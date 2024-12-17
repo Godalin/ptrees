@@ -3,4 +3,5 @@
 (coq.theory
  (name PTree)
  (package coq-ptree)
- (theories ExtLib ITree))
+ (theories ExtLib ITree mathcomp HB elpi elpi_elpi)
+ (flags -w -notation-incompatible-prefix -w -notation-overridden))

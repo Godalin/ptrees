@@ -15,9 +15,6 @@ Set Warnings "-notation-overridden".
 
 From Coq Require Import Program.
 
-From mathcomp Require Import all_ssreflect.
-From mathcomp Require Import reals measure.
-
 From ExtLib Require Import
      Structures.Functor
      Structures.Monads.
@@ -27,15 +24,15 @@ From ITree Require Import
      Core.Subevent
      Indexed.Sum.
 
+From ProbAx Require Import integration.
+Check Meas.
+
 
 
 Set Primitive Projections.
 
 Section ptree.
-
-Context {ℝ : realType}.
-Context {d : measure_display}.
-Context {E : Type -> Type} {R : measurableType d}.
+Context {E : Type -> Type} {R : Type}.
 
 (*|
 
@@ -58,7 +55,7 @@ Variant ptreeF (ptree : Type) : Type :=
 | RetF  (r : R)
 | Tau   (e : ptree)
 | VisF  {X} (e : E X) (k : X -> ptree)
-| ProbF {d} {X : measurableType d} (eμ :(measure X ℝ)) (k : X -> ptree)
+| ProbF {X} (μ : Meas X) (k : X -> ptree)
 .
 (* | SRetF {d} {R : measurableType d} (μ : measure R ℝ) *)
 (* | ProbCPS {X d} {R : measurableType d} (e : E X) (k : X -> probability R ℝ) *)
@@ -67,11 +64,6 @@ CoInductive ptree : Type :=
   go { _observe : ptreeF ptree }.
 
 End ptree.
-
-
-
-Check bool : measurableType _.
-Check nat : measurableType _.
 
 
 
