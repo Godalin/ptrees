@@ -1,0 +1,10 @@
+From ITree Require Import ITree.
+
+From PTree Require Import Core.PTreeDefinitionFin.
+
+
+Definition h_embed {E} : E ~> ptree E :=
+  fun _ e => PTree.trigger e.
+
+Definition inject {E} : itree E ~> ptree E :=
+  interp h_embed.

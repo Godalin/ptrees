@@ -26,8 +26,6 @@
    (>= 8.18))
   (coq-ext-lib
    (>= 0.11.3))
-  (coq-coquelicot
-   (>= 0.1))
   (coq-coinduction
    (>= 1.3))
   (coq-itree

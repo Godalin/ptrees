@@ -3,5 +3,16 @@
 (coq.theory
  (name PTree)
  (package coq-ptree)
- (theories ExtLib ITree ProbAx mathcomp HB elpi elpi_elpi)
+ (theories
+  ExtLib
+  ITree
+  Paco
+  Coinduction
+  RelationAlgebra
+  ProbAx
+  ; mathcomp
+  ; HB
+  ; elpi
+  ; elpi_elpi
+  HoTT)
  (flags -w -notation-incompatible-prefix -w -notation-overridden))

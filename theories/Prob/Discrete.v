@@ -1,0 +1,342 @@
+Require Import Utf8.
+Require Import EquivDec.
+Require Import List.
+Require Import Setoid.
+Require Import Program.
+Require Import Morphisms.
+
+From PTree.Prob Require Import RealSubTypes.
+
+Set Implicit Arguments.
+Set Contextual Implicit.
+
+Notation "ℝ₊" := R : type_scope.
+
+
+(** The Inference Problem Representation for discrete cases *)
+Section Interface.
+
+(* The semantics is defined as [Mass] functions. *)
+(* Definition Mass (X : Type) := X → ℝ₊. *)
+
+(* Record Mass_Monad := *)
+(*   { ret_mass := fun A x y => if x == y then 1 else 0 *)
+(*   ; bind_mass := fun A B f g x => fun y => f x y * g y; *)
+(*   }. *)
+
+Class Discrete (m : Type → Type) := {
+  disc_ret : forall {A}, A → m A;
+  disc_bind : forall {A B}, m A → (A → m B) → m B;
+  disc_flip : unit → m bool;
+  disc_score : ℝ₊ → m unit;
+}.
+
+(** Discrete Laws:
+  bind (ret x) f ≃ f x
+  bind m ret ≃ m
+  bind m (λ x, bind (f x) g) ≃ bind (bind m f) g
+  bind m (λ x, bind n (λ y, f x y)) ≃ bind n (λ y, bind m (λ x, f x y))
+  *)
+
+Class DiscreteLaws (m : Type → Type) `{Discrete m}
+  (R : forall {a}, m a → m a → Prop) :=
+
+  { disc_ret_bind : forall A B (x : A) (f : A → m B),
+    R (disc_bind (disc_ret x) f) (f x)
+
+  ; disc_bind_ret : forall A (u : m A),
+    R (disc_bind u disc_ret) u
+
+  ; disc_bind_assoc : forall A B C (u : m A) (f : A → m B) (g : B → m C),
+    R (disc_bind u (λ x, disc_bind (f x) g))
+      (disc_bind (disc_bind u f) g)
+
+  ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A → B → m C),
+    R (disc_bind u (λ x, disc_bind v (λ y, f x y)))
+      (disc_bind v (λ y, disc_bind u (λ x, f x y)))
+  }.
+
+Class DiscreteInterface (M : Type → Type) : Type :=
+  { disc :: Discrete M
+  (* ; disc_laws :: DiscreteLaws *)
+
+  (** The equality for discrete representations *)
+  ; disc_eq : ∀ R `{EqDec R eq}, M R → M R → Prop
+
+  (** The equality should be some [Equivalence] *)
+  ; disc_eq_equiv :: ∀ R `{DR : EqDec R eq},
+      Equivalence (@disc_eq R _ DR)
+
+  (** We need a relation transformer *)
+  ; disc_RT : ∀ R1 R2 `{EqDec R1 eq} `{EqDec R2 eq},
+      (R1 → R2 → Prop) → M R1 → M R2 → Prop
+
+  (** The transformed [disc_RT eq] should coincide with [disc_eq] *)
+  ; disc_RTeq : ∀ R `{EqDec R eq} (μ1 μ2 : M R),
+      disc_eq μ1 μ2 ↔ disc_RT eq μ1 μ2
+  }.
+
+Context {M : Type → Type}.
+Context `{DiscreteInterface M}.
+
+(** "easy-to-use" [Equivalence] for [disc_RT] when  is given *)
+#[global] Instance dist_RT_equiv X `{EqDec X eq}
+  : @Equivalence (M X) (disc_RT eq).
+Proof. split.
+  - unfold Reflexive. intros. apply disc_RTeq. reflexivity.
+  - unfold Symmetric. intros. apply disc_RTeq. symmetry.
+    apply disc_RTeq. assumption.
+  - unfold Transitive. intros. apply disc_RTeq.
+    etransitivity; apply disc_RTeq; eassumption.
+Qed.
+
+End Interface.
+
+
+
+(** The [Term] Representation *)
+Module Term.
+
+Inductive Term (A : Type) :=
+| Return : ℝ₊ → A → Term A
+| Flip : Term A → Term A → Term A.
+
+Arguments Return {A} _ _.
+Arguments Flip {A} _ _.
+
+Fixpoint scale_Term {A} (s : ℝ₊) (t : Term A) : Term A :=
+  match t with
+  | Return p x => Return (s * p) x
+  | Flip k_false k_true =>
+    Flip (scale_Term s k_false) (scale_Term s k_true)
+  end.
+
+Fixpoint bind_Term {A B} (a : Term A) (f : A → Term B) :=
+  match a with
+    | Return r x => scale_Term r (f x)
+    | Flip k_true k_false =>
+      Flip (bind_Term k_true f) (bind_Term k_false f)
+  end.
+
+#[global] Instance Term_Discrete : Discrete Term :=
+  {|disc_ret := λ A x, Return 1 x
+  ; disc_bind := @bind_Term
+  ; disc_flip := λ _, Flip (Return 1 true) (Return 1 false)
+  ; disc_score := λ r, Return r tt
+  |}.
+
+End Term.
+
+
+
+
+
+(** The [Enum] Representation *)
+Module Enum.
+Import ListNotations.
+
+Definition Enum (A : Type) := list (ℝ₊ * A).
+
+Declare Scope enum_scope.
+Bind Scope enum_scope with Enum.
+Delimit Scope enum_scope with enum.
+Local Open Scope enum_scope.
+
+Fixpoint scale_Enum {A} (r : ℝ₊) (e : Enum A) : Enum A :=
+  match e with
+  | [] => []
+  | (s, x) :: e' => (r * s, x) :: scale_Enum r e'
+  end.
+
+Lemma scale_app : ∀ A r (u v : Enum A),
+  scale_Enum r (u ++ v) = scale_Enum r u ++ scale_Enum r v.
+Proof. intros. generalize r. induction u; simpl. reflexivity.
+  destruct a. repeat simpl. intros. rewrite IHu. reflexivity.
+Qed.
+
+Lemma scale_scale : ∀ {A} r s (u : Enum A),
+  scale_Enum r (scale_Enum s u) = scale_Enum (r * s) u.
+Proof. intros. induction u. now simpl.
+  destruct a. simpl. rewrite IHu. rewrite Rmult_assoc.
+  reflexivity.
+Qed.
+
+Definition bind_Enum {A B} (xs : Enum A) (f : A → Enum B) : Enum B :=
+  fold_right (λ '(s, x) ys, scale_Enum s (f x) ++ ys) [] xs.
+
+#[global] Instance Enum_Discrete : Discrete Enum :=
+  {|disc_ret := λ A x, [(1, x)]
+  ; disc_bind := @bind_Enum
+  ; disc_flip := λ _, [(1, true); (1, false)]
+  ; disc_score := λ r, [(r, tt)]
+  |}.
+
+Inductive InSupp {A} (x : A) : list A → Prop :=
+| In_head : forall xs, InSupp x (x :: xs)
+| In_tail : forall y xs, InSupp x xs → InSupp x (y :: xs).
+
+Definition scale_bind : ∀ {A B} r (u : Enum A) (f : A → Enum B),
+  scale_Enum r (bind_Enum u f) = bind_Enum u (λ x, scale_Enum r (f x)).
+Proof. intros. induction u. now simpl. destruct a. simpl.
+  rewrite scale_app. rewrite IHu. repeat rewrite scale_scale.
+  now rewrite Rmult_comm.
+Qed.
+
+
+
+(** We need the decidable equality for the base type [A] of
+    the enumeration. *)
+
+Fixpoint acc_mass {A} `{EqDec A eq} (x : A) (μ : Enum A) : ℝ₊ :=
+  match μ with
+  | [] => 0
+  | (p, y) :: μ' =>
+      if x == y then p + acc_mass x μ' else acc_mass x μ'
+  end.
+
+Lemma acc_app {A} `{EqDec A eq} {x : A} {μ1 μ2 : Enum A}
+  : acc_mass x (μ1 ++ μ2) = acc_mass x μ1 + acc_mass x μ2.
+Proof. induction μ1. simpl. now rewrite Rplus_0_l.
+  destruct a. simpl. destruct (x == a). rewrite IHμ1.
+  now rewrite Rplus_assoc. auto.
+Qed.
+
+Definition EqEnum {A} `{EqDec A eq} (μ1 μ2 : Enum A) : Prop :=
+  ∀ x : A, acc_mass x μ1 = acc_mass x μ2.
+
+Infix "==Enum" := EqEnum (at level 70).
+
+Lemma enum_eq_eq {A} `{EqDec A eq} : ∀ {μ1 μ2 : Enum A},
+  μ1 = μ2 → EqEnum μ1 μ2.
+Proof. intros. unfold EqEnum. intros.
+  rewrite H0. reflexivity.
+Qed.
+
+Lemma enum_eq_refl : ∀ {A} `{EqDec A eq} {μ : Enum A},
+  μ ==Enum μ.
+Proof. intros. unfold EqEnum. intros. reflexivity. Qed.
+
+Lemma enum_eq_sym {A} `{EqDec A eq} : ∀ {μ ν : Enum A},
+  μ ==Enum ν → ν ==Enum μ.
+Proof. intros. unfold EqEnum. intros. symmetry. apply H0. Qed.
+
+Lemma enum_eq_trans {A} `{EqDec A eq} : ∀ {x y z : Enum A},
+  x ==Enum y → y ==Enum z → x ==Enum z.
+Proof. intros. unfold EqEnum. intros. etransitivity; eauto. Qed.
+
+
+
+#[global] Instance enum_eq_equiv A `{DA : EqDec A eq}
+  : @Equivalence (Enum A) EqEnum.
+Proof. split. unfold Reflexive. intros. apply enum_eq_refl.
+  unfold Symmetric. intros. now apply enum_eq_sym.
+  unfold Transitive. intros. now eapply enum_eq_trans.
+Qed.
+
+Add Parametric Morphism {A} `{DA : EqDec A eq} : (@app (ℝ₊ * A))
+  with signature EqEnum ==> EqEnum ==> EqEnum
+  as app_proper.
+Proof. intros. intros a. repeat rewrite acc_app.
+  rewrite H. rewrite H0. reflexivity.
+Qed.
+
+
+
+Lemma app_comm {A} `{EqDec A eq} (u v : Enum A) : u ++ v ==Enum v ++ u.
+Proof. unfold EqEnum. intros. induction u.
+  simpl. now rewrite app_nil_r. destruct a.
+  repeat rewrite acc_app. rewrite Rplus_comm.
+  reflexivity.
+Qed.
+
+Lemma enum_nil_bind : ∀ A B (f : A → Enum B),
+  bind_Enum [] f = [].
+Proof. intros. simpl. reflexivity. Qed.
+
+Lemma enum_cons_bind : ∀ A B x r (u : Enum A) (f : A → Enum B),
+  bind_Enum ((r, x) :: u) f = scale_Enum r (f x) ++ bind_Enum u f.
+Proof. intros. simpl. reflexivity. Qed.
+
+Lemma enum_bind_nil : ∀ A B (u : Enum A),
+  bind_Enum u (λ _, [] : Enum B) = [].
+Proof.
+  intros. simpl. induction u.
+  now simpl. destruct a. rewrite enum_cons_bind.
+  now simpl.
+Qed.
+
+Lemma enum_bind_app : ∀ A B `{EqDec B eq} (u : Enum A) (f g : A → Enum B),
+  bind_Enum u (λ x, (f x) ++ (g x))
+    ==Enum
+  bind_Enum u (λ x, f x) ++ bind_Enum u (λ x, g x).
+Proof. intros. induction u. now simpl.
+  destruct a. repeat rewrite enum_cons_bind.
+  rewrite scale_app. rewrite IHu. repeat rewrite <- app_assoc.
+  rewrite (app_assoc (scale_Enum r (g a))).
+  rewrite (app_comm (scale_Enum r (g a))).
+  repeat rewrite <- app_assoc. reflexivity.
+Qed.
+
+Lemma enum_comm_nil : ∀ A B C (v : Enum B) (f : A → B → Enum C),
+  bind_Enum [] (λ x, bind_Enum v (λ y, f x y)) =
+  bind_Enum v (λ y, bind_Enum [] (λ x, f x y)).
+Proof.
+  intros A B C v f.
+  rewrite enum_bind_nil. simpl. reflexivity.
+Qed.
+
+Lemma enum_comm_cons : ∀ A B C
+  `{DA : EqDec A eq} `{DB : EqDec B eq} `{DC : EqDec C eq} r a
+  (u : Enum A) (v : Enum B) (f : A → B → Enum C),
+    bind_Enum ((r, a) :: u) (λ x, bind_Enum v (λ y, f x y))
+      ==Enum
+    bind_Enum v (λ y, bind_Enum ((r, a) :: u) (λ x, f x y)).
+Proof.
+  intros. rewrite enum_cons_bind. simpl.
+  induction v.
+  - simpl. rewrite enum_bind_nil. now apply enum_eq_eq.
+  - destruct a0. simpl. repeat rewrite scale_app.
+    repeat rewrite enum_bind_app.
+    repeat rewrite <- app_assoc.
+    rewrite (app_assoc (scale_Enum r (bind_Enum v (λ y : B, f a y)))).
+    rewrite (app_comm (scale_Enum r (bind_Enum v (λ y : B, f a y)))).
+    rewrite <- app_assoc.
+    rewrite IHv. repeat rewrite scale_scale.
+    rewrite scale_bind. rewrite enum_bind_app. rewrite Rmult_comm.
+    reflexivity.
+Qed.
+
+Theorem enum_Fubini_Tonelli : ∀ A B C
+  `{DA : EqDec A eq} `{DB : EqDec B eq} `{DC : EqDec C eq}
+  (u : Enum A) (v : Enum B) (f : A → B → Enum C),
+    bind_Enum u (λ x, bind_Enum v (λ y, f x y))
+      ==Enum
+    bind_Enum v (λ y, bind_Enum u (λ x, f x y)).
+Proof. destruct u.
+  - intros. apply enum_eq_eq. apply enum_comm_nil.
+  - intros. destruct p. now eapply enum_comm_cons.
+Qed.
+
+
+
+(** the relation transformer for [Enum] *)
+
+Definition enumRT {R1 R2 : Type} `{EqDec R1 eq} `{EqDec R2 eq}
+    (RR : R1 → R2 → Prop) : Enum R1 → Enum R2 → Prop
+  := λ μx μy, ∀ x y, RR x y → acc_mass x μx = acc_mass y μy.
+
+Infix "==EnumRT" := (enumRT _) (at level 70).
+
+#[global] Program Instance Enum_DiscreteInterface
+    : DiscreteInterface Enum :=
+  {|disc := Enum_Discrete
+  ; disc_eq := @EqEnum
+  ; disc_RT := @enumRT
+  |}.
+Next Obligation.
+  split. intros. unfold enumRT. intros x ? <-.
+  rewrite H0. reflexivity.
+  intros. intro a. apply H0. exact eq_refl.
+Qed.
+
+End Enum.
