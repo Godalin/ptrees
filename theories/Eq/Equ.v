@@ -315,6 +315,38 @@ Proof.
   intros. rewrite RELk0. auto.
 Qed.
 
+#[global] Instance eq_equ_equ {RC : Chain (@fequ E M _ R R eq)}
+  : Proper (eq ==> going (equ eq) ==> flip impl)
+	   (@equb E M _ R R eq (` RC)).
+Proof.
+  unfold Proper, respectful, flip, impl. intros. subst.
+  inversion H0; subst. step in H.
+  inversion H; subst; inversion H1; subst. auto.
+  - econstructor. now rewrite REL.
+  - dependent destruction H5. dependent destruction H6.
+    econstructor. intros. now rewrite REL.
+  - dependent destruction H9; subst. dependent destruction H10.
+    econstructor; eauto. rewrite REL0. now symmetry.
+    intro. rewrite RELk0. symmetry. rewrite RELk. reflexivity.
+Qed.
+
+#[global] Instance equ_equ_equ {RC : Chain (@fequ E M _ R R eq)}
+  : Proper (going (equ eq) ==> going (equ eq) ==> flip impl)
+	   (@equb E M _ R R eq (` RC)).
+Proof.
+  unfold Proper, respectful, flip, impl. intros.
+  inversion H; subst. step in H2.
+  inversion H0; subst. step in H3.
+  inversion H2; subst; inversion H3; subst; eauto.
+  all: try now inversion H1.
+  - inversion H1; subst. econstructor. rewrite REL, REL0; assumption.
+  - dependent destruction H1. econstructor.
+    intro x. rewrite REL0, REL1. apply REL.
+  - dependent destruction H1. econstructor.
+    rewrite REL0, REL1. assumption.
+    intro x. rewrite RELk0, RELk1. apply RELk.
+Qed.
+
 Lemma observe_equ_eq
   : forall (t u: ptree E M R),
     observe t = observe u -> t ≅ u.
@@ -484,14 +516,21 @@ Proof. red. red. red. intros t u Hx k1 k2 Hk.
   intros ?? <-. auto.
 Qed.
 
-#[global] Instance bind_chain {X Y} (S : relation X) (R : relation Y)
-    (RXC : Chain (@fequ E M _ _ _ S))
-    (RYC : Chain (@fequ E M _ _ _ R))
-  : Proper (` RXC ==> pointwise_relation X (` RYC) ==> ` RYC)
-    bind. (* @bind (ptree E M) _ X Y. *)
-Proof. red. red. red. intros t u Hx k1 k2 Hk.
-  - eapply clo_bind_chain; eauto.
-Admitted.
+#[global] Instance bind_equ_cong {X Y}
+  : Proper (@equ E M _ _ _ eq ==>
+      pointwise_relation X (equ (@eq Y)) ==> (equ (@eq Y)))
+    bind.
+Proof. apply bind_equ_cong_chain. Qed.
+
+
+(* #[global] Instance bind_chain {X Y} (S : relation X) (R : relation Y) *)
+(*     (RXC : Chain (@fequ E M _ _ _ S)) *)
+(*     (RYC : Chain (@fequ E M _ _ _ R)) *)
+(*   : Proper (` RXC ==> pointwise_relation X (` RYC) ==> ` RYC) *)
+(*     bind. (* @bind (ptree E M) _ X Y. *) *)
+(* Proof. red. red. red. intros t u Hx k1 k2 Hk. *)
+(*   - eapply clo_bind_chain; eauto. *)
+(* Qed. *)
 
 End rules.
 
@@ -548,7 +587,7 @@ End equational.
 
 
 
-(** Monadic laws *)
+(** * Monadic laws *)
 Section monadic.
 Import PTree.
 Import PTreeNotations.
@@ -559,10 +598,12 @@ Import MonadNotation.
 Context {E M : Type -> Type}.
 Context `{DiscreteInterface M}.
 
-Lemma bind_ret_l {X Y} : forall (x : X) (k : X -> ptree E M Y), (Ret x >>= k) ≅ k x.
+Lemma bind_ret_l {X Y} : forall (x : X) (k : X -> ptree E M Y),
+    (ret x >>= k) ≅ k x.
 Proof. intros. cbn. now rewrite unfold_bind. Qed.
 
-Lemma bind_ret_r {X} : forall (t : ptree E M X), x <- t;; Ret x ≅ t.
+Lemma bind_ret_r {X} : forall (t : ptree E M X),
+    x <- t ;; ret x ≅ t.
 Proof. unfold equ.
   coinduction R CIH.
   intros t. cbn.
@@ -570,18 +611,17 @@ Proof. unfold equ.
   cbn in *. desobs t Heq; constructor; auto.
 Qed.
 
-Print Instances Proper.
-
-Lemma bind_bind {X Y Z}
-  : forall (t : ptree E M X) (k : X -> ptree E M Y) (h : Y -> ptree E M Z),
-    (t >>= k) >>= h ≅ t >>= (fun x => k x >>= h).
+Lemma bind_bind {X Y Z} : forall (t : ptree E M X)
+    (k : X -> ptree E M Y) (h : Y -> ptree E M Z),
+    t >>= k >>= h ≅ t >>= (fun x => k x >>= h).
 Proof. unfold equ.
-  coinduction S CIH; intros.
-  cbn. rewrite (ptree_eta t). cbn*.
+  coinduction S CIH. intros.
+  cbn. rewrite (ptree_eta t). cbn.
   desobs t; cbn.
   - reflexivity.
   - constructor; intros. apply CIH.
   - constructor; intros. apply CIH.
+  - constructor; intros. reflexivity. eapply CIH.
 Qed.
 
 End monadic.
@@ -590,3 +630,4 @@ End monadic.
 
 (*+ Structural rules *)
 Section structural.
+End structural.
