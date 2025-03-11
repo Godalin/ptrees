@@ -54,7 +54,7 @@ Local Open Scope ptree_scope.
 
 Arguments ptree _ _ : clear implicits.
 Arguments ptreeF _ _ : clear implicits.
-
+Arguments ProbF {E M R} [ptree] {X _ _} μ k.
 
 
 Notation ptree' E M R := (ptreeF E M R (ptree E M R)).
@@ -67,6 +67,7 @@ Tactic Notation "desobs" ident(t) := destruct (observe t).
 Tactic Notation "desobs" ident(t) ident(H) := __desobs t H.
 
 
+
 (** Notations for constructors of PTrees. *)
 
 Notation Ret x   := (go (RetF x)).
@@ -77,7 +78,6 @@ Notation Prob μ k := (go (ProbF μ k)).
 
 
 (*| Main Operations for PTrees. |*)
-
 Module PTree.
 
 (*| Monadic Operations |*)

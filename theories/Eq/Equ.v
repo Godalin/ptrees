@@ -285,10 +285,10 @@ Context `{DM : DiscreteInterface M}.
   : Proper (equ eq ==> going (equ eq)) (@observe E M R).
 Proof. constructor. step in H. now step. Qed.
 
-#[global] Instance equ_ProbF {X} `{EqDec X eq} (μ : M X)
-  : Proper (pointwise_relation _ (equ eq) ==> going (equ eq))
-    (@ProbF E M R _ _ _ _ μ).
-Proof. constructor. red in H0. step. econstructor; eauto. Qed.
+#[global] Instance equ_ProbF {X} `{EqDec X eq}
+  : Proper (disc_RT eq ==> pointwise_relation _ (equ eq) ==> going (equ eq))
+    (@ProbF E M R _ _ _ _).
+Proof. constructor. red in H1. step. econstructor; eauto. Qed.
 
 #[global] Instance equ_VisF {X} (e : E X)
   : Proper (pointwise_relation _ (equ eq) ==> going (equ eq))
@@ -543,22 +543,22 @@ Import PTree.
 Import PTreeNotations.
 Open Scope ptree.
 
-Context {E M : Type -> Type} {R S : Type}.
-Context `{DM : DiscreteInterface M}.
+Context {E M : Type -> Type}.
+Context `{DiscreteInterface M}.
 
 (** * η-expensions  *)
 
-Lemma ptree_eta_ (t : ptree E M R) : t ≅ go (_observe t).
+Lemma ptree_eta_ {R} (t : ptree E M R) : t ≅ go (_observe t).
 Proof. now step. Qed.
 
-Lemma ptree_eta (t : ptree E M R) : t ≅ go (observe t).
+Lemma ptree_eta {R} (t : ptree E M R) : t ≅ go (observe t).
 Proof. now step. Qed.
 
-Lemma ptree_eta' (ot : ptree' E M R) : ot = observe (go ot).
+Lemma ptree_eta' {R} (ot : ptree' E M R) : ot = observe (go ot).
 Proof. reflexivity. Qed.
 
 Import MonadNotation.
-#[local] Open Scope monad_scope.
+Local Open Scope monad_scope.
 
 Notation bind_ t k :=
   match observe t with
@@ -568,7 +568,7 @@ Notation bind_ t k :=
   | ProbF μ kμ => Prob μ (fun x => bind (kμ x) k)
   end.
 
-Lemma unfold_bind (t : ptree E M R) (k : R -> ptree E M S)
+Lemma unfold_bind {R S} (t : ptree E M R) (k : R -> ptree E M S)
   : bind t k ≅ bind_ t k.
 Proof. now step. Qed.
 
@@ -579,7 +579,7 @@ Notation iter_ step i :=
    | inr r => Ret r
    end)%ptree.
 
-Lemma unfold_iter {I} (step : I -> ptree E M (I + R)) i:
+Lemma unfold_iter {R I} (step : I -> ptree E M (I + R)) i:
 	iter step i ≅ iter_ step i.
 Proof. now step. Qed.
 
@@ -591,9 +591,9 @@ End equational.
 Section monadic.
 Import PTree.
 Import PTreeNotations.
-#[local] Open Scope ptree_scope.
+Local Open Scope ptree_scope.
 Import MonadNotation.
-#[local] Open Scope monad_scope.
+Local Open Scope monad_scope.
 
 Context {E M : Type -> Type}.
 Context `{DiscreteInterface M}.
@@ -628,6 +628,95 @@ End monadic.
 
 
 
-(*+ Structural rules *)
+(** * Structural rules *)
 Section structural.
+Context {E M : Type -> Type} {R S : Type}.
+Context `{DiscreteInterface M}.
+Import PTree.
+Import MonadNotation.
+Local Open Scope monad_scope.
+
+Lemma bind_vis {X Y Z} (e : E X)
+    (k : X -> ptree E M Y) (g : Y -> ptree E M Z)
+  : Vis e k >>= g ≅ Vis e (fun x => k x >>= g).
+Proof. cbn. now rewrite unfold_bind. Qed.
+
+Lemma bind_trigger {X Y} (e : E X) (k : X -> ptree E M Y)
+  : trigger e >>= k ≅ Vis e k.
+Proof.
+  unfold trigger. rewrite bind_vis. setoid_rewrite bind_ret_l.
+  reflexivity.
+Qed.
+
+Lemma bind_prob {X Y Z} `{EqDec X eq} (μ : M X)
+    (k : X -> ptree E M Y) (g : Y -> ptree E M Z)
+  : Prob μ k >>= g ≅ Prob μ (fun x => k x >>= g).
+Proof. cbn. now rewrite unfold_bind. Qed.
+
+Lemma bind_tau {X Y} (t : ptree E M X) (g : X -> ptree E M Y)
+  : Tau t >>= g ≅ Tau (t >>= g).
+Proof. cbn. rewrite unfold_bind. now cbn. Qed.
+
+Lemma vis_equ_bind {X Y Z}
+  : forall (t : ptree E M X) (e : E Z) k (k' : X -> ptree E M Y),
+      x <- t;; k' x ≅ Vis e k ->
+      (exists r, t ≅ Ret r) \/
+      exists k0, t ≅ Vis e k0 /\ forall x, k x ≅ x <- k0 x;; k' x.
+Proof.
+  intros.
+  destruct (observe t) eqn:?.
+  - left. exists r. now rewrite ptree_eta, Heqp.
+  - rewrite (ptree_eta t), Heqp, bind_tau in H0.
+    step in H0. inversion H0.
+  - rewrite (ptree_eta t), Heqp, bind_vis in H0.
+    apply equ_vis_invT in H0 as ?; subst.
+    apply equ_vis_invE in H0 as ?; destruct H1; subst.
+    right. exists k0. split.
+    2:{ intro. symmetry. apply H2. }
+    + rewrite (ptree_eta t). now rewrite <- Heqp.
+  - rewrite (ptree_eta t), Heqp, bind_prob in H0.
+    step in H0. inversion H0.
+Qed.
+
+Lemma ret_equ_bind {X Y}
+  : forall (t : ptree E M Y) (k : Y -> ptree E M X) r,
+    x <- t;; k x ≅ ret r ->
+    exists r1, t ≅ ret r1 /\ k r1 ≅ ret r.
+Proof.
+  intros. rewrite (ptree_eta t) in H0. (* rewrite (ptree_eta t). *)
+  destruct (observe t) eqn:?.
+  - rewrite (bind_ret_l r0 k) in H0. econstructor; split.
+    unfold ret. rewrite <- Heqp. rewrite <- (ptree_eta t).
+    all: auto.
+  - rewrite bind_tau in H0. step in H0. inversion H0.
+  - rewrite bind_vis in H0. step in H0. inversion H0.
+  - rewrite bind_prob in H0. step in H0. inversion H0.
+Qed.
+
+Lemma prob_equ_bind {X Y Z} `{EqDec Z eq}
+  : forall (t : ptree E M X) (μ : M Z) k (k' : X -> ptree E M Y),
+    x <- t;; k' x ≅ Prob μ k ->
+    (exists r, t ≅ Ret r) \/
+    exists k0, t ≅ Prob μ k0 /\ forall x, k x ≅ x <- k0 x;; k' x.
+Proof.
+  intros.
+  destruct (observe t) eqn:?.
+  - left. exists r. rewrite ptree_eta, Heqp. reflexivity.
+  - rewrite (ptree_eta t), Heqp, bind_tau in H1. step in H1. inversion H1.
+  - rewrite (ptree_eta t), Heqp, bind_vis in H1. step in H1. inversion H1.
+  - rewrite (ptree_eta t), Heqp, bind_prob in H1.
+    apply equ_prob_invT in H1 as ?. subst.
+    step in H1. dependent destruction H1.
+    right. exists k0. split.
+    + rewrite (ptree_eta t). rewrite Heqp.
+      rewrite REL. reflexivity.
+    + intro z. cbn. now rewrite RELk.
+Qed.
+
+
+
+(** *map laws *)
+
+(* TODO *)
+
 End structural.
