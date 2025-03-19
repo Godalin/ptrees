@@ -91,7 +91,9 @@ Arguments equb_ {_ _ _ _ _} _/.
 (*   | |- _ => step *)
 (*   end. *)
 
-(* #[local] Tactic Notation "step" := __step_equ. *)
+Ltac __step_equ := step.
+
+#[local] Tactic Notation "step" := __step_equ.
 
 Ltac __step_in_equ H :=
   match type of H with
@@ -105,7 +107,7 @@ Ltac __step_in_equ H :=
 
 
 (** Useful relation notations *)
-Module Import EquNotations.
+Module EquNotations.
 Notation "` R" := (elem R) (at level 10).
 
 Infix "≅"      := (equ eq) (at level 70).
@@ -120,10 +122,9 @@ Infix "{{≅ Q }}" := (equb Q (equ Q)) (at level 70).
 Infix "[≅]"   := (et eq) (at level 70).
 Infix "{≅}"   := (ebt eq) (at level 70).
 Infix "{{≅}}" := (equb eq (equ eq)) (at level 70).
-
 End EquNotations.
 
-
+Import EquNotations.
 
 Section equ_theory.
 Context {E M : Type -> Type} {R : Type}.
@@ -295,6 +296,11 @@ Proof. constructor. red in H1. step. econstructor; eauto. Qed.
     (@VisF E M R _ _ e).
 Proof. constructor. red in H. step. econstructor; eauto. Qed.
 
+#[global] Instance equ_TauF
+  : Proper (equ eq ==> going (equ eq))
+    (@TauF E M R _).
+Proof. constructor. red in H. step. econstructor; eauto. Qed.
+
 
 
 #[global] Instance observing_sub_equ
@@ -356,7 +362,7 @@ End proper.
 
 
 
-(*+ Up-To [bind] Reasoning +*)
+(** * Up-To [bind] Reasoning *)
 (** Given [t ≅ u], how to show that [t >>= k] and [u >>= h] are bisimilar?
     The goal is to show that, the function
     [ f R = {(bind t k, bind u h) | equ SS t u ∧ ∀ x y, SS x y → R (k x) (h y)} ]
@@ -603,7 +609,7 @@ Lemma bind_ret_l {X Y} : forall (x : X) (k : X -> ptree E M Y),
 Proof. intros. cbn. now rewrite unfold_bind. Qed.
 
 Lemma bind_ret_r {X} : forall (t : ptree E M X),
-    x <- t ;; ret x ≅ t.
+    x <- t ;; ret x ≅ t.        (* bind t ret = t *)
 Proof. unfold equ.
   coinduction R CIH.
   intros t. cbn.

@@ -1,35 +1,38 @@
 Require Import Utf8.
-Require Import Reals.
-Require Import EquivDec.
 Require Import List.
 Require Import Setoid.
 Require Import Program.
 Require Import Morphisms.
 
-From PTree.Prob Require Import RealSubTypes.
+From mathcomp Require Import ssreflect ssrbool eqtype ssrnat.
+From mathcomp Require Import order ssrint rat.
+
+From PTree.Prob Require Import RatSubTypes.
 
 Set Implicit Arguments.
 Set Contextual Implicit.
 
-Notation "ℝ₊" := R : type_scope.
-#[local] Open Scope R_scope.
+#[local] Open Scope subrat_scope.
 
 (** The Inference Problem Representation for discrete cases *)
 Section Interface.
+Import NonnegQNotations.
 
 (* The semantics is defined as [Mass] functions. *)
-(* Definition Mass (X : Type) := X → ℝ₊. *)
+(* Definition Mass (X : Type) := X → ℚ≥0. *)
 
 (* Record Mass_Monad := *)
 (*   { ret_mass := fun A x y => if x == y then 1 else 0 *)
 (*   ; bind_mass := fun A B f g x => fun y => f x y * g y; *)
 (*   }. *)
 
+
+
 Class Discrete (m : Type → Type) := {
   disc_ret : forall {A}, A → m A;
   disc_bind : forall {A B}, m A → (A → m B) → m B;
   disc_flip : unit → m bool;
-  disc_score : ℝ₊ → m unit;
+  disc_score : nnQ → m unit;
 }.
 
 (** Discrete Laws:
@@ -63,25 +66,25 @@ Class DiscreteInterface (M : Type → Type) : Type :=
   (* ; disc_laws :: DiscreteLaws *)
 
   (** The equality for discrete representations *)
-  ; disc_eq : ∀ R `{EqDec R eq}, M R → M R → Prop
+  ; disc_eq : ∀ {R : eqType}, M R → M R → Prop
 
   (** The equality should be some [Equivalence] *)
-  ; disc_eq_equiv :: ∀ R `{EqDec R eq},
-      Equivalence (@disc_eq R _ _)
+  ; disc_eq_equiv :: ∀ R : eqType,
+      Equivalence (@disc_eq R)
 
   (** We need a relation transformer *)
-  ; disc_RT : ∀ R1 R2 `{EqDec R1 eq} `{EqDec R2 eq},
+  ; disc_RT : ∀ {R1 R2 : eqType},
       (R1 → R2 → Prop) → M R1 → M R2 → Prop
 
   (** The transformed [disc_RT eq] should coincide with [disc_eq] *)
-  ; disc_RTeq : ∀ R `{EqDec R eq} (μ1 μ2 : M R),
+  ; disc_RTeq : ∀ (R : eqType) (μ1 μ2 : M R),
       disc_eq μ1 μ2 ↔ disc_RT eq μ1 μ2
 
   (** A mass operator for getting the probability mass *)
-  ; disc_mass {R} `{EqDec R eq} : R → M R → ℝ₊
+  ; disc_mass {R : eqType} : R → M R → nnQ
 
   (** The mass operator should be proper.  *)
-  ; disc_mass_proper {R} `{EqDec R eq} {x : R} ::
+  ; disc_mass_proper {R : eqType} {x : R} ::
       Proper (disc_RT eq ==> eq) (disc_mass x)
   }.
 
@@ -89,7 +92,7 @@ Context {M : Type → Type}.
 Context `{DiscreteInterface M}.
 
 (** "easy-to-use" [Equivalence] for [disc_RT] when  is given *)
-#[global] Instance dist_RT_equiv X `{EqDec X eq}
+#[global] Instance dist_RT_equiv {X : eqType}
   : @Equivalence (M X) (disc_RT eq).
 Proof. split.
   - unfold Reflexive. intros. apply disc_RTeq. reflexivity.
@@ -105,15 +108,16 @@ End Interface.
 
 (** The [Term] Representation *)
 Module Term.
+Import NonnegQNotations.
 
 Inductive Term (A : Type) :=
-| Return : ℝ₊ → A → Term A
-| Flip : Term A → Term A → Term A.
+  | Return : nnQ → A → Term A
+  | Flip : Term A → Term A → Term A.
 
 Arguments Return {A} _ _.
 Arguments Flip {A} _ _.
 
-Fixpoint scale_Term {A} (s : ℝ₊) (t : Term A) : Term A :=
+Fixpoint scale_Term {A} (s : nnQ) (t : Term A) : Term A :=
   match t with
   | Return p x => Return (s * p) x
   | Flip k_false k_true =>
@@ -127,11 +131,14 @@ Fixpoint bind_Term {A B} (a : Term A) (f : A → Term B) :=
       Flip (bind_Term k_true f) (bind_Term k_false f)
   end.
 
-#[global] Instance Term_Discrete : Discrete Term :=
-  {|disc_ret := λ A x, Return 1 x
+#[global, program]
+Instance Term_Discrete : Discrete Term :=
+  {|disc_ret := λ A x, Return ([nn 1]) x
   ; disc_bind := @bind_Term
-  ; disc_flip := λ _, Flip (Return 1 true) (Return 1 false)
-  ; disc_score := λ r, Return r tt
+  ; disc_flip := λ _, Flip
+      (Return [nn 1] true)
+      (Return [nn 1] false)
+  ; disc_score := λ r : ℚ≥0, Return r tt
   |}.
 
 End Term.
@@ -143,53 +150,59 @@ End Term.
 (** The [Enum] Representation *)
 Module Enum.
 Import ListNotations.
+Import NonnegQNotations.
 
-Definition Enum (A : Type) := list (ℝ₊ * A).
+Definition Enum (A : Type) := list (ℚ≥0 * A).
 
 Declare Scope enum_scope.
 Bind Scope enum_scope with Enum.
 Delimit Scope enum_scope with enum.
-Local Open Scope enum_scope.
+#[local] Open Scope enum_scope.
 
-Fixpoint scale_Enum {A} (r : ℝ₊) (e : Enum A) : Enum A :=
+#[program]
+Fixpoint scale_Enum {A} (r : ℚ≥0) (e : Enum A) : Enum A :=
   match e with
   | [] => []
-  | (s, x) :: e' => (r * s, x) :: scale_Enum r e'
+  | (s, x) :: e' => (r * s , x) :: scale_Enum r e'
   end.
 
 Lemma scale_app : ∀ A r (u v : Enum A),
   scale_Enum r (u ++ v) = scale_Enum r u ++ scale_Enum r v.
-Proof. intros. generalize r. induction u; simpl. reflexivity.
-  destruct a. repeat simpl. intros. rewrite IHu. reflexivity.
+Proof. move=> A r u v. move: r. elim: u => [//|[t a] us] IH r //=.
+  congr cons. rewrite IH //.
 Qed.
 
 Lemma scale_scale : ∀ {A} r s (u : Enum A),
   scale_Enum r (scale_Enum s u) = scale_Enum (r * s) u.
-Proof. intros. induction u. now simpl.
-  destruct a. simpl. rewrite IHu. rewrite Rmult_assoc.
-  reflexivity.
+Proof. move=> A r s u. elim: u => [//|[t a] us] IH //=.
+rewrite {}IH. congr cons. congr pair. apply: val_inj. move=> /=.
+rewrite mulqA //.
 Qed.
 
-Definition ret_Enum {A} (x : A) : Enum A := [(1, x)].
+
+
+#[program]
+Definition ret_Enum {A} (x : A) : Enum A := [([nn 1], x)].
 
 Definition bind_Enum {A B} (xs : Enum A) (f : A → Enum B) : Enum B :=
   fold_right (λ '(s, x) ys, scale_Enum s (f x) ++ ys) [] xs.
 
-#[global] Instance Enum_Discrete : Discrete Enum :=
+#[global, program] Instance Enum_Discrete : Discrete Enum :=
   {|disc_ret := @ret_Enum
   ; disc_bind := @bind_Enum
-  ; disc_flip := λ _, [(1, true); (1, false)]
+  ; disc_flip := λ _, [([nn 1], true); ([nn 1], false)]
   ; disc_score := λ r, [(r, tt)]
   |}.
 
 Inductive InSupp {A} (x : A) : list A → Prop :=
-| In_head : ∀ xs, InSupp x (x :: xs)
-| In_tail : ∀ y xs, InSupp x xs → InSupp x (y :: xs).
+| In_head : forall xs, InSupp x (x :: xs)
+| In_tail : forall y xs, InSupp x xs → InSupp x (y :: xs).
 
 Definition scale_bind : ∀ {A B} r (u : Enum A) (f : A → Enum B),
   scale_Enum r (bind_Enum u f) = bind_Enum u (λ x, scale_Enum r (f x)).
 Proof. intros. induction u. now simpl. destruct a. simpl.
   rewrite scale_app. rewrite IHu. repeat rewrite scale_scale.
+  f_equal. f_equal. cbv. __nonnegreal_eq.
   now rewrite Rmult_comm.
 Qed.
 
@@ -198,21 +211,26 @@ Qed.
 (** We need the decidable equality for the base type [A] of
     the enumeration. *)
 
-Fixpoint acc_mass {A} `{EqDec A eq} (x : A) (μ : Enum A) : ℝ₊ :=
+#[program]
+Fixpoint acc_mass {A : eqType} (x : A) (μ : Enum A) : ℝ≥0 :=
   match μ with
-  | [] => 0
+  | [] => [nn 0]
   | (p, y) :: μ' =>
       if x == y then p + acc_mass x μ' else acc_mass x μ'
   end.
+Next Obligation. lra. Defined.
 
-Lemma acc_app {A} `{EqDec A eq} {x : A} {μ1 μ2 : Enum A}
+Lemma acc_app {A : eqType} {x : A} {μ1 μ2 : Enum A}
   : acc_mass x (μ1 ++ μ2) = acc_mass x μ1 + acc_mass x μ2.
-Proof. induction μ1. simpl. now rewrite Rplus_0_l.
-  destruct a. simpl. destruct (x == a). rewrite IHμ1.
-  now rewrite Rplus_assoc. auto.
+Proof. induction μ1. simpl. unfold nonneg_add.
+  rewrite nonnegreal_eta.
+  __nonnegreal_eq.
+  now rewrite Rplus_0_l.
+  destruct a. simpl. destruct (x == s). rewrite IHμ1.
+  __nonnegreal_eq.
 Qed.
 
-Definition EqEnum {A} `{EqDec A eq} (μ1 μ2 : Enum A) : Prop :=
+Definition EqEnum {A : eqType} (μ1 μ2 : Enum A) : Prop :=
   ∀ x : A, acc_mass x μ1 = acc_mass x μ2.
 
 Infix "==Enum" := EqEnum (at level 70).
@@ -244,7 +262,7 @@ Proof. split. unfold Reflexive. intros. apply enum_eq_refl.
   unfold Transitive. intros. now eapply enum_eq_trans.
 Qed.
 
-Add Parametric Morphism {A} `{DA : EqDec A eq} : (@app (ℝ₊ * A))
+Add Parametric Morphism {A} `{DA : EqDec A eq} : (@app (ℝ≥0 * A))
   with signature EqEnum ==> EqEnum ==> EqEnum
   as app_proper.
 Proof. intros. intros a. repeat rewrite acc_app.
@@ -336,8 +354,7 @@ Definition enumRT {R1 R2 : Type} `{EqDec R1 eq} `{EqDec R2 eq}
 
 Infix "==EnumRT" := (enumRT _) (at level 70).
 
-#[global, program]
-Instance Enum_DiscreteInterface
+#[global] Program Instance Enum_DiscreteInterface
     : DiscreteInterface Enum :=
   {|disc_rep := Enum_Discrete
   ; disc_eq := @EqEnum
@@ -367,7 +384,7 @@ Definition unif2 {A} (x y : A) : Enum A :=
   [(1/2, x); (1/2, y)].
 
 Definition unif3 {A} (x y z : A) : Enum A :=
-  [(1/3, x); (1/3, y); (1/3, z)].
+  [(1/3, x); (1/3, y); (1/2, z)].
 
 End Dists.
 

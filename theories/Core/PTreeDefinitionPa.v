@@ -56,7 +56,6 @@ Arguments ptree _ _ : clear implicits.
 Arguments ptreeF _ _ : clear implicits.
 Arguments ProbF {E M R} [ptree] {X _ _} μ k.
 
-
 Notation ptree' E M R := (ptreeF E M R (ptree E M R)).
 
 Definition observe {E M R} (t : ptree E M R) : ptree' E M R :=
@@ -74,6 +73,17 @@ Notation Ret x   := (go (RetF x)).
 Notation Vis e k := (go (VisF e k)).
 Notation Tau e   := (go (TauF e)).
 Notation Prob μ k := (go (ProbF μ k)).
+
+#[global] Instance void_dec_eq : EqDec void eq.
+Proof. constructor. inversion x. Qed.
+
+Definition ProbF0 {E M R} `{DiscreteInterface M} (μ : M void) k
+  : ptree' E M R :=
+    ProbF μ k.
+
+Definition Prob0 {E M R} `{DiscreteInterface M} (μ : M void) k
+  : ptree E M R :=
+    Prob μ k.
 
 
 

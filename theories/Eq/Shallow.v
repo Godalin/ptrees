@@ -158,9 +158,10 @@ Proof. econstructor. reflexivity. Qed. *)
 
 (** [going]: Lift relations through [go]. *)
 
-Inductive going {E M R1 R2} (r : ptree E M R1 -> ptree E M R2 -> Prop)
-          (ot1 : ptree' E M R1) (ot2 : ptree' E M R2) : Prop :=
-| going_intros : r (go ot1) (go ot2) -> going r ot1 ot2.
+Inductive going {E M R1 R2}
+    (r : ptree E M R1 -> ptree E M R2 -> Prop)
+    (ot1 : ptree' E M R1) (ot2 : ptree' E M R2) : Prop :=
+  | going_intros : r (go ot1) (go ot2) -> going r ot1 ot2.
 #[global] Hint Constructors going : ptree.
 
 Lemma observing_going {E M R1 R2} (eq_ : ptree' E M R1 -> ptree' E M R2 -> Prop) ot1 ot2 :

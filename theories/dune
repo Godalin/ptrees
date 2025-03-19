@@ -4,15 +4,17 @@
  (name PTree)
  (package coq-ptree)
  (theories
-  ExtLib
-  ITree
-  Paco
-  Coinduction
-  RelationAlgebra
-  ProbAx
-  ; mathcomp
-  ; HB
-  ; elpi
-  ; elpi_elpi
-  HoTT)
+   ExtLib
+   ITree
+   Paco
+   Coinduction
+   RelationAlgebra
+   ProbAx
+
+   ;; math comp
+   mathcomp
+   HB
+   elpi
+   elpi_elpi
+ )
  (flags -w -notation-incompatible-prefix -w -notation-overridden))

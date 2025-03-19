@@ -19,7 +19,7 @@
 
 (package
  (name coq-ptree)
- (synopsis "probability tree as freer monad")
+ (synopsis "probability tree")
  (version 0.1)
  (depends
   (coq
@@ -29,4 +29,6 @@
   (coq-coinduction
    (>= 1.3))
   (coq-itree
-   (>= 5.0))))
+   (>= 5.0))
+  (coq-mathcomp-reals
+   (>= 1.9))))
