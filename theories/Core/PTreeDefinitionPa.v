@@ -23,6 +23,7 @@ From PTree.Prob Require Import Monad.
 From PTree.Prob Require Import Discrete FinSupp.
 
 Set Implicit Arguments.
+Set Contextual Implicit.
 Set Primitive Projections.
 
 
