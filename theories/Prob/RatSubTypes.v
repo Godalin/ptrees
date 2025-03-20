@@ -41,6 +41,9 @@ Lemma addq_nnQP x y : 0 <= x + y.
 Proof. apply: le_rat0D; apply le_nnQ0. Qed.
 Canonical addq_nnQ x y := mknnQ (x + y) (addq_nnQP x y).
 
+#[program] Canonical zero_nnQ := mknnQ 0 _.
+#[program] Canonical one_nnQ := mknnQ (1 : rat) _.
+
 End NonnegQ.
 
 Module NonnegQNotations.
@@ -54,7 +57,9 @@ Notation "'[nn'  r ']'" := (mknnQ r _) : subrat_scope.
 
 End NonnegQNotations.
 
-
+Section test.
+Check 0 : nnQ.
+End test.
 
 (* Class RatSub (T : Type) := { *)
 (*   inject : T -> Q; *)

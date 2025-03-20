@@ -1,16 +1,16 @@
 Require Import Utf8.
-Require Import List.
 Require Import Setoid.
 Require Import Program.
 Require Import Morphisms.
 
-From mathcomp Require Import ssreflect ssrbool eqtype ssrnat.
-From mathcomp Require Import order ssrint rat.
+From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
+From mathcomp Require Import order ssralg ssrint rat.
 
 From PTree.Prob Require Import RatSubTypes.
 
 Set Implicit Arguments.
-Set Contextual Implicit.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
 
 #[local] Open Scope subrat_scope.
 
@@ -31,8 +31,8 @@ Import NonnegQNotations.
 Class Discrete (m : Type → Type) := {
   disc_ret : forall {A}, A → m A;
   disc_bind : forall {A B}, m A → (A → m B) → m B;
-  disc_flip : unit → m bool;
-  disc_score : nnQ → m unit;
+  disc_flip : () → m bool;
+  disc_score : nnQ → m ()%type;
 }.
 
 (** Discrete Laws:
@@ -149,21 +149,19 @@ End Term.
 
 (** The [Enum] Representation *)
 Module Enum.
-Import ListNotations.
 Import NonnegQNotations.
 
-Definition Enum (A : Type) := list (ℚ≥0 * A).
+Definition Enum (A : Type) := seq (ℚ≥0 * A).
 
 Declare Scope enum_scope.
 Bind Scope enum_scope with Enum.
 Delimit Scope enum_scope with enum.
 #[local] Open Scope enum_scope.
 
-#[program]
 Fixpoint scale_Enum {A} (r : ℚ≥0) (e : Enum A) : Enum A :=
   match e with
-  | [] => []
-  | (s, x) :: e' => (r * s , x) :: scale_Enum r e'
+  | [::] => [::]
+  | (s, x) :: e' => (r * s : ℚ≥0 , x) :: scale_Enum r e'
   end.
 
 Lemma scale_app : ∀ A r (u v : Enum A),
@@ -179,19 +177,17 @@ rewrite {}IH. congr cons. congr pair. apply: val_inj. move=> /=.
 rewrite mulqA //.
 Qed.
 
-
-
 #[program]
-Definition ret_Enum {A} (x : A) : Enum A := [([nn 1], x)].
+Definition ret_Enum {A} (x : A) : Enum A := [:: ([nn 1], x)].
 
 Definition bind_Enum {A B} (xs : Enum A) (f : A → Enum B) : Enum B :=
-  fold_right (λ '(s, x) ys, scale_Enum s (f x) ++ ys) [] xs.
+  foldr (λ '(s, x) ys, scale_Enum s (f x) ++ ys) [::] xs.
 
 #[global, program] Instance Enum_Discrete : Discrete Enum :=
   {|disc_ret := @ret_Enum
   ; disc_bind := @bind_Enum
-  ; disc_flip := λ _, [([nn 1], true); ([nn 1], false)]
-  ; disc_score := λ r, [(r, tt)]
+  ; disc_flip := λ _, [:: ([nn 1], true); ([nn 1], false)]
+  ; disc_score := λ r, [:: (r, tt)]
   |}.
 
 Inductive InSupp {A} (x : A) : list A → Prop :=
@@ -200,10 +196,9 @@ Inductive InSupp {A} (x : A) : list A → Prop :=
 
 Definition scale_bind : ∀ {A B} r (u : Enum A) (f : A → Enum B),
   scale_Enum r (bind_Enum u f) = bind_Enum u (λ x, scale_Enum r (f x)).
-Proof. intros. induction u. now simpl. destruct a. simpl.
-  rewrite scale_app. rewrite IHu. repeat rewrite scale_scale.
-  f_equal. f_equal. cbv. __nonnegreal_eq.
-  now rewrite Rmult_comm.
+Proof. move=> A B r u f. elim: u => [//|[s a] us] IH //=.
+rewrite !scale_app {}IH. congr app. rewrite !scale_scale.
+congr scale_Enum. apply: val_inj; move=> /=. rewrite mulqC //.
 Qed.
 
 
@@ -211,29 +206,32 @@ Qed.
 (** We need the decidable equality for the base type [A] of
     the enumeration. *)
 
-#[program]
-Fixpoint acc_mass {A : eqType} (x : A) (μ : Enum A) : ℝ≥0 :=
+Fixpoint acc_mass {A : eqType} (x : A) (μ : Enum A) : ℚ≥0 :=
   match μ with
-  | [] => [nn 0]
-  | (p, y) :: μ' =>
-      if x == y then p + acc_mass x μ' else acc_mass x μ'
+  | [::] => 0
+  | (p, y) :: μ' => if x == y
+      then p + acc_mass x μ' : ℚ≥0 else acc_mass x μ'
   end.
-Next Obligation. lra. Defined.
+
+Lemma acc_nil : ∀ (A : eqType) (x : A), acc_mass x [::] = 0.
+Proof. move=> //=. Qed.
 
 Lemma acc_app {A : eqType} {x : A} {μ1 μ2 : Enum A}
   : acc_mass x (μ1 ++ μ2) = acc_mass x μ1 + acc_mass x μ2.
-Proof. induction μ1. simpl. unfold nonneg_add.
-  rewrite nonnegreal_eta.
-  __nonnegreal_eq.
-  now rewrite Rplus_0_l.
-  destruct a. simpl. destruct (x == s). rewrite IHμ1.
-  __nonnegreal_eq.
+Proof. elim: μ1 => [//|[r a] μ1 IH]. apply: val_inj.
+rewrite [RHS]add0q //=.
+move=> //=. case: (x == a); move => //=. apply: val_inj.
+rewrite IH [LHS]addqA //.
 Qed.
 
 Definition EqEnum {A : eqType} (μ1 μ2 : Enum A) : Prop :=
   ∀ x : A, acc_mass x μ1 = acc_mass x μ2.
 
 Infix "==Enum" := EqEnum (at level 70).
+
+
+
+(*+ TODO: update till here +*)
 
 Lemma enum_eq_eq {A} `{EqDec A eq} : ∀ {μ1 μ2 : Enum A},
   μ1 = μ2 → EqEnum μ1 μ2.
