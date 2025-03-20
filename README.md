@@ -7,7 +7,7 @@
 After cloning the PTree repository, use the following command to create a local `opam` switch and install the dependencies, and activate the switch:
 
 ```sh
-opam switch create ./ --repositories=coq-released,default --deps-only
+opam switch create ./ --repos default,coq-released=https://coq.inria.fr/opam/released --deps-only
 eval $(opam env)
 ```
 
