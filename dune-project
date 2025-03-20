@@ -10,11 +10,6 @@
 
 (maintainers "Linyu Yang")
 
-; (source
-;  (github vellvm/ctrees))
-
-; (bug_reports "https://github.com/vellvm/ctrees/issues")
-
 (generate_opam_files true)
 
 (package
@@ -30,5 +25,6 @@
    (>= 1.3))
   (coq-itree
    (>= 5.0))
-  (coq-mathcomp-reals
-   (>= 1.9))))
+  (coq-relation-algebra
+   (>= 1.7.11))))
+
