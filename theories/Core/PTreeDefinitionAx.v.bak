@@ -23,8 +23,7 @@ From ITree Require Import
      Indexed.Sum.
 
 From ProbAx Require Import
-     ennr
-     integration.
+     ennr integration.
 
 Open Scope ennr.
 Check Meas.
@@ -34,9 +33,7 @@ Check Meas.
 Section ptree.
 Context {E : Type -> Type} {R : Type}.
 
-(*|
-
-How to design the constructors:
+(*| How to design the constructors:
 
 probabilistic choice after a computation
 _ (eμ : E (measure X ℝ)) (k : X -> ptree)
@@ -55,10 +52,7 @@ Variant ptreeF {ptree : Type} : Type :=
 | RetF (r : R)
 | TauF (e : ptree)
 | VisF {X} (e : E X) (k : X -> ptree)
-| PrbF {X} (μ : Meas X) (k : X -> ptree)
-.
-(* | SRetF {d} {R : measurableType d} (μ : measure R ℝ) *)
-(* | ProbCPS {X d} {R : measurableType d} (e : E X) (k : X -> probability R ℝ) *)
+| PrbF {X} (μ : Meas X) (k : X -> ptree).
 
 CoInductive ptree : Type :=
   go { _observe : @ptreeF ptree }.
@@ -125,7 +119,9 @@ Definition cat {E T U V} (k : T -> ptree E U) (h : U -> ptree E V)
   : (T -> ptree E V)
   := fun x => bind (k x) h.
 
-(* Functorial Mapping *)
+
+
+(*| Functorial Mapping |*)
 
 Definition fmap {E T U} (f : T -> U) : ptree E T -> ptree E U
   := fun u => bind u (fun x => ret (f x)).
@@ -140,9 +136,25 @@ Notation on_left lr l t :=
   | inr r => Ret r
   end) (only parsing).
 
-Definition iter {E : Type -> Type} {R I: Type}
-           (step : I -> ptree E (I + R)) : I -> ptree E R :=
-  cofix iter_ i := bind (step i) (fun lr => on_left lr l (Tau (iter_ l))).
+Definition iter {E : Type -> Type} {R I : Type}
+  (step : I -> ptree E (I + R)) : I -> ptree E R :=
+    cofix iter_ i :=
+      bind (step i) (fun lr => on_left lr l (Tau (iter_ l))).
+
+
+
+(*| Embedding of Probabilistic Constructions
+
+Meas X     -------->>      ptree E X
+Kernel X Y -------->> X -> ptree E Y
+
+|*)
+
+Definition meas {E X} (μ : Meas X) : ptree E X
+  := Prb μ ret.
+
+Definition kernel {E X Y} (k : Kernel X Y) : (X -> ptree E Y)
+  := fun x => meas (k x).
 
 End PTree.
 
@@ -167,33 +179,38 @@ End PTreeNotations.
 
 (*| Instances |*)
 
-#[global] Instance Functor_itree {E} : Functor (ptree E) := {|
+#[global]
+Instance Functor_ptree {E} : Functor (ptree E) := {|
   fmap := @PTree.fmap E 
 |}.
 
-(* Instead of [pure := @Ret E], [ret := @Ret E], we eta-expand
-   [pure] and [ret] to make the extracted code respect OCaml's
-   value restriction. *)
+(*| Instead of [pure := @Ret E], [ret := @Ret E], we eta-expand
+    [pure] and [ret] to make the extracted code respect OCaml's
+    value restriction.
+|*)
+
 #[global]
-Instance Applicative_itree {E} : Applicative (ptree E) := {|
+Instance Applicative_ptree {E} : Applicative (ptree E) := {|
   pure := fun _ x => Ret x;
   ap   := fun _ _ f x =>
     PTree.bind f (fun f => PTree.bind x (fun x => Ret (f x)))
 |}.
 
 #[global]
-Instance Monad_itree {E} : Monad (ptree E) := {|
+Instance Monad_ptree {E} : Monad (ptree E) := {|
   ret := fun _ x => Ret x;
   bind := @PTree.bind E
 |}.
 
-(* #[global] Instance MonadIter_itree {E} : MonadIter (ptree E) :=
-  fun _ _ => ITree.iter. *)
+#[global]
+Instance MonadIter_itree {E} : MonadIter (ptree E) :=
+  fun _ _ => PTree.iter.
 
 
 
 (*| Remove [Tau]s from the front of an [itree].
 |*)
+
 Fixpoint burn (n : nat) {E R} (t : ptree E R) :=
   match n with
   | O => t
