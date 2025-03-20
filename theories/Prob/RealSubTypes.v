@@ -2,8 +2,6 @@ Require Import Utf8.
 Require Import Reals.
 Require Import ProofIrrelevance.
 
-From mathcomp Require Import all_ssreflect.
-
 #[local] Open Scope R_scope.
 
 Declare Scope real_sub_scope.

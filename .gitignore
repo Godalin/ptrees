@@ -3,8 +3,9 @@ _opam
 _build
 
 learn
+sketch
 
 Prob/pGCL.v
 Prob/Qbs.v
 
-.log
+*.log

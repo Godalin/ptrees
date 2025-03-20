@@ -26,5 +26,6 @@
   (coq-itree
    (>= 5.0))
   (coq-relation-algebra
-   (>= 1.7.11))))
-
+   (>= 1.7.11))
+  (coq-mathcomp-algebra
+   (>= 2.3.0))))
