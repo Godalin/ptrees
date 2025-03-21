@@ -6,6 +6,7 @@ Require Import Morphisms.
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
 From mathcomp Require Import order ssralg ssrint rat.
+From mathcomp.ssreflect Require Import finset.
 
 From PTree.Prob Require Import RatSubTypes.
 
@@ -190,9 +191,6 @@ Definition bind_Enum {A B} (xs : Enum A) (f : A → Enum B) : Enum B :=
   ; disc_score := λ r, [:: (r, tt)]
   |}.
 
-Inductive InSupp {A} (x : A) : list A → Prop :=
-| In_head : forall xs, InSupp x (x :: xs)
-| In_tail : forall y xs, InSupp x xs → InSupp x (y :: xs).
 
 Definition scale_bind : ∀ {A B} r (u : Enum A) (f : A → Enum B),
   scale_Enum r (bind_Enum u f) = bind_Enum u (λ x, scale_Enum r (f x)).
@@ -400,5 +398,59 @@ Definition EnumSucc {Y} (μ : Enum X) (k : X → Y) : Enum Y :=
 (* Definition EnumSubSucc {μ : Enum X} (k : X → Y) *)
 
 End successor.
+
+(* Section  *)
+
+Section Normalize.
+
+
+Definition SuppSetOfEnum {A: eqType} (μ: Enum A) (supp: seq A) : bool :=
+  uniq supp &&
+  all (λ '(_, s), s \in supp) μ &&
+  all (λ s, has (λ '(_, s'), s' == s) μ) supp.
+
+Definition supp_set_of_enum {A: eqType} (μ: Enum A) := undup [seq x  | '(_, x) <- μ].
+
+Theorem supp_set_is_supp_set {A: eqType} (μ: Enum A): SuppSetOfEnum μ (supp_set_of_enum μ).
+Proof.
+  unfold SuppSetOfEnum.
+  rewrite <- Bool.andb_assoc.
+  apply andb_true_intro.
+  split.
+  - unfold supp_set_of_enum.
+    apply undup_uniq.
+  - apply andb_true_intro.
+    split.
+
+Admitted.
+
+Definition NormalizedEnum {A : Type} (μ: Enum A) : bool :=
+  @foldr (ℚ≥0 * A) ℚ≥0 (λ '(s, _) ys, s + ys) 0 μ == 1.
+
+Theorem normalized_of_supp {A : eqType} (μ: Enum A) (supp: seq A) (hsupp : SuppSetOfEnum μ supp) :
+  @foldr A ℚ≥0 (λ s ys, (acc_mass s μ) + ys) 0 supp = 1 <-> NormalizedEnum μ.
+Proof.
+Admitted.
+
+
+Theorem normalized_mass_le_one {A : eqType} (μ: Enum A) (nμ : NormalizedEnum μ): 
+  ∀x, acc_mass x μ <= 1.
+Proof.
+Admitted.
+
+Theorem normalized_ret_enum {A : Type} {a: A} : NormalizedEnum (ret_Enum a).
+Proof.
+Admitted.
+
+Theorem normalized_enum_eq {A : eqType} (μ1 μ2: Enum A) (eq: μ1 ==Enum μ2) : NormalizedEnum μ1 <-> NormalizedEnum μ2.
+Proof.
+Admitted.
+
+Theorem normalized_enum_rt_eq {R1 : eqType} {R2 : eqType} (μ1: Enum R1) (μ2: Enum R2)
+(RR : R1 → R2 → Prop) (eq: enumRT RR μ1 μ2) : NormalizedEnum μ1 <-> NormalizedEnum μ2.
+Proof.
+Admitted.
+
+End Normalize.
 
 End Enum.
