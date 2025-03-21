@@ -58,13 +58,14 @@ End NonnegQ.
 Module NonnegQNotations.
 Open Scope order_scope.
 Open Scope ring_scope.
-Open Scope rat_scope.
 Open Scope subrat_scope.
 
 Notation "ℚ≥0" := nnQ : subrat_scope.
 Notation "'[nn'  r ']'" := (mknnQ r _) : subrat_scope.
 
 End NonnegQNotations.
+
+
 
 
 (* Class RatSub (T : Type) := { *)

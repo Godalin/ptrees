@@ -3,6 +3,7 @@ Require Import Setoid.
 Require Import Program.
 Require Import Morphisms.
 
+From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
 From mathcomp Require Import order ssralg ssrint rat.
 
@@ -131,13 +132,13 @@ Fixpoint bind_Term {A B} (a : Term A) (f : A → Term B) :=
       Flip (bind_Term k_true f) (bind_Term k_false f)
   end.
 
-#[global, program]
+#[global]
 Instance Term_Discrete : Discrete Term :=
-  {|disc_ret := λ A x, Return ([nn 1]) x
+  {|disc_ret := λ A x, Return 1 x
   ; disc_bind := @bind_Term
   ; disc_flip := λ _, Flip
-      (Return [nn 1] true)
-      (Return [nn 1] false)
+      (Return 1 true)
+      (Return 1 false)
   ; disc_score := λ r : ℚ≥0, Return r tt
   |}.
 
@@ -150,6 +151,7 @@ End Term.
 (** The [Enum] Representation *)
 Module Enum.
 Import NonnegQNotations.
+Import GRing.Theory.
 
 Definition Enum (A : Type) := seq (ℚ≥0 * A).
 
@@ -161,7 +163,7 @@ Delimit Scope enum_scope with enum.
 Fixpoint scale_Enum {A} (r : ℚ≥0) (e : Enum A) : Enum A :=
   match e with
   | [::] => [::]
-  | (s, x) :: e' => (r * s : ℚ≥0 , x) :: scale_Enum r e'
+  | (s, x) :: e' => (r * s, x) :: scale_Enum r e'
   end.
 
 Lemma scale_app : ∀ A r (u v : Enum A),
@@ -173,20 +175,18 @@ Qed.
 Lemma scale_scale : ∀ {A} r s (u : Enum A),
   scale_Enum r (scale_Enum s u) = scale_Enum (r * s) u.
 Proof. move=> A r s u. elim: u => [//|[t a] us] IH //=.
-rewrite {}IH. congr cons. congr pair. apply: val_inj. move=> /=.
-rewrite mulqA //.
+rewrite {}IH. congr cons. congr pair. rewrite mulrA //.
 Qed.
 
-#[program]
-Definition ret_Enum {A} (x : A) : Enum A := [:: ([nn 1], x)].
+Definition ret_Enum {A} (x : A) : Enum A := [:: (1, x)].
 
 Definition bind_Enum {A B} (xs : Enum A) (f : A → Enum B) : Enum B :=
   foldr (λ '(s, x) ys, scale_Enum s (f x) ++ ys) [::] xs.
 
-#[global, program] Instance Enum_Discrete : Discrete Enum :=
+#[global] Instance Enum_Discrete : Discrete Enum :=
   {|disc_ret := @ret_Enum
   ; disc_bind := @bind_Enum
-  ; disc_flip := λ _, [:: ([nn 1], true); ([nn 1], false)]
+  ; disc_flip := λ _, [:: (1, true); (1, false)]
   ; disc_score := λ r, [:: (r, tt)]
   |}.
 
@@ -198,7 +198,7 @@ Definition scale_bind : ∀ {A B} r (u : Enum A) (f : A → Enum B),
   scale_Enum r (bind_Enum u f) = bind_Enum u (λ x, scale_Enum r (f x)).
 Proof. move=> A B r u f. elim: u => [//|[s a] us] IH //=.
 rewrite !scale_app {}IH. congr app. rewrite !scale_scale.
-congr scale_Enum. apply: val_inj; move=> /=. rewrite mulqC //.
+congr scale_Enum. rewrite mulrC //.
 Qed.
 
 
@@ -210,7 +210,7 @@ Fixpoint acc_mass {A : eqType} (x : A) (μ : Enum A) : ℚ≥0 :=
   match μ with
   | [::] => 0
   | (p, y) :: μ' => if x == y
-      then p + acc_mass x μ' : ℚ≥0 else acc_mass x μ'
+      then p + acc_mass x μ' else acc_mass x μ'
   end.
 
 Lemma acc_nil : ∀ (A : eqType) (x : A), acc_mass x [::] = 0.
@@ -220,8 +220,7 @@ Lemma acc_app {A : eqType} {x : A} {μ1 μ2 : Enum A}
   : acc_mass x (μ1 ++ μ2) = acc_mass x μ1 + acc_mass x μ2.
 Proof. elim: μ1 => [//|[r a] μ1 IH]. apply: val_inj.
 rewrite [RHS]add0q //=.
-move=> //=. case: (x == a); move => //=. apply: val_inj.
-rewrite IH [LHS]addqA //.
+move=> //=. case: (x == a); move => //=. rewrite IH [LHS]addrA //.
 Qed.
 
 Definition EqEnum {A : eqType} (μ1 μ2 : Enum A) : Prop :=
@@ -272,7 +271,7 @@ Qed.
 Lemma app_comm {A : eqType} (u v : Enum A) : u ++ v ==Enum v ++ u.
 Proof. unfold EqEnum. intros. induction u.
   simpl. now rewrite cats0. destruct a.
-  repeat rewrite acc_app. apply: val_inj; move=> /=. rewrite addqC //.
+  repeat rewrite acc_app. apply: val_inj; move=> /=. rewrite addrC //.
 Qed.
 
 Lemma enum_nil_bind : ∀ A B (f : A → Enum B),
@@ -330,7 +329,7 @@ Proof.
     rewrite IHv. repeat rewrite scale_scale.
     rewrite scale_bind. rewrite enum_bind_app.
     apply enum_eq_eq. congr app. congr scale_Enum.
-    apply: val_inj; move=> /=. rewrite mulqC //.
+    apply: val_inj; move=> /=. rewrite mulrC //.
 Qed.
 
 Theorem enum_Fubini_Tonelli : ∀
