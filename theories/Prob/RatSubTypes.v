@@ -2,8 +2,9 @@ Require Import Utf8.
 
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat.
-From mathcomp Require Import order.
+From mathcomp Require Import order choice.
 From mathcomp Require Import ssrint rat.
+From mathcomp.algebra Require Import ssralg.
 
 #[local] Open Scope order_scope.
 #[local] Open Scope ring_scope.
@@ -24,8 +25,26 @@ Structure nnQ : Type := mknnQ { Qval :> rat; _ : 0 <= Qval }.
 
 HB.instance Definition _ := [isSub for Qval].
 
-HB.instance Definition _ : hasDecEq nnQ :=
-  [Equality of nnQ by <:].
+HB.instance Definition _ : hasDecEq nnQ := [Equality of nnQ by <:].
+HB.instance Definition _ := [Choice of nnQ by <:].
+
+Lemma ge_zero_closed : semiring_closed (R:=rat_rat__canonical__GRing_ComSemiRing) (>= 0).
+Proof.
+  unfold semiring_closed, addr_closed, mulr_closed.
+  rewrite //=.
+  split.
+  - split. rewrite //=.
+    intros x y hx hy. unfold in_mem; rewrite //=.
+    unfold in_mem in hx, hy. rewrite //= in hx, hy.
+    apply: le_rat0D. exact hx. exact hy.
+  - split. rewrite //=.
+    unfold GRing.mulr_2closed.
+    intros x y hx hy. unfold in_mem; rewrite //=.
+    unfold in_mem in hx, hy. rewrite //= in hx, hy.
+    apply: le_rat0M. exact hx. exact hy.
+Qed.
+
+HB.instance Definition _ := GRing.SubChoice_isSubComSemiRing.Build _ _ nnQ ge_zero_closed.
 (* Canonical nnQ_predType := PredType (pred_of_rat :  -> bool) *)
 
 Implicit Type r s x y : nnQ.
@@ -33,16 +52,6 @@ Implicit Type r s x y : nnQ.
 Lemma le_nnQ0 r : 0 <= r.
 Proof. move: r => [r ler0]. apply: ler0. Qed.
 
-Lemma mulq_nnQP x y : 0 <= x * y.
-Proof. apply: le_rat0M; apply le_nnQ0. Qed.
-Canonical mulq_nnQ x y := mknnQ (x * y) (mulq_nnQP x y).
-
-Lemma addq_nnQP x y : 0 <= x + y.
-Proof. apply: le_rat0D; apply le_nnQ0. Qed.
-Canonical addq_nnQ x y := mknnQ (x + y) (addq_nnQP x y).
-
-#[program] Canonical zero_nnQ := mknnQ 0 _.
-#[program] Canonical one_nnQ := mknnQ (1 : rat) _.
 
 End NonnegQ.
 
@@ -57,9 +66,6 @@ Notation "'[nn'  r ']'" := (mknnQ r _) : subrat_scope.
 
 End NonnegQNotations.
 
-Section test.
-Check 0 : nnQ.
-End test.
 
 (* Class RatSub (T : Type) := { *)
 (*   inject : T -> Q; *)
