@@ -284,7 +284,7 @@ Lemma enum_cons_bind : ∀ A B x r (u : Enum A) (f : A → Enum B),
 Proof. intros. simpl. reflexivity. Qed.
 
 Lemma enum_bind_nil : ∀ A B (u : Enum A),
-  bind_Enum u (λ _, [:: ] : Enum B) = [:: ].
+  bind_Enum u (λ _, [::] : Enum B) = [::].
 Proof.
   intros. simpl. induction u.
   now simpl. destruct a. rewrite enum_cons_bind.
@@ -297,22 +297,22 @@ Lemma enum_bind_app : ∀ A {B : eqType} (u : Enum A) (f g : A → Enum B),
   bind_Enum u (λ x, f x) ++ bind_Enum u (λ x, g x).
 Proof. intros. induction u. now simpl.
   destruct a. repeat rewrite enum_cons_bind.
-  rewrite scale_app. rewrite IHu. repeat rewrite <- app_assoc.
-  rewrite (app_assoc (scale_Enum r (g a))).
-  rewrite (app_comm (scale_Enum r (g a))).
-  repeat rewrite <- app_assoc. reflexivity.
+  rewrite scale_app. rewrite IHu. repeat rewrite <- catA.
+  rewrite (catA (bind_Enum u (λ x : A, f x))).
+  rewrite (app_comm (bind_Enum u (λ x : A, f x)) (scale_Enum n (g a))).
+  repeat rewrite <- catA. reflexivity.
 Qed.
 
 Lemma enum_comm_nil : ∀ A B C (v : Enum B) (f : A → B → Enum C),
-  bind_Enum [] (λ x, bind_Enum v (λ y, f x y)) =
-  bind_Enum v (λ y, bind_Enum [] (λ x, f x y)).
+  bind_Enum [::] (λ x, bind_Enum v (λ y, f x y)) =
+  bind_Enum v (λ y, bind_Enum [::] (λ x, f x y)).
 Proof.
   intros A B C v f.
   rewrite enum_bind_nil. simpl. reflexivity.
 Qed.
 
-Lemma enum_comm_cons : ∀ A B C
-  `{DA : EqDec A eq} `{DB : EqDec B eq} `{DC : EqDec C eq} r a
+Lemma enum_comm_cons : ∀
+  {A : eqType} {B : eqType} {C : eqType} r a
   (u : Enum A) (v : Enum B) (f : A → B → Enum C),
     bind_Enum ((r, a) :: u) (λ x, bind_Enum v (λ y, f x y))
       ==Enum
@@ -323,17 +323,18 @@ Proof.
   - simpl. rewrite enum_bind_nil. now apply enum_eq_eq.
   - destruct a0. simpl. repeat rewrite scale_app.
     repeat rewrite enum_bind_app.
-    repeat rewrite <- app_assoc.
-    rewrite (app_assoc (scale_Enum r (bind_Enum v (λ y : B, f a y)))).
+    repeat rewrite <- catA.
+    rewrite (catA (scale_Enum r (bind_Enum v (λ y : B, f a y)))).
     rewrite (app_comm (scale_Enum r (bind_Enum v (λ y : B, f a y)))).
-    rewrite <- app_assoc.
+    rewrite <- catA.
     rewrite IHv. repeat rewrite scale_scale.
-    rewrite scale_bind. rewrite enum_bind_app. rewrite Rmult_comm.
-    reflexivity.
+    rewrite scale_bind. rewrite enum_bind_app.
+    apply enum_eq_eq. congr app. congr scale_Enum.
+    apply: val_inj; move=> /=. rewrite mulqC //.
 Qed.
 
-Theorem enum_Fubini_Tonelli : ∀ A B C
-  `{DA : EqDec A eq} `{DB : EqDec B eq} `{DC : EqDec C eq}
+Theorem enum_Fubini_Tonelli : ∀
+  {A : eqType} {B : eqType} {C : eqType}
   (u : Enum A) (v : Enum B) (f : A → B → Enum C),
     bind_Enum u (λ x, bind_Enum v (λ y, f x y))
       ==Enum
@@ -345,7 +346,7 @@ Qed.
 
 (** * the relation transformer for [Enum] *)
 
-Definition enumRT {R1 R2 : Type} `{EqDec R1 eq} `{EqDec R2 eq}
+Definition enumRT {R1 : eqType} {R2 : eqType}
     (RR : R1 → R2 → Prop) : Enum R1 → Enum R2 → Prop
   := λ μx μy, ∀ x y, RR x y → acc_mass x μx = acc_mass y μy.
 
@@ -360,8 +361,8 @@ Infix "==EnumRT" := (enumRT _) (at level 70).
   |}.
 Next Obligation.
   split. intros. unfold enumRT. intros x ? <-.
-  rewrite H0. reflexivity.
-  intros. intro a. apply H0. exact eq_refl.
+  rewrite H. reflexivity.
+  intros. intro a. apply H. reflexivity.
 Qed.
 Next Obligation.
   intros m1 m2 Hm.
@@ -377,19 +378,21 @@ Section Dists.
 Definition dirac {A} (x : A) : Enum A :=
   ret_Enum x.
 
+#[program] Definition one_div_two := [nn 1/2].
+#[program] Definition one_div_three := [nn 1/3].
+
 Definition unif2 {A} (x y : A) : Enum A :=
-  [(1/2, x); (1/2, y)].
+  [:: (one_div_two, x); (one_div_two, y)].
 
 Definition unif3 {A} (x y z : A) : Enum A :=
-  [(1/3, x); (1/3, y); (1/2, z)].
+  [:: (one_div_three, x); (one_div_three, y); (one_div_three, z)].
 
 End Dists.
 
 
 
 Section successor.
-Context {X : Type}.
-Context `{EqDec X eq}.
+Context {X : eqType}.
 
 Definition EnumSucc {Y} (μ : Enum X) (k : X → Y) : Enum Y :=
   map (λ '(p, x), (p, k x)) μ.
