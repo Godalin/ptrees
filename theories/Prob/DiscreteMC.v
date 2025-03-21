@@ -233,34 +233,34 @@ Infix "==Enum" := EqEnum (at level 70).
 
 (*+ TODO: update till here +*)
 
-Lemma enum_eq_eq {A} `{EqDec A eq} : ∀ {μ1 μ2 : Enum A},
+Lemma enum_eq_eq {A : eqType} : ∀ {μ1 μ2 : Enum A},
   μ1 = μ2 → EqEnum μ1 μ2.
 Proof. intros. unfold EqEnum. intros.
-  rewrite H0. reflexivity.
+  rewrite H. reflexivity.
 Qed.
 
-Lemma enum_eq_refl : ∀ {A} `{EqDec A eq} {μ : Enum A},
+Lemma enum_eq_refl : ∀ {A : eqType} {μ : Enum A},
   μ ==Enum μ.
 Proof. intros. unfold EqEnum. intros. reflexivity. Qed.
 
-Lemma enum_eq_sym {A} `{EqDec A eq} : ∀ {μ ν : Enum A},
+Lemma enum_eq_sym {A : eqType} : ∀ {μ ν : Enum A},
   μ ==Enum ν → ν ==Enum μ.
-Proof. intros. unfold EqEnum. intros. symmetry. apply H0. Qed.
+Proof. intros. unfold EqEnum. intros. symmetry. apply H. Qed.
 
-Lemma enum_eq_trans {A} `{EqDec A eq} : ∀ {x y z : Enum A},
+Lemma enum_eq_trans {A : eqType} : ∀ {x y z : Enum A},
   x ==Enum y → y ==Enum z → x ==Enum z.
 Proof. intros. unfold EqEnum. intros. etransitivity; eauto. Qed.
 
 
 
-#[global] Instance enum_eq_equiv A `{DA : EqDec A eq}
+#[global] Instance enum_eq_equiv {A : eqType}
   : @Equivalence (Enum A) EqEnum.
 Proof. split. unfold Reflexive. intros. apply enum_eq_refl.
   unfold Symmetric. intros. now apply enum_eq_sym.
   unfold Transitive. intros. now eapply enum_eq_trans.
 Qed.
 
-Add Parametric Morphism {A} `{DA : EqDec A eq} : (@app (ℝ≥0 * A))
+Add Parametric Morphism {A : eqType} : (@app (ℚ≥0 * A))
   with signature EqEnum ==> EqEnum ==> EqEnum
   as app_proper.
 Proof. intros. intros a. repeat rewrite acc_app.
@@ -269,15 +269,14 @@ Qed.
 
 
 
-Lemma app_comm {A} `{EqDec A eq} (u v : Enum A) : u ++ v ==Enum v ++ u.
+Lemma app_comm {A : eqType} (u v : Enum A) : u ++ v ==Enum v ++ u.
 Proof. unfold EqEnum. intros. induction u.
-  simpl. now rewrite app_nil_r. destruct a.
-  repeat rewrite acc_app. rewrite Rplus_comm.
-  reflexivity.
+  simpl. now rewrite cats0. destruct a.
+  repeat rewrite acc_app. apply: val_inj; move=> /=. rewrite addqC //.
 Qed.
 
 Lemma enum_nil_bind : ∀ A B (f : A → Enum B),
-  bind_Enum [] f = [].
+  bind_Enum [:: ] f = [:: ].
 Proof. intros. simpl. reflexivity. Qed.
 
 Lemma enum_cons_bind : ∀ A B x r (u : Enum A) (f : A → Enum B),
@@ -285,14 +284,14 @@ Lemma enum_cons_bind : ∀ A B x r (u : Enum A) (f : A → Enum B),
 Proof. intros. simpl. reflexivity. Qed.
 
 Lemma enum_bind_nil : ∀ A B (u : Enum A),
-  bind_Enum u (λ _, [] : Enum B) = [].
+  bind_Enum u (λ _, [:: ] : Enum B) = [:: ].
 Proof.
   intros. simpl. induction u.
   now simpl. destruct a. rewrite enum_cons_bind.
   now simpl.
 Qed.
 
-Lemma enum_bind_app : ∀ A B `{EqDec B eq} (u : Enum A) (f g : A → Enum B),
+Lemma enum_bind_app : ∀ A {B : eqType} (u : Enum A) (f g : A → Enum B),
   bind_Enum u (λ x, (f x) ++ (g x))
     ==Enum
   bind_Enum u (λ x, f x) ++ bind_Enum u (λ x, g x).
