@@ -24,8 +24,7 @@ Section NonnegQ.
 Structure nnQ : Type := mknnQ { Qval :> rat; _ : 0 <= Qval }.
 
 HB.instance Definition _ := [isSub for Qval].
-
-HB.instance Definition _ : hasDecEq nnQ := [Equality of nnQ by <:].
+HB.instance Definition _ := [Equality of nnQ by <:].
 HB.instance Definition _ := [Choice of nnQ by <:].
 
 Lemma ge_zero_closed : semiring_closed (R:=rat_rat__canonical__GRing_ComSemiRing) (>= 0).
