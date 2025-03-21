@@ -218,8 +218,7 @@ Proof. move=> //=. Qed.
 
 Lemma acc_app {A : eqType} {x : A} {μ1 μ2 : Enum A}
   : acc_mass x (μ1 ++ μ2) = acc_mass x μ1 + acc_mass x μ2.
-Proof. elim: μ1 => [//|[r a] μ1 IH]. apply: val_inj.
-rewrite [RHS]add0q //=.
+Proof. elim: μ1 => [//|[r a] μ1 IH]. rewrite [RHS]add0r //=.
 move=> //=. case: (x == a); move => //=. rewrite IH [LHS]addrA //.
 Qed.
 
@@ -271,7 +270,7 @@ Qed.
 Lemma app_comm {A : eqType} (u v : Enum A) : u ++ v ==Enum v ++ u.
 Proof. unfold EqEnum. intros. induction u.
   simpl. now rewrite cats0. destruct a.
-  repeat rewrite acc_app. apply: val_inj; move=> /=. rewrite addrC //.
+  repeat rewrite acc_app. rewrite addrC //.
 Qed.
 
 Lemma enum_nil_bind : ∀ A B (f : A → Enum B),
@@ -329,7 +328,7 @@ Proof.
     rewrite IHv. repeat rewrite scale_scale.
     rewrite scale_bind. rewrite enum_bind_app.
     apply enum_eq_eq. congr app. congr scale_Enum.
-    apply: val_inj; move=> /=. rewrite mulrC //.
+    rewrite mulrC //.
 Qed.
 
 Theorem enum_Fubini_Tonelli : ∀

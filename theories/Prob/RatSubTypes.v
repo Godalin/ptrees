@@ -36,16 +36,40 @@ Proof.
   - split. rewrite //=.
     intros x y hx hy. unfold in_mem; rewrite //=.
     unfold in_mem in hx, hy. rewrite //= in hx, hy.
-    apply: le_rat0D. exact hx. exact hy.
+    exact (le_rat0D hx hy).
   - split. rewrite //=.
     unfold GRing.mulr_2closed.
     intros x y hx hy. unfold in_mem; rewrite //=.
     unfold in_mem in hx, hy. rewrite //= in hx, hy.
-    apply: le_rat0M. exact hx. exact hy.
+    exact (le_rat0M hx hy).
 Qed.
+HB.instance Definition _ := GRing.isSemiringClosed.Build _ _ ge_zero_closed.
+HB.instance Definition _ := [SubChoice_isSubComSemiRing of nnQ by <:].
 
-HB.instance Definition _ := GRing.SubChoice_isSubComSemiRing.Build _ _ nnQ ge_zero_closed.
-(* Canonical nnQ_predType := PredType (pred_of_rat :  -> bool) *)
+HB.instance Definition _ := [SubChoice_isSubOrder of nnQ by <: with ssrnum.ring_display].
+
+(* 
+TODO: prove nnQ is SubLattice
+Lemma ge_zero_meet_closed: Order.ClosedPredicates.meet_closed (T:=rat_rat__canonical__Order_Lattice) (>= 0).
+Proof.
+  unfold Order.ClosedPredicates.meet_closed.
+  intros x y hx hy.
+  unfold in_mem; rewrite //=.
+  unfold in_mem in hx, hy. rewrite //= in hx, hy.
+  Unset Printing Notations.
+  unfold Order.meet, Order.MeetSemilattice.class, Order_Lattice__to__Order_MeetSemilattice, Order.Lattice.class, rat_rat__canonical__Order_Lattice.
+  unfold Order.POrder_isMeetSemilattice.meet.
+Admitted.
+
+Lemma ge_zero_join_closed: Order.ClosedPredicates.join_closed (T:=rat_rat__canonical__Order_Lattice) (>= 0).
+Proof.
+Admitted.
+
+HB.instance Definition _ := Order.isMeetLatticeClosed.Build _ _ _ ge_zero_meet_closed.
+HB.instance Definition _ := Order.isJoinLatticeClosed.Build _ _ _ ge_zero_join_closed.
+
+HB.instance Definition _ := [SubChoice_isSubLattice of nnQ by <: with ssrnum.ring_display]. *)
+
 
 Implicit Type r s x y : nnQ.
 
