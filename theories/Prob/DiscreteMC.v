@@ -225,10 +225,6 @@ Definition EqEnum {A : eqType} (μ1 μ2 : Enum A) : Prop :=
 
 Infix "==Enum" := EqEnum (at level 70).
 
-
-
-(*+ TODO: update till here +*)
-
 Lemma enum_eq_eq {A : eqType} : ∀ {μ1 μ2 : Enum A},
   μ1 = μ2 → EqEnum μ1 μ2.
 Proof. intros. unfold EqEnum. intros.
@@ -387,39 +383,28 @@ End Dists.
 
 
 
-Section successor.
-Context {X : eqType}.
-
-Definition EnumSucc {Y} (μ : Enum X) (k : X → Y) : Enum Y :=
-  map (λ '(p, x), (p, k x)) μ.
-
-
-
-(* Definition EnumSubSucc {μ : Enum X} (k : X → Y) *)
-
-End successor.
-
-(* Section  *)
-
 Section Normalize.
 
-
-Definition SuppSetOfEnum {A: eqType} (μ: Enum A) (supp: seq A) : Prop :=
-  uniq supp ∧ (supp =i [seq x | '(_, x) <- μ]).
-
-Definition supp_set_of_enum {A: eqType} (μ: Enum A) := undup [seq x  | '(_, x) <- μ].
-
-Theorem supp_set_is_supp_set {A: eqType} (μ: Enum A): SuppSetOfEnum μ (supp_set_of_enum μ).
-Proof.
-  unfold SuppSetOfEnum, supp_set_of_enum.
-  split.
-  - apply undup_uniq.
-  - apply (mem_undup [seq x  | '(_, x) <- μ]).
+Lemma eta {A : eqType} (μ : Enum A)
+  : μ = [seq (p, x) | '(p, x) <- μ].
+Proof. elim: μ => [//|[p x] μ IH]. rewrite map_cons.
+congr cons. exact: IH.
 Qed.
+
+Definition supp {A : eqType} (μ : Enum A)
+  := undup [seq x | '(_, x) <- μ].
+
+Lemma supp_uniq {A : eqType} (μ : Enum A) : uniq (supp μ).
+Proof. apply: undup_uniq. Qed.
+
+Lemma supp_spec {A: eqType} (μ: Enum A) : (supp μ =i [seq x | '(_, x) <- μ]).
+Proof. apply: mem_undup. Qed.
+
+
 
 Definition NormalizedEnum {A : Type} (μ: Enum A) : bool :=
   foldr (λ '(s, _) (ys : ℚ≥0), s + ys) 0 μ == 1.
- 
+
 Theorem normalized_of_supp {A : eqType} {μ: Enum A} {supp: seq A} (hsupp : SuppSetOfEnum μ supp) :
   foldr (λ (s : A) (ys : ℚ≥0), acc_mass s μ + ys) 0 supp == 1 = NormalizedEnum μ.
 Proof.
@@ -428,16 +413,16 @@ Proof.
   reflexivity.
   unfold SuppSetOfEnum in hsupp.
   unfold acc_mass.
-  
+
 
 Admitted.
 
 
-Theorem normalized_mass_le_one {A : eqType} (μ: Enum A) (nμ : NormalizedEnum μ): 
+Theorem normalized_mass_le_one {A : eqType} (μ: Enum A) (nμ : NormalizedEnum μ):
   ∀x, acc_mass x μ <= 1.
 Proof.
   rewrite <- (normalized_of_supp (supp_set_is_supp_set μ)) in nμ.
-  
+
 Admitted.
 
 Theorem normalized_ret_enum {A : Type} {a: A} : NormalizedEnum (ret_Enum a).
@@ -460,3 +445,17 @@ Admitted.
 End Normalize.
 
 End Enum.
+
+
+
+Section successor.
+Context {X : eqType}.
+
+Definition EnumSucc {Y} (μ : Enum X) (k : X → Y) : Enum Y :=
+  map (λ '(p, x), (p, k x)) μ.
+
+(* Definition EnumSubSucc {μ : Enum X} (k : X → Y) *)
+
+End successor.
+
+(* Section  *)
