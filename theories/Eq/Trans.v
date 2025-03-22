@@ -5,7 +5,6 @@
  *)
 
 Require Import Utf8.
-Require Import Reals.
 Require Import Program Morphisms.
 
 From Coinduction Require Import all.
@@ -19,16 +18,21 @@ From RelationAlgebra Require Import
      comparisons
      rewriting
      normalisation.
+From mathcomp Require Import eqtype ssralg.
 
-From PTree.Core Require Import PTreeDefinitionPa Utils.
-From PTree.Prob Require Import Discrete.
-From PTree.Eq Require Import Equ Shallow.
+From PTree.Core Require Import PTreeDefinitionNew Utils.
+From PTree.Prob Require Import RatSubTypes DiscreteMC.
+From PTree.Eq Require Import EquNew ShallowNew.
 
 
 
 #[local] Ltac inv H := inversion H; clear H; subst.
 #[local] Tactic Notation "step" := __step_equ.
 #[local] Tactic Notation "step" "in" ident(H) := __step_in_equ H.
+
+(* To use the relation algebra library,
+  the universe check should be unset. *)
+#[local] Unset Universe Checking.
 
 Section Trans.
 Import PTree.
@@ -42,6 +46,8 @@ Context {R : Type}.
 
 #[local] Notation S' := (ptree' E M R).
 #[local] Notation S := (ptree E M R).
+
+
 
 Definition SS : EqType :=
   {| type_of := S; Eq := equ eq |}.
@@ -65,16 +71,19 @@ Proof. intros Contra. inversion Contra. Qed.
 
 
 
-Inductive trans_ : label → ℝ₊ → hrel S' S' :=
+Import NonnegQNotations.
+Import GRing.Theory.
+
+Inductive trans_ : label → ℚ≥0 → hrel S' S' :=
   | StepTau t u
     : t ≅ u ->
-      trans_ tau 1%R (TauF t) (observe u)
+      trans_ tau 1 (TauF t) (observe u)
   | StepObs {X} (e : E X) k x t
     : k x ≅ t ->
-      trans_ (obs e x) 1%R (VisF e k) (observe t)
+      trans_ (obs e x) 1 (VisF e k) (observe t)
   | StepVal r μ k
-    : trans_ (val r) 1%R (RetF r) (ProbF0 μ k)
-  | StepPrb μ k x p t
+    : trans_ (val r) 1 (RetF r) (ProbF0 μ k)
+  | StepPrb {X : eqType} (μ : M X) k x p t
     : disc_mass x μ = p ->
       k x ≅ t ->
       trans_ tau p (ProbF μ k) (observe t).
