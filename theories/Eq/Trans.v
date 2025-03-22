@@ -4,6 +4,9 @@
     Bisimulation* of [ptree]s.
  *)
 
+Set Warnings "-notation-incompatible-prefix".
+Set Warnings "-ambiguous-paths".
+
 Require Import Utf8.
 Require Import Program Morphisms.
 
@@ -32,7 +35,7 @@ From PTree.Eq Require Import EquNew ShallowNew.
 
 (* To use the relation algebra library,
   the universe check should be unset. *)
-#[local] Unset Universe Checking.
+Unset Universe Checking.
 
 Section Trans.
 Import PTree.
