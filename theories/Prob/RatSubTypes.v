@@ -70,11 +70,13 @@ HB.instance Definition _ := Order.isJoinLatticeClosed.Build _ _ _ ge_zero_join_c
 HB.instance Definition _ := [SubChoice_isSubLattice of nnQ by <: with ssrnum.ring_display]. *)
 
 
-Implicit Type r s x y : nnQ.
-
-Lemma le_nnQ0 r : 0 <= r.
+Lemma le_nnQ0 (r : nnQ) : 0 <= r.
 Proof. move: r => [r ler0]. apply: ler0. Qed.
 
+Lemma le_nnQ0' (r : nnQ) : Order.le (mknnQ 0 (Order.POrderTheory.lexx 0 )) r.
+Proof.
+  admit.
+Admitted.
 
 End NonnegQ.
 
@@ -89,37 +91,27 @@ Notation "'[nn'  r ']'" := (mknnQ r _) : subrat_scope.
 End NonnegQNotations.
 
 
-
-
-(* Class RatSub (T : Type) := { *)
-(*   inject : T -> Q; *)
-(* }. *)
-
 (** The Standard Unit Interval *)
+Section IntervalQ.
+Import NonnegQNotations.
+Structure IntervalQ : Type := mkIntervalQ { IntervalVal :> ℚ≥0; _ : IntervalVal <= 1 }.
 
-(* Variant Interval : Type := *)
-(* | mkInterval (r : R) (_ : Rle 0 r) (_ : Rle r 1). *)
-
-(* Notation 𝕀 := R. *)
-
-(* Global Instance Interval_RealSub : RealSub Interval := {| *)
-(*   inject := fun '(mkInterval r _ _) => r *)
-(* |}. *)
-
-
-(** The Positive Reals *)
-(* Variant NNR : Type := *)
-(* | mkNNR (r : R) (_ : Rle 0 r). *)
-
-(* Notation "ℝ₊" := R : type_scope. *)
+HB.instance Definition _ := [isSub for IntervalVal].
+HB.instance Definition _ := [Equality of IntervalQ by <:].
+HB.instance Definition _ := [Choice of IntervalQ by <:].
+HB.instance Definition _ := [SubChoice_isSubOrder of IntervalQ by <: with ssrnum.ring_display].
 
 
+Lemma le_IntervalQ1 r : IntervalVal r <= 1.
+Proof. move: r => [r ler1]. apply: ler1. Qed.
 
-(** The Extended Non-Negative Real Numbers
-  Which is not an injection *)
+Lemma mulq_IntervalQP (x y: IntervalQ) : (IntervalVal x) * (IntervalVal y) <= 1.
+Proof.
+  Unset Printing Notations.
+  have h1 := ssrnum.Num.Theory.ler_piMr (le_nnQ0' (IntervalVal x)) (le_IntervalQ1 y).
+Admitted.
+Canonical mulq_IntervalQ x y := mkIntervalQ ((IntervalVal x) * (IntervalVal y)) (mulq_IntervalQP x y).
 
-(* Inductive ENNR : Type := *)
-(* | mkENNR (r : R) (_ : Rle 0 r) *)
-(* | pinfty. *)
 
-(* Notation "ℝ₊∞" := R : type_scope. *)
+
+End IntervalQ.
