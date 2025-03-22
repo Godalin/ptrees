@@ -1,62 +1,54 @@
 (** Probabilistic Strong Simulation Relation *)
+Set Warnings "-ambiguous-paths".
+Unset Universe Checking.
 
-Require Import Reals.
 Require Import Program Morphisms.
-Require Import ssrbool.
 
 From Coinduction Require Import all.
-
 From RelationAlgebra Require Import rel srel.
+From mathcomp Require Import ssrbool seq ssralg order.
 
-From PTree.Core Require Import PTreeDefinitionPa Utils.
-From PTree.Prob Require Import Discrete.
-From PTree.Eq Require Import Shallow Equ Trans.
+From PTree.Core Require Import PTreeDefinitionNew Utils.
+From PTree.Prob Require Import RatSubTypes DiscreteMC.
+From PTree.Eq Require Import ShallowNew EquNew Trans.
 
 
 
 Section PSSim.
-Import List.
-Import ListNotations.
-#[local] Open Scope list_scope.
 Import Enum.
+Import NonnegQNotations.
 
 #[local] Notation ptree E := (ptree E Enum).
 
-Definition reflects (x : bool) (P : Prop) : Prop :=
-  (x = true <-> P) /\ (x = false <-> ~ P).
-
-Notation "'[' x '`reflects`' P ']'" := (reflects x P).
-
 Fixpoint transAll {E X} α (t : ptree E X)
-  (tlist : list (ℝ₊ * ptree E X)) : Prop :=
+    (tlist : list (ℚ≥0 * ptree E X)) : Prop :=
   match tlist with
-  | [] => True
+  | [::] => True
   | (p, t') :: tlist' => transR α p t t' /\ transAll α t tlist'
   end.
 
-Fixpoint transAllPrb {E X} (tlist : list (ℝ₊ * ptree E X)) : ℝ₊ :=
+Fixpoint transAllPrb {E X} (tlist : list (ℚ≥0 * ptree E X)) : ℚ≥0 :=
   match tlist with
-  | [] => 0%R
+  | [::] => 0
   | (p, t') :: tlist' => p + transAllPrb tlist'
   end.
 
 Fixpoint relateAll {X Y} (R : rel X Y) (x : X) (ys : list Y) : Prop :=
   match ys with
-  | [] => True
+  | [::] => True
   | y :: ys' => R x y /\ relateAll R x ys'
   end.
 
 
-(* exists f : ptree E X -> ptree E Y -> bool, *)
-(*         (forall x y, [ f x y `reflects` R x y ]) *)
 
-#[program] Definition pss {E F M N : Type -> Type}
+#[program]
+Definition pss {E F M N : Type -> Type}
     {X Y : Type} (L : rel (@label E) (@label F))
   : mon (ptree E X -> ptree F Y -> Prop)
   := {| body R t u := forall l p t', trans l p t t' ->
-          exists l' (u's : list (ℝ₊ * ptree F Y)), (* issue: how no dup *)
+          exists l' (u's : list (ℚ≥0 * ptree F Y)),
             transAll l' u u's
-            /\ (p <= (transAllPrb u's))%R
+            /\ p <= (transAllPrb u's)
             /\ relateAll R t' (map snd u's)
             /\ L l l' |}.
 Next Obligation.
