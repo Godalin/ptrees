@@ -1,3 +1,6 @@
+Set Warnings "-notation-overridden".
+Set Warnings "-ambiguous-paths".
+
 Require Import Utf8.
 Require Import Setoid.
 Require Import Program.
@@ -6,7 +9,6 @@ Require Import Morphisms.
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
 From mathcomp Require Import order ssralg ssrint rat.
-From mathcomp.ssreflect Require Import finset.
 
 From PTree.Prob Require Import RatSubTypes.
 
@@ -153,6 +155,7 @@ End Term.
 Module Enum.
 Import NonnegQNotations.
 Import GRing.Theory.
+Import Order.Theory.
 
 Definition Enum (A : Type) := seq (ℚ≥0 * A).
 
@@ -383,6 +386,17 @@ End Dists.
 
 
 
+Section int.
+
+Definition integral {A : eqType} (f : A → ℚ≥0) (μ : Enum A)
+  := foldr (λ '(p, x) s, (f x) * p + s) 0.
+
+End int.
+
+
+
+(* Properties about Normalized Distributions *)
+
 Section Normalize.
 
 Lemma eta {A : eqType} (μ : Enum A)
@@ -397,54 +411,44 @@ Definition supp {A : eqType} (μ : Enum A)
 Lemma supp_uniq {A : eqType} (μ : Enum A) : uniq (supp μ).
 Proof. apply: undup_uniq. Qed.
 
-Lemma supp_spec {A: eqType} (μ: Enum A) : (supp μ =i [seq x | '(_, x) <- μ]).
+Lemma supp_spec {A: eqType} (μ : Enum A)
+  : (supp μ =i [seq x | '(_, x) <- μ]).
 Proof. apply: mem_undup. Qed.
 
+Definition Normalized {A : Type} (μ : Enum A) : bool
+  := foldr (λ '(p, _) s, p + s) 0 μ == 1.
 
-
-Definition NormalizedEnum {A : Type} (μ: Enum A) : bool :=
-  foldr (λ '(s, _) (ys : ℚ≥0), s + ys) 0 μ == 1.
-
-Theorem normalized_of_supp {A : eqType} {μ: Enum A} {supp: seq A} (hsupp : SuppSetOfEnum μ supp) :
-  foldr (λ (s : A) (ys : ℚ≥0), acc_mass s μ + ys) 0 supp == 1 = NormalizedEnum μ.
-Proof.
-  unfold NormalizedEnum.
-  replace (foldr (λ '(s, _) (ys : ℚ≥0), s + ys) 0 μ) with (foldr (λ (s : A) (ys : ℚ≥0), acc_mass s μ + ys) 0 supp).
-  reflexivity.
-  unfold SuppSetOfEnum in hsupp.
-  unfold acc_mass.
-
-
+Theorem normalized_of_supp {A : eqType} {μ : Enum A}
+  : foldr (λ x (s : ℚ≥0), (acc_mass x μ) + s) 0 (supp μ) == 1
+    -> Normalized μ.
+Proof. elim μ => [//|[r x] l IH] /= H //=.
 Admitted.
 
 
-Theorem normalized_mass_le_one {A : eqType} (μ: Enum A) (nμ : NormalizedEnum μ):
-  ∀x, acc_mass x μ <= 1.
-Proof.
-  rewrite <- (normalized_of_supp (supp_set_is_supp_set μ)) in nμ.
 
+Theorem normalized_mass_le_one {A : eqType} (μ: Enum A) (nμ : Normalized μ)
+  : ∀x, acc_mass x μ <= 1.
+Proof.
 Admitted.
 
-Theorem normalized_ret_enum {A : Type} {a: A} : NormalizedEnum (ret_Enum a).
+Theorem normalized_ret_enum {A : Type} {a: A} : Normalized (ret_Enum a).
 Proof.
-  unfold NormalizedEnum, ret_Enum.
-  rewrite //=.
+  unfold Normalized, ret_Enum.
+  move=> //=.
 Qed.
 
-Theorem normalized_enum_eq {A : eqType} (μ1 μ2: Enum A) (eq: μ1 ==Enum μ2) : NormalizedEnum μ1 <-> NormalizedEnum μ2.
+Theorem normalized_enum_eq {A : eqType} (μ1 μ2: Enum A) (eq: μ1 ==Enum μ2) : Normalized μ1 <-> Normalized μ2.
 Proof.
   unfold EqEnum in eq.
-  rewrite <- (normalized_of_supp (supp_set_is_supp_set μ1)), <- (normalized_of_supp (supp_set_is_supp_set μ2)).
+  (* rewrite <- (normalized_of_supp (supp_set_is_supp_set μ1)), <- (normalized_of_supp (supp_set_is_supp_set μ2)). *)
 Admitted.
 
 Theorem normalized_enum_rt_eq {R1 : eqType} {R2 : eqType} (μ1: Enum R1) (μ2: Enum R2)
-(RR : R1 → R2 → Prop) (eq: enumRT RR μ1 μ2) : NormalizedEnum μ1 ↔ NormalizedEnum μ2.
+(RR : R1 → R2 → Prop) (eq: enumRT RR μ1 μ2) : Normalized μ1 ↔ Normalized μ2.
 Proof.
 Admitted.
 
 End Normalize.
-
-End Enum.
 
 
 
@@ -458,4 +462,5 @@ Definition EnumSucc {Y} (μ : Enum X) (k : X → Y) : Enum Y :=
 
 End successor.
 
-(* Section  *)
+
+End Enum.

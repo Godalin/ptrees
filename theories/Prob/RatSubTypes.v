@@ -1,3 +1,8 @@
+Set Warnings "-notation-overridden".
+Set Warnings "-ambiguous-paths".
+Set Warnings "-redundant-canonical-projection".
+Set Warnings "-projection-no-head-constant".
+
 Require Import Utf8.
 
 From HB Require Import structures.
@@ -47,7 +52,7 @@ HB.instance Definition _ := [SubChoice_isSubComSemiRing of nnQ by <:].
 
 HB.instance Definition _ := [SubChoice_isSubOrder of nnQ by <: with ssrnum.ring_display].
 
-(* 
+(*
 TODO: prove nnQ is SubLattice
 Lemma ge_zero_meet_closed: Order.ClosedPredicates.meet_closed (T:=rat_rat__canonical__Order_Lattice) (>= 0).
 Proof.
