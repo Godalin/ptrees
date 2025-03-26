@@ -49,39 +49,11 @@ Proof.
 Qed.
 HB.instance Definition _ := GRing.isSemiringClosed.Build _ _ ge_zero_closed.
 HB.instance Definition _ := [SubChoice_isSubComSemiRing of nnQ by <:].
-
 HB.instance Definition _ := [SubChoice_isSubOrder of nnQ by <: with ssrnum.ring_display].
-
-(*
-TODO: prove nnQ is SubLattice
-Lemma ge_zero_meet_closed: Order.ClosedPredicates.meet_closed (T:=rat_rat__canonical__Order_Lattice) (>= 0).
-Proof.
-  unfold Order.ClosedPredicates.meet_closed.
-  intros x y hx hy.
-  unfold in_mem; rewrite //=.
-  unfold in_mem in hx, hy. rewrite //= in hx, hy.
-  Unset Printing Notations.
-  unfold Order.meet, Order.MeetSemilattice.class, Order_Lattice__to__Order_MeetSemilattice, Order.Lattice.class, rat_rat__canonical__Order_Lattice.
-  unfold Order.POrder_isMeetSemilattice.meet.
-Admitted.
-
-Lemma ge_zero_join_closed: Order.ClosedPredicates.join_closed (T:=rat_rat__canonical__Order_Lattice) (>= 0).
-Proof.
-Admitted.
-
-HB.instance Definition _ := Order.isMeetLatticeClosed.Build _ _ _ ge_zero_meet_closed.
-HB.instance Definition _ := Order.isJoinLatticeClosed.Build _ _ _ ge_zero_join_closed.
-
-HB.instance Definition _ := [SubChoice_isSubLattice of nnQ by <: with ssrnum.ring_display]. *)
 
 
 Lemma le_nnQ0 (r : nnQ) : 0 <= r.
 Proof. move: r => [r ler0]. apply: ler0. Qed.
-
-Lemma le_nnQ0' (r : nnQ) : Order.le (mknnQ 0 (Order.POrderTheory.lexx 0 )) r.
-Proof.
-  admit.
-Admitted.
 
 End NonnegQ.
 
@@ -107,16 +79,19 @@ HB.instance Definition _ := [Choice of IntervalQ by <:].
 HB.instance Definition _ := [SubChoice_isSubOrder of IntervalQ by <: with ssrnum.ring_display].
 
 
-Lemma le_IntervalQ1 r : IntervalVal r <= 1.
+Lemma le_0IntervalQ r : mkIntervalQ 0 ssrnum.Num.Theory.ler01 <= r.
+Proof. move: r => [[r le0r] ler1]. apply: le0r. Qed.
+
+#[program]
+Lemma le_IntervalQ1 r : r <= mkIntervalQ 1 _.
 Proof. move: r => [r ler1]. apply: ler1. Qed.
 
 Lemma mulq_IntervalQP (x y: IntervalQ) : (IntervalVal x) * (IntervalVal y) <= 1.
 Proof.
-  Unset Printing Notations.
-  have h1 := ssrnum.Num.Theory.ler_piMr (le_nnQ0' (IntervalVal x)) (le_IntervalQ1 y).
-Admitted.
+  have h1 := ssrnum.Num.Theory.ler_piMr (le_0IntervalQ x) (le_IntervalQ1 y).
+  have h2 := le_IntervalQ1 x.
+  apply (Order.POrderTheory.le_trans h1 h2).
+Qed.
 Canonical mulq_IntervalQ x y := mkIntervalQ ((IntervalVal x) * (IntervalVal y)) (mulq_IntervalQP x y).
-
-
 
 End IntervalQ.
