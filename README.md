@@ -2,16 +2,36 @@
 
 ## Introduction
 
-## How to build
+## Meta
 
-After cloning the PTree repository, use the following command to create a local `opam` switch and install the dependencies, and activate the switch:
+- Author(s):
+  - Linyu Yang
+  - Yuchi Su
+
+## Building Instructions
+
+### Obtaining the project
+
+```sh
+git clone git@github.com:Godalin/ptrees.git
+cd ptrees
+```
+
+### Setting up the environment
+
+Create a local `opam` switch and install the dependencies, and activate the switch:
 
 ```sh
 opam switch create ./ --repos default,coq-released=https://coq.inria.fr/opam/released --deps-only
 eval $(opam env)
+
+# update the dependencies
+opam install ./ --deps-only
 ```
 
-Then run
+### Build the project
+
+Run
 
 ``` sh
 dune build
@@ -21,8 +41,10 @@ to build the theories.
 
 ### Dependencies
 
-The dependencies are not needed to be installed manually, but we list them here:
+We list the dependencies here, although are not needed to be installed manually if you use the local `opam` switch approach:
 - `coq-ext-lib`
 - `coq-coinduction`
 - `coq-itree`
 - `coq-mathcomp`
+
+If you do not want to use the local `opam` switch, you can manually install the dependencies above.
