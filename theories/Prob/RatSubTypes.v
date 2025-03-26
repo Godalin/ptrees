@@ -49,29 +49,7 @@ Proof.
 Qed.
 HB.instance Definition _ := GRing.isSemiringClosed.Build _ _ ge_zero_closed.
 HB.instance Definition _ := [SubChoice_isSubComSemiRing of nnQ by <:].
-
 HB.instance Definition _ := [SubChoice_isSubOrder of nnQ by <: with ssrnum.ring_display].
-
-Lemma ge_zero_meet_closed: Order.ClosedPredicates.meet_closed (T:=rat_rat__canonical__Order_Lattice) (>= 0).
-Proof.
-  intros x y hx hy.
-  unfold in_mem; rewrite //=.
-  unfold in_mem in hx, hy. rewrite //= in hx, hy.
-  rewrite Order.MeetTheory.lexI hx hy //=.
-Qed.
-
-Lemma ge_zero_join_closed: Order.ClosedPredicates.join_closed (T:=rat_rat__canonical__Order_Lattice) (>= 0).
-Proof.
-  intros x y hx hy.
-  unfold in_mem; rewrite //=.
-  unfold in_mem in hx, hy. rewrite //= in hx, hy.
-  exact (Order.POrderTheory.le_trans hx (Order.JoinTheory.leUl x y)).
-Qed.
-
-HB.instance Definition _ := Order.isMeetLatticeClosed.Build _ _ _ ge_zero_meet_closed.
-HB.instance Definition _ := Order.isJoinLatticeClosed.Build _ _ _ ge_zero_join_closed.
-
-HB.instance Definition _ := [SubChoice_isSubLattice of nnQ by <: with ssrnum.ring_display].
 
 
 Lemma le_nnQ0 (r : nnQ) : 0 <= r.
@@ -99,25 +77,6 @@ HB.instance Definition _ := [isSub for IntervalVal].
 HB.instance Definition _ := [Equality of IntervalQ by <:].
 HB.instance Definition _ := [Choice of IntervalQ by <:].
 HB.instance Definition _ := [SubChoice_isSubOrder of IntervalQ by <: with ssrnum.ring_display].
-
-
-Lemma le_one_meet_closed: Order.ClosedPredicates.meet_closed (T:=RatSubTypes_nnQ__canonical__Order_Lattice) (λ x : ℚ≥0, x <= 1).
-Proof.
-  intros x y hx hy.
-  unfold in_mem; rewrite //=.
-  unfold in_mem in hx, hy. rewrite //= in hx, hy.
-  exact (Order.POrderTheory.le_trans (Order.MeetTheory.leIl x y) hx).
-Qed.
-
-Lemma le_one_join_closed: Order.ClosedPredicates.join_closed (T:=RatSubTypes_nnQ__canonical__Order_Lattice) (<= (1: nnQ)).
-Proof.
-  intros x y hx hy.
-  unfold in_mem; rewrite //=.
-  unfold in_mem in hx, hy. rewrite //= in hx, hy.
-  rewrite Order.JoinTheory.leUx hx hy //=.
-Qed.
-
-HB.instance Definition _ := Order.SubChoice_isSubLattice.Build _ _ _ ssrnum.ring_display IntervalQ le_one_meet_closed le_one_join_closed.
 
 
 Lemma le_0IntervalQ r : mkIntervalQ 0 ssrnum.Num.Theory.ler01 <= r.
