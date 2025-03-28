@@ -18,13 +18,13 @@
  (version 0.1)
  (depends
   (coq
-   (>= 8.18))
+   (>= 8.20))
   (coq-ext-lib
-   (>= 0.11.3))
+   (>= 0.13.0))
   (coq-coinduction
-   (>= 1.3))
+   (>= 1.20))
   (coq-itree
-   (>= 5.0))
+   (>= 5.2.1))
   (coq-relation-algebra
    (>= 1.7.11))
   (coq-mathcomp-algebra

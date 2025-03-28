@@ -250,7 +250,15 @@ Context {L : relation (@label E)}.
 Instance Reflexive_pss {RC : relation (ptree E X)}
     `{Reflexive _ L} `{Reflexive _ RC}
   : Reflexive (pss L RC).
-Proof. cbn. intros. inversion H1; subst.
+Proof. cbn. intros. inversion H1. 
+  - exists tau. split. reflexivity. eapply PSSimTauF. eapply StepTau. reflexivity. admit.
+  - exists (obs e x0). split. reflexivity. eapply PSSimVisF. eapply StepObs. reflexivity. admit.
+  - exists (val r). split. reflexivity. apply (PSSimRetF RC t' (val r) 1 r (Prob0 μ k)). eapply StepVal. admit.
+  - exists tau. split. reflexivity. apply (PSSimProbF RC t' tau p X0 μ k (supp μ)).
+    auto. elim: (supp μ) => [//|head tail ih]. rewrite map_cons. rewrite //=. split.
+    eapply StepPrb. reflexivity. reflexivity. by [].
+    unfold transR in H1. elim: (supp μ) => [//|head tail ih]. rewrite map_cons. rewrite //=. split.
+    admit. exact ih. rewrite <- H6. unfold disc_mass. rewrite //=. admit.
 Admitted.
 
 #[global]
