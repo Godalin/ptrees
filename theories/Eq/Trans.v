@@ -21,7 +21,7 @@ From RelationAlgebra Require Import
      comparisons
      rewriting
      normalisation.
-From mathcomp Require Import eqtype ssralg.
+From mathcomp Require Import ssreflect ssrbool eqtype seq finset ssralg order.
 
 From PTree.Core Require Import PTreeDefinitionNew Utils.
 From PTree.Prob Require Import RatSubTypes DiscreteMC.
@@ -181,9 +181,61 @@ Definition pwtrans l : srel SS SS :=
 Definition tautrans : srel SS SS :=
   (trans tau 1)^+.
 
-
 End Trans.
 
+Section Trans_relation.
+
+Import Enum.
+Import NonnegQNotations.
+
+Fixpoint transAll {E} {R} α (t : ptree E Enum R)
+    (tlist : Enum (ptree E Enum R)) : Prop :=
+  match tlist with
+  | [::] => True
+  | (p, t') :: tlist' => trans α p t t' ∧ transAll α t tlist'
+  end.
+
+Definition transAllPrb {E X} (tlist : Enum (ptree E Enum X)) : ℚ≥0 :=
+  sumq (unzip1 tlist).
+
+Fixpoint relateAll {X Y} (R : rel X Y) (x : X) (ys : list Y) : Prop :=
+  match ys with
+  | [::] => True
+  | y :: ys' => R x y ∧ relateAll R x ys'
+  end.
+
+Lemma sub_relateAll {X Y} (R S : rel X Y) (x : X) (ys : list Y)
+  : (∀ x y, R x y → S x y) → relateAll R x ys → relateAll S x ys.
+Proof. elim: ys => [//|y ys IH //= H] [Hxy Hxys]. auto. Qed.
+
+Lemma transAll_Prob_Cons {E} {X : eqType} {Y} {k : X -> ptree E Enum Y} (x : Enum X) (p : ℚ≥0 * X) (l : seq X)
+  : transAll tau (Prob x k) [seq enumk x k x0  | x0 <- l] -> transAll tau (Prob (p :: x) k) [seq enumk (p :: x) k x0 | x0 <- l].
+Proof.
+  move => ih. induction l. rewrite //=.
+  rewrite map_cons /transAll in ih. destruct ih.
+  have ih1 := IHl H0. clear IHl H0.
+  rewrite map_cons /transAll. split.
+  econstructor. reflexivity. reflexivity. exact ih1. 
+Qed.
+  
+Lemma transAll_Prob {E} {X : eqType} {Y}
+  : forall (μ : Enum X) (k : X -> ptree E Enum Y), transAll tau (Prob μ k) [seq enumk μ k x | x <- supp μ].
+Proof.
+  intros. elim: μ => [//|p x ih]. rewrite /supp /unzip2 map_cons.
+  (* used to fold back the unfolded `undup` *)
+  have fold_undup : undup = undup. reflexivity. unfold undup at 1 in fold_undup. 
+  unfold undup.
+
+  remember (snd p \in [seq snd i | i <- x]) as snd_p_in_snd. destruct snd_p_in_snd. 
+  (* p in [seq snd i  | i <- x] *)
+  rewrite /enumk fold_undup. eapply transAll_Prob_Cons. exact ih.
+
+  (* p not in [seq snd i  | i <- x] *)
+  rewrite /enumk {}fold_undup map_cons /transAll. split.
+  econstructor. reflexivity. reflexivity.
+  eapply transAll_Prob_Cons. exact ih.
+Qed.
+End Trans_relation.
 
 (* Section test. *)
 (* Import Enum. *)

@@ -24,89 +24,8 @@ Import EquNotations.
 #[local] Notation ptree E := (ptree E Enum).
 #[local] Notation ptree' E R := (ptree' E Enum R).
 
-Fixpoint transAll {E X} α (t : ptree E X)
-    (tlist : list (ℚ≥0 * ptree E X)) : Prop :=
-  match tlist with
-  | [::] => True
-  | (p, t') :: tlist' => trans α p t t' ∧ transAll α t tlist'
-  end.
-
-Definition transAllPrb {E X} (tlist : Enum (ptree E X)) : ℚ≥0 :=
-  foldr (λ x acc, x + acc) 0 (unzip1 tlist).
-
-Fixpoint relateAll {X Y} (R : rel X Y) (x : X) (ys : list Y) : Prop :=
-  match ys with
-  | [::] => True
-  | y :: ys' => R x y ∧ relateAll R x ys'
-  end.
-
-Lemma transAll_Prob {E} {X : eqType} {Y}
-  : ∀ (μ : Enum X) (k : X → ptree E Y),
-    transAll tau (Prob μ k) [seq enumk μ k x | x <- supp μ].
-Proof. intros. induction μ.
-  - simpl. reflexivity.
-  - destruct a as [p x]. simpl.
-    unfold supp.
-    remember (x \in unzip2 μ) as mem. destruct mem.
-    + simpl. rewrite <- Heqmem.
-      change (undup (unzip2 μ)) with (supp μ).
-Abort.
-
-
-Lemma transAll_Prob {E} {X : eqType} {Y}
-  : ∀ (μ : Enum X) (k : X → ptree E Y),
-    transAll tau (Prob μ k) [seq enumk μ k (snd x) | x <- μ].
-Proof. intros. induction μ.
-  - simpl. reflexivity.
-  - destruct a as [p x]. simpl.
-    destruct (x \in supp μ).
-    + simpl.
-Abort.
-
-Lemma sub_relateAll {X Y} (R S : rel X Y) (x : X) (ys : list Y)
-  : (∀ x y, R x y → S x y) → relateAll R x ys → relateAll S x ys.
-Proof. elim: ys => [//|y ys IH //= H] [Hxy Hxys]. auto. Qed.
-
 Section experiment.
 Context {E F : Type → Type} {X Y : Type}.
-
-(* Old definitions of [pss], probabilistic strong simulation.
-  This version has the problem of not being unique in the provided
-  [seq] of [weight * ptree]. *)
-
-(* #[program] *)
-(* Definition pss {E F : Type → Type} *)
-(*     {X Y : Type} (L : rel (@label E) (@label F)) *)
-(*   : mon (ptree E X → ptree F Y → Prop) *)
-(*   := {| body R t u := ∀ l p t', *)
-(*         trans l p t t' → *)
-(*           ∃ l' (u's : list (ℚ≥0 * ptree F Y)), *)
-(*             transAll l' u u's *)
-(*             ∧ p <= (transAllPrb u's) *)
-(*             ∧ relateAll R t' (map snd u's) *)
-(*             ∧ L l l' |}. *)
-(* Next Obligation. *)
-(* Admitted. *)
-
-(* #[program] *)
-(* Definition pss' {E F : Type → Type} *)
-(*     {X Y : Type} (L : rel (@label E) (@label F)) *)
-(*   : mon (ptree E X → ptree F Y → Prop) *)
-(*   := {| body R t u := ∀ l (p : ℚ≥0) t', *)
-(*         trans l p t t' → *)
-(*           ∃ l' (X' : eqType) (k' : X' → ℚ≥0 * ptree F Y) (x's : seq X'), *)
-(*             uniq x's *)
-(*             ∧ let u's := [seq k' x | x <- x's] in *)
-(*               transAll l' u u's *)
-(*               ∧ p <= (transAllPrb u's) *)
-(*               ∧ relateAll R t' (map snd u's) *)
-(*               ∧ L l l' |}. *)
-(* Next Obligation. *)
-(* move: (H0 l p t' H1) => *)
-(*   [l' [X' [k' [x's [Huniq [Htrans [Hprob [Hrelate HL]]]]]]]]. *)
-(* exists l', X', k', x's. repeat (split; auto). *)
-(* apply: sub_relateAll. apply H. auto. *)
-(* Defined. *)
 
 (** Goal: define a prop: [R t u] is a simulation, or part of the prop
     t -- R ---- u
@@ -141,20 +60,6 @@ Variant pssim_cond REL (t' : ptree E X) (l' : label) (p : ℚ≥0)
       → relateAll REL t' [seq k x | x <- s]
       → p <= mass μ s
       → pssim_cond REL t' l' p (ProbF μ k).
-
-(* Variant pssim_cond REL (t' : ptree E X) (l' : label) (p : ℚ≥0) *)
-(*   : ptree' F Y → Prop := *)
-(*   | PSSimTrans' *)
-(*     : ∀ u u', *)
-(*         trans l' p u u' *)
-(*       → pssim_cond REL t' l' p (observe u) *)
-(*   | PSSimProbF' *)
-(*     : ∀ (X' : eqType) (μ : Enum X') (k : X' → ptree F Y) (s : seq X'), *)
-(*         subseq s (supp μ) *)
-(*       → transAll l' (Prob μ k) [seq enumk μ k x | x <- s] *)
-(*       → relateAll REL t' [seq k x | x <- s] *)
-(*       → p <= mass μ s *)
-(*       → pssim_cond REL t' l' p (ProbF μ k). *)
 
 Lemma sub_pssim_cond (R S : rel (ptree E X) (ptree F Y))
     t' (l : @label F) p u
@@ -192,7 +97,7 @@ Proof. intros REL t' l p u H. inversion H; subst.
     apply H1. rewrite <- map_comp. exact H2.
     apply (le_trans H3). unfold transAllPrb, unzip1.
     rewrite <- map_comp. unfold ssrfun.comp, fst, mass. simpl.
-    rewrite foldr_map le_refl. reflexivity.
+    rewrite le_refl. reflexivity.
 Qed.
 
 End experiment.
@@ -252,7 +157,6 @@ Ltac __step_in_pssim H :=
   end.
 
 
-
 Section homogenous_pssim_theory.
 Import Enum.
 Import GRing.Theory Order.Theory.
@@ -276,7 +180,8 @@ Proof. unfold Reflexive.
   - exists (obs e x); split; auto. econstructor.
     rewrite H1. apply Htrans. auto.
   - exists tau; split; auto. econstructor.
-    apply subseq_refl.
+    apply subseq_refl. apply transAll_Prob.
+    admit. unfold disc_mass. simpl. exact le_acc_mass_mass_supp.
 Admitted.
 
 #[global]

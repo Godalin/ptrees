@@ -207,15 +207,21 @@ Qed.
 (** We need the decidable equality for the base type [A] of
     the enumeration. *)
 
-Fixpoint acc_mass {A : eqType} (x : A) (μ : Enum A) : ℚ≥0 :=
-  match μ with
-  | [::] => 0
-  | (p, y) :: μ' => if x == y
-      then p + acc_mass x μ' else acc_mass x μ'
-  end.
+Definition sumq (l : seq ℚ≥0) : ℚ≥0 
+  := foldr (λ x acc, x + acc) 0 l.
+
+Lemma sumq_cons {x : ℚ≥0} {l : seq ℚ≥0} : sumq (x :: l) = x + sumq l.
+Proof. unfold sumq, foldr. reflexivity. Qed.
+
+Lemma sumq_app {l1 l2 : seq ℚ≥0} : sumq (l1 ++ l2) = sumq l1 + sumq l2.
+Proof. rewrite /sumq. elim: l1 => [//=| x s iH //=]. rewrite add0r //=.
+rewrite iH //= addrA. reflexivity. Qed.
+
+Definition acc_mass {A : eqType} (x : A) (μ : Enum A) : ℚ≥0
+  := sumq (unzip1 [seq i <- μ | snd i == x]).
 
 Definition mass {X : eqType} (μ : Enum X) (s : seq X) : ℚ≥0
-  := foldr (λ x acc, acc_mass x μ + acc) 0 s.
+  := sumq [seq acc_mass x μ | x <- s].
 
 Definition enumk {Y} {X : eqType} (μ : Enum X) (k : X → Y) (x : X) : ℚ≥0 * Y
   := (acc_mass x μ, k x).
@@ -225,9 +231,7 @@ Proof. move=> //=. Qed.
 
 Lemma acc_app {A : eqType} {x : A} {μ1 μ2 : Enum A}
   : acc_mass x (μ1 ++ μ2) = acc_mass x μ1 + acc_mass x μ2.
-Proof. elim: μ1 => [//|[r a] μ1 IH]. rewrite [RHS]add0r //=.
-move=> //=. case: (x == a); move => //=. rewrite IH [LHS]addrA //.
-Qed.
+Proof. rewrite /acc_mass filter_cat /unzip1 map_cat sumq_app //=. Qed.
 
 Definition EqEnum {A : eqType} (μ1 μ2 : Enum A) : Prop :=
   ∀ x : A, acc_mass x μ1 = acc_mass x μ2.
@@ -401,9 +405,9 @@ End int.
 
 
 
-(* Properties about Normalized Distributions *)
+(* Properties about Support Set *)
 
-Section Normalize.
+Section Supp.
 
 Lemma eta {A : eqType} (μ : Enum A)
   : μ = [seq (p, x) | '(p, x) <- μ].
@@ -421,40 +425,38 @@ Lemma supp_spec {A: eqType} (μ : Enum A)
   : (supp μ =i unzip2 μ).
 Proof. apply: mem_undup. Qed.
 
-Definition Normalized {A : Type} (μ : Enum A) : bool
-  := foldr (λ '(p, _) s, p + s) 0 μ == 1.
 
-Theorem normalized_of_supp {A : eqType} {μ : Enum A}
-  : foldr (λ x (s : ℚ≥0), (acc_mass x μ) + s) 0 (supp μ) == 1
-    -> Normalized μ.
-Proof. elim μ => [//|[r x] l IH] /= H //=.
-Admitted.
-
-
-
-Theorem normalized_mass_le_one {A : eqType} (μ: Enum A) (nμ : Normalized μ)
-  : ∀x, acc_mass x μ <= 1.
+Lemma mass_supp_eq_sumq_fst {A : eqType} (μ : Enum A) : mass μ (supp μ) = sumq (unzip1 μ).
 Proof.
 Admitted.
 
-Theorem normalized_ret_enum {A : Type} {a: A} : Normalized (ret_Enum a).
+Lemma acc_mass_0_of_notin_supp {A : eqType} (x : A) (μ : Enum A) : x \notin (supp μ) → acc_mass x μ = 0.
 Proof.
-  unfold Normalized, ret_Enum.
-  move=> //=.
+  intros h.
+  rewrite /acc_mass. rewrite /supp mem_undup /unzip2 in h.
+  replace ([seq i <- μ  | snd i == x]) with ([::] : Enum A). auto.
+  elim: μ h => [//= | h t ih x_notin].
+  rewrite map_cons in_cons in x_notin.
+  rewrite <- (Bool.reflect_iff _ _ (@norP (x == snd h) (x  \in [seq snd i  | i <- t])) ) in x_notin.
+  move: x_notin => [x_ne_h x_notin].
+  rewrite eq_sym /is_true Bool.negb_true_iff in x_ne_h.
+  rewrite /filter x_ne_h.
+  exact (ih x_notin).
 Qed.
 
-Theorem normalized_enum_eq {A : eqType} (μ1 μ2: Enum A) (eq: μ1 ==Enum μ2) : Normalized μ1 <-> Normalized μ2.
+Lemma le_acc_mass_mass_supp {A : eqType} {x : A} {μ : Enum A} : acc_mass x μ <= mass μ (supp μ).
 Proof.
-  unfold EqEnum in eq.
-  (* rewrite <- (normalized_of_supp (supp_set_is_supp_set μ1)), <- (normalized_of_supp (supp_set_is_supp_set μ2)). *)
+  have uniq : uniq (supp μ) := supp_uniq μ.
+  induction μ as [| a l ih']. cbn. auto.
+  have ih := ih' (supp_uniq l).
+  rewrite mass_supp_eq_sumq_fst /acc_mass /unzip1 /filter.
+  remember (snd a == x) as snd_a_x. destruct snd_a_x.
+  rewrite map_cons map_cons sumq_cons sumq_cons. admit.
+  rewrite map_cons sumq_cons (le_trans ih) //=.
+  rewrite mass_supp_eq_sumq_fst /unzip1. admit.
 Admitted.
 
-Theorem normalized_enum_rt_eq {R1 : eqType} {R2 : eqType} (μ1: Enum R1) (μ2: Enum R2)
-(RR : R1 → R2 → Prop) (eq: enumRT RR μ1 μ2) : Normalized μ1 ↔ Normalized μ2.
-Proof.
-Admitted.
-
-End Normalize.
+End Supp.
 
 
 
