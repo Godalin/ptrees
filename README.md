@@ -1,4 +1,4 @@
-# Formalization of Random Behavior for Interaction Trees
+# Formalization of Probabilistic Behavior as Extensions of Interaction Trees
 
 ## Introduction
 
