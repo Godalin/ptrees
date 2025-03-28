@@ -247,18 +247,24 @@ Context {E : Type → Type} {X : Type}.
 Context {L : relation (@label E)}.
 
 #[global]
-Instance Reflexive_pss {RC : relation (ptree E X)}
-    `{Reflexive _ L} `{Reflexive _ RC}
-  : Reflexive (pss L RC).
-Proof. cbn. intros. inversion H1. 
-  - exists tau. split. reflexivity. eapply PSSimTauF. eapply StepTau. reflexivity. admit.
-  - exists (obs e x0). split. reflexivity. eapply PSSimVisF. eapply StepObs. reflexivity. admit.
-  - exists (val r). split. reflexivity. apply (PSSimRetF RC t' (val r) 1 r (Prob0 μ k)). eapply StepVal. admit.
-  - exists tau. split. reflexivity. apply (PSSimProbF RC t' tau p X0 μ k (supp μ)).
+Instance Reflexive_pss `{Reflexive _ L}
+  : Reflexive (@pss E E X X L (equ eq)).
+Proof. cbn. intros. inversion H0; subst.
+  - exists tau; split; auto. repeat econstructor.
+    eassumption. apply observe_equ_eq; auto.
+  - exists (obs e x0); split; auto. repeat econstructor.
+    eassumption. apply observe_equ_eq; auto.
+  - exists (val r); split; auto.
+    apply (PSSimRetF _ t' (val r) 1 r (Prob0 μ k)). eapply StepVal.
+    apply observe_equ_eq; auto.
+  - exists tau. split. reflexivity.
+    apply (PSSimProbF _ t' tau _ X0 μ k (supp μ)).
+    apply subseq_refl.
+    simpl.
     auto. elim: (supp μ) => [//|head tail ih]. rewrite map_cons. rewrite //=. split.
     eapply StepPrb. reflexivity. reflexivity. by [].
     unfold transR in H1. elim: (supp μ) => [//|head tail ih]. rewrite map_cons. rewrite //=. split.
-    admit. exact ih. rewrite <- H6. unfold disc_mass. rewrite //=. admit.
+    admit. exact ih. Fail rewrite <- H6. unfold disc_mass. rewrite //=. admit.
 Admitted.
 
 #[global]

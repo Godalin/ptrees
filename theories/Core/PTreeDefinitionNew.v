@@ -77,11 +77,13 @@ Notation Vis e k := (go (VisF e k)).
 Notation Tau e   := (go (TauF e)).
 Notation Prob μ k := (go (ProbF μ k)).
 
-Definition ProbF0 {E M R} `{DiscreteInterface M} (μ : M void) k
+Definition ProbF0 {E M R} `{DiscreteInterface M}
+    (μ : M void) (k : void -> ptree E M R)
   : ptree' E M R :=
     ProbF μ k.
 
-Definition Prob0 {E M R} `{DiscreteInterface M} (μ : M void) k
+Definition Prob0 {E M R} `{DiscreteInterface M}
+    (μ : M void) (k : void -> ptree E M R)
   : ptree E M R :=
     Prob μ k.
 
