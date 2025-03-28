@@ -31,11 +31,8 @@ Fixpoint transAll {E X} α (t : ptree E X)
   | (p, t') :: tlist' => trans α p t t' ∧ transAll α t tlist'
   end.
 
-Fixpoint transAllPrb {E X} (tlist : Enum (ptree E X)) : ℚ≥0 :=
-  match tlist with
-  | [::] => 0
-  | (p, t') :: tlist' => p + transAllPrb tlist'
-  end.
+Definition transAllPrb {E X} (tlist : Enum (ptree E X)) : ℚ≥0 :=
+  foldr (λ x acc, x + acc) 0 (unzip1 tlist).
 
 Fixpoint relateAll {X Y} (R : rel X Y) (x : X) (ys : list Y) : Prop :=
   match ys with
@@ -46,13 +43,6 @@ Fixpoint relateAll {X Y} (R : rel X Y) (x : X) (ys : list Y) : Prop :=
 Lemma sub_relateAll {X Y} (R S : rel X Y) (x : X) (ys : list Y)
   : (∀ x y, R x y → S x y) → relateAll R x ys → relateAll S x ys.
 Proof. elim: ys => [//|y ys IH //= H] [Hxy Hxys]. auto. Qed.
-
-Definition mass {X : eqType} (μ : Enum X) (s : seq X) : ℚ≥0
-  := foldr (λ x acc, acc_mass x μ + acc) 0 s.
-
-Definition enumk {Y} {X : eqType} (μ : Enum X) (k : X → Y) (x : X) : ℚ≥0 * Y
-  := (acc_mass x μ, k x).
-
 
 Section experiment.
 Context {E F : Type → Type} {X Y : Type}.
@@ -163,18 +153,24 @@ Lemma pssim_cond_char : ∀ (REL : rel (ptree E X) (ptree F Y)) t' l p u,
 Proof. intros REL t' l p u H. inversion H; subst.
   - exists [:: (p, u')]; repeat split; simpl.
     inversion H0; subst; auto. assumption.
+    unfold transAllPrb, foldr. simpl.
     rewrite addr0. rewrite le_refl. auto.
   - exists [:: (p, u')]; repeat split; simpl.
     inversion H0; subst; auto. assumption.
+    unfold transAllPrb, foldr. simpl.
     rewrite addr0. rewrite le_refl. auto.
   - exists [:: (p, u')]; repeat split; simpl.
     inversion H0; subst. dependent destruction H7.
     econstructor. rewrite -> H5. apply observe_equ_eq.
     assumption. assumption.
+    unfold transAllPrb, foldr. simpl.
     rewrite addr0. rewrite le_refl. auto.
   - exists (map (enumk μ k) s); repeat split; simpl.
-    apply H1.
-Admitted.
+    apply H1. rewrite <- map_comp. exact H2.
+    apply (le_trans H3). unfold transAllPrb, unzip1.
+    rewrite <- map_comp. unfold ssrfun.comp, fst, mass. simpl.
+    rewrite foldr_map le_refl. reflexivity.    
+Qed.
 
 
 

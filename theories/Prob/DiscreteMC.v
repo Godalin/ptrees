@@ -214,6 +214,12 @@ Fixpoint acc_mass {A : eqType} (x : A) (μ : Enum A) : ℚ≥0 :=
       then p + acc_mass x μ' else acc_mass x μ'
   end.
 
+Definition mass {X : eqType} (μ : Enum X) (s : seq X) : ℚ≥0
+  := foldr (λ x acc, acc_mass x μ + acc) 0 s.
+
+Definition enumk {Y} {X : eqType} (μ : Enum X) (k : X → Y) (x : X) : ℚ≥0 * Y
+  := (acc_mass x μ, k x).
+
 Lemma acc_nil : ∀ (A : eqType) (x : A), acc_mass x [::] = 0.
 Proof. move=> //=. Qed.
 
