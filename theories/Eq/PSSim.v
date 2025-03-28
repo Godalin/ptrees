@@ -263,10 +263,7 @@ Import EquNotations.
 Context {E : Type → Type} {X : Type}.
 Context {L : relation (@label E)}.
 
-(** Why reflexive [RC] cannot give this lemma?
-
-*)
-
+#[global]
 Instance Reflexive_pss {RC : relation (ptree E X)}
     `{Reflexive _ L} `{Reflexive _ RC}
   : Reflexive (pss L RC).
@@ -281,6 +278,18 @@ Proof. unfold Reflexive.
   - exists tau; split; auto. econstructor.
     apply subseq_refl.
 Admitted.
+
+#[global]
+Instance Transitive_pss {RC : relation (ptree E X)}
+    `{Transitive _ L} `{Transitive _ RC}
+  : Transitive (pss L RC).
+Proof. unfold Transitive.
+  intros s t u Hst Htu. intros l p t' Htrans.
+  inversion Htrans; subst.
+  - inversion Htrans; subst. dependent destruction H2.
+Admitted.
+
+
 
 #[global]
 Instance Reflexive_hpssim `{Reflexive _ L} (RC : Chain (@pss E E X X L))
