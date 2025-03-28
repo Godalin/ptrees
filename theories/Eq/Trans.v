@@ -78,14 +78,14 @@ Import NonnegQNotations.
 Import GRing.Theory.
 
 Inductive trans_ : label → ℚ≥0 → hrel S' S' :=
+  | StepVal r μ k
+    : trans_ (val r) 1 (RetF r) (ProbF0 μ k)
   | StepTau t u
     : t ≅ u ->
       trans_ tau 1 (TauF t) (observe u)
   | StepObs {X} (e : E X) k x t
     : k x ≅ t ->
       trans_ (obs e x) 1 (VisF e k) (observe t)
-  | StepVal r μ k
-    : trans_ (val r) 1 (RetF r) (ProbF0 μ k)
   | StepPrb {X : eqType} (μ : M X) k x p t
     : disc_mass x μ = p ->
       k x ≅ t ->
@@ -109,12 +109,12 @@ Proof. intros u u' Heq. intros TR.
   inv Heq. rename H0 into EQU.
   step in EQU. revert u EQU.
   dependent induction TR.
+  - intros. dependent destruction EQU.
+    econstructor.
   - intros. FtoObs. constructor. rewrite H0.
     rewrite (ptree_eta u). symmetry. step. auto.
   - intros. FtoObs. constructor. rewrite H0.
     rewrite (ptree_eta t). symmetry. step. auto.
-  - intros. dependent destruction EQU.
-    econstructor.
   - intros. FtoObs. econstructor; eauto.
     rewrite H1. rewrite (ptree_eta t). symmetry. step. auto.
 Qed.
@@ -126,13 +126,13 @@ Proof. intros t1 t2 Heqt u1 u2 Hequ TR.
   inv Heqt. rename H0 into Heqt. step in Heqt.
   revert t2 Heqt. dependent induction TR.
   - intros. dependent destruction Heqt.
+    constructor.
+  - intros. dependent destruction Heqt.
     constructor. symmetry. transitivity t.
     symmetry. all: auto.
   - intros. dependent destruction Heqt.
     constructor. symmetry. rewrite <- H0.
     apply REL.
-  - intros. dependent destruction Heqt.
-    constructor.
   - intros. dependent destruction Heqt.
     econstructor.
     rewrite <- REL. eassumption.

@@ -40,6 +40,29 @@ Fixpoint relateAll {X Y} (R : rel X Y) (x : X) (ys : list Y) : Prop :=
   | y :: ys' => R x y ∧ relateAll R x ys'
   end.
 
+Lemma transAll_Prob {E} {X : eqType} {Y}
+  : ∀ (μ : Enum X) (k : X → ptree E Y),
+    transAll tau (Prob μ k) [seq enumk μ k x | x <- supp μ].
+Proof. intros. induction μ.
+  - simpl. reflexivity.
+  - destruct a as [p x]. simpl.
+    unfold supp.
+    remember (x \in unzip2 μ) as mem. destruct mem.
+    + simpl. rewrite <- Heqmem.
+      change (undup (unzip2 μ)) with (supp μ).
+Abort.
+
+
+Lemma transAll_Prob {E} {X : eqType} {Y}
+  : ∀ (μ : Enum X) (k : X → ptree E Y),
+    transAll tau (Prob μ k) [seq enumk μ k (snd x) | x <- μ].
+Proof. intros. induction μ.
+  - simpl. reflexivity.
+  - destruct a as [p x]. simpl.
+    destruct (x \in supp μ).
+    + simpl.
+Abort.
+
 Lemma sub_relateAll {X Y} (R S : rel X Y) (x : X) (ys : list Y)
   : (∀ x y, R x y → S x y) → relateAll R x ys → relateAll S x ys.
 Proof. elim: ys => [//|y ys IH //= H] [Hxy Hxys]. auto. Qed.
@@ -169,10 +192,8 @@ Proof. intros REL t' l p u H. inversion H; subst.
     apply H1. rewrite <- map_comp. exact H2.
     apply (le_trans H3). unfold transAllPrb, unzip1.
     rewrite <- map_comp. unfold ssrfun.comp, fst, mass. simpl.
-    rewrite foldr_map le_refl. reflexivity.    
+    rewrite foldr_map le_refl. reflexivity.
 Qed.
-
-
 
 End experiment.
 
@@ -242,32 +263,30 @@ Import EquNotations.
 Context {E : Type → Type} {X : Type}.
 Context {L : relation (@label E)}.
 
-#[global]
-Instance Reflexive_pss `{Reflexive _ L}
-  : Reflexive (@pss E E X X L (equ eq)).
-Proof. cbn. intros. inversion H0; subst.
-  - exists tau; split; auto. repeat econstructor.
-    eassumption. apply observe_equ_eq; auto.
-  - exists (obs e x0); split; auto. repeat econstructor.
-    eassumption. apply observe_equ_eq; auto.
-  - exists (val r); split; auto.
-    apply (PSSimRetF _ t' (val r) 1 r (Prob0 μ k)). eapply StepVal.
-    apply observe_equ_eq; auto.
-  - exists tau. split. reflexivity.
-    apply (PSSimProbF _ t' tau _ X0 μ k (supp μ)).
+(** Why reflexive [RC] cannot give this lemma?
+
+*)
+
+Instance Reflexive_pss {RC : relation (ptree E X)}
+    `{Reflexive _ L} `{Reflexive _ RC}
+  : Reflexive (pss L RC).
+Proof. unfold Reflexive.
+  intros t l p t' Htrans. inversion Htrans; subst.
+  - exists (val r); split; auto. inversion Htrans.
+    econstructor. rewrite H4. apply Htrans. auto.
+  - exists tau; split; auto. econstructor.
+    rewrite H1. apply Htrans. auto.
+  - exists (obs e x); split; auto. econstructor.
+    rewrite H1. apply Htrans. auto.
+  - exists tau; split; auto. econstructor.
     apply subseq_refl.
-    simpl.
-    auto. elim: (supp μ) => [//|head tail ih]. rewrite map_cons. rewrite //=. split.
-    eapply StepPrb. reflexivity. reflexivity. by [].
-    unfold transR in H1. elim: (supp μ) => [//|head tail ih]. rewrite map_cons. rewrite //=. split.
-    admit. exact ih. Fail rewrite <- H6. unfold disc_mass. rewrite //=. admit.
 Admitted.
 
 #[global]
 Instance Reflexive_hpssim `{Reflexive _ L} (RC : Chain (@pss E E X X L))
   : Reflexive (` RC).
 Proof. revert RC. apply Reflexive_chain.
-  intros RC HRC.
-Admitted.
+  intros RC HRC x. apply Reflexive_pss.
+Qed.
 
 End homogenous_pssim_theory.
