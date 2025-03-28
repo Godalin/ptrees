@@ -289,13 +289,18 @@ Proof. unfold Transitive.
   - inversion Htrans; subst. dependent destruction H2.
 Admitted.
 
-
-
 #[global]
 Instance Reflexive_hpssim `{Reflexive _ L} (RC : Chain (@pss E E X X L))
   : Reflexive (` RC).
 Proof. revert RC. apply Reflexive_chain.
   intros RC HRC x. apply Reflexive_pss.
+Qed.
+
+#[global]
+Instance Transitive_hpssim `{Transitive _ L} (RC : Chain (@pss E E X X L))
+  : Transitive (` RC).
+Proof. revert RC. apply Transitive_chain.
+  intros RC HRC x. apply Transitive_pss.
 Qed.
 
 End homogenous_pssim_theory.
