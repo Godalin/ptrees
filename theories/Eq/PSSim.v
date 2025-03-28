@@ -64,37 +64,21 @@ Context {E F : Type → Type} {X Y : Type}.
     t'-- R -- u'u'u'
   *)
 
-Variant pssim_cond' REL (t' : ptree E X) (l' : label) (p : ℚ≥0)
+Variant pssim_cond REL (t' : ptree E X) (l' : label) (p : ℚ≥0)
   : ptree' F Y → Prop :=
   | PSSimRetF
     : ∀ r u',
         trans l' p (Ret r) u'
-      → pssim_cond' REL t' l' p (RetF r)
+      → pssim_cond REL t' l' p (RetF r)
   | PSSimTauF
     : ∀ t u',
         trans l' p (Tau t) u'
-      → pssim_cond' REL t' l' p (TauF t)
+      → pssim_cond REL t' l' p (TauF t)
   | PSSimVisF
     : ∀ X' (e : F X') k u',
         trans l' p (Vis e k) u'
-      → pssim_cond' REL t' l' p (VisF e k)
+      → pssim_cond REL t' l' p (VisF e k)
   | PSSimProbF
-    : ∀ (X' : eqType) (μ : Enum X') (k : X' → ptree F Y) (s : seq X'),
-        subseq s (supp μ)
-      → transAll l' (Prob μ k) [seq enumk μ k x | x <- s]
-      → relateAll REL t' [seq k x | x <- s]
-      → p <= mass μ s
-      → pssim_cond' REL t' l' p (ProbF μ k).
-
-
-
-Variant pssim_cond REL (t' : ptree E X) (l' : label) (p : ℚ≥0)
-  : ptree' F Y → Prop :=
-  | PSSimTrans'
-    : ∀ u u',
-        trans l' p u u'
-      → pssim_cond REL t' l' p (observe u)
-  | PSSimProbF'
     : ∀ (X' : eqType) (μ : Enum X') (k : X' → ptree F Y) (s : seq X'),
         subseq s (supp μ)
       → transAll l' (Prob μ k) [seq enumk μ k x | x <- s]
@@ -102,11 +86,27 @@ Variant pssim_cond REL (t' : ptree E X) (l' : label) (p : ℚ≥0)
       → p <= mass μ s
       → pssim_cond REL t' l' p (ProbF μ k).
 
+(* Variant pssim_cond REL (t' : ptree E X) (l' : label) (p : ℚ≥0) *)
+(*   : ptree' F Y → Prop := *)
+(*   | PSSimTrans' *)
+(*     : ∀ u u', *)
+(*         trans l' p u u' *)
+(*       → pssim_cond REL t' l' p (observe u) *)
+(*   | PSSimProbF' *)
+(*     : ∀ (X' : eqType) (μ : Enum X') (k : X' → ptree F Y) (s : seq X'), *)
+(*         subseq s (supp μ) *)
+(*       → transAll l' (Prob μ k) [seq enumk μ k x | x <- s] *)
+(*       → relateAll REL t' [seq k x | x <- s] *)
+(*       → p <= mass μ s *)
+(*       → pssim_cond REL t' l' p (ProbF μ k). *)
+
 Lemma sub_pssim_cond (R S : rel (ptree E X) (ptree F Y))
     t' (l : @label F) p u
   : (∀ x y, R x y → S x y) → pssim_cond R t' l p u → pssim_cond S t' l p u.
 Proof. intros. inversion H0.
-  - eapply PSSimTrans'. apply H1.
+  - econstructor. apply H1.
+  - econstructor. apply H1.
+  - econstructor. apply H1.
   - econstructor. apply H1. all: auto.
     apply (sub_relateAll R S); auto.
 Qed.
