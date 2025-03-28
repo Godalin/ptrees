@@ -100,6 +100,7 @@ Ltac __step_in_equ H :=
   | context [@equ ?E ?M ?DM ?R1 ?R2 ?RR _ _] =>
       unfold equ in H; apply (gfp_pfp (fequ RR)) in H;
       fold (@equ E M _ R1 R2 RR) in H; cbn in H
+  | _ => fail "Fail to step equ"
   end.
 
 #[local] Tactic Notation "step" "in" ident(H) := __step_in_equ H.
@@ -111,14 +112,14 @@ Module EquNotations.
 Notation "` R" := (elem R) (at level 10).
 
 Infix "≅"      := (equ eq) (at level 70).
-Infix "(≅ Q )" := (equ Q) (at level 70).
+Infix "(≅  Q )" := (equ Q) (at level 70).
 
 Notation et Q  := (` (_ : Chain (fequ Q))).
 Notation ebt Q := (equb Q (` (_ : Chain (fequ Q)))).
 
-Infix "[≅ Q ]"   := (et Q) (at level 70).
-Infix "{≅ Q }"   := (ebt Q) (at level 70).
-Infix "{{≅ Q }}" := (equb Q (equ Q)) (at level 70).
+Infix "[≅  Q ]"   := (et Q) (at level 70).
+Infix "{≅  Q }"   := (ebt Q) (at level 70).
+Infix "{{≅  Q }}" := (equb Q (equ Q)) (at level 70).
 Infix "[≅]"   := (et eq) (at level 70).
 Infix "{≅}"   := (ebt eq) (at level 70).
 Infix "{{≅}}" := (equb eq (equ eq)) (at level 70).
@@ -133,17 +134,17 @@ Context {RR : R -> R -> Prop}.
 
 (** [equb] is an [Equivalence] instance transformer *)
 
-#[global] Instance Reflexive_equb {RC} {RRR : Reflexive RR} {RRC : Reflexive RC}
+#[global] Instance Reflexive_equb {RC} `{Reflexive _ RR} `{Reflexive _ RC}
   : Reflexive (@equb E M _ _ _ RR RC).
 Proof. unfold Reflexive. intros. destruct x; econstructor; eauto. Qed.
 
-#[global] Instance Symmetric_equb {RC} {SRR : Symmetric RR} {SRC : Symmetric RC}
+#[global] Instance Symmetric_equb {RC} `{Symmetric _ RR} `{Symmetric _ RC}
   : Symmetric (@equb E M _ _ _ RR RC).
 Proof. unfold Symmetric. intros x y Hxy. dependent destruction Hxy; econstructor; auto.
   symmetry. assumption.
 Qed.
 
-#[global] Instance Transitive_equb {RC} {RRR : Transitive RR} {RRC : Transitive RC}
+#[global] Instance Transitive_equb {RC} `{Transitive _ RR} `{Transitive _ RC}
   : Transitive (@equb E M _ _ _ RR RC).
 Proof. unfold Transitive. intros x y z Hxy Hyz.
   dependent destruction Hxy; dependent destruction Hyz; econstructor; eauto.
