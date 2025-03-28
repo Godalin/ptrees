@@ -412,13 +412,13 @@ congr cons. exact: IH.
 Qed.
 
 Definition supp {A : eqType} (μ : Enum A)
-  := undup [seq x | '(_, x) <- μ].
+  := undup (unzip2 μ).
 
 Lemma supp_uniq {A : eqType} (μ : Enum A) : uniq (supp μ).
 Proof. apply: undup_uniq. Qed.
 
 Lemma supp_spec {A: eqType} (μ : Enum A)
-  : (supp μ =i [seq x | '(_, x) <- μ]).
+  : (supp μ =i unzip2 μ).
 Proof. apply: mem_undup. Qed.
 
 Definition Normalized {A : Type} (μ : Enum A) : bool
