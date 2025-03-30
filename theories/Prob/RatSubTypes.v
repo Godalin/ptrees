@@ -55,6 +55,12 @@ HB.instance Definition _ := [SubChoice_isSubOrder of nnQ by <: with ssrnum.ring_
 Lemma le_nnQ0 (r : nnQ) : 0 <= r.
 Proof. move: r => [r ler0]. apply: ler0. Qed.
 
+Lemma le_nnQ_of_le_Q {p q : nnQ} (hq: Qval p <= Qval q) : p <= q.
+Proof. exact hq. Qed.
+
+Lemma lt_nnQ_of_lt_Q {p q : nnQ} (hq: Qval p < Qval q) : p < q.
+Proof. exact hq. Qed.
+
 End NonnegQ.
 
 Module NonnegQNotations.

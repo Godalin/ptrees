@@ -7,7 +7,7 @@ Require Import Program.
 Require Import Morphisms.
 
 From HB Require Import structures.
-From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq.
+From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq ssrfun.
 From mathcomp Require Import order ssralg ssrint rat.
 
 From PTree.Prob Require Import RatSubTypes.
@@ -217,11 +217,20 @@ Lemma sumq_app {l1 l2 : seq ℚ≥0} : sumq (l1 ++ l2) = sumq l1 + sumq l2.
 Proof. rewrite /sumq. elim: l1 => [//=| x s iH //=]. rewrite add0r //=.
 rewrite iH //= addrA. reflexivity. Qed.
 
+Lemma sumq_nil : sumq [::] = 0.
+Proof. cbn. reflexivity. Qed.
+
 Definition acc_mass {A : eqType} (x : A) (μ : Enum A) : ℚ≥0
   := sumq (unzip1 [seq i <- μ | snd i == x]).
 
 Definition mass {X : eqType} (μ : Enum X) (s : seq X) : ℚ≥0
   := sumq [seq acc_mass x μ | x <- s].
+
+Lemma acc_mass_nil {A : eqType} {x : A} : acc_mass x ([::] : Enum A) = 0.
+Proof. cbn. reflexivity. Qed.
+
+Lemma mass_nil {A : eqType} (μ : Enum A) : mass μ [::] = 0.
+Proof. cbn. reflexivity. Qed.
 
 Definition enumk {Y} {X : eqType} (μ : Enum X) (k : X → Y) (x : X) : ℚ≥0 * Y
   := (acc_mass x μ, k x).
@@ -425,10 +434,70 @@ Lemma supp_spec {A: eqType} (μ : Enum A)
   : (supp μ =i unzip2 μ).
 Proof. apply: mem_undup. Qed.
 
+Lemma supp_nil {A : eqType} : supp ([::] : Enum A) = [::].
+Proof. cbn. reflexivity. Qed.
+
+Lemma sumq_filter {A} {C : A -> nnQ} (l : seq A) (P : A -> bool) : sumq (map C l) = sumq [seq C i  | i <- l  & P i] + sumq [seq C i  | i <- l  & ~~ P i].
+Proof.
+  induction l. rewrite //= addr0 //=.
+  rewrite map_cons /filter. destruct (P a).
+  - rewrite //= IHl addrA //=.
+  - rewrite //= IHl addrA addrA (addrC (C a) (sumq [seq C i  | i <- l  & P i])) //=.
+Qed.
+
+Lemma acc_mass_cons {A : eqType} {μ : Enum A} {a : A} {h : nnQ * A} : acc_mass a (h :: μ) = acc_mass a μ + if h.2 == a then h.1 else 0.
+Proof.
+  rewrite /acc_mass /filter.
+  have fold_filter : filter (fun x => snd x == a) = filter (fun x => snd x == a). reflexivity. unfold filter at 1 in fold_filter.
+  rewrite fold_filter.
+  remember (h.2 == a) as snd_h_a. destruct snd_h_a.
+  - rewrite /unzip1 map_cons sumq_cons addrC //=.
+  - rewrite addr0 //=.
+Qed.
+
+Lemma mass_cons_eq_acc_mass_add_mass {A : eqType} {μ : Enum A} (a : A) : mass μ (supp μ) = acc_mass a μ + mass ([seq i <- μ | snd i != a]) (supp [seq i <- μ | snd i != a]).
+Proof.
+  rewrite /acc_mass /mass (sumq_filter (supp μ) (fun (i : A) => i == a)).
+  congr GRing.add.
+  - rewrite /acc_mass /unzip1 /supp /unzip2 filter_undup. induction μ. cbn. reflexivity. Unset Printing Notations. admit.
+  - congr sumq. 
+Qed.
+
+Lemma sum_cons_eq_acc_mass_add_mass {A : eqType} {μ : Enum A} (a : A) : sumq (unzip1 μ) = acc_mass a μ + sumq (unzip1 ([seq i <- μ | snd i != a])).
+Proof.
+  elim: μ => [//|h l IH].
+  - simpl. rewrite acc_mass_nil addr0 //=.
+  - rewrite acc_mass_cons /filter /unzip1 map_cons sumq_cons.
+    have fold_filter : filter (fun x => snd x != a) = filter (fun x => snd x != a). reflexivity. unfold filter at 1 in fold_filter.
+    rewrite {}fold_filter.
+    remember (h.2 == a) as snd_h_a. destruct snd_h_a.
+    - rewrite //= IH addrA (addrC (acc_mass a l) h.1) //=.
+    - rewrite //= addr0 addrA IH addrA (addrC (acc_mass a l) h.1) //=.
+Qed.
+
+Lemma seq_strong_induction {A: Type} {P : seq A -> Prop} (Pn : ∀ L, (∀ l, size l < size L -> P l) -> P L ): ∀ l, P l.
+Proof.
+  enough (H0: ∀ (n: nat) l, lt (size l) n -> P l).
+  - move=> l. eapply (H0 (plus 1 (size l))). auto.
+  - elim => [l fal| n IHn l sizel_lt_n_add_1].
+    + cbn in fal. apply except. exact (PeanoNat.Nat.nle_succ_0 _ fal).
+    + eapply (Pn l). move => l' size_l'_lt_l. eapply (IHn l').
+      rewrite /Order.lt /Order.NatOrder.Datatypes_nat__canonical__Order_POrder //= /is_true -(Bool.reflect_iff _ _ ssrnat.ltP) in size_l'_lt_l.
+      rewrite /lt -PeanoNat.Nat.succ_le_mono in sizel_lt_n_add_1. exact (PeanoNat.Nat.le_trans _ _ _ size_l'_lt_l sizel_lt_n_add_1).
+Qed.
 
 Lemma mass_supp_eq_sumq_fst {A : eqType} (μ : Enum A) : mass μ (supp μ) = sumq (unzip1 μ).
 Proof.
-Admitted.
+  move: μ. apply seq_strong_induction.
+  move => [|a l] iH. cbn. reflexivity.
+  rewrite (mass_cons_eq_acc_mass_add_mass (snd a)) (sum_cons_eq_acc_mass_add_mass (snd a)).
+  congr GRing.add.
+  replace [seq i <- a :: l  | i.2 != a.2] with [seq i <- l  | i.2 != a.2].
+  eapply (iH [seq i <- l  | i.2 != a.2]).
+  rewrite size_filter.
+  have le_count := count_size (λ i : ℚ≥0 * A, i.2 != a.2) l. auto.
+  unfold filter. rewrite (eq_refl (snd a)). auto.
+Qed.
 
 Lemma acc_mass_0_of_notin_supp {A : eqType} (x : A) (μ : Enum A) : x \notin (supp μ) → acc_mass x μ = 0.
 Proof.
@@ -451,10 +520,13 @@ Proof.
   have ih := ih' (supp_uniq l).
   rewrite mass_supp_eq_sumq_fst /acc_mass /unzip1 /filter.
   remember (snd a == x) as snd_a_x. destruct snd_a_x.
-  rewrite map_cons map_cons sumq_cons sumq_cons. admit.
-  rewrite map_cons sumq_cons (le_trans ih) //=.
-  rewrite mass_supp_eq_sumq_fst /unzip1. admit.
-Admitted.
+  - have fold_filter : filter (fun a => snd a == x) = filter (fun a => snd a == x). reflexivity. unfold filter at 1 in fold_filter.
+    rewrite map_cons map_cons sumq_cons sumq_cons {}fold_filter. apply le_nnQ_of_le_Q, ssrnum.Num.Theory.lerD. auto.
+    rewrite mass_supp_eq_sumq_fst in ih'. apply ih', supp_uniq.
+  - rewrite map_cons sumq_cons (le_trans ih) //=.
+    rewrite mass_supp_eq_sumq_fst /unzip1. apply le_nnQ_of_le_Q.
+    rewrite ssrnum.Num.Theory.lerDr. exact (le_nnQ0 a.1).
+Qed.
 
 End Supp.
 
