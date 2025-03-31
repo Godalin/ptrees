@@ -445,6 +445,12 @@ Proof.
   - rewrite //= IHl addrA addrA (addrC (C a) (sumq [seq C i  | i <- l  & P i])) //=.
 Qed.
 
+Lemma filter_cons {A} {l: seq A} {a : A} {P: A -> bool}: filter P (a :: l) = if P a then a :: filter P l else filter P l.
+Proof. reflexivity. Qed.
+
+Lemma undup_filter_item {A: eqType} {l: seq A} {a : A} : undup [seq i <- l | i == a] = if a \in l then [:: a] else [::].
+Proof. Admitted.
+
 Lemma acc_mass_cons {A : eqType} {μ : Enum A} {a : A} {h : nnQ * A} : acc_mass a (h :: μ) = acc_mass a μ + if h.2 == a then h.1 else 0.
 Proof.
   rewrite /acc_mass /filter.
@@ -459,8 +465,33 @@ Lemma mass_cons_eq_acc_mass_add_mass {A : eqType} {μ : Enum A} (a : A) : mass �
 Proof.
   rewrite /acc_mass /mass (sumq_filter (supp μ) (fun (i : A) => i == a)).
   congr GRing.add.
-  - rewrite /acc_mass /unzip1 /supp /unzip2 filter_undup. induction μ. cbn. reflexivity. Unset Printing Notations. admit.
-  - congr sumq.
+  - rewrite /acc_mass /unzip1 /supp /unzip2 filter_undup. induction μ. cbn. reflexivity.
+    rewrite map_cons filter_cons filter_cons. remember (a0.2 == a) as snd_a. destruct snd_a.
+    + rewrite sumq_cons -{}IHμ. remember [seq i.2  | i <- μ] as μ2. replace (undup (a0.2 :: [seq i <- μ2  | i == a])) with [:: a].
+      + rewrite map_cons sumq_cons sumq_nil addr0 filter_cons -Heqsnd_a sumq_cons undup_filter_item. congr GRing.add.
+        remember (a \in μ2) as H. destruct H. rewrite map_cons sumq_cons sumq_nil addr0 //=. rewrite sumq_nil.
+        enough (H : [seq i <- μ  | i.2 == a] = [seq i <- μ  | false]). rewrite H filter_pred0 sumq_nil //=. apply eq_in_filter.
+        intros x i. rewrite Heqμ2 in HeqH. clear - Heqsnd_a HeqH. admit.
+      + unfold undup. remember (a0.2  \in [seq i <- μ2  | i == a]) as H. destruct H.
+        - have fold_undup : undup = undup. reflexivity. unfold undup at 1 in fold_undup. rewrite {}fold_undup undup_filter_item. enough (a \in μ2). rewrite H //=.
+          rewrite Heqμ2. rewrite Heqμ2 in HeqH. rewrite filter_map /preim //= in HeqH. clear - HeqH Heqsnd_a. admit.
+        - enough (H2: [seq i <- μ2  | i == a] = [seq i <- μ2 | false]). rewrite H2 filter_pred0. enough (H3 : a = a0.2). rewrite H3 //=.
+          clear - Heqsnd_a. admit.
+        - apply eq_in_filter. intros x i. admit.
+    + rewrite undup_filter_item. remember (a \in [seq i.2  | i <- μ]) as a_in_μ. destruct a_in_μ.
+      - rewrite sumq_cons sumq_nil addr0 filter_cons -Heqsnd_a //=.
+      - rewrite /map sumq_nil. symmetry. enough (H : [seq i.1  | i <- μ  & i.2 == a] = [::]). rewrite /map in H. rewrite H sumq_nil //=.
+        enough (H : [seq i <- μ | i.2 == a] = [::]). rewrite H /map //=. clear IHμ. induction μ. auto.
+        rewrite filter_cons. rewrite map_cons in_cons in Heqa_in_μ. symmetry in Heqa_in_μ. rewrite Bool.orb_false_iff in Heqa_in_μ.
+        destruct Heqa_in_μ. symmetry in H0. rewrite (IHμ H0) eq_sym H. reflexivity.
+  - rewrite /supp /unzip2. congr sumq.
+    have prem_f: (fun i : nnQ * A => (snd i) != a) = preim snd (fun i : A => i != a). rewrite //=.
+    rewrite prem_f -filter_map filter_undup -eq_in_map. move => b hb. rewrite -prem_f. rewrite mem_undup mem_filter in hb.
+    rewrite /acc_mass. congr sumq. congr unzip1. rewrite -filter_predI. apply eq_in_filter. intros c hc. rewrite /predI //=.
+    remember (c.2 == b) as cb. destruct cb. rewrite -Heqcb //=.
+    rewrite <- (Bool.reflect_iff _ _ (@andP (b != a) (b  \in [seq i.2  | i <- μ])) ) in hb. destruct hb.
+    clear - Heqcb H. admit.
+    rewrite -Heqcb //=.
 Admitted.
 
 Lemma sum_cons_eq_acc_mass_add_mass {A : eqType} {μ : Enum A} (a : A) : sumq (unzip1 μ) = acc_mass a μ + sumq (unzip1 ([seq i <- μ | snd i != a])).
