@@ -541,7 +541,7 @@ End rules.
 
 
 
-(*+ Elementary Equational Theory *)
+(** Elementary Equational Theory *)
 
 Section equational.
 Import PTree.
@@ -725,3 +725,13 @@ Qed.
 (* TODO *)
 
 End structural.
+
+
+
+Module EquAxioms.
+
+Axiom equ_is_eq
+  : forall {E M R} `{DiscreteInterface M},
+    forall {t u : ptree E M R}, t ≅ u -> t = u.
+
+End EquAxioms.

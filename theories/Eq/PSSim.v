@@ -102,6 +102,8 @@ Qed.
 
 End experiment.
 
+
+
 (** [pss] is the monotone function for probabilistic strong simulation  *)
 
 #[program]
@@ -117,6 +119,8 @@ Next Obligation.
   exists l'. split; auto. apply (sub_pssim_cond x y); auto.
 Defined.
 
+
+
 (** [pssim] is the probabilistic similarity, which is defined as
     the greatest fixpoint of the monotone function [pss] *)
 
@@ -126,6 +130,11 @@ End PSSim.
 
 
 
+Section pssim_proper.
+Import Enum.
+Import EquNotations.
+#[local] Notation ptree E := (ptree E Enum).
+
 #[global]
 Instance pssim_equ_equ {E F : Type → Type}
     {X Y : Type} (L : rel (@label E) (@label F))
@@ -133,6 +142,7 @@ Instance pssim_equ_equ {E F : Type → Type}
     (pssim L).
 Proof. Admitted.
 
+End pssim_proper.
 
 
 (** pss notation *)
@@ -174,6 +184,7 @@ Import Enum.
 Import GRing.Theory Order.Theory.
 Import NonnegQNotations.
 Import EquNotations.
+Import EquAxioms.
 #[local] Notation ptree E := (ptree E Enum).
 
 Context {E : Type → Type} {X : Type}.
@@ -197,12 +208,17 @@ Proof. unfold Reflexive.
       rewrite sub1seq -HeqHmem //.
       simpl; split; auto. rewrite H1 H6.
       rewrite (ptree_eta t0). rewrite H2. apply Htrans.
-      simpl; split; auto. admit.
+      simpl; split; auto.
+      (* use axiom [equ_is_eq] here *)
+      rewrite (equ_is_eq (ptree_eta t')) -H2
+        -(equ_is_eq (ptree_eta t0)) (equ_is_eq H6) //.
       simpl. unfold mass. simpl. rewrite addr0 //.
     + apply (PSSimProbF _ _ _ _ _ _ _ [::]).
       apply sub0seq. all: simpl; auto.
-      unfold mass. simpl. admit.
-Admitted.
+      unfold mass. simpl.
+      rewrite acc_mass_0_of_notin_supp //.
+      rewrite -HeqHmem //.
+Qed.
 
 
 
@@ -223,9 +239,7 @@ Proof. unfold Transitive.
   __use_pssim Hst Htrans. inversion Hpssim_cond; subst.
   - inversion H2; subst. rewrite <- H1 in Hpssim_cond.
     exists (val r); split; auto.
-    rewrite <- H1 in Htu.
-
-
+    Fail rewrite <- H1 in Htu.
 Admitted.
 
 #[global]
