@@ -448,8 +448,17 @@ Qed.
 Lemma filter_cons {A} {l: seq A} {a : A} {P: A -> bool}: filter P (a :: l) = if P a then a :: filter P l else filter P l.
 Proof. reflexivity. Qed.
 
+Lemma undup_cons {A: eqType} {l: seq A} {a : A}: undup (a :: l) = if a \in l then undup l else a :: undup l.
+Proof. reflexivity. Qed.
+
 Lemma undup_filter_item {A: eqType} {l: seq A} {a : A} : undup [seq i <- l | i == a] = if a \in l then [:: a] else [::].
-Proof. Admitted.
+Proof.
+  elim/last_ind: l => [//=|l x IH]. rewrite filter_rcons. remember (x == a) as x_a. elim : x_a Heqx_a => [x_eq_a | x_ne_a]. 
+  - rewrite undup_rcons IH mem_rcons in_cons. rewrite eq_sym in x_eq_a. rewrite -x_eq_a //=.
+    remember (a \in l) as a_in_l. case: a_in_l Heqa_in_l IH => [Heqa_in_l IH //= | Heqa_in_l IH //=].
+    rewrite -x_eq_a //=. clear - x_eq_a. symmetry in x_eq_a. rewrite (eqP x_eq_a) //=. symmetry in x_eq_a. rewrite (eqP x_eq_a) //=. 
+  - rewrite IH mem_rcons in_cons. rewrite eq_sym in x_ne_a. rewrite -x_ne_a //=.
+Qed.
 
 Lemma acc_mass_cons {A : eqType} {μ : Enum A} {a : A} {h : nnQ * A} : acc_mass a (h :: μ) = acc_mass a μ + if h.2 == a then h.1 else 0.
 Proof.
@@ -476,8 +485,8 @@ Proof.
         - have fold_undup : undup = undup. reflexivity. unfold undup at 1 in fold_undup. rewrite {}fold_undup undup_filter_item. enough (a \in μ2). rewrite H //=.
           rewrite Heqμ2. rewrite Heqμ2 in HeqH. rewrite filter_map /preim //= in HeqH. clear - HeqH Heqsnd_a. admit.
         - enough (H2: [seq i <- μ2  | i == a] = [seq i <- μ2 | false]). rewrite H2 filter_pred0. enough (H3 : a = a0.2). rewrite H3 //=.
-          clear - Heqsnd_a. admit.
-        - apply eq_in_filter. intros x i. admit.
+          clear - Heqsnd_a. symmetry in Heqsnd_a. rewrite (eqP Heqsnd_a) //=.
+        - apply eq_in_filter. intros x i. symmetry in Heqsnd_a. rewrite (eqP Heqsnd_a) in HeqH. admit.
     + rewrite undup_filter_item. remember (a \in [seq i.2  | i <- μ]) as a_in_μ. destruct a_in_μ.
       - rewrite sumq_cons sumq_nil addr0 filter_cons -Heqsnd_a //=.
       - rewrite /map sumq_nil. symmetry. enough (H : [seq i.1  | i <- μ  & i.2 == a] = [::]). rewrite /map in H. rewrite H sumq_nil //=.
@@ -490,7 +499,9 @@ Proof.
     rewrite /acc_mass. congr sumq. congr unzip1. rewrite -filter_predI. apply eq_in_filter. intros c hc. rewrite /predI //=.
     remember (c.2 == b) as cb. destruct cb. rewrite -Heqcb //=.
     rewrite <- (Bool.reflect_iff _ _ (@andP (b != a) (b  \in [seq i.2  | i <- μ])) ) in hb. destruct hb.
-    clear - Heqcb H. admit.
+    clear - Heqcb H. symmetry in Heqcb. symmetry. apply Bool.Is_true_eq_true. apply Bool.negb_prop_intro. move=> c_eq_a.
+    have c_eq_a' := (Bool.reflect_iff _ _ (@eqP _ c.2 a)).2 (Bool.Is_true_eq_true _ c_eq_a). clear c_eq_a. 
+    rewrite -(Bool.reflect_iff _ _ (@eqP _ c.2 b)) c_eq_a' in Heqcb. rewrite Heqcb eq_refl //= in H.
     rewrite -Heqcb //=.
 Admitted.
 
