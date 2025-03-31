@@ -457,7 +457,7 @@ Lemma mass_cons_eq_acc_mass_add_mass {A : eqType} {μ : Enum A} (a : A) : mass �
 Proof.
   rewrite /acc_mass /mass (sumq_filter (supp μ) (fun (i : A) => i == a)).
   congr GRing.add.
-  - rewrite /acc_mass /unzip1 /supp /unzip2 filter_undup. induction μ. cbn. reflexivity.
+  - rewrite /acc_mass /unzip1 /supp /unzip2 filter_undup. elim: μ => [//=|a0 μ IHμ].
     rewrite map_cons filter_cons filter_cons. remember (a0.2 == a) as snd_a. destruct snd_a.
     + rewrite sumq_cons -{}IHμ. remember [seq i.2  | i <- μ] as μ2. replace (undup (a0.2 :: [seq i <- μ2  | i == a])) with [:: a].
       + rewrite map_cons sumq_cons sumq_nil addr0 filter_cons -Heqsnd_a sumq_cons undup_filter_item. congr GRing.add.
@@ -465,8 +465,7 @@ Proof.
         enough (H : [seq i <- μ  | i.2 == a] = [seq i <- μ  | false]). rewrite H filter_pred0 sumq_nil //=. apply eq_in_filter.
         move=> [px x] i //=. rewrite Heqμ2 in HeqH.
         have: true = (x \in [seq i.2 | i <- μ]). rewrite (map_f snd i) //.
-        move=> Hxin. apply/negP. move=>/eqP Hxa. rewrite Hxa in Hxin. rewrite -HeqH in Hxin. case: Hxin.
-        move=> [//].
+        move=> Hxin. apply/negP. move=>/eqP Hxa. rewrite Hxa in Hxin. rewrite -HeqH //= in Hxin.
       + rewrite undup_cons. remember (a0.2  \in [seq i <- μ2  | i == a]) as H. destruct H.
         - rewrite undup_filter_item. enough (a \in μ2). rewrite H //=.
           rewrite Heqμ2. rewrite Heqμ2 in HeqH. rewrite filter_map /preim //= in HeqH. symmetry in Heqsnd_a. rewrite (eqP Heqsnd_a) in HeqH. symmetry in HeqH.
@@ -486,10 +485,8 @@ Proof.
     have prem_f: (fun i : nnQ * A => (snd i) != a) = preim snd (fun i : A => i != a). rewrite //=.
     rewrite prem_f -filter_map filter_undup -eq_in_map. move => b hb. rewrite -prem_f. rewrite mem_undup mem_filter in hb.
     rewrite /acc_mass. congr sumq. congr unzip1. rewrite -filter_predI. apply eq_in_filter. intros c hc. rewrite /predI //=.
-    remember (c.2 == b) as cb. destruct cb. rewrite -Heqcb //=.
-    rewrite <- (Bool.reflect_iff _ _ (@andP (b != a) (b  \in [seq i.2  | i <- μ])) ) in hb. destruct hb.
-    clear - Heqcb H. symmetry in Heqcb. symmetry. apply/negP. move=> c_eq_a. rewrite (eqP Heqcb) in c_eq_a.
-    rewrite c_eq_a //= in H.
+    remember (c.2 == b) as cb. destruct cb. rewrite -Heqcb //=. move: (andP hb) => [b_ne_a _].
+    symmetry in Heqcb. symmetry. apply/negP. move=> c_eq_a. rewrite (eqP Heqcb) in c_eq_a. rewrite c_eq_a //= in b_ne_a.
     rewrite -Heqcb //=.
 Qed.
 
@@ -498,7 +495,7 @@ Proof.
   elim: μ => [//|h l IH].
   - simpl. rewrite acc_mass_nil addr0 //=.
   - rewrite acc_mass_cons filter_cons /unzip1 map_cons sumq_cons.
-    remember (h.2 == a) as snd_h_a. destruct snd_h_a.
+    case: (h.2 == a).
     - rewrite //= IH addrA (addrC (acc_mass a l) h.1) //=.
     - rewrite //= addr0 addrA IH addrA (addrC (acc_mass a l) h.1) //=.
 Qed.
@@ -510,7 +507,7 @@ Proof.
   - elim => [l fal| n IHn l sizel_lt_n_add_1].
     + cbn in fal. apply except. exact (PeanoNat.Nat.nle_succ_0 _ fal).
     + eapply (Pn l). move => l' size_l'_lt_l. eapply (IHn l').
-      rewrite /Order.lt /Order.NatOrder.Datatypes_nat__canonical__Order_POrder //= /is_true -(Bool.reflect_iff _ _ ssrnat.ltP) in size_l'_lt_l.
+      rewrite /is_true -(Bool.reflect_iff _ _ ssrnat.ltP) in size_l'_lt_l.
       rewrite /lt -PeanoNat.Nat.succ_le_mono in sizel_lt_n_add_1. exact (PeanoNat.Nat.le_trans _ _ _ size_l'_lt_l sizel_lt_n_add_1).
 Qed.
 
@@ -534,11 +531,10 @@ Proof.
   replace ([seq i <- μ  | snd i == x]) with ([::] : Enum A). auto.
   elim: μ h => [//= | h t ih x_notin].
   rewrite map_cons in_cons in x_notin.
-  rewrite <- (Bool.reflect_iff _ _ (@norP (x == snd h) (x  \in [seq snd i  | i <- t])) ) in x_notin.
-  move: x_notin => [x_ne_h x_notin].
+  move: (norP x_notin) => [x_ne_h x_notin'].
   rewrite eq_sym /is_true Bool.negb_true_iff in x_ne_h.
-  rewrite /filter x_ne_h.
-  exact (ih x_notin).
+  rewrite filter_cons x_ne_h.
+  exact: (ih x_notin').
 Qed.
 
 Lemma le_acc_mass_mass_supp {A : eqType} {x : A} {μ : Enum A} : acc_mass x μ <= mass μ (supp μ).
