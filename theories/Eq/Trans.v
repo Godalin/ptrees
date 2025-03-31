@@ -74,8 +74,10 @@ Proof. intros Contra. inversion Contra. Qed.
 
 
 
+Import Enum.
 Import NonnegQNotations.
 Import GRing.Theory.
+
 
 Inductive trans_ : label → ℚ≥0 → hrel S' S' :=
   | StepVal r μ k
@@ -88,6 +90,7 @@ Inductive trans_ : label → ℚ≥0 → hrel S' S' :=
       trans_ (obs e x) 1 (VisF e k) (observe t)
   | StepPrb {X : eqType} (μ : M X) k x p t
     : disc_mass x μ = p ->
+      (* x \in disc_supp μ -> *)
       k x ≅ t ->
       trans_ tau p (ProbF μ k) (observe t).
 Hint Constructors trans_ : core.

@@ -191,9 +191,17 @@ Proof. unfold Reflexive.
     rewrite H1. apply Htrans. auto.
   - exists (obs e x); split; auto. econstructor.
     rewrite H1. apply Htrans. auto.
-  - exists tau; split; auto. econstructor.
-    apply subseq_refl. apply transAll_Prob.
-    admit. unfold disc_mass. simpl. exact le_acc_mass_mass_supp.
+  - exists tau; split; auto.
+    remember (x \in supp μ) as Hmem. destruct Hmem.
+    + apply (PSSimProbF _ _ _ _ _ _ _ [:: x]).
+      rewrite sub1seq -HeqHmem //.
+      simpl; split; auto. rewrite H1 H6.
+      rewrite (ptree_eta t0). rewrite H2. apply Htrans.
+      simpl; split; auto. admit.
+      simpl. unfold mass. simpl. rewrite addr0 //.
+    + apply (PSSimProbF _ _ _ _ _ _ _ [::]).
+      apply sub0seq. all: simpl; auto.
+      unfold mass. simpl. admit.
 Admitted.
 
 

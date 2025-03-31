@@ -90,6 +90,9 @@ Class DiscreteInterface (M : Type → Type) : Type :=
   (** The mass operator should be proper.  *)
   ; disc_mass_proper {R : eqType} {x : R} ::
       Proper (disc_RT eq ==> eq) (disc_mass x)
+
+  (** supp *)
+  ; disc_supp {R : eqType} : M R → seq R
   }.
 
 Context {M : Type → Type}.
@@ -208,7 +211,7 @@ Qed.
     the enumeration. *)
 
 Definition sumq (l : seq ℚ≥0) : ℚ≥0
-  := foldr (λ x acc, x + acc) 0 l.
+  := foldr (λ (x acc : ℚ≥0), x + acc) 0 l.
 
 Lemma sumq_cons {x : ℚ≥0} {l : seq ℚ≥0} : sumq (x :: l) = x + sumq l.
 Proof. unfold sumq, foldr. reflexivity. Qed.
@@ -366,24 +369,6 @@ Definition enumRT {R1 : eqType} {R2 : eqType}
 
 Infix "==EnumRT" := (enumRT _) (at level 70).
 
-#[global] Program Instance Enum_DiscreteInterface
-    : DiscreteInterface Enum :=
-  {|disc_rep := Enum_Discrete
-  ; disc_eq := @EqEnum
-  ; disc_RT := @enumRT
-  ; disc_mass := @acc_mass
-  |}.
-Next Obligation.
-  split. intros. unfold enumRT. intros x ? <-.
-  rewrite H. reflexivity.
-  intros. intro a. apply H. reflexivity.
-Qed.
-Next Obligation.
-  intros m1 m2 Hm.
-  unfold enumRT in Hm.
-  apply Hm. reflexivity.
-Qed.
-
 
 
 (** Convenient Distribution Constructors *)
@@ -453,10 +438,10 @@ Proof. reflexivity. Qed.
 
 Lemma undup_filter_item {A: eqType} {l: seq A} {a : A} : undup [seq i <- l | i == a] = if a \in l then [:: a] else [::].
 Proof.
-  elim/last_ind: l => [//=|l x IH]. rewrite filter_rcons. remember (x == a) as x_a. elim : x_a Heqx_a => [x_eq_a | x_ne_a]. 
+  elim/last_ind: l => [//=|l x IH]. rewrite filter_rcons. remember (x == a) as x_a. elim : x_a Heqx_a => [x_eq_a | x_ne_a].
   - rewrite undup_rcons IH mem_rcons in_cons. rewrite eq_sym in x_eq_a. rewrite -x_eq_a //=.
     remember (a \in l) as a_in_l. case: a_in_l Heqa_in_l IH => [Heqa_in_l IH //= | Heqa_in_l IH //=].
-    rewrite -x_eq_a //=. clear - x_eq_a. symmetry in x_eq_a. rewrite (eqP x_eq_a) //=. symmetry in x_eq_a. rewrite (eqP x_eq_a) //=. 
+    rewrite -x_eq_a //=. clear - x_eq_a. symmetry in x_eq_a. rewrite (eqP x_eq_a) //=. symmetry in x_eq_a. rewrite (eqP x_eq_a) //=.
   - rewrite IH mem_rcons in_cons. rewrite eq_sym in x_ne_a. rewrite -x_ne_a //=.
 Qed.
 
@@ -470,6 +455,12 @@ Proof.
   - rewrite addr0 //=.
 Qed.
 
+Lemma mass_neq {A : eqType} {μ : Enum A} (a : A) (l : seq A)
+  : a \in l →
+    mass μ (undup l) = acc_mass a μ + mass μ (undup [seq i <- l | i != a]).
+Proof. rewrite /mass /sumq.
+Admitted.
+
 Lemma mass_cons_eq_acc_mass_add_mass {A : eqType} {μ : Enum A} (a : A) : mass μ (supp μ) = acc_mass a μ + mass ([seq i <- μ | snd i != a]) (supp [seq i <- μ | snd i != a]).
 Proof.
   rewrite /acc_mass /mass (sumq_filter (supp μ) (fun (i : A) => i == a)).
@@ -480,7 +471,9 @@ Proof.
       + rewrite map_cons sumq_cons sumq_nil addr0 filter_cons -Heqsnd_a sumq_cons undup_filter_item. congr GRing.add.
         remember (a \in μ2) as H. destruct H. rewrite map_cons sumq_cons sumq_nil addr0 //=. rewrite sumq_nil.
         enough (H : [seq i <- μ  | i.2 == a] = [seq i <- μ  | false]). rewrite H filter_pred0 sumq_nil //=. apply eq_in_filter.
-        intros x i. rewrite Heqμ2 in HeqH. clear - Heqsnd_a HeqH. admit.
+        move=> [px x] i //=. rewrite Heqμ2 in HeqH.
+        have: true = (x \in [seq i.2 | i <- μ]). rewrite -(mem_map (f := snd)) /= in i.
+        rewrite i //. admit. admit.
       + unfold undup. remember (a0.2  \in [seq i <- μ2  | i == a]) as H. destruct H.
         - have fold_undup : undup = undup. reflexivity. unfold undup at 1 in fold_undup. rewrite {}fold_undup undup_filter_item. enough (a \in μ2). rewrite H //=.
           rewrite Heqμ2. rewrite Heqμ2 in HeqH. rewrite filter_map /preim //= in HeqH. clear - HeqH Heqsnd_a. admit.
@@ -500,7 +493,7 @@ Proof.
     remember (c.2 == b) as cb. destruct cb. rewrite -Heqcb //=.
     rewrite <- (Bool.reflect_iff _ _ (@andP (b != a) (b  \in [seq i.2  | i <- μ])) ) in hb. destruct hb.
     clear - Heqcb H. symmetry in Heqcb. symmetry. apply Bool.Is_true_eq_true. apply Bool.negb_prop_intro. move=> c_eq_a.
-    have c_eq_a' := (Bool.reflect_iff _ _ (@eqP _ c.2 a)).2 (Bool.Is_true_eq_true _ c_eq_a). clear c_eq_a. 
+    have c_eq_a' := (Bool.reflect_iff _ _ (@eqP _ c.2 a)).2 (Bool.Is_true_eq_true _ c_eq_a). clear c_eq_a.
     rewrite -(Bool.reflect_iff _ _ (@eqP _ c.2 b)) c_eq_a' in Heqcb. rewrite Heqcb eq_refl //= in H.
     rewrite -Heqcb //=.
 Admitted.
@@ -584,5 +577,25 @@ Definition EnumSucc {Y} (μ : Enum X) (k : X → Y) : Enum Y :=
 
 End successor.
 
+
+
+#[global] Program Instance Enum_DiscreteInterface
+    : DiscreteInterface Enum :=
+  {|disc_rep := Enum_Discrete
+  ; disc_eq := @EqEnum
+  ; disc_RT := @enumRT
+  ; disc_mass := @acc_mass
+  ; disc_supp := @supp
+  |}.
+Next Obligation.
+  split. intros. unfold enumRT. intros x ? <-.
+  rewrite H. reflexivity.
+  intros. intro a. apply H. reflexivity.
+Qed.
+Next Obligation.
+  intros m1 m2 Hm.
+  unfold enumRT in Hm.
+  apply Hm. reflexivity.
+Qed.
 
 End Enum.
