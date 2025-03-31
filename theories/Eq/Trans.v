@@ -204,9 +204,17 @@ Fixpoint relateAll {X Y} (R : rel X Y) (x : X) (ys : list Y) : Prop :=
   | y :: ys' => R x y ∧ relateAll R x ys'
   end.
 
-Lemma sub_relateAll {X Y} (R S : rel X Y) (x : X) (ys : list Y)
+Lemma relateAll_sub {X Y} (R S : rel X Y) (x : X) (ys : list Y)
   : (∀ x y, R x y → S x y) → relateAll R x ys → relateAll S x ys.
 Proof. elim: ys => [//|y ys IH //= H] [Hxy Hxys]. auto. Qed.
+
+Lemma relateAll_trans {X} (R : relation X) `{Transitive _ R}
+  : ∀ (x y : X) (zs : list X), R x y → relateAll R y zs → relateAll R x zs.
+Proof. intros. induction zs.
+  auto. simpl in H1. destruct H1 as [Rya RAyzs].
+  simpl. split. etransitivity; eauto.
+  apply IHzs. eauto.
+Qed.
 
 Lemma transAll_Prob_Cons {E} {X : eqType} {Y} {k : X -> ptree E Enum Y} (x : Enum X) (p : ℚ≥0 * X) (l : seq X)
   : transAll tau (Prob x k) [seq enumk x k x0  | x0 <- l] -> transAll tau (Prob (p :: x) k) [seq enumk (p :: x) k x0 | x0 <- l].
@@ -215,18 +223,18 @@ Proof.
   rewrite map_cons /transAll in ih. destruct ih.
   have ih1 := IHl H0. clear IHl H0.
   rewrite map_cons /transAll. split.
-  econstructor. reflexivity. reflexivity. exact ih1. 
+  econstructor. reflexivity. reflexivity. exact ih1.
 Qed.
-  
+
 Lemma transAll_Prob {E} {X : eqType} {Y}
   : forall (μ : Enum X) (k : X -> ptree E Enum Y), transAll tau (Prob μ k) [seq enumk μ k x | x <- supp μ].
 Proof.
   intros. elim: μ => [//|p x ih]. rewrite /supp /unzip2 map_cons.
   (* used to fold back the unfolded `undup` *)
-  have fold_undup : undup = undup. reflexivity. unfold undup at 1 in fold_undup. 
+  have fold_undup : undup = undup. reflexivity. unfold undup at 1 in fold_undup.
   unfold undup.
 
-  remember (snd p \in [seq snd i | i <- x]) as snd_p_in_snd. destruct snd_p_in_snd. 
+  remember (snd p \in [seq snd i | i <- x]) as snd_p_in_snd. destruct snd_p_in_snd.
   (* p in [seq snd i  | i <- x] *)
   rewrite /enumk fold_undup. eapply transAll_Prob_Cons. exact ih.
 
@@ -237,15 +245,6 @@ Proof.
 Qed.
 End Trans_relation.
 
-(* Section test. *)
-(* Import Enum. *)
-(* Context {E : Type → Type}. *)
-(* Context {R : Type}. *)
-(* Variable u t : ptree E Enum R. *)
-(* Variable l : @label E. *)
-
-(* Check trans l 1%R u t. *)
-(* Check trans. *)
 
 Module Import TransNotations.
 Infix "---[ l ; p ]-->" := (trans l p) (at level 70).

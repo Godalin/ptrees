@@ -207,7 +207,7 @@ Qed.
 (** We need the decidable equality for the base type [A] of
     the enumeration. *)
 
-Definition sumq (l : seq ℚ≥0) : ℚ≥0 
+Definition sumq (l : seq ℚ≥0) : ℚ≥0
   := foldr (λ x acc, x + acc) 0 l.
 
 Lemma sumq_cons {x : ℚ≥0} {l : seq ℚ≥0} : sumq (x :: l) = x + sumq l.
@@ -460,8 +460,8 @@ Proof.
   rewrite /acc_mass /mass (sumq_filter (supp μ) (fun (i : A) => i == a)).
   congr GRing.add.
   - rewrite /acc_mass /unzip1 /supp /unzip2 filter_undup. induction μ. cbn. reflexivity. Unset Printing Notations. admit.
-  - congr sumq. 
-Qed.
+  - congr sumq.
+Admitted.
 
 Lemma sum_cons_eq_acc_mass_add_mass {A : eqType} {μ : Enum A} (a : A) : sumq (unzip1 μ) = acc_mass a μ + sumq (unzip1 ([seq i <- μ | snd i != a])).
 Proof.

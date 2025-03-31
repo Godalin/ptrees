@@ -69,7 +69,7 @@ Proof. intros. inversion H0.
   - econstructor. apply H1. auto.
   - econstructor. apply H1. auto.
   - econstructor. apply H1. all: auto.
-    apply (sub_relateAll R S); auto.
+    apply (relateAll_sub R S); auto.
 Qed.
 
 Lemma pssim_cond_char : ∀ (REL : rel (ptree E X) (ptree F Y)) t' l p u,
@@ -126,6 +126,15 @@ End PSSim.
 
 
 
+#[global]
+Instance pssim_equ_equ {E F : Type → Type}
+    {X Y : Type} (L : rel (@label E) (@label F))
+  : Proper (equ (R1 := X) eq ==> equ (R1 := Y) eq ==> flip impl)
+    (pssim L).
+Proof. Admitted.
+
+
+
 (** pss notation *)
 Module Import PSSimNotations.
 Notation "` R" := (elem R) (at level 10).
@@ -143,6 +152,8 @@ Infix "{≲p}" := (psst eq _) (at level 70).
 Infix "{{≲p  L }}" := (pssbt L _) (at level 70).
 Infix "{{≲p}}" := (pssbt eq _) (at level 70).
 
+Notation "[ R ; l ; p | ?→  t ∥ u  →→]" := (pssim_cond R t l p u).
+
 End PSSimNotations.
 
 
@@ -155,6 +166,7 @@ Ltac __step_in_pssim H :=
   | context [@pssim ?E ?X ?Y _ _ ?RL] =>
       unfold pssim in H
   end.
+
 
 
 Section homogenous_pssim_theory.
@@ -184,14 +196,28 @@ Proof. unfold Reflexive.
     admit. unfold disc_mass. simpl. exact le_acc_mass_mass_supp.
 Admitted.
 
+
+
+Ltac __use_pssim Hpssim Htrans :=
+  idtac "use pssim";
+  apply Hpssim in Htrans;
+  let l := fresh "l'" in
+  let RL := fresh "RL" in
+  let Hpssim_cond := fresh "Hpssim_cond" in
+  destruct Htrans as [l [RL Hpssim_cond]].
+
 #[global]
 Instance Transitive_pss {RC : relation (ptree E X)}
     `{Transitive _ L} `{Transitive _ RC}
   : Transitive (pss L RC).
 Proof. unfold Transitive.
   intros s t u Hst Htu. intros l p t' Htrans.
-  inversion Htrans; subst.
-  - inversion Htrans; subst. dependent destruction H2.
+  __use_pssim Hst Htrans. inversion Hpssim_cond; subst.
+  - inversion H2; subst. rewrite <- H1 in Hpssim_cond.
+    exists (val r); split; auto.
+    rewrite <- H1 in Htu.
+
+
 Admitted.
 
 #[global]
