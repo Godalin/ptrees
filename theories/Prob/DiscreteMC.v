@@ -472,8 +472,9 @@ Proof.
         remember (a \in μ2) as H. destruct H. rewrite map_cons sumq_cons sumq_nil addr0 //=. rewrite sumq_nil.
         enough (H : [seq i <- μ  | i.2 == a] = [seq i <- μ  | false]). rewrite H filter_pred0 sumq_nil //=. apply eq_in_filter.
         move=> [px x] i //=. rewrite Heqμ2 in HeqH.
-        have: true = (x \in [seq i.2 | i <- μ]). rewrite -(mem_map (f := snd)) /= in i.
-        rewrite i //. admit. admit.
+        have: true = (x \in [seq i.2 | i <- μ]). rewrite (map_f snd i) //.
+        move=> Hxin. apply/negP. move=>/eqP Hxa. rewrite Hxa in Hxin. rewrite -HeqH in Hxin. case: Hxin.
+        move=> [//].
       + unfold undup. remember (a0.2  \in [seq i <- μ2  | i == a]) as H. destruct H.
         - have fold_undup : undup = undup. reflexivity. unfold undup at 1 in fold_undup. rewrite {}fold_undup undup_filter_item. enough (a \in μ2). rewrite H //=.
           rewrite Heqμ2. rewrite Heqμ2 in HeqH. rewrite filter_map /preim //= in HeqH. clear - HeqH Heqsnd_a. admit.
