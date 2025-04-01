@@ -36,69 +36,28 @@ Context {E F : Type → Type} {X Y : Type}.
     t'-- R -- u'u'u'
   *)
 
-Variant pssim_cond REL (t' : ptree E X) (l' : label) (p : ℚ≥0)
-  : ptree' F Y → Prop :=
+Variant pssim_cond_ l' p : (ptree' F Y) → seq (ptree F Y) → Prop :=
   | PSSimRetF
     : ∀ r u',
         trans l' p (Ret r) u'
-      → REL t' u'
-      → pssim_cond REL t' l' p (RetF r)
+      → pssim_cond_ l' p (RetF r) [:: u']
   | PSSimTauF
     : ∀ t u',
         trans l' p (Tau t) u'
-      → REL t' u'
-      → pssim_cond REL t' l' p (TauF t)
+      → pssim_cond_ l' p (TauF t) [:: u']
   | PSSimVisF
     : ∀ X' (e : F X') k u',
         trans l' p (Vis e k) u'
-      → REL t' u'
-      → pssim_cond REL t' l' p (VisF e k)
+      → pssim_cond_ l' p (VisF e k) [:: u']
   | PSSimProbF
     : ∀ (X' : eqType) (μ : Enum X') (k : X' → ptree F Y) (s : seq X'),
         subseq s (supp μ)
       → transAll l' (Prob μ k) [seq enumk μ k x | x <- s]
-      → relateAll REL t' [seq k x | x <- s]
       → p <= mass μ s
-      → pssim_cond REL t' l' p (ProbF μ k).
+      → pssim_cond_ l' p (ProbF μ k) [seq k x | x <- s].
 
-Lemma sub_pssim_cond (R S : rel (ptree E X) (ptree F Y))
-    t' (l : @label F) p u
-  : (∀ x y, R x y → S x y) → pssim_cond R t' l p u → pssim_cond S t' l p u.
-Proof. intros. inversion H0.
-  - econstructor. apply H1. auto.
-  - econstructor. apply H1. auto.
-  - econstructor. apply H1. auto.
-  - econstructor. apply H1. all: auto.
-    apply (relateAll_sub R S); auto.
-Qed.
-
-Lemma pssim_cond_char : ∀ (REL : rel (ptree E X) (ptree F Y)) t' l p u,
-    pssim_cond REL t' l p u
-  → ∃ (u's : Enum (ptree F Y)),
-      transAll l (go u) u's
-    ∧ relateAll REL t' [seq snd p | p <- u's]
-    ∧ p <= transAllPrb u's.
-Proof. intros REL t' l p u H. inversion H; subst.
-  - exists [:: (p, u')]; repeat split; simpl.
-    inversion H0; subst; auto. assumption.
-    unfold transAllPrb, foldr. simpl.
-    rewrite addr0. rewrite le_refl. auto.
-  - exists [:: (p, u')]; repeat split; simpl.
-    inversion H0; subst; auto. assumption.
-    unfold transAllPrb, foldr. simpl.
-    rewrite addr0. rewrite le_refl. auto.
-  - exists [:: (p, u')]; repeat split; simpl.
-    inversion H0; subst. dependent destruction H7.
-    econstructor. rewrite -> H5. apply observe_equ_eq.
-    assumption. assumption.
-    unfold transAllPrb, foldr. simpl.
-    rewrite addr0. rewrite le_refl. auto.
-  - exists (map (enumk μ k) s); repeat split; simpl.
-    apply H1. rewrite <- map_comp. exact H2.
-    apply (le_trans H3). unfold transAllPrb, unzip1.
-    rewrite <- map_comp. unfold ssrfun.comp, fst, mass. simpl.
-    rewrite le_refl. reflexivity.
-Qed.
+Definition pssim_cond l' p (u : ptree F Y) (u's : seq (ptree F Y)) : Prop
+  := pssim_cond_ l' p (observe u) u's.
 
 End experiment.
 
@@ -111,12 +70,15 @@ Definition pss {E F : Type → Type}
     {X Y : Type} (L : rel (@label E) (@label F))
   : mon (ptree E X → ptree F Y → Prop)
   := {| body R t u := ∀ l (p : ℚ≥0) t',
-        trans l p t t' → ∃ l',
-          L l l' ∧ pssim_cond R t' l' p (observe u)
+        trans l p t t' → ∃ l', ∃ u's,
+          L l l'
+          ∧ pssim_cond l' p u u's
+          ∧ relateAll R t' u's
      |}.
 Next Obligation.
-  destruct (H0 l p t' H1) as [l' [RL HCond]].
-  exists l'. split; auto. apply (sub_pssim_cond x y); auto.
+  destruct (H0 l p t' H1) as [l' [u's [RL [HCond Rall]]]].
+  exists l', u's; split; auto. split; auto.
+  apply (relateAll_sub x); auto.
 Defined.
 
 
@@ -146,10 +108,12 @@ Ltac __step_in_pssim H :=
 
 Ltac __use_pssim Hpssim Htrans :=
   apply Hpssim in Htrans;
+  let u's := fresh "u's" in
   let l := fresh "l'" in
   let RL := fresh "RL" in
   let Hpssim_cond := fresh Hpssim "Cond" in
-  destruct Htrans as [l [RL Hpssim_cond]].
+  let HrelAll := fresh "HrelAll_" u's in
+  destruct Htrans as [l [u's [RL [Hpssim_cond HrelAll]]]].
 Tactic Notation "use" "pssim" "with" ident(Hpssim) ident(Htrans) :=
   __use_pssim Hpssim Htrans.
 
@@ -184,6 +148,10 @@ Import EquNotations.
 Import EquAxioms.
 #[local] Notation ptree E := (ptree E Enum).
 
+(* #[global] *)
+(* Instance pssim_cond_proper {E : Type → Type} {l' : @label E} p {X} *)
+(*   : Proper (equb (R1 := X) eq (equ eq) ==> pssim_cond_ l' p). *)
+
 #[global]
 Instance pssim_equ_equ {E F : Type → Type}
     {X Y : Type} (L : rel (@label E) (@label F))
@@ -193,9 +161,12 @@ Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
   step in Hpssim2. apply (gfp_fp (pss L)).
   intros l p x1' Htrans. rewrite EQx in Htrans.
   use pssim with Hpssim2 Htrans.
-  (* use axiom *) rewrite (equ_is_eq EQy).
-  exists l'; split; auto.
-Qed.
+  exists l', u's; repeat split; auto.
+  inversion Hpssim2Cond; subst.
+  - rewrite (ptree_eta y2) in EQy. rewrite -H in EQy.
+    __step_in_equ EQy. inversion EQy; subst.
+    red. rewrite -H2. econstructor; auto.
+Admitted.
 
 End pssim_proper.
 
