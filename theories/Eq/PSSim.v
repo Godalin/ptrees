@@ -144,6 +144,9 @@ Ltac __step_in_pssim H :=
   end.
 #[local] Tactic Notation "step" "in" ident(H) := __step_in_pssim H.
 
+#[local] Tactic Notation "step" "equ" "in" ident(H) :=
+  __step_in_equ H.
+
 Ltac __use_pssim Hpssim Htrans :=
   apply Hpssim in Htrans;
   let l := fresh "l'" in
@@ -181,7 +184,6 @@ End PSSimNotations.
 Section pssim_proper.
 Import Enum.
 Import EquNotations.
-Import EquAxioms.
 #[local] Notation ptree E := (ptree E Enum).
 
 #[global]
@@ -193,9 +195,19 @@ Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
   step in Hpssim2. apply (gfp_fp (pss L)).
   intros l p x1' Htrans. rewrite EQx in Htrans.
   use pssim with Hpssim2 Htrans.
-  (* use axiom *) rewrite (equ_is_eq EQy).
   exists l'; split; auto.
-Qed.
+  inversion Hpssim2Cond; subst.
+  - step equ in EQy. rewrite -H in EQy. inversion EQy; subst.
+    econstructor; eauto.
+  - step equ in EQy. rewrite -H in EQy. inversion EQy; subst.
+    econstructor; eauto. rewrite REL. auto.
+  - step equ in EQy. rewrite -H in EQy. dependent destruction EQy; subst.
+    rewrite -x. econstructor; eauto.
+    assert (Vis e k ≅ Vis e k1). step. constructor. intros.
+    rewrite REL. reflexivity. rewrite -H2. auto.
+  - step equ in EQy. rewrite -H in EQy. dependent destruction EQy; subst.
+    rewrite -x. econstructor. admit.
+Admitted.
 
 End pssim_proper.
 
