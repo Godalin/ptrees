@@ -130,19 +130,29 @@ End PSSim.
 
 
 
-Section pssim_proper.
-Import Enum.
-Import EquNotations.
-#[local] Notation ptree E := (ptree E Enum).
+(** pss tactics *)
 
-#[global]
-Instance pssim_equ_equ {E F : Type → Type}
-    {X Y : Type} (L : rel (@label E) (@label F))
-  : Proper (equ (R1 := X) eq ==> equ (R1 := Y) eq ==> flip impl)
-    (pssim L).
-Proof. Admitted.
+Ltac __step_pssim := step.
+#[local] Tactic Notation "step" := __step_pssim.
 
-End pssim_proper.
+Ltac __step_in_pssim H :=
+  match type of H with
+  | context [@pssim ?E ?F ?X ?Y ?RL] =>
+      unfold pssim in H; apply (gfp_pfp (pss RL)) in H;
+      fold (@pssim E F X Y RL) in H
+  | _ => fail "Fail to step pssim"
+  end.
+#[local] Tactic Notation "step" "in" ident(H) := __step_in_pssim H.
+
+Ltac __use_pssim Hpssim Htrans :=
+  apply Hpssim in Htrans;
+  let l := fresh "l'" in
+  let RL := fresh "RL" in
+  let Hpssim_cond := fresh Hpssim "Cond" in
+  destruct Htrans as [l [RL Hpssim_cond]].
+Tactic Notation "use" "pssim" "with" ident(Hpssim) ident(Htrans) :=
+  __use_pssim Hpssim Htrans.
+
 
 
 (** pss notation *)
@@ -168,14 +178,26 @@ End PSSimNotations.
 
 
 
-Ltac __step_pssim := step.
-#[local] Tactic Notation "step" := __step_pssim.
+Section pssim_proper.
+Import Enum.
+Import EquNotations.
+Import EquAxioms.
+#[local] Notation ptree E := (ptree E Enum).
 
-Ltac __step_in_pssim H :=
-  match type of H with
-  | context [@pssim ?E ?X ?Y _ _ ?RL] =>
-      unfold pssim in H
-  end.
+#[global]
+Instance pssim_equ_equ {E F : Type → Type}
+    {X Y : Type} (L : rel (@label E) (@label F))
+  : Proper (equ (R1 := X) eq ==> equ (R1 := Y) eq ==> flip impl)
+    (pssim L).
+Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
+  step in Hpssim2. apply (gfp_fp (pss L)).
+  intros l p x1' Htrans. rewrite EQx in Htrans.
+  use pssim with Hpssim2 Htrans.
+  (* use axiom *) rewrite (equ_is_eq EQy).
+  exists l'; split; auto.
+Qed.
+
+End pssim_proper.
 
 
 
@@ -220,24 +242,14 @@ Proof. unfold Reflexive.
       rewrite -HeqHmem //.
 Qed.
 
-
-
-Ltac __use_pssim Hpssim Htrans :=
-  idtac "use pssim";
-  apply Hpssim in Htrans;
-  let l := fresh "l'" in
-  let RL := fresh "RL" in
-  let Hpssim_cond := fresh "Hpssim_cond" in
-  destruct Htrans as [l [RL Hpssim_cond]].
-
 #[global]
 Instance Transitive_pss {RC : relation (ptree E X)}
     `{Transitive _ L} `{Transitive _ RC}
   : Transitive (pss L RC).
 Proof. unfold Transitive.
   intros s t u Hst Htu. intros l p t' Htrans.
-  __use_pssim Hst Htrans. inversion Hpssim_cond; subst.
-  - inversion H2; subst. rewrite <- H1 in Hpssim_cond.
+  __use_pssim Hst Htrans. inversion HstCond; subst.
+  - inversion H2; subst. rewrite <- H1 in HstCond.
     exists (val r); split; auto.
     Fail rewrite <- H1 in Htu.
 Admitted.
