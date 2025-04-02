@@ -369,7 +369,12 @@ Definition enumRT {R1 : eqType} {R2 : eqType}
 
 Infix "==EnumRT" := (enumRT _) (at level 70).
 
-
+Lemma enumRT_eq {R : eqType} : @enumRT R R eq = EqEnum.
+Proof.
+  rewrite /enumRT /EqEnum.
+  apply functional_extensionality. move => l1.
+  apply functional_extensionality. move => l2.
+Admitted.
 
 (** Convenient Distribution Constructors *)
 Section Dists.
@@ -410,22 +415,29 @@ congr cons. exact: IH.
 Qed.
 
 Definition supp {A : eqType} (μ : Enum A)
-  := undup (unzip2 μ).
+  := undup (unzip2 [seq i <- μ | i.1 != 0]).
 
 Lemma supp_uniq {A : eqType} (μ : Enum A) : uniq (supp μ).
 Proof. apply: undup_uniq. Qed.
 
 Lemma supp_spec {A: eqType} (μ : Enum A)
-  : (supp μ =i unzip2 μ).
+  : (supp μ =i unzip2 [seq i <- μ | i.1 != 0]).
 Proof. apply: mem_undup. Qed.
 
 Lemma supp_nil {A : eqType} : supp ([::] : Enum A) = [::].
 Proof. cbn. reflexivity. Qed.
 
+
+Lemma supp_enum_eq_mem_eq {A : eqType} : Proper (EqEnum (A:= A) ==> eq_mem) (mem \o supp).
+Proof.
+  rewrite /Proper /respectful /comp //=. move => l1 l2 enumeq x. rewrite /supp mem_undup mem_undup /unzip2.
+  rewrite /EqEnum in enumeq.
+Admitted.
+
 Lemma sumq_filter {A} {C : A -> nnQ} (l : seq A) (P : A -> bool) : sumq (map C l) = sumq [seq C i  | i <- l  & P i] + sumq [seq C i  | i <- l  & ~~ P i].
 Proof.
   induction l. rewrite //= addr0 //=.
-  rewrite map_cons /filter. destruct (P a).
+  rewrite map_cons /filter. case: (P a).
   - rewrite //= IHl addrA //=.
   - rewrite //= IHl addrA addrA (addrC (C a) (sumq [seq C i  | i <- l  & P i])) //=.
 Qed.
@@ -453,9 +465,21 @@ Proof.
   - rewrite addr0 //=.
 Qed.
 
-Lemma mass_cons_eq_acc_mass_add_mass {A : eqType} {μ : Enum A} (a : A) : mass μ (supp μ) = acc_mass a μ + mass ([seq i <- μ | snd i != a]) (supp [seq i <- μ | snd i != a]).
+(* This theorem will not be used for now. *)
+Lemma mass_eq_of_mem_eq {A : eqType} {m1 m2 : seq A} {μ : Enum A} (mem_eq: m1 =i m2) (uniq_m1: uniq m1) (uniq_m2: uniq m2): mass μ m1 = mass μ m2.
 Proof.
-  rewrite /acc_mass /mass (sumq_filter (supp μ) (fun (i : A) => i == a)).
+Admitted.
+
+Lemma mass_supp_eq_mass_undup {A: eqType} (μ : Enum A) : mass μ (supp μ) = mass μ (undup (unzip2 μ)).
+Proof.
+  rewrite /mass /supp /unzip2.
+  elim/last_ind : μ => [//= | a l IH]. rewrite filter_rcons. remember (l.1 == 0) as l_0. elim : l_0 Heql_0 => [l_eq_0 | l_ne_0].
+  - rewrite -l_eq_0 //= map_rcons undup_rcons. (* have : ∀ x, acc_mass x (rcons a l) = acc_mass x l. *)
+Admitted.
+
+Lemma mass_cons_eq_acc_mass_add_mass {A : eqType} {μ : Enum A} (a : A) : mass μ (undup (unzip2 μ)) = acc_mass a μ + mass ([seq i <- μ | snd i != a]) (undup (unzip2 [seq i <- μ | snd i != a])).
+Proof.
+  rewrite /acc_mass /mass (sumq_filter (undup (unzip2  μ)) (fun (i : A) => i == a)).
   congr GRing.add.
   - rewrite /acc_mass /unzip1 /supp /unzip2 filter_undup. elim: μ => [//=|a0 μ IHμ].
     rewrite map_cons filter_cons filter_cons. remember (a0.2 == a) as snd_a. destruct snd_a.
@@ -513,6 +537,7 @@ Qed.
 
 Lemma mass_supp_eq_sumq_fst {A : eqType} (μ : Enum A) : mass μ (supp μ) = sumq (unzip1 μ).
 Proof.
+  rewrite mass_supp_eq_mass_undup.
   move: μ. apply seq_strong_induction.
   move => [|a l] iH. cbn. reflexivity.
   rewrite (mass_cons_eq_acc_mass_add_mass (snd a)) (sum_cons_eq_acc_mass_add_mass (snd a)).
@@ -526,15 +551,17 @@ Qed.
 
 Lemma acc_mass_0_of_notin_supp {A : eqType} (x : A) (μ : Enum A) : x \notin (supp μ) → acc_mass x μ = 0.
 Proof.
-  intros h.
-  rewrite /acc_mass. rewrite /supp mem_undup /unzip2 in h.
-  replace ([seq i <- μ  | snd i == x]) with ([::] : Enum A). auto.
+  move => h. rewrite /acc_mass. rewrite /supp mem_undup /unzip2 in h.
   elim: μ h => [//= | h t ih x_notin].
-  rewrite map_cons in_cons in x_notin.
-  move: (norP x_notin) => [x_ne_h x_notin'].
-  rewrite eq_sym /is_true Bool.negb_true_iff in x_ne_h.
-  rewrite filter_cons x_ne_h.
-  exact: (ih x_notin').
+  rewrite filter_cons in x_notin.
+  remember (h.1 != 0) as h_0. elim : h_0 Heqh_0 => [h_eq_0 | h_ne_0].
+  - rewrite -{}h_eq_0 in x_notin. rewrite map_cons in_cons in x_notin.
+    move : x_notin => /norP [x_ne_h x_not_in]. move : ih => /(_ x_not_in) ih. rewrite {x_not_in}.
+    rewrite /is_true Bool.negb_true_iff eq_sym in x_ne_h. rewrite filter_cons x_ne_h. exact: ih.
+  - symmetry in h_ne_0. rewrite h_ne_0 in x_notin. move : ih => /(_ x_notin) ih. rewrite filter_cons.
+    remember (h.2 == x) as h_x. elim : h_x Heqh_x => [h_eq_x | h_ne_x].
+    + rewrite /unzip1 map_cons sumq_cons ih addr0. rewrite Bool.negb_false_iff in h_ne_0. exact: eqP h_ne_0.
+    + exact: ih.
 Qed.
 
 Lemma le_acc_mass_mass_supp {A : eqType} {x : A} {μ : Enum A} : acc_mass x μ <= mass μ (supp μ).

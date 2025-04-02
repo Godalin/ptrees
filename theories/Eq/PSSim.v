@@ -206,7 +206,8 @@ Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
     assert (Vis e k ≅ Vis e k1). step. constructor. intros.
     rewrite REL. reflexivity. rewrite -H2. auto.
   - step equ in EQy. rewrite -H in EQy. dependent destruction EQy; subst.
-    rewrite -x. econstructor. admit.
+    rewrite -x. econstructor. rewrite /disc_RT enumRT_eq in REL.
+    have mem_eq := supp_enum_eq_mem_eq REL. admit.
 Admitted.
 
 End pssim_proper.

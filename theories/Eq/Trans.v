@@ -232,15 +232,18 @@ Qed.
 Lemma transAll_Prob {E} {X : eqType} {Y}
   : forall (μ : Enum X) (k : X -> ptree E Enum Y), transAll tau (Prob μ k) [seq enumk μ k x | x <- supp μ].
 Proof.
-  move => μ k. elim : μ => [//|p x ih]. rewrite /supp /unzip2 map_cons /undup -/undup.
-  case: (snd p \in [seq snd i | i <- x]).
-  (* p in [seq snd i  | i <- x] *)
-  rewrite /enumk. eapply transAll_Prob_Cons. exact: ih.
+  move => μ k. elim : μ => [//|p x ih]. rewrite /supp /unzip2 filter_cons.
+  case: (fst p == 0).
+  - rewrite //=. rewrite /enumk. eapply transAll_Prob_Cons. exact: ih.
+  - rewrite //=. 
+    case: (snd p \in [seq snd i  | i <- x  & fst i != 0]).
+    (* p in [seq snd i  | i <- x] *)
+    + rewrite /enumk. eapply transAll_Prob_Cons. exact: ih.
 
-  (* p not in [seq snd i  | i <- x] *)
-  rewrite /enumk map_cons /transAll. split.
-  econstructor. reflexivity. reflexivity.
-  eapply transAll_Prob_Cons. exact: ih.
+    (* p not in [seq snd i  | i <- x] *)
+    + rewrite /enumk map_cons /transAll. split.
+      econstructor. reflexivity. reflexivity.
+      eapply transAll_Prob_Cons. exact: ih.
 Qed.
 End Trans_relation.
 
