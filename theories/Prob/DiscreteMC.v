@@ -223,6 +223,21 @@ rewrite iH //= addrA. reflexivity. Qed.
 Lemma sumq_nil : sumq [::] = 0.
 Proof. cbn. reflexivity. Qed.
 
+Lemma sumq_filter_0 {l : seq ℚ≥0} : sumq [seq i <- l | i == 0] = 0.
+Proof.
+  elim : l => [//=|a l IH]. rewrite /filter. remember (a == 0) as a_0.
+  case: a_0 Heqa_0 => [a_eq_0|a_ne_0].
+  - symmetry in a_eq_0. rewrite a_eq_0 sumq_cons IH addr0 (eqP a_eq_0) //=.
+  - rewrite -a_ne_0 IH //=.
+Qed.
+
+
+Lemma sumq_ne_0_cons {l : seq ℚ≥0} {a: ℚ≥0} : a != 0 -> sumq (a :: l) != 0.
+Proof.
+  move => a_ne_0. rewrite sumq_cons. exact: (ne0_of_ne0_add a_ne_0).
+Qed.
+
+
 Definition acc_mass {A : eqType} (x : A) (μ : Enum A) : ℚ≥0
   := sumq (unzip1 [seq i <- μ | snd i == x]).
 
@@ -369,12 +384,12 @@ Definition enumRT {R1 : eqType} {R2 : eqType}
 
 Infix "==EnumRT" := (enumRT _) (at level 70).
 
-Lemma enumRT_eq {R : eqType} : @enumRT R R eq = EqEnum.
+Lemma enumRT_eq {R : eqType} {a b}: @enumRT R R eq a b <-> EqEnum a b.
 Proof.
-  rewrite /enumRT /EqEnum.
-  apply functional_extensionality. move => l1.
-  apply functional_extensionality. move => l2.
-Admitted.
+  rewrite /enumRT /EqEnum. split.
+  - move => h1 x. eapply h1. by [].
+  - move => h1 x y x_eq_y. rewrite -x_eq_y. exact: (h1 x).
+Qed.
 
 (** Convenient Distribution Constructors *)
 Section Dists.
@@ -427,13 +442,6 @@ Proof. apply: mem_undup. Qed.
 Lemma supp_nil {A : eqType} : supp ([::] : Enum A) = [::].
 Proof. cbn. reflexivity. Qed.
 
-
-Lemma supp_enum_eq_mem_eq {A : eqType} : Proper (EqEnum (A:= A) ==> eq_mem) (mem \o supp).
-Proof.
-  rewrite /Proper /respectful /comp //=. move => l1 l2 enumeq x. rewrite /supp mem_undup mem_undup /unzip2.
-  rewrite /EqEnum in enumeq.
-Admitted.
-
 Lemma sumq_filter {A} {C : A -> nnQ} (l : seq A) (P : A -> bool) : sumq (map C l) = sumq [seq C i  | i <- l  & P i] + sumq [seq C i  | i <- l  & ~~ P i].
 Proof.
   induction l. rewrite //= addr0 //=.
@@ -465,6 +473,84 @@ Proof.
   - rewrite addr0 //=.
 Qed.
 
+Lemma acc_mass_cons_zero {A : eqType} {μ : Enum A} {a : A} {h : nnQ * A} : h.1 = 0 -> acc_mass a (h :: μ) = acc_mass a μ.
+Proof.
+  move =>eq_0. rewrite acc_mass_cons eq_0.
+  case : (h.2 == a). rewrite addr0 //=. rewrite addr0 //=.
+Qed.
+
+Lemma predI_comm {T} (p1 p2 : pred T) : predI p1 p2 = predI p2 p1.
+Proof.
+  rewrite /predI /xpredI. congr SimplPred.
+  apply functional_extensionality. move => x. exact: Bool.andb_comm.
+Qed.
+
+Lemma notin_supp_iff_acc_mass_eq_0 {A : eqType} (x : A) (μ : Enum A) : x \notin (supp μ) <-> acc_mass x μ = 0.
+Proof.
+  split.
+  + move => h. rewrite /acc_mass. rewrite /supp mem_undup /unzip2 in h.
+    elim: μ h => [//= | h t ih x_notin].
+    rewrite filter_cons in x_notin.
+    remember (h.1 != 0) as h_0. elim : h_0 Heqh_0 => [h_eq_0 | h_ne_0].
+    - rewrite -{}h_eq_0 in x_notin. rewrite map_cons in_cons in x_notin.
+      move : x_notin => /norP [x_ne_h x_not_in]. move : ih => /(_ x_not_in) ih. rewrite {x_not_in}.
+      rewrite /is_true Bool.negb_true_iff eq_sym in x_ne_h. rewrite filter_cons x_ne_h. exact: ih.
+    - symmetry in h_ne_0. rewrite h_ne_0 in x_notin. move : ih => /(_ x_notin) ih. rewrite filter_cons.
+      remember (h.2 == x) as h_x. elim : h_x Heqh_x => [h_eq_x | h_ne_x].
+      + rewrite /unzip1 map_cons sumq_cons ih addr0. rewrite Bool.negb_false_iff in h_ne_0. exact: eqP h_ne_0.
+      + exact: ih.
+  + move => acc_mass_eq_zero. apply/negP. rewrite /supp mem_undup /unzip2.
+    elim : μ acc_mass_eq_zero => [//= | a l IH acc_mass_eq_0 x_in_cons].
+    rewrite filter_cons in x_in_cons. rewrite /acc_mass /unzip1 filter_cons in acc_mass_eq_0.
+    remember (a.2 == x) as a_x. case : a_x Heqa_x acc_mass_eq_0 => [a_eq_x acc_mass_eq_0 | a_ne_x acc_mass_eq_0].
+    - rewrite map_cons in acc_mass_eq_0. remember (a.1 == 0) as a_0. 
+      case : a_0 Heqa_0 acc_mass_eq_0 => [a_eq_0 acc_mass_eq_0 | a_ne_0 acc_mass_eq_0].
+      + symmetry in a_eq_0. rewrite a_eq_0 //= in x_in_cons. move : a_eq_0 => /eqP a_eq_0. rewrite sumq_cons a_eq_0 add0r in acc_mass_eq_0.
+        move : IH => /(_ acc_mass_eq_0 x_in_cons) IH. exact: IH.
+      + rewrite -a_ne_0 //= in x_in_cons. move : acc_mass_eq_0. apply/eqP. apply sumq_ne_0_cons. rewrite -a_ne_0 //=.
+    - remember (a.1 == 0) as a_0. case : a_0 Heqa_0 acc_mass_eq_0 => [a_eq_0 acc_mass_eq_0 | a_ne_0 acc_mass_eq_0].
+      + rewrite -a_eq_0 //= in x_in_cons. move : IH => /(_ acc_mass_eq_0 x_in_cons) IH. exact: IH.
+      + rewrite -a_ne_0 //= in_cons eq_sym -a_ne_x //= in x_in_cons. move : IH => /(_ acc_mass_eq_0 x_in_cons) IH. exact: IH.
+Qed.
+
+Lemma in_supp_iff_acc_mass_ne_0 {A : eqType} (x : A) (μ : Enum A) : x \in (supp μ) <-> acc_mass x μ != 0.
+Proof.
+  have n := not_iff_compat (notin_supp_iff_acc_mass_eq_0 x μ).
+  rewrite /is_true Bool.eq_true_negb_classical_iff in n.
+  rewrite /is_true {}n. split. move => l. apply/eqP. exact l.
+  move => l. apply/eqP. exact l.
+Qed.
+
+Lemma supp_enum_eq_mem_eq {A : eqType} : Proper (EqEnum (A:= A) ==> eq_mem) (mem \o supp).
+Proof.
+  rewrite /Proper /respectful /comp //=.
+  have : forall x y : Enum A, x ==Enum y -> forall m, m \in supp x -> m \in supp y. 
+  - move => x y x_eq_y m m_in_x. rewrite /EqEnum in x_eq_y.
+    rewrite in_supp_iff_acc_mass_ne_0 x_eq_y -in_supp_iff_acc_mass_ne_0 in m_in_x.
+    exact m_in_x.
+  move => lem l1 l2 enumeq x. rewrite Bool.eq_iff_eq_true. split.
+  - apply lem. exact: enumeq.
+  - apply lem. symmetry. exact: enumeq.
+Qed.
+
+Lemma acc_mass_eq_filter_ne_item {A : eqType} {x m : A} (μ : Enum A) : x != m → acc_mass x μ = acc_mass x [seq i <- μ | i.2 != m].
+Proof.
+  move => x_ne_m. rewrite /acc_mass /unzip1 -filter_predI. congr sumq. congr map. apply eq_in_filter.
+  move => i hi. rewrite /predI /in_mem //=. symmetry. apply andb_idr. move => /eqP i_eq_x. rewrite -i_eq_x //= in x_ne_m.
+Qed.
+
+Lemma seq_strong_induction {A: Type} {P : seq A -> Prop} (Pn : ∀ L, (∀ l, size l < size L -> P l) -> P L ): ∀ l, P l.
+Proof.
+  enough (H0: ∀ (n: nat) l, lt (size l) n -> P l).
+  - move=> l. eapply (H0 (plus 1 (size l))). auto.
+  - elim => [l fal| n IHn l sizel_lt_n_add_1].
+    + cbn in fal. apply except. exact (PeanoNat.Nat.nle_succ_0 _ fal).
+    + eapply (Pn l). move => l' size_l'_lt_l. eapply (IHn l').
+      rewrite /is_true -(Bool.reflect_iff _ _ ssrnat.ltP) in size_l'_lt_l.
+      rewrite /lt -PeanoNat.Nat.succ_le_mono in sizel_lt_n_add_1.
+      exact: (PeanoNat.Nat.le_trans _ _ _ size_l'_lt_l sizel_lt_n_add_1).
+Qed.
+
 (* This theorem will not be used for now. *)
 Lemma mass_eq_of_mem_eq {A : eqType} {m1 m2 : seq A} {μ : Enum A} (mem_eq: m1 =i m2) (uniq_m1: uniq m1) (uniq_m2: uniq m2): mass μ m1 = mass μ m2.
 Proof.
@@ -472,10 +558,75 @@ Admitted.
 
 Lemma mass_supp_eq_mass_undup {A: eqType} (μ : Enum A) : mass μ (supp μ) = mass μ (undup (unzip2 μ)).
 Proof.
-  rewrite /mass /supp /unzip2.
-  elim/last_ind : μ => [//= | a l IH]. rewrite filter_rcons. remember (l.1 == 0) as l_0. elim : l_0 Heql_0 => [l_eq_0 | l_ne_0].
-  - rewrite -l_eq_0 //= map_rcons undup_rcons. (* have : ∀ x, acc_mass x (rcons a l) = acc_mass x l. *)
-Admitted.
+  rewrite /mass /supp /unzip2. move : μ. apply seq_strong_induction. move => [//= | a l IH].
+
+  have in_map_of_in_map_filter : forall (A: eqType) (a: ℚ≥0 * A) (l:Enum A), (a.2 \in [seq i.2  | i <- l  & i.1 != 0] -> a.2 \in [seq i.2  | i <- l]).
+  - move => A' a' l' in_filter. exact: (sub_map (mem_subseq (filter_subseq (fun i => i.1 != 0) l')) in_filter).
+
+  have size_lt_cons : forall (A: Type) (a: A) (l: seq A), size l < size (a :: l).
+  - rewrite //= /Order.lt /Order.NatOrder.Datatypes_nat__canonical__Order_POrder //=.
+
+  rewrite filter_cons. remember (a.1 == 0) as a_0. elim : a_0 Heqa_0 => [a_eq_0 | a_ne_0].
+  - rewrite -a_eq_0 //=. symmetry in a_eq_0.
+    rewrite (functional_extensionality _ _ (fun a => (acc_mass_cons_zero (μ:=l) (a:=a) (eqP a_eq_0)))) IH.
+    remember (a.2  \in [seq i.2  | i <- l]) as a_l. elim : a_l Heqa_l => [//= | a_notin_l]. rewrite map_cons sumq_cons.
+    have: (acc_mass a.2 l = 0) => [|acc_mass_eq_0]. rewrite -notin_supp_iff_acc_mass_eq_0 /supp mem_undup /unzip2.
+    have not_in := contra (@in_map_of_in_map_filter A a l). rewrite -a_notin_l //= in not_in. apply not_in. rewrite //=. 
+    rewrite acc_mass_eq_0 add0r //=. rewrite size_lt_cons //=.
+  - rewrite -a_ne_0 //=. remember (a.2  \in [seq i.2  | i <- l & i.1 != 0]) as a_l. elim : a_l Heqa_l => [a_in_l_ne0 | a_notin_l_ne0].
+    + have : [fun x0:ℚ≥0 * A => x0.2 != a.2] = preim snd [fun x0 =>  x0 != a.2] => [|prem_eq]. rewrite //=.
+      symmetry in a_in_l_ne0. rewrite a_in_l_ne0 (in_map_of_in_map_filter _ _ _ a_in_l_ne0)
+        (sumq_filter (undup [seq i.2  | i <- l  & i.1 != 0]) (fun (i : A) => i == a.2))
+        filter_undup filter_undup undup_filter_item a_in_l_ne0 //=
+        addr0 filter_map /preim -filter_predI predI_comm filter_predI  //=
+        (sumq_filter (undup [seq i.2  | i <- l]) (fun (i : A) => i == a.2))
+        filter_undup filter_undup undup_filter_item (in_map_of_in_map_filter _ _ _ a_in_l_ne0) //=
+        addr0 filter_map /preim /SimplPred //=. congr GRing.add.
+      have : {in undup [seq i.2  | i <- [seq x <- l  | [fun x => x.2 != a.2] x]  & i.1 != 0], 
+                (fun i => acc_mass i (a :: l)) =1 (fun i => acc_mass i [seq x <- l  | [fun x =>  x.2 != a.2] x])} 
+        => [m hm |transform_map].
+        - have : m != a.2 => [| a_ne_m]. 
+          + rewrite mem_undup -filter_predI predI_comm filter_predI prem_eq -filter_map mem_filter //= in hm.
+            exact: (andP hm).1.
+          rewrite (acc_mass_eq_filter_ne_item (a :: l) a_ne_m) filter_cons eq_refl //=.
+      rewrite eq_in_map in transform_map. rewrite {}transform_map. rewrite IH. congr sumq. rewrite -eq_in_map. move => m hm.
+      have : m != a.2 => [| a_ne_m]. rewrite mem_undup prem_eq -filter_map mem_filter //= in hm. exact: (andP hm).1.
+      rewrite (acc_mass_eq_filter_ne_item (a :: l) a_ne_m) filter_cons eq_refl //=.
+      rewrite size_filter. eapply le_lt_trans. exact: (count_size _ _). rewrite size_lt_cons //=.
+    + rewrite -a_notin_l_ne0. remember (a.2  \in [seq i.2 | i <- l]) as a_l. elim : a_l Heqa_l => [a_in_l | a_notin_l].
+      - rewrite map_cons sumq_cons acc_mass_cons eq_refl.
+        have : {in undup [seq i.2  | i <- l  & i.1 != 0], (fun x => acc_mass x (a :: l)) =1 (fun x => acc_mass x l)} => [m hm| transform_map].
+        + rewrite /acc_mass /unzip1 filter_cons. have : a.2 == m = false => [| a_ne_m].
+          - apply/eqP. move => a_eq_m. rewrite -a_eq_m mem_undup in hm. rewrite hm //= in a_notin_l_ne0.
+          rewrite a_ne_m //=.
+        rewrite eq_in_map in transform_map. rewrite {}transform_map {}IH.
+        rewrite (sumq_filter (C:= (fun x => acc_mass x (a :: l))) (undup [seq i.2  | i <- l]) (fun (i : A) => i == a.2)) 
+          filter_undup undup_filter_item -a_in_l //= addr0 acc_mass_cons eq_refl //= filter_undup. 
+        congr GRing.add. 
+        have : {in undup [seq i <- [seq i.2  | i <- l]  | i != a.2], (fun x => acc_mass x (a :: l)) =1 (fun x => acc_mass x l)} => [m hm| transform_map].
+        + rewrite acc_mass_cons. have : (a.2 == m) = false => [| a_ne_m]. 
+          - rewrite mem_undup mem_filter in hm. move : (andP hm) => [m_ne_a _]. rewrite /is_true Bool.negb_true_iff eq_sym //= in m_ne_a.
+          rewrite a_ne_m addr0 //=.
+        rewrite eq_in_map in transform_map. rewrite {}transform_map (sumq_filter (undup [seq i.2  | i <- l]) (fun (i : A) => i == a.2))
+          filter_undup filter_undup undup_filter_item -a_in_l //= addr0.
+        have : acc_mass a.2 l = 0 => [|acc_mass_eq_0].
+        + clear - a_notin_l_ne0. rewrite /acc_mass /unzip1 (sumq_filter [seq i <- l | i.2 == a.2] (fun (i : ℚ≥0 * A) => i.1 == 0)).
+          have : (fun (i : ℚ≥0 * A) => i.1 == 0) = preim fst (fun x => x == 0 ) => [//=|eq_preim]. rewrite {}eq_preim -filter_map sumq_filter_0 add0r.
+          rewrite -filter_predI predI_comm filter_predI. have : {in [seq i <- l  | i.1 != 0], (fun (i: ℚ≥0 * A) => i.2 == a.2) =i pred0 } => [m hm|eq_pred0].
+          - rewrite /pred0 /in_mem //=. apply/eqP. move => m_eq_a. have m_eq_a' := map_f snd hm. rewrite m_eq_a /is_true in m_eq_a'.
+            rewrite m_eq_a' //= in a_notin_l_ne0.
+          rewrite (eq_in_filter eq_pred0) filter_pred0 //=.
+        rewrite acc_mass_eq_0 add0r //=. rewrite size_lt_cons //=.
+      - rewrite map_cons map_cons sumq_cons sumq_cons. congr GRing.add.
+        have : {in undup [seq i.2  | i <- l  & i.1 != 0], (fun x => acc_mass x (a :: l)) =1 (fun x => acc_mass x l)} => [m hm| transform_map].
+        + rewrite acc_mass_cons. have : a.2 == m = false => [| a_ne_m]. apply/eqP. move => a_eq_m. rewrite -a_eq_m mem_undup in hm. rewrite hm //= in a_notin_l_ne0.
+          rewrite a_ne_m addr0 //=.
+        rewrite eq_in_map in transform_map. rewrite {}transform_map.
+        have : {in undup [seq i.2  | i <- l], (fun x => acc_mass x (a :: l)) =1 (fun x => acc_mass x l)} => [m hm| transform_map].
+        + rewrite acc_mass_cons. have : a.2 == m = false => [| a_ne_m]. apply/eqP. move => a_eq_m. rewrite -a_eq_m mem_undup in hm. rewrite hm //= in a_notin_l.
+          rewrite a_ne_m addr0 //=. 
+        rewrite eq_in_map in transform_map. rewrite {}transform_map IH //=. rewrite size_lt_cons //=.
+Qed.
 
 Lemma mass_cons_eq_acc_mass_add_mass {A : eqType} {μ : Enum A} (a : A) : mass μ (undup (unzip2 μ)) = acc_mass a μ + mass ([seq i <- μ | snd i != a]) (undup (unzip2 [seq i <- μ | snd i != a])).
 Proof.
@@ -524,17 +675,6 @@ Proof.
     - rewrite //= addr0 addrA IH addrA (addrC (acc_mass a l) h.1) //=.
 Qed.
 
-Lemma seq_strong_induction {A: Type} {P : seq A -> Prop} (Pn : ∀ L, (∀ l, size l < size L -> P l) -> P L ): ∀ l, P l.
-Proof.
-  enough (H0: ∀ (n: nat) l, lt (size l) n -> P l).
-  - move=> l. eapply (H0 (plus 1 (size l))). auto.
-  - elim => [l fal| n IHn l sizel_lt_n_add_1].
-    + cbn in fal. apply except. exact (PeanoNat.Nat.nle_succ_0 _ fal).
-    + eapply (Pn l). move => l' size_l'_lt_l. eapply (IHn l').
-      rewrite /is_true -(Bool.reflect_iff _ _ ssrnat.ltP) in size_l'_lt_l.
-      rewrite /lt -PeanoNat.Nat.succ_le_mono in sizel_lt_n_add_1. exact (PeanoNat.Nat.le_trans _ _ _ size_l'_lt_l sizel_lt_n_add_1).
-Qed.
-
 Lemma mass_supp_eq_sumq_fst {A : eqType} (μ : Enum A) : mass μ (supp μ) = sumq (unzip1 μ).
 Proof.
   rewrite mass_supp_eq_mass_undup.
@@ -547,21 +687,6 @@ Proof.
   rewrite size_filter.
   have le_count := count_size (λ i : ℚ≥0 * A, i.2 != a.2) l. auto.
   unfold filter. rewrite (eq_refl (snd a)). auto.
-Qed.
-
-Lemma acc_mass_0_of_notin_supp {A : eqType} (x : A) (μ : Enum A) : x \notin (supp μ) → acc_mass x μ = 0.
-Proof.
-  move => h. rewrite /acc_mass. rewrite /supp mem_undup /unzip2 in h.
-  elim: μ h => [//= | h t ih x_notin].
-  rewrite filter_cons in x_notin.
-  remember (h.1 != 0) as h_0. elim : h_0 Heqh_0 => [h_eq_0 | h_ne_0].
-  - rewrite -{}h_eq_0 in x_notin. rewrite map_cons in_cons in x_notin.
-    move : x_notin => /norP [x_ne_h x_not_in]. move : ih => /(_ x_not_in) ih. rewrite {x_not_in}.
-    rewrite /is_true Bool.negb_true_iff eq_sym in x_ne_h. rewrite filter_cons x_ne_h. exact: ih.
-  - symmetry in h_ne_0. rewrite h_ne_0 in x_notin. move : ih => /(_ x_notin) ih. rewrite filter_cons.
-    remember (h.2 == x) as h_x. elim : h_x Heqh_x => [h_eq_x | h_ne_x].
-    + rewrite /unzip1 map_cons sumq_cons ih addr0. rewrite Bool.negb_false_iff in h_ne_0. exact: eqP h_ne_0.
-    + exact: ih.
 Qed.
 
 Lemma le_acc_mass_mass_supp {A : eqType} {x : A} {μ : Enum A} : acc_mass x μ <= mass μ (supp μ).

@@ -250,9 +250,9 @@ Proof. unfold Reflexive.
       simpl. unfold mass. simpl. rewrite addr0 //.
     + apply (PSSimProbF _ _ _ _ _ _ _ [::]).
       apply sub0seq. all: simpl; auto.
-      unfold mass. simpl.
-      rewrite acc_mass_0_of_notin_supp //.
-      rewrite -HeqHmem //.
+      unfold mass. simpl. symmetry in HeqHmem.
+      rewrite -common.negb_spec notin_supp_iff_acc_mass_eq_0 in HeqHmem.
+      rewrite HeqHmem //=.
 Qed.
 
 #[global]

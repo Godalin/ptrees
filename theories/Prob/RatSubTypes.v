@@ -61,6 +61,40 @@ Proof. exact hq. Qed.
 Lemma lt_nnQ_of_lt_Q {p q : nnQ} (hq: Qval p < Qval q) : p < q.
 Proof. exact hq. Qed.
 
+#[local] Open Scope order_scope.
+#[local] Open Scope ring_scope.
+
+Definition nnQ_0 := mknnQ 0 (Order.POrderTheory.lexx (0:rat)).
+
+Lemma lt_0_nnQ_iff_ne_0 {p: nnQ}: p != nnQ_0 <-> nnQ_0 < p.
+Proof.
+  split.
+  - move => ne. rewrite /nnQ_0 //=.
+    have le0 := le_nnQ0 p. rewrite Order.POrderTheory.lt_def. apply/andP. split.
+    exact ne. exact le0.
+  - move => lt. rewrite Order.POrderTheory.lt_def in lt. move: (andP lt) => [r _]. exact r.
+Qed.
+
+Lemma pos_of_pos_add {p q: nnQ} (p_pos: nnQ_0 < p): nnQ_0 < p + q.
+Proof.
+  apply ssrnum.Num.Theory.ltr_wpDr. exact (le_nnQ0 q). exact p_pos.
+Qed.
+
+Lemma pos_of_add_pos {p q: nnQ} (q_pos: nnQ_0 < q): nnQ_0 < p + q.
+Proof.
+  apply ssrnum.Num.Theory.ltr_wpDl. exact (le_nnQ0 p). exact q_pos.
+Qed.
+
+Lemma ne0_of_ne0_add {p q: nnQ} (p_pos: p != nnQ_0): p + q != nnQ_0.
+Proof.
+  rewrite lt_0_nnQ_iff_ne_0. rewrite lt_0_nnQ_iff_ne_0 in p_pos. exact (pos_of_pos_add p_pos).
+Qed.
+
+Lemma ne0_of_add_ne0 {p q: nnQ} (q_pos: q != nnQ_0): p + q != nnQ_0.
+Proof.
+  rewrite lt_0_nnQ_iff_ne_0. rewrite lt_0_nnQ_iff_ne_0 in q_pos. exact (pos_of_add_pos q_pos).
+Qed.
+
 End NonnegQ.
 
 Module NonnegQNotations.
