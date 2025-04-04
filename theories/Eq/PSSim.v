@@ -55,7 +55,8 @@ Variant pssim_cond REL (t' : ptree E X) (l' : label) (p : ℚ≥0)
       → pssim_cond REL t' l' p (VisF e k)
   | PSSimProbF
     : ∀ (X' : eqType) (μ : Enum X') (k : X' → ptree F Y) (s : seq X'),
-        subseq s (supp μ)
+        uniq s
+      → {subset s <= supp μ}
       → transAll l' (Prob μ k) [seq enumk μ k x | x <- s]
       → relateAll REL t' [seq k x | x <- s]
       → p <= mass μ s
@@ -94,8 +95,8 @@ Proof. intros REL t' l p u H. inversion H; subst.
     unfold transAllPrb, foldr. simpl.
     rewrite addr0. rewrite le_refl. auto.
   - exists (map (enumk μ k) s); repeat split; simpl.
-    apply H1. rewrite <- map_comp. exact H2.
-    apply (le_trans H3). unfold transAllPrb, unzip1.
+    apply H2. rewrite <- map_comp. exact H3.
+    apply (le_trans H4). unfold transAllPrb, unzip1.
     rewrite <- map_comp. unfold ssrfun.comp, fst, mass. simpl.
     rewrite le_refl. reflexivity.
 Qed.
@@ -184,6 +185,7 @@ End PSSimNotations.
 Section pssim_proper.
 Import Enum.
 Import EquNotations.
+Import GRing.Theory Order.Theory.
 #[local] Notation ptree E := (ptree E Enum).
 
 #[global]
@@ -206,8 +208,14 @@ Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
     assert (Vis e k ≅ Vis e k1). step. constructor. intros.
     rewrite REL. reflexivity. rewrite -H2. auto.
   - step equ in EQy. rewrite -H in EQy. dependent destruction EQy; subst.
-    rewrite -x. econstructor. rewrite /disc_RT enumRT_eq in REL.
-    have mem_eq := supp_enum_eq_mem_eq REL. admit.
+    rewrite /disc_RT enumRT_eq in REL.
+    rewrite -x. econstructor. exact: supp_uniq μ.
+    + move => m hm. rewrite (supp_enum_eq_mem_eq REL m). exact: hm.
+    + admit.
+    + admit.
+    + apply (le_trans H4).
+      rewrite -(mass_eq1_of_enumeq REL).
+      exact: (mass_le_of_subset H1 H0 (supp_uniq μ)).
 Admitted.
 
 End pssim_proper.
@@ -239,8 +247,9 @@ Proof. unfold Reflexive.
     rewrite H1. apply Htrans. auto.
   - exists tau; split; auto.
     remember (x \in supp μ) as Hmem. destruct Hmem.
-    + apply (PSSimProbF _ _ _ _ _ _ _ [:: x]).
-      rewrite sub1seq -HeqHmem //.
+    + apply (PSSimProbF _ _ _ _ _ _ _ [:: x]). by [].
+      move => m hm. rewrite mem_seq1 in hm.
+      rewrite (eqP hm) -HeqHmem //.
       simpl; split; auto. rewrite H1 H6.
       rewrite (ptree_eta t0). rewrite H2. apply Htrans.
       simpl; split; auto.
@@ -249,7 +258,7 @@ Proof. unfold Reflexive.
         -(equ_is_eq (ptree_eta t0)) (equ_is_eq H6) //.
       simpl. unfold mass. simpl. rewrite addr0 //.
     + apply (PSSimProbF _ _ _ _ _ _ _ [::]).
-      apply sub0seq. all: simpl; auto.
+      by []. by []. all: simpl; auto.
       unfold mass. simpl. symmetry in HeqHmem.
       rewrite -common.negb_spec notin_supp_iff_acc_mass_eq_0 in HeqHmem.
       rewrite HeqHmem //=.

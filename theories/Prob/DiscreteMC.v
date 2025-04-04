@@ -551,10 +551,44 @@ Proof.
       exact: (PeanoNat.Nat.le_trans _ _ _ size_l'_lt_l sizel_lt_n_add_1).
 Qed.
 
-(* This theorem will not be used for now. *)
-Lemma mass_eq_of_mem_eq {A : eqType} {m1 m2 : seq A} {μ : Enum A} (mem_eq: m1 =i m2) (uniq_m1: uniq m1) (uniq_m2: uniq m2): mass μ m1 = mass μ m2.
+Lemma mass_eq2_of_mem_eq {A : eqType} {m1 m2 : seq A} {μ : Enum A} (mem_eq: m1 =i m2) (uniq_m1: uniq m1) (uniq_m2: uniq m2): mass μ m1 = mass μ m2.
 Proof.
-Admitted.
+  have : size m1 = size m2 => [|size_eq]. rewrite (uniq_size_uniq uniq_m1 mem_eq) in uniq_m2. symmetry. exact: (eqP uniq_m2).
+  remember (size m1) as sz. elim: sz m1 m2 Heqsz size_eq mem_eq uniq_m1 uniq_m2 => [m1 m2 Heqsz size_eq mem_eq uniq_m1 uniq_m2|n IH m1 m2 Heqsz size_eq mem_eq uniq_m1 uniq_m2].
+  - have : m1 = [::] => [|m1_eq_nil]. move : Heqsz => /eqP Heqsz. rewrite eq_sym size_eq0 in Heqsz. exact: eqP Heqsz.
+    have : m2 = [::] => [|m2_eq_nil]. move : size_eq => /eqP size_eq. rewrite eq_sym size_eq0 in size_eq. exact: eqP size_eq.
+    rewrite m1_eq_nil m2_eq_nil //=.
+  - case: m1 Heqsz uniq_m1 mem_eq => [Heqsz uniq_m1 mem_eq|a m1 Heqsz uniq_m1 mem_eq]. rewrite //= in Heqsz.
+    rewrite /mass map_cons sumq_cons. rewrite //= in Heqsz. move : Heqsz => /PeanoNat.Nat.succ_inj Heqsz.
+    rewrite /uniq -/uniq in uniq_m1. move : uniq_m1 => /andP [a_notin_m1 uniq_m1]. rewrite -/(mass μ m1) (sumq_filter m2 (fun x => x == a)).
+    have : a \in m2 => [|a_in_m2]. move : mem_eq => /(_ a) mem_eq. rewrite in_cons eq_refl //= in mem_eq.
+    congr GRing.add.
+    + rewrite (filter_pred1_uniq uniq_m2 a_in_m2) //= addr0 //=.
+    + apply IH; try assumption.
+      - rewrite size_filter. have count_a := count_uniq_mem a uniq_m2. rewrite a_in_m2 //= in count_a.
+        have count_eq_add := count_predC (λ i : A, i == a) m2. rewrite -size_eq {}count_a add1n in count_eq_add.
+        move : count_eq_add => /PeanoNat.Nat.succ_inj count_eq_add. rewrite count_eq_add //=.
+      - move => i. rewrite mem_filter. symmetry. move : mem_eq => /(_ i) mem_eq. rewrite in_cons in mem_eq. rewrite -{}mem_eq.
+        rewrite Bool.andb_orb_distrib_r andNb //= andb_idl //=. move => i_in_m. apply/eqP. move => i_eq_a. rewrite /is_true i_eq_a in i_in_m.
+        rewrite i_in_m //= in a_notin_m1.
+      - apply filter_uniq. exact: uniq_m2.
+Qed.
+
+Lemma mass_eq1_of_enumeq {A : eqType} {m : seq A} {μ1 μ2 : Enum A} (eq: μ1 ==Enum μ2): mass μ1 m = mass μ2 m.
+Proof.
+  congr sumq. apply eq_in_map. move => i _. rewrite eq //=.
+Qed.
+
+Lemma mass_le_of_subset {A : eqType} {m1 m2 : seq A} {μ : Enum A} (subset: {subset m1 <= m2}) (uniq_m1: uniq m1) (uniq_m2: uniq m2): mass μ m1 <= mass μ m2.
+Proof.
+  rewrite /mass (sumq_filter m2 [in m1]).
+  have sumeq : sumq [seq acc_mass x μ  | x <- m1] = sumq [seq acc_mass i μ  | i <- m2  & i  \in m1].
+  - apply mass_eq2_of_mem_eq; try assumption.
+    + move => i. rewrite mem_filter andb_idr //=. exact: subset i.
+    + apply filter_uniq. exact: uniq_m2.
+  rewrite {}sumeq. apply le_nnQ_of_le_Q. rewrite ssrnum.Num.Theory.lerDl. apply le_nnQ0.
+Qed.
+
 
 Lemma mass_supp_eq_mass_undup {A: eqType} (μ : Enum A) : mass μ (supp μ) = mass μ (undup (unzip2 μ)).
 Proof.
