@@ -210,17 +210,21 @@ Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
     rewrite REL. reflexivity. rewrite -H2. auto.
   - step equ in EQy. rewrite -H in EQy. dependent destruction EQy; subst.
     rewrite /disc_RT enumRT_eq in REL.
-    rewrite -x. apply transAll_Prob_tau in H2.
-    case: H2 => [Hsnil|Htau].
+    rewrite -x.
+    case: (transAll_Prob_tau μ k H2) => [Hsnil|Htau].
     * econstructor. have uniq_nil : uniq [::]. rewrite //=. apply uniq_nil.
       all: rewrite //. rewrite /mass //=.
       have size_eq : size ([::] : seq (ℚ≥0 * (ptree F Y))) = size ([::] : seq (ℚ≥0 * (ptree F Y))).
         reflexivity. rewrite -{1}Hsnil //= size_map in size_eq. have s_nil := size0nil size_eq.
       rewrite s_nil //= in H4.
-    * econstructor. exact: (supp_uniq μ1).
-      + rewrite //=.
-      + rewrite Htau. apply transAll_Prob.
-      + admit.
+    * rewrite Htau.
+      have s_subset : {subset s  <= supp μ1}.
+        move => i in_s. rewrite (supp_enum_eq_mem_eq REL) (H1 i in_s) //=.
+      econstructor. exact: H0. exact: s_subset.
+      + apply (transAll_subset_map s_subset). apply transAll_Prob.
+      + clear - H3 RELk. elim : s H3 => [//=|a s IH H3]. rewrite map_cons in H3. move : H3 => [H3 H4]. move : IH => /(_ H4) IH.
+        rewrite map_cons. split. clear H4 IH s. move : RELk => /(_ a) RELk. rewrite -/(pssim L).
+        admit. exact: IH.
       + apply (le_trans H4).
         rewrite -(mass_eq1_of_enumeq REL) 
           (mass_eq2_of_mem_eq (supp_enum_eq_mem_eq REL) (supp_uniq μ1) (supp_uniq μ)).
