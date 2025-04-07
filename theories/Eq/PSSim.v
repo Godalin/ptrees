@@ -213,13 +213,18 @@ Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
     rewrite -x. apply transAll_Prob_tau in H2.
     case: H2 => [Hsnil|Htau].
     * econstructor. have uniq_nil : uniq [::]. rewrite //=. apply uniq_nil.
-      all: rewrite //.
-    (* * move => m hm. rewrite (supp_enum_eq_mem_eq REL m). exact: hm. *)
-    + admit.
-    + admit.
-    (* + apply (le_trans H4). *)
-    (*   rewrite -(mass_eq1_of_enumeq REL). *)
-    (*   exact: (mass_le_of_subset H1 H0 (supp_uniq μ)). *)
+      all: rewrite //. rewrite /mass //=.
+      have size_eq : size ([::] : seq (ℚ≥0 * (ptree F Y))) = size ([::] : seq (ℚ≥0 * (ptree F Y))).
+        reflexivity. rewrite -{1}Hsnil //= size_map in size_eq. have s_nil := size0nil size_eq.
+      rewrite s_nil //= in H4.
+    * econstructor. exact: (supp_uniq μ1).
+      + rewrite //=.
+      + rewrite Htau. apply transAll_Prob.
+      + admit.
+      + apply (le_trans H4).
+        rewrite -(mass_eq1_of_enumeq REL) 
+          (mass_eq2_of_mem_eq (supp_enum_eq_mem_eq REL) (supp_uniq μ1) (supp_uniq μ)).
+        exact: (mass_le_of_subset H1 H0 (supp_uniq μ)).
 Admitted.
 
 End pssim_proper.
