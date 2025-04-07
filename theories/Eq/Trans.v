@@ -186,6 +186,8 @@ Definition tautrans : srel SS SS :=
 
 End Trans.
 
+
+
 Section Trans_relation.
 
 Import Enum.
@@ -219,7 +221,7 @@ Proof. intros. induction zs.
   apply IHzs. eauto.
 Qed.
 
-Lemma transAll_Prob_Cons {E} {X : eqType} {Y} {k : X -> ptree E Enum Y} (x : Enum X) (p : ℚ≥0 * X) (l : seq X)
+Lemma transAll_Prob_Cons {E} {X : eqType} {Y} {k : X → ptree E Enum Y} (x : Enum X) (p : ℚ≥0 * X) (l : seq X)
   : transAll tau (Prob x k) [seq enumk x k x0  | x0 <- l] -> transAll tau (Prob (p :: x) k) [seq enumk (p :: x) k x0 | x0 <- l].
 Proof.
   move => ih. induction l. rewrite //=.
@@ -230,12 +232,12 @@ Proof.
 Qed.
 
 Lemma transAll_Prob {E} {X : eqType} {Y}
-  : forall (μ : Enum X) (k : X -> ptree E Enum Y), transAll tau (Prob μ k) [seq enumk μ k x | x <- supp μ].
+  : ∀ (μ : Enum X) (k : X → ptree E Enum Y), transAll tau (Prob μ k) [seq enumk μ k x | x <- supp μ].
 Proof.
   move => μ k. elim : μ => [//|p x ih]. rewrite /supp /unzip2 filter_cons.
   case: (fst p == 0).
   - rewrite //=. rewrite /enumk. eapply transAll_Prob_Cons. exact: ih.
-  - rewrite //=. 
+  - rewrite //=.
     case: (snd p \in [seq snd i  | i <- x  & fst i != 0]).
     (* p in [seq snd i  | i <- x] *)
     + rewrite /enumk. eapply transAll_Prob_Cons. exact: ih.
@@ -245,7 +247,19 @@ Proof.
       econstructor. reflexivity. reflexivity.
       eapply transAll_Prob_Cons. exact: ih.
 Qed.
+
+
+
+Lemma transAll_Prob_tau {E} {X : eqType} {Y} {l} {s}
+  : ∀ (μ : Enum X) (k : X → ptree E Enum Y),
+    transAll l (Prob μ k) s → s = [::] ∨ l = tau.
+Proof. intros. induction s. left; auto. destruct a. right.
+  simpl in H. destruct H as [Htrans ?].
+  inversion Htrans. auto.
+Qed.
+
 End Trans_relation.
+
 
 
 Module Import TransNotations.

@@ -186,6 +186,7 @@ Section pssim_proper.
 Import Enum.
 Import EquNotations.
 Import GRing.Theory Order.Theory.
+Import NonnegQNotations.
 #[local] Notation ptree E := (ptree E Enum).
 
 #[global]
@@ -209,13 +210,16 @@ Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
     rewrite REL. reflexivity. rewrite -H2. auto.
   - step equ in EQy. rewrite -H in EQy. dependent destruction EQy; subst.
     rewrite /disc_RT enumRT_eq in REL.
-    rewrite -x. econstructor. exact: supp_uniq μ.
-    + move => m hm. rewrite (supp_enum_eq_mem_eq REL m). exact: hm.
+    rewrite -x. apply transAll_Prob_tau in H2.
+    case: H2 => [Hsnil|Htau].
+    * econstructor. have uniq_nil : uniq [::]. rewrite //=. apply uniq_nil.
+      all: rewrite //.
+    (* * move => m hm. rewrite (supp_enum_eq_mem_eq REL m). exact: hm. *)
     + admit.
     + admit.
-    + apply (le_trans H4).
-      rewrite -(mass_eq1_of_enumeq REL).
-      exact: (mass_le_of_subset H1 H0 (supp_uniq μ)).
+    (* + apply (le_trans H4). *)
+    (*   rewrite -(mass_eq1_of_enumeq REL). *)
+    (*   exact: (mass_le_of_subset H1 H0 (supp_uniq μ)). *)
 Admitted.
 
 End pssim_proper.
