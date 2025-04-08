@@ -103,6 +103,8 @@ Ltac __step_in_equ H :=
 
 #[local] Tactic Notation "step" "in" ident(H) := __step_in_equ H.
 
+Tactic Notation "step" "equ" "in" ident(H) :=  __step_in_equ H.
+
 
 
 (** Useful relation notations *)
