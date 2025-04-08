@@ -133,20 +133,26 @@ End PSSim.
 
 (** pss tactics *)
 
-Ltac __step_pssim := step.
-#[local] Tactic Notation "step" := __step_pssim.
+Ltac __step_pssim :=
+  match goal with
+  | |- @pssim ?E ?F ?X ?Y ?RL _ _ =>
+      unfold pssim; apply (gfp_fp (pss RL))
+  | _ => fail "Fail to step pssim in goal"
+  end.
+#[local] Tactic Notation "step" := __step_pssim || step.
+
+Tactic Notation "step" "pssim" := __step_pssim || step.
 
 Ltac __step_in_pssim H :=
   match type of H with
   | context [@pssim ?E ?F ?X ?Y ?RL] =>
       unfold pssim in H; apply (gfp_pfp (pss RL)) in H;
       fold (@pssim E F X Y RL) in H
-  | _ => fail "Fail to step pssim"
+  | _ => fail "Fail to step pssim in hypothesis"
   end.
 #[local] Tactic Notation "step" "in" ident(H) := __step_in_pssim H.
 
-#[local] Tactic Notation "step" "equ" "in" ident(H) :=
-  __step_in_equ H.
+Tactic Notation "step" "pssim" "in" ident(H) := __step_in_pssim H.
 
 Ltac __use_pssim Hpssim Htrans :=
   apply Hpssim in Htrans;
@@ -189,11 +195,25 @@ Import GRing.Theory Order.Theory.
 Import NonnegQNotations.
 #[local] Notation ptree E := (ptree E Enum).
 
+#[global]
+Instance pssim_aux1 {E F : Type → Type} {X Y : Type} {L : rel (@label E) (@label F)}
+    (t : ptree E X)
+  : Proper (equ (R1 := X) eq ==> flip impl) (pssim L t).
+Proof. intros u1 u2 EQu Htu2. step in Htu2. step. intros l p t' Htrans.
+  use pssim with Htu2 Htrans. step equ in EQu. exists l'. split; auto.
+  inversion Htu2Cond; subst; rewrite <- H in EQu; inversion EQu; subst.
+  all: econstructor; try eauto.
+  - rewrite REL; auto.
+  - dependent destruction H5; subst; dependent destruction H6; subst.
+    assert (Vis e k ≅ Vis e k0). step. constructor. intros. rewrite REL. reflexivity.
+    rewrite -H2. auto.
+  - dependent destruction H8; subst. dependent destruction H9; subst.
+    rewrite -disc_RTeq in REL.
+Admitted.
 
-Definition pssim_equb {E F : Type → Type}
-{X Y : Type} {L : rel (@label E) (@label F)}
-(pssim_equb_: ∀ (x : ptree E X) (a b: ptree F Y), a ≅ b -> x (≲p L) a -> x (≲p L) b)
-: ∀ (x : ptree E X) (a b: ptree F Y), a ≅ b -> x (≲p L) a -> x (≲p L) b.
+Definition pssim_equb {E F : Type → Type} {X Y : Type} {L : rel (@label E) (@label F)}
+    (pssim_equb_: ∀ (x : ptree E X) (a b: ptree F Y), a ≅ b -> x (≲p L) a -> x (≲p L) b)
+  : ∀ (x : ptree E X) (a b: ptree F Y), a ≅ b -> x (≲p L) a -> x (≲p L) b.
 Proof.
   move => x a b equ_eq Hsim. step in Hsim. apply (gfp_fp (pss L)). move => l p x1' Htrans.
   use pssim with Hsim Htrans. exists l'. split. exact: RL.
