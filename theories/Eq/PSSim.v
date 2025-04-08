@@ -195,50 +195,15 @@ Import GRing.Theory Order.Theory.
 Import NonnegQNotations.
 #[local] Notation ptree E := (ptree E Enum).
 
-#[global]
-Instance pssim_equ {E F : Type → Type} {X Y : Type} {L : rel (@label E) (@label F)}
-    (x : ptree E X)
-  : Proper (equ (R2 := Y) eq ==> impl) (pssim L x).
-Proof.
-  rewrite //=. move : x. unfold pssim at 2. coinduction RC CIH.
-  move => x a b equ_eq Hsim. step in Hsim. move => l p x1' Htrans.
-  use pssim with Hsim Htrans. exists l'. split. exact: RL.
-  inversion HsimCond.
-  - step equ in equ_eq. rewrite -H in equ_eq. inversion equ_eq; subst.
-    econstructor; eauto.
-  - step equ in equ_eq. rewrite -H in equ_eq. inversion equ_eq; subst.
-    econstructor; eauto. have t_eq : (Tau t) ≅ (Tau t2). rewrite equ_TauF //=.
-    rewrite -transR_trans -(trans_equ l' p (Tau t) (Tau t2) t_eq). exact: H0. rewrite //=.
-  - step equ in equ_eq. rewrite -H in equ_eq. dependent destruction equ_eq; subst.
-    rewrite -x. econstructor; eauto.
-    assert (Vis e k ≅ Vis e k2). step. constructor. intros.
-    rewrite REL. reflexivity. rewrite -H2. auto.
-  - step equ in equ_eq. rewrite -H in equ_eq. dependent destruction equ_eq; subst.
-    rewrite /disc_RT enumRT_eq in REL.
-    rewrite -x.
-    have s_subset : {subset s  <= supp μ2}.
-        move => i in_s. rewrite -(supp_enum_eq_mem_eq REL) (H1 i in_s) //=.
-    econstructor; eauto.
-    + case: (transAll_Prob_tau μ k H2) => [Hsnil|Htau].
-      * have size_eq : size [seq enumk μ k x  | x <- s] = size ([::] : seq (ℚ≥0 * (ptree F Y))).
-        rewrite Hsnil //=. rewrite //= size_map in size_eq. rewrite (size0nil size_eq) //=.
-      * rewrite Htau. apply (transAll_subset_map s_subset). apply transAll_Prob.
-    + clear - CIH RELk H3. elim : s H3 => [//=|a s IH H3]. rewrite map_cons in H3.
-      move : H3 => [H3 H4]. move : IH => /(_ H4) IH.
-      rewrite map_cons. split. clear H4 IH s. move : RELk => /(_ a) RELk. rewrite -/(pssim L).
-      eapply CIH. exact: RELk. exact: H3. exact: IH.
-    + apply (le_trans H4).
-      rewrite -(mass_eq1_of_enumeq REL) //=.
-Qed.
-
 
 #[global]
 Instance pssim_equ_equ {E F : Type → Type}
     {X Y : Type} (L : rel (@label E) (@label F))
   : Proper (equ (R1 := X) eq ==> equ (R1 := Y) eq ==> flip impl)
     (pssim L).
-Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
-  step in Hpssim2. apply (gfp_fp (pss L)).
+Proof. simpl. unfold pssim at 2. coinduction RC CIH.
+  intros x1 x2 EQx y1 y2 EQy Hpssim2.
+  step in Hpssim2.
   intros l p x1' Htrans. rewrite EQx in Htrans.
   use pssim with Hpssim2 Htrans.
   exists l'; split; auto.
@@ -265,9 +230,9 @@ Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
         move => i in_s. rewrite (supp_enum_eq_mem_eq REL) (H1 i in_s) //=.
       econstructor. exact: H0. exact: s_subset.
       + apply (transAll_subset_map s_subset). apply transAll_Prob.
-      + clear - H3 RELk. elim : s H3 => [//=|a s IH H3]. rewrite map_cons in H3. move : H3 => [H3 H4]. move : IH => /(_ H4) IH.
+      + clear - H3 RELk CIH. elim : s H3 => [//=|a s IH H3]. rewrite map_cons in H3. move : H3 => [H3 H4]. move : IH => /(_ H4) IH.
         rewrite map_cons. split. clear H4 IH s. move : RELk => /(_ a) RELk. rewrite -/(pssim L).
-        eapply pssim_equ. symmetry. exact: RELk. exact: H3. exact: IH.
+        eapply CIH. reflexivity. exact: RELk. exact: H3. exact: IH.
       + apply (le_trans H4).
         rewrite -(mass_eq1_of_enumeq REL) //=.
 Qed.
@@ -324,10 +289,12 @@ Instance Transitive_pss {RC : relation (ptree E X)}
   : Transitive (pss L RC).
 Proof. unfold Transitive.
   intros s t u Hst Htu. intros l p t' Htrans.
-  use pssim with Hst Htrans. inversion HstCond; subst.
-  - inversion H2; subst. rewrite <- H1 in HstCond.
-    exists (val r); split; auto.
-    Fail rewrite <- H1 in Htu.
+  use pssim with Hst Htrans. apply Htu. clear Htu Hst.
+  rewrite -trans__trans. inversion HstCond.
+  - remember (observe t') as ot'. destruct ot'; admit.
+  - admit.
+  - admit.
+  - admit.
 Admitted.
 
 #[global]
