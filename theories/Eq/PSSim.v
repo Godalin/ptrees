@@ -224,9 +224,10 @@ Proof. simpl. intros x1 x2 EQx y1 y2 EQy Hpssim2.
       + apply (transAll_subset_map s_subset). apply transAll_Prob.
       + clear - H3 RELk. elim : s H3 => [//=|a s IH H3]. rewrite map_cons in H3. move : H3 => [H3 H4]. move : IH => /(_ H4) IH.
         rewrite map_cons. split. clear H4 IH s. move : RELk => /(_ a) RELk. rewrite -/(pssim L).
+
         admit. exact: IH.
       + apply (le_trans H4).
-        rewrite -(mass_eq1_of_enumeq REL) 
+        rewrite -(mass_eq1_of_enumeq REL)
           (mass_eq2_of_mem_eq (supp_enum_eq_mem_eq REL) (supp_uniq μ1) (supp_uniq μ)).
         exact: (mass_le_of_subset H1 H0 (supp_uniq μ)).
 Admitted.
@@ -283,24 +284,50 @@ Instance Transitive_pss {RC : relation (ptree E X)}
   : Transitive (pss L RC).
 Proof. unfold Transitive.
   intros s t u Hst Htu. intros l p t' Htrans.
-  __use_pssim Hst Htrans. inversion HstCond; subst.
+  use pssim with Hst Htrans. inversion HstCond; subst.
   - inversion H2; subst. rewrite <- H1 in HstCond.
     exists (val r); split; auto.
     Fail rewrite <- H1 in Htu.
 Admitted.
 
 #[global]
-Instance Reflexive_hpssim `{Reflexive _ L} (RC : Chain (@pss E E X X L))
+Instance Reflexive_hpssim `{Reflexive _ L} {RC : Chain (@pss E E X X L)}
   : Reflexive (` RC).
 Proof. revert RC. apply Reflexive_chain.
   intros RC HRC x. apply Reflexive_pss.
 Qed.
 
 #[global]
-Instance Transitive_hpssim `{Transitive _ L} (RC : Chain (@pss E E X X L))
+Instance Transitive_hpssim `{Transitive _ L} {RC : Chain (@pss E E X X L)}
   : Transitive (` RC).
 Proof. revert RC. apply Transitive_chain.
   intros RC HRC x. apply Transitive_pss.
 Qed.
 
+#[global]
+Instance PreOrder_hpssim `{PreOrder _ L} {RC : Chain (@pss E _ X _ L)}
+  : PreOrder (` RC).
+Proof. split; typeclasses eauto. Qed.
+
 End homogenous_pssim_theory.
+
+
+
+Section heterogenous_pssim_theory.
+Import Enum.
+Import GRing.Theory Order.Theory.
+Import NonnegQNotations.
+Import EquNotations.
+Import EquAxioms.
+#[local] Notation ptree E := (ptree E Enum).
+
+
+Context {E F : Type → Type} {X Y : Type}.
+Context {L : rel (@label E) (@label F)}.
+
+Notation ss := (@pss E F X Y L).
+Notation ssim := (@pssim E F X Y L).
+
+
+
+End heterogenous_pssim_theory.
