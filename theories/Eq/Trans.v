@@ -186,6 +186,8 @@ Definition tautrans : srel SS SS :=
 
 End Trans.
 
+
+
 Section Trans_relation.
 
 Import Enum.
@@ -195,31 +197,83 @@ Fixpoint transAll {E} {R} α (t : ptree E Enum R)
     (tlist : Enum (ptree E Enum R)) : Prop :=
   match tlist with
   | [::] => True
-  | (p, t') :: tlist' => trans α p t t' ∧ transAll α t tlist'
+  | a :: tlist' => trans α (fst a) t (snd a) ∧ transAll α t tlist'
   end.
 
 Definition transAllPrb {E X} (tlist : Enum (ptree E Enum X)) : ℚ≥0 :=
   sumq (unzip1 tlist).
 
-Fixpoint relateAll {X Y} (R : rel X Y) (x : X) (ys : list Y) : Prop :=
+Fixpoint relateAll {X Y} (R : rel X Y) (x : X) (ys : seq Y) : Prop :=
   match ys with
   | [::] => True
   | y :: ys' => R x y ∧ relateAll R x ys'
   end.
 
-Lemma relateAll_sub {X Y} (R S : rel X Y) (x : X) (ys : list Y)
+Lemma relateAll_sub {X Y} (R S : rel X Y) (x : X) (ys : seq Y)
   : (∀ x y, R x y → S x y) → relateAll R x ys → relateAll S x ys.
 Proof. elim: ys => [//|y ys IH //= H] [Hxy Hxys]. auto. Qed.
 
 Lemma relateAll_trans {X} (R : relation X) `{Transitive _ R}
-  : ∀ (x y : X) (zs : list X), R x y → relateAll R y zs → relateAll R x zs.
+  : ∀ (x y : X) (zs : seq X), R x y → relateAll R y zs → relateAll R x zs.
 Proof. intros. induction zs.
   auto. simpl in H1. destruct H1 as [Rya RAyzs].
   simpl. split. etransitivity; eauto.
   apply IHzs. eauto.
 Qed.
 
-Lemma transAll_Prob_Cons {E} {X : eqType} {Y} {k : X -> ptree E Enum Y} (x : Enum X) (p : ℚ≥0 * X) (l : seq X)
+Lemma relateAll_iff_forall_map {X Z: Type} {Y: eqType} {R : rel X Z} {f: Y -> Z}
+   {x : X} {z : seq Y}: relateAll R x [seq f i | i <- z] <-> ∀i, i \in z -> R x (f i).
+Proof. split.
+  - elim: z => [//=|a l IH h i hi]. move : h => [Rxa rl].
+    rewrite in_cons in hi. move : hi => /orP [/eqP i_eq_a | i_in_l].
+    + rewrite i_eq_a. exact: Rxa.
+    + exact: IH rl i i_in_l.
+  - elim: z => [//=|a l IH h]. split.
+    + apply h. rewrite in_cons eq_refl //=.
+    + apply IH. move => i hi. apply h. rewrite in_cons hi orbT //=.
+Qed.
+
+Lemma relateAll_iff_forall {X: Type} {Y: eqType} (R : rel X Y)
+   {x : X} {z : seq Y}: relateAll R x z <-> ∀i, i \in z -> R x i.
+Proof.
+  have hm:=@relateAll_iff_forall_map X Y Y R (fun x => x) x z.
+  rewrite map_id //= in hm.
+Qed.
+
+Lemma relateAll_subset {X: Type} {Y: eqType} (R : rel X Y)
+   {x : X} {z1 z2 : seq Y} (subset : {subset z1 <= z2}) : relateAll R x z2 → relateAll R x z1.
+Proof.
+  rewrite relateAll_iff_forall relateAll_iff_forall. move => r2 i hi. apply r2. exact: subset hi.
+Qed.
+
+Lemma relateAll_map_subset {X Z: Type} {Y: eqType} {R : rel X Z} {f: Y -> Z}
+   {x : X} {z1 z2 : seq Y} (subset : {subset z1 <= z2}) : relateAll R x [seq f i | i <- z2] → relateAll R x [seq f i | i <- z1].
+Proof.
+  rewrite relateAll_iff_forall_map relateAll_iff_forall_map. move => r2 i hi. apply r2. exact: subset hi.
+Qed.
+
+
+Lemma transAll_iff_forall_map {X : eqType} {E} {R} {α} {f: X -> (ℚ≥0 * (ptree E Enum R))} 
+  {t : ptree E Enum R} {t' : seq X} : transAll α t [seq f i | i <- t'] <-> ∀x, x \in t' -> trans α (fst (f x)) t (snd (f x)).
+Proof.
+  split.
+  - elim: t' => [//=|a l IH h i hi]. rewrite map_cons in h.
+    move : h => [Rxa rl]. rewrite in_cons in hi. move : hi => /orP [/eqP i_eq_a | i_in_l].
+    + rewrite i_eq_a. exact: Rxa.
+    + exact: IH rl i i_in_l.
+  - elim: t' => [//=|a l IH h]. split.
+    + apply h. rewrite in_cons eq_refl //=.
+    + apply IH. move => i hi. apply h. rewrite in_cons hi orbT //=. 
+Qed.
+
+Lemma transAll_subset_map {X : eqType} {E} {R} {α} {f: X -> (ℚ≥0 * (ptree E Enum R))} 
+  {t : ptree E Enum R} {t1 t2 : seq X} (subset: {subset t1 <= t2}) : transAll α t [seq f i | i <- t2] -> transAll α t [seq f i | i <- t1].
+Proof.
+  rewrite transAll_iff_forall_map transAll_iff_forall_map.
+  move => h1 x hx. apply h1. exact: subset hx.
+Qed.
+
+Lemma transAll_Prob_Cons {E} {X : eqType} {Y} {k : X → ptree E Enum Y} (x : Enum X) (p : ℚ≥0 * X) (l : seq X)
   : transAll tau (Prob x k) [seq enumk x k x0  | x0 <- l] -> transAll tau (Prob (p :: x) k) [seq enumk (p :: x) k x0 | x0 <- l].
 Proof.
   move => ih. induction l. rewrite //=.
@@ -230,19 +284,34 @@ Proof.
 Qed.
 
 Lemma transAll_Prob {E} {X : eqType} {Y}
-  : forall (μ : Enum X) (k : X -> ptree E Enum Y), transAll tau (Prob μ k) [seq enumk μ k x | x <- supp μ].
+  : ∀ (μ : Enum X) (k : X → ptree E Enum Y), transAll tau (Prob μ k) [seq enumk μ k x | x <- supp μ].
 Proof.
-  move => μ k. elim : μ => [//|p x ih]. rewrite /supp /unzip2 map_cons /undup -/undup.
-  case: (snd p \in [seq snd i | i <- x]).
-  (* p in [seq snd i  | i <- x] *)
-  rewrite /enumk. eapply transAll_Prob_Cons. exact: ih.
+  move => μ k. elim : μ => [//|p x ih]. rewrite /supp /unzip2 filter_cons.
+  case: (fst p == 0).
+  - rewrite //=. rewrite /enumk. eapply transAll_Prob_Cons. exact: ih.
+  - rewrite //=.
+    case: (snd p \in [seq snd i  | i <- x  & fst i != 0]).
+    (* p in [seq snd i  | i <- x] *)
+    + rewrite /enumk. eapply transAll_Prob_Cons. exact: ih.
 
-  (* p not in [seq snd i  | i <- x] *)
-  rewrite /enumk map_cons /transAll. split.
-  econstructor. reflexivity. reflexivity.
-  eapply transAll_Prob_Cons. exact: ih.
+    (* p not in [seq snd i  | i <- x] *)
+    + rewrite /enumk map_cons /transAll. split.
+      econstructor. reflexivity. reflexivity.
+      eapply transAll_Prob_Cons. exact: ih.
 Qed.
+
+
+
+Lemma transAll_Prob_tau {E} {X : eqType} {Y} {l} {s}
+  : ∀ (μ : Enum X) (k : X → ptree E Enum Y),
+    transAll l (Prob μ k) s → s = [::] ∨ l = tau.
+Proof. intros. induction s. left; auto. destruct a. right.
+  simpl in H. destruct H as [Htrans ?].
+  inversion Htrans. auto.
+Qed.
+
 End Trans_relation.
+
 
 
 Module Import TransNotations.

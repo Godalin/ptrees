@@ -103,6 +103,8 @@ Ltac __step_in_equ H :=
 
 #[local] Tactic Notation "step" "in" ident(H) := __step_in_equ H.
 
+Tactic Notation "step" "equ" "in" ident(H) :=  __step_in_equ H.
+
 
 
 (** Useful relation notations *)
@@ -538,6 +540,62 @@ Proof. apply bind_equ_cong_chain. Qed.
 (* Qed. *)
 
 End rules.
+
+
+
+(** * Up-to Equ *)
+Section up_to_equ.
+
+Variant equ_clos_body {E F M N}
+    `{DiscreteInterface M} `{DiscreteInterface N} {X1 X2}
+    (R : rel (ptree E M X1) (ptree F N X2))
+  : (rel (ptree E M X1) (ptree F N X2)) :=
+  | Equ_clos
+    : forall t t' u' u
+        (Equt : t ≅ t') (HR : R t' u') (Equu : u' ≅ u),
+      equ_clos_body R t u.
+
+Program Definition equ_clos {E F M N}
+    `{DiscreteInterface M} `{DiscreteInterface N} {X1 X2}
+  : mon (rel (ptree E M X1) (ptree F N X2)) :=
+  {| body := @equ_clos_body E F M N _ _ X1 X2 |}.
+Next Obligation.
+  intros * ?? LE t u EQ. inversion EQ; subst.
+  econstructor; eauto.
+  apply LE; auto.
+Qed.
+
+Lemma equ_clos_sym {E M X} `{DiscreteInterface M}
+  : compat converse (@equ_clos E E M M _ _ X X).
+Proof. intros R t u EQ. inversion EQ; subst.
+  apply Equ_clos with u' t'; auto; symmetry; auto.
+Qed.
+
+Lemma equ_clos_equ {E M} `{DiscreteInterface M} {X L} {RC: Chain (fequ L)}:
+  forall x y, @equ_clos E E M M _ _ X X (` RC) x y -> (` RC) x y.
+Proof. apply tower.
+  - intros ? INC x y [x' y' x'' y'' EQ' ? EQ'' ] ??. red.
+    apply INC; auto.
+    econstructor; eauto.
+    apply leq_infx in H0.
+    now apply H0.
+  (* - clear; intros RC IH ?? []. *)
+  (*   step in Equt; step in Equu; cbn in *. *)
+  (*   inversion Equt; subst; rewrite <- H in HR; clear H H0 t t'. *)
+  (*   all:inv HR; rewrite <- H in Equu. *)
+  (*   all:try now inv Equu; eauto. *)
+  (*   inv Equu; constructor; apply IH; econstructor; eauto. *)
+  (*   inv Equu; constructor; apply IH; econstructor; eauto. *)
+  (*   dependent induction H1; dependent induction H2. inv Equu. *)
+  (*   dependent induction H2; dependent induction H3. *)
+  (*   econstructor; intros. apply IH; econstructor; eauto. *)
+  (*   dependent induction H1; dependent induction H2. inv Equu. *)
+  (*   dependent induction H2; dependent induction H3. *)
+  (*   econstructor; intros. apply IH; econstructor; eauto. *)
+Admitted.
+
+End up_to_equ.
+
 
 
 
