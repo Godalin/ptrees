@@ -193,11 +193,11 @@ Section Trans_relation.
 Import Enum.
 Import NonnegQNotations.
 
-Fixpoint transAll {E} {R} α (t : ptree E Enum R)
-    (tlist : Enum (ptree E Enum R)) : Prop :=
+Fixpoint transAll {E} {R} (t : ptree E Enum R)
+    (tlist : Enum (label * ptree E Enum R)) : Prop :=
   match tlist with
   | [::] => True
-  | a :: tlist' => trans α (fst a) t (snd a) ∧ transAll α t tlist'
+  | i :: tlist' => trans (fst (snd i)) (fst i) t (snd (snd i)) ∧ transAll t tlist'
   end.
 
 Definition transAllPrb {E X} (tlist : Enum (ptree E Enum X)) : ℚ≥0 :=
@@ -253,11 +253,11 @@ Proof.
 Qed.
 
 
-Lemma transAll_iff_forall_map {X : eqType} {E} {R} {α} {f: X -> (ℚ≥0 * (ptree E Enum R))} 
-  {t : ptree E Enum R} {t' : seq X} : transAll α t [seq f i | i <- t'] <-> ∀x, x \in t' -> trans α (fst (f x)) t (snd (f x)).
+Lemma transAll_iff_forall_map {X : eqType} {E} {R} {f: X -> (ℚ≥0 * (label * ptree E Enum R))} 
+  {t : ptree E Enum R} {t' : seq X} : transAll t [seq f i | i <- t'] <-> ∀x, x \in t' -> trans (fst (snd (f x))) (fst (f x)) t (snd (snd (f x))).
 Proof.
   split.
-  - elim: t' => [//=|a l IH h i hi]. rewrite map_cons in h.
+  - elim: t' => [//=|a l IH h i hi]. rewrite map_cons /transAll in h.
     move : h => [Rxa rl]. rewrite in_cons in hi. move : hi => /orP [/eqP i_eq_a | i_in_l].
     + rewrite i_eq_a. exact: Rxa.
     + exact: IH rl i i_in_l.
@@ -266,13 +266,14 @@ Proof.
     + apply IH. move => i hi. apply h. rewrite in_cons hi orbT //=. 
 Qed.
 
-Lemma transAll_subset_map {X : eqType} {E} {R} {α} {f: X -> (ℚ≥0 * (ptree E Enum R))} 
-  {t : ptree E Enum R} {t1 t2 : seq X} (subset: {subset t1 <= t2}) : transAll α t [seq f i | i <- t2] -> transAll α t [seq f i | i <- t1].
+Lemma transAll_subset_map {X : eqType} {E} {R} {f: X -> (ℚ≥0 * (label * ptree E Enum R))} 
+  {t : ptree E Enum R} {t1 t2 : seq X} (subset: {subset t1 <= t2}) : transAll t [seq f i | i <- t2] -> transAll t [seq f i | i <- t1].
 Proof.
   rewrite transAll_iff_forall_map transAll_iff_forall_map.
   move => h1 x hx. apply h1. exact: subset hx.
 Qed.
 
+(*
 Lemma transAll_Prob_Cons {E} {X : eqType} {Y} {k : X → ptree E Enum Y} (x : Enum X) (p : ℚ≥0 * X) (l : seq X)
   : transAll tau (Prob x k) [seq enumk x k x0  | x0 <- l] -> transAll tau (Prob (p :: x) k) [seq enumk (p :: x) k x0 | x0 <- l].
 Proof.
@@ -309,7 +310,7 @@ Proof. intros. induction s. left; auto. destruct a. right.
   simpl in H. destruct H as [Htrans ?].
   inversion Htrans. auto.
 Qed.
-
+*)
 End Trans_relation.
 
 
