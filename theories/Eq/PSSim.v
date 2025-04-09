@@ -36,69 +36,90 @@ Context {E F : Type → Type} {X Y : Type}.
     t'-- R -- u'u'u'
   *)
 
-Variant pssim_cond_ l' p : (ptree' F Y) → seq (ptree F Y) → Prop :=
-  | PSSimRetF
-    : ∀ r u',
-        trans l' p (Ret r) u'
-      → pssim_cond_ l' p (RetF r) [:: u']
-  | PSSimTauF
-    : ∀ t u',
-        trans l' p (Tau t) u'
-      → pssim_cond_ l' p (TauF t) [:: u']
-  | PSSimVisF
-    : ∀ X' (e : F X') k u',
-        trans l' p (Vis e k) u'
-      → pssim_cond_ l' p (VisF e k) [:: u']
+(* Variant pssim_cond_ l' p : (ptree' F Y) → seq (ptree F Y) → Prop := *)
+(*   | PSSimRetF *)
+(*     : ∀ r u', *)
+(*         trans l' p (Ret r) u' *)
+(*       → pssim_cond_ l' p (RetF r) [:: u'] *)
+(*   | PSSimTauF *)
+(*     : ∀ t u', *)
+(*         trans l' p (Tau t) u' *)
+(*       → pssim_cond_ l' p (TauF t) [:: u'] *)
+(*   | PSSimVisF *)
+(*     : ∀ X' (e : F X') k u', *)
+(*         trans l' p (Vis e k) u' *)
+(*       → pssim_cond_ l' p (VisF e k) [:: u'] *)
+(*   | PSSimProbF *)
+(*     : ∀ (X' : eqType) (μ : Enum X') (k : X' → ptree F Y) (s : seq X'), *)
+(*         uniq s *)
+(*       → {subset s <= supp μ} *)
+(*       → transAll l' (Prob μ k) [seq enumk μ k x | x <- s] *)
+(*       → p <= mass μ s *)
+(*       → pssim_cond_ l' p (ProbF μ k) [seq k x | x <- s]. *)
+
+
+
+Fixpoint transAll_new {E} {R} (t : ptree E R)
+    (tlist : Enum (label * ptree E R)) : Prop :=
+  match tlist with
+  | [::] => True
+  | (p, (l, t')) :: tlist' => trans l p t t' ∧ transAll_new t tlist'
+  end.
+
+Variant pssim_cond_ : (ptree' F Y) → Enum (label * ptree F Y) → Prop :=
+  | PSSimTransF
+    : ∀ l' p' u u',
+        trans l' p' u u'
+      → pssim_cond_ (observe u) [:: (p', (l', u'))]
   | PSSimProbF
-    : ∀ (X' : eqType) (μ : Enum X') (k : X' → ptree F Y) (s : seq X'),
+    : ∀ (X' : eqType) (μ : Enum X') (k : X' → ptree F Y) (s : seq X') (kl : X' → @label F),
         uniq s
       → {subset s <= supp μ}
-      → transAll l' (Prob μ k) [seq enumk μ k x | x <- s]
-      → p <= mass μ s
-      → pssim_cond_ l' p (ProbF μ k) [seq k x | x <- s].
+      → transAll_new (Prob μ k) [seq (acc_mass x μ, (kl x, k x)) | x <- s]
+      → pssim_cond_ (ProbF μ k) [seq (acc_mass x μ, (kl x, k x)) | x <- s].
 
 
-Definition pssim_cond l' p (u : ptree F Y) (u's : seq (ptree F Y)) : Prop
-  := pssim_cond_ l' p (observe u) u's.
+(* Definition pssim_cond l' p (u : ptree F Y) (u's : seq (ptree F Y)) : Prop *)
+(*   := pssim_cond_ l' p (observe u) u's. *)
 
-Lemma sub_pssim_cond (R S : rel (ptree E X) (ptree F Y))
-    t' (l : @label F) p u
-  : (∀ x y, R x y → S x y) → pssim_cond R t' l p u → pssim_cond S t' l p u.
-Proof. intros. inversion H0.
-  - econstructor. apply H1. auto.
-  - econstructor. apply H1. auto.
-  - econstructor. apply H1. auto.
-  - econstructor. apply H1. all: auto.
-    apply (relateAll_sub R S); auto.
-Qed.
+(* Lemma sub_pssim_cond (R S : rel (ptree E X) (ptree F Y)) *)
+(*     t' (l : @label F) p u *)
+(*   : (∀ x y, R x y → S x y) → pssim_cond R t' l p u → pssim_cond S t' l p u. *)
+(* Proof. intros. inversion H0. *)
+(*   - econstructor. apply H1. auto. *)
+(*   - econstructor. apply H1. auto. *)
+(*   - econstructor. apply H1. auto. *)
+(*   - econstructor. apply H1. all: auto. *)
+(*     apply (relateAll_sub R S); auto. *)
+(* Qed. *)
 
-Lemma pssim_cond_char : ∀ (REL : rel (ptree E X) (ptree F Y)) t' l p u,
-    pssim_cond REL t' l p u
-  → ∃ (u's : Enum (ptree F Y)),
-      transAll l (go u) u's
-    ∧ relateAll REL t' [seq snd p | p <- u's]
-    ∧ p <= transAllPrb u's.
-Proof. intros REL t' l p u H. inversion H; subst.
-  - exists [:: (p, u')]; repeat split; simpl.
-    inversion H0; subst; auto. assumption.
-    unfold transAllPrb, foldr. simpl.
-    rewrite addr0. rewrite le_refl. auto.
-  - exists [:: (p, u')]; repeat split; simpl.
-    inversion H0; subst; auto. assumption.
-    unfold transAllPrb, foldr. simpl.
-    rewrite addr0. rewrite le_refl. auto.
-  - exists [:: (p, u')]; repeat split; simpl.
-    inversion H0; subst. dependent destruction H7.
-    econstructor. rewrite -> H5. apply observe_equ_eq.
-    assumption. assumption.
-    unfold transAllPrb, foldr. simpl.
-    rewrite addr0. rewrite le_refl. auto.
-  - exists (map (enumk μ k) s); repeat split; simpl.
-    apply H2. rewrite <- map_comp. exact H3.
-    apply (le_trans H4). unfold transAllPrb, unzip1.
-    rewrite <- map_comp. unfold ssrfun.comp, fst, mass. simpl.
-    rewrite le_refl. reflexivity.
-Qed.
+(* Lemma pssim_cond_char : ∀ (REL : rel (ptree E X) (ptree F Y)) t' l p u, *)
+(*     pssim_cond REL t' l p u *)
+(*   → ∃ (u's : Enum (ptree F Y)), *)
+(*       transAll l (go u) u's *)
+(*     ∧ relateAll REL t' [seq snd p | p <- u's] *)
+(*     ∧ p <= transAllPrb u's. *)
+(* Proof. intros REL t' l p u H. inversion H; subst. *)
+(*   - exists [:: (p, u')]; repeat split; simpl. *)
+(*     inversion H0; subst; auto. assumption. *)
+(*     unfold transAllPrb, foldr. simpl. *)
+(*     rewrite addr0. rewrite le_refl. auto. *)
+(*   - exists [:: (p, u')]; repeat split; simpl. *)
+(*     inversion H0; subst; auto. assumption. *)
+(*     unfold transAllPrb, foldr. simpl. *)
+(*     rewrite addr0. rewrite le_refl. auto. *)
+(*   - exists [:: (p, u')]; repeat split; simpl. *)
+(*     inversion H0; subst. dependent destruction H7. *)
+(*     econstructor. rewrite -> H5. apply observe_equ_eq. *)
+(*     assumption. assumption. *)
+(*     unfold transAllPrb, foldr. simpl. *)
+(*     rewrite addr0. rewrite le_refl. auto. *)
+(*   - exists (map (enumk μ k) s); repeat split; simpl. *)
+(*     apply H2. rewrite <- map_comp. exact H3. *)
+(*     apply (le_trans H4). unfold transAllPrb, unzip1. *)
+(*     rewrite <- map_comp. unfold ssrfun.comp, fst, mass. simpl. *)
+(*     rewrite le_refl. reflexivity. *)
+(* Qed. *)
 
 End experiment.
 
@@ -111,9 +132,9 @@ Definition pss {E F : Type → Type}
     {X Y : Type} (L : rel (@label E) (@label F))
   : mon (ptree E X → ptree F Y → Prop)
   := {| body R t u := ∀ l (p : ℚ≥0) t',
-        trans l p t t' → ∃ l', ∃ u's,
-          L l l'
-          ∧ pssim_cond l' p u u's
+        trans l p t t' → ∃ u's : list (label * ℚ≥0 * SS),
+            True
+          ∧ pssim_cond l u u's
           ∧ relateAll R t' u's
      |}.
 Next Obligation.
@@ -262,7 +283,6 @@ Proof. simpl. unfold pssim at 2. coinduction RC CIH.
       + apply (le_trans H4).
         rewrite -(mass_eq1_of_enumeq REL) //=.
 Qed.
->>>>>>> supp_filter_ne_0
 
 End pssim_proper.
 
