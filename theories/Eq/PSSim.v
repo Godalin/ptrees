@@ -195,6 +195,22 @@ Import GRing.Theory Order.Theory.
 Import NonnegQNotations.
 #[local] Notation ptree E := (ptree E Enum).
 
+#[global]
+Instance pss_equ_equ {E F : Type → Type}
+    {X Y : Type} (L : rel (@label E) (@label F))
+  : Proper (equ (R1 := X) eq ==> equ (R1 := Y) eq ==> flip impl)
+    (pss L (pssim L)).
+Proof. simpl. intros t1 t2 EQt u1 u2 EQu H2 l p t1' HT1.
+  rewrite EQt in HT1. use pssim with H2 HT1. exists l'; split; auto.
+  inversion H2Cond; subst. all: step equ in EQu; rewrite -H in EQu; inversion EQu; subst.
+  - rewrite -H in H2Cond; auto.
+  - econstructor. rewrite REL. apply H0. auto.
+  - dependent destruction H6; subst. dependent destruction H7; subst.
+    assert (Vis e k ≅ Vis e k0). step. constructor. intros x. rewrite REL. reflexivity.
+    econstructor. rewrite -H3. apply H0. apply H1.
+  - dependent destruction H9; subst. dependent destruction H10; subst.
+    econstructor. apply H0. admit.
+Admitted.
 
 #[global]
 Instance pssim_equ_equ {E F : Type → Type}
@@ -288,10 +304,14 @@ Instance Transitive_pss {RC : relation (ptree E X)}
     `{Transitive _ L} `{Transitive _ RC}
   : Transitive (pss L RC).
 Proof. unfold Transitive.
-  intros s t u Hst Htu. intros l p t' Htrans.
-  use pssim with Hst Htrans. apply Htu. clear Htu Hst.
-  rewrite -trans__trans. inversion HstCond.
-  - remember (observe t') as ot'. destruct ot'; admit.
+  intros s t u Hst Htu. intros l p s' Htrans.
+  use pssim with Hst Htrans. inversion HstCond; subst.
+  - rewrite H1 in H2. use pssim with Htu H2. exists l'0; split.
+    transitivity l'; auto. inversion HtuCond; subst.
+    + econstructor. apply H4. transitivity u'; auto.
+    + econstructor. apply H4. transitivity u'; auto.
+    + econstructor. apply H4. transitivity u'; auto.
+    + econstructor. admit.
   - admit.
   - admit.
   - admit.
