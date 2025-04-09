@@ -209,7 +209,9 @@ Proof. simpl. intros t1 t2 EQt u1 u2 EQu H2 l p t1' HT1.
     assert (Vis e k ≅ Vis e k0). step. constructor. intros x. rewrite REL. reflexivity.
     econstructor. rewrite -H3. apply H0. apply H1.
   - dependent destruction H9; subst. dependent destruction H10; subst.
-    econstructor. apply H0. admit.
+    econstructor. apply H0. intros i in_s.
+    rewrite /disc_RT in REL.
+    Fail rewrite -(supp_enum_eq_mem_eq REL).
 Admitted.
 
 #[global]
