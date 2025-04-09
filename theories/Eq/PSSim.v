@@ -311,9 +311,19 @@ Proof. unfold Transitive.
     + econstructor. apply H4. transitivity u'; auto.
     + econstructor. apply H4. transitivity u'; auto.
     + econstructor. apply H4. transitivity u'; auto.
-    + econstructor. admit.
-  - admit.
-  - admit.
+    + econstructor. exact: H4. exact: H5. exact: H6. eapply relateAll_trans. exact: H0. exact: H3. exact H7. exact H8.
+  - rewrite H1 in H2. use pssim with Htu H2. exists l'0; split.
+    transitivity l'; auto. inversion HtuCond; subst.
+    + econstructor. apply H4. transitivity u'; auto.
+    + econstructor. apply H4. transitivity u'; auto.
+    + econstructor. apply H4. transitivity u'; auto.
+    + econstructor. exact: H4. exact: H5. exact: H6. eapply relateAll_trans. exact: H0. exact: H3. exact H7. exact H8.
+  - rewrite H1 in H2. use pssim with Htu H2. exists l'0; split.
+    transitivity l'; auto. inversion HtuCond; subst.
+    + econstructor. apply H4. transitivity u'; auto.
+    + econstructor. apply H4. transitivity u'; auto.
+    + econstructor. apply H4. transitivity u'; auto.
+    + econstructor. exact: H4. exact: H5. exact: H6. eapply relateAll_trans. exact: H0. exact: H3. exact H7. exact H8.
   - admit.
 Admitted.
 
