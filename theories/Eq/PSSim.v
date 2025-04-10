@@ -269,11 +269,9 @@ Proof. unfold Transitive.
     + rewrite //= addr0 in Hp_le_sumq. apply (le_trans Hp_le_sumq). exact: Hp_le_sumq0.
     + split; auto. rewrite //= in HrelAll_u's. eapply relateAll_trans;auto. move: HrelAll_u's => [HrelAll_u's _]. exact : HrelAll_u's. exact: HrelAll_u's0.
   - rewrite transAll_iff_forall_map //= in H4.
-    assert (∀ x : X', x \in s0 → transR (kl x) (acc_mass x μ) t (k x)).
-    { intros. rewrite transR_trans. rewrite (ptree_eta t) -H1.
-      apply H4. auto. }
-    (* 这里要把H4中的(Prob μ k)换成t *) rewrite (observe_equ_eq _ _ H1) in H4.
-    (* 这里要构造一个把s0每一项都应用于Htu上的列表 *) exists (flatten [seq (Htu (H4 i _)).1 | i <- s]). admit.
+    assert (∀ x : X', x \in s0 → trans (kl x) (acc_mass x μ) t (k x)).
+    { intros. rewrite (ptree_eta t) -H1. apply H4. auto. } clear H4.
+    exists (flatten [seq ex_proj1 (Htu (kl i) (acc_mass i μ) (k i) (H5 i _)) | i <- s0]). admit.
 Admitted.
 
 #[global]
