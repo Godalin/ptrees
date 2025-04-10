@@ -192,6 +192,7 @@ Section Trans_relation.
 
 Import Enum.
 Import NonnegQNotations.
+Import Coq.Init.Specif.
 
 Fixpoint transAll {E} {R} (t : ptree E Enum R)
     (tlist : Enum (label * ptree E Enum R)) : Prop :=
@@ -252,6 +253,16 @@ Proof.
   rewrite relateAll_iff_forall_map relateAll_iff_forall_map. move => r2 i hi. apply r2. exact: subset hi.
 Qed.
 
+Lemma relateAll_app {X Y: Type} {R : rel X Y}
+   {x : X} (z1 z2 : seq Y) : relateAll R x (z1 ++ z2) <-> relateAll R x z1 /\ relateAll R x z2.
+Proof.
+  elim : z1 => [//=|a z1 IH].
+  - split. move => i. split; auto. move => [_ i]. exact: i.
+  - rewrite cat_cons /relateAll -/relateAll IH.
+    split. move => [b [c d]]. split. split. all: try assumption.
+    move => [[b c] d]. split. assumption. split. all: try assumption.
+Qed.
+
 
 Lemma transAll_iff_forall_map {X : eqType} {E} {R} {f: X -> (ℚ≥0 * (label * ptree E Enum R))} 
   {t : ptree E Enum R} {t' : seq X} : transAll t [seq f i | i <- t'] <-> ∀x, x \in t' -> trans (fst (snd (f x))) (fst (f x)) t (snd (snd (f x))).
@@ -271,6 +282,20 @@ Lemma transAll_subset_map {X : eqType} {E} {R} {f: X -> (ℚ≥0 * (label * ptre
 Proof.
   rewrite transAll_iff_forall_map transAll_iff_forall_map.
   move => h1 x hx. apply h1. exact: subset hx.
+Qed.
+
+
+Program Fixpoint to_transable_index {E} {R} {X : eqType} {t : ptree E Enum R} {f: X -> nnQ * (label * ptree E Enum R)}
+    {xs : seq X} (tr: transAll t [seq f i | i <- xs]) : seq {x : X | (let i := f x in trans (fst (snd i)) (fst i) t (snd (snd i))) } :=
+  match xs with
+  | [::] => [::]
+  | x :: xs' => (exist _ x _) :: (to_transable_index (xs:= xs') _)
+  end.
+Next Obligation.
+  rewrite map_cons in tr. exact: proj1 tr.
+Qed.
+Next Obligation.
+  rewrite map_cons in tr. exact: proj2 tr.
 Qed.
 
 (*

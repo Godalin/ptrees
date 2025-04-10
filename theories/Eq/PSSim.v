@@ -267,12 +267,34 @@ Proof. unfold Transitive.
   use pssim with Hst Htrans. inversion HstCond; subst.
   - rewrite (observe_equ_eq _ _ H1) in H2. use pssim with Htu H2. exists u's; split.
     + rewrite //= addr0 in Hp_le_sumq. apply (le_trans Hp_le_sumq). exact: Hp_le_sumq0.
-    + split; auto. rewrite //= in HrelAll_u's. eapply relateAll_trans;auto. move: HrelAll_u's => [HrelAll_u's _]. exact : HrelAll_u's. exact: HrelAll_u's0.
-  - rewrite transAll_iff_forall_map //= in H4.
-    assert (∀ x : X', x \in s0 → trans (kl x) (acc_mass x μ) t (k x)).
-    { intros. rewrite (ptree_eta t) -H1. apply H4. auto. } clear H4.
-    exists (flatten [seq ex_proj1 (Htu (kl i) (acc_mass i μ) (k i) (H5 i _)) | i <- s0]). admit.
+    + split; auto. rewrite //= in HrelAll_u's. eapply relateAll_trans;auto.
+      exact : proj1 HrelAll_u's. exact: HrelAll_u's0.
+  - have H5 : transAll t [seq (acc_mass x μ, (kl x, k x)) | x <- s0]. admit. clear H4.
+    exists (flatten [seq let i := proj1_sig x in ex_proj1 (Htu (kl i) (acc_mass i μ) (k i) (proj2_sig x)) | x <- to_transable_index H5]). split; try split.
+    + rewrite -map_comp /ssrfun.comp //= in Hp_le_sumq. apply (le_trans Hp_le_sumq). clear - Htu.
+      elim : s0 H5 => [//= | a s0 IH H5]. have H := H5. rewrite map_cons /transAll -/transAll //= in H. move : IH => /(_ (proj2 H)) IH.
+      rewrite /to_transable_index -/to_transable_index //= map_cat sumq_app.
+      have cond := Htu (kl a) (acc_mass a μ) (k a) (proj1 H).
+      have le_ind := proj1 (ex_proj2 cond).
+      (* 这边把le_ind和IH两边加起来就能证完，但是nnQ好像用不了下面这个定理 *)
+      Fail eapply ssrnum.Num.Theory.lerD. admit.
+    + (* 这里要先证明u是Prob *) admit.
+    + rewrite -map_comp /ssrfun.comp //= in HrelAll_u's. clear - H0 HrelAll_u's.
+      elim : s0 H5 HrelAll_u's => [//= | a s0 IH H5 HrelAll_u's]. have H := H5.
+      rewrite map_cons /transAll -/transAll //= in H.
+      rewrite map_cons /relateAll -/relateAll in HrelAll_u's. destruct HrelAll_u's. move : IH => /(_ (proj2 H) H2) IH.
+      rewrite /to_transable_index -/to_transable_index //= map_cat .
+      rewrite relateAll_app. split.
+      have cond1 := proj2 (proj2 (ex_proj2 (Htu (kl a) (acc_mass a μ) (k a) (proj1 H)))).
+      eapply relateAll_trans. assumption. exact H1. rewrite //=.
+      (* 这里exact cond1, 但是其中proj2 H和目标中的类型不一样 *)
+      Fail rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_1 E X X' t
+                      (λ x : X', (acc_mass x μ, (kl x, k x))) 
+                      (a :: s0) H5 a s0 Logic.eq_refl) (proj2 H)).
+      Fail exact cond1. admit.
 Admitted.
+      (* 同样的这里想使用IH,但是那个证明类型不一样 *)
+      Fail exact IH. admit.
 
 #[global]
 Instance Reflexive_hpssim `{Reflexive _ L} {RC : Chain (@pss E E X X L)}
