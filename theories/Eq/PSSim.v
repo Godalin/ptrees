@@ -170,6 +170,7 @@ Proof. simpl. intros t1 t2 EQt u1 u2 EQu H2 l p t1' HT1.
     Fail rewrite -(supp_enum_eq_mem_eq REL). *)
 Admitted.
 
+(*
 #[global]
 Instance pssim_equ_equ {E F : Type → Type}
     {X Y : Type} (L : rel (@label E) (@label F))
@@ -209,7 +210,7 @@ Proof. simpl. unfold pssim at 2. coinduction RC CIH.
       + apply (le_trans H4).
         rewrite -(mass_eq1_of_enumeq REL) //=.
 Qed.
-
+*)
 End pssim_proper.
 
 
@@ -224,7 +225,7 @@ Import EquAxioms.
 
 Context {E : Type → Type} {X : Type}.
 Context {L : relation (@label E)}.
-
+(*
 #[global]
 Instance Reflexive_pss {RC : relation (ptree E X)}
     `{Reflexive _ L} `{Reflexive _ RC}
@@ -255,6 +256,7 @@ Proof. unfold Reflexive.
       rewrite -common.negb_spec notin_supp_iff_acc_mass_eq_0 in HeqHmem.
       rewrite HeqHmem //=.
 Qed.
+*)
 
 #[global]
 Instance Transitive_pss {RC : relation (ptree E X)}
@@ -263,25 +265,12 @@ Instance Transitive_pss {RC : relation (ptree E X)}
 Proof. unfold Transitive.
   intros s t u Hst Htu. intros l p s' Htrans.
   use pssim with Hst Htrans. inversion HstCond; subst.
-  - rewrite H1 in H2. use pssim with Htu H2. exists l'0; split.
-    transitivity l'; auto. inversion HtuCond; subst.
-    + econstructor. apply H4. transitivity u'; auto.
-    + econstructor. apply H4. transitivity u'; auto.
-    + econstructor. apply H4. transitivity u'; auto.
-    + econstructor. exact: H4. exact: H5. exact: H6. eapply relateAll_trans. exact: H0. exact: H3. exact H7. exact H8.
-  - rewrite H1 in H2. use pssim with Htu H2. exists l'0; split.
-    transitivity l'; auto. inversion HtuCond; subst.
-    + econstructor. apply H4. transitivity u'; auto.
-    + econstructor. apply H4. transitivity u'; auto.
-    + econstructor. apply H4. transitivity u'; auto.
-    + econstructor. exact: H4. exact: H5. exact: H6. eapply relateAll_trans. exact: H0. exact: H3. exact H7. exact H8.
-  - rewrite H1 in H2. use pssim with Htu H2. exists l'0; split.
-    transitivity l'; auto. inversion HtuCond; subst.
-    + econstructor. apply H4. transitivity u'; auto.
-    + econstructor. apply H4. transitivity u'; auto.
-    + econstructor. apply H4. transitivity u'; auto.
-    + econstructor. exact: H4. exact: H5. exact: H6. eapply relateAll_trans. exact: H0. exact: H3. exact H7. exact H8.
-  - admit.
+  - rewrite (observe_equ_eq _ _ H1) in H2. use pssim with Htu H2. exists u's; split.
+    + rewrite //= addr0 in Hp_le_sumq. apply (le_trans Hp_le_sumq). exact: Hp_le_sumq0.
+    + split; auto. rewrite //= in HrelAll_u's. eapply relateAll_trans;auto. move: HrelAll_u's => [HrelAll_u's _]. exact : HrelAll_u's. exact: HrelAll_u's0.
+  - rewrite transAll_iff_forall_map //= in H4.
+    (* 这里要把H4中的(Prob μ k)换成t *) rewrite (observe_equ_eq _ _ H1) in H4.
+    (* 这里要构造一个把s0每一项都应用于Htu上的列表 *) exists (flatten [seq (Htu (H4 i _)).1 | i <- s]). admit.
 Admitted.
 
 #[global]
