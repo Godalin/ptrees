@@ -87,7 +87,12 @@ Definition Prob0 {E M R} `{DiscreteInterface M}
   : ptree E M R :=
     Prob μ k.
 
-
+Definition IsProbF {E M R} (p: ptree' E M R) : bool := match p with
+| RetF r => false
+| TauF t => false
+| VisF _ e h => false
+| ProbF _ μ h => true
+end.
 
 (*| Main Operations for PTrees. |*)
 Module PTree.

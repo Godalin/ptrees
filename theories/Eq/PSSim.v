@@ -276,9 +276,11 @@ Proof. unfold Transitive.
       rewrite /to_transable_index -/to_transable_index //= map_cat sumq_app.
       have cond := Htu (kl a) (acc_mass a μ) (k a) (proj1 H).
       have le_ind := proj1 (ex_proj2 cond).
+      rewrite (proof_irrelevance _ (Htu (kl a) (acc_mass a μ) (k a) (Trans.to_transable_index_obligation_1 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl)) cond).
+      rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_2 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl) (proj2 H)).
       (* 这边把le_ind和IH两边加起来就能证完，但是nnQ好像用不了下面这个定理 *)
       Fail eapply ssrnum.Num.Theory.lerD. admit.
-    + (* 这里要先证明u是Prob *) admit.
+    + (* 这里要先证明u是Prob *) have u_prob : ∃ p t, observe u = ProbF p t. admit. 
     + rewrite -map_comp /ssrfun.comp //= in HrelAll_u's. clear - H0 HrelAll_u's.
       elim : s0 H5 HrelAll_u's => [//= | a s0 IH H5 HrelAll_u's]. have H := H5.
       rewrite map_cons /transAll -/transAll //= in H.
@@ -287,14 +289,13 @@ Proof. unfold Transitive.
       rewrite relateAll_app. split.
       have cond1 := proj2 (proj2 (ex_proj2 (Htu (kl a) (acc_mass a μ) (k a) (proj1 H)))).
       eapply relateAll_trans. assumption. exact H1. rewrite //=.
-      (* 这里exact cond1, 但是其中proj2 H和目标中的类型不一样 *)
-      Fail rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_1 E X X' t
+      rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_1 E X X' t
                       (λ x : X', (acc_mass x μ, (kl x, k x))) 
-                      (a :: s0) H5 a s0 Logic.eq_refl) (proj2 H)).
-      Fail exact cond1. admit.
+                      (a :: s0) H5 a s0 Logic.eq_refl) (proj1 H)).
+      exact cond1.
+      rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_2 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl) (proj2 H)).
+      exact IH.
 Admitted.
-      (* 同样的这里想使用IH,但是那个证明类型不一样 *)
-      Fail exact IH. admit.
 
 #[global]
 Instance Reflexive_hpssim `{Reflexive _ L} {RC : Chain (@pss E E X X L)}

@@ -81,16 +81,15 @@ Import GRing.Theory.
 
 Inductive trans_ : label → ℚ≥0 → hrel S' S' :=
   | StepVal r μ k
-    : trans_ (val r) 1 (RetF r) (ProbF0 μ k)
+    (q: ℚ≥0) : trans_ (val r) q (RetF r) (ProbF0 μ k)
   | StepTau t u
-    : t ≅ u ->
-      trans_ tau 1 (TauF t) (observe u)
+    (q: ℚ≥0) : t ≅ u ->
+      trans_ tau q (TauF t) (observe u)
   | StepObs {X} (e : E X) k x t
-    : k x ≅ t ->
-      trans_ (obs e x) 1 (VisF e k) (observe t)
+    (q: ℚ≥0) : k x ≅ t ->
+      trans_ (obs e x) q (VisF e k) (observe t)
   | StepPrb {X : eqType} (μ : M X) k x p t
     : disc_mass x μ = p ->
-      (* x \in disc_supp μ -> *)
       k x ≅ t ->
       trans_ tau p (ProbF μ k) (observe t).
 Hint Constructors trans_ : core.
@@ -104,8 +103,17 @@ Ltac FtoObs :=
     change t with (observe {| _observe := t |})
   end.
 
-
-
+Lemma trans_any_poss {l p t t'} (p': ℚ≥0) (not_prob: ~~ (IsProbF t)): trans_ l p t t' -> trans_ l p' t t'.
+Proof.
+  move => h. destruct t. 
+  - inversion h. constructor.
+  - inversion h. econstructor; auto.
+  - inversion h.
+    apply Coq.Logic.Eqdep_dec.inj_pair2_eq_dec in H4. rewrite -H4. econstructor.
+    rewrite -H6. apply Coq.Logic.Eqdep_dec.inj_pair2_eq_dec in H5. rewrite H5. reflexivity.
+    + move => x1 y. admit. admit.
+  - rewrite /IsProbF //= in not_prob.
+Admitted.
 #[local] Instance trans_equ_aux1 l p t
   : Proper (going (equ eq) ==> flip impl) (trans_ l p t).
 Proof. intros u u' Heq. intros TR.
