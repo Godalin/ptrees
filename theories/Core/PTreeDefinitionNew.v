@@ -7,6 +7,7 @@
     construct. *)
 
 Require Import Program.
+Require Import Utf8.
 
 From ExtLib Require Import Structures.Functor.
 From ExtLib Require Import Structures.Applicative.
@@ -19,6 +20,7 @@ From ITree.Indexed Require Import Sum.
 From ITree Require Eq.
 
 From mathcomp Require Import eqtype seq.
+From mathcomp Require Import ssreflect ssrbool.
 
 From PTree.Core Require Import Utils.
 From PTree.Prob Require Import Monad.
@@ -93,6 +95,11 @@ Definition IsProbF {E M R} (p: ptree' E M R) : bool := match p with
 | VisF _ e h => false
 | ProbF _ μ h => true
 end.
+
+Theorem IsProbF_ex_ProbF {E M R} {p: ptree' E M R} (is_prob : IsProbF p = true): ∃ (X : eqType) (μ : M X) (k : X -> ptree E M R), p = ProbF μ k.
+  destruct p; rewrite //= in is_prob.
+  exists X, μ, k. reflexivity.
+Qed.
 
 (*| Main Operations for PTrees. |*)
 Module PTree.

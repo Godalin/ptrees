@@ -61,13 +61,13 @@ Definition pss {E F : Type → Type}
   : mon (ptree E X → ptree F Y → Prop)
   := {| body R t u := ∀ l (p : ℚ≥0) t',
         trans l p t t' → ∃ u's : Enum (label * ptree F Y),
-            p <= sumq [seq fst i | i <- u's]
+            nnQ_0 < p ∧ p <= sumq [seq fst i | i <- u's]
           ∧ pssim_cond (observe u) u's
           ∧ relateAll R t' [seq snd (snd i) | i <- u's]
      |}.
 Next Obligation.
-  move: H0 => /(_ l p t' H1) [u's [p_le_sum [HCond Rall]]].
-  exists u's; split; auto. split; auto.
+  move: H0 => /(_ l p t' H1) [u's [le_0_p [p_le_sum [HCond Rall]]]].
+  exists u's; split; auto. split; auto. split; auto.
   apply (relateAll_sub x); auto.
 Defined.
 
@@ -109,9 +109,10 @@ Ltac __use_pssim Hpssim Htrans :=
   apply Hpssim in Htrans;
   let u's := fresh "u's" in
   let Hp_le_sumq := fresh "Hp_le_sumq" in
+  let Hle0p := fresh "Hle0p" in
   let Hpssim_cond := fresh Hpssim "Cond" in
   let HrelAll := fresh "HrelAll_" u's in
-  destruct Htrans as [u's [Hp_le_sumq [Hpssim_cond HrelAll]]].
+  destruct Htrans as [u's [Hle0p [Hp_le_sumq [Hpssim_cond HrelAll]]]].
 Tactic Notation "use" "pssim" "with" ident(Hpssim) ident(Htrans) :=
   __use_pssim Hpssim Htrans.
 
@@ -147,17 +148,13 @@ Import GRing.Theory Order.Theory.
 Import NonnegQNotations.
 #[local] Notation ptree E := (ptree E Enum).
 
-(* #[global] *)
-(* Instance pssim_cond_proper {E : Type → Type} {l' : @label E} p {X} *)
-(*   : Proper (equb (R1 := X) eq (equ eq) ==> pssim_cond_ l' p). *)
-
 #[global]
 Instance pss_equ_equ {E F : Type → Type}
     {X Y : Type} (L : rel (@label E) (@label F))
   : Proper (equ (R1 := X) eq ==> equ (R1 := Y) eq ==> impl)
     (pss L (pssim L)).
 Proof. simpl. intros t1 t2 EQt u1 u2 EQu H2 l p t1' HT1.
-  rewrite -EQt in HT1. use pssim with H2 HT1. exists u's; split; auto.
+  rewrite -EQt in HT1. use pssim with H2 HT1. exists u's; split; auto. split. auto.
   inversion H2Cond; subst. all: step equ in EQu; rewrite -H in EQu; inversion EQu; subst.
   - split. rewrite -H -H3 //= in H2Cond. exact: HrelAll_u's.
   - split. rewrite H4. econstructor. eapply trans_equ_aux2. admit. reflexivity. exact: H0. exact: HrelAll_u's.
@@ -265,36 +262,52 @@ Instance Transitive_pss {RC : relation (ptree E X)}
 Proof. unfold Transitive.
   intros s t u Hst Htu. intros l p s' Htrans.
   use pssim with Hst Htrans. inversion HstCond; subst.
-  - rewrite (observe_equ_eq _ _ H1) in H2. use pssim with Htu H2. exists u's; split.
+  - rewrite (observe_equ_eq _ _ H1) in H2. use pssim with Htu H2.
+    exists u's; split. assumption. split.
     + rewrite //= addr0 in Hp_le_sumq. apply (le_trans Hp_le_sumq). exact: Hp_le_sumq0.
     + split; auto. rewrite //= in HrelAll_u's. eapply relateAll_trans;auto.
       exact : proj1 HrelAll_u's. exact: HrelAll_u's0.
   - have H5 : transAll t [seq (acc_mass x μ, (kl x, k x)) | x <- s0]. admit. clear H4.
-    exists (flatten [seq let i := proj1_sig x in ex_proj1 (Htu (kl i) (acc_mass i μ) (k i) (proj2_sig x)) | x <- to_transable_index H5]). split; try split.
-    + rewrite -map_comp /ssrfun.comp //= in Hp_le_sumq. apply (le_trans Hp_le_sumq). clear - Htu.
-      elim : s0 H5 => [//= | a s0 IH H5]. have H := H5. rewrite map_cons /transAll -/transAll //= in H. move : IH => /(_ (proj2 H)) IH.
-      rewrite /to_transable_index -/to_transable_index //= map_cat sumq_app.
-      have cond := Htu (kl a) (acc_mass a μ) (k a) (proj1 H).
-      have le_ind := proj1 (ex_proj2 cond).
-      rewrite (proof_irrelevance _ (Htu (kl a) (acc_mass a μ) (k a) (Trans.to_transable_index_obligation_1 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl)) cond).
-      rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_2 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl) (proj2 H)).
-      (* 这边把le_ind和IH两边加起来就能证完，但是nnQ好像用不了下面这个定理 *)
-      Fail eapply ssrnum.Num.Theory.lerD. admit.
-    + (* 这里要先证明u是Prob *) have u_prob : ∃ p t, observe u = ProbF p t. admit. 
-    + rewrite -map_comp /ssrfun.comp //= in HrelAll_u's. clear - H0 HrelAll_u's.
-      elim : s0 H5 HrelAll_u's => [//= | a s0 IH H5 HrelAll_u's]. have H := H5.
-      rewrite map_cons /transAll -/transAll //= in H.
-      rewrite map_cons /relateAll -/relateAll in HrelAll_u's. destruct HrelAll_u's. move : IH => /(_ (proj2 H) H2) IH.
-      rewrite /to_transable_index -/to_transable_index //= map_cat .
-      rewrite relateAll_app. split.
-      have cond1 := proj2 (proj2 (ex_proj2 (Htu (kl a) (acc_mass a μ) (k a) (proj1 H)))).
-      eapply relateAll_trans. assumption. exact H1. rewrite //=.
-      rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_1 E X X' t
-                      (λ x : X', (acc_mass x μ, (kl x, k x))) 
-                      (a :: s0) H5 a s0 Logic.eq_refl) (proj1 H)).
-      exact cond1.
-      rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_2 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl) (proj2 H)).
-      exact IH.
+    remember (IsProbF (observe u)) as prob_u. destruct prob_u.
+    * exists (flatten [seq let i := proj1_sig x in ex_proj1 (Htu (kl i) (acc_mass i μ) (k i) (proj2_sig x)) | x <- to_transable_index H5]). split. assumption. split; try split.
+      + rewrite -map_comp /ssrfun.comp //= in Hp_le_sumq. apply (le_trans Hp_le_sumq). clear - Htu.
+        elim : s0 H5 => [//= | a s0 IH H5]. have H := H5. rewrite map_cons /transAll -/transAll //= in H. move : IH => /(_ (proj2 H)) IH.
+        rewrite /to_transable_index -/to_transable_index //= map_cat sumq_app.
+        have cond := Htu (kl a) (acc_mass a μ) (k a) (proj1 H).
+        have le_ind := proj1 (proj2 (ex_proj2 cond)).
+        rewrite (proof_irrelevance _ (Htu (kl a) (acc_mass a μ) (k a) (Trans.to_transable_index_obligation_1 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl)) cond).
+        rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_2 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl) (proj2 H)).
+        (* 把le_ind和IH两边加起来就能证完，但是nnQ好像用不了下面这个定理 *)
+        Fail eapply ssrnum.Num.Theory.lerD. admit.
+      + symmetry in Heqprob_u. have [Xu [μu [ku probf_u]]] := IsProbF_ex_ProbF Heqprob_u.
+        (* 不知道怎么同时rewrite类型和证明 *)
+        Fail rewrite probf_u; econstructor.
+        admit.
+      + rewrite -map_comp /ssrfun.comp //= in HrelAll_u's. clear - H0 HrelAll_u's.
+        elim : s0 H5 HrelAll_u's => [//= | a s0 IH H5 HrelAll_u's]. have H := H5.
+        rewrite map_cons /transAll -/transAll //= in H.
+        rewrite map_cons /relateAll -/relateAll in HrelAll_u's. destruct HrelAll_u's. move : IH => /(_ (proj2 H) H2) IH.
+        rewrite /to_transable_index -/to_transable_index //= map_cat .
+        rewrite relateAll_app. split.
+        have cond1 := proj2 (proj2 (proj2 (ex_proj2 (Htu (kl a) (acc_mass a μ) (k a) (proj1 H))))).
+        eapply relateAll_trans. assumption. exact H1. rewrite //=.
+        rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_1 E X X' t
+                        (λ x : X', (acc_mass x μ, (kl x, k x)))
+                        (a :: s0) H5 a s0 Logic.eq_refl) (proj1 H)).
+        exact cond1.
+        rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_2 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl) (proj2 H)).
+        exact IH.
+    * destruct s0.
+      + rewrite //= le_nnQ_0_iff_eq_0 in Hp_le_sumq. rewrite (eqP Hp_le_sumq) //= in Hle0p.
+      + rewrite map_cons in H5. move: H5 => [H5 _]. rewrite //= in H5. use pssim with Htu H5.
+        inversion HtuCond.
+        -- exists [:: (p, (l', u'))]. split. assumption. split. rewrite //= addr0 //=. split.
+          - econstructor. rewrite -trans__trans. eapply trans_any_poss. rewrite H4 -Heqprob_u //=.
+            exact: H5.
+          - rewrite //=. split; auto. rewrite map_cons in HrelAll_u's. move : HrelAll_u's => [HrelAll_u's _].
+            rewrite -H6 //= in HrelAll_u's0. move: HrelAll_u's0 => [HrelAll_u's0 _]. rewrite //= in HrelAll_u's.
+            exact: H0 HrelAll_u's HrelAll_u's0.
+        -- rewrite -H4 //= in Heqprob_u.
 Admitted.
 
 #[global]

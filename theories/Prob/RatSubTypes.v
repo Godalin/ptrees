@@ -75,6 +75,13 @@ Proof.
   - move => lt. rewrite Order.POrderTheory.lt_def in lt. move: (andP lt) => [r _]. exact r.
 Qed.
 
+Lemma le_nnQ_0_iff_eq_0 {p: nnQ}: p <= nnQ_0 <-> p == nnQ_0 .
+Proof.
+  have le0 := le_nnQ0 p.
+  split.
+  - move => lep0.
+Admitted.
+
 Lemma pos_of_pos_add {p q: nnQ} (p_pos: nnQ_0 < p): nnQ_0 < p + q.
 Proof.
   apply ssrnum.Num.Theory.ltr_wpDr. exact (le_nnQ0 q). exact p_pos.

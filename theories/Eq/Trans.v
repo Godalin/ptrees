@@ -105,15 +105,14 @@ Ltac FtoObs :=
 
 Lemma trans_any_poss {l p t t'} (p': ℚ≥0) (not_prob: ~~ (IsProbF t)): trans_ l p t t' -> trans_ l p' t t'.
 Proof.
-  move => h. destruct t. 
-  - inversion h. constructor.
-  - inversion h. econstructor; auto.
-  - inversion h.
-    apply Coq.Logic.Eqdep_dec.inj_pair2_eq_dec in H4. rewrite -H4. econstructor.
-    rewrite -H6. apply Coq.Logic.Eqdep_dec.inj_pair2_eq_dec in H5. rewrite H5. reflexivity.
-    + move => x1 y. admit. admit.
+  move => h. destruct t ; inversion h.
+  - constructor.
+  - econstructor; auto.
+  - dependent destruction H4. dependent destruction H5.
+    econstructor. rewrite -H6 //=.
   - rewrite /IsProbF //= in not_prob.
-Admitted.
+Qed.
+
 #[local] Instance trans_equ_aux1 l p t
   : Proper (going (equ eq) ==> flip impl) (trans_ l p t).
 Proof. intros u u' Heq. intros TR.
@@ -272,7 +271,7 @@ Proof.
 Qed.
 
 
-Lemma transAll_iff_forall_map {X : eqType} {E} {R} {f: X -> (ℚ≥0 * (label * ptree E Enum R))} 
+Lemma transAll_iff_forall_map {X : eqType} {E} {R} {f: X -> (ℚ≥0 * (label * ptree E Enum R))}
   {t : ptree E Enum R} {t' : seq X} : transAll t [seq f i | i <- t'] <-> ∀x, x \in t' -> trans (fst (snd (f x))) (fst (f x)) t (snd (snd (f x))).
 Proof.
   split.
@@ -282,10 +281,10 @@ Proof.
     + exact: IH rl i i_in_l.
   - elim: t' => [//=|a l IH h]. split.
     + apply h. rewrite in_cons eq_refl //=.
-    + apply IH. move => i hi. apply h. rewrite in_cons hi orbT //=. 
+    + apply IH. move => i hi. apply h. rewrite in_cons hi orbT //=.
 Qed.
 
-Lemma transAll_subset_map {X : eqType} {E} {R} {f: X -> (ℚ≥0 * (label * ptree E Enum R))} 
+Lemma transAll_subset_map {X : eqType} {E} {R} {f: X -> (ℚ≥0 * (label * ptree E Enum R))}
   {t : ptree E Enum R} {t1 t2 : seq X} (subset: {subset t1 <= t2}) : transAll t [seq f i | i <- t2] -> transAll t [seq f i | i <- t1].
 Proof.
   rewrite transAll_iff_forall_map transAll_iff_forall_map.
