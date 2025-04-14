@@ -291,6 +291,14 @@ Proof.
   move => h1 x hx. apply h1. exact: subset hx.
 Qed.
 
+Lemma transAll_equ {E} {R} {t1 t2 : ptree E Enum R}
+    {tlist : Enum (label * ptree E Enum R)} (equ_eq: equ eq t1 t2) : transAll t1 tlist <-> transAll t2 tlist.
+Proof.
+  elim: tlist => [//=|a l IH].
+  rewrite /transAll -/transAll IH.
+  apply and_iff_compat_r. apply trans_equ.
+  assumption. reflexivity.
+Qed.
 
 Program Fixpoint to_transable_index {E} {R} {X : eqType} {t : ptree E Enum R} {f: X -> nnQ * (label * ptree E Enum R)}
     {xs : seq X} (tr: transAll t [seq f i | i <- xs]) : seq {x : X | (let i := f x in trans (fst (snd i)) (fst i) t (snd (snd i))) } :=

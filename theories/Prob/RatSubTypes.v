@@ -61,6 +61,13 @@ Proof. exact hq. Qed.
 Lemma lt_nnQ_of_lt_Q {p q : nnQ} (hq: Qval p < Qval q) : p < q.
 Proof. exact hq. Qed.
 
+Lemma le_nnQ_iff_le_Q {p q : nnQ}: Qval p <= Qval q = (p <= q).
+Proof. reflexivity. Qed.
+
+Lemma lt_nnQ_iff_lt_Q {p q : nnQ}: Qval p < Qval q = (p < q).
+Proof. reflexivity. Qed.
+
+
 #[local] Open Scope order_scope.
 #[local] Open Scope ring_scope.
 
@@ -79,8 +86,20 @@ Lemma le_nnQ_0_iff_eq_0 {p: nnQ}: p <= nnQ_0 <-> p == nnQ_0 .
 Proof.
   have le0 := le_nnQ0 p.
   split.
-  - move => lep0.
-Admitted.
+  - move => lep0. rewrite ssrnum.Num.Theory.le0r in le0.
+    rewrite -le_nnQ_iff_le_Q //= in lep0.
+    case: le0 => /orP [eq0|lt0p]. exact: eq0.
+    rewrite Order.TotalTheory.ltNge in lt0p.
+    rewrite lep0 //= in lt0p.
+  - move => /eqP e. rewrite e //=.
+Qed.
+
+Lemma nnQ_lerD {p q m n: nnQ}: p <= q -> m <= n -> p + m <= q + n.
+Proof.
+  move => h1 h2.
+  apply le_nnQ_of_le_Q. apply ssrnum.Num.Theory.lerD.
+  exact: h1. exact: h2.
+Qed.
 
 Lemma pos_of_pos_add {p q: nnQ} (p_pos: nnQ_0 < p): nnQ_0 < p + q.
 Proof.

@@ -255,6 +255,8 @@ Proof. unfold Reflexive.
 Qed.
 *)
 
+
+
 #[global]
 Instance Transitive_pss {RC : relation (ptree E X)}
     `{Transitive _ L} `{Transitive _ RC}
@@ -267,24 +269,25 @@ Proof. unfold Transitive.
     + rewrite //= addr0 in Hp_le_sumq. apply (le_trans Hp_le_sumq). exact: Hp_le_sumq0.
     + split; auto. rewrite //= in HrelAll_u's. eapply relateAll_trans;auto.
       exact : proj1 HrelAll_u's. exact: HrelAll_u's0.
-  - have H5 : transAll t [seq (acc_mass x μ, (kl x, k x)) | x <- s0]. admit. clear H4.
+  - have t_equ_prob : Prob μ k ≅ t. apply observe_equ_eq. rewrite //=.
+    rewrite (transAll_equ t_equ_prob) in H4.
     remember (IsProbF (observe u)) as prob_u. destruct prob_u.
-    * exists (flatten [seq let i := proj1_sig x in ex_proj1 (Htu (kl i) (acc_mass i μ) (k i) (proj2_sig x)) | x <- to_transable_index H5]). split. assumption. split; try split.
+    * exists (flatten [seq let i := proj1_sig x in ex_proj1 (Htu (kl i) (acc_mass i μ) (k i) (proj2_sig x)) | x <- to_transable_index H4]). split. assumption. split; try split.
       + rewrite -map_comp /ssrfun.comp //= in Hp_le_sumq. apply (le_trans Hp_le_sumq). clear - Htu.
-        elim : s0 H5 => [//= | a s0 IH H5]. have H := H5. rewrite map_cons /transAll -/transAll //= in H. move : IH => /(_ (proj2 H)) IH.
+        elim : s0 H4 => [//= | a s0 IH H4]. have H := H4. rewrite map_cons /transAll -/transAll //= in H. move : IH => /(_ (proj2 H)) IH.
         rewrite /to_transable_index -/to_transable_index //= map_cat sumq_app.
         have cond := Htu (kl a) (acc_mass a μ) (k a) (proj1 H).
         have le_ind := proj1 (proj2 (ex_proj2 cond)).
-        rewrite (proof_irrelevance _ (Htu (kl a) (acc_mass a μ) (k a) (Trans.to_transable_index_obligation_1 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl)) cond).
-        rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_2 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl) (proj2 H)).
-        (* 把le_ind和IH两边加起来就能证完，但是nnQ好像用不了下面这个定理 *)
-        Fail eapply ssrnum.Num.Theory.lerD. admit.
+        rewrite (proof_irrelevance _ (Htu (kl a) (acc_mass a μ) (k a) (Trans.to_transable_index_obligation_1 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H4 a s0 Logic.eq_refl)) cond).
+        rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_2 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H4 a s0 Logic.eq_refl) (proj2 H)).
+        exact: nnQ_lerD le_ind IH.
       + symmetry in Heqprob_u. have [Xu [μu [ku probf_u]]] := IsProbF_ex_ProbF Heqprob_u.
-        (* 不知道怎么同时rewrite类型和证明 *)
-        Fail rewrite probf_u; econstructor.
+        enough (pssim_cond (ProbF μu ku) (flatten [seq (let i := (` x)%prg in
+          ex_proj1 (Htu (kl i) (acc_mass i μ) (k i) (proj2_sig x))) | x <- to_transable_index H4])).
+        rewrite -probf_u in H5. exact: H5.
         admit.
       + rewrite -map_comp /ssrfun.comp //= in HrelAll_u's. clear - H0 HrelAll_u's.
-        elim : s0 H5 HrelAll_u's => [//= | a s0 IH H5 HrelAll_u's]. have H := H5.
+        elim : s0 H4 HrelAll_u's => [//= | a s0 IH H4 HrelAll_u's]. have H := H4.
         rewrite map_cons /transAll -/transAll //= in H.
         rewrite map_cons /relateAll -/relateAll in HrelAll_u's. destruct HrelAll_u's. move : IH => /(_ (proj2 H) H2) IH.
         rewrite /to_transable_index -/to_transable_index //= map_cat .
@@ -293,13 +296,13 @@ Proof. unfold Transitive.
         eapply relateAll_trans. assumption. exact H1. rewrite //=.
         rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_1 E X X' t
                         (λ x : X', (acc_mass x μ, (kl x, k x)))
-                        (a :: s0) H5 a s0 Logic.eq_refl) (proj1 H)).
+                        (a :: s0) H4 a s0 Logic.eq_refl) (proj1 H)).
         exact cond1.
-        rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_2 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H5 a s0 Logic.eq_refl) (proj2 H)).
+        rewrite (proof_irrelevance _ (Trans.to_transable_index_obligation_2 E X X' t (λ x : X', (acc_mass x μ, (kl x, k x))) (a :: s0) H4 a s0 Logic.eq_refl) (proj2 H)).
         exact IH.
     * destruct s0.
       + rewrite //= le_nnQ_0_iff_eq_0 in Hp_le_sumq. rewrite (eqP Hp_le_sumq) //= in Hle0p.
-      + rewrite map_cons in H5. move: H5 => [H5 _]. rewrite //= in H5. use pssim with Htu H5.
+      + rewrite map_cons in H4. move: H4 => [H4 _]. rewrite //= in H4. use pssim with Htu H4.
         inversion HtuCond.
         -- exists [:: (p, (l', u'))]. split. assumption. split. rewrite //= addr0 //=. split.
           - econstructor. rewrite -trans__trans. eapply trans_any_poss. rewrite H4 -Heqprob_u //=.
