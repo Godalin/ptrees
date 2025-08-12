@@ -1,6 +1,7 @@
 .vscode
 _opam
 _build
+.direnv
 
 learn
 sketch
