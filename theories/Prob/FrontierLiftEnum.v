@@ -5,14 +5,14 @@ Require Import List.
 
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg order rat.
-From PTree.Prob Require Import RatSubTypes DiscreteMC IndexedCoupling
+From PTree.Prob Require Import RatSubTypes DiscreteMC Coupling IndexedCoupling
   FrontierLift.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Import Enum IndexedCoupling.
+Import Enum Coupling IndexedCoupling.
 Import GRing.Theory.
 #[local] Open Scope ring_scope.
 #[local] Open Scope order_scope.
@@ -98,6 +98,16 @@ Proof.
     exact: indexed_coupling_mono HRS Hlift.
   - move=> A R mu HR.
     exact: indexed_coupling_refl HR.
+  - move=> A B R x y Hxy. cbn.
+    eapply coupling_mono; [|apply coupling_refl].
+    move=> i j Hij. subst j. destruct i as [|i].
+    + split.
+      * move=> p a Hi. cbn in Hi. inversion Hi; subst.
+        eexists; exists y. split=> //.
+      * move=> q b Hj. cbn in Hj. inversion Hj; subst.
+        eexists; exists x. split=> //.
+    + split; move=> p a Hbad; cbn in Hbad;
+        destruct i; discriminate.
 Qed.
 
 #[global] Instance Enum_MeasureLaws :

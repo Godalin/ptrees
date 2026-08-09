@@ -430,6 +430,54 @@ Proof.
     + apply meas_lift_refl=> x. exact: CIH (k x).
 Qed.
 
+Lemma tau_apweak_l {R1 R2} (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E M R1) (t2 : ptree E M R2) :
+  apweak RR t1 t2 -> apweak RR (Tau t1) t2.
+Proof.
+  move=> H. apply apweak_fold. apply APWTauL. exact: apweak_unfold H.
+Qed.
+
+Lemma tau_apweak_r {R1 R2} (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E M R1) (t2 : ptree E M R2) :
+  apweak RR t1 t2 -> apweak RR t1 (Tau t2).
+Proof.
+  move=> H. apply apweak_fold. apply APWTauR. exact: apweak_unfold H.
+Qed.
+
+Lemma apweak_ret_intro {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
+  RR r1 r2 -> apweak RR (Ret r1 : ptree E M R1) (Ret r2).
+Proof.
+  move=> Hr. apply apweak_fold.
+  eapply APWFrontier with
+      (hs1 := meas_ret (APHRet r1))
+      (hs2 := meas_ret (APHRet r2)).
+  - constructor.
+  - constructor.
+  - apply meas_lift_ret. constructor. exact Hr.
+Qed.
+
+Lemma apweak_vis_intro {R1 R2 X} (RR : R1 -> R2 -> Prop)
+    (e : E X) (k1 : X -> ptree E M R1) (k2 : X -> ptree E M R2) :
+  (forall x, apweak RR (k1 x) (k2 x)) ->
+  apweak RR (Vis e k1) (Vis e k2).
+Proof.
+  move=> Hk. apply apweak_fold.
+  eapply APWFrontier with
+      (hs1 := meas_ret (APHVis e k1))
+      (hs2 := meas_ret (APHVis e k2)).
+  - constructor.
+  - constructor.
+  - apply meas_lift_ret. constructor. exact Hk.
+Qed.
+
+Lemma apweak_prob_intro {R1 R2} (RR : R1 -> R2 -> Prop)
+    {X Y : eqType} (mu : M X) (nu : M Y)
+    (k1 : X -> ptree E M R1) (k2 : Y -> ptree E M R2) :
+  apfrontier_match RR (apweak RR) (ProbF mu k1) (ProbF nu k2) ->
+  meas_lift (fun x y => apweak RR (k1 x) (k2 y)) mu nu ->
+  apweak RR (Prob mu k1) (Prob nu k2).
+Proof. move=> Hfront Hlift. apply apweak_fold. constructor; assumption. Qed.
+
 End AbstractWeakFacts.
 
 Section AbstractWeakSymmetry.

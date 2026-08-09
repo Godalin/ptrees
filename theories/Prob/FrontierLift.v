@@ -32,7 +32,9 @@ Class MeasureCoreLaws (M : Type -> Type) `{MI : MeasureInterface M} := {
       (forall x y, R x y -> S x y) ->
       meas_lift R mu nu -> meas_lift S mu nu;
   meas_lift_refl : forall {A} (R : A -> A -> Prop) mu,
-      Reflexive R -> meas_lift R mu mu
+      Reflexive R -> meas_lift R mu mu;
+  meas_lift_ret : forall {A B} (R : A -> B -> Prop) x y,
+      R x y -> meas_lift R (meas_ret x) (meas_ret y)
 }.
 
 (** Laws used by the coinductive relation.  A continuous implementation can
