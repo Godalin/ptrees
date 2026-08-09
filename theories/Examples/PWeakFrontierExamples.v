@@ -198,6 +198,30 @@ Proof.
   - move=> b ->. constructor.
 Qed.
 
+(** A zero-mass divergent branch is observationally irrelevant, not merely
+    capable of producing a frontier. *)
+Lemma zero_divergent_program_equivalent_to_return :
+  apweak eq zero_divergent_program (Ret tt).
+Proof.
+  apply apweak_fold.
+  eapply APWFrontier with
+      (hs1 := meas_bind live_or_zero unit_afront)
+      (hs2 := meas_ret (APHRet tt)).
+  - exact zero_divergent_program_has_afrontier.
+  - constructor.
+  - change (indexed_coupling
+      (aphead_rel eq (@apweak demoE Enum
+        Enum_MeasureInterface Enum_MeasureCoreLaws unit unit eq))
+      (enum_prune (bind_Enum live_or_zero unit_afront))
+      (enum_prune (ret_Enum (APHRet tt)))).
+    have Hone : (1 : nnQ) != RatSubTypes.nnQ_0.
+    { apply/eqP=> Hbad.
+      move: (f_equal Qval Hbad). discriminate. }
+    rewrite /live_or_zero /unit_afront /bind_Enum /ret_Enum /=.
+    rewrite mulr1. apply indexed_coupling_refl.
+    apply aphead_rel_refl. apply apweak_refl.
+Qed.
+
 Definition parity_ahead (b1 b2 : bool) : aphead demoE Enum unit :=
   APHVis (Emit (if xorb b1 b2 then 1 else 0))
     (fun _ => Ret tt).
@@ -289,4 +313,69 @@ Proof.
     rewrite flat_aheads_eq_nested.
     apply indexed_coupling_refl.
     exact parity_aheads_reflexive.
+Qed.
+
+(** The internal sample spaces need not agree.  Both programs expose the same
+    return distribution although one samples [bool] and the other [unit]. *)
+Definition singleton_bool : Enum bool := ret_Enum true.
+Definition singleton_unit : Enum unit := ret_Enum tt.
+
+Definition sample_bool_program : ptree demoE Enum bool :=
+  Prob singleton_bool (fun b => Ret b).
+
+Definition sample_unit_program : ptree demoE Enum bool :=
+  Prob singleton_unit (fun _ => Ret true).
+
+Definition singleton_true_ahead : Enum (aphead demoE Enum bool) :=
+  ret_Enum (APHRet true).
+
+Definition sample_bool_heads : Enum (aphead demoE Enum bool) :=
+  meas_bind singleton_bool (fun _ =>
+    meas_ret (APHRet true : aphead demoE Enum bool)).
+
+Definition sample_unit_heads : Enum (aphead demoE Enum bool) :=
+  meas_bind singleton_unit (fun _ =>
+    meas_ret (APHRet true : aphead demoE Enum bool)).
+
+Lemma sample_heads_equal : sample_bool_heads = sample_unit_heads.
+Proof. reflexivity. Qed.
+
+Lemma sample_bool_afrontier :
+  apfrontier (observe sample_bool_program) sample_bool_heads.
+Proof.
+  change (apfrontier (ProbF singleton_bool (fun b => Ret b))
+    sample_bool_heads).
+  apply (APFProb
+    (front := fun _ =>
+      meas_ret (APHRet true : aphead demoE Enum bool))
+    (Good := fun b => b = true)).
+  - move=> p b Hin Hnz. cbn in Hin.
+    destruct Hin as [Hin|[]]. inversion Hin. reflexivity.
+  - move=> b ->. constructor.
+Qed.
+
+Lemma sample_unit_afrontier :
+  apfrontier (observe sample_unit_program) sample_unit_heads.
+Proof.
+  change (apfrontier (ProbF singleton_unit (fun _ => Ret true))
+    sample_unit_heads).
+  apply (APFProb
+    (front := fun _ =>
+      meas_ret (APHRet true : aphead demoE Enum bool))
+    (Good := fun _ => True)).
+  - apply meas_ae_true.
+  - move=> u _. destruct u. constructor.
+Qed.
+
+Lemma different_sample_spaces_abstractly_equivalent :
+  apweak eq sample_bool_program sample_unit_program.
+Proof.
+  apply apweak_fold.
+  eapply APWFrontier with
+      (hs1 := sample_bool_heads)
+      (hs2 := sample_unit_heads).
+  - exact sample_bool_afrontier.
+  - exact sample_unit_afrontier.
+  - rewrite -sample_heads_equal. apply meas_lift_refl.
+    apply aphead_rel_refl. apply apweak_refl.
 Qed.
