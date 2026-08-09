@@ -394,3 +394,98 @@ Proof.
     apply auhead_rel_refl.
     exact auweak_refl.
 Qed.
+
+(** ** Parametric correctness layer
+
+    The coinductive proof itself is independent of the numerical bias.  Its
+    only analytic premise is that the absorbing iteration converges to the
+    fair measure.  Concrete measure models can discharge that premise using
+    their preferred limit theory; [vn_iteration_converges] above is one fully
+    proved instance. *)
+Section ParametricVonNeumann.
+
+Variables p q : nnQ.
+
+Definition param_biased_coin : Enum bool :=
+  [:: (p, false); (q, true)].
+
+Definition param_round_measure : Enum (unit + bool) :=
+  bind_Enum param_biased_coin (fun b1 =>
+    bind_Enum param_biased_coin (fun b2 =>
+      ret_Enum (vn_round_result b1 b2))).
+
+Definition param_step (_ : unit) : ptree vnE Enum (unit + bool) :=
+  Prob param_biased_coin (fun b1 =>
+    Prob param_biased_coin (fun b2 => Ret (vn_round_result b1 b2))).
+
+Definition param_von_neumann : ptree vnE Enum bool :=
+  PTree.iter param_step tt.
+
+Lemma param_transition_heads :
+  bind_Enum param_round_measure (fun next =>
+    ret_Enum (APHRet next : aphead vnE Enum (unit + bool))) =
+  bind_Enum param_biased_coin (fun b1 =>
+    bind_Enum param_biased_coin (fun b2 =>
+      ret_Enum (APHRet (vn_round_result b1 b2) :
+        aphead vnE Enum (unit + bool)))).
+Proof.
+  rewrite /param_round_measure bind_Enum_assoc.
+  apply bind_Enum_ext=> b1.
+  rewrite bind_Enum_assoc.
+  apply bind_Enum_ext=> b2.
+  by rewrite /ret_Enum /bind_Enum /= mulr1.
+Qed.
+
+Lemma param_step_frontier i :
+  apfrontier (observe (param_step i))
+    (meas_bind param_round_measure (fun next =>
+      meas_ret (APHRet next : aphead vnE Enum (unit + bool)))).
+Proof.
+  destruct i.
+  change (apfrontier (observe (param_step tt))
+    (bind_Enum param_round_measure (fun next =>
+      ret_Enum (APHRet next : aphead vnE Enum (unit + bool))))).
+  rewrite param_transition_heads.
+  cbn [param_step].
+  change (apfrontier
+    (ProbF param_biased_coin (fun b1 =>
+      Prob param_biased_coin (fun b2 => Ret (vn_round_result b1 b2))))
+    (meas_bind param_biased_coin (fun b1 =>
+      meas_bind param_biased_coin (fun b2 =>
+        meas_ret (APHRet (vn_round_result b1 b2) :
+          aphead vnE Enum (unit + bool)))))).
+  apply (APFProb
+    (front := fun b1 =>
+      meas_bind param_biased_coin (fun b2 =>
+        meas_ret (APHRet (vn_round_result b1 b2) :
+          aphead vnE Enum (unit + bool))))
+    (Good := fun _ => True)).
+  - apply meas_ae_true.
+  - move=> b1 _. apply (APFProb
+      (front := fun b2 =>
+        meas_ret (APHRet (vn_round_result b1 b2) :
+          aphead vnE Enum (unit + bool)))
+      (Good := fun _ => True)).
+    + apply meas_ae_true.
+    + move=> b2 _. constructor.
+Qed.
+
+Theorem von_neumann_correct_of_convergence
+    (Hlimit : meas_iter (fun _ : unit => param_round_measure) tt vn_fair) :
+  auweak eq param_von_neumann direct_fair.
+Proof.
+  apply auweak_fold.
+  eapply AUWFrontier with (hs1 := vn_heads) (hs2 := vn_heads).
+  - unfold param_von_neumann, vn_heads.
+    eapply (AUFIter (step := param_step)
+      (transition := fun _ : unit => param_round_measure)
+      (i := tt) (out := vn_fair)).
+    + exact param_step_frontier.
+    + exact Hlimit.
+  - exact direct_fair_frontier.
+  - apply meas_lift_refl.
+    apply auhead_rel_refl.
+    exact auweak_refl.
+Qed.
+
+End ParametricVonNeumann.
