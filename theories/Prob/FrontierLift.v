@@ -72,6 +72,28 @@ Class MeasureBindLaws (M : Type -> Type) `{MI : MeasureInterface M} := {
       meas_eq (meas_bind mu k1) (meas_bind mu k2)
 }.
 
+(** Kleisli extension laws for couplings and almost-everywhere predicates.
+    For measure-theoretic implementations, [meas_lift_bind] is obtained by
+    integrating a measurable family of conditional couplings. *)
+Class MeasureAEKleisliLaws (M : Type -> Type)
+    `{MI : MeasureInterface M} := {
+  meas_ae_bind : forall {A B} (mu : M A) (k : A -> M B)
+      (P : A -> Prop) (Q : B -> Prop),
+      meas_ae mu P ->
+      (forall x, P x -> meas_ae (k x) Q) ->
+      meas_ae (meas_bind mu k) Q
+}.
+
+Class MeasureKleisliLaws (M : Type -> Type)
+    `{MI : MeasureInterface M} := {
+  meas_lift_bind : forall {A B C D}
+      (R : A -> B -> Prop) (S : C -> D -> Prop)
+      (mu : M A) (nu : M B) (k : A -> M C) (h : B -> M D),
+      meas_lift R mu nu ->
+      (forall x y, R x y -> meas_lift S (k x) (h y)) ->
+      meas_lift S (meas_bind mu k) (meas_bind nu h)
+}.
+
 #[global] Instance meas_eq_equivalence
     {M} `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}
     `{ML : @MeasureLaws M MI MC} A :

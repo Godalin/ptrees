@@ -147,6 +147,68 @@ Proof.
   by rewrite Hhead.
 Qed.
 
+Lemma scale_entry_preimage {A} (p w : nnQ) (x : A) (mu : Enum A) :
+  List.In (w, x) (scale_Enum p mu) ->
+  exists q, List.In (q, x) mu /\ w = p * q.
+Proof.
+  elim: mu=> [//|[q y] mu IH] /=.
+  move=> [Hhead|Htail].
+  - inversion Hhead; subst. exists q; split=> //.
+    left. reflexivity.
+  - move: (IH Htail)=> [r [Hin ->]].
+    exists r; split=> //. right. exact Hin.
+Qed.
+
+Lemma bind_entry_preimage {A B} (mu : Enum A) (k : A -> Enum B)
+    (w : nnQ) (b : B) :
+  List.In (w, b) (bind_Enum mu k) ->
+  exists p a q,
+    List.In (p, a) mu /\ List.In (q, b) (k a) /\ w = p * q.
+Proof.
+  elim: mu=> [//|[p a] mu IH] /=.
+  rewrite List.in_app_iff. move=> [Hhead|Htail].
+  - move: (scale_entry_preimage Hhead)=> [q [Hq ->]].
+    exists p, a, q. repeat split=> //.
+    left. reflexivity.
+  - move: (IH Htail)=> [q [x [r [Hq [Hr ->]]]]].
+    exists q, x, r. repeat split=> //. right. exact Hq.
+Qed.
+
+Lemma nnq_mul_nonzero_left p q :
+  p * q != RatSubTypes.nnQ_0 -> p != RatSubTypes.nnQ_0.
+Proof.
+  apply: contra=> /eqP Hp. subst p.
+  have Hz : RatSubTypes.nnQ_0 * q = RatSubTypes.nnQ_0.
+    apply val_inj. cbn. exact: mul0r (Qval q).
+  by rewrite Hz eq_refl.
+Qed.
+
+Lemma nnq_mul_nonzero_right p q :
+  p * q != RatSubTypes.nnQ_0 -> q != RatSubTypes.nnQ_0.
+Proof.
+  apply: contra=> /eqP Hq. subst q.
+  have Hz : p * RatSubTypes.nnQ_0 = RatSubTypes.nnQ_0.
+    apply val_inj. cbn. exact: mulr0 (Qval p).
+  by rewrite Hz eq_refl.
+Qed.
+
+#[global] Instance Enum_MeasureAEKleisliLaws :
+    @MeasureAEKleisliLaws Enum Enum_MeasureInterface.
+Proof.
+  constructor. move=> A B mu k P Q Hmu Hk w b Hin Hw.
+  move: (bind_entry_preimage Hin)=> [p [a [q [Hp [Hq HwEq]]]]].
+  subst w.
+  have HwB : p * q != RatSubTypes.nnQ_0.
+  { apply/negP=> /eqP Heq. exact: Hw Heq. }
+  have HpB := nnq_mul_nonzero_left HwB.
+  have HqB := nnq_mul_nonzero_right HwB.
+  have Hp0 : p <> RatSubTypes.nnQ_0.
+  { move=> Heq. subst p. by rewrite eq_refl in HpB. }
+  have Hq0 : q <> RatSubTypes.nnQ_0.
+  { move=> Heq. subst q. by rewrite eq_refl in HqB. }
+  exact: Hk a (Hmu p a Hp Hp0) q b Hq Hq0.
+Qed.
+
 #[global] Instance Enum_MeasureBindLaws :
     @MeasureBindLaws Enum Enum_MeasureInterface.
 Proof.
