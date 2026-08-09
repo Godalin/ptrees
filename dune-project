@@ -23,6 +23,8 @@
    (>= 0.13.0))
   (coq-coinduction
    (>= 1.20))
+  (coq-paco
+   (>= 4.2.3))
   (coq-itree
    (>= 5.2.1))
   (coq-relation-algebra
