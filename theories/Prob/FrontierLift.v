@@ -60,6 +60,16 @@ Class MeasureLaws (M : Type -> Type) `{MI : MeasureInterface M}
       meas_lift (fun x z => exists y, R x y /\ S y z) mu xi
 }.
 
+(** Congruence of integration/bind under almost-everywhere equality.  It is
+    separated because it is the measure-theoretic ingredient needed to prove
+    uniqueness of finite frontiers. *)
+Class MeasureBindLaws (M : Type -> Type) `{MI : MeasureInterface M} := {
+  meas_bind_ae_proper : forall {A B} (mu : M A)
+      (k1 k2 : A -> M B),
+      meas_ae mu (fun x => meas_eq (k1 x) (k2 x)) ->
+      meas_eq (meas_bind mu k1) (meas_bind mu k2)
+}.
+
 #[global] Instance meas_eq_equivalence
     {M} `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}
     `{ML : @MeasureLaws M MI MC} A :

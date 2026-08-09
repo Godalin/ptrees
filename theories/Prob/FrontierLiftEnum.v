@@ -15,6 +15,16 @@ Unset Printing Implicit Defensive.
 Import Enum IndexedCoupling.
 Import GRing.Theory.
 #[local] Open Scope ring_scope.
+#[local] Open Scope order_scope.
+
+Lemma nnq_mul_ne_zero (p q : nnQ) :
+  p != RatSubTypes.nnQ_0 -> q != RatSubTypes.nnQ_0 ->
+  p * q != RatSubTypes.nnQ_0.
+Proof.
+  rewrite !RatSubTypes.lt_0_nnQ_iff_ne_0.
+  move=> Hp Hq. apply RatSubTypes.lt_nnQ_of_lt_Q.
+  exact: ssrnum.Num.Theory.mulr_gt0 Hp Hq.
+Qed.
 
 Fixpoint enum_prune {A} (mu : Enum A) : Enum A :=
   match mu with
@@ -39,6 +49,25 @@ Proof.
   have Hz : RatSubTypes.nnQ_0 * p = RatSubTypes.nnQ_0.
     apply val_inj. cbn. exact: mul0r (Qval p).
   by rewrite Hz eq_refl IH.
+Qed.
+
+Lemma enum_prune_scale {A} (p : nnQ) (mu : Enum A) :
+  enum_prune (scale_Enum p mu) =
+  if p == RatSubTypes.nnQ_0 then [::]
+  else scale_Enum p (enum_prune mu).
+Proof.
+  case Hp: (p == RatSubTypes.nnQ_0).
+  - move/eqP: Hp=> ->. exact: enum_prune_scale_zero mu.
+  - elim: mu=> [//=|[q x] mu IH] //=.
+    case Hq: (q == RatSubTypes.nnQ_0).
+    + move/eqP: Hq=> Hq0.
+      have Hpq0 : p * q = RatSubTypes.nnQ_0.
+      { rewrite Hq0. apply val_inj. cbn. exact: mulr0 (Qval p). }
+      rewrite Hpq0 eq_refl. exact IH.
+    + have Hpn : p != RatSubTypes.nnQ_0 by rewrite Hp.
+      have Hqn : q != RatSubTypes.nnQ_0 by rewrite Hq.
+      have Hpq := nnq_mul_ne_zero Hpn Hqn.
+      rewrite (negPf Hpq) IH. reflexivity.
 Qed.
 
 (** Almost-everywhere for a finite enumeration: a property is required only
@@ -88,4 +117,29 @@ Proof.
   - move=> A B R mu nu H. exact: indexed_coupling_sym H.
   - move=> A B C R S mu nu xi H1 H2.
     exact: indexed_coupling_comp H1 H2.
+Qed.
+
+Lemma enum_prune_bind_ae {A B} (mu : Enum A) (k1 k2 : A -> Enum B) :
+  enum_ae mu (fun x => enum_prune (k1 x) = enum_prune (k2 x)) ->
+  enum_prune (bind_Enum mu k1) = enum_prune (bind_Enum mu k2).
+Proof.
+  move=> Hae. elim: mu Hae=> [|[p x] mu IH] Hae //=.
+  rewrite !enum_prune_app !enum_prune_scale.
+  have Htail : enum_ae mu
+      (fun y => enum_prune (k1 y) = enum_prune (k2 y)).
+  { move=> q y Hin Hq. exact: Hae q y (or_intror Hin) Hq. }
+  rewrite (IH Htail).
+  case Hp: (p == RatSubTypes.nnQ_0)=> //=.
+  have Hpn : p <> RatSubTypes.nnQ_0.
+    move=> Heq. subst p. by rewrite eq_refl in Hp.
+  have Hhead := Hae p x
+    (or_introl (Logic.eq_refl (p, x))) Hpn.
+  by rewrite Hhead.
+Qed.
+
+#[global] Instance Enum_MeasureBindLaws :
+    @MeasureBindLaws Enum Enum_MeasureInterface.
+Proof.
+  constructor. move=> A B mu k1 k2 Hae.
+  exact: enum_prune_bind_ae Hae.
 Qed.

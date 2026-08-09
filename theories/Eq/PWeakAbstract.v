@@ -103,6 +103,44 @@ Proof.
     exact: aphead_rel_mono Hsim.
 Qed.
 
+Lemma apfrontier_tau_inv {R} (t : ptree E M R) hs :
+  apfrontier (TauF t) hs -> apfrontier (observe t) hs.
+Proof. move=> H. dependent destruction H. assumption. Qed.
+
+Lemma apfrontier_match_tau
+    (t1 : ptree E M R1) (t2 : ptree E M R2) sim :
+  apfrontier_match sim (observe t1) (observe t2) ->
+  apfrontier_match sim (TauF t1) (TauF t2).
+Proof.
+  move=> [HL HR]; split.
+  - move=> hs1 Hf1. dependent destruction Hf1.
+    move: (HL _ Hf1)=> [hs2 [Hf2 Hc]].
+    exists hs2; split=> //. exact: APFTau Hf2.
+  - move=> hs2 Hf2. dependent destruction Hf2.
+    move: (HR _ Hf2)=> [hs1 [Hf1 Hc]].
+    exists hs1; split=> //. exact: APFTau Hf1.
+Qed.
+
+Lemma apfrontier_match_untau_r ot1 (t2 : ptree E M R2) sim :
+  apfrontier_match sim ot1 (TauF t2) ->
+  apfrontier_match sim ot1 (observe t2).
+Proof.
+  move=> [HL HR]; split.
+  - move=> hs1 Hf1. move: (HL _ Hf1)=> [hs2 [Hf2 Hc]].
+    apply apfrontier_tau_inv in Hf2. by exists hs2.
+  - move=> hs2 Hf2. exact: HR _ (APFTau Hf2).
+Qed.
+
+Lemma apfrontier_match_untau_l (t1 : ptree E M R1) ot2 sim :
+  apfrontier_match sim (TauF t1) ot2 ->
+  apfrontier_match sim (observe t1) ot2.
+Proof.
+  move=> [HL HR]; split.
+  - move=> hs1 Hf1. exact: HL _ (APFTau Hf1).
+  - move=> hs2 Hf2. move: (HR _ Hf2)=> [hs1 [Hf1 Hc]].
+    apply apfrontier_tau_inv in Hf1. by exists hs1.
+Qed.
+
 Lemma apweakF_monotone sim1 sim2 :
   (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
   forall ot1 ot2, apweakF sim1 ot1 ot2 -> apweakF sim2 ot1 ot2.
@@ -203,9 +241,145 @@ Qed.
 
 End AbstractFrontierComposition.
 
+Section AbstractWeakRelationMonotonicity.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}.
+
+Lemma aphead_rel_rel_mono {R1 R2}
+    (RR SS : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop) :
+  (forall x y, RR x y -> SS x y) ->
+  forall h1 h2, aphead_rel RR sim h1 h2 -> aphead_rel SS sim h1 h2.
+Proof.
+  move=> HRS h1 h2 H. inversion H; subst; constructor; auto.
+Qed.
+
+Lemma apfrontier_match_rel_mono {R1 R2}
+    (RR SS : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop) ot1 ot2 :
+  (forall x y, RR x y -> SS x y) ->
+  apfrontier_match RR sim ot1 ot2 -> apfrontier_match SS sim ot1 ot2.
+Proof.
+  move=> HRS [HL HR]; split; move=> hs Hf.
+  - move: (HL _ Hf)=> [hs' [Hf' Hlift]]. exists hs'; split=> //.
+    eapply meas_lift_mono; [|exact Hlift].
+    move=> h1 h2 Hh. eapply aphead_rel_rel_mono; [exact HRS|exact Hh].
+  - move: (HR _ Hf)=> [hs' [Hf' Hlift]]. exists hs'; split=> //.
+    eapply meas_lift_mono; [|exact Hlift].
+    move=> h1 h2 Hh. eapply aphead_rel_rel_mono; [exact HRS|exact Hh].
+Qed.
+
+Lemma apweakF_rel_mono {R1 R2}
+    (RR SS : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop) :
+  (forall x y, RR x y -> SS x y) ->
+  forall ot1 ot2, apweakF RR sim ot1 ot2 -> apweakF SS sim ot1 ot2.
+Proof.
+  move=> HRS ot1 ot2 H; induction H.
+  - eapply APWFrontier; [exact H|exact H0|].
+    eapply meas_lift_mono; [|exact H1].
+    move=> h1 h2 Hh. eapply aphead_rel_rel_mono; [exact HRS|exact Hh].
+  - constructor; [exact: apfrontier_match_rel_mono HRS H|exact H0].
+  - constructor; [exact: apfrontier_match_rel_mono HRS H|exact H0].
+  - exact: APWTauL IHapweakF.
+  - exact: APWTauR IHapweakF.
+Qed.
+
+Lemma apweak_rel_mono {R1 R2}
+    (RR SS : R1 -> R2 -> Prop)
+    (HRS : forall x y, RR x y -> SS x y) :
+  forall (t1 : ptree E M R1) (t2 : ptree E M R2),
+    apweak RR t1 t2 -> apweak SS t1 t2.
+Proof.
+  unfold apweak at 2. coinduction CH CIH.
+  move=> t1 t2 Hrel. move: (apweak_unfold Hrel)=> Hstep.
+  eapply apweakF_rel_mono; [exact HRS|].
+  eapply apweakF_monotone; [exact CIH|exact Hstep].
+Qed.
+
+End AbstractWeakRelationMonotonicity.
+
 Section AbstractWeakFacts.
 Context {E : Type -> Type} {M : Type -> Type}
   `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}.
+
+Lemma apfrontier_deterministic `{ML : @MeasureLaws M MI MC}
+    `{MB : @MeasureBindLaws M MI}
+    {R} (ot : ptree' E M R) hs1 hs2 :
+  apfrontier ot hs1 -> apfrontier ot hs2 -> meas_eq hs1 hs2.
+Proof.
+  move=> H1. move: hs2.
+  induction H1 as
+      [r | X e k | t hs Hfront IH
+       | X mu k front Good Hae Hfronts IHs];
+      move=> hs2 H2; dependent destruction H2.
+  - apply meas_eq_refl.
+  - apply meas_eq_refl.
+  - exact: IH _ H2.
+  - apply meas_bind_ae_proper.
+    have Hboth : meas_ae mu (fun x => Good x /\ Good0 x) :=
+      @meas_ae_conj M MI MC ML _ mu Good Good0 Hae H.
+    eapply meas_ae_mono; [|exact Hboth].
+    move=> x [Hx1 Hx2].
+    exact: IHs x Hx1 _ (H0 x Hx2).
+Qed.
+
+Lemma apweakF_frontier_l `{ML : @MeasureLaws M MI MC}
+    `{MB : @MeasureBindLaws M MI}
+    {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
+    ot1 ot2 hs1 :
+  apweakF RR sim ot1 ot2 -> apfrontier ot1 hs1 ->
+  exists hs2, apfrontier ot2 hs2 /\
+    meas_lift (aphead_rel RR sim) hs1 hs2.
+Proof.
+  move=> Hstep. move: hs1.
+  induction Hstep; move=> hs Hfront.
+  - have Heq : meas_eq hs hs1.
+      exact: apfrontier_deterministic Hfront H.
+    exists hs2; split=> //.
+    have Heq' : meas_eq hs1 hs :=
+      @meas_eq_sym M MI MC ML _ _ _ Heq.
+    exact: (@meas_lift_proper_l M MI MC ML _ _ _ _ _ _ Heq' H1).
+  - exact: (proj1 H _ Hfront).
+  - exact: (proj1 H _ Hfront).
+  - dependent destruction Hfront. exact: IHHstep _ Hfront.
+  - move: (IHHstep _ Hfront)=> [hs2 [Hf2 Hc]].
+    exists hs2; split=> //. exact: APFTau Hf2.
+Qed.
+
+Lemma apweakF_frontier_r `{ML : @MeasureLaws M MI MC}
+    `{MB : @MeasureBindLaws M MI}
+    {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
+    ot1 ot2 hs2 :
+  apweakF RR sim ot1 ot2 -> apfrontier ot2 hs2 ->
+  exists hs1, apfrontier ot1 hs1 /\
+    meas_lift (aphead_rel RR sim) hs1 hs2.
+Proof.
+  move=> Hstep. move: hs2.
+  induction Hstep; move=> hs Hfront.
+  - have Heq : meas_eq hs2 hs.
+      exact: apfrontier_deterministic H0 Hfront.
+    exists hs1; split=> //.
+    exact: (@meas_lift_proper_r M MI MC ML _ _ _ _ _ _ Heq H1).
+  - exact: (proj2 H _ Hfront).
+  - exact: (proj2 H _ Hfront).
+  - move: (IHHstep _ Hfront)=> [hs1 [Hf1 Hc]].
+    exists hs1; split=> //. exact: APFTau Hf1.
+  - dependent destruction Hfront. exact: IHHstep _ Hfront.
+Qed.
+
+Lemma apweakF_frontier_match `{ML : @MeasureLaws M MI MC}
+    `{MB : @MeasureBindLaws M MI}
+    {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop) ot1 ot2 :
+  apweakF RR sim ot1 ot2 -> apfrontier_match RR sim ot1 ot2.
+Proof.
+  move=> Hstep; split; move=> hs Hfront.
+  - exact: apweakF_frontier_l Hstep Hfront.
+  - exact: apweakF_frontier_r Hstep Hfront.
+Qed.
 
 Lemma aphead_rel_refl {R}
     (sim : ptree E M R -> ptree E M R -> Prop) :
