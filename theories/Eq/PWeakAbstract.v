@@ -8,6 +8,7 @@ From mathcomp Require Import ssreflect eqtype.
 
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import FrontierLift.
+From PTree.Eq Require Import ShallowNew.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -477,6 +478,64 @@ Lemma apweak_prob_intro {R1 R2} (RR : R1 -> R2 -> Prop)
   meas_lift (fun x y => apweak RR (k1 x) (k2 y)) mu nu ->
   apweak RR (Prob mu k1) (Prob nu k2).
 Proof. move=> Hfront Hlift. apply apweak_fold. constructor; assumption. Qed.
+
+Lemma apweak_bind_ret_l {R1 R2 S1 S2}
+    (RR : R1 -> R2 -> Prop) (SS : S1 -> S2 -> Prop)
+    (r1 : R1) (r2 : R2)
+    (k1 : R1 -> ptree E M S1) (k2 : R2 -> ptree E M S2) :
+  RR r1 r2 -> apweak SS (k1 r1) (k2 r2) ->
+  apweak SS (PTree.bind (Ret r1) k1) (PTree.bind (Ret r2) k2).
+Proof.
+  move=> _ Hk.
+  apply apweak_fold. rewrite !observe_bind. cbn.
+  exact: apweak_unfold Hk.
+Qed.
+
+Lemma apweak_bind_tau {R S}
+    (k : R -> ptree E M S) (t1 t2 : ptree E M R) :
+  apweak eq (PTree.bind t1 k) (PTree.bind t2 k) ->
+  apweak eq
+    (PTree.bind (Tau t1) k)
+    (PTree.bind (Tau t2) k).
+Proof.
+  move=> H. apply apweak_fold. rewrite !observe_bind. cbn.
+  move: (apweak_unfold (tau_apweak_l (tau_apweak_r H)))=> Hstep.
+  cbn in Hstep. exact Hstep.
+Qed.
+
+Lemma apweak_bind_vis {R S X} (e : E X)
+    (h1 h2 : X -> ptree E M R) (k : R -> ptree E M S) :
+  (forall x, apweak eq
+    (PTree.bind (h1 x) k) (PTree.bind (h2 x) k)) ->
+  apweak eq
+    (PTree.bind (Vis e h1) k)
+    (PTree.bind (Vis e h2) k).
+Proof.
+  move=> H. apply apweak_fold. rewrite !observe_bind. cbn.
+  have Hv : apweak eq
+      (Vis e (fun x => PTree.bind (h1 x) k))
+      (Vis e (fun x => PTree.bind (h2 x) k)).
+  { apply apweak_vis_intro. exact H. }
+  move: (apweak_unfold Hv)=> Hstep.
+  cbn in Hstep. exact Hstep.
+Qed.
+
+Lemma apweak_bind_prob {R S} {X Y : eqType}
+    (mu : M X) (nu : M Y)
+    (h1 : X -> ptree E M R) (h2 : Y -> ptree E M R)
+    (k : R -> ptree E M S) :
+  apfrontier_match eq (apweak eq)
+    (ProbF mu (fun x => PTree.bind (h1 x) k))
+    (ProbF nu (fun y => PTree.bind (h2 y) k)) ->
+  meas_lift (fun x y => apweak eq
+    (PTree.bind (h1 x) k) (PTree.bind (h2 y) k)) mu nu ->
+  apweak eq
+    (PTree.bind (Prob mu h1) k)
+    (PTree.bind (Prob nu h2) k).
+Proof.
+  move=> Hfront Hlift. apply apweak_fold. rewrite !observe_bind. cbn.
+  constructor; assumption.
+Qed.
 
 End AbstractWeakFacts.
 
