@@ -20,6 +20,11 @@ Variant aphead (E : Type -> Type) (M : Type -> Type) (R : Type) : Type :=
 Arguments APHRet {E M R} _.
 Arguments APHVis {E M R X} _ _.
 
+Inductive aprelcomp {A B C}
+    (R : A -> B -> Prop) (S : B -> C -> Prop)
+    (a : A) (c : C) : Prop :=
+  | aprelcomp_intro b : R a b -> S b c -> aprelcomp R S a c.
+
 Section AbstractFrontier.
 Context {E : Type -> Type} {M : Type -> Type}
   `{MI : MeasureInterface M} {R : Type}.
@@ -139,6 +144,64 @@ Proof.
 Qed.
 
 End AbstractWeak.
+
+Section AbstractFrontierComposition.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}
+  `{ML : @MeasureLaws M MI MC}.
+
+Lemma aphead_rel_comp {R1 R2 R3}
+    (RR1 : R1 -> R2 -> Prop) (RR2 : R2 -> R3 -> Prop)
+    (sim1 : ptree E M R1 -> ptree E M R2 -> Prop)
+    (sim2 : ptree E M R2 -> ptree E M R3 -> Prop)
+    (sim3 : ptree E M R1 -> ptree E M R3 -> Prop)
+    (Hsim : forall t1 t2 t3,
+      sim1 t1 t2 -> sim2 t2 t3 -> sim3 t1 t3) :
+  forall h1 h2 h3,
+    aphead_rel RR1 sim1 h1 h2 ->
+    aphead_rel RR2 sim2 h2 h3 ->
+    aphead_rel (aprelcomp RR1 RR2) sim3 h1 h3.
+Proof.
+  move=> h1 h2 h3 H12 H23.
+  dependent destruction H12; dependent destruction H23.
+  - constructor. by econstructor; eassumption.
+  - constructor=> x. exact: Hsim _ _ _ (H x) (H0 x).
+Qed.
+
+Lemma apfrontier_match_comp {R1 R2 R3}
+    (RR1 : R1 -> R2 -> Prop) (RR2 : R2 -> R3 -> Prop)
+    (sim1 : ptree E M R1 -> ptree E M R2 -> Prop)
+    (sim2 : ptree E M R2 -> ptree E M R3 -> Prop)
+    (sim3 : ptree E M R1 -> ptree E M R3 -> Prop)
+    (Hsim : forall t1 t2 t3,
+      sim1 t1 t2 -> sim2 t2 t3 -> sim3 t1 t3) :
+  forall ot1 ot2 ot3,
+    apfrontier_match RR1 sim1 ot1 ot2 ->
+    apfrontier_match RR2 sim2 ot2 ot3 ->
+    apfrontier_match (aprelcomp RR1 RR2) sim3 ot1 ot3.
+Proof.
+  move=> ot1 ot2 ot3 [H12L H12R] [H23L H23R]; split.
+  - move=> hs1 Hf1.
+    move: (H12L _ Hf1)=> [hs2 [Hf2 Hc12]].
+    move: (H23L _ Hf2)=> [hs3 [Hf3 Hc23]].
+    exists hs3; split=> //.
+    have Hcomp := @meas_lift_comp M MI MC ML
+      _ _ _ _ _ _ _ _ Hc12 Hc23.
+    eapply meas_lift_mono; [|exact Hcomp].
+    move=> h1 h3 [h2 [Hh12 Hh23]].
+    eapply aphead_rel_comp; [exact Hsim|exact Hh12|exact Hh23].
+  - move=> hs3 Hf3.
+    move: (H23R _ Hf3)=> [hs2 [Hf2 Hc23]].
+    move: (H12R _ Hf2)=> [hs1 [Hf1 Hc12]].
+    exists hs1; split=> //.
+    have Hcomp := @meas_lift_comp M MI MC ML
+      _ _ _ _ _ _ _ _ Hc12 Hc23.
+    eapply meas_lift_mono; [|exact Hcomp].
+    move=> h1 h3 [h2 [Hh12 Hh23]].
+    eapply aphead_rel_comp; [exact Hsim|exact Hh12|exact Hh23].
+Qed.
+
+End AbstractFrontierComposition.
 
 Section AbstractWeakFacts.
 Context {E : Type -> Type} {M : Type -> Type}
