@@ -146,3 +146,59 @@ Lemma auweak_fold t1 t2 :
 Proof. intro H. unfold auweak. apply (gfp_fp fauweak). exact H. Qed.
 
 End UnboundedWeak.
+
+Section UnboundedWeakReflexivity.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : MeasureInterface M}
+  `{MC : @MeasureCoreLaws M MI}
+  `{MO : @MeasureOmegaInterface M MI}.
+
+Lemma auhead_rel_refl {R}
+    (sim : ptree E M R -> ptree E M R -> Prop) :
+  Reflexive sim -> Reflexive (aphead_rel eq sim).
+Proof.
+  intros Hsim h. destruct h as [r|X e k].
+  - constructor. reflexivity.
+  - constructor. intro x. apply Hsim.
+Qed.
+
+Lemma aufrontier_match_refl {R}
+    (sim : ptree E M R -> ptree E M R -> Prop)
+    (Hhead : Reflexive (aphead_rel eq sim)) :
+  forall ot, aufrontier_match eq sim ot ot.
+Proof.
+  intro ot. split; intros hs Hf; exists hs; split; auto.
+  all: apply meas_lift_refl; exact Hhead.
+Qed.
+
+Lemma auweak_refl {R} :
+  Reflexive (@auweak E M MI MC MO R R eq).
+Proof.
+  intro t. revert t. unfold auweak.
+  coinduction CH CIH. intro t.
+  unfold auweak_body. set (ot := observe t).
+  change (auweakF eq (elem CH) ot ot).
+  destruct ot as [r|u|X e k|X mu k].
+  - eapply AUWFrontier with
+        (hs1 := meas_ret (APHRet r))
+        (hs2 := meas_ret (APHRet r)).
+    + apply AUFFinite. constructor.
+    + apply AUFFinite. constructor.
+    + apply meas_lift_refl. apply auhead_rel_refl. exact CIH.
+  - apply AUWTau.
+    + apply aufrontier_match_refl.
+      apply auhead_rel_refl. exact CIH.
+    + exact (CIH u).
+  - eapply AUWFrontier with
+        (hs1 := meas_ret (APHVis e k))
+        (hs2 := meas_ret (APHVis e k)).
+    + apply AUFFinite. constructor.
+    + apply AUFFinite. constructor.
+    + apply meas_lift_refl. apply auhead_rel_refl. exact CIH.
+  - apply AUWProb.
+    + apply aufrontier_match_refl.
+      apply auhead_rel_refl. exact CIH.
+    + apply meas_lift_refl. intro x. exact (CIH (k x)).
+Qed.
+
+End UnboundedWeakReflexivity.
