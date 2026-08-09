@@ -8,7 +8,8 @@ From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg order rat.
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts
   Coupling IndexedCoupling FrontierLift FrontierLiftEnum.
-From PTree.Eq Require Import PFrontier PWeak PWeakFacts PWeakAbstract.
+From PTree.Eq Require Import ShallowNew PFrontier PWeak PWeakFacts
+  PWeakAbstract.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -377,5 +378,72 @@ Proof.
   - exact sample_bool_afrontier.
   - exact sample_unit_afrontier.
   - rewrite -sample_heads_equal. apply meas_lift_refl.
+    apply aphead_rel_refl. apply apweak_refl.
+Qed.
+
+(** Sequential composition through the actual tree [bind].  The unused
+    [false] continuation deliberately has a different result; the singleton
+    sampler makes only the related continuations observable. *)
+Definition reward_after_bool (b : bool) : ptree demoE Enum nat :=
+  if b then Tau (Ret 10) else Ret 99.
+
+Definition reward_after_unit (_ : unit) : ptree demoE Enum nat :=
+  Ret 10.
+
+Definition bound_bool_program : ptree demoE Enum nat :=
+  PTree.bind sample_bool_program reward_after_bool.
+
+Definition bound_unit_program : ptree demoE Enum nat :=
+  PTree.bind
+    (Prob singleton_unit (fun u => Ret u) : ptree demoE Enum unit)
+    reward_after_unit.
+
+Definition singleton_ten_ahead : Enum (aphead demoE Enum nat) :=
+  meas_bind singleton_bool (fun _ =>
+    meas_ret (APHRet 10 : aphead demoE Enum nat)).
+
+Lemma bound_bool_afrontier :
+  apfrontier (observe bound_bool_program) singleton_ten_ahead.
+Proof.
+  rewrite /bound_bool_program observe_bind.
+  change (apfrontier
+    (ProbF singleton_bool
+      (fun b => PTree.bind (Ret b) reward_after_bool))
+    (meas_bind singleton_bool (fun _ =>
+      meas_ret (APHRet 10 : aphead demoE Enum nat)))).
+  apply (APFProb
+    (front := fun _ => meas_ret (APHRet 10 : aphead demoE Enum nat))
+    (Good := fun b => b = true)).
+  - move=> p b Hin Hnz. cbn in Hin.
+    destruct Hin as [Hin|[]]. inversion Hin. reflexivity.
+  - move=> b ->. rewrite observe_bind. cbn. apply APFTau. constructor.
+Qed.
+
+Lemma bound_unit_afrontier :
+  apfrontier (observe bound_unit_program) singleton_ten_ahead.
+Proof.
+  rewrite /bound_unit_program observe_bind.
+  change (apfrontier
+    (ProbF singleton_unit
+      (fun u => PTree.bind (Ret u) reward_after_unit))
+    (meas_bind singleton_unit (fun _ =>
+      meas_ret (APHRet 10 : aphead demoE Enum nat)))).
+  apply (APFProb
+    (front := fun _ => meas_ret (APHRet 10 : aphead demoE Enum nat))
+    (Good := fun _ => True)).
+  - apply meas_ae_true.
+  - move=> u _. destruct u. rewrite observe_bind. cbn. constructor.
+Qed.
+
+Lemma bound_programs_abstractly_equivalent :
+  apweak eq bound_bool_program bound_unit_program.
+Proof.
+  apply apweak_fold.
+  eapply APWFrontier with
+      (hs1 := singleton_ten_ahead)
+      (hs2 := singleton_ten_ahead).
+  - exact bound_bool_afrontier.
+  - exact bound_unit_afrontier.
+  - apply meas_lift_refl.
     apply aphead_rel_refl. apply apweak_refl.
 Qed.
