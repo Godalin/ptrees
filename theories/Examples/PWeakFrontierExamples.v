@@ -447,3 +447,98 @@ Proof.
   - apply meas_lift_refl.
     apply aphead_rel_refl. apply apweak_refl.
 Qed.
+
+(** ** Bind is not an unrestricted congruence
+
+    Finite-frontier equivalence deliberately forgets an internal Dirac
+    probability node once it reaches a return.  Binding that return to a
+    divergent computation exposes the forgotten node again. *)
+Definition dirac_return_program : ptree demoE Enum unit :=
+  Prob singleton_unit (fun _ => Ret tt).
+
+Definition dirac_return_heads : Enum (aphead demoE Enum unit) :=
+  meas_bind singleton_unit (fun _ =>
+    meas_ret (APHRet tt : aphead demoE Enum unit)).
+
+Lemma dirac_return_afrontier :
+  apfrontier (observe dirac_return_program) dirac_return_heads.
+Proof.
+  change (apfrontier
+    (ProbF singleton_unit (fun _ => Ret tt)) dirac_return_heads).
+  apply (APFProb
+    (front := fun _ => meas_ret (APHRet tt : aphead demoE Enum unit))
+    (Good := fun _ => True)).
+  - apply meas_ae_true.
+  - move=> u _. destruct u. constructor.
+Qed.
+
+Lemma dirac_return_equivalent_to_return :
+  apweak eq dirac_return_program (Ret tt).
+Proof.
+  apply apweak_fold.
+  eapply APWFrontier with
+      (hs1 := dirac_return_heads)
+      (hs2 := meas_ret (APHRet tt : aphead demoE Enum unit)).
+  - exact dirac_return_afrontier.
+  - constructor.
+  - change (indexed_coupling
+      (aphead_rel eq (@apweak demoE Enum
+        Enum_MeasureInterface Enum_MeasureCoreLaws unit unit eq))
+      (enum_prune dirac_return_heads)
+      (enum_prune (ret_Enum (APHRet tt)))).
+    rewrite /dirac_return_heads /singleton_unit /bind_Enum /= mulr1.
+    apply indexed_coupling_refl.
+    apply aphead_rel_refl. apply apweak_refl.
+Qed.
+
+Lemma weak_spin_has_no_afrontier {R} hs :
+  ~ apfrontier (TauF (@weak_spin R)) hs.
+Proof.
+  move=> H.
+  remember (TauF (@weak_spin R)) as ot eqn:Hot in H.
+  induction H; try discriminate.
+  apply IHapfrontier.
+  inversion Hot; subst t. exact observe_weak_spin.
+Qed.
+
+Lemma apweakF_prob_spin_absurd
+    (sim : ptree demoE Enum unit -> ptree demoE Enum unit -> Prop)
+    (k : unit -> ptree demoE Enum unit) :
+  apweakF eq sim
+    (ProbF singleton_unit k)
+    (TauF (@weak_spin unit)) -> False.
+Proof.
+  move=> Hstep.
+  remember
+    (ProbF singleton_unit k) as lhs
+      eqn:Hlhs in Hstep.
+  remember (TauF (@weak_spin unit)) as rhs eqn:Hrhs in Hstep.
+  induction Hstep; try discriminate.
+  - rewrite Hrhs in H0. exact: weak_spin_has_no_afrontier H0.
+  - apply IHHstep.
+    + exact Hlhs.
+    + inversion Hrhs; subst t2. exact observe_weak_spin.
+Qed.
+
+Lemma aprob_spin_not_spin :
+  ~ apweak eq
+      (Prob singleton_unit (fun _ => @weak_spin unit))
+      (@weak_spin unit).
+Proof.
+  move=> Hrel. move: (apweak_unfold Hrel).
+  rewrite observe_weak_spin.
+  exact: apweakF_prob_spin_absurd.
+Qed.
+
+Definition bind_to_spin (_ : unit) : ptree demoE Enum unit := weak_spin.
+
+Lemma unrestricted_bind_congruence_fails :
+  ~ apweak eq
+      (PTree.bind dirac_return_program bind_to_spin)
+      (PTree.bind (Ret tt) bind_to_spin).
+Proof.
+  move=> H.
+  move: (apweak_unfold H)=> Hstep.
+  rewrite !observe_bind in Hstep. cbn in Hstep.
+  exact: apweakF_prob_spin_absurd Hstep.
+Qed.
