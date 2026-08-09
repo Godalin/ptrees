@@ -147,6 +147,149 @@ Proof. intro H. unfold auweak. apply (gfp_fp fauweak). exact H. Qed.
 
 End UnboundedWeak.
 
+Section UnboundedWeakRelationFacts.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : MeasureInterface M}
+  `{MC : @MeasureCoreLaws M MI}
+  `{MO : @MeasureOmegaInterface M MI}.
+
+Lemma auhead_rel_rel_mono {R1 R2}
+    (RR SS : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop) :
+  (forall x y, RR x y -> SS x y) ->
+  forall h1 h2, aphead_rel RR sim h1 h2 -> aphead_rel SS sim h1 h2.
+Proof.
+  intros HRS h1 h2 H. inversion H; subst; constructor; auto.
+Qed.
+
+Lemma aufrontier_match_rel_mono {R1 R2}
+    (RR SS : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop) ot1 ot2 :
+  (forall x y, RR x y -> SS x y) ->
+  aufrontier_match RR sim ot1 ot2 ->
+  aufrontier_match SS sim ot1 ot2.
+Proof.
+  intros HRS [HL HR]. split; intros hs Hf.
+  - destruct (HL hs Hf) as [hs' [Hf' Hlift]].
+    exists hs'. split; [exact Hf'|].
+    eapply meas_lift_mono; [|exact Hlift].
+    intros h1 h2 Hh. eapply auhead_rel_rel_mono; eauto.
+  - destruct (HR hs Hf) as [hs' [Hf' Hlift]].
+    exists hs'. split; [exact Hf'|].
+    eapply meas_lift_mono; [|exact Hlift].
+    intros h1 h2 Hh. eapply auhead_rel_rel_mono; eauto.
+Qed.
+
+Lemma auweakF_rel_mono {R1 R2}
+    (RR SS : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop) ot1 ot2 :
+  (forall x y, RR x y -> SS x y) ->
+  auweakF RR sim ot1 ot2 -> auweakF SS sim ot1 ot2.
+Proof.
+  intros HRS Hstep. induction Hstep.
+  - eapply AUWFrontier; [exact H|exact H0|].
+    eapply meas_lift_mono; [|exact H1].
+    intros h1 h2 Hh. eapply auhead_rel_rel_mono; eauto.
+  - apply AUWTau; [eapply aufrontier_match_rel_mono; eauto|exact H0].
+  - apply AUWProb; [eapply aufrontier_match_rel_mono; eauto|exact H0].
+  - exact (AUWTauL IHHstep).
+  - exact (AUWTauR IHHstep).
+Qed.
+
+Lemma auweak_rel_mono {R1 R2}
+    (RR SS : R1 -> R2 -> Prop)
+    (HRS : forall x y, RR x y -> SS x y) :
+  forall t1 t2, @auweak E M MI MC MO R1 R2 RR t1 t2 ->
+    @auweak E M MI MC MO R1 R2 SS t1 t2.
+Proof.
+  unfold auweak at 2. coinduction CH CIH.
+  intros t1 t2 Hrel. apply auweak_unfold in Hrel.
+  unfold auweak_body. eapply auweakF_rel_mono; [exact HRS|].
+  eapply auweakF_monotone; [exact CIH|exact Hrel].
+Qed.
+
+End UnboundedWeakRelationFacts.
+
+Section UnboundedWeakSymmetry.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : MeasureInterface M}
+  `{MC : @MeasureCoreLaws M MI}
+  `{ML : @MeasureLaws M MI MC}
+  `{MO : @MeasureOmegaInterface M MI}.
+
+Lemma auhead_rel_sym {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
+    (sim' : ptree E M R2 -> ptree E M R1 -> Prop) :
+  (forall t1 t2, sim t1 t2 -> sim' t2 t1) ->
+  forall h1 h2, aphead_rel RR sim h1 h2 ->
+    aphead_rel (fun y x => RR x y) sim' h2 h1.
+Proof.
+  intros Hsim h1 h2 H. inversion H; subst.
+  - constructor. assumption.
+  - constructor. intro x. apply Hsim. auto.
+Qed.
+
+Lemma aufrontier_match_sym {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
+    (sim' : ptree E M R2 -> ptree E M R1 -> Prop)
+    (Hsim : forall t1 t2, sim t1 t2 -> sim' t2 t1) :
+  forall ot1 ot2, aufrontier_match RR sim ot1 ot2 ->
+    aufrontier_match (fun y x => RR x y) sim' ot2 ot1.
+Proof.
+  intros ot1 ot2 [HL HR]. split; intros hs Hf.
+  - destruct (HR hs Hf) as [hs' [Hf' Hlift]].
+    exists hs'. split; [exact Hf'|].
+    eapply meas_lift_mono; [|eapply meas_lift_sym; exact Hlift].
+    intros h2 h1 Hh. eapply auhead_rel_sym; eauto.
+  - destruct (HL hs Hf) as [hs' [Hf' Hlift]].
+    exists hs'. split; [exact Hf'|].
+    eapply meas_lift_mono; [|eapply meas_lift_sym; exact Hlift].
+    intros h2 h1 Hh. eapply auhead_rel_sym; eauto.
+Qed.
+
+Lemma auweakF_sym {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
+    (sim' : ptree E M R2 -> ptree E M R1 -> Prop) :
+  (forall t1 t2, sim t1 t2 -> sim' t2 t1) ->
+  forall ot1 ot2, auweakF RR sim ot1 ot2 ->
+    auweakF (fun y x => RR x y) sim' ot2 ot1.
+Proof.
+  intros Hsim ot1 ot2 Hstep. induction Hstep.
+  - eapply AUWFrontier; [exact H0|exact H|].
+    eapply meas_lift_mono; [|eapply meas_lift_sym; exact H1].
+    intros h2 h1 Hh. eapply auhead_rel_sym; eauto.
+  - apply AUWTau.
+    + eapply aufrontier_match_sym; eauto.
+    + eauto.
+  - apply AUWProb.
+    + eapply aufrontier_match_sym; eauto.
+    + eapply meas_lift_mono; [|eapply meas_lift_sym; exact H0].
+      intros y x Hxy. eauto.
+  - exact (AUWTauR IHHstep).
+  - exact (AUWTauL IHHstep).
+Qed.
+
+Lemma auweak_sym {R1 R2} (RR : R1 -> R2 -> Prop) :
+  forall (t1 : ptree E M R1) (t2 : ptree E M R2),
+    auweak RR t1 t2 -> auweak (fun y x => RR x y) t2 t1.
+Proof.
+  unfold auweak at 2. coinduction CH CIH.
+  intros t1 t2 Hrel. apply auweak_unfold in Hrel.
+  unfold auweak_body. eapply auweakF_sym; eauto.
+Qed.
+
+Lemma auweak_sym_eq {R} :
+  Symmetric (@auweak E M MI MC MO R R eq).
+Proof.
+  intros t1 t2 H12.
+  eapply (auweak_rel_mono
+    (RR := fun y x : R => x = y) (SS := eq)).
+  - intros x y Hxy. symmetry. exact Hxy.
+  - exact (auweak_sym H12).
+Qed.
+
+End UnboundedWeakSymmetry.
+
 Section UnboundedWeakReflexivity.
 Context {E : Type -> Type} {M : Type -> Type}
   `{MI : MeasureInterface M}
