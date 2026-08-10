@@ -1,14 +1,14 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
-Require Import Utf8 Program Ring Field Lia.
+Require Import Utf8 Program Ring Field Lia FunctionalExtensionality.
 
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum
   order rat archimedean.
 
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts FrontierLift
-  FrontierLiftEnum MeasureIteration MeasureIterationEnum.
+  FrontierLiftEnum MeasureIteration MeasureIterationEnum RatGeometric.
 From PTree.Eq Require Import PWeakAbstract PWeakUnbounded.
 
 Set Implicit Arguments.
@@ -487,6 +487,114 @@ Proof.
     + move=> b2 _. constructor.
 Qed.
 
+Definition param_a : rat := Qval p.
+Definition param_b : rat := Qval q.
+Definition param_retry : rat := param_a * param_a + param_b * param_b.
+Definition param_success : rat := param_a * param_b.
+
+Lemma param_collect (a b z f t : rat) :
+  a * (a * z + b * f) + b * (a * t + b * z) =
+  (a * a + b * b) * z + (a * b) * (f + t).
+Proof.
+  rewrite !mulrDr !mulrA [b * a]mulrC.
+  rewrite [a * b * t + b * b * z]addrC addrACA.
+  by rewrite mulrDl.
+Qed.
+
+Lemma param_round_expect (P : bool -> bool) z :
+  enum_expect
+    (fun next => match next with
+      | inl _ => z
+      | inr b => indicator P b
+      end) param_round_measure =
+  param_retry * z +
+    param_success * (indicator P false + indicator P true).
+Proof.
+  rewrite /param_round_measure !enum_expect_bind
+    /param_biased_coin /=.
+  rewrite /param_a /param_b /param_retry /param_success.
+  rewrite !mulr1 !addr0.
+  exact: param_collect.
+Qed.
+
+Lemma param_approx_expect_succ n (P : bool -> bool) :
+  enum_expect (indicator P)
+    (meas_iter_approx (S n)
+      (fun _ : unit => param_round_measure) tt) =
+  param_retry * enum_expect (indicator P)
+    (meas_iter_approx n (fun _ : unit => param_round_measure) tt) +
+  param_success * (indicator P false + indicator P true).
+Proof.
+  cbn [meas_iter_approx]. rewrite enum_expect_bind.
+  set z := enum_expect (indicator P)
+    (meas_iter_approx n (fun _ : unit => param_round_measure) tt).
+  have Hfun :
+      (fun x : unit + bool =>
+        enum_expect (indicator P)
+          match x with
+          | inl i' =>
+              meas_iter_approx n
+                (fun _ : unit => param_round_measure) i'
+          | inr a => meas_ret a
+          end) =
+      (fun x => match x with
+        | inl _ => z
+        | inr b => indicator P b
+        end).
+  { apply functional_extensionality=> x.
+    destruct x as [u|b].
+    - destruct u. reflexivity.
+    - apply enum_expect_ret. }
+  rewrite Hfun. exact: param_round_expect.
+Qed.
+
+Lemma param_success_is_escape
+    (Hescape : param_success = (1 - param_retry) * (1 / 2))
+    (P : bool -> bool) :
+  param_success * (indicator P false + indicator P true) =
+  (1 - param_retry) * enum_expect (indicator P) vn_fair.
+Proof.
+  rewrite Hescape vn_fair_expect.
+  by rewrite -mulrA.
+Qed.
+
+Lemma param_approx_closed_form
+    (Hescape : param_success = (1 - param_retry) * (1 / 2))
+    n (P : bool -> bool) :
+  enum_expect (indicator P)
+      (meas_iter_approx n
+        (fun _ : unit => param_round_measure) tt) =
+    (1 - param_retry ^+ n) * enum_expect (indicator P) vn_fair.
+Proof.
+  elim: n=> [|n IH].
+  - rewrite /= /meas_zero /Enum_MeasureOmegaInterface /=.
+    by rewrite expr0 subrr mul0r.
+  - rewrite param_approx_expect_succ IH exprS.
+    rewrite (param_success_is_escape Hescape).
+    exact: vn_geometric_step.
+Qed.
+
+Lemma param_iteration_converges_of_contract
+    (Hescape : param_success = (1 - param_retry) * (1 / 2))
+    K (Kpos : (0 < K)%coq_nat)
+    (retry0 : 0 <= param_retry)
+    (Hcontract : param_retry <= (K%:R : rat) / K.+1%:R) :
+  meas_iter (fun _ : unit => param_round_measure) tt vn_fair.
+Proof.
+  unfold meas_iter, meas_lub, Enum_MeasureOmegaInterface,
+    enum_converges.
+  move=> P eps eps0.
+  destruct (rat_contract_vanishes Kpos retry0 Hcontract eps0)
+    as [N HN].
+  exists N=> n Hfuel.
+  rewrite (param_approx_closed_form Hescape) vn_difference normrN normrM.
+  have Hpow : 0 <= param_retry ^+ n := exprn_ge0 n retry0.
+  rewrite (ger0_norm Hpow).
+  have Hbounded := ler_wpM2l Hpow (vn_fair_expect_norm P).
+  rewrite mulr1 in Hbounded.
+  exact: le_lt_trans Hbounded (HN n Hfuel).
+Qed.
+
 Theorem von_neumann_correct_of_convergence
     (Hlimit : meas_iter (fun _ : unit => param_round_measure) tt vn_fair) :
   auweak eq param_von_neumann direct_fair.
@@ -504,6 +612,33 @@ Proof.
   - apply meas_lift_refl.
     apply auhead_rel_refl.
     exact auweak_refl.
+Qed.
+
+Theorem von_neumann_correct_of_contract
+    (Hescape : param_success = (1 - param_retry) * (1 / 2))
+    K (Kpos : (0 < K)%coq_nat)
+    (retry0 : 0 <= param_retry)
+    (Hcontract : param_retry <= (K%:R : rat) / K.+1%:R) :
+  auweak eq param_von_neumann direct_fair.
+Proof.
+  apply von_neumann_correct_of_convergence.
+  exact (param_iteration_converges_of_contract
+    Hescape Kpos retry0 Hcontract).
+Qed.
+
+(** The Archimedean property of rational weights constructs [K]
+    automatically.  Thus a strict retry probability is the semantic
+    hypothesis needed by the unbounded program proof. *)
+Theorem von_neumann_correct_of_strict_retry
+    (Hescape : param_success = (1 - param_retry) * (1 / 2))
+    (retry0 : 0 <= param_retry)
+    (retry1 : param_retry < 1) :
+  auweak eq param_von_neumann direct_fair.
+Proof.
+  destruct (rat_contract_certificate retry0 retry1)
+    as [K [Kpos Hcontract]].
+  exact (von_neumann_correct_of_contract
+    Hescape Kpos retry0 Hcontract).
 Qed.
 
 End ParametricVonNeumann.
