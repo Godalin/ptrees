@@ -42,6 +42,7 @@ Inductive aufrontier {R} :
           (meas_bind (transition j)
             (fun next => meas_ret (APHRet next)))) ->
       meas_iter transition i out ->
+      meas_total out ->
       aufrontier (observe (PTree.iter step i))
         (meas_bind out (fun r => meas_ret (APHRet r))).
 

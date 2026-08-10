@@ -16,7 +16,11 @@ Unset Printing Implicit Defensive.
 Class MeasureOmegaInterface (M : Type -> Type)
     `{MI : MeasureInterface M} := {
   meas_zero : forall {A}, M A;
-  meas_lub : forall {A}, (nat -> M A) -> M A -> Prop
+  meas_lub : forall {A}, (nat -> M A) -> M A -> Prop;
+  (** [meas_total mu] states that [mu] has total mass one.  Requiring this
+      separately from existence of a limit distinguishes almost-sure
+      termination from convergence to a proper subprobability measure. *)
+  meas_total : forall {A}, M A -> Prop
 }.
 
 (** Laws needed by the unbounded frontier development.  In particular,
@@ -58,6 +62,15 @@ Fixpoint meas_iter_approx {I A}
 Definition meas_iter {I A} (step : I -> M (I + A))
     (i : I) (out : M A) : Prop :=
   meas_lub (fun n => meas_iter_approx n step i) out.
+
+(** Almost-sure termination: the finite absorbing approximants converge and
+    their limit has total mass one. *)
+Definition meas_iter_ast {I A} (step : I -> M (I + A)) (i : I) : Prop :=
+  exists out, meas_iter step i out /\ meas_total out.
+
+Lemma meas_iter_total_ast {I A} (step : I -> M (I + A)) i out :
+  meas_iter step i out -> meas_total out -> meas_iter_ast step i.
+Proof. intros Hiter Htotal. exists out. auto. Qed.
 
 Lemma meas_iter_unique `{OL : @MeasureOmegaLaws M MI MO}
     {I A} (step : I -> M (I + A)) i out1 out2 :

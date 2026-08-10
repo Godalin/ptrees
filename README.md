@@ -34,10 +34,11 @@ The unbounded extension is split into three files:
   Kleisli loop and defines its unbounded result relationally as an omega
   limit.  Runs which have not terminated within `n` steps contribute zero
   mass, so a purely divergent loop cannot be assigned an arbitrary result by
-  coinduction.
+  coinduction.  `meas_iter_ast` additionally requires that the limit has total
+  mass one.
 - `Eq/PWeakUnbounded.v` adds `aufrontier`, whose iteration rule collapses a
   `PTree.iter` only after its finite approximants have a certified measure
-  limit, and defines the corresponding greatest-fixed-point relation
+  limit **and that limit has total mass one**, and defines the corresponding greatest-fixed-point relation
   `auweak`.  Reflexivity and symmetry are mechanized.
 - `Prob/MeasureIterationEnum.v` instantiates limits for finite rational
   enumerations using convergence of the mass of every Boolean measurable

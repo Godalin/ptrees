@@ -83,6 +83,14 @@ Definition von_neumann_third : ptree vnE Enum bool :=
 Definition vn_fair : Enum bool :=
   [:: (one_div_two, false); (one_div_two, true)].
 
+Lemma vn_fair_total : meas_total vn_fair.
+Proof.
+  change (enum_expect (fun _ : bool => 1) vn_fair = 1).
+  rewrite /vn_fair /= !mulr1 addr0 -mulrDl.
+  change ((2 : rat) / 2 = 1).
+  by rewrite divrr // unitfE pnatr_eq0.
+Qed.
+
 Definition direct_fair : ptree vnE Enum bool :=
   Prob vn_fair (fun b => Ret b).
 
@@ -304,6 +312,14 @@ Proof.
   exact: le_lt_trans Hbounded (HN n Hfuel).
 Qed.
 
+Theorem von_neumann_third_almost_surely_terminates :
+  meas_iter_ast (fun _ : unit => vn_transition) tt.
+Proof.
+  eapply meas_iter_total_ast.
+  - exact vn_iteration_converges.
+  - exact vn_fair_total.
+Qed.
+
 Definition vn_heads : Enum (aphead vnE Enum bool) :=
   meas_bind vn_fair (fun b =>
     meas_ret (APHRet b : aphead vnE Enum bool)).
@@ -366,6 +382,7 @@ Proof.
     (i := tt) (out := vn_fair)).
   - exact vn_step_frontier.
   - exact vn_iteration_converges.
+  - exact vn_fair_total.
 Qed.
 
 Lemma direct_fair_frontier :
@@ -482,6 +499,7 @@ Proof.
       (i := tt) (out := vn_fair)).
     + exact param_step_frontier.
     + exact Hlimit.
+    + exact vn_fair_total.
   - exact direct_fair_frontier.
   - apply meas_lift_refl.
     apply auhead_rel_refl.

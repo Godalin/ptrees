@@ -37,7 +37,8 @@ Definition enum_converges {A} (chain : nat -> Enum A) (mu : Enum A) : Prop :=
 #[global] Instance Enum_MeasureOmegaInterface :
     @MeasureOmegaInterface Enum Enum_MeasureInterface := {
   meas_zero := fun A => [::];
-  meas_lub := @enum_converges
+  meas_lub := @enum_converges;
+  meas_total := fun A mu => enum_expect (fun _ : A => 1) mu = 1
 }.
 
 Lemma enum_expect_nil {A} (f : A -> rat) :
