@@ -26,6 +26,14 @@ Inductive aufrontier {R} :
     ptree' E M R -> M (aphead E M R) -> Prop :=
   | AUFFinite ot hs :
       apfrontier ot hs -> aufrontier ot hs
+  | AUFTau t hs :
+      aufrontier (observe t) hs ->
+      aufrontier (TauF t) hs
+  | AUFProb {X : eqType} (mu : M X) k
+      (front : X -> M (aphead E M R)) (Good : X -> Prop) :
+      meas_ae mu Good ->
+      (forall x, Good x -> aufrontier (observe (k x)) (front x)) ->
+      aufrontier (ProbF mu k) (meas_bind mu front)
   | AUFIter {I : Type}
       (step : I -> ptree E M (I + R))
       (transition : I -> M (I + R)) i out :
@@ -40,6 +48,10 @@ Inductive aufrontier {R} :
 Lemma apfrontier_aufrontier {R} ot hs :
   @apfrontier E M MI R ot hs -> aufrontier ot hs.
 Proof. apply AUFFinite. Qed.
+
+Lemma aufrontier_tau {R} (t : ptree E M R) hs :
+  aufrontier (observe t) hs -> aufrontier (TauF t) hs.
+Proof. apply AUFTau. Qed.
 
 (** Unbounded iteration is functional up to measure equality whenever the
     model's omega-limit is unique. *)
