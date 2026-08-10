@@ -492,6 +492,60 @@ Definition param_b : rat := Qval q.
 Definition param_retry : rat := param_a * param_a + param_b * param_b.
 Definition param_success : rat := param_a * param_b.
 
+Lemma param_escape_of_normalized
+    (Hsum : param_a + param_b = 1) :
+  param_success = (1 - param_retry) * (1 / 2).
+Proof.
+  unfold param_success, param_retry.
+  have Hsquare : 1 =
+      (param_a + param_b) * (param_a + param_b).
+  { by rewrite Hsum mulr1. }
+  have Hinter :
+      1 -
+        (param_a * param_a + param_b * param_b) =
+      param_a * param_b + param_a * param_b.
+  { apply: (addIr (param_a * param_a + param_b * param_b)).
+    rewrite subrK Hsquare !mulrDr !mulrDl.
+    rewrite [param_b * param_a]mulrC.
+    rewrite [param_a * param_b + param_b * param_b]addrC addrACA.
+    exact: addrC. }
+  rewrite Hinter -mulrDr.
+  have Hdouble : param_b + param_b = param_b * (1 + 1 : rat).
+  { by rewrite mulrDr !mulr1. }
+  rewrite Hdouble !mulrA.
+  rewrite mulr1.
+  change (param_a * param_b =
+    param_a * param_b * (2 : rat) / 2).
+  by rewrite mulrK // unitfE pnatr_eq0.
+Qed.
+
+Lemma param_retry_nonnegative : 0 <= param_retry.
+Proof.
+  unfold param_retry, param_a, param_b.
+  apply addr_ge0; apply mulr_ge0; exact: le_nnQ0.
+Qed.
+
+Lemma param_retry_strict_of_normalized
+    (Hsum : param_a + param_b = 1)
+    (success0 : 0 < param_success) :
+  param_retry < 1.
+Proof.
+  have Hescape := param_escape_of_normalized Hsum.
+  have Hprod : 0 < (1 - param_retry) * (1 / 2).
+  { by rewrite -Hescape. }
+  have half0 : 0 < (1 / 2 : rat).
+  { apply divr_gt0.
+    - exact ltr01.
+    - exact: ltr0Sn. }
+  have Hsub : 0 < 1 - param_retry.
+  { have Hprod' : (0 : rat) * (1 / 2) <
+        (1 - param_retry) * (1 / 2).
+    { by rewrite mul0r. }
+    move: Hprod'.
+    by rewrite ltr_pM2r. }
+  by move: Hsub; rewrite subr_gt0.
+Qed.
+
 Lemma param_collect (a b z f t : rat) :
   a * (a * z + b * f) + b * (a * t + b * z) =
   (a * a + b * b) * z + (a * b) * (f + t).
@@ -639,6 +693,19 @@ Proof.
     as [K [Kpos Hcontract]].
   exact (von_neumann_correct_of_contract
     Hescape Kpos retry0 Hcontract).
+Qed.
+
+(** Direct user-facing form: normalized nonnegative weights with nonzero
+    probability of seeing different outcomes implement a fair coin. *)
+Theorem von_neumann_correct_of_normalized_bias
+    (Hsum : param_a + param_b = 1)
+    (success0 : 0 < param_success) :
+  auweak eq param_von_neumann direct_fair.
+Proof.
+  apply von_neumann_correct_of_strict_retry.
+  - exact: param_escape_of_normalized.
+  - exact param_retry_nonnegative.
+  - exact: param_retry_strict_of_normalized.
 Qed.
 
 End ParametricVonNeumann.
