@@ -106,3 +106,36 @@ Proof.
   rewrite ![(_%:R : rat) * eps]mulrC in HK Hmul.
   exact: lt_le_trans HK Hmul.
 Qed.
+
+(** Every nonnegative rational strictly below one admits the elementary
+    [K / (K + 1)] contraction certificate used above. *)
+Lemma rat_contract_certificate (r : rat) :
+  0 <= r -> r < 1 ->
+  exists K : nat, (0 < K)%coq_nat /\
+    r <= (K%:R : rat) / K.+1%:R.
+Proof.
+  move=> r0 r1.
+  pose K := Num.bound (r / (1 - r)).
+  have one_sub_r0 : 0 < 1 - r by rewrite subr_gt0.
+  have quotient0 : 0 <= r / (1 - r).
+  { exact: divr_ge0 r0 (ltW one_sub_r0). }
+  have Harch : r / (1 - r) < K%:R := archi_boundP quotient0.
+  have Kbool : (0 < K)%N.
+  { have HK : (0 : rat) < K%:R := le_lt_trans quotient0 Harch.
+    by move: HK; rewrite ltr0n. }
+  have Kpos : (0 < K)%coq_nat by apply/ssrnat.ltP.
+  exists K; split=> //.
+  rewrite ler_pdivlMr; last exact: ltr0Sn.
+  apply/ltW.
+  rewrite -addn1 natrD /= mulrDr mulr1.
+  have Hcross : r < (K%:R : rat) * (1 - r).
+  { move: Harch. by rewrite ltr_pdivrMr. }
+  rewrite mulrBr mulr1 in Hcross.
+  have Hadd :
+      r + (K%:R : rat) * r <
+        ((K%:R : rat) - (K%:R : rat) * r) + (K%:R : rat) * r.
+  { by rewrite ltrD2r. }
+  rewrite subrK in Hadd.
+  move: Hadd.
+  by rewrite [(K%:R : rat) * r]mulrC addrC.
+Qed.
