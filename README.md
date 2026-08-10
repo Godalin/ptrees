@@ -40,6 +40,11 @@ The unbounded extension is split into three files:
   `PTree.iter` only after its finite approximants have a certified measure
   limit **and that limit has total mass one**, and defines the corresponding greatest-fixed-point relation
   `auweak`.  Reflexivity and symmetry are mechanized.
+- `Eq/PWeakUnboundedEquiv.v` exposes `auequiv`, the explicitly named
+  reflexive-symmetric-transitive closure of `auweak`, together with an
+  `Equivalence` instance.  This is the client-facing program equivalence;
+  the separate name avoids claiming raw `auweak` transitivity without an
+  omega-frontier coherence law.
 - `Prob/MeasureIterationEnum.v` instantiates limits for finite rational
   enumerations using convergence of the mass of every Boolean measurable
   set.  The limit is relational because `Enum` is not closed under arbitrary
@@ -74,7 +79,9 @@ discharges it from `0 <= retry < 1`, and
 the user-facing assumptions that the weights sum to one and their product is
 strictly positive.  Thus the retry loop is genuinely unbounded, almost surely
 terminating, and weakly equivalent to a direct fair toss for every
-nondegenerate rational input bias.
+nondegenerate rational input bias.  The corresponding client-facing results
+are `von_neumann_third_auequiv_fair` and
+`von_neumann_auequiv_of_normalized_bias`.
 
 The current `Enum` `meas_eq` is intentionally representation-sensitive
 (pruned-list equality), while omega convergence is observational.  Therefore
