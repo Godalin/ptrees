@@ -9,7 +9,8 @@ From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts FrontierLift
   FrontierLiftEnum MeasureIteration MeasureIterationEnum RatGeometric.
-From PTree.Eq Require Import PWeakAbstract PWeakUnbounded.
+From PTree.Eq Require Import PWeakAbstract PWeakUnbounded
+  PWeakUnboundedEquiv.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -412,6 +413,13 @@ Proof.
     exact auweak_refl.
 Qed.
 
+Theorem von_neumann_third_auequiv_fair :
+  auequiv von_neumann_third direct_fair.
+Proof.
+  apply auequiv_of_auweak.
+  exact von_neumann_third_equivalent_to_fair.
+Qed.
+
 (** ** Parametric correctness layer
 
     The coinductive proof itself is independent of the numerical bias.  Its
@@ -706,6 +714,15 @@ Proof.
   - exact: param_escape_of_normalized.
   - exact param_retry_nonnegative.
   - exact: param_retry_strict_of_normalized.
+Qed.
+
+Theorem von_neumann_auequiv_of_normalized_bias
+    (Hsum : param_a + param_b = 1)
+    (success0 : 0 < param_success) :
+  auequiv param_von_neumann direct_fair.
+Proof.
+  apply auequiv_of_auweak.
+  exact (von_neumann_correct_of_normalized_bias Hsum success0).
 Qed.
 
 End ParametricVonNeumann.
