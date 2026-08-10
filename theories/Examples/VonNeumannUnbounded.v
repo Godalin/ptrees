@@ -489,3 +489,71 @@ Proof.
 Qed.
 
 End ParametricVonNeumann.
+
+(** The unbounded frontier remains usable below ordinary program context. *)
+Definition delayed_von_neumann : ptree vnE Enum bool :=
+  Tau von_neumann_third.
+
+Lemma delayed_von_neumann_frontier :
+  aufrontier (observe delayed_von_neumann) vn_heads.
+Proof.
+  change (aufrontier (TauF von_neumann_third) vn_heads).
+  apply AUFTau. exact von_neumann_unbounded_frontier.
+Qed.
+
+Theorem delayed_von_neumann_equivalent_to_fair :
+  auweak eq delayed_von_neumann direct_fair.
+Proof.
+  apply auweak_fold.
+  eapply AUWFrontier with (hs1 := vn_heads) (hs2 := vn_heads).
+  - exact delayed_von_neumann_frontier.
+  - exact direct_fair_frontier.
+  - apply meas_lift_refl.
+    apply auhead_rel_refl. exact auweak_refl.
+Qed.
+
+Definition singleton_start : Enum unit := ret_Enum tt.
+
+Definition sampled_von_neumann : ptree vnE Enum bool :=
+  Prob singleton_start (fun _ => von_neumann_third).
+
+Lemma scale_one_enum {A} (mu : Enum A) :
+  scale_Enum (1 : nnQ) mu = mu.
+Proof.
+  elim: mu=> [|[w x] tl IH] //=.
+  by rewrite mul1r IH.
+Qed.
+
+Lemma sampled_von_neumann_frontier :
+  aufrontier (observe sampled_von_neumann)
+    (meas_bind singleton_start (fun _ => vn_heads)).
+Proof.
+  change (aufrontier
+    (ProbF singleton_start (fun _ => von_neumann_third))
+    (meas_bind singleton_start (fun _ => vn_heads))).
+  apply (AUFProb (front := fun _ => vn_heads)
+    (Good := fun _ => True)).
+  - apply meas_ae_true.
+  - move=> u _. destruct u. exact von_neumann_unbounded_frontier.
+Qed.
+
+Lemma sampled_heads_eq :
+  meas_bind singleton_start (fun _ => vn_heads) = vn_heads.
+Proof.
+  change (scale_Enum (1 : nnQ) vn_heads = vn_heads).
+  exact: scale_one_enum.
+Qed.
+
+Theorem sampled_von_neumann_equivalent_to_fair :
+  auweak eq sampled_von_neumann direct_fair.
+Proof.
+  apply auweak_fold.
+  eapply AUWFrontier with
+      (hs1 := meas_bind singleton_start (fun _ => vn_heads))
+      (hs2 := vn_heads).
+  - exact sampled_von_neumann_frontier.
+  - exact direct_fair_frontier.
+  - rewrite sampled_heads_eq.
+    apply meas_lift_refl.
+    apply auhead_rel_refl. exact auweak_refl.
+Qed.
