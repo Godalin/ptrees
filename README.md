@@ -44,6 +44,10 @@ The unbounded extension is split into three files:
   enumerations using convergence of the mass of every Boolean measurable
   set.  The limit is relational because `Enum` is not closed under arbitrary
   omega-limits: a limit may have infinite support or irrational weights.
+- `Prob/RatGeometric.v` proves an Archimedean contraction principle for
+  rational retry probabilities.  In particular, every `0 <= r < 1`
+  automatically admits a natural `K > 0` with `r <= K/(K+1)`, which yields
+  an explicit bound tending to zero for `r^n`.
 
 `Examples/VonNeumannUnbounded.v` is the main unbounded regression test.  Its
 source program repeatedly tosses a coin with weights `1/3` and `2/3` twice,
@@ -62,10 +66,15 @@ Theorem von_neumann_third_equivalent_to_fair :
   auweak eq von_neumann_third direct_fair.
 ```
 
-The same file also provides `von_neumann_correct_of_convergence`, a
-parameterized program-level theorem for arbitrary bias weights `p` and `q`.
-It isolates the only model-specific analytic obligation—convergence of the
-absorbing iteration—from the coinductive weak-bisimulation proof.
+The same file also provides a parameterized proof stack for arbitrary input
+bias weights `p` and `q`: `von_neumann_correct_of_convergence` isolates the
+model-specific limit obligation, `von_neumann_correct_of_strict_retry`
+discharges it from `0 <= retry < 1`, and
+`von_neumann_correct_of_normalized_bias` derives all analytic premises from
+the user-facing assumptions that the weights sum to one and their product is
+strictly positive.  Thus the retry loop is genuinely unbounded, almost surely
+terminating, and weakly equivalent to a direct fair toss for every
+nondegenerate rational input bias.
 
 The current `Enum` `meas_eq` is intentionally representation-sensitive
 (pruned-list equality), while omega convergence is observational.  Therefore
