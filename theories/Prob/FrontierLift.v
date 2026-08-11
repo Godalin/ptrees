@@ -3,6 +3,8 @@ Set Warnings "-ambiguous-paths".
 
 Require Import Morphisms.
 
+From mathcomp Require Import eqtype.
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -89,7 +91,7 @@ Class MeasureAEKleisliLaws (M : Type -> Type)
     basic weak-bisimulation development. *)
 Class MeasureCommutativeLaws (M : Type -> Type)
     `{MI : MeasureInterface M} := {
-  meas_lift_bind_ret_exchange : forall {A B C D}
+  meas_lift_bind_ret_exchange : forall {A B : eqType} {C D}
       (R : C -> D -> Prop) (mu : M A) (nu : M B)
       (f : A -> B -> C) (g : B -> A -> D),
       (forall x y, R (f x y) (g y x)) ->
