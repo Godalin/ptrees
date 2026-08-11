@@ -82,6 +82,24 @@ Class MeasureAEKleisliLaws (M : Type -> Type)
       meas_ae (meas_bind mu k) Q
 }.
 
+(** Relational Fubini law for two independent samples.  It is stated through
+    [meas_lift], rather than [meas_eq], so the result types need neither
+    decidable equality nor a canonical enumeration order.  Keeping this in a
+    separate class allows non-commutative measure-like effects to use the
+    basic weak-bisimulation development. *)
+Class MeasureCommutativeLaws (M : Type -> Type)
+    `{MI : MeasureInterface M} := {
+  meas_lift_bind_ret_exchange : forall {A B C D}
+      (R : C -> D -> Prop) (mu : M A) (nu : M B)
+      (f : A -> B -> C) (g : B -> A -> D),
+      (forall x y, R (f x y) (g y x)) ->
+      meas_lift R
+        (meas_bind mu (fun x =>
+          meas_bind nu (fun y => meas_ret (f x y))))
+        (meas_bind nu (fun y =>
+          meas_bind mu (fun x => meas_ret (g y x))))
+}.
+
 #[global] Instance meas_eq_equivalence
     {M} `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}
     `{ML : @MeasureLaws M MI MC} A :

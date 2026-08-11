@@ -479,6 +479,48 @@ Lemma apweak_prob_intro {R1 R2} (RR : R1 -> R2 -> Prop)
   apweak RR (Prob mu k1) (Prob nu k2).
 Proof. move=> Hfront Hlift. apply apweak_fold. constructor; assumption. Qed.
 
+(** Relational Fubini/Tonelli at the program level.  The two samples are
+    independent; their execution order may change, while [f] and [g] specify
+    how the two orders expose related return values. *)
+Lemma apweak_sample_exchange
+    `{ML : @MeasureLaws M MI MC}
+    `{MCom : @MeasureCommutativeLaws M MI}
+    {A B : eqType} {S1 S2}
+    (RR : S1 -> S2 -> Prop) (mu : M A) (nu : M B)
+    (f : A -> B -> S1) (g : B -> A -> S2) :
+  (forall x y, RR (f x y) (g y x)) ->
+  apweak RR
+    (Prob mu (fun x => Prob nu (fun y => Ret (f x y)))
+      : ptree E M S1)
+    (Prob nu (fun y => Prob mu (fun x => Ret (g y x)))
+      : ptree E M S2).
+Proof.
+  move=> Hfg. apply apweak_fold.
+  eapply APWFrontier with
+      (hs1 := meas_bind mu (fun x =>
+        meas_bind nu (fun y => meas_ret (APHRet (f x y)))))
+      (hs2 := meas_bind nu (fun y =>
+        meas_bind mu (fun x => meas_ret (APHRet (g y x))))).
+  - apply (APFProb
+      (front := fun x => meas_bind nu
+        (fun y => meas_ret (APHRet (f x y))))
+      (Good := fun _ => True)); first apply meas_ae_true.
+    move=> x _. apply (APFProb
+      (front := fun y => meas_ret (APHRet (f x y)))
+      (Good := fun _ => True)); first apply meas_ae_true.
+    move=> y _. constructor.
+  - apply (APFProb
+      (front := fun y => meas_bind mu
+        (fun x => meas_ret (APHRet (g y x))))
+      (Good := fun _ => True)); first apply meas_ae_true.
+    move=> y _. apply (APFProb
+      (front := fun x => meas_ret (APHRet (g y x)))
+      (Good := fun _ => True)); first apply meas_ae_true.
+    move=> x _. constructor.
+  - apply meas_lift_bind_ret_exchange=> x y.
+    constructor. exact: Hfg.
+Qed.
+
 Lemma apweak_bind_ret_l {R1 R2 S1 S2}
     (RR : R1 -> R2 -> Prop) (SS : S1 -> S2 -> Prop)
     (r1 : R1) (r2 : R2)
