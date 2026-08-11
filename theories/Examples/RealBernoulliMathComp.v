@@ -1,10 +1,11 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
-Require Import Utf8.
+Require Import Utf8 Ring Field.
 
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat ssralg ssrnum
   order rat reals normedtype classical_sets.
+From mathcomp Require Import numfun.
 From mathcomp.analysis Require Import topology sequences ereal measure.
 
 From PTree.Core Require Import PTreeDefinitionNew.
@@ -137,6 +138,46 @@ Proof.
     rewrite ler_pdivrMr; last by rewrite ltr0n.
     by rewrite mul1r ler1n.
   - exact mU.
+Qed.
+
+Fixpoint mathcomp_oracle_prefix_from
+    (qbit : binary_oracle) (n fuel : nat) : R :=
+  match fuel with
+  | 0 => 0
+  | fuel'.+1 =>
+      ((if qbit n then (1 / 2 : R) else 0) +
+       (1 / 2 : R) * mathcomp_oracle_prefix_from qbit n.+1 fuel')%R
+  end.
+
+Lemma mathcomp_half_complement : (1 - (1 / 2 : R) = 1 / 2)%R.
+Proof.
+  apply/eqP. rewrite subr_eq.
+  rewrite -mulrDl.
+  change ((1 : R) == ((2 : R) / (2 : R)))%R.
+  by rewrite divrr // unitfE pnatr_eq0.
+Qed.
+
+Lemma mathcomp_oracle_unfolded_true_mass qbit fuel n :
+  mathcomp_kernel_root
+      (mathcomp_oracle_unfolded_approx qbit fuel n)
+      [set MCValue true] =
+  (mathcomp_oracle_prefix_from qbit n fuel)%:E.
+Proof.
+  elim: fuel n=> [|fuel IH] n.
+  - rewrite /= /mathcomp_kernel_zero /mathcomp_kernel_root
+      /mathcomp_source_kernel /mathcomp_source_measure
+      /mathcomp_bottom_measure /dirac /=.
+    change (((\1_[set MCValue true] MCBottom : R)%:E) = 0).
+    rewrite indicE.
+    have Hnot : MCBottom \notin [set MCValue true] by rewrite notin_setE.
+    by rewrite (negbTE Hnot).
+  - rewrite mathcomp_oracle_unfolded_mass //.
+    rewrite IH !mathcomp_kernel_root_ret /dirac /= !indicE /=
+      mathcomp_half_complement.
+    case: (qbit n)=> /=; rewrite ?mul1e ?mule0 ?adde0 ?add0e.
+    all: rewrite -?EFinM -?EFinD.
+    all: congr (_%:E).
+    all: by rewrite ?addrC.
 Qed.
 
 End RealOracleBackend.
