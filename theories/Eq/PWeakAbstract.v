@@ -521,6 +521,55 @@ Proof.
     constructor. exact: Hfg.
 Qed.
 
+(** Relational Fubini with arbitrary Kleisli continuations.  The explicit
+    frontier kernels make the required measurability/coupling data visible:
+    each continuation may perform further finite internal computation, and
+    corresponding continuation frontiers need only be related rather than
+    syntactically equal. *)
+Lemma apweak_sample_exchange_kleisli
+    `{ML : @MeasureLaws M MI MC}
+    `{MKCom : @MeasureKleisliCommutativeLaws M MI}
+    {A B : eqType} {S1 S2}
+    (RR : S1 -> S2 -> Prop) (mu : M A) (nu : M B)
+    (k1 : A -> B -> ptree E M S1)
+    (k2 : B -> A -> ptree E M S2)
+    (front1 : A -> B -> M (aphead E M S1))
+    (front2 : B -> A -> M (aphead E M S2)) :
+  (forall x y, apfrontier (observe (k1 x y)) (front1 x y)) ->
+  (forall y x, apfrontier (observe (k2 y x)) (front2 y x)) ->
+  (forall x y,
+    meas_lift (aphead_rel RR (apweak RR))
+      (front1 x y) (front2 y x)) ->
+  apweak RR
+    (Prob mu (fun x => Prob nu (fun y => k1 x y))
+      : ptree E M S1)
+    (Prob nu (fun y => Prob mu (fun x => k2 y x))
+      : ptree E M S2).
+Proof.
+  move=> Hfront1 Hfront2 Hlift. apply apweak_fold.
+  eapply APWFrontier with
+      (hs1 := meas_bind mu (fun x =>
+        meas_bind nu (fun y => front1 x y)))
+      (hs2 := meas_bind nu (fun y =>
+        meas_bind mu (fun x => front2 y x))).
+  - apply (APFProb
+      (front := fun x => meas_bind nu (fun y => front1 x y))
+      (Good := fun _ => True)); first apply meas_ae_true.
+    move=> x _. apply (APFProb
+      (front := fun y => front1 x y)
+      (Good := fun _ => True)); first apply meas_ae_true.
+    move=> y _. exact: Hfront1.
+  - apply (APFProb
+      (front := fun y => meas_bind mu (fun x => front2 y x))
+      (Good := fun _ => True)); first apply meas_ae_true.
+    move=> y _. apply (APFProb
+      (front := fun x => front2 y x)
+      (Good := fun _ => True)); first apply meas_ae_true.
+    move=> x _. exact: Hfront2.
+  - apply meas_lift_bind_exchange.
+    exact Hlift.
+Qed.
+
 Lemma apweak_bind_ret_l {R1 R2 S1 S2}
     (RR : R1 -> R2 -> Prop) (SS : S1 -> S2 -> Prop)
     (r1 : R1) (r2 : R2)

@@ -102,6 +102,23 @@ Class MeasureCommutativeLaws (M : Type -> Type)
           meas_bind mu (fun x => meas_ret (g y x))))
 }.
 
+(** Full relational Fubini law for Kleisli kernels.  Unlike
+    [MeasureCommutativeLaws], whose terminal computations are Dirac masses,
+    this interface permits each pair of samples to continue with an
+    arbitrary measure.  It is kept separate because proving it for a
+    concrete representation requires a bind-preservation theorem for that
+    representation's coupling. *)
+Class MeasureKleisliCommutativeLaws (M : Type -> Type)
+    `{MI : MeasureInterface M} := {
+  meas_lift_bind_exchange : forall {A B : eqType} {C D}
+      (R : C -> D -> Prop) (mu : M A) (nu : M B)
+      (k1 : A -> B -> M C) (k2 : B -> A -> M D),
+      (forall x y, meas_lift R (k1 x y) (k2 y x)) ->
+      meas_lift R
+        (meas_bind mu (fun x => meas_bind nu (fun y => k1 x y)))
+        (meas_bind nu (fun y => meas_bind mu (fun x => k2 y x)))
+}.
+
 #[global] Instance meas_eq_equivalence
     {M} `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}
     `{ML : @MeasureLaws M MI MC} A :
