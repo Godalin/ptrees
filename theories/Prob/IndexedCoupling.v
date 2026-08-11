@@ -1,17 +1,18 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
-Require Import Utf8 List Morphisms.
+Require Import Utf8 List Morphisms Lia.
 
-From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat.
+From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg order rat.
 
-From PTree.Prob Require Import DiscreteMC Coupling.
+From PTree.Prob Require Import RatSubTypes DiscreteMC Coupling.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum EnumMap Coupling.
+Import GRing.Theory.
 
 Module IndexedCoupling.
 
@@ -48,6 +49,125 @@ Definition at_index {A B}
 Definition indexed_coupling {A B}
     (R : A -> B -> Prop) (mu : Enum A) (nu : Enum B) : Prop :=
   coupling (at_index R mu nu) (indexed mu) (indexed nu).
+
+Fixpoint value_index_joint_from {A} (n : nat) (mu : Enum A)
+    : Enum (A * nat) :=
+  match mu with
+  | [::] => [::]
+  | (p, a) :: tl => (p, (a, n)) :: value_index_joint_from n.+1 tl
+  end.
+
+Lemma emap_fst_value_index_joint_from {A : eqType} n (mu : Enum A) :
+  emap fst (value_index_joint_from n mu) = mu.
+Proof. by elim: mu n=> [|[p a] mu IH] n //=; rewrite IH. Qed.
+
+Lemma emap_snd_value_index_joint_from {A} n (mu : Enum A) :
+  emap snd (value_index_joint_from n mu) = index_from n mu.
+Proof. by elim: mu n=> [|[p a] mu IH] n //=; rewrite IH. Qed.
+
+Lemma value_index_joint_nth {A : eqType} n (mu : Enum A) a i :
+  acc_mass (a, i) (value_index_joint_from n mu) !=
+      RatSubTypes.nnQ_0 ->
+  exists p, nth_error mu (i - n) = Some (p, a) /\ n <= i.
+Proof.
+  elim: mu n=> [|[p x] mu IH] n //=.
+  rewrite /acc_mass /=.
+  case Epair: ((x, n) == (a, i)).
+  - move/eqP: Epair=> [-> ->] _. exists p. split.
+    + by rewrite subnn.
+    + exact: leqnn.
+  - move=> Hmass.
+    move: (IH n.+1 Hmass)=> [q [Hnth Hle]].
+    exists q. split=> //.
+    have Hni : n < i := Hle.
+    rewrite -(subnSK Hni).
+    exact Hnth.
+    exact: ltnW Hle.
+Qed.
+
+Lemma coupling_value_index {A : eqType} (mu : Enum A) :
+  coupling
+    (fun a i => exists p, nth_error mu i = Some (p, a))
+    mu (indexed mu).
+Proof.
+  exists (value_index_joint_from 0 mu).
+  - apply enum_eq_eq. exact: emap_fst_value_index_joint_from.
+  - apply enum_eq_eq. exact: emap_snd_value_index_joint_from.
+  - move=> a i Hai.
+    move: (value_index_joint_nth
+      (n := 0) (mu := mu) (a := a) (i := i) Hai)=> [p [Hnth _]].
+    exists p. by rewrite subn0 in Hnth.
+Qed.
+
+Lemma indexed_coupling_of_coupling {A B : eqType}
+    (R : A -> B -> Prop) (mu : Enum A) (nu : Enum B) :
+  coupling R mu nu -> indexed_coupling R mu nu.
+Proof.
+  move=> Hmn.
+  have Him := coupling_sym (coupling_value_index mu).
+  have H1 := coupling_comp Him Hmn.
+  have H2 := coupling_comp H1 (coupling_value_index nu).
+  eapply coupling_mono; [|exact H2].
+  move=> i j [b [[a [[p Hip] Hrab]] [q Hjq]]].
+  split.
+  - move=> p' a' Hip'.
+    rewrite Hip in Hip'. inversion Hip'; subst p' a'.
+    exists q, b. split=> //.
+  - move=> q' b' Hjq'.
+    rewrite Hjq in Hjq'. inversion Hjq'; subst q' b'.
+    exists p, a. split=> //.
+Qed.
+
+Lemma index_from_emap {A B} (f : A -> B) n (mu : Enum A) :
+  index_from n (emap f mu) = index_from n mu.
+Proof. by elim: mu n=> [|[p a] mu IH] n //=; rewrite IH. Qed.
+
+Lemma indexed_emap {A B} (f : A -> B) (mu : Enum A) :
+  indexed (emap f mu) = indexed mu.
+Proof. exact: index_from_emap. Qed.
+
+Lemma nth_error_emap_inv {A B} (f : A -> B) (mu : Enum A) i p b :
+  nth_error (emap f mu) i = Some (p, b) ->
+  exists a, nth_error mu i = Some (p, a) /\ b = f a.
+Proof.
+  elim: mu i=> [|[q a] mu IH] [|i] //=.
+  - move=> H. inversion H; subst. by exists a.
+  - exact: IH.
+Qed.
+
+Lemma nth_error_emap {A B} (f : A -> B) (mu : Enum A) i p a :
+  nth_error mu i = Some (p, a) ->
+  nth_error (emap f mu) i = Some (p, f a).
+Proof.
+  elim: mu i=> [|[q b] mu IH] [|i] //=.
+  - move=> H. by inversion H; subst.
+  - exact: IH.
+Qed.
+
+Lemma indexed_coupling_emap {A B C D}
+    (S : A -> B -> Prop) (R : C -> D -> Prop)
+    (f : A -> C) (g : B -> D) (mu : Enum A) (nu : Enum B) :
+  (forall a b, S a b -> R (f a) (g b)) ->
+  indexed_coupling S mu nu ->
+  indexed_coupling R (emap f mu) (emap g nu).
+Proof.
+  move=> HSR Hc.
+  rewrite /indexed_coupling !indexed_emap.
+  eapply coupling_mono; [|exact Hc].
+  move=> i j [HL HR]; split.
+  - move=> p c Hic.
+    move: (nth_error_emap_inv Hic)=> [a [Hia ->]].
+    move: (HL p a Hia)=> [q [b [Hjb Hab]]].
+    exists q, (g b). split.
+    + exact: nth_error_emap Hjb.
+    + exact: HSR Hab.
+  - move=> q d Hjd.
+    move: (nth_error_emap_inv Hjd)=> [b [Hjb ->]].
+    move: (HR q b Hjb)=> [p [a [Hia Hab]]].
+    exists p, (f a). split.
+    + exact: nth_error_emap Hia.
+    + exact: HSR Hab.
+Qed.
 
 Lemma at_index_mono {A B}
     (R S : A -> B -> Prop) (mu : Enum A) (nu : Enum B) i j :

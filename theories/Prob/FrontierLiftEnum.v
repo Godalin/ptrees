@@ -6,7 +6,7 @@ Require Import List.
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg order rat.
 From PTree.Prob Require Import RatSubTypes DiscreteMC Coupling IndexedCoupling
-  FrontierLift.
+  EnumBindFacts EnumMap FrontierLift.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -40,6 +40,24 @@ Lemma enum_prune_app {A} (mu nu : Enum A) :
 Proof.
   elim: mu=> [//=|[p x] mu IH] //=.
   by case: (p == RatSubTypes.nnQ_0); rewrite IH.
+Qed.
+
+Lemma enum_prune_emap {A B} (f : A -> B) (mu : Enum A) :
+  enum_prune (emap f mu) = emap f (enum_prune mu).
+Proof.
+  elim: mu=> [|[p a] mu IH] //=.
+  by case: (p == RatSubTypes.nnQ_0); rewrite /= IH.
+Qed.
+
+Lemma enum_prune_eqenum {A : eqType} (mu : Enum A) :
+  enum_prune mu ==Enum mu.
+Proof.
+  move=> a. elim: mu=> [|[p x] mu IH] //=.
+  case Hp: (p == RatSubTypes.nnQ_0).
+  - have Hp0 : p = 0.
+    { rewrite (eqP Hp). apply val_inj. reflexivity. }
+    rewrite (@acc_mass_cons_zero A mu a (p, x) Hp0). exact IH.
+  - rewrite !acc_mass_cons IH. reflexivity.
 Qed.
 
 Lemma enum_prune_scale_zero {A} (mu : Enum A) :
@@ -214,4 +232,54 @@ Qed.
 Proof.
   constructor. move=> A B mu k1 k2 Hae.
   exact: enum_prune_bind_ae Hae.
+Qed.
+
+#[global] Instance Enum_MeasureCommutativeLaws :
+    @MeasureCommutativeLaws Enum Enum_MeasureInterface.
+Proof.
+  constructor.
+  move=> A B C D R mu nu f g Hfg.
+  set xy : Enum (A * B) :=
+    bind_Enum mu (fun x =>
+      bind_Enum nu (fun y => ret_Enum (x, y))).
+  set yx : Enum (A * B) :=
+    bind_Enum nu (fun y =>
+      bind_Enum mu (fun x => ret_Enum (x, y))).
+  have Hxy : xy ==Enum yx.
+  { exact: enum_Fubini_Tonelli. }
+  have Hprune : enum_prune xy ==Enum enum_prune yx.
+  { eapply enum_eq_trans.
+    - exact: enum_prune_eqenum.
+    - eapply enum_eq_trans; [exact Hxy|].
+      apply enum_eq_sym. exact: enum_prune_eqenum. }
+  have Hidx : indexed_coupling eq (enum_prune xy) (enum_prune yx).
+  { apply indexed_coupling_of_coupling.
+    exact: coupling_of_enum_eq Hprune. }
+  have Hmap := indexed_coupling_emap
+    (R := R)
+    (f := fun xy : A * B => f (fst xy) (snd xy))
+    (g := fun xy : A * B => g (snd xy) (fst xy))
+    (fun x y (H : x = y) =>
+      match H with Logic.eq_refl => Hfg (fst x) (snd x) end)
+    Hidx.
+  cbn [Enum_MeasureInterface].
+  have Hleft :
+      bind_Enum mu (fun x =>
+      bind_Enum nu (fun y => ret_Enum (f x y))) =
+      emap (fun xy : A * B => f (fst xy) (snd xy)) xy.
+  { rewrite /xy emap_bind. apply bind_Enum_ext=> x.
+    rewrite emap_bind. apply bind_Enum_ext=> y. reflexivity. }
+  have Hright :
+      bind_Enum nu (fun y =>
+      bind_Enum mu (fun x => ret_Enum (g y x))) =
+      emap (fun xy : A * B => g (snd xy) (fst xy)) yx.
+  { rewrite /yx emap_bind. apply bind_Enum_ext=> y.
+    rewrite emap_bind. apply bind_Enum_ext=> x. reflexivity. }
+  change (indexed_coupling R
+    (enum_prune (bind_Enum mu (fun x =>
+      bind_Enum nu (fun y => ret_Enum (f x y)))))
+    (enum_prune (bind_Enum nu (fun y =>
+      bind_Enum mu (fun x => ret_Enum (g y x)))))).
+  rewrite Hleft Hright !enum_prune_emap.
+  exact Hmap.
 Qed.

@@ -35,6 +35,30 @@ Proof.
   by rewrite IH.
 Qed.
 
+Lemma emap_scale {A B} (f : A -> B) p (mu : Enum A) :
+  emap f (scale_Enum p mu) = scale_Enum p (emap f mu).
+Proof. by elim: mu=> [|[q a] mu IH] //=; rewrite IH. Qed.
+
+Lemma emap_app {A B} (f : A -> B) (mu nu : Enum A) :
+  emap f (mu ++ nu) = emap f mu ++ emap f nu.
+Proof. exact: map_cat. Qed.
+
+Lemma emap_bind {A B C} (f : B -> C)
+    (mu : Enum A) (k : A -> Enum B) :
+  emap f (bind_Enum mu k) =
+  bind_Enum mu (fun x => emap f (k x)).
+Proof.
+  elim: mu=> [|[p a] mu IH] //=.
+  by rewrite emap_app emap_scale IH.
+Qed.
+
+Lemma bind_ret_emap {A B} (f : A -> B) (mu : Enum A) :
+  bind_Enum mu (fun x => ret_Enum (f x)) = emap f mu.
+Proof.
+  elim: mu=> [|[p a] mu IH] //=.
+  by rewrite mulr1 IH.
+Qed.
+
 Lemma acc_mass_emap {A : eqType} {B : eqType} (f : A -> B)
     (mu : Enum A) (b : B) :
   acc_mass b (emap f mu) =
