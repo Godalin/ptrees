@@ -22,6 +22,16 @@ Context {E : Type -> Type} {M : Type -> Type}
   `{MI : MeasureInterface M}
   `{MO : @MeasureOmegaInterface M MI}.
 
+Definition aphead_bind_front {A B}
+    (k : A -> ptree E M B)
+    (front : A -> M (aphead E M B))
+    (h : aphead E M A) : M (aphead E M B) :=
+  match h with
+  | APHRet a => front a
+  | @APHVis _ _ _ X e c =>
+      meas_ret (APHVis e (fun x => PTree.bind (c x) k))
+  end.
+
 Inductive aufrontier {R} :
     ptree' E M R -> M (aphead E M R) -> Prop :=
   | AUFFinite ot hs :
@@ -39,6 +49,24 @@ Inductive aufrontier {R} :
       (transition : I -> M (I + R)) i out :
       (forall j,
         apfrontier (observe (step j))
+          (meas_bind (transition j)
+            (fun next => meas_ret (APHRet next)))) ->
+      meas_iter transition i out ->
+      meas_total out ->
+      aufrontier (observe (PTree.iter step i))
+        (meas_bind out (fun r => meas_ret (APHRet r)))
+  | AUFBind {A : Type}
+      (t : ptree E M A) (k : A -> ptree E M R)
+      hs (front : A -> M (aphead E M R)) :
+      aufrontier (observe t) hs ->
+      (forall a, aufrontier (observe (k a)) (front a)) ->
+      aufrontier (observe (PTree.bind t k))
+        (meas_bind hs (aphead_bind_front k front))
+  | AUFNestedIter {I : Type}
+      (step : I -> ptree E M (I + R))
+      (transition : I -> M (I + R)) i out :
+      (forall j,
+        aufrontier (observe (step j))
           (meas_bind (transition j)
             (fun next => meas_ret (APHRet next)))) ->
       meas_iter transition i out ->
