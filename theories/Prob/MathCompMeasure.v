@@ -734,6 +734,48 @@ Proof.
       exact: measure_negligible Hm Hae.
 Qed.
 
+(** Gluing is the one coupling law that is not available from MathComp's
+    bare measure interface alone.  On standard Borel spaces it follows from
+    disintegration/regular conditional probabilities; on arbitrary [Type]
+    equipped with the full discrete sigma-algebra this is an additional
+    mathematical assumption (and can fail in models with non-atomic measures
+    on a full powerset).  Isolating it here keeps that assumption visible. *)
+Class MathCompCouplingGluing := {
+  mathcomp_kernel_lift_comp : forall {A B C}
+      (rel : A -> B -> Prop) (rel' : B -> C -> Prop)
+      (mu : MathCompKernelMeasure A)
+      (nu : MathCompKernelMeasure B)
+      (xi : MathCompKernelMeasure C),
+    mathcomp_kernel_lift rel mu nu ->
+    mathcomp_kernel_lift rel' nu xi ->
+    mathcomp_kernel_lift
+      (fun x z => exists y, rel x y /\ rel' y z) mu xi
+}.
+
+(** Consequently the whole abstract law package is available as soon as the
+    ambient class of measurable spaces supplies coupling gluing.  All other
+    fields below are proved directly from MathComp measures. *)
+#[global] Instance MathCompKernelMeasureLaws
+    `{MathCompCouplingGluing} :
+    @MeasureLaws MathCompKernelMeasure MathCompKernelMeasureInterface
+      MathCompKernelMeasureCoreLaws.
+Proof.
+  constructor.
+  - exact: mathcomp_kernel_eq_refl.
+  - exact: mathcomp_kernel_eq_sym.
+  - exact: mathcomp_kernel_eq_trans.
+  - move=> A mu. exact: mathcomp_kernel_ae_true.
+  - move=> A mu P Q HP HQ. exact: mathcomp_kernel_ae_conj HP HQ.
+  - move=> A B rel mu mu' nu Heq Hlift.
+    exact: mathcomp_kernel_lift_proper_l Heq Hlift.
+  - move=> A B rel mu nu nu' Heq Hlift.
+    exact: mathcomp_kernel_lift_proper_r Heq Hlift.
+  - move=> A B rel mu nu Hlift.
+    exact: mathcomp_kernel_lift_sym Hlift.
+  - move=> A B C rel rel' mu nu xi Hlift Hlift'.
+    exact: mathcomp_kernel_lift_comp Hlift Hlift'.
+Qed.
+
 (** ** Omega limits and termination mass
 
     The finite approximants used by [meas_iter] form increasing chains in
