@@ -5,6 +5,14 @@
 The current development contains a measure-parametric weak probabilistic
 bisimulation in `theories/Eq/PWeakAbstract.v`.
 
+`Eq/PStrong.v` provides the corresponding strong baseline.  It matches
+`Ret`, `Tau`, `Vis`, and `Prob` constructors in lockstep, while allowing two
+probability nodes to be related through the abstract `ProbRelLift` interface.
+It is proved reflexive, symmetric, and transitive directly with
+`coq-coinduction`.  In contrast, `apweak` may collapse finite internal
+`Tau`/probability prefixes and `auweak` additionally admits certified AST
+omega iterations.
+
 Its probability interface is split into:
 
 - `MeasureInterface`, providing return, bind, extensional equality,
