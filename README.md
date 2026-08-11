@@ -17,6 +17,10 @@ Its probability interface is split into:
 The relation `apweak` collapses finite `Tau`/probability prefixes to a
 distribution of stable `Ret`/`Vis` heads.  It is proved reflexive, symmetric,
 and transitive; see `PWeakAbstractTrans.v` for the `Equivalence` instance.
+The probabilistic weak relations and their transitivity proofs use
+`coq-coinduction` directly, including its enhanced `Chain` principle; no
+project-level Paco adapter is used.  The Paco package remains a build
+dependency because it is part of the surrounding ITree dependency stack.
 
 `apweak` is intentionally divergence-sensitive outside finite frontiers.
 Consequently unrestricted monadic bind is not a congruence: a Dirac
