@@ -1,6 +1,7 @@
 .vscode
 _opam
 _build
+prob-ax/
 
 learn
 sketch
