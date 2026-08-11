@@ -6,7 +6,7 @@ Require Import Morphisms.
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra.
 From mathcomp Require Import boolp classical_sets functions cardinality reals
-  fsbigop.
+  fsbigop lebesgue_integral.
 From mathcomp.analysis Require Import measure probability kernel
   measurable_realfun ereal numfun.
 
@@ -510,6 +510,31 @@ Definition mathcomp_kernel_bind {A B}
     MathCompKernelMeasure B :=
   [the R.-spker (mc_carrier unit) ~> (mc_carrier B) of
     mkcomp_noparam mu (mathcomp_kernel_extend k)].
+
+Lemma mathcomp_kernel_bind_bernoulli {B} (q : R)
+    (q01 : (0 <= q <= 1)%R)
+    (k : bool -> MathCompKernelMeasure B)
+    (U : set (mc_carrier B)) : measurable U ->
+  mathcomp_kernel_root (mathcomp_kernel_bind (mathcomp_bernoulli q) k) U =
+    q%:E * mathcomp_kernel_root (k true) U +
+    (1 - q)%:E * mathcomp_kernel_root (k false) U.
+Proof.
+  move=> mU.
+  rewrite /mathcomp_kernel_root /mathcomp_kernel_bind /mkcomp_noparam
+    /kcomp_noparam /mathcomp_bernoulli /mathcomp_source_kernel
+    /mathcomp_source_measure /mathcomp_bernoulli_measure.
+  change (\int[mathcomp_bernoulli_probability q]_y
+      (mathcomp_kernel_extend_measure k y U) =
+    q%:E * mathcomp_kernel_root (k true) U +
+    (1 - q)%:E * mathcomp_kernel_root (k false) U).
+  rewrite /mathcomp_bernoulli_probability.
+  rewrite (ge0_integral_distribution
+    (P := bernoulli q)
+    [mfun of mc_bool_value]); last 2 first.
+  - by [].
+  - move=> [|b]; exact: measure_ge0.
+  rewrite integral_bernoulli // => b.
+Qed.
 
 Definition mathcomp_kernel_eq {A}
     (mu nu : MathCompKernelMeasure A) : Prop :=
