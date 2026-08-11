@@ -7,7 +7,7 @@ From mathcomp Require Import boolp classical_sets functions cardinality reals.
 From mathcomp.analysis Require Import measure probability kernel
   measurable_realfun ereal.
 
-From PTree.Prob Require Import FrontierLift.
+From PTree.Prob Require Import FrontierLift MeasureIteration.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -254,7 +254,8 @@ Definition mathcomp_kernel_bind {A B}
 
 Definition mathcomp_kernel_eq {A}
     (mu nu : MathCompKernelMeasure A) : Prop :=
-  mathcomp_measure_eq (mathcomp_kernel_root mu) (mathcomp_kernel_root nu).
+  forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
+    mathcomp_kernel_root mu U = mathcomp_kernel_root nu U.
 
 Definition mathcomp_kernel_ae {A}
     (mu : MathCompKernelMeasure A) (P : A -> Prop) : Prop :=
@@ -273,6 +274,72 @@ Definition mathcomp_kernel_lift {A B} (rel : A -> B -> Prop)
   meas_eq := @mathcomp_kernel_eq;
   meas_ae := @mathcomp_kernel_ae;
   meas_lift := @mathcomp_kernel_lift
+}.
+
+(** ** Omega limits and termination mass
+
+    The finite approximants used by [meas_iter] form increasing chains in
+    the intended applications.  Their limit is characterized setwise on
+    returned-value events: their mass is the supremum along the chain.
+    Events containing [MCBottom] are deliberately excluded because the
+    unfinished mass decreases as fuel grows.  Keeping this relation in the
+    abstract interface avoids choosing a representation of limits at the
+    [ptree] level. *)
+Definition mathcomp_kernel_zero {A} : MathCompKernelMeasure A :=
+  mathcomp_source_kernel mathcomp_bottom_measure.
+
+Definition mathcomp_kernel_lub {A}
+    (chain : nat -> MathCompKernelMeasure A)
+    (mu : MathCompKernelMeasure A) : Prop :=
+  forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
+    mathcomp_kernel_root mu U =
+      ereal_sup [set mathcomp_kernel_root (chain n) U | n in [set: nat]].
+
+Definition mc_returned {A} : set (mc_carrier A) :=
+  [set x | match x with MCBottom => False | MCValue _ => True end].
+
+Definition mathcomp_kernel_total {A}
+    (mu : MathCompKernelMeasure A) : Prop :=
+  mathcomp_kernel_root mu (@mc_returned A) = 1.
+
+#[global] Instance MathCompKernelMeasureOmegaInterface :
+    @MeasureOmegaInterface MathCompKernelMeasure
+      MathCompKernelMeasureInterface := {
+  meas_zero := @mathcomp_kernel_zero;
+  meas_lub := @mathcomp_kernel_lub;
+  meas_total := @mathcomp_kernel_total
+}.
+
+Lemma mathcomp_kernel_lub_unique {A}
+    (chain : nat -> MathCompKernelMeasure A) mu nu :
+  mathcomp_kernel_lub chain mu ->
+  mathcomp_kernel_lub chain nu ->
+  mathcomp_kernel_eq mu nu.
+Proof.
+  move=> Hmu Hnu U mU nbot. rewrite Hmu // Hnu //.
+Qed.
+
+Lemma mathcomp_kernel_lub_proper {A}
+    (c1 c2 : nat -> MathCompKernelMeasure A) mu :
+  (forall n, mathcomp_kernel_eq (c1 n) (c2 n)) ->
+  mathcomp_kernel_lub c1 mu ->
+  mathcomp_kernel_lub c2 mu.
+Proof.
+  move=> Hc Hlim U mU nbot. rewrite Hlim //.
+  congr (ereal_sup _). apply/seteqP; split=> x.
+  - move=> [n _ <-].
+    exists n; first by [].
+    by rewrite (Hc n U mU nbot).
+  - move=> [n _ <-].
+    exists n; first by [].
+    by rewrite (Hc n U mU nbot).
+Qed.
+
+#[global] Instance MathCompKernelMeasureOmegaLaws :
+    @MeasureOmegaLaws MathCompKernelMeasure
+      MathCompKernelMeasureInterface MathCompKernelMeasureOmegaInterface := {
+  meas_lub_unique := @mathcomp_kernel_lub_unique;
+  meas_lub_proper := @mathcomp_kernel_lub_proper
 }.
 
 End BackendShape.
