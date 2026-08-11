@@ -62,4 +62,18 @@ Definition mathcomp_oracle_represents
     (qbit : binary_oracle) (q : R) : Prop :=
   (fun n => ratr (oracle_prefix qbit n)) @ \oo --> q.
 
+(** Result-valued absorbing approximants.  Unlike a frontier measure, this
+    stays in [M bool] and therefore avoids raising the carrier universe; it is
+    the semantic chain used for AST and the direct Bernoulli comparison. *)
+Definition mathcomp_oracle_result_approx
+    (qbit : binary_oracle) (fuel n : nat) : M bool :=
+  meas_iter_approx fuel (mathcomp_oracle_transition qbit) n.
+
+Definition mathcomp_binary_oracle_denotes
+    (qbit : binary_oracle) (out : M bool) : Prop :=
+  meas_iter (mathcomp_oracle_transition qbit) 0 out.
+
+Definition mathcomp_binary_oracle_ast (qbit : binary_oracle) : Prop :=
+  meas_iter_ast (mathcomp_oracle_transition qbit) 0.
+
 End RealOracleBackend.
