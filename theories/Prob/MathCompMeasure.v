@@ -3,7 +3,8 @@ Set Warnings "-ambiguous-paths".
 
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra.
-From mathcomp Require Import boolp classical_sets functions cardinality reals.
+From mathcomp Require Import boolp classical_sets functions cardinality reals
+  fsbigop.
 From mathcomp.analysis Require Import measure probability kernel
   measurable_realfun ereal.
 
@@ -202,6 +203,74 @@ Definition mathcomp_kernel_ret {A} (x : A) :
     MathCompKernelMeasure A :=
   mathcomp_source_kernel (mathcomp_measure_ret x).
 
+(** Embed a Boolean value into the returned-value part of the carrier. *)
+Definition mc_bool_value (x : bool) : mc_carrier bool := MCValue x.
+
+Lemma measurable_mc_bool_value :
+  measurable_fun [set: bool] mc_bool_value.
+Proof. by []. Qed.
+
+HB.instance Definition mc_bool_value_is_measurable :=
+  @isMeasurableFun.Build _ _ bool (mc_carrier bool) mc_bool_value
+    measurable_mc_bool_value.
+
+(** A genuine real-valued Bernoulli law, transported into the carrier.  In
+    contrast with finite rational [Enum], this representation is closed
+    under irrational parameters. *)
+Definition mathcomp_bernoulli_probability (q : R) :
+    probability (mc_carrier bool) R :=
+  [the probability (mc_carrier bool) R of
+    distribution (bernoulli q) [mfun of mc_bool_value]].
+
+Definition mathcomp_bernoulli_measure (q : R) :
+  subprobability (mc_carrier bool) R :=
+  [the subprobability (mc_carrier bool) R of
+    (mathcomp_bernoulli_probability q :
+      measure (mc_carrier bool) R)].
+
+Definition mathcomp_bernoulli (q : R) :
+    MathCompKernelMeasure bool :=
+  mathcomp_source_kernel (mathcomp_bernoulli_measure q).
+
+Lemma mathcomp_bernoulli_true_mass (q : R) (q01 : (0 <= q <= 1)%R) :
+  mathcomp_kernel_root (mathcomp_bernoulli q) [set MCValue true] = q%:E.
+Proof.
+  rewrite /mathcomp_kernel_root /mathcomp_bernoulli
+    /mathcomp_source_kernel /mathcomp_source_measure
+    /mathcomp_bernoulli_measure /mathcomp_bernoulli_probability
+    /distribution /pushforward /=.
+  have -> : mc_bool_value @^-1` [set MCValue true] = [set true].
+  { apply/seteqP; split=> b /=; by case: b. }
+  rewrite /bernoulli q01 fsbig_set1 /bernoulli_pmf.
+  reflexivity.
+Qed.
+
+Lemma mathcomp_bernoulli_false_mass (q : R) (q01 : (0 <= q <= 1)%R) :
+  mathcomp_kernel_root (mathcomp_bernoulli q) [set MCValue false] =
+    (1 - q)%:E.
+Proof.
+  rewrite /mathcomp_kernel_root /mathcomp_bernoulli
+    /mathcomp_source_kernel /mathcomp_source_measure
+    /mathcomp_bernoulli_measure /mathcomp_bernoulli_probability
+    /distribution /pushforward /=.
+  have -> : mc_bool_value @^-1` [set MCValue false] = [set false].
+  { apply/seteqP; split=> b /=; by case: b. }
+  rewrite /bernoulli q01 fsbig_set1 /bernoulli_pmf.
+  reflexivity.
+Qed.
+
+Lemma mathcomp_bernoulli_bottom_mass (q : R) :
+  mathcomp_kernel_root (mathcomp_bernoulli q) [set MCBottom] = 0.
+Proof.
+  rewrite /mathcomp_kernel_root /mathcomp_bernoulli
+    /mathcomp_source_kernel /mathcomp_source_measure
+    /mathcomp_bernoulli_measure /mathcomp_bernoulli_probability
+    /distribution /pushforward /=.
+  have -> : mc_bool_value @^-1` [set MCBottom] = set0.
+  { apply/seteqP; split=> b /=; by case: b. }
+  exact: measure0.
+Qed.
+
 Definition mathcomp_kernel_extend_measure {A B}
     (k : A -> MathCompKernelMeasure B)
     (x : mc_carrier A) : measure (mc_carrier B) R :=
@@ -301,6 +370,18 @@ Definition mc_returned {A} : set (mc_carrier A) :=
 Definition mathcomp_kernel_total {A}
     (mu : MathCompKernelMeasure A) : Prop :=
   mathcomp_kernel_root mu (@mc_returned A) = 1.
+
+Lemma mathcomp_bernoulli_total (q : R) :
+  mathcomp_kernel_total (mathcomp_bernoulli q).
+Proof.
+  rewrite /mathcomp_kernel_total /mathcomp_kernel_root
+    /mathcomp_bernoulli /mathcomp_source_kernel /mathcomp_source_measure
+    /mathcomp_bernoulli_measure /mathcomp_bernoulli_probability
+    /distribution /pushforward /=.
+  have -> : mc_bool_value @^-1` (@mc_returned bool) = [set: bool].
+  { apply/seteqP; split=> b //=. }
+  exact: probability_setT.
+Qed.
 
 #[global] Instance MathCompKernelMeasureOmegaInterface :
     @MeasureOmegaInterface MathCompKernelMeasure

@@ -36,7 +36,6 @@ Section ptree.
 
 Context {E : Type -> Type}.
 Context {M : Type -> Type}.
-Context `{DiscreteInterface M}.
 Context {R : Type}.
 
 Variant ptreeF {ptree : Type} : Type :=
@@ -79,12 +78,12 @@ Notation Vis e k := (go (VisF e k)).
 Notation Tau e   := (go (TauF e)).
 Notation Prob μ k := (go (ProbF μ k)).
 
-Definition ProbF0 {E M R} `{DiscreteInterface M}
+Definition ProbF0 {E : Type -> Type} {M : Type -> Type} {R : Type}
     (μ : M void) (k : void -> ptree E M R)
   : ptree' E M R :=
     ProbF μ k.
 
-Definition Prob0 {E M R} `{DiscreteInterface M}
+Definition Prob0 {E : Type -> Type} {M : Type -> Type} {R : Type}
     (μ : M void) (k : void -> ptree E M R)
   : ptree E M R :=
     Prob μ k.
