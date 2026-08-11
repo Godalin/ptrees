@@ -1,7 +1,7 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
-Require Import Utf8 Ring FunctionalExtensionality List.
+Require Import Utf8 Ring Field Lia Lra FunctionalExtensionality List.
 
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order
   rat.
@@ -10,6 +10,8 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLift
   FrontierLiftEnum EnumBindFacts MeasureIteration MeasureIterationEnum
   RatGeometric.
+From PTree.Eq Require Import PWeakAbstract PWeakUnbounded
+  PWeakUnboundedEquiv.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -208,6 +210,13 @@ Proof.
   exact: addrACA.
 Qed.
 
+Lemma enum_expect_zero {A} (mu : Enum A) :
+  enum_expect (fun _ : A => 0) mu = 0.
+Proof.
+  elim: mu=> [|[p x] tl IH] //=.
+  by rewrite mulr0 add0r.
+Qed.
+
 Lemma discarded_run_total n x :
   enum_expect (fun _ : bool => 1)
       (discard_unresolved (binary_coin_run n x)) =
@@ -362,3 +371,240 @@ Proof.
   rewrite iter_approx_as_discarded_run discarded_run_true.
   exact: binary_coin_run_true_plus_residual.
 Qed.
+
+Definition false_bool_indicator (b : bool) : rat :=
+  if b then 0 else 1.
+
+Lemma rat_false_error_identity (t r u : rat) :
+  (1 - u - t) - (1 - (t + r)) = r - u.
+Proof.
+  change ((1 - u - t) + - (1 - (t + r)) = r - u).
+  have Hassoc : t + r - 1 = t + (r - 1) by rewrite addrA.
+  rewrite opprB Hassoc subrKA.
+  by rewrite [r - 1]addrC addrACA addrN add0r addrC.
+Qed.
+
+Lemma rat_true_error_identity (t r : rat) : t - (t + r) = - r.
+Proof.
+  rewrite opprD.
+  change (t + (- t + - r) = - r).
+  by rewrite addrA addrN add0r.
+Qed.
+
+Lemma half_power_nonnegative n : 0 <= (1 / 2 : rat) ^+ n.
+Proof.
+  have half0 : (0 : rat) <= 1 / 2 by [].
+  elim: n=> [|n IH].
+  - by rewrite expr0.
+  - rewrite exprS. exact: mulr_ge0 half0 IH.
+Qed.
+
+Lemma enum_bool_total_split (mu : Enum bool) :
+  enum_expect false_bool_indicator mu +
+  enum_expect (fun b : bool => if b then 1 else 0) mu =
+  enum_expect (fun _ : bool => 1) mu.
+Proof.
+  rewrite -enum_expect_add.
+  congr (enum_expect _ mu).
+  apply functional_extensionality=> b.
+  by destruct b; rewrite /false_bool_indicator /= ?add0r ?addr0.
+Qed.
+
+Section RationalTarget.
+Variable q : rat.
+Hypothesis q0 : 0 <= q.
+Hypothesis q1 : q <= 1.
+
+Lemma one_minus_q0 : 0 <= 1 - q.
+Proof. by rewrite subr_ge0. Qed.
+
+Definition rational_bernoulli_measure : Enum bool :=
+  [:: (mknnQ (1 - q) one_minus_q0, false);
+      (mknnQ q q0, true)].
+
+Lemma rational_bernoulli_total :
+  enum_expect (fun _ : bool => 1) rational_bernoulli_measure = 1.
+Proof.
+  rewrite /rational_bernoulli_measure /= !mulr1 !addr0.
+  exact: subrK q 1.
+Qed.
+
+Lemma rational_bernoulli_indicator (P : bool -> bool) :
+  enum_expect (fun b => if P b then 1 else 0)
+    rational_bernoulli_measure =
+  (if P false then 1 - q else 0) + (if P true then q else 0).
+Proof.
+  rewrite /rational_bernoulli_measure /=.
+  by case: (P false); case: (P true);
+    rewrite /= ?mulr0 ?mulr1 ?addr0 ?add0r.
+Qed.
+
+Lemma rational_iter_indicator_error n (P : bool -> bool) :
+  `|enum_expect (fun b => if P b then 1 else 0)
+       (meas_iter_approx n binary_coin_transition q) -
+     enum_expect (fun b => if P b then 1 else 0)
+       rational_bernoulli_measure| <= (1 / 2 : rat) ^+ n.
+Proof.
+  pose mu : Enum bool :=
+    @meas_iter_approx Enum Enum_MeasureInterface
+      Enum_MeasureOmegaInterface rat bool n binary_coin_transition q.
+  pose r := enum_expect residual_potential (binary_coin_run n q).
+  pose u : rat := (1 / 2 : rat) ^+ n.
+  pose t : rat :=
+    enum_expect (fun b : bool => if b then 1 else 0) mu.
+  have half0 : (0 : rat) <= 1 / 2 by [].
+  have u0 : 0 <= u by exact: half_power_nonnegative.
+  have [r0 ru] : 0 <= r /\ r <= u.
+  { exact: binary_coin_run_residual_bound q0 q1. }
+  have Htrue : t + r = q.
+  { exact: iter_approx_true. }
+  have Htotal : enum_expect (fun _ : bool => 1) mu = 1 - u.
+  { exact: iter_approx_total. }
+  have Hsplit := enum_bool_total_split mu.
+  fold t in Hsplit.
+  rewrite rational_bernoulli_indicator.
+  case Hf: (P false); case Ht: (P true).
+  - have HP : (fun b : bool => if P b then (1 : rat) else 0) =
+        (fun _ : bool => (1 : rat)).
+    { apply functional_extensionality=> b.
+      destruct b; simpl; [by rewrite Ht|by rewrite Hf]. }
+    rewrite HP Htotal.
+    have Hu : (1 - u) - 1 = - u.
+    { apply: (addrI 1). by rewrite addrC subrK. }
+    by rewrite subrK Hu normrN ger0_norm.
+  - have HP : (fun b : bool => if P b then (1 : rat) else 0) =
+        false_bool_indicator.
+    { apply functional_extensionality=> b.
+      destruct b; rewrite /false_bool_indicator /=; [by rewrite Ht|by rewrite Hf]. }
+    rewrite HP /=.
+    have Hdiff : enum_expect false_bool_indicator mu - (1 - q) = r - u.
+    { have HF : enum_expect false_bool_indicator mu = (1 - u) - t.
+      { apply: (addrI t).
+        rewrite [t + enum_expect false_bool_indicator mu]addrC Hsplit Htotal.
+        by rewrite [t + ((1 - u) - t)]addrC subrK. }
+      rewrite HF -Htrue. exact: rat_false_error_identity. }
+    have Hru : r - u <= 0 by rewrite subr_le0.
+    fold mu. rewrite addr0 Hdiff (ler0_norm Hru) opprB lerBlDr lerDl.
+    exact r0.
+  - have HP : (fun b : bool => if P b then (1 : rat) else 0) =
+        (fun b : bool => if b then (1 : rat) else 0).
+    { apply functional_extensionality=> b.
+      destruct b; simpl; [by rewrite Ht|by rewrite Hf]. }
+    rewrite HP /=.
+    have Hdiff :
+        t - q = - r.
+    { rewrite -Htrue. exact: rat_true_error_identity. }
+    fold mu t. by rewrite add0r Hdiff normrN ger0_norm.
+  - have HP : (fun b : bool => if P b then (1 : rat) else 0) =
+        (fun _ : bool => (0 : rat)).
+    { apply functional_extensionality=> b.
+      destruct b; simpl; [by rewrite Ht|by rewrite Hf]. }
+    rewrite HP /=.
+    have Hz : enum_expect (fun _ : bool => 0) mu = 0.
+    { exact: enum_expect_zero. }
+    fold mu. rewrite !add0r Hz subrr normr0.
+    fold u. exact u0.
+Qed.
+
+Lemma half_power_vanishes eps : 0 < eps ->
+  exists N, forall n, Peano.le N n -> (1 / 2 : rat) ^+ n < eps.
+Proof.
+  move=> eps0.
+  eapply rat_contract_vanishes with (K := 1%nat).
+  - lia.
+  - by [].
+  - change ((1 / 2 : rat) <= 1 / 2). exact: lexx _.
+  - exact eps0.
+Qed.
+
+Theorem rational_binary_iteration_converges :
+  meas_iter binary_coin_transition q rational_bernoulli_measure.
+Proof.
+  unfold meas_iter, meas_lub, Enum_MeasureOmegaInterface, enum_converges.
+  move=> P eps eps0.
+  destruct (half_power_vanishes eps0) as [N HN].
+  exists N=> n HNn.
+  exact: le_lt_trans (rational_iter_indicator_error n P) (HN n HNn).
+Qed.
+
+Theorem rational_binary_coin_almost_surely_terminates :
+  meas_iter_ast binary_coin_transition q.
+Proof.
+  eapply meas_iter_total_ast.
+  - exact rational_binary_iteration_converges.
+  - exact rational_bernoulli_total.
+Qed.
+
+Definition direct_rational_coin : ptree rational_coinE Enum bool :=
+  Prob rational_bernoulli_measure (fun b => Ret b).
+
+Definition rational_coin_heads : Enum (aphead rational_coinE Enum bool) :=
+  meas_bind rational_bernoulli_measure (fun b =>
+    meas_ret (APHRet b : aphead rational_coinE Enum bool)).
+
+Lemma binary_coin_step_frontier x :
+  apfrontier (observe (binary_coin_step x))
+    (meas_bind (binary_coin_transition x) (fun next =>
+      meas_ret (APHRet next :
+        aphead rational_coinE Enum (rat + bool)))).
+Proof.
+  cbn [binary_coin_step].
+  change (apfrontier
+    (ProbF (binary_coin_transition x) (fun next => Ret next))
+    (meas_bind (binary_coin_transition x) (fun next =>
+      meas_ret (APHRet next :
+        aphead rational_coinE Enum (rat + bool))))).
+  apply (APFProb
+    (front := fun next =>
+      meas_ret (APHRet next : aphead rational_coinE Enum (rat + bool)))
+    (Good := fun _ => True)).
+  - apply meas_ae_true.
+  - move=> next _. constructor.
+Qed.
+
+Lemma rational_binary_coin_frontier :
+  aufrontier (observe (binary_rational_coin q)) rational_coin_heads.
+Proof.
+  unfold binary_rational_coin, rational_coin_heads.
+  eapply (AUFIter (step := binary_coin_step)
+    (transition := binary_coin_transition)
+    (i := q) (out := rational_bernoulli_measure)).
+  - exact binary_coin_step_frontier.
+  - exact rational_binary_iteration_converges.
+  - exact rational_bernoulli_total.
+Qed.
+
+Lemma direct_rational_coin_frontier :
+  aufrontier (observe direct_rational_coin) rational_coin_heads.
+Proof.
+  apply AUFFinite.
+  unfold direct_rational_coin, rational_coin_heads.
+  apply (APFProb
+    (front := fun b =>
+      meas_ret (APHRet b : aphead rational_coinE Enum bool))
+    (Good := fun _ => True)).
+  - apply meas_ae_true.
+  - move=> b _. constructor.
+Qed.
+
+Theorem binary_rational_coin_equivalent_to_direct :
+  auweak eq (binary_rational_coin q) direct_rational_coin.
+Proof.
+  apply auweak_fold.
+  eapply AUWFrontier with
+    (hs1 := rational_coin_heads) (hs2 := rational_coin_heads).
+  - exact rational_binary_coin_frontier.
+  - exact direct_rational_coin_frontier.
+  - apply meas_lift_refl.
+    apply auhead_rel_refl.
+    exact auweak_refl.
+Qed.
+
+Theorem binary_rational_coin_auequiv_direct :
+  auequiv (binary_rational_coin q) direct_rational_coin.
+Proof.
+  apply auequiv_of_auweak.
+  exact binary_rational_coin_equivalent_to_direct.
+Qed.
+
+End RationalTarget.
