@@ -511,6 +511,30 @@ Definition mathcomp_kernel_bind {A B}
   [the R.-spker (mc_carrier unit) ~> (mc_carrier B) of
     mkcomp_noparam mu (mathcomp_kernel_extend k)].
 
+Lemma mathcomp_kernel_root_ret {A} (x : A)
+    (U : set (mc_carrier A)) :
+  mathcomp_kernel_root (mathcomp_kernel_ret x) U =
+    dirac (MCValue x) U.
+Proof.
+  rewrite /mathcomp_kernel_root /mathcomp_kernel_ret
+    /mathcomp_source_kernel /mathcomp_source_measure
+    /mathcomp_measure_ret.
+  reflexivity.
+Qed.
+
+Lemma mathcomp_kernel_root_bind {A B}
+    (mu : MathCompKernelMeasure A)
+    (k : A -> MathCompKernelMeasure B)
+    (U : set (mc_carrier B)) :
+  mathcomp_kernel_root (mathcomp_kernel_bind mu k) U =
+    \int[mathcomp_kernel_root mu]_x
+      (mathcomp_kernel_extend_measure k x U).
+Proof.
+  rewrite /mathcomp_kernel_root /mathcomp_kernel_bind /mkcomp_noparam
+    /kcomp_noparam.
+  reflexivity.
+Qed.
+
 Lemma mathcomp_kernel_bind_bernoulli {B} (q : R)
     (q01 : (0 <= q <= 1)%R)
     (k : bool -> MathCompKernelMeasure B)

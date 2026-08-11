@@ -4,8 +4,8 @@ Set Warnings "-ambiguous-paths".
 Require Import Utf8.
 
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat ssralg ssrnum
-  order rat reals normedtype.
-From mathcomp.analysis Require Import topology sequences ereal.
+  order rat reals normedtype classical_sets.
+From mathcomp.analysis Require Import topology sequences ereal measure.
 
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import FrontierLift MeasureIteration MathCompMeasure.
@@ -75,5 +75,68 @@ Definition mathcomp_binary_oracle_denotes
 
 Definition mathcomp_binary_oracle_ast (qbit : binary_oracle) : Prop :=
   meas_iter_ast (mathcomp_oracle_transition qbit) 0.
+
+(** A reassociated form of the same intended approximation, exposing the
+    fair Bernoulli draw at the outermost bind.  Its event masses can be
+    calculated directly by [mathcomp_kernel_bind_bernoulli].  Equating this
+    chain with [mathcomp_oracle_result_approx] is precisely the kernel-bind
+    associativity obligation. *)
+Fixpoint mathcomp_oracle_unfolded_approx
+    (qbit : binary_oracle) (fuel n : nat) : M bool :=
+  match fuel with
+  | 0 => meas_zero
+  | fuel'.+1 =>
+      meas_bind mathcomp_half_coin (fun random =>
+        if qbit n then
+          if random then
+            mathcomp_oracle_unfolded_approx qbit fuel' n.+1
+          else meas_ret true
+        else
+          if random then meas_ret false
+          else mathcomp_oracle_unfolded_approx qbit fuel' n.+1)
+  end.
+
+Local Open Scope ereal_scope.
+
+Lemma mathcomp_oracle_unfolded_mass qbit fuel n
+    (U : set (mc_carrier bool)) : measurable U ->
+  mathcomp_kernel_root
+      (mathcomp_oracle_unfolded_approx qbit fuel.+1 n) U =
+    if qbit n then
+      (1 / 2 : R)%:E * mathcomp_kernel_root
+        (mathcomp_oracle_unfolded_approx qbit fuel n.+1) U +
+      (1 - (1 / 2 : R))%:E *
+        mathcomp_kernel_root (meas_ret true) U
+    else
+      (1 / 2 : R)%:E * mathcomp_kernel_root (meas_ret false) U +
+      (1 - (1 / 2 : R))%:E * mathcomp_kernel_root
+        (mathcomp_oracle_unfolded_approx qbit fuel n.+1) U.
+Proof.
+  move=> mU. cbn [mathcomp_oracle_unfolded_approx].
+  set k := fun random : bool =>
+    if qbit n then
+      if random then mathcomp_oracle_unfolded_approx qbit fuel n.+1
+      else meas_ret true
+    else if random then meas_ret false
+      else mathcomp_oracle_unfolded_approx qbit fuel n.+1.
+  change (mathcomp_kernel_root
+    (mathcomp_kernel_bind mathcomp_half_coin k) U =
+    if qbit n then
+      (1 / 2 : R)%:E * mathcomp_kernel_root
+        (mathcomp_oracle_unfolded_approx qbit fuel n.+1) U +
+      (1 - (1 / 2 : R))%:E *
+        mathcomp_kernel_root (meas_ret true) U
+    else
+      (1 / 2 : R)%:E * mathcomp_kernel_root (meas_ret false) U +
+      (1 - (1 / 2 : R))%:E * mathcomp_kernel_root
+        (mathcomp_oracle_unfolded_approx qbit fuel n.+1) U).
+  subst k.
+  rewrite /mathcomp_half_coin mathcomp_kernel_bind_bernoulli.
+  - by case: (qbit n).
+  - apply/andP; split; first exact: divr_ge0.
+    rewrite ler_pdivrMr; last by rewrite ltr0n.
+    by rewrite mul1r ler1n.
+  - exact mU.
+Qed.
 
 End RealOracleBackend.
