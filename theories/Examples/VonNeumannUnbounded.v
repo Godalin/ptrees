@@ -716,6 +716,33 @@ Proof.
   - exact: param_retry_strict_of_normalized.
 Qed.
 
+Theorem param_iteration_converges_of_normalized_bias
+    (Hsum : param_a + param_b = 1)
+    (success0 : 0 < param_success) :
+  meas_iter (fun _ : unit => param_round_measure) tt vn_fair.
+Proof.
+  have Hescape := param_escape_of_normalized Hsum.
+  have retry1 := param_retry_strict_of_normalized Hsum success0.
+  destruct (rat_contract_certificate param_retry_nonnegative retry1)
+    as [K [Kpos Hcontract]].
+  exact (param_iteration_converges_of_contract
+    Hescape Kpos param_retry_nonnegative Hcontract).
+Qed.
+
+(** User-facing AST statement for the parametric extractor.  Positivity of
+    [param_success = p*q] excludes the two deterministic endpoint coins;
+    normalization then makes the retry probability strictly smaller than
+    one. *)
+Theorem param_von_neumann_almost_surely_terminates
+    (Hsum : param_a + param_b = 1)
+    (success0 : 0 < param_success) :
+  meas_iter_ast (fun _ : unit => param_round_measure) tt.
+Proof.
+  eapply meas_iter_total_ast.
+  - exact (param_iteration_converges_of_normalized_bias Hsum success0).
+  - exact vn_fair_total.
+Qed.
+
 Theorem von_neumann_auequiv_of_normalized_bias
     (Hsum : param_a + param_b = 1)
     (success0 : 0 < param_success) :
