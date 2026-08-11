@@ -542,3 +542,108 @@ Proof.
   rewrite !observe_bind in Hstep. cbn in Hstep.
   exact: apweakF_prob_spin_absurd Hstep.
 Qed.
+
+(** Two independent samples may be taken in either order.  Notice that the
+    two enumerations below have a different list order; the proof therefore
+    uses a coupling which exchanges the two middle positions, rather than
+    identifying the enumerations syntactically. *)
+Definition sample_xy : ptree demoE Enum (bool * bool) :=
+  Prob fair (fun x => Prob fair (fun y => Ret (x, y))).
+
+Definition sample_yx : ptree demoE Enum (bool * bool) :=
+  Prob fair (fun y => Prob fair (fun x => Ret (x, y))).
+
+Definition sample_xy_heads : Enum (aphead demoE Enum (bool * bool)) :=
+  bind_Enum fair (fun x =>
+    bind_Enum fair (fun y => ret_Enum (APHRet (x, y)))).
+
+Definition sample_yx_heads : Enum (aphead demoE Enum (bool * bool)) :=
+  bind_Enum fair (fun y =>
+    bind_Enum fair (fun x => ret_Enum (APHRet (x, y)))).
+
+Lemma sample_xy_afrontier :
+  apfrontier (observe sample_xy) sample_xy_heads.
+Proof.
+  change (apfrontier
+    (ProbF fair (fun x => Prob fair (fun y => Ret (x, y))))
+    (meas_bind fair (fun x =>
+      bind_Enum fair (fun y => ret_Enum
+        (APHRet (x, y) : aphead demoE Enum (bool * bool)))))).
+  apply (APFProb
+    (front := fun x => bind_Enum fair
+      (fun y => ret_Enum (APHRet (x, y))))
+    (Good := fun _ => True)); first apply meas_ae_true.
+  move=> x _. change (apfrontier
+    (ProbF fair (fun y => Ret (x, y)))
+    (meas_bind fair (fun y => ret_Enum
+      (APHRet (x, y) : aphead demoE Enum (bool * bool))))).
+  apply (APFProb
+    (front := fun y => ret_Enum (APHRet (x, y)))
+    (Good := fun _ => True)); first apply meas_ae_true.
+  move=> y _. constructor.
+Qed.
+
+Lemma sample_yx_afrontier :
+  apfrontier (observe sample_yx) sample_yx_heads.
+Proof.
+  change (apfrontier
+    (ProbF fair (fun y => Prob fair (fun x => Ret (x, y))))
+    (meas_bind fair (fun y =>
+      bind_Enum fair (fun x => ret_Enum
+        (APHRet (x, y) : aphead demoE Enum (bool * bool)))))).
+  apply (APFProb
+    (front := fun y => bind_Enum fair
+      (fun x => ret_Enum (APHRet (x, y))))
+    (Good := fun _ => True)); first apply meas_ae_true.
+  move=> y _. change (apfrontier
+    (ProbF fair (fun x => Ret (x, y)))
+    (meas_bind fair (fun x => ret_Enum
+      (APHRet (x, y) : aphead demoE Enum (bool * bool))))).
+  apply (APFProb
+    (front := fun x => ret_Enum (APHRet (x, y)))
+    (Good := fun _ => True)); first apply meas_ae_true.
+  move=> x _. constructor.
+Qed.
+
+Definition sample_exchange_joint : Enum (nat * nat) :=
+  [:: (one_div_two * one_div_two, (0, 0));
+      (one_div_two * one_div_two, (1, 2));
+      (one_div_two * one_div_two, (2, 1));
+      (one_div_two * one_div_two, (3, 3))].
+
+Lemma sample_exchange_heads_lift :
+  meas_lift
+    (aphead_rel eq (@apweak demoE Enum
+      Enum_MeasureInterface Enum_MeasureCoreLaws
+      (bool * bool) (bool * bool) eq))
+    sample_xy_heads sample_yx_heads.
+Proof.
+  change (indexed_coupling
+    (aphead_rel eq (@apweak demoE Enum
+      Enum_MeasureInterface Enum_MeasureCoreLaws
+      (bool * bool) (bool * bool) eq))
+    (enum_prune sample_xy_heads) (enum_prune sample_yx_heads)).
+  cbn [sample_xy_heads sample_yx_heads fair bind_Enum ret_Enum
+    enum_prune indexed_coupling indexed].
+  unshelve eexists sample_exchange_joint.
+  - apply enum_eq_eq. vm_compute. reflexivity.
+  - apply enum_eq_eq. vm_compute. reflexivity.
+  - move=> i j Hij.
+    move: i j Hij.
+    do 5 (case=> [|?]); do 5 (case=> [|?]);
+      cbn [acc_mass]; try discriminate;
+      move=> _; split; move=> p a Hnth;
+      inversion Hnth; subst; eexists; eexists; split; first reflexivity;
+      constructor; reflexivity.
+Qed.
+
+Lemma independent_samples_commute :
+  apweak eq sample_xy sample_yx.
+Proof.
+  apply apweak_fold.
+  eapply APWFrontier with
+      (hs1 := sample_xy_heads) (hs2 := sample_yx_heads).
+  - exact sample_xy_afrontier.
+  - exact sample_yx_afrontier.
+  - exact sample_exchange_heads_lift.
+Qed.
