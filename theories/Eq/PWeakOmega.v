@@ -15,9 +15,10 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 (** Omega frontiers extend finite frontiers with zero-mass truncation.  At
-    fuel zero no returned or visible head has yet been observed.  Successor
-    fuel exposes an immediate head, removes a tau, or integrates one layer of
-    probabilistic branching. *)
+    fuel zero truncates a probabilistic node, while immediate heads and taus
+    cost no probabilistic fuel.  A successor integrates exactly one layer of
+    probabilistic branching.  This convention makes the approximation index
+    coincide with [meas_iter_approx]. *)
 Section OmegaFrontier.
 Context {E : Type -> Type} {M : Type -> Type}
   `{MI : MeasureInterface M}
@@ -28,12 +29,12 @@ Inductive apfrontier_approx :
   | APFAZero ot :
       apfrontier_approx 0 ot meas_zero
   | APFAReturn n r :
-      apfrontier_approx n.+1 (RetF r) (meas_ret (APHRet r))
+      apfrontier_approx n (RetF r) (meas_ret (APHRet r))
   | APFAVisible n {X} (e : E X) k :
-      apfrontier_approx n.+1 (VisF e k) (meas_ret (APHVis e k))
+      apfrontier_approx n (VisF e k) (meas_ret (APHVis e k))
   | APFATau n t hs :
       apfrontier_approx n (observe t) hs ->
-      apfrontier_approx n.+1 (TauF t) hs
+      apfrontier_approx n (TauF t) hs
   | APFAProb n {X : eqType} (mu : M X) k
       (front : X -> M (aphead E M R)) (Good : X -> Prop) :
       meas_ae mu Good ->
@@ -48,6 +49,60 @@ Definition apomega_frontier
     meas_lub chain hs.
 
 End OmegaFrontier.
+
+(** Head-valued absorbing approximation for a probabilistic loop whose step
+    immediately returns its continue/finish decision. *)
+Section IterOmegaFrontier.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : MeasureInterface M}
+  `{MO : @MeasureOmegaInterface M MI} {R : eqType}.
+
+Fixpoint ap_iter_head_approx {I A}
+    (n : nat) (step : I -> M (I + A)) (i : I) :
+    M (aphead E M A) :=
+  match n with
+  | 0 => meas_zero
+  | n'.+1 =>
+      meas_bind (step i) (fun next =>
+        match next with
+        | inl i' => ap_iter_head_approx n' step i'
+        | inr a => meas_ret (APHRet a)
+        end)
+  end.
+
+Definition ap_iter_tree {I A : eqType}
+    (step : I -> M (I + A)) (i : I) :
+    ptree E M A :=
+  PTree.iter (fun j => Prob (step j) (fun next => Ret next)) i.
+
+Lemma ap_iter_tree_approx
+    `{MC : @MeasureCoreLaws M MI}
+    `{ML : @MeasureLaws M MI MC}
+    {I : eqType} n (step : I -> M (I + R)) i :
+  apfrontier_approx n (observe (ap_iter_tree step i))
+    (ap_iter_head_approx n step i).
+Proof.
+  elim: n i=> [|n IH] i.
+  - exact: APFAZero.
+  - cbn. apply: (APFAProb (Good := fun _ => True)).
+    + exact: meas_ae_true.
+    + move=> [i'|a] _ /=.
+      * apply: APFATau. exact: IH.
+      * exact: APFAReturn.
+Qed.
+
+Lemma ap_iter_tree_omega_frontier
+    `{MC : @MeasureCoreLaws M MI}
+    `{ML : @MeasureLaws M MI MC}
+    {I : eqType} (step : I -> M (I + R)) i out :
+  meas_lub (fun n => ap_iter_head_approx n step i) out ->
+  apomega_frontier (observe (ap_iter_tree step i)) out.
+Proof.
+  move=> Hlub. exists (fun n => ap_iter_head_approx n step i).
+  split; [move=> n; exact: ap_iter_tree_approx|exact Hlub].
+Qed.
+
+End IterOmegaFrontier.
 
 (** Weak bisimulation over omega frontiers.  Internal divergence is handled
     by the zero/lub construction above; visible continuations remain guarded
