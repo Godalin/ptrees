@@ -177,6 +177,14 @@ Definition mathcomp_coupling {A B} (rel : A -> B -> Prop)
       joint (snd @^-1` V) = nu V) /\
     almost_everywhere joint (mc_relation rel).
 
+(** The ordinary product measurable structure suffices for concrete
+    measurable relations.  Instantiating [MeasureCoreLaws], whose relation
+    argument is an arbitrary Coq predicate, requires a dedicated discrete
+    joint carrier: on an infinite discrete space the product sigma-algebra
+    need not contain every predicate (not even every diagonal).  Keeping the
+    root subprobability packaging below separate makes that replacement
+    local to the coupling representation. *)
+
 (** The intended [MeasureInterface] lifting is existence of a subprobability
     coupling concentrated almost everywhere on the lifted relation. *)
 Definition mathcomp_measure_lift {A B} (rel : A -> B -> Prop)
@@ -198,6 +206,44 @@ Definition mathcomp_kernel_root {A}
     (mu : MathCompKernelMeasure A) :
     measure (mc_carrier A) R :=
   mu (MCBottom : mc_carrier unit).
+
+Lemma mathcomp_kernel_root_le1 {A} (mu : MathCompKernelMeasure A) :
+  mathcomp_kernel_root mu [set: mc_carrier A] <= 1.
+Proof. exact: sprob_kernel_le1. Qed.
+
+Definition mathcomp_kernel_root_fun {A} (mu : MathCompKernelMeasure A) :=
+  fun U : set (mc_carrier A) => mathcomp_kernel_root mu U.
+
+Lemma mathcomp_kernel_root_fun0 {A} (mu : MathCompKernelMeasure A) :
+  mathcomp_kernel_root_fun mu set0 = 0.
+Proof. exact: measure0. Qed.
+
+Lemma mathcomp_kernel_root_fun_ge0 {A} (mu : MathCompKernelMeasure A) U :
+  0 <= mathcomp_kernel_root_fun mu U.
+Proof. exact: measure_ge0. Qed.
+
+Lemma mathcomp_kernel_root_fun_sigma_additive {A}
+    (mu : MathCompKernelMeasure A) :
+  semi_sigma_additive (mathcomp_kernel_root_fun mu).
+Proof. exact: measure_semi_sigma_additive. Qed.
+
+HB.instance Definition mathcomp_kernel_root_fun_is_measure {A}
+    (mu : MathCompKernelMeasure A) :=
+  @measure.isMeasure.Build _ (mc_carrier A) R (mathcomp_kernel_root_fun mu)
+    (@mathcomp_kernel_root_fun0 A mu)
+    (@mathcomp_kernel_root_fun_ge0 A mu)
+    (@mathcomp_kernel_root_fun_sigma_additive A mu).
+
+HB.instance Definition mathcomp_kernel_root_is_subprobability {A}
+    (mu : MathCompKernelMeasure A) :=
+  @Measure_isSubProbability.Build _ _ R (mathcomp_kernel_root_fun mu)
+    (@mathcomp_kernel_root_le1 A mu).
+
+Definition mathcomp_kernel_root_subprobability {A}
+    (mu : MathCompKernelMeasure A) :
+  subprobability (mc_carrier A) R :=
+  [the subprobability (mc_carrier A) R of
+    mathcomp_kernel_root_fun mu].
 
 Definition mathcomp_kernel_ret {A} (x : A) :
     MathCompKernelMeasure A :=
