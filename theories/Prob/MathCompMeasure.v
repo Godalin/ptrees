@@ -504,12 +504,64 @@ Definition mathcomp_kernel_extend {A B}
   [the R.-spker (mc_carrier A) ~> (mc_carrier B) of
     mathcomp_kernel_extend_measure k].
 
+Definition mathcomp_kernel_extend_snd_measure {X A B}
+    (k : A -> MathCompKernelMeasure B)
+    (xy : (mc_carrier X * mc_carrier A)%type) :
+    measure (mc_carrier B) R :=
+  mathcomp_kernel_extend_measure k xy.2.
+
+Lemma measurable_mathcomp_kernel_extend_snd {X A B}
+    (k : A -> MathCompKernelMeasure B) U :
+  measurable U -> measurable_fun
+    [set: (mc_carrier X * mc_carrier A)%type]
+    (fun xy => mathcomp_kernel_extend_snd_measure k xy U).
+Proof.
+  move=> mU.
+  exact: measurableT_comp (measurable_mathcomp_kernel_extend k mU)
+    measurable_snd.
+Qed.
+
+HB.instance Definition mathcomp_kernel_extend_snd_is_kernel {X A B}
+    (k : A -> MathCompKernelMeasure B) :=
+  @isKernel.Build _ _ (mc_carrier X * mc_carrier A)%type (mc_carrier B) R
+    (mathcomp_kernel_extend_snd_measure k)
+    (measurable_mathcomp_kernel_extend_snd k).
+
+Lemma mathcomp_kernel_extend_snd_subprobability {X A B}
+    (k : A -> MathCompKernelMeasure B) :
+  ereal_sup [set mathcomp_kernel_extend_snd_measure k xy
+      [set: mc_carrier B] |
+      xy in [set: (mc_carrier X * mc_carrier A)%type]] <= 1.
+Proof.
+  apply/(sprob_kernelP (mathcomp_kernel_extend_snd_measure k)).
+  move=> [x [|a]].
+  - exact: sprobability_setT.
+  - exact: sprob_kernel_le1.
+Qed.
+
+HB.instance Definition mathcomp_kernel_extend_snd_is_subprobability {X A B}
+    (k : A -> MathCompKernelMeasure B) :=
+  Kernel_isSubProbability.Build _ _ _ _ R
+    (mathcomp_kernel_extend_snd_measure k)
+    (@mathcomp_kernel_extend_snd_subprobability X A B k).
+
+Definition mathcomp_kernel_extend_snd {X A B}
+    (k : A -> MathCompKernelMeasure B) :
+    R.-spker (mc_carrier X * mc_carrier A)%type ~> (mc_carrier B) :=
+  [the R.-spker (mc_carrier X * mc_carrier A)%type ~> (mc_carrier B) of
+    mathcomp_kernel_extend_snd_measure k].
+
 Definition mathcomp_kernel_bind {A B}
     (mu : MathCompKernelMeasure A)
     (k : A -> MathCompKernelMeasure B) :
     MathCompKernelMeasure B :=
   [the R.-spker (mc_carrier unit) ~> (mc_carrier B) of
     mkcomp_noparam mu (mathcomp_kernel_extend k)].
+
+Definition mathcomp_kernel_eq {A}
+    (mu nu : MathCompKernelMeasure A) : Prop :=
+  forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
+    mathcomp_kernel_root mu U = mathcomp_kernel_root nu U.
 
 Lemma mathcomp_kernel_root_ret {A} (x : A)
     (U : set (mc_carrier A)) :
@@ -533,6 +585,63 @@ Proof.
   rewrite /mathcomp_kernel_root /mathcomp_kernel_bind /mkcomp_noparam
     /kcomp_noparam.
   reflexivity.
+Qed.
+
+Lemma mathcomp_kernel_bind_ret_l {A B} (x : A)
+    (k : A -> MathCompKernelMeasure B) :
+  mathcomp_kernel_eq
+    (mathcomp_kernel_bind (mathcomp_kernel_ret x) k) (k x).
+Proof.
+  move=> U mU nbot.
+  rewrite mathcomp_kernel_root_bind.
+  change (\int[dirac (MCValue x)]_y
+      (mathcomp_kernel_extend_measure k y U) =
+    mathcomp_kernel_root (k x) U).
+  rewrite integral_dirac //= diracT mul1e.
+  by [].
+Qed.
+
+Lemma mathcomp_kernel_bind_assoc {A B C}
+    (mu : MathCompKernelMeasure A)
+    (k : A -> MathCompKernelMeasure B)
+    (h : B -> MathCompKernelMeasure C) :
+  mathcomp_kernel_eq
+    (mathcomp_kernel_bind (mathcomp_kernel_bind mu k) h)
+    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_bind (k x) h)).
+Proof.
+  move=> U mU nbot. rewrite !mathcomp_kernel_root_bind.
+  change
+    (\int[kcomp mu (mathcomp_kernel_extend_snd k)
+        (MCBottom : mc_carrier unit)]_y
+       (mathcomp_kernel_extend_measure h y U) =
+     \int[mathcomp_kernel_root mu]_x
+       (mathcomp_kernel_extend_measure
+         (fun a => mathcomp_kernel_bind (k a) h) x U)).
+  rewrite (integral_kcomp
+    mu (mathcomp_kernel_extend_snd k)
+    (MCBottom : mc_carrier unit)
+    (f := fun y => mathcomp_kernel_extend_measure h y U)); last 2 first.
+  - move=> z. exact: measure_ge0.
+  - exact: measurable_mathcomp_kernel_extend mU.
+  apply: eq_integral=> x _.
+  destruct x as [|a].
+  - rewrite /= /mathcomp_bottom_measure integral_dirac //= diracT mul1e.
+    by [].
+  - rewrite /= mathcomp_kernel_root_bind.
+    reflexivity.
+Qed.
+
+Lemma mathcomp_kernel_bind_proper_k {A B}
+    (mu : MathCompKernelMeasure A)
+    (k h : A -> MathCompKernelMeasure B) :
+  (forall x, mathcomp_kernel_eq (k x) (h x)) ->
+  mathcomp_kernel_eq (mathcomp_kernel_bind mu k)
+    (mathcomp_kernel_bind mu h).
+Proof.
+  move=> Hkh U mU nbot. rewrite !mathcomp_kernel_root_bind.
+  apply: eq_integral=> x _.
+  destruct x as [|a]; first reflexivity.
+  exact: Hkh.
 Qed.
 
 Lemma mathcomp_kernel_bind_bernoulli {B} (q : R)
@@ -559,11 +668,6 @@ Proof.
   - move=> [|b]; exact: measure_ge0.
   rewrite integral_bernoulli // => b.
 Qed.
-
-Definition mathcomp_kernel_eq {A}
-    (mu nu : MathCompKernelMeasure A) : Prop :=
-  forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
-    mathcomp_kernel_root mu U = mathcomp_kernel_root nu U.
 
 Definition mathcomp_kernel_ae {A}
     (mu : MathCompKernelMeasure A) (P : A -> Prop) : Prop :=

@@ -231,4 +231,61 @@ Proof.
     - exact: mathcomp_half_contract.
 Qed.
 
+Lemma mathcomp_oracle_result_unfolded_eq qbit fuel n :
+  mathcomp_kernel_eq
+    (mathcomp_oracle_result_approx qbit fuel n)
+    (mathcomp_oracle_unfolded_approx qbit fuel n).
+Proof.
+  elim: fuel n=> [|fuel IH] n.
+  - exact: mathcomp_kernel_eq_refl.
+  - set f := fun random : bool =>
+      if qbit n then
+        if random then meas_ret (inl n.+1) else meas_ret (inr true)
+      else if random then meas_ret (inr false) else meas_ret (inl n.+1).
+    set g := fun next : nat + bool =>
+      match next with
+      | inl n' => mathcomp_oracle_result_approx qbit fuel n'
+      | inr b => meas_ret b
+      end.
+    set h := fun random : bool =>
+      if qbit n then
+        if random then mathcomp_oracle_unfolded_approx qbit fuel n.+1
+        else meas_ret true
+      else if random then meas_ret false
+        else mathcomp_oracle_unfolded_approx qbit fuel n.+1.
+    change (mathcomp_kernel_eq
+      (mathcomp_kernel_bind (mathcomp_kernel_bind mathcomp_half_coin f) g)
+      (mathcomp_kernel_bind mathcomp_half_coin h)).
+    eapply mathcomp_kernel_eq_trans.
+    + exact: mathcomp_kernel_bind_assoc.
+    + apply: mathcomp_kernel_bind_proper_k=> random.
+      subst f g h. case E: (qbit n); case: random=> /=.
+      * eapply mathcomp_kernel_eq_trans.
+        -- exact: mathcomp_kernel_bind_ret_l.
+        -- exact: IH.
+      * exact: mathcomp_kernel_bind_ret_l.
+      * exact: mathcomp_kernel_bind_ret_l.
+      * eapply mathcomp_kernel_eq_trans.
+        -- exact: mathcomp_kernel_bind_ret_l.
+        -- exact: IH.
+Qed.
+
+Lemma mathcomp_oracle_result_true_mass qbit fuel n :
+  mathcomp_kernel_root (mathcomp_oracle_result_approx qbit fuel n)
+      [set MCValue true] =
+  (mathcomp_oracle_prefix_from qbit n fuel)%:E.
+Proof.
+  rewrite (mathcomp_oracle_result_unfolded_eq qbit fuel n) //.
+  exact: mathcomp_oracle_unfolded_true_mass.
+Qed.
+
+Lemma mathcomp_oracle_result_total_mass qbit fuel n :
+  mathcomp_kernel_root (mathcomp_oracle_result_approx qbit fuel n)
+      (@mc_returned bool) =
+  (1 - (1 / 2 : R) ^+ fuel)%:E.
+Proof.
+  rewrite (mathcomp_oracle_result_unfolded_eq qbit fuel n) //.
+  exact: mathcomp_oracle_unfolded_total_mass.
+Qed.
+
 End RealOracleBackend.
