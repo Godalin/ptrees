@@ -65,6 +65,19 @@ Definition mc_joint_diagonal (A : Type) (x : mc_carrier A) : mc_joint A A :=
   MCJoint x x.
 Arguments mc_joint_diagonal A _ : clear implicits.
 
+Definition mc_joint_swap {A B} (xy : mc_joint A B) : mc_joint B A :=
+  match xy with MCJoint x y => MCJoint y x end.
+
+Lemma mc_joint_swap_fst_preimage A B (U : set (mc_carrier B)) :
+  @mc_joint_swap A B @^-1` (mc_joint_fst @^-1` U) =
+  (mc_joint_snd @^-1` U).
+Proof. by apply/seteqP; split=> -[x y]. Qed.
+
+Lemma mc_joint_swap_snd_preimage A B (U : set (mc_carrier A)) :
+  @mc_joint_swap A B @^-1` (mc_joint_snd @^-1` U) =
+  (mc_joint_fst @^-1` U).
+Proof. by apply/seteqP; split=> -[x y]. Qed.
+
 Section BackendShape.
 Context (R : realType).
 
@@ -317,6 +330,64 @@ HB.instance Definition mathcomp_diagonal_fun_is_subprobability {A}
 Definition mathcomp_diagonal_joint {A}
     (mu : MathCompKernelMeasure A) : subprobability (mc_joint A A) R :=
   [the subprobability (mc_joint A A) R of mathcomp_diagonal_fun mu].
+
+(** Push a joint subprobability through coordinate exchange.  We package the
+    pushforward explicitly because MathComp's generic pushforward instance
+    records only the measure laws, not preservation of subprobability mass. *)
+Definition mathcomp_swap_fun {A B}
+    (joint : subprobability (mc_joint A B) R) :=
+  pushforward joint (@mc_joint_swap A B).
+
+Lemma mathcomp_swap_fun0 {A B}
+    (joint : subprobability (mc_joint A B) R) :
+  mathcomp_swap_fun joint set0 = 0.
+Proof. by rewrite /mathcomp_swap_fun /pushforward preimage_set0 measure0. Qed.
+
+Lemma mathcomp_swap_fun_ge0 {A B}
+    (joint : subprobability (mc_joint A B) R) U :
+  0 <= mathcomp_swap_fun joint U.
+Proof. exact: measure_ge0. Qed.
+
+Lemma mathcomp_swap_fun_sigma_additive {A B}
+    (joint : subprobability (mc_joint A B) R) :
+  semi_sigma_additive (mathcomp_swap_fun joint).
+Proof.
+  move=> F mF tF mUF; rewrite /mathcomp_swap_fun /pushforward
+    preimage_bigcup.
+  apply: measure_semi_sigma_additive.
+  - by move=> n.
+  - apply/trivIsetP=> /= i j _ _ ij; rewrite -preimage_setI.
+    have Hij : F i `&` F j = set0.
+    { move/trivIsetP: tF=> H. exact: H i j Logic.I Logic.I ij. }
+    by rewrite Hij preimage_set0.
+  - by [].
+Qed.
+
+HB.instance Definition mathcomp_swap_fun_is_measure {A B}
+    (joint : subprobability (mc_joint A B) R) :=
+  @measure.isMeasure.Build _ (mc_joint B A) R
+    (mathcomp_swap_fun joint)
+    (@mathcomp_swap_fun0 A B joint)
+    (@mathcomp_swap_fun_ge0 A B joint)
+    (@mathcomp_swap_fun_sigma_additive A B joint).
+
+Lemma mathcomp_swap_fun_le1 {A B}
+    (joint : subprobability (mc_joint A B) R) :
+  mathcomp_swap_fun joint [set: mc_joint B A] <= 1.
+Proof.
+  change (joint [set: mc_joint A B] <= 1).
+  exact: sprobability_setT.
+Qed.
+
+HB.instance Definition mathcomp_swap_fun_is_subprobability {A B}
+    (joint : subprobability (mc_joint A B) R) :=
+  @Measure_isSubProbability.Build _ _ R (mathcomp_swap_fun joint)
+    (@mathcomp_swap_fun_le1 A B joint).
+
+Definition mathcomp_swap_joint {A B}
+    (joint : subprobability (mc_joint A B) R) :
+    subprobability (mc_joint B A) R :=
+  [the subprobability (mc_joint B A) R of mathcomp_swap_fun joint].
 
 Definition mathcomp_kernel_ret {A} (x : A) :
     MathCompKernelMeasure A :=
@@ -626,6 +697,41 @@ Proof.
   exists joint. repeat split=> //.
   move=> U mU nbot. rewrite -Hnn //.
   exact: Hright.
+Qed.
+
+Lemma mathcomp_kernel_lift_sym {A B} (rel : A -> B -> Prop)
+    (mu : MathCompKernelMeasure A) (nu : MathCompKernelMeasure B) :
+  mathcomp_kernel_lift rel mu nu ->
+  mathcomp_kernel_lift (fun y x => rel x y) nu mu.
+Proof.
+  move=> [joint [Hleft [Hright Hae]]].
+  exists (mathcomp_swap_joint joint). split.
+  - move=> U mU nbot.
+    rewrite /mathcomp_swap_joint /mathcomp_swap_fun /pushforward.
+    change (joint (@mc_joint_swap A B @^-1`
+      (@mc_joint_fst B A @^-1` U)) = mathcomp_kernel_root nu U).
+    rewrite mc_joint_swap_fst_preimage.
+    exact: Hright.
+  - split.
+    + move=> V mV nbot.
+      rewrite /mathcomp_swap_joint /mathcomp_swap_fun /pushforward.
+      change (joint (@mc_joint_swap A B @^-1`
+        (@mc_joint_snd B A @^-1` V)) = mathcomp_kernel_root mu V).
+      rewrite mc_joint_swap_snd_preimage.
+      exact: Hleft.
+    + rewrite /almost_everywhere.
+      apply/negligibleP; first by [].
+      change (joint (@mc_joint_swap A B @^-1`
+        (~` mc_relation (fun y x => rel x y))) = 0).
+      have Heq : @mc_joint_swap A B @^-1`
+          (~` mc_relation (fun y x => rel x y)) =
+          (~` mc_relation rel).
+      { apply/seteqP; split.
+        - move=> [x y]; destruct x, y=> //=.
+        - move=> [x y]; destruct x, y=> //=. }
+      rewrite Heq.
+      have Hm : measurable (~` mc_relation rel) by [].
+      exact: measure_negligible Hm Hae.
 Qed.
 
 (** ** Omega limits and termination mass
