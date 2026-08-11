@@ -200,9 +200,9 @@ Definition mathcomp_coupling {A B} (rel : A -> B -> Prop)
     (mu : measure (mc_carrier A) R)
     (nu : measure (mc_carrier B) R) : Prop :=
   exists joint : subprobability (mc_joint A B) R,
-    (forall U : set (mc_carrier A), measurable U ->
+    (forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
       joint (mc_joint_fst @^-1` U) = mu U) /\
-    (forall V : set (mc_carrier B), measurable V ->
+    (forall V : set (mc_carrier B), measurable V -> ~ V MCBottom ->
       joint (mc_joint_snd @^-1` V) = nu V) /\
     almost_everywhere joint (mc_relation rel).
 
@@ -500,9 +500,9 @@ Lemma mathcomp_kernel_lift_refl {A} (rel : A -> A -> Prop)
 Proof.
   move=> Hrel. exists (mathcomp_diagonal_joint mu).
   split.
-  - move=> U _. exact: mathcomp_diagonal_left.
+  - move=> U _ _. exact: mathcomp_diagonal_left.
   - split.
-    + move=> U _. exact: mathcomp_diagonal_right.
+    + move=> U _ _. exact: mathcomp_diagonal_right.
     + exact: mathcomp_diagonal_related Hrel.
 Qed.
 
@@ -517,13 +517,13 @@ Lemma mathcomp_kernel_lift_ret {A B} (rel : A -> B -> Prop) x y :
 Proof.
   move=> Hxy. exists (mathcomp_ret_joint x y).
   constructor.
-  - move=> U mU.
+  - move=> U mU _.
     rewrite /mathcomp_ret_joint /mathcomp_kernel_root /mathcomp_kernel_ret
       /mathcomp_source_kernel /mathcomp_source_measure
       /mathcomp_measure_ret /dirac /=.
     reflexivity.
   - constructor.
-    + move=> V mV.
+    + move=> V mV _.
       rewrite /mathcomp_ret_joint /mathcomp_kernel_root /mathcomp_kernel_ret
         /mathcomp_source_kernel /mathcomp_source_measure
         /mathcomp_measure_ret /dirac /=.
@@ -535,7 +535,8 @@ Proof.
       have Hnot : MCJoint (MCValue x) (MCValue y) \notin
           (~` mc_relation rel).
       { rewrite notin_setE /= /mc_relation.
-        apply/(asboolP (~ ~ rel x y))=> Hn. exact: Hn Hxy. }
+        have Hnn : ~ ~ rel x y := fun Hn => Hn Hxy.
+        exact Hnn. }
       by rewrite (negbTE Hnot).
 Qed.
 
@@ -554,17 +555,77 @@ Qed.
 Proof.
   constructor.
   - move=> A mu P Q HPQ Hae.
-    eapply almost_everywhereS; [|exact Hae].
-    move=> [|a] /=; [exact (fun H => H)|exact: HPQ].
+    rewrite /almost_everywhere in Hae *.
+    eapply negligibleS; [|exact Hae].
+    move=> [|a] /= HnQ HP; apply: HnQ.
+    - exact: HP.
+    - exact: HPQ HP.
   - move=> A B rel rel' mu nu Hmono.
     move=> [joint [Hleft [Hright Hae]]].
     exists joint. repeat split=> //.
-    eapply almost_everywhereS; [|exact Hae].
-    move=> [x y] /=.
-    destruct x as [|a], y as [|b]=> //.
-    exact: Hmono.
-  - exact: mathcomp_kernel_lift_refl.
-  - exact: mathcomp_kernel_lift_ret.
+    rewrite /almost_everywhere in Hae *.
+    eapply negligibleS; [|exact Hae].
+    move=> [x y] Hnot' Hrel; apply: Hnot'.
+    rewrite /mc_relation in Hrel *.
+    destruct x as [|a], y as [|b]; simpl in Hrel |- *; auto.
+  - move=> A rel mu Hrel.
+    exact: mathcomp_kernel_lift_refl Hrel.
+  - move=> A B rel x y Hxy.
+    exact: mathcomp_kernel_lift_ret Hxy.
+Qed.
+
+Lemma mathcomp_kernel_eq_refl A :
+  Reflexive (@mathcomp_kernel_eq A).
+Proof. by move=> mu U mU nbot. Qed.
+
+Lemma mathcomp_kernel_eq_sym A :
+  Symmetric (@mathcomp_kernel_eq A).
+Proof. by move=> mu nu H U mU nbot; rewrite H. Qed.
+
+Lemma mathcomp_kernel_eq_trans A :
+  Transitive (@mathcomp_kernel_eq A).
+Proof. by move=> mu nu xi Hmn Hnx U mU nbot; rewrite Hmn // Hnx. Qed.
+
+Lemma mathcomp_kernel_ae_true {A} (mu : MathCompKernelMeasure A) :
+  mathcomp_kernel_ae mu (fun _ => True).
+Proof. apply: aeW=> [[|a]]; exact I. Qed.
+
+Lemma mathcomp_kernel_ae_conj {A} (mu : MathCompKernelMeasure A)
+    (P Q : A -> Prop) :
+  mathcomp_kernel_ae mu P -> mathcomp_kernel_ae mu Q ->
+  mathcomp_kernel_ae mu (fun x => P x /\ Q x).
+Proof.
+  rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
+  move=> HP HQ.
+  eapply negligibleS; [|exact (negligibleU HP HQ)].
+  move=> [|a] /= Hnot; [case Hnot; exact I|].
+  case: (pselect (P a)) => HPa.
+  - right. move=> HQa. exact: Hnot (conj HPa HQa).
+  - by left.
+Qed.
+
+Lemma mathcomp_kernel_lift_proper_l {A B} (rel : A -> B -> Prop)
+    (mu mu' : MathCompKernelMeasure A) (nu : MathCompKernelMeasure B) :
+  mathcomp_kernel_eq mu mu' ->
+  mathcomp_kernel_lift rel mu nu ->
+  mathcomp_kernel_lift rel mu' nu.
+Proof.
+  move=> Hmm [joint [Hleft [Hright Hrel]]].
+  exists joint. repeat split=> //.
+  move=> U mU nbot. rewrite -Hmm //.
+  exact: Hleft.
+Qed.
+
+Lemma mathcomp_kernel_lift_proper_r {A B} (rel : A -> B -> Prop)
+    (mu : MathCompKernelMeasure A) (nu nu' : MathCompKernelMeasure B) :
+  mathcomp_kernel_eq nu nu' ->
+  mathcomp_kernel_lift rel mu nu ->
+  mathcomp_kernel_lift rel mu nu'.
+Proof.
+  move=> Hnn [joint [Hleft [Hright Hrel]]].
+  exists joint. repeat split=> //.
+  move=> U mU nbot. rewrite -Hnn //.
+  exact: Hright.
 Qed.
 
 (** ** Omega limits and termination mass
