@@ -180,4 +180,55 @@ Proof.
     all: by rewrite ?addrC.
 Qed.
 
+Lemma mathcomp_kernel_ret_returned (b : bool) :
+  mathcomp_kernel_root (meas_ret b) (@mc_returned bool) = 1.
+Proof.
+  rewrite mathcomp_kernel_root_ret /dirac /= indicE.
+  have Hin : MCValue b \in (@mc_returned bool) by [].
+  by rewrite asboolT.
+Qed.
+
+Lemma mathcomp_kernel_zero_returned :
+  mathcomp_kernel_root (@meas_zero M _ _ bool) (@mc_returned bool) = 0.
+Proof.
+  rewrite /meas_zero /MathCompKernelMeasureOmegaInterface
+    /mathcomp_kernel_zero /mathcomp_kernel_root
+    /mathcomp_source_kernel /mathcomp_source_measure
+    /mathcomp_bottom_measure /dirac /= indicE.
+  have Hnot : MCBottom \notin (@mc_returned bool) by rewrite notin_setE.
+  by rewrite (negbTE Hnot).
+Qed.
+
+Lemma mathcomp_half_contract a :
+  ((1 / 2 : R) + (1 / 2) * (1 - a) =
+    1 - (1 / 2) * a)%R.
+Proof.
+  rewrite mulrBr mulr1.
+  rewrite [((1 / 2 : R) +
+      ((1 / 2 : R) - (1 / 2 : R) * a))%R]addrC -addrA.
+  rewrite [(- ((1 / 2 : R) * a) + (1 / 2 : R))%R]addrC addrA.
+  have Hhalf : ((1 / 2 : R) + 1 / 2 = 1)%R.
+  { rewrite -mulrDl.
+    change (((2 : R) / (2 : R)) = 1)%R.
+    by rewrite divrr // unitfE pnatr_eq0. }
+  by rewrite Hhalf.
+Qed.
+
+Lemma mathcomp_oracle_unfolded_total_mass qbit fuel n :
+  mathcomp_kernel_root
+      (mathcomp_oracle_unfolded_approx qbit fuel n)
+      (@mc_returned bool) =
+  (1 - (1 / 2 : R) ^+ fuel)%:E.
+Proof.
+  elim: fuel n=> [|fuel IH] n.
+  - by rewrite /= mathcomp_kernel_zero_returned expr0 subrr.
+  - rewrite mathcomp_oracle_unfolded_mass // IH
+      !mathcomp_kernel_ret_returned mathcomp_half_complement.
+    case: (qbit n); rewrite /= ?mul1e.
+    all: rewrite -?EFinM -?EFinD.
+    all: congr (_%:E); rewrite exprS.
+    - rewrite addrC. exact: mathcomp_half_contract.
+    - exact: mathcomp_half_contract.
+Qed.
+
 End RealOracleBackend.
