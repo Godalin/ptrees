@@ -14,6 +14,7 @@ depends: [
   "coq-itree" {>= "5.2.1"}
   "coq-relation-algebra" {>= "1.7.11"}
   "coq-mathcomp-algebra" {>= "2.3.0"}
+  "coq-mathcomp-analysis" {>= "1.13.0" & < "1.15.0"}
   "odoc" {with-doc}
 ]
 build: [

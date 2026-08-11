@@ -15,6 +15,7 @@
    ;; math comp
    mathcomp
    HB
+   mathcomp.analysis
    elpi
    elpi_elpi
  )
