@@ -4,7 +4,8 @@ Set Warnings "-ambiguous-paths".
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra.
 From mathcomp Require Import boolp classical_sets functions cardinality reals.
-From mathcomp.analysis Require Import measure probability kernel.
+From mathcomp.analysis Require Import measure probability kernel
+  measurable_realfun ereal.
 
 From PTree.Prob Require Import FrontierLift.
 
@@ -13,6 +14,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
+Local Open Scope ereal_scope.
 
 (** A uniform discrete measurable carrier for an arbitrary Coq type.  The
     extra [MCBottom] point is needed because MathComp's [measurableType]
@@ -48,6 +50,95 @@ Definition mathcomp_measure_set (A : Type) :=
 Definition mathcomp_measure_ret {A} (x : A) :
     subprobability (mc_carrier A) R :=
   [the subprobability (mc_carrier A) R of dirac (MCValue x)].
+
+Definition mathcomp_bottom_measure {A} :
+    subprobability (mc_carrier A) R :=
+  [the subprobability (mc_carrier A) R of dirac MCBottom].
+
+(** Extend a continuation to the bookkeeping bottom point.  Lost mass is
+    propagated as a Dirac mass at bottom; ordinary values use the supplied
+    subprobability continuation. *)
+Definition mathcomp_extend {A B}
+    (k : A -> subprobability (mc_carrier B) R)
+    (x : mc_carrier A) : subprobability (mc_carrier B) R :=
+  match x with
+  | MCBottom => mathcomp_bottom_measure
+  | MCValue a => k a
+  end.
+
+Definition mathcomp_extend_measure {A B}
+    (k : A -> subprobability (mc_carrier B) R)
+    (x : mc_carrier A) : measure (mc_carrier B) R :=
+  mathcomp_extend k x.
+
+Lemma measurable_mathcomp_extend {A B}
+    (k : A -> subprobability (mc_carrier B) R) U :
+  measurable U -> measurable_fun [set: mc_carrier A]
+    (fun x => mathcomp_extend_measure k x U).
+Proof.
+  move=> mtop Y mY.
+  by [].
+Qed.
+
+HB.instance Definition mathcomp_extend_is_kernel {A B}
+    (k : A -> subprobability (mc_carrier B) R) :=
+  @isKernel.Build _ _ (mc_carrier A) (mc_carrier B) R
+    (mathcomp_extend_measure k) (measurable_mathcomp_extend k).
+
+Lemma mathcomp_extend_subprobability {A B}
+    (k : A -> subprobability (mc_carrier B) R) :
+  ereal_sup [set mathcomp_extend_measure k x [set: mc_carrier B]
+    | x in [set: mc_carrier A]] <= 1.
+Proof.
+  apply/(sprob_kernelP (mathcomp_extend_measure k)).
+  move=> [|a]; exact: sprobability_setT.
+Qed.
+
+HB.instance Definition mathcomp_extend_is_subprobability_kernel {A B}
+    (k : A -> subprobability (mc_carrier B) R) :=
+  Kernel_isSubProbability.Build _ _ _ _ R
+    (mathcomp_extend_measure k) (mathcomp_extend_subprobability k).
+
+Definition mathcomp_extend_kernel {A B}
+    (k : A -> subprobability (mc_carrier B) R) :
+    R.-spker (mc_carrier A) ~> (mc_carrier B) :=
+  [the R.-spker (mc_carrier A) ~> (mc_carrier B) of
+    mathcomp_extend_measure k].
+
+Definition mathcomp_source_measure {A}
+    (mu : subprobability (mc_carrier A) R)
+    (_ : mc_carrier unit) : measure (mc_carrier A) R := mu.
+
+Lemma measurable_mathcomp_source {A}
+    (mu : subprobability (mc_carrier A) R) U :
+  measurable U -> measurable_fun [set: mc_carrier unit]
+    (fun x => mathcomp_source_measure mu x U).
+Proof. move=> mU mtop Y mY. by []. Qed.
+
+HB.instance Definition mathcomp_source_is_kernel {A}
+    (mu : subprobability (mc_carrier A) R) :=
+  @isKernel.Build _ _ (mc_carrier unit) (mc_carrier A) R
+    (mathcomp_source_measure mu) (measurable_mathcomp_source mu).
+
+Lemma mathcomp_source_subprobability {A}
+    (mu : subprobability (mc_carrier A) R) :
+  ereal_sup [set mathcomp_source_measure mu x [set: mc_carrier A]
+    | x in [set: mc_carrier unit]] <= 1.
+Proof.
+  apply/(sprob_kernelP (mathcomp_source_measure mu)).
+  move=> x. exact: sprobability_setT.
+Qed.
+
+HB.instance Definition mathcomp_source_is_subprobability_kernel {A}
+    (mu : subprobability (mc_carrier A) R) :=
+  Kernel_isSubProbability.Build _ _ _ _ R
+    (mathcomp_source_measure mu) (mathcomp_source_subprobability mu).
+
+Definition mathcomp_source_kernel {A}
+    (mu : subprobability (mc_carrier A) R) :
+    R.-spker (mc_carrier unit) ~> (mc_carrier A) :=
+  [the R.-spker (mc_carrier unit) ~> (mc_carrier A) of
+    mathcomp_source_measure mu].
 
 (** Extensional equality on measurable sets. *)
 Definition mathcomp_measure_eq {A}
