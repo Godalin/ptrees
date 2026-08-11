@@ -282,3 +282,83 @@ Proof.
         exact H.
     + constructor.
 Qed.
+
+Definition residual_potential (next : rat + bool) : rat :=
+  match next with inl x => x | inr _ => 0 end.
+
+Lemma binary_coin_run_residual_bound n x :
+  0 <= x -> x <= 1 ->
+  0 <= enum_expect residual_potential (binary_coin_run n x) /\
+  enum_expect residual_potential (binary_coin_run n x) <=
+    (1 / 2 : rat) ^+ n.
+Proof.
+  elim: n x=> [|n IH] x x0 x1.
+  - rewrite /= expr0 mul1r addr0. exact: conj x0 x1.
+  - rewrite /= enum_expect_bind /binary_coin_transition.
+    have two0 : (0 : rat) <= 2 by [].
+    have half0 : (0 : rat) <= 1 / 2 by [].
+    case Hhalf: (x < 1 / 2); rewrite /= !mulr0 !addr0 ?add0r exprS.
+    + have y0 : 0 <= 2 * x by exact: mulr_ge0 two0 x0.
+      have y1 : 2 * x <= 1.
+      { have H := ler_pM two0 x0 (lexx (2 : rat)) (ltW Hhalf).
+        exact H. }
+      have [IH0 IH1] := IH (2 * x) y0 y1.
+      split.
+      * exact: mulr_ge0 half0 IH0.
+      * have H := ler_wpM2l half0 IH1.
+        by rewrite mulrC in H *.
+    + have Hge : (1 / 2 : rat) <= x by rewrite leNgt Hhalf.
+      have y0 : 0 <= 2 * x - 1.
+      { rewrite subr_ge0.
+        have H := ler_pM two0 half0 (lexx (2 : rat)) Hge.
+        exact H. }
+      have y1 : 2 * x - 1 <= 1.
+      { rewrite lerBlDr.
+        have H := ler_pM two0 x0 (lexx (2 : rat)) x1.
+        exact H. }
+      have [IH0 IH1] := IH (2 * x - 1) y0 y1.
+      split.
+      * exact: mulr_ge0 half0 IH0.
+      * have H := ler_wpM2l half0 IH1.
+        by rewrite mulrC in H *.
+Qed.
+
+Definition true_indicator (next : rat + bool) : rat :=
+  match next with inr true => 1 | _ => 0 end.
+
+Lemma coin_potential_split :
+  coin_potential = (fun next => true_indicator next + residual_potential next).
+Proof.
+  apply functional_extensionality=> next.
+  destruct next as [y|[]]; rewrite /coin_potential /true_indicator
+    /residual_potential /= ?add0r ?addr0; reflexivity.
+Qed.
+
+Lemma binary_coin_run_true_plus_residual n x :
+  enum_expect true_indicator (binary_coin_run n x) +
+  enum_expect residual_potential (binary_coin_run n x) = x.
+Proof.
+  rewrite -enum_expect_add -coin_potential_split.
+  exact: binary_coin_run_potential.
+Qed.
+
+Lemma discarded_run_true n x :
+  enum_expect (fun b : bool => if b then 1 else 0)
+      (discard_unresolved (binary_coin_run n x)) =
+  enum_expect true_indicator (binary_coin_run n x).
+Proof.
+  rewrite /discard_unresolved enum_expect_bind.
+  congr (enum_expect _ _).
+  apply functional_extensionality=> next.
+  destruct next as [y|[]]; rewrite /true_indicator /= ?mul1r ?addr0;
+    reflexivity.
+Qed.
+
+Lemma iter_approx_true n x :
+  enum_expect (fun b : bool => if b then 1 else 0)
+      (meas_iter_approx n binary_coin_transition x) +
+  enum_expect residual_potential (binary_coin_run n x) = x.
+Proof.
+  rewrite iter_approx_as_discarded_run discarded_run_true.
+  exact: binary_coin_run_true_plus_residual.
+Qed.
