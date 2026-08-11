@@ -1,12 +1,14 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
+Require Import Morphisms.
+
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra.
 From mathcomp Require Import boolp classical_sets functions cardinality reals
   fsbigop.
 From mathcomp.analysis Require Import measure probability kernel
-  measurable_realfun ereal.
+  measurable_realfun ereal numfun.
 
 From PTree.Prob Require Import FrontierLift MeasureIteration.
 
@@ -35,6 +37,33 @@ HB.instance Definition _ A := isPointed.Build (mc_carrier A) MCBottom.
 HB.instance Definition _ A := @isMeasurable.Build default_measure_display
   (mc_carrier A) discrete_measurable discrete_measurable0
   discrete_measurableC discrete_measurableU.
+
+(** A coupling uses its own fully discrete joint carrier.  This is
+    intentionally not MathComp's product measurable structure: the abstract
+    lifting accepts arbitrary Coq relations, and on infinite spaces such a
+    relation need not belong to the product sigma-algebra. *)
+Variant mc_joint (A B : Type) : Type :=
+  | MCJoint (joint_left : mc_carrier A) (joint_right : mc_carrier B).
+
+Arguments MCJoint {A B} _ _.
+
+HB.instance Definition _ A B := gen_eqMixin (mc_joint A B).
+HB.instance Definition _ A B := gen_choiceMixin (mc_joint A B).
+HB.instance Definition _ A B := isPointed.Build (mc_joint A B)
+  (MCJoint MCBottom MCBottom).
+HB.instance Definition _ A B := @isMeasurable.Build default_measure_display
+  (mc_joint A B) discrete_measurable discrete_measurable0
+  discrete_measurableC discrete_measurableU.
+
+Definition mc_joint_fst {A B} (xy : mc_joint A B) : mc_carrier A :=
+  match xy with MCJoint x _ => x end.
+
+Definition mc_joint_snd {A B} (xy : mc_joint A B) : mc_carrier B :=
+  match xy with MCJoint _ y => y end.
+
+Definition mc_joint_diagonal (A : Type) (x : mc_carrier A) : mc_joint A A :=
+  MCJoint x x.
+Arguments mc_joint_diagonal A _ : clear implicits.
 
 Section BackendShape.
 Context (R : realType).
@@ -160,30 +189,22 @@ Definition mathcomp_measure_ae {A}
     one-sided bottom point is deliberately unrelated: it would represent a
     mismatch in lost mass. *)
 Definition mc_relation {A B} (rel : A -> B -> Prop) :
-    set (mc_carrier A * mc_carrier B) :=
+    set (mc_joint A B) :=
   [set xy | match xy with
-   | (MCBottom, MCBottom) => True
-   | (MCValue a, MCValue b) => rel a b
+   | MCJoint MCBottom MCBottom => True
+   | MCJoint (MCValue a) (MCValue b) => rel a b
    | _ => False
    end].
 
 Definition mathcomp_coupling {A B} (rel : A -> B -> Prop)
     (mu : measure (mc_carrier A) R)
     (nu : measure (mc_carrier B) R) : Prop :=
-  exists joint : subprobability (mc_carrier A * mc_carrier B)%type R,
+  exists joint : subprobability (mc_joint A B) R,
     (forall U : set (mc_carrier A), measurable U ->
-      joint (fst @^-1` U) = mu U) /\
+      joint (mc_joint_fst @^-1` U) = mu U) /\
     (forall V : set (mc_carrier B), measurable V ->
-      joint (snd @^-1` V) = nu V) /\
+      joint (mc_joint_snd @^-1` V) = nu V) /\
     almost_everywhere joint (mc_relation rel).
-
-(** The ordinary product measurable structure suffices for concrete
-    measurable relations.  Instantiating [MeasureCoreLaws], whose relation
-    argument is an arbitrary Coq predicate, requires a dedicated discrete
-    joint carrier: on an infinite discrete space the product sigma-algebra
-    need not contain every predicate (not even every diagonal).  Keeping the
-    root subprobability packaging below separate makes that replacement
-    local to the coupling representation. *)
 
 (** The intended [MeasureInterface] lifting is existence of a subprobability
     coupling concentrated almost everywhere on the lifted relation. *)
@@ -244,6 +265,58 @@ Definition mathcomp_kernel_root_subprobability {A}
   subprobability (mc_carrier A) R :=
   [the subprobability (mc_carrier A) R of
     mathcomp_kernel_root_fun mu].
+
+Definition mathcomp_diagonal_fun {A}
+    (mu : MathCompKernelMeasure A) :=
+  pushforward (mathcomp_kernel_root_subprobability mu)
+    (mc_joint_diagonal A).
+
+Lemma mathcomp_diagonal_fun0 {A} (mu : MathCompKernelMeasure A) :
+  mathcomp_diagonal_fun mu set0 = 0.
+Proof. by rewrite /mathcomp_diagonal_fun /pushforward preimage_set0 measure0. Qed.
+
+Lemma mathcomp_diagonal_fun_ge0 {A} (mu : MathCompKernelMeasure A) U :
+  0 <= mathcomp_diagonal_fun mu U.
+Proof. exact: measure_ge0. Qed.
+
+Lemma mathcomp_diagonal_fun_sigma_additive {A}
+    (mu : MathCompKernelMeasure A) :
+  semi_sigma_additive (mathcomp_diagonal_fun mu).
+Proof.
+  move=> F mF tF mUF; rewrite /mathcomp_diagonal_fun /pushforward
+    preimage_bigcup.
+  apply: measure_semi_sigma_additive.
+  - by move=> n.
+  - apply/trivIsetP=> /= i j _ _ ij; rewrite -preimage_setI.
+    have Hij : F i `&` F j = set0.
+    { move/trivIsetP: tF=> H. exact: H i j Logic.I Logic.I ij. }
+    by rewrite Hij preimage_set0.
+  - by [].
+Qed.
+
+HB.instance Definition mathcomp_diagonal_fun_is_measure {A}
+    (mu : MathCompKernelMeasure A) :=
+  @measure.isMeasure.Build _ (mc_joint A A) R
+    (mathcomp_diagonal_fun mu)
+    (@mathcomp_diagonal_fun0 A mu)
+    (@mathcomp_diagonal_fun_ge0 A mu)
+    (@mathcomp_diagonal_fun_sigma_additive A mu).
+
+Lemma mathcomp_diagonal_fun_le1 {A} (mu : MathCompKernelMeasure A) :
+  mathcomp_diagonal_fun mu [set: mc_joint A A] <= 1.
+Proof.
+  change (mathcomp_kernel_root mu [set: mc_carrier A] <= 1).
+  exact: mathcomp_kernel_root_le1.
+Qed.
+
+HB.instance Definition mathcomp_diagonal_fun_is_subprobability {A}
+    (mu : MathCompKernelMeasure A) :=
+  @Measure_isSubProbability.Build _ _ R (mathcomp_diagonal_fun mu)
+    (@mathcomp_diagonal_fun_le1 A mu).
+
+Definition mathcomp_diagonal_joint {A}
+    (mu : MathCompKernelMeasure A) : subprobability (mc_joint A A) R :=
+  [the subprobability (mc_joint A A) R of mathcomp_diagonal_fun mu].
 
 Definition mathcomp_kernel_ret {A} (x : A) :
     MathCompKernelMeasure A :=
@@ -382,6 +455,90 @@ Definition mathcomp_kernel_lift {A B} (rel : A -> B -> Prop)
   mathcomp_measure_lift rel
     (mathcomp_kernel_root mu) (mathcomp_kernel_root nu).
 
+Lemma mathcomp_diagonal_left {A} (mu : MathCompKernelMeasure A)
+    (U : set (mc_carrier A)) :
+  mathcomp_diagonal_joint mu (mc_joint_fst @^-1` U) =
+    mathcomp_kernel_root mu U.
+Proof.
+  change (mathcomp_kernel_root mu
+    ((mc_joint_diagonal A) @^-1` (mc_joint_fst @^-1` U)) =
+    mathcomp_kernel_root mu U).
+  congr (mathcomp_kernel_root mu _).
+Qed.
+
+Lemma mathcomp_diagonal_right {A} (mu : MathCompKernelMeasure A)
+    (U : set (mc_carrier A)) :
+  mathcomp_diagonal_joint mu (mc_joint_snd @^-1` U) =
+    mathcomp_kernel_root mu U.
+Proof.
+  change (mathcomp_kernel_root mu
+    ((mc_joint_diagonal A) @^-1` (mc_joint_snd @^-1` U)) =
+    mathcomp_kernel_root mu U).
+  congr (mathcomp_kernel_root mu _).
+Qed.
+
+Lemma mathcomp_diagonal_related {A} (rel : A -> A -> Prop)
+    (mu : MathCompKernelMeasure A) :
+  Reflexive rel ->
+  almost_everywhere (mathcomp_diagonal_joint mu) (mc_relation rel).
+Proof.
+  move=> Hrel. rewrite /almost_everywhere.
+  apply/negligibleP; first by [].
+  change (mathcomp_kernel_root mu
+    ((mc_joint_diagonal A) @^-1` (~` mc_relation rel)) = 0).
+  have -> : (mc_joint_diagonal A) @^-1` (~` mc_relation rel) = set0.
+  { apply/seteqP; split=> x H.
+    - destruct x as [|a]; first exact: H Logic.I.
+      exact: H (Hrel a).
+    - exact: False_rect _ H. }
+  exact: measure0.
+Qed.
+
+Lemma mathcomp_kernel_lift_refl {A} (rel : A -> A -> Prop)
+    (mu : MathCompKernelMeasure A) :
+  Reflexive rel -> mathcomp_kernel_lift rel mu mu.
+Proof.
+  move=> Hrel. exists (mathcomp_diagonal_joint mu).
+  split.
+  - move=> U _. exact: mathcomp_diagonal_left.
+  - split.
+    + move=> U _. exact: mathcomp_diagonal_right.
+    + exact: mathcomp_diagonal_related Hrel.
+Qed.
+
+Definition mathcomp_ret_joint {A B} (x : A) (y : B) :
+    subprobability (mc_joint A B) R :=
+  [the subprobability (mc_joint A B) R of
+    dirac (MCJoint (MCValue x) (MCValue y))].
+
+Lemma mathcomp_kernel_lift_ret {A B} (rel : A -> B -> Prop) x y :
+  rel x y ->
+  mathcomp_kernel_lift rel (mathcomp_kernel_ret x) (mathcomp_kernel_ret y).
+Proof.
+  move=> Hxy. exists (mathcomp_ret_joint x y).
+  constructor.
+  - move=> U mU.
+    rewrite /mathcomp_ret_joint /mathcomp_kernel_root /mathcomp_kernel_ret
+      /mathcomp_source_kernel /mathcomp_source_measure
+      /mathcomp_measure_ret /dirac /=.
+    reflexivity.
+  - constructor.
+    + move=> V mV.
+      rewrite /mathcomp_ret_joint /mathcomp_kernel_root /mathcomp_kernel_ret
+        /mathcomp_source_kernel /mathcomp_source_measure
+        /mathcomp_measure_ret /dirac /=.
+      reflexivity.
+    + rewrite /almost_everywhere. apply/negligibleP; first by [].
+      change (((\1_(~` mc_relation rel)
+        (MCJoint (MCValue x) (MCValue y))) : R)%:E = 0).
+      rewrite indicE.
+      have Hnot : MCJoint (MCValue x) (MCValue y) \notin
+          (~` mc_relation rel).
+      { rewrite notin_setE /= /mc_relation.
+        apply/(asboolP (~ ~ rel x y))=> Hn. exact: Hn Hxy. }
+      by rewrite (negbTE Hnot).
+Qed.
+
 #[global] Instance MathCompKernelMeasureInterface :
     MeasureInterface MathCompKernelMeasure := {
   meas_ret := @mathcomp_kernel_ret;
@@ -390,6 +547,25 @@ Definition mathcomp_kernel_lift {A B} (rel : A -> B -> Prop)
   meas_ae := @mathcomp_kernel_ae;
   meas_lift := @mathcomp_kernel_lift
 }.
+
+#[global] Instance MathCompKernelMeasureCoreLaws :
+    @MeasureCoreLaws MathCompKernelMeasure
+      MathCompKernelMeasureInterface.
+Proof.
+  constructor.
+  - move=> A mu P Q HPQ Hae.
+    eapply almost_everywhereS; [|exact Hae].
+    move=> [|a] /=; [exact (fun H => H)|exact: HPQ].
+  - move=> A B rel rel' mu nu Hmono.
+    move=> [joint [Hleft [Hright Hae]]].
+    exists joint. repeat split=> //.
+    eapply almost_everywhereS; [|exact Hae].
+    move=> [x y] /=.
+    destruct x as [|a], y as [|b]=> //.
+    exact: Hmono.
+  - exact: mathcomp_kernel_lift_refl.
+  - exact: mathcomp_kernel_lift_ret.
+Qed.
 
 (** ** Omega limits and termination mass
 
