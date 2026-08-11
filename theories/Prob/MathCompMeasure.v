@@ -142,7 +142,7 @@ Definition mathcomp_source_kernel {A}
 
 (** Extensional equality on measurable sets. *)
 Definition mathcomp_measure_eq {A}
-    (mu nu : subprobability (mc_carrier A) R) : Prop :=
+    (mu nu : measure (mc_carrier A) R) : Prop :=
   forall U : set (mc_carrier A), measurable U -> mu U = nu U.
 
 (** A predicate on returned values is lifted to the carrier by declaring
@@ -152,7 +152,7 @@ Definition mc_predicate {A} (P : A -> Prop) : set (mc_carrier A) :=
   [set x | match x with MCBottom => True | MCValue a => P a end].
 
 Definition mathcomp_measure_ae {A}
-    (mu : subprobability (mc_carrier A) R) (P : A -> Prop) : Prop :=
+    (mu : measure (mc_carrier A) R) (P : A -> Prop) : Prop :=
   almost_everywhere mu (mc_predicate P).
 
 (** Relations used by couplings also relate the two bottom points.  A
@@ -167,8 +167,8 @@ Definition mc_relation {A B} (rel : A -> B -> Prop) :
    end].
 
 Definition mathcomp_coupling {A B} (rel : A -> B -> Prop)
-    (mu : subprobability (mc_carrier A) R)
-    (nu : subprobability (mc_carrier B) R) : Prop :=
+    (mu : measure (mc_carrier A) R)
+    (nu : measure (mc_carrier B) R) : Prop :=
   exists joint : subprobability (mc_carrier A * mc_carrier B)%type R,
     (forall U : set (mc_carrier A), measurable U ->
       joint (fst @^-1` U) = mu U) /\
@@ -179,8 +179,100 @@ Definition mathcomp_coupling {A B} (rel : A -> B -> Prop)
 (** The intended [MeasureInterface] lifting is existence of a subprobability
     coupling concentrated almost everywhere on the lifted relation. *)
 Definition mathcomp_measure_lift {A B} (rel : A -> B -> Prop)
-    (mu : subprobability (mc_carrier A) R)
-    (nu : subprobability (mc_carrier B) R) : Prop :=
+    (mu : measure (mc_carrier A) R)
+    (nu : measure (mc_carrier B) R) : Prop :=
   mathcomp_coupling rel mu nu.
+
+(** ** Closed kernel carrier
+
+    MathComp exposes composition as a subprobability *kernel*, whereas
+    evaluating that kernel at one point forgets the subprobability structure
+    and exposes only a measure.  We therefore use a kernel from a fixed
+    discrete root carrier as the actual higher-kinded backend.  All kernels
+    built by this module are observationally read at [MCBottom]. *)
+Definition MathCompKernelMeasure (A : Type) : Type :=
+  R.-spker (mc_carrier unit) ~> (mc_carrier A).
+
+Definition mathcomp_kernel_root {A}
+    (mu : MathCompKernelMeasure A) :
+    measure (mc_carrier A) R :=
+  mu (MCBottom : mc_carrier unit).
+
+Definition mathcomp_kernel_ret {A} (x : A) :
+    MathCompKernelMeasure A :=
+  mathcomp_source_kernel (mathcomp_measure_ret x).
+
+Definition mathcomp_kernel_extend_measure {A B}
+    (k : A -> MathCompKernelMeasure B)
+    (x : mc_carrier A) : measure (mc_carrier B) R :=
+  match x with
+  | MCBottom => mathcomp_bottom_measure
+  | MCValue a => mathcomp_kernel_root (k a)
+  end.
+
+Lemma measurable_mathcomp_kernel_extend {A B}
+    (k : A -> MathCompKernelMeasure B) U :
+  measurable U -> measurable_fun [set: mc_carrier A]
+    (fun x => mathcomp_kernel_extend_measure k x U).
+Proof. move=> mU mtop Y mY. by []. Qed.
+
+HB.instance Definition mathcomp_kernel_extend_is_kernel {A B}
+    (k : A -> MathCompKernelMeasure B) :=
+  @isKernel.Build _ _ (mc_carrier A) (mc_carrier B) R
+    (mathcomp_kernel_extend_measure k)
+    (measurable_mathcomp_kernel_extend k).
+
+Lemma mathcomp_kernel_extend_subprobability {A B}
+    (k : A -> MathCompKernelMeasure B) :
+  ereal_sup [set mathcomp_kernel_extend_measure k x [set: mc_carrier B]
+    | x in [set: mc_carrier A]] <= 1.
+Proof.
+  apply/(sprob_kernelP (mathcomp_kernel_extend_measure k)).
+  move=> [|a].
+  - exact: sprobability_setT.
+  - exact: sprob_kernel_le1.
+Qed.
+
+HB.instance Definition mathcomp_kernel_extend_is_subprobability_kernel {A B}
+    (k : A -> MathCompKernelMeasure B) :=
+  Kernel_isSubProbability.Build _ _ _ _ R
+    (mathcomp_kernel_extend_measure k)
+    (mathcomp_kernel_extend_subprobability k).
+
+Definition mathcomp_kernel_extend {A B}
+    (k : A -> MathCompKernelMeasure B) :
+    R.-spker (mc_carrier A) ~> (mc_carrier B) :=
+  [the R.-spker (mc_carrier A) ~> (mc_carrier B) of
+    mathcomp_kernel_extend_measure k].
+
+Definition mathcomp_kernel_bind {A B}
+    (mu : MathCompKernelMeasure A)
+    (k : A -> MathCompKernelMeasure B) :
+    MathCompKernelMeasure B :=
+  [the R.-spker (mc_carrier unit) ~> (mc_carrier B) of
+    mkcomp_noparam mu (mathcomp_kernel_extend k)].
+
+Definition mathcomp_kernel_eq {A}
+    (mu nu : MathCompKernelMeasure A) : Prop :=
+  mathcomp_measure_eq (mathcomp_kernel_root mu) (mathcomp_kernel_root nu).
+
+Definition mathcomp_kernel_ae {A}
+    (mu : MathCompKernelMeasure A) (P : A -> Prop) : Prop :=
+  mathcomp_measure_ae (mathcomp_kernel_root mu) P.
+
+Definition mathcomp_kernel_lift {A B} (rel : A -> B -> Prop)
+    (mu : MathCompKernelMeasure A)
+    (nu : MathCompKernelMeasure B) : Prop :=
+  mathcomp_measure_lift rel
+    (mathcomp_kernel_root mu) (mathcomp_kernel_root nu).
+
+#[global] Instance MathCompKernelMeasureInterface :
+    MeasureInterface MathCompKernelMeasure := {
+  meas_ret := @mathcomp_kernel_ret;
+  meas_bind := @mathcomp_kernel_bind;
+  meas_eq := @mathcomp_kernel_eq;
+  meas_ae := @mathcomp_kernel_ae;
+  meas_lift := @mathcomp_kernel_lift
+}.
 
 End BackendShape.
