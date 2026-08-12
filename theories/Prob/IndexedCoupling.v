@@ -361,59 +361,6 @@ Proof.
   exact Hmap.
 Qed.
 
-Lemma coupling_shift_bind_entries {A B C D} (R : C -> D -> Prop)
-    (mu : Enum A) (nu : Enum B)
-    (k : A -> Enum C) (h : B -> Enum D)
-    ix iy p a q b :
-  nth_error mu ix = Some (p, a) ->
-  nth_error nu iy = Some (q, b) ->
-  indexed_coupling R (k a) (h b) ->
-  coupling (at_index R (bind_Enum mu k) (bind_Enum nu h))
-    (index_from (bind_offset mu k ix) (k a))
-    (index_from (bind_offset nu h iy) (h b)).
-Proof.
-  move=> Hmu Hnu Hkab.
-  move: (@coupling_shift_index C D R (k a) (h b)
-    (bind_offset mu k ix) (bind_offset nu h iy) Hkab)
-    => [j HL HR Hrel].
-  exists j=> // gi gj Hgj.
-  move: (joint_nonzero_marginals Hgj)=> [HgiL HgjR].
-  move: (Hrel gi gj Hgj)=> [li [lj [Hgi [Hgj' Hij]]]].
-  unfold shift_index in Hgi, Hgj'. subst gi gj.
-  move: (index_from_nonzero_nth HgiL)=> [r [c Hkc]].
-  move: (index_from_nonzero_nth HgjR)=> [s [d Hhd]].
-  apply at_index_bind_entries with p a q b=> //.
-  - by exists r, c.
-  - by exists s, d.
-Qed.
-
-Lemma indexed_coupling_bind {A B C D : eqType}
-    (S : A -> B -> Prop) (R : C -> D -> Prop)
-    (mu : Enum A) (nu : Enum B)
-    (k : A -> Enum C) (h : B -> Enum D) :
-  indexed_coupling S mu nu ->
-  (forall a b, S a b -> indexed_coupling R (k a) (h b)) ->
-  indexed_coupling R (bind_Enum mu k) (bind_Enum nu h).
-Proof.
-  move=> [outer HL HR Houter] Hk.
-  rewrite /indexed_coupling !indexed_bind_as_position_bind.
-  have Hjoint := coupling_bind_joint_on Houter.
-  eapply coupling_proper_l; [|eapply coupling_proper_r; [|apply Hjoint]].
-  - apply bind_Enum_pointwise_proper=> i. exact HL.
-  - apply bind_Enum_pointwise_proper=> j. exact HR.
-  - move=> i j Hij.
-    have [Hmi Hnj] := joint_nonzero_marginals Hij.
-    rewrite HL in Hmi. rewrite HR in Hnj.
-    move: (indexed_nonzero_nth Hmi)=> [p [a Hia]].
-    move: (indexed_nonzero_nth Hnj)=> [q [b Hjb]].
-    have Hijrel := Houter i j Hij.
-    move: ((proj1 Hijrel) p a Hia)=> [q' [b' [Hjb' Sab]]].
-    rewrite Hjb in Hjb'. inversion Hjb'; subst q' b'.
-    rewrite (indexed_bind_block_nth Hia) (indexed_bind_block_nth Hjb).
-    exact: coupling_shift_bind_entries Hia Hjb (Hk a b Sab).
-Qed.
-
-
 (** A related pair of continuation positions induces related global
     positions in the two flattened binds. *)
 Lemma at_index_bind_entries {A B C D} (R : C -> D -> Prop)
@@ -444,6 +391,59 @@ Proof.
     exists (p * r'), c. split.
     - exact: nth_error_bind_Enum Hmu Hkc.
     - exact Rcd.
+Qed.
+
+Lemma coupling_shift_bind_entries {A B C D} (R : C -> D -> Prop)
+    (mu : Enum A) (nu : Enum B)
+    (k : A -> Enum C) (h : B -> Enum D)
+    ix iy p a q b :
+  nth_error mu ix = Some (p, a) ->
+  nth_error nu iy = Some (q, b) ->
+  indexed_coupling R (k a) (h b) ->
+  coupling (at_index R (bind_Enum mu k) (bind_Enum nu h))
+    (index_from (bind_offset mu k ix) (k a))
+    (index_from (bind_offset nu h iy) (h b)).
+Proof.
+  move=> Hmu Hnu Hkab.
+  move: (@coupling_shift_index C D R (k a) (h b)
+    (bind_offset mu k ix) (bind_offset nu h iy) Hkab)
+    => [j HL HR Hrel].
+  exists j=> // gi gj Hgj.
+  move: (joint_nonzero_marginals Hgj)=> [HgiL HgjR].
+  move: (Hrel gi gj Hgj)=> [li [lj [Hgi [Hgj' Hij]]]].
+  unfold shift_index in Hgi, Hgj'. subst gi gj.
+  rewrite HL in HgiL. rewrite HR in HgjR.
+  move: (index_from_nonzero_nth HgiL)=> [r [c Hkc]].
+  move: (index_from_nonzero_nth HgjR)=> [s [d Hhd]].
+  apply at_index_bind_entries with p a q b=> //.
+  - by exists r, c.
+  - by exists s, d.
+Qed.
+
+Lemma indexed_coupling_bind {A B C D : eqType}
+    (S : A -> B -> Prop) (R : C -> D -> Prop)
+    (mu : Enum A) (nu : Enum B)
+    (k : A -> Enum C) (h : B -> Enum D) :
+  indexed_coupling S mu nu ->
+  (forall a b, S a b -> indexed_coupling R (k a) (h b)) ->
+  indexed_coupling R (bind_Enum mu k) (bind_Enum nu h).
+Proof.
+  move=> [outer HL HR Houter] Hk.
+  rewrite /indexed_coupling !indexed_bind_as_position_bind.
+  have Hjoint := coupling_bind_joint_on Houter.
+  eapply coupling_proper_l; [|eapply coupling_proper_r; [|apply Hjoint]].
+  - exact: bind_Enum_outer_proper HL.
+  - exact: bind_Enum_outer_proper HR.
+  - move=> i j Hij.
+    have [Hmi Hnj] := joint_nonzero_marginals Hij.
+    rewrite HL in Hmi. rewrite HR in Hnj.
+    move: (indexed_nonzero_nth Hmi)=> [p [a Hia]].
+    move: (indexed_nonzero_nth Hnj)=> [q [b Hjb]].
+    have Hijrel := Houter i j Hij.
+    move: ((proj1 Hijrel) p a Hia)=> [q' [b' [Hjb' Sab]]].
+    rewrite Hjb in Hjb'. inversion Hjb'; subst q' b'.
+    rewrite (indexed_bind_block_nth Hia) (indexed_bind_block_nth Hjb).
+    exact: coupling_shift_bind_entries Hia Hjb (Hk a b Sab).
 Qed.
 
 Lemma nth_error_emap {A B} (f : A -> B) (mu : Enum A) i p a :

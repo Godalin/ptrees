@@ -3,7 +3,7 @@ Set Warnings "-ambiguous-paths".
 
 Require Import List Lia PeanoNat Arith.
 
-From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg.
+From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg rat ssrint.
 
 From PTree.Prob Require Import RatSubTypes DiscreteMC.
 
@@ -23,6 +23,81 @@ Lemma bind_Enum_app {A B}
 Proof.
   elim: mu => [//=|[p a] mu IH] //=.
   by rewrite IH catA.
+Qed.
+
+Fixpoint enum_weightQ {A} (f : A -> rat) (mu : Enum A) : rat :=
+  if mu is h :: tl then Qval (fst h) * f (snd h) + enum_weightQ f tl else 0.
+
+Lemma enum_weightQ_filter_split {A : eqType} (f : A -> rat)
+    (mu : Enum A) a :
+  enum_weightQ f mu = Qval (acc_mass a mu) * f a +
+    enum_weightQ f [seq h <- mu | snd h != a].
+Proof.
+  revert mu.
+  refine (list_ind (fun mu => enum_weightQ f mu =
+    Qval (acc_mass a mu) * f a +
+    enum_weightQ f [seq h <- mu | snd h != a]) _ _).
+  - by rewrite /= mul0r add0r.
+  - intros [p x] tl IH. cbn [enum_weightQ filter].
+    rewrite acc_mass_cons.
+    destruct (x == a) eqn:Hxa.
+    + move/eqP: Hxa=> Hxa. subst x.
+      cbn. rewrite IH.
+      apply/eqP. rewrite -subr_eq0.
+      apply/eqP. vm_compute.
+    + change (Qval p * f x + enum_weightQ f tl =
+        Qval (acc_mass a tl) * f a + Qval p * f x +
+        enum_weightQ f [seq h <- tl | snd h != a]).
+      rewrite IH !addrA.
+      congr (_ + _). exact: addrC.
+Qed.
+
+Lemma enum_weightQ_zero {A} (f : A -> rat) (mu : Enum A) :
+  (forall a, acc_mass a mu = 0) -> enum_weightQ f mu = 0.
+Proof.
+  elim: mu=> [|[p x] tl IH] Hzero //=.
+  have Hp : p = 0.
+  { have Hx := Hzero x. rewrite acc_mass_cons eq_refl in Hx.
+    apply val_inj. apply/eqP. rewrite -lez0.
+    apply le_nnQ_of_le_Q.
+    move: (le_nnQ0 (acc_mass x tl)).
+    rewrite -le_nnQ_iff_le_Q=> Hnonneg.
+    move: (f_equal Qval Hx)=> /= Heq. lra. }
+  rewrite Hp /= mul0r add0r. apply IH=> a.
+  move: (Hzero a). rewrite (@acc_mass_cons_zero _ tl a (p, x) Hp).
+  exact.
+Qed.
+
+Lemma enum_weightQ_proper {A : eqType} (f : A -> rat)
+    (mu nu : Enum A) :
+  mu ==Enum nu -> enum_weightQ f mu = enum_weightQ f nu.
+Proof.
+  move: mu nu. apply seq_strong_induction=> mu IH nu Hmn.
+  case: mu IH Hmn=> [|[p a] tl] IH Hmn.
+  - apply eq_sym, enum_weightQ_zero=> x. exact: (Hmn x).
+  - rewrite (enum_weightQ_filter_split f ((p, a) :: tl) a).
+    rewrite (enum_weightQ_filter_split f nu a) (Hmn a).
+    congr (_ + _). apply IH.
+    + rewrite size_filter. exact: ltnSn (size tl).
+    + exact: enum_filter_proper Hmn.
+Qed.
+
+Lemma acc_mass_bind_EnumQ {A} {B : eqType}
+    (mu : Enum A) (k : A -> Enum B) b :
+  Qval (acc_mass b (bind_Enum mu k)) =
+  enum_weightQ (fun a => Qval (acc_mass b (k a))) mu.
+Proof.
+  elim: mu=> [|[p a] mu IH] //=.
+  rewrite acc_app acc_mass_scale IH /=.
+  reflexivity.
+Qed.
+
+Lemma bind_Enum_outer_proper {A B : eqType}
+    (mu nu : Enum A) (k : A -> Enum B) :
+  mu ==Enum nu -> bind_Enum mu k ==Enum bind_Enum nu k.
+Proof.
+  move=> Hmn b. apply val_inj. rewrite !acc_mass_bind_EnumQ.
+  exact: enum_weightQ_proper Hmn.
 Qed.
 
 Lemma bind_Enum_scale {A B}
