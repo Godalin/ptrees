@@ -325,6 +325,34 @@ Proof.
       exact: ne0_of_ne0_add Hxy.
 Qed.
 
+Lemma equality_joint_marginals {A : eqType} (j : Enum (A * A)) :
+  (forall x y, acc_mass (x, y) j != 0 -> x = y) ->
+  emap fst j ==Enum emap snd j.
+Proof.
+  move=> Hrel a. elim: j Hrel=> [|[p [x y]] j IH] Hrel //=.
+  have Htail : forall u v, acc_mass (u, v) j != 0 -> u = v.
+  { move=> u v Huv. apply Hrel.
+    rewrite acc_mass_cons. exact: ne0_of_ne0_add Huv. }
+  case Hp: (p == 0).
+  - move/eqP: Hp=> Hp.
+    rewrite (@acc_mass_cons_zero A (emap fst j) a (p, x) Hp).
+    rewrite (@acc_mass_cons_zero A (emap snd j) a (p, y) Hp).
+    exact: IH Htail.
+  - have Hxy : x = y.
+    { apply Hrel. apply entry_nonzero_acc_mass with p.
+      - by rewrite in_cons eq_refl.
+      - by rewrite /negb Hp. }
+    subst y. rewrite !acc_mass_cons (IH Htail). reflexivity.
+Qed.
+
+Lemma coupling_eq_enum_eq {A : eqType} (mu nu : Enum A) :
+  coupling eq mu nu -> mu ==Enum nu.
+Proof.
+  move=> [j HL HR Hrel].
+  eapply enum_eq_trans; first (apply enum_eq_sym; exact HL).
+  eapply enum_eq_trans; [exact: equality_joint_marginals Hrel|exact HR].
+Qed.
+
 Definition glue_row {A B C : eqType}
     (nu : Enum B) (jbc : Enum (B * C))
     (ab : nnQ * (A * B)) : Enum (A * C) :=
