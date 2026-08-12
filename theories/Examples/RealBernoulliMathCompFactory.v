@@ -7,7 +7,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals.
 
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import FrontierLift MeasureIteration MathCompMeasure.
-From PTree.Eq Require Import PWeakUnbounded.
+From PTree.Eq Require Import PWeakUnbounded PWeakUnboundedEquiv.
 From PTree.Examples Require Import RealBernoulliMathComp VonNeumannMathComp.
 
 Set Implicit Arguments.
@@ -129,6 +129,19 @@ Proof.
     Hq Hrep).
 Qed.
 
+(** Mutual weak simulation.  The omega-frontier relation [auweak] is the
+    unbounded extension of finite [apweak]; a plain finite frontier cannot in
+    general expose the result hidden behind either unbounded loop. *)
+Theorem mathcomp_p_coin_simulates_q_oracle_auequiv p qbit q
+    (Hp : (0 < p < 1)%R) (Hq : (0 <= q <= 1)%R) :
+  mathcomp_oracle_represents R qbit q ->
+  auequiv (mathcomp_p_to_q_oracle p qbit)
+    (mathcomp_direct_bernoulli R q).
+Proof.
+  move=> Hrep. apply auequiv_of_auweak.
+  exact: mathcomp_p_coin_simulates_q_oracle Hp Hq Hrep.
+Qed.
+
 (** The two termination obligations are explicit: the inner extractor is
     AST for every fair bit, while the outer oracle comparison is AST for
     every represented [q]. *)
@@ -148,14 +161,14 @@ Theorem mathcomp_p_coin_simulates_q_oracle_correct p qbit q
   mathcomp_oracle_represents R qbit q ->
   meas_iter_ast (fun _ : unit => mathcomp_vn_transition R p) tt /\
   mathcomp_binary_oracle_ast R qbit /\
-  auweak eq (mathcomp_p_to_q_oracle p qbit)
+  auequiv (mathcomp_p_to_q_oracle p qbit)
     (mathcomp_direct_bernoulli R q).
 Proof.
   move=> Hrep. split.
   - exact: mathcomp_von_neumann_ast R Hp.
   - split.
     + exact: mathcomp_binary_oracle_is_ast R Hq Hrep.
-    + exact: mathcomp_p_coin_simulates_q_oracle Hp Hq Hrep.
+    + exact: mathcomp_p_coin_simulates_q_oracle_auequiv Hp Hq Hrep.
 Qed.
 
 End RealBernoulliFactory.
