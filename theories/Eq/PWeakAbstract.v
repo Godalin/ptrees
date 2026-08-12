@@ -37,7 +37,7 @@ Inductive apfrontier : ptree' E M R -> M (aphead E M R) -> Prop :=
       apfrontier (VisF e k) (meas_ret (APHVis e k))
   | APFTau t hs :
       apfrontier (observe t) hs -> apfrontier (TauF t) hs
-  | APFProb {X : eqType} (mu : M X) k
+  | APFProb {X : Type} (mu : M X) k
       (front : X -> M (aphead E M R)) (Good : X -> Prop) :
       meas_ae mu Good ->
       (forall x, Good x ->
@@ -75,7 +75,7 @@ Inductive apweakF
   | APWTau t1 t2 :
       apfrontier_match sim (TauF t1) (TauF t2) ->
       sim t1 t2 -> apweakF sim (TauF t1) (TauF t2)
-  | APWProb {X Y : eqType} (mu : M X) (nu : M Y) k1 k2 :
+  | APWProb {X Y : Type} (mu : M X) (nu : M Y) k1 k2 :
       apfrontier_match sim (ProbF mu k1) (ProbF nu k2) ->
       meas_lift (fun x y => sim (k1 x) (k2 y)) mu nu ->
       apweakF sim (ProbF mu k1) (ProbF nu k2)
@@ -611,7 +611,7 @@ Proof.
   cbn in Hstep. exact Hstep.
 Qed.
 
-Lemma apweak_bind_prob {R S} {X Y : eqType}
+Lemma apweak_bind_prob {R S} {X Y : Type}
     (mu : M X) (nu : M Y)
     (h1 : X -> ptree E M R) (h2 : Y -> ptree E M R)
     (k : R -> ptree E M S) :

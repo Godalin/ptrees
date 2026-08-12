@@ -39,7 +39,7 @@ Inductive aufrontier {R} :
   | AUFTau t hs :
       aufrontier (observe t) hs ->
       aufrontier (TauF t) hs
-  | AUFProb {X : eqType} (mu : M X) k
+  | AUFProb {X : Type} (mu : M X) k
       (front : X -> M (aphead E M R)) (Good : X -> Prop) :
       meas_ae mu Good ->
       (forall x, Good x -> aufrontier (observe (k x)) (front x)) ->
@@ -120,7 +120,7 @@ Inductive auweakF
   | AUWTau t1 t2 :
       aufrontier_match sim (TauF t1) (TauF t2) ->
       sim t1 t2 -> auweakF sim (TauF t1) (TauF t2)
-  | AUWProb {X Y : eqType} (mu : M X) (nu : M Y) k1 k2 :
+  | AUWProb {X Y : Type} (mu : M X) (nu : M Y) k1 k2 :
       aufrontier_match sim (ProbF mu k1) (ProbF nu k2) ->
       meas_lift (fun x y => sim (k1 x) (k2 y)) mu nu ->
       auweakF sim (ProbF mu k1) (ProbF nu k2)

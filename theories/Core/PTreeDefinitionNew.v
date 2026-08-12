@@ -24,7 +24,6 @@ From mathcomp Require Import ssreflect ssrbool.
 
 From PTree.Core Require Import Utils.
 From PTree.Prob Require Import Monad.
-From PTree.Prob Require Import DiscreteMC.
 
 Set Implicit Arguments.
 Set Contextual Implicit.
@@ -42,7 +41,7 @@ Variant ptreeF {ptree : Type} : Type :=
 | RetF (r : R)
 | TauF (e : ptree)
 | VisF {X} (e : E X) (k : X -> ptree)
-| ProbF {X : eqType} (μ : M X) (k : X -> ptree).
+| ProbF {X : Type} (μ : M X) (k : X -> ptree).
 
 CoInductive ptree : Type :=
   go { _observe : @ptreeF ptree }.
@@ -95,7 +94,10 @@ Definition IsProbF {E M R} (p: ptree' E M R) : bool := match p with
 | ProbF _ μ h => true
 end.
 
-Theorem IsProbF_ex_ProbF {E M R} {p: ptree' E M R} (is_prob : IsProbF p = true): ∃ (X : eqType) (μ : M X) (k : X -> ptree E M R), p = ProbF μ k.
+Theorem IsProbF_ex_ProbF {E M R} {p: ptree' E M R}
+    (is_prob : IsProbF p = true) :
+  exists (X : Type) (mu : M X) (k : X -> ptree E M R),
+    p = ProbF mu k.
   destruct p; rewrite //= in is_prob.
   exists X, μ, k. reflexivity.
 Qed.
@@ -231,35 +233,6 @@ Instance MonadLaws_PTree : MonadLawsE (ptree E M).
 Proof. Admitted.
 
 End MonadLaws.
-
-
-
-(** probabilistic operations *)
-Section prob.
-Import Enum.
-
-Definition meas {E} {X : eqType} (μ : Enum X) : ptree E Enum X
-  := Prob μ ret.
-
-Definition kernel {E} {X Y : eqType} (k : X -> Enum Y)
-  : (X -> ptree E Enum Y)
-  := fun x => meas (k x).
-
-
-
-(** SampleE *)
-Variant sampleE : eqType -> Type :=
-| Sample {A : eqType} : Enum A -> sampleE A.
-
-Definition handle_sample {E} {R : eqType} (e : sampleE R)
-  : ptree E Enum R :=
-  match e with
-  | Sample _ μ => meas μ
-  end.
-
-End prob.
-
-
 
 
 
