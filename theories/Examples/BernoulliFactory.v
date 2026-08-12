@@ -258,4 +258,22 @@ Proof.
   exact biased_coin_simulates_rational_coin.
 Qed.
 
+(** End-to-end specification of the executable rational Bernoulli factory.
+    The source enumeration is a normalized non-trivial [p]-coin.  The first
+    unbounded loop applies von Neumann extraction, and the second consumes
+    fair bits using the binary expansion of [q].  Both loops are AST and the
+    resulting program is equivalent to sampling the direct [q]-coin.
+
+    [auweak] is the omega-frontier extension of [apweak]; plain [apweak]
+    cannot in general expose the result of an unbounded internal loop. *)
+Theorem biased_to_rational_coin_correct :
+  meas_iter_ast (fun _ : unit => factory_round_measure) tt /\
+  meas_iter_ast binary_coin_transition q /\
+  auweak eq biased_to_rational_coin (factory_direct_q q0 q1).
+Proof.
+  have [Hfair Hq] := biased_to_rational_coin_ast.
+  repeat split=> //.
+  exact biased_coin_simulates_rational_coin.
+Qed.
+
 End Factory.
