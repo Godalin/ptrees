@@ -188,6 +188,38 @@ Proof.
     exact: Hrel Hab.
 Qed.
 
+Lemma coupling_emap {A B C D : eqType}
+    (R : A -> B -> Prop) (S : C -> D -> Prop)
+    (f : A -> C) (g : B -> D) (mu : Enum A) (nu : Enum B) :
+  (forall a b, R a b -> S (f a) (g b)) ->
+  coupling R mu nu -> coupling S (emap f mu) (emap g nu).
+Proof.
+  move=> HRS [j HL HR Hrel].
+  have Hleft_map :
+      emap fst (emap (fun xy => (f (fst xy), g (snd xy))) j) =
+      emap f (emap fst j).
+  { clear HL HR Hrel.
+    by elim: j=> [|[p [a b]] j IH] //=; rewrite IH. }
+  have Hright_map :
+      emap snd (emap (fun xy => (f (fst xy), g (snd xy))) j) =
+      emap g (emap snd j).
+  { clear HL HR Hrel Hleft_map.
+    by elim: j=> [|[p [a b]] j IH] //=; rewrite IH. }
+  exists (emap (fun xy => (f (fst xy), g (snd xy))) j).
+  - eapply enum_eq_trans.
+    + exact: enum_eq_eq Hleft_map.
+    + apply (emap_proper f). exact HL.
+  - eapply enum_eq_trans.
+    + exact: enum_eq_eq Hright_map.
+    + apply (emap_proper g). exact HR.
+  - move=> c d Hcd.
+    move: (@emap_nonzero_preimage (A * B)%type (C * D)%type
+      (fun xy : A * B => (f (fst xy), g (snd xy))) j (c, d) Hcd)
+      => [[a b] [Hab Heq]].
+    cbn in Heq. inversion Heq; subst c d.
+    exact: HRS (Hrel a b Hab).
+Qed.
+
 Lemma coupling_scale {A B : eqType} (R : A -> B -> Prop)
     p (mu : Enum A) (nu : Enum B) :
   coupling R mu nu -> coupling R (scale_Enum p mu) (scale_Enum p nu).

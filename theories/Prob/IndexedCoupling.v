@@ -200,6 +200,30 @@ Lemma indexed_bind_Enum {A B} (mu : Enum A) (k : A -> Enum B) :
   indexed (bind_Enum mu k) = indexed_bind_blocks mu k 0.
 Proof. exact: index_from_bind_Enum. Qed.
 
+Definition shifted_at_index {A B} (R : A -> B -> Prop)
+    (mu : Enum A) (nu : Enum B) (oi oj : nat) (i j : nat) : Prop :=
+  exists li lj,
+    i = shift_index oi li /\ j = shift_index oj lj /\
+    at_index R mu nu li lj.
+
+Lemma coupling_shift_index {A B} (R : A -> B -> Prop)
+    (mu : Enum A) (nu : Enum B) oi oj :
+  indexed_coupling R mu nu ->
+  coupling (shifted_at_index R mu nu oi oj)
+    (index_from oi mu) (index_from oj nu).
+Proof.
+  move=> H.
+  rewrite !index_from_shift.
+  have Hmap := coupling_emap
+    (R := at_index R mu nu)
+    (S := shifted_at_index R mu nu oi oj)
+    (f := shift_index oi) (g := shift_index oj)
+    (fun i j Hij => ex_intro _ i
+      (ex_intro _ j (conj (Logic.eq_refl _)
+        (conj (Logic.eq_refl _) Hij)))) H.
+  exact Hmap.
+Qed.
+
 Lemma nth_error_emap {A B} (f : A -> B) (mu : Enum A) i p a :
   nth_error mu i = Some (p, a) ->
   nth_error (emap f mu) i = Some (p, f a).
