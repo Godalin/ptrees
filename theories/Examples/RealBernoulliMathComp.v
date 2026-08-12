@@ -4,7 +4,7 @@ Set Warnings "-ambiguous-paths".
 Require Import Utf8 Ring Field.
 
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat ssralg ssrnum
-  order rat reals normedtype classical_sets.
+  order rat reals normedtype boolp classical_sets.
 From mathcomp Require Import numfun.
 From mathcomp.analysis Require Import topology sequences ereal measure.
 
@@ -187,7 +187,17 @@ Proof.
     case: (qbit n)=> /=; rewrite ?mul1e ?mule0 ?adde0 ?add0e.
     all: rewrite -?EFinM -?EFinD.
     all: congr (_%:E).
-    all: by rewrite ?addrC.
+    - have Hone : ((MCValue true \in [set MCValue true])%:R : R) = (1 : R)%R.
+        have Hmem : (MCValue true \in [set MCValue true]) = true.
+          apply/asboolP. reflexivity.
+        by rewrite Hmem.
+      rewrite Hone.
+      rewrite mulr1. exact: addrC.
+    - have Hzero : ((MCValue false \in [set MCValue true])%:R : R) = (0 : R)%R.
+        have Hmem : (MCValue false \in [set MCValue true]) = false.
+          apply/asboolPn. discriminate.
+        by rewrite Hmem.
+      rewrite Hzero mulr0. reflexivity.
 Qed.
 
 Lemma mathcomp_oracle_unfolded_false_mass qbit fuel n :
@@ -210,7 +220,16 @@ Proof.
     case: (qbit n)=> /=; rewrite ?mul1e ?mule0 ?adde0 ?add0e.
     all: rewrite -?EFinM -?EFinD.
     all: congr (_%:E).
-    all: by rewrite ?addrC.
+    - have Hzero : ((MCValue true \in [set MCValue false])%:R : R) = (0 : R)%R.
+        have Hmem : (MCValue true \in [set MCValue false]) = false.
+          apply/asboolPn. discriminate.
+        by rewrite Hmem.
+      rewrite Hzero mulr0 addr0 add0r. reflexivity.
+    - have Hone : ((MCValue false \in [set MCValue false])%:R : R) = (1 : R)%R.
+        have Hmem : (MCValue false \in [set MCValue false]) = true.
+          apply/asboolP. reflexivity.
+        by rewrite Hmem.
+      rewrite Hone mulr1 addrC. reflexivity.
 Qed.
 
 Lemma mathcomp_oracle_prefix_from_rat qbit fuel n :
@@ -218,9 +237,14 @@ Lemma mathcomp_oracle_prefix_from_rat qbit fuel n :
   ratr (oracle_prefix_from qbit n fuel).
 Proof.
   elim: fuel n=> [|fuel IH] n; first by rewrite /= rmorph0.
+  have Hratr2 : ratr (2 : rat) = (2 : R)%R by rewrite ratr_nat.
   rewrite /= IH.
   case: (qbit n); rewrite /=.
   all: rewrite ?rmorphD ?rmorphM ?fmorph_div ?rmorph1 ?ratr_nat.
+  all: rewrite !mul1r ?fmorphV ?ratr_nat //.
+  all: rewrite -Hratr2.
+  all: rewrite ?rmorph0.
+  all: try by rewrite unitfE pnatr_eq0.
   all: reflexivity.
 Qed.
 
@@ -228,10 +252,14 @@ Lemma mathcomp_oracle_prefix_nonnegative qbit fuel n :
   (0 <= mathcomp_oracle_prefix_from qbit n fuel)%R.
 Proof.
   elim: fuel n=> [|fuel IH] n; first exact: lexx.
-  rewrite /=. have Hhalf : (0 <= (1 / 2 : R))%R := divr_ge0 _ _.
+  rewrite /=.
+  have Hhalf : (0 <= (1 / 2 : R))%R.
+  { apply: divr_ge0; by []. }
   case: (qbit n)=> /=.
-  - exact: addr_ge0 Hhalf (mulr_ge0 Hhalf (IH n.+1)).
-  - exact: mulr_ge0 Hhalf (IH n.+1).
+  - apply: addr_ge0; [exact Hhalf|].
+    apply: mulr_ge0; [exact Hhalf|exact: IH].
+  - apply: addr_ge0; first exact: lexx.
+    apply: mulr_ge0; [exact Hhalf|exact: IH].
 Qed.
 
 Lemma mathcomp_oracle_prefix_step_le qbit fuel n :
@@ -240,11 +268,12 @@ Lemma mathcomp_oracle_prefix_step_le qbit fuel n :
 Proof.
   elim: fuel n=> [|fuel IH] n.
   - exact: mathcomp_oracle_prefix_nonnegative.
-  - rewrite /=. have Hhalf : (0 <= (1 / 2 : R))%R := divr_ge0 _ _.
+  - rewrite /=. have Hhalf : (0 <= (1 / 2 : R))%R.
+    { apply: divr_ge0; by []. }
     have Htail := ler_wpM2l Hhalf (IH n.+1).
     case: (qbit n)=> /=.
     + exact: lerD Htail.
-    + exact: Htail.
+    + exact: lerD Htail.
 Qed.
 
 Lemma mathcomp_oracle_prefix_nondecreasing qbit n :
@@ -259,10 +288,13 @@ Lemma mathcomp_oracle_false_prefix_nonnegative qbit fuel n :
   (0 <= mathcomp_oracle_false_prefix_from qbit n fuel)%R.
 Proof.
   elim: fuel n=> [|fuel IH] n; first exact: lexx.
-  rewrite /=. have Hhalf : (0 <= (1 / 2 : R))%R := divr_ge0 _ _.
+  rewrite /=. have Hhalf : (0 <= (1 / 2 : R))%R.
+  { apply: divr_ge0; by []. }
   case: (qbit n)=> /=.
-  - exact: mulr_ge0 Hhalf (IH n.+1).
-  - exact: addr_ge0 Hhalf (mulr_ge0 Hhalf (IH n.+1)).
+  - apply: addr_ge0; first exact: lexx.
+    apply: mulr_ge0; [exact Hhalf|exact: IH].
+  - apply: addr_ge0; first exact Hhalf.
+    apply: mulr_ge0; [exact Hhalf|exact: IH].
 Qed.
 
 Lemma mathcomp_oracle_false_prefix_step_le qbit fuel n :
@@ -271,10 +303,11 @@ Lemma mathcomp_oracle_false_prefix_step_le qbit fuel n :
 Proof.
   elim: fuel n=> [|fuel IH] n.
   - exact: mathcomp_oracle_false_prefix_nonnegative.
-  - rewrite /=. have Hhalf : (0 <= (1 / 2 : R))%R := divr_ge0 _ _.
+  - rewrite /=. have Hhalf : (0 <= (1 / 2 : R))%R.
+    { apply: divr_ge0; by []. }
     have Htail := ler_wpM2l Hhalf (IH n.+1).
     case: (qbit n)=> /=.
-    + exact: Htail.
+    + exact: lerD Htail.
     + exact: lerD Htail.
 Qed.
 
@@ -297,44 +330,45 @@ Proof.
   have Hq : (fun fuel =>
       (mathcomp_oracle_prefix_from qbit 0 fuel)%:E) @ \oo --> q%:E.
   { apply: cvg_EFin; first exact: nearW.
-    change (fun fuel => mathcomp_oracle_prefix_from qbit 0 fuel)
-      @ \oo --> q.
+    change ((fun fuel => mathcomp_oracle_prefix_from qbit 0 fuel)
+      @ \oo --> q).
     under eq_cvg do rewrite mathcomp_oracle_prefix_from_rat.
     exact Hrep. }
-  apply: cvg_lim Hsup.
-  exact Hq.
+  exact: cvg_unique Hsup Hq.
 Qed.
 
 Lemma mathcomp_half_expr_step_le fuel :
   (((1 / 2 : R) ^+ fuel.+1) <= (1 / 2 : R) ^+ fuel)%R.
 Proof.
   rewrite exprS.
-  have Hhalf0 : (0 <= (1 / 2 : R))%R := divr_ge0 _ _.
+  have Hhalf0 : (0 <= (1 / 2 : R))%R.
+  { apply: divr_ge0; by []. }
   have Hhalf1 : ((1 / 2 : R) <= 1)%R.
   { rewrite ler_pdivrMr; last by rewrite ltr0n.
     by rewrite mul1r ler1n. }
   have H := ler_wpM2l (exprn_ge0 fuel Hhalf0) Hhalf1.
-  by rewrite mulr1 in H.
+  rewrite mulr1 in H. by rewrite mulrC.
 Qed.
 
 Lemma mathcomp_total_nondecreasing :
   nondecreasing_seq (fun fuel =>
     (1 - (1 / 2 : R) ^+ fuel)%:E).
 Proof.
-  apply/nondecreasing_seqP=> fuel. rewrite lee_fin lerBlDr subrK.
+  apply/nondecreasing_seqP=> fuel. rewrite lee_fin.
+  apply: lerB; first exact: lexx.
   exact: mathcomp_half_expr_step_le.
 Qed.
 
 Lemma mathcomp_total_cvg :
-  (fun fuel => (1 - (1 / 2 : R) ^+ fuel)%R) @ \oo --> 1.
+  (fun fuel => (1 - (1 / 2 : R) ^+ fuel)%R) @ \oo --> (1 : R)%R.
 Proof.
-  have Hpow : (GRing.exp (1 / 2 : R) : R ^nat) @ \oo --> 0.
+  have Hpow : (GRing.exp (1 / 2 : R) : R ^nat) @ \oo --> (0 : R)%R.
   { apply: cvg_expr. rewrite ger0_norm; first last.
     - exact: divr_ge0.
     - rewrite ltr_pdivrMr; last by rewrite ltr0n.
       by rewrite mul1r ltr1n. }
-  have := cvgB (cvg_cst (1 : R)) Hpow.
-  by rewrite subr0.
+  have := cvgB (cvg_cst (1 : R)%R) Hpow.
+  rewrite subr0. exact.
 Qed.
 
 Lemma mathcomp_total_sup :
@@ -345,7 +379,79 @@ Proof.
   have HE : (fun fuel => (1 - (1 / 2 : R) ^+ fuel)%:E)
       @ \oo --> (1 : R)%:E.
   { apply: cvg_EFin; first exact: nearW. exact mathcomp_total_cvg. }
-  apply: cvg_lim Hsup. exact HE.
+  exact: cvg_unique Hsup HE.
+Qed.
+
+Lemma mathcomp_kernel_ret_returned (b : bool) :
+  @mathcomp_kernel_root R bool (meas_ret b) (@mc_returned bool) = 1.
+Proof.
+  rewrite mathcomp_kernel_root_ret /dirac /= indicE.
+  have Hmem : (MCValue b \in (@mc_returned bool)) = true.
+  { apply/asboolP. by []. }
+  by rewrite Hmem.
+Qed.
+
+Lemma mathcomp_kernel_zero_returned :
+  mathcomp_kernel_root (@meas_zero M _ _ bool) (@mc_returned bool) = 0.
+Proof.
+  rewrite /meas_zero /MathCompKernelMeasureOmegaInterface
+    /mathcomp_kernel_zero /mathcomp_kernel_root
+    /mathcomp_source_kernel /mathcomp_source_measure
+    /mathcomp_bottom_measure /dirac /=.
+  have Hmem : (MCBottom \in (@mc_returned bool)) = false.
+  { apply/asboolPn. by []. }
+  rewrite /dirac indicE Hmem. reflexivity.
+Qed.
+
+Lemma mathcomp_kernel_root_empty (mu : M bool) :
+  mathcomp_kernel_root mu set0 = 0.
+Proof. exact: measure0. Qed.
+
+Lemma mathcomp_half_contract a :
+  ((1 / 2 : R) + (1 / 2) * (1 - a) =
+    1 - (1 / 2) * a)%R.
+Proof.
+  rewrite mulrBr mulr1.
+  rewrite [((1 / 2 : R) +
+      ((1 / 2 : R) - (1 / 2 : R) * a))%R]addrC -addrA.
+  rewrite [(- ((1 / 2 : R) * a) + (1 / 2 : R))%R]addrC addrA.
+  have Hhalf : ((1 / 2 : R) + 1 / 2 = 1)%R.
+  { rewrite -mulrDl.
+    change (((2 : R) / (2 : R)) = 1)%R.
+    by rewrite divrr // unitfE pnatr_eq0. }
+  by rewrite Hhalf.
+Qed.
+
+Lemma mathcomp_oracle_prefix_split qbit fuel n :
+  (mathcomp_oracle_prefix_from qbit n fuel +
+   mathcomp_oracle_false_prefix_from qbit n fuel =
+   1 - (1 / 2 : R) ^+ fuel)%R.
+Proof.
+  elim: fuel n=> [|fuel IH] n.
+  - rewrite /= expr0 subrr add0r. reflexivity.
+  rewrite /=. case: (qbit n)=> /=.
+  - rewrite add0r -addrA -mulrDr (IH n.+1) exprS.
+    exact: mathcomp_half_contract.
+  - rewrite add0r addrCA -mulrDr (IH n.+1) exprS.
+    exact: mathcomp_half_contract.
+Qed.
+
+Lemma mathcomp_oracle_false_prefixE qbit fuel n :
+  mathcomp_oracle_false_prefix_from qbit n fuel =
+  (1 - (1 / 2 : R) ^+ fuel -
+   mathcomp_oracle_prefix_from qbit n fuel)%R.
+Proof.
+  set p : R := mathcomp_oracle_prefix_from qbit n fuel.
+  set s : R := (1 - (1 / 2 : R) ^+ fuel)%R.
+  change (mathcomp_oracle_false_prefix_from qbit n fuel = s - p)%R.
+  apply: (addrI p).
+  change ((p + mathcomp_oracle_false_prefix_from qbit n fuel)%R =
+    (p + (s - p))%R).
+  have Hcancel : (p + (s - p) = s)%R.
+  { rewrite addrC subrK. reflexivity. }
+  rewrite Hcancel.
+  subst p s.
+  exact: mathcomp_oracle_prefix_split.
 Qed.
 
 Lemma mathcomp_oracle_false_prefix_sup qbit q :
@@ -369,64 +475,7 @@ Proof.
       (mathcomp_oracle_false_prefix_from qbit 0 fuel)%:E)
       @ \oo --> (1 - q)%:E.
   { apply: cvg_EFin; first exact: nearW. exact Hfalse. }
-  apply: cvg_lim Hsup. exact HE.
-Qed.
-
-Lemma mathcomp_kernel_ret_returned (b : bool) :
-  mathcomp_kernel_root (meas_ret b) (@mc_returned bool) = 1.
-Proof.
-  rewrite mathcomp_kernel_root_ret /dirac /= indicE.
-  have Hin : MCValue b \in (@mc_returned bool) by [].
-  by rewrite asboolT.
-Qed.
-
-Lemma mathcomp_kernel_zero_returned :
-  mathcomp_kernel_root (@meas_zero M _ _ bool) (@mc_returned bool) = 0.
-Proof.
-  rewrite /meas_zero /MathCompKernelMeasureOmegaInterface
-    /mathcomp_kernel_zero /mathcomp_kernel_root
-    /mathcomp_source_kernel /mathcomp_source_measure
-    /mathcomp_bottom_measure /dirac /= indicE.
-  have Hnot : MCBottom \notin (@mc_returned bool) by rewrite notin_setE.
-  by rewrite (negbTE Hnot).
-Qed.
-
-Lemma mathcomp_half_contract a :
-  ((1 / 2 : R) + (1 / 2) * (1 - a) =
-    1 - (1 / 2) * a)%R.
-Proof.
-  rewrite mulrBr mulr1.
-  rewrite [((1 / 2 : R) +
-      ((1 / 2 : R) - (1 / 2 : R) * a))%R]addrC -addrA.
-  rewrite [(- ((1 / 2 : R) * a) + (1 / 2 : R))%R]addrC addrA.
-  have Hhalf : ((1 / 2 : R) + 1 / 2 = 1)%R.
-  { rewrite -mulrDl.
-    change (((2 : R) / (2 : R)) = 1)%R.
-    by rewrite divrr // unitfE pnatr_eq0. }
-  by rewrite Hhalf.
-Qed.
-
-Lemma mathcomp_oracle_prefix_split qbit fuel n :
-  (mathcomp_oracle_prefix_from qbit n fuel +
-   mathcomp_oracle_false_prefix_from qbit n fuel =
-   1 - (1 / 2 : R) ^+ fuel)%R.
-Proof.
-  elim: fuel n=> [|fuel IH] n; first by rewrite /= expr0 subrr.
-  rewrite /=. case: (qbit n)=> /=.
-  - rewrite addrA -mulrDr IH exprS.
-    exact: mathcomp_half_contract.
-  - rewrite addrCA -mulrDr IH exprS.
-    exact: mathcomp_half_contract.
-Qed.
-
-Lemma mathcomp_oracle_false_prefixE qbit fuel n :
-  mathcomp_oracle_false_prefix_from qbit n fuel =
-  (1 - (1 / 2 : R) ^+ fuel -
-   mathcomp_oracle_prefix_from qbit n fuel)%R.
-Proof.
-  apply: (addrI (mathcomp_oracle_prefix_from qbit n fuel)).
-  rewrite subrK.
-  exact: mathcomp_oracle_prefix_split.
+  exact: cvg_unique Hsup HE.
 Qed.
 
 Lemma mathcomp_oracle_unfolded_total_mass qbit fuel n :
@@ -442,8 +491,8 @@ Proof.
     case: (qbit n); rewrite /= ?mul1e.
     all: rewrite -?EFinM -?EFinD.
     all: congr (_%:E); rewrite exprS.
-    - rewrite addrC. exact: mathcomp_half_contract.
-    - exact: mathcomp_half_contract.
+    - rewrite mulr1 addrC. exact: mathcomp_half_contract.
+    - rewrite mulr1. exact: mathcomp_half_contract.
 Qed.
 
 Lemma mathcomp_oracle_result_unfolded_eq qbit fuel n :
@@ -453,16 +502,16 @@ Lemma mathcomp_oracle_result_unfolded_eq qbit fuel n :
 Proof.
   elim: fuel n=> [|fuel IH] n.
   - exact: mathcomp_kernel_eq_refl.
-  - set f := fun random : bool =>
+  - set f : bool -> M (nat + bool) := fun random : bool =>
       if qbit n then
         if random then meas_ret (inl n.+1) else meas_ret (inr true)
       else if random then meas_ret (inr false) else meas_ret (inl n.+1).
-    set g := fun next : nat + bool =>
+    set g : (nat + bool) -> M bool := fun next : nat + bool =>
       match next with
       | inl n' => mathcomp_oracle_result_approx qbit fuel n'
       | inr b => meas_ret b
       end.
-    set h := fun random : bool =>
+    set h : bool -> M bool := fun random : bool =>
       if qbit n then
         if random then mathcomp_oracle_unfolded_approx qbit fuel n.+1
         else meas_ret true
@@ -522,8 +571,10 @@ Proof.
       (mathcomp_oracle_result_approx qbit fuel 0) [set MCValue true]) =
       range (fun fuel =>
         (mathcomp_oracle_prefix_from qbit 0 fuel)%:E).
-  { apply/seteqP; split=> z [fuel <-]; exists fuel=> //;
-      exact: mathcomp_oracle_result_true_mass. }
+  { apply/seteqP; split=> z [fuel _ <-].
+    - exists fuel; first by []. symmetry.
+      exact: mathcomp_oracle_result_true_mass.
+    - exists fuel; first by []. exact: mathcomp_oracle_result_true_mass. }
   exact: mathcomp_oracle_prefix_sup Hrep.
 Qed.
 
@@ -538,8 +589,10 @@ Proof.
       (mathcomp_oracle_result_approx qbit fuel 0) [set MCValue false]) =
       range (fun fuel =>
         (mathcomp_oracle_false_prefix_from qbit 0 fuel)%:E).
-  { apply/seteqP; split=> z [fuel <-]; exists fuel=> //;
-      exact: mathcomp_oracle_result_false_mass. }
+  { apply/seteqP; split=> z [fuel _ <-].
+    - exists fuel; first by []. symmetry.
+      exact: mathcomp_oracle_result_false_mass.
+    - exists fuel; first by []. exact: mathcomp_oracle_result_false_mass. }
   exact: mathcomp_oracle_false_prefix_sup Hrep.
 Qed.
 
@@ -550,8 +603,10 @@ Proof.
   have -> : range (fun fuel => mathcomp_kernel_root
       (mathcomp_oracle_result_approx qbit fuel 0) (@mc_returned bool)) =
       range (fun fuel => (1 - (1 / 2 : R) ^+ fuel)%:E).
-  { apply/seteqP; split=> z [fuel <-]; exists fuel=> //;
-      exact: mathcomp_oracle_result_total_mass. }
+  { apply/seteqP; split=> z [fuel _ <-].
+    - exists fuel; first by []. symmetry.
+      exact: mathcomp_oracle_result_total_mass.
+    - exists fuel; first by []. exact: mathcomp_oracle_result_total_mass. }
   exact: mathcomp_total_sup.
 Qed.
 
@@ -565,8 +620,8 @@ Lemma mc_bool_set_both U :
 Proof.
   move=> nbot Ht Hf. apply/seteqP; split=> x Hx.
   - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
-    by case: b.
-  - destruct x as [|b]=> //; by case: b.
+    destruct b; exact I.
+  - destruct x as [|b]=> //; destruct b; [exact Ht|exact Hf].
 Qed.
 
 Lemma mc_bool_set_true U :
@@ -575,8 +630,9 @@ Lemma mc_bool_set_true U :
 Proof.
   move=> nbot Ht Hnf. apply/seteqP; split=> x Hx.
   - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
-    destruct b=> //=. exact: False_rect _ (Hnf Hx).
-  - move=> /=. exact Ht.
+    destruct b; first reflexivity. exact: False_rect _ (Hnf Hx).
+  - destruct x as [|b]; first discriminate.
+    destruct b; [exact Ht|discriminate].
 Qed.
 
 Lemma mc_bool_set_false U :
@@ -585,8 +641,9 @@ Lemma mc_bool_set_false U :
 Proof.
   move=> nbot Hnt Hf. apply/seteqP; split=> x Hx.
   - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
-    destruct b=> //=. exact: False_rect _ (Hnt Hx).
-  - move=> /=. exact Hf.
+    destruct b; first exact: False_rect _ (Hnt Hx). reflexivity.
+  - destruct x as [|b]; first discriminate.
+    destruct b; [discriminate|exact Hf].
 Qed.
 
 Lemma mc_bool_set_neither U :
@@ -617,28 +674,36 @@ Proof.
         mathcomp_kernel_root
           (mathcomp_oracle_result_approx qbit fuel 0)
           (@mc_returned bool)))).
-      exact: esym (mathcomp_oracle_result_total_sup qbit).
+      symmetry. exact: mathcomp_oracle_result_total_sup.
     + rewrite (mc_bool_set_true nbot Ht Hnf)
-        (mathcomp_bernoulli_true_mass q q01).
+        (mathcomp_bernoulli_true_mass q01).
       change (q%:E = ereal_sup (range (fun fuel =>
         mathcomp_kernel_root
           (mathcomp_oracle_result_approx qbit fuel 0)
           [set MCValue true]))).
-      exact: esym (mathcomp_oracle_result_true_sup Hrep).
+      symmetry. exact: mathcomp_oracle_result_true_sup Hrep.
   - have [Hf|Hnf] := pselect (U (MCValue false)).
     + rewrite (mc_bool_set_false nbot Hnt Hf)
-        (mathcomp_bernoulli_false_mass q q01).
+        (mathcomp_bernoulli_false_mass q01).
       change ((1 - q)%:E = ereal_sup (range (fun fuel =>
         mathcomp_kernel_root
           (mathcomp_oracle_result_approx qbit fuel 0)
           [set MCValue false]))).
-      exact: esym (mathcomp_oracle_result_false_sup Hrep).
+      symmetry. exact: mathcomp_oracle_result_false_sup Hrep.
     + rewrite (mc_bool_set_neither nbot Hnt Hnf) measure0.
-      change (0 = ereal_sup (range (fun _ : nat => 0))).
+      have Hrange : [set mathcomp_kernel_root
+          (mathcomp_oracle_result_approx qbit fuel 0) set0 |
+          fuel in [set: nat]] = range (fun _ : nat => (0 : \bar R)).
+      { apply/seteqP; split=> z [fuel _ <-].
+        - exists fuel; first by [].
+          symmetry. exact: mathcomp_kernel_root_empty.
+        - exists fuel; first by []. symmetry.
+          symmetry. exact: mathcomp_kernel_root_empty. }
+      rewrite Hrange.
       have -> : range (fun _ : nat => (0 : \bar R)) = [set 0].
       { apply/seteqP; split=> z.
         - by move=> [fuel _ <-].
-        - move=> ->. by exists 0. }
+        - move=> ->. exists 0%N; by []. }
       by rewrite ereal_sup1.
 Qed.
 
