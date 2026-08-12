@@ -13,6 +13,7 @@ Unset Printing Implicit Defensive.
 
 Import Enum EnumMap Coupling.
 Import GRing.Theory.
+#[local] Open Scope ring_scope.
 
 Module IndexedCoupling.
 
@@ -260,6 +261,38 @@ Proof.
       (ex_intro _ j (conj (Logic.eq_refl _)
         (conj (Logic.eq_refl _) Hij)))) H.
   exact Hmap.
+Qed.
+
+(** A related pair of continuation positions induces related global
+    positions in the two flattened binds. *)
+Lemma at_index_bind_entries {A B C D} (R : C -> D -> Prop)
+    (mu : Enum A) (nu : Enum B)
+    (k : A -> Enum C) (h : B -> Enum D)
+    ix iy li lj p a q b :
+  nth_error mu ix = Some (p, a) ->
+  nth_error nu iy = Some (q, b) ->
+  (exists r c, nth_error (k a) li = Some (r, c)) ->
+  (exists s d, nth_error (h b) lj = Some (s, d)) ->
+  at_index R (k a) (h b) li lj ->
+  at_index R (bind_Enum mu k) (bind_Enum nu h)
+    (Nat.add (bind_offset mu k ix) li)
+    (Nat.add (bind_offset nu h iy) lj).
+Proof.
+  move=> Hmu Hnu [r [c0 Hka]] [s [d0 Hhb]] [HL HR]. split.
+  - move=> w c Hleft.
+    have Hknown := nth_error_bind_Enum Hmu Hka.
+    rewrite Hleft in Hknown. inversion Hknown; subst w c0.
+    move: (HL r c Hka)=> [s' [d [Hhd Rcd]]].
+    exists (q * s'), d. split.
+    - exact: nth_error_bind_Enum Hnu Hhd.
+    - exact Rcd.
+  - move=> w d Hright.
+    have Hknown := nth_error_bind_Enum Hnu Hhb.
+    rewrite Hright in Hknown. inversion Hknown; subst w d0.
+    move: (HR s d Hhb)=> [r' [c [Hkc Rcd]]].
+    exists (p * r'), c. split.
+    - exact: nth_error_bind_Enum Hmu Hkc.
+    - exact Rcd.
 Qed.
 
 Lemma nth_error_emap {A B} (f : A -> B) (mu : Enum A) i p a :
