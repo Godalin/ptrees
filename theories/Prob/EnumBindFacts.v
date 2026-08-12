@@ -53,6 +53,17 @@ Proof.
   by rewrite Hk IH.
 Qed.
 
+Lemma bind_Enum_ext_in {A B}
+    (mu : Enum A) (k1 k2 : A -> Enum B) :
+  (forall p x, List.In (p, x) mu -> k1 x = k2 x) ->
+  bind_Enum mu k1 = bind_Enum mu k2.
+Proof.
+  move=> Hk. elim: mu Hk=> [//=|[p a] mu IH] Hk //=.
+  rewrite (Hk p a (or_introl (Logic.eq_refl _))).
+  rewrite IH=> // q x Hx.
+  exact: Hk q x (or_intror Hx).
+Qed.
+
 Lemma acc_mass_scale {A : eqType} (x : A) p (mu : Enum A) :
   acc_mass x (scale_Enum p mu) = p * acc_mass x mu.
 Proof.
