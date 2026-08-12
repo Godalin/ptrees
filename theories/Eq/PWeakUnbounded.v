@@ -385,4 +385,21 @@ Proof.
     + apply meas_lift_refl. intro x. exact (CIH (k x)).
 Qed.
 
+(** Two computations are weakly bisimilar as soon as they expose one common
+    (possibly unbounded) frontier.  This is the main backend boundary: a
+    concrete measure model only has to identify the limiting frontier; all
+    coinductive obligations are discharged here. *)
+Lemma auweak_of_common_frontier {R}
+    (t1 t2 : ptree E M R) hs :
+  aufrontier (observe t1) hs ->
+  aufrontier (observe t2) hs ->
+  @auweak E M MI MC MO R R eq t1 t2.
+Proof.
+  intros H1 H2. apply auweak_fold.
+  eapply AUWFrontier; [exact H1|exact H2|].
+  apply meas_lift_refl.
+  apply auhead_rel_refl.
+  exact auweak_refl.
+Qed.
+
 End UnboundedWeakReflexivity.
