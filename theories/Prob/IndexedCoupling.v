@@ -1,11 +1,11 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
-Require Import Utf8 List Morphisms Lia.
+Require Import Utf8 List Morphisms Lia PeanoNat.
 
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg order rat.
 
-From PTree.Prob Require Import RatSubTypes DiscreteMC Coupling.
+From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts Coupling.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -134,6 +134,71 @@ Proof.
   - move=> H. inversion H; subst. by exists a.
   - exact: IH.
 Qed.
+
+Definition shift_index (offset i : nat) : nat := Nat.add offset i.
+
+Lemma index_from_shift_from {A} offset start (mu : Enum A) :
+  index_from (Nat.add offset start) mu =
+  emap (shift_index offset) (index_from start mu).
+Proof.
+  revert offset start.
+  induction mu as [|[p a] mu IH]; intros offset start; cbn.
+  - reflexivity.
+  - unfold shift_index at 1.
+    rewrite <- Nat.add_succ_r.
+    rewrite IH. reflexivity.
+Qed.
+
+Lemma index_from_shift {A} offset (mu : Enum A) :
+  index_from offset mu = emap (shift_index offset) (indexed mu).
+Proof.
+  unfold indexed.
+  rewrite <- (Nat.add_0_r offset) at 1.
+  exact: index_from_shift_from.
+Qed.
+
+Lemma index_from_scale {A} offset p (mu : Enum A) :
+  index_from offset (scale_Enum p mu) =
+  scale_Enum p (index_from offset mu).
+Proof.
+  revert offset.
+  induction mu as [|[q a] mu IH]; intro offset; cbn=> //.
+  rewrite IH. reflexivity.
+Qed.
+
+Lemma index_from_app {A} offset (mu nu : Enum A) :
+  index_from offset (mu ++ nu) =
+  index_from offset mu ++
+    index_from (Nat.add offset (size mu)) nu.
+Proof.
+  revert offset.
+  induction mu as [|[p a] mu IH]; intro offset; cbn.
+  - rewrite Nat.add_0_r. reflexivity.
+  - rewrite IH Nat.add_succ_r. reflexivity.
+Qed.
+
+Fixpoint indexed_bind_blocks {A B}
+    (mu : Enum A) (k : A -> Enum B) (offset : nat) : Enum nat :=
+  match mu with
+  | [::] => [::]
+  | (p, a) :: tl =>
+      scale_Enum p (index_from offset (k a)) ++
+      indexed_bind_blocks tl k (Nat.add offset (size (k a)))
+  end.
+
+Lemma index_from_bind_Enum {A B} offset
+    (mu : Enum A) (k : A -> Enum B) :
+  index_from offset (bind_Enum mu k) = indexed_bind_blocks mu k offset.
+Proof.
+  revert offset.
+  induction mu as [|[p a] mu IH]; intro offset; cbn=> //.
+  rewrite index_from_app index_from_scale size_scale_Enum IH.
+  reflexivity.
+Qed.
+
+Lemma indexed_bind_Enum {A B} (mu : Enum A) (k : A -> Enum B) :
+  indexed (bind_Enum mu k) = indexed_bind_blocks mu k 0.
+Proof. exact: index_from_bind_Enum. Qed.
 
 Lemma nth_error_emap {A B} (f : A -> B) (mu : Enum A) i p a :
   nth_error mu i = Some (p, a) ->
