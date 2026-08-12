@@ -165,6 +165,18 @@ Proof.
   by rewrite Hhead.
 Qed.
 
+(** Pruning commutes exactly with finite Kleisli extension.  This exposes a
+    bind as a concatenation of non-zero blocks, which is the normal form used
+    by position-indexed couplings. *)
+Lemma enum_prune_bind {A B} (mu : Enum A) (k : A -> Enum B) :
+  enum_prune (bind_Enum mu k) =
+  bind_Enum (enum_prune mu) (fun x => enum_prune (k x)).
+Proof.
+  elim: mu=> [|[p x] mu IH] //=.
+  rewrite enum_prune_app enum_prune_scale IH.
+  case Hp: (p == RatSubTypes.nnQ_0)=> //=.
+Qed.
+
 Lemma scale_entry_preimage {A} (p w : nnQ) (x : A) (mu : Enum A) :
   List.In (w, x) (scale_Enum p mu) ->
   exists q, List.In (q, x) mu /\ w = p * q.
