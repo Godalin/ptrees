@@ -7,12 +7,13 @@ From Coinduction Require Import all.
 From mathcomp Require Import ssreflect ssrbool eqtype seq.
 
 From PTree.Core Require Import PTreeDefinitionNew.
-From PTree.Prob Require Import DiscreteMC RelLift.
-From PTree.Eq Require Import EquNew.
+From PTree.Prob Require Import FrontierLift.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
+
+Notation "` R" := (elem R) (at level 10).
 
 (** Strong probabilistic bisimulation over an abstract probabilistic
     relation lifting.  Constructors are matched in lockstep: unlike
@@ -24,8 +25,8 @@ Section PStrong.
 
 Context {E : Type -> Type}.
 Context {M : Type -> Type}.
-Context `{DI : DiscreteInterface M}.
-Context `{PL : @ProbRelLift M DI}.
+Context `{MI : MeasureInterface M}.
+Context `{MC : @MeasureCoreLaws M MI}.
 Context {R1 R2 : Type}.
 Variable RR : R1 -> R2 -> Prop.
 
@@ -41,8 +42,8 @@ Variant pstrongF
   | PSVis {X} (e : E X) k1 k2 :
       (forall x, sim (k1 x) (k2 x)) ->
       pstrongF sim (VisF e k1) (VisF e k2)
-  | PSProb {X Y : eqType} (mu : M X) (nu : M Y) k1 k2 :
-      prob_lift (fun x y => sim (k1 x) (k2 y)) mu nu ->
+  | PSProb {X Y : Type} (mu : M X) (nu : M Y) k1 k2 :
+      meas_lift (fun x y => sim (k1 x) (k2 y)) mu nu ->
       pstrongF sim (ProbF mu k1) (ProbF nu k2).
 
 Definition pstrong_body
@@ -62,7 +63,7 @@ Proof.
   - constructor. exact HR.
   - constructor. exact: Hmono Hrel.
   - constructor=> x. exact: Hmono (Hk x).
-  - constructor. eapply prob_lift_mono; [|exact Hc].
+  - constructor. eapply meas_lift_mono; [|exact Hc].
     move=> x y Hxy. exact: Hmono Hxy.
 Qed.
 
@@ -99,15 +100,14 @@ Qed.
 End PStrong.
 
 Section PStrongFacts.
-Import EquNotations.
-
 Context {E : Type -> Type}.
 Context {M : Type -> Type}.
-Context `{DI : DiscreteInterface M}.
-Context `{PL : @ProbRelLift M DI}.
+Context `{MI : MeasureInterface M}.
+Context `{MC : @MeasureCoreLaws M MI}.
+Context `{ML : @MeasureLaws M MI MC}.
 
 Lemma pstrong_refl {R : Type} :
-  Reflexive (@pstrong E M DI PL R R eq).
+  Reflexive (@pstrong E M MI MC R R eq).
 Proof.
   red.
   unfold pstrong.
@@ -121,9 +121,9 @@ Proof.
   - constructor. apply CIH.
   - constructor=> x. apply CIH.
   - constructor.
-    eapply prob_lift_mono.
+    eapply meas_lift_mono.
     + move=> x y ->. apply CIH.
-    + apply prob_lift_refl.
+    + apply meas_lift_refl. unfold Reflexive. reflexivity.
 Qed.
 
 Lemma pstrong_sym {R1 R2 : Type} (RR : R1 -> R2 -> Prop)
@@ -146,50 +146,18 @@ Proof.
   - constructor. exact: CIH Hsim.
   - constructor=> x. exact: CIH (Hk x).
   - constructor.
-    eapply prob_lift_mono.
+    eapply meas_lift_mono.
     + move=> y x Hxy. exact: CIH Hxy.
-    + exact: prob_lift_sym Hc.
-Qed.
-
-Lemma equ_implies_pstrong {R : Type} (t1 t2 : ptree E M R) :
-  equ eq t1 t2 -> pstrong eq t1 t2.
-Proof.
-  revert t1 t2.
-  unfold pstrong.
-  coinduction CH CIH.
-  move=> t1 t2 Huv.
-  unfold equ in Huv.
-  apply (gfp_pfp (fequ eq)) in Huv.
-  cbn in Huv.
-  set ot1 := observe t1 in Huv |- *.
-  set ot2 := observe t2 in Huv |- *.
-  change (pstrongF eq (` CH) ot1 ot2).
-  inversion Huv as
-      [r1 r2 HR | u1 u2 Hsim | X e k1 k2 Hk
-       | X mu nu k1 k2 Hmu Hk]; subst.
-  - constructor. reflexivity.
-  - constructor. exact: CIH Hsim.
-  - constructor=> x. exact: CIH (Hk x).
-  - constructor.
-    have Hdisc : disc_eq mu nu.
-      apply (proj2 (disc_RTeq mu nu)).
-      exact Hmu.
-    have Hc : @prob_lift M DI PL X X eq mu nu :=
-      @prob_lift_of_eq M DI PL X mu nu Hdisc.
-    eapply (prob_lift_mono
-      (R := eq)
-      (S := fun x y => (` CH) (k1 x) (k2 y))).
-    + move=> x y Hxy. subst y. exact: CIH (Hk x).
-    + exact Hc.
+    + apply meas_lift_sym. exact Hc.
 Qed.
 
 Lemma pstrong_ret_intro {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
   RR r1 r2 ->
-  @pstrong E M DI PL R1 R2 RR (Ret r1) (Ret r2).
+  @pstrong E M MI MC R1 R2 RR (Ret r1) (Ret r2).
 Proof. move=> Hrel. apply pstrong_fold. constructor. exact Hrel. Qed.
 
 Lemma pstrong_ret_inv {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
-  @pstrong E M DI PL R1 R2 RR (Ret r1) (Ret r2) -> RR r1 r2.
+  @pstrong E M MI MC R1 R2 RR (Ret r1) (Ret r2) -> RR r1 r2.
 Proof. move/pstrong_unfold. by inversion 1. Qed.
 
 Lemma pstrong_vis_intro {R X} (e : E X)
@@ -209,26 +177,24 @@ Proof.
   assumption.
 Qed.
 
-Lemma pstrong_prob_intro {R} {X Y : eqType}
+Lemma pstrong_prob_intro {R} {X Y : Type}
     (mu : M X) (nu : M Y)
     (k1 : X -> ptree E M R) (k2 : Y -> ptree E M R) :
-  prob_lift (fun x y => pstrong eq (k1 x) (k2 y)) mu nu ->
+  meas_lift (fun x y => pstrong eq (k1 x) (k2 y)) mu nu ->
   pstrong eq (Prob mu k1) (Prob nu k2).
 Proof. move=> Hrel. apply pstrong_fold. constructor. exact Hrel. Qed.
 
-Lemma pstrong_prob_inv {R} {X Y : eqType}
+Lemma pstrong_prob_inv {R} {X Y : Type}
     (mu : M X) (nu : M Y)
     (k1 : X -> ptree E M R) (k2 : Y -> ptree E M R) :
   pstrong eq (Prob mu k1) (Prob nu k2) ->
-  prob_lift (fun x y => pstrong eq (k1 x) (k2 y)) mu nu.
+  meas_lift (fun x y => pstrong eq (k1 x) (k2 y)) mu nu.
 Proof.
   move=> Hrel.
   move: (pstrong_unfold Hrel) => Hs.
   dependent destruction Hs.
   assumption.
 Qed.
-
-Context `{PC : @ComposableProbRelLift M DI PL}.
 
 Inductive pstrong_trans_clo {R : Type} :
     ptree E M R -> ptree E M R -> Prop :=
@@ -238,7 +204,7 @@ Inductive pstrong_trans_clo {R : Type} :
       pstrong_trans_clo t1 t3.
 
 Lemma pstrong_trans {R : Type} :
-  Transitive (@pstrong E M DI PL R R eq).
+  Transitive (@pstrong E M MI MC R R eq).
 Proof.
   move=> t1 t2 t3 H12 H23.
   have Hcomp : pstrong_trans_clo t1 t3.
@@ -272,9 +238,8 @@ Proof.
     dependent destruction Hstep2.
     rewrite -x0 -x.
     constructor.
-    have Hcomp :=
-      prob_lift_comp (ComposableProbRelLift := PC) H H0.
-    eapply (prob_lift_mono
+    have Hcomp := @meas_lift_comp M MI MC ML _ _ _ _ _ _ _ _ H H0.
+    eapply (meas_lift_mono
       (R := fun a c => exists b,
         pstrong eq (k1 a) (k b) /\ pstrong eq (k b) (k2 c))
       (S := fun a c => (` CH) (k1 a) (k2 c))).
@@ -307,7 +272,7 @@ Proof.
 Qed.
 
 Lemma pstrong_sym_eq {R : Type} :
-  Symmetric (@pstrong E M DI PL R R eq).
+  Symmetric (@pstrong E M MI MC R R eq).
 Proof.
   move=> t1 t2 Hrel.
   revert t1 t2 Hrel.
@@ -325,13 +290,13 @@ Proof.
   - constructor. exact: CIH Hu.
   - constructor=> x. exact: CIH (Hk x).
   - constructor.
-    eapply prob_lift_mono.
+    eapply meas_lift_mono.
     + move=> y x Hxy. exact: CIH Hxy.
-    + exact: prob_lift_sym Hc.
+    + apply meas_lift_sym. exact Hc.
 Qed.
 
 #[global] Instance pstrong_equivalence {R : Type} :
-  Equivalence (@pstrong E M DI PL R R eq).
+  Equivalence (@pstrong E M MI MC R R eq).
 Proof.
   split.
   - exact pstrong_refl.

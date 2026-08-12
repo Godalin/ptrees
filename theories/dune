@@ -3,7 +3,7 @@
 (coq.theory
  (name PTree)
  (package coq-ptree)
- (modules (:standard \ Eq.PSSim))
+ (modules (:standard \ Eq.EquNew Eq.Trans Eq.PSSim))
  (theories
    ExtLib
    ITree
