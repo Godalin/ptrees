@@ -295,3 +295,36 @@ Proof.
   rewrite Hleft Hright !enum_prune_emap.
   exact Hmap.
 Qed.
+
+#[global] Instance Enum_MeasureKleisliCommutativeLaws :
+    @MeasureKleisliCommutativeLaws Enum Enum_MeasureInterface.
+Proof.
+  constructor.
+  move=> A B C D R mu nu k1 k2 Hk.
+  cbn [Enum_MeasureInterface].
+  rewrite !enum_prune_bind.
+  apply indexed_coupling_bind
+    with (S := fun x y => indexed_coupling R
+      (enum_prune (k1 x y)) (enum_prune (k2 y x))).
+  - set xy : Enum (A * B) :=
+      bind_Enum (enum_prune mu) (fun x =>
+        bind_Enum (enum_prune nu) (fun y => ret_Enum (x, y))).
+    set yx : Enum (A * B) :=
+      bind_Enum (enum_prune nu) (fun y =>
+        bind_Enum (enum_prune mu) (fun x => ret_Enum (x, y))).
+    have Hxy : xy ==Enum yx by exact: enum_Fubini_Tonelli.
+    have Hidx := indexed_coupling_of_coupling
+      (R := eq) (coupling_of_enum_eq Hxy).
+    have Hmap := indexed_coupling_emap
+      (R := fun x y => indexed_coupling R
+        (enum_prune (k1 (fst x) (snd x)))
+        (enum_prune (k2 (fst y) (snd y))))
+      (f := fun xy : A * B => xy)
+      (g := fun yx : A * B => (snd yx, fst yx))
+      (fun x y H => match H with Logic.eq_refl => Hk (fst x) (snd x) end)
+      Hidx.
+    cbn in Hmap.
+    exact Hmap.
+  - move=> [x y] [x' y'] Hxy.
+    exact Hxy.
+Qed.
