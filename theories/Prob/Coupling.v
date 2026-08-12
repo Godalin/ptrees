@@ -397,6 +397,27 @@ Proof.
   by rewrite mem_filter Hp Hmem.
 Qed.
 
+Lemma joint_nonzero_marginals {A B : eqType}
+    (j : Enum (A * B)) a b :
+  acc_mass (a, b) j != 0 ->
+  acc_mass a (emap fst j) != 0 /\ acc_mass b (emap snd j) != 0.
+Proof.
+  move=> Hab.
+  have Hmem : (a, b) \in supp j.
+  { exact: (in_supp_iff_acc_mass_ne_0 (a, b) j).2 Hab. }
+  rewrite /supp mem_undup in Hmem.
+  move/mapP: Hmem=> [[p [a' b']] Hentry Heq].
+  move: Heq=> /= [] -> ->.
+  rewrite mem_filter in Hentry. move/andP: Hentry=> [Hp Hj].
+  split.
+  - apply entry_nonzero_acc_mass with p.
+    + rewrite /emap. apply/mapP. exists (p, (a', b'))=> //.
+    + exact Hp.
+  - apply entry_nonzero_acc_mass with p.
+    + rewrite /emap. apply/mapP. exists (p, (a', b'))=> //.
+    + exact Hp.
+Qed.
+
 Lemma sumq_if_filter {A} (P : pred A) (F : A -> nnQ) (l : seq A) :
   sumq [seq if P x then F x else 0 | x <- l] =
   sumq [seq F x | x <- l & P x].

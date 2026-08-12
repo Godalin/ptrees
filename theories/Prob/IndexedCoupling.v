@@ -126,6 +126,44 @@ Lemma indexed_emap {A B} (f : A -> B) (mu : Enum A) :
   indexed (emap f mu) = indexed mu.
 Proof. exact: index_from_emap. Qed.
 
+Lemma nth_error_index_from_inv {A} n (mu : Enum A) i p j :
+  nth_error (index_from n mu) i = Some (p, j) ->
+  exists a, nth_error mu i = Some (p, a) /\ j = Nat.add n i.
+Proof.
+  revert n i p j.
+  induction mu as [|[q a] mu IH]; intros n [|i] p j Hnth;
+    cbn in Hnth; try discriminate.
+  - inversion Hnth; subst p j. exists a. split=> //.
+    symmetry. exact: Nat.add_0_r n.
+  - move: (IH n.+1 i p j Hnth)=> [b [Hi ->]].
+    exists b. split=> //.
+    rewrite Nat.add_succ_l Nat.add_succ_r. reflexivity.
+Qed.
+
+Lemma indexed_nonzero_nth {A} (mu : Enum A) i :
+  acc_mass i (indexed mu) != RatSubTypes.nnQ_0 ->
+  exists p a, nth_error mu i = Some (p, a).
+Proof.
+  move=> Hi.
+  have Hsupp : i \in supp (indexed mu).
+  { apply/(in_supp_iff_acc_mass_ne_0 i (indexed mu)). exact Hi. }
+  rewrite /supp mem_undup in Hsupp.
+  move/mapP: Hsupp=> [[p j] Hentry Hij].
+  cbn in Hij. subst j.
+  rewrite mem_filter in Hentry. move/andP: Hentry=> [_ Hentry].
+  rewrite /indexed in Hentry.
+  have Hin : List.In (p, i) (index_from 0 mu).
+  { move: Hentry. clear Hi.
+    induction (index_from 0 mu) as [|x xs IH]=> //=.
+    move=> /orP [H|H].
+    - left. move/eqP: H=> H. symmetry. exact H.
+    - right. exact: IH H. }
+  move: (In_nth_error _ _ Hin)=> [pos Hpos].
+  move: (nth_error_index_from_inv Hpos)=> [a [Hmu Heq]].
+  rewrite Nat.add_0_l in Heq. subst pos.
+  by exists p, a.
+Qed.
+
 Lemma nth_error_emap_inv {A B} (f : A -> B) (mu : Enum A) i p b :
   nth_error (emap f mu) i = Some (p, b) ->
   exists a, nth_error mu i = Some (p, a) /\ b = f a.
