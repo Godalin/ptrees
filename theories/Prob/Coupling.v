@@ -233,6 +233,30 @@ Proof.
     cbn. exact: mulr0 (Qval p).
 Qed.
 
+Lemma coupling_zero_scale {A B : eqType} (R : A -> B -> Prop)
+    (mu : Enum A) (nu : Enum B) :
+  coupling R (scale_Enum 0 mu) (scale_Enum 0 nu).
+Proof.
+  exists [::].
+  - move=> a. rewrite acc_mass_nil acc_mass_scale.
+    apply val_inj. by rewrite /= mul0r.
+  - move=> b. rewrite acc_mass_nil acc_mass_scale.
+    apply val_inj. by rewrite /= mul0r.
+  - move=> a b Hbad. by rewrite acc_mass_nil in Hbad.
+Qed.
+
+Lemma entry_nonzero_acc_mass {A : eqType}
+    (p : nnQ) (x : A) (mu : Enum A) :
+  (p, x) \in mu -> p != 0 -> acc_mass x mu != 0.
+Proof.
+  move=> Hmem Hp.
+  apply/(in_supp_iff_acc_mass_ne_0 x mu).
+  rewrite /supp mem_undup.
+  apply/mapP.
+  exists (p, x) => //.
+  by rewrite mem_filter Hp Hmem.
+Qed.
+
 Lemma coupling_app {A B : eqType} (R : A -> B -> Prop)
     (mu1 mu2 : Enum A) (nu1 nu2 : Enum B) :
   coupling R mu1 nu1 -> coupling R mu2 nu2 ->
@@ -271,6 +295,34 @@ Proof.
   - apply coupling_app.
     + exact: coupling_scale (Hk a b).
     + exact IH.
+Qed.
+
+(** Relational Kleisli extension over one explicit outer joint. *)
+Lemma coupling_bind_joint_on {A B C D : eqType}
+    (S : A -> B -> Prop) (R : C -> D -> Prop)
+    (outer : Enum (A * B))
+    (k : A -> Enum C) (h : B -> Enum D) :
+  (forall a b, acc_mass (a, b) outer != 0 -> S a b) ->
+  (forall a b, S a b -> coupling R (k a) (h b)) ->
+  coupling R
+    (bind_Enum (emap fst outer) k)
+    (bind_Enum (emap snd outer) h).
+Proof.
+  move=> Houter Hk. induction outer as [|[p [a b]] outer IH]; cbn.
+  - exists [::]; first exact: enum_eq_refl.
+    + exact: enum_eq_refl.
+    + move=> c d Hbad. by rewrite acc_mass_nil in Hbad.
+  - apply coupling_app.
+    + case Hp: (p == 0).
+      * move/eqP: Hp=> Hp. subst p. exact: coupling_zero_scale.
+      * apply coupling_scale. apply Hk. apply Houter.
+        apply entry_nonzero_acc_mass with p.
+        -- by rewrite in_cons eq_refl.
+        -- by rewrite /negb Hp.
+    + apply IH.
+      move=> x y Hxy. apply Houter.
+      rewrite acc_mass_cons.
+      exact: ne0_of_ne0_add Hxy.
 Qed.
 
 Definition glue_row {A B C : eqType}
@@ -383,18 +435,6 @@ Lemma emap_flatten {A B} (f : A -> B) (ls : seq (Enum A)) :
   emap f (flatten ls) = flatten [seq emap f l | l <- ls].
 Proof.
   by rewrite /emap map_flatten.
-Qed.
-
-Lemma entry_nonzero_acc_mass {A : eqType}
-    (p : nnQ) (x : A) (mu : Enum A) :
-  (p, x) \in mu -> p != 0 -> acc_mass x mu != 0.
-Proof.
-  move=> Hmem Hp.
-  apply/(in_supp_iff_acc_mass_ne_0 x mu).
-  rewrite /supp mem_undup.
-  apply/mapP.
-  exists (p, x) => //.
-  by rewrite mem_filter Hp Hmem.
 Qed.
 
 Lemma joint_nonzero_marginals {A B : eqType}
