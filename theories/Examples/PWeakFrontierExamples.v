@@ -558,3 +558,42 @@ Lemma independent_samples_commute :
 Proof.
   apply apweak_sample_exchange=> x y. reflexivity.
 Qed.
+
+(** After exchanging the first two samples, take a third probabilistic
+    sample.  Thus the continuation frontier is a two-point measure rather
+    than a Dirac return frontier. *)
+Definition third_coin_cont (x y : bool) : ptree demoE Enum bool :=
+  Prob fair (fun z => Ret (xorb (andb x y) z)).
+
+Definition third_coin_front (x y : bool) :
+    Enum (aphead demoE Enum bool) :=
+  bind_Enum fair (fun z =>
+    ret_Enum (APHRet (xorb (andb x y) z))).
+
+Lemma third_coin_cont_frontier x y :
+  apfrontier (observe (third_coin_cont x y)) (third_coin_front x y).
+Proof.
+  apply (APFProb
+    (front := fun z => ret_Enum (APHRet (xorb (andb x y) z)))
+    (Good := fun _ => True)).
+  - apply meas_ae_true.
+  - move=> z _. constructor.
+Qed.
+
+Definition sample_xy_then_coin : ptree demoE Enum bool :=
+  Prob fair (fun x => Prob fair (fun y => third_coin_cont x y)).
+
+Definition sample_yx_then_coin : ptree demoE Enum bool :=
+  Prob fair (fun y => Prob fair (fun x => third_coin_cont x y)).
+
+Lemma independent_samples_commute_with_probabilistic_continuation :
+  apweak eq sample_xy_then_coin sample_yx_then_coin.
+Proof.
+  eapply apweak_sample_exchange_kleisli
+    with (front1 := fun x y => third_coin_front x y)
+         (front2 := fun y x => third_coin_front x y).
+  - exact: third_coin_cont_frontier.
+  - move=> y x. exact: third_coin_cont_frontier.
+  - move=> x y. apply meas_lift_refl.
+    apply aphead_rel_refl. apply apweak_refl.
+Qed.
