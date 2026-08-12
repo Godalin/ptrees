@@ -6,7 +6,7 @@ Require Import Morphisms.
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrfun ssralg ssrnum order rat.
 
-From PTree.Prob Require Import RatSubTypes DiscreteMC EnumMap RelLift.
+From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts EnumMap RelLift.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -186,6 +186,59 @@ Proof.
     cbn in Heq.
     inversion Heq; subst.
     exact: Hrel Hab.
+Qed.
+
+Lemma coupling_scale {A B : eqType} (R : A -> B -> Prop)
+    p (mu : Enum A) (nu : Enum B) :
+  coupling R mu nu -> coupling R (scale_Enum p mu) (scale_Enum p nu).
+Proof.
+  move=> [j HL HR Hrel]. exists (scale_Enum p j).
+  - rewrite emap_scale. exact: scale_Enum_proper HL.
+  - rewrite emap_scale. exact: scale_Enum_proper HR.
+  - move=> a b Hab.
+    apply Hrel. apply: contra Hab=> /eqP Hz.
+    rewrite acc_mass_scale Hz. apply/eqP. apply val_inj.
+    cbn. exact: mulr0 (Qval p).
+Qed.
+
+Lemma coupling_app {A B : eqType} (R : A -> B -> Prop)
+    (mu1 mu2 : Enum A) (nu1 nu2 : Enum B) :
+  coupling R mu1 nu1 -> coupling R mu2 nu2 ->
+  coupling R (mu1 ++ mu2) (nu1 ++ nu2).
+Proof.
+  move=> [j1 HL1 HR1 Hrel1] [j2 HL2 HR2 Hrel2].
+  exists (j1 ++ j2).
+  - rewrite emap_app. exact: app_Enum_proper HL1 HL2.
+  - rewrite emap_app. exact: app_Enum_proper HR1 HR2.
+  - move=> a b Hab. rewrite acc_app in Hab.
+    case H1: (acc_mass (a, b) j1 == 0).
+    + apply Hrel2. apply: contra Hab=> /eqP H2.
+      move/eqP: H1=> H1. rewrite H1 H2.
+      apply/eqP. apply val_inj. cbn. exact: addr0 0.
+    + apply Hrel1. apply/eqP=> Hz.
+      have Heq0 : (acc_mass (a, b) j1 == 0) = true.
+      { apply/eqP. apply val_inj. exact (f_equal Qval Hz). }
+      rewrite Heq0 in H1. discriminate.
+Qed.
+
+(** Finite relational Kleisli extension.  This proof is constructive: the
+    outer joint is traversed entry by entry and each continuation joint is
+    scaled by that entry's weight. *)
+Lemma coupling_bind {A B C D : eqType} (R : C -> D -> Prop)
+    (outer : Enum (A * B))
+    (k : A -> Enum C) (h : B -> Enum D) :
+  (forall a b, coupling R (k a) (h b)) ->
+  coupling R
+    (bind_Enum (emap fst outer) k)
+    (bind_Enum (emap snd outer) h).
+Proof.
+  move=> Hk. elim: outer=> [|[p [a b]] outer IH] /=.
+  - exists [::]; first exact: enum_eq_refl.
+    + exact: enum_eq_refl.
+    + move=> c d Hbad. by rewrite acc_mass_nil in Hbad.
+  - apply coupling_app.
+    + exact: coupling_scale (Hk a b).
+    + exact IH.
 Qed.
 
 Definition glue_row {A B C : eqType}
