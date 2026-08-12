@@ -1,7 +1,7 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
-Require Import List Lia PeanoNat.
+Require Import List Lia PeanoNat Arith.
 
 From mathcomp Require Import ssreflect seq ssrnat ssralg.
 
@@ -91,6 +91,30 @@ Proof.
   exact: IH.
 Qed.
 
+Lemma nth_error_scale_Enum_inv {A} p (mu : Enum A) i w a :
+  nth_error (scale_Enum p mu) i = Some (w, a) ->
+  exists q, nth_error mu i = Some (q, a) /\ w = p * q.
+Proof.
+  elim: mu i=> [|[q b] mu IH] [|i] //=.
+  - move=> H. inversion H; subst. by exists q.
+  - exact: IH.
+Qed.
+
+Lemma nth_error_app_inv {A} (xs ys : seq A) n z :
+  nth_error (xs ++ ys) n = Some z ->
+  (Peano.lt n (size xs) /\ nth_error xs n = Some z) \/
+  exists j, n = (size xs + j)%N /\ nth_error ys j = Some z.
+Proof.
+  move=> H.
+  destruct (PeanoNat.Nat.lt_ge_cases n (size xs)) as [Hlt|Hge].
+  - left. split=> //.
+    rewrite -(@nth_error_app1 A xs ys n Hlt). exact H.
+  - right. exists (n - size xs)%N. split.
+    + change (n = size xs + (n - size xs))%coq_nat.
+      rewrite Nat.add_comm. symmetry. apply Nat.sub_add. exact Hge.
+    + rewrite -(@nth_error_app2 A xs ys n Hge). exact H.
+Qed.
+
 (** Exact position and weight of an entry after flattening an Enum bind. *)
 Lemma nth_error_bind_Enum {A B} (mu : Enum A) (k : A -> Enum B)
     i j p a q b :
@@ -113,4 +137,27 @@ Proof.
       with (size (k x) + (bind_offset mu k i + j))%N.
     - exact Happ.
     - apply PeanoNat.Nat.add_assoc.
+Qed.
+
+(** Every successful position in a flattened bind comes from an outer entry
+    and one entry of its continuation block. *)
+Lemma nth_error_bind_Enum_inv {A B} (mu : Enum A) (k : A -> Enum B)
+    n w b :
+  nth_error (bind_Enum mu k) n = Some (w, b) ->
+  exists i j p a q,
+    nth_error mu i = Some (p, a) /\
+    nth_error (k a) j = Some (q, b) /\
+    n = (bind_offset mu k i + j)%N /\ w = p * q.
+Proof.
+  elim: mu n=> [|[p a] mu IH] n Hnth.
+  - destruct n; cbn in Hnth; discriminate.
+  - cbn in Hnth.
+    move: (nth_error_app_inv Hnth)=> [[Hlt Hhead]|[n' [Hn Htail]]].
+    + move: (nth_error_scale_Enum_inv Hhead)=> [q [Hq ->]].
+      exists 0%N, n, p, a, q. repeat split=> //.
+    + rewrite size_scale_Enum in Hn.
+      move: (IH n' Htail)=> [i [j [r [x [q [Hi [Hj [Hoff Hw]]]]]]]].
+      exists i.+1, j, r, x, q. repeat split=> //.
+      rewrite Hn Hoff /=.
+      rewrite addnA. reflexivity.
 Qed.
