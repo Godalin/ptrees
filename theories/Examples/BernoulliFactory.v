@@ -277,3 +277,53 @@ Proof.
 Qed.
 
 End Factory.
+
+(** A closed, non-trivial executable instance: two tosses of the [1/3]
+    source coin are repeatedly von-Neumann-filtered, and the resulting fair
+    bits drive the binary algorithm for a [2/5] target coin. *)
+Definition third_to_two_fifths : ptree factoryE Enum bool :=
+  biased_to_rational_coin vn_one_third vn_two_thirds (2 / 5).
+
+Definition direct_two_fifths : ptree factoryE Enum bool :=
+  factory_direct_q vn_one_third vn_two_thirds (2 / 5)
+    (ltW (divr_gt0 (ltr0Sn 2) (ltr0Sn 5)))
+    (ltW (ltr_pdivrMr (ltr0Sn 5)
+      (by norm_num : (2 : rat) < 1 * 5))).
+
+Lemma third_bias_normalized :
+  Qval vn_one_third + Qval vn_two_thirds = 1.
+Proof. vm_compute. Qed.
+
+Lemma third_bias_nontrivial :
+  0 < Qval vn_one_third * Qval vn_two_thirds.
+Proof. vm_compute. Qed.
+
+Lemma two_fifths_nonnegative : (0 <= 2 / 5 : rat).
+Proof. vm_compute. Qed.
+
+Lemma two_fifths_at_most_one : (2 / 5 <= 1 : rat).
+Proof. vm_compute. Qed.
+
+Theorem third_coin_simulates_two_fifths_correct :
+  meas_iter_ast
+    (fun _ : unit =>
+      factory_round_measure vn_one_third vn_two_thirds) tt /\
+  meas_iter_ast binary_coin_transition (2 / 5) /\
+  auweak eq third_to_two_fifths
+    (factory_direct_q vn_one_third vn_two_thirds (2 / 5)
+      two_fifths_nonnegative two_fifths_at_most_one).
+Proof.
+  exact (biased_to_rational_coin_correct
+    third_bias_normalized third_bias_nontrivial
+    two_fifths_nonnegative two_fifths_at_most_one).
+Qed.
+
+Theorem third_coin_simulates_two_fifths_auequiv :
+  auequiv third_to_two_fifths
+    (factory_direct_q vn_one_third vn_two_thirds (2 / 5)
+      two_fifths_nonnegative two_fifths_at_most_one).
+Proof.
+  exact (biased_coin_simulates_rational_coin_auequiv
+    third_bias_normalized third_bias_nontrivial
+    two_fifths_nonnegative two_fifths_at_most_one).
+Qed.
