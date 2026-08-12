@@ -555,58 +555,85 @@ Proof.
   exact: mathcomp_total_sup.
 Qed.
 
+(** On the result carrier for [bool], a set which excludes [MCBottom] is
+    determined by its two returned points.  Keeping these finite-space
+    facts opaque prevents the omega-limit proof below from carrying four
+    copies of a large set-extensionality term. *)
+Lemma mc_bool_set_both U :
+  ~ U MCBottom -> U (MCValue true) -> U (MCValue false) ->
+  U = (@mc_returned bool).
+Proof.
+  move=> nbot Ht Hf. apply/seteqP; split=> x Hx.
+  - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
+    by case: b.
+  - destruct x as [|b]=> //; by case: b.
+Qed.
+
+Lemma mc_bool_set_true U :
+  ~ U MCBottom -> U (MCValue true) -> ~ U (MCValue false) ->
+  U = [set MCValue true].
+Proof.
+  move=> nbot Ht Hnf. apply/seteqP; split=> x Hx.
+  - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
+    destruct b=> //=. exact: False_rect _ (Hnf Hx).
+  - move=> /=. exact Ht.
+Qed.
+
+Lemma mc_bool_set_false U :
+  ~ U MCBottom -> ~ U (MCValue true) -> U (MCValue false) ->
+  U = [set MCValue false].
+Proof.
+  move=> nbot Hnt Hf. apply/seteqP; split=> x Hx.
+  - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
+    destruct b=> //=. exact: False_rect _ (Hnt Hx).
+  - move=> /=. exact Hf.
+Qed.
+
+Lemma mc_bool_set_neither U :
+  ~ U MCBottom -> ~ U (MCValue true) -> ~ U (MCValue false) ->
+  U = set0.
+Proof.
+  move=> nbot Hnt Hnf. apply/seteqP; split=> x Hx.
+  - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
+    destruct b; [exact: False_rect _ (Hnt Hx)|
+                 exact: False_rect _ (Hnf Hx)].
+  - by [].
+Qed.
+
 Lemma mathcomp_binary_oracle_lub qbit q
     (q01 : (0 <= q <= 1)%R) :
   mathcomp_oracle_represents qbit q ->
   mathcomp_binary_oracle_denotes qbit (mathcomp_bernoulli q).
 Proof.
   move=> Hrep.
-  rewrite /mathcomp_binary_oracle_denotes /meas_iter
-    /mathcomp_kernel_lub.
+  change (mathcomp_kernel_lub
+    (fun fuel => mathcomp_oracle_result_approx qbit fuel 0)
+    (mathcomp_bernoulli q)).
   move=> U mU nbot.
   have [Ht|Hnt] := pselect (U (MCValue true)).
   - have [Hf|Hnf] := pselect (U (MCValue false)).
-    + have EU : U = (@mc_returned bool).
-      { apply/seteqP; split=> x Hx.
-        - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
-          by case: b.
-        - destruct x as [|b]=> //; by case: b. }
-      rewrite EU mathcomp_bernoulli_total.
+    + rewrite (mc_bool_set_both nbot Ht Hf) mathcomp_bernoulli_total.
       change (1 = ereal_sup (range (fun fuel =>
         mathcomp_kernel_root
           (mathcomp_oracle_result_approx qbit fuel 0)
           (@mc_returned bool)))).
       exact: esym (mathcomp_oracle_result_total_sup qbit).
-    + have EU : U = [set MCValue true].
-      { apply/seteqP; split=> x Hx.
-        - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
-          destruct b=> //=. exact: False_rect _ (Hnf Hx).
-        - move=> /=. exact Ht. }
-      rewrite EU (mathcomp_bernoulli_true_mass q q01).
+    + rewrite (mc_bool_set_true nbot Ht Hnf)
+        (mathcomp_bernoulli_true_mass q q01).
       change (q%:E = ereal_sup (range (fun fuel =>
         mathcomp_kernel_root
           (mathcomp_oracle_result_approx qbit fuel 0)
           [set MCValue true]))).
       exact: esym (mathcomp_oracle_result_true_sup Hrep).
   - have [Hf|Hnf] := pselect (U (MCValue false)).
-    + have EU : U = [set MCValue false].
-      { apply/seteqP; split=> x Hx.
-        - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
-          destruct b=> //=. exact: False_rect _ (Hnt Hx).
-        - move=> /=. exact Hf. }
-      rewrite EU (mathcomp_bernoulli_false_mass q q01).
+    + rewrite (mc_bool_set_false nbot Hnt Hf)
+        (mathcomp_bernoulli_false_mass q q01).
       change ((1 - q)%:E = ereal_sup (range (fun fuel =>
         mathcomp_kernel_root
           (mathcomp_oracle_result_approx qbit fuel 0)
           [set MCValue false]))).
       exact: esym (mathcomp_oracle_result_false_sup Hrep).
-    + have EU : U = set0.
-      { apply/seteqP; split=> x Hx.
-        - destruct x as [|b]; first exact: False_rect _ (nbot Hx).
-          destruct b; [exact: False_rect _ (Hnt Hx)|
-                       exact: False_rect _ (Hnf Hx)].
-        - by []. }
-      rewrite EU measure0.
+    + rewrite (mc_bool_set_neither nbot Hnt Hnf) measure0.
       change (0 = ereal_sup (range (fun _ : nat => 0))).
       have -> : range (fun _ : nat => (0 : \bar R)) = [set 0].
       { apply/seteqP; split=> z.
