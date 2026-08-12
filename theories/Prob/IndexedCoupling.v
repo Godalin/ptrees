@@ -293,6 +293,19 @@ Lemma indexed_bind_as_position_bind {A B}
   bind_Enum (indexed mu) (indexed_bind_block mu k).
 Proof. exact: index_from_bind_as_position_bind. Qed.
 
+Lemma index_from_nonzero_nth {A} n (mu : Enum A) i :
+  acc_mass (Nat.add n i) (index_from n mu) != RatSubTypes.nnQ_0 ->
+  exists p a, nth_error mu i = Some (p, a).
+Proof.
+  move=> Hmass.
+  rewrite index_from_shift in Hmass.
+  move: (@emap_nonzero_preimage nat nat (shift_index n)
+    (index_from 0 mu) (Nat.add n i) Hmass)=> [j [Hj Heq]].
+  unfold shift_index in Heq.
+  have Hji : j = i by lia. subst j.
+  exact: indexed_nonzero_nth Hj.
+Qed.
+
 Definition shifted_at_index {A B} (R : A -> B -> Prop)
     (mu : Enum A) (nu : Enum B) (oi oj : nat) (i j : nat) : Prop :=
   exists li lj,
