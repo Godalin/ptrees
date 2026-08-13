@@ -74,6 +74,21 @@ Class MeasureBindLaws (M : Type -> Type) `{MI : MeasureInterface M} := {
       meas_eq (meas_bind mu k1) (meas_bind mu k2)
 }.
 
+(** Relational Kleisli compatibility for coupling liftings.  It composes a
+    coupling of source samples with a coupling of every related pair of
+    continuation measures.  This is the probabilistic analogue of the
+    relational bind rule and is strictly more general than congruence of
+    bind under [meas_eq]. *)
+Class MeasureLiftBindLaws (M : Type -> Type)
+    `{MI : MeasureInterface M} := {
+  meas_lift_bind : forall {A B C D}
+      (R : A -> B -> Prop) (S : C -> D -> Prop)
+      (mu : M A) (nu : M B) (k : A -> M C) (h : B -> M D),
+      meas_lift R mu nu ->
+      (forall x y, R x y -> meas_lift S (k x) (h y)) ->
+      meas_lift S (meas_bind mu k) (meas_bind nu h)
+}.
+
 (** Extensional equality is a congruence for the measure monad and for
     almost-everywhere predicates.  This separates semantic equality from
     any concrete representation equality used by a backend. *)

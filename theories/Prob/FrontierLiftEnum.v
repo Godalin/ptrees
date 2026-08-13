@@ -278,6 +278,15 @@ Proof.
   exact: enum_prune_bind_ae Hae.
 Qed.
 
+#[global] Instance Enum_MeasureLiftBindLaws :
+    @MeasureLiftBindLaws Enum Enum_MeasureInterface.
+Proof.
+  constructor. move=> A B C D R S mu nu k h Hmn Hkh.
+  cbn in Hmn, Hkh |- *. rewrite !enum_prune_bind.
+  eapply indexed_coupling_bind; [exact Hmn|].
+  move=> x y Hxy. exact (Hkh x y Hxy).
+Qed.
+
 #[global] Instance Enum_MeasureCongruenceLaws :
     @MeasureCongruenceLaws Enum Enum_MeasureInterface.
 Proof.
