@@ -73,6 +73,53 @@ Qed.
 
 End ExtensionalFrontier.
 
+Section FiniteFrontierAlgebra.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}
+  `{ML : @MeasureLaws M MI MC} `{MB : @MeasureBindLaws M MI}
+  `{MM : @MeasureMonadLaws M MI}.
+
+(** A Dirac probabilistic node contributes no observable computation.  The
+    statement is fully polymorphic in the sampled type and does not require
+    decidable equality: equality is used only as an almost-everywhere
+    predicate under the Dirac measure. *)
+Lemma apfrontier_sem_prob_ret {R A} (x : A)
+    (k : A -> ptree E M R) hs :
+  apfrontier (observe (k x)) hs ->
+  apfrontier_sem (ProbF (meas_ret x) k) hs.
+Proof.
+  move=> Hfront.
+  exists (meas_bind (meas_ret x) (fun _ => hs)); split.
+  - apply (APFProb (front := fun _ => hs) (Good := fun y => y = x)).
+    + apply meas_ae_ret. reflexivity.
+    + move=> y ->. exact Hfront.
+  - exact: meas_bind_ret_l.
+Qed.
+
+(** Two finite probabilistic layers flatten by associativity of integration.
+    The shared inner continuation is the usual monadic shape
+    [mu >>= fun x => nu x >>= k]. *)
+Lemma apfrontier_sem_prob_flatten {R A B}
+    (mu : M A) (nu : A -> M B) (k : B -> ptree E M R)
+    (front : B -> M (aphead E M R)) :
+  (forall y, apfrontier (observe (k y)) (front y)) ->
+  apfrontier_sem
+    (ProbF mu (fun x => Prob (nu x) k))
+    (meas_bind (meas_bind mu nu) front).
+Proof.
+  move=> Hfront.
+  exists (meas_bind mu (fun x => meas_bind (nu x) front)); split.
+  - apply (APFProb
+      (front := fun x => meas_bind (nu x) front)
+      (Good := fun _ => True)); first apply meas_ae_true.
+    move=> x _. apply (APFProb
+      (front := front) (Good := fun _ => True)); first apply meas_ae_true.
+    move=> y _. exact: Hfront.
+  - apply meas_eq_sym. exact: meas_bind_assoc.
+Qed.
+
+End FiniteFrontierAlgebra.
+
 Section AbstractWeak.
 Context {E : Type -> Type} {M : Type -> Type}
   `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}.
@@ -471,6 +518,30 @@ Proof.
     + apply apfrontier_match_refl.
       apply aphead_rel_refl. exact CIH.
     + apply meas_lift_refl=> x. exact: CIH (k x).
+Qed.
+
+(** Two programs with the same extensional finite frontier are weakly
+    bisimilar.  This is the finite analogue of
+    [auweak_of_common_frontier] and is the main client rule for algebraic
+    normalization of probability nodes. *)
+Lemma apweak_of_common_frontier_sem `{ML : @MeasureLaws M MI MC}
+    `{MB : @MeasureBindLaws M MI} {R}
+    (t1 t2 : ptree E M R) hs :
+  apfrontier_sem (observe t1) hs ->
+  apfrontier_sem (observe t2) hs ->
+  apweak eq t1 t2.
+Proof.
+  move=> [hs1 [Hf1 E1]] [hs2 [Hf2 E2]]. apply apweak_fold.
+  eapply APWFrontier with (hs1 := hs1) (hs2 := hs2).
+  - exact Hf1.
+  - exact Hf2.
+  - have Hrefl : meas_lift (aphead_rel eq (apweak eq)) hs1 hs1.
+    { apply meas_lift_refl. apply aphead_rel_refl. exact apweak_refl. }
+    apply (meas_lift_proper_r
+      (R := aphead_rel eq (apweak eq)) (nu := hs1)).
+    + eapply meas_eq_trans; [exact E1|].
+      apply meas_eq_sym. exact E2.
+    + exact Hrefl.
 Qed.
 
 Lemma tau_apweak_l {R1 R2} (RR : R1 -> R2 -> Prop)
