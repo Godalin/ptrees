@@ -89,6 +89,26 @@ Class MeasureLiftBindLaws (M : Type -> Type)
       meas_lift S (meas_bind mu k) (meas_bind nu h)
 }.
 
+(** Almost-everywhere relational Kleisli compatibility.  Finite frontiers
+    deliberately need continuation frontiers only on non-zero branches, so
+    the unconditional rule above cannot express their probabilistic case:
+    zero-mass continuations may have no finite frontier at all. *)
+Class MeasureLiftAELaws (M : Type -> Type)
+    `{MI : MeasureInterface M} := {
+  meas_lift_ae_transport_r : forall {A B}
+      (R : A -> B -> Prop) (mu : M A) (nu : M B) (P : A -> Prop),
+      meas_lift R mu nu -> meas_ae mu P ->
+      meas_ae nu (fun y => exists x, R x y /\ P x);
+  meas_lift_bind_ae : forall {A B C D}
+      (R : A -> B -> Prop) (S : C -> D -> Prop)
+      (mu : M A) (nu : M B) (k : A -> M C) (h : B -> M D)
+      (P : A -> Prop) (Q : B -> Prop),
+      meas_lift R mu nu -> meas_ae mu P -> meas_ae nu Q ->
+      (forall x y, R x y -> P x -> Q y ->
+        meas_lift S (k x) (h y)) ->
+      meas_lift S (meas_bind mu k) (meas_bind nu h)
+}.
+
 (** Extensional equality is a congruence for the measure monad and for
     almost-everywhere predicates.  This separates semantic equality from
     any concrete representation equality used by a backend. *)
