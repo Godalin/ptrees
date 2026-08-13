@@ -696,4 +696,49 @@ Proof.
     + exact Hrefl.
 Qed.
 
+(** A precise positive bind rule.  Unrestricted bind congruence is false:
+    an arbitrary continuation may diverge and reveal an internal node that
+    finite frontier equivalence had consumed.  Here every continuation is
+    required to expose a (possibly unbounded AST) frontier.  The two source
+    programs then share the bound frontier constructed by [AUFBind]. *)
+Lemma auweak_bind_common_frontier {A R}
+    (t1 t2 : ptree E M A) (k : A -> ptree E M R)
+    hs (front : A -> M (aphead E M R)) :
+  aufrontier (observe t1) hs ->
+  aufrontier (observe t2) hs ->
+  (forall a, aufrontier (observe (k a)) (front a)) ->
+  auweak eq (PTree.bind t1 k) (PTree.bind t2 k).
+Proof.
+  intros Ht1 Ht2 Hk. apply auweak_of_common_frontier with
+      (hs := meas_bind hs (aphead_bind_front k front)).
+  - exact (AUFBind Ht1 Hk).
+  - exact (AUFBind Ht2 Hk).
+Qed.
+
+(** Extensional source frontiers are also sufficient when bind is proper in
+    its source measure.  This is the public representation-independent
+    version used by measure backends. *)
+Lemma auweak_bind_common_frontier_sem
+    `{ML : @MeasureLaws M MI MC}
+    `{MG : @MeasureCongruenceLaws M MI}
+    {A R} (t1 t2 : ptree E M A) (k : A -> ptree E M R)
+    hs (front : A -> M (aphead E M R)) :
+  aufrontier_sem (observe t1) hs ->
+  aufrontier_sem (observe t2) hs ->
+  (forall a, aufrontier (observe (k a)) (front a)) ->
+  auweak eq (PTree.bind t1 k) (PTree.bind t2 k).
+Proof.
+  intros [hs1 [Ht1 E1]] [hs2 [Ht2 E2]] Hk.
+  apply auweak_of_common_frontier_sem with
+      (hs := meas_bind hs (aphead_bind_front k front)).
+  - exists (meas_bind hs1 (aphead_bind_front k front)). split.
+    + exact (AUFBind Ht1 Hk).
+    + apply meas_bind_proper; [exact E1|].
+      intro h. apply meas_eq_refl.
+  - exists (meas_bind hs2 (aphead_bind_front k front)). split.
+    + exact (AUFBind Ht2 Hk).
+    + apply meas_bind_proper; [exact E2|].
+      intro h. apply meas_eq_refl.
+Qed.
+
 End UnboundedWeakReflexivity.
