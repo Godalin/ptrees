@@ -1,7 +1,9 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
-From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
+Require Import Program.
+
+From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg rat.
 
 From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLift
   FrontierLiftEnum.
@@ -13,10 +15,17 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum GRing.Theory.
+Import RatSubTypes.NonnegQNotations.
 #[local] Open Scope ring_scope.
 
 #[program] Definition reg_half : nnQ := [nn 1/2].
 #[program] Definition reg_quarter : nnQ := [nn 1/4].
+
+Lemma reg_half_val : Qval reg_half = (1 / 2 : rat).
+Proof. reflexivity. Qed.
+
+Lemma reg_quarter_val : Qval reg_quarter = (1 / 4 : rat).
+Proof. reflexivity. Qed.
 
 Definition reg_fair : Enum bool :=
   [:: (reg_half, false); (reg_half, true)].
@@ -30,16 +39,23 @@ Definition reg_fair_split : Enum bool :=
 
 Lemma reg_fair_reordered_eqenum :
   reg_fair ==Enum reg_fair_reordered.
-Proof. move=> b. by destruct b; vm_compute. Qed.
+Proof.
+  move=> b; case: b; rewrite /reg_fair /reg_fair_reordered /acc_mass /=.
+  all: apply val_inj; cbn; ring_to_rat; reflexivity.
+Qed.
 
 Lemma reg_fair_split_eqenum :
   reg_fair ==Enum reg_fair_split.
-Proof. move=> b. by destruct b; vm_compute. Qed.
+Proof.
+  move=> b; case: b;
+    rewrite /reg_fair /reg_fair_split /acc_mass /=.
+  all: apply val_inj; cbn; ring_to_rat; reflexivity.
+Qed.
 
 (** Ordering is representation-visible but measure-invisible. *)
 Lemma reg_reordering_not_repr_eq :
   ~ enum_repr_eq reg_fair reg_fair_reordered.
-Proof. move=> H. vm_compute in H. discriminate. Qed.
+Proof. move=> H. discriminate H. Qed.
 
 Lemma reg_reordering_meas_eq :
   @meas_eq Enum Enum_MeasureInterface bool
@@ -50,7 +66,7 @@ Proof. exact: enum_meas_eq_of_eqenum reg_fair_reordered_eqenum. Qed.
     repeated-mass bug: only their accumulated probability matters. *)
 Lemma reg_split_mass_not_repr_eq :
   ~ enum_repr_eq reg_fair reg_fair_split.
-Proof. move=> H. vm_compute in H. discriminate. Qed.
+Proof. move=> H. discriminate H. Qed.
 
 Lemma reg_split_mass_meas_eq :
   @meas_eq Enum Enum_MeasureInterface bool reg_fair reg_fair_split.
@@ -76,15 +92,30 @@ Definition reg_split_heads : Enum (aphead regE Enum bool) :=
 Lemma reg_split_program_frontier :
   apfrontier (observe reg_split_program) reg_split_heads.
 Proof.
+  unfold reg_split_program, reg_split_heads.
+  change (apfrontier
+    (ProbF reg_fair_split (fun b => Ret b))
+    (meas_bind reg_fair_split (fun b =>
+      meas_ret (APHRet b : aphead regE Enum bool)))).
   apply (APFProb
     (front := fun b => ret_Enum (APHRet b))
     (Good := fun _ => True)); first apply meas_ae_true.
   move=> b _. constructor.
 Qed.
 
-Lemma reg_split_heads_eqenum : reg_split_heads ==Enum reg_fair_heads.
+Lemma reg_split_heads_meas_eq :
+  @meas_eq Enum Enum_MeasureInterface _ reg_split_heads reg_fair_heads.
 Proof.
-  apply bind_Enum_outer_proper. exact: reg_fair_split_eqenum.
+  unfold reg_split_heads, reg_fair_heads.
+  change (meas_eq
+    (meas_bind reg_fair_split (fun b =>
+      meas_ret (APHRet b : aphead regE Enum bool)))
+    (meas_bind reg_fair (fun b =>
+      meas_ret (APHRet b : aphead regE Enum bool)))).
+  apply meas_bind_proper.
+  - apply enum_meas_eq_of_eqenum.
+    exact: enum_eq_sym reg_fair_split_eqenum.
+  - move=> b. apply meas_eq_refl.
 Qed.
 
 (** The extensional public judgment transports the canonical split frontier
@@ -93,7 +124,7 @@ Lemma reg_split_program_extensional_frontier :
   apfrontier_sem (observe reg_split_program) reg_fair_heads.
 Proof.
   exists reg_split_heads; split; first exact: reg_split_program_frontier.
-  exact: enum_meas_eq_of_eqenum reg_split_heads_eqenum.
+  exact reg_split_heads_meas_eq.
 Qed.
 
 (** Dirac sampling is observationally silent, without requiring an [eqType]
@@ -105,6 +136,10 @@ Lemma reg_dirac_program_frontier :
   apfrontier_sem (observe reg_dirac_program)
     (ret_Enum (APHRet true)).
 Proof.
+  unfold reg_dirac_program.
+  change (apfrontier_sem
+    (ProbF (meas_ret true) (fun b => Ret b))
+    (meas_ret (APHRet true : aphead regE Enum bool))).
   apply apfrontier_sem_prob_ret. constructor.
 Qed.
 
@@ -123,15 +158,15 @@ Qed.
 
     is weakly equivalent to [1/2 A + 1/4 B + 1/4 C]. *)
 Definition reg_inner (side : bool) : Enum nat :=
-  if side then [:: (reg_half, 0%N); (reg_half, 2%N)]
-  else [:: (reg_half, 0%N); (reg_half, 1%N)].
+  if side then [:: (reg_half, 0); (reg_half, 2)]
+  else [:: (reg_half, 0); (reg_half, 1)].
 
 Definition reg_nested_program : ptree regE Enum nat :=
   Prob reg_fair (fun side =>
     Prob (reg_inner side) (fun outcome => Ret outcome)).
 
 Definition reg_merged_three : Enum nat :=
-  [:: (reg_half, 0%N); (reg_quarter, 1%N); (reg_quarter, 2%N)].
+  [:: (reg_half, 0); (reg_quarter, 1); (reg_quarter, 2)].
 
 Definition reg_merged_program : ptree regE Enum nat :=
   Prob reg_merged_three (fun outcome => Ret outcome).
@@ -144,13 +179,38 @@ Definition reg_merged_heads : Enum (aphead regE Enum nat) :=
   bind_Enum reg_merged_three
     (fun outcome => ret_Enum (APHRet outcome)).
 
-Lemma reg_nested_heads_eqenum :
-  reg_nested_heads ==Enum reg_merged_heads.
-Proof. move=> [outcome|X e k]; last destruct e. vm_compute. Qed.
+Lemma reg_nested_outcomes_eqenum :
+  bind_Enum reg_fair reg_inner ==Enum reg_merged_three.
+Proof.
+  move=> outcome.
+  rewrite /reg_fair /reg_inner /reg_merged_three /bind_Enum /acc_mass /=.
+  case: outcome=> [|[|[|outcome]]];
+    apply val_inj; cbn; ring_to_rat; reflexivity.
+Qed.
+
+Lemma reg_nested_heads_meas_eq :
+  @meas_eq Enum Enum_MeasureInterface _ reg_nested_heads reg_merged_heads.
+Proof.
+  unfold reg_nested_heads, reg_merged_heads.
+  change (meas_eq
+    (meas_bind (bind_Enum reg_fair reg_inner) (fun outcome =>
+      meas_ret (APHRet outcome : aphead regE Enum nat)))
+    (meas_bind reg_merged_three (fun outcome =>
+      meas_ret (APHRet outcome : aphead regE Enum nat)))).
+  apply meas_bind_proper.
+  - exact: enum_meas_eq_of_eqenum reg_nested_outcomes_eqenum.
+  - move=> outcome. apply meas_eq_refl.
+Qed.
 
 Lemma reg_nested_program_frontier :
   apfrontier_sem (observe reg_nested_program) reg_nested_heads.
 Proof.
+  unfold reg_nested_program, reg_nested_heads.
+  change (apfrontier_sem
+    (ProbF reg_fair (fun side =>
+      Prob (reg_inner side) (fun outcome => Ret outcome)))
+    (meas_bind (meas_bind reg_fair reg_inner) (fun outcome =>
+      meas_ret (APHRet outcome : aphead regE Enum nat)))).
   apply apfrontier_sem_prob_flatten.
   move=> outcome. constructor.
 Qed.
@@ -158,6 +218,11 @@ Qed.
 Lemma reg_merged_program_frontier :
   apfrontier_sem (observe reg_merged_program) reg_merged_heads.
 Proof.
+  unfold reg_merged_program, reg_merged_heads.
+  change (apfrontier_sem
+    (ProbF reg_merged_three (fun outcome => Ret outcome))
+    (meas_bind reg_merged_three (fun outcome =>
+      meas_ret (APHRet outcome : aphead regE Enum nat)))).
   apply apfrontier_apfrontier_sem.
   apply (APFProb
     (front := fun outcome => ret_Enum (APHRet outcome))
@@ -169,7 +234,7 @@ Lemma reg_nested_program_merged_frontier :
   apfrontier_sem (observe reg_nested_program) reg_merged_heads.
 Proof.
   eapply apfrontier_sem_proper; first exact reg_nested_program_frontier.
-  exact: enum_meas_eq_of_eqenum reg_nested_heads_eqenum.
+  exact reg_nested_heads_meas_eq.
 Qed.
 
 Theorem reg_nested_merged_apweak :
