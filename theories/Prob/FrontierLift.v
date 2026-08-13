@@ -90,6 +90,20 @@ Class MeasureCongruenceLaws (M : Type -> Type)
       meas_eq mu nu -> (meas_ae mu P <-> meas_ae nu P)
 }.
 
+(** Extensional monad equations used to normalize finite probabilistic
+    computations.  A backend need not expose any representation-level
+    equality for these laws. *)
+Class MeasureMonadLaws (M : Type -> Type)
+    `{MI : MeasureInterface M} := {
+  meas_bind_ret_l : forall {A B} (x : A) (k : A -> M B),
+      meas_eq (meas_bind (meas_ret x) k) (k x);
+  meas_bind_assoc : forall {A B C} (mu : M A)
+      (k : A -> M B) (h : B -> M C),
+      meas_eq
+        (meas_bind (meas_bind mu k) h)
+        (meas_bind mu (fun x => meas_bind (k x) h))
+}.
+
 (** Kleisli extension of almost-everywhere predicates. *)
 Class MeasureAEKleisliLaws (M : Type -> Type)
     `{MI : MeasureInterface M} := {

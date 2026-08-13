@@ -332,6 +332,17 @@ Proof.
           (indexed_coupling_sym Hmn))). exact Hnu.
 Qed.
 
+#[global] Instance Enum_MeasureMonadLaws :
+    @MeasureMonadLaws Enum Enum_MeasureInterface.
+Proof.
+  constructor.
+  - move=> A B x k. cbn [Enum_MeasureInterface].
+    apply enum_repr_eq_implies_meas_eq. reflexivity.
+  - move=> A B C mu k h. cbn [Enum_MeasureInterface].
+    apply enum_repr_eq_implies_meas_eq.
+    exact: bind_Enum_assoc.
+Qed.
+
 #[global] Instance Enum_MeasureCommutativeLaws :
     @MeasureCommutativeLaws Enum Enum_MeasureInterface.
 Proof.

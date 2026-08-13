@@ -773,6 +773,14 @@ Qed.
   meas_lift := @mathcomp_kernel_lift
 }.
 
+#[global] Instance MathCompKernelMeasureMonadLaws :
+    @MeasureMonadLaws MathCompKernelMeasure MathCompKernelMeasureInterface.
+Proof.
+  constructor.
+  - move=> A B x k. exact: mathcomp_kernel_bind_ret_l.
+  - move=> A B C mu k h. exact: mathcomp_kernel_bind_assoc.
+Qed.
+
 #[global] Instance MathCompKernelMeasureCoreLaws :
     @MeasureCoreLaws MathCompKernelMeasure
       MathCompKernelMeasureInterface.
