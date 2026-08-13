@@ -430,7 +430,11 @@ Lemma indexed_coupling_bind {A B C D : Type}
 Proof.
   move=> [outer HL HR Houter] Hk.
   rewrite /indexed_coupling !indexed_bind_as_position_bind.
-  have Hjoint := coupling_bind_joint_on Houter.
+  have Hjoint := coupling_bind_joint_on_nonzero
+    (R := at_index R (bind_Enum mu k) (bind_Enum nu h))
+    (outer := outer)
+    (k := indexed_bind_block mu k)
+    (h := indexed_bind_block nu h).
   eapply coupling_proper_l; [|eapply coupling_proper_r; [|apply Hjoint]].
   - exact: bind_Enum_outer_proper HL.
   - exact: bind_Enum_outer_proper HR.
@@ -442,7 +446,8 @@ Proof.
     have Hijrel := Houter i j Hij.
     move: ((proj1 Hijrel) p a Hia)=> [q' [b' [Hjb' Sab]]].
     rewrite Hjb in Hjb'. inversion Hjb'; subst q' b'.
-    rewrite (indexed_bind_block_nth Hia) (indexed_bind_block_nth Hjb).
+    rewrite (@indexed_bind_block_nth A C mu k i p a Hia)
+      (@indexed_bind_block_nth B D nu h j q b Hjb).
     exact: coupling_shift_bind_entries Hia Hjb (Hk a b Sab).
 Qed.
 

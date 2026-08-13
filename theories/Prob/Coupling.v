@@ -325,6 +325,33 @@ Proof.
       exact: ne0_of_ne0_add Hxy.
 Qed.
 
+(** Variant in which the continuation coupling is needed only at pairs with
+    non-zero joint mass.  This is the form required by indexed and
+    almost-everywhere liftings. *)
+Lemma coupling_bind_joint_on_nonzero {A B C D : eqType}
+    (R : C -> D -> Prop) (outer : Enum (A * B))
+    (k : A -> Enum C) (h : B -> Enum D) :
+  (forall a b, acc_mass (a, b) outer != 0 ->
+    coupling R (k a) (h b)) ->
+  coupling R
+    (bind_Enum (emap fst outer) k)
+    (bind_Enum (emap snd outer) h).
+Proof.
+  move=> Hk. induction outer as [|[p [a b]] outer IH]; cbn.
+  - exists [::]; first exact: enum_eq_refl.
+    + exact: enum_eq_refl.
+    + move=> c d Hbad. by rewrite acc_mass_nil in Hbad.
+  - apply coupling_app.
+    + case Hp: (p == 0).
+      * move/eqP: Hp=> Hp. subst p. exact: coupling_zero_scale.
+      * apply coupling_scale. apply Hk.
+        apply entry_nonzero_acc_mass with p.
+        -- by rewrite in_cons eq_refl.
+        -- by rewrite /negb Hp.
+    + apply IH. move=> x y Hxy. apply Hk.
+      rewrite acc_mass_cons. exact: ne0_of_ne0_add Hxy.
+Qed.
+
 Lemma equality_joint_marginals {A : eqType} (j : Enum (A * A)) :
   (forall x y, acc_mass (x, y) j != 0 -> x = y) ->
   emap fst j ==Enum emap snd j.
