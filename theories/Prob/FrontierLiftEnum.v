@@ -132,7 +132,7 @@ Qed.
 }.
 
 #[global] Instance Enum_MeasureZeroInterface : MeasureZeroInterface Enum := {
-  meas_zero := fun A => [::]
+  meas_empty := fun A => [::]
 }.
 
 #[global] Instance Enum_MeasureCoreLaws :

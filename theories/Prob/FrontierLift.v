@@ -28,7 +28,7 @@ Class MeasureInterface (M : Type -> Type) := {
     be represented as a total Coq function.  Values on null branches are
     semantically irrelevant, but still require a measure inhabitant. *)
 Class MeasureZeroInterface (M : Type -> Type) := {
-  meas_zero : forall {A}, M A
+  meas_empty : forall {A}, M A
 }.
 
 (** The small law package needed merely to define [apweak] and prove
