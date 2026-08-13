@@ -45,6 +45,34 @@ Inductive apfrontier : ptree' E M R -> M (aphead E M R) -> Prop :=
       apfrontier (ProbF mu k) (meas_bind mu front).
 End AbstractFrontier.
 
+Section ExtensionalFrontier.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}
+  `{ML : @MeasureLaws M MI MC} `{MB : @MeasureBindLaws M MI}.
+
+(** Public, representation-independent finite frontier semantics.  The
+    inductive [apfrontier] produces a canonical representative; this closure
+    identifies all extensionally equal measures without adding a transport
+    constructor that would complicate structural inversion. *)
+Definition apfrontier_sem {R} (ot : ptree' E M R)
+    (hs : M (aphead E M R)) : Prop :=
+  exists hs0, apfrontier ot hs0 /\ meas_eq hs0 hs.
+
+Lemma apfrontier_apfrontier_sem {R} ot hs :
+  @apfrontier E M MI R ot hs -> apfrontier_sem ot hs.
+Proof. move=> Hf. exists hs; split=> //. Qed.
+
+Lemma apfrontier_sem_proper {R} (ot : ptree' E M R)
+    (hs hs' : M (aphead E M R)) :
+  apfrontier_sem ot hs ->
+  meas_eq hs hs' -> apfrontier_sem ot hs'.
+Proof.
+  move=> [hs0 [Hf Heq]] Heq'. exists hs0; split=> //.
+  eapply meas_eq_trans; [exact Heq|exact Heq'].
+Qed.
+
+End ExtensionalFrontier.
+
 Section AbstractWeak.
 Context {E : Type -> Type} {M : Type -> Type}
   `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}.
@@ -323,6 +351,20 @@ Proof.
     eapply meas_ae_mono; [|exact Hboth].
     move=> x [Hx1 Hx2].
     exact: IHs x Hx1 _ (H0 x Hx2).
+Qed.
+
+Lemma apfrontier_sem_unique `{ML : @MeasureLaws M MI MC}
+  `{MB : @MeasureBindLaws M MI}
+    {R} (ot : ptree' E M R) (hs1 hs2 : M (aphead E M R)) :
+  apfrontier_sem ot hs1 ->
+  apfrontier_sem ot hs2 -> meas_eq hs1 hs2.
+Proof.
+  move=> [h1 [Hf1 E1]] [h2 [Hf2 E2]].
+  have E0 : meas_eq h1 h2.
+  { eapply (apfrontier_deterministic (ot := ot)); eassumption. }
+  eapply meas_eq_trans.
+  - apply meas_eq_sym. exact E1.
+  - eapply meas_eq_trans; [exact E0|exact E2].
 Qed.
 
 Lemma apweakF_frontier_l `{ML : @MeasureLaws M MI MC}
