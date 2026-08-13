@@ -117,7 +117,10 @@ Qed.
 
 Lemma enum_repr_eq_implies_meas_eq {A} (mu nu : Enum A) :
   enum_repr_eq mu nu -> enum_meas_eq mu nu.
-Proof. move=> ->. apply indexed_coupling_refl. reflexivity. Qed.
+Proof.
+  unfold enum_repr_eq. move=> H. subst nu.
+  apply indexed_coupling_refl. intros x. reflexivity.
+Qed.
 
 #[global] Instance Enum_MeasureInterface : MeasureInterface Enum := {
   meas_ret := @ret_Enum;
@@ -154,29 +157,40 @@ Qed.
     @MeasureLaws Enum Enum_MeasureInterface Enum_MeasureCoreLaws.
 Proof.
   constructor.
-  - move=> A mu. cbn. apply indexed_coupling_refl. reflexivity.
+  - move=> A mu. cbn. apply indexed_coupling_refl. intros x. reflexivity.
   - move=> A mu nu H. cbn in H |- *.
-    exact: indexed_coupling_sym H.
-  - move=> A mu nu xi H1 H2. cbn in H1, H2 |- *.
     eapply indexed_coupling_mono.
-    + move=> x z [y [-> ->]]. reflexivity.
-    + exact: indexed_coupling_comp H1 H2.
+    + move=> x y Hyx. symmetry. exact Hyx.
+    + exact: indexed_coupling_sym H.
+  - move=> A mu nu xi H1 H2. cbn in H1, H2 |- *.
+    have Hcomp := @indexed_coupling_comp A A A eq eq
+      (enum_prune mu) (enum_prune nu) (enum_prune xi) H1 H2.
+    eapply indexed_coupling_mono; [|exact Hcomp].
+    move=> x z [y [Hxy Hyz]]. subst. reflexivity.
   - move=> A mu p x Hin Hnz. exact I.
   - move=> A mu P Q HP HQ p x Hin Hnz.
     split; [exact: HP p x Hin Hnz|exact: HQ p x Hin Hnz].
   - move=> A B R mu mu' nu Hmu Hlift.
     cbn in Hmu, Hlift |- *.
-    have Hcomp := indexed_coupling_comp Hmu Hlift.
+    have Hmu0 := indexed_coupling_sym Hmu.
+    have Hmu' : indexed_coupling eq (enum_prune mu') (enum_prune mu).
+    { eapply indexed_coupling_mono; [|exact Hmu0].
+      move=> x y Hyx. symmetry. exact Hyx. }
+    have Hcomp := @indexed_coupling_comp A A B eq R
+      (enum_prune mu') (enum_prune mu) (enum_prune nu) Hmu' Hlift.
     eapply indexed_coupling_mono; [|exact Hcomp].
-    move=> x y [z [-> Hzy]]. exact Hzy.
+    move=> x y [z [Hxz Hzy]]. subst. exact Hzy.
   - move=> A B R mu nu nu' Hnu Hlift.
     cbn in Hnu, Hlift |- *.
-    have Hcomp := indexed_coupling_comp Hlift Hnu.
+    have Hcomp := @indexed_coupling_comp A B B R eq
+      (enum_prune mu) (enum_prune nu) (enum_prune nu') Hlift Hnu.
     eapply indexed_coupling_mono; [|exact Hcomp].
-    move=> x y [z [Hxz ->]]. exact Hxz.
-  - move=> A B R mu nu H. exact: indexed_coupling_sym H.
+    move=> x y [z [Hxz Hzy]]. subst. exact Hxz.
+  - move=> A B R mu nu H. exact: (@indexed_coupling_sym
+      A B R (enum_prune mu) (enum_prune nu) H).
   - move=> A B C R S mu nu xi H1 H2.
-    exact: indexed_coupling_comp H1 H2.
+    exact: (@indexed_coupling_comp A B C R S
+      (enum_prune mu) (enum_prune nu) (enum_prune xi) H1 H2).
 Qed.
 
 Lemma enum_prune_bind_ae {A B} (mu : Enum A) (k1 k2 : A -> Enum B) :
@@ -207,6 +221,19 @@ Proof.
   elim: mu=> [|[p x] mu IH] //=.
   rewrite enum_prune_app enum_prune_scale IH.
   case Hp: (p == RatSubTypes.nnQ_0)=> //=.
+Qed.
+
+Lemma enum_prune_in_source {A} (mu : Enum A) p x :
+  List.In (p, x) (enum_prune mu) ->
+  List.In (p, x) mu /\ p <> RatSubTypes.nnQ_0.
+Proof.
+  elim: mu=> [//|[q y] mu IH] //=.
+  case Hq: (q == RatSubTypes.nnQ_0).
+  - move=> Hin. have [Hs Hnz] := IH Hin. split=> //; right; exact Hs.
+  - move=> [Heq|Hin].
+    + inversion Heq; subst. split; first by left.
+      move=> Hp. subst p. by rewrite eq_refl in Hq.
+    + have [Hs Hnz] := IH Hin. split=> //; right; exact Hs.
 Qed.
 
 Lemma scale_entry_preimage {A} (p w : nnQ) (x : A) (mu : Enum A) :
@@ -275,7 +302,16 @@ Qed.
     @MeasureBindLaws Enum Enum_MeasureInterface.
 Proof.
   constructor. move=> A B mu k1 k2 Hae.
-  exact: enum_prune_bind_ae Hae.
+  cbn in Hae |- *. unfold enum_meas_eq. rewrite !enum_prune_bind.
+  eapply indexed_coupling_bind_ae
+    with (P := fun x => enum_meas_eq (k1 x) (k2 x))
+         (Q := fun x => enum_meas_eq (k1 x) (k2 x)).
+  - apply indexed_coupling_refl. intros x. reflexivity.
+  - move=> p x Hin. have [Hsrc Hnz] := enum_prune_in_source Hin.
+    exact: Hae p x Hsrc Hnz.
+  - move=> p x Hin. have [Hsrc Hnz] := enum_prune_in_source Hin.
+    exact: Hae p x Hsrc Hnz.
+  - move=> x y -> Hx _. exact Hx.
 Qed.
 
 #[global] Instance Enum_MeasureLiftBindLaws :
@@ -287,58 +323,90 @@ Proof.
   move=> x y Hxy. exact (Hkh x y Hxy).
 Qed.
 
+#[global] Instance Enum_MeasureLiftAELaws :
+    @MeasureLiftAELaws Enum Enum_MeasureInterface.
+Proof.
+  constructor.
+  - move=> A B R mu nu P Hmn Hmu p y Hy Hp.
+    have Hpb : p != RatSubTypes.nnQ_0.
+    { apply/eqP=> Heq. exact: Hp Heq. }
+    have Hy' : List.In (p, y) (enum_prune nu).
+    { clear -Hy Hpb. induction nu as [|[q z] nu IH]=> //=.
+      destruct Hy as [H|H].
+      - inversion H; subst q z. rewrite (negPf Hpb). left; reflexivity.
+      - case Hq: (q == RatSubTypes.nnQ_0); [exact: IH H|].
+        right. exact: IH H. }
+    move: (@In_nth_error _ (enum_prune nu) (p, y) Hy')=> [j Hj].
+    have Hjmass := @indexed_nth_nonzero B
+      (enum_prune nu) j p y Hj Hpb.
+    destruct Hmn as [joint HL HR Hrel]. rewrite -HR in Hjmass.
+    move: (@emap_nonzero_preimage _ _ snd joint j Hjmass)
+      => [[i j'] [Hijmass Hij]]. cbn in Hij. subst j'.
+    have Hirel := Hrel i j Hijmass.
+    have [Himass _] := joint_nonzero_marginals Hijmass.
+    rewrite HL in Himass.
+    move: (indexed_nonzero_nth Himass)=> [q [x Hi]].
+    have [Hleft _] := Hirel.
+    move: (Hleft q x Hi)=> [r [z [Hj' Hxz]]].
+    rewrite Hj in Hj'. inversion Hj'; subst r z.
+    exists x. split=> //.
+    have Hinprune := @nth_error_In _ (enum_prune mu) i (q, x) Hi.
+    have [Hinsrc Hqnz] := enum_prune_in_source Hinprune.
+    exact: Hmu q x Hinsrc Hqnz.
+  - move=> A B C D R S mu nu k h P Q Hmn HP HQ Hkh.
+    cbn in Hmn, HP, HQ, Hkh |- *. rewrite !enum_prune_bind.
+    eapply indexed_coupling_bind_ae
+      with (P := P) (Q := Q); [exact Hmn|..].
+    + move=> p x Hin. have [Hsrc Hnz] := enum_prune_in_source Hin.
+      exact: HP p x Hsrc Hnz.
+    + move=> q y Hin. have [Hsrc Hnz] := enum_prune_in_source Hin.
+      exact: HQ q y Hsrc Hnz.
+    + move=> x y Hxy Hpx Hqy. exact: Hkh Hxy Hpx Hqy.
+Qed.
+
 #[global] Instance Enum_MeasureCongruenceLaws :
     @MeasureCongruenceLaws Enum Enum_MeasureInterface.
 Proof.
+  have ae_transport : forall A (mu nu : Enum A) (P : A -> Prop),
+      enum_meas_eq mu nu -> enum_ae mu P -> enum_ae nu P.
+  { move=> A mu nu P Hmn Hmu p y Hy Hp.
+    have Hpb : p != RatSubTypes.nnQ_0.
+    { apply/eqP=> Heq. exact: Hp Heq. }
+    have Hy' : List.In (p, y) (enum_prune nu).
+    { clear -Hy Hpb. induction nu as [|[q z] nu IH]=> //=.
+      destruct Hy as [H|H].
+      - inversion H; subst q z. rewrite (negPf Hpb). left; reflexivity.
+      - case Hq: (q == RatSubTypes.nnQ_0); [exact: IH H|].
+        right. exact: IH H. }
+    move: (@In_nth_error _ (enum_prune nu) (p, y) Hy')=> [j Hj].
+    have Hjmass := @indexed_nth_nonzero A
+      (enum_prune nu) j p y Hj Hpb.
+    destruct Hmn as [joint HL HR Hrel]. rewrite -HR in Hjmass.
+    move: (@emap_nonzero_preimage _ _ snd joint j Hjmass)
+      => [[i j'] [Hijmass Hij]]. cbn in Hij. subst j'.
+    have Hirel := Hrel i j Hijmass.
+    have [Himass _] := joint_nonzero_marginals Hijmass.
+    rewrite HL in Himass.
+    move: (indexed_nonzero_nth Himass)=> [q [x Hi]].
+    have [Hleft _] := Hirel.
+    move: (Hleft q x Hi)=> [r [z [Hj' Hxz]]].
+    rewrite Hj in Hj'. inversion Hj'; subst r z. subst y.
+    have Hinprune := @nth_error_In _ (enum_prune mu) i (q, x) Hi.
+    have [Hinsrc Hqnz] := enum_prune_in_source Hinprune.
+    exact: Hmu q x Hinsrc Hqnz. }
   constructor.
-  - move=> A x y ->. apply indexed_coupling_refl. reflexivity.
+  - move=> A x y ->. apply indexed_coupling_refl. intros z. reflexivity.
   - move=> A B mu nu k h Hmn Hkh. cbn in Hmn, Hkh |- *.
-    rewrite !enum_prune_bind.
+    unfold enum_meas_eq in Hmn |- *. rewrite !enum_prune_bind.
     eapply indexed_coupling_bind.
     + exact Hmn.
     + move=> x y ->. exact: Hkh.
   - move=> A mu nu P Hmn. cbn in Hmn |- *.
     split.
-    + move=> Hmu p y Hy Hp.
-      have Hy' : List.In (p, y) (enum_prune nu).
-      { clear -Hy Hp. induction nu as [|[q z] nu IH]=> //=.
-        destruct Hy as [H|H].
-        - inversion H; subst q z. rewrite (negPf Hp). left; reflexivity.
-        - case Hq: (q == RatSubTypes.nnQ_0).
-          + exact: IH H.
-          + right. exact: IH H. }
-      move: (In_nth_error _ _ Hy')=> [j Hj].
-      have Hjmass : acc_mass j (indexed (enum_prune nu)) != 0.
-      { apply entry_nonzero_acc_mass with p.
-        - rewrite /indexed. clear -Hj.
-          move: Hj. generalize 0%N. induction (enum_prune nu)
-            as [|[q z] tl IH]=> n [|j] //= Hnth.
-          - inversion Hnth; subst. left. reflexivity.
-          - right. exact: IH n.+1 j Hnth.
-        - exact Hp. }
-      destruct Hmn as [joint HL HR Hrel].
-      rewrite -HR in Hjmass.
-      move: (emap_nonzero_preimage snd joint j Hjmass)
-        => [i [Hijmass Hij]]. subst j.
-      have Hirel := Hrel i (snd (i, i)) Hijmass.
-      move: (joint_nonzero_marginals Hijmass)=> [Himass _].
-      rewrite HL in Himass.
-      move: (indexed_nonzero_nth Himass)=> [q [x Hi]].
-      have [Hleft _] := Hirel.
-      move: (Hleft q x Hi)=> [r [z [Hj' Hxz]]].
-      rewrite Hj in Hj'. inversion Hj'; subst r z. subst y.
-      apply Hmu with q.
-      * apply nth_error_In in Hi.
-        clear -Hi. induction mu as [|[r z] mu IH]=> //=.
-        case Hr: (r == RatSubTypes.nnQ_0).
-        -- right. exact: IH Hi.
-        -- destruct Hi as [Hi|Hi].
-           ++ left. exact Hi.
-           ++ right. exact: IH Hi.
-      * move=> Hq. subst q. rewrite eq_refl in Himass. discriminate.
-    + move=> Hnu. apply (proj1
-        (@Enum_MeasureCongruenceLaws _ _ _ mu nu P
-          (indexed_coupling_sym Hmn))). exact Hnu.
+    + exact: ae_transport Hmn.
+    + move=> Hnu. apply (@ae_transport A nu mu P)=> //.
+      eapply indexed_coupling_mono; [|exact: indexed_coupling_sym Hmn].
+      move=> x y Hyx. symmetry. exact Hyx.
 Qed.
 
 #[global] Instance Enum_MeasureMonadLaws :
@@ -349,10 +417,20 @@ Proof.
     destruct Hin as [Hin|Hin]; last contradiction.
     inversion Hin; subst. exact Hx.
   - move=> A B x k. cbn [Enum_MeasureInterface].
-    apply enum_repr_eq_implies_meas_eq. reflexivity.
+    unfold enum_meas_eq. cbn.
+    have Hone : scale_Enum (fst (1, x)) (k x) = k x.
+    { induction (k x) as [|[p y] tl IH]=> //=.
+      rewrite IH. congr ((_ , _) :: _). apply val_inj.
+      exact: mul1r (Qval p). }
+    rewrite Hone cats0. apply indexed_coupling_refl.
+    intros z. reflexivity.
   - move=> A B C mu k h. cbn [Enum_MeasureInterface].
-    apply enum_repr_eq_implies_meas_eq.
-    exact: bind_Enum_assoc.
+    unfold enum_meas_eq.
+    change (indexed_coupling eq
+      (enum_prune (bind_Enum (bind_Enum mu k) h))
+      (enum_prune (bind_Enum mu (fun x => bind_Enum (k x) h)))).
+    rewrite bind_Enum_assoc.
+    apply indexed_coupling_refl. intros z. reflexivity.
 Qed.
 
 #[global] Instance Enum_MeasureCommutativeLaws :
@@ -405,35 +483,10 @@ Proof.
   exact Hmap.
 Qed.
 
-#[global] Instance Enum_MeasureKleisliCommutativeLaws :
-    @MeasureKleisliCommutativeLaws Enum Enum_MeasureInterface.
-Proof.
-  constructor.
-  move=> A B C D R mu nu k1 k2 Hk.
-  cbn [Enum_MeasureInterface].
-  rewrite !enum_prune_bind.
-  apply indexed_coupling_bind
-    with (S := fun x y => indexed_coupling R
-      (enum_prune (k1 x y)) (enum_prune (k2 y x))).
-  - set xy : Enum (A * B) :=
-      bind_Enum (enum_prune mu) (fun x =>
-        bind_Enum (enum_prune nu) (fun y => ret_Enum (x, y))).
-    set yx : Enum (A * B) :=
-      bind_Enum (enum_prune nu) (fun y =>
-        bind_Enum (enum_prune mu) (fun x => ret_Enum (x, y))).
-    have Hxy : xy ==Enum yx by exact: enum_Fubini_Tonelli.
-    have Hidx := indexed_coupling_of_coupling
-      (R := eq) (coupling_of_enum_eq Hxy).
-    have Hmap := indexed_coupling_emap
-      (R := fun x y => indexed_coupling R
-        (enum_prune (k1 (fst x) (snd x)))
-        (enum_prune (k2 (fst y) (snd y))))
-      (f := fun xy : A * B => xy)
-      (g := fun yx : A * B => (snd yx, fst yx))
-      (fun x y H => match H with Logic.eq_refl => Hk (fst x) (snd x) end)
-      Hidx.
-    cbn in Hmap.
-    exact Hmap.
-  - move=> [x y] [x' y'] Hxy.
-    exact Hxy.
-Qed.
+(** The representation-level Fubini theorem above proves the Dirac-terminal
+    [MeasureCommutativeLaws] instance.  A full relational Fubini theorem for
+    arbitrary continuation couplings additionally needs a product-joint
+    flattening/gluing argument.  The previous attempted instance confused
+    its coupling on paired samples with a coupling of [mu] and [nu], so it
+    was unsound and is intentionally not registered.  Developments needing
+    [MeasureKleisliCommutativeLaws] must currently assume that law explicitly. *)

@@ -141,6 +141,18 @@ Proof.
     rewrite Nat.add_succ_l Nat.add_succ_r. reflexivity.
 Qed.
 
+Lemma nth_error_index_from {A} n (mu : Enum A) i p x :
+  nth_error mu i = Some (p, x) ->
+  nth_error (index_from n mu) i = Some (p, Nat.add n i).
+Proof.
+  revert n i p x. induction mu as [|[q y] tl IH].
+  - intros n [|i] p x Hnth; cbn in Hnth; discriminate.
+  - intros n [|i] p x Hnth; cbn in Hnth |- *.
+    + inversion Hnth; subst. rewrite Nat.add_0_r. reflexivity.
+    + rewrite (IH n.+1 i p x Hnth).
+    rewrite Nat.add_succ_l Nat.add_succ_r. reflexivity.
+Qed.
+
 Lemma indexed_nonzero_nth {A} (mu : Enum A) i :
   acc_mass i (indexed mu) != RatSubTypes.nnQ_0 ->
   exists p a, nth_error mu i = Some (p, a).
@@ -163,6 +175,22 @@ Proof.
   move: (nth_error_index_from_inv Hpos)=> [a [Hmu Heq]].
   rewrite Nat.add_0_l in Heq. subst pos.
   by exists p, a.
+Qed.
+
+Lemma indexed_nth_nonzero {A} (mu : Enum A) i p x :
+  nth_error mu i = Some (p, x) -> p != RatSubTypes.nnQ_0 ->
+  acc_mass i (indexed mu) != RatSubTypes.nnQ_0.
+Proof.
+  move=> Hnth Hp.
+  have Hin : List.In (p, i) (indexed mu).
+  { rewrite /indexed. have Hi := @nth_error_index_from A 0 mu i p x Hnth.
+    rewrite Nat.add_0_l in Hi. exact: nth_error_In Hi. }
+  have Hmem : (p, i) \in indexed mu.
+  { clear Hnth Hp. induction (indexed mu) as [|z tl IH]=> //.
+    destruct Hin as [->|Hin].
+    - exact: mem_head.
+    - rewrite in_cons. apply/orP; right. exact: IH Hin. }
+  exact: entry_nonzero_acc_mass Hmem Hp.
 Qed.
 
 Lemma nth_error_emap_inv {A B} (f : A -> B) (mu : Enum A) i p b :
