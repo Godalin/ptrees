@@ -51,12 +51,12 @@ The unbounded extension is split into three files:
 - `Eq/PWeakUnbounded.v` adds `aufrontier`, whose iteration rule collapses a
   `PTree.iter` only after its finite approximants have a certified measure
   limit **and that limit has total mass one**, and defines the corresponding greatest-fixed-point relation
-  `auweak`.  Reflexivity and symmetry are mechanized.
-- `Eq/PWeakUnboundedEquiv.v` exposes `auequiv`, the explicitly named
-  reflexive-symmetric-transitive closure of `auweak`, together with an
-  `Equivalence` instance.  This is the client-facing program equivalence;
-  the separate name avoids claiming raw `auweak` transitivity without an
-  omega-frontier coherence law.
+  `auweak`.  Reflexivity and symmetry are mechanized directly.
+- `Eq/PWeakUnboundedTrans.v` proves transitivity of raw `auweak` using
+  extensional frontier coherence and coupling composition, and installs its
+  `Equivalence` instance.  `Eq/PWeakUnboundedEquiv.v` retains `auequiv` only
+  as a compatibility wrapper; the maintained theory does not rely on an
+  artificial reflexive-symmetric-transitive closure.
 - `Prob/MeasureIterationEnum.v` instantiates limits for finite rational
   enumerations using convergence of the mass of every Boolean measurable
   set.  The limit is relational because `Enum` is not closed under arbitrary
@@ -95,12 +95,25 @@ nondegenerate rational input bias.  The corresponding client-facing results
 are `von_neumann_third_auequiv_fair` and
 `von_neumann_auequiv_of_normalized_bias`.
 
-The current `Enum` `meas_eq` is intentionally representation-sensitive
-(pruned-list equality), while omega convergence is observational.  Therefore
-there is no global `MeasureOmegaLaws Enum` instance claiming that
-observationally equal limits have identical list representations.  Any future
-transitivity theorem for raw `auweak` must either use an extensional measure
-equality or state the required frontier-coherence law explicitly.
+The current `Enum` `meas_eq` is extensional: two enumerations are equal when
+every outcome has the same accumulated mass.  Raw list equality is exposed
+separately as `enum_repr_eq`.  In particular, reordering entries, duplicating
+an outcome, or splitting its mass does not change the measure.  The regression
+file `Examples/EnumMeasureRegression.v` checks these cases together with
+Dirac elimination and nested-probability flattening.
+
+The MathComp Analysis backend currently supports the measure, bind,
+subprobability, omega-limit, and AST developments.  Coupling composition is
+deliberately exposed as the `MathCompCouplingGluing` assumption: it follows in
+standard Borel settings from disintegration, but not from MathComp's bare
+measure interface for arbitrary types.  The present `ptree` definition is
+monomorphic in its measure constructor, so MathComp measurable kernels cannot
+yet be instantiated inside the generic `auweak` layer without a systematic
+universe-polymorphism refactor.  Consequently the experimental
+`RealBernoulliMathCompPWeak.v` and `VonNeumannMathComp.v` clients are not part
+of the default installed theory; their measure/AST prerequisites remain
+available and the Enum Bernoulli factory supplies the fully checked end-to-end
+unbounded equivalence case.
 
 ## Meta
 

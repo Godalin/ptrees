@@ -3,7 +3,18 @@
 (coq.theory
  (name PTree)
  (package coq-ptree)
- (modules (:standard \ Eq.EquNew Eq.Trans Eq.PSSim))
+ (modules
+  (:standard
+   \ Eq.EquNew Eq.Trans Eq.PSSim
+   ;; Legacy Enum-only weak relation.  The maintained replacement is the
+   ;; extensional MeasureInterface-based PWeakAbstract hierarchy.
+   Eq.PFrontier Eq.PWeak Eq.PWeakFacts Eq.PWeakTrans
+   Examples.PWeakFrontierExamples
+   ;; These experimental clients require a universe-polymorphic PTree to
+   ;; host MathComp measurable kernels.  The MathComp measure and AST layers
+   ;; themselves remain part of the installed theory.
+   Examples.RealBernoulliMathCompPWeak Examples.VonNeumannMathComp
+   Examples.RealBernoulliMathCompFactory))
  (theories
    ExtLib
    ITree
