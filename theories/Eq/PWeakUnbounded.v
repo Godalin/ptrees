@@ -10,6 +10,13 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import FrontierLift MeasureIteration.
 From PTree.Eq Require Import PWeakAbstract.
 
+(** Relational composition, re-exported here so clients of the unbounded
+    theory do not need to import the finite weak-bisimulation module
+    explicitly. *)
+Definition aurelcomp {A B C}
+    (R : A -> B -> Prop) (S : B -> C -> Prop) : A -> C -> Prop :=
+  aprelcomp R S.
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -86,6 +93,7 @@ Class UnboundedFrontierCoherence := {
   aufrontier_tau_inv : forall {R} (t : ptree E M R) hs,
       aufrontier (TauF t) hs -> aufrontier (observe t) hs
 }.
+
 
 Lemma apfrontier_aufrontier {R} ot hs :
   @apfrontier E M MI R ot hs -> aufrontier ot hs.
@@ -291,6 +299,43 @@ Proof.
   - exact (auweakF_frontier_r Hstep Hfront).
 Qed.
 
+Lemma aufrontier_match_tau {R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E M R1) (t2 : ptree E M R2) sim :
+  aufrontier_match RR sim (observe t1) (observe t2) ->
+  aufrontier_match RR sim (TauF t1) (TauF t2).
+Proof.
+  intros [HL HR]. split.
+  - intros hs1 Hf1.
+    destruct (HL _ (aufrontier_tau_inv Hf1)) as [hs2 [Hf2 Hlift]].
+    exists hs2. split; [exact (AUFTau Hf2)|exact Hlift].
+  - intros hs2 Hf2.
+    destruct (HR _ (aufrontier_tau_inv Hf2)) as [hs1 [Hf1 Hlift]].
+    exists hs1. split; [exact (AUFTau Hf1)|exact Hlift].
+Qed.
+
+Lemma aufrontier_match_untau_r {R1 R2}
+    (RR : R1 -> R2 -> Prop) ot1 (t2 : ptree E M R2) sim :
+  aufrontier_match RR sim ot1 (TauF t2) ->
+  aufrontier_match RR sim ot1 (observe t2).
+Proof.
+  intros [HL HR]. split.
+  - intros hs1 Hf1. destruct (HL _ Hf1) as [hs2 [Hf2 Hlift]].
+    exists hs2. split; [exact (aufrontier_tau_inv Hf2)|exact Hlift].
+  - intros hs2 Hf2. exact (HR _ (AUFTau Hf2)).
+Qed.
+
+Lemma aufrontier_match_untau_l {R1 R2}
+    (RR : R1 -> R2 -> Prop) (t1 : ptree E M R1) ot2 sim :
+  aufrontier_match RR sim (TauF t1) ot2 ->
+  aufrontier_match RR sim (observe t1) ot2.
+Proof.
+  intros [HL HR]. split.
+  - intros hs1 Hf1. exact (HL _ (AUFTau Hf1)).
+  - intros hs2 Hf2. destruct (HR _ Hf2) as [hs1 [Hf1 Hlift]].
+    exists hs1. split; [exact (aufrontier_tau_inv Hf1)|exact Hlift].
+Qed.
+
 Lemma auhead_rel_comp {R1 R2 R3}
     (RR1 : R1 -> R2 -> Prop) (RR2 : R2 -> R3 -> Prop)
     (sim1 : ptree E M R1 -> ptree E M R2 -> Prop)
@@ -339,6 +384,80 @@ Proof.
 Qed.
 
 End UnboundedFrontierCoherentFacts.
+
+Section UnboundedWeakCoherentTauInversion.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}
+  `{ML : @MeasureLaws M MI MC} `{MO : @MeasureOmegaInterface M MI}
+  `{UC : @UnboundedFrontierCoherence E M MI MO}.
+
+Lemma auweakF_inv_tau_l_step {R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E M R1) (ot2 : ptree' E M R2) :
+  auweakF RR (auweak RR) (TauF t1) ot2 ->
+  auweakF RR (auweak RR) (observe t1) ot2.
+Proof.
+  intros Hstep.
+  remember (TauF t1) as lhs eqn:Elhs in Hstep.
+  dependent induction Hstep; try discriminate.
+  - dependent destruction Elhs.
+    eapply AUWFrontier; [exact (aufrontier_tau_inv H)|exact H0|exact H1].
+  - injection Elhs as Et. subst t0.
+    apply AUWTauR. exact (auweak_unfold H0).
+  - injection Elhs as Et. subst t0. exact Hstep.
+  - apply AUWTauR. eapply IHHstep; eauto.
+Qed.
+
+Lemma auweakF_inv_tau_r_step {R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (ot1 : ptree' E M R1) (t2 : ptree E M R2) :
+  auweakF RR (auweak RR) ot1 (TauF t2) ->
+  auweakF RR (auweak RR) ot1 (observe t2).
+Proof.
+  intros Hstep.
+  remember (TauF t2) as rhs eqn:Erhs in Hstep.
+  dependent induction Hstep; try discriminate.
+  - dependent destruction Erhs.
+    eapply AUWFrontier; [exact H|exact (aufrontier_tau_inv H0)|exact H1].
+  - injection Erhs as Et. subst t2.
+    apply AUWTauL. exact (auweak_unfold H0).
+  - apply AUWTauL. eapply IHHstep; eauto.
+  - injection Erhs as Et. subst t2. exact Hstep.
+Qed.
+
+Lemma auweak_inv_tau_r {R1 R2} (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E M R1) (t2 : ptree E M R2) :
+  auweak RR t1 (Tau t2) -> auweak RR t1 t2.
+Proof.
+  revert t1 t2. unfold auweak at 2. coinduction CH CIH.
+  intros t1' t2' Hrel. unfold fauweak, auweak_body; cbn.
+  eapply (auweakF_monotone
+    (sim1 := auweak RR) (sim2 := elem CH)).
+  - intros u v Huv. apply (gfp_chain (b := fauweak RR) CH). exact Huv.
+  - exact (auweakF_inv_tau_r_step (auweak_unfold Hrel)).
+Qed.
+
+Lemma auweak_inv_tau_l {R1 R2} (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E M R1) (t2 : ptree E M R2) :
+  auweak RR (Tau t1) t2 -> auweak RR t1 t2.
+Proof.
+  revert t1 t2. unfold auweak at 2. coinduction CH CIH.
+  intros t1' t2' Hrel. unfold fauweak, auweak_body; cbn.
+  eapply (auweakF_monotone
+    (sim1 := auweak RR) (sim2 := elem CH)).
+  - intros u v Huv. apply (gfp_chain (b := fauweak RR) CH). exact Huv.
+  - exact (auweakF_inv_tau_l_step (auweak_unfold Hrel)).
+Qed.
+
+Lemma auweak_inv_tau {R1 R2} (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E M R1) (t2 : ptree E M R2) :
+  auweak RR (Tau t1) (Tau t2) -> auweak RR t1 t2.
+Proof.
+  intros H. apply auweak_inv_tau_l in H.
+  exact (auweak_inv_tau_r H).
+Qed.
+
+End UnboundedWeakCoherentTauInversion.
 
 Section UnboundedWeakRelationFacts.
 Context {E : Type -> Type} {M : Type -> Type}
