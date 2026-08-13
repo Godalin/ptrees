@@ -95,3 +95,87 @@ Proof.
   exists reg_split_heads; split; first exact: reg_split_program_frontier.
   exact: enum_meas_eq_of_eqenum reg_split_heads_eqenum.
 Qed.
+
+(** Dirac sampling is observationally silent, without requiring an [eqType]
+    instance for the sampled carrier in the generic theorem. *)
+Definition reg_dirac_program : ptree regE Enum bool :=
+  Prob (ret_Enum true) (fun b => Ret b).
+
+Lemma reg_dirac_program_frontier :
+  apfrontier_sem (observe reg_dirac_program)
+    (ret_Enum (APHRet true)).
+Proof.
+  apply apfrontier_sem_prob_ret. constructor.
+Qed.
+
+Lemma reg_dirac_program_apweak :
+  apweak eq reg_dirac_program (Ret true).
+Proof.
+  apply apweak_of_common_frontier_sem with
+      (hs := ret_Enum (APHRet true)).
+  - exact reg_dirac_program_frontier.
+  - apply apfrontier_apfrontier_sem. constructor.
+Qed.
+
+(** The non-trivial flattening example from the roadmap:
+
+       1/2 (1/2 A + 1/2 B) + 1/2 (1/2 A + 1/2 C)
+
+    is weakly equivalent to [1/2 A + 1/4 B + 1/4 C]. *)
+Definition reg_inner (side : bool) : Enum nat :=
+  if side then [:: (reg_half, 0%N); (reg_half, 2%N)]
+  else [:: (reg_half, 0%N); (reg_half, 1%N)].
+
+Definition reg_nested_program : ptree regE Enum nat :=
+  Prob reg_fair (fun side =>
+    Prob (reg_inner side) (fun outcome => Ret outcome)).
+
+Definition reg_merged_three : Enum nat :=
+  [:: (reg_half, 0%N); (reg_quarter, 1%N); (reg_quarter, 2%N)].
+
+Definition reg_merged_program : ptree regE Enum nat :=
+  Prob reg_merged_three (fun outcome => Ret outcome).
+
+Definition reg_nested_heads : Enum (aphead regE Enum nat) :=
+  bind_Enum (bind_Enum reg_fair reg_inner)
+    (fun outcome => ret_Enum (APHRet outcome)).
+
+Definition reg_merged_heads : Enum (aphead regE Enum nat) :=
+  bind_Enum reg_merged_three
+    (fun outcome => ret_Enum (APHRet outcome)).
+
+Lemma reg_nested_heads_eqenum :
+  reg_nested_heads ==Enum reg_merged_heads.
+Proof. move=> [outcome|X e k]; last destruct e. vm_compute. Qed.
+
+Lemma reg_nested_program_frontier :
+  apfrontier_sem (observe reg_nested_program) reg_nested_heads.
+Proof.
+  apply apfrontier_sem_prob_flatten.
+  move=> outcome. constructor.
+Qed.
+
+Lemma reg_merged_program_frontier :
+  apfrontier_sem (observe reg_merged_program) reg_merged_heads.
+Proof.
+  apply apfrontier_apfrontier_sem.
+  apply (APFProb
+    (front := fun outcome => ret_Enum (APHRet outcome))
+    (Good := fun _ => True)); first apply meas_ae_true.
+  move=> outcome _. constructor.
+Qed.
+
+Lemma reg_nested_program_merged_frontier :
+  apfrontier_sem (observe reg_nested_program) reg_merged_heads.
+Proof.
+  eapply apfrontier_sem_proper; first exact reg_nested_program_frontier.
+  exact: enum_meas_eq_of_eqenum reg_nested_heads_eqenum.
+Qed.
+
+Theorem reg_nested_merged_apweak :
+  apweak eq reg_nested_program reg_merged_program.
+Proof.
+  apply apweak_of_common_frontier_sem with (hs := reg_merged_heads).
+  - exact reg_nested_program_merged_frontier.
+  - exact reg_merged_program_frontier.
+Qed.
