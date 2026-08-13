@@ -95,6 +95,8 @@ Class MeasureCongruenceLaws (M : Type -> Type)
     equality for these laws. *)
 Class MeasureMonadLaws (M : Type -> Type)
     `{MI : MeasureInterface M} := {
+  meas_ae_ret : forall {A} (x : A) (P : A -> Prop),
+      P x -> meas_ae (meas_ret x) P;
   meas_bind_ret_l : forall {A B} (x : A) (k : A -> M B),
       meas_eq (meas_bind (meas_ret x) k) (k x);
   meas_bind_assoc : forall {A B C} (mu : M A)

@@ -336,6 +336,9 @@ Qed.
     @MeasureMonadLaws Enum Enum_MeasureInterface.
 Proof.
   constructor.
+  - move=> A x P Hx p y Hin Hnz. cbn in Hin.
+    destruct Hin as [Hin|Hin]; last contradiction.
+    inversion Hin; subst. exact Hx.
   - move=> A B x k. cbn [Enum_MeasureInterface].
     apply enum_repr_eq_implies_meas_eq. reflexivity.
   - move=> A B C mu k h. cbn [Enum_MeasureInterface].

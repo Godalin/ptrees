@@ -777,6 +777,15 @@ Qed.
     @MeasureMonadLaws MathCompKernelMeasure MathCompKernelMeasureInterface.
 Proof.
   constructor.
+  - move=> A x P Hx.
+    rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
+    apply/negligibleP; first by [].
+    change (((\1_(~` mc_predicate P) (MCValue x)) : R)%:E = 0).
+    rewrite indicE.
+    have Hnot : MCValue x \notin (~` mc_predicate P).
+    { rewrite notin_setE /= /mc_predicate.
+      exact: (fun Hn => Hn Hx). }
+    by rewrite (negbTE Hnot).
   - move=> A B x k. exact: mathcomp_kernel_bind_ret_l.
   - move=> A B C mu k h. exact: mathcomp_kernel_bind_assoc.
 Qed.
