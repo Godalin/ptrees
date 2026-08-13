@@ -5,7 +5,7 @@ Require Import Utf8 RelationClasses.
 
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import FrontierLift MeasureIteration.
-From PTree.Eq Require Import PWeakUnbounded.
+From PTree.Eq Require Import PWeakUnbounded PWeakUnboundedTrans.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -62,6 +62,33 @@ Lemma auequiv_auweak_sym
   auweak eq t1 t2 -> auequiv t2 t1.
 Proof.
   intro H. constructor. exact (auweak_sym_eq H).
+Qed.
+
+(** Under the explicit frontier-coherence obligation, the compatibility
+    closure adds no equations: every closure derivation is already a raw
+    [auweak] derivation.  Clients can therefore migrate to [auweak] without
+    changing their semantic equivalence once their backend provides
+    coherence. *)
+Lemma auequiv_to_auweak
+    `{ML : @MeasureLaws M MI MC}
+    `{UC : @UnboundedFrontierCoherence E M MI MO}
+    {R} (t1 t2 : ptree E M R) :
+  auequiv t1 t2 -> auweak eq t1 t2.
+Proof.
+  intro H. induction H.
+  - exact H.
+  - exact (auweak_refl t).
+  - exact (auweak_sym_eq IHauequiv).
+  - eapply auweak_trans; eassumption.
+Qed.
+
+Lemma auequiv_iff_auweak
+    `{ML : @MeasureLaws M MI MC}
+    `{UC : @UnboundedFrontierCoherence E M MI MO}
+    {R} (t1 t2 : ptree E M R) :
+  auequiv t1 t2 <-> auweak eq t1 t2.
+Proof.
+  split; [apply auequiv_to_auweak|apply auequiv_of_auweak].
 Qed.
 
 End UnboundedWeakEquivalence.
