@@ -24,6 +24,13 @@ Class MeasureInterface (M : Type -> Type) := {
       (A -> B -> Prop) -> M A -> M B -> Prop
 }.
 
+(** A polymorphic zero measure is needed whenever an AE-defined kernel must
+    be represented as a total Coq function.  Values on null branches are
+    semantically irrelevant, but still require a measure inhabitant. *)
+Class MeasureZeroInterface (M : Type -> Type) := {
+  meas_zero : forall {A}, M A
+}.
+
 (** The small law package needed merely to define [apweak] and prove
     reflexivity.  Stronger laws below are only needed by compositionality and
     transitivity proofs. *)

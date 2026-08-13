@@ -131,6 +131,10 @@ Qed.
     indexed_coupling R (enum_prune mu) (enum_prune nu)
 }.
 
+#[global] Instance Enum_MeasureZeroInterface : MeasureZeroInterface Enum := {
+  meas_zero := fun A => [::]
+}.
+
 #[global] Instance Enum_MeasureCoreLaws :
     @MeasureCoreLaws Enum Enum_MeasureInterface.
 Proof.
