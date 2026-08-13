@@ -1017,11 +1017,38 @@ Proof.
     by rewrite (Hc n U mU nbot).
 Qed.
 
+Lemma mathcomp_kernel_lub_limit_proper {A}
+    (chain : nat -> MathCompKernelMeasure A) mu nu :
+  mathcomp_kernel_eq mu nu ->
+  mathcomp_kernel_lub chain mu -> mathcomp_kernel_lub chain nu.
+Proof.
+  move=> Hmn Hlim U mU nbot.
+  rewrite -(Hmn U mU nbot). exact: Hlim.
+Qed.
+
+Lemma mathcomp_kernel_total_proper {A}
+    (mu nu : MathCompKernelMeasure A) :
+  mathcomp_kernel_eq mu nu ->
+  (mathcomp_kernel_total mu <-> mathcomp_kernel_total nu).
+Proof.
+  move=> Hmn. rewrite /mathcomp_kernel_total.
+  have mret : measurable (@mc_returned A) by [].
+  have nbot : ~ (@mc_returned A) MCBottom by [].
+  rewrite (Hmn _ mret nbot). reflexivity.
+Qed.
+
 #[global] Instance MathCompKernelMeasureOmegaLaws :
     @MeasureOmegaLaws MathCompKernelMeasure
       MathCompKernelMeasureInterface MathCompKernelMeasureOmegaInterface := {
   meas_lub_unique := @mathcomp_kernel_lub_unique;
   meas_lub_proper := @mathcomp_kernel_lub_proper
+}.
+
+#[global] Instance MathCompKernelMeasureOmegaCongruenceLaws :
+    @MeasureOmegaCongruenceLaws MathCompKernelMeasure
+      MathCompKernelMeasureInterface MathCompKernelMeasureOmegaInterface := {
+  meas_lub_limit_proper := @mathcomp_kernel_lub_limit_proper;
+  meas_total_proper := @mathcomp_kernel_total_proper
 }.
 
 End BackendShape.

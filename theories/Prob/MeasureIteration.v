@@ -36,6 +36,18 @@ Class MeasureOmegaLaws (M : Type -> Type)
       meas_lub c1 mu -> meas_lub c2 mu
 }.
 
+(** Extensionality in the represented limit and in total-mass assertions.
+    These laws belong to the measure backend; unlike program-level frontier
+    coherence, they mention neither trees nor particular derivations. *)
+Class MeasureOmegaCongruenceLaws (M : Type -> Type)
+    `{MI : MeasureInterface M}
+    `{MO : @MeasureOmegaInterface M MI} := {
+  meas_lub_limit_proper : forall {A} (chain : nat -> M A) mu nu,
+      meas_eq mu nu -> meas_lub chain mu -> meas_lub chain nu;
+  meas_total_proper : forall {A} (mu nu : M A),
+      meas_eq mu nu -> (meas_total mu <-> meas_total nu)
+}.
+
 Section Iteration.
 Context {M : Type -> Type} `{MI : MeasureInterface M}
   `{MO : @MeasureOmegaInterface M MI}.
@@ -77,6 +89,26 @@ Lemma meas_iter_unique `{OL : @MeasureOmegaLaws M MI MO}
   meas_iter step i out1 -> meas_iter step i out2 -> meas_eq out1 out2.
 Proof.
   unfold meas_iter. eapply meas_lub_unique.
+Qed.
+
+Lemma meas_iter_proper_out
+    `{OC : @MeasureOmegaCongruenceLaws M MI MO}
+    {I A} (step : I -> M (I + A)) i out out' :
+  meas_iter step i out -> meas_eq out out' -> meas_iter step i out'.
+Proof.
+  unfold meas_iter. intros Hiter Heq.
+  eapply meas_lub_limit_proper; eassumption.
+Qed.
+
+Lemma meas_iter_ast_proper_out
+    `{OC : @MeasureOmegaCongruenceLaws M MI MO}
+    {I A} (step : I -> M (I + A)) i out out' :
+  meas_iter step i out -> meas_total out -> meas_eq out out' ->
+  meas_iter step i out' /\ meas_total out'.
+Proof.
+  intros Hiter Htotal Heq. split.
+  - exact (meas_iter_proper_out Hiter Heq).
+  - exact ((proj1 (meas_total_proper Heq)) Htotal).
 Qed.
 
 End Iteration.
