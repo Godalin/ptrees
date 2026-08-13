@@ -131,6 +131,23 @@ Qed.
     indexed_coupling R (enum_prune mu) (enum_prune nu)
 }.
 
+(** Every Boolean observation respected by a coupling has the same
+    extensional distribution on both marginals.  Unlike [acc_mass], this
+    statement does not require decidable equality on the original carriers;
+    observable heads may therefore contain functions and dependent events. *)
+Lemma enum_meas_lift_observe {A B} (R : A -> B -> Prop)
+    (obsA : A -> bool) (obsB : B -> bool) (mu : Enum A) (nu : Enum B) :
+  (forall x y, R x y -> obsA x = obsB y) ->
+  @meas_lift Enum Enum_MeasureInterface A B R mu nu ->
+  @meas_eq Enum Enum_MeasureInterface bool
+    (emap obsA mu) (emap obsB nu).
+Proof.
+  move=> Hobs Hlift.
+  cbn in Hlift |- *. unfold enum_meas_eq in Hlift |- *.
+  rewrite !enum_prune_emap.
+  exact: indexed_coupling_emap Hobs Hlift.
+Qed.
+
 #[global] Instance Enum_MeasureZeroInterface : MeasureZeroInterface Enum := {
   meas_empty := fun A => [::]
 }.

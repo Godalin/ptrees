@@ -10,7 +10,7 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLift
   FrontierLiftEnum EnumBindFacts MeasureIteration MeasureIterationEnum.
 From PTree.Eq Require Import PWeakAbstract PWeakUnbounded
-  PWeakUnboundedEquiv.
+  PWeakUnboundedEquiv PWeakObservableEnum.
 From PTree.Examples Require Import VonNeumannUnbounded RationalBernoulli.
 
 Set Implicit Arguments.
@@ -18,6 +18,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum.
+Import EnumMap.
 Import GRing.Theory Num.Theory Order.Theory.
 #[local] Open Scope ring_scope.
 #[local] Open Scope order_scope.
@@ -251,6 +252,21 @@ Proof.
     exact auweak_refl.
 Qed.
 
+(** Observable consequence of the common frontier proof: the generated and
+    direct programs assign the same probability to returning [true]. *)
+Theorem biased_coin_preserves_true_probability :
+  exists hs1 hs2,
+    aufrontier (observe biased_to_rational_coin) hs1 /\
+    aufrontier (observe (factory_direct_q q0 q1)) hs2 /\
+    @meas_eq Enum Enum_MeasureInterface bool
+      (emap (auhead_returns (fun b => b)) hs1)
+      (emap (auhead_returns (fun b => b)) hs2).
+Proof.
+  exact (common_aufrontier_return_observation
+    (fun b => b)
+    biased_to_rational_coin_frontier factory_direct_q_frontier).
+Qed.
+
 Theorem biased_coin_simulates_rational_coin_auequiv :
   auequiv biased_to_rational_coin (factory_direct_q q0 q1).
 Proof.
@@ -332,6 +348,19 @@ Theorem third_coin_simulates_two_fifths_auequiv :
       two_fifths_nonnegative two_fifths_at_most_one).
 Proof.
   exact (biased_coin_simulates_rational_coin_auequiv
+    third_bias_normalized third_bias_nontrivial
+    two_fifths_nonnegative two_fifths_at_most_one).
+Qed.
+
+Theorem third_coin_preserves_two_fifths_true_probability :
+  exists hs1 hs2,
+    aufrontier (observe third_to_two_fifths) hs1 /\
+    aufrontier (observe direct_two_fifths) hs2 /\
+    @meas_eq Enum Enum_MeasureInterface bool
+      (emap (auhead_returns (fun b => b)) hs1)
+      (emap (auhead_returns (fun b => b)) hs2).
+Proof.
+  exact (biased_coin_preserves_true_probability
     third_bias_normalized third_bias_nontrivial
     two_fifths_nonnegative two_fifths_at_most_one).
 Qed.

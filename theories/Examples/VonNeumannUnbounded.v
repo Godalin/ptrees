@@ -10,13 +10,14 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts FrontierLift
   FrontierLiftEnum MeasureIteration MeasureIterationEnum RatGeometric.
 From PTree.Eq Require Import PWeakAbstract PWeakUnbounded
-  PWeakUnboundedEquiv.
+  PWeakUnboundedEquiv PWeakObservableEnum.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum.
+Import EnumMap.
 Import RatSubTypes.NonnegQNotations.
 Import GRing.Theory.
 Import Num.Theory.
@@ -411,6 +412,18 @@ Proof.
   - apply meas_lift_refl.
     apply auhead_rel_refl.
     exact auweak_refl.
+Qed.
+
+Theorem von_neumann_third_preserves_true_probability :
+  exists hs1 hs2,
+    aufrontier (observe von_neumann_third) hs1 /\
+    aufrontier (observe direct_fair) hs2 /\
+    @meas_eq Enum Enum_MeasureInterface bool
+      (emap (auhead_returns (fun b => b)) hs1)
+      (emap (auhead_returns (fun b => b)) hs2).
+Proof.
+  exact (common_aufrontier_return_observation (fun b => b)
+    von_neumann_unbounded_frontier direct_fair_frontier).
 Qed.
 
 Theorem von_neumann_third_auequiv_fair :
