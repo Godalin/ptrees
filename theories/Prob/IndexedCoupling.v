@@ -420,7 +420,7 @@ Proof.
   - by exists s, d.
 Qed.
 
-Lemma indexed_coupling_bind {A B C D : eqType}
+Lemma indexed_coupling_bind {A B C D : Type}
     (S : A -> B -> Prop) (R : C -> D -> Prop)
     (mu : Enum A) (nu : Enum B)
     (k : A -> Enum C) (h : B -> Enum D) :

@@ -74,6 +74,22 @@ Class MeasureBindLaws (M : Type -> Type) `{MI : MeasureInterface M} := {
       meas_eq (meas_bind mu k1) (meas_bind mu k2)
 }.
 
+(** Extensional equality is a congruence for the measure monad and for
+    almost-everywhere predicates.  This separates semantic equality from
+    any concrete representation equality used by a backend. *)
+Class MeasureCongruenceLaws (M : Type -> Type)
+    `{MI : MeasureInterface M} := {
+  meas_ret_proper : forall {A} (x y : A),
+      x = y -> meas_eq (meas_ret x) (meas_ret y);
+  meas_bind_proper : forall {A B} (mu nu : M A)
+      (k h : A -> M B),
+      meas_eq mu nu ->
+      (forall x, meas_eq (k x) (h x)) ->
+      meas_eq (meas_bind mu k) (meas_bind nu h);
+  meas_ae_proper : forall {A} (mu nu : M A) (P : A -> Prop),
+      meas_eq mu nu -> (meas_ae mu P <-> meas_ae nu P)
+}.
+
 (** Kleisli extension of almost-everywhere predicates. *)
 Class MeasureAEKleisliLaws (M : Type -> Type)
     `{MI : MeasureInterface M} := {
