@@ -74,6 +74,19 @@ Inductive aufrontier {R} :
       aufrontier (observe (PTree.iter step i))
         (meas_bind out (fun r => meas_ret (APHRet r))).
 
+(** Coherence of the unbounded closure.  Unlike finite frontier
+    determinism, this is not derivable from [MeasureBindLaws] alone:
+    [AUFBind] and [AUFNestedIter] also require continuity/coherence between
+    bind and omega limits.  Keeping the obligation explicit prevents raw
+    [auweak] transitivity from silently assuming a canonical limit
+    representation. *)
+Class UnboundedFrontierCoherence := {
+  aufrontier_unique : forall {R} (ot : ptree' E M R) hs1 hs2,
+      aufrontier ot hs1 -> aufrontier ot hs2 -> meas_eq hs1 hs2;
+  aufrontier_tau_inv : forall {R} (t : ptree E M R) hs,
+      aufrontier (TauF t) hs -> aufrontier (observe t) hs
+}.
+
 Lemma apfrontier_aufrontier {R} ot hs :
   @apfrontier E M MI R ot hs -> aufrontier ot hs.
 Proof. apply AUFFinite. Qed.
@@ -218,6 +231,114 @@ Lemma auweak_fold t1 t2 :
 Proof. intro H. unfold auweak. apply (gfp_fp fauweak). exact H. Qed.
 
 End UnboundedWeak.
+
+Section UnboundedFrontierCoherentFacts.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : MeasureInterface M} `{MC : @MeasureCoreLaws M MI}
+  `{ML : @MeasureLaws M MI MC} `{MO : @MeasureOmegaInterface M MI}
+  `{UC : @UnboundedFrontierCoherence E M MI MO}.
+
+Lemma auweakF_frontier_l {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
+    ot1 ot2 hs1 :
+  auweakF RR sim ot1 ot2 -> aufrontier ot1 hs1 ->
+  exists hs2, aufrontier ot2 hs2 /\
+    meas_lift (aphead_rel RR sim) hs1 hs2.
+Proof.
+  intros Hstep. revert hs1.
+  induction Hstep; intros hs Hfront.
+  - assert (Heq : meas_eq hs hs1).
+    { eapply aufrontier_unique; eassumption. }
+    exists hs2. split; [exact H0|].
+    apply (@meas_lift_proper_l M MI MC ML _ _
+      (aphead_rel RR sim) hs1 hs hs2).
+    + apply meas_eq_sym. exact Heq.
+    + exact H1.
+  - exact (proj1 H _ Hfront).
+  - exact (proj1 H _ Hfront).
+  - exact (IHHstep _ (aufrontier_tau_inv Hfront)).
+  - destruct (IHHstep _ Hfront) as [hs2 [Hf2 Hlift]].
+    exists hs2. split; [exact (AUFTau Hf2)|exact Hlift].
+Qed.
+
+Lemma auweakF_frontier_r {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
+    ot1 ot2 hs2 :
+  auweakF RR sim ot1 ot2 -> aufrontier ot2 hs2 ->
+  exists hs1, aufrontier ot1 hs1 /\
+    meas_lift (aphead_rel RR sim) hs1 hs2.
+Proof.
+  intros Hstep. revert hs2.
+  induction Hstep; intros hs Hfront.
+  - assert (Heq : meas_eq hs2 hs).
+    { eapply aufrontier_unique; eassumption. }
+    exists hs1. split; [exact H|].
+    exact (@meas_lift_proper_r M MI MC ML _ _
+      (aphead_rel RR sim) hs1 hs2 hs Heq H1).
+  - exact (proj2 H _ Hfront).
+  - exact (proj2 H _ Hfront).
+  - destruct (IHHstep _ Hfront) as [hs1 [Hf1 Hlift]].
+    exists hs1. split; [exact (AUFTau Hf1)|exact Hlift].
+  - exact (IHHstep _ (aufrontier_tau_inv Hfront)).
+Qed.
+
+Lemma auweakF_frontier_match {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop) ot1 ot2 :
+  auweakF RR sim ot1 ot2 -> aufrontier_match RR sim ot1 ot2.
+Proof.
+  intros Hstep. split; intros hs Hfront.
+  - exact (auweakF_frontier_l Hstep Hfront).
+  - exact (auweakF_frontier_r Hstep Hfront).
+Qed.
+
+Lemma auhead_rel_comp {R1 R2 R3}
+    (RR1 : R1 -> R2 -> Prop) (RR2 : R2 -> R3 -> Prop)
+    (sim1 : ptree E M R1 -> ptree E M R2 -> Prop)
+    (sim2 : ptree E M R2 -> ptree E M R3 -> Prop)
+    (sim3 : ptree E M R1 -> ptree E M R3 -> Prop)
+    (Hsim : forall t1 t2 t3,
+      sim1 t1 t2 -> sim2 t2 t3 -> sim3 t1 t3) :
+  forall h1 h2 h3,
+    aphead_rel RR1 sim1 h1 h2 ->
+    aphead_rel RR2 sim2 h2 h3 ->
+    aphead_rel (aprelcomp RR1 RR2) sim3 h1 h3.
+Proof.
+  intros h1 h2 h3 H12 H23.
+  dependent destruction H12; dependent destruction H23.
+  - constructor. econstructor; eassumption.
+  - constructor. intro x. eapply Hsim; eauto.
+Qed.
+
+Lemma aufrontier_match_comp {R1 R2 R3}
+    (RR1 : R1 -> R2 -> Prop) (RR2 : R2 -> R3 -> Prop)
+    (sim1 : ptree E M R1 -> ptree E M R2 -> Prop)
+    (sim2 : ptree E M R2 -> ptree E M R3 -> Prop)
+    (sim3 : ptree E M R1 -> ptree E M R3 -> Prop)
+    (Hsim : forall t1 t2 t3,
+      sim1 t1 t2 -> sim2 t2 t3 -> sim3 t1 t3) :
+  forall ot1 ot2 ot3,
+    aufrontier_match RR1 sim1 ot1 ot2 ->
+    aufrontier_match RR2 sim2 ot2 ot3 ->
+    aufrontier_match (aprelcomp RR1 RR2) sim3 ot1 ot3.
+Proof.
+  intros ot1 ot2 ot3 [H12L H12R] [H23L H23R]. split.
+  - intros hs1 Hf1.
+    destruct (H12L _ Hf1) as [hs2 [Hf2 Hc12]].
+    destruct (H23L _ Hf2) as [hs3 [Hf3 Hc23]].
+    exists hs3. split; [exact Hf3|].
+    eapply meas_lift_mono; [|eapply meas_lift_comp; eassumption].
+    intros h1 h3 [h2 [Hh12 Hh23]].
+    eapply auhead_rel_comp; eauto.
+  - intros hs3 Hf3.
+    destruct (H23R _ Hf3) as [hs2 [Hf2 Hc23]].
+    destruct (H12R _ Hf2) as [hs1 [Hf1 Hc12]].
+    exists hs1. split; [exact Hf1|].
+    eapply meas_lift_mono; [|eapply meas_lift_comp; eassumption].
+    intros h1 h3 [h2 [Hh12 Hh23]].
+    eapply auhead_rel_comp; eauto.
+Qed.
+
+End UnboundedFrontierCoherentFacts.
 
 Section UnboundedWeakRelationFacts.
 Context {E : Type -> Type} {M : Type -> Type}
