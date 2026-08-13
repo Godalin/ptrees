@@ -92,6 +92,37 @@ Lemma aufrontier_iter_unique
   meas_eq out1 out2.
 Proof. eapply meas_iter_unique. Qed.
 
+(** Public, representation-independent unbounded frontier semantics.  As in
+    the finite case, the inductive judgment records a canonical witness and
+    this closure exposes every extensionally equal measure to clients. *)
+Definition aufrontier_sem
+    `{MC : @MeasureCoreLaws M MI} `{ML : @MeasureLaws M MI MC}
+    {R} (ot : ptree' E M R) (hs : M (aphead E M R)) : Prop :=
+  exists hs0, aufrontier ot hs0 /\ meas_eq hs0 hs.
+
+Lemma aufrontier_aufrontier_sem
+    `{MC : @MeasureCoreLaws M MI} `{ML : @MeasureLaws M MI MC}
+    {R} (ot : ptree' E M R) (hs : M (aphead E M R)) :
+  aufrontier ot hs -> aufrontier_sem ot hs.
+Proof. intros Hf. exists hs. split; [exact Hf|apply meas_eq_refl]. Qed.
+
+Lemma apfrontier_aufrontier_sem
+    `{MC : @MeasureCoreLaws M MI} `{ML : @MeasureLaws M MI MC}
+    {R} (ot : ptree' E M R) (hs : M (aphead E M R)) :
+  apfrontier ot hs -> aufrontier_sem ot hs.
+Proof.
+  intros Hf. apply aufrontier_aufrontier_sem. exact (AUFFinite Hf).
+Qed.
+
+Lemma aufrontier_sem_proper
+    `{MC : @MeasureCoreLaws M MI} `{ML : @MeasureLaws M MI MC}
+    {R} (ot : ptree' E M R) hs hs' :
+  aufrontier_sem ot hs -> meas_eq hs hs' -> aufrontier_sem ot hs'.
+Proof.
+  intros [hs0 [Hf E0]] E1. exists hs0. split; [exact Hf|].
+  eapply meas_eq_trans; eassumption.
+Qed.
+
 End UnboundedFrontier.
 
 Section UnboundedWeak.
@@ -400,6 +431,29 @@ Proof.
   apply meas_lift_refl.
   apply auhead_rel_refl.
   exact auweak_refl.
+Qed.
+
+(** Extensional version of [auweak_of_common_frontier].  The two programs
+    may expose different concrete representatives of the same limiting
+    measure. *)
+Lemma auweak_of_common_frontier_sem
+    `{ML : @MeasureLaws M MI MC} {R}
+    (t1 t2 : ptree E M R) hs :
+  aufrontier_sem (observe t1) hs ->
+  aufrontier_sem (observe t2) hs ->
+  @auweak E M MI MC MO R R eq t1 t2.
+Proof.
+  intros [hs1 [Hf1 E1]] [hs2 [Hf2 E2]]. apply auweak_fold.
+  eapply AUWFrontier with (hs1 := hs1) (hs2 := hs2).
+  - exact Hf1.
+  - exact Hf2.
+  - assert (Hrefl : meas_lift (aphead_rel eq (auweak eq)) hs1 hs1).
+    { apply meas_lift_refl. apply auhead_rel_refl. exact auweak_refl. }
+    apply (meas_lift_proper_r
+      (R := aphead_rel eq (auweak eq)) (nu := hs1)).
+    + eapply meas_eq_trans; [exact E1|].
+      apply meas_eq_sym. exact E2.
+    + exact Hrefl.
 Qed.
 
 End UnboundedWeakReflexivity.
