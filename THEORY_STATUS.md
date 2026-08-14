@@ -229,6 +229,17 @@ condition is listed explicitly, the referenced result is proved without an
   primitive-hitting/cofinality proof for the inner p-to-fair sampler and its
   composition with this outer loop, not another universe specialization of
   the mirrored theorem.
+  The first compiled-shortcut removal is now checked at primitive finite
+  fuel. `operational_vn_raw_round_observes` proves that the source
+  `vn_step`, which really performs two biased samples, reaches exactly
+  `vn_transition` after two primitive steps. At fuel one it observes only
+  the zero subdistribution
+  (`operational_vn_raw_round_one_observes_zero`), whereas the compiled
+  one-sample round already observes `vn_transition`
+  (`operational_vn_compiled_round_observes`). These facts unfold only the
+  primitive kernel; they use no frontier or Iter rule. The remaining step is
+  to lift this fixed per-round scheduling mismatch to cofinality of the two
+  unbounded retry chains.
   The outer example now makes its non-lockstep nature checkable:
   `operational_rational_coin_hitting_one` identifies the implementation's
   one-fuel primitive prefix, `operational_rational_direct_hitting_one`

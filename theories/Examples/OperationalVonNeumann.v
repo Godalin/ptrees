@@ -23,6 +23,88 @@ Import EnumMap.
 
 Local Notation MF := (FreeOmega Enum).
 Local Notation vn_head := (frontier_head vnE Enum bool).
+Local Notation vn_round_head := (frontier_head vnE Enum (unit + bool)).
+
+Definition operational_vn_round_head_value (h : vn_round_head) : unit + bool :=
+  match h with
+  | FHRet next => next
+  | @FHVis _ _ _ X e _ => match e with end
+  end.
+
+(** Unlike [operational_vn_compiled], this is the source program's actual
+    round: its two biased samples remain two separate primitive transitions.
+    The lemma below isolates the finite scheduling fact from the later
+    unbounded retry argument. *)
+Definition operational_vn_raw_round : MF vn_round_head :=
+  operational_hitting_approx (MF := MF) 2 (observe (vn_step tt)).
+
+Lemma operational_vn_raw_round_one_observes_zero :
+  free_omega_observes operational_vn_round_head_value
+    (operational_hitting_approx (MF := MF) 1 (observe (vn_step tt)))
+    (sem_zero : Enum (unit + bool)).
+Proof.
+  assert (Hstep : observe (vn_step tt) =
+    ProbF vn_biased_coin (fun b1 =>
+      Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2))))
+    by reflexivity.
+  rewrite Hstep.
+  change (free_omega_observes operational_vn_round_head_value
+    (FOSample vn_biased_coin (fun _ =>
+      FOSample vn_biased_coin (fun _ => FOZero)))
+    (nil : Enum (unit + bool))).
+  rewrite <- (enum_bind_nil (A := bool) (unit + bool) vn_biased_coin).
+  constructor. intro b1.
+  rewrite <- (enum_bind_nil (A := bool) (unit + bool) vn_biased_coin).
+  constructor. intro b2. constructor.
+Qed.
+
+Lemma operational_vn_raw_round_observes :
+  free_omega_observes operational_vn_round_head_value
+    operational_vn_raw_round vn_transition.
+Proof.
+  unfold operational_vn_raw_round.
+  assert (Hstep : observe (vn_step tt) =
+    ProbF vn_biased_coin (fun b1 =>
+      Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2))))
+    by reflexivity.
+  rewrite Hstep.
+  change (free_omega_observes operational_vn_round_head_value
+    (FOSample vn_biased_coin (fun b1 =>
+      FOSample vn_biased_coin (fun b2 =>
+        FORet (FHRet (vn_round_result b1 b2))))) vn_transition).
+  rewrite <- vn_round_measure_eq.
+  unfold vn_round_measure.
+  constructor. intro b1.
+  constructor. intro b2. constructor.
+Qed.
+
+Corollary operational_vn_raw_round_is_transition :
+  free_omega_observes operational_vn_round_head_value
+    operational_vn_raw_round vn_round_measure.
+Proof.
+  rewrite vn_round_measure_eq. exact operational_vn_raw_round_observes.
+Qed.
+
+Definition operational_vn_compiled_round : MF vn_round_head :=
+  operational_hitting_approx (MF := MF) 1
+    (observe (vn_compiled_step tt)).
+
+Lemma operational_vn_compiled_round_observes :
+  free_omega_observes operational_vn_round_head_value
+    operational_vn_compiled_round vn_transition.
+Proof.
+  unfold operational_vn_compiled_round, vn_compiled_step.
+  change (free_omega_observes operational_vn_round_head_value
+    (FOSample vn_transition (fun next => FORet (FHRet next)))
+    vn_transition).
+  assert (Hbind : bind_Enum vn_transition (fun next => ret_Enum next) =
+      vn_transition).
+  { rewrite bind_ret_emap. apply emap_id. }
+  replace vn_transition with
+    (bind_Enum vn_transition (fun next => ret_Enum next)) at 2
+    by exact Hbind.
+  constructor. intro next. constructor.
+Qed.
 
 Definition operational_vn_compiled : ptree vnE Enum bool :=
   PTree.iter vn_compiled_step tt.
