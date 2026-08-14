@@ -42,6 +42,12 @@ condition is listed explicitly, the referenced result is proved without an
   the unbounded Von Neumann sampler versus a terminating fair coin and to the
   closed `p = 1/3` to `q = 2/5` Bernoulli factory versus a direct terminating
   `q`-coin.
+- `Eq/UnifiedProbabilisticPTS.v` gives an independent distribution-valued
+  transition presentation for the two-level model: primitive residual
+  transitions live in `MN`, stable weak distributions live in `MF`, and
+  `mixed_bind` connects them.  It proves `unified_ppts_weak <-> frontier` and,
+  for the divergence-sensitive guarded PTS, the full characterization
+  `weak_bisim <-> unified_ppts_bisim`.
 
 ## Measure semantics and coupling
 
