@@ -8,6 +8,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype seq.
 
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import FrontierLift.
+From PTree.Eq Require Import ShallowNew.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -164,6 +165,100 @@ Proof.
 Qed.
 
 End PStructuralFacts.
+
+Section PStructuralBind.
+Context {E : Type -> Type} {M : Type -> Type}.
+Context {A1 A2 B1 B2 : Type}.
+Variables (RA : A1 -> A2 -> Prop) (RB : B1 -> B2 -> Prop).
+Variables (k1 : A1 -> ptree E M B1) (k2 : A2 -> ptree E M B2).
+Hypothesis Hcont : forall a1 a2, RA a1 a2 ->
+  pstructural RB (k1 a1) (k2 a2).
+
+Definition pstructural_bind_clo
+    (u1 : ptree E M B1) (u2 : ptree E M B2) : Prop :=
+  (exists t1 t2, u1 = PTree.bind t1 k1 /\
+    u2 = PTree.bind t2 k2 /\ pstructural RA t1 t2) \/
+  pstructural RB u1 u2.
+
+Theorem pstructural_bind t1 t2 :
+  pstructural RA t1 t2 ->
+  pstructural RB (PTree.bind t1 k1) (PTree.bind t2 k2).
+Proof.
+  intro Hsource.
+  assert (Hstrong : forall u1 u2, pstructural_bind_clo u1 u2 ->
+      pstructural RB u1 u2).
+  { unfold pstructural. coinduction CH CIH.
+    intros u1 u2 Hclo.
+    destruct Hclo as [[s1 [s2 [-> [-> Hs]]]]|Hdone].
+    - unfold pstructural_body.
+      change (pstructuralF RB (` CH)
+        (observe (PTree.bind s1 k1)) (observe (PTree.bind s2 k2))).
+      rewrite !observe_bind.
+      pose proof (pstructural_unfold Hs) as Hstep.
+      dependent destruction Hstep; cbn.
+      + rewrite <- x0, <- x.
+        pose proof (pstructural_unfold (Hcont H)) as Hret.
+        eapply pstructuralF_monotone; [|exact Hret].
+        intros v1 v2 Hv. apply CIH. right. exact Hv.
+      + rewrite <- x0, <- x. constructor. apply CIH. left.
+        eexists _, _. repeat split; eauto.
+      + rewrite <- x0, <- x. constructor=> y. apply CIH. left.
+        eexists _, _. repeat split; eauto.
+      + rewrite <- x0, <- x. constructor=> y. apply CIH. left.
+        eexists _, _. repeat split; eauto.
+    - unfold pstructural_body.
+      pose proof (pstructural_unfold Hdone) as Hstep.
+      eapply pstructuralF_monotone; [|exact Hstep].
+      intros x y Hxy. apply CIH. right. exact Hxy. }
+  apply Hstrong. left. eexists _, _. repeat split; eauto.
+Qed.
+
+End PStructuralBind.
+
+Section PStructuralBindAssoc.
+Context {E : Type -> Type} {M : Type -> Type}.
+Context {A B C : Type}.
+Variables (k : A -> ptree E M B) (h : B -> ptree E M C).
+
+Definition pstructural_bind_assoc_clo
+    (u v : ptree E M C) : Prop :=
+  (exists t, u = PTree.bind (PTree.bind t k) h /\
+    v = PTree.bind t (fun a => PTree.bind (k a) h)) \/
+  pstructural eq u v.
+
+Theorem pstructural_bind_assoc (t : ptree E M A) :
+  pstructural eq
+    (PTree.bind (PTree.bind t k) h)
+    (PTree.bind t (fun a => PTree.bind (k a) h)).
+Proof.
+  assert (Hstrong : forall u v, pstructural_bind_assoc_clo u v ->
+      pstructural eq u v).
+  { unfold pstructural. coinduction CH CIH.
+    intros u v Hclo.
+    destruct Hclo as [[s [-> ->]]|Hdone].
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.bind (PTree.bind s k) h))
+        (observe (PTree.bind s (fun a => PTree.bind (k a) h)))).
+      rewrite !observe_bind.
+      remember (observe s) as ot eqn:Hot.
+      destruct ot as [a|s'|X e c|X mu c]; cbn.
+      + pose proof (pstructural_refl
+          (PTree.bind (k a) h)) as Hrefl.
+        pose proof (pstructural_unfold Hrefl) as Hstep.
+        eapply pstructuralF_monotone; [|exact Hstep].
+        intros x y Hxy. apply CIH. right. exact Hxy.
+      + constructor. apply CIH. left. eexists. split; reflexivity.
+      + constructor=> x. apply CIH. left. eexists. split; reflexivity.
+      + constructor=> x. apply CIH. left. eexists. split; reflexivity.
+    - unfold pstructural_body.
+      pose proof (pstructural_unfold Hdone) as Hstep.
+      eapply pstructuralF_monotone; [|exact Hstep].
+      intros x y Hxy. apply CIH. right. exact Hxy. }
+  apply Hstrong. left. eexists. split; reflexivity.
+Qed.
+
+End PStructuralBindAssoc.
 
 (** Strong probabilistic bisimulation over an abstract probabilistic
     relation lifting.  Constructors are matched in lockstep: unlike
