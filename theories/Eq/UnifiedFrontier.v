@@ -132,4 +132,20 @@ Class UnifiedFrontierCoherence := {
       frontier (TauF t) hs -> frontier (observe t) hs
 }.
 
+(** Opaque introduction wrapper for clients with large analytic measure
+    terms.  It avoids re-elaborating the dependent [UFIter] constructor and
+    its universe arguments at every use site. *)
+Lemma frontier_iter_intro {R I}
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) i out :
+  (forall j,
+    frontier (observe (step j))
+      (mixed_bind (transition j)
+        (fun next => sem_ret (FHRet next)))) ->
+  mixed_iter transition i out ->
+  sem_total out ->
+  frontier (observe (PTree.iter step i))
+    (sem_bind out (fun r => sem_ret (FHRet r))).
+Proof. intros Hstep Hiter Htotal. eapply UFIter; eassumption. Qed.
+
 End UnifiedFrontier.

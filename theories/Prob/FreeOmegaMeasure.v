@@ -27,6 +27,14 @@ Arguments FOZero {MN A}.
 Arguments FOSample {MN A X} _ _.
 Arguments FOLub {MN A} _.
 
+(** [Anchor] pins the otherwise minimizable result universe.  This is useful
+    when a low type such as [bool] must inhabit the same [MF] instance as a
+    high recursive frontier head. *)
+Polymorphic Definition FreeOmegaAt@{node node_rep frontier}
+    (MN : Type@{node} -> Type@{node_rep})
+    (Anchor A : Type@{frontier}) : Type@{frontier} :=
+  @FreeOmega@{node node_rep frontier} MN A.
+
 Polymorphic Fixpoint free_omega_bind {MN A B}
     (mu : FreeOmega MN A) (k : A -> FreeOmega MN B) : FreeOmega MN B :=
   match mu with
@@ -63,6 +71,25 @@ Polymorphic Inductive free_omega_lift {MN}
   | FOLLub c d :
       (forall n, free_omega_lift R (c n) (d n)) ->
       free_omega_lift R (FOLub c) (FOLub d).
+
+(** Relational interpretation into a low-universe observable distribution.
+    It is relational because an abstract omega interface specifies limits by
+    [sem_lub] rather than by a choice function. *)
+Polymorphic Inductive free_omega_observes {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NO : @SemanticOmegaInterface MN NI}
+    {A O} (obs : A -> O) : FreeOmega MN A -> MN O -> Prop :=
+  | FOOObserveRet x :
+      free_omega_observes obs (FORet x) (sem_ret (obs x))
+  | FOOObserveZero :
+      free_omega_observes obs FOZero sem_zero
+  | FOOObserveSample {X} (mu : MN X) k (front : X -> MN O) :
+      (forall x, free_omega_observes obs (k x) (front x)) ->
+      free_omega_observes obs (FOSample mu k) (sem_bind mu front)
+  | FOOObserveLub chain outs out :
+      (forall n, free_omega_observes obs (chain n) (outs n)) ->
+      sem_lub outs out ->
+      free_omega_observes obs (FOLub chain) out.
 
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureInterface {MN}
     `{NI : SemanticMeasureInterface MN} :
@@ -288,20 +315,28 @@ Qed.
     explicit and conservative: totality certificates for analytic limits
     belong to an observable interpretation, not to the syntax alone. *)
 #[global] Polymorphic Instance FreeOmegaSemanticOmegaInterface :
+    forall `{NO : @SemanticOmegaInterface MN NI},
     @SemanticOmegaInterface (FreeOmega MN)
-      (FreeOmegaSemanticMeasureInterface (NI := NI)) := {
-  sem_zero := @FOZero MN;
-  sem_le := fun A _ _ => True;
-  sem_lub := fun A chain out => out = FOLub chain;
-  sem_total := fun A mu => exists x : A, mu = FORet x
-}.
+      (FreeOmegaSemanticMeasureInterface (NI := NI)).
+Proof.
+  intros NO. refine {| sem_zero := @FOZero MN;
+    sem_le := fun A _ _ => True;
+    sem_lub := fun A chain out => out = FOLub chain;
+    sem_total := fun A mu => exists (O : Type) (obs : A -> O) (out : MN O),
+      free_omega_observes obs mu out /\ sem_total out |}.
+Defined.
+
+(** The old syntactic-total design would accept only [FORet].  Observable
+    totality instead permits a formal omega limit exactly when it denotes a
+    total low-universe node distribution. *)
 
 #[global] Polymorphic Instance FreeOmegaSemanticOmegaLaws :
+    forall `{NO : @SemanticOmegaInterface MN NI},
     @SemanticOmegaLaws (FreeOmega MN)
       (FreeOmegaSemanticMeasureInterface (NI := NI))
-      FreeOmegaSemanticOmegaInterface.
+      (FreeOmegaSemanticOmegaInterface (NO := NO)).
 Proof.
-  constructor.
+  intros NO. constructor.
   - intros A chain _. exists (FOLub chain). reflexivity.
   - intros A chain mu nu -> ->. reflexivity.
   - intros A B chain mu k _ ->. reflexivity.

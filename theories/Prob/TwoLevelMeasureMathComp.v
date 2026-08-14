@@ -32,6 +32,34 @@ Context (R : realType).
   sem_lift := @mathcomp_kernel_lift R
 }.
 
+Lemma mathcomp_node_sem_retE {A} (x : A) :
+  @sem_ret (MathCompKernelMeasure R)
+    MathCompNodeSemanticMeasureInterface A x = @mathcomp_kernel_ret R A x.
+Proof. reflexivity. Qed.
+
+Lemma mathcomp_node_sem_bindE {A B} (mu : MathCompKernelMeasure R A)
+    (k : A -> MathCompKernelMeasure R B) :
+  @sem_bind (MathCompKernelMeasure R)
+    MathCompNodeSemanticMeasureInterface A B mu k =
+  @mathcomp_kernel_bind R A B mu k.
+Proof. reflexivity. Qed.
+
+Lemma mathcomp_legacy_ret_semE {A} (x : A) :
+  @meas_ret (MathCompKernelMeasure R)
+    (MathCompKernelMeasureInterface R) A x =
+  @sem_ret (MathCompKernelMeasure R)
+    MathCompNodeSemanticMeasureInterface A x.
+Proof. reflexivity. Qed.
+
+Lemma mathcomp_legacy_bind_semE {A B}
+    (mu : MathCompKernelMeasure R A)
+    (k : A -> MathCompKernelMeasure R B) :
+  @meas_bind (MathCompKernelMeasure R)
+    (MathCompKernelMeasureInterface R) A B mu k =
+  @sem_bind (MathCompKernelMeasure R)
+    MathCompNodeSemanticMeasureInterface A B mu k.
+Proof. reflexivity. Qed.
+
 #[global] Instance MathCompNodeSemanticMeasureCoreLaws
     `{MathCompCouplingGluing R} :
     @SemanticMeasureCoreLaws (MathCompKernelMeasure R)
@@ -112,6 +140,27 @@ Definition mathcomp_node_le {A}
   sem_lub := @mathcomp_kernel_lub R;
   sem_total := @mathcomp_kernel_total R
 }.
+
+Lemma mathcomp_node_sem_zeroE {A} :
+  @sem_zero (MathCompKernelMeasure R)
+    MathCompNodeSemanticMeasureInterface
+    MathCompNodeSemanticOmegaInterface A = @mathcomp_kernel_zero R A.
+Proof. reflexivity. Qed.
+
+Lemma mathcomp_node_sem_lubE {A}
+    (chain : nat -> MathCompKernelMeasure R A) out :
+  @sem_lub (MathCompKernelMeasure R)
+    MathCompNodeSemanticMeasureInterface
+    MathCompNodeSemanticOmegaInterface A chain out <->
+  @mathcomp_kernel_lub R A chain out.
+Proof. reflexivity. Qed.
+
+Lemma mathcomp_node_sem_totalE {A} (mu : MathCompKernelMeasure R A) :
+  @sem_total (MathCompKernelMeasure R)
+    MathCompNodeSemanticMeasureInterface
+    MathCompNodeSemanticOmegaInterface A mu <->
+  @mathcomp_kernel_total R A mu.
+Proof. reflexivity. Qed.
 
 End MathCompNodeLayer.
 

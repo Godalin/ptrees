@@ -161,10 +161,16 @@ condition is listed explicitly, the referenced result is proved without an
   `Examples/UnifiedMathCompFrontier.v` is the positive regression: a genuine
   MathComp Bernoulli node has a unified high-universe frontier and is
   reflexive under the new `weak_bisim` (assuming explicit MathComp gluing).
-- The free behavior model's formal omega constructor is universe-safe, but
-  analytic totality of a lub must still be connected to MathComp returned-mass
-  observables before the real oracle example can be stated as a unified weak
-  equivalence.
+- `FreeOmega.free_omega_observes` folds a high-universe formal behavior into
+  a low-universe node distribution.  Observable totality means that such a
+  fold exists and its node distribution is total.  In
+  `Examples/UnifiedRealBernoulliMathComp.v`, every formal oracle approximant
+  folds to the existing MathComp `meas_iter_approx`; the proved analytic lub
+  is the genuine Bernoulli `q`, whose returned mass proves the `UFIter`
+  totality premise.  Thus the real oracle now has a checked unified AST
+  frontier.  A coupling quotient relating this formal-lub frontier to the
+  differently shaped direct-sample frontier is still needed for a final
+  `weak_bisim` theorem between the two programs.
 - `Experimental/UniverseSeparatedPTree.v` is a checked migration probe.  It
   separates `M`'s sampled-carrier and measure-representation universes and
   successfully constructs a PTree probability node from
