@@ -396,6 +396,15 @@ Proof.
   - intros A B chain mu k _ ->. reflexivity.
 Qed.
 
+#[global] Polymorphic Instance FreeOmegaSemanticMeasureOrderLaws :
+    forall `{NO : @SemanticOmegaInterface MN NI},
+    @SemanticMeasureOrderLaws (FreeOmega MN)
+      (FreeOmegaSemanticMeasureInterface (NI := NI))
+      (FreeOmegaSemanticOmegaInterface (NO := NO)).
+Proof.
+  intros NO. constructor; intros; exact I.
+Qed.
+
 End FreeOmegaLaws.
 
 (** An observation-closed coupling for the free omega completion.  The
@@ -592,5 +601,11 @@ Proof.
     apply FOQLLub. exact Hcc.
   - intros A B chain mu k _ ->. reflexivity.
 Qed.
+
+#[global] Instance FreeOmegaObservableSemanticMeasureOrderLaws :
+    @SemanticMeasureOrderLaws (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface.
+Proof. constructor; intros; exact I. Qed.
 
 End FreeOmegaObservableLaws.

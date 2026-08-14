@@ -72,8 +72,12 @@ condition is listed explicitly, the referenced result is proved without an
   separate assertion that this limit is total.
   There are no Iter/Bind/NestedIter weak constructors.  The development also
   identifies and proves for Enum and FreeOmega the previously implicit mixed
-  associativity law needed to derive the operational Prob recurrence.  Sound
-  frontier laws and conditional completeness remain the next stage.
+  associativity law needed to derive the operational Prob recurrence.  A
+  separate minimal order capability (reflexivity, bottom zero, and bind
+  monotonicity) proves that every primitive hitting chain is increasing;
+  together with omega laws this yields existence and extensional uniqueness
+  of its operational weak limit.  Sound frontier laws and conditional
+  completeness remain the next stage.
 
 ## Measure semantics and coupling
 

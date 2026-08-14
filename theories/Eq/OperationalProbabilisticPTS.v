@@ -214,3 +214,62 @@ Proof.
 Qed.
 
 End OperationalKernelLaws.
+
+Section OperationalHittingOrder.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}.
+
+Lemma operational_target_approx_increasing {R} fuel
+    (target : operational_target E MN R) :
+  sem_le
+    (operational_target_approx (MF := MF) fuel target)
+    (operational_target_approx (Datatypes.S fuel) target).
+Proof.
+  induction fuel as [|fuel IH] in target |- *; destruct target as [h|t].
+  - apply sem_le_refl.
+  - apply sem_zero_le.
+  - apply sem_le_refl.
+  - apply sem_bind_le_k. exact IH.
+Qed.
+
+Theorem operational_hitting_increasing {R} (ot : ptree' E MN R) :
+  sem_increasing
+    (fun fuel => operational_hitting_approx (MF := MF) fuel ot).
+Proof.
+  intros fuel. unfold operational_hitting_approx.
+  apply sem_bind_le_k. intros target.
+  exact (operational_target_approx_increasing fuel target).
+Qed.
+
+End OperationalHittingOrder.
+
+Section OperationalWeakExistence.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}.
+
+Theorem operational_weak_exists {R} (ot : ptree' E MN R) :
+  exists out, operational_weak (MF := MF) ot out.
+Proof.
+  unfold operational_weak. apply sem_lub_exists.
+  exact (operational_hitting_increasing ot).
+Qed.
+
+Theorem operational_weak_unique {R} (ot : ptree' E MN R) out1 out2 :
+  operational_weak (MF := MF) ot out1 ->
+  operational_weak (MF := MF) ot out2 ->
+  sem_eq out1 out2.
+Proof.
+  unfold operational_weak. intros H1 H2.
+  eapply sem_lub_unique; eassumption.
+Qed.
+
+End OperationalWeakExistence.

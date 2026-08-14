@@ -156,6 +156,21 @@ Definition sem_increasing {SM} `{SI : SemanticMeasureInterface SM}
     (chain : nat -> SM A) : Prop :=
   forall n, sem_le (chain n) (chain (Datatypes.S n)).
 
+(** Minimal order theory needed to show that primitive stable-hitting
+    approximants form an increasing chain.  It is independent of omega-limit
+    existence and can therefore be supplied by partial backends. *)
+Polymorphic Class SemanticMeasureOrderLaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S}
+    `{SO : @SemanticOmegaInterface S SI} := {
+  sem_le_refl : forall {A : Type@{carrier}} (mu : S A), sem_le mu mu;
+  sem_zero_le : forall {A : Type@{carrier}} (mu : S A), sem_le sem_zero mu;
+  sem_bind_le_k : forall {A B : Type@{carrier}} (mu : S A)
+      (k h : A -> S B),
+      (forall x, sem_le (k x) (h x)) ->
+      sem_le (sem_bind mu k) (sem_bind mu h)
+}.
+
 (** Continuity needed by the absorbing PTS construction.  Existence is
     restricted to increasing chains; uniqueness and bind-continuity are
     extensional. *)
