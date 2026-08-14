@@ -56,8 +56,10 @@ condition is listed explicitly, the referenced result is proved without an
 
 ## Relation hierarchy
 
-- `Eq/PStrong.v`: `eq_pstrong` and the `pstrong` equivalence facts establish
-  tree identity as an axiom-free structural baseline.
+- `Eq/PStrong.v` defines the axiom-free coinductive `pstructural` relation:
+  Ret/Tau/Vis are lockstep and Prob requires the same measure with pointwise
+  related continuations.  `pstructural_pstrong` proves its inclusion in
+  `pstrong`; `eq_pstructural` embeds tree identity.
 - `Eq/PWeakHierarchy.v`: `pstrong_apweak` proves strong-to-finite weak
   inclusion from the measure laws; `apweak_auweak_of_finite_generation` and
   `pstrong_auweak_of_finite_generation` state the exact finite-generation
@@ -90,9 +92,8 @@ condition is listed explicitly, the referenced result is proved without an
 
 - A new probabilistic refinement/simulation replacing legacy `PSSim`.
 - Bidirectional ITree compilation bridges.
-- A stronger coinductive structural `equ` rebuilt without the axioms in the
-  legacy module.  The maintained hierarchy currently starts from tree
-  identity.
+- Compatibility with every auxiliary rule of the legacy structural `equ`.
+  The maintained hierarchy uses the smaller axiom-free `pstructural` instead.
 
 The default validation command is:
 

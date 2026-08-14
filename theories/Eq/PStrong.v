@@ -15,6 +15,95 @@ Unset Printing Implicit Defensive.
 
 Notation "` R" := (elem R) (at level 10).
 
+(** A purely structural lockstep relation.  Probability nodes must expose
+    the same sampling measure and sampled type; only their continuations may
+    differ recursively.  This replaces the axiom-bearing legacy [equ] as the
+    maintained coinductive structural baseline. *)
+Section PStructural.
+
+Context {E : Type -> Type} {M : Type -> Type}.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+
+Variant pstructuralF
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop) :
+    ptree' E M R1 -> ptree' E M R2 -> Prop :=
+  | PStRet r1 r2 : RR r1 r2 ->
+      pstructuralF sim (RetF r1) (RetF r2)
+  | PStTau t1 t2 : sim t1 t2 ->
+      pstructuralF sim (TauF t1) (TauF t2)
+  | PStVis {X} (e : E X) k1 k2 :
+      (forall x, sim (k1 x) (k2 x)) ->
+      pstructuralF sim (VisF e k1) (VisF e k2)
+  | PStProb {X : Type} (mu : M X) k1 k2 :
+      (forall x, sim (k1 x) (k2 x)) ->
+      pstructuralF sim (ProbF mu k1) (ProbF mu k2).
+
+Definition pstructural_body
+    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
+    (t1 : ptree E M R1) (t2 : ptree E M R2) : Prop :=
+  pstructuralF sim (observe t1) (observe t2).
+
+Lemma pstructuralF_monotone sim1 sim2 :
+  (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
+  forall ot1 ot2, pstructuralF sim1 ot1 ot2 ->
+    pstructuralF sim2 ot1 ot2.
+Proof.
+  move=> Hmono ot1 ot2 Hs. inversion Hs; subst.
+  - constructor. exact H.
+  - constructor. exact: Hmono H.
+  - constructor=> x. exact: Hmono (H x).
+  - constructor=> x. exact: Hmono (H x).
+Qed.
+
+Program Definition fpstructural :
+    mon (ptree E M R1 -> ptree E M R2 -> Prop) :=
+  {| body := pstructural_body |}.
+Next Obligation.
+  move=> sim1 sim2 Hsub t1 t2 Hs.
+  eapply pstructuralF_monotone.
+  - exact Hsub.
+  - exact Hs.
+Qed.
+
+Definition pstructural : ptree E M R1 -> ptree E M R2 -> Prop :=
+  gfp fpstructural.
+
+Lemma pstructural_unfold t1 t2 :
+  pstructural t1 t2 ->
+  pstructuralF pstructural (observe t1) (observe t2).
+Proof. move=> H. apply (gfp_pfp fpstructural) in H. exact H. Qed.
+
+Lemma pstructural_fold t1 t2 :
+  pstructuralF pstructural (observe t1) (observe t2) ->
+  pstructural t1 t2.
+Proof. move=> H. unfold pstructural. apply (gfp_fp fpstructural). exact H. Qed.
+
+End PStructural.
+
+Section PStructuralFacts.
+Context {E : Type -> Type} {M : Type -> Type}.
+
+Lemma pstructural_refl {R : Type} :
+  Reflexive (@pstructural E M R R eq).
+Proof.
+  red. unfold pstructural. coinduction CH CIH. move=> t.
+  unfold pstructural_body.
+  set ot := observe t.
+  change (pstructuralF eq (` CH) ot ot).
+  destruct ot.
+  - constructor. reflexivity.
+  - constructor. apply CIH.
+  - constructor=> x. apply CIH.
+  - constructor=> x. apply CIH.
+Qed.
+
+Lemma eq_pstructural {R : Type} (t1 t2 : ptree E M R) :
+  t1 = t2 -> pstructural eq t1 t2.
+Proof. move=> ->. exact: pstructural_refl. Qed.
+
+End PStructuralFacts.
+
 (** Strong probabilistic bisimulation over an abstract probabilistic
     relation lifting.  Constructors are matched in lockstep: unlike
     [apweak], this relation neither discards a one-sided [Tau] nor collapses
@@ -105,6 +194,27 @@ Context {M : Type -> Type}.
 Context `{MI : MeasureInterface M}.
 Context `{MC : @MeasureCoreLaws M MI}.
 Context `{ML : @MeasureLaws M MI MC}.
+
+Theorem pstructural_pstrong {R1 R2} (RR : R1 -> R2 -> Prop) :
+  forall (t1 : ptree E M R1) (t2 : ptree E M R2),
+    pstructural RR t1 t2 -> pstrong RR t1 t2.
+Proof.
+  unfold pstrong. coinduction CH CIH. move=> t1 t2 Hrel.
+  move: (pstructural_unfold Hrel)=> Hstep.
+  set ot1 := observe t1 in Hstep |- *.
+  set ot2 := observe t2 in Hstep |- *.
+  change (pstrongF RR (` CH) ot1 ot2).
+  inversion Hstep as
+      [r1 r2 HR | u1 u2 Hsim | X e k1 k2 Hk
+       | X mu k1 k2 Hk]; subst.
+  - constructor. exact HR.
+  - constructor. exact: CIH Hsim.
+  - constructor=> x. exact: CIH (Hk x).
+  - constructor.
+    eapply meas_lift_mono.
+    + move=> x y ->. exact: CIH (Hk y).
+    + apply meas_lift_refl. unfold Reflexive. reflexivity.
+Qed.
 
 Lemma pstrong_refl {R : Type} :
   Reflexive (@pstrong E M MI MC R R eq).
