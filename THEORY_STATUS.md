@@ -121,6 +121,15 @@ condition is listed explicitly, the referenced result is proved without an
   `frontier_to_operational_weak` proves soundness for every unified frontier
   constructor. These premises contain no mirrored weak-transition rules;
   proving them structurally is the remaining adequacy task.
+- `Examples/OperationalPTSExamples.v` is the first direct client of the
+  independent model.  A genuinely nested two-sample Enum program and a
+  differently shaped one-sample three-point program receive separate
+  primitive operational weak limits in `FreeOmega Enum`.  Both limits are
+  proved total through low-level observations, and an observation-closed
+  coupling derived from the established flattening equality feeds
+  `OPBStable` directly.  The resulting
+  `operational_reg_nested_merged_bisim` uses neither the mirrored PTS nor a
+  transport from unified-frontier bisimulation.
 
 ## Measure semantics and coupling
 
