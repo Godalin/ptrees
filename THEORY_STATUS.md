@@ -96,6 +96,13 @@ condition is listed explicitly, the referenced result is proved without an
   `operational_weak_tau_iff` and `operational_ast_weak_tau_iff` then derive
   silent-step invariance solely from the primitive hitting recurrence and
   cofinality; no Tau weak-transition constructor is used.
+  `MixedMeasureOmegaLaws` isolates the two further facts required by a
+  primitive probability node: sampling an everywhere-zero continuation is
+  zero, and mixed bind commutes with almost-everywhere branchwise increasing
+  lubs.  The observation-closed FreeOmega model validates both explicitly.
+  Consequently `operational_weak_prob` and `operational_ast_weak_prob` prove
+  the native Prob soundness rule from primitive fuel recurrence and monotone
+  convergence, without importing the frontier's `UFProb` constructor.
 
 ## Measure semantics and coupling
 

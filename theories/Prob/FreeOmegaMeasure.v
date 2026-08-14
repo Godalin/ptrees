@@ -487,7 +487,18 @@ Polymorphic Inductive free_omega_qlift {MN}
       free_omega_qlift R
         (FOLub c)
         (FOLub (fun n => match n with O => FOZero
-          | Datatypes.S n' => d n' end)).
+          | Datatypes.S n' => d n' end))
+  | FOQLSampleLub {C} (mu : MN C) (Good : C -> Prop)
+      (chain : C -> nat -> FreeOmega MN B)
+      (out : C -> FreeOmega MN A) :
+      sem_ae mu Good ->
+      (forall x, Good x ->
+        free_omega_qlift R (out x) (FOLub (chain x))) ->
+      free_omega_qlift R
+        (FOSample mu out)
+        (FOLub (fun n => FOSample mu (fun x => chain x n)))
+  | FOQLSampleZero {C} (mu : MN C) :
+      free_omega_qlift R (FOSample mu (fun _ => FOZero)) FOZero.
 
 #[global] Polymorphic Instance FreeOmegaObservableSemanticMeasureInterface
     {MN} `{NI : SemanticMeasureInterface MN}
@@ -684,6 +695,19 @@ Proof.
       FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hlim|].
     apply FOQLLubZeroPrefixL. intro n.
     apply free_omega_qlift_refl. intros x. reflexivity.
+Qed.
+
+#[global] Instance FreeOmegaObservableMixedMeasureOmegaLaws :
+    @MixedMeasureOmegaLaws MN (FreeOmega MN) NI
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface.
+Proof.
+  constructor.
+  - intros A B mu. cbn. apply FOQLSampleZero.
+  - intros A B mu Good chain out Hae _ Hlim.
+    cbn in Hlim |- *.
+    eapply FOQLSampleLub; eauto.
 Qed.
 
 #[global] Instance FreeOmegaObservableSemanticMeasureOrderLaws :

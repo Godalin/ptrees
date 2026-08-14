@@ -280,6 +280,7 @@ Section OperationalTauSoundness.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
   `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasureInterface MN MF}
@@ -330,6 +331,74 @@ Proof.
 Qed.
 
 End OperationalTauSoundness.
+
+Section OperationalProbSoundness.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
+
+Lemma operational_hitting_prob_zero_prefix {R X}
+    (mu : MN X) (k : X -> ptree E MN R) fuel :
+  sem_eq
+    (operational_hitting_approx (MF := MF) fuel (ProbF mu k))
+    (sem_zero_prefix
+      (fun n => mixed_bind mu (fun x =>
+        operational_hitting_approx (MF := MF) n (observe (k x))))
+      fuel).
+Proof.
+  destruct fuel as [|fuel].
+  - cbn [sem_zero_prefix]. eapply sem_eq_trans.
+    + apply operational_hitting_prob_zero.
+    + apply mixed_bind_zero.
+  - cbn [sem_zero_prefix]. apply operational_hitting_prob_succ.
+Qed.
+
+(** Primitive probabilistic sampling commutes with unbounded stable hitting
+    exactly under the mixed monotone-convergence capability. *)
+Theorem operational_weak_prob {R X}
+    (mu : MN X) (k : X -> ptree E MN R)
+    (front : X -> MF (frontier_head E MN R)) (Good : X -> Prop) :
+  sem_ae mu Good ->
+  (forall x, Good x -> operational_weak (MF := MF) (observe (k x)) (front x)) ->
+  operational_weak (MF := MF) (ProbF mu k) (mixed_bind mu front).
+Proof.
+  intros Hae Hbranch. unfold operational_weak in Hbranch |- *.
+  eapply sem_lub_chain_proper.
+  - intro n. apply sem_eq_sym.
+    apply operational_hitting_prob_zero_prefix.
+  - apply (proj1 (sem_lub_zero_prefix
+      (fun n => mixed_bind mu (fun x =>
+        operational_hitting_approx (MF := MF) n (observe (k x))))
+      (mixed_bind mu front))).
+    eapply mixed_bind_lub; [exact Hae| |exact Hbranch].
+    intros x _. apply operational_hitting_increasing.
+Qed.
+
+Corollary operational_ast_weak_prob {R X}
+    (mu : MN X) (k : X -> ptree E MN R)
+    (front : X -> MF (frontier_head E MN R)) (Good : X -> Prop) :
+  sem_ae mu Good ->
+  (forall x, Good x ->
+    operational_ast_weak (MF := MF) (observe (k x)) (front x)) ->
+  sem_total (mixed_bind mu front) ->
+  operational_ast_weak (MF := MF) (ProbF mu k) (mixed_bind mu front).
+Proof.
+  intros Hae Hbranch Htotal. split; [|exact Htotal].
+  eapply operational_weak_prob; [exact Hae|].
+  intros x Hx. exact (proj1 (Hbranch x Hx)).
+Qed.
+
+End OperationalProbSoundness.
 
 Section GuardedOperationalBisimulation.
 Context {E : Type -> Type} {MN MF : Type -> Type}

@@ -213,6 +213,29 @@ Polymorphic Class SemanticOmegaCofinalityLaws@{carrier representation}
       sem_lub chain out <-> sem_lub (sem_zero_prefix chain) out
 }.
 
+(** Monotone convergence across the two measure levels.  This is the exact
+    analytic capability needed to turn almost-everywhere branchwise weak
+    limits into the weak limit of a primitive Prob transition. *)
+Polymorphic Class MixedMeasureOmegaLaws@{node node_rep frontier frontier_rep}
+    (MN : Type@{node} -> Type@{node_rep})
+    (MF : Type@{frontier} -> Type@{frontier_rep})
+    `{NI : SemanticMeasureInterface MN}
+    `{FI : SemanticMeasureInterface MF}
+    `{MX : MixedMeasureInterface MN MF}
+    `{FO : @SemanticOmegaInterface MF FI} := {
+  mixed_bind_zero : forall {A : Type@{node}} {B : Type@{frontier}}
+      (mu : MN A),
+      sem_eq (mixed_bind mu (fun _ => @sem_zero MF FI FO B)) sem_zero;
+  mixed_bind_lub : forall {A : Type@{node}} {B : Type@{frontier}}
+      (mu : MN A) (Good : A -> Prop)
+      (chain : A -> nat -> MF B) (out : A -> MF B),
+      sem_ae mu Good ->
+      (forall x, Good x -> sem_increasing (chain x)) ->
+      (forall x, Good x -> sem_lub (chain x) (out x)) ->
+      sem_lub (fun n => mixed_bind mu (fun x => chain x n))
+        (mixed_bind mu out)
+}.
+
 #[global] Polymorphic Instance sem_eq_equivalence
     {S} `{SI : SemanticMeasureInterface S}
     `{SL : @SemanticMeasureCoreLaws S SI} A :
