@@ -72,6 +72,32 @@ Polymorphic Inductive free_omega_lift {MN}
       (forall n, free_omega_lift R (c n) (d n)) ->
       free_omega_lift R (FOLub c) (FOLub d).
 
+(** Finite subbehavior order.  Unlike the earlier placeholder [sem_le :=
+    True], this relation records the concrete information needed for
+    cofinality arguments: missing mass is bottom, and existing Ret/Sample/Lub
+    structure must be preserved relationally. *)
+Polymorphic Inductive free_omega_approx {MN}
+    `{NI : SemanticMeasureInterface MN} {A B}
+    (R : A -> B -> Prop) : FreeOmega MN A -> FreeOmega MN B -> Prop :=
+  | FOApproxZero nu : free_omega_approx R FOZero nu
+  | FOApproxRet x y : R x y ->
+      free_omega_approx R (FORet x) (FORet y)
+  | FOApproxSample {X Y} (S : X -> Y -> Prop)
+      (mu : MN X) (nu : MN Y) k h :
+      sem_lift S mu nu ->
+      (forall x y, S x y -> free_omega_approx R (k x) (h y)) ->
+      free_omega_approx R (FOSample mu k) (FOSample nu h)
+  | FOApproxLub c d :
+      (forall n, free_omega_approx R (c n) (d n)) ->
+      free_omega_approx R (FOLub c) (FOLub d).
+
+Definition free_omega_chains_cofinal {MN}
+    `{NI : SemanticMeasureInterface MN} {A B} (R : A -> B -> Prop)
+    (left : nat -> FreeOmega MN A) (right : nat -> FreeOmega MN B) : Prop :=
+  (forall n, exists m, free_omega_approx R (left n) (right m)) /\
+  (forall m, exists n, free_omega_approx (fun y x => R x y)
+    (right m) (left n)).
+
 (** Relational interpretation into a low-universe observable distribution.
     It is relational because an abstract omega interface specifies limits by
     [sem_lub] rather than by a choice function. *)
@@ -203,6 +229,18 @@ Proof.
   - constructor. apply HR.
   - constructor.
   - eapply FOLSample with (S := eq).
+    + apply sem_lift_refl. intros x. reflexivity.
+    + intros x y ->. exact (H y).
+  - constructor. exact H.
+Qed.
+
+Lemma free_omega_approx_refl {A} (R : A -> A -> Prop) mu :
+  Reflexive R -> free_omega_approx R mu mu.
+Proof.
+  intros HR. induction mu.
+  - constructor. apply HR.
+  - constructor.
+  - eapply FOApproxSample with (S := eq).
     + apply sem_lift_refl. intros x. reflexivity.
     + intros x y ->. exact (H y).
   - constructor. exact H.
@@ -511,7 +549,11 @@ Polymorphic Inductive free_omega_qlift {MN}
       free_omega_qlift R
         (free_omega_bind source_out kernel_out)
         (FOLub (fun n => free_omega_bind (source n)
-          (fun x => kernels x n))).
+          (fun x => kernels x n)))
+  | FOQLCofinal (left : nat -> FreeOmega MN A)
+      (right : nat -> FreeOmega MN B) :
+      free_omega_chains_cofinal R left right ->
+      free_omega_qlift R (FOLub left) (FOLub right).
 
 #[global] Polymorphic Instance FreeOmegaObservableSemanticMeasureInterface
     {MN} `{NI : SemanticMeasureInterface MN}
@@ -647,6 +689,23 @@ Qed.
   sem_total := fun A mu => exists (O : Type) (obs : A -> O) (out : MN O),
     free_omega_observes obs mu out /\ sem_total out
 }.
+
+Lemma free_omega_cofinal_lub_iff {A}
+    (left right : nat -> FreeOmega MN A) out :
+  free_omega_chains_cofinal eq left right ->
+  @sem_lub (FreeOmega MN)
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface A left out <->
+  @sem_lub (FreeOmega MN)
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface A right out.
+Proof.
+  intro Hcofinal. cbn. split; intro Hlim.
+  - refine (FOQLComp (R := eq) Hlim (FOQLCofinal Hcofinal) _).
+    intros x z [y [-> ->]]. reflexivity.
+  - refine (FOQLComp (R := eq) Hlim (FOQLSym (FOQLCofinal Hcofinal)) _).
+    intros x z [y [-> ->]]. reflexivity.
+Qed.
 
 #[global] Instance FreeOmegaObservableSemanticOmegaLaws :
     @SemanticOmegaLaws (FreeOmega MN)

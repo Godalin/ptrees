@@ -130,6 +130,17 @@ condition is listed explicitly, the referenced result is proved without an
   `OPBStable` directly.  The resulting
   `operational_reg_nested_merged_bisim` uses neither the mirrored PTS nor a
   transport from unified-frontier bisimulation.
+- `FreeOmegaMeasure.v` now contains the nontrivial finite subbehavior order
+  `free_omega_approx` (zero is bottom; Ret/Sample/Lub structure is preserved)
+  and mutual eventual coverage `free_omega_chains_cofinal`.  The
+  observation-closed quotient identifies formal lubs of such cofinal chains,
+  with `free_omega_cofinal_lub_iff` deriving the corresponding semantic-lub
+  equivalence. `Eq/OperationalProbabilisticPTSFreeOmega.v` lowers the former
+  abstract Bind/Iter lub-cofinality premises to these concrete finite
+  obligations.  The Ret-source Bind case is already discharged by
+  `free_operational_bind_ret_approx_cofinal`; Tau/Prob and general iteration
+  now reduce to finite fuel monotonicity and index-bound proofs rather than
+  assumed weak-transition rules.
 
 ## Measure semantics and coupling
 
