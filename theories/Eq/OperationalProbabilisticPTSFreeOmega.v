@@ -572,6 +572,14 @@ Definition free_no_event_head_value
   | @FHVis _ _ _ X e _ => False_rect A (no_event e)
   end.
 
+Lemma free_no_event_head_ret (h : frontier_head E MN A) :
+  exists a, h = FHRet a.
+Proof.
+  destruct h as [a|X e c].
+  - exists a. reflexivity.
+  - exfalso. exact (no_event e).
+Qed.
+
 Lemma free_omega_approx_monotone_nat {X}
     (chain : nat -> MF X)
     (Hstep : forall n, free_omega_approx eq (chain n) (chain (S n))) :
@@ -675,13 +683,15 @@ Proof.
         cbn [free_nested_execution_grid].
         eapply free_omega_approx_bind with (R := eq) (T := eq).
         -- apply free_omega_approx_refl. intros h. reflexivity.
-        -- intros h1 h2 ->. destruct h2 as [a|X e c].
-           ++ cbn [operational_head_bind_approx].
-              cbn [free_no_event_head_value].
-              unfold free_nested_after. destruct (round i a);
-                cbn [operational_hitting_approx operational_kernel];
-                try rewrite operational_target_stableE; constructor.
-           ++ exfalso. exact (no_event e).
+        -- intros h1 h2 ->.
+           destruct (free_no_event_head_ret h2) as [a ->].
+           cbn [operational_head_bind_approx free_no_event_head_value].
+           unfold free_nested_after. destruct (round i a) as [i'|r].
+           ++ cbn [operational_hitting_approx operational_kernel].
+              constructor.
+           ++ cbn [operational_hitting_approx operational_kernel].
+              try rewrite operational_target_stableE.
+              apply free_omega_approx_refl. intros x. reflexivity.
   - eapply free_omega_approx_trans.
     + apply free_omega_lift_to_approx.
       apply free_nested_program_hitting_unfold.
@@ -691,23 +701,22 @@ Proof.
         cbn [free_nested_execution_grid].
         eapply free_omega_approx_bind with (R := eq) (T := eq).
         -- apply free_omega_approx_refl. intros h. reflexivity.
-        -- intros h1 h2 ->. destruct h2 as [a|X e c].
-           ++ cbn [operational_head_bind_approx].
-              cbn [free_no_event_head_value].
-              unfold free_nested_after. destruct (round i a) as [i'|r].
-              ** cbn [operational_hitting_approx operational_kernel].
-                 eapply free_omega_approx_trans.
-                 --- apply IH.
-                 --- apply free_omega_approx_monotone_nat with
-                       (chain := fun inner =>
-                         free_nested_execution_grid (S fuel) inner i').
-                     +++ intro inner.
-                         apply free_nested_execution_grid_inner_increasing.
-                     +++ apply le_S, le_n.
-              ** cbn [operational_hitting_approx operational_kernel].
-                 rewrite operational_target_stableE.
-                 apply free_omega_approx_refl. intros x. reflexivity.
-           ++ exfalso. exact (no_event e).
+        -- intros h1 h2 ->.
+           destruct (free_no_event_head_ret h2) as [a ->].
+           cbn [operational_head_bind_approx free_no_event_head_value].
+           unfold free_nested_after. destruct (round i a) as [i'|r].
+           ++ cbn [operational_hitting_approx operational_kernel].
+              eapply free_omega_approx_trans.
+              ** apply IH.
+              ** apply free_omega_approx_monotone_nat with
+                    (chain := fun inner =>
+                      free_nested_execution_grid (S fuel) inner i').
+                 --- intro inner.
+                     apply free_nested_execution_grid_inner_increasing.
+                 --- apply le_S, le_n.
+           ++ cbn [operational_hitting_approx operational_kernel].
+              try rewrite operational_target_stableE.
+              apply free_omega_approx_refl. intros x. reflexivity.
 Qed.
 
 Lemma free_nested_execution_grid_outer_increasing inner :
@@ -760,15 +769,15 @@ Proof.
       unfold free_operational_bind_split_approx.
       eapply free_omega_approx_bind with (R := eq) (T := eq).
       * apply free_omega_approx_refl. intros h. reflexivity.
-      * intros h1 h2 ->. destruct h2 as [a|X e c].
-        -- cbn [free_no_event_head_value operational_head_bind_approx].
-           unfold free_nested_after. destruct (round i a) as [i'|r].
-           ++ cbn [operational_hitting_approx operational_kernel].
-              apply IH.
-           ++ cbn [operational_hitting_approx operational_kernel].
-              rewrite operational_target_stableE.
-              apply free_omega_approx_refl. intros x. reflexivity.
-        -- exfalso. exact (no_event e).
+      * intros h1 h2 ->.
+        destruct (free_no_event_head_ret h2) as [a ->].
+        cbn [free_no_event_head_value operational_head_bind_approx].
+        unfold free_nested_after. destruct (round i a) as [i'|r].
+        -- cbn [operational_hitting_approx operational_kernel].
+           apply IH.
+        -- cbn [operational_hitting_approx operational_kernel].
+           try rewrite operational_target_stableE.
+           apply free_omega_approx_refl. intros x. reflexivity.
     + eapply free_omega_approx_trans.
       * apply free_operational_bind_split_le_hitting. exact no_event.
       * apply free_omega_lift_to_approx.
