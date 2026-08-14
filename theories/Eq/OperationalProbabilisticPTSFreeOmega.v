@@ -332,6 +332,16 @@ Definition free_no_event_head_value
   | @FHVis _ _ _ X e _ => False_rect A (no_event e)
   end.
 
+Lemma free_omega_approx_monotone_nat {X}
+    (chain : nat -> MF X)
+    (Hstep : forall n, free_omega_approx eq (chain n) (chain (S n))) :
+  forall n m, n <= m -> free_omega_approx eq (chain n) (chain m).
+Proof.
+  intros n m Hle. induction Hle.
+  - apply free_omega_approx_refl. intros x. reflexivity.
+  - eapply free_omega_approx_trans; [exact IHHle|apply Hstep].
+Qed.
+
 (** [outer] bounds how many completed sampler results may be consumed;
     [inner] bounds primitive execution inside every sampler invocation. *)
 Fixpoint free_nested_execution_grid (outer inner : nat) (i : I) :
@@ -347,6 +357,34 @@ Fixpoint free_nested_execution_grid (outer inner : nat) (i : I) :
           | inr r => FORet (FHRet r)
           end)
   end.
+
+(** Finite productivity data for a genuinely nested execution.  Unlike the
+    earlier one-dimensional iteration certificate, the structured side has
+    two independent budgets.  No finite budget is required to contain the
+    complete AST sampler: every obligation compares only finite primitive
+    execution with one finite grid cell.
+
+    The schedules need not preserve indices.  This is essential because a
+    global primitive budget is shared by all sampler invocations, whereas a
+    grid cell grants its [inner] budget afresh in each of [outer] rounds. *)
+Record free_nested_productivity_certificate (i : I) := {
+  nested_operational_to_grid_outer : nat -> nat;
+  nested_operational_to_grid_inner : nat -> nat;
+  nested_grid_to_operational : nat -> nat -> nat;
+  nested_operational_to_grid_sound : forall fuel,
+    free_omega_approx eq
+      (operational_hitting_approx (MF := MF) fuel
+        (observe (free_nested_program i)))
+      (free_nested_execution_grid
+        (nested_operational_to_grid_outer fuel)
+        (nested_operational_to_grid_inner fuel) i);
+  nested_grid_to_operational_sound : forall outer inner,
+    free_omega_approx eq
+      (free_nested_execution_grid outer inner i)
+      (operational_hitting_approx (MF := MF)
+        (nested_grid_to_operational outer inner)
+        (observe (free_nested_program i)))
+}.
 
 (** The corresponding row limit replaces the finite inner hitting chain by
     its complete AST output, while retaining finite outer fuel. *)
@@ -395,6 +433,42 @@ Proof.
       destruct (round i (free_no_event_head_value h2)) as [i'|r].
       * apply IH.
       * apply free_omega_approx_refl. intros x. reflexivity.
+Qed.
+
+(** A finite productivity certificate is sufficient for the canonical
+    program/grid omega-limit bridge.  Monotonicity in both grid coordinates
+    moves arbitrary scheduled cells to the diagonal. *)
+Theorem free_nested_productivity_diagonal_cofinal (i : I) :
+  free_nested_productivity_certificate i ->
+  @operational_hitting_diagonal_cofinal E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R
+    (observe (free_nested_program i))
+    (fun outer inner => free_nested_execution_grid outer inner i).
+Proof.
+  intro cert. intro out. apply free_omega_cofinal_lub_iff. split.
+  - intro fuel.
+    set (outer := nested_operational_to_grid_outer cert fuel).
+    set (inner := nested_operational_to_grid_inner cert fuel).
+    exists (Nat.max outer inner).
+    eapply free_omega_approx_trans.
+    + exact (nested_operational_to_grid_sound cert fuel).
+    + eapply free_omega_approx_trans.
+      * apply free_omega_approx_monotone_nat with
+          (chain := fun n => free_nested_execution_grid n inner i).
+        -- intros n. apply free_nested_execution_grid_outer_increasing.
+        -- apply Nat.le_max_l.
+      * apply free_omega_approx_monotone_nat with
+          (chain := fun n => free_nested_execution_grid
+            (Nat.max outer inner) n i).
+        -- intros n. apply free_nested_execution_grid_inner_increasing.
+        -- apply Nat.le_max_r.
+  - intro diagonal.
+    exists (nested_grid_to_operational cert diagonal diagonal).
+    eapply free_omega_approx_mono.
+    + intros x y Hxy. symmetry. exact Hxy.
+    + exact (nested_grid_to_operational_sound cert diagonal diagonal).
 Qed.
 
 Lemma free_nested_execution_grid_row_lub
