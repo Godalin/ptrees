@@ -24,6 +24,13 @@ condition is listed explicitly, the referenced result is proved without an
   `meas_iter_approx/meas_iter` on Enum.  The established hierarchy below
   remains the maintained compatibility baseline while equivalence, PTS and
   examples are migrated incrementally.
+- `Eq/UnifiedPWeak.v` defines the new backend-independent `weak_bisim`
+  directly over the single frontier and split `MN`/`MF` couplings.  It is a
+  coinductive greatest fixed point with guarded Tau/Prob rules; fold/unfold,
+  result-relation monotonicity, reflexivity, symmetry, and the common-frontier
+  introduction theorem are checked without referring to the legacy weak
+  relations.  Transitivity is intentionally pending the explicit unified
+  frontier-coherence package rather than being assumed.
 
 ## Measure semantics and coupling
 
