@@ -911,14 +911,35 @@ Proof.
     + apply sem_lift_refl. intro x. exact (CIH (k x)).
 Qed.
 
+(** Extensional endpoint principle.  The two AST proofs may use unrelated
+    finite hitting chains, productivity arguments, and concrete
+    representations of their limits.  Only the resulting stable
+    distributions are coupled.  This is the intended entry point for
+    comparing an unbounded implementation with a terminating specification;
+    it does not require them to share an iteration design. *)
+Lemma operational_bisim_of_ast_lift {R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
+  operational_ast_weak (MF := MF) (observe t1) out1 ->
+  operational_ast_weak (MF := MF) (observe t2) out2 ->
+  sem_lift
+    (frontier_head_rel RR
+      (@operational_bisim E MN MF NI FI NC FC MX FO R1 R2 RR))
+    out1 out2 ->
+  @operational_bisim E MN MF NI FI NC FC MX FO R1 R2 RR t1 t2.
+Proof.
+  intros H1 H2 Hlift. apply operational_bisim_fold.
+  exact (OPBStable H1 H2 Hlift).
+Qed.
+
 Lemma operational_bisim_of_common_ast {R}
     (t1 t2 : ptree E MN R) out :
   operational_ast_weak (MF := MF) (observe t1) out ->
   operational_ast_weak (MF := MF) (observe t2) out ->
   @operational_bisim E MN MF NI FI NC FC MX FO R R eq t1 t2.
 Proof.
-  intros H1 H2. apply operational_bisim_fold.
-  eapply OPBStable; [exact H1|exact H2|].
+  intros H1 H2. eapply operational_bisim_of_ast_lift;
+    [exact H1|exact H2|].
   apply sem_lift_refl. apply unified_head_rel_refl.
   exact operational_bisim_refl.
 Qed.
