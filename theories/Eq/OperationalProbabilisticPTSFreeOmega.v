@@ -584,6 +584,58 @@ Proof.
   - exact Houter.
 Qed.
 
+(** User-facing form for the canonical nested program: the example supplies
+    only finite productivity schedules and the outer probabilistic limit. *)
+Corollary free_operational_weak_of_nested_productivity
+    (sample_out : MF (frontier_head E MN A))
+    (Hsample : @operational_weak E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A
+      (observe sample) sample_out)
+    (i : I) out :
+  free_nested_productivity_certificate i ->
+  @sem_lub MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (fun outer => free_nested_row_out sample_out outer i) out ->
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R
+    (observe (free_nested_program i)) out.
+Proof.
+  intros Hproductivity Houter.
+  eapply free_operational_weak_of_nested_no_event_grid.
+  - exact Hsample.
+  - exact (free_nested_productivity_diagonal_cofinal Hproductivity).
+  - exact Houter.
+Qed.
+
+Corollary free_operational_ast_weak_of_nested_productivity
+    (sample_out : MF (frontier_head E MN A))
+    (Hsample : @operational_weak E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A
+      (observe sample) sample_out)
+    (i : I) out :
+  free_nested_productivity_certificate i ->
+  @sem_lub MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (fun outer => free_nested_row_out sample_out outer i) out ->
+  sem_total out ->
+  @operational_ast_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R
+    (observe (free_nested_program i)) out.
+Proof.
+  intros Hproductivity Houter Htotal. split; [|exact Htotal].
+  eapply free_operational_weak_of_nested_productivity; eassumption.
+Qed.
+
 End NestedNoEventGrid.
 
 Lemma free_operational_bind_vis_approx_cofinal {A R X}
