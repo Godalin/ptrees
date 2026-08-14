@@ -101,14 +101,30 @@ Qed.
 
 Lemma unified_mathcomp_oracle_mixed_iter (Anchor : Type) qbit :
   @mixed_iter MN (FreeOmega MN)
-    (FreeOmegaSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := MathCompNodeSemanticMeasureInterface R)
+      (NO := MathCompNodeSemanticOmegaInterface R))
     FreeOmegaMixedMeasureInterface
-    (FreeOmegaSemanticOmegaInterface
+    (FreeOmegaObservableSemanticOmegaInterface
       (NI := MathCompNodeSemanticMeasureInterface R)
       (NO := MathCompNodeSemanticOmegaInterface R))
     nat bool (mathcomp_oracle_transition R qbit) 0
     (unified_mathcomp_oracle_out Anchor qbit).
-Proof. reflexivity. Qed.
+Proof.
+  unfold mixed_iter, unified_mathcomp_oracle_out. cbn.
+  apply FOQLStructural.
+  apply FOLLub. intro n.
+  change (free_omega_lift eq
+    (mixed_iter_approx n (mathcomp_oracle_transition R qbit) 0)
+    (mixed_iter_approx n (mathcomp_oracle_transition R qbit) 0)).
+  induction (mixed_iter_approx n (mathcomp_oracle_transition R qbit) 0);
+    cbn.
+  - constructor. reflexivity.
+  - constructor.
+  - eapply FOLSample.
+    + apply mathcomp_kernel_lift_refl. intros x. reflexivity.
+    + intros x y ->. apply H.
+  - apply FOLLub. exact H.
+Qed.
 
 End UnifiedRealOracle.

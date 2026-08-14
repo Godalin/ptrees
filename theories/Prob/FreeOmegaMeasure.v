@@ -373,7 +373,10 @@ Qed.
 Proof.
   intros NO. refine {| sem_zero := @FOZero MN;
     sem_le := fun A _ _ => True;
-    sem_lub := fun A chain out => out = FOLub chain;
+    sem_lub := fun A chain out =>
+      @sem_eq (FreeOmega MN)
+        (FreeOmegaSemanticMeasureInterface (NI := NI)) A
+        out (FOLub chain);
     sem_total := fun A mu => exists (O : Type) (obs : A -> O) (out : MN O),
       free_omega_observes obs mu out /\ sem_total out |}.
 Defined.
@@ -389,11 +392,27 @@ Defined.
       (FreeOmegaSemanticOmegaInterface (NO := NO)).
 Proof.
   intros NO. constructor.
-  - intros A chain _. exists (FOLub chain). reflexivity.
-  - intros A chain mu nu -> ->. reflexivity.
-  - intros A chain chain' mu nu Hcc -> ->.
+  - intros A chain _. exists (FOLub chain).
+    apply free_omega_lift_refl. intros x. reflexivity.
+  - intros A chain mu nu Hmu Hnu.
+    eapply sem_eq_trans; [exact Hmu|].
+    eapply sem_eq_sym. exact Hnu.
+  - intros A chain chain' mu nu Hcc Hmu Hnu.
+    eapply sem_eq_trans; [exact Hmu|].
+    eapply sem_eq_trans.
+    + apply FOLLub. exact Hcc.
+    + eapply sem_eq_sym. exact Hnu.
+  - intros A chain chain' mu Hcc Hmu.
+    eapply sem_eq_trans; [exact Hmu|].
     apply FOLLub. exact Hcc.
-  - intros A B chain mu k _ ->. reflexivity.
+  - intros A B chain mu k _ Hmu.
+    cbn in Hmu |- *.
+    change (free_omega_lift eq (free_omega_bind mu k)
+      (free_omega_bind (FOLub chain) k)).
+    eapply free_omega_lift_bind with (R := eq) (T := eq);
+      [exact Hmu|].
+    intros x y ->. apply free_omega_lift_refl.
+    intros z. reflexivity.
 Qed.
 
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureOrderLaws :
@@ -583,7 +602,10 @@ Qed.
       (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)) := {
   sem_zero := @FOZero MN;
   sem_le := fun A _ _ => True;
-  sem_lub := fun A chain out => out = FOLub chain;
+  sem_lub := fun A chain out =>
+    @sem_eq (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)) A
+      out (FOLub chain);
   sem_total := fun A mu => exists (O : Type) (obs : A -> O) (out : MN O),
     free_omega_observes obs mu out /\ sem_total out
 }.
@@ -594,12 +616,42 @@ Qed.
       FreeOmegaObservableSemanticOmegaInterface.
 Proof.
   constructor.
-  - intros A chain _. exists (FOLub chain). reflexivity.
-  - intros A chain mu nu -> ->. apply free_omega_qlift_refl.
-    intros x. reflexivity.
-  - intros A chain chain' mu nu Hcc -> ->.
+  - intros A chain _. exists (FOLub chain).
+    cbn.
+    apply free_omega_qlift_refl. intros x. reflexivity.
+  - intros A chain mu nu Hmu Hnu.
+    cbn in Hmu, Hnu |- *.
+    eapply (@sem_eq_trans _
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hmu|].
+    eapply (@sem_eq_sym _
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws A). exact Hnu.
+  - intros A chain chain' mu nu Hcc Hmu Hnu.
+    cbn in Hcc, Hmu, Hnu |- *.
+    eapply (@sem_eq_trans _
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hmu|].
+    eapply (@sem_eq_trans _
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws A).
+    + apply FOQLLub. exact Hcc.
+    + eapply (@sem_eq_sym _
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws A). exact Hnu.
+  - intros A chain chain' mu Hcc Hmu.
+    cbn in Hcc, Hmu |- *.
+    eapply (@sem_eq_trans _
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hmu|].
     apply FOQLLub. exact Hcc.
-  - intros A B chain mu k _ ->. reflexivity.
+  - intros A B chain mu k _ Hmu.
+    cbn in Hmu |- *.
+    change (free_omega_qlift eq (free_omega_bind mu k)
+      (free_omega_bind (FOLub chain) k)).
+    eapply FOQLBind with (T := eq); [exact Hmu|].
+    intros x y ->. apply free_omega_qlift_refl.
+    intros z. reflexivity.
 Qed.
 
 #[global] Instance FreeOmegaObservableSemanticMeasureOrderLaws :

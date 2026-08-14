@@ -83,6 +83,13 @@ condition is listed explicitly, the referenced result is proved without an
   divergence cannot by itself justify an arbitrary equivalence.  Fold/unfold,
   monotonicity, reflexivity, and common-AST introduction are checked.  Sound
   frontier laws and conditional completeness remain the next stage.
+  As a prerequisite for those soundness laws, omega limits are now congruent
+  under pointwise semantic equality of chains (`sem_lub_chain_proper`).
+  FreeOmega's lub judgment consequently relates an output to its formal lub
+  by semantic equality, rather than requiring literal equality of syntax.
+  Both the structural and observation-closed FreeOmega models implement this
+  strengthened law; the real-oracle mixed-iteration witness was migrated to
+  the observation-closed relation without adding a gluing assumption.
 
 ## Measure semantics and coupling
 
