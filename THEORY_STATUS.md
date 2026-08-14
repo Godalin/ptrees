@@ -51,6 +51,11 @@ condition is listed explicitly, the referenced result is proved without an
   `q`-coin.
   A legacy Enum `UnboundedFrontierCoherence` witness transports to the new
   coherence package through the bidirectional head isomorphism.
+- `Examples/UnifiedPWeakEnumExamples.v` also contains a direct finite proof,
+  not routed through a legacy relation: a two-level nested sampler with split
+  mass is unified-weak-bisimilar to one terminating three-point sample.  The
+  proof combines native unified frontiers, Kleisli associativity, Enum
+  extensional equality, and coupling properness.
 - `Eq/UnifiedProbabilisticPTS.v` gives an independent distribution-valued
   transition presentation for the two-level model: primitive residual
   transitions live in `MN`, stable weak distributions live in `MF`, and
