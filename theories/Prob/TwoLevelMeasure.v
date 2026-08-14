@@ -162,6 +162,10 @@ Polymorphic Class SemanticOmegaLaws@{carrier representation}
       sem_increasing chain -> exists out, sem_lub chain out;
   sem_lub_unique : forall {A : Type@{carrier}} (chain : nat -> S A) mu nu,
       sem_lub chain mu -> sem_lub chain nu -> sem_eq mu nu;
+  sem_lub_proper : forall {A : Type@{carrier}}
+      (chain chain' : nat -> S A) mu nu,
+      (forall n, sem_eq (chain n) (chain' n)) ->
+      sem_lub chain mu -> sem_lub chain' nu -> sem_eq mu nu;
   sem_bind_lub : forall {A B : Type@{carrier}} (chain : nat -> S A) mu
       (k : A -> S B),
       sem_increasing chain -> sem_lub chain mu ->

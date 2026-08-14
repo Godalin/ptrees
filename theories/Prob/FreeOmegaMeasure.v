@@ -108,6 +108,39 @@ Proof.
   - eapply FOOObserveLub; eauto.
 Qed.
 
+Section FreeOmegaObservationLaws.
+Context {MN : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NB : @SemanticMeasureBindLaws MN NI}
+  `{NO : @SemanticOmegaInterface MN NI}
+  `{NOL : @SemanticOmegaLaws MN NI NO}.
+
+(** Observation is relational only because [sem_lub] need not choose a
+    concrete representative.  Once the node backend supplies extensional lub
+    uniqueness, the denoted low-universe distribution is deterministic up to
+    [sem_eq]. *)
+Lemma free_omega_observes_unique {A O} (obs : A -> O)
+    (mu : FreeOmega MN A) out1 out2 :
+  free_omega_observes obs mu out1 ->
+  free_omega_observes obs mu out2 ->
+  sem_eq out1 out2.
+Proof.
+  intros H1. revert out2. induction H1; intros out2 H2;
+    dependent destruction H2.
+  - apply sem_eq_refl.
+  - apply sem_eq_refl.
+  - apply sem_bind_ae_proper.
+    eapply sem_ae_mono; [|apply sem_ae_true].
+    intros x _. exact (H0 x _ (H1 x)).
+  - eapply sem_lub_proper.
+    + intros n. exact (H0 n _ (H2 n)).
+    + exact H1.
+    + exact H3.
+Qed.
+
+End FreeOmegaObservationLaws.
+
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureInterface {MN}
     `{NI : SemanticMeasureInterface MN} :
     SemanticMeasureInterface (FreeOmega MN) := {
@@ -356,6 +389,8 @@ Proof.
   intros NO. constructor.
   - intros A chain _. exists (FOLub chain). reflexivity.
   - intros A chain mu nu -> ->. reflexivity.
+  - intros A chain chain' mu nu Hcc -> ->.
+    apply FOLLub. exact Hcc.
   - intros A B chain mu k _ ->. reflexivity.
 Qed.
 
@@ -549,6 +584,8 @@ Proof.
   - intros A chain _. exists (FOLub chain). reflexivity.
   - intros A chain mu nu -> ->. apply free_omega_qlift_refl.
     intros x. reflexivity.
+  - intros A chain chain' mu nu Hcc -> ->.
+    apply FOQLLub. exact Hcc.
   - intros A B chain mu k _ ->. reflexivity.
 Qed.
 
