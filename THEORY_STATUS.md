@@ -35,6 +35,13 @@ condition is listed explicitly, the referenced result is proved without an
   introduction theorem are checked without referring to the legacy weak
   relations.  Transitivity is intentionally pending the explicit unified
   frontier-coherence package rather than being assumed.
+- `Eq/UnifiedPWeakEnumFacts.v` proves that every established Enum `auweak`
+  derivation maps to the new `weak_bisim`, translating both directions of
+  frontier matching and pushing old head couplings through the representation
+  isomorphism.  `Examples/UnifiedPWeakEnumExamples.v` applies that theorem to
+  the unbounded Von Neumann sampler versus a terminating fair coin and to the
+  closed `p = 1/3` to `q = 2/5` Bernoulli factory versus a direct terminating
+  `q`-coin.
 
 ## Measure semantics and coupling
 
