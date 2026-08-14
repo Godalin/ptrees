@@ -103,6 +103,16 @@ Lemma eq_pstructural {R : Type} (t1 t2 : ptree E M R) :
   t1 = t2 -> pstructural eq t1 t2.
 Proof. move=> ->. exact: pstructural_refl. Qed.
 
+(** Structural equality only inspects one observation at a time.  Hence an
+    exact equality of observations is enough even when the coinductive tree
+    values themselves are not judgmentally equal. *)
+Lemma observe_eq_pstructural {R : Type} (t1 t2 : ptree E M R) :
+  observe t1 = observe t2 -> pstructural eq t1 t2.
+Proof.
+  intro Hobs. apply pstructural_fold. rewrite Hobs.
+  apply pstructural_unfold. apply pstructural_refl.
+Qed.
+
 Lemma pstructural_sym {R : Type} :
   Symmetric (@pstructural E M R R eq).
 Proof.

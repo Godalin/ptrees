@@ -325,6 +325,42 @@ Definition free_nested_after (i : I) (a : A) : ptree E MN R :=
   | inr r => Ret r
   end.
 
+Lemma free_nested_ret_after_structural (i : I) (a : A) :
+  pstructural eq
+    (PTree.bind (Ret (round i a)) (fun lr =>
+      match lr with
+      | inl i' => Tau (free_nested_program i')
+      | inr r => Ret r
+      end))
+    (free_nested_after i a).
+Proof.
+  apply observe_eq_pstructural. unfold free_nested_after. rewrite observe_bind.
+  destruct (round i a); reflexivity.
+Qed.
+
+(** One canonical operational round, obtained solely from the coinductive
+    [iter] unfolding and structural bind laws. *)
+Lemma free_nested_program_unfold_structural (i : I) :
+  pstructural eq (free_nested_program i)
+    (PTree.bind sample (free_nested_after i)).
+Proof.
+  set (handler := fun lr : I + R =>
+    match lr with
+    | inl i' => Tau (free_nested_program i')
+    | inr r => Ret r
+    end).
+  eapply pstructural_trans.
+  - apply observe_eq_pstructural.
+    exact (observing_observe (unfold_aloop_ free_nested_step i)).
+  - eapply pstructural_trans.
+    + unfold free_nested_step.
+      apply pstructural_bind_assoc.
+    + eapply pstructural_bind.
+      * intros a1 a2 ->. unfold handler.
+        apply free_nested_ret_after_structural.
+      * apply pstructural_refl.
+Qed.
+
 Definition free_no_event_head_value
     (h : frontier_head E MN A) : A :=
   match h with
