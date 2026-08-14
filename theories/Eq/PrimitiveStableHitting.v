@@ -2,6 +2,8 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
+Require Import Program.
+From Coinduction Require Import all.
 From PTree.Prob Require Import TwoLevelMeasure.
 
 Set Implicit Arguments.
@@ -132,3 +134,137 @@ Proof.
 Qed.
 
 End PrimitiveStableHittingLimits.
+
+(** Relational lifting of one primitive target.  Stable observations must
+    satisfy the public result relation; internal targets remain guarded by
+    the candidate state relation. *)
+Polymorphic Inductive stable_target_rel {S1 S2 A1 A2}
+    (RA : A1 -> A2 -> Prop) (sim : S1 -> S2 -> Prop) :
+    stable_target S1 A1 -> stable_target S2 A2 -> Prop :=
+  | SHTRStable a1 a2 :
+      RA a1 a2 -> stable_target_rel RA sim (SHStable a1) (SHStable a2)
+  | SHTRInternal s1 s2 :
+      sim s1 s2 -> stable_target_rel RA sim (SHInternal s1) (SHInternal s2).
+
+Section PrimitiveKernelBisimulation.
+Context {MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {S1 S2 A1 A2 : Type}.
+Variable kernel1 : S1 -> MF (stable_target S1 A1).
+Variable kernel2 : S2 -> MF (stable_target S2 A2).
+Variable AR : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
+Hypothesis AR_mono : forall sim1 sim2,
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall a1 a2, AR sim1 a1 a2 -> AR sim2 a1 a2.
+
+(** A generic divergence-sensitive probabilistic bisimulation generator.
+    [SKBAST] permits different finite schedules to meet at coupled total
+    stable limits.  [SKBStep] is the residual guard: programs without an AST
+    limit must still expose coupled primitive steps, so absence of a weak
+    transition cannot prove an arbitrary equivalence. *)
+Inductive stable_kernel_bisimF (sim : S1 -> S2 -> Prop) :
+    S1 -> S2 -> Prop :=
+  | SKBAST s1 s2 out1 out2 :
+      stable_hitting_ast kernel1 s1 out1 ->
+      stable_hitting_ast kernel2 s2 out2 ->
+      sem_lift (AR sim) out1 out2 ->
+      stable_kernel_bisimF sim s1 s2
+  | SKBStep s1 s2 :
+      sem_lift (stable_target_rel (AR sim) sim)
+        (kernel1 s1) (kernel2 s2) ->
+      stable_kernel_bisimF sim s1 s2.
+
+Lemma stable_target_rel_mono
+    (RA1 RA2 : A1 -> A2 -> Prop)
+    (sim1 sim2 : S1 -> S2 -> Prop) :
+  (forall a1 a2, RA1 a1 a2 -> RA2 a1 a2) ->
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall t1 t2, stable_target_rel RA1 sim1 t1 t2 ->
+    stable_target_rel RA2 sim2 t1 t2.
+Proof.
+  intros HRA Hsim t1 t2 Hrel. destruct Hrel.
+  - constructor. exact (HRA _ _ H).
+  - constructor. exact (Hsim _ _ H).
+Qed.
+
+Lemma stable_kernel_bisimF_monotone (sim1 sim2 : S1 -> S2 -> Prop) :
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall s1 s2, stable_kernel_bisimF sim1 s1 s2 ->
+    stable_kernel_bisimF sim2 s1 s2.
+Proof.
+  intros Hsim s1 s2 Hstep. destruct Hstep.
+  - eapply SKBAST; [exact H|exact H0|].
+    eapply sem_lift_mono; [|exact H1].
+    exact (AR_mono Hsim).
+  - apply SKBStep. eapply sem_lift_mono; [|exact H].
+    eapply stable_target_rel_mono.
+    + exact (AR_mono Hsim).
+    + exact Hsim.
+Qed.
+
+Definition stable_kernel_bisim_body sim (s1 : S1) (s2 : S2) : Prop :=
+  stable_kernel_bisimF sim s1 s2.
+
+Program Definition fstable_kernel_bisim : mon (S1 -> S2 -> Prop) :=
+  {| body := stable_kernel_bisim_body |}.
+Next Obligation.
+  intros sim1 sim2 Hsub s1 s2 Hstep.
+  eapply stable_kernel_bisimF_monotone; eauto.
+Qed.
+
+Definition stable_kernel_bisim : S1 -> S2 -> Prop :=
+  gfp fstable_kernel_bisim.
+
+Lemma stable_kernel_bisim_unfold s1 s2 :
+  stable_kernel_bisim s1 s2 ->
+  stable_kernel_bisimF stable_kernel_bisim s1 s2.
+Proof.
+  intro H. apply (gfp_pfp fstable_kernel_bisim) in H. exact H.
+Qed.
+
+Lemma stable_kernel_bisim_fold s1 s2 :
+  stable_kernel_bisimF stable_kernel_bisim s1 s2 ->
+  stable_kernel_bisim s1 s2.
+Proof.
+  intro H. unfold stable_kernel_bisim.
+  apply (gfp_fp fstable_kernel_bisim). exact H.
+Qed.
+
+End PrimitiveKernelBisimulation.
+
+Section PrimitiveKernelBisimulationReflexivity.
+Context {MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {S A : Type}.
+Variable kernel : S -> MF (stable_target S A).
+Variable AR : (S -> S -> Prop) -> A -> A -> Prop.
+Hypothesis AR_mono : forall sim1 sim2,
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall a1 a2, AR sim1 a1 a2 -> AR sim2 a1 a2.
+Hypothesis AR_refl : forall sim, Reflexive sim -> Reflexive (AR sim).
+
+Lemma stable_target_rel_refl
+    (sim : S -> S -> Prop) (Hsim : Reflexive sim) :
+  Reflexive (stable_target_rel (AR sim) sim).
+Proof.
+  intros [a|s].
+  - constructor. apply AR_refl. exact Hsim.
+  - constructor. apply Hsim.
+Qed.
+
+Theorem stable_kernel_bisim_refl :
+  Reflexive (@stable_kernel_bisim MF FI FC FO S S A A
+    kernel kernel AR AR_mono).
+Proof.
+  intro state. revert state. unfold stable_kernel_bisim.
+  coinduction CH CIH. intro state.
+  unfold stable_kernel_bisim_body.
+  apply SKBStep. apply sem_lift_refl.
+  apply stable_target_rel_refl. exact CIH.
+Qed.
+
+End PrimitiveKernelBisimulationReflexivity.

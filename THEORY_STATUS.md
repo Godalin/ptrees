@@ -136,6 +136,18 @@ condition is listed explicitly, the referenced result is proved without an
   backend.  These conclusions all use the same generic `stable_hitting_ast`
   predicate despite their different concrete measure instances and
   productivity proofs.
+  The generic layer now also owns the guarded greatest-fixed-point relation
+  `stable_kernel_bisim`.  Its stable rule couples independently established
+  AST limits, while its primitive-step rule couples stable targets and keeps
+  residual states under the coinductive guard.  Hence two states with no AST
+  behavior cannot be related vacuously: they must continue to match actual
+  kernel transitions.  Stable observations are related by a monotone
+  relation transformer `AR sim`, rather than a fixed result relation, so
+  observations containing continuations (such as PTree visible heads) can
+  refer back to the current candidate bisimulation.  Fold/unfold,
+  monotonicity, and reflexivity are checked using `coq-coinduction`; there is
+  no Paco-level definition and no syntax-specific Tau/Prob/Iter rule in this
+  generic relation.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides
