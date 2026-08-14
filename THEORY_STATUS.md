@@ -108,6 +108,19 @@ condition is listed explicitly, the referenced result is proved without an
   primitive PTree observations now have sound unbounded hitting laws; the
   remaining frontier soundness gap is specifically compositional Bind and
   the diagonal/cofinal comparison for syntactic iteration.
+  That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
+  joint omega continuity when both a source distribution and its continuation
+  kernels grow along the same diagonal; observation-closed FreeOmega provides
+  a checked instance. `operational_bind_diagonal_approx` and
+  `operational_bind_cofinal` separate this analytic fact from the PTree-level
+  comparison between global primitive fuel and diagonal source/continuation
+  fuel, yielding conditional `operational_weak_bind` and AST variants.
+  Likewise `operational_iter_round_approx` and `operational_iter_cofinal`
+  isolate the comparison between structured iteration rounds and primitive
+  steps. Under exactly Bind cofinality and productive iteration cofinality,
+  `frontier_to_operational_weak` proves soundness for every unified frontier
+  constructor. These premises contain no mirrored weak-transition rules;
+  proving them structurally is the remaining adequacy task.
 
 ## Measure semantics and coupling
 

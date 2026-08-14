@@ -501,7 +501,17 @@ Polymorphic Inductive free_omega_qlift {MN}
       free_omega_qlift R (FOSample mu (fun _ => FOZero)) FOZero
   | FOQLLubConstantR (mu : FreeOmega MN A) (nu : FreeOmega MN B) :
       free_omega_qlift R mu nu ->
-      free_omega_qlift R mu (FOLub (fun _ => nu)).
+      free_omega_qlift R mu (FOLub (fun _ => nu))
+  | FOQLBindLub {C} (source : nat -> FreeOmega MN C)
+      (source_out : FreeOmega MN C)
+      (kernels : C -> nat -> FreeOmega MN B)
+      (kernel_out : C -> FreeOmega MN A) :
+      free_omega_qlift eq source_out (FOLub source) ->
+      (forall x, free_omega_qlift R (kernel_out x) (FOLub (kernels x))) ->
+      free_omega_qlift R
+        (free_omega_bind source_out kernel_out)
+        (FOLub (fun n => free_omega_bind (source n)
+          (fun x => kernels x n))).
 
 #[global] Polymorphic Instance FreeOmegaObservableSemanticMeasureInterface
     {MN} `{NI : SemanticMeasureInterface MN}
@@ -714,6 +724,16 @@ Proof.
   - intros A B mu Good chain out Hae _ Hlim.
     cbn in Hlim |- *.
     eapply FOQLSampleLub; eauto.
+Qed.
+
+#[global] Instance FreeOmegaObservableSemanticMeasureDiagonalLaws :
+    @SemanticMeasureDiagonalLaws (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface.
+Proof.
+  constructor. intros A B source source_out kernels kernel_out _ _ Hsource Hkernels.
+  cbn in Hsource, Hkernels |- *.
+  eapply FOQLBindLub; eauto.
 Qed.
 
 #[global] Instance FreeOmegaObservableSemanticMeasureOrderLaws :

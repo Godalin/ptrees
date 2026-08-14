@@ -238,6 +238,25 @@ Polymorphic Class MixedMeasureOmegaLaws@{node node_rep frontier frontier_rep}
         (mixed_bind mu out)
 }.
 
+(** Joint continuity for a growing source measure and growing continuation
+    kernels.  This is stronger than [sem_bind_lub], whose kernel is fixed,
+    and is exactly the measure-level half of operational Bind soundness. *)
+Polymorphic Class SemanticMeasureDiagonalLaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S}
+    `{SO : @SemanticOmegaInterface S SI} := {
+  sem_bind_diagonal_lub : forall {A B : Type@{carrier}}
+      (source : nat -> S A) (source_out : S A)
+      (kernels : A -> nat -> S B) (kernel_out : A -> S B),
+      sem_increasing source ->
+      (forall x, sem_increasing (kernels x)) ->
+      sem_lub source source_out ->
+      (forall x, sem_lub (kernels x) (kernel_out x)) ->
+      sem_lub
+        (fun n => sem_bind (source n) (fun x => kernels x n))
+        (sem_bind source_out kernel_out)
+}.
+
 #[global] Polymorphic Instance sem_eq_equivalence
     {S} `{SI : SemanticMeasureInterface S}
     `{SL : @SemanticMeasureCoreLaws S SI} A :

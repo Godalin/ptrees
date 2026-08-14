@@ -434,6 +434,201 @@ Qed.
 
 End OperationalProbSoundness.
 
+Section OperationalBindDiagonal.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+
+Definition operational_head_bind_approx {A R} (fuel : nat)
+    (k : A -> ptree E MN R) (h : frontier_head E MN A) :
+    MF (frontier_head E MN R) :=
+  match h with
+  | FHRet a => operational_hitting_approx (MF := MF) fuel (observe (k a))
+  | @FHVis _ _ _ X e c =>
+      sem_ret (FHVis e (fun x => PTree.bind (c x) k))
+  end.
+
+Definition operational_bind_diagonal_approx {A R} (fuel : nat)
+    (t : ptree E MN A) (k : A -> ptree E MN R) :
+    MF (frontier_head E MN R) :=
+  sem_bind (operational_hitting_approx (MF := MF) fuel (observe t))
+    (operational_head_bind_approx fuel k).
+
+(** The remaining PTree-specific obligation for Bind: global primitive fuel
+    and the diagonal allocation of the same index to source and continuation
+    must be cofinal.  This statement contains no frontier derivation and is
+    kept separate from measure-level diagonal continuity. *)
+Definition operational_bind_cofinal {A R}
+    (t : ptree E MN A) (k : A -> ptree E MN R) : Prop :=
+  forall out,
+    sem_lub (fun fuel => operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.bind t k))) out <->
+    sem_lub (fun fuel => operational_bind_diagonal_approx fuel t k) out.
+
+End OperationalBindDiagonal.
+
+Section OperationalBindSoundness.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}.
+
+Lemma operational_head_bind_approx_increasing {A R}
+    (k : A -> ptree E MN R) h :
+  sem_increasing (fun fuel => operational_head_bind_approx
+    (MF := MF) fuel k h).
+Proof.
+  destruct h as [a|X e c]; intro fuel; cbn [operational_head_bind_approx].
+  - apply operational_hitting_increasing.
+  - apply sem_le_refl.
+Qed.
+
+Lemma operational_head_bind_approx_lub {A R}
+    (k : A -> ptree E MN R)
+    (front : A -> MF (frontier_head E MN R))
+    (Hfront : forall a,
+      operational_weak (MF := MF) (observe (k a)) (front a)) h :
+  sem_lub (fun fuel => operational_head_bind_approx
+      (MF := MF) fuel k h)
+    (frontier_head_bind_front k front h).
+Proof.
+  destruct h as [a|X e c]; cbn [operational_head_bind_approx
+    frontier_head_bind_front].
+  - exact (Hfront a).
+  - apply sem_lub_constant.
+Qed.
+
+Theorem operational_weak_bind {A R}
+    (t : ptree E MN A) (k : A -> ptree E MN R)
+    hs (front : A -> MF (frontier_head E MN R)) :
+  operational_bind_cofinal (MF := MF) t k ->
+  operational_weak (MF := MF) (observe t) hs ->
+  (forall a, operational_weak (MF := MF) (observe (k a)) (front a)) ->
+  operational_weak (MF := MF) (observe (PTree.bind t k))
+    (sem_bind hs (frontier_head_bind_front k front)).
+Proof.
+  intros Hcofinal Hsource Hfront. unfold operational_weak in *.
+  apply (proj2 (Hcofinal _)).
+  unfold operational_bind_diagonal_approx.
+  eapply sem_bind_diagonal_lub.
+  - apply operational_hitting_increasing.
+  - intro h. apply operational_head_bind_approx_increasing.
+  - exact Hsource.
+  - intro h. apply operational_head_bind_approx_lub. exact Hfront.
+Qed.
+
+Corollary operational_ast_weak_bind {A R}
+    (t : ptree E MN A) (k : A -> ptree E MN R)
+    hs (front : A -> MF (frontier_head E MN R)) :
+  operational_bind_cofinal (MF := MF) t k ->
+  operational_ast_weak (MF := MF) (observe t) hs ->
+  (forall a, operational_ast_weak (MF := MF)
+    (observe (k a)) (front a)) ->
+  sem_total (sem_bind hs (frontier_head_bind_front k front)) ->
+  operational_ast_weak (MF := MF) (observe (PTree.bind t k))
+    (sem_bind hs (frontier_head_bind_front k front)).
+Proof.
+  intros Hcofinal Hsource Hfront Htotal. split; [|exact Htotal].
+  eapply operational_weak_bind; [exact Hcofinal|exact (proj1 Hsource)|].
+  intro a. exact (proj1 (Hfront a)).
+Qed.
+
+End OperationalBindSoundness.
+
+Section OperationalIterationCofinality.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+
+Definition operational_iter_round_approx {I R} (fuel : nat)
+    (transition : I -> MN (I + R)) (i : I) :
+    MF (frontier_head E MN R) :=
+  sem_bind (mixed_iter_approx fuel transition i)
+    (fun r => sem_ret (FHRet r)).
+
+Definition operational_iter_cofinal {I R}
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) (i : I) : Prop :=
+  forall out,
+    sem_lub (fun fuel => operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.iter step i))) out <->
+    sem_lub (fun fuel => operational_iter_round_approx
+      fuel transition i) out.
+
+End OperationalIterationCofinality.
+
+Section FrontierOperationalSoundness.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}
+  `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}.
+
+Variable bind_cofinality : forall A R
+    (t : ptree E MN A) (k : A -> ptree E MN R),
+    operational_bind_cofinal (MF := MF) t k.
+
+Variable iter_productivity : forall I R
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) (i : I),
+    (forall j, operational_weak (MF := MF) (observe (step j))
+      (mixed_bind (transition j)
+        (fun next => sem_ret (FHRet next)))) ->
+    sem_increasing (fun fuel => mixed_iter_approx fuel transition i) /\
+    operational_iter_cofinal (MF := MF) step transition i.
+
+(** Conditional end-to-end soundness of the structured frontier.  The
+    analytic assumptions are measure capabilities; the only PTree-specific
+    assumptions left are global-vs-diagonal fuel cofinality for Bind and
+    productive iteration rounds. *)
+Theorem frontier_to_operational_weak {R}
+    (ot : ptree' E MN R) out :
+  frontier ot out -> operational_weak (MF := MF) ot out.
+Proof.
+  intro Hfront. induction Hfront.
+  - apply operational_weak_ret.
+  - apply operational_weak_vis.
+  - apply (proj2 (operational_weak_tau_iff t hs)). exact IHHfront.
+  - eapply operational_weak_prob; [exact H|exact H1].
+  - destruct (iter_productivity (I := I) (R := R)
+      (step := step) (transition := transition) i H0)
+      as [Hinc Hcofinal].
+    unfold operational_weak. apply (proj2 (Hcofinal _)).
+    unfold operational_iter_round_approx.
+    eapply sem_bind_lub; [exact Hinc|exact H1].
+  - eapply operational_weak_bind.
+    + apply bind_cofinality.
+    + exact IHHfront.
+    + exact H0.
+  - destruct (iter_productivity (I := I) (R := R)
+      (step := step) (transition := transition) i H0)
+      as [Hinc Hcofinal].
+    unfold operational_weak. apply (proj2 (Hcofinal _)).
+    unfold operational_iter_round_approx.
+    eapply sem_bind_lub; [exact Hinc|exact H1].
+Qed.
+
+End FrontierOperationalSoundness.
+
 Section GuardedOperationalBisimulation.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
