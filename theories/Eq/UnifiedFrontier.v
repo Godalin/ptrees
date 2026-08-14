@@ -22,6 +22,17 @@ Variant frontier_head (E : Type -> Type) (MN : Type -> Type)
 Arguments FHRet {E MN R} _.
 Arguments FHVis {E MN R X} _ _.
 
+Definition frontier_head_bind_front {E MN MF}
+    `{FI : SemanticMeasureInterface MF} {A B}
+    (k : A -> ptree E MN B)
+    (front : A -> MF (frontier_head E MN B))
+    (h : frontier_head E MN A) : MF (frontier_head E MN B) :=
+  match h with
+  | FHRet a => front a
+  | @FHVis _ _ _ X e c =>
+      sem_ret (FHVis e (fun x => PTree.bind (c x) k))
+  end.
+
 Section MixedIteration.
 Context {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
@@ -77,6 +88,24 @@ Inductive frontier {R} :
       (forall x, Good x -> frontier (observe (k x)) (front x)) ->
       frontier (ProbF mu k) (mixed_bind mu front)
   | UFIter {I : Type}
+      (step : I -> ptree E MN (I + R))
+      (transition : I -> MN (I + R)) i out :
+      (forall j,
+        frontier (observe (step j))
+          (mixed_bind (transition j)
+            (fun next => sem_ret (FHRet next)))) ->
+      mixed_iter transition i out ->
+      sem_total out ->
+      frontier (observe (PTree.iter step i))
+        (sem_bind out (fun r => sem_ret (FHRet r)))
+  | UFBind {A : Type}
+      (t : ptree E MN A) (k : A -> ptree E MN R)
+      hs (front : A -> MF (frontier_head E MN R)) :
+      frontier (observe t) hs ->
+      (forall a, frontier (observe (k a)) (front a)) ->
+      frontier (observe (PTree.bind t k))
+        (sem_bind hs (frontier_head_bind_front k front))
+  | UFNestedIter {I : Type}
       (step : I -> ptree E MN (I + R))
       (transition : I -> MN (I + R)) i out :
       (forall j,
