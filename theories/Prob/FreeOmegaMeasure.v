@@ -623,6 +623,19 @@ Polymorphic Inductive free_omega_qlift {MN}
         (free_omega_bind source_out kernel_out)
         (FOLub (fun n => free_omega_bind (source n)
           (fun x => kernels x n)))
+  | FOQLDoubleDiagonal (HAB : A = B)
+      (grid : nat -> nat -> FreeOmega MN A) :
+      (forall outer inner,
+        free_omega_approx eq (grid outer inner)
+          (grid outer (Datatypes.S inner))) ->
+      (forall outer inner,
+        free_omega_approx eq (grid outer inner)
+          (grid (Datatypes.S outer) inner)) ->
+      (forall x, R x (eq_rect A (fun T => T) x B HAB)) ->
+      free_omega_qlift R
+        (FOLub (fun outer => FOLub (grid outer)))
+        (eq_rect A (fun T => FreeOmega MN T)
+          (FOLub (fun fuel => grid fuel fuel)) B HAB)
   | FOQLCofinal (left : nat -> FreeOmega MN A)
       (right : nat -> FreeOmega MN B) :
       free_omega_chains_cofinal R left right ->
@@ -866,6 +879,26 @@ Proof.
   constructor. intros A B source source_out kernels kernel_out _ _ Hsource Hkernels.
   cbn in Hsource, Hkernels |- *.
   eapply FOQLBindLub; eauto.
+Qed.
+
+#[global] Instance FreeOmegaObservableSemanticOmegaFubiniLaws :
+    @SemanticOmegaFubiniLaws (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface.
+Proof.
+  constructor. intros A grid row_out out Hrows_inc Hcols_inc Hrows Hout.
+  cbn in Hrows, Hout |- *.
+  eapply (@sem_eq_trans _
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hout|].
+  eapply (@sem_eq_trans _
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws A).
+  - apply FOQLLub. exact Hrows.
+  - eapply FOQLDoubleDiagonal with (HAB := eq_refl) (grid := grid).
+    + intros outer inner. exact (Hrows_inc outer inner).
+    + intros outer inner. exact (Hcols_inc inner outer).
+    + intros x. reflexivity.
 Qed.
 
 #[global] Instance FreeOmegaObservableSemanticMeasureOrderLaws :
