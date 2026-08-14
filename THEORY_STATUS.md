@@ -108,6 +108,16 @@ condition is listed explicitly, the referenced result is proved without an
   primitive PTree observations now have sound unbounded hitting laws; the
   remaining frontier soundness gap is specifically compositional Bind and
   the diagonal/cofinal comparison for syntactic iteration.
+- `Eq/PrimitiveStableHitting.v` now factors the behavioral core one level
+  below PTree.  For an arbitrary primitive kernel `S -> MF (A + S)` (encoded
+  by `stable_target`), it defines finite stable-hitting approximants, their
+  subprobability omega-limit weak behavior, and AST as totality of that
+  limit.  Monotonicity, existence, and extensional uniqueness use only the
+  semantic measure order/omega capabilities.  This module contains no PTree,
+  frontier, Bind, Iter, or NestedIter reference.  The next refactoring step
+  is to prove the current PTree `operational_kernel` is an instance of this
+  generic construction and then make the generic definitions the public
+  ones.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides
