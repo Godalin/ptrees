@@ -206,6 +206,19 @@ Polymorphic Class SemanticOmegaLaws@{carrier representation}
       sem_lub (fun n => sem_bind (chain n) k) (sem_bind mu k)
 }.
 
+(** Extensionality of almost-sure termination.  It is separated from omega
+    completeness because a backend may support a relational limit without
+    quotienting its concrete representation strongly enough to prove this
+    law.  Operational AST transfer across denotational equality requires it
+    explicitly. *)
+Polymorphic Class SemanticTotalProperLaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S}
+    `{SO : @SemanticOmegaInterface S SI} := {
+  sem_total_proper : forall {A : Type@{carrier}} (mu nu : S A),
+      sem_eq mu nu -> (sem_total mu <-> sem_total nu)
+}.
+
 (** Cofinality needed for silent operational steps.  It is deliberately
     separate from ordinary omega completeness: a backend may provide formal
     lub syntax without quotienting away finite prefixes. *)
