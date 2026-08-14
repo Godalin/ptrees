@@ -41,12 +41,18 @@ Proof.
       Enum_MeasureCoreLaws Enum_MeasureLaws).
   - exact (@meas_ae_mono Enum Enum_MeasureInterface
       Enum_MeasureCoreLaws).
+  - exact (@meas_ae_conj Enum Enum_MeasureInterface
+      Enum_MeasureCoreLaws Enum_MeasureLaws).
   - exact (@meas_lift_mono Enum Enum_MeasureInterface
       Enum_MeasureCoreLaws).
   - exact (@meas_lift_refl Enum Enum_MeasureInterface
       Enum_MeasureCoreLaws).
   - exact (@meas_lift_ret Enum Enum_MeasureInterface
       Enum_MeasureCoreLaws).
+  - exact (@meas_lift_proper_l Enum Enum_MeasureInterface
+      Enum_MeasureCoreLaws Enum_MeasureLaws).
+  - exact (@meas_lift_proper_r Enum Enum_MeasureInterface
+      Enum_MeasureCoreLaws Enum_MeasureLaws).
   - exact (@meas_lift_sym Enum Enum_MeasureInterface
       Enum_MeasureCoreLaws Enum_MeasureLaws).
   - exact (@meas_lift_comp Enum Enum_MeasureInterface

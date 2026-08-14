@@ -49,6 +49,10 @@ Polymorphic Class SemanticMeasureCoreLaws@{carrier representation}
   sem_ae_mono : forall {A : Type@{carrier}}
       (mu : S A) (P Q : A -> Prop),
       (forall x, P x -> Q x) -> sem_ae mu P -> sem_ae mu Q;
+  sem_ae_conj : forall {A : Type@{carrier}}
+      (mu : S A) (P Q : A -> Prop),
+      sem_ae mu P -> sem_ae mu Q ->
+      sem_ae mu (fun x => P x /\ Q x);
 
   sem_lift_mono : forall {A B : Type@{carrier}}
       (R T : A -> B -> Prop) mu nu,
@@ -58,6 +62,12 @@ Polymorphic Class SemanticMeasureCoreLaws@{carrier representation}
       Reflexive R -> sem_lift R mu mu;
   sem_lift_ret : forall {A B : Type@{carrier}} (R : A -> B -> Prop) x y,
       R x y -> sem_lift R (sem_ret x) (sem_ret y);
+  sem_lift_proper_l : forall {A B : Type@{carrier}}
+      (R : A -> B -> Prop) mu mu' nu,
+      sem_eq mu mu' -> sem_lift R mu nu -> sem_lift R mu' nu;
+  sem_lift_proper_r : forall {A B : Type@{carrier}}
+      (R : A -> B -> Prop) mu nu nu',
+      sem_eq nu nu' -> sem_lift R mu nu -> sem_lift R mu nu';
   sem_lift_sym : forall {A B : Type@{carrier}}
       (R : A -> B -> Prop) mu nu,
       sem_lift R mu nu -> sem_lift (fun y x => R x y) nu mu;

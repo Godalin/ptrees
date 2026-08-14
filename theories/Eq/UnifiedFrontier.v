@@ -117,4 +117,19 @@ Inductive frontier {R} :
       frontier (observe (PTree.iter step i))
         (sem_bind out (fun r => sem_ret (FHRet r))).
 
+(** Coherence is the exact semantic condition needed to treat a frontier as
+    an observation rather than a chosen derivation.  Omega-limit uniqueness
+    and continuity should discharge [frontier_unique] for concrete
+    backends; Tau inversion records that adding one silent step creates no
+    new observation.  Keeping this package explicit prevents transitivity
+    from assuming canonical representatives. *)
+Class UnifiedFrontierCoherence := {
+  unified_frontier_unique : forall {R}
+      (ot : ptree' E MN R) hs1 hs2,
+      frontier ot hs1 -> frontier ot hs2 -> sem_eq hs1 hs2;
+  unified_frontier_tau_inv : forall {R}
+      (t : ptree E MN R) hs,
+      frontier (TauF t) hs -> frontier (observe t) hs
+}.
+
 End UnifiedFrontier.

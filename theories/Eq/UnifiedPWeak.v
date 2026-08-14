@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-Require Import Utf8 Program Morphisms.
+Require Import Utf8 Program Morphisms Program.Equality.
 
 From Coinduction Require Import all.
 From mathcomp Require Import ssreflect.
@@ -140,6 +140,154 @@ Proof.
 Qed.
 
 End UnifiedWeak.
+
+Section UnifiedFrontierCoherentFacts.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{UC : @UnifiedFrontierCoherence E MN MF NI FI MX FO}.
+
+Lemma weak_bisimF_frontier_l {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E MN R1 -> ptree E MN R2 -> Prop)
+    ot1 ot2 hs1 :
+  weak_bisimF RR sim ot1 ot2 -> frontier ot1 hs1 ->
+  exists hs2, frontier ot2 hs2 /\
+    sem_lift (frontier_head_rel RR sim) hs1 hs2.
+Proof.
+  intros Hstep. revert hs1.
+  induction Hstep; intros hs Hfront.
+  - have Heq : sem_eq hs hs1.
+    { eapply unified_frontier_unique; eassumption. }
+    exists hs2. split; [exact H0|].
+    eapply sem_lift_proper_l; [|exact H1].
+    apply sem_eq_sym. exact Heq.
+  - exact (proj1 H _ Hfront).
+  - exact (proj1 H _ Hfront).
+  - exact (IHHstep _ (unified_frontier_tau_inv Hfront)).
+  - destruct (IHHstep _ Hfront) as [hs2 [Hf2 Hlift]].
+    exists hs2. split; [exact (UFTau Hf2)|exact Hlift].
+Qed.
+
+Lemma weak_bisimF_frontier_r {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E MN R1 -> ptree E MN R2 -> Prop)
+    ot1 ot2 hs2 :
+  weak_bisimF RR sim ot1 ot2 -> frontier ot2 hs2 ->
+  exists hs1, frontier ot1 hs1 /\
+    sem_lift (frontier_head_rel RR sim) hs1 hs2.
+Proof.
+  intros Hstep. revert hs2.
+  induction Hstep; intros hs Hfront.
+  - have Heq : sem_eq hs2 hs.
+    { eapply unified_frontier_unique; eassumption. }
+    exists hs1. split; [exact H|].
+    eapply sem_lift_proper_r; [exact Heq|exact H1].
+  - exact (proj2 H _ Hfront).
+  - exact (proj2 H _ Hfront).
+  - destruct (IHHstep _ Hfront) as [hs1 [Hf1 Hlift]].
+    exists hs1. split; [exact (UFTau Hf1)|exact Hlift].
+  - exact (IHHstep _ (unified_frontier_tau_inv Hfront)).
+Qed.
+
+Lemma weak_bisimF_frontier_match {R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree E MN R1 -> ptree E MN R2 -> Prop) ot1 ot2 :
+  weak_bisimF RR sim ot1 ot2 -> unified_frontier_match RR sim ot1 ot2.
+Proof.
+  intro Hstep. split; intros hs Hfront.
+  - exact (weak_bisimF_frontier_l Hstep Hfront).
+  - exact (weak_bisimF_frontier_r Hstep Hfront).
+Qed.
+
+Lemma unified_frontier_match_tau {R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) sim :
+  unified_frontier_match RR sim (observe t1) (observe t2) ->
+  unified_frontier_match RR sim (TauF t1) (TauF t2).
+Proof.
+  intros [HL HR]. split; intros hs Hf.
+  - destruct (HL _ (unified_frontier_tau_inv Hf)) as [hs' [Hf' Hl]].
+    exists hs'. split; [exact (UFTau Hf')|exact Hl].
+  - destruct (HR _ (unified_frontier_tau_inv Hf)) as [hs' [Hf' Hl]].
+    exists hs'. split; [exact (UFTau Hf')|exact Hl].
+Qed.
+
+Lemma unified_frontier_match_untau_l {R1 R2}
+    (RR : R1 -> R2 -> Prop) (t1 : ptree E MN R1) ot2 sim :
+  unified_frontier_match RR sim (TauF t1) ot2 ->
+  unified_frontier_match RR sim (observe t1) ot2.
+Proof.
+  intros [HL HR]. split; intros hs Hf.
+  - exact (HL _ (UFTau Hf)).
+  - destruct (HR _ Hf) as [hs' [Hf' Hl]].
+    exists hs'. split; [exact (unified_frontier_tau_inv Hf')|exact Hl].
+Qed.
+
+Lemma unified_frontier_match_untau_r {R1 R2}
+    (RR : R1 -> R2 -> Prop) ot1 (t2 : ptree E MN R2) sim :
+  unified_frontier_match RR sim ot1 (TauF t2) ->
+  unified_frontier_match RR sim ot1 (observe t2).
+Proof.
+  intros [HL HR]. split; intros hs Hf.
+  - destruct (HL _ Hf) as [hs' [Hf' Hl]].
+    exists hs'. split; [exact (unified_frontier_tau_inv Hf')|exact Hl].
+  - exact (HR _ (UFTau Hf)).
+Qed.
+
+Definition unified_relcomp {A B C}
+    (R : A -> B -> Prop) (S : B -> C -> Prop) : A -> C -> Prop :=
+  fun x z => exists y, R x y /\ S y z.
+
+Lemma frontier_head_rel_comp {R1 R2 R3}
+    (RR1 : R1 -> R2 -> Prop) (RR2 : R2 -> R3 -> Prop)
+    (sim1 : ptree E MN R1 -> ptree E MN R2 -> Prop)
+    (sim2 : ptree E MN R2 -> ptree E MN R3 -> Prop)
+    (sim3 : ptree E MN R1 -> ptree E MN R3 -> Prop)
+    (Hsim : forall t1 t2 t3,
+      sim1 t1 t2 -> sim2 t2 t3 -> sim3 t1 t3) :
+  forall h1 h2 h3,
+    frontier_head_rel RR1 sim1 h1 h2 ->
+    frontier_head_rel RR2 sim2 h2 h3 ->
+    frontier_head_rel (unified_relcomp RR1 RR2) sim3 h1 h3.
+Proof.
+  intros h1 h2 h3 H12 H23.
+  dependent destruction H12; dependent destruction H23.
+  - constructor. eexists. split; eassumption.
+  - constructor. intro x. eapply Hsim; eauto.
+Qed.
+
+Lemma unified_frontier_match_comp {R1 R2 R3}
+    (RR1 : R1 -> R2 -> Prop) (RR2 : R2 -> R3 -> Prop)
+    (sim1 : ptree E MN R1 -> ptree E MN R2 -> Prop)
+    (sim2 : ptree E MN R2 -> ptree E MN R3 -> Prop)
+    (sim3 : ptree E MN R1 -> ptree E MN R3 -> Prop)
+    (Hsim : forall t1 t2 t3,
+      sim1 t1 t2 -> sim2 t2 t3 -> sim3 t1 t3) :
+  forall ot1 ot2 ot3,
+    unified_frontier_match RR1 sim1 ot1 ot2 ->
+    unified_frontier_match RR2 sim2 ot2 ot3 ->
+    unified_frontier_match (unified_relcomp RR1 RR2) sim3 ot1 ot3.
+Proof.
+  intros ot1 ot2 ot3 [H12L H12R] [H23L H23R]. split.
+  - intros hs1 Hf1.
+    destruct (H12L _ Hf1) as [hs2 [Hf2 Hc12]].
+    destruct (H23L _ Hf2) as [hs3 [Hf3 Hc23]].
+    exists hs3. split; [exact Hf3|].
+    eapply sem_lift_mono; [|eapply sem_lift_comp; eassumption].
+    intros h1 h3 [h2 [Hh12 Hh23]].
+    eapply frontier_head_rel_comp; eauto.
+  - intros hs3 Hf3.
+    destruct (H23R _ Hf3) as [hs2 [Hf2 Hc23]].
+    destruct (H12R _ Hf2) as [hs1 [Hf1 Hc12]].
+    exists hs1. split; [exact Hf1|].
+    eapply sem_lift_mono; [|eapply sem_lift_comp; eassumption].
+    intros h1 h3 [h2 [Hh12 Hh23]].
+    eapply frontier_head_rel_comp; eauto.
+Qed.
+
+End UnifiedFrontierCoherentFacts.
 
 Section UnifiedWeakReflexivity.
 Context {E : Type -> Type} {MN MF : Type -> Type}

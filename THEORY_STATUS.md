@@ -33,8 +33,11 @@ condition is listed explicitly, the referenced result is proved without an
   coinductive greatest fixed point with guarded Tau/Prob rules; fold/unfold,
   result-relation monotonicity, reflexivity, symmetry, and the common-frontier
   introduction theorem are checked without referring to the legacy weak
-  relations.  Transitivity is intentionally pending the explicit unified
-  frontier-coherence package rather than being assumed.
+  relations.  `UnifiedFrontierCoherence` makes the two additional conditions
+  needed by transitivity explicit: extensional frontier uniqueness and Tau
+  inversion.  Under that package, arbitrary frontiers can be matched and
+  matching composes through `sem_lift_comp`; transitivity itself is the next
+  migration step rather than an implicit assumption.
 - `Eq/UnifiedPWeakEnumFacts.v` proves that every established Enum `auweak`
   derivation maps to the new `weak_bisim`, translating both directions of
   frontier matching and pushing old head couplings through the representation
@@ -42,6 +45,8 @@ condition is listed explicitly, the referenced result is proved without an
   the unbounded Von Neumann sampler versus a terminating fair coin and to the
   closed `p = 1/3` to `q = 2/5` Bernoulli factory versus a direct terminating
   `q`-coin.
+  A legacy Enum `UnboundedFrontierCoherence` witness transports to the new
+  coherence package through the bidirectional head isomorphism.
 - `Eq/UnifiedProbabilisticPTS.v` gives an independent distribution-valued
   transition presentation for the two-level model: primitive residual
   transitions live in `MN`, stable weak distributions live in `MF`, and

@@ -6,8 +6,8 @@ Require Import FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq.
 
 From PTree.Core Require Import PTreeDefinitionNew.
-From PTree.Prob Require Import DiscreteMC EnumBindFacts EnumMap FrontierLift
-  FrontierLiftEnum MeasureIteration MeasureIterationEnum TwoLevelMeasure
+From PTree.Prob Require Import DiscreteMC EnumBindFacts EnumMap IndexedCoupling
+  FrontierLift FrontierLiftEnum MeasureIteration MeasureIterationEnum TwoLevelMeasure
   TwoLevelMeasureEnum.
 From PTree.Eq Require Import PWeakAbstract PWeakUnbounded UnifiedFrontier.
 
@@ -346,6 +346,43 @@ Corollary unified_frontier_roundtrip {E R}
       (emap frontier_head_to_aphead hs)).
 Proof.
   move=> Hf. rewrite emap_frontier_aphead_cancel. exact Hf.
+Qed.
+
+Lemma enum_meas_eq_emap {A B} (f : A -> B) (mu nu : Enum A) :
+  @meas_eq Enum Enum_MeasureInterface A mu nu ->
+  @sem_eq Enum Enum_SemanticMeasureInterface B
+    (emap f mu) (emap f nu).
+Proof.
+  move=> Heq. cbn in Heq |- *. unfold enum_meas_eq in Heq |- *.
+  rewrite !enum_prune_emap.
+  eapply indexed_coupling_emap; [|exact Heq].
+  move=> x y ->. reflexivity.
+Qed.
+
+(** Compatibility route for clients that already discharged the old
+    unbounded coherence obligations.  No new uniqueness assumption is hidden
+    by the migration: it is transported through the head isomorphism. *)
+#[global] Instance Enum_UnifiedFrontierCoherence_from_legacy {E}
+    `{UC : @UnboundedFrontierCoherence E Enum
+      Enum_MeasureInterface Enum_MeasureOmegaInterface} :
+  @UnifiedFrontierCoherence E Enum Enum
+    Enum_SemanticMeasureInterface Enum_SemanticMeasureInterface
+    Enum_MixedMeasureInterface Enum_SemanticOmegaInterface.
+Proof.
+  constructor.
+  - move=> R ot hs1 hs2 Hf1 Hf2.
+    have Ho1 := unified_frontier_to_aufrontier Hf1.
+    have Ho2 := unified_frontier_to_aufrontier Hf2.
+    have Heq := @aufrontier_unique E Enum Enum_MeasureInterface
+      Enum_MeasureOmegaInterface UC R ot _ _ Ho1 Ho2.
+    move: (enum_meas_eq_emap aphead_to_frontier_head Heq)=> Hmap.
+    by rewrite !emap_frontier_aphead_cancel in Hmap.
+  - move=> R t hs Hf.
+    have Ho := unified_frontier_to_aufrontier Hf.
+    have Hobase := @aufrontier_tau_inv E Enum Enum_MeasureInterface
+      Enum_MeasureOmegaInterface UC R t _ Ho.
+    move: (aufrontier_to_unified_frontier Hobase)=> Hnew.
+    by rewrite emap_frontier_aphead_cancel in Hnew.
 Qed.
 
 (** The same bridge is available through the extensional closure: clients
