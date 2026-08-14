@@ -81,8 +81,7 @@ condition is listed explicitly, the referenced result is proved without an
   total operational AST limits, while Ret/Vis/Tau/Prob and one-sided Tau
   remain guarded rules.  Consequently the zero hitting limit of pure
   divergence cannot by itself justify an arbitrary equivalence.  Fold/unfold,
-  monotonicity, reflexivity, and common-AST introduction are checked.  Sound
-  frontier laws and conditional completeness remain the next stage.
+  monotonicity, reflexivity, and common-AST introduction are checked.
   As a prerequisite for those soundness laws, omega limits are now congruent
   under pointwise semantic equality of chains (`sem_lub_chain_proper`).
   FreeOmega's lub judgment consequently relates an output to its formal lub
@@ -186,6 +185,19 @@ condition is listed explicitly, the referenced result is proved without an
   `frontier_to_primitive_stable_ast` adds totality. Their conclusions mention
   only `stable_hitting_weak/ast` for `ptree_primitive_kernel`; no frontier
   constructor occurs on the semantic side.
+  The reverse direction is deliberately domain-relative rather than claimed
+  for all syntax. `primitive_frontier_realizable_on Productive` is the exact
+  remaining obligation: on the selected productive domain, the structured
+  frontier must realize one limit of the independently defined primitive
+  hitting chain. `primitive_stable_weak_complete_on` then uses uniqueness of
+  that hitting limit to show that every primitive weak result is semantically
+  equal to a frontier result. This is not a mirrored transition system or a
+  circular completeness assumption: the realizability witness is expected
+  to come from structural decomposition, Bind/nested diagonal cofinality,
+  and Iter productivity. An unrestricted theorem would be false for the
+  intended frontier, because primitive weak hitting assigns the zero
+  subdistribution to divergence whereas frontier iteration admits only its
+  productive/AST cases.
 - `Examples/OperationalPTSExamples.v` is the first direct client of the
   independent model.  A genuinely nested two-sample Enum program and a
   differently shaped one-sample three-point program receive separate

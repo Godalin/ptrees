@@ -955,6 +955,54 @@ Qed.
 
 End FrontierOperationalSoundness.
 
+Section PrimitiveFrontierCompletenessBoundary.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}.
+
+(** The exact non-circular obligation for reverse completeness on a chosen
+    domain [Productive].  It asks the structured proof system to realize one
+    limit of the independently defined primitive hitting chain.  It does not
+    quantify over a preselected frontier result and does not assume the
+    desired completeness conclusion for every representation of that limit.
+
+    Typical sufficient proofs split this obligation into: a structural
+    decomposition of the program, continuity/cofinality for Bind and nested
+    limits, and productivity/totality for unbounded Iter nodes.  It cannot
+    hold for unrestricted syntax when the frontier intentionally admits only
+    productive iteration while primitive hitting also assigns the zero
+    subdistribution to divergence. *)
+Definition primitive_frontier_realizable_on
+    (Productive : forall R : Type, ptree' E MN R -> Prop) : Prop :=
+  forall (R : Type) (ot : ptree' E MN R), Productive R ot ->
+    exists out,
+      frontier ot out /\
+      stable_hitting_weak
+        (@ptree_primitive_kernel E MN MF FI MX R) ot out.
+
+Theorem primitive_stable_weak_complete_on
+    (Productive : forall R : Type, ptree' E MN R -> Prop)
+    (Hrealize : primitive_frontier_realizable_on Productive)
+    {R} (ot : ptree' E MN R) out :
+  Productive R ot ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R) ot out ->
+  exists frontier_out,
+    frontier ot frontier_out /\ sem_eq out frontier_out.
+Proof.
+  intros Hproductive Hweak.
+  destruct (Hrealize R ot Hproductive) as [frontier_out [Hfront Hfrontweak]].
+  exists frontier_out. split; [exact Hfront|].
+  eapply stable_hitting_weak_unique; eassumption.
+Qed.
+
+End PrimitiveFrontierCompletenessBoundary.
+
 Section GuardedOperationalBisimulation.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
