@@ -91,6 +91,20 @@ Polymorphic Inductive free_omega_approx {MN}
       (forall n, free_omega_approx R (c n) (d n)) ->
       free_omega_approx R (FOLub c) (FOLub d).
 
+Lemma free_omega_lift_to_approx {MN}
+    `{NI : SemanticMeasureInterface MN} {A B}
+    (R : A -> B -> Prop) (mu : FreeOmega MN A) (nu : FreeOmega MN B) :
+  free_omega_lift R mu nu -> free_omega_approx R mu nu.
+Proof.
+  intro Hlift. induction Hlift.
+  - constructor. exact H.
+  - constructor.
+  - eapply FOApproxSample with (S := S).
+    + exact H.
+    + intros x y Hxy. exact (H1 x y Hxy).
+  - constructor. exact H0.
+Qed.
+
 Definition free_omega_chains_cofinal {MN}
     `{NI : SemanticMeasureInterface MN} {A B} (R : A -> B -> Prop)
     (left : nat -> FreeOmega MN A) (right : nat -> FreeOmega MN B) : Prop :=
