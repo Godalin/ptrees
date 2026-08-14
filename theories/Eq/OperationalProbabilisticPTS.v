@@ -276,6 +276,61 @@ Qed.
 
 End OperationalWeakExistence.
 
+Section OperationalTauSoundness.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}.
+
+Lemma operational_hitting_tau_zero_prefix {R}
+    (t : ptree E MN R) fuel :
+  sem_eq
+    (operational_hitting_approx (MF := MF) fuel (TauF t))
+    (sem_zero_prefix
+      (fun n => operational_hitting_approx (MF := MF) n (observe t))
+      fuel).
+Proof.
+  destruct fuel as [|fuel].
+  - apply operational_hitting_tau_zero.
+  - apply operational_hitting_tau_succ.
+Qed.
+
+(** A silent primitive step changes only the finite indexing of the hitting
+    chain.  Cofinality, rather than a Tau-specific weak constructor, is what
+    makes its unbounded behavior invariant. *)
+Theorem operational_weak_tau_iff {R} (t : ptree E MN R) out :
+  operational_weak (MF := MF) (TauF t) out <->
+  operational_weak (MF := MF) (observe t) out.
+Proof.
+  unfold operational_weak. split; intro Hlim.
+  - apply (proj2 (sem_lub_zero_prefix
+      (fun n => operational_hitting_approx (MF := MF) n (observe t)) out)).
+    eapply sem_lub_chain_proper; [|exact Hlim].
+    intro n. apply operational_hitting_tau_zero_prefix.
+  - eapply sem_lub_chain_proper.
+    + intro n. apply sem_eq_sym.
+      apply operational_hitting_tau_zero_prefix.
+    + apply (proj1 (sem_lub_zero_prefix
+        (fun n => operational_hitting_approx (MF := MF) n (observe t)) out)).
+      exact Hlim.
+Qed.
+
+Corollary operational_ast_weak_tau_iff {R} (t : ptree E MN R) out :
+  operational_ast_weak (MF := MF) (TauF t) out <->
+  operational_ast_weak (MF := MF) (observe t) out.
+Proof.
+  unfold operational_ast_weak. rewrite operational_weak_tau_iff.
+  reflexivity.
+Qed.
+
+End OperationalTauSoundness.
+
 Section GuardedOperationalBisimulation.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}

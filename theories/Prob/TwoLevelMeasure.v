@@ -156,6 +156,11 @@ Definition sem_increasing {SM} `{SI : SemanticMeasureInterface SM}
     (chain : nat -> SM A) : Prop :=
   forall n, sem_le (chain n) (chain (Datatypes.S n)).
 
+Definition sem_zero_prefix {SM} `{SI : SemanticMeasureInterface SM}
+    `{SO : @SemanticOmegaInterface SM SI} {A}
+    (chain : nat -> SM A) : nat -> SM A :=
+  fun n => match n with O => sem_zero | Datatypes.S n' => chain n' end.
+
 (** Minimal order theory needed to show that primitive stable-hitting
     approximants form an increasing chain.  It is independent of omega-limit
     existence and can therefore be supplied by partial backends. *)
@@ -194,6 +199,18 @@ Polymorphic Class SemanticOmegaLaws@{carrier representation}
       (k : A -> S B),
       sem_increasing chain -> sem_lub chain mu ->
       sem_lub (fun n => sem_bind (chain n) k) (sem_bind mu k)
+}.
+
+(** Cofinality needed for silent operational steps.  It is deliberately
+    separate from ordinary omega completeness: a backend may provide formal
+    lub syntax without quotienting away finite prefixes. *)
+Polymorphic Class SemanticOmegaCofinalityLaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S}
+    `{SO : @SemanticOmegaInterface S SI} := {
+  sem_lub_zero_prefix : forall {A : Type@{carrier}}
+      (chain : nat -> S A) out,
+      sem_lub chain out <-> sem_lub (sem_zero_prefix chain) out
 }.
 
 #[global] Polymorphic Instance sem_eq_equivalence

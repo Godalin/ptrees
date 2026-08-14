@@ -90,6 +90,12 @@ condition is listed explicitly, the referenced result is proved without an
   Both the structural and observation-closed FreeOmega models implement this
   strengthened law; the real-oracle mixed-iteration witness was migrated to
   the observation-closed relation without adding a gluing assumption.
+  Finite-prefix invariance is exposed separately as
+  `SemanticOmegaCofinalityLaws`: the observation-closed FreeOmega equality
+  validates it by quotienting formal lubs by a leading zero approximant.
+  `operational_weak_tau_iff` and `operational_ast_weak_tau_iff` then derive
+  silent-step invariance solely from the primitive hitting recurrence and
+  cofinality; no Tau weak-transition constructor is used.
 
 ## Measure semantics and coupling
 

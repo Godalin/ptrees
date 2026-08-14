@@ -473,7 +473,21 @@ Polymorphic Inductive free_omega_qlift {MN}
       free_omega_qlift R (FOSample mu k) (FOSample nu h)
   | FOQLLub (c : nat -> FreeOmega MN A) (d : nat -> FreeOmega MN B) :
       (forall n, free_omega_qlift R (c n) (d n)) ->
-      free_omega_qlift R (FOLub c) (FOLub d).
+      free_omega_qlift R (FOLub c) (FOLub d)
+  | FOQLLubZeroPrefixL (c : nat -> FreeOmega MN A)
+      (d : nat -> FreeOmega MN B) :
+      (forall n, free_omega_qlift R (c n) (d n)) ->
+      free_omega_qlift R
+        (FOLub (fun n => match n with O => FOZero
+          | Datatypes.S n' => c n' end))
+        (FOLub d)
+  | FOQLLubZeroPrefixR (c : nat -> FreeOmega MN A)
+      (d : nat -> FreeOmega MN B) :
+      (forall n, free_omega_qlift R (c n) (d n)) ->
+      free_omega_qlift R
+        (FOLub c)
+        (FOLub (fun n => match n with O => FOZero
+          | Datatypes.S n' => d n' end)).
 
 #[global] Polymorphic Instance FreeOmegaObservableSemanticMeasureInterface
     {MN} `{NI : SemanticMeasureInterface MN}
@@ -652,6 +666,24 @@ Proof.
     eapply FOQLBind with (T := eq); [exact Hmu|].
     intros x y ->. apply free_omega_qlift_refl.
     intros z. reflexivity.
+Qed.
+
+#[global] Instance FreeOmegaObservableSemanticOmegaCofinalityLaws :
+    @SemanticOmegaCofinalityLaws (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface.
+Proof.
+  constructor. intros A chain out. cbn. split; intro Hlim.
+  - eapply (@sem_eq_trans _
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hlim|].
+    apply FOQLLubZeroPrefixR. intro n.
+    apply free_omega_qlift_refl. intros x. reflexivity.
+  - eapply (@sem_eq_trans _
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hlim|].
+    apply FOQLLubZeroPrefixL. intro n.
+    apply free_omega_qlift_refl. intros x. reflexivity.
 Qed.
 
 #[global] Instance FreeOmegaObservableSemanticMeasureOrderLaws :
