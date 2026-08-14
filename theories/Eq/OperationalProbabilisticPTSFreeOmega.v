@@ -754,18 +754,11 @@ Proof.
   induction outer as [|outer IH]; intros inner i.
   - constructor.
   - cbn [free_nested_execution_grid free_nested_grid_operational_fuel].
-    eapply free_omega_approx_trans.
-    + change (free_omega_approx eq
-        (free_omega_bind
-          (operational_hitting_approx (MF := MF) inner (observe sample))
-          (fun h =>
-            match round i (free_no_event_head_value h) with
-            | inl i' => free_nested_execution_grid outer inner i'
-            | inr r => FORet (FHRet r)
-            end))
-        (free_operational_bind_split_approx inner
-          (S (free_nested_grid_operational_fuel outer inner))
-          sample (free_nested_after i))).
+    eapply free_omega_approx_trans with
+      (nu := free_operational_bind_split_approx inner
+        (S (free_nested_grid_operational_fuel outer inner))
+        sample (free_nested_after i)).
+    +
       unfold free_operational_bind_split_approx.
       eapply free_omega_approx_bind with (R := eq) (T := eq).
       * apply free_omega_approx_refl. intros h. reflexivity.
@@ -781,8 +774,10 @@ Proof.
     + eapply free_omega_approx_trans.
       * apply free_operational_bind_split_le_hitting. exact no_event.
       * apply free_omega_lift_to_approx.
-        apply free_omega_lift_sym.
-        apply free_nested_program_hitting_unfold.
+        eapply free_omega_lift_mono.
+        -- intros x y Hyx. symmetry. exact Hyx.
+        -- apply free_omega_lift_sym.
+           apply free_nested_program_hitting_unfold.
 Qed.
 
 Theorem free_nested_productivity (i : I) :
