@@ -117,7 +117,15 @@ condition is listed explicitly, the referenced result is proved without an
   frontier, Bind, Iter, or NestedIter reference.  The next refactoring step
   is to prove the current PTree `operational_kernel` is an instance of this
   generic construction and then make the generic definitions the public
-  ones.
+  ones.  The first half is now checked: `ptree_primitive_kernel` maps one
+  observed PTree state to a distribution of stable heads or next observed
+  states, and `ptree_primitive_hitting_adequate` proves pointwise semantic
+  equality with the former PTree-specific approximants for every finite
+  fuel.  `ptree_primitive_weak_adequate` and
+  `ptree_primitive_ast_adequate` lift that result to omega-limit weak behavior
+  and AST.  Thus existing examples already have a theorem-level path into
+  the generic standard model; changing the public definitions can now be a
+  compatibility refactoring rather than a new semantic assumption.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides

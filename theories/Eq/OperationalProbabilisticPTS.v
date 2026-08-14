@@ -6,7 +6,7 @@ Require Import Program.
 From Coinduction Require Import all.
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import TwoLevelMeasure.
-From PTree.Eq Require Import UnifiedFrontier UnifiedPWeak.
+From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier UnifiedPWeak.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -42,6 +42,19 @@ Definition operational_kernel {R} (ot : ptree' E MN R) :
   | TauF t => sem_ret (OPInternal t)
   | ProbF _ mu k =>
       mixed_bind mu (fun x => sem_ret (OPInternal (k x)))
+  end.
+
+(** The same primitive transition in the generic stable-hitting interface.
+    Residual states are observations, not syntax constructors: taking the
+    transition never recognizes a derived [bind] or [iter] form. *)
+Definition ptree_primitive_kernel {R} (ot : ptree' E MN R) :
+    MF (stable_target (ptree' E MN R) (frontier_head E MN R)) :=
+  match ot with
+  | RetF r => sem_ret (SHStable (FHRet r))
+  | VisF _ e k => sem_ret (SHStable (FHVis e k))
+  | TauF t => sem_ret (SHInternal (observe t))
+  | ProbF _ mu k =>
+      mixed_bind mu (fun x => sem_ret (SHInternal (observe (k x))))
   end.
 
 (** Resolve one operational target using at most [fuel] further primitive
@@ -268,6 +281,100 @@ Proof.
 Qed.
 
 End OperationalKernelLaws.
+
+Section GenericKernelAdequacy.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}.
+
+(** Adequacy of the PTree adapter for the syntax-independent primitive
+    kernel semantics.  This is pointwise in finite fuel, so the later weak
+    and AST correspondence does not assume omega-limit uniqueness or a
+    structured frontier derivation. *)
+Theorem ptree_primitive_hitting_adequate {R} fuel
+    (ot : ptree' E MN R) :
+  sem_eq
+    (stable_hitting_approx
+      (@ptree_primitive_kernel E MN MF FI MX R) fuel ot)
+    (operational_hitting_approx (MF := MF) fuel ot).
+Proof.
+  induction fuel as [|fuel IH] in ot |- *; destruct ot as [r|t|X e k|X mu k].
+  - unfold stable_hitting_approx, ptree_primitive_kernel.
+    eapply sem_eq_trans; [apply sem_bind_ret_l|].
+    rewrite stable_target_stableE.
+    apply sem_eq_sym. apply operational_hitting_ret.
+  - unfold stable_hitting_approx, ptree_primitive_kernel.
+    eapply sem_eq_trans; [apply sem_bind_ret_l|].
+    rewrite stable_target_internal_zeroE.
+    apply sem_eq_sym. apply operational_hitting_tau_zero.
+  - unfold stable_hitting_approx, ptree_primitive_kernel.
+    eapply sem_eq_trans; [apply sem_bind_ret_l|].
+    rewrite stable_target_stableE.
+    apply sem_eq_sym. apply operational_hitting_vis.
+  - unfold stable_hitting_approx, ptree_primitive_kernel.
+    eapply sem_eq_trans; [apply mixed_bind_assoc|].
+    eapply sem_eq_trans.
+    + apply mixed_bind_ae_proper.
+      eapply sem_ae_mono; [|apply sem_ae_true].
+      intros x _. eapply sem_eq_trans; [apply sem_bind_ret_l|].
+      rewrite stable_target_internal_zeroE. apply sem_eq_refl.
+    + apply sem_eq_sym. apply operational_hitting_prob_zero.
+  - unfold stable_hitting_approx, ptree_primitive_kernel.
+    eapply sem_eq_trans; [apply sem_bind_ret_l|].
+    rewrite stable_target_stableE.
+    apply sem_eq_sym. apply operational_hitting_ret.
+  - unfold stable_hitting_approx, ptree_primitive_kernel.
+    eapply sem_eq_trans; [apply sem_bind_ret_l|].
+    rewrite stable_target_internal_succE.
+    eapply sem_eq_trans; [apply IH|].
+    apply sem_eq_sym. apply operational_hitting_tau_succ.
+  - unfold stable_hitting_approx, ptree_primitive_kernel.
+    eapply sem_eq_trans; [apply sem_bind_ret_l|].
+    rewrite stable_target_stableE.
+    apply sem_eq_sym. apply operational_hitting_vis.
+  - unfold stable_hitting_approx, ptree_primitive_kernel.
+    eapply sem_eq_trans; [apply mixed_bind_assoc|].
+    eapply sem_eq_trans.
+    + apply mixed_bind_ae_proper.
+      eapply sem_ae_mono; [|apply sem_ae_true].
+      intros x _. eapply sem_eq_trans; [apply sem_bind_ret_l|].
+      rewrite stable_target_internal_succE. apply IH.
+    + apply sem_eq_sym. apply operational_hitting_prob_succ.
+Qed.
+
+Context `{FOL : @SemanticOmegaLaws MF FI FO}.
+
+Theorem ptree_primitive_weak_adequate {R}
+    (ot : ptree' E MN R) out :
+  stable_hitting_weak
+      (@ptree_primitive_kernel E MN MF FI MX R) ot out <->
+  operational_weak (MF := MF) ot out.
+Proof.
+  unfold stable_hitting_weak, operational_weak. split; intro Hlim.
+  - eapply sem_lub_chain_proper; [|exact Hlim].
+    intro fuel. apply ptree_primitive_hitting_adequate.
+  - eapply sem_lub_chain_proper; [|exact Hlim].
+    intro fuel. apply sem_eq_sym.
+    apply ptree_primitive_hitting_adequate.
+Qed.
+
+Theorem ptree_primitive_ast_adequate {R}
+    (ot : ptree' E MN R) out :
+  stable_hitting_ast
+      (@ptree_primitive_kernel E MN MF FI MX R) ot out <->
+  operational_ast_weak (MF := MF) ot out.
+Proof.
+  unfold stable_hitting_ast, operational_ast_weak.
+  rewrite ptree_primitive_weak_adequate. reflexivity.
+Qed.
+
+End GenericKernelAdequacy.
 
 Section OperationalHittingOrder.
 Context {E : Type -> Type} {MN MF : Type -> Type}
