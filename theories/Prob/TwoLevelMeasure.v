@@ -262,6 +262,30 @@ Polymorphic Class SemanticMeasureDiagonalLaws@{carrier representation}
         (sem_bind source_out kernel_out)
 }.
 
+(** Fubini/diagonal continuity for two independent approximation indices.
+    This is the semantic capability required by genuinely nested unbounded
+    computation.  It is intentionally stronger than finite cofinality: an
+    inner AST sampler need not expose its complete output at any finite
+    fuel, so no finite maximum can replace this double-limit law.
+
+    Monotonicity in both coordinates makes the diagonal chain cofinal in the
+    product order.  Backends based on ordinary subprobability measures can
+    discharge this with monotone convergence; formal completions may instead
+    provide it through their observation quotient. *)
+Polymorphic Class SemanticOmegaFubiniLaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S}
+    `{SO : @SemanticOmegaInterface S SI} := {
+  sem_lub_double_diagonal : forall {A : Type@{carrier}}
+      (grid : nat -> nat -> S A)
+      (row_out : nat -> S A) (out : S A),
+      (forall outer, sem_increasing (grid outer)) ->
+      (forall inner, sem_increasing (fun outer => grid outer inner)) ->
+      (forall outer, sem_lub (grid outer) (row_out outer)) ->
+      sem_lub row_out out ->
+      sem_lub (fun fuel => grid fuel fuel) out
+}.
+
 #[global] Polymorphic Instance sem_eq_equivalence
     {S} `{SI : SemanticMeasureInterface S}
     `{SL : @SemanticMeasureCoreLaws S SI} A :
