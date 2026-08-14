@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-Require Import List Arith.PeanoNat.
+Require Import List Arith.PeanoNat FunctionalExtensionality Lia.
 
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
@@ -291,6 +291,190 @@ Definition free_operational_iter_approx_cofinal {I R}
       (observe (PTree.iter step i)))
     (fun rounds => operational_iter_round_approx (MF := MF)
       rounds transition i).
+
+(** A primitive Markov step has a uniform syntactic cost: one probabilistic
+    node followed by the silent back-edge inserted by [PTree.iter].  Hence
+    its global stable-hitting chain and its absorbing-round chain are
+    cofinal.  This theorem is entirely operational; no frontier derivation
+    or iteration constructor occurs in its assumptions. *)
+Section PrimitiveProbIteration.
+Context {I R : Type} (transition : I -> MN (I + R)).
+
+Definition free_primitive_iter_step (i : I) : ptree E MN (I + R) :=
+  Prob (transition i) (fun next => Ret next).
+
+Definition free_primitive_iter_program (i : I) : ptree E MN R :=
+  PTree.iter free_primitive_iter_step i.
+
+Definition free_primitive_iter_hitting (fuel : nat) (i : I) :
+    MF (frontier_head E MN R) :=
+  operational_hitting_approx (MF := MF) fuel
+    (observe (free_primitive_iter_program i)).
+
+Definition free_primitive_iter_rounds (rounds : nat) (i : I) :
+    MF (frontier_head E MN R) :=
+  operational_iter_round_approx (MF := MF) rounds transition i.
+
+Definition free_primitive_iter_after (next : I + R) : ptree E MN R :=
+  match next with
+  | inl j => Tau (free_primitive_iter_program j)
+  | inr r => Ret r
+  end.
+
+Definition free_primitive_iter_cont (next : I + R) : ptree E MN R :=
+  PTree.bind (Ret next) (fun lr =>
+    match lr with
+    | inl j => Tau (free_primitive_iter_program j)
+    | inr r => Ret r
+    end).
+
+Lemma free_primitive_iter_observe i :
+  observe (free_primitive_iter_program i) =
+  ProbF (transition i) free_primitive_iter_cont.
+Proof.
+  unfold free_primitive_iter_program.
+  pose proof (unfold_aloop_ free_primitive_iter_step i) as Hunfold.
+  rewrite (observing_observe Hunfold), observe_bind.
+  assert (Hstep : observe (free_primitive_iter_step i) =
+    ProbF (transition i) (fun next => Ret next)) by reflexivity.
+  rewrite Hstep. reflexivity.
+Qed.
+
+Lemma free_primitive_iter_cont_observe next :
+  observe (free_primitive_iter_cont next) =
+  observe (free_primitive_iter_after next).
+Proof.
+  unfold free_primitive_iter_cont. rewrite observe_bind.
+  destruct next as [j|r]; reflexivity.
+Qed.
+
+Lemma free_primitive_iter_rounds_zero i :
+  free_primitive_iter_rounds 0 i = FOZero.
+Proof. reflexivity. Qed.
+
+Lemma free_primitive_iter_rounds_succ rounds i :
+  free_primitive_iter_rounds (Datatypes.S rounds) i =
+  FOSample (transition i) (fun next =>
+    match next with
+    | inl j => free_primitive_iter_rounds rounds j
+    | inr r => FORet (FHRet r)
+    end).
+Proof.
+  unfold free_primitive_iter_rounds, operational_iter_round_approx.
+  cbv [mixed_iter_approx sem_bind mixed_bind sem_ret free_omega_bind
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaSemanticMeasureInterface].
+  f_equal. apply functional_extensionality. intros [j|r]; reflexivity.
+Qed.
+
+Lemma free_primitive_iter_hitting_succ fuel i :
+  free_primitive_iter_hitting (Datatypes.S fuel) i =
+  FOSample (transition i) (fun next =>
+    operational_hitting_approx (MF := MF) fuel
+      (observe (free_primitive_iter_cont next))).
+Proof.
+  unfold free_primitive_iter_hitting. rewrite free_primitive_iter_observe.
+  reflexivity.
+Qed.
+
+Lemma free_primitive_iter_retry_zero j :
+  operational_hitting_approx (MF := MF) 0
+    (observe (free_primitive_iter_cont (inl j))) = FOZero.
+Proof. reflexivity. Qed.
+
+Lemma free_primitive_iter_retry_succ fuel j :
+  operational_hitting_approx (MF := MF) (Datatypes.S fuel)
+    (observe (free_primitive_iter_cont (inl j))) =
+  free_primitive_iter_hitting fuel j.
+Proof.
+  rewrite free_primitive_iter_cont_observe. reflexivity.
+Qed.
+
+Lemma free_primitive_iter_success fuel r :
+  operational_hitting_approx (MF := MF) fuel
+    (observe (free_primitive_iter_cont (inr r))) = FORet (FHRet r).
+Proof.
+  rewrite free_primitive_iter_cont_observe.
+  unfold free_primitive_iter_after, operational_hitting_approx,
+    operational_kernel. cbn. rewrite operational_target_stableE.
+  reflexivity.
+Qed.
+
+Lemma free_primitive_iter_hitting_le_round fuel :
+  forall i, free_omega_approx eq
+    (free_primitive_iter_hitting fuel i)
+    (free_primitive_iter_rounds (Datatypes.S fuel) i).
+Proof.
+  induction fuel as [|fuel IH]; intro i.
+  - rewrite free_primitive_iter_rounds_succ.
+    unfold free_primitive_iter_hitting. rewrite free_primitive_iter_observe.
+    unfold operational_hitting_approx, operational_kernel. cbn.
+    eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intros x. reflexivity.
+    + intros x y ->. destruct y as [j|r]; constructor.
+  - rewrite free_primitive_iter_hitting_succ,
+      free_primitive_iter_rounds_succ.
+    eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intros x. reflexivity.
+    + intros x y ->. destruct y as [j|r].
+      * eapply free_omega_approx_trans with
+          (nu := free_primitive_iter_hitting fuel j).
+        -- destruct fuel as [|fuel].
+           ++ constructor.
+           ++ rewrite free_primitive_iter_retry_succ.
+              apply free_operational_hitting_mono.
+              apply le_S. apply le_n.
+        -- apply IH.
+      * rewrite free_primitive_iter_success.
+        apply free_omega_approx_refl. intros x. reflexivity.
+Qed.
+
+Lemma free_primitive_iter_round_le_hitting rounds :
+  forall i, free_omega_approx eq
+    (free_primitive_iter_rounds rounds i)
+    (free_primitive_iter_hitting (2 * rounds) i).
+Proof.
+  induction rounds as [|rounds IH]; intro i.
+  - rewrite free_primitive_iter_rounds_zero. constructor.
+  - rewrite free_primitive_iter_rounds_succ.
+    replace (2 * Datatypes.S rounds) with
+      (Datatypes.S (Datatypes.S (2 * rounds))) by lia.
+    rewrite free_primitive_iter_hitting_succ.
+    eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intros x. reflexivity.
+    + intros x y ->. destruct y as [j|r].
+      * rewrite free_primitive_iter_retry_succ. apply IH.
+      * rewrite free_primitive_iter_success.
+        apply free_omega_approx_refl. intros x. reflexivity.
+Qed.
+
+Theorem free_primitive_iter_approx_cofinal i :
+  free_operational_iter_approx_cofinal
+    free_primitive_iter_step transition i.
+Proof.
+  split.
+  - intro fuel. exists (Datatypes.S fuel).
+    exact (free_primitive_iter_hitting_le_round fuel i).
+  - intro rounds. exists (2 * rounds).
+    eapply free_omega_approx_mono.
+    + intros x y Hxy. symmetry. exact Hxy.
+    + exact (free_primitive_iter_round_le_hitting rounds i).
+Qed.
+
+Corollary free_primitive_iter_cofinal i :
+  @operational_iter_cofinal E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface I R
+    free_primitive_iter_step transition i.
+Proof.
+  intros out. unfold operational_iter_cofinal.
+  apply free_omega_cofinal_lub_iff.
+  exact (free_primitive_iter_approx_cofinal i).
+Qed.
+
+End PrimitiveProbIteration.
 
 Theorem free_operational_iter_cofinal {I R}
     (step : I -> ptree E MN (I + R))
