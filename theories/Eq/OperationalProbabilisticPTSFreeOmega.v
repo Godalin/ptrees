@@ -292,6 +292,57 @@ Definition free_operational_iter_approx_cofinal {I R}
     (fun rounds => operational_iter_round_approx (MF := MF)
       rounds transition i).
 
+(** Finite, proof-relevant productivity data.  A certificate does more than
+    assert equality of two omega limits: it exhibits how much structured
+    round fuel is sufficient for each operational fuel, and conversely.
+    For nested samplers these schedules are where uniform/AE-uniform bounds
+    must be supplied; the generic omega theory does not invent them. *)
+Record free_operational_iter_productivity_certificate {I R}
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) (i : I) := {
+  operational_to_round_schedule : nat -> nat;
+  round_to_operational_schedule : nat -> nat;
+  operational_to_round_sound : forall fuel,
+    free_omega_approx eq
+      (operational_hitting_approx (MF := MF) fuel
+        (observe (PTree.iter step i)))
+      (operational_iter_round_approx (MF := MF)
+        (operational_to_round_schedule fuel) transition i);
+  round_to_operational_sound : forall rounds,
+    free_omega_approx (fun y x => x = y)
+      (operational_iter_round_approx (MF := MF) rounds transition i)
+      (operational_hitting_approx (MF := MF)
+        (round_to_operational_schedule rounds)
+        (observe (PTree.iter step i)))
+}.
+
+Lemma free_operational_iter_certificate_approx_cofinal {I R}
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) (i : I) :
+  free_operational_iter_productivity_certificate step transition i ->
+  free_operational_iter_approx_cofinal step transition i.
+Proof.
+  intros cert. split.
+  - intro fuel. exists (operational_to_round_schedule cert fuel).
+    exact (operational_to_round_sound cert fuel).
+  - intro rounds. exists (round_to_operational_schedule cert rounds).
+    exact (round_to_operational_sound cert rounds).
+Qed.
+
+Corollary free_operational_iter_certificate_cofinal {I R}
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) (i : I) :
+  free_operational_iter_productivity_certificate step transition i ->
+  @operational_iter_cofinal E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface I R step transition i.
+Proof.
+  intros cert out. unfold operational_iter_cofinal.
+  apply free_omega_cofinal_lub_iff.
+  exact (free_operational_iter_certificate_approx_cofinal cert).
+Qed.
+
 (** A primitive Markov step has a uniform syntactic cost: one probabilistic
     node followed by the silent back-edge inserted by [PTree.iter].  Hence
     its global stable-hitting chain and its absorbing-round chain are
@@ -449,17 +500,24 @@ Proof.
         apply free_omega_approx_refl. intros x. reflexivity.
 Qed.
 
-Theorem free_primitive_iter_approx_cofinal i :
+Theorem free_primitive_iter_productivity i :
+  free_operational_iter_productivity_certificate
+    free_primitive_iter_step transition i.
+Proof.
+  refine {| operational_to_round_schedule := Datatypes.S;
+    round_to_operational_schedule := fun rounds => 2 * rounds |}.
+  - intro fuel. exact (free_primitive_iter_hitting_le_round fuel i).
+  - intro rounds. eapply free_omega_approx_mono.
+    + intros x y Hxy. symmetry. exact Hxy.
+    + exact (free_primitive_iter_round_le_hitting rounds i).
+Qed.
+
+Corollary free_primitive_iter_approx_cofinal i :
   free_operational_iter_approx_cofinal
     free_primitive_iter_step transition i.
 Proof.
-  split.
-  - intro fuel. exists (Datatypes.S fuel).
-    exact (free_primitive_iter_hitting_le_round fuel i).
-  - intro rounds. exists (2 * rounds).
-    eapply free_omega_approx_mono.
-    + intros x y Hxy. symmetry. exact Hxy.
-    + exact (free_primitive_iter_round_le_hitting rounds i).
+  apply free_operational_iter_certificate_approx_cofinal.
+  exact (free_primitive_iter_productivity i).
 Qed.
 
 Corollary free_primitive_iter_cofinal i :
@@ -469,9 +527,8 @@ Corollary free_primitive_iter_cofinal i :
     FreeOmegaObservableSemanticOmegaInterface I R
     free_primitive_iter_step transition i.
 Proof.
-  intros out. unfold operational_iter_cofinal.
-  apply free_omega_cofinal_lub_iff.
-  exact (free_primitive_iter_approx_cofinal i).
+  apply free_operational_iter_certificate_cofinal.
+  exact (free_primitive_iter_productivity i).
 Qed.
 
 End PrimitiveProbIteration.
