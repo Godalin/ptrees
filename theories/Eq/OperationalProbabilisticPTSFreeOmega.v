@@ -681,7 +681,7 @@ Proof.
               unfold free_nested_after. destruct (round i a);
                 cbn [operational_hitting_approx operational_kernel];
                 try rewrite operational_target_stableE; constructor.
-           ++ exfalso. exact (@no_event X e).
+           ++ exfalso. exact (no_event e).
   - eapply free_omega_approx_trans.
     + apply free_omega_lift_to_approx.
       apply free_nested_program_hitting_unfold.
@@ -707,7 +707,7 @@ Proof.
               ** cbn [operational_hitting_approx operational_kernel].
                  rewrite operational_target_stableE.
                  apply free_omega_approx_refl. intros x. reflexivity.
-           ++ exfalso. exact (@no_event X e).
+           ++ exfalso. exact (no_event e).
 Qed.
 
 Lemma free_nested_execution_grid_outer_increasing inner :
@@ -725,6 +725,67 @@ Proof.
       destruct (round i (free_no_event_head_value h2)) as [i'|r].
       * apply IH.
       * apply free_omega_approx_refl. intros x. reflexivity.
+Qed.
+
+Fixpoint free_nested_grid_operational_fuel
+    (outer inner : nat) : nat :=
+  match outer with
+  | O => O
+  | S outer' => inner + S (free_nested_grid_operational_fuel outer' inner)
+  end.
+
+Lemma free_nested_grid_to_operational_sound outer :
+  forall inner i,
+  free_omega_approx eq
+    (free_nested_execution_grid outer inner i)
+    (operational_hitting_approx (MF := MF)
+      (free_nested_grid_operational_fuel outer inner)
+      (observe (free_nested_program i))).
+Proof.
+  induction outer as [|outer IH]; intros inner i.
+  - constructor.
+  - cbn [free_nested_execution_grid free_nested_grid_operational_fuel].
+    eapply free_omega_approx_trans.
+    + change (free_omega_approx eq
+        (free_omega_bind
+          (operational_hitting_approx (MF := MF) inner (observe sample))
+          (fun h =>
+            match round i (free_no_event_head_value h) with
+            | inl i' => free_nested_execution_grid outer inner i'
+            | inr r => FORet (FHRet r)
+            end))
+        (free_operational_bind_split_approx inner
+          (S (free_nested_grid_operational_fuel outer inner))
+          sample (free_nested_after i))).
+      unfold free_operational_bind_split_approx.
+      eapply free_omega_approx_bind with (R := eq) (T := eq).
+      * apply free_omega_approx_refl. intros h. reflexivity.
+      * intros h1 h2 ->. destruct h2 as [a|X e c].
+        -- cbn [free_no_event_head_value operational_head_bind_approx].
+           unfold free_nested_after. destruct (round i a) as [i'|r].
+           ++ cbn [operational_hitting_approx operational_kernel].
+              apply IH.
+           ++ cbn [operational_hitting_approx operational_kernel].
+              rewrite operational_target_stableE.
+              apply free_omega_approx_refl. intros x. reflexivity.
+        -- exfalso. exact (no_event e).
+    + eapply free_omega_approx_trans.
+      * apply free_operational_bind_split_le_hitting. exact no_event.
+      * apply free_omega_lift_to_approx.
+        apply free_omega_lift_sym.
+        apply free_nested_program_hitting_unfold.
+Qed.
+
+Theorem free_nested_productivity (i : I) :
+  free_nested_productivity_certificate i.
+Proof.
+  refine {|
+    nested_operational_to_grid_outer := S;
+    nested_operational_to_grid_inner := fun fuel => fuel;
+    nested_grid_to_operational := free_nested_grid_operational_fuel
+  |}.
+  - intro fuel. apply free_nested_operational_to_grid_sound.
+  - intros outer inner. apply free_nested_grid_to_operational_sound.
 Qed.
 
 (** A finite productivity certificate is sufficient for the canonical
@@ -761,6 +822,18 @@ Proof.
     eapply free_omega_approx_mono.
     + intros x y Hxy. symmetry. exact Hxy.
     + exact (nested_grid_to_operational_sound cert diagonal diagonal).
+Qed.
+
+Corollary free_nested_program_diagonal_cofinal (i : I) :
+  @operational_hitting_diagonal_cofinal E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R
+    (observe (free_nested_program i))
+    (fun outer inner => free_nested_execution_grid outer inner i).
+Proof.
+  apply free_nested_productivity_diagonal_cofinal.
+  apply free_nested_productivity.
 Qed.
 
 Lemma free_nested_execution_grid_row_lub
