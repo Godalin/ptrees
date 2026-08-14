@@ -2,7 +2,6 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 
-Require Import Arith.PeanoNat FunctionalExtensionality Lia.
 From mathcomp Require Import ssralg rat.
 
 From PTree.Core Require Import PTreeDefinitionNew.
@@ -23,168 +22,9 @@ Import EnumMap.
 
 Local Notation MF := (FreeOmega Enum).
 Local Notation vn_head := (frontier_head vnE Enum bool).
-Local Notation vn_head_eq := (@eq vn_head).
 
 Definition operational_vn_compiled : ptree vnE Enum bool :=
   PTree.iter vn_compiled_step tt.
-
-Definition operational_vn_hitting (fuel : nat) :
-    MF (frontier_head vnE Enum bool) :=
-  operational_hitting_approx (MF := MF) fuel
-    (observe operational_vn_compiled).
-
-Definition operational_vn_round_heads (rounds : nat) :
-    MF (frontier_head vnE Enum bool) :=
-  @operational_iter_round_approx vnE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface unit bool rounds
-    (fun _ : unit => vn_transition) tt.
-
-Definition operational_vn_round_branch (rounds : nat)
-    (next : unit + bool) : MF (frontier_head vnE Enum bool) :=
-  match next with
-  | inl _ => operational_vn_round_heads rounds
-  | inr b => FORet (FHRet b)
-  end.
-
-Definition operational_vn_after (next : unit + bool) : ptree vnE Enum bool :=
-  match next with
-  | inl _ => Tau operational_vn_compiled
-  | inr b => Ret b
-  end.
-
-Definition operational_vn_cont (next : unit + bool) : ptree vnE Enum bool :=
-  PTree.bind (Ret next) (fun lr =>
-    match lr with
-    | inl l => Tau (PTree.iter vn_compiled_step l)
-    | inr b => Ret b
-    end).
-
-Lemma operational_vn_compiled_observe :
-  observe operational_vn_compiled =
-  ProbF vn_transition operational_vn_cont.
-Proof.
-  unfold operational_vn_compiled.
-  pose proof (unfold_aloop_ vn_compiled_step tt) as Hunfold.
-  rewrite (observing_observe Hunfold).
-  rewrite observe_bind.
-  assert (Hstep : observe (vn_compiled_step tt) =
-    ProbF vn_transition (fun next => Ret next)) by reflexivity.
-  rewrite Hstep.
-  reflexivity.
-Qed.
-
-Lemma operational_vn_cont_observe next :
-  observe (operational_vn_cont next) = observe (operational_vn_after next).
-Proof.
-  unfold operational_vn_cont. rewrite observe_bind.
-  destruct next as [u|b]; cbn [operational_vn_after].
-  - destruct u. reflexivity.
-  - reflexivity.
-Qed.
-
-Lemma operational_vn_round_heads_zero :
-  operational_vn_round_heads 0 = FOZero.
-Proof. reflexivity. Qed.
-
-Lemma operational_vn_round_heads_succ rounds :
-  operational_vn_round_heads (Datatypes.S rounds) =
-  FOSample vn_transition (operational_vn_round_branch rounds).
-Proof.
-  unfold operational_vn_round_branch, operational_vn_round_heads,
-    operational_iter_round_approx.
-  cbv [mixed_iter_approx sem_bind mixed_bind
-    sem_ret free_omega_bind
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticMeasureInterface].
-  f_equal. apply functional_extensionality. intros [u|b].
-  - destruct u. reflexivity.
-  - reflexivity.
-Qed.
-
-Lemma operational_vn_hitting_succ fuel :
-  operational_vn_hitting (Datatypes.S fuel) =
-  FOSample vn_transition (fun next =>
-    operational_hitting_approx (MF := MF) fuel
-      (observe (operational_vn_cont next))).
-Proof.
-  unfold operational_vn_hitting. rewrite operational_vn_compiled_observe.
-  reflexivity.
-Qed.
-
-Lemma operational_vn_retry_hitting_zero :
-  operational_hitting_approx (MF := MF) 0
-    (observe (operational_vn_cont (inl tt))) = FOZero.
-Proof. rewrite operational_vn_cont_observe. reflexivity. Qed.
-
-Lemma operational_vn_retry_hitting_succ fuel :
-  operational_hitting_approx (MF := MF) (Datatypes.S fuel)
-    (observe (operational_vn_cont (inl tt))) =
-  operational_vn_hitting fuel.
-Proof.
-  rewrite operational_vn_cont_observe.
-  unfold operational_vn_after. reflexivity.
-Qed.
-
-Lemma operational_vn_success_hitting fuel b :
-  operational_hitting_approx (MF := MF) fuel
-    (observe (operational_vn_cont (inr b))) = FORet (FHRet b).
-Proof.
-  rewrite operational_vn_cont_observe. unfold operational_vn_after.
-  assert (Hret : observe (Ret b : ptree vnE Enum bool) = RetF b) by reflexivity.
-  rewrite Hret. unfold operational_hitting_approx, operational_kernel.
-  cbn. rewrite operational_target_stableE. reflexivity.
-Qed.
-
-Lemma operational_vn_hitting_zero_le_round_one :
-  free_omega_approx vn_head_eq (operational_vn_hitting 0)
-    (operational_vn_round_heads 1).
-Proof.
-  rewrite operational_vn_round_heads_succ.
-  unfold operational_vn_hitting, operational_vn_round_branch.
-  rewrite operational_vn_compiled_observe.
-  unfold operational_hitting_approx, operational_kernel. cbn.
-  eapply FOApproxSample with (S := @eq (unit + bool)).
-  - apply sem_lift_refl. intros x. reflexivity.
-  - intros x y ->. destruct y as [u|b].
-    + constructor.
-    + constructor.
-Qed.
-
-Lemma operational_vn_approx_trans
-    (mu nu xi : MF (frontier_head vnE Enum bool)) :
-  free_omega_approx vn_head_eq mu nu ->
-  free_omega_approx vn_head_eq nu xi ->
-  free_omega_approx vn_head_eq mu xi.
-Proof.
-  apply free_omega_approx_trans.
-Qed.
-
-Lemma operational_vn_hitting_le_round fuel :
-  free_omega_approx vn_head_eq (operational_vn_hitting fuel)
-    (operational_vn_round_heads (Datatypes.S fuel)).
-Proof.
-  induction fuel as [|fuel IH].
-  - apply operational_vn_hitting_zero_le_round_one.
-  - rewrite operational_vn_hitting_succ,
-      operational_vn_round_heads_succ.
-    eapply FOApproxSample with (S := @eq (unit + bool)).
-    + apply sem_lift_refl. intros x. reflexivity.
-    + intros x y ->. destruct y as [u|b].
-      * destruct u. cbn [operational_vn_round_branch].
-        eapply operational_vn_approx_trans with
-          (nu := operational_vn_hitting fuel); [|exact IH].
-        destruct fuel as [|fuel].
-        -- constructor.
-        -- rewrite operational_vn_retry_hitting_succ.
-           apply free_operational_hitting_mono.
-           apply le_S. apply le_n.
-      * rewrite operational_vn_success_hitting.
-        apply free_omega_approx_refl. intros x. reflexivity.
-Qed.
 
 Lemma operational_vn_round_increasing :
   @sem_increasing MF
@@ -216,39 +56,6 @@ Proof.
       * apply free_omega_approx_refl. intros x. reflexivity.
 Qed.
 
-Lemma operational_vn_round_le_hitting rounds :
-  free_omega_approx vn_head_eq
-    (operational_vn_round_heads rounds)
-    (operational_vn_hitting (2 * rounds)).
-Proof.
-  induction rounds as [|rounds IH].
-  - rewrite operational_vn_round_heads_zero. constructor.
-  - rewrite operational_vn_round_heads_succ.
-    replace (2 * Datatypes.S rounds) with
-      (Datatypes.S (Datatypes.S (2 * rounds))) by lia.
-    rewrite operational_vn_hitting_succ.
-    eapply FOApproxSample with (S := @eq (unit + bool)).
-    + apply sem_lift_refl. intros x. reflexivity.
-    + intros x y ->. destruct y as [u|b].
-      * destruct u. cbn [operational_vn_round_branch].
-        rewrite operational_vn_retry_hitting_succ. exact IH.
-      * rewrite operational_vn_success_hitting.
-        apply free_omega_approx_refl. intros x. reflexivity.
-Qed.
-
-Theorem operational_vn_approx_cofinal :
-  free_operational_iter_approx_cofinal vn_compiled_step
-    (fun _ : unit => vn_transition) tt.
-Proof.
-  split.
-  - intro fuel. exists (Datatypes.S fuel).
-    exact (operational_vn_hitting_le_round fuel).
-  - intro rounds. exists (2 * rounds).
-    eapply free_omega_approx_mono.
-    + intros x y Hxy. symmetry. exact Hxy.
-    + exact (operational_vn_round_le_hitting rounds).
-Qed.
-
 Corollary operational_vn_cofinal :
   @operational_iter_cofinal vnE Enum MF
     (FreeOmegaObservableSemanticMeasureInterface
@@ -258,8 +65,15 @@ Corollary operational_vn_cofinal :
     FreeOmegaObservableSemanticOmegaInterface unit bool
     vn_compiled_step (fun _ : unit => vn_transition) tt.
 Proof.
-  apply free_operational_iter_cofinal.
-  exact operational_vn_approx_cofinal.
+  change (@operational_iter_cofinal vnE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface unit bool
+    (free_primitive_iter_step (fun _ : unit => vn_transition))
+    (fun _ : unit => vn_transition) tt).
+  apply free_primitive_iter_cofinal.
 Qed.
 
 Definition operational_vn_iter_approx (fuel : nat) : MF bool :=
