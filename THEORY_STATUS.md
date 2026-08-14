@@ -168,6 +168,11 @@ condition is listed explicitly, the referenced result is proved without an
   all have compositional Bind-cofinality rules for the FreeOmega+Enum model;
   assembling them for arbitrary coinductive sources and proving iteration
   bounds remain.
+  `operational_weak_iter` and `operational_ast_weak_iter` expose the
+  iteration case independently of the structured frontier: a concrete client
+  supplies only increasing round approximants, a round/primitive cofinality
+  proof, the mixed-iteration limit, and (for AST) totality.  This is the entry
+  point used for direct migration of fixed-cost unbounded samplers.
 
 ## Measure semantics and coupling
 

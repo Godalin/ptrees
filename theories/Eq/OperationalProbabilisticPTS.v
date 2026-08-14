@@ -602,6 +602,48 @@ Definition operational_iter_cofinal {I R}
 
 End OperationalIterationCofinality.
 
+Section OperationalIterationSoundness.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}.
+
+Theorem operational_weak_iter {I R}
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) (i : I) out :
+  sem_increasing (fun fuel => mixed_iter_approx fuel transition i) ->
+  operational_iter_cofinal (MF := MF) step transition i ->
+  mixed_iter transition i out ->
+  operational_weak (MF := MF) (observe (PTree.iter step i))
+    (sem_bind out (fun r => sem_ret
+      (FHRet r : frontier_head E MN R))).
+Proof.
+  intros Hinc Hcofinal Hiter. unfold operational_weak.
+  apply (proj2 (Hcofinal _)). unfold operational_iter_round_approx.
+  eapply sem_bind_lub; [exact Hinc|exact Hiter].
+Qed.
+
+Corollary operational_ast_weak_iter {I R}
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) (i : I) out :
+  sem_increasing (fun fuel => mixed_iter_approx fuel transition i) ->
+  operational_iter_cofinal (MF := MF) step transition i ->
+  mixed_iter transition i out ->
+  sem_total (sem_bind out (fun r => sem_ret
+    (FHRet r : frontier_head E MN R))) ->
+  operational_ast_weak (MF := MF) (observe (PTree.iter step i))
+    (sem_bind out (fun r => sem_ret
+      (FHRet r : frontier_head E MN R))).
+Proof.
+  intros Hinc Hcofinal Hiter Htotal. split; [|exact Htotal].
+  eapply operational_weak_iter; eassumption.
+Qed.
+
+End OperationalIterationSoundness.
+
 Section FrontierOperationalSoundness.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
@@ -647,9 +689,7 @@ Proof.
   - destruct (iter_productivity (I := I) (R := R)
       (step := step) (transition := transition) i H0)
       as [Hinc Hcofinal].
-    unfold operational_weak. apply (proj2 (Hcofinal _)).
-    unfold operational_iter_round_approx.
-    eapply sem_bind_lub; [exact Hinc|exact H1].
+    eapply operational_weak_iter; eassumption.
   - eapply operational_weak_bind.
     + apply bind_cofinality.
     + exact IHHfront.
@@ -657,9 +697,7 @@ Proof.
   - destruct (iter_productivity (I := I) (R := R)
       (step := step) (transition := transition) i H0)
       as [Hinc Hcofinal].
-    unfold operational_weak. apply (proj2 (Hcofinal _)).
-    unfold operational_iter_round_approx.
-    eapply sem_bind_lub; [exact Hinc|exact H1].
+    eapply operational_weak_iter; eassumption.
 Qed.
 
 End FrontierOperationalSoundness.
