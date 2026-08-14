@@ -18,9 +18,13 @@ condition is listed explicitly, the referenced result is proved without an
 - `Prob/TwoLevelMeasureEnum.v` is the first concrete model, with
   `MN = MF = Enum`.  `Examples/UnifiedFrontierEnum.v` checks the new semantics
   on the existing split-mass regression.  `Eq/UnifiedFrontierEnumFacts.v`
-  proves that every established finite `apfrontier` and AST-aware
-  `aufrontier` derivation pushes forward into the single new judgment; it also
-  proves that the new mixed finite iteration is exactly the old
+  proves a bidirectional correspondence between the AST-aware `aufrontier`
+  and the single new judgment (with mutually inverse head pushforwards), and
+  embeds finite `apfrontier` derivations as a compatibility layer.  In
+  particular, a unified iteration whose step proof is already unbounded maps
+  back to the old `AUFNestedIter`; the finite/unbounded distinction is not
+  present in the public judgment.  The file also proves that mixed finite
+  iteration is exactly the old
   `meas_iter_approx/meas_iter` on Enum.  The established hierarchy below
   remains the maintained compatibility baseline while equivalence, PTS and
   examples are migrated incrementally.
