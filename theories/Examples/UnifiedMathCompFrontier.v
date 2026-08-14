@@ -36,10 +36,10 @@ Definition unified_mathcomp_coin_heads :
 Lemma unified_mathcomp_direct_coin_frontier :
   @frontier mc_freeE (MathCompKernelMeasure R) (MathCompBehaviorMeasure R)
     (MathCompNodeSemanticMeasureInterface R)
-    (FreeOmegaSemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
     FreeOmegaMixedMeasureInterface
-    (FreeOmegaSemanticOmegaInterface
+    (FreeOmegaObservableSemanticOmegaInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
     bool (observe unified_mathcomp_direct_coin)
     unified_mathcomp_coin_heads.
@@ -50,15 +50,15 @@ Proof.
   apply (@UFProb mc_freeE (MathCompKernelMeasure R)
     (MathCompBehaviorMeasure R)
     (MathCompNodeSemanticMeasureInterface R)
-    (FreeOmegaSemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
     FreeOmegaMixedMeasureInterface
-    (FreeOmegaSemanticOmegaInterface
+    (FreeOmegaObservableSemanticOmegaInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
     bool bool (mathcomp_bernoulli q) (fun b => Ret b)
     (fun b => FORet (FHRet b)) (fun _ => True)).
   - exact: mathcomp_kernel_ae_true.
-  - intros b _. rewrite -free_omega_sem_retE. constructor.
+  - intros b _. rewrite -free_omega_observable_sem_retE. apply UFRet.
 Qed.
 
 Lemma unified_mathcomp_direct_coin_reflexive
@@ -66,13 +66,13 @@ Lemma unified_mathcomp_direct_coin_reflexive
   @weak_bisim mc_freeE (MathCompKernelMeasure R)
     (MathCompBehaviorMeasure R)
     (MathCompNodeSemanticMeasureInterface R)
-    (FreeOmegaSemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
     (@MathCompNodeSemanticMeasureCoreLaws R H)
-    (FreeOmegaSemanticMeasureCoreLaws
+    (FreeOmegaObservableSemanticMeasureCoreLaws
       (NI := MathCompNodeSemanticMeasureInterface R))
     FreeOmegaMixedMeasureInterface
-    (FreeOmegaSemanticOmegaInterface
+    (FreeOmegaObservableSemanticOmegaInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
     bool bool eq unified_mathcomp_direct_coin unified_mathcomp_direct_coin.
 Proof. apply weak_bisim_refl. Qed.

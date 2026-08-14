@@ -18,6 +18,7 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 Local Open Scope ereal_scope.
+Import HBNNSimple.
 
 (** A uniform discrete measurable carrier for an arbitrary Coq type.  The
     extra [MCBottom] point is needed because MathComp's [measurableType]
@@ -599,6 +600,23 @@ Proof.
     mathcomp_kernel_root (k x) U).
   rewrite integral_dirac //= diracT mul1e.
   by [].
+Qed.
+
+Lemma mathcomp_kernel_bind_ret_r {A} (mu : MathCompKernelMeasure A) :
+  mathcomp_kernel_eq
+    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret x)) mu.
+Proof.
+  move=> U mU nbot. rewrite mathcomp_kernel_root_bind.
+  transitivity (\int[mathcomp_kernel_root mu]_x
+    (indic U x : R)%:E).
+  - apply: eq_integral=> x _. destruct x as [|a].
+    + rewrite /= /mathcomp_bottom_measure /dirac indicE.
+      have Hnot : (MCBottom \in U) = false.
+      { apply/asboolPn. exact nbot. }
+      by rewrite Hnot.
+    + rewrite /= mathcomp_kernel_root_ret /dirac indicE.
+      by case: (MCValue a \in U).
+  - by rewrite integral_indic // setIT.
 Qed.
 
 Lemma mathcomp_kernel_bind_assoc {A B C}

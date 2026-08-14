@@ -91,6 +91,23 @@ Polymorphic Inductive free_omega_observes {MN}
       sem_lub outs out ->
       free_omega_observes obs (FOLub chain) out.
 
+Lemma free_omega_observes_bind_ret {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NO : @SemanticOmegaInterface MN NI}
+    {A B O} (obsA : A -> O) (obsB : B -> O) (f : A -> B)
+    (mu : FreeOmega MN A) (out : MN O) :
+  free_omega_observes obsA mu out ->
+  (forall x, obsB (f x) = obsA x) ->
+  free_omega_observes obsB
+    (free_omega_bind mu (fun x => FORet (f x))) out.
+Proof.
+  intros Hobs Hf. induction Hobs; cbn.
+  - rewrite <- Hf. constructor.
+  - constructor.
+  - eapply FOOObserveSample. exact H0.
+  - eapply FOOObserveLub; eauto.
+Qed.
+
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureInterface {MN}
     `{NI : SemanticMeasureInterface MN} :
     SemanticMeasureInterface (FreeOmega MN) := {
@@ -403,6 +420,14 @@ Polymorphic Inductive free_omega_qlift {MN}
   sem_ae := fun A mu P => @free_omega_ae MN NI A P mu;
   sem_lift := @free_omega_qlift MN NI NO
 }.
+
+Lemma free_omega_observable_sem_retE {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NO : @SemanticOmegaInterface MN NI} {A} (x : A) :
+  @sem_ret (FreeOmega MN)
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    A x = FORet x.
+Proof. reflexivity. Qed.
 
 Section FreeOmegaObservableLaws.
 Context {MN : Type -> Type}

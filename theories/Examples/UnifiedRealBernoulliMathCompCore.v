@@ -29,10 +29,10 @@ Definition unified_mathcomp_oracle_approx (Anchor : Type)
     (qbit : binary_oracle) (fuel n : nat) :
     FreeOmegaAt MN Anchor bool :=
   @mixed_iter_approx MN (FreeOmega MN)
-    (FreeOmegaSemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
     FreeOmegaMixedMeasureInterface
-    (FreeOmegaSemanticOmegaInterface
+    (FreeOmegaObservableSemanticOmegaInterface
       (NI := MathCompNodeSemanticMeasureInterface R)
       (NO := MathCompNodeSemanticOmegaInterface R))
     nat bool fuel (mathcomp_oracle_transition R qbit) n.
@@ -44,10 +44,10 @@ Definition unified_mathcomp_oracle_out (Anchor : Type)
 Lemma unified_mathcomp_oracle_step_frontier qbit n :
   @frontier real_mathcomp_coinE MN MF
     (MathCompNodeSemanticMeasureInterface R)
-    (FreeOmegaSemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
     FreeOmegaMixedMeasureInterface
-    (FreeOmegaSemanticOmegaInterface
+    (FreeOmegaObservableSemanticOmegaInterface
       (NI := MathCompNodeSemanticMeasureInterface R)
       (NO := MathCompNodeSemanticOmegaInterface R))
     (nat + bool) (observe (mathcomp_oracle_step R qbit n))
@@ -58,17 +58,17 @@ Proof.
   rewrite -free_omega_mixed_bindE.
   apply (@UFProb real_mathcomp_coinE MN MF
     (MathCompNodeSemanticMeasureInterface R)
-    (FreeOmegaSemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
     FreeOmegaMixedMeasureInterface
-    (FreeOmegaSemanticOmegaInterface
+    (FreeOmegaObservableSemanticOmegaInterface
       (NI := MathCompNodeSemanticMeasureInterface R)
       (NO := MathCompNodeSemanticOmegaInterface R))
     (nat + bool) (nat + bool)
     (mathcomp_oracle_transition R qbit n) (fun next => Ret next)
     (fun next => FORet (FHRet next)) (fun _ => True)).
   - exact: mathcomp_kernel_ae_true.
-  - intros next _. rewrite -free_omega_sem_retE. constructor.
+  - intros next _. rewrite -free_omega_observable_sem_retE. apply UFRet.
 Qed.
 
 Lemma unified_mathcomp_oracle_approx_observes (Anchor : Type)
