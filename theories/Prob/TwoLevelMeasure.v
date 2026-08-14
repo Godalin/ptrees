@@ -125,6 +125,11 @@ Polymorphic Class MixedMeasureLaws@{node node_rep frontier frontier_rep}
       (mu : MN A) (k h : A -> MF B),
       sem_ae mu (fun x => sem_eq (k x) (h x)) ->
       sem_eq (mixed_bind mu k) (mixed_bind mu h);
+  mixed_bind_assoc : forall
+      {A : Type@{node}} {B C : Type@{frontier}}
+      (mu : MN A) (k : A -> MF B) (h : B -> MF C),
+      sem_eq (sem_bind (mixed_bind mu k) h)
+        (mixed_bind mu (fun x => sem_bind (k x) h));
   mixed_lift_bind : forall
       {A B : Type@{node}} {C D : Type@{frontier}}
       (R : A -> B -> Prop) (T : C -> D -> Prop)

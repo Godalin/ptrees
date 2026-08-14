@@ -357,6 +357,8 @@ Proof.
       free_omega_lift eq (k x) (h x)).
     + exact (sem_lift_refl_ae Hae).
     + intros x y [-> Hxy]. exact Hxy.
+  - intros A B C mu k h.
+    apply free_omega_lift_refl. intros x. reflexivity.
   - intros A B C D R T mu nu k h Hmn Hkh.
     eapply FOLSample with (S := R); eauto.
 Qed.
@@ -561,6 +563,8 @@ Proof.
       free_omega_qlift eq (k x) (h x)).
     + exact (sem_lift_refl_ae Hae).
     + intros x y [-> Hxy]. exact Hxy.
+  - intros A B C mu k h.
+    apply free_omega_qlift_refl. intros x. reflexivity.
   - intros A B C D R T mu nu k h Hmn Hkh.
     eapply FOQLSample; eauto.
 Qed.

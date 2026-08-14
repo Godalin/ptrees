@@ -127,6 +127,8 @@ Proof.
   constructor.
   - exact (@meas_bind_ae_proper Enum Enum_MeasureInterface
       Enum_MeasureBindLaws).
+  - exact (@meas_bind_assoc Enum Enum_MeasureInterface
+      Enum_MeasureMonadLaws).
   - exact (@meas_lift_bind Enum Enum_MeasureInterface
       Enum_MeasureLiftBindLaws).
 Qed.
