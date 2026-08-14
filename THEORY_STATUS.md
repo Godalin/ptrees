@@ -104,12 +104,14 @@ condition is listed explicitly, the referenced result is proved without an
   two-level shape typecheck, and the sealed bind has the desired mixed type
   at its original levels.  A final negative regression shows why that is not
   yet enough: HB kernel operations and measurable instances already sealed
-  below the recursive frontier cannot construct its measure.  End-to-end
-  MathComp `auweak` therefore requires generating the frontier HB instance
-  and mixed operations together in an explicit higher-universe section (or
-  an equivalent backend refactor), followed by the coupling/omega laws.
-  This is an explicit backend boundary, not an assumed real-valued program
-  equivalence.
+  below the recursive frontier cannot construct its measure.  The probe also
+  asks HB to generate a new measurable carrier at an explicitly selected
+  higher universe; MathComp's hierarchy constrains it back below the same
+  global bound, so that local workaround is rejected as well.  End-to-end
+  MathComp `auweak` therefore needs a genuinely universe-polymorphic
+  MathComp/HB hierarchy (likely an upstream change), or a non-HB frontier
+  backend with the required mixed bind, coupling, and omega laws.  This is an
+  explicit backend boundary, not an assumed real-valued program equivalence.
 
 ## Deliberately deferred
 

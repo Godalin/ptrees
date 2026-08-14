@@ -166,3 +166,37 @@ Fail Polymorphic Definition mathcomp_bernoulli_bool_frontier (R : realType) :
   mathcomp_mixed_bind (@mathcomp_bernoulli R (1 / 2))
     (fun b => mathcomp_mixed_ret (@TLHRet (fun _ => Empty_set)
       (MathCompKernelMeasure R) bool b)).
+
+(** Even choosing the carrier universe explicitly cannot lift MathComp's HB
+    hierarchy: generation of [measurableType] constrains that universe below
+    the hierarchy's sealed global universe.  The final [Fail] command records
+    this stronger boundary. *)
+Universe explicit_frontier.
+
+Variant high_frontier_carrier (A : Type@{explicit_frontier}) :
+    Type@{explicit_frontier} :=
+  | HFBottom
+  | HFValue (high_frontier_value : A).
+
+Arguments HFBottom {A}.
+Arguments HFValue {A} _.
+
+HB.instance Definition _ (A : Type@{explicit_frontier}) :=
+  gen_eqMixin (high_frontier_carrier A).
+HB.instance Definition _ (A : Type@{explicit_frontier}) :=
+  gen_choiceMixin (high_frontier_carrier A).
+HB.instance Definition _ (A : Type@{explicit_frontier}) :=
+  isPointed.Build (high_frontier_carrier A) HFBottom.
+HB.instance Definition _ (A : Type@{explicit_frontier}) :=
+  @isMeasurable.Build default_measure_display
+    (high_frontier_carrier A) discrete_measurable discrete_measurable0
+    discrete_measurableC discrete_measurableU.
+
+Definition HighFrontierMathCompMeasure (R : realType)
+    (A : Type@{explicit_frontier}) : Type :=
+  R.-spker (mc_carrier unit) ~> (high_frontier_carrier A).
+
+Fail Definition high_mathcomp_recursive_frontier_shape (R : realType) : Type :=
+  HighFrontierMathCompMeasure R
+    (two_level_head (fun _ => Empty_set)
+      (MathCompKernelMeasure R) bool).
