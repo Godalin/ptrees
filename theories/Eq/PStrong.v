@@ -270,6 +270,84 @@ Qed.
 
 End PStructuralBindAssoc.
 
+Section PStructuralIter.
+Context {E : Type -> Type} {M : Type -> Type}.
+Context {I R : Type}.
+Variables (f g : I -> ptree E M (I + R)).
+Hypothesis Hstep : forall i, pstructural eq (f i) (g i).
+
+Definition pstructural_iter_handler_f (lr : I + R) : ptree E M R :=
+  match lr with
+  | inl i => Tau (PTree.iter f i)
+  | inr r => Ret r
+  end.
+
+Definition pstructural_iter_handler_g (lr : I + R) : ptree E M R :=
+  match lr with
+  | inl i => Tau (PTree.iter g i)
+  | inr r => Ret r
+  end.
+
+Inductive pstructural_iter_clo : ptree E M R -> ptree E M R -> Prop :=
+  | PStIterC i : pstructural_iter_clo (PTree.iter f i) (PTree.iter g i)
+  | PStIterBindC t1 t2 :
+      pstructural eq t1 t2 ->
+      pstructural_iter_clo
+        (PTree.bind t1 pstructural_iter_handler_f)
+        (PTree.bind t2 pstructural_iter_handler_g)
+  | PStIterDoneC t1 t2 :
+      pstructural eq t1 t2 -> pstructural_iter_clo t1 t2.
+
+Theorem pstructural_iter i :
+  pstructural eq (PTree.iter f i) (PTree.iter g i).
+Proof.
+  assert (Hstrong : forall u v, pstructural_iter_clo u v ->
+      pstructural eq u v).
+  { unfold pstructural. coinduction CH CIH.
+    intros u v Hclo.
+    inversion Hclo as [j|t1 t2 H12|t1 t2 H12]; subst.
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.iter f j)) (observe (PTree.iter g j))).
+      rewrite (observing_observe (unfold_aloop_ f j)).
+      rewrite (observing_observe (unfold_aloop_ g j)).
+      rewrite !observe_bind.
+      pose proof (pstructural_unfold (Hstep j)) as Hs.
+      dependent destruction Hs; cbn.
+      + rewrite <- x0, <- x. destruct r2 as [j'|r].
+        * constructor. apply CIH. constructor.
+        * constructor. reflexivity.
+      + rewrite <- x0, <- x. constructor. apply CIH.
+        constructor. exact H.
+      + rewrite <- x0, <- x. constructor=> y. apply CIH.
+        constructor. exact (H y).
+      + rewrite <- x0, <- x. constructor=> y. apply CIH.
+        constructor. exact (H y).
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.bind t1 pstructural_iter_handler_f))
+        (observe (PTree.bind t2 pstructural_iter_handler_g))).
+      rewrite !observe_bind.
+      pose proof (pstructural_unfold H12) as Hs.
+      dependent destruction Hs; cbn.
+      + rewrite <- x0, <- x. destruct r2 as [j'|r].
+        * constructor. apply CIH. constructor.
+        * constructor. reflexivity.
+      + rewrite <- x0, <- x. constructor. apply CIH.
+        constructor. exact H.
+      + rewrite <- x0, <- x. constructor=> y. apply CIH.
+        constructor. exact (H y).
+      + rewrite <- x0, <- x. constructor=> y. apply CIH.
+        constructor. exact (H y).
+    - unfold pstructural_body.
+      pose proof (pstructural_unfold H12) as Hs.
+      eapply pstructuralF_monotone; [|exact Hs].
+      intros x y Hxy. apply CIH. constructor. exact Hxy. }
+  apply Hstrong. constructor.
+Qed.
+
+End PStructuralIter.
+
 (** Strong probabilistic bisimulation over an abstract probabilistic
     relation lifting.  Constructors are matched in lockstep: unlike
     [apweak], this relation neither discards a one-sided [Tau] nor collapses
