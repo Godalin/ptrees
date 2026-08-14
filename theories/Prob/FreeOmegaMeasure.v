@@ -263,6 +263,46 @@ Proof.
   - constructor. exact H.
 Qed.
 
+Lemma free_omega_approx_mono {A B} (R T : A -> B -> Prop) mu nu :
+  (forall x y, R x y -> T x y) ->
+  free_omega_approx R mu nu -> free_omega_approx T mu nu.
+Proof.
+  intros HRT Happrox. induction Happrox.
+  - constructor.
+  - constructor. exact (HRT _ _ H).
+  - eapply FOApproxSample; [exact H|exact H1].
+  - constructor. exact H0.
+Qed.
+
+Lemma free_omega_approx_comp {A B C}
+    (R : A -> B -> Prop) (T : B -> C -> Prop) mu nu xi :
+  free_omega_approx R mu nu -> free_omega_approx T nu xi ->
+  free_omega_approx (fun x z => exists y, R x y /\ T y z) mu xi.
+Proof.
+  intros H12. revert C T xi.
+  induction H12; intros C T xi H23.
+  - constructor.
+  - dependent destruction H23. constructor. eexists. split; eassumption.
+  - dependent destruction H23.
+    eapply FOApproxSample with
+      (S := fun x z => exists y, S x y /\ S0 y z).
+    + eapply sem_lift_comp; eassumption.
+    + intros x z [y [Hxy Hyz]]. eapply H1; eauto.
+  - dependent destruction H23. constructor. intro n.
+    eapply H0. exact (H1 n).
+Qed.
+
+Lemma free_omega_approx_trans {A}
+    (mu nu xi : FreeOmega MN A) :
+  free_omega_approx eq mu nu -> free_omega_approx eq nu xi ->
+  free_omega_approx eq mu xi.
+Proof.
+  intros Hmn Hnx. eapply free_omega_approx_mono with
+    (R := fun x z => exists mid, x = mid /\ mid = z).
+  - intros x z [mid [-> ->]]. reflexivity.
+  - exact (free_omega_approx_comp (R := eq) (T := eq) Hmn Hnx).
+Qed.
+
 Lemma free_omega_lift_sym {A B} (R : A -> B -> Prop) mu nu :
   free_omega_lift R mu nu ->
   free_omega_lift (fun y x => R x y) nu mu.
@@ -478,7 +518,17 @@ Qed.
 Proof.
   intros NO. constructor.
   - intros A mu. apply free_omega_approx_refl. intros x. reflexivity.
+  - intros A mu nu xi Hmn Hnx.
+    eapply free_omega_approx_mono with
+      (R := fun x z => exists mid, x = mid /\ mid = z).
+    + intros x z [mid [-> ->]]. reflexivity.
+    + exact (free_omega_approx_comp (R := eq) (T := eq) Hmn Hnx).
   - intros A mu. constructor.
+  - intros A B mu nu k Hmn.
+    eapply free_omega_approx_bind with (R := eq) (T := eq).
+    + exact Hmn.
+    + intros x y ->. apply free_omega_approx_refl.
+      intros z. reflexivity.
   - intros A B mu k h Hkh.
     eapply free_omega_approx_bind with (R := eq) (T := eq).
     + apply free_omega_approx_refl. intros x. reflexivity.
@@ -825,7 +875,17 @@ Qed.
 Proof.
   constructor.
   - intros A mu. apply free_omega_approx_refl. intros x. reflexivity.
+  - intros A mu nu xi Hmn Hnx.
+    eapply free_omega_approx_mono with
+      (R := fun x z => exists mid, x = mid /\ mid = z).
+    + intros x z [mid [-> ->]]. reflexivity.
+    + exact (free_omega_approx_comp (R := eq) (T := eq) Hmn Hnx).
   - intros A mu. constructor.
+  - intros A B mu nu k Hmn.
+    eapply free_omega_approx_bind with (R := eq) (T := eq).
+    + exact Hmn.
+    + intros x y ->. apply free_omega_approx_refl.
+      intros z. reflexivity.
   - intros A B mu k h Hkh.
     eapply free_omega_approx_bind with (R := eq) (T := eq).
     + apply free_omega_approx_refl. intros x. reflexivity.

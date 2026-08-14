@@ -169,7 +169,12 @@ Polymorphic Class SemanticMeasureOrderLaws@{carrier representation}
     `{SI : SemanticMeasureInterface S}
     `{SO : @SemanticOmegaInterface S SI} := {
   sem_le_refl : forall {A : Type@{carrier}} (mu : S A), sem_le mu mu;
+  sem_le_trans : forall {A : Type@{carrier}} (mu nu xi : S A),
+      sem_le mu nu -> sem_le nu xi -> sem_le mu xi;
   sem_zero_le : forall {A : Type@{carrier}} (mu : S A), sem_le sem_zero mu;
+  sem_bind_le_mu : forall {A B : Type@{carrier}} (mu nu : S A)
+      (k : A -> S B),
+      sem_le mu nu -> sem_le (sem_bind mu k) (sem_bind nu k);
   sem_bind_le_k : forall {A B : Type@{carrier}} (mu : S A)
       (k h : A -> S B),
       (forall x, sem_le (k x) (h x)) ->

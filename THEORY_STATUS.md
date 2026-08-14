@@ -147,6 +147,14 @@ condition is listed explicitly, the referenced result is proved without an
   monotonicity are proved structurally (`free_omega_approx_bind`), so the
   operational hitting-chain increasing theorem now carries genuine finite
   subbehavior content in the maintained unbounded backend.
+  The order package now also includes transitivity and monotonicity of bind
+  in its source distribution. `operational_hitting_mono` and
+  `operational_bind_diagonal_mono` lift adjacent-fuel growth to arbitrary
+  natural-number bounds.  Using these facts, the FreeOmega adequacy layer
+  proves `free_operational_bind_tau_approx_cofinal`: if a Bind source has a
+  finite cofinality certificate, adding a leading Tau preserves it via the
+  explicit bounds `D n <= D_tau (n+1) <= D (n+1)`.  Thus Ret and Tau Bind
+  cases are discharged constructively; Prob/Vis and iteration remain.
 
 ## Measure semantics and coupling
 

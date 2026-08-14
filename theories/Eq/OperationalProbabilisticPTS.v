@@ -247,6 +247,17 @@ Proof.
   exact (operational_target_approx_increasing fuel target).
 Qed.
 
+Theorem operational_hitting_mono {R} (ot : ptree' E MN R) n m :
+  Peano.le n m ->
+  sem_le (operational_hitting_approx (MF := MF) n ot)
+    (operational_hitting_approx (MF := MF) m ot).
+Proof.
+  intro Hnm. induction Hnm.
+  - apply sem_le_refl.
+  - eapply sem_le_trans; [exact IHHnm|].
+    apply operational_hitting_increasing.
+Qed.
+
 End OperationalHittingOrder.
 
 Section OperationalWeakExistence.
@@ -489,6 +500,30 @@ Proof.
   destruct h as [a|X e c]; intro fuel; cbn [operational_head_bind_approx].
   - apply operational_hitting_increasing.
   - apply sem_le_refl.
+Qed.
+
+Lemma operational_head_bind_approx_mono {A R}
+    (k : A -> ptree E MN R) h n m :
+  Peano.le n m ->
+  sem_le (operational_head_bind_approx (MF := MF) n k h)
+    (operational_head_bind_approx (MF := MF) m k h).
+Proof.
+  intro Hnm. destruct h as [a|X e c]; cbn [operational_head_bind_approx].
+  - apply operational_hitting_mono. exact Hnm.
+  - apply sem_le_refl.
+Qed.
+
+Lemma operational_bind_diagonal_mono {A R}
+    (t : ptree E MN A) (k : A -> ptree E MN R) n m :
+  Peano.le n m ->
+  sem_le (operational_bind_diagonal_approx (MF := MF) n t k)
+    (operational_bind_diagonal_approx (MF := MF) m t k).
+Proof.
+  intro Hnm. unfold operational_bind_diagonal_approx.
+  eapply sem_le_trans.
+  - apply sem_bind_le_mu. apply operational_hitting_mono. exact Hnm.
+  - apply sem_bind_le_k. intro h.
+    apply operational_head_bind_approx_mono. exact Hnm.
 Qed.
 
 Lemma operational_head_bind_approx_lub {A R}
