@@ -2,13 +2,14 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-Require Import List Arith.PeanoNat FunctionalExtensionality Lia.
+Require Import List Arith.PeanoNat FunctionalExtensionality Lia
+  Program.Equality.
 
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure.
-From PTree.Eq Require Import ShallowNew UnifiedFrontier
-  OperationalProbabilisticPTS.
+From PTree.Eq Require Import ShallowNew UnifiedFrontier UnifiedPWeak
+  OperationalProbabilisticPTS PStrong.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -33,6 +34,113 @@ Proof.
     (FI := FreeOmegaObservableSemanticMeasureInterface)
     (FO := FreeOmegaObservableSemanticOmegaInterface)
     (MX := FreeOmegaMixedMeasureInterface)).
+Qed.
+
+Lemma free_operational_hitting_pstructural {A B}
+    (RR : A -> B -> Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstructural RR t1 t2 ->
+  free_omega_lift (frontier_head_rel RR (pstructural RR))
+    (operational_hitting_approx (MF := MF) fuel (observe t1))
+    (operational_hitting_approx (MF := MF) fuel (observe t2)).
+Proof.
+  revert t1 t2. induction fuel as [|fuel IH]; intros t1 t2 Hstruct.
+  all: pose proof (pstructural_unfold Hstruct) as Hstep;
+    dependent destruction Hstep.
+  - rewrite <- x0, <- x. constructor. constructor. exact H.
+  - rewrite <- x0, <- x.
+    cbn [operational_hitting_approx operational_kernel]. constructor.
+  - rewrite <- x0, <- x. constructor. constructor. exact H.
+  - rewrite <- x0, <- x.
+    change (free_omega_lift
+      (@frontier_head_rel E MN A B RR (@pstructural E MN A B RR))
+      (FOSample mu (fun _ => FOZero))
+      (FOSample mu (fun _ => FOZero))).
+    eapply FOLSample with (S := eq).
+    + apply sem_lift_refl. intros z. reflexivity.
+    + intros z z' ->. constructor.
+  - rewrite <- x0, <- x. constructor. constructor. exact H.
+  - rewrite <- x0, <- x.
+    cbn [operational_hitting_approx operational_kernel].
+    exact (IH _ _ H).
+  - rewrite <- x0, <- x. constructor. constructor. exact H.
+  - rewrite <- x0, <- x.
+    change (free_omega_lift
+      (@frontier_head_rel E MN A B RR (@pstructural E MN A B RR))
+      (FOSample mu (fun z => operational_hitting_approx (MF := MF)
+        fuel (observe (k1 z))))
+      (FOSample mu (fun z => operational_hitting_approx (MF := MF)
+        fuel (observe (k2 z))))).
+    eapply FOLSample with (S := eq).
+    + apply sem_lift_refl. intros z. reflexivity.
+    + intros z z' ->. apply IH. exact (H z').
+Qed.
+
+Lemma free_operational_hitting_pstructural_no_event {A}
+    (no_event : forall X, E X -> False) fuel
+    (t1 t2 : ptree E MN A) :
+  pstructural eq t1 t2 ->
+  free_omega_lift eq
+    (operational_hitting_approx (MF := MF) fuel (observe t1))
+    (operational_hitting_approx (MF := MF) fuel (observe t2)).
+Proof.
+  intro Hstruct. eapply free_omega_lift_mono with
+    (R := frontier_head_rel eq (pstructural eq)).
+  - intros h1 h2 Hhead.
+    destruct h1 as [a1|X1 e1 k1];
+      destruct h2 as [a2|X2 e2 k2].
+    + inversion Hhead; subst. reflexivity.
+    + exfalso. exact (@no_event X2 e2).
+    + exfalso. exact (@no_event X1 e1).
+    + exfalso. exact (@no_event X1 e1).
+  - exact (free_operational_hitting_pstructural
+      (RR := eq) fuel Hstruct).
+Qed.
+
+Theorem free_operational_weak_pstructural_no_event {A}
+    (no_event : forall X, E X -> False)
+    (t1 t2 : ptree E MN A) :
+  pstructural eq t1 t2 ->
+  forall out,
+    @operational_weak E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A (observe t1) out <->
+    @operational_weak E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A (observe t2) out.
+Proof.
+  intros Hstruct out. unfold operational_weak. split; intro Hlim.
+  - eapply sem_lub_chain_proper; [|exact Hlim]. intro fuel.
+    apply FOQLStructural.
+    exact (free_operational_hitting_pstructural_no_event
+      no_event fuel Hstruct).
+  - eapply sem_lub_chain_proper; [|exact Hlim]. intro fuel.
+    apply FOQLStructural.
+    apply free_omega_lift_sym.
+    eapply free_omega_lift_mono.
+    + intros x y Hxy. symmetry. exact Hxy.
+    + exact (free_operational_hitting_pstructural_no_event
+        no_event fuel Hstruct).
+Qed.
+
+Corollary free_operational_weak_bind_assoc_no_event {A B C}
+    (no_event : forall X, E X -> False)
+    (t : ptree E MN A) (k : A -> ptree E MN B)
+    (h : B -> ptree E MN C) out :
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface C
+    (observe (PTree.bind (PTree.bind t k) h)) out <->
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface C
+    (observe (PTree.bind t (fun a => PTree.bind (k a) h))) out.
+Proof.
+  apply free_operational_weak_pstructural_no_event; [exact no_event|].
+  apply pstructural_bind_assoc.
 Qed.
 
 Lemma free_operational_bind_diagonal_mono {A R}
