@@ -307,6 +307,198 @@ Proof.
   exact (free_operational_bind_ret_map_approx_cofinal t f).
 Qed.
 
+(** A shared global primitive budget is contained in the more generous
+    diagonal allocation that gives the same budget to the source and to the
+    continuation. *)
+Lemma free_operational_bind_hitting_le_diagonal {A R}
+    (fuel : nat) (t : ptree E MN A) (k : A -> ptree E MN R) :
+  free_omega_approx eq
+    (operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.bind t k)))
+    (operational_bind_diagonal_approx (MF := MF) fuel t k).
+Proof.
+  revert t. induction fuel as [|fuel IH]; intro t.
+  - rewrite observe_bind. remember (observe t) as ot eqn:Hot.
+    destruct ot as [a|u|X e c|X mu c];
+      unfold operational_bind_diagonal_approx; rewrite <- Hot.
+    + change (free_omega_approx eq
+        (operational_hitting_approx (MF := MF) 0 (observe (k a)))
+        (free_omega_bind (FORet (FHRet a))
+          (operational_head_bind_approx (MF := MF) 0 k))).
+      cbn [free_omega_bind operational_head_bind_approx].
+      apply free_omega_approx_refl. intros x. reflexivity.
+    + constructor.
+    + change (free_omega_approx eq
+        (FORet (FHVis e (fun x => PTree.bind (c x) k)))
+        (free_omega_bind (FORet (FHVis e c))
+          (operational_head_bind_approx (MF := MF) 0 k))).
+      cbn [free_omega_bind operational_head_bind_approx].
+      apply free_omega_approx_refl. intros x. reflexivity.
+    + change (free_omega_approx eq
+        (FOSample mu (fun _ : X => FOZero))
+        (free_omega_bind (FOSample mu (fun _ : X => FOZero))
+          (operational_head_bind_approx (MF := MF) 0 k))).
+      cbn [free_omega_bind].
+      eapply FOApproxSample with (S := eq).
+      * apply sem_lift_refl. intros x. reflexivity.
+      * intros x y ->. constructor.
+  - rewrite observe_bind. remember (observe t) as ot eqn:Hot.
+    destruct ot as [a|u|X e c|X mu c].
+    + unfold operational_bind_diagonal_approx. rewrite <- Hot.
+      cbn [operational_hitting_approx operational_kernel
+        operational_head_bind_approx].
+      apply free_omega_approx_refl. intros x. reflexivity.
+    + unfold operational_bind_diagonal_approx. rewrite <- Hot.
+      cbn [operational_hitting_approx operational_kernel
+        operational_head_bind_approx].
+      eapply free_omega_approx_trans.
+      * apply IH.
+      * unfold operational_bind_diagonal_approx.
+        eapply free_omega_approx_bind with (R := eq) (T := eq).
+        -- apply free_omega_approx_refl. intros x. reflexivity.
+        -- intros h1 h2 ->.
+           destruct h2; cbn [operational_head_bind_approx].
+           ++ apply free_operational_hitting_mono. apply le_S, le_n.
+           ++ apply free_omega_approx_refl. intros z. reflexivity.
+    + unfold operational_bind_diagonal_approx. rewrite <- Hot.
+      cbn [operational_hitting_approx operational_kernel
+        operational_head_bind_approx].
+      apply free_omega_approx_refl. intros x. reflexivity.
+    + unfold operational_bind_diagonal_approx. rewrite <- Hot.
+      change (free_omega_approx eq
+        (FOSample mu (fun x => operational_hitting_approx (MF := MF)
+          fuel (observe (PTree.bind (c x) k))))
+        (free_omega_bind
+          (FOSample mu (fun x => operational_hitting_approx (MF := MF)
+            fuel (observe (c x))))
+          (operational_head_bind_approx (MF := MF)
+            (S fuel) k))).
+      cbn [free_omega_bind].
+      eapply FOApproxSample with (S := eq).
+      * apply sem_lift_refl. intros x. reflexivity.
+      * intros x y ->. eapply free_omega_approx_trans.
+        -- apply IH.
+        -- unfold operational_bind_diagonal_approx.
+           eapply free_omega_approx_bind with (R := eq) (T := eq).
+           ++ apply free_omega_approx_refl. intros z. reflexivity.
+           ++ intros h1 h2 ->.
+              destruct h2; cbn [operational_head_bind_approx].
+              ** apply free_operational_hitting_mono. apply le_S, le_n.
+              ** apply free_omega_approx_refl. intros z. reflexivity.
+Qed.
+
+(** Split-budget form of a bind approximation.  It is useful for proving
+    that sequentially spending [source_fuel] and [continuation_fuel] is
+    implementable by their sum in the primitive global machine. *)
+Definition free_operational_bind_split_approx {A R}
+    (source_fuel continuation_fuel : nat)
+    (t : ptree E MN A) (k : A -> ptree E MN R) :
+    MF (frontier_head E MN R) :=
+  free_omega_bind
+    (operational_hitting_approx (MF := MF) source_fuel (observe t))
+    (operational_head_bind_approx (MF := MF) continuation_fuel k).
+
+Lemma free_operational_bind_split_le_hitting {A R}
+    (no_event : forall X, E X -> False)
+    (source_fuel continuation_fuel : nat)
+    (t : ptree E MN A) (k : A -> ptree E MN R) :
+  free_omega_approx eq
+    (free_operational_bind_split_approx
+      source_fuel continuation_fuel t k)
+    (operational_hitting_approx (MF := MF)
+      (source_fuel + continuation_fuel)
+      (observe (PTree.bind t k))).
+Proof.
+  revert t. induction source_fuel as [|source_fuel IH]; intro t.
+  - unfold free_operational_bind_split_approx.
+    rewrite observe_bind. remember (observe t) as ot eqn:Hot.
+    destruct ot as [a|u|X e c|X mu c].
+    + change (free_omega_approx eq
+        (free_omega_bind (FORet (FHRet a))
+          (operational_head_bind_approx (MF := MF)
+            continuation_fuel k))
+        (operational_hitting_approx (MF := MF)
+          continuation_fuel (observe (k a)))).
+      cbn [free_omega_bind operational_head_bind_approx].
+      apply free_omega_approx_refl. intros x. reflexivity.
+    + constructor.
+    + exfalso. exact (@no_event X e).
+    + cbv [operational_hitting_approx operational_kernel sem_bind sem_ret
+        FreeOmegaObservableSemanticMeasureInterface free_omega_bind
+        operational_target_approx].
+      eapply FOApproxSample with (S := eq).
+      * apply sem_lift_refl. intros x. reflexivity.
+      * intros x y ->. constructor.
+  - unfold free_operational_bind_split_approx.
+    rewrite observe_bind. remember (observe t) as ot eqn:Hot.
+    destruct ot as [a|u|X e c|X mu c].
+    + change (free_omega_approx eq
+        (operational_hitting_approx (MF := MF)
+          continuation_fuel (observe (k a)))
+        (operational_hitting_approx (MF := MF)
+          (S source_fuel + continuation_fuel) (observe (k a)))).
+      apply free_operational_hitting_mono. lia.
+    + change (free_omega_approx eq
+        (free_operational_bind_split_approx
+          source_fuel continuation_fuel u k)
+        (operational_hitting_approx (MF := MF)
+          (source_fuel + continuation_fuel)
+          (observe (PTree.bind u k)))).
+      apply IH.
+    + exfalso. exact (@no_event X e).
+    + change (free_omega_approx eq
+        (FOSample mu (fun x => free_operational_bind_split_approx
+          source_fuel continuation_fuel (c x) k))
+        (FOSample mu (fun x => operational_hitting_approx (MF := MF)
+          (source_fuel + continuation_fuel)
+          (observe (PTree.bind (c x) k))))).
+      eapply FOApproxSample with (S := eq).
+      * apply sem_lift_refl. intros x. reflexivity.
+      * intros x y ->. apply IH.
+Qed.
+
+Lemma free_operational_bind_diagonal_le_hitting {A R}
+    (no_event : forall X, E X -> False)
+    (fuel : nat) (t : ptree E MN A) (k : A -> ptree E MN R) :
+  free_omega_approx eq
+    (operational_bind_diagonal_approx (MF := MF) fuel t k)
+    (operational_hitting_approx (MF := MF) (2 * fuel)
+      (observe (PTree.bind t k))).
+Proof.
+  change (free_omega_approx eq
+    (free_operational_bind_split_approx fuel fuel t k)
+    (operational_hitting_approx (MF := MF) (2 * fuel)
+      (observe (PTree.bind t k)))).
+  replace (2 * fuel) with (fuel + fuel) by lia.
+  apply free_operational_bind_split_le_hitting. exact no_event.
+Qed.
+
+Theorem free_operational_bind_approx_cofinal_no_event {A R}
+    (no_event : forall X, E X -> False)
+    (t : ptree E MN A) (k : A -> ptree E MN R) :
+  free_operational_bind_approx_cofinal t k.
+Proof.
+  split.
+  - intro fuel. exists fuel.
+    apply free_operational_bind_hitting_le_diagonal.
+  - intro fuel. exists (2 * fuel).
+    eapply free_omega_approx_mono.
+    + intros x y Hxy. symmetry. exact Hxy.
+    + apply free_operational_bind_diagonal_le_hitting. exact no_event.
+Qed.
+
+Corollary free_operational_bind_cofinal_no_event {A R}
+    (no_event : forall X, E X -> False)
+    (t : ptree E MN A) (k : A -> ptree E MN R) :
+  @operational_bind_cofinal E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A R t k.
+Proof.
+  apply free_operational_bind_cofinal.
+  apply free_operational_bind_approx_cofinal_no_event. exact no_event.
+Qed.
+
 Section NestedNoEventGrid.
 Context {I A R : Type}.
 Variable no_event : forall X, E X -> False.
