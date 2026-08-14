@@ -1001,6 +1001,53 @@ Proof.
   eapply free_operational_weak_of_nested_productivity; eassumption.
 Qed.
 
+Corollary free_operational_weak_of_canonical_nested
+    (sample_out : MF (frontier_head E MN A))
+    (Hsample : @operational_weak E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A
+      (observe sample) sample_out)
+    (i : I) out :
+  @sem_lub MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (fun outer => free_nested_row_out sample_out outer i) out ->
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R
+    (observe (free_nested_program i)) out.
+Proof.
+  intro Houter. eapply free_operational_weak_of_nested_productivity.
+  - exact Hsample.
+  - apply free_nested_productivity.
+  - exact Houter.
+Qed.
+
+Corollary free_operational_ast_weak_of_canonical_nested
+    (sample_out : MF (frontier_head E MN A))
+    (Hsample : @operational_weak E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A
+      (observe sample) sample_out)
+    (i : I) out :
+  @sem_lub MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (fun outer => free_nested_row_out sample_out outer i) out ->
+  sem_total out ->
+  @operational_ast_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R
+    (observe (free_nested_program i)) out.
+Proof.
+  intros Houter Htotal. split; [|exact Htotal].
+  eapply free_operational_weak_of_canonical_nested; eassumption.
+Qed.
+
 End NestedNoEventGrid.
 
 Lemma free_operational_bind_vis_approx_cofinal {A R X}
