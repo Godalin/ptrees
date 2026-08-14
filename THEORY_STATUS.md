@@ -237,9 +237,19 @@ condition is listed explicitly, the referenced result is proved without an
   (`operational_vn_raw_round_one_observes_zero`), whereas the compiled
   one-sample round already observes `vn_transition`
   (`operational_vn_compiled_round_observes`). These facts unfold only the
-  primitive kernel; they use no frontier or Iter rule. The remaining step is
-  to lift this fixed per-round scheduling mismatch to cofinality of the two
-  unbounded retry chains.
+  primitive kernel; they use no frontier or Iter rule.
+  The scheduling mismatch is now lifted through the full unbounded program.
+  `operational_vn_raw_hitting_three` derives the three-global-step recurrence
+  (two samples plus the retry back-edge) directly from primitive hitting.
+  The scheduled subsequence observes exactly the standard
+  `meas_iter_approx` chain, and `operational_vn_raw_chains_cofinal` proves it
+  cofinal with the complete global-fuel chain using hitting monotonicity.
+  Consequently `operational_von_neumann_raw_ast` proves AST for the actual
+  two-sample `von_neumann_third`, while
+  `primitive_von_neumann_raw_direct_bisim` relates that source program
+  directly to the one-sample terminating fair coin. The quotient step uses
+  their common low-level Enum observation; it does not identify their
+  differently shaped FreeOmega trees structurally.
   The outer example now makes its non-lockstep nature checkable:
   `operational_rational_coin_hitting_one` identifies the implementation's
   one-fuel primitive prefix, `operational_rational_direct_hitting_one`

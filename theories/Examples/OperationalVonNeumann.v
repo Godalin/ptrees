@@ -2,11 +2,12 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 
-From mathcomp Require Import ssralg rat.
+From Coq Require Import Lia Logic.FunctionalExtensionality.
+From mathcomp Require Import ssreflect ssrnat eqtype ssralg ssrnum rat.
 
 From PTree.Core Require Import PTreeDefinitionNew.
-From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
-  TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration EnumMap.
+From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLiftEnum TwoLevelMeasure
+  TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration EnumMap EnumBindFacts.
 From PTree.Prob Require Import MeasureIterationEnum.
 From PTree.Eq Require Import ShallowNew PrimitiveStableHitting
   OperationalProbabilisticPTS
@@ -20,10 +21,31 @@ Unset Printing Implicit Defensive.
 
 Import Enum.
 Import EnumMap.
+Import GRing.Theory.
+Import RatSubTypes.NonnegQNotations.
+Local Open Scope ring_scope.
+
+Lemma operational_vn_bind_ret_eq {A B} (x : A) (k : A -> Enum B) :
+  bind_Enum (ret_Enum x) k = k x.
+Proof.
+  cbn [ret_Enum bind_Enum].
+  change (List.app (scale_Enum (fst (1, x)) (k x)) nil = k x).
+  have Hone : scale_Enum (fst (1, x)) (k x) = k x.
+  { induction (k x) as [|[p y] tl IH]=> //=.
+    rewrite IH. f_equal. f_equal. apply val_inj.
+    exact: mul1r (Qval p). }
+  rewrite Hone List.app_nil_r. reflexivity.
+Qed.
 
 Local Notation MF := (FreeOmega Enum).
 Local Notation vn_head := (frontier_head vnE Enum bool).
 Local Notation vn_round_head := (frontier_head vnE Enum (unit + bool)).
+
+Definition operational_vn_head_value (h : vn_head) : bool :=
+  match h with
+  | FHRet b => b
+  | @FHVis _ _ _ X e _ => match e with end
+  end.
 
 Definition operational_vn_round_head_value (h : vn_round_head) : unit + bool :=
   match h with
@@ -104,6 +126,208 @@ Proof.
     (bind_Enum vn_transition (fun next => ret_Enum next)) at 2
     by exact Hbind.
   constructor. intro next. constructor.
+Qed.
+
+Definition operational_vn_raw_after (next : unit + bool) : ptree vnE Enum bool :=
+  match next with
+  | inl u => Tau (PTree.iter vn_step u)
+  | inr b => Ret b
+  end.
+
+Definition operational_vn_raw_second (b1 : bool) : ptree vnE Enum bool :=
+  PTree.bind
+    (Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2)))
+    operational_vn_raw_after.
+
+Lemma operational_vn_raw_observe :
+  observe von_neumann_third =
+  ProbF vn_biased_coin operational_vn_raw_second.
+Proof.
+  unfold von_neumann_third.
+  pose proof (unfold_aloop_ vn_step tt) as Hunfold.
+  rewrite (observing_observe Hunfold). rewrite observe_bind.
+  assert (Hstep : observe (vn_step tt) =
+    ProbF vn_biased_coin (fun b1 =>
+      Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2))))
+    by reflexivity.
+  rewrite Hstep. reflexivity.
+Qed.
+
+Lemma operational_vn_raw_second_observe b1 :
+  observe (operational_vn_raw_second b1) =
+  ProbF vn_biased_coin (fun b2 =>
+    PTree.bind (Ret (vn_round_result b1 b2)) operational_vn_raw_after).
+Proof.
+  unfold operational_vn_raw_second. rewrite observe_bind. reflexivity.
+Qed.
+
+Definition operational_vn_raw_hitting (fuel : nat) : MF vn_head :=
+  operational_hitting_approx (MF := MF) fuel
+    (observe von_neumann_third).
+
+Lemma operational_vn_raw_hitting_three fuel :
+  operational_vn_raw_hitting (Datatypes.S (Datatypes.S (Datatypes.S fuel))) =
+  FOSample vn_biased_coin (fun b1 =>
+    FOSample vn_biased_coin (fun b2 =>
+      match vn_round_result b1 b2 with
+      | inl _ => operational_vn_raw_hitting fuel
+      | inr b => FORet (FHRet b)
+      end)).
+Proof.
+  unfold operational_vn_raw_hitting. rewrite operational_vn_raw_observe.
+  cbn [operational_hitting_approx operational_kernel operational_target_approx
+    sem_bind sem_ret mixed_bind free_omega_bind FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaSemanticMeasureInterface].
+  f_equal. apply functional_extensionality. intro b1.
+  rewrite operational_vn_raw_second_observe.
+  cbn [operational_kernel operational_target_approx sem_bind sem_ret
+    mixed_bind free_omega_bind FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticMeasureInterface FreeOmegaSemanticMeasureInterface].
+  f_equal. apply functional_extensionality. intro b2.
+  rewrite observe_bind.
+  destruct (vn_round_result b1 b2) as [u|b]; [destruct u|]; reflexivity.
+Qed.
+
+Lemma operational_vn_raw_hitting_zero_observes :
+  free_omega_observes operational_vn_head_value
+    (operational_vn_raw_hitting 0) (sem_zero : Enum bool).
+Proof.
+  unfold operational_vn_raw_hitting. rewrite operational_vn_raw_observe.
+  change (free_omega_observes operational_vn_head_value
+    (FOSample vn_biased_coin (fun _ => FOZero)) (nil : Enum bool)).
+  rewrite <- (enum_bind_nil (A := bool) bool vn_biased_coin).
+  constructor. intro b. constructor.
+Qed.
+
+Fixpoint operational_vn_raw_schedule (rounds : nat) : nat :=
+  match rounds with
+  | O => O
+  | Datatypes.S rounds' =>
+      Datatypes.S (Datatypes.S (Datatypes.S
+        (operational_vn_raw_schedule rounds')))
+  end.
+
+Lemma operational_vn_raw_hitting_rounds_observes rounds :
+  free_omega_observes operational_vn_head_value
+    (operational_vn_raw_hitting (operational_vn_raw_schedule rounds))
+    (meas_iter_approx rounds (fun _ : unit => vn_transition) tt).
+Proof.
+  induction rounds as [|rounds IH].
+  - exact operational_vn_raw_hitting_zero_observes.
+  - cbn [operational_vn_raw_schedule].
+    rewrite operational_vn_raw_hitting_three.
+    assert (Hout :
+      meas_iter_approx (Datatypes.S rounds)
+        (fun _ : unit => vn_transition) tt =
+      bind_Enum vn_biased_coin (fun b1 =>
+        bind_Enum vn_biased_coin (fun b2 =>
+          match vn_round_result b1 b2 with
+          | inl _ => meas_iter_approx rounds
+              (fun _ : unit => vn_transition) tt
+          | inr b => ret_Enum b
+          end))).
+    { cbn [meas_iter_approx].
+      change (bind_Enum vn_transition (fun next =>
+        match next with
+        | inl i' => meas_iter_approx rounds
+            (fun _ : unit => vn_transition) i'
+        | inr b => ret_Enum b
+        end) =
+        bind_Enum vn_biased_coin (fun b1 =>
+          bind_Enum vn_biased_coin (fun b2 =>
+            match vn_round_result b1 b2 with
+            | inl _ => meas_iter_approx rounds
+                (fun _ : unit => vn_transition) tt
+            | inr b => ret_Enum b
+            end))).
+      rewrite <- vn_round_measure_eq. unfold vn_round_measure.
+      rewrite bind_Enum_assoc.
+      apply bind_Enum_ext=> b1. rewrite bind_Enum_assoc.
+      apply bind_Enum_ext=> b2.
+      rewrite operational_vn_bind_ret_eq.
+      destruct (vn_round_result b1 b2) as [u|b]; [destruct u|]; reflexivity. }
+    rewrite Hout.
+    constructor. intro b1.
+    constructor. intro b2.
+    destruct (vn_round_result b1 b2) as [u|b].
+    + destruct u. exact IH.
+    + constructor.
+Qed.
+
+Lemma operational_vn_raw_schedule_ge rounds :
+  Peano.le rounds (operational_vn_raw_schedule rounds).
+Proof.
+  induction rounds as [|rounds IH]; [apply le_n|].
+  cbn [operational_vn_raw_schedule]. apply le_n_S.
+  apply le_S, le_S. exact IH.
+Qed.
+
+Lemma operational_vn_raw_chains_cofinal :
+  free_omega_chains_cofinal eq operational_vn_raw_hitting
+    (fun rounds => operational_vn_raw_hitting
+      (operational_vn_raw_schedule rounds)).
+Proof.
+  split.
+  - intro fuel. exists fuel. apply free_operational_hitting_mono.
+    exact (operational_vn_raw_schedule_ge fuel).
+  - intro rounds. exists (operational_vn_raw_schedule rounds).
+    apply free_omega_approx_refl. intro h. reflexivity.
+Qed.
+
+Definition operational_vn_raw_limit : MF vn_head :=
+  FOLub (fun rounds => operational_vn_raw_hitting
+    (operational_vn_raw_schedule rounds)).
+
+Lemma operational_vn_raw_limit_observes :
+  free_omega_observes operational_vn_head_value
+    operational_vn_raw_limit vn_fair.
+Proof.
+  unfold operational_vn_raw_limit. eapply FOOObserveLub.
+  - exact operational_vn_raw_hitting_rounds_observes.
+  - exact vn_iteration_converges.
+Qed.
+
+Definition operational_vn_raw_heads : MF vn_head :=
+  operational_vn_raw_limit.
+
+Lemma operational_vn_raw_weak :
+  @operational_weak vnE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe von_neumann_third) operational_vn_raw_heads.
+Proof.
+  unfold operational_weak, operational_vn_raw_heads,
+    operational_vn_raw_limit, operational_vn_raw_hitting.
+  cbn. apply FOQLSym. eapply FOQLMono.
+  - apply FOQLCofinal. exact operational_vn_raw_chains_cofinal.
+  - intros x y ->. reflexivity.
+Qed.
+
+Lemma operational_vn_raw_heads_total :
+  @sem_total MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface _ operational_vn_raw_heads.
+Proof.
+  exists bool, operational_vn_head_value, vn_fair.
+  split; [exact operational_vn_raw_limit_observes|exact vn_fair_total].
+Qed.
+
+Theorem operational_von_neumann_raw_ast :
+  @operational_ast_weak vnE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe von_neumann_third) operational_vn_raw_heads.
+Proof.
+  split; [exact operational_vn_raw_weak|exact operational_vn_raw_heads_total].
 Qed.
 
 Definition operational_vn_compiled : ptree vnE Enum bool :=
@@ -255,12 +479,6 @@ Definition operational_vn_direct_observation : Enum bool :=
   @sem_bind Enum Enum_SemanticMeasureInterface _ _ vn_fair
     (fun b => @sem_ret Enum Enum_SemanticMeasureInterface bool b).
 
-Definition operational_vn_head_value (h : vn_head) : bool :=
-  match h with
-  | FHRet b => b
-  | @FHVis _ _ _ X e _ => match e with end
-  end.
-
 Lemma operational_vn_heads_observes :
   free_omega_observes operational_vn_head_value
     operational_vn_heads vn_fair.
@@ -401,6 +619,69 @@ Proof.
       destruct h2 as [b2|Y e2 k2];
       try destruct e1; try destruct e2.
     cbn in Hvalue. subst b2. constructor. reflexivity.
+Qed.
+
+Lemma operational_vn_raw_heads_lift
+    (sim : ptree vnE Enum bool -> ptree vnE Enum bool -> Prop) :
+  @sem_lift MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface)) _ _
+    (frontier_head_rel eq sim)
+    operational_vn_raw_heads operational_vn_direct_heads.
+Proof.
+  eapply FOQLObserve with
+    (obsA := operational_vn_head_value)
+    (obsB := operational_vn_head_value)
+    (outA := vn_fair)
+    (outB := operational_vn_direct_observation)
+    (S := eq).
+  - exact operational_vn_raw_limit_observes.
+  - exact operational_vn_direct_heads_observes.
+  - rewrite operational_vn_direct_observation_eq.
+    apply sem_lift_refl. intro b. reflexivity.
+  - intros h1 h2 Hvalue.
+    destruct h1 as [b1|X e1 k1];
+      destruct h2 as [b2|Y e2 k2];
+      try destruct e1; try destruct e2.
+    cbn in Hvalue. subst b2. constructor. reflexivity.
+Qed.
+
+(** This endpoint removes the compiled-round shortcut completely.  The
+    implementation executes two biased primitive samples per retry round;
+    the specification executes one fair sample. *)
+Theorem operational_von_neumann_raw_direct_bisim :
+  @operational_bisim vnE Enum MF
+    Enum_SemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    Enum_SemanticMeasureCoreLaws
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    von_neumann_third direct_fair.
+Proof.
+  apply operational_bisim_fold. eapply OPBStable.
+  - exact operational_von_neumann_raw_ast.
+  - exact operational_vn_direct_ast.
+  - exact (operational_vn_raw_heads_lift _).
+Qed.
+
+Theorem primitive_von_neumann_raw_direct_bisim :
+  @primitive_ptree_bisim vnE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    von_neumann_third direct_fair.
+Proof.
+  eapply primitive_ptree_bisim_of_ast_lift.
+  - exact operational_von_neumann_raw_ast.
+  - exact operational_vn_direct_ast.
+  - exact (operational_vn_raw_heads_lift _).
 Qed.
 
 (** The unbounded retrying implementation and the one-step fair sampler
