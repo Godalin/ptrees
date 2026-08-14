@@ -148,6 +148,17 @@ condition is listed explicitly, the referenced result is proved without an
   monotonicity, and reflexivity are checked using `coq-coinduction`; there is
   no Paco-level definition and no syntax-specific Tau/Prob/Iter rule in this
   generic relation.
+  Weak stuttering is likewise behavioral: `stable_kernel_silent_l/r` says
+  that a kernel is semantically a Dirac transition to one residual state,
+  and the two silent rules remove such a step on either side.  They do not
+  inspect or mention a PTree Tau constructor.
+  `primitive_ptree_bisim` instantiates this generic gfp with
+  `ptree_primitive_kernel` and the recursive frontier-head relation; PTree
+  syntax occurs only in the adapter kernel.  The rational Bernoulli endpoint
+  `primitive_binary_rational_coin_bisim_direct` is the first equivalence
+  proved directly in this new public relation.  Its distribution coupling
+  is relation-parametric and is shared with the compatibility
+  `operational_bisim` proof, rather than transported from that old relation.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides

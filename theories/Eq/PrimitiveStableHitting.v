@@ -159,6 +159,12 @@ Hypothesis AR_mono : forall sim1 sim2,
   (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
   forall a1 a2, AR sim1 a1 a2 -> AR sim2 a1 a2.
 
+Definition stable_kernel_silent_l (s1 s1' : S1) : Prop :=
+  sem_eq (kernel1 s1) (sem_ret (SHInternal s1')).
+
+Definition stable_kernel_silent_r (s2 s2' : S2) : Prop :=
+  sem_eq (kernel2 s2) (sem_ret (SHInternal s2')).
+
 (** A generic divergence-sensitive probabilistic bisimulation generator.
     [SKBAST] permits different finite schedules to meet at coupled total
     stable limits.  [SKBStep] is the residual guard: programs without an AST
@@ -174,6 +180,14 @@ Inductive stable_kernel_bisimF (sim : S1 -> S2 -> Prop) :
   | SKBStep s1 s2 :
       sem_lift (stable_target_rel (AR sim) sim)
         (kernel1 s1) (kernel2 s2) ->
+      stable_kernel_bisimF sim s1 s2
+  | SKBSilentL s1 s1' s2 :
+      stable_kernel_silent_l s1 s1' ->
+      sim s1' s2 ->
+      stable_kernel_bisimF sim s1 s2
+  | SKBSilentR s1 s2 s2' :
+      stable_kernel_silent_r s2 s2' ->
+      sim s1 s2' ->
       stable_kernel_bisimF sim s1 s2.
 
 Lemma stable_target_rel_mono
@@ -202,6 +216,8 @@ Proof.
     eapply stable_target_rel_mono.
     + exact (AR_mono Hsim).
     + exact Hsim.
+  - eapply SKBSilentL; [exact H|exact (Hsim _ _ H0)].
+  - eapply SKBSilentR; [exact H|exact (Hsim _ _ H0)].
 Qed.
 
 Definition stable_kernel_bisim_body sim (s1 : S1) (s2 : S2) : Prop :=

@@ -382,21 +382,14 @@ Proof.
   exact operational_rational_direct_ast.
 Qed.
 
-Lemma operational_rational_heads_lift :
+Lemma operational_rational_heads_lift
+    (sim : ptree rational_coinE Enum bool ->
+      ptree rational_coinE Enum bool -> Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := Enum_SemanticMeasureInterface)
       (NO := Enum_SemanticOmegaInterface)) _ _
-    (frontier_head_rel eq
-      (@operational_bisim rational_coinE Enum MF
-        Enum_SemanticMeasureInterface
-        (FreeOmegaObservableSemanticMeasureInterface
-          (NI := Enum_SemanticMeasureInterface)
-          (NO := Enum_SemanticOmegaInterface))
-        Enum_SemanticMeasureCoreLaws
-        FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface bool bool eq))
+    (frontier_head_rel eq sim)
     operational_rational_heads operational_rational_direct_heads.
 Proof.
   eapply FOQLObserve with
@@ -431,7 +424,24 @@ Proof.
   eapply operational_bisim_of_ast_lift.
   - exact operational_rational_coin_ast.
   - exact operational_rational_direct_ast.
-  - exact operational_rational_heads_lift.
+  - exact (operational_rational_heads_lift _).
+Qed.
+
+Theorem primitive_binary_rational_coin_bisim_direct :
+  @primitive_ptree_bisim rational_coinE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface
+    bool bool eq
+    (binary_rational_coin q) operational_rational_direct.
+Proof.
+  eapply primitive_ptree_bisim_of_ast_lift.
+  - exact operational_rational_coin_ast.
+  - exact operational_rational_direct_ast.
+  - exact (operational_rational_heads_lift _).
 Qed.
 
 End OperationalRationalCoin.

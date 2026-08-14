@@ -376,6 +376,74 @@ Qed.
 
 End GenericKernelAdequacy.
 
+Section GenericPTreeBisimulation.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+
+Definition ptree_state_kernel {R} (ot : ptree' E MN R) :
+    MF (stable_target (ptree' E MN R) (frontier_head E MN R)) :=
+  @ptree_primitive_kernel E MN MF FI MX R ot.
+
+Definition ptree_stable_observation_rel
+    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop) :
+    frontier_head E MN R1 -> frontier_head E MN R2 -> Prop :=
+  frontier_head_rel RR (fun t1 t2 => sim (observe t1) (observe t2)).
+
+Lemma ptree_stable_observation_rel_mono sim1 sim2 :
+  (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
+  forall h1 h2,
+    ptree_stable_observation_rel sim1 h1 h2 ->
+    ptree_stable_observation_rel sim2 h1 h2.
+Proof.
+  intro Hsim. apply frontier_head_rel_mono.
+  intros t1 t2 Hrel. exact (Hsim _ _ Hrel).
+Qed.
+
+(** Public PTree instance of the syntax-independent guarded kernel
+    bisimulation.  All PTree syntax is confined to [ptree_state_kernel]; the
+    greatest fixed point itself is the generic one. *)
+Definition primitive_ptree_state_bisim :
+    ptree' E MN R1 -> ptree' E MN R2 -> Prop :=
+  @stable_kernel_bisim MF FI FC FO
+    (ptree' E MN R1) (ptree' E MN R2)
+    (frontier_head E MN R1) (frontier_head E MN R2)
+    (@ptree_state_kernel R1) (@ptree_state_kernel R2)
+    ptree_stable_observation_rel
+    ptree_stable_observation_rel_mono.
+
+Definition primitive_ptree_bisim
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) : Prop :=
+  primitive_ptree_state_bisim (observe t1) (observe t2).
+
+Lemma primitive_ptree_bisim_of_ast_lift
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
+  operational_ast_weak (MF := MF) (observe t1) out1 ->
+  operational_ast_weak (MF := MF) (observe t2) out2 ->
+  sem_lift (frontier_head_rel RR primitive_ptree_bisim) out1 out2 ->
+  primitive_ptree_bisim t1 t2.
+Proof.
+  intros H1 H2 Hlift. unfold primitive_ptree_bisim,
+    primitive_ptree_state_bisim.
+  apply stable_kernel_bisim_fold. eapply SKBAST.
+  - apply (proj2 (ptree_primitive_ast_adequate (observe t1) out1)).
+    exact H1.
+  - apply (proj2 (ptree_primitive_ast_adequate (observe t2) out2)).
+    exact H2.
+  - exact Hlift.
+Qed.
+
+End GenericPTreeBisimulation.
+
 Section OperationalHittingOrder.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
