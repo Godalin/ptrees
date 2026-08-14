@@ -83,6 +83,58 @@ Definition operational_ast_weak {R} (ot : ptree' E MN R)
     (out : MF (frontier_head E MN R)) : Prop :=
   operational_weak ot out /\ sem_total out.
 
+(** A syntax-independent bridge for genuinely nested unbounded execution.
+    [grid outer inner] may allocate separate fuel to an outer protocol and
+    an inner AST sampler.  The program-specific obligation is only that its
+    primitive global-fuel chain has the same limits as the diagonal grid.
+    Fubini continuity then turns iterated row limits into that diagonal
+    limit; no [Bind], [Iter], or [NestedIter] semantic constructor is used. *)
+Definition operational_hitting_diagonal_cofinal {R}
+    (ot : ptree' E MN R)
+    (grid : nat -> nat -> MF (frontier_head E MN R)) : Prop :=
+  forall out,
+    sem_lub (fun fuel => operational_hitting_approx fuel ot) out <->
+    sem_lub (fun fuel => grid fuel fuel) out.
+
+Section OperationalNestedGrid.
+Context `{FFubini : @SemanticOmegaFubiniLaws MF FI FO}.
+
+Theorem operational_weak_of_nested_grid {R}
+    (ot : ptree' E MN R)
+    (grid : nat -> nat -> MF (frontier_head E MN R))
+    (row_out : nat -> MF (frontier_head E MN R)) out :
+  operational_hitting_diagonal_cofinal ot grid ->
+  (forall outer, sem_increasing (grid outer)) ->
+  (forall inner, sem_increasing (fun outer => grid outer inner)) ->
+  (forall outer, sem_lub (grid outer) (row_out outer)) ->
+  sem_lub row_out out ->
+  operational_weak ot out.
+Proof.
+  intros Hcofinal Hinner Houter Hrows Hout.
+  unfold operational_weak.
+  apply (proj2 (Hcofinal out)).
+  eapply sem_lub_double_diagonal; eassumption.
+Qed.
+
+Corollary operational_ast_weak_of_nested_grid {R}
+    (ot : ptree' E MN R)
+    (grid : nat -> nat -> MF (frontier_head E MN R))
+    (row_out : nat -> MF (frontier_head E MN R)) out :
+  operational_hitting_diagonal_cofinal ot grid ->
+  (forall outer, sem_increasing (grid outer)) ->
+  (forall inner, sem_increasing (fun outer => grid outer inner)) ->
+  (forall outer, sem_lub (grid outer) (row_out outer)) ->
+  sem_lub row_out out ->
+  sem_total out ->
+  operational_ast_weak ot out.
+Proof.
+  intros Hcofinal Hinner Houter Hrows Hout Htotal.
+  split; [|exact Htotal].
+  eapply operational_weak_of_nested_grid; eassumption.
+Qed.
+
+End OperationalNestedGrid.
+
 Lemma operational_kernel_retE {R} (r : R) :
   operational_kernel (RetF r) =
   sem_ret (OPStable (FHRet r)).
