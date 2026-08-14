@@ -100,6 +100,18 @@ Polymorphic Class SemanticMeasureBindLaws@{carrier representation}
       sem_lift T (sem_bind mu k) (sem_bind nu h)
 }.
 
+(** The diagonal coupling may be restricted to an almost-everywhere good
+    set.  This capability is precisely what turns AE equality of kernels into
+    Kleisli congruence; it is kept separate from the basic coupling algebra. *)
+Polymorphic Class SemanticMeasureAELiftLaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S} := {
+  sem_lift_refl_ae : forall {A : Type@{carrier}}
+      (mu : S A) (P : A -> Prop),
+      sem_ae mu P ->
+      sem_lift (fun x y => x = y /\ P x) mu mu
+}.
+
 (** Laws connecting the node and frontier layers.  AE lives at the node
     layer, while equality and couplings of continuations live at the
     frontier layer. *)

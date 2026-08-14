@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From mathcomp Require Import ssreflect reals boolp classical_sets.
+From mathcomp Require Import ssreflect ssralg reals boolp classical_sets.
 From mathcomp.analysis Require Import measure ereal.
 
 From PTree.Prob Require Import FrontierLift MeasureIteration MathCompMeasure
@@ -14,6 +14,8 @@ Unset Printing Implicit Defensive.
 
 Local Open Scope classical_set_scope.
 Local Open Scope ereal_scope.
+Import GRing.Theory.
+Local Open Scope ring_scope.
 
 Section MathCompNodeLayer.
 Context (R : realType).
@@ -53,6 +55,45 @@ Proof.
   - exact (@mathcomp_kernel_lift_proper_r R).
   - exact (@mathcomp_kernel_lift_sym R).
   - exact (@mathcomp_kernel_lift_comp R H).
+Qed.
+
+Lemma mathcomp_kernel_lift_refl_ae {A}
+    (mu : MathCompKernelMeasure R A) (P : A -> Prop) :
+  mathcomp_kernel_ae mu P ->
+  mathcomp_kernel_lift (fun x y => x = y /\ P x) mu mu.
+Proof.
+  move=> Hae.
+  rewrite /mathcomp_kernel_ae /mathcomp_measure_ae in Hae.
+  exists (mathcomp_diagonal_joint mu). split.
+  - move=> U _ _. exact: mathcomp_diagonal_left.
+  - split.
+    + move=> U _ _. exact: mathcomp_diagonal_right.
+    + rewrite /almost_everywhere.
+      apply/negligibleP; first by [].
+      change (mathcomp_kernel_root mu
+        ((mc_joint_diagonal A) @^-1`
+          (~` mc_relation (fun x y => x = y /\ P x))) = 0).
+      have Eset :
+          (mc_joint_diagonal A) @^-1`
+            (~` mc_relation (fun x y => x = y /\ P x)) =
+          (~` mc_predicate P).
+      { apply/seteqP; split.
+        - move=> [|a] /= Hx.
+          + exact Hx.
+          + move=> HP. apply: Hx. split=> //.
+        - move=> [|a] /= Hx.
+          + exact Hx.
+          + move=> [_ HP]. exact: Hx HP. }
+      rewrite Eset.
+      have Hm : measurable (~` mc_predicate P) by [].
+      exact: measure_negligible Hm Hae.
+Qed.
+
+#[global] Instance MathCompNodeSemanticMeasureAELiftLaws :
+    @SemanticMeasureAELiftLaws (MathCompKernelMeasure R)
+      MathCompNodeSemanticMeasureInterface.
+Proof.
+  constructor. exact @mathcomp_kernel_lift_refl_ae.
 Qed.
 
 (** Setwise order on returned-value events.  As in the existing MathComp

@@ -69,7 +69,7 @@ Polymorphic Inductive free_omega_lift {MN}
     SemanticMeasureInterface (FreeOmega MN) := {
   sem_ret := @FORet MN;
   sem_bind := @free_omega_bind MN;
-  sem_eq := fun A => @eq (FreeOmega MN A);
+  sem_eq := fun A => @free_omega_lift MN NI A A eq;
   sem_ae := fun A mu P => @free_omega_ae MN NI A P mu;
   sem_lift := @free_omega_lift MN NI
 }.
@@ -165,9 +165,14 @@ Qed.
       (FreeOmegaSemanticMeasureInterface (NI := NI)).
 Proof.
   constructor.
-  - intros A x. reflexivity.
-  - intros A x y. apply eq_sym.
-  - intros A x y z. apply eq_trans.
+  - intros A mu. apply free_omega_lift_refl. intros x. reflexivity.
+  - intros A mu nu Hmn.
+    eapply free_omega_lift_mono; [|exact (free_omega_lift_sym Hmn)].
+    intros x y Hyx. symmetry. exact Hyx.
+  - intros A mu nu xi Hmn Hnx.
+    eapply free_omega_lift_mono;
+      [|exact (free_omega_lift_comp (R := eq) (T := eq) Hmn Hnx)].
+    intros x z [y [-> ->]]. reflexivity.
   - intros A mu. induction mu.
     + apply FOAERet. exact I.
     + apply FOAEZero.
@@ -180,8 +185,17 @@ Proof.
   - exact @free_omega_lift_mono.
   - exact @free_omega_lift_refl.
   - intros A B R x y Hxy. constructor. exact Hxy.
-  - intros A B R mu mu' nu -> H. exact H.
-  - intros A B R mu nu nu' -> H. exact H.
+  - intros A B R mu mu' nu Hmm Hmn.
+    assert (Hmm' : free_omega_lift eq mu' mu).
+    { eapply free_omega_lift_mono; [|exact (free_omega_lift_sym Hmm)].
+      intros x y Hyx. symmetry. exact Hyx. }
+    eapply free_omega_lift_mono;
+      [|exact (free_omega_lift_comp (R := eq) (T := R) Hmm' Hmn)].
+    intros x z [y [-> Hyz]]. exact Hyz.
+  - intros A B R mu nu nu' Hnn Hmn.
+    eapply free_omega_lift_mono;
+      [|exact (free_omega_lift_comp (R := R) (T := eq) Hmn Hnn)].
+    intros x z [y [Hxy ->]]. exact Hxy.
   - exact @free_omega_lift_sym.
   - exact @free_omega_lift_comp.
 Qed.
@@ -211,6 +225,38 @@ Proof.
   - constructor. exact H0.
 Qed.
 
+Lemma free_omega_bind_ae_proper
+    `{NAE : @SemanticMeasureAELiftLaws MN NI}
+    {A B} (mu : FreeOmega MN A) (k h : A -> FreeOmega MN B) :
+  free_omega_ae (fun x => free_omega_lift eq (k x) (h x)) mu ->
+  free_omega_lift eq (free_omega_bind mu k) (free_omega_bind mu h).
+Proof.
+  intros Hae. induction Hae; cbn.
+  - exact H.
+  - constructor.
+  - eapply FOLSample with (S := fun x y => x = y /\ Good x).
+    + exact (sem_lift_refl_ae H).
+    + intros x y [-> Hy]. exact (H1 y Hy).
+  - constructor. exact H0.
+Qed.
+
+#[global] Polymorphic Instance FreeOmegaSemanticMeasureBindLaws
+    `{NAE : @SemanticMeasureAELiftLaws MN NI} :
+    @SemanticMeasureBindLaws (FreeOmega MN)
+      (FreeOmegaSemanticMeasureInterface (NI := NI)).
+Proof.
+  constructor.
+  - intros A B x k. apply free_omega_lift_refl. intros y. reflexivity.
+  - intros A B C mu k h.
+    change (free_omega_lift eq
+      (free_omega_bind (free_omega_bind mu k) h)
+      (free_omega_bind mu (fun x => free_omega_bind (k x) h))).
+    rewrite free_omega_bind_assoc.
+    apply free_omega_lift_refl. intros y. reflexivity.
+  - intros A B mu k h Hae. exact (free_omega_bind_ae_proper Hae).
+  - exact @free_omega_lift_bind.
+Qed.
+
 #[global] Polymorphic Instance FreeOmegaMixedMeasureInterface :
     MixedMeasureInterface MN (FreeOmega MN) := {
   mixed_bind := fun A B mu k => @FOSample MN B A mu k
@@ -221,6 +267,22 @@ Lemma free_omega_mixed_bindE {A B} (mu : MN A)
   @mixed_bind MN (FreeOmega MN) FreeOmegaMixedMeasureInterface
     A B mu k = FOSample mu k.
 Proof. reflexivity. Qed.
+
+#[global] Polymorphic Instance FreeOmegaMixedMeasureLaws
+    `{NAE : @SemanticMeasureAELiftLaws MN NI} :
+    @MixedMeasureLaws MN (FreeOmega MN) NI
+      (FreeOmegaSemanticMeasureInterface (NI := NI))
+      FreeOmegaMixedMeasureInterface.
+Proof.
+  constructor.
+  - intros A B mu k h Hae.
+    eapply FOLSample with (S := fun x y => x = y /\
+      free_omega_lift eq (k x) (h x)).
+    + exact (sem_lift_refl_ae Hae).
+    + intros x y [-> Hxy]. exact Hxy.
+  - intros A B C D R T mu nu k h Hmn Hkh.
+    eapply FOLSample with (S := R); eauto.
+Qed.
 
 (** The free completion has a canonical formal lub.  [sem_total] is kept
     explicit and conservative: totality certificates for analytic limits

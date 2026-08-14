@@ -150,15 +150,18 @@ condition is listed explicitly, the referenced result is proved without an
   behavior measure `MF`: MathComp samples remain low-universe nodes while
   results may contain recursive frontier heads at a higher universe.  Its
   coupling is structural and composes by the node backend's gluing law.
+  Its extensional equality is equality-supported coupling rather than syntax
+  equality.  `SemanticMeasureAELiftLaws` isolates the diagonal-AE fact needed
+  for Kleisli congruence; the MathComp adapter proves it from
+  `almost_everywhere`, so FreeOmega provides checked AE bind, relational bind,
+  and mixed-bind laws.
   `Examples/UnifiedMathCompFrontier.v` is the positive regression: a genuine
   MathComp Bernoulli node has a unified high-universe frontier and is
   reflexive under the new `weak_bisim` (assuming explicit MathComp gluing).
-- The free behavior model deliberately does not yet advertise AE Kleisli or
-  mixed-bind congruence: its current `sem_eq` is structural equality, so those
-  laws require an AE quotient or an observable interpretation.  Its formal
-  omega constructor is universe-safe, but analytic totality of a lub must
-  likewise be connected to MathComp returned-mass observables before the real
-  oracle example can be stated as a unified weak equivalence.
+- The free behavior model's formal omega constructor is universe-safe, but
+  analytic totality of a lub must still be connected to MathComp returned-mass
+  observables before the real oracle example can be stated as a unified weak
+  equivalence.
 - `Experimental/UniverseSeparatedPTree.v` is a checked migration probe.  It
   separates `M`'s sampled-carrier and measure-representation universes and
   successfully constructs a PTree probability node from
