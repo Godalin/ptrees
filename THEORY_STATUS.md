@@ -126,6 +126,16 @@ condition is listed explicitly, the referenced result is proved without an
   and AST.  Thus existing examples already have a theorem-level path into
   the generic standard model; changing the public definitions can now be a
   compatibility refactoring rather than a new semantic assumption.
+  Representative clients now state this endpoint explicitly rather than
+  leaving it implicit in the bridge theorem:
+  `operational_reg_nested_primitive_ast` covers the finite nested Enum
+  regression, `operational_vn_compiled_primitive_ast` the unbounded
+  Von Neumann sampler, `operational_rational_coin_primitive_ast` the
+  fair-to-q binary algorithm, and
+  `operational_mathcomp_oracle_primitive_ast` the real-oracle MathComp
+  backend.  These conclusions all use the same generic `stable_hitting_ast`
+  predicate despite their different concrete measure instances and
+  productivity proofs.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides

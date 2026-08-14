@@ -5,7 +5,7 @@ Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
-From PTree.Eq Require Import UnifiedFrontier UnifiedPWeak
+From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier UnifiedPWeak
   OperationalProbabilisticPTS.
 From PTree.Examples Require Import EnumMeasureRegression
   UnifiedPWeakEnumExamples.
@@ -171,6 +171,35 @@ Proof.
   exists nat, reg_head_value, operational_reg_merged_observation.
   split; first exact operational_reg_merged_observes.
   vm_compute. reflexivity.
+Qed.
+
+Lemma operational_reg_nested_ast :
+  @operational_ast_weak regE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface nat
+    (observe reg_nested_program) operational_reg_nested_heads.
+Proof. split; [exact operational_reg_nested_weak|exact operational_reg_nested_total]. Qed.
+
+Corollary operational_reg_nested_primitive_ast :
+  @stable_hitting_ast MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface
+    (ptree' regE Enum nat) (frontier_head regE Enum nat)
+    (@ptree_primitive_kernel regE Enum MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaMixedMeasureInterface nat)
+    (observe reg_nested_program) operational_reg_nested_heads.
+Proof.
+  apply (proj2 (ptree_primitive_ast_adequate
+    (observe reg_nested_program) operational_reg_nested_heads)).
+  exact operational_reg_nested_ast.
 Qed.
 
 Lemma operational_reg_nested_merged_lift :

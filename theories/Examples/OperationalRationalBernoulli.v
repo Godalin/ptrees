@@ -10,7 +10,8 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration MeasureIterationEnum
   EnumMap.
-From PTree.Eq Require Import ShallowNew OperationalProbabilisticPTS
+From PTree.Eq Require Import ShallowNew PrimitiveStableHitting
+  OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega UnifiedFrontier UnifiedPWeak.
 From PTree.Examples Require Import RationalBernoulli.
 
@@ -315,6 +316,25 @@ Proof.
   - exact operational_rational_heads_total.
 Qed.
 
+Corollary operational_rational_coin_primitive_ast :
+  @stable_hitting_ast MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface
+    (ptree' rational_coinE Enum bool) rational_head
+    (@ptree_primitive_kernel rational_coinE Enum MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaMixedMeasureInterface bool)
+    (observe (binary_rational_coin q)) operational_rational_heads.
+Proof.
+  apply (proj2 (ptree_primitive_ast_adequate
+    (observe (binary_rational_coin q)) operational_rational_heads)).
+  exact operational_rational_coin_ast.
+Qed.
+
 Theorem operational_rational_direct_ast :
   @operational_ast_weak rational_coinE Enum MF
     (FreeOmegaObservableSemanticMeasureInterface
@@ -340,6 +360,26 @@ Proof.
         (1 : rat)).
       rewrite enum_expect_ret. reflexivity.
   - exact operational_rational_direct_heads_total.
+Qed.
+
+Corollary operational_rational_direct_primitive_ast :
+  @stable_hitting_ast MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface
+    (ptree' rational_coinE Enum bool) rational_head
+    (@ptree_primitive_kernel rational_coinE Enum MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaMixedMeasureInterface bool)
+    (observe operational_rational_direct) operational_rational_direct_heads.
+Proof.
+  apply (proj2 (ptree_primitive_ast_adequate
+    (observe operational_rational_direct)
+    operational_rational_direct_heads)).
+  exact operational_rational_direct_ast.
 Qed.
 
 Lemma operational_rational_heads_lift :

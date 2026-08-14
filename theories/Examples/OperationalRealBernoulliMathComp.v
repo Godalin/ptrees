@@ -7,7 +7,7 @@ From mathcomp Require Import ssreflect ssrbool ssralg ssrnum reals.
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
   TwoLevelMeasure TwoLevelMeasureMathComp.
-From PTree.Eq Require Import OperationalProbabilisticPTS
+From PTree.Eq Require Import PrimitiveStableHitting OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega UnifiedFrontier UnifiedPWeak.
 From PTree.Examples Require Import RealBernoulliOracle RealBernoulliMathComp
   UnifiedRealBernoulliMathCompCore.
@@ -173,6 +173,27 @@ Proof.
     apply free_primitive_iter_cofinal.
   - exact: unified_mathcomp_oracle_mixed_iter.
   - exact operational_mathcomp_oracle_heads_total.
+Qed.
+
+Corollary operational_mathcomp_oracle_primitive_ast :
+  @stable_hitting_ast MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := MathCompNodeSemanticMeasureInterface R))
+    (FreeOmegaObservableSemanticOmegaInterface
+      (NI := MathCompNodeSemanticMeasureInterface R)
+      (NO := MathCompNodeSemanticOmegaInterface R))
+    (ptree' real_mathcomp_coinE MN bool) Head
+    (@ptree_primitive_kernel real_mathcomp_coinE MN MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := MathCompNodeSemanticMeasureInterface R))
+      FreeOmegaMixedMeasureInterface bool)
+    (observe (mathcomp_binary_oracle_coin R qbit))
+    operational_mathcomp_oracle_heads.
+Proof.
+  apply (proj2 (ptree_primitive_ast_adequate
+    (observe (mathcomp_binary_oracle_coin R qbit))
+    operational_mathcomp_oracle_heads)).
+  exact operational_mathcomp_oracle_ast.
 Qed.
 
 Theorem operational_mathcomp_direct_ast :

@@ -8,7 +8,8 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration EnumMap.
 From PTree.Prob Require Import MeasureIterationEnum.
-From PTree.Eq Require Import ShallowNew OperationalProbabilisticPTS
+From PTree.Eq Require Import ShallowNew PrimitiveStableHitting
+  OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega UnifiedFrontier UnifiedFrontierEnumFacts
   UnifiedPWeak.
 From PTree.Examples Require Import VonNeumannUnbounded.
@@ -244,6 +245,25 @@ Proof.
   - exact operational_vn_cofinal.
   - exact operational_vn_mixed_iter.
   - exact operational_vn_heads_total.
+Qed.
+
+Corollary operational_vn_compiled_primitive_ast :
+  @stable_hitting_ast MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface
+    (ptree' vnE Enum bool) vn_head
+    (@ptree_primitive_kernel vnE Enum MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaMixedMeasureInterface bool)
+    (observe operational_vn_compiled) operational_vn_heads.
+Proof.
+  apply (proj2 (ptree_primitive_ast_adequate
+    (observe operational_vn_compiled) operational_vn_heads)).
+  exact operational_vn_compiled_ast.
 Qed.
 
 Import GRing.Theory.
