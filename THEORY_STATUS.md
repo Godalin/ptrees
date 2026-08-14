@@ -143,11 +143,22 @@ condition is listed explicitly, the referenced result is proved without an
 - `Prob/MathCompMeasure.v` provides the measure, bind, subprobability, omega,
   and AST backend.  `MathCompCouplingGluing` is an explicit assumption because
   gluing is not a theorem of the bare measure interface on arbitrary types.
-- The current PTree measure constructor is monomorphic.  Embedding MathComp's
-  higher-universe measurable kernels into `auweak` therefore requires a
-  systematic universe-polymorphism refactor.  The experimental MathComp PTree
-  clients are excluded from the default installed theory; the checked Enum
-  cases provide the current end-to-end program equivalences.
+- `Prob/TwoLevelMeasureMathComp.v` now instantiates the low-universe `MN`
+  interface with genuine MathComp kernels, including extensional equality,
+  AE, coupling/gluing, setwise returned-mass order, lub, and totality.
+  `Prob/FreeOmegaMeasure.v` supplies a separate universe-polymorphic formal
+  behavior measure `MF`: MathComp samples remain low-universe nodes while
+  results may contain recursive frontier heads at a higher universe.  Its
+  coupling is structural and composes by the node backend's gluing law.
+  `Examples/UnifiedMathCompFrontier.v` is the positive regression: a genuine
+  MathComp Bernoulli node has a unified high-universe frontier and is
+  reflexive under the new `weak_bisim` (assuming explicit MathComp gluing).
+- The free behavior model deliberately does not yet advertise AE Kleisli or
+  mixed-bind congruence: its current `sem_eq` is structural equality, so those
+  laws require an AE quotient or an observable interpretation.  Its formal
+  omega constructor is universe-safe, but analytic totality of a lub must
+  likewise be connected to MathComp returned-mass observables before the real
+  oracle example can be stated as a unified weak equivalence.
 - `Experimental/UniverseSeparatedPTree.v` is a checked migration probe.  It
   separates `M`'s sampled-carrier and measure-representation universes and
   successfully constructs a PTree probability node from
@@ -158,11 +169,11 @@ condition is listed explicitly, the referenced result is proved without an
   `(MN, MF)` signature can.  `TwoLevelMeasureInterface` isolates the mixed
   operation required by the probabilistic frontier rule: integrating an
   `MF`-valued frontier kernel against an `MN` node measure.  Finally, a
-  checked negative probe shows that the current monomorphic-universe
-  `MathCompKernelMeasure` cannot be instantiated independently as both `MN`
-  and `MF`.  A polymorphic kernel type synonym does make the abstract
-  two-level shape typecheck, and the sealed bind has the desired mixed type
-  at its original levels.  A final negative regression shows why that is not
+  checked negative probe shows that the sealed monomorphic-universe
+  `MathCompKernelMeasure` cannot itself be instantiated independently as both
+  `MN` and `MF`.  The maintained free behavior layer is now the constructive
+  resolution of that boundary.  The remaining negative regression explains
+  why directly reusing HB at the frontier level is not
   yet enough: HB kernel operations and measurable instances already sealed
   below the recursive frontier cannot construct its measure.  The probe also
   asks HB to generate a new measurable carrier at an explicitly selected
