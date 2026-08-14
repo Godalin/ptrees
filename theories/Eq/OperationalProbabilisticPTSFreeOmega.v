@@ -205,6 +205,18 @@ Variable no_event : forall X, E X -> False.
 Variable sample : ptree E MN A.
 Variable round : I -> A -> I + R.
 
+Definition free_nested_step (i : I) : ptree E MN (I + R) :=
+  PTree.bind sample (fun a => Ret (round i a)).
+
+Definition free_nested_program (i : I) : ptree E MN R :=
+  PTree.iter free_nested_step i.
+
+Definition free_nested_after (i : I) (a : A) : ptree E MN R :=
+  match round i a with
+  | inl i' => Tau (free_nested_program i')
+  | inr r => Ret r
+  end.
+
 Definition free_no_event_head_value
     (h : frontier_head E MN A) : A :=
   match h with
