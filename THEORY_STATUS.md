@@ -99,8 +99,10 @@ condition is listed explicitly, the referenced result is proved without an
 - `Eq/PWeakUnboundedTrans.v` proves `auweak_trans` and installs
   `auweak_equivalence`; raw `auweak`, not `auequiv`, is the maintained
   AST-aware weak probabilistic bisimilarity.
-- `Examples/PWeakFrontierExamples.v` contains the concrete divergence
-  counterexample `unrestricted_bind_congruence_fails`.
+- `Examples/FiniteBindCounterexample.v` contains the concrete finite-layer
+  divergence counterexample `finite_unrestricted_bind_congruence_fails`.
+  Its scope is intentionally [apweak]; no stronger negative claim about the
+  unified AST-aware relation is inferred from it.
 - `Eq/PWeakUnbounded.v` proves the positive, explicitly conditioned rules
   `auweak_bind_common_frontier` and `auweak_bind_common_frontier_sem`.
 

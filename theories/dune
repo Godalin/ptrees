@@ -5,13 +5,10 @@
  (package coq-ptree)
  (modules
   (:standard
-   ;; Superseded experimental clients retained only until their useful
-   ;; regressions have been migrated to the maintained unified theory.
-   \ Examples.PWeakFrontierExamples
    ;; These experimental clients require a universe-polymorphic PTree to
    ;; host MathComp measurable kernels.  The MathComp measure and AST layers
    ;; themselves remain part of the installed theory.
-   Examples.RealBernoulliMathCompPWeak Examples.VonNeumannMathComp
+   \ Examples.VonNeumannMathComp
    Examples.RealBernoulliMathCompFactory))
  (theories
    ExtLib

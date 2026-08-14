@@ -34,8 +34,10 @@ dependency because it is part of the surrounding ITree dependency stack.
 Consequently unrestricted monadic bind is not a congruence: a Dirac
 probability node is equivalent to its return, but binding both programs to an
 infinite `Tau` loop exposes the probability node again.  The mechanized
-counterexample is `unrestricted_bind_congruence_fails` in
-`PWeakFrontierExamples.v`.  Constructor-level bind rules and productive
+counterexample is `finite_unrestricted_bind_congruence_fails` in
+`FiniteBindCounterexample.v`; its statement is deliberately limited to the
+finite compatibility relation and does not overclaim the same result for the
+unified AST-aware relation.  Constructor-level bind rules and productive
 examples are provided instead.
 
 ### Unbounded almost-sure frontiers
@@ -102,18 +104,14 @@ an outcome, or splitting its mass does not change the measure.  The regression
 file `Examples/EnumMeasureRegression.v` checks these cases together with
 Dirac elimination and nested-probability flattening.
 
-The MathComp Analysis backend currently supports the measure, bind,
-subprobability, omega-limit, and AST developments.  Coupling composition is
-deliberately exposed as the `MathCompCouplingGluing` assumption: it follows in
-standard Borel settings from disintegration, but not from MathComp's bare
-measure interface for arbitrary types.  The present `ptree` definition is
-monomorphic in its measure constructor, so MathComp measurable kernels cannot
-yet be instantiated inside the generic `auweak` layer without a systematic
-universe-polymorphism refactor.  Consequently the experimental
-`RealBernoulliMathCompPWeak.v` and `VonNeumannMathComp.v` clients are not part
-of the default installed theory; their measure/AST prerequisites remain
-available and the Enum Bernoulli factory supplies the fully checked end-to-end
-unbounded equivalence case.
+The MathComp Analysis backend supports measure, bind, subprobability,
+omega-limit, AST, and the universe-safe two-level unified frontier.  Coupling
+composition remains the explicit `MathCompCouplingGluing` capability.  The
+maintained real binary-oracle example is unified-weak-bisimilar to a direct
+real Bernoulli sample.  The older real-valued Von Neumann and composed factory
+clients remain experimental until migrated to the same two-level interface;
+they are excluded from the default installed theory rather than presented as
+maintained results.
 
 ## Meta
 
