@@ -154,7 +154,9 @@ condition is listed explicitly, the referenced result is proved without an
   proves `free_operational_bind_tau_approx_cofinal`: if a Bind source has a
   finite cofinality certificate, adding a leading Tau preserves it via the
   explicit bounds `D n <= D_tau (n+1) <= D (n+1)`.  Thus Ret and Tau Bind
-  cases are discharged constructively; Prob/Vis and iteration remain.
+  cases are discharged constructively.  The stable Vis-source case is also
+  pointwise identical at every fuel and is proved by
+  `free_operational_bind_vis_approx_cofinal`; Prob and iteration remain.
 
 ## Measure semantics and coupling
 

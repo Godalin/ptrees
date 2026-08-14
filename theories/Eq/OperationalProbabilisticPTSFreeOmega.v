@@ -63,8 +63,7 @@ Proof.
       operational_head_bind_approx,
       operational_hitting_approx, operational_kernel;
     cbn.
-  all: rewrite observe_bind; cbn.
-  all: rewrite operational_target_stableE; cbn.
+  all: rewrite !operational_target_stableE; cbn.
   all: apply free_omega_approx_refl; intros x; reflexivity.
 Qed.
 
@@ -77,6 +76,31 @@ Corollary free_operational_bind_ret_cofinal {A R}
 Proof.
   apply free_operational_bind_cofinal.
   apply free_operational_bind_ret_approx_cofinal.
+Qed.
+
+Lemma free_operational_bind_vis_approx_cofinal {A R X}
+    (e : E X) (c : X -> ptree E MN A) (k : A -> ptree E MN R) :
+  free_operational_bind_approx_cofinal (Vis e c) k.
+Proof.
+  split; intro n; exists n;
+    unfold free_operational_bind_approx_cofinal,
+      operational_bind_diagonal_approx,
+      operational_head_bind_approx,
+      operational_hitting_approx, operational_kernel;
+    cbn.
+  all: rewrite !operational_target_stableE; cbn.
+  all: apply free_omega_approx_refl; intros x; reflexivity.
+Qed.
+
+Corollary free_operational_bind_vis_cofinal {A R X}
+    (e : E X) (c : X -> ptree E MN A) (k : A -> ptree E MN R) :
+  @operational_bind_cofinal E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A R (Vis e c) k.
+Proof.
+  apply free_operational_bind_cofinal.
+  apply free_operational_bind_vis_approx_cofinal.
 Qed.
 
 Lemma free_operational_bind_tau_diagonal_left {A R}
