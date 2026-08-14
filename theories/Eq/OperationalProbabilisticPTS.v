@@ -66,13 +66,20 @@ Definition operational_hitting_approx {R} (fuel : nat)
     (ot : ptree' E MN R) : MF (frontier_head E MN R) :=
   sem_bind (operational_kernel ot) (operational_target_approx fuel).
 
-(** AST weak behavior is now stated solely as the total omega limit of the
-    generic primitive-step hitting chain.  Unlike the old operational
-    presentation, this definition has no Iter/Bind/NestedIter constructors. *)
+(** A generic weak behavior is the (possibly subprobabilistic) stable-hitting
+    limit of primitive execution.  Unresolved mass is absent from each finite
+    approximant, hence pure divergence has the zero subdistribution as its
+    hitting limit. *)
+Definition operational_weak {R} (ot : ptree' E MN R)
+    (out : MF (frontier_head E MN R)) : Prop :=
+  sem_lub (fun fuel => operational_hitting_approx fuel ot) out.
+
+(** AST is a separate property of a weak behavior: its stable-hitting limit
+    has total mass.  Keeping these notions separate is necessary because an
+    ordinary finite frontier may legitimately be a subprobability measure. *)
 Definition operational_ast_weak {R} (ot : ptree' E MN R)
     (out : MF (frontier_head E MN R)) : Prop :=
-  sem_lub (fun fuel => operational_hitting_approx fuel ot) out /\
-  sem_total out.
+  operational_weak ot out /\ sem_total out.
 
 Lemma operational_kernel_retE {R} (r : R) :
   operational_kernel (RetF r) =

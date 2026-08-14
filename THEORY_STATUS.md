@@ -68,7 +68,8 @@ condition is listed explicitly, the referenced result is proved without an
 - `Eq/OperationalProbabilisticPTS.v` starts the independent replacement.  It
   defines one universe-safe primitive kernel into `MF`, a generic fuel-bounded
   stable-hitting distribution obtained only by repeatedly binding that
-  kernel, and an AST weak behavior as the total omega limit of this chain.
+  kernel, a subprobability weak behavior as its omega limit, and AST as the
+  separate assertion that this limit is total.
   There are no Iter/Bind/NestedIter weak constructors.  The development also
   identifies and proves for Enum and FreeOmega the previously implicit mixed
   associativity law needed to derive the operational Prob recurrence.  Sound
