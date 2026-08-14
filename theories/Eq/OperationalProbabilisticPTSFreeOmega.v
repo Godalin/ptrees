@@ -565,12 +565,16 @@ Proof.
   - apply free_nested_program_unfold_structural.
 Qed.
 
+Definition free_no_event_head_value_for {X}
+    (h : frontier_head E MN X) : X :=
+  match h with
+  | FHRet x => x
+  | @FHVis _ _ _ Y e _ => False_rect X (no_event e)
+  end.
+
 Definition free_no_event_head_value
     (h : frontier_head E MN A) : A :=
-  match h with
-  | FHRet a => a
-  | @FHVis _ _ _ X e _ => False_rect A (no_event e)
-  end.
+  free_no_event_head_value_for h.
 
 Lemma free_no_event_head_ret (h : frontier_head E MN A) :
   exists a, h = FHRet a.
@@ -649,6 +653,73 @@ Fixpoint free_nested_row_out
         end)
   end.
 
+(** Low-level finite-round meaning corresponding to [free_nested_row_out]. *)
+Fixpoint free_nested_measure_row
+    (sample_measure : MN A) (outer : nat) (i : I) : MN R :=
+  match outer with
+  | O => sem_zero
+  | S outer' =>
+      sem_bind sample_measure (fun a =>
+        match round i a with
+        | inl i' => free_nested_measure_row sample_measure outer' i'
+        | inr r => sem_ret r
+        end)
+  end.
+
+Section NestedRowDenotation.
+Context `{DB : @FreeOmegaDenotationBindLaws MN NI NO}.
+
+Lemma free_nested_row_out_denotes
+    (sample_out : MF (frontier_head E MN A))
+    (sample_measure : MN A)
+    (Hsample : free_omega_denotes
+      (@free_no_event_head_value_for A)
+      sample_out sample_measure) :
+  forall outer i,
+    free_omega_denotes
+      (@free_no_event_head_value_for R)
+      (free_nested_row_out sample_out outer i)
+      (free_nested_measure_row sample_measure outer i).
+Proof.
+  induction outer as [|outer IH]; intro i.
+  - apply free_omega_observes_denotes. constructor.
+  - cbn [free_nested_row_out free_nested_measure_row].
+    eapply free_omega_denotes_bind.
+    + exact Hsample.
+    + intro h. destruct (free_no_event_head_ret h) as [a ->].
+      cbn [free_no_event_head_value free_no_event_head_value_for].
+      destruct (round i a) as [i'|r].
+      * apply IH.
+      * apply free_omega_observes_denotes. constructor.
+Qed.
+
+End NestedRowDenotation.
+
+Section NestedLimitDenotation.
+Context `{DO : @FreeOmegaDenotationOmegaLaws MN NI NO}.
+
+Lemma free_nested_rows_lub_denotes
+    (sample_out : MF (frontier_head E MN A))
+    (sample_measure : MN A)
+    (Hrows : forall outer i,
+      free_omega_denotes
+        (@free_no_event_head_value_for R)
+        (free_nested_row_out sample_out outer i)
+        (free_nested_measure_row sample_measure outer i))
+    (i : I) out :
+  sem_lub (fun outer => free_nested_measure_row
+      sample_measure outer i) out ->
+  free_omega_denotes
+    (@free_no_event_head_value_for R)
+    (FOLub (fun outer => free_nested_row_out sample_out outer i)) out.
+Proof.
+  intro Hlub. eapply free_omega_denotes_lub.
+  - intro outer. apply Hrows.
+  - exact Hlub.
+Qed.
+
+End NestedLimitDenotation.
+
 Lemma free_nested_execution_grid_inner_increasing outer :
   forall i inner,
     free_omega_approx eq
@@ -685,7 +756,8 @@ Proof.
         -- apply free_omega_approx_refl. intros h. reflexivity.
         -- intros h1 h2 ->.
            destruct (free_no_event_head_ret h2) as [a ->].
-           cbn [operational_head_bind_approx free_no_event_head_value].
+           cbn [operational_head_bind_approx free_no_event_head_value
+             free_no_event_head_value_for].
            unfold free_nested_after. destruct (round i a) as [i'|r].
            ++ cbn [operational_hitting_approx operational_kernel].
               constructor.
@@ -703,7 +775,8 @@ Proof.
         -- apply free_omega_approx_refl. intros h. reflexivity.
         -- intros h1 h2 ->.
            destruct (free_no_event_head_ret h2) as [a ->].
-           cbn [operational_head_bind_approx free_no_event_head_value].
+           cbn [operational_head_bind_approx free_no_event_head_value
+             free_no_event_head_value_for].
            unfold free_nested_after. destruct (round i a) as [i'|r].
            ++ cbn [operational_hitting_approx operational_kernel].
               eapply free_omega_approx_trans.
@@ -764,7 +837,8 @@ Proof.
       * apply free_omega_approx_refl. intros h. reflexivity.
       * intros h1 h2 ->.
         destruct (free_no_event_head_ret h2) as [a ->].
-        cbn [free_no_event_head_value operational_head_bind_approx].
+        cbn [free_no_event_head_value free_no_event_head_value_for
+          operational_head_bind_approx].
         unfold free_nested_after. destruct (round i a) as [i'|r].
         -- cbn [operational_hitting_approx operational_kernel].
            apply IH.
