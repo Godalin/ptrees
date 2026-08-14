@@ -343,3 +343,188 @@ Proof.
 Qed.
 
 End FreeOmegaLaws.
+
+(** An observation-closed coupling for the free omega completion.  The
+    structural lifting above remains useful for syntax-directed proofs, but
+    it deliberately cannot identify, for example, a formal omega limit with
+    a single sampling node.  [free_omega_qlift] is the least relation which
+    also admits couplings between low-universe observations and is closed
+    under the algebraic operations needed by the generic development. *)
+Polymorphic Inductive free_omega_qlift {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NO : @SemanticOmegaInterface MN NI}
+    {A B} (R : A -> B -> Prop) :
+    FreeOmega MN A -> FreeOmega MN B -> Prop :=
+  | FOQLStructural mu nu :
+      free_omega_lift R mu nu -> free_omega_qlift R mu nu
+  | FOQLObserve {OA OB} (obsA : A -> OA) (obsB : B -> OB)
+      (mu : FreeOmega MN A) (nu : FreeOmega MN B)
+      (outA : MN OA) (outB : MN OB) (S : OA -> OB -> Prop) :
+      free_omega_observes obsA mu outA ->
+      free_omega_observes obsB nu outB ->
+      sem_lift S outA outB ->
+      (forall x y, S (obsA x) (obsB y) -> R x y) ->
+      free_omega_qlift R mu nu
+  | FOQLMono (T : A -> B -> Prop) mu nu :
+      free_omega_qlift T mu nu ->
+      (forall x y, T x y -> R x y) ->
+      free_omega_qlift R mu nu
+  | FOQLSym mu nu :
+      free_omega_qlift (fun y x => R x y) nu mu ->
+      free_omega_qlift R mu nu
+  | FOQLComp {C} (T : A -> C -> Prop) (U : C -> B -> Prop) mu mid nu :
+      free_omega_qlift T mu mid ->
+      free_omega_qlift U mid nu ->
+      (forall x z, (exists y, T x y /\ U y z) -> R x z) ->
+      free_omega_qlift R mu nu
+  | FOQLBind {C D} (T : C -> D -> Prop)
+      (mu : FreeOmega MN C) (nu : FreeOmega MN D)
+      (k : C -> FreeOmega MN A) (h : D -> FreeOmega MN B) :
+      free_omega_qlift T mu nu ->
+      (forall x y, T x y -> free_omega_qlift R (k x) (h y)) ->
+      free_omega_qlift R (free_omega_bind mu k) (free_omega_bind nu h)
+  | FOQLSample {C D} (T : C -> D -> Prop)
+      (mu : MN C) (nu : MN D)
+      (k : C -> FreeOmega MN A) (h : D -> FreeOmega MN B) :
+      sem_lift T mu nu ->
+      (forall x y, T x y -> free_omega_qlift R (k x) (h y)) ->
+      free_omega_qlift R (FOSample mu k) (FOSample nu h)
+  | FOQLLub (c : nat -> FreeOmega MN A) (d : nat -> FreeOmega MN B) :
+      (forall n, free_omega_qlift R (c n) (d n)) ->
+      free_omega_qlift R (FOLub c) (FOLub d).
+
+#[global] Polymorphic Instance FreeOmegaObservableSemanticMeasureInterface
+    {MN} `{NI : SemanticMeasureInterface MN}
+    `{NO : @SemanticOmegaInterface MN NI} :
+    SemanticMeasureInterface (FreeOmega MN) := {
+  sem_ret := @FORet MN;
+  sem_bind := @free_omega_bind MN;
+  sem_eq := fun A => @free_omega_qlift MN NI NO A A eq;
+  sem_ae := fun A mu P => @free_omega_ae MN NI A P mu;
+  sem_lift := @free_omega_qlift MN NI NO
+}.
+
+Section FreeOmegaObservableLaws.
+Context {MN : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NO : @SemanticOmegaInterface MN NI}.
+
+Lemma free_omega_qlift_refl {A} (R : A -> A -> Prop) mu :
+  Reflexive R -> free_omega_qlift R mu mu.
+Proof. intro HR. apply FOQLStructural, free_omega_lift_refl, HR. Qed.
+
+#[global] Instance FreeOmegaObservableSemanticMeasureCoreLaws :
+    @SemanticMeasureCoreLaws (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)).
+Proof.
+  constructor.
+  - intros A mu. apply free_omega_qlift_refl. intros x. reflexivity.
+  - intros A mu nu H. apply FOQLSym.
+    eapply FOQLMono; [exact H|]. intros x y ->. reflexivity.
+  - intros A mu nu xi Hmn Hnx.
+    refine (FOQLComp (R := eq) Hmn Hnx _).
+    intros x z [y [-> ->]]. reflexivity.
+  - intros A mu. induction mu.
+    + constructor. exact I.
+    + constructor.
+    + eapply FOAESample with (Good := fun _ => True).
+      * apply sem_ae_true.
+      * intros x _. exact (H x).
+    + constructor. exact H.
+  - intros A mu P Q HPQ Hae.
+    exact (free_omega_ae_mono (P := P) (Q := Q) (mu := mu) HPQ Hae).
+  - intros A mu P Q HP HQ.
+    exact (free_omega_ae_conj (P := P) (Q := Q) (mu := mu) HP HQ).
+  - intros A B R T mu nu HRT H.
+    eapply FOQLMono; eauto.
+  - intros A R mu HR. apply free_omega_qlift_refl. exact HR.
+  - intros A B R x y Hxy. apply FOQLStructural. constructor. exact Hxy.
+  - intros A B R mu mu' nu Hmm Hmn.
+    assert (Hmm' : free_omega_qlift eq mu' mu).
+    { apply FOQLSym. eapply FOQLMono; [exact Hmm|].
+      intros x y ->. reflexivity. }
+    refine (FOQLComp (R := R) Hmm' Hmn _).
+    intros x z [y [-> Hyz]]. exact Hyz.
+  - intros A B R mu nu nu' Hnn Hmn.
+    refine (FOQLComp (R := R) Hmn Hnn _).
+    intros x z [y [Hxy ->]]. exact Hxy.
+  - intros A B R mu nu H. apply FOQLSym. exact H.
+  - intros A B C R T mu nu xi Hmn Hnx.
+    refine (FOQLComp (R := fun x z => exists y, R x y /\ T y z)
+      Hmn Hnx _).
+    intros x z Hxz. exact Hxz.
+Qed.
+
+Lemma free_omega_qlift_bind_ae
+    `{NAE : @SemanticMeasureAELiftLaws MN NI}
+    {A B} (mu : FreeOmega MN A) (k h : A -> FreeOmega MN B) :
+  free_omega_ae (fun x => free_omega_qlift eq (k x) (h x)) mu ->
+  free_omega_qlift eq (free_omega_bind mu k) (free_omega_bind mu h).
+Proof.
+  intro Hae. induction Hae; cbn.
+  - exact H.
+  - apply FOQLStructural. constructor.
+  - eapply FOQLSample with (T := fun x y => x = y /\ Good x).
+    + exact (sem_lift_refl_ae H).
+    + intros x y [-> Hy]. exact (H1 y Hy).
+  - apply FOQLLub. exact H0.
+Qed.
+
+#[global] Instance FreeOmegaObservableSemanticMeasureBindLaws
+    `{NAE : @SemanticMeasureAELiftLaws MN NI} :
+    @SemanticMeasureBindLaws (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)).
+Proof.
+  constructor.
+  - intros A B x k. apply free_omega_qlift_refl. intros y. reflexivity.
+  - intros A B C mu k h.
+    change (free_omega_qlift eq
+      (free_omega_bind (free_omega_bind mu k) h)
+      (free_omega_bind mu (fun x => free_omega_bind (k x) h))).
+    rewrite free_omega_bind_assoc.
+    apply free_omega_qlift_refl. intros y. reflexivity.
+  - intros A B mu k h Hae. exact (free_omega_qlift_bind_ae Hae).
+  - intros A B C D R T mu nu k h Hmn Hkh.
+    eapply FOQLBind; eauto.
+Qed.
+
+#[global] Instance FreeOmegaObservableMixedMeasureLaws
+    `{NAE : @SemanticMeasureAELiftLaws MN NI} :
+    @MixedMeasureLaws MN (FreeOmega MN) NI
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface.
+Proof.
+  constructor.
+  - intros A B mu k h Hae.
+    eapply FOQLSample with (T := fun x y => x = y /\
+      free_omega_qlift eq (k x) (h x)).
+    + exact (sem_lift_refl_ae Hae).
+    + intros x y [-> Hxy]. exact Hxy.
+  - intros A B C D R T mu nu k h Hmn Hkh.
+    eapply FOQLSample; eauto.
+Qed.
+
+#[global] Polymorphic Instance FreeOmegaObservableSemanticOmegaInterface :
+    @SemanticOmegaInterface (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)) := {
+  sem_zero := @FOZero MN;
+  sem_le := fun A _ _ => True;
+  sem_lub := fun A chain out => out = FOLub chain;
+  sem_total := fun A mu => exists (O : Type) (obs : A -> O) (out : MN O),
+    free_omega_observes obs mu out /\ sem_total out
+}.
+
+#[global] Instance FreeOmegaObservableSemanticOmegaLaws :
+    @SemanticOmegaLaws (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface.
+Proof.
+  constructor.
+  - intros A chain _. exists (FOLub chain). reflexivity.
+  - intros A chain mu nu -> ->. apply free_omega_qlift_refl.
+    intros x. reflexivity.
+  - intros A B chain mu k _ ->. reflexivity.
+Qed.
+
+End FreeOmegaObservableLaws.
