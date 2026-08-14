@@ -144,10 +144,22 @@ condition is listed explicitly, the referenced result is proved without an
   The older `Examples/OperationalBernoulliFactory.v` is consequently kept as
   migration material but excluded from the installed theory: its main loop
   still enters through `pstructural` and the syntax-directed
-  `free_operational_weak_of_canonical_nested`.  The maintained p-to-q endpoint
-  is `Examples/OperationalRationalBernoulli.v`; re-admitting the older client
-  requires a direct primitive-hitting/cofinality proof, not another universe
-  specialization of the mirrored theorem.
+  `free_operational_weak_of_canonical_nested`.  More precisely,
+  `Examples/OperationalRationalBernoulli.v` is currently only the maintained
+  operational proof for the outer fair-bit-to-q binary algorithm; the full
+  p-to-q composition remains proved only through the legacy/unified route.
+  Re-admitting the factory client therefore requires a direct
+  primitive-hitting/cofinality proof for the inner p-to-fair sampler and its
+  composition with this outer loop, not another universe specialization of
+  the mirrored theorem.
+  The outer example now makes its non-lockstep nature checkable:
+  `operational_rational_coin_hitting_one` identifies the implementation's
+  one-fuel primitive prefix, `operational_rational_direct_hitting_one`
+  identifies the already-complete direct prefix, and
+  `operational_rational_first_round_not_direct` proves their low-level Enum
+  observations differ because the former has mass one half while the latter
+  is total.  Their operational bisimulation is constructed through
+  `operational_bisim_of_ast_lift`, so equality appears only at the AST limit.
 - `FreeOmegaMeasure.v` now contains the nontrivial finite subbehavior order
   `free_omega_approx` (zero is bottom; Ret/Sample/Lub structure is preserved)
   and mutual eventual coverage `free_omega_chains_cofinal`.  The

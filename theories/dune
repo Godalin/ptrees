@@ -14,7 +14,7 @@
    ;; syntax-directed canonical-nested adequacy theorem.  Keep the source as
    ;; migration material, but do not present it as part of the independent
    ;; operational model; OperationalRationalBernoulli is the maintained
-   ;; primitive-hitting p-to-q example.
+   ;; primitive-hitting outer q-from-fair-bits example.
    Examples.OperationalBernoulliFactory))
  (theories
    ExtLib

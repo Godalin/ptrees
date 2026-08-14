@@ -19,7 +19,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum EnumMap.
-Import GRing.Theory Order.Theory.
+Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope order_scope.
 
@@ -40,6 +40,17 @@ Definition operational_rational_iter_approx (fuel : nat) : MF bool :=
     FreeOmegaMixedMeasureInterface
     FreeOmegaObservableSemanticOmegaInterface rat bool fuel
     binary_coin_transition q.
+
+Definition operational_rational_head_approx (fuel : nat) : MF rational_head :=
+  @sem_bind MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface)) _ _
+    (operational_rational_iter_approx fuel)
+    (fun b => @sem_ret MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface)) rational_head (FHRet b)).
 
 Definition operational_rational_limit : MF bool :=
   FOLub operational_rational_iter_approx.
@@ -165,6 +176,60 @@ Definition operational_rational_direct_observation : Enum bool :=
   @sem_bind Enum Enum_SemanticMeasureInterface _ _
     (rational_bernoulli_measure q0 q1)
     (fun b => @sem_ret Enum Enum_SemanticMeasureInterface bool b).
+
+(** The implementation and specification already differ at finite fuel.
+    One unit of primitive fuel exposes exactly one binary-algorithm round on
+    the left, whereas it exposes the complete direct sample on the right.
+    Their bisimulation below therefore arises only after the left-hand
+    omega limit; it is not lockstep equality of two copied schedules. *)
+Lemma operational_rational_coin_hitting_one :
+  operational_hitting_approx (MF := MF) 1
+      (observe (binary_rational_coin q)) =
+    operational_rational_head_approx 1.
+Proof.
+  unfold binary_rational_coin.
+  change (free_primitive_iter_hitting
+      (E := rational_coinE) binary_coin_transition 1 q =
+    operational_rational_head_approx 1).
+  rewrite free_primitive_iter_hitting_succ.
+  unfold operational_rational_head_approx,
+    operational_rational_iter_approx.
+  cbv [mixed_iter_approx sem_bind mixed_bind sem_ret free_omega_bind
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaSemanticMeasureInterface].
+  f_equal. apply functional_extensionality. intros [x|b]; reflexivity.
+Qed.
+
+Lemma operational_rational_direct_hitting_one :
+  operational_hitting_approx (MF := MF) 1
+      (observe operational_rational_direct) =
+    operational_rational_direct_heads.
+Proof. reflexivity. Qed.
+
+Lemma operational_rational_first_round_mass :
+  enum_expect (fun _ : bool => (1 : rat))
+    (meas_iter_approx 1 binary_coin_transition q) = 1 / 2.
+Proof.
+  rewrite /meas_iter_approx /binary_coin_transition.
+  case: (q < 1 / 2); rewrite /= !mulr1 !addr0; reflexivity.
+Qed.
+
+(** In particular, the first implementation prefix is a strict
+    subdistribution, while the direct specification is already total. *)
+Lemma operational_rational_first_round_not_direct :
+  meas_iter_approx 1 binary_coin_transition q <>
+    rational_bernoulli_measure q0 q1.
+Proof.
+  intro Heq.
+  pose proof (rational_bernoulli_total q0 q1) as Htotal.
+  change (enum_expect (fun _ : bool => (1 : rat))
+    (rational_bernoulli_measure q0 q1) = 1) in Htotal.
+  rewrite <- Heq, operational_rational_first_round_mass in Htotal.
+  have Hlt : (1 / 2 : rat) < 1.
+  { apply ltr_pdivrMr. exact (@ltr0Sn rat 1). }
+  rewrite Htotal ltxx in Hlt. discriminate Hlt.
+Qed.
 
 Lemma operational_rational_heads_observes :
   free_omega_observes operational_rational_head_value
@@ -323,7 +388,7 @@ Theorem operational_binary_rational_coin_bisim_direct :
     FreeOmegaObservableSemanticOmegaInterface bool bool eq
     (binary_rational_coin q) operational_rational_direct.
 Proof.
-  apply operational_bisim_fold. eapply OPBStable.
+  eapply operational_bisim_of_ast_lift.
   - exact operational_rational_coin_ast.
   - exact operational_rational_direct_ast.
   - exact operational_rational_heads_lift.
