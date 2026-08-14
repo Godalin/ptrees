@@ -199,6 +199,199 @@ Proof.
   exact (free_operational_bind_ret_map_approx_cofinal t f).
 Qed.
 
+Section NestedNoEventGrid.
+Context {I A R : Type}.
+Variable no_event : forall X, E X -> False.
+Variable sample : ptree E MN A.
+Variable round : I -> A -> I + R.
+
+Definition free_no_event_head_value
+    (h : frontier_head E MN A) : A :=
+  match h with
+  | FHRet a => a
+  | @FHVis _ _ _ X e _ => False_rect A (no_event e)
+  end.
+
+(** [outer] bounds how many completed sampler results may be consumed;
+    [inner] bounds primitive execution inside every sampler invocation. *)
+Fixpoint free_nested_execution_grid (outer inner : nat) (i : I) :
+    MF (frontier_head E MN R) :=
+  match outer with
+  | O => FOZero
+  | Datatypes.S outer' =>
+      free_omega_bind
+        (operational_hitting_approx (MF := MF) inner (observe sample))
+        (fun h =>
+          match round i (free_no_event_head_value h) with
+          | inl i' => free_nested_execution_grid outer' inner i'
+          | inr r => FORet (FHRet r)
+          end)
+  end.
+
+(** The corresponding row limit replaces the finite inner hitting chain by
+    its complete AST output, while retaining finite outer fuel. *)
+Fixpoint free_nested_row_out
+    (sample_out : MF (frontier_head E MN A))
+    (outer : nat) (i : I) : MF (frontier_head E MN R) :=
+  match outer with
+  | O => FOZero
+  | Datatypes.S outer' =>
+      free_omega_bind sample_out (fun h =>
+        match round i (free_no_event_head_value h) with
+        | inl i' => free_nested_row_out sample_out outer' i'
+        | inr r => FORet (FHRet r)
+        end)
+  end.
+
+Lemma free_nested_execution_grid_inner_increasing outer :
+  forall i inner,
+    free_omega_approx eq
+      (free_nested_execution_grid outer inner i)
+      (free_nested_execution_grid outer (Datatypes.S inner) i).
+Proof.
+  induction outer as [|outer IH]; intros i inner.
+  - constructor.
+  - cbn [free_nested_execution_grid].
+    eapply free_omega_approx_bind with (R := eq) (T := eq).
+    + apply free_operational_hitting_mono. apply le_S, le_n.
+    + intros h1 h2 ->.
+      destruct (round i (free_no_event_head_value h2)) as [i'|r].
+      * apply IH.
+      * apply free_omega_approx_refl. intros x. reflexivity.
+Qed.
+
+Lemma free_nested_execution_grid_outer_increasing inner :
+  forall outer i,
+    free_omega_approx eq
+      (free_nested_execution_grid outer inner i)
+      (free_nested_execution_grid (Datatypes.S outer) inner i).
+Proof.
+  induction outer as [|outer IH]; intro i.
+  - constructor.
+  - cbn [free_nested_execution_grid].
+    eapply free_omega_approx_bind with (R := eq) (T := eq).
+    + apply free_omega_approx_refl. intros h. reflexivity.
+    + intros h1 h2 ->.
+      destruct (round i (free_no_event_head_value h2)) as [i'|r].
+      * apply IH.
+      * apply free_omega_approx_refl. intros x. reflexivity.
+Qed.
+
+Lemma free_nested_execution_grid_row_lub
+    (sample_out : MF (frontier_head E MN A))
+    (Hsample : @operational_weak E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A
+      (observe sample) sample_out) :
+  forall outer i,
+    @sem_lub MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface _
+      (fun inner => free_nested_execution_grid outer inner i)
+      (free_nested_row_out sample_out outer i).
+Proof.
+  induction outer as [|outer IH]; intro i.
+  - cbn [free_nested_execution_grid free_nested_row_out].
+    apply sem_lub_constant.
+  - cbn [free_nested_execution_grid free_nested_row_out].
+    change (@sem_lub MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface _
+      (fun inner => @sem_bind MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        _ _ (operational_hitting_approx (MF := MF) inner (observe sample))
+        (fun h => match round i (free_no_event_head_value h) with
+          | inl i' => free_nested_execution_grid outer inner i'
+          | inr r => FORet (FHRet r)
+          end))
+      (@sem_bind MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        _ _ sample_out
+        (fun h => match round i (free_no_event_head_value h) with
+          | inl i' => free_nested_row_out sample_out outer i'
+          | inr r => FORet (FHRet r)
+          end))).
+    eapply sem_bind_diagonal_lub.
+    + apply (operational_hitting_increasing
+        (FI := FreeOmegaObservableSemanticMeasureInterface)
+        (MX := FreeOmegaMixedMeasureInterface)
+        (FO := FreeOmegaObservableSemanticOmegaInterface)).
+    + intro h. destruct (round i (free_no_event_head_value h)) as [i'|r].
+      * intro inner. apply free_nested_execution_grid_inner_increasing.
+      * intro inner. apply free_omega_approx_refl. intros x. reflexivity.
+    + exact Hsample.
+    + intro h. destruct (round i (free_no_event_head_value h)) as [i'|r].
+      * apply IH.
+      * apply sem_lub_constant.
+Qed.
+
+Theorem free_nested_execution_grid_diagonal_lub
+    (sample_out : MF (frontier_head E MN A))
+    (Hsample : @operational_weak E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A
+      (observe sample) sample_out)
+    (i : I) out :
+  @sem_lub MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (fun outer => free_nested_row_out sample_out outer i) out ->
+  @sem_lub MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (fun fuel => free_nested_execution_grid fuel fuel i) out.
+Proof.
+  intro Houter.
+  refine (@sem_lub_double_diagonal MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface
+    FreeOmegaObservableSemanticOmegaFubiniLaws (frontier_head E MN R)
+    (fun outer inner => free_nested_execution_grid outer inner i)
+    (fun outer => free_nested_row_out sample_out outer i) out _ _ _ _).
+  - intros outer inner. apply free_nested_execution_grid_inner_increasing.
+  - intros inner outer. apply free_nested_execution_grid_outer_increasing.
+  - intro outer. apply free_nested_execution_grid_row_lub. exact Hsample.
+  - exact Houter.
+Qed.
+
+Theorem free_operational_weak_of_nested_no_event_grid
+    (program : ptree E MN R)
+    (sample_out : MF (frontier_head E MN A))
+    (Hsample : @operational_weak E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A
+      (observe sample) sample_out)
+    (i : I) out :
+  @operational_hitting_diagonal_cofinal E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R (observe program)
+    (fun outer inner => free_nested_execution_grid outer inner i) ->
+  @sem_lub MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (fun outer => free_nested_row_out sample_out outer i) out ->
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R
+    (observe program) out.
+Proof.
+  intros Hdiagonal Houter.
+  eapply operational_weak_of_nested_grid
+    with (row_out := fun outer => free_nested_row_out sample_out outer i).
+  - exact Hdiagonal.
+  - intros outer inner. apply free_nested_execution_grid_inner_increasing.
+  - intros inner outer. apply free_nested_execution_grid_outer_increasing.
+  - intro outer. apply free_nested_execution_grid_row_lub. exact Hsample.
+  - exact Houter.
+Qed.
+
+End NestedNoEventGrid.
+
 Lemma free_operational_bind_vis_approx_cofinal {A R X}
     (e : E X) (c : X -> ptree E MN A) (k : A -> ptree E MN R) :
   free_operational_bind_approx_cofinal (Vis e c) k.
