@@ -210,7 +210,9 @@ Polymorphic Class SemanticOmegaCofinalityLaws@{carrier representation}
     `{SO : @SemanticOmegaInterface S SI} := {
   sem_lub_zero_prefix : forall {A : Type@{carrier}}
       (chain : nat -> S A) out,
-      sem_lub chain out <-> sem_lub (sem_zero_prefix chain) out
+      sem_lub chain out <-> sem_lub (sem_zero_prefix chain) out;
+  sem_lub_constant : forall {A : Type@{carrier}} (mu : S A),
+      sem_lub (fun _ => mu) mu
 }.
 
 (** Monotone convergence across the two measure levels.  This is the exact

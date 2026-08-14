@@ -103,6 +103,11 @@ condition is listed explicitly, the referenced result is proved without an
   Consequently `operational_weak_prob` and `operational_ast_weak_prob` prove
   the native Prob soundness rule from primitive fuel recurrence and monotone
   convergence, without importing the frontier's `UFProb` constructor.
+  Cofinality also records the constant-chain law, yielding checked
+  `operational_weak_ret` and `operational_weak_vis` theorems.  Thus all four
+  primitive PTree observations now have sound unbounded hitting laws; the
+  remaining frontier soundness gap is specifically compositional Bind and
+  the diagonal/cofinal comparison for syntactic iteration.
 
 ## Measure semantics and coupling
 

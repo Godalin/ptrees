@@ -276,6 +276,40 @@ Qed.
 
 End OperationalWeakExistence.
 
+Section OperationalStableSoundness.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}.
+
+Theorem operational_weak_ret {R} (r : R) :
+  operational_weak (MF := MF) (RetF r)
+    (sem_ret (FHRet r : frontier_head E MN R)).
+Proof.
+  unfold operational_weak. eapply sem_lub_chain_proper.
+  - intro n. apply sem_eq_sym. apply operational_hitting_ret.
+  - apply sem_lub_constant.
+Qed.
+
+Theorem operational_weak_vis {R X} (e : E X)
+    (k : X -> ptree E MN R) :
+  operational_weak (MF := MF) (VisF e k)
+    (sem_ret (FHVis e k : frontier_head E MN R)).
+Proof.
+  unfold operational_weak. eapply sem_lub_chain_proper.
+  - intro n. apply sem_eq_sym. apply operational_hitting_vis.
+  - apply sem_lub_constant.
+Qed.
+
+End OperationalStableSoundness.
+
 Section OperationalTauSoundness.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}

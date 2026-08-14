@@ -498,7 +498,10 @@ Polymorphic Inductive free_omega_qlift {MN}
         (FOSample mu out)
         (FOLub (fun n => FOSample mu (fun x => chain x n)))
   | FOQLSampleZero {C} (mu : MN C) :
-      free_omega_qlift R (FOSample mu (fun _ => FOZero)) FOZero.
+      free_omega_qlift R (FOSample mu (fun _ => FOZero)) FOZero
+  | FOQLLubConstantR (mu : FreeOmega MN A) (nu : FreeOmega MN B) :
+      free_omega_qlift R mu nu ->
+      free_omega_qlift R mu (FOLub (fun _ => nu)).
 
 #[global] Polymorphic Instance FreeOmegaObservableSemanticMeasureInterface
     {MN} `{NI : SemanticMeasureInterface MN}
@@ -684,16 +687,19 @@ Qed.
       (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticOmegaInterface.
 Proof.
-  constructor. intros A chain out. cbn. split; intro Hlim.
-  - eapply (@sem_eq_trans _
+  constructor.
+  - intros A chain out. cbn. split; intro Hlim.
+    + eapply (@sem_eq_trans _
       (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hlim|].
-    apply FOQLLubZeroPrefixR. intro n.
-    apply free_omega_qlift_refl. intros x. reflexivity.
-  - eapply (@sem_eq_trans _
+      apply FOQLLubZeroPrefixR. intro n.
+      apply free_omega_qlift_refl. intros x. reflexivity.
+    + eapply (@sem_eq_trans _
       (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hlim|].
-    apply FOQLLubZeroPrefixL. intro n.
+      apply FOQLLubZeroPrefixL. intro n.
+      apply free_omega_qlift_refl. intros x. reflexivity.
+  - intros A mu. cbn. apply FOQLLubConstantR.
     apply free_omega_qlift_refl. intros x. reflexivity.
 Qed.
 
