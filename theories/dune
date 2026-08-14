@@ -6,6 +6,8 @@
  (modules
   (:standard
    \ Eq.EquNew Eq.Trans Eq.PSSim
+   ;; Superseded Paco-era PTree definition and its structural relation.
+   Core.PTreeDefinitionPa Eq.Shallow Eq.Equ
    ;; Legacy Enum-only weak relation.  The maintained replacement is the
    ;; extensional MeasureInterface-based PWeakAbstract hierarchy.
    Eq.PFrontier Eq.PWeak Eq.PWeakFacts Eq.PWeakTrans
