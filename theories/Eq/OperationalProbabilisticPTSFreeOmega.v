@@ -95,6 +95,110 @@ Proof.
   apply free_operational_bind_ret_approx_cofinal.
 Qed.
 
+(** Binding a pure continuation does not introduce a second unbounded
+    computation.  Stable heads are mapped immediately, so global primitive
+    fuel and diagonal bind fuel coincide rather than merely being cofinal. *)
+Definition free_pure_head_bind {A R} (f : A -> R)
+    (h : frontier_head E MN A) : frontier_head E MN R :=
+  match h with
+  | FHRet a => FHRet (f a)
+  | @FHVis _ _ _ X e c =>
+      FHVis e (fun x => PTree.bind (c x) (fun a => Ret (f a)))
+  end.
+
+Lemma free_operational_hitting_bind_ret_map {A R}
+    (t : ptree E MN A) (f : A -> R) fuel :
+  operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.bind t (fun a => Ret (f a)))) =
+  free_omega_bind
+    (operational_hitting_approx (MF := MF) fuel (observe t))
+    (fun h => FORet (free_pure_head_bind f h)).
+Proof.
+  revert t. induction fuel as [|fuel IH]; intro t;
+    rewrite observe_bind; remember (observe t) as ot eqn:Hot;
+    destruct ot as [a|u|X e c|X mu c].
+  - reflexivity.
+  - cbn [operational_hitting_approx operational_kernel].
+    reflexivity.
+  - reflexivity.
+  - change (FOSample mu (fun _ : X => FOZero) =
+      free_omega_bind (FOSample mu (fun _ : X => FOZero))
+        (fun h => FORet (free_pure_head_bind f h))).
+    reflexivity.
+  - reflexivity.
+  - cbn [observe operational_hitting_approx operational_kernel].
+    exact (IH u).
+  - reflexivity.
+  - change (FOSample mu (fun x => operational_hitting_approx (MF := MF)
+        fuel (observe (PTree.bind (c x) (fun a => Ret (f a))))) =
+      free_omega_bind
+        (FOSample mu (fun x => operational_hitting_approx (MF := MF)
+          fuel (observe (c x))))
+        (fun h => FORet (free_pure_head_bind f h))).
+    cbn [free_omega_bind].
+    f_equal. apply functional_extensionality. intro x.
+    exact (IH (c x)).
+Qed.
+
+Lemma free_operational_head_bind_ret_map {A R}
+    (f : A -> R) fuel (h : frontier_head E MN A) :
+  operational_head_bind_approx (MF := MF) fuel
+    (fun a => Ret (f a)) h = FORet (free_pure_head_bind f h).
+Proof.
+  destruct h as [a|X e c].
+  - cbn [operational_head_bind_approx free_pure_head_bind].
+    assert (Hret : observe (Ret (f a) : ptree E MN R) = RetF (f a))
+      by reflexivity.
+    rewrite Hret. unfold operational_hitting_approx, operational_kernel.
+    cbn. rewrite operational_target_stableE. reflexivity.
+  - reflexivity.
+Qed.
+
+Lemma free_operational_bind_ret_diagonal_map {A R}
+    (t : ptree E MN A) (f : A -> R) fuel :
+  operational_bind_diagonal_approx (MF := MF) fuel t
+      (fun a => Ret (f a)) =
+  free_omega_bind
+    (operational_hitting_approx (MF := MF) fuel (observe t))
+    (fun h => FORet (free_pure_head_bind f h)).
+Proof.
+  unfold operational_bind_diagonal_approx.
+  change (free_omega_bind
+    (operational_hitting_approx (MF := MF) fuel (observe t))
+    (operational_head_bind_approx (MF := MF) fuel
+      (fun a => Ret (f a))) =
+    free_omega_bind
+      (operational_hitting_approx (MF := MF) fuel (observe t))
+      (fun h => FORet (free_pure_head_bind f h))).
+  f_equal. apply functional_extensionality. intro h.
+  apply free_operational_head_bind_ret_map.
+Qed.
+
+Theorem free_operational_bind_ret_map_approx_cofinal {A R}
+    (t : ptree E MN A) (f : A -> R) :
+  free_operational_bind_approx_cofinal t (fun a => Ret (f a)).
+Proof.
+  split; intro fuel; exists fuel.
+  - rewrite free_operational_hitting_bind_ret_map,
+      free_operational_bind_ret_diagonal_map.
+    apply free_omega_approx_refl. intros h. reflexivity.
+  - rewrite free_operational_hitting_bind_ret_map,
+      free_operational_bind_ret_diagonal_map.
+    apply free_omega_approx_refl. intros h. reflexivity.
+Qed.
+
+Corollary free_operational_bind_ret_map_cofinal {A R}
+    (t : ptree E MN A) (f : A -> R) :
+  @operational_bind_cofinal E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A R t
+    (fun a => Ret (f a)).
+Proof.
+  apply free_operational_bind_cofinal.
+  exact (free_operational_bind_ret_map_approx_cofinal t f).
+Qed.
+
 Lemma free_operational_bind_vis_approx_cofinal {A R X}
     (e : E X) (c : X -> ptree E MN A) (k : A -> ptree E MN R) :
   free_operational_bind_approx_cofinal (Vis e c) k.
@@ -292,11 +396,15 @@ Definition free_operational_iter_approx_cofinal {I R}
     (fun rounds => operational_iter_round_approx (MF := MF)
       rounds transition i).
 
-(** Finite, proof-relevant productivity data.  A certificate does more than
+(** Finite, proof-relevant productivity data for bounded-cost iterations.
+    A certificate does more than
     assert equality of two omega limits: it exhibits how much structured
     round fuel is sufficient for each operational fuel, and conversely.
-    For nested samplers these schedules are where uniform/AE-uniform bounds
-    must be supplied; the generic omega theory does not invent them. *)
+    This is deliberately only a sufficient condition.  A genuinely
+    unbounded nested sampler generally cannot provide the reverse finite
+    schedule: no finite inner fuel contains its complete AST output measure.
+    Such programs require diagonal/Fubini continuity of the two omega
+    limits, rather than a maximum finite fuel. *)
 Record free_operational_iter_productivity_certificate {I R}
     (step : I -> ptree E MN (I + R))
     (transition : I -> MN (I + R)) (i : I) := {
