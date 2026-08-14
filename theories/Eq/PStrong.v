@@ -126,6 +126,14 @@ Proof.
     + apply meas_lift_refl. unfold Reflexive. reflexivity.
 Qed.
 
+(** Intensional structural identity is contained in strong probabilistic
+    bisimilarity.  This is the axiom-free left edge of the maintained
+    hierarchy; the former coinductive [equ] development is legacy code and
+    is not used by the probabilistic theory. *)
+Lemma eq_pstrong {R : Type} (t1 t2 : ptree E M R) :
+  t1 = t2 -> pstrong eq t1 t2.
+Proof. move=> ->. exact: pstrong_refl. Qed.
+
 Lemma pstrong_sym {R1 R2 : Type} (RR : R1 -> R2 -> Prop)
     (t1 : ptree E M R1) (t2 : ptree E M R2) :
   pstrong RR t1 t2 ->
