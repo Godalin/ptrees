@@ -35,9 +35,10 @@ condition is listed explicitly, the referenced result is proved without an
   introduction theorem are checked without referring to the legacy weak
   relations.  `UnifiedFrontierCoherence` makes the two additional conditions
   needed by transitivity explicit: extensional frontier uniqueness and Tau
-  inversion.  Under that package, arbitrary frontiers can be matched and
-  matching composes through `sem_lift_comp`; transitivity itself is the next
-  migration step rather than an implicit assumption.
+  inversion.  `Eq/UnifiedPWeakTrans.v` proves relational composition and
+  transitivity under exactly that package, using `MF` gluing for frontier
+  couplings and `MN` gluing for primitive probabilistic residuals; consequently
+  `weak_bisim eq` is an `Equivalence` whenever coherence is available.
 - `Eq/UnifiedPWeakEnumFacts.v` proves that every established Enum `auweak`
   derivation maps to the new `weak_bisim`, translating both directions of
   frontier matching and pushing old head couplings through the representation

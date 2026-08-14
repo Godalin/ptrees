@@ -289,6 +289,84 @@ Qed.
 
 End UnifiedFrontierCoherentFacts.
 
+Section UnifiedWeakCoherentTauInversion.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{UC : @UnifiedFrontierCoherence E MN MF NI FI MX FO}.
+
+Lemma weak_bisimF_inv_tau_l_step {R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E MN R1) (ot2 : ptree' E MN R2) :
+  weak_bisimF RR (weak_bisim RR) (TauF t1) ot2 ->
+  weak_bisimF RR (weak_bisim RR) (observe t1) ot2.
+Proof.
+  intros Hstep. remember (TauF t1) as lhs eqn:Elhs in Hstep.
+  dependent induction Hstep; try discriminate.
+  - dependent destruction Elhs.
+    eapply UWBFrontier;
+      [exact (unified_frontier_tau_inv H)|exact H0|exact H1].
+  - injection Elhs as Et. subst t0.
+    apply UWBTauR. exact (weak_bisim_unfold H0).
+  - injection Elhs as Et. subst t0. exact Hstep.
+  - apply UWBTauR. eapply IHHstep; eauto.
+Qed.
+
+Lemma weak_bisimF_inv_tau_r_step {R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (ot1 : ptree' E MN R1) (t2 : ptree E MN R2) :
+  weak_bisimF RR (weak_bisim RR) ot1 (TauF t2) ->
+  weak_bisimF RR (weak_bisim RR) ot1 (observe t2).
+Proof.
+  intros Hstep. remember (TauF t2) as rhs eqn:Erhs in Hstep.
+  dependent induction Hstep; try discriminate.
+  - dependent destruction Erhs.
+    eapply UWBFrontier;
+      [exact H|exact (unified_frontier_tau_inv H0)|exact H1].
+  - injection Erhs as Et. subst t2.
+    apply UWBTauL. exact (weak_bisim_unfold H0).
+  - apply UWBTauL. eapply IHHstep; eauto.
+  - injection Erhs as Et. subst t2. exact Hstep.
+Qed.
+
+Lemma weak_bisim_inv_tau_r {R1 R2} (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
+  weak_bisim RR t1 (Tau t2) -> weak_bisim RR t1 t2.
+Proof.
+  revert t1 t2. unfold weak_bisim at 2. coinduction CH CIH.
+  intros t1' t2' Hrel. unfold weak_bisim_body.
+  eapply (weak_bisimF_monotone
+    (sim1 := weak_bisim RR) (sim2 := elem CH)).
+  - intros u v Huv. apply (gfp_chain (b := funified_weak RR) CH). exact Huv.
+  - exact (weak_bisimF_inv_tau_r_step (weak_bisim_unfold Hrel)).
+Qed.
+
+Lemma weak_bisim_inv_tau_l {R1 R2} (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
+  weak_bisim RR (Tau t1) t2 -> weak_bisim RR t1 t2.
+Proof.
+  revert t1 t2. unfold weak_bisim at 2. coinduction CH CIH.
+  intros t1' t2' Hrel. unfold weak_bisim_body.
+  eapply (weak_bisimF_monotone
+    (sim1 := weak_bisim RR) (sim2 := elem CH)).
+  - intros u v Huv. apply (gfp_chain (b := funified_weak RR) CH). exact Huv.
+  - exact (weak_bisimF_inv_tau_l_step (weak_bisim_unfold Hrel)).
+Qed.
+
+Lemma weak_bisim_inv_tau {R1 R2} (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
+  weak_bisim RR (Tau t1) (Tau t2) -> weak_bisim RR t1 t2.
+Proof.
+  intro H. apply weak_bisim_inv_tau_l in H.
+  exact (weak_bisim_inv_tau_r H).
+Qed.
+
+End UnifiedWeakCoherentTauInversion.
+
 Section UnifiedWeakReflexivity.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
