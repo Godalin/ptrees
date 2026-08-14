@@ -98,6 +98,23 @@ Definition free_omega_chains_cofinal {MN}
   (forall m, exists n, free_omega_approx (fun y x => R x y)
     (right m) (left n)).
 
+Lemma free_omega_approx_bind {MN}
+    `{NI : SemanticMeasureInterface MN} {A B C D}
+    (R : A -> B -> Prop) (T : C -> D -> Prop)
+    (mu : FreeOmega MN A) (nu : FreeOmega MN B)
+    (k : A -> FreeOmega MN C) (h : B -> FreeOmega MN D) :
+  free_omega_approx R mu nu ->
+  (forall x y, R x y -> free_omega_approx T (k x) (h y)) ->
+  free_omega_approx T (free_omega_bind mu k) (free_omega_bind nu h).
+Proof.
+  intros Happrox Hkh. induction Happrox; cbn.
+  - constructor.
+  - exact (Hkh _ _ H).
+  - eapply FOApproxSample; [exact H|].
+    intros x y Hxy. exact (H1 x y Hxy).
+  - apply FOApproxLub. exact H0.
+Qed.
+
 (** Relational interpretation into a low-universe observable distribution.
     It is relational because an abstract omega interface specifies limits by
     [sem_lub] rather than by a choice function. *)
@@ -410,7 +427,7 @@ Qed.
       (FreeOmegaSemanticMeasureInterface (NI := NI)).
 Proof.
   intros NO. refine {| sem_zero := @FOZero MN;
-    sem_le := fun A _ _ => True;
+    sem_le := fun A => @free_omega_approx MN NI A A eq;
     sem_lub := fun A chain out =>
       @sem_eq (FreeOmega MN)
         (FreeOmegaSemanticMeasureInterface (NI := NI)) A
@@ -459,7 +476,13 @@ Qed.
       (FreeOmegaSemanticMeasureInterface (NI := NI))
       (FreeOmegaSemanticOmegaInterface (NO := NO)).
 Proof.
-  intros NO. constructor; intros; exact I.
+  intros NO. constructor.
+  - intros A mu. apply free_omega_approx_refl. intros x. reflexivity.
+  - intros A mu. constructor.
+  - intros A B mu k h Hkh.
+    eapply free_omega_approx_bind with (R := eq) (T := eq).
+    + apply free_omega_approx_refl. intros x. reflexivity.
+    + intros x y ->. apply Hkh.
 Qed.
 
 End FreeOmegaLaws.
@@ -681,7 +704,7 @@ Qed.
     @SemanticOmegaInterface (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)) := {
   sem_zero := @FOZero MN;
-  sem_le := fun A _ _ => True;
+  sem_le := fun A => @free_omega_approx MN NI A A eq;
   sem_lub := fun A chain out =>
     @sem_eq (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)) A
@@ -799,6 +822,14 @@ Qed.
     @SemanticMeasureOrderLaws (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticOmegaInterface.
-Proof. constructor; intros; exact I. Qed.
+Proof.
+  constructor.
+  - intros A mu. apply free_omega_approx_refl. intros x. reflexivity.
+  - intros A mu. constructor.
+  - intros A B mu k h Hkh.
+    eapply free_omega_approx_bind with (R := eq) (T := eq).
+    + apply free_omega_approx_refl. intros x. reflexivity.
+    + intros x y ->. apply Hkh.
+Qed.
 
 End FreeOmegaObservableLaws.

@@ -141,6 +141,12 @@ condition is listed explicitly, the referenced result is proved without an
   `free_operational_bind_ret_approx_cofinal`; Tau/Prob and general iteration
   now reduce to finite fuel monotonicity and index-bound proofs rather than
   assumed weak-transition rules.
+  FreeOmega's semantic order is no longer the placeholder `True`: both its
+  structural and observation-closed omega interfaces use
+  `free_omega_approx eq`.  Reflexivity, bottom, and continuation-bind
+  monotonicity are proved structurally (`free_omega_approx_bind`), so the
+  operational hitting-chain increasing theorem now carries genuine finite
+  subbehavior content in the maintained unbounded backend.
 
 ## Measure semantics and coupling
 
