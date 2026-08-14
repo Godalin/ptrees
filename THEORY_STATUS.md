@@ -92,8 +92,19 @@ condition is listed explicitly, the referenced result is proved without an
   separates `M`'s sampled-carrier and measure-representation universes and
   successfully constructs a PTree probability node from
   `MathCompKernelMeasure` and a real Bernoulli kernel.  This confirms the
-  required signature change before the maintained frontier hierarchy is
-  migrated.
+  required node-level signature change.  The same file now records two
+  further compile-time boundaries: the same fixed `M` cannot measure a
+  frontier head containing its recursive tree, while an abstract two-level
+  `(MN, MF)` signature can.  `TwoLevelMeasureInterface` isolates the mixed
+  operation required by the probabilistic frontier rule: integrating an
+  `MF`-valued frontier kernel against an `MN` node measure.  Finally, a
+  checked negative probe shows that the current monomorphic-universe
+  `MathCompKernelMeasure` cannot be instantiated independently as both `MN`
+  and `MF`.  End-to-end MathComp `auweak` therefore requires either a
+  universe-polymorphic backend refactor or two generated backend layers,
+  followed by proofs of this mixed bind and the existing coupling/omega
+  laws.  This is an explicit backend boundary, not an assumed real-valued
+  program equivalence.
 
 ## Deliberately deferred
 
