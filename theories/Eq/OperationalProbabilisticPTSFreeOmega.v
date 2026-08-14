@@ -361,6 +361,18 @@ Proof.
       * apply pstructural_refl.
 Qed.
 
+Lemma free_nested_program_hitting_unfold (fuel : nat) (i : I) :
+  free_omega_lift eq
+    (operational_hitting_approx (MF := MF) fuel
+      (observe (free_nested_program i)))
+    (operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.bind sample (free_nested_after i)))).
+Proof.
+  apply free_operational_hitting_pstructural_no_event.
+  - exact no_event.
+  - apply free_nested_program_unfold_structural.
+Qed.
+
 Definition free_no_event_head_value
     (h : frontier_head E MN A) : A :=
   match h with
