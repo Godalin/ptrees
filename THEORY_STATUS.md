@@ -88,6 +88,12 @@ condition is listed explicitly, the referenced result is proved without an
   systematic universe-polymorphism refactor.  The experimental MathComp PTree
   clients are excluded from the default installed theory; the checked Enum
   cases provide the current end-to-end program equivalences.
+- `Experimental/UniverseSeparatedPTree.v` is a checked migration probe.  It
+  separates `M`'s sampled-carrier and measure-representation universes and
+  successfully constructs a PTree probability node from
+  `MathCompKernelMeasure` and a real Bernoulli kernel.  This confirms the
+  required signature change before the maintained frontier hierarchy is
+  migrated.
 
 ## Deliberately deferred
 
