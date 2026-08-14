@@ -4,6 +4,23 @@ This file maps the maintained theory to its checked Coq artifacts.  Unless a
 condition is listed explicitly, the referenced result is proved without an
 `Admitted` axiom in the default installed theory.
 
+## Two-level unified-frontier migration
+
+- `Prob/TwoLevelMeasure.v` introduces the universe-polymorphic model now used
+  for the next API: node measures `MN` and semantic/frontier measures `MF`
+  are independent, connected only by an explicit mixed bind and its
+  extensional/coupling laws.  Omega order and continuity are capabilities of
+  `MF`, not assumptions built into PTree syntax.
+- `Eq/UnifiedFrontier.v` defines one public `frontier` judgment.  Finite
+  `Ret`/`Vis`/`Tau`/`Prob` derivations are native rules rather than an
+  `AUFFinite` wrapper; AST iteration uses `MN`-to-`MF` finite approximants and
+  an `MF` omega limit.
+- `Prob/TwoLevelMeasureEnum.v` is the first concrete model, with
+  `MN = MF = Enum`.  `Examples/UnifiedFrontierEnum.v` checks the new semantics
+  on the existing split-mass regression.  The established `apfrontier` and
+  `aufrontier` hierarchy below remains the maintained compatibility baseline
+  while equivalence, PTS and examples are migrated incrementally.
+
 ## Measure semantics and coupling
 
 - `Prob/FrontierLift.v` defines the backend-independent `MeasureInterface`.
