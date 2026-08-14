@@ -927,6 +927,32 @@ Proof.
     eapply operational_weak_iter; eassumption.
 Qed.
 
+(** Soundness into the syntax-independent standard model.  The conclusion
+    mentions only the primitive PTree kernel adapter and generic stable
+    hitting; the structured frontier is used solely as a proof system on the
+    premise side. *)
+Theorem frontier_to_primitive_stable_weak {R}
+    (ot : ptree' E MN R) out :
+  frontier ot out ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R) ot out.
+Proof.
+  intro Hfront.
+  apply (proj2 (ptree_primitive_weak_adequate ot out)).
+  exact (frontier_to_operational_weak Hfront).
+Qed.
+
+Corollary frontier_to_primitive_stable_ast {R}
+    (ot : ptree' E MN R) out :
+  frontier ot out -> sem_total out ->
+  stable_hitting_ast
+    (@ptree_primitive_kernel E MN MF FI MX R) ot out.
+Proof.
+  intros Hfront Htotal. split.
+  - exact (frontier_to_primitive_stable_weak Hfront).
+  - exact Htotal.
+Qed.
+
 End FrontierOperationalSoundness.
 
 Section GuardedOperationalBisimulation.

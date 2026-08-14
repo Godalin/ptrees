@@ -180,6 +180,12 @@ condition is listed explicitly, the referenced result is proved without an
   `frontier_to_operational_weak` proves soundness for every unified frontier
   constructor. These premises contain no mirrored weak-transition rules;
   proving them structurally is the remaining adequacy task.
+  This conditional soundness now lands in the genuinely independent model:
+  `frontier_to_primitive_stable_weak` composes structured-frontier soundness
+  with pointwise PTree-kernel adequacy, and
+  `frontier_to_primitive_stable_ast` adds totality. Their conclusions mention
+  only `stable_hitting_weak/ast` for `ptree_primitive_kernel`; no frontier
+  constructor occurs on the semantic side.
 - `Examples/OperationalPTSExamples.v` is the first direct client of the
   independent model.  A genuinely nested two-sample Enum program and a
   differently shaped one-sample three-point program receive separate
