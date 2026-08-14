@@ -152,9 +152,13 @@ condition is listed explicitly, the referenced result is proved without an
   `Prob/FreeOmegaMeasure.v` supplies a separate universe-polymorphic formal
   behavior measure `MF`: MathComp samples remain low-universe nodes while
   results may contain recursive frontier heads at a higher universe.  Its
-  coupling is structural and composes by the node backend's gluing law.
-  Its extensional equality is equality-supported coupling rather than syntax
-  equality.  `SemanticMeasureAELiftLaws` isolates the diagonal-AE fact needed
+  structural coupling composes by the node backend's gluing law.  The
+  maintained MathComp frontier uses the observation-closed relation
+  `free_omega_qlift`: it is the least closure containing structural couplings
+  and couplings of low-universe observations, and closed under composition,
+  bind, mixed sampling, and formal lub.  Its extensional equality is therefore
+  semantic equality-supported coupling rather than syntax equality.
+  `SemanticMeasureAELiftLaws` isolates the diagonal-AE fact needed
   for Kleisli congruence; the MathComp adapter proves it from
   `almost_everywhere`, so FreeOmega provides checked AE bind, relational bind,
   and mixed-bind laws.
@@ -167,10 +171,12 @@ condition is listed explicitly, the referenced result is proved without an
   `Examples/UnifiedRealBernoulliMathComp.v`, every formal oracle approximant
   folds to the existing MathComp `meas_iter_approx`; the proved analytic lub
   is the genuine Bernoulli `q`, whose returned mass proves the `UFIter`
-  totality premise.  Thus the real oracle now has a checked unified AST
-  frontier.  A coupling quotient relating this formal-lub frontier to the
-  differently shaped direct-sample frontier is still needed for a final
-  `weak_bisim` theorem between the two programs.
+  totality premise.  Thus the real oracle has a checked unified AST frontier.
+  The observation-closed coupling then relates that formal-lub frontier to
+  the differently shaped direct-sample frontier.  The theorem
+  `unified_mathcomp_binary_oracle_weak_bisim_direct` proves that the unbounded
+  oracle program is weakly bisimilar to the terminating direct Bernoulli `q`
+  program (assuming the explicit MathComp coupling-gluing capability).
 - `Experimental/UniverseSeparatedPTree.v` is a checked migration probe.  It
   separates `M`'s sampled-carrier and measure-representation universes and
   successfully constructs a PTree probability node from
