@@ -76,4 +76,73 @@ Proof.
   - apply factory_fair_coin_pair_structural.
 Qed.
 
+Local Notation factory_head A := (frontier_head factoryE Enum A).
+
+Definition operational_factory_pair_heads : MF (factory_head (bool * bool)) :=
+  @mixed_bind Enum MF FreeOmegaMixedMeasureInterface bool _
+    (factory_biased_coin pfalse ptrue) (fun b1 =>
+      @mixed_bind Enum MF FreeOmegaMixedMeasureInterface bool _
+        (factory_biased_coin pfalse ptrue) (fun b2 =>
+          FORet (FHRet (b1, b2)))).
+
+Lemma operational_factory_pair_sample_weak :
+  @operational_weak factoryE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface (bool * bool)
+    (observe operational_factory_pair_sample)
+    operational_factory_pair_heads.
+Proof.
+  unfold operational_factory_pair_sample, operational_factory_pair_heads.
+  eapply operational_weak_prob with (Good := fun _ => True).
+  - apply sem_ae_true.
+  - intros b1 _. eapply operational_weak_prob with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros b2 _. apply operational_weak_ret.
+Qed.
+
+Definition operational_factory_fair_row (outer : nat) :
+    MF (factory_head bool) :=
+  free_nested_row_out factoryE_no_event operational_factory_pair_round
+    operational_factory_pair_heads outer tt.
+
+Definition operational_factory_fair_heads : MF (factory_head bool) :=
+  FOLub operational_factory_fair_row.
+
+Lemma operational_factory_pair_fair_weak :
+  @operational_weak factoryE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe operational_factory_pair_fair)
+    operational_factory_fair_heads.
+Proof.
+  unfold operational_factory_pair_fair, operational_factory_pair_step.
+  eapply free_operational_weak_of_canonical_nested
+    with (sample_out := operational_factory_pair_heads).
+  - exact operational_factory_pair_sample_weak.
+  - unfold operational_factory_fair_heads, operational_factory_fair_row.
+    apply free_omega_qlift_refl. intros h. reflexivity.
+Qed.
+
+Theorem operational_factory_fair_coin_weak :
+  @operational_weak factoryE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe (factory_fair_coin pfalse ptrue))
+    operational_factory_fair_heads.
+Proof.
+  apply (proj2 (free_operational_weak_pstructural_no_event
+    factoryE_no_event factory_fair_coin_pair_structural
+    operational_factory_fair_heads)).
+  exact operational_factory_pair_fair_weak.
+Qed.
+
 End FactoryOperationalNormalization.
