@@ -130,6 +130,24 @@ condition is listed explicitly, the referenced result is proved without an
   `OPBStable` directly.  The resulting
   `operational_reg_nested_merged_bisim` uses neither the mirrored PTS nor a
   transport from unified-frontier bisimulation.
+- The intended non-circular proof boundary is now exposed by
+  `operational_bisim_of_ast_lift`: the two programs establish AST from their
+  own primitive hitting chains (which may have different finite prefixes,
+  schedules, and FreeOmega representations), and only their resulting stable
+  distributions are coupled.  Requiring literally the same output is merely
+  the convenient special case `operational_bisim_of_common_ast`.  In
+  particular, the unbounded Von Neumann retry loop and the one-step fair
+  sampler do not share an operational design: the former needs a geometric
+  productivity/omega argument, while the latter is discharged by the native
+  Prob rule.  Their equivalence is nontrivial exactly at the limit-coupling
+  boundary, not because matching syntax was built on both sides.
+  The older `Examples/OperationalBernoulliFactory.v` is consequently kept as
+  migration material but excluded from the installed theory: its main loop
+  still enters through `pstructural` and the syntax-directed
+  `free_operational_weak_of_canonical_nested`.  The maintained p-to-q endpoint
+  is `Examples/OperationalRationalBernoulli.v`; re-admitting the older client
+  requires a direct primitive-hitting/cofinality proof, not another universe
+  specialization of the mirrored theorem.
 - `FreeOmegaMeasure.v` now contains the nontrivial finite subbehavior order
   `free_omega_approx` (zero is bottom; Ret/Sample/Lub structure is preserved)
   and mutual eventual coverage `free_omega_chains_cofinal`.  The
