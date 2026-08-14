@@ -2,9 +2,11 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
+Require Import Program.
+From Coinduction Require Import all.
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import TwoLevelMeasure.
-From PTree.Eq Require Import UnifiedFrontier.
+From PTree.Eq Require Import UnifiedFrontier UnifiedPWeak.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -273,3 +275,174 @@ Proof.
 Qed.
 
 End OperationalWeakExistence.
+
+Section GuardedOperationalBisimulation.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+
+Definition operational_ast_match
+    (sim : ptree E MN R1 -> ptree E MN R2 -> Prop)
+    (ot1 : ptree' E MN R1) (ot2 : ptree' E MN R2) : Prop :=
+  (forall out1, operational_ast_weak (MF := MF) ot1 out1 ->
+    exists out2, operational_ast_weak (MF := MF) ot2 out2 /\
+      sem_lift (frontier_head_rel RR sim) out1 out2) /\
+  (forall out2, operational_ast_weak (MF := MF) ot2 out2 ->
+    exists out1, operational_ast_weak (MF := MF) ot1 out1 /\
+      sem_lift (frontier_head_rel RR sim) out1 out2).
+
+Inductive operational_bisimF
+    (sim : ptree E MN R1 -> ptree E MN R2 -> Prop) :
+    ptree' E MN R1 -> ptree' E MN R2 -> Prop :=
+  | OPBStable ot1 ot2 out1 out2 :
+      operational_ast_weak (MF := MF) ot1 out1 ->
+      operational_ast_weak (MF := MF) ot2 out2 ->
+      sem_lift (frontier_head_rel RR sim) out1 out2 ->
+      operational_bisimF sim ot1 ot2
+  | OPBRet r1 r2 :
+      RR r1 r2 -> operational_bisimF sim (RetF r1) (RetF r2)
+  | OPBVis {X : Type} (e : E X) k1 k2 :
+      (forall x, sim (k1 x) (k2 x)) ->
+      operational_bisimF sim (VisF e k1) (VisF e k2)
+  | OPBTau t1 t2 :
+      operational_ast_match sim (TauF t1) (TauF t2) ->
+      sim t1 t2 -> operational_bisimF sim (TauF t1) (TauF t2)
+  | OPBProb {X Y : Type} (mu : MN X) (nu : MN Y) k1 k2 :
+      operational_ast_match sim (ProbF mu k1) (ProbF nu k2) ->
+      sem_lift (fun x y => sim (k1 x) (k2 y)) mu nu ->
+      operational_bisimF sim (ProbF mu k1) (ProbF nu k2)
+  | OPBTauL t1 ot2 :
+      operational_bisimF sim (observe t1) ot2 ->
+      operational_bisimF sim (TauF t1) ot2
+  | OPBTauR ot1 t2 :
+      operational_bisimF sim ot1 (observe t2) ->
+      operational_bisimF sim ot1 (TauF t2).
+
+Lemma operational_ast_match_mono sim1 sim2 ot1 ot2 :
+  (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
+  operational_ast_match sim1 ot1 ot2 ->
+  operational_ast_match sim2 ot1 ot2.
+Proof.
+  intros Hsim [HL HR]. split; intros out Hweak.
+  - destruct (HL _ Hweak) as [out' [Hweak' Hlift]].
+    exists out'. split; [exact Hweak'|].
+    eapply sem_lift_mono; [|exact Hlift].
+    exact (frontier_head_rel_mono Hsim).
+  - destruct (HR _ Hweak) as [out' [Hweak' Hlift]].
+    exists out'. split; [exact Hweak'|].
+    eapply sem_lift_mono; [|exact Hlift].
+    exact (frontier_head_rel_mono Hsim).
+Qed.
+
+Lemma operational_bisimF_monotone sim1 sim2 :
+  (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
+  forall ot1 ot2, operational_bisimF sim1 ot1 ot2 ->
+    operational_bisimF sim2 ot1 ot2.
+Proof.
+  intros Hsim ot1 ot2 Hstep. induction Hstep.
+  - eapply OPBStable; [exact H|exact H0|].
+    eapply sem_lift_mono; [|exact H1].
+    exact (frontier_head_rel_mono Hsim).
+  - apply OPBRet. exact H.
+  - apply OPBVis. intros x. exact (Hsim _ _ (H x)).
+  - apply OPBTau.
+    + exact (operational_ast_match_mono Hsim H).
+    + exact (Hsim _ _ H0).
+  - apply OPBProb.
+    + exact (operational_ast_match_mono Hsim H).
+    + eapply sem_lift_mono; [|exact H0].
+      intros x y Hxy. exact (Hsim _ _ Hxy).
+  - exact (OPBTauL IHHstep).
+  - exact (OPBTauR IHHstep).
+Qed.
+
+Definition operational_bisim_body sim
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) :=
+  operational_bisimF sim (observe t1) (observe t2).
+
+Program Definition foperational_bisim :
+    mon (ptree E MN R1 -> ptree E MN R2 -> Prop) :=
+  {| body := operational_bisim_body |}.
+Next Obligation.
+  intros sim1 sim2 Hsub t1 t2 Hstep.
+  eapply operational_bisimF_monotone; eauto.
+Qed.
+
+Definition operational_bisim :
+    ptree E MN R1 -> ptree E MN R2 -> Prop :=
+  gfp foperational_bisim.
+
+Lemma operational_bisim_unfold t1 t2 :
+  operational_bisim t1 t2 ->
+  operational_bisimF operational_bisim (observe t1) (observe t2).
+Proof.
+  intro H. apply (gfp_pfp foperational_bisim) in H. exact H.
+Qed.
+
+Lemma operational_bisim_fold t1 t2 :
+  operational_bisimF operational_bisim (observe t1) (observe t2) ->
+  operational_bisim t1 t2.
+Proof.
+  intro H. unfold operational_bisim.
+  apply (gfp_fp foperational_bisim). exact H.
+Qed.
+
+End GuardedOperationalBisimulation.
+
+Section GuardedOperationalReflexivity.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+
+Lemma operational_ast_match_refl {R}
+    (sim : ptree E MN R -> ptree E MN R -> Prop)
+    (Hhead : Reflexive (frontier_head_rel eq sim)) :
+  forall ot, operational_ast_match eq sim ot ot.
+Proof.
+  intro ot. split; intros out Hweak; exists out; split; auto.
+  all: apply sem_lift_refl; exact Hhead.
+Qed.
+
+Lemma operational_bisim_refl {R} :
+  Reflexive (@operational_bisim E MN MF NI FI NC FC MX FO R R eq).
+Proof.
+  intro t. revert t. unfold operational_bisim.
+  coinduction CH CIH. intro t.
+  unfold operational_bisim_body. set (ot := observe t).
+  change (operational_bisimF eq (elem CH) ot ot).
+  destruct ot as [r|u|X e k|X mu k].
+  - apply OPBRet. reflexivity.
+  - apply OPBTau.
+    + apply operational_ast_match_refl.
+      apply unified_head_rel_refl. exact CIH.
+    + exact (CIH u).
+  - apply OPBVis. intro x. exact (CIH (k x)).
+  - apply OPBProb.
+    + apply operational_ast_match_refl.
+      apply unified_head_rel_refl. exact CIH.
+    + apply sem_lift_refl. intro x. exact (CIH (k x)).
+Qed.
+
+Lemma operational_bisim_of_common_ast {R}
+    (t1 t2 : ptree E MN R) out :
+  operational_ast_weak (MF := MF) (observe t1) out ->
+  operational_ast_weak (MF := MF) (observe t2) out ->
+  @operational_bisim E MN MF NI FI NC FC MX FO R R eq t1 t2.
+Proof.
+  intros H1 H2. apply operational_bisim_fold.
+  eapply OPBStable; [exact H1|exact H2|].
+  apply sem_lift_refl. apply unified_head_rel_refl.
+  exact operational_bisim_refl.
+Qed.
+
+End GuardedOperationalReflexivity.

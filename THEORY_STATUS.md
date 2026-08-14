@@ -76,8 +76,13 @@ condition is listed explicitly, the referenced result is proved without an
   separate minimal order capability (reflexivity, bottom zero, and bind
   monotonicity) proves that every primitive hitting chain is increasing;
   together with omega laws this yields existence and extensional uniqueness
-  of its operational weak limit.  Sound frontier laws and conditional
-  completeness remain the next stage.
+  of its operational weak limit.  The first guarded operational bisimulation
+  is now defined as a greatest fixed point: cross-shape matching requires
+  total operational AST limits, while Ret/Vis/Tau/Prob and one-sided Tau
+  remain guarded rules.  Consequently the zero hitting limit of pure
+  divergence cannot by itself justify an arbitrary equivalence.  Fold/unfold,
+  monotonicity, reflexivity, and common-AST introduction are checked.  Sound
+  frontier laws and conditional completeness remain the next stage.
 
 ## Measure semantics and coupling
 
