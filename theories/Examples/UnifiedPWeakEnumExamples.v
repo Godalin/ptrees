@@ -6,7 +6,7 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum.
 From PTree.Eq Require Import UnifiedFrontier UnifiedPWeak
-  UnifiedPWeakEnumFacts.
+  UnifiedPWeakEnumFacts UnifiedProbabilisticPTS.
 From PTree.Examples Require Import VonNeumannUnbounded BernoulliFactory.
 From PTree.Examples Require Import EnumMeasureRegression.
 
@@ -95,6 +95,13 @@ Proof.
   - exact (unified_reg_nested_merged_lift _).
 Qed.
 
+Corollary unified_reg_nested_merged_ppts_bisim :
+  unified_ppts_bisim eq reg_nested_program reg_merged_program.
+Proof.
+  apply weak_bisim_to_unified_ppts_bisim.
+  exact unified_reg_nested_merged_weak_bisim.
+Qed.
+
 (** An unbounded almost-surely terminating sampler is weakly bisimilar, in
     the new single-frontier semantics, to one terminating fair sample. *)
 Theorem unified_von_neumann_third_equivalent_to_fair :
@@ -108,6 +115,13 @@ Proof.
   exact von_neumann_third_equivalent_to_fair.
 Qed.
 
+Corollary unified_von_neumann_third_ppts_equivalent_to_fair :
+  unified_ppts_bisim eq von_neumann_third direct_fair.
+Proof.
+  apply weak_bisim_to_unified_ppts_bisim.
+  exact unified_von_neumann_third_equivalent_to_fair.
+Qed.
+
 (** Closed p-to-q Bernoulli factory example: repeated samples from a [1/3]
     coin implement a direct [2/5] coin, including both unbounded loops. *)
 Theorem unified_third_coin_simulates_two_fifths :
@@ -119,4 +133,11 @@ Theorem unified_third_coin_simulates_two_fifths :
 Proof.
   apply auweak_to_weak_bisim.
   exact (proj2 (proj2 third_coin_simulates_two_fifths_correct)).
+Qed.
+
+Corollary unified_third_coin_two_fifths_ppts_bisim :
+  unified_ppts_bisim eq third_to_two_fifths direct_two_fifths.
+Proof.
+  apply weak_bisim_to_unified_ppts_bisim.
+  exact unified_third_coin_simulates_two_fifths.
 Qed.

@@ -62,6 +62,9 @@ condition is listed explicitly, the referenced result is proved without an
   `mixed_bind` connects them.  It proves `unified_ppts_weak <-> frontier` and,
   for the divergence-sensitive guarded PTS, the full characterization
   `weak_bisim <-> unified_ppts_bisim`.
+  The finite nested sampler, Von Neumann extractor, rational Bernoulli
+  factory, and real MathComp oracle examples each instantiate the forward
+  direction as a checked concrete PTS-bisimulation corollary.
 
 ## Measure semantics and coupling
 
@@ -139,9 +142,10 @@ condition is listed explicitly, the referenced result is proved without an
   `mathcomp_binary_oracle_lub`: whenever those prefixes represent a real
   parameter `q`, the unbounded result measure is the genuine MathComp
   Bernoulli `q`; `mathcomp_binary_oracle_is_ast` proves AST.  This is the
-  maintained real-valued behavioral result semantics.  It is deliberately
-  not advertised as `auweak`, whose recursive-frontier universe is outside
-  the current MathComp/HB support boundary documented below.
+  maintained real-valued behavioral result semantics.  The legacy single-HB
+  `auweak` cannot host its recursive frontier, but the new two-level unified
+  relation does; the corresponding weak-bisimulation and distribution-valued
+  PTS theorems are documented below.
 - `Eq/PWeakObservableEnum.v` proves Boolean return-event preservation from
   Enum couplings.  The Von Neumann and Bernoulli factory files instantiate it
   for the probability of returning `true`.
@@ -172,7 +176,11 @@ condition is listed explicitly, the referenced result is proved without an
   reflexive under the new `weak_bisim` (assuming explicit MathComp gluing).
 - `FreeOmega.free_omega_observes` folds a high-universe formal behavior into
   a low-universe node distribution.  Observable totality means that such a
-  fold exists and its node distribution is total.  In
+  fold exists and its node distribution is total.  The strengthened
+  `SemanticOmegaLaws` includes extensional chain properness, and
+  `free_omega_observes_unique` proves that observation denotes at most one
+  node distribution up to `sem_eq` whenever the node backend supplies that
+  omega law and its bind laws.  In
   `Examples/UnifiedRealBernoulliMathComp.v`, every formal oracle approximant
   folds to the existing MathComp `meas_iter_approx`; the proved analytic lub
   is the genuine Bernoulli `q`, whose returned mass proves the `UFIter`
@@ -202,10 +210,11 @@ condition is listed explicitly, the referenced result is proved without an
   asks HB to generate a new measurable carrier at an explicitly selected
   higher universe; MathComp's hierarchy constrains it back below the same
   global bound, so that local workaround is rejected as well.  End-to-end
-  MathComp `auweak` therefore needs a genuinely universe-polymorphic
-  MathComp/HB hierarchy (likely an upstream change), or a non-HB frontier
-  backend with the required mixed bind, coupling, and omega laws.  This is an
-  explicit backend boundary, not an assumed real-valued program equivalence.
+  legacy single-backend MathComp `auweak` therefore needs a genuinely
+  universe-polymorphic MathComp/HB hierarchy (likely an upstream change).
+  The maintained two-level model avoids that boundary with its non-HB free
+  frontier backend and now proves the real-valued program equivalence rather
+  than assuming it.
 
 ## Deliberately deferred
 

@@ -7,7 +7,8 @@ From mathcomp Require Import ssreflect ssrbool ssralg ssrnum reals.
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
   TwoLevelMeasure TwoLevelMeasureMathComp.
-From PTree.Eq Require Import UnifiedFrontier UnifiedPWeak.
+From PTree.Eq Require Import UnifiedFrontier UnifiedPWeak
+  UnifiedProbabilisticPTS.
 From PTree.Examples Require Import RealBernoulliOracle RealBernoulliMathComp
   UnifiedMathCompFrontier UnifiedRealBernoulliMathCompCore.
 
@@ -161,6 +162,27 @@ Proof.
   - exact (unified_mathcomp_binary_oracle_frontier q01 Hrep).
   - exact (unified_mathcomp_real_direct_frontier q).
   - exact (unified_mathcomp_oracle_heads_lift q01 Hrep _).
+Qed.
+
+Corollary unified_mathcomp_binary_oracle_ppts_bisim_direct
+    `{MathCompCouplingGluing R}
+    (qbit : binary_oracle) (q : R) (q01 : (0 <= q <= 1)%R)
+    (Hrep : mathcomp_oracle_represents qbit q) :
+  @unified_ppts_bisim real_mathcomp_coinE MN MF
+    (MathCompNodeSemanticMeasureInterface R)
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := MathCompNodeSemanticMeasureInterface R))
+    (@MathCompNodeSemanticMeasureCoreLaws R H)
+    (FreeOmegaObservableSemanticMeasureCoreLaws
+      (NI := MathCompNodeSemanticMeasureInterface R))
+    FreeOmegaMixedMeasureInterface
+    (FreeOmegaObservableSemanticOmegaInterface
+      (NI := MathCompNodeSemanticMeasureInterface R))
+    bool bool eq (@mathcomp_binary_oracle_coin R qbit)
+    (mathcomp_direct_bernoulli (R := R) q).
+Proof.
+  apply weak_bisim_to_unified_ppts_bisim.
+  exact (unified_mathcomp_binary_oracle_weak_bisim_direct q01 Hrep).
 Qed.
 
 End UnifiedRealOracle.
