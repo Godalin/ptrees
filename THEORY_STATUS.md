@@ -156,7 +156,18 @@ condition is listed explicitly, the referenced result is proved without an
   explicit bounds `D n <= D_tau (n+1) <= D (n+1)`.  Thus Ret and Tau Bind
   cases are discharged constructively.  The stable Vis-source case is also
   pointwise identical at every fuel and is proved by
-  `free_operational_bind_vis_approx_cofinal`; Prob and iteration remain.
+  `free_operational_bind_vis_approx_cofinal`.
+  For Prob sources, `free_operational_bind_prob_uniform` states the exact
+  generic requirement exposed by sampling: for each approximant there must
+  be one almost-everywhere branch fuel bound in both directions.  The theorem
+  `free_operational_bind_prob_approx_cofinal` proves this sufficient using
+  restricted diagonal couplings.  On Enum, finite support supplies the
+  uniform bound constructively by taking a `Nat.max` over the enumeration;
+  `enum_free_operational_bind_prob_approx_cofinal` therefore derives the Prob
+  case from ordinary pointwise branch cofinality. Ret, Vis, Tau, and Prob now
+  all have compositional Bind-cofinality rules for the FreeOmega+Enum model;
+  assembling them for arbitrary coinductive sources and proving iteration
+  bounds remain.
 
 ## Measure semantics and coupling
 
