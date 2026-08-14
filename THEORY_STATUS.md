@@ -74,6 +74,15 @@ condition is listed explicitly, the referenced result is proved without an
   source coin can drive two AST loops to implement a rational target coin;
   `third_coin_simulates_two_fifths_correct` is the closed `1/3 -> 2/5`
   instance.
+- `Examples/RealBernoulliOracle.v` proves the oracle sampler's finite-prefix
+  law and a uniform geometric vanishing bound for its missing mass.
+  `Examples/RealBernoulliMathComp.v` then proves
+  `mathcomp_binary_oracle_lub`: whenever those prefixes represent a real
+  parameter `q`, the unbounded result measure is the genuine MathComp
+  Bernoulli `q`; `mathcomp_binary_oracle_is_ast` proves AST.  This is the
+  maintained real-valued behavioral result semantics.  It is deliberately
+  not advertised as `auweak`, whose recursive-frontier universe is outside
+  the current MathComp/HB support boundary documented below.
 - `Eq/PWeakObservableEnum.v` proves Boolean return-event preservation from
   Enum couplings.  The Von Neumann and Bernoulli factory files instantiate it
   for the probability of returning `true`.
