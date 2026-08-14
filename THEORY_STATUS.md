@@ -159,6 +159,14 @@ condition is listed explicitly, the referenced result is proved without an
   proved directly in this new public relation.  Its distribution coupling
   is relation-parametric and is shared with the compatibility
   `operational_bisim` proof, rather than transported from that old relation.
+  The same direct endpoint has now been checked for all migrated clients:
+  `primitive_reg_nested_merged_bisim`,
+  `primitive_von_neumann_compiled_direct_bisim`, and
+  `primitive_mathcomp_binary_oracle_bisim_direct`.  Their low-level output
+  couplings were generalized over the continuation relation, then
+  instantiated independently for the compatibility relation and the new
+  primitive-kernel gfp.  Thus the generic equivalences do not assume an
+  inclusion theorem from the old bisimulation.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides

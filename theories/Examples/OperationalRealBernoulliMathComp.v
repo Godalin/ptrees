@@ -217,22 +217,13 @@ Proof.
   - exact operational_mathcomp_direct_heads_total.
 Qed.
 
-Lemma operational_mathcomp_oracle_heads_lift :
+Lemma operational_mathcomp_oracle_heads_lift
+    (sim : ptree real_mathcomp_coinE MN bool ->
+      ptree real_mathcomp_coinE MN bool -> Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := MathCompNodeSemanticMeasureInterface R)) _ _
-    (frontier_head_rel eq
-      (@operational_bisim real_mathcomp_coinE MN MF
-        (MathCompNodeSemanticMeasureInterface R)
-        (FreeOmegaObservableSemanticMeasureInterface
-          (NI := MathCompNodeSemanticMeasureInterface R))
-        (@MathCompNodeSemanticMeasureCoreLaws R H)
-        (FreeOmegaObservableSemanticMeasureCoreLaws
-          (NI := MathCompNodeSemanticMeasureInterface R))
-        FreeOmegaMixedMeasureInterface
-        (FreeOmegaObservableSemanticOmegaInterface
-          (NI := MathCompNodeSemanticMeasureInterface R)
-          (NO := MathCompNodeSemanticOmegaInterface R)) bool bool eq))
+    (frontier_head_rel eq sim)
     operational_mathcomp_oracle_heads operational_mathcomp_direct_heads.
 Proof.
   eapply FOQLObserve with
@@ -273,7 +264,26 @@ Proof.
   apply operational_bisim_fold. eapply OPBStable.
   - exact operational_mathcomp_oracle_ast.
   - exact operational_mathcomp_direct_ast.
-  - exact operational_mathcomp_oracle_heads_lift.
+  - exact (operational_mathcomp_oracle_heads_lift _).
+Qed.
+
+Theorem primitive_mathcomp_binary_oracle_bisim_direct :
+  @primitive_ptree_bisim real_mathcomp_coinE MN MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := MathCompNodeSemanticMeasureInterface R))
+    (FreeOmegaObservableSemanticMeasureCoreLaws
+      (NI := MathCompNodeSemanticMeasureInterface R))
+    FreeOmegaMixedMeasureInterface
+    (FreeOmegaObservableSemanticOmegaInterface
+      (NI := MathCompNodeSemanticMeasureInterface R)
+      (NO := MathCompNodeSemanticOmegaInterface R)) bool bool eq
+    (mathcomp_binary_oracle_coin R qbit)
+    (mathcomp_direct_bernoulli (R := R) q).
+Proof.
+  eapply primitive_ptree_bisim_of_ast_lift.
+  - exact operational_mathcomp_oracle_ast.
+  - exact operational_mathcomp_direct_ast.
+  - exact (operational_mathcomp_oracle_heads_lift _).
 Qed.
 
 End OperationalRealOracle.

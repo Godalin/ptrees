@@ -202,21 +202,13 @@ Proof.
   exact operational_reg_nested_ast.
 Qed.
 
-Lemma operational_reg_nested_merged_lift :
+Lemma operational_reg_nested_merged_lift
+    (sim : ptree regE Enum nat -> ptree regE Enum nat -> Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := Enum_SemanticMeasureInterface)
       (NO := Enum_SemanticOmegaInterface)) _ _
-    (frontier_head_rel eq
-      (@operational_bisim regE Enum MF
-        Enum_SemanticMeasureInterface
-        (FreeOmegaObservableSemanticMeasureInterface
-          (NI := Enum_SemanticMeasureInterface)
-          (NO := Enum_SemanticOmegaInterface))
-        Enum_SemanticMeasureCoreLaws
-        FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface nat nat eq))
+    (frontier_head_rel eq sim)
     operational_reg_nested_heads operational_reg_merged_heads.
 Proof.
   eapply FOQLObserve with
@@ -263,5 +255,21 @@ Proof.
   apply operational_bisim_fold. eapply OPBStable.
   - split; [exact operational_reg_nested_weak|exact operational_reg_nested_total].
   - split; [exact operational_reg_merged_weak|exact operational_reg_merged_total].
-  - exact operational_reg_nested_merged_lift.
+  - exact (operational_reg_nested_merged_lift _).
+Qed.
+
+Theorem primitive_reg_nested_merged_bisim :
+  @primitive_ptree_bisim regE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface nat nat eq
+    reg_nested_program reg_merged_program.
+Proof.
+  eapply primitive_ptree_bisim_of_ast_lift.
+  - exact operational_reg_nested_ast.
+  - split; [exact operational_reg_merged_weak|exact operational_reg_merged_total].
+  - exact (operational_reg_nested_merged_lift _).
 Qed.

@@ -295,21 +295,13 @@ Proof.
   - exact operational_vn_direct_heads_total.
 Qed.
 
-Lemma operational_vn_heads_lift :
+Lemma operational_vn_heads_lift
+    (sim : ptree vnE Enum bool -> ptree vnE Enum bool -> Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := Enum_SemanticMeasureInterface)
       (NO := Enum_SemanticOmegaInterface)) _ _
-    (frontier_head_rel eq
-      (@operational_bisim vnE Enum MF
-        Enum_SemanticMeasureInterface
-        (FreeOmegaObservableSemanticMeasureInterface
-          (NI := Enum_SemanticMeasureInterface)
-          (NO := Enum_SemanticOmegaInterface))
-        Enum_SemanticMeasureCoreLaws
-        FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface bool bool eq))
+    (frontier_head_rel eq sim)
     operational_vn_heads operational_vn_direct_heads.
 Proof.
   eapply FOQLObserve with
@@ -347,5 +339,21 @@ Proof.
   apply operational_bisim_fold. eapply OPBStable.
   - exact operational_vn_compiled_ast.
   - exact operational_vn_direct_ast.
-  - exact operational_vn_heads_lift.
+  - exact (operational_vn_heads_lift _).
+Qed.
+
+Theorem primitive_von_neumann_compiled_direct_bisim :
+  @primitive_ptree_bisim vnE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    operational_vn_compiled direct_fair.
+Proof.
+  eapply primitive_ptree_bisim_of_ast_lift.
+  - exact operational_vn_compiled_ast.
+  - exact operational_vn_direct_ast.
+  - exact (operational_vn_heads_lift _).
 Qed.
