@@ -58,8 +58,9 @@ condition is listed explicitly, the referenced result is proved without an
 
 - `Eq/PStrong.v` defines the axiom-free coinductive `pstructural` relation:
   Ret/Tau/Vis are lockstep and Prob requires the same measure with pointwise
-  related continuations.  `pstructural_pstrong` proves its inclusion in
-  `pstrong`; `eq_pstructural` embeds tree identity.
+  related continuations.  `pstructural_equivalence` proves it is an
+  equivalence, `pstructural_pstrong` proves its inclusion in `pstrong`, and
+  `eq_pstructural` embeds tree identity.
 - `Eq/PWeakHierarchy.v`: `pstrong_apweak` proves strong-to-finite weak
   inclusion from the measure laws; `apweak_auweak_of_finite_generation` and
   `pstrong_auweak_of_finite_generation` state the exact finite-generation

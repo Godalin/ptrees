@@ -102,6 +102,67 @@ Lemma eq_pstructural {R : Type} (t1 t2 : ptree E M R) :
   t1 = t2 -> pstructural eq t1 t2.
 Proof. move=> ->. exact: pstructural_refl. Qed.
 
+Lemma pstructural_sym {R : Type} :
+  Symmetric (@pstructural E M R R eq).
+Proof.
+  move=> t1 t2. revert t1 t2.
+  unfold pstructural at 2. coinduction CH CIH.
+  move=> t1 t2 Hrel. move: (pstructural_unfold Hrel)=> Hstep.
+  set ot1 := observe t1 in Hstep |- *.
+  set ot2 := observe t2 in Hstep |- *.
+  change (pstructuralF eq (` CH) ot2 ot1).
+  inversion Hstep as
+      [r1 r2 HR | u1 u2 Hsim | X e k1 k2 Hk
+       | X mu k1 k2 Hk]; subst.
+  - constructor. reflexivity.
+  - constructor. exact: CIH Hsim.
+  - constructor=> x. exact: CIH (Hk x).
+  - constructor=> x. exact: CIH (Hk x).
+Qed.
+
+Inductive pstructural_trans_clo {R : Type} :
+    ptree E M R -> ptree E M R -> Prop :=
+  | PStTC t1 t2 t3 :
+      pstructural eq t1 t2 ->
+      pstructural eq t2 t3 ->
+      pstructural_trans_clo t1 t3.
+
+Lemma pstructural_trans {R : Type} :
+  Transitive (@pstructural E M R R eq).
+Proof.
+  move=> t1 t2 t3 H12 H23.
+  have Hcomp : pstructural_trans_clo t1 t3 := PStTC H12 H23.
+  clear t2 H12 H23. revert t1 t3 Hcomp.
+  unfold pstructural. coinduction CH CIH.
+  move=> u w Hclo. inversion Hclo as [u' v w' Huv Hvw]; subst.
+  move: (pstructural_unfold Huv)=> Hstep1.
+  move: (pstructural_unfold Hvw)=> Hstep2.
+  set ou := observe u in Hstep1 |- *.
+  set ov := observe v in Hstep1 Hstep2.
+  set ow := observe w in Hstep2 |- *.
+  change (pstructuralF eq (` CH) ou ow).
+  destruct ov.
+  - dependent destruction Hstep1. dependent destruction Hstep2.
+    rewrite -x0 -x. constructor. reflexivity.
+  - dependent destruction Hstep1. dependent destruction Hstep2.
+    rewrite -x0 -x. constructor. apply CIH. exact: PStTC H H0.
+  - dependent destruction Hstep1. dependent destruction Hstep2.
+    rewrite -x0 -x. constructor=> y. apply CIH.
+    exact: PStTC (H y) (H0 y).
+  - dependent destruction Hstep1. dependent destruction Hstep2.
+    rewrite -x0 -x. constructor=> y. apply CIH.
+    exact: PStTC (H y) (H0 y).
+Qed.
+
+#[global] Instance pstructural_equivalence {R : Type} :
+  Equivalence (@pstructural E M R R eq).
+Proof.
+  split.
+  - exact pstructural_refl.
+  - exact pstructural_sym.
+  - exact pstructural_trans.
+Qed.
+
 End PStructuralFacts.
 
 (** Strong probabilistic bisimulation over an abstract probabilistic
