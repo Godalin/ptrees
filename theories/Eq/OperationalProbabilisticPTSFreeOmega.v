@@ -658,6 +658,58 @@ Proof.
       * apply free_omega_approx_refl. intros x. reflexivity.
 Qed.
 
+Lemma free_nested_operational_to_grid_sound fuel :
+  forall i,
+  free_omega_approx eq
+    (operational_hitting_approx (MF := MF) fuel
+      (observe (free_nested_program i)))
+    (free_nested_execution_grid (S fuel) fuel i).
+Proof.
+  induction fuel as [|fuel IH]; intro i.
+  - eapply free_omega_approx_trans.
+    + apply free_omega_lift_to_approx.
+      apply free_nested_program_hitting_unfold.
+    + eapply free_omega_approx_trans.
+      * apply free_operational_bind_hitting_le_diagonal.
+      * unfold operational_bind_diagonal_approx.
+        cbn [free_nested_execution_grid].
+        eapply free_omega_approx_bind with (R := eq) (T := eq).
+        -- apply free_omega_approx_refl. intros h. reflexivity.
+        -- intros h1 h2 ->. destruct h2 as [a|X e c].
+           ++ cbn [operational_head_bind_approx].
+              cbn [free_no_event_head_value].
+              unfold free_nested_after. destruct (round i a);
+                cbn [operational_hitting_approx operational_kernel];
+                try rewrite operational_target_stableE; constructor.
+           ++ exfalso. exact (@no_event X e).
+  - eapply free_omega_approx_trans.
+    + apply free_omega_lift_to_approx.
+      apply free_nested_program_hitting_unfold.
+    + eapply free_omega_approx_trans.
+      * apply free_operational_bind_hitting_le_diagonal.
+      * unfold operational_bind_diagonal_approx.
+        cbn [free_nested_execution_grid].
+        eapply free_omega_approx_bind with (R := eq) (T := eq).
+        -- apply free_omega_approx_refl. intros h. reflexivity.
+        -- intros h1 h2 ->. destruct h2 as [a|X e c].
+           ++ cbn [operational_head_bind_approx].
+              cbn [free_no_event_head_value].
+              unfold free_nested_after. destruct (round i a) as [i'|r].
+              ** cbn [operational_hitting_approx operational_kernel].
+                 eapply free_omega_approx_trans.
+                 --- apply IH.
+                 --- apply free_omega_approx_monotone_nat with
+                       (chain := fun inner =>
+                         free_nested_execution_grid (S fuel) inner i').
+                     +++ intro inner.
+                         apply free_nested_execution_grid_inner_increasing.
+                     +++ apply le_S, le_n.
+              ** cbn [operational_hitting_approx operational_kernel].
+                 rewrite operational_target_stableE.
+                 apply free_omega_approx_refl. intros x. reflexivity.
+           ++ exfalso. exact (@no_event X e).
+Qed.
+
 Lemma free_nested_execution_grid_outer_increasing inner :
   forall outer i,
     free_omega_approx eq
