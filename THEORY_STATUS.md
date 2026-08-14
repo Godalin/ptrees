@@ -28,6 +28,9 @@ condition is listed explicitly, the referenced result is proved without an
   `meas_iter_approx/meas_iter` on Enum.  The established hierarchy below
   remains the maintained compatibility baseline while equivalence, PTS and
   examples are migrated incrementally.
+  Enum also proves the diagonal-AE coupling capability directly from its
+  nonzero-support semantics, so it and MathComp satisfy the same optional AE
+  Kleisli interface rather than relying on backend-specific shortcuts.
 - `Eq/UnifiedPWeak.v` defines the new backend-independent `weak_bisim`
   directly over the single frontier and split `MN`/`MF` couplings.  It is a
   coinductive greatest fixed point with guarded Tau/Prob rules; fold/unfold,

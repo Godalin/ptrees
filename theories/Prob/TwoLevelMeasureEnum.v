@@ -2,15 +2,18 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
-From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
-  MeasureIteration MeasureIterationEnum TwoLevelMeasure.
+Require Import List.
+
+From mathcomp Require Import ssreflect ssrbool ssrnat ssralg ssrnum order rat.
+From PTree.Prob Require Import DiscreteMC Coupling IndexedCoupling FrontierLift
+  FrontierLiftEnum MeasureIteration MeasureIterationEnum TwoLevelMeasure.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum.
+Import Coupling IndexedCoupling.
 Import GRing.Theory Order.Theory.
 #[local] Open Scope ring_scope.
 #[local] Open Scope order_scope.
@@ -57,6 +60,28 @@ Proof.
       Enum_MeasureCoreLaws Enum_MeasureLaws).
   - exact (@meas_lift_comp Enum Enum_MeasureInterface
       Enum_MeasureCoreLaws Enum_MeasureLaws).
+Qed.
+
+#[global] Instance Enum_SemanticMeasureAELiftLaws :
+    @SemanticMeasureAELiftLaws Enum Enum_SemanticMeasureInterface.
+Proof.
+  constructor. move=> A mu P Hae. cbn in Hae |- *.
+  unfold enum_meas_eq.
+  eapply (coupling_mono (R := eq));
+    [|exact (coupling_refl (indexed (enum_prune mu)))].
+  move=> i j ->. split.
+  - move=> p x Hi. exists p, x. split; first exact Hi.
+    split; first reflexivity.
+    have Hin : List.In (p, x) (enum_prune mu).
+    { eapply nth_error_In. exact Hi. }
+    have [Hsrc Hnz] := enum_prune_in_source Hin.
+    exact (Hae p x Hsrc Hnz).
+  - move=> p x Hi. exists p, x. split; first exact Hi.
+    split; first reflexivity.
+    have Hin : List.In (p, x) (enum_prune mu).
+    { eapply nth_error_In. exact Hi. }
+    have [Hsrc Hnz] := enum_prune_in_source Hin.
+    exact (Hae p x Hsrc Hnz).
 Qed.
 
 (** Eventwise order on finite rational measures.  Enum is not globally
