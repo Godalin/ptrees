@@ -217,22 +217,12 @@ Fixpoint burn (n : nat) {E M R} (t : ptree E M R) :=
 
 
 
-(** [ptree E M R] satisfies monad laws up to the
-    TODO: complete this monad laws with specific *)
-Section MonadLaws.
-
-Context {E : Type -> Type}.
-Context {M : Type -> Type}.
-Context {R : Type}.
-Context `{Monad M}.
-
-Instance Eq1_PTree : Eq1 (ptree E M) :=
-  fun _ => eq.
-
-Instance MonadLaws_PTree : MonadLawsE (ptree E M).
-Proof. Admitted.
-
-End MonadLaws.
+(** Monad laws for coinductive trees do not hold under Coq's intensional
+    equality: for example, [bind t Ret] is generally only bisimilar to [t].
+    The former [Eq1 := eq] / admitted [MonadLawsE] instance was therefore
+    unsound and has been removed.  Clients should state these laws using the
+    maintained coinductive relations ([equ], [pstrong], or the appropriate
+    weak probabilistic equivalence). *)
 
 
 
