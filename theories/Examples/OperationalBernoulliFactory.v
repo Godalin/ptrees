@@ -249,4 +249,53 @@ Proof.
       pnormalized pnontrivial).
 Qed.
 
+Section RationalTarget.
+Variable q : rat.
+
+Definition operational_factory_q_row (outer : nat) :
+    MF (factory_head bool) :=
+  free_nested_row_out factoryE_no_event binary_round_result
+    operational_factory_fair_heads outer q.
+
+Definition operational_factory_q_heads : MF (factory_head bool) :=
+  FOLub operational_factory_q_row.
+
+Theorem operational_biased_to_rational_coin_weak :
+  @operational_weak factoryE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe (biased_to_rational_coin pfalse ptrue q))
+    operational_factory_q_heads.
+Proof.
+  unfold biased_to_rational_coin, factory_binary_step.
+  eapply free_operational_weak_of_canonical_nested
+    with (sample_out := operational_factory_fair_heads).
+  - exact operational_factory_fair_coin_weak.
+  - unfold operational_factory_q_heads, operational_factory_q_row.
+    apply free_omega_qlift_refl. intros h. reflexivity.
+Qed.
+
+End RationalTarget.
+
 End FactoryOperationalNormalization.
+
+Definition operational_third_to_two_fifths_heads :
+    MF (factory_head bool) :=
+  operational_factory_q_heads vn_one_third vn_two_thirds (2 / 5).
+
+Theorem operational_third_to_two_fifths_weak :
+  @operational_weak factoryE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe third_to_two_fifths)
+    operational_third_to_two_fifths_heads.
+Proof.
+  exact (operational_biased_to_rational_coin_weak
+    vn_one_third vn_two_thirds (2 / 5)).
+Qed.
