@@ -2,11 +2,17 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From mathcomp Require Import ssralg ssrnum reals.
+From HB Require Import structures.
+From mathcomp Require Import ssreflect ssrbool eqtype choice ssralg ssrnum reals boolp classical_sets
+  numfun lebesgue_integral.
+From mathcomp.analysis Require Import measure probability kernel
+  measurable_realfun ereal.
 From PTree.Prob Require Import MathCompMeasure.
 
 Import GRing.Theory.
 #[local] Open Scope ring_scope.
+#[local] Open Scope classical_set_scope.
+#[local] Open Scope ereal_scope.
 
 (** A universe-separated probe for the next PTree representation.  The
     sampled carrier universe and the universe containing a measure value are
@@ -116,3 +122,47 @@ Polymorphic Class TwoLevelMeasureInterface@{sample node_measure
 Fail Definition mathcomp_two_level_frontier (R : realType) (A : Type) : Type :=
   @two_level_frontier (fun _ => Empty_set)
     (MathCompKernelMeasure R) (MathCompKernelMeasure R) A.
+
+(** With the MathComp measurable hierarchy imported explicitly, the kernel
+    type synonym itself can be redeclared polymorphically, so the abstract
+    two-level *shape* inhabits both levels.  This does not make the already
+    sealed kernel operations or their HB instances polymorphic. *)
+Polymorphic Definition PolyMathCompKernelMeasure (R : realType)
+    (A : Type) : Type :=
+  R.-spker (mc_carrier unit) ~> (mc_carrier A).
+
+Polymorphic Definition poly_mathcomp_two_level_frontier
+    (R : realType) (A : Type) : Type :=
+  @two_level_frontier (fun _ => Empty_set)
+    (PolyMathCompKernelMeasure R) (PolyMathCompKernelMeasure R) A.
+
+(** At its sealed universe levels, the existing bind operation has the right
+    mixed source/target type and instantiates the abstract interface. *)
+Definition mathcomp_mixed_bind {R : realType} {A B : Type}
+    (mu : MathCompKernelMeasure R A)
+    (k : A -> PolyMathCompKernelMeasure R B) :
+    PolyMathCompKernelMeasure R B :=
+  @mathcomp_kernel_bind R A B mu k.
+
+Definition mathcomp_mixed_ret {R : realType} {A : Type} (x : A) :
+    PolyMathCompKernelMeasure R A :=
+  @mathcomp_kernel_ret R A x.
+
+Definition MathCompTwoLevelMeasureInterface (R : realType) :
+    TwoLevelMeasureInterface
+      (MathCompKernelMeasure R) (PolyMathCompKernelMeasure R) :=
+  {| frontier_ret := @mathcomp_mixed_ret R;
+     frontier_bind_node := @mathcomp_mixed_bind R |}.
+
+(** The decisive negative regression: that sealed target universe remains
+    below the recursive tree, so it still cannot integrate a genuine real
+    Bernoulli node into a recursive frontier carrier.  A working migration
+    must generate the HB instance and mixed operation in the same explicit
+    high-universe section as the frontier head. *)
+Fail Polymorphic Definition mathcomp_bernoulli_bool_frontier (R : realType) :
+    @PolyMathCompKernelMeasure R
+      (two_level_head (fun _ => Empty_set)
+        (MathCompKernelMeasure R) bool) :=
+  mathcomp_mixed_bind (@mathcomp_bernoulli R (1 / 2))
+    (fun b => mathcomp_mixed_ret (@TLHRet (fun _ => Empty_set)
+      (MathCompKernelMeasure R) bool b)).
