@@ -501,6 +501,8 @@ Qed.
 
 Section NestedNoEventGrid.
 Context {I A R : Type}.
+Context `{NCAE : @SemanticMeasureCouplingAELaws MN NI}.
+Context `{NCountAE : @SemanticMeasureCountableAELaws MN NI}.
 Variable no_event : forall X, E X -> False.
 Variable sample : ptree E MN A.
 Variable round : I -> A -> I + R.
@@ -1322,6 +1324,8 @@ Qed.
     bind reassociation or [pstructural] normalization is involved. *)
 Section DirectUnboundedIteration.
 Context {I R : Type}.
+Context `{NCAEIter : @SemanticMeasureCouplingAELaws MN NI}.
+Context `{NCountAEIter : @SemanticMeasureCountableAELaws MN NI}.
 Variable no_event : forall X, E X -> False.
 Variable step : I -> ptree E MN (I + R).
 
