@@ -620,6 +620,54 @@ Polymorphic Record BehavioralDomain
         end)
 }.
 
+Polymorphic Definition frontier_head_in_domain
+    {E : Type -> Type} {MN : Type -> Type} {R : Type}
+    (D : ptree' E MN R -> Prop) (head : frontier_head E MN R) : Prop :=
+  match head with
+  | FHRet _ => True
+  | @FHVis _ _ _ X _ k => forall x : X, D (observe (k x))
+  end.
+
+Section BehavioralDomainStableHittingClosure.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FAE : @SemanticMeasureAEKleisliLaws MF FI}
+  `{FOAE : @SemanticOmegaAELaws MF FI FO}.
+Context {R : Type}.
+Variable D : ptree' E MN R -> Prop.
+Hypothesis BD : BehavioralDomain (MF := MF) D.
+
+(** [behavioral_primitive_closed] is not merely bookkeeping: via the generic
+    unbounded invariant theorem it closes every stable-hitting limit, not
+    just a single primitive step. *)
+Theorem behavioral_domain_stable_hitting_weak_ae state out :
+  D state ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R) state out ->
+  sem_ae out (frontier_head_in_domain D).
+Proof.
+  intros HD Hhit.
+  eapply stable_hitting_weak_ae with (D := D).
+  - intros state' HD'. exact (behavioral_primitive_closed BD HD').
+  - exact HD.
+  - exact Hhit.
+Qed.
+
+Corollary behavioral_domain_stable_hitting_ast_ae state out :
+  D state ->
+  stable_hitting_ast
+    (@ptree_primitive_kernel E MN MF FI MX R) state out ->
+  sem_ae out (frontier_head_in_domain D).
+Proof.
+  intros HD [Hweak _].
+  exact (behavioral_domain_stable_hitting_weak_ae HD Hweak).
+Qed.
+
+End BehavioralDomainStableHittingClosure.
+
 Section OperationalHittingOrder.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}

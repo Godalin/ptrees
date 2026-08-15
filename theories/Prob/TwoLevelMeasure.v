@@ -112,6 +112,22 @@ Polymorphic Class SemanticMeasureAELiftLaws@{carrier representation}
       sem_lift (fun x y => x = y /\ P x) mu mu
 }.
 
+(** Predicate semantics for the monadic operations.  These laws are kept
+    separate from extensional equality and coupling: they are exactly the
+    capability needed to propagate an invariant through a finite kernel
+    computation. *)
+Polymorphic Class SemanticMeasureAEKleisliLaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S} := {
+  sem_ae_ret : forall {A : Type@{carrier}} (P : A -> Prop) x,
+      P x -> sem_ae (sem_ret x) P;
+  sem_ae_bind : forall {A B : Type@{carrier}}
+      (mu : S A) (k : A -> S B) (P : A -> Prop) (Q : B -> Prop),
+      sem_ae mu P ->
+      (forall x, P x -> sem_ae (k x) Q) ->
+      sem_ae (sem_bind mu k) Q
+}.
+
 (** Laws connecting the node and frontier layers.  AE lives at the node
     layer, while equality and couplings of continuations live at the
     frontier layer. *)
@@ -204,6 +220,22 @@ Polymorphic Class SemanticOmegaLaws@{carrier representation}
       (k : A -> S B),
       sem_increasing chain -> sem_lub chain mu ->
       sem_lub (fun n => sem_bind (chain n) k) (sem_bind mu k)
+}.
+
+(** Almost-everywhere predicates are admissible for bottom and omega limits.
+    Together with [SemanticMeasureAEKleisliLaws], this turns one-step AE
+    kernel invariants into invariants of unbounded stable hitting. *)
+Polymorphic Class SemanticOmegaAELaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S}
+    `{SO : @SemanticOmegaInterface S SI} := {
+  sem_ae_zero : forall {A : Type@{carrier}} (P : A -> Prop),
+      sem_ae (@sem_zero S SI SO A) P;
+  sem_ae_lub : forall {A : Type@{carrier}}
+      (chain : nat -> S A) out (P : A -> Prop),
+      sem_lub chain out ->
+      (forall n, sem_ae (chain n) P) ->
+      sem_ae out P
 }.
 
 (** Extensionality of almost-sure termination.  It is separated from omega

@@ -135,6 +135,66 @@ Qed.
 
 End PrimitiveStableHittingLimits.
 
+Section PrimitiveStableHittingAE.
+Context {MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FAE : @SemanticMeasureAEKleisliLaws MF FI}
+  `{FOAE : @SemanticOmegaAELaws MF FI FO}.
+Context {S A : Type}.
+Variable kernel : S -> MF (stable_target S A).
+Variable D : S -> Prop.
+Variable P : A -> Prop.
+
+Definition stable_target_invariant (target : stable_target S A) : Prop :=
+  match target with
+  | SHStable out => P out
+  | SHInternal state => D state
+  end.
+
+Hypothesis kernel_ae_closed : forall state, D state ->
+  sem_ae (kernel state) stable_target_invariant.
+
+Lemma stable_target_approx_ae fuel target :
+  stable_target_invariant target ->
+  sem_ae (stable_target_approx kernel fuel target) P.
+Proof.
+  revert target. induction fuel as [|fuel IH]; intros [out|state] Hgood.
+  - apply sem_ae_ret. exact Hgood.
+  - apply sem_ae_zero.
+  - apply sem_ae_ret. exact Hgood.
+  - cbn. eapply sem_ae_bind.
+    + exact (kernel_ae_closed Hgood).
+    + intros target Htarget. exact (IH target Htarget).
+Qed.
+
+Lemma stable_hitting_approx_ae fuel state :
+  D state -> sem_ae (stable_hitting_approx kernel fuel state) P.
+Proof.
+  intro HD. unfold stable_hitting_approx. eapply sem_ae_bind.
+  - exact (kernel_ae_closed HD).
+  - intros target Htarget.
+    exact (stable_target_approx_ae fuel Htarget).
+Qed.
+
+(** The central unbounded invariant theorem: closure of one primitive kernel
+    is enough to establish closure of its entire omega stable-hitting limit.
+    Totality is not needed for this support property. *)
+Theorem stable_hitting_weak_ae state out :
+  D state -> stable_hitting_weak kernel state out -> sem_ae out P.
+Proof.
+  intros HD Hlimit. eapply sem_ae_lub; [exact Hlimit|].
+  intro fuel. exact (stable_hitting_approx_ae fuel HD).
+Qed.
+
+Corollary stable_hitting_ast_ae state out :
+  D state -> stable_hitting_ast kernel state out -> sem_ae out P.
+Proof.
+  intros HD [Hweak _]. exact (stable_hitting_weak_ae HD Hweak).
+Qed.
+
+End PrimitiveStableHittingAE.
+
 (** Relational lifting of one primitive target.  Stable observations must
     satisfy the public result relation; internal targets remain guarded by
     the candidate state relation. *)
