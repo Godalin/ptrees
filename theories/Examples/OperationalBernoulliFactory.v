@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 
-From Coq Require Import FunctionalExtensionality.
+From Coq Require Import FunctionalExtensionality Program.Equality.
 
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype ssralg ssrnum rat.
 
@@ -528,6 +528,17 @@ Proof.
   intro next. constructor.
 Qed.
 
+Class OperationalFactoryStepSupportLaws := {
+  operational_factory_binary_step_support : forall
+      (pnormalized : Qval pfalse + Qval ptrue = 1)
+      (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x,
+    free_omega_support_lift eq
+      (operational_factory_binary_step_heads x)
+      (operational_factory_standard_step_heads x)
+}.
+
+Context `{FactoryStepSupport : OperationalFactoryStepSupportLaws}.
+
 Lemma operational_factory_binary_step_heads_lift
     (pnormalized : Qval pfalse + Qval ptrue = 1)
     (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x :
@@ -555,6 +566,8 @@ Proof.
       destruct h2 as [next2|Y e2 k2];
       try destruct e1; try destruct e2.
     cbn in Hnext. subst next2. reflexivity.
+  - exact (operational_factory_binary_step_support
+      pnormalized pnontrivial x).
 Qed.
 
 Fixpoint operational_factory_standard_q_row
@@ -839,6 +852,17 @@ Proof.
   - exact (operational_factory_direct_q_heads_total q0 q1).
 Qed.
 
+Class OperationalFactoryRationalSupportLaws := {
+  operational_factory_standard_q_support : forall
+      (q0 : 0 <= q) (q1 : q <= 1)
+      (sim : ptree factoryE Enum bool -> ptree factoryE Enum bool -> Prop),
+    free_omega_support_lift (frontier_head_rel eq sim)
+      operational_factory_standard_q_heads
+      (operational_factory_direct_q_heads q0 q1)
+}.
+
+Context `{FactoryRationalSupport : OperationalFactoryRationalSupportLaws}.
+
 Lemma operational_factory_standard_q_heads_lift_direct
     (q0 : 0 <= q) (q1 : q <= 1)
     (sim : ptree factoryE Enum bool -> ptree factoryE Enum bool -> Prop) :
@@ -865,6 +889,7 @@ Proof.
       destruct h2 as [b2|Y e2 k2];
       try destruct e1; try destruct e2.
     cbn in Hvalue. subst b2. constructor. reflexivity.
+  - exact (operational_factory_standard_q_support q0 q1 sim).
 Qed.
 
 Theorem primitive_biased_to_rational_coin_bisim_direct
@@ -910,7 +935,9 @@ Proof.
     vn_one_third vn_two_thirds (2 / 5)).
 Qed.
 
-Theorem primitive_third_to_two_fifths_bisim_direct :
+Theorem primitive_third_to_two_fifths_bisim_direct
+    `{OperationalFactoryStepSupportLaws vn_one_third vn_two_thirds}
+    `{OperationalFactoryRationalSupportLaws (2 / 5)} :
   @primitive_ptree_bisim factoryE Enum MF
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := Enum_SemanticMeasureInterface)

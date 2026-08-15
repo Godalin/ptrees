@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 
-Require Import FunctionalExtensionality.
+Require Import FunctionalExtensionality Program.Equality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order
   rat.
 
@@ -383,6 +383,9 @@ Proof.
 Qed.
 
 Lemma operational_rational_heads_lift
+    (Hsupport : free_omega_support_lift eq operational_rational_limit
+      (FOSample (rational_bernoulli_measure q0 q1)
+        (fun b => FORet b)))
     (sim : ptree rational_coinE Enum bool ->
       ptree rational_coinE Enum bool -> Prop) :
   @sem_lift MF
@@ -407,9 +410,26 @@ Proof.
       destruct h2 as [b2|Y e2 k2];
       try destruct e1; try destruct e2.
     cbn in Hvalue. subst b2. constructor. reflexivity.
+  - unfold operational_rational_heads, operational_rational_direct_heads.
+    change (free_omega_support_lift (frontier_head_rel eq sim)
+      (free_omega_bind operational_rational_limit
+        (fun b => FORet (FHRet b)))
+      (free_omega_bind
+        (FOSample (rational_bernoulli_measure q0 q1)
+          (fun b => FORet b))
+        (fun b => FORet (FHRet b)))).
+    eapply free_omega_support_lift_bind with (T := eq).
+    + exact Hsupport.
+    + intros b1 b2 ->. split.
+      * intros P HP. dependent destruction HP. apply FOAERet.
+        exists (FHRet b2). split; [constructor; reflexivity|assumption].
+      * intros P HP. dependent destruction HP. apply FOAERet.
+        exists (FHRet b2). split; [constructor; reflexivity|assumption].
 Qed.
 
 Theorem operational_binary_rational_coin_bisim_direct :
+  free_omega_support_lift eq operational_rational_limit
+    (FOSample (rational_bernoulli_measure q0 q1) (fun b => FORet b)) ->
   @operational_bisim rational_coinE Enum MF
     Enum_SemanticMeasureInterface
     (FreeOmegaObservableSemanticMeasureInterface
@@ -421,13 +441,16 @@ Theorem operational_binary_rational_coin_bisim_direct :
     FreeOmegaObservableSemanticOmegaInterface bool bool eq
     (binary_rational_coin q) operational_rational_direct.
 Proof.
+  intro Hsupport.
   eapply operational_bisim_of_ast_lift.
   - exact operational_rational_coin_ast.
   - exact operational_rational_direct_ast.
-  - exact (operational_rational_heads_lift _).
+  - exact (operational_rational_heads_lift Hsupport _).
 Qed.
 
 Theorem primitive_binary_rational_coin_bisim_direct :
+  free_omega_support_lift eq operational_rational_limit
+    (FOSample (rational_bernoulli_measure q0 q1) (fun b => FORet b)) ->
   @primitive_ptree_bisim rational_coinE Enum MF
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := Enum_SemanticMeasureInterface)
@@ -438,10 +461,11 @@ Theorem primitive_binary_rational_coin_bisim_direct :
     bool bool eq
     (binary_rational_coin q) operational_rational_direct.
 Proof.
+  intro Hsupport.
   eapply primitive_ptree_bisim_of_ast_lift.
   - exact operational_rational_coin_ast.
   - exact operational_rational_direct_ast.
-  - exact (operational_rational_heads_lift _).
+  - exact (operational_rational_heads_lift Hsupport _).
 Qed.
 
 End OperationalRationalCoin.
