@@ -1446,9 +1446,41 @@ Qed.
     @sem_eq (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)) A
       out (FOLub chain);
-  sem_total := fun A mu => exists (O : Type) (obs : A -> O) (out : MN O),
-    free_omega_observes obs mu out /\ sem_total out
+  sem_total := fun A mu => exists representative : FreeOmega MN A,
+    free_omega_qlift eq mu representative /\
+    exists (O : Type) (obs : A -> O) (out : MN O),
+      free_omega_observes obs representative out /\ sem_total out
 }.
+
+Lemma free_omega_observable_total_intro {A} (mu : FreeOmega MN A) :
+  (exists (O : Type) (obs : A -> O) (out : MN O),
+    free_omega_observes obs mu out /\ sem_total out) ->
+  @sem_total (FreeOmega MN)
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface A mu.
+Proof.
+  intro Htotal. exists mu. split; [apply free_omega_qlift_refl;
+    intros x; reflexivity|exact Htotal].
+Qed.
+
+#[global] Instance FreeOmegaObservableSemanticTotalProperLaws :
+    @SemanticTotalProperLaws (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface.
+Proof.
+  constructor. intros A mu nu Hmn. cbn. split.
+  - intros [rep [Hmu Htotal]]. exists rep. split; [|exact Htotal].
+    eapply FOQLComp with (T := eq) (U := eq) (mid := mu).
+    + apply FOQLSym. eapply FOQLMono; [exact Hmn|].
+      intros x y ->. reflexivity.
+    + exact Hmu.
+    + intros x z [y [-> ->]]. reflexivity.
+  - intros [rep [Hnu Htotal]]. exists rep. split; [|exact Htotal].
+    eapply FOQLComp with (T := eq) (U := eq) (mid := nu).
+    + exact Hmn.
+    + exact Hnu.
+    + intros x z [y [-> ->]]. reflexivity.
+Qed.
 
 Lemma free_omega_cofinal_lub_iff {A}
     (left right : nat -> FreeOmega MN A) out :

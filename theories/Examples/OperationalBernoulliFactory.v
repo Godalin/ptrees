@@ -277,6 +277,7 @@ Lemma operational_factory_fair_heads_total
     FreeOmegaObservableSemanticOmegaInterface _
     operational_factory_raw_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists bool, operational_factory_head_value, vn_fair.
   split.
   - exact (operational_factory_fair_heads_observes
@@ -678,6 +679,7 @@ Lemma operational_factory_standard_q_heads_total
     FreeOmegaObservableSemanticOmegaInterface _
     operational_factory_standard_q_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists bool, operational_factory_head_value,
     (rational_bernoulli_measure q0 q1).
   split.
@@ -813,6 +815,7 @@ Lemma operational_factory_direct_q_heads_total
     FreeOmegaObservableSemanticOmegaInterface _
     (operational_factory_direct_q_heads q0 q1).
 Proof.
+  apply free_omega_observable_total_intro.
   exists bool, operational_factory_head_value,
     (operational_factory_direct_q_observation q0 q1).
   split; [apply operational_factory_direct_q_heads_observes|].
@@ -844,7 +847,8 @@ Proof.
         (FI := FreeOmegaObservableSemanticMeasureInterface)
         (FO := FreeOmegaObservableSemanticOmegaInterface)
         (MX := FreeOmegaMixedMeasureInterface) (E := factoryE)).
-    + exists bool, operational_factory_head_value,
+    + apply free_omega_observable_total_intro.
+      exists bool, operational_factory_head_value,
         (@sem_ret Enum Enum_SemanticMeasureInterface bool b).
       split; [constructor|].
       change (enum_expect (fun _ : bool => (1 : rat)) (ret_Enum b) = 1).

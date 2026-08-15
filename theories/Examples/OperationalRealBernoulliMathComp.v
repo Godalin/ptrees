@@ -123,6 +123,7 @@ Lemma operational_mathcomp_oracle_heads_total :
       (NO := MathCompNodeSemanticOmegaInterface R)) _
     operational_mathcomp_oracle_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists bool, operational_mathcomp_head_value, (mathcomp_bernoulli q).
   split; [exact operational_mathcomp_oracle_heads_observes|].
   exact: mathcomp_bernoulli_total.
@@ -137,6 +138,7 @@ Lemma operational_mathcomp_direct_heads_total :
       (NO := MathCompNodeSemanticOmegaInterface R)) _
     operational_mathcomp_direct_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists bool, operational_mathcomp_head_value,
     operational_mathcomp_direct_observation.
   split; [exact operational_mathcomp_direct_heads_observes|].

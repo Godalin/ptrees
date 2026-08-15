@@ -155,6 +155,7 @@ Lemma operational_reg_nested_total :
       (NO := Enum_SemanticOmegaInterface)) _
     operational_reg_nested_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists nat, reg_head_value, operational_reg_nested_observation.
   split; first exact operational_reg_nested_observes.
   vm_compute. reflexivity.
@@ -170,6 +171,7 @@ Lemma operational_reg_merged_total :
       (NO := Enum_SemanticOmegaInterface)) _
     operational_reg_merged_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists nat, reg_head_value, operational_reg_merged_observation.
   split; first exact operational_reg_merged_observes.
   vm_compute. reflexivity.

@@ -270,6 +270,7 @@ Lemma operational_rational_heads_total :
       (NO := Enum_SemanticOmegaInterface))
     FreeOmegaObservableSemanticOmegaInterface _ operational_rational_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists bool, operational_rational_head_value,
     (rational_bernoulli_measure q0 q1).
   split; [exact operational_rational_heads_observes|].
@@ -284,6 +285,7 @@ Lemma operational_rational_direct_heads_total :
     FreeOmegaObservableSemanticOmegaInterface _
     operational_rational_direct_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists bool, operational_rational_head_value,
     operational_rational_direct_observation.
   split; [exact operational_rational_direct_heads_observes|].
@@ -353,7 +355,8 @@ Proof.
   - apply sem_ae_true.
   - intros b _. split.
     + apply operational_weak_ret.
-    + exists bool, operational_rational_head_value,
+    + apply free_omega_observable_total_intro.
+      exists bool, operational_rational_head_value,
         (@sem_ret Enum Enum_SemanticMeasureInterface bool b).
       split; [constructor|].
       change (enum_expect (fun _ : bool => (1 : rat)) (ret_Enum b) =

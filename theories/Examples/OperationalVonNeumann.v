@@ -314,6 +314,7 @@ Lemma operational_vn_raw_heads_total :
       (NO := Enum_SemanticOmegaInterface))
     FreeOmegaObservableSemanticOmegaInterface _ operational_vn_raw_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists bool, operational_vn_head_value, vn_fair.
   split; [exact operational_vn_raw_limit_observes|exact vn_fair_total].
 Qed.
@@ -514,6 +515,7 @@ Lemma operational_vn_heads_total :
       (NO := Enum_SemanticOmegaInterface))
     FreeOmegaObservableSemanticOmegaInterface _ operational_vn_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists bool, operational_vn_head_value, vn_fair.
   split; [exact operational_vn_heads_observes|exact vn_fair_total].
 Qed.
@@ -525,6 +527,7 @@ Lemma operational_vn_direct_heads_total :
       (NO := Enum_SemanticOmegaInterface))
     FreeOmegaObservableSemanticOmegaInterface _ operational_vn_direct_heads.
 Proof.
+  apply free_omega_observable_total_intro.
   exists bool, operational_vn_head_value, operational_vn_direct_observation.
   split; [exact operational_vn_direct_heads_observes|].
   rewrite operational_vn_direct_observation_eq. exact vn_fair_total.
@@ -585,7 +588,8 @@ Proof.
   - apply sem_ae_true.
   - intros b _. split.
     + apply operational_weak_ret.
-    + exists bool, operational_vn_head_value,
+    + apply free_omega_observable_total_intro.
+      exists bool, operational_vn_head_value,
         (@sem_ret Enum Enum_SemanticMeasureInterface bool b).
       split; [constructor|].
       change (meas_total (ret_Enum b)).

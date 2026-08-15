@@ -1070,7 +1070,9 @@ Corollary free_operational_ast_weak_of_nested_productivity
     (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmegaInterface _
     (fun outer => free_nested_row_out sample_out outer i) out ->
-  sem_total out ->
+  @sem_total MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _ out ->
   @operational_ast_weak E MN MF
     (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
     FreeOmegaMixedMeasureInterface
@@ -1117,7 +1119,9 @@ Corollary free_operational_ast_weak_of_canonical_nested
     (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmegaInterface _
     (fun outer => free_nested_row_out sample_out outer i) out ->
-  sem_total out ->
+  @sem_total MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _ out ->
   @operational_ast_weak E MN MF
     (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
     FreeOmegaMixedMeasureInterface

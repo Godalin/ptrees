@@ -51,7 +51,8 @@ Proof.
   - exact: mathcomp_binary_oracle_lub q01 Hrep.
 Qed.
 
-Lemma unified_mathcomp_oracle_total (qbit : binary_oracle) (q : R)
+Lemma unified_mathcomp_oracle_total `{MathCompCouplingGluing R}
+    (qbit : binary_oracle) (q : R)
     (q01 : (0 <= q <= 1)%R) :
   mathcomp_oracle_represents qbit q ->
   @sem_total MF
@@ -62,12 +63,14 @@ Lemma unified_mathcomp_oracle_total (qbit : binary_oracle) (q : R)
       (NO := MathCompNodeSemanticOmegaInterface R))
     bool (unified_mathcomp_oracle_out R Head qbit).
 Proof.
-  intro Hrep. exists bool, id, (mathcomp_bernoulli q). split.
+  intro Hrep. apply free_omega_observable_total_intro.
+  exists bool, id, (mathcomp_bernoulli q). split.
   - exact: unified_mathcomp_oracle_out_observes.
   - exact: mathcomp_bernoulli_total.
 Qed.
 
 Definition unified_mathcomp_binary_oracle_frontier
+    `{MathCompCouplingGluing R}
     (qbit : binary_oracle) (q : R)
     (q01 : (0 <= q <= 1)%R)
     (Hrep : mathcomp_oracle_represents qbit q) :=
