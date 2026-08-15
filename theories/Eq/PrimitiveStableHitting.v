@@ -373,3 +373,122 @@ Proof.
 Qed.
 
 End PrimitiveKernelBisimulationObservationMonotonicity.
+
+Section PrimitiveKernelBisimulationComposition.
+Context {MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {S1 S2 S3 A1 A2 A3 : Type}.
+Variable kernel1 : S1 -> MF (stable_target S1 A1).
+Variable kernel2 : S2 -> MF (stable_target S2 A2).
+Variable kernel3 : S3 -> MF (stable_target S3 A3).
+Variable AR12 : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
+Variable AR23 : (S2 -> S3 -> Prop) -> A2 -> A3 -> Prop.
+Variable AR13 : (S1 -> S3 -> Prop) -> A1 -> A3 -> Prop.
+Hypothesis AR12_mono : forall sim1 sim2,
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall a1 a2, AR12 sim1 a1 a2 -> AR12 sim2 a1 a2.
+Hypothesis AR23_mono : forall sim1 sim2,
+  (forall s2 s3, sim1 s2 s3 -> sim2 s2 s3) ->
+  forall a2 a3, AR23 sim1 a2 a3 -> AR23 sim2 a2 a3.
+Hypothesis AR13_mono : forall sim1 sim2,
+  (forall s1 s3, sim1 s1 s3 -> sim2 s1 s3) ->
+  forall a1 a3, AR13 sim1 a1 a3 -> AR13 sim2 a1 a3.
+
+Local Definition KB12 := @stable_kernel_bisim MF FI FC FO
+  S1 S2 A1 A2 kernel1 kernel2 AR12 AR12_mono.
+Local Definition KB23 := @stable_kernel_bisim MF FI FC FO
+  S2 S3 A2 A3 kernel2 kernel3 AR23 AR23_mono.
+Local Definition KB13 := @stable_kernel_bisim MF FI FC FO
+  S1 S3 A1 A3 kernel1 kernel3 AR13 AR13_mono.
+
+(** Composition of stable observations, parametrized by composition of the
+    recursive state relations. *)
+Hypothesis AR_comp : forall sim12 sim23 sim13,
+  (forall s1 s3, (exists s2, sim12 s1 s2 /\ sim23 s2 s3) ->
+    sim13 s1 s3) ->
+  forall a1 a3, (exists a2, AR12 sim12 a1 a2 /\ AR23 sim23 a2 a3) ->
+    AR13 sim13 a1 a3.
+
+(** These are the exact mixed-scale obligations exposed by AST x Step and
+    Step x AST.  They are intentionally hypotheses here: deriving them from
+    primitive couplings requires an additional stable-hitting continuity
+    theorem, not merely coupling gluing. *)
+Hypothesis KB12_ast_backward : forall s1 s2,
+  KB12 s1 s2 -> forall out2,
+  stable_hitting_ast kernel2 s2 out2 ->
+  exists out1, stable_hitting_ast kernel1 s1 out1 /\
+    sem_lift (AR12 KB12) out1 out2.
+Hypothesis KB23_ast_forward : forall s2 s3,
+  KB23 s2 s3 -> forall out2,
+  stable_hitting_ast kernel2 s2 out2 ->
+  exists out3, stable_hitting_ast kernel3 s3 out3 /\
+    sem_lift (AR23 KB23) out2 out3.
+
+Lemma stable_target_rel_compose
+    (sim13 : S1 -> S3 -> Prop)
+    (Hsim : forall s1 s3, (exists s2, KB12 s1 s2 /\ KB23 s2 s3) ->
+      sim13 s1 s3) :
+  forall t1 t3,
+    (exists t2,
+      stable_target_rel (AR12 KB12) KB12 t1 t2 /\
+      stable_target_rel (AR23 KB23) KB23 t2 t3) ->
+    stable_target_rel (AR13 sim13) sim13 t1 t3.
+Proof.
+  intros t1 t3 [t2 [H12 H23]].
+  destruct H12; inversion H23; subst.
+  - constructor. eapply AR_comp.
+    + exact Hsim.
+    + eauto.
+  - constructor. apply Hsim. eauto.
+Qed.
+
+(** Conditional heterogeneous transitivity.  After removing unrestricted
+    silent stuttering, the only non-algebraic premise is preservation of AST
+    stable hitting across the two component bisimulations. *)
+Theorem stable_kernel_bisim_compose_rel : forall s1 s3,
+  (exists s2, KB12 s1 s2 /\ KB23 s2 s3) -> KB13 s1 s3.
+Proof.
+  unfold KB13. unfold stable_kernel_bisim at 1. coinduction CH CIH.
+  intros s1 s3 [s2 [H12 H23]].
+  pose proof (@stable_kernel_bisim_unfold MF FI FC FO S1 S2 A1 A2
+    kernel1 kernel2 AR12 AR12_mono s1 s2 H12) as Hstep12.
+  unfold stable_kernel_bisim_body. destruct Hstep12.
+  - destruct (KB23_ast_forward H23 H0)
+      as [out3 [Hast3 Hlift23]].
+    eapply SKBAST; [exact H|exact Hast3|].
+    pose proof (sem_lift_comp H1 Hlift23) as Hcomp.
+    eapply sem_lift_mono; [|exact Hcomp].
+    intros a1 a3 [a2 [Ha12 Ha23]].
+    eapply AR_comp.
+    + intros x1 x3 [x2 [Hx12 Hx23]]. exact (CIH _ _ (ex_intro _ x2 (conj Hx12 Hx23))).
+    + eauto.
+  - pose proof (@stable_kernel_bisim_unfold MF FI FC FO S2 S3 A2 A3
+      kernel2 kernel3 AR23 AR23_mono s2 s3 H23) as Hstep23.
+    destruct Hstep23.
+    + destruct (KB12_ast_backward H12 H0)
+      as [out0 [Hast0 Hlift12]].
+      eapply SKBAST; [exact Hast0|exact H1|].
+      pose proof (sem_lift_comp Hlift12 H2) as Hcomp.
+      eapply sem_lift_mono; [|exact Hcomp].
+      intros a1 a3 [a2 [Ha12 Ha23]].
+      eapply AR_comp.
+      * intros x1 x3 [x2 [Hx12 Hx23]].
+        exact (CIH _ _ (ex_intro _ x2 (conj Hx12 Hx23))).
+      * eauto.
+    + apply SKBStep.
+      pose proof (sem_lift_comp H H0) as Hcomp.
+      eapply sem_lift_mono; [|exact Hcomp].
+      intros t1 t3 Htargets.
+      eapply stable_target_rel_compose.
+      * intros x1 x3 [x2 [Hx12 Hx23]].
+        exact (CIH _ _ (ex_intro _ x2 (conj Hx12 Hx23))).
+      * exact Htargets.
+Qed.
+
+Corollary stable_kernel_bisim_compose : forall s1 s2 s3,
+  KB12 s1 s2 -> KB23 s2 s3 -> KB13 s1 s3.
+Proof. intros s1 s2 s3 H12 H23. apply stable_kernel_bisim_compose_rel. eauto. Qed.
+
+End PrimitiveKernelBisimulationComposition.
