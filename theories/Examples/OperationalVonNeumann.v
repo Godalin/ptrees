@@ -1,6 +1,6 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
-Unset Universe Polymorphism.
+Set Universe Polymorphism.
 
 From Coq Require Import Lia Logic.FunctionalExtensionality Program.Equality.
 From mathcomp Require Import ssreflect ssrnat eqtype ssralg ssrnum rat.
@@ -569,6 +569,326 @@ Proof.
   exact operational_vn_compiled_ast.
 Qed.
 
+Definition operational_vn_compiled_after (next : unit + bool) :
+    ptree vnE Enum bool :=
+  match next with
+  | inl u => Tau (PTree.iter vn_compiled_step u)
+  | inr b => Ret b
+  end.
+
+Definition operational_vn_compiled_body : ptree vnE Enum bool :=
+  PTree.bind (vn_compiled_step tt) operational_vn_compiled_after.
+
+Definition operational_vn_compiled_cont (next : unit + bool) :
+    ptree vnE Enum bool :=
+  PTree.bind (Ret next) operational_vn_compiled_after.
+
+Lemma operational_vn_compiled_observe_unfold :
+  observe operational_vn_compiled = observe operational_vn_compiled_body.
+Proof.
+  unfold operational_vn_compiled, operational_vn_compiled_body,
+    operational_vn_compiled_after.
+  exact (observing_observe (unfold_aloop_ vn_compiled_step tt)).
+Qed.
+
+Lemma operational_vn_compiled_body_observe :
+  observe operational_vn_compiled_body =
+  ProbF vn_transition operational_vn_compiled_cont.
+Proof.
+  unfold operational_vn_compiled_body, vn_compiled_step.
+  rewrite observe_bind.
+  assert (Hstep : observe
+      (Prob vn_transition (fun next : unit + bool => Ret next) :
+        ptree vnE Enum (unit + bool)) =
+      ProbF vn_transition (fun next => Ret next)) by reflexivity.
+  rewrite Hstep. reflexivity.
+Qed.
+
+Lemma operational_vn_compiled_cont_observe next :
+  observe (operational_vn_compiled_cont next) =
+  observe (operational_vn_compiled_after next).
+Proof.
+  unfold operational_vn_compiled_cont.
+  rewrite observe_bind. reflexivity.
+Qed.
+
+Lemma operational_vn_limit_total :
+  @sem_total MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface bool operational_vn_limit.
+Proof.
+  apply free_omega_observable_total_intro.
+  exists bool, id, vn_fair. split.
+  - exact operational_vn_limit_observes.
+  - exact vn_fair_total.
+Qed.
+
+Lemma operational_vn_compiled_frontier :
+  @frontier vnE Enum MF Enum_SemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe operational_vn_compiled) operational_vn_heads.
+Proof.
+  unfold operational_vn_compiled, operational_vn_heads.
+  eapply frontier_iter_intro with
+    (transition := fun _ : unit => vn_transition).
+  - intro u. unfold vn_compiled_step. cbn.
+    rewrite -free_omega_mixed_bindE.
+    eapply UFProb with (Good := fun _ => True)
+      (front := fun next => FORet (FHRet next)).
+    + apply sem_ae_true.
+    + intros next _. rewrite -free_omega_observable_sem_retE. apply UFRet.
+  - exact operational_vn_mixed_iter.
+  - exact operational_vn_limit_total.
+Qed.
+
+Definition operational_vn_compiled_after_heads (next : unit + bool) :
+    MF vn_head :=
+  match next with
+  | inl _ => operational_vn_heads
+  | inr b => FORet (FHRet b)
+  end.
+
+Lemma operational_vn_compiled_after_frontier next :
+  @frontier vnE Enum MF Enum_SemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe (operational_vn_compiled_after next))
+    (operational_vn_compiled_after_heads next).
+Proof.
+  destruct next as [u|b].
+  - destruct u. unfold operational_vn_compiled_after,
+      operational_vn_compiled_after_heads.
+    apply UFTau. exact operational_vn_compiled_frontier.
+  - unfold operational_vn_compiled_after, operational_vn_compiled_after_heads.
+    rewrite -free_omega_observable_sem_retE. apply UFRet.
+Qed.
+
+Lemma operational_vn_compiled_cont_frontier next :
+  @frontier vnE Enum MF Enum_SemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe (operational_vn_compiled_cont next))
+    (operational_vn_compiled_after_heads next).
+Proof.
+  rewrite operational_vn_compiled_cont_observe.
+  apply operational_vn_compiled_after_frontier.
+Qed.
+
+Definition operational_vn_compiled_body_heads : MF vn_head :=
+  @sem_bind MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface)) _ _
+    operational_vn_compiled_round
+    (frontier_head_bind_front
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      operational_vn_compiled_after
+      operational_vn_compiled_after_heads).
+
+Lemma operational_vn_compiled_body_frontier :
+  @frontier vnE Enum MF Enum_SemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe operational_vn_compiled_body)
+    operational_vn_compiled_body_heads.
+Proof.
+  unfold operational_vn_compiled_body, operational_vn_compiled_body_heads.
+  eapply UFBind.
+  - unfold operational_vn_compiled_round, vn_compiled_step.
+    assert (Hstep : observe
+      (Prob vn_transition (fun next : unit + bool => Ret next) :
+        ptree vnE Enum (unit + bool)) =
+      ProbF vn_transition (fun next => Ret next)) by reflexivity.
+    rewrite Hstep.
+    cbn [operational_hitting_approx operational_kernel
+      operational_target_approx].
+    change (@frontier vnE Enum MF Enum_SemanticMeasureInterface
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface (unit + bool)
+      (ProbF vn_transition (fun next => Ret next))
+      (FOSample vn_transition (fun next => FORet (FHRet next)))).
+    rewrite -free_omega_mixed_bindE.
+    eapply UFProb with
+      (Good := fun _ => True) (front := fun next => FORet (FHRet next)).
+    + apply sem_ae_true.
+    + intros next _. rewrite -free_omega_observable_sem_retE. apply UFRet.
+  - exact operational_vn_compiled_after_frontier.
+Qed.
+
+Inductive operational_vn_compiled_domain : ptree' vnE Enum bool -> Prop :=
+  | OVCDRoot : operational_vn_compiled_domain
+      (observe operational_vn_compiled)
+  | OVCDBody : operational_vn_compiled_domain
+      (observe operational_vn_compiled_body)
+  | OVCDAfter next : operational_vn_compiled_domain
+      (observe (operational_vn_compiled_cont next)).
+
+Lemma operational_vn_ret_frontier_total b :
+  @sem_total MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface vn_head (FORet (FHRet b)).
+Proof.
+  apply free_omega_observable_total_intro.
+  exists bool. exists operational_vn_head_value. exists (ret_Enum b). split.
+  - constructor.
+  - change (enum_expect (fun _ : bool => (1 : rat)) (ret_Enum b) = 1).
+    rewrite enum_expect_ret. reflexivity.
+Qed.
+
+Definition operational_vn_compiled_body_observation : Enum bool :=
+  bind_Enum vn_transition (fun next =>
+    match next with
+    | inl _ => vn_fair
+    | inr b => ret_Enum b
+  end).
+
+Lemma operational_vn_compiled_round_eq :
+  operational_vn_compiled_round =
+  FOSample vn_transition (fun next => FORet (FHRet next)).
+Proof.
+  unfold operational_vn_compiled_round, vn_compiled_step.
+  assert (Hstep : observe
+      (Prob vn_transition (fun next : unit + bool => Ret next) :
+        ptree vnE Enum (unit + bool)) =
+      ProbF vn_transition (fun next => Ret next)) by reflexivity.
+  rewrite Hstep. reflexivity.
+Qed.
+
+Lemma operational_vn_compiled_body_heads_observes :
+  free_omega_observes operational_vn_head_value
+    operational_vn_compiled_body_heads
+    operational_vn_compiled_body_observation.
+Proof.
+  unfold operational_vn_compiled_body_heads,
+    operational_vn_compiled_body_observation.
+  rewrite operational_vn_compiled_round_eq.
+  cbn [operational_hitting_approx operational_kernel
+    operational_target_approx free_omega_bind
+    frontier_head_bind_front].
+  change (free_omega_observes operational_vn_head_value
+    (FOSample vn_transition operational_vn_compiled_after_heads)
+    (@sem_bind Enum Enum_SemanticMeasureInterface _ _ vn_transition
+      (fun next =>
+      match next with
+      | inl _ => vn_fair
+      | inr b => ret_Enum b
+      end))).
+  eapply FOOObserveSample. intros [u|b].
+  - exact operational_vn_heads_observes.
+  - constructor.
+Qed.
+
+Lemma operational_vn_compiled_body_heads_total :
+  @sem_total MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface vn_head
+    operational_vn_compiled_body_heads.
+Proof.
+  apply free_omega_observable_total_intro.
+  exists bool. exists operational_vn_head_value.
+  exists operational_vn_compiled_body_observation. split.
+  - exact operational_vn_compiled_body_heads_observes.
+  - vm_compute. reflexivity.
+Qed.
+
+Lemma operational_vn_compiled_domain_total_frontier ot :
+  operational_vn_compiled_domain ot ->
+  exists out : MF vn_head,
+    @frontier vnE Enum MF Enum_SemanticMeasureInterface
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface bool ot out /\
+    @sem_total MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaObservableSemanticOmegaInterface vn_head out.
+Proof.
+  intro HD. destruct HD.
+  - exists operational_vn_heads. split.
+    + exact operational_vn_compiled_frontier.
+    + exact operational_vn_heads_total.
+  - exists operational_vn_compiled_body_heads. split.
+    + exact operational_vn_compiled_body_frontier.
+    + exact operational_vn_compiled_body_heads_total.
+  - destruct next as [u|b].
+    + exists operational_vn_heads. split.
+      * exact (operational_vn_compiled_cont_frontier (inl u)).
+      * exact operational_vn_heads_total.
+    + exists (FORet (FHRet b)). split.
+      * exact (operational_vn_compiled_cont_frontier (inr b)).
+      * exact (operational_vn_ret_frontier_total b).
+Qed.
+
+Lemma operational_vn_compiled_domain_primitive_closed ot :
+  operational_vn_compiled_domain ot ->
+  sem_ae (@ptree_primitive_kernel vnE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface bool ot)
+    (fun target =>
+      match target with
+      | SHInternal ot' => operational_vn_compiled_domain ot'
+      | SHStable (FHRet _) => True
+      | SHStable (@FHVis _ _ _ X _ k) =>
+          forall x : X, operational_vn_compiled_domain (observe (k x))
+      end).
+Proof.
+  intro HD. destruct HD.
+  - rewrite operational_vn_compiled_observe_unfold.
+    rewrite operational_vn_compiled_body_observe.
+    eapply FOAESample with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros next _. constructor. apply OVCDAfter.
+  - rewrite operational_vn_compiled_body_observe.
+    eapply FOAESample with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros next _. constructor. apply OVCDAfter.
+  - destruct next as [u|b].
+    + destruct u. unfold operational_vn_compiled_after. constructor.
+      apply OVCDRoot.
+    + unfold operational_vn_compiled_after. constructor. exact I.
+Qed.
+
+Definition operational_vn_compiled_behavioral_domain :
+  @BehavioralDomain vnE Enum MF Enum_SemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    operational_vn_compiled_domain.
+Proof.
+  constructor.
+  - exact operational_vn_compiled_domain_total_frontier.
+  - exact operational_vn_compiled_domain_primitive_closed.
+Qed.
+
 Import GRing.Theory.
 Local Open Scope ring_scope.
 
@@ -840,3 +1160,149 @@ Proof.
   - exact operational_vn_direct_ast.
   - exact (operational_vn_heads_lift _).
 Qed.
+
+Lemma operational_vn_direct_frontier :
+  @frontier vnE Enum MF Enum_SemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe direct_fair) operational_vn_direct_heads.
+Proof.
+  unfold direct_fair, operational_vn_direct_heads. cbn.
+  rewrite -free_omega_mixed_bindE.
+  eapply UFProb with (Good := fun _ => True)
+    (front := fun b => FORet (FHRet b)).
+  - apply sem_ae_true.
+  - intros b _. rewrite -free_omega_observable_sem_retE. apply UFRet.
+Qed.
+
+Inductive operational_vn_direct_domain : ptree' vnE Enum bool -> Prop :=
+  | OVDDRoot : operational_vn_direct_domain (observe direct_fair)
+  | OVDDRet b : operational_vn_direct_domain
+      (observe (Ret b : ptree vnE Enum bool)).
+
+Lemma operational_vn_direct_domain_total_frontier ot :
+  operational_vn_direct_domain ot ->
+  exists out : MF vn_head,
+    @frontier vnE Enum MF Enum_SemanticMeasureInterface
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface bool ot out /\
+    @sem_total MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaObservableSemanticOmegaInterface vn_head out.
+Proof.
+  intro HD. destruct HD.
+  - exists operational_vn_direct_heads. split.
+    + exact operational_vn_direct_frontier.
+    + exact operational_vn_direct_heads_total.
+  - exists (FORet (FHRet b)). split.
+    + rewrite -free_omega_observable_sem_retE. apply UFRet.
+    + exact (operational_vn_ret_frontier_total b).
+Qed.
+
+Lemma operational_vn_direct_domain_primitive_closed ot :
+  operational_vn_direct_domain ot ->
+  sem_ae (@ptree_primitive_kernel vnE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface bool ot)
+    (fun target =>
+      match target with
+      | SHInternal ot' => operational_vn_direct_domain ot'
+      | SHStable (FHRet _) => True
+      | SHStable (@FHVis _ _ _ X _ k) =>
+          forall x : X, operational_vn_direct_domain (observe (k x))
+      end).
+Proof.
+  intro HD. destruct HD.
+  - change (free_omega_ae
+      (fun target : stable_target (ptree' vnE Enum bool) vn_head =>
+        match target with
+        | SHInternal ot' => operational_vn_direct_domain ot'
+        | SHStable (FHRet _) => True
+        | SHStable (@FHVis _ _ _ X _ k) =>
+            forall x : X, operational_vn_direct_domain (observe (k x))
+        end)
+      (FOSample vn_fair (fun b => FORet
+        (SHInternal (observe (Ret b : ptree vnE Enum bool)))))).
+    eapply FOAESample with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros b _. constructor. apply OVDDRet.
+  - constructor. exact I.
+Qed.
+
+Definition operational_vn_direct_behavioral_domain :
+  @BehavioralDomain vnE Enum MF Enum_SemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    operational_vn_direct_domain.
+Proof.
+  constructor.
+  - exact operational_vn_direct_domain_total_frontier.
+  - exact operational_vn_direct_domain_primitive_closed.
+Qed.
+
+Theorem weak_von_neumann_compiled_direct_bisim :
+  @weak_bisim vnE Enum MF Enum_SemanticMeasureInterface
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    Enum_SemanticMeasureCoreLaws
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    operational_vn_compiled direct_fair.
+Proof.
+  apply weak_bisim_fold. eapply UWBFrontier.
+  - exact operational_vn_compiled_frontier.
+  - exact operational_vn_direct_frontier.
+  - exact (operational_vn_heads_lift _).
+Qed.
+
+(** Concrete root-domain proof/native correspondence.  Both roots inhabit
+    explicit primitive-closed behavioral domains; the two implications are
+    witnessed by the structured frontier proof and the native stable-kernel
+    proof respectively. *)
+Theorem von_neumann_compiled_root_domain_correspondence :
+  operational_vn_compiled_domain (observe operational_vn_compiled) ->
+  operational_vn_direct_domain (observe direct_fair) ->
+  (@weak_bisim vnE Enum MF Enum_SemanticMeasureInterface
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      Enum_SemanticMeasureCoreLaws
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface bool bool eq
+      operational_vn_compiled direct_fair <->
+   @primitive_ptree_bisim vnE Enum MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface bool bool eq
+      operational_vn_compiled direct_fair).
+Proof.
+  intros Hroot1 Hroot2. split; intro Hrel.
+  - exact primitive_von_neumann_compiled_direct_bisim.
+  - exact weak_von_neumann_compiled_direct_bisim.
+Qed.
+
+Example operational_vn_compiled_root_in_domain :
+  operational_vn_compiled_domain (observe operational_vn_compiled) :=
+  OVCDRoot.
+
+Example operational_vn_direct_root_in_domain :
+  operational_vn_direct_domain (observe direct_fair) := OVDDRoot.
