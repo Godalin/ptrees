@@ -270,3 +270,106 @@ Proof.
 Qed.
 
 End PrimitiveKernelBisimulationReflexivity.
+
+Section PrimitiveKernelBisimulationConverse.
+Context {MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {S1 S2 A1 A2 : Type}.
+Variable kernel1 : S1 -> MF (stable_target S1 A1).
+Variable kernel2 : S2 -> MF (stable_target S2 A2).
+Variable AR12 : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
+Variable AR21 : (S2 -> S1 -> Prop) -> A2 -> A1 -> Prop.
+Hypothesis AR12_mono : forall sim1 sim2,
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall a1 a2, AR12 sim1 a1 a2 -> AR12 sim2 a1 a2.
+Hypothesis AR21_mono : forall sim1 sim2,
+  (forall s2 s1, sim1 s2 s1 -> sim2 s2 s1) ->
+  forall a2 a1, AR21 sim1 a2 a1 -> AR21 sim2 a2 a1.
+Hypothesis AR_converse : forall sim a1 a2,
+  AR12 sim a1 a2 ->
+  AR21 (fun s2 s1 => sim s1 s2) a2 a1.
+
+Lemma stable_target_rel_converse
+    (sim12 : S1 -> S2 -> Prop) (sim21 : S2 -> S1 -> Prop)
+    (Hsim : forall s1 s2, sim12 s1 s2 -> sim21 s2 s1) :
+  forall t1 t2,
+    stable_target_rel (AR12 sim12) sim12 t1 t2 ->
+    stable_target_rel (AR21 sim21) sim21 t2 t1.
+Proof.
+  intros t1 t2 Hrel. destruct Hrel.
+  - constructor. eapply AR21_mono.
+    + intros s2 s1 H12. exact (Hsim _ _ H12).
+    + exact (AR_converse H).
+  - constructor. exact (Hsim _ _ H).
+Qed.
+
+(** Heterogeneous converse: swapping both kernels and the observation
+    transformer commutes with the native greatest fixed point. *)
+Theorem stable_kernel_bisim_converse : forall s1 s2,
+  @stable_kernel_bisim MF FI FC FO S1 S2 A1 A2
+    kernel1 kernel2 AR12 AR12_mono s1 s2 ->
+  @stable_kernel_bisim MF FI FC FO S2 S1 A2 A1
+    kernel2 kernel1 AR21 AR21_mono s2 s1.
+Proof.
+  unfold stable_kernel_bisim at 2. coinduction CH CIH.
+  intros s1 s2 Hrel.
+  pose proof (@stable_kernel_bisim_unfold MF FI FC FO S1 S2 A1 A2
+    kernel1 kernel2 AR12 AR12_mono s1 s2 Hrel) as Hstep.
+  unfold stable_kernel_bisim_body.
+  destruct Hstep.
+  - eapply SKBAST; [exact H0|exact H|].
+    apply sem_lift_sym in H1. eapply sem_lift_mono; [|exact H1].
+    intros a2 a1 Har. eapply AR21_mono.
+    + intros x2 x1 H12. exact (CIH _ _ H12).
+    + exact (AR_converse Har).
+  - apply SKBStep. apply sem_lift_sym in H.
+    eapply sem_lift_mono; [|exact H].
+    intros t2 t1 Htarget.
+    eapply stable_target_rel_converse; [exact CIH|exact Htarget].
+Qed.
+
+End PrimitiveKernelBisimulationConverse.
+
+Section PrimitiveKernelBisimulationObservationMonotonicity.
+Context {MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {S1 S2 A1 A2 : Type}.
+Variable kernel1 : S1 -> MF (stable_target S1 A1).
+Variable kernel2 : S2 -> MF (stable_target S2 A2).
+Variable AR1 AR2 : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
+Hypothesis AR1_mono : forall sim1 sim2,
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall a1 a2, AR1 sim1 a1 a2 -> AR1 sim2 a1 a2.
+Hypothesis AR2_mono : forall sim1 sim2,
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall a1 a2, AR2 sim1 a1 a2 -> AR2 sim2 a1 a2.
+Hypothesis AR_sub : forall sim1 sim2,
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall a1 a2, AR1 sim1 a1 a2 -> AR2 sim2 a1 a2.
+
+Theorem stable_kernel_bisim_observation_mono : forall s1 s2,
+  @stable_kernel_bisim MF FI FC FO S1 S2 A1 A2
+    kernel1 kernel2 AR1 AR1_mono s1 s2 ->
+  @stable_kernel_bisim MF FI FC FO S1 S2 A1 A2
+    kernel1 kernel2 AR2 AR2_mono s1 s2.
+Proof.
+  unfold stable_kernel_bisim at 2. coinduction CH CIH.
+  intros s1 s2 Hrel.
+  pose proof (@stable_kernel_bisim_unfold MF FI FC FO S1 S2 A1 A2
+    kernel1 kernel2 AR1 AR1_mono s1 s2 Hrel) as Hstep.
+  unfold stable_kernel_bisim_body. destruct Hstep.
+  - eapply SKBAST; [exact H|exact H0|].
+    eapply sem_lift_mono; [|exact H1].
+    intros a1 a2 Har. exact (AR_sub CIH Har).
+  - apply SKBStep. eapply sem_lift_mono; [|exact H].
+    intros t1 t2 Htarget. eapply stable_target_rel_mono.
+    + intros a1 a2 Har. exact (AR_sub CIH Har).
+    + exact CIH.
+    + exact Htarget.
+Qed.
+
+End PrimitiveKernelBisimulationObservationMonotonicity.

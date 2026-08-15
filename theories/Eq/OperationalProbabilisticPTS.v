@@ -442,7 +442,87 @@ Proof.
   - exact Hlift.
 Qed.
 
+Lemma ptree_stable_observation_rel_converse
+    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop) :
+  forall h1 h2,
+    ptree_stable_observation_rel sim h1 h2 ->
+    @frontier_head_rel E MN R2 R1 (fun r2 r1 => RR r1 r2)
+      (fun t2 t1 => sim (observe t1) (observe t2)) h2 h1.
+Proof.
+  intros h1 h2 Hrel. inversion Hrel; subst.
+  - constructor. exact H.
+  - constructor. intro x. exact (H x).
+Qed.
+
 End GenericPTreeBisimulation.
+
+Section PrimitivePTreeBisimulationConverse.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+
+Theorem primitive_ptree_bisim_converse : forall t1 t2,
+  @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR t1 t2 ->
+  @primitive_ptree_bisim E MN MF FI FC MX FO R2 R1
+    (fun r2 r1 => RR r1 r2) t2 t1.
+Proof.
+  intros t1 t2 Hrel. unfold primitive_ptree_bisim,
+    primitive_ptree_state_bisim in Hrel |- *.
+  eapply stable_kernel_bisim_converse; [|exact Hrel].
+  intros sim h1 h2 Hhead.
+  exact (@ptree_stable_observation_rel_converse E MN R1 R2 RR
+    sim h1 h2 Hhead).
+Qed.
+
+End PrimitivePTreeBisimulationConverse.
+
+Section PrimitivePTreeBisimulationResultMonotonicity.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {R1 R2 : Type}.
+
+Theorem primitive_ptree_bisim_rel_mono
+    (RR1 RR2 : R1 -> R2 -> Prop)
+    (HR : forall r1 r2, RR1 r1 r2 -> RR2 r1 r2) :
+  forall t1 t2,
+    @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR1 t1 t2 ->
+    @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR2 t1 t2.
+Proof.
+  intros t1 t2 Hrel. unfold primitive_ptree_bisim,
+    primitive_ptree_state_bisim in Hrel |- *.
+  eapply stable_kernel_bisim_observation_mono; [|exact Hrel].
+  intros sim1 sim2 Hsim h1 h2 Hhead. inversion Hhead; subst.
+  - constructor. exact (HR _ _ H).
+  - constructor. intro x. exact (Hsim _ _ (H x)).
+Qed.
+
+End PrimitivePTreeBisimulationResultMonotonicity.
+
+Section PrimitivePTreeBisimulationSymmetry.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {R : Type}.
+
+Theorem primitive_ptree_bisim_sym :
+  Symmetric (@primitive_ptree_bisim E MN MF FI FC MX FO R R eq).
+Proof.
+  intros t1 t2 Hrel.
+  eapply primitive_ptree_bisim_rel_mono.
+  - intros r1 r2 Heq. symmetry. exact Heq.
+  - exact (primitive_ptree_bisim_converse Hrel).
+Qed.
+
+End PrimitivePTreeBisimulationSymmetry.
 
 Section OperationalHittingOrder.
 Context {E : Type -> Type} {MN MF : Type -> Type}
