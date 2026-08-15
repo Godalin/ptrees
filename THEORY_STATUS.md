@@ -166,6 +166,22 @@ condition is listed explicitly, the referenced result is proved without an
   instantiated independently for the compatibility relation and the new
   primitive-kernel gfp.  Thus the generic equivalences do not assume an
   inclusion theorem from the old bisimulation.
+  A later behavioral-equivalence audit found that the original coinductive
+  one-sided semantic-silent rules were too strong: a Dirac residual
+  self-loop could reuse the coinduction hypothesis forever and become
+  related to an arbitrary state.  Commit `6acc311` mechanized both absorption
+  directions before the rules were removed.  No maintained primitive client
+  depended on them.  Any future silent convenience must therefore use an
+  inductive finite closure or an explicit progress argument.
+  The repaired generic relation now has a checked heterogeneous converse
+  theorem, observation-transformer monotonicity, and the PTree theorem
+  `primitive_ptree_bisim_sym`.  Transitivity is factored at its exact
+  remaining boundary by `stable_kernel_bisim_compose`: `Step x Step` follows
+  from coupling composition and `AR` composition, while `AST x Step` and
+  `Step x AST` require stable-hitting AST and its coupled limit to be
+  preserved along the component bisimulations.  That preservation result is
+  not supplied by the present bare coupling interface, so no unconditional
+  `Equivalence` instance is claimed yet.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides
