@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 
-From Coq Require Import Lia Logic.FunctionalExtensionality.
+From Coq Require Import Lia Logic.FunctionalExtensionality Program.Equality.
 From mathcomp Require Import ssreflect ssrnat eqtype ssralg ssrnum rat.
 
 From PTree.Core Require Import PTreeDefinitionNew.
@@ -619,6 +619,55 @@ Proof.
       destruct h2 as [b2|Y e2 k2];
       try destruct e1; try destruct e2.
     cbn in Hvalue. subst b2. constructor. reflexivity.
+  - unfold free_omega_support_lift. split.
+    + intros P HP.
+      apply free_omega_ae_bind_inv in HP.
+      unfold operational_vn_limit in HP. dependent destruction HP.
+      specialize (H 1%nat).
+      unfold operational_vn_iter_approx in H.
+      cbn [mixed_iter_approx mixed_bind FreeOmegaMixedMeasureInterface] in H.
+      pose proof (free_omega_ae_sample_inv H) as Hround.
+      assert (HPfalse : P (FHRet false)).
+      { specialize (Hround vn_two_ninths (inr false)). cbn in Hround.
+        pose proof (Hround (or_intror (or_introl Logic.eq_refl))
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. dependent destruction H0. exact H0. }
+      assert (HPtrue : P (FHRet true)).
+      { specialize (Hround vn_two_ninths (inr true)). cbn in Hround.
+        pose proof (Hround (or_intror (or_intror (or_introl Logic.eq_refl)))
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. dependent destruction H0. exact H0. }
+      unfold operational_vn_direct_heads.
+      eapply FOAESample with (Good := fun _ => True).
+      * apply sem_ae_true.
+      * intros b _. constructor. exists (FHRet b). split.
+        -- constructor. reflexivity.
+        -- destruct b; assumption.
+    + intros Q HQ.
+      unfold operational_vn_direct_heads in HQ.
+      pose proof (free_omega_ae_sample_inv HQ) as Hfair.
+      assert (HQfalse : Q (FHRet false)).
+      { specialize (Hfair one_div_two false). cbn in Hfair.
+        pose proof (Hfair (or_introl Logic.eq_refl)
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. exact H. }
+      assert (HQtrue : Q (FHRet true)).
+      { specialize (Hfair one_div_two true). cbn in Hfair.
+        pose proof (Hfair (or_intror (or_introl Logic.eq_refl))
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. exact H. }
+      apply free_omega_ae_mono with (P := fun _ => True).
+      * intros h _. destruct h as [b|X e k]; [|destruct e].
+        exists (FHRet b). split; [constructor; reflexivity|].
+        destruct b; assumption.
+      * generalize operational_vn_heads. intro mu. induction mu.
+        -- constructor. exact I.
+        -- constructor.
+        -- eapply FOAESample with (Good := fun _ => True).
+           ++ apply (@sem_ae_true Enum Enum_SemanticMeasureInterface
+                Enum_SemanticMeasureCoreLaws).
+           ++ intros x _. exact (H x).
+        -- constructor. exact H.
 Qed.
 
 Lemma operational_vn_raw_heads_lift
@@ -645,6 +694,73 @@ Proof.
       destruct h2 as [b2|Y e2 k2];
       try destruct e1; try destruct e2.
     cbn in Hvalue. subst b2. constructor. reflexivity.
+  - unfold free_omega_support_lift. split.
+    + intros P HP. unfold operational_vn_raw_heads,
+        operational_vn_raw_limit in HP.
+      dependent destruction HP. specialize (H 1%nat).
+      cbn [operational_vn_raw_schedule] in H.
+      rewrite operational_vn_raw_hitting_three in H.
+      pose proof (free_omega_ae_sample_inv H) as Hfirst.
+      assert (Hfirst_false : free_omega_ae P
+          (FOSample vn_biased_coin (fun b2 =>
+            match vn_round_result false b2 with
+            | inl _ => operational_vn_raw_hitting 0
+            | inr b => FORet (FHRet b)
+            end))).
+      { apply Hfirst with (p := vn_one_third).
+        - cbn. auto.
+        - cbn. discriminate. }
+      assert (Hfirst_true : free_omega_ae P
+          (FOSample vn_biased_coin (fun b2 =>
+            match vn_round_result true b2 with
+            | inl _ => operational_vn_raw_hitting 0
+            | inr b => FORet (FHRet b)
+            end))).
+      { apply Hfirst with (p := vn_two_thirds).
+        - cbn. auto.
+        - cbn. discriminate. }
+      pose proof (free_omega_ae_sample_inv Hfirst_false) as Hsecond_false.
+      pose proof (free_omega_ae_sample_inv Hfirst_true) as Hsecond_true.
+      assert (HPfalse : P (FHRet false)).
+      { specialize (Hsecond_false vn_two_thirds true). cbn in Hsecond_false.
+        pose proof (Hsecond_false (or_intror (or_introl Logic.eq_refl))
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. exact H0. }
+      assert (HPtrue : P (FHRet true)).
+      { specialize (Hsecond_true vn_one_third false). cbn in Hsecond_true.
+        pose proof (Hsecond_true (or_introl Logic.eq_refl)
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. exact H0. }
+      unfold operational_vn_direct_heads.
+      eapply FOAESample with (Good := fun _ => True).
+      * apply sem_ae_true.
+      * intros b _. constructor. exists (FHRet b). split.
+        -- constructor. reflexivity.
+        -- destruct b; assumption.
+    + intros Q HQ. unfold operational_vn_direct_heads in HQ.
+      pose proof (free_omega_ae_sample_inv HQ) as Hfair.
+      assert (HQfalse : Q (FHRet false)).
+      { specialize (Hfair one_div_two false). cbn in Hfair.
+        pose proof (Hfair (or_introl Logic.eq_refl)
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. exact H. }
+      assert (HQtrue : Q (FHRet true)).
+      { specialize (Hfair one_div_two true). cbn in Hfair.
+        pose proof (Hfair (or_intror (or_introl Logic.eq_refl))
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. exact H. }
+      apply free_omega_ae_mono with (P := fun _ => True).
+      * intros h _. destruct h as [b|X e k]; [|destruct e].
+        exists (FHRet b). split; [constructor; reflexivity|].
+        destruct b; assumption.
+      * generalize operational_vn_raw_heads. intro mu. induction mu.
+        -- constructor. exact I.
+        -- constructor.
+        -- eapply FOAESample with (Good := fun _ => True).
+           ++ apply (@sem_ae_true Enum Enum_SemanticMeasureInterface
+                Enum_SemanticMeasureCoreLaws).
+           ++ intros x _. exact (H x).
+        -- constructor. exact H.
 Qed.
 
 (** This endpoint removes the compiled-round shortcut completely.  The
