@@ -704,6 +704,32 @@ Qed.
 
 End FreeOmegaLaws.
 
+(** High-universe support transport, stated without choosing a concrete
+    measure on the result carrier.  This is the information that an
+    observation-level coupling must retain in addition to its low-universe
+    denotation: every AE-good set on one representation is transported to
+    the relational image on the other. *)
+Polymorphic Definition free_omega_support_lift {MN}
+    `{NI : SemanticMeasureInterface MN} {A B}
+    (R : A -> B -> Prop) (mu : FreeOmega MN A) (nu : FreeOmega MN B) : Prop :=
+  (forall P, free_omega_ae P mu ->
+    free_omega_ae (fun y => exists x, R x y /\ P x) nu) /\
+  (forall Q, free_omega_ae Q nu ->
+    free_omega_ae (fun x => exists y, R x y /\ Q y) mu).
+
+Lemma free_omega_lift_support_lift {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NC : @SemanticMeasureCoreLaws MN NI}
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    {A B} (R : A -> B -> Prop) mu nu :
+  free_omega_lift R mu nu -> free_omega_support_lift R mu nu.
+Proof.
+  intro Hlift. split.
+  - intro P. exact (free_omega_lift_ae_transport_r Hlift).
+  - intro Q. apply free_omega_lift_ae_transport_r.
+    exact (free_omega_lift_sym Hlift).
+Qed.
+
 (** An observation-closed coupling for the free omega completion.  The
     structural lifting above remains useful for syntax-directed proofs, but
     it deliberately cannot identify, for example, a formal omega limit with
