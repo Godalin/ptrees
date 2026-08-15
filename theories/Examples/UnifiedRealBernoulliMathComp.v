@@ -2,6 +2,8 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
+Require Import Program.Equality.
+
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum reals.
 
 From PTree.Core Require Import PTreeDefinitionNew.
@@ -21,6 +23,7 @@ Local Open Scope ring_scope.
 
 Section UnifiedRealOracle.
 Context (R : realType).
+Context `{MathCompOracleSupportLaws R}.
 
 Local Notation MN := (MathCompKernelMeasure R).
 Local Notation MF := (MathCompBehaviorMeasure R).
@@ -138,6 +141,20 @@ Proof.
     destruct h1 as [b1|X1 e1 k1]; [|destruct e1].
     destruct h2 as [b2|X2 e2 k2]; [|destruct e2].
     constructor. exact Hh.
+  - change (free_omega_support_lift (frontier_head_rel eq sim)
+      (free_omega_bind (unified_mathcomp_oracle_out R Head qbit)
+        (fun b => FORet (FHRet b)))
+      (free_omega_bind
+        (FOSample (mathcomp_bernoulli q) (fun b => FORet b))
+        (fun b => FORet (FHRet b)))).
+    eapply free_omega_support_lift_bind with (T := eq).
+    + exact (mathcomp_oracle_support Head
+        (qbit := qbit) (q := q) q01 Hrep).
+    + intros b1 b2 ->. split.
+      * intros P HP. dependent destruction HP. apply FOAERet.
+        exists (FHRet b2). split; [apply FHRRet; reflexivity|assumption].
+      * intros P HP. dependent destruction HP. apply FOAERet.
+        exists (FHRet b2). split; [apply FHRRet; reflexivity|assumption].
 Qed.
 
 Theorem unified_mathcomp_binary_oracle_weak_bisim_direct
@@ -148,7 +165,7 @@ Theorem unified_mathcomp_binary_oracle_weak_bisim_direct
     (MathCompNodeSemanticMeasureInterface R)
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
-    (@MathCompNodeSemanticMeasureCoreLaws R H)
+    (@MathCompNodeSemanticMeasureCoreLaws R H0)
     (FreeOmegaObservableSemanticMeasureCoreLaws
       (NI := MathCompNodeSemanticMeasureInterface R))
     FreeOmegaMixedMeasureInterface
@@ -172,7 +189,7 @@ Corollary unified_mathcomp_binary_oracle_ppts_bisim_direct
     (MathCompNodeSemanticMeasureInterface R)
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
-    (@MathCompNodeSemanticMeasureCoreLaws R H)
+    (@MathCompNodeSemanticMeasureCoreLaws R H0)
     (FreeOmegaObservableSemanticMeasureCoreLaws
       (NI := MathCompNodeSemanticMeasureInterface R))
     FreeOmegaMixedMeasureInterface

@@ -2,6 +2,8 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 
+Require Import Program.Equality.
+
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum reals.
 
 From PTree.Core Require Import PTreeDefinitionNew.
@@ -22,6 +24,7 @@ Local Open Scope ring_scope.
 Section OperationalRealOracle.
 Context (R : realType).
 Context `{MathCompCouplingGluing R}.
+Context `{MathCompOracleSupportLaws R}.
 
 Local Notation MN := (MathCompKernelMeasure R).
 Local Notation MF := (MathCompBehaviorMeasure R).
@@ -244,6 +247,22 @@ Proof.
       destruct h2 as [b2|Y e2 k2];
       try destruct e1; try destruct e2.
     cbn in Hvalue. subst b2. constructor. reflexivity.
+  - unfold operational_mathcomp_oracle_heads,
+      operational_mathcomp_direct_heads.
+    change (free_omega_support_lift (frontier_head_rel eq sim)
+      (free_omega_bind (unified_mathcomp_oracle_out R Head qbit)
+        (fun b => FORet (FHRet b)))
+      (free_omega_bind
+        (FOSample (mathcomp_bernoulli q) (fun b => FORet b))
+        (fun b => FORet (FHRet b)))).
+    eapply free_omega_support_lift_bind with (T := eq).
+    + exact (mathcomp_oracle_support Head
+        (qbit := qbit) (q := q) q01 Hrep).
+    + intros b1 b2 ->. split.
+      * intros P HP. dependent destruction HP. apply FOAERet.
+        exists (FHRet b2). split; [apply FHRRet; reflexivity|assumption].
+      * intros P HP. dependent destruction HP. apply FOAERet.
+        exists (FHRet b2). split; [apply FHRRet; reflexivity|assumption].
 Qed.
 
 Theorem operational_mathcomp_binary_oracle_bisim_direct :

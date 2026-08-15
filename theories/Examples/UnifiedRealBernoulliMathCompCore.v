@@ -41,6 +41,20 @@ Definition unified_mathcomp_oracle_out (Anchor : Type)
     (qbit : binary_oracle) : FreeOmegaAt MN Anchor bool :=
   FOLub (fun fuel => unified_mathcomp_oracle_approx Anchor qbit fuel 0).
 
+(** Analytic support adequacy of the MathComp oracle limit.  Equality of
+    limiting probabilities alone does not expose this high-universe fact;
+    concrete real-measure backends discharge it from monotonicity and
+    null-set reflection.  Keeping it as a named law prevents observation
+    couplings from silently assuming that theorem. *)
+Class MathCompOracleSupportLaws := {
+  mathcomp_oracle_support : forall (Anchor : Type)
+      (qbit : binary_oracle) (q : R),
+    (0 <= q <= 1)%R -> mathcomp_oracle_represents qbit q ->
+    @free_omega_support_lift MN (MathCompNodeSemanticMeasureInterface R)
+      bool bool eq (unified_mathcomp_oracle_out Anchor qbit)
+      (FOSample (mathcomp_bernoulli q) (fun b => FORet b))
+}.
+
 Lemma unified_mathcomp_oracle_step_frontier qbit n :
   @frontier real_mathcomp_coinE MN MF
     (MathCompNodeSemanticMeasureInterface R)
