@@ -1314,6 +1314,341 @@ Proof.
   exact (free_operational_bind_prob_approx_cofinal Huniform).
 Qed.
 
+(** A two-dimensional operational model for an iterator whose individual
+    state-indexed steps may themselves have unbounded running time.  The
+    first coordinate bounds completed iterator rounds; the second bounds
+    primitive execution inside every step.  Unlike [free_nested_program],
+    this construction consumes the client's actual [step] directly, so no
+    bind reassociation or [pstructural] normalization is involved. *)
+Section DirectUnboundedIteration.
+Context {I R : Type}.
+Variable no_event : forall X, E X -> False.
+Variable step : I -> ptree E MN (I + R).
+
+Definition free_iter_after (next : I + R) : ptree E MN R :=
+  match next with
+  | inl j => Tau (PTree.iter step j)
+  | inr r => Ret r
+  end.
+
+Lemma free_iter_program_observe i :
+  observe (PTree.iter step i) =
+  observe (PTree.bind (step i) free_iter_after).
+Proof.
+  pose proof (unfold_aloop_ step i) as Hunfold.
+  rewrite (observing_observe Hunfold), observe_bind. reflexivity.
+Qed.
+
+Definition free_iter_head_next
+    (h : frontier_head E MN (I + R)) : I + R :=
+  match h with
+  | FHRet next => next
+  | @FHVis _ _ _ X e k => False_rect _ (no_event e)
+  end.
+
+Fixpoint free_iter_execution_grid (rounds inner : nat) (i : I) :
+    MF (frontier_head E MN R) :=
+  match rounds with
+  | O => FOZero
+  | S rounds' =>
+      free_omega_bind
+        (operational_hitting_approx (MF := MF) inner (observe (step i)))
+        (fun h =>
+          match free_iter_head_next h with
+          | inl j => free_iter_execution_grid rounds' inner j
+          | inr r => FORet (FHRet r)
+          end)
+  end.
+
+Lemma free_iter_head_ret (h : frontier_head E MN (I + R)) :
+  exists next, h = FHRet next.
+Proof.
+  destruct h as [next|X e k].
+  - exists next. reflexivity.
+  - exfalso. exact (no_event e).
+Qed.
+
+Lemma free_iter_execution_grid_inner_increasing rounds :
+  forall inner i,
+    free_omega_approx eq
+      (free_iter_execution_grid rounds inner i)
+      (free_iter_execution_grid rounds (S inner) i).
+Proof.
+  induction rounds as [|rounds IH]; intros inner i.
+  - constructor.
+  - cbn [free_iter_execution_grid].
+    eapply free_omega_approx_bind with (R := eq) (T := eq).
+    + apply free_operational_hitting_mono. apply le_S, le_n.
+    + intros h1 h2 ->.
+      destruct (free_iter_head_next h2) as [j|r].
+      * apply IH.
+      * apply free_omega_approx_refl. intros x. reflexivity.
+Qed.
+
+Lemma free_iter_execution_grid_outer_increasing inner :
+  forall rounds i,
+    free_omega_approx eq
+      (free_iter_execution_grid rounds inner i)
+      (free_iter_execution_grid (S rounds) inner i).
+Proof.
+  induction rounds as [|rounds IH]; intro i.
+  - constructor.
+  - cbn [free_iter_execution_grid].
+    eapply free_omega_approx_bind with (R := eq) (T := eq).
+    + apply free_omega_approx_refl. intros h. reflexivity.
+    + intros h1 h2 ->.
+      destruct (free_iter_head_next h2) as [j|r].
+      * apply IH.
+      * apply free_omega_approx_refl. intros x. reflexivity.
+Qed.
+
+Lemma free_iter_operational_to_grid_sound fuel : forall i,
+  free_omega_approx eq
+    (operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.iter step i)))
+    (free_iter_execution_grid (S fuel) fuel i).
+Proof.
+  induction fuel as [|fuel IH]; intro i.
+  - rewrite free_iter_program_observe.
+    eapply free_omega_approx_trans.
+    + apply free_operational_bind_hitting_le_diagonal.
+    + unfold operational_bind_diagonal_approx.
+      cbn [free_iter_execution_grid].
+      eapply free_omega_approx_bind with (R := eq) (T := eq).
+      * apply free_omega_approx_refl. intros h. reflexivity.
+      * intros h1 h2 ->.
+        destruct (free_iter_head_ret h2) as [next ->].
+        cbn [operational_head_bind_approx free_iter_head_next].
+        destruct next as [j|r].
+        -- cbn [operational_hitting_approx operational_kernel]. constructor.
+        -- cbn [operational_hitting_approx operational_kernel].
+           try rewrite operational_target_stableE.
+           apply free_omega_approx_refl. intros x. reflexivity.
+  - rewrite free_iter_program_observe.
+    eapply free_omega_approx_trans.
+    + apply free_operational_bind_hitting_le_diagonal.
+    + unfold operational_bind_diagonal_approx.
+      cbn [free_iter_execution_grid].
+      eapply free_omega_approx_bind with (R := eq) (T := eq).
+      * apply free_omega_approx_refl. intros h. reflexivity.
+      * intros h1 h2 ->.
+        destruct (free_iter_head_ret h2) as [next ->].
+        cbn [operational_head_bind_approx free_iter_head_next].
+        destruct next as [j|r].
+        -- cbn [operational_hitting_approx operational_kernel].
+           eapply free_omega_approx_trans.
+           ++ apply IH.
+           ++ apply free_omega_approx_monotone_nat with
+                (chain := fun inner =>
+                  free_iter_execution_grid (S fuel) inner j).
+              ** intro inner.
+                 apply free_iter_execution_grid_inner_increasing.
+              ** apply le_S, le_n.
+        -- cbn [operational_hitting_approx operational_kernel].
+           try rewrite operational_target_stableE.
+           apply free_omega_approx_refl. intros x. reflexivity.
+Qed.
+
+Fixpoint free_iter_grid_operational_fuel
+    (rounds inner : nat) : nat :=
+  match rounds with
+  | O => O
+  | S rounds' => inner + S (free_iter_grid_operational_fuel rounds' inner)
+  end.
+
+Lemma free_iter_grid_to_operational_sound rounds : forall inner i,
+  free_omega_approx eq
+    (free_iter_execution_grid rounds inner i)
+    (operational_hitting_approx (MF := MF)
+      (free_iter_grid_operational_fuel rounds inner)
+      (observe (PTree.iter step i))).
+Proof.
+  induction rounds as [|rounds IH]; intros inner i.
+  - constructor.
+  - cbn [free_iter_execution_grid free_iter_grid_operational_fuel].
+    rewrite free_iter_program_observe.
+    eapply free_omega_approx_trans with
+      (nu := free_operational_bind_split_approx inner
+        (S (free_iter_grid_operational_fuel rounds inner))
+        (step i) free_iter_after).
+    + unfold free_operational_bind_split_approx.
+      eapply free_omega_approx_bind with (R := eq) (T := eq).
+      * apply free_omega_approx_refl. intros h. reflexivity.
+      * intros h1 h2 ->.
+        destruct (free_iter_head_ret h2) as [next ->].
+        cbn [free_iter_head_next operational_head_bind_approx].
+        destruct next as [j|r].
+        -- cbn [operational_hitting_approx operational_kernel]. apply IH.
+        -- cbn [operational_hitting_approx operational_kernel].
+           try rewrite operational_target_stableE.
+           apply free_omega_approx_refl. intros x. reflexivity.
+    + apply free_operational_bind_split_le_hitting. exact no_event.
+Qed.
+
+Record free_iter_diagonal_productivity_certificate (i : I) := {
+  iter_operational_to_grid : forall fuel,
+    free_omega_approx eq
+      (operational_hitting_approx (MF := MF) fuel
+        (observe (PTree.iter step i)))
+      (free_iter_execution_grid (S fuel) fuel i);
+  iter_grid_to_operational : forall rounds inner,
+    free_omega_approx eq
+      (free_iter_execution_grid rounds inner i)
+      (operational_hitting_approx (MF := MF)
+        (free_iter_grid_operational_fuel rounds inner)
+        (observe (PTree.iter step i)))
+}.
+
+Theorem free_iter_diagonal_productivity i :
+  free_iter_diagonal_productivity_certificate i.
+Proof.
+  constructor.
+  - intro fuel. exact (free_iter_operational_to_grid_sound fuel i).
+  - intros rounds inner.
+    exact (free_iter_grid_to_operational_sound rounds inner i).
+Qed.
+
+Theorem free_iter_grid_diagonal_cofinal i :
+  @operational_hitting_diagonal_cofinal E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R
+    (observe (PTree.iter step i))
+    (fun rounds inner => free_iter_execution_grid rounds inner i).
+Proof.
+  intro out. apply free_omega_cofinal_lub_iff. split.
+  - intro fuel. exists (S fuel).
+    eapply free_omega_approx_trans.
+    + apply free_iter_operational_to_grid_sound.
+    + apply free_omega_approx_monotone_nat with
+        (chain := fun inner => free_iter_execution_grid (S fuel) inner i).
+      * intro inner. apply free_iter_execution_grid_inner_increasing.
+      * apply le_S, le_n.
+  - intro diagonal.
+    exists (free_iter_grid_operational_fuel diagonal diagonal).
+    eapply free_omega_approx_mono.
+    + intros x y Hxy. symmetry. exact Hxy.
+    + apply free_iter_grid_to_operational_sound.
+Qed.
+
+Variable step_out : I -> MF (frontier_head E MN (I + R)).
+
+Fixpoint free_iter_complete_rows (rounds : nat) (i : I) :
+    MF (frontier_head E MN R) :=
+  match rounds with
+  | O => FOZero
+  | S rounds' =>
+      free_omega_bind (step_out i) (fun h =>
+        match free_iter_head_next h with
+        | inl j => free_iter_complete_rows rounds' j
+        | inr r => FORet (FHRet r)
+        end)
+  end.
+
+Lemma free_iter_execution_grid_row_lub
+    (Hstep : forall i,
+      @operational_weak E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface (I + R)
+        (observe (step i)) (step_out i)) :
+  forall rounds i,
+    @sem_lub MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface _
+      (fun inner => free_iter_execution_grid rounds inner i)
+      (free_iter_complete_rows rounds i).
+Proof.
+  induction rounds as [|rounds IH]; intro i.
+  - cbn [free_iter_execution_grid free_iter_complete_rows].
+    apply sem_lub_constant.
+  - cbn [free_iter_execution_grid free_iter_complete_rows].
+    change (@sem_lub MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface _
+      (fun inner => @sem_bind MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        _ _ (operational_hitting_approx (MF := MF) inner (observe (step i)))
+        (fun h => match free_iter_head_next h with
+          | inl j => free_iter_execution_grid rounds inner j
+          | inr r => FORet (FHRet r)
+          end))
+      (@sem_bind MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        _ _ (step_out i)
+        (fun h => match free_iter_head_next h with
+          | inl j => free_iter_complete_rows rounds j
+          | inr r => FORet (FHRet r)
+          end))).
+    eapply sem_bind_diagonal_lub.
+    + apply (operational_hitting_increasing
+        (FI := FreeOmegaObservableSemanticMeasureInterface)
+        (MX := FreeOmegaMixedMeasureInterface)
+        (FO := FreeOmegaObservableSemanticOmegaInterface)).
+    + intro h. destruct (free_iter_head_next h) as [j|r].
+      * intro inner. apply free_iter_execution_grid_inner_increasing.
+      * intro inner. apply free_omega_approx_refl. intros x. reflexivity.
+    + apply Hstep.
+    + intro h. destruct (free_iter_head_next h) as [j|r].
+      * apply IH.
+      * apply sem_lub_constant.
+Qed.
+
+Theorem free_iter_execution_grid_diagonal_lub
+    (Hstep : forall i,
+      @operational_weak E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface (I + R)
+        (observe (step i)) (step_out i))
+    (i : I) out :
+  @sem_lub MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (fun rounds => free_iter_complete_rows rounds i) out ->
+  @sem_lub MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (fun fuel => free_iter_execution_grid fuel fuel i) out.
+Proof.
+  intro Hrows.
+  refine (@sem_lub_double_diagonal MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface
+    FreeOmegaObservableSemanticOmegaFubiniLaws (frontier_head E MN R)
+    (fun rounds inner => free_iter_execution_grid rounds inner i)
+    (fun rounds => free_iter_complete_rows rounds i) out _ _ _ _).
+  - intros rounds inner. apply free_iter_execution_grid_inner_increasing.
+  - intros inner rounds. apply free_iter_execution_grid_outer_increasing.
+  - intro rounds. apply free_iter_execution_grid_row_lub. exact Hstep.
+  - exact Hrows.
+Qed.
+
+Theorem free_operational_weak_iter_of_unbounded_steps
+    (Hstep : forall i,
+      @operational_weak E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface (I + R)
+        (observe (step i)) (step_out i))
+    (i : I) out :
+  @sem_lub MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (fun rounds => free_iter_complete_rows rounds i) out ->
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R
+    (observe (PTree.iter step i)) out.
+Proof.
+  intro Hrounds. unfold operational_weak.
+  apply (proj2 (free_iter_grid_diagonal_cofinal i out)).
+  apply free_iter_execution_grid_diagonal_lub; assumption.
+Qed.
+
+End DirectUnboundedIteration.
+
 (** The analogous finite obligation for iteration rounds.  This is where
     bounded cost/productivity proofs for concrete samplers belong. *)
 Definition free_operational_iter_approx_cofinal {I R}

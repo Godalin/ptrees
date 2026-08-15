@@ -10,12 +10,7 @@
    ;; themselves remain part of the installed theory.
    \ Examples.VonNeumannMathComp
    Examples.RealBernoulliMathCompFactory
-   ;; This older client derives its nested loop through pstructural and the
-   ;; syntax-directed canonical-nested adequacy theorem.  Keep the source as
-   ;; migration material, but do not present it as part of the independent
-   ;; operational model; OperationalRationalBernoulli is the maintained
-   ;; primitive-hitting outer q-from-fair-bits example.
-   Examples.OperationalBernoulliFactory))
+   ))
  (theories
    ExtLib
    ITree
