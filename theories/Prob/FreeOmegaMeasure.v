@@ -751,6 +751,15 @@ Polymorphic Inductive free_omega_qlift {MN}
       sem_lift S outA outB ->
       (forall x y, S (obsA x) (obsB y) -> R x y) ->
       free_omega_qlift R mu nu
+  | FOQLObserveSupported {OA OB} (obsA : A -> OA) (obsB : B -> OB)
+      (mu : FreeOmega MN A) (nu : FreeOmega MN B)
+      (outA : MN OA) (outB : MN OB) (S : OA -> OB -> Prop) :
+      free_omega_observes obsA mu outA ->
+      free_omega_observes obsB nu outB ->
+      sem_lift S outA outB ->
+      (forall x y, S (obsA x) (obsB y) -> R x y) ->
+      free_omega_support_lift R mu nu ->
+      free_omega_qlift R mu nu
   | FOQLMono (T : A -> B -> Prop) mu nu :
       free_omega_qlift T mu nu ->
       (forall x y, T x y -> R x y) ->
