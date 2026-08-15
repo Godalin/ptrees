@@ -183,8 +183,8 @@ condition is listed explicitly, the referenced result is proved without an
   composition.  The PTree instance now proves reflexivity, symmetry, and
   transitivity and installs `primitive_ptree_bisim_equivalence`.
   `BehavioralDomain` packages candidate domain assumptions for comparing
-  this native relation with the structured proof system: every member has a
-  frontier, every such frontier is total, and primitive residual states plus
+  this native relation with the structured proof system: every member admits
+  one total frontier, and primitive residual states plus
   visible continuations remain in the domain almost everywhere.  The current
   correspondence theorem additionally assumes that every recursive pair of
   `weak_bisim` and `primitive_ptree_bisim` lies in the two domains.  Under
@@ -209,9 +209,12 @@ condition is listed explicitly, the referenced result is proved without an
   `weak_bisim_iff_primitive_ptree_bisim_root_domain` requires only membership
   of the two initial states and propagates domain membership inside its
   coinduction candidate.  Enum provides the finite Kleisli and coupling-AE
-  instances, and structural FreeOmega inherits both from its node backend.
-  The observable/quotiented FreeOmega omega-AE instance remains an explicit
-  backend proof obligation, so the older relation-global theorem is retained
+  instances, and structural FreeOmega inherits the finite Kleisli and
+  coupling-AE layers from its node backend.  Neither structural nor
+  observable/quotiented FreeOmega currently supplies the required omega-AE
+  instance; observable FreeOmega also still owes coupling-AE compatibility
+  for its quotient lifting.  These remain explicit backend proof
+  obligations, so the older relation-global theorem is retained
   as a compatibility endpoint rather than silently assuming that quotient
   transport law.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states

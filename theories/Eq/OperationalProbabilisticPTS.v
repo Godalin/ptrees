@@ -592,8 +592,8 @@ Qed.
 End PrimitivePTreeBisimulationTransitivity.
 
 (** A domain on observed PTree states suitable for relating structured proof
-    rules to primitive behavior.  Totality is required for every structured
-    frontier of a member, while primitive closure records that residual
+    rules to primitive behavior.  Every member must admit one total
+    structured frontier, while primitive closure records that residual
     states and visible continuations remain in the domain almost everywhere.
     The latter packages the closure obligations needed by completeness rather
     than scattering them across client theorems. *)
@@ -604,11 +604,9 @@ Polymorphic Record BehavioralDomain
     `{MX : MixedMeasureInterface MN MF}
     `{FO : @SemanticOmegaInterface MF FI}
     {R : Type} (D : ptree' E MN R -> Prop) : Prop := {
-  behavioral_frontier_exists : forall ot, D ot ->
-    exists out : MF (frontier_head E MN R), frontier ot out;
-  behavioral_frontier_total : forall ot, D ot ->
-    forall out : MF (frontier_head E MN R),
-    frontier ot out -> @sem_total MF FI FO _ out;
+  behavioral_total_frontier : forall ot, D ot ->
+    exists out : MF (frontier_head E MN R),
+      frontier ot out /\ @sem_total MF FI FO _ out;
   behavioral_primitive_closed : forall ot, D ot ->
     sem_ae (@ptree_primitive_kernel E MN MF FI MX R ot)
       (fun target =>
@@ -1207,6 +1205,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{MX : MixedMeasureInterface MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
   `{FO : @SemanticOmegaInterface MF FI}
+  `{FTP : @SemanticTotalProperLaws MF FI FO}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
@@ -1250,11 +1249,16 @@ Proof.
   intros t1 t2 Hweak.
   pose proof (weak_bisim_unfold Hweak) as Hstep.
   destruct (weak_bisim_domain_closed Hweak) as [HD1 HD2].
-  destruct (behavioral_frontier_exists BD1 HD1) as [out1 Hfront1].
+  destruct (behavioral_total_frontier BD1 HD1)
+    as [out1 [Hfront1 Htotal1]].
   destruct (weak_bisimF_frontier_l Hstep Hfront1)
     as [out2 [Hfront2 Hlift]].
-  pose proof (behavioral_frontier_total BD1 HD1 Hfront1) as Htotal1.
-  pose proof (behavioral_frontier_total BD2 HD2 Hfront2) as Htotal2.
+  destruct (behavioral_total_frontier BD2 HD2)
+    as [out2total [Hfront2total Htotal2canonical]].
+  assert (Htotal2 : sem_total out2).
+  { apply (proj2 (sem_total_proper
+      (unified_frontier_unique Hfront2 Hfront2total))).
+    exact Htotal2canonical. }
   pose proof (frontier_to_primitive_stable_ast
     bind_cofinality iter_productivity Hfront1 Htotal1) as Hast1.
   pose proof (frontier_to_primitive_stable_ast
@@ -1293,10 +1297,10 @@ Proof.
   unfold weak_bisim at 1. coinduction CH CIH.
   intros t1 t2 Hnative.
   destruct (primitive_bisim_domain_closed Hnative) as [HD1 HD2].
-  destruct (behavioral_frontier_exists BD1 HD1) as [out1 Hfront1].
-  destruct (behavioral_frontier_exists BD2 HD2) as [front2 Hfront2].
-  pose proof (behavioral_frontier_total BD1 HD1 Hfront1) as Htotal1.
-  pose proof (behavioral_frontier_total BD2 HD2 Hfront2) as Htotal2.
+  destruct (behavioral_total_frontier BD1 HD1)
+    as [out1 [Hfront1 Htotal1]].
+  destruct (behavioral_total_frontier BD2 HD2)
+    as [front2 [Hfront2 Htotal2]].
   pose proof (frontier_to_primitive_stable_ast
     bind_cofinality iter_productivity Hfront1 Htotal1) as Hast1.
   pose proof (frontier_to_primitive_stable_ast
@@ -1340,6 +1344,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{MX : MixedMeasureInterface MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
   `{FO : @SemanticOmegaInterface MF FI}
+  `{FTP : @SemanticTotalProperLaws MF FI FO}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
@@ -1376,11 +1381,16 @@ Proof.
   unfold stable_kernel_bisim at 1. coinduction CH CIH.
   intros t1 t2 [Hweak [HD1 HD2]].
   pose proof (weak_bisim_unfold Hweak) as Hstep.
-  destruct (behavioral_frontier_exists BD1 HD1) as [out1 Hfront1].
+  destruct (behavioral_total_frontier BD1 HD1)
+    as [out1 [Hfront1 Htotal1]].
   destruct (weak_bisimF_frontier_l Hstep Hfront1)
     as [out2 [Hfront2 Hlift]].
-  pose proof (behavioral_frontier_total BD1 HD1 Hfront1) as Htotal1.
-  pose proof (behavioral_frontier_total BD2 HD2 Hfront2) as Htotal2.
+  destruct (behavioral_total_frontier BD2 HD2)
+    as [out2total [Hfront2total Htotal2canonical]].
+  assert (Htotal2 : sem_total out2).
+  { apply (proj2 (sem_total_proper
+      (unified_frontier_unique Hfront2 Hfront2total))).
+    exact Htotal2canonical. }
   pose proof (frontier_to_primitive_stable_ast
     bind_cofinality iter_productivity Hfront1 Htotal1) as Hast1.
   pose proof (frontier_to_primitive_stable_ast
@@ -1418,10 +1428,10 @@ Theorem primitive_ptree_bisim_to_weak_bisim_root_domain : forall t1 t2,
 Proof.
   unfold weak_bisim at 1. coinduction CH CIH.
   intros t1 t2 [Hnative [HD1 HD2]].
-  destruct (behavioral_frontier_exists BD1 HD1) as [out1 Hfront1].
-  destruct (behavioral_frontier_exists BD2 HD2) as [front2 Hfront2].
-  pose proof (behavioral_frontier_total BD1 HD1 Hfront1) as Htotal1.
-  pose proof (behavioral_frontier_total BD2 HD2 Hfront2) as Htotal2.
+  destruct (behavioral_total_frontier BD1 HD1)
+    as [out1 [Hfront1 Htotal1]].
+  destruct (behavioral_total_frontier BD2 HD2)
+    as [front2 [Hfront2 Htotal2]].
   pose proof (frontier_to_primitive_stable_ast
     bind_cofinality iter_productivity Hfront1 Htotal1) as Hast1.
   pose proof (frontier_to_primitive_stable_ast
