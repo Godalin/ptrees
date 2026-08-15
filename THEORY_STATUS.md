@@ -217,6 +217,13 @@ condition is listed explicitly, the referenced result is proved without an
   obligations, so the older relation-global theorem is retained
   as a compatibility endpoint rather than silently assuming that quotient
   transport law.
+  `FreeOmegaMeasureEnumAudit.observable_free_omega_omega_ae_impossible`
+  now proves that this is a definition-level obstruction, not merely a
+  missing backend lemma: the current observation quotient can identify an
+  all-zero lub with a representative containing a bad transient return,
+  while structural `free_omega_ae` distinguishes them.  Observable qlift or
+  observable AE must therefore be tightened before an omega-AE instance can
+  soundly be installed.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides

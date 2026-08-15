@@ -321,6 +321,20 @@ Proof.
   - constructor. exact H0.
 Qed.
 
+Lemma free_omega_ae_bind_inv {A B} (mu : FreeOmega MN A)
+    (k : A -> FreeOmega MN B) (P : B -> Prop) :
+  free_omega_ae P (free_omega_bind mu k) ->
+  free_omega_ae (fun x => free_omega_ae P (k x)) mu.
+Proof.
+  induction mu; cbn; intro Hae.
+  - constructor. exact Hae.
+  - constructor.
+  - dependent destruction Hae. eapply FOAESample; [exact H0|].
+    intros x Hx. exact (H x (H1 x Hx)).
+  - dependent destruction Hae. constructor. intro n.
+    exact (H n (H0 n)).
+Qed.
+
 Lemma free_omega_lift_mono {A B} (R T : A -> B -> Prop) mu nu :
   (forall x y, R x y -> T x y) ->
   free_omega_lift R mu nu -> free_omega_lift T mu nu.
