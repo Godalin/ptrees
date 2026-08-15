@@ -9,9 +9,9 @@ From mathcomp Require Import ssreflect ssrbool ssrnat eqtype ssralg ssrnum rat.
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts
   MeasureIteration MeasureIterationEnum TwoLevelMeasure TwoLevelMeasureEnum
-  FreeOmegaMeasure.
+  FreeOmegaMeasure EnumMap.
 From PTree.Eq Require Import ShallowNew PStrong
-  UnifiedFrontier PrimitiveStableHitting OperationalProbabilisticPTS
+  UnifiedFrontier UnifiedPWeak PrimitiveStableHitting OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega.
 From PTree.Examples Require Import VonNeumannUnbounded RationalBernoulli
   BernoulliFactory.
@@ -21,6 +21,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum.
+Import EnumMap.
 Import GRing.Theory.
 Import RatSubTypes.NonnegQNotations.
 Local Open Scope ring_scope.
@@ -669,6 +670,94 @@ Proof.
   - intro h. destruct h as [b|X e k]; [reflexivity|destruct e].
 Qed.
 
+(** The target of the implementation proof is the standard one-step
+    distribution, embedded once into the free omega completion.  This is
+    deliberately independent of the implementation's unbounded raw-coin
+    schedule. *)
+Definition operational_factory_standard_step_heads (x : rat) :
+    MF (factory_head (rat + bool)) :=
+  FOSample (binary_coin_transition x) (fun next => FORet (FHRet next)).
+
+Lemma operational_factory_standard_step_heads_observes x :
+  free_omega_observes
+    (free_iter_head_next factoryE_no_event)
+    (operational_factory_standard_step_heads x)
+    (@sem_bind Enum Enum_SemanticMeasureInterface _ _
+      (binary_coin_transition x) (fun next =>
+        @sem_ret Enum Enum_SemanticMeasureInterface _ next)).
+Proof.
+  unfold operational_factory_standard_step_heads.
+  eapply FOOObserveSample with
+    (front := fun next : rat + bool =>
+      @sem_ret Enum Enum_SemanticMeasureInterface _ next).
+  intro next. constructor.
+Qed.
+
+Lemma operational_factory_binary_step_heads_lift
+    (pnormalized : Qval pfalse + Qval ptrue = 1)
+    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x :
+  free_omega_qlift eq
+    (operational_factory_binary_step_heads x)
+    (operational_factory_standard_step_heads x).
+Proof.
+  eapply FOQLObserve with
+    (obsA := free_iter_head_next factoryE_no_event)
+    (obsB := free_iter_head_next factoryE_no_event)
+    (outA := binary_coin_transition x)
+    (outB := @sem_bind Enum Enum_SemanticMeasureInterface _ _
+      (binary_coin_transition x) (fun next =>
+        @sem_ret Enum Enum_SemanticMeasureInterface _ next)) (S := eq).
+  - exact (operational_factory_binary_step_heads_observes
+      pnormalized pnontrivial x).
+  - exact (operational_factory_standard_step_heads_observes x).
+  - cbn [sem_bind sem_ret Enum_SemanticMeasureInterface
+      FrontierLift.meas_bind FrontierLift.meas_ret
+      FrontierLiftEnum.Enum_MeasureInterface].
+    rewrite bind_ret_emap emap_id.
+    apply sem_lift_refl. intros next. reflexivity.
+  - intros h1 h2 Hnext.
+    destruct h1 as [next1|X e1 k1];
+      destruct h2 as [next2|Y e2 k2];
+      try destruct e1; try destruct e2.
+    cbn in Hnext. subst next2. reflexivity.
+Qed.
+
+Fixpoint operational_factory_standard_q_row
+    (outer : nat) (x : rat) : MF (factory_head bool) :=
+  match outer with
+  | O => FOZero
+  | S outer' =>
+      free_omega_bind (operational_factory_standard_step_heads x) (fun h =>
+        match free_iter_head_next factoryE_no_event h with
+        | inl x' => operational_factory_standard_q_row outer' x'
+        | inr b => FORet (FHRet b)
+        end)
+  end.
+
+Definition operational_factory_standard_q_heads : MF (factory_head bool) :=
+  FOLub (fun outer => operational_factory_standard_q_row outer q).
+
+Lemma operational_factory_q_row_lift
+    (pnormalized : Qval pfalse + Qval ptrue = 1)
+    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) :
+  forall outer x,
+    free_omega_qlift eq
+      (free_iter_complete_rows factoryE_no_event
+        operational_factory_binary_step_heads outer x)
+      (operational_factory_standard_q_row outer x).
+Proof.
+  induction outer as [|outer IH]; intro x.
+  - apply free_omega_qlift_refl. intros h. reflexivity.
+  - cbn [free_iter_complete_rows operational_factory_standard_q_row].
+    eapply FOQLBind with (T := eq).
+    + exact (operational_factory_binary_step_heads_lift
+        pnormalized pnontrivial x).
+    + intros h1 h2 ->. destruct (free_iter_head_next factoryE_no_event h2)
+        as [x'|b].
+      * apply IH.
+      * apply free_omega_qlift_refl. intros h. reflexivity.
+Qed.
+
 Definition operational_factory_q_row (outer : nat) :
     MF (factory_head bool) :=
   free_iter_complete_rows factoryE_no_event
@@ -676,6 +765,77 @@ Definition operational_factory_q_row (outer : nat) :
 
 Definition operational_factory_q_heads : MF (factory_head bool) :=
   FOLub operational_factory_q_row.
+
+Lemma operational_factory_q_heads_lift_standard
+    (pnormalized : Qval pfalse + Qval ptrue = 1)
+    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) :
+  free_omega_qlift eq operational_factory_q_heads
+    operational_factory_standard_q_heads.
+Proof.
+  unfold operational_factory_q_heads, operational_factory_q_row,
+    operational_factory_standard_q_heads.
+  apply FOQLLub. intro outer.
+  exact (operational_factory_q_row_lift pnormalized pnontrivial outer q).
+Qed.
+
+Lemma operational_factory_standard_q_row_observes : forall outer x,
+  free_omega_observes operational_factory_head_value
+    (operational_factory_standard_q_row outer x)
+    (meas_iter_approx outer binary_coin_transition x).
+Proof.
+  induction outer as [|outer IH]; intro x.
+  - constructor.
+  - cbn [operational_factory_standard_q_row meas_iter_approx
+      operational_factory_standard_step_heads free_omega_bind].
+    change (free_omega_observes operational_factory_head_value
+      (FOSample (binary_coin_transition x) (fun next : rat + bool =>
+        match next with
+        | inl x' => operational_factory_standard_q_row outer x'
+        | inr b => FORet (FHRet b)
+        end))
+      (@sem_bind Enum Enum_SemanticMeasureInterface _ _
+        (binary_coin_transition x) (fun next : rat + bool =>
+          match next with
+          | inl x' => meas_iter_approx outer binary_coin_transition x'
+          | inr b => @sem_ret Enum Enum_SemanticMeasureInterface _ b
+          end))).
+    eapply FOOObserveSample with (front := fun next : rat + bool =>
+      match next with
+      | inl x' => meas_iter_approx outer binary_coin_transition x'
+      | inr b => ret_Enum b
+      end).
+    intros [x'|b].
+    + apply IH.
+    + constructor.
+Qed.
+
+Lemma operational_factory_standard_q_heads_observes
+    (q0 : 0 <= q) (q1 : q <= 1) :
+  free_omega_observes operational_factory_head_value
+    operational_factory_standard_q_heads
+    (rational_bernoulli_measure q0 q1).
+Proof.
+  unfold operational_factory_standard_q_heads.
+  eapply FOOObserveLub.
+  - intro outer. apply operational_factory_standard_q_row_observes.
+  - exact (rational_binary_iteration_converges q0 q1).
+Qed.
+
+Lemma operational_factory_standard_q_heads_total
+    (q0 : 0 <= q) (q1 : q <= 1) :
+  @sem_total MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface _
+    operational_factory_standard_q_heads.
+Proof.
+  exists bool, operational_factory_head_value,
+    (rational_bernoulli_measure q0 q1).
+  split.
+  - exact (operational_factory_standard_q_heads_observes q0 q1).
+  - exact (rational_bernoulli_total q0 q1).
+Qed.
 
 Theorem operational_biased_to_rational_coin_weak :
   @operational_weak factoryE Enum MF
@@ -693,6 +853,204 @@ Proof.
   - exact operational_factory_binary_step_weak.
   - unfold operational_factory_q_heads, operational_factory_q_row.
     apply free_omega_qlift_refl. intros h. reflexivity.
+Qed.
+
+Theorem operational_biased_to_rational_coin_weak_standard
+    (pnormalized : Qval pfalse + Qval ptrue = 1)
+    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) :
+  @operational_weak factoryE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe (biased_to_rational_coin pfalse ptrue q))
+    operational_factory_standard_q_heads.
+Proof.
+  pose proof operational_biased_to_rational_coin_weak as Hweak.
+  unfold operational_weak in Hweak |- *.
+  eapply sem_eq_trans.
+  - apply sem_eq_sym.
+    exact (operational_factory_q_heads_lift_standard
+      pnormalized pnontrivial).
+  - exact Hweak.
+Qed.
+
+Theorem operational_biased_to_rational_coin_ast
+    (pnormalized : Qval pfalse + Qval ptrue = 1)
+    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q)
+    (q0 : 0 <= q) (q1 : q <= 1) :
+  @operational_ast_weak factoryE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe (biased_to_rational_coin pfalse ptrue q))
+    operational_factory_standard_q_heads.
+Proof.
+  split.
+  - exact (operational_biased_to_rational_coin_weak_standard
+      pnormalized pnontrivial).
+  - exact (operational_factory_standard_q_heads_total q0 q1).
+Qed.
+
+Corollary operational_biased_to_rational_coin_primitive_ast
+    (pnormalized : Qval pfalse + Qval ptrue = 1)
+    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q)
+    (q0 : 0 <= q) (q1 : q <= 1) :
+  @stable_hitting_ast MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface
+    (ptree' factoryE Enum bool) (factory_head bool)
+    (@ptree_primitive_kernel factoryE Enum MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaMixedMeasureInterface bool)
+    (observe (biased_to_rational_coin pfalse ptrue q))
+    operational_factory_standard_q_heads.
+Proof.
+  apply (proj2 (ptree_primitive_ast_adequate
+    (observe (biased_to_rational_coin pfalse ptrue q))
+    operational_factory_standard_q_heads)).
+  exact (operational_biased_to_rational_coin_ast
+    pnormalized pnontrivial q0 q1).
+Qed.
+
+Definition operational_factory_direct_q_heads
+    (q0 : 0 <= q) (q1 : q <= 1) : MF (factory_head bool) :=
+  @mixed_bind Enum MF FreeOmegaMixedMeasureInterface bool _
+    (rational_bernoulli_measure q0 q1)
+    (fun b => FORet (FHRet b)).
+
+Definition operational_factory_direct_q_observation
+    (q0 : 0 <= q) (q1 : q <= 1) : Enum bool :=
+  @sem_bind Enum Enum_SemanticMeasureInterface _ _
+    (rational_bernoulli_measure q0 q1) (fun b =>
+      @sem_ret Enum Enum_SemanticMeasureInterface _ b).
+
+Lemma operational_factory_direct_q_heads_observes
+    (q0 : 0 <= q) (q1 : q <= 1) :
+  free_omega_observes operational_factory_head_value
+    (operational_factory_direct_q_heads q0 q1)
+    (operational_factory_direct_q_observation q0 q1).
+Proof.
+  unfold operational_factory_direct_q_heads,
+    operational_factory_direct_q_observation.
+  eapply FOOObserveSample with (front := fun b : bool => ret_Enum b).
+  intro b. constructor.
+Qed.
+
+Lemma operational_factory_direct_q_observation_eq
+    (q0 : 0 <= q) (q1 : q <= 1) :
+  operational_factory_direct_q_observation q0 q1 =
+    rational_bernoulli_measure q0 q1.
+Proof.
+  unfold operational_factory_direct_q_observation.
+  cbn [sem_bind sem_ret Enum_SemanticMeasureInterface
+    FrontierLift.meas_bind FrontierLift.meas_ret
+    FrontierLiftEnum.Enum_MeasureInterface].
+  rewrite bind_ret_emap. apply emap_id.
+Qed.
+
+Lemma operational_factory_direct_q_heads_total
+    (q0 : 0 <= q) (q1 : q <= 1) :
+  @sem_total MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticOmegaInterface _
+    (operational_factory_direct_q_heads q0 q1).
+Proof.
+  exists bool, operational_factory_head_value,
+    (operational_factory_direct_q_observation q0 q1).
+  split; [apply operational_factory_direct_q_heads_observes|].
+  rewrite operational_factory_direct_q_observation_eq.
+  exact (rational_bernoulli_total q0 q1).
+Qed.
+
+Theorem operational_factory_direct_q_ast
+    (q0 : 0 <= q) (q1 : q <= 1) :
+  @operational_ast_weak factoryE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (observe (factory_direct_q q0 q1))
+    (operational_factory_direct_q_heads q0 q1).
+Proof.
+  assert (Hobserve : observe (factory_direct_q q0 q1) =
+    ProbF (rational_bernoulli_measure q0 q1) (fun b => Ret b))
+    by reflexivity.
+  rewrite Hobserve.
+  eapply operational_ast_weak_prob with (Good := fun _ => True).
+  - apply sem_ae_true.
+  - intros b _. split.
+    + assert (Hb : observe (Ret b : ptree factoryE Enum bool) = RetF b)
+        by reflexivity.
+      rewrite Hb. apply (operational_weak_ret
+        (FI := FreeOmegaObservableSemanticMeasureInterface)
+        (FO := FreeOmegaObservableSemanticOmegaInterface)
+        (MX := FreeOmegaMixedMeasureInterface) (E := factoryE)).
+    + exists bool, operational_factory_head_value,
+        (@sem_ret Enum Enum_SemanticMeasureInterface bool b).
+      split; [constructor|].
+      change (enum_expect (fun _ : bool => (1 : rat)) (ret_Enum b) = 1).
+      rewrite enum_expect_ret. reflexivity.
+  - exact (operational_factory_direct_q_heads_total q0 q1).
+Qed.
+
+Lemma operational_factory_standard_q_heads_lift_direct
+    (q0 : 0 <= q) (q1 : q <= 1)
+    (sim : ptree factoryE Enum bool -> ptree factoryE Enum bool -> Prop) :
+  @sem_lift MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface)) _ _
+    (frontier_head_rel eq sim)
+    operational_factory_standard_q_heads
+    (operational_factory_direct_q_heads q0 q1).
+Proof.
+  eapply FOQLObserve with
+    (obsA := operational_factory_head_value)
+    (obsB := operational_factory_head_value)
+    (outA := rational_bernoulli_measure q0 q1)
+    (outB := operational_factory_direct_q_observation q0 q1)
+    (S := eq).
+  - exact (operational_factory_standard_q_heads_observes q0 q1).
+  - exact (operational_factory_direct_q_heads_observes q0 q1).
+  - rewrite operational_factory_direct_q_observation_eq.
+    apply sem_lift_refl. intros b. reflexivity.
+  - intros h1 h2 Hvalue.
+    destruct h1 as [b1|X e1 k1];
+      destruct h2 as [b2|Y e2 k2];
+      try destruct e1; try destruct e2.
+    cbn in Hvalue. subst b2. constructor. reflexivity.
+Qed.
+
+Theorem primitive_biased_to_rational_coin_bisim_direct
+    (pnormalized : Qval pfalse + Qval ptrue = 1)
+    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q)
+    (q0 : 0 <= q) (q1 : q <= 1) :
+  @primitive_ptree_bisim factoryE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface
+    bool bool eq
+    (biased_to_rational_coin pfalse ptrue q) (factory_direct_q q0 q1).
+Proof.
+  eapply primitive_ptree_bisim_of_ast_lift.
+  - exact (operational_biased_to_rational_coin_ast
+      pnormalized pnontrivial q0 q1).
+  - exact (operational_factory_direct_q_ast q0 q1).
+  - exact (operational_factory_standard_q_heads_lift_direct q0 q1 _).
 Qed.
 
 End RationalTarget.
@@ -715,4 +1073,20 @@ Theorem operational_third_to_two_fifths_weak :
 Proof.
   exact (operational_biased_to_rational_coin_weak
     vn_one_third vn_two_thirds (2 / 5)).
+Qed.
+
+Theorem primitive_third_to_two_fifths_bisim_direct :
+  @primitive_ptree_bisim factoryE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface
+    bool bool eq third_to_two_fifths direct_two_fifths.
+Proof.
+  exact (primitive_biased_to_rational_coin_bisim_direct
+    (pfalse := vn_one_third) (ptrue := vn_two_thirds) (q := 2 / 5)
+    third_bias_normalized third_bias_nontrivial
+    two_fifths_nonnegative two_fifths_at_most_one).
 Qed.
