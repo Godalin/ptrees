@@ -125,6 +125,13 @@ Proof.
       exact (HQ q y Hsrc Hnz).
 Qed.
 
+#[global] Instance Enum_SemanticMeasureCountableAELaws :
+    @SemanticMeasureCountableAELaws Enum Enum_SemanticMeasureInterface.
+Proof.
+  constructor. intros A mu P HP p x Hin Hnz n.
+  exact (HP n p x Hin Hnz).
+Qed.
+
 (** Eventwise order on finite rational measures.  Enum is not globally
     omega-complete, so this adapter intentionally provides the omega
     operations but no unconditional [SemanticOmegaLaws] instance. *)

@@ -131,6 +131,20 @@ Polymorphic Class SemanticMeasureCouplingAELaws@{carrier representation}
       sem_lift (fun x y => R x y /\ P x /\ Q y) mu nu
 }.
 
+(** Measures are closed under countable intersections of almost-everywhere
+    predicates.  This is the measure-theoretic ingredient needed when an
+    omega construction exposes one AE side condition at every finite
+    approximation.  It is separate from finite conjunction so finite-state
+    clients do not need to assume sigma-completeness. *)
+Polymorphic Class SemanticMeasureCountableAELaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S} := {
+  sem_ae_countable : forall {A : Type@{carrier}} (mu : S A)
+      (P : nat -> A -> Prop),
+    (forall n, sem_ae mu (P n)) ->
+    sem_ae mu (fun x => forall n, P n x)
+}.
+
 (** Predicate semantics for the monadic operations.  These laws are kept
     separate from extensional equality and coupling: they are exactly the
     capability needed to propagate an invariant through a finite kernel

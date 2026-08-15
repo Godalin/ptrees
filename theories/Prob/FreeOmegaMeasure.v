@@ -796,6 +796,122 @@ Proof.
     exists z. split; [exists y; split|]; assumption.
 Qed.
 
+Lemma free_omega_support_lift_bind {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NC : @SemanticMeasureCoreLaws MN NI}
+    {A B C D} (T : C -> D -> Prop) (R : A -> B -> Prop)
+    mu nu (k : C -> FreeOmega MN A) (h : D -> FreeOmega MN B) :
+  free_omega_support_lift T mu nu ->
+  (forall x y, T x y -> free_omega_support_lift R (k x) (h y)) ->
+  free_omega_support_lift R
+    (free_omega_bind mu k) (free_omega_bind nu h).
+Proof.
+  intros [HTRight HTLeft] Hkh. split.
+  - intros P HP. apply free_omega_ae_bind_inv in HP.
+    specialize (HTRight _ HP).
+    eapply free_omega_ae_bind; [exact HTRight|].
+    intros y [x [Hxy Hpx]].
+    exact ((proj1 (Hkh x y Hxy)) P Hpx).
+  - intros Q HQ. apply free_omega_ae_bind_inv in HQ.
+    specialize (HTLeft _ HQ).
+    eapply free_omega_ae_bind; [exact HTLeft|].
+    intros x [y [Hxy Hqy]].
+    exact ((proj2 (Hkh x y Hxy)) Q Hqy).
+Qed.
+
+Lemma free_omega_support_lift_sample {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NC : @SemanticMeasureCoreLaws MN NI}
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    {A B C D} (T : C -> D -> Prop) (R : A -> B -> Prop)
+    (mu : MN C) (nu : MN D)
+    (k : C -> FreeOmega MN A) (h : D -> FreeOmega MN B) :
+  sem_lift T mu nu ->
+  (forall x y, T x y -> free_omega_support_lift R (k x) (h y)) ->
+  free_omega_support_lift R (FOSample mu k) (FOSample nu h).
+Proof.
+  intros HT Hkh. split.
+  - intros P HP. dependent destruction HP.
+    eapply FOAESample with
+      (Good := fun y => exists x, T x y /\ Good x).
+    + eapply sem_lift_ae_transport_r; eassumption.
+    + intros y [x [Hxy Hx]].
+      apply (proj1 (Hkh x y Hxy) P). eauto.
+  - intros Q HQ. dependent destruction HQ.
+    eapply FOAESample with
+      (Good := fun x => exists y, T x y /\ Good y).
+    + eapply sem_lift_ae_transport_r with
+        (R := fun y x => T x y) (mu := nu) (nu := mu).
+      * apply sem_lift_sym. exact HT.
+      * eassumption.
+    + intros x [y [Hxy Hy]].
+      apply (proj2 (Hkh x y Hxy) Q). eauto.
+Qed.
+
+Lemma free_omega_support_lift_lub {MN}
+    `{NI : SemanticMeasureInterface MN} {A B}
+    (R : A -> B -> Prop) (c : nat -> FreeOmega MN A)
+    (d : nat -> FreeOmega MN B) :
+  (forall n, free_omega_support_lift R (c n) (d n)) ->
+  free_omega_support_lift R (FOLub c) (FOLub d).
+Proof.
+  intro Hcd. split; intros P HP; dependent destruction HP; constructor;
+    intro n; [apply (proj1 (Hcd n))|apply (proj2 (Hcd n))]; auto.
+Qed.
+
+Lemma free_omega_support_lift_lub_zero_prefix_l {MN}
+    `{NI : SemanticMeasureInterface MN} {A B}
+    (R : A -> B -> Prop) (c : nat -> FreeOmega MN A)
+    (d : nat -> FreeOmega MN B) :
+  (forall n, free_omega_support_lift R (c n) (d n)) ->
+  free_omega_support_lift R
+    (FOLub (fun n => match n with O => FOZero
+      | Datatypes.S n' => c n' end)) (FOLub d).
+Proof.
+  intro Hcd. split.
+  - intros P HP. dependent destruction HP. constructor. intro n.
+    apply (proj1 (Hcd n) P).
+    match goal with
+    | Hchain : forall i : nat, _ |- _ =>
+        exact (Hchain (S n))
+    end.
+  - intros P HP. dependent destruction HP. constructor. intros [|n].
+    + constructor.
+    + apply (proj2 (Hcd n) P).
+      match goal with
+      | Hchain : forall i : nat, _ |- _ =>
+          exact (Hchain n)
+      end.
+Qed.
+
+Lemma free_omega_support_lift_sample_zero {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NC : @SemanticMeasureCoreLaws MN NI}
+    {A B C} (R : A -> B -> Prop) (mu : MN C) :
+  free_omega_support_lift R (FOSample mu (fun _ => @FOZero MN A))
+    (@FOZero MN B).
+Proof.
+  split; intros P HP.
+  - constructor.
+  - eapply FOAESample with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros. constructor.
+Qed.
+
+Lemma free_omega_support_lift_lub_constant_r {MN}
+    `{NI : SemanticMeasureInterface MN} {A B}
+    (R : A -> B -> Prop) mu nu :
+  free_omega_support_lift R mu nu ->
+  free_omega_support_lift R mu (FOLub (fun _ => nu)).
+Proof.
+  intros [Hright Hleft]. split.
+  - intros P HP. constructor. intro n. exact (Hright P HP).
+  - intros Q HQ. dependent destruction HQ. apply Hleft.
+    match goal with
+    | Hchain : forall i : nat, _ |- _ => exact (Hchain 0)
+    end.
+Qed.
+
 (** An observation-closed coupling for the free omega completion.  The
     structural lifting above remains useful for syntax-directed proofs, but
     it deliberately cannot identify, for example, a formal omega limit with
@@ -810,14 +926,6 @@ Polymorphic Inductive free_omega_qlift {MN}
   | FOQLStructural mu nu :
       free_omega_lift R mu nu -> free_omega_qlift R mu nu
   | FOQLObserve {OA OB} (obsA : A -> OA) (obsB : B -> OB)
-      (mu : FreeOmega MN A) (nu : FreeOmega MN B)
-      (outA : MN OA) (outB : MN OB) (S : OA -> OB -> Prop) :
-      free_omega_observes obsA mu outA ->
-      free_omega_observes obsB nu outB ->
-      sem_lift S outA outB ->
-      (forall x y, S (obsA x) (obsB y) -> R x y) ->
-      free_omega_qlift R mu nu
-  | FOQLObserveSupported {OA OB} (obsA : A -> OA) (obsB : B -> OB)
       (mu : FreeOmega MN A) (nu : FreeOmega MN B)
       (outA : MN OA) (outB : MN OB) (S : OA -> OB -> Prop) :
       free_omega_observes obsA mu outA ->
