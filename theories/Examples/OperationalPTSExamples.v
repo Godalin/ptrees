@@ -2,6 +2,8 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
+Require Import Program.Equality.
+
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
@@ -238,6 +240,73 @@ Proof.
   - intros h1 h2 Hvalue. destruct h1 as [n1|X e1 c1];
       destruct h2 as [n2|Y e2 c2]; try destruct e1; try destruct e2.
     cbn in Hvalue. subst n2. constructor. reflexivity.
+  - unfold free_omega_support_lift, operational_reg_nested_heads,
+      operational_reg_merged_heads. split.
+    + intros P HP.
+      pose proof (free_omega_ae_sample_inv HP) as Houter.
+      assert (Hfalse : free_omega_ae P
+          (FOSample (reg_inner false)
+            (fun outcome => FORet (FHRet outcome)))).
+      { apply Houter with (p := reg_half).
+        - cbn. auto.
+        - cbn. discriminate. }
+      assert (Htrue : free_omega_ae P
+          (FOSample (reg_inner true)
+            (fun outcome => FORet (FHRet outcome)))).
+      { apply Houter with (p := reg_half).
+        - cbn. auto.
+        - cbn. discriminate. }
+      pose proof (free_omega_ae_sample_inv Hfalse) as Hfin.
+      pose proof (free_omega_ae_sample_inv Htrue) as Htin.
+      assert (HP0 : P (FHRet 0)).
+      { specialize (Hfin reg_half 0). cbn in Hfin.
+        pose proof (Hfin (or_introl eq_refl) ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. assumption. }
+      assert (HP1 : P (FHRet 1)).
+      { specialize (Hfin reg_half 1). cbn in Hfin.
+        pose proof (Hfin (or_intror (or_introl eq_refl))
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. assumption. }
+      assert (HP2 : P (FHRet 2)).
+      { specialize (Htin reg_half 2). cbn in Htin.
+        pose proof (Htin (or_intror (or_introl eq_refl))
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. assumption. }
+      eapply FOAESample with (Good := fun n => P (FHRet n)).
+      * intros p n Hin Hnz. cbn in Hin.
+        destruct Hin as [Hin|[Hin|[Hin|[]]]]; inversion Hin; subst;
+          assumption.
+      * intros n Hn. constructor. exists (FHRet n). split.
+        -- constructor. reflexivity.
+        -- exact Hn.
+    + intros Q HQ.
+      pose proof (free_omega_ae_sample_inv HQ) as Hmerged.
+      assert (HQ0 : Q (FHRet 0)).
+      { specialize (Hmerged reg_half 0). cbn in Hmerged.
+        pose proof (Hmerged (or_introl eq_refl)
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. assumption. }
+      assert (HQ1 : Q (FHRet 1)).
+      { specialize (Hmerged reg_quarter 1). cbn in Hmerged.
+        pose proof (Hmerged (or_intror (or_introl eq_refl))
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. assumption. }
+      assert (HQ2 : Q (FHRet 2)).
+      { specialize (Hmerged reg_quarter 2). cbn in Hmerged.
+        pose proof (Hmerged (or_intror (or_intror (or_introl eq_refl)))
+          ltac:(cbn; discriminate)) as Hr.
+        dependent destruction Hr. assumption. }
+      eapply FOAESample with (Good := fun _ => True).
+      * apply sem_ae_true.
+      * intros side _. eapply FOAESample with (Good := fun n =>
+          match n with 0 => True | 1 => side = false | 2 => side = true
+          | _ => False end).
+        -- intros p n Hin Hnz. destruct side; cbn in Hin |- *;
+             destruct Hin as [Hin|[Hin|[]]]; inversion Hin; subst; auto.
+        -- intros n Hn. constructor. exists (FHRet n). split.
+           ++ constructor. reflexivity.
+           ++ destruct side, n as [|[|[|n]]]; cbn in Hn |- *;
+                try contradiction; assumption.
 Qed.
 
 Theorem operational_reg_nested_merged_bisim :

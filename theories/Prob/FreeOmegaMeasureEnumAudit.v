@@ -74,21 +74,6 @@ Proof.
   intros i j Hnz. cbn in Hnz. discriminate.
 Qed.
 
-Lemma transient_bad_qlift_zero :
-  @free_omega_qlift Enum Enum_SemanticMeasureInterface
-    Enum_SemanticOmegaInterface bool bool eq
-    transient_bad_limit zero_free_limit.
-Proof.
-  refine (@FOQLObserve Enum Enum_SemanticMeasureInterface
-    Enum_SemanticOmegaInterface bool bool eq bool bool id id
-    transient_bad_limit zero_free_limit [::] [::]
-    (fun _ _ => False) _ _ _ _).
-  - exact transient_bad_limit_observes_zero.
-  - exact zero_free_limit_observes_zero.
-  - exact enum_empty_lift_false.
-  - intros x y Hfalse. contradiction.
-Qed.
-
 Lemma zero_chain_ae_true : forall n,
   free_omega_ae (fun b => b = true) (zero_free_chain n).
 Proof. intro n. constructor. Qed.
@@ -100,26 +85,22 @@ Proof.
   specialize (H O). dependent destruction H.
 Qed.
 
-(** The current observation quotient forgets transient returned support.
-    Consequently its structural [sem_ae] cannot satisfy omega admissibility:
-    a zero chain may have a quotient-equal representative containing a bad
-    transient return.  This theorem is the formal design audit that forces
-    observable AE or [FOQLObserve] to be strengthened before installing the
-    desired backend capability. *)
-Theorem observable_free_omega_omega_ae_impossible :
-  ~ @SemanticOmegaAELaws MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface))
-      FreeOmegaObservableSemanticOmegaInterface.
+(** Equal low-level observations alone still forget the transient [false]
+    return, but the repaired observation constructor additionally asks for
+    this support coupling.  The missing certificate is now provably
+    impossible, so the former omega-AE counterexample is rejected at the
+    quotient boundary rather than contradicting the backend laws. *)
+Theorem transient_bad_support_zero_impossible :
+  ~ @free_omega_support_lift Enum Enum_SemanticMeasureInterface bool bool eq
+      transient_bad_limit zero_free_limit.
 Proof.
-  intro Hlaws.
-  pose proof (@sem_ae_lub MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaObservableSemanticOmegaInterface Hlaws bool
-    zero_free_chain transient_bad_limit (fun b => b = true)
-    transient_bad_qlift_zero zero_chain_ae_true) as Hae.
-  exact (transient_bad_limit_not_ae_true Hae).
+  intro Hsupport.
+  assert (Hzero : free_omega_ae (fun b => b = true) zero_free_limit).
+  { unfold zero_free_limit. constructor. exact zero_chain_ae_true. }
+  pose proof ((proj2 Hsupport) _ Hzero) as Himage.
+  apply transient_bad_limit_not_ae_true.
+  eapply free_omega_ae_mono; [|exact Himage].
+  intros x [y [-> Hy]]. exact Hy.
 Qed.
+
+Check FreeOmegaObservableSemanticOmegaAELaws.
