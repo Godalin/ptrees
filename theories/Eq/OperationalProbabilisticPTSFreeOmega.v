@@ -7,7 +7,7 @@ Require Import List Arith.PeanoNat FunctionalExtensionality Lia
 
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
-  TwoLevelMeasureEnum FreeOmegaMeasure.
+  TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration.
 From PTree.Eq Require Import ShallowNew UnifiedFrontier UnifiedPWeak
   OperationalProbabilisticPTS PStrong.
 
@@ -1346,6 +1346,13 @@ Definition free_iter_head_next
   | @FHVis _ _ _ X e k => False_rect _ (no_event e)
   end.
 
+Definition free_iter_result_value
+    (h : frontier_head E MN R) : R :=
+  match h with
+  | FHRet r => r
+  | @FHVis _ _ _ X e k => False_rect _ (no_event e)
+  end.
+
 Fixpoint free_iter_execution_grid (rounds inner : nat) (i : I) :
     MF (frontier_head E MN R) :=
   match rounds with
@@ -1646,6 +1653,62 @@ Proof.
   apply (proj2 (free_iter_grid_diagonal_cofinal i out)).
   apply free_iter_execution_grid_diagonal_lub; assumption.
 Qed.
+
+Section DirectUnboundedIterationDenotation.
+Context `{DB : @FreeOmegaDenotationBindLaws MN NI NO}.
+Variable transition : I -> MN (I + R).
+
+Fixpoint free_iter_measure_rows (rounds : nat) (i : I) : MN R :=
+  match rounds with
+  | O => sem_zero
+  | S rounds' => sem_bind (transition i) (fun next =>
+      match next with
+      | inl j => free_iter_measure_rows rounds' j
+      | inr r => sem_ret r
+      end)
+  end.
+
+Lemma free_iter_complete_rows_denotes
+    (Hstep : forall i,
+      free_omega_denotes free_iter_head_next (step_out i) (transition i)) :
+  forall rounds i,
+      free_omega_denotes free_iter_result_value
+      (free_iter_complete_rows rounds i)
+      (free_iter_measure_rows rounds i).
+Proof.
+  induction rounds as [|rounds IH]; intro i.
+  - apply free_omega_observes_denotes. constructor.
+  - cbn [free_iter_complete_rows free_iter_measure_rows].
+    eapply free_omega_denotes_bind.
+    + apply Hstep.
+    + intro h. destruct (free_iter_head_ret h) as [next ->].
+      cbn [free_iter_head_next]. destruct next as [j|r].
+      * apply IH.
+      * apply free_omega_observes_denotes. constructor.
+Qed.
+
+End DirectUnboundedIterationDenotation.
+
+Section DirectUnboundedIterationLimitDenotation.
+Context `{DO : @FreeOmegaDenotationOmegaLaws MN NI NO}.
+Variable transition : I -> MN (I + R).
+
+Lemma free_iter_complete_limit_denotes
+    (Hrows : forall rounds i,
+      free_omega_denotes free_iter_result_value
+        (free_iter_complete_rows rounds i)
+        (free_iter_measure_rows transition rounds i))
+    (i : I) out :
+  sem_lub (fun rounds => free_iter_measure_rows transition rounds i) out ->
+  free_omega_denotes free_iter_result_value
+    (FOLub (fun rounds => free_iter_complete_rows rounds i)) out.
+Proof.
+  intro Hlub. eapply free_omega_denotes_lub.
+  - intro rounds. apply Hrows.
+  - exact Hlub.
+Qed.
+
+End DirectUnboundedIterationLimitDenotation.
 
 End DirectUnboundedIteration.
 

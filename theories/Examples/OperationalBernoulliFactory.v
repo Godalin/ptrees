@@ -469,6 +469,131 @@ Qed.
 Section RationalTarget.
 Variable q : rat.
 
+Fixpoint operational_factory_binary_measure_row
+    (rounds : nat) (x : rat) : Enum (rat + bool) :=
+  match rounds with
+  | O => nil
+  | S rounds' =>
+      bind_Enum (factory_biased_coin pfalse ptrue) (fun b1 =>
+        bind_Enum (factory_biased_coin pfalse ptrue) (fun b2 =>
+          match vn_round_result b1 b2 with
+          | inl _ => operational_factory_binary_measure_row rounds' x
+          | inr b => ret_Enum (binary_round_result x b)
+          end))
+  end.
+
+Lemma operational_factory_binary_measure_row_eq rounds x :
+  operational_factory_binary_measure_row rounds x =
+  bind_Enum (operational_factory_fair_measure_row rounds)
+    (fun b => ret_Enum (binary_round_result x b)).
+Proof.
+  induction rounds as [|rounds IH]; first reflexivity.
+  cbn [operational_factory_binary_measure_row
+    operational_factory_fair_measure_row].
+  rewrite bind_Enum_assoc. apply bind_Enum_ext=> b1.
+  rewrite bind_Enum_assoc. apply bind_Enum_ext=> b2.
+  destruct (vn_round_result b1 b2) as [[]|b].
+  - exact IH.
+  - rewrite /ret_Enum /bind_Enum /=.
+    change (ret_Enum (binary_round_result x b) =
+      (scale_Enum 1 (ret_Enum (binary_round_result x b)) ++ nil)%list).
+    rewrite scale_Enum_one. symmetry. apply enum_cat_nil.
+Qed.
+
+Lemma enum_converges_bind_ret_map {A B}
+    (chain : nat -> Enum A) out (f : A -> B) :
+  enum_converges chain out ->
+  enum_converges
+    (fun n => bind_Enum (chain n) (fun a => ret_Enum (f a)))
+    (bind_Enum out (fun a => ret_Enum (f a))).
+Proof.
+  intros H P eps Heps.
+  destruct (H (fun a => P (f a)) eps Heps) as [N HN].
+  exists N. intros n Hn. specialize (HN n Hn).
+  rewrite !enum_expect_bind.
+  assert (Hret :
+    (fun a : A => enum_expect (fun b : B =>
+      if P b then (1 : rat) else 0) (ret_Enum (f a))) =
+    (fun a : A => if P (f a) then (1 : rat) else 0)).
+  { apply functional_extensionality=> a. apply enum_expect_ret. }
+  rewrite Hret. exact HN.
+Qed.
+
+Lemma operational_factory_raw_hitting_rounds_observes_binary rounds x :
+  free_omega_observes
+    (fun h => binary_round_result x (operational_factory_head_value h))
+    (operational_factory_raw_hitting
+      (operational_factory_raw_schedule rounds))
+    (operational_factory_binary_measure_row rounds x).
+Proof.
+  induction rounds as [|rounds IH].
+  - unfold operational_factory_raw_hitting.
+    rewrite operational_factory_raw_observe.
+    change (free_omega_observes
+      (fun h => binary_round_result x (operational_factory_head_value h))
+      (FOSample (factory_biased_coin pfalse ptrue) (fun _ => FOZero))
+      (nil : Enum (rat + bool))).
+    rewrite <- (enum_bind_nil (A := bool) (rat + bool)
+      (factory_biased_coin pfalse ptrue)).
+    constructor=> b. constructor.
+  - cbn [operational_factory_raw_schedule
+      operational_factory_binary_measure_row].
+    rewrite operational_factory_raw_hitting_three.
+    change (free_omega_observes
+      (fun h => binary_round_result x (operational_factory_head_value h))
+      (FOSample (factory_biased_coin pfalse ptrue) (fun b1 =>
+        FOSample (factory_biased_coin pfalse ptrue) (fun b2 =>
+          match vn_round_result b1 b2 with
+          | inl _ => operational_factory_raw_hitting
+              (operational_factory_raw_schedule rounds)
+          | inr b => FORet (FHRet b)
+          end)))
+      (@sem_bind Enum Enum_SemanticMeasureInterface _ _
+        (factory_biased_coin pfalse ptrue) (fun b1 =>
+          @sem_bind Enum Enum_SemanticMeasureInterface _ _
+            (factory_biased_coin pfalse ptrue) (fun b2 =>
+              match vn_round_result b1 b2 with
+              | inl _ => operational_factory_binary_measure_row rounds x
+              | inr b => @sem_ret Enum Enum_SemanticMeasureInterface _
+                  (binary_round_result x b)
+              end)))).
+    constructor=> b1. constructor=> b2.
+    destruct (vn_round_result b1 b2) as [[]|b]; [exact IH|constructor].
+Qed.
+
+Lemma operational_factory_raw_heads_observes_binary
+    (pnormalized : Qval pfalse + Qval ptrue = 1)
+    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x :
+  free_omega_observes
+    (fun h => binary_round_result x (operational_factory_head_value h))
+    operational_factory_raw_heads (binary_coin_transition x).
+Proof.
+  unfold operational_factory_raw_heads. eapply FOOObserveLub.
+  - intro rounds.
+    exact (operational_factory_raw_hitting_rounds_observes_binary rounds x).
+  - assert (Hfair : enum_converges operational_factory_fair_measure_row
+        vn_fair).
+    { assert (Hrows : operational_factory_fair_measure_row =
+        fun rounds => meas_iter_approx rounds
+          (fun _ : unit => param_round_measure pfalse ptrue) tt).
+      { apply functional_extensionality=> rounds.
+        rewrite operational_factory_fair_measure_row_eq.
+        rewrite (factory_round_is_param_round pfalse ptrue). reflexivity. }
+      rewrite Hrows. exact (param_iteration_converges_of_normalized_bias
+        (p := pfalse) (q := ptrue) pnormalized pnontrivial). }
+    pose proof (@enum_converges_bind_ret_map bool (rat + bool)
+      operational_factory_fair_measure_row vn_fair
+      (fun b => binary_round_result x b) Hfair)
+      as Hmap.
+    assert (Hchain : (fun rounds =>
+        operational_factory_binary_measure_row rounds x) =
+      fun rounds => bind_Enum (operational_factory_fair_measure_row rounds)
+        (fun b => ret_Enum (binary_round_result x b))).
+    { apply functional_extensionality=> rounds.
+      apply operational_factory_binary_measure_row_eq. }
+    rewrite Hchain. rewrite <- fair_binary_round_measure. exact Hmap.
+Qed.
+
 Definition operational_factory_binary_step_heads (x : rat) :
     MF (factory_head (rat + bool)) :=
   @sem_bind MF
@@ -516,6 +641,32 @@ Proof.
   - apply free_operational_bind_cofinal_no_event. exact factoryE_no_event.
   - exact operational_factory_fair_coin_weak.
   - intro b. apply operational_factory_binary_ret_weak.
+Qed.
+
+Lemma operational_factory_binary_step_heads_observes
+    (pnormalized : Qval pfalse + Qval ptrue = 1)
+    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x :
+  free_omega_observes
+    (free_iter_head_next factoryE_no_event)
+    (operational_factory_binary_step_heads x)
+    (binary_coin_transition x).
+Proof.
+  unfold operational_factory_binary_step_heads.
+  assert (Hfront :
+    frontier_head_bind_front
+      (fun b => Ret (binary_round_result x b) : ptree factoryE Enum _)
+      (fun b => FORet (FHRet (binary_round_result x b))) =
+    (fun h => FORet (FHRet (binary_round_result x
+      (operational_factory_head_value h))))).
+  { apply functional_extensionality=> h.
+    destruct h as [b|X e k]; [reflexivity|destruct e]. }
+  rewrite Hfront.
+  eapply free_omega_observes_bind_ret
+    with (obsA := fun h => binary_round_result x
+      (operational_factory_head_value h)).
+  - exact (operational_factory_raw_heads_observes_binary
+      pnormalized pnontrivial x).
+  - intro h. destruct h as [b|X e k]; [reflexivity|destruct e].
 Qed.
 
 Definition operational_factory_q_row (outer : nat) :
