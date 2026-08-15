@@ -186,6 +186,18 @@ condition is listed explicitly, the referenced result is proved without an
   `stable_kernel_bisim_compose` needs only coupling composition plus `AR`
   composition.  The PTree instance now proves reflexivity, symmetry, and
   transitivity and installs `primitive_ptree_bisim_equivalence`.
+  `BehavioralDomain` packages the domain assumptions for comparing this
+  native relation with the structured proof system: every member has a
+  frontier, every such frontier is total, and primitive residual states plus
+  visible continuations remain in the domain almost everywhere.  When the
+  recursive pairs of `weak_bisim` and `primitive_ptree_bisim` stay in two
+  such domains, `weak_bisim_to_primitive_ptree_bisim_on_domain` proves
+  soundness by showing that the proof relation itself is a post-fixed point
+  of the native generator.  The converse theorem realizes native AST
+  coherence through the domains' total frontiers, and
+  `weak_bisim_iff_primitive_ptree_bisim_on_domain` gives the resulting
+  domain-relative full-abstraction statement.  No unrestricted equivalence
+  is claimed for partial/divergent states.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides
@@ -238,6 +250,10 @@ condition is listed explicitly, the referenced result is proved without an
   productivity/omega argument, while the latter is discharged by the native
   Prob rule.  Their equivalence is nontrivial exactly at the limit-coupling
   boundary, not because matching syntax was built on both sides.
+  The older `operational_bisim` generator is retained only as a compatibility
+  layer for migrated clients.  It directly mentions Ret/Vis/Tau/Prob shapes
+  and is not the semantic relation used by the proof/native full-abstraction
+  theorem; the public native equivalence is `primitive_ptree_bisim`.
   `Examples/OperationalBernoulliFactory.v` is now a maintained client of this
   boundary.  It unfolds the actual two-toss source program, proves its raw
   global-fuel hitting chain cofinal with the Von Neumann round schedule, and

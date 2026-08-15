@@ -591,6 +591,35 @@ Qed.
 
 End PrimitivePTreeBisimulationTransitivity.
 
+(** A domain on observed PTree states suitable for relating structured proof
+    rules to primitive behavior.  Totality is required for every structured
+    frontier of a member, while primitive closure records that residual
+    states and visible continuations remain in the domain almost everywhere.
+    The latter packages the closure obligations needed by completeness rather
+    than scattering them across client theorems. *)
+Polymorphic Record BehavioralDomain
+    {E : Type -> Type} {MN MF : Type -> Type}
+    `{NI : SemanticMeasureInterface MN}
+    `{FI : SemanticMeasureInterface MF}
+    `{MX : MixedMeasureInterface MN MF}
+    `{FO : @SemanticOmegaInterface MF FI}
+    {R : Type} (D : ptree' E MN R -> Prop) : Prop := {
+  behavioral_frontier_exists : forall ot, D ot ->
+    exists out : MF (frontier_head E MN R), frontier ot out;
+  behavioral_frontier_total : forall ot, D ot ->
+    forall out : MF (frontier_head E MN R),
+    frontier ot out -> @sem_total MF FI FO _ out;
+  behavioral_primitive_closed : forall ot, D ot ->
+    sem_ae (@ptree_primitive_kernel E MN MF FI MX R ot)
+      (fun target =>
+        match target with
+        | SHInternal ot' => D ot'
+        | SHStable (FHRet _) => True
+        | SHStable (@FHVis _ _ _ X _ k) =>
+            forall x : X, D (observe (k x))
+        end)
+}.
+
 Section OperationalHittingOrder.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
@@ -1102,6 +1131,135 @@ Qed.
 
 End FrontierOperationalSoundness.
 
+Section StructuredProofNativeSoundness.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}
+  `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}
+  `{UC : @UnifiedFrontierCoherence E MN MF NI FI MX FO}.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+Variable bind_cofinality : forall A R
+    (t : ptree E MN A) (k : A -> ptree E MN R),
+    operational_bind_cofinal (MF := MF) t k.
+Variable iter_productivity : forall I R
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) (i : I),
+    (forall j, operational_weak (MF := MF) (observe (step j))
+      (mixed_bind (transition j)
+        (fun next => sem_ret (FHRet next)))) ->
+    sem_increasing (fun fuel => mixed_iter_approx fuel transition i) /\
+    operational_iter_cofinal (MF := MF) step transition i.
+Variable D1 : ptree' E MN R1 -> Prop.
+Variable D2 : ptree' E MN R2 -> Prop.
+Hypothesis BD1 : BehavioralDomain (MF := MF) D1.
+Hypothesis BD2 : BehavioralDomain (MF := MF) D2.
+
+(** The structured proof relation is restricted to a domain closed under all
+    of its recursive pairs.  This makes the coinduction hypothesis available
+    for visible continuations while [BehavioralDomain] supplies total
+    realizable frontiers for the current pair. *)
+Hypothesis weak_bisim_domain_closed : forall t1 t2,
+  @weak_bisim E MN MF NI FI NC FC MX FO R1 R2 RR t1 t2 ->
+  D1 (observe t1) /\ D2 (observe t2).
+
+Theorem weak_bisim_to_primitive_ptree_bisim_on_domain : forall t1 t2,
+  @weak_bisim E MN MF NI FI NC FC MX FO R1 R2 RR t1 t2 ->
+  @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR t1 t2.
+Proof.
+  unfold primitive_ptree_bisim, primitive_ptree_state_bisim.
+  unfold stable_kernel_bisim at 1. coinduction CH CIH.
+  intros t1 t2 Hweak.
+  pose proof (weak_bisim_unfold Hweak) as Hstep.
+  destruct (weak_bisim_domain_closed Hweak) as [HD1 HD2].
+  destruct (behavioral_frontier_exists BD1 HD1) as [out1 Hfront1].
+  destruct (weak_bisimF_frontier_l Hstep Hfront1)
+    as [out2 [Hfront2 Hlift]].
+  pose proof (behavioral_frontier_total BD1 HD1 Hfront1) as Htotal1.
+  pose proof (behavioral_frontier_total BD2 HD2 Hfront2) as Htotal2.
+  pose proof (frontier_to_primitive_stable_ast
+    bind_cofinality iter_productivity Hfront1 Htotal1) as Hast1.
+  pose proof (frontier_to_primitive_stable_ast
+    bind_cofinality iter_productivity Hfront2 Htotal2) as Hast2.
+  assert (Hnative : sem_lift
+      (ptree_stable_observation_rel RR (elem CH)) out1 out2).
+  { eapply sem_lift_mono; [|exact Hlift].
+    apply frontier_head_rel_mono. intros u1 u2 Hu.
+    exact (CIH _ _ Hu). }
+  unfold stable_kernel_bisim_body. eapply SKBAST.
+  - split.
+    + intros out1' Hast1'. exists out2. split; [exact Hast2|].
+      eapply sem_lift_proper_l; [|exact Hnative].
+      eapply sem_lub_unique; [exact (proj1 Hast1)|exact (proj1 Hast1')].
+    + intros out2' Hast2'. exists out1. split; [exact Hast1|].
+      eapply sem_lift_proper_r; [|exact Hnative].
+      eapply sem_lub_unique; [exact (proj1 Hast2)|exact (proj1 Hast2')].
+  - exact Hast1.
+  - exact Hast2.
+  - exact Hnative.
+Qed.
+
+Hypothesis primitive_bisim_domain_closed : forall t1 t2,
+  @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR t1 t2 ->
+  D1 (observe t1) /\ D2 (observe t2).
+
+(** Closed-domain completeness.  Because every domain member has a total
+    structured frontier, the native AST coherence can be realized on both
+    sides and its recursive head coupling becomes the coinduction hypothesis
+    for the structured proof relation. *)
+Theorem primitive_ptree_bisim_to_weak_bisim_on_domain : forall t1 t2,
+  @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR t1 t2 ->
+  @weak_bisim E MN MF NI FI NC FC MX FO R1 R2 RR t1 t2.
+Proof.
+  unfold weak_bisim at 1. coinduction CH CIH.
+  intros t1 t2 Hnative.
+  destruct (primitive_bisim_domain_closed Hnative) as [HD1 HD2].
+  destruct (behavioral_frontier_exists BD1 HD1) as [out1 Hfront1].
+  destruct (behavioral_frontier_exists BD2 HD2) as [front2 Hfront2].
+  pose proof (behavioral_frontier_total BD1 HD1 Hfront1) as Htotal1.
+  pose proof (behavioral_frontier_total BD2 HD2 Hfront2) as Htotal2.
+  pose proof (frontier_to_primitive_stable_ast
+    bind_cofinality iter_productivity Hfront1 Htotal1) as Hast1.
+  pose proof (frontier_to_primitive_stable_ast
+    bind_cofinality iter_productivity Hfront2 Htotal2) as Hfront_ast2.
+  pose proof Hnative as Hstate.
+  unfold primitive_ptree_bisim, primitive_ptree_state_bisim in Hstate.
+  destruct (proj1 (stable_kernel_bisim_ast_match Hstate) out1 Hast1)
+    as [out2 [Hast2 Hlift]].
+  assert (Hout2 : sem_eq out2 front2).
+  { eapply sem_lub_unique;
+      [exact (proj1 Hast2)|exact (proj1 Hfront_ast2)]. }
+  assert (Hlift_front : sem_lift
+      (frontier_head_rel RR (elem CH)) out1 front2).
+  { eapply sem_lift_mono.
+    - apply frontier_head_rel_mono. intros u1 u2 Hu.
+      exact (CIH _ _ Hu).
+    - eapply sem_lift_proper_r; [exact Hout2|exact Hlift]. }
+  unfold weak_bisim_body. eapply UWBFrontier;
+    [exact Hfront1|exact Hfront2|exact Hlift_front].
+Qed.
+
+Corollary weak_bisim_iff_primitive_ptree_bisim_on_domain t1 t2 :
+  @weak_bisim E MN MF NI FI NC FC MX FO R1 R2 RR t1 t2 <->
+  @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR t1 t2.
+Proof.
+  split.
+  - apply weak_bisim_to_primitive_ptree_bisim_on_domain.
+  - apply primitive_ptree_bisim_to_weak_bisim_on_domain.
+Qed.
+
+End StructuredProofNativeSoundness.
+
 Section PrimitiveFrontierCompletenessBoundary.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
@@ -1150,7 +1308,11 @@ Qed.
 
 End PrimitiveFrontierCompletenessBoundary.
 
-Section GuardedOperationalBisimulation.
+(** Compatibility layer retained for migrated clients.  The public native
+    behavioral equivalence is [primitive_ptree_bisim]; this older generator
+    mentions PTree Ret/Vis/Tau/Prob shapes directly and is not used by the
+    proof/native full-abstraction theorem above. *)
+Section GuardedOperationalBisimulationCompatibility.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
   `{FI : SemanticMeasureInterface MF}
@@ -1267,7 +1429,7 @@ Proof.
   apply (gfp_fp foperational_bisim). exact H.
 Qed.
 
-End GuardedOperationalBisimulation.
+End GuardedOperationalBisimulationCompatibility.
 
 Section GuardedOperationalReflexivity.
 Context {E : Type -> Type} {MN MF : Type -> Type}
