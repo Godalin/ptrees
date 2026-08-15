@@ -494,14 +494,35 @@ Proof.
   - constructor. intro n. eapply H0; eauto.
 Qed.
 
+Lemma free_omega_lift_ae_transport_r
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    {A B} (R : A -> B -> Prop) (mu : FreeOmega MN A)
+    (nu : FreeOmega MN B) (P : A -> Prop) :
+  free_omega_lift R mu nu -> free_omega_ae P mu ->
+  free_omega_ae (fun y => exists x, R x y /\ P x) nu.
+Proof.
+  intros Hlift HP. induction Hlift; dependent destruction HP.
+  - constructor. exists x. split; assumption.
+  - constructor.
+  - eapply FOAESample with
+      (Good := fun y => exists x, S x y /\ Good x).
+    + eapply sem_lift_ae_transport_r; eassumption.
+    + intros y [x [Hxy Hx]]. eapply H1; eauto.
+  - constructor. intro n. exact (H0 n (H1 n)).
+Qed.
+
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureCouplingAELaws
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI} :
     @SemanticMeasureCouplingAELaws (FreeOmega MN)
       (FreeOmegaSemanticMeasureInterface (NI := NI)).
 Proof.
-  constructor. intros A B R mu nu P Q Hlift HP HQ.
-  exact (free_omega_lift_ae_restrict
-    (NCAE := NCAE) Hlift HP HQ).
+  constructor.
+  - intros A B R mu nu P Hlift HP.
+    exact (free_omega_lift_ae_transport_r
+      (NCAE := NCAE) Hlift HP).
+  - intros A B R mu nu P Q Hlift HP HQ.
+    exact (free_omega_lift_ae_restrict
+      (NCAE := NCAE) Hlift HP HQ).
 Qed.
 
 Lemma free_omega_bind_assoc {A B C} (mu : FreeOmega MN A)

@@ -119,6 +119,10 @@ Polymorphic Class SemanticMeasureAELiftLaws@{carrier representation}
 Polymorphic Class SemanticMeasureCouplingAELaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
     `{SI : SemanticMeasureInterface S} := {
+  sem_lift_ae_transport_r : forall {A B : Type@{carrier}}
+      (R : A -> B -> Prop) (mu : S A) (nu : S B) (P : A -> Prop),
+      sem_lift R mu nu -> sem_ae mu P ->
+      sem_ae nu (fun y => exists x, R x y /\ P x);
   sem_lift_ae_restrict : forall {A B : Type@{carrier}}
       (R : A -> B -> Prop) (mu : S A) (nu : S B)
       (P : A -> Prop) (Q : B -> Prop),

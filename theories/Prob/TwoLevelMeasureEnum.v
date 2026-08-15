@@ -97,7 +97,10 @@ Qed.
 #[global] Instance Enum_SemanticMeasureCouplingAELaws :
     @SemanticMeasureCouplingAELaws Enum Enum_SemanticMeasureInterface.
 Proof.
-  constructor. move=> A B R mu nu P Q Hlift HP HQ.
+  constructor.
+  - exact (@meas_lift_ae_transport_r Enum Enum_MeasureInterface
+      Enum_MeasureLiftAELaws).
+  - move=> A B R mu nu P Q Hlift HP HQ.
   cbn in Hlift, HP, HQ |- *.
   unfold indexed_coupling in Hlift |- *.
   eapply coupling_mono; [|exact Hlift].
