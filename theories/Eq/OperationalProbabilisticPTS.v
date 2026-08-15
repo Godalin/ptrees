@@ -628,6 +628,24 @@ Polymorphic Definition frontier_head_in_domain
   | @FHVis _ _ _ X _ k => forall x : X, D (observe (k x))
   end.
 
+Lemma frontier_head_rel_with_domains
+    {E : Type -> Type} {MN : Type -> Type} {R1 R2 : Type}
+    (RR : R1 -> R2 -> Prop)
+    (sim : ptree E MN R1 -> ptree E MN R2 -> Prop)
+    (D1 : ptree' E MN R1 -> Prop) (D2 : ptree' E MN R2 -> Prop)
+    h1 h2 :
+  frontier_head_rel RR sim h1 h2 ->
+  frontier_head_in_domain D1 h1 ->
+  frontier_head_in_domain D2 h2 ->
+  frontier_head_rel RR
+    (fun t1 t2 => sim t1 t2 /\ D1 (observe t1) /\ D2 (observe t2)) h1 h2.
+Proof.
+  intros Hrel HD1 HD2. destruct Hrel.
+  - constructor. exact H.
+  - constructor. intro x. split; [exact (H x)|].
+    split; [exact (HD1 x)|exact (HD2 x)].
+Qed.
+
 Section BehavioralDomainStableHittingClosure.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
@@ -1310,6 +1328,142 @@ Proof.
 Qed.
 
 End StructuredProofNativeSoundness.
+
+Section StructuredProofNativeRootDomainCorrespondence.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{FCA : @SemanticMeasureCouplingAELaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}
+  `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}
+  `{FAE : @SemanticMeasureAEKleisliLaws MF FI}
+  `{FOAE : @SemanticOmegaAELaws MF FI FO}
+  `{UC : @UnifiedFrontierCoherence E MN MF NI FI MX FO}.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+Variable bind_cofinality : forall A R
+    (t : ptree E MN A) (k : A -> ptree E MN R),
+    operational_bind_cofinal (MF := MF) t k.
+Variable iter_productivity : forall I R
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) (i : I),
+    (forall j, operational_weak (MF := MF) (observe (step j))
+      (mixed_bind (transition j) (fun next => sem_ret (FHRet next)))) ->
+    sem_increasing (fun fuel => mixed_iter_approx fuel transition i) /\
+    operational_iter_cofinal (MF := MF) step transition i.
+Variable D1 : ptree' E MN R1 -> Prop.
+Variable D2 : ptree' E MN R2 -> Prop.
+Hypothesis BD1 : BehavioralDomain (MF := MF) D1.
+Hypothesis BD2 : BehavioralDomain (MF := MF) D2.
+
+(** Root membership now suffices: stable-hitting AE closure and coupling
+    restriction manufacture domain membership for every recursive pair. *)
+Theorem weak_bisim_to_primitive_ptree_bisim_root_domain : forall t1 t2,
+  @weak_bisim E MN MF NI FI NC FC MX FO R1 R2 RR t1 t2 /\
+  D1 (observe t1) /\ D2 (observe t2) ->
+  @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR t1 t2.
+Proof.
+  unfold primitive_ptree_bisim, primitive_ptree_state_bisim.
+  unfold stable_kernel_bisim at 1. coinduction CH CIH.
+  intros t1 t2 [Hweak [HD1 HD2]].
+  pose proof (weak_bisim_unfold Hweak) as Hstep.
+  destruct (behavioral_frontier_exists BD1 HD1) as [out1 Hfront1].
+  destruct (weak_bisimF_frontier_l Hstep Hfront1)
+    as [out2 [Hfront2 Hlift]].
+  pose proof (behavioral_frontier_total BD1 HD1 Hfront1) as Htotal1.
+  pose proof (behavioral_frontier_total BD2 HD2 Hfront2) as Htotal2.
+  pose proof (frontier_to_primitive_stable_ast
+    bind_cofinality iter_productivity Hfront1 Htotal1) as Hast1.
+  pose proof (frontier_to_primitive_stable_ast
+    bind_cofinality iter_productivity Hfront2 Htotal2) as Hast2.
+  pose proof (behavioral_domain_stable_hitting_ast_ae BD1 HD1 Hast1)
+    as Hae1.
+  pose proof (behavioral_domain_stable_hitting_ast_ae BD2 HD2 Hast2)
+    as Hae2.
+  pose proof (sem_lift_ae_restrict Hlift Hae1 Hae2) as Hrestricted.
+  assert (Hnative : sem_lift
+      (ptree_stable_observation_rel RR (elem CH)) out1 out2).
+  { eapply sem_lift_mono; [|exact Hrestricted].
+    intros h1 h2 [Hrel [Hgood1 Hgood2]].
+    destruct Hrel.
+    - constructor. exact H.
+    - constructor. intro x.
+      exact (CIH _ _ (conj (H x) (conj (Hgood1 x) (Hgood2 x)))). }
+  unfold stable_kernel_bisim_body. eapply SKBAST.
+  - split.
+    + intros out1' Hast1'. exists out2. split; [exact Hast2|].
+      eapply sem_lift_proper_l; [|exact Hnative].
+      eapply sem_lub_unique; [exact (proj1 Hast1)|exact (proj1 Hast1')].
+    + intros out2' Hast2'. exists out1. split; [exact Hast1|].
+      eapply sem_lift_proper_r; [|exact Hnative].
+      eapply sem_lub_unique; [exact (proj1 Hast2)|exact (proj1 Hast2')].
+  - exact Hast1.
+  - exact Hast2.
+  - exact Hnative.
+Qed.
+
+Theorem primitive_ptree_bisim_to_weak_bisim_root_domain : forall t1 t2,
+  @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR t1 t2 /\
+  D1 (observe t1) /\ D2 (observe t2) ->
+  @weak_bisim E MN MF NI FI NC FC MX FO R1 R2 RR t1 t2.
+Proof.
+  unfold weak_bisim at 1. coinduction CH CIH.
+  intros t1 t2 [Hnative [HD1 HD2]].
+  destruct (behavioral_frontier_exists BD1 HD1) as [out1 Hfront1].
+  destruct (behavioral_frontier_exists BD2 HD2) as [front2 Hfront2].
+  pose proof (behavioral_frontier_total BD1 HD1 Hfront1) as Htotal1.
+  pose proof (behavioral_frontier_total BD2 HD2 Hfront2) as Htotal2.
+  pose proof (frontier_to_primitive_stable_ast
+    bind_cofinality iter_productivity Hfront1 Htotal1) as Hast1.
+  pose proof (frontier_to_primitive_stable_ast
+    bind_cofinality iter_productivity Hfront2 Htotal2) as Hast2.
+  pose proof Hnative as Hstate.
+  unfold primitive_ptree_bisim, primitive_ptree_state_bisim in Hstate.
+  destruct (proj1 (stable_kernel_bisim_ast_match Hstate) out1 Hast1)
+    as [out2 [Hout2ast Hlift]].
+  assert (Hout2 : sem_eq out2 front2).
+  { eapply sem_lub_unique;
+      [exact (proj1 Hout2ast)|exact (proj1 Hast2)]. }
+  pose proof (behavioral_domain_stable_hitting_ast_ae BD1 HD1 Hast1)
+    as Hae1.
+  pose proof (behavioral_domain_stable_hitting_ast_ae BD2 HD2 Hout2ast)
+    as Hae2.
+  pose proof (sem_lift_ae_restrict Hlift Hae1 Hae2) as Hrestricted.
+  assert (Hlift_front : sem_lift
+      (frontier_head_rel RR (elem CH)) out1 front2).
+  { eapply sem_lift_proper_r; [exact Hout2|].
+    eapply sem_lift_mono; [|exact Hrestricted].
+    intros h1 h2 [Hrel [Hgood1 Hgood2]].
+    destruct Hrel.
+    - constructor. exact H.
+    - constructor. intro x.
+      exact (CIH _ _ (conj (H x) (conj (Hgood1 x) (Hgood2 x)))). }
+  unfold weak_bisim_body. eapply UWBFrontier;
+    [exact Hfront1|exact Hfront2|exact Hlift_front].
+Qed.
+
+Corollary weak_bisim_iff_primitive_ptree_bisim_root_domain t1 t2 :
+  D1 (observe t1) -> D2 (observe t2) ->
+  (@weak_bisim E MN MF NI FI NC FC MX FO R1 R2 RR t1 t2 <->
+   @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR t1 t2).
+Proof.
+  intros HD1 HD2. split; intro Hrel.
+  - apply weak_bisim_to_primitive_ptree_bisim_root_domain.
+    exact (conj Hrel (conj HD1 HD2)).
+  - apply primitive_ptree_bisim_to_weak_bisim_root_domain.
+    exact (conj Hrel (conj HD1 HD2)).
+Qed.
+
+End StructuredProofNativeRootDomainCorrespondence.
 
 Section PrimitiveFrontierCompletenessBoundary.
 Context {E : Type -> Type} {MN MF : Type -> Type}

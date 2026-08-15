@@ -84,6 +84,44 @@ Proof.
     exact (Hae p x Hsrc Hnz).
 Qed.
 
+#[global] Instance Enum_SemanticMeasureAEKleisliLaws :
+    @SemanticMeasureAEKleisliLaws Enum Enum_SemanticMeasureInterface.
+Proof.
+  constructor.
+  - intros A P x Hx. exact (@meas_ae_ret Enum Enum_MeasureInterface
+      Enum_MeasureMonadLaws A x P Hx).
+  - exact (@meas_ae_bind Enum Enum_MeasureInterface
+      Enum_MeasureAEKleisliLaws).
+Qed.
+
+#[global] Instance Enum_SemanticMeasureCouplingAELaws :
+    @SemanticMeasureCouplingAELaws Enum Enum_SemanticMeasureInterface.
+Proof.
+  constructor. move=> A B R mu nu P Q Hlift HP HQ.
+  cbn in Hlift, HP, HQ |- *.
+  unfold indexed_coupling in Hlift |- *.
+  eapply coupling_mono; [|exact Hlift].
+  move=> i j [HL HR]. split.
+  - move=> p x Hi.
+    move: (HL p x Hi)=> [q [y [Hj Hxy]]].
+    exists q, y. split; [exact Hj|]. split; [exact Hxy|]. split.
+    + have Hin := @nth_error_In _ (enum_prune mu) i (p, x) Hi.
+      have [Hsrc Hnz] := enum_prune_in_source Hin.
+      exact (HP p x Hsrc Hnz).
+    + have Hin := @nth_error_In _ (enum_prune nu) j (q, y) Hj.
+      have [Hsrc Hnz] := enum_prune_in_source Hin.
+      exact (HQ q y Hsrc Hnz).
+  - move=> q y Hj.
+    move: (HR q y Hj)=> [p [x [Hi Hxy]]].
+    exists p, x. split; [exact Hi|]. split; [exact Hxy|]. split.
+    + have Hin := @nth_error_In _ (enum_prune mu) i (p, x) Hi.
+      have [Hsrc Hnz] := enum_prune_in_source Hin.
+      exact (HP p x Hsrc Hnz).
+    + have Hin := @nth_error_In _ (enum_prune nu) j (q, y) Hj.
+      have [Hsrc Hnz] := enum_prune_in_source Hin.
+      exact (HQ q y Hsrc Hnz).
+Qed.
+
 (** Eventwise order on finite rational measures.  Enum is not globally
     omega-complete, so this adapter intentionally provides the omega
     operations but no unconditional [SemanticOmegaLaws] instance. *)

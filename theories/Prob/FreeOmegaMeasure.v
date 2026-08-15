@@ -307,6 +307,20 @@ Proof.
   - constructor. intro n. eapply H0. exact (H1 n).
 Qed.
 
+Lemma free_omega_ae_bind {A B} (mu : FreeOmega MN A)
+    (k : A -> FreeOmega MN B) (P : A -> Prop) (Q : B -> Prop) :
+  free_omega_ae P mu ->
+  (forall x, P x -> free_omega_ae Q (k x)) ->
+  free_omega_ae Q (free_omega_bind mu k).
+Proof.
+  intros Hae Hk. induction Hae; cbn.
+  - exact (Hk x H).
+  - constructor.
+  - eapply FOAESample; [exact H|].
+    intros x Hx. exact (H1 x Hx).
+  - constructor. exact H0.
+Qed.
+
 Lemma free_omega_lift_mono {A B} (R T : A -> B -> Prop) mu nu :
   (forall x y, R x y -> T x y) ->
   free_omega_lift R mu nu -> free_omega_lift T mu nu.
@@ -449,6 +463,45 @@ Proof.
     intros x z [y [Hxy ->]]. exact Hxy.
   - exact @free_omega_lift_sym.
   - exact @free_omega_lift_comp.
+Qed.
+
+#[global] Polymorphic Instance FreeOmegaSemanticMeasureAEKleisliLaws :
+    @SemanticMeasureAEKleisliLaws (FreeOmega MN)
+      (FreeOmegaSemanticMeasureInterface (NI := NI)).
+Proof.
+  constructor.
+  - intros A P x Hx. constructor. exact Hx.
+  - intros A B mu k P Q Hmu Hk.
+    cbn in Hmu, Hk |- *. exact (free_omega_ae_bind Hmu Hk).
+Qed.
+
+Lemma free_omega_lift_ae_restrict
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    {A B} (R : A -> B -> Prop) (mu : FreeOmega MN A)
+    (nu : FreeOmega MN B) (P : A -> Prop) (Q : B -> Prop) :
+  free_omega_lift R mu nu ->
+  free_omega_ae P mu -> free_omega_ae Q nu ->
+  free_omega_lift (fun x y => R x y /\ P x /\ Q y) mu nu.
+Proof.
+  intros Hlift. induction Hlift; intros HP HQ;
+    dependent destruction HP; dependent destruction HQ.
+  - constructor. repeat split; assumption.
+  - constructor.
+  - eapply FOLSample with
+      (S := fun x y => S x y /\ Good x /\ Good0 y).
+    + eapply sem_lift_ae_restrict; eassumption.
+    + intros x y [Hxy [Hx Hy]]. eapply H1; eauto.
+  - constructor. intro n. eapply H0; eauto.
+Qed.
+
+#[global] Polymorphic Instance FreeOmegaSemanticMeasureCouplingAELaws
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI} :
+    @SemanticMeasureCouplingAELaws (FreeOmega MN)
+      (FreeOmegaSemanticMeasureInterface (NI := NI)).
+Proof.
+  constructor. intros A B R mu nu P Q Hlift HP HQ.
+  exact (free_omega_lift_ae_restrict
+    (NCAE := NCAE) Hlift HP HQ).
 Qed.
 
 Lemma free_omega_bind_assoc {A B C} (mu : FreeOmega MN A)
@@ -789,6 +842,16 @@ Proof.
     refine (FOQLComp (R := fun x z => exists y, R x y /\ T y z)
       Hmn Hnx _).
     intros x z Hxz. exact Hxz.
+Qed.
+
+#[global] Instance FreeOmegaObservableSemanticMeasureAEKleisliLaws :
+    @SemanticMeasureAEKleisliLaws (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)).
+Proof.
+  constructor.
+  - intros A P x Hx. constructor. exact Hx.
+  - intros A B mu k P Q Hmu Hk.
+    cbn in Hmu, Hk |- *. exact (free_omega_ae_bind Hmu Hk).
 Qed.
 
 Lemma free_omega_qlift_bind_ae

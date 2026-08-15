@@ -199,6 +199,21 @@ condition is listed explicitly, the referenced result is proved without an
   AE preservation through stable hitting and a law restricting a coupling
   to AE-good marginals.  No unrestricted equivalence is claimed for
   partial/divergent states.
+  These missing layers are now explicit capabilities rather than hidden
+  side conditions.  `SemanticMeasureAEKleisliLaws` and
+  `SemanticOmegaAELaws` yield the generic theorem
+  `stable_hitting_weak_ae`; its PTree specialization
+  `behavioral_domain_stable_hitting_weak_ae` is the first theorem that
+  consumes `behavioral_primitive_closed`.  With the independent standard
+  coupling law `SemanticMeasureCouplingAELaws`, the new
+  `weak_bisim_iff_primitive_ptree_bisim_root_domain` requires only membership
+  of the two initial states and propagates domain membership inside its
+  coinduction candidate.  Enum provides the finite Kleisli and coupling-AE
+  instances, and structural FreeOmega inherits both from its node backend.
+  The observable/quotiented FreeOmega omega-AE instance remains an explicit
+  backend proof obligation, so the older relation-global theorem is retained
+  as a compatibility endpoint rather than silently assuming that quotient
+  transport law.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides

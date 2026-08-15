@@ -112,6 +112,21 @@ Polymorphic Class SemanticMeasureAELiftLaws@{carrier representation}
       sem_lift (fun x y => x = y /\ P x) mu mu
 }.
 
+(** A coupling can be replaced by one supported on predicates that hold
+    almost everywhere in its two marginals.  This is the standard bridge
+    from measure-theoretic AE invariants to pointwise relational coinduction;
+    it is intentionally not bundled into the basic coupling algebra. *)
+Polymorphic Class SemanticMeasureCouplingAELaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S} := {
+  sem_lift_ae_restrict : forall {A B : Type@{carrier}}
+      (R : A -> B -> Prop) (mu : S A) (nu : S B)
+      (P : A -> Prop) (Q : B -> Prop),
+      sem_lift R mu nu ->
+      sem_ae mu P -> sem_ae nu Q ->
+      sem_lift (fun x y => R x y /\ P x /\ Q y) mu nu
+}.
+
 (** Predicate semantics for the monadic operations.  These laws are kept
     separate from extensional equality and coupling: they are exactly the
     capability needed to propagate an invariant through a finite kernel
