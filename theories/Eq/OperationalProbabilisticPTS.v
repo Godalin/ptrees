@@ -434,11 +434,20 @@ Lemma primitive_ptree_bisim_of_ast_lift
 Proof.
   intros H1 H2 Hlift. unfold primitive_ptree_bisim,
     primitive_ptree_state_bisim.
+  pose proof (proj2 (ptree_primitive_ast_adequate
+    (observe t1) out1) H1) as Hast1.
+  pose proof (proj2 (ptree_primitive_ast_adequate
+    (observe t2) out2) H2) as Hast2.
   apply stable_kernel_bisim_fold. eapply SKBAST.
-  - apply (proj2 (ptree_primitive_ast_adequate (observe t1) out1)).
-    exact H1.
-  - apply (proj2 (ptree_primitive_ast_adequate (observe t2) out2)).
-    exact H2.
+  - split.
+    + intros out1' Hast1'. exists out2. split; [exact Hast2|].
+      eapply sem_lift_proper_l; [|exact Hlift].
+      eapply sem_lub_unique; [exact (proj1 Hast1)|exact (proj1 Hast1')].
+    + intros out2' Hast2'. exists out1. split; [exact Hast1|].
+      eapply sem_lift_proper_r; [|exact Hlift].
+      eapply sem_lub_unique; [exact (proj1 Hast2)|exact (proj1 Hast2')].
+  - exact Hast1.
+  - exact Hast2.
   - exact Hlift.
 Qed.
 
@@ -523,6 +532,64 @@ Proof.
 Qed.
 
 End PrimitivePTreeBisimulationSymmetry.
+
+Section PrimitivePTreeBisimulationTransitivity.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {R : Type}.
+
+Lemma ptree_stable_observation_rel_comp
+    (sim12 sim23 sim13 : ptree' E MN R -> ptree' E MN R -> Prop)
+    (Hsim : forall s1 s3, (exists s2, sim12 s1 s2 /\ sim23 s2 s3) ->
+      sim13 s1 s3) :
+  forall h1 h3,
+    (exists h2,
+      @ptree_stable_observation_rel E MN R R eq sim12 h1 h2 /\
+      @ptree_stable_observation_rel E MN R R eq sim23 h2 h3) ->
+    @ptree_stable_observation_rel E MN R R eq sim13 h1 h3.
+Proof.
+  intros h1 h3 [h2 [H12 H23]].
+  dependent destruction H12; dependent destruction H23.
+  - constructor. reflexivity.
+  - constructor. intro x. apply Hsim.
+    exists (observe (k2 x)). split; [exact (H x)|exact (H0 x)].
+Qed.
+
+Theorem primitive_ptree_state_bisim_trans :
+  Transitive (@primitive_ptree_state_bisim E MN MF FI FC MX FO R R eq).
+Proof.
+  intros s1 s2 s3 H12 H23.
+  unfold primitive_ptree_state_bisim in H12, H23 |- *.
+  eapply stable_kernel_bisim_compose; [|exact H12|exact H23].
+  intros sim12 sim23 sim13 Hsim h1 h3 Hheads.
+  exact (ptree_stable_observation_rel_comp Hsim Hheads).
+Qed.
+
+Theorem primitive_ptree_bisim_trans :
+  Transitive (@primitive_ptree_bisim E MN MF FI FC MX FO R R eq).
+Proof.
+  intros t1 t2 t3 H12 H23.
+  unfold primitive_ptree_bisim in H12, H23 |- *.
+  eapply primitive_ptree_state_bisim_trans; eassumption.
+Qed.
+
+#[global] Instance primitive_ptree_bisim_equivalence :
+  Equivalence (@primitive_ptree_bisim E MN MF FI FC MX FO R R eq).
+Proof.
+  split.
+  - unfold Reflexive, primitive_ptree_bisim, primitive_ptree_state_bisim.
+    intro t. apply stable_kernel_bisim_refl.
+    intros sim Hsim h. destruct h as [r|X e k].
+    + constructor. reflexivity.
+    + constructor. intro x. exact (Hsim (observe (k x))).
+  - exact primitive_ptree_bisim_sym.
+  - exact primitive_ptree_bisim_trans.
+Qed.
+
+End PrimitivePTreeBisimulationTransitivity.
 
 Section OperationalHittingOrder.
 Context {E : Type -> Type} {MN MF : Type -> Type}

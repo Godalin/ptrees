@@ -159,6 +159,15 @@ Hypothesis AR_mono : forall sim1 sim2,
   (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
   forall a1 a2, AR sim1 a1 a2 -> AR sim2 a1 a2.
 
+Definition stable_kernel_ast_match (sim : S1 -> S2 -> Prop)
+    (s1 : S1) (s2 : S2) : Prop :=
+  (forall out1, stable_hitting_ast kernel1 s1 out1 ->
+    exists out2, stable_hitting_ast kernel2 s2 out2 /\
+      sem_lift (AR sim) out1 out2) /\
+  (forall out2, stable_hitting_ast kernel2 s2 out2 ->
+    exists out1, stable_hitting_ast kernel1 s1 out1 /\
+      sem_lift (AR sim) out1 out2).
+
 (** A generic divergence-sensitive probabilistic bisimulation generator.
     [SKBAST] permits different finite schedules to meet at coupled total
     stable limits.  [SKBStep] is the residual guard: programs without an AST
@@ -169,11 +178,13 @@ Hypothesis AR_mono : forall sim1 sim2,
 Inductive stable_kernel_bisimF (sim : S1 -> S2 -> Prop) :
     S1 -> S2 -> Prop :=
   | SKBAST s1 s2 out1 out2 :
+      stable_kernel_ast_match sim s1 s2 ->
       stable_hitting_ast kernel1 s1 out1 ->
       stable_hitting_ast kernel2 s2 out2 ->
       sem_lift (AR sim) out1 out2 ->
       stable_kernel_bisimF sim s1 s2
   | SKBStep s1 s2 :
+      stable_kernel_ast_match sim s1 s2 ->
       sem_lift (stable_target_rel (AR sim) sim)
         (kernel1 s1) (kernel2 s2) ->
       stable_kernel_bisimF sim s1 s2.
@@ -191,19 +202,38 @@ Proof.
   - constructor. exact (Hsim _ _ H).
 Qed.
 
+Lemma stable_kernel_ast_match_mono (sim1 sim2 : S1 -> S2 -> Prop) :
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall s1 s2, stable_kernel_ast_match sim1 s1 s2 ->
+    stable_kernel_ast_match sim2 s1 s2.
+Proof.
+  intros Hsim s1 s2 [Hforward Hbackward]. split.
+  - intros out1 Hast1. destruct (Hforward out1 Hast1)
+      as [out2 [Hast2 Hlift]]. exists out2. split; [exact Hast2|].
+    eapply sem_lift_mono; [|exact Hlift]. exact (AR_mono Hsim).
+  - intros out2 Hast2. destruct (Hbackward out2 Hast2)
+      as [out1 [Hast1 Hlift]]. exists out1. split; [exact Hast1|].
+    eapply sem_lift_mono; [|exact Hlift]. exact (AR_mono Hsim).
+Qed.
+
 Lemma stable_kernel_bisimF_monotone (sim1 sim2 : S1 -> S2 -> Prop) :
   (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
   forall s1 s2, stable_kernel_bisimF sim1 s1 s2 ->
     stable_kernel_bisimF sim2 s1 s2.
 Proof.
   intros Hsim s1 s2 Hstep. destruct Hstep.
-  - eapply SKBAST; [exact H|exact H0|].
-    eapply sem_lift_mono; [|exact H1].
-    exact (AR_mono Hsim).
-  - apply SKBStep. eapply sem_lift_mono; [|exact H].
-    eapply stable_target_rel_mono.
-    + exact (AR_mono Hsim).
-    + exact Hsim.
+  - eapply SKBAST.
+    + exact (stable_kernel_ast_match_mono Hsim H).
+    + exact H0.
+    + exact H1.
+    + eapply sem_lift_mono; [|exact H2].
+      exact (AR_mono Hsim).
+  - apply SKBStep.
+    + exact (stable_kernel_ast_match_mono Hsim H).
+    + eapply sem_lift_mono; [|exact H0].
+      eapply stable_target_rel_mono.
+      * exact (AR_mono Hsim).
+      * exact Hsim.
 Qed.
 
 Definition stable_kernel_bisim_body sim (s1 : S1) (s2 : S2) : Prop :=
@@ -232,6 +262,14 @@ Lemma stable_kernel_bisim_fold s1 s2 :
 Proof.
   intro H. unfold stable_kernel_bisim.
   apply (gfp_fp fstable_kernel_bisim). exact H.
+Qed.
+
+Theorem stable_kernel_bisim_ast_match s1 s2 :
+  stable_kernel_bisim s1 s2 ->
+  stable_kernel_ast_match stable_kernel_bisim s1 s2.
+Proof.
+  intro Hrel. apply stable_kernel_bisim_unfold in Hrel.
+  destruct Hrel; exact H.
 Qed.
 
 End PrimitiveKernelBisimulation.
@@ -265,8 +303,14 @@ Proof.
   intro state. revert state. unfold stable_kernel_bisim.
   coinduction CH CIH. intro state.
   unfold stable_kernel_bisim_body.
-  apply SKBStep. apply sem_lift_refl.
-  apply stable_target_rel_refl. exact CIH.
+  apply SKBStep.
+  - split.
+    + intros out Hast. exists out. split; [exact Hast|].
+      apply sem_lift_refl. apply AR_refl. exact CIH.
+    + intros out Hast. exists out. split; [exact Hast|].
+      apply sem_lift_refl. apply AR_refl. exact CIH.
+  - apply sem_lift_refl.
+    apply stable_target_rel_refl. exact CIH.
 Qed.
 
 End PrimitiveKernelBisimulationReflexivity.
@@ -305,6 +349,30 @@ Proof.
   - constructor. exact (Hsim _ _ H).
 Qed.
 
+Lemma stable_kernel_ast_match_converse
+    (sim12 : S1 -> S2 -> Prop) (sim21 : S2 -> S1 -> Prop)
+    (Hsim : forall s1 s2, sim12 s1 s2 -> sim21 s2 s1) :
+  forall s1 s2,
+    @stable_kernel_ast_match MF FI FO S1 S2 A1 A2
+      kernel1 kernel2 AR12 sim12 s1 s2 ->
+    @stable_kernel_ast_match MF FI FO S2 S1 A2 A1
+      kernel2 kernel1 AR21 sim21 s2 s1.
+Proof.
+  intros s1 s2 [Hforward Hbackward]. split.
+  - intros out2 Hast2. destruct (Hbackward out2 Hast2)
+      as [out1 [Hast1 Hlift]]. exists out1. split; [exact Hast1|].
+    apply sem_lift_sym in Hlift. eapply sem_lift_mono; [|exact Hlift].
+    intros a2 a1 Har. eapply AR21_mono.
+    + intros x2 x1 H12. exact (Hsim _ _ H12).
+    + exact (AR_converse Har).
+  - intros out1 Hast1. destruct (Hforward out1 Hast1)
+      as [out2 [Hast2 Hlift]]. exists out2. split; [exact Hast2|].
+    apply sem_lift_sym in Hlift. eapply sem_lift_mono; [|exact Hlift].
+    intros a2 a1 Har. eapply AR21_mono.
+    + intros x2 x1 H12. exact (Hsim _ _ H12).
+    + exact (AR_converse Har).
+Qed.
+
 (** Heterogeneous converse: swapping both kernels and the observation
     transformer commutes with the native greatest fixed point. *)
 Theorem stable_kernel_bisim_converse : forall s1 s2,
@@ -319,15 +387,20 @@ Proof.
     kernel1 kernel2 AR12 AR12_mono s1 s2 Hrel) as Hstep.
   unfold stable_kernel_bisim_body.
   destruct Hstep.
-  - eapply SKBAST; [exact H0|exact H|].
-    apply sem_lift_sym in H1. eapply sem_lift_mono; [|exact H1].
-    intros a2 a1 Har. eapply AR21_mono.
-    + intros x2 x1 H12. exact (CIH _ _ H12).
-    + exact (AR_converse Har).
-  - apply SKBStep. apply sem_lift_sym in H.
-    eapply sem_lift_mono; [|exact H].
-    intros t2 t1 Htarget.
-    eapply stable_target_rel_converse; [exact CIH|exact Htarget].
+  - eapply SKBAST.
+    + exact (stable_kernel_ast_match_converse CIH H).
+    + exact H1.
+    + exact H0.
+    + apply sem_lift_sym in H2. eapply sem_lift_mono; [|exact H2].
+      intros a2 a1 Har. eapply AR21_mono.
+      * intros x2 x1 H12. exact (CIH _ _ H12).
+      * exact (AR_converse Har).
+  - apply SKBStep.
+    + exact (stable_kernel_ast_match_converse CIH H).
+    + apply sem_lift_sym in H0.
+      eapply sem_lift_mono; [|exact H0].
+      intros t2 t1 Htarget.
+      eapply stable_target_rel_converse; [exact CIH|exact Htarget].
 Qed.
 
 End PrimitiveKernelBisimulationConverse.
@@ -362,14 +435,35 @@ Proof.
   pose proof (@stable_kernel_bisim_unfold MF FI FC FO S1 S2 A1 A2
     kernel1 kernel2 AR1 AR1_mono s1 s2 Hrel) as Hstep.
   unfold stable_kernel_bisim_body. destruct Hstep.
-  - eapply SKBAST; [exact H|exact H0|].
-    eapply sem_lift_mono; [|exact H1].
-    intros a1 a2 Har. exact (AR_sub CIH Har).
-  - apply SKBStep. eapply sem_lift_mono; [|exact H].
-    intros t1 t2 Htarget. eapply stable_target_rel_mono.
-    + intros a1 a2 Har. exact (AR_sub CIH Har).
-    + exact CIH.
-    + exact Htarget.
+  - eapply SKBAST.
+    + destruct H as [Hforward Hbackward]. split.
+      * intros out Hast. destruct (Hforward out Hast)
+          as [out' [Hast' Hlift]]. exists out'. split; [exact Hast'|].
+        eapply sem_lift_mono; [|exact Hlift].
+        intros a1 a2 Har. exact (AR_sub CIH Har).
+      * intros out Hast. destruct (Hbackward out Hast)
+          as [out' [Hast' Hlift]]. exists out'. split; [exact Hast'|].
+        eapply sem_lift_mono; [|exact Hlift].
+        intros a1 a2 Har. exact (AR_sub CIH Har).
+    + exact H0.
+    + exact H1.
+    + eapply sem_lift_mono; [|exact H2].
+      intros a1 a2 Har. exact (AR_sub CIH Har).
+  - apply SKBStep.
+    + destruct H as [Hforward Hbackward]. split.
+      * intros out Hast. destruct (Hforward out Hast)
+          as [out' [Hast' Hlift]]. exists out'. split; [exact Hast'|].
+        eapply sem_lift_mono; [|exact Hlift].
+        intros a1 a2 Har. exact (AR_sub CIH Har).
+      * intros out Hast. destruct (Hbackward out Hast)
+          as [out' [Hast' Hlift]]. exists out'. split; [exact Hast'|].
+        eapply sem_lift_mono; [|exact Hlift].
+        intros a1 a2 Har. exact (AR_sub CIH Har).
+    + eapply sem_lift_mono; [|exact H0].
+      intros t1 t2 Htarget. eapply stable_target_rel_mono.
+      * intros a1 a2 Har. exact (AR_sub CIH Har).
+      * exact CIH.
+      * exact Htarget.
 Qed.
 
 End PrimitiveKernelBisimulationObservationMonotonicity.
@@ -411,20 +505,34 @@ Hypothesis AR_comp : forall sim12 sim23 sim13,
   forall a1 a3, (exists a2, AR12 sim12 a1 a2 /\ AR23 sim23 a2 a3) ->
     AR13 sim13 a1 a3.
 
-(** These are the exact mixed-scale obligations exposed by AST x Step and
-    Step x AST.  They are intentionally hypotheses here: deriving them from
-    primitive couplings requires an additional stable-hitting continuity
-    theorem, not merely coupling gluing. *)
-Hypothesis KB12_ast_backward : forall s1 s2,
-  KB12 s1 s2 -> forall out2,
-  stable_hitting_ast kernel2 s2 out2 ->
-  exists out1, stable_hitting_ast kernel1 s1 out1 /\
-    sem_lift (AR12 KB12) out1 out2.
-Hypothesis KB23_ast_forward : forall s2 s3,
-  KB23 s2 s3 -> forall out2,
-  stable_hitting_ast kernel2 s2 out2 ->
-  exists out3, stable_hitting_ast kernel3 s3 out3 /\
-    sem_lift (AR23 KB23) out2 out3.
+Lemma stable_kernel_ast_match_compose
+    (sim13 : S1 -> S3 -> Prop)
+    (Hsim : forall s1 s3, (exists s2, KB12 s1 s2 /\ KB23 s2 s3) ->
+      sim13 s1 s3) :
+  forall s1 s2 s3,
+    @stable_kernel_ast_match MF FI FO S1 S2 A1 A2
+      kernel1 kernel2 AR12 KB12 s1 s2 ->
+    @stable_kernel_ast_match MF FI FO S2 S3 A2 A3
+      kernel2 kernel3 AR23 KB23 s2 s3 ->
+    @stable_kernel_ast_match MF FI FO S1 S3 A1 A3
+      kernel1 kernel3 AR13 sim13 s1 s3.
+Proof.
+  intros s1 s2 s3 [H12f H12b] [H23f H23b]. split.
+  - intros out1 Hast1. destruct (H12f out1 Hast1)
+      as [out2 [Hast2 Hl12]].
+    destruct (H23f out2 Hast2) as [out3 [Hast3 Hl23]].
+    exists out3. split; [exact Hast3|].
+    pose proof (sem_lift_comp Hl12 Hl23) as Hcomp.
+    eapply sem_lift_mono; [|exact Hcomp].
+    intros a1 a3 [a2 [Ha12 Ha23]]. eapply AR_comp; [exact Hsim|eauto].
+  - intros out3 Hast3. destruct (H23b out3 Hast3)
+      as [out2 [Hast2 Hl23]].
+    destruct (H12b out2 Hast2) as [out1 [Hast1 Hl12]].
+    exists out1. split; [exact Hast1|].
+    pose proof (sem_lift_comp Hl12 Hl23) as Hcomp.
+    eapply sem_lift_mono; [|exact Hcomp].
+    intros a1 a3 [a2 [Ha12 Ha23]]. eapply AR_comp; [exact Hsim|eauto].
+Qed.
 
 Lemma stable_target_rel_compose
     (sim13 : S1 -> S3 -> Prop)
@@ -444,9 +552,10 @@ Proof.
   - constructor. apply Hsim. eauto.
 Qed.
 
-(** Conditional heterogeneous transitivity.  After removing unrestricted
-    silent stuttering, the only non-algebraic premise is preservation of AST
-    stable hitting across the two component bisimulations. *)
+(** Heterogeneous transitivity.  The AST-coherence carried by every
+    generator clause closes the formerly dangerous mixed [AST x Step] cases;
+    the remaining public premise is composition of the stable-observation
+    transformer. *)
 Theorem stable_kernel_bisim_compose_rel : forall s1 s3,
   (exists s2, KB12 s1 s2 /\ KB23 s2 s3) -> KB13 s1 s3.
 Proof.
@@ -455,36 +564,45 @@ Proof.
   pose proof (@stable_kernel_bisim_unfold MF FI FC FO S1 S2 A1 A2
     kernel1 kernel2 AR12 AR12_mono s1 s2 H12) as Hstep12.
   unfold stable_kernel_bisim_body. destruct Hstep12.
-  - destruct (KB23_ast_forward H23 H0)
+  - destruct (proj1 (stable_kernel_bisim_ast_match H23) out2 H1)
       as [out3 [Hast3 Hlift23]].
-    eapply SKBAST; [exact H|exact Hast3|].
-    pose proof (sem_lift_comp H1 Hlift23) as Hcomp.
-    eapply sem_lift_mono; [|exact Hcomp].
-    intros a1 a3 [a2 [Ha12 Ha23]].
-    eapply AR_comp.
-    + intros x1 x3 [x2 [Hx12 Hx23]]. exact (CIH _ _ (ex_intro _ x2 (conj Hx12 Hx23))).
-    + eauto.
-  - pose proof (@stable_kernel_bisim_unfold MF FI FC FO S2 S3 A2 A3
-      kernel2 kernel3 AR23 AR23_mono s2 s3 H23) as Hstep23.
-    destruct Hstep23.
-    + destruct (KB12_ast_backward H12 H0)
-      as [out0 [Hast0 Hlift12]].
-      eapply SKBAST; [exact Hast0|exact H1|].
-      pose proof (sem_lift_comp Hlift12 H2) as Hcomp.
+    eapply SKBAST.
+    + eapply stable_kernel_ast_match_compose; [exact CIH|exact H|].
+      exact (stable_kernel_bisim_ast_match H23).
+    + exact H0.
+    + exact Hast3.
+    + pose proof (sem_lift_comp H2 Hlift23) as Hcomp.
       eapply sem_lift_mono; [|exact Hcomp].
       intros a1 a3 [a2 [Ha12 Ha23]].
       eapply AR_comp.
       * intros x1 x3 [x2 [Hx12 Hx23]].
         exact (CIH _ _ (ex_intro _ x2 (conj Hx12 Hx23))).
       * eauto.
+  - pose proof (@stable_kernel_bisim_unfold MF FI FC FO S2 S3 A2 A3
+      kernel2 kernel3 AR23 AR23_mono s2 s3 H23) as Hstep23.
+    destruct Hstep23.
+    + destruct (proj2 H out1 H2)
+      as [out0 [Hast0 Hlift12]].
+      eapply SKBAST.
+      * eapply stable_kernel_ast_match_compose; [exact CIH|exact H|exact H1].
+      * exact Hast0.
+      * exact H3.
+      * pose proof (sem_lift_comp Hlift12 H4) as Hcomp.
+        eapply sem_lift_mono; [|exact Hcomp].
+        intros a1 a3 [a2 [Ha12 Ha23]].
+        eapply AR_comp.
+        -- intros x1 x3 [x2 [Hx12 Hx23]].
+           exact (CIH _ _ (ex_intro _ x2 (conj Hx12 Hx23))).
+        -- eauto.
     + apply SKBStep.
-      pose proof (sem_lift_comp H H0) as Hcomp.
-      eapply sem_lift_mono; [|exact Hcomp].
-      intros t1 t3 Htargets.
-      eapply stable_target_rel_compose.
-      * intros x1 x3 [x2 [Hx12 Hx23]].
-        exact (CIH _ _ (ex_intro _ x2 (conj Hx12 Hx23))).
-      * exact Htargets.
+      * eapply stable_kernel_ast_match_compose; [exact CIH|exact H|exact H1].
+      * pose proof (sem_lift_comp H0 H2) as Hcomp.
+        eapply sem_lift_mono; [|exact Hcomp].
+        intros t1 t3 Htargets.
+        eapply stable_target_rel_compose.
+        -- intros x1 x3 [x2 [Hx12 Hx23]].
+           exact (CIH _ _ (ex_intro _ x2 (conj Hx12 Hx23))).
+        -- exact Htargets.
 Qed.
 
 Corollary stable_kernel_bisim_compose : forall s1 s2 s3,

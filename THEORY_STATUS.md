@@ -173,15 +173,19 @@ condition is listed explicitly, the referenced result is proved without an
   directions before the rules were removed.  No maintained primitive client
   depended on them.  Any future silent convenience must therefore use an
   inductive finite closure or an explicit progress argument.
-  The repaired generic relation now has a checked heterogeneous converse
-  theorem, observation-transformer monotonicity, and the PTree theorem
-  `primitive_ptree_bisim_sym`.  Transitivity is factored at its exact
-  remaining boundary by `stable_kernel_bisim_compose`: `Step x Step` follows
-  from coupling composition and `AR` composition, while `AST x Step` and
-  `Step x AST` require stable-hitting AST and its coupled limit to be
-  preserved along the component bisimulations.  That preservation result is
-  not supplied by the present bare coupling interface, so no unconditional
-  `Equivalence` instance is claimed yet.
+  The repaired generic relation has a checked heterogeneous converse theorem
+  and observation-transformer monotonicity.  The transitivity audit exposed
+  one missing invariant in the original [SKBStep]: a one-step coupling alone
+  did not say whether total stable hitting was preserved.  Every generator
+  clause now carries `stable_kernel_ast_match`, a bidirectional certificate
+  transporting AST limits and their observation coupling.  `SKBAST` clients
+  obtain this certificate from omega-limit uniqueness; `SKBStep` must supply
+  it as part of being a behavioral, rather than merely local, step match.
+  Consequently `stable_kernel_bisim_ast_match` is unconditional, the mixed
+  `AST x Step` cases close compositionally, and
+  `stable_kernel_bisim_compose` needs only coupling composition plus `AR`
+  composition.  The PTree instance now proves reflexivity, symmetry, and
+  transitivity and installs `primitive_ptree_bisim_equivalence`.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides
