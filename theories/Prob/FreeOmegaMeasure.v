@@ -730,6 +730,72 @@ Proof.
     exact (free_omega_lift_sym Hlift).
 Qed.
 
+(** Almost-everywhere predicates are downward closed along the finite
+    subbehavior order.  This is the support fact needed by diagonal and
+    cofinal quotient laws: a finite approximation cannot introduce a return
+    outside the support of the behavior which contains it. *)
+Lemma free_omega_approx_ae_backward {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NC : @SemanticMeasureCoreLaws MN NI}
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    {A B} (R : A -> B -> Prop) mu nu (Q : B -> Prop) :
+  free_omega_approx R mu nu -> free_omega_ae Q nu ->
+  free_omega_ae (fun x => exists y, R x y /\ Q y) mu.
+Proof.
+  intros Happrox. induction Happrox; intro HQ.
+  - constructor.
+  - dependent destruction HQ. constructor. exists y. split; assumption.
+  - dependent destruction HQ.
+    eapply FOAESample with
+      (Good := fun x => exists y, S x y /\ Good y).
+    + apply sem_lift_ae_transport_r with
+        (R := fun y x => S x y) (mu := nu) (nu := mu).
+      * apply sem_lift_sym. exact H.
+      * exact H2.
+    + intros x [y [Hxy Hy]]. eapply H1; eauto.
+  - dependent destruction HQ. constructor. intro n. eapply H0; eauto.
+Qed.
+
+Lemma free_omega_support_lift_mono {MN}
+    `{NI : SemanticMeasureInterface MN} {A B}
+    (R T : A -> B -> Prop) mu nu :
+  free_omega_support_lift R mu nu ->
+  (forall x y, R x y -> T x y) ->
+  free_omega_support_lift T mu nu.
+Proof.
+  intros [Hright Hleft] HRT. split.
+  - intros P HP. eapply free_omega_ae_mono; [|exact (Hright P HP)].
+    intros y [x [Hxy Hx]]. exists x. split; [apply HRT|]; assumption.
+  - intros Q HQ. eapply free_omega_ae_mono; [|exact (Hleft Q HQ)].
+    intros x [y [Hxy Hy]]. exists y. split; [apply HRT|]; assumption.
+Qed.
+
+Lemma free_omega_support_lift_sym {MN}
+    `{NI : SemanticMeasureInterface MN} {A B}
+    (R : A -> B -> Prop) mu nu :
+  free_omega_support_lift R mu nu ->
+  free_omega_support_lift (fun y x => R x y) nu mu.
+Proof. intros [Hright Hleft]. split; assumption. Qed.
+
+Lemma free_omega_support_lift_comp {MN}
+    `{NI : SemanticMeasureInterface MN} {A B C}
+    (R : A -> B -> Prop) (T : B -> C -> Prop) mu mid nu :
+  free_omega_support_lift R mu mid ->
+  free_omega_support_lift T mid nu ->
+  free_omega_support_lift
+    (fun x z => exists y, R x y /\ T y z) mu nu.
+Proof.
+  intros [HRr HRl] [HTr HTl]. split.
+  - intros P HP. specialize (HRr P HP). specialize (HTr _ HRr).
+    eapply free_omega_ae_mono; [|exact HTr].
+    intros z [y [Hyz [x [Hxy Hx]]]].
+    exists x. split; [exists y; split|]; assumption.
+  - intros Q HQ. specialize (HTl Q HQ). specialize (HRl _ HTl).
+    eapply free_omega_ae_mono; [|exact HRl].
+    intros x [y [Hxy [z [Hyz Hz]]]].
+    exists z. split; [exists y; split|]; assumption.
+Qed.
+
 (** An observation-closed coupling for the free omega completion.  The
     structural lifting above remains useful for syntax-directed proofs, but
     it deliberately cannot identify, for example, a formal omega limit with
