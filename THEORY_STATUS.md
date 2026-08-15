@@ -147,10 +147,6 @@ condition is listed explicitly, the referenced result is proved without an
   monotonicity, and reflexivity are checked using `coq-coinduction`; there is
   no Paco-level definition and no syntax-specific Tau/Prob/Iter rule in this
   generic relation.
-  Weak stuttering is likewise behavioral: `stable_kernel_silent_l/r` says
-  that a kernel is semantically a Dirac transition to one residual state,
-  and the two silent rules remove such a step on either side.  They do not
-  inspect or mention a PTree Tau constructor.
   `primitive_ptree_bisim` instantiates this generic gfp with
   `ptree_primitive_kernel` and the recursive frontier-head relation; PTree
   syntax occurs only in the adapter kernel.  The rational Bernoulli endpoint
@@ -186,18 +182,23 @@ condition is listed explicitly, the referenced result is proved without an
   `stable_kernel_bisim_compose` needs only coupling composition plus `AR`
   composition.  The PTree instance now proves reflexivity, symmetry, and
   transitivity and installs `primitive_ptree_bisim_equivalence`.
-  `BehavioralDomain` packages the domain assumptions for comparing this
-  native relation with the structured proof system: every member has a
+  `BehavioralDomain` packages candidate domain assumptions for comparing
+  this native relation with the structured proof system: every member has a
   frontier, every such frontier is total, and primitive residual states plus
-  visible continuations remain in the domain almost everywhere.  When the
-  recursive pairs of `weak_bisim` and `primitive_ptree_bisim` stay in two
-  such domains, `weak_bisim_to_primitive_ptree_bisim_on_domain` proves
-  soundness by showing that the proof relation itself is a post-fixed point
-  of the native generator.  The converse theorem realizes native AST
-  coherence through the domains' total frontiers, and
-  `weak_bisim_iff_primitive_ptree_bisim_on_domain` gives the resulting
-  domain-relative full-abstraction statement.  No unrestricted equivalence
-  is claimed for partial/divergent states.
+  visible continuations remain in the domain almost everywhere.  The current
+  correspondence theorem additionally assumes that every recursive pair of
+  `weak_bisim` and `primitive_ptree_bisim` lies in the two domains.  Under
+  that relation-global closure hypothesis,
+  `weak_bisim_to_primitive_ptree_bisim_on_domain` proves soundness by showing
+  that the proof relation itself is a post-fixed point of the native
+  generator; the converse realizes native AST coherence through total
+  frontiers.  This is an intermediate total-domain correspondence theorem,
+  not yet the desired root-membership full-abstraction theorem: the
+  `behavioral_primitive_closed` field is almost-everywhere, whereas recursive
+  coupling obligations are currently pointwise.  Closing that gap requires
+  AE preservation through stable hitting and a law restricting a coupling
+  to AE-good marginals.  No unrestricted equivalence is claimed for
+  partial/divergent states.
   That gap is now factored precisely. `SemanticMeasureDiagonalLaws` states
   joint omega continuity when both a source distribution and its continuation
   kernels grow along the same diagonal; observation-closed FreeOmega provides

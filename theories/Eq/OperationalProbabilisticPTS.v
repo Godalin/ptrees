@@ -1165,10 +1165,12 @@ Variable D2 : ptree' E MN R2 -> Prop.
 Hypothesis BD1 : BehavioralDomain (MF := MF) D1.
 Hypothesis BD2 : BehavioralDomain (MF := MF) D2.
 
-(** The structured proof relation is restricted to a domain closed under all
-    of its recursive pairs.  This makes the coinduction hypothesis available
-    for visible continuations while [BehavioralDomain] supplies total
-    realizable frontiers for the current pair. *)
+(** Intermediate relation-global closure assumption.  It is deliberately
+    separate from [BehavioralDomain]: the latter currently gives only AE
+    closure of one primitive kernel, while the coinductive coupling below
+    needs pointwise domain membership for every recursive pair.  A genuine
+    root-membership theorem must derive this fact via AE preservation through
+    stable hitting and coupling restriction. *)
 Hypothesis weak_bisim_domain_closed : forall t1 t2,
   @weak_bisim E MN MF NI FI NC FC MX FO R1 R2 RR t1 t2 ->
   D1 (observe t1) /\ D2 (observe t2).
@@ -1213,10 +1215,11 @@ Hypothesis primitive_bisim_domain_closed : forall t1 t2,
   @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR t1 t2 ->
   D1 (observe t1) /\ D2 (observe t2).
 
-(** Closed-domain completeness.  Because every domain member has a total
-    structured frontier, the native AST coherence can be realized on both
-    sides and its recursive head coupling becomes the coinduction hypothesis
-    for the structured proof relation. *)
+(** Completeness under relation-global domain closure.  Because every domain
+    member has a total structured frontier, native AST coherence can be
+    realized on both sides and its recursive head coupling becomes the
+    coinduction hypothesis for the structured proof relation.  This theorem
+    is not yet root-membership closed-domain completeness. *)
 Theorem primitive_ptree_bisim_to_weak_bisim_on_domain : forall t1 t2,
   @primitive_ptree_bisim E MN MF FI FC MX FO R1 R2 RR t1 t2 ->
   @weak_bisim E MN MF NI FI NC FC MX FO R1 R2 RR t1 t2.
