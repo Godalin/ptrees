@@ -159,17 +159,13 @@ Hypothesis AR_mono : forall sim1 sim2,
   (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
   forall a1 a2, AR sim1 a1 a2 -> AR sim2 a1 a2.
 
-Definition stable_kernel_silent_l (s1 s1' : S1) : Prop :=
-  sem_eq (kernel1 s1) (sem_ret (SHInternal s1')).
-
-Definition stable_kernel_silent_r (s2 s2' : S2) : Prop :=
-  sem_eq (kernel2 s2) (sem_ret (SHInternal s2')).
-
 (** A generic divergence-sensitive probabilistic bisimulation generator.
     [SKBAST] permits different finite schedules to meet at coupled total
     stable limits.  [SKBStep] is the residual guard: programs without an AST
     limit must still expose coupled primitive steps, so absence of a weak
-    transition cannot prove an arbitrary equivalence. *)
+    transition cannot prove an arbitrary equivalence.  In particular, there
+    is no coinductive one-sided silent rule: such a rule lets a silent
+    self-loop absorb an arbitrary state without observing its behavior. *)
 Inductive stable_kernel_bisimF (sim : S1 -> S2 -> Prop) :
     S1 -> S2 -> Prop :=
   | SKBAST s1 s2 out1 out2 :
@@ -180,14 +176,6 @@ Inductive stable_kernel_bisimF (sim : S1 -> S2 -> Prop) :
   | SKBStep s1 s2 :
       sem_lift (stable_target_rel (AR sim) sim)
         (kernel1 s1) (kernel2 s2) ->
-      stable_kernel_bisimF sim s1 s2
-  | SKBSilentL s1 s1' s2 :
-      stable_kernel_silent_l s1 s1' ->
-      sim s1' s2 ->
-      stable_kernel_bisimF sim s1 s2
-  | SKBSilentR s1 s2 s2' :
-      stable_kernel_silent_r s2 s2' ->
-      sim s1 s2' ->
       stable_kernel_bisimF sim s1 s2.
 
 Lemma stable_target_rel_mono
@@ -216,8 +204,6 @@ Proof.
     eapply stable_target_rel_mono.
     + exact (AR_mono Hsim).
     + exact Hsim.
-  - eapply SKBSilentL; [exact H|exact (Hsim _ _ H0)].
-  - eapply SKBSilentR; [exact H|exact (Hsim _ _ H0)].
 Qed.
 
 Definition stable_kernel_bisim_body sim (s1 : S1) (s2 : S2) : Prop :=
@@ -246,32 +232,6 @@ Lemma stable_kernel_bisim_fold s1 s2 :
 Proof.
   intro H. unfold stable_kernel_bisim.
   apply (gfp_fp fstable_kernel_bisim). exact H.
-Qed.
-
-(** Audit witness: the unrestricted coinductive one-sided silent rule makes
-    a semantic silent self-loop absorb every state on the other side.  This
-    theorem is intentionally stated before repairing the generator, so the
-    failure mode is checked rather than only described informally. *)
-Theorem stable_kernel_bisim_silent_self_loop_r s2
-    (Hloop : stable_kernel_silent_r s2 s2) :
-  forall s1, stable_kernel_bisim s1 s2.
-Proof.
-  intro s1. revert s1. unfold stable_kernel_bisim.
-  coinduction CH CIH. intro s1.
-  unfold stable_kernel_bisim_body.
-  eapply SKBSilentR; [exact Hloop|].
-  apply CIH.
-Qed.
-
-Theorem stable_kernel_bisim_silent_self_loop_l s1
-    (Hloop : stable_kernel_silent_l s1 s1) :
-  forall s2, stable_kernel_bisim s1 s2.
-Proof.
-  intro s2. revert s2. unfold stable_kernel_bisim.
-  coinduction CH CIH. intro s2.
-  unfold stable_kernel_bisim_body.
-  eapply SKBSilentL; [exact Hloop|].
-  apply CIH.
 Qed.
 
 End PrimitiveKernelBisimulation.
