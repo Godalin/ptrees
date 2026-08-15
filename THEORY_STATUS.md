@@ -218,17 +218,35 @@ condition is listed explicitly, the referenced result is proved without an
   productivity/omega argument, while the latter is discharged by the native
   Prob rule.  Their equivalence is nontrivial exactly at the limit-coupling
   boundary, not because matching syntax was built on both sides.
-  The older `Examples/OperationalBernoulliFactory.v` is consequently kept as
-  migration material but excluded from the installed theory: its main loop
-  still enters through `pstructural` and the syntax-directed
-  `free_operational_weak_of_canonical_nested`.  More precisely,
-  `Examples/OperationalRationalBernoulli.v` is currently only the maintained
-  operational proof for the outer fair-bit-to-q binary algorithm; the full
-  p-to-q composition remains proved only through the legacy/unified route.
-  Re-admitting the factory client therefore requires a direct
-  primitive-hitting/cofinality proof for the inner p-to-fair sampler and its
-  composition with this outer loop, not another universe specialization of
-  the mirrored theorem.
+  `Examples/OperationalBernoulliFactory.v` is now a maintained client of this
+  boundary.  It unfolds the actual two-toss source program, proves its raw
+  global-fuel hitting chain cofinal with the Von Neumann round schedule, and
+  obtains the fair inner sampler as an AST primitive limit.  The outer
+  `p -> q` loop is handled by the direct two-dimensional primitive execution
+  grid in `OperationalProbabilisticPTSFreeOmega.v`: inner fuel approximates
+  each unbounded fair-bit call, outer fuel counts binary-algorithm rounds, and
+  diagonal cofinality plus the FreeOmega Fubini law relates this grid to the
+  program's single global primitive-fuel chain.  No Iter/Bind/NestedIter weak
+  constructor or `pstructural` normalization occurs in this proof.
+  Each actual unbounded binary step is observation-coupled to the standard
+  finite `binary_coin_transition`.  These step couplings compose through the
+  outer rows, so the implementation's weak result can be chosen to be the
+  standard rational-Bernoulli limit.  The latter supplies totality, yielding
+  `operational_biased_to_rational_coin_ast` and the direct generic endpoint
+  `primitive_biased_to_rational_coin_bisim_direct`.  The closed theorem
+  `primitive_third_to_two_fifths_bisim_direct` relates the genuinely
+  unbounded `1/3 -> 2/5` factory to the one-step terminating `2/5` sampler.
+  The obsolete pair-program, nested-row, and `pstructural` proof chain has
+  been removed from this file; `PStrong` is not used by the maintained
+  factory proof.
+
+  The development deliberately does not install a blanket Enum instance of
+  `FreeOmegaDenotationBindLaws`.  Enum's omega relation is setwise
+  convergence tested by Boolean predicates; on an unbounded carrier this
+  alone does not justify convergence after binding an arbitrary varying
+  kernel.  The factory instead proves the needed finite standard-transition
+  coupling locally.  This keeps the analytic assumption at its true boundary
+  and avoids strengthening the abstract measure interface unsoundly.
   The first compiled-shortcut removal is now checked at primitive finite
   fuel. `operational_vn_raw_round_observes` proves that the source
   `vn_step`, which really performs two biased samples, reaches exactly
@@ -373,7 +391,11 @@ condition is listed explicitly, the referenced result is proved without an
 - `Examples/BernoulliFactory.v` proves that any normalized nontrivial rational
   source coin can drive two AST loops to implement a rational target coin;
   `third_coin_simulates_two_fifths_correct` is the closed `1/3 -> 2/5`
-  instance.
+  instance.  Its independent primitive-kernel counterpart is
+  `primitive_biased_to_rational_coin_bisim_direct` in
+  `Examples/OperationalBernoulliFactory.v`; the closed theorem
+  `primitive_third_to_two_fifths_bisim_direct` compares the unbounded source
+  implementation directly with the terminating target sampler.
 - `Examples/RealBernoulliOracle.v` proves the oracle sampler's finite-prefix
   law and a uniform geometric vanishing bound for its missing mass.
   `Examples/RealBernoulliMathComp.v` then proves
