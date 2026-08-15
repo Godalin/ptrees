@@ -248,6 +248,32 @@ Proof.
   apply (gfp_fp fstable_kernel_bisim). exact H.
 Qed.
 
+(** Audit witness: the unrestricted coinductive one-sided silent rule makes
+    a semantic silent self-loop absorb every state on the other side.  This
+    theorem is intentionally stated before repairing the generator, so the
+    failure mode is checked rather than only described informally. *)
+Theorem stable_kernel_bisim_silent_self_loop_r s2
+    (Hloop : stable_kernel_silent_r s2 s2) :
+  forall s1, stable_kernel_bisim s1 s2.
+Proof.
+  intro s1. revert s1. unfold stable_kernel_bisim.
+  coinduction CH CIH. intro s1.
+  unfold stable_kernel_bisim_body.
+  eapply SKBSilentR; [exact Hloop|].
+  apply CIH.
+Qed.
+
+Theorem stable_kernel_bisim_silent_self_loop_l s1
+    (Hloop : stable_kernel_silent_l s1 s1) :
+  forall s2, stable_kernel_bisim s1 s2.
+Proof.
+  intro s2. revert s2. unfold stable_kernel_bisim.
+  coinduction CH CIH. intro s2.
+  unfold stable_kernel_bisim_body.
+  eapply SKBSilentL; [exact Hloop|].
+  apply CIH.
+Qed.
+
 End PrimitiveKernelBisimulation.
 
 Section PrimitiveKernelBisimulationReflexivity.
