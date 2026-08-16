@@ -12,7 +12,7 @@ From PTree.Prob Require Import MeasureIterationEnum.
 From PTree.Eq Require Import ShallowNew PrimitiveStableHitting
   OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega UnifiedFrontier UnifiedFrontierEnumFacts
-  UnifiedPWeak ProbabilisticEutt.
+  ProbabilisticEutt.
 From PTree.Examples Require Import VonNeumannUnbounded.
 
 Set Implicit Arguments.
