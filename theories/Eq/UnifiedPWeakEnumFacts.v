@@ -9,8 +9,8 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC EnumMap IndexedCoupling FrontierLift
   FrontierLiftEnum MeasureIteration MeasureIterationEnum TwoLevelMeasure
   TwoLevelMeasureEnum.
-From PTree.Eq Require Import PWeakAbstract PWeakUnbounded UnifiedFrontierEnumFacts
-  UnifiedPWeak.
+From PTree.Eq Require Import PWeakAbstract PWeakUnbounded UnifiedFrontier
+  UnifiedFrontierEnumFacts UnifiedPWeak.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
