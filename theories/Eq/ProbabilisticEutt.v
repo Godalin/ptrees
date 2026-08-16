@@ -930,4 +930,39 @@ Proof.
   - exact Hlift.
 Qed.
 
+(** [PTree.iter] instance of the structured/corecursive proof discipline.
+    Iteration is discharged by two semantic frontier certificates and a
+    coupling of their completed result measures; it is not a constructor of
+    [probabilistic_eutt]. *)
+Lemma probabilistic_eutt_of_iter_certificates
+    {I1 I2 R1 R2} (RR : R1 -> R2 -> Prop)
+    (step1 : I1 -> ptree E MN (I1 + R1))
+    (step2 : I2 -> ptree E MN (I2 + R2))
+    (transition1 : I1 -> MN (I1 + R1))
+    (transition2 : I2 -> MN (I2 + R2))
+    (i1 : I1) (i2 : I2) out1 out2 :
+  (forall j,
+    frontier (observe (step1 j))
+      (mixed_bind (transition1 j)
+        (fun next => sem_ret (FHRet next)))) ->
+  mixed_iter transition1 i1 out1 ->
+  sem_total out1 ->
+  (forall j,
+    frontier (observe (step2 j))
+      (mixed_bind (transition2 j)
+        (fun next => sem_ret (FHRet next)))) ->
+  mixed_iter transition2 i2 out2 ->
+  sem_total out2 ->
+  sem_lift (ptree_stable_head_rel RR
+    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR))
+    (sem_bind out1 (fun r => sem_ret (FHRet r)))
+    (sem_bind out2 (fun r => sem_ret (FHRet r))) ->
+  probabilistic_eutt RR (PTree.iter step1 i1) (PTree.iter step2 i2).
+Proof.
+  intros Hstep1 Hiter1 Htotal1 Hstep2 Hiter2 Htotal2 Hlift.
+  eapply probabilistic_eutt_of_frontiers; [| |exact Hlift].
+  - eapply frontier_iter_intro; eassumption.
+  - eapply frontier_iter_intro; eassumption.
+Qed.
+
 End ProbabilisticEuttFrontierRule.
