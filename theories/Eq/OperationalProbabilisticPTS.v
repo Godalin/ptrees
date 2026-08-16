@@ -12,16 +12,14 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** Targets of the genuinely operational state-to-distribution kernel.
-    Stable observations stop the internal computation; internal targets are
-    PTree states from which the kernel can take another step. *)
-Polymorphic Variant operational_target
+(** Compatibility names for the canonical primitive stable-target layer.
+    There is no second operational target datatype. *)
+Polymorphic Definition operational_target
     (E : Type -> Type) (MN : Type -> Type) (R : Type) : Type :=
-  | OPStable (h : frontier_head E MN R)
-  | OPInternal (t : ptree E MN R).
+  stable_target (ptree' E MN R) (frontier_head E MN R).
 
-Arguments OPStable {E MN R} _.
-Arguments OPInternal {E MN R} _.
+Notation OPStable := SHStable.
+Notation OPInternal := SHInternal.
 
 Section OperationalKernel.
 Context {E : Type -> Type} {MN MF : Type -> Type}
@@ -29,20 +27,6 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FI : SemanticMeasureInterface MF}
   `{MX : MixedMeasureInterface MN MF}
   `{FO : @SemanticOmegaInterface MF FI}.
-
-(** One primitive PTree step, interpreted directly as a behavior-layer
-    distribution.  The only syntax inspection in the operational semantics
-    is here.  In particular, no rule recognizes [PTree.iter], [PTree.bind],
-    or nested iteration. *)
-Definition operational_kernel {R} (ot : ptree' E MN R) :
-    MF (operational_target E MN R) :=
-  match ot with
-  | RetF r => sem_ret (OPStable (FHRet r))
-  | VisF _ e k => sem_ret (OPStable (FHVis e k))
-  | TauF t => sem_ret (OPInternal t)
-  | ProbF _ mu k =>
-      mixed_bind mu (fun x => sem_ret (OPInternal (k x)))
-  end.
 
 (** The same primitive transition in the generic stable-hitting interface.
     Residual states are observations, not syntax constructors: taking the
@@ -57,21 +41,18 @@ Definition ptree_primitive_kernel {R} (ot : ptree' E MN R) :
       mixed_bind mu (fun x => sem_ret (SHInternal (observe (k x))))
   end.
 
+(** Deprecated compatibility alias.  Residual states are observations in
+    both presentations, so the two kernels are definitionally identical. *)
+Definition operational_kernel {R} (ot : ptree' E MN R) :
+    MF (operational_target E MN R) :=
+  ptree_primitive_kernel ot.
+
 (** Resolve one operational target using at most [fuel] further primitive
     steps.  Unresolved internal mass goes to [sem_zero]. *)
-Fixpoint operational_target_approx {R} (fuel : nat)
+Definition operational_target_approx {R} (fuel : nat)
     (target : operational_target E MN R) :
     MF (frontier_head E MN R) :=
-  match target with
-  | OPStable h => sem_ret h
-  | OPInternal t =>
-      match fuel with
-      | O => sem_zero
-      | Datatypes.S fuel' =>
-          sem_bind (operational_kernel (observe t))
-            (operational_target_approx fuel')
-      end
-  end.
+  stable_target_approx ptree_primitive_kernel fuel target.
 
 (** The [fuel]-bounded stable-hitting distribution of an observed state.
     Fuel counts primitive internal transitions.  Ret and Vis are stable after
@@ -79,7 +60,7 @@ Fixpoint operational_target_approx {R} (fuel : nat)
     remaining fuel through the same kernel. *)
 Definition operational_hitting_approx {R} (fuel : nat)
     (ot : ptree' E MN R) : MF (frontier_head E MN R) :=
-  sem_bind (operational_kernel ot) (operational_target_approx fuel).
+  stable_hitting_approx ptree_primitive_kernel fuel ot.
 
 (** A generic weak behavior is the (possibly subprobabilistic) stable-hitting
     limit of primitive execution.  Unresolved mass is absent from each finite
@@ -87,7 +68,7 @@ Definition operational_hitting_approx {R} (fuel : nat)
     hitting limit. *)
 Definition operational_weak {R} (ot : ptree' E MN R)
     (out : MF (frontier_head E MN R)) : Prop :=
-  sem_lub (fun fuel => operational_hitting_approx fuel ot) out.
+  stable_hitting_weak ptree_primitive_kernel ot out.
 
 (** AST is a separate property of a weak behavior: its stable-hitting limit
     has total mass.  Keeping these notions separate is necessary because an
@@ -160,13 +141,13 @@ Lemma operational_kernel_visE {R X} (e : E X)
 Proof. reflexivity. Qed.
 
 Lemma operational_kernel_tauE {R} (t : ptree E MN R) :
-  operational_kernel (TauF t) = sem_ret (OPInternal t).
+  operational_kernel (TauF t) = sem_ret (OPInternal (observe t)).
 Proof. reflexivity. Qed.
 
 Lemma operational_kernel_probE {R X} (mu : MN X)
     (k : X -> ptree E MN R) :
   operational_kernel (ProbF mu k) =
-  mixed_bind mu (fun x => sem_ret (OPInternal (k x))).
+  mixed_bind mu (fun x => sem_ret (OPInternal (observe (k x)))).
 Proof. reflexivity. Qed.
 
 Lemma operational_target_stableE {R} fuel
@@ -174,15 +155,15 @@ Lemma operational_target_stableE {R} fuel
   operational_target_approx fuel (OPStable h) = sem_ret h.
 Proof. destruct fuel; reflexivity. Qed.
 
-Lemma operational_target_internal_zeroE {R} (t : ptree E MN R) :
+Lemma operational_target_internal_zeroE {R} (t : ptree' E MN R) :
   operational_target_approx O (OPInternal t) = sem_zero.
 Proof. reflexivity. Qed.
 
 Lemma operational_target_internal_succE {R} fuel
-    (t : ptree E MN R) :
+    (t : ptree' E MN R) :
   operational_target_approx (Datatypes.S fuel)
     (OPInternal t) =
-  sem_bind (operational_kernel (observe t))
+  sem_bind (operational_kernel t)
     (operational_target_approx fuel).
 Proof. reflexivity. Qed.
 
@@ -205,10 +186,11 @@ Lemma operational_hitting_ret {R} fuel (r : R) :
   sem_eq (operational_hitting_approx (MF := MF) fuel (RetF r))
     (sem_ret (FHRet r : frontier_head E MN R)).
 Proof.
-  unfold operational_hitting_approx. rewrite operational_kernel_retE.
+  unfold operational_hitting_approx, stable_hitting_approx,
+    ptree_primitive_kernel.
   eapply sem_eq_trans.
   - apply sem_bind_ret_l.
-  - rewrite operational_target_stableE. apply sem_eq_refl.
+  - rewrite stable_target_stableE. apply sem_eq_refl.
 Qed.
 
 Lemma operational_hitting_vis {R X} fuel (e : E X)
@@ -216,19 +198,21 @@ Lemma operational_hitting_vis {R X} fuel (e : E X)
   sem_eq (operational_hitting_approx (MF := MF) fuel (VisF e k))
     (sem_ret (FHVis e k : frontier_head E MN R)).
 Proof.
-  unfold operational_hitting_approx. rewrite operational_kernel_visE.
+  unfold operational_hitting_approx, stable_hitting_approx,
+    ptree_primitive_kernel.
   eapply sem_eq_trans.
   - apply sem_bind_ret_l.
-  - rewrite operational_target_stableE. apply sem_eq_refl.
+  - rewrite stable_target_stableE. apply sem_eq_refl.
 Qed.
 
 Lemma operational_hitting_tau_zero {R} (t : ptree E MN R) :
   sem_eq (operational_hitting_approx (MF := MF) O (TauF t)) sem_zero.
 Proof.
-  unfold operational_hitting_approx. rewrite operational_kernel_tauE.
+  unfold operational_hitting_approx, stable_hitting_approx,
+    ptree_primitive_kernel.
   eapply sem_eq_trans.
   - apply sem_bind_ret_l.
-  - rewrite operational_target_internal_zeroE. apply sem_eq_refl.
+  - rewrite stable_target_internal_zeroE. apply sem_eq_refl.
 Qed.
 
 Lemma operational_hitting_tau_succ {R} fuel (t : ptree E MN R) :
@@ -236,19 +220,21 @@ Lemma operational_hitting_tau_succ {R} fuel (t : ptree E MN R) :
     (operational_hitting_approx (MF := MF) (Datatypes.S fuel) (TauF t))
     (operational_hitting_approx fuel (observe t)).
 Proof.
-  unfold operational_hitting_approx at 1. rewrite operational_kernel_tauE.
+  unfold operational_hitting_approx, stable_hitting_approx at 1.
+  unfold ptree_primitive_kernel.
   eapply sem_eq_trans.
   - apply sem_bind_ret_l.
-  - rewrite operational_target_internal_succE. apply sem_eq_refl.
+  - rewrite stable_target_internal_succE. apply sem_eq_refl.
 Qed.
 
 Lemma operational_hitting_prob {R X} fuel (mu : MN X)
     (k : X -> ptree E MN R) :
   sem_eq (operational_hitting_approx (MF := MF) fuel (ProbF mu k))
     (mixed_bind mu (fun x =>
-      operational_target_approx fuel (OPInternal (k x)))).
+      operational_target_approx fuel (OPInternal (observe (k x))))).
 Proof.
-  unfold operational_hitting_approx. rewrite operational_kernel_probE.
+  unfold operational_hitting_approx, stable_hitting_approx,
+    ptree_primitive_kernel.
   eapply sem_eq_trans.
   - apply mixed_bind_assoc.
   - apply mixed_bind_ae_proper.

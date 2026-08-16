@@ -8,7 +8,7 @@ Require Import List Arith.PeanoNat FunctionalExtensionality Lia
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration.
-From PTree.Eq Require Import ShallowNew UnifiedFrontier
+From PTree.Eq Require Import ShallowNew UnifiedFrontier PrimitiveStableHitting
   OperationalProbabilisticPTS PStrong.
 
 Set Implicit Arguments.
@@ -182,13 +182,15 @@ Lemma free_operational_bind_ret_approx_cofinal {A R}
     (a : A) (k : A -> ptree E MN R) :
   free_operational_bind_approx_cofinal (Ret a) k.
 Proof.
-  split; intro n; exists n;
+  split; intro n; exists n.
+  all: rewrite (observing_observe (bind_ret_ a k)).
+  all:
     unfold free_operational_bind_approx_cofinal,
       operational_bind_diagonal_approx,
       operational_head_bind_approx,
       operational_hitting_approx, operational_kernel;
     cbn.
-  all: rewrite !operational_target_stableE; cbn.
+  all: rewrite !stable_target_stableE; cbn.
   all: apply free_omega_approx_refl; intros x; reflexivity.
 Qed.
 
@@ -258,7 +260,7 @@ Proof.
     assert (Hret : observe (Ret (f a) : ptree E MN R) = RetF (f a))
       by reflexivity.
     rewrite Hret. unfold operational_hitting_approx, operational_kernel.
-    cbn. rewrite operational_target_stableE. reflexivity.
+    cbn. rewrite stable_target_stableE. reflexivity.
   - reflexivity.
 Qed.
 
@@ -764,7 +766,7 @@ Proof.
            ++ cbn [operational_hitting_approx operational_kernel].
               constructor.
            ++ cbn [operational_hitting_approx operational_kernel].
-              try rewrite operational_target_stableE.
+              try rewrite stable_target_stableE.
               apply free_omega_approx_refl. intros x. reflexivity.
   - eapply free_omega_approx_trans.
     + apply free_omega_lift_to_approx.
@@ -790,7 +792,7 @@ Proof.
                      apply free_nested_execution_grid_inner_increasing.
                  --- apply le_S, le_n.
            ++ cbn [operational_hitting_approx operational_kernel].
-              try rewrite operational_target_stableE.
+              try rewrite stable_target_stableE.
               apply free_omega_approx_refl. intros x. reflexivity.
 Qed.
 
@@ -845,7 +847,7 @@ Proof.
         -- cbn [operational_hitting_approx operational_kernel].
            apply IH.
         -- cbn [operational_hitting_approx operational_kernel].
-           try rewrite operational_target_stableE.
+           try rewrite stable_target_stableE.
            apply free_omega_approx_refl. intros x. reflexivity.
     + eapply free_omega_approx_trans.
       * apply free_operational_bind_split_le_hitting. exact no_event.
@@ -1144,7 +1146,7 @@ Proof.
       operational_head_bind_approx,
       operational_hitting_approx, operational_kernel;
     cbn.
-  all: rewrite !operational_target_stableE; cbn.
+  all: rewrite !stable_target_stableE; cbn.
   all: apply free_omega_approx_refl; intros x; reflexivity.
 Qed.
 
@@ -1437,7 +1439,7 @@ Proof.
         destruct next as [j|r].
         -- cbn [operational_hitting_approx operational_kernel]. constructor.
         -- cbn [operational_hitting_approx operational_kernel].
-           try rewrite operational_target_stableE.
+           try rewrite stable_target_stableE.
            apply free_omega_approx_refl. intros x. reflexivity.
   - rewrite free_iter_program_observe.
     eapply free_omega_approx_trans.
@@ -1460,7 +1462,7 @@ Proof.
                  apply free_iter_execution_grid_inner_increasing.
               ** apply le_S, le_n.
         -- cbn [operational_hitting_approx operational_kernel].
-           try rewrite operational_target_stableE.
+           try rewrite stable_target_stableE.
            apply free_omega_approx_refl. intros x. reflexivity.
 Qed.
 
@@ -1495,7 +1497,7 @@ Proof.
         destruct next as [j|r].
         -- cbn [operational_hitting_approx operational_kernel]. apply IH.
         -- cbn [operational_hitting_approx operational_kernel].
-           try rewrite operational_target_stableE.
+           try rewrite stable_target_stableE.
            apply free_omega_approx_refl. intros x. reflexivity.
     + apply free_operational_bind_split_le_hitting. exact no_event.
 Qed.
@@ -1891,7 +1893,7 @@ Lemma free_primitive_iter_success fuel r :
 Proof.
   rewrite free_primitive_iter_cont_observe.
   unfold free_primitive_iter_after, operational_hitting_approx,
-    operational_kernel. cbn. rewrite operational_target_stableE.
+    operational_kernel. cbn. rewrite stable_target_stableE.
   reflexivity.
 Qed.
 

@@ -176,12 +176,14 @@ Lemma operational_vn_raw_hitting_three fuel :
 Proof.
   unfold operational_vn_raw_hitting. rewrite operational_vn_raw_observe.
   cbn [operational_hitting_approx operational_kernel operational_target_approx
+    stable_hitting_approx stable_target_approx ptree_primitive_kernel
     sem_bind sem_ret mixed_bind free_omega_bind FreeOmegaMixedMeasureInterface
     FreeOmegaObservableSemanticMeasureInterface
     FreeOmegaSemanticMeasureInterface].
   f_equal. apply functional_extensionality. intro b1.
   rewrite operational_vn_raw_second_observe.
-  cbn [operational_kernel operational_target_approx sem_bind sem_ret
+  cbn [operational_kernel operational_target_approx stable_target_approx
+    ptree_primitive_kernel sem_bind sem_ret
     mixed_bind free_omega_bind FreeOmegaMixedMeasureInterface
     FreeOmegaObservableSemanticMeasureInterface FreeOmegaSemanticMeasureInterface].
   f_equal. apply functional_extensionality. intro b2.
