@@ -12,7 +12,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts
   FreeOmegaMeasure EnumMap.
 From PTree.Eq Require Import ShallowNew UnifiedFrontier
   PrimitiveStableHitting OperationalProbabilisticPTS
-  OperationalProbabilisticPTSFreeOmega.
+  OperationalProbabilisticPTSFreeOmega ProbabilisticEutt.
 From PTree.Examples Require Import VonNeumannUnbounded RationalBernoulli
   BernoulliFactory.
 
@@ -896,11 +896,11 @@ Proof.
   - exact (operational_factory_standard_q_support q0 q1 sim).
 Qed.
 
-Theorem primitive_biased_to_rational_coin_bisim_direct
+Theorem probabilistic_eutt_biased_to_rational_coin_direct
     (pnormalized : Qval pfalse + Qval ptrue = 1)
     (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q)
     (q0 : 0 <= q) (q1 : q <= 1) :
-  @primitive_ptree_bisim factoryE Enum MF
+  @probabilistic_eutt factoryE Enum MF
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := Enum_SemanticMeasureInterface)
       (NO := Enum_SemanticOmegaInterface))
@@ -910,10 +910,12 @@ Theorem primitive_biased_to_rational_coin_bisim_direct
     bool bool eq
     (biased_to_rational_coin pfalse ptrue q) (factory_direct_q q0 q1).
 Proof.
-  eapply primitive_ptree_bisim_of_ast_lift.
-  - exact (operational_biased_to_rational_coin_ast
-      pnormalized pnontrivial q0 q1).
-  - exact (operational_factory_direct_q_ast q0 q1).
+  eapply probabilistic_eutt_of_hitting_lift.
+  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
+    exact (proj1 (operational_biased_to_rational_coin_ast
+      pnormalized pnontrivial q0 q1)).
+  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
+    exact (proj1 (operational_factory_direct_q_ast q0 q1)).
   - exact (operational_factory_standard_q_heads_lift_direct q0 q1 _).
 Qed.
 
@@ -939,10 +941,10 @@ Proof.
     vn_one_third vn_two_thirds (2 / 5)).
 Qed.
 
-Theorem primitive_third_to_two_fifths_bisim_direct
+Theorem probabilistic_eutt_third_to_two_fifths_direct
     `{OperationalFactoryStepSupportLaws vn_one_third vn_two_thirds}
     `{OperationalFactoryRationalSupportLaws (2 / 5)} :
-  @primitive_ptree_bisim factoryE Enum MF
+  @probabilistic_eutt factoryE Enum MF
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := Enum_SemanticMeasureInterface)
       (NO := Enum_SemanticOmegaInterface))
@@ -951,7 +953,7 @@ Theorem primitive_third_to_two_fifths_bisim_direct
     FreeOmegaObservableSemanticOmegaInterface
     bool bool eq third_to_two_fifths direct_two_fifths.
 Proof.
-  exact (primitive_biased_to_rational_coin_bisim_direct
+  exact (probabilistic_eutt_biased_to_rational_coin_direct
     (pfalse := vn_one_third) (ptrue := vn_two_thirds) (q := 2 / 5)
     third_bias_normalized third_bias_nontrivial
     two_fifths_nonnegative two_fifths_at_most_one).

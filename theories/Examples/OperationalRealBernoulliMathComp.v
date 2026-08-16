@@ -10,7 +10,7 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
   TwoLevelMeasure TwoLevelMeasureMathComp.
 From PTree.Eq Require Import PrimitiveStableHitting OperationalProbabilisticPTS
-  OperationalProbabilisticPTSFreeOmega UnifiedFrontier.
+  OperationalProbabilisticPTSFreeOmega UnifiedFrontier ProbabilisticEutt.
 From PTree.Examples Require Import RealBernoulliOracle RealBernoulliMathComp
   UnifiedRealBernoulliMathCompCore.
 
@@ -267,29 +267,8 @@ Proof.
         exists (FHRet b2). split; [apply FHRRet; reflexivity|assumption].
 Qed.
 
-Theorem operational_mathcomp_binary_oracle_bisim_direct :
-  @operational_bisim real_mathcomp_coinE MN MF
-    (MathCompNodeSemanticMeasureInterface R)
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    (@MathCompNodeSemanticMeasureCoreLaws R H)
-    (FreeOmegaObservableSemanticMeasureCoreLaws
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R)) bool bool eq
-    (mathcomp_binary_oracle_coin R qbit)
-    (mathcomp_direct_bernoulli (R := R) q).
-Proof.
-  apply operational_bisim_fold. eapply OPBStable.
-  - exact operational_mathcomp_oracle_ast.
-  - exact operational_mathcomp_direct_ast.
-  - exact (operational_mathcomp_oracle_heads_lift _).
-Qed.
-
-Theorem primitive_mathcomp_binary_oracle_bisim_direct :
-  @primitive_ptree_bisim real_mathcomp_coinE MN MF
+Theorem probabilistic_eutt_mathcomp_binary_oracle_direct :
+  @probabilistic_eutt real_mathcomp_coinE MN MF
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := MathCompNodeSemanticMeasureInterface R))
     (FreeOmegaObservableSemanticMeasureCoreLaws
@@ -301,9 +280,11 @@ Theorem primitive_mathcomp_binary_oracle_bisim_direct :
     (mathcomp_binary_oracle_coin R qbit)
     (mathcomp_direct_bernoulli (R := R) q).
 Proof.
-  eapply primitive_ptree_bisim_of_ast_lift.
-  - exact operational_mathcomp_oracle_ast.
-  - exact operational_mathcomp_direct_ast.
+  eapply probabilistic_eutt_of_hitting_lift.
+  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
+    exact (proj1 operational_mathcomp_oracle_ast).
+  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
+    exact (proj1 operational_mathcomp_direct_ast).
   - exact (operational_mathcomp_oracle_heads_lift _).
 Qed.
 
