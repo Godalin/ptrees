@@ -817,3 +817,54 @@ Proof.
 Qed.
 
 End ProbabilisticEuttBindCongruence.
+
+Section ProbabilisticEuttFrontierRule.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}
+  `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}.
+
+Variable bind_cofinality : forall A R
+    (t : ptree E MN A) (k : A -> ptree E MN R),
+    operational_bind_cofinal (MF := MF) t k.
+
+Variable iter_productivity : forall I R
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) (i : I),
+    (forall j, operational_weak (MF := MF) (observe (step j))
+      (mixed_bind (transition j)
+        (fun next => sem_ret (FHRet next)))) ->
+    sem_increasing (fun fuel => mixed_iter_approx fuel transition i) /\
+    operational_iter_cofinal (MF := MF) step transition i.
+
+(** Structured frontiers are proof certificates for the canonical
+    stable-hitting semantics, not a second behavioral relation. *)
+Lemma probabilistic_eutt_of_frontiers {R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
+  frontier (observe t1) out1 ->
+  frontier (observe t2) out2 ->
+  sem_lift (ptree_stable_head_rel RR
+    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->
+  probabilistic_eutt RR t1 t2.
+Proof.
+  intros Hfront1 Hfront2 Hlift.
+  eapply probabilistic_eutt_of_hitting_lift.
+  - exact (frontier_to_primitive_stable_weak
+      bind_cofinality iter_productivity Hfront1).
+  - exact (frontier_to_primitive_stable_weak
+      bind_cofinality iter_productivity Hfront2).
+  - exact Hlift.
+Qed.
+
+End ProbabilisticEuttFrontierRule.
