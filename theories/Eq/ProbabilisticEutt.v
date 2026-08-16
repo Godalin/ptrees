@@ -336,6 +336,38 @@ Proof.
     eapply stable_hitting_weak_unique; [exact Hhit2|exact Hhit2'].
 Qed.
 
+Lemma probabilistic_eutt_preserves_hitting_mass
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
+  probabilistic_eutt RR t1 t2 ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
+  sem_same_mass out1 out2.
+Proof.
+  intros Hrel Hhit1 Hhit2.
+  apply probabilistic_eutt_unfold in Hrel.
+  destruct Hrel as [Hforward _].
+  destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
+  apply sem_lift_same_mass in Hlift.
+  unfold sem_same_mass in Hlift |- *.
+  eapply sem_lift_proper_r; [|exact Hlift].
+  eapply stable_hitting_weak_unique; [exact Hhit2'|exact Hhit2].
+Qed.
+
+Corollary probabilistic_eutt_not_of_mass_mismatch
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
+  ~ sem_same_mass out1 out2 ->
+  ~ probabilistic_eutt RR t1 t2.
+Proof.
+  intros Hhit1 Hhit2 Hmass Hrel. apply Hmass.
+  eapply probabilistic_eutt_preserves_hitting_mass; eassumption.
+Qed.
+
 End ProbabilisticEuttEndpoint.
 
 Section PTreeStableHittingEquations.
