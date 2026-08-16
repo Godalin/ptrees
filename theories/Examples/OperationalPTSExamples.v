@@ -8,7 +8,7 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier
-  OperationalProbabilisticPTS.
+  OperationalProbabilisticPTS ProbabilisticEutt.
 From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
@@ -310,26 +310,8 @@ Proof.
                 try contradiction; assumption.
 Qed.
 
-Theorem operational_reg_nested_merged_bisim :
-  @operational_bisim regE Enum MF
-    Enum_SemanticMeasureInterface
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    Enum_SemanticMeasureCoreLaws
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface nat nat eq
-    reg_nested_program reg_merged_program.
-Proof.
-  apply operational_bisim_fold. eapply OPBStable.
-  - split; [exact operational_reg_nested_weak|exact operational_reg_nested_total].
-  - split; [exact operational_reg_merged_weak|exact operational_reg_merged_total].
-  - exact (operational_reg_nested_merged_lift _).
-Qed.
-
-Theorem primitive_reg_nested_merged_bisim :
-  @primitive_ptree_bisim regE Enum MF
+Theorem probabilistic_eutt_reg_nested_merged :
+  @probabilistic_eutt regE Enum MF
     (FreeOmegaObservableSemanticMeasureInterface
       (NI := Enum_SemanticMeasureInterface)
       (NO := Enum_SemanticOmegaInterface))
@@ -338,8 +320,10 @@ Theorem primitive_reg_nested_merged_bisim :
     FreeOmegaObservableSemanticOmegaInterface nat nat eq
     reg_nested_program reg_merged_program.
 Proof.
-  eapply primitive_ptree_bisim_of_ast_lift.
-  - exact operational_reg_nested_ast.
-  - split; [exact operational_reg_merged_weak|exact operational_reg_merged_total].
+  eapply probabilistic_eutt_of_hitting_lift.
+  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
+    exact operational_reg_nested_weak.
+  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
+    exact operational_reg_merged_weak.
   - exact (operational_reg_nested_merged_lift _).
 Qed.

@@ -431,47 +431,6 @@ Proof.
         exists (FHRet b2). split; [constructor; reflexivity|assumption].
 Qed.
 
-Theorem operational_binary_rational_coin_bisim_direct :
-  free_omega_support_lift eq operational_rational_limit
-    (FOSample (rational_bernoulli_measure q0 q1) (fun b => FORet b)) ->
-  @operational_bisim rational_coinE Enum MF
-    Enum_SemanticMeasureInterface
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    Enum_SemanticMeasureCoreLaws
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool bool eq
-    (binary_rational_coin q) operational_rational_direct.
-Proof.
-  intro Hsupport.
-  eapply operational_bisim_of_ast_lift.
-  - exact operational_rational_coin_ast.
-  - exact operational_rational_direct_ast.
-  - exact (operational_rational_heads_lift Hsupport _).
-Qed.
-
-Theorem primitive_binary_rational_coin_bisim_direct :
-  free_omega_support_lift eq operational_rational_limit
-    (FOSample (rational_bernoulli_measure q0 q1) (fun b => FORet b)) ->
-  @primitive_ptree_bisim rational_coinE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface
-    bool bool eq
-    (binary_rational_coin q) operational_rational_direct.
-Proof.
-  intro Hsupport.
-  eapply primitive_ptree_bisim_of_ast_lift.
-  - exact operational_rational_coin_ast.
-  - exact operational_rational_direct_ast.
-  - exact (operational_rational_heads_lift Hsupport _).
-Qed.
-
 Theorem probabilistic_eutt_binary_rational_coin_direct :
   free_omega_support_lift eq operational_rational_limit
     (FOSample (rational_bernoulli_measure q0 q1) (fun b => FORet b)) ->
