@@ -82,6 +82,21 @@ Proof.
   apply (gfp_fp fstable_hitting_bisim). exact H.
 Qed.
 
+(** Generic corecursive proof rule.  A structured or program-specific
+    relation need only be closed by matching the complete stable-hitting
+    limits.  Syntax such as [Iter] belongs in the candidate [sim] (or in a
+    certificate used to establish [Hpost]), never in the canonical
+    behavioral generator. *)
+Theorem stable_hitting_bisim_coinduction
+    (sim : S1 -> S2 -> Prop)
+    (Hpost : forall s1 s2, sim s1 s2 ->
+      stable_hitting_match sim s1 s2) :
+  forall s1 s2, sim s1 s2 -> stable_hitting_bisim s1 s2.
+Proof.
+  intros s1 s2 Hsim. unfold stable_hitting_bisim.
+  eapply (@leq_gfp _ _ fstable_hitting_bisim sim); eauto.
+Qed.
+
 End StableHittingBisimulation.
 
 Section StableHittingBisimulationReflexivity.
@@ -275,6 +290,22 @@ Definition probabilistic_eutt
   probabilistic_eutt_state (observe t1) (observe t2).
 
 Definition pbisim := probabilistic_eutt.
+
+(** PTree-facing specialization of the generic corecursive rule. *)
+Theorem probabilistic_eutt_coinduction
+    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
+    (Hpost : forall s1 s2, sim s1 s2 ->
+      stable_hitting_match
+        (@ptree_primitive_kernel E MN MF FI MX R1)
+        (@ptree_primitive_kernel E MN MF FI MX R2)
+        ptree_stable_head_rel
+        sim s1 s2) :
+  forall t1 t2, sim (observe t1) (observe t2) ->
+    probabilistic_eutt t1 t2.
+Proof.
+  intros t1 t2 Hsim.
+  eapply stable_hitting_bisim_coinduction; eauto.
+Qed.
 
 Lemma probabilistic_eutt_unfold t1 t2 :
   probabilistic_eutt t1 t2 ->

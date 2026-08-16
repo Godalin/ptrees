@@ -840,10 +840,6 @@ Proof.
     + apply bind_cofinality.
     + exact IHHfront.
     + exact H0.
-  - destruct (iter_productivity (I := I) (R := R)
-      (step := step) (transition := transition) i H0)
-      as [Hinc Hcofinal].
-    eapply operational_weak_iter; eassumption.
 Qed.
 
 (** Soundness into the syntax-independent standard model.  The conclusion
