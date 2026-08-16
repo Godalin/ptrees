@@ -4,7 +4,7 @@ Set Universe Polymorphism.
 
 Require Import List.
 
-From mathcomp Require Import ssreflect ssrbool ssrnat ssralg ssrnum order rat.
+From mathcomp Require Import ssreflect ssrbool eqtype ssrnat ssralg ssrnum order rat.
 From PTree.Prob Require Import DiscreteMC Coupling IndexedCoupling FrontierLift
   FrontierLiftEnum MeasureIteration MeasureIterationEnum TwoLevelMeasure.
 
@@ -13,7 +13,8 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum.
-Import Coupling IndexedCoupling.
+Import EnumMap Coupling IndexedCoupling.
+Import RatSubTypes.
 Import GRing.Theory Order.Theory.
 #[local] Open Scope ring_scope.
 #[local] Open Scope order_scope.
@@ -179,4 +180,24 @@ Proof.
       Enum_MeasureMonadLaws).
   - exact (@meas_lift_bind Enum Enum_MeasureInterface
       Enum_MeasureLiftBindLaws).
+Qed.
+
+(** Concrete mass-discipline regression: an empty subdistribution cannot
+    be coupled with a point mass, even under the total relation. *)
+Local Open Scope bool_scope.
+Lemma enum_sem_same_mass_zero_ret_bool :
+  ~ @sem_same_mass Enum Enum_SemanticMeasureInterface bool bool
+      (@nil (RatSubTypes.nnQ * bool)) (sem_ret true).
+Proof.
+  unfold sem_same_mass. cbn.
+  unfold indexed_coupling. intros [j HjL HjR Hrelated].
+  have Hright : acc_mass 0 (emap snd j) != 0.
+  { rewrite (HjR 0). cbn [indexed index_from enum_prune ret_Enum acc_mass].
+    done. }
+  move: (@emap_nonzero_preimage _ _ snd j 0 Hright)=>
+    [[i q] [Hjoint Hq]].
+  move: (joint_nonzero_marginals Hjoint)=> [Hleft _].
+  move: Hleft. rewrite (HjL i).
+  cbn [indexed index_from enum_prune acc_mass].
+  done.
 Qed.
