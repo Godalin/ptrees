@@ -9,8 +9,7 @@ From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier UnifiedPWeak
   OperationalProbabilisticPTS.
-From PTree.Examples Require Import EnumMeasureRegression
-  UnifiedPWeakEnumExamples.
+From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
