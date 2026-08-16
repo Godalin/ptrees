@@ -5,8 +5,9 @@ Set Universe Polymorphism.
 Require Import List.
 
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat ssralg ssrnum order rat.
-From PTree.Prob Require Import DiscreteMC Coupling IndexedCoupling FrontierLift
-  FrontierLiftEnum MeasureIteration MeasureIterationEnum TwoLevelMeasure.
+From PTree.Prob Require Import DiscreteMC EnumBindFacts Coupling
+  IndexedCoupling FrontierLift FrontierLiftEnum MeasureIteration
+  MeasureIterationEnum TwoLevelMeasure.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -180,6 +181,66 @@ Proof.
       Enum_MeasureMonadLaws).
   - exact (@meas_lift_bind Enum Enum_MeasureInterface
       Enum_MeasureLiftBindLaws).
+Qed.
+
+(** Indexed couplings preserve the total finite weight even when the value
+    carriers have no decidable equality.  This is the concrete numeric
+    reflection of the abstract [sem_same_mass] predicate. *)
+Lemma enum_expect_one_emap {A B} (f : A -> B) (mu : Enum A) :
+  enum_expect (fun _ : B => 1) (emap f mu) =
+  enum_expect (fun _ : A => 1) mu.
+Proof. by elim: mu=> [|[p x] mu IH] //=; rewrite IH. Qed.
+
+Lemma enum_expect_one_indexed {A} (mu : Enum A) :
+  enum_expect (fun _ : nat => 1) (indexed mu) =
+  enum_expect (fun _ : A => 1) mu.
+Proof.
+  unfold indexed.
+  have H : forall n,
+      enum_expect (fun _ : nat => 1) (index_from n mu) =
+      enum_expect (fun _ : A => 1) mu.
+  { elim: mu=> [|[p x] tl IH] n //=; by rewrite IH. }
+  exact (H 0%nat).
+Qed.
+
+Lemma enum_expect_one_prune {A} (mu : Enum A) :
+  enum_expect (fun _ : A => 1) (enum_prune mu) =
+  enum_expect (fun _ : A => 1) mu.
+Proof.
+  elim: mu=> [|[p x] mu IH] //=.
+  case Hp: (p == nnQ_0).
+  - move/eqP: Hp=> ->. rewrite /nnQ_0 /=.
+    by rewrite IH add0r.
+  - cbn. by rewrite IH.
+Qed.
+
+Lemma enum_expect_one_eqenum {A : eqType} (mu nu : Enum A) :
+  mu ==Enum nu ->
+  enum_expect (fun _ : A => 1) mu = enum_expect (fun _ : A => 1) nu.
+Proof.
+  intro H.
+  have E : forall xi : Enum A,
+      enum_expect (fun _ : A => 1) xi =
+      enum_weightQ (fun _ : A => 1) xi.
+  { by elim=> [|[p x] xi IH] //=; rewrite IH. }
+  rewrite !E.
+  exact (enum_weightQ_proper (fun _ : A => 1) H).
+Qed.
+
+Lemma enum_sem_same_mass_expect_one {A B} (mu : Enum A) (nu : Enum B) :
+  @sem_same_mass Enum Enum_SemanticMeasureInterface A B mu nu ->
+  enum_expect (fun _ : A => 1) mu = enum_expect (fun _ : B => 1) nu.
+Proof.
+  unfold sem_same_mass. cbn. unfold indexed_coupling.
+  intros [j HjL HjR _].
+  rewrite -(enum_expect_one_prune mu) -(enum_expect_one_prune nu).
+  rewrite -(enum_expect_one_indexed (enum_prune mu)).
+  rewrite -(enum_expect_one_indexed (enum_prune nu)).
+  eapply eq_trans.
+  - symmetry. exact (enum_expect_one_eqenum HjL).
+  - eapply eq_trans; [exact (enum_expect_one_emap fst j)|].
+    eapply eq_trans; [symmetry; exact (enum_expect_one_emap snd j)|].
+    exact (enum_expect_one_eqenum HjR).
 Qed.
 
 (** Concrete mass-discipline regression: an empty subdistribution cannot
