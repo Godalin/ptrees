@@ -4,6 +4,7 @@ Set Universe Polymorphism.
 
 Require Import Program.
 From Coinduction Require Import all.
+From mathcomp Require Import ssreflect.
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import
@@ -82,6 +83,156 @@ Qed.
 
 End StableHittingBisimulation.
 
+Section StableHittingBisimulationReflexivity.
+Context {MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {S A : Type}.
+Variable kernel : S -> MF (stable_target S A).
+Variable AR : (S -> S -> Prop) -> A -> A -> Prop.
+Hypothesis AR_mono : forall sim1 sim2,
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall a1 a2, AR sim1 a1 a2 -> AR sim2 a1 a2.
+Hypothesis AR_refl : forall sim, Reflexive sim -> Reflexive (AR sim).
+
+Theorem stable_hitting_bisim_refl :
+  Reflexive (@stable_hitting_bisim MF FI FC FO S S A A
+    kernel kernel AR AR_mono).
+Proof.
+  intro state. revert state. unfold stable_hitting_bisim.
+  coinduction CH CIH. intro state.
+  unfold stable_hitting_match. split.
+  - intros out Hhit. exists out. split; [exact Hhit|].
+    apply sem_lift_refl. apply AR_refl. exact CIH.
+  - intros out Hhit. exists out. split; [exact Hhit|].
+    apply sem_lift_refl. apply AR_refl. exact CIH.
+Qed.
+
+End StableHittingBisimulationReflexivity.
+
+Section StableHittingBisimulationConverse.
+Context {MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {S1 S2 A1 A2 : Type}.
+Variable kernel1 : S1 -> MF (stable_target S1 A1).
+Variable kernel2 : S2 -> MF (stable_target S2 A2).
+Variable AR12 : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
+Variable AR21 : (S2 -> S1 -> Prop) -> A2 -> A1 -> Prop.
+Hypothesis AR12_mono : forall sim1 sim2,
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall a1 a2, AR12 sim1 a1 a2 -> AR12 sim2 a1 a2.
+Hypothesis AR21_mono : forall sim1 sim2,
+  (forall s2 s1, sim1 s2 s1 -> sim2 s2 s1) ->
+  forall a2 a1, AR21 sim1 a2 a1 -> AR21 sim2 a2 a1.
+Hypothesis AR_converse : forall sim a1 a2,
+  AR12 sim a1 a2 ->
+  AR21 (fun s2 s1 => sim s1 s2) a2 a1.
+
+Theorem stable_hitting_bisim_converse : forall s1 s2,
+  @stable_hitting_bisim MF FI FC FO S1 S2 A1 A2
+    kernel1 kernel2 AR12 AR12_mono s1 s2 ->
+  @stable_hitting_bisim MF FI FC FO S2 S1 A2 A1
+    kernel2 kernel1 AR21 AR21_mono s2 s1.
+Proof.
+  unfold stable_hitting_bisim at 2. coinduction CH CIH.
+  intros s1 s2 Hrel.
+  pose proof (@stable_hitting_bisim_unfold MF FI FC FO S1 S2 A1 A2
+    kernel1 kernel2 AR12 AR12_mono s1 s2 Hrel) as Hmatch.
+  unfold stable_hitting_match in Hmatch |- *.
+  destruct Hmatch as [Hforward Hbackward]. split.
+  - intros out2 Hhit2. destruct (Hbackward out2 Hhit2)
+      as [out1 [Hhit1 Hlift]]. exists out1. split; [exact Hhit1|].
+    apply sem_lift_sym in Hlift. eapply sem_lift_mono; [|exact Hlift].
+    intros a2 a1 Har. eapply AR21_mono.
+    + intros x2 x1 H12. exact (CIH _ _ H12).
+    + exact (AR_converse Har).
+  - intros out1 Hhit1. destruct (Hforward out1 Hhit1)
+      as [out2 [Hhit2 Hlift]]. exists out2. split; [exact Hhit2|].
+    apply sem_lift_sym in Hlift. eapply sem_lift_mono; [|exact Hlift].
+    intros a2 a1 Har. eapply AR21_mono.
+    + intros x2 x1 H12. exact (CIH _ _ H12).
+    + exact (AR_converse Har).
+Qed.
+
+End StableHittingBisimulationConverse.
+
+Section StableHittingBisimulationComposition.
+Context {MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {S1 S2 S3 A1 A2 A3 : Type}.
+Variable kernel1 : S1 -> MF (stable_target S1 A1).
+Variable kernel2 : S2 -> MF (stable_target S2 A2).
+Variable kernel3 : S3 -> MF (stable_target S3 A3).
+Variable AR12 : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
+Variable AR23 : (S2 -> S3 -> Prop) -> A2 -> A3 -> Prop.
+Variable AR13 : (S1 -> S3 -> Prop) -> A1 -> A3 -> Prop.
+Hypothesis AR12_mono : forall sim1 sim2,
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall a1 a2, AR12 sim1 a1 a2 -> AR12 sim2 a1 a2.
+Hypothesis AR23_mono : forall sim1 sim2,
+  (forall s2 s3, sim1 s2 s3 -> sim2 s2 s3) ->
+  forall a2 a3, AR23 sim1 a2 a3 -> AR23 sim2 a2 a3.
+Hypothesis AR13_mono : forall sim1 sim2,
+  (forall s1 s3, sim1 s1 s3 -> sim2 s1 s3) ->
+  forall a1 a3, AR13 sim1 a1 a3 -> AR13 sim2 a1 a3.
+
+Local Definition HB12 := @stable_hitting_bisim MF FI FC FO
+  S1 S2 A1 A2 kernel1 kernel2 AR12 AR12_mono.
+Local Definition HB23 := @stable_hitting_bisim MF FI FC FO
+  S2 S3 A2 A3 kernel2 kernel3 AR23 AR23_mono.
+Local Definition HB13 := @stable_hitting_bisim MF FI FC FO
+  S1 S3 A1 A3 kernel1 kernel3 AR13 AR13_mono.
+
+Hypothesis AR_comp : forall sim12 sim23 sim13,
+  (forall s1 s3, (exists s2, sim12 s1 s2 /\ sim23 s2 s3) ->
+    sim13 s1 s3) ->
+  forall a1 a3, (exists a2, AR12 sim12 a1 a2 /\ AR23 sim23 a2 a3) ->
+    AR13 sim13 a1 a3.
+
+Theorem stable_hitting_bisim_compose_rel : forall s1 s3,
+  (exists s2, HB12 s1 s2 /\ HB23 s2 s3) -> HB13 s1 s3.
+Proof.
+  unfold HB13. unfold stable_hitting_bisim at 1. coinduction CH CIH.
+  intros s1 s3 [s2 [H12 H23]].
+  pose proof (@stable_hitting_bisim_unfold MF FI FC FO S1 S2 A1 A2
+    kernel1 kernel2 AR12 AR12_mono s1 s2 H12) as HM12.
+  pose proof (@stable_hitting_bisim_unfold MF FI FC FO S2 S3 A2 A3
+    kernel2 kernel3 AR23 AR23_mono s2 s3 H23) as HM23.
+  unfold stable_hitting_match in HM12, HM23 |- *.
+  destruct HM12 as [H12f H12b]. destruct HM23 as [H23f H23b]. split.
+  - intros out1 Hhit1. destruct (H12f out1 Hhit1)
+      as [out2 [Hhit2 Hl12]].
+    destruct (H23f out2 Hhit2) as [out3 [Hhit3 Hl23]].
+    exists out3. split; [exact Hhit3|].
+    pose proof (sem_lift_comp Hl12 Hl23) as Hcomp.
+    eapply sem_lift_mono; [|exact Hcomp].
+    intros a1 a3 [a2 [Ha12 Ha23]]. eapply AR_comp.
+    + intros x1 x3 [x2 [Hx12 Hx23]].
+      exact (CIH _ _ (ex_intro _ x2 (conj Hx12 Hx23))).
+    + eauto.
+  - intros out3 Hhit3. destruct (H23b out3 Hhit3)
+      as [out2 [Hhit2 Hl23]].
+    destruct (H12b out2 Hhit2) as [out1 [Hhit1 Hl12]].
+    exists out1. split; [exact Hhit1|].
+    pose proof (sem_lift_comp Hl12 Hl23) as Hcomp.
+    eapply sem_lift_mono; [|exact Hcomp].
+    intros a1 a3 [a2 [Ha12 Ha23]]. eapply AR_comp.
+    + intros x1 x3 [x2 [Hx12 Hx23]].
+      exact (CIH _ _ (ex_intro _ x2 (conj Hx12 Hx23))).
+    + eauto.
+Qed.
+
+Corollary stable_hitting_bisim_compose : forall s1 s2 s3,
+  HB12 s1 s2 -> HB23 s2 s3 -> HB13 s1 s3.
+Proof. intros s1 s2 s3 H12 H23. apply stable_hitting_bisim_compose_rel. eauto. Qed.
+
+End StableHittingBisimulationComposition.
+
 (** PTree instantiation.  PTree syntax occurs only in the primitive kernel
     and in the relation on stable Ret/Vis heads. *)
 Section ProbabilisticEutt.
@@ -149,3 +300,239 @@ Proof.
 Qed.
 
 End ProbabilisticEutt.
+
+Section PTreeStableHittingEquations.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}.
+
+Lemma stable_hitting_weak_ret {R} (r : R) :
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R) (RetF r)
+    (sem_ret (FHRet r)).
+Proof.
+  unfold stable_hitting_weak.
+  eapply sem_lub_chain_proper with
+      (chain := fun _ => sem_ret (FHRet r)).
+  - intro fuel. apply sem_eq_sym.
+    eapply sem_eq_trans; [apply sem_bind_ret_l|].
+    rewrite stable_target_stableE. apply sem_eq_refl.
+  - apply sem_lub_constant.
+Qed.
+
+Lemma stable_hitting_weak_vis {R X} (e : E X)
+    (k : X -> ptree E MN R) :
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R) (VisF e k)
+    (sem_ret (FHVis e k)).
+Proof.
+  unfold stable_hitting_weak.
+  eapply sem_lub_chain_proper with
+      (chain := fun _ => sem_ret (FHVis e k)).
+  - intro fuel. apply sem_eq_sym.
+    eapply sem_eq_trans; [apply sem_bind_ret_l|].
+    rewrite stable_target_stableE. apply sem_eq_refl.
+  - apply sem_lub_constant.
+Qed.
+
+Lemma stable_hitting_tau_chain {R} (t : ptree E MN R) fuel :
+  sem_eq
+    (stable_hitting_approx
+      (@ptree_primitive_kernel E MN MF FI MX R) fuel (TauF t))
+    (sem_zero_prefix (fun n => stable_hitting_approx
+      (@ptree_primitive_kernel E MN MF FI MX R) n (observe t)) fuel).
+Proof.
+  unfold stable_hitting_approx, ptree_primitive_kernel.
+  rewrite sem_bind_ret_l.
+  destruct fuel; [apply sem_eq_refl|apply sem_eq_refl].
+Qed.
+
+Theorem stable_hitting_weak_tau_iff {R} (t : ptree E MN R) out :
+  stable_hitting_weak
+      (@ptree_primitive_kernel E MN MF FI MX R) (TauF t) out <->
+  stable_hitting_weak
+      (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out.
+Proof.
+  unfold stable_hitting_weak. split; intro Hhit.
+  - apply (proj2 (sem_lub_zero_prefix
+      (fun n => stable_hitting_approx
+        (@ptree_primitive_kernel E MN MF FI MX R) n (observe t)) out)).
+    eapply sem_lub_chain_proper; [|exact Hhit].
+    intro fuel. exact (stable_hitting_tau_chain t fuel).
+  - eapply sem_lub_chain_proper with
+      (chain := sem_zero_prefix (fun n => stable_hitting_approx
+        (@ptree_primitive_kernel E MN MF FI MX R) n (observe t))).
+    + intro fuel. apply sem_eq_sym. exact (stable_hitting_tau_chain t fuel).
+    + apply (proj1 (sem_lub_zero_prefix
+        (fun n => stable_hitting_approx
+          (@ptree_primitive_kernel E MN MF FI MX R) n (observe t)) out)).
+      exact Hhit.
+Qed.
+
+End PTreeStableHittingEquations.
+
+Section ProbabilisticEuttEquivalence.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {R : Type}.
+
+Lemma ptree_stable_head_rel_refl
+    (sim : ptree' E MN R -> ptree' E MN R -> Prop) :
+  Reflexive sim -> Reflexive (@ptree_stable_head_rel E MN R R eq sim).
+Proof.
+  intros Hsim [r|X e k].
+  - constructor. reflexivity.
+  - constructor. intro x. exact (Hsim (observe (k x))).
+Qed.
+
+Lemma ptree_stable_head_rel_converse
+    (sim : ptree' E MN R -> ptree' E MN R -> Prop) :
+  forall h1 h2, ptree_stable_head_rel eq sim h1 h2 ->
+    ptree_stable_head_rel eq (fun s2 s1 => sim s1 s2) h2 h1.
+Proof.
+  intros h1 h2 Hrel. dependent destruction Hrel.
+  - constructor. reflexivity.
+  - constructor. intro x. auto.
+Qed.
+
+Lemma ptree_stable_head_rel_compose
+    (sim12 sim23 sim13 : ptree' E MN R -> ptree' E MN R -> Prop)
+    (Hsim : forall s1 s3, (exists s2, sim12 s1 s2 /\ sim23 s2 s3) ->
+      sim13 s1 s3) :
+  forall h1 h3,
+    (exists h2, ptree_stable_head_rel eq sim12 h1 h2 /\
+      ptree_stable_head_rel eq sim23 h2 h3) ->
+    ptree_stable_head_rel eq sim13 h1 h3.
+Proof.
+  intros h1 h3 [h2 [H12 H23]].
+  dependent destruction H12; dependent destruction H23.
+  - constructor. congruence.
+  - constructor. intro x. apply Hsim. eauto.
+Qed.
+
+Theorem probabilistic_eutt_state_refl :
+  Reflexive (@probabilistic_eutt_state E MN MF FI FC MX FO R R eq).
+Proof.
+  unfold probabilistic_eutt_state.
+  apply stable_hitting_bisim_refl.
+  intros sim Hsim. exact (ptree_stable_head_rel_refl Hsim).
+Qed.
+
+Theorem probabilistic_eutt_refl :
+  Reflexive (@probabilistic_eutt E MN MF FI FC MX FO R R eq).
+Proof.
+  intro t. apply probabilistic_eutt_state_refl.
+Qed.
+
+Theorem probabilistic_eutt_sym :
+  Symmetric (@probabilistic_eutt E MN MF FI FC MX FO R R eq).
+Proof.
+  intros t1 t2 Hrel.
+  unfold probabilistic_eutt, probabilistic_eutt_state in Hrel |- *.
+  eapply stable_hitting_bisim_converse; [|exact Hrel].
+  intros sim a1 a2 Har. exact (ptree_stable_head_rel_converse Har).
+Qed.
+
+Theorem probabilistic_eutt_trans :
+  Transitive (@probabilistic_eutt E MN MF FI FC MX FO R R eq).
+Proof.
+  intros t1 t2 t3 H12 H23.
+  unfold probabilistic_eutt, probabilistic_eutt_state in H12, H23 |- *.
+  eapply stable_hitting_bisim_compose; [|exact H12|exact H23].
+  intros sim12 sim23 sim13 Hsim a1 a3 Hheads.
+  exact (ptree_stable_head_rel_compose Hsim Hheads).
+Qed.
+
+Global Instance probabilistic_eutt_equivalence :
+  Equivalence (@probabilistic_eutt E MN MF FI FC MX FO R R eq) :=
+  {| Equivalence_Reflexive := probabilistic_eutt_refl;
+     Equivalence_Symmetric := probabilistic_eutt_sym;
+     Equivalence_Transitive := probabilistic_eutt_trans |}.
+
+End ProbabilisticEuttEquivalence.
+
+Section ProbabilisticEuttStructuralLaws.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}.
+
+Lemma probabilistic_eutt_tau_l {R} (t : ptree E MN R) :
+  @probabilistic_eutt E MN MF FI FC MX FO R R eq (Tau t) t.
+Proof.
+  apply probabilistic_eutt_fold. unfold stable_hitting_match. split.
+  - intros out Htau. exists out. split.
+    + apply (proj1 (stable_hitting_weak_tau_iff t out)). exact Htau.
+    + apply sem_lift_refl. apply ptree_stable_head_rel_refl.
+      exact probabilistic_eutt_state_refl.
+  - intros out Ht. exists out. split.
+    + apply (proj2 (stable_hitting_weak_tau_iff t out)). exact Ht.
+    + apply sem_lift_refl. apply ptree_stable_head_rel_refl.
+      exact probabilistic_eutt_state_refl.
+Qed.
+
+Lemma probabilistic_eutt_tau_r {R} (t : ptree E MN R) :
+  @probabilistic_eutt E MN MF FI FC MX FO R R eq t (Tau t).
+Proof.
+  apply probabilistic_eutt_sym. apply probabilistic_eutt_tau_l.
+Qed.
+
+Lemma probabilistic_eutt_ret {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
+  RR r1 r2 ->
+  @probabilistic_eutt E MN MF FI FC MX FO R1 R2 RR (Ret r1) (Ret r2).
+Proof.
+  intro Hrr. apply probabilistic_eutt_fold.
+  unfold stable_hitting_match. split.
+  - intros out1 Hhit1. exists (sem_ret (FHRet r2)). split.
+    + apply stable_hitting_weak_ret.
+    + eapply sem_lift_proper_l.
+      * eapply stable_hitting_weak_unique;
+          [apply stable_hitting_weak_ret|exact Hhit1].
+      * apply sem_lift_ret. constructor. exact Hrr.
+  - intros out2 Hhit2. exists (sem_ret (FHRet r1)). split.
+    + apply stable_hitting_weak_ret.
+    + eapply sem_lift_proper_r.
+      * eapply stable_hitting_weak_unique;
+          [apply stable_hitting_weak_ret|exact Hhit2].
+      * apply sem_lift_ret. constructor. exact Hrr.
+Qed.
+
+Lemma probabilistic_eutt_vis {R1 R2 X} (RR : R1 -> R2 -> Prop)
+    (e : E X) (k1 : X -> ptree E MN R1) (k2 : X -> ptree E MN R2) :
+  (forall x, @probabilistic_eutt E MN MF FI FC MX FO R1 R2 RR
+      (k1 x) (k2 x)) ->
+  @probabilistic_eutt E MN MF FI FC MX FO R1 R2 RR
+    (Vis e k1) (Vis e k2).
+Proof.
+  intro Hk. apply probabilistic_eutt_fold.
+  unfold stable_hitting_match. split.
+  - intros out1 Hhit1. exists (sem_ret (FHVis e k2)). split.
+    + apply stable_hitting_weak_vis.
+    + eapply sem_lift_proper_l.
+      * eapply stable_hitting_weak_unique;
+          [apply (stable_hitting_weak_vis e k1)|exact Hhit1].
+      * apply sem_lift_ret. constructor. exact Hk.
+  - intros out2 Hhit2. exists (sem_ret (FHVis e k1)). split.
+    + apply stable_hitting_weak_vis.
+    + eapply sem_lift_proper_r.
+      * eapply stable_hitting_weak_unique;
+          [apply (stable_hitting_weak_vis e k2)|exact Hhit2].
+      * apply sem_lift_ret. constructor. exact Hk.
+Qed.
+
+End ProbabilisticEuttStructuralLaws.
