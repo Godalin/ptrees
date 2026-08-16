@@ -12,7 +12,7 @@ From PTree.Prob Require Import MeasureIterationEnum.
 From PTree.Eq Require Import ShallowNew PrimitiveStableHitting
   OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega UnifiedFrontier UnifiedFrontierEnumFacts
-  UnifiedPWeak.
+  UnifiedPWeak ProbabilisticEutt.
 From PTree.Examples Require Import VonNeumannUnbounded.
 
 Set Implicit Arguments.
@@ -1124,6 +1124,27 @@ Proof.
   - exact (operational_vn_raw_heads_lift _).
 Qed.
 
+(** Canonical endpoint: the unbounded retrying implementation and the
+    one-step fair coin are compared only at their subprobabilistic
+    stable-hitting limits. *)
+Theorem probabilistic_eutt_von_neumann_raw_direct :
+  @probabilistic_eutt vnE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    von_neumann_third direct_fair.
+Proof.
+  eapply probabilistic_eutt_of_hitting_lift.
+  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
+    exact (proj1 operational_von_neumann_raw_ast).
+  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
+    exact (proj1 operational_vn_direct_ast).
+  - exact (operational_vn_raw_heads_lift _).
+Qed.
+
 (** The unbounded retrying implementation and the one-step fair sampler
     have different operational shapes and different FreeOmega witnesses.
     Their common low-level observation supplies the stable coupling. *)
@@ -1158,6 +1179,24 @@ Proof.
   eapply primitive_ptree_bisim_of_ast_lift.
   - exact operational_vn_compiled_ast.
   - exact operational_vn_direct_ast.
+  - exact (operational_vn_heads_lift _).
+Qed.
+
+Theorem probabilistic_eutt_von_neumann_compiled_direct :
+  @probabilistic_eutt vnE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    operational_vn_compiled direct_fair.
+Proof.
+  eapply probabilistic_eutt_of_hitting_lift.
+  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
+    exact (proj1 operational_vn_compiled_ast).
+  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
+    exact (proj1 operational_vn_direct_ast).
   - exact (operational_vn_heads_lift _).
 Qed.
 

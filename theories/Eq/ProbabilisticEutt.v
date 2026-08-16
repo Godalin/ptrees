@@ -301,6 +301,42 @@ Qed.
 
 End ProbabilisticEutt.
 
+Section ProbabilisticEuttEndpoint.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+
+(** Extensional proof rule: implementations may have unrelated finite
+    schedules (including bounded versus unbounded ones); only their complete
+    stable-hitting limits are coupled. *)
+Lemma probabilistic_eutt_of_hitting_lift
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
+  sem_lift (ptree_stable_head_rel RR
+    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->
+  probabilistic_eutt RR t1 t2.
+Proof.
+  intros Hhit1 Hhit2 Hlift. apply probabilistic_eutt_fold.
+  unfold stable_hitting_match. split.
+  - intros out1' Hhit1'. exists out2. split; [exact Hhit2|].
+    eapply sem_lift_proper_l; [|exact Hlift].
+    eapply stable_hitting_weak_unique; [exact Hhit1|exact Hhit1'].
+  - intros out2' Hhit2'. exists out1. split; [exact Hhit1|].
+    eapply sem_lift_proper_r; [|exact Hlift].
+    eapply stable_hitting_weak_unique; [exact Hhit2|exact Hhit2'].
+Qed.
+
+End ProbabilisticEuttEndpoint.
+
 Section PTreeStableHittingEquations.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
