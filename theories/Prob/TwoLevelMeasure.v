@@ -77,6 +77,27 @@ Polymorphic Class SemanticMeasureCoreLaws@{carrier representation}
       sem_lift (fun x z => exists y, R x y /\ T y z) mu xi
 }.
 
+(** Abstract equality of total subprobability mass.  This formulation avoids
+    committing the generic interface to a numeric mass operation: a coupling
+    for the total relation exists exactly when the two marginals carry the
+    same amount of mass in the intended backends. *)
+Polymorphic Definition sem_same_mass@{carrier representation}
+    {S : Type@{carrier} -> Type@{representation}}
+    `{SI : SemanticMeasureInterface S} {A B : Type@{carrier}}
+    (mu : S A) (nu : S B) : Prop :=
+  sem_lift (fun _ _ => True) mu nu.
+
+Polymorphic Lemma sem_lift_same_mass@{carrier representation}
+    {S : Type@{carrier} -> Type@{representation}}
+    `{SI : SemanticMeasureInterface S}
+    `{SL : @SemanticMeasureCoreLaws S SI}
+    {A B : Type@{carrier}} (R : A -> B -> Prop) mu nu :
+  sem_lift R mu nu -> sem_same_mass mu nu.
+Proof.
+  intro Hlift. eapply sem_lift_mono; [|exact Hlift].
+  intros x y Hxy. exact I.
+Qed.
+
 (** Ordinary semantic-measure Kleisli laws, used when resolving an existing
     distribution of residual PTS states. *)
 Polymorphic Class SemanticMeasureBindLaws@{carrier representation}
