@@ -130,18 +130,7 @@ Inductive frontier {R} :
       frontier (observe t) hs ->
       (forall a, frontier (observe (k a)) (front a)) ->
       frontier (observe (PTree.bind t k))
-        (sem_bind hs (frontier_head_bind_front k front))
-  | UFNestedIter {I : Type}
-      (step : I -> ptree E MN (I + R))
-      (transition : I -> MN (I + R)) i out :
-      (forall j,
-        frontier (observe (step j))
-          (mixed_bind (transition j)
-            (fun next => sem_ret (FHRet next)))) ->
-      mixed_iter transition i out ->
-      sem_total out ->
-      frontier (observe (PTree.iter step i))
-        (sem_bind out (fun r => sem_ret (FHRet r))).
+        (sem_bind hs (frontier_head_bind_front k front)).
 
 (** Coherence is the exact semantic condition needed to treat a frontier as
     an observation rather than a chosen derivation.  Omega-limit uniqueness
@@ -173,5 +162,21 @@ Lemma frontier_iter_intro {R I}
   frontier (observe (PTree.iter step i))
     (sem_bind out (fun r => sem_ret (FHRet r))).
 Proof. intros Hstep Hiter Htotal. eapply UFIter; eassumption. Qed.
+
+(** Compatibility name for clients that previously distinguished nested
+    iteration.  There is no second constructor: nesting is a property of
+    [step], and the same semantic iteration certificate proves the result. *)
+Lemma frontier_nested_iter_intro {R I}
+    (step : I -> ptree E MN (I + R))
+    (transition : I -> MN (I + R)) i out :
+  (forall j,
+    frontier (observe (step j))
+      (mixed_bind (transition j)
+        (fun next => sem_ret (FHRet next)))) ->
+  mixed_iter transition i out ->
+  sem_total out ->
+  frontier (observe (PTree.iter step i))
+    (sem_bind out (fun r => sem_ret (FHRet r))).
+Proof. intros Hstep Hiter Htotal. eapply frontier_iter_intro; eassumption. Qed.
 
 End UnifiedFrontier.

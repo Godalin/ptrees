@@ -225,7 +225,7 @@ Proof.
     + exact IHHf.
     + assumption.
   - rewrite emap_bind.
-    apply (@UFNestedIter E Enum Enum
+    apply (@UFIter E Enum Enum
       Enum_SemanticMeasureInterface Enum_SemanticMeasureInterface
       Enum_MixedMeasureInterface Enum_SemanticOmegaInterface
       R I step transition i out).
@@ -315,27 +315,6 @@ Proof.
       (front := fun a => emap frontier_head_to_aphead (front a))).
     + exact IHHf.
     + assumption.
-  - rewrite emap_bind.
-    change (aufrontier (observe (PTree.iter step i))
-      (bind_Enum out
-        (fun r => emap frontier_head_to_aphead (sem_ret (FHRet r))))).
-    have Eout :
-        bind_Enum out
-          (fun r => emap (@frontier_head_to_aphead E R)
-            (@sem_ret Enum Enum_SemanticMeasureInterface
-              (frontier_head E Enum R) (@FHRet E Enum R r))) =
-        bind_Enum out
-          (fun r => @meas_ret Enum Enum_MeasureInterface
-            (aphead E Enum R) (@APHRet E Enum R r)).
-    { exact (bind_frontier_ret_to_aphead (E := E) out). }
-    rewrite Eout.
-    rewrite bind_Enum_meas_bind.
-    apply (AUFNestedIter (step := step) (transition := transition)
-      (i := i) (out := out)).
-    + move=> j. move: (H0 j)=> Hnew.
-      by rewrite emap_mixed_ret_to_meas in Hnew.
-    + apply enum_mixed_iter_iff_meas_iter. exact H1.
-    + exact H2.
 Qed.
 
 Corollary unified_frontier_roundtrip {E R}
