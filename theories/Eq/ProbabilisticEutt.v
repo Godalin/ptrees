@@ -413,6 +413,49 @@ Qed.
 
 End PTreeStableHittingEquations.
 
+Section PTreeStableHittingBind.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}.
+
+(** Stable hitting composes with bind under the local global/diagonal fuel
+    cofinality obligation.  This theorem mentions neither behavioral
+    relation nor structured frontier derivations. *)
+Theorem stable_hitting_weak_bind {A R}
+    (t : ptree E MN A) (k : A -> ptree E MN R)
+    hs (front : A -> MF (frontier_head E MN R)) :
+  operational_bind_cofinal (MF := MF) t k ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX A) (observe t) hs ->
+  (forall a, stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R)
+    (observe (k a)) (front a)) ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R)
+    (observe (PTree.bind t k))
+    (sem_bind hs (frontier_head_bind_front k front)).
+Proof.
+  intros Hcofinal Hsource Hfront.
+  apply (proj2 (ptree_primitive_weak_adequate _ _)).
+  eapply operational_weak_bind.
+  - exact Hcofinal.
+  - apply (proj1 (ptree_primitive_weak_adequate _ _)). exact Hsource.
+  - intro a. apply (proj1 (ptree_primitive_weak_adequate _ _)).
+    exact (Hfront a).
+Qed.
+
+End PTreeStableHittingBind.
+
 Section ProbabilisticEuttEquivalence.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
