@@ -38,6 +38,9 @@ The following laws are checked:
 - `probabilistic_eutt_ret` and `probabilistic_eutt_vis`;
 - `probabilistic_eutt_tau_l` and `probabilistic_eutt_tau_r`;
 - `probabilistic_eutt_bind`;
+- `stable_hitting_bisim_coinduction` and its PTree specialization
+  `probabilistic_eutt_coinduction`;
+- `probabilistic_eutt_of_iter_certificates`;
 - `probabilistic_eutt_preserves_hitting_mass`;
 - `probabilistic_eutt_not_of_mass_mismatch`.
 
@@ -62,6 +65,12 @@ coupled with a Boolean point mass.  Together with
 observable and partial divergence cannot be silently identified with total
 return.
 
+It also proves `enum_sem_same_mass_expect_one`: indexed coupling preserves
+the numeric total weight of arbitrary finite Enum measures, without an
+`eqType` assumption on their values.  The program-level regression
+`Examples/CanonicalPartialDivergence.v` uses this fact to prove
+`1/2 Ret + 1/2 (Tau^omega)` is not canonically bisimilar to `Ret`.
+
 The support-aware FreeOmega quotient and its AE, Kleisli, coupling, omega,
 diagonal, and Fubini capabilities remain the maintained unbounded backend.
 Enum and MathComp remain concrete instances of the generic measure API.
@@ -78,6 +87,15 @@ Finite computations and unbounded AST computations therefore use the same
 `stable_hitting_weak`.  Bounded chains are special cases whose approximants
 stabilize; AST is totality of the resulting limit rather than a bisimulation
 constructor.
+
+`stable_hitting_bisim_coinduction` is the public, syntax-independent corec
+rule: every post-fixed stable-hitting candidate is contained in the
+canonical greatest fixed point.  `probabilistic_eutt_of_iter_certificates`
+is the `PTree.iter` instance.  It combines two `UFIter` certificates and a
+coupling of their completed results; neither corecursion nor iteration adds
+a case to the behavioral generator.  The formerly duplicated
+`UFNestedIter` constructor has been removed.  Its compatibility use is a
+derived lemma over `UFIter`.
 
 The former public relations `weak_bisim`, `unified_ppts_bisim`,
 `operational_bisim`, `stable_kernel_bisim`, and `primitive_ptree_bisim`, plus
@@ -97,20 +115,44 @@ The maintained examples end directly in `probabilistic_eutt`:
   target coin;
 - the MathComp real-oracle Bernoulli sampler;
 - a universe-polymorphic MathComp direct coin reflexivity regression.
+- a fair half-return/half-silent-divergence program distinguished from a
+  total return by its missing termination mass.
 
 The Von Neumann proof compares independently established complete hitting
 limits, so bounded and unbounded implementations do not share a mirrored
 iteration design in the behavioral relation.
 
-## Remaining acceptance work
+## Exact no-Prob / ITree boundary
 
-Two planned semantic conveniences remain open and are not claimed here:
+The maintained generic theorem deliberately does **not** claim
 
-1. an exact theorem relating the no-`Prob` embedding of ITree `eutt` to
-   `probabilistic_eutt` (the Ret/Vis/Tau/bind fragment laws already hold);
-2. one generic structured macro-kernel/corecursion proof rule from which
-   `PTree.iter` can be obtained as an instance.
+```text
+pbisim (embed t) (embed u) <-> eutt t u
+```
 
-Neither item requires changing the canonical generator.  Future work must
-strengthen hitting composition, structured certificates, or coinduction
-up-to principles instead of adding syntax cases to `probabilistic_eutt`.
+under the current `SemanticMeasureInterface`.  The converse is not derivable
+from these axioms and is false for admissible degenerate instances: the
+interface gives positive coupling constructors and algebraic closure laws,
+but it does not require couplings to separate unequal Dirac measures, reflect
+zero mass, or invert a coupling of stable heads.  An implementation whose
+`sem_lift` relates every pair satisfies the basic positive laws and makes
+`pbisim` universal, while ITree `eutt` is not universal.
+
+An exact backend-qualified correspondence therefore requires a separate
+separation package with at least:
+
+1. Dirac/Dirac coupling inversion and zero-versus-Dirac separation;
+2. stable-head coupling inversion (including visible event equality and
+   related continuations);
+3. a pure-tree hitting classification: every no-`Prob` tree has either the
+   zero divergent limit or a Dirac Ret/Vis stable limit, coherently through
+   Tau;
+4. the resulting pure-limit uniqueness/reflection theorem.
+
+The already checked Ret, Vis, Tau, and bind laws give the sound structural
+fragment in the forward direction.  Exact completeness belongs to a future
+`SeparatingSemanticMeasure` backend theorem, not to the canonical generic
+generator.  This boundary is intentional: strengthening the base interface
+would incorrectly force Enum, MathComp, and future measure implementations
+to expose representation-specific inversion principles as universal
+probability axioms.
