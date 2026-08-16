@@ -22,6 +22,32 @@ Variant frontier_head (E : Type -> Type) (MN : Type -> Type)
 Arguments FHRet {E MN R} _.
 Arguments FHVis {E MN R X} _ _.
 
+(** Relational lifting of stable Ret/Vis observations.  This belongs to the
+    stable-observation layer, independently of any particular behavioral
+    greatest fixed point. *)
+Section StableHeadRelation.
+Context {E : Type -> Type} {MN : Type -> Type} {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+
+Inductive frontier_head_rel
+    (sim : ptree E MN R1 -> ptree E MN R2 -> Prop) :
+    frontier_head E MN R1 -> frontier_head E MN R2 -> Prop :=
+  | FHRRet r1 r2 : RR r1 r2 ->
+      frontier_head_rel sim (FHRet r1) (FHRet r2)
+  | FHRVis {X : Type} (e : E X) k1 k2 :
+      (forall x, sim (k1 x) (k2 x)) ->
+      frontier_head_rel sim (FHVis e k1) (FHVis e k2).
+
+Lemma frontier_head_rel_mono sim1 sim2 :
+  (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
+  forall h1 h2,
+    frontier_head_rel sim1 h1 h2 -> frontier_head_rel sim2 h1 h2.
+Proof.
+  intros Hsim h1 h2 Hh. inversion Hh; subst; constructor; auto.
+Qed.
+
+End StableHeadRelation.
+
 Definition frontier_head_bind_front {E MN MF}
     `{FI : SemanticMeasureInterface MF} {A B}
     (k : A -> ptree E MN B)

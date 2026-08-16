@@ -26,39 +26,22 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 Context {R1 R2 : Type}.
 Variable RR : R1 -> R2 -> Prop.
 
-Inductive frontier_head_rel
-    (sim : ptree E MN R1 -> ptree E MN R2 -> Prop) :
-    frontier_head E MN R1 -> frontier_head E MN R2 -> Prop :=
-  | FHRRet r1 r2 : RR r1 r2 ->
-      frontier_head_rel sim (FHRet r1) (FHRet r2)
-  | FHRVis {X : Type} (e : E X) k1 k2 :
-      (forall x, sim (k1 x) (k2 x)) ->
-      frontier_head_rel sim (FHVis e k1) (FHVis e k2).
-
-Lemma frontier_head_rel_mono sim1 sim2 :
-  (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
-  forall h1 h2,
-    frontier_head_rel sim1 h1 h2 -> frontier_head_rel sim2 h1 h2.
-Proof.
-  intros Hsim h1 h2 Hh. inversion Hh; subst; constructor; auto.
-Qed.
-
 Definition unified_frontier_match
     (sim : ptree E MN R1 -> ptree E MN R2 -> Prop)
     (ot1 : ptree' E MN R1) (ot2 : ptree' E MN R2) : Prop :=
   (forall hs1, frontier ot1 hs1 -> exists hs2,
       frontier ot2 hs2 /\
-      sem_lift (frontier_head_rel sim) hs1 hs2) /\
+      sem_lift (frontier_head_rel RR sim) hs1 hs2) /\
   (forall hs2, frontier ot2 hs2 -> exists hs1,
       frontier ot1 hs1 /\
-      sem_lift (frontier_head_rel sim) hs1 hs2).
+      sem_lift (frontier_head_rel RR sim) hs1 hs2).
 
 Inductive weak_bisimF
     (sim : ptree E MN R1 -> ptree E MN R2 -> Prop) :
     ptree' E MN R1 -> ptree' E MN R2 -> Prop :=
   | UWBFrontier ot1 ot2 hs1 hs2 :
       frontier ot1 hs1 -> frontier ot2 hs2 ->
-      sem_lift (frontier_head_rel sim) hs1 hs2 ->
+      sem_lift (frontier_head_rel RR sim) hs1 hs2 ->
       weak_bisimF sim ot1 ot2
   | UWBTau t1 t2 :
       unified_frontier_match sim (TauF t1) (TauF t2) ->
