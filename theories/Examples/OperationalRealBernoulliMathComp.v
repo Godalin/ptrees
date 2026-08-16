@@ -10,7 +10,7 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
   TwoLevelMeasure TwoLevelMeasureMathComp.
 From PTree.Eq Require Import PrimitiveStableHitting OperationalProbabilisticPTS
-  OperationalProbabilisticPTSFreeOmega UnifiedFrontier UnifiedPWeak.
+  OperationalProbabilisticPTSFreeOmega UnifiedFrontier.
 From PTree.Examples Require Import RealBernoulliOracle RealBernoulliMathComp
   UnifiedRealBernoulliMathCompCore.
 

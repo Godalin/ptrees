@@ -10,7 +10,7 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts
   MeasureIteration MeasureIterationEnum TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure EnumMap.
-From PTree.Eq Require Import ShallowNew UnifiedFrontier UnifiedPWeak
+From PTree.Eq Require Import ShallowNew UnifiedFrontier
   PrimitiveStableHitting OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega.
 From PTree.Examples Require Import VonNeumannUnbounded RationalBernoulli

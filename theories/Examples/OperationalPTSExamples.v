@@ -7,7 +7,7 @@ Require Import Program.Equality.
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
-From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier UnifiedPWeak
+From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier
   OperationalProbabilisticPTS.
 From PTree.Examples Require Import EnumMeasureRegression.
 

@@ -12,7 +12,7 @@ From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   EnumMap.
 From PTree.Eq Require Import ShallowNew PrimitiveStableHitting
   OperationalProbabilisticPTS
-  OperationalProbabilisticPTSFreeOmega UnifiedFrontier UnifiedPWeak
+  OperationalProbabilisticPTSFreeOmega UnifiedFrontier
   ProbabilisticEutt.
 From PTree.Examples Require Import RationalBernoulli.
 

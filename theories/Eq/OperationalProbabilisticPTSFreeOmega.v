@@ -8,7 +8,7 @@ Require Import List Arith.PeanoNat FunctionalExtensionality Lia
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration.
-From PTree.Eq Require Import ShallowNew UnifiedFrontier UnifiedPWeak
+From PTree.Eq Require Import ShallowNew UnifiedFrontier
   OperationalProbabilisticPTS PStrong.
 
 Set Implicit Arguments.
