@@ -10,8 +10,6 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLift
   FrontierLiftEnum EnumBindFacts MeasureIteration MeasureIterationEnum
   RatGeometric.
-From PTree.Eq Require Import PWeakAbstract PWeakUnbounded
-  PWeakUnboundedEquiv.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -537,74 +535,5 @@ Qed.
 
 Definition direct_rational_coin : ptree rational_coinE Enum bool :=
   Prob rational_bernoulli_measure (fun b => Ret b).
-
-Definition rational_coin_heads : Enum (aphead rational_coinE Enum bool) :=
-  meas_bind rational_bernoulli_measure (fun b =>
-    meas_ret (APHRet b : aphead rational_coinE Enum bool)).
-
-Lemma binary_coin_step_frontier x :
-  apfrontier (observe (binary_coin_step x))
-    (meas_bind (binary_coin_transition x) (fun next =>
-      meas_ret (APHRet next :
-        aphead rational_coinE Enum (rat + bool)))).
-Proof.
-  cbn [binary_coin_step].
-  change (apfrontier
-    (ProbF (binary_coin_transition x) (fun next => Ret next))
-    (meas_bind (binary_coin_transition x) (fun next =>
-      meas_ret (APHRet next :
-        aphead rational_coinE Enum (rat + bool))))).
-  apply (APFProb
-    (front := fun next =>
-      meas_ret (APHRet next : aphead rational_coinE Enum (rat + bool)))
-    (Good := fun _ => True)).
-  - apply meas_ae_true.
-  - move=> next _. constructor.
-Qed.
-
-Lemma rational_binary_coin_frontier :
-  aufrontier (observe (binary_rational_coin q)) rational_coin_heads.
-Proof.
-  unfold binary_rational_coin, rational_coin_heads.
-  eapply (AUFIter (step := binary_coin_step)
-    (transition := binary_coin_transition)
-    (i := q) (out := rational_bernoulli_measure)).
-  - exact binary_coin_step_frontier.
-  - exact rational_binary_iteration_converges.
-  - exact rational_bernoulli_total.
-Qed.
-
-Lemma direct_rational_coin_frontier :
-  aufrontier (observe direct_rational_coin) rational_coin_heads.
-Proof.
-  apply AUFFinite.
-  unfold direct_rational_coin, rational_coin_heads.
-  apply (APFProb
-    (front := fun b =>
-      meas_ret (APHRet b : aphead rational_coinE Enum bool))
-    (Good := fun _ => True)).
-  - apply meas_ae_true.
-  - move=> b _. constructor.
-Qed.
-
-Theorem binary_rational_coin_equivalent_to_direct :
-  auweak eq (binary_rational_coin q) direct_rational_coin.
-Proof.
-  apply auweak_fold.
-  eapply AUWFrontier with
-    (hs1 := rational_coin_heads) (hs2 := rational_coin_heads).
-  - exact rational_binary_coin_frontier.
-  - exact direct_rational_coin_frontier.
-  - apply meas_lift_refl.
-    apply auhead_rel_refl.
-    exact auweak_refl.
-Qed.
-
-Theorem binary_rational_coin_auequiv_direct :
-  auequiv (binary_rational_coin q) direct_rational_coin.
-Proof.
-  apply auequiv_of_auweak.
-  exact binary_rational_coin_equivalent_to_direct.
-Qed.
 
 End RationalTarget.
