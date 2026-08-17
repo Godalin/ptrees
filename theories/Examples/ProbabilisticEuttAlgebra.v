@@ -200,6 +200,23 @@ Lemma canonical_interp_bind_regression {A B}
       (fun x => PTree.interp bit_handler (k x))).
 Proof. apply free_probabilistic_eutt_interp_bind. Qed.
 
+Definition interactive_loop_step (state : bool) :
+    ptree sourceE Enum (bool + bool) :=
+  Vis AskBit (fun answer : bool =>
+    let next : bool + bool :=
+      if answer then inr state else inl (negb state) in
+    Ret next).
+
+(** Regression: an eventful guarded loop can be interpreted either before
+    or after forming the loop.  The handler contributes an administrative
+    [Tau], so the two programs are not definitionally equal. *)
+Lemma canonical_interp_iter_regression state :
+  peutt eq
+    (PTree.interp bit_handler (PTree.iter interactive_loop_step state))
+    (PTree.iter
+      (fun s => PTree.interp bit_handler (interactive_loop_step s)) state).
+Proof. apply free_probabilistic_eutt_interp_iter. Qed.
+
 Lemma canonical_translate_preservation_regression {A B}
     (RR : A -> B -> Prop)
     (t1 : ptree sourceE Enum A) (t2 : ptree sourceE Enum B) :

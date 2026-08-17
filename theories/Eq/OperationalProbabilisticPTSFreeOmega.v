@@ -2833,6 +2833,26 @@ Proof.
   apply pstructural_interp_bind.
 Qed.
 
+(** A handler may itself perform unbounded probabilistic computation before
+    returning the answer to an event.  Guarded interpretation nevertheless
+    commutes with [iter]: the law follows from the joint structural
+    coinduction in [pstructural_interp_iter], so it needs no productivity or
+    bounded-fuel premise. *)
+Theorem free_probabilistic_eutt_interp_iter {I R}
+    (handler : forall X, E X -> ptree F MN X)
+    (step : I -> ptree E MN (I + R)) (i : I) :
+  @probabilistic_eutt F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.interp handler (PTree.iter step i))
+    (PTree.iter (fun j => PTree.interp handler (step j)) i).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_interp_iter.
+Qed.
+
 Theorem free_probabilistic_eutt_translate_structural {G A B}
     (RR : A -> B -> Prop) (rename : forall X, E X -> G X)
     (t1 : ptree E MN A) (t2 : ptree E MN B) :

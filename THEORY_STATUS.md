@@ -121,6 +121,16 @@ to run arbitrary target-side Tau/Vis/Prob structure before returning.
 morphism equation, and `canonical_interp_bind_regression` checks it at the
 Enum-to-FreeOmega endpoint.
 
+Interpretation also commutes with guarded iteration.  The structural proof
+`pstructural_interp_iter` uses one joint coinductive invariant containing the
+main loop, the bind exposed by an unfolding, and the additional bind in
+which an effectful handler may execute.  Its canonical endpoint is
+`free_probabilistic_eutt_interp_iter`.  This law has no AST, finite-fuel, or
+productivity premise: it reorganizes the same guarded computation rather
+than evaluating a handler in advance.  `canonical_interp_iter_regression`
+checks the law on an eventful loop whose handler inserts an administrative
+Tau.
+
 Pure event renaming now has full behavioral preservation, not merely the
 structural rule above.  `free_translate_approx_forward` and
 `free_translate_approx_backward` account for the administrative Tau by
@@ -135,9 +145,9 @@ signature.
 
 This is the first sound handler layer, not yet the full ITree-style claim
 that `interp` preserves arbitrary `probabilistic_eutt`.  In particular,
-general effectful-handler composition, `interp_iter`, and effectful `interp`
-preservation remain future algebraic laws; pure `translate` preservation is
-complete.
+general effectful-handler composition and effectful `interp` preservation
+remain future algebraic laws; `interp_iter` and pure `translate`
+preservation are complete.
 
 Dirac elimination is now explicit rather than axiomatized accidentally.
 `SemanticMeasureDiracAELaws` characterizes AE predicates on node Dirac
