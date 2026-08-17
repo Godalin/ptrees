@@ -107,6 +107,42 @@ Proof.
       Enum_MeasureMonadLaws A x P Hx).
 Qed.
 
+Lemma enum_scale_entry_image {A} (p q : nnQ) (x : A) (mu : Enum A) :
+  List.In (q, x) mu -> List.In (p * q, x) (scale_Enum p mu).
+Proof.
+  induction mu as [|[r y] tl IH]=> //=.
+  intros [Hhead|Htail].
+  - inversion Hhead; subst. left. reflexivity.
+  - right. exact (IH Htail).
+Qed.
+
+Lemma enum_bind_entry_image {A B} (mu : Enum A) (k : A -> Enum B)
+    (p : nnQ) (x : A) (q : nnQ) (y : B) :
+  List.In (p, x) mu -> List.In (q, y) (k x) ->
+  List.In (p * q, y) (bind_Enum mu k).
+Proof.
+  induction mu as [|[r z] tl IH]=> //=.
+  intros [Hhead|Htail] Hq.
+  - inversion Hhead; subst. apply List.in_or_app. left.
+    apply enum_scale_entry_image. exact Hq.
+  - apply List.in_or_app. right. exact (IH Htail Hq).
+Qed.
+
+#[global] Instance Enum_SemanticMeasureBindAEExactLaws :
+    @SemanticMeasureBindAEExactLaws Enum Enum_SemanticMeasureInterface.
+Proof.
+  constructor. intros A B mu k P. split.
+  - intros Hflat p x Hpx Hpn q y Hqy Hqn.
+    apply (Hflat (p * q) y).
+    + exact (enum_bind_entry_image Hpx Hqy).
+    + move=> Hzero. have Hmul : p * q != RatSubTypes.nnQ_0.
+      { apply nnq_mul_ne_zero; apply/eqP; assumption. }
+      move/eqP: Hmul. contradiction.
+  - intro Hnested. eapply sem_ae_bind.
+    + exact Hnested.
+    + intros x Hx. exact Hx.
+Qed.
+
 #[global] Instance Enum_SemanticMeasureCouplingAELaws :
     @SemanticMeasureCouplingAELaws Enum Enum_SemanticMeasureInterface.
 Proof.

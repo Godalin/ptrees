@@ -1118,6 +1118,46 @@ Proof.
     intros x [y [-> Hy]]. exists y. split; [reflexivity|exact Hy].
 Qed.
 
+Lemma free_omega_support_lift_sample_bind {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NC : @SemanticMeasureCoreLaws MN NI}
+    {A B C D} (R : A -> B -> Prop)
+    (mu : MN C) (h : C -> MN D)
+    (k : D -> FreeOmega MN A) (l : D -> FreeOmega MN B) :
+  (forall P, sem_ae (sem_bind mu h) P <->
+    sem_ae mu (fun x => sem_ae (h x) P)) ->
+  (forall y, free_omega_support_lift R (k y) (l y)) ->
+  free_omega_support_lift R
+    (FOSample mu (fun x => FOSample (h x) k))
+    (FOSample (sem_bind mu h) l).
+Proof.
+  intros Hbind Hkl. split.
+  - intros P HP. dependent destruction HP.
+    match goal with
+    | Houter : sem_ae mu ?Good,
+      Hinner : forall x, ?Good x -> _ |- _ =>
+      eapply FOAESample with
+        (Good := fun y => exists x, Good x /\
+          free_omega_ae P (k y));
+      [apply (proj2 (Hbind _));
+       eapply sem_ae_mono; [|exact Houter];
+       intros x Hx; specialize (Hinner x Hx);
+       dependent destruction Hinner;
+       eapply sem_ae_mono; [|eassumption];
+       intros y Hy; exists x; split; [exact Hx|eauto]
+      |intros y [x [Hx Hky]];
+       exact ((proj1 (Hkl y)) P Hky)]
+    end.
+  - intros Q HQ. dependent destruction HQ.
+    apply (proj1 (Hbind _)) in H.
+    eapply FOAESample with
+      (Good := fun x => sem_ae (h x) Good).
+    + exact H.
+    + intros x Hx. eapply FOAESample with (Good := Good).
+      * exact Hx.
+      * intros y Hy. apply (proj2 (Hkl y) Q). apply H0. exact Hy.
+Qed.
+
 (** An observation-closed coupling for the free omega completion.  The
     structural lifting above remains useful for syntax-directed proofs, but
     it deliberately cannot identify, for example, a formal omega limit with
@@ -1176,6 +1216,14 @@ Polymorphic Inductive free_omega_qlift {MN}
       (forall P, sem_ae (sem_ret x) P <-> P x) ->
       free_omega_qlift R (k x) nu ->
       free_omega_qlift R (FOSample (sem_ret x) k) nu
+  | FOQLSampleBind {C D} (mu : MN C) (h : C -> MN D)
+      (k : D -> FreeOmega MN A) (l : D -> FreeOmega MN B) :
+      (forall P, sem_ae (sem_bind mu h) P <->
+        sem_ae mu (fun x => sem_ae (h x) P)) ->
+      (forall y, free_omega_qlift R (k y) (l y)) ->
+      free_omega_qlift R
+        (FOSample mu (fun x => FOSample (h x) k))
+        (FOSample (sem_bind mu h) l)
   | FOQLLub (c : nat -> FreeOmega MN A) (d : nat -> FreeOmega MN B) :
       (forall n, free_omega_qlift R (c n) (d n)) ->
       free_omega_qlift R (FOLub c) (FOLub d)
@@ -1274,6 +1322,7 @@ Proof.
       eapply FOAESample with (Good := fun z => z = x).
       * apply (proj2 (H (fun z => z = x))). reflexivity.
       * intros z ->. exact Hbranch.
+  - eapply free_omega_support_lift_sample_bind; eauto.
   - apply free_omega_support_lift_lub. assumption.
   - apply free_omega_support_lift_lub_zero_prefix_l. assumption.
   - apply free_omega_support_lift_sym.
@@ -1462,6 +1511,21 @@ Proof.
   - apply sem_ae_ret_iff.
   - apply free_omega_qlift_refl.
   intro y. reflexivity.
+Qed.
+
+#[global] Instance FreeOmegaObservableMixedMeasureNodeBindLaws
+    `{NBAE : @SemanticMeasureBindAEExactLaws MN NI} :
+    @MixedMeasureNodeBindLaws MN (FreeOmega MN) NI
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface.
+Proof.
+  constructor. intros A B C mu h k.
+  change (free_omega_qlift eq
+    (FOSample mu (fun x => FOSample (h x) k))
+    (FOSample (sem_bind mu h) k)).
+  eapply FOQLSampleBind.
+  - apply sem_ae_bind_iff.
+  - intro y. apply free_omega_qlift_refl. intro z. reflexivity.
 Qed.
 
 #[global] Polymorphic Instance FreeOmegaObservableSemanticOmegaInterface :

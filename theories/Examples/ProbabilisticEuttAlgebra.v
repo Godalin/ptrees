@@ -66,6 +66,19 @@ Proof.
   apply probabilistic_eutt_prob_ret.
 Qed.
 
+Lemma canonical_prob_flatten_regression {X Y R}
+    (mu : Enum X) (h : X -> Enum Y)
+    (k : Y -> ptree algebraE Enum R) :
+  peutt eq
+    (Prob mu (fun x => Prob (h x) k))
+    (Prob (bind_Enum mu h) k).
+Proof.
+  change (peutt eq
+    (Prob mu (fun x => Prob (h x) k))
+    (Prob (@sem_bind Enum Enum_SemanticMeasureInterface X Y mu h) k)).
+  apply probabilistic_eutt_prob_flatten.
+Qed.
+
 Lemma canonical_iter_unfold_regression {I R}
     (step : I -> ptree algebraE Enum (I + R)) (i : I) :
   peutt eq (PTree.iter step i)

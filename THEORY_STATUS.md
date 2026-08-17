@@ -133,12 +133,14 @@ Nested sampling is handled by a second optional capability,
 `MixedMeasureNodeBindLaws`, which couples a node-level Kleisli bind with two
 successive mixed binds.  Under it, `probabilistic_eutt_prob_flatten` proves
 that two consecutive `Prob` nodes equal one node sampling the bound measure.
-The Enum/Enum two-level backend supplies this law from measure associativity.
-The maintained Enum-to-FreeOmega backend does not yet expose the instance:
-its quotient proof additionally needs the reverse direction of node-bind
-AE/support decomposition, whereas the base interface currently provides
-only forward Kleisli AE closure.  This remaining backend condition is kept
-explicit rather than being smuggled into the behavioral generator.
+`SemanticMeasureBindAEExactLaws` supplies the additional reverse direction
+of node-bind AE/support decomposition needed by a quotient backend.  Enum
+proves it from nonzero finite-weight support decomposition.  The FreeOmega
+observable quotient's `FOQLSampleBind` constructor is proved support-safe
+from this exact law, yielding
+`FreeOmegaObservableMixedMeasureNodeBindLaws`.  Consequently
+`canonical_prob_flatten_regression` checks nested-Prob flattening at the
+maintained Enum-to-FreeOmega canonical endpoint.
 
 ## Probability and missing mass
 

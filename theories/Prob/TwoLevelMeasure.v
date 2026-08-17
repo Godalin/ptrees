@@ -252,6 +252,19 @@ Polymorphic Class SemanticMeasureDiracAELaws@{carrier representation}
       sem_ae (sem_ret x) P <-> P x
 }.
 
+(** Exact support decomposition for node-level Kleisli bind.  The forward
+    implication supplied by [SemanticMeasureAEKleisliLaws] is sufficient for
+    many soundness arguments; quotienting one bound sample with two nested
+    samples also needs this reverse characterization. *)
+Polymorphic Class SemanticMeasureBindAEExactLaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S} := {
+  sem_ae_bind_iff : forall {A B : Type@{carrier}}
+      (mu : S A) (k : A -> S B) (P : B -> Prop),
+      sem_ae (sem_bind mu k) P <->
+      sem_ae mu (fun x => sem_ae (k x) P)
+}.
+
 (** Omega structure belongs to the semantic/frontier layer.  The order is
     explicit so a unified frontier can state that finite approximants form an
     increasing chain instead of treating every arbitrary sequence as a lub. *)
