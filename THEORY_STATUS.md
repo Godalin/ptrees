@@ -119,12 +119,21 @@ that `interp` preserves arbitrary `probabilistic_eutt`.  In particular,
 `interp_bind`, handler composition, and `interp_iter` remain future algebraic
 laws.
 
-No generic Dirac-elimination or nested-Prob-flattening theorem is asserted.
-The current positive coupling interface does not by itself identify a node
-sample from a Dirac measure with direct continuation execution, nor identify
-nested node sampling with a monadic product measure.  Those laws require an
-explicit backend quotient/unit/bind capability rather than new cases in the
-behavioral generator.
+Dirac elimination is now explicit rather than axiomatized accidentally.
+`SemanticMeasureDiracAELaws` characterizes AE predicates on node Dirac
+measures, while `MixedMeasureUnitLaws` states that mixed binding a node Dirac
+is coupled to its selected continuation.  Under these capabilities,
+`probabilistic_eutt_prob_ret` proves
+`Prob (sem_ret x) k ≈ₚ k x`.  Enum supplies the exact Dirac AE law and the
+FreeOmega observable quotient contains the corresponding
+`FOQLSampleRetL` equation; `canonical_prob_ret_regression` checks the complete
+Enum-to-FreeOmega instance chain.
+
+No generic nested-Prob-flattening theorem is yet asserted.  The current
+mixed laws do not identify a node-level monadic bind with two consecutive
+`FOSample` layers.  That law similarly requires an explicit backend
+node-bind/quotient capability rather than a new case in the behavioral
+generator.
 
 ## Probability and missing mass
 

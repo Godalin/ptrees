@@ -96,6 +96,17 @@ Proof.
       Enum_MeasureAEKleisliLaws).
 Qed.
 
+#[global] Instance Enum_SemanticMeasureDiracAELaws :
+    @SemanticMeasureDiracAELaws Enum Enum_SemanticMeasureInterface.
+Proof.
+  constructor. intros A x P. split.
+  - intro Hae. apply (Hae 1 x); cbn.
+    + left. reflexivity.
+    + discriminate.
+  - intro Hx. exact (@meas_ae_ret Enum Enum_MeasureInterface
+      Enum_MeasureMonadLaws A x P Hx).
+Qed.
+
 #[global] Instance Enum_SemanticMeasureCouplingAELaws :
     @SemanticMeasureCouplingAELaws Enum Enum_SemanticMeasureInterface.
 Proof.
@@ -181,6 +192,18 @@ Proof.
       Enum_MeasureMonadLaws).
   - exact (@meas_lift_bind Enum Enum_MeasureInterface
       Enum_MeasureLiftBindLaws).
+Qed.
+
+#[global] Instance Enum_MixedMeasureUnitLaws :
+    @MixedMeasureUnitLaws Enum Enum
+      Enum_SemanticMeasureInterface Enum_SemanticMeasureInterface
+      Enum_MixedMeasureInterface.
+Proof.
+  constructor. intros A B x k.
+  eapply sem_lift_proper_l.
+  - apply sem_eq_sym. exact (@meas_bind_ret_l Enum Enum_MeasureInterface
+      Enum_MeasureMonadLaws A B x k).
+  - apply sem_lift_refl. intro y. reflexivity.
 Qed.
 
 (** Indexed couplings preserve the total finite weight even when the value

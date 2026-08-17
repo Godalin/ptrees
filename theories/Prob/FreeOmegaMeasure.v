@@ -1171,6 +1171,11 @@ Polymorphic Inductive free_omega_qlift {MN}
       sem_lift T mu nu ->
       (forall x y, T x y -> free_omega_qlift R (k x) (h y)) ->
       free_omega_qlift R (FOSample mu k) (FOSample nu h)
+  | FOQLSampleRetL {C} (x : C) (k : C -> FreeOmega MN A)
+      (nu : FreeOmega MN B) :
+      (forall P, sem_ae (sem_ret x) P <-> P x) ->
+      free_omega_qlift R (k x) nu ->
+      free_omega_qlift R (FOSample (sem_ret x) k) nu
   | FOQLLub (c : nat -> FreeOmega MN A) (d : nat -> FreeOmega MN B) :
       (forall n, free_omega_qlift R (c n) (d n)) ->
       free_omega_qlift R (FOLub c) (FOLub d)
@@ -1261,6 +1266,14 @@ Proof.
     + assumption.
   - eapply free_omega_support_lift_bind; eauto.
   - eapply free_omega_support_lift_sample; eauto.
+  - split.
+    + intros P HP. dependent destruction HP.
+      apply (proj1 IHHq). apply H1. apply (proj1 (H Good)). exact H0.
+    + intros Q HQ.
+      pose proof ((proj2 IHHq) Q HQ) as Hbranch.
+      eapply FOAESample with (Good := fun z => z = x).
+      * apply (proj2 (H (fun z => z = x))). reflexivity.
+      * intros z ->. exact Hbranch.
   - apply free_omega_support_lift_lub. assumption.
   - apply free_omega_support_lift_lub_zero_prefix_l. assumption.
   - apply free_omega_support_lift_sym.
@@ -1435,6 +1448,20 @@ Proof.
     apply free_omega_qlift_refl. intros x. reflexivity.
   - intros A B C D R T mu nu k h Hmn Hkh.
     eapply FOQLSample; eauto.
+Qed.
+
+#[global] Instance FreeOmegaObservableMixedMeasureUnitLaws
+    `{ND : @SemanticMeasureDiracAELaws MN NI} :
+    @MixedMeasureUnitLaws MN (FreeOmega MN) NI
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface.
+Proof.
+  constructor. intros A B x k.
+  change (free_omega_qlift eq (FOSample (sem_ret x) k) (k x)).
+  apply FOQLSampleRetL.
+  - apply sem_ae_ret_iff.
+  - apply free_omega_qlift_refl.
+  intro y. reflexivity.
 Qed.
 
 #[global] Polymorphic Instance FreeOmegaObservableSemanticOmegaInterface :

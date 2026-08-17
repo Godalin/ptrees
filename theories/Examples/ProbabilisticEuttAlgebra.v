@@ -55,6 +55,17 @@ Proof.
   intro Ht. setoid_rewrite Ht. reflexivity.
 Qed.
 
+(** Dirac elimination uses the explicit node-Dirac/mixed-unit capability of
+    the Enum-to-FreeOmega backend. *)
+Lemma canonical_prob_ret_regression {X R}
+    (x : X) (k : X -> ptree algebraE Enum R) :
+  peutt eq (Prob (ret_Enum x) k) (k x).
+Proof.
+  change (peutt eq
+    (Prob (@sem_ret Enum Enum_SemanticMeasureInterface X x) k) (k x)).
+  apply probabilistic_eutt_prob_ret.
+Qed.
+
 Lemma canonical_iter_unfold_regression {I R}
     (step : I -> ptree algebraE Enum (I + R)) (i : I) :
   peutt eq (PTree.iter step i)

@@ -889,6 +889,31 @@ Proof.
   - intros x1 x2 ->. apply probabilistic_eutt_refl.
 Qed.
 
+(** Dirac elimination is available exactly for backends whose two-level
+    semantic quotient declares node return to be a mixed-bind left unit. *)
+Theorem probabilistic_eutt_prob_ret {R X}
+    `{MU : @MixedMeasureUnitLaws MN MF NI FI MX}
+    (x : X) (k : X -> ptree E MN R) :
+  probabilistic_eutt eq (Prob (sem_ret x) k) (k x).
+Proof.
+  assert (Hexists : forall y, exists out,
+      stable_hitting_weak
+        (@ptree_primitive_kernel E MN MF FI MX R)
+        (observe (k y)) out).
+  { intro y. apply stable_hitting_weak_exists. }
+  destruct (choice _ Hexists) as [front Hfront].
+  eapply probabilistic_eutt_of_hitting_lift.
+  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros y _. exact (Hfront y).
+  - exact (Hfront x).
+  - eapply sem_lift_mono.
+    + intros h1 h2 ->. destruct h2.
+      * constructor. reflexivity.
+      * constructor. intro y. apply probabilistic_eutt_refl.
+    + apply mixed_bind_ret_l.
+Qed.
+
 #[global] Instance probabilistic_eutt_prob_Proper {R X} (mu : MN X) :
   Proper (pointwise_relation X (probabilistic_eutt eq) ==>
     probabilistic_eutt eq) (fun k : X -> ptree E MN R => Prob mu k).

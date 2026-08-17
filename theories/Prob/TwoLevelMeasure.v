@@ -209,6 +209,32 @@ Polymorphic Class MixedMeasureLaws@{node node_rep frontier frontier_rep}
       sem_lift T (mixed_bind mu k) (mixed_bind nu h)
 }.
 
+(** Optional left-unit capability for a two-level measure backend.  It is
+    intentionally separate from [MixedMeasureLaws]: a syntax-level free
+    omega backend need not quotient a sampled node Dirac to its selected
+    continuation unless that equation is explicitly part of its semantic
+    quotient. *)
+Polymorphic Class MixedMeasureUnitLaws@{node node_rep frontier frontier_rep}
+    (MN : Type@{node} -> Type@{node_rep})
+    (MF : Type@{frontier} -> Type@{frontier_rep})
+    `{NI : SemanticMeasureInterface MN}
+    `{FI : SemanticMeasureInterface MF}
+    `{MX : MixedMeasureInterface MN MF} := {
+  mixed_bind_ret_l : forall {A : Type@{node}} {B : Type@{frontier}}
+      (x : A) (k : A -> MF B),
+      sem_lift eq (mixed_bind (sem_ret x) k) (k x)
+}.
+
+(** Exact almost-everywhere characterization of semantic Dirac measures.
+    Positive AE introduction alone is insufficient to discard branches other
+    than the selected point when quotienting a sampled Dirac. *)
+Polymorphic Class SemanticMeasureDiracAELaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasureInterface S} := {
+  sem_ae_ret_iff : forall {A : Type@{carrier}} (x : A) (P : A -> Prop),
+      sem_ae (sem_ret x) P <-> P x
+}.
+
 (** Omega structure belongs to the semantic/frontier layer.  The order is
     explicit so a unified frontier can state that finite approximants form an
     increasing chain instead of treating every arbitrary sequence as a lub. *)
