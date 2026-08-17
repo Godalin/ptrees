@@ -165,6 +165,14 @@ coinduction.  Its hypothesis is arbitrary `probabilistic_eutt`, not
 `pstructural`.  The regression renames `sourceE` to a distinct `renamedE`
 signature.
 
+Identity interpretation is also a proved behavioral unit.
+`free_probabilistic_eutt_translate_id` transports complete hitting behavior
+on only the interpreted side and closes translated visible continuations by
+native coinduction; `free_probabilistic_eutt_interp_trigger` exposes the law
+as `interp trigger t ≈ₚ t`.  This cannot be a structural equation because
+guarded interpretation inserts Tau before Vis.  The regression exercises an
+actual visible `GetBit` event.
+
 This is the first sound handler layer, not yet the full ITree-style claim
 that `interp` preserves arbitrary `probabilistic_eutt`.  In particular,
 effectful `interp` preservation for arbitrary behaviorally equivalent source

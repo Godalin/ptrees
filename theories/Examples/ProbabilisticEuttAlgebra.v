@@ -216,6 +216,22 @@ Definition rename_bit (X : Type) (e : sourceE X) : renamedE X :=
   | AskBit => GetBit
   end.
 
+(** Identity interpretation is genuinely weak on this program: interpreting
+    [GetBit] inserts an administrative Tau before the visible event. *)
+Lemma canonical_interp_trigger_regression {R}
+    (k : bool -> ptree renamedE Enum R) :
+  @probabilistic_eutt renamedE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.interp (fun X e => @PTree.trigger renamedE Enum X e)
+      (Vis GetBit k))
+    (Vis GetBit k).
+Proof. apply free_probabilistic_eutt_interp_trigger. Qed.
+
 Definition bit_handler (X : Type) (e : sourceE X) : ptree algebraE Enum X :=
   match e with
   | AskBit => Tau (Ret true)
