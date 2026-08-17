@@ -349,10 +349,10 @@ Qed.
 End PStructuralIter.
 
 (** Strong probabilistic bisimulation over an abstract probabilistic
-    relation lifting.  Constructors are matched in lockstep: unlike
-    [apweak], this relation neither discards a one-sided [Tau] nor collapses
-    a finite probabilistic frontier.  It therefore serves as the strong
-    baseline between structural [equ] and the weak frontier relations. *)
+    relation lifting.  Constructors are matched in lockstep: this relation
+    neither discards a one-sided [Tau] nor collapses an internal probability
+    prefix.  It therefore remains the syntax-sensitive baseline for the
+    canonical stable-hitting equivalence. *)
 
 Section PStrong.
 

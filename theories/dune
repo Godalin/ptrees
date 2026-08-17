@@ -9,7 +9,6 @@
    ;; host MathComp measurable kernels.  The MathComp measure and AST layers
    ;; themselves remain part of the installed theory.
    \ Examples.VonNeumannMathComp
-   Examples.RealBernoulliMathCompFactory
    ))
  (theories
    ExtLib

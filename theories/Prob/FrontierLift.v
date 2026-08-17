@@ -31,9 +31,8 @@ Class MeasureZeroInterface (M : Type -> Type) := {
   meas_empty : forall {A}, M A
 }.
 
-(** The small law package needed merely to define [apweak] and prove
-    reflexivity.  Stronger laws below are only needed by compositionality and
-    transitivity proofs. *)
+(** The basic finite-measure law package.  Stronger laws below are needed by
+    compositionality and coupling-transitivity proofs. *)
 Class MeasureCoreLaws (M : Type -> Type) `{MI : MeasureInterface M} := {
   meas_ae_mono : forall {A} (mu : M A) (P Q : A -> Prop),
       (forall x, P x -> Q x) -> meas_ae mu P -> meas_ae mu Q;
