@@ -230,6 +230,13 @@ interpreter preservation from closure of that candidate.  Thus the open
 proof obligation is specifically candidate-level closure of the binds
 produced by handled visible heads; primitive scheduling, complete hitting,
 and omega-limit composition are not part of the remaining gap.
+The existing `probabilistic_eutt_bind` theorem establishes closure only at
+the greatest fixed point.  It cannot soundly be used recursively to prove
+this obligation: native coinduction exposes an arbitrary element of the
+final chain, and complete stable hitting may consume the continuation after
+a handler returns.  An unconditional theorem therefore needs a stronger
+bind transformer compatible with the final chain (equivalently, an
+appropriate companion/up-to-bind result), not an additional measure axiom.
 
 Dirac elimination is now explicit rather than axiomatized accidentally.
 `SemanticMeasureDiracAELaws` characterizes AE predicates on node Dirac
