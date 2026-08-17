@@ -11,7 +11,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLiftEnum TwoLevelM
 From PTree.Prob Require Import MeasureIterationEnum.
 From PTree.Eq Require Import ShallowNew PrimitiveStableHitting
   OperationalProbabilisticPTS
-  OperationalProbabilisticPTSFreeOmega UnifiedFrontier UnifiedFrontierEnumFacts
+  OperationalProbabilisticPTSFreeOmega UnifiedFrontier
   ProbabilisticEutt.
 From PTree.Examples Require Import VonNeumannUnbounded.
 
