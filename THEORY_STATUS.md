@@ -136,6 +136,8 @@ The maintained examples end directly in `probabilistic_eutt`:
 - finite nested Enum sampling versus a merged sampler;
 - binary rational sampling versus a direct rational coin;
 - the unbounded Von Neumann sampler versus a one-step fair coin;
+- an infinite request/reply service which runs that unbounded sampler between
+  visible events, versus a service using one direct fair sample;
 - the rational Bernoulli factory (including `1/3` to `2/5`) versus a direct
   target coin;
 - the MathComp real-oracle Bernoulli sampler;
@@ -146,6 +148,14 @@ The maintained examples end directly in `probabilistic_eutt`:
 The Von Neumann proof compares independently established complete hitting
 limits, so bounded and unbounded implementations do not share a mirrored
 iteration design in the behavioral relation.
+
+`Examples/InteractiveVonNeumannService.v` additionally demonstrates that
+stable hitting is not a termination-only semantics.  Its two-state
+coinduction candidate alternates between a stable `CoinRequest` head and an
+unbounded AST sampling phase whose limit is coupled at `CoinReply`; each
+reply continuation returns to the original pair of infinite services.  The
+proof explicitly establishes Ret-only support almost everywhere before
+binding the closed sampler into the eventful protocol.
 
 ## Exact no-Prob / ITree boundary
 

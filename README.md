@@ -85,6 +85,23 @@ Theorem von_neumann_third_equivalent_to_fair :
   auweak eq von_neumann_third direct_fair.
 ```
 
+`Examples/InteractiveVonNeumannService.v` lifts this closed sampler into an
+infinite request/reply protocol.  After every `CoinRequest`, the
+implementation runs the unbounded Von Neumann retry loop before emitting
+`CoinReply b`; the specification samples a fair bit directly and emits the
+same reply.  The canonical endpoint
+
+```coq
+Theorem interactive_von_neumann_service_equivalent :
+  probabilistic_eutt eq von_neumann_service direct_fair_service.
+```
+
+is proved with a two-phase `probabilistic_eutt_coinduction` candidate.  It
+therefore checks stable `Vis` transitions, probabilistic successor behavior,
+and an infinite recursive continuation—not merely a final `Ret`
+distribution.  The file also proves that the first implementation sample is
+the biased `1/3,2/3` measure rather than the specification's fair measure.
+
 The same file also provides a parameterized proof stack for arbitrary input
 bias weights `p` and `q`: `von_neumann_correct_of_convergence` isolates the
 model-specific limit obligation, `von_neumann_correct_of_strict_retry`
