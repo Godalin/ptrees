@@ -96,6 +96,31 @@ Qed.
 Definition direct_fair : ptree vnE Enum bool :=
   Prob vn_fair (fun b => Ret b).
 
+(** Event-polymorphic forms of the closed samplers.  Although these programs
+    never emit a visible event, exposing the ambient signature is essential
+    when they are used inside an interactive client.  The historical [vnE]
+    definitions above remain the closed executable API. *)
+Definition vn_step_in {E : Type -> Type} (_ : unit) :
+    ptree E Enum (unit + bool) :=
+  Prob vn_biased_coin (fun b1 =>
+    Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2))).
+
+Definition von_neumann_third_in {E : Type -> Type} : ptree E Enum bool :=
+  PTree.iter vn_step_in tt.
+
+Definition direct_fair_in {E : Type -> Type} : ptree E Enum bool :=
+  Prob vn_fair (fun b => Ret b).
+
+Lemma vn_step_in_closed : @vn_step_in vnE = vn_step.
+Proof. reflexivity. Qed.
+
+Lemma von_neumann_third_in_closed :
+  @von_neumann_third_in vnE = von_neumann_third.
+Proof. reflexivity. Qed.
+
+Lemma direct_fair_in_closed : @direct_fair_in vnE = direct_fair.
+Proof. reflexivity. Qed.
+
 Definition indicator {A} (P : A -> bool) (x : A) : rat :=
   if P x then 1 else 0.
 
