@@ -593,12 +593,10 @@ Theorem stable_hitting_weak_bind {A R}
     (sem_bind hs (frontier_head_bind_front k front)).
 Proof.
   intros Hcofinal Hsource Hfront.
-  apply (proj2 (ptree_primitive_weak_adequate _ _)).
   eapply operational_weak_bind.
   - exact Hcofinal.
-  - apply (proj1 (ptree_primitive_weak_adequate _ _)). exact Hsource.
-  - intro a. apply (proj1 (ptree_primitive_weak_adequate _ _)).
-    exact (Hfront a).
+  - exact Hsource.
+  - exact Hfront.
 Qed.
 
 End PTreeStableHittingBind.

@@ -946,10 +946,8 @@ Theorem probabilistic_eutt_von_neumann_raw_direct :
     von_neumann_third direct_fair.
 Proof.
   eapply probabilistic_eutt_of_hitting_lift.
-  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
-    exact (proj1 operational_von_neumann_raw_ast).
-  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
-    exact (proj1 operational_vn_direct_ast).
+  - exact (proj1 operational_von_neumann_raw_ast).
+  - exact (proj1 operational_vn_direct_ast).
   - exact (operational_vn_raw_heads_lift _).
 Qed.
 
@@ -964,10 +962,8 @@ Theorem probabilistic_eutt_von_neumann_compiled_direct :
     operational_vn_compiled direct_fair.
 Proof.
   eapply probabilistic_eutt_of_hitting_lift.
-  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
-    exact (proj1 operational_vn_compiled_ast).
-  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
-    exact (proj1 operational_vn_direct_ast).
+  - exact (proj1 operational_vn_compiled_ast).
+  - exact (proj1 operational_vn_direct_ast).
   - exact (operational_vn_heads_lift _).
 Qed.
 
