@@ -4,12 +4,7 @@
  (name PTree)
  (package coq-ptree)
  (modules
-  (:standard
-   ;; These experimental clients require a universe-polymorphic PTree to
-   ;; host MathComp measurable kernels.  The MathComp measure and AST layers
-   ;; themselves remain part of the installed theory.
-   \ Examples.VonNeumannMathComp
-   ))
+  :standard)
  (theories
    ExtLib
    ITree
