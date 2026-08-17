@@ -1203,6 +1203,96 @@ Proof.
     repeat split; try reflexivity; assumption.
 Qed.
 
+(** Generator-level unfolding of monadic congruence.  This exposes the
+    complete stable-hitting match directly, which is useful when a larger
+    coinductive context must compose with a completed bind proof. *)
+Lemma probabilistic_eutt_bind_match {A R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2)
+    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A) :
+  probabilistic_eutt RR t1 t2 ->
+  (forall r1 r2, RR r1 r2 ->
+    probabilistic_eutt eq (k1 r1) (k2 r2)) ->
+  stable_hitting_match
+    (@ptree_primitive_kernel E MN MF FI MX A)
+    (@ptree_primitive_kernel E MN MF FI MX A)
+    (@ptree_stable_head_rel E MN A A eq)
+    (probabilistic_eutt_state eq)
+    (observe (PTree.bind t1 k1)) (observe (PTree.bind t2 k2)).
+Proof.
+  intros Hsource Hk. apply probabilistic_eutt_unfold in Hsource.
+  unfold stable_hitting_match in Hsource |- *.
+  destruct Hsource as [Hforward Hbackward]. split.
+  - intros hs1 Hhit1.
+    destruct (stable_hitting_weak_exists
+      (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1))
+      as [source1 Hsource1].
+    destruct (Hforward source1 Hsource1)
+      as [source2 [Hsource2 Hlift]].
+    destruct (stable_hitting_front_choice k1) as [front1 Hfront1].
+    destruct (stable_hitting_front_choice k2) as [front2 Hfront2].
+    assert (Hbound1 : stable_hitting_weak
+      (@ptree_primitive_kernel E MN MF FI MX A)
+      (observe (PTree.bind t1 k1))
+      (sem_bind source1 (frontier_head_bind_front k1 front1))).
+    { eapply stable_hitting_weak_bind;
+        [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
+    assert (Hbound2 : stable_hitting_weak
+      (@ptree_primitive_kernel E MN MF FI MX A)
+      (observe (PTree.bind t2 k2))
+      (sem_bind source2 (frontier_head_bind_front k2 front2))).
+    { eapply stable_hitting_weak_bind;
+        [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
+    exists (sem_bind source2 (frontier_head_bind_front k2 front2)). split.
+    + exact Hbound2.
+    + eapply sem_lift_proper_l.
+      * eapply stable_hitting_weak_unique; [exact Hbound1|exact Hhit1].
+      * eapply sem_lift_bind; [exact Hlift|].
+        intros h1 h2 Hhead. dependent destruction Hhead.
+        -- eapply sem_lift_mono.
+           ++ apply ptree_stable_head_rel_mono.
+              intros s1 s2 Hrel. exact Hrel.
+           ++ apply probabilistic_eutt_state_hitting_lift
+                with (s1 := observe (k1 r1)) (s2 := observe (k2 r2));
+                [exact (Hk r1 r2 H)|exact (Hfront1 r1)|exact (Hfront2 r2)].
+        -- apply sem_lift_ret. constructor. intro x.
+           eapply probabilistic_eutt_bind; [exact (H x)|]. exact Hk.
+  - intros hs2 Hhit2.
+    destruct (stable_hitting_weak_exists
+      (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2))
+      as [source2 Hsource2].
+    destruct (Hbackward source2 Hsource2)
+      as [source1 [Hsource1 Hlift]].
+    destruct (stable_hitting_front_choice k1) as [front1 Hfront1].
+    destruct (stable_hitting_front_choice k2) as [front2 Hfront2].
+    assert (Hbound1 : stable_hitting_weak
+      (@ptree_primitive_kernel E MN MF FI MX A)
+      (observe (PTree.bind t1 k1))
+      (sem_bind source1 (frontier_head_bind_front k1 front1))).
+    { eapply stable_hitting_weak_bind;
+        [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
+    assert (Hbound2 : stable_hitting_weak
+      (@ptree_primitive_kernel E MN MF FI MX A)
+      (observe (PTree.bind t2 k2))
+      (sem_bind source2 (frontier_head_bind_front k2 front2))).
+    { eapply stable_hitting_weak_bind;
+        [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
+    exists (sem_bind source1 (frontier_head_bind_front k1 front1)). split.
+    + exact Hbound1.
+    + eapply sem_lift_proper_r.
+      * eapply stable_hitting_weak_unique; [exact Hbound2|exact Hhit2].
+      * eapply sem_lift_bind; [exact Hlift|].
+        intros h1 h2 Hhead. dependent destruction Hhead.
+        -- eapply sem_lift_mono.
+           ++ apply ptree_stable_head_rel_mono.
+              intros s1 s2 Hrel. exact Hrel.
+           ++ apply probabilistic_eutt_state_hitting_lift
+                with (s1 := observe (k1 r1)) (s2 := observe (k2 r2));
+                [exact (Hk r1 r2 H)|exact (Hfront1 r1)|exact (Hfront2 r2)].
+        -- apply sem_lift_ret. constructor. intro x.
+           eapply probabilistic_eutt_bind; [exact (H x)|]. exact Hk.
+Qed.
+
 End ProbabilisticEuttBindCongruence.
 
 Section ProbabilisticEuttFrontierRule.

@@ -139,6 +139,13 @@ handler is required to be pure.  The regression sends a source event through
 a Tau/Vis-producing first handler and then replaces the intermediate Vis by
 a Prob node in the second handler.
 
+Handlers also support pointwise replacement at the structural baseline.
+`pstructural_interp_handler` proves that structurally related handlers yield
+structurally related interpretations, and
+`free_probabilistic_eutt_interp_handler` exports the canonical endpoint.
+The regression replaces a handler by a non-definitionally-equal version
+containing a monadic redex under Tau.
+
 Pure event renaming now has full behavioral preservation, not merely the
 structural rule above.  `free_translate_approx_forward` and
 `free_translate_approx_backward` account for the administrative Tau by

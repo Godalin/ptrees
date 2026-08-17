@@ -191,6 +191,12 @@ Definition renamed_prob_handler (X : Type) (e : renamedE X) :
   | GetBit => Prob (ret_Enum true) (fun b => Ret b)
   end.
 
+Definition bit_handler_eta (X : Type) (e : sourceE X) :
+    ptree algebraE Enum X :=
+  match e with
+  | AskBit => Tau (PTree.bind (Ret true) (fun b => Ret b))
+  end.
+
 (** Regression: a visible source interaction is replaced by a target-side
     computation, and the heterogeneous continuation relation is retained. *)
 Lemma canonical_interp_structural_regression
@@ -239,6 +245,22 @@ Lemma canonical_interp_compose_regression {R} (t : ptree sourceE Enum R) :
       (fun (X : Type) (e : sourceE X) =>
         PTree.interp renamed_prob_handler (@bit_forward_handler X e)) t).
 Proof. apply free_probabilistic_eutt_interp_compose. Qed.
+
+Lemma bit_handlers_structurally_related X (e : sourceE X) :
+  pstructural eq (@bit_handler X e) (@bit_handler_eta X e).
+Proof.
+  destruct e. apply pstructural_fold. cbn. constructor.
+  apply pstructural_fold. cbn. constructor. reflexivity.
+Qed.
+
+(** Handler replacement is not definitional: the right handler contains an
+    extra monadic redex under Tau. *)
+Lemma canonical_interp_handler_regression {R} (t : ptree sourceE Enum R) :
+  peutt eq (PTree.interp bit_handler t) (PTree.interp bit_handler_eta t).
+Proof.
+  apply free_probabilistic_eutt_interp_handler.
+  exact bit_handlers_structurally_related.
+Qed.
 
 Lemma canonical_translate_preservation_regression {A B}
     (RR : A -> B -> Prop)

@@ -2874,6 +2874,24 @@ Proof.
   apply pstructural_interp_compose.
 Qed.
 
+(** Pointwise structurally equivalent handlers are interchangeable under
+    interpretation. *)
+Theorem free_probabilistic_eutt_interp_handler {R}
+    (handler1 handler2 : forall X, E X -> ptree F MN X)
+    (Hhandler : forall X (e : E X),
+      pstructural eq (@handler1 X e) (@handler2 X e))
+    (t : ptree E MN R) :
+  @probabilistic_eutt F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.interp handler1 t) (PTree.interp handler2 t).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_interp_handler. exact Hhandler.
+Qed.
+
 Theorem free_probabilistic_eutt_translate_structural {G A B}
     (RR : A -> B -> Prop) (rename : forall X, E X -> G X)
     (t1 : ptree E MN A) (t2 : ptree E MN B) :
