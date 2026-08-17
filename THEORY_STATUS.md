@@ -149,13 +149,14 @@ been removed.  `UnifiedPWeak.v`, `UnifiedPWeakTrans.v`,
 `UnifiedProbabilisticPTS.v`, and their relation-specific examples no longer
 exist.
 
-The older `PWeak*` modules are still present as compatibility/proof-
-certificate infrastructure because maintained sampler developments still
-import them (notably Bernoulli, rational, and Von Neumann certificate
-files).  They are not the canonical behavioral endpoint.  Moving them to a
-legacy namespace must therefore follow migration of those imports; a
-directory-only move would merely break clients without simplifying the
-theory.
+The older `PWeak*` modules and their `apweak`, `auweak`, and `auequiv`
+endpoints have now been removed.  Bernoulli, rational, and Von Neumann source
+files retain only program definitions plus analytic convergence/AST
+certificates; their behavioral theorems live in the corresponding
+`Operational*` files and end in `probabilistic_eutt`.  The obsolete
+`ProbabilisticPTS`, `UnifiedFrontierEnumFacts`, finite-bind counterexample,
+and old MathComp factory client were removed with the closed legacy
+dependency subgraph.
 
 ## Semantic regression examples
 
