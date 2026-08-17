@@ -36,6 +36,335 @@ Proof.
     (MX := FreeOmegaMixedMeasureInterface)).
 Qed.
 
+Section TranslateApproximants.
+Context {F : Type -> Type}.
+Variable rename : forall X, E X -> F X.
+
+Definition free_translate_cont {R X}
+    (k : X -> ptree E MN R) (x : X) : ptree F MN R :=
+  PTree.bind (Ret x) (fun y => PTree.translate rename (k y)).
+
+Inductive free_translate_head_rel {R} :
+    frontier_head E MN R -> frontier_head F MN R -> Prop :=
+  | FTHRet r : free_translate_head_rel (FHRet r) (FHRet r)
+  | FTHVis {X} (e : E X) (k : X -> ptree E MN R) :
+      free_translate_head_rel (FHVis e k)
+        (FHVis (@rename X e) (free_translate_cont k)).
+
+Lemma free_translate_approx_forward {R} fuel (t : ptree E MN R) :
+  free_omega_approx free_translate_head_rel
+    (operational_hitting_approx (MF := MF) fuel (observe t))
+    (operational_hitting_approx (MF := MF) (S fuel)
+      (observe (PTree.translate rename t))).
+Proof.
+  revert t. induction fuel as [|fuel IH]; intro t.
+  all: unfold PTree.translate; rewrite observe_interp;
+    remember (observe t) as ot eqn:Hot;
+    destruct ot as [r|t'|X e k|X mu k]; cbn.
+  all: cbn [operational_hitting_approx operational_kernel
+    ptree_primitive_kernel stable_hitting_approx stable_target_approx].
+  - constructor. constructor.
+  - constructor.
+  - constructor. constructor.
+  - eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. constructor.
+  - constructor. constructor.
+  - apply IH.
+  - constructor. constructor.
+  - eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. apply IH.
+Qed.
+
+Lemma free_translate_approx_backward {R} fuel (t : ptree E MN R) :
+  free_omega_approx
+    (fun hF hE => free_translate_head_rel hE hF)
+    (operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.translate rename t)))
+    (operational_hitting_approx (MF := MF) fuel (observe t)).
+Proof.
+  revert t. induction fuel as [|fuel IH]; intro t.
+  all: unfold PTree.translate; rewrite observe_interp;
+    remember (observe t) as ot eqn:Hot;
+    destruct ot as [r|t'|X e k|X mu k]; cbn.
+  all: cbn [operational_hitting_approx operational_kernel
+    ptree_primitive_kernel stable_hitting_approx stable_target_approx].
+  - constructor. constructor.
+  - constructor.
+  - constructor.
+  - eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. constructor.
+  - constructor. constructor.
+  - apply IH.
+  - rewrite stable_target_stableE. constructor. constructor.
+  - eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. apply IH.
+Qed.
+
+Lemma free_translate_hitting_cofinal {R} (t : ptree E MN R) :
+  free_omega_chains_cofinal free_translate_head_rel
+    (fun fuel => operational_hitting_approx (MF := MF) fuel (observe t))
+    (fun fuel => operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.translate rename t))).
+Proof.
+  split.
+  - intro n. exists (S n). apply free_translate_approx_forward.
+  - intro n. exists n. apply free_translate_approx_backward.
+Qed.
+
+Lemma free_translate_canonical_lift {R} (t : ptree E MN R) :
+  free_omega_qlift free_translate_head_rel
+    (FOLub (fun fuel => operational_hitting_approx (MF := MF) fuel
+      (observe t)))
+    (FOLub (fun fuel => operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.translate rename t)))).
+Proof.
+  apply FOQLCofinal. apply free_translate_hitting_cofinal.
+Qed.
+
+Lemma free_translate_hitting_lift {R} (t : ptree E MN R) out out' :
+  @stable_hitting_weak MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface
+    (ptree' E MN R) (frontier_head E MN R)
+    (@ptree_primitive_kernel E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface R) (observe t) out ->
+  @stable_hitting_weak MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmegaInterface
+    (ptree' F MN R) (frontier_head F MN R)
+    (@ptree_primitive_kernel F MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface R)
+    (observe (PTree.translate rename t)) out' ->
+  free_omega_qlift free_translate_head_rel out out'.
+Proof.
+  intros Hout Hout'.
+  unfold stable_hitting_weak in Hout, Hout'.
+  cbn [FreeOmegaObservableSemanticOmegaInterface
+    FreeOmegaObservableSemanticMeasureInterface] in Hout, Hout'.
+  unfold sem_lub in Hout, Hout'.
+  change (@sem_eq MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)) _
+    out
+    (FOLub (fun fuel => stable_hitting_approx
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface
+          (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R) fuel (observe t)))) in Hout.
+  change (@sem_eq MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)) _
+    out'
+    (FOLub (fun fuel => stable_hitting_approx
+      (@ptree_primitive_kernel F MN MF
+        (FreeOmegaObservableSemanticMeasureInterface
+          (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R) fuel
+      (observe (PTree.translate rename t))))) in Hout'.
+  change (free_omega_qlift eq out
+    (FOLub (fun fuel => stable_hitting_approx
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface
+          (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R) fuel (observe t)))) in Hout.
+  change (free_omega_qlift eq out'
+    (FOLub (fun fuel => stable_hitting_approx
+      (@ptree_primitive_kernel F MN MF
+        (FreeOmegaObservableSemanticMeasureInterface
+          (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R) fuel
+      (observe (PTree.translate rename t))))) in Hout'.
+  assert (Hadequate : free_omega_qlift eq
+      (FOLub (fun fuel => stable_hitting_approx
+        (@ptree_primitive_kernel E MN MF
+          (FreeOmegaObservableSemanticMeasureInterface
+            (NI := NI) (NO := NO))
+          FreeOmegaMixedMeasureInterface R) fuel (observe t)))
+      (FOLub (fun fuel => operational_hitting_approx (MF := MF) fuel
+        (observe t)))).
+  { apply FOQLLub. intro fuel.
+    exact (ptree_primitive_hitting_adequate
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (MX := FreeOmegaMixedMeasureInterface) fuel (observe t)). }
+  assert (Hadequate' : free_omega_qlift eq
+      (FOLub (fun fuel => stable_hitting_approx
+        (@ptree_primitive_kernel F MN MF
+          (FreeOmegaObservableSemanticMeasureInterface
+            (NI := NI) (NO := NO))
+          FreeOmegaMixedMeasureInterface R) fuel
+        (observe (PTree.translate rename t))))
+      (FOLub (fun fuel => operational_hitting_approx (MF := MF) fuel
+        (observe (PTree.translate rename t))))).
+  { apply FOQLLub. intro fuel.
+    exact (ptree_primitive_hitting_adequate
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (MX := FreeOmegaMixedMeasureInterface) fuel
+      (observe (PTree.translate rename t))). }
+  eapply FOQLComp with (T := eq) (U := free_translate_head_rel)
+      (mid := FOLub (fun fuel => stable_hitting_approx
+        (@ptree_primitive_kernel E MN MF
+          (FreeOmegaObservableSemanticMeasureInterface
+            (NI := NI) (NO := NO))
+          FreeOmegaMixedMeasureInterface R) fuel (observe t))).
+  - exact Hout.
+  - eapply FOQLComp with (T := free_translate_head_rel) (U := eq)
+        (mid := FOLub (fun fuel => stable_hitting_approx
+          (@ptree_primitive_kernel F MN MF
+            (FreeOmegaObservableSemanticMeasureInterface
+              (NI := NI) (NO := NO))
+            FreeOmegaMixedMeasureInterface R) fuel
+          (observe (PTree.translate rename t)))).
+    + eapply FOQLComp with (T := eq) (U := free_translate_head_rel)
+          (mid := FOLub (fun fuel => operational_hitting_approx (MF := MF)
+            fuel (observe t))).
+      * exact Hadequate.
+      * eapply FOQLComp with (T := free_translate_head_rel) (U := eq)
+            (mid := FOLub (fun fuel => operational_hitting_approx (MF := MF)
+              fuel (observe (PTree.translate rename t)))).
+        -- apply free_translate_canonical_lift.
+        -- apply FOQLSym. eapply FOQLMono; [exact Hadequate'|].
+           intros x y ->. reflexivity.
+        -- intros x z [y [Hxy ->]]. exact Hxy.
+      * intros x z [y [-> Hyz]]. exact Hyz.
+    + apply FOQLSym. eapply FOQLMono; [exact Hout'|].
+      intros x y ->. reflexivity.
+    + intros x z [y [Hxy ->]]. exact Hxy.
+  - intros x z [y [-> Hyz]]. exact Hyz.
+Qed.
+
+End TranslateApproximants.
+
+Section TranslatePreservation.
+Context {F : Type -> Type}.
+Variable rename : forall X, E X -> F X.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+
+Inductive free_translate_bisim_state :
+    ptree' F MN R1 -> ptree' F MN R2 -> Prop :=
+  | FTBSMain (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
+      @probabilistic_eutt E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface R1 R2 RR t1 t2 ->
+      free_translate_bisim_state
+        (observe (PTree.translate rename t1))
+        (observe (PTree.translate rename t2)).
+
+Lemma free_translate_head_comp
+    (hT1 : frontier_head F MN R1) (hT2 : frontier_head F MN R2) :
+  (exists hS2,
+    (exists hS1,
+      free_translate_head_rel (F := F) rename hS1 hT1 /\
+      @ptree_stable_head_rel E MN R1 R2 RR
+        (@probabilistic_eutt_state E MN MF
+          (FreeOmegaObservableSemanticMeasureInterface
+            (NI := NI) (NO := NO))
+          FreeOmegaObservableSemanticMeasureCoreLaws
+          FreeOmegaMixedMeasureInterface
+          FreeOmegaObservableSemanticOmegaInterface R1 R2 RR) hS1 hS2) /\
+    free_translate_head_rel (F := F) rename hS2 hT2) ->
+  @ptree_stable_head_rel F MN R1 R2 RR free_translate_bisim_state hT1 hT2.
+Proof.
+  intros [hS2 [[hS1 [Hmap1 Hsource]] Hmap2]].
+  dependent destruction Hsource.
+  - dependent destruction Hmap1. dependent destruction Hmap2.
+    constructor. exact H.
+  - dependent destruction Hmap1. dependent destruction Hmap2.
+    constructor. intro x.
+    unfold free_translate_cont. rewrite !observe_bind. cbn.
+    constructor. exact (H x).
+Qed.
+
+Theorem free_probabilistic_eutt_translate {t1 : ptree E MN R1}
+    {t2 : ptree E MN R2} :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR t1 t2 ->
+  @probabilistic_eutt F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR
+    (PTree.translate rename t1) (PTree.translate rename t2).
+Proof.
+  intro Hsource. eapply probabilistic_eutt_coinduction with
+    (sim := free_translate_bisim_state).
+  - intros s1 s2 Hsim. dependent destruction Hsim.
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R1) (observe t0)) as [outS1 HS1].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R2) (observe t3)) as [outS2 HS2].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel F MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R1)
+      (observe (PTree.translate rename t0))) as [outT1 HT1].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel F MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R2)
+      (observe (PTree.translate rename t3))) as [outT2 HT2].
+    eapply stable_hitting_match_of_hitting_lift; [exact HT1|exact HT2|].
+    pose proof (probabilistic_eutt_hitting_lift H HS1 HS2) as HsourceLift.
+    pose proof (free_translate_hitting_lift HS1 HT1) as Hmap1.
+    pose proof (free_translate_hitting_lift HS2 HT2) as Hmap2.
+    eapply FOQLComp with
+      (T := fun hT hS => free_translate_head_rel rename hS hT)
+      (U := fun hS1 hT2 => exists hS2,
+        @ptree_stable_head_rel E MN R1 R2 RR
+          (@probabilistic_eutt_state E MN MF
+            (FreeOmegaObservableSemanticMeasureInterface
+              (NI := NI) (NO := NO))
+            FreeOmegaObservableSemanticMeasureCoreLaws
+            FreeOmegaMixedMeasureInterface
+            FreeOmegaObservableSemanticOmegaInterface R1 R2 RR) hS1 hS2 /\
+        free_translate_head_rel rename hS2 hT2)
+      (mid := outS1).
+    + apply FOQLSym. exact Hmap1.
+    + eapply FOQLComp with
+        (T := @ptree_stable_head_rel E MN R1 R2 RR
+          (@probabilistic_eutt_state E MN MF
+            (FreeOmegaObservableSemanticMeasureInterface
+              (NI := NI) (NO := NO))
+            FreeOmegaObservableSemanticMeasureCoreLaws
+            FreeOmegaMixedMeasureInterface
+            FreeOmegaObservableSemanticOmegaInterface R1 R2 RR))
+        (U := free_translate_head_rel rename)
+        (mid := outS2).
+      * exact HsourceLift.
+      * exact Hmap2.
+      * intros hS1 hT2 [hS2 [Hrel Hmap]].
+        exists hS2. split; assumption.
+    + intros hT1 hT2 [hS1 [Hmap1' [hS2 [Hsource' Hmap2']]]].
+      apply free_translate_head_comp.
+      exists hS2. split; [exists hS1; split|]; assumption.
+  - constructor. exact Hsource.
+Qed.
+
+End TranslatePreservation.
+
 Lemma free_operational_hitting_pstructural {A B}
     (RR : A -> B -> Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
   pstructural RR t1 t2 ->

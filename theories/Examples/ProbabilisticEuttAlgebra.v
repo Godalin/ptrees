@@ -166,6 +166,14 @@ Qed.
 Variant sourceE : Type -> Type :=
   | AskBit : sourceE bool.
 
+Variant renamedE : Type -> Type :=
+  | GetBit : renamedE bool.
+
+Definition rename_bit (X : Type) (e : sourceE X) : renamedE X :=
+  match e with
+  | AskBit => GetBit
+  end.
+
 Definition bit_handler (X : Type) (e : sourceE X) : ptree algebraE Enum X :=
   match e with
   | AskBit => Tau (Ret true)
@@ -191,3 +199,23 @@ Lemma canonical_interp_bind_regression {A B}
     (PTree.bind (PTree.interp bit_handler t)
       (fun x => PTree.interp bit_handler (k x))).
 Proof. apply free_probabilistic_eutt_interp_bind. Qed.
+
+Lemma canonical_translate_preservation_regression {A B}
+    (RR : A -> B -> Prop)
+    (t1 : ptree sourceE Enum A) (t2 : ptree sourceE Enum B) :
+  @probabilistic_eutt sourceE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A B RR t1 t2 ->
+  @probabilistic_eutt renamedE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A B RR
+    (PTree.translate rename_bit t1) (PTree.translate rename_bit t2).
+Proof. apply free_probabilistic_eutt_translate. Qed.

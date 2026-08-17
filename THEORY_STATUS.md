@@ -121,10 +121,23 @@ to run arbitrary target-side Tau/Vis/Prob structure before returning.
 morphism equation, and `canonical_interp_bind_regression` checks it at the
 Enum-to-FreeOmega endpoint.
 
+Pure event renaming now has full behavioral preservation, not merely the
+structural rule above.  `free_translate_approx_forward` and
+`free_translate_approx_backward` account for the administrative Tau by
+mutual finite-approximant inclusion.  `free_translate_hitting_cofinal` lifts
+them through the FreeOmega cofinal quotient, and
+`free_translate_hitting_lift` transports arbitrary complete hitting
+witnesses.  `free_probabilistic_eutt_translate` then glues the left transport,
+the source behavioral head coupling, and the right transport inside native
+coinduction.  Its hypothesis is arbitrary `probabilistic_eutt`, not
+`pstructural`.  The regression renames `sourceE` to a distinct `renamedE`
+signature.
+
 This is the first sound handler layer, not yet the full ITree-style claim
 that `interp` preserves arbitrary `probabilistic_eutt`.  In particular,
-handler composition, `interp_iter`, and behavioral preservation remain future
-algebraic laws.
+general effectful-handler composition, `interp_iter`, and effectful `interp`
+preservation remain future algebraic laws; pure `translate` preservation is
+complete.
 
 Dirac elimination is now explicit rather than axiomatized accidentally.
 `SemanticMeasureDiracAELaws` characterizes AE predicates on node Dirac
