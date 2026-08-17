@@ -6,4 +6,5 @@
     imports while that refactoring proceeds. *)
 From PTree.Eq Require Export
   OperationalProbabilisticPTSFreeOmegaBase
+  OperationalProbabilisticPTSFreeOmegaFacts
   OperationalProbabilisticPTSFreeOmegaInterp.
