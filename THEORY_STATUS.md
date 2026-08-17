@@ -114,10 +114,17 @@ canonical FreeOmega endpoint is
 `free_probabilistic_eutt_interp_structural`; canonical unfolding laws and
 `free_probabilistic_eutt_translate_structural` are also exported.
 
+`pstructural_interp_bind` uses a dedicated coinductive closure to track
+handler execution together with bind reassociation.  It permits the handler
+to run arbitrary target-side Tau/Vis/Prob structure before returning.
+`free_probabilistic_eutt_interp_bind` exposes the resulting canonical monad
+morphism equation, and `canonical_interp_bind_regression` checks it at the
+Enum-to-FreeOmega endpoint.
+
 This is the first sound handler layer, not yet the full ITree-style claim
 that `interp` preserves arbitrary `probabilistic_eutt`.  In particular,
-`interp_bind`, handler composition, and `interp_iter` remain future algebraic
-laws.
+handler composition, `interp_iter`, and behavioral preservation remain future
+algebraic laws.
 
 Dirac elimination is now explicit rather than axiomatized accidentally.
 `SemanticMeasureDiracAELaws` characterizes AE predicates on node Dirac

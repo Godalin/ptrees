@@ -183,3 +183,11 @@ Proof.
   intro Hk. apply free_probabilistic_eutt_interp_structural.
   apply pstructural_fold. cbn. constructor. exact Hk.
 Qed.
+
+Lemma canonical_interp_bind_regression {A B}
+    (t : ptree sourceE Enum A) (k : A -> ptree sourceE Enum B) :
+  peutt eq
+    (PTree.interp bit_handler (PTree.bind t k))
+    (PTree.bind (PTree.interp bit_handler t)
+      (fun x => PTree.interp bit_handler (k x))).
+Proof. apply free_probabilistic_eutt_interp_bind. Qed.

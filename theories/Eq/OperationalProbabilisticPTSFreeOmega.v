@@ -2488,6 +2488,22 @@ Proof.
   apply observe_eq_pstructural. exact (observing_observe (interp_prob_ handler mu k)).
 Qed.
 
+Theorem free_probabilistic_eutt_interp_bind {A B}
+    (handler : forall X, E X -> ptree F MN X)
+    (t : ptree E MN A) (k : A -> ptree E MN B) :
+  @probabilistic_eutt F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface B B eq
+    (PTree.interp handler (PTree.bind t k))
+    (PTree.bind (PTree.interp handler t)
+      (fun x => PTree.interp handler (k x))).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_interp_bind.
+Qed.
+
 Theorem free_probabilistic_eutt_translate_structural {G A B}
     (RR : A -> B -> Prop) (rename : forall X, E X -> G X)
     (t1 : ptree E MN A) (t2 : ptree E MN B) :
