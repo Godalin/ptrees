@@ -153,6 +153,15 @@ and direct `PTree.interp` execution are mutually cofinal for every source
 tree and every effectful handler.  The finite schedules are `n` and `2*n`;
 there is no AST, boundedness, or eventlessness premise.
 
+`free_probabilistic_eutt_interp_of_head_lifts` is the corresponding
+kernel-level preservation rule.  It takes one coupling of the completed
+source heads and a coupling of the completed interpreted behavior of every
+related head, then combines them with `FOQLBind` and concludes canonical
+`probabilistic_eutt` for the whole interpreted programs.  Thus the remaining
+fully generic preservation proof is isolated to constructing the guarded
+family of per-head couplings; scheduling and limit composition are no longer
+mixed into that coinductive argument.
+
 Interpretation also commutes with guarded iteration.  The structural proof
 `pstructural_interp_iter` uses one joint coinductive invariant containing the
 main loop, the bind exposed by an unfolding, and the additional bind in
