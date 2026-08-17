@@ -13,7 +13,7 @@ PTree.observe
   -> stable_hitting_approx
   -> stable_hitting_weak (subprobabilistic omega limit)
   -> sem_lift over stable Ret/Vis heads
-  -> probabilistic_eutt / pbisim (greatest fixed point)
+  -> probabilistic_eutt / ≈ₚ (greatest fixed point)
 ```
 
 `Eq/PrimitiveStableHitting.v` contains the syntax-independent absorbing
@@ -152,7 +152,7 @@ iteration design in the behavioral relation.
 The maintained generic theorem deliberately does **not** claim
 
 ```text
-pbisim (embed t) (embed u) <-> eutt t u
+probabilistic_eutt eq (embed t) (embed u) <-> eutt t u
 ```
 
 under the current `SemanticMeasureInterface`.  The converse is not derivable
@@ -161,7 +161,7 @@ interface gives positive coupling constructors and algebraic closure laws,
 but it does not require couplings to separate unequal Dirac measures, reflect
 zero mass, or invert a coupling of stable heads.  An implementation whose
 `sem_lift` relates every pair satisfies the basic positive laws and makes
-`pbisim` universal, while ITree `eutt` is not universal.
+`probabilistic_eutt` universal, while ITree `eutt` is not universal.
 
 An exact backend-qualified correspondence therefore requires a separate
 separation package with at least:

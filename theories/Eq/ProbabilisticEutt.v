@@ -289,8 +289,6 @@ Definition probabilistic_eutt
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) : Prop :=
   probabilistic_eutt_state (observe t1) (observe t2).
 
-Definition pbisim := probabilistic_eutt.
-
 (** PTree-facing specialization of the generic corecursive rule. *)
 Theorem probabilistic_eutt_coinduction
     (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
