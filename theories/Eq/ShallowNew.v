@@ -147,6 +147,35 @@ Lemma unfold_aloop_ {E M A B} (f : A -> ptree E M (A + B)) (x : A) :
     (PTree.bind (f x) (fun lr => PTree.on_left lr l (Tau (PTree.iter f l)))).
 Proof. constructor; reflexivity. Qed.
 
+(** Unfolding equations for event interpretation.  The visible equation
+    exposes the administrative guard inserted by [PTree.interp]. *)
+Lemma interp_ret_ {E F M R}
+    (handler : forall X, E X -> ptree F M X) (r : R) :
+  observing eq (PTree.interp handler (Ret r)) (Ret r).
+Proof. constructor; reflexivity. Qed.
+
+Lemma interp_tau_ {E F M R}
+    (handler : forall X, E X -> ptree F M X)
+    (t : ptree E M R) :
+  observing eq (PTree.interp handler (Tau t))
+    (Tau (PTree.interp handler t)).
+Proof. constructor; reflexivity. Qed.
+
+Lemma interp_vis_ {E F M R X}
+    (handler : forall X, E X -> ptree F M X)
+    (e : E X) (k : X -> ptree E M R) :
+  observing eq (PTree.interp handler (Vis e k))
+    (Tau (PTree.bind (handler _ e)
+      (fun x => PTree.interp handler (k x)))).
+Proof. constructor; reflexivity. Qed.
+
+Lemma interp_prob_ {E F M R X}
+    (handler : forall X, E X -> ptree F M X)
+    (mu : M X) (k : X -> ptree E M R) :
+  observing eq (PTree.interp handler (Prob mu k))
+    (Prob mu (fun x => PTree.interp handler (k x))).
+Proof. constructor; reflexivity. Qed.
+
 
 
 (** Unfolding lemma for [forever]. *)
