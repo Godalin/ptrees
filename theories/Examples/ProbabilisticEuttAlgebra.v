@@ -10,6 +10,7 @@ From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   FreeOmegaMeasure MeasureIterationEnum.
 From PTree.Eq Require Import OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega ProbabilisticEutt PStrong.
+From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -160,6 +161,47 @@ Proof.
   - intros i1 [i2 []] Hi. cbn in Hi. inversion Hi; subst. destruct i2; cbn.
     + apply pstructural_fold. cbn. constructor. constructor. split; reflexivity.
     + apply pstructural_fold. cbn. constructor. constructor. reflexivity.
+  - reflexivity.
+Qed.
+
+Definition retry_next (b : bool) : unit + bool :=
+  if b then inr true else inl tt.
+
+Definition retry_step_left (_ : unit) :
+    ptree algebraE Enum (unit + bool) :=
+  Tau (Prob reg_fair (fun b => Ret (retry_next b))).
+
+Definition retry_step_right (_ : unit) :
+    ptree algebraE Enum (unit + bool) :=
+  Prob reg_fair (fun b => Tau (Ret (retry_next b))).
+
+Lemma retry_steps_behaviorally_related u1 u2 :
+  eq u1 u2 ->
+  peutt (free_iter_behavioral_sum_rel eq eq)
+    (retry_step_left u1) (retry_step_right u2).
+Proof.
+  intros ->. unfold retry_step_left, retry_step_right.
+  eapply probabilistic_eutt_rel_mono with (RR := eq).
+  - intros x y ->. destruct y as [[]|b]; reflexivity.
+  - eapply probabilistic_eutt_trans.
+    + apply probabilistic_eutt_tau_l.
+    + eapply probabilistic_eutt_prob with (XR := eq).
+      * apply sem_lift_refl. intro b. reflexivity.
+      * intros b1 b2 ->. apply probabilistic_eutt_tau_r.
+Qed.
+
+(** Behavioral rather than structural iteration congruence: Tau occurs
+    outside the sample on the left and inside every sampled continuation on
+    the right.  A false sample retries, so the number of loop rounds is
+    unbounded. *)
+Lemma canonical_iter_behavioral_retry_regression :
+  peutt eq
+    (PTree.iter retry_step_left tt)
+    (PTree.iter retry_step_right tt).
+Proof.
+  eapply free_probabilistic_eutt_iter_behavioral_rel with (SI := eq).
+  - intros X e. destruct e.
+  - exact retry_steps_behaviorally_related.
   - reflexivity.
 Qed.
 

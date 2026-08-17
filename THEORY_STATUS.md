@@ -101,7 +101,14 @@ take `pstructural` steps whose sum results contain either related successor
 states or related final results.  The countdown regression uses `nat` versus
 `nat * unit` states and `nat` versus `bool` results.  Congruence is the
 identity-relation instance.  Fusion from merely behavioral (rather than
-structural) step hypotheses, naturality, and codiagonal laws have not yet
+structural) step hypotheses is now available for eventless unbounded loops:
+`free_probabilistic_eutt_iter_behavioral_rel` chooses complete step hitting
+witnesses, couples related steps, iterates those couplings over complete
+rows, and uses the double-omega grid to obtain a heterogeneous loop
+equivalence.  Its steps may have unrelated syntax and finite schedules.  The
+retry regression moves Tau from outside a fair sample into every sampled
+continuation; failed samples retry, so the loop has unboundedly many rounds.
+The eventful generalization, naturality, and codiagonal laws have not yet
 been claimed.
 
 `PTree.interp` and its pure renaming instance `PTree.translate` are guarded

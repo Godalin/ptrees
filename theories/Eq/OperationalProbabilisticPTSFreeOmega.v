@@ -3,6 +3,7 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import List Arith.PeanoNat FunctionalExtensionality Lia
+  Logic.ClassicalChoice
   Program.Equality Morphisms.
 
 From PTree.Core Require Import PTreeDefinitionNew.
@@ -63,8 +64,8 @@ Proof.
     destruct ot as [r|t'|X e k|X mu k]; cbn.
   all: cbn [operational_hitting_approx operational_kernel
     ptree_primitive_kernel stable_hitting_approx stable_target_approx].
-  - constructor. constructor.
   - constructor.
+  - constructor. constructor.
   - constructor. constructor.
   - eapply FOApproxSample with (S := eq).
     + apply sem_lift_refl. intro x. reflexivity.
@@ -2454,6 +2455,181 @@ Qed.
 End DirectUnboundedIterationLimitDenotation.
 
 End DirectUnboundedIteration.
+
+Section EventlessBehavioralIterationFusion.
+Context {I1 I2 R1 R2 : Type}.
+Context `{NCAEIterFusion : @SemanticMeasureCouplingAELaws MN NI}.
+Context `{NCountAEIterFusion : @SemanticMeasureCountableAELaws MN NI}.
+Variable no_event : forall X, E X -> False.
+Variable step1 : I1 -> ptree E MN (I1 + R1).
+Variable step2 : I2 -> ptree E MN (I2 + R2).
+Variable SI : I1 -> I2 -> Prop.
+Variable RR : R1 -> R2 -> Prop.
+
+Definition free_iter_behavioral_sum_rel
+    (x1 : I1 + R1) (x2 : I2 + R2) : Prop :=
+  match x1, x2 with
+  | inl i1, inl i2 => SI i1 i2
+  | inr r1, inr r2 => RR r1 r2
+  | _, _ => False
+  end.
+
+Variable step_out1 : I1 -> MF (frontier_head E MN (I1 + R1)).
+Variable step_out2 : I2 -> MF (frontier_head E MN (I2 + R2)).
+Hypothesis Hstep_out1 : forall i1,
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface (I1 + R1)
+    (observe (step1 i1)) (step_out1 i1).
+Hypothesis Hstep_out2 : forall i2,
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface (I2 + R2)
+    (observe (step2 i2)) (step_out2 i2).
+Hypothesis Hstep_lift : forall i1 i2, SI i1 i2 ->
+  free_omega_qlift
+    (@ptree_stable_head_rel E MN (I1 + R1) (I2 + R2)
+      free_iter_behavioral_sum_rel
+      (@probabilistic_eutt_state E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface
+        (I1 + R1) (I2 + R2) free_iter_behavioral_sum_rel))
+    (step_out1 i1) (step_out2 i2).
+
+Lemma free_iter_complete_rows_behavioral_lift rounds :
+  forall i1 i2, SI i1 i2 ->
+  free_omega_qlift
+    (@ptree_stable_head_rel E MN R1 R2 RR
+      (@probabilistic_eutt_state E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface R1 R2 RR))
+    (free_iter_complete_rows no_event step_out1 rounds i1)
+    (free_iter_complete_rows no_event step_out2 rounds i2).
+Proof.
+  induction rounds as [|rounds IH]; intros i1 i2 Hij.
+  - constructor. constructor.
+  - cbn [free_iter_complete_rows].
+    eapply FOQLBind; [exact (Hstep_lift Hij)|].
+    intros h1 h2 Hhead. dependent destruction Hhead.
+    + destruct r1 as [j1|v1], r2 as [j2|v2];
+        cbn [free_iter_head_next] in H |- *.
+      * apply IH. exact H.
+      * contradiction.
+      * contradiction.
+      * constructor. constructor. constructor. exact H.
+    + exfalso. exact (no_event e).
+Qed.
+
+Theorem free_probabilistic_eutt_iter_behavioral_rel_of_outputs
+    i1 i2 :
+  SI i1 i2 ->
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR
+    (PTree.iter step1 i1) (PTree.iter step2 i2).
+Proof.
+  intro Hij.
+  let rows1 := constr:(fun rounds =>
+    free_iter_complete_rows no_event step_out1 rounds i1) in
+  let rows2 := constr:(fun rounds =>
+    free_iter_complete_rows no_event step_out2 rounds i2) in
+  eapply probabilistic_eutt_of_hitting_lift
+    with (out1 := FOLub rows1) (out2 := FOLub rows2).
+  - eapply free_operational_weak_iter_of_unbounded_steps
+      with (step_out := step_out1).
+    + exact Hstep_out1.
+    + apply free_omega_qlift_refl. intro h. reflexivity.
+  - eapply free_operational_weak_iter_of_unbounded_steps
+      with (step_out := step_out2).
+    + exact Hstep_out2.
+    + apply free_omega_qlift_refl. intro h. reflexivity.
+  - apply FOQLLub. intro rounds.
+    apply free_iter_complete_rows_behavioral_lift. exact Hij.
+Qed.
+
+End EventlessBehavioralIterationFusion.
+
+Section EventlessBehavioralIterationCongruence.
+Context {I1 I2 R1 R2 : Type}.
+Context `{NCAEIterCong : @SemanticMeasureCouplingAELaws MN NI}.
+Context `{NCountAEIterCong : @SemanticMeasureCountableAELaws MN NI}.
+Variable no_event : forall X, E X -> False.
+Variable step1 : I1 -> ptree E MN (I1 + R1).
+Variable step2 : I2 -> ptree E MN (I2 + R2).
+Variable SI : I1 -> I2 -> Prop.
+Variable RR : R1 -> R2 -> Prop.
+
+(** Heterogeneous behavioral fusion for eventless unbounded loops.  Step
+    programs need only be related by the canonical equivalence; their finite
+    schedules and syntax may be unrelated.  Complete step witnesses are
+    chosen extensionally, coupled by step equivalence, iterated by the
+    complete-row construction, and finally lifted through the double omega
+    limit. *)
+Theorem free_probabilistic_eutt_iter_behavioral_rel
+    (Hstep : forall i1 i2, SI i1 i2 ->
+      @probabilistic_eutt E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface
+        (I1 + R1) (I2 + R2)
+        (free_iter_behavioral_sum_rel SI RR)
+        (step1 i1) (step2 i2))
+    i1 i2 :
+  SI i1 i2 ->
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR
+    (PTree.iter step1 i1) (PTree.iter step2 i2).
+Proof.
+  intro Hij.
+  assert (Hexists1 : forall j1, exists out,
+      @operational_weak E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface (I1 + R1)
+        (observe (step1 j1)) out).
+  { intro j1. apply stable_hitting_weak_exists. }
+  assert (Hexists2 : forall j2, exists out,
+      @operational_weak E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface (I2 + R2)
+        (observe (step2 j2)) out).
+  { intro j2. apply stable_hitting_weak_exists. }
+  destruct (choice _ Hexists1) as [out1 Hout1].
+  destruct (choice _ Hexists2) as [out2 Hout2].
+  eapply free_probabilistic_eutt_iter_behavioral_rel_of_outputs
+    with (step_out1 := out1) (step_out2 := out2)
+         (SI := SI) (RR := RR); try eassumption.
+  intros j1 j2 Hrel.
+  change (@sem_lift MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    _ _
+    (@ptree_stable_head_rel E MN (I1 + R1) (I2 + R2)
+      (free_iter_behavioral_sum_rel SI RR)
+      (@probabilistic_eutt_state E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface
+        (I1 + R1) (I2 + R2) (free_iter_behavioral_sum_rel SI RR)))
+    (out1 j1) (out2 j2)).
+  eapply probabilistic_eutt_hitting_lift;
+    [exact (Hstep j1 j2 Hrel)|exact (Hout1 j1)|exact (Hout2 j2)].
+Qed.
+
+End EventlessBehavioralIterationCongruence.
 
 (** The analogous finite obligation for iteration rounds.  This is where
     bounded cost/productivity proofs for concrete samplers belong. *)

@@ -366,12 +366,74 @@ Proof.
   - left. exact Hsim.
 Qed.
 
+(** The return relation itself is generalized outside the fixed-[RR]
+    definition section below. *)
+End ProbabilisticEutt.
+
+Section ProbabilisticEuttRelationMonotonicity.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+
+(** Weakening of the return relation.  This is relational covariance of the
+    canonical endpoint; recursive visible continuations stay in the
+    coinduction candidate while return heads use [Hsub]. *)
+Theorem probabilistic_eutt_rel_mono
+    (RR' : R1 -> R2 -> Prop)
+    (Hsub : forall r1 r2, RR r1 r2 -> RR' r1 r2) :
+  forall t1 t2,
+    @probabilistic_eutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->
+    @probabilistic_eutt E MN MF FI FC MX FO R1 R2 RR' t1 t2.
+Proof.
+  intros t1 t2 Hsource.
+  eapply (@probabilistic_eutt_coinduction E MN MF FI FC MX FO
+    R1 R2 RR'
+    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)).
+  - intros s1 s2 Hrel.
+    apply stable_hitting_bisim_unfold in Hrel.
+    unfold stable_hitting_match in Hrel |- *.
+    destruct Hrel as [Hforward Hbackward]. split.
+    + intros out1 Hhit1.
+      destruct (Hforward out1 Hhit1) as [out2 [Hhit2 Hlift]].
+      exists out2. split; [exact Hhit2|].
+      eapply sem_lift_mono; [|exact Hlift].
+      intros h1 h2 Hhead. dependent destruction Hhead.
+      * constructor. apply Hsub. exact H.
+      * constructor. exact H.
+    + intros out2 Hhit2.
+      destruct (Hbackward out2 Hhit2) as [out1 [Hhit1 Hlift]].
+      exists out1. split; [exact Hhit1|].
+      eapply sem_lift_mono; [|exact Hlift].
+      intros h1 h2 Hhead. dependent destruction Hhead.
+      * constructor. apply Hsub. exact H.
+      * constructor. exact H.
+  - exact Hsource.
+Qed.
+
+End ProbabilisticEuttRelationMonotonicity.
+
+Section ProbabilisticEuttContinuation.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+
 Lemma probabilistic_eutt_unfold t1 t2 :
-  probabilistic_eutt t1 t2 ->
+  probabilistic_eutt RR t1 t2 ->
   stable_hitting_match
     (@ptree_primitive_kernel E MN MF FI MX R1)
     (@ptree_primitive_kernel E MN MF FI MX R2)
-    ptree_stable_head_rel probabilistic_eutt_state
+    (@ptree_stable_head_rel E MN R1 R2 RR)
+    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)
     (observe t1) (observe t2).
 Proof.
   exact (stable_hitting_bisim_unfold (s1 := observe t1)
@@ -382,15 +444,16 @@ Lemma probabilistic_eutt_fold t1 t2 :
   stable_hitting_match
     (@ptree_primitive_kernel E MN MF FI MX R1)
     (@ptree_primitive_kernel E MN MF FI MX R2)
-    ptree_stable_head_rel probabilistic_eutt_state
+    (@ptree_stable_head_rel E MN R1 R2 RR)
+    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)
     (observe t1) (observe t2) ->
-  probabilistic_eutt t1 t2.
+  probabilistic_eutt RR t1 t2.
 Proof.
   exact (stable_hitting_bisim_fold (s1 := observe t1)
     (s2 := observe t2)).
 Qed.
 
-End ProbabilisticEutt.
+End ProbabilisticEuttContinuation.
 
 (** Public notation for the canonical behavioral equivalence.  It lives in
     [type_scope], matching ITree's [≈] convention while retaining a visible
