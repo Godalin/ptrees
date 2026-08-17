@@ -242,6 +242,25 @@ Polymorphic Class MixedMeasureNodeBindLaws@{node node_rep frontier frontier_rep}
         (mixed_bind (sem_bind mu h) k)
 }.
 
+(** Relational Fubini law across the node/frontier boundary.  It is kept
+    optional because commutativity is not a law of every measure-like
+    effect. *)
+Polymorphic Class MixedMeasureCommutativeLaws@{node node_rep frontier frontier_rep}
+    (MN : Type@{node} -> Type@{node_rep})
+    (MF : Type@{frontier} -> Type@{frontier_rep})
+    `{NI : SemanticMeasureInterface MN}
+    `{FI : SemanticMeasureInterface MF}
+    `{MX : MixedMeasureInterface MN MF} := {
+  mixed_lift_exchange : forall
+      {A B : Type@{node}} {C D : Type@{frontier}}
+      (R : C -> D -> Prop) (mu : MN A) (nu : MN B)
+      (k1 : A -> B -> MF C) (k2 : B -> A -> MF D),
+      (forall x y, sem_lift R (k1 x y) (k2 y x)) ->
+      sem_lift R
+        (mixed_bind mu (fun x => mixed_bind nu (k1 x)))
+        (mixed_bind nu (fun y => mixed_bind mu (k2 y)))
+}.
+
 (** Exact almost-everywhere characterization of semantic Dirac measures.
     Positive AE introduction alone is insufficient to discard branches other
     than the selected point when quotienting a sampled Dirac. *)

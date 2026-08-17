@@ -142,6 +142,14 @@ from this exact law, yielding
 `canonical_prob_flatten_regression` checks nested-Prob flattening at the
 maintained Enum-to-FreeOmega canonical endpoint.
 
+Independent sampling interchange is expressed by the optional relational
+Fubini capability `MixedMeasureCommutativeLaws`.  Under that capability,
+`probabilistic_eutt_prob_interchange` exchanges two nested `Prob` nodes with
+dependent continuations by coupling their complete hitting limits.  The law
+is intentionally not part of the base mixed interface: instantiating it for
+FreeOmega requires transporting nested-sample support through a product-node
+coupling, and noncommutative measure-like effects must remain admissible.
+
 ## Probability and missing mass
 
 `Prob/TwoLevelMeasure.v` keeps node measures `MN` separate from behavioral

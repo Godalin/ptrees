@@ -946,6 +946,41 @@ Proof.
     + apply mixed_bind_node_assoc.
 Qed.
 
+(** Exchange two independent sampling nodes.  Commutativity is supplied by
+    the two-level backend and is not assumed by the canonical generator. *)
+Theorem probabilistic_eutt_prob_interchange {R X Y}
+    `{MC : @MixedMeasureCommutativeLaws MN MF NI FI MX}
+    (mu : MN X) (nu : MN Y)
+    (k : X -> Y -> ptree E MN R) :
+  probabilistic_eutt eq
+    (Prob mu (fun x => Prob nu (fun y => k x y)))
+    (Prob nu (fun y => Prob mu (fun x => k x y))).
+Proof.
+  assert (Hexists : forall p : X * Y, exists out,
+      stable_hitting_weak
+        (@ptree_primitive_kernel E MN MF FI MX R)
+        (observe (k (fst p) (snd p))) out).
+  { intro p. apply stable_hitting_weak_exists. }
+  destruct (choice _ Hexists) as [front Hfront].
+  eapply probabilistic_eutt_of_hitting_lift.
+  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros x _. eapply stable_hitting_weak_prob with
+          (Good := fun _ => True).
+      * apply sem_ae_true.
+      * intros y _. exact (Hfront (x, y)).
+  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros y _. eapply stable_hitting_weak_prob with
+          (Good := fun _ => True).
+      * apply sem_ae_true.
+      * intros x _. exact (Hfront (x, y)).
+  - eapply mixed_lift_exchange.
+    intros x y. apply sem_lift_refl. intros h. destruct h.
+    + constructor. reflexivity.
+    + constructor. intro z. apply probabilistic_eutt_refl.
+Qed.
+
 #[global] Instance probabilistic_eutt_prob_Proper {R X} (mu : MN X) :
   Proper (pointwise_relation X (probabilistic_eutt eq) ==>
     probabilistic_eutt eq) (fun k : X -> ptree E MN R => Prob mu k).
