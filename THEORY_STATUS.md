@@ -52,6 +52,7 @@ The following laws are checked:
 - `probabilistic_eutt_bind`;
 - `stable_hitting_bisim_coinduction` and its PTree specialization
   `probabilistic_eutt_coinduction`;
+- `probabilistic_eutt_coinduction_upto` and `stable_hitting_match_vis`;
 - `probabilistic_eutt_of_iter_certificates`;
 - `probabilistic_eutt_preserves_hitting_mass`;
 - `probabilistic_eutt_not_of_mass_mismatch`.
@@ -122,6 +123,17 @@ a case to the behavioral generator.  The formerly duplicated
 `UFNestedIter` constructor has been removed.  Its compatibility use is a
 derived lemma over `UFIter`.
 
+The PTree-facing guarded proof API also provides
+`probabilistic_eutt_coinduction_upto`: recursive obligations may close either
+in the user candidate or in an already established `probabilistic_eutt`.
+`stable_hitting_match_vis` packages a common visible guard, including hitting
+uniqueness and the Dirac head coupling.  On FreeOmega,
+`free_stable_hitting_weak_bind_ret_only` composes an almost-everywhere
+Ret-only closed sampler with an eventful continuation, while
+`free_sem_lift_ret_bind_front` lifts its head coupling through those
+continuations.  These are proof rules over the canonical semantics, not new
+generator cases.
+
 The former public relations `weak_bisim`, `unified_ppts_bisim`,
 `operational_bisim`, `stable_kernel_bisim`, and `primitive_ptree_bisim`, plus
 their proof/native full-abstraction and `BehavioralDomain` machinery, have
@@ -155,7 +167,10 @@ coinduction candidate alternates between a stable `CoinRequest` head and an
 unbounded AST sampling phase whose limit is coupled at `CoinReply`; each
 reply continuation returns to the original pair of infinite services.  The
 proof explicitly establishes Ret-only support almost everywhere before
-binding the closed sampler into the eventful protocol.
+binding the closed sampler into the eventful protocol.  It then uses the
+generic Ret-only bind/lifting rules, guarded `Vis` matching, and coinduction
+up to canonical equivalence; the example no longer reconstructs their
+measure-level witnesses locally.
 
 ## Exact no-Prob / ITree boundary
 

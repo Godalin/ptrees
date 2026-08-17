@@ -96,7 +96,10 @@ Theorem interactive_von_neumann_service_equivalent :
   probabilistic_eutt eq von_neumann_service direct_fair_service.
 ```
 
-is proved with a two-phase `probabilistic_eutt_coinduction` candidate.  It
+is proved with a two-phase `probabilistic_eutt_coinduction_upto` candidate.
+The proof uses the generic Ret-only stable-bind and coupling-lifting rules
+for the closed sampler, then `stable_hitting_match_vis` for the guarded
+request.  It
 therefore checks stable `Vis` transitions, probabilistic successor behavior,
 and an infinite recursive continuation—not merely a final `Ret`
 distribution.  The file also proves that the first implementation sample is
