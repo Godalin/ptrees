@@ -37,6 +37,7 @@ The following laws are checked:
 - `probabilistic_eutt_equivalence` (`refl`, `sym`, and `trans`);
 - `probabilistic_eutt_ret` and `probabilistic_eutt_vis`;
 - `probabilistic_eutt_tau_l` and `probabilistic_eutt_tau_r`;
+- `stable_hitting_weak_prob` and `probabilistic_eutt_prob`;
 - `probabilistic_eutt_bind`;
 - `stable_hitting_bisim_coinduction` and its PTree specialization
   `probabilistic_eutt_coinduction`;
@@ -49,6 +50,19 @@ Bind congruence is proved by a post-fixed candidate containing the existing
 greatest fixed point and bind closure.  Bind is not a generator case.  The
 current theorem consumes the established global/diagonal primitive-fuel
 cofinality theorem as a proof-side scheduling fact.
+
+For the maintained FreeOmega backend this scheduling fact is now
+unconditional, including eventful trees:
+`free_operational_bind_approx_cofinal_all` proves mutual cofinality of the
+global and diagonal chains, and `free_probabilistic_eutt_bind` exposes bind
+as an unconditional monadic congruence.  A visible event is already a stable
+head, so bind only rewrites its continuation and does not need to execute
+through the event.  The former `no_event` theorem remains a compatibility
+corollary of this stronger result.
+
+`probabilistic_eutt_prob` is likewise derived at the hitting layer.  A
+coupling of node measures and related branch bisimulations are composed with
+`mixed_lift_bind`; probability sampling is not a generator constructor.
 
 ## Probability and missing mass
 
