@@ -77,6 +77,49 @@ corollary of this stronger result.
 coupling of node measures and related branch bisimulations are composed with
 `mixed_lift_bind`; probability sampling is not a generator constructor.
 
+## Equational and interpreter API
+
+The canonical FreeOmega endpoint now includes all three Monad equations:
+
+- `free_probabilistic_eutt_bind_ret_l`;
+- `free_probabilistic_eutt_bind_ret_r`;
+- `free_probabilistic_eutt_bind_assoc`.
+
+`probabilistic_eutt` is registered as an `Equivalence`.  Tau, Vis, and fixed
+measure Prob constructors have `Proper` instances, and
+`free_probabilistic_eutt_bind_Proper` supports `setoid_rewrite` under bind.
+`Examples/ProbabilisticEuttAlgebra.v` checks these uses rather than merely
+checking that the theorem names elaborate.
+
+Iteration currently exposes canonical one-step unfolding and a
+syntax-directed congruence:
+`free_probabilistic_eutt_iter_unfold` and
+`free_probabilistic_eutt_iter_structural`.  The latter deliberately requires
+pointwise `pstructural` steps.  Behavioral step congruence, fusion,
+naturality, and codiagonal laws have not yet been claimed.
+
+`PTree.interp` and its pure renaming instance `PTree.translate` are guarded
+corecursive operations.  Interpretation inserts an administrative Tau at a
+handled Vis.  `observe_interp` and the four shallow Ret/Tau/Vis/Prob equations
+make this operational choice explicit.  `pstructural_interp` proves that an
+arbitrary handler preserves structural equivalence, including handlers that
+perform internal or visible target computation before returning.  Its
+canonical FreeOmega endpoint is
+`free_probabilistic_eutt_interp_structural`; canonical unfolding laws and
+`free_probabilistic_eutt_translate_structural` are also exported.
+
+This is the first sound handler layer, not yet the full ITree-style claim
+that `interp` preserves arbitrary `probabilistic_eutt`.  In particular,
+`interp_bind`, handler composition, and `interp_iter` remain future algebraic
+laws.
+
+No generic Dirac-elimination or nested-Prob-flattening theorem is asserted.
+The current positive coupling interface does not by itself identify a node
+sample from a Dirac measure with direct continuation execution, nor identify
+nested node sampling with a monadic product measure.  Those laws require an
+explicit backend quotient/unit/bind capability rather than new cases in the
+behavioral generator.
+
 ## Probability and missing mass
 
 `Prob/TwoLevelMeasure.v` keeps node measures `MN` separate from behavioral
