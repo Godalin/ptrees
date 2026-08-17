@@ -131,6 +131,14 @@ than evaluating a handler in advance.  `canonical_interp_iter_regression`
 checks the law on an eventful loop whose handler inserts an administrative
 Tau.
 
+Sequential effect handlers also compose.  `pstructural_interp_compose`
+tracks the two interpreters, the bind introduced by the first handler, and
+the reassociation needed while the second handler executes;
+`free_probabilistic_eutt_interp_compose` is its canonical endpoint.  Neither
+handler is required to be pure.  The regression sends a source event through
+a Tau/Vis-producing first handler and then replaces the intermediate Vis by
+a Prob node in the second handler.
+
 Pure event renaming now has full behavioral preservation, not merely the
 structural rule above.  `free_translate_approx_forward` and
 `free_translate_approx_backward` account for the administrative Tau by
@@ -145,9 +153,9 @@ signature.
 
 This is the first sound handler layer, not yet the full ITree-style claim
 that `interp` preserves arbitrary `probabilistic_eutt`.  In particular,
-general effectful-handler composition and effectful `interp` preservation
-remain future algebraic laws; `interp_iter` and pure `translate`
-preservation are complete.
+effectful `interp` preservation for arbitrary behaviorally equivalent source
+trees remains a future algebraic law; effectful-handler composition,
+`interp_iter`, and pure `translate` preservation are complete.
 
 Dirac elimination is now explicit rather than axiomatized accidentally.
 `SemanticMeasureDiracAELaws` characterizes AE predicates on node Dirac

@@ -2853,6 +2853,27 @@ Proof.
   apply pstructural_interp_iter.
 Qed.
 
+(** Sequential effect handlers compose, even when either handler performs
+    target-side probabilistic or visible computation. *)
+Theorem free_probabilistic_eutt_interp_compose
+    {G : Type -> Type} {R}
+    (handler1 : forall X, E X -> ptree F MN X)
+    (handler2 : forall X, F X -> ptree G MN X)
+    (t : ptree E MN R) :
+  @probabilistic_eutt G MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.interp handler2 (PTree.interp handler1 t))
+    (PTree.interp
+      (fun (X : Type) (e : E X) =>
+        PTree.interp handler2 (@handler1 X e)) t).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_interp_compose.
+Qed.
+
 Theorem free_probabilistic_eutt_translate_structural {G A B}
     (RR : A -> B -> Prop) (rename : forall X, E X -> G X)
     (t1 : ptree E MN A) (t2 : ptree E MN B) :

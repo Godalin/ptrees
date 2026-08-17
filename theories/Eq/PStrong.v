@@ -589,6 +589,116 @@ Qed.
 
 End PStructuralInterpIter.
 
+Section PStructuralInterpCompose.
+Context {E F G : Type -> Type} {M : Type -> Type}.
+Context {R : Type}.
+Variable handler1 : forall X, E X -> ptree F M X.
+Variable handler2 : forall X, F X -> ptree G M X.
+
+Definition pstructural_interp_compose_handler
+    (X : Type) (e : E X) : ptree G M X :=
+  PTree.interp handler2 (handler1 e).
+
+Inductive pstructural_interp_compose_clo :
+    ptree G M R -> ptree G M R -> Prop :=
+  | PStInterpComposeMain (t : ptree E M R) :
+      pstructural_interp_compose_clo
+        (PTree.interp handler2 (PTree.interp handler1 t))
+        (PTree.interp pstructural_interp_compose_handler t)
+  | PStInterpComposeBind {X} (source : ptree F M X)
+      (k : X -> ptree E M R) :
+      pstructural_interp_compose_clo
+        (PTree.interp handler2
+          (PTree.bind source (fun x => PTree.interp handler1 (k x))))
+        (PTree.bind (PTree.interp handler2 source)
+          (fun x => PTree.interp pstructural_interp_compose_handler (k x)))
+  | PStInterpComposeHandler {X} (source : ptree G M X)
+      {Y} (c : X -> ptree F M Y) (k : Y -> ptree E M R) :
+      pstructural_interp_compose_clo
+        (PTree.bind source (fun x => PTree.interp handler2
+          (PTree.bind (c x) (fun y => PTree.interp handler1 (k y)))))
+        (PTree.bind
+          (PTree.bind source (fun x => PTree.interp handler2 (c x)))
+          (fun y => PTree.interp pstructural_interp_compose_handler (k y)))
+  | PStInterpComposeDone (u v : ptree G M R) :
+      pstructural eq u v -> pstructural_interp_compose_clo u v.
+
+(** Sequential effect handlers compose.  Both handlers are arbitrary
+    PTrees; in particular their execution may contain Tau, Vis, and Prob. *)
+Theorem pstructural_interp_compose (t : ptree E M R) :
+  pstructural eq
+    (PTree.interp handler2 (PTree.interp handler1 t))
+    (PTree.interp pstructural_interp_compose_handler t).
+Proof.
+  assert (Hstrong : forall u v, pstructural_interp_compose_clo u v ->
+      pstructural eq u v).
+  { unfold pstructural. coinduction CH CIH.
+    intros u v Hclo. inversion Hclo; subst.
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.interp handler2 (PTree.interp handler1 t0)))
+        (observe (PTree.interp pstructural_interp_compose_handler t0))).
+      rewrite !observe_interp.
+      remember (observe t0) as ot eqn:Hot.
+      destruct ot as [r|t'|X e k|X mu k]; cbn.
+      + constructor. reflexivity.
+      + constructor. apply CIH. constructor.
+      + constructor. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.interp handler2
+          (PTree.bind source (fun x => PTree.interp handler1 (k x)))))
+        (observe (PTree.bind (PTree.interp handler2 source)
+          (fun x => PTree.interp pstructural_interp_compose_handler (k x))))).
+      rewrite observe_interp. rewrite !observe_bind. rewrite observe_interp.
+      remember (observe source) as os eqn:Hos.
+      destruct os as [x|source'|Y e c|Y mu c]; cbn.
+      + rewrite !observe_interp.
+        remember (observe (k x)) as ok eqn:Hok.
+        destruct ok as [r|k'|Z e' d|Z mu' d]; cbn.
+        * constructor. reflexivity.
+        * constructor. apply CIH. constructor.
+        * constructor. apply CIH. constructor.
+        * constructor=> z. apply CIH. constructor.
+      + constructor. apply CIH. constructor.
+      + constructor. apply CIH. constructor.
+      + constructor=> y. apply CIH. constructor.
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.bind source (fun x => PTree.interp handler2
+          (PTree.bind (c x) (fun y => PTree.interp handler1 (k y))))))
+        (observe (PTree.bind
+          (PTree.bind source (fun x => PTree.interp handler2 (c x)))
+          (fun y => PTree.interp pstructural_interp_compose_handler (k y))))).
+      rewrite !observe_bind.
+      remember (observe source) as os eqn:Hos.
+      destruct os as [x|source'|Z e d|Z mu d]; cbn.
+      + rewrite observe_interp. rewrite !observe_bind. rewrite observe_interp.
+        remember (observe (c x)) as oc eqn:Hoc.
+        destruct oc as [y|c'|W e' d'|W mu' d']; cbn.
+        * rewrite !observe_interp.
+          remember (observe (k y)) as ok eqn:Hok.
+          destruct ok as [r|k'|V e'' q|V mu'' q]; cbn.
+          -- constructor. reflexivity.
+          -- constructor. apply CIH. constructor.
+          -- constructor. apply CIH. constructor.
+          -- constructor=> z. apply CIH. constructor.
+        * constructor. apply CIH. constructor.
+        * constructor. apply CIH. constructor.
+        * constructor=> z. apply CIH. constructor.
+      + constructor. apply CIH. constructor.
+      + constructor=> z. apply CIH. constructor.
+      + constructor=> z. apply CIH. constructor.
+    - unfold pstructural_body.
+      pose proof (pstructural_unfold H) as Hstep.
+      eapply pstructuralF_monotone; [|exact Hstep].
+      intros x y Hxy. apply CIH. constructor. exact Hxy. }
+  apply Hstrong. constructor.
+Qed.
+
+End PStructuralInterpCompose.
+
 Section PStructuralIter.
 Context {E : Type -> Type} {M : Type -> Type}.
 Context {I R : Type}.
