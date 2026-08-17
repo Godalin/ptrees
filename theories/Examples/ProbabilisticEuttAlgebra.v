@@ -7,7 +7,7 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure MeasureIterationEnum.
 From PTree.Eq Require Import OperationalProbabilisticPTS
-  OperationalProbabilisticPTSFreeOmega ProbabilisticEutt.
+  OperationalProbabilisticPTSFreeOmega ProbabilisticEutt PStrong.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -54,3 +54,19 @@ Lemma canonical_bind_setoid_rewrite {A B}
 Proof.
   intro Ht. setoid_rewrite Ht. reflexivity.
 Qed.
+
+Lemma canonical_iter_unfold_regression {I R}
+    (step : I -> ptree algebraE Enum (I + R)) (i : I) :
+  peutt eq (PTree.iter step i)
+    (PTree.bind (step i) (fun lr =>
+      match lr with
+      | inl i' => Tau (PTree.iter step i')
+      | inr r => Ret r
+      end)).
+Proof. apply free_probabilistic_eutt_iter_unfold. Qed.
+
+Lemma canonical_iter_structural_regression {I R}
+    (step1 step2 : I -> ptree algebraE Enum (I + R)) (i : I) :
+  (forall j, pstructural eq (step1 j) (step2 j)) ->
+  peutt eq (PTree.iter step1 i) (PTree.iter step2 i).
+Proof. apply free_probabilistic_eutt_iter_structural. Qed.

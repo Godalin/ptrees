@@ -795,6 +795,43 @@ Proof.
   apply pstructural_bind_assoc.
 Qed.
 
+(** One guarded unfolding of [iter]. *)
+Theorem free_probabilistic_eutt_iter_unfold {I R}
+    (step : I -> ptree E MN (I + R)) (i : I) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.iter step i)
+    (PTree.bind (step i) (fun lr =>
+      match lr with
+      | inl i' => Tau (PTree.iter step i')
+      | inr r => Ret r
+      end)).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply observe_eq_pstructural.
+  exact (observing_observe (unfold_aloop_ step i)).
+Qed.
+
+(** Syntax-directed iter congruence.  The stronger behavioral congruence is
+    intentionally separated: this rule is assumption-free because its step
+    relation is the structural baseline. *)
+Theorem free_probabilistic_eutt_iter_structural {I R}
+    (step1 step2 : I -> ptree E MN (I + R)) (i : I) :
+  (forall j, pstructural eq (step1 j) (step2 j)) ->
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.iter step1 i) (PTree.iter step2 i).
+Proof.
+  intro Hstep. apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_iter. exact Hstep.
+Qed.
+
 #[global] Instance free_probabilistic_eutt_bind_Proper
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
