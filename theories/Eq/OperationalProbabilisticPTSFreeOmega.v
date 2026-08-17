@@ -401,7 +401,6 @@ Definition free_operational_bind_split_approx {A R}
     (operational_head_bind_approx (MF := MF) continuation_fuel k).
 
 Lemma free_operational_bind_split_le_hitting {A R}
-    (no_event : forall X, E X -> False)
     (source_fuel continuation_fuel : nat)
     (t : ptree E MN A) (k : A -> ptree E MN R) :
   free_omega_approx eq
@@ -424,10 +423,26 @@ Proof.
       cbn [free_omega_bind operational_head_bind_approx].
       apply free_omega_approx_refl. intros x. reflexivity.
     + constructor.
-    + exfalso. exact (@no_event X e).
+    + assert (Hvis : observe (Vis e (fun x => PTree.bind (c x) k)) =
+          VisF e (fun x => PTree.bind (c x) k)).
+      { reflexivity. }
+      rewrite Hvis.
+      cbv [operational_hitting_approx operational_kernel sem_bind sem_ret
+        FreeOmegaObservableSemanticMeasureInterface free_omega_bind
+        FreeOmegaSemanticMeasureInterface
+        operational_target_approx stable_hitting_approx
+        ptree_primitive_kernel observe].
+      cbn [observe].
+      rewrite !stable_target_stableE.
+      cbv [sem_ret FreeOmegaObservableSemanticMeasureInterface
+        FreeOmegaSemanticMeasureInterface free_omega_bind].
+      cbn [free_omega_bind operational_head_bind_approx].
+      apply free_omega_approx_refl. intros x. reflexivity.
     + cbv [operational_hitting_approx operational_kernel sem_bind sem_ret
         FreeOmegaObservableSemanticMeasureInterface free_omega_bind
-        operational_target_approx].
+        FreeOmegaSemanticMeasureInterface
+        operational_target_approx stable_hitting_approx
+        ptree_primitive_kernel observe].
       eapply FOApproxSample with (S := eq).
       * apply sem_lift_refl. intros x. reflexivity.
       * intros x y ->. constructor.
@@ -447,7 +462,21 @@ Proof.
           (source_fuel + continuation_fuel)
           (observe (PTree.bind u k)))).
       apply IH.
-    + exfalso. exact (@no_event X e).
+    + assert (Hvis : observe (Vis e (fun x => PTree.bind (c x) k)) =
+          VisF e (fun x => PTree.bind (c x) k)).
+      { reflexivity. }
+      rewrite Hvis.
+      cbv [operational_hitting_approx operational_kernel sem_bind sem_ret
+        FreeOmegaObservableSemanticMeasureInterface free_omega_bind
+        FreeOmegaSemanticMeasureInterface
+        operational_target_approx stable_hitting_approx
+        ptree_primitive_kernel observe].
+      cbn [observe].
+      rewrite !stable_target_stableE.
+      cbv [sem_ret FreeOmegaObservableSemanticMeasureInterface
+        FreeOmegaSemanticMeasureInterface free_omega_bind].
+      cbn [free_omega_bind operational_head_bind_approx].
+      apply free_omega_approx_refl. intros x. reflexivity.
     + change (free_omega_approx eq
         (FOSample mu (fun x => free_operational_bind_split_approx
           source_fuel continuation_fuel (c x) k))
@@ -460,7 +489,6 @@ Proof.
 Qed.
 
 Lemma free_operational_bind_diagonal_le_hitting {A R}
-    (no_event : forall X, E X -> False)
     (fuel : nat) (t : ptree E MN A) (k : A -> ptree E MN R) :
   free_omega_approx eq
     (operational_bind_diagonal_approx (MF := MF) fuel t k)
@@ -472,11 +500,10 @@ Proof.
     (operational_hitting_approx (MF := MF) (2 * fuel)
       (observe (PTree.bind t k)))).
   replace (2 * fuel) with (fuel + fuel) by lia.
-  apply free_operational_bind_split_le_hitting. exact no_event.
+  apply free_operational_bind_split_le_hitting.
 Qed.
 
-Theorem free_operational_bind_approx_cofinal_no_event {A R}
-    (no_event : forall X, E X -> False)
+Theorem free_operational_bind_approx_cofinal_all {A R}
     (t : ptree E MN A) (k : A -> ptree E MN R) :
   free_operational_bind_approx_cofinal t k.
 Proof.
@@ -486,7 +513,26 @@ Proof.
   - intro fuel. exists (2 * fuel).
     eapply free_omega_approx_mono.
     + intros x y Hxy. symmetry. exact Hxy.
-    + apply free_operational_bind_diagonal_le_hitting. exact no_event.
+    + apply free_operational_bind_diagonal_le_hitting.
+Qed.
+
+Corollary free_operational_bind_cofinal_all {A R}
+    (t : ptree E MN A) (k : A -> ptree E MN R) :
+  @operational_bind_cofinal E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A R t k.
+Proof.
+  apply free_operational_bind_cofinal.
+  apply free_operational_bind_approx_cofinal_all.
+Qed.
+
+Theorem free_operational_bind_approx_cofinal_no_event {A R}
+    (no_event : forall X, E X -> False)
+    (t : ptree E MN A) (k : A -> ptree E MN R) :
+  free_operational_bind_approx_cofinal t k.
+Proof.
+  apply free_operational_bind_approx_cofinal_all.
 Qed.
 
 Corollary free_operational_bind_cofinal_no_event {A R}
@@ -850,7 +896,7 @@ Proof.
            try rewrite stable_target_stableE.
            apply free_omega_approx_refl. intros x. reflexivity.
     + eapply free_omega_approx_trans.
-      * apply free_operational_bind_split_le_hitting. exact no_event.
+      * apply free_operational_bind_split_le_hitting.
       * apply free_omega_lift_to_approx.
         eapply free_omega_lift_mono.
         -- intros x y Hyx. symmetry. exact Hyx.
@@ -1499,7 +1545,7 @@ Proof.
         -- cbn [operational_hitting_approx operational_kernel].
            try rewrite stable_target_stableE.
            apply free_omega_approx_refl. intros x. reflexivity.
-    + apply free_operational_bind_split_le_hitting. exact no_event.
+    + apply free_operational_bind_split_le_hitting.
 Qed.
 
 Record free_iter_diagonal_productivity_certificate (i : I) := {
