@@ -832,6 +832,29 @@ Proof.
   apply pstructural_iter. exact Hstep.
 Qed.
 
+(** Heterogeneous relational fusion for iteration.  This subsumes ordinary
+    structural congruence and supports state refinement between loops with
+    different index and result types. *)
+Theorem free_probabilistic_eutt_iter_rel
+    {I1 I2 R1 R2}
+    (SI : I1 -> I2 -> Prop) (RR : R1 -> R2 -> Prop)
+    (f : I1 -> ptree E MN (I1 + R1))
+    (g : I2 -> ptree E MN (I2 + R2))
+    (Hstep : forall i1 i2, SI i1 i2 ->
+      pstructural (pstructural_iter_sum_rel SI RR) (f i1) (g i2))
+    i1 i2 :
+  SI i1 i2 ->
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR
+    (PTree.iter f i1) (PTree.iter g i2).
+Proof.
+  intro Hij. apply free_probabilistic_eutt_of_pstructural.
+  eapply pstructural_iter_rel; eauto.
+Qed.
+
 #[global] Instance free_probabilistic_eutt_bind_Proper
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}

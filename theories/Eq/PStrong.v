@@ -457,6 +457,105 @@ Qed.
 
 End PStructuralIter.
 
+(** Relational iteration fusion.  The two loops may use different state and
+    result types; one related step either produces related successor states
+    or related final results. *)
+Section PStructuralIterRel.
+Context {E : Type -> Type} {M : Type -> Type}.
+Context {I1 I2 R1 R2 : Type}.
+Variable SI : I1 -> I2 -> Prop.
+Variable RR : R1 -> R2 -> Prop.
+Variables (f : I1 -> ptree E M (I1 + R1))
+  (g : I2 -> ptree E M (I2 + R2)).
+
+Inductive pstructural_iter_sum_rel : I1 + R1 -> I2 + R2 -> Prop :=
+  | PStIterSumL i1 i2 : SI i1 i2 ->
+      pstructural_iter_sum_rel (inl i1) (inl i2)
+  | PStIterSumR r1 r2 : RR r1 r2 ->
+      pstructural_iter_sum_rel (inr r1) (inr r2).
+
+Hypothesis Hstep : forall i1 i2, SI i1 i2 ->
+  pstructural pstructural_iter_sum_rel (f i1) (g i2).
+
+Definition pstructural_iter_rel_handler_f
+    (lr : I1 + R1) : ptree E M R1 :=
+  match lr with
+  | inl i => Tau (PTree.iter f i)
+  | inr r => Ret r
+  end.
+
+Definition pstructural_iter_rel_handler_g
+    (lr : I2 + R2) : ptree E M R2 :=
+  match lr with
+  | inl i => Tau (PTree.iter g i)
+  | inr r => Ret r
+  end.
+
+Inductive pstructural_iter_rel_clo :
+    ptree E M R1 -> ptree E M R2 -> Prop :=
+  | PStIterRelC i1 i2 : SI i1 i2 ->
+      pstructural_iter_rel_clo (PTree.iter f i1) (PTree.iter g i2)
+  | PStIterRelBindC t1 t2 :
+      pstructural pstructural_iter_sum_rel t1 t2 ->
+      pstructural_iter_rel_clo
+        (PTree.bind t1 pstructural_iter_rel_handler_f)
+        (PTree.bind t2 pstructural_iter_rel_handler_g)
+  | PStIterRelDoneC t1 t2 :
+      pstructural RR t1 t2 -> pstructural_iter_rel_clo t1 t2.
+
+Theorem pstructural_iter_rel i1 i2 :
+  SI i1 i2 ->
+  pstructural RR (PTree.iter f i1) (PTree.iter g i2).
+Proof.
+  assert (Hstrong : forall u v, pstructural_iter_rel_clo u v ->
+      pstructural RR u v).
+  { unfold pstructural. coinduction CH CIH.
+    intros u v Hclo.
+    inversion Hclo as [j1 j2 Hj|t1 t2 H12|t1 t2 H12]; subst.
+    - unfold pstructural_body.
+      change (pstructuralF RR (` CH)
+        (observe (PTree.iter f j1)) (observe (PTree.iter g j2))).
+      rewrite (observing_observe (unfold_aloop_ f j1)).
+      rewrite (observing_observe (unfold_aloop_ g j2)).
+      rewrite !observe_bind.
+      pose proof (pstructural_unfold (Hstep Hj)) as Hs.
+      dependent destruction Hs; cbn.
+      + rewrite <- x0. rewrite <- x.
+        dependent destruction H. cbn.
+        * constructor. apply CIH. constructor. exact H.
+        * constructor. exact H.
+      + rewrite <- x0. rewrite <- x. constructor. apply CIH.
+        constructor. exact H.
+      + rewrite <- x0. rewrite <- x. constructor=> y. apply CIH.
+        constructor. exact (H y).
+      + rewrite <- x0. rewrite <- x. constructor=> y. apply CIH.
+        constructor. exact (H y).
+    - unfold pstructural_body.
+      change (pstructuralF RR (` CH)
+        (observe (PTree.bind t1 pstructural_iter_rel_handler_f))
+        (observe (PTree.bind t2 pstructural_iter_rel_handler_g))).
+      rewrite !observe_bind.
+      pose proof (pstructural_unfold H12) as Hs.
+      dependent destruction Hs; cbn.
+      + rewrite <- x0. rewrite <- x.
+        dependent destruction H. cbn.
+        * constructor. apply CIH. constructor. exact H.
+        * constructor. exact H.
+      + rewrite <- x0. rewrite <- x. constructor. apply CIH.
+        constructor. exact H.
+      + rewrite <- x0. rewrite <- x. constructor=> y. apply CIH.
+        constructor. exact (H y).
+      + rewrite <- x0. rewrite <- x. constructor=> y. apply CIH.
+        constructor. exact (H y).
+    - unfold pstructural_body.
+      pose proof (pstructural_unfold H12) as Hs.
+      eapply pstructuralF_monotone; [|exact Hs].
+      intros x y Hxy. apply CIH. constructor. exact Hxy. }
+  intro Hij. apply Hstrong. constructor. exact Hij.
+Qed.
+
+End PStructuralIterRel.
+
 (** Strong probabilistic bisimulation over an abstract probabilistic
     relation lifting.  Constructors are matched in lockstep: this relation
     neither discards a one-sided [Tau] nor collapses an internal probability

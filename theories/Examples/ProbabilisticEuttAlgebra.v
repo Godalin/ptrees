@@ -71,6 +71,41 @@ Lemma canonical_iter_structural_regression {I R}
   peutt eq (PTree.iter step1 i) (PTree.iter step2 i).
 Proof. apply free_probabilistic_eutt_iter_structural. Qed.
 
+Definition countdown_nat (n : nat) :
+    ptree algebraE Enum (nat + nat) :=
+  match n with
+  | O => Ret (inr O)
+  | S n' => Ret (inl n')
+  end.
+
+Definition countdown_tagged (s : nat * unit) :
+    ptree algebraE Enum ((nat * unit) + bool) :=
+  match fst s with
+  | O => Ret (inr true)
+  | S n' => Ret (inl (n', tt))
+  end.
+
+Definition countdown_state_rel (n : nat) (s : nat * unit) : Prop :=
+  fst s = n.
+
+Definition countdown_result_rel (n : nat) (b : bool) : Prop :=
+  n = O /\ b = true.
+
+(** A relational-fusion regression: the two loops have different state and
+    result types, so this is not an instance of homogeneous congruence. *)
+Lemma canonical_iter_rel_fusion_regression n :
+  peutt countdown_result_rel
+    (PTree.iter countdown_nat n)
+    (PTree.iter countdown_tagged (n, tt)).
+Proof.
+  eapply free_probabilistic_eutt_iter_rel
+    with (SI := countdown_state_rel).
+  - intros i1 [i2 []] Hi. cbn in Hi. inversion Hi; subst. destruct i2; cbn.
+    + apply pstructural_fold. cbn. constructor. constructor. split; reflexivity.
+    + apply pstructural_fold. cbn. constructor. constructor. reflexivity.
+  - reflexivity.
+Qed.
+
 Variant sourceE : Type -> Type :=
   | AskBit : sourceE bool.
 

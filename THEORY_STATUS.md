@@ -94,9 +94,15 @@ checking that the theorem names elaborate.
 Iteration currently exposes canonical one-step unfolding and a
 syntax-directed congruence:
 `free_probabilistic_eutt_iter_unfold` and
-`free_probabilistic_eutt_iter_structural`.  The latter deliberately requires
-pointwise `pstructural` steps.  Behavioral step congruence, fusion,
-naturality, and codiagonal laws have not yet been claimed.
+`free_probabilistic_eutt_iter_structural`.  The more general
+`free_probabilistic_eutt_iter_rel` is a heterogeneous relational-fusion law:
+the loops may have different state and result types, provided related states
+take `pstructural` steps whose sum results contain either related successor
+states or related final results.  The countdown regression uses `nat` versus
+`nat * unit` states and `nat` versus `bool` results.  Congruence is the
+identity-relation instance.  Fusion from merely behavioral (rather than
+structural) step hypotheses, naturality, and codiagonal laws have not yet
+been claimed.
 
 `PTree.interp` and its pure renaming instance `PTree.translate` are guarded
 corecursive operations.  Interpretation inserts an administrative Tau at a
