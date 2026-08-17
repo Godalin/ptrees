@@ -3,7 +3,7 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import List Arith.PeanoNat FunctionalExtensionality Lia
-  Program.Equality.
+  Program.Equality Morphisms.
 
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
@@ -793,6 +793,36 @@ Theorem free_probabilistic_eutt_bind_assoc {A B C}
 Proof.
   apply free_probabilistic_eutt_of_pstructural.
   apply pstructural_bind_assoc.
+Qed.
+
+#[global] Instance free_probabilistic_eutt_bind_Proper
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
+    {A B} :
+  Proper
+    (@probabilistic_eutt E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A A eq ==>
+      pointwise_relation A
+        (@probabilistic_eutt E MN MF
+          (FreeOmegaObservableSemanticMeasureInterface
+            (NI := NI) (NO := NO))
+          FreeOmegaObservableSemanticMeasureCoreLaws
+          FreeOmegaMixedMeasureInterface
+          FreeOmegaObservableSemanticOmegaInterface B B eq) ==>
+      @probabilistic_eutt E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface B B eq)
+    (@PTree.bind E MN A B).
+Proof.
+  intros t1 t2 Ht k1 k2 Hk.
+  eapply free_probabilistic_eutt_bind with (RR := eq).
+  - exact Ht.
+  - intros x1 x2 ->. exact (Hk x2).
 Qed.
 
 Theorem free_operational_bind_approx_cofinal_no_event {A R}

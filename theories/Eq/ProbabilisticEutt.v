@@ -3,7 +3,7 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import Program.
-From Coq Require Import Logic.ClassicalChoice.
+From Coq Require Import Logic.ClassicalChoice Morphisms.
 From Coinduction Require Import all.
 From mathcomp Require Import ssreflect.
 From PTree.Core Require Import PTreeDefinitionNew.
@@ -841,7 +841,64 @@ Proof.
   apply stable_hitting_match_vis. exact Hk.
 Qed.
 
+#[global] Instance probabilistic_eutt_tau_Proper {R} :
+  Proper (probabilistic_eutt eq ==> probabilistic_eutt eq)
+    (fun t : ptree E MN R => Tau t).
+Proof.
+  intros t1 t2 Ht. eapply probabilistic_eutt_trans.
+  - apply probabilistic_eutt_tau_l.
+  - eapply probabilistic_eutt_trans; [exact Ht|].
+    apply probabilistic_eutt_tau_r.
+Qed.
+
+#[global] Instance probabilistic_eutt_vis_Proper {R X} (e : E X) :
+  Proper (pointwise_relation X (probabilistic_eutt eq) ==>
+    probabilistic_eutt eq)
+    (fun k : X -> ptree E MN R => Vis e k).
+Proof.
+  intros k1 k2 Hk. apply probabilistic_eutt_vis. exact Hk.
+Qed.
+
 End ProbabilisticEuttStructuralLaws.
+
+Section ProbabilisticEuttProbRewriting.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
+
+(** Transport a sampling node across an extensional coupling of its node
+    measures.  This is the canonical measure-equivalence rewriting rule;
+    list or representation equality is neither required nor exposed. *)
+Corollary probabilistic_eutt_prob_measure {R X}
+    (mu1 mu2 : MN X) (k : X -> ptree E MN R) :
+  sem_lift eq mu1 mu2 ->
+  probabilistic_eutt eq (Prob mu1 k) (Prob mu2 k).
+Proof.
+  intro Hmu. eapply probabilistic_eutt_prob with (XR := eq).
+  - exact Hmu.
+  - intros x1 x2 ->. apply probabilistic_eutt_refl.
+Qed.
+
+#[global] Instance probabilistic_eutt_prob_Proper {R X} (mu : MN X) :
+  Proper (pointwise_relation X (probabilistic_eutt eq) ==>
+    probabilistic_eutt eq) (fun k : X -> ptree E MN R => Prob mu k).
+Proof.
+  intros k1 k2 Hk. eapply probabilistic_eutt_prob with (XR := eq).
+  - apply sem_lift_refl. intro x. reflexivity.
+  - intros x1 x2 ->. exact (Hk x2).
+Qed.
+
+End ProbabilisticEuttProbRewriting.
 
 Section ProbabilisticEuttBindCongruence.
 Context {E : Type -> Type} {MN MF : Type -> Type}
