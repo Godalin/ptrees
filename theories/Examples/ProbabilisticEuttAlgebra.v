@@ -102,6 +102,23 @@ Proof.
   apply probabilistic_eutt_prob_flatten.
 Qed.
 
+(** Measure rewriting uses coupling equality, so a split representation of
+    the fair distribution rewrites under [Prob] without list equality. *)
+Lemma canonical_prob_measure_setoid_rewrite {R}
+    (k : bool -> ptree algebraE Enum R) :
+  peutt eq (Prob reg_fair k) (Prob reg_fair_split k).
+Proof.
+  set (sample := fun mu : Enum bool =>
+    (Prob mu k : ptree algebraE Enum R)).
+  change (peutt eq (sample reg_fair) (sample reg_fair_split)).
+  assert (Hsample : Proper
+      (@sem_lift Enum Enum_SemanticMeasureInterface bool bool eq ==>
+       peutt eq) sample).
+  { intros mu1 mu2 Hmu. unfold sample.
+    apply probabilistic_eutt_prob_measure. exact Hmu. }
+  setoid_rewrite reg_split_mass_lift_eq. reflexivity.
+Qed.
+
 Lemma enum_semantic_product_swap {X Y : eqType}
     (mu : Enum X) (nu : Enum Y) :
   @sem_lift Enum Enum_SemanticMeasureInterface _ _

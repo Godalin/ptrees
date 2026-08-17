@@ -98,6 +98,11 @@ measure Prob constructors have `Proper` instances, and
 `free_probabilistic_eutt_fmap_Proper`, and
 `free_probabilistic_eutt_translate_Proper` support `setoid_rewrite` under
 bind, mapping, and event renaming.
+`semantic_lift_eq_Equivalence` registers coupling equality as a setoid, and
+`probabilistic_eutt_prob_measure_Proper` lets `Prob` rewrite both its measure
+and pointwise-related continuation.  The Enum regression rewrites a fair
+distribution to a split-mass representation without requiring list
+equality.
 `Examples/ProbabilisticEuttAlgebra.v` checks these uses rather than merely
 checking that the theorem names elaborate.
 

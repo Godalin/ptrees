@@ -1065,6 +1065,33 @@ Proof.
   - intros x1 x2 ->. exact (Hk x2).
 Qed.
 
+#[global] Instance semantic_lift_eq_Equivalence {X} :
+  Equivalence (@sem_lift MN NI X X eq).
+Proof.
+  split.
+  - intro mu. apply sem_lift_refl. intro x. reflexivity.
+  - intros mu nu H. apply sem_lift_sym in H.
+    eapply sem_lift_mono; [|exact H]. intros x y Hxy. symmetry. exact Hxy.
+  - intros mu nu xi Hmn Hnx.
+    eapply sem_lift_mono with
+      (R := fun x z => exists y, x = y /\ y = z).
+    + intros x z [y [-> ->]]. reflexivity.
+    + eapply sem_lift_comp; eassumption.
+Qed.
+
+#[global] Instance probabilistic_eutt_prob_measure_Proper {R X} :
+  Proper
+    (@sem_lift MN NI X X eq ==>
+      pointwise_relation X (probabilistic_eutt eq) ==>
+      probabilistic_eutt eq)
+    (fun (mu : MN X) (k : X -> ptree E MN R) => Prob mu k).
+Proof.
+  intros mu1 mu2 Hmu k1 k2 Hk.
+  eapply probabilistic_eutt_prob with (XR := eq).
+  - exact Hmu.
+  - intros x1 x2 ->. exact (Hk x2).
+Qed.
+
 End ProbabilisticEuttProbRewriting.
 
 Section ProbabilisticEuttBindCongruence.
