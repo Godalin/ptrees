@@ -22,29 +22,49 @@ Import Enum.
 Import EnumMap.
 Local Open Scope ring_scope.
 
-(** A client requests a fresh bit; the server then publishes its answer.
-    Both events return [unit], so the only observable choice is the reply bit. *)
-Variant coin_serviceE : Type -> Type :=
-  | CoinRequest : coin_serviceE unit
-  | CoinReply (b : bool) : coin_serviceE unit.
+(** Universe-polymorphic singleton used as the response type of protocol
+    events.  Using Coq's monomorphic [unit : Set] here would incorrectly pin
+    the invariant event universe of [PTree] to [Set]. *)
+Polymorphic Variant service_unit@{u} : Type@{u} := ServiceTT.
 
-Definition publish (b : bool) (next : ptree coin_serviceE Enum Empty_set) :
-    ptree coin_serviceE Enum Empty_set :=
+(** A client requests a fresh bit; the server then publishes its answer.
+    Both events have one response, so the only observable choice is the
+    reply bit. *)
+Polymorphic Variant coin_serviceE@{u} : Type@{u} -> Type@{u} :=
+  | CoinRequest : coin_serviceE service_unit@{u}
+  | CoinReply (b : bool) : coin_serviceE service_unit@{u}.
+
+Definition publish (b : bool) (next : ptree coin_serviceE Enum bool) :
+    ptree coin_serviceE Enum bool :=
   Vis (CoinReply b) (fun _ => next).
 
 (** One request is followed by a closed sampler and one visible reply. *)
 Definition serve_round (sampler : ptree coin_serviceE Enum bool)
-    (next : ptree coin_serviceE Enum Empty_set) :
-    ptree coin_serviceE Enum Empty_set :=
+    (next : ptree coin_serviceE Enum bool) :
+    ptree coin_serviceE Enum bool :=
   Vis CoinRequest (fun _ =>
     PTree.bind sampler (fun b => publish b next)).
 
 (** The recursive call is guarded by the request [Vis]. *)
-CoFixpoint von_neumann_service : ptree coin_serviceE Enum Empty_set :=
+CoFixpoint von_neumann_service : ptree coin_serviceE Enum bool :=
   serve_round von_neumann_third_in von_neumann_service.
 
-CoFixpoint direct_fair_service : ptree coin_serviceE Enum Empty_set :=
+CoFixpoint direct_fair_service : ptree coin_serviceE Enum bool :=
   serve_round direct_fair_in direct_fair_service.
+
+Lemma observe_von_neumann_service :
+  observe von_neumann_service =
+  VisF CoinRequest (fun _ =>
+    PTree.bind von_neumann_third_in
+      (fun b => publish b von_neumann_service)).
+Proof. reflexivity. Qed.
+
+Lemma observe_direct_fair_service :
+  observe direct_fair_service =
+  VisF CoinRequest (fun _ =>
+    PTree.bind direct_fair_in
+      (fun b => publish b direct_fair_service)).
+Proof. reflexivity. Qed.
 
 Local Notation MF := (FreeOmega Enum).
 Local Notation service_head :=
@@ -480,12 +500,12 @@ Proof.
   - exact (service_vn_direct_heads_lift _).
 Qed.
 
-(** One service round is a congruence.  The infinite theorem cannot simply
-    invoke this lemma recursively: its [Hnext] premise is exactly the
-    coinductive obligation that the final proof candidate must retain. *)
+(** A finite service round is a congruence.  The infinite theorem below
+    instead retains its recursive continuation in an explicit coinduction
+    candidate. *)
 Lemma serve_round_congruence
     (sampler1 sampler2 : ptree coin_serviceE Enum bool)
-    (next1 next2 : ptree coin_serviceE Enum Empty_set)
+    (next1 next2 : ptree coin_serviceE Enum bool)
     (Hsampler :
       @probabilistic_eutt coin_serviceE Enum MF
         (FreeOmegaObservableSemanticMeasureInterface
@@ -502,7 +522,7 @@ Lemma serve_round_congruence
           (NO := Enum_SemanticOmegaInterface))
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface Empty_set Empty_set eq
+        FreeOmegaObservableSemanticOmegaInterface bool bool eq
         next1 next2) :
   @probabilistic_eutt coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasureInterface
@@ -510,7 +530,7 @@ Lemma serve_round_congruence
       (NO := Enum_SemanticOmegaInterface))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface Empty_set Empty_set eq
+    FreeOmegaObservableSemanticOmegaInterface bool bool eq
     (serve_round sampler1 next1) (serve_round sampler2 next2).
 Proof.
   unfold serve_round.
@@ -521,16 +541,299 @@ Proof.
     apply probabilistic_eutt_vis. intros []. exact Hnext.
 Qed.
 
-Lemma observe_von_neumann_service :
-  observe von_neumann_service =
-  VisF CoinRequest (fun _ =>
-    PTree.bind von_neumann_third_in
-      (fun b => publish b von_neumann_service)).
-Proof. reflexivity. Qed.
+Local Definition service_kernel {R} :
+    ptree' coin_serviceE Enum R ->
+    MF (stable_target (ptree' coin_serviceE Enum R)
+      (frontier_head coin_serviceE Enum R)) :=
+  @ptree_primitive_kernel coin_serviceE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface R.
 
-Lemma observe_direct_fair_service :
-  observe direct_fair_service =
-  VisF CoinRequest (fun _ =>
-    PTree.bind direct_fair_in
-      (fun b => publish b direct_fair_service)).
-Proof. reflexivity. Qed.
+Local Definition service_stable_rel {R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (sim : ptree' coin_serviceE Enum R1 ->
+      ptree' coin_serviceE Enum R2 -> Prop) :=
+  @ptree_stable_head_rel coin_serviceE Enum R1 R2 RR sim.
+
+Local Notation service_hitting :=
+  (@operational_weak coin_serviceE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface
+    bool).
+
+Local Definition service_lift {A B} (R : A -> B -> Prop)
+    (mu : MF A) (nu : MF B) : Prop :=
+  @sem_lift MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    A B R mu nu.
+
+Definition service_ret_head {R}
+    (h : frontier_head coin_serviceE Enum R) : Prop :=
+  match h with
+  | FHRet _ => True
+  | @FHVis _ _ _ X e k => False
+  end.
+
+Definition service_ret_bind_front {A R}
+    (front : A -> MF (frontier_head coin_serviceE Enum R))
+    (h : frontier_head coin_serviceE Enum A) :
+    MF (frontier_head coin_serviceE Enum R) :=
+  match h with
+  | FHRet a => front a
+  | @FHVis _ _ _ X e k => FOZero
+  end.
+
+(** A Ret-only source limit lets bind discard the unreachable visible-head
+    branch.  This prevents arbitrary source continuations from entering the
+    output term and is the right AE interface for closed samplers. *)
+Lemma service_stable_hitting_bind_ret_only
+    (t : ptree coin_serviceE Enum bool)
+    (k : bool -> ptree coin_serviceE Enum bool)
+    (hs : MF (frontier_head coin_serviceE Enum bool))
+    (front : bool ->
+      MF (frontier_head coin_serviceE Enum bool)) :
+  free_omega_ae service_ret_head hs ->
+  service_hitting (observe t) hs ->
+  (forall a, service_hitting (observe (k a)) (front a)) ->
+  service_hitting (observe (PTree.bind t k))
+    (free_omega_bind hs (service_ret_bind_front front)).
+Proof.
+  intros Hret Hsource Hfront.
+  pose (full := free_omega_bind hs (frontier_head_bind_front k front)).
+  assert (Hfull : service_hitting
+      (observe (PTree.bind t k)) full).
+  { unfold full. eapply (stable_hitting_weak_bind
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)).
+    - apply free_operational_bind_cofinal_all.
+    - exact Hsource.
+    - exact Hfront. }
+  assert (Hrestricted :
+      service_lift (fun h1 h2 => h1 = h2 /\ service_ret_head h1)
+        hs hs).
+  { eapply FOQLAERestrict with
+      (T := eq) (P := service_ret_head) (Q := service_ret_head).
+    - apply free_omega_qlift_refl. intro h. reflexivity.
+    - exact Hret.
+    - exact Hret.
+    - intros h1 h2 [-> [H1 H2]]. split; [reflexivity|exact H1]. }
+  assert (Houtputs : service_lift eq full
+      (free_omega_bind hs (service_ret_bind_front front))).
+  { unfold full.
+    eapply FOQLBind; [exact Hrestricted|].
+    intros h1 h2 [-> Hret1].
+    destruct h2 as [a|X e c]; [|contradiction].
+    cbn [frontier_head_bind_front service_ret_bind_front].
+    apply free_omega_qlift_refl. intro h. reflexivity. }
+  unfold operational_weak, stable_hitting_weak in Hfull |- *.
+  eapply FOQLComp with (T := eq) (U := eq) (mid := full).
+  - apply FOQLSym. eapply FOQLMono; [exact Houtputs|].
+    intros x y ->. reflexivity.
+  - exact Hfull.
+  - intros x z [y [-> ->]]. reflexivity.
+Qed.
+
+Definition vn_after_request : ptree coin_serviceE Enum bool :=
+  PTree.bind von_neumann_third_in
+    (fun b => publish b von_neumann_service).
+
+Definition direct_after_request : ptree coin_serviceE Enum bool :=
+  PTree.bind direct_fair_in
+    (fun b => publish b direct_fair_service).
+
+Definition vn_reply_front (b : bool) :
+    MF (frontier_head coin_serviceE Enum bool) :=
+  sem_ret (FHVis (CoinReply b)
+    (fun _ => von_neumann_service)).
+
+Definition direct_reply_front (b : bool) :
+    MF (frontier_head coin_serviceE Enum bool) :=
+  sem_ret (FHVis (CoinReply b)
+    (fun _ => direct_fair_service)).
+
+Local Opaque von_neumann_service direct_fair_service
+  service_vn_heads service_direct_heads.
+
+Definition vn_after_request_heads :
+    MF (frontier_head coin_serviceE Enum bool) :=
+  free_omega_bind service_vn_heads
+    (service_ret_bind_front vn_reply_front).
+
+Definition direct_after_request_heads :
+    MF (frontier_head coin_serviceE Enum bool) :=
+  free_omega_bind service_direct_heads
+    (service_ret_bind_front direct_reply_front).
+
+Lemma vn_after_request_weak :
+  service_hitting
+    (observe vn_after_request) vn_after_request_heads.
+Proof.
+  unfold vn_after_request, vn_after_request_heads.
+  eapply service_stable_hitting_bind_ret_only.
+  - exact service_vn_heads_ret_only.
+  - exact service_vn_weak.
+  - intro b. unfold publish, vn_reply_front.
+    apply (stable_hitting_weak_vis
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)).
+Qed.
+
+Lemma direct_after_request_weak :
+  service_hitting
+    (observe direct_after_request) direct_after_request_heads.
+Proof.
+  unfold direct_after_request, direct_after_request_heads.
+  eapply service_stable_hitting_bind_ret_only.
+  - exact service_direct_heads_ret_only.
+  - exact (proj1 service_direct_fair_ast).
+  - intro b. unfold publish, direct_reply_front.
+    apply (stable_hitting_weak_vis
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)).
+Qed.
+
+(** The equivalence below is not structural reflexivity.  Immediately after
+    the request, the implementation's first primitive sample is the biased
+    [1/3,2/3] coin, whereas the specification samples [1/2,1/2]. *)
+Lemma service_first_sampling_measure_not_direct :
+  vn_biased_coin <> vn_fair.
+Proof.
+  intro Heq.
+  have Hmass := f_equal
+    (fun mu => enum_expect
+      (fun b => if b then (0 : rat) else (1 : rat)) mu) Heq.
+  cbn [vn_biased_coin vn_fair] in Hmass.
+  vm_compute in Hmass. discriminate.
+Qed.
+
+Definition interactive_service_sim
+    (s1 s2 : ptree' coin_serviceE Enum bool) : Prop :=
+  (s1 = observe von_neumann_service /\
+    s2 = observe direct_fair_service) \/
+  (s1 = observe vn_after_request /\
+    s2 = observe direct_after_request).
+
+Lemma ISSRoot : interactive_service_sim
+    (observe von_neumann_service) (observe direct_fair_service).
+Proof. left. split; reflexivity. Qed.
+
+Lemma ISSAfterRequest : interactive_service_sim
+    (observe vn_after_request) (observe direct_after_request).
+Proof. right. split; reflexivity. Qed.
+
+Lemma after_request_heads_lift :
+  service_lift (service_stable_rel eq interactive_service_sim)
+    vn_after_request_heads direct_after_request_heads.
+Proof.
+  unfold service_lift, vn_after_request_heads, direct_after_request_heads.
+  eapply FOQLBind.
+  - exact (service_vn_direct_heads_lift (fun _ _ => False)).
+  - intros h1 h2 Hhead. inversion Hhead; subst; clear Hhead.
+    + cbn [service_ret_bind_front].
+      unfold vn_reply_front, direct_reply_front.
+      apply FOQLStructural. apply FOLRet. apply FHRVis. intros [].
+      exact ISSRoot.
+    + cbn [service_ret_bind_front]. apply FOQLStructural. constructor.
+Qed.
+
+Lemma interactive_service_sim_postfixed :
+  forall s1 s2, interactive_service_sim s1 s2 ->
+    @stable_hitting_match MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaObservableSemanticOmegaInterface
+      (ptree' coin_serviceE Enum bool) (ptree' coin_serviceE Enum bool)
+      service_head service_head service_kernel service_kernel
+      (@service_stable_rel bool bool eq)
+      interactive_service_sim s1 s2.
+Proof.
+  intros s1 s2 [[-> ->]|[-> ->]].
+  - rewrite observe_von_neumann_service observe_direct_fair_service.
+    unfold stable_hitting_match. split.
+    + intros out1 Hhit1.
+      exists (@sem_ret MF
+        (FreeOmegaObservableSemanticMeasureInterface
+          (NI := Enum_SemanticMeasureInterface)
+          (NO := Enum_SemanticOmegaInterface)) _
+        (FHVis CoinRequest (fun _ => direct_after_request))). split.
+      * apply (stable_hitting_weak_vis
+          (FI := FreeOmegaObservableSemanticMeasureInterface)
+          (FO := FreeOmegaObservableSemanticOmegaInterface)
+          CoinRequest (fun _ => direct_after_request)).
+      * eapply sem_lift_proper_l.
+        -- eapply (stable_hitting_weak_unique
+             (FI := FreeOmegaObservableSemanticMeasureInterface)
+             (FO := FreeOmegaObservableSemanticOmegaInterface));
+             [exact (stable_hitting_weak_vis
+                (FI := FreeOmegaObservableSemanticMeasureInterface)
+                (FO := FreeOmegaObservableSemanticOmegaInterface)
+                CoinRequest (fun _ => vn_after_request))
+             |exact Hhit1].
+        -- apply FOQLStructural. apply FOLRet. apply FHRVis. intros [].
+           exact ISSAfterRequest.
+    + intros out2 Hhit2.
+      exists (@sem_ret MF
+        (FreeOmegaObservableSemanticMeasureInterface
+          (NI := Enum_SemanticMeasureInterface)
+          (NO := Enum_SemanticOmegaInterface)) _
+        (FHVis CoinRequest (fun _ => vn_after_request))). split.
+      * apply (stable_hitting_weak_vis
+          (FI := FreeOmegaObservableSemanticMeasureInterface)
+          (FO := FreeOmegaObservableSemanticOmegaInterface)
+          CoinRequest (fun _ => vn_after_request)).
+      * eapply sem_lift_proper_r.
+        -- eapply (stable_hitting_weak_unique
+             (FI := FreeOmegaObservableSemanticMeasureInterface)
+             (FO := FreeOmegaObservableSemanticOmegaInterface));
+             [exact (stable_hitting_weak_vis
+                (FI := FreeOmegaObservableSemanticMeasureInterface)
+                (FO := FreeOmegaObservableSemanticOmegaInterface)
+                CoinRequest (fun _ => direct_after_request))
+             |exact Hhit2].
+        -- apply FOQLStructural. apply FOLRet. apply FHRVis. intros [].
+           exact ISSAfterRequest.
+  - unfold stable_hitting_match. split.
+    + intros out1 Hhit1. exists direct_after_request_heads. split.
+      * exact direct_after_request_weak.
+      * eapply sem_lift_proper_l.
+        -- eapply stable_hitting_weak_unique;
+             [exact vn_after_request_weak|exact Hhit1].
+        -- exact after_request_heads_lift.
+    + intros out2 Hhit2. exists vn_after_request_heads. split.
+      * exact vn_after_request_weak.
+      * eapply sem_lift_proper_r.
+        -- eapply stable_hitting_weak_unique;
+             [exact direct_after_request_weak|exact Hhit2].
+        -- exact after_request_heads_lift.
+Qed.
+
+Theorem interactive_von_neumann_service_equivalent :
+  @probabilistic_eutt coin_serviceE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    von_neumann_service direct_fair_service.
+Proof.
+  eapply probabilistic_eutt_coinduction
+    with (sim := interactive_service_sim).
+  - exact interactive_service_sim_postfixed.
+  - exact ISSRoot.
+Qed.
+
+(** This is an infinite visible behavior, not a terminating sampler theorem:
+    both roots expose [CoinRequest], both replies recurse to the original
+    service, and the proof above closes that recursive continuation only via
+    [probabilistic_eutt_coinduction].  The implementation nevertheless uses
+    the genuinely unbounded AST certificate [service_von_neumann_ast] between
+    every request and reply. *)
