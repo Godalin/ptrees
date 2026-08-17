@@ -527,6 +527,95 @@ Proof.
   apply free_operational_bind_approx_cofinal_all.
 Qed.
 
+Definition frontier_head_is_ret {R}
+    (h : frontier_head E MN R) : Prop :=
+  match h with
+  | FHRet _ => True
+  | @FHVis _ _ _ X e k => False
+  end.
+
+Definition frontier_head_ret_bind_front {A R}
+    (front : A -> MF (frontier_head E MN R))
+    (h : frontier_head E MN A) : MF (frontier_head E MN R) :=
+  match h with
+  | FHRet a => front a
+  | @FHVis _ _ _ X e k => FOZero
+  end.
+
+(** If the complete source behavior is almost everywhere a return head,
+    bind may discard the unreachable visible-head branch.  This is the
+    generic composition rule needed when a closed sampler is embedded in an
+    eventful client. *)
+Theorem free_stable_hitting_weak_bind_ret_only
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
+    {A R}
+    (t : ptree E MN A) (k : A -> ptree E MN R)
+    (hs : MF (frontier_head E MN A))
+    (front : A -> MF (frontier_head E MN R)) :
+  free_omega_ae frontier_head_is_ret hs ->
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A (observe t) hs ->
+  (forall a,
+    @operational_weak E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface R
+      (observe (k a)) (front a)) ->
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R
+    (observe (PTree.bind t k))
+    (free_omega_bind hs (frontier_head_ret_bind_front front)).
+Proof.
+  intros Hret Hsource Hfront.
+  pose (full :=
+    free_omega_bind hs (frontier_head_bind_front k front)).
+  assert (Hfull :
+      @operational_weak E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface R
+        (observe (PTree.bind t k)) full).
+  { unfold full. eapply (stable_hitting_weak_bind
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)).
+    - apply free_operational_bind_cofinal_all.
+    - exact Hsource.
+    - exact Hfront. }
+  assert (Hrestricted :
+      @sem_lift MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        _ _ (fun h1 h2 => h1 = h2 /\ frontier_head_is_ret h1)
+        hs hs).
+  { eapply FOQLAERestrict with
+      (T := eq) (P := frontier_head_is_ret)
+      (Q := frontier_head_is_ret).
+    - apply free_omega_qlift_refl. intro h. reflexivity.
+    - exact Hret.
+    - exact Hret.
+    - intros h1 h2 [-> [H1 H2]]. split; [reflexivity|exact H1]. }
+  assert (Houtputs :
+      @sem_lift MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        _ _ eq full
+        (free_omega_bind hs (frontier_head_ret_bind_front front))).
+  { unfold full. eapply FOQLBind; [exact Hrestricted|].
+    intros h1 h2 [-> Hret1].
+    destruct h2 as [a|X e c]; [|contradiction].
+    cbn [frontier_head_bind_front frontier_head_ret_bind_front].
+    apply free_omega_qlift_refl. intro h. reflexivity. }
+  unfold operational_weak, stable_hitting_weak in Hfull |- *.
+  eapply FOQLComp with (T := eq) (U := eq) (mid := full).
+  - apply FOQLSym. eapply FOQLMono; [exact Houtputs|].
+    intros x y ->. reflexivity.
+  - exact Hfull.
+  - intros x z [y [-> ->]]. reflexivity.
+Qed.
+
 (** Unconditional monadic congruence for the maintained unbounded backend.
     The generic theorem keeps its local scheduling premise; FreeOmega now
     discharges it for every eventful PTree. *)

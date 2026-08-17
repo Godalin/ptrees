@@ -574,72 +574,6 @@ Local Definition service_lift {A B} (R : A -> B -> Prop)
       (NO := Enum_SemanticOmegaInterface))
     A B R mu nu.
 
-Definition service_ret_head {R}
-    (h : frontier_head coin_serviceE Enum R) : Prop :=
-  match h with
-  | FHRet _ => True
-  | @FHVis _ _ _ X e k => False
-  end.
-
-Definition service_ret_bind_front {A R}
-    (front : A -> MF (frontier_head coin_serviceE Enum R))
-    (h : frontier_head coin_serviceE Enum A) :
-    MF (frontier_head coin_serviceE Enum R) :=
-  match h with
-  | FHRet a => front a
-  | @FHVis _ _ _ X e k => FOZero
-  end.
-
-(** A Ret-only source limit lets bind discard the unreachable visible-head
-    branch.  This prevents arbitrary source continuations from entering the
-    output term and is the right AE interface for closed samplers. *)
-Lemma service_stable_hitting_bind_ret_only
-    (t : ptree coin_serviceE Enum bool)
-    (k : bool -> ptree coin_serviceE Enum bool)
-    (hs : MF (frontier_head coin_serviceE Enum bool))
-    (front : bool ->
-      MF (frontier_head coin_serviceE Enum bool)) :
-  free_omega_ae service_ret_head hs ->
-  service_hitting (observe t) hs ->
-  (forall a, service_hitting (observe (k a)) (front a)) ->
-  service_hitting (observe (PTree.bind t k))
-    (free_omega_bind hs (service_ret_bind_front front)).
-Proof.
-  intros Hret Hsource Hfront.
-  pose (full := free_omega_bind hs (frontier_head_bind_front k front)).
-  assert (Hfull : service_hitting
-      (observe (PTree.bind t k)) full).
-  { unfold full. eapply (stable_hitting_weak_bind
-      (FI := FreeOmegaObservableSemanticMeasureInterface)
-      (FO := FreeOmegaObservableSemanticOmegaInterface)).
-    - apply free_operational_bind_cofinal_all.
-    - exact Hsource.
-    - exact Hfront. }
-  assert (Hrestricted :
-      service_lift (fun h1 h2 => h1 = h2 /\ service_ret_head h1)
-        hs hs).
-  { eapply FOQLAERestrict with
-      (T := eq) (P := service_ret_head) (Q := service_ret_head).
-    - apply free_omega_qlift_refl. intro h. reflexivity.
-    - exact Hret.
-    - exact Hret.
-    - intros h1 h2 [-> [H1 H2]]. split; [reflexivity|exact H1]. }
-  assert (Houtputs : service_lift eq full
-      (free_omega_bind hs (service_ret_bind_front front))).
-  { unfold full.
-    eapply FOQLBind; [exact Hrestricted|].
-    intros h1 h2 [-> Hret1].
-    destruct h2 as [a|X e c]; [|contradiction].
-    cbn [frontier_head_bind_front service_ret_bind_front].
-    apply free_omega_qlift_refl. intro h. reflexivity. }
-  unfold operational_weak, stable_hitting_weak in Hfull |- *.
-  eapply FOQLComp with (T := eq) (U := eq) (mid := full).
-  - apply FOQLSym. eapply FOQLMono; [exact Houtputs|].
-    intros x y ->. reflexivity.
-  - exact Hfull.
-  - intros x z [y [-> ->]]. reflexivity.
-Qed.
-
 Definition vn_after_request : ptree coin_serviceE Enum bool :=
   PTree.bind von_neumann_third_in
     (fun b => publish b von_neumann_service).
@@ -664,19 +598,19 @@ Local Opaque von_neumann_service direct_fair_service
 Definition vn_after_request_heads :
     MF (frontier_head coin_serviceE Enum bool) :=
   free_omega_bind service_vn_heads
-    (service_ret_bind_front vn_reply_front).
+    (frontier_head_ret_bind_front vn_reply_front).
 
 Definition direct_after_request_heads :
     MF (frontier_head coin_serviceE Enum bool) :=
   free_omega_bind service_direct_heads
-    (service_ret_bind_front direct_reply_front).
+    (frontier_head_ret_bind_front direct_reply_front).
 
 Lemma vn_after_request_weak :
   service_hitting
     (observe vn_after_request) vn_after_request_heads.
 Proof.
   unfold vn_after_request, vn_after_request_heads.
-  eapply service_stable_hitting_bind_ret_only.
+  eapply free_stable_hitting_weak_bind_ret_only.
   - exact service_vn_heads_ret_only.
   - exact service_vn_weak.
   - intro b. unfold publish, vn_reply_front.
@@ -690,7 +624,7 @@ Lemma direct_after_request_weak :
     (observe direct_after_request) direct_after_request_heads.
 Proof.
   unfold direct_after_request, direct_after_request_heads.
-  eapply service_stable_hitting_bind_ret_only.
+  eapply free_stable_hitting_weak_bind_ret_only.
   - exact service_direct_heads_ret_only.
   - exact (proj1 service_direct_fair_ast).
   - intro b. unfold publish, direct_reply_front.
@@ -736,11 +670,11 @@ Proof.
   eapply FOQLBind.
   - exact (service_vn_direct_heads_lift (fun _ _ => False)).
   - intros h1 h2 Hhead. inversion Hhead; subst; clear Hhead.
-    + cbn [service_ret_bind_front].
+    + cbn [frontier_head_ret_bind_front].
       unfold vn_reply_front, direct_reply_front.
       apply FOQLStructural. apply FOLRet. apply FHRVis. intros [].
       exact ISSRoot.
-    + cbn [service_ret_bind_front]. apply FOQLStructural. constructor.
+    + cbn [frontier_head_ret_bind_front]. apply FOQLStructural. constructor.
 Qed.
 
 Lemma interactive_service_sim_postfixed :
