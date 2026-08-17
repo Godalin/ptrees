@@ -328,6 +328,18 @@ Proof.
   apply pstructural_fold. cbn. constructor. exact Hk.
 Qed.
 
+(** The direct interpreter fuel chain is cofinal with the semantic
+    source-head/handler diagonal for every source tree. *)
+Lemma canonical_interp_cofinal_regression {R}
+    (t : ptree sourceE Enum R) :
+  @operational_interp_cofinal sourceE algebraE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R bit_handler t.
+Proof. apply free_operational_interp_cofinal_all. Qed.
+
 Lemma canonical_interp_bind_regression {A B}
     (t : ptree sourceE Enum A) (k : A -> ptree sourceE Enum B) :
   peutt eq

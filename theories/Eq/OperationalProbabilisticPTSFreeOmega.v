@@ -1150,6 +1150,166 @@ Proof.
   apply free_operational_bind_approx_cofinal_all.
 Qed.
 
+Section FreeOperationalInterpCofinality.
+Context {F : Type -> Type}.
+Variable handler : forall X, E X -> ptree F MN X.
+
+Definition free_operational_interp_approx_cofinal {R}
+    (t : ptree E MN R) : Prop :=
+  free_omega_chains_cofinal eq
+    (fun fuel => operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.interp handler t)))
+    (fun fuel => operational_interp_diagonal_approx fuel handler t).
+
+Lemma free_operational_interp_hitting_le_diagonal {R}
+    (fuel : nat) (t : ptree E MN R) :
+  free_omega_approx eq
+    (operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.interp handler t)))
+    (operational_interp_diagonal_approx fuel handler t).
+Proof.
+  revert t. induction fuel as [|fuel IH]; intro t.
+  all: unfold operational_interp_diagonal_approx;
+    rewrite observe_interp; remember (observe t) as ot eqn:Hot;
+    destruct ot as [r|u|X e k|X mu k].
+  - cbn [operational_hitting_approx operational_kernel
+      operational_interp_head_approx operational_interp_head_tree
+      free_omega_bind].
+    apply free_omega_approx_refl. intro h. reflexivity.
+  - constructor.
+  - constructor.
+  - change (free_omega_approx eq
+      (FOSample mu (fun _ : X => FOZero))
+      (free_omega_bind (FOSample mu (fun _ : X => FOZero))
+        (operational_interp_head_approx (MF := MF) (R := R) 0 handler))).
+    cbn [free_omega_bind]. eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. constructor.
+  - cbn [operational_hitting_approx operational_kernel
+      operational_interp_head_approx operational_interp_head_tree
+      free_omega_bind].
+    apply free_omega_approx_refl. intro h. reflexivity.
+  - cbn [operational_hitting_approx operational_kernel].
+    eapply free_omega_approx_trans; [apply IH|].
+    eapply free_omega_approx_bind with (R := eq) (T := eq).
+    + apply free_omega_approx_refl. intro h. reflexivity.
+    + intros h1 h2 ->. apply free_operational_hitting_mono. lia.
+  - cbn [operational_hitting_approx operational_kernel
+      operational_interp_head_approx free_omega_bind].
+    apply free_omega_approx_refl. intro h. reflexivity.
+  - change (free_omega_approx eq
+      (FOSample mu (fun x => operational_hitting_approx (MF := MF)
+        fuel (observe (PTree.interp handler (k x)))))
+      (free_omega_bind
+        (FOSample mu (fun x => operational_hitting_approx (MF := MF)
+          fuel (observe (k x))))
+        (operational_interp_head_approx (MF := MF) (R := R)
+          (S fuel) handler))).
+    cbn [free_omega_bind]. eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. eapply free_omega_approx_trans; [apply IH|].
+      eapply free_omega_approx_bind with (R := eq) (T := eq).
+      * apply free_omega_approx_refl. intro h. reflexivity.
+      * intros h1 h2 ->. apply free_operational_hitting_mono. lia.
+Qed.
+
+Definition free_operational_interp_split_approx {R}
+    (source_fuel head_fuel : nat) (t : ptree E MN R) :
+    MF (frontier_head F MN R) :=
+  free_omega_bind
+    (operational_hitting_approx (MF := MF) source_fuel (observe t))
+    (operational_interp_head_approx (MF := MF) (R := R)
+      head_fuel handler).
+
+Lemma free_operational_interp_split_le_hitting {R}
+    (source_fuel head_fuel : nat) (t : ptree E MN R) :
+  free_omega_approx eq
+    (free_operational_interp_split_approx source_fuel head_fuel t)
+    (operational_hitting_approx (MF := MF) (source_fuel + head_fuel)
+      (observe (PTree.interp handler t))).
+Proof.
+  revert t. induction source_fuel as [|source_fuel IH]; intro t.
+  all: unfold free_operational_interp_split_approx;
+    rewrite observe_interp; remember (observe t) as ot eqn:Hot;
+    destruct ot as [r|u|X e k|X mu k].
+  - cbn [operational_hitting_approx operational_kernel
+      operational_interp_head_approx operational_interp_head_tree
+      free_omega_bind].
+    apply free_omega_approx_refl. intro h. reflexivity.
+  - constructor.
+  - cbn [free_omega_bind operational_interp_head_approx
+      operational_interp_head_tree].
+    apply free_omega_approx_refl. intro h. reflexivity.
+  - change (free_omega_approx eq
+      (free_omega_bind (FOSample mu (fun _ : X => FOZero))
+        (operational_interp_head_approx (MF := MF) (R := R)
+          head_fuel handler))
+      (operational_hitting_approx (MF := MF) head_fuel
+        (observe (Prob mu (fun x => PTree.interp handler (k x)))))).
+    cbn [free_omega_bind operational_hitting_approx operational_kernel].
+    eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. constructor.
+  - unfold operational_hitting_approx, operational_kernel,
+      operational_interp_head_approx, operational_interp_head_tree.
+    cbn. rewrite !stable_target_stableE. cbn [free_omega_bind].
+    apply free_omega_approx_refl. intro h. reflexivity.
+  - cbn [operational_hitting_approx operational_kernel]. apply IH.
+  - cbn [free_omega_bind operational_interp_head_approx
+      operational_interp_head_tree].
+    apply free_operational_hitting_mono. lia.
+  - change (free_omega_approx eq
+      (FOSample mu (fun x => free_operational_interp_split_approx
+        source_fuel head_fuel (k x)))
+      (FOSample mu (fun x => operational_hitting_approx (MF := MF)
+        (source_fuel + head_fuel)
+        (observe (PTree.interp handler (k x)))))).
+    eapply FOApproxSample with (S := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. apply IH.
+Qed.
+
+Lemma free_operational_interp_diagonal_le_hitting {R}
+    (fuel : nat) (t : ptree E MN R) :
+  free_omega_approx eq
+    (operational_interp_diagonal_approx fuel handler t)
+    (operational_hitting_approx (MF := MF) (2 * fuel)
+      (observe (PTree.interp handler t))).
+Proof.
+  change (free_omega_approx eq
+    (free_operational_interp_split_approx fuel fuel t)
+    (operational_hitting_approx (MF := MF) (2 * fuel)
+      (observe (PTree.interp handler t)))).
+  replace (2 * fuel) with (fuel + fuel) by lia.
+  apply free_operational_interp_split_le_hitting.
+Qed.
+
+Theorem free_operational_interp_approx_cofinal_all {R}
+    (t : ptree E MN R) : free_operational_interp_approx_cofinal t.
+Proof.
+  split.
+  - intro fuel. exists fuel.
+    apply free_operational_interp_hitting_le_diagonal.
+  - intro fuel. exists (2 * fuel).
+    eapply free_omega_approx_mono.
+    + intros x y Hxy. symmetry. exact Hxy.
+    + apply free_operational_interp_diagonal_le_hitting.
+Qed.
+
+Corollary free_operational_interp_cofinal_all {R}
+    (t : ptree E MN R) :
+  @operational_interp_cofinal E F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R handler t.
+Proof.
+  intro out. unfold operational_interp_cofinal.
+  apply free_omega_cofinal_lub_iff.
+  apply free_operational_interp_approx_cofinal_all.
+Qed.
+
+End FreeOperationalInterpCofinality.
+
 Definition frontier_head_is_ret {R}
     (h : frontier_head E MN R) : Prop :=
   match h with

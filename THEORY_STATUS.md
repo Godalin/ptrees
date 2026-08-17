@@ -143,6 +143,16 @@ to run arbitrary target-side Tau/Vis/Prob structure before returning.
 morphism equation, and `canonical_interp_bind_regression` checks it at the
 Enum-to-FreeOmega endpoint.
 
+The operational semantics now also has the missing general interpreter
+composition theorem.  `operational_interp_diagonal_approx` first runs the
+source to a stable Ret/Vis head and then runs the corresponding interpreted
+head; `operational_weak_interp` lifts the two complete limits through mixed
+bind.  For FreeOmega,
+`free_operational_interp_approx_cofinal_all` proves that this diagonal chain
+and direct `PTree.interp` execution are mutually cofinal for every source
+tree and every effectful handler.  The finite schedules are `n` and `2*n`;
+there is no AST, boundedness, or eventlessness premise.
+
 Interpretation also commutes with guarded iteration.  The structural proof
 `pstructural_interp_iter` uses one joint coinductive invariant containing the
 main loop, the bind exposed by an unfolding, and the additional bind in

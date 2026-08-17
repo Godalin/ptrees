@@ -724,6 +724,103 @@ Qed.
 
 End OperationalBindSoundness.
 
+Section OperationalInterpDiagonal.
+Context {E F : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}.
+
+Definition operational_interp_head_tree {R}
+    (handler : forall X, E X -> ptree F MN X)
+    (h : frontier_head E MN R) : ptree F MN R :=
+  match h with
+  | FHRet r => Ret r
+  | @FHVis _ _ _ X e k =>
+      Tau (PTree.bind (@handler X e)
+        (fun x => PTree.interp handler (k x)))
+  end.
+
+Definition operational_interp_head_approx {R}
+    (fuel : nat) (handler : forall X, E X -> ptree F MN X)
+    (h : frontier_head E MN R) :
+    MF (frontier_head F MN R) :=
+  operational_hitting_approx (MF := MF) fuel
+    (observe (operational_interp_head_tree handler h)).
+
+Definition operational_interp_diagonal_approx {R}
+    (fuel : nat) (handler : forall X, E X -> ptree F MN X)
+    (t : ptree E MN R) : MF (frontier_head F MN R) :=
+  sem_bind
+    (operational_hitting_approx (MF := MF) fuel (observe t))
+    (operational_interp_head_approx fuel handler).
+
+Definition operational_interp_cofinal {R}
+    (handler : forall X, E X -> ptree F MN X)
+    (t : ptree E MN R) : Prop :=
+  forall out,
+    sem_lub (fun fuel => operational_hitting_approx (MF := MF) fuel
+      (observe (PTree.interp handler t))) out <->
+    sem_lub (fun fuel => operational_interp_diagonal_approx
+      fuel handler t) out.
+
+End OperationalInterpDiagonal.
+
+Section OperationalInterpSoundness.
+Context {E F : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}.
+
+Lemma operational_interp_head_approx_increasing {R}
+    (handler : forall X, E X -> ptree F MN X)
+    (h : frontier_head E MN R) :
+  sem_increasing (fun fuel => operational_interp_head_approx
+    (MF := MF) fuel handler h).
+Proof.
+  intro fuel. apply operational_hitting_increasing.
+Qed.
+
+Lemma operational_interp_head_approx_lub {R}
+    (handler : forall X, E X -> ptree F MN X)
+    (front : frontier_head E MN R -> MF (frontier_head F MN R))
+    (Hfront : forall h, operational_weak (MF := MF)
+      (observe (operational_interp_head_tree handler h)) (front h)) h :
+  sem_lub (fun fuel => operational_interp_head_approx
+      (MF := MF) fuel handler h) (front h).
+Proof.
+  exact (Hfront h).
+Qed.
+
+Theorem operational_weak_interp {R}
+    (handler : forall X, E X -> ptree F MN X)
+    (t : ptree E MN R)
+    hs (front : frontier_head E MN R -> MF (frontier_head F MN R)) :
+  operational_interp_cofinal (MF := MF) handler t ->
+  operational_weak (MF := MF) (observe t) hs ->
+  (forall h, operational_weak (MF := MF)
+    (observe (operational_interp_head_tree handler h)) (front h)) ->
+  operational_weak (MF := MF) (observe (PTree.interp handler t))
+    (sem_bind hs front).
+Proof.
+  intros Hcofinal Hsource Hfront. unfold operational_weak in *.
+  apply (proj2 (Hcofinal _)).
+  unfold operational_interp_diagonal_approx.
+  eapply sem_bind_diagonal_lub.
+  - apply operational_hitting_increasing.
+  - intro h. apply operational_interp_head_approx_increasing.
+  - exact Hsource.
+  - intro h. apply operational_interp_head_approx_lub. exact Hfront.
+Qed.
+
+End OperationalInterpSoundness.
+
 Section OperationalIterationCofinality.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}
