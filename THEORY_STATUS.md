@@ -53,6 +53,7 @@ The following laws are checked:
 - `stable_hitting_bisim_coinduction` and its PTree specialization
   `probabilistic_eutt_coinduction`;
 - `probabilistic_eutt_coinduction_upto` and `stable_hitting_match_vis`;
+- `stable_hitting_match_of_hitting_lift`;
 - `probabilistic_eutt_of_iter_certificates`;
 - `probabilistic_eutt_preserves_hitting_mass`;
 - `probabilistic_eutt_not_of_mass_mismatch`.
@@ -134,12 +135,27 @@ Ret-only closed sampler with an eventful continuation, while
 continuations.  These are proof rules over the canonical semantics, not new
 generator cases.
 
+At the generator boundary, `stable_hitting_match_of_hitting_lift` turns two
+complete hitting witnesses plus one coupling directly into the required
+bidirectional match.  Hitting uniqueness performs both transports.  The
+canonical endpoint rule `probabilistic_eutt_of_hitting_lift` and the
+after-request phase of the interactive service are instances of this single
+rule.
+
 The former public relations `weak_bisim`, `unified_ppts_bisim`,
 `operational_bisim`, `stable_kernel_bisim`, and `primitive_ptree_bisim`, plus
 their proof/native full-abstraction and `BehavioralDomain` machinery, have
 been removed.  `UnifiedPWeak.v`, `UnifiedPWeakTrans.v`,
 `UnifiedProbabilisticPTS.v`, and their relation-specific examples no longer
 exist.
+
+The older `PWeak*` modules are still present as compatibility/proof-
+certificate infrastructure because maintained sampler developments still
+import them (notably Bernoulli, rational, and Von Neumann certificate
+files).  They are not the canonical behavioral endpoint.  Moving them to a
+legacy namespace must therefore follow migration of those imports; a
+directory-only move would merely break clients without simplifying the
+theory.
 
 ## Semantic regression examples
 
