@@ -9,7 +9,7 @@ From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration.
 From PTree.Eq Require Import ShallowNew UnifiedFrontier PrimitiveStableHitting
-  OperationalProbabilisticPTS PStrong.
+  OperationalProbabilisticPTS ProbabilisticEutt PStrong.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -525,6 +525,42 @@ Corollary free_operational_bind_cofinal_all {A R}
 Proof.
   apply free_operational_bind_cofinal.
   apply free_operational_bind_approx_cofinal_all.
+Qed.
+
+(** Unconditional monadic congruence for the maintained unbounded backend.
+    The generic theorem keeps its local scheduling premise; FreeOmega now
+    discharges it for every eventful PTree. *)
+Corollary free_probabilistic_eutt_bind
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
+    {A R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2)
+    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR t1 t2 ->
+  (forall r1 r2, RR r1 r2 ->
+    @probabilistic_eutt E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A A eq (k1 r1) (k2 r2)) ->
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A A eq
+    (PTree.bind t1 k1) (PTree.bind t2 k2).
+Proof.
+  intros Hsource Hk.
+  eapply probabilistic_eutt_bind.
+  - intros B S t k. apply free_operational_bind_cofinal_all.
+  - exact Hsource.
+  - exact Hk.
+  Unshelve. all: try typeclasses eauto.
 Qed.
 
 Theorem free_operational_bind_approx_cofinal_no_event {A R}
