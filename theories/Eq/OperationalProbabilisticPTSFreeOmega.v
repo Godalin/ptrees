@@ -4,4 +4,6 @@
     iteration, and interpretation modules.  Keeping this module as the
     stable aggregate means existing developments do not need to change their
     imports while that refactoring proceeds. *)
-From PTree.Eq Require Export OperationalProbabilisticPTSFreeOmegaBase.
+From PTree.Eq Require Export
+  OperationalProbabilisticPTSFreeOmegaBase
+  OperationalProbabilisticPTSFreeOmegaInterp.

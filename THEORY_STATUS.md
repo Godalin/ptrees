@@ -221,6 +221,16 @@ effectful `interp` preservation for arbitrary behaviorally equivalent source
 trees remains a future algebraic law; effectful-handler composition,
 `interp_iter`, and pure `translate` preservation are complete.
 
+The remaining law now has an exact generator-level interface in the focused
+`OperationalProbabilisticPTSFreeOmegaInterp` module.
+`free_interp_bisim_candidate` relates precisely interpretations of source
+trees already related by `probabilistic_eutt`, and
+`free_probabilistic_eutt_interp_of_generator_closed` proves full effectful
+interpreter preservation from closure of that candidate.  Thus the open
+proof obligation is specifically candidate-level closure of the binds
+produced by handled visible heads; primitive scheduling, complete hitting,
+and omega-limit composition are not part of the remaining gap.
+
 Dirac elimination is now explicit rather than axiomatized accidentally.
 `SemanticMeasureDiracAELaws` characterizes AE predicates on node Dirac
 measures, while `MixedMeasureUnitLaws` states that mixed binding a node Dirac
