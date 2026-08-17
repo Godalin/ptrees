@@ -75,6 +75,71 @@ Proof.
     + intros z z' ->. apply IH. exact (H z').
 Qed.
 
+(** State-level closure used to interpret syntax-sensitive structural
+    equivalence inside the canonical stable-hitting coinduction principle. *)
+Definition free_pstructural_state {A B} (RR : A -> B -> Prop)
+    (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
+  exists (t1 : ptree E MN A) (t2 : ptree E MN B),
+    s1 = observe t1 /\ s2 = observe t2 /\ pstructural RR t1 t2.
+
+(** Structural probabilistic bisimulation is sound for the canonical weak
+    equivalence.  Pointwise structural couplings of all finite hitting
+    approximants are closed by the FreeOmega limit constructor; visible
+    continuations re-enter the coinduction candidate. *)
+Theorem free_probabilistic_eutt_of_pstructural {A B}
+    (RR : A -> B -> Prop) (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstructural RR t1 t2 ->
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A B RR t1 t2.
+Proof.
+  intro Hstruct. eapply probabilistic_eutt_coinduction with
+    (sim := free_pstructural_state RR).
+  - intros s1 s2 [u1 [u2 [-> [-> Hs]]]].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface A) (observe u1)) as [out1 Hout1].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface B) (observe u2)) as [out2 Hout2].
+    eapply stable_hitting_match_of_hitting_lift;
+      [exact Hout1|exact Hout2|].
+    eapply FOQLMono.
+    + unfold stable_hitting_weak in Hout1, Hout2.
+      cbn in Hout1, Hout2.
+      eapply FOQLComp with (T := eq)
+        (U := frontier_head_rel RR (pstructural RR))
+        (mid := FOLub (fun fuel => operational_hitting_approx
+          (MF := MF) fuel (observe u1))).
+      * exact Hout1.
+      * eapply FOQLComp with
+          (T := frontier_head_rel RR (pstructural RR))
+          (U := eq)
+          (mid := FOLub (fun fuel => operational_hitting_approx
+            (MF := MF) fuel (observe u2))).
+        -- apply FOQLLub. intro fuel.
+           apply FOQLStructural.
+           exact (free_operational_hitting_pstructural
+             (RR := RR) fuel Hs).
+        -- apply FOQLSym. eapply FOQLMono; [exact Hout2|].
+           intros x y ->. reflexivity.
+        -- intros x z [y [Hxy ->]]. exact Hxy.
+      * intros x z [y [-> Hyz]]. exact Hyz.
+    + intros h1 h2 Hhead. dependent destruction Hhead.
+      * constructor. exact H.
+      * constructor. intro x. exists (k1 x), (k2 x).
+        repeat split; try reflexivity. exact (H x).
+  - exists t1, t2. repeat split; try reflexivity. exact Hstruct.
+Qed.
+
 Lemma free_operational_hitting_pstructural_no_event {A}
     (no_event : forall X, E X -> False) fuel
     (t1 t2 : ptree E MN A) :
@@ -684,6 +749,50 @@ Proof.
   - exact Hsource.
   - exact Hk.
   Unshelve. all: try typeclasses eauto.
+Qed.
+
+(** Canonical Monad laws.  They are consequences of structural soundness,
+    not additional cases of the behavioral generator. *)
+Theorem free_probabilistic_eutt_bind_ret_l {A B}
+    (a : A) (k : A -> ptree E MN B) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface B B eq
+    (PTree.bind (Ret a) k) (k a).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply observe_eq_pstructural.
+  exact (observing_observe (bind_ret_ a k)).
+Qed.
+
+Theorem free_probabilistic_eutt_bind_ret_r {A}
+    (t : ptree E MN A) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A A eq
+    (PTree.bind t (fun x => Ret x)) t.
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_bind_ret_r.
+Qed.
+
+Theorem free_probabilistic_eutt_bind_assoc {A B C}
+    (t : ptree E MN A) (k : A -> ptree E MN B)
+    (h : B -> ptree E MN C) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface C C eq
+    (PTree.bind (PTree.bind t k) h)
+    (PTree.bind t (fun x => PTree.bind (k x) h)).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_bind_assoc.
 Qed.
 
 Theorem free_operational_bind_approx_cofinal_no_event {A R}

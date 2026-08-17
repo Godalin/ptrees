@@ -270,6 +270,40 @@ Qed.
 
 End PStructuralBindAssoc.
 
+Section PStructuralBindRetR.
+Context {E : Type -> Type} {M : Type -> Type} {A : Type}.
+
+Definition pstructural_bind_ret_r_clo
+    (u v : ptree E M A) : Prop :=
+  (exists t, u = PTree.bind t (fun x => Ret x) /\ v = t) \/
+  pstructural eq u v.
+
+Theorem pstructural_bind_ret_r (t : ptree E M A) :
+  pstructural eq (PTree.bind t (fun x => Ret x)) t.
+Proof.
+  assert (Hstrong : forall u v, pstructural_bind_ret_r_clo u v ->
+      pstructural eq u v).
+  { unfold pstructural. coinduction CH CIH.
+    intros u v Hclo. destruct Hclo as [[s [-> ->]]|Hdone].
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.bind s (fun x => Ret x))) (observe s)).
+      rewrite observe_bind.
+      remember (observe s) as os eqn:Hos.
+      destruct os as [a|s'|X e k|X mu k]; cbn.
+      + constructor. reflexivity.
+      + constructor. apply CIH. left. eexists. split; reflexivity.
+      + constructor=> x. apply CIH. left. eexists. split; reflexivity.
+      + constructor=> x. apply CIH. left. eexists. split; reflexivity.
+    - unfold pstructural_body.
+      pose proof (pstructural_unfold Hdone) as Hstep.
+      eapply pstructuralF_monotone; [|exact Hstep].
+      intros x y Hxy. apply CIH. right. exact Hxy. }
+  apply Hstrong. left. eexists. split; reflexivity.
+Qed.
+
+End PStructuralBindRetR.
+
 Section PStructuralIter.
 Context {E : Type -> Type} {M : Type -> Type}.
 Context {I R : Type}.
