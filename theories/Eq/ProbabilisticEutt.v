@@ -305,6 +305,35 @@ Proof.
   eapply stable_hitting_bisim_coinduction; eauto.
 Qed.
 
+(** Coinduction up to the canonical equivalence.  Recursive obligations may
+    either remain in the user candidate or close with an equivalence that has
+    already been established.  This is the basic sound guarded-context API;
+    it changes only the proof principle, never the behavioral generator. *)
+Theorem probabilistic_eutt_coinduction_upto
+    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
+    (Hpost : forall s1 s2, sim s1 s2 ->
+      stable_hitting_match
+        (@ptree_primitive_kernel E MN MF FI MX R1)
+        (@ptree_primitive_kernel E MN MF FI MX R2)
+        ptree_stable_head_rel
+        (fun x1 x2 => sim x1 x2 \/ probabilistic_eutt_state x1 x2)
+        s1 s2) :
+  forall t1 t2, sim (observe t1) (observe t2) ->
+    probabilistic_eutt t1 t2.
+Proof.
+  intros t1 t2 Hsim.
+  eapply probabilistic_eutt_coinduction with
+    (sim := fun x1 x2 => sim x1 x2 \/ probabilistic_eutt_state x1 x2).
+  - intros s1 s2 [Hcandidate|Hknown].
+    + exact (Hpost _ _ Hcandidate).
+    + apply stable_hitting_bisim_unfold in Hknown.
+      eapply stable_hitting_match_mono.
+      * apply ptree_stable_head_rel_mono.
+      * intros x1 x2 Hrel. right. exact Hrel.
+      * exact Hknown.
+  - left. exact Hsim.
+Qed.
+
 Lemma probabilistic_eutt_unfold t1 t2 :
   probabilistic_eutt t1 t2 ->
   stable_hitting_match
@@ -529,6 +558,38 @@ Proof.
     eapply sem_eq_trans; [apply sem_bind_ret_l|].
     rewrite stable_target_stableE. apply sem_eq_refl.
   - apply sem_lub_constant.
+Qed.
+
+(** A common visible guard closes one native bisimulation step.  Besides the
+    continuation obligation, this rule hides the complete-hitting witnesses,
+    their uniqueness transport, and the Dirac coupling at the visible head. *)
+Lemma stable_hitting_match_vis {R1 R2}
+    (RR : R1 -> R2 -> Prop)
+    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
+    {X : Type} (e : E X)
+    (k1 : X -> ptree E MN R1) (k2 : X -> ptree E MN R2) :
+  (forall x, sim (observe (k1 x)) (observe (k2 x))) ->
+  stable_hitting_match
+    (@ptree_primitive_kernel E MN MF FI MX R1)
+    (@ptree_primitive_kernel E MN MF FI MX R2)
+    (@ptree_stable_head_rel E MN R1 R2 RR) sim
+    (VisF e k1) (VisF e k2).
+Proof.
+  intro Hk. unfold stable_hitting_match. split.
+  - intros out1 Hhit1.
+    exists (sem_ret (FHVis e k2)). split.
+    + apply stable_hitting_weak_vis.
+    + eapply sem_lift_proper_l.
+      * eapply stable_hitting_weak_unique;
+          [exact (stable_hitting_weak_vis e k1)|exact Hhit1].
+      * apply sem_lift_ret. apply FHRVis. exact Hk.
+  - intros out2 Hhit2.
+    exists (sem_ret (FHVis e k1)). split.
+    + apply stable_hitting_weak_vis.
+    + eapply sem_lift_proper_r.
+      * eapply stable_hitting_weak_unique;
+          [exact (stable_hitting_weak_vis e k2)|exact Hhit2].
+      * apply sem_lift_ret. apply FHRVis. exact Hk.
 Qed.
 
 Lemma stable_hitting_tau_chain {R} (t : ptree E MN R) fuel :

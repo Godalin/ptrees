@@ -542,6 +542,40 @@ Definition frontier_head_ret_bind_front {A R}
   | @FHVis _ _ _ X e k => FOZero
   end.
 
+(** Lift a coupling of closed-source heads through Ret-only continuations.
+    Related returns use the supplied continuation coupling; related visible
+    heads are discarded on both sides.  Thus clients do not need to unfold
+    [FOQLBind] merely to place a closed sampler before an eventful context. *)
+Theorem free_sem_lift_ret_bind_front
+    {A1 A2 R1 R2}
+    (RA : A1 -> A2 -> Prop)
+    (simA : ptree E MN A1 -> ptree E MN A2 -> Prop)
+    (RR : R1 -> R2 -> Prop)
+    (simR : ptree E MN R1 -> ptree E MN R2 -> Prop)
+    (hs1 : MF (frontier_head E MN A1))
+    (hs2 : MF (frontier_head E MN A2))
+    (front1 : A1 -> MF (frontier_head E MN R1))
+    (front2 : A2 -> MF (frontier_head E MN R2)) :
+  @sem_lift MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    _ _ (frontier_head_rel RA simA) hs1 hs2 ->
+  (forall a1 a2, RA a1 a2 ->
+    @sem_lift MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      _ _ (frontier_head_rel RR simR) (front1 a1) (front2 a2)) ->
+  @sem_lift MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    _ _ (frontier_head_rel RR simR)
+    (free_omega_bind hs1 (frontier_head_ret_bind_front front1))
+    (free_omega_bind hs2 (frontier_head_ret_bind_front front2)).
+Proof.
+  intros Hsource Hfront. eapply FOQLBind; [exact Hsource|].
+  intros h1 h2 Hhead. inversion Hhead; subst; clear Hhead.
+  - cbn [frontier_head_ret_bind_front]. apply Hfront. exact H.
+  - cbn [frontier_head_ret_bind_front].
+    apply FOQLStructural. constructor.
+Qed.
+
 (** If the complete source behavior is almost everywhere a return head,
     bind may discard the unreachable visible-head branch.  This is the
     generic composition rule needed when a closed sampler is embedded in an

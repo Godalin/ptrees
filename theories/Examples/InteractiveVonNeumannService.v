@@ -654,6 +654,17 @@ Definition interactive_service_sim
   (s1 = observe vn_after_request /\
     s2 = observe direct_after_request).
 
+Definition interactive_service_upto
+    (s1 s2 : ptree' coin_serviceE Enum bool) : Prop :=
+  interactive_service_sim s1 s2 \/
+  @probabilistic_eutt_state coin_serviceE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool bool eq s1 s2.
+
 Lemma ISSRoot : interactive_service_sim
     (observe von_neumann_service) (observe direct_fair_service).
 Proof. left. split; reflexivity. Qed.
@@ -667,14 +678,11 @@ Lemma after_request_heads_lift :
     vn_after_request_heads direct_after_request_heads.
 Proof.
   unfold service_lift, vn_after_request_heads, direct_after_request_heads.
-  eapply FOQLBind.
+  eapply free_sem_lift_ret_bind_front.
   - exact (service_vn_direct_heads_lift (fun _ _ => False)).
-  - intros h1 h2 Hhead. inversion Hhead; subst; clear Hhead.
-    + cbn [frontier_head_ret_bind_front].
-      unfold vn_reply_front, direct_reply_front.
-      apply FOQLStructural. apply FOLRet. apply FHRVis. intros [].
-      exact ISSRoot.
-    + cbn [frontier_head_ret_bind_front]. apply FOQLStructural. constructor.
+  - intros b1 b2 ->. unfold vn_reply_front, direct_reply_front.
+    apply FOQLStructural. apply FOLRet. apply FHRVis. intros [].
+    exact ISSRoot.
 Qed.
 
 Lemma interactive_service_sim_postfixed :
@@ -687,66 +695,29 @@ Lemma interactive_service_sim_postfixed :
       (ptree' coin_serviceE Enum bool) (ptree' coin_serviceE Enum bool)
       service_head service_head service_kernel service_kernel
       (@service_stable_rel bool bool eq)
-      interactive_service_sim s1 s2.
+      interactive_service_upto s1 s2.
 Proof.
   intros s1 s2 [[-> ->]|[-> ->]].
   - rewrite observe_von_neumann_service observe_direct_fair_service.
-    unfold stable_hitting_match. split.
-    + intros out1 Hhit1.
-      exists (@sem_ret MF
-        (FreeOmegaObservableSemanticMeasureInterface
-          (NI := Enum_SemanticMeasureInterface)
-          (NO := Enum_SemanticOmegaInterface)) _
-        (FHVis CoinRequest (fun _ => direct_after_request))). split.
-      * apply (stable_hitting_weak_vis
-          (FI := FreeOmegaObservableSemanticMeasureInterface)
-          (FO := FreeOmegaObservableSemanticOmegaInterface)
-          CoinRequest (fun _ => direct_after_request)).
-      * eapply sem_lift_proper_l.
-        -- eapply (stable_hitting_weak_unique
-             (FI := FreeOmegaObservableSemanticMeasureInterface)
-             (FO := FreeOmegaObservableSemanticOmegaInterface));
-             [exact (stable_hitting_weak_vis
-                (FI := FreeOmegaObservableSemanticMeasureInterface)
-                (FO := FreeOmegaObservableSemanticOmegaInterface)
-                CoinRequest (fun _ => vn_after_request))
-             |exact Hhit1].
-        -- apply FOQLStructural. apply FOLRet. apply FHRVis. intros [].
-           exact ISSAfterRequest.
-    + intros out2 Hhit2.
-      exists (@sem_ret MF
-        (FreeOmegaObservableSemanticMeasureInterface
-          (NI := Enum_SemanticMeasureInterface)
-          (NO := Enum_SemanticOmegaInterface)) _
-        (FHVis CoinRequest (fun _ => vn_after_request))). split.
-      * apply (stable_hitting_weak_vis
-          (FI := FreeOmegaObservableSemanticMeasureInterface)
-          (FO := FreeOmegaObservableSemanticOmegaInterface)
-          CoinRequest (fun _ => vn_after_request)).
-      * eapply sem_lift_proper_r.
-        -- eapply (stable_hitting_weak_unique
-             (FI := FreeOmegaObservableSemanticMeasureInterface)
-             (FO := FreeOmegaObservableSemanticOmegaInterface));
-             [exact (stable_hitting_weak_vis
-                (FI := FreeOmegaObservableSemanticMeasureInterface)
-                (FO := FreeOmegaObservableSemanticOmegaInterface)
-                CoinRequest (fun _ => direct_after_request))
-             |exact Hhit2].
-        -- apply FOQLStructural. apply FOLRet. apply FHRVis. intros [].
-           exact ISSAfterRequest.
+    apply stable_hitting_match_vis. intros [].
+    left. exact ISSAfterRequest.
   - unfold stable_hitting_match. split.
     + intros out1 Hhit1. exists direct_after_request_heads. split.
       * exact direct_after_request_weak.
       * eapply sem_lift_proper_l.
         -- eapply stable_hitting_weak_unique;
              [exact vn_after_request_weak|exact Hhit1].
-        -- exact after_request_heads_lift.
+        -- eapply sem_lift_mono; [|exact after_request_heads_lift].
+           apply frontier_head_rel_mono. intros x1 x2 Hsim.
+           left. exact Hsim.
     + intros out2 Hhit2. exists vn_after_request_heads. split.
       * exact vn_after_request_weak.
       * eapply sem_lift_proper_r.
         -- eapply stable_hitting_weak_unique;
              [exact direct_after_request_weak|exact Hhit2].
-        -- exact after_request_heads_lift.
+        -- eapply sem_lift_mono; [|exact after_request_heads_lift].
+           apply frontier_head_rel_mono. intros x1 x2 Hsim.
+           left. exact Hsim.
 Qed.
 
 Theorem interactive_von_neumann_service_equivalent :
@@ -759,7 +730,7 @@ Theorem interactive_von_neumann_service_equivalent :
     FreeOmegaObservableSemanticOmegaInterface bool bool eq
     von_neumann_service direct_fair_service.
 Proof.
-  eapply probabilistic_eutt_coinduction
+  eapply probabilistic_eutt_coinduction_upto
     with (sim := interactive_service_sim).
   - exact interactive_service_sim_postfixed.
   - exact ISSRoot.
