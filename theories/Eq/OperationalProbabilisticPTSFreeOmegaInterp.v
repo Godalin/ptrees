@@ -13,6 +13,28 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+(** Interpreting visible events preserves every structural proof. *)
+Theorem free_probabilistic_eutt_interp_structural
+    {E F : Type -> Type} {MN : Type -> Type}
+    `{NI : SemanticMeasureInterface MN}
+    `{NC : @SemanticMeasureCoreLaws MN NI}
+    `{NAE : @SemanticMeasureAELiftLaws MN NI}
+    `{NO : @SemanticOmegaInterface MN NI}
+    {A B} (RR : A -> B -> Prop)
+    (handler : forall X, E X -> ptree F MN X)
+    (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstructural RR t1 t2 ->
+  @probabilistic_eutt F MN (FreeOmega MN)
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A B RR
+    (PTree.interp handler t1) (PTree.interp handler t2).
+Proof.
+  intro Hstruct. apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_interp. exact Hstruct.
+Qed.
+
 (** Focused behavioral facts for effect interpretation over the maintained
     FreeOmega backend.  This module deliberately exposes the one remaining
     algebraic boundary: an effectful handler must close the native generator
@@ -27,6 +49,107 @@ Context {E F : Type -> Type} {MN : Type -> Type}
   `{NO : @SemanticOmegaInterface MN NI}.
 
 Local Notation MF := (FreeOmega MN).
+
+(** Semantic interpreter preservation from stable-head kernels.  Source
+    hitting is coupled once, related source heads supply coupled interpreted
+    behavior, and operational composition assembles the whole programs. *)
+Theorem free_probabilistic_eutt_interp_of_head_lifts
+    `{NCAEInterp : @SemanticMeasureCouplingAELaws MN NI}
+    `{NCountAEInterp : @SemanticMeasureCountableAELaws MN NI}
+    {A0 B0} (RR0 : A0 -> B0 -> Prop)
+    (handler0 : forall X, E X -> ptree F MN X)
+    (t1 : ptree E MN A0) (t2 : ptree E MN B0)
+    (source1 : MF (frontier_head E MN A0))
+    (source2 : MF (frontier_head E MN B0))
+    (front1 : frontier_head E MN A0 -> MF (frontier_head F MN A0))
+    (front2 : frontier_head E MN B0 -> MF (frontier_head F MN B0)) :
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A0 (observe t1) source1 ->
+  @operational_weak E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface B0 (observe t2) source2 ->
+  (forall h, @operational_weak F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A0
+    (observe (operational_interp_head_tree handler0 h)) (front1 h)) ->
+  (forall h, @operational_weak F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface B0
+    (observe (operational_interp_head_tree handler0 h)) (front2 h)) ->
+  @sem_lift MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    _ _
+    (@ptree_stable_head_rel E MN A0 B0 RR0
+      (@probabilistic_eutt_state E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface A0 B0 RR0))
+    source1 source2 ->
+  (forall h1 h2,
+    @ptree_stable_head_rel E MN A0 B0 RR0
+      (@probabilistic_eutt_state E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface A0 B0 RR0) h1 h2 ->
+    @sem_lift MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      _ _
+      (@ptree_stable_head_rel F MN A0 B0 RR0
+        (@probabilistic_eutt_state F MN MF
+          (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+          FreeOmegaObservableSemanticMeasureCoreLaws
+          FreeOmegaMixedMeasureInterface
+          FreeOmegaObservableSemanticOmegaInterface A0 B0 RR0))
+      (front1 h1) (front2 h2)) ->
+  @probabilistic_eutt F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A0 B0 RR0
+    (PTree.interp handler0 t1) (PTree.interp handler0 t2).
+Proof.
+  intros Hsource1 Hsource2 Hfront1 Hfront2 HsourceLift HfrontLift.
+  assert (Htarget1 : @operational_weak F MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A0
+      (observe (PTree.interp handler0 t1))
+      (free_omega_bind source1 front1)).
+  { eapply (operational_weak_interp
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (MX := FreeOmegaMixedMeasureInterface)).
+    + apply free_operational_interp_cofinal_all.
+    + exact Hsource1.
+    + exact Hfront1. }
+  assert (Htarget2 : @operational_weak F MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface B0
+      (observe (PTree.interp handler0 t2))
+      (free_omega_bind source2 front2)).
+  { eapply (operational_weak_interp
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (MX := FreeOmegaMixedMeasureInterface)).
+    + apply free_operational_interp_cofinal_all.
+    + exact Hsource2.
+    + exact Hfront2. }
+  eapply probabilistic_eutt_of_hitting_lift
+    with (out1 := free_omega_bind source1 front1)
+         (out2 := free_omega_bind source2 front2).
+  - exact Htarget1.
+  - exact Htarget2.
+  - eapply FOQLBind; [exact HsourceLift|]. exact HfrontLift.
+  Unshelve. all: typeclasses eauto.
+Qed.
 
 (** Canonical unfolding laws for the guarded interpreter. *)
 Theorem free_probabilistic_eutt_interp_ret {R}
