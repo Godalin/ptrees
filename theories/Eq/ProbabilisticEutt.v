@@ -333,6 +333,15 @@ Qed.
 
 End ProbabilisticEutt.
 
+(** Public notation for the canonical behavioral equivalence.  It lives in
+    [type_scope], matching ITree's [≈] convention while retaining a visible
+    probabilistic subscript.  The bracketed form supports heterogeneous
+    return relations. *)
+Notation "t ≈ₚ[ RR ] u" := (probabilistic_eutt RR t u)
+  (at level 70, RR at next level, no associativity) : type_scope.
+Notation "t ≈ₚ u" := (probabilistic_eutt eq t u)
+  (at level 70, no associativity) : type_scope.
+
 Section ProbabilisticEuttEndpoint.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasureInterface MN}

@@ -32,6 +32,17 @@ Its generator contains only bidirectional matching of complete
 stable-hitting limits through `sem_lift (head_rel sim)`.  It has no AST,
 Step, Tau, Prob, Bind, Iter, frontier, or syntax-specific constructor.
 
+The public notation is deliberately small:
+
+```coq
+t ≈ₚ u        (* probabilistic_eutt eq t u *)
+t ≈ₚ[RR] u    (* probabilistic_eutt RR t u *)
+```
+
+Both notations live in `type_scope`, following ITree's relation-notation
+convention.  Stable hitting, coupling, and frontier remain explicitly named
+until their user-facing APIs stabilize further.
+
 The following laws are checked:
 
 - `probabilistic_eutt_equivalence` (`refl`, `sym`, and `trans`);
