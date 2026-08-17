@@ -366,6 +366,30 @@ Qed.
 
 End TranslatePreservation.
 
+Section TranslateProper.
+Context {F : Type -> Type}.
+Variable rename : forall X, E X -> F X.
+
+#[global] Instance free_probabilistic_eutt_translate_Proper {R} :
+  Proper
+    (@probabilistic_eutt E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface R R eq ==>
+     @probabilistic_eutt F MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface R R eq)
+    (PTree.translate rename).
+Proof.
+  intros t1 t2 Ht. apply free_probabilistic_eutt_translate.
+  exact Ht.
+Qed.
+
+End TranslateProper.
+
 Section TranslateIdentity.
 
 Definition free_identity_rename (X : Type) (e : E X) : E X := e.
@@ -1329,6 +1353,52 @@ Proof.
   apply pstructural_bind_assoc.
 Qed.
 
+(** Canonical Functor laws.  [PTree.fmap] is the monadic definition, but the
+    named laws keep client proofs independent of that implementation. *)
+Theorem free_probabilistic_eutt_fmap_id {A} (t : ptree E MN A) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A A eq
+    (PTree.fmap (fun x => x) t) t.
+Proof.
+  unfold PTree.fmap. apply free_probabilistic_eutt_bind_ret_r.
+Qed.
+
+Theorem free_probabilistic_eutt_fmap_compose {A B C}
+    (f : A -> B) (g : B -> C) (t : ptree E MN A) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface C C eq
+    (PTree.fmap g (PTree.fmap f t))
+    (PTree.fmap (fun x => g (f x)) t).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  unfold PTree.fmap.
+  eapply pstructural_trans.
+  - apply pstructural_bind_assoc.
+  - eapply pstructural_bind with (RA := eq) (RB := eq).
+    + intros x1 x2 ->. apply observe_eq_pstructural.
+      exact (observing_observe (bind_ret_ (f x2) (fun y => Ret (g y)))).
+    + apply pstructural_refl.
+Qed.
+
+Theorem free_probabilistic_eutt_fmap_bind {A B C}
+    (f : B -> C) (t : ptree E MN A) (k : A -> ptree E MN B) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface C C eq
+    (PTree.fmap f (PTree.bind t k))
+    (PTree.bind t (fun x => PTree.fmap f (k x))).
+Proof.
+  unfold PTree.fmap. apply free_probabilistic_eutt_bind_assoc.
+Qed.
+
 (** One guarded unfolding of [iter]. *)
 Theorem free_probabilistic_eutt_iter_unfold {I R}
     (step : I -> ptree E MN (I + R)) (i : I) :
@@ -1417,6 +1487,29 @@ Proof.
   eapply free_probabilistic_eutt_bind with (RR := eq).
   - exact Ht.
   - intros x1 x2 ->. exact (Hk x2).
+Qed.
+
+#[global] Instance free_probabilistic_eutt_fmap_Proper
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
+    {A B} (f : A -> B) :
+  Proper
+    (@probabilistic_eutt E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A A eq ==>
+     @probabilistic_eutt E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface B B eq)
+    (PTree.fmap f).
+Proof.
+  intros t1 t2 Ht. unfold PTree.fmap.
+  eapply free_probabilistic_eutt_bind with (RR := eq).
+  - exact Ht.
+  - intros x1 x2 ->. apply probabilistic_eutt_refl.
 Qed.
 
 Theorem free_operational_bind_approx_cofinal_no_event {A R}

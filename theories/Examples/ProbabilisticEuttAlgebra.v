@@ -58,6 +58,26 @@ Proof.
   intro Ht. setoid_rewrite Ht. reflexivity.
 Qed.
 
+Lemma canonical_fmap_laws_regression {A B C}
+    (f : A -> B) (g : B -> C) (t : ptree algebraE Enum A) :
+  peutt eq (PTree.fmap (fun x => x) t) t /\
+  peutt eq (PTree.fmap g (PTree.fmap f t))
+    (PTree.fmap (fun x => g (f x)) t).
+Proof.
+  split.
+  - apply free_probabilistic_eutt_fmap_id.
+  - apply free_probabilistic_eutt_fmap_compose.
+Qed.
+
+(** Regression: the Functor [Proper] instance is registered with the setoid
+    machinery, not merely available as a manually applied theorem. *)
+Lemma canonical_fmap_setoid_rewrite {A B}
+    (f : A -> B) (t1 t2 : ptree algebraE Enum A) :
+  peutt eq t1 t2 -> peutt eq (PTree.fmap f t1) (PTree.fmap f t2).
+Proof.
+  intro Ht. setoid_rewrite Ht. reflexivity.
+Qed.
+
 (** Dirac elimination uses the explicit node-Dirac/mixed-unit capability of
     the Enum-to-FreeOmega backend. *)
 Lemma canonical_prob_ret_regression {X R}
@@ -362,3 +382,24 @@ Lemma canonical_translate_preservation_regression {A B}
     FreeOmegaObservableSemanticOmegaInterface A B RR
     (PTree.translate rename_bit t1) (PTree.translate rename_bit t2).
 Proof. apply free_probabilistic_eutt_translate. Qed.
+
+Lemma canonical_translate_setoid_rewrite {A}
+    (t1 t2 : ptree sourceE Enum A) :
+  @probabilistic_eutt sourceE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A A eq t1 t2 ->
+  @probabilistic_eutt renamedE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A A eq
+    (PTree.translate rename_bit t1) (PTree.translate rename_bit t2).
+Proof.
+  intro Ht. setoid_rewrite Ht. reflexivity.
+Qed.

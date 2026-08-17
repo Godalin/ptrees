@@ -85,9 +85,19 @@ The canonical FreeOmega endpoint now includes all three Monad equations:
 - `free_probabilistic_eutt_bind_ret_r`;
 - `free_probabilistic_eutt_bind_assoc`.
 
+The Functor surface is named explicitly rather than requiring clients to
+unfold its monadic implementation:
+`free_probabilistic_eutt_fmap_id`,
+`free_probabilistic_eutt_fmap_compose`, and
+`free_probabilistic_eutt_fmap_bind` provide identity, composition, and bind
+naturality.
+
 `probabilistic_eutt` is registered as an `Equivalence`.  Tau, Vis, and fixed
 measure Prob constructors have `Proper` instances, and
-`free_probabilistic_eutt_bind_Proper` supports `setoid_rewrite` under bind.
+`free_probabilistic_eutt_bind_Proper`,
+`free_probabilistic_eutt_fmap_Proper`, and
+`free_probabilistic_eutt_translate_Proper` support `setoid_rewrite` under
+bind, mapping, and event renaming.
 `Examples/ProbabilisticEuttAlgebra.v` checks these uses rather than merely
 checking that the theorem names elaborate.
 
