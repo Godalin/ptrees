@@ -685,6 +685,15 @@ Proof.
     exact ISSRoot.
 Qed.
 
+Lemma after_request_heads_lift_upto :
+  service_lift (service_stable_rel eq interactive_service_upto)
+    vn_after_request_heads direct_after_request_heads.
+Proof.
+  eapply sem_lift_mono; [|exact after_request_heads_lift].
+  apply frontier_head_rel_mono. intros x1 x2 Hsim.
+  left. exact Hsim.
+Qed.
+
 Lemma interactive_service_sim_postfixed :
   forall s1 s2, interactive_service_sim s1 s2 ->
     @stable_hitting_match MF
@@ -701,23 +710,10 @@ Proof.
   - rewrite observe_von_neumann_service observe_direct_fair_service.
     apply stable_hitting_match_vis. intros [].
     left. exact ISSAfterRequest.
-  - unfold stable_hitting_match. split.
-    + intros out1 Hhit1. exists direct_after_request_heads. split.
-      * exact direct_after_request_weak.
-      * eapply sem_lift_proper_l.
-        -- eapply stable_hitting_weak_unique;
-             [exact vn_after_request_weak|exact Hhit1].
-        -- eapply sem_lift_mono; [|exact after_request_heads_lift].
-           apply frontier_head_rel_mono. intros x1 x2 Hsim.
-           left. exact Hsim.
-    + intros out2 Hhit2. exists vn_after_request_heads. split.
-      * exact vn_after_request_weak.
-      * eapply sem_lift_proper_r.
-        -- eapply stable_hitting_weak_unique;
-             [exact direct_after_request_weak|exact Hhit2].
-        -- eapply sem_lift_mono; [|exact after_request_heads_lift].
-           apply frontier_head_rel_mono. intros x1 x2 Hsim.
-           left. exact Hsim.
+  - eapply stable_hitting_match_of_hitting_lift.
+    + exact vn_after_request_weak.
+    + exact direct_after_request_weak.
+    + exact after_request_heads_lift_upto.
 Qed.
 
 Theorem interactive_von_neumann_service_equivalent :

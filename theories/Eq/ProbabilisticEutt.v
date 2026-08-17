@@ -99,6 +99,38 @@ Qed.
 
 End StableHittingBisimulation.
 
+Section StableHittingMatchEndpoint.
+Context {MF : Type -> Type}
+  `{FI : SemanticMeasureInterface MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}.
+Context {S1 S2 A1 A2 : Type}.
+Variable kernel1 : S1 -> MF (stable_target S1 A1).
+Variable kernel2 : S2 -> MF (stable_target S2 A2).
+Variable AR : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
+
+(** Generator-level endpoint rule.  A pair of complete hitting witnesses and
+    one coupling between them determine the full bidirectional match: all
+    other complete witnesses are transported to these by uniqueness. *)
+Lemma stable_hitting_match_of_hitting_lift
+    (sim : S1 -> S2 -> Prop) s1 s2 out1 out2 :
+  stable_hitting_weak kernel1 s1 out1 ->
+  stable_hitting_weak kernel2 s2 out2 ->
+  sem_lift (AR sim) out1 out2 ->
+  stable_hitting_match kernel1 kernel2 AR sim s1 s2.
+Proof.
+  intros Hhit1 Hhit2 Hlift. unfold stable_hitting_match. split.
+  - intros out1' Hhit1'. exists out2. split; [exact Hhit2|].
+    eapply sem_lift_proper_l; [|exact Hlift].
+    eapply stable_hitting_weak_unique; [exact Hhit1|exact Hhit1'].
+  - intros out2' Hhit2'. exists out1. split; [exact Hhit1|].
+    eapply sem_lift_proper_r; [|exact Hlift].
+    eapply stable_hitting_weak_unique; [exact Hhit2|exact Hhit2'].
+Qed.
+
+End StableHittingMatchEndpoint.
+
 Section StableHittingBisimulationReflexivity.
 Context {MF : Type -> Type}
   `{FI : SemanticMeasureInterface MF}
@@ -394,13 +426,7 @@ Lemma probabilistic_eutt_of_hitting_lift
   probabilistic_eutt RR t1 t2.
 Proof.
   intros Hhit1 Hhit2 Hlift. apply probabilistic_eutt_fold.
-  unfold stable_hitting_match. split.
-  - intros out1' Hhit1'. exists out2. split; [exact Hhit2|].
-    eapply sem_lift_proper_l; [|exact Hlift].
-    eapply stable_hitting_weak_unique; [exact Hhit1|exact Hhit1'].
-  - intros out2' Hhit2'. exists out1. split; [exact Hhit1|].
-    eapply sem_lift_proper_r; [|exact Hlift].
-    eapply stable_hitting_weak_unique; [exact Hhit2|exact Hhit2'].
+  eapply stable_hitting_match_of_hitting_lift; eauto.
 Qed.
 
 Lemma probabilistic_eutt_preserves_hitting_mass
@@ -812,19 +838,7 @@ Lemma probabilistic_eutt_vis {R1 R2 X} (RR : R1 -> R2 -> Prop)
     (Vis e k1) (Vis e k2).
 Proof.
   intro Hk. apply probabilistic_eutt_fold.
-  unfold stable_hitting_match. split.
-  - intros out1 Hhit1. exists (sem_ret (FHVis e k2)). split.
-    + apply stable_hitting_weak_vis.
-    + eapply sem_lift_proper_l.
-      * eapply stable_hitting_weak_unique;
-          [apply (stable_hitting_weak_vis e k1)|exact Hhit1].
-      * apply sem_lift_ret. constructor. exact Hk.
-  - intros out2 Hhit2. exists (sem_ret (FHVis e k1)). split.
-    + apply stable_hitting_weak_vis.
-    + eapply sem_lift_proper_r.
-      * eapply stable_hitting_weak_unique;
-          [apply (stable_hitting_weak_vis e k2)|exact Hhit2].
-      * apply sem_lift_ret. constructor. exact Hk.
+  apply stable_hitting_match_vis. exact Hk.
 Qed.
 
 End ProbabilisticEuttStructuralLaws.
