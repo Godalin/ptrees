@@ -2398,6 +2398,89 @@ Proof.
   apply pstructural_interp. exact Hstruct.
 Qed.
 
+Section FreeOmegaInterpLaws.
+Context {E F : Type -> Type} {MN : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NAE : @SemanticMeasureAELiftLaws MN NI}
+  `{NO : @SemanticOmegaInterface MN NI}.
+
+Local Notation MF := (FreeOmega MN).
+
+(** Canonical unfolding laws for the guarded interpreter. *)
+Theorem free_probabilistic_eutt_interp_ret {R}
+    (handler : forall X, E X -> ptree F MN X) (r : R) :
+  @probabilistic_eutt F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.interp handler (Ret r)) (Ret r).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply observe_eq_pstructural. exact (observing_observe (interp_ret_ handler r)).
+Qed.
+
+Theorem free_probabilistic_eutt_interp_tau {R}
+    (handler : forall X, E X -> ptree F MN X) (t : ptree E MN R) :
+  @probabilistic_eutt F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.interp handler (Tau t)) (Tau (PTree.interp handler t)).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply observe_eq_pstructural. exact (observing_observe (interp_tau_ handler t)).
+Qed.
+
+Theorem free_probabilistic_eutt_interp_vis {R X}
+    (handler : forall Y, E Y -> ptree F MN Y)
+    (e : E X) (k : X -> ptree E MN R) :
+  @probabilistic_eutt F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.interp handler (Vis e k))
+    (Tau (PTree.bind (handler _ e)
+      (fun x => PTree.interp handler (k x)))).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply observe_eq_pstructural. exact (observing_observe (interp_vis_ handler e k)).
+Qed.
+
+Theorem free_probabilistic_eutt_interp_prob {R X}
+    (handler : forall Y, E Y -> ptree F MN Y)
+    (mu : MN X) (k : X -> ptree E MN R) :
+  @probabilistic_eutt F MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.interp handler (Prob mu k))
+    (Prob mu (fun x => PTree.interp handler (k x))).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply observe_eq_pstructural. exact (observing_observe (interp_prob_ handler mu k)).
+Qed.
+
+Theorem free_probabilistic_eutt_translate_structural {G A B}
+    (RR : A -> B -> Prop) (rename : forall X, E X -> G X)
+    (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstructural RR t1 t2 ->
+  @probabilistic_eutt G MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A B RR
+    (PTree.translate rename t1) (PTree.translate rename t2).
+Proof.
+  apply free_probabilistic_eutt_interp_structural.
+Qed.
+
+End FreeOmegaInterpLaws.
+
 Section EnumOperationalCofinality.
 Import Enum.
 Context {E : Type -> Type}.
