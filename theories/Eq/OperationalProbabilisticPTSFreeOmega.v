@@ -2374,6 +2374,30 @@ Qed.
 
 End FreeOmegaOperationalCofinality.
 
+(** Interpreting visible events preserves every structural proof.  This is
+    stated outside the source-event section so structural soundness can be
+    instantiated at the handler's target event signature. *)
+Theorem free_probabilistic_eutt_interp_structural
+    {E F : Type -> Type} {MN : Type -> Type}
+    `{NI : SemanticMeasureInterface MN}
+    `{NC : @SemanticMeasureCoreLaws MN NI}
+    `{NAE : @SemanticMeasureAELiftLaws MN NI}
+    `{NO : @SemanticOmegaInterface MN NI}
+    {A B} (RR : A -> B -> Prop)
+    (handler : forall X, E X -> ptree F MN X)
+    (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstructural RR t1 t2 ->
+  @probabilistic_eutt F MN (FreeOmega MN)
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface A B RR
+    (PTree.interp handler t1) (PTree.interp handler t2).
+Proof.
+  intro Hstruct. apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_interp. exact Hstruct.
+Qed.
+
 Section EnumOperationalCofinality.
 Import Enum.
 Context {E : Type -> Type}.

@@ -70,3 +70,24 @@ Lemma canonical_iter_structural_regression {I R}
   (forall j, pstructural eq (step1 j) (step2 j)) ->
   peutt eq (PTree.iter step1 i) (PTree.iter step2 i).
 Proof. apply free_probabilistic_eutt_iter_structural. Qed.
+
+Variant sourceE : Type -> Type :=
+  | AskBit : sourceE bool.
+
+Definition bit_handler (X : Type) (e : sourceE X) : ptree algebraE Enum X :=
+  match e with
+  | AskBit => Tau (Ret true)
+  end.
+
+(** Regression: a visible source interaction is replaced by a target-side
+    computation, and the heterogeneous continuation relation is retained. *)
+Lemma canonical_interp_structural_regression
+    (k1 k2 : bool -> ptree sourceE Enum nat) :
+  (forall b, pstructural (fun n m => n = S m) (k1 b) (k2 b)) ->
+  peutt (fun n m => n = S m)
+    (PTree.interp bit_handler (Vis AskBit k1))
+    (PTree.interp bit_handler (Vis AskBit k2)).
+Proof.
+  intro Hk. apply free_probabilistic_eutt_interp_structural.
+  apply pstructural_fold. cbn. constructor. exact Hk.
+Qed.

@@ -304,6 +304,81 @@ Qed.
 
 End PStructuralBindRetR.
 
+Section PStructuralInterp.
+Context {E F : Type -> Type} {M : Type -> Type}.
+Context {R1 R2 : Type}.
+Variable RR : R1 -> R2 -> Prop.
+Variable handler : forall X, E X -> ptree F M X.
+
+Inductive pstructural_interp_clo :
+    ptree F M R1 -> ptree F M R2 -> Prop :=
+  | PStInterpMain t1 t2 :
+      pstructural RR t1 t2 ->
+      pstructural_interp_clo
+        (PTree.interp handler t1) (PTree.interp handler t2)
+  | PStInterpBind {X} (source : ptree F M X)
+      (k1 : X -> ptree E M R1) (k2 : X -> ptree E M R2) :
+      (forall x, pstructural RR (k1 x) (k2 x)) ->
+      pstructural_interp_clo
+        (PTree.bind source (fun x => PTree.interp handler (k1 x)))
+        (PTree.bind source (fun x => PTree.interp handler (k2 x)))
+  | PStInterpDone u1 u2 :
+      pstructural RR u1 u2 -> pstructural_interp_clo u1 u2.
+
+Theorem pstructural_interp (t1 : ptree E M R1) (t2 : ptree E M R2) :
+  pstructural RR t1 t2 ->
+  pstructural RR (PTree.interp handler t1) (PTree.interp handler t2).
+Proof.
+  intro Hsource.
+  assert (Hinterp : forall u1 u2, pstructural_interp_clo u1 u2 ->
+      pstructural RR u1 u2).
+  { unfold pstructural. coinduction CH CIH.
+    intros u1 u2 Hclo. inversion Hclo; subst.
+    - unfold pstructural_body.
+      change (pstructuralF RR (` CH)
+        (observe (PTree.interp handler t0))
+        (observe (PTree.interp handler t3))).
+      rewrite !observe_interp.
+      pose proof (pstructural_unfold H) as Hstep.
+      dependent destruction Hstep.
+      + rewrite <- x0. rewrite <- x. cbn. constructor. exact H0.
+      + rewrite <- x0. rewrite <- x. cbn.
+        constructor. apply CIH. constructor. exact H0.
+      + rewrite <- x0. rewrite <- x. cbn.
+        constructor. apply CIH. constructor. intro y. exact (H0 y).
+      + rewrite <- x0. rewrite <- x. cbn.
+        constructor=> y. apply CIH. constructor. exact (H0 y).
+    - unfold pstructural_body.
+      change (pstructuralF RR (` CH)
+        (observe (PTree.bind source
+          (fun x => PTree.interp handler (k1 x))))
+        (observe (PTree.bind source
+          (fun x => PTree.interp handler (k2 x))))).
+      rewrite !observe_bind.
+      remember (observe source) as os eqn:Hos.
+      destruct os as [x|source'|Y e c|Y mu c]; cbn.
+      + rewrite !observe_interp.
+        pose proof (pstructural_unfold (H x)) as Hstep.
+        dependent destruction Hstep.
+        * rewrite <- x1. rewrite <- x. cbn. constructor. exact H0.
+        * rewrite <- x1. rewrite <- x. cbn.
+          constructor. apply CIH. constructor. exact H0.
+        * rewrite <- x1. rewrite <- x. cbn.
+          constructor. apply CIH. constructor. intro z. exact (H0 z).
+        * rewrite <- x1. rewrite <- x. cbn.
+          constructor=> z. apply CIH. constructor. exact (H0 z).
+      + constructor. apply CIH. constructor. exact H.
+      + constructor=> y. apply CIH. constructor. exact H.
+      + constructor=> y. apply CIH. constructor. exact H.
+    - unfold pstructural_body.
+      pose proof (pstructural_unfold H) as Hstep.
+      eapply pstructuralF_monotone; [|exact Hstep].
+      intros x y Hxy. apply CIH. constructor. exact Hxy. }
+  apply Hinterp. constructor. exact Hsource.
+Qed.
+
+End PStructuralInterp.
+
 Section PStructuralIter.
 Context {E : Type -> Type} {M : Type -> Type}.
 Context {I R : Type}.

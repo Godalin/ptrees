@@ -160,16 +160,15 @@ Arguments trigger {E M T} _.
 (** Interpret visible events with a PTree handler.  The administrative
     [Tau] on the visible branch makes the corecursion syntactically guarded;
     it is intentionally invisible to the canonical weak equivalence. *)
-Definition interp {E F M} (handler : E ~> ptree F M) {R}
+CoFixpoint interp {E F M} (handler : E ~> ptree F M) {R}
     (t : ptree E M R) : ptree F M R :=
-  (cofix interp_ (u : ptree E M R) : ptree F M R :=
-    match observe u with
+    match observe t with
     | RetF r => Ret r
-    | TauF u' => Tau (interp_ u')
+    | TauF t' => Tau (interp handler t')
     | @VisF _ _ _ _ X e k =>
-        Tau (bind (handler _ e) (fun x => interp_ (k x)))
-    | @ProbF _ _ _ _ X mu k => Prob mu (fun x => interp_ (k x))
-    end) t.
+        Tau (bind (handler _ e) (fun x => interp handler (k x)))
+    | @ProbF _ _ _ _ X mu k => Prob mu (fun x => interp handler (k x))
+    end.
 
 (** Event renaming is the pure-handler instance of [interp]. *)
 Definition translate {E F M} (f : E ~> F) {R}

@@ -149,6 +149,22 @@ Proof. constructor; reflexivity. Qed.
 
 (** Unfolding equations for event interpretation.  The visible equation
     exposes the administrative guard inserted by [PTree.interp]. *)
+Lemma observe_interp {E F M R}
+    (handler : forall X, E X -> ptree F M X) (t : ptree E M R) :
+  observe (PTree.interp handler t) =
+    match observe t with
+    | RetF r => RetF r
+    | TauF t' => TauF (PTree.interp handler t')
+    | @VisF _ _ _ _ X e k =>
+        TauF (PTree.bind (handler X e)
+          (fun x => PTree.interp handler (k x)))
+    | @ProbF _ _ _ _ X mu k =>
+        ProbF mu (fun x => PTree.interp handler (k x))
+    end.
+Proof.
+  destruct (observe t) eqn:Ht; unfold observe; cbn; rewrite Ht; reflexivity.
+Qed.
+
 Lemma interp_ret_ {E F M R}
     (handler : forall X, E X -> ptree F M X) (r : R) :
   observing eq (PTree.interp handler (Ret r)) (Ret r).
