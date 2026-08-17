@@ -211,10 +211,33 @@ Variant sourceE : Type -> Type :=
 Variant renamedE : Type -> Type :=
   | GetBit : renamedE bool.
 
+Variant finalE : Type -> Type :=
+  | ReadBit : finalE bool.
+
 Definition rename_bit (X : Type) (e : sourceE X) : renamedE X :=
   match e with
   | AskBit => GetBit
   end.
+
+Definition rename_get (X : Type) (e : renamedE X) : finalE X :=
+  match e with
+  | GetBit => ReadBit
+  end.
+
+Lemma canonical_translate_compose_regression {R}
+    (t : ptree sourceE Enum R) :
+  @probabilistic_eutt finalE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.translate rename_get (PTree.translate rename_bit t))
+    (PTree.translate
+      (fun (X : Type) (e : sourceE X) =>
+        @rename_get X (@rename_bit X e)) t).
+Proof. apply free_probabilistic_eutt_translate_compose. Qed.
 
 (** Identity interpretation is genuinely weak on this program: interpreting
     [GetBit] inserts an administrative Tau before the visible event. *)

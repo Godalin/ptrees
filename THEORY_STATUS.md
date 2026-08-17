@@ -173,6 +173,14 @@ as `interp trigger t ≈ₚ t`.  This cannot be a structural equation because
 guarded interpretation inserts Tau before Vis.  The regression exercises an
 actual visible `GetBit` event.
 
+Pure renaming is functorial as well:
+`free_probabilistic_eutt_translate_compose` proves
+`translate g (translate f t) ≈ₚ translate (g ∘ f) t`.  Because two guarded
+interpreters insert more Tau structure than one, this is proved by gluing
+source-to-intermediate-to-left hitting transport with direct
+source-to-right transport, not by structural equality.  The regression uses
+three distinct event signatures (`AskBit`, `GetBit`, and `ReadBit`).
+
 This is the first sound handler layer, not yet the full ITree-style claim
 that `interp` preserves arbitrary `probabilistic_eutt`.  In particular,
 effectful `interp` preservation for arbitrary behaviorally equivalent source

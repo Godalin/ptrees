@@ -445,6 +445,131 @@ Qed.
 
 End TranslateIdentity.
 
+End FreeOmegaOperationalCofinality.
+
+Section TranslateComposition.
+Context {E : Type -> Type} {MN : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NAE : @SemanticMeasureAELiftLaws MN NI}
+  `{NO : @SemanticOmegaInterface MN NI}.
+Local Notation MF := (FreeOmega MN).
+Context {F G : Type -> Type}.
+Variable rename1 : forall X, E X -> F X.
+Variable rename2 : forall X, F X -> G X.
+
+Definition free_compose_rename (X : Type) (e : E X) : G X :=
+  @rename2 X (@rename1 X e).
+
+Inductive free_translate_comp_state {R} :
+    ptree' G MN R -> ptree' G MN R -> Prop :=
+  | FTCSMain (t : ptree E MN R) :
+      free_translate_comp_state
+        (observe (PTree.translate rename2 (PTree.translate rename1 t)))
+        (observe (PTree.translate free_compose_rename t)).
+
+Lemma free_translate_comp_head {R}
+    (hL hR : frontier_head G MN R) :
+  (exists hS : frontier_head E MN R,
+    (exists hM : frontier_head F MN R,
+      free_translate_head_rel rename1 hS hM /\
+      @free_translate_head_rel F MN G rename2 R hM hL) /\
+    free_translate_head_rel free_compose_rename hS hR) ->
+  @ptree_stable_head_rel G MN R R eq free_translate_comp_state hL hR.
+Proof.
+  intros [hS [[hM [Hsm Hml]] Hsr]].
+  dependent destruction Hsm; dependent destruction Hml;
+    dependent destruction Hsr.
+  - constructor. reflexivity.
+  - constructor. intro x.
+    unfold free_translate_cont. rewrite !observe_bind. cbn.
+    change (free_translate_comp_state
+      (observe (PTree.translate rename2 (PTree.translate rename1 (k x))))
+      (observe (PTree.translate free_compose_rename (k x)))).
+    constructor.
+Qed.
+
+(** Pure event renaming is functorial up to the canonical weak
+    equivalence.  The proof glues source-to-intermediate-to-left hitting
+    transport against the direct source-to-right transport. *)
+Theorem free_probabilistic_eutt_translate_compose {R}
+    (t : ptree E MN R) :
+  @probabilistic_eutt G MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.translate rename2 (PTree.translate rename1 t))
+    (PTree.translate free_compose_rename t).
+Proof.
+  eapply probabilistic_eutt_coinduction with
+    (sim := @free_translate_comp_state R).
+  - intros sL sR Hsim. dependent destruction Hsim.
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R) (observe t0)) as [outS HS].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel F MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R)
+      (observe (PTree.translate rename1 t0))) as [outM HM].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel G MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R)
+      (observe (PTree.translate rename2
+        (PTree.translate rename1 t0)))) as [outL HL].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel G MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R)
+      (observe (PTree.translate free_compose_rename t0))) as [outR HR].
+    eapply stable_hitting_match_of_hitting_lift; [exact HL|exact HR|].
+    pose proof (free_translate_hitting_lift
+      (rename := rename1) HS HM) as Hsm.
+    pose proof (free_translate_hitting_lift
+      (rename := rename2) HM HL) as Hml.
+    pose proof (free_translate_hitting_lift
+      (rename := free_compose_rename) HS HR) as Hsr.
+    eapply FOQLComp
+      with (T := fun hL hS => exists hM,
+          free_translate_head_rel rename1 hS hM /\
+          @free_translate_head_rel F MN G rename2 R hM hL)
+        (U := free_translate_head_rel free_compose_rename)
+        (mid := outS).
+    + apply FOQLSym.
+      eapply FOQLComp with
+        (T := free_translate_head_rel rename1)
+        (U := @free_translate_head_rel F MN G rename2 R) (mid := outM).
+      * exact Hsm.
+      * exact Hml.
+      * intros hS hL [hM [H1 H2]]. exists hM. split; assumption.
+    + exact Hsr.
+    + intros hL hR [hS [[hM [H1 H2]] H3]].
+      apply free_translate_comp_head.
+      exists hS. split; [exists hM; split|]; assumption.
+  - constructor.
+Qed.
+
+End TranslateComposition.
+
+Section FreeOmegaOperationalCofinalityContinuation.
+Context {E : Type -> Type} {MN : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NAE : @SemanticMeasureAELiftLaws MN NI}
+  `{NO : @SemanticOmegaInterface MN NI}.
+Local Notation MF := (FreeOmega MN).
+
 Lemma free_operational_hitting_pstructural {A B}
     (RR : A -> B -> Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
   pstructural RR t1 t2 ->
@@ -2979,7 +3104,7 @@ Proof.
   apply free_omega_cofinal_lub_iff. exact Hcofinal.
 Qed.
 
-End FreeOmegaOperationalCofinality.
+End FreeOmegaOperationalCofinalityContinuation.
 
 (** Interpreting visible events preserves every structural proof.  This is
     stated outside the source-event section so structural soundness can be
