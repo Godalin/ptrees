@@ -225,6 +225,23 @@ Polymorphic Class MixedMeasureUnitLaws@{node node_rep frontier frontier_rep}
       sem_lift eq (mixed_bind (sem_ret x) k) (k x)
 }.
 
+(** Optional compatibility between node-level Kleisli composition and
+    mixed binding into the frontier layer.  This is the semantic content of
+    flattening two consecutive [Prob] nodes. *)
+Polymorphic Class MixedMeasureNodeBindLaws@{node node_rep frontier frontier_rep}
+    (MN : Type@{node} -> Type@{node_rep})
+    (MF : Type@{frontier} -> Type@{frontier_rep})
+    `{NI : SemanticMeasureInterface MN}
+    `{FI : SemanticMeasureInterface MF}
+    `{MX : MixedMeasureInterface MN MF} := {
+  mixed_bind_node_assoc : forall
+      {A B : Type@{node}} {C : Type@{frontier}}
+      (mu : MN A) (h : A -> MN B) (k : B -> MF C),
+      sem_lift eq
+        (mixed_bind mu (fun x => mixed_bind (h x) k))
+        (mixed_bind (sem_bind mu h) k)
+}.
+
 (** Exact almost-everywhere characterization of semantic Dirac measures.
     Positive AE introduction alone is insufficient to discard branches other
     than the selected point when quotienting a sampled Dirac. *)

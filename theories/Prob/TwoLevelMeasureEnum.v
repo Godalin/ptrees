@@ -206,6 +206,18 @@ Proof.
   - apply sem_lift_refl. intro y. reflexivity.
 Qed.
 
+#[global] Instance Enum_MixedMeasureNodeBindLaws :
+    @MixedMeasureNodeBindLaws Enum Enum
+      Enum_SemanticMeasureInterface Enum_SemanticMeasureInterface
+      Enum_MixedMeasureInterface.
+Proof.
+  constructor. intros A B C mu h k.
+  eapply sem_lift_proper_l.
+  - exact (@meas_bind_assoc Enum Enum_MeasureInterface
+      Enum_MeasureMonadLaws A B C mu h k).
+  - apply sem_lift_refl. intro z. reflexivity.
+Qed.
+
 (** Indexed couplings preserve the total finite weight even when the value
     carriers have no decidable equality.  This is the concrete numeric
     reflection of the abstract [sem_same_mass] predicate. *)

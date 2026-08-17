@@ -129,11 +129,16 @@ FreeOmega observable quotient contains the corresponding
 `FOQLSampleRetL` equation; `canonical_prob_ret_regression` checks the complete
 Enum-to-FreeOmega instance chain.
 
-No generic nested-Prob-flattening theorem is yet asserted.  The current
-mixed laws do not identify a node-level monadic bind with two consecutive
-`FOSample` layers.  That law similarly requires an explicit backend
-node-bind/quotient capability rather than a new case in the behavioral
-generator.
+Nested sampling is handled by a second optional capability,
+`MixedMeasureNodeBindLaws`, which couples a node-level Kleisli bind with two
+successive mixed binds.  Under it, `probabilistic_eutt_prob_flatten` proves
+that two consecutive `Prob` nodes equal one node sampling the bound measure.
+The Enum/Enum two-level backend supplies this law from measure associativity.
+The maintained Enum-to-FreeOmega backend does not yet expose the instance:
+its quotient proof additionally needs the reverse direction of node-bind
+AE/support decomposition, whereas the base interface currently provides
+only forward Kleisli AE closure.  This remaining backend condition is kept
+explicit rather than being smuggled into the behavioral generator.
 
 ## Probability and missing mass
 
