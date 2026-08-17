@@ -145,10 +145,19 @@ maintained Enum-to-FreeOmega canonical endpoint.
 Independent sampling interchange is expressed by the optional relational
 Fubini capability `MixedMeasureCommutativeLaws`.  Under that capability,
 `probabilistic_eutt_prob_interchange` exchanges two nested `Prob` nodes with
-dependent continuations by coupling their complete hitting limits.  The law
-is intentionally not part of the base mixed interface: instantiating it for
-FreeOmega requires transporting nested-sample support through a product-node
-coupling, and noncommutative measure-like effects must remain admissible.
+dependent continuations by coupling their complete hitting limits.  A fixed
+pair of measures may instead use `mixed_measure_exchange` and
+`probabilistic_eutt_prob_interchange_of`.
+
+For FreeOmega, `free_omega_ae_sample2_product_iff` identifies nested-sample
+AE with product-node AE.  `free_omega_support_lift_sample_exchange` transports
+that support through a product-swap coupling, and the guarded quotient rule
+`FOQLSampleExchange` requires both this support witness and pointwise
+continuation couplings.  `free_omega_mixed_exchange_of_product` packages the
+result.  The Enum regression obtains its product coupling from finite
+Fubini--Tonelli and proves canonical nested-Prob interchange end to end.
+The law remains outside the base mixed interface, so noncommutative
+measure-like effects remain admissible.
 
 ## Probability and missing mass
 

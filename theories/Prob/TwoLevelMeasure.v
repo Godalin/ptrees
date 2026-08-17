@@ -242,8 +242,23 @@ Polymorphic Class MixedMeasureNodeBindLaws@{node node_rep frontier frontier_rep}
         (mixed_bind (sem_bind mu h) k)
 }.
 
-(** Relational Fubini law across the node/frontier boundary.  It is kept
-    optional because commutativity is not a law of every measure-like
+(** Relational Fubini law for one fixed pair of node measures. *)
+Polymorphic Definition mixed_measure_exchange@{node node_rep frontier frontier_rep}
+    {MN : Type@{node} -> Type@{node_rep}}
+    {MF : Type@{frontier} -> Type@{frontier_rep}}
+    `{NI : SemanticMeasureInterface MN}
+    `{FI : SemanticMeasureInterface MF}
+    `{MX : MixedMeasureInterface MN MF}
+    {A B : Type@{node}} (mu : MN A) (nu : MN B) : Prop :=
+  forall (C D : Type@{frontier}) (R : C -> D -> Prop)
+    (k1 : A -> B -> MF C) (k2 : B -> A -> MF D),
+    (forall x y, sem_lift R (k1 x y) (k2 y x)) ->
+    sem_lift R
+      (mixed_bind mu (fun x => mixed_bind nu (k1 x)))
+      (mixed_bind nu (fun y => mixed_bind mu (k2 y))).
+
+(** Uniform relational Fubini law across the node/frontier boundary.  It is
+    kept optional because commutativity is not a law of every measure-like
     effect. *)
 Polymorphic Class MixedMeasureCommutativeLaws@{node node_rep frontier frontier_rep}
     (MN : Type@{node} -> Type@{node_rep})
@@ -251,14 +266,8 @@ Polymorphic Class MixedMeasureCommutativeLaws@{node node_rep frontier frontier_r
     `{NI : SemanticMeasureInterface MN}
     `{FI : SemanticMeasureInterface MF}
     `{MX : MixedMeasureInterface MN MF} := {
-  mixed_lift_exchange : forall
-      {A B : Type@{node}} {C D : Type@{frontier}}
-      (R : C -> D -> Prop) (mu : MN A) (nu : MN B)
-      (k1 : A -> B -> MF C) (k2 : B -> A -> MF D),
-      (forall x y, sem_lift R (k1 x y) (k2 y x)) ->
-      sem_lift R
-        (mixed_bind mu (fun x => mixed_bind nu (k1 x)))
-        (mixed_bind nu (fun y => mixed_bind mu (k2 y)))
+  mixed_lift_exchange : forall {A B : Type@{node}}
+      (mu : MN A) (nu : MN B), mixed_measure_exchange mu nu
 }.
 
 (** Exact almost-everywhere characterization of semantic Dirac measures.

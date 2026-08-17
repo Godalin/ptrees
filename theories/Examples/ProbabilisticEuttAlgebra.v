@@ -3,8 +3,10 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 From Coq Require Import Morphisms.
+From mathcomp Require Import eqtype.
 From PTree.Core Require Import PTreeDefinitionNew.
-From PTree.Prob Require Import DiscreteMC TwoLevelMeasure TwoLevelMeasureEnum
+From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
+  TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure MeasureIterationEnum.
 From PTree.Eq Require Import OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega ProbabilisticEutt PStrong.
@@ -77,6 +79,37 @@ Proof.
     (Prob mu (fun x => Prob (h x) k))
     (Prob (@sem_bind Enum Enum_SemanticMeasureInterface X Y mu h) k)).
   apply probabilistic_eutt_prob_flatten.
+Qed.
+
+Lemma enum_semantic_product_swap {X Y : eqType}
+    (mu : Enum X) (nu : Enum Y) :
+  @sem_lift Enum Enum_SemanticMeasureInterface _ _
+    semantic_pair_swap_rel
+    (semantic_product mu nu) (semantic_product nu mu).
+Proof.
+  change (@meas_lift Enum Enum_MeasureInterface _ _
+    semantic_pair_swap_rel
+    (bind_Enum mu (fun x => bind_Enum nu
+      (fun y => ret_Enum (x, y))))
+    (bind_Enum nu (fun y => bind_Enum mu
+      (fun x => ret_Enum (y, x))))).
+  refine (@meas_lift_bind_ret_exchange Enum Enum_MeasureInterface
+    Enum_MeasureCommutativeLaws X Y (X * Y)%type (Y * X)%type
+    (@semantic_pair_swap_rel X Y) mu nu
+    (fun x y => (x, y)) (fun y x => (y, x)) _).
+  intros x y. split; reflexivity.
+Qed.
+
+Lemma canonical_prob_interchange_regression {X Y : eqType} {R}
+    (mu : Enum X) (nu : Enum Y)
+    (k : X -> Y -> ptree algebraE Enum R) :
+  peutt eq
+    (Prob mu (fun x => Prob nu (fun y => k x y)))
+    (Prob nu (fun y => Prob mu (fun x => k x y))).
+Proof.
+  eapply probabilistic_eutt_prob_interchange_of.
+  apply free_omega_mixed_exchange_of_product.
+  apply enum_semantic_product_swap.
 Qed.
 
 Lemma canonical_iter_unfold_regression {I R}

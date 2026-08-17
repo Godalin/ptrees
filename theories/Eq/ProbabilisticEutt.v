@@ -948,9 +948,9 @@ Qed.
 
 (** Exchange two independent sampling nodes.  Commutativity is supplied by
     the two-level backend and is not assumed by the canonical generator. *)
-Theorem probabilistic_eutt_prob_interchange {R X Y}
-    `{MC : @MixedMeasureCommutativeLaws MN MF NI FI MX}
+Theorem probabilistic_eutt_prob_interchange_of {R X Y}
     (mu : MN X) (nu : MN Y)
+    (Hexchange : mixed_measure_exchange mu nu)
     (k : X -> Y -> ptree E MN R) :
   probabilistic_eutt eq
     (Prob mu (fun x => Prob nu (fun y => k x y)))
@@ -975,10 +975,22 @@ Proof.
           (Good := fun _ => True).
       * apply sem_ae_true.
       * intros x _. exact (Hfront (x, y)).
-  - eapply mixed_lift_exchange.
+  - eapply Hexchange.
     intros x y. apply sem_lift_refl. intros h. destruct h.
     + constructor. reflexivity.
     + constructor. intro z. apply probabilistic_eutt_refl.
+Qed.
+
+Corollary probabilistic_eutt_prob_interchange {R X Y}
+    `{MC : @MixedMeasureCommutativeLaws MN MF NI FI MX}
+    (mu : MN X) (nu : MN Y)
+    (k : X -> Y -> ptree E MN R) :
+  probabilistic_eutt eq
+    (Prob mu (fun x => Prob nu (fun y => k x y)))
+    (Prob nu (fun y => Prob mu (fun x => k x y))).
+Proof.
+  eapply probabilistic_eutt_prob_interchange_of.
+  apply mixed_lift_exchange.
 Qed.
 
 #[global] Instance probabilistic_eutt_prob_Proper {R X} (mu : MN X) :

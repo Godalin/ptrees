@@ -1158,6 +1158,90 @@ Proof.
       * intros y Hy. apply (proj2 (Hkl y) Q). apply H0. exact Hy.
 Qed.
 
+Definition semantic_product {MN}
+    `{NI : SemanticMeasureInterface MN} {X Y}
+    (mu : MN X) (nu : MN Y) : MN (X * Y)%type :=
+  sem_bind mu (fun x => sem_bind nu (fun y => sem_ret (x, y))).
+
+Lemma free_omega_ae_sample2_product_iff {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NC : @SemanticMeasureCoreLaws MN NI}
+    `{ND : @SemanticMeasureDiracAELaws MN NI}
+    `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
+    {A X Y} (P : A -> Prop) (mu : MN X) (nu : MN Y)
+    (k : X -> Y -> FreeOmega MN A) :
+  free_omega_ae P (FOSample mu (fun x => FOSample nu (k x))) <->
+  sem_ae (semantic_product mu nu)
+    (fun p => free_omega_ae P (k (fst p) (snd p))).
+Proof.
+  split.
+  - intro Hnested. dependent destruction Hnested.
+    apply (proj2 (sem_ae_bind_iff _ _ _)).
+    eapply sem_ae_mono; [|exact H]. intros x Hx.
+    specialize (H0 x Hx). dependent destruction H0.
+    apply (proj2 (sem_ae_bind_iff _ _ _)).
+    eapply sem_ae_mono; [|exact H0]. intros y Hy.
+    apply (proj2 (sem_ae_ret_iff _ _)). exact (H1 y Hy).
+  - intro Hproduct.
+    apply (proj1 (sem_ae_bind_iff _ _ _)) in Hproduct.
+    eapply FOAESample with
+      (Good := fun x => sem_ae
+        (sem_bind nu (fun y => sem_ret (x, y)))
+        (fun p => free_omega_ae P (k (fst p) (snd p)))).
+    + exact Hproduct.
+    + intros x Hx.
+      apply (proj1 (sem_ae_bind_iff _ _ _)) in Hx.
+      eapply FOAESample with
+        (Good := fun y => sem_ae (sem_ret (x, y))
+          (fun p => free_omega_ae P (k (fst p) (snd p)))).
+      * exact Hx.
+      * intros y Hy. apply (proj1 (sem_ae_ret_iff _ _)) in Hy.
+        exact Hy.
+Qed.
+
+Definition semantic_pair_swap_rel {X Y}
+    (p : X * Y) (q : Y * X) : Prop :=
+  fst p = snd q /\ snd p = fst q.
+
+Lemma free_omega_support_lift_sample_exchange {MN}
+    `{NI : SemanticMeasureInterface MN}
+    `{NC : @SemanticMeasureCoreLaws MN NI}
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    `{ND : @SemanticMeasureDiracAELaws MN NI}
+    `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
+    {A B X Y} (R : A -> B -> Prop)
+    (mu : MN X) (nu : MN Y)
+    (k1 : X -> Y -> FreeOmega MN A)
+    (k2 : Y -> X -> FreeOmega MN B) :
+  sem_lift semantic_pair_swap_rel
+    (semantic_product mu nu) (semantic_product nu mu) ->
+  (forall x y, free_omega_support_lift R (k1 x y) (k2 y x)) ->
+  free_omega_support_lift R
+    (FOSample mu (fun x => FOSample nu (k1 x)))
+    (FOSample nu (fun y => FOSample mu (k2 y))).
+Proof.
+  intros Hswap Hkl. split.
+  - intros P HP.
+    apply (proj2 (free_omega_ae_sample2_product_iff
+      (fun b => exists a, R a b /\ P a) nu mu k2)).
+    pose proof (proj1 (free_omega_ae_sample2_product_iff
+      P mu nu k1) HP) as Hprod.
+    pose proof (sem_lift_ae_transport_r Hswap Hprod) as Htransport.
+    eapply sem_ae_mono; [|exact Htransport].
+    intros [y x] [[x' y'] [[Hxx Hyy] HPxy]]. cbn in *.
+    subst x'. subst y'. apply (proj1 (Hkl x y) P). exact HPxy.
+  - intros Q HQ.
+    apply (proj2 (free_omega_ae_sample2_product_iff
+      (fun a => exists b, R a b /\ Q b) mu nu k1)).
+    pose proof (proj1 (free_omega_ae_sample2_product_iff
+      Q nu mu k2) HQ) as Hprod.
+    pose proof (sem_lift_ae_transport_r (sem_lift_sym Hswap) Hprod)
+      as Htransport.
+    eapply sem_ae_mono; [|exact Htransport].
+    intros [x y] [[y' x'] [[Hyy Hxx] HQyx]]. cbn in *.
+    subst y'. subst x'. apply (proj2 (Hkl x y) Q). exact HQyx.
+Qed.
+
 (** An observation-closed coupling for the free omega completion.  The
     structural lifting above remains useful for syntax-directed proofs, but
     it deliberately cannot identify, for example, a formal omega limit with
@@ -1224,6 +1308,18 @@ Polymorphic Inductive free_omega_qlift {MN}
       free_omega_qlift R
         (FOSample mu (fun x => FOSample (h x) k))
         (FOSample (sem_bind mu h) l)
+  | FOQLSampleExchange {C D} (mu : MN C) (nu : MN D)
+      (k : C -> D -> FreeOmega MN A)
+      (l : D -> C -> FreeOmega MN B) :
+      sem_lift semantic_pair_swap_rel
+        (semantic_product mu nu) (semantic_product nu mu) ->
+      (forall x y, free_omega_qlift R (k x y) (l y x)) ->
+      free_omega_support_lift R
+        (FOSample mu (fun x => FOSample nu (k x)))
+        (FOSample nu (fun y => FOSample mu (l y))) ->
+      free_omega_qlift R
+        (FOSample mu (fun x => FOSample nu (k x)))
+        (FOSample nu (fun y => FOSample mu (l y)))
   | FOQLLub (c : nat -> FreeOmega MN A) (d : nat -> FreeOmega MN B) :
       (forall n, free_omega_qlift R (c n) (d n)) ->
       free_omega_qlift R (FOLub c) (FOLub d)
@@ -1323,6 +1419,7 @@ Proof.
       * apply (proj2 (H (fun z => z = x))). reflexivity.
       * intros z ->. exact Hbranch.
   - eapply free_omega_support_lift_sample_bind; eauto.
+  - assumption.
   - apply free_omega_support_lift_lub. assumption.
   - apply free_omega_support_lift_lub_zero_prefix_l. assumption.
   - apply free_omega_support_lift_sym.
@@ -1526,6 +1623,29 @@ Proof.
   eapply FOQLSampleBind.
   - apply sem_ae_bind_iff.
   - intro y. apply free_omega_qlift_refl. intro z. reflexivity.
+Qed.
+
+Lemma free_omega_mixed_exchange_of_product
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
+    `{ND : @SemanticMeasureDiracAELaws MN NI}
+    `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
+    {X Y} (mu : MN X) (nu : MN Y) :
+  sem_lift semantic_pair_swap_rel
+    (semantic_product mu nu) (semantic_product nu mu) ->
+  @mixed_measure_exchange MN (FreeOmega MN) NI
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasureInterface X Y mu nu.
+Proof.
+  intro Hswap. intros A B R k1 k2 Hkl.
+  change (free_omega_qlift R
+    (FOSample mu (fun x => FOSample nu (k1 x)))
+    (FOSample nu (fun y => FOSample mu (k2 y)))).
+  eapply FOQLSampleExchange.
+  - exact Hswap.
+  - exact Hkl.
+  - eapply free_omega_support_lift_sample_exchange; [exact Hswap|].
+    intros x y. apply free_omega_qlift_support. exact (Hkl x y).
 Qed.
 
 #[global] Polymorphic Instance FreeOmegaObservableSemanticOmegaInterface :
