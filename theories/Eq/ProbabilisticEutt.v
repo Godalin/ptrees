@@ -386,6 +386,23 @@ Proof.
   eapply stable_hitting_weak_unique; [exact Hhit2'|exact Hhit2].
 Qed.
 
+Lemma probabilistic_eutt_hitting_lift
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
+  probabilistic_eutt RR t1 t2 ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
+  sem_lift (ptree_stable_head_rel RR
+    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2.
+Proof.
+  intros Hrel Hhit1 Hhit2. apply probabilistic_eutt_unfold in Hrel.
+  destruct Hrel as [Hforward _].
+  destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
+  eapply sem_lift_proper_r; [|exact Hlift].
+  eapply stable_hitting_weak_unique; eassumption.
+Qed.
+
 Corollary probabilistic_eutt_not_of_mass_mismatch
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
   stable_hitting_weak
@@ -400,6 +417,72 @@ Proof.
 Qed.
 
 End ProbabilisticEuttEndpoint.
+
+Section ProbabilisticEuttProbCongruence.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{FI : SemanticMeasureInterface MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasureInterface MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmegaInterface MF FI}
+  `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
+
+Lemma stable_hitting_weak_prob {R X}
+    (mu : MN X) (k : X -> ptree E MN R)
+    (front : X -> MF (frontier_head E MN R)) (Good : X -> Prop) :
+  sem_ae mu Good ->
+  (forall x, Good x -> stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R)
+    (observe (k x)) (front x)) ->
+  stable_hitting_weak
+    (@ptree_primitive_kernel E MN MF FI MX R)
+    (observe (Prob mu k)) (mixed_bind mu front).
+Proof.
+  intros Hae Hfront. change (operational_weak (MF := MF)
+    (observe (Prob mu k)) (mixed_bind mu front)).
+  eapply operational_weak_prob; eassumption.
+Qed.
+
+Theorem probabilistic_eutt_prob {R X1 X2}
+    (XR : X1 -> X2 -> Prop) (mu1 : MN X1) (mu2 : MN X2)
+    (k1 : X1 -> ptree E MN R) (k2 : X2 -> ptree E MN R) :
+  sem_lift XR mu1 mu2 ->
+  (forall x1 x2, XR x1 x2 -> probabilistic_eutt eq (k1 x1) (k2 x2)) ->
+  probabilistic_eutt eq (Prob mu1 k1) (Prob mu2 k2).
+Proof.
+  intros Hmu Hk.
+  assert (Hexists1 : forall x1, exists out,
+      stable_hitting_weak
+        (@ptree_primitive_kernel E MN MF FI MX R)
+        (observe (k1 x1)) out).
+  { intro x1. apply stable_hitting_weak_exists. }
+  assert (Hexists2 : forall x2, exists out,
+      stable_hitting_weak
+        (@ptree_primitive_kernel E MN MF FI MX R)
+        (observe (k2 x2)) out).
+  { intro x2. apply stable_hitting_weak_exists. }
+  destruct (choice _ Hexists1) as [front1 Hfront1].
+  destruct (choice _ Hexists2) as [front2 Hfront2].
+  eapply probabilistic_eutt_of_hitting_lift.
+  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros x _. exact (Hfront1 x).
+  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros x _. exact (Hfront2 x).
+  - eapply mixed_lift_bind; [exact Hmu|].
+    intros x1 x2 Hx.
+    eapply probabilistic_eutt_hitting_lift;
+      [exact (Hk x1 x2 Hx)|exact (Hfront1 x1)|exact (Hfront2 x2)].
+Qed.
+
+End ProbabilisticEuttProbCongruence.
 
 Section PTreeStableHittingEquations.
 Context {E : Type -> Type} {MN MF : Type -> Type}
