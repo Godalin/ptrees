@@ -123,8 +123,15 @@ rows, and uses the double-omega grid to obtain a heterogeneous loop
 equivalence.  Its steps may have unrelated syntax and finite schedules.  The
 retry regression moves Tau from outside a fair sample into every sampled
 continuation; failed samples retry, so the loop has unboundedly many rounds.
-The eventful generalization, naturality, and codiagonal laws have not yet
-been claimed.
+The eventful generalization now has an explicit native proof boundary:
+`free_iter_eventful_bisim_candidate` contains exactly related loop states,
+and `free_probabilistic_eutt_iter_eventful_of_generator_closed` derives the
+full behavioral fusion theorem from closure of that candidate under the
+stable-hitting generator.  This removes the eventless scheduling machinery
+from the remaining obligation.  As with generic effectful interpretation,
+discharging it from behavioral step equivalence requires an up-to-bind/final
+chain compatibility result; it is not sound to recursively reuse the gfp
+bind congruence.  Naturality and codiagonal have not yet been claimed.
 
 `PTree.interp` and its pure renaming instance `PTree.translate` are guarded
 corecursive operations.  Interpretation inserts an administrative Tau at a

@@ -243,4 +243,61 @@ Qed.
 
 End EventlessBehavioralIterationCongruence.
 
+Section EventfulBehavioralIterationClosure.
+Context {I1 I2 R1 R2 : Type}.
+Variable step1 : I1 -> ptree E MN (I1 + R1).
+Variable step2 : I2 -> ptree E MN (I2 + R2).
+Variable SI : I1 -> I2 -> Prop.
+Variable RR : R1 -> R2 -> Prop.
+
+(** Native coinduction candidate for eventful behavioral fusion.  Unlike the
+    eventless grid theorem, it does not erase visible heads: their
+    continuations must re-enter this candidate. *)
+Definition free_iter_eventful_bisim_candidate
+    (s1 : ptree' E MN R1) (s2 : ptree' E MN R2) : Prop :=
+  exists i1 i2,
+    SI i1 i2 /\
+    s1 = observe (PTree.iter step1 i1) /\
+    s2 = observe (PTree.iter step2 i2).
+
+(** Exact generator-level obligation for eventful behavioral iteration.
+    This is deliberately independent of finite schedules and of the
+    eventless complete-row construction. *)
+Definition free_iter_eventful_generator_closed : Prop :=
+  forall i1 i2, SI i1 i2 ->
+    @stable_hitting_match MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface
+      (ptree' E MN R1) (ptree' E MN R2)
+      (frontier_head E MN R1) (frontier_head E MN R2)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R1)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R2)
+      (@ptree_stable_head_rel E MN R1 R2 RR)
+      free_iter_eventful_bisim_candidate
+      (observe (PTree.iter step1 i1))
+      (observe (PTree.iter step2 i2)).
+
+Theorem free_probabilistic_eutt_iter_eventful_of_generator_closed
+    (Hclosed : free_iter_eventful_generator_closed) :
+  forall i1 i2, SI i1 i2 ->
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR
+    (PTree.iter step1 i1) (PTree.iter step2 i2).
+Proof.
+  intros i1 i2 Hij.
+  eapply probabilistic_eutt_coinduction with
+      (sim := free_iter_eventful_bisim_candidate).
+  - intros s1 s2 [j1 [j2 [Hj [-> ->]]]]. exact (Hclosed j1 j2 Hj).
+  - exists i1, i2. repeat split; try reflexivity. exact Hij.
+Qed.
+
+End EventfulBehavioralIterationClosure.
+
 End FreeOmegaIter.
