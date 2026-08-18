@@ -79,6 +79,14 @@ coupling of node measures and related branch bisimulations are composed with
 
 ## Equational and interpreter API
 
+The FreeOmega theorem library is organized as a stable aggregate over four
+focused public layers.  `OperationalProbabilisticPTSFreeOmegaFacts` contains
+backend-specific operational facts; `...Rewrite` contains Monad/Functor laws
+and setoid instances; `...Iter` contains iteration equations, fusion, and
+Conway laws; and `...Interp` contains translation and effect-handler laws.
+`OperationalProbabilisticPTSFreeOmega` re-exports these together with the
+operational Base, preserving the historical import path and theorem names.
+
 The canonical FreeOmega endpoint now includes all three Monad equations:
 
 - `free_probabilistic_eutt_bind_ret_l`;

@@ -1,9 +1,7 @@
-(** Compatibility entry point for the FreeOmega canonical equality library.
-
-    The implementation is being split into focused facts, rewriting,
-    iteration, and interpretation modules.  Keeping this module as the
-    stable aggregate means existing developments do not need to change their
-    imports while that refactoring proceeds. *)
+(** Stable aggregate entry point for the FreeOmega canonical equality
+    library.  Operational foundations, backend facts, rewriting, iteration,
+    and interpretation live in focused modules; existing developments may
+    continue importing this compatibility module. *)
 From PTree.Eq Require Export
   OperationalProbabilisticPTSFreeOmegaBase
   OperationalProbabilisticPTSFreeOmegaFacts
