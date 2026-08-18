@@ -7,4 +7,5 @@
 From PTree.Eq Require Export
   OperationalProbabilisticPTSFreeOmegaBase
   OperationalProbabilisticPTSFreeOmegaFacts
+  OperationalProbabilisticPTSFreeOmegaRewrite
   OperationalProbabilisticPTSFreeOmegaInterp.
