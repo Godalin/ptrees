@@ -74,6 +74,24 @@ Proof.
   eapply pstructural_iter_rel; eauto.
 Qed.
 
+(** Parameter identity / naturality.  Post-processing the result of a loop
+    is equivalent to pushing that Kleisli continuation into every successful
+    step result.  The proof is structural and therefore supports visible
+    events, probability, divergence, and unbounded iteration uniformly. *)
+Theorem free_probabilistic_eutt_iter_natural {I A B}
+    (step : I -> ptree E MN (I + A))
+    (k : A -> ptree E MN B) (i : I) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface B B eq
+    (PTree.bind (PTree.iter step i) k)
+    (PTree.iter (pstructural_iter_natural_step step k) i).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_iter_natural.
+Qed.
+
 Section EventlessBehavioralIterationFusion.
 Context {I1 I2 R1 R2 : Type}.
 Context `{NCAEIterFusion : @SemanticMeasureCouplingAELaws MN NI}.

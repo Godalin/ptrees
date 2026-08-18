@@ -948,6 +948,129 @@ Qed.
 
 End PStructuralIterRel.
 
+(** Naturality (parameter identity) for guarded iteration. *)
+Section PStructuralIterNatural.
+Context {E : Type -> Type} {M : Type -> Type}.
+Context {I A B : Type}.
+Variable step : I -> ptree E M (I + A).
+Variable k : A -> ptree E M B.
+
+Definition pstructural_iter_natural_source_handler
+    (ia : I + A) : ptree E M A :=
+  match ia with
+  | inl j => Tau (PTree.iter step j)
+  | inr a => Ret a
+  end.
+
+Definition pstructural_iter_natural_step_handler
+    (ia : I + A) : ptree E M (I + B) :=
+  match ia with
+  | inl j => Ret (inl j)
+  | inr a => PTree.bind (k a) (fun b => Ret (inr b))
+  end.
+
+Definition pstructural_iter_natural_step (i : I) : ptree E M (I + B) :=
+  PTree.bind (step i) pstructural_iter_natural_step_handler.
+
+Definition pstructural_iter_natural_target_handler
+    (ib : I + B) : ptree E M B :=
+  match ib with
+  | inl j => Tau (PTree.iter pstructural_iter_natural_step j)
+  | inr b => Ret b
+  end.
+
+Inductive pstructural_iter_natural_clo :
+    ptree E M B -> ptree E M B -> Prop :=
+  | PStIterNaturalMain i :
+      pstructural_iter_natural_clo
+        (PTree.bind (PTree.iter step i) k)
+        (PTree.iter pstructural_iter_natural_step i)
+  | PStIterNaturalBind t :
+      pstructural_iter_natural_clo
+        (PTree.bind
+          (PTree.bind t pstructural_iter_natural_source_handler) k)
+        (PTree.bind
+          (PTree.bind t pstructural_iter_natural_step_handler)
+          pstructural_iter_natural_target_handler)
+  | PStIterNaturalDone t1 t2 :
+      pstructural eq t1 t2 -> pstructural_iter_natural_clo t1 t2.
+
+Lemma pstructural_iter_natural_return (a : A) :
+  pstructural eq (k a)
+    (PTree.bind
+      (PTree.bind (k a) (fun b => Ret (inr b)))
+      pstructural_iter_natural_target_handler).
+Proof.
+  apply pstructural_sym.
+  eapply pstructural_trans.
+  - apply pstructural_bind_assoc.
+  - eapply pstructural_trans.
+    + eapply pstructural_bind with (RA := eq) (RB := eq).
+      * intros b1 b2 ->. apply observe_eq_pstructural.
+        exact (observing_observe (bind_ret_ (inr b2)
+          pstructural_iter_natural_target_handler)).
+      * apply pstructural_refl.
+    + apply pstructural_bind_ret_r.
+Qed.
+
+Theorem pstructural_iter_natural i :
+  pstructural eq
+    (PTree.bind (PTree.iter step i) k)
+    (PTree.iter pstructural_iter_natural_step i).
+Proof.
+  assert (Hstrong : forall u v, pstructural_iter_natural_clo u v ->
+      pstructural eq u v).
+  { unfold pstructural. coinduction CH CIH.
+    intros u v Hclo.
+    inversion Hclo as [j|t|t1 t2 Hdone]; subst.
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.bind (PTree.iter step j) k))
+        (observe (PTree.iter pstructural_iter_natural_step j))).
+      rewrite observe_bind.
+      rewrite (observing_observe (unfold_aloop_ step j)).
+      rewrite (observing_observe
+        (unfold_aloop_ pstructural_iter_natural_step j)).
+      rewrite !observe_bind.
+      remember (observe (step j)) as ot eqn:Hot.
+      destruct ot as [ia|t'|X e c|X mu c]; cbn.
+      + destruct ia as [j'|a]; cbn.
+        * constructor. apply CIH. constructor.
+        * pose proof (pstructural_iter_natural_return a) as Hr.
+          pose proof (pstructural_unfold Hr) as Hstep.
+          eapply pstructuralF_monotone; [|exact Hstep].
+          intros x y Hxy. apply CIH. constructor. exact Hxy.
+      + constructor. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.bind
+          (PTree.bind t pstructural_iter_natural_source_handler) k))
+        (observe (PTree.bind
+          (PTree.bind t pstructural_iter_natural_step_handler)
+          pstructural_iter_natural_target_handler))).
+      rewrite !observe_bind.
+      remember (observe t) as ot eqn:Hot.
+      destruct ot as [ia|t'|X e c|X mu c]; cbn.
+      + destruct ia as [j|a]; cbn.
+        * constructor. apply CIH. constructor.
+        * pose proof (pstructural_iter_natural_return a) as Hr.
+          pose proof (pstructural_unfold Hr) as Hstep.
+          eapply pstructuralF_monotone; [|exact Hstep].
+          intros x y Hxy. apply CIH. constructor. exact Hxy.
+      + constructor. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+    - unfold pstructural_body.
+      pose proof (pstructural_unfold Hdone) as Hstep.
+      eapply pstructuralF_monotone; [|exact Hstep].
+      intros x y Hxy. apply CIH. constructor. exact Hxy. }
+  apply Hstrong. constructor.
+Qed.
+
+End PStructuralIterNatural.
+
 (** Strong probabilistic bisimulation over an abstract probabilistic
     relation lifting.  Constructors are matched in lockstep: this relation
     neither discards a one-sided [Tau] nor collapses an internal probability

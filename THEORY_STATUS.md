@@ -131,7 +131,17 @@ stable-hitting generator.  This removes the eventless scheduling machinery
 from the remaining obligation.  As with generic effectful interpretation,
 discharging it from behavioral step equivalence requires an up-to-bind/final
 chain compatibility result; it is not sound to recursively reuse the gfp
-bind congruence.  Naturality and codiagonal have not yet been claimed.
+bind congruence.
+
+Iteration naturality (the parameter identity) is now unconditional.
+`pstructural_iter_natural` proves structurally that post-processing a loop
+result with a Kleisli continuation is equivalent to pushing that
+continuation into every successful step result;
+`free_probabilistic_eutt_iter_natural` exports the canonical endpoint.  Its
+regression uses a visible read followed by a fair probabilistic retry and a
+Tau-producing postprocessor, so the law covers interaction and unbounded
+execution rather than only finite countdowns.  Codiagonal remains to be
+established.
 
 `PTree.interp` and its pure renaming instance `PTree.translate` are guarded
 corecursive operations.  Interpretation inserts an administrative Tau at a

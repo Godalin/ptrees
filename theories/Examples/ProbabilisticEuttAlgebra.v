@@ -166,6 +166,36 @@ Lemma canonical_iter_structural_regression {I R}
   peutt eq (PTree.iter step1 i) (PTree.iter step2 i).
 Proof. apply free_probabilistic_eutt_iter_structural. Qed.
 
+Variant naturalityE : Type -> Type :=
+  | ReadFlag : naturalityE bool.
+
+Local Notation naturality_peutt :=
+  (@probabilistic_eutt naturalityE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface).
+
+Definition naturality_step (_ : unit) :
+    ptree naturalityE Enum (unit + bool) :=
+  Vis ReadFlag (fun observed =>
+    Prob reg_fair (fun retry =>
+      Ret (if retry then inl tt else inr observed))).
+
+Definition naturality_post (b : bool) : ptree naturalityE Enum nat :=
+  Tau (Ret (if b then 1 else 0)).
+
+(** Naturality is exercised by an eventful, probabilistic, potentially
+    unbounded retry loop; it is not merely a finite countdown equation. *)
+Lemma canonical_iter_natural_regression :
+  naturality_peutt eq
+    (PTree.bind (PTree.iter naturality_step tt) naturality_post)
+    (PTree.iter
+      (pstructural_iter_natural_step naturality_step naturality_post) tt).
+Proof. apply free_probabilistic_eutt_iter_natural. Qed.
+
 Definition countdown_nat (n : nat) :
     ptree algebraE Enum (nat + nat) :=
   match n with
