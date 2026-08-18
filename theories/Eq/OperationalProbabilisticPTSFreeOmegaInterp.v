@@ -2,16 +2,119 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
+Require Import Morphisms Program.Equality.
 From PTree.Core Require Import PTreeDefinitionNew.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import
-  ShallowNew UnifiedFrontier OperationalProbabilisticPTS
+  ShallowNew UnifiedFrontier PrimitiveStableHitting OperationalProbabilisticPTS
   ProbabilisticEutt PStrong
   OperationalProbabilisticPTSFreeOmegaBase.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
+
+Section FreeOmegaTranslateIdentity.
+Context {E : Type -> Type} {MN : Type -> Type}
+  `{NI : SemanticMeasureInterface MN}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NAE : @SemanticMeasureAELiftLaws MN NI}
+  `{NO : @SemanticOmegaInterface MN NI}.
+Local Notation MF := (FreeOmega MN).
+
+Section TranslateProper.
+Context {F : Type -> Type}.
+Variable rename : forall X, E X -> F X.
+
+#[global] Instance free_probabilistic_eutt_translate_Proper {R} :
+  Proper
+    (@probabilistic_eutt E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface R R eq ==>
+     @probabilistic_eutt F MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface R R eq)
+    (PTree.translate rename).
+Proof.
+  intros t1 t2 Ht. apply free_probabilistic_eutt_translate. exact Ht.
+Qed.
+
+End TranslateProper.
+
+Definition free_identity_rename (X : Type) (e : E X) : E X := e.
+
+Inductive free_translate_id_state {R} :
+    ptree' E MN R -> ptree' E MN R -> Prop :=
+  | FTISMain (t : ptree E MN R) :
+      free_translate_id_state
+        (observe (PTree.translate free_identity_rename t)) (observe t).
+
+Lemma free_translate_id_head_comp {R}
+    (hT hS : frontier_head E MN R) :
+  free_translate_head_rel free_identity_rename hS hT ->
+  @ptree_stable_head_rel E MN R R eq free_translate_id_state hT hS.
+Proof.
+  intro Hmap. dependent destruction Hmap.
+  - constructor. reflexivity.
+  - constructor. intro x.
+    unfold free_translate_cont. rewrite observe_bind. cbn. constructor.
+Qed.
+
+Theorem free_probabilistic_eutt_translate_id {R} (t : ptree E MN R) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.translate free_identity_rename t) t.
+Proof.
+  eapply probabilistic_eutt_coinduction with
+    (sim := @free_translate_id_state R).
+  - intros sT sS Hsim. dependent destruction Hsim.
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R) (observe t0)) as [outS HS].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface R)
+      (observe (PTree.translate free_identity_rename t0))) as [outT HT].
+    eapply stable_hitting_match_of_hitting_lift; [exact HT|exact HS|].
+    pose proof (free_translate_hitting_lift
+      (rename := free_identity_rename) HS HT) as Hmap.
+    eapply FOQLMono.
+    + apply FOQLSym. exact Hmap.
+    + intros hT hS Hrel. apply free_translate_id_head_comp. exact Hrel.
+  - constructor.
+Qed.
+
+Corollary free_probabilistic_eutt_interp_trigger {R} (t : ptree E MN R) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.interp (fun X e => @PTree.trigger E MN X e) t) t.
+Proof.
+  change (@probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.translate free_identity_rename t) t).
+  apply free_probabilistic_eutt_translate_id.
+Qed.
+
+End FreeOmegaTranslateIdentity.
 
 (** Interpreting visible events preserves every structural proof. *)
 Theorem free_probabilistic_eutt_interp_structural
