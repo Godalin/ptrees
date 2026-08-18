@@ -1469,66 +1469,6 @@ Proof.
   Unshelve. all: try typeclasses eauto.
 Qed.
 
-(** One guarded unfolding of [iter]. *)
-Theorem free_probabilistic_eutt_iter_unfold {I R}
-    (step : I -> ptree E MN (I + R)) (i : I) :
-  @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R R eq
-    (PTree.iter step i)
-    (PTree.bind (step i) (fun lr =>
-      match lr with
-      | inl i' => Tau (PTree.iter step i')
-      | inr r => Ret r
-      end)).
-Proof.
-  apply free_probabilistic_eutt_of_pstructural.
-  apply observe_eq_pstructural.
-  exact (observing_observe (unfold_aloop_ step i)).
-Qed.
-
-(** Syntax-directed iter congruence.  The stronger behavioral congruence is
-    intentionally separated: this rule is assumption-free because its step
-    relation is the structural baseline. *)
-Theorem free_probabilistic_eutt_iter_structural {I R}
-    (step1 step2 : I -> ptree E MN (I + R)) (i : I) :
-  (forall j, pstructural eq (step1 j) (step2 j)) ->
-  @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R R eq
-    (PTree.iter step1 i) (PTree.iter step2 i).
-Proof.
-  intro Hstep. apply free_probabilistic_eutt_of_pstructural.
-  apply pstructural_iter. exact Hstep.
-Qed.
-
-(** Heterogeneous relational fusion for iteration.  This subsumes ordinary
-    structural congruence and supports state refinement between loops with
-    different index and result types. *)
-Theorem free_probabilistic_eutt_iter_rel
-    {I1 I2 R1 R2}
-    (SI : I1 -> I2 -> Prop) (RR : R1 -> R2 -> Prop)
-    (f : I1 -> ptree E MN (I1 + R1))
-    (g : I2 -> ptree E MN (I2 + R2))
-    (Hstep : forall i1 i2, SI i1 i2 ->
-      pstructural (pstructural_iter_sum_rel SI RR) (f i1) (g i2))
-    i1 i2 :
-  SI i1 i2 ->
-  @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR
-    (PTree.iter f i1) (PTree.iter g i2).
-Proof.
-  intro Hij. apply free_probabilistic_eutt_of_pstructural.
-  eapply pstructural_iter_rel; eauto.
-Qed.
-
 Theorem free_operational_bind_approx_cofinal_no_event {A R}
     (no_event : forall X, E X -> False)
     (t : ptree E MN A) (k : A -> ptree E MN R) :
