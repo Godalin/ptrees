@@ -1071,6 +1071,150 @@ Qed.
 
 End PStructuralIterNatural.
 
+(** Codiagonal / double-dagger identity: two nested loops over the same
+    state space flatten to one loop whose first two sum branches both retry. *)
+Section PStructuralIterCodiagonal.
+Context {E : Type -> Type} {M : Type -> Type}.
+Context {I R : Type}.
+Variable step : I -> ptree E M (I + (I + R)).
+
+Definition pstructural_iter_codiagonal_nested (i : I) : ptree E M R :=
+  PTree.iter (fun j => PTree.iter step j) i.
+
+Definition pstructural_iter_codiagonal_inner_handler
+    (x : I + (I + R)) : ptree E M (I + R) :=
+  match x with
+  | inl j => Tau (PTree.iter step j)
+  | inr q => Ret q
+  end.
+
+Definition pstructural_iter_codiagonal_outer_handler
+    (x : I + R) : ptree E M R :=
+  match x with
+  | inl j => Tau (pstructural_iter_codiagonal_nested j)
+  | inr r => Ret r
+  end.
+
+Definition pstructural_iter_codiagonal_flatten
+    (x : I + (I + R)) : I + R :=
+  match x with
+  | inl j => inl j
+  | inr (inl j) => inl j
+  | inr (inr r) => inr r
+  end.
+
+Definition pstructural_iter_codiagonal_flat_step
+    (i : I) : ptree E M (I + R) :=
+  PTree.bind (step i)
+    (fun x => Ret (pstructural_iter_codiagonal_flatten x)).
+
+Definition pstructural_iter_codiagonal_flat_handler
+    (x : I + R) : ptree E M R :=
+  match x with
+  | inl j => Tau (PTree.iter pstructural_iter_codiagonal_flat_step j)
+  | inr r => Ret r
+  end.
+
+Inductive pstructural_iter_codiagonal_clo :
+    ptree E M R -> ptree E M R -> Prop :=
+  | PStIterCodiagonalMain i :
+      pstructural_iter_codiagonal_clo
+        (pstructural_iter_codiagonal_nested i)
+        (PTree.iter pstructural_iter_codiagonal_flat_step i)
+  | PStIterCodiagonalOuter i :
+      pstructural_iter_codiagonal_clo
+        (PTree.bind (PTree.iter step i)
+          pstructural_iter_codiagonal_outer_handler)
+        (PTree.iter pstructural_iter_codiagonal_flat_step i)
+  | PStIterCodiagonalBind t :
+      pstructural_iter_codiagonal_clo
+        (PTree.bind
+          (PTree.bind t pstructural_iter_codiagonal_inner_handler)
+          pstructural_iter_codiagonal_outer_handler)
+        (PTree.bind
+          (PTree.bind t
+            (fun x => Ret (pstructural_iter_codiagonal_flatten x)))
+          pstructural_iter_codiagonal_flat_handler)
+  | PStIterCodiagonalDone t1 t2 :
+      pstructural eq t1 t2 -> pstructural_iter_codiagonal_clo t1 t2.
+
+Theorem pstructural_iter_codiagonal i :
+  pstructural eq
+    (pstructural_iter_codiagonal_nested i)
+    (PTree.iter pstructural_iter_codiagonal_flat_step i).
+Proof.
+  assert (Hstrong : forall u v, pstructural_iter_codiagonal_clo u v ->
+      pstructural eq u v).
+  { unfold pstructural. coinduction CH CIH.
+    intros u v Hclo.
+    inversion Hclo as [j|j|t|t1 t2 Hdone]; subst.
+    - unfold pstructural_body, pstructural_iter_codiagonal_nested.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.iter (fun j0 => PTree.iter step j0) j))
+        (observe (PTree.iter pstructural_iter_codiagonal_flat_step j))).
+      rewrite (observing_observe
+        (unfold_aloop_ (fun j0 => PTree.iter step j0) j)).
+      rewrite (observing_observe
+        (unfold_aloop_ pstructural_iter_codiagonal_flat_step j)).
+      rewrite !observe_bind.
+      rewrite (observing_observe (unfold_aloop_ step j)).
+      rewrite !observe_bind.
+      remember (observe (step j)) as ot eqn:Hot.
+      destruct ot as [x|t'|X e c|X mu c]; cbn.
+      + destruct x as [j'|[j'|r]]; cbn.
+        * constructor. apply CIH. constructor.
+        * constructor. apply CIH. constructor.
+        * constructor. reflexivity.
+      + constructor. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.bind (PTree.iter step j)
+          pstructural_iter_codiagonal_outer_handler))
+        (observe (PTree.iter pstructural_iter_codiagonal_flat_step j))).
+      rewrite observe_bind.
+      rewrite (observing_observe (unfold_aloop_ step j)).
+      rewrite (observing_observe
+        (unfold_aloop_ pstructural_iter_codiagonal_flat_step j)).
+      rewrite !observe_bind.
+      remember (observe (step j)) as ot eqn:Hot.
+      destruct ot as [x|t'|X e c|X mu c]; cbn.
+      + destruct x as [j'|[j'|r]]; cbn.
+        * constructor. apply CIH. constructor.
+        * constructor. apply CIH. constructor.
+        * constructor. reflexivity.
+      + constructor. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+    - unfold pstructural_body.
+      change (pstructuralF eq (` CH)
+        (observe (PTree.bind
+          (PTree.bind t pstructural_iter_codiagonal_inner_handler)
+          pstructural_iter_codiagonal_outer_handler))
+        (observe (PTree.bind
+          (PTree.bind t
+            (fun x => Ret (pstructural_iter_codiagonal_flatten x)))
+          pstructural_iter_codiagonal_flat_handler))).
+      rewrite !observe_bind.
+      remember (observe t) as ot eqn:Hot.
+      destruct ot as [x|t'|X e c|X mu c]; cbn.
+      + destruct x as [j'|[j'|r]]; cbn.
+        * constructor. apply CIH. constructor.
+        * constructor. apply CIH. constructor.
+        * constructor. reflexivity.
+      + constructor. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+      + constructor=> x. apply CIH. constructor.
+    - unfold pstructural_body.
+      pose proof (pstructural_unfold Hdone) as Hstep.
+      eapply pstructuralF_monotone; [|exact Hstep].
+      intros x y Hxy. apply CIH. constructor. exact Hxy. }
+  apply Hstrong. constructor.
+Qed.
+
+End PStructuralIterCodiagonal.
+
 (** Strong probabilistic bisimulation over an abstract probabilistic
     relation lifting.  Constructors are matched in lockstep: this relation
     neither discards a one-sided [Tau] nor collapses an internal probability

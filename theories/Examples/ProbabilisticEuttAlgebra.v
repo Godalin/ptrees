@@ -196,6 +196,23 @@ Lemma canonical_iter_natural_regression :
       (pstructural_iter_natural_step naturality_step naturality_post) tt).
 Proof. apply free_probabilistic_eutt_iter_natural. Qed.
 
+Definition codiagonal_step (_ : unit) :
+    ptree naturalityE Enum (unit + (unit + bool)) :=
+  Vis ReadFlag (fun observed : bool =>
+    Prob reg_fair (fun choose_inner : bool =>
+      Ret ((if observed then
+        if choose_inner then inl tt else inr (inl tt)
+      else inr (inr false)) : unit + (unit + bool)))).
+
+(** Both retry layers are live: the visible answer selects termination versus
+    retry, while the fair sample selects an inner versus outer retry. *)
+Lemma canonical_iter_codiagonal_regression :
+  naturality_peutt eq
+    (PTree.iter (fun j => PTree.iter codiagonal_step j) tt)
+    (PTree.iter
+      (pstructural_iter_codiagonal_flat_step codiagonal_step) tt).
+Proof. apply free_probabilistic_eutt_iter_codiagonal. Qed.
+
 Definition countdown_nat (n : nat) :
     ptree algebraE Enum (nat + nat) :=
   match n with

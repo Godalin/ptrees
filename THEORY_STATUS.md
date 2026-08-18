@@ -140,8 +140,15 @@ continuation into every successful step result;
 `free_probabilistic_eutt_iter_natural` exports the canonical endpoint.  Its
 regression uses a visible read followed by a fair probabilistic retry and a
 Tau-producing postprocessor, so the law covers interaction and unbounded
-execution rather than only finite countdowns.  Codiagonal remains to be
-established.
+execution rather than only finite countdowns.
+
+The double-dagger/codiagonal identity is also proved structurally by
+`pstructural_iter_codiagonal` and exported as
+`free_probabilistic_eutt_iter_codiagonal`.  Its joint invariant distinguishes
+the complete nested loop, an inner loop waiting for the outer handler, and
+the flattened execution of a common step subtree.  The regression combines
+a visible read with fair sampling so that both the inner-retry and
+outer-retry branches can occur for unboundedly many rounds.
 
 `PTree.interp` and its pure renaming instance `PTree.translate` are guarded
 corecursive operations.  Interpretation inserts an administrative Tau at a

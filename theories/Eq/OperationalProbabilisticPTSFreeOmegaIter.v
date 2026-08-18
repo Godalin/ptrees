@@ -92,6 +92,21 @@ Proof.
   apply pstructural_iter_natural.
 Qed.
 
+(** Double-dagger / codiagonal identity.  Nested retries at either sum layer
+    are flattened into retries of one loop. *)
+Theorem free_probabilistic_eutt_iter_codiagonal {I R}
+    (step : I -> ptree E MN (I + (I + R))) (i : I) :
+  @probabilistic_eutt E MN MF
+    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (PTree.iter (fun j => PTree.iter step j) i)
+    (PTree.iter (pstructural_iter_codiagonal_flat_step step) i).
+Proof.
+  apply free_probabilistic_eutt_of_pstructural.
+  apply pstructural_iter_codiagonal.
+Qed.
+
 Section EventlessBehavioralIterationFusion.
 Context {I1 I2 R1 R2 : Type}.
 Context `{NCAEIterFusion : @SemanticMeasureCouplingAELaws MN NI}.
