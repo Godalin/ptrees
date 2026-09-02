@@ -34,10 +34,15 @@ Tau laws, probability congruence, bind congruence, iteration certificates, and
 coinduction rules are derived theorems.  Both layers use `coq-coinduction`;
 Paco remains only an inherited ITree build dependency.
 
-`Eq/ProbabilisticTrace.v` provides measure-valued stable-head and next-event
-queries.  `probabilistic_eutt_preserves_next_event_query` shows that `≈ₚ`
-preserves these quantitative observations without fixing the generic theory
-to Enum, MathComp, rationals, or reals.
+`Eq/ProbabilisticTrace.v` provides measure-valued stable-head, next-event,
+and finite interactive trace-prefix queries.  A dependent event selector
+both recognizes an event and supplies the environment response used to enter
+its continuation.  `probabilistic_eutt_preserves_finite_trace_query` shows
+that `≈ₚ` preserves every such finite cylinder without fixing the generic
+theory to Enum, MathComp, rationals, or reals.  Continuation obligations hold
+almost everywhere, so zero-mass branches need no artificial trace witness.
+This API does not yet claim an infinite-trace sigma-algebra or a general
+expectation-transformer calculus.
 
 ### Unbounded stable hitting
 

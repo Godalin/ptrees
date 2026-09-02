@@ -414,7 +414,8 @@ The maintained examples end directly in `probabilistic_eutt`:
 - binary rational sampling versus a direct rational coin;
 - the unbounded Von Neumann sampler versus a one-step fair coin;
 - an infinite request/reply service which runs that unbounded sampler between
-  visible events, versus a service using one direct fair sample;
+  visible events, versus a service using one direct fair sample, together
+  with a direct finite-cylinder probability theorem;
 - the rational Bernoulli factory (including `1/3` to `2/5`) versus a direct
   target coin;
 - the MathComp real-oracle Bernoulli sampler;
@@ -438,23 +439,37 @@ up to canonical equivalence; the example no longer reconstructs their
 measure-level witnesses locally.
 
 The same example now has an event-aware quantitative endpoint.  The generic
-`ProbabilisticTrace` layer classifies the next complete stable Ret/Vis head
-and pushes that observation through the semantic subprobability measure.
-`probabilistic_eutt_preserves_head_query` proves that every such query is
-preserved by the canonical coupling, and
-`probabilistic_eutt_preserves_next_event_query` specializes it to visible
-event indicators.  These are measure-valued weakest-preexpectation-style
-queries: the generic layer retains missing mass, while Enum or MathComp may
-read a numeric expectation from the resulting measure.
+`ProbabilisticTrace` layer first classifies the next complete stable Ret/Vis
+head and then extends this operation to finite interactive trace prefixes.
+A selector has type `forall X, E X -> option X`: it recognizes the next
+dependent event and supplies the environment response that enters its
+continuation.  Recursive branch obligations are required almost everywhere
+with respect to the stable-head measure, so inaccessible zero-mass branches
+need no spurious hitting witness.
 
-After a `CoinRequest`, `accepts_true_reply` classifies precisely the next
-`CoinReply true` event.  `direct_true_reply_query_denotes_fair` identifies
-the direct service query with `vn_fair`,
-`direct_true_reply_probability_half` computes its true mass as `1/2`, and
-`von_neumann_true_reply_probability_half` transports that query through the
-unbounded implementation equivalence.  Thus the quantitative result is
-about the observable protocol prefix `Request; Reply(true)`, not merely the
-program's eventual return value.
+`finite_trace_query_singleton_iff_next_event_query` proves that the old
+next-event query is precisely the singleton specialization.
+`finite_trace_query_related` gives witness independence up to coupling, and
+`probabilistic_eutt_preserves_finite_trace_query` proves that canonical
+equivalence preserves every finite cylinder.  The proof uses coupling AE
+transport and restriction at each prefix step; it is not a syntactic replay
+of the two programs.
+
+`request_true_reply_trace` directly represents the two-event prefix
+`CoinRequest; CoinReply true` from the service root.
+`direct_request_true_reply_prefix_query` identifies its direct-service query
+with the previously computed `vn_fair` measure, and
+`von_neumann_request_true_reply_probability_half` transports it to the
+unbounded implementation.  The existing expectation theorem therefore reads
+its true mass as `1/2`.  `direct_reply_first_prefix_rejected` checks a
+non-matching first event.  Separately,
+`canonical_spin_nonempty_trace_query_zero` proves that pure silent divergence
+produces a zero-mass nonempty trace query, and
+`divergent_trace_query_not_rejection_mass` distinguishes that missing mass
+from an ordinary mass-one `false` result.
+
+This is finite trace-prefix/cylinder semantics.  The maintained theory does
+not claim a probability measure on infinite traces or a general WP calculus.
 
 ## Exact no-Prob / ITree boundary
 
