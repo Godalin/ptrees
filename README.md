@@ -1,4 +1,4 @@
-# Formalization of Random Behavior for Interaction Trees
+# PTree: Probabilistic Eventful Computations
 
 ## Introduction
 
@@ -8,6 +8,14 @@ heterogeneous return relation).  It compares complete subprobabilistic
 stable-hitting limits through couplings of stable `Ret`/`Vis` heads.
 Internal `Tau` and `Prob` computation are abstracted by the hitting semantics;
 missing termination mass remains observable.
+
+The project is a semantic framework for computations in which native
+probability, potentially infinite internal computation, and observable event
+sequences coexist.  It is not limited to samplers returning a final value:
+the quantitative query layer can measure stable visible-event classes, and
+the interactive Von Neumann case study proves the protocol observation
+`Request; Reply(true)` has probability `1/2` despite an unbounded internal
+retry loop.
 
 The semantic stack is:
 
@@ -25,6 +33,11 @@ probability lifting.  The weak canonical relation has no syntax constructors:
 Tau laws, probability congruence, bind congruence, iteration certificates, and
 coinduction rules are derived theorems.  Both layers use `coq-coinduction`;
 Paco remains only an inherited ITree build dependency.
+
+`Eq/ProbabilisticTrace.v` provides measure-valued stable-head and next-event
+queries.  `probabilistic_eutt_preserves_next_event_query` shows that `≈ₚ`
+preserves these quantitative observations without fixing the generic theory
+to Enum, MathComp, rationals, or reals.
 
 ### Unbounded stable hitting
 

@@ -1,0 +1,28 @@
+name: Coq
+
+on:
+  push:
+    branches: [main, new-idea]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: 4.14.x
+          opam-repositories: |
+            default: https://github.com/ocaml/opam-repository.git
+            coq-released: https://coq.inria.fr/opam/released
+
+      - name: Install dependencies
+        run: opam install . --deps-only --with-test -y
+
+      - name: Build all theories
+        run: opam exec -- dune build

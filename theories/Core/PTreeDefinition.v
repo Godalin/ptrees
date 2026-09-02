@@ -217,9 +217,7 @@ Global Instance MonadTrigger_ptree {E M} : MonadTrigger E (ptree E M) :=
 
 
 
-(** Remove [Tau]s from the front of an [ptree].
-  TODO: replace [Tau] with [M.return] of the representation.
-  *)
+(** Remove a bounded number of leading [Tau] nodes from a [ptree]. *)
 
 Fixpoint burn (n : nat) {E M R} (t : ptree E M R) :=
   match n with

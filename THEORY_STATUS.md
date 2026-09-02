@@ -1,7 +1,7 @@
 # Maintained probabilistic equivalence theory
 
-This file describes the maintained Coq API on branch `new-idea`.  The named
-results are checked without `Admitted` by the default `dune build`.
+This file describes the maintained Coq API.  The named results are checked
+without `Admitted` by the default `dune build`.
 
 ## Canonical semantics
 
