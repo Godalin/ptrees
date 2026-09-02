@@ -20,6 +20,7 @@ Unset Printing Implicit Defensive.
 
 Import Enum.
 Import EnumMap.
+Import GRing.Theory.
 Local Open Scope ring_scope.
 
 (** Universe-polymorphic singleton used as the response type of protocol
@@ -730,6 +731,98 @@ Proof.
     with (sim := interactive_service_sim).
   - exact interactive_service_sim_postfixed.
   - exact ISSRoot.
+Qed.
+
+(** Event-aware quantitative observation.  After a request has been
+    accepted, this classifier asks whether the next visible action is
+    [CoinReply true].  It does not inspect the program's return value. *)
+Definition accepts_true_reply {X} (e : coin_serviceE X) : bool :=
+  match e with
+  | CoinRequest => false
+  | CoinReply b => b
+  end.
+
+Definition direct_true_reply_query : MF bool :=
+  sem_bind direct_after_request_heads
+    (fun h => sem_ret
+      (observe_stable_head (fun _ : bool => false) (@accepts_true_reply) h)).
+
+Lemma direct_after_request_true_reply_query :
+  @next_event_query coin_serviceE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (@accepts_true_reply) direct_after_request direct_true_reply_query.
+Proof.
+  exists direct_after_request_heads. split.
+  - exact direct_after_request_weak.
+  - apply sem_eq_refl.
+Qed.
+
+Lemma direct_true_reply_query_denotes_fair :
+  free_omega_denotes (fun b : bool => b)
+    direct_true_reply_query vn_fair.
+Proof.
+  Transparent service_direct_heads.
+  exists service_direct_observation. split.
+  -
+  unfold direct_true_reply_query, direct_after_request_heads,
+    service_direct_heads, direct_reply_front,
+    frontier_head_ret_bind_front, frontier_head_bind_front.
+  cbn [free_omega_bind mixed_bind sem_bind sem_ret
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaSemanticMeasureInterface observe_stable_head accepts_true_reply].
+    unfold service_direct_observation. constructor. intro b. constructor.
+  - rewrite service_direct_observation_eq. apply sem_eq_refl.
+Qed.
+
+Lemma direct_true_reply_probability_half :
+  enum_expect (indicator (fun b => b)) vn_fair = (1 / 2 : rat).
+Proof.
+  by rewrite vn_fair_expect /indicator /= add0r mulr1.
+Qed.
+
+Lemma after_request_probabilistic_eutt :
+  @probabilistic_eutt coin_serviceE Enum MF
+    (FreeOmegaObservableSemanticMeasureInterface
+      (NI := Enum_SemanticMeasureInterface)
+      (NO := Enum_SemanticOmegaInterface))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    vn_after_request direct_after_request.
+Proof.
+  eapply probabilistic_eutt_coinduction_upto
+    with (sim := interactive_service_sim).
+  - exact interactive_service_sim_postfixed.
+  - exact ISSAfterRequest.
+Qed.
+
+(** The implementation's unbounded retry loop has the same quantitative
+    [Reply true] observation as the direct fair service.  The witness on the
+    implementation side is coupled to the explicit fair query above, so a
+    concrete observation backend reads probability [1/2] from it. *)
+Theorem von_neumann_true_reply_probability_half :
+  exists query,
+    @next_event_query coin_serviceE Enum MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface bool
+      (@accepts_true_reply) vn_after_request query /\
+    @sem_lift MF
+      (FreeOmegaObservableSemanticMeasureInterface
+        (NI := Enum_SemanticMeasureInterface)
+        (NO := Enum_SemanticOmegaInterface)) bool bool eq
+      direct_true_reply_query query.
+Proof.
+  eapply probabilistic_eutt_preserves_next_event_query.
+  - eapply probabilistic_eutt_sym. exact after_request_probabilistic_eutt.
+  - exact direct_after_request_true_reply_query.
 Qed.
 
 (** This is an infinite visible behavior, not a terminating sampler theorem:
