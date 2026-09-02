@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From Coq Require Import Program.Equality List ClassicalChoice.
+From Coq Require Import Program.Equality List ClassicalChoice ClassicalEpsilon.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting
@@ -434,5 +434,97 @@ Proof.
       intros h1 h2 [Hrel [Hg1 Hr]].
       exact (proj2 (Hbranch2 h2) h1 Hrel Hg1).
 Qed.
+
+(** * Existence and canonical packaging
+
+    Preservation above only needs an existing source certificate.  Total
+    existence additionally needs the order/omega capability which constructs
+    the complete stable-hitting limit of every primitive state. *)
+Section FiniteTraceExistence.
+Context `{FOrd : @SemanticMeasureOrderLaws MF FI FO}.
+
+Theorem finite_trace_query_exists {R} tr (t : ptree E MN R) :
+  exists query, finite_trace_query tr t query.
+Proof.
+  revert R t.
+  induction tr as [|select rest IH]; intros R t.
+  - exists (sem_ret true). apply finite_trace_query_nil.
+  - destruct (stable_hitting_weak_exists
+      (@ptree_primitive_kernel E MN MF FI MX R) (observe t))
+      as [out Hhit].
+    assert (Hbranches : forall h : frontier_head E MN R, exists query,
+      match h with
+      | FHRet _ => sem_eq query (sem_ret false)
+      | @FHVis _ _ _ X e k =>
+          match select X e with
+          | Some x => finite_trace_query rest (k x) query
+          | None => sem_eq query (sem_ret false)
+          end
+      end).
+    { intros [r|X e k].
+      - exists (sem_ret false). apply sem_eq_refl.
+      - destruct (select X e) as [x|].
+        + apply IH.
+        + exists (sem_ret false). apply sem_eq_refl. }
+    destruct (@choice (frontier_head E MN R) (MF bool) _ Hbranches)
+      as [branch Hbranch].
+    exists (sem_bind out branch).
+    exists out, branch. repeat split; try assumption.
+    + eapply sem_ae_mono; [|apply sem_ae_true].
+      intros h Htrue. apply Hbranch.
+    + apply sem_eq_refl.
+Qed.
+
+(** Query witnesses are unique at the generic level up to diagonal
+    coupling.  Turning this into [sem_eq] is intentionally left to a backend
+    whose coupling interface includes an equality-reflection law. *)
+Corollary finite_trace_query_unique_up_to_coupling {R} tr
+    (t : ptree E MN R) query1 query2 :
+  finite_trace_query tr t query1 ->
+  finite_trace_query tr t query2 ->
+  sem_lift eq query1 query2.
+Proof.
+  intros Hq1 Hq2.
+  eapply finite_trace_query_related; [apply probabilistic_eutt_refl|eassumption|].
+  exact Hq2.
+Qed.
+
+(** A choice-based representative makes the finite-cylinder denotation
+    available as a function.  The theorems below, rather than the particular
+    classical choice, are the public semantic contract. *)
+Definition finite_trace_sem {R} (tr : finite_event_trace)
+    (t : ptree E MN R) : MF bool :=
+  epsilon (inhabits (sem_ret true))
+    (fun query => finite_trace_query tr t query).
+
+Theorem finite_trace_sem_spec {R} tr (t : ptree E MN R) :
+  finite_trace_query tr t (finite_trace_sem tr t).
+Proof.
+  unfold finite_trace_sem. apply epsilon_spec. apply finite_trace_query_exists.
+Qed.
+
+Theorem finite_trace_sem_coupled_to_query {R} tr
+    (t : ptree E MN R) query :
+  finite_trace_query tr t query ->
+  sem_lift eq (finite_trace_sem tr t) query.
+Proof.
+  intro Hquery. eapply finite_trace_query_unique_up_to_coupling.
+  - apply finite_trace_sem_spec.
+  - exact Hquery.
+Qed.
+
+Theorem probabilistic_eutt_preserves_finite_trace_sem {R1 R2}
+    (RR : R1 -> R2 -> Prop) tr
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
+  probabilistic_eutt RR t1 t2 ->
+  sem_lift eq (finite_trace_sem tr t1) (finite_trace_sem tr t2).
+Proof.
+  intro Heutt. eapply finite_trace_query_related.
+  - exact Heutt.
+  - apply finite_trace_sem_spec.
+  - apply finite_trace_sem_spec.
+Qed.
+
+End FiniteTraceExistence.
 
 End FiniteTraceQuery.
