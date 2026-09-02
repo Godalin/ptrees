@@ -173,7 +173,6 @@ The main dependencies, installed automatically by opam, are:
 - `coq-coinduction`
 - `coq-itree`
 - `coq-paco` (through the ITree ecosystem)
-- `coq-relation-algebra`
 - `coq-mathcomp-algebra`
 - `coq-mathcomp-analysis`
 
