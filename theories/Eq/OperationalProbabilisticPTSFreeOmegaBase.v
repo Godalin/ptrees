@@ -6,10 +6,10 @@ Require Import List Arith.PeanoNat FunctionalExtensionality Lia
   Logic.ClassicalChoice
   Program.Equality Morphisms.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration.
-From PTree.Eq Require Import ShallowNew UnifiedFrontier PrimitiveStableHitting
+From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
   OperationalProbabilisticPTS ProbabilisticEutt PStrong.
 
 Set Implicit Arguments.

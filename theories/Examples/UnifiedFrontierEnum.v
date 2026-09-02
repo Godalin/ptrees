@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
 From mathcomp Require Import ssreflect ssrbool eqtype.
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum.
 From PTree.Eq Require Import UnifiedFrontier.

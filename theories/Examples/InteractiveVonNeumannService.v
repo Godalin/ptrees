@@ -4,11 +4,11 @@ Set Universe Polymorphism.
 
 From Coq Require Import Logic.FunctionalExtensionality Program.Equality.
 From mathcomp Require Import ssreflect ssralg rat.
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import RatSubTypes DiscreteMC TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration EnumBindFacts.
 From PTree.Prob Require Import EnumMap MeasureIterationEnum.
-From PTree.Eq Require Import ShallowNew PrimitiveStableHitting UnifiedFrontier
+From PTree.Eq Require Import Shallow PrimitiveStableHitting UnifiedFrontier
   OperationalProbabilisticPTS
   ProbabilisticEutt
   OperationalProbabilisticPTSFreeOmega.

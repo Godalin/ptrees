@@ -8,7 +8,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssrnat ssralg ssrnum
 From mathcomp Require Import numfun.
 From mathcomp.analysis Require Import topology sequences ereal measure.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import FrontierLift MeasureIteration MathCompMeasure.
 From PTree.Examples Require Import RealBernoulliOracle.
 

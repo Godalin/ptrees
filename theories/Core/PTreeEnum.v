@@ -1,11 +1,11 @@
 (** Enum-specific convenience operations for probability trees.
 
-    They used to live in [PTreeDefinitionNew], forcing every generic tree and
+    They used to live in [PTreeDefinition], forcing every generic tree and
     measure development to load the legacy finite-distribution backend. *)
 From mathcomp Require Import eqtype.
 From ExtLib Require Import Structures.Monads.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC.
 
 Set Implicit Arguments.

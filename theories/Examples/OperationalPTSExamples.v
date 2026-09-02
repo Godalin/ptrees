@@ -4,7 +4,7 @@ Set Universe Polymorphism.
 
 Require Import Program.Equality.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier

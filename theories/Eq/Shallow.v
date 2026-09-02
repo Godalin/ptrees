@@ -15,7 +15,7 @@
 (* begin hide *)
 Require Import Morphisms.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 
 Set Implicit Arguments.
 (* end hide *)

@@ -6,11 +6,11 @@ From Coq Require Import FunctionalExtensionality Program.Equality.
 
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype ssralg ssrnum rat.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts
   MeasureIteration MeasureIterationEnum TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure EnumMap.
-From PTree.Eq Require Import ShallowNew UnifiedFrontier
+From PTree.Eq Require Import Shallow UnifiedFrontier
   PrimitiveStableHitting OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega ProbabilisticEutt.
 From PTree.Examples Require Import VonNeumannUnbounded RationalBernoulli

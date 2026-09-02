@@ -6,9 +6,9 @@ Require Import Utf8 Program Morphisms.
 From Coinduction Require Import all.
 From mathcomp Require Import ssreflect ssrbool eqtype seq.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import FrontierLift.
-From PTree.Eq Require Import ShallowNew.
+From PTree.Eq Require Import Shallow.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

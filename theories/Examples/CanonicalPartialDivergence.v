@@ -4,7 +4,7 @@ Set Warnings "-ambiguous-paths".
 Require Import Lra.
 From mathcomp Require Import ssreflect ssrbool ssrnat seq ssralg ssrnum rat.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum MeasureIterationEnum
   TwoLevelMeasure TwoLevelMeasureEnum.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier

@@ -16,7 +16,7 @@ Import GRing.Theory.
 
 (** A universe-separated probe for the next PTree representation.  The
     sampled carrier universe and the universe containing a measure value are
-    deliberately independent.  The current [PTreeDefinitionNew] implicitly
+    deliberately independent.  The current [PTreeDefinition] implicitly
     identifies them when frontiers contain recursive trees, which prevents
     MathComp measurable kernels from inhabiting the generic weak theory. *)
 Polymorphic Section UniverseSeparatedPTree.

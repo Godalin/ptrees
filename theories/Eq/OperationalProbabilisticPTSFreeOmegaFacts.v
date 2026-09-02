@@ -3,7 +3,7 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import List Arith.PeanoNat.
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FreeOmegaMeasure.
 From PTree.Eq Require Import
   OperationalProbabilisticPTS OperationalProbabilisticPTSFreeOmegaBase.

@@ -3,9 +3,9 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 From Coq Require Import Morphisms.
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
-From PTree.Eq Require Import ShallowNew ProbabilisticEutt PStrong
+From PTree.Eq Require Import Shallow ProbabilisticEutt PStrong
   OperationalProbabilisticPTSFreeOmegaBase.
 
 Set Implicit Arguments.

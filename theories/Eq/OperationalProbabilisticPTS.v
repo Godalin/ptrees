@@ -4,7 +4,7 @@ Set Universe Polymorphism.
 
 Require Import Program.
 From Coinduction Require Import all.
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier.
 

@@ -7,7 +7,7 @@ From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg rat.
 
 From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLift
   FrontierLiftEnum.
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

@@ -6,11 +6,11 @@ Require Import FunctionalExtensionality Program.Equality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order
   rat.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration MeasureIterationEnum
   EnumMap.
-From PTree.Eq Require Import ShallowNew PrimitiveStableHitting
+From PTree.Eq Require Import Shallow PrimitiveStableHitting
   OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega UnifiedFrontier
   ProbabilisticEutt.

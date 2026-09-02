@@ -3,10 +3,10 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import Morphisms Program.Equality.
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import
-  ShallowNew UnifiedFrontier PrimitiveStableHitting OperationalProbabilisticPTS
+  Shallow UnifiedFrontier PrimitiveStableHitting OperationalProbabilisticPTS
   ProbabilisticEutt PStrong
   OperationalProbabilisticPTSFreeOmegaBase.
 

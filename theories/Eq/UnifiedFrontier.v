@@ -4,7 +4,7 @@ Set Universe Polymorphism.
 
 Require Import Utf8.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 
 Set Implicit Arguments.

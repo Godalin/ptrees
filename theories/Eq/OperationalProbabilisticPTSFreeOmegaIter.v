@@ -3,9 +3,9 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import Logic.ClassicalChoice Program.Equality.
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
-From PTree.Eq Require Import ShallowNew UnifiedFrontier PrimitiveStableHitting
+From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
   OperationalProbabilisticPTS ProbabilisticEutt PStrong
   OperationalProbabilisticPTSFreeOmegaBase.
 

@@ -3,7 +3,7 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 From Coq Require Import Program.Equality.
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting
   OperationalProbabilisticPTS ProbabilisticEutt.

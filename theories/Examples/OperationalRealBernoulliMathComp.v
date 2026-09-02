@@ -6,7 +6,7 @@ Require Import Program.Equality.
 
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum reals.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
   TwoLevelMeasure TwoLevelMeasureMathComp.
 From PTree.Eq Require Import PrimitiveStableHitting OperationalProbabilisticPTS

@@ -4,7 +4,7 @@ Set Universe Polymorphism.
 
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum reals.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import FrontierLift MathCompMeasure FreeOmegaMeasure
   MeasureIteration TwoLevelMeasure TwoLevelMeasureMathComp.
 From PTree.Eq Require Import UnifiedFrontier.

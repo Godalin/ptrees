@@ -6,7 +6,7 @@ Require Import Program.
 From Coq Require Import Logic.ClassicalChoice Morphisms.
 From Coinduction Require Import all.
 From mathcomp Require Import ssreflect.
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import
   PrimitiveStableHitting UnifiedFrontier

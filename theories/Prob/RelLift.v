@@ -24,7 +24,7 @@ Unset Printing Implicit Defensive.
   [disc_mass].  Thus an abstract measure implementation can be added as a
   separate instance without changing clients such as [PStrong].  Supporting a
   genuinely non-discrete carrier will first require weakening that constraint
-  in [PTreeDefinitionNew], which is intentionally outside this change.
+  in [PTreeDefinition], which is intentionally outside this change.
 *)
 Class ProbRelLift (M : Type -> Type) `{DiscreteInterface M} := {
   prob_lift : forall {A B : eqType},

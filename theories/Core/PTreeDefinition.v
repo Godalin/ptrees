@@ -1,10 +1,10 @@
-(** This file formalizes the probability tree: PTree, as an
-    negative coinductive type.
+(** Native probabilistic interaction trees.
 
-    The most interesting part of this formalization lies in
-    the fact that, with the constructor [Prob], we can create
-    a stochastic choice with some weight provided by the [measure]
-    construct. *)
+    [PTree] combines coinductive Ret/Tau/Vis interaction with an internal
+    [Prob] node whose sampling measure is supplied by the parameter [M].
+    Its canonical behavioral theory is developed through primitive kernels,
+    complete stable hitting, and couplings rather than by exposing these
+    syntax constructors in the weak equivalence. *)
 
 Require Import Program.
 Require Import Utf8.

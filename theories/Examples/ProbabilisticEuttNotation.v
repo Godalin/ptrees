@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import OperationalProbabilisticPTS ProbabilisticEutt.
 

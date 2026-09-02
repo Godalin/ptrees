@@ -6,7 +6,7 @@ Require Import Utf8 Ring Field Lia Lra FunctionalExtensionality List.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order
   rat.
 
-From PTree.Core Require Import PTreeDefinitionNew.
+From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLift
   FrontierLiftEnum EnumBindFacts MeasureIteration MeasureIterationEnum
   RatGeometric.
