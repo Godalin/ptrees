@@ -531,6 +531,168 @@ Definition free_interp_bisim_candidate
       FreeOmegaMixedMeasureInterface
       FreeOmegaObservableSemanticOmegaInterface A B RR t1 t2.
 
+(** The irreducible handled-[Vis] obligation.  When the handler returns
+    internally, stable hitting crosses the handler bind and immediately
+    enters the interpreted source continuation.  Ordinary residual-bind
+    compatibility cannot guard that recursive use of [free_interp_bisim_candidate].
+
+    This property isolates exactly that collapsed segment; Ret heads and the
+    outer source stable-hitting composition are derivable from existing laws. *)
+Definition free_interp_vis_fusion : Prop :=
+  forall X (e : E X) (k1 : X -> ptree E MN A) (k2 : X -> ptree E MN B),
+    (forall x,
+      @probabilistic_eutt E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface A B RR (k1 x) (k2 x)) ->
+    @stable_hitting_match MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmegaInterface
+      (ptree' F MN A) (ptree' F MN B)
+      (frontier_head F MN A) (frontier_head F MN B)
+      (@ptree_primitive_kernel F MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface A)
+      (@ptree_primitive_kernel F MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface B)
+      (@ptree_stable_head_rel F MN A B RR)
+      (@bind_upto_closure F MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws
+        FreeOmegaMixedMeasureInterface
+        FreeOmegaObservableSemanticOmegaInterface
+        A B RR free_interp_bisim_candidate)
+      (observe (operational_interp_head_tree handler (FHVis e k1)))
+      (observe (operational_interp_head_tree handler (FHVis e k2))).
+
+(** Full effectful interpreter preservation follows once the single
+    collapsed handled-[Vis] fusion above is supplied.  This theorem
+    discharges source hitting, Ret heads, outer interpreter scheduling, and
+    coupling composition; no broader generator-closure premise remains. *)
+Theorem free_probabilistic_eutt_interp_of_vis_fusion
+    `{NCAEInterp : @SemanticMeasureCouplingAELaws MN NI}
+    `{NCountAEInterp : @SemanticMeasureCountableAELaws MN NI}
+    (Hvis : free_interp_vis_fusion) :
+  forall (t1 : ptree E MN A) (t2 : ptree E MN B),
+    @probabilistic_eutt E MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A B RR t1 t2 ->
+    @probabilistic_eutt F MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A B RR
+      (PTree.interp handler t1) (PTree.interp handler t2).
+Proof.
+  intros t1 t2 Hsource.
+  eapply (probabilistic_eutt_coinduction_upto_bind
+    (E := F) (MN := MN) (MF := MF)
+    (fun A0 R0 (t : ptree F MN A0) (k : A0 -> ptree F MN R0) =>
+      free_operational_bind_cofinal_all t k)
+    (A := A) (B := B) (RR0 := RR)
+    (sim := free_interp_bisim_candidate)).
+  - intros s1 s2 Hsim.
+    unfold free_interp_bisim_candidate in Hsim.
+    destruct Hsim as [u1 Hsim].
+    destruct Hsim as [u2 Hsim].
+    destruct Hsim as [Hs1 Hsim].
+    destruct Hsim as [Hs2 Hu].
+    rewrite Hs1, Hs2.
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface A) (observe u1))
+      as [source1 Hsource1].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasureInterface B) (observe u2))
+      as [source2 Hsource2].
+    destruct (stable_hitting_front_choice
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (fun h : frontier_head E MN A =>
+        operational_interp_head_tree handler h))
+      as [front1 Hfront1].
+    destruct (stable_hitting_front_choice
+      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FO := FreeOmegaObservableSemanticOmegaInterface)
+      (fun h : frontier_head E MN B =>
+        operational_interp_head_tree handler h))
+      as [front2 Hfront2].
+    assert (HsourceLift :
+      @sem_lift MF
+        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        _ _
+        (@ptree_stable_head_rel E MN A B RR
+          (@probabilistic_eutt_state E MN MF
+            (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+            FreeOmegaObservableSemanticMeasureCoreLaws
+            FreeOmegaMixedMeasureInterface
+            FreeOmegaObservableSemanticOmegaInterface A B RR))
+        source1 source2).
+    { eapply probabilistic_eutt_state_hitting_lift;
+        [exact Hu|exact Hsource1|exact Hsource2]. }
+    assert (Htarget1 : @operational_weak F MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface A
+      (observe (PTree.interp handler u1))
+      (free_omega_bind source1 front1)).
+    { eapply (operational_weak_interp
+        (FI := FreeOmegaObservableSemanticMeasureInterface)
+        (FO := FreeOmegaObservableSemanticOmegaInterface)
+        (handler := handler) (t := u1) (hs := source1) (front := front1)).
+      - apply free_operational_interp_cofinal_all.
+      - exact Hsource1.
+      - exact Hfront1. }
+    assert (Htarget2 : @operational_weak F MN MF
+      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface B
+      (observe (PTree.interp handler u2))
+      (free_omega_bind source2 front2)).
+    { eapply (operational_weak_interp
+        (FI := FreeOmegaObservableSemanticMeasureInterface)
+        (FO := FreeOmegaObservableSemanticOmegaInterface)
+        (handler := handler) (t := u2) (hs := source2) (front := front2)).
+      - apply free_operational_interp_cofinal_all.
+      - exact Hsource2.
+      - exact Hfront2. }
+    eapply stable_hitting_match_of_hitting_lift;
+      [exact Htarget1|exact Htarget2|].
+    eapply FOQLBind; [exact HsourceLift|].
+    intros h1 h2 Hhead. inversion Hhead; subst; clear Hhead.
+    + eapply (sem_lift_mono
+        (SI := FreeOmegaObservableSemanticMeasureInterface
+          (NI := NI) (NO := NO))).
+      * apply ptree_stable_head_rel_mono.
+        intros x1 x2 Hknown. right. left. exact Hknown.
+      * eapply probabilistic_eutt_state_hitting_lift.
+        -- apply probabilistic_eutt_ret. exact H.
+        -- exact (Hfront1 (FHRet r1)).
+        -- exact (Hfront2 (FHRet r2)).
+    + pose proof (stable_hitting_match_hitting_lift
+        (FI := FreeOmegaObservableSemanticMeasureInterface
+          (NI := NI) (NO := NO))
+        (FO := FreeOmegaObservableSemanticOmegaInterface
+          (NI := NI) (NO := NO))
+        (Hvis X e k1 k2 H)
+        (Hfront1 (FHVis e k1))
+        (Hfront2 (FHVis e k2))) as HvisLift.
+      cbn in HvisLift. exact HvisLift.
+  - exists t1, t2. repeat split; try reflexivity. exact Hsource.
+  Unshelve. all: typeclasses eauto.
+Qed.
+
 (** Exact closure obligation for an arbitrary effectful handler.  Compared
     with the generic PTree coinduction rule, the candidate is fixed to
     interpreted source equivalence.  Consequently an implementation of this
