@@ -9,7 +9,7 @@ homepage: "https://github.com/Godalin/ptrees"
 bug-reports: "https://github.com/Godalin/ptrees/issues"
 depends: [
   "dune" {>= "3.8"}
-  "coq" {>= "8.20"}
+  "coq" {>= "8.20" & < "9.0"}
   "coq-ext-lib" {>= "0.13.0"}
   "coq-coinduction" {>= "1.20"}
   "coq-paco" {>= "4.2.3"}

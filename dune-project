@@ -19,7 +19,7 @@
  (source (github Godalin/ptrees))
  (depends
   (coq
-   (>= 8.20))
+   (and (>= 8.20) (< 9.0)))
   (coq-ext-lib
    (>= 0.13.0))
   (coq-coinduction

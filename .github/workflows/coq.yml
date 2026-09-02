@@ -11,6 +11,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PTREE_COQ_VERSION: 8.20.1
     steps:
       - uses: actions/checkout@v4
 
@@ -20,6 +22,9 @@ jobs:
           opam-repositories: |
             default: https://github.com/ocaml/opam-repository.git
             coq-released: https://coq.inria.fr/opam/released
+
+      - name: Install supported Coq
+        run: opam install "coq.${PTREE_COQ_VERSION}" -y
 
       - name: Install dependencies
         run: opam install . --deps-only --with-test -y
