@@ -194,6 +194,39 @@ Definition selector_accept (select : event_selector) :
     | None => false
     end.
 
+Lemma finite_trace_query_vis_match `{FK : @SemanticMeasureAEKleisliLaws MF FI}
+    `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
+    {R X} (select : event_selector) rest (e : E X)
+    (k : X -> ptree E MN R) x query :
+  select X e = Some x ->
+  finite_trace_query rest (k x) query ->
+  finite_trace_query (select :: rest) (Vis e k) query.
+Proof.
+  intros Hselect Hrest.
+  exists (sem_ret (FHVis e k)),
+    (fun _ : frontier_head E MN R => query). repeat split.
+  - apply stable_hitting_weak_vis.
+  - apply sem_ae_ret. cbn. rewrite Hselect. exact Hrest.
+  - exact (sem_bind_ret_l (FHVis e k)
+      (fun _ : frontier_head E MN R => query)).
+Qed.
+
+Lemma finite_trace_query_vis_reject `{FK : @SemanticMeasureAEKleisliLaws MF FI}
+    `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
+    {R X} (select : event_selector) rest (e : E X)
+    (k : X -> ptree E MN R) :
+  select X e = None ->
+  finite_trace_query (select :: rest) (Vis e k) (sem_ret false).
+Proof.
+  intro Hselect.
+  exists (sem_ret (FHVis e k)),
+    (fun _ : frontier_head E MN R => sem_ret false). repeat split.
+  - apply stable_hitting_weak_vis.
+  - apply sem_ae_ret. cbn. rewrite Hselect. apply sem_eq_refl.
+  - exact (sem_bind_ret_l (FHVis e k)
+      (fun _ : frontier_head E MN R => sem_ret false)).
+Qed.
+
 (** A singleton interactive prefix is exactly the old next-event query,
     after forgetting the selected response.  This makes
     [next_event_query] a conservative one-step specialization of the finite

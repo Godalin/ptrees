@@ -825,6 +825,128 @@ Proof.
   - exact direct_after_request_true_reply_query.
 Qed.
 
+(** A genuine two-event cylinder.  A selector both recognizes a dependent
+    event and supplies the unique client response used to continue the
+    protocol. *)
+Definition select_request {X} (e : coin_serviceE X) : option X :=
+  match e in coin_serviceE X0 return option X0 with
+  | CoinRequest => Some ServiceTT
+  | CoinReply _ => None
+  end.
+
+Definition select_true_reply {X} (e : coin_serviceE X) : option X :=
+  match e in coin_serviceE X0 return option X0 with
+  | CoinRequest => None
+  | CoinReply b => if b then Some ServiceTT else None
+  end.
+
+Definition request_true_reply_trace :
+    @finite_event_trace coin_serviceE :=
+  cons (@select_request) (cons (@select_true_reply) nil).
+
+Lemma select_request_accepts_request :
+  @select_request service_unit CoinRequest = Some ServiceTT.
+Proof. reflexivity. Qed.
+
+Lemma selector_accept_true_reply :
+  @selector_accept coin_serviceE (@select_true_reply) =
+    @accepts_true_reply.
+Proof.
+  apply functional_extensionality_dep. intro X.
+  apply functional_extensionality. intro e. destruct e; cbn.
+  - reflexivity.
+  - by destruct b.
+Qed.
+
+Lemma direct_after_request_true_reply_prefix_query :
+  @finite_trace_query coin_serviceE Enum MF
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface
+    bool
+    (cons (@select_true_reply) nil)
+    direct_after_request direct_true_reply_query.
+Proof.
+  apply (proj2 (finite_trace_query_singleton_iff_next_event_query
+    (@select_true_reply) direct_after_request direct_true_reply_query)).
+  rewrite selector_accept_true_reply.
+  exact direct_after_request_true_reply_query.
+Qed.
+
+Lemma direct_request_true_reply_prefix_query :
+  @finite_trace_query coin_serviceE Enum MF
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface
+    bool
+    request_true_reply_trace direct_fair_service direct_true_reply_query.
+Proof.
+  unfold request_true_reply_trace.
+  change (@finite_trace_query coin_serviceE Enum MF
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (cons (@select_request) (cons (@select_true_reply) nil))
+    (Vis CoinRequest (fun _ => direct_after_request))
+    direct_true_reply_query).
+  eapply finite_trace_query_vis_match.
+  - exact select_request_accepts_request.
+  - exact direct_after_request_true_reply_prefix_query.
+Qed.
+
+(** The unbounded implementation directly satisfies the two-event
+    [Request; CoinReply true] cylinder.  Its witness is coupled to the same
+    explicit fair measure whose true mass is [1/2]. *)
+Theorem von_neumann_request_true_reply_probability_half :
+  exists query,
+    @finite_trace_query coin_serviceE Enum MF
+      FreeOmegaObservableSemanticMeasureInterface
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface
+      bool
+      request_true_reply_trace von_neumann_service query /\
+    @sem_lift MF
+      FreeOmegaObservableSemanticMeasureInterface bool bool eq
+      direct_true_reply_query query.
+Proof.
+  eapply probabilistic_eutt_preserves_finite_trace_query.
+  - eapply probabilistic_eutt_sym.
+    exact interactive_von_neumann_service_equivalent.
+  - exact direct_request_true_reply_prefix_query.
+Qed.
+
+(** A non-matching cylinder fails at the first event: the service initially
+    offers [CoinRequest], not a reply. *)
+Lemma direct_reply_first_prefix_rejected :
+  @finite_trace_query coin_serviceE Enum MF
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface
+    bool
+    (cons (@select_true_reply) nil)
+    direct_fair_service (sem_ret false).
+Proof.
+  change (@finite_trace_query coin_serviceE Enum MF
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface bool
+    (cons (@select_true_reply) nil)
+    (Vis CoinRequest (fun _ => direct_after_request)) (sem_ret false)).
+  eapply (@finite_trace_query_vis_reject
+    coin_serviceE Enum MF
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaObservableSemanticMeasureBindLaws
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface
+    FreeOmegaObservableSemanticOmegaLaws
+    FreeOmegaObservableSemanticMeasureAEKleisliLaws
+    FreeOmegaObservableSemanticOmegaCofinalityLaws
+    bool service_unit (@select_true_reply) nil CoinRequest
+    (fun _ => direct_after_request)).
+  reflexivity.
+Qed.
+
 (** This is an infinite visible behavior, not a terminating sampler theorem:
     both roots expose [CoinRequest], both replies recurse to the original
     service, and the proof above closes that recursive continuation only via
