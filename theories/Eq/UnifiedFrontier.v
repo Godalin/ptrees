@@ -104,7 +104,8 @@ Definition mixed_iter {I R} (transition : I -> MN (I + R))
 
 End MixedIteration.
 
-(** A single public frontier judgment.  Finite internal computation is not
+(** A syntax-directed frontier certificate judgment.  Finite internal
+    computation is not
     wrapped in a separate [AUFFinite] constructor: [Ret]/[Vis]/[Tau]/[Prob]
     are native rules of this relation.  [UFIter] adds an AST omega proof for
     syntactic iteration without changing the observable result type. *)
