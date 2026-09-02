@@ -455,13 +455,27 @@ equivalence preserves every finite cylinder.  The proof uses coupling AE
 transport and restriction at each prefix step; it is not a syntactic replay
 of the two programs.
 
+The certificate semantics is total on backends providing
+`SemanticMeasureOrderLaws`: `finite_trace_query_exists` constructs a query by
+induction over the finite prefix and uses `stable_hitting_weak_exists` at each
+event boundary.  `finite_trace_query_unique_up_to_coupling` specializes the
+relational theorem to reflexive `probabilistic_eutt`.  Classical choice then
+packages `finite_trace_sem`, with `finite_trace_sem_spec` as its adequacy
+contract and `probabilistic_eutt_preserves_finite_trace_sem` as its canonical
+preservation theorem.  The generic result deliberately says `sem_lift eq`;
+identifying that with `sem_eq` requires a backend equality-reflection law.
+
 `request_true_reply_trace` directly represents the two-event prefix
 `CoinRequest; CoinReply true` from the service root.
 `direct_request_true_reply_prefix_query` identifies its direct-service query
 with the previously computed `vn_fair` measure, and
 `von_neumann_request_true_reply_probability_half` transports it to the
 unbounded implementation.  The existing expectation theorem therefore reads
-its true mass as `1/2`.  `direct_reply_first_prefix_rejected` checks a
+its true mass as `1/2`.
+`direct_request_true_reply_sem_coupled_to_fair` connects the canonical
+function to the explicit fair witness, while
+`von_neumann_request_true_reply_sem_preserved` states preservation directly
+between the two canonical denotations.  `direct_reply_first_prefix_rejected` checks a
 non-matching first event.  Separately,
 `canonical_spin_nonempty_trace_query_zero` proves that pure silent divergence
 produces a zero-mass nonempty trace query, and
@@ -470,6 +484,10 @@ from an ordinary mass-one `false` result.
 
 This is finite trace-prefix/cylinder semantics.  The maintained theory does
 not claim a probability measure on infinite traces or a general WP calculus.
+
+The artifact support range is Coq `>= 8.20` and `< 9.0`, with CI explicitly
+installing Coq 8.20.1.  Coq 9 changes Stdlib load paths and requires a
+separate migration; it is not part of the current compatibility claim.
 
 ## Exact no-Prob / ITree boundary
 

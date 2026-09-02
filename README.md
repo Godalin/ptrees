@@ -41,6 +41,13 @@ its continuation.  `probabilistic_eutt_preserves_finite_trace_query` shows
 that `≈ₚ` preserves every such finite cylinder without fixing the generic
 theory to Enum, MathComp, rationals, or reals.  Continuation obligations hold
 almost everywhere, so zero-mass branches need no artificial trace witness.
+On backends with the order/omega laws needed to construct every complete
+hitting limit, `finite_trace_query_exists` and
+`finite_trace_query_unique_up_to_coupling` make the semantics well-defined.
+The choice-based `finite_trace_sem` packages a canonical representative, and
+`probabilistic_eutt_preserves_finite_trace_sem` is its extensional soundness
+theorem.  Generic witness independence is stated as diagonal coupling;
+backends may reflect that coupling to their own semantic equality.
 This API does not yet claim an infinite-trace sigma-algebra or a general
 expectation-transformer calculus.
 
@@ -87,6 +94,10 @@ removed; a future nested real factory must be rebuilt over the two-level
 canonical iter/congruence API.
 
 ## Artifact claims
+
+The reproducible artifact currently targets Coq 8.20 (CI pins 8.20.1); the
+package metadata deliberately excludes Coq 9 pending a separate Stdlib and
+dependency migration.
 
 The maintained artifact establishes:
 
