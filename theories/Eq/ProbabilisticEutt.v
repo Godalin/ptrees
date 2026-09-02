@@ -1232,38 +1232,37 @@ Qed.
     Keeping the recursive alternative at the state level is essential:
     this is exactly the shape produced when interpreting the continuation of
     a visible source head with an effectful handler. *)
-Definition bind_upto_closure (A : Type)
-    (sim : ptree' E MN A -> ptree' E MN A -> Prop)
-    (s1 s2 : ptree' E MN A) : Prop :=
-  probabilistic_eutt_state eq s1 s2 \/
+Definition bind_upto_closure (A B : Type) (RR0 : A -> B -> Prop)
+    (sim : ptree' E MN A -> ptree' E MN B -> Prop)
+    (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
+  sim s1 s2 \/
+  probabilistic_eutt_state RR0 s1 s2 \/
   exists (R1 R2 : Type) (RR : R1 -> R2 -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
-    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A),
+    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN B),
     s1 = observe (PTree.bind t1 k1) /\
     s2 = observe (PTree.bind t2 k2) /\
     probabilistic_eutt RR t1 t2 /\
     (forall r1 r2, RR r1 r2 ->
       sim (observe (k1 r1)) (observe (k2 r2)) \/
-      probabilistic_eutt eq (k1 r1) (k2 r2)).
+      probabilistic_eutt RR0 (k1 r1) (k2 r2)).
 
-Lemma bind_upto_closure_includes A sim :
+Lemma bind_upto_closure_includes A B (RR0 : A -> B -> Prop) sim :
   forall s1 s2, sim s1 s2 ->
-    bind_upto_closure (A := A) sim s1 s2.
+    bind_upto_closure RR0 sim s1 s2.
 Proof.
-  intros s1 s2 Hsim.
-  right. exists unit, unit, (fun _ _ => True),
-    (Ret tt), (Ret tt), (fun _ => go s1), (fun _ => go s2).
-  repeat split; try reflexivity.
-  - apply probabilistic_eutt_ret. exact I.
-  - intros _ _ _. left. exact Hsim.
+  intros s1 s2 Hsim. left. exact Hsim.
 Qed.
 
-Lemma bind_upto_closure_mono A sim1 sim2 :
+Lemma bind_upto_closure_mono A B (RR0 : A -> B -> Prop) sim1 sim2 :
   (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
-  forall s1 s2, bind_upto_closure (A := A) sim1 s1 s2 ->
-    bind_upto_closure (A := A) sim2 s1 s2.
+  forall s1 s2, bind_upto_closure RR0 sim1 s1 s2 ->
+    bind_upto_closure RR0 sim2 s1 s2.
 Proof.
-  intros Hsub s1 s2 [Hknown|Hbind]; [left; exact Hknown|right].
+  intros Hsub s1 s2 [Hsim|[Hknown|Hbind]].
+  - left. exact (Hsub _ _ Hsim).
+  - right. left. exact Hknown.
+  - right. right.
   destruct Hbind as
     (R1 & R2 & RR & t1 & t2 & k1 & k2 & Hs1 & Hs2 & Hsource & Hk).
   exists R1, R2, RR, t1, t2, k1, k2.
@@ -1271,6 +1270,153 @@ Proof.
   intros r1 r2 Hr. destruct (Hk r1 r2 Hr) as [Hsim|Hknown].
   - left. exact (Hsub _ _ Hsim).
   - right. exact Hknown.
+Qed.
+
+(** [bind_upto_closure] is compatible with the stable-hitting generator.
+    The recursive continuation case consumes [Hprogress] directly at chosen
+    hitting witnesses; the known case unfolds the final greatest fixed
+    point.  Thus this proof does not depend on [probabilistic_eutt_bind]. *)
+Lemma bind_upto_closure_compatible A B (RR0 : A -> B -> Prop) sim
+    (Hprogress : forall s1 s2, sim s1 s2 ->
+      stable_hitting_match
+        (@ptree_primitive_kernel E MN MF FI MX A)
+        (@ptree_primitive_kernel E MN MF FI MX B)
+        (@ptree_stable_head_rel E MN A B RR0)
+        (bind_upto_closure RR0 sim) s1 s2) :
+  forall s1 s2, bind_upto_closure RR0 sim s1 s2 ->
+    stable_hitting_match
+      (@ptree_primitive_kernel E MN MF FI MX A)
+      (@ptree_primitive_kernel E MN MF FI MX B)
+      (@ptree_stable_head_rel E MN A B RR0)
+      (bind_upto_closure RR0 sim) s1 s2.
+Proof.
+  intros s1 s2 [Hrecursive|[Hknown|Hbind]].
+  - exact (Hprogress _ _ Hrecursive).
+  - apply stable_hitting_bisim_unfold in Hknown.
+    unfold stable_hitting_match in Hknown |- *.
+    destruct Hknown as [Hforward Hbackward]. split.
+    + intros out1 Hhit1. destruct (Hforward out1 Hhit1)
+        as [out2 [Hhit2 Hlift]]. exists out2. split; [exact Hhit2|].
+      eapply sem_lift_mono; [|exact Hlift].
+      apply ptree_stable_head_rel_mono.
+      intros x1 x2 Hrel. right. left. exact Hrel.
+    + intros out2 Hhit2. destruct (Hbackward out2 Hhit2)
+        as [out1 [Hhit1 Hlift]]. exists out1. split; [exact Hhit1|].
+      eapply sem_lift_mono; [|exact Hlift].
+      apply ptree_stable_head_rel_mono.
+      intros x1 x2 Hrel. right. left. exact Hrel.
+  - destruct Hbind as
+      (R1 & R2 & RR & t1 & t2 & k1 & k2 & -> & -> & Hsource & Hk).
+    apply probabilistic_eutt_unfold in Hsource.
+    unfold stable_hitting_match in Hsource |- *.
+    destruct Hsource as [Hforward Hbackward]. split.
+    + intros hs1 Hhit1.
+      destruct (stable_hitting_weak_exists
+        (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1))
+        as [source1 Hsource1].
+      destruct (Hforward source1 Hsource1)
+        as [source2 [Hsource2 Hlift]].
+      destruct (stable_hitting_front_choice k1) as [front1 Hfront1].
+      destruct (stable_hitting_front_choice k2) as [front2 Hfront2].
+      assert (Hbound1 : stable_hitting_weak
+        (@ptree_primitive_kernel E MN MF FI MX A)
+        (observe (PTree.bind t1 k1))
+        (sem_bind source1 (frontier_head_bind_front k1 front1))).
+      { eapply stable_hitting_weak_bind;
+          [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
+      assert (Hbound2 : stable_hitting_weak
+        (@ptree_primitive_kernel E MN MF FI MX B)
+        (observe (PTree.bind t2 k2))
+        (sem_bind source2 (frontier_head_bind_front k2 front2))).
+      { eapply stable_hitting_weak_bind;
+          [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
+      exists (sem_bind source2 (frontier_head_bind_front k2 front2)). split.
+      * exact Hbound2.
+      * eapply sem_lift_proper_l.
+        -- eapply stable_hitting_weak_unique; [exact Hbound1|exact Hhit1].
+        -- eapply sem_lift_bind; [exact Hlift|].
+           intros h1 h2 Hhead. dependent destruction Hhead.
+           ++ destruct (Hk r1 r2 H) as [Hrecursive|Hknown].
+              ** eapply stable_hitting_match_hitting_lift.
+                 --- exact (Hprogress _ _ Hrecursive).
+                 --- exact (Hfront1 r1).
+                 --- exact (Hfront2 r2).
+              ** eapply sem_lift_mono.
+                 --- apply ptree_stable_head_rel_mono.
+                     intros x1 x2 Hrel. right. left. exact Hrel.
+                 --- eapply probabilistic_eutt_state_hitting_lift;
+                       [exact Hknown|exact (Hfront1 r1)|exact (Hfront2 r2)].
+           ++ apply sem_lift_ret. constructor. intro x. right. right.
+              exists R1, R2, RR, (k0 x), (k3 x), k1, k2.
+              repeat split; try reflexivity.
+              ** exact (H x).
+              ** exact Hk.
+    + intros hs2 Hhit2.
+      destruct (stable_hitting_weak_exists
+        (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2))
+        as [source2 Hsource2].
+      destruct (Hbackward source2 Hsource2)
+        as [source1 [Hsource1 Hlift]].
+      destruct (stable_hitting_front_choice k1) as [front1 Hfront1].
+      destruct (stable_hitting_front_choice k2) as [front2 Hfront2].
+      assert (Hbound1 : stable_hitting_weak
+        (@ptree_primitive_kernel E MN MF FI MX A)
+        (observe (PTree.bind t1 k1))
+        (sem_bind source1 (frontier_head_bind_front k1 front1))).
+      { eapply stable_hitting_weak_bind;
+          [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
+      assert (Hbound2 : stable_hitting_weak
+        (@ptree_primitive_kernel E MN MF FI MX B)
+        (observe (PTree.bind t2 k2))
+        (sem_bind source2 (frontier_head_bind_front k2 front2))).
+      { eapply stable_hitting_weak_bind;
+          [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
+      exists (sem_bind source1 (frontier_head_bind_front k1 front1)). split.
+      * exact Hbound1.
+      * eapply sem_lift_proper_r.
+        -- eapply stable_hitting_weak_unique; [exact Hbound2|exact Hhit2].
+        -- eapply sem_lift_bind; [exact Hlift|].
+           intros h1 h2 Hhead. dependent destruction Hhead.
+           ++ destruct (Hk r1 r2 H) as [Hrecursive|Hknown].
+              ** eapply stable_hitting_match_hitting_lift.
+                 --- exact (Hprogress _ _ Hrecursive).
+                 --- exact (Hfront1 r1).
+                 --- exact (Hfront2 r2).
+              ** eapply sem_lift_mono.
+                 --- apply ptree_stable_head_rel_mono.
+                     intros x1 x2 Hrel. right. left. exact Hrel.
+                 --- eapply probabilistic_eutt_state_hitting_lift;
+                       [exact Hknown|exact (Hfront1 r1)|exact (Hfront2 r2)].
+           ++ apply sem_lift_ret. constructor. intro x. right. right.
+              exists R1, R2, RR, (k0 x), (k3 x), k1, k2.
+              repeat split; try reflexivity.
+              ** exact (H x).
+              ** exact Hk.
+Qed.
+
+(** Sound coinduction up to monadic bind. *)
+Theorem probabilistic_eutt_coinduction_upto_bind A B
+    (RR0 : A -> B -> Prop)
+    (sim : ptree' E MN A -> ptree' E MN B -> Prop)
+    (Hprogress : forall s1 s2, sim s1 s2 ->
+      stable_hitting_match
+        (@ptree_primitive_kernel E MN MF FI MX A)
+        (@ptree_primitive_kernel E MN MF FI MX B)
+        (@ptree_stable_head_rel E MN A B RR0)
+        (bind_upto_closure RR0 sim) s1 s2) :
+  forall t1 t2, sim (observe t1) (observe t2) ->
+    probabilistic_eutt RR0 t1 t2.
+Proof.
+  intros t1 t2 Hsim.
+  unfold probabilistic_eutt, probabilistic_eutt_state,
+    stable_hitting_bisim.
+  eapply (@leq_gfp _ _ (fstable_hitting_bisim
+    (@ptree_primitive_kernel E MN MF FI MX A)
+    (@ptree_primitive_kernel E MN MF FI MX B)
+    (@ptree_stable_head_rel_mono E MN A B RR0))
+    (bind_upto_closure RR0 sim)).
+  - exact (bind_upto_closure_compatible Hprogress).
+  - apply bind_upto_closure_includes. exact Hsim.
 Qed.
 
 (** The coinduction candidate contains the already established greatest
