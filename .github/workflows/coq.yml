@@ -24,5 +24,16 @@ jobs:
       - name: Install dependencies
         run: opam install . --deps-only --with-test -y
 
+      - name: Audit maintained sources
+        run: |
+          if git grep -n -E '^[[:space:]]*(Admitted|admit)\.' -- '*.v'; then
+            echo 'Maintained theories contain an unfinished proof.' >&2
+            exit 1
+          fi
+          if git grep -n -E 'PTreeDefinitionNew|ShallowNew|\.bak' -- theories; then
+            echo 'Maintained theories reference an obsolete artifact name.' >&2
+            exit 1
+          fi
+
       - name: Build all theories
         run: opam exec -- dune build
