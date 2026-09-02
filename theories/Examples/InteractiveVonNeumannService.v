@@ -10,7 +10,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC TwoLevelMeasure
 From PTree.Prob Require Import EnumMap MeasureIterationEnum.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting UnifiedFrontier
   OperationalProbabilisticPTS
-  ProbabilisticEutt
+  ProbabilisticEutt ProbabilisticTraceEnum
   OperationalProbabilisticPTSFreeOmega.
 From PTree.Examples Require Import VonNeumannUnbounded OperationalVonNeumann.
 
@@ -926,6 +926,23 @@ Proof.
   - eapply probabilistic_eutt_sym.
     exact interactive_von_neumann_service_equivalent.
   - exact direct_request_true_reply_prefix_query.
+Qed.
+
+(** Paper-facing numeric statement: all FreeOmega witnesses and coupling
+    plumbing are hidden behind the concrete Enum trace-probability API. *)
+Theorem von_neumann_request_true_reply_trace_probability :
+  Prₜ[ von_neumann_service | request_true_reply_trace ] = (1 / 2 : rat).
+Proof.
+  destruct von_neumann_request_true_reply_probability_half
+    as [query [Hquery Hlift]].
+  eapply enum_finite_trace_probability_intro
+    with (query := query) (representative := direct_true_reply_query)
+      (out := vn_fair).
+  - exact Hquery.
+  - exact Hlift.
+  - exact direct_true_reply_query_denotes_fair.
+  - unfold enum_bool_indicator, indicator.
+    exact direct_true_reply_probability_half.
 Qed.
 
 Theorem von_neumann_request_true_reply_sem_preserved :
