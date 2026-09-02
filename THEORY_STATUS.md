@@ -434,6 +434,25 @@ generic Ret-only bind/lifting rules, guarded `Vis` matching, and coinduction
 up to canonical equivalence; the example no longer reconstructs their
 measure-level witnesses locally.
 
+The same example now has an event-aware quantitative endpoint.  The generic
+`ProbabilisticTrace` layer classifies the next complete stable Ret/Vis head
+and pushes that observation through the semantic subprobability measure.
+`probabilistic_eutt_preserves_head_query` proves that every such query is
+preserved by the canonical coupling, and
+`probabilistic_eutt_preserves_next_event_query` specializes it to visible
+event indicators.  These are measure-valued weakest-preexpectation-style
+queries: the generic layer retains missing mass, while Enum or MathComp may
+read a numeric expectation from the resulting measure.
+
+After a `CoinRequest`, `accepts_true_reply` classifies precisely the next
+`CoinReply true` event.  `direct_true_reply_query_denotes_fair` identifies
+the direct service query with `vn_fair`,
+`direct_true_reply_probability_half` computes its true mass as `1/2`, and
+`von_neumann_true_reply_probability_half` transports that query through the
+unbounded implementation equivalence.  Thus the quantitative result is
+about the observable protocol prefix `Request; Reply(true)`, not merely the
+program's eventual return value.
+
 ## Exact no-Prob / ITree boundary
 
 The maintained generic theorem deliberately does **not** claim
@@ -468,3 +487,14 @@ generator.  This boundary is intentional: strengthening the base interface
 would incorrectly force Enum, MathComp, and future measure implementations
 to expose representation-specific inversion principles as universal
 probability axioms.
+
+The concrete FreeOmega/Enum audit narrows this further.  Its semantic lifting
+is `free_omega_qlift`, and `free_omega_qlift_support` already recovers a
+support coupling; Enum also proves zero-versus-Dirac mass separation.  Hence
+the generic universal-coupling counterexample does not apply to this backend.
+What is still absent is the pure-tree bridge itself: a maintained embedding
+from ITree into no-`Prob` PTree, classification of its complete stable-hitting
+limit through arbitrarily many Tau steps (including spin), and inversion of
+the resulting supported stable-head coupling into ITree's dependent Vis
+equality.  Until those three lemmas are formalized, the concrete iff is
+plausible but unproved and is not exported as an artifact claim.
