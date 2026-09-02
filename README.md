@@ -81,6 +81,29 @@ real Bernoulli sample.  The former one-level composed factory client was
 removed; a future nested real factory must be rebuilt over the two-level
 canonical iter/congruence API.
 
+## Artifact claims
+
+The maintained artifact establishes:
+
+- one canonical weak probabilistic equivalence `≈ₚ`, including reflexivity,
+  symmetry, transitivity, Tau weakening, probability congruence, and bind
+  congruence;
+- a sound heterogeneous coinduction-up-to-bind rule;
+- one semantics for bounded and genuinely unbounded AST computation;
+- eventful iteration, interpretation/translation laws, and quantitative
+  next-event observations;
+- Enum and MathComp Analysis instances, with executable rational examples
+  and real-measure examples respectively.
+
+Two stronger statements are intentionally not claimed.  Arbitrary effectful
+handlers still require a stable-hitting-aware companion/fusion theorem after
+an internally returning handler enters a recursive continuation.  Likewise,
+the exact no-`Prob` correspondence with ITree `eutt` still requires the
+pure-tree hitting classification and dependent visible-head inversion
+described in [`THEORY_STATUS.md`](THEORY_STATUS.md).  The existing generic
+measure interface is deliberately not strengthened with representation-
+specific separation axioms merely to state that correspondence.
+
 ## Meta
 
 - Author(s):
@@ -98,21 +121,20 @@ cd ptrees
 
 ### Setting up the environment
 
-Create a local `opam` switch and install the dependencies, and activate the switch:
+Create a local `opam` switch, activate it, and install the dependencies:
 
 ```sh
-opam switch create ./ --repos default,coq-released=https://coq.inria.fr/opam/released --deps-only
+opam switch create . 4.14.2 \
+  --repos default,coq-released=https://coq.inria.fr/opam/released
 eval $(opam env)
-
-# update the dependencies
-opam install ./ --deps-only
+opam install . --deps-only --with-test
 ```
 
 ### Build the project
 
 Run
 
-``` sh
+```sh
 dune build
 ```
 
@@ -120,10 +142,14 @@ to build the theories.
 
 ### Dependencies
 
-We list the dependencies here, although are not needed to be installed manually if you use the local `opam` switch approach:
+The main dependencies, installed automatically by opam, are:
+
 - `coq-ext-lib`
 - `coq-coinduction`
 - `coq-itree`
-- `coq-mathcomp`
+- `coq-paco` (through the ITree ecosystem)
+- `coq-relation-algebra`
+- `coq-mathcomp-algebra`
+- `coq-mathcomp-analysis`
 
 If you do not want to use the local `opam` switch, you can manually install the dependencies above.

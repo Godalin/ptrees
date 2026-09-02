@@ -53,6 +53,8 @@ The following laws are checked:
 - `stable_hitting_bisim_coinduction` and its PTree specialization
   `probabilistic_eutt_coinduction`;
 - `probabilistic_eutt_coinduction_upto` and `stable_hitting_match_vis`;
+- `probabilistic_eutt_coinduction_upto_bind` and
+  `bind_upto_closure_compatible`;
 - `stable_hitting_match_of_hitting_lift`;
 - `probabilistic_eutt_of_iter_certificates`;
 - `probabilistic_eutt_preserves_hitting_mass`;
@@ -79,8 +81,9 @@ coupling of node measures and related branch bisimulations are composed with
 
 ## Equational and interpreter API
 
-The FreeOmega theorem library is organized as a stable aggregate over four
-focused public layers.  `OperationalProbabilisticPTSFreeOmegaFacts` contains
+The FreeOmega theorem library is organized as a stable aggregate over five
+focused public layers.  `ProbabilisticTrace` contains generic stable-head
+and event-query laws; `OperationalProbabilisticPTSFreeOmegaFacts` contains
 backend-specific operational facts; `...Rewrite` contains Monad/Functor laws
 and setoid instances; `...Iter` contains iteration equations, fusion, and
 Conway laws; and `...Interp` contains translation and effect-handler laws.
