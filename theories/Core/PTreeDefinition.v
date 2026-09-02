@@ -217,7 +217,8 @@ Global Instance MonadTrigger_ptree {E M} : MonadTrigger E (ptree E M) :=
 
 
 
-(** Remove a bounded number of leading [Tau] nodes from a [ptree]. *)
+(** Compatibility proof utility: remove a bounded number of leading [Tau]
+    nodes.  This operation is not part of the behavioral semantics. *)
 
 Fixpoint burn (n : nat) {E M R} (t : ptree E M R) :=
   match n with
@@ -237,12 +238,14 @@ Fixpoint burn (n : nat) {E M R} (t : ptree E M R) :=
     equality: for example, [bind t Ret] is generally only bisimilar to [t].
     The former [Eq1 := eq] / admitted [MonadLawsE] instance was therefore
     unsound and has been removed.  Clients should state these laws using the
-    maintained coinductive relations ([equ], [pstrong], or the appropriate
-    weak probabilistic equivalence). *)
+    maintained coinductive relations: the auxiliary structural/strong
+    proof relations where appropriate, and [probabilistic_eutt] for the
+    public probabilistic behavioral equivalence. *)
 
 
 
-(** stuck trees *)
+(** Compatibility constructors used by examples.  They are convenience
+    programs, not additional PTree syntax or semantic observations. *)
 Section stuck.
 Context {E M : Type -> Type}.
 Context `{Monad M}.
@@ -256,10 +259,3 @@ Definition stuckM {R} (u : ptree E M R) : ptree E M R
   := Prob (score 0) (fun _ => u).
 
 End stuck.
-
-
-
-Section spinning.
-Context {E M : Type -> Type}.
-
-End spinning.

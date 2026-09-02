@@ -38,9 +38,18 @@ Definition enum_finite_trace_probability {E : Type -> Type} {R}
       Enum_SemanticOmegaInterface bool bool id representative out /\
     enum_expect enum_bool_indicator out = p.
 
-Notation "'Prₜ[' t '|' tr ']' '=' p" :=
-  (enum_finite_trace_probability tr t p)
-  (at level 70, t at next level, tr at next level,
+(** Canonical public name.  The argument is a dependent interaction pattern:
+    selectors may recognize more than one event, so it need not denote a
+    single concrete trace.  [enum_finite_trace_probability] is retained as a
+    compatibility name. *)
+Definition enum_finite_interaction_probability {E : Type -> Type} {R}
+    (pattern : @finite_interaction_pattern E)
+    (t : ptree E Enum R) (p : rat) : Prop :=
+  enum_finite_trace_probability pattern t p.
+
+Notation "'Prₜ[' t '|' pattern ']' '=' p" :=
+  (enum_finite_interaction_probability pattern t p)
+  (at level 70, t at next level, pattern at next level,
    p at next level, no associativity) : type_scope.
 
 Lemma enum_finite_trace_probability_intro {E : Type -> Type} {R}
@@ -60,4 +69,22 @@ Lemma enum_finite_trace_probability_intro {E : Type -> Type} {R}
 Proof.
   intros Hquery Hlift Hdenotes Hprobability.
   exists query, representative, out. repeat split; assumption.
+Qed.
+
+Lemma enum_finite_interaction_probability_intro {E : Type -> Type} {R}
+    (pattern : @finite_interaction_pattern E) (t : ptree E Enum R) p
+    query representative out :
+  @finite_interaction_query E Enum (FreeOmega Enum)
+    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaMixedMeasureInterface
+    FreeOmegaObservableSemanticOmegaInterface R pattern t query ->
+  @sem_lift (FreeOmega Enum)
+    FreeOmegaObservableSemanticMeasureInterface bool bool eq
+    representative query ->
+  @free_omega_denotes Enum Enum_SemanticMeasureInterface
+    Enum_SemanticOmegaInterface bool bool id representative out ->
+  enum_expect enum_bool_indicator out = p ->
+  Prₜ[ t | pattern ] = p.
+Proof.
+  apply enum_finite_trace_probability_intro.
 Qed.

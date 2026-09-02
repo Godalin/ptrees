@@ -44,11 +44,16 @@ Fixpoint stable_target_approx (fuel : nat) (target : stable_target S A) :
 Definition stable_hitting_approx (fuel : nat) (state : S) : MF A :=
   sem_bind (kernel state) (stable_target_approx fuel).
 
-Definition stable_hitting_weak (state : S) (out : MF A) : Prop :=
+Definition stable_hitting (state : S) (out : MF A) : Prop :=
   sem_lub (fun fuel => stable_hitting_approx fuel state) out.
 
+(** Historical compatibility name.  Internal-transition closure is already
+    intrinsic to stable hitting, so new public statements should use
+    [stable_hitting]. *)
+Definition stable_hitting_weak := stable_hitting.
+
 Definition stable_hitting_ast (state : S) (out : MF A) : Prop :=
-  stable_hitting_weak state out /\ sem_total out.
+  stable_hitting state out /\ sem_total out.
 
 Lemma stable_target_stableE fuel out :
   stable_target_approx fuel (SHStable out) = sem_ret out.
@@ -131,6 +136,16 @@ Proof.
   eapply sem_lub_unique; eassumption.
 Qed.
 
+Corollary stable_hitting_exists state :
+  exists out, stable_hitting kernel state out.
+Proof. apply stable_hitting_weak_exists. Qed.
+
+Corollary stable_hitting_unique state out1 out2 :
+  stable_hitting kernel state out1 ->
+  stable_hitting kernel state out2 ->
+  sem_eq out1 out2.
+Proof. apply stable_hitting_weak_unique. Qed.
+
 End PrimitiveStableHittingLimits.
 
 Section PrimitiveStableHittingAE.
@@ -184,6 +199,10 @@ Proof.
   intros HD Hlimit. eapply sem_ae_lub; [exact Hlimit|].
   intro fuel. exact (stable_hitting_approx_ae fuel HD).
 Qed.
+
+Corollary stable_hitting_ae state out :
+  D state -> stable_hitting kernel state out -> sem_ae out P.
+Proof. apply stable_hitting_weak_ae. Qed.
 
 Corollary stable_hitting_ast_ae state out :
   D state -> stable_hitting_ast kernel state out -> sem_ae out P.

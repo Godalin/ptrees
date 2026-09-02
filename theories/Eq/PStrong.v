@@ -16,7 +16,8 @@ Unset Printing Implicit Defensive.
 
 Notation "` R" := (elem R) (at level 10).
 
-(** A purely structural lockstep relation.  Probability nodes must expose
+(** Auxiliary proof relation, not a public behavioral equivalence.  It is a
+    purely structural lockstep relation.  Probability nodes must expose
     the same sampling measure and sampled type; only their continuations may
     differ recursively.  This replaces the axiom-bearing legacy [equ] as the
     maintained coinductive structural baseline. *)
@@ -1215,7 +1216,9 @@ Qed.
 
 End PStructuralIterCodiagonal.
 
-(** Strong probabilistic bisimulation over an abstract probabilistic
+(** Syntax-sensitive comparison baseline, not the canonical behavioral
+    equivalence.  Strong probabilistic bisimulation uses an abstract
+    probabilistic
     relation lifting.  Constructors are matched in lockstep: this relation
     neither discards a one-sided [Tau] nor collapses an internal probability
     prefix.  It therefore remains the syntax-sensitive baseline for the

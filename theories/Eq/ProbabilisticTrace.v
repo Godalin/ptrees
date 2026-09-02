@@ -137,7 +137,12 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FL : @SemanticOmegaLaws MF FI FO}.
 
 Definition event_selector : Type := forall X, E X -> option X.
-Definition finite_event_trace : Type := list event_selector.
+Definition finite_interaction_pattern : Type := list event_selector.
+
+(** Compatibility name.  A list of selectors denotes a dependent-event
+    cylinder pattern, not necessarily one concrete trace: a selector may
+    accept several events and supplies the environment response on success. *)
+Definition finite_event_trace : Type := finite_interaction_pattern.
 
 (** [finite_trace_query tr t q] says that [q] is the Boolean
     subprobability measure of executions of [t] whose next visible
@@ -163,6 +168,13 @@ Fixpoint finite_trace_query {R} (tr : finite_event_trace)
           end) /\
         sem_eq (sem_bind out branch) query
   end.
+
+(** Canonical public wrapper emphasizing prefix/cylinder satisfaction rather
+    than a pushforward distribution on traces. *)
+Definition finite_interaction_query {R}
+    (pattern : finite_interaction_pattern)
+    (t : ptree E MN R) (query : MF bool) : Prop :=
+  finite_trace_query pattern t query.
 
 Lemma finite_trace_query_nil {R} (t : ptree E MN R) :
   finite_trace_query nil t (sem_ret true).
@@ -449,7 +461,7 @@ Proof.
   revert R t.
   induction tr as [|select rest IH]; intros R t.
   - exists (sem_ret true). apply finite_trace_query_nil.
-  - destruct (stable_hitting_weak_exists
+  - destruct (stable_hitting_exists
       (@ptree_primitive_kernel E MN MF FI MX R) (observe t))
       as [out Hhit].
     assert (Hbranches : forall h : frontier_head E MN R, exists query,
@@ -497,11 +509,20 @@ Definition finite_trace_sem {R} (tr : finite_event_trace)
   epsilon (inhabits (sem_ret true))
     (fun query => finite_trace_query tr t query).
 
+Definition finite_interaction_sem {R}
+    (pattern : finite_interaction_pattern)
+    (t : ptree E MN R) : MF bool :=
+  finite_trace_sem pattern t.
+
 Theorem finite_trace_sem_spec {R} tr (t : ptree E MN R) :
   finite_trace_query tr t (finite_trace_sem tr t).
 Proof.
   unfold finite_trace_sem. apply epsilon_spec. apply finite_trace_query_exists.
 Qed.
+
+Theorem finite_interaction_sem_spec {R} pattern (t : ptree E MN R) :
+  finite_interaction_query pattern t (finite_interaction_sem pattern t).
+Proof. apply finite_trace_sem_spec. Qed.
 
 Theorem finite_trace_sem_coupled_to_query {R} tr
     (t : ptree E MN R) query :
@@ -524,6 +545,14 @@ Proof.
   - apply finite_trace_sem_spec.
   - apply finite_trace_sem_spec.
 Qed.
+
+Theorem probabilistic_eutt_preserves_finite_interaction_sem {R1 R2}
+    (RR : R1 -> R2 -> Prop) pattern
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
+  probabilistic_eutt RR t1 t2 ->
+  sem_lift eq (finite_interaction_sem pattern t1)
+    (finite_interaction_sem pattern t2).
+Proof. apply probabilistic_eutt_preserves_finite_trace_sem. Qed.
 
 End FiniteTraceExistence.
 

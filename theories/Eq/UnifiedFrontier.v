@@ -22,6 +22,11 @@ Variant frontier_head (E : Type -> Type) (MN : Type -> Type)
 Arguments FHRet {E MN R} _.
 Arguments FHVis {E MN R X} _ _.
 
+(** Canonical public terminology.  [frontier_head] remains the compatibility
+    identifier used by existing proofs; mathematically this type is exactly
+    the stable Ret/Vis observation exposed by stable hitting. *)
+Notation stable_head := frontier_head.
+
 (** Relational lifting of stable Ret/Vis observations.  This belongs to the
     stable-observation layer, independently of any particular behavioral
     greatest fixed point. *)
@@ -38,6 +43,12 @@ Inductive frontier_head_rel
       (forall x, sim (k1 x) (k2 x)) ->
       frontier_head_rel sim (FHVis e k1) (FHVis e k2).
 
+(** Public name for the relational lifting on stable heads. *)
+Definition stable_head_rel
+    (sim : ptree E MN R1 -> ptree E MN R2 -> Prop) :
+    stable_head E MN R1 -> stable_head E MN R2 -> Prop :=
+  frontier_head_rel sim.
+
 Lemma frontier_head_rel_mono sim1 sim2 :
   (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
   forall h1 h2,
@@ -45,6 +56,12 @@ Lemma frontier_head_rel_mono sim1 sim2 :
 Proof.
   intros Hsim h1 h2 Hh. inversion Hh; subst; constructor; auto.
 Qed.
+
+Lemma stable_head_rel_mono sim1 sim2 :
+  (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
+  forall h1 h2, stable_head_rel sim1 h1 h2 ->
+    stable_head_rel sim2 h1 h2.
+Proof. apply frontier_head_rel_mono. Qed.
 
 End StableHeadRelation.
 
@@ -131,6 +148,13 @@ Inductive frontier {R} :
       (forall a, frontier (observe (k a)) (front a)) ->
       frontier (observe (PTree.bind t k))
         (sem_bind hs (frontier_head_bind_front k front)).
+
+(** Canonical proof-engineering name.  This syntax-directed judgment is a
+    certificate for stable-hitting facts, not a second behavioral or
+    operational semantics.  [frontier] is retained for source compatibility. *)
+Definition frontier_certificate {R}
+    (state : ptree' E MN R) (out : MF (stable_head E MN R)) : Prop :=
+  frontier state out.
 
 (** Coherence is the exact semantic condition needed to treat a frontier as
     an observation rather than a chosen derivation.  Omega-limit uniqueness
