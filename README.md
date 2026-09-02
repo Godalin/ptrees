@@ -18,9 +18,11 @@ PTree syntax (intensional representation)
        -> finite interaction observations / Prₜ[t | pattern] (quantitative)
 ```
 
-The generic public facade is `Eq/ProbabilisticSemantics.v`.  PTree has one
-public behavioral equivalence: `probabilistic_eutt`, written `t ≈ₚ u` (or
-`t ≈ₚ[RR] u`).  It is the greatest fixed point obtained by coupling the
+The generic public facade is `Eq/ProbabilisticSemantics.v`.  It imports its
+implementation dependencies without transitively exporting their historical
+short names, then exposes the curated semantic vocabulary and endpoint laws.
+PTree has one public behavioral equivalence: `probabilistic_eutt`, written
+`t ≈ₚ u` (or `t ≈ₚ[RR] u`).  It is the greatest fixed point obtained by coupling the
 stable-hitting behaviors of the two trees and recursively relating visible
 continuations.  Its definition has no Tau, Prob, Bind, Iter, or certificate
 constructor; the corresponding equations are derived laws.
@@ -35,7 +37,7 @@ Paco remains only an inherited ITree build dependency.
 
 The framework is not limited to samplers returning a final value.  The
 quantitative layer measures finite dependent-event cylinder patterns, and the
-interactive Von Neumann case study proves the singleton-pattern observation
+interactive Von Neumann case study proves the concrete two-event pattern
 `Request; Reply(true)` has probability `1/2` despite an unbounded internal
 retry loop.
 

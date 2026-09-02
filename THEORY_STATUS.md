@@ -19,8 +19,10 @@ PTree syntax
 ```
 
 `Eq/ProbabilisticSemantics.v` is the generic public facade for this graph.
-Historical implementation module names remain stable for proof clients but
-do not denote additional semantic layers.
+It exposes curated aliases, notation, and endpoint laws without transitively
+importing the historical short names from implementation modules.  Those
+modules remain available by explicit import to proof developers but do not
+denote additional semantic layers.
 
 `Eq/PrimitiveStableHitting.v` contains the syntax-independent absorbing
 hitting construction.  It defines finite approximants, their omega limit,
