@@ -894,6 +894,19 @@ Proof.
   - exact direct_after_request_true_reply_prefix_query.
 Qed.
 
+Lemma direct_request_true_reply_sem_coupled_to_fair :
+  @sem_lift MF FreeOmegaObservableSemanticMeasureInterface bool bool eq
+    (@finite_trace_sem coin_serviceE Enum MF
+      FreeOmegaObservableSemanticMeasureInterface
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface bool
+      request_true_reply_trace direct_fair_service)
+    direct_true_reply_query.
+Proof.
+  eapply finite_trace_sem_coupled_to_query.
+  exact direct_request_true_reply_prefix_query.
+Qed.
+
 (** The unbounded implementation directly satisfies the two-event
     [Request; CoinReply true] cylinder.  Its witness is coupled to the same
     explicit fair measure whose true mass is [1/2]. *)
@@ -913,6 +926,24 @@ Proof.
   - eapply probabilistic_eutt_sym.
     exact interactive_von_neumann_service_equivalent.
   - exact direct_request_true_reply_prefix_query.
+Qed.
+
+Theorem von_neumann_request_true_reply_sem_preserved :
+  @sem_lift MF FreeOmegaObservableSemanticMeasureInterface bool bool eq
+    (@finite_trace_sem coin_serviceE Enum MF
+      FreeOmegaObservableSemanticMeasureInterface
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface bool
+      request_true_reply_trace direct_fair_service)
+    (@finite_trace_sem coin_serviceE Enum MF
+      FreeOmegaObservableSemanticMeasureInterface
+      FreeOmegaMixedMeasureInterface
+      FreeOmegaObservableSemanticOmegaInterface bool
+      request_true_reply_trace von_neumann_service).
+Proof.
+  eapply probabilistic_eutt_preserves_finite_trace_sem.
+  eapply probabilistic_eutt_sym.
+  exact interactive_von_neumann_service_equivalent.
 Qed.
 
 (** A non-matching cylinder fails at the first event: the service initially
