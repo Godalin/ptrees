@@ -4,7 +4,7 @@
 
 (name coq-ptree)
 
-(license "GPL 3.0")
+(license GPL-3.0-only)
 
 (authors "Linyu Yang")
 
@@ -14,8 +14,9 @@
 
 (package
  (name coq-ptree)
- (synopsis "probability tree")
+ (synopsis "Probabilistic eventful computation trees")
  (version 0.1)
+ (source (github Godalin/ptrees))
  (depends
   (coq
    (>= 8.20))
