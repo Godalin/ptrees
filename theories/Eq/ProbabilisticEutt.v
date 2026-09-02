@@ -97,6 +97,31 @@ Proof.
   eapply (@leq_gfp _ _ fstable_hitting_bisim sim); eauto.
 Qed.
 
+(** Generic coinduction through a compatible closure.  This is the small
+    fixed-point theorem needed by sound up-to techniques: the user candidate
+    only has to progress to [clo sim], while compatibility turns the whole
+    closure into an ordinary post-fixed point.  In particular, an up-to-bind
+    development must prove [Hcompatible]; merely invoking the final bind
+    congruence inside [Hprogress] would be circular. *)
+Theorem stable_hitting_bisim_coinduction_upto_closure
+    (clo : (S1 -> S2 -> Prop) -> S1 -> S2 -> Prop)
+    (Hinclude : forall sim s1 s2, sim s1 s2 -> clo sim s1 s2)
+    (Hcompatible : forall sim,
+      (forall s1 s2, sim s1 s2 ->
+        stable_hitting_match (clo sim) s1 s2) ->
+      forall s1 s2, clo sim s1 s2 ->
+        stable_hitting_match (clo sim) s1 s2)
+    (sim : S1 -> S2 -> Prop)
+    (Hprogress : forall s1 s2, sim s1 s2 ->
+      stable_hitting_match (clo sim) s1 s2) :
+  forall s1 s2, sim s1 s2 -> stable_hitting_bisim s1 s2.
+Proof.
+  intros s1 s2 Hsim. unfold stable_hitting_bisim.
+  eapply (@leq_gfp _ _ fstable_hitting_bisim (clo sim)).
+  - exact (Hcompatible sim Hprogress).
+  - exact (Hinclude sim s1 s2 Hsim).
+Qed.
+
 End StableHittingBisimulation.
 
 Section StableHittingMatchEndpoint.
@@ -335,6 +360,37 @@ Theorem probabilistic_eutt_coinduction
 Proof.
   intros t1 t2 Hsim.
   eapply stable_hitting_bisim_coinduction; eauto.
+Qed.
+
+(** PTree-facing form of compatible-closure coinduction.  The closure is a
+    proof device only; the definition and generator of [probabilistic_eutt]
+    remain unchanged. *)
+Theorem probabilistic_eutt_coinduction_upto_closure
+    (clo : (ptree' E MN R1 -> ptree' E MN R2 -> Prop) ->
+      ptree' E MN R1 -> ptree' E MN R2 -> Prop)
+    (Hinclude : forall sim s1 s2, sim s1 s2 -> clo sim s1 s2)
+    (Hcompatible : forall sim,
+      (forall s1 s2, sim s1 s2 ->
+        stable_hitting_match
+          (@ptree_primitive_kernel E MN MF FI MX R1)
+          (@ptree_primitive_kernel E MN MF FI MX R2)
+          ptree_stable_head_rel (clo sim) s1 s2) ->
+      forall s1 s2, clo sim s1 s2 ->
+        stable_hitting_match
+          (@ptree_primitive_kernel E MN MF FI MX R1)
+          (@ptree_primitive_kernel E MN MF FI MX R2)
+          ptree_stable_head_rel (clo sim) s1 s2)
+    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
+    (Hprogress : forall s1 s2, sim s1 s2 ->
+      stable_hitting_match
+        (@ptree_primitive_kernel E MN MF FI MX R1)
+        (@ptree_primitive_kernel E MN MF FI MX R2)
+        ptree_stable_head_rel (clo sim) s1 s2) :
+  forall t1 t2, sim (observe t1) (observe t2) ->
+    probabilistic_eutt t1 t2.
+Proof.
+  intros t1 t2 Hsim.
+  eapply stable_hitting_bisim_coinduction_upto_closure; eauto.
 Qed.
 
 (** Coinduction up to the canonical equivalence.  Recursive obligations may
