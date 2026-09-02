@@ -2,49 +2,58 @@
 
 ## Introduction
 
-PTree has one maintained weak/extensional probabilistic behavioral
-equivalence: `probabilistic_eutt`, written `t ≈ₚ u` (or `t ≈ₚ[RR] u` for a
-heterogeneous return relation).  It compares complete subprobabilistic
-stable-hitting limits through couplings of stable `Ret`/`Vis` heads.
-Internal `Tau` and `Prob` computation are abstracted by the hitting semantics;
-missing termination mass remains observable.
-
-The project is a semantic framework for computations in which native
+PTree is an intensional representation of computations in which native
 probability, potentially infinite internal computation, and observable event
-sequences coexist.  It is not limited to samplers returning a final value:
-the quantitative query layer can measure stable visible-event classes, and
-the interactive Von Neumann case study proves the protocol observation
+sequences coexist.  Stable hitting extracts its extensional probabilistic
+behavior: it absorbs internal `Tau` and `Prob` evolution until reaching a
+stable `Ret` or `Vis` head, while preserving missing termination mass.
+
+The public conceptual architecture has four layers and two semantic clients:
+
+```text
+PTree syntax (intensional representation)
+  -> ptree_primitive_kernel
+  -> stable_hitting / H(t) (extensional behavior)
+       -> probabilistic_eutt / ≈ₚ (relational reasoning)
+       -> finite interaction observations / Prₜ[t | pattern] (quantitative)
+```
+
+The generic public facade is `Eq/ProbabilisticSemantics.v`.  PTree has one
+public behavioral equivalence: `probabilistic_eutt`, written `t ≈ₚ u` (or
+`t ≈ₚ[RR] u`).  It is the greatest fixed point obtained by coupling the
+stable-hitting behaviors of the two trees and recursively relating visible
+continuations.  Its definition has no Tau, Prob, Bind, Iter, or certificate
+constructor; the corresponding equations are derived laws.
+
+`frontier_certificate` (compatibility name `frontier`), `pstructural`, and
+`pstrong` belong to mechanization infrastructure.  The first is a
+syntax-directed certificate system for proving stable-hitting facts;
+`pstructural` is the lockstep relation used to establish structural equations;
+and `pstrong` is a syntax-sensitive comparison baseline.  None is a competing
+public behavioral semantics.  The coinductive layers use `coq-coinduction`;
+Paco remains only an inherited ITree build dependency.
+
+The framework is not limited to samplers returning a final value.  The
+quantitative layer measures finite dependent-event cylinder patterns, and the
+interactive Von Neumann case study proves the singleton-pattern observation
 `Request; Reply(true)` has probability `1/2` despite an unbounded internal
 retry loop.
 
-The semantic stack is:
-
-```text
-PTree.observe
-  -> ptree_primitive_kernel
-  -> stable_hitting_weak
-  -> sem_lift over stable heads
-  -> probabilistic_eutt (greatest fixed point)
-```
-
-`Eq/PStrong.v` remains the syntax-sensitive strong baseline.  It matches
-`Ret`, `Tau`, `Vis`, and `Prob` constructors in lockstep through the abstract
-probability lifting.  The weak canonical relation has no syntax constructors:
-Tau laws, probability congruence, bind congruence, iteration certificates, and
-coinduction rules are derived theorems.  Both layers use `coq-coinduction`;
-Paco remains only an inherited ITree build dependency.
-
 `Eq/ProbabilisticTrace.v` provides measure-valued stable-head, next-event,
-and finite interactive trace-prefix queries.  A dependent event selector
-both recognizes an event and supplies the environment response used to enter
-its continuation.  `probabilistic_eutt_preserves_finite_trace_query` shows
-that `≈ₚ` preserves every such finite cylinder without fixing the generic
+and finite interaction-prefix queries.  A dependent event selector both
+recognizes an event and supplies the environment response used to enter its
+continuation; a list of selectors is therefore a
+`finite_interaction_pattern`, not necessarily one concrete trace.  Singleton
+selectors represent ordinary concrete traces.
+`probabilistic_eutt_preserves_finite_trace_query` shows that `≈ₚ` preserves
+every such finite cylinder without fixing the generic
 theory to Enum, MathComp, rationals, or reals.  Continuation obligations hold
 almost everywhere, so zero-mass branches need no artificial trace witness.
 On backends with the order/omega laws needed to construct every complete
 hitting limit, `finite_trace_query_exists` and
 `finite_trace_query_unique_up_to_coupling` make the semantics well-defined.
-The choice-based `finite_trace_sem` packages a canonical representative, and
+The choice-based `finite_trace_sem` (public wrapper
+`finite_interaction_sem`) packages a representative, and
 `probabilistic_eutt_preserves_finite_trace_sem` is its extensional soundness
 theorem.  Generic witness independence is stated as diagonal coupling;
 backends may reflect that coupling to their own semantic equality.
@@ -54,7 +63,8 @@ representative coupled to a valid query, without pretending that the
 choice-selected `finite_trace_sem` representative is executable.  The
 interactive Von Neumann example proves the compact numeric endpoint
 `Prₜ[von_neumann_service | request_true_reply_trace] = 1/2`.
-This API does not yet claim an infinite-trace sigma-algebra or a general
+This is prefix-satisfaction/cylinder semantics, not a pushforward trace
+distribution.  The API does not claim an infinite-trace sigma-algebra or a general
 expectation-transformer calculus.
 
 ### Unbounded stable hitting

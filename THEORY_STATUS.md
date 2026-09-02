@@ -1,25 +1,33 @@
-# Maintained probabilistic equivalence theory
+# Maintained probabilistic semantics
 
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
-## Canonical semantics
+## Canonical architecture
 
-PTree has one maintained probabilistic behavioral equivalence:
+PTree syntax is the intensional representation; stable hitting extracts its
+extensional probabilistic behavior.  That behavior has a relational client
+and a quantitative client:
 
 ```text
-PTree.observe
+PTree syntax
   -> ptree_primitive_kernel
   -> stable_hitting_approx
-  -> stable_hitting_weak (subprobabilistic omega limit)
-  -> sem_lift over stable Ret/Vis heads
-  -> probabilistic_eutt / ≈ₚ (greatest fixed point)
+  -> stable_hitting / H(t) (subprobabilistic omega limit)
+       -> probabilistic_eutt / ≈ₚ (coupling greatest fixed point)
+       -> finite_interaction_sem (finite cylinder observation)
 ```
+
+`Eq/ProbabilisticSemantics.v` is the generic public facade for this graph.
+Historical implementation module names remain stable for proof clients but
+do not denote additional semantic layers.
 
 `Eq/PrimitiveStableHitting.v` contains the syntax-independent absorbing
 hitting construction.  It defines finite approximants, their omega limit,
 existence, uniqueness, increasingness, AE preservation, and AST as the
-derived conjunction of weak hitting and `sem_total`.
+derived conjunction of stable hitting and `sem_total`.  `stable_hitting` is
+the canonical public name; `stable_hitting_weak` is retained as a source-
+compatibility alias.
 
 `Eq/OperationalProbabilisticPTS.v` supplies the PTree primitive kernel.
 The remaining `operational_target`, `operational_kernel`,
@@ -32,6 +40,12 @@ Its generator contains only bidirectional matching of complete
 stable-hitting limits through `sem_lift (head_rel sim)`.  It has no AST,
 Step, Tau, Prob, Bind, Iter, frontier, or syntax-specific constructor.
 
+Stable observations are publicly called `stable_head` and related by
+`stable_head_rel`; the established `frontier_head` names remain compatible.
+The syntax-directed `frontier_certificate` judgment (compatibility identifier
+`frontier`) is proof infrastructure for constructing stable-hitting facts,
+not a second operational or behavioral semantics.
+
 The public notation is deliberately small:
 
 ```coq
@@ -40,8 +54,9 @@ t ≈ₚ[RR] u    (* probabilistic_eutt RR t u *)
 ```
 
 Both notations live in `type_scope`, following ITree's relation-notation
-convention.  Stable hitting, coupling, and frontier remain explicitly named
-until their user-facing APIs stabilize further.
+convention.  `probabilistic_eutt` is the only public behavioral relation;
+`pstructural` is an auxiliary lockstep proof relation and `pstrong` a
+syntax-sensitive baseline.
 
 The following laws are checked:
 
@@ -452,12 +467,18 @@ measure-level witnesses locally.
 
 The same example now has an event-aware quantitative endpoint.  The generic
 `ProbabilisticTrace` layer first classifies the next complete stable Ret/Vis
-head and then extends this operation to finite interactive trace prefixes.
+head and then extends this operation to finite interaction patterns.
 A selector has type `forall X, E X -> option X`: it recognizes the next
 dependent event and supplies the environment response that enters its
 continuation.  Recursive branch obligations are required almost everywhere
 with respect to the stable-head measure, so inaccessible zero-mass branches
 need no spurious hitting witness.
+
+The canonical type name is `finite_interaction_pattern`.  Because a selector
+may accept several events, such a pattern denotes a finite prefix/cylinder
+observation and is not necessarily one concrete trace.  The compatibility
+name `finite_event_trace` remains available; singleton selectors recover
+ordinary concrete traces.
 
 `finite_trace_query_singleton_iff_next_event_query` proves that the old
 next-event query is precisely the singleton specialization.
@@ -469,17 +490,19 @@ of the two programs.
 
 The certificate semantics is total on backends providing
 `SemanticMeasureOrderLaws`: `finite_trace_query_exists` constructs a query by
-induction over the finite prefix and uses `stable_hitting_weak_exists` at each
+induction over the finite prefix and uses `stable_hitting_exists` at each
 event boundary.  `finite_trace_query_unique_up_to_coupling` specializes the
 relational theorem to reflexive `probabilistic_eutt`.  Classical choice then
-packages `finite_trace_sem`, with `finite_trace_sem_spec` as its adequacy
-contract and `probabilistic_eutt_preserves_finite_trace_sem` as its canonical
-preservation theorem.  The generic result deliberately says `sem_lift eq`;
+packages `finite_trace_sem` (canonical wrapper `finite_interaction_sem`), with
+`finite_trace_sem_spec` as its adequacy contract and
+`probabilistic_eutt_preserves_finite_trace_sem` as its canonical preservation
+theorem.  The generic result deliberately says `sem_lift eq`;
 identifying that with `sem_eq` requires a backend equality-reflection law.
 
 `ProbabilisticTraceEnum` adds the concrete presentation layer without
-duplicating this generic semantics.  `enum_finite_trace_probability` and the
-notation `Prₜ[t | tr] = p` require a valid generic query, an observational
+duplicating this generic semantics.  `enum_finite_interaction_probability`
+(compatibility name `enum_finite_trace_probability`) and the notation
+`Prₜ[t | pattern] = p` require a valid generic query, an observational
 FreeOmega representative coupled to it, a concrete Enum denotation, and the
 rational expectation of the Boolean indicator.  Consequently the numeric
 API respects the semantic quotient and never computes by inspecting the
@@ -505,8 +528,9 @@ produces a zero-mass nonempty trace query, and
 `divergent_trace_query_not_rejection_mass` distinguishes that missing mass
 from an ordinary mass-one `false` result.
 
-This is finite trace-prefix/cylinder semantics.  The maintained theory does
-not claim a probability measure on infinite traces or a general WP calculus.
+This is finite prefix-satisfaction/cylinder semantics, not a distribution on
+traces.  The maintained theory does not claim a probability measure on
+infinite traces or a general WP calculus.
 
 The artifact support range is Coq `>= 8.20` and `< 9.0`, with CI explicitly
 installing Coq 8.20.1.  Coq 9 changes Stdlib load paths and requires a
