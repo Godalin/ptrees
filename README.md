@@ -48,6 +48,12 @@ The choice-based `finite_trace_sem` packages a canonical representative, and
 `probabilistic_eutt_preserves_finite_trace_sem` is its extensional soundness
 theorem.  Generic witness independence is stated as diagonal coupling;
 backends may reflect that coupling to their own semantic equality.
+`Eq/ProbabilisticTraceEnum.v` is the paper-facing concrete projection.  It
+defines `Prₜ[t | tr] = p` using an Enum expectation of a FreeOmega
+representative coupled to a valid query, without pretending that the
+choice-selected `finite_trace_sem` representative is executable.  The
+interactive Von Neumann example proves the compact numeric endpoint
+`Prₜ[von_neumann_service | request_true_reply_trace] = 1/2`.
 This API does not yet claim an infinite-trace sigma-algebra or a general
 expectation-transformer calculus.
 
@@ -111,9 +117,12 @@ The maintained artifact establishes:
 - Enum and MathComp Analysis instances, with executable rational examples
   and real-measure examples respectively.
 
-Two stronger statements are intentionally not claimed.  Arbitrary effectful
-handlers still require a stable-hitting-aware companion/fusion theorem after
-an internally returning handler enters a recursive continuation.  Likewise,
+Two stronger statements are intentionally not claimed.  The remaining
+arbitrary-effectful-handler premise is now isolated as
+`free_interp_vis_fusion`; `free_probabilistic_eutt_interp_of_vis_fusion`
+derives full preservation once that one collapsed handled-`Vis` segment is
+supplied.  Ordinary up-to-bind compatibility cannot discharge it without an
+unguarded recursive use after the handler returns internally.  Likewise,
 the exact no-`Prob` correspondence with ITree `eutt` still requires the
 pure-tree hitting classification and dependent visible-head inversion
 described in [`THEORY_STATUS.md`](THEORY_STATUS.md).  The existing generic

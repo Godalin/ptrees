@@ -252,11 +252,9 @@ source-to-intermediate-to-left hitting transport with direct
 source-to-right transport, not by structural equality.  The regression uses
 three distinct event signatures (`AskBit`, `GetBit`, and `ReadBit`).
 
-This is the first sound handler layer, not yet the full ITree-style claim
-that `interp` preserves arbitrary `probabilistic_eutt`.  In particular,
-effectful `interp` preservation for arbitrary behaviorally equivalent source
-trees remains a future algebraic law; effectful-handler composition,
-`interp_iter`, and pure `translate` preservation are complete.
+This is a sound handler layer, not an unconditional ITree-style claim that
+`interp` preserves arbitrary `probabilistic_eutt`.  Effectful-handler
+composition, `interp_iter`, and pure `translate` preservation are complete.
 
 The remaining law now has an exact generator-level interface in the focused
 `OperationalProbabilisticPTSFreeOmegaInterp` module.
@@ -284,6 +282,20 @@ continuation in `bind_upto_closure`.  The remaining obligation is therefore
 narrower: a guarded/companion closure for stable-hitting interpretation (or
 an equivalent fusion theorem for this collapsed bind), not another measure
 axiom and not ordinary bind compatibility.
+
+The bounded audit now exposes that last premise directly.
+`free_interp_vis_fusion` asks only for generator progress of a pair of
+handled `Vis` heads whose source continuations are pointwise canonically
+equivalent.  `free_probabilistic_eutt_interp_of_vis_fusion` proves full
+effectful `interp` preservation from it, deriving source hitting, Ret-head
+matching, outer interpreter cofinality, and coupling composition from the
+maintained library.  This is strictly narrower than the older whole-
+candidate `free_interp_generator_closed` interface.  Proving it from the
+ordinary bind companion would require using the very interpreter-progress
+claim being established after an internally returning handler crosses into
+the source continuation, hence an unguarded self-use.  The artifact records
+this as the exact research boundary and does not expand the core scope to
+postulate a stronger measure law.
 
 Dirac elimination is now explicit rather than axiomatized accidentally.
 `SemanticMeasureDiracAELaws` characterizes AE predicates on node Dirac
@@ -465,6 +477,14 @@ contract and `probabilistic_eutt_preserves_finite_trace_sem` as its canonical
 preservation theorem.  The generic result deliberately says `sem_lift eq`;
 identifying that with `sem_eq` requires a backend equality-reflection law.
 
+`ProbabilisticTraceEnum` adds the concrete presentation layer without
+duplicating this generic semantics.  `enum_finite_trace_probability` and the
+notation `Prₜ[t | tr] = p` require a valid generic query, an observational
+FreeOmega representative coupled to it, a concrete Enum denotation, and the
+rational expectation of the Boolean indicator.  Consequently the numeric
+API respects the semantic quotient and never computes by inspecting the
+arbitrary representative selected by classical choice.
+
 `request_true_reply_trace` directly represents the two-event prefix
 `CoinRequest; CoinReply true` from the service root.
 `direct_request_true_reply_prefix_query` identifies its direct-service query
@@ -472,6 +492,9 @@ with the previously computed `vn_fair` measure, and
 `von_neumann_request_true_reply_probability_half` transports it to the
 unbounded implementation.  The existing expectation theorem therefore reads
 its true mass as `1/2`.
+`von_neumann_request_true_reply_trace_probability` packages the same result
+as the paper-facing statement
+`Prₜ[von_neumann_service | request_true_reply_trace] = 1/2`.
 `direct_request_true_reply_sem_coupled_to_fair` connects the canonical
 function to the explicit fair witness, while
 `von_neumann_request_true_reply_sem_preserved` states preservation directly
