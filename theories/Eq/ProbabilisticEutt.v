@@ -154,6 +154,24 @@ Proof.
     eapply stable_hitting_weak_unique; [exact Hhit2|exact Hhit2'].
 Qed.
 
+(** Eliminate a generator match at chosen complete witnesses.  This is the
+    converse-facing companion of [stable_hitting_match_of_hitting_lift] and
+    is particularly useful in compatible-closure proofs: progress of a
+    recursive candidate can be consumed without first folding it into the
+    final greatest fixed point. *)
+Lemma stable_hitting_match_hitting_lift
+    (sim : S1 -> S2 -> Prop) s1 s2 out1 out2 :
+  stable_hitting_match kernel1 kernel2 AR sim s1 s2 ->
+  stable_hitting_weak kernel1 s1 out1 ->
+  stable_hitting_weak kernel2 s2 out2 ->
+  sem_lift (AR sim) out1 out2.
+Proof.
+  intros [Hforward _] Hhit1 Hhit2.
+  destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
+  eapply sem_lift_proper_r; [|exact Hlift].
+  eapply stable_hitting_weak_unique; [exact Hhit2'|exact Hhit2].
+Qed.
+
 End StableHittingMatchEndpoint.
 
 Section StableHittingBisimulationReflexivity.
@@ -1204,6 +1222,55 @@ Proof.
   destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
   eapply sem_lift_proper_r; [|exact Hlift].
   eapply stable_hitting_weak_unique; [exact Hhit2'|exact Hhit2].
+Qed.
+
+(** Closure used by the up-to-bind proof method.  Besides already known
+    behavioral equivalence, it admits a bind whose source is behaviorally
+    related and whose return continuations may either re-enter the current
+    coinduction candidate or close by an already known equivalence.
+
+    Keeping the recursive alternative at the state level is essential:
+    this is exactly the shape produced when interpreting the continuation of
+    a visible source head with an effectful handler. *)
+Definition bind_upto_closure (A : Type)
+    (sim : ptree' E MN A -> ptree' E MN A -> Prop)
+    (s1 s2 : ptree' E MN A) : Prop :=
+  probabilistic_eutt_state eq s1 s2 \/
+  exists (R1 R2 : Type) (RR : R1 -> R2 -> Prop)
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2)
+    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A),
+    s1 = observe (PTree.bind t1 k1) /\
+    s2 = observe (PTree.bind t2 k2) /\
+    probabilistic_eutt RR t1 t2 /\
+    (forall r1 r2, RR r1 r2 ->
+      sim (observe (k1 r1)) (observe (k2 r2)) \/
+      probabilistic_eutt eq (k1 r1) (k2 r2)).
+
+Lemma bind_upto_closure_includes A sim :
+  forall s1 s2, sim s1 s2 ->
+    bind_upto_closure (A := A) sim s1 s2.
+Proof.
+  intros s1 s2 Hsim.
+  right. exists unit, unit, (fun _ _ => True),
+    (Ret tt), (Ret tt), (fun _ => go s1), (fun _ => go s2).
+  repeat split; try reflexivity.
+  - apply probabilistic_eutt_ret. exact I.
+  - intros _ _ _. left. exact Hsim.
+Qed.
+
+Lemma bind_upto_closure_mono A sim1 sim2 :
+  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
+  forall s1 s2, bind_upto_closure (A := A) sim1 s1 s2 ->
+    bind_upto_closure (A := A) sim2 s1 s2.
+Proof.
+  intros Hsub s1 s2 [Hknown|Hbind]; [left; exact Hknown|right].
+  destruct Hbind as
+    (R1 & R2 & RR & t1 & t2 & k1 & k2 & Hs1 & Hs2 & Hsource & Hk).
+  exists R1, R2, RR, t1, t2, k1, k2.
+  repeat split; try assumption.
+  intros r1 r2 Hr. destruct (Hk r1 r2 Hr) as [Hsim|Hknown].
+  - left. exact (Hsub _ _ Hsim).
+  - right. exact Hknown.
 Qed.
 
 (** The coinduction candidate contains the already established greatest
