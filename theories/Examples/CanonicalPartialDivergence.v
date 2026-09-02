@@ -8,7 +8,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum MeasureIterationEnum
   TwoLevelMeasure TwoLevelMeasureEnum.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier
-  OperationalProbabilisticPTS ProbabilisticEutt.
+  OperationalProbabilisticPTS ProbabilisticEutt ProbabilisticTrace.
 From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
@@ -73,6 +73,51 @@ Proof.
   intros P eps Heps. exists 0%nat. intros n _.
   rewrite canonical_spin_hitting_approx_expect_zero.
   cbn [enum_expect]. rewrite subr0 normr0. exact Heps.
+Qed.
+
+(** A non-empty trace query on pure silent divergence has zero total mass.
+    This is deliberately different from [sem_ret false]: divergence means
+    that no next stable observation is reached, not that a visible event was
+    observed and rejected. *)
+Definition impossible_trace_step {X} (e : regE X) : option X :=
+  match e with end.
+
+Definition divergent_one_event_trace : @finite_event_trace regE :=
+  cons (@impossible_trace_step) nil.
+
+Definition divergent_trace_query : Enum bool := [::].
+
+Lemma canonical_spin_nonempty_trace_query_zero :
+  @finite_trace_query regE Enum Enum
+    Enum_SemanticMeasureInterface Enum_MixedMeasureInterface
+    Enum_SemanticOmegaInterface bool
+    divergent_one_event_trace canonical_spin divergent_trace_query.
+Proof.
+  unfold divergent_one_event_trace, divergent_trace_query.
+  exists ([::] : Enum (frontier_head regE Enum bool)),
+    (fun _ : frontier_head regE Enum bool => [::]).
+  repeat split.
+  - exact canonical_spin_stable_hitting_zero.
+  - cbn [TwoLevelMeasure.sem_ae Enum_SemanticMeasureInterface
+      FrontierLift.meas_ae Enum_MeasureInterface enum_ae].
+    intros p x Hin Hnz. inversion Hin.
+  - apply sem_eq_refl.
+Qed.
+
+Lemma divergent_trace_query_mass_zero :
+  enum_expect (fun _ : bool => (1 : rat)) divergent_trace_query = 0.
+Proof. reflexivity. Qed.
+
+Lemma divergent_trace_query_not_rejection_mass :
+  ~ @sem_same_mass Enum Enum_SemanticMeasureInterface bool bool
+      divergent_trace_query (sem_ret false).
+Proof.
+  intro Hmass.
+  have Hweight := enum_sem_same_mass_expect_one Hmass.
+  cbn [divergent_trace_query TwoLevelMeasure.sem_ret
+    FrontierLift.meas_ret Enum_SemanticMeasureInterface
+    Enum_MeasureInterface ret_Enum enum_expect] in Hweight.
+  discriminate Hweight.
 Qed.
 
 Lemma half_return_half_diverge_stable_hitting :
