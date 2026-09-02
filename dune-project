@@ -31,6 +31,6 @@
   (coq-relation-algebra
    (>= 1.7.11))
   (coq-mathcomp-algebra
-   (>= 2.3.0))
+   (and (>= 2.3.0) (< 2.5.0)))
   (coq-mathcomp-analysis
    (and (>= 1.13.0) (< 1.15.0)))))
