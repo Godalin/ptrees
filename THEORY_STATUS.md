@@ -137,9 +137,11 @@ and `free_probabilistic_eutt_iter_eventful_of_generator_closed` derives the
 full behavioral fusion theorem from closure of that candidate under the
 stable-hitting generator.  This removes the eventless scheduling machinery
 from the remaining obligation.  As with generic effectful interpretation,
-discharging it from behavioral step equivalence requires an up-to-bind/final
-chain compatibility result; it is not sound to recursively reuse the gfp
-bind congruence.
+discharging it from behavioral step equivalence has the same remaining
+stable-hitting companion issue as arbitrary effectful interpretation.  The
+sound up-to-bind rule handles residual binds, but an internally returning
+iteration step may collapse directly into the next recursive round before a
+stable head is exposed.
 
 Iteration naturality (the parameter identity) is now unconditional.
 `pstructural_iter_natural` proves structurally that post-processing a loop
@@ -262,13 +264,23 @@ interpreter preservation from closure of that candidate.  Thus the open
 proof obligation is specifically candidate-level closure of the binds
 produced by handled visible heads; primitive scheduling, complete hitting,
 and omega-limit composition are not part of the remaining gap.
-The existing `probabilistic_eutt_bind` theorem establishes closure only at
-the greatest fixed point.  It cannot soundly be used recursively to prove
-this obligation: native coinduction exposes an arbitrary element of the
-final chain, and complete stable hitting may consume the continuation after
-a handler returns.  An unconditional theorem therefore needs a stronger
-bind transformer compatible with the final chain (equivalently, an
-appropriate companion/up-to-bind result), not an additional measure axiom.
+The generic layer now includes a sound heterogeneous up-to-bind theorem.
+`bind_upto_closure` contains the current candidate, the established greatest
+fixed point, and binds whose continuations return to either relation;
+`bind_upto_closure_compatible` proves generator compatibility without using
+the final bind congruence, and
+`probabilistic_eutt_coinduction_upto_bind` exposes the resulting proof rule.
+This closes the previously missing bind-compatibility theorem itself.
+
+It does not, by itself, prove arbitrary effectful interpretation.  When a
+handled visible head returns internally, complete stable hitting immediately
+continues into the interpreted source continuation before producing a stable
+head.  Establishing the coupling for that collapsed segment asks recursively
+for interpreter progress, rather than merely placing a residual visible
+continuation in `bind_upto_closure`.  The remaining obligation is therefore
+narrower: a guarded/companion closure for stable-hitting interpretation (or
+an equivalent fusion theorem for this collapsed bind), not another measure
+axiom and not ordinary bind compatibility.
 
 Dirac elimination is now explicit rather than axiomatized accidentally.
 `SemanticMeasureDiracAELaws` characterizes AE predicates on node Dirac
