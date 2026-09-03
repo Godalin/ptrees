@@ -10,3 +10,6 @@ Prob/pGCL.v
 Prob/Qbs.v
 
 *.log
+
+# Local seminar-slide workspace cloned from the Typst template repository.
+FICTION-Seminar-Slide-Template-Typst/
