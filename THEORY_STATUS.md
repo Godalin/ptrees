@@ -24,6 +24,11 @@ importing the historical short names from implementation modules.  Those
 modules remain available by explicit import to proof developers but do not
 denote additional semantic layers.
 
+The canonical measure capabilities follow the same operations/laws split:
+`SemanticMeasure`, `SemanticOmega`, and `MixedMeasure` contain structure,
+while their property packages retain the `Laws` suffix.  The unrelated
+legacy `MeasureInterface` name remains unchanged.
+
 `Eq/PrimitiveStableHitting.v` contains the syntax-independent absorbing
 hitting construction.  It defines finite approximants, their omega limit,
 existence, uniqueness, increasingness, AE preservation, and AST as the
@@ -546,7 +551,7 @@ The maintained generic theorem deliberately does **not** claim
 probabilistic_eutt eq (embed t) (embed u) <-> eutt t u
 ```
 
-under the current `SemanticMeasureInterface`.  The converse is not derivable
+under the current `SemanticMeasure`.  The converse is not derivable
 from these axioms and is false for admissible degenerate instances: the
 interface gives positive coupling constructors and algebraic closure laws,
 but it does not require couplings to separate unequal Dirac measures, reflect
