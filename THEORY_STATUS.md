@@ -29,6 +29,47 @@ The canonical measure capabilities follow the same operations/laws split:
 while their property packages retain the `Laws` suffix.  The unrelated
 legacy `MeasureInterface` name remains unchanged.
 
+## Backend capability profiles
+
+`Examples/BackendCapabilities.v` is the compile-time audit of the two
+maintained two-level profiles:
+
+```text
+Enum node              -> FreeOmega Enum behavior
+MathComp kernel node   -> FreeOmega MathCompKernelMeasure behavior
+```
+
+Capabilities are assigned to the layer where they mathematically belong;
+the goal is not to make the two node layers superficially identical.
+
+| Capability | Enum node | MathComp node | Both FreeOmega behaviors |
+| --- | --- | --- | --- |
+| `SemanticMeasure`, core, AE lift | direct | direct¹ | derived/direct |
+| AE Kleisli, Dirac AE, countable AE | direct | direct | derived |
+| coupling AE | direct | direct | derived |
+| bind-AE exactness | direct | direct | used to derive mixed node-bind |
+| `SemanticMeasureBindLaws` | direct | not required² | direct FreeOmega proof |
+| omega order/laws/cofinality | node-specific subset | node-specific subset | derived |
+| omega AE, diagonal, Fubini | — | — | derived |
+| mixed laws/unit/node-bind/omega | — | — | derived |
+| mixed commutativity | optional | optional | not a required profile field |
+
+¹ MathComp's core relational package keeps `MathCompCouplingGluing` explicit,
+because coupling composition is not available for arbitrary full-powerset
+measures without an additional gluing assumption.
+
+² The missing node-level field is relational coupling through kernel bind.
+The maintained behavioral measure already has `SemanticMeasureBindLaws` by
+FreeOmega construction.  Adding the node instance would require a new
+measurable joint-kernel selection/gluing development, so it is intentionally
+not pursued merely for matrix symmetry.
+
+The MathComp AE adapters use existing measure facts: negligible sets are
+closed under countable union, Dirac AE is exact, kernel bind is integration,
+and a nonnegative integral is zero exactly almost everywhere.  Consequently
+the node instances automatically unlock FreeOmega coupling AE, omega AE,
+diagonal continuity, Fubini, mixed unit, and nested-`Prob` flattening.
+
 `Eq/PrimitiveStableHitting.v` contains the syntax-independent absorbing
 hitting construction.  It defines finite approximants, their omega limit,
 existence, uniqueness, increasingness, AE preservation, and AST as the

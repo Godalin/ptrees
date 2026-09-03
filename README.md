@@ -103,13 +103,14 @@ an outcome, or splitting its mass does not change the measure.  The regression
 file `Examples/EnumMeasureRegression.v` checks these cases together with
 Dirac elimination and nested-probability flattening.
 
-The MathComp Analysis backend supports measure, bind, subprobability,
-omega-limit, AST, and the universe-safe two-level unified frontier.  Coupling
-composition remains the explicit `MathCompCouplingGluing` capability.  The
-maintained real binary-oracle example is canonically bisimilar to a direct
-real Bernoulli sample.  The former one-level composed factory client was
-removed; a future nested real factory must be rebuilt over the two-level
-canonical iter/congruence API.
+The MathComp Analysis backend now supplies the same foundational AE profile
+as Enum: AE Kleisli extension, exact Dirac AE, countable AE, coupling AE, and
+exact bind support decomposition.  Through the FreeOmega behavior layer these
+instances derive omega AE, diagonal continuity, Fubini, mixed unit, and
+nested-`Prob` flattening.  Coupling composition remains the explicit
+`MathCompCouplingGluing` capability.  The compile-time matrix lives in
+`Examples/BackendCapabilities.v`.  The maintained real binary-oracle example
+is canonically bisimilar to a direct real Bernoulli sample.
 
 ## Artifact claims
 
