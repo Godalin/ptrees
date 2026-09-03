@@ -86,13 +86,12 @@ Definition enum_profile_mixed_omega :
 
 End EnumFreeOmegaProfile.
 
-Section MathCompNodeProfile.
+Section MathCompFoundationalProfile.
 Context (R : realType).
-Context `{MathCompCouplingGluing R}.
 
-Definition mathcomp_profile_core :
-    @SemanticMeasureCoreLaws (MathCompKernelMeasure R)
-      (MathCompNodeSemanticMeasure R) := _.
+Definition mathcomp_profile_measure :
+    SemanticMeasure (MathCompKernelMeasure R) :=
+  MathCompNodeSemanticMeasure R.
 Definition mathcomp_profile_ae_lift :
     @SemanticMeasureAELiftLaws (MathCompKernelMeasure R)
       (MathCompNodeSemanticMeasure R) := _.
@@ -112,7 +111,20 @@ Definition mathcomp_profile_bind_ae_exact :
     @SemanticMeasureBindAEExactLaws (MathCompKernelMeasure R)
       (MathCompNodeSemanticMeasure R) := _.
 
-End MathCompNodeProfile.
+End MathCompFoundationalProfile.
+
+(** Coupling support transport above only uses the given coupling witness.
+    Composition of two witnesses is the sole foundational capability in this
+    audit that needs the explicit measurable gluing assumption. *)
+Section MathCompRelationalCoreProfile.
+Context (R : realType).
+Context `{MathCompCouplingGluing R}.
+
+Definition mathcomp_profile_core :
+    @SemanticMeasureCoreLaws (MathCompKernelMeasure R)
+      (MathCompNodeSemanticMeasure R) := _.
+
+End MathCompRelationalCoreProfile.
 
 Section MathCompFreeOmegaProfile.
 Context (R : realType).
