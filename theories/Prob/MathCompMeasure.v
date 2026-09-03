@@ -210,6 +210,14 @@ Definition mc_relation {A B} (rel : A -> B -> Prop) :
    | _ => False
    end].
 
+Definition mc_joint_left_predicate {A B} (P : A -> Prop) :
+    set (mc_joint A B) :=
+  [set xy | mc_predicate P (mc_joint_fst xy)].
+
+Definition mc_joint_right_predicate {A B} (Q : B -> Prop) :
+    set (mc_joint A B) :=
+  [set xy | mc_predicate Q (mc_joint_snd xy)].
+
 Definition mathcomp_coupling {A B} (rel : A -> B -> Prop)
     (mu : measure (mc_carrier A) R)
     (nu : measure (mc_carrier B) R) : Prop :=
@@ -861,6 +869,191 @@ Proof.
   case: (pselect (P a)) => HPa.
   - right. move=> HQa. exact: Hnot (conj HPa HQa).
   - by left.
+Qed.
+
+Lemma mathcomp_kernel_ae_ret_iff {A} (x : A) (P : A -> Prop) :
+  mathcomp_kernel_ae (mathcomp_kernel_ret x) P <-> P x.
+Proof.
+  split.
+  - rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere
+      /mathcomp_kernel_root /mathcomp_kernel_ret /mathcomp_source_kernel
+      /mathcomp_source_measure /mathcomp_measure_ret.
+    move=> [N [mN HN0 Hsub]].
+    case: (pselect (P x))=> [HP|Hnot]; first exact HP.
+    have Hbad : (~` mc_predicate P) (MCValue x) := Hnot.
+    have HN : N (MCValue x) := Hsub _ Hbad.
+    change (@dirac _ _ (MCValue x) R N = 0) in HN0.
+    have HNb : (MCValue x \in N) = true by apply/asboolP.
+    move: HN0. rewrite /dirac indicE HNb /= => Hzero.
+    exfalso.
+    have Hcontra : (1%:E == 0 :> \bar R) by apply/eqP.
+    by rewrite onee_eq0 in Hcontra.
+  - move=> Hx.
+    exact: (@meas_ae_ret _ MathCompKernelMeasureInterface
+      MathCompKernelMeasureMonadLaws A x P Hx).
+Qed.
+
+Lemma mathcomp_kernel_ae_countable {A} (mu : MathCompKernelMeasure A)
+    (P : nat -> A -> Prop) :
+  (forall n, mathcomp_kernel_ae mu (P n)) ->
+  mathcomp_kernel_ae mu (fun x => forall n, P n x).
+Proof.
+  rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
+  move=> HP.
+  eapply negligibleS; last first.
+  - apply: negligible_bigcup=> n. exact: HP.
+  - move=> [|a] /= Hbad.
+    + exfalso. exact: Hbad.
+    + move/existsNP: Hbad=> [n Hn].
+      exists n; first exact I. exact Hn.
+Qed.
+
+Lemma mathcomp_kernel_ae_bind {A B} (mu : MathCompKernelMeasure A)
+    (k : A -> MathCompKernelMeasure B) (P : A -> Prop) (Q : B -> Prop) :
+  mathcomp_kernel_ae mu P ->
+  (forall x, P x -> mathcomp_kernel_ae (k x) Q) ->
+  mathcomp_kernel_ae (mathcomp_kernel_bind mu k) Q.
+Proof.
+  rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
+  move=> Hmu Hk.
+  apply/negligibleP; first by [].
+  change (\int[mathcomp_kernel_root mu]_z
+    (mathcomp_kernel_extend_measure k z (~` mc_predicate Q)) = 0).
+  have Hzero : ae_eq (mathcomp_kernel_root mu) setT
+      (fun z => mathcomp_kernel_extend_measure k z
+        (~` mc_predicate Q)) (cst 0).
+  { rewrite /ae_eq /almost_everywhere.
+    eapply negligibleS; [|exact Hmu].
+    move=> [|a] Hbad.
+    - exfalso. apply: Hbad=> _.
+      rewrite /= /mathcomp_bottom_measure /dirac indicE.
+      have Hnot : (MCBottom \in (~` mc_predicate Q)) = false.
+      { apply/asboolPn=> Hbad. exact: Hbad. }
+      by rewrite Hnot.
+    - move=> HPa. apply: Hbad=> _.
+      have Hae := Hk a HPa.
+      have Hm : measurable (~` mc_predicate Q) by [].
+      exact: measure_negligible Hm Hae. }
+  rewrite (ae_eq_integral (cst 0)) ?integral0 //.
+Qed.
+
+Lemma mathcomp_kernel_ae_bind_iff {A B} (mu : MathCompKernelMeasure A)
+    (k : A -> MathCompKernelMeasure B) (Q : B -> Prop) :
+  mathcomp_kernel_ae (mathcomp_kernel_bind mu k) Q <->
+  mathcomp_kernel_ae mu (fun x => mathcomp_kernel_ae (k x) Q).
+Proof.
+  split; last first.
+  - move=> Hnested. eapply mathcomp_kernel_ae_bind; [exact Hnested|].
+    intros x Hx. exact Hx.
+  - rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
+    move=> Hflat.
+    pose f z := mathcomp_kernel_extend_measure k z (~` mc_predicate Q).
+    have HmQ : measurable (~` mc_predicate Q) by [].
+    have Hflat0 : mathcomp_kernel_root (mathcomp_kernel_bind mu k)
+        (~` mc_predicate Q) = 0 := measure_negligible HmQ Hflat.
+    change (\int[mathcomp_kernel_root mu]_z f z = 0) in Hflat0.
+    have Hmf : measurable_fun setT f.
+    { unfold f. exact: measurable_mathcomp_kernel_extend. }
+    have HmT : measurable [set: mc_carrier A] by [].
+    have Hfzero : ae_eq (mathcomp_kernel_root mu) setT f (cst 0).
+    { apply/(@ae_eq_integral_abs _ _ R (mathcomp_kernel_root mu)
+        setT HmT f Hmf).
+      rewrite (_ : (fun z => `|f z|) = f); first exact Hflat0.
+      apply/funext=> z. rewrite /f gee0_abs //. }
+    rewrite /ae_eq /almost_everywhere in Hfzero.
+    eapply negligibleS; [|exact Hfzero].
+    move=> [|a] Hbad.
+    + exfalso. exact: Hbad.
+    + move=> Hzero. apply: Hbad.
+      apply/negligibleP; first exact HmQ.
+      exact (Hzero I).
+Qed.
+
+Lemma mathcomp_joint_ae_left {A B}
+    (joint : subprobability (mc_joint A B) R)
+    (mu : MathCompKernelMeasure A) (P : A -> Prop) :
+  (forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
+    joint (mc_joint_fst @^-1` U) = mathcomp_kernel_root mu U) ->
+  mathcomp_kernel_ae mu P ->
+  almost_everywhere joint (mc_joint_left_predicate P).
+Proof.
+  move=> Hleft.
+  rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
+  move=> Hmu. apply/negligibleP; first by [].
+  change (joint (mc_joint_fst @^-1` (~` mc_predicate P)) = 0).
+  rewrite Hleft; last 2 first.
+  - by [].
+  - move=> Hbad. exact: Hbad.
+  exact: measure_negligible (measurableC _) Hmu.
+Qed.
+
+Lemma mathcomp_joint_ae_right {A B}
+    (joint : subprobability (mc_joint A B) R)
+    (nu : MathCompKernelMeasure B) (Q : B -> Prop) :
+  (forall V : set (mc_carrier B), measurable V -> ~ V MCBottom ->
+    joint (mc_joint_snd @^-1` V) = mathcomp_kernel_root nu V) ->
+  mathcomp_kernel_ae nu Q ->
+  almost_everywhere joint (mc_joint_right_predicate Q).
+Proof.
+  move=> Hright.
+  rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
+  move=> Hnu. apply/negligibleP; first by [].
+  change (joint (mc_joint_snd @^-1` (~` mc_predicate Q)) = 0).
+  rewrite Hright; last 2 first.
+  - by [].
+  - move=> Hbad. exact: Hbad.
+  exact: measure_negligible (measurableC _) Hnu.
+Qed.
+
+Lemma mathcomp_kernel_lift_ae_transport_r {A B}
+    (rel : A -> B -> Prop) (mu : MathCompKernelMeasure A)
+    (nu : MathCompKernelMeasure B) (P : A -> Prop) :
+  mathcomp_kernel_lift rel mu nu -> mathcomp_kernel_ae mu P ->
+  mathcomp_kernel_ae nu (fun y => exists x, rel x y /\ P x).
+Proof.
+  move=> [joint [Hleft [Hright Hrel]]] HP.
+  have HjointP := mathcomp_joint_ae_left Hleft HP.
+  rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
+  apply/negligibleP; first by [].
+  have Hm : measurable
+      (~` mc_predicate (fun y => exists x, rel x y /\ P x)) by [].
+  have Hnb : ~
+      (~` mc_predicate (fun y => exists x, rel x y /\ P x)) MCBottom.
+  { move=> Hbad. exact: Hbad. }
+  transitivity (joint (mc_joint_snd @^-1`
+    (~` mc_predicate (fun y => exists x, rel x y /\ P x)))).
+  - symmetry. exact: Hright Hm Hnb.
+  - apply/negligibleP; first by [].
+  rewrite /almost_everywhere in Hrel HjointP.
+  eapply negligibleS; last exact: (negligibleU Hrel HjointP).
+  move=> [x y] Hbad.
+  destruct x as [|a]; destruct y as [|b]; simpl in Hbad |- *; try tauto.
+  case: (pselect (rel a b))=> Hr; last by left.
+  case: (pselect (P a))=> Hp; last by right.
+  exfalso. apply: Hbad. exists a. split; assumption.
+Qed.
+
+Lemma mathcomp_kernel_lift_ae_restrict {A B}
+    (rel : A -> B -> Prop) (mu : MathCompKernelMeasure A)
+    (nu : MathCompKernelMeasure B) (P : A -> Prop) (Q : B -> Prop) :
+  mathcomp_kernel_lift rel mu nu ->
+  mathcomp_kernel_ae mu P -> mathcomp_kernel_ae nu Q ->
+  mathcomp_kernel_lift (fun x y => rel x y /\ P x /\ Q y) mu nu.
+Proof.
+  move=> [joint [Hleft [Hright Hrel]]] HP HQ.
+  exists joint. repeat split=> //.
+  have HjointP := mathcomp_joint_ae_left Hleft HP.
+  have HjointQ := mathcomp_joint_ae_right Hright HQ.
+  rewrite /almost_everywhere in Hrel HjointP HjointQ |- *.
+  eapply negligibleS; last first.
+  - exact: (negligibleU Hrel (negligibleU HjointP HjointQ)).
+  - move=> [x y] Hbad.
+    destruct x as [|a]; destruct y as [|b]; simpl in Hbad |- *; try tauto.
+    unfold mc_joint_left_predicate, mc_joint_right_predicate. simpl.
+    case: (pselect (rel a b))=> Hr; last by left.
+    case: (pselect (P a))=> Hp; last by right; left.
+    case: (pselect (Q b))=> Hq; last by right; right.
+    exfalso. apply: Hbad. repeat split; assumption.
 Qed.
 
 Lemma mathcomp_kernel_lift_proper_l {A B} (rel : A -> B -> Prop)

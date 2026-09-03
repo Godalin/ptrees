@@ -124,6 +124,48 @@ Proof.
   constructor. exact @mathcomp_kernel_lift_refl_ae.
 Qed.
 
+#[global] Instance MathCompNodeSemanticMeasureDiracAELaws :
+    @SemanticMeasureDiracAELaws (MathCompKernelMeasure R)
+      MathCompNodeSemanticMeasure.
+Proof.
+  constructor. exact (@mathcomp_kernel_ae_ret_iff R).
+Qed.
+
+#[global] Instance MathCompNodeSemanticMeasureCountableAELaws :
+    @SemanticMeasureCountableAELaws (MathCompKernelMeasure R)
+      MathCompNodeSemanticMeasure.
+Proof.
+  constructor. exact (@mathcomp_kernel_ae_countable R).
+Qed.
+
+#[global] Instance MathCompNodeSemanticMeasureAEKleisliLaws :
+    @SemanticMeasureAEKleisliLaws (MathCompKernelMeasure R)
+      MathCompNodeSemanticMeasure.
+Proof.
+  constructor.
+  - intros A P x Hx.
+    exact (@meas_ae_ret (MathCompKernelMeasure R)
+      (MathCompKernelMeasureInterface R)
+      (MathCompKernelMeasureMonadLaws R) A x P Hx).
+  - exact (@mathcomp_kernel_ae_bind R).
+Qed.
+
+#[global] Instance MathCompNodeSemanticMeasureCouplingAELaws :
+    @SemanticMeasureCouplingAELaws (MathCompKernelMeasure R)
+      MathCompNodeSemanticMeasure.
+Proof.
+  constructor.
+  - exact (@mathcomp_kernel_lift_ae_transport_r R).
+  - exact (@mathcomp_kernel_lift_ae_restrict R).
+Qed.
+
+#[global] Instance MathCompNodeSemanticMeasureBindAEExactLaws :
+    @SemanticMeasureBindAEExactLaws (MathCompKernelMeasure R)
+      MathCompNodeSemanticMeasure.
+Proof.
+  constructor. exact (@mathcomp_kernel_ae_bind_iff R).
+Qed.
+
 (** Setwise order on returned-value events.  As in the existing MathComp
     omega semantics, events containing [MCBottom] are excluded because their
     unfinished mass decreases while returned mass increases. *)
