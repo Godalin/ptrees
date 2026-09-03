@@ -17,18 +17,18 @@ Unset Printing Implicit Defensive.
     algebraic rewriting layer. *)
 Section FreeOmegaRewrite.
 Context {E : Type -> Type} {MN : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
+  `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
-  `{NO : @SemanticOmegaInterface MN NI}.
+  `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 
 Theorem free_probabilistic_eutt_bind_ret_l {A B}
     (a : A) (k : A -> ptree E MN B) :
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface B B eq
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega B B eq
     (PTree.bind (Ret a) k) (k a).
 Proof.
   apply free_probabilistic_eutt_of_pstructural.
@@ -38,9 +38,9 @@ Qed.
 
 Theorem free_probabilistic_eutt_bind_ret_r {A} (t : ptree E MN A) :
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface A A eq
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega A A eq
     (PTree.bind t (fun x => Ret x)) t.
 Proof.
   apply free_probabilistic_eutt_of_pstructural.
@@ -51,9 +51,9 @@ Theorem free_probabilistic_eutt_bind_assoc {A B C}
     (t : ptree E MN A) (k : A -> ptree E MN B)
     (h : B -> ptree E MN C) :
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface C C eq
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega C C eq
     (PTree.bind (PTree.bind t k) h)
     (PTree.bind t (fun x => PTree.bind (k x) h)).
 Proof.
@@ -63,18 +63,18 @@ Qed.
 
 Theorem free_probabilistic_eutt_fmap_id {A} (t : ptree E MN A) :
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface A A eq
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega A A eq
     (PTree.fmap (fun x => x) t) t.
 Proof. unfold PTree.fmap. apply free_probabilistic_eutt_bind_ret_r. Qed.
 
 Theorem free_probabilistic_eutt_fmap_compose {A B C}
     (f : A -> B) (g : B -> C) (t : ptree E MN A) :
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface C C eq
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega C C eq
     (PTree.fmap g (PTree.fmap f t))
     (PTree.fmap (fun x => g (f x)) t).
 Proof.
@@ -90,9 +90,9 @@ Qed.
 Theorem free_probabilistic_eutt_fmap_bind {A B C}
     (f : B -> C) (t : ptree E MN A) (k : A -> ptree E MN B) :
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface C C eq
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega C C eq
     (PTree.fmap f (PTree.bind t k))
     (PTree.bind t (fun x => PTree.fmap f (k x))).
 Proof. unfold PTree.fmap. apply free_probabilistic_eutt_bind_assoc. Qed.
@@ -103,19 +103,19 @@ Proof. unfold PTree.fmap. apply free_probabilistic_eutt_bind_assoc. Qed.
     {A B} :
   Proper
     (@probabilistic_eutt E MN MF
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface A A eq ==>
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega A A eq ==>
       pointwise_relation A
         (@probabilistic_eutt E MN MF
-          (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+          (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
           FreeOmegaObservableSemanticMeasureCoreLaws
-          FreeOmegaMixedMeasureInterface
-          FreeOmegaObservableSemanticOmegaInterface B B eq) ==>
+          FreeOmegaMixedMeasure
+          FreeOmegaObservableSemanticOmega B B eq) ==>
       @probabilistic_eutt E MN MF
-        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-        FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface B B eq)
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+        FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega B B eq)
     (@PTree.bind E MN A B).
 Proof.
   intros t1 t2 Ht k1 k2 Hk.
@@ -130,13 +130,13 @@ Qed.
     {A B} (f : A -> B) :
   Proper
     (@probabilistic_eutt E MN MF
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface A A eq ==>
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega A A eq ==>
      @probabilistic_eutt E MN MF
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface B B eq)
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega B B eq)
     (PTree.fmap f).
 Proof.
   intros t1 t2 Ht. unfold PTree.fmap.

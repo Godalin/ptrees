@@ -21,8 +21,8 @@ Arguments SHInternal {S O} _.
 
 Section PrimitiveStableHitting.
 Context {MF : Type -> Type}
-  `{FI : SemanticMeasureInterface MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{FI : SemanticMeasure MF}
+  `{FO : @SemanticOmega MF FI}.
 Context {S A : Type}.
 Variable kernel : S -> MF (stable_target S A).
 
@@ -72,8 +72,8 @@ End PrimitiveStableHitting.
 
 Section PrimitiveStableHittingOrder.
 Context {MF : Type -> Type}
-  `{FI : SemanticMeasureInterface MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FI : SemanticMeasure MF}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}.
 Context {S A : Type}.
 Variable kernel : S -> MF (stable_target S A).
@@ -113,8 +113,8 @@ End PrimitiveStableHittingOrder.
 
 Section PrimitiveStableHittingLimits.
 Context {MF : Type -> Type}
-  `{FI : SemanticMeasureInterface MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FI : SemanticMeasure MF}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 Context {S A : Type}.
@@ -150,8 +150,8 @@ End PrimitiveStableHittingLimits.
 
 Section PrimitiveStableHittingAE.
 Context {MF : Type -> Type}
-  `{FI : SemanticMeasureInterface MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FI : SemanticMeasure MF}
+  `{FO : @SemanticOmega MF FI}
   `{FAE : @SemanticMeasureAEKleisliLaws MF FI}
   `{FOAE : @SemanticOmegaAELaws MF FI FO}.
 Context {S A : Type}.

@@ -38,11 +38,11 @@ Hypothesis Hrep : mathcomp_oracle_represents qbit q.
 
 Lemma operational_mathcomp_oracle_increasing :
   @sem_increasing MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R)) bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) bool
     (fun fuel => unified_mathcomp_oracle_approx R Head qbit fuel 0).
 Proof.
   intro fuel. unfold unified_mathcomp_oracle_approx.
@@ -58,8 +58,8 @@ Qed.
 
 Lemma operational_mathcomp_oracle_out_observes :
   @free_omega_observes MN
-    (MathCompNodeSemanticMeasureInterface R)
-    (MathCompNodeSemanticOmegaInterface R)
+    (MathCompNodeSemanticMeasure R)
+    (MathCompNodeSemanticOmega R)
     bool bool id (unified_mathcomp_oracle_out R Head qbit)
     (mathcomp_bernoulli q).
 Proof.
@@ -71,19 +71,19 @@ Qed.
 
 Definition operational_mathcomp_oracle_heads : MF Head :=
   @sem_bind MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)) _ _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R)) _ _
     (unified_mathcomp_oracle_out R Head qbit)
     (fun b => @sem_ret MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := MathCompNodeSemanticMeasureInterface R)) Head (FHRet b)).
+      (FreeOmegaObservableSemanticMeasure
+        (NI := MathCompNodeSemanticMeasure R)) Head (FHRet b)).
 
 Definition operational_mathcomp_direct_heads : MF Head :=
-  @mixed_bind MN MF FreeOmegaMixedMeasureInterface bool Head
+  @mixed_bind MN MF FreeOmegaMixedMeasure bool Head
     (mathcomp_bernoulli q)
     (fun b => @sem_ret MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := MathCompNodeSemanticMeasureInterface R)) Head (FHRet b)).
+      (FreeOmegaObservableSemanticMeasure
+        (NI := MathCompNodeSemanticMeasure R)) Head (FHRet b)).
 
 Definition operational_mathcomp_direct_observation : MN bool :=
   sem_bind (mathcomp_bernoulli q) (fun b => sem_ret b).
@@ -116,11 +116,11 @@ Qed.
 
 Lemma operational_mathcomp_oracle_heads_total :
   @sem_total MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R)) _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) _
     operational_mathcomp_oracle_heads.
 Proof.
   apply free_omega_observable_total_intro.
@@ -131,11 +131,11 @@ Qed.
 
 Lemma operational_mathcomp_direct_heads_total :
   @sem_total MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R)) _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) _
     operational_mathcomp_direct_heads.
 Proof.
   apply free_omega_observable_total_intro.
@@ -152,12 +152,12 @@ Qed.
 
 Theorem operational_mathcomp_oracle_ast :
   @operational_ast_weak real_mathcomp_coinE MN MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R)) bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) bool
     (observe (mathcomp_binary_oracle_coin R qbit))
     operational_mathcomp_oracle_heads.
 Proof.
@@ -166,12 +166,12 @@ Proof.
   eapply operational_ast_weak_iter.
   - exact operational_mathcomp_oracle_increasing.
   - change (@operational_iter_cofinal real_mathcomp_coinE MN MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := MathCompNodeSemanticMeasureInterface R))
-      FreeOmegaMixedMeasureInterface
-      (FreeOmegaObservableSemanticOmegaInterface
-        (NI := MathCompNodeSemanticMeasureInterface R)
-        (NO := MathCompNodeSemanticOmegaInterface R)) nat bool
+      (FreeOmegaObservableSemanticMeasure
+        (NI := MathCompNodeSemanticMeasure R))
+      FreeOmegaMixedMeasure
+      (FreeOmegaObservableSemanticOmega
+        (NI := MathCompNodeSemanticMeasure R)
+        (NO := MathCompNodeSemanticOmega R)) nat bool
       (free_primitive_iter_step
         (mathcomp_oracle_transition R qbit))
       (mathcomp_oracle_transition R qbit) 0).
@@ -182,16 +182,16 @@ Qed.
 
 Corollary operational_mathcomp_oracle_primitive_ast :
   @stable_hitting_ast MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R))
     (ptree' real_mathcomp_coinE MN bool) Head
     (@ptree_primitive_kernel real_mathcomp_coinE MN MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := MathCompNodeSemanticMeasureInterface R))
-      FreeOmegaMixedMeasureInterface bool)
+      (FreeOmegaObservableSemanticMeasure
+        (NI := MathCompNodeSemanticMeasure R))
+      FreeOmegaMixedMeasure bool)
     (observe (mathcomp_binary_oracle_coin R qbit))
     operational_mathcomp_oracle_heads.
 Proof.
@@ -203,12 +203,12 @@ Qed.
 
 Theorem operational_mathcomp_direct_ast :
   @operational_ast_weak real_mathcomp_coinE MN MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R)) bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) bool
     (observe (mathcomp_direct_bernoulli (R := R) q))
     operational_mathcomp_direct_heads.
 Proof.
@@ -226,8 +226,8 @@ Lemma operational_mathcomp_oracle_heads_lift
     (sim : ptree real_mathcomp_coinE MN bool ->
       ptree real_mathcomp_coinE MN bool -> Prop) :
   @sem_lift MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)) _ _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R)) _ _
     (frontier_head_rel eq sim)
     operational_mathcomp_oracle_heads operational_mathcomp_direct_heads.
 Proof.
@@ -269,14 +269,14 @@ Qed.
 
 Theorem probabilistic_eutt_mathcomp_binary_oracle_direct :
   @probabilistic_eutt real_mathcomp_coinE MN MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
     (FreeOmegaObservableSemanticMeasureCoreLaws
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R)) bool bool eq
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) bool bool eq
     (mathcomp_binary_oracle_coin R qbit)
     (mathcomp_direct_bernoulli (R := R) q).
 Proof.

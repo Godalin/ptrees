@@ -28,14 +28,14 @@ Definition enum_finite_trace_probability {E : Type -> Type} {R}
     (tr : @finite_event_trace E) (t : ptree E Enum R) (p : rat) : Prop :=
   exists (query representative : FreeOmega Enum bool) (out : Enum bool),
     @finite_trace_query E Enum (FreeOmega Enum)
-      FreeOmegaObservableSemanticMeasureInterface
-      FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface R tr t query /\
+      FreeOmegaObservableSemanticMeasure
+      FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega R tr t query /\
     @sem_lift (FreeOmega Enum)
-      FreeOmegaObservableSemanticMeasureInterface bool bool eq
+      FreeOmegaObservableSemanticMeasure bool bool eq
       representative query /\
-    @free_omega_denotes Enum Enum_SemanticMeasureInterface
-      Enum_SemanticOmegaInterface bool bool id representative out /\
+    @free_omega_denotes Enum Enum_SemanticMeasure
+      Enum_SemanticOmega bool bool id representative out /\
     enum_expect enum_bool_indicator out = p.
 
 (** Canonical public name.  The argument is a dependent interaction pattern:
@@ -56,14 +56,14 @@ Lemma enum_finite_trace_probability_intro {E : Type -> Type} {R}
     (tr : @finite_event_trace E) (t : ptree E Enum R) p
     query representative out :
   @finite_trace_query E Enum (FreeOmega Enum)
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R tr t query ->
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R tr t query ->
   @sem_lift (FreeOmega Enum)
-    FreeOmegaObservableSemanticMeasureInterface bool bool eq
+    FreeOmegaObservableSemanticMeasure bool bool eq
     representative query ->
-  @free_omega_denotes Enum Enum_SemanticMeasureInterface
-    Enum_SemanticOmegaInterface bool bool id representative out ->
+  @free_omega_denotes Enum Enum_SemanticMeasure
+    Enum_SemanticOmega bool bool id representative out ->
   enum_expect enum_bool_indicator out = p ->
   Prₜ[ t | tr ] = p.
 Proof.
@@ -75,14 +75,14 @@ Lemma enum_finite_interaction_probability_intro {E : Type -> Type} {R}
     (pattern : @finite_interaction_pattern E) (t : ptree E Enum R) p
     query representative out :
   @finite_interaction_query E Enum (FreeOmega Enum)
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R pattern t query ->
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R pattern t query ->
   @sem_lift (FreeOmega Enum)
-    FreeOmegaObservableSemanticMeasureInterface bool bool eq
+    FreeOmegaObservableSemanticMeasure bool bool eq
     representative query ->
-  @free_omega_denotes Enum Enum_SemanticMeasureInterface
-    Enum_SemanticOmegaInterface bool bool id representative out ->
+  @free_omega_denotes Enum Enum_SemanticMeasure
+    Enum_SemanticOmega bool bool id representative out ->
   enum_expect enum_bool_indicator out = p ->
   Prₜ[ t | pattern ] = p.
 Proof.

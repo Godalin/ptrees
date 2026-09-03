@@ -22,12 +22,12 @@ Variant algebraE : Type -> Type := .
 Local Notation MF := (FreeOmega Enum).
 Local Notation peutt :=
   (@probabilistic_eutt algebraE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface).
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega).
 
 (** Regression: all three monad equations elaborate at the canonical
     FreeOmega endpoint. *)
@@ -85,7 +85,7 @@ Lemma canonical_prob_ret_regression {X R}
   peutt eq (Prob (ret_Enum x) k) (k x).
 Proof.
   change (peutt eq
-    (Prob (@sem_ret Enum Enum_SemanticMeasureInterface X x) k) (k x)).
+    (Prob (@sem_ret Enum Enum_SemanticMeasure X x) k) (k x)).
   apply probabilistic_eutt_prob_ret.
 Qed.
 
@@ -98,7 +98,7 @@ Lemma canonical_prob_flatten_regression {X Y R}
 Proof.
   change (peutt eq
     (Prob mu (fun x => Prob (h x) k))
-    (Prob (@sem_bind Enum Enum_SemanticMeasureInterface X Y mu h) k)).
+    (Prob (@sem_bind Enum Enum_SemanticMeasure X Y mu h) k)).
   apply probabilistic_eutt_prob_flatten.
 Qed.
 
@@ -112,7 +112,7 @@ Proof.
     (Prob mu k : ptree algebraE Enum R)).
   change (peutt eq (sample reg_fair) (sample reg_fair_split)).
   assert (Hsample : Proper
-      (@sem_lift Enum Enum_SemanticMeasureInterface bool bool eq ==>
+      (@sem_lift Enum Enum_SemanticMeasure bool bool eq ==>
        peutt eq) sample).
   { intros mu1 mu2 Hmu. unfold sample.
     apply probabilistic_eutt_prob_measure. exact Hmu. }
@@ -121,7 +121,7 @@ Qed.
 
 Lemma enum_semantic_product_swap {X Y : eqType}
     (mu : Enum X) (nu : Enum Y) :
-  @sem_lift Enum Enum_SemanticMeasureInterface _ _
+  @sem_lift Enum Enum_SemanticMeasure _ _
     semantic_pair_swap_rel
     (semantic_product mu nu) (semantic_product nu mu).
 Proof.
@@ -171,12 +171,12 @@ Variant naturalityE : Type -> Type :=
 
 Local Notation naturality_peutt :=
   (@probabilistic_eutt naturalityE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface).
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega).
 
 Definition naturality_step (_ : unit) :
     ptree naturalityE Enum (unit + bool) :=
@@ -311,12 +311,12 @@ Definition rename_get (X : Type) (e : renamedE X) : finalE X :=
 Lemma canonical_translate_compose_regression {R}
     (t : ptree sourceE Enum R) :
   @probabilistic_eutt finalE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R R eq
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R R eq
     (PTree.translate rename_get (PTree.translate rename_bit t))
     (PTree.translate
       (fun (X : Type) (e : sourceE X) =>
@@ -328,12 +328,12 @@ Proof. apply free_probabilistic_eutt_translate_compose. Qed.
 Lemma canonical_interp_trigger_regression {R}
     (k : bool -> ptree renamedE Enum R) :
   @probabilistic_eutt renamedE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R R eq
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R R eq
     (PTree.interp (fun X e => @PTree.trigger renamedE Enum X e)
       (Vis GetBit k))
     (Vis GetBit k).
@@ -380,11 +380,11 @@ Qed.
 Lemma canonical_interp_cofinal_regression {R}
     (t : ptree sourceE Enum R) :
   @operational_interp_cofinal sourceE algebraE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R bit_handler t.
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R bit_handler t.
 Proof. apply free_operational_interp_cofinal_all. Qed.
 
 Lemma canonical_interp_bind_regression {A B}
@@ -443,38 +443,38 @@ Lemma canonical_translate_preservation_regression {A B}
     (RR : A -> B -> Prop)
     (t1 : ptree sourceE Enum A) (t2 : ptree sourceE Enum B) :
   @probabilistic_eutt sourceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface A B RR t1 t2 ->
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega A B RR t1 t2 ->
   @probabilistic_eutt renamedE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface A B RR
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega A B RR
     (PTree.translate rename_bit t1) (PTree.translate rename_bit t2).
 Proof. apply free_probabilistic_eutt_translate. Qed.
 
 Lemma canonical_translate_setoid_rewrite {A}
     (t1 t2 : ptree sourceE Enum A) :
   @probabilistic_eutt sourceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface A A eq t1 t2 ->
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega A A eq t1 t2 ->
   @probabilistic_eutt renamedE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface A A eq
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega A A eq
     (PTree.translate rename_bit t1) (PTree.translate rename_bit t2).
 Proof.
   intro Ht. setoid_rewrite Ht. reflexivity.

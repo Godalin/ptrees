@@ -35,12 +35,12 @@ Definition unified_mathcomp_coin_heads :
     measure whose carrier contains recursive PTree continuations. *)
 Lemma unified_mathcomp_direct_coin_frontier :
   @frontier mc_freeE (MathCompKernelMeasure R) (MathCompBehaviorMeasure R)
-    (MathCompNodeSemanticMeasureInterface R)
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
+    (MathCompNodeSemanticMeasure R)
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R))
     bool (observe unified_mathcomp_direct_coin)
     unified_mathcomp_coin_heads.
 Proof.
@@ -49,12 +49,12 @@ Proof.
   rewrite -free_omega_mixed_bindE.
   apply (@UFProb mc_freeE (MathCompKernelMeasure R)
     (MathCompBehaviorMeasure R)
-    (MathCompNodeSemanticMeasureInterface R)
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
+    (MathCompNodeSemanticMeasure R)
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R))
     bool bool (mathcomp_bernoulli q) (fun b => Ret b)
     (fun b => FORet (FHRet b)) (fun _ => True)).
   - exact: mathcomp_kernel_ae_true.
@@ -65,13 +65,13 @@ Lemma unified_mathcomp_direct_coin_probabilistic_eutt_reflexive
     `{MathCompCouplingGluing R} :
   @probabilistic_eutt mc_freeE (MathCompKernelMeasure R)
     (MathCompBehaviorMeasure R)
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
     (FreeOmegaObservableSemanticMeasureCoreLaws
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R))
     bool bool eq unified_mathcomp_direct_coin unified_mathcomp_direct_coin.
 Proof. apply probabilistic_eutt_refl. Qed.
 

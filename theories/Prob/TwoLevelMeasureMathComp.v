@@ -23,8 +23,8 @@ Context (R : realType).
 (** MathComp kernels instantiate the low-universe node layer.  This adapter
     does not claim that the same sealed HB type can also contain recursive
     frontier heads; the behavior layer is intentionally separate. *)
-#[global] Instance MathCompNodeSemanticMeasureInterface :
-    SemanticMeasureInterface (MathCompKernelMeasure R) := {
+#[global] Instance MathCompNodeSemanticMeasure :
+    SemanticMeasure (MathCompKernelMeasure R) := {
   sem_ret := @mathcomp_kernel_ret R;
   sem_bind := @mathcomp_kernel_bind R;
   sem_eq := @mathcomp_kernel_eq R;
@@ -34,13 +34,13 @@ Context (R : realType).
 
 Lemma mathcomp_node_sem_retE {A} (x : A) :
   @sem_ret (MathCompKernelMeasure R)
-    MathCompNodeSemanticMeasureInterface A x = @mathcomp_kernel_ret R A x.
+    MathCompNodeSemanticMeasure A x = @mathcomp_kernel_ret R A x.
 Proof. reflexivity. Qed.
 
 Lemma mathcomp_node_sem_bindE {A B} (mu : MathCompKernelMeasure R A)
     (k : A -> MathCompKernelMeasure R B) :
   @sem_bind (MathCompKernelMeasure R)
-    MathCompNodeSemanticMeasureInterface A B mu k =
+    MathCompNodeSemanticMeasure A B mu k =
   @mathcomp_kernel_bind R A B mu k.
 Proof. reflexivity. Qed.
 
@@ -48,7 +48,7 @@ Lemma mathcomp_legacy_ret_semE {A} (x : A) :
   @meas_ret (MathCompKernelMeasure R)
     (MathCompKernelMeasureInterface R) A x =
   @sem_ret (MathCompKernelMeasure R)
-    MathCompNodeSemanticMeasureInterface A x.
+    MathCompNodeSemanticMeasure A x.
 Proof. reflexivity. Qed.
 
 Lemma mathcomp_legacy_bind_semE {A B}
@@ -57,13 +57,13 @@ Lemma mathcomp_legacy_bind_semE {A B}
   @meas_bind (MathCompKernelMeasure R)
     (MathCompKernelMeasureInterface R) A B mu k =
   @sem_bind (MathCompKernelMeasure R)
-    MathCompNodeSemanticMeasureInterface A B mu k.
+    MathCompNodeSemanticMeasure A B mu k.
 Proof. reflexivity. Qed.
 
 #[global] Instance MathCompNodeSemanticMeasureCoreLaws
     `{MathCompCouplingGluing R} :
     @SemanticMeasureCoreLaws (MathCompKernelMeasure R)
-      MathCompNodeSemanticMeasureInterface.
+      MathCompNodeSemanticMeasure.
 Proof.
   constructor.
   - exact (@mathcomp_kernel_eq_refl R).
@@ -119,7 +119,7 @@ Qed.
 
 #[global] Instance MathCompNodeSemanticMeasureAELiftLaws :
     @SemanticMeasureAELiftLaws (MathCompKernelMeasure R)
-      MathCompNodeSemanticMeasureInterface.
+      MathCompNodeSemanticMeasure.
 Proof.
   constructor. exact @mathcomp_kernel_lift_refl_ae.
 Qed.
@@ -132,9 +132,9 @@ Definition mathcomp_node_le {A}
   forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
     mathcomp_kernel_root mu U <= mathcomp_kernel_root nu U = true.
 
-#[global] Instance MathCompNodeSemanticOmegaInterface :
-    @SemanticOmegaInterface (MathCompKernelMeasure R)
-      MathCompNodeSemanticMeasureInterface := {
+#[global] Instance MathCompNodeSemanticOmega :
+    @SemanticOmega (MathCompKernelMeasure R)
+      MathCompNodeSemanticMeasure := {
   sem_zero := @mathcomp_kernel_zero R;
   sem_le := @mathcomp_node_le;
   sem_lub := @mathcomp_kernel_lub R;
@@ -143,22 +143,22 @@ Definition mathcomp_node_le {A}
 
 Lemma mathcomp_node_sem_zeroE {A} :
   @sem_zero (MathCompKernelMeasure R)
-    MathCompNodeSemanticMeasureInterface
-    MathCompNodeSemanticOmegaInterface A = @mathcomp_kernel_zero R A.
+    MathCompNodeSemanticMeasure
+    MathCompNodeSemanticOmega A = @mathcomp_kernel_zero R A.
 Proof. reflexivity. Qed.
 
 Lemma mathcomp_node_sem_lubE {A}
     (chain : nat -> MathCompKernelMeasure R A) out :
   @sem_lub (MathCompKernelMeasure R)
-    MathCompNodeSemanticMeasureInterface
-    MathCompNodeSemanticOmegaInterface A chain out <->
+    MathCompNodeSemanticMeasure
+    MathCompNodeSemanticOmega A chain out <->
   @mathcomp_kernel_lub R A chain out.
 Proof. reflexivity. Qed.
 
 Lemma mathcomp_node_sem_totalE {A} (mu : MathCompKernelMeasure R A) :
   @sem_total (MathCompKernelMeasure R)
-    MathCompNodeSemanticMeasureInterface
-    MathCompNodeSemanticOmegaInterface A mu <->
+    MathCompNodeSemanticMeasure
+    MathCompNodeSemanticOmega A mu <->
   @mathcomp_kernel_total R A mu.
 Proof. reflexivity. Qed.
 

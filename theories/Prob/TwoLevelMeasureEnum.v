@@ -23,8 +23,8 @@ Import GRing.Theory Order.Theory.
 (** Compatibility adapter: Enum implements both layers of the new model with
     the same concrete representation.  The distinction remains visible to
     the generic theory even though it collapses in this instance. *)
-#[global] Instance Enum_SemanticMeasureInterface :
-    SemanticMeasureInterface Enum := {
+#[global] Instance Enum_SemanticMeasure :
+    SemanticMeasure Enum := {
   sem_ret := @meas_ret Enum Enum_MeasureInterface;
   sem_bind := @meas_bind Enum Enum_MeasureInterface;
   sem_eq := @meas_eq Enum Enum_MeasureInterface;
@@ -33,7 +33,7 @@ Import GRing.Theory Order.Theory.
 }.
 
 #[global] Instance Enum_SemanticMeasureCoreLaws :
-    @SemanticMeasureCoreLaws Enum Enum_SemanticMeasureInterface.
+    @SemanticMeasureCoreLaws Enum Enum_SemanticMeasure.
 Proof.
   constructor.
   - exact (@meas_eq_refl Enum Enum_MeasureInterface
@@ -65,7 +65,7 @@ Proof.
 Qed.
 
 #[global] Instance Enum_SemanticMeasureAELiftLaws :
-    @SemanticMeasureAELiftLaws Enum Enum_SemanticMeasureInterface.
+    @SemanticMeasureAELiftLaws Enum Enum_SemanticMeasure.
 Proof.
   constructor. move=> A mu P Hae. cbn in Hae |- *.
   unfold enum_meas_eq.
@@ -87,7 +87,7 @@ Proof.
 Qed.
 
 #[global] Instance Enum_SemanticMeasureAEKleisliLaws :
-    @SemanticMeasureAEKleisliLaws Enum Enum_SemanticMeasureInterface.
+    @SemanticMeasureAEKleisliLaws Enum Enum_SemanticMeasure.
 Proof.
   constructor.
   - intros A P x Hx. exact (@meas_ae_ret Enum Enum_MeasureInterface
@@ -97,7 +97,7 @@ Proof.
 Qed.
 
 #[global] Instance Enum_SemanticMeasureDiracAELaws :
-    @SemanticMeasureDiracAELaws Enum Enum_SemanticMeasureInterface.
+    @SemanticMeasureDiracAELaws Enum Enum_SemanticMeasure.
 Proof.
   constructor. intros A x P. split.
   - intro Hae. apply (Hae 1 x); cbn.
@@ -129,7 +129,7 @@ Proof.
 Qed.
 
 #[global] Instance Enum_SemanticMeasureBindAEExactLaws :
-    @SemanticMeasureBindAEExactLaws Enum Enum_SemanticMeasureInterface.
+    @SemanticMeasureBindAEExactLaws Enum Enum_SemanticMeasure.
 Proof.
   constructor. intros A B mu k P. split.
   - intros Hflat p x Hpx Hpn q y Hqy Hqn.
@@ -144,7 +144,7 @@ Proof.
 Qed.
 
 #[global] Instance Enum_SemanticMeasureCouplingAELaws :
-    @SemanticMeasureCouplingAELaws Enum Enum_SemanticMeasureInterface.
+    @SemanticMeasureCouplingAELaws Enum Enum_SemanticMeasure.
 Proof.
   constructor.
   - exact (@meas_lift_ae_transport_r Enum Enum_MeasureInterface
@@ -175,7 +175,7 @@ Proof.
 Qed.
 
 #[global] Instance Enum_SemanticMeasureCountableAELaws :
-    @SemanticMeasureCountableAELaws Enum Enum_SemanticMeasureInterface.
+    @SemanticMeasureCountableAELaws Enum Enum_SemanticMeasure.
 Proof.
   constructor. intros A mu P HP p x Hin Hnz n.
   exact (HP n p x Hin Hnz).
@@ -189,8 +189,8 @@ Definition enum_sem_le {A} (mu nu : Enum A) : Prop :=
     enum_expect (fun x => if P x then 1 else 0) mu <=
     enum_expect (fun x => if P x then 1 else 0) nu.
 
-#[global] Instance Enum_SemanticOmegaInterface :
-    @SemanticOmegaInterface Enum Enum_SemanticMeasureInterface := {
+#[global] Instance Enum_SemanticOmega :
+    @SemanticOmega Enum Enum_SemanticMeasure := {
   sem_zero := fun A => @nil (RatSubTypes.nnQ * A);
   sem_le := @enum_sem_le;
   sem_lub := @enum_converges;
@@ -198,7 +198,7 @@ Definition enum_sem_le {A} (mu nu : Enum A) : Prop :=
 }.
 
 #[global] Instance Enum_SemanticMeasureBindLaws :
-    @SemanticMeasureBindLaws Enum Enum_SemanticMeasureInterface.
+    @SemanticMeasureBindLaws Enum Enum_SemanticMeasure.
 Proof.
   constructor.
   - exact (@meas_bind_ret_l Enum Enum_MeasureInterface
@@ -211,15 +211,15 @@ Proof.
       Enum_MeasureLiftBindLaws).
 Qed.
 
-#[global] Instance Enum_MixedMeasureInterface :
-    MixedMeasureInterface Enum Enum := {
+#[global] Instance Enum_MixedMeasure :
+    MixedMeasure Enum Enum := {
   mixed_bind := @meas_bind Enum Enum_MeasureInterface
 }.
 
 #[global] Instance Enum_MixedMeasureLaws :
     @MixedMeasureLaws Enum Enum
-      Enum_SemanticMeasureInterface Enum_SemanticMeasureInterface
-      Enum_MixedMeasureInterface.
+      Enum_SemanticMeasure Enum_SemanticMeasure
+      Enum_MixedMeasure.
 Proof.
   constructor.
   - exact (@meas_bind_ae_proper Enum Enum_MeasureInterface
@@ -232,8 +232,8 @@ Qed.
 
 #[global] Instance Enum_MixedMeasureUnitLaws :
     @MixedMeasureUnitLaws Enum Enum
-      Enum_SemanticMeasureInterface Enum_SemanticMeasureInterface
-      Enum_MixedMeasureInterface.
+      Enum_SemanticMeasure Enum_SemanticMeasure
+      Enum_MixedMeasure.
 Proof.
   constructor. intros A B x k.
   eapply sem_lift_proper_l.
@@ -244,8 +244,8 @@ Qed.
 
 #[global] Instance Enum_MixedMeasureNodeBindLaws :
     @MixedMeasureNodeBindLaws Enum Enum
-      Enum_SemanticMeasureInterface Enum_SemanticMeasureInterface
-      Enum_MixedMeasureInterface.
+      Enum_SemanticMeasure Enum_SemanticMeasure
+      Enum_MixedMeasure.
 Proof.
   constructor. intros A B C mu h k.
   eapply sem_lift_proper_l.
@@ -299,7 +299,7 @@ Proof.
 Qed.
 
 Lemma enum_sem_same_mass_expect_one {A B} (mu : Enum A) (nu : Enum B) :
-  @sem_same_mass Enum Enum_SemanticMeasureInterface A B mu nu ->
+  @sem_same_mass Enum Enum_SemanticMeasure A B mu nu ->
   enum_expect (fun _ : A => 1) mu = enum_expect (fun _ : B => 1) nu.
 Proof.
   unfold sem_same_mass. cbn. unfold indexed_coupling.
@@ -318,7 +318,7 @@ Qed.
     be coupled with a point mass, even under the total relation. *)
 Local Open Scope bool_scope.
 Lemma enum_sem_same_mass_zero_ret_bool :
-  ~ @sem_same_mass Enum Enum_SemanticMeasureInterface bool bool
+  ~ @sem_same_mass Enum Enum_SemanticMeasure bool bool
       (@nil (RatSubTypes.nnQ * bool)) (sem_ret true).
 Proof.
   unfold sem_same_mass. cbn.

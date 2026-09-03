@@ -12,11 +12,11 @@ Unset Printing Implicit Defensive.
 
 Section NotationRegression.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 
 Lemma probabilistic_eutt_notation_homogeneous {R}
     (t u : ptree E MN R) :

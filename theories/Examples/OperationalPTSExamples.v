@@ -30,31 +30,31 @@ Definition operational_reg_merged_heads :
 
 Lemma operational_reg_ret_weak (n : nat) :
   @operational_weak regE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     nat (observe (Ret n)) (FORet (FHRet n)).
 Proof.
   assert (Hobs : observe (Ret n : ptree regE Enum nat) = RetF n) by reflexivity.
   rewrite Hobs. apply (operational_weak_ret
-    (FI := FreeOmegaObservableSemanticMeasureInterface)
-    (FO := FreeOmegaObservableSemanticOmegaInterface)
-    (MX := FreeOmegaMixedMeasureInterface) (E := regE)).
+    (FI := FreeOmegaObservableSemanticMeasure)
+    (FO := FreeOmegaObservableSemanticOmega)
+    (MX := FreeOmegaMixedMeasure) (E := regE)).
 Qed.
 
 Lemma operational_reg_nested_weak :
   @operational_weak regE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     nat (observe reg_nested_program) operational_reg_nested_heads.
 Proof.
   assert (Hobs : observe reg_nested_program =
@@ -63,9 +63,9 @@ Proof.
   rewrite Hobs.
   unfold operational_reg_nested_heads.
   eapply (operational_weak_prob
-    (FI := FreeOmegaObservableSemanticMeasureInterface)
-    (FO := FreeOmegaObservableSemanticOmegaInterface)
-    (MX := FreeOmegaMixedMeasureInterface) (E := regE)
+    (FI := FreeOmegaObservableSemanticMeasure)
+    (FO := FreeOmegaObservableSemanticOmega)
+    (MX := FreeOmegaMixedMeasure) (E := regE)
     (mu := reg_fair)
     (k := fun side => Prob (reg_inner side) (fun outcome => Ret outcome))
     (front := fun side => FOSample (reg_inner side)
@@ -73,9 +73,9 @@ Proof.
     (Good := fun _ => True)).
   - apply sem_ae_true.
   - intros side _. eapply (operational_weak_prob
-      (FI := FreeOmegaObservableSemanticMeasureInterface)
-      (FO := FreeOmegaObservableSemanticOmegaInterface)
-      (MX := FreeOmegaMixedMeasureInterface) (E := regE)
+      (FI := FreeOmegaObservableSemanticMeasure)
+      (FO := FreeOmegaObservableSemanticOmega)
+      (MX := FreeOmegaMixedMeasure) (E := regE)
       (mu := reg_inner side)
       (k := fun outcome => Ret outcome)
       (front := fun outcome => FORet (FHRet outcome))
@@ -86,13 +86,13 @@ Qed.
 
 Lemma operational_reg_merged_weak :
   @operational_weak regE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     nat (observe reg_merged_program) operational_reg_merged_heads.
 Proof.
   assert (Hobs : observe reg_merged_program =
@@ -100,9 +100,9 @@ Proof.
   rewrite Hobs.
   unfold operational_reg_merged_heads.
   eapply (operational_weak_prob
-    (FI := FreeOmegaObservableSemanticMeasureInterface)
-    (FO := FreeOmegaObservableSemanticOmegaInterface)
-    (MX := FreeOmegaMixedMeasureInterface) (E := regE)
+    (FI := FreeOmegaObservableSemanticMeasure)
+    (FO := FreeOmegaObservableSemanticOmega)
+    (MX := FreeOmegaMixedMeasure) (E := regE)
     (mu := reg_merged_three)
     (k := fun outcome => Ret outcome)
     (front := fun outcome => FORet (FHRet outcome))
@@ -118,12 +118,12 @@ Definition reg_head_value (h : frontier_head regE Enum nat) : nat :=
   end.
 
 Definition operational_reg_nested_observation : Enum nat :=
-  @sem_bind Enum Enum_SemanticMeasureInterface _ _ reg_fair
-    (fun side => @sem_bind Enum Enum_SemanticMeasureInterface _ _
+  @sem_bind Enum Enum_SemanticMeasure _ _ reg_fair
+    (fun side => @sem_bind Enum Enum_SemanticMeasure _ _
       (reg_inner side) (fun outcome => sem_ret outcome)).
 
 Definition operational_reg_merged_observation : Enum nat :=
-  @sem_bind Enum Enum_SemanticMeasureInterface _ _ reg_merged_three
+  @sem_bind Enum Enum_SemanticMeasure _ _ reg_merged_three
     (fun outcome => sem_ret outcome).
 
 Lemma operational_reg_nested_observes :
@@ -146,12 +146,12 @@ Qed.
 
 Lemma operational_reg_nested_total :
   @sem_total MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface)) _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    (FreeOmegaObservableSemanticOmega
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega)) _
     operational_reg_nested_heads.
 Proof.
   apply free_omega_observable_total_intro.
@@ -162,12 +162,12 @@ Qed.
 
 Lemma operational_reg_merged_total :
   @sem_total MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface)) _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    (FreeOmegaObservableSemanticOmega
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega)) _
     operational_reg_merged_heads.
 Proof.
   apply free_omega_observable_total_intro.
@@ -178,26 +178,26 @@ Qed.
 
 Lemma operational_reg_nested_ast :
   @operational_ast_weak regE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface nat
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega nat
     (observe reg_nested_program) operational_reg_nested_heads.
 Proof. split; [exact operational_reg_nested_weak|exact operational_reg_nested_total]. Qed.
 
 Corollary operational_reg_nested_primitive_ast :
   @stable_hitting_ast MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaObservableSemanticOmegaInterface
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaObservableSemanticOmega
     (ptree' regE Enum nat) (frontier_head regE Enum nat)
     (@ptree_primitive_kernel regE Enum MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface))
-      FreeOmegaMixedMeasureInterface nat)
+      (FreeOmegaObservableSemanticMeasure
+        (NI := Enum_SemanticMeasure)
+        (NO := Enum_SemanticOmega))
+      FreeOmegaMixedMeasure nat)
     (observe reg_nested_program) operational_reg_nested_heads.
 Proof.
   apply (proj2 (ptree_primitive_ast_adequate
@@ -208,9 +208,9 @@ Qed.
 Lemma operational_reg_nested_merged_lift
     (sim : ptree regE Enum nat -> ptree regE Enum nat -> Prop) :
   @sem_lift MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface)) _ _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega)) _ _
     (frontier_head_rel eq sim)
     operational_reg_nested_heads operational_reg_merged_heads.
 Proof.
@@ -312,12 +312,12 @@ Qed.
 
 Theorem probabilistic_eutt_reg_nested_merged :
   @probabilistic_eutt regE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface nat nat eq
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega nat nat eq
     reg_nested_program reg_merged_program.
 Proof.
   eapply probabilistic_eutt_of_hitting_lift.

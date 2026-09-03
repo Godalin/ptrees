@@ -23,10 +23,10 @@ Notation OPInternal := SHInternal.
 
 Section OperationalKernel.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 
 (** The same primitive transition in the generic stable-hitting interface.
     Residual states are observations, not syntax constructors: taking the
@@ -171,14 +171,14 @@ End OperationalKernel.
 
 Section OperationalKernelLaws.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{FO : @SemanticOmega MF FI}.
 
 (** These equations are derived from the single operational kernel.  They
     are not constructors of the weak semantics. *)
@@ -270,14 +270,14 @@ End OperationalKernelLaws.
 
 Section GenericKernelAdequacy.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{FO : @SemanticOmega MF FI}.
 
 (** Adequacy of the PTree adapter for the syntax-independent primitive
     kernel semantics.  This is pointwise in finite fuel, so the later weak
@@ -365,10 +365,10 @@ End GenericKernelAdequacy.
 
 Section OperationalHittingOrder.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}.
 
 Lemma operational_target_approx_increasing {R} fuel
@@ -408,10 +408,10 @@ End OperationalHittingOrder.
 
 Section OperationalWeakExistence.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 
@@ -435,14 +435,14 @@ End OperationalWeakExistence.
 
 Section OperationalStableSoundness.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FO : @SemanticOmega MF FI}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}.
 
@@ -469,14 +469,14 @@ End OperationalStableSoundness.
 
 Section OperationalTauSoundness.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FO : @SemanticOmega MF FI}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}.
 
@@ -525,14 +525,14 @@ End OperationalTauSoundness.
 
 Section OperationalProbSoundness.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
@@ -593,10 +593,10 @@ End OperationalProbSoundness.
 
 Section OperationalBindDiagonal.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 
 Definition operational_head_bind_approx {A R} (fuel : nat)
     (k : A -> ptree E MN R) (h : frontier_head E MN A) :
@@ -628,11 +628,11 @@ End OperationalBindDiagonal.
 
 Section OperationalBindSoundness.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
@@ -726,10 +726,10 @@ End OperationalBindSoundness.
 
 Section OperationalInterpDiagonal.
 Context {E F : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 
 Definition operational_interp_head_tree {R}
     (handler : forall X, E X -> ptree F MN X)
@@ -768,11 +768,11 @@ End OperationalInterpDiagonal.
 
 Section OperationalInterpSoundness.
 Context {E F : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
@@ -823,10 +823,10 @@ End OperationalInterpSoundness.
 
 Section OperationalIterationCofinality.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 
 Definition operational_iter_round_approx {I R} (fuel : nat)
     (transition : I -> MN (I + R)) (i : I) :
@@ -847,11 +847,11 @@ End OperationalIterationCofinality.
 
 Section OperationalIterationSoundness.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 
 Theorem operational_weak_iter {I R}
@@ -889,14 +889,14 @@ End OperationalIterationSoundness.
 
 Section FrontierOperationalSoundness.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}

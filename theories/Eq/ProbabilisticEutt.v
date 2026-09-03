@@ -21,9 +21,9 @@ Unset Printing Implicit Defensive.
     no syntax-specific, AST, bounded-execution, or one-sided silent case. *)
 Section StableHittingBisimulation.
 Context {MF : Type -> Type}
-  `{FI : SemanticMeasureInterface MF}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{FO : @SemanticOmega MF FI}.
 Context {S1 S2 A1 A2 : Type}.
 Variable kernel1 : S1 -> MF (stable_target S1 A1).
 Variable kernel2 : S2 -> MF (stable_target S2 A2).
@@ -126,9 +126,9 @@ End StableHittingBisimulation.
 
 Section StableHittingMatchEndpoint.
 Context {MF : Type -> Type}
-  `{FI : SemanticMeasureInterface MF}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FO : @SemanticOmega MF FI}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 Context {S1 S2 A1 A2 : Type}.
 Variable kernel1 : S1 -> MF (stable_target S1 A1).
@@ -176,9 +176,9 @@ End StableHittingMatchEndpoint.
 
 Section StableHittingBisimulationReflexivity.
 Context {MF : Type -> Type}
-  `{FI : SemanticMeasureInterface MF}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{FO : @SemanticOmega MF FI}.
 Context {S A : Type}.
 Variable kernel : S -> MF (stable_target S A).
 Variable AR : (S -> S -> Prop) -> A -> A -> Prop.
@@ -204,9 +204,9 @@ End StableHittingBisimulationReflexivity.
 
 Section StableHittingBisimulationConverse.
 Context {MF : Type -> Type}
-  `{FI : SemanticMeasureInterface MF}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{FO : @SemanticOmega MF FI}.
 Context {S1 S2 A1 A2 : Type}.
 Variable kernel1 : S1 -> MF (stable_target S1 A1).
 Variable kernel2 : S2 -> MF (stable_target S2 A2).
@@ -252,9 +252,9 @@ End StableHittingBisimulationConverse.
 
 Section StableHittingBisimulationComposition.
 Context {MF : Type -> Type}
-  `{FI : SemanticMeasureInterface MF}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{FO : @SemanticOmega MF FI}.
 Context {S1 S2 S3 A1 A2 A3 : Type}.
 Variable kernel1 : S1 -> MF (stable_target S1 A1).
 Variable kernel2 : S2 -> MF (stable_target S2 A2).
@@ -328,11 +328,11 @@ End StableHittingBisimulationComposition.
     and in the relation on stable Ret/Vis heads. *)
 Section ProbabilisticEutt.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 Context {R1 R2 : Type}.
 Variable RR : R1 -> R2 -> Prop.
 
@@ -446,11 +446,11 @@ End ProbabilisticEutt.
 
 Section ProbabilisticEuttRelationMonotonicity.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 Context {R1 R2 : Type}.
 Variable RR : R1 -> R2 -> Prop.
 
@@ -493,11 +493,11 @@ End ProbabilisticEuttRelationMonotonicity.
 
 Section ProbabilisticEuttContinuation.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 Context {R1 R2 : Type}.
 Variable RR : R1 -> R2 -> Prop.
 
@@ -540,11 +540,11 @@ Notation "t ≈ₚ u" := (probabilistic_eutt eq t u)
 
 Section ProbabilisticEuttEndpoint.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 Context {R1 R2 : Type}.
 Variable RR : R1 -> R2 -> Prop.
@@ -619,14 +619,14 @@ End ProbabilisticEuttEndpoint.
 
 Section ProbabilisticEuttProbCongruence.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
@@ -685,12 +685,12 @@ End ProbabilisticEuttProbCongruence.
 
 Section PTreeStableHittingEquations.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}.
 
@@ -793,14 +793,14 @@ End PTreeStableHittingEquations.
 
 Section PTreeStableHittingBind.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
@@ -834,11 +834,11 @@ End PTreeStableHittingBind.
 
 Section ProbabilisticEuttEquivalence.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 Context {R : Type}.
 
 Lemma ptree_stable_head_rel_refl
@@ -918,12 +918,12 @@ End ProbabilisticEuttEquivalence.
 
 Section ProbabilisticEuttStructuralLaws.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}.
 
@@ -1000,14 +1000,14 @@ End ProbabilisticEuttStructuralLaws.
 
 Section ProbabilisticEuttProbRewriting.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
@@ -1170,14 +1170,14 @@ End ProbabilisticEuttProbRewriting.
 
 Section ProbabilisticEuttBindCongruence.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
@@ -1656,14 +1656,14 @@ End ProbabilisticEuttBindCongruence.
 
 Section ProbabilisticEuttFrontierRule.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
+  `{MX : MixedMeasure MN MF}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}

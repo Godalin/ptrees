@@ -47,10 +47,10 @@ Local Notation facade_probabilistic_eutt_preserves_finite_interaction_sem :=
     measure module rather than becoming extra facade aliases. *)
 Section NotationRegression.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{FI : TwoLevelMeasure.SemanticMeasureInterface MF}
+  `{FI : TwoLevelMeasure.SemanticMeasure MF}
   `{FC : @TwoLevelMeasure.SemanticMeasureCoreLaws MF FI}
-  `{MX : TwoLevelMeasure.MixedMeasureInterface MN MF}
-  `{FO : @TwoLevelMeasure.SemanticOmegaInterface MF FI}.
+  `{MX : TwoLevelMeasure.MixedMeasure MN MF}
+  `{FO : @TwoLevelMeasure.SemanticOmega MF FI}.
 Context {R : Type}.
 
 Lemma public_probabilistic_eutt_notation (t u : ptree E MN R) :

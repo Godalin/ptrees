@@ -66,7 +66,7 @@ Proof. apply frontier_head_rel_mono. Qed.
 End StableHeadRelation.
 
 Definition frontier_head_bind_front {E MN MF}
-    `{FI : SemanticMeasureInterface MF} {A B}
+    `{FI : SemanticMeasure MF} {A B}
     (k : A -> ptree E MN B)
     (front : A -> MF (frontier_head E MN B))
     (h : frontier_head E MN A) : MF (frontier_head E MN B) :=
@@ -78,10 +78,10 @@ Definition frontier_head_bind_front {E MN MF}
 
 Section MixedIteration.
 Context {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 
 (** Finite absorbing approximants already live in the frontier layer.  A
     source transition is a node measure, so every unfolding uses the mixed
@@ -111,10 +111,10 @@ End MixedIteration.
     syntactic iteration without changing the observable result type. *)
 Section UnifiedFrontier.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 
 Inductive frontier {R} :
     ptree' E MN R -> MF (frontier_head E MN R) -> Prop :=

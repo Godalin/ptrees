@@ -45,7 +45,7 @@ Polymorphic Fixpoint free_omega_bind {MN A B}
   end.
 
 Polymorphic Inductive free_omega_ae {MN}
-    `{NI : SemanticMeasureInterface MN} {A}
+    `{NI : SemanticMeasure MN} {A}
     (P : A -> Prop) : FreeOmega MN A -> Prop :=
   | FOAERet x : P x -> free_omega_ae P (FORet x)
   | FOAEZero : free_omega_ae P FOZero
@@ -58,7 +58,7 @@ Polymorphic Inductive free_omega_ae {MN}
       free_omega_ae P (FOLub chain).
 
 Polymorphic Inductive free_omega_lift {MN}
-    `{NI : SemanticMeasureInterface MN} {A B}
+    `{NI : SemanticMeasure MN} {A B}
     (R : A -> B -> Prop) : FreeOmega MN A -> FreeOmega MN B -> Prop :=
   | FOLRet x y : R x y ->
       free_omega_lift R (FORet x) (FORet y)
@@ -77,7 +77,7 @@ Polymorphic Inductive free_omega_lift {MN}
     cofinality arguments: missing mass is bottom, and existing Ret/Sample/Lub
     structure must be preserved relationally. *)
 Polymorphic Inductive free_omega_approx {MN}
-    `{NI : SemanticMeasureInterface MN} {A B}
+    `{NI : SemanticMeasure MN} {A B}
     (R : A -> B -> Prop) : FreeOmega MN A -> FreeOmega MN B -> Prop :=
   | FOApproxZero nu : free_omega_approx R FOZero nu
   | FOApproxRet x y : R x y ->
@@ -92,7 +92,7 @@ Polymorphic Inductive free_omega_approx {MN}
       free_omega_approx R (FOLub c) (FOLub d).
 
 Lemma free_omega_lift_to_approx {MN}
-    `{NI : SemanticMeasureInterface MN} {A B}
+    `{NI : SemanticMeasure MN} {A B}
     (R : A -> B -> Prop) (mu : FreeOmega MN A) (nu : FreeOmega MN B) :
   free_omega_lift R mu nu -> free_omega_approx R mu nu.
 Proof.
@@ -106,14 +106,14 @@ Proof.
 Qed.
 
 Definition free_omega_chains_cofinal {MN}
-    `{NI : SemanticMeasureInterface MN} {A B} (R : A -> B -> Prop)
+    `{NI : SemanticMeasure MN} {A B} (R : A -> B -> Prop)
     (left : nat -> FreeOmega MN A) (right : nat -> FreeOmega MN B) : Prop :=
   (forall n, exists m, free_omega_approx R (left n) (right m)) /\
   (forall m, exists n, free_omega_approx (fun y x => R x y)
     (right m) (left n)).
 
 Lemma free_omega_approx_bind {MN}
-    `{NI : SemanticMeasureInterface MN} {A B C D}
+    `{NI : SemanticMeasure MN} {A B C D}
     (R : A -> B -> Prop) (T : C -> D -> Prop)
     (mu : FreeOmega MN A) (nu : FreeOmega MN B)
     (k : A -> FreeOmega MN C) (h : B -> FreeOmega MN D) :
@@ -133,8 +133,8 @@ Qed.
     It is relational because an abstract omega interface specifies limits by
     [sem_lub] rather than by a choice function. *)
 Polymorphic Inductive free_omega_observes {MN}
-    `{NI : SemanticMeasureInterface MN}
-    `{NO : @SemanticOmegaInterface MN NI}
+    `{NI : SemanticMeasure MN}
+    `{NO : @SemanticOmega MN NI}
     {A O} (obs : A -> O) : FreeOmega MN A -> MN O -> Prop :=
   | FOOObserveRet x :
       free_omega_observes obs (FORet x) (sem_ret (obs x))
@@ -153,17 +153,17 @@ Polymorphic Inductive free_omega_observes {MN}
     clients should normally reason through [free_omega_denotes], because a
     measure backend may identify several such representatives by [sem_eq]. *)
 Definition free_omega_denotes {MN}
-    `{NI : SemanticMeasureInterface MN}
-    `{NO : @SemanticOmegaInterface MN NI} {A O}
+    `{NI : SemanticMeasure MN}
+    `{NO : @SemanticOmega MN NI} {A O}
     (obs : A -> O) (mu : FreeOmega MN A) (out : MN O) : Prop :=
   exists represented,
     free_omega_observes obs mu represented /\ sem_eq represented out.
 
 Section FreeOmegaDenotationBasics.
 Context {MN : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
+  `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
-  `{NO : @SemanticOmegaInterface MN NI}.
+  `{NO : @SemanticOmega MN NI}.
 
 Lemma free_omega_observes_denotes {A O} (obs : A -> O)
     (mu : FreeOmega MN A) out :
@@ -191,8 +191,8 @@ End FreeOmegaDenotationBasics.
     representatives.  Quotient measure models normally satisfy both;
     concrete list models must prove them extensionally. *)
 Polymorphic Class FreeOmegaDenotationBindLaws {MN}
-    `{NI : SemanticMeasureInterface MN}
-    `{NO : @SemanticOmegaInterface MN NI} := {
+    `{NI : SemanticMeasure MN}
+    `{NO : @SemanticOmega MN NI} := {
   free_omega_denotes_bind : forall {A B OA OB}
       (obsA : A -> OA) (obsB : B -> OB)
       (mu : FreeOmega MN A) (out : MN OA)
@@ -204,8 +204,8 @@ Polymorphic Class FreeOmegaDenotationBindLaws {MN}
 }.
 
 Polymorphic Class FreeOmegaDenotationOmegaLaws {MN}
-    `{NI : SemanticMeasureInterface MN}
-    `{NO : @SemanticOmegaInterface MN NI} := {
+    `{NI : SemanticMeasure MN}
+    `{NO : @SemanticOmega MN NI} := {
   free_omega_denotes_lub : forall {A O} (obs : A -> O)
       (chain : nat -> FreeOmega MN A) (outs : nat -> MN O) out,
     (forall n, free_omega_denotes obs (chain n) (outs n)) ->
@@ -214,8 +214,8 @@ Polymorphic Class FreeOmegaDenotationOmegaLaws {MN}
 }.
 
 Lemma free_omega_observes_bind_ret {MN}
-    `{NI : SemanticMeasureInterface MN}
-    `{NO : @SemanticOmegaInterface MN NI}
+    `{NI : SemanticMeasure MN}
+    `{NO : @SemanticOmega MN NI}
     {A B O} (obsA : A -> O) (obsB : B -> O) (f : A -> B)
     (mu : FreeOmega MN A) (out : MN O) :
   free_omega_observes obsA mu out ->
@@ -232,10 +232,10 @@ Qed.
 
 Section FreeOmegaObservationLaws.
 Context {MN : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
+  `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NB : @SemanticMeasureBindLaws MN NI}
-  `{NO : @SemanticOmegaInterface MN NI}
+  `{NO : @SemanticOmega MN NI}
   `{NOL : @SemanticOmegaLaws MN NI NO}.
 
 (** Observation is relational only because [sem_lub] need not choose a
@@ -263,9 +263,9 @@ Qed.
 
 End FreeOmegaObservationLaws.
 
-#[global] Polymorphic Instance FreeOmegaSemanticMeasureInterface {MN}
-    `{NI : SemanticMeasureInterface MN} :
-    SemanticMeasureInterface (FreeOmega MN) := {
+#[global] Polymorphic Instance FreeOmegaSemanticMeasure {MN}
+    `{NI : SemanticMeasure MN} :
+    SemanticMeasure (FreeOmega MN) := {
   sem_ret := @FORet MN;
   sem_bind := @free_omega_bind MN;
   sem_eq := fun A => @free_omega_lift MN NI A A eq;
@@ -273,15 +273,15 @@ End FreeOmegaObservationLaws.
   sem_lift := @free_omega_lift MN NI
 }.
 
-Lemma free_omega_sem_retE {MN} `{NI : SemanticMeasureInterface MN}
+Lemma free_omega_sem_retE {MN} `{NI : SemanticMeasure MN}
     {A} (x : A) :
   @sem_ret (FreeOmega MN)
-    (FreeOmegaSemanticMeasureInterface (NI := NI)) A x = FORet x.
+    (FreeOmegaSemanticMeasure (NI := NI)) A x = FORet x.
 Proof. reflexivity. Qed.
 
 Section FreeOmegaLaws.
 Context {MN : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
+  `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}.
 
 Lemma free_omega_ae_mono {A} (P Q : A -> Prop) mu :
@@ -453,7 +453,7 @@ Qed.
 
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureCoreLaws :
     @SemanticMeasureCoreLaws (FreeOmega MN)
-      (FreeOmegaSemanticMeasureInterface (NI := NI)).
+      (FreeOmegaSemanticMeasure (NI := NI)).
 Proof.
   constructor.
   - intros A mu. apply free_omega_lift_refl. intros x. reflexivity.
@@ -493,7 +493,7 @@ Qed.
 
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureAEKleisliLaws :
     @SemanticMeasureAEKleisliLaws (FreeOmega MN)
-      (FreeOmegaSemanticMeasureInterface (NI := NI)).
+      (FreeOmegaSemanticMeasure (NI := NI)).
 Proof.
   constructor.
   - intros A P x Hx. constructor. exact Hx.
@@ -524,7 +524,7 @@ Qed.
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureCountableAELaws
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI} :
     @SemanticMeasureCountableAELaws (FreeOmega MN)
-      (FreeOmegaSemanticMeasureInterface (NI := NI)).
+      (FreeOmegaSemanticMeasure (NI := NI)).
 Proof.
   constructor. intros A mu P HP. apply free_omega_ae_countable. exact HP.
 Qed.
@@ -568,7 +568,7 @@ Qed.
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureCouplingAELaws
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI} :
     @SemanticMeasureCouplingAELaws (FreeOmega MN)
-      (FreeOmegaSemanticMeasureInterface (NI := NI)).
+      (FreeOmegaSemanticMeasure (NI := NI)).
 Proof.
   constructor.
   - intros A B R mu nu P Hlift HP.
@@ -622,7 +622,7 @@ Qed.
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureBindLaws
     `{NAE : @SemanticMeasureAELiftLaws MN NI} :
     @SemanticMeasureBindLaws (FreeOmega MN)
-      (FreeOmegaSemanticMeasureInterface (NI := NI)).
+      (FreeOmegaSemanticMeasure (NI := NI)).
 Proof.
   constructor.
   - intros A B x k. apply free_omega_lift_refl. intros y. reflexivity.
@@ -636,22 +636,22 @@ Proof.
   - exact @free_omega_lift_bind.
 Qed.
 
-#[global] Polymorphic Instance FreeOmegaMixedMeasureInterface :
-    MixedMeasureInterface MN (FreeOmega MN) := {
+#[global] Polymorphic Instance FreeOmegaMixedMeasure :
+    MixedMeasure MN (FreeOmega MN) := {
   mixed_bind := fun A B mu k => @FOSample MN B A mu k
 }.
 
 Lemma free_omega_mixed_bindE {A B} (mu : MN A)
     (k : A -> FreeOmega MN B) :
-  @mixed_bind MN (FreeOmega MN) FreeOmegaMixedMeasureInterface
+  @mixed_bind MN (FreeOmega MN) FreeOmegaMixedMeasure
     A B mu k = FOSample mu k.
 Proof. reflexivity. Qed.
 
 #[global] Polymorphic Instance FreeOmegaMixedMeasureLaws
     `{NAE : @SemanticMeasureAELiftLaws MN NI} :
     @MixedMeasureLaws MN (FreeOmega MN) NI
-      (FreeOmegaSemanticMeasureInterface (NI := NI))
-      FreeOmegaMixedMeasureInterface.
+      (FreeOmegaSemanticMeasure (NI := NI))
+      FreeOmegaMixedMeasure.
 Proof.
   constructor.
   - intros A B mu k h Hae.
@@ -668,16 +668,16 @@ Qed.
 (** The free completion has a canonical formal lub.  [sem_total] is kept
     explicit and conservative: totality certificates for analytic limits
     belong to an observable interpretation, not to the syntax alone. *)
-#[global] Polymorphic Instance FreeOmegaSemanticOmegaInterface :
-    forall `{NO : @SemanticOmegaInterface MN NI},
-    @SemanticOmegaInterface (FreeOmega MN)
-      (FreeOmegaSemanticMeasureInterface (NI := NI)).
+#[global] Polymorphic Instance FreeOmegaSemanticOmega :
+    forall `{NO : @SemanticOmega MN NI},
+    @SemanticOmega (FreeOmega MN)
+      (FreeOmegaSemanticMeasure (NI := NI)).
 Proof.
   intros NO. refine {| sem_zero := @FOZero MN;
     sem_le := fun A => @free_omega_approx MN NI A A eq;
     sem_lub := fun A chain out =>
       @sem_eq (FreeOmega MN)
-        (FreeOmegaSemanticMeasureInterface (NI := NI)) A
+        (FreeOmegaSemanticMeasure (NI := NI)) A
         out (FOLub chain);
     sem_total := fun A mu => exists (O : Type) (obs : A -> O) (out : MN O),
       free_omega_observes obs mu out /\ sem_total out |}.
@@ -688,10 +688,10 @@ Defined.
     total low-universe node distribution. *)
 
 #[global] Polymorphic Instance FreeOmegaSemanticOmegaLaws :
-    forall `{NO : @SemanticOmegaInterface MN NI},
+    forall `{NO : @SemanticOmega MN NI},
     @SemanticOmegaLaws (FreeOmega MN)
-      (FreeOmegaSemanticMeasureInterface (NI := NI))
-      (FreeOmegaSemanticOmegaInterface (NO := NO)).
+      (FreeOmegaSemanticMeasure (NI := NI))
+      (FreeOmegaSemanticOmega (NO := NO)).
 Proof.
   intros NO. constructor.
   - intros A chain _. exists (FOLub chain).
@@ -718,10 +718,10 @@ Proof.
 Qed.
 
 #[global] Polymorphic Instance FreeOmegaSemanticMeasureOrderLaws :
-    forall `{NO : @SemanticOmegaInterface MN NI},
+    forall `{NO : @SemanticOmega MN NI},
     @SemanticMeasureOrderLaws (FreeOmega MN)
-      (FreeOmegaSemanticMeasureInterface (NI := NI))
-      (FreeOmegaSemanticOmegaInterface (NO := NO)).
+      (FreeOmegaSemanticMeasure (NI := NI))
+      (FreeOmegaSemanticOmega (NO := NO)).
 Proof.
   intros NO. constructor.
   - intros A mu. apply free_omega_approx_refl. intros x. reflexivity.
@@ -750,7 +750,7 @@ End FreeOmegaLaws.
     denotation: every AE-good set on one representation is transported to
     the relational image on the other. *)
 Polymorphic Definition free_omega_support_lift {MN}
-    `{NI : SemanticMeasureInterface MN} {A B}
+    `{NI : SemanticMeasure MN} {A B}
     (R : A -> B -> Prop) (mu : FreeOmega MN A) (nu : FreeOmega MN B) : Prop :=
   (forall P, free_omega_ae P mu ->
     free_omega_ae (fun y => exists x, R x y /\ P x) nu) /\
@@ -758,7 +758,7 @@ Polymorphic Definition free_omega_support_lift {MN}
     free_omega_ae (fun x => exists y, R x y /\ Q y) mu).
 
 Lemma free_omega_lift_support_lift {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     {A B} (R : A -> B -> Prop) mu nu :
@@ -775,7 +775,7 @@ Qed.
     cofinal quotient laws: a finite approximation cannot introduce a return
     outside the support of the behavior which contains it. *)
 Lemma free_omega_approx_ae_backward {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     {A B} (R : A -> B -> Prop) mu nu (Q : B -> Prop) :
@@ -797,7 +797,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_mono {MN}
-    `{NI : SemanticMeasureInterface MN} {A B}
+    `{NI : SemanticMeasure MN} {A B}
     (R T : A -> B -> Prop) mu nu :
   free_omega_support_lift R mu nu ->
   (forall x y, R x y -> T x y) ->
@@ -811,14 +811,14 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_sym {MN}
-    `{NI : SemanticMeasureInterface MN} {A B}
+    `{NI : SemanticMeasure MN} {A B}
     (R : A -> B -> Prop) mu nu :
   free_omega_support_lift R mu nu ->
   free_omega_support_lift (fun y x => R x y) nu mu.
 Proof. intros [Hright Hleft]. split; assumption. Qed.
 
 Lemma free_omega_support_lift_comp {MN}
-    `{NI : SemanticMeasureInterface MN} {A B C}
+    `{NI : SemanticMeasure MN} {A B C}
     (R : A -> B -> Prop) (T : B -> C -> Prop) mu mid nu :
   free_omega_support_lift R mu mid ->
   free_omega_support_lift T mid nu ->
@@ -837,7 +837,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_restrict {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     {A B} (R : A -> B -> Prop) mu nu (P : A -> Prop) (Q : B -> Prop) :
   free_omega_support_lift R mu nu ->
@@ -866,7 +866,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_bind {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     {A B C D} (T : C -> D -> Prop) (R : A -> B -> Prop)
     mu nu (k : C -> FreeOmega MN A) (h : D -> FreeOmega MN B) :
@@ -889,7 +889,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_sample {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     {A B C D} (T : C -> D -> Prop) (R : A -> B -> Prop)
@@ -918,7 +918,7 @@ Proof.
 Qed.
 
 Lemma free_omega_ae_sample_inv {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     {A C} (mu : MN C) (k : C -> FreeOmega MN A) (P : A -> Prop) :
   free_omega_ae P (FOSample mu k) ->
@@ -929,7 +929,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_sample_lub {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
     {A B C} (R : A -> B -> Prop) (mu : MN C) (Good : C -> Prop)
@@ -962,7 +962,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_lub {MN}
-    `{NI : SemanticMeasureInterface MN} {A B}
+    `{NI : SemanticMeasure MN} {A B}
     (R : A -> B -> Prop) (c : nat -> FreeOmega MN A)
     (d : nat -> FreeOmega MN B) :
   (forall n, free_omega_support_lift R (c n) (d n)) ->
@@ -973,7 +973,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_lub_zero_prefix_l {MN}
-    `{NI : SemanticMeasureInterface MN} {A B}
+    `{NI : SemanticMeasure MN} {A B}
     (R : A -> B -> Prop) (c : nat -> FreeOmega MN A)
     (d : nat -> FreeOmega MN B) :
   (forall n, free_omega_support_lift R (c n) (d n)) ->
@@ -998,7 +998,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_sample_zero {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     {A B C} (R : A -> B -> Prop) (mu : MN C) :
   free_omega_support_lift R (FOSample mu (fun _ => @FOZero MN A))
@@ -1012,7 +1012,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_lub_constant_r {MN}
-    `{NI : SemanticMeasureInterface MN} {A B}
+    `{NI : SemanticMeasure MN} {A B}
     (R : A -> B -> Prop) mu nu :
   free_omega_support_lift R mu nu ->
   free_omega_support_lift R mu (FOLub (fun _ => nu)).
@@ -1026,7 +1026,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_bind_diagonal {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
@@ -1083,7 +1083,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_double_diagonal {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     {A} (grid : nat -> nat -> FreeOmega MN A) :
@@ -1119,7 +1119,7 @@ Proof.
 Qed.
 
 Lemma free_omega_support_lift_sample_bind {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     {A B C D} (R : A -> B -> Prop)
     (mu : MN C) (h : C -> MN D)
@@ -1159,12 +1159,12 @@ Proof.
 Qed.
 
 Definition semantic_product {MN}
-    `{NI : SemanticMeasureInterface MN} {X Y}
+    `{NI : SemanticMeasure MN} {X Y}
     (mu : MN X) (nu : MN Y) : MN (X * Y)%type :=
   sem_bind mu (fun x => sem_bind nu (fun y => sem_ret (x, y))).
 
 Lemma free_omega_ae_sample2_product_iff {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     `{ND : @SemanticMeasureDiracAELaws MN NI}
     `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
@@ -1204,7 +1204,7 @@ Definition semantic_pair_swap_rel {X Y}
   fst p = snd q /\ snd p = fst q.
 
 Lemma free_omega_support_lift_sample_exchange {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{ND : @SemanticMeasureDiracAELaws MN NI}
@@ -1249,8 +1249,8 @@ Qed.
     also admits couplings between low-universe observations and is closed
     under the algebraic operations needed by the generic development. *)
 Polymorphic Inductive free_omega_qlift {MN}
-    `{NI : SemanticMeasureInterface MN}
-    `{NO : @SemanticOmegaInterface MN NI}
+    `{NI : SemanticMeasure MN}
+    `{NO : @SemanticOmega MN NI}
     {A B} (R : A -> B -> Prop) :
     FreeOmega MN A -> FreeOmega MN B -> Prop :=
   | FOQLStructural mu nu :
@@ -1388,11 +1388,11 @@ Polymorphic Inductive free_omega_qlift {MN}
       free_omega_qlift R (FOLub left) (FOLub right).
 
 Theorem free_omega_qlift_support {MN}
-    `{NI : SemanticMeasureInterface MN}
+    `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
-    `{NO : @SemanticOmegaInterface MN NI}
+    `{NO : @SemanticOmega MN NI}
     {A B} (R : A -> B -> Prop) mu nu :
   @free_omega_qlift MN NI NO A B R mu nu ->
   free_omega_support_lift R mu nu.
@@ -1439,10 +1439,10 @@ Proof.
       eapply free_omega_approx_ae_backward; [exact Happrox|]. eauto.
 Qed.
 
-#[global] Polymorphic Instance FreeOmegaObservableSemanticMeasureInterface
-    {MN} `{NI : SemanticMeasureInterface MN}
-    `{NO : @SemanticOmegaInterface MN NI} :
-    SemanticMeasureInterface (FreeOmega MN) := {
+#[global] Polymorphic Instance FreeOmegaObservableSemanticMeasure
+    {MN} `{NI : SemanticMeasure MN}
+    `{NO : @SemanticOmega MN NI} :
+    SemanticMeasure (FreeOmega MN) := {
   sem_ret := @FORet MN;
   sem_bind := @free_omega_bind MN;
   sem_eq := fun A => @free_omega_qlift MN NI NO A A eq;
@@ -1451,18 +1451,18 @@ Qed.
 }.
 
 Lemma free_omega_observable_sem_retE {MN}
-    `{NI : SemanticMeasureInterface MN}
-    `{NO : @SemanticOmegaInterface MN NI} {A} (x : A) :
+    `{NI : SemanticMeasure MN}
+    `{NO : @SemanticOmega MN NI} {A} (x : A) :
   @sem_ret (FreeOmega MN)
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     A x = FORet x.
 Proof. reflexivity. Qed.
 
 Section FreeOmegaObservableLaws.
 Context {MN : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
+  `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
-  `{NO : @SemanticOmegaInterface MN NI}.
+  `{NO : @SemanticOmega MN NI}.
 
 Lemma free_omega_qlift_refl {A} (R : A -> A -> Prop) mu :
   Reflexive R -> free_omega_qlift R mu mu.
@@ -1470,7 +1470,7 @@ Proof. intro HR. apply FOQLStructural, free_omega_lift_refl, HR. Qed.
 
 #[global] Instance FreeOmegaObservableSemanticMeasureCoreLaws :
     @SemanticMeasureCoreLaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)).
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Proof.
   constructor.
   - intros A mu. apply free_omega_qlift_refl. intros x. reflexivity.
@@ -1512,7 +1512,7 @@ Qed.
 
 #[global] Instance FreeOmegaObservableSemanticMeasureAEKleisliLaws :
     @SemanticMeasureAEKleisliLaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)).
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Proof.
   constructor.
   - intros A P x Hx. constructor. exact Hx.
@@ -1523,7 +1523,7 @@ Qed.
 #[global] Instance FreeOmegaObservableSemanticMeasureCountableAELaws
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI} :
     @SemanticMeasureCountableAELaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)).
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Proof.
   constructor. intros A mu P HP. apply free_omega_ae_countable. exact HP.
 Qed.
@@ -1532,7 +1532,7 @@ Qed.
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI} :
     @SemanticMeasureCouplingAELaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)).
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Proof.
   constructor.
   - intros A B R mu nu P Hlift HP.
@@ -1563,7 +1563,7 @@ Qed.
 #[global] Instance FreeOmegaObservableSemanticMeasureBindLaws
     `{NAE : @SemanticMeasureAELiftLaws MN NI} :
     @SemanticMeasureBindLaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)).
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Proof.
   constructor.
   - intros A B x k. apply free_omega_qlift_refl. intros y. reflexivity.
@@ -1581,8 +1581,8 @@ Qed.
 #[global] Instance FreeOmegaObservableMixedMeasureLaws
     `{NAE : @SemanticMeasureAELiftLaws MN NI} :
     @MixedMeasureLaws MN (FreeOmega MN) NI
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaMixedMeasureInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure.
 Proof.
   constructor.
   - intros A B mu k h Hae.
@@ -1599,8 +1599,8 @@ Qed.
 #[global] Instance FreeOmegaObservableMixedMeasureUnitLaws
     `{ND : @SemanticMeasureDiracAELaws MN NI} :
     @MixedMeasureUnitLaws MN (FreeOmega MN) NI
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaMixedMeasureInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure.
 Proof.
   constructor. intros A B x k.
   change (free_omega_qlift eq (FOSample (sem_ret x) k) (k x)).
@@ -1613,8 +1613,8 @@ Qed.
 #[global] Instance FreeOmegaObservableMixedMeasureNodeBindLaws
     `{NBAE : @SemanticMeasureBindAEExactLaws MN NI} :
     @MixedMeasureNodeBindLaws MN (FreeOmega MN) NI
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaMixedMeasureInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure.
 Proof.
   constructor. intros A B C mu h k.
   change (free_omega_qlift eq
@@ -1634,8 +1634,8 @@ Lemma free_omega_mixed_exchange_of_product
   sem_lift semantic_pair_swap_rel
     (semantic_product mu nu) (semantic_product nu mu) ->
   @mixed_measure_exchange MN (FreeOmega MN) NI
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaMixedMeasureInterface X Y mu nu.
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasure X Y mu nu.
 Proof.
   intro Hswap. intros A B R k1 k2 Hkl.
   change (free_omega_qlift R
@@ -1648,14 +1648,14 @@ Proof.
     intros x y. apply free_omega_qlift_support. exact (Hkl x y).
 Qed.
 
-#[global] Polymorphic Instance FreeOmegaObservableSemanticOmegaInterface :
-    @SemanticOmegaInterface (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)) := {
+#[global] Polymorphic Instance FreeOmegaObservableSemanticOmega :
+    @SemanticOmega (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) := {
   sem_zero := @FOZero MN;
   sem_le := fun A => @free_omega_approx MN NI A A eq;
   sem_lub := fun A chain out =>
     @sem_eq (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO)) A
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) A
       out (FOLub chain);
   sem_total := fun A mu => exists representative : FreeOmega MN A,
     free_omega_qlift eq mu representative /\
@@ -1667,8 +1667,8 @@ Lemma free_omega_observable_total_intro {A} (mu : FreeOmega MN A) :
   (exists (O : Type) (obs : A -> O) (out : MN O),
     free_omega_observes obs mu out /\ sem_total out) ->
   @sem_total (FreeOmega MN)
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticOmegaInterface A mu.
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmega A mu.
 Proof.
   intro Htotal. exists mu. split; [apply free_omega_qlift_refl;
     intros x; reflexivity|exact Htotal].
@@ -1676,8 +1676,8 @@ Qed.
 
 #[global] Instance FreeOmegaObservableSemanticTotalProperLaws :
     @SemanticTotalProperLaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticOmegaInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmega.
 Proof.
   constructor. intros A mu nu Hmn. cbn. split.
   - intros [rep [Hmu Htotal]]. exists rep. split; [|exact Htotal].
@@ -1697,11 +1697,11 @@ Lemma free_omega_cofinal_lub_iff {A}
     (left right : nat -> FreeOmega MN A) out :
   free_omega_chains_cofinal eq left right ->
   @sem_lub (FreeOmega MN)
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticOmegaInterface A left out <->
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmega A left out <->
   @sem_lub (FreeOmega MN)
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticOmegaInterface A right out.
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticOmega A right out.
 Proof.
   intro Hcofinal. cbn. split; intro Hlim.
   - refine (FOQLComp (R := eq) Hlim (FOQLCofinal Hcofinal) _).
@@ -1712,8 +1712,8 @@ Qed.
 
 #[global] Instance FreeOmegaObservableSemanticOmegaLaws :
     @SemanticOmegaLaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticOmegaInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmega.
 Proof.
   constructor.
   - intros A chain _. exists (FOLub chain).
@@ -1722,27 +1722,27 @@ Proof.
   - intros A chain mu nu Hmu Hnu.
     cbn in Hmu, Hnu |- *.
     eapply (@sem_eq_trans _
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hmu|].
     eapply (@sem_eq_sym _
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws A). exact Hnu.
   - intros A chain chain' mu nu Hcc Hmu Hnu.
     cbn in Hcc, Hmu, Hnu |- *.
     eapply (@sem_eq_trans _
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hmu|].
     eapply (@sem_eq_trans _
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws A).
     + apply FOQLLub. exact Hcc.
     + eapply (@sem_eq_sym _
-        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws A). exact Hnu.
   - intros A chain chain' mu Hcc Hmu.
     cbn in Hcc, Hmu |- *.
     eapply (@sem_eq_trans _
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hmu|].
     apply FOQLLub. exact Hcc.
   - intros A B chain mu k _ Hmu.
@@ -1758,8 +1758,8 @@ Qed.
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI} :
     @SemanticOmegaAELaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticOmegaInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmega.
 Proof.
   constructor.
   - intros A P. constructor.
@@ -1774,18 +1774,18 @@ Qed.
 
 #[global] Instance FreeOmegaObservableSemanticOmegaCofinalityLaws :
     @SemanticOmegaCofinalityLaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticOmegaInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmega.
 Proof.
   constructor.
   - intros A chain out. cbn. split; intro Hlim.
     + eapply (@sem_eq_trans _
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hlim|].
       apply FOQLLubZeroPrefixR. intro n.
       apply free_omega_qlift_refl. intros x. reflexivity.
     + eapply (@sem_eq_trans _
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hlim|].
       apply FOQLLubZeroPrefixL. intro n.
       apply free_omega_qlift_refl. intros x. reflexivity.
@@ -1795,9 +1795,9 @@ Qed.
 
 #[global] Instance FreeOmegaObservableMixedMeasureOmegaLaws :
     @MixedMeasureOmegaLaws MN (FreeOmega MN) NI
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega.
 Proof.
   constructor.
   - intros A B mu. cbn. apply FOQLSampleZero.
@@ -1810,8 +1810,8 @@ Qed.
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI} :
     @SemanticMeasureDiagonalLaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticOmegaInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmega.
 Proof.
   constructor. intros A B source source_out kernels kernel_out
     Hsource_inc Hkernels_inc Hsource Hkernels.
@@ -1825,16 +1825,16 @@ Qed.
 #[global] Instance FreeOmegaObservableSemanticOmegaFubiniLaws
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI} :
     @SemanticOmegaFubiniLaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticOmegaInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmega.
 Proof.
   constructor. intros A grid row_out out Hrows_inc Hcols_inc Hrows Hout.
   cbn in Hrows, Hout |- *.
   eapply (@sem_eq_trans _
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws A); [exact Hout|].
   eapply (@sem_eq_trans _
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws A).
   - apply FOQLLub. exact Hrows.
   - eapply FOQLDoubleDiagonal with (HAB := eq_refl) (grid := grid).
@@ -1848,8 +1848,8 @@ Qed.
 
 #[global] Instance FreeOmegaObservableSemanticMeasureOrderLaws :
     @SemanticMeasureOrderLaws (FreeOmega MN)
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticOmegaInterface.
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmega.
 Proof.
   constructor.
   - intros A mu. apply free_omega_approx_refl. intros x. reflexivity.

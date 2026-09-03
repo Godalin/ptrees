@@ -8,11 +8,12 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** A universe-polymorphic semantic measure interface.  Unlike the legacy
+(** A universe-polymorphic semantic measure structure.  Unlike the legacy
     [MeasureInterface], its carrier and representation universes are explicit,
     so independent instances may be used for source-level samples and for
-    higher-universe semantic states. *)
-Polymorphic Class SemanticMeasureInterface@{carrier representation}
+    higher-universe semantic states.  Operation-bearing classes use noun
+    names; separate property packages carry the [Laws] suffix. *)
+Polymorphic Class SemanticMeasure@{carrier representation}
     (S : Type@{carrier} -> Type@{representation}) := {
   sem_ret : forall {A : Type@{carrier}}, A -> S A;
   sem_bind : forall {A B : Type@{carrier}},
@@ -27,7 +28,7 @@ Polymorphic Class SemanticMeasureInterface@{carrier representation}
     [MF] is the measure of stable heads and residual semantic states.  The
     mixed bind is exactly the operation used by the probabilistic frontier
     rule. *)
-Polymorphic Class MixedMeasureInterface@{node node_rep frontier frontier_rep}
+Polymorphic Class MixedMeasure@{node node_rep frontier frontier_rep}
     (MN : Type@{node} -> Type@{node_rep})
     (MF : Type@{frontier} -> Type@{frontier_rep}) := {
   mixed_bind : forall {A : Type@{node}} {B : Type@{frontier}},
@@ -39,7 +40,7 @@ Polymorphic Class MixedMeasureInterface@{node node_rep frontier frontier_rep}
     separate capabilities. *)
 Polymorphic Class SemanticMeasureCoreLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S} := {
+    `{SI : SemanticMeasure S} := {
   sem_eq_refl : forall (A : Type@{carrier}), Reflexive (@sem_eq S SI A);
   sem_eq_sym : forall (A : Type@{carrier}), Symmetric (@sem_eq S SI A);
   sem_eq_trans : forall (A : Type@{carrier}), Transitive (@sem_eq S SI A);
@@ -83,13 +84,13 @@ Polymorphic Class SemanticMeasureCoreLaws@{carrier representation}
     same amount of mass in the intended backends. *)
 Polymorphic Definition sem_same_mass@{carrier representation}
     {S : Type@{carrier} -> Type@{representation}}
-    `{SI : SemanticMeasureInterface S} {A B : Type@{carrier}}
+    `{SI : SemanticMeasure S} {A B : Type@{carrier}}
     (mu : S A) (nu : S B) : Prop :=
   sem_lift (fun _ _ => True) mu nu.
 
 Polymorphic Lemma sem_lift_same_mass@{carrier representation}
     {S : Type@{carrier} -> Type@{representation}}
-    `{SI : SemanticMeasureInterface S}
+    `{SI : SemanticMeasure S}
     `{SL : @SemanticMeasureCoreLaws S SI}
     {A B : Type@{carrier}} (R : A -> B -> Prop) mu nu :
   sem_lift R mu nu -> sem_same_mass mu nu.
@@ -102,7 +103,7 @@ Qed.
     distribution of residual PTS states. *)
 Polymorphic Class SemanticMeasureBindLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S} := {
+    `{SI : SemanticMeasure S} := {
   sem_bind_ret_l : forall {A B : Type@{carrier}} (x : A) (k : A -> S B),
       sem_eq (sem_bind (sem_ret x) k) (k x);
   sem_bind_assoc : forall {A B C : Type@{carrier}} (mu : S A)
@@ -126,7 +127,7 @@ Polymorphic Class SemanticMeasureBindLaws@{carrier representation}
     Kleisli congruence; it is kept separate from the basic coupling algebra. *)
 Polymorphic Class SemanticMeasureAELiftLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S} := {
+    `{SI : SemanticMeasure S} := {
   sem_lift_refl_ae : forall {A : Type@{carrier}}
       (mu : S A) (P : A -> Prop),
       sem_ae mu P ->
@@ -139,7 +140,7 @@ Polymorphic Class SemanticMeasureAELiftLaws@{carrier representation}
     it is intentionally not bundled into the basic coupling algebra. *)
 Polymorphic Class SemanticMeasureCouplingAELaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S} := {
+    `{SI : SemanticMeasure S} := {
   sem_lift_ae_transport_r : forall {A B : Type@{carrier}}
       (R : A -> B -> Prop) (mu : S A) (nu : S B) (P : A -> Prop),
       sem_lift R mu nu -> sem_ae mu P ->
@@ -159,7 +160,7 @@ Polymorphic Class SemanticMeasureCouplingAELaws@{carrier representation}
     clients do not need to assume sigma-completeness. *)
 Polymorphic Class SemanticMeasureCountableAELaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S} := {
+    `{SI : SemanticMeasure S} := {
   sem_ae_countable : forall {A : Type@{carrier}} (mu : S A)
       (P : nat -> A -> Prop),
     (forall n, sem_ae mu (P n)) ->
@@ -172,7 +173,7 @@ Polymorphic Class SemanticMeasureCountableAELaws@{carrier representation}
     computation. *)
 Polymorphic Class SemanticMeasureAEKleisliLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S} := {
+    `{SI : SemanticMeasure S} := {
   sem_ae_ret : forall {A : Type@{carrier}} (P : A -> Prop) x,
       P x -> sem_ae (sem_ret x) P;
   sem_ae_bind : forall {A B : Type@{carrier}}
@@ -188,9 +189,9 @@ Polymorphic Class SemanticMeasureAEKleisliLaws@{carrier representation}
 Polymorphic Class MixedMeasureLaws@{node node_rep frontier frontier_rep}
     (MN : Type@{node} -> Type@{node_rep})
     (MF : Type@{frontier} -> Type@{frontier_rep})
-    `{NI : SemanticMeasureInterface MN}
-    `{FI : SemanticMeasureInterface MF}
-    `{MX : MixedMeasureInterface MN MF} := {
+    `{NI : SemanticMeasure MN}
+    `{FI : SemanticMeasure MF}
+    `{MX : MixedMeasure MN MF} := {
   mixed_bind_ae_proper : forall {A : Type@{node}} {B : Type@{frontier}}
       (mu : MN A) (k h : A -> MF B),
       sem_ae mu (fun x => sem_eq (k x) (h x)) ->
@@ -217,9 +218,9 @@ Polymorphic Class MixedMeasureLaws@{node node_rep frontier frontier_rep}
 Polymorphic Class MixedMeasureUnitLaws@{node node_rep frontier frontier_rep}
     (MN : Type@{node} -> Type@{node_rep})
     (MF : Type@{frontier} -> Type@{frontier_rep})
-    `{NI : SemanticMeasureInterface MN}
-    `{FI : SemanticMeasureInterface MF}
-    `{MX : MixedMeasureInterface MN MF} := {
+    `{NI : SemanticMeasure MN}
+    `{FI : SemanticMeasure MF}
+    `{MX : MixedMeasure MN MF} := {
   mixed_bind_ret_l : forall {A : Type@{node}} {B : Type@{frontier}}
       (x : A) (k : A -> MF B),
       sem_lift eq (mixed_bind (sem_ret x) k) (k x)
@@ -231,9 +232,9 @@ Polymorphic Class MixedMeasureUnitLaws@{node node_rep frontier frontier_rep}
 Polymorphic Class MixedMeasureNodeBindLaws@{node node_rep frontier frontier_rep}
     (MN : Type@{node} -> Type@{node_rep})
     (MF : Type@{frontier} -> Type@{frontier_rep})
-    `{NI : SemanticMeasureInterface MN}
-    `{FI : SemanticMeasureInterface MF}
-    `{MX : MixedMeasureInterface MN MF} := {
+    `{NI : SemanticMeasure MN}
+    `{FI : SemanticMeasure MF}
+    `{MX : MixedMeasure MN MF} := {
   mixed_bind_node_assoc : forall
       {A B : Type@{node}} {C : Type@{frontier}}
       (mu : MN A) (h : A -> MN B) (k : B -> MF C),
@@ -246,9 +247,9 @@ Polymorphic Class MixedMeasureNodeBindLaws@{node node_rep frontier frontier_rep}
 Polymorphic Definition mixed_measure_exchange@{node node_rep frontier frontier_rep}
     {MN : Type@{node} -> Type@{node_rep}}
     {MF : Type@{frontier} -> Type@{frontier_rep}}
-    `{NI : SemanticMeasureInterface MN}
-    `{FI : SemanticMeasureInterface MF}
-    `{MX : MixedMeasureInterface MN MF}
+    `{NI : SemanticMeasure MN}
+    `{FI : SemanticMeasure MF}
+    `{MX : MixedMeasure MN MF}
     {A B : Type@{node}} (mu : MN A) (nu : MN B) : Prop :=
   forall (C D : Type@{frontier}) (R : C -> D -> Prop)
     (k1 : A -> B -> MF C) (k2 : B -> A -> MF D),
@@ -263,9 +264,9 @@ Polymorphic Definition mixed_measure_exchange@{node node_rep frontier frontier_r
 Polymorphic Class MixedMeasureCommutativeLaws@{node node_rep frontier frontier_rep}
     (MN : Type@{node} -> Type@{node_rep})
     (MF : Type@{frontier} -> Type@{frontier_rep})
-    `{NI : SemanticMeasureInterface MN}
-    `{FI : SemanticMeasureInterface MF}
-    `{MX : MixedMeasureInterface MN MF} := {
+    `{NI : SemanticMeasure MN}
+    `{FI : SemanticMeasure MF}
+    `{MX : MixedMeasure MN MF} := {
   mixed_lift_exchange : forall {A B : Type@{node}}
       (mu : MN A) (nu : MN B), mixed_measure_exchange mu nu
 }.
@@ -275,7 +276,7 @@ Polymorphic Class MixedMeasureCommutativeLaws@{node node_rep frontier frontier_r
     than the selected point when quotienting a sampled Dirac. *)
 Polymorphic Class SemanticMeasureDiracAELaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S} := {
+    `{SI : SemanticMeasure S} := {
   sem_ae_ret_iff : forall {A : Type@{carrier}} (x : A) (P : A -> Prop),
       sem_ae (sem_ret x) P <-> P x
 }.
@@ -286,7 +287,7 @@ Polymorphic Class SemanticMeasureDiracAELaws@{carrier representation}
     samples also needs this reverse characterization. *)
 Polymorphic Class SemanticMeasureBindAEExactLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S} := {
+    `{SI : SemanticMeasure S} := {
   sem_ae_bind_iff : forall {A B : Type@{carrier}}
       (mu : S A) (k : A -> S B) (P : B -> Prop),
       sem_ae (sem_bind mu k) P <->
@@ -296,22 +297,22 @@ Polymorphic Class SemanticMeasureBindAEExactLaws@{carrier representation}
 (** Omega structure belongs to the semantic/frontier layer.  The order is
     explicit so a unified frontier can state that finite approximants form an
     increasing chain instead of treating every arbitrary sequence as a lub. *)
-Polymorphic Class SemanticOmegaInterface@{carrier representation}
+Polymorphic Class SemanticOmega@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S} := {
+    `{SI : SemanticMeasure S} := {
   sem_zero : forall {A : Type@{carrier}}, S A;
   sem_le : forall {A : Type@{carrier}}, S A -> S A -> Prop;
   sem_lub : forall {A : Type@{carrier}}, (nat -> S A) -> S A -> Prop;
   sem_total : forall {A : Type@{carrier}}, S A -> Prop
 }.
 
-Definition sem_increasing {SM} `{SI : SemanticMeasureInterface SM}
-    `{SO : @SemanticOmegaInterface SM SI} {A}
+Definition sem_increasing {SM} `{SI : SemanticMeasure SM}
+    `{SO : @SemanticOmega SM SI} {A}
     (chain : nat -> SM A) : Prop :=
   forall n, sem_le (chain n) (chain (Datatypes.S n)).
 
-Definition sem_zero_prefix {SM} `{SI : SemanticMeasureInterface SM}
-    `{SO : @SemanticOmegaInterface SM SI} {A}
+Definition sem_zero_prefix {SM} `{SI : SemanticMeasure SM}
+    `{SO : @SemanticOmega SM SI} {A}
     (chain : nat -> SM A) : nat -> SM A :=
   fun n => match n with O => sem_zero | Datatypes.S n' => chain n' end.
 
@@ -320,8 +321,8 @@ Definition sem_zero_prefix {SM} `{SI : SemanticMeasureInterface SM}
     existence and can therefore be supplied by partial backends. *)
 Polymorphic Class SemanticMeasureOrderLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S}
-    `{SO : @SemanticOmegaInterface S SI} := {
+    `{SI : SemanticMeasure S}
+    `{SO : @SemanticOmega S SI} := {
   sem_le_refl : forall {A : Type@{carrier}} (mu : S A), sem_le mu mu;
   sem_le_trans : forall {A : Type@{carrier}} (mu nu xi : S A),
       sem_le mu nu -> sem_le nu xi -> sem_le mu xi;
@@ -340,8 +341,8 @@ Polymorphic Class SemanticMeasureOrderLaws@{carrier representation}
     extensional. *)
 Polymorphic Class SemanticOmegaLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S}
-    `{SO : @SemanticOmegaInterface S SI} := {
+    `{SI : SemanticMeasure S}
+    `{SO : @SemanticOmega S SI} := {
   sem_lub_exists : forall {A : Type@{carrier}} (chain : nat -> S A),
       sem_increasing chain -> exists out, sem_lub chain out;
   sem_lub_unique : forall {A : Type@{carrier}} (chain : nat -> S A) mu nu,
@@ -365,8 +366,8 @@ Polymorphic Class SemanticOmegaLaws@{carrier representation}
     kernel invariants into invariants of unbounded stable hitting. *)
 Polymorphic Class SemanticOmegaAELaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S}
-    `{SO : @SemanticOmegaInterface S SI} := {
+    `{SI : SemanticMeasure S}
+    `{SO : @SemanticOmega S SI} := {
   sem_ae_zero : forall {A : Type@{carrier}} (P : A -> Prop),
       sem_ae (@sem_zero S SI SO A) P;
   sem_ae_lub : forall {A : Type@{carrier}}
@@ -383,8 +384,8 @@ Polymorphic Class SemanticOmegaAELaws@{carrier representation}
     explicitly. *)
 Polymorphic Class SemanticTotalProperLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S}
-    `{SO : @SemanticOmegaInterface S SI} := {
+    `{SI : SemanticMeasure S}
+    `{SO : @SemanticOmega S SI} := {
   sem_total_proper : forall {A : Type@{carrier}} (mu nu : S A),
       sem_eq mu nu -> (sem_total mu <-> sem_total nu)
 }.
@@ -394,8 +395,8 @@ Polymorphic Class SemanticTotalProperLaws@{carrier representation}
     lub syntax without quotienting away finite prefixes. *)
 Polymorphic Class SemanticOmegaCofinalityLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S}
-    `{SO : @SemanticOmegaInterface S SI} := {
+    `{SI : SemanticMeasure S}
+    `{SO : @SemanticOmega S SI} := {
   sem_lub_zero_prefix : forall {A : Type@{carrier}}
       (chain : nat -> S A) out,
       sem_lub chain out <-> sem_lub (sem_zero_prefix chain) out;
@@ -409,10 +410,10 @@ Polymorphic Class SemanticOmegaCofinalityLaws@{carrier representation}
 Polymorphic Class MixedMeasureOmegaLaws@{node node_rep frontier frontier_rep}
     (MN : Type@{node} -> Type@{node_rep})
     (MF : Type@{frontier} -> Type@{frontier_rep})
-    `{NI : SemanticMeasureInterface MN}
-    `{FI : SemanticMeasureInterface MF}
-    `{MX : MixedMeasureInterface MN MF}
-    `{FO : @SemanticOmegaInterface MF FI} := {
+    `{NI : SemanticMeasure MN}
+    `{FI : SemanticMeasure MF}
+    `{MX : MixedMeasure MN MF}
+    `{FO : @SemanticOmega MF FI} := {
   mixed_bind_zero : forall {A : Type@{node}} {B : Type@{frontier}}
       (mu : MN A),
       sem_eq (mixed_bind mu (fun _ => @sem_zero MF FI FO B)) sem_zero;
@@ -431,8 +432,8 @@ Polymorphic Class MixedMeasureOmegaLaws@{node node_rep frontier frontier_rep}
     and is exactly the measure-level half of operational Bind soundness. *)
 Polymorphic Class SemanticMeasureDiagonalLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S}
-    `{SO : @SemanticOmegaInterface S SI} := {
+    `{SI : SemanticMeasure S}
+    `{SO : @SemanticOmega S SI} := {
   sem_bind_diagonal_lub : forall {A B : Type@{carrier}}
       (source : nat -> S A) (source_out : S A)
       (kernels : A -> nat -> S B) (kernel_out : A -> S B),
@@ -457,8 +458,8 @@ Polymorphic Class SemanticMeasureDiagonalLaws@{carrier representation}
     provide it through their observation quotient. *)
 Polymorphic Class SemanticOmegaFubiniLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})
-    `{SI : SemanticMeasureInterface S}
-    `{SO : @SemanticOmegaInterface S SI} := {
+    `{SI : SemanticMeasure S}
+    `{SO : @SemanticOmega S SI} := {
   sem_lub_double_diagonal : forall {A : Type@{carrier}}
       (grid : nat -> nat -> S A)
       (row_out : nat -> S A) (out : S A),
@@ -470,7 +471,7 @@ Polymorphic Class SemanticOmegaFubiniLaws@{carrier representation}
 }.
 
 #[global] Polymorphic Instance sem_eq_equivalence
-    {S} `{SI : SemanticMeasureInterface S}
+    {S} `{SI : SemanticMeasure S}
     `{SL : @SemanticMeasureCoreLaws S SI} A :
   Equivalence (@sem_eq S SI A).
 Proof.

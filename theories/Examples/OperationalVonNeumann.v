@@ -176,15 +176,15 @@ Proof.
   unfold operational_vn_raw_hitting. rewrite operational_vn_raw_observe.
   cbn [operational_hitting_approx operational_kernel operational_target_approx
     stable_hitting_approx stable_target_approx ptree_primitive_kernel
-    sem_bind sem_ret mixed_bind free_omega_bind FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaSemanticMeasureInterface].
+    sem_bind sem_ret mixed_bind free_omega_bind FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaSemanticMeasure].
   f_equal. apply functional_extensionality. intro b1.
   rewrite operational_vn_raw_second_observe.
   cbn [operational_kernel operational_target_approx stable_target_approx
     ptree_primitive_kernel sem_bind sem_ret
-    mixed_bind free_omega_bind FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticMeasureInterface FreeOmegaSemanticMeasureInterface].
+    mixed_bind free_omega_bind FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticMeasure FreeOmegaSemanticMeasure].
   f_equal. apply functional_extensionality. intro b2.
   rewrite observe_bind.
   destruct (vn_round_result b1 b2) as [u|b]; [destruct u|]; reflexivity.
@@ -294,11 +294,11 @@ Definition operational_vn_raw_heads : MF vn_head :=
 
 Lemma operational_vn_raw_weak :
   @operational_weak vnE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe von_neumann_third) operational_vn_raw_heads.
 Proof.
   unfold operational_weak, operational_vn_raw_heads,
@@ -310,10 +310,10 @@ Qed.
 
 Lemma operational_vn_raw_heads_total :
   @sem_total MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaObservableSemanticOmegaInterface _ operational_vn_raw_heads.
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaObservableSemanticOmega _ operational_vn_raw_heads.
 Proof.
   apply free_omega_observable_total_intro.
   exists bool, operational_vn_head_value, vn_fair.
@@ -322,11 +322,11 @@ Qed.
 
 Theorem operational_von_neumann_raw_ast :
   @operational_ast_weak vnE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe von_neumann_third) operational_vn_raw_heads.
 Proof.
   split; [exact operational_vn_raw_weak|exact operational_vn_raw_heads_total].
@@ -337,18 +337,18 @@ Definition operational_vn_compiled : ptree vnE Enum bool :=
 
 Lemma operational_vn_round_increasing :
   @sem_increasing MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface)) _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    (FreeOmegaObservableSemanticOmega
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega)) _
     (fun rounds => @mixed_iter_approx Enum MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface))
-      FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface unit bool rounds
+      (FreeOmegaObservableSemanticMeasure
+        (NI := Enum_SemanticMeasure)
+        (NO := Enum_SemanticOmega))
+      FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega unit bool rounds
       (fun _ => vn_transition) tt).
 Proof.
   intro rounds. induction rounds as [|rounds IH].
@@ -367,19 +367,19 @@ Qed.
 
 Corollary operational_vn_cofinal :
   @operational_iter_cofinal vnE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface unit bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega unit bool
     vn_compiled_step (fun _ : unit => vn_transition) tt.
 Proof.
   change (@operational_iter_cofinal vnE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface unit bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega unit bool
     (free_primitive_iter_step (fun _ : unit => vn_transition))
     (fun _ : unit => vn_transition) tt).
   apply free_primitive_iter_cofinal.
@@ -387,11 +387,11 @@ Qed.
 
 Definition operational_vn_iter_approx (fuel : nat) : MF bool :=
   @mixed_iter_approx Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface unit bool fuel
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega unit bool fuel
     (fun _ : unit => vn_transition) tt.
 
 Definition operational_vn_limit : MF bool :=
@@ -399,11 +399,11 @@ Definition operational_vn_limit : MF bool :=
 
 Lemma operational_vn_mixed_iter :
   @mixed_iter Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface unit bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega unit bool
     (fun _ : unit => vn_transition) tt operational_vn_limit.
 Proof.
   unfold mixed_iter, operational_vn_limit, operational_vn_iter_approx.
@@ -418,33 +418,33 @@ Proof.
   unfold operational_vn_iter_approx. induction fuel as [|fuel IH].
   - constructor.
   - cbn [mixed_iter_approx meas_iter_approx mixed_bind
-      FreeOmegaMixedMeasureInterface sem_bind
-      Enum_SemanticMeasureInterface].
+      FreeOmegaMixedMeasure sem_bind
+      Enum_SemanticMeasure].
     change (free_omega_observes (fun b : bool => b)
       (FOSample vn_transition (fun next : unit + bool =>
         match next with
         | inl u => @mixed_iter_approx Enum MF
-            (FreeOmegaObservableSemanticMeasureInterface
-              (NI := Enum_SemanticMeasureInterface)
-              (NO := Enum_SemanticOmegaInterface))
-            FreeOmegaMixedMeasureInterface
-            FreeOmegaObservableSemanticOmegaInterface unit bool fuel
+            (FreeOmegaObservableSemanticMeasure
+              (NI := Enum_SemanticMeasure)
+              (NO := Enum_SemanticOmega))
+            FreeOmegaMixedMeasure
+            FreeOmegaObservableSemanticOmega unit bool fuel
             (fun _ : unit => vn_transition) u
         | inr b => FORet b
         end))
-      (@sem_bind Enum Enum_SemanticMeasureInterface _ _ vn_transition
+      (@sem_bind Enum Enum_SemanticMeasure _ _ vn_transition
         (fun next : unit + bool =>
           match next with
           | inl u => meas_iter_approx fuel
               (fun _ : unit => vn_transition) u
-          | inr b => @sem_ret Enum Enum_SemanticMeasureInterface bool b
+          | inr b => @sem_ret Enum Enum_SemanticMeasure bool b
           end))).
     eapply FOOObserveSample with
       (front := fun next : unit + bool =>
         match next with
         | inl u => meas_iter_approx fuel
             (fun _ : unit => vn_transition) u
-        | inr b => @sem_ret Enum Enum_SemanticMeasureInterface bool b
+        | inr b => @sem_ret Enum Enum_SemanticMeasure bool b
         end).
     intros [u|b].
     + destruct u. exact IH.
@@ -462,24 +462,24 @@ Qed.
 
 Definition operational_vn_heads : MF vn_head :=
   @sem_bind MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface)) _ _ operational_vn_limit
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega)) _ _ operational_vn_limit
     (fun b => @sem_ret MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface)) vn_head (FHRet b)).
+      (FreeOmegaObservableSemanticMeasure
+        (NI := Enum_SemanticMeasure)
+        (NO := Enum_SemanticOmega)) vn_head (FHRet b)).
 
 Definition operational_vn_direct_heads : MF vn_head :=
-  @mixed_bind Enum MF FreeOmegaMixedMeasureInterface bool vn_head vn_fair
+  @mixed_bind Enum MF FreeOmegaMixedMeasure bool vn_head vn_fair
     (fun b => @sem_ret MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface)) vn_head (FHRet b)).
+      (FreeOmegaObservableSemanticMeasure
+        (NI := Enum_SemanticMeasure)
+        (NO := Enum_SemanticOmega)) vn_head (FHRet b)).
 
 Definition operational_vn_direct_observation : Enum bool :=
-  @sem_bind Enum Enum_SemanticMeasureInterface _ _ vn_fair
-    (fun b => @sem_ret Enum Enum_SemanticMeasureInterface bool b).
+  @sem_bind Enum Enum_SemanticMeasure _ _ vn_fair
+    (fun b => @sem_ret Enum Enum_SemanticMeasure bool b).
 
 Lemma operational_vn_heads_observes :
   free_omega_observes operational_vn_head_value
@@ -511,10 +511,10 @@ Qed.
 
 Lemma operational_vn_heads_total :
   @sem_total MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaObservableSemanticOmegaInterface _ operational_vn_heads.
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaObservableSemanticOmega _ operational_vn_heads.
 Proof.
   apply free_omega_observable_total_intro.
   exists bool, operational_vn_head_value, vn_fair.
@@ -523,10 +523,10 @@ Qed.
 
 Lemma operational_vn_direct_heads_total :
   @sem_total MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaObservableSemanticOmegaInterface _ operational_vn_direct_heads.
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaObservableSemanticOmega _ operational_vn_direct_heads.
 Proof.
   apply free_omega_observable_total_intro.
   exists bool, operational_vn_head_value, operational_vn_direct_observation.
@@ -536,11 +536,11 @@ Qed.
 
 Theorem operational_vn_compiled_ast :
   @operational_ast_weak vnE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe operational_vn_compiled) operational_vn_heads.
 Proof.
   unfold operational_vn_compiled, operational_vn_heads.
@@ -553,16 +553,16 @@ Qed.
 
 Corollary operational_vn_compiled_primitive_ast :
   @stable_hitting_ast MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaObservableSemanticOmegaInterface
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaObservableSemanticOmega
     (ptree' vnE Enum bool) vn_head
     (@ptree_primitive_kernel vnE Enum MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface))
-      FreeOmegaMixedMeasureInterface bool)
+      (FreeOmegaObservableSemanticMeasure
+        (NI := Enum_SemanticMeasure)
+        (NO := Enum_SemanticOmega))
+      FreeOmegaMixedMeasure bool)
     (observe operational_vn_compiled) operational_vn_heads.
 Proof.
   apply (proj2 (ptree_primitive_ast_adequate
@@ -615,10 +615,10 @@ Qed.
 
 Lemma operational_vn_limit_total :
   @sem_total MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaObservableSemanticOmegaInterface bool operational_vn_limit.
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaObservableSemanticOmega bool operational_vn_limit.
 Proof.
   apply free_omega_observable_total_intro.
   exists bool, id, vn_fair. split.
@@ -627,12 +627,12 @@ Proof.
 Qed.
 
 Lemma operational_vn_compiled_frontier :
-  @frontier vnE Enum MF Enum_SemanticMeasureInterface
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+  @frontier vnE Enum MF Enum_SemanticMeasure
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe operational_vn_compiled) operational_vn_heads.
 Proof.
   unfold operational_vn_compiled, operational_vn_heads.
@@ -656,12 +656,12 @@ Definition operational_vn_compiled_after_heads (next : unit + bool) :
   end.
 
 Lemma operational_vn_compiled_after_frontier next :
-  @frontier vnE Enum MF Enum_SemanticMeasureInterface
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+  @frontier vnE Enum MF Enum_SemanticMeasure
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe (operational_vn_compiled_after next))
     (operational_vn_compiled_after_heads next).
 Proof.
@@ -674,12 +674,12 @@ Proof.
 Qed.
 
 Lemma operational_vn_compiled_cont_frontier next :
-  @frontier vnE Enum MF Enum_SemanticMeasureInterface
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+  @frontier vnE Enum MF Enum_SemanticMeasure
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe (operational_vn_compiled_cont next))
     (operational_vn_compiled_after_heads next).
 Proof.
@@ -689,22 +689,22 @@ Qed.
 
 Definition operational_vn_compiled_body_heads : MF vn_head :=
   @sem_bind MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface)) _ _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega)) _ _
     operational_vn_compiled_round
     (frontier_head_bind_front
-      (FI := FreeOmegaObservableSemanticMeasureInterface)
+      (FI := FreeOmegaObservableSemanticMeasure)
       operational_vn_compiled_after
       operational_vn_compiled_after_heads).
 
 Lemma operational_vn_compiled_body_frontier :
-  @frontier vnE Enum MF Enum_SemanticMeasureInterface
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+  @frontier vnE Enum MF Enum_SemanticMeasure
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe operational_vn_compiled_body)
     operational_vn_compiled_body_heads.
 Proof.
@@ -718,12 +718,12 @@ Proof.
     rewrite Hstep.
     cbn [operational_hitting_approx operational_kernel
       operational_target_approx].
-    change (@frontier vnE Enum MF Enum_SemanticMeasureInterface
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface))
-      FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface (unit + bool)
+    change (@frontier vnE Enum MF Enum_SemanticMeasure
+      (FreeOmegaObservableSemanticMeasure
+        (NI := Enum_SemanticMeasure)
+        (NO := Enum_SemanticOmega))
+      FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega (unit + bool)
       (ProbF vn_transition (fun next => Ret next))
       (FOSample vn_transition (fun next => FORet (FHRet next)))).
     rewrite -free_omega_mixed_bindE.
@@ -739,11 +739,11 @@ Local Open Scope ring_scope.
 
 Theorem operational_vn_direct_ast :
   @operational_ast_weak vnE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe direct_fair) operational_vn_direct_heads.
 Proof.
   assert (Hobserve : observe direct_fair =
@@ -755,7 +755,7 @@ Proof.
     + apply operational_weak_ret.
     + apply free_omega_observable_total_intro.
       exists bool, operational_vn_head_value,
-        (@sem_ret Enum Enum_SemanticMeasureInterface bool b).
+        (@sem_ret Enum Enum_SemanticMeasure bool b).
       split; [constructor|].
       change (meas_total (ret_Enum b)).
       change (enum_expect (fun _ : bool => (1 : rat)) (ret_Enum b) =
@@ -767,9 +767,9 @@ Qed.
 Lemma operational_vn_heads_lift
     (sim : ptree vnE Enum bool -> ptree vnE Enum bool -> Prop) :
   @sem_lift MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface)) _ _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega)) _ _
     (frontier_head_rel eq sim)
     operational_vn_heads operational_vn_direct_heads.
 Proof.
@@ -794,7 +794,7 @@ Proof.
       unfold operational_vn_limit in HP. dependent destruction HP.
       specialize (H 1%nat).
       unfold operational_vn_iter_approx in H.
-      cbn [mixed_iter_approx mixed_bind FreeOmegaMixedMeasureInterface] in H.
+      cbn [mixed_iter_approx mixed_bind FreeOmegaMixedMeasure] in H.
       pose proof (free_omega_ae_sample_inv H) as Hround.
       assert (HPfalse : P (FHRet false)).
       { specialize (Hround vn_two_ninths (inr false)). cbn in Hround.
@@ -833,7 +833,7 @@ Proof.
         -- constructor. exact I.
         -- constructor.
         -- eapply FOAESample with (Good := fun _ => True).
-           ++ apply (@sem_ae_true Enum Enum_SemanticMeasureInterface
+           ++ apply (@sem_ae_true Enum Enum_SemanticMeasure
                 Enum_SemanticMeasureCoreLaws).
            ++ intros x _. exact (H x).
         -- constructor. exact H.
@@ -842,9 +842,9 @@ Qed.
 Lemma operational_vn_raw_heads_lift
     (sim : ptree vnE Enum bool -> ptree vnE Enum bool -> Prop) :
   @sem_lift MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface)) _ _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega)) _ _
     (frontier_head_rel eq sim)
     operational_vn_raw_heads operational_vn_direct_heads.
 Proof.
@@ -926,7 +926,7 @@ Proof.
         -- constructor. exact I.
         -- constructor.
         -- eapply FOAESample with (Good := fun _ => True).
-           ++ apply (@sem_ae_true Enum Enum_SemanticMeasureInterface
+           ++ apply (@sem_ae_true Enum Enum_SemanticMeasure
                 Enum_SemanticMeasureCoreLaws).
            ++ intros x _. exact (H x).
         -- constructor. exact H.
@@ -937,12 +937,12 @@ Qed.
     stable-hitting limits. *)
 Theorem probabilistic_eutt_von_neumann_raw_direct :
   @probabilistic_eutt vnE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool bool eq
     von_neumann_third direct_fair.
 Proof.
   eapply probabilistic_eutt_of_hitting_lift.
@@ -953,12 +953,12 @@ Qed.
 
 Theorem probabilistic_eutt_von_neumann_compiled_direct :
   @probabilistic_eutt vnE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool bool eq
     operational_vn_compiled direct_fair.
 Proof.
   eapply probabilistic_eutt_of_hitting_lift.
@@ -968,12 +968,12 @@ Proof.
 Qed.
 
 Lemma operational_vn_direct_frontier :
-  @frontier vnE Enum MF Enum_SemanticMeasureInterface
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+  @frontier vnE Enum MF Enum_SemanticMeasure
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe direct_fair) operational_vn_direct_heads.
 Proof.
   unfold direct_fair, operational_vn_direct_heads. cbn.

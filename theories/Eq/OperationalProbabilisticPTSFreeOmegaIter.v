@@ -18,18 +18,18 @@ Unset Printing Implicit Defensive.
     colocated here as they are extracted from the compatibility Base. *)
 Section FreeOmegaIter.
 Context {E : Type -> Type} {MN : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
+  `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
-  `{NO : @SemanticOmegaInterface MN NI}.
+  `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 
 Theorem free_probabilistic_eutt_iter_unfold {I R}
     (step : I -> ptree E MN (I + R)) (i : I) :
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R R eq
     (PTree.iter step i)
     (PTree.bind (step i) (fun lr =>
       match lr with
@@ -46,9 +46,9 @@ Theorem free_probabilistic_eutt_iter_structural {I R}
     (step1 step2 : I -> ptree E MN (I + R)) (i : I) :
   (forall j, pstructural eq (step1 j) (step2 j)) ->
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R R eq
     (PTree.iter step1 i) (PTree.iter step2 i).
 Proof.
   intro Hstep. apply free_probabilistic_eutt_of_pstructural.
@@ -65,9 +65,9 @@ Theorem free_probabilistic_eutt_iter_rel
     i1 i2 :
   SI i1 i2 ->
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R1 R2 RR
     (PTree.iter f i1) (PTree.iter g i2).
 Proof.
   intro Hij. apply free_probabilistic_eutt_of_pstructural.
@@ -82,9 +82,9 @@ Theorem free_probabilistic_eutt_iter_natural {I A B}
     (step : I -> ptree E MN (I + A))
     (k : A -> ptree E MN B) (i : I) :
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface B B eq
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega B B eq
     (PTree.bind (PTree.iter step i) k)
     (PTree.iter (pstructural_iter_natural_step step k) i).
 Proof.
@@ -97,9 +97,9 @@ Qed.
 Theorem free_probabilistic_eutt_iter_codiagonal {I R}
     (step : I -> ptree E MN (I + (I + R))) (i : I) :
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R R eq
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R R eq
     (PTree.iter (fun j => PTree.iter step j) i)
     (PTree.iter (pstructural_iter_codiagonal_flat_step step) i).
 Proof.
@@ -129,25 +129,25 @@ Variable step_out1 : I1 -> MF (frontier_head E MN (I1 + R1)).
 Variable step_out2 : I2 -> MF (frontier_head E MN (I2 + R2)).
 Hypothesis Hstep_out1 : forall i1,
   @operational_weak E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface (I1 + R1)
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega (I1 + R1)
     (observe (step1 i1)) (step_out1 i1).
 Hypothesis Hstep_out2 : forall i2,
   @operational_weak E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface (I2 + R2)
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega (I2 + R2)
     (observe (step2 i2)) (step_out2 i2).
 Hypothesis Hstep_lift : forall i1 i2, SI i1 i2 ->
   free_omega_qlift
     (@ptree_stable_head_rel E MN (I1 + R1) (I2 + R2)
       free_iter_behavioral_sum_rel
       (@probabilistic_eutt_state E MN MF
-        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface
+        FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega
         (I1 + R1) (I2 + R2) free_iter_behavioral_sum_rel))
     (step_out1 i1) (step_out2 i2).
 
@@ -156,10 +156,10 @@ Lemma free_iter_complete_rows_behavioral_lift rounds :
   free_omega_qlift
     (@ptree_stable_head_rel E MN R1 R2 RR
       (@probabilistic_eutt_state E MN MF
-        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface R1 R2 RR))
+        FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega R1 R2 RR))
     (free_iter_complete_rows no_event step_out1 rounds i1)
     (free_iter_complete_rows no_event step_out2 rounds i2).
 Proof.
@@ -180,10 +180,10 @@ Qed.
 Theorem free_probabilistic_eutt_iter_behavioral_rel_of_outputs i1 i2 :
   SI i1 i2 ->
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R1 R2 RR
     (PTree.iter step1 i1) (PTree.iter step2 i2).
 Proof.
   intro Hij.
@@ -221,35 +221,35 @@ Variable RR : R1 -> R2 -> Prop.
 Theorem free_probabilistic_eutt_iter_behavioral_rel
     (Hstep : forall i1 i2, SI i1 i2 ->
       @probabilistic_eutt E MN MF
-        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface
+        FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega
         (I1 + R1) (I2 + R2)
         (free_iter_behavioral_sum_rel SI RR)
         (step1 i1) (step2 i2))
     i1 i2 :
   SI i1 i2 ->
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R1 R2 RR
     (PTree.iter step1 i1) (PTree.iter step2 i2).
 Proof.
   intro Hij.
   assert (Hexists1 : forall j1, exists out,
       @operational_weak E MN MF
-        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface (I1 + R1)
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega (I1 + R1)
         (observe (step1 j1)) out).
   { intro j1. apply stable_hitting_weak_exists. }
   assert (Hexists2 : forall j2, exists out,
       @operational_weak E MN MF
-        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface (I2 + R2)
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega (I2 + R2)
         (observe (step2 j2)) out).
   { intro j2. apply stable_hitting_weak_exists. }
   destruct (choice _ Hexists1) as [out1 Hout1].
@@ -259,15 +259,15 @@ Proof.
          (SI := SI) (RR := RR); try eassumption.
   intros j1 j2 Hrel.
   change (@sem_lift MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     _ _
     (@ptree_stable_head_rel E MN (I1 + R1) (I2 + R2)
       (free_iter_behavioral_sum_rel SI RR)
       (@probabilistic_eutt_state E MN MF
-        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface
+        FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega
         (I1 + R1) (I2 + R2) (free_iter_behavioral_sum_rel SI RR)))
     (out1 j1) (out2 j2)).
   eapply probabilistic_eutt_hitting_lift;
@@ -299,16 +299,16 @@ Definition free_iter_eventful_bisim_candidate
 Definition free_iter_eventful_generator_closed : Prop :=
   forall i1 i2, SI i1 i2 ->
     @stable_hitting_match MF
-      (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticOmegaInterface
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticOmega
       (ptree' E MN R1) (ptree' E MN R2)
       (frontier_head E MN R1) (frontier_head E MN R2)
       (@ptree_primitive_kernel E MN MF
-        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasureInterface R1)
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasure R1)
       (@ptree_primitive_kernel E MN MF
-        (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasureInterface R2)
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasure R2)
       (@ptree_stable_head_rel E MN R1 R2 RR)
       free_iter_eventful_bisim_candidate
       (observe (PTree.iter step1 i1))
@@ -318,10 +318,10 @@ Theorem free_probabilistic_eutt_iter_eventful_of_generator_closed
     (Hclosed : free_iter_eventful_generator_closed) :
   forall i1 i2, SI i1 i2 ->
   @probabilistic_eutt E MN MF
-    (FreeOmegaObservableSemanticMeasureInterface (NI := NI) (NO := NO))
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface R1 R2 RR
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R1 R2 RR
     (PTree.iter step1 i1) (PTree.iter step2 i2).
 Proof.
   intros i1 i2 Hij.

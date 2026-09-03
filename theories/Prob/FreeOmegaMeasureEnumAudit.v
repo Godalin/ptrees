@@ -44,8 +44,8 @@ Proof.
 Qed.
 
 Lemma transient_bad_limit_observes_zero :
-  @free_omega_observes Enum Enum_SemanticMeasureInterface
-    Enum_SemanticOmegaInterface bool bool id
+  @free_omega_observes Enum Enum_SemanticMeasure
+    Enum_SemanticOmega bool bool id
     transient_bad_limit [::].
 Proof.
   unfold transient_bad_limit. eapply FOOObserveLub with
@@ -55,19 +55,19 @@ Proof.
 Qed.
 
 Lemma zero_free_limit_observes_zero :
-  @free_omega_observes Enum Enum_SemanticMeasureInterface
-    Enum_SemanticOmegaInterface bool bool id zero_free_limit [::].
+  @free_omega_observes Enum Enum_SemanticMeasure
+    Enum_SemanticOmega bool bool id zero_free_limit [::].
 Proof.
   unfold zero_free_limit.
-  eapply (@FOOObserveLub Enum Enum_SemanticMeasureInterface
-    Enum_SemanticOmegaInterface bool bool id zero_free_chain
+  eapply (@FOOObserveLub Enum Enum_SemanticMeasure
+    Enum_SemanticOmega bool bool id zero_free_chain
     (fun _ : nat => (@nil (RatSubTypes.nnQ * bool))) [::]).
   - intro n. constructor.
   - intros P eps Heps. exists O. intros n _. cbn. exact Heps.
 Qed.
 
 Lemma enum_empty_lift_false :
-  @sem_lift Enum Enum_SemanticMeasureInterface bool bool
+  @sem_lift Enum Enum_SemanticMeasure bool bool
     (fun _ _ => False) [::] [::].
 Proof.
   cbn. unfold indexed_coupling. exists [::]; try reflexivity.
@@ -91,7 +91,7 @@ Qed.
     impossible, so the former omega-AE counterexample is rejected at the
     quotient boundary rather than contradicting the backend laws. *)
 Theorem transient_bad_support_zero_impossible :
-  ~ @free_omega_support_lift Enum Enum_SemanticMeasureInterface bool bool eq
+  ~ @free_omega_support_lift Enum Enum_SemanticMeasure bool bool eq
       transient_bad_limit zero_free_limit.
 Proof.
   intro Hsupport.

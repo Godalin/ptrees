@@ -45,12 +45,12 @@ End StableHeadObservation.
 
 Section ProbabilisticHeadQuery.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}.
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
 
 (** A query result is itself a semantic subprobability measure.  This is a
     weakest-preexpectation-style interface with indicator/result carrier
@@ -127,13 +127,13 @@ End ProbabilisticHeadQuery.
     assuming decidable equality on the event signature. *)
 Section FiniteTraceQuery.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasureInterface MN}
-  `{FI : SemanticMeasureInterface MF}
+  `{NI : SemanticMeasure MN}
+  `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{FA : @SemanticMeasureCouplingAELaws MF FI}
-  `{MX : MixedMeasureInterface MN MF}
-  `{FO : @SemanticOmegaInterface MF FI}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}
   `{FL : @SemanticOmegaLaws MF FI FO}.
 
 Definition event_selector : Type := forall X, E X -> option X.

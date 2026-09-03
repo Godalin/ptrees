@@ -130,16 +130,16 @@ Proof.
   cbn [operational_hitting_approx operational_kernel
     operational_target_approx stable_hitting_approx stable_target_approx
     ptree_primitive_kernel sem_bind sem_ret mixed_bind free_omega_bind
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaSemanticMeasureInterface].
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaSemanticMeasure].
   f_equal. apply functional_extensionality. intro b1.
   rewrite service_vn_second_observe.
   cbn [operational_kernel operational_target_approx stable_target_approx
     ptree_primitive_kernel sem_bind sem_ret mixed_bind free_omega_bind
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaSemanticMeasureInterface].
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaSemanticMeasure].
   f_equal. apply functional_extensionality. intro b2.
   rewrite observe_bind.
   destruct (vn_round_result b1 b2) as [u|b]; [destruct u|]; reflexivity.
@@ -228,11 +228,11 @@ Qed.
 
 Lemma service_vn_weak :
   @operational_weak coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe (@von_neumann_third_in coin_serviceE)) service_vn_heads.
 Proof.
   unfold operational_weak, service_vn_heads, service_vn_hitting.
@@ -243,10 +243,10 @@ Qed.
 
 Lemma service_vn_heads_total :
   @sem_total MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaObservableSemanticOmegaInterface _ service_vn_heads.
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaObservableSemanticOmega _ service_vn_heads.
 Proof.
   apply free_omega_observable_total_intro.
   exists bool, service_head_value, vn_fair.
@@ -255,25 +255,25 @@ Qed.
 
 Theorem service_von_neumann_ast :
   @operational_ast_weak coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe (@von_neumann_third_in coin_serviceE)) service_vn_heads.
 Proof. split; [exact service_vn_weak|exact service_vn_heads_total]. Qed.
 
 Definition service_direct_heads : MF service_head :=
-  @mixed_bind Enum MF FreeOmegaMixedMeasureInterface bool service_head
+  @mixed_bind Enum MF FreeOmegaMixedMeasure bool service_head
     vn_fair
     (fun b => @sem_ret MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface)) service_head (FHRet b)).
+      (FreeOmegaObservableSemanticMeasure
+        (NI := Enum_SemanticMeasure)
+        (NO := Enum_SemanticOmega)) service_head (FHRet b)).
 
 Definition service_direct_observation : Enum bool :=
-  @sem_bind Enum Enum_SemanticMeasureInterface _ _ vn_fair
-    (fun b => @sem_ret Enum Enum_SemanticMeasureInterface bool b).
+  @sem_bind Enum Enum_SemanticMeasure _ _ vn_fair
+    (fun b => @sem_ret Enum Enum_SemanticMeasure bool b).
 
 Lemma service_direct_heads_observes :
   free_omega_observes service_head_value
@@ -293,10 +293,10 @@ Qed.
 
 Lemma service_direct_heads_total :
   @sem_total MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaObservableSemanticOmegaInterface _ service_direct_heads.
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaObservableSemanticOmega _ service_direct_heads.
 Proof.
   apply free_omega_observable_total_intro.
   exists bool, service_head_value, service_direct_observation.
@@ -306,11 +306,11 @@ Qed.
 
 Theorem service_direct_fair_ast :
   @operational_ast_weak coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (observe (@direct_fair_in coin_serviceE)) service_direct_heads.
 Proof.
   assert (Hobserve : observe (@direct_fair_in coin_serviceE) =
@@ -322,7 +322,7 @@ Proof.
     + apply operational_weak_ret.
     + apply free_omega_observable_total_intro.
       exists bool, service_head_value,
-        (@sem_ret Enum Enum_SemanticMeasureInterface bool b).
+        (@sem_ret Enum Enum_SemanticMeasure bool b).
       split; [constructor|].
       change (meas_total (ret_Enum b)).
       change (enum_expect (fun _ : bool => (1 : rat)) (ret_Enum b) =
@@ -345,9 +345,9 @@ Proof.
   - unfold service_vn_hitting. rewrite service_vn_observe.
     cbn [operational_vn_raw_schedule operational_hitting_approx
       stable_hitting_approx ptree_primitive_kernel mixed_bind sem_bind
-      FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticMeasureInterface
-      FreeOmegaSemanticMeasureInterface stable_target_approx].
+      FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticMeasure
+      FreeOmegaSemanticMeasure stable_target_approx].
     eapply FOAESample with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros b _. constructor.
@@ -424,7 +424,7 @@ Proof.
         ltac:(cbn; discriminate)) as Hr.
       dependent destruction Hr. exact H0. }
     unfold service_direct_heads, mixed_bind,
-      FreeOmegaMixedMeasureInterface.
+      FreeOmegaMixedMeasure.
     eapply FOAESample with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros b _. constructor. exists (FHRet b). split.
@@ -432,7 +432,7 @@ Proof.
       * destruct b; assumption.
   - intros Q HQ.
     unfold service_direct_heads, mixed_bind,
-      FreeOmegaMixedMeasureInterface in HQ.
+      FreeOmegaMixedMeasure in HQ.
     pose proof (free_omega_ae_sample_inv HQ) as Hfair.
     assert (HQfalse : Q (FHRet false)).
     { specialize (Hfair one_div_two false). cbn in Hfair.
@@ -455,9 +455,9 @@ Lemma service_vn_direct_heads_lift
     (sim : ptree coin_serviceE Enum bool ->
       ptree coin_serviceE Enum bool -> Prop) :
   @sem_lift MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface)) _ _
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega)) _ _
     (frontier_head_rel eq sim)
     service_vn_heads service_direct_heads.
 Proof.
@@ -487,12 +487,12 @@ Qed.
 
 Theorem service_sampler_equivalent :
   @probabilistic_eutt coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool bool eq
     von_neumann_third_in direct_fair_in.
 Proof.
   eapply probabilistic_eutt_of_hitting_lift.
@@ -509,29 +509,29 @@ Lemma serve_round_congruence
     (next1 next2 : ptree coin_serviceE Enum bool)
     (Hsampler :
       @probabilistic_eutt coin_serviceE Enum MF
-        (FreeOmegaObservableSemanticMeasureInterface
-          (NI := Enum_SemanticMeasureInterface)
-          (NO := Enum_SemanticOmegaInterface))
+        (FreeOmegaObservableSemanticMeasure
+          (NI := Enum_SemanticMeasure)
+          (NO := Enum_SemanticOmega))
         FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface bool bool eq
+        FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega bool bool eq
         sampler1 sampler2)
     (Hnext :
       @probabilistic_eutt coin_serviceE Enum MF
-        (FreeOmegaObservableSemanticMeasureInterface
-          (NI := Enum_SemanticMeasureInterface)
-          (NO := Enum_SemanticOmegaInterface))
+        (FreeOmegaObservableSemanticMeasure
+          (NI := Enum_SemanticMeasure)
+          (NO := Enum_SemanticOmega))
         FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasureInterface
-        FreeOmegaObservableSemanticOmegaInterface bool bool eq
+        FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega bool bool eq
         next1 next2) :
   @probabilistic_eutt coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool bool eq
     (serve_round sampler1 next1) (serve_round sampler2 next2).
 Proof.
   unfold serve_round.
@@ -547,10 +547,10 @@ Local Definition service_kernel {R} :
     MF (stable_target (ptree' coin_serviceE Enum R)
       (frontier_head coin_serviceE Enum R)) :=
   @ptree_primitive_kernel coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface R.
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure R.
 
 Local Definition service_stable_rel {R1 R2}
     (RR : R1 -> R2 -> Prop)
@@ -560,19 +560,19 @@ Local Definition service_stable_rel {R1 R2}
 
 Local Notation service_hitting :=
   (@operational_weak coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega
     bool).
 
 Local Definition service_lift {A B} (R : A -> B -> Prop)
     (mu : MF A) (nu : MF B) : Prop :=
   @sem_lift MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     A B R mu nu.
 
 Definition vn_after_request : ptree coin_serviceE Enum bool :=
@@ -616,8 +616,8 @@ Proof.
   - exact service_vn_weak.
   - intro b. unfold publish, vn_reply_front.
     apply (stable_hitting_weak_vis
-      (FI := FreeOmegaObservableSemanticMeasureInterface)
-      (FO := FreeOmegaObservableSemanticOmegaInterface)).
+      (FI := FreeOmegaObservableSemanticMeasure)
+      (FO := FreeOmegaObservableSemanticOmega)).
 Qed.
 
 Lemma direct_after_request_weak :
@@ -630,8 +630,8 @@ Proof.
   - exact (proj1 service_direct_fair_ast).
   - intro b. unfold publish, direct_reply_front.
     apply (stable_hitting_weak_vis
-      (FI := FreeOmegaObservableSemanticMeasureInterface)
-      (FO := FreeOmegaObservableSemanticOmegaInterface)).
+      (FI := FreeOmegaObservableSemanticMeasure)
+      (FO := FreeOmegaObservableSemanticOmega)).
 Qed.
 
 (** The equivalence below is not structural reflexivity.  Immediately after
@@ -659,12 +659,12 @@ Definition interactive_service_upto
     (s1 s2 : ptree' coin_serviceE Enum bool) : Prop :=
   interactive_service_sim s1 s2 \/
   @probabilistic_eutt_state coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool bool eq s1 s2.
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool bool eq s1 s2.
 
 Lemma ISSRoot : interactive_service_sim
     (observe von_neumann_service) (observe direct_fair_service).
@@ -698,10 +698,10 @@ Qed.
 Lemma interactive_service_sim_postfixed :
   forall s1 s2, interactive_service_sim s1 s2 ->
     @stable_hitting_match MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface))
-      FreeOmegaObservableSemanticOmegaInterface
+      (FreeOmegaObservableSemanticMeasure
+        (NI := Enum_SemanticMeasure)
+        (NO := Enum_SemanticOmega))
+      FreeOmegaObservableSemanticOmega
       (ptree' coin_serviceE Enum bool) (ptree' coin_serviceE Enum bool)
       service_head service_head service_kernel service_kernel
       (@service_stable_rel bool bool eq)
@@ -719,12 +719,12 @@ Qed.
 
 Theorem interactive_von_neumann_service_equivalent :
   @probabilistic_eutt coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool bool eq
     von_neumann_service direct_fair_service.
 Proof.
   eapply probabilistic_eutt_coinduction_upto
@@ -749,11 +749,11 @@ Definition direct_true_reply_query : MF bool :=
 
 Lemma direct_after_request_true_reply_query :
   @next_event_query coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (@accepts_true_reply) direct_after_request direct_true_reply_query.
 Proof.
   exists direct_after_request_heads. split.
@@ -772,9 +772,9 @@ Proof.
     service_direct_heads, direct_reply_front,
     frontier_head_ret_bind_front, frontier_head_bind_front.
   cbn [free_omega_bind mixed_bind sem_bind sem_ret
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaSemanticMeasureInterface observe_stable_head accepts_true_reply].
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaSemanticMeasure observe_stable_head accepts_true_reply].
     unfold service_direct_observation. constructor. intro b. constructor.
   - rewrite service_direct_observation_eq. apply sem_eq_refl.
 Qed.
@@ -787,12 +787,12 @@ Qed.
 
 Lemma after_request_probabilistic_eutt :
   @probabilistic_eutt coin_serviceE Enum MF
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := Enum_SemanticMeasureInterface)
-      (NO := Enum_SemanticOmegaInterface))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure)
+      (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool bool eq
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool bool eq
     vn_after_request direct_after_request.
 Proof.
   eapply probabilistic_eutt_coinduction_upto
@@ -808,16 +808,16 @@ Qed.
 Theorem von_neumann_true_reply_probability_half :
   exists query,
     @next_event_query coin_serviceE Enum MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface))
-      FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface bool
+      (FreeOmegaObservableSemanticMeasure
+        (NI := Enum_SemanticMeasure)
+        (NO := Enum_SemanticOmega))
+      FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega bool
       (@accepts_true_reply) vn_after_request query /\
     @sem_lift MF
-      (FreeOmegaObservableSemanticMeasureInterface
-        (NI := Enum_SemanticMeasureInterface)
-        (NO := Enum_SemanticOmegaInterface)) bool bool eq
+      (FreeOmegaObservableSemanticMeasure
+        (NI := Enum_SemanticMeasure)
+        (NO := Enum_SemanticOmega)) bool bool eq
       direct_true_reply_query query.
 Proof.
   eapply probabilistic_eutt_preserves_next_event_query.
@@ -860,9 +860,9 @@ Qed.
 
 Lemma direct_after_request_true_reply_prefix_query :
   @finite_trace_query coin_serviceE Enum MF
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega
     bool
     (cons (@select_true_reply) nil)
     direct_after_request direct_true_reply_query.
@@ -875,17 +875,17 @@ Qed.
 
 Lemma direct_request_true_reply_prefix_query :
   @finite_trace_query coin_serviceE Enum MF
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega
     bool
     request_true_reply_trace direct_fair_service direct_true_reply_query.
 Proof.
   unfold request_true_reply_trace.
   change (@finite_trace_query coin_serviceE Enum MF
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (cons (@select_request) (cons (@select_true_reply) nil))
     (Vis CoinRequest (fun _ => direct_after_request))
     direct_true_reply_query).
@@ -895,11 +895,11 @@ Proof.
 Qed.
 
 Lemma direct_request_true_reply_sem_coupled_to_fair :
-  @sem_lift MF FreeOmegaObservableSemanticMeasureInterface bool bool eq
+  @sem_lift MF FreeOmegaObservableSemanticMeasure bool bool eq
     (@finite_trace_sem coin_serviceE Enum MF
-      FreeOmegaObservableSemanticMeasureInterface
-      FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface bool
+      FreeOmegaObservableSemanticMeasure
+      FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega bool
       request_true_reply_trace direct_fair_service)
     direct_true_reply_query.
 Proof.
@@ -913,13 +913,13 @@ Qed.
 Theorem von_neumann_request_true_reply_probability_half :
   exists query,
     @finite_trace_query coin_serviceE Enum MF
-      FreeOmegaObservableSemanticMeasureInterface
-      FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface
+      FreeOmegaObservableSemanticMeasure
+      FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega
       bool
       request_true_reply_trace von_neumann_service query /\
     @sem_lift MF
-      FreeOmegaObservableSemanticMeasureInterface bool bool eq
+      FreeOmegaObservableSemanticMeasure bool bool eq
       direct_true_reply_query query.
 Proof.
   eapply probabilistic_eutt_preserves_finite_trace_query.
@@ -946,16 +946,16 @@ Proof.
 Qed.
 
 Theorem von_neumann_request_true_reply_sem_preserved :
-  @sem_lift MF FreeOmegaObservableSemanticMeasureInterface bool bool eq
+  @sem_lift MF FreeOmegaObservableSemanticMeasure bool bool eq
     (@finite_trace_sem coin_serviceE Enum MF
-      FreeOmegaObservableSemanticMeasureInterface
-      FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface bool
+      FreeOmegaObservableSemanticMeasure
+      FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega bool
       request_true_reply_trace direct_fair_service)
     (@finite_trace_sem coin_serviceE Enum MF
-      FreeOmegaObservableSemanticMeasureInterface
-      FreeOmegaMixedMeasureInterface
-      FreeOmegaObservableSemanticOmegaInterface bool
+      FreeOmegaObservableSemanticMeasure
+      FreeOmegaMixedMeasure
+      FreeOmegaObservableSemanticOmega bool
       request_true_reply_trace von_neumann_service).
 Proof.
   eapply probabilistic_eutt_preserves_finite_trace_sem.
@@ -967,26 +967,26 @@ Qed.
     offers [CoinRequest], not a reply. *)
 Lemma direct_reply_first_prefix_rejected :
   @finite_trace_query coin_serviceE Enum MF
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega
     bool
     (cons (@select_true_reply) nil)
     direct_fair_service (sem_ret false).
 Proof.
   change (@finite_trace_query coin_serviceE Enum MF
-    FreeOmegaObservableSemanticMeasureInterface
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface bool
+    FreeOmegaObservableSemanticMeasure
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool
     (cons (@select_true_reply) nil)
     (Vis CoinRequest (fun _ => direct_after_request)) (sem_ret false)).
   eapply (@finite_trace_query_vis_reject
     coin_serviceE Enum MF
-    FreeOmegaObservableSemanticMeasureInterface
+    FreeOmegaObservableSemanticMeasure
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaObservableSemanticMeasureBindLaws
-    FreeOmegaMixedMeasureInterface
-    FreeOmegaObservableSemanticOmegaInterface
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega
     FreeOmegaObservableSemanticOmegaLaws
     FreeOmegaObservableSemanticMeasureAEKleisliLaws
     FreeOmegaObservableSemanticOmegaCofinalityLaws

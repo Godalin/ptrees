@@ -29,12 +29,12 @@ Definition unified_mathcomp_oracle_approx (Anchor : Type)
     (qbit : binary_oracle) (fuel n : nat) :
     FreeOmegaAt MN Anchor bool :=
   @mixed_iter_approx MN (FreeOmega MN)
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R))
     nat bool fuel (mathcomp_oracle_transition R qbit) n.
 
 Definition unified_mathcomp_oracle_out (Anchor : Type)
@@ -50,20 +50,20 @@ Class MathCompOracleSupportLaws := {
   mathcomp_oracle_support : forall (Anchor : Type)
       (qbit : binary_oracle) (q : R),
     (0 <= q <= 1)%R -> mathcomp_oracle_represents qbit q ->
-    @free_omega_support_lift MN (MathCompNodeSemanticMeasureInterface R)
+    @free_omega_support_lift MN (MathCompNodeSemanticMeasure R)
       bool bool eq (unified_mathcomp_oracle_out Anchor qbit)
       (FOSample (mathcomp_bernoulli q) (fun b => FORet b))
 }.
 
 Lemma unified_mathcomp_oracle_step_frontier qbit n :
   @frontier real_mathcomp_coinE MN MF
-    (MathCompNodeSemanticMeasureInterface R)
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R))
+    (MathCompNodeSemanticMeasure R)
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R))
     (nat + bool) (observe (mathcomp_oracle_step R qbit n))
     (mixed_bind (mathcomp_oracle_transition R qbit n)
       (fun next => sem_ret (FHRet next))).
@@ -71,13 +71,13 @@ Proof.
   unfold mathcomp_oracle_step. cbn.
   rewrite -free_omega_mixed_bindE.
   apply (@UFProb real_mathcomp_coinE MN MF
-    (MathCompNodeSemanticMeasureInterface R)
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R))
+    (MathCompNodeSemanticMeasure R)
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R))
     (nat + bool) (nat + bool)
     (mathcomp_oracle_transition R qbit n) (fun next => Ret next)
     (fun next => FORet (FHRet next)) (fun _ => True)).
@@ -88,8 +88,8 @@ Qed.
 Lemma unified_mathcomp_oracle_approx_observes (Anchor : Type)
     qbit fuel n :
   @free_omega_observes MN
-    (MathCompNodeSemanticMeasureInterface R)
-    (MathCompNodeSemanticOmegaInterface R)
+    (MathCompNodeSemanticMeasure R)
+    (MathCompNodeSemanticOmega R)
     bool bool id
     (unified_mathcomp_oracle_approx Anchor qbit fuel n)
     (mathcomp_oracle_result_approx R qbit fuel n).
@@ -115,13 +115,13 @@ Qed.
 
 Lemma unified_mathcomp_oracle_mixed_iter (Anchor : Type) qbit :
   @mixed_iter MN (FreeOmega MN)
-    (FreeOmegaObservableSemanticMeasureInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R))
-    FreeOmegaMixedMeasureInterface
-    (FreeOmegaObservableSemanticOmegaInterface
-      (NI := MathCompNodeSemanticMeasureInterface R)
-      (NO := MathCompNodeSemanticOmegaInterface R))
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R))
     nat bool (mathcomp_oracle_transition R qbit) 0
     (unified_mathcomp_oracle_out Anchor qbit).
 Proof.
