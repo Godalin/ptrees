@@ -2,6 +2,10 @@
 
     [PTree] combines coinductive Ret/Tau/Vis interaction with an internal
     [Prob] node whose sampling measure is supplied by the parameter [M].
+    The syntax is deliberately generic in [M]; its probability interpretation
+    requires a subprobability carrier such as [SubEnum] or the MathComp
+    subprobability kernel.  A raw finite-weight carrier remains useful for
+    separate weighted interpretations but does not enforce that contract.
     Its canonical behavioral theory is developed through primitive kernels,
     complete stable hitting, and couplings rather than by exposing these
     syntax constructors in the weak equivalence. *)

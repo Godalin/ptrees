@@ -1,10 +1,11 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
+Require Import Program.Equality.
 From mathcomp Require Import ssreflect ssrbool seq ssralg ssrnum order rat.
-From PTree.Core Require Import PTreeDefinition.
+From PTree.Core Require Import PTreeDefinition PTreeProbability.
 From PTree.Prob Require Import DiscreteMC FreeOmegaMeasure
-  TwoLevelMeasure TwoLevelMeasureSubEnum.
+  TwoLevelMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
 From PTree.Eq Require Import OperationalProbabilisticPTSFreeOmega
   ProbabilisticEutt.
 From PTree.Examples Require Import EnumMeasureRegression.
@@ -87,6 +88,23 @@ Proof.
   native_compute.
   discriminate.
 Qed.
+
+Definition enum_overweight_program : ptree subenumE Enum bool :=
+  Prob enum_overweight_flip (fun b : bool => Ret b).
+
+Lemma enum_overweight_program_not_probabilistic :
+  ~ @probabilistic_ptree subenumE Enum Enum_SemanticMeasure
+      Enum_SemanticSubprobability bool enum_overweight_program.
+Proof.
+  intro Hwf. unfold probabilistic_ptree in Hwf. cbn in Hwf.
+  dependent destruction Hwf.
+  exact (enum_overweight_flip_not_subprob H).
+Qed.
+
+Lemma subenum_direct_coin_probabilistic :
+  @probabilistic_ptree subenumE SubEnum SubEnum_SemanticMeasure
+    SubEnum_SemanticSubprobability bool subenum_direct_coin.
+Proof. apply probabilistic_ptree_intrinsic. Qed.
 
 (** Bind remains inside the carrier without asking clients to re-establish
     a global mass inequality after every probabilistic composition. *)

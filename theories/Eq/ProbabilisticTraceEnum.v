@@ -16,8 +16,12 @@ Import Enum.
 Import GRing.Theory.
 Local Open Scope ring_scope.
 
-(** Concrete paper-facing projection of the generic finite-cylinder
-    semantics.  A probability certificate contains a valid query together
+(** Compatibility projection of the generic finite-cylinder semantics to
+    raw finite weights.  Despite the historical [probability] identifier,
+    the result is guaranteed to lie in [[0,1]] only when the input program's
+    node measures satisfy [enum_subprob].  New probability-facing clients
+    should use [ProbabilisticTraceSubEnum].  A certificate contains a query
+    together
     with an observationally representable FreeOmega measure coupled to that
     query.  This respects the semantic quotient: it does not inspect the
     particular representative selected by [finite_trace_sem]. *)

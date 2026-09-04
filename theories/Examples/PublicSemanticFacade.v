@@ -17,6 +17,7 @@ Fail Check operational_weak.
 Fail Check frontier_head_bind_front.
 
 Local Notation facade_ptree := ptree.
+Local Notation facade_probabilistic_ptree := probabilistic_ptree.
 Local Notation facade_stable_head := stable_head.
 Local Notation facade_stable_head_rel := stable_head_rel.
 Local Notation facade_stable_hitting := stable_hitting.

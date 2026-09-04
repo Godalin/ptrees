@@ -13,7 +13,7 @@ Unset Printing Implicit Defensive.
 
 Import Enum.
 
-(** Compile-time audit of the two maintained two-level backend profiles.
+(** Compile-time audit of the maintained two-level backend profiles.
 
     Structure and elementary AE facts belong to the node measure [MN].
     Order, omega continuity, diagonal continuity, and Fubini belong to the
@@ -22,6 +22,13 @@ Import Enum.
 
 Section EnumNodeProfile.
 
+Definition enum_profile_subprobability_predicate :
+    @SemanticSubprobability Enum Enum_SemanticMeasure := _.
+Definition enum_profile_subprobability_closure :
+    @SemanticSubprobabilityLaws Enum Enum_SemanticMeasure
+      Enum_SemanticSubprobability := _.
+(** Intentionally no [SemanticSubprobabilityCarrierLaws Enum]: raw Enum
+    contains arbitrary finite weights. *)
 Definition enum_profile_core :
     @SemanticMeasureCoreLaws Enum Enum_SemanticMeasure := _.
 Definition enum_profile_ae_lift :
@@ -93,6 +100,14 @@ End EnumFreeOmegaProfile.
 Section SubEnumNodeProfile.
 
 Definition subenum_profile_measure : SemanticMeasure SubEnum := _.
+Definition subenum_profile_subprobability :
+    @SemanticSubprobability SubEnum SubEnum_SemanticMeasure := _.
+Definition subenum_profile_subprobability_closure :
+    @SemanticSubprobabilityLaws SubEnum SubEnum_SemanticMeasure
+      SubEnum_SemanticSubprobability := _.
+Definition subenum_profile_intrinsically_bounded :
+    @SemanticSubprobabilityCarrierLaws SubEnum SubEnum_SemanticMeasure
+      SubEnum_SemanticSubprobability := _.
 Definition subenum_profile_core :
     @SemanticMeasureCoreLaws SubEnum SubEnum_SemanticMeasure := _.
 Definition subenum_profile_ae_lift :
@@ -163,6 +178,17 @@ Context (R : realType).
 Definition mathcomp_profile_measure :
     SemanticMeasure (MathCompKernelMeasure R) :=
   MathCompNodeSemanticMeasure R.
+Definition mathcomp_profile_subprobability :
+    @SemanticSubprobability (MathCompKernelMeasure R)
+      (MathCompNodeSemanticMeasure R) := _.
+Definition mathcomp_profile_subprobability_closure :
+    @SemanticSubprobabilityLaws (MathCompKernelMeasure R)
+      (MathCompNodeSemanticMeasure R)
+      (MathCompNodeSemanticSubprobability R) := _.
+Definition mathcomp_profile_intrinsically_bounded :
+    @SemanticSubprobabilityCarrierLaws (MathCompKernelMeasure R)
+      (MathCompNodeSemanticMeasure R)
+      (MathCompNodeSemanticSubprobability R) := _.
 Definition mathcomp_profile_ae_lift :
     @SemanticMeasureAELiftLaws (MathCompKernelMeasure R)
       (MathCompNodeSemanticMeasure R) := _.

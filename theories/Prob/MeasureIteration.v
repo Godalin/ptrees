@@ -17,9 +17,9 @@ Class MeasureOmegaInterface (M : Type -> Type)
     `{MI : MeasureInterface M} := {
   meas_zero : forall {A}, M A;
   meas_lub : forall {A}, (nat -> M A) -> M A -> Prop;
-  (** [meas_total mu] states that [mu] has total mass one.  Requiring this
-      separately from existence of a limit distinguishes almost-sure
-      termination from convergence to a proper subprobability measure. *)
+  (** [meas_total mu] states that [mu] satisfies the backend's totality
+      criterion.  On subprobability backends this is mass one, separating
+      almost-sure termination from convergence to a partial measure. *)
   meas_total : forall {A}, M A -> Prop
 }.
 
@@ -52,7 +52,7 @@ Section Iteration.
 Context {M : Type -> Type} `{MI : MeasureInterface M}
   `{MO : @MeasureOmegaInterface M MI}.
 
-(** The [n]-step submeasure of an absorbing probabilistic loop.  A left
+(** The [n]-step finite approximation of an absorbing probabilistic loop.  A left
     result continues with one less unit of fuel; a right result is absorbed.
     Runs which have not terminated within the fuel budget contribute zero
     mass. *)

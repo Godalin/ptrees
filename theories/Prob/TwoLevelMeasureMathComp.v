@@ -32,6 +32,33 @@ Context (R : realType).
   sem_lift := @mathcomp_kernel_lift R
 }.
 
+(** The HB carrier is intrinsically a subprobability kernel.  Unlike raw
+    Enum, no per-value side condition is needed at a [Prob] node. *)
+Definition mathcomp_node_subprob {A}
+    (mu : MathCompKernelMeasure R A) : Prop :=
+  is_true (mathcomp_kernel_root mu [set: mc_carrier A] <= (1 : R)%:E).
+
+#[global] Instance MathCompNodeSemanticSubprobability :
+    @SemanticSubprobability (MathCompKernelMeasure R)
+      MathCompNodeSemanticMeasure := {
+  sem_subprob := @mathcomp_node_subprob
+}.
+
+#[global] Instance MathCompNodeSemanticSubprobabilityLaws :
+    @SemanticSubprobabilityLaws (MathCompKernelMeasure R)
+      MathCompNodeSemanticMeasure MathCompNodeSemanticSubprobability.
+Proof.
+  constructor.
+  - intros. apply mathcomp_kernel_root_le1.
+  - intros. apply mathcomp_kernel_root_le1.
+  - intros. split; intros; apply mathcomp_kernel_root_le1.
+Qed.
+
+#[global] Instance MathCompNodeSemanticSubprobabilityCarrierLaws :
+    @SemanticSubprobabilityCarrierLaws (MathCompKernelMeasure R)
+      MathCompNodeSemanticMeasure MathCompNodeSemanticSubprobability.
+Proof. constructor. exact (@mathcomp_kernel_root_le1 R). Qed.
+
 Lemma mathcomp_node_sem_retE {A} (x : A) :
   @sem_ret (MathCompKernelMeasure R)
     MathCompNodeSemanticMeasure A x = @mathcomp_kernel_ret R A x.

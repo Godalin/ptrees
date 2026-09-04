@@ -24,6 +24,46 @@ Polymorphic Class SemanticMeasure@{carrier representation}
       (A -> B -> Prop) -> S A -> S B -> Prop
 }.
 
+(** Probability-specific validity is deliberately separate from the generic
+    measure-like algebra.  This permits raw weighted models (for example a
+    future unrestricted Bayesian [score]) without weakening the contract of
+    a native [Prob] node.  Concrete backends give [sem_subprob] their actual
+    mass-bounded meaning. *)
+Polymorphic Class SemanticSubprobability@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasure S} := {
+  sem_subprob : forall {A : Type@{carrier}}, S A -> Prop
+}.
+
+(** Closure facts for individually validated measures.  Pointwise bind
+    validity is intentionally sufficient; support/AE refinements can be
+    added later without making the basic probability boundary depend on a
+    particular representation of null branches. *)
+Polymorphic Class SemanticSubprobabilityLaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasure S}
+    `{SP : @SemanticSubprobability S SI} := {
+  sem_subprob_ret : forall {A : Type@{carrier}} (x : A),
+      sem_subprob (sem_ret x);
+  sem_subprob_bind : forall {A B : Type@{carrier}}
+      (mu : S A) (k : A -> S B),
+      sem_subprob mu ->
+      (forall x, sem_subprob (k x)) ->
+      sem_subprob (sem_bind mu k);
+  sem_subprob_proper : forall {A : Type@{carrier}} (mu nu : S A),
+      sem_eq mu nu -> (sem_subprob mu <-> sem_subprob nu)
+}.
+
+(** Intrinsically bounded carriers validate every inhabitant.  [SubEnum] and
+    MathComp's subprobability kernels implement this package; raw [Enum]
+    implements only the predicate and closure laws above. *)
+Polymorphic Class SemanticSubprobabilityCarrierLaws@{carrier representation}
+    (S : Type@{carrier} -> Type@{representation})
+    `{SI : SemanticMeasure S}
+    `{SP : @SemanticSubprobability S SI} := {
+  sem_subprob_all : forall {A : Type@{carrier}} (mu : S A), sem_subprob mu
+}.
+
 (** The two-level bridge.  [MN] is the measure stored by a [Prob] node;
     [MF] is the measure of stable heads and residual semantic states.  The
     mixed bind is exactly the operation used by the probabilistic frontier
@@ -78,7 +118,8 @@ Polymorphic Class SemanticMeasureCoreLaws@{carrier representation}
       sem_lift (fun x z => exists y, R x y /\ T y z) mu xi
 }.
 
-(** Abstract equality of total subprobability mass.  This formulation avoids
+(** Abstract equality of total semantic weight.  On a subprobability backend
+    this is equality of total subprobability mass.  The formulation avoids
     committing the generic interface to a numeric mass operation: a coupling
     for the total relation exists exactly when the two marginals carry the
     same amount of mass in the intended backends. *)

@@ -15,7 +15,7 @@ Set Universe Polymorphism.
     modules.  Requiring this facade loads the definitions needed by the
     curated surface below without turning their module imports and scopes
     into part of the facade contract. *)
-From PTree.Core Require Import PTreeDefinition.
+From PTree.Core Require Import PTreeDefinition PTreeProbability.
 From PTree.Eq Require Import
   UnifiedFrontier
   PrimitiveStableHitting
@@ -25,6 +25,7 @@ From PTree.Eq Require Import
 (** Curated aliases are declared here because [Require Import] deliberately
     does not re-export the short names introduced by implementation modules. *)
 Notation ptree := PTreeDefinition.ptree.
+Notation probabilistic_ptree := PTreeProbability.probabilistic_ptree.
 Notation stable_head := UnifiedFrontier.frontier_head.
 Notation stable_head_rel := UnifiedFrontier.stable_head_rel.
 Notation stable_hitting := PrimitiveStableHitting.stable_hitting.

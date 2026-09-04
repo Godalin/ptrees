@@ -15,6 +15,10 @@ a subprobability kernel.  Raw `Enum` remains a compatibility representation
 for arbitrary finite nonnegative weights and is therefore not, by itself, a
 valid native-probability backend.  This distinction keeps Bayesian `score`
 weights separate from probabilistic choice.
+The generic boundary is recorded by `SemanticSubprobability`: raw Enum
+supports its per-measure predicate and closure laws, whereas SubEnum and
+MathComp additionally provide `SemanticSubprobabilityCarrierLaws`, certifying
+that every inhabitant is admissible at a native probability node.
 
 The public conceptual architecture has four layers and two semantic clients:
 

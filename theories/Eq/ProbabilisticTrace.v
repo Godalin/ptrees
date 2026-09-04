@@ -15,8 +15,9 @@ Unset Printing Implicit Defensive.
 (** A lightweight quantitative observation layer for eventful PTree
     behavior.  A query classifies the next stable Ret/Vis head and pushes
     that value through the semantic measure.  In particular, choosing
-    [O := bool] gives the subprobability of a return or visible-event class;
-    no numeric representation is required by the generic theory. *)
+    [O := bool] gives the semantic weight of a return or visible-event class;
+    it is a subprobability on bounded backends such as SubEnum or MathComp.
+    No numeric representation is required by the generic theory. *)
 Section StableHeadObservation.
 Context {E : Type -> Type} {MN : Type -> Type}.
 
@@ -52,7 +53,8 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
 
-(** A query result is itself a semantic subprobability measure.  This is a
+(** A query result is itself a semantic measure (a subprobability measure on
+    a bounded backend).  This is a
     weakest-preexpectation-style interface with indicator/result carrier
     [O], retaining missing mass and postponing numeric integration to a
     concrete backend such as Enum or MathComp. *)
@@ -144,8 +146,8 @@ Definition finite_interaction_pattern : Type := list event_selector.
     accept several events and supplies the environment response on success. *)
 Definition finite_event_trace : Type := finite_interaction_pattern.
 
-(** [finite_trace_query tr t q] says that [q] is the Boolean
-    subprobability measure of executions of [t] whose next visible
+(** [finite_trace_query tr t q] says that [q] is the Boolean semantic measure
+    of executions of [t] whose next visible
     interactions have prefix [tr].  The empty prefix succeeds immediately;
     a non-empty prefix rejects a stable return or a non-matching event and
     recursively queries the selected visible continuation. *)

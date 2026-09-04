@@ -126,6 +126,50 @@ Definition subenum_lift {A B} (R : A -> B -> Prop)
   sem_lift := @subenum_lift
 }.
 
+#[global] Instance Enum_SemanticSubprobability :
+    @SemanticSubprobability Enum Enum_SemanticMeasure := {
+  sem_subprob := @enum_subprob
+}.
+
+#[global] Instance Enum_SemanticSubprobabilityLaws :
+    @SemanticSubprobabilityLaws Enum Enum_SemanticMeasure
+      Enum_SemanticSubprobability.
+Proof.
+  constructor.
+  - exact @enum_subprob_ret.
+  - exact @enum_subprob_bind.
+  - intros A mu nu Heq. cbn in Heq |- *.
+    have Hsame : @sem_same_mass Enum Enum_SemanticMeasure A A mu nu.
+    { eapply sem_lift_mono; [|exact Heq]. intros x y _. exact I. }
+    have Hmass := enum_sem_same_mass_expect_one Hsame.
+    rewrite /enum_subprob /enum_mass Hmass. reflexivity.
+Qed.
+
+#[global] Instance SubEnum_SemanticSubprobability :
+    @SemanticSubprobability SubEnum SubEnum_SemanticMeasure := {
+  sem_subprob := fun A mu => enum_subprob (subenum_raw mu)
+}.
+
+#[global] Instance SubEnum_SemanticSubprobabilityLaws :
+    @SemanticSubprobabilityLaws SubEnum SubEnum_SemanticMeasure
+      SubEnum_SemanticSubprobability.
+Proof.
+  constructor; cbn.
+  - exact @enum_subprob_ret.
+  - intros A B mu k Hmu Hk. apply enum_subprob_bind; assumption.
+  - intros A mu nu Heq.
+    have Hsame : @sem_same_mass Enum Enum_SemanticMeasure A A
+        (subenum_raw mu) (subenum_raw nu).
+    { eapply sem_lift_mono; [|exact Heq]. intros x y _. exact I. }
+    have Hmass := enum_sem_same_mass_expect_one Hsame.
+    rewrite /enum_subprob /enum_mass Hmass. reflexivity.
+Qed.
+
+#[global] Instance SubEnum_SemanticSubprobabilityCarrierLaws :
+    @SemanticSubprobabilityCarrierLaws SubEnum SubEnum_SemanticMeasure
+      SubEnum_SemanticSubprobability.
+Proof. constructor. exact @subenum_bound. Qed.
+
 #[global] Instance SubEnum_SemanticMeasureCoreLaws :
     @SemanticMeasureCoreLaws SubEnum SubEnum_SemanticMeasure.
 Proof.

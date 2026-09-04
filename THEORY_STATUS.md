@@ -36,6 +36,10 @@ weights.  Native probability is enforced by the concrete node carrier.
 one, while `MathCompKernelMeasure` is intrinsically subprobabilistic.  Raw
 `Enum` and its unrestricted legacy `disc_score` remain weighted compatibility
 infrastructure; they must not be cited as enforcing the `Prob` contract.
+`SemanticSubprobability` exposes the backend-specific validity predicate,
+`SemanticSubprobabilityLaws` gives return/bind/equality closure, and
+`SemanticSubprobabilityCarrierLaws` states that a carrier enforces validity
+for every inhabitant.  Raw Enum deliberately lacks only the last package.
 
 ## Backend capability profiles
 
@@ -379,7 +383,8 @@ is coupled to its selected continuation.  Under these capabilities,
 `Prob (sem_ret x) k ≈ₚ k x`.  Enum supplies the exact Dirac AE law and the
 FreeOmega observable quotient contains the corresponding
 `FOQLSampleRetL` equation; `canonical_prob_ret_regression` checks the complete
-Enum-to-FreeOmega instance chain.
+raw Enum-to-FreeOmega compatibility chain.  The bounded SubEnum chain is
+checked independently in `SubEnumRegression.v`.
 
 Nested sampling is handled by a second optional capability,
 `MixedMeasureNodeBindLaws`, which couples a node-level Kleisli bind with two
@@ -392,7 +397,8 @@ observable quotient's `FOQLSampleBind` constructor is proved support-safe
 from this exact law, yielding
 `FreeOmegaObservableMixedMeasureNodeBindLaws`.  Consequently
 `canonical_prob_flatten_regression` checks nested-Prob flattening at the
-maintained Enum-to-FreeOmega canonical endpoint.
+raw Enum-to-FreeOmega compatibility endpoint; the same capability is
+machine-audited for the canonical bounded SubEnum endpoint.
 
 Independent sampling interchange is expressed by the optional relational
 Fubini capability `MixedMeasureCommutativeLaws`.  Under that capability,
@@ -414,10 +420,13 @@ measure-like effects remain admissible.
 ## Probability and missing mass
 
 `Prob/TwoLevelMeasure.v` keeps node measures `MN` separate from behavioral
-measures `MF`.  Coupling is the only probabilistic relation former.
-`sem_same_mass mu nu` is the abstract total-subprobability-mass relation
-defined by coupling under the total relation, and `sem_lift_same_mass` shows
-that every semantic coupling preserves it.
+measures `MF`.  Coupling is the relational measure former.
+`sem_same_mass mu nu` is abstract equality of total semantic weight, defined
+by coupling under the total relation; on SubEnum and MathComp this is equality
+of subprobability mass.  `sem_lift_same_mass` shows that every semantic
+coupling preserves it.  Coupling equality alone does not provide an upper
+bound, which is why the probability constraint is enforced by the node
+carrier rather than inferred from the generic relation.
 
 `Prob/TwoLevelMeasureEnum.v` proves
 `enum_sem_same_mass_zero_ret_bool`: the empty subdistribution cannot be

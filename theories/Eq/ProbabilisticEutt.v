@@ -16,9 +16,12 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** The canonical behavioral generator compares the complete
-    subprobabilistic stable-hitting limits of two primitive kernels.  It has
-    no syntax-specific, AST, bounded-execution, or one-sided silent case. *)
+(** The canonical behavioral generator compares the complete stable-hitting
+    limits of two primitive kernels.  They are subprobabilistic behaviors
+    when the node backend enforces the native [Prob] contract; the relational
+    construction itself remains reusable for weighted measure-like models.
+    It has no syntax-specific, AST, bounded-execution, or one-sided silent
+    case. *)
 Section StableHittingBisimulation.
 Context {MF : Type -> Type}
   `{FI : SemanticMeasure MF}

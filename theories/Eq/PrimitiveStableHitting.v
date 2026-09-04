@@ -26,9 +26,10 @@ Context {MF : Type -> Type}
 Context {S A : Type}.
 Variable kernel : S -> MF (stable_target S A).
 
-(** Resolve at most [fuel] residual primitive states.  Stable mass is
-    retained immediately; unresolved residual mass is discarded into the
-    subprobability bottom. *)
+(** Resolve at most [fuel] residual primitive states.  Stable semantic weight
+    is retained immediately; unresolved residual weight is sent to the
+    backend's zero.  With a subprobability carrier this is precisely the
+    missing-mass approximation. *)
 Fixpoint stable_target_approx (fuel : nat) (target : stable_target S A) :
     MF A :=
   match target with

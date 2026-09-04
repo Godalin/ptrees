@@ -62,17 +62,17 @@ Definition operational_hitting_approx {R} (fuel : nat)
     (ot : ptree' E MN R) : MF (frontier_head E MN R) :=
   stable_hitting_approx ptree_primitive_kernel fuel ot.
 
-(** A generic weak behavior is the (possibly subprobabilistic) stable-hitting
-    limit of primitive execution.  Unresolved mass is absent from each finite
-    approximant, hence pure divergence has the zero subdistribution as its
-    hitting limit. *)
+(** A generic weak behavior is the stable-hitting limit of primitive
+    execution.  Unresolved weight is absent from each finite approximant.
+    On a subprobability backend, pure divergence therefore has the zero
+    subdistribution as its hitting limit. *)
 Definition operational_weak {R} (ot : ptree' E MN R)
     (out : MF (frontier_head E MN R)) : Prop :=
   stable_hitting_weak ptree_primitive_kernel ot out.
 
 (** AST is a separate property of a weak behavior: its stable-hitting limit
-    has total mass.  Keeping these notions separate is necessary because an
-    ordinary finite frontier may legitimately be a subprobability measure. *)
+    satisfies the backend's totality predicate.  On a subprobability backend
+    this means stable mass one. *)
 Definition operational_ast_weak {R} (ot : ptree' E MN R)
     (out : MF (frontier_head E MN R)) : Prop :=
   operational_weak ot out /\ sem_total out.
