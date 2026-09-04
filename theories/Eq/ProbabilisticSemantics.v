@@ -26,6 +26,12 @@ From PTree.Eq Require Import
     does not re-export the short names introduced by implementation modules. *)
 Notation ptree := PTreeDefinition.ptree.
 Notation probabilistic_ptree := PTreeProbability.probabilistic_ptree.
+Notation probabilistic_ptree_ret := PTreeProbability.probabilistic_ptree_ret.
+Notation probabilistic_ptree_tau := PTreeProbability.probabilistic_ptree_tau.
+Notation probabilistic_ptree_vis := PTreeProbability.probabilistic_ptree_vis.
+Notation probabilistic_ptree_prob := PTreeProbability.probabilistic_ptree_prob.
+Notation probabilistic_ptree_bind := PTreeProbability.probabilistic_ptree_bind.
+Notation probabilistic_ptree_iter := PTreeProbability.probabilistic_ptree_iter.
 Notation stable_head := UnifiedFrontier.frontier_head.
 Notation stable_head_rel := UnifiedFrontier.stable_head_rel.
 Notation stable_hitting := PrimitiveStableHitting.stable_hitting.

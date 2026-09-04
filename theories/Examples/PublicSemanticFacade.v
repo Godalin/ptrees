@@ -18,6 +18,12 @@ Fail Check frontier_head_bind_front.
 
 Local Notation facade_ptree := ptree.
 Local Notation facade_probabilistic_ptree := probabilistic_ptree.
+Local Notation facade_probabilistic_ptree_ret := probabilistic_ptree_ret.
+Local Notation facade_probabilistic_ptree_tau := probabilistic_ptree_tau.
+Local Notation facade_probabilistic_ptree_vis := probabilistic_ptree_vis.
+Local Notation facade_probabilistic_ptree_prob := probabilistic_ptree_prob.
+Local Notation facade_probabilistic_ptree_bind := probabilistic_ptree_bind.
+Local Notation facade_probabilistic_ptree_iter := probabilistic_ptree_iter.
 Local Notation facade_stable_head := stable_head.
 Local Notation facade_stable_head_rel := stable_head_rel.
 Local Notation facade_stable_hitting := stable_hitting.
