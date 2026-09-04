@@ -55,6 +55,18 @@ Proof.
   - exact (IH Htail).
 Qed.
 
+Lemma enum_expect_nonnegative {A} (mu : Enum A) (f : A -> rat) :
+  (forall p x, List.In (p, x) mu -> 0 <= f x) ->
+  0 <= enum_expect f mu.
+Proof.
+  elim: mu=> [|[p x] tl IH] Hf //=.
+  apply: ssrnum.Num.Theory.addr_ge0.
+  - apply: ssrnum.Num.Theory.mulr_ge0.
+    + exact (Qval_nnQ_ge0 p).
+    + exact (Hf p x (or_introl (eq_refl (p, x)))).
+  - apply: IH=> q y Hy. exact (Hf q y (or_intror Hy)).
+Qed.
+
 Lemma enum_subprob_bind {A B} (mu : Enum A) (k : A -> Enum B) :
   enum_subprob mu ->
   (forall x, enum_subprob (k x)) ->

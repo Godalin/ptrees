@@ -29,30 +29,41 @@ The canonical measure capabilities follow the same operations/laws split:
 while their property packages retain the `Laws` suffix.  The unrelated
 legacy `MeasureInterface` name remains unchanged.
 
+`SemanticMeasure` is deliberately measure-like rather than intrinsically
+probabilistic: its relational algebra is also useful for unnormalised finite
+weights.  Native probability is enforced by the concrete node carrier.
+`SubEnum A` packages a raw finite rational `Enum A` with total weight at most
+one, while `MathCompKernelMeasure` is intrinsically subprobabilistic.  Raw
+`Enum` and its unrestricted legacy `disc_score` remain weighted compatibility
+infrastructure; they must not be cited as enforcing the `Prob` contract.
+
 ## Backend capability profiles
 
-`Examples/BackendCapabilities.v` is the compile-time audit of the two
-maintained two-level profiles:
+`Examples/BackendCapabilities.v` is the compile-time audit of the bounded
+finite profile, the raw weighted compatibility profile, and the MathComp
+profile:
 
 ```text
-Enum node              -> FreeOmega Enum behavior
+SubEnum node           -> FreeOmega SubEnum behavior
+Enum node (weighted)   -> FreeOmega Enum behavior
 MathComp kernel node   -> FreeOmega MathCompKernelMeasure behavior
 ```
 
 Capabilities are assigned to the layer where they mathematically belong;
 the goal is not to make the two node layers superficially identical.
 
-| Capability | Enum node | MathComp node | Both FreeOmega behaviors |
-| --- | --- | --- | --- |
-| `SemanticMeasure`, core, AE lift | direct | direct¹ | derived/direct |
-| AE Kleisli, Dirac AE, countable AE | direct | direct | derived |
-| coupling AE | direct | direct | derived |
-| bind-AE exactness | direct | direct | used to derive mixed node-bind |
-| `SemanticMeasureBindLaws` | direct | not required² | direct FreeOmega proof |
-| omega order/laws/cofinality | node-specific subset | node-specific subset | derived |
-| omega AE, diagonal, Fubini | — | — | derived |
-| mixed laws/unit/node-bind/omega | — | — | derived |
-| mixed commutativity | optional | optional | not a required profile field |
+| Capability | SubEnum node | raw Enum node | MathComp node | FreeOmega behaviors |
+| --- | --- | --- | --- | --- |
+| total weight `<= 1` | by carrier | not enforced | by carrier | inherited denotationally |
+| `SemanticMeasure`, core, AE lift | direct | direct | direct¹ | derived/direct |
+| AE Kleisli, Dirac AE, countable AE | direct | direct | direct | derived |
+| coupling AE | direct | direct | direct | derived |
+| bind-AE exactness | direct | direct | direct | used to derive mixed node-bind |
+| `SemanticMeasureBindLaws` | direct | direct | not required² | direct FreeOmega proof |
+| omega order/laws/cofinality | node-specific subset | node-specific subset | node-specific subset | derived |
+| omega AE, diagonal, Fubini | — | — | — | derived |
+| mixed laws/unit/node-bind/omega | — | — | — | derived |
+| mixed commutativity | optional | optional | optional | not required |
 
 ¹ MathComp's core relational package keeps `MathCompCouplingGluing` explicit,
 because coupling composition is not available for arbitrary full-powerset

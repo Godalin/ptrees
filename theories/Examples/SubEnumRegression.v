@@ -3,7 +3,10 @@ Set Warnings "-ambiguous-paths".
 
 From mathcomp Require Import ssreflect ssrbool seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import DiscreteMC TwoLevelMeasureSubEnum.
+From PTree.Prob Require Import DiscreteMC FreeOmegaMeasure
+  TwoLevelMeasure TwoLevelMeasureSubEnum.
+From PTree.Eq Require Import OperationalProbabilisticPTSFreeOmega
+  ProbabilisticEutt.
 From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
@@ -29,8 +32,44 @@ Qed.
 Definition subenum_fair : SubEnum bool :=
   @enum_as_subprob bool reg_fair reg_fair_subprob.
 
+Lemma reg_fair_split_subprob : enum_subprob reg_fair_split.
+Proof.
+  rewrite /enum_subprob /enum_mass /reg_fair_split /= !mulr1 addr0.
+  native_compute. reflexivity.
+Qed.
+
+Definition subenum_fair_split : SubEnum bool :=
+  @enum_as_subprob bool reg_fair_split reg_fair_split_subprob.
+
 Definition subenum_direct_coin : ptree subenumE SubEnum bool :=
   Prob subenum_fair (fun b : bool => Ret b).
+
+Definition subenum_split_coin : ptree subenumE SubEnum bool :=
+  Prob subenum_fair_split (fun b : bool => Ret b).
+
+Local Notation SubMF := (FreeOmega SubEnum).
+Local Notation subpeutt :=
+  (@probabilistic_eutt subenumE SubEnum SubMF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := SubEnum_SemanticMeasure)
+      (NO := SubEnum_SemanticOmega))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega).
+
+Lemma subenum_fair_split_lift :
+  @sem_lift SubEnum SubEnum_SemanticMeasure bool bool eq
+    subenum_fair subenum_fair_split.
+Proof. exact reg_split_mass_lift_eq. Qed.
+
+(** The canonical bounded backend supports the same extensional rewriting:
+    splitting probability mass changes representation, not behavior. *)
+Theorem subenum_split_coin_equivalent :
+  subpeutt eq subenum_direct_coin subenum_split_coin.
+Proof.
+  apply probabilistic_eutt_prob_measure.
+  exact subenum_fair_split_lift.
+Qed.
 
 (** The same raw representation that served as the legacy unnormalised
     [disc_flip] has total weight two.  It is a valid [Enum] weighting but

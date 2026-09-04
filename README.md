@@ -8,6 +8,14 @@ sequences coexist.  Stable hitting extracts its extensional probabilistic
 behavior: it absorbs internal `Tau` and `Prob` evolution until reaching a
 stable `Ret` or `Vis` head, while preserving missing termination mass.
 
+Native `Prob` is instantiated with a subprobability carrier.  The canonical
+finite executable carrier is `SubEnum`, a finite nonnegative enumeration
+whose total weight is proved at most one; the MathComp carrier is intrinsically
+a subprobability kernel.  Raw `Enum` remains a compatibility representation
+for arbitrary finite nonnegative weights and is therefore not, by itself, a
+valid native-probability backend.  This distinction keeps Bayesian `score`
+weights separate from probabilistic choice.
+
 The public conceptual architecture has four layers and two semantic clients:
 
 ```text
@@ -59,11 +67,17 @@ The choice-based `finite_trace_sem` (public wrapper
 `probabilistic_eutt_preserves_finite_trace_sem` is its extensional soundness
 theorem.  Generic witness independence is stated as diagonal coupling;
 backends may reflect that coupling to their own semantic equality.
-`Eq/ProbabilisticTraceEnum.v` is the paper-facing concrete projection.  It
-defines `Prₜ[t | tr] = p` using an Enum expectation of a FreeOmega
+`Eq/ProbabilisticTraceSubEnum.v` is the bounded paper-facing concrete
+projection.  It defines `Prₛ[t | tr] = p` using an Enum expectation of a
+`FreeOmega SubEnum`
 representative coupled to a valid query, without pretending that the
 choice-selected `finite_trace_sem` representative is executable.  The
-interactive Von Neumann example proves the compact numeric endpoint
+theorem `subenum_finite_interaction_probability_range` proves every such
+number lies in `[0,1]`.  The existing raw-Enum projection is retained for
+compatibility with the current interactive case studies while they are
+migrated to the bounded carrier; its numeric result is a finite weight unless
+the program's node measures are separately shown subprobabilistic.  The
+interactive Von Neumann example currently proves the compact raw-Enum endpoint
 `Prₜ[von_neumann_service | request_true_reply_trace] = 1/2`.
 This is prefix-satisfaction/cylinder semantics, not a pushforward trace
 distribution.  The API does not claim an infinite-trace sigma-algebra or a general
@@ -96,12 +110,15 @@ and analytic certificates only.  Their maintained behavioral endpoints are
 `Operational*` files.  The superseded `PWeak*` modules and
 `apweak`/`auweak`/`auequiv` endpoints have been removed.
 
-The current `Enum` `meas_eq` is extensional: two enumerations are equal when
+The underlying raw `Enum` `meas_eq` is extensional: two enumerations are equal when
 every outcome has the same accumulated mass.  Raw list equality is exposed
 separately as `enum_repr_eq`.  In particular, reordering entries, duplicating
 an outcome, or splitting its mass does not change the measure.  The regression
 file `Examples/EnumMeasureRegression.v` checks these cases together with
-Dirac elimination and nested-probability flattening.
+Dirac elimination and nested-probability flattening.  `SubEnum` reuses this
+extensional theory while carrying the missing total-weight bound;
+`Examples/SubEnumRegression.v` checks bind closure and rejects the legacy
+weight-two flip.
 
 The MathComp Analysis backend now supplies the same foundational AE profile
 as Enum: AE Kleisli extension, exact Dirac AE, countable AE, coupling AE, and
@@ -127,8 +144,9 @@ The maintained artifact establishes:
 - one semantics for bounded and genuinely unbounded AST computation;
 - eventful iteration, interpretation/translation laws, and quantitative
   next-event observations;
-- Enum and MathComp Analysis instances, with executable rational examples
-  and real-measure examples respectively.
+- SubEnum and MathComp Analysis subprobability instances, plus a legacy raw
+  Enum weighted instance; executable rational examples are being migrated
+  to the bounded carrier without changing the generic behavioral theory.
 
 Two stronger statements are intentionally not claimed.  The remaining
 arbitrary-effectful-handler premise is now isolated as
@@ -146,7 +164,6 @@ specific separation axioms merely to state that correspondence.
 
 - Author(s):
   - Linyu Yang
-  - Yuchi Su
 
 ## Building Instructions
 
