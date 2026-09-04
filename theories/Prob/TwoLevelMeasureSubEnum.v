@@ -1,7 +1,5 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
-Set Universe Polymorphism.
-
 Require Import List.
 
 From mathcomp Require Import ssreflect ssrbool seq ssralg ssrnum order rat.

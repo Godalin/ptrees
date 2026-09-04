@@ -4,7 +4,8 @@ Set Universe Polymorphism.
 
 From mathcomp Require Import reals.
 From PTree.Prob Require Import DiscreteMC MathCompMeasure TwoLevelMeasure
-  FreeOmegaMeasure TwoLevelMeasureEnum TwoLevelMeasureMathComp.
+  FreeOmegaMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum
+  TwoLevelMeasureMathComp.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -85,6 +86,76 @@ Definition enum_profile_mixed_omega :
     @MixedMeasureOmegaLaws Enum MF NI FI FreeOmegaMixedMeasure FO := _.
 
 End EnumFreeOmegaProfile.
+
+(** The canonical finite probability backend.  Unlike raw [Enum], every
+    inhabitant of [SubEnum] carries a proof that its total weight is at most
+    one.  The FreeOmega behavior profile is otherwise the same. *)
+Section SubEnumNodeProfile.
+
+Definition subenum_profile_measure : SemanticMeasure SubEnum := _.
+Definition subenum_profile_core :
+    @SemanticMeasureCoreLaws SubEnum SubEnum_SemanticMeasure := _.
+Definition subenum_profile_ae_lift :
+    @SemanticMeasureAELiftLaws SubEnum SubEnum_SemanticMeasure := _.
+Definition subenum_profile_ae_kleisli :
+    @SemanticMeasureAEKleisliLaws SubEnum SubEnum_SemanticMeasure := _.
+Definition subenum_profile_dirac_ae :
+    @SemanticMeasureDiracAELaws SubEnum SubEnum_SemanticMeasure := _.
+Definition subenum_profile_countable_ae :
+    @SemanticMeasureCountableAELaws SubEnum SubEnum_SemanticMeasure := _.
+Definition subenum_profile_coupling_ae :
+    @SemanticMeasureCouplingAELaws SubEnum SubEnum_SemanticMeasure := _.
+Definition subenum_profile_bind :
+    @SemanticMeasureBindLaws SubEnum SubEnum_SemanticMeasure := _.
+Definition subenum_profile_bind_ae_exact :
+    @SemanticMeasureBindAEExactLaws SubEnum SubEnum_SemanticMeasure := _.
+
+End SubEnumNodeProfile.
+
+Section SubEnumFreeOmegaProfile.
+
+Let NI := SubEnum_SemanticMeasure.
+Let NO := SubEnum_SemanticOmega.
+Let MF := FreeOmega SubEnum.
+Let FI := FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO).
+Let FO := FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO).
+
+Definition subenum_profile_behavior_core :
+    @SemanticMeasureCoreLaws MF FI := _.
+Definition subenum_profile_behavior_bind :
+    @SemanticMeasureBindLaws MF FI := _.
+Definition subenum_profile_behavior_ae_kleisli :
+    @SemanticMeasureAEKleisliLaws MF FI := _.
+Definition subenum_profile_behavior_countable_ae :
+    @SemanticMeasureCountableAELaws MF FI := _.
+Definition subenum_profile_behavior_coupling_ae :
+    @SemanticMeasureCouplingAELaws MF FI := _.
+Definition subenum_profile_behavior_omega : @SemanticOmega MF FI := FO.
+Definition subenum_profile_behavior_order :
+    @SemanticMeasureOrderLaws MF FI FO := _.
+Definition subenum_profile_behavior_omega_laws :
+    @SemanticOmegaLaws MF FI FO := _.
+Definition subenum_profile_behavior_total_proper :
+    @SemanticTotalProperLaws MF FI FO := _.
+Definition subenum_profile_behavior_cofinality :
+    @SemanticOmegaCofinalityLaws MF FI FO := _.
+Definition subenum_profile_behavior_omega_ae :
+    @SemanticOmegaAELaws MF FI FO := _.
+Definition subenum_profile_behavior_diagonal :
+    @SemanticMeasureDiagonalLaws MF FI FO := _.
+Definition subenum_profile_behavior_fubini :
+    @SemanticOmegaFubiniLaws MF FI FO := _.
+Definition subenum_profile_mixed : @MixedMeasure SubEnum MF := _.
+Definition subenum_profile_mixed_laws :
+    @MixedMeasureLaws SubEnum MF NI FI FreeOmegaMixedMeasure := _.
+Definition subenum_profile_mixed_unit :
+    @MixedMeasureUnitLaws SubEnum MF NI FI FreeOmegaMixedMeasure := _.
+Definition subenum_profile_mixed_node_bind :
+    @MixedMeasureNodeBindLaws SubEnum MF NI FI FreeOmegaMixedMeasure := _.
+Definition subenum_profile_mixed_omega :
+    @MixedMeasureOmegaLaws SubEnum MF NI FI FreeOmegaMixedMeasure FO := _.
+
+End SubEnumFreeOmegaProfile.
 
 Section MathCompFoundationalProfile.
 Context (R : realType).
