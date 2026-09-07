@@ -6,7 +6,7 @@ Require Import Program.Equality.
 
 From mathcomp Require Import ssreflect ssrbool seq ssralg ssrnum order rat.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum
-  MeasureIterationEnum TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
+  MeasureIterationEnum TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure EnumSupport.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -104,3 +104,11 @@ Proof.
 Qed.
 
 Check FreeOmegaObservableSemanticOmegaAELaws.
+
+(** The AE-continuity theorem deliberately excludes this disappearing atom. *)
+Example transient_observation_not_increasing :
+  ~ enum_chain_increasing transient_observation.
+Proof.
+  intro H. specialize (H (fun _ => true) O (S O) (Peano.le_0_n _)).
+  vm_compute in H. discriminate.
+Qed.

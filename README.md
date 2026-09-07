@@ -121,10 +121,29 @@ samplers using bind and eventless iteration congruence. The parametric
 `probabilistic_eutt_factory_vn_fair` proves the VN sampler equivalent to a
 direct fair coin. `probabilistic_eutt_factory_fair_direct` proves the fair
 factory correct, and `probabilistic_eutt_factory_vn_direct` combines these
-results explicitly by transitivity. The final theorem retains
-`OperationalFactoryRationalSupportLaws q`, but no longer requires
-`OperationalFactoryStepSupportLaws`. Source weights are nonnegative rationals
-summing to one with positive product; the target is any rational in `[0,1]`.
+results explicitly by transitivity. Neither example-specific support class is
+required on this route: the VN support is proved directly, and the binary
+limit support follows from increasing finite approximations. Source weights
+are nonnegative rationals summing to one with positive product; the target is
+any rational in `[0,1]`, including the endpoints. Independently verified VN
+and standard-binary components live in `OperationalBernoulliFactory.v`;
+`BernoulliFactoryComposition.v` contains their algebraic composition.
+
+`Examples/BernoulliFactoryProbability.v` separately certifies the executable
+raw `Enum` programs as `probabilistic_ptree`: normalized source weights make
+the VN sampler well formed, and `probabilistic_factory_with_sampler` lifts
+any sampler's probability contract through the entire Factory loop. This
+contract needs neither source nondegeneracy nor termination. Raw Enum is the
+executable representation; the certificates establish membership in its
+subprobabilistic fragment.
+
+`Prob/EnumSupport.v` proves AE continuity for increasing, convergent Enum
+chains over outcomes with decidable equality, and proves that absorbing
+iteration approximations are increasing.
+`Prob/FreeOmegaSupport.v` transports a concrete observation coupling back to
+high-universe support when both observations preserve and reflect AE.
+Observation equality or injectivity alone is insufficient: the disappearing
+atom regression in `FreeOmegaMeasureEnumAudit.v` remains rejected.
 
 The underlying raw `Enum` `meas_eq` is extensional: two enumerations are equal when
 every outcome has the same accumulated mass.  Raw list equality is exposed

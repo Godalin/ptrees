@@ -529,10 +529,32 @@ its congruence theorem uses `free_probabilistic_eutt_bind` and
 The VN-to-fair theorem proves the support coupling for arbitrary normalized,
 nondegenerate rational source weights. The fair factory is related to the
 standard binary loop, then to direct sampling. The final VN factory theorem
-uses `probabilistic_eutt_trans` through the fair factory and only retains the
-existing target `OperationalFactoryRationalSupportLaws q`; the old single-step
-support premise is unnecessary on this route. A Tau-sampler regression checks
-that the congruence is behavioral rather than syntactic.
+uses `probabilistic_eutt_trans` through the fair factory without either
+example-specific support premise. `OperationalFactoryRationalSupportLaws`
+has been replaced by a proved `operational_factory_standard_q_support`.
+The legacy monolithic route still takes `OperationalFactoryStepSupportLaws`;
+the compositional endpoint does not. A Tau-sampler regression checks that
+the congruence is behavioral rather than syntactic. Operational component
+proofs now live in `OperationalBernoulliFactory.v`, leaving composition and
+probability-algebra rewriting in `BernoulliFactoryComposition.v`.
+
+The support proof uses `enum_converges_ae_iff` in `Prob/EnumSupport.v`:
+for increasing Enum chains over decidable-equality outcomes, AE at the limit
+is equivalent to AE at every finite approximation. The proof extracts
+positive singleton support constructively, without classical predicate choice. `enum_iter_approx_increasing` establishes the premise
+for any absorbing Enum iteration, without a normalization assumption.
+`free_omega_support_lift_observation_ae` in `Prob/FreeOmegaSupport.v` then
+recovers high-universe support from an observation coupling and AE
+preservation/reflection. Equal observations and injectivity alone cannot do
+this: the transient-atom counterexample is nonmonotone and remains invalid.
+No generic observation-completeness axiom has been introduced.
+
+`Examples/BernoulliFactoryProbability.v` certifies raw Enum source samplers,
+Factory contexts, composed programs, and direct coins as
+`probabilistic_ptree`. The source certificate needs normalization only;
+the context certificate works for any event signature and any well-formed
+Boolean sampler. Nondegeneracy and termination belong to behavioral
+correctness, not to the syntax-level probability contract.
 
 `Examples/InteractiveVonNeumannService.v` additionally demonstrates that
 stable hitting is not a termination-only semantics.  Its two-state
