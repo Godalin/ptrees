@@ -114,6 +114,18 @@ and analytic certificates only.  Their maintained behavioral endpoints are
 `Operational*` files.  The superseded `PWeak*` modules and
 `apweak`/`auweak`/`auequiv` endpoints have been removed.
 
+`Examples/BernoulliFactoryComposition.v` exposes the compositional route.
+`factory_with_sampler sampler q` accepts a Boolean sampler;
+`probabilistic_eutt_factory_sampler_congr` preserves equivalence of closed
+samplers using bind and eventless iteration congruence. The parametric
+`probabilistic_eutt_factory_vn_fair` proves the VN sampler equivalent to a
+direct fair coin. `probabilistic_eutt_factory_fair_direct` proves the fair
+factory correct, and `probabilistic_eutt_factory_vn_direct` combines these
+results explicitly by transitivity. The final theorem retains
+`OperationalFactoryRationalSupportLaws q`, but no longer requires
+`OperationalFactoryStepSupportLaws`. Source weights are nonnegative rationals
+summing to one with positive product; the target is any rational in `[0,1]`.
+
 The underlying raw `Enum` `meas_eq` is extensional: two enumerations are equal when
 every outcome has the same accumulated mass.  Raw list equality is exposed
 separately as `enum_repr_eq`.  In particular, reordering entries, duplicating

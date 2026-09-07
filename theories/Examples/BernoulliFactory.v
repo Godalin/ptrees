@@ -65,12 +65,24 @@ Proof.
   by case: (x < 1 / 2); rewrite /bind_Enum /ret_Enum /= !mulr1.
 Qed.
 
+(** The algorithm only depends on the behavior of its Boolean sampler. *)
+Definition factory_sampler_step {E : Type -> Type}
+    (sampler : ptree E Enum bool) (x : rat) : ptree E Enum (rat + bool) :=
+  PTree.bind sampler (fun b => Ret (binary_round_result x b)).
+
+Definition factory_with_sampler {E : Type -> Type}
+    (sampler : ptree E Enum bool) (target : rat) : ptree E Enum bool :=
+  PTree.iter (factory_sampler_step sampler) target.
+
+Definition factory_direct_fair : ptree factoryE Enum bool :=
+  Prob vn_fair (fun b => Ret b).
+
 Definition factory_binary_step (x : rat) :
     ptree factoryE Enum (rat + bool) :=
-  PTree.bind factory_fair_coin (fun b => Ret (binary_round_result x b)).
+  factory_sampler_step factory_fair_coin x.
 
 Definition biased_to_rational_coin : ptree factoryE Enum bool :=
-  PTree.iter factory_binary_step q.
+  factory_with_sampler factory_fair_coin q.
 
 Definition factory_direct_q (q0 : 0 <= q) (q1 : q <= 1) :
     ptree factoryE Enum bool :=

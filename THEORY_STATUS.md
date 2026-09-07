@@ -522,6 +522,18 @@ The Von Neumann proof compares independently established complete hitting
 limits, so bounded and unbounded implementations do not share a mirrored
 iteration design in the behavioral relation.
 
+`Examples/BernoulliFactoryComposition.v` adds a parametric compositional
+endpoint. The sampler is an explicit argument of `factory_with_sampler`;
+its congruence theorem uses `free_probabilistic_eutt_bind` and
+`free_probabilistic_eutt_iter_behavioral_rel` for the empty event signature.
+The VN-to-fair theorem proves the support coupling for arbitrary normalized,
+nondegenerate rational source weights. The fair factory is related to the
+standard binary loop, then to direct sampling. The final VN factory theorem
+uses `probabilistic_eutt_trans` through the fair factory and only retains the
+existing target `OperationalFactoryRationalSupportLaws q`; the old single-step
+support premise is unnecessary on this route. A Tau-sampler regression checks
+that the congruence is behavioral rather than syntactic.
+
 `Examples/InteractiveVonNeumannService.v` additionally demonstrates that
 stable hitting is not a termination-only semantics.  Its two-state
 coinduction candidate alternates between a stable `CoinRequest` head and an
