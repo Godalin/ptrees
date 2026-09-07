@@ -106,6 +106,24 @@ infinite sequence of request/reply events and proves
 `interactive_von_neumann_service_equivalent` using guarded `Vis` matching and
 coinduction up to `≈ₚ`.
 
+`Examples/MixedHeadProtocol.v` is the canonical mixed-head bisimulation
+example. A hidden-state implementation receives a Boolean challenge, samples
+a fair pair, and either returns a masked bit or publishes it in a Reply
+whose Boolean acknowledgement updates the hidden state. The specification
+instead chooses uniformly among `Stop(false)`, `Stop(true)`,
+`Continue(false)`, and `Continue(true)`. An explicit four-atom coupling
+matches returns and visible heads together, and a two-phase relation closes
+all response-dependent continuations using plain
+`probabilistic_eutt_coinduction` (no up-to closure). The theorem
+`masked_protocol_equivalent` holds for either initial hidden bit.
+The bounded backend is `SubEnum`, with intrinsic `probabilistic_ptree`
+certificates. `masked_challenge_true_reply_probability` proves that the
+pattern `[Challenge(c); Reply(true)]` has probability `1/4` for either
+challenge: return mass rejects the still-incomplete prefix. This example
+explains the bisimulation definition itself; the Factory demonstrates
+composition, and the VN service retains its role as unbounded internal
+sampling between interactions.
+
 The rational and Bernoulli source files likewise contain program definitions
 and analytic certificates only.  Their maintained behavioral endpoints are
 `probabilistic_eutt_binary_rational_coin_direct`,

@@ -567,6 +567,28 @@ generic Ret-only bind/lifting rules, guarded `Vis` matching, and coinduction
 up to canonical equivalence; the example no longer reconstructs their
 measure-level witnesses locally.
 
+`Examples/MixedHeadProtocol.v` adds a focused probabilistic-LTS example
+on `SubEnum`/`FreeOmega SubEnum`. The implementation's single hidden bit and
+the environment's challenge parameterize a bijection from two fair bits to
+four Stop/Continue outcomes. `mixed_pair_outcome_lift` exhibits the four-atom
+joint distribution explicitly. `mixed_heads_lift` matches both Ret and Vis
+heads in one coupling; each matched Reply demands the simulation for every
+acknowledgement, which updates the implementation's next hidden bit.
+`mixed_protocol_sim_postfixed` uses Root/After phases, and
+`masked_protocol_equivalent` applies plain `probabilistic_eutt_coinduction`.
+`masked_after_heads_denote_four` exposes the uniform stable-head observation
+extensionally. `masked_challenge_true_reply_probability` gives the single
+quantitative endpoint `1/4`, using finite-cylinder preservation and the
+SubEnum probability API. No example-specific assumptions or up-to closure
+are used. Event responses use a universe-polymorphic two-value wrapper
+around bool, preserving both genuine environment choices in PTree's
+invariant event universe.
+
+This first eventful client of `ProbabilisticTraceSubEnum.v` also exposed
+monomorphic universe constraints in its public probability wrapper. The
+module now enables universe polymorphism, matching `ProbabilisticTraceEnum`
+and allowing the canonical eventful proof witnesses to instantiate it.
+
 The same example now has an event-aware quantitative endpoint.  The generic
 `ProbabilisticTrace` layer first classifies the next complete stable Ret/Vis
 head and then extends this operation to finite interaction patterns.

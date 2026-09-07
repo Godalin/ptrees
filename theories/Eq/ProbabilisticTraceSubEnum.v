@@ -1,5 +1,6 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
 
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
