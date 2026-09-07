@@ -569,16 +569,20 @@ measure-level witnesses locally.
 
 `Examples/MixedHeadProtocol.v` adds a focused probabilistic-LTS example
 on `SubEnum`/`FreeOmega SubEnum`. The implementation's single hidden bit and
-the environment's challenge parameterize a bijection from two fair bits to
-four Stop/Continue outcomes. `mixed_pair_outcome_lift` exhibits the four-atom
-joint distribution explicitly. `mixed_heads_lift` matches both Ret and Vis
+the environment's challenge parameterize a bijection from a fair bit r
+and an independent biased bit s (P(true)=3/4) to four Stop/Continue
+outcomes: q=m xor r selects the head kind and b=c xor s the output.
+`mixed_pair_outcome_lift` exhibits the nonuniform four-atom joint
+distribution explicitly, matching the challenge-dependent target masses. `mixed_heads_lift` matches both Ret and Vis
 heads in one coupling; each matched Reply demands the simulation for every
 acknowledgement, which updates the implementation's next hidden bit.
 `mixed_protocol_sim_postfixed` uses Root/After phases, and
 `masked_protocol_equivalent` applies plain `probabilistic_eutt_coinduction`.
-`masked_after_heads_denote_four` exposes the uniform stable-head observation
-extensionally. `masked_challenge_true_reply_probability` gives the single
-quantitative endpoint `1/4`, using finite-cylinder preservation and the
+`masked_after_heads_denote_four` exposes the challenge-dependent stable-head
+observation extensionally; `masked_after_stable_hitting` ties it to the
+implementation's complete-hitting witness.
+`masked_challenge_true_reply_probability` gives probability `3/8` for
+challenge false and `1/8` for challenge true, using finite-cylinder preservation and the
 SubEnum probability API. No example-specific assumptions or up-to closure
 are used. Event responses use a universe-polymorphic two-value wrapper
 around bool, preserving both genuine environment choices in PTree's
