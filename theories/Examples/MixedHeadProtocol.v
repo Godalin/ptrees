@@ -36,69 +36,86 @@ Lemma mixed_outcome_eqP : Equality.axiom mixed_outcome_beq.
 Proof. intros [[]|[]] [[]|[]]; constructor; congruence. Qed.
 HB.instance Definition _ := hasDecEq.Build mixed_outcome mixed_outcome_eqP.
 
-(** r is fair and s has P(false)=1/4, P(true)=3/4, independently.
-    Public challenge c flips s; hidden m only permutes the equal-mass r rows. *)
+(** Independent bits: r and h are fair, s has P(true)=3/4. Public c
+    flips s; hidden h affects only the continuation, not the current label. *)
 Definition mixed_eighth : nnQ := mknnQ (1 / 8) ltac:(by []).
 Definition mixed_three_eighths : nnQ := mknnQ (3 / 8) ltac:(by []).
-Definition biased_pair_raw : Enum (bool * bool) :=
-  [:: (mixed_eighth, (false,false)); (mixed_three_eighths, (false,true));
-      (mixed_eighth, (true,false)); (mixed_three_eighths, (true,true))].
+Definition mixed_sixteenth : nnQ := mknnQ (1 / 16) ltac:(by []).
+Definition mixed_three_sixteenths : nnQ := mknnQ (3 / 16) ltac:(by []).
+Definition biased_triple_raw : Enum (bool * bool * bool) :=
+  [:: (mixed_sixteenth, (false,false,false));
+      (mixed_sixteenth, (false,false,true));
+      (mixed_three_sixteenths, (false,true,false));
+      (mixed_three_sixteenths, (false,true,true));
+      (mixed_sixteenth, (true,false,false));
+      (mixed_sixteenth, (true,false,true));
+      (mixed_three_sixteenths, (true,true,false));
+      (mixed_three_sixteenths, (true,true,true))].
 Definition mixed_outcomes_raw (c : bool) : Enum mixed_outcome :=
   let w0 := if c then mixed_three_eighths else mixed_eighth in
   let w1 := if c then mixed_eighth else mixed_three_eighths in
   [:: (w0, Stop false); (w1, Stop true);
       (w0, Continue false); (w1, Continue true)].
-Lemma biased_pair_bound : enum_subprob biased_pair_raw.
+Lemma biased_triple_bound : enum_subprob biased_triple_raw.
 Proof. by vm_compute. Qed.
 Lemma mixed_outcomes_bound c : enum_subprob (mixed_outcomes_raw c).
 Proof. destruct c; by vm_compute. Qed.
-Definition biased_pair := enum_as_subprob biased_pair_bound.
+Definition biased_triple := enum_as_subprob biased_triple_bound.
 Definition mixed_outcomes c := enum_as_subprob (mixed_outcomes_bound c).
 Lemma mixed_outcomes_prune c : enum_prune (mixed_outcomes_raw c) = mixed_outcomes_raw c.
 Proof. destruct c; reflexivity. Qed.
 
-Definition mixed_encode m c (rs : bool * bool) : mixed_outcome :=
-  let '(r,s) := rs in
+Definition mixed_encode m c (rsh : bool * bool * bool) : mixed_outcome :=
+  let '(r,s,h) := rsh in
   let b := xorb c s in
   if xorb m r then Continue b else Stop b.
-Definition mixed_decode m c o : bool * bool :=
+(** Every abstract outcome has exactly two preimages, one for each h.
+    Unlike an inverse, choosing a preimage cannot recover the forgotten bit. *)
+Definition mixed_preimage m c o h : bool * bool * bool :=
   match o with
-  | Stop b => (m, xorb c b)
-  | Continue b => (negb m, xorb c b)
+  | Stop b => (m, xorb c b, h)
+  | Continue b => (negb m, xorb c b, h)
   end.
-Lemma mixed_decode_encode m c rs : mixed_decode m c (mixed_encode m c rs) = rs.
-Proof. destruct m,c; destruct rs as [r s]; destruct r,s; reflexivity. Qed.
-Lemma mixed_encode_decode m c o : mixed_encode m c (mixed_decode m c o) = o.
+Lemma mixed_encode_preimage m c o h :
+  mixed_encode m c (mixed_preimage m c o h) = o.
 Proof. destruct m,c; destruct o as [b|b]; destruct b; reflexivity. Qed.
-Definition mixed_outcome_rel m c rs o := o = mixed_encode m c rs.
-
-(** An explicit nonuniform functional coupling. Bijection alone is not
-    enough: the right marginal must match the challenge-dependent weights. *)
-Definition mixed_joint m c : Enum ((bool * bool) * mixed_outcome) :=
-  emap (fun rs => (rs, mixed_encode m c rs)) biased_pair_raw.
-Polymorphic Lemma mixed_pair_outcome_lift m c :
-  @sem_lift SubEnum SubEnum_SemanticMeasure _ _ (mixed_outcome_rel m c)
-    biased_pair (mixed_outcomes c).
+Lemma mixed_encode_fiber m c rsh o :
+  mixed_encode m c rsh = o <->
+  rsh = mixed_preimage m c o false \/ rsh = mixed_preimage m c o true.
 Proof.
-  change (indexed_coupling (mixed_outcome_rel m c) biased_pair_raw (enum_prune (mixed_outcomes_raw c))).
+  destruct m,c; destruct rsh as [[r s] h]; destruct r,s,h;
+    destruct o as [b|b]; destruct b; cbn; intuition congruence.
+Qed.
+Definition mixed_outcome_rel m c rsh o := o = mixed_encode m c rsh.
+
+(** Eight source atoms feed four target outcomes. Each target marginal
+    adds its two h-preimages: 1/16+1/16=1/8 or 3/16+3/16=3/8. *)
+Definition mixed_joint m c : Enum ((bool * bool * bool) * mixed_outcome) :=
+  emap (fun rsh => (rsh, mixed_encode m c rsh)) biased_triple_raw.
+Polymorphic Lemma mixed_triple_outcome_lift m c :
+  @sem_lift SubEnum SubEnum_SemanticMeasure _ _ (mixed_outcome_rel m c)
+    biased_triple (mixed_outcomes c).
+Proof.
+  change (indexed_coupling (mixed_outcome_rel m c) biased_triple_raw (enum_prune (mixed_outcomes_raw c))).
   rewrite mixed_outcomes_prune.
   apply indexed_coupling_of_coupling. exists (mixed_joint m c).
   - apply enum_eq_eq. reflexivity.
   - intros [b|b]; destruct m,c,b; apply val_inj; vm_compute; reflexivity.
-  - intros [r s] [b|b] Hmass; destruct m,c,r,s,b;
+  - intros [[r s] h] [b|b] Hmass; destruct m,c,r,s,h,b;
       try reflexivity; vm_compute in Hmass; discriminate.
 Qed.
 
 Set Universe Polymorphism.
 
-Definition masked_update (rs : bool * bool) ack := if ack then fst rs else snd rs.
+Definition masked_update (rsh : bool * bool * bool) ack :=
+  let '(r,s,h) := rsh in if ack then h else r.
 CoFixpoint masked_impl (m : bool) : ptree mixedE SubEnum bool :=
   Vis Challenge (fun answer =>
     let c := response_value answer in
-    Prob biased_pair (fun rs =>
-      match mixed_encode m c rs with
+    Prob biased_triple (fun rsh =>
+      match mixed_encode m c rsh with
       | Stop b => Ret b
-      | Continue b => Vis (Reply b) (fun ack => masked_impl (masked_update rs (response_value ack)))
+      | Continue b => Vis (Reply b) (fun ack => masked_impl (masked_update rsh (response_value ack)))
       end)).
 CoFixpoint mixed_spec : ptree mixedE SubEnum bool :=
   Vis Challenge (fun answer =>
@@ -107,17 +124,17 @@ CoFixpoint mixed_spec : ptree mixedE SubEnum bool :=
       | Stop b => Ret b
       | Continue b => Vis (Reply b) (fun _ => mixed_spec)
       end)).
-Definition masked_branch m c rs : ptree mixedE SubEnum bool :=
-  match mixed_encode m c rs with
+Definition masked_branch m c rsh : ptree mixedE SubEnum bool :=
+  match mixed_encode m c rsh with
   | Stop b => Ret b
-  | Continue b => Vis (Reply b) (fun ack => masked_impl (masked_update rs (response_value ack)))
+  | Continue b => Vis (Reply b) (fun ack => masked_impl (masked_update rsh (response_value ack)))
   end.
 Definition spec_branch o : ptree mixedE SubEnum bool :=
   match o with
   | Stop b => Ret b
   | Continue b => Vis (Reply b) (fun _ => mixed_spec)
   end.
-Definition masked_after m c := Prob biased_pair (masked_branch m c).
+Definition masked_after m c := Prob biased_triple (masked_branch m c).
 Definition mixed_after c := Prob (mixed_outcomes c) spec_branch.
 Lemma masked_impl_unfold m : observe (masked_impl m) = VisF Challenge (fun answer => masked_after m (response_value answer)).
 Proof. reflexivity. Qed.
@@ -140,18 +157,28 @@ Local Notation peutt := (@probabilistic_eutt mixedE SubEnum MF FI
   FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
   FreeOmegaObservableSemanticOmega).
 
-Definition masked_head m c rs : mixed_head :=
-  match mixed_encode m c rs with
+Definition masked_head m c rsh : mixed_head :=
+  match mixed_encode m c rsh with
   | Stop b => FHRet b
-  | Continue b => FHVis (Reply b) (fun ack => masked_impl (masked_update rs (response_value ack)))
+  | Continue b => FHVis (Reply b) (fun ack => masked_impl (masked_update rsh (response_value ack)))
   end.
+(** The two h-atoms collapse on Ret, but remain in the Reply continuation.
+    These are the six concrete head forms drawn in the case study. *)
+Lemma masked_head_stop_h m c s h :
+  masked_head m c (m,s,h) = FHRet (xorb c s).
+Proof. destruct m; reflexivity. Qed.
+Lemma masked_head_continue_h m c s h :
+  masked_head m c (negb m,s,h) =
+    FHVis (Reply (xorb c s)) (fun ack =>
+      masked_impl (if response_value ack then h else negb m)).
+Proof. destruct m; reflexivity. Qed.
 Definition spec_head o : mixed_head :=
   match o with
   | Stop b => FHRet b
   | Continue b => FHVis (Reply b) (fun _ => mixed_spec)
   end.
 Definition masked_after_heads m c : MF mixed_head :=
-  FOSample biased_pair (fun rs => FORet (masked_head m c rs)).
+  FOSample biased_triple (fun rsh => FORet (masked_head m c rsh)).
 Definition spec_after_heads c : MF mixed_head :=
   FOSample (mixed_outcomes c) (fun o => FORet (spec_head o)).
 
@@ -162,8 +189,8 @@ Proof.
     (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))
     with (Good := fun _ => True).
   - apply sem_ae_true.
-  - intros rs _. unfold masked_branch, masked_head.
-    destruct (mixed_encode m c rs).
+  - intros rsh _. unfold masked_branch, masked_head.
+    destruct (mixed_encode m c rsh).
     + apply (stable_hitting_weak_ret (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)).
     + apply (stable_hitting_weak_vis (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)).
 Qed.
@@ -194,10 +221,10 @@ Proof.
   unfold masked_after_heads, spec_after_heads.
   eapply (mixed_lift_bind (NI := SubEnum_SemanticMeasure) (FI := FI)
     (MX := FreeOmegaMixedMeasure)) with (R := mixed_outcome_rel m c).
-  - exact (mixed_pair_outcome_lift m c).
-  - intros rs o ->. apply (sem_lift_ret (SI := FI)).
+  - exact (mixed_triple_outcome_lift m c).
+  - intros rsh o ->. apply (sem_lift_ret (SI := FI)).
     unfold ptree_stable_head_rel, masked_head, spec_head.
-    destruct (mixed_encode m c rs) as [b|b].
+    destruct (mixed_encode m c rsh) as [b|b].
     + apply FHRRet. reflexivity.
     + apply FHRVis. intro ack. apply MPSRoot.
 Qed.
@@ -232,10 +259,10 @@ Definition stable_outcome (h : mixed_head) : mixed_outcome :=
   | @FHVis _ _ _ X e _ =>
       match e with Challenge => Stop false | Reply b => Continue b end
   end.
-Lemma masked_head_outcome m c rs : stable_outcome (masked_head m c rs) = mixed_encode m c rs.
-Proof. unfold masked_head. destruct (mixed_encode m c rs); reflexivity. Qed.
+Lemma masked_head_outcome m c rsh : stable_outcome (masked_head m c rsh) = mixed_encode m c rsh.
+Proof. unfold masked_head. destruct (mixed_encode m c rsh); reflexivity. Qed.
 Definition masked_outcome_observation m c : SubEnum mixed_outcome :=
-  subenum_bind biased_pair (fun rs => subenum_ret (mixed_encode m c rs)).
+  subenum_bind biased_triple (fun rsh => subenum_ret (mixed_encode m c rsh)).
 
 (** The observation is stated extensionally: list order may change with
     m and c; the four masses depend on c but never on hidden m. *)
@@ -245,10 +272,10 @@ Lemma masked_after_heads_denote_four m c :
 Proof.
   exists (masked_outcome_observation m c). split.
   - unfold masked_after_heads, masked_outcome_observation.
-    apply (FOOObserveSample (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)). intro rs.
-    rewrite <- (masked_head_outcome m c rs). constructor.
+    apply (FOOObserveSample (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)). intro rsh.
+    rewrite <- (masked_head_outcome m c rsh). constructor.
   - change (enum_meas_eq
-      (bind_Enum biased_pair_raw (fun rs => ret_Enum (mixed_encode m c rs))) (mixed_outcomes_raw c)).
+      (bind_Enum biased_triple_raw (fun rsh => ret_Enum (mixed_encode m c rsh))) (mixed_outcomes_raw c)).
     apply enum_meas_eq_of_eqenum. intros [b|b]; destruct m,c,b;
       apply val_inj; vm_compute; reflexivity.
 Qed.

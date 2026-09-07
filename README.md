@@ -108,14 +108,19 @@ coinduction up to `≈ₚ`.
 
 `Examples/MixedHeadProtocol.v` is the canonical mixed-head bisimulation
 example. A hidden-state implementation receives a Boolean challenge, samples
-independent bits r (fair) and s (P(true)=3/4), and either returns c xor s
-or publishes it in a Reply
-whose Boolean acknowledgement updates the hidden state. The specification
+independent bits r (fair), s (P(true)=3/4), and h (fair). It either returns
+c xor s or publishes it in a Reply, whose Boolean acknowledgement selects
+the next hidden state: h on true, r on false. The fresh bit h affects only
+the continuation. The specification
 chooses among `Stop(false)`, `Stop(true)`, `Continue(false)`, and
 `Continue(true)` with weights `(1/8,3/8,1/8,3/8)` for challenge false
 and `(3/8,1/8,3/8,1/8)` for challenge true. It forgets the hidden state
-but retains the public challenge. An explicit nonuniform four-atom coupling
-matches returns and visible heads together, and a two-phase relation closes
+but retains the public challenge. An explicit nonuniform eight-to-four coupling
+forgets h and adds its two preimage masses for each abstract outcome.
+The eight sampled atoms yield six concrete stable head forms: two returns
+(h is discarded) and four Reply heads (two continuations per label).
+The coupling merges each pair of Reply heads into one specification head.
+A two-phase relation closes
 all response-dependent continuations using plain
 `probabilistic_eutt_coinduction` (no up-to closure). The theorem
 `masked_protocol_equivalent` holds for either initial hidden bit.

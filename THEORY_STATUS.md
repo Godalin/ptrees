@@ -569,13 +569,17 @@ measure-level witnesses locally.
 
 `Examples/MixedHeadProtocol.v` adds a focused probabilistic-LTS example
 on `SubEnum`/`FreeOmega SubEnum`. The implementation's single hidden bit and
-the environment's challenge parameterize a bijection from a fair bit r
-and an independent biased bit s (P(true)=3/4) to four Stop/Continue
-outcomes: q=m xor r selects the head kind and b=c xor s the output.
-`mixed_pair_outcome_lift` exhibits the nonuniform four-atom joint
-distribution explicitly, matching the challenge-dependent target masses. `mixed_heads_lift` matches both Ret and Vis
-heads in one coupling; each matched Reply demands the simulation for every
-acknowledgement, which updates the implementation's next hidden bit.
+the environment's challenge parameterize a two-to-one map from independent
+bits r (fair), s (P(true)=3/4), and h (fair) to four Stop/Continue outcomes:
+q=m xor r selects the head kind and b=c xor s the output.
+`mixed_encode_fiber` identifies exactly the two h-preimages of each outcome.
+`mixed_triple_outcome_lift` exhibits the eight-atom joint distribution and
+sums its preimage masses to the challenge-dependent target weights.
+`masked_head_stop_h` discards h on return, while `masked_head_continue_h`
+retains it in the continuation. Thus eight sampled atoms yield six concrete
+head forms, coupled to four abstract heads by `mixed_heads_lift`. Each
+matched Reply demands the simulation for every acknowledgement; the next
+hidden state is h on ack=true and r on ack=false.
 `mixed_protocol_sim_postfixed` uses Root/After phases, and
 `masked_protocol_equivalent` applies plain `probabilistic_eutt_coinduction`.
 `masked_after_heads_denote_four` exposes the challenge-dependent stable-head
