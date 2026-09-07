@@ -651,22 +651,23 @@ Proof.
   eapply operational_weak_prob; eassumption.
 Qed.
 
-Theorem probabilistic_eutt_prob {R X1 X2}
+Theorem probabilistic_eutt_prob {R1 R2 X1 X2}
+    (RR : R1 -> R2 -> Prop)
     (XR : X1 -> X2 -> Prop) (mu1 : MN X1) (mu2 : MN X2)
-    (k1 : X1 -> ptree E MN R) (k2 : X2 -> ptree E MN R) :
+    (k1 : X1 -> ptree E MN R1) (k2 : X2 -> ptree E MN R2) :
   sem_lift XR mu1 mu2 ->
-  (forall x1 x2, XR x1 x2 -> probabilistic_eutt eq (k1 x1) (k2 x2)) ->
-  probabilistic_eutt eq (Prob mu1 k1) (Prob mu2 k2).
+  (forall x1 x2, XR x1 x2 -> probabilistic_eutt RR (k1 x1) (k2 x2)) ->
+  probabilistic_eutt RR (Prob mu1 k1) (Prob mu2 k2).
 Proof.
   intros Hmu Hk.
   assert (Hexists1 : forall x1, exists out,
       stable_hitting_weak
-        (@ptree_primitive_kernel E MN MF FI MX R)
+        (@ptree_primitive_kernel E MN MF FI MX R1)
         (observe (k1 x1)) out).
   { intro x1. apply stable_hitting_weak_exists. }
   assert (Hexists2 : forall x2, exists out,
       stable_hitting_weak
-        (@ptree_primitive_kernel E MN MF FI MX R)
+        (@ptree_primitive_kernel E MN MF FI MX R2)
         (observe (k2 x2)) out).
   { intro x2. apply stable_hitting_weak_exists. }
   destruct (choice _ Hexists1) as [front1 Hfront1].
