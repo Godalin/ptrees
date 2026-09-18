@@ -681,6 +681,56 @@ The artifact support range is Coq `>= 8.20` and `< 9.0`, with CI explicitly
 installing Coq 8.20.1.  Coq 9 changes Stdlib load paths and requires a
 separate migration; it is not part of the current compatibility claim.
 
+## Residual finite-compression redesign (in progress)
+
+The proposed replacement for `pfinite` is implemented separately in
+`Eq/PFiniteResidual.v`, and is **not yet the public `pfinite` relation**.
+The current `PFinite.v`, its soundness theorem, and the public facade are
+unchanged until greatest-fixed-point soundness of the replacement is proved.
+The temporary candidate names are migration scaffolding, not a second
+intended public behavioral relation.
+
+`Eq/FiniteInternal.v` defines the inductive operational judgment
+`finite_internal t out`, with `FIStop`, `FITau`, and `FIProb`.  It returns a
+distribution of residual trees, not stable heads.  There is no fuel or
+stable-hitting condition.  Infinitely many sampling branches may have
+different finite depths with no uniform bound; the derivation is
+well-founded, not necessarily a finite tree.
+
+The candidate generator couples these residual distributions under
+`pfinite_guard RR sim`, a single `pstrongF` match whose continuations use
+`sim`.  Thus `FIStop` cannot make an unguarded recursive proof valid.  The
+candidate has proved `pstrong` inclusion, heterogeneous converse, return
+relation monotonicity, and reflexivity.  As in the current API, its
+homogeneous equivalence is the finite reflexive-symmetric-transitive closure;
+this does not assert transitivity of the raw heterogeneous greatest fixed
+point.
+
+The completed semantic results in `Eq/FiniteInternalHitting.v` are:
+
+- `finite_internal_hitting_lift`: the original complete hitting behavior
+  couples by equality to the bind of the residual distribution with its
+  complete hitting behaviors.  The conclusion is a coupling, not an
+  unjustified equality or closure of a chosen limit representative.
+- `peutt_of_finite_internal`: coupling residuals by **already proved**
+  `peutt` is a sound behavioral rewrite.
+- `pfinite_residual_round_sound`: one candidate round with `peutt` as its
+  recursive relation is sound.
+
+The last item establishes `F(peutt) ⊆ peutt`, **not**
+`νF ⊆ peutt`.  Greatest-fixed-point soundness still needs a progress argument
+through arbitrarily many guarded Tau/Prob rounds and well-founded internal
+compression.  The old proof, which recurs only after stable observations,
+does not supply this argument.  No additional capability axiom, intersection
+with `peutt`, or unfinished proof has been used to disguise this gap.
+
+`Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
+before divergence, Prob branch compression, and the negative core regression
+`residual_finite_spin_not_ret`.  It also derives the actual RandomWalk renewal
+equation as `random_walk_passage_residual_finite`, without behavioral Prob
+congruence.  That example is a client of the candidate, not a replacement for
+the maintained `passage_unfold` until the soundness bridge is complete.
+
 ## Infinite-state random walk
 
 `Examples/RandomWalk.v` encodes the while loop on `(height, streak)` with
