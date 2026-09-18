@@ -19,6 +19,7 @@ From PTree.Core Require Import PTreeDefinition PTreeProbability.
 From PTree.Eq Require Import
   UnifiedFrontier
   PrimitiveStableHitting
+  PStruct
   PStrong
   PFinite
   PEutt
@@ -37,7 +38,7 @@ Notation probabilistic_ptree_iter := PTreeProbability.probabilistic_ptree_iter.
 Notation stable_head := UnifiedFrontier.frontier_head.
 Notation stable_head_rel := UnifiedFrontier.stable_head_rel.
 Notation stable_hitting := PrimitiveStableHitting.stable_hitting.
-Notation pstruct := PStrong.pstruct.
+Notation pstruct := PStruct.pstruct.
 Notation pstrong := PStrong.pstrong.
 Notation pfinite := PFinite.pfinite.
 Notation peutt := PEutt.peutt.
@@ -69,7 +70,7 @@ Notation peutt_vis := PEutt.peutt_vis.
 Notation peutt_prob := PEutt.peutt_prob.
 Notation peutt_bind := PEutt.peutt_bind.
 Notation pstruct_pstrong := PStrong.pstruct_pstrong.
-Notation pstruct_equivalence := PStrong.pstruct_equivalence.
+Notation pstruct_equivalence := PStruct.pstruct_equivalence.
 Notation pstrong_equivalence := PStrong.pstrong_equivalence.
 Notation pstrong_bind := PStrong.pstrong_bind.
 Notation pstrong_pfinite := PFinite.pstrong_pfinite.

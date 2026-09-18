@@ -7,7 +7,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import
   Shallow UnifiedFrontier PrimitiveStableHitting OperationalProbabilisticPTS
-  PEutt PStrong
+  PEutt PStruct PStrong
   OperationalProbabilisticPTSFreeOmegaBase.
 
 Set Implicit Arguments.

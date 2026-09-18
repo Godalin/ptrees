@@ -5,7 +5,7 @@ Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
-From PTree.Eq Require Import Shallow PEutt PStrong
+From PTree.Eq Require Import Shallow PEutt PStruct PStrong
   OperationalProbabilisticPTSFreeOmegaBase.
 
 Set Implicit Arguments.

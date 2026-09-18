@@ -9,7 +9,7 @@ From Coinduction Require Import all.
 From mathcomp Require Import ssreflect.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
-From PTree.Eq Require Import PStrong PrimitiveStableHitting
+From PTree.Eq Require Import PStruct PStrong PrimitiveStableHitting
   OperationalProbabilisticPTS UnifiedFrontier.
 
 Set Implicit Arguments.
