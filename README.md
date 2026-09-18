@@ -128,6 +128,20 @@ infinite sequence of request/reply events and proves
 `interactive_von_neumann_service_equivalent` using guarded `Vis` matching and
 coinduction up to `≈ₚ`.
 
+`Examples/RandomWalk.v` studies an infinite-state loop: with probability
+`2/3`, decrement the height and increment a streak; otherwise increment the
+height and reset the streak.  Starting from `(1,0)`, it stops at height zero.
+`run_split` factors a descent through an intermediate level using `pstruct`,
+and `passage_unfold` proves the genuine `peutt` renewal equation
+`D_y ≈ₚ Prob coin (fun down => if down then Ret (y+1) else D_0 >>= D)`.
+`random_walk_closed_form` proves native stable-hitting AST and the normalized
+joint output law `Pr[(0,n)] = 2/3^n` for `n >= 1` (zero elsewhere).
+Finite observations are connected directly to the source's primitive kernel;
+a rational contraction bound proves their limits without a random-walk
+library or an additional measure axiom.  This is an output-distribution
+endpoint, **not** a claim of `peutt` equivalence to a countably supported
+distribution node or a geometric sampler.
+
 `Examples/MixedHeadProtocol.v` is the canonical mixed-head bisimulation
 example. A hidden-state implementation receives a Boolean challenge, samples
 independent bits r (fair), s (P(true)=3/4), and h (fair). It either returns

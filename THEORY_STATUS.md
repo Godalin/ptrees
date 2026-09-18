@@ -681,6 +681,62 @@ The artifact support range is Coq `>= 8.20` and `< 9.0`, with CI explicitly
 installing Coq 8.20.1.  Coq 9 changes Stdlib load paths and requires a
 separate migration; it is not part of the current compatibility claim.
 
+## Infinite-state random walk
+
+`Examples/RandomWalk.v` encodes the while loop on `(height, streak)` with
+down/reset probabilities `2/3` and `1/3`, using the intrinsic `SubEnum`
+node carrier and `FreeOmega SubEnum` behavior.
+
+The proof has two explicitly distinguished layers:
+
+- `run_split` is a carrier-independent `pstruct` theorem factoring a descent
+  of `a+b` levels into a descent of `a` levels followed by `b` levels.
+  `height_two_split` identifies the reset branch with `D_0 >>= passage`.
+  `random_walk_passage_normal_form` and `passage_unfold` promote structural
+  control-flow reasoning to actual `peutt` equations.
+- `walk_harmonic_error` proves the uniform-in-streak error bound
+  `|(finite evaluation) - H(x,y)| <= (3/2)^x (17/18)^rounds` for every
+  bounded harmonic candidate with the stated boundary values.
+  The constant-one candidate proves AST; an explicit candidate gives each
+  output atom.  This is an elementary rational convergence argument, not an
+  imported random-walk theorem or an assumed uniqueness of fixed points.
+
+`walk_hitting_observes` and `joint_hitting_observes` connect these calculations
+to the existing primitive stable-hitting approximants.  A complete round
+consumes two internal steps (`Prob`, then the `Tau` introduced by `iter`);
+`walk_schedule_ge` and cofinality justify taking that subsequence of fuels.
+`random_walk_ast` is consequently the maintained `ptree_stable_hitting_ast`
+predicate for the original source tree, not a separate numerical definition
+of AST.
+
+`random_walk_outputs_spec` identifies the source's finite joint observations.
+`random_walk_output_dist` proves their pointwise limits are `joint_pmf`:
+`joint_pmf (0,S n) = (2/3)(1/3)^n`, and zero for all other states.
+`joint_pmf_normalized` proves the finite sums converge to one.
+`random_walk_closed_form` packages these statements with native AST.
+`continuation_pmf` and `D0_geometric_equation` also verify the successor-tail
+and geometric renewal formulas for the proved limiting probabilities.
+`continuation_stable_hitting_ast` transports the two-level limit through
+`height_two_split` to the actual bind program in the renewal equation.
+The regression for output `(0,2)` gives mass `4/27` after three rounds but
+limiting mass `2/9`, distinguishing finite execution from the unbounded law.
+
+The assumption audit reports `run_split` and `walk_harmonic_error` closed
+under the global context.  `random_walk_closed_form` uses the existing
+functional-extensionality and dependent-equality axioms; `passage_unfold`
+additionally inherits the generic behavioral theory's choice principles.
+No example-specific probability axiom or unfinished proof is introduced.
+
+The quantitative proof uses a bounded harmonic candidate instead of the
+proposal's scalar equation `m = p + q*m*m`: the former constructs the
+required limits directly without first requiring a real-valued mass for an
+arbitrary FreeOmega expression.  In particular, no scalar cancellation rule
+is assumed for `peutt`.  The normalized countable law is expressed by limits
+of primitive finite observations, **not** as an element of finite `SubEnum`.
+A theorem equating the source to a geometric sampler under `peutt` remains
+outside this endpoint; pointwise PMF equality is not silently promoted to
+behavioral equivalence.
+
 ## Exact no-Prob / ITree boundary
 
 The maintained generic theorem deliberately does **not** claim
