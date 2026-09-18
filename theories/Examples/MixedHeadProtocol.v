@@ -12,7 +12,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts EnumMap
   Coupling IndexedCoupling FrontierLiftEnum MeasureIterationEnum
   TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  OperationalProbabilisticPTS OperationalProbabilisticPTSFreeOmega
+  PTreeKernel OperationalProbabilisticPTSFreeOmega
   PEutt ProbabilisticTraceSubEnum.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -151,7 +151,7 @@ Local Notation mixed_head := (frontier_head mixedE SubEnum bool).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
 Local Notation kernel := (@ptree_primitive_kernel mixedE SubEnum MF FI FreeOmegaMixedMeasure bool).
-Local Notation hitting := (@stable_hitting_weak MF FI FreeOmegaObservableSemanticOmega
+Local Notation hitting := (@stable_hitting MF FI FreeOmegaObservableSemanticOmega
   (ptree' mixedE SubEnum bool) mixed_head kernel).
 Local Notation peutt := (@peutt mixedE SubEnum MF FI
   FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
@@ -185,23 +185,23 @@ Definition spec_after_heads c : MF mixed_head :=
 Lemma masked_after_hitting m c : hitting (observe (masked_after m c)) (masked_after_heads m c).
 Proof.
   unfold masked_after, masked_after_heads.
-  eapply (stable_hitting_weak_prob (FI := FI)
+  eapply (stable_hitting_prob (FI := FI)
     (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))
     with (Good := fun _ => True).
   - apply sem_ae_true.
   - intros rsh _. unfold masked_branch, masked_head.
     destruct (mixed_encode m c rsh).
-    + apply (stable_hitting_weak_ret (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)).
-    + apply (stable_hitting_weak_vis (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)).
+    + apply (stable_hitting_ret (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)).
+    + apply (stable_hitting_vis (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)).
 Qed.
 Lemma spec_after_hitting c : hitting (observe (mixed_after c)) (spec_after_heads c).
 Proof.
   unfold mixed_after, spec_after_heads.
-  eapply (stable_hitting_weak_prob (FI := FI)
+  eapply (stable_hitting_prob (FI := FI)
     (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))
     with (Good := fun _ => True).
   - apply sem_ae_true.
-  - intros [b|b] _; [apply (stable_hitting_weak_ret (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))|apply (stable_hitting_weak_vis (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))].
+  - intros [b|b] _; [apply (stable_hitting_ret (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))|apply (stable_hitting_vis (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))].
 Qed.
 
 (** Root quantifies over every hidden bit. After additionally remembers the

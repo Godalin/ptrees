@@ -6,7 +6,7 @@ From Coq Require Import Program.Equality List ClassicalChoice ClassicalEpsilon.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting
-  OperationalProbabilisticPTS PEutt.
+  PTreeKernel PEutt.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -62,7 +62,7 @@ Definition probabilistic_head_query {R O}
     (on_ret : R -> O) (on_vis : forall X, E X -> O)
     (t : ptree E MN R) (query : MF O) : Prop :=
   exists out : MF (frontier_head E MN R),
-    stable_hitting_weak
+    stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out /\
     sem_eq
       (sem_bind out
@@ -157,7 +157,7 @@ Fixpoint finite_trace_query {R} (tr : finite_event_trace)
   | nil => sem_eq query (sem_ret true)
   | select :: rest =>
       exists out branch,
-        stable_hitting_weak
+        stable_hitting
           (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out /\
         sem_ae out (fun h =>
           match h with
@@ -186,7 +186,7 @@ Lemma finite_trace_query_cons_inv {R} select rest
     (t : ptree E MN R) query :
   finite_trace_query (select :: rest) t query ->
   exists out branch,
-    stable_hitting_weak
+    stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out /\
     sem_ae out (fun h =>
       match h with
@@ -219,7 +219,7 @@ Proof.
   intros Hselect Hrest.
   exists (sem_ret (FHVis e k)),
     (fun _ : frontier_head E MN R => query). repeat split.
-  - apply stable_hitting_weak_vis.
+  - apply stable_hitting_vis.
   - apply sem_ae_ret. cbn. rewrite Hselect. exact Hrest.
   - exact (sem_bind_ret_l (FHVis e k)
       (fun _ : frontier_head E MN R => query)).
@@ -235,7 +235,7 @@ Proof.
   intro Hselect.
   exists (sem_ret (FHVis e k)),
     (fun _ : frontier_head E MN R => sem_ret false). repeat split.
-  - apply stable_hitting_weak_vis.
+  - apply stable_hitting_vis.
   - apply sem_ae_ret. cbn. rewrite Hselect. apply sem_eq_refl.
   - exact (sem_bind_ret_l (FHVis e k)
       (fun _ : frontier_head E MN R => sem_ret false)).
@@ -302,7 +302,7 @@ Proof.
     destruct Heutt as [Hforward _].
     destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
     assert (HoutEq : sem_eq out2' out2).
-    { eapply stable_hitting_weak_unique; eassumption. }
+    { eapply stable_hitting_unique; eassumption. }
     pose proof (sem_lift_proper_r
       (R := ptree_stable_head_rel RR (peutt_state RR))
       (mu := out1) (nu := out2') (nu' := out2) HoutEq Hlift) as Hlift12.

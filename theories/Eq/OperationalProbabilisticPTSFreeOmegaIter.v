@@ -6,7 +6,7 @@ Require Import Logic.ClassicalChoice Program.Equality.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  OperationalProbabilisticPTS PEutt PStruct PStrong
+  PTreeKernel PEutt PStruct PStrong
   OperationalProbabilisticPTSFreeOmegaBase.
 
 Set Implicit Arguments.
@@ -128,13 +128,13 @@ Definition free_iter_behavioral_sum_rel
 Variable step_out1 : I1 -> MF (frontier_head E MN (I1 + R1)).
 Variable step_out2 : I2 -> MF (frontier_head E MN (I2 + R2)).
 Hypothesis Hstep_out1 : forall i1,
-  @operational_weak E MN MF
+  @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega (I1 + R1)
     (observe (step1 i1)) (step_out1 i1).
 Hypothesis Hstep_out2 : forall i2,
-  @operational_weak E MN MF
+  @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega (I2 + R2)
@@ -193,11 +193,11 @@ Proof.
     free_iter_complete_rows no_event step_out2 rounds i2) in
   eapply peutt_of_hitting_lift
     with (out1 := FOLub rows1) (out2 := FOLub rows2).
-  - eapply free_operational_weak_iter_of_unbounded_steps
+  - eapply free_ptree_stable_hitting_iter_of_unbounded_steps
       with (step_out := step_out1).
     + exact Hstep_out1.
     + apply free_omega_qlift_refl. intro h. reflexivity.
-  - eapply free_operational_weak_iter_of_unbounded_steps
+  - eapply free_ptree_stable_hitting_iter_of_unbounded_steps
       with (step_out := step_out2).
     + exact Hstep_out2.
     + apply free_omega_qlift_refl. intro h. reflexivity.
@@ -239,19 +239,19 @@ Theorem free_peutt_iter_behavioral_rel
 Proof.
   intro Hij.
   assert (Hexists1 : forall j1, exists out,
-      @operational_weak E MN MF
+      @ptree_stable_hitting E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega (I1 + R1)
         (observe (step1 j1)) out).
-  { intro j1. apply stable_hitting_weak_exists. }
+  { intro j1. apply stable_hitting_exists. }
   assert (Hexists2 : forall j2, exists out,
-      @operational_weak E MN MF
+      @ptree_stable_hitting E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega (I2 + R2)
         (observe (step2 j2)) out).
-  { intro j2. apply stable_hitting_weak_exists. }
+  { intro j2. apply stable_hitting_exists. }
   destruct (choice _ Hexists1) as [out1 Hout1].
   destruct (choice _ Hexists2) as [out2 Hout2].
   eapply free_peutt_iter_behavioral_rel_of_outputs

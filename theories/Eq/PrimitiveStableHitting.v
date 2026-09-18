@@ -48,11 +48,6 @@ Definition stable_hitting_approx (fuel : nat) (state : S) : MF A :=
 Definition stable_hitting (state : S) (out : MF A) : Prop :=
   sem_lub (fun fuel => stable_hitting_approx fuel state) out.
 
-(** Historical compatibility name.  Internal-transition closure is already
-    intrinsic to stable hitting, so new public statements should use
-    [stable_hitting]. *)
-Definition stable_hitting_weak := stable_hitting.
-
 Definition stable_hitting_ast (state : S) (out : MF A) : Prop :=
   stable_hitting state out /\ sem_total out.
 
@@ -121,31 +116,21 @@ Context {MF : Type -> Type}
 Context {S A : Type}.
 Variable kernel : S -> MF (stable_target S A).
 
-Theorem stable_hitting_weak_exists state :
-  exists out, stable_hitting_weak kernel state out.
+Theorem stable_hitting_exists state :
+  exists out, stable_hitting kernel state out.
 Proof.
-  unfold stable_hitting_weak. apply sem_lub_exists.
+  unfold stable_hitting. apply sem_lub_exists.
   exact (stable_hitting_increasing kernel state).
 Qed.
 
-Theorem stable_hitting_weak_unique state out1 out2 :
-  stable_hitting_weak kernel state out1 ->
-  stable_hitting_weak kernel state out2 ->
-  sem_eq out1 out2.
-Proof.
-  unfold stable_hitting_weak. intros H1 H2.
-  eapply sem_lub_unique; eassumption.
-Qed.
-
-Corollary stable_hitting_exists state :
-  exists out, stable_hitting kernel state out.
-Proof. apply stable_hitting_weak_exists. Qed.
-
-Corollary stable_hitting_unique state out1 out2 :
+Theorem stable_hitting_unique state out1 out2 :
   stable_hitting kernel state out1 ->
   stable_hitting kernel state out2 ->
   sem_eq out1 out2.
-Proof. apply stable_hitting_weak_unique. Qed.
+Proof.
+  unfold stable_hitting. intros H1 H2.
+  eapply sem_lub_unique; eassumption.
+Qed.
 
 End PrimitiveStableHittingLimits.
 
@@ -194,21 +179,17 @@ Qed.
 (** The central unbounded invariant theorem: closure of one primitive kernel
     is enough to establish closure of its entire omega stable-hitting limit.
     Totality is not needed for this support property. *)
-Theorem stable_hitting_weak_ae state out :
-  D state -> stable_hitting_weak kernel state out -> sem_ae out P.
+Theorem stable_hitting_ae state out :
+  D state -> stable_hitting kernel state out -> sem_ae out P.
 Proof.
   intros HD Hlimit. eapply sem_ae_lub; [exact Hlimit|].
   intro fuel. exact (stable_hitting_approx_ae fuel HD).
 Qed.
 
-Corollary stable_hitting_ae state out :
-  D state -> stable_hitting kernel state out -> sem_ae out P.
-Proof. apply stable_hitting_weak_ae. Qed.
-
 Corollary stable_hitting_ast_ae state out :
   D state -> stable_hitting_ast kernel state out -> sem_ae out P.
 Proof.
-  intros HD [Hweak _]. exact (stable_hitting_weak_ae HD Hweak).
+  intros HD [Hstable _]. exact (stable_hitting_ae HD Hstable).
 Qed.
 
 End PrimitiveStableHittingAE.

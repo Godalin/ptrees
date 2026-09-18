@@ -6,7 +6,7 @@ Require Import Morphisms Program.Equality.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import
-  Shallow UnifiedFrontier PrimitiveStableHitting OperationalProbabilisticPTS
+  Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel
   PEutt PStruct PStrong
   OperationalProbabilisticPTSFreeOmegaBase.
 
@@ -75,13 +75,13 @@ Proof.
   eapply peutt_coinduction with
     (sim := @free_translate_id_state R).
   - intros sT sS Hsim. dependent destruction Hsim.
-    destruct (stable_hitting_weak_exists
+    destruct (stable_hitting_exists
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (@ptree_primitive_kernel E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure R) (observe t0)) as [outS HS].
-    destruct (stable_hitting_weak_exists
+    destruct (stable_hitting_exists
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (@ptree_primitive_kernel E MN MF
@@ -171,20 +171,20 @@ Proof.
   eapply peutt_coinduction with
     (sim := @free_translate_comp_state R).
   - intros sL sR Hsim. dependent destruction Hsim.
-    destruct (stable_hitting_weak_exists
+    destruct (stable_hitting_exists
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (@ptree_primitive_kernel E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure R) (observe t0)) as [outS HS].
-    destruct (stable_hitting_weak_exists
+    destruct (stable_hitting_exists
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (@ptree_primitive_kernel F MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure R)
       (observe (PTree.translate rename1 t0))) as [outM HM].
-    destruct (stable_hitting_weak_exists
+    destruct (stable_hitting_exists
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (@ptree_primitive_kernel G MN MF
@@ -192,7 +192,7 @@ Proof.
         FreeOmegaMixedMeasure R)
       (observe (PTree.translate rename2
         (PTree.translate rename1 t0)))) as [outL HL].
-    destruct (stable_hitting_weak_exists
+    destruct (stable_hitting_exists
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (@ptree_primitive_kernel G MN MF
@@ -255,7 +255,7 @@ Qed.
     algebraic boundary: an effectful handler must close the native generator
     at handler-produced binds.  Operational scheduling and omega-limit
     composition have already been discharged by
-    [free_operational_interp_cofinal_all]. *)
+    [free_ptree_interp_cofinal_all]. *)
 Section FreeOmegaInterpCoinduction.
 Context {E F : Type -> Type} {MN : Type -> Type}
   `{NI : SemanticMeasure MN}
@@ -278,24 +278,24 @@ Theorem free_peutt_interp_of_head_lifts
     (source2 : MF (frontier_head E MN B0))
     (front1 : frontier_head E MN A0 -> MF (frontier_head F MN A0))
     (front2 : frontier_head E MN B0 -> MF (frontier_head F MN B0)) :
-  @operational_weak E MN MF
+  @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A0 (observe t1) source1 ->
-  @operational_weak E MN MF
+  @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega B0 (observe t2) source2 ->
-  (forall h, @operational_weak F MN MF
+  (forall h, @ptree_stable_hitting F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A0
-    (observe (operational_interp_head_tree handler0 h)) (front1 h)) ->
-  (forall h, @operational_weak F MN MF
+    (observe (ptree_interp_head_tree handler0 h)) (front1 h)) ->
+  (forall h, @ptree_stable_hitting F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega B0
-    (observe (operational_interp_head_tree handler0 h)) (front2 h)) ->
+    (observe (ptree_interp_head_tree handler0 h)) (front2 h)) ->
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     _ _
@@ -331,30 +331,30 @@ Theorem free_peutt_interp_of_head_lifts
     (PTree.interp handler0 t1) (PTree.interp handler0 t2).
 Proof.
   intros Hsource1 Hsource2 Hfront1 Hfront2 HsourceLift HfrontLift.
-  assert (Htarget1 : @operational_weak F MN MF
+  assert (Htarget1 : @ptree_stable_hitting F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A0
       (observe (PTree.interp handler0 t1))
       (free_omega_bind source1 front1)).
-  { eapply (operational_weak_interp
+  { eapply (ptree_stable_hitting_interp
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (MX := FreeOmegaMixedMeasure)).
-    + apply free_operational_interp_cofinal_all.
+    + apply free_ptree_interp_cofinal_all.
     + exact Hsource1.
     + exact Hfront1. }
-  assert (Htarget2 : @operational_weak F MN MF
+  assert (Htarget2 : @ptree_stable_hitting F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega B0
       (observe (PTree.interp handler0 t2))
       (free_omega_bind source2 front2)).
-  { eapply (operational_weak_interp
+  { eapply (ptree_stable_hitting_interp
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (MX := FreeOmegaMixedMeasure)).
-    + apply free_operational_interp_cofinal_all.
+    + apply free_ptree_interp_cofinal_all.
     + exact Hsource2.
     + exact Hfront2. }
   eapply peutt_of_hitting_lift
@@ -564,8 +564,8 @@ Definition free_interp_vis_fusion : Prop :=
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega
         A B RR free_interp_bisim_candidate)
-      (observe (operational_interp_head_tree handler (FHVis e k1)))
-      (observe (operational_interp_head_tree handler (FHVis e k2))).
+      (observe (ptree_interp_head_tree handler (FHVis e k1)))
+      (observe (ptree_interp_head_tree handler (FHVis e k2))).
 
 (** Full effectful interpreter preservation follows once the single
     collapsed handled-[Vis] fusion above is supplied.  This theorem
@@ -592,7 +592,7 @@ Proof.
   eapply (peutt_coinduction_upto_bind
     (E := F) (MN := MN) (MF := MF)
     (fun A0 R0 (t : ptree F MN A0) (k : A0 -> ptree F MN R0) =>
-      free_operational_bind_cofinal_all t k)
+      free_ptree_bind_cofinal_all t k)
     (A := A) (B := B) (RR0 := RR)
     (sim := free_interp_bisim_candidate)).
   - intros s1 s2 Hsim.
@@ -602,14 +602,14 @@ Proof.
     destruct Hsim as [Hs1 Hsim].
     destruct Hsim as [Hs2 Hu].
     rewrite Hs1, Hs2.
-    destruct (stable_hitting_weak_exists
+    destruct (stable_hitting_exists
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (@ptree_primitive_kernel E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure A) (observe u1))
       as [source1 Hsource1].
-    destruct (stable_hitting_weak_exists
+    destruct (stable_hitting_exists
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (@ptree_primitive_kernel E MN MF
@@ -620,13 +620,13 @@ Proof.
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (fun h : frontier_head E MN A =>
-        operational_interp_head_tree handler h))
+        ptree_interp_head_tree handler h))
       as [front1 Hfront1].
     destruct (stable_hitting_front_choice
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (fun h : frontier_head E MN B =>
-        operational_interp_head_tree handler h))
+        ptree_interp_head_tree handler h))
       as [front2 Hfront2].
     assert (HsourceLift :
       @sem_lift MF
@@ -641,30 +641,30 @@ Proof.
         source1 source2).
     { eapply peutt_state_hitting_lift;
         [exact Hu|exact Hsource1|exact Hsource2]. }
-    assert (Htarget1 : @operational_weak F MN MF
+    assert (Htarget1 : @ptree_stable_hitting F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A
       (observe (PTree.interp handler u1))
       (free_omega_bind source1 front1)).
-    { eapply (operational_weak_interp
+    { eapply (ptree_stable_hitting_interp
         (FI := FreeOmegaObservableSemanticMeasure)
         (FO := FreeOmegaObservableSemanticOmega)
         (handler := handler) (t := u1) (hs := source1) (front := front1)).
-      - apply free_operational_interp_cofinal_all.
+      - apply free_ptree_interp_cofinal_all.
       - exact Hsource1.
       - exact Hfront1. }
-    assert (Htarget2 : @operational_weak F MN MF
+    assert (Htarget2 : @ptree_stable_hitting F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega B
       (observe (PTree.interp handler u2))
       (free_omega_bind source2 front2)).
-    { eapply (operational_weak_interp
+    { eapply (ptree_stable_hitting_interp
         (FI := FreeOmegaObservableSemanticMeasure)
         (FO := FreeOmegaObservableSemanticOmega)
         (handler := handler) (t := u2) (hs := source2) (front := front2)).
-      - apply free_operational_interp_cofinal_all.
+      - apply free_ptree_interp_cofinal_all.
       - exact Hsource2.
       - exact Hfront2. }
     eapply stable_hitting_match_of_hitting_lift;

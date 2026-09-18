@@ -10,7 +10,7 @@ From mathcomp Require Import ssreflect.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import PStruct PStrong PrimitiveStableHitting
-  OperationalProbabilisticPTS UnifiedFrontier.
+  PTreeKernel UnifiedFrontier.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

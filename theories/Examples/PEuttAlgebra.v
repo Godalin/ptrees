@@ -8,7 +8,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure MeasureIterationEnum.
-From PTree.Eq Require Import OperationalProbabilisticPTS
+From PTree.Eq Require Import PTreeKernel
   OperationalProbabilisticPTSFreeOmega PEutt PStruct PStrong.
 From PTree.Examples Require Import EnumMeasureRegression.
 
@@ -380,13 +380,13 @@ Qed.
     source-head/handler diagonal for every source tree. *)
 Lemma canonical_interp_cofinal_regression {R}
     (t : ptree sourceE Enum R) :
-  @operational_interp_cofinal sourceE algebraE Enum MF
+  @ptree_interp_cofinal sourceE algebraE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R bit_handler t.
-Proof. apply free_operational_interp_cofinal_all. Qed.
+Proof. apply free_ptree_interp_cofinal_all. Qed.
 
 Lemma canonical_interp_bind_regression {A B}
     (t : ptree sourceE Enum A) (k : A -> ptree sourceE Enum B) :

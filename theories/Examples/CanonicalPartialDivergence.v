@@ -8,7 +8,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum MeasureIterationEnum
   TwoLevelMeasure TwoLevelMeasureEnum.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier
-  OperationalProbabilisticPTS PEutt ProbabilisticTrace.
+  PTreeKernel PEutt ProbabilisticTrace.
 From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
@@ -65,7 +65,7 @@ Proof.
 Qed.
 
 Lemma canonical_spin_stable_hitting_zero :
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel regE Enum Enum
       Enum_SemanticMeasure Enum_MixedMeasure bool)
     (observe canonical_spin) [::].
@@ -121,7 +121,7 @@ Proof.
 Qed.
 
 Lemma half_return_half_diverge_stable_hitting :
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel regE Enum Enum
       Enum_SemanticMeasure Enum_MixedMeasure bool)
     (observe half_return_half_diverge) half_return_heads.
@@ -164,7 +164,7 @@ Proof.
 Qed.
 
 Lemma enum_ret_true_stable_hitting :
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel regE Enum Enum
       Enum_SemanticMeasure Enum_MixedMeasure bool)
     (observe (Ret true)) (sem_ret (FHRet true)).
@@ -189,7 +189,7 @@ Proof.
   have Hmass : sem_same_mass half_return_heads out.
   { eapply sem_lift_same_mass. exact Hlift. }
   have Hweight := enum_sem_same_mass_expect_one Hmass.
-  unfold stable_hitting_weak in Hout.
+  unfold stable_hitting in Hout.
   specialize (Hout (fun _ => true) (1 / 4 : rat)).
   have Hquarter : (0 : rat) < 1 / 4 by native_compute.
   destruct (Hout Hquarter) as [N HN].

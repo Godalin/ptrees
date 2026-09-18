@@ -4,7 +4,7 @@ Set Universe Polymorphism.
 
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
-From PTree.Eq Require Import OperationalProbabilisticPTS PEutt.
+From PTree.Eq Require Import PTreeKernel PEutt.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

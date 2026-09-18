@@ -6,7 +6,7 @@ Require Import List Arith.PeanoNat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FreeOmegaMeasure.
 From PTree.Eq Require Import
-  OperationalProbabilisticPTS OperationalProbabilisticPTSFreeOmegaBase.
+  PTreeKernel OperationalProbabilisticPTSFreeOmegaBase.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -33,29 +33,29 @@ Proof.
     + eapply Hmono; [apply Nat.le_max_r|exact (Htail _ _ Hin)].
 Qed.
 
-Theorem enum_free_operational_bind_prob_uniform {A R X}
+Theorem enum_free_ptree_bind_prob_uniform {A R X}
     (mu : Enum X) (c : X -> ptree E Enum A)
     (k : A -> ptree E Enum R) :
-  (forall x, free_operational_bind_approx_cofinal (c x) k) ->
-  free_operational_bind_prob_uniform mu c k.
+  (forall x, free_ptree_bind_approx_cofinal (c x) k) ->
+  free_ptree_bind_prob_uniform mu c k.
 Proof.
   intro Hbranches. split.
   - intro fuel.
     destruct (enum_uniform_nat_bound mu
       (P := fun x bound => free_omega_approx eq
-        (operational_hitting_approx (MF := FreeOmega Enum) fuel
+        (ptree_hitting_approx (MF := FreeOmega Enum) fuel
           (observe (PTree.bind (c x) k)))
-        (operational_bind_diagonal_approx (MF := FreeOmega Enum)
+        (ptree_bind_diagonal_approx (MF := FreeOmega Enum)
           bound (c x) k))) as [bound Hbound].
     + intro x. exact (proj1 (Hbranches x) fuel).
     + intros x n m Hnm Happrox.
       eapply free_omega_approx_trans; [exact Happrox|].
-      apply free_operational_bind_diagonal_mono. exact Hnm.
+      apply free_ptree_bind_diagonal_mono. exact Hnm.
     + exists bound,
         (fun x => free_omega_approx eq
-          (operational_hitting_approx (MF := FreeOmega Enum) fuel
+          (ptree_hitting_approx (MF := FreeOmega Enum) fuel
             (observe (PTree.bind (c x) k)))
-          (operational_bind_diagonal_approx (MF := FreeOmega Enum)
+          (ptree_bind_diagonal_approx (MF := FreeOmega Enum)
             bound (c x) k)).
       split.
       * intros p x Hin _. exact (Hbound p x Hin).
@@ -63,35 +63,35 @@ Proof.
   - intro fuel.
     destruct (enum_uniform_nat_bound mu
       (P := fun x bound => free_omega_approx eq
-        (operational_bind_diagonal_approx (MF := FreeOmega Enum)
+        (ptree_bind_diagonal_approx (MF := FreeOmega Enum)
           fuel (c x) k)
-        (operational_hitting_approx (MF := FreeOmega Enum) bound
+        (ptree_hitting_approx (MF := FreeOmega Enum) bound
           (observe (PTree.bind (c x) k))))) as [bound Hbound].
     + intro x. destruct (proj2 (Hbranches x) fuel) as [n Hn].
       exists n. eapply free_omega_approx_mono; [|exact Hn].
       intros a b Hba. symmetry. exact Hba.
     + intros x n m Hnm Happrox.
       eapply free_omega_approx_trans; [exact Happrox|].
-      apply free_operational_hitting_mono. exact Hnm.
+      apply free_ptree_hitting_mono. exact Hnm.
     + exists bound,
         (fun x => free_omega_approx eq
-          (operational_bind_diagonal_approx (MF := FreeOmega Enum)
+          (ptree_bind_diagonal_approx (MF := FreeOmega Enum)
             fuel (c x) k)
-          (operational_hitting_approx (MF := FreeOmega Enum) bound
+          (ptree_hitting_approx (MF := FreeOmega Enum) bound
             (observe (PTree.bind (c x) k)))).
       split.
       * intros p x Hin _. exact (Hbound p x Hin).
       * intros x Hx. exact Hx.
 Qed.
 
-Corollary enum_free_operational_bind_prob_approx_cofinal {A R X}
+Corollary enum_free_ptree_bind_prob_approx_cofinal {A R X}
     (mu : Enum X) (c : X -> ptree E Enum A)
     (k : A -> ptree E Enum R) :
-  (forall x, free_operational_bind_approx_cofinal (c x) k) ->
-  free_operational_bind_approx_cofinal (Prob mu c) k.
+  (forall x, free_ptree_bind_approx_cofinal (c x) k) ->
+  free_ptree_bind_approx_cofinal (Prob mu c) k.
 Proof.
-  intro Hbranches. apply free_operational_bind_prob_approx_cofinal.
-  exact (enum_free_operational_bind_prob_uniform
+  intro Hbranches. apply free_ptree_bind_prob_approx_cofinal.
+  exact (enum_free_ptree_bind_prob_uniform
     mu (c := c) (k := k) Hbranches).
 Qed.
 

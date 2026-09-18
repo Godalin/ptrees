@@ -11,7 +11,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import
   PrimitiveStableHitting UnifiedFrontier
-  OperationalProbabilisticPTS.
+  PTreeKernel.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -38,11 +38,11 @@ Hypothesis AR_mono : forall sim1 sim2,
 
 Definition stable_hitting_match (sim : S1 -> S2 -> Prop)
     (s1 : S1) (s2 : S2) : Prop :=
-  (forall out1, stable_hitting_weak kernel1 s1 out1 ->
-    exists out2, stable_hitting_weak kernel2 s2 out2 /\
+  (forall out1, stable_hitting kernel1 s1 out1 ->
+    exists out2, stable_hitting kernel2 s2 out2 /\
       sem_lift (AR sim) out1 out2) /\
-  (forall out2, stable_hitting_weak kernel2 s2 out2 ->
-    exists out1, stable_hitting_weak kernel1 s1 out1 /\
+  (forall out2, stable_hitting kernel2 s2 out2 ->
+    exists out1, stable_hitting kernel1 s1 out1 /\
       sem_lift (AR sim) out1 out2).
 
 Lemma stable_hitting_match_mono sim1 sim2 :
@@ -144,18 +144,18 @@ Variable AR : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
     other complete witnesses are transported to these by uniqueness. *)
 Lemma stable_hitting_match_of_hitting_lift
     (sim : S1 -> S2 -> Prop) s1 s2 out1 out2 :
-  stable_hitting_weak kernel1 s1 out1 ->
-  stable_hitting_weak kernel2 s2 out2 ->
+  stable_hitting kernel1 s1 out1 ->
+  stable_hitting kernel2 s2 out2 ->
   sem_lift (AR sim) out1 out2 ->
   stable_hitting_match kernel1 kernel2 AR sim s1 s2.
 Proof.
   intros Hhit1 Hhit2 Hlift. unfold stable_hitting_match. split.
   - intros out1' Hhit1'. exists out2. split; [exact Hhit2|].
     eapply sem_lift_proper_l; [|exact Hlift].
-    eapply stable_hitting_weak_unique; [exact Hhit1|exact Hhit1'].
+    eapply stable_hitting_unique; [exact Hhit1|exact Hhit1'].
   - intros out2' Hhit2'. exists out1. split; [exact Hhit1|].
     eapply sem_lift_proper_r; [|exact Hlift].
-    eapply stable_hitting_weak_unique; [exact Hhit2|exact Hhit2'].
+    eapply stable_hitting_unique; [exact Hhit2|exact Hhit2'].
 Qed.
 
 (** Eliminate a generator match at chosen complete witnesses.  This is the
@@ -166,14 +166,14 @@ Qed.
 Lemma stable_hitting_match_hitting_lift
     (sim : S1 -> S2 -> Prop) s1 s2 out1 out2 :
   stable_hitting_match kernel1 kernel2 AR sim s1 s2 ->
-  stable_hitting_weak kernel1 s1 out1 ->
-  stable_hitting_weak kernel2 s2 out2 ->
+  stable_hitting kernel1 s1 out1 ->
+  stable_hitting kernel2 s2 out2 ->
   sem_lift (AR sim) out1 out2.
 Proof.
   intros [Hforward _] Hhit1 Hhit2.
   destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
   eapply sem_lift_proper_r; [|exact Hlift].
-  eapply stable_hitting_weak_unique; [exact Hhit2'|exact Hhit2].
+  eapply stable_hitting_unique; [exact Hhit2'|exact Hhit2].
 Qed.
 
 End StableHittingMatchEndpoint.
@@ -558,9 +558,9 @@ Variable RR : R1 -> R2 -> Prop.
     stable-hitting limits are coupled. *)
 Lemma peutt_of_hitting_lift
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
   sem_lift (ptree_stable_head_rel RR
     (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->
@@ -573,9 +573,9 @@ Qed.
 Lemma peutt_preserves_hitting_mass
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
   peutt RR t1 t2 ->
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
   sem_same_mass out1 out2.
 Proof.
@@ -586,15 +586,15 @@ Proof.
   apply sem_lift_same_mass in Hlift.
   unfold sem_same_mass in Hlift |- *.
   eapply sem_lift_proper_r; [|exact Hlift].
-  eapply stable_hitting_weak_unique; [exact Hhit2'|exact Hhit2].
+  eapply stable_hitting_unique; [exact Hhit2'|exact Hhit2].
 Qed.
 
 Lemma peutt_hitting_lift
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
   peutt RR t1 t2 ->
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
   sem_lift (ptree_stable_head_rel RR
     (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2.
@@ -603,14 +603,14 @@ Proof.
   destruct Hrel as [Hforward _].
   destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
   eapply sem_lift_proper_r; [|exact Hlift].
-  eapply stable_hitting_weak_unique; eassumption.
+  eapply stable_hitting_unique; eassumption.
 Qed.
 
 Corollary peutt_not_of_mass_mismatch
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
   ~ sem_same_mass out1 out2 ->
   ~ peutt RR t1 t2.
@@ -636,20 +636,20 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
   `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
 
-Lemma stable_hitting_weak_prob {R X}
+Lemma stable_hitting_prob {R X}
     (mu : MN X) (k : X -> ptree E MN R)
     (front : X -> MF (frontier_head E MN R)) (Good : X -> Prop) :
   sem_ae mu Good ->
-  (forall x, Good x -> stable_hitting_weak
+  (forall x, Good x -> stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
     (observe (k x)) (front x)) ->
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
     (observe (Prob mu k)) (mixed_bind mu front).
 Proof.
-  intros Hae Hfront. change (operational_weak (MF := MF)
+  intros Hae Hfront. change (ptree_stable_hitting (MF := MF)
     (observe (Prob mu k)) (mixed_bind mu front)).
-  eapply operational_weak_prob; eassumption.
+  eapply ptree_stable_hitting_prob; eassumption.
 Qed.
 
 Theorem peutt_prob {R1 R2 X1 X2}
@@ -662,22 +662,22 @@ Theorem peutt_prob {R1 R2 X1 X2}
 Proof.
   intros Hmu Hk.
   assert (Hexists1 : forall x1, exists out,
-      stable_hitting_weak
+      stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R1)
         (observe (k1 x1)) out).
-  { intro x1. apply stable_hitting_weak_exists. }
+  { intro x1. apply stable_hitting_exists. }
   assert (Hexists2 : forall x2, exists out,
-      stable_hitting_weak
+      stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R2)
         (observe (k2 x2)) out).
-  { intro x2. apply stable_hitting_weak_exists. }
+  { intro x2. apply stable_hitting_exists. }
   destruct (choice _ Hexists1) as [front1 Hfront1].
   destruct (choice _ Hexists2) as [front2 Hfront2].
   eapply peutt_of_hitting_lift.
-  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros x _. exact (Hfront1 x).
-  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros x _. exact (Hfront2 x).
   - eapply mixed_lift_bind; [exact Hmu|].
@@ -699,12 +699,12 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}.
 
-Lemma stable_hitting_weak_ret {R} (r : R) :
-  stable_hitting_weak
+Lemma stable_hitting_ret {R} (r : R) :
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R) (RetF r)
     (sem_ret (FHRet r)).
 Proof.
-  unfold stable_hitting_weak.
+  unfold stable_hitting.
   eapply sem_lub_chain_proper with
       (chain := fun _ => sem_ret (FHRet r)).
   - intro fuel. apply sem_eq_sym.
@@ -713,13 +713,13 @@ Proof.
   - apply sem_lub_constant.
 Qed.
 
-Lemma stable_hitting_weak_vis {R X} (e : E X)
+Lemma stable_hitting_vis {R X} (e : E X)
     (k : X -> ptree E MN R) :
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R) (VisF e k)
     (sem_ret (FHVis e k)).
 Proof.
-  unfold stable_hitting_weak.
+  unfold stable_hitting.
   eapply sem_lub_chain_proper with
       (chain := fun _ => sem_ret (FHVis e k)).
   - intro fuel. apply sem_eq_sym.
@@ -746,17 +746,17 @@ Proof.
   intro Hk. unfold stable_hitting_match. split.
   - intros out1 Hhit1.
     exists (sem_ret (FHVis e k2)). split.
-    + apply stable_hitting_weak_vis.
+    + apply stable_hitting_vis.
     + eapply sem_lift_proper_l.
-      * eapply stable_hitting_weak_unique;
-          [exact (stable_hitting_weak_vis e k1)|exact Hhit1].
+      * eapply stable_hitting_unique;
+          [exact (stable_hitting_vis e k1)|exact Hhit1].
       * apply sem_lift_ret. apply FHRVis. exact Hk.
   - intros out2 Hhit2.
     exists (sem_ret (FHVis e k1)). split.
-    + apply stable_hitting_weak_vis.
+    + apply stable_hitting_vis.
     + eapply sem_lift_proper_r.
-      * eapply stable_hitting_weak_unique;
-          [exact (stable_hitting_weak_vis e k2)|exact Hhit2].
+      * eapply stable_hitting_unique;
+          [exact (stable_hitting_vis e k2)|exact Hhit2].
       * apply sem_lift_ret. apply FHRVis. exact Hk.
 Qed.
 
@@ -772,13 +772,13 @@ Proof.
   destruct fuel; [apply sem_eq_refl|apply sem_eq_refl].
 Qed.
 
-Theorem stable_hitting_weak_tau_iff {R} (t : ptree E MN R) out :
-  stable_hitting_weak
+Theorem stable_hitting_tau_iff {R} (t : ptree E MN R) out :
+  stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R) (TauF t) out <->
-  stable_hitting_weak
+  stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out.
 Proof.
-  unfold stable_hitting_weak. split; intro Hhit.
+  unfold stable_hitting. split; intro Hhit.
   - apply (proj2 (sem_lub_zero_prefix
       (fun n => stable_hitting_approx
         (@ptree_primitive_kernel E MN MF FI MX R) n (observe t)) out)).
@@ -814,22 +814,22 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 (** Stable hitting composes with bind under the local global/diagonal fuel
     cofinality obligation.  This theorem mentions neither behavioral
     relation nor structured frontier derivations. *)
-Theorem stable_hitting_weak_bind {A R}
+Theorem stable_hitting_bind {A R}
     (t : ptree E MN A) (k : A -> ptree E MN R)
     hs (front : A -> MF (frontier_head E MN R)) :
-  operational_bind_cofinal (MF := MF) t k ->
-  stable_hitting_weak
+  ptree_bind_cofinal (MF := MF) t k ->
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX A) (observe t) hs ->
-  (forall a, stable_hitting_weak
+  (forall a, stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
     (observe (k a)) (front a)) ->
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
     (observe (PTree.bind t k))
     (sem_bind hs (frontier_head_bind_front k front)).
 Proof.
   intros Hcofinal Hsource Hfront.
-  eapply operational_weak_bind.
+  eapply ptree_stable_hitting_bind.
   - exact Hcofinal.
   - exact Hsource.
   - exact Hfront.
@@ -986,11 +986,11 @@ Lemma peutt_tau_l {R} (t : ptree E MN R) :
 Proof.
   apply peutt_fold. unfold stable_hitting_match. split.
   - intros out Htau. exists out. split.
-    + apply (proj1 (stable_hitting_weak_tau_iff t out)). exact Htau.
+    + apply (proj1 (stable_hitting_tau_iff t out)). exact Htau.
     + apply sem_lift_refl. apply ptree_stable_head_rel_refl.
       exact peutt_state_refl.
   - intros out Ht. exists out. split.
-    + apply (proj2 (stable_hitting_weak_tau_iff t out)). exact Ht.
+    + apply (proj2 (stable_hitting_tau_iff t out)). exact Ht.
     + apply sem_lift_refl. apply ptree_stable_head_rel_refl.
       exact peutt_state_refl.
 Qed.
@@ -1008,16 +1008,16 @@ Proof.
   intro Hrr. apply peutt_fold.
   unfold stable_hitting_match. split.
   - intros out1 Hhit1. exists (sem_ret (FHRet r2)). split.
-    + apply stable_hitting_weak_ret.
+    + apply stable_hitting_ret.
     + eapply sem_lift_proper_l.
-      * eapply stable_hitting_weak_unique;
-          [apply stable_hitting_weak_ret|exact Hhit1].
+      * eapply stable_hitting_unique;
+          [apply stable_hitting_ret|exact Hhit1].
       * apply sem_lift_ret. constructor. exact Hrr.
   - intros out2 Hhit2. exists (sem_ret (FHRet r1)). split.
-    + apply stable_hitting_weak_ret.
+    + apply stable_hitting_ret.
     + eapply sem_lift_proper_r.
-      * eapply stable_hitting_weak_unique;
-          [apply stable_hitting_weak_ret|exact Hhit2].
+      * eapply stable_hitting_unique;
+          [apply stable_hitting_ret|exact Hhit2].
       * apply sem_lift_ret. constructor. exact Hrr.
 Qed.
 
@@ -1088,13 +1088,13 @@ Theorem peutt_prob_ret {R X}
   peutt eq (Prob (sem_ret x) k) (k x).
 Proof.
   assert (Hexists : forall y, exists out,
-      stable_hitting_weak
+      stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R)
         (observe (k y)) out).
-  { intro y. apply stable_hitting_weak_exists. }
+  { intro y. apply stable_hitting_exists. }
   destruct (choice _ Hexists) as [front Hfront].
   eapply peutt_of_hitting_lift.
-  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros y _. exact (Hfront y).
   - exact (Hfront x).
@@ -1115,19 +1115,19 @@ Theorem peutt_prob_flatten {R X Y}
     (Prob (sem_bind mu h) k).
 Proof.
   assert (Hexists : forall y, exists out,
-      stable_hitting_weak
+      stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R)
         (observe (k y)) out).
-  { intro y. apply stable_hitting_weak_exists. }
+  { intro y. apply stable_hitting_exists. }
   destruct (choice _ Hexists) as [front Hfront].
   eapply peutt_of_hitting_lift.
-  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := fun _ => True).
     + apply sem_ae_true.
-    + intros x _. eapply stable_hitting_weak_prob with
+    + intros x _. eapply stable_hitting_prob with
           (Good := fun _ => True).
       * apply sem_ae_true.
       * intros y _. exact (Hfront y).
-  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros y _. exact (Hfront y).
   - eapply sem_lift_mono.
@@ -1148,21 +1148,21 @@ Theorem peutt_prob_interchange_of {R X Y}
     (Prob nu (fun y => Prob mu (fun x => k x y))).
 Proof.
   assert (Hexists : forall p : X * Y, exists out,
-      stable_hitting_weak
+      stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R)
         (observe (k (fst p) (snd p))) out).
-  { intro p. apply stable_hitting_weak_exists. }
+  { intro p. apply stable_hitting_exists. }
   destruct (choice _ Hexists) as [front Hfront].
   eapply peutt_of_hitting_lift.
-  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := fun _ => True).
     + apply sem_ae_true.
-    + intros x _. eapply stable_hitting_weak_prob with
+    + intros x _. eapply stable_hitting_prob with
           (Good := fun _ => True).
       * apply sem_ae_true.
       * intros y _. exact (Hfront (x, y)).
-  - eapply stable_hitting_weak_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := fun _ => True).
     + apply sem_ae_true.
-    + intros y _. eapply stable_hitting_weak_prob with
+    + intros y _. eapply stable_hitting_prob with
           (Good := fun _ => True).
       * apply sem_ae_true.
       * intros x _. exact (Hfront (x, y)).
@@ -1239,22 +1239,22 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 
 Variable bind_cofinality : forall A R
     (t : ptree E MN A) (k : A -> ptree E MN R),
-    operational_bind_cofinal (MF := MF) t k.
+    ptree_bind_cofinal (MF := MF) t k.
 
 Lemma stable_hitting_front_choice {A R} (k : A -> ptree E MN R) :
   exists front : A -> MF (frontier_head E MN R),
-    forall a, stable_hitting_weak
+    forall a, stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R)
       (observe (k a)) (front a).
 Proof.
   assert (Hexists : forall a : A,
       exists out : MF (frontier_head E MN R),
-        stable_hitting_weak
+        stable_hitting
           (@ptree_primitive_kernel E MN MF FI MX R)
           (observe (k a)) out).
-  { intro a. apply stable_hitting_weak_exists. }
+  { intro a. apply stable_hitting_exists. }
   exact (choice
-    (fun a out => stable_hitting_weak
+    (fun a out => stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R)
       (observe (k a)) out) Hexists).
 Qed.
@@ -1263,9 +1263,9 @@ Lemma peutt_state_hitting_lift {R1 R2}
     (RR : R1 -> R2 -> Prop)
     (s1 : ptree' E MN R1) (s2 : ptree' E MN R2) out1 out2 :
   peutt_state RR s1 s2 ->
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R1) s1 out1 ->
-  stable_hitting_weak
+  stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R2) s2 out2 ->
   sem_lift (ptree_stable_head_rel RR
     (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2.
@@ -1275,7 +1275,7 @@ Proof.
   destruct Hrel as [Hforward _].
   destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
   eapply sem_lift_proper_r; [|exact Hlift].
-  eapply stable_hitting_weak_unique; [exact Hhit2'|exact Hhit2].
+  eapply stable_hitting_unique; [exact Hhit2'|exact Hhit2].
 Qed.
 
 (** Closure used by the up-to-bind proof method.  Besides already known
@@ -1365,29 +1365,29 @@ Proof.
     unfold stable_hitting_match in Hsource |- *.
     destruct Hsource as [Hforward Hbackward]. split.
     + intros hs1 Hhit1.
-      destruct (stable_hitting_weak_exists
+      destruct (stable_hitting_exists
         (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1))
         as [source1 Hsource1].
       destruct (Hforward source1 Hsource1)
         as [source2 [Hsource2 Hlift]].
       destruct (stable_hitting_front_choice k1) as [front1 Hfront1].
       destruct (stable_hitting_front_choice k2) as [front2 Hfront2].
-      assert (Hbound1 : stable_hitting_weak
+      assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
         (sem_bind source1 (frontier_head_bind_front k1 front1))).
-      { eapply stable_hitting_weak_bind;
+      { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
-      assert (Hbound2 : stable_hitting_weak
+      assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX B)
         (observe (PTree.bind t2 k2))
         (sem_bind source2 (frontier_head_bind_front k2 front2))).
-      { eapply stable_hitting_weak_bind;
+      { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
       exists (sem_bind source2 (frontier_head_bind_front k2 front2)). split.
       * exact Hbound2.
       * eapply sem_lift_proper_l.
-        -- eapply stable_hitting_weak_unique; [exact Hbound1|exact Hhit1].
+        -- eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
         -- eapply sem_lift_bind; [exact Hlift|].
            intros h1 h2 Hhead. dependent destruction Hhead.
            ++ destruct (Hk r1 r2 H) as [Hrecursive|Hknown].
@@ -1406,29 +1406,29 @@ Proof.
               ** exact (H x).
               ** exact Hk.
     + intros hs2 Hhit2.
-      destruct (stable_hitting_weak_exists
+      destruct (stable_hitting_exists
         (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2))
         as [source2 Hsource2].
       destruct (Hbackward source2 Hsource2)
         as [source1 [Hsource1 Hlift]].
       destruct (stable_hitting_front_choice k1) as [front1 Hfront1].
       destruct (stable_hitting_front_choice k2) as [front2 Hfront2].
-      assert (Hbound1 : stable_hitting_weak
+      assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
         (sem_bind source1 (frontier_head_bind_front k1 front1))).
-      { eapply stable_hitting_weak_bind;
+      { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
-      assert (Hbound2 : stable_hitting_weak
+      assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX B)
         (observe (PTree.bind t2 k2))
         (sem_bind source2 (frontier_head_bind_front k2 front2))).
-      { eapply stable_hitting_weak_bind;
+      { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
       exists (sem_bind source1 (frontier_head_bind_front k1 front1)). split.
       * exact Hbound1.
       * eapply sem_lift_proper_r.
-        -- eapply stable_hitting_weak_unique; [exact Hbound2|exact Hhit2].
+        -- eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
         -- eapply sem_lift_bind; [exact Hlift|].
            intros h1 h2 Hhead. dependent destruction Hhead.
            ++ destruct (Hk r1 r2 H) as [Hrecursive|Hknown].
@@ -1516,29 +1516,29 @@ Proof.
     unfold stable_hitting_match in Hsource |- *.
     destruct Hsource as [Hforward Hbackward]. split.
     + intros hs1 Hhit1.
-      destruct (stable_hitting_weak_exists
+      destruct (stable_hitting_exists
         (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1))
         as [source1 Hsource1].
       destruct (Hforward source1 Hsource1)
         as [source2 [Hsource2 Hlift]].
       destruct (stable_hitting_front_choice k1) as [front1 Hfront1].
       destruct (stable_hitting_front_choice k2) as [front2 Hfront2].
-      assert (Hbound1 : stable_hitting_weak
+      assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
         (sem_bind source1 (frontier_head_bind_front k1 front1))).
-      { eapply stable_hitting_weak_bind;
+      { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
-      assert (Hbound2 : stable_hitting_weak
+      assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t2 k2))
         (sem_bind source2 (frontier_head_bind_front k2 front2))).
-      { eapply stable_hitting_weak_bind;
+      { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
       exists (sem_bind source2 (frontier_head_bind_front k2 front2)). split.
       * exact Hbound2.
       * eapply sem_lift_proper_l.
-        -- eapply stable_hitting_weak_unique; [exact Hbound1|exact Hhit1].
+        -- eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
         -- eapply sem_lift_bind; [exact Hlift|].
         intros h1 h2 Hhead. dependent destruction Hhead.
         -- eapply sem_lift_mono.
@@ -1553,29 +1553,29 @@ Proof.
            ++ exact (H x).
            ++ exact Hk.
     + intros hs2 Hhit2.
-      destruct (stable_hitting_weak_exists
+      destruct (stable_hitting_exists
         (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2))
         as [source2 Hsource2].
       destruct (Hbackward source2 Hsource2)
         as [source1 [Hsource1 Hlift]].
       destruct (stable_hitting_front_choice k1) as [front1 Hfront1].
       destruct (stable_hitting_front_choice k2) as [front2 Hfront2].
-      assert (Hbound1 : stable_hitting_weak
+      assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
         (sem_bind source1 (frontier_head_bind_front k1 front1))).
-      { eapply stable_hitting_weak_bind;
+      { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
-      assert (Hbound2 : stable_hitting_weak
+      assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t2 k2))
         (sem_bind source2 (frontier_head_bind_front k2 front2))).
-      { eapply stable_hitting_weak_bind;
+      { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
       exists (sem_bind source1 (frontier_head_bind_front k1 front1)). split.
       * exact Hbound1.
       * eapply sem_lift_proper_r.
-        -- eapply stable_hitting_weak_unique; [exact Hbound2|exact Hhit2].
+        -- eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
         -- eapply sem_lift_bind; [exact Hlift|].
         intros h1 h2 Hhead. dependent destruction Hhead.
         -- eapply sem_lift_mono.
@@ -1593,7 +1593,7 @@ Qed.
 
 (** Monadic congruence.  The only syntax-specific premise is the current
     global form of the global/diagonal fuel cofinality theorem; it is used as
-    a proof-side scheduling fact by [stable_hitting_weak_bind], never by the
+    a proof-side scheduling fact by [stable_hitting_bind], never by the
     definition of [peutt]. *)
 Theorem peutt_bind : forall A R1 R2
     (RR : R1 -> R2 -> Prop)
@@ -1637,29 +1637,29 @@ Proof.
   unfold stable_hitting_match in Hsource |- *.
   destruct Hsource as [Hforward Hbackward]. split.
   - intros hs1 Hhit1.
-    destruct (stable_hitting_weak_exists
+    destruct (stable_hitting_exists
       (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1))
       as [source1 Hsource1].
     destruct (Hforward source1 Hsource1)
       as [source2 [Hsource2 Hlift]].
     destruct (stable_hitting_front_choice k1) as [front1 Hfront1].
     destruct (stable_hitting_front_choice k2) as [front2 Hfront2].
-    assert (Hbound1 : stable_hitting_weak
+    assert (Hbound1 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t1 k1))
       (sem_bind source1 (frontier_head_bind_front k1 front1))).
-    { eapply stable_hitting_weak_bind;
+    { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
-    assert (Hbound2 : stable_hitting_weak
+    assert (Hbound2 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t2 k2))
       (sem_bind source2 (frontier_head_bind_front k2 front2))).
-    { eapply stable_hitting_weak_bind;
+    { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
     exists (sem_bind source2 (frontier_head_bind_front k2 front2)). split.
     + exact Hbound2.
     + eapply sem_lift_proper_l.
-      * eapply stable_hitting_weak_unique; [exact Hbound1|exact Hhit1].
+      * eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
       * eapply sem_lift_bind; [exact Hlift|].
         intros h1 h2 Hhead. dependent destruction Hhead.
         -- eapply sem_lift_mono.
@@ -1671,29 +1671,29 @@ Proof.
         -- apply sem_lift_ret. constructor. intro x.
            eapply peutt_bind; [exact (H x)|]. exact Hk.
   - intros hs2 Hhit2.
-    destruct (stable_hitting_weak_exists
+    destruct (stable_hitting_exists
       (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2))
       as [source2 Hsource2].
     destruct (Hbackward source2 Hsource2)
       as [source1 [Hsource1 Hlift]].
     destruct (stable_hitting_front_choice k1) as [front1 Hfront1].
     destruct (stable_hitting_front_choice k2) as [front2 Hfront2].
-    assert (Hbound1 : stable_hitting_weak
+    assert (Hbound1 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t1 k1))
       (sem_bind source1 (frontier_head_bind_front k1 front1))).
-    { eapply stable_hitting_weak_bind;
+    { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
-    assert (Hbound2 : stable_hitting_weak
+    assert (Hbound2 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t2 k2))
       (sem_bind source2 (frontier_head_bind_front k2 front2))).
-    { eapply stable_hitting_weak_bind;
+    { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
     exists (sem_bind source1 (frontier_head_bind_front k1 front1)). split.
     + exact Hbound1.
     + eapply sem_lift_proper_r.
-      * eapply stable_hitting_weak_unique; [exact Hbound2|exact Hhit2].
+      * eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
       * eapply sem_lift_bind; [exact Hlift|].
         intros h1 h2 Hhead. dependent destruction Hhead.
         -- eapply sem_lift_mono.
@@ -1726,16 +1726,16 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 
 Variable bind_cofinality : forall A R
     (t : ptree E MN A) (k : A -> ptree E MN R),
-    operational_bind_cofinal (MF := MF) t k.
+    ptree_bind_cofinal (MF := MF) t k.
 
 Variable iter_productivity : forall I R
     (step : I -> ptree E MN (I + R))
     (transition : I -> MN (I + R)) (i : I),
-    (forall j, operational_weak (MF := MF) (observe (step j))
+    (forall j, ptree_stable_hitting (MF := MF) (observe (step j))
       (mixed_bind (transition j)
         (fun next => sem_ret (FHRet next)))) ->
     sem_increasing (fun fuel => mixed_iter_approx fuel transition i) /\
-    operational_iter_cofinal (MF := MF) step transition i.
+    ptree_iter_cofinal (MF := MF) step transition i.
 
 (** Structured frontiers are proof certificates for the canonical
     stable-hitting semantics, not a second behavioral relation. *)
@@ -1750,9 +1750,9 @@ Lemma peutt_of_frontiers {R1 R2}
 Proof.
   intros Hfront1 Hfront2 Hlift.
   eapply peutt_of_hitting_lift.
-  - exact (frontier_to_primitive_stable_weak
+  - exact (frontier_to_stable_hitting
       bind_cofinality iter_productivity Hfront1).
-  - exact (frontier_to_primitive_stable_weak
+  - exact (frontier_to_stable_hitting
       bind_cofinality iter_productivity Hfront2).
   - exact Hlift.
 Qed.

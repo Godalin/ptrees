@@ -89,12 +89,12 @@ diagonal continuity, Fubini, mixed unit, and nested-`Prob` flattening.
 hitting construction.  It defines finite approximants, their omega limit,
 existence, uniqueness, increasingness, AE preservation, and AST as the
 derived conjunction of stable hitting and `sem_total`.  `stable_hitting` is
-the canonical public name; `stable_hitting_weak` is retained as a source-
+the canonical public name; `stable_hitting` is retained as a source-
 compatibility alias.
 
-`Eq/OperationalProbabilisticPTS.v` supplies the PTree primitive kernel.
-The remaining `operational_target`, `operational_kernel`,
-`operational_hitting_approx`, and `operational_weak` names are compatibility
+`Eq/PTreeKernel.v` supplies the PTree primitive kernel.
+The remaining `ptree_target`, `ptree_primitive_kernel`,
+`ptree_hitting_approx`, and `ptree_stable_hitting` names are compatibility
 aliases of the generic stable-target/kernel/hitting definitions; they no
 longer form a second execution semantics.
 
@@ -144,7 +144,7 @@ The following laws are checked:
 - `peutt_equivalence` (`refl`, `sym`, and `trans`);
 - `peutt_ret` and `peutt_vis`;
 - `peutt_tau_l` and `peutt_tau_r`;
-- `stable_hitting_weak_prob` and `peutt_prob`;
+- `stable_hitting_prob` and `peutt_prob`;
 - `peutt_bind`;
 - `stable_hitting_bisim_coinduction` and its PTree specialization
   `peutt_coinduction`;
@@ -164,7 +164,7 @@ cofinality theorem as a proof-side scheduling fact.
 
 For the maintained FreeOmega backend this scheduling fact is now
 unconditional, including eventful trees:
-`free_operational_bind_approx_cofinal_all` proves mutual cofinality of the
+`free_ptree_bind_approx_cofinal_all` proves mutual cofinality of the
 global and diagonal chains, and `free_peutt_bind` exposes bind
 as an unconditional monadic congruence.  A visible event is already a stable
 head, so bind only rewrites its continuation and does not need to execute
@@ -277,11 +277,11 @@ morphism equation, and `canonical_interp_bind_regression` checks it at the
 Enum-to-FreeOmega endpoint.
 
 The operational semantics now also has the missing general interpreter
-composition theorem.  `operational_interp_diagonal_approx` first runs the
+composition theorem.  `ptree_interp_diagonal_approx` first runs the
 source to a stable Ret/Vis head and then runs the corresponding interpreted
-head; `operational_weak_interp` lifts the two complete limits through mixed
+head; `ptree_stable_hitting_interp` lifts the two complete limits through mixed
 bind.  For FreeOmega,
-`free_operational_interp_approx_cofinal_all` proves that this diagonal chain
+`free_ptree_interp_approx_cofinal_all` proves that this diagonal chain
 and direct `PTree.interp` execution are mutually cofinal for every source
 tree and every effectful handler.  The finite schedules are `n` and `2*n`;
 there is no AST, boundedness, or eventlessness premise.
@@ -472,7 +472,7 @@ frontiers as canonical primitive stable-hitting limits and then applies the
 canonical coupling relation.
 
 Finite computations and unbounded AST computations therefore use the same
-`stable_hitting_weak`.  Bounded chains are special cases whose approximants
+`stable_hitting`.  Bounded chains are special cases whose approximants
 stabilize; AST is totality of the resulting limit rather than a bisimulation
 constructor.
 
@@ -490,7 +490,7 @@ The PTree-facing guarded proof API also provides
 in the user candidate or in an already established `peutt`.
 `stable_hitting_match_vis` packages a common visible guard, including hitting
 uniqueness and the Dirac head coupling.  On FreeOmega,
-`free_stable_hitting_weak_bind_ret_only` composes an almost-everywhere
+`free_stable_hitting_bind_ret_only` composes an almost-everywhere
 Ret-only closed sampler with an eventful continuation, while
 `free_sem_lift_ret_bind_front` lifts its head coupling through those
 continuations.  These are proof rules over the canonical semantics, not new
@@ -504,7 +504,7 @@ after-request phase of the interactive service are instances of this single
 rule.
 
 The former public relations `weak_bisim`, `unified_ppts_bisim`,
-`operational_bisim`, `stable_kernel_bisim`, and `primitive_ptree_bisim`, plus
+`ptree_bisim`, `stable_kernel_bisim`, and `primitive_ptree_bisim`, plus
 their proof/native full-abstraction and `BehavioralDomain` machinery, have
 been removed.  `UnifiedPWeak.v`, `UnifiedPWeakTrans.v`,
 `UnifiedProbabilisticPTS.v`, and their relation-specific examples no longer
@@ -549,7 +549,7 @@ nondegenerate rational source weights. The fair factory is related to the
 standard binary loop, then to direct sampling. The final VN factory theorem
 uses `peutt_trans` through the fair factory without either
 example-specific support premise. `OperationalFactoryRationalSupportLaws`
-has been replaced by a proved `operational_factory_standard_q_support`.
+has been replaced by a proved `ptree_factory_standard_q_support`.
 The legacy monolithic route still takes `OperationalFactoryStepSupportLaws`;
 the compositional endpoint does not. A Tau-sampler regression checks that
 the congruence is behavioral rather than syntactic. Operational component

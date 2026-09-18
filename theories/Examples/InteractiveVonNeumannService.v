@@ -9,7 +9,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration EnumBindFacts.
 From PTree.Prob Require Import EnumMap MeasureIterationEnum.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting UnifiedFrontier
-  OperationalProbabilisticPTS
+  PTreeKernel
   PEutt ProbabilisticTraceEnum
   OperationalProbabilisticPTSFreeOmega.
 From PTree.Examples Require Import VonNeumannUnbounded OperationalVonNeumann.
@@ -114,7 +114,7 @@ Proof.
 Qed.
 
 Definition service_vn_hitting (fuel : nat) : MF service_head :=
-  operational_hitting_approx (MF := MF) fuel
+  ptree_hitting_approx (MF := MF) fuel
     (observe (@von_neumann_third_in coin_serviceE)).
 
 Lemma service_vn_hitting_three fuel :
@@ -127,15 +127,15 @@ Lemma service_vn_hitting_three fuel :
       end)).
 Proof.
   unfold service_vn_hitting. rewrite service_vn_observe.
-  cbn [operational_hitting_approx operational_kernel
-    operational_target_approx stable_hitting_approx stable_target_approx
+  cbn [ptree_hitting_approx ptree_primitive_kernel
+    ptree_stable_target_approx stable_hitting_approx stable_target_approx
     ptree_primitive_kernel sem_bind sem_ret mixed_bind free_omega_bind
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticMeasure
     FreeOmegaSemanticMeasure].
   f_equal. apply functional_extensionality. intro b1.
   rewrite service_vn_second_observe.
-  cbn [operational_kernel operational_target_approx stable_target_approx
+  cbn [ptree_primitive_kernel ptree_stable_target_approx stable_target_approx
     ptree_primitive_kernel sem_bind sem_ret mixed_bind free_omega_bind
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticMeasure
@@ -158,12 +158,12 @@ Qed.
 
 Lemma service_vn_hitting_rounds_observes rounds :
   free_omega_observes service_head_value
-    (service_vn_hitting (operational_vn_raw_schedule rounds))
+    (service_vn_hitting (ptree_vn_raw_schedule rounds))
     (meas_iter_approx rounds (fun _ : unit => vn_transition) tt).
 Proof.
   induction rounds as [|rounds IH].
   - exact service_vn_hitting_zero_observes.
-  - cbn [operational_vn_raw_schedule].
+  - cbn [ptree_vn_raw_schedule].
     rewrite service_vn_hitting_three.
     assert (Hout :
       meas_iter_approx (S rounds) (fun _ : unit => vn_transition) tt =
@@ -192,7 +192,7 @@ Proof.
       rewrite bind_Enum_assoc.
       apply bind_Enum_ext=> b1. rewrite bind_Enum_assoc.
       apply bind_Enum_ext=> b2.
-      rewrite operational_vn_bind_ret_eq.
+      rewrite ptree_vn_bind_ret_eq.
       destruct (vn_round_result b1 b2) as [u|b];
         [destruct u|]; reflexivity. }
     rewrite Hout. constructor. intro b1.
@@ -205,18 +205,18 @@ Qed.
 Lemma service_vn_chains_cofinal :
   free_omega_chains_cofinal eq service_vn_hitting
     (fun rounds =>
-      service_vn_hitting (operational_vn_raw_schedule rounds)).
+      service_vn_hitting (ptree_vn_raw_schedule rounds)).
 Proof.
   split.
-  - intro fuel. exists fuel. apply free_operational_hitting_mono.
-    exact (operational_vn_raw_schedule_ge fuel).
-  - intro rounds. exists (operational_vn_raw_schedule rounds).
+  - intro fuel. exists fuel. apply free_ptree_hitting_mono.
+    exact (ptree_vn_raw_schedule_ge fuel).
+  - intro rounds. exists (ptree_vn_raw_schedule rounds).
     apply free_omega_approx_refl. intro h. reflexivity.
 Qed.
 
 Definition service_vn_heads : MF service_head :=
   FOLub (fun rounds =>
-    service_vn_hitting (operational_vn_raw_schedule rounds)).
+    service_vn_hitting (ptree_vn_raw_schedule rounds)).
 
 Lemma service_vn_heads_observes :
   free_omega_observes service_head_value service_vn_heads vn_fair.
@@ -227,7 +227,7 @@ Proof.
 Qed.
 
 Lemma service_vn_weak :
-  @operational_weak coin_serviceE Enum MF
+  @ptree_stable_hitting coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -235,7 +235,7 @@ Lemma service_vn_weak :
     FreeOmegaObservableSemanticOmega bool
     (observe (@von_neumann_third_in coin_serviceE)) service_vn_heads.
 Proof.
-  unfold operational_weak, service_vn_heads, service_vn_hitting.
+  unfold ptree_stable_hitting, service_vn_heads, service_vn_hitting.
   cbn. apply FOQLSym. eapply FOQLMono.
   - apply FOQLCofinal. exact service_vn_chains_cofinal.
   - intros x y ->. reflexivity.
@@ -254,7 +254,7 @@ Proof.
 Qed.
 
 Theorem service_von_neumann_ast :
-  @operational_ast_weak coin_serviceE Enum MF
+  @ptree_stable_hitting_ast coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -305,7 +305,7 @@ Proof.
 Qed.
 
 Theorem service_direct_fair_ast :
-  @operational_ast_weak coin_serviceE Enum MF
+  @ptree_stable_hitting_ast coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -316,10 +316,10 @@ Proof.
   assert (Hobserve : observe (@direct_fair_in coin_serviceE) =
     ProbF vn_fair (fun b => Ret b)) by reflexivity.
   rewrite Hobserve.
-  eapply operational_ast_weak_prob with (Good := fun _ => True).
+  eapply ptree_stable_hitting_ast_prob with (Good := fun _ => True).
   - apply sem_ae_true.
   - intros b _. split.
-    + apply operational_weak_ret.
+    + apply ptree_stable_hitting_ret.
     + apply free_omega_observable_total_intro.
       exists bool, service_head_value,
         (@sem_ret Enum Enum_SemanticMeasure bool b).
@@ -339,11 +339,11 @@ Definition service_head_is_ret (h : service_head) : Prop :=
 
 Lemma service_vn_hitting_rounds_ret_only rounds :
   free_omega_ae service_head_is_ret
-    (service_vn_hitting (operational_vn_raw_schedule rounds)).
+    (service_vn_hitting (ptree_vn_raw_schedule rounds)).
 Proof.
   induction rounds as [|rounds IH].
   - unfold service_vn_hitting. rewrite service_vn_observe.
-    cbn [operational_vn_raw_schedule operational_hitting_approx
+    cbn [ptree_vn_raw_schedule ptree_hitting_approx
       stable_hitting_approx ptree_primitive_kernel mixed_bind sem_bind
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticMeasure
@@ -351,7 +351,7 @@ Proof.
     eapply FOAESample with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros b _. constructor.
-  - cbn [operational_vn_raw_schedule].
+  - cbn [ptree_vn_raw_schedule].
     rewrite service_vn_hitting_three.
     eapply FOAESample with (Good := fun _ => True).
     + apply sem_ae_true.
@@ -388,7 +388,7 @@ Proof.
   unfold free_omega_support_lift. split.
   - intros P HP. unfold service_vn_heads in HP.
     dependent destruction HP. specialize (H 1%nat).
-    cbn [operational_vn_raw_schedule] in H.
+    cbn [ptree_vn_raw_schedule] in H.
     rewrite service_vn_hitting_three in H.
     pose proof (free_omega_ae_sample_inv H) as Hfirst.
     assert (Hfirst_false : free_omega_ae P
@@ -559,7 +559,7 @@ Local Definition service_stable_rel {R1 R2}
   @ptree_stable_head_rel coin_serviceE Enum R1 R2 RR sim.
 
 Local Notation service_hitting :=
-  (@operational_weak coin_serviceE Enum MF
+  (@ptree_stable_hitting coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -611,11 +611,11 @@ Lemma vn_after_request_weak :
     (observe vn_after_request) vn_after_request_heads.
 Proof.
   unfold vn_after_request, vn_after_request_heads.
-  eapply free_stable_hitting_weak_bind_ret_only.
+  eapply free_stable_hitting_bind_ret_only.
   - exact service_vn_heads_ret_only.
   - exact service_vn_weak.
   - intro b. unfold publish, vn_reply_front.
-    apply (stable_hitting_weak_vis
+    apply (stable_hitting_vis
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)).
 Qed.
@@ -625,11 +625,11 @@ Lemma direct_after_request_weak :
     (observe direct_after_request) direct_after_request_heads.
 Proof.
   unfold direct_after_request, direct_after_request_heads.
-  eapply free_stable_hitting_weak_bind_ret_only.
+  eapply free_stable_hitting_bind_ret_only.
   - exact service_direct_heads_ret_only.
   - exact (proj1 service_direct_fair_ast).
   - intro b. unfold publish, direct_reply_front.
-    apply (stable_hitting_weak_vis
+    apply (stable_hitting_vis
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)).
 Qed.

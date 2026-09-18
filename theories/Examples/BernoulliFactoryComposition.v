@@ -9,7 +9,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts
   MeasureIteration MeasureIterationEnum TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure EnumMap.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  OperationalProbabilisticPTS OperationalProbabilisticPTSFreeOmega
+  PTreeKernel OperationalProbabilisticPTSFreeOmega
   PEutt PStruct PStrong.
 From PTree.Examples Require Import VonNeumannUnbounded RationalBernoulli
   BernoulliFactory OperationalBernoulliFactory.

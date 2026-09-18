@@ -13,7 +13,7 @@ Unset Printing Implicit Defensive.
 (** Implementation modules remain addressable by qualified names, but their
     historical short names are not transitively imported by the facade. *)
 Fail Check frontier.
-Fail Check operational_weak.
+Fail Check ptree_stable_hitting.
 Fail Check frontier_head_bind_front.
 
 Local Notation facade_ptree := ptree.

@@ -8,7 +8,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier
-  OperationalProbabilisticPTS PEutt.
+  PTreeKernel PEutt.
 From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
@@ -19,17 +19,17 @@ Import Enum.
 
 Local Notation MF := (FreeOmega Enum).
 
-Definition operational_reg_nested_heads :
+Definition ptree_reg_nested_heads :
     MF (frontier_head regE Enum nat) :=
   FOSample reg_fair (fun side =>
     FOSample (reg_inner side) (fun outcome => FORet (FHRet outcome))).
 
-Definition operational_reg_merged_heads :
+Definition ptree_reg_merged_heads :
     MF (frontier_head regE Enum nat) :=
   FOSample reg_merged_three (fun outcome => FORet (FHRet outcome)).
 
-Lemma operational_reg_ret_weak (n : nat) :
-  @operational_weak regE Enum MF
+Lemma ptree_reg_ret_weak (n : nat) :
+  @ptree_stable_hitting regE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -40,14 +40,14 @@ Lemma operational_reg_ret_weak (n : nat) :
     nat (observe (Ret n)) (FORet (FHRet n)).
 Proof.
   assert (Hobs : observe (Ret n : ptree regE Enum nat) = RetF n) by reflexivity.
-  rewrite Hobs. apply (operational_weak_ret
+  rewrite Hobs. apply (ptree_stable_hitting_ret
     (FI := FreeOmegaObservableSemanticMeasure)
     (FO := FreeOmegaObservableSemanticOmega)
     (MX := FreeOmegaMixedMeasure) (E := regE)).
 Qed.
 
-Lemma operational_reg_nested_weak :
-  @operational_weak regE Enum MF
+Lemma ptree_reg_nested_weak :
+  @ptree_stable_hitting regE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -55,14 +55,14 @@ Lemma operational_reg_nested_weak :
     (FreeOmegaObservableSemanticOmega
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
-    nat (observe reg_nested_program) operational_reg_nested_heads.
+    nat (observe reg_nested_program) ptree_reg_nested_heads.
 Proof.
   assert (Hobs : observe reg_nested_program =
     ProbF reg_fair (fun side =>
       Prob (reg_inner side) (fun outcome => Ret outcome))) by reflexivity.
   rewrite Hobs.
-  unfold operational_reg_nested_heads.
-  eapply (operational_weak_prob
+  unfold ptree_reg_nested_heads.
+  eapply (ptree_stable_hitting_prob
     (FI := FreeOmegaObservableSemanticMeasure)
     (FO := FreeOmegaObservableSemanticOmega)
     (MX := FreeOmegaMixedMeasure) (E := regE)
@@ -72,7 +72,7 @@ Proof.
       (fun outcome => FORet (FHRet outcome)))
     (Good := fun _ => True)).
   - apply sem_ae_true.
-  - intros side _. eapply (operational_weak_prob
+  - intros side _. eapply (ptree_stable_hitting_prob
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
       (MX := FreeOmegaMixedMeasure) (E := regE)
@@ -81,11 +81,11 @@ Proof.
       (front := fun outcome => FORet (FHRet outcome))
       (Good := fun _ => True)).
     + apply sem_ae_true.
-    + intros outcome _. exact (operational_reg_ret_weak outcome).
+    + intros outcome _. exact (ptree_reg_ret_weak outcome).
 Qed.
 
-Lemma operational_reg_merged_weak :
-  @operational_weak regE Enum MF
+Lemma ptree_reg_merged_weak :
+  @ptree_stable_hitting regE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -93,13 +93,13 @@ Lemma operational_reg_merged_weak :
     (FreeOmegaObservableSemanticOmega
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
-    nat (observe reg_merged_program) operational_reg_merged_heads.
+    nat (observe reg_merged_program) ptree_reg_merged_heads.
 Proof.
   assert (Hobs : observe reg_merged_program =
     ProbF reg_merged_three (fun outcome => Ret outcome)) by reflexivity.
   rewrite Hobs.
-  unfold operational_reg_merged_heads.
-  eapply (operational_weak_prob
+  unfold ptree_reg_merged_heads.
+  eapply (ptree_stable_hitting_prob
     (FI := FreeOmegaObservableSemanticMeasure)
     (FO := FreeOmegaObservableSemanticOmega)
     (MX := FreeOmegaMixedMeasure) (E := regE)
@@ -108,7 +108,7 @@ Proof.
     (front := fun outcome => FORet (FHRet outcome))
     (Good := fun _ => True)).
   - apply sem_ae_true.
-  - intros outcome _. exact (operational_reg_ret_weak outcome).
+  - intros outcome _. exact (ptree_reg_ret_weak outcome).
 Qed.
 
 Definition reg_head_value (h : frontier_head regE Enum nat) : nat :=
@@ -117,34 +117,34 @@ Definition reg_head_value (h : frontier_head regE Enum nat) : nat :=
   | @FHVis _ _ _ X e _ => match e with end
   end.
 
-Definition operational_reg_nested_observation : Enum nat :=
+Definition ptree_reg_nested_observation : Enum nat :=
   @sem_bind Enum Enum_SemanticMeasure _ _ reg_fair
     (fun side => @sem_bind Enum Enum_SemanticMeasure _ _
       (reg_inner side) (fun outcome => sem_ret outcome)).
 
-Definition operational_reg_merged_observation : Enum nat :=
+Definition ptree_reg_merged_observation : Enum nat :=
   @sem_bind Enum Enum_SemanticMeasure _ _ reg_merged_three
     (fun outcome => sem_ret outcome).
 
-Lemma operational_reg_nested_observes :
-  free_omega_observes reg_head_value operational_reg_nested_heads
-    operational_reg_nested_observation.
+Lemma ptree_reg_nested_observes :
+  free_omega_observes reg_head_value ptree_reg_nested_heads
+    ptree_reg_nested_observation.
 Proof.
-  unfold operational_reg_nested_heads, operational_reg_nested_observation.
+  unfold ptree_reg_nested_heads, ptree_reg_nested_observation.
   eapply FOOObserveSample.
   intro side. eapply FOOObserveSample. intro outcome. constructor.
 Qed.
 
-Lemma operational_reg_merged_observes :
-  free_omega_observes reg_head_value operational_reg_merged_heads
-    operational_reg_merged_observation.
+Lemma ptree_reg_merged_observes :
+  free_omega_observes reg_head_value ptree_reg_merged_heads
+    ptree_reg_merged_observation.
 Proof.
-  unfold operational_reg_merged_heads, operational_reg_merged_observation.
+  unfold ptree_reg_merged_heads, ptree_reg_merged_observation.
   eapply FOOObserveSample.
   intro outcome. constructor.
 Qed.
 
-Lemma operational_reg_nested_total :
+Lemma ptree_reg_nested_total :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
@@ -152,15 +152,15 @@ Lemma operational_reg_nested_total :
     (FreeOmegaObservableSemanticOmega
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _
-    operational_reg_nested_heads.
+    ptree_reg_nested_heads.
 Proof.
   apply free_omega_observable_total_intro.
-  exists nat, reg_head_value, operational_reg_nested_observation.
-  split; first exact operational_reg_nested_observes.
+  exists nat, reg_head_value, ptree_reg_nested_observation.
+  split; first exact ptree_reg_nested_observes.
   vm_compute. reflexivity.
 Qed.
 
-Lemma operational_reg_merged_total :
+Lemma ptree_reg_merged_total :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
@@ -168,25 +168,25 @@ Lemma operational_reg_merged_total :
     (FreeOmegaObservableSemanticOmega
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _
-    operational_reg_merged_heads.
+    ptree_reg_merged_heads.
 Proof.
   apply free_omega_observable_total_intro.
-  exists nat, reg_head_value, operational_reg_merged_observation.
-  split; first exact operational_reg_merged_observes.
+  exists nat, reg_head_value, ptree_reg_merged_observation.
+  split; first exact ptree_reg_merged_observes.
   vm_compute. reflexivity.
 Qed.
 
-Lemma operational_reg_nested_ast :
-  @operational_ast_weak regE Enum MF
+Lemma ptree_reg_nested_ast :
+  @ptree_stable_hitting_ast regE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega nat
-    (observe reg_nested_program) operational_reg_nested_heads.
-Proof. split; [exact operational_reg_nested_weak|exact operational_reg_nested_total]. Qed.
+    (observe reg_nested_program) ptree_reg_nested_heads.
+Proof. split; [exact ptree_reg_nested_weak|exact ptree_reg_nested_total]. Qed.
 
-Corollary operational_reg_nested_primitive_ast :
+Corollary ptree_reg_nested_primitive_ast :
   @stable_hitting_ast MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
@@ -198,33 +198,33 @@ Corollary operational_reg_nested_primitive_ast :
         (NI := Enum_SemanticMeasure)
         (NO := Enum_SemanticOmega))
       FreeOmegaMixedMeasure nat)
-    (observe reg_nested_program) operational_reg_nested_heads.
+    (observe reg_nested_program) ptree_reg_nested_heads.
 Proof.
   apply (proj2 (ptree_primitive_ast_adequate
-    (observe reg_nested_program) operational_reg_nested_heads)).
-  exact operational_reg_nested_ast.
+    (observe reg_nested_program) ptree_reg_nested_heads)).
+  exact ptree_reg_nested_ast.
 Qed.
 
-Lemma operational_reg_nested_merged_lift
+Lemma ptree_reg_nested_merged_lift
     (sim : ptree regE Enum nat -> ptree regE Enum nat -> Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _ _
     (frontier_head_rel eq sim)
-    operational_reg_nested_heads operational_reg_merged_heads.
+    ptree_reg_nested_heads ptree_reg_merged_heads.
 Proof.
   eapply FOQLObserve with
     (obsA := reg_head_value) (obsB := reg_head_value)
-    (outA := operational_reg_nested_observation)
-    (outB := operational_reg_merged_observation)
+    (outA := ptree_reg_nested_observation)
+    (outB := ptree_reg_merged_observation)
     (S := eq).
-  - exact operational_reg_nested_observes.
-  - exact operational_reg_merged_observes.
+  - exact ptree_reg_nested_observes.
+  - exact ptree_reg_merged_observes.
   - eapply sem_lift_proper_l with
-      (mu := operational_reg_merged_observation).
-    + apply sem_eq_sym. unfold operational_reg_nested_observation,
-        operational_reg_merged_observation.
+      (mu := ptree_reg_merged_observation).
+    + apply sem_eq_sym. unfold ptree_reg_nested_observation,
+        ptree_reg_merged_observation.
       change (sem_eq
         (sem_bind reg_fair
           (fun side => sem_bind (reg_inner side) (fun x => sem_ret x)))
@@ -241,8 +241,8 @@ Proof.
   - intros h1 h2 Hvalue. destruct h1 as [n1|X e1 c1];
       destruct h2 as [n2|Y e2 c2]; try destruct e1; try destruct e2.
     cbn in Hvalue. subst n2. constructor. reflexivity.
-  - unfold free_omega_support_lift, operational_reg_nested_heads,
-      operational_reg_merged_heads. split.
+  - unfold free_omega_support_lift, ptree_reg_nested_heads,
+      ptree_reg_merged_heads. split.
     + intros P HP.
       pose proof (free_omega_ae_sample_inv HP) as Houter.
       assert (Hfalse : free_omega_ae P
@@ -321,9 +321,9 @@ Theorem peutt_reg_nested_merged :
     reg_nested_program reg_merged_program.
 Proof.
   eapply peutt_of_hitting_lift.
-  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
-    exact operational_reg_nested_weak.
-  - apply (proj2 (ptree_primitive_weak_adequate _ _)).
-    exact operational_reg_merged_weak.
-  - exact (operational_reg_nested_merged_lift _).
+  - apply (proj2 (ptree_primitive_stable_hitting_adequate _ _)).
+    exact ptree_reg_nested_weak.
+  - apply (proj2 (ptree_primitive_stable_hitting_adequate _ _)).
+    exact ptree_reg_merged_weak.
+  - exact (ptree_reg_nested_merged_lift _).
 Qed.
