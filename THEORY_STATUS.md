@@ -715,9 +715,20 @@ The completed semantic results in `Eq/FiniteInternalHitting.v` are:
 - `peutt_of_finite_internal`: coupling residuals by **already proved**
   `peutt` is a sound behavioral rewrite.
 - `pfinite_residual_round_sound`: one candidate round with `peutt` as its
-  recursive relation is sound.
+  recursive relation is sound, including heterogeneous return relations.
+- `finite_internal_match` and `finite_internal_closure_compatible`: finite
+  compression preserves native generator matching for arbitrary continuation
+  candidates.  Thus `peutt_coinduction_upto_finite_internal` is a proved
+  compatible-closure rule, rather than an appeal to a final congruence inside
+  its own coinductive proof.  Its progress premise is still a complete
+  stable-hitting match, not merely a `pstrongF` internal guard.
+- `FreeOmega/FiniteInternal.v::finite_internal_hitting_covered`: every
+  primitive n-step observation is below the result of first performing any
+  well-founded compression and then running each residual for n steps.
+  The index is a proof-level semantic approximation; it imposes no uniform
+  depth bound on `finite_internal`.
 
-The last item establishes `F(peutt) ⊆ peutt`, **not**
+The round-soundness lemma establishes `F(peutt) ⊆ peutt`, **not**
 `νF ⊆ peutt`.  Greatest-fixed-point soundness still needs a progress argument
 through arbitrarily many guarded Tau/Prob rounds and well-founded internal
 compression.  The old proof, which recurs only after stable observations,
@@ -726,7 +737,9 @@ with `peutt`, or unfinished proof has been used to disguise this gap.
 
 `Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
 before divergence, Prob branch compression, and the negative core regression
-`residual_finite_spin_not_ret`.  It also derives the actual RandomWalk renewal
+`residual_finite_spin_not_ret`.  `residual_services_peutt` checks the sound
+up-to-compression rule on infinitely interacting services with different
+finite delays on every continuation.  It also derives the actual RandomWalk renewal
 equation as `random_walk_passage_residual_finite`, without behavioral Prob
 congruence.  That example is a client of the candidate, not a replacement for
 the maintained `passage_unfold` until the soundness bridge is complete.
