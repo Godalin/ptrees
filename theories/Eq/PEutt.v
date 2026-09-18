@@ -686,6 +686,23 @@ Proof.
       [exact (Hk x1 x2 Hx)|exact (Hfront1 x1)|exact (Hfront2 x2)].
 Qed.
 
+(** A stronger local proof relation may rewrite probability branches without
+    itself being a Prob congruence.  The contextual conclusion is [peutt],
+    not [S]; in particular branchwise finite rewrites need not have a uniform
+    global finite bound.  The source samples may have different types. *)
+Lemma peutt_prob_rewrite {R X Y}
+    (S : relation (ptree E MN R))
+    `{Hsub : subrelation _ S (@peutt E MN MF FI FC MX FO R R eq)}
+    (XR : X -> Y -> Prop) (mu : MN X) (nu : MN Y)
+    (k1 : X -> ptree E MN R) (k2 : Y -> ptree E MN R) :
+  sem_lift XR mu nu ->
+  (forall x y, XR x y -> S (k1 x) (k2 y)) ->
+  peutt eq (Prob mu k1) (Prob nu k2).
+Proof.
+  intros Hmu Hk. eapply peutt_prob; [exact Hmu|].
+  intros x y Hxy. apply Hsub. exact (Hk x y Hxy).
+Qed.
+
 End PEuttProbCongruence.
 
 Section PTreeStableHittingEquations.

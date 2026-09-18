@@ -6,7 +6,8 @@ Require Import RelationClasses.
 From Coq Require Import Program.Equality.
 
 From PTree.Core Require Import PTreeDefinition PTreeEnum.
-From PTree.Prob Require Import DiscreteMC TwoLevelMeasureEnum FreeOmegaMeasure.
+From PTree.Prob Require Import
+  DiscreteMC TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
 From PTree.Eq Require Import PStruct PStrong PFinite PEutt
   FreeOmega.
 
@@ -140,3 +141,68 @@ Proof.
   - apply pfinite_tau_l.
   - apply peutt_refl.
 Qed.
+
+(** Local finite rewrites under probability have a behavioral conclusion;
+    no congruence or contextual closure is added to [pfinite]. *)
+Section FiniteContextualRewriting.
+Local Notation W :=
+  (@peutt hierarchyE Enum MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool bool eq).
+
+Lemma pfinite_prob_context_rewrite {X} (mu : Enum X)
+    (k1 k2 : X -> ptree hierarchyE Enum bool)
+    (Hk : forall x, hierarchy_pfinite (k1 x) (k2 x)) :
+  W (Prob mu k1) (Prob mu k2).
+Proof.
+  eapply (peutt_prob_rewrite (Hsub := pfinite_peutt_subrelation))
+    with (XR := eq).
+  - apply sem_lift_refl. intro x. reflexivity.
+  - intros x y ->. apply Hk.
+Qed.
+
+Lemma pfinite_prob_coupled_context_rewrite {X Y}
+    (XR : X -> Y -> Prop) (mu : Enum X) (nu : Enum Y)
+    (k1 : X -> ptree hierarchyE Enum bool)
+    (k2 : Y -> ptree hierarchyE Enum bool)
+    (Hmu : sem_lift XR mu nu)
+    (Hk : forall x y, XR x y -> hierarchy_pfinite (k1 x) (k2 y)) :
+  W (Prob mu k1) (Prob nu k2).
+Proof.
+  eapply (peutt_prob_rewrite (Hsub := pfinite_peutt_subrelation));
+    [exact Hmu|exact Hk].
+Qed.
+
+(** Removing a local Tau does not require the continuation to terminate. *)
+Lemma pfinite_prob_divergent_branch (mu : Enum bool) :
+  W (Prob mu (fun b => Tau (if b then Ret true else hierarchy_spin)))
+    (Prob mu (fun b => if b then Ret true else hierarchy_spin)).
+Proof.
+  apply pfinite_prob_context_rewrite. intro b. apply pfinite_tau_l.
+Qed.
+
+(** Existing behavioral Proper instances suffice for the other monadic
+    contexts: promote locally, then use their behavioral congruence. *)
+Lemma pfinite_bind_context_rewrite
+    (t1 t2 : ptree hierarchyE Enum bool)
+    (k1 k2 : bool -> ptree hierarchyE Enum bool)
+    (Ht : hierarchy_pfinite t1 t2)
+    (Hk : forall x, hierarchy_pfinite (k1 x) (k2 x)) :
+  W (PTree.bind t1 k1) (PTree.bind t2 k2).
+Proof.
+  apply peutt_bind_Proper.
+  - apply pfinite_peutt_subrelation. exact Ht.
+  - intro x. apply pfinite_peutt_subrelation. apply Hk.
+Qed.
+
+Lemma pfinite_fmap_context_rewrite (f : bool -> bool)
+    (t1 t2 : ptree hierarchyE Enum bool)
+    (Ht : hierarchy_pfinite t1 t2) :
+  W (PTree.fmap f t1) (PTree.fmap f t2).
+Proof.
+  apply peutt_fmap_Proper. apply pfinite_peutt_subrelation. exact Ht.
+Qed.
+
+End FiniteContextualRewriting.

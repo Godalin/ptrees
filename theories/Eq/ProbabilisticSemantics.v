@@ -67,6 +67,7 @@ Notation peutt_tau_l := PEutt.peutt_tau_l.
 Notation peutt_tau_r := PEutt.peutt_tau_r.
 Notation peutt_vis := PEutt.peutt_vis.
 Notation peutt_prob := PEutt.peutt_prob.
+Notation peutt_prob_rewrite := PEutt.peutt_prob_rewrite.
 Notation peutt_bind := PEutt.peutt_bind.
 Notation pstruct_pstrong := PStrong.pstruct_pstrong.
 Notation pstruct_equivalence := PStruct.pstruct_equivalence.

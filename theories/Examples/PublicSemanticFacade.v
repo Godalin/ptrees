@@ -40,6 +40,7 @@ Local Notation facade_peutt_tau_l := peutt_tau_l.
 Local Notation facade_peutt_tau_r := peutt_tau_r.
 Local Notation facade_peutt_vis := peutt_vis.
 Local Notation facade_peutt_prob := peutt_prob.
+Local Notation facade_peutt_prob_rewrite := peutt_prob_rewrite.
 Local Notation facade_peutt_bind := peutt_bind.
 Local Notation facade_finite_interaction_pattern := finite_interaction_pattern.
 Local Notation facade_finite_interaction_query := finite_interaction_query.
