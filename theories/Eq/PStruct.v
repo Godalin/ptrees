@@ -1216,3 +1216,97 @@ Qed.
 
 End PStructIterCodiagonal.
 
+(** First-stopping decomposition, without inserting a Tau at the boundary.
+    Before the barrier the two bodies agree structurally and only retry.
+    At the barrier the prefix returns the state from which the original
+    iteration resumes.  No termination or probability hypothesis is needed.
+
+    Unlike [pstruct_iter_rel], the stopping case does not compare two
+    iteration bodies: only the prefix returns, while the source continues
+    from the resumption state.  Naturality and codiagonal reorganize binds
+    and nested iterations, but do not directly discharge this asymmetric
+    boundary case.  This law packages that extra invariant argument. *)
+Section PStructIterSplitAt.
+Context {E M : Type -> Type} {I J B R : Type}.
+Variables (step : I -> ptree E M (I + R))
+  (prefix : J -> ptree E M (J + B)) (resume : B -> I).
+Variable SI : I -> J -> Prop.
+
+Let next_rel := pstruct_iter_sum_rel SI (fun (_ : R) (_ : B) => False).
+Let source_cont (v : I + R) :=
+  match v with inl i => Tau (PTree.iter step i) | inr r => Ret r end.
+Let prefix_cont (v : J + B) :=
+  match v with inl j => Tau (PTree.iter prefix j) | inr b => Ret b end.
+Let rest b := PTree.iter step (resume b).
+
+Hypothesis split_step : forall i j, SI i j ->
+  (exists b, observe (prefix j) = RetF (inr b) /\ i = resume b) \/
+  pstruct next_rel (step i) (prefix j).
+
+Inductive pstruct_iter_split_clo : ptree E M R -> ptree E M R -> Prop :=
+  | PStIterSplitMain i j : SI i j -> pstruct_iter_split_clo
+      (PTree.iter step i) (PTree.bind (PTree.iter prefix j) rest)
+  | PStIterSplitBind t1 t2 : pstruct next_rel t1 t2 -> pstruct_iter_split_clo
+      (PTree.bind t1 source_cont)
+      (PTree.bind (PTree.bind t2 prefix_cont) rest)
+  | PStIterSplitDone t1 t2 : pstruct eq t1 t2 -> pstruct_iter_split_clo t1 t2.
+
+Local Lemma iter_split_bind_step sim
+    (Hmain : forall i j, SI i j ->
+      sim (PTree.iter step i) (PTree.bind (PTree.iter prefix j) rest))
+    (Hbind : forall t1 t2, pstruct next_rel t1 t2 ->
+      sim (PTree.bind t1 source_cont)
+        (PTree.bind (PTree.bind t2 prefix_cont) rest)) t1 t2 :
+  pstruct next_rel t1 t2 ->
+  pstructF eq sim (observe (PTree.bind t1 source_cont))
+    (observe (PTree.bind (PTree.bind t2 prefix_cont) rest)).
+Proof.
+  intro Hrel. rewrite !observe_bind.
+  pose proof (pstruct_unfold Hrel) as Hbody.
+  remember (observe t1) as ot1 in Hbody |- *.
+  remember (observe t2) as ot2 in Hbody |- *.
+  destruct Hbody.
+  - cbn.
+    destruct H; [|contradiction]. cbn. constructor. apply Hmain. assumption.
+  - cbn. constructor. apply Hbind. assumption.
+  - cbn. constructor. intro v. apply Hbind. apply H.
+  - cbn. constructor. intro v. apply Hbind. apply H.
+Qed.
+
+Theorem pstruct_iter_split_at i j :
+  SI i j -> pstruct eq (PTree.iter step i)
+    (PTree.bind (PTree.iter prefix j) (fun b => PTree.iter step (resume b))).
+Proof.
+  intro Hij.
+  assert (Hsound : forall t1 t2, pstruct_iter_split_clo t1 t2 -> pstruct eq t1 t2).
+  { unfold pstruct. coinduction CH CIH.
+    intros t1 t2 Hclo. destruct Hclo as [i' j' Hstate|u1 u2 Hbody|u1 u2 Hdone].
+    - change (pstructF eq (` CH) (observe (PTree.iter step i'))
+        (observe (PTree.bind (PTree.iter prefix j') rest))).
+      destruct (split_step Hstate) as [[b [Hstop ->]]|Hbody].
+      + rewrite observe_bind.
+        rewrite (observing_observe (unfold_aloop_ prefix j')).
+        rewrite observe_bind Hstop. cbn.
+        eapply pstructF_monotone; [|apply pstruct_unfold; apply pstruct_refl].
+        intros v1 v2 Hv. apply CIH. apply PStIterSplitDone. exact Hv.
+      + have Hprefix : observe (PTree.bind (PTree.iter prefix j') rest) =
+            observe (PTree.bind (PTree.bind (prefix j') prefix_cont) rest).
+        { rewrite !observe_bind.
+          rewrite (observing_observe (unfold_aloop_ prefix j')).
+          rewrite observe_bind. reflexivity. }
+        rewrite (observing_observe (unfold_aloop_ step i')) Hprefix.
+        eapply iter_split_bind_step; [| |exact Hbody].
+        * intros i0 j0 Hs. apply CIH. now apply PStIterSplitMain.
+        * intros v1 v2 Hv. apply CIH. now apply PStIterSplitBind.
+    - change (pstructF eq (` CH) (observe (PTree.bind u1 source_cont))
+        (observe (PTree.bind (PTree.bind u2 prefix_cont) rest))).
+      eapply iter_split_bind_step; [| |exact Hbody].
+      + intros i0 j0 Hs. apply CIH. now apply PStIterSplitMain.
+      + intros v1 v2 Hv. apply CIH. now apply PStIterSplitBind.
+    - change (pstructF eq (` CH) (observe u1) (observe u2)).
+      eapply pstructF_monotone; [|exact (pstruct_unfold Hdone)].
+      intros v1 v2 Hv. apply CIH. now apply PStIterSplitDone. }
+  apply Hsound. now apply PStIterSplitMain.
+Qed.
+
+End PStructIterSplitAt.

@@ -7,7 +7,7 @@ From Coq Require Import Program.Equality.
 
 From PTree.Core Require Import PTreeDefinition PTreeEnum.
 From PTree.Prob Require Import DiscreteMC TwoLevelMeasureEnum FreeOmegaMeasure.
-From PTree.Eq Require Import PStrong PFinite PEutt
+From PTree.Eq Require Import PStruct PStrong PFinite PEutt
   FreeOmega.
 
 Set Implicit Arguments.
@@ -51,6 +51,53 @@ Lemma tau_ret_not_pstrong :
 Proof.
   intro H. apply pstrong_unfold in H. dependent destruction H.
 Qed.
+
+(** Stopping decomposition is not probability-specific and does not require
+    AST.  The first client below stops between two visible interactions;
+    the second never reaches its stopping region. *)
+Section IterationStoppingRegressions.
+Context {E M : Type -> Type}.
+Variable tick : E unit.
+
+Definition stopping_source (n : nat) : ptree E M (nat + unit) :=
+  match n with
+  | O => Ret (inr tt)
+  | S m => Vis tick (fun _ => Ret (inl m))
+  end.
+
+Definition stopping_prefix (first : bool) : ptree E M (bool + nat) :=
+  if first then Vis tick (fun _ => Ret (inl false)) else Ret (inr 1).
+
+Lemma iter_split_eventful_regression :
+  pstruct eq (PTree.iter stopping_source 2)
+    (PTree.bind (PTree.iter stopping_prefix true) (PTree.iter stopping_source)).
+Proof.
+  eapply pstruct_iter_split_at with
+    (SI := fun (n : nat) (first : bool) => n = if first then 2 else 1)
+    (resume := fun n => n).
+  - intros n [] ->.
+    + right. apply pstruct_fold. cbn. apply PStVis. intros [].
+      apply pstruct_fold. cbn. apply PStRet. constructor. reflexivity.
+    + left. exists 1. split; reflexivity.
+  - reflexivity.
+Qed.
+
+Lemma iter_split_unreached_barrier_regression :
+  pstruct eq
+    (PTree.iter (fun _ : unit => Ret (inl tt) : ptree E M (unit + bool)) tt)
+    (PTree.bind
+      (PTree.iter (fun _ : unit => Ret (inl tt) : ptree E M (unit + unit)) tt)
+      (fun _ => PTree.iter
+        (fun _ : unit => Ret (inl tt) : ptree E M (unit + bool)) tt)).
+Proof.
+  eapply pstruct_iter_split_at with
+    (SI := fun (_ _ : unit) => True) (resume := fun _ => tt).
+  - intros [] [] _. right. apply pstruct_fold. cbn.
+    apply PStRet. constructor. exact I.
+  - exact I.
+Qed.
+
+End IterationStoppingRegressions.
 
 Lemma tau_ret_pfinite :
   @pfinite hierarchyE Enum MF Enum_SemanticMeasure
