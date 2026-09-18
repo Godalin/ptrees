@@ -691,6 +691,13 @@ The proof has two explicitly distinguished layers:
 
 - `run_split` is a carrier-independent `pstruct` theorem factoring a descent
   of `a+b` levels into a descent of `a` levels followed by `b` levels.
+  It now instantiates the library theorem `pstruct_iter_split_at`; there is
+  no example-local coinductive candidate.  The library law relates a source
+  loop to a prefix loop: before the barrier, the bodies agree structurally
+  and only retry; at the barrier, the prefix returns the source's resumption
+  state without an additional Tau.  Neither probability laws nor eventual
+  arrival at the barrier are assumed.  The hierarchy regressions also test
+  visible interactions and an unreachable barrier.
   `height_two_split` identifies the reset branch with `D_0 >>= passage`.
   `random_walk_passage_normal_form` and `passage_unfold` promote structural
   control-flow reasoning to actual `peutt` equations.
@@ -722,10 +729,27 @@ The regression for output `(0,2)` gives mass `4/27` after three rounds but
 limiting mass `2/9`, distinguishing finite execution from the unbounded law.
 
 The assumption audit reports `run_split` and `walk_harmonic_error` closed
-under the global context.  `random_walk_closed_form` uses the existing
+under the global context, as is the new `pstruct_iter_split_at` library law.
+`random_walk_closed_form` uses the existing
 functional-extensionality and dependent-equality axioms; `passage_unfold`
 additionally inherits the generic behavioral theory's choice principles.
 No example-specific probability axiom or unfinished proof is introduced.
+
+`walk_approx` is now the identity specialization of `walk_observation`,
+rather than a duplicate recursive execution function.  Its expectation law
+specializes `walk_observation_expect`.  The scalar fold `walk_eval` remains
+useful for the harmonic induction and executable regressions; both folds
+are certified against primitive execution by `walk_hitting_observes`.
+
+The finite-renewal migration remains pending a proof-relation design decision.
+The current `pfinite` API removes outer Tau prefixes and collapses complete
+finite stable-hitting prefixes, but has no congruence that lifts finite Tau
+removal under `Prob`.  In particular, the unbounded reset branch prevents
+applying the complete-finite-prefix rule directly to the RandomWalk renewal
+node.  `passage_unfold` still uses the existing behavioral Prob/Tau laws;
+it is not presented as a proved `passage_unfold_finite` theorem.  A general
+contextual extension needs its own soundness argument and has not been
+silently added to the relation as part of this example refactor.
 
 The quantitative proof uses a bounded harmonic candidate instead of the
 proposal's scalar equation `m = p + q*m*m`: the former constructs the

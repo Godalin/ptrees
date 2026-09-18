@@ -3,7 +3,6 @@ Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 
 Require Import Program.Equality FunctionalExtensionality Arith.PeanoNat Lia Ring Field.
-From Coinduction Require Import all.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition PTreeProbability.
 From PTree.Prob Require Import RatSubTypes DiscreteMC TwoLevelMeasure
@@ -82,44 +81,24 @@ Lemma run_branch_observe x y down :
   TauF (let '(x',y') := rw_next x y down in run_until_zero x' y').
 Proof. destruct down; reflexivity. Qed.
 
-(** The candidate explicitly includes the branch between [Prob] and [Tau],
-    so every use of coinduction consumes a constructor on both sides. *)
-Inductive split_candidate (b : nat) : ptree E M nat -> ptree E M nat -> Prop :=
-  | SplitRun a y : split_candidate b
-      (run_until_zero (a+b) y)
-      (PTree.bind (run_until_zero a y) (run_until_zero b))
-  | SplitBranch a y down : split_candidate b
-      (run_branch (a+b) y down)
-      (PTree.bind (run_branch a y down) (run_until_zero b))
-  | SplitDone t u : pstruct eq t u -> split_candidate b t u.
-
+(** The generic stopping law handles the control flow.  The only local
+    invariant is height translation by [b], preserving the streak.  Reaching
+    relative height zero returns the state at the intermediate barrier. *)
 Theorem run_split a b y :
   pstruct eq (run_until_zero (a+b) y)
     (PTree.bind (run_until_zero a y) (run_until_zero b)).
 Proof.
-  assert (Hsound : forall t u, split_candidate b t u -> pstruct eq t u).
-  { unfold pstruct. coinduction CH CIH.
-    intros t u H. destruct H as [a' y'|a' y' down|t u H].
-    - change (pstructF eq (` CH)
-        (observe (run_until_zero (a'+b) y'))
-        (observe (PTree.bind (run_until_zero a' y') (run_until_zero b)))).
-      destruct a' as [|a'].
-      + cbn [Nat.add]. rewrite observe_bind run_zero_observe. cbn.
-        eapply pstructF_monotone; [|apply pstruct_unfold; apply pstruct_refl].
-        intros v w Hv. apply CIH. now apply SplitDone.
-      + cbn [Nat.add]. rewrite observe_bind !run_succ_observe. cbn.
-        constructor. intro down. apply CIH. apply SplitBranch.
-    - change (pstructF eq (` CH)
-        (observe (run_branch (a'+b) y' down))
-        (observe (PTree.bind (run_branch a' y' down) (run_until_zero b)))).
-      rewrite observe_bind !run_branch_observe.
-      destruct down; cbn [rw_next observe]; apply PStTau; apply CIH.
-      + exact (SplitRun b a' (S y')).
-      + exact (SplitRun b (S (S a')) 0).
-    - change (pstructF eq (` CH) (observe t) (observe u)).
-      eapply pstructF_monotone; [|exact (pstruct_unfold H)].
-      intros v w Hv. apply CIH. now apply SplitDone. }
-  apply Hsound. apply SplitRun.
+  unfold run_until_zero.
+  eapply pstruct_iter_split_at with
+    (SI := fun i j => i = (Nat.add (fst j) b, snd j))
+    (resume := fun z => (b,z)).
+  - intros i [h z] Hstate. cbn in Hstate. subst i.
+    destruct h as [|h].
+    + left. exists z. split; reflexivity.
+    + right. apply pstruct_fold. cbn. apply PStProb. intros down.
+      apply pstruct_fold. cbn. apply PStRet. constructor.
+      destruct down; reflexivity.
+  - reflexivity.
 Qed.
 
 Lemma height_two_split :
@@ -206,10 +185,19 @@ Proof. apply probabilistic_ptree_intrinsic. Qed.
 
 Theorem random_walk_passage_normal_form :
   rwpeutt eq random_walk (PTree.fmap (fun n => (0%nat,n)) rw_D0).
-Proof. apply peutt_of_pstruct. apply random_walk_as_passage. Qed.
+Proof.
+  apply pfinite_peutt_subrelation.
+  apply pstruct_pfinite_subrelation.
+  apply random_walk_as_passage.
+Qed.
 
 (** Renewal is an equation between trees.  The down branch terminates;
-    the reset branch consists of two successive one-level passages. *)
+    the reset branch consists of two successive one-level passages.
+    Pending finite-layer API: [pfinite_tau_l] only removes an outer Tau;
+    the current generator has no Prob congruence for such rewrites and its
+    collapse rule requires complete finite stable hitting, not available
+    for this unbounded reset branch.  Do not disguise the following proof
+    as promotion from a finite theorem until that generic gap is resolved. *)
 Theorem passage_unfold y :
   rwpeutt eq (rw_passage y)
     (Prob rw_coin (fun down =>
@@ -222,9 +210,21 @@ Proof.
     + intros b b' ->. apply peutt_tau_l.
 Qed.
 
-(** The analytic part uses rational finite approximants.  A countable output
+(** Quantitative semantics (separate from finite administrative rewrites).
+    The analytic part uses rational finite approximants.  A countable output
     is specified by the limits of its individual masses, without packaging
-    infinitely many atoms into the finite [SubEnum] carrier. *)
+    infinitely many atoms into the finite [SubEnum] carrier.
+
+    The renewal route m = p + q*m*m would first need an existing scalar
+    mass for each completed passage, and an unconditional observation/bind
+    theorem computing the mass of C from those scalars.  [sem_total] is a
+    predicate, not such a mass function.  [free_omega_denotes_bind] is an
+    additional capability, not an available SubEnum instance, and requires
+    represented observations up front.  The atom calculation likewise needs
+    integration against D0's countably supported law, which cannot itself be
+    represented in finite SubEnum.  Thus assuming those limits here would
+    beg the existence question.  We retain the constructive rational-limit
+    argument; no scalar cancellation or PMF-to-peutt converse is assumed. *)
 Import Num.Theory.
 (** Unlike [ring_to_rat], do not simplify concrete rational multiplication:
     doing so unfolds its representation before the ring tactic runs. *)
@@ -351,17 +351,23 @@ Qed.
 
 (** [rounds] counts complete sample/Tau pairs, not an artificial bound on
     the walk's state space.  The absorbing state is observed immediately. *)
-Fixpoint walk_approx (rounds x y : nat) : SubEnum nat :=
+Fixpoint walk_observation {A} (obs : nat -> A) (rounds x y : nat) : SubEnum A :=
   match x with
-  | O => subenum_ret y
+  | O => subenum_ret (obs y)
   | S h =>
       subenum_bind rw_coin (fun down =>
         match rounds with
         | O => subenum_zero
-        | S fuel => if down then walk_approx fuel h (S y)
-                    else walk_approx fuel (S (S h)) 0
+        | S fuel => if down then walk_observation obs fuel h (S y)
+                    else walk_observation obs fuel (S (S h)) 0
         end)
   end.
+
+(** The identity observation is a specialization, not a second execution
+    recurrence.  [walk_hitting_observes] below certifies this executable fold
+    against the maintained primitive kernel; [walk_eval] is its scalar fold. *)
+Definition walk_approx (rounds x y : nat) : SubEnum nat :=
+  walk_observation (fun n => n) rounds x y.
 
 Fixpoint walk_eval (rounds : nat) (f : nat -> rat) (x y : nat) : rat :=
   match x with
@@ -381,21 +387,27 @@ Proof.
   by rewrite addr0.
 Qed.
 
-Lemma walk_approx_expect rounds f x y :
-  enum_expect f (subenum_raw (walk_approx rounds x y)) = walk_eval rounds f x y.
+Lemma walk_observation_expect {A} (obs : nat -> A) f rounds x y :
+  enum_expect f (subenum_raw (walk_observation obs rounds x y)) =
+    walk_eval rounds (fun n => f (obs n)) x y.
 Proof.
   revert x y. induction rounds as [|rounds IH]; intros [|x] y.
-  - exact (enum_expect_ret f y).
+  - exact (enum_expect_ret f (obs y)).
   - change (enum_expect f (bind_Enum (subenum_raw rw_coin)
       (fun _ => [::])) = 0).
     rewrite enum_expect_bind rw_coin_expect /= !mulr0 addr0. reflexivity.
-  - exact (enum_expect_ret f y).
+  - exact (enum_expect_ret f (obs y)).
   - change (enum_expect f (bind_Enum (subenum_raw rw_coin)
-      (fun b => subenum_raw (if b then walk_approx rounds x (S y)
-                            else walk_approx rounds (S (S x)) 0))) =
-      p * walk_eval rounds f x (S y) + q * walk_eval rounds f (S (S x)) 0).
+      (fun b => subenum_raw (if b then walk_observation obs rounds x (S y)
+                            else walk_observation obs rounds (S (S x)) 0))) =
+      p * walk_eval rounds (fun n => f (obs n)) x (S y) +
+      q * walk_eval rounds (fun n => f (obs n)) (S (S x)) 0).
     by rewrite enum_expect_bind rw_coin_expect !IH.
 Qed.
+
+Lemma walk_approx_expect rounds f x y :
+  enum_expect f (subenum_raw (walk_approx rounds x y)) = walk_eval rounds f x y.
+Proof. exact (walk_observation_expect (fun n => n) f rounds x y). Qed.
 
 Local Notation radius := (3 / 2 : rat).
 Local Notation contraction := (17 / 18 : rat).
@@ -536,35 +548,6 @@ Proof.
     stable_target_approx sem_bind sem_ret mixed_bind free_omega_bind
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticMeasure FreeOmegaSemanticMeasure].
   f_equal. apply functional_extensionality. intros []; reflexivity.
-Qed.
-
-Fixpoint walk_observation {A} (obs : nat -> A) (rounds x y : nat) : SubEnum A :=
-  match x with
-  | O => subenum_ret (obs y)
-  | S h => subenum_bind rw_coin (fun down =>
-      match rounds with
-      | O => subenum_zero
-      | S fuel => if down then walk_observation obs fuel h (S y)
-                  else walk_observation obs fuel (S (S h)) 0
-      end)
-  end.
-
-Lemma walk_observation_expect {A} (obs : nat -> A) f rounds x y :
-  enum_expect f (subenum_raw (walk_observation obs rounds x y)) =
-    walk_eval rounds (fun n => f (obs n)) x y.
-Proof.
-  revert x y. induction rounds as [|rounds IH]; intros [|x] y.
-  - exact (enum_expect_ret f (obs y)).
-  - change (enum_expect f (bind_Enum (subenum_raw rw_coin)
-      (fun _ => [::])) = 0).
-    rewrite enum_expect_bind rw_coin_expect /= !mulr0 addr0. reflexivity.
-  - exact (enum_expect_ret f (obs y)).
-  - change (enum_expect f (bind_Enum (subenum_raw rw_coin)
-      (fun b => subenum_raw (if b then walk_observation obs rounds x (S y)
-                            else walk_observation obs rounds (S (S x)) 0))) =
-      p * walk_eval rounds (fun n => f (obs n)) x (S y) +
-      q * walk_eval rounds (fun n => f (obs n)) (S (S x)) 0).
-    by rewrite enum_expect_bind rw_coin_expect !IH.
 Qed.
 
 Lemma walk_hitting_observes {A} (obs : nat -> A) rounds x y :
