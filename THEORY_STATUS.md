@@ -727,6 +727,17 @@ The completed semantic results in `Eq/FiniteInternalHitting.v` are:
   well-founded compression and then running each residual for n steps.
   The index is a proof-level semantic approximation; it imposes no uniform
   depth bound on `finite_internal`.
+- `finite_internal_rounds_cover_hitting`: for any independently selected
+  valid compression policy, n+1 compression/guard rounds cover every
+  observation reached within n primitive internal steps.  The accelerated
+  approximants are increasing (`finite_internal_rounds_increasing`).
+  This establishes lower coverage through arbitrarily many internal rounds,
+  not just preservation of a single compression.
+- `finite_internal_round_limits_coupled`: if two independently selected
+  policies couple their residuals under `pfinite_guard RR sim` at every
+  related state pair, their complete accelerated chains are coupled under
+  `stable_head_rel RR sim`.  This is a coupling of actual omega chains;
+  no assumed inclusion in `peutt` occurs in its proof.
 
 The round-soundness lemma establishes `F(peutt) ⊆ peutt`, **not**
 `νF ⊆ peutt`.  Greatest-fixed-point soundness still needs a progress argument
@@ -734,6 +745,16 @@ through arbitrarily many guarded Tau/Prob rounds and well-founded internal
 compression.  The old proof, which recurs only after stable observations,
 does not supply this argument.  No additional capability axiom, intersection
 with `peutt`, or unfinished proof has been used to disguise this gap.
+
+The acceleration route now has two explicit remaining obligations.  First,
+lower coverage alone does not identify an accelerated limit with primitive
+stable hitting: the converse adequacy direction is still needed.  Second,
+the existential compression witnesses in `pfinite_residual_unfold` may
+depend on the whole related pair.  Classical choice on pairs does **not**
+produce the independent marginal policies assumed by
+`finite_internal_round_limits_coupled`.  A proof must handle this dependency,
+not silently strengthen the generator to require such policies.  Neither
+obligation is currently claimed solved or replaced by a new class axiom.
 
 `Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
 before divergence, Prob branch compression, and the negative core regression
