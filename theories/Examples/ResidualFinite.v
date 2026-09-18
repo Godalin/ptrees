@@ -7,7 +7,8 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import
   TwoLevelMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum
   FreeOmegaMeasure DiscreteMC.
-From PTree.Eq Require Import FiniteInternal PFiniteResidual PStrong.
+From PTree.Eq Require Import
+  FiniteInternal FiniteInternalHitting PFiniteResidual PStrong PEutt.
 From PTree.Examples Require Import RandomWalk.
 
 Set Implicit Arguments.
@@ -66,6 +67,48 @@ Proof.
   specialize (Hsupport _ Hae). dependent destruction Hsupport.
   destruct H as [t [Hguard ->]].
   unfold pfinite_guard in Hguard. cbn in Hguard. inversion Hguard.
+Qed.
+
+(** Infinitely many visible rounds, each with a finite administrative delay.
+    This exercises the sound native up-to rule, independently of the still
+    pending inclusion of the residual greatest fixed point. *)
+Variant residual_tickE : Type -> Type := ResidualTick : residual_tickE unit.
+
+CoFixpoint residual_service_left : ptree residual_tickE SubEnum bool :=
+  Vis ResidualTick (fun _ => Tau residual_service_left).
+
+CoFixpoint residual_service_right : ptree residual_tickE SubEnum bool :=
+  Vis ResidualTick (fun _ => Tau (Tau residual_service_right)).
+
+Lemma residual_services_peutt :
+  @peutt residual_tickE SubEnum (FreeOmega SubEnum)
+    (FreeOmegaObservableSemanticMeasure
+      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool bool eq
+    residual_service_left residual_service_right.
+Proof.
+  eapply peutt_coinduction_upto_finite_internal with
+    (sim := fun s1 s2 =>
+      s1 = observe residual_service_left /\ s2 = observe residual_service_right).
+  - intros s1 s2 [-> ->].
+    apply stable_hitting_match_vis. intros [].
+    exists (Tau residual_service_left), (Tau (Tau residual_service_right)),
+      (FORet residual_service_left), (FORet residual_service_right).
+    split; [reflexivity|]. split; [reflexivity|].
+    split.
+    + apply FITau. exact (@FIStop residual_tickE SubEnum (FreeOmega SubEnum)
+        (FreeOmegaObservableSemanticMeasure
+          (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+        FreeOmegaMixedMeasure bool residual_service_left).
+    + split.
+      * apply FITau. apply FITau.
+        exact (@FIStop residual_tickE SubEnum (FreeOmega SubEnum)
+          (FreeOmegaObservableSemanticMeasure
+            (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+          FreeOmegaMixedMeasure bool residual_service_right).
+      * apply FOQLStructural. apply FOLRet. split; reflexivity.
+  - split; reflexivity.
 Qed.
 
 (** The actual RandomWalk renewal equation is already derivable in the new

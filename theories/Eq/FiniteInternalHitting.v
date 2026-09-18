@@ -63,16 +63,25 @@ Qed.
 
 End OneReturnType.
 
-(** Sound inductive compression around an already established behavioral
-    relation.  This is a rewriting rule, not a coinduction-up-to theorem:
-    its premise must not be replaced by an unproved coinductive hypothesis. *)
-Theorem peutt_of_finite_internal {A B} (RR : A -> B -> Prop)
+(** Finite compression preserves generator-level matching, for an arbitrary
+    continuation candidate.  No folding into [peutt] is used here. *)
+Theorem finite_internal_match {A B} (RR : A -> B -> Prop)
+    (sim : ptree' E MN A -> ptree' E MN B -> Prop)
+    (S : ptree E MN A -> ptree E MN B -> Prop)
     (t1 : ptree E MN A) (t2 : ptree E MN B) out1 out2 :
   finite_internal t1 out1 -> finite_internal t2 out2 ->
-  sem_lift (@peutt E MN MF FI FC MX FO A B RR) out1 out2 ->
-  peutt RR t1 t2.
+  sem_lift S out1 out2 ->
+  (forall u v, S u v ->
+    stable_hitting_match
+      (@ptree_primitive_kernel E MN MF FI MX A)
+      (@ptree_primitive_kernel E MN MF FI MX B)
+      (ptree_stable_head_rel RR) sim (observe u) (observe v)) ->
+  stable_hitting_match
+    (@ptree_primitive_kernel E MN MF FI MX A)
+    (@ptree_primitive_kernel E MN MF FI MX B)
+    (ptree_stable_head_rel RR) sim (observe t1) (observe t2).
 Proof.
-  intros Hexec1 Hexec2 Hres.
+  intros Hexec1 Hexec2 Hres Hmatch.
   assert (Hex1 : forall u : ptree E MN A, exists out,
       stable_hitting (@ptree_primitive_kernel E MN MF FI MX A)
         (observe u) out).
@@ -83,43 +92,122 @@ Proof.
   { intro u. apply stable_hitting_exists. }
   destruct (choice _ Hex1) as [front1 Hfront1].
   destruct (choice _ Hex2) as [front2 Hfront2].
-  eapply peutt_of_hitting_lift; [apply Hfront1|apply Hfront2|].
+  eapply stable_hitting_match_of_hitting_lift; [apply Hfront1|apply Hfront2|].
   eapply sem_lift_mono with
-    (R := fun x z => exists y, x = y /\ stable_head_rel RR (peutt RR) y z).
+    (R := fun x z => exists y, x = y /\ ptree_stable_head_rel RR sim y z).
   - intros x z [y [-> Hyz]]. exact Hyz.
   - eapply sem_lift_comp.
     + eapply finite_internal_hitting_lift;
         [exact Hexec1|exact Hfront1|apply Hfront1].
     + eapply sem_lift_mono with
-        (R := fun x z => exists y, stable_head_rel RR (peutt RR) x y /\ z = y).
+        (R := fun x z => exists y, ptree_stable_head_rel RR sim x y /\ z = y).
       * intros x z [y [Hxy Heq]]. subst y. exact Hxy.
       * eapply sem_lift_comp.
         -- eapply sem_lift_bind; [exact Hres|].
-           intros u v Huv. eapply peutt_hitting_lift;
-             [exact Huv|apply Hfront1|apply Hfront2].
+           intros u v Huv. eapply stable_hitting_match_hitting_lift;
+             [apply Hmatch; exact Huv|apply Hfront1|apply Hfront2].
         -- apply sem_lift_sym. eapply finite_internal_hitting_lift;
              [exact Hexec2|exact Hfront2|apply Hfront2].
 Qed.
 
+(** Sound inductive compression around an already established behavioral
+    relation. *)
+Theorem peutt_of_finite_internal {A B} (RR : A -> B -> Prop)
+    (t1 : ptree E MN A) (t2 : ptree E MN B) out1 out2 :
+  finite_internal t1 out1 -> finite_internal t2 out2 ->
+  sem_lift (@peutt E MN MF FI FC MX FO A B RR) out1 out2 ->
+  peutt RR t1 t2.
+Proof.
+  intros H1 H2 Hlift. apply peutt_fold.
+  eapply finite_internal_match; [exact H1|exact H2|exact Hlift|].
+  intros u v Huv. apply peutt_unfold. exact Huv.
+Qed.
+
+Section FiniteInternalCoinduction.
+Context {A B : Type} (RR : A -> B -> Prop).
+
+Definition finite_internal_closure
+    (sim : ptree' E MN A -> ptree' E MN B -> Prop) s1 s2 : Prop :=
+  exists t1 t2 out1 out2,
+    s1 = observe t1 /\ s2 = observe t2 /\
+    finite_internal t1 out1 /\ finite_internal t2 out2 /\
+    sem_lift (fun u v => sim (observe u) (observe v)) out1 out2.
+
+Lemma finite_internal_closure_includes sim s1 s2 :
+  sim s1 s2 -> finite_internal_closure sim s1 s2.
+Proof.
+  intro H. exists (go s1), (go s2), (sem_ret (go s1)), (sem_ret (go s2)).
+  split; [reflexivity|]. split; [reflexivity|].
+  split; [apply FIStop|]. split; [apply FIStop|].
+  apply sem_lift_ret. exact H.
+Qed.
+
+Lemma finite_internal_closure_compatible sim
+    (Hprogress : forall s1 s2, sim s1 s2 ->
+      stable_hitting_match
+        (@ptree_primitive_kernel E MN MF FI MX A)
+        (@ptree_primitive_kernel E MN MF FI MX B)
+        (ptree_stable_head_rel RR) (finite_internal_closure sim) s1 s2) :
+  forall s1 s2, finite_internal_closure sim s1 s2 ->
+    stable_hitting_match
+      (@ptree_primitive_kernel E MN MF FI MX A)
+      (@ptree_primitive_kernel E MN MF FI MX B)
+      (ptree_stable_head_rel RR) (finite_internal_closure sim) s1 s2.
+Proof.
+  intros s1 s2 [t1 [t2 [out1 [out2 [-> [-> [H1 [H2 Hlift]]]]]]]].
+  eapply finite_internal_match; [exact H1|exact H2|exact Hlift|].
+  intros u v Huv. apply Hprogress. exact Huv.
+Qed.
+
+(** Sound up-to-compression coinduction for the native hitting generator.
+    The caller still owes a complete hitting match per candidate round;
+    this must not be confused with an arbitrary internal [pstrongF] guard. *)
+Theorem peutt_coinduction_upto_finite_internal sim
+    (Hprogress : forall s1 s2, sim s1 s2 ->
+      stable_hitting_match
+        (@ptree_primitive_kernel E MN MF FI MX A)
+        (@ptree_primitive_kernel E MN MF FI MX B)
+        (ptree_stable_head_rel RR) (finite_internal_closure sim) s1 s2) :
+  forall t1 t2, sim (observe t1) (observe t2) -> peutt RR t1 t2.
+Proof.
+  eapply peutt_coinduction_upto_closure.
+  - exact finite_internal_closure_includes.
+  - exact finite_internal_closure_compatible.
+  - exact Hprogress.
+Qed.
+
+End FiniteInternalCoinduction.
+
 (** A single guarded round is sound when its recursive obligations are
     already proved.  This pre-fixed-point fact alone does NOT establish
     inclusion of the greatest fixed point [pfinite_residual_rel]. *)
-Theorem pfinite_residual_round_sound {A} (t1 t2 : ptree E MN A) :
-  pfinite_residualF eq (@peutt E MN MF FI FC MX FO A A eq) t1 t2 ->
-  peutt eq t1 t2.
+Theorem pfinite_residual_round_sound {A B} (RR : A -> B -> Prop)
+    (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pfinite_residualF RR (@peutt E MN MF FI FC MX FO A B RR) t1 t2 ->
+  peutt RR t1 t2.
 Proof.
   intro Hstep. destruct Hstep.
   eapply peutt_of_finite_internal; [exact H|exact H0|].
   eapply sem_lift_mono; [|exact H1].
   intros u1 u2 Hguard. unfold pfinite_guard in Hguard.
-  change (peutt_state eq (observe u1) (observe u2)).
+  change (peutt_state RR (observe u1) (observe u2)).
   remember (observe u1) as o1 in Hguard |- *.
   remember (observe u2) as o2 in Hguard |- *.
-  destruct Hguard.
-  - apply peutt_ret. exact H2.
-  - apply peutt_tau_Proper. exact H2.
-  - apply peutt_vis. exact H2.
-  - eapply peutt_prob; [exact H2|]. intros x y Hxy. exact Hxy.
+  destruct Hguard as [r1 r2 Hret|v1 v2 Hv|X e k1 k2 Hk|X Y mu nu k1 k2 Hk].
+  - apply peutt_ret. exact Hret.
+  - change (peutt RR (Tau v1) (Tau v2)).
+    apply peutt_fold. apply peutt_unfold in Hv.
+    destruct Hv as [Hforward Hbackward]. split; intros out Htau.
+    + apply (proj1 (stable_hitting_tau_iff v1 out)) in Htau.
+      destruct (Hforward out Htau) as [result2 [Hhit Hlift]].
+      exists result2. split; [|exact Hlift].
+      apply (proj2 (stable_hitting_tau_iff v2 result2)). exact Hhit.
+    + apply (proj1 (stable_hitting_tau_iff v2 out)) in Htau.
+      destruct (Hbackward out Htau) as [result1 [Hhit Hlift]].
+      exists result1. split; [|exact Hlift].
+      apply (proj2 (stable_hitting_tau_iff v1 result1)). exact Hhit.
+  - apply peutt_vis. exact Hk.
+  - eapply peutt_prob; [exact Hk|]. intros x y Hxy. exact Hxy.
 Qed.
 
 End FiniteInternalHitting.
