@@ -69,6 +69,7 @@ Notation peutt_vis := PEutt.peutt_vis.
 Notation peutt_prob := PEutt.peutt_prob.
 Notation peutt_bind := PEutt.peutt_bind.
 Notation pstruct_pstrong := PStrong.pstruct_pstrong.
+Notation pstrong_bind := PStrong.pstrong_bind.
 Notation pstrong_pfinite := PFinite.pstrong_pfinite.
 Notation pfinite_rel_mono := PFinite.pfinite_rel_mono.
 Notation pfinite_sym := PFinite.pfinite_sym.

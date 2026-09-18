@@ -1536,3 +1536,56 @@ Qed.
 Proof. intros t1 t2. apply pstruct_pstrong. Qed.
 
 End PStrongFacts.
+
+Section PStrongBind.
+Context {E : Type -> Type} {M : Type -> Type}
+  `{MI : SemanticMeasure M}
+  `{MC : @SemanticMeasureCoreLaws M MI}.
+Context {A1 A2 B1 B2 : Type}.
+Variables (RA : A1 -> A2 -> Prop) (RB : B1 -> B2 -> Prop).
+Variables (k1 : A1 -> ptree E M B1) (k2 : A2 -> ptree E M B2).
+Hypothesis Hcont : forall a1 a2, RA a1 a2 ->
+  pstrong RB (k1 a1) (k2 a2).
+
+Definition pstrong_bind_clo
+    (u1 : ptree E M B1) (u2 : ptree E M B2) : Prop :=
+  (exists t1 t2, u1 = PTree.bind t1 k1 /\
+    u2 = PTree.bind t2 k2 /\ pstrong RA t1 t2) \/
+  pstrong RB u1 u2.
+
+Theorem pstrong_bind t1 t2 :
+  pstrong RA t1 t2 ->
+  pstrong RB (PTree.bind t1 k1) (PTree.bind t2 k2).
+Proof.
+  intro Hsource.
+  assert (Hbind : forall u1 u2, pstrong_bind_clo u1 u2 ->
+      pstrong RB u1 u2).
+  { unfold pstrong. coinduction CH CIH.
+    intros u1 u2 Hclo.
+    destruct Hclo as [[s1 [s2 [-> [-> Hs]]]]|Hdone].
+    - unfold pstrong_body.
+      change (pstrongF RB (` CH)
+        (observe (PTree.bind s1 k1)) (observe (PTree.bind s2 k2))).
+      rewrite !observe_bind.
+      pose proof (pstrong_unfold Hs) as Hstep.
+      dependent destruction Hstep; cbn.
+      + rewrite <- x0, <- x.
+        pose proof (pstrong_unfold (Hcont H)) as Hret.
+        eapply pstrongF_monotone; [|exact Hret].
+        intros v1 v2 Hv. apply CIH. right. exact Hv.
+      + rewrite <- x0, <- x. constructor. apply CIH. left.
+        eexists _, _. repeat split; eauto.
+      + rewrite <- x0, <- x. constructor=> y. apply CIH. left.
+        eexists _, _. repeat split; eauto.
+      + rewrite <- x0, <- x. constructor.
+        eapply sem_lift_mono; [|exact H].
+        intros a1 a2 Ha. apply CIH. left.
+        eexists _, _. repeat split; eauto.
+    - unfold pstrong_body.
+      pose proof (pstrong_unfold Hdone) as Hstep.
+      eapply pstrongF_monotone; [|exact Hstep].
+      intros v1 v2 Hv. apply CIH. right. exact Hv. }
+  apply Hbind. left. eexists _, _. repeat split; eauto.
+Qed.
+
+End PStrongBind.

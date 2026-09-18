@@ -125,7 +125,9 @@ pstruct ⊆ pstrong ⊆ pfinite ⊆ peutt.
 ```
 
 `pstruct` is exact structural lockstep.  `pstrong` uses the canonical
-`SemanticMeasure` coupling while retaining lockstep control flow.  `pfinite`
+`SemanticMeasure` coupling while retaining lockstep control flow;
+`pstrong_bind` threads a heterogeneous coupling through monadic composition.
+`pfinite`
 adds an inductively finite one-sided Tau closure and finite-complete
 stable-prefix collapse; the inductive closure is intentionally outside the
 greatest fixed point, so an infinite one-sided Tau loop cannot justify an
