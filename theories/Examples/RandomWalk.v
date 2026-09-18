@@ -193,21 +193,22 @@ Qed.
 
 (** Renewal is an equation between trees.  The down branch terminates;
     the reset branch consists of two successive one-level passages.
-    Pending finite-layer API: [pfinite_tau_l] only removes an outer Tau;
-    the current generator has no Prob congruence for such rewrites and its
-    collapse rule requires complete finite stable hitting, not available
-    for this unbounded reset branch.  Do not disguise the following proof
-    as promotion from a finite theorem until that generic gap is resolved. *)
+    Structural normalization promotes through [pfinite]; each branch then
+    removes just one Tau using [pfinite_tau_l].  [peutt_prob_rewrite] lifts
+    those local finite rewrites into a behavioral probability context.
+    No Prob congruence or unguarded renewal equation is claimed in [pfinite]. *)
 Theorem passage_unfold y :
   rwpeutt eq (rw_passage y)
     (Prob rw_coin (fun down =>
       if down then Ret (S y) else rw_continuation)).
 Proof.
   eapply peutt_trans.
-  - apply peutt_of_pstruct. apply passage_unfold_guarded.
-  - eapply peutt_prob with (XR := eq).
+  - apply pfinite_peutt_subrelation.
+    apply pstruct_pfinite_subrelation. apply passage_unfold_guarded.
+  - eapply (peutt_prob_rewrite (Hsub := pfinite_peutt_subrelation))
+      with (XR := eq).
     + apply sem_lift_refl. intros b. reflexivity.
-    + intros b b' ->. apply peutt_tau_l.
+    + intros b b' ->. apply pfinite_tau_l.
 Qed.
 
 (** Quantitative semantics (separate from finite administrative rewrites).

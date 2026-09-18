@@ -741,15 +741,25 @@ specializes `walk_observation_expect`.  The scalar fold `walk_eval` remains
 useful for the harmonic induction and executable regressions; both folds
 are certified against primitive execution by `walk_hitting_observes`.
 
-The finite-renewal migration remains pending a proof-relation design decision.
-The current `pfinite` API removes outer Tau prefixes and collapses complete
-finite stable-hitting prefixes, but has no congruence that lifts finite Tau
-removal under `Prob`.  In particular, the unbounded reset branch prevents
-applying the complete-finite-prefix rule directly to the RandomWalk renewal
-node.  `passage_unfold` still uses the existing behavioral Prob/Tau laws;
-it is not presented as a proved `passage_unfold_finite` theorem.  A general
-contextual extension needs its own soundness argument and has not been
-silently added to the relation as part of this example refactor.
+The renewal proof now uses local finite rewriting with a behavioral
+contextual conclusion.  `passage_unfold_guarded` first promotes from
+`pstruct` through `pfinite` to `peutt`.  Each branch removes one Tau using
+`pfinite_tau_l`, and `peutt_prob_rewrite` promotes these branchwise proofs
+under the probability node.  The result is `passage_unfold : peutt ...`,
+not a claimed `passage_unfold_finite` equation.  No Prob congruence has been
+added to `pfinite`: local finite rewrites need only remain behaviorally sound
+when placed under a context, not globally finite.
+
+`peutt_prob_rewrite` is backend-neutral and accepts any registered
+subrelation of homogeneous `peutt`; it also accepts a coupling between
+different sample types/measures.  The hierarchy regressions cover same-measure
+and coupled sampling, a divergent continuation, and promotion under the
+existing bind/fmap Proper instances.  Direct branchwise `setoid_rewrite`
+under `Prob` currently unfolds the constructor to `go/ProbF` and fails to
+find the needed morphisms; explicit contextual promotion avoids adding a
+new typeclass search graph.  This does not claim arbitrary eventful iter
+congruence: the existing eventless behavioral theorem and eventful
+generator-closure obligation retain their documented scope.
 
 The quantitative proof uses a bounded harmonic candidate instead of the
 proposal's scalar equation `m = p + q*m*m`: the former constructs the

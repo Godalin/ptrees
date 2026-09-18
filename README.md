@@ -61,6 +61,13 @@ Rocq's standard `subrelation`, and
 `PEutt.v` provides relation-generic left, right, and two-sided endpoint
 rewriting.
 
+Local finite rewrites may also be used under a behavioral context without
+making `pfinite` itself a congruence.  `peutt_prob_rewrite` combines a
+registered subrelation with the probabilistic coupling rule: branchwise
+`pfinite` proofs yield a `peutt` conclusion for the probability nodes.
+RandomWalk's `passage_unfold` uses precisely this pattern.  Bind and fmap
+reuse their existing behavioral Proper instances after local promotion.
+
 `frontier_certificate`, `pstruct`, `pstrong`, and `pfinite` belong to
 mechanization infrastructure.  The first is a
 syntax-directed certificate system for proving stable-hitting facts;
