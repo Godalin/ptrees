@@ -738,23 +738,42 @@ The completed semantic results in `Eq/FiniteInternalHitting.v` are:
   related state pair, their complete accelerated chains are coupled under
   `stable_head_rel RR sim`.  This is a coupling of actual omega chains;
   no assumed inclusion in `peutt` occurs in its proof.
+- `finite_internal_approximation_exists`: every well-founded cut has an
+  increasing chain of uniform-depth truncations converging to its residual
+  distribution.  The truncations have both primitive-fuel upper bounds and
+  lower coverage.  This does not put a uniform bound on the original cut.
+
+`Eq/FreeOmega/FiniteInternalAcceleration.v` completes the acceleration
+adequacy argument for any selected compression policy:
+
+- `finite_internal_grid_cofinal` proves that primitive hitting and the
+  diagonal of the truncated-round grid are mutually cofinal.
+- `finite_internal_acceleration` couples the complete accelerated limit
+  by equality to the original primitive hitting limit.  The scheduling grid
+  is constructed from the well-founded derivations; it is not an extra
+  hypothesis, and branch depths need not have a uniform bound.
+- `peutt_coinduction_finite_internal_policies` is therefore a proved native
+  coinduction rule for two valid marginal policies with guarded residual
+  coupling.  Unlike `peutt_coinduction_upto_finite_internal`, its premise
+  needs only `pstrongF` matching after compression.  It handles indefinitely
+  repeated internal Tau/Prob rounds with no intervening visible event.
 
 The round-soundness lemma establishes `F(peutt) ⊆ peutt`, **not**
-`νF ⊆ peutt`.  Greatest-fixed-point soundness still needs a progress argument
-through arbitrarily many guarded Tau/Prob rounds and well-founded internal
-compression.  The old proof, which recurs only after stable observations,
-does not supply this argument.  No additional capability axiom, intersection
+`νF ⊆ peutt`.  Greatest-fixed-point soundness still needs to connect its
+pair-dependent compression witnesses to the proved unbounded execution
+argument.  The old proof, which recurs only after stable observations,
+does not supply this connection.  No additional capability axiom, intersection
 with `peutt`, or unfinished proof has been used to disguise this gap.
 
-The acceleration route now has two explicit remaining obligations.  First,
-lower coverage alone does not identify an accelerated limit with primitive
-stable hitting: the converse adequacy direction is still needed.  Second,
-the existential compression witnesses in `pfinite_residual_unfold` may
+The acceleration limit obligation is now solved.  The remaining gap to the
+unrestricted residual GFP is witness dependency: the existential
+compression witnesses in `pfinite_residual_unfold` may
 depend on the whole related pair.  Classical choice on pairs does **not**
 produce the independent marginal policies assumed by
-`finite_internal_round_limits_coupled`.  A proof must handle this dependency,
+`peutt_coinduction_finite_internal_policies`.  A proof must handle this dependency,
 not silently strengthen the generator to require such policies.  Neither
-obligation is currently claimed solved or replaced by a new class axiom.
+uniformization nor unrestricted GFP soundness is currently claimed solved;
+no new capability axiom replaces this obligation.
 
 `Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
 before divergence, Prob branch compression, and the negative core regression
@@ -764,6 +783,10 @@ finite delays on every continuation.  It also derives the actual RandomWalk rene
 equation as `random_walk_passage_residual_finite`, without behavioral Prob
 congruence.  That example is a client of the candidate, not a replacement for
 the maintained `passage_unfold` until the soundness bridge is complete.
+`residual_retries_peutt` checks the stronger policy-based rule on purely
+internal retry loops, with one Tau per failed toss on one side and two on
+the other.  There is no Vis guard between retries and the proof does not
+first assume a behavioral equivalence for the recursive continuations.
 
 ## Infinite-state random walk
 

@@ -17,7 +17,7 @@ Notation "` R" := (elem R) (at level 10).
 
 (** Candidate replacement for the stable-frontier-based finite relation.
     Kept separate until the unconditional FreeOmega soundness theorem has
-    been transported.  There is deliberately no semantic soundness premise
+    been proved.  There is deliberately no semantic soundness premise
     hidden in this definition, and no stable hitting or omega interface. *)
 Section ResidualFinite.
 Context {E MN MF : Type -> Type}

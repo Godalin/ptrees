@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From Coq Require Import Arith.PeanoNat.
+From Coq Require Import Arith.PeanoNat Logic.ClassicalChoice Lia.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import
@@ -62,6 +62,101 @@ Proof.
           FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
           FreeOmegaObservableSemanticMeasureOrderLaws R (observe (k y))
           n (S n) (Nat.le_succ_diag_r n)).
+Qed.
+
+(** Uniform truncations of a well-founded cut, not a uniform bound on the
+    cut itself.  They recover its full residual distribution only at omega.
+    Both inequalities are raw approximation statements, so later cofinality
+    arguments do not need an unjustified order/properness law for qlift. *)
+Definition finite_internal_approximates t out
+    (chain : nat -> MF (ptree E MN R)) : Prop :=
+  (forall n, free_omega_approx eq (chain n) (chain (S n))) /\
+  free_omega_qlift eq out (FOLub chain) /\
+  (forall n m, free_omega_approx eq
+    (free_omega_bind (chain n) (fun u => hit m (observe u)))
+    (hit (n + m) (observe t))) /\
+  (forall n, free_omega_approx eq (hit n (observe t))
+    (free_omega_bind (chain n) (fun u => hit n (observe u)))).
+
+Lemma finite_internal_prefix_limit {A} (out : MF A) (chain : nat -> MF A) :
+  free_omega_qlift eq out (FOLub chain) ->
+  free_omega_qlift eq out
+    (FOLub (fun n => match n with O => FOZero | S m => chain m end)).
+Proof.
+  intro Hlimit. eapply FOQLComp with (T := eq) (U := eq).
+  - exact Hlimit.
+  - apply FOQLLubZeroPrefixR. intro n.
+    apply free_omega_qlift_refl. intro x. reflexivity.
+  - intros x z [y [-> ->]]. reflexivity.
+Qed.
+
+Theorem finite_internal_approximation_exists t out :
+  execute t out -> exists chain, finite_internal_approximates t out chain.
+Proof.
+  intro Hexec. induction Hexec.
+  - exists (fun _ => FORet t). repeat split.
+    + intro n. apply free_omega_approx_refl. intro x. reflexivity.
+    + apply FOQLLubConstantR. apply free_omega_qlift_refl.
+      intro x. reflexivity.
+    + intros n m. change (free_omega_approx eq
+        (hit m (observe t)) (hit (n + m) (observe t))).
+      apply (@PTreeKernel.ptree_hitting_mono E MN MF FI
+        FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
+        FreeOmegaObservableSemanticMeasureOrderLaws R). lia.
+    + intro n. apply free_omega_approx_refl. intro x. reflexivity.
+  - destruct IHHexec as [chain [Hinc [Hlimit [Hupper Hcover]]]].
+    exists (fun n => match n with O => FOZero | S m => chain m end).
+    repeat split.
+    + intros [|n]; [apply FOApproxZero|apply Hinc].
+    + apply finite_internal_prefix_limit. exact Hlimit.
+    + intros [|n] m; [apply FOApproxZero|]. exact (Hupper n m).
+    + intros [|n]; [apply FOApproxZero|].
+      eapply free_omega_approx_trans; [exact (Hcover n)|].
+      eapply free_omega_approx_bind with (R := eq).
+      * apply free_omega_approx_refl. intro x. reflexivity.
+      * intros x y ->.
+        exact (@PTreeKernel.ptree_hitting_mono E MN MF FI
+          FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
+          FreeOmegaObservableSemanticMeasureOrderLaws R (observe y)
+          n (S n) (Nat.le_succ_diag_r n)).
+  - destruct (choice _ H0) as [chains Hchains].
+    exists (fun n => FOSample mu (fun x =>
+      match n with O => FOZero | S m => chains x m end)).
+    repeat split.
+    + intros [|n]; eapply FOApproxSample with (S := eq).
+      * apply sem_lift_refl. intro x. reflexivity.
+      * intros x y ->. apply FOApproxZero.
+      * apply sem_lift_refl. intro x. reflexivity.
+      * intros x y ->. exact (proj1 (Hchains y) n).
+    + apply FOQLSampleLub with (Good := fun _ => True).
+      * apply sem_ae_true.
+      * intros x _. apply finite_internal_prefix_limit.
+        exact (proj1 (proj2 (Hchains x))).
+    + intros [|n] m.
+      * destruct m as [|m].
+        -- apply free_omega_approx_refl. intro x. reflexivity.
+        -- change (free_omega_approx eq
+             (FOSample mu (fun _ => FOZero))
+             (FOSample mu (fun x => hit m (observe (k x))))).
+           eapply FOApproxSample with (S := eq).
+           ++ apply sem_lift_refl. intro x. reflexivity.
+           ++ intros x y ->. apply FOApproxZero.
+      * eapply FOApproxSample with (S := eq).
+        -- apply sem_lift_refl. intro x. reflexivity.
+        -- intros x y ->. exact (proj1 (proj2 (proj2 (Hchains y))) n m).
+    + intros [|n].
+      * apply free_omega_approx_refl. intro x. reflexivity.
+      * eapply FOApproxSample with (S := eq).
+        -- apply sem_lift_refl. intro x. reflexivity.
+        -- intros x y ->. eapply free_omega_approx_trans.
+           ++ exact (proj2 (proj2 (proj2 (Hchains y))) n).
+           ++ eapply free_omega_approx_bind with (R := eq).
+              ** apply free_omega_approx_refl. intro z. reflexivity.
+              ** intros u v ->.
+                 exact (@PTreeKernel.ptree_hitting_mono E MN MF FI
+                   FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
+                   FreeOmegaObservableSemanticMeasureOrderLaws R (observe v)
+                   n (S n) (Nat.le_succ_diag_r n)).
 Qed.
 
 (** A selected compression policy, followed by one genuine primitive step.
