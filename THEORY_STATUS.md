@@ -136,7 +136,7 @@ is its finite reflexive-symmetric-transitive closure.  Consequently
 `pfinite_equivalence` are available without introducing any omega execution
 rule.  `OperationalProbabilisticPTSFreeOmegaBase.v` proves soundness first for
 `pfinite_rel` and then for the whole equivalence closure.  The adjacent
-inclusions are registered with Rocq's `subrelation`.  `PEuttRewrite.v`
+inclusions are registered with Rocq's `subrelation`.  `PEutt.v`
 supplies generic endpoint rewriting for every registered stronger relation.
 
 The following laws are checked:

@@ -7,7 +7,7 @@ From Coq Require Import Program.Equality.
 
 From PTree.Core Require Import PTreeDefinition PTreeEnum.
 From PTree.Prob Require Import DiscreteMC TwoLevelMeasureEnum FreeOmegaMeasure.
-From PTree.Eq Require Import PStrong PFinite PEutt PEuttRewrite
+From PTree.Eq Require Import PStrong PFinite PEutt
   OperationalProbabilisticPTSFreeOmega.
 
 Set Implicit Arguments.

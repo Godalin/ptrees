@@ -58,7 +58,7 @@ transitive closure of this one-round finite proof relation, so its composition
 still contains only finitely many finite weak rewrites.  All four homogeneous
 relations are registered as `Equivalence` instances.  The inclusions use
 Rocq's standard `subrelation`, and
-`PEuttRewrite.v` provides relation-generic left, right, and two-sided endpoint
+`PEutt.v` provides relation-generic left, right, and two-sided endpoint
 rewriting.
 
 `frontier_certificate`, `pstruct`, `pstrong`, and `pfinite` belong to
