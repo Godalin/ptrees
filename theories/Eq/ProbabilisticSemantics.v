@@ -8,9 +8,8 @@ Set Universe Polymorphism.
         -> primitive kernel and stable hitting
         -> peutt / finite interaction observations.
 
-    The historical module names remain available to proof developers, while
-    clients need not treat frontier certificates or operational compatibility
-    aliases as additional semantic layers. *)
+    Proof-oriented frontier certificates remain implementation
+    infrastructure rather than an additional semantic layer. *)
 (** Deliberately import, rather than transitively export, implementation
     modules.  Requiring this facade loads the definitions needed by the
     curated surface below without turning their module imports and scopes

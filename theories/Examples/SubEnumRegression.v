@@ -6,7 +6,7 @@ From mathcomp Require Import ssreflect ssrbool seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition PTreeProbability.
 From PTree.Prob Require Import DiscreteMC FreeOmegaMeasure
   TwoLevelMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
-From PTree.Eq Require Import OperationalProbabilisticPTSFreeOmega
+From PTree.Eq Require Import FreeOmega
   PEutt.
 From PTree.Examples Require Import EnumMeasureRegression.
 

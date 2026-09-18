@@ -12,7 +12,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts EnumMap
   Coupling IndexedCoupling FrontierLiftEnum MeasureIterationEnum
   TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  PTreeKernel OperationalProbabilisticPTSFreeOmega
+  PTreeKernel FreeOmega
   PEutt ProbabilisticTraceSubEnum.
 Set Implicit Arguments.
 Unset Strict Implicit.

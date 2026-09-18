@@ -9,7 +9,7 @@ From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure MeasureIterationEnum.
 From PTree.Eq Require Import PTreeKernel
-  OperationalProbabilisticPTSFreeOmega PEutt PStruct PStrong.
+  FreeOmega PEutt PStruct PStrong.
 From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
@@ -42,9 +42,9 @@ Lemma canonical_monad_laws_regression {A B C}
     (PTree.bind t (fun x => PTree.bind (k x) h)).
 Proof.
   repeat split.
-  - apply free_peutt_bind_ret_l.
-  - apply free_peutt_bind_ret_r.
-  - apply free_peutt_bind_assoc.
+  - apply peutt_bind_ret_l.
+  - apply peutt_bind_ret_r.
+  - apply peutt_bind_assoc.
 Qed.
 
 (** Regression: the bind [Proper] instance supports rewriting a canonical
@@ -65,8 +65,8 @@ Lemma canonical_fmap_laws_regression {A B C}
     (PTree.fmap (fun x => g (f x)) t).
 Proof.
   split.
-  - apply free_peutt_fmap_id.
-  - apply free_peutt_fmap_compose.
+  - apply peutt_fmap_id.
+  - apply peutt_fmap_compose.
 Qed.
 
 (** Regression: the Functor [Proper] instance is registered with the setoid
@@ -158,13 +158,13 @@ Lemma canonical_iter_unfold_regression {I R}
       | inl i' => Tau (PTree.iter step i')
       | inr r => Ret r
       end)).
-Proof. apply free_peutt_iter_unfold. Qed.
+Proof. apply peutt_iter_unfold. Qed.
 
 Lemma canonical_iter_structural_regression {I R}
     (step1 step2 : I -> ptree algebraE Enum (I + R)) (i : I) :
   (forall j, pstruct eq (step1 j) (step2 j)) ->
   peutt eq (PTree.iter step1 i) (PTree.iter step2 i).
-Proof. apply free_peutt_iter_structural. Qed.
+Proof. apply peutt_iter_structural. Qed.
 
 Variant naturalityE : Type -> Type :=
   | ReadFlag : naturalityE bool.
@@ -195,7 +195,7 @@ Lemma canonical_iter_natural_regression :
     (PTree.iter
       (pstruct_iter_natural_step (E := naturalityE) (M := Enum)
         naturality_step naturality_post) tt).
-Proof. apply free_peutt_iter_natural. Qed.
+Proof. apply peutt_iter_natural. Qed.
 
 Definition codiagonal_step (_ : unit) :
     ptree naturalityE Enum (unit + (unit + bool)) :=
@@ -212,7 +212,7 @@ Lemma canonical_iter_codiagonal_regression :
     (PTree.iter (fun j => PTree.iter codiagonal_step j) tt)
     (PTree.iter
       (pstruct_iter_codiagonal_flat_step codiagonal_step) tt).
-Proof. apply free_peutt_iter_codiagonal. Qed.
+Proof. apply peutt_iter_codiagonal. Qed.
 
 Definition countdown_nat (n : nat) :
     ptree algebraE Enum (nat + nat) :=
@@ -241,7 +241,7 @@ Lemma canonical_iter_rel_fusion_regression n :
     (PTree.iter countdown_nat n)
     (PTree.iter countdown_tagged (n, tt)).
 Proof.
-  eapply free_peutt_iter_rel
+  eapply peutt_iter_rel
     with (SI := countdown_state_rel).
   - intros i1 [i2 []] Hi. cbn in Hi. inversion Hi; subst. destruct i2; cbn.
     + apply pstruct_fold. cbn. constructor. constructor. split; reflexivity.
@@ -262,7 +262,7 @@ Definition retry_step_right (_ : unit) :
 
 Lemma retry_steps_behaviorally_related u1 u2 :
   eq u1 u2 ->
-  peutt (free_iter_behavioral_sum_rel eq eq)
+  peutt (iter_behavioral_sum_rel eq eq)
     (retry_step_left u1) (retry_step_right u2).
 Proof.
   intros ->. unfold retry_step_left, retry_step_right.
@@ -284,7 +284,7 @@ Lemma canonical_iter_behavioral_retry_regression :
     (PTree.iter retry_step_left tt)
     (PTree.iter retry_step_right tt).
 Proof.
-  eapply free_peutt_iter_behavioral_rel with (SI := eq).
+  eapply peutt_iter_behavioral_rel with (SI := eq).
   - intros X e. destruct e.
   - exact retry_steps_behaviorally_related.
   - reflexivity.
@@ -322,7 +322,7 @@ Lemma canonical_translate_compose_regression {R}
     (PTree.translate
       (fun (X : Type) (e : sourceE X) =>
         @rename_get X (@rename_bit X e)) t).
-Proof. apply free_peutt_translate_compose. Qed.
+Proof. apply peutt_translate_compose. Qed.
 
 (** Identity interpretation is genuinely weak on this program: interpreting
     [GetBit] inserts an administrative Tau before the visible event. *)
@@ -338,7 +338,7 @@ Lemma canonical_interp_trigger_regression {R}
     (PTree.interp (fun X e => @PTree.trigger renamedE Enum X e)
       (Vis GetBit k))
     (Vis GetBit k).
-Proof. apply free_peutt_interp_trigger. Qed.
+Proof. apply peutt_interp_trigger. Qed.
 
 Definition bit_handler (X : Type) (e : sourceE X) : ptree algebraE Enum X :=
   match e with
@@ -372,7 +372,7 @@ Lemma canonical_interp_structural_regression
     (PTree.interp bit_handler (Vis AskBit k1))
     (PTree.interp bit_handler (Vis AskBit k2)).
 Proof.
-  intro Hk. apply free_peutt_interp_structural.
+  intro Hk. apply peutt_interp_structural.
   apply pstruct_fold. cbn. constructor. exact Hk.
 Qed.
 
@@ -380,13 +380,13 @@ Qed.
     source-head/handler diagonal for every source tree. *)
 Lemma canonical_interp_cofinal_regression {R}
     (t : ptree sourceE Enum R) :
-  @ptree_interp_cofinal sourceE algebraE Enum MF
+  @PTreeKernel.ptree_interp_cofinal sourceE algebraE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R bit_handler t.
-Proof. apply free_ptree_interp_cofinal_all. Qed.
+Proof. apply ptree_interp_cofinal_all. Qed.
 
 Lemma canonical_interp_bind_regression {A B}
     (t : ptree sourceE Enum A) (k : A -> ptree sourceE Enum B) :
@@ -394,7 +394,7 @@ Lemma canonical_interp_bind_regression {A B}
     (PTree.interp bit_handler (PTree.bind t k))
     (PTree.bind (PTree.interp bit_handler t)
       (fun x => PTree.interp bit_handler (k x))).
-Proof. apply free_peutt_interp_bind. Qed.
+Proof. apply peutt_interp_bind. Qed.
 
 Definition interactive_loop_step (state : bool) :
     ptree sourceE Enum (bool + bool) :=
@@ -411,7 +411,7 @@ Lemma canonical_interp_iter_regression state :
     (PTree.interp bit_handler (PTree.iter interactive_loop_step state))
     (PTree.iter
       (fun s => PTree.interp bit_handler (interactive_loop_step s)) state).
-Proof. apply free_peutt_interp_iter. Qed.
+Proof. apply peutt_interp_iter. Qed.
 
 (** Both layers are operationally nontrivial: the first handler contributes
     Tau and Vis, while the second replaces that Vis by a probabilistic node. *)
@@ -422,7 +422,7 @@ Lemma canonical_interp_compose_regression {R} (t : ptree sourceE Enum R) :
     (PTree.interp
       (fun (X : Type) (e : sourceE X) =>
         PTree.interp renamed_prob_handler (@bit_forward_handler X e)) t).
-Proof. apply free_peutt_interp_compose. Qed.
+Proof. apply peutt_interp_compose. Qed.
 
 Lemma bit_handlers_structurally_related X (e : sourceE X) :
   pstruct eq (@bit_handler X e) (@bit_handler_eta X e).
@@ -436,7 +436,7 @@ Qed.
 Lemma canonical_interp_handler_regression {R} (t : ptree sourceE Enum R) :
   peutt eq (PTree.interp bit_handler t) (PTree.interp bit_handler_eta t).
 Proof.
-  apply free_peutt_interp_handler.
+  apply peutt_interp_handler.
   exact bit_handlers_structurally_related.
 Qed.
 
@@ -458,7 +458,7 @@ Lemma canonical_translate_preservation_regression {A B}
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A B RR
     (PTree.translate rename_bit t1) (PTree.translate rename_bit t2).
-Proof. apply free_peutt_translate. Qed.
+Proof. apply peutt_translate. Qed.
 
 Lemma canonical_translate_setoid_rewrite {A}
     (t1 t2 : ptree sourceE Enum A) :

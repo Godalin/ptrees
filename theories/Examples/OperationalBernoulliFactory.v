@@ -12,7 +12,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts
   FreeOmegaMeasure FreeOmegaSupport EnumSupport EnumMap.
 From PTree.Eq Require Import Shallow UnifiedFrontier
   PrimitiveStableHitting PTreeKernel
-  OperationalProbabilisticPTSFreeOmega PEutt.
+  FreeOmega PEutt.
 From PTree.Examples Require Import VonNeumannUnbounded RationalBernoulli
   BernoulliFactory.
 
@@ -223,7 +223,7 @@ Lemma ptree_factory_raw_chains_cofinal :
       (ptree_factory_raw_schedule rounds)).
 Proof.
   split.
-  - intro fuel. exists fuel. apply free_ptree_hitting_mono.
+  - intro fuel. exists fuel. apply ptree_hitting_mono.
     exact (ptree_factory_raw_schedule_ge fuel).
   - intro rounds. exists (ptree_factory_raw_schedule rounds).
     apply free_omega_approx_refl. intro h. reflexivity.
@@ -477,7 +477,7 @@ Proof.
     (FI := FreeOmegaObservableSemanticMeasure)
     (FO := FreeOmegaObservableSemanticOmega)
     (MX := FreeOmegaMixedMeasure)).
-  - apply free_ptree_bind_cofinal_no_event. exact factoryE_no_event.
+  - apply ptree_bind_cofinal_no_event. exact factoryE_no_event.
   - exact ptree_factory_fair_coin_weak.
   - intro b. apply ptree_factory_binary_ret_weak.
 Qed.
@@ -486,7 +486,7 @@ Lemma ptree_factory_binary_step_heads_observes
     (pnormalized : Qval pfalse + Qval ptrue = 1)
     (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x :
   free_omega_observes
-    (free_iter_head_next factoryE_no_event)
+    (iter_head_next factoryE_no_event)
     (ptree_factory_binary_step_heads x)
     (binary_coin_transition x).
 Proof.
@@ -518,7 +518,7 @@ Definition ptree_factory_standard_step_heads (x : rat) :
 
 Lemma ptree_factory_standard_step_heads_observes x :
   free_omega_observes
-    (free_iter_head_next factoryE_no_event)
+    (iter_head_next factoryE_no_event)
     (ptree_factory_standard_step_heads x)
     (@sem_bind Enum Enum_SemanticMeasure _ _
       (binary_coin_transition x) (fun next =>
@@ -550,8 +550,8 @@ Lemma ptree_factory_binary_step_heads_lift
     (ptree_factory_standard_step_heads x).
 Proof.
   eapply FOQLObserve with
-    (obsA := free_iter_head_next factoryE_no_event)
-    (obsB := free_iter_head_next factoryE_no_event)
+    (obsA := iter_head_next factoryE_no_event)
+    (obsB := iter_head_next factoryE_no_event)
     (outA := binary_coin_transition x)
     (outB := @sem_bind Enum Enum_SemanticMeasure _ _
       (binary_coin_transition x) (fun next =>
@@ -579,7 +579,7 @@ Fixpoint ptree_factory_standard_q_row
   | O => FOZero
   | S outer' =>
       free_omega_bind (ptree_factory_standard_step_heads x) (fun h =>
-        match free_iter_head_next factoryE_no_event h with
+        match iter_head_next factoryE_no_event h with
         | inl x' => ptree_factory_standard_q_row outer' x'
         | inr b => FORet (FHRet b)
         end)
@@ -593,17 +593,17 @@ Lemma ptree_factory_q_row_lift
     (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) :
   forall outer x,
     free_omega_qlift eq
-      (free_iter_complete_rows factoryE_no_event
+      (iter_complete_rows factoryE_no_event
         ptree_factory_binary_step_heads outer x)
       (ptree_factory_standard_q_row outer x).
 Proof.
   induction outer as [|outer IH]; intro x.
   - apply free_omega_qlift_refl. intros h. reflexivity.
-  - cbn [free_iter_complete_rows ptree_factory_standard_q_row].
+  - cbn [iter_complete_rows ptree_factory_standard_q_row].
     eapply FOQLBind with (T := eq).
     + exact (ptree_factory_binary_step_heads_lift
         pnormalized pnontrivial x).
-    + intros h1 h2 ->. destruct (free_iter_head_next factoryE_no_event h2)
+    + intros h1 h2 ->. destruct (iter_head_next factoryE_no_event h2)
         as [x'|b].
       * apply IH.
       * apply free_omega_qlift_refl. intros h. reflexivity.
@@ -611,7 +611,7 @@ Qed.
 
 Definition ptree_factory_q_row (outer : nat) :
     MF (factory_head bool) :=
-  free_iter_complete_rows factoryE_no_event
+  iter_complete_rows factoryE_no_event
     ptree_factory_binary_step_heads outer q.
 
 Definition ptree_factory_q_heads : MF (factory_head bool) :=
@@ -700,7 +700,7 @@ Theorem ptree_biased_to_rational_coin_weak :
     ptree_factory_q_heads.
 Proof.
   unfold biased_to_rational_coin.
-  eapply free_ptree_stable_hitting_iter_of_unbounded_steps
+  eapply ptree_stable_hitting_iter_of_unbounded_steps
     with (step_out := ptree_factory_binary_step_heads).
   - exact ptree_factory_binary_step_weak.
   - unfold ptree_factory_q_heads, ptree_factory_q_row.
@@ -1209,18 +1209,18 @@ Lemma factory_standard_weak q :
   weak (observe (factory_standard q)) (ptree_factory_standard_q_heads q).
 Proof.
   unfold factory_standard.
-  eapply free_ptree_stable_hitting_iter_of_unbounded_steps
+  eapply ptree_stable_hitting_iter_of_unbounded_steps
     with (step_out := ptree_factory_standard_step_heads)
          (no_event := factoryE_no_event).
   - exact factory_standard_step_weak.
   - unfold ptree_factory_standard_q_heads.
     apply FOQLLub. intro n.
     assert (Hrows : forall x,
-      free_iter_complete_rows factoryE_no_event
+      iter_complete_rows factoryE_no_event
         ptree_factory_standard_step_heads n x =
       ptree_factory_standard_q_row n x).
     { induction n as [|n IH]; intro x; [reflexivity|].
-      cbn [free_iter_complete_rows ptree_factory_standard_q_row].
+      cbn [iter_complete_rows ptree_factory_standard_q_row].
       f_equal. }
     rewrite Hrows. apply free_omega_qlift_refl. intro h. reflexivity.
 Qed.

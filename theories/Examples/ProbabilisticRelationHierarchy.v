@@ -8,7 +8,7 @@ From Coq Require Import Program.Equality.
 From PTree.Core Require Import PTreeDefinition PTreeEnum.
 From PTree.Prob Require Import DiscreteMC TwoLevelMeasureEnum FreeOmegaMeasure.
 From PTree.Eq Require Import PStrong PFinite PEutt
-  OperationalProbabilisticPTSFreeOmega.
+  FreeOmega.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -69,7 +69,7 @@ Lemma pfinite_promotes_to_peutt :
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
     bool bool eq (Tau (Ret true)) (Ret true).
-Proof. apply free_peutt_of_pfinite. exact tau_ret_pfinite. Qed.
+Proof. apply peutt_of_pfinite. exact tau_ret_pfinite. Qed.
 
 (** Generic endpoint rewriting consumes the native [subrelation] instance;
     it is not specialized to [pfinite]. *)
@@ -89,7 +89,7 @@ Proof.
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
       bool).
-  - apply free_pfinite_peutt_subrelation.
+  - apply pfinite_peutt_subrelation.
   - apply pfinite_tau_l.
   - apply peutt_refl.
 Qed.

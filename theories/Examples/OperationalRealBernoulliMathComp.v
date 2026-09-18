@@ -10,7 +10,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
   TwoLevelMeasure TwoLevelMeasureMathComp.
 From PTree.Eq Require Import PrimitiveStableHitting PTreeKernel
-  OperationalProbabilisticPTSFreeOmega UnifiedFrontier PEutt.
+  FreeOmega UnifiedFrontier PEutt.
 From PTree.Examples Require Import RealBernoulliOracle RealBernoulliMathComp
   UnifiedRealBernoulliMathCompCore.
 
@@ -165,17 +165,17 @@ Proof.
     ptree_mathcomp_oracle_heads.
   eapply ptree_stable_hitting_ast_iter.
   - exact ptree_mathcomp_oracle_increasing.
-  - change (@ptree_iter_cofinal real_mathcomp_coinE MN MF
+  - change (@PTreeKernel.ptree_iter_cofinal real_mathcomp_coinE MN MF
       (FreeOmegaObservableSemanticMeasure
         (NI := MathCompNodeSemanticMeasure R))
       FreeOmegaMixedMeasure
       (FreeOmegaObservableSemanticOmega
         (NI := MathCompNodeSemanticMeasure R)
         (NO := MathCompNodeSemanticOmega R)) nat bool
-      (free_primitive_iter_step
+      (primitive_iter_step
         (mathcomp_oracle_transition R qbit))
       (mathcomp_oracle_transition R qbit) 0).
-    apply free_primitive_iter_cofinal.
+    apply primitive_iter_cofinal.
   - exact: unified_mathcomp_oracle_mixed_iter.
   - exact ptree_mathcomp_oracle_heads_total.
 Qed.

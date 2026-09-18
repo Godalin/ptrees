@@ -11,7 +11,7 @@ From PTree.Prob Require Import EnumMap MeasureIterationEnum.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting UnifiedFrontier
   PTreeKernel
   PEutt ProbabilisticTraceEnum
-  OperationalProbabilisticPTSFreeOmega.
+  FreeOmega.
 From PTree.Examples Require Import VonNeumannUnbounded OperationalVonNeumann.
 
 Set Implicit Arguments.
@@ -208,7 +208,7 @@ Lemma service_vn_chains_cofinal :
       service_vn_hitting (ptree_vn_raw_schedule rounds)).
 Proof.
   split.
-  - intro fuel. exists fuel. apply free_ptree_hitting_mono.
+  - intro fuel. exists fuel. apply ptree_hitting_mono.
     exact (ptree_vn_raw_schedule_ge fuel).
   - intro rounds. exists (ptree_vn_raw_schedule rounds).
     apply free_omega_approx_refl. intro h. reflexivity.
@@ -536,7 +536,7 @@ Lemma serve_round_congruence
 Proof.
   unfold serve_round.
   apply peutt_vis. intros [].
-  eapply free_peutt_bind.
+  eapply FreeOmega.Bind.peutt_bind.
   - exact Hsampler.
   - intros b1 b2 ->. unfold publish.
     apply peutt_vis. intros []. exact Hnext.
@@ -611,7 +611,7 @@ Lemma vn_after_request_weak :
     (observe vn_after_request) vn_after_request_heads.
 Proof.
   unfold vn_after_request, vn_after_request_heads.
-  eapply free_stable_hitting_bind_ret_only.
+  eapply stable_hitting_bind_ret_only.
   - exact service_vn_heads_ret_only.
   - exact service_vn_weak.
   - intro b. unfold publish, vn_reply_front.
@@ -625,7 +625,7 @@ Lemma direct_after_request_weak :
     (observe direct_after_request) direct_after_request_heads.
 Proof.
   unfold direct_after_request, direct_after_request_heads.
-  eapply free_stable_hitting_bind_ret_only.
+  eapply stable_hitting_bind_ret_only.
   - exact service_direct_heads_ret_only.
   - exact (proj1 service_direct_fair_ast).
   - intro b. unfold publish, direct_reply_front.
@@ -679,7 +679,7 @@ Lemma after_request_heads_lift :
     vn_after_request_heads direct_after_request_heads.
 Proof.
   unfold service_lift, vn_after_request_heads, direct_after_request_heads.
-  eapply free_sem_lift_ret_bind_front.
+  eapply sem_lift_ret_bind_front.
   - exact (service_vn_direct_heads_lift (fun _ _ => False)).
   - intros b1 b2 ->. unfold vn_reply_front, direct_reply_front.
     apply FOQLStructural. apply FOLRet. apply FHRVis. intros [].

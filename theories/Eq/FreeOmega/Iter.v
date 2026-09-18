@@ -6,16 +6,15 @@ Require Import Logic.ClassicalChoice Program.Equality.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  PTreeKernel PEutt PStruct PStrong
-  OperationalProbabilisticPTSFreeOmegaBase.
+  PTreeKernel PEutt PStruct PStrong.
+From PTree.Eq.FreeOmega Require Import Base Relation Bind.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 (** Iteration equations and fusion principles for the maintained FreeOmega
-    backend.  Operational grids and productivity certificates will be
-    colocated here as they are extracted from the compatibility Base. *)
+    backend. *)
 Section FreeOmegaIter.
 Context {E : Type -> Type} {MN : Type -> Type}
   `{NI : SemanticMeasure MN}
@@ -24,7 +23,7 @@ Context {E : Type -> Type} {MN : Type -> Type}
   `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 
-Theorem free_peutt_iter_unfold {I R}
+Theorem peutt_iter_unfold {I R}
     (step : I -> ptree E MN (I + R)) (i : I) :
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -37,12 +36,12 @@ Theorem free_peutt_iter_unfold {I R}
       | inr r => Ret r
       end)).
 Proof.
-  apply free_peutt_of_pstruct.
+  apply peutt_of_pstruct.
   apply observe_eq_pstruct.
   exact (observing_observe (unfold_aloop_ step i)).
 Qed.
 
-Theorem free_peutt_iter_structural {I R}
+Theorem peutt_iter_structural {I R}
     (step1 step2 : I -> ptree E MN (I + R)) (i : I) :
   (forall j, pstruct eq (step1 j) (step2 j)) ->
   @peutt E MN MF
@@ -51,11 +50,11 @@ Theorem free_peutt_iter_structural {I R}
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.iter step1 i) (PTree.iter step2 i).
 Proof.
-  intro Hstep. apply free_peutt_of_pstruct.
+  intro Hstep. apply peutt_of_pstruct.
   apply pstruct_iter. exact Hstep.
 Qed.
 
-Theorem free_peutt_iter_rel
+Theorem peutt_iter_rel
     {I1 I2 R1 R2}
     (SI : I1 -> I2 -> Prop) (RR : R1 -> R2 -> Prop)
     (f : I1 -> ptree E MN (I1 + R1))
@@ -70,7 +69,7 @@ Theorem free_peutt_iter_rel
     FreeOmegaObservableSemanticOmega R1 R2 RR
     (PTree.iter f i1) (PTree.iter g i2).
 Proof.
-  intro Hij. apply free_peutt_of_pstruct.
+  intro Hij. apply peutt_of_pstruct.
   eapply pstruct_iter_rel; eauto.
 Qed.
 
@@ -78,7 +77,7 @@ Qed.
     is equivalent to pushing that Kleisli continuation into every successful
     step result.  The proof is structural and therefore supports visible
     events, probability, divergence, and unbounded iteration uniformly. *)
-Theorem free_peutt_iter_natural {I A B}
+Theorem peutt_iter_natural {I A B}
     (step : I -> ptree E MN (I + A))
     (k : A -> ptree E MN B) (i : I) :
   @peutt E MN MF
@@ -88,13 +87,13 @@ Theorem free_peutt_iter_natural {I A B}
     (PTree.bind (PTree.iter step i) k)
     (PTree.iter (pstruct_iter_natural_step step k) i).
 Proof.
-  apply free_peutt_of_pstruct.
+  apply peutt_of_pstruct.
   apply pstruct_iter_natural.
 Qed.
 
 (** Double-dagger / codiagonal identity.  Nested retries at either sum layer
     are flattened into retries of one loop. *)
-Theorem free_peutt_iter_codiagonal {I R}
+Theorem peutt_iter_codiagonal {I R}
     (step : I -> ptree E MN (I + (I + R))) (i : I) :
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -103,7 +102,7 @@ Theorem free_peutt_iter_codiagonal {I R}
     (PTree.iter (fun j => PTree.iter step j) i)
     (PTree.iter (pstruct_iter_codiagonal_flat_step step) i).
 Proof.
-  apply free_peutt_of_pstruct.
+  apply peutt_of_pstruct.
   apply pstruct_iter_codiagonal.
 Qed.
 
@@ -117,7 +116,7 @@ Variable step2 : I2 -> ptree E MN (I2 + R2).
 Variable SI : I1 -> I2 -> Prop.
 Variable RR : R1 -> R2 -> Prop.
 
-Definition free_iter_behavioral_sum_rel
+Definition iter_behavioral_sum_rel
     (x1 : I1 + R1) (x2 : I2 + R2) : Prop :=
   match x1, x2 with
   | inl i1, inl i2 => SI i1 i2
@@ -142,16 +141,16 @@ Hypothesis Hstep_out2 : forall i2,
 Hypothesis Hstep_lift : forall i1 i2, SI i1 i2 ->
   free_omega_qlift
     (@ptree_stable_head_rel E MN (I1 + R1) (I2 + R2)
-      free_iter_behavioral_sum_rel
+      iter_behavioral_sum_rel
       (@peutt_state E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega
-        (I1 + R1) (I2 + R2) free_iter_behavioral_sum_rel))
+        (I1 + R1) (I2 + R2) iter_behavioral_sum_rel))
     (step_out1 i1) (step_out2 i2).
 
-Lemma free_iter_complete_rows_behavioral_lift rounds :
+Lemma iter_complete_rows_behavioral_lift rounds :
   forall i1 i2, SI i1 i2 ->
   free_omega_qlift
     (@ptree_stable_head_rel E MN R1 R2 RR
@@ -160,16 +159,16 @@ Lemma free_iter_complete_rows_behavioral_lift rounds :
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega R1 R2 RR))
-    (free_iter_complete_rows no_event step_out1 rounds i1)
-    (free_iter_complete_rows no_event step_out2 rounds i2).
+    (iter_complete_rows no_event step_out1 rounds i1)
+    (iter_complete_rows no_event step_out2 rounds i2).
 Proof.
   induction rounds as [|rounds IH]; intros i1 i2 Hij.
   - constructor. constructor.
-  - cbn [free_iter_complete_rows].
+  - cbn [iter_complete_rows].
     eapply FOQLBind; [exact (Hstep_lift Hij)|].
     intros h1 h2 Hhead. dependent destruction Hhead.
     + destruct r1 as [j1|v1], r2 as [j2|v2];
-        cbn [free_iter_head_next] in H |- *.
+        cbn [iter_head_next] in H |- *.
       * apply IH. exact H.
       * contradiction.
       * contradiction.
@@ -177,7 +176,7 @@ Proof.
     + exfalso. exact (no_event e).
 Qed.
 
-Theorem free_peutt_iter_behavioral_rel_of_outputs i1 i2 :
+Theorem peutt_iter_behavioral_rel_of_outputs i1 i2 :
   SI i1 i2 ->
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -188,21 +187,21 @@ Theorem free_peutt_iter_behavioral_rel_of_outputs i1 i2 :
 Proof.
   intro Hij.
   let rows1 := constr:(fun rounds =>
-    free_iter_complete_rows no_event step_out1 rounds i1) in
+    iter_complete_rows no_event step_out1 rounds i1) in
   let rows2 := constr:(fun rounds =>
-    free_iter_complete_rows no_event step_out2 rounds i2) in
+    iter_complete_rows no_event step_out2 rounds i2) in
   eapply peutt_of_hitting_lift
     with (out1 := FOLub rows1) (out2 := FOLub rows2).
-  - eapply free_ptree_stable_hitting_iter_of_unbounded_steps
+  - eapply ptree_stable_hitting_iter_of_unbounded_steps
       with (step_out := step_out1).
     + exact Hstep_out1.
     + apply free_omega_qlift_refl. intro h. reflexivity.
-  - eapply free_ptree_stable_hitting_iter_of_unbounded_steps
+  - eapply ptree_stable_hitting_iter_of_unbounded_steps
       with (step_out := step_out2).
     + exact Hstep_out2.
     + apply free_omega_qlift_refl. intro h. reflexivity.
   - apply FOQLLub. intro rounds.
-    apply free_iter_complete_rows_behavioral_lift. exact Hij.
+    apply iter_complete_rows_behavioral_lift. exact Hij.
 Qed.
 
 End EventlessBehavioralIterationFusion.
@@ -218,7 +217,7 @@ Variable SI : I1 -> I2 -> Prop.
 Variable RR : R1 -> R2 -> Prop.
 
 (** Heterogeneous behavioral fusion for eventless unbounded loops. *)
-Theorem free_peutt_iter_behavioral_rel
+Theorem peutt_iter_behavioral_rel
     (Hstep : forall i1 i2, SI i1 i2 ->
       @peutt E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -226,7 +225,7 @@ Theorem free_peutt_iter_behavioral_rel
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega
         (I1 + R1) (I2 + R2)
-        (free_iter_behavioral_sum_rel SI RR)
+        (iter_behavioral_sum_rel SI RR)
         (step1 i1) (step2 i2))
     i1 i2 :
   SI i1 i2 ->
@@ -254,7 +253,7 @@ Proof.
   { intro j2. apply stable_hitting_exists. }
   destruct (choice _ Hexists1) as [out1 Hout1].
   destruct (choice _ Hexists2) as [out2 Hout2].
-  eapply free_peutt_iter_behavioral_rel_of_outputs
+  eapply peutt_iter_behavioral_rel_of_outputs
     with (step_out1 := out1) (step_out2 := out2)
          (SI := SI) (RR := RR); try eassumption.
   intros j1 j2 Hrel.
@@ -262,13 +261,13 @@ Proof.
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     _ _
     (@ptree_stable_head_rel E MN (I1 + R1) (I2 + R2)
-      (free_iter_behavioral_sum_rel SI RR)
+      (iter_behavioral_sum_rel SI RR)
       (@peutt_state E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega
-        (I1 + R1) (I2 + R2) (free_iter_behavioral_sum_rel SI RR)))
+        (I1 + R1) (I2 + R2) (iter_behavioral_sum_rel SI RR)))
     (out1 j1) (out2 j2)).
   eapply peutt_hitting_lift;
     [exact (Hstep j1 j2 Hrel)|exact (Hout1 j1)|exact (Hout2 j2)].
@@ -286,7 +285,7 @@ Variable RR : R1 -> R2 -> Prop.
 (** Native coinduction candidate for eventful behavioral fusion.  Unlike the
     eventless grid theorem, it does not erase visible heads: their
     continuations must re-enter this candidate. *)
-Definition free_iter_eventful_bisim_candidate
+Definition iter_eventful_bisim_candidate
     (s1 : ptree' E MN R1) (s2 : ptree' E MN R2) : Prop :=
   exists i1 i2,
     SI i1 i2 /\
@@ -296,7 +295,7 @@ Definition free_iter_eventful_bisim_candidate
 (** Exact generator-level obligation for eventful behavioral iteration.
     This is deliberately independent of finite schedules and of the
     eventless complete-row construction. *)
-Definition free_iter_eventful_generator_closed : Prop :=
+Definition iter_eventful_generator_closed : Prop :=
   forall i1 i2, SI i1 i2 ->
     @stable_hitting_match MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -310,12 +309,12 @@ Definition free_iter_eventful_generator_closed : Prop :=
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure R2)
       (@ptree_stable_head_rel E MN R1 R2 RR)
-      free_iter_eventful_bisim_candidate
+      iter_eventful_bisim_candidate
       (observe (PTree.iter step1 i1))
       (observe (PTree.iter step2 i2)).
 
-Theorem free_peutt_iter_eventful_of_generator_closed
-    (Hclosed : free_iter_eventful_generator_closed) :
+Theorem peutt_iter_eventful_of_generator_closed
+    (Hclosed : iter_eventful_generator_closed) :
   forall i1 i2, SI i1 i2 ->
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -326,7 +325,7 @@ Theorem free_peutt_iter_eventful_of_generator_closed
 Proof.
   intros i1 i2 Hij.
   eapply peutt_coinduction with
-      (sim := free_iter_eventful_bisim_candidate).
+      (sim := iter_eventful_bisim_candidate).
   - intros s1 s2 [j1 [j2 [Hj [-> ->]]]]. exact (Hclosed j1 j2 Hj).
   - exists i1, i2. repeat split; try reflexivity. exact Hij.
 Qed.

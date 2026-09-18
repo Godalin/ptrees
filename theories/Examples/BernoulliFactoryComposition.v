@@ -9,7 +9,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts
   MeasureIteration MeasureIterationEnum TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure EnumMap.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  PTreeKernel OperationalProbabilisticPTSFreeOmega
+  PTreeKernel FreeOmega
   PEutt PStruct PStrong.
 From PTree.Examples Require Import VonNeumannUnbounded RationalBernoulli
   BernoulliFactory OperationalBernoulliFactory.
@@ -31,12 +31,12 @@ Theorem peutt_factory_sampler_congr
   peutt eq (factory_with_sampler s1 q) (factory_with_sampler s2 q).
 Proof.
   intro Hsampler. unfold factory_with_sampler.
-  eapply free_peutt_iter_behavioral_rel with (SI := eq).
+  eapply peutt_iter_behavioral_rel with (SI := eq).
   - exact factoryE_no_event.
   - intros x y ->. unfold factory_sampler_step.
     eapply peutt_rel_mono with (RR := eq).
     + intros u v ->. destruct v; reflexivity.
-    + eapply free_peutt_bind with (RR := eq).
+    + eapply FreeOmega.Bind.peutt_bind with (RR := eq).
       * exact Hsampler.
       * intros a b ->. apply peutt_refl.
   - reflexivity.
@@ -48,7 +48,7 @@ Proof.
   unfold factory_sampler_step, factory_direct_fair, factory_standard_step.
   transitivity (Prob vn_fair (fun b => Ret (binary_round_result x b))
     : ptree factoryE Enum (rat + bool)).
-  - apply free_peutt_of_pstruct.
+  - apply peutt_of_pstruct.
     apply pstruct_fold. rewrite observe_bind. cbn.
     constructor. intro b. apply observe_eq_pstruct. reflexivity.
   - rewrite <- (fair_binary_round_measure x).
@@ -69,7 +69,7 @@ Lemma peutt_factory_fair_standard q :
   peutt eq (factory_with_sampler factory_direct_fair q) (factory_standard q).
 Proof.
   unfold factory_with_sampler, factory_standard.
-  eapply free_peutt_iter_behavioral_rel with (SI := eq).
+  eapply peutt_iter_behavioral_rel with (SI := eq).
   - exact factoryE_no_event.
   - intros x y ->. eapply peutt_rel_mono with (RR := eq).
     + intros u v ->. destruct v; reflexivity.

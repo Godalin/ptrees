@@ -12,7 +12,7 @@ From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   EnumMap.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting
   PTreeKernel
-  OperationalProbabilisticPTSFreeOmega UnifiedFrontier
+  FreeOmega UnifiedFrontier
   PEutt.
 From PTree.Examples Require Import RationalBernoulli.
 
@@ -190,10 +190,10 @@ Lemma ptree_rational_coin_hitting_one :
     ptree_rational_head_approx 1.
 Proof.
   unfold binary_rational_coin.
-  change (free_primitive_iter_hitting
+  change (primitive_iter_hitting
       (E := rational_coinE) binary_coin_transition 1 q =
     ptree_rational_head_approx 1).
-  rewrite free_primitive_iter_hitting_succ.
+  rewrite primitive_iter_hitting_succ.
   unfold ptree_rational_head_approx,
     ptree_rational_iter_approx.
   cbv [mixed_iter_approx sem_bind mixed_bind sem_ret free_omega_bind
@@ -306,15 +306,15 @@ Proof.
   unfold binary_rational_coin, ptree_rational_heads.
   eapply ptree_stable_hitting_ast_iter.
   - exact ptree_rational_increasing.
-  - change (@ptree_iter_cofinal rational_coinE Enum MF
+  - change (@PTreeKernel.ptree_iter_cofinal rational_coinE Enum MF
       (FreeOmegaObservableSemanticMeasure
         (NI := Enum_SemanticMeasure)
         (NO := Enum_SemanticOmega))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega rat bool
-      (free_primitive_iter_step binary_coin_transition)
+      (primitive_iter_step binary_coin_transition)
       binary_coin_transition q).
-    apply free_primitive_iter_cofinal.
+    apply primitive_iter_cofinal.
   - exact ptree_rational_mixed_iter.
   - exact ptree_rational_heads_total.
 Qed.

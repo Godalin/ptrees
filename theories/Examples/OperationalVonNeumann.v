@@ -11,7 +11,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLiftEnum TwoLevelM
 From PTree.Prob Require Import MeasureIterationEnum.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting
   PTreeKernel
-  OperationalProbabilisticPTSFreeOmega UnifiedFrontier
+  FreeOmega UnifiedFrontier
   PEutt.
 From PTree.Examples Require Import VonNeumannUnbounded.
 
@@ -270,7 +270,7 @@ Lemma ptree_vn_raw_chains_cofinal :
       (ptree_vn_raw_schedule rounds)).
 Proof.
   split.
-  - intro fuel. exists fuel. apply free_ptree_hitting_mono.
+  - intro fuel. exists fuel. apply ptree_hitting_mono.
     exact (ptree_vn_raw_schedule_ge fuel).
   - intro rounds. exists (ptree_vn_raw_schedule rounds).
     apply free_omega_approx_refl. intro h. reflexivity.
@@ -366,7 +366,7 @@ Proof.
 Qed.
 
 Corollary ptree_vn_cofinal :
-  @ptree_iter_cofinal vnE Enum MF
+  @PTreeKernel.ptree_iter_cofinal vnE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -374,15 +374,15 @@ Corollary ptree_vn_cofinal :
     FreeOmegaObservableSemanticOmega unit bool
     vn_compiled_step (fun _ : unit => vn_transition) tt.
 Proof.
-  change (@ptree_iter_cofinal vnE Enum MF
+  change (@PTreeKernel.ptree_iter_cofinal vnE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega unit bool
-    (free_primitive_iter_step (fun _ : unit => vn_transition))
+    (primitive_iter_step (fun _ : unit => vn_transition))
     (fun _ : unit => vn_transition) tt).
-  apply free_primitive_iter_cofinal.
+  apply primitive_iter_cofinal.
 Qed.
 
 Definition ptree_vn_iter_approx (fuel : nat) : MF bool :=

@@ -6,7 +6,8 @@ Require Import List Arith.PeanoNat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FreeOmegaMeasure.
 From PTree.Eq Require Import
-  PTreeKernel OperationalProbabilisticPTSFreeOmegaBase.
+  PTreeKernel.
+From PTree.Eq.FreeOmega Require Import Base Relation Bind.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -15,7 +16,7 @@ Unset Printing Implicit Defensive.
 (** Backend-specific finite-support facts.  They are kept outside the generic
     FreeOmega development because the uniform bound below is a property of
     Enum's finite representation, not of the semantic measure interface. *)
-Section EnumOperationalCofinality.
+Section EnumCofinality.
 Import Enum.
 Context {E : Type -> Type}.
 
@@ -33,11 +34,11 @@ Proof.
     + eapply Hmono; [apply Nat.le_max_r|exact (Htail _ _ Hin)].
 Qed.
 
-Theorem enum_free_ptree_bind_prob_uniform {A R X}
+Theorem enum_bind_prob_uniform {A R X}
     (mu : Enum X) (c : X -> ptree E Enum A)
     (k : A -> ptree E Enum R) :
-  (forall x, free_ptree_bind_approx_cofinal (c x) k) ->
-  free_ptree_bind_prob_uniform mu c k.
+  (forall x, ptree_bind_approx_cofinal (c x) k) ->
+  ptree_bind_prob_uniform mu c k.
 Proof.
   intro Hbranches. split.
   - intro fuel.
@@ -50,7 +51,7 @@ Proof.
     + intro x. exact (proj1 (Hbranches x) fuel).
     + intros x n m Hnm Happrox.
       eapply free_omega_approx_trans; [exact Happrox|].
-      apply free_ptree_bind_diagonal_mono. exact Hnm.
+      apply ptree_bind_diagonal_mono. exact Hnm.
     + exists bound,
         (fun x => free_omega_approx eq
           (ptree_hitting_approx (MF := FreeOmega Enum) fuel
@@ -72,7 +73,7 @@ Proof.
       intros a b Hba. symmetry. exact Hba.
     + intros x n m Hnm Happrox.
       eapply free_omega_approx_trans; [exact Happrox|].
-      apply free_ptree_hitting_mono. exact Hnm.
+      apply ptree_hitting_mono. exact Hnm.
     + exists bound,
         (fun x => free_omega_approx eq
           (ptree_bind_diagonal_approx (MF := FreeOmega Enum)
@@ -84,15 +85,15 @@ Proof.
       * intros x Hx. exact Hx.
 Qed.
 
-Corollary enum_free_ptree_bind_prob_approx_cofinal {A R X}
+Corollary enum_bind_prob_approx_cofinal {A R X}
     (mu : Enum X) (c : X -> ptree E Enum A)
     (k : A -> ptree E Enum R) :
-  (forall x, free_ptree_bind_approx_cofinal (c x) k) ->
-  free_ptree_bind_approx_cofinal (Prob mu c) k.
+  (forall x, ptree_bind_approx_cofinal (c x) k) ->
+  ptree_bind_approx_cofinal (Prob mu c) k.
 Proof.
-  intro Hbranches. apply free_ptree_bind_prob_approx_cofinal.
-  exact (enum_free_ptree_bind_prob_uniform
+  intro Hbranches. apply ptree_bind_prob_approx_cofinal.
+  exact (enum_bind_prob_uniform
     mu (c := c) (k := k) Hbranches).
 Qed.
 
-End EnumOperationalCofinality.
+End EnumCofinality.
