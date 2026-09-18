@@ -243,7 +243,7 @@ Fixpoint burn (n : nat) {E M R} (t : ptree E M R) :=
     The former [Eq1 := eq] / admitted [MonadLawsE] instance was therefore
     unsound and has been removed.  Clients should state these laws using the
     maintained coinductive relations: the auxiliary structural/strong
-    proof relations where appropriate, and [probabilistic_eutt] for the
+    proof relations where appropriate, and [peutt] for the
     public probabilistic behavioral equivalence. *)
 
 

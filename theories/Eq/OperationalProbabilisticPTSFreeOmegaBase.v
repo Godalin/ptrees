@@ -10,7 +10,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  OperationalProbabilisticPTS ProbabilisticEutt PStrong.
+  OperationalProbabilisticPTS PEutt PStrong PFinite.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -250,7 +250,7 @@ Variable RR : R1 -> R2 -> Prop.
 Inductive free_translate_bisim_state :
     ptree' F MN R1 -> ptree' F MN R2 -> Prop :=
   | FTBSMain (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
-      @probabilistic_eutt E MN MF
+      @peutt E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasure
@@ -265,7 +265,7 @@ Lemma free_translate_head_comp
     (exists hS1,
       free_translate_head_rel (F := F) rename hS1 hT1 /\
       @ptree_stable_head_rel E MN R1 R2 RR
-        (@probabilistic_eutt_state E MN MF
+        (@peutt_state E MN MF
           (FreeOmegaObservableSemanticMeasure
             (NI := NI) (NO := NO))
           FreeOmegaObservableSemanticMeasureCoreLaws
@@ -284,21 +284,21 @@ Proof.
     constructor. exact (H x).
 Qed.
 
-Theorem free_probabilistic_eutt_translate {t1 : ptree E MN R1}
+Theorem free_peutt_translate {t1 : ptree E MN R1}
     {t2 : ptree E MN R2} :
-  @probabilistic_eutt E MN MF
+  @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R1 R2 RR t1 t2 ->
-  @probabilistic_eutt F MN MF
+  @peutt F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R1 R2 RR
     (PTree.translate rename t1) (PTree.translate rename t2).
 Proof.
-  intro Hsource. eapply probabilistic_eutt_coinduction with
+  intro Hsource. eapply peutt_coinduction with
     (sim := free_translate_bisim_state).
   - intros s1 s2 Hsim. dependent destruction Hsim.
     destruct (stable_hitting_weak_exists
@@ -328,14 +328,14 @@ Proof.
         FreeOmegaMixedMeasure R2)
       (observe (PTree.translate rename t3))) as [outT2 HT2].
     eapply stable_hitting_match_of_hitting_lift; [exact HT1|exact HT2|].
-    pose proof (probabilistic_eutt_hitting_lift H HS1 HS2) as HsourceLift.
+    pose proof (peutt_hitting_lift H HS1 HS2) as HsourceLift.
     pose proof (free_translate_hitting_lift HS1 HT1) as Hmap1.
     pose proof (free_translate_hitting_lift HS2 HT2) as Hmap2.
     eapply FOQLComp with
       (T := fun hT hS => free_translate_head_rel rename hS hT)
       (U := fun hS1 hT2 => exists hS2,
         @ptree_stable_head_rel E MN R1 R2 RR
-          (@probabilistic_eutt_state E MN MF
+          (@peutt_state E MN MF
             (FreeOmegaObservableSemanticMeasure
               (NI := NI) (NO := NO))
             FreeOmegaObservableSemanticMeasureCoreLaws
@@ -346,7 +346,7 @@ Proof.
     + apply FOQLSym. exact Hmap1.
     + eapply FOQLComp with
         (T := @ptree_stable_head_rel E MN R1 R2 RR
-          (@probabilistic_eutt_state E MN MF
+          (@peutt_state E MN MF
             (FreeOmegaObservableSemanticMeasure
               (NI := NI) (NO := NO))
             FreeOmegaObservableSemanticMeasureCoreLaws
@@ -376,15 +376,15 @@ Context {E : Type -> Type} {MN : Type -> Type}
   `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 
-Lemma free_operational_hitting_pstructural {A B}
+Lemma free_operational_hitting_pstruct {A B}
     (RR : A -> B -> Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  pstructural RR t1 t2 ->
-  free_omega_lift (frontier_head_rel RR (pstructural RR))
+  pstruct RR t1 t2 ->
+  free_omega_lift (frontier_head_rel RR (pstruct RR))
     (operational_hitting_approx (MF := MF) fuel (observe t1))
     (operational_hitting_approx (MF := MF) fuel (observe t2)).
 Proof.
   revert t1 t2. induction fuel as [|fuel IH]; intros t1 t2 Hstruct.
-  all: pose proof (pstructural_unfold Hstruct) as Hstep;
+  all: pose proof (pstruct_unfold Hstruct) as Hstep;
     dependent destruction Hstep.
   - rewrite <- x0, <- x. constructor. constructor. exact H.
   - rewrite <- x0, <- x.
@@ -392,7 +392,7 @@ Proof.
   - rewrite <- x0, <- x. constructor. constructor. exact H.
   - rewrite <- x0, <- x.
     change (free_omega_lift
-      (@frontier_head_rel E MN A B RR (@pstructural E MN A B RR))
+      (@frontier_head_rel E MN A B RR (@pstruct E MN A B RR))
       (FOSample mu (fun _ => FOZero))
       (FOSample mu (fun _ => FOZero))).
     eapply FOLSample with (S := eq).
@@ -405,7 +405,7 @@ Proof.
   - rewrite <- x0, <- x. constructor. constructor. exact H.
   - rewrite <- x0, <- x.
     change (free_omega_lift
-      (@frontier_head_rel E MN A B RR (@pstructural E MN A B RR))
+      (@frontier_head_rel E MN A B RR (@pstruct E MN A B RR))
       (FOSample mu (fun z => operational_hitting_approx (MF := MF)
         fuel (observe (k1 z))))
       (FOSample mu (fun z => operational_hitting_approx (MF := MF)
@@ -417,26 +417,26 @@ Qed.
 
 (** State-level closure used to interpret syntax-sensitive structural
     equivalence inside the canonical stable-hitting coinduction principle. *)
-Definition free_pstructural_state {A B} (RR : A -> B -> Prop)
+Definition free_pstruct_state {A B} (RR : A -> B -> Prop)
     (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
   exists (t1 : ptree E MN A) (t2 : ptree E MN B),
-    s1 = observe t1 /\ s2 = observe t2 /\ pstructural RR t1 t2.
+    s1 = observe t1 /\ s2 = observe t2 /\ pstruct RR t1 t2.
 
 (** Structural probabilistic bisimulation is sound for the canonical weak
     equivalence.  Pointwise structural couplings of all finite hitting
     approximants are closed by the FreeOmega limit constructor; visible
     continuations re-enter the coinduction candidate. *)
-Theorem free_probabilistic_eutt_of_pstructural {A B}
+Theorem free_peutt_of_pstruct {A B}
     (RR : A -> B -> Prop) (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  pstructural RR t1 t2 ->
-  @probabilistic_eutt E MN MF
+  pstruct RR t1 t2 ->
+  @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A B RR t1 t2.
 Proof.
-  intro Hstruct. eapply probabilistic_eutt_coinduction with
-    (sim := free_pstructural_state RR).
+  intro Hstruct. eapply peutt_coinduction with
+    (sim := free_pstruct_state RR).
   - intros s1 s2 [u1 [u2 [-> [-> Hs]]]].
     destruct (stable_hitting_weak_exists
       (FI := FreeOmegaObservableSemanticMeasure)
@@ -456,18 +456,18 @@ Proof.
     + unfold stable_hitting_weak in Hout1, Hout2.
       cbn in Hout1, Hout2.
       eapply FOQLComp with (T := eq)
-        (U := frontier_head_rel RR (pstructural RR))
+        (U := frontier_head_rel RR (pstruct RR))
         (mid := FOLub (fun fuel => operational_hitting_approx
           (MF := MF) fuel (observe u1))).
       * exact Hout1.
       * eapply FOQLComp with
-          (T := frontier_head_rel RR (pstructural RR))
+          (T := frontier_head_rel RR (pstruct RR))
           (U := eq)
           (mid := FOLub (fun fuel => operational_hitting_approx
             (MF := MF) fuel (observe u2))).
         -- apply FOQLLub. intro fuel.
            apply FOQLStructural.
-           exact (free_operational_hitting_pstructural
+           exact (free_operational_hitting_pstruct
              (RR := RR) fuel Hs).
         -- apply FOQLSym. eapply FOQLMono; [exact Hout2|].
            intros x y ->. reflexivity.
@@ -480,16 +480,201 @@ Proof.
   - exists t1, t2. repeat split; try reflexivity. exact Hstruct.
 Qed.
 
-Lemma free_operational_hitting_pstructural_no_event {A}
+(** Strong lockstep coupling is also sound for the canonical weak endpoint.
+    Unlike [pstruct], probability nodes may use distinct source measures;
+    their coupling is threaded through every finite hitting approximant and
+    then closed by the FreeOmega limit. *)
+Lemma free_operational_hitting_pstrong {A B}
+    (RR : A -> B -> Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstrong RR t1 t2 ->
+  free_omega_lift (frontier_head_rel RR (pstrong RR))
+    (operational_hitting_approx (MF := MF) fuel (observe t1))
+    (operational_hitting_approx (MF := MF) fuel (observe t2)).
+Proof.
+  revert t1 t2. induction fuel as [|fuel IH]; intros t1 t2 Hstrong.
+  all: pose proof (pstrong_unfold Hstrong) as Hstep;
+    dependent destruction Hstep.
+  - rewrite <- x0, <- x. constructor. constructor. exact H.
+  - rewrite <- x0, <- x.
+    cbn [operational_hitting_approx operational_kernel]. constructor.
+  - rewrite <- x0, <- x. constructor. constructor. exact H.
+  - rewrite <- x0, <- x.
+    change (free_omega_lift
+      (@frontier_head_rel E MN A B RR (@pstrong E MN NI NC A B RR))
+      (FOSample mu (fun _ => FOZero))
+      (FOSample nu (fun _ => FOZero))).
+    eapply FOLSample with
+      (S := fun a b => pstrong RR (k1 a) (k2 b)).
+    + exact H.
+    + intros a b Hab. constructor.
+  - rewrite <- x0, <- x. constructor. constructor. exact H.
+  - rewrite <- x0, <- x.
+    cbn [operational_hitting_approx operational_kernel].
+    exact (IH _ _ H).
+  - rewrite <- x0, <- x. constructor. constructor. exact H.
+  - rewrite <- x0, <- x.
+    change (free_omega_lift
+      (@frontier_head_rel E MN A B RR (@pstrong E MN NI NC A B RR))
+      (FOSample mu (fun a => operational_hitting_approx (MF := MF)
+        fuel (observe (k1 a))))
+      (FOSample nu (fun b => operational_hitting_approx (MF := MF)
+        fuel (observe (k2 b))))).
+    eapply FOLSample with
+      (S := fun a b => pstrong RR (k1 a) (k2 b)).
+    + exact H.
+    + intros a b Hab. exact (IH _ _ Hab).
+Qed.
+
+Definition free_pstrong_state {A B} (RR : A -> B -> Prop)
+    (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
+  exists (t1 : ptree E MN A) (t2 : ptree E MN B),
+    s1 = observe t1 /\ s2 = observe t2 /\ pstrong RR t1 t2.
+
+Theorem free_peutt_of_pstrong {A B}
+    (RR : A -> B -> Prop) (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstrong RR t1 t2 ->
+  @peutt E MN MF
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega A B RR t1 t2.
+Proof.
+  intro Hstrong. eapply peutt_coinduction with
+    (sim := free_pstrong_state RR).
+  - intros s1 s2 [u1 [u2 [-> [-> Hs]]]].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasure)
+      (FO := FreeOmegaObservableSemanticOmega)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasure A) (observe u1)) as [out1 Hout1].
+    destruct (stable_hitting_weak_exists
+      (FI := FreeOmegaObservableSemanticMeasure)
+      (FO := FreeOmegaObservableSemanticOmega)
+      (@ptree_primitive_kernel E MN MF
+        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+        FreeOmegaMixedMeasure B) (observe u2)) as [out2 Hout2].
+    eapply stable_hitting_match_of_hitting_lift;
+      [exact Hout1|exact Hout2|].
+    eapply FOQLMono.
+    + unfold stable_hitting_weak in Hout1, Hout2.
+      cbn in Hout1, Hout2.
+      eapply FOQLComp with (T := eq)
+        (U := frontier_head_rel RR (pstrong RR))
+        (mid := FOLub (fun fuel => operational_hitting_approx
+          (MF := MF) fuel (observe u1))).
+      * exact Hout1.
+      * eapply FOQLComp with
+          (T := frontier_head_rel RR (pstrong RR))
+          (U := eq)
+          (mid := FOLub (fun fuel => operational_hitting_approx
+            (MF := MF) fuel (observe u2))).
+        -- apply FOQLLub. intro fuel.
+           apply FOQLStructural.
+           exact (free_operational_hitting_pstrong
+             (RR := RR) fuel Hs).
+        -- apply FOQLSym. eapply FOQLMono; [exact Hout2|].
+           intros x y ->. reflexivity.
+        -- intros x z [y [Hxy ->]]. exact Hxy.
+      * intros x z [y [-> Hyz]]. exact Hyz.
+    + intros h1 h2 Hhead. dependent destruction Hhead.
+      * constructor. exact H.
+      * constructor. intro x. exists (k1 x), (k2 x).
+        repeat split; try reflexivity. exact (H x).
+  - exists t1, t2. repeat split; try reflexivity. exact Hstrong.
+Qed.
+
+Definition free_pfinite_state {A B} (RR : A -> B -> Prop)
+    (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
+  exists (t1 : ptree E MN A) (t2 : ptree E MN B),
+    s1 = observe t1 /\ s2 = observe t2 /\
+    @pfinite E MN MF NI NC
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
+      A B RR t1 t2.
+
+(** Every finite weak proof is sound for the unbounded endpoint.  The key
+    distinction is visible in the proof: finite Tau prefixes are eliminated
+    by induction, while visible continuations return to coinduction. *)
+Theorem free_peutt_of_pfinite {A B}
+    (RR : A -> B -> Prop) (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  @pfinite E MN MF NI NC
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
+      A B RR t1 t2 ->
+  @peutt E MN MF
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega A B RR t1 t2.
+Proof.
+  intro Hfinite. eapply peutt_coinduction_upto with
+    (sim := free_pfinite_state RR).
+  - intros s1 s2 [u1 [u2 [-> [-> Hrel]]]].
+    induction Hrel as [u1 u2 Hcore|u1 u2 Hrel IH|u1 u2 Hrel IH].
+    + pose proof (pfinite_core_unfold Hcore) as Hstep.
+      inversion Hstep as
+          [v1 v2 Hstrong|v1 v2 out1 out2 Hhit1 Hhit2 Hlift]; subst.
+      * pose proof (free_peutt_of_pstrong (RR := RR) Hstrong) as Hknown.
+        apply peutt_unfold in Hknown.
+        eapply stable_hitting_match_mono.
+        -- apply ptree_stable_head_rel_mono.
+        -- intros x1 x2 Hx. right. exact Hx.
+        -- exact Hknown.
+      * eapply stable_hitting_match_of_hitting_lift.
+        -- exact (finite_stable_hitting_stable Hhit1).
+        -- exact (finite_stable_hitting_stable Hhit2).
+        -- eapply sem_lift_mono; [|exact Hlift].
+           intros h1 h2 Hhead. dependent destruction Hhead.
+           ++ constructor. exact H.
+           ++ constructor. intro x. left.
+              exists (k1 x), (k2 x). repeat split; try reflexivity.
+              exact (H x).
+    + unfold stable_hitting_match in IH |- *.
+      destruct IH as [IHforward IHbackward]. split.
+      * intros out Htau.
+        apply (proj1 (stable_hitting_weak_tau_iff u1 out)) in Htau.
+        exact (IHforward out Htau).
+      * intros out Hright.
+        destruct (IHbackward out Hright) as [out1 [Hleft Hlift]].
+        exists out1. split; [|exact Hlift].
+        apply (proj2 (stable_hitting_weak_tau_iff u1 out1)). exact Hleft.
+    + unfold stable_hitting_match in IH |- *.
+      destruct IH as [IHforward IHbackward]. split.
+      * intros out Hleft.
+        destruct (IHforward out Hleft) as [out2 [Hright Hlift]].
+        exists out2. split; [|exact Hlift].
+        apply (proj2 (stable_hitting_weak_tau_iff u2 out2)). exact Hright.
+      * intros out Htau.
+        apply (proj1 (stable_hitting_weak_tau_iff u2 out)) in Htau.
+        exact (IHbackward out Htau).
+  - exists t1, t2. repeat split; try reflexivity. exact Hfinite.
+Qed.
+
+#[global] Instance free_pfinite_peutt_subrelation {R} :
+  subrelation
+    (@pfinite E MN MF NI NC
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R R eq)
+    (@peutt E MN MF
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R R eq).
+Proof. intros t1 t2. apply free_peutt_of_pfinite. Qed.
+
+Lemma free_operational_hitting_pstruct_no_event {A}
     (no_event : forall X, E X -> False) fuel
     (t1 t2 : ptree E MN A) :
-  pstructural eq t1 t2 ->
+  pstruct eq t1 t2 ->
   free_omega_lift eq
     (operational_hitting_approx (MF := MF) fuel (observe t1))
     (operational_hitting_approx (MF := MF) fuel (observe t2)).
 Proof.
   intro Hstruct. eapply free_omega_lift_mono with
-    (R := frontier_head_rel eq (pstructural eq)).
+    (R := frontier_head_rel eq (pstruct eq)).
   - intros h1 h2 Hhead.
     destruct h1 as [a1|X1 e1 k1];
       destruct h2 as [a2|X2 e2 k2].
@@ -497,14 +682,14 @@ Proof.
     + exfalso. exact (@no_event X2 e2).
     + exfalso. exact (@no_event X1 e1).
     + exfalso. exact (@no_event X1 e1).
-  - exact (free_operational_hitting_pstructural
+  - exact (free_operational_hitting_pstruct
       (RR := eq) fuel Hstruct).
 Qed.
 
-Theorem free_operational_weak_pstructural_no_event {A}
+Theorem free_operational_weak_pstruct_no_event {A}
     (no_event : forall X, E X -> False)
     (t1 t2 : ptree E MN A) :
-  pstructural eq t1 t2 ->
+  pstruct eq t1 t2 ->
   forall out,
     @operational_weak E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -518,14 +703,14 @@ Proof.
   intros Hstruct out. unfold operational_weak. split; intro Hlim.
   - eapply sem_lub_chain_proper; [|exact Hlim]. intro fuel.
     apply FOQLStructural.
-    exact (free_operational_hitting_pstructural_no_event
+    exact (free_operational_hitting_pstruct_no_event
       no_event fuel Hstruct).
   - eapply sem_lub_chain_proper; [|exact Hlim]. intro fuel.
     apply FOQLStructural.
     apply free_omega_lift_sym.
     eapply free_omega_lift_mono.
     + intros x y Hxy. symmetry. exact Hxy.
-    + exact (free_operational_hitting_pstructural_no_event
+    + exact (free_operational_hitting_pstruct_no_event
         no_event fuel Hstruct).
 Qed.
 
@@ -544,8 +729,8 @@ Corollary free_operational_weak_bind_assoc_no_event {A B C}
     FreeOmegaObservableSemanticOmega C
     (observe (PTree.bind t (fun a => PTree.bind (k a) h))) out.
 Proof.
-  apply free_operational_weak_pstructural_no_event; [exact no_event|].
-  apply pstructural_bind_assoc.
+  apply free_operational_weak_pstruct_no_event; [exact no_event|].
+  apply pstruct_bind_assoc.
 Qed.
 
 Lemma free_operational_bind_diagonal_mono {A R}
@@ -1218,25 +1403,25 @@ Qed.
 (** Unconditional monadic congruence for the maintained unbounded backend.
     The generic theorem keeps its local scheduling premise; FreeOmega now
     discharges it for every eventful PTree. *)
-Corollary free_probabilistic_eutt_bind
+Corollary free_peutt_bind
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
     {A R1 R2}
     (RR : R1 -> R2 -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
     (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A) :
-  @probabilistic_eutt E MN MF
+  @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R1 R2 RR t1 t2 ->
   (forall r1 r2, RR r1 r2 ->
-    @probabilistic_eutt E MN MF
+    @peutt E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A A eq (k1 r1) (k2 r2)) ->
-  @probabilistic_eutt E MN MF
+  @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
@@ -1244,7 +1429,7 @@ Corollary free_probabilistic_eutt_bind
     (PTree.bind t1 k1) (PTree.bind t2 k2).
 Proof.
   intros Hsource Hk.
-  eapply probabilistic_eutt_bind.
+  eapply peutt_bind.
   - intros B S t k. apply free_operational_bind_cofinal_all.
   - exact Hsource.
   - exact Hk.
@@ -1292,7 +1477,7 @@ Definition free_nested_after (i : I) (a : A) : ptree E MN R :=
   end.
 
 Lemma free_nested_ret_after_structural (i : I) (a : A) :
-  pstructural eq
+  pstruct eq
     (PTree.bind (Ret (round i a)) (fun lr =>
       match lr with
       | inl i' => Tau (free_nested_program i')
@@ -1300,14 +1485,14 @@ Lemma free_nested_ret_after_structural (i : I) (a : A) :
       end))
     (free_nested_after i a).
 Proof.
-  apply observe_eq_pstructural. unfold free_nested_after. rewrite observe_bind.
+  apply observe_eq_pstruct. unfold free_nested_after. rewrite observe_bind.
   destruct (round i a); reflexivity.
 Qed.
 
 (** One canonical operational round, obtained solely from the coinductive
     [iter] unfolding and structural bind laws. *)
 Lemma free_nested_program_unfold_structural (i : I) :
-  pstructural eq (free_nested_program i)
+  pstruct eq (free_nested_program i)
     (PTree.bind sample (free_nested_after i)).
 Proof.
   set (handler := fun lr : I + R =>
@@ -1315,16 +1500,16 @@ Proof.
     | inl i' => Tau (free_nested_program i')
     | inr r => Ret r
     end).
-  eapply pstructural_trans.
-  - apply observe_eq_pstructural.
+  eapply pstruct_trans.
+  - apply observe_eq_pstruct.
     exact (observing_observe (unfold_aloop_ free_nested_step i)).
-  - eapply pstructural_trans.
+  - eapply pstruct_trans.
     + unfold free_nested_step.
-      apply pstructural_bind_assoc.
-    + eapply pstructural_bind.
+      apply pstruct_bind_assoc.
+    + eapply pstruct_bind.
       * intros a1 a2 ->. unfold handler.
         apply free_nested_ret_after_structural.
-      * apply pstructural_refl.
+      * apply pstruct_refl.
 Qed.
 
 Lemma free_nested_program_hitting_unfold (fuel : nat) (i : I) :
@@ -1334,7 +1519,7 @@ Lemma free_nested_program_hitting_unfold (fuel : nat) (i : I) :
     (operational_hitting_approx (MF := MF) fuel
       (observe (PTree.bind sample (free_nested_after i)))).
 Proof.
-  apply free_operational_hitting_pstructural_no_event.
+  apply free_operational_hitting_pstruct_no_event.
   - exact no_event.
   - apply free_nested_program_unfold_structural.
 Qed.
@@ -2097,7 +2282,7 @@ Qed.
     first coordinate bounds completed iterator rounds; the second bounds
     primitive execution inside every step.  Unlike [free_nested_program],
     this construction consumes the client's actual [step] directly, so no
-    bind reassociation or [pstructural] normalization is involved. *)
+    bind reassociation or [pstruct] normalization is involved. *)
 Section DirectUnboundedIteration.
 Context {I R : Type}.
 Context `{NCAEIter : @SemanticMeasureCouplingAELaws MN NI}.

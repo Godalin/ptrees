@@ -6,7 +6,7 @@ Set Universe Polymorphism.
 
       PTree representation
         -> primitive kernel and stable hitting
-        -> probabilistic_eutt / finite interaction observations.
+        -> peutt / finite interaction observations.
 
     The historical module names remain available to proof developers, while
     clients need not treat frontier certificates or operational compatibility
@@ -19,7 +19,10 @@ From PTree.Core Require Import PTreeDefinition PTreeProbability.
 From PTree.Eq Require Import
   UnifiedFrontier
   PrimitiveStableHitting
-  ProbabilisticEutt
+  PStrong
+  PFinite
+  PEutt
+  PEuttRewrite
   ProbabilisticTrace.
 
 (** Curated aliases are declared here because [Require Import] deliberately
@@ -35,15 +38,18 @@ Notation probabilistic_ptree_iter := PTreeProbability.probabilistic_ptree_iter.
 Notation stable_head := UnifiedFrontier.frontier_head.
 Notation stable_head_rel := UnifiedFrontier.stable_head_rel.
 Notation stable_hitting := PrimitiveStableHitting.stable_hitting.
-Notation probabilistic_eutt := ProbabilisticEutt.probabilistic_eutt.
+Notation pstruct := PStrong.pstruct.
+Notation pstrong := PStrong.pstrong.
+Notation pfinite := PFinite.pfinite.
+Notation peutt := PEutt.peutt.
 Notation finite_interaction_pattern :=
   ProbabilisticTrace.finite_interaction_pattern.
 Notation finite_interaction_query := ProbabilisticTrace.finite_interaction_query.
 Notation finite_interaction_sem := ProbabilisticTrace.finite_interaction_sem.
 
-Notation "t ≈ₚ[ RR ] u" := (probabilistic_eutt RR t u)
+Notation "t ≈ₚ[ RR ] u" := (peutt RR t u)
   (at level 70, RR at next level, no associativity) : type_scope.
-Notation "t ≈ₚ u" := (probabilistic_eutt eq t u)
+Notation "t ≈ₚ u" := (peutt eq t u)
   (at level 70, no associativity) : type_scope.
 
 (** Stable-hitting and behavioral endpoints. *)
@@ -51,20 +57,29 @@ Notation stable_hitting_exists :=
   PrimitiveStableHitting.stable_hitting_exists.
 Notation stable_hitting_unique :=
   PrimitiveStableHitting.stable_hitting_unique.
-Notation probabilistic_eutt_coinduction :=
-  ProbabilisticEutt.probabilistic_eutt_coinduction.
-Notation probabilistic_eutt_refl := ProbabilisticEutt.probabilistic_eutt_refl.
-Notation probabilistic_eutt_sym := ProbabilisticEutt.probabilistic_eutt_sym.
-Notation probabilistic_eutt_trans := ProbabilisticEutt.probabilistic_eutt_trans.
-Notation probabilistic_eutt_ret := ProbabilisticEutt.probabilistic_eutt_ret.
-Notation probabilistic_eutt_tau_l := ProbabilisticEutt.probabilistic_eutt_tau_l.
-Notation probabilistic_eutt_tau_r := ProbabilisticEutt.probabilistic_eutt_tau_r.
-Notation probabilistic_eutt_vis := ProbabilisticEutt.probabilistic_eutt_vis.
-Notation probabilistic_eutt_prob := ProbabilisticEutt.probabilistic_eutt_prob.
-Notation probabilistic_eutt_bind := ProbabilisticEutt.probabilistic_eutt_bind.
+Notation peutt_coinduction :=
+  PEutt.peutt_coinduction.
+Notation peutt_refl := PEutt.peutt_refl.
+Notation peutt_sym := PEutt.peutt_sym.
+Notation peutt_trans := PEutt.peutt_trans.
+Notation peutt_ret := PEutt.peutt_ret.
+Notation peutt_tau_l := PEutt.peutt_tau_l.
+Notation peutt_tau_r := PEutt.peutt_tau_r.
+Notation peutt_vis := PEutt.peutt_vis.
+Notation peutt_prob := PEutt.peutt_prob.
+Notation peutt_bind := PEutt.peutt_bind.
+Notation pstruct_pstrong := PStrong.pstruct_pstrong.
+Notation pstrong_pfinite := PFinite.pstrong_pfinite.
+Notation pfinite_rel_mono := PFinite.pfinite_rel_mono.
+Notation pfinite_sym := PFinite.pfinite_sym.
+Notation pfinite_tau_l := PFinite.pfinite_tau_l.
+Notation pfinite_tau_r := PFinite.pfinite_tau_r.
+Notation peutt_rewrite_l := PEuttRewrite.peutt_rewrite_l.
+Notation peutt_rewrite_r := PEuttRewrite.peutt_rewrite_r.
+Notation peutt_rewrite := PEuttRewrite.peutt_rewrite.
 
 (** Finite-cylinder adequacy and extensionality endpoints. *)
 Notation finite_interaction_sem_spec :=
   ProbabilisticTrace.finite_interaction_sem_spec.
-Notation probabilistic_eutt_preserves_finite_interaction_sem :=
-  ProbabilisticTrace.probabilistic_eutt_preserves_finite_interaction_sem.
+Notation peutt_preserves_finite_interaction_sem :=
+  ProbabilisticTrace.peutt_preserves_finite_interaction_sem.

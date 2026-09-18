@@ -8,7 +8,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier
-  OperationalProbabilisticPTS ProbabilisticEutt.
+  OperationalProbabilisticPTS PEutt.
 From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
@@ -310,8 +310,8 @@ Proof.
                 try contradiction; assumption.
 Qed.
 
-Theorem probabilistic_eutt_reg_nested_merged :
-  @probabilistic_eutt regE Enum MF
+Theorem peutt_reg_nested_merged :
+  @peutt regE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -320,7 +320,7 @@ Theorem probabilistic_eutt_reg_nested_merged :
     FreeOmegaObservableSemanticOmega nat nat eq
     reg_nested_program reg_merged_program.
 Proof.
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - apply (proj2 (ptree_primitive_weak_adequate _ _)).
     exact operational_reg_nested_weak.
   - apply (proj2 (ptree_primitive_weak_adequate _ _)).

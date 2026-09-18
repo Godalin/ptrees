@@ -7,7 +7,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import
   Shallow UnifiedFrontier PrimitiveStableHitting OperationalProbabilisticPTS
-  ProbabilisticEutt PStrong
+  PEutt PStrong
   OperationalProbabilisticPTSFreeOmegaBase.
 
 Set Implicit Arguments.
@@ -26,21 +26,21 @@ Section TranslateProper.
 Context {F : Type -> Type}.
 Variable rename : forall X, E X -> F X.
 
-#[global] Instance free_probabilistic_eutt_translate_Proper {R} :
+#[global] Instance free_peutt_translate_Proper {R} :
   Proper
-    (@probabilistic_eutt E MN MF
+    (@peutt E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega R R eq ==>
-     @probabilistic_eutt F MN MF
+     @peutt F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega R R eq)
     (PTree.translate rename).
 Proof.
-  intros t1 t2 Ht. apply free_probabilistic_eutt_translate. exact Ht.
+  intros t1 t2 Ht. apply free_peutt_translate. exact Ht.
 Qed.
 
 End TranslateProper.
@@ -64,15 +64,15 @@ Proof.
     unfold free_translate_cont. rewrite observe_bind. cbn. constructor.
 Qed.
 
-Theorem free_probabilistic_eutt_translate_id {R} (t : ptree E MN R) :
-  @probabilistic_eutt E MN MF
+Theorem free_peutt_translate_id {R} (t : ptree E MN R) :
+  @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.translate free_identity_rename t) t.
 Proof.
-  eapply probabilistic_eutt_coinduction with
+  eapply peutt_coinduction with
     (sim := @free_translate_id_state R).
   - intros sT sS Hsim. dependent destruction Hsim.
     destruct (stable_hitting_weak_exists
@@ -97,21 +97,21 @@ Proof.
   - constructor.
 Qed.
 
-Corollary free_probabilistic_eutt_interp_trigger {R} (t : ptree E MN R) :
-  @probabilistic_eutt E MN MF
+Corollary free_peutt_interp_trigger {R} (t : ptree E MN R) :
+  @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.interp (fun X e => @PTree.trigger E MN X e) t) t.
 Proof.
-  change (@probabilistic_eutt E MN MF
+  change (@peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.translate free_identity_rename t) t).
-  apply free_probabilistic_eutt_translate_id.
+  apply free_peutt_translate_id.
 Qed.
 
 End FreeOmegaTranslateIdentity.
@@ -158,9 +158,9 @@ Proof.
     constructor.
 Qed.
 
-Theorem free_probabilistic_eutt_translate_compose {R}
+Theorem free_peutt_translate_compose {R}
     (t : ptree E MN R) :
-  @probabilistic_eutt G MN MF
+  @peutt G MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
@@ -168,7 +168,7 @@ Theorem free_probabilistic_eutt_translate_compose {R}
     (PTree.translate rename2 (PTree.translate rename1 t))
     (PTree.translate free_compose_rename t).
 Proof.
-  eapply probabilistic_eutt_coinduction with
+  eapply peutt_coinduction with
     (sim := @free_translate_comp_state R).
   - intros sL sR Hsim. dependent destruction Hsim.
     destruct (stable_hitting_weak_exists
@@ -229,7 +229,7 @@ Qed.
 End FreeOmegaTranslateComposition.
 
 (** Interpreting visible events preserves every structural proof. *)
-Theorem free_probabilistic_eutt_interp_structural
+Theorem free_peutt_interp_structural
     {E F : Type -> Type} {MN : Type -> Type}
     `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -238,16 +238,16 @@ Theorem free_probabilistic_eutt_interp_structural
     {A B} (RR : A -> B -> Prop)
     (handler : forall X, E X -> ptree F MN X)
     (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  pstructural RR t1 t2 ->
-  @probabilistic_eutt F MN (FreeOmega MN)
+  pstruct RR t1 t2 ->
+  @peutt F MN (FreeOmega MN)
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A B RR
     (PTree.interp handler t1) (PTree.interp handler t2).
 Proof.
-  intro Hstruct. apply free_probabilistic_eutt_of_pstructural.
-  apply pstructural_interp. exact Hstruct.
+  intro Hstruct. apply free_peutt_of_pstruct.
+  apply pstruct_interp. exact Hstruct.
 Qed.
 
 (** Focused behavioral facts for effect interpretation over the maintained
@@ -268,7 +268,7 @@ Local Notation MF := (FreeOmega MN).
 (** Semantic interpreter preservation from stable-head kernels.  Source
     hitting is coupled once, related source heads supply coupled interpreted
     behavior, and operational composition assembles the whole programs. *)
-Theorem free_probabilistic_eutt_interp_of_head_lifts
+Theorem free_peutt_interp_of_head_lifts
     `{NCAEInterp : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAEInterp : @SemanticMeasureCountableAELaws MN NI}
     {A0 B0} (RR0 : A0 -> B0 -> Prop)
@@ -300,7 +300,7 @@ Theorem free_probabilistic_eutt_interp_of_head_lifts
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     _ _
     (@ptree_stable_head_rel E MN A0 B0 RR0
-      (@probabilistic_eutt_state E MN MF
+      (@peutt_state E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasure
@@ -308,7 +308,7 @@ Theorem free_probabilistic_eutt_interp_of_head_lifts
     source1 source2 ->
   (forall h1 h2,
     @ptree_stable_head_rel E MN A0 B0 RR0
-      (@probabilistic_eutt_state E MN MF
+      (@peutt_state E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasure
@@ -317,13 +317,13 @@ Theorem free_probabilistic_eutt_interp_of_head_lifts
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       _ _
       (@ptree_stable_head_rel F MN A0 B0 RR0
-        (@probabilistic_eutt_state F MN MF
+        (@peutt_state F MN MF
           (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
           FreeOmegaObservableSemanticMeasureCoreLaws
           FreeOmegaMixedMeasure
           FreeOmegaObservableSemanticOmega A0 B0 RR0))
       (front1 h1) (front2 h2)) ->
-  @probabilistic_eutt F MN MF
+  @peutt F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
@@ -357,7 +357,7 @@ Proof.
     + apply free_operational_interp_cofinal_all.
     + exact Hsource2.
     + exact Hfront2. }
-  eapply probabilistic_eutt_of_hitting_lift
+  eapply peutt_of_hitting_lift
     with (out1 := free_omega_bind source1 front1)
          (out2 := free_omega_bind source2 front2).
   - exact Htarget1.
@@ -367,36 +367,36 @@ Proof.
 Qed.
 
 (** Canonical unfolding laws for the guarded interpreter. *)
-Theorem free_probabilistic_eutt_interp_ret {R}
+Theorem free_peutt_interp_ret {R}
     (handler : forall X, E X -> ptree F MN X) (r : R) :
-  @probabilistic_eutt F MN MF
+  @peutt F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.interp handler (Ret r)) (Ret r).
 Proof.
-  apply free_probabilistic_eutt_of_pstructural.
-  apply observe_eq_pstructural. exact (observing_observe (interp_ret_ handler r)).
+  apply free_peutt_of_pstruct.
+  apply observe_eq_pstruct. exact (observing_observe (interp_ret_ handler r)).
 Qed.
 
-Theorem free_probabilistic_eutt_interp_tau {R}
+Theorem free_peutt_interp_tau {R}
     (handler : forall X, E X -> ptree F MN X) (t : ptree E MN R) :
-  @probabilistic_eutt F MN MF
+  @peutt F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.interp handler (Tau t)) (Tau (PTree.interp handler t)).
 Proof.
-  apply free_probabilistic_eutt_of_pstructural.
-  apply observe_eq_pstructural. exact (observing_observe (interp_tau_ handler t)).
+  apply free_peutt_of_pstruct.
+  apply observe_eq_pstruct. exact (observing_observe (interp_tau_ handler t)).
 Qed.
 
-Theorem free_probabilistic_eutt_interp_vis {R X}
+Theorem free_peutt_interp_vis {R X}
     (handler : forall Y, E Y -> ptree F MN Y)
     (e : E X) (k : X -> ptree E MN R) :
-  @probabilistic_eutt F MN MF
+  @peutt F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
@@ -405,14 +405,14 @@ Theorem free_probabilistic_eutt_interp_vis {R X}
     (Tau (PTree.bind (handler _ e)
       (fun x => PTree.interp handler (k x)))).
 Proof.
-  apply free_probabilistic_eutt_of_pstructural.
-  apply observe_eq_pstructural. exact (observing_observe (interp_vis_ handler e k)).
+  apply free_peutt_of_pstruct.
+  apply observe_eq_pstruct. exact (observing_observe (interp_vis_ handler e k)).
 Qed.
 
-Theorem free_probabilistic_eutt_interp_prob {R X}
+Theorem free_peutt_interp_prob {R X}
     (handler : forall Y, E Y -> ptree F MN Y)
     (mu : MN X) (k : X -> ptree E MN R) :
-  @probabilistic_eutt F MN MF
+  @peutt F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
@@ -420,14 +420,14 @@ Theorem free_probabilistic_eutt_interp_prob {R X}
     (PTree.interp handler (Prob mu k))
     (Prob mu (fun x => PTree.interp handler (k x))).
 Proof.
-  apply free_probabilistic_eutt_of_pstructural.
-  apply observe_eq_pstructural. exact (observing_observe (interp_prob_ handler mu k)).
+  apply free_peutt_of_pstruct.
+  apply observe_eq_pstruct. exact (observing_observe (interp_prob_ handler mu k)).
 Qed.
 
-Theorem free_probabilistic_eutt_interp_bind {A B}
+Theorem free_peutt_interp_bind {A B}
     (handler : forall X, E X -> ptree F MN X)
     (t : ptree E MN A) (k : A -> ptree E MN B) :
-  @probabilistic_eutt F MN MF
+  @peutt F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
@@ -436,19 +436,19 @@ Theorem free_probabilistic_eutt_interp_bind {A B}
     (PTree.bind (PTree.interp handler t)
       (fun x => PTree.interp handler (k x))).
 Proof.
-  apply free_probabilistic_eutt_of_pstructural.
-  apply pstructural_interp_bind.
+  apply free_peutt_of_pstruct.
+  apply pstruct_interp_bind.
 Qed.
 
 (** A handler may itself perform unbounded probabilistic computation before
     returning the answer to an event.  Guarded interpretation nevertheless
     commutes with [iter]: the law follows from the joint structural
-    coinduction in [pstructural_interp_iter], so it needs no productivity or
+    coinduction in [pstruct_interp_iter], so it needs no productivity or
     bounded-fuel premise. *)
-Theorem free_probabilistic_eutt_interp_iter {I R}
+Theorem free_peutt_interp_iter {I R}
     (handler : forall X, E X -> ptree F MN X)
     (step : I -> ptree E MN (I + R)) (i : I) :
-  @probabilistic_eutt F MN MF
+  @peutt F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
@@ -456,18 +456,18 @@ Theorem free_probabilistic_eutt_interp_iter {I R}
     (PTree.interp handler (PTree.iter step i))
     (PTree.iter (fun j => PTree.interp handler (step j)) i).
 Proof.
-  apply free_probabilistic_eutt_of_pstructural.
-  apply pstructural_interp_iter.
+  apply free_peutt_of_pstruct.
+  apply pstruct_interp_iter.
 Qed.
 
 (** Sequential effect handlers compose, even when either handler performs
     target-side probabilistic or visible computation. *)
-Theorem free_probabilistic_eutt_interp_compose
+Theorem free_peutt_interp_compose
     {G : Type -> Type} {R}
     (handler1 : forall X, E X -> ptree F MN X)
     (handler2 : forall X, F X -> ptree G MN X)
     (t : ptree E MN R) :
-  @probabilistic_eutt G MN MF
+  @peutt G MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
@@ -477,40 +477,40 @@ Theorem free_probabilistic_eutt_interp_compose
       (fun (X : Type) (e : E X) =>
         PTree.interp handler2 (@handler1 X e)) t).
 Proof.
-  apply free_probabilistic_eutt_of_pstructural.
-  apply pstructural_interp_compose.
+  apply free_peutt_of_pstruct.
+  apply pstruct_interp_compose.
 Qed.
 
 (** Pointwise structurally equivalent handlers are interchangeable under
     interpretation. *)
-Theorem free_probabilistic_eutt_interp_handler {R}
+Theorem free_peutt_interp_handler {R}
     (handler1 handler2 : forall X, E X -> ptree F MN X)
     (Hhandler : forall X (e : E X),
-      pstructural eq (@handler1 X e) (@handler2 X e))
+      pstruct eq (@handler1 X e) (@handler2 X e))
     (t : ptree E MN R) :
-  @probabilistic_eutt F MN MF
+  @peutt F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.interp handler1 t) (PTree.interp handler2 t).
 Proof.
-  apply free_probabilistic_eutt_of_pstructural.
-  apply pstructural_interp_handler. exact Hhandler.
+  apply free_peutt_of_pstruct.
+  apply pstruct_interp_handler. exact Hhandler.
 Qed.
 
-Theorem free_probabilistic_eutt_translate_structural {G A B}
+Theorem free_peutt_translate_structural {G A B}
     (RR0 : A -> B -> Prop) (rename : forall X, E X -> G X)
     (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  pstructural RR0 t1 t2 ->
-  @probabilistic_eutt G MN MF
+  pstruct RR0 t1 t2 ->
+  @peutt G MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A B RR0
     (PTree.translate rename t1) (PTree.translate rename t2).
 Proof.
-  apply free_probabilistic_eutt_interp_structural.
+  apply free_peutt_interp_structural.
 Qed.
 
 Context {A B : Type} (RR : A -> B -> Prop)
@@ -525,7 +525,7 @@ Definition free_interp_bisim_candidate
   exists (t1 : ptree E MN A) (t2 : ptree E MN B),
     s1 = observe (PTree.interp handler t1) /\
     s2 = observe (PTree.interp handler t2) /\
-    @probabilistic_eutt E MN MF
+    @peutt E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
@@ -541,7 +541,7 @@ Definition free_interp_bisim_candidate
 Definition free_interp_vis_fusion : Prop :=
   forall X (e : E X) (k1 : X -> ptree E MN A) (k2 : X -> ptree E MN B),
     (forall x,
-      @probabilistic_eutt E MN MF
+      @peutt E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasure
@@ -571,17 +571,17 @@ Definition free_interp_vis_fusion : Prop :=
     collapsed handled-[Vis] fusion above is supplied.  This theorem
     discharges source hitting, Ret heads, outer interpreter scheduling, and
     coupling composition; no broader generator-closure premise remains. *)
-Theorem free_probabilistic_eutt_interp_of_vis_fusion
+Theorem free_peutt_interp_of_vis_fusion
     `{NCAEInterp : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAEInterp : @SemanticMeasureCountableAELaws MN NI}
     (Hvis : free_interp_vis_fusion) :
   forall (t1 : ptree E MN A) (t2 : ptree E MN B),
-    @probabilistic_eutt E MN MF
+    @peutt E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A B RR t1 t2 ->
-    @probabilistic_eutt F MN MF
+    @peutt F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
@@ -589,7 +589,7 @@ Theorem free_probabilistic_eutt_interp_of_vis_fusion
       (PTree.interp handler t1) (PTree.interp handler t2).
 Proof.
   intros t1 t2 Hsource.
-  eapply (probabilistic_eutt_coinduction_upto_bind
+  eapply (peutt_coinduction_upto_bind
     (E := F) (MN := MN) (MF := MF)
     (fun A0 R0 (t : ptree F MN A0) (k : A0 -> ptree F MN R0) =>
       free_operational_bind_cofinal_all t k)
@@ -633,13 +633,13 @@ Proof.
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         _ _
         (@ptree_stable_head_rel E MN A B RR
-          (@probabilistic_eutt_state E MN MF
+          (@peutt_state E MN MF
             (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
             FreeOmegaObservableSemanticMeasureCoreLaws
             FreeOmegaMixedMeasure
             FreeOmegaObservableSemanticOmega A B RR))
         source1 source2).
-    { eapply probabilistic_eutt_state_hitting_lift;
+    { eapply peutt_state_hitting_lift;
         [exact Hu|exact Hsource1|exact Hsource2]. }
     assert (Htarget1 : @operational_weak F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -676,8 +676,8 @@ Proof.
           (NI := NI) (NO := NO))).
       * apply ptree_stable_head_rel_mono.
         intros x1 x2 Hknown. right. left. exact Hknown.
-      * eapply probabilistic_eutt_state_hitting_lift.
-        -- apply probabilistic_eutt_ret. exact H.
+      * eapply peutt_state_hitting_lift.
+        -- apply peutt_ret. exact H.
         -- exact (Hfront1 (FHRet r1)).
         -- exact (Hfront2 (FHRet r2)).
     + pose proof (stable_hitting_match_hitting_lift
@@ -700,7 +700,7 @@ Qed.
     theorem's conclusion. *)
 Definition free_interp_generator_closed : Prop :=
   forall (t1 : ptree E MN A) (t2 : ptree E MN B),
-    @probabilistic_eutt E MN MF
+    @peutt E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
@@ -723,15 +723,15 @@ Definition free_interp_generator_closed : Prop :=
 
 (** Full behavioral preservation follows from precisely the candidate-level
     handler closure above.  The canonical generator is unchanged. *)
-Theorem free_probabilistic_eutt_interp_of_generator_closed
+Theorem free_peutt_interp_of_generator_closed
     (Hclosed : free_interp_generator_closed) :
   forall (t1 : ptree E MN A) (t2 : ptree E MN B),
-    @probabilistic_eutt E MN MF
+    @peutt E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A B RR t1 t2 ->
-    @probabilistic_eutt F MN MF
+    @peutt F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
@@ -739,7 +739,7 @@ Theorem free_probabilistic_eutt_interp_of_generator_closed
       (PTree.interp handler t1) (PTree.interp handler t2).
 Proof.
   intros t1 t2 Hsource.
-  eapply probabilistic_eutt_coinduction with
+  eapply peutt_coinduction with
       (sim := free_interp_bisim_candidate).
   - intros s1 s2 [u1 [u2 [-> [-> Hu]]]]. exact (Hclosed u1 u2 Hu).
   - exists t1, t2. repeat split; try reflexivity. exact Hsource.

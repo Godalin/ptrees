@@ -10,7 +10,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC TwoLevelMeasure
 From PTree.Prob Require Import EnumMap MeasureIterationEnum.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting UnifiedFrontier
   OperationalProbabilisticPTS
-  ProbabilisticEutt ProbabilisticTraceEnum
+  PEutt ProbabilisticTraceEnum
   OperationalProbabilisticPTSFreeOmega.
 From PTree.Examples Require Import VonNeumannUnbounded OperationalVonNeumann.
 
@@ -486,7 +486,7 @@ Proof.
 Qed.
 
 Theorem service_sampler_equivalent :
-  @probabilistic_eutt coin_serviceE Enum MF
+  @peutt coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -495,7 +495,7 @@ Theorem service_sampler_equivalent :
     FreeOmegaObservableSemanticOmega bool bool eq
     von_neumann_third_in direct_fair_in.
 Proof.
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - exact (proj1 service_von_neumann_ast).
   - exact (proj1 service_direct_fair_ast).
   - exact (service_vn_direct_heads_lift _).
@@ -508,7 +508,7 @@ Lemma serve_round_congruence
     (sampler1 sampler2 : ptree coin_serviceE Enum bool)
     (next1 next2 : ptree coin_serviceE Enum bool)
     (Hsampler :
-      @probabilistic_eutt coin_serviceE Enum MF
+      @peutt coin_serviceE Enum MF
         (FreeOmegaObservableSemanticMeasure
           (NI := Enum_SemanticMeasure)
           (NO := Enum_SemanticOmega))
@@ -517,7 +517,7 @@ Lemma serve_round_congruence
         FreeOmegaObservableSemanticOmega bool bool eq
         sampler1 sampler2)
     (Hnext :
-      @probabilistic_eutt coin_serviceE Enum MF
+      @peutt coin_serviceE Enum MF
         (FreeOmegaObservableSemanticMeasure
           (NI := Enum_SemanticMeasure)
           (NO := Enum_SemanticOmega))
@@ -525,7 +525,7 @@ Lemma serve_round_congruence
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega bool bool eq
         next1 next2) :
-  @probabilistic_eutt coin_serviceE Enum MF
+  @peutt coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -535,11 +535,11 @@ Lemma serve_round_congruence
     (serve_round sampler1 next1) (serve_round sampler2 next2).
 Proof.
   unfold serve_round.
-  apply probabilistic_eutt_vis. intros [].
-  eapply free_probabilistic_eutt_bind.
+  apply peutt_vis. intros [].
+  eapply free_peutt_bind.
   - exact Hsampler.
   - intros b1 b2 ->. unfold publish.
-    apply probabilistic_eutt_vis. intros []. exact Hnext.
+    apply peutt_vis. intros []. exact Hnext.
 Qed.
 
 Local Definition service_kernel {R} :
@@ -658,7 +658,7 @@ Definition interactive_service_sim
 Definition interactive_service_upto
     (s1 s2 : ptree' coin_serviceE Enum bool) : Prop :=
   interactive_service_sim s1 s2 \/
-  @probabilistic_eutt_state coin_serviceE Enum MF
+  @peutt_state coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -718,7 +718,7 @@ Proof.
 Qed.
 
 Theorem interactive_von_neumann_service_equivalent :
-  @probabilistic_eutt coin_serviceE Enum MF
+  @peutt coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -727,7 +727,7 @@ Theorem interactive_von_neumann_service_equivalent :
     FreeOmegaObservableSemanticOmega bool bool eq
     von_neumann_service direct_fair_service.
 Proof.
-  eapply probabilistic_eutt_coinduction_upto
+  eapply peutt_coinduction_upto
     with (sim := interactive_service_sim).
   - exact interactive_service_sim_postfixed.
   - exact ISSRoot.
@@ -785,8 +785,8 @@ Proof.
   by rewrite vn_fair_expect /indicator /= add0r mulr1.
 Qed.
 
-Lemma after_request_probabilistic_eutt :
-  @probabilistic_eutt coin_serviceE Enum MF
+Lemma after_request_peutt :
+  @peutt coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -795,7 +795,7 @@ Lemma after_request_probabilistic_eutt :
     FreeOmegaObservableSemanticOmega bool bool eq
     vn_after_request direct_after_request.
 Proof.
-  eapply probabilistic_eutt_coinduction_upto
+  eapply peutt_coinduction_upto
     with (sim := interactive_service_sim).
   - exact interactive_service_sim_postfixed.
   - exact ISSAfterRequest.
@@ -820,8 +820,8 @@ Theorem von_neumann_true_reply_probability_half :
         (NO := Enum_SemanticOmega)) bool bool eq
       direct_true_reply_query query.
 Proof.
-  eapply probabilistic_eutt_preserves_next_event_query.
-  - eapply probabilistic_eutt_sym. exact after_request_probabilistic_eutt.
+  eapply peutt_preserves_next_event_query.
+  - eapply peutt_sym. exact after_request_peutt.
   - exact direct_after_request_true_reply_query.
 Qed.
 
@@ -922,8 +922,8 @@ Theorem von_neumann_request_true_reply_probability_half :
       FreeOmegaObservableSemanticMeasure bool bool eq
       direct_true_reply_query query.
 Proof.
-  eapply probabilistic_eutt_preserves_finite_trace_query.
-  - eapply probabilistic_eutt_sym.
+  eapply peutt_preserves_finite_trace_query.
+  - eapply peutt_sym.
     exact interactive_von_neumann_service_equivalent.
   - exact direct_request_true_reply_prefix_query.
 Qed.
@@ -958,8 +958,8 @@ Theorem von_neumann_request_true_reply_sem_preserved :
       FreeOmegaObservableSemanticOmega bool
       request_true_reply_trace von_neumann_service).
 Proof.
-  eapply probabilistic_eutt_preserves_finite_trace_sem.
-  eapply probabilistic_eutt_sym.
+  eapply peutt_preserves_finite_trace_sem.
+  eapply peutt_sym.
   exact interactive_von_neumann_service_equivalent.
 Qed.
 
@@ -998,6 +998,6 @@ Qed.
 (** This is an infinite visible behavior, not a terminating sampler theorem:
     both roots expose [CoinRequest], both replies recurse to the original
     service, and the proof above closes that recursive continuation only via
-    [probabilistic_eutt_coinduction].  The implementation nevertheless uses
+    [peutt_coinduction].  The implementation nevertheless uses
     the genuinely unbounded AST certificate [service_von_neumann_ast] between
     every request and reply. *)

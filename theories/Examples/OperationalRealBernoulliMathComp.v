@@ -10,7 +10,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
   TwoLevelMeasure TwoLevelMeasureMathComp.
 From PTree.Eq Require Import PrimitiveStableHitting OperationalProbabilisticPTS
-  OperationalProbabilisticPTSFreeOmega UnifiedFrontier ProbabilisticEutt.
+  OperationalProbabilisticPTSFreeOmega UnifiedFrontier PEutt.
 From PTree.Examples Require Import RealBernoulliOracle RealBernoulliMathComp
   UnifiedRealBernoulliMathCompCore.
 
@@ -267,8 +267,8 @@ Proof.
         exists (FHRet b2). split; [apply FHRRet; reflexivity|assumption].
 Qed.
 
-Theorem probabilistic_eutt_mathcomp_binary_oracle_direct :
-  @probabilistic_eutt real_mathcomp_coinE MN MF
+Theorem peutt_mathcomp_binary_oracle_direct :
+  @peutt real_mathcomp_coinE MN MF
     (FreeOmegaObservableSemanticMeasure
       (NI := MathCompNodeSemanticMeasure R))
     (FreeOmegaObservableSemanticMeasureCoreLaws
@@ -280,7 +280,7 @@ Theorem probabilistic_eutt_mathcomp_binary_oracle_direct :
     (mathcomp_binary_oracle_coin R qbit)
     (mathcomp_direct_bernoulli (R := R) q).
 Proof.
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - apply (proj2 (ptree_primitive_weak_adequate _ _)).
     exact (proj1 operational_mathcomp_oracle_ast).
   - apply (proj2 (ptree_primitive_weak_adequate _ _)).

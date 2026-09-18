@@ -7,7 +7,7 @@ From mathcomp Require Import ssreflect ssralg ssrnum reals.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
   TwoLevelMeasure TwoLevelMeasureMathComp.
-From PTree.Eq Require Import UnifiedFrontier ProbabilisticEutt.
+From PTree.Eq Require Import UnifiedFrontier PEutt.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -61,9 +61,9 @@ Proof.
   - intros b _. rewrite -free_omega_observable_sem_retE. apply UFRet.
 Qed.
 
-Lemma unified_mathcomp_direct_coin_probabilistic_eutt_reflexive
+Lemma unified_mathcomp_direct_coin_peutt_reflexive
     `{MathCompCouplingGluing R} :
-  @probabilistic_eutt mc_freeE (MathCompKernelMeasure R)
+  @peutt mc_freeE (MathCompKernelMeasure R)
     (MathCompBehaviorMeasure R)
     (FreeOmegaObservableSemanticMeasure
       (NI := MathCompNodeSemanticMeasure R))
@@ -73,6 +73,6 @@ Lemma unified_mathcomp_direct_coin_probabilistic_eutt_reflexive
     (FreeOmegaObservableSemanticOmega
       (NI := MathCompNodeSemanticMeasure R))
     bool bool eq unified_mathcomp_direct_coin unified_mathcomp_direct_coin.
-Proof. apply probabilistic_eutt_refl. Qed.
+Proof. apply peutt_refl. Qed.
 
 End DirectMathCompCoin.

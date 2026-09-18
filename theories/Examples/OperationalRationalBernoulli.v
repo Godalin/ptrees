@@ -13,7 +13,7 @@ From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
 From PTree.Eq Require Import Shallow PrimitiveStableHitting
   OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega UnifiedFrontier
-  ProbabilisticEutt.
+  PEutt.
 From PTree.Examples Require Import RationalBernoulli.
 
 Set Implicit Arguments.
@@ -431,10 +431,10 @@ Proof.
         exists (FHRet b2). split; [constructor; reflexivity|assumption].
 Qed.
 
-Theorem probabilistic_eutt_binary_rational_coin_direct :
+Theorem peutt_binary_rational_coin_direct :
   free_omega_support_lift eq operational_rational_limit
     (FOSample (rational_bernoulli_measure q0 q1) (fun b => FORet b)) ->
-  @probabilistic_eutt rational_coinE Enum MF
+  @peutt rational_coinE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -443,7 +443,7 @@ Theorem probabilistic_eutt_binary_rational_coin_direct :
     FreeOmegaObservableSemanticOmega bool bool eq
     (binary_rational_coin q) operational_rational_direct.
 Proof.
-  intro Hsupport. eapply probabilistic_eutt_of_hitting_lift.
+  intro Hsupport. eapply peutt_of_hitting_lift.
   - apply (proj2 (ptree_primitive_weak_adequate _ _)).
     exact (proj1 operational_rational_coin_ast).
   - apply (proj2 (ptree_primitive_weak_adequate _ _)).

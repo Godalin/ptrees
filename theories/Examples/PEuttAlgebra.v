@@ -9,7 +9,7 @@ From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
   TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure MeasureIterationEnum.
 From PTree.Eq Require Import OperationalProbabilisticPTS
-  OperationalProbabilisticPTSFreeOmega ProbabilisticEutt PStrong.
+  OperationalProbabilisticPTSFreeOmega PEutt PStrong.
 From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
@@ -21,7 +21,7 @@ Import Enum.
 Variant algebraE : Type -> Type := .
 Local Notation MF := (FreeOmega Enum).
 Local Notation peutt :=
-  (@probabilistic_eutt algebraE Enum MF
+  (@PEutt.peutt algebraE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -42,9 +42,9 @@ Lemma canonical_monad_laws_regression {A B C}
     (PTree.bind t (fun x => PTree.bind (k x) h)).
 Proof.
   repeat split.
-  - apply free_probabilistic_eutt_bind_ret_l.
-  - apply free_probabilistic_eutt_bind_ret_r.
-  - apply free_probabilistic_eutt_bind_assoc.
+  - apply free_peutt_bind_ret_l.
+  - apply free_peutt_bind_ret_r.
+  - apply free_peutt_bind_assoc.
 Qed.
 
 (** Regression: the bind [Proper] instance supports rewriting a canonical
@@ -65,8 +65,8 @@ Lemma canonical_fmap_laws_regression {A B C}
     (PTree.fmap (fun x => g (f x)) t).
 Proof.
   split.
-  - apply free_probabilistic_eutt_fmap_id.
-  - apply free_probabilistic_eutt_fmap_compose.
+  - apply free_peutt_fmap_id.
+  - apply free_peutt_fmap_compose.
 Qed.
 
 (** Regression: the Functor [Proper] instance is registered with the setoid
@@ -86,7 +86,7 @@ Lemma canonical_prob_ret_regression {X R}
 Proof.
   change (peutt eq
     (Prob (@sem_ret Enum Enum_SemanticMeasure X x) k) (k x)).
-  apply probabilistic_eutt_prob_ret.
+  apply peutt_prob_ret.
 Qed.
 
 Lemma canonical_prob_flatten_regression {X Y R}
@@ -99,7 +99,7 @@ Proof.
   change (peutt eq
     (Prob mu (fun x => Prob (h x) k))
     (Prob (@sem_bind Enum Enum_SemanticMeasure X Y mu h) k)).
-  apply probabilistic_eutt_prob_flatten.
+  apply peutt_prob_flatten.
 Qed.
 
 (** Measure rewriting uses coupling equality, so a split representation of
@@ -115,7 +115,7 @@ Proof.
       (@sem_lift Enum Enum_SemanticMeasure bool bool eq ==>
        peutt eq) sample).
   { intros mu1 mu2 Hmu. unfold sample.
-    apply probabilistic_eutt_prob_measure. exact Hmu. }
+    apply peutt_prob_measure. exact Hmu. }
   setoid_rewrite reg_split_mass_lift_eq. reflexivity.
 Qed.
 
@@ -145,7 +145,7 @@ Lemma canonical_prob_interchange_regression {X Y : eqType} {R}
     (Prob mu (fun x => Prob nu (fun y => k x y)))
     (Prob nu (fun y => Prob mu (fun x => k x y))).
 Proof.
-  eapply probabilistic_eutt_prob_interchange_of.
+  eapply peutt_prob_interchange_of.
   apply free_omega_mixed_exchange_of_product.
   apply enum_semantic_product_swap.
 Qed.
@@ -158,19 +158,19 @@ Lemma canonical_iter_unfold_regression {I R}
       | inl i' => Tau (PTree.iter step i')
       | inr r => Ret r
       end)).
-Proof. apply free_probabilistic_eutt_iter_unfold. Qed.
+Proof. apply free_peutt_iter_unfold. Qed.
 
 Lemma canonical_iter_structural_regression {I R}
     (step1 step2 : I -> ptree algebraE Enum (I + R)) (i : I) :
-  (forall j, pstructural eq (step1 j) (step2 j)) ->
+  (forall j, pstruct eq (step1 j) (step2 j)) ->
   peutt eq (PTree.iter step1 i) (PTree.iter step2 i).
-Proof. apply free_probabilistic_eutt_iter_structural. Qed.
+Proof. apply free_peutt_iter_structural. Qed.
 
 Variant naturalityE : Type -> Type :=
   | ReadFlag : naturalityE bool.
 
 Local Notation naturality_peutt :=
-  (@probabilistic_eutt naturalityE Enum MF
+  (@PEutt.peutt naturalityE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -193,8 +193,9 @@ Lemma canonical_iter_natural_regression :
   naturality_peutt eq
     (PTree.bind (PTree.iter naturality_step tt) naturality_post)
     (PTree.iter
-      (pstructural_iter_natural_step naturality_step naturality_post) tt).
-Proof. apply free_probabilistic_eutt_iter_natural. Qed.
+      (pstruct_iter_natural_step (E := naturalityE) (M := Enum)
+        naturality_step naturality_post) tt).
+Proof. apply free_peutt_iter_natural. Qed.
 
 Definition codiagonal_step (_ : unit) :
     ptree naturalityE Enum (unit + (unit + bool)) :=
@@ -210,8 +211,8 @@ Lemma canonical_iter_codiagonal_regression :
   naturality_peutt eq
     (PTree.iter (fun j => PTree.iter codiagonal_step j) tt)
     (PTree.iter
-      (pstructural_iter_codiagonal_flat_step codiagonal_step) tt).
-Proof. apply free_probabilistic_eutt_iter_codiagonal. Qed.
+      (pstruct_iter_codiagonal_flat_step codiagonal_step) tt).
+Proof. apply free_peutt_iter_codiagonal. Qed.
 
 Definition countdown_nat (n : nat) :
     ptree algebraE Enum (nat + nat) :=
@@ -240,11 +241,11 @@ Lemma canonical_iter_rel_fusion_regression n :
     (PTree.iter countdown_nat n)
     (PTree.iter countdown_tagged (n, tt)).
 Proof.
-  eapply free_probabilistic_eutt_iter_rel
+  eapply free_peutt_iter_rel
     with (SI := countdown_state_rel).
   - intros i1 [i2 []] Hi. cbn in Hi. inversion Hi; subst. destruct i2; cbn.
-    + apply pstructural_fold. cbn. constructor. constructor. split; reflexivity.
-    + apply pstructural_fold. cbn. constructor. constructor. reflexivity.
+    + apply pstruct_fold. cbn. constructor. constructor. split; reflexivity.
+    + apply pstruct_fold. cbn. constructor. constructor. reflexivity.
   - reflexivity.
 Qed.
 
@@ -265,13 +266,13 @@ Lemma retry_steps_behaviorally_related u1 u2 :
     (retry_step_left u1) (retry_step_right u2).
 Proof.
   intros ->. unfold retry_step_left, retry_step_right.
-  eapply probabilistic_eutt_rel_mono with (RR := eq).
+  eapply peutt_rel_mono with (RR := eq).
   - intros x y ->. destruct y as [[]|b]; reflexivity.
-  - eapply probabilistic_eutt_trans.
-    + apply probabilistic_eutt_tau_l.
-    + eapply probabilistic_eutt_prob with (XR := eq).
+  - eapply peutt_trans.
+    + apply peutt_tau_l.
+    + eapply peutt_prob with (XR := eq).
       * apply sem_lift_refl. intro b. reflexivity.
-      * intros b1 b2 ->. apply probabilistic_eutt_tau_r.
+      * intros b1 b2 ->. apply peutt_tau_r.
 Qed.
 
 (** Behavioral rather than structural iteration congruence: Tau occurs
@@ -283,7 +284,7 @@ Lemma canonical_iter_behavioral_retry_regression :
     (PTree.iter retry_step_left tt)
     (PTree.iter retry_step_right tt).
 Proof.
-  eapply free_probabilistic_eutt_iter_behavioral_rel with (SI := eq).
+  eapply free_peutt_iter_behavioral_rel with (SI := eq).
   - intros X e. destruct e.
   - exact retry_steps_behaviorally_related.
   - reflexivity.
@@ -310,7 +311,7 @@ Definition rename_get (X : Type) (e : renamedE X) : finalE X :=
 
 Lemma canonical_translate_compose_regression {R}
     (t : ptree sourceE Enum R) :
-  @probabilistic_eutt finalE Enum MF
+  @PEutt.peutt finalE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -321,13 +322,13 @@ Lemma canonical_translate_compose_regression {R}
     (PTree.translate
       (fun (X : Type) (e : sourceE X) =>
         @rename_get X (@rename_bit X e)) t).
-Proof. apply free_probabilistic_eutt_translate_compose. Qed.
+Proof. apply free_peutt_translate_compose. Qed.
 
 (** Identity interpretation is genuinely weak on this program: interpreting
     [GetBit] inserts an administrative Tau before the visible event. *)
 Lemma canonical_interp_trigger_regression {R}
     (k : bool -> ptree renamedE Enum R) :
-  @probabilistic_eutt renamedE Enum MF
+  @PEutt.peutt renamedE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -337,7 +338,7 @@ Lemma canonical_interp_trigger_regression {R}
     (PTree.interp (fun X e => @PTree.trigger renamedE Enum X e)
       (Vis GetBit k))
     (Vis GetBit k).
-Proof. apply free_probabilistic_eutt_interp_trigger. Qed.
+Proof. apply free_peutt_interp_trigger. Qed.
 
 Definition bit_handler (X : Type) (e : sourceE X) : ptree algebraE Enum X :=
   match e with
@@ -366,13 +367,13 @@ Definition bit_handler_eta (X : Type) (e : sourceE X) :
     computation, and the heterogeneous continuation relation is retained. *)
 Lemma canonical_interp_structural_regression
     (k1 k2 : bool -> ptree sourceE Enum nat) :
-  (forall b, pstructural (fun n m => n = S m) (k1 b) (k2 b)) ->
+  (forall b, pstruct (fun n m => n = S m) (k1 b) (k2 b)) ->
   peutt (fun n m => n = S m)
     (PTree.interp bit_handler (Vis AskBit k1))
     (PTree.interp bit_handler (Vis AskBit k2)).
 Proof.
-  intro Hk. apply free_probabilistic_eutt_interp_structural.
-  apply pstructural_fold. cbn. constructor. exact Hk.
+  intro Hk. apply free_peutt_interp_structural.
+  apply pstruct_fold. cbn. constructor. exact Hk.
 Qed.
 
 (** The direct interpreter fuel chain is cofinal with the semantic
@@ -393,7 +394,7 @@ Lemma canonical_interp_bind_regression {A B}
     (PTree.interp bit_handler (PTree.bind t k))
     (PTree.bind (PTree.interp bit_handler t)
       (fun x => PTree.interp bit_handler (k x))).
-Proof. apply free_probabilistic_eutt_interp_bind. Qed.
+Proof. apply free_peutt_interp_bind. Qed.
 
 Definition interactive_loop_step (state : bool) :
     ptree sourceE Enum (bool + bool) :=
@@ -410,7 +411,7 @@ Lemma canonical_interp_iter_regression state :
     (PTree.interp bit_handler (PTree.iter interactive_loop_step state))
     (PTree.iter
       (fun s => PTree.interp bit_handler (interactive_loop_step s)) state).
-Proof. apply free_probabilistic_eutt_interp_iter. Qed.
+Proof. apply free_peutt_interp_iter. Qed.
 
 (** Both layers are operationally nontrivial: the first handler contributes
     Tau and Vis, while the second replaces that Vis by a probabilistic node. *)
@@ -421,13 +422,13 @@ Lemma canonical_interp_compose_regression {R} (t : ptree sourceE Enum R) :
     (PTree.interp
       (fun (X : Type) (e : sourceE X) =>
         PTree.interp renamed_prob_handler (@bit_forward_handler X e)) t).
-Proof. apply free_probabilistic_eutt_interp_compose. Qed.
+Proof. apply free_peutt_interp_compose. Qed.
 
 Lemma bit_handlers_structurally_related X (e : sourceE X) :
-  pstructural eq (@bit_handler X e) (@bit_handler_eta X e).
+  pstruct eq (@bit_handler X e) (@bit_handler_eta X e).
 Proof.
-  destruct e. apply pstructural_fold. cbn. constructor.
-  apply pstructural_fold. cbn. constructor. reflexivity.
+  destruct e. apply pstruct_fold. cbn. constructor.
+  apply pstruct_fold. cbn. constructor. reflexivity.
 Qed.
 
 (** Handler replacement is not definitional: the right handler contains an
@@ -435,21 +436,21 @@ Qed.
 Lemma canonical_interp_handler_regression {R} (t : ptree sourceE Enum R) :
   peutt eq (PTree.interp bit_handler t) (PTree.interp bit_handler_eta t).
 Proof.
-  apply free_probabilistic_eutt_interp_handler.
+  apply free_peutt_interp_handler.
   exact bit_handlers_structurally_related.
 Qed.
 
 Lemma canonical_translate_preservation_regression {A B}
     (RR : A -> B -> Prop)
     (t1 : ptree sourceE Enum A) (t2 : ptree sourceE Enum B) :
-  @probabilistic_eutt sourceE Enum MF
+  @PEutt.peutt sourceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A B RR t1 t2 ->
-  @probabilistic_eutt renamedE Enum MF
+  @PEutt.peutt renamedE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -457,18 +458,18 @@ Lemma canonical_translate_preservation_regression {A B}
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A B RR
     (PTree.translate rename_bit t1) (PTree.translate rename_bit t2).
-Proof. apply free_probabilistic_eutt_translate. Qed.
+Proof. apply free_peutt_translate. Qed.
 
 Lemma canonical_translate_setoid_rewrite {A}
     (t1 t2 : ptree sourceE Enum A) :
-  @probabilistic_eutt sourceE Enum MF
+  @PEutt.peutt sourceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A A eq t1 t2 ->
-  @probabilistic_eutt renamedE Enum MF
+  @PEutt.peutt renamedE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))

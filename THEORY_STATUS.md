@@ -14,7 +14,7 @@ PTree syntax
   -> ptree_primitive_kernel
   -> stable_hitting_approx
   -> stable_hitting / H(t) (subprobabilistic omega limit)
-       -> probabilistic_eutt / ≈ₚ (coupling greatest fixed point)
+       -> peutt / ≈ₚ (coupling greatest fixed point)
        -> finite_interaction_sem (finite cylinder observation)
 ```
 
@@ -98,7 +98,7 @@ The remaining `operational_target`, `operational_kernel`,
 aliases of the generic stable-target/kernel/hitting definitions; they no
 longer form a second execution semantics.
 
-`Eq/ProbabilisticEutt.v` defines the canonical coupling greatest fixed point.
+`Eq/PEutt.v` defines the canonical coupling greatest fixed point.
 Its generator contains only bidirectional matching of complete
 stable-hitting limits through `sem_lift (head_rel sim)`.  It has no AST,
 Step, Tau, Prob, Bind, Iter, frontier, or syntax-specific constructor.
@@ -112,31 +112,44 @@ not a second operational or behavioral semantics.
 The public notation is deliberately small:
 
 ```coq
-t ≈ₚ u        (* probabilistic_eutt eq t u *)
-t ≈ₚ[RR] u    (* probabilistic_eutt RR t u *)
+t ≈ₚ u        (* peutt eq t u *)
+t ≈ₚ[RR] u    (* peutt RR t u *)
 ```
 
 Both notations live in `type_scope`, following ITree's relation-notation
-convention.  `probabilistic_eutt` is the only public behavioral relation;
-`pstructural` is an auxiliary lockstep proof relation and `pstrong` a
-syntax-sensitive baseline.
+convention.  `peutt` is the only public behavioral relation;
+the maintained proof hierarchy below it is
+
+```text
+pstruct ⊆ pstrong ⊆ pfinite ⊆ peutt.
+```
+
+`pstruct` is exact structural lockstep.  `pstrong` uses the canonical
+`SemanticMeasure` coupling while retaining lockstep control flow.  `pfinite`
+adds an inductively finite one-sided Tau closure and finite-complete
+stable-prefix collapse; the inductive closure is intentionally outside the
+greatest fixed point, so an infinite one-sided Tau loop cannot justify an
+arbitrary relation.  `OperationalProbabilisticPTSFreeOmegaBase.v` proves
+`free_peutt_of_pstrong` and `free_peutt_of_pfinite`; the adjacent inclusions
+are registered with Rocq's `subrelation`.  `PEuttRewrite.v` supplies generic
+endpoint rewriting for every registered stronger relation.
 
 The following laws are checked:
 
-- `probabilistic_eutt_equivalence` (`refl`, `sym`, and `trans`);
-- `probabilistic_eutt_ret` and `probabilistic_eutt_vis`;
-- `probabilistic_eutt_tau_l` and `probabilistic_eutt_tau_r`;
-- `stable_hitting_weak_prob` and `probabilistic_eutt_prob`;
-- `probabilistic_eutt_bind`;
+- `peutt_equivalence` (`refl`, `sym`, and `trans`);
+- `peutt_ret` and `peutt_vis`;
+- `peutt_tau_l` and `peutt_tau_r`;
+- `stable_hitting_weak_prob` and `peutt_prob`;
+- `peutt_bind`;
 - `stable_hitting_bisim_coinduction` and its PTree specialization
-  `probabilistic_eutt_coinduction`;
-- `probabilistic_eutt_coinduction_upto` and `stable_hitting_match_vis`;
-- `probabilistic_eutt_coinduction_upto_bind` and
+  `peutt_coinduction`;
+- `peutt_coinduction_upto` and `stable_hitting_match_vis`;
+- `peutt_coinduction_upto_bind` and
   `bind_upto_closure_compatible`;
 - `stable_hitting_match_of_hitting_lift`;
-- `probabilistic_eutt_of_iter_certificates`;
-- `probabilistic_eutt_preserves_hitting_mass`;
-- `probabilistic_eutt_not_of_mass_mismatch`.
+- `peutt_of_iter_certificates`;
+- `peutt_preserves_hitting_mass`;
+- `peutt_not_of_mass_mismatch`.
 
 Tau invariance is derived from zero-prefix cofinality of the hitting chain.
 Bind congruence is proved by a post-fixed candidate containing the existing
@@ -147,13 +160,13 @@ cofinality theorem as a proof-side scheduling fact.
 For the maintained FreeOmega backend this scheduling fact is now
 unconditional, including eventful trees:
 `free_operational_bind_approx_cofinal_all` proves mutual cofinality of the
-global and diagonal chains, and `free_probabilistic_eutt_bind` exposes bind
+global and diagonal chains, and `free_peutt_bind` exposes bind
 as an unconditional monadic congruence.  A visible event is already a stable
 head, so bind only rewrites its continuation and does not need to execute
 through the event.  The former `no_event` theorem remains a compatibility
 corollary of this stronger result.
 
-`probabilistic_eutt_prob` is likewise derived at the hitting layer.  A
+`peutt_prob` is likewise derived at the hitting layer.  A
 coupling of node measures and related branch bisimulations are composed with
 `mixed_lift_bind`; probability sampling is not a generator constructor.
 
@@ -170,43 +183,43 @@ operational Base, preserving the historical import path and theorem names.
 
 The canonical FreeOmega endpoint now includes all three Monad equations:
 
-- `free_probabilistic_eutt_bind_ret_l`;
-- `free_probabilistic_eutt_bind_ret_r`;
-- `free_probabilistic_eutt_bind_assoc`.
+- `free_peutt_bind_ret_l`;
+- `free_peutt_bind_ret_r`;
+- `free_peutt_bind_assoc`.
 
 The Functor surface is named explicitly rather than requiring clients to
 unfold its monadic implementation:
-`free_probabilistic_eutt_fmap_id`,
-`free_probabilistic_eutt_fmap_compose`, and
-`free_probabilistic_eutt_fmap_bind` provide identity, composition, and bind
+`free_peutt_fmap_id`,
+`free_peutt_fmap_compose`, and
+`free_peutt_fmap_bind` provide identity, composition, and bind
 naturality.
 
-`probabilistic_eutt` is registered as an `Equivalence`.  Tau, Vis, and fixed
+`peutt` is registered as an `Equivalence`.  Tau, Vis, and fixed
 measure Prob constructors have `Proper` instances, and
-`free_probabilistic_eutt_bind_Proper`,
-`free_probabilistic_eutt_fmap_Proper`, and
-`free_probabilistic_eutt_translate_Proper` support `setoid_rewrite` under
+`free_peutt_bind_Proper`,
+`free_peutt_fmap_Proper`, and
+`free_peutt_translate_Proper` support `setoid_rewrite` under
 bind, mapping, and event renaming.
 `semantic_lift_eq_Equivalence` registers coupling equality as a setoid, and
-`probabilistic_eutt_prob_measure_Proper` lets `Prob` rewrite both its measure
+`peutt_prob_measure_Proper` lets `Prob` rewrite both its measure
 and pointwise-related continuation.  The Enum regression rewrites a fair
 distribution to a split-mass representation without requiring list
 equality.
-`Examples/ProbabilisticEuttAlgebra.v` checks these uses rather than merely
+`Examples/PEuttAlgebra.v` checks these uses rather than merely
 checking that the theorem names elaborate.
 
 Iteration currently exposes canonical one-step unfolding and a
 syntax-directed congruence:
-`free_probabilistic_eutt_iter_unfold` and
-`free_probabilistic_eutt_iter_structural`.  The more general
-`free_probabilistic_eutt_iter_rel` is a heterogeneous relational-fusion law:
+`free_peutt_iter_unfold` and
+`free_peutt_iter_structural`.  The more general
+`free_peutt_iter_rel` is a heterogeneous relational-fusion law:
 the loops may have different state and result types, provided related states
-take `pstructural` steps whose sum results contain either related successor
+take `pstruct` steps whose sum results contain either related successor
 states or related final results.  The countdown regression uses `nat` versus
 `nat * unit` states and `nat` versus `bool` results.  Congruence is the
 identity-relation instance.  Fusion from merely behavioral (rather than
 structural) step hypotheses is now available for eventless unbounded loops:
-`free_probabilistic_eutt_iter_behavioral_rel` chooses complete step hitting
+`free_peutt_iter_behavioral_rel` chooses complete step hitting
 witnesses, couples related steps, iterates those couplings over complete
 rows, and uses the double-omega grid to obtain a heterogeneous loop
 equivalence.  Its steps may have unrelated syntax and finite schedules.  The
@@ -214,7 +227,7 @@ retry regression moves Tau from outside a fair sample into every sampled
 continuation; failed samples retry, so the loop has unboundedly many rounds.
 The eventful generalization now has an explicit native proof boundary:
 `free_iter_eventful_bisim_candidate` contains exactly related loop states,
-and `free_probabilistic_eutt_iter_eventful_of_generator_closed` derives the
+and `free_peutt_iter_eventful_of_generator_closed` derives the
 full behavioral fusion theorem from closure of that candidate under the
 stable-hitting generator.  This removes the eventless scheduling machinery
 from the remaining obligation.  As with generic effectful interpretation,
@@ -225,17 +238,17 @@ iteration step may collapse directly into the next recursive round before a
 stable head is exposed.
 
 Iteration naturality (the parameter identity) is now unconditional.
-`pstructural_iter_natural` proves structurally that post-processing a loop
+`pstruct_iter_natural` proves structurally that post-processing a loop
 result with a Kleisli continuation is equivalent to pushing that
 continuation into every successful step result;
-`free_probabilistic_eutt_iter_natural` exports the canonical endpoint.  Its
+`free_peutt_iter_natural` exports the canonical endpoint.  Its
 regression uses a visible read followed by a fair probabilistic retry and a
 Tau-producing postprocessor, so the law covers interaction and unbounded
 execution rather than only finite countdowns.
 
 The double-dagger/codiagonal identity is also proved structurally by
-`pstructural_iter_codiagonal` and exported as
-`free_probabilistic_eutt_iter_codiagonal`.  Its joint invariant distinguishes
+`pstruct_iter_codiagonal` and exported as
+`free_peutt_iter_codiagonal`.  Its joint invariant distinguishes
 the complete nested loop, an inner loop waiting for the outer handler, and
 the flattened execution of a common step subtree.  The regression combines
 a visible read with fair sampling so that both the inner-retry and
@@ -244,17 +257,17 @@ outer-retry branches can occur for unboundedly many rounds.
 `PTree.interp` and its pure renaming instance `PTree.translate` are guarded
 corecursive operations.  Interpretation inserts an administrative Tau at a
 handled Vis.  `observe_interp` and the four shallow Ret/Tau/Vis/Prob equations
-make this operational choice explicit.  `pstructural_interp` proves that an
+make this operational choice explicit.  `pstruct_interp` proves that an
 arbitrary handler preserves structural equivalence, including handlers that
 perform internal or visible target computation before returning.  Its
 canonical FreeOmega endpoint is
-`free_probabilistic_eutt_interp_structural`; canonical unfolding laws and
-`free_probabilistic_eutt_translate_structural` are also exported.
+`free_peutt_interp_structural`; canonical unfolding laws and
+`free_peutt_translate_structural` are also exported.
 
-`pstructural_interp_bind` uses a dedicated coinductive closure to track
+`pstruct_interp_bind` uses a dedicated coinductive closure to track
 handler execution together with bind reassociation.  It permits the handler
 to run arbitrary target-side Tau/Vis/Prob structure before returning.
-`free_probabilistic_eutt_interp_bind` exposes the resulting canonical monad
+`free_peutt_interp_bind` exposes the resulting canonical monad
 morphism equation, and `canonical_interp_bind_regression` checks it at the
 Enum-to-FreeOmega endpoint.
 
@@ -268,37 +281,37 @@ and direct `PTree.interp` execution are mutually cofinal for every source
 tree and every effectful handler.  The finite schedules are `n` and `2*n`;
 there is no AST, boundedness, or eventlessness premise.
 
-`free_probabilistic_eutt_interp_of_head_lifts` is the corresponding
+`free_peutt_interp_of_head_lifts` is the corresponding
 kernel-level preservation rule.  It takes one coupling of the completed
 source heads and a coupling of the completed interpreted behavior of every
 related head, then combines them with `FOQLBind` and concludes canonical
-`probabilistic_eutt` for the whole interpreted programs.  Thus the remaining
+`peutt` for the whole interpreted programs.  Thus the remaining
 fully generic preservation proof is isolated to constructing the guarded
 family of per-head couplings; scheduling and limit composition are no longer
 mixed into that coinductive argument.
 
 Interpretation also commutes with guarded iteration.  The structural proof
-`pstructural_interp_iter` uses one joint coinductive invariant containing the
+`pstruct_interp_iter` uses one joint coinductive invariant containing the
 main loop, the bind exposed by an unfolding, and the additional bind in
 which an effectful handler may execute.  Its canonical endpoint is
-`free_probabilistic_eutt_interp_iter`.  This law has no AST, finite-fuel, or
+`free_peutt_interp_iter`.  This law has no AST, finite-fuel, or
 productivity premise: it reorganizes the same guarded computation rather
 than evaluating a handler in advance.  `canonical_interp_iter_regression`
 checks the law on an eventful loop whose handler inserts an administrative
 Tau.
 
-Sequential effect handlers also compose.  `pstructural_interp_compose`
+Sequential effect handlers also compose.  `pstruct_interp_compose`
 tracks the two interpreters, the bind introduced by the first handler, and
 the reassociation needed while the second handler executes;
-`free_probabilistic_eutt_interp_compose` is its canonical endpoint.  Neither
+`free_peutt_interp_compose` is its canonical endpoint.  Neither
 handler is required to be pure.  The regression sends a source event through
 a Tau/Vis-producing first handler and then replaces the intermediate Vis by
 a Prob node in the second handler.
 
 Handlers also support pointwise replacement at the structural baseline.
-`pstructural_interp_handler` proves that structurally related handlers yield
+`pstruct_interp_handler` proves that structurally related handlers yield
 structurally related interpretations, and
-`free_probabilistic_eutt_interp_handler` exports the canonical endpoint.
+`free_peutt_interp_handler` exports the canonical endpoint.
 The regression replaces a handler by a non-definitionally-equal version
 containing a monadic redex under Tau.
 
@@ -308,22 +321,22 @@ structural rule above.  `free_translate_approx_forward` and
 mutual finite-approximant inclusion.  `free_translate_hitting_cofinal` lifts
 them through the FreeOmega cofinal quotient, and
 `free_translate_hitting_lift` transports arbitrary complete hitting
-witnesses.  `free_probabilistic_eutt_translate` then glues the left transport,
+witnesses.  `free_peutt_translate` then glues the left transport,
 the source behavioral head coupling, and the right transport inside native
-coinduction.  Its hypothesis is arbitrary `probabilistic_eutt`, not
-`pstructural`.  The regression renames `sourceE` to a distinct `renamedE`
+coinduction.  Its hypothesis is arbitrary `peutt`, not
+`pstruct`.  The regression renames `sourceE` to a distinct `renamedE`
 signature.
 
 Identity interpretation is also a proved behavioral unit.
-`free_probabilistic_eutt_translate_id` transports complete hitting behavior
+`free_peutt_translate_id` transports complete hitting behavior
 on only the interpreted side and closes translated visible continuations by
-native coinduction; `free_probabilistic_eutt_interp_trigger` exposes the law
+native coinduction; `free_peutt_interp_trigger` exposes the law
 as `interp trigger t ≈ₚ t`.  This cannot be a structural equation because
 guarded interpretation inserts Tau before Vis.  The regression exercises an
 actual visible `GetBit` event.
 
 Pure renaming is functorial as well:
-`free_probabilistic_eutt_translate_compose` proves
+`free_peutt_translate_compose` proves
 `translate g (translate f t) ≈ₚ translate (g ∘ f) t`.  Because two guarded
 interpreters insert more Tau structure than one, this is proved by gluing
 source-to-intermediate-to-left hitting transport with direct
@@ -331,14 +344,14 @@ source-to-right transport, not by structural equality.  The regression uses
 three distinct event signatures (`AskBit`, `GetBit`, and `ReadBit`).
 
 This is a sound handler layer, not an unconditional ITree-style claim that
-`interp` preserves arbitrary `probabilistic_eutt`.  Effectful-handler
+`interp` preserves arbitrary `peutt`.  Effectful-handler
 composition, `interp_iter`, and pure `translate` preservation are complete.
 
 The remaining law now has an exact generator-level interface in the focused
 `OperationalProbabilisticPTSFreeOmegaInterp` module.
 `free_interp_bisim_candidate` relates precisely interpretations of source
-trees already related by `probabilistic_eutt`, and
-`free_probabilistic_eutt_interp_of_generator_closed` proves full effectful
+trees already related by `peutt`, and
+`free_peutt_interp_of_generator_closed` proves full effectful
 interpreter preservation from closure of that candidate.  Thus the open
 proof obligation is specifically candidate-level closure of the binds
 produced by handled visible heads; primitive scheduling, complete hitting,
@@ -348,7 +361,7 @@ The generic layer now includes a sound heterogeneous up-to-bind theorem.
 fixed point, and binds whose continuations return to either relation;
 `bind_upto_closure_compatible` proves generator compatibility without using
 the final bind congruence, and
-`probabilistic_eutt_coinduction_upto_bind` exposes the resulting proof rule.
+`peutt_coinduction_upto_bind` exposes the resulting proof rule.
 This closes the previously missing bind-compatibility theorem itself.
 
 It does not, by itself, prove arbitrary effectful interpretation.  When a
@@ -364,7 +377,7 @@ axiom and not ordinary bind compatibility.
 The bounded audit now exposes that last premise directly.
 `free_interp_vis_fusion` asks only for generator progress of a pair of
 handled `Vis` heads whose source continuations are pointwise canonically
-equivalent.  `free_probabilistic_eutt_interp_of_vis_fusion` proves full
+equivalent.  `free_peutt_interp_of_vis_fusion` proves full
 effectful `interp` preservation from it, deriving source hitting, Ret-head
 matching, outer interpreter cofinality, and coupling composition from the
 maintained library.  This is strictly narrower than the older whole-
@@ -379,7 +392,7 @@ Dirac elimination is now explicit rather than axiomatized accidentally.
 `SemanticMeasureDiracAELaws` characterizes AE predicates on node Dirac
 measures, while `MixedMeasureUnitLaws` states that mixed binding a node Dirac
 is coupled to its selected continuation.  Under these capabilities,
-`probabilistic_eutt_prob_ret` proves
+`peutt_prob_ret` proves
 `Prob (sem_ret x) k ≈ₚ k x`.  Enum supplies the exact Dirac AE law and the
 FreeOmega observable quotient contains the corresponding
 `FOQLSampleRetL` equation; `canonical_prob_ret_regression` checks the complete
@@ -388,7 +401,7 @@ checked independently in `SubEnumRegression.v`.
 
 Nested sampling is handled by a second optional capability,
 `MixedMeasureNodeBindLaws`, which couples a node-level Kleisli bind with two
-successive mixed binds.  Under it, `probabilistic_eutt_prob_flatten` proves
+successive mixed binds.  Under it, `peutt_prob_flatten` proves
 that two consecutive `Prob` nodes equal one node sampling the bound measure.
 `SemanticMeasureBindAEExactLaws` supplies the additional reverse direction
 of node-bind AE/support decomposition needed by a quotient backend.  Enum
@@ -402,10 +415,10 @@ machine-audited for the canonical bounded SubEnum endpoint.
 
 Independent sampling interchange is expressed by the optional relational
 Fubini capability `MixedMeasureCommutativeLaws`.  Under that capability,
-`probabilistic_eutt_prob_interchange` exchanges two nested `Prob` nodes with
+`peutt_prob_interchange` exchanges two nested `Prob` nodes with
 dependent continuations by coupling their complete hitting limits.  A fixed
 pair of measures may instead use `mixed_measure_exchange` and
-`probabilistic_eutt_prob_interchange_of`.
+`peutt_prob_interchange_of`.
 
 For FreeOmega, `free_omega_ae_sample2_product_iff` identifies nested-sample
 AE with product-node AE.  `free_omega_support_lift_sample_exchange` transports
@@ -431,7 +444,7 @@ carrier rather than inferred from the generic relation.
 `Prob/TwoLevelMeasureEnum.v` proves
 `enum_sem_same_mass_zero_ret_bool`: the empty subdistribution cannot be
 coupled with a Boolean point mass.  Together with
-`probabilistic_eutt_not_of_mass_mismatch`, unequal termination probability is
+`peutt_not_of_mass_mismatch`, unequal termination probability is
 observable and partial divergence cannot be silently identified with total
 return.
 
@@ -449,7 +462,7 @@ Enum and MathComp remain concrete instances of the generic measure API.
 
 `Eq/UnifiedFrontier.v` defines stable heads, `frontier_head_rel`, and the
 single structured `frontier` certificate.  Frontier is not a behavioral
-equivalence.  `probabilistic_eutt_of_frontiers` first interprets two
+equivalence.  `peutt_of_frontiers` first interprets two
 frontiers as canonical primitive stable-hitting limits and then applies the
 canonical coupling relation.
 
@@ -460,7 +473,7 @@ constructor.
 
 `stable_hitting_bisim_coinduction` is the public, syntax-independent corec
 rule: every post-fixed stable-hitting candidate is contained in the
-canonical greatest fixed point.  `probabilistic_eutt_of_iter_certificates`
+canonical greatest fixed point.  `peutt_of_iter_certificates`
 is the `PTree.iter` instance.  It combines two `UFIter` certificates and a
 coupling of their completed results; neither corecursion nor iteration adds
 a case to the behavioral generator.  The formerly duplicated
@@ -468,8 +481,8 @@ a case to the behavioral generator.  The formerly duplicated
 derived lemma over `UFIter`.
 
 The PTree-facing guarded proof API also provides
-`probabilistic_eutt_coinduction_upto`: recursive obligations may close either
-in the user candidate or in an already established `probabilistic_eutt`.
+`peutt_coinduction_upto`: recursive obligations may close either
+in the user candidate or in an already established `peutt`.
 `stable_hitting_match_vis` packages a common visible guard, including hitting
 uniqueness and the Dirac head coupling.  On FreeOmega,
 `free_stable_hitting_weak_bind_ret_only` composes an almost-everywhere
@@ -481,7 +494,7 @@ generator cases.
 At the generator boundary, `stable_hitting_match_of_hitting_lift` turns two
 complete hitting witnesses plus one coupling directly into the required
 bidirectional match.  Hitting uniqueness performs both transports.  The
-canonical endpoint rule `probabilistic_eutt_of_hitting_lift` and the
+canonical endpoint rule `peutt_of_hitting_lift` and the
 after-request phase of the interactive service are instances of this single
 rule.
 
@@ -496,14 +509,14 @@ The older `PWeak*` modules and their `apweak`, `auweak`, and `auequiv`
 endpoints have now been removed.  Bernoulli, rational, and Von Neumann source
 files retain only program definitions plus analytic convergence/AST
 certificates; their behavioral theorems live in the corresponding
-`Operational*` files and end in `probabilistic_eutt`.  The obsolete
+`Operational*` files and end in `peutt`.  The obsolete
 `ProbabilisticPTS`, `UnifiedFrontierEnumFacts`, finite-bind counterexample,
 and old MathComp factory client were removed with the closed legacy
 dependency subgraph.
 
 ## Semantic regression examples
 
-The maintained examples end directly in `probabilistic_eutt`:
+The maintained examples end directly in `peutt`:
 
 - finite nested Enum sampling versus a merged sampler;
 - binary rational sampling versus a direct rational coin;
@@ -524,12 +537,12 @@ iteration design in the behavioral relation.
 
 `Examples/BernoulliFactoryComposition.v` adds a parametric compositional
 endpoint. The sampler is an explicit argument of `factory_with_sampler`;
-its congruence theorem uses `free_probabilistic_eutt_bind` and
-`free_probabilistic_eutt_iter_behavioral_rel` for the empty event signature.
+its congruence theorem uses `free_peutt_bind` and
+`free_peutt_iter_behavioral_rel` for the empty event signature.
 The VN-to-fair theorem proves the support coupling for arbitrary normalized,
 nondegenerate rational source weights. The fair factory is related to the
 standard binary loop, then to direct sampling. The final VN factory theorem
-uses `probabilistic_eutt_trans` through the fair factory without either
+uses `peutt_trans` through the fair factory without either
 example-specific support premise. `OperationalFactoryRationalSupportLaws`
 has been replaced by a proved `operational_factory_standard_q_support`.
 The legacy monolithic route still takes `OperationalFactoryStepSupportLaws`;
@@ -581,7 +594,7 @@ head forms, coupled to four abstract heads by `mixed_heads_lift`. Each
 matched Reply demands the simulation for every acknowledgement; the next
 hidden state is h on ack=true and r on ack=false.
 `mixed_protocol_sim_postfixed` uses Root/After phases, and
-`masked_protocol_equivalent` applies plain `probabilistic_eutt_coinduction`.
+`masked_protocol_equivalent` applies plain `peutt_coinduction`.
 `masked_after_heads_denote_four` exposes the challenge-dependent stable-head
 observation extensionally; `masked_after_stable_hitting` ties it to the
 implementation's complete-hitting witness.
@@ -615,7 +628,7 @@ ordinary concrete traces.
 `finite_trace_query_singleton_iff_next_event_query` proves that the old
 next-event query is precisely the singleton specialization.
 `finite_trace_query_related` gives witness independence up to coupling, and
-`probabilistic_eutt_preserves_finite_trace_query` proves that canonical
+`peutt_preserves_finite_trace_query` proves that canonical
 equivalence preserves every finite cylinder.  The proof uses coupling AE
 transport and restriction at each prefix step; it is not a syntactic replay
 of the two programs.
@@ -624,10 +637,10 @@ The certificate semantics is total on backends providing
 `SemanticMeasureOrderLaws`: `finite_trace_query_exists` constructs a query by
 induction over the finite prefix and uses `stable_hitting_exists` at each
 event boundary.  `finite_trace_query_unique_up_to_coupling` specializes the
-relational theorem to reflexive `probabilistic_eutt`.  Classical choice then
+relational theorem to reflexive `peutt`.  Classical choice then
 packages `finite_trace_sem` (canonical wrapper `finite_interaction_sem`), with
 `finite_trace_sem_spec` as its adequacy contract and
-`probabilistic_eutt_preserves_finite_trace_sem` as its canonical preservation
+`peutt_preserves_finite_trace_sem` as its canonical preservation
 theorem.  The generic result deliberately says `sem_lift eq`;
 identifying that with `sem_eq` requires a backend equality-reflection law.
 
@@ -673,7 +686,7 @@ separate migration; it is not part of the current compatibility claim.
 The maintained generic theorem deliberately does **not** claim
 
 ```text
-probabilistic_eutt eq (embed t) (embed u) <-> eutt t u
+peutt eq (embed t) (embed u) <-> eutt t u
 ```
 
 under the current `SemanticMeasure`.  The converse is not derivable
@@ -682,7 +695,7 @@ interface gives positive coupling constructors and algebraic closure laws,
 but it does not require couplings to separate unequal Dirac measures, reflect
 zero mass, or invert a coupling of stable heads.  An implementation whose
 `sem_lift` relates every pair satisfies the basic positive laws and makes
-`probabilistic_eutt` universal, while ITree `eutt` is not universal.
+`peutt` universal, while ITree `eutt` is not universal.
 
 An exact backend-qualified correspondence therefore requires a separate
 separation package with at least:

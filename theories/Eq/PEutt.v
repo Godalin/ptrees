@@ -329,7 +329,7 @@ End StableHittingBisimulationComposition.
 
 (** PTree instantiation.  PTree syntax occurs only in the primitive kernel
     and in the relation on stable Ret/Vis heads. *)
-Section ProbabilisticEutt.
+Section PEutt.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
@@ -354,7 +354,7 @@ Proof.
   intros t1 t2 Hrel. exact (Hsim _ _ Hrel).
 Qed.
 
-Definition probabilistic_eutt_state :
+Definition peutt_state :
     ptree' E MN R1 -> ptree' E MN R2 -> Prop :=
   @stable_hitting_bisim MF FI FC FO
     (ptree' E MN R1) (ptree' E MN R2)
@@ -363,12 +363,12 @@ Definition probabilistic_eutt_state :
     (@ptree_primitive_kernel E MN MF FI MX R2)
     ptree_stable_head_rel ptree_stable_head_rel_mono.
 
-Definition probabilistic_eutt
+Definition peutt
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) : Prop :=
-  probabilistic_eutt_state (observe t1) (observe t2).
+  peutt_state (observe t1) (observe t2).
 
 (** PTree-facing specialization of the generic corecursive rule. *)
-Theorem probabilistic_eutt_coinduction
+Theorem peutt_coinduction
     (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
     (Hpost : forall s1 s2, sim s1 s2 ->
       stable_hitting_match
@@ -377,16 +377,16 @@ Theorem probabilistic_eutt_coinduction
         ptree_stable_head_rel
         sim s1 s2) :
   forall t1 t2, sim (observe t1) (observe t2) ->
-    probabilistic_eutt t1 t2.
+    peutt t1 t2.
 Proof.
   intros t1 t2 Hsim.
   eapply stable_hitting_bisim_coinduction; eauto.
 Qed.
 
 (** PTree-facing form of compatible-closure coinduction.  The closure is a
-    proof device only; the definition and generator of [probabilistic_eutt]
+    proof device only; the definition and generator of [peutt]
     remain unchanged. *)
-Theorem probabilistic_eutt_coinduction_upto_closure
+Theorem peutt_coinduction_upto_closure
     (clo : (ptree' E MN R1 -> ptree' E MN R2 -> Prop) ->
       ptree' E MN R1 -> ptree' E MN R2 -> Prop)
     (Hinclude : forall sim s1 s2, sim s1 s2 -> clo sim s1 s2)
@@ -408,7 +408,7 @@ Theorem probabilistic_eutt_coinduction_upto_closure
         (@ptree_primitive_kernel E MN MF FI MX R2)
         ptree_stable_head_rel (clo sim) s1 s2) :
   forall t1 t2, sim (observe t1) (observe t2) ->
-    probabilistic_eutt t1 t2.
+    peutt t1 t2.
 Proof.
   intros t1 t2 Hsim.
   eapply stable_hitting_bisim_coinduction_upto_closure; eauto.
@@ -418,21 +418,21 @@ Qed.
     either remain in the user candidate or close with an equivalence that has
     already been established.  This is the basic sound guarded-context API;
     it changes only the proof principle, never the behavioral generator. *)
-Theorem probabilistic_eutt_coinduction_upto
+Theorem peutt_coinduction_upto
     (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
     (Hpost : forall s1 s2, sim s1 s2 ->
       stable_hitting_match
         (@ptree_primitive_kernel E MN MF FI MX R1)
         (@ptree_primitive_kernel E MN MF FI MX R2)
         ptree_stable_head_rel
-        (fun x1 x2 => sim x1 x2 \/ probabilistic_eutt_state x1 x2)
+        (fun x1 x2 => sim x1 x2 \/ peutt_state x1 x2)
         s1 s2) :
   forall t1 t2, sim (observe t1) (observe t2) ->
-    probabilistic_eutt t1 t2.
+    peutt t1 t2.
 Proof.
   intros t1 t2 Hsim.
-  eapply probabilistic_eutt_coinduction with
-    (sim := fun x1 x2 => sim x1 x2 \/ probabilistic_eutt_state x1 x2).
+  eapply peutt_coinduction with
+    (sim := fun x1 x2 => sim x1 x2 \/ peutt_state x1 x2).
   - intros s1 s2 [Hcandidate|Hknown].
     + exact (Hpost _ _ Hcandidate).
     + apply stable_hitting_bisim_unfold in Hknown.
@@ -445,9 +445,9 @@ Qed.
 
 (** The return relation itself is generalized outside the fixed-[RR]
     definition section below. *)
-End ProbabilisticEutt.
+End PEutt.
 
-Section ProbabilisticEuttRelationMonotonicity.
+Section PEuttRelationMonotonicity.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
@@ -460,17 +460,17 @@ Variable RR : R1 -> R2 -> Prop.
 (** Weakening of the return relation.  This is relational covariance of the
     canonical endpoint; recursive visible continuations stay in the
     coinduction candidate while return heads use [Hsub]. *)
-Theorem probabilistic_eutt_rel_mono
+Theorem peutt_rel_mono
     (RR' : R1 -> R2 -> Prop)
     (Hsub : forall r1 r2, RR r1 r2 -> RR' r1 r2) :
   forall t1 t2,
-    @probabilistic_eutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->
-    @probabilistic_eutt E MN MF FI FC MX FO R1 R2 RR' t1 t2.
+    @peutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->
+    @peutt E MN MF FI FC MX FO R1 R2 RR' t1 t2.
 Proof.
   intros t1 t2 Hsource.
-  eapply (@probabilistic_eutt_coinduction E MN MF FI FC MX FO
+  eapply (@peutt_coinduction E MN MF FI FC MX FO
     R1 R2 RR'
-    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)).
+    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)).
   - intros s1 s2 Hrel.
     apply stable_hitting_bisim_unfold in Hrel.
     unfold stable_hitting_match in Hrel |- *.
@@ -492,9 +492,9 @@ Proof.
   - exact Hsource.
 Qed.
 
-End ProbabilisticEuttRelationMonotonicity.
+End PEuttRelationMonotonicity.
 
-Section ProbabilisticEuttContinuation.
+Section PEuttContinuation.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
@@ -504,44 +504,44 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 Context {R1 R2 : Type}.
 Variable RR : R1 -> R2 -> Prop.
 
-Lemma probabilistic_eutt_unfold t1 t2 :
-  probabilistic_eutt RR t1 t2 ->
+Lemma peutt_unfold t1 t2 :
+  peutt RR t1 t2 ->
   stable_hitting_match
     (@ptree_primitive_kernel E MN MF FI MX R1)
     (@ptree_primitive_kernel E MN MF FI MX R2)
     (@ptree_stable_head_rel E MN R1 R2 RR)
-    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)
+    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)
     (observe t1) (observe t2).
 Proof.
   exact (stable_hitting_bisim_unfold (s1 := observe t1)
     (s2 := observe t2)).
 Qed.
 
-Lemma probabilistic_eutt_fold t1 t2 :
+Lemma peutt_fold t1 t2 :
   stable_hitting_match
     (@ptree_primitive_kernel E MN MF FI MX R1)
     (@ptree_primitive_kernel E MN MF FI MX R2)
     (@ptree_stable_head_rel E MN R1 R2 RR)
-    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)
+    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)
     (observe t1) (observe t2) ->
-  probabilistic_eutt RR t1 t2.
+  peutt RR t1 t2.
 Proof.
   exact (stable_hitting_bisim_fold (s1 := observe t1)
     (s2 := observe t2)).
 Qed.
 
-End ProbabilisticEuttContinuation.
+End PEuttContinuation.
 
 (** Public notation for the canonical behavioral equivalence.  It lives in
     [type_scope], matching ITree's [≈] convention while retaining a visible
     probabilistic subscript.  The bracketed form supports heterogeneous
     return relations. *)
-Notation "t ≈ₚ[ RR ] u" := (probabilistic_eutt RR t u)
+Notation "t ≈ₚ[ RR ] u" := (peutt RR t u)
   (at level 70, RR at next level, no associativity) : type_scope.
-Notation "t ≈ₚ u" := (probabilistic_eutt eq t u)
+Notation "t ≈ₚ u" := (peutt eq t u)
   (at level 70, no associativity) : type_scope.
 
-Section ProbabilisticEuttEndpoint.
+Section PEuttEndpoint.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
@@ -555,23 +555,23 @@ Variable RR : R1 -> R2 -> Prop.
 (** Extensional proof rule: implementations may have unrelated finite
     schedules (including bounded versus unbounded ones); only their complete
     stable-hitting limits are coupled. *)
-Lemma probabilistic_eutt_of_hitting_lift
+Lemma peutt_of_hitting_lift
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
   stable_hitting_weak
     (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
   stable_hitting_weak
     (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
   sem_lift (ptree_stable_head_rel RR
-    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->
-  probabilistic_eutt RR t1 t2.
+    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->
+  peutt RR t1 t2.
 Proof.
-  intros Hhit1 Hhit2 Hlift. apply probabilistic_eutt_fold.
+  intros Hhit1 Hhit2 Hlift. apply peutt_fold.
   eapply stable_hitting_match_of_hitting_lift; eauto.
 Qed.
 
-Lemma probabilistic_eutt_preserves_hitting_mass
+Lemma peutt_preserves_hitting_mass
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
-  probabilistic_eutt RR t1 t2 ->
+  peutt RR t1 t2 ->
   stable_hitting_weak
     (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
   stable_hitting_weak
@@ -579,7 +579,7 @@ Lemma probabilistic_eutt_preserves_hitting_mass
   sem_same_mass out1 out2.
 Proof.
   intros Hrel Hhit1 Hhit2.
-  apply probabilistic_eutt_unfold in Hrel.
+  apply peutt_unfold in Hrel.
   destruct Hrel as [Hforward _].
   destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
   apply sem_lift_same_mass in Hlift.
@@ -588,39 +588,39 @@ Proof.
   eapply stable_hitting_weak_unique; [exact Hhit2'|exact Hhit2].
 Qed.
 
-Lemma probabilistic_eutt_hitting_lift
+Lemma peutt_hitting_lift
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
-  probabilistic_eutt RR t1 t2 ->
+  peutt RR t1 t2 ->
   stable_hitting_weak
     (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
   stable_hitting_weak
     (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
   sem_lift (ptree_stable_head_rel RR
-    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2.
+    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2.
 Proof.
-  intros Hrel Hhit1 Hhit2. apply probabilistic_eutt_unfold in Hrel.
+  intros Hrel Hhit1 Hhit2. apply peutt_unfold in Hrel.
   destruct Hrel as [Hforward _].
   destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
   eapply sem_lift_proper_r; [|exact Hlift].
   eapply stable_hitting_weak_unique; eassumption.
 Qed.
 
-Corollary probabilistic_eutt_not_of_mass_mismatch
+Corollary peutt_not_of_mass_mismatch
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
   stable_hitting_weak
     (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
   stable_hitting_weak
     (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
   ~ sem_same_mass out1 out2 ->
-  ~ probabilistic_eutt RR t1 t2.
+  ~ peutt RR t1 t2.
 Proof.
   intros Hhit1 Hhit2 Hmass Hrel. apply Hmass.
-  eapply probabilistic_eutt_preserves_hitting_mass; eassumption.
+  eapply peutt_preserves_hitting_mass; eassumption.
 Qed.
 
-End ProbabilisticEuttEndpoint.
+End PEuttEndpoint.
 
-Section ProbabilisticEuttProbCongruence.
+Section PEuttProbCongruence.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
@@ -651,13 +651,13 @@ Proof.
   eapply operational_weak_prob; eassumption.
 Qed.
 
-Theorem probabilistic_eutt_prob {R1 R2 X1 X2}
+Theorem peutt_prob {R1 R2 X1 X2}
     (RR : R1 -> R2 -> Prop)
     (XR : X1 -> X2 -> Prop) (mu1 : MN X1) (mu2 : MN X2)
     (k1 : X1 -> ptree E MN R1) (k2 : X2 -> ptree E MN R2) :
   sem_lift XR mu1 mu2 ->
-  (forall x1 x2, XR x1 x2 -> probabilistic_eutt RR (k1 x1) (k2 x2)) ->
-  probabilistic_eutt RR (Prob mu1 k1) (Prob mu2 k2).
+  (forall x1 x2, XR x1 x2 -> peutt RR (k1 x1) (k2 x2)) ->
+  peutt RR (Prob mu1 k1) (Prob mu2 k2).
 Proof.
   intros Hmu Hk.
   assert (Hexists1 : forall x1, exists out,
@@ -672,7 +672,7 @@ Proof.
   { intro x2. apply stable_hitting_weak_exists. }
   destruct (choice _ Hexists1) as [front1 Hfront1].
   destruct (choice _ Hexists2) as [front2 Hfront2].
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - eapply stable_hitting_weak_prob with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros x _. exact (Hfront1 x).
@@ -681,11 +681,11 @@ Proof.
     + intros x _. exact (Hfront2 x).
   - eapply mixed_lift_bind; [exact Hmu|].
     intros x1 x2 Hx.
-    eapply probabilistic_eutt_hitting_lift;
+    eapply peutt_hitting_lift;
       [exact (Hk x1 x2 Hx)|exact (Hfront1 x1)|exact (Hfront2 x2)].
 Qed.
 
-End ProbabilisticEuttProbCongruence.
+End PEuttProbCongruence.
 
 Section PTreeStableHittingEquations.
 Context {E : Type -> Type} {MN MF : Type -> Type}
@@ -836,7 +836,7 @@ Qed.
 
 End PTreeStableHittingBind.
 
-Section ProbabilisticEuttEquivalence.
+Section PEuttEquivalence.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
@@ -879,48 +879,48 @@ Proof.
   - constructor. intro x. apply Hsim. eauto.
 Qed.
 
-Theorem probabilistic_eutt_state_refl :
-  Reflexive (@probabilistic_eutt_state E MN MF FI FC MX FO R R eq).
+Theorem peutt_state_refl :
+  Reflexive (@peutt_state E MN MF FI FC MX FO R R eq).
 Proof.
-  unfold probabilistic_eutt_state.
+  unfold peutt_state.
   apply stable_hitting_bisim_refl.
   intros sim Hsim. exact (ptree_stable_head_rel_refl Hsim).
 Qed.
 
-Theorem probabilistic_eutt_refl :
-  Reflexive (@probabilistic_eutt E MN MF FI FC MX FO R R eq).
+Theorem peutt_refl :
+  Reflexive (@peutt E MN MF FI FC MX FO R R eq).
 Proof.
-  intro t. apply probabilistic_eutt_state_refl.
+  intro t. apply peutt_state_refl.
 Qed.
 
-Theorem probabilistic_eutt_sym :
-  Symmetric (@probabilistic_eutt E MN MF FI FC MX FO R R eq).
+Theorem peutt_sym :
+  Symmetric (@peutt E MN MF FI FC MX FO R R eq).
 Proof.
   intros t1 t2 Hrel.
-  unfold probabilistic_eutt, probabilistic_eutt_state in Hrel |- *.
+  unfold peutt, peutt_state in Hrel |- *.
   eapply stable_hitting_bisim_converse; [|exact Hrel].
   intros sim a1 a2 Har. exact (ptree_stable_head_rel_converse Har).
 Qed.
 
-Theorem probabilistic_eutt_trans :
-  Transitive (@probabilistic_eutt E MN MF FI FC MX FO R R eq).
+Theorem peutt_trans :
+  Transitive (@peutt E MN MF FI FC MX FO R R eq).
 Proof.
   intros t1 t2 t3 H12 H23.
-  unfold probabilistic_eutt, probabilistic_eutt_state in H12, H23 |- *.
+  unfold peutt, peutt_state in H12, H23 |- *.
   eapply stable_hitting_bisim_compose; [|exact H12|exact H23].
   intros sim12 sim23 sim13 Hsim a1 a3 Hheads.
   exact (ptree_stable_head_rel_compose Hsim Hheads).
 Qed.
 
-Global Instance probabilistic_eutt_equivalence :
-  Equivalence (@probabilistic_eutt E MN MF FI FC MX FO R R eq) :=
-  {| Equivalence_Reflexive := probabilistic_eutt_refl;
-     Equivalence_Symmetric := probabilistic_eutt_sym;
-     Equivalence_Transitive := probabilistic_eutt_trans |}.
+Global Instance peutt_equivalence :
+  Equivalence (@peutt E MN MF FI FC MX FO R R eq) :=
+  {| Equivalence_Reflexive := peutt_refl;
+     Equivalence_Symmetric := peutt_sym;
+     Equivalence_Transitive := peutt_trans |}.
 
-End ProbabilisticEuttEquivalence.
+End PEuttEquivalence.
 
-Section ProbabilisticEuttStructuralLaws.
+Section PEuttStructuralLaws.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
@@ -931,31 +931,31 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}.
 
-Lemma probabilistic_eutt_tau_l {R} (t : ptree E MN R) :
-  @probabilistic_eutt E MN MF FI FC MX FO R R eq (Tau t) t.
+Lemma peutt_tau_l {R} (t : ptree E MN R) :
+  @peutt E MN MF FI FC MX FO R R eq (Tau t) t.
 Proof.
-  apply probabilistic_eutt_fold. unfold stable_hitting_match. split.
+  apply peutt_fold. unfold stable_hitting_match. split.
   - intros out Htau. exists out. split.
     + apply (proj1 (stable_hitting_weak_tau_iff t out)). exact Htau.
     + apply sem_lift_refl. apply ptree_stable_head_rel_refl.
-      exact probabilistic_eutt_state_refl.
+      exact peutt_state_refl.
   - intros out Ht. exists out. split.
     + apply (proj2 (stable_hitting_weak_tau_iff t out)). exact Ht.
     + apply sem_lift_refl. apply ptree_stable_head_rel_refl.
-      exact probabilistic_eutt_state_refl.
+      exact peutt_state_refl.
 Qed.
 
-Lemma probabilistic_eutt_tau_r {R} (t : ptree E MN R) :
-  @probabilistic_eutt E MN MF FI FC MX FO R R eq t (Tau t).
+Lemma peutt_tau_r {R} (t : ptree E MN R) :
+  @peutt E MN MF FI FC MX FO R R eq t (Tau t).
 Proof.
-  apply probabilistic_eutt_sym. apply probabilistic_eutt_tau_l.
+  apply peutt_sym. apply peutt_tau_l.
 Qed.
 
-Lemma probabilistic_eutt_ret {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
+Lemma peutt_ret {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
   RR r1 r2 ->
-  @probabilistic_eutt E MN MF FI FC MX FO R1 R2 RR (Ret r1) (Ret r2).
+  @peutt E MN MF FI FC MX FO R1 R2 RR (Ret r1) (Ret r2).
 Proof.
-  intro Hrr. apply probabilistic_eutt_fold.
+  intro Hrr. apply peutt_fold.
   unfold stable_hitting_match. split.
   - intros out1 Hhit1. exists (sem_ret (FHRet r2)). split.
     + apply stable_hitting_weak_ret.
@@ -971,38 +971,38 @@ Proof.
       * apply sem_lift_ret. constructor. exact Hrr.
 Qed.
 
-Lemma probabilistic_eutt_vis {R1 R2 X} (RR : R1 -> R2 -> Prop)
+Lemma peutt_vis {R1 R2 X} (RR : R1 -> R2 -> Prop)
     (e : E X) (k1 : X -> ptree E MN R1) (k2 : X -> ptree E MN R2) :
-  (forall x, @probabilistic_eutt E MN MF FI FC MX FO R1 R2 RR
+  (forall x, @peutt E MN MF FI FC MX FO R1 R2 RR
       (k1 x) (k2 x)) ->
-  @probabilistic_eutt E MN MF FI FC MX FO R1 R2 RR
+  @peutt E MN MF FI FC MX FO R1 R2 RR
     (Vis e k1) (Vis e k2).
 Proof.
-  intro Hk. apply probabilistic_eutt_fold.
+  intro Hk. apply peutt_fold.
   apply stable_hitting_match_vis. exact Hk.
 Qed.
 
-#[global] Instance probabilistic_eutt_tau_Proper {R} :
-  Proper (probabilistic_eutt eq ==> probabilistic_eutt eq)
+#[global] Instance peutt_tau_Proper {R} :
+  Proper (peutt eq ==> peutt eq)
     (fun t : ptree E MN R => Tau t).
 Proof.
-  intros t1 t2 Ht. eapply probabilistic_eutt_trans.
-  - apply probabilistic_eutt_tau_l.
-  - eapply probabilistic_eutt_trans; [exact Ht|].
-    apply probabilistic_eutt_tau_r.
+  intros t1 t2 Ht. eapply peutt_trans.
+  - apply peutt_tau_l.
+  - eapply peutt_trans; [exact Ht|].
+    apply peutt_tau_r.
 Qed.
 
-#[global] Instance probabilistic_eutt_vis_Proper {R X} (e : E X) :
-  Proper (pointwise_relation X (probabilistic_eutt eq) ==>
-    probabilistic_eutt eq)
+#[global] Instance peutt_vis_Proper {R X} (e : E X) :
+  Proper (pointwise_relation X (peutt eq) ==>
+    peutt eq)
     (fun k : X -> ptree E MN R => Vis e k).
 Proof.
-  intros k1 k2 Hk. apply probabilistic_eutt_vis. exact Hk.
+  intros k1 k2 Hk. apply peutt_vis. exact Hk.
 Qed.
 
-End ProbabilisticEuttStructuralLaws.
+End PEuttStructuralLaws.
 
-Section ProbabilisticEuttProbRewriting.
+Section PEuttProbRewriting.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
@@ -1020,22 +1020,22 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 (** Transport a sampling node across an extensional coupling of its node
     measures.  This is the canonical measure-equivalence rewriting rule;
     list or representation equality is neither required nor exposed. *)
-Corollary probabilistic_eutt_prob_measure {R X}
+Corollary peutt_prob_measure {R X}
     (mu1 mu2 : MN X) (k : X -> ptree E MN R) :
   sem_lift eq mu1 mu2 ->
-  probabilistic_eutt eq (Prob mu1 k) (Prob mu2 k).
+  peutt eq (Prob mu1 k) (Prob mu2 k).
 Proof.
-  intro Hmu. eapply probabilistic_eutt_prob with (XR := eq).
+  intro Hmu. eapply peutt_prob with (XR := eq).
   - exact Hmu.
-  - intros x1 x2 ->. apply probabilistic_eutt_refl.
+  - intros x1 x2 ->. apply peutt_refl.
 Qed.
 
 (** Dirac elimination is available exactly for backends whose two-level
     semantic quotient declares node return to be a mixed-bind left unit. *)
-Theorem probabilistic_eutt_prob_ret {R X}
+Theorem peutt_prob_ret {R X}
     `{MU : @MixedMeasureUnitLaws MN MF NI FI MX}
     (x : X) (k : X -> ptree E MN R) :
-  probabilistic_eutt eq (Prob (sem_ret x) k) (k x).
+  peutt eq (Prob (sem_ret x) k) (k x).
 Proof.
   assert (Hexists : forall y, exists out,
       stable_hitting_weak
@@ -1043,7 +1043,7 @@ Proof.
         (observe (k y)) out).
   { intro y. apply stable_hitting_weak_exists. }
   destruct (choice _ Hexists) as [front Hfront].
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - eapply stable_hitting_weak_prob with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros y _. exact (Hfront y).
@@ -1051,16 +1051,16 @@ Proof.
   - eapply sem_lift_mono.
     + intros h1 h2 ->. destruct h2.
       * constructor. reflexivity.
-      * constructor. intro y. apply probabilistic_eutt_refl.
+      * constructor. intro y. apply peutt_refl.
     + apply mixed_bind_ret_l.
 Qed.
 
 (** Flatten two consecutive sampling nodes when node-level Kleisli
     composition is compatible with mixed binding into behavioral measures. *)
-Theorem probabilistic_eutt_prob_flatten {R X Y}
+Theorem peutt_prob_flatten {R X Y}
     `{NB : @MixedMeasureNodeBindLaws MN MF NI FI MX}
     (mu : MN X) (h : X -> MN Y) (k : Y -> ptree E MN R) :
-  probabilistic_eutt eq
+  peutt eq
     (Prob mu (fun x => Prob (h x) k))
     (Prob (sem_bind mu h) k).
 Proof.
@@ -1070,7 +1070,7 @@ Proof.
         (observe (k y)) out).
   { intro y. apply stable_hitting_weak_exists. }
   destruct (choice _ Hexists) as [front Hfront].
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - eapply stable_hitting_weak_prob with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros x _. eapply stable_hitting_weak_prob with
@@ -1083,17 +1083,17 @@ Proof.
   - eapply sem_lift_mono.
     + intros h1 h2 ->. destruct h2.
       * constructor. reflexivity.
-      * constructor. intro z. apply probabilistic_eutt_refl.
+      * constructor. intro z. apply peutt_refl.
     + apply mixed_bind_node_assoc.
 Qed.
 
 (** Exchange two independent sampling nodes.  Commutativity is supplied by
     the two-level backend and is not assumed by the canonical generator. *)
-Theorem probabilistic_eutt_prob_interchange_of {R X Y}
+Theorem peutt_prob_interchange_of {R X Y}
     (mu : MN X) (nu : MN Y)
     (Hexchange : mixed_measure_exchange mu nu)
     (k : X -> Y -> ptree E MN R) :
-  probabilistic_eutt eq
+  peutt eq
     (Prob mu (fun x => Prob nu (fun y => k x y)))
     (Prob nu (fun y => Prob mu (fun x => k x y))).
 Proof.
@@ -1103,7 +1103,7 @@ Proof.
         (observe (k (fst p) (snd p))) out).
   { intro p. apply stable_hitting_weak_exists. }
   destruct (choice _ Hexists) as [front Hfront].
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - eapply stable_hitting_weak_prob with (Good := fun _ => True).
     + apply sem_ae_true.
     + intros x _. eapply stable_hitting_weak_prob with
@@ -1119,26 +1119,26 @@ Proof.
   - eapply Hexchange.
     intros x y. apply sem_lift_refl. intros h. destruct h.
     + constructor. reflexivity.
-    + constructor. intro z. apply probabilistic_eutt_refl.
+    + constructor. intro z. apply peutt_refl.
 Qed.
 
-Corollary probabilistic_eutt_prob_interchange {R X Y}
+Corollary peutt_prob_interchange {R X Y}
     `{MC : @MixedMeasureCommutativeLaws MN MF NI FI MX}
     (mu : MN X) (nu : MN Y)
     (k : X -> Y -> ptree E MN R) :
-  probabilistic_eutt eq
+  peutt eq
     (Prob mu (fun x => Prob nu (fun y => k x y)))
     (Prob nu (fun y => Prob mu (fun x => k x y))).
 Proof.
-  eapply probabilistic_eutt_prob_interchange_of.
+  eapply peutt_prob_interchange_of.
   apply mixed_lift_exchange.
 Qed.
 
-#[global] Instance probabilistic_eutt_prob_Proper {R X} (mu : MN X) :
-  Proper (pointwise_relation X (probabilistic_eutt eq) ==>
-    probabilistic_eutt eq) (fun k : X -> ptree E MN R => Prob mu k).
+#[global] Instance peutt_prob_Proper {R X} (mu : MN X) :
+  Proper (pointwise_relation X (peutt eq) ==>
+    peutt eq) (fun k : X -> ptree E MN R => Prob mu k).
 Proof.
-  intros k1 k2 Hk. eapply probabilistic_eutt_prob with (XR := eq).
+  intros k1 k2 Hk. eapply peutt_prob with (XR := eq).
   - apply sem_lift_refl. intro x. reflexivity.
   - intros x1 x2 ->. exact (Hk x2).
 Qed.
@@ -1157,22 +1157,22 @@ Proof.
     + eapply sem_lift_comp; eassumption.
 Qed.
 
-#[global] Instance probabilistic_eutt_prob_measure_Proper {R X} :
+#[global] Instance peutt_prob_measure_Proper {R X} :
   Proper
     (@sem_lift MN NI X X eq ==>
-      pointwise_relation X (probabilistic_eutt eq) ==>
-      probabilistic_eutt eq)
+      pointwise_relation X (peutt eq) ==>
+      peutt eq)
     (fun (mu : MN X) (k : X -> ptree E MN R) => Prob mu k).
 Proof.
   intros mu1 mu2 Hmu k1 k2 Hk.
-  eapply probabilistic_eutt_prob with (XR := eq).
+  eapply peutt_prob with (XR := eq).
   - exact Hmu.
   - intros x1 x2 ->. exact (Hk x2).
 Qed.
 
-End ProbabilisticEuttProbRewriting.
+End PEuttProbRewriting.
 
-Section ProbabilisticEuttBindCongruence.
+Section PEuttBindCongruence.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
@@ -1209,16 +1209,16 @@ Proof.
       (observe (k a)) out) Hexists).
 Qed.
 
-Lemma probabilistic_eutt_state_hitting_lift {R1 R2}
+Lemma peutt_state_hitting_lift {R1 R2}
     (RR : R1 -> R2 -> Prop)
     (s1 : ptree' E MN R1) (s2 : ptree' E MN R2) out1 out2 :
-  probabilistic_eutt_state RR s1 s2 ->
+  peutt_state RR s1 s2 ->
   stable_hitting_weak
     (@ptree_primitive_kernel E MN MF FI MX R1) s1 out1 ->
   stable_hitting_weak
     (@ptree_primitive_kernel E MN MF FI MX R2) s2 out2 ->
   sem_lift (ptree_stable_head_rel RR
-    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2.
+    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2.
 Proof.
   intros Hrel Hhit1 Hhit2.
   apply stable_hitting_bisim_unfold in Hrel.
@@ -1240,16 +1240,16 @@ Definition bind_upto_closure (A B : Type) (RR0 : A -> B -> Prop)
     (sim : ptree' E MN A -> ptree' E MN B -> Prop)
     (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
   sim s1 s2 \/
-  probabilistic_eutt_state RR0 s1 s2 \/
+  peutt_state RR0 s1 s2 \/
   exists (R1 R2 : Type) (RR : R1 -> R2 -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
     (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN B),
     s1 = observe (PTree.bind t1 k1) /\
     s2 = observe (PTree.bind t2 k2) /\
-    probabilistic_eutt RR t1 t2 /\
+    peutt RR t1 t2 /\
     (forall r1 r2, RR r1 r2 ->
       sim (observe (k1 r1)) (observe (k2 r2)) \/
-      probabilistic_eutt RR0 (k1 r1) (k2 r2)).
+      peutt RR0 (k1 r1) (k2 r2)).
 
 Lemma bind_upto_closure_includes A B (RR0 : A -> B -> Prop) sim :
   forall s1 s2, sim s1 s2 ->
@@ -1279,7 +1279,7 @@ Qed.
 (** [bind_upto_closure] is compatible with the stable-hitting generator.
     The recursive continuation case consumes [Hprogress] directly at chosen
     hitting witnesses; the known case unfolds the final greatest fixed
-    point.  Thus this proof does not depend on [probabilistic_eutt_bind]. *)
+    point.  Thus this proof does not depend on [peutt_bind]. *)
 Lemma bind_upto_closure_compatible A B (RR0 : A -> B -> Prop) sim
     (Hprogress : forall s1 s2, sim s1 s2 ->
       stable_hitting_match
@@ -1311,7 +1311,7 @@ Proof.
       intros x1 x2 Hrel. right. left. exact Hrel.
   - destruct Hbind as
       (R1 & R2 & RR & t1 & t2 & k1 & k2 & -> & -> & Hsource & Hk).
-    apply probabilistic_eutt_unfold in Hsource.
+    apply peutt_unfold in Hsource.
     unfold stable_hitting_match in Hsource |- *.
     destruct Hsource as [Hforward Hbackward]. split.
     + intros hs1 Hhit1.
@@ -1348,7 +1348,7 @@ Proof.
               ** eapply sem_lift_mono.
                  --- apply ptree_stable_head_rel_mono.
                      intros x1 x2 Hrel. right. left. exact Hrel.
-                 --- eapply probabilistic_eutt_state_hitting_lift;
+                 --- eapply peutt_state_hitting_lift;
                        [exact Hknown|exact (Hfront1 r1)|exact (Hfront2 r2)].
            ++ apply sem_lift_ret. constructor. intro x. right. right.
               exists R1, R2, RR, (k0 x), (k3 x), k1, k2.
@@ -1389,7 +1389,7 @@ Proof.
               ** eapply sem_lift_mono.
                  --- apply ptree_stable_head_rel_mono.
                      intros x1 x2 Hrel. right. left. exact Hrel.
-                 --- eapply probabilistic_eutt_state_hitting_lift;
+                 --- eapply peutt_state_hitting_lift;
                        [exact Hknown|exact (Hfront1 r1)|exact (Hfront2 r2)].
            ++ apply sem_lift_ret. constructor. intro x. right. right.
               exists R1, R2, RR, (k0 x), (k3 x), k1, k2.
@@ -1399,7 +1399,7 @@ Proof.
 Qed.
 
 (** Sound coinduction up to monadic bind. *)
-Theorem probabilistic_eutt_coinduction_upto_bind A B
+Theorem peutt_coinduction_upto_bind A B
     (RR0 : A -> B -> Prop)
     (sim : ptree' E MN A -> ptree' E MN B -> Prop)
     (Hprogress : forall s1 s2, sim s1 s2 ->
@@ -1409,10 +1409,10 @@ Theorem probabilistic_eutt_coinduction_upto_bind A B
         (@ptree_stable_head_rel E MN A B RR0)
         (bind_upto_closure RR0 sim) s1 s2) :
   forall t1 t2, sim (observe t1) (observe t2) ->
-    probabilistic_eutt RR0 t1 t2.
+    peutt RR0 t1 t2.
 Proof.
   intros t1 t2 Hsim.
-  unfold probabilistic_eutt, probabilistic_eutt_state,
+  unfold peutt, peutt_state,
     stable_hitting_bisim.
   eapply (@leq_gfp _ _ (fstable_hitting_bisim
     (@ptree_primitive_kernel E MN MF FI MX A)
@@ -1429,14 +1429,14 @@ Qed.
     arbitrary related continuation. *)
 Definition bind_bisim_candidate (A : Type)
     (s1 s2 : ptree' E MN A) : Prop :=
-  probabilistic_eutt_state eq s1 s2 \/
+  peutt_state eq s1 s2 \/
   exists (R1 R2 : Type) (RR : R1 -> R2 -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
     (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A),
     s1 = observe (PTree.bind t1 k1) /\
     s2 = observe (PTree.bind t2 k2) /\
-    probabilistic_eutt RR t1 t2 /\
-    (forall r1 r2, RR r1 r2 -> probabilistic_eutt eq (k1 r1) (k2 r2)).
+    peutt RR t1 t2 /\
+    (forall r1 r2, RR r1 r2 -> peutt eq (k1 r1) (k2 r2)).
 
 Lemma bind_bisim_candidate_postfixed A :
   forall s1 s2, bind_bisim_candidate (A := A) s1 s2 ->
@@ -1462,7 +1462,7 @@ Proof.
       intros x1 x2 Hrel. left. exact Hrel.
   - destruct Hbind as
       [R1 [R2 [RR [t1 [t2 [k1 [k2 [-> [-> [Hsource Hk]]]]]]]]]].
-    apply probabilistic_eutt_unfold in Hsource.
+    apply peutt_unfold in Hsource.
     unfold stable_hitting_match in Hsource |- *.
     destruct Hsource as [Hforward Hbackward]. split.
     + intros hs1 Hhit1.
@@ -1494,7 +1494,7 @@ Proof.
         -- eapply sem_lift_mono.
            ++ apply ptree_stable_head_rel_mono.
               intros x1 x2 Hrel. left. exact Hrel.
-           ++ apply probabilistic_eutt_state_hitting_lift
+           ++ apply peutt_state_hitting_lift
                 with (s1 := observe (k1 r1)) (s2 := observe (k2 r2));
                 [exact (Hk r1 r2 H)|exact (Hfront1 r1)|exact (Hfront2 r2)].
         -- apply sem_lift_ret. constructor. intro x. right.
@@ -1531,7 +1531,7 @@ Proof.
         -- eapply sem_lift_mono.
            ++ apply ptree_stable_head_rel_mono.
               intros x1 x2 Hrel. left. exact Hrel.
-           ++ apply probabilistic_eutt_state_hitting_lift
+           ++ apply peutt_state_hitting_lift
                 with (s1 := observe (k1 r1)) (s2 := observe (k2 r2));
                 [exact (Hk r1 r2 H)|exact (Hfront1 r1)|exact (Hfront2 r2)].
         -- apply sem_lift_ret. constructor. intro x. right.
@@ -1544,17 +1544,17 @@ Qed.
 (** Monadic congruence.  The only syntax-specific premise is the current
     global form of the global/diagonal fuel cofinality theorem; it is used as
     a proof-side scheduling fact by [stable_hitting_weak_bind], never by the
-    definition of [probabilistic_eutt]. *)
-Theorem probabilistic_eutt_bind : forall A R1 R2
+    definition of [peutt]. *)
+Theorem peutt_bind : forall A R1 R2
     (RR : R1 -> R2 -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
     (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A),
-  probabilistic_eutt RR t1 t2 ->
-  (forall r1 r2, RR r1 r2 -> probabilistic_eutt eq (k1 r1) (k2 r2)) ->
-  probabilistic_eutt eq (PTree.bind t1 k1) (PTree.bind t2 k2).
+  peutt RR t1 t2 ->
+  (forall r1 r2, RR r1 r2 -> peutt eq (k1 r1) (k2 r2)) ->
+  peutt eq (PTree.bind t1 k1) (PTree.bind t2 k2).
 Proof.
   intros A R1 R2 RR t1 t2 k1 k2 Hsource Hk.
-  unfold probabilistic_eutt, probabilistic_eutt_state,
+  unfold peutt, peutt_state,
     stable_hitting_bisim.
   eapply (@leq_gfp _ _ (fstable_hitting_bisim
     (@ptree_primitive_kernel E MN MF FI MX A)
@@ -1569,21 +1569,21 @@ Qed.
 (** Generator-level unfolding of monadic congruence.  This exposes the
     complete stable-hitting match directly, which is useful when a larger
     coinductive context must compose with a completed bind proof. *)
-Lemma probabilistic_eutt_bind_match {A R1 R2}
+Lemma peutt_bind_match {A R1 R2}
     (RR : R1 -> R2 -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
     (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A) :
-  probabilistic_eutt RR t1 t2 ->
+  peutt RR t1 t2 ->
   (forall r1 r2, RR r1 r2 ->
-    probabilistic_eutt eq (k1 r1) (k2 r2)) ->
+    peutt eq (k1 r1) (k2 r2)) ->
   stable_hitting_match
     (@ptree_primitive_kernel E MN MF FI MX A)
     (@ptree_primitive_kernel E MN MF FI MX A)
     (@ptree_stable_head_rel E MN A A eq)
-    (probabilistic_eutt_state eq)
+    (peutt_state eq)
     (observe (PTree.bind t1 k1)) (observe (PTree.bind t2 k2)).
 Proof.
-  intros Hsource Hk. apply probabilistic_eutt_unfold in Hsource.
+  intros Hsource Hk. apply peutt_unfold in Hsource.
   unfold stable_hitting_match in Hsource |- *.
   destruct Hsource as [Hforward Hbackward]. split.
   - intros hs1 Hhit1.
@@ -1615,11 +1615,11 @@ Proof.
         -- eapply sem_lift_mono.
            ++ apply ptree_stable_head_rel_mono.
               intros s1 s2 Hrel. exact Hrel.
-           ++ apply probabilistic_eutt_state_hitting_lift
+           ++ apply peutt_state_hitting_lift
                 with (s1 := observe (k1 r1)) (s2 := observe (k2 r2));
                 [exact (Hk r1 r2 H)|exact (Hfront1 r1)|exact (Hfront2 r2)].
         -- apply sem_lift_ret. constructor. intro x.
-           eapply probabilistic_eutt_bind; [exact (H x)|]. exact Hk.
+           eapply peutt_bind; [exact (H x)|]. exact Hk.
   - intros hs2 Hhit2.
     destruct (stable_hitting_weak_exists
       (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2))
@@ -1649,16 +1649,16 @@ Proof.
         -- eapply sem_lift_mono.
            ++ apply ptree_stable_head_rel_mono.
               intros s1 s2 Hrel. exact Hrel.
-           ++ apply probabilistic_eutt_state_hitting_lift
+           ++ apply peutt_state_hitting_lift
                 with (s1 := observe (k1 r1)) (s2 := observe (k2 r2));
                 [exact (Hk r1 r2 H)|exact (Hfront1 r1)|exact (Hfront2 r2)].
         -- apply sem_lift_ret. constructor. intro x.
-           eapply probabilistic_eutt_bind; [exact (H x)|]. exact Hk.
+           eapply peutt_bind; [exact (H x)|]. exact Hk.
 Qed.
 
-End ProbabilisticEuttBindCongruence.
+End PEuttBindCongruence.
 
-Section ProbabilisticEuttFrontierRule.
+Section PEuttFrontierRule.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
@@ -1689,17 +1689,17 @@ Variable iter_productivity : forall I R
 
 (** Structured frontiers are proof certificates for the canonical
     stable-hitting semantics, not a second behavioral relation. *)
-Lemma probabilistic_eutt_of_frontiers {R1 R2}
+Lemma peutt_of_frontiers {R1 R2}
     (RR : R1 -> R2 -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
   frontier (observe t1) out1 ->
   frontier (observe t2) out2 ->
   sem_lift (ptree_stable_head_rel RR
-    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->
-  probabilistic_eutt RR t1 t2.
+    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->
+  peutt RR t1 t2.
 Proof.
   intros Hfront1 Hfront2 Hlift.
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - exact (frontier_to_primitive_stable_weak
       bind_cofinality iter_productivity Hfront1).
   - exact (frontier_to_primitive_stable_weak
@@ -1710,8 +1710,8 @@ Qed.
 (** [PTree.iter] instance of the structured/corecursive proof discipline.
     Iteration is discharged by two semantic frontier certificates and a
     coupling of their completed result measures; it is not a constructor of
-    [probabilistic_eutt]. *)
-Lemma probabilistic_eutt_of_iter_certificates
+    [peutt]. *)
+Lemma peutt_of_iter_certificates
     {I1 I2 R1 R2} (RR : R1 -> R2 -> Prop)
     (step1 : I1 -> ptree E MN (I1 + R1))
     (step2 : I2 -> ptree E MN (I2 + R2))
@@ -1731,15 +1731,15 @@ Lemma probabilistic_eutt_of_iter_certificates
   mixed_iter transition2 i2 out2 ->
   sem_total out2 ->
   sem_lift (ptree_stable_head_rel RR
-    (@probabilistic_eutt_state E MN MF FI FC MX FO R1 R2 RR))
+    (@peutt_state E MN MF FI FC MX FO R1 R2 RR))
     (sem_bind out1 (fun r => sem_ret (FHRet r)))
     (sem_bind out2 (fun r => sem_ret (FHRet r))) ->
-  probabilistic_eutt RR (PTree.iter step1 i1) (PTree.iter step2 i2).
+  peutt RR (PTree.iter step1 i1) (PTree.iter step2 i2).
 Proof.
   intros Hstep1 Hiter1 Htotal1 Hstep2 Hiter2 Htotal2 Hlift.
-  eapply probabilistic_eutt_of_frontiers; [| |exact Hlift].
+  eapply peutt_of_frontiers; [| |exact Hlift].
   - eapply frontier_iter_intro; eassumption.
   - eapply frontier_iter_intro; eassumption.
 Qed.
 
-End ProbabilisticEuttFrontierRule.
+End PEuttFrontierRule.

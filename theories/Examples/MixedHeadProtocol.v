@@ -13,7 +13,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts EnumMap
   TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
   OperationalProbabilisticPTS OperationalProbabilisticPTSFreeOmega
-  ProbabilisticEutt ProbabilisticTraceSubEnum.
+  PEutt ProbabilisticTraceSubEnum.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -153,7 +153,7 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure
 Local Notation kernel := (@ptree_primitive_kernel mixedE SubEnum MF FI FreeOmegaMixedMeasure bool).
 Local Notation hitting := (@stable_hitting_weak MF FI FreeOmegaObservableSemanticOmega
   (ptree' mixedE SubEnum bool) mixed_head kernel).
-Local Notation peutt := (@probabilistic_eutt mixedE SubEnum MF FI
+Local Notation peutt := (@peutt mixedE SubEnum MF FI
   FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
   FreeOmegaObservableSemanticOmega).
 
@@ -246,7 +246,7 @@ Qed.
 
 Theorem masked_protocol_equivalent m : peutt eq (masked_impl m) mixed_spec.
 Proof.
-  eapply probabilistic_eutt_coinduction with (sim := mixed_protocol_sim).
+  eapply peutt_coinduction with (sim := mixed_protocol_sim).
   - exact mixed_protocol_sim_postfixed.
   - apply MPSRoot.
 Qed.
@@ -363,8 +363,8 @@ Proof. destruct c; vm_compute; reflexivity. Qed.
 Theorem masked_challenge_true_reply_probability m c :
   Prₛ[ masked_impl m | challenge_true_reply_trace c ] = (if c then 1 / 8 else 3 / 8 : rat).
 Proof.
-  destruct (probabilistic_eutt_preserves_finite_trace_query
-    (probabilistic_eutt_sym (masked_protocol_equivalent m))
+  destruct (peutt_preserves_finite_trace_query
+    (peutt_sym (masked_protocol_equivalent m))
     (spec_challenge_true_reply_query c)) as [query [Hquery Hlift]].
   eapply subenum_finite_interaction_probability_intro
     with (query := query) (representative := spec_true_reply_query c)

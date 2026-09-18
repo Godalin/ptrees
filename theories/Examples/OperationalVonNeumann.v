@@ -12,7 +12,7 @@ From PTree.Prob Require Import MeasureIterationEnum.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting
   OperationalProbabilisticPTS
   OperationalProbabilisticPTSFreeOmega UnifiedFrontier
-  ProbabilisticEutt.
+  PEutt.
 From PTree.Examples Require Import VonNeumannUnbounded.
 
 Set Implicit Arguments.
@@ -935,8 +935,8 @@ Qed.
 (** Canonical endpoint: the unbounded retrying implementation and the
     one-step fair coin are compared only at their subprobabilistic
     stable-hitting limits. *)
-Theorem probabilistic_eutt_von_neumann_raw_direct :
-  @probabilistic_eutt vnE Enum MF
+Theorem peutt_von_neumann_raw_direct :
+  @peutt vnE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -945,14 +945,14 @@ Theorem probabilistic_eutt_von_neumann_raw_direct :
     FreeOmegaObservableSemanticOmega bool bool eq
     von_neumann_third direct_fair.
 Proof.
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - exact (proj1 operational_von_neumann_raw_ast).
   - exact (proj1 operational_vn_direct_ast).
   - exact (operational_vn_raw_heads_lift _).
 Qed.
 
-Theorem probabilistic_eutt_von_neumann_compiled_direct :
-  @probabilistic_eutt vnE Enum MF
+Theorem peutt_von_neumann_compiled_direct :
+  @peutt vnE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -961,7 +961,7 @@ Theorem probabilistic_eutt_von_neumann_compiled_direct :
     FreeOmegaObservableSemanticOmega bool bool eq
     operational_vn_compiled direct_fair.
 Proof.
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - exact (proj1 operational_vn_compiled_ast).
   - exact (proj1 operational_vn_direct_ast).
   - exact (operational_vn_heads_lift _).

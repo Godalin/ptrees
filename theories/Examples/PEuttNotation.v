@@ -4,7 +4,7 @@ Set Universe Polymorphism.
 
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
-From PTree.Eq Require Import OperationalProbabilisticPTS ProbabilisticEutt.
+From PTree.Eq Require Import OperationalProbabilisticPTS PEutt.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -18,14 +18,14 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
 
-Lemma probabilistic_eutt_notation_homogeneous {R}
+Lemma peutt_notation_homogeneous {R}
     (t u : ptree E MN R) :
-  (t ≈ₚ u) <-> probabilistic_eutt eq t u.
+  (t ≈ₚ u) <-> peutt eq t u.
 Proof. reflexivity. Qed.
 
-Lemma probabilistic_eutt_notation_heterogeneous {R1 R2}
+Lemma peutt_notation_heterogeneous {R1 R2}
     (RR : R1 -> R2 -> Prop) (t : ptree E MN R1) (u : ptree E MN R2) :
-  (t ≈ₚ[RR] u) <-> probabilistic_eutt RR t u.
+  (t ≈ₚ[RR] u) <-> peutt RR t u.
 Proof. reflexivity. Qed.
 
 End NotationRegression.

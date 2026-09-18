@@ -26,25 +26,44 @@ The public conceptual architecture has four layers and two semantic clients:
 PTree syntax (intensional representation)
   -> ptree_primitive_kernel
   -> stable_hitting / H(t) (extensional behavior)
-       -> probabilistic_eutt / ≈ₚ (relational reasoning)
+       -> peutt / ≈ₚ (relational reasoning)
        -> finite interaction observations / Prₜ[t | pattern] (quantitative)
 ```
 
 The generic public facade is `Eq/ProbabilisticSemantics.v`.  It imports its
-implementation dependencies without transitively exporting their historical
-short names, then exposes the curated semantic vocabulary and endpoint laws.
-PTree has one public behavioral equivalence: `probabilistic_eutt`, written
+implementation dependencies without transitively exporting implementation
+names, then exposes the curated semantic vocabulary and endpoint laws.
+PTree has one public behavioral equivalence: `peutt`, written
 `t ≈ₚ u` (or `t ≈ₚ[RR] u`).  It is the greatest fixed point obtained by coupling the
 stable-hitting behaviors of the two trees and recursively relating visible
 continuations.  Its definition has no Tau, Prob, Bind, Iter, or certificate
 constructor; the corresponding equations are derived laws.
 
-`frontier_certificate` (compatibility name `frontier`), `pstructural`, and
-`pstrong` belong to mechanization infrastructure.  The first is a
+Proofs may use the following strength hierarchy before promoting their result
+to the canonical behavioral endpoint:
+
+```text
+pstruct  ⊆  pstrong  ⊆  pfinite  ⊆  peutt
+```
+
+`pstruct` matches the tree representation exactly; `pstrong` retains
+lockstep control flow but permits coupled sampling measures; `pfinite` may
+remove an inductively finite number of one-sided `Tau` nodes and may collapse
+a stable-hitting prefix once its complete measure is attained at a finite
+approximant; `peutt` additionally admits genuinely unbounded internal
+probability through the omega limit.  In particular, `pfinite (Tau spin)
+spin` does not assert that `spin` terminates: only the removed prefix is
+finite.  The inclusions use Rocq's standard `subrelation`, and
+`PEuttRewrite.v` provides relation-generic left, right, and two-sided endpoint
+rewriting.
+
+`frontier_certificate`, `pstruct`, `pstrong`, and `pfinite` belong to
+mechanization infrastructure.  The first is a
 syntax-directed certificate system for proving stable-hitting facts;
-`pstructural` is the lockstep relation used to establish structural equations;
-and `pstrong` is a syntax-sensitive comparison baseline.  None is a competing
-public behavioral semantics.  The coinductive layers use `coq-coinduction`;
+`pstruct` is the lockstep relation used to establish structural equations;
+`pstrong` permits coupled probability nodes; and `pfinite` packages finite
+weakening steps.  None is a competing public behavioral semantics.  The
+coinductive layers use `coq-coinduction`;
 Paco remains only an inherited ITree build dependency.
 
 The framework is not limited to samplers returning a final value.  The
@@ -59,7 +78,7 @@ recognizes an event and supplies the environment response used to enter its
 continuation; a list of selectors is therefore a
 `finite_interaction_pattern`, not necessarily one concrete trace.  Singleton
 selectors represent ordinary concrete traces.
-`probabilistic_eutt_preserves_finite_trace_query` shows that `≈ₚ` preserves
+`peutt_preserves_finite_trace_query` shows that `≈ₚ` preserves
 every such finite cylinder without fixing the generic
 theory to Enum, MathComp, rationals, or reals.  Continuation obligations hold
 almost everywhere, so zero-mass branches need no artificial trace witness.
@@ -68,7 +87,7 @@ hitting limit, `finite_trace_query_exists` and
 `finite_trace_query_unique_up_to_coupling` make the semantics well-defined.
 The choice-based `finite_trace_sem` (public wrapper
 `finite_interaction_sem`) packages a representative, and
-`probabilistic_eutt_preserves_finite_trace_sem` is its extensional soundness
+`peutt_preserves_finite_trace_sem` is its extensional soundness
 theorem.  Generic witness independence is stated as diagonal coupling;
 backends may reflect that coupling to their own semantic equality.
 `Eq/ProbabilisticTraceSubEnum.v` is the bounded paper-facing concrete
@@ -122,7 +141,7 @@ The eight sampled atoms yield six concrete stable head forms: two returns
 The coupling merges each pair of Reply heads into one specification head.
 A two-phase relation closes
 all response-dependent continuations using plain
-`probabilistic_eutt_coinduction` (no up-to closure). The theorem
+`peutt_coinduction` (no up-to closure). The theorem
 `masked_protocol_equivalent` holds for either initial hidden bit.
 The bounded backend is `SubEnum`, with intrinsic `probabilistic_ptree`
 certificates. `masked_challenge_true_reply_probability` proves that the
@@ -135,19 +154,19 @@ sampling between interactions.
 
 The rational and Bernoulli source files likewise contain program definitions
 and analytic certificates only.  Their maintained behavioral endpoints are
-`probabilistic_eutt_binary_rational_coin_direct`,
-`probabilistic_eutt_biased_to_rational_coin_direct`, and
-`probabilistic_eutt_third_to_two_fifths_direct` in the corresponding
+`peutt_binary_rational_coin_direct`,
+`peutt_biased_to_rational_coin_direct`, and
+`peutt_third_to_two_fifths_direct` in the corresponding
 `Operational*` files.  The superseded `PWeak*` modules and
 `apweak`/`auweak`/`auequiv` endpoints have been removed.
 
 `Examples/BernoulliFactoryComposition.v` exposes the compositional route.
 `factory_with_sampler sampler q` accepts a Boolean sampler;
-`probabilistic_eutt_factory_sampler_congr` preserves equivalence of closed
+`peutt_factory_sampler_congr` preserves equivalence of closed
 samplers using bind and eventless iteration congruence. The parametric
-`probabilistic_eutt_factory_vn_fair` proves the VN sampler equivalent to a
-direct fair coin. `probabilistic_eutt_factory_fair_direct` proves the fair
-factory correct, and `probabilistic_eutt_factory_vn_direct` combines these
+`peutt_factory_vn_fair` proves the VN sampler equivalent to a
+direct fair coin. `peutt_factory_fair_direct` proves the fair
+factory correct, and `peutt_factory_vn_direct` combines these
 results explicitly by transitivity. Neither example-specific support class is
 required on this route: the VN support is proved directly, and the binary
 limit support follows from increasing finite approximations. Source weights
@@ -212,7 +231,7 @@ The maintained artifact establishes:
 
 Two stronger statements are intentionally not claimed.  The remaining
 arbitrary-effectful-handler premise is now isolated as
-`free_interp_vis_fusion`; `free_probabilistic_eutt_interp_of_vis_fusion`
+`free_interp_vis_fusion`; `free_peutt_interp_of_vis_fusion`
 derives full preservation once that one collapsed handled-`Vis` segment is
 supplied.  Ordinary up-to-bind compatibility cannot discharge it without an
 unguarded recursive use after the handler returns internally.  Likewise,

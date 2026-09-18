@@ -7,7 +7,7 @@ From PTree.Core Require Import PTreeDefinition PTreeProbability.
 From PTree.Prob Require Import DiscreteMC FreeOmegaMeasure
   TwoLevelMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
 From PTree.Eq Require Import OperationalProbabilisticPTSFreeOmega
-  ProbabilisticEutt.
+  PEutt.
 From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
@@ -50,7 +50,7 @@ Definition subenum_split_coin : ptree subenumE SubEnum bool :=
 
 Local Notation SubMF := (FreeOmega SubEnum).
 Local Notation subpeutt :=
-  (@probabilistic_eutt subenumE SubEnum SubMF
+  (@peutt subenumE SubEnum SubMF
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnum_SemanticMeasure)
       (NO := SubEnum_SemanticOmega))
@@ -68,7 +68,7 @@ Proof. exact reg_split_mass_lift_eq. Qed.
 Theorem subenum_split_coin_equivalent :
   subpeutt eq subenum_direct_coin subenum_split_coin.
 Proof.
-  apply probabilistic_eutt_prob_measure.
+  apply peutt_prob_measure.
   exact subenum_fair_split_lift.
 Qed.
 

@@ -12,7 +12,7 @@ From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts
   FreeOmegaMeasure FreeOmegaSupport EnumSupport EnumMap.
 From PTree.Eq Require Import Shallow UnifiedFrontier
   PrimitiveStableHitting OperationalProbabilisticPTS
-  OperationalProbabilisticPTSFreeOmega ProbabilisticEutt.
+  OperationalProbabilisticPTSFreeOmega PEutt.
 From PTree.Examples Require Import VonNeumannUnbounded RationalBernoulli
   BernoulliFactory.
 
@@ -973,11 +973,11 @@ Proof.
   - exact (operational_factory_standard_q_support q0 q1 sim).
 Qed.
 
-Theorem probabilistic_eutt_biased_to_rational_coin_direct
+Theorem peutt_biased_to_rational_coin_direct
     (pnormalized : Qval pfalse + Qval ptrue = 1)
     (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q)
     (q0 : 0 <= q) (q1 : q <= 1) :
-  @probabilistic_eutt factoryE Enum MF
+  @peutt factoryE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -987,7 +987,7 @@ Theorem probabilistic_eutt_biased_to_rational_coin_direct
     bool bool eq
     (biased_to_rational_coin pfalse ptrue q) (factory_direct_q q0 q1).
 Proof.
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - apply (proj2 (ptree_primitive_weak_adequate _ _)).
     exact (proj1 (operational_biased_to_rational_coin_ast
       pnormalized pnontrivial q0 q1)).
@@ -1018,9 +1018,9 @@ Proof.
     vn_one_third vn_two_thirds (2 / 5)).
 Qed.
 
-Theorem probabilistic_eutt_third_to_two_fifths_direct
+Theorem peutt_third_to_two_fifths_direct
     `{OperationalFactoryStepSupportLaws vn_one_third vn_two_thirds} :
-  @probabilistic_eutt factoryE Enum MF
+  @peutt factoryE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -1029,7 +1029,7 @@ Theorem probabilistic_eutt_third_to_two_fifths_direct
     FreeOmegaObservableSemanticOmega
     bool bool eq third_to_two_fifths direct_two_fifths.
 Proof.
-  exact (probabilistic_eutt_biased_to_rational_coin_direct
+  exact (peutt_biased_to_rational_coin_direct
     (pfalse := vn_one_third) (ptrue := vn_two_thirds) (q := 2 / 5)
     third_bias_normalized third_bias_nontrivial
     two_fifths_nonnegative two_fifths_at_most_one).
@@ -1039,7 +1039,7 @@ Import Num.Theory Order.Theory.
 
 (** Independently verified components for the compositional Factory proof.
     The legacy nested normalization above remains available separately. *)
-Local Notation peutt := (@probabilistic_eutt factoryE Enum MF
+Local Notation peutt := (@peutt factoryE Enum MF
   (FreeOmegaObservableSemanticMeasure (NI := Enum_SemanticMeasure)
     (NO := Enum_SemanticOmega)) FreeOmegaObservableSemanticMeasureCoreLaws
   FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega).
@@ -1179,10 +1179,10 @@ Proof.
   - exact (factory_vn_fair_support sim).
 Qed.
 
-Theorem probabilistic_eutt_factory_vn_fair :
+Theorem peutt_factory_vn_fair :
   peutt eq (factory_fair_coin pfalse ptrue) factory_direct_fair.
 Proof.
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - exact (operational_factory_fair_coin_weak pfalse ptrue).
   - exact factory_direct_fair_weak.
   - exact (factory_vn_fair_heads_lift _).
@@ -1229,10 +1229,10 @@ Section StandardRationalTarget.
 Variable q : rat.
 Hypotheses (q0 : 0 <= q) (q1 : q <= 1).
 
-Theorem probabilistic_eutt_factory_standard_direct :
+Theorem peutt_factory_standard_direct :
   peutt eq (factory_standard q) (factory_direct_q q0 q1).
 Proof.
-  eapply probabilistic_eutt_of_hitting_lift.
+  eapply peutt_of_hitting_lift.
   - exact (factory_standard_weak q).
   - apply (proj2 (ptree_primitive_weak_adequate _ _)).
     exact (proj1 (operational_factory_direct_q_ast q0 q1)).

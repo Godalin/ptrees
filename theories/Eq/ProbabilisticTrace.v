@@ -6,7 +6,7 @@ From Coq Require Import Program.Equality List ClassicalChoice ClassicalEpsilon.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting
-  OperationalProbabilisticPTS ProbabilisticEutt.
+  OperationalProbabilisticPTS PEutt.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -74,20 +74,20 @@ Definition probabilistic_head_query {R O}
     agree because [frontier_head_rel] matches the same dependent event.
     The conclusion is coupling equality of query measures, which concrete
     backends turn into equality of probabilities/expectations. *)
-Theorem probabilistic_eutt_preserves_head_query {R1 R2 O}
+Theorem peutt_preserves_head_query {R1 R2 O}
     (RR : R1 -> R2 -> Prop)
     (on_ret1 : R1 -> O) (on_ret2 : R2 -> O)
     (on_vis : forall X, E X -> O)
     (Hret : forall r1 r2, RR r1 r2 -> on_ret1 r1 = on_ret2 r2)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) query1 :
-  probabilistic_eutt RR t1 t2 ->
+  peutt RR t1 t2 ->
   probabilistic_head_query on_ret1 on_vis t1 query1 ->
   exists query2,
     probabilistic_head_query on_ret2 on_vis t2 query2 /\
     sem_lift eq query1 query2.
 Proof.
   intros Heutt [out1 [Hhit1 Hquery1]].
-  apply probabilistic_eutt_unfold in Heutt.
+  apply peutt_unfold in Heutt.
   destruct Heutt as [Hforward _].
   destruct (Hforward out1 Hhit1) as [out2 [Hhit2 Hlift]].
   exists (sem_bind out2
@@ -107,16 +107,16 @@ Definition next_event_query {R}
     (query : MF bool) : Prop :=
   probabilistic_head_query (fun _ => false) accept t query.
 
-Corollary probabilistic_eutt_preserves_next_event_query {R1 R2}
+Corollary peutt_preserves_next_event_query {R1 R2}
     (RR : R1 -> R2 -> Prop) (accept : forall X, E X -> bool)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) query1 :
-  probabilistic_eutt RR t1 t2 ->
+  peutt RR t1 t2 ->
   next_event_query accept t1 query1 ->
   exists query2,
     next_event_query accept t2 query2 /\ sem_lift eq query1 query2.
 Proof.
   intros Heutt Hquery.
-  eapply probabilistic_eutt_preserves_head_query; eauto.
+  eapply peutt_preserves_head_query; eauto.
 Qed.
 
 End ProbabilisticHeadQuery.
@@ -281,7 +281,7 @@ Qed.
 Theorem finite_trace_query_related {R1 R2}
     (RR : R1 -> R2 -> Prop) tr
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) query1 query2 :
-  probabilistic_eutt RR t1 t2 ->
+  peutt RR t1 t2 ->
   finite_trace_query tr t1 query1 ->
   finite_trace_query tr t2 query2 ->
   sem_lift eq query1 query2.
@@ -298,13 +298,13 @@ Proof.
       as [out1 [branch1 [Hhit1 [Hgood1 Hquery1]]]].
     destruct (finite_trace_query_cons_inv Hq2)
       as [out2 [branch2 [Hhit2 [Hgood2 Hquery2]]]].
-    apply probabilistic_eutt_unfold in Heutt.
+    apply peutt_unfold in Heutt.
     destruct Heutt as [Hforward _].
     destruct (Hforward out1 Hhit1) as [out2' [Hhit2' Hlift]].
     assert (HoutEq : sem_eq out2' out2).
     { eapply stable_hitting_weak_unique; eassumption. }
     pose proof (sem_lift_proper_r
-      (R := ptree_stable_head_rel RR (probabilistic_eutt_state RR))
+      (R := ptree_stable_head_rel RR (peutt_state RR))
       (mu := out1) (nu := out2') (nu' := out2) HoutEq Hlift) as Hlift12.
     pose (good1 := fun h : frontier_head E MN R1 =>
       match h with
@@ -347,10 +347,10 @@ Qed.
 (** Canonical behavioral equivalence preserves all finite dependent event
     prefixes.  Stable-head coupling transports the almost-everywhere domain
     on which recursive continuation queries are required. *)
-Theorem probabilistic_eutt_preserves_finite_trace_query {R1 R2}
+Theorem peutt_preserves_finite_trace_query {R1 R2}
     (RR : R1 -> R2 -> Prop) tr
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) query1 :
-  probabilistic_eutt RR t1 t2 ->
+  peutt RR t1 t2 ->
   finite_trace_query tr t1 query1 ->
   exists query2,
     finite_trace_query tr t2 query2 /\ sem_lift eq query1 query2.
@@ -361,7 +361,7 @@ Proof.
     eapply finite_trace_query_related; eauto using finite_trace_query_nil.
   - destruct (finite_trace_query_cons_inv Hq)
       as [out1 [branch1 [Hhit1 [Hgood1 Hquery1]]]].
-    apply probabilistic_eutt_unfold in Heutt.
+    apply peutt_unfold in Heutt.
     destruct Heutt as [Hforward _].
     destruct (Hforward out1 Hhit1) as [out2 [Hhit2 Hlift]].
     pose (good1 := fun h : frontier_head E MN R1 =>
@@ -374,7 +374,7 @@ Proof.
           end
       end).
     pose (reachable2 := fun h2 : frontier_head E MN R2 =>
-      exists h1, frontier_head_rel RR (probabilistic_eutt RR) h1 h2 /\
+      exists h1, frontier_head_rel RR (peutt RR) h1 h2 /\
         good1 h1).
     assert (Hreachable2 : sem_ae out2 reachable2).
     { eapply sem_lift_ae_transport_r; [exact Hlift|exact Hgood1]. }
@@ -388,7 +388,7 @@ Proof.
             | None => sem_eq q2 (sem_ret false)
             end
         end) /\
-      (forall h1, frontier_head_rel RR (probabilistic_eutt RR) h1 h2 ->
+      (forall h1, frontier_head_rel RR (peutt RR) h1 h2 ->
         good1 h1 -> sem_lift eq (branch1 h1) q2)).
     { intro h2. destruct (classic (reachable2 h2)) as [Hr|Hnr].
       - destruct Hr as [h1 [Hrel Hg1]].
@@ -499,7 +499,7 @@ Corollary finite_trace_query_unique_up_to_coupling {R} tr
   sem_lift eq query1 query2.
 Proof.
   intros Hq1 Hq2.
-  eapply finite_trace_query_related; [apply probabilistic_eutt_refl|eassumption|].
+  eapply finite_trace_query_related; [apply peutt_refl|eassumption|].
   exact Hq2.
 Qed.
 
@@ -536,10 +536,10 @@ Proof.
   - exact Hquery.
 Qed.
 
-Theorem probabilistic_eutt_preserves_finite_trace_sem {R1 R2}
+Theorem peutt_preserves_finite_trace_sem {R1 R2}
     (RR : R1 -> R2 -> Prop) tr
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
-  probabilistic_eutt RR t1 t2 ->
+  peutt RR t1 t2 ->
   sem_lift eq (finite_trace_sem tr t1) (finite_trace_sem tr t2).
 Proof.
   intro Heutt. eapply finite_trace_query_related.
@@ -548,13 +548,13 @@ Proof.
   - apply finite_trace_sem_spec.
 Qed.
 
-Theorem probabilistic_eutt_preserves_finite_interaction_sem {R1 R2}
+Theorem peutt_preserves_finite_interaction_sem {R1 R2}
     (RR : R1 -> R2 -> Prop) pattern
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
-  probabilistic_eutt RR t1 t2 ->
+  peutt RR t1 t2 ->
   sem_lift eq (finite_interaction_sem pattern t1)
     (finite_interaction_sem pattern t2).
-Proof. apply probabilistic_eutt_preserves_finite_trace_sem. Qed.
+Proof. apply peutt_preserves_finite_trace_sem. Qed.
 
 End FiniteTraceExistence.
 

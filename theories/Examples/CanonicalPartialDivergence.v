@@ -8,7 +8,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum MeasureIterationEnum
   TwoLevelMeasure TwoLevelMeasureEnum.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier
-  OperationalProbabilisticPTS ProbabilisticEutt ProbabilisticTrace.
+  OperationalProbabilisticPTS PEutt ProbabilisticTrace.
 From PTree.Examples Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.
@@ -176,13 +176,13 @@ Proof.
   exact Heps.
 Qed.
 
-Theorem half_return_half_diverge_not_probabilistic_eutt_ret :
-  ~ @probabilistic_eutt regE Enum Enum
+Theorem half_return_half_diverge_not_peutt_ret :
+  ~ @peutt regE Enum Enum
       Enum_SemanticMeasure Enum_SemanticMeasureCoreLaws
       Enum_MixedMeasure Enum_SemanticOmega
       bool bool eq half_return_half_diverge (Ret true).
 Proof.
-  intro Hrel. apply probabilistic_eutt_unfold in Hrel.
+  intro Hrel. apply peutt_unfold in Hrel.
   destruct Hrel as [Hforward _].
   destruct (Hforward half_return_heads
     half_return_half_diverge_stable_hitting) as [out [Hout Hlift]].
