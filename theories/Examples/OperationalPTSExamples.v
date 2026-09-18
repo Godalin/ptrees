@@ -20,12 +20,12 @@ Import Enum.
 Local Notation MF := (FreeOmega Enum).
 
 Definition ptree_reg_nested_heads :
-    MF (frontier_head regE Enum nat) :=
+    MF (stable_head regE Enum nat) :=
   FOSample reg_fair (fun side =>
     FOSample (reg_inner side) (fun outcome => FORet (FHRet outcome))).
 
 Definition ptree_reg_merged_heads :
-    MF (frontier_head regE Enum nat) :=
+    MF (stable_head regE Enum nat) :=
   FOSample reg_merged_three (fun outcome => FORet (FHRet outcome)).
 
 Lemma ptree_reg_ret_weak (n : nat) :
@@ -111,7 +111,7 @@ Proof.
   - intros outcome _. exact (ptree_reg_ret_weak outcome).
 Qed.
 
-Definition reg_head_value (h : frontier_head regE Enum nat) : nat :=
+Definition reg_head_value (h : stable_head regE Enum nat) : nat :=
   match h with
   | FHRet n => n
   | @FHVis _ _ _ X e _ => match e with end
@@ -192,7 +192,7 @@ Corollary ptree_reg_nested_primitive_ast :
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticOmega
-    (ptree' regE Enum nat) (frontier_head regE Enum nat)
+    (ptree' regE Enum nat) (stable_head regE Enum nat)
     (@ptree_primitive_kernel regE Enum MF
       (FreeOmegaObservableSemanticMeasure
         (NI := Enum_SemanticMeasure)
@@ -211,7 +211,7 @@ Lemma ptree_reg_nested_merged_lift
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _ _
-    (frontier_head_rel eq sim)
+    (stable_head_rel eq sim)
     ptree_reg_nested_heads ptree_reg_merged_heads.
 Proof.
   eapply FOQLObserve with

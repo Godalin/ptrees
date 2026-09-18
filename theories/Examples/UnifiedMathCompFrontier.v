@@ -27,14 +27,14 @@ Definition unified_mathcomp_direct_coin :
 
 Definition unified_mathcomp_coin_heads :
     MathCompBehaviorMeasure R
-      (frontier_head mc_freeE (MathCompKernelMeasure R) bool) :=
+      (stable_head mc_freeE (MathCompKernelMeasure R) bool) :=
   mixed_bind (mathcomp_bernoulli q) (fun b => sem_ret (FHRet b)).
 
 (** This theorem is the positive universe regression missing from the old HB
     backend: a genuine MathComp probability node now produces a behavior
     measure whose carrier contains recursive PTree continuations. *)
 Lemma unified_mathcomp_direct_coin_frontier :
-  @frontier mc_freeE (MathCompKernelMeasure R) (MathCompBehaviorMeasure R)
+  @frontier_certificate mc_freeE (MathCompKernelMeasure R) (MathCompBehaviorMeasure R)
     (MathCompNodeSemanticMeasure R)
     (FreeOmegaObservableSemanticMeasure
       (NI := MathCompNodeSemanticMeasure R))

@@ -342,8 +342,8 @@ Variable RR : R1 -> R2 -> Prop.
 
 Definition ptree_stable_head_rel
     (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop) :
-    frontier_head E MN R1 -> frontier_head E MN R2 -> Prop :=
-  frontier_head_rel RR
+    stable_head E MN R1 -> stable_head E MN R2 -> Prop :=
+  stable_head_rel RR
     (fun t1 t2 => sim (observe t1) (observe t2)).
 
 Lemma ptree_stable_head_rel_mono sim1 sim2 :
@@ -351,7 +351,7 @@ Lemma ptree_stable_head_rel_mono sim1 sim2 :
   forall h1 h2, ptree_stable_head_rel sim1 h1 h2 ->
     ptree_stable_head_rel sim2 h1 h2.
 Proof.
-  intro Hsim. apply frontier_head_rel_mono.
+  intro Hsim. apply stable_head_rel_mono.
   intros t1 t2 Hrel. exact (Hsim _ _ Hrel).
 Qed.
 
@@ -359,7 +359,7 @@ Definition peutt_state :
     ptree' E MN R1 -> ptree' E MN R2 -> Prop :=
   @stable_hitting_bisim MF FI FC FO
     (ptree' E MN R1) (ptree' E MN R2)
-    (frontier_head E MN R1) (frontier_head E MN R2)
+    (stable_head E MN R1) (stable_head E MN R2)
     (@ptree_primitive_kernel E MN MF FI MX R1)
     (@ptree_primitive_kernel E MN MF FI MX R2)
     ptree_stable_head_rel ptree_stable_head_rel_mono.
@@ -638,7 +638,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 
 Lemma stable_hitting_prob {R X}
     (mu : MN X) (k : X -> ptree E MN R)
-    (front : X -> MF (frontier_head E MN R)) (Good : X -> Prop) :
+    (front : X -> MF (stable_head E MN R)) (Good : X -> Prop) :
   sem_ae mu Good ->
   (forall x, Good x -> stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
@@ -813,10 +813,10 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 
 (** Stable hitting composes with bind under the local global/diagonal fuel
     cofinality obligation.  This theorem mentions neither behavioral
-    relation nor structured frontier derivations. *)
+    relation nor structured frontier-certificate derivations. *)
 Theorem stable_hitting_bind {A R}
     (t : ptree E MN A) (k : A -> ptree E MN R)
-    hs (front : A -> MF (frontier_head E MN R)) :
+    hs (front : A -> MF (stable_head E MN R)) :
   ptree_bind_cofinal (MF := MF) t k ->
   stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX A) (observe t) hs ->
@@ -826,7 +826,7 @@ Theorem stable_hitting_bind {A R}
   stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
     (observe (PTree.bind t k))
-    (sem_bind hs (frontier_head_bind_front k front)).
+    (sem_bind hs (stable_head_bind_front k front)).
 Proof.
   intros Hcofinal Hsource Hfront.
   eapply ptree_stable_hitting_bind.
@@ -1242,13 +1242,13 @@ Variable bind_cofinality : forall A R
     ptree_bind_cofinal (MF := MF) t k.
 
 Lemma stable_hitting_front_choice {A R} (k : A -> ptree E MN R) :
-  exists front : A -> MF (frontier_head E MN R),
+  exists front : A -> MF (stable_head E MN R),
     forall a, stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R)
       (observe (k a)) (front a).
 Proof.
   assert (Hexists : forall a : A,
-      exists out : MF (frontier_head E MN R),
+      exists out : MF (stable_head E MN R),
         stable_hitting
           (@ptree_primitive_kernel E MN MF FI MX R)
           (observe (k a)) out).
@@ -1375,16 +1375,16 @@ Proof.
       assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
-        (sem_bind source1 (frontier_head_bind_front k1 front1))).
+        (sem_bind source1 (stable_head_bind_front k1 front1))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
       assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX B)
         (observe (PTree.bind t2 k2))
-        (sem_bind source2 (frontier_head_bind_front k2 front2))).
+        (sem_bind source2 (stable_head_bind_front k2 front2))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-      exists (sem_bind source2 (frontier_head_bind_front k2 front2)). split.
+      exists (sem_bind source2 (stable_head_bind_front k2 front2)). split.
       * exact Hbound2.
       * eapply sem_lift_proper_l.
         -- eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
@@ -1416,16 +1416,16 @@ Proof.
       assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
-        (sem_bind source1 (frontier_head_bind_front k1 front1))).
+        (sem_bind source1 (stable_head_bind_front k1 front1))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
       assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX B)
         (observe (PTree.bind t2 k2))
-        (sem_bind source2 (frontier_head_bind_front k2 front2))).
+        (sem_bind source2 (stable_head_bind_front k2 front2))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-      exists (sem_bind source1 (frontier_head_bind_front k1 front1)). split.
+      exists (sem_bind source1 (stable_head_bind_front k1 front1)). split.
       * exact Hbound1.
       * eapply sem_lift_proper_r.
         -- eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
@@ -1526,16 +1526,16 @@ Proof.
       assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
-        (sem_bind source1 (frontier_head_bind_front k1 front1))).
+        (sem_bind source1 (stable_head_bind_front k1 front1))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
       assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t2 k2))
-        (sem_bind source2 (frontier_head_bind_front k2 front2))).
+        (sem_bind source2 (stable_head_bind_front k2 front2))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-      exists (sem_bind source2 (frontier_head_bind_front k2 front2)). split.
+      exists (sem_bind source2 (stable_head_bind_front k2 front2)). split.
       * exact Hbound2.
       * eapply sem_lift_proper_l.
         -- eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
@@ -1563,16 +1563,16 @@ Proof.
       assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
-        (sem_bind source1 (frontier_head_bind_front k1 front1))).
+        (sem_bind source1 (stable_head_bind_front k1 front1))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
       assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t2 k2))
-        (sem_bind source2 (frontier_head_bind_front k2 front2))).
+        (sem_bind source2 (stable_head_bind_front k2 front2))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-      exists (sem_bind source1 (frontier_head_bind_front k1 front1)). split.
+      exists (sem_bind source1 (stable_head_bind_front k1 front1)). split.
       * exact Hbound1.
       * eapply sem_lift_proper_r.
         -- eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
@@ -1647,16 +1647,16 @@ Proof.
     assert (Hbound1 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t1 k1))
-      (sem_bind source1 (frontier_head_bind_front k1 front1))).
+      (sem_bind source1 (stable_head_bind_front k1 front1))).
     { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
     assert (Hbound2 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t2 k2))
-      (sem_bind source2 (frontier_head_bind_front k2 front2))).
+      (sem_bind source2 (stable_head_bind_front k2 front2))).
     { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-    exists (sem_bind source2 (frontier_head_bind_front k2 front2)). split.
+    exists (sem_bind source2 (stable_head_bind_front k2 front2)). split.
     + exact Hbound2.
     + eapply sem_lift_proper_l.
       * eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
@@ -1681,16 +1681,16 @@ Proof.
     assert (Hbound1 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t1 k1))
-      (sem_bind source1 (frontier_head_bind_front k1 front1))).
+      (sem_bind source1 (stable_head_bind_front k1 front1))).
     { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
     assert (Hbound2 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t2 k2))
-      (sem_bind source2 (frontier_head_bind_front k2 front2))).
+      (sem_bind source2 (stable_head_bind_front k2 front2))).
     { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-    exists (sem_bind source1 (frontier_head_bind_front k1 front1)). split.
+    exists (sem_bind source1 (stable_head_bind_front k1 front1)). split.
     + exact Hbound1.
     + eapply sem_lift_proper_r.
       * eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
@@ -1742,17 +1742,17 @@ Variable iter_productivity : forall I R
 Lemma peutt_of_frontiers {R1 R2}
     (RR : R1 -> R2 -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
-  frontier (observe t1) out1 ->
-  frontier (observe t2) out2 ->
+  frontier_certificate (observe t1) out1 ->
+  frontier_certificate (observe t2) out2 ->
   sem_lift (ptree_stable_head_rel RR
     (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->
   peutt RR t1 t2.
 Proof.
   intros Hfront1 Hfront2 Hlift.
   eapply peutt_of_hitting_lift.
-  - exact (frontier_to_stable_hitting
+  - exact (certificate_to_stable_hitting
       bind_cofinality iter_productivity Hfront1).
-  - exact (frontier_to_stable_hitting
+  - exact (certificate_to_stable_hitting
       bind_cofinality iter_productivity Hfront2).
   - exact Hlift.
 Qed.
@@ -1769,13 +1769,13 @@ Lemma peutt_of_iter_certificates
     (transition2 : I2 -> MN (I2 + R2))
     (i1 : I1) (i2 : I2) out1 out2 :
   (forall j,
-    frontier (observe (step1 j))
+    frontier_certificate (observe (step1 j))
       (mixed_bind (transition1 j)
         (fun next => sem_ret (FHRet next)))) ->
   mixed_iter transition1 i1 out1 ->
   sem_total out1 ->
   (forall j,
-    frontier (observe (step2 j))
+    frontier_certificate (observe (step2 j))
       (mixed_bind (transition2 j)
         (fun next => sem_ret (FHRet next)))) ->
   mixed_iter transition2 i2 out2 ->
@@ -1788,8 +1788,8 @@ Lemma peutt_of_iter_certificates
 Proof.
   intros Hstep1 Hiter1 Htotal1 Hstep2 Hiter2 Htotal2 Hlift.
   eapply peutt_of_frontiers; [| |exact Hlift].
-  - eapply frontier_iter_intro; eassumption.
-  - eapply frontier_iter_intro; eassumption.
+  - eapply certificate_iter_intro; eassumption.
+  - eapply certificate_iter_intro; eassumption.
 Qed.
 
 End PEuttFrontierRule.

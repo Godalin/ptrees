@@ -68,12 +68,12 @@ Context (E : Type@{sample} -> Type@{event}).
 Context (M : Type@{sample} -> Type@{measure}).
 Context (R : Type@{result}).
 
-Variant ufrontier_head : Type :=
+Variant ustable_head : Type :=
   | UFHRet (r : R)
   | UFHVis {X : Type@{sample}} (e : E X)
       (k : X -> uptree E M R).
 
-Fail Definition same_measure_frontier : Type := M ufrontier_head.
+Fail Definition same_measure_stable_head : Type := M ustable_head.
 
 End SameMeasureFrontierBoundary.
 

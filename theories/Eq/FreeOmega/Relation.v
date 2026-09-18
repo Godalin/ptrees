@@ -26,7 +26,7 @@ Local Notation MF := (FreeOmega MN).
 Lemma ptree_hitting_pstruct {A B}
     (RR : A -> B -> Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
   pstruct RR t1 t2 ->
-  free_omega_lift (frontier_head_rel RR (pstruct RR))
+  free_omega_lift (stable_head_rel RR (pstruct RR))
     (ptree_hitting_approx (MF := MF) fuel (observe t1))
     (ptree_hitting_approx (MF := MF) fuel (observe t2)).
 Proof.
@@ -39,7 +39,7 @@ Proof.
   - rewrite <- x0, <- x. constructor. constructor. exact H.
   - rewrite <- x0, <- x.
     change (free_omega_lift
-      (@frontier_head_rel E MN A B RR (@pstruct E MN A B RR))
+      (@stable_head_rel E MN A B RR (@pstruct E MN A B RR))
       (FOSample mu (fun _ => FOZero))
       (FOSample mu (fun _ => FOZero))).
     eapply FOLSample with (S := eq).
@@ -52,7 +52,7 @@ Proof.
   - rewrite <- x0, <- x. constructor. constructor. exact H.
   - rewrite <- x0, <- x.
     change (free_omega_lift
-      (@frontier_head_rel E MN A B RR (@pstruct E MN A B RR))
+      (@stable_head_rel E MN A B RR (@pstruct E MN A B RR))
       (FOSample mu (fun z => ptree_hitting_approx (MF := MF)
         fuel (observe (k1 z))))
       (FOSample mu (fun z => ptree_hitting_approx (MF := MF)
@@ -103,12 +103,12 @@ Proof.
     + unfold stable_hitting in Hout1, Hout2.
       cbn in Hout1, Hout2.
       eapply FOQLComp with (T := eq)
-        (U := frontier_head_rel RR (pstruct RR))
+        (U := stable_head_rel RR (pstruct RR))
         (mid := FOLub (fun fuel => ptree_hitting_approx
           (MF := MF) fuel (observe u1))).
       * exact Hout1.
       * eapply FOQLComp with
-          (T := frontier_head_rel RR (pstruct RR))
+          (T := stable_head_rel RR (pstruct RR))
           (U := eq)
           (mid := FOLub (fun fuel => ptree_hitting_approx
             (MF := MF) fuel (observe u2))).
@@ -134,7 +134,7 @@ Qed.
 Lemma ptree_hitting_pstrong {A B}
     (RR : A -> B -> Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
   pstrong RR t1 t2 ->
-  free_omega_lift (frontier_head_rel RR (pstrong RR))
+  free_omega_lift (stable_head_rel RR (pstrong RR))
     (ptree_hitting_approx (MF := MF) fuel (observe t1))
     (ptree_hitting_approx (MF := MF) fuel (observe t2)).
 Proof.
@@ -147,7 +147,7 @@ Proof.
   - rewrite <- x0, <- x. constructor. constructor. exact H.
   - rewrite <- x0, <- x.
     change (free_omega_lift
-      (@frontier_head_rel E MN A B RR (@pstrong E MN NI NC A B RR))
+      (@stable_head_rel E MN A B RR (@pstrong E MN NI NC A B RR))
       (FOSample mu (fun _ => FOZero))
       (FOSample nu (fun _ => FOZero))).
     eapply FOLSample with
@@ -161,7 +161,7 @@ Proof.
   - rewrite <- x0, <- x. constructor. constructor. exact H.
   - rewrite <- x0, <- x.
     change (free_omega_lift
-      (@frontier_head_rel E MN A B RR (@pstrong E MN NI NC A B RR))
+      (@stable_head_rel E MN A B RR (@pstrong E MN NI NC A B RR))
       (FOSample mu (fun a => ptree_hitting_approx (MF := MF)
         fuel (observe (k1 a))))
       (FOSample nu (fun b => ptree_hitting_approx (MF := MF)
@@ -207,12 +207,12 @@ Proof.
     + unfold stable_hitting in Hout1, Hout2.
       cbn in Hout1, Hout2.
       eapply FOQLComp with (T := eq)
-        (U := frontier_head_rel RR (pstrong RR))
+        (U := stable_head_rel RR (pstrong RR))
         (mid := FOLub (fun fuel => ptree_hitting_approx
           (MF := MF) fuel (observe u1))).
       * exact Hout1.
       * eapply FOQLComp with
-          (T := frontier_head_rel RR (pstrong RR))
+          (T := stable_head_rel RR (pstrong RR))
           (U := eq)
           (mid := FOLub (fun fuel => ptree_hitting_approx
             (MF := MF) fuel (observe u2))).

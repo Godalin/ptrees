@@ -124,8 +124,8 @@ Definition iter_behavioral_sum_rel
   | _, _ => False
   end.
 
-Variable step_out1 : I1 -> MF (frontier_head E MN (I1 + R1)).
-Variable step_out2 : I2 -> MF (frontier_head E MN (I2 + R2)).
+Variable step_out1 : I1 -> MF (stable_head E MN (I1 + R1)).
+Variable step_out2 : I2 -> MF (stable_head E MN (I2 + R2)).
 Hypothesis Hstep_out1 : forall i1,
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -301,7 +301,7 @@ Definition iter_eventful_generator_closed : Prop :=
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticOmega
       (ptree' E MN R1) (ptree' E MN R2)
-      (frontier_head E MN R1) (frontier_head E MN R2)
+      (stable_head E MN R1) (stable_head E MN R2)
       (@ptree_primitive_kernel E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure R1)

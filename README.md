@@ -82,23 +82,22 @@ recognizes an event and supplies the environment response used to enter its
 continuation; a list of selectors is therefore a
 `finite_interaction_pattern`, not necessarily one concrete trace.  Singleton
 selectors represent ordinary concrete traces.
-`peutt_preserves_finite_trace_query` shows that `≈ₚ` preserves
+`peutt_preserves_finite_interaction_query` shows that `≈ₚ` preserves
 every such finite cylinder without fixing the generic
 theory to Enum, MathComp, rationals, or reals.  Continuation obligations hold
 almost everywhere, so zero-mass branches need no artificial trace witness.
 On backends with the order/omega laws needed to construct every complete
-hitting limit, `finite_trace_query_exists` and
-`finite_trace_query_unique_up_to_coupling` make the semantics well-defined.
-The choice-based `finite_trace_sem` (public wrapper
-`finite_interaction_sem`) packages a representative, and
-`peutt_preserves_finite_trace_sem` is its extensional soundness
+hitting limit, `finite_interaction_query_exists` and
+`finite_interaction_query_unique_up_to_coupling` make the semantics well-defined.
+The choice-based `finite_interaction_sem` packages a representative, and
+`peutt_preserves_finite_interaction_sem` is its extensional soundness
 theorem.  Generic witness independence is stated as diagonal coupling;
 backends may reflect that coupling to their own semantic equality.
 `Eq/ProbabilisticTraceSubEnum.v` is the bounded paper-facing concrete
 projection.  It defines `Prₛ[t | tr] = p` using an Enum expectation of a
 `FreeOmega SubEnum`
 representative coupled to a valid query, without pretending that the
-choice-selected `finite_trace_sem` representative is executable.  The
+choice-selected `finite_interaction_sem` representative is executable.  The
 theorem `subenum_finite_interaction_probability_range` proves every such
 number lies in `[0,1]`.  The existing raw-Enum projection is retained for
 compatibility with the current interactive case studies while they are

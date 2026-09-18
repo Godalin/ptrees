@@ -23,7 +23,7 @@ Context {E : Type -> Type} {MN : Type -> Type}.
 
 Definition observe_stable_head {R O}
     (on_ret : R -> O) (on_vis : forall X, E X -> O)
-    (h : frontier_head E MN R) : O :=
+    (h : stable_head E MN R) : O :=
   match h with
   | FHRet r => on_ret r
   | @FHVis _ _ _ X e _ => on_vis X e
@@ -35,7 +35,7 @@ Lemma observe_stable_head_related {R1 R2 O}
     (on_vis : forall X, E X -> O)
     (sim : ptree E MN R1 -> ptree E MN R2 -> Prop) h1 h2 :
   (forall r1 r2, RR r1 r2 -> on_ret1 r1 = on_ret2 r2) ->
-  frontier_head_rel RR sim h1 h2 ->
+  stable_head_rel RR sim h1 h2 ->
   observe_stable_head on_ret1 on_vis h1 =
     observe_stable_head on_ret2 on_vis h2.
 Proof.
@@ -61,7 +61,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 Definition probabilistic_head_query {R O}
     (on_ret : R -> O) (on_vis : forall X, E X -> O)
     (t : ptree E MN R) (query : MF O) : Prop :=
-  exists out : MF (frontier_head E MN R),
+  exists out : MF (stable_head E MN R),
     stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out /\
     sem_eq
@@ -71,7 +71,7 @@ Definition probabilistic_head_query {R O}
 
 (** Canonical equivalence preserves every next-stable-head query whose
     return observations respect [RR].  Visible observations automatically
-    agree because [frontier_head_rel] matches the same dependent event.
+    agree because [stable_head_rel] matches the same dependent event.
     The conclusion is coupling equality of query measures, which concrete
     backends turn into equality of probabilities/expectations. *)
 Theorem peutt_preserves_head_query {R1 R2 O}
@@ -141,17 +141,12 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 Definition event_selector : Type := forall X, E X -> option X.
 Definition finite_interaction_pattern : Type := list event_selector.
 
-(** Compatibility name.  A list of selectors denotes a dependent-event
-    cylinder pattern, not necessarily one concrete trace: a selector may
-    accept several events and supplies the environment response on success. *)
-Definition finite_event_trace : Type := finite_interaction_pattern.
-
-(** [finite_trace_query tr t q] says that [q] is the Boolean semantic measure
+(** [finite_interaction_query tr t q] says that [q] is the Boolean semantic measure
     of executions of [t] whose next visible
     interactions have prefix [tr].  The empty prefix succeeds immediately;
     a non-empty prefix rejects a stable return or a non-matching event and
     recursively queries the selected visible continuation. *)
-Fixpoint finite_trace_query {R} (tr : finite_event_trace)
+Fixpoint finite_interaction_query {R} (tr : finite_interaction_pattern)
     (t : ptree E MN R) (query : MF bool) : Prop :=
   match tr with
   | nil => sem_eq query (sem_ret true)
@@ -164,27 +159,20 @@ Fixpoint finite_trace_query {R} (tr : finite_event_trace)
           | FHRet _ => sem_eq (branch h) (sem_ret false)
           | @FHVis _ _ _ X e k =>
               match select X e with
-              | Some x => finite_trace_query rest (k x) (branch h)
+              | Some x => finite_interaction_query rest (k x) (branch h)
               | None => sem_eq (branch h) (sem_ret false)
               end
           end) /\
         sem_eq (sem_bind out branch) query
   end.
 
-(** Canonical public wrapper emphasizing prefix/cylinder satisfaction rather
-    than a pushforward distribution on traces. *)
-Definition finite_interaction_query {R}
-    (pattern : finite_interaction_pattern)
-    (t : ptree E MN R) (query : MF bool) : Prop :=
-  finite_trace_query pattern t query.
-
-Lemma finite_trace_query_nil {R} (t : ptree E MN R) :
-  finite_trace_query nil t (sem_ret true).
+Lemma finite_interaction_query_nil {R} (t : ptree E MN R) :
+  finite_interaction_query nil t (sem_ret true).
 Proof. cbn. apply sem_eq_refl. Qed.
 
-Lemma finite_trace_query_cons_inv {R} select rest
+Lemma finite_interaction_query_cons_inv {R} select rest
     (t : ptree E MN R) query :
-  finite_trace_query (select :: rest) t query ->
+  finite_interaction_query (select :: rest) t query ->
   exists out branch,
     stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out /\
@@ -193,7 +181,7 @@ Lemma finite_trace_query_cons_inv {R} select rest
       | FHRet _ => sem_eq (branch h) (sem_ret false)
       | @FHVis _ _ _ X e k =>
           match select X e with
-          | Some x => finite_trace_query rest (k x) (branch h)
+          | Some x => finite_interaction_query rest (k x) (branch h)
           | None => sem_eq (branch h) (sem_ret false)
           end
       end) /\
@@ -208,46 +196,46 @@ Definition selector_accept (select : event_selector) :
     | None => false
     end.
 
-Lemma finite_trace_query_vis_match `{FK : @SemanticMeasureAEKleisliLaws MF FI}
+Lemma finite_interaction_query_vis_match `{FK : @SemanticMeasureAEKleisliLaws MF FI}
     `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
     {R X} (select : event_selector) rest (e : E X)
     (k : X -> ptree E MN R) x query :
   select X e = Some x ->
-  finite_trace_query rest (k x) query ->
-  finite_trace_query (select :: rest) (Vis e k) query.
+  finite_interaction_query rest (k x) query ->
+  finite_interaction_query (select :: rest) (Vis e k) query.
 Proof.
   intros Hselect Hrest.
   exists (sem_ret (FHVis e k)),
-    (fun _ : frontier_head E MN R => query). repeat split.
+    (fun _ : stable_head E MN R => query). repeat split.
   - apply stable_hitting_vis.
   - apply sem_ae_ret. cbn. rewrite Hselect. exact Hrest.
   - exact (sem_bind_ret_l (FHVis e k)
-      (fun _ : frontier_head E MN R => query)).
+      (fun _ : stable_head E MN R => query)).
 Qed.
 
-Lemma finite_trace_query_vis_reject `{FK : @SemanticMeasureAEKleisliLaws MF FI}
+Lemma finite_interaction_query_vis_reject `{FK : @SemanticMeasureAEKleisliLaws MF FI}
     `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
     {R X} (select : event_selector) rest (e : E X)
     (k : X -> ptree E MN R) :
   select X e = None ->
-  finite_trace_query (select :: rest) (Vis e k) (sem_ret false).
+  finite_interaction_query (select :: rest) (Vis e k) (sem_ret false).
 Proof.
   intro Hselect.
   exists (sem_ret (FHVis e k)),
-    (fun _ : frontier_head E MN R => sem_ret false). repeat split.
+    (fun _ : stable_head E MN R => sem_ret false). repeat split.
   - apply stable_hitting_vis.
   - apply sem_ae_ret. cbn. rewrite Hselect. apply sem_eq_refl.
   - exact (sem_bind_ret_l (FHVis e k)
-      (fun _ : frontier_head E MN R => sem_ret false)).
+      (fun _ : stable_head E MN R => sem_ret false)).
 Qed.
 
 (** A singleton interactive prefix is exactly the old next-event query,
     after forgetting the selected response.  This makes
     [next_event_query] a conservative one-step specialization of the finite
     trace interface. *)
-Theorem finite_trace_query_singleton_iff_next_event_query {R}
+Theorem finite_interaction_query_singleton_iff_next_event_query {R}
     (select : event_selector) (t : ptree E MN R) query :
-  finite_trace_query (select :: nil) t query <->
+  finite_interaction_query (select :: nil) t query <->
   next_event_query (selector_accept select) t query.
 Proof.
   split.
@@ -278,12 +266,12 @@ Qed.
 (** Two witnesses for the same finite prefix are coupled whenever their
     programs are behaviorally equivalent.  Almost-everywhere restriction is
     essential: zero-mass stable heads need not admit a continuation query. *)
-Theorem finite_trace_query_related {R1 R2}
+Theorem finite_interaction_query_related {R1 R2}
     (RR : R1 -> R2 -> Prop) tr
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) query1 query2 :
   peutt RR t1 t2 ->
-  finite_trace_query tr t1 query1 ->
-  finite_trace_query tr t2 query2 ->
+  finite_interaction_query tr t1 query1 ->
+  finite_interaction_query tr t2 query2 ->
   sem_lift eq query1 query2.
 Proof.
   revert R1 R2 RR t1 t2 query1 query2.
@@ -294,9 +282,9 @@ Proof.
     eapply sem_lift_proper_l with (mu := sem_ret true).
     + apply sem_eq_sym. exact Hq1.
     + apply sem_lift_ret. reflexivity.
-  - destruct (finite_trace_query_cons_inv Hq1)
+  - destruct (finite_interaction_query_cons_inv Hq1)
       as [out1 [branch1 [Hhit1 [Hgood1 Hquery1]]]].
-    destruct (finite_trace_query_cons_inv Hq2)
+    destruct (finite_interaction_query_cons_inv Hq2)
       as [out2 [branch2 [Hhit2 [Hgood2 Hquery2]]]].
     apply peutt_unfold in Heutt.
     destruct Heutt as [Hforward _].
@@ -306,21 +294,21 @@ Proof.
     pose proof (sem_lift_proper_r
       (R := ptree_stable_head_rel RR (peutt_state RR))
       (mu := out1) (nu := out2') (nu' := out2) HoutEq Hlift) as Hlift12.
-    pose (good1 := fun h : frontier_head E MN R1 =>
+    pose (good1 := fun h : stable_head E MN R1 =>
       match h with
       | FHRet _ => sem_eq (branch1 h) (sem_ret false)
       | @FHVis _ _ _ X e k =>
           match select X e with
-          | Some x => finite_trace_query rest (k x) (branch1 h)
+          | Some x => finite_interaction_query rest (k x) (branch1 h)
           | None => sem_eq (branch1 h) (sem_ret false)
           end
       end).
-    pose (good2 := fun h : frontier_head E MN R2 =>
+    pose (good2 := fun h : stable_head E MN R2 =>
       match h with
       | FHRet _ => sem_eq (branch2 h) (sem_ret false)
       | @FHVis _ _ _ X e k =>
           match select X e with
-          | Some x => finite_trace_query rest (k x) (branch2 h)
+          | Some x => finite_interaction_query rest (k x) (branch2 h)
           | None => sem_eq (branch2 h) (sem_ret false)
           end
       end).
@@ -347,34 +335,34 @@ Qed.
 (** Canonical behavioral equivalence preserves all finite dependent event
     prefixes.  Stable-head coupling transports the almost-everywhere domain
     on which recursive continuation queries are required. *)
-Theorem peutt_preserves_finite_trace_query {R1 R2}
+Theorem peutt_preserves_finite_interaction_query {R1 R2}
     (RR : R1 -> R2 -> Prop) tr
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) query1 :
   peutt RR t1 t2 ->
-  finite_trace_query tr t1 query1 ->
+  finite_interaction_query tr t1 query1 ->
   exists query2,
-    finite_trace_query tr t2 query2 /\ sem_lift eq query1 query2.
+    finite_interaction_query tr t2 query2 /\ sem_lift eq query1 query2.
 Proof.
   revert R1 R2 RR t1 t2 query1.
   induction tr as [|select rest IH]; intros R1 R2 RR t1 t2 query1 Heutt Hq.
-  - exists (sem_ret true). split; [apply finite_trace_query_nil|].
-    eapply finite_trace_query_related; eauto using finite_trace_query_nil.
-  - destruct (finite_trace_query_cons_inv Hq)
+  - exists (sem_ret true). split; [apply finite_interaction_query_nil|].
+    eapply finite_interaction_query_related; eauto using finite_interaction_query_nil.
+  - destruct (finite_interaction_query_cons_inv Hq)
       as [out1 [branch1 [Hhit1 [Hgood1 Hquery1]]]].
     apply peutt_unfold in Heutt.
     destruct Heutt as [Hforward _].
     destruct (Hforward out1 Hhit1) as [out2 [Hhit2 Hlift]].
-    pose (good1 := fun h : frontier_head E MN R1 =>
+    pose (good1 := fun h : stable_head E MN R1 =>
       match h with
       | FHRet _ => sem_eq (branch1 h) (sem_ret false)
       | @FHVis _ _ _ X e k =>
           match select X e with
-          | Some x => finite_trace_query rest (k x) (branch1 h)
+          | Some x => finite_interaction_query rest (k x) (branch1 h)
           | None => sem_eq (branch1 h) (sem_ret false)
           end
       end).
-    pose (reachable2 := fun h2 : frontier_head E MN R2 =>
-      exists h1, frontier_head_rel RR (peutt RR) h1 h2 /\
+    pose (reachable2 := fun h2 : stable_head E MN R2 =>
+      exists h1, stable_head_rel RR (peutt RR) h1 h2 /\
         good1 h1).
     assert (Hreachable2 : sem_ae out2 reachable2).
     { eapply sem_lift_ae_transport_r; [exact Hlift|exact Hgood1]. }
@@ -384,11 +372,11 @@ Proof.
         | FHRet _ => sem_eq q2 (sem_ret false)
         | @FHVis _ _ _ X e k =>
             match select X e with
-            | Some x => finite_trace_query rest (k x) q2
+            | Some x => finite_interaction_query rest (k x) q2
             | None => sem_eq q2 (sem_ret false)
             end
         end) /\
-      (forall h1, frontier_head_rel RR (peutt RR) h1 h2 ->
+      (forall h1, stable_head_rel RR (peutt RR) h1 h2 ->
         good1 h1 -> sem_lift eq (branch1 h1) q2)).
     { intro h2. destruct (classic (reachable2 h2)) as [Hr|Hnr].
       - destruct Hr as [h1 [Hrel Hg1]].
@@ -411,7 +399,7 @@ Proof.
                destruct h1' as [r1'|Y' e1' k1']; dependent destruction Hrel'.
                unfold good1 in Hg1'.
                rewrite Hselect in Hg1'.
-               eapply finite_trace_query_related;
+               eapply finite_interaction_query_related;
                  [exact (H0 x)|exact Hg1'|exact Hq2].
           * exists (sem_ret false). split.
             -- intros Hreachable. apply sem_eq_refl.
@@ -426,14 +414,14 @@ Proof.
         + contradiction.
         + intros h1 Hrel Hg1. exfalso. apply Hnr.
           exists h1. split; assumption. }
-    destruct (@choice (frontier_head E MN R2) (MF bool) _ Hbranches)
+    destruct (@choice (stable_head E MN R2) (MF bool) _ Hbranches)
       as [branch2 Hbranch2].
     assert (Hgood2 : sem_ae out2 (fun h2 =>
       match h2 with
       | FHRet _ => sem_eq (branch2 h2) (sem_ret false)
       | @FHVis _ _ _ X e k =>
           match select X e with
-          | Some x => finite_trace_query rest (k x) (branch2 h2)
+          | Some x => finite_interaction_query rest (k x) (branch2 h2)
           | None => sem_eq (branch2 h2) (sem_ret false)
           end
       end)).
@@ -457,21 +445,21 @@ Qed.
 Section FiniteTraceExistence.
 Context `{FOrd : @SemanticMeasureOrderLaws MF FI FO}.
 
-Theorem finite_trace_query_exists {R} tr (t : ptree E MN R) :
-  exists query, finite_trace_query tr t query.
+Theorem finite_interaction_query_exists {R} tr (t : ptree E MN R) :
+  exists query, finite_interaction_query tr t query.
 Proof.
   revert R t.
   induction tr as [|select rest IH]; intros R t.
-  - exists (sem_ret true). apply finite_trace_query_nil.
+  - exists (sem_ret true). apply finite_interaction_query_nil.
   - destruct (stable_hitting_exists
       (@ptree_primitive_kernel E MN MF FI MX R) (observe t))
       as [out Hhit].
-    assert (Hbranches : forall h : frontier_head E MN R, exists query,
+    assert (Hbranches : forall h : stable_head E MN R, exists query,
       match h with
       | FHRet _ => sem_eq query (sem_ret false)
       | @FHVis _ _ _ X e k =>
           match select X e with
-          | Some x => finite_trace_query rest (k x) query
+          | Some x => finite_interaction_query rest (k x) query
           | None => sem_eq query (sem_ret false)
           end
       end).
@@ -480,7 +468,7 @@ Proof.
       - destruct (select X e) as [x|].
         + apply IH.
         + exists (sem_ret false). apply sem_eq_refl. }
-    destruct (@choice (frontier_head E MN R) (MF bool) _ Hbranches)
+    destruct (@choice (stable_head E MN R) (MF bool) _ Hbranches)
       as [branch Hbranch].
     exists (sem_bind out branch).
     exists out, branch. repeat split; try assumption.
@@ -492,69 +480,52 @@ Qed.
 (** Query witnesses are unique at the generic level up to diagonal
     coupling.  Turning this into [sem_eq] is intentionally left to a backend
     whose coupling interface includes an equality-reflection law. *)
-Corollary finite_trace_query_unique_up_to_coupling {R} tr
+Corollary finite_interaction_query_unique_up_to_coupling {R} tr
     (t : ptree E MN R) query1 query2 :
-  finite_trace_query tr t query1 ->
-  finite_trace_query tr t query2 ->
+  finite_interaction_query tr t query1 ->
+  finite_interaction_query tr t query2 ->
   sem_lift eq query1 query2.
 Proof.
   intros Hq1 Hq2.
-  eapply finite_trace_query_related; [apply peutt_refl|eassumption|].
+  eapply finite_interaction_query_related; [apply peutt_refl|eassumption|].
   exact Hq2.
 Qed.
 
 (** A choice-based representative makes the finite-cylinder denotation
     available as a function.  The theorems below, rather than the particular
     classical choice, are the public semantic contract. *)
-Definition finite_trace_sem {R} (tr : finite_event_trace)
+Definition finite_interaction_sem {R} (tr : finite_interaction_pattern)
     (t : ptree E MN R) : MF bool :=
   epsilon (inhabits (sem_ret true))
-    (fun query => finite_trace_query tr t query).
+    (fun query => finite_interaction_query tr t query).
 
-Definition finite_interaction_sem {R}
-    (pattern : finite_interaction_pattern)
-    (t : ptree E MN R) : MF bool :=
-  finite_trace_sem pattern t.
-
-Theorem finite_trace_sem_spec {R} tr (t : ptree E MN R) :
-  finite_trace_query tr t (finite_trace_sem tr t).
+Theorem finite_interaction_sem_spec {R} tr (t : ptree E MN R) :
+  finite_interaction_query tr t (finite_interaction_sem tr t).
 Proof.
-  unfold finite_trace_sem. apply epsilon_spec. apply finite_trace_query_exists.
+  unfold finite_interaction_sem. apply epsilon_spec. apply finite_interaction_query_exists.
 Qed.
 
-Theorem finite_interaction_sem_spec {R} pattern (t : ptree E MN R) :
-  finite_interaction_query pattern t (finite_interaction_sem pattern t).
-Proof. apply finite_trace_sem_spec. Qed.
-
-Theorem finite_trace_sem_coupled_to_query {R} tr
+Theorem finite_interaction_sem_coupled_to_query {R} tr
     (t : ptree E MN R) query :
-  finite_trace_query tr t query ->
-  sem_lift eq (finite_trace_sem tr t) query.
+  finite_interaction_query tr t query ->
+  sem_lift eq (finite_interaction_sem tr t) query.
 Proof.
-  intro Hquery. eapply finite_trace_query_unique_up_to_coupling.
-  - apply finite_trace_sem_spec.
+  intro Hquery. eapply finite_interaction_query_unique_up_to_coupling.
+  - apply finite_interaction_sem_spec.
   - exact Hquery.
 Qed.
 
-Theorem peutt_preserves_finite_trace_sem {R1 R2}
+Theorem peutt_preserves_finite_interaction_sem {R1 R2}
     (RR : R1 -> R2 -> Prop) tr
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
   peutt RR t1 t2 ->
-  sem_lift eq (finite_trace_sem tr t1) (finite_trace_sem tr t2).
+  sem_lift eq (finite_interaction_sem tr t1) (finite_interaction_sem tr t2).
 Proof.
-  intro Heutt. eapply finite_trace_query_related.
+  intro Heutt. eapply finite_interaction_query_related.
   - exact Heutt.
-  - apply finite_trace_sem_spec.
-  - apply finite_trace_sem_spec.
+  - apply finite_interaction_sem_spec.
+  - apply finite_interaction_sem_spec.
 Qed.
-
-Theorem peutt_preserves_finite_interaction_sem {R1 R2}
-    (RR : R1 -> R2 -> Prop) pattern
-    (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
-  peutt RR t1 t2 ->
-  sem_lift eq (finite_interaction_sem pattern t1)
-    (finite_interaction_sem pattern t2).
-Proof. apply peutt_preserves_finite_trace_sem. Qed.
 
 End FiniteTraceExistence.
 

@@ -29,7 +29,7 @@ Context `{MathCompOracleSupportLaws R}.
 Local Notation MN := (MathCompKernelMeasure R).
 Local Notation MF := (MathCompBehaviorMeasure R).
 Local Notation Head :=
-  (frontier_head real_mathcomp_coinE MN bool).
+  (stable_head real_mathcomp_coinE MN bool).
 
 Variable qbit : binary_oracle.
 Variable q : R.
@@ -228,7 +228,7 @@ Lemma ptree_mathcomp_oracle_heads_lift
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
       (NI := MathCompNodeSemanticMeasure R)) _ _
-    (frontier_head_rel eq sim)
+    (stable_head_rel eq sim)
     ptree_mathcomp_oracle_heads ptree_mathcomp_direct_heads.
 Proof.
   eapply FOQLObserve with
@@ -251,7 +251,7 @@ Proof.
     cbn in Hvalue. subst b2. constructor. reflexivity.
   - unfold ptree_mathcomp_oracle_heads,
       ptree_mathcomp_direct_heads.
-    change (free_omega_support_lift (frontier_head_rel eq sim)
+    change (free_omega_support_lift (stable_head_rel eq sim)
       (free_omega_bind (unified_mathcomp_oracle_out R Head qbit)
         (fun b => FORet (FHRet b)))
       (free_omega_bind

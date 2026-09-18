@@ -33,7 +33,7 @@ Lemma ptree_hitting_pstruct_no_event {A}
     (ptree_hitting_approx (MF := MF) fuel (observe t2)).
 Proof.
   intro Hstruct. eapply free_omega_lift_mono with
-    (R := frontier_head_rel eq (pstruct eq)).
+    (R := stable_head_rel eq (pstruct eq)).
   - intros h1 h2 Hhead.
     destruct h1 as [a1|X1 e1 k1];
       destruct h2 as [a2|X2 e2 k2].
@@ -158,7 +158,7 @@ Qed.
     computation.  Stable heads are mapped immediately, so global primitive
     fuel and diagonal bind fuel coincide rather than merely being cofinal. *)
 Definition pure_head_bind {A R} (f : A -> R)
-    (h : frontier_head E MN A) : frontier_head E MN R :=
+    (h : stable_head E MN A) : stable_head E MN R :=
   match h with
   | FHRet a => FHRet (f a)
   | @FHVis _ _ _ X e c =>
@@ -200,7 +200,7 @@ Proof.
 Qed.
 
 Lemma ptree_head_bind_ret_map {A R}
-    (f : A -> R) fuel (h : frontier_head E MN A) :
+    (f : A -> R) fuel (h : stable_head E MN A) :
   ptree_head_bind_approx (MF := MF) fuel
     (fun a => Ret (f a)) h = FORet (pure_head_bind f h).
 Proof.
@@ -344,7 +344,7 @@ Qed.
 Definition ptree_bind_split_approx {A R}
     (source_fuel continuation_fuel : nat)
     (t : ptree E MN A) (k : A -> ptree E MN R) :
-    MF (frontier_head E MN R) :=
+    MF (stable_head E MN R) :=
   free_omega_bind
     (ptree_hitting_approx (MF := MF) source_fuel (observe t))
     (ptree_head_bind_approx (MF := MF) continuation_fuel k).
@@ -541,7 +541,7 @@ Qed.
 
 Definition ptree_interp_split_approx {R}
     (source_fuel head_fuel : nat) (t : ptree E MN R) :
-    MF (frontier_head F MN R) :=
+    MF (stable_head F MN R) :=
   free_omega_bind
     (ptree_hitting_approx (MF := MF) source_fuel (observe t))
     (ptree_interp_head_approx (MF := MF) (R := R)
@@ -636,16 +636,16 @@ Qed.
 
 End InterpCofinality.
 
-Definition frontier_head_is_ret {R}
-    (h : frontier_head E MN R) : Prop :=
+Definition stable_head_is_ret {R}
+    (h : stable_head E MN R) : Prop :=
   match h with
   | FHRet _ => True
   | @FHVis _ _ _ X e k => False
   end.
 
-Definition frontier_head_ret_bind_front {A R}
-    (front : A -> MF (frontier_head E MN R))
-    (h : frontier_head E MN A) : MF (frontier_head E MN R) :=
+Definition stable_head_ret_bind_front {A R}
+    (front : A -> MF (stable_head E MN R))
+    (h : stable_head E MN A) : MF (stable_head E MN R) :=
   match h with
   | FHRet a => front a
   | @FHVis _ _ _ X e k => FOZero
@@ -661,27 +661,27 @@ Theorem sem_lift_ret_bind_front
     (simA : ptree E MN A1 -> ptree E MN A2 -> Prop)
     (RR : R1 -> R2 -> Prop)
     (simR : ptree E MN R1 -> ptree E MN R2 -> Prop)
-    (hs1 : MF (frontier_head E MN A1))
-    (hs2 : MF (frontier_head E MN A2))
-    (front1 : A1 -> MF (frontier_head E MN R1))
-    (front2 : A2 -> MF (frontier_head E MN R2)) :
+    (hs1 : MF (stable_head E MN A1))
+    (hs2 : MF (stable_head E MN A2))
+    (front1 : A1 -> MF (stable_head E MN R1))
+    (front2 : A2 -> MF (stable_head E MN R2)) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-    _ _ (frontier_head_rel RA simA) hs1 hs2 ->
+    _ _ (stable_head_rel RA simA) hs1 hs2 ->
   (forall a1 a2, RA a1 a2 ->
     @sem_lift MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      _ _ (frontier_head_rel RR simR) (front1 a1) (front2 a2)) ->
+      _ _ (stable_head_rel RR simR) (front1 a1) (front2 a2)) ->
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-    _ _ (frontier_head_rel RR simR)
-    (free_omega_bind hs1 (frontier_head_ret_bind_front front1))
-    (free_omega_bind hs2 (frontier_head_ret_bind_front front2)).
+    _ _ (stable_head_rel RR simR)
+    (free_omega_bind hs1 (stable_head_ret_bind_front front1))
+    (free_omega_bind hs2 (stable_head_ret_bind_front front2)).
 Proof.
   intros Hsource Hfront. eapply FOQLBind; [exact Hsource|].
   intros h1 h2 Hhead. inversion Hhead; subst; clear Hhead.
-  - cbn [frontier_head_ret_bind_front]. apply Hfront. exact H.
-  - cbn [frontier_head_ret_bind_front].
+  - cbn [stable_head_ret_bind_front]. apply Hfront. exact H.
+  - cbn [stable_head_ret_bind_front].
     apply FOQLStructural. constructor.
 Qed.
 
@@ -694,9 +694,9 @@ Theorem stable_hitting_bind_ret_only
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
     {A R}
     (t : ptree E MN A) (k : A -> ptree E MN R)
-    (hs : MF (frontier_head E MN A))
-    (front : A -> MF (frontier_head E MN R)) :
-  free_omega_ae frontier_head_is_ret hs ->
+    (hs : MF (stable_head E MN A))
+    (front : A -> MF (stable_head E MN R)) :
+  free_omega_ae stable_head_is_ret hs ->
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -712,11 +712,11 @@ Theorem stable_hitting_bind_ret_only
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R
     (observe (PTree.bind t k))
-    (free_omega_bind hs (frontier_head_ret_bind_front front)).
+    (free_omega_bind hs (stable_head_ret_bind_front front)).
 Proof.
   intros Hret Hsource Hfront.
   pose (full :=
-    free_omega_bind hs (frontier_head_bind_front k front)).
+    free_omega_bind hs (stable_head_bind_front k front)).
   assert (Hfull :
       @ptree_stable_hitting E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -732,11 +732,11 @@ Proof.
   assert (Hrestricted :
       @sem_lift MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        _ _ (fun h1 h2 => h1 = h2 /\ frontier_head_is_ret h1)
+        _ _ (fun h1 h2 => h1 = h2 /\ stable_head_is_ret h1)
         hs hs).
   { eapply FOQLAERestrict with
-      (T := eq) (P := frontier_head_is_ret)
-      (Q := frontier_head_is_ret).
+      (T := eq) (P := stable_head_is_ret)
+      (Q := stable_head_is_ret).
     - apply free_omega_qlift_refl. intro h. reflexivity.
     - exact Hret.
     - exact Hret.
@@ -745,11 +745,11 @@ Proof.
       @sem_lift MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         _ _ eq full
-        (free_omega_bind hs (frontier_head_ret_bind_front front))).
+        (free_omega_bind hs (stable_head_ret_bind_front front))).
   { unfold full. eapply FOQLBind; [exact Hrestricted|].
     intros h1 h2 [-> Hret1].
     destruct h2 as [a|X e c]; [|contradiction].
-    cbn [frontier_head_bind_front frontier_head_ret_bind_front].
+    cbn [stable_head_bind_front stable_head_ret_bind_front].
     apply free_omega_qlift_refl. intro h. reflexivity. }
   unfold ptree_stable_hitting, stable_hitting in Hfull |- *.
   eapply FOQLComp with (T := eq) (U := eq) (mid := full).
@@ -884,17 +884,17 @@ Proof.
 Qed.
 
 Definition no_event_head_value_for {X}
-    (h : frontier_head E MN X) : X :=
+    (h : stable_head E MN X) : X :=
   match h with
   | FHRet x => x
   | @FHVis _ _ _ Y e _ => False_rect X (no_event e)
   end.
 
 Definition no_event_head_value
-    (h : frontier_head E MN A) : A :=
+    (h : stable_head E MN A) : A :=
   no_event_head_value_for h.
 
-Lemma no_event_head_ret (h : frontier_head E MN A) :
+Lemma no_event_head_ret (h : stable_head E MN A) :
   exists a, h = FHRet a.
 Proof.
   destruct h as [a|X e c].
@@ -915,7 +915,7 @@ Qed.
 (** [outer] bounds how many completed sampler results may be consumed;
     [inner] bounds primitive execution inside every sampler invocation. *)
 Fixpoint nested_execution_grid (outer inner : nat) (i : I) :
-    MF (frontier_head E MN R) :=
+    MF (stable_head E MN R) :=
   match outer with
   | O => FOZero
   | Datatypes.S outer' =>
@@ -959,8 +959,8 @@ Record nested_productivity_certificate (i : I) := {
 (** The corresponding row limit replaces the finite inner hitting chain by
     its complete AST output, while retaining finite outer fuel. *)
 Fixpoint nested_row_out
-    (sample_out : MF (frontier_head E MN A))
-    (outer : nat) (i : I) : MF (frontier_head E MN R) :=
+    (sample_out : MF (stable_head E MN A))
+    (outer : nat) (i : I) : MF (stable_head E MN R) :=
   match outer with
   | O => FOZero
   | Datatypes.S outer' =>
@@ -988,7 +988,7 @@ Section NestedRowDenotation.
 Context `{DB : @FreeOmegaDenotationBindLaws MN NI NO}.
 
 Lemma nested_row_out_denotes
-    (sample_out : MF (frontier_head E MN A))
+    (sample_out : MF (stable_head E MN A))
     (sample_measure : MN A)
     (Hsample : free_omega_denotes
       (@no_event_head_value_for A)
@@ -1017,7 +1017,7 @@ Section NestedLimitDenotation.
 Context `{DO : @FreeOmegaDenotationOmegaLaws MN NI NO}.
 
 Lemma nested_rows_lub_denotes
-    (sample_out : MF (frontier_head E MN A))
+    (sample_out : MF (stable_head E MN A))
     (sample_measure : MN A)
     (Hrows : forall outer i,
       free_omega_denotes
@@ -1233,7 +1233,7 @@ Proof.
 Qed.
 
 Lemma nested_execution_grid_row_lub
-    (sample_out : MF (frontier_head E MN A))
+    (sample_out : MF (stable_head E MN A))
     (Hsample : @ptree_stable_hitting E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
@@ -1282,7 +1282,7 @@ Proof.
 Qed.
 
 Theorem nested_execution_grid_diagonal_lub
-    (sample_out : MF (frontier_head E MN A))
+    (sample_out : MF (stable_head E MN A))
     (Hsample : @ptree_stable_hitting E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
@@ -1302,7 +1302,7 @@ Proof.
   refine (@sem_lub_double_diagonal MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega
-    FreeOmegaObservableSemanticOmegaFubiniLaws (frontier_head E MN R)
+    FreeOmegaObservableSemanticOmegaFubiniLaws (stable_head E MN R)
     (fun outer inner => nested_execution_grid outer inner i)
     (fun outer => nested_row_out sample_out outer i) out _ _ _ _).
   - intros outer inner. apply nested_execution_grid_inner_increasing.
@@ -1313,7 +1313,7 @@ Qed.
 
 Theorem ptree_stable_hitting_of_nested_no_event_grid
     (program : ptree E MN R)
-    (sample_out : MF (frontier_head E MN A))
+    (sample_out : MF (stable_head E MN A))
     (Hsample : @ptree_stable_hitting E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
@@ -1348,7 +1348,7 @@ Qed.
 (** User-facing form for the canonical nested program: the example supplies
     only finite productivity schedules and the outer probabilistic limit. *)
 Corollary ptree_stable_hitting_of_nested_productivity
-    (sample_out : MF (frontier_head E MN A))
+    (sample_out : MF (stable_head E MN A))
     (Hsample : @ptree_stable_hitting E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
@@ -1374,7 +1374,7 @@ Proof.
 Qed.
 
 Corollary ptree_stable_hitting_ast_of_nested_productivity
-    (sample_out : MF (frontier_head E MN A))
+    (sample_out : MF (stable_head E MN A))
     (Hsample : @ptree_stable_hitting E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
@@ -1400,7 +1400,7 @@ Proof.
 Qed.
 
 Corollary ptree_stable_hitting_of_canonical_nested
-    (sample_out : MF (frontier_head E MN A))
+    (sample_out : MF (stable_head E MN A))
     (Hsample : @ptree_stable_hitting E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
@@ -1424,7 +1424,7 @@ Proof.
 Qed.
 
 Corollary ptree_stable_hitting_ast_of_canonical_nested
-    (sample_out : MF (frontier_head E MN A))
+    (sample_out : MF (stable_head E MN A))
     (Hsample : @ptree_stable_hitting E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
@@ -1664,21 +1664,21 @@ Proof.
 Qed.
 
 Definition iter_head_next
-    (h : frontier_head E MN (I + R)) : I + R :=
+    (h : stable_head E MN (I + R)) : I + R :=
   match h with
   | FHRet next => next
   | @FHVis _ _ _ X e k => False_rect _ (no_event e)
   end.
 
 Definition iter_result_value
-    (h : frontier_head E MN R) : R :=
+    (h : stable_head E MN R) : R :=
   match h with
   | FHRet r => r
   | @FHVis _ _ _ X e k => False_rect _ (no_event e)
   end.
 
 Fixpoint iter_execution_grid (rounds inner : nat) (i : I) :
-    MF (frontier_head E MN R) :=
+    MF (stable_head E MN R) :=
   match rounds with
   | O => FOZero
   | S rounds' =>
@@ -1691,7 +1691,7 @@ Fixpoint iter_execution_grid (rounds inner : nat) (i : I) :
           end)
   end.
 
-Lemma iter_head_ret (h : frontier_head E MN (I + R)) :
+Lemma iter_head_ret (h : stable_head E MN (I + R)) :
   exists next, h = FHRet next.
 Proof.
   destruct h as [next|X e k].
@@ -1862,10 +1862,10 @@ Proof.
     + apply iter_grid_to_ptree_sound.
 Qed.
 
-Variable step_out : I -> MF (frontier_head E MN (I + R)).
+Variable step_out : I -> MF (stable_head E MN (I + R)).
 
 Fixpoint iter_complete_rows (rounds : nat) (i : I) :
-    MF (frontier_head E MN R) :=
+    MF (stable_head E MN R) :=
   match rounds with
   | O => FOZero
   | S rounds' =>
@@ -1946,7 +1946,7 @@ Proof.
   refine (@sem_lub_double_diagonal MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega
-    FreeOmegaObservableSemanticOmegaFubiniLaws (frontier_head E MN R)
+    FreeOmegaObservableSemanticOmegaFubiniLaws (stable_head E MN R)
     (fun rounds inner => iter_execution_grid rounds inner i)
     (fun rounds => iter_complete_rows rounds i) out _ _ _ _).
   - intros rounds inner. apply iter_execution_grid_inner_increasing.
@@ -2105,7 +2105,7 @@ Qed.
 (** A primitive Markov step has a uniform syntactic cost: one probabilistic
     node followed by the silent back-edge inserted by [PTree.iter].  Hence
     its global stable-hitting chain and its absorbing-round chain are
-    cofinal.  This theorem is entirely semantic; no frontier derivation
+    cofinal.  This theorem is entirely semantic; no frontier-certificate derivation
     or iteration constructor occurs in its assumptions. *)
 Section PrimitiveProbIteration.
 Context {I R : Type} (transition : I -> MN (I + R)).
@@ -2117,12 +2117,12 @@ Definition primitive_iter_program (i : I) : ptree E MN R :=
   PTree.iter primitive_iter_step i.
 
 Definition primitive_iter_hitting (fuel : nat) (i : I) :
-    MF (frontier_head E MN R) :=
+    MF (stable_head E MN R) :=
   ptree_hitting_approx (MF := MF) fuel
     (observe (primitive_iter_program i)).
 
 Definition primitive_iter_rounds (rounds : nat) (i : I) :
-    MF (frontier_head E MN R) :=
+    MF (stable_head E MN R) :=
   ptree_iter_round_approx (MF := MF) rounds transition i.
 
 Definition primitive_iter_after (next : I + R) : ptree E MN R :=

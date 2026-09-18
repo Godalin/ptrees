@@ -91,7 +91,7 @@ Variant pfinite_relF
         (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
       finite_stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
-      sem_lift (frontier_head_rel RR (finite_tau_closure sim)) out1 out2 ->
+      sem_lift (stable_head_rel RR (finite_tau_closure sim)) out1 out2 ->
       pfinite_relF sim t1 t2.
 
 Lemma pfinite_relF_monotone sim1 sim2 :
@@ -102,7 +102,7 @@ Proof.
   - apply PFiniteStrong. exact H.
   - eapply PFiniteCollapse; [eassumption|eassumption|].
     eapply sem_lift_mono; [|eassumption].
-    intros h1 h2 Hh. eapply frontier_head_rel_mono; [|exact Hh].
+    intros h1 h2 Hh. eapply stable_head_rel_mono; [|exact Hh].
     intros u1 u2 Hu. eapply finite_tau_closure_mono; eauto.
 Qed.
 
@@ -273,7 +273,7 @@ Lemma pfinite_rel_collapse {R1 R2} (RR : R1 -> R2 -> Prop)
     (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
   finite_stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
-  sem_lift (frontier_head_rel RR
+  sem_lift (stable_head_rel RR
     (@pfinite_rel E MN MF NI NC FI FC MX FO R1 R2 RR)) out1 out2 ->
   @pfinite_rel E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2.
 Proof.

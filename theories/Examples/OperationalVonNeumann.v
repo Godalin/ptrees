@@ -37,8 +37,8 @@ Proof.
   rewrite Hone List.app_nil_r. reflexivity.
 Qed.
 Local Notation MF := (FreeOmega Enum).
-Local Notation vn_head := (frontier_head vnE Enum bool).
-Local Notation vn_round_head := (frontier_head vnE Enum (unit + bool)).
+Local Notation vn_head := (stable_head vnE Enum bool).
+Local Notation vn_round_head := (stable_head vnE Enum (unit + bool)).
 
 Definition ptree_vn_head_value (h : vn_head) : bool :=
   match h with
@@ -627,7 +627,7 @@ Proof.
 Qed.
 
 Lemma ptree_vn_compiled_frontier :
-  @frontier vnE Enum MF Enum_SemanticMeasure
+  @frontier_certificate vnE Enum MF Enum_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -636,7 +636,7 @@ Lemma ptree_vn_compiled_frontier :
     (observe ptree_vn_compiled) ptree_vn_heads.
 Proof.
   unfold ptree_vn_compiled, ptree_vn_heads.
-  eapply frontier_iter_intro with
+  eapply certificate_iter_intro with
     (transition := fun _ : unit => vn_transition).
   - intro u. unfold vn_compiled_step. cbn.
     rewrite -free_omega_mixed_bindE.
@@ -656,7 +656,7 @@ Definition ptree_vn_compiled_after_heads (next : unit + bool) :
   end.
 
 Lemma ptree_vn_compiled_after_frontier next :
-  @frontier vnE Enum MF Enum_SemanticMeasure
+  @frontier_certificate vnE Enum MF Enum_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -674,7 +674,7 @@ Proof.
 Qed.
 
 Lemma ptree_vn_compiled_cont_frontier next :
-  @frontier vnE Enum MF Enum_SemanticMeasure
+  @frontier_certificate vnE Enum MF Enum_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -693,13 +693,13 @@ Definition ptree_vn_compiled_body_heads : MF vn_head :=
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _ _
     ptree_vn_compiled_round
-    (frontier_head_bind_front
+    (stable_head_bind_front
       (FI := FreeOmegaObservableSemanticMeasure)
       ptree_vn_compiled_after
       ptree_vn_compiled_after_heads).
 
 Lemma ptree_vn_compiled_body_frontier :
-  @frontier vnE Enum MF Enum_SemanticMeasure
+  @frontier_certificate vnE Enum MF Enum_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))
@@ -718,7 +718,7 @@ Proof.
     rewrite Hstep.
     cbn [ptree_hitting_approx ptree_primitive_kernel
       ptree_stable_target_approx].
-    change (@frontier vnE Enum MF Enum_SemanticMeasure
+    change (@frontier_certificate vnE Enum MF Enum_SemanticMeasure
       (FreeOmegaObservableSemanticMeasure
         (NI := Enum_SemanticMeasure)
         (NO := Enum_SemanticOmega))
@@ -770,7 +770,7 @@ Lemma ptree_vn_heads_lift
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _ _
-    (frontier_head_rel eq sim)
+    (stable_head_rel eq sim)
     ptree_vn_heads ptree_vn_direct_heads.
 Proof.
   eapply FOQLObserve with
@@ -845,7 +845,7 @@ Lemma ptree_vn_raw_heads_lift
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _ _
-    (frontier_head_rel eq sim)
+    (stable_head_rel eq sim)
     ptree_vn_raw_heads ptree_vn_direct_heads.
 Proof.
   eapply FOQLObserve with
@@ -968,7 +968,7 @@ Proof.
 Qed.
 
 Lemma ptree_vn_direct_frontier :
-  @frontier vnE Enum MF Enum_SemanticMeasure
+  @frontier_certificate vnE Enum MF Enum_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))

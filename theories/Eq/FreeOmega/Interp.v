@@ -54,7 +54,7 @@ Inductive translate_id_state {R} :
         (observe (PTree.translate identity_rename t)) (observe t).
 
 Lemma translate_id_head_comp {R}
-    (hT hS : frontier_head E MN R) :
+    (hT hS : stable_head E MN R) :
   translate_head_rel identity_rename hS hT ->
   @ptree_stable_head_rel E MN R R eq translate_id_state hT hS.
 Proof.
@@ -138,9 +138,9 @@ Inductive translate_comp_state {R} :
         (observe (PTree.translate compose_rename t)).
 
 Lemma translate_comp_head {R}
-    (hL hR : frontier_head G MN R) :
-  (exists hS : frontier_head E MN R,
-    (exists hM : frontier_head F MN R,
+    (hL hR : stable_head G MN R) :
+  (exists hS : stable_head E MN R,
+    (exists hM : stable_head F MN R,
       translate_head_rel rename1 hS hM /\
       @translate_head_rel F MN G rename2 R hM hL) /\
     translate_head_rel compose_rename hS hR) ->
@@ -274,10 +274,10 @@ Theorem peutt_interp_of_head_lifts
     {A0 B0} (RR0 : A0 -> B0 -> Prop)
     (handler0 : forall X, E X -> ptree F MN X)
     (t1 : ptree E MN A0) (t2 : ptree E MN B0)
-    (source1 : MF (frontier_head E MN A0))
-    (source2 : MF (frontier_head E MN B0))
-    (front1 : frontier_head E MN A0 -> MF (frontier_head F MN A0))
-    (front2 : frontier_head E MN B0 -> MF (frontier_head F MN B0)) :
+    (source1 : MF (stable_head E MN A0))
+    (source2 : MF (stable_head E MN B0))
+    (front1 : stable_head E MN A0 -> MF (stable_head F MN A0))
+    (front2 : stable_head E MN B0 -> MF (stable_head F MN B0)) :
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -550,7 +550,7 @@ Definition interp_vis_fusion : Prop :=
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticOmega
       (ptree' F MN A) (ptree' F MN B)
-      (frontier_head F MN A) (frontier_head F MN B)
+      (stable_head F MN A) (stable_head F MN B)
       (@ptree_primitive_kernel F MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure A)
@@ -619,13 +619,13 @@ Proof.
     destruct (stable_hitting_front_choice
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
-      (fun h : frontier_head E MN A =>
+      (fun h : stable_head E MN A =>
         ptree_interp_head_tree handler h))
       as [front1 Hfront1].
     destruct (stable_hitting_front_choice
       (FI := FreeOmegaObservableSemanticMeasure)
       (FO := FreeOmegaObservableSemanticOmega)
-      (fun h : frontier_head E MN B =>
+      (fun h : stable_head E MN B =>
         ptree_interp_head_tree handler h))
       as [front2 Hfront2].
     assert (HsourceLift :
@@ -709,7 +709,7 @@ Definition interp_generator_closed : Prop :=
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticOmega
       (ptree' F MN A) (ptree' F MN B)
-      (frontier_head F MN A) (frontier_head F MN B)
+      (stable_head F MN A) (stable_head F MN B)
       (@ptree_primitive_kernel F MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure A)

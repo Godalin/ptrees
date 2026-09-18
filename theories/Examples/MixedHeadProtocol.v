@@ -147,7 +147,7 @@ Example mixed_spec_probabilistic : probabilistic_ptree mixed_spec.
 Proof. apply probabilistic_ptree_intrinsic. Qed.
 
 Local Notation MF := (FreeOmega SubEnum).
-Local Notation mixed_head := (frontier_head mixedE SubEnum bool).
+Local Notation mixed_head := (stable_head mixedE SubEnum bool).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
 Local Notation kernel := (@ptree_primitive_kernel mixedE SubEnum MF FI FreeOmegaMixedMeasure bool).
@@ -328,18 +328,18 @@ Proof.
   destruct b; reflexivity.
 Qed.
 Lemma spec_challenge_true_reply_query c :
-  @finite_trace_query mixedE SubEnum MF FI FreeOmegaMixedMeasure
+  @finite_interaction_query mixedE SubEnum MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool (challenge_true_reply_trace c)
     mixed_spec (spec_true_reply_query c).
 Proof.
   unfold challenge_true_reply_trace.
-  change (@finite_trace_query mixedE SubEnum MF FI FreeOmegaMixedMeasure
+  change (@finite_interaction_query mixedE SubEnum MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (cons (@select_challenge c) (cons (@select_true_reply) nil))
     (Vis Challenge (fun answer => mixed_after (response_value answer))) (spec_true_reply_query c)).
-  eapply finite_trace_query_vis_match.
+  eapply finite_interaction_query_vis_match.
   - reflexivity.
-  - apply (proj2 (finite_trace_query_singleton_iff_next_event_query
+  - apply (proj2 (finite_interaction_query_singleton_iff_next_event_query
       (@select_true_reply) (mixed_after c) (spec_true_reply_query c))).
     rewrite true_reply_selector_accepts. exact (spec_after_true_reply_query c).
 Qed.
@@ -363,7 +363,7 @@ Proof. destruct c; vm_compute; reflexivity. Qed.
 Theorem masked_challenge_true_reply_probability m c :
   Prₛ[ masked_impl m | challenge_true_reply_trace c ] = (if c then 1 / 8 else 3 / 8 : rat).
 Proof.
-  destruct (peutt_preserves_finite_trace_query
+  destruct (peutt_preserves_finite_interaction_query
     (peutt_sym (masked_protocol_equivalent m))
     (spec_challenge_true_reply_query c)) as [query [Hquery Hlift]].
   eapply subenum_finite_interaction_probability_intro

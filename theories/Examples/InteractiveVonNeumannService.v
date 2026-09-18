@@ -69,7 +69,7 @@ Proof. reflexivity. Qed.
 
 Local Notation MF := (FreeOmega Enum).
 Local Notation service_head :=
-  (frontier_head coin_serviceE Enum bool).
+  (stable_head coin_serviceE Enum bool).
 
 Definition service_head_value (h : service_head) : bool :=
   match h with
@@ -458,7 +458,7 @@ Lemma service_vn_direct_heads_lift
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _ _
-    (frontier_head_rel eq sim)
+    (stable_head_rel eq sim)
     service_vn_heads service_direct_heads.
 Proof.
   eapply FOQLAERestrict with
@@ -545,7 +545,7 @@ Qed.
 Local Definition service_kernel {R} :
     ptree' coin_serviceE Enum R ->
     MF (stable_target (ptree' coin_serviceE Enum R)
-      (frontier_head coin_serviceE Enum R)) :=
+      (stable_head coin_serviceE Enum R)) :=
   @ptree_primitive_kernel coin_serviceE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
@@ -584,12 +584,12 @@ Definition direct_after_request : ptree coin_serviceE Enum bool :=
     (fun b => publish b direct_fair_service).
 
 Definition vn_reply_front (b : bool) :
-    MF (frontier_head coin_serviceE Enum bool) :=
+    MF (stable_head coin_serviceE Enum bool) :=
   sem_ret (FHVis (CoinReply b)
     (fun _ => von_neumann_service)).
 
 Definition direct_reply_front (b : bool) :
-    MF (frontier_head coin_serviceE Enum bool) :=
+    MF (stable_head coin_serviceE Enum bool) :=
   sem_ret (FHVis (CoinReply b)
     (fun _ => direct_fair_service)).
 
@@ -597,14 +597,14 @@ Local Opaque von_neumann_service direct_fair_service
   service_vn_heads service_direct_heads.
 
 Definition vn_after_request_heads :
-    MF (frontier_head coin_serviceE Enum bool) :=
+    MF (stable_head coin_serviceE Enum bool) :=
   free_omega_bind service_vn_heads
-    (frontier_head_ret_bind_front vn_reply_front).
+    (stable_head_ret_bind_front vn_reply_front).
 
 Definition direct_after_request_heads :
-    MF (frontier_head coin_serviceE Enum bool) :=
+    MF (stable_head coin_serviceE Enum bool) :=
   free_omega_bind service_direct_heads
-    (frontier_head_ret_bind_front direct_reply_front).
+    (stable_head_ret_bind_front direct_reply_front).
 
 Lemma vn_after_request_weak :
   service_hitting
@@ -691,7 +691,7 @@ Lemma after_request_heads_lift_upto :
     vn_after_request_heads direct_after_request_heads.
 Proof.
   eapply sem_lift_mono; [|exact after_request_heads_lift].
-  apply frontier_head_rel_mono. intros x1 x2 Hsim.
+  apply stable_head_rel_mono. intros x1 x2 Hsim.
   left. exact Hsim.
 Qed.
 
@@ -770,7 +770,7 @@ Proof.
   -
   unfold direct_true_reply_query, direct_after_request_heads,
     service_direct_heads, direct_reply_front,
-    frontier_head_ret_bind_front, frontier_head_bind_front.
+    stable_head_ret_bind_front, stable_head_bind_front.
   cbn [free_omega_bind mixed_bind sem_bind sem_ret
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticMeasure
@@ -841,7 +841,7 @@ Definition select_true_reply {X} (e : coin_serviceE X) : option X :=
   end.
 
 Definition request_true_reply_trace :
-    @finite_event_trace coin_serviceE :=
+    @finite_interaction_pattern coin_serviceE :=
   cons (@select_request) (cons (@select_true_reply) nil).
 
 Lemma select_request_accepts_request :
@@ -859,7 +859,7 @@ Proof.
 Qed.
 
 Lemma direct_after_request_true_reply_prefix_query :
-  @finite_trace_query coin_serviceE Enum MF
+  @finite_interaction_query coin_serviceE Enum MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega
@@ -867,14 +867,14 @@ Lemma direct_after_request_true_reply_prefix_query :
     (cons (@select_true_reply) nil)
     direct_after_request direct_true_reply_query.
 Proof.
-  apply (proj2 (finite_trace_query_singleton_iff_next_event_query
+  apply (proj2 (finite_interaction_query_singleton_iff_next_event_query
     (@select_true_reply) direct_after_request direct_true_reply_query)).
   rewrite selector_accept_true_reply.
   exact direct_after_request_true_reply_query.
 Qed.
 
 Lemma direct_request_true_reply_prefix_query :
-  @finite_trace_query coin_serviceE Enum MF
+  @finite_interaction_query coin_serviceE Enum MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega
@@ -882,28 +882,28 @@ Lemma direct_request_true_reply_prefix_query :
     request_true_reply_trace direct_fair_service direct_true_reply_query.
 Proof.
   unfold request_true_reply_trace.
-  change (@finite_trace_query coin_serviceE Enum MF
+  change (@finite_interaction_query coin_serviceE Enum MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (cons (@select_request) (cons (@select_true_reply) nil))
     (Vis CoinRequest (fun _ => direct_after_request))
     direct_true_reply_query).
-  eapply finite_trace_query_vis_match.
+  eapply finite_interaction_query_vis_match.
   - exact select_request_accepts_request.
   - exact direct_after_request_true_reply_prefix_query.
 Qed.
 
 Lemma direct_request_true_reply_sem_coupled_to_fair :
   @sem_lift MF FreeOmegaObservableSemanticMeasure bool bool eq
-    (@finite_trace_sem coin_serviceE Enum MF
+    (@finite_interaction_sem coin_serviceE Enum MF
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool
       request_true_reply_trace direct_fair_service)
     direct_true_reply_query.
 Proof.
-  eapply finite_trace_sem_coupled_to_query.
+  eapply finite_interaction_sem_coupled_to_query.
   exact direct_request_true_reply_prefix_query.
 Qed.
 
@@ -912,7 +912,7 @@ Qed.
     explicit fair measure whose true mass is [1/2]. *)
 Theorem von_neumann_request_true_reply_probability_half :
   exists query,
-    @finite_trace_query coin_serviceE Enum MF
+    @finite_interaction_query coin_serviceE Enum MF
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega
@@ -922,7 +922,7 @@ Theorem von_neumann_request_true_reply_probability_half :
       FreeOmegaObservableSemanticMeasure bool bool eq
       direct_true_reply_query query.
 Proof.
-  eapply peutt_preserves_finite_trace_query.
+  eapply peutt_preserves_finite_interaction_query.
   - eapply peutt_sym.
     exact interactive_von_neumann_service_equivalent.
   - exact direct_request_true_reply_prefix_query.
@@ -935,7 +935,7 @@ Theorem von_neumann_request_true_reply_trace_probability :
 Proof.
   destruct von_neumann_request_true_reply_probability_half
     as [query [Hquery Hlift]].
-  eapply enum_finite_trace_probability_intro
+  eapply enum_finite_interaction_probability_intro
     with (query := query) (representative := direct_true_reply_query)
       (out := vn_fair).
   - exact Hquery.
@@ -947,18 +947,18 @@ Qed.
 
 Theorem von_neumann_request_true_reply_sem_preserved :
   @sem_lift MF FreeOmegaObservableSemanticMeasure bool bool eq
-    (@finite_trace_sem coin_serviceE Enum MF
+    (@finite_interaction_sem coin_serviceE Enum MF
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool
       request_true_reply_trace direct_fair_service)
-    (@finite_trace_sem coin_serviceE Enum MF
+    (@finite_interaction_sem coin_serviceE Enum MF
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool
       request_true_reply_trace von_neumann_service).
 Proof.
-  eapply peutt_preserves_finite_trace_sem.
+  eapply peutt_preserves_finite_interaction_sem.
   eapply peutt_sym.
   exact interactive_von_neumann_service_equivalent.
 Qed.
@@ -966,7 +966,7 @@ Qed.
 (** A non-matching cylinder fails at the first event: the service initially
     offers [CoinRequest], not a reply. *)
 Lemma direct_reply_first_prefix_rejected :
-  @finite_trace_query coin_serviceE Enum MF
+  @finite_interaction_query coin_serviceE Enum MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega
@@ -974,13 +974,13 @@ Lemma direct_reply_first_prefix_rejected :
     (cons (@select_true_reply) nil)
     direct_fair_service (sem_ret false).
 Proof.
-  change (@finite_trace_query coin_serviceE Enum MF
+  change (@finite_interaction_query coin_serviceE Enum MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (cons (@select_true_reply) nil)
     (Vis CoinRequest (fun _ => direct_after_request)) (sem_ret false)).
-  eapply (@finite_trace_query_vis_reject
+  eapply (@finite_interaction_query_vis_reject
     coin_serviceE Enum MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaObservableSemanticMeasureCoreLaws

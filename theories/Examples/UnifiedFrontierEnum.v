@@ -16,13 +16,13 @@ Import Enum.
 
 (** First checked client of the two-level semantics.  Enum implements both
     layers, while the theorem itself mentions only the backend-independent
-    unified frontier. *)
+    unified frontier_certificate. *)
 Definition unified_reg_split_heads :
-    Enum (frontier_head regE Enum bool) :=
+    Enum (stable_head regE Enum bool) :=
   mixed_bind reg_fair_split (fun b => sem_ret (FHRet b)).
 
 Lemma reg_split_program_unified_frontier :
-  frontier (observe reg_split_program) unified_reg_split_heads.
+  frontier_certificate (observe reg_split_program) unified_reg_split_heads.
 Proof.
   unfold reg_split_program, unified_reg_split_heads.
   apply (UFProb
@@ -40,7 +40,7 @@ Lemma unified_reg_split_extensional :
     (mixed_bind reg_fair (fun b => sem_ret (FHRet b))).
 Proof.
   change (@meas_eq Enum Enum_MeasureInterface
-    (frontier_head regE Enum bool)
+    (stable_head regE Enum bool)
     (bind_Enum reg_fair_split (fun b => ret_Enum (FHRet b)))
     (bind_Enum reg_fair (fun b => ret_Enum (FHRet b)))).
   apply (@meas_bind_proper Enum Enum_MeasureInterface

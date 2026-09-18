@@ -56,7 +56,7 @@ Class MathCompOracleSupportLaws := {
 }.
 
 Lemma unified_mathcomp_oracle_step_frontier qbit n :
-  @frontier real_mathcomp_coinE MN MF
+  @frontier_certificate real_mathcomp_coinE MN MF
     (MathCompNodeSemanticMeasure R)
     (FreeOmegaObservableSemanticMeasure
       (NI := MathCompNodeSemanticMeasure R))

@@ -23,7 +23,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
     Residual states are observations, not syntax constructors: taking the
     transition never recognizes a derived [bind] or [iter] form. *)
 Definition ptree_primitive_kernel {R} (ot : ptree' E MN R) :
-    MF (stable_target (ptree' E MN R) (frontier_head E MN R)) :=
+    MF (stable_target (ptree' E MN R) (stable_head E MN R)) :=
   match ot with
   | RetF r => sem_ret (SHStable (FHRet r))
   | VisF _ e k => sem_ret (SHStable (FHVis e k))
@@ -35,8 +35,8 @@ Definition ptree_primitive_kernel {R} (ot : ptree' E MN R) :
 (** Resolve one stable target using at most [fuel] further primitive
     steps.  Unresolved internal mass goes to [sem_zero]. *)
 Definition ptree_stable_target_approx {R} (fuel : nat)
-    (target : stable_target (ptree' E MN R) (frontier_head E MN R)) :
-    MF (frontier_head E MN R) :=
+    (target : stable_target (ptree' E MN R) (stable_head E MN R)) :
+    MF (stable_head E MN R) :=
   stable_target_approx ptree_primitive_kernel fuel target.
 
 (** The [fuel]-bounded stable-hitting distribution of an observed state.
@@ -44,7 +44,7 @@ Definition ptree_stable_target_approx {R} (fuel : nat)
     their one primitive observation step; Tau and Prob recursively spend the
     remaining fuel through the same kernel. *)
 Definition ptree_hitting_approx {R} (fuel : nat)
-    (ot : ptree' E MN R) : MF (frontier_head E MN R) :=
+    (ot : ptree' E MN R) : MF (stable_head E MN R) :=
   stable_hitting_approx ptree_primitive_kernel fuel ot.
 
 (** The behavior of a tree is the stable-hitting limit of primitive
@@ -52,14 +52,14 @@ Definition ptree_hitting_approx {R} (fuel : nat)
     On a subprobability backend, pure divergence therefore has the zero
     subdistribution as its hitting limit. *)
 Definition ptree_stable_hitting {R} (ot : ptree' E MN R)
-    (out : MF (frontier_head E MN R)) : Prop :=
+    (out : MF (stable_head E MN R)) : Prop :=
   stable_hitting ptree_primitive_kernel ot out.
 
 (** AST is a separate property of a behavior: its stable-hitting limit
     satisfies the backend's totality predicate.  On a subprobability backend
     this means stable mass one. *)
 Definition ptree_stable_hitting_ast {R} (ot : ptree' E MN R)
-    (out : MF (frontier_head E MN R)) : Prop :=
+    (out : MF (stable_head E MN R)) : Prop :=
   ptree_stable_hitting ot out /\ sem_total out.
 
 (** A syntax-independent bridge for genuinely nested unbounded execution.
@@ -70,7 +70,7 @@ Definition ptree_stable_hitting_ast {R} (ot : ptree' E MN R)
     limit; no [Bind], [Iter], or [NestedIter] semantic constructor is used. *)
 Definition ptree_hitting_diagonal_cofinal {R}
     (ot : ptree' E MN R)
-    (grid : nat -> nat -> MF (frontier_head E MN R)) : Prop :=
+    (grid : nat -> nat -> MF (stable_head E MN R)) : Prop :=
   forall out,
     sem_lub (fun fuel => ptree_hitting_approx fuel ot) out <->
     sem_lub (fun fuel => grid fuel fuel) out.
@@ -80,8 +80,8 @@ Context `{FFubini : @SemanticOmegaFubiniLaws MF FI FO}.
 
 Theorem ptree_stable_hitting_of_nested_grid {R}
     (ot : ptree' E MN R)
-    (grid : nat -> nat -> MF (frontier_head E MN R))
-    (row_out : nat -> MF (frontier_head E MN R)) out :
+    (grid : nat -> nat -> MF (stable_head E MN R))
+    (row_out : nat -> MF (stable_head E MN R)) out :
   ptree_hitting_diagonal_cofinal ot grid ->
   (forall outer, sem_increasing (grid outer)) ->
   (forall inner, sem_increasing (fun outer => grid outer inner)) ->
@@ -97,8 +97,8 @@ Qed.
 
 Corollary ptree_stable_hitting_ast_of_nested_grid {R}
     (ot : ptree' E MN R)
-    (grid : nat -> nat -> MF (frontier_head E MN R))
-    (row_out : nat -> MF (frontier_head E MN R)) out :
+    (grid : nat -> nat -> MF (stable_head E MN R))
+    (row_out : nat -> MF (stable_head E MN R)) out :
   ptree_hitting_diagonal_cofinal ot grid ->
   (forall outer, sem_increasing (grid outer)) ->
   (forall inner, sem_increasing (fun outer => grid outer inner)) ->
@@ -136,7 +136,7 @@ Lemma ptree_kernel_probE {R X} (mu : MN X)
 Proof. reflexivity. Qed.
 
 Lemma ptree_target_stableE {R} fuel
-    (h : frontier_head E MN R) :
+    (h : stable_head E MN R) :
   ptree_stable_target_approx fuel (SHStable h) = sem_ret h.
 Proof. destruct fuel; reflexivity. Qed.
 
@@ -169,7 +169,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
     are not constructors of stable-hitting semantics. *)
 Lemma ptree_hitting_ret {R} fuel (r : R) :
   sem_eq (ptree_hitting_approx (MF := MF) fuel (RetF r))
-    (sem_ret (FHRet r : frontier_head E MN R)).
+    (sem_ret (FHRet r : stable_head E MN R)).
 Proof.
   unfold ptree_hitting_approx, stable_hitting_approx,
     ptree_primitive_kernel.
@@ -181,7 +181,7 @@ Qed.
 Lemma ptree_hitting_vis {R X} fuel (e : E X)
     (k : X -> ptree E MN R) :
   sem_eq (ptree_hitting_approx (MF := MF) fuel (VisF e k))
-    (sem_ret (FHVis e k : frontier_head E MN R)).
+    (sem_ret (FHVis e k : stable_head E MN R)).
 Proof.
   unfold ptree_hitting_approx, stable_hitting_approx,
     ptree_primitive_kernel.
@@ -267,7 +267,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 (** Adequacy of the PTree adapter for the syntax-independent primitive
     kernel semantics.  This is pointwise in finite fuel, so the later
     and AST correspondence does not assume omega-limit uniqueness or a
-    structured frontier derivation. *)
+    structured frontier-certificate derivation. *)
 Theorem ptree_primitive_hitting_adequate {R} fuel
     (ot : ptree' E MN R) :
   sem_eq
@@ -357,7 +357,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}.
 
 Lemma ptree_target_approx_increasing {R} fuel
-    (target : stable_target (ptree' E MN R) (frontier_head E MN R)) :
+    (target : stable_target (ptree' E MN R) (stable_head E MN R)) :
   sem_le
     (ptree_stable_target_approx (MF := MF) fuel target)
     (ptree_stable_target_approx (Datatypes.S fuel) target).
@@ -433,7 +433,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 
 Theorem ptree_stable_hitting_ret {R} (r : R) :
   ptree_stable_hitting (MF := MF) (RetF r)
-    (sem_ret (FHRet r : frontier_head E MN R)).
+    (sem_ret (FHRet r : stable_head E MN R)).
 Proof.
   unfold ptree_stable_hitting. eapply sem_lub_chain_proper.
   - intro n. apply sem_eq_sym. apply ptree_hitting_ret.
@@ -443,7 +443,7 @@ Qed.
 Theorem ptree_stable_hitting_vis {R X} (e : E X)
     (k : X -> ptree E MN R) :
   ptree_stable_hitting (MF := MF) (VisF e k)
-    (sem_ret (FHVis e k : frontier_head E MN R)).
+    (sem_ret (FHVis e k : stable_head E MN R)).
 Proof.
   unfold ptree_stable_hitting. eapply sem_lub_chain_proper.
   - intro n. apply sem_eq_sym. apply ptree_hitting_vis.
@@ -543,7 +543,7 @@ Qed.
     exactly under the mixed monotone-convergence capability. *)
 Theorem ptree_stable_hitting_prob {R X}
     (mu : MN X) (k : X -> ptree E MN R)
-    (front : X -> MF (frontier_head E MN R)) (Good : X -> Prop) :
+    (front : X -> MF (stable_head E MN R)) (Good : X -> Prop) :
   sem_ae mu Good ->
   (forall x, Good x -> ptree_stable_hitting (MF := MF) (observe (k x)) (front x)) ->
   ptree_stable_hitting (MF := MF) (ProbF mu k) (mixed_bind mu front).
@@ -562,7 +562,7 @@ Qed.
 
 Corollary ptree_stable_hitting_ast_prob {R X}
     (mu : MN X) (k : X -> ptree E MN R)
-    (front : X -> MF (frontier_head E MN R)) (Good : X -> Prop) :
+    (front : X -> MF (stable_head E MN R)) (Good : X -> Prop) :
   sem_ae mu Good ->
   (forall x, Good x ->
     ptree_stable_hitting_ast (MF := MF) (observe (k x)) (front x)) ->
@@ -584,8 +584,8 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FO : @SemanticOmega MF FI}.
 
 Definition ptree_head_bind_approx {A R} (fuel : nat)
-    (k : A -> ptree E MN R) (h : frontier_head E MN A) :
-    MF (frontier_head E MN R) :=
+    (k : A -> ptree E MN R) (h : stable_head E MN A) :
+    MF (stable_head E MN R) :=
   match h with
   | FHRet a => ptree_hitting_approx (MF := MF) fuel (observe (k a))
   | @FHVis _ _ _ X e c =>
@@ -594,13 +594,13 @@ Definition ptree_head_bind_approx {A R} (fuel : nat)
 
 Definition ptree_bind_diagonal_approx {A R} (fuel : nat)
     (t : ptree E MN A) (k : A -> ptree E MN R) :
-    MF (frontier_head E MN R) :=
+    MF (stable_head E MN R) :=
   sem_bind (ptree_hitting_approx (MF := MF) fuel (observe t))
     (ptree_head_bind_approx fuel k).
 
 (** The remaining PTree-specific obligation for Bind: global primitive fuel
     and the diagonal allocation of the same index to source and continuation
-    must be cofinal.  This statement contains no frontier derivation and is
+    must be cofinal.  This statement contains no frontier-certificate derivation and is
     kept separate from measure-level diagonal continuity. *)
 Definition ptree_bind_cofinal {A R}
     (t : ptree E MN A) (k : A -> ptree E MN R) : Prop :=
@@ -659,27 +659,27 @@ Qed.
 
 Lemma ptree_head_bind_approx_lub {A R}
     (k : A -> ptree E MN R)
-    (front : A -> MF (frontier_head E MN R))
+    (front : A -> MF (stable_head E MN R))
     (Hfront : forall a,
       ptree_stable_hitting (MF := MF) (observe (k a)) (front a)) h :
   sem_lub (fun fuel => ptree_head_bind_approx
       (MF := MF) fuel k h)
-    (frontier_head_bind_front k front h).
+    (stable_head_bind_front k front h).
 Proof.
   destruct h as [a|X e c]; cbn [ptree_head_bind_approx
-    frontier_head_bind_front].
+    stable_head_bind_front].
   - exact (Hfront a).
   - apply sem_lub_constant.
 Qed.
 
 Theorem ptree_stable_hitting_bind {A R}
     (t : ptree E MN A) (k : A -> ptree E MN R)
-    hs (front : A -> MF (frontier_head E MN R)) :
+    hs (front : A -> MF (stable_head E MN R)) :
   ptree_bind_cofinal (MF := MF) t k ->
   ptree_stable_hitting (MF := MF) (observe t) hs ->
   (forall a, ptree_stable_hitting (MF := MF) (observe (k a)) (front a)) ->
   ptree_stable_hitting (MF := MF) (observe (PTree.bind t k))
-    (sem_bind hs (frontier_head_bind_front k front)).
+    (sem_bind hs (stable_head_bind_front k front)).
 Proof.
   intros Hcofinal Hsource Hfront. unfold ptree_stable_hitting in *.
   apply (proj2 (Hcofinal _)).
@@ -693,14 +693,14 @@ Qed.
 
 Corollary ptree_stable_hitting_ast_bind {A R}
     (t : ptree E MN A) (k : A -> ptree E MN R)
-    hs (front : A -> MF (frontier_head E MN R)) :
+    hs (front : A -> MF (stable_head E MN R)) :
   ptree_bind_cofinal (MF := MF) t k ->
   ptree_stable_hitting_ast (MF := MF) (observe t) hs ->
   (forall a, ptree_stable_hitting_ast (MF := MF)
     (observe (k a)) (front a)) ->
-  sem_total (sem_bind hs (frontier_head_bind_front k front)) ->
+  sem_total (sem_bind hs (stable_head_bind_front k front)) ->
   ptree_stable_hitting_ast (MF := MF) (observe (PTree.bind t k))
-    (sem_bind hs (frontier_head_bind_front k front)).
+    (sem_bind hs (stable_head_bind_front k front)).
 Proof.
   intros Hcofinal Hsource Hfront Htotal. split; [|exact Htotal].
   eapply ptree_stable_hitting_bind; [exact Hcofinal|exact (proj1 Hsource)|].
@@ -718,7 +718,7 @@ Context {E F : Type -> Type} {MN MF : Type -> Type}
 
 Definition ptree_interp_head_tree {R}
     (handler : forall X, E X -> ptree F MN X)
-    (h : frontier_head E MN R) : ptree F MN R :=
+    (h : stable_head E MN R) : ptree F MN R :=
   match h with
   | FHRet r => Ret r
   | @FHVis _ _ _ X e k =>
@@ -728,14 +728,14 @@ Definition ptree_interp_head_tree {R}
 
 Definition ptree_interp_head_approx {R}
     (fuel : nat) (handler : forall X, E X -> ptree F MN X)
-    (h : frontier_head E MN R) :
-    MF (frontier_head F MN R) :=
+    (h : stable_head E MN R) :
+    MF (stable_head F MN R) :=
   ptree_hitting_approx (MF := MF) fuel
     (observe (ptree_interp_head_tree handler h)).
 
 Definition ptree_interp_diagonal_approx {R}
     (fuel : nat) (handler : forall X, E X -> ptree F MN X)
-    (t : ptree E MN R) : MF (frontier_head F MN R) :=
+    (t : ptree E MN R) : MF (stable_head F MN R) :=
   sem_bind
     (ptree_hitting_approx (MF := MF) fuel (observe t))
     (ptree_interp_head_approx fuel handler).
@@ -765,7 +765,7 @@ Context {E F : Type -> Type} {MN MF : Type -> Type}
 
 Lemma ptree_interp_head_approx_increasing {R}
     (handler : forall X, E X -> ptree F MN X)
-    (h : frontier_head E MN R) :
+    (h : stable_head E MN R) :
   sem_increasing (fun fuel => ptree_interp_head_approx
     (MF := MF) fuel handler h).
 Proof.
@@ -774,7 +774,7 @@ Qed.
 
 Lemma ptree_interp_head_approx_lub {R}
     (handler : forall X, E X -> ptree F MN X)
-    (front : frontier_head E MN R -> MF (frontier_head F MN R))
+    (front : stable_head E MN R -> MF (stable_head F MN R))
     (Hfront : forall h, ptree_stable_hitting (MF := MF)
       (observe (ptree_interp_head_tree handler h)) (front h)) h :
   sem_lub (fun fuel => ptree_interp_head_approx
@@ -786,7 +786,7 @@ Qed.
 Theorem ptree_stable_hitting_interp {R}
     (handler : forall X, E X -> ptree F MN X)
     (t : ptree E MN R)
-    hs (front : frontier_head E MN R -> MF (frontier_head F MN R)) :
+    hs (front : stable_head E MN R -> MF (stable_head F MN R)) :
   ptree_interp_cofinal (MF := MF) handler t ->
   ptree_stable_hitting (MF := MF) (observe t) hs ->
   (forall h, ptree_stable_hitting (MF := MF)
@@ -815,7 +815,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 
 Definition ptree_iter_round_approx {I R} (fuel : nat)
     (transition : I -> MN (I + R)) (i : I) :
-    MF (frontier_head E MN R) :=
+    MF (stable_head E MN R) :=
   sem_bind (mixed_iter_approx fuel transition i)
     (fun r => sem_ret (FHRet r)).
 
@@ -847,7 +847,7 @@ Theorem ptree_stable_hitting_iter {I R}
   mixed_iter transition i out ->
   ptree_stable_hitting (MF := MF) (observe (PTree.iter step i))
     (sem_bind out (fun r => sem_ret
-      (FHRet r : frontier_head E MN R))).
+      (FHRet r : stable_head E MN R))).
 Proof.
   intros Hinc Hcofinal Hiter. unfold ptree_stable_hitting.
   apply (proj2 (Hcofinal _)). unfold ptree_iter_round_approx.
@@ -861,10 +861,10 @@ Corollary ptree_stable_hitting_ast_iter {I R}
   ptree_iter_cofinal (MF := MF) step transition i ->
   mixed_iter transition i out ->
   sem_total (sem_bind out (fun r => sem_ret
-    (FHRet r : frontier_head E MN R))) ->
+    (FHRet r : stable_head E MN R))) ->
   ptree_stable_hitting_ast (MF := MF) (observe (PTree.iter step i))
     (sem_bind out (fun r => sem_ret
-      (FHRet r : frontier_head E MN R))).
+      (FHRet r : stable_head E MN R))).
 Proof.
   intros Hinc Hcofinal Hiter Htotal. split; [|exact Htotal].
   eapply ptree_stable_hitting_iter; eassumption.
@@ -901,13 +901,13 @@ Variable iter_productivity : forall I R
     sem_increasing (fun fuel => mixed_iter_approx fuel transition i) /\
     ptree_iter_cofinal (MF := MF) step transition i.
 
-(** Conditional end-to-end soundness of the structured frontier.  The
+(** Conditional end-to-end soundness of the structured certificate.  The
     analytic assumptions are measure capabilities; the only PTree-specific
     assumptions left are global-vs-diagonal fuel cofinality for Bind and
     productive iteration rounds. *)
-Theorem frontier_to_ptree_stable_hitting {R}
+Theorem certificate_to_ptree_stable_hitting {R}
     (ot : ptree' E MN R) out :
-  frontier ot out -> ptree_stable_hitting (MF := MF) ot out.
+  frontier_certificate ot out -> ptree_stable_hitting (MF := MF) ot out.
 Proof.
   intro Hfront. induction Hfront.
   - apply ptree_stable_hitting_ret.
@@ -926,27 +926,27 @@ Qed.
 
 (** Soundness into the syntax-independent standard model.  The conclusion
     mentions only the primitive PTree kernel adapter and generic stable
-    hitting; the structured frontier is used solely as a proof system on the
+    hitting; the structured certificate is used solely as a proof system on the
     premise side. *)
-Theorem frontier_to_stable_hitting {R}
+Theorem certificate_to_stable_hitting {R}
     (ot : ptree' E MN R) out :
-  frontier ot out ->
+  frontier_certificate ot out ->
   stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R) ot out.
 Proof.
   intro Hfront.
   apply (proj2 (ptree_primitive_stable_hitting_adequate ot out)).
-  exact (frontier_to_ptree_stable_hitting Hfront).
+  exact (certificate_to_ptree_stable_hitting Hfront).
 Qed.
 
-Corollary frontier_to_stable_hitting_ast {R}
+Corollary certificate_to_stable_hitting_ast {R}
     (ot : ptree' E MN R) out :
-  frontier ot out -> sem_total out ->
+  frontier_certificate ot out -> sem_total out ->
   stable_hitting_ast
     (@ptree_primitive_kernel E MN MF FI MX R) ot out.
 Proof.
   intros Hfront Htotal. split.
-  - exact (frontier_to_stable_hitting Hfront).
+  - exact (certificate_to_stable_hitting Hfront).
   - exact Htotal.
 Qed.
 

@@ -46,7 +46,7 @@ Definition translate_cont {R X}
   PTree.bind (Ret x) (fun y => PTree.translate rename (k y)).
 
 Inductive translate_head_rel {R} :
-    frontier_head E MN R -> frontier_head F MN R -> Prop :=
+    stable_head E MN R -> stable_head F MN R -> Prop :=
   | FTHRet r : translate_head_rel (FHRet r) (FHRet r)
   | FTHVis {X} (e : E X) (k : X -> ptree E MN R) :
       translate_head_rel (FHVis e k)
@@ -130,14 +130,14 @@ Lemma translate_hitting_lift {R} (t : ptree E MN R) out out' :
   @stable_hitting MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega
-    (ptree' E MN R) (frontier_head E MN R)
+    (ptree' E MN R) (stable_head E MN R)
     (@ptree_primitive_kernel E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure R) (observe t) out ->
   @stable_hitting MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega
-    (ptree' F MN R) (frontier_head F MN R)
+    (ptree' F MN R) (stable_head F MN R)
     (@ptree_primitive_kernel F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure R)
@@ -260,7 +260,7 @@ Inductive translate_bisim_state :
         (observe (PTree.translate rename t2)).
 
 Lemma translate_head_comp
-    (hT1 : frontier_head F MN R1) (hT2 : frontier_head F MN R2) :
+    (hT1 : stable_head F MN R1) (hT2 : stable_head F MN R2) :
   (exists hS2,
     (exists hS1,
       translate_head_rel (F := F) rename hS1 hT1 /\

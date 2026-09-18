@@ -98,13 +98,12 @@ single generic stable-hitting semantics, not a second execution semantics.
 `Eq/PEutt.v` defines the canonical coupling greatest fixed point.
 Its generator contains only bidirectional matching of complete
 stable-hitting limits through `sem_lift (head_rel sim)`.  It has no AST,
-Step, Tau, Prob, Bind, Iter, frontier, or syntax-specific constructor.
+Step, Tau, Prob, Bind, Iter, certificate, or syntax-specific constructor.
 
-Stable observations are publicly called `stable_head` and related by
-`stable_head_rel`; the established `frontier_head` names remain compatible.
-The syntax-directed `frontier_certificate` judgment (compatibility identifier
-`frontier`) is proof infrastructure for constructing stable-hitting facts,
-not a second operational or behavioral semantics.
+Stable observations are called `stable_head` and related by
+`stable_head_rel`.  The syntax-directed `frontier_certificate` judgment is
+proof infrastructure for constructing stable-hitting facts, not a second
+operational or behavioral semantics.
 
 The public notation is deliberately small:
 
@@ -462,10 +461,10 @@ Enum and MathComp remain concrete instances of the generic measure API.
 
 ## Structured proof infrastructure
 
-`Eq/UnifiedFrontier.v` defines stable heads, `frontier_head_rel`, and the
-single structured `frontier` certificate.  Frontier is not a behavioral
-equivalence.  `peutt_of_frontiers` first interprets two
-frontiers as canonical primitive stable-hitting limits and then applies the
+`Eq/UnifiedFrontier.v` defines stable heads, `stable_head_rel`, and the
+single structured `frontier_certificate` judgment.  It is not a behavioral
+equivalence.  `peutt_of_frontiers` first interprets two certificates as
+canonical primitive stable-hitting limits and then applies the
 canonical coupling relation.
 
 Finite computations and unbounded AST computations therefore use the same
@@ -621,34 +620,33 @@ continuation.  Recursive branch obligations are required almost everywhere
 with respect to the stable-head measure, so inaccessible zero-mass branches
 need no spurious hitting witness.
 
-The canonical type name is `finite_interaction_pattern`.  Because a selector
-may accept several events, such a pattern denotes a finite prefix/cylinder
-observation and is not necessarily one concrete trace.  The compatibility
-name `finite_event_trace` remains available; singleton selectors recover
-ordinary concrete traces.
+The type `finite_interaction_pattern` is a list of selectors.  Because a
+selector may accept several events, such a pattern denotes a finite
+prefix/cylinder observation and is not necessarily one concrete trace;
+singleton selectors recover ordinary concrete traces.
 
-`finite_trace_query_singleton_iff_next_event_query` proves that the old
+`finite_interaction_query_singleton_iff_next_event_query` proves that the old
 next-event query is precisely the singleton specialization.
-`finite_trace_query_related` gives witness independence up to coupling, and
-`peutt_preserves_finite_trace_query` proves that canonical
+`finite_interaction_query_related` gives witness independence up to coupling, and
+`peutt_preserves_finite_interaction_query` proves that canonical
 equivalence preserves every finite cylinder.  The proof uses coupling AE
 transport and restriction at each prefix step; it is not a syntactic replay
 of the two programs.
 
 The certificate semantics is total on backends providing
-`SemanticMeasureOrderLaws`: `finite_trace_query_exists` constructs a query by
+`SemanticMeasureOrderLaws`: `finite_interaction_query_exists` constructs a query by
 induction over the finite prefix and uses `stable_hitting_exists` at each
-event boundary.  `finite_trace_query_unique_up_to_coupling` specializes the
+event boundary.  `finite_interaction_query_unique_up_to_coupling` specializes the
 relational theorem to reflexive `peutt`.  Classical choice then
-packages `finite_trace_sem` (canonical wrapper `finite_interaction_sem`), with
-`finite_trace_sem_spec` as its adequacy contract and
-`peutt_preserves_finite_trace_sem` as its canonical preservation
+packages `finite_interaction_sem`, with
+`finite_interaction_sem_spec` as its adequacy contract and
+`peutt_preserves_finite_interaction_sem` as its canonical preservation
 theorem.  The generic result deliberately says `sem_lift eq`;
 identifying that with `sem_eq` requires a backend equality-reflection law.
 
 `ProbabilisticTraceEnum` adds the concrete presentation layer without
 duplicating this generic semantics.  `enum_finite_interaction_probability`
-(compatibility name `enum_finite_trace_probability`) and the notation
+and the notation
 `Prₜ[t | pattern] = p` require a valid generic query, an observational
 FreeOmega representative coupled to it, a concrete Enum denotation, and the
 rational expectation of the Boolean indicator.  Consequently the numeric

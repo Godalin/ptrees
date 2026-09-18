@@ -34,7 +34,7 @@ Definition factoryE_no_event : forall X, factoryE X -> False :=
 Section FactoryOperationalNormalization.
 Variables pfalse ptrue : nnQ.
 
-Local Notation factory_head A := (frontier_head factoryE Enum A).
+Local Notation factory_head A := (stable_head factoryE Enum A).
 
 Polymorphic Definition ptree_factory_head_value {X}
     (h : factory_head X) : X :=
@@ -440,7 +440,7 @@ Definition ptree_factory_binary_step_heads (x : rat) :
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _ _
     ptree_factory_raw_heads
-    (frontier_head_bind_front
+    (stable_head_bind_front
       (fun b => Ret (binary_round_result x b) : ptree factoryE Enum _)
       (fun b => FORet (FHRet (binary_round_result x b)))).
 
@@ -492,7 +492,7 @@ Lemma ptree_factory_binary_step_heads_observes
 Proof.
   unfold ptree_factory_binary_step_heads.
   assert (Hfront :
-    frontier_head_bind_front
+    stable_head_bind_front
       (fun b => Ret (binary_round_result x b) : ptree factoryE Enum _)
       (fun b => FORet (FHRet (binary_round_result x b))) =
     (fun h => FORet (FHRet (binary_round_result x
@@ -926,7 +926,7 @@ Qed.
 Lemma ptree_factory_standard_q_support
     (q0 : 0 <= q) (q1 : q <= 1)
     (sim : ptree factoryE Enum bool -> ptree factoryE Enum bool -> Prop) :
-  free_omega_support_lift (frontier_head_rel eq sim)
+  free_omega_support_lift (stable_head_rel eq sim)
     ptree_factory_standard_q_heads
     (ptree_factory_direct_q_heads q0 q1).
 Proof.
@@ -951,7 +951,7 @@ Lemma ptree_factory_standard_q_heads_lift_direct
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _ _
-    (frontier_head_rel eq sim)
+    (stable_head_rel eq sim)
     ptree_factory_standard_q_heads
     (ptree_factory_direct_q_heads q0 q1).
 Proof.
@@ -1001,7 +1001,7 @@ End RationalTarget.
 End FactoryOperationalNormalization.
 
 Definition ptree_third_to_two_fifths_heads :
-    MF (frontier_head factoryE Enum bool) :=
+    MF (stable_head factoryE Enum bool) :=
   ptree_factory_q_heads vn_one_third vn_two_thirds (2 / 5).
 
 Theorem ptree_third_to_two_fifths_weak :
@@ -1047,7 +1047,7 @@ Local Notation weak := (@ptree_stable_hitting factoryE Enum MF
   (FreeOmegaObservableSemanticMeasure (NI := Enum_SemanticMeasure)
     (NO := Enum_SemanticOmega)) FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega).
 
-Definition factory_fair_heads : MF (frontier_head factoryE Enum bool) :=
+Definition factory_fair_heads : MF (stable_head factoryE Enum bool) :=
   FOSample vn_fair (fun b => FORet (FHRet b)).
 
 Lemma factory_direct_fair_weak :
@@ -1081,7 +1081,7 @@ Hypothesis pnontrivial : 0 < Qval pfalse * Qval ptrue.
 
 Lemma factory_vn_fair_support
     (sim : ptree factoryE Enum bool -> ptree factoryE Enum bool -> Prop) :
-  free_omega_support_lift (frontier_head_rel eq sim)
+  free_omega_support_lift (stable_head_rel eq sim)
     (ptree_factory_raw_heads pfalse ptrue) factory_fair_heads.
 Proof.
   assert (Hpfalse : pfalse <> nnQ_0).
@@ -1162,7 +1162,7 @@ Qed.
 
 Lemma factory_vn_fair_heads_lift
     (sim : ptree factoryE Enum bool -> ptree factoryE Enum bool -> Prop) :
-  free_omega_qlift (frontier_head_rel eq sim)
+  free_omega_qlift (stable_head_rel eq sim)
     (ptree_factory_raw_heads pfalse ptrue) factory_fair_heads.
 Proof.
   eapply FOQLObserve with

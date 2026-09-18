@@ -30,11 +30,11 @@ Proof. reflexivity. Qed.
 Definition half_return_half_diverge : ptree regE Enum bool :=
   Prob reg_fair (fun b => if b then Ret true else canonical_spin).
 
-Definition half_return_heads : Enum (frontier_head regE Enum bool) :=
+Definition half_return_heads : Enum (stable_head regE Enum bool) :=
   [:: (reg_half, FHRet true)].
 
 Lemma canonical_spin_target_approx_expect_zero fuel
-    (P : frontier_head regE Enum bool -> bool) :
+    (P : stable_head regE Enum bool -> bool) :
   enum_expect (fun x => if P x then 1 else 0)
     (@stable_target_approx Enum Enum_SemanticMeasure
       Enum_SemanticOmega _ _
@@ -51,7 +51,7 @@ Proof.
 Qed.
 
 Lemma canonical_spin_hitting_approx_expect_zero fuel
-    (P : frontier_head regE Enum bool -> bool) :
+    (P : stable_head regE Enum bool -> bool) :
   enum_expect (fun x => if P x then 1 else 0)
     (@stable_hitting_approx Enum Enum_SemanticMeasure
       Enum_SemanticOmega _ _
@@ -82,20 +82,20 @@ Qed.
 Definition impossible_trace_step {X} (e : regE X) : option X :=
   match e with end.
 
-Definition divergent_one_event_trace : @finite_event_trace regE :=
+Definition divergent_one_event_trace : @finite_interaction_pattern regE :=
   cons (@impossible_trace_step) nil.
 
 Definition divergent_trace_query : Enum bool := [::].
 
 Lemma canonical_spin_nonempty_trace_query_zero :
-  @finite_trace_query regE Enum Enum
+  @finite_interaction_query regE Enum Enum
     Enum_SemanticMeasure Enum_MixedMeasure
     Enum_SemanticOmega bool
     divergent_one_event_trace canonical_spin divergent_trace_query.
 Proof.
   unfold divergent_one_event_trace, divergent_trace_query.
-  exists ([::] : Enum (frontier_head regE Enum bool)),
-    (fun _ : frontier_head regE Enum bool => [::]).
+  exists ([::] : Enum (stable_head regE Enum bool)),
+    (fun _ : stable_head regE Enum bool => [::]).
   repeat split.
   - exact canonical_spin_stable_hitting_zero.
   - cbn [TwoLevelMeasure.sem_ae Enum_SemanticMeasure
@@ -151,7 +151,7 @@ Qed.
 
 Lemma half_return_heads_not_same_mass_ret :
   ~ @sem_same_mass Enum Enum_SemanticMeasure
-      (frontier_head regE Enum bool) (frontier_head regE Enum bool)
+      (stable_head regE Enum bool) (stable_head regE Enum bool)
       half_return_heads (sem_ret (FHRet true)).
 Proof.
   intro Hmass.

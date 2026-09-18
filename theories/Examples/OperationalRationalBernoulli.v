@@ -27,7 +27,7 @@ Local Open Scope order_scope.
 
 Local Notation MF := (FreeOmega Enum).
 Local Notation rational_head :=
-  (frontier_head rational_coinE Enum bool).
+  (stable_head rational_coinE Enum bool).
 
 Section OperationalRationalCoin.
 Variable q : rat.
@@ -396,7 +396,7 @@ Lemma ptree_rational_heads_lift
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega)) _ _
-    (frontier_head_rel eq sim)
+    (stable_head_rel eq sim)
     ptree_rational_heads ptree_rational_direct_heads.
 Proof.
   eapply FOQLObserve with
@@ -415,7 +415,7 @@ Proof.
       try destruct e1; try destruct e2.
     cbn in Hvalue. subst b2. constructor. reflexivity.
   - unfold ptree_rational_heads, ptree_rational_direct_heads.
-    change (free_omega_support_lift (frontier_head_rel eq sim)
+    change (free_omega_support_lift (stable_head_rel eq sim)
       (free_omega_bind ptree_rational_limit
         (fun b => FORet (FHRet b)))
       (free_omega_bind
