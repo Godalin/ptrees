@@ -584,11 +584,11 @@ Proof.
   - exists t1, t2. repeat split; try reflexivity. exact Hstrong.
 Qed.
 
-Definition free_pfinite_state {A B} (RR : A -> B -> Prop)
+Definition free_pfinite_rel_state {A B} (RR : A -> B -> Prop)
     (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
   exists (t1 : ptree E MN A) (t2 : ptree E MN B),
     s1 = observe t1 /\ s2 = observe t2 /\
-    @pfinite E MN MF NI NC
+    @pfinite_rel E MN MF NI NC
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
@@ -597,9 +597,9 @@ Definition free_pfinite_state {A B} (RR : A -> B -> Prop)
 (** Every finite weak proof is sound for the unbounded endpoint.  The key
     distinction is visible in the proof: finite Tau prefixes are eliminated
     by induction, while visible continuations return to coinduction. *)
-Theorem free_peutt_of_pfinite {A B}
+Theorem free_peutt_of_pfinite_rel {A B}
     (RR : A -> B -> Prop) (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  @pfinite E MN MF NI NC
+  @pfinite_rel E MN MF NI NC
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
@@ -611,10 +611,10 @@ Theorem free_peutt_of_pfinite {A B}
     FreeOmegaObservableSemanticOmega A B RR t1 t2.
 Proof.
   intro Hfinite. eapply peutt_coinduction_upto with
-    (sim := free_pfinite_state RR).
+    (sim := free_pfinite_rel_state RR).
   - intros s1 s2 [u1 [u2 [-> [-> Hrel]]]].
     induction Hrel as [u1 u2 Hcore|u1 u2 Hrel IH|u1 u2 Hrel IH].
-    + pose proof (pfinite_core_unfold Hcore) as Hstep.
+    + pose proof (pfinite_rel_core_unfold Hcore) as Hstep.
       inversion Hstep as
           [v1 v2 Hstrong|v1 v2 out1 out2 Hhit1 Hhit2 Hlift]; subst.
       * pose proof (free_peutt_of_pstrong (RR := RR) Hstrong) as Hknown.
@@ -653,12 +653,43 @@ Proof.
   - exists t1, t2. repeat split; try reflexivity. exact Hfinite.
 Qed.
 
+Theorem free_peutt_of_pfinite {R}
+    (t1 t2 : ptree E MN R) :
+  @pfinite E MN MF NI NC
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R t1 t2 ->
+  @peutt E MN MF
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega R R eq t1 t2.
+Proof.
+  intro Hfinite. induction Hfinite.
+  - now apply free_peutt_of_pfinite_rel.
+  - apply peutt_refl.
+  - now apply peutt_sym.
+  - eapply peutt_trans; eauto.
+Qed.
+
+#[global] Instance free_pfinite_rel_peutt_subrelation {R} :
+  subrelation
+    (@pfinite_rel E MN MF NI NC
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R R eq)
+    (@peutt E MN MF
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R R eq).
+Proof. intros t1 t2. apply free_peutt_of_pfinite_rel. Qed.
+
 #[global] Instance free_pfinite_peutt_subrelation {R} :
   subrelation
     (@pfinite E MN MF NI NC
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R R eq)
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R)
     (@peutt E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws

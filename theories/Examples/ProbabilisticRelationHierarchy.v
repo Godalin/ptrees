@@ -18,6 +18,16 @@ Import Enum.
 
 Variant hierarchyE : Type -> Type := .
 Local Notation MF := (FreeOmega Enum).
+Local Notation hierarchy_pfinite :=
+  (@pfinite hierarchyE Enum MF Enum_SemanticMeasure
+    Enum_SemanticMeasureCoreLaws
+    (FreeOmegaObservableSemanticMeasure
+      (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega))
+    FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool).
+
+Lemma pfinite_equivalence_regression : Equivalence hierarchy_pfinite.
+Proof. exact pfinite_equivalence. Qed.
 
 (** A finite weak step removes one Tau even when the remaining computation
     has no stable observation.  Thus "finite" describes the compressed
@@ -31,7 +41,7 @@ Lemma pfinite_tau_before_divergence :
       (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
-    bool bool eq (Tau hierarchy_spin) hierarchy_spin.
+    bool (Tau hierarchy_spin) hierarchy_spin.
 Proof. apply pfinite_tau_l. Qed.
 
 Lemma tau_ret_not_pstrong :
@@ -49,7 +59,7 @@ Lemma tau_ret_pfinite :
       (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
-    bool bool eq (Tau (Ret true)) (Ret true).
+    bool (Tau (Ret true)) (Ret true).
 Proof. apply pfinite_tau_l. Qed.
 
 Lemma pfinite_promotes_to_peutt :
@@ -78,7 +88,7 @@ Proof.
         (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
-      bool bool eq).
+      bool).
   - apply free_pfinite_peutt_subrelation.
   - apply pfinite_tau_l.
   - apply peutt_refl.

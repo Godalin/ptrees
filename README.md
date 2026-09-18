@@ -53,7 +53,11 @@ a stable-hitting prefix once its complete measure is attained at a finite
 approximant; `peutt` additionally admits genuinely unbounded internal
 probability through the omega limit.  In particular, `pfinite (Tau spin)
 spin` does not assert that `spin` terminates: only the removed prefix is
-finite.  The inclusions use Rocq's standard `subrelation`, and
+finite.  The public homogeneous `pfinite` is the reflexive-symmetric-
+transitive closure of this one-round finite proof relation, so its composition
+still contains only finitely many finite weak rewrites.  All four homogeneous
+relations are registered as `Equivalence` instances.  The inclusions use
+Rocq's standard `subrelation`, and
 `PEuttRewrite.v` provides relation-generic left, right, and two-sided endpoint
 rewriting.
 

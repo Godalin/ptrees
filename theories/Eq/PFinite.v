@@ -3,6 +3,7 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import Utf8 Program RelationClasses.
+From Coq Require Import Relations.Relation_Operators.
 
 From Coinduction Require Import all.
 From mathcomp Require Import ssreflect.
@@ -80,22 +81,22 @@ Proof.
   - apply FTTauR. exact IHHfinite.
 Qed.
 
-Variant pfiniteF
+Variant pfinite_relF
     (sim : ptree E MN R1 -> ptree E MN R2 -> Prop) :
     ptree E MN R1 -> ptree E MN R2 -> Prop :=
   | PFiniteStrong t1 t2 :
-      pstrong RR t1 t2 -> pfiniteF sim t1 t2
+      pstrong RR t1 t2 -> pfinite_relF sim t1 t2
   | PFiniteCollapse t1 t2 out1 out2 :
       finite_stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
       finite_stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
       sem_lift (frontier_head_rel RR (finite_tau_closure sim)) out1 out2 ->
-      pfiniteF sim t1 t2.
+      pfinite_relF sim t1 t2.
 
-Lemma pfiniteF_monotone sim1 sim2 :
+Lemma pfinite_relF_monotone sim1 sim2 :
   (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
-  forall t1 t2, pfiniteF sim1 t1 t2 -> pfiniteF sim2 t1 t2.
+  forall t1 t2, pfinite_relF sim1 t1 t2 -> pfinite_relF sim2 t1 t2.
 Proof.
   intros Hsub t1 t2 Hstep. inversion Hstep; subst.
   - apply PFiniteStrong. exact H.
@@ -105,32 +106,32 @@ Proof.
     intros u1 u2 Hu. eapply finite_tau_closure_mono; eauto.
 Qed.
 
-Program Definition fpfinite :
+Program Definition fpfinite_rel :
     mon (ptree E MN R1 -> ptree E MN R2 -> Prop) :=
-  {| body := pfiniteF |}.
+  {| body := pfinite_relF |}.
 Next Obligation.
   intros sim1 sim2 Hsub t1 t2 Hstep.
-  eapply pfiniteF_monotone; eauto.
+  eapply pfinite_relF_monotone; eauto.
 Qed.
 
-Definition pfinite_core : ptree E MN R1 -> ptree E MN R2 -> Prop :=
-  gfp fpfinite.
+Definition pfinite_rel_core : ptree E MN R1 -> ptree E MN R2 -> Prop :=
+  gfp fpfinite_rel.
 
-Lemma pfinite_core_unfold t1 t2 :
-  pfinite_core t1 t2 -> pfiniteF pfinite_core t1 t2.
-Proof. intro H. apply (gfp_pfp fpfinite) in H. exact H. Qed.
+Lemma pfinite_rel_core_unfold t1 t2 :
+  pfinite_rel_core t1 t2 -> pfinite_relF pfinite_rel_core t1 t2.
+Proof. intro H. apply (gfp_pfp fpfinite_rel) in H. exact H. Qed.
 
-Lemma pfinite_core_fold t1 t2 :
-  pfiniteF pfinite_core t1 t2 -> pfinite_core t1 t2.
-Proof. intro H. unfold pfinite_core. apply (gfp_fp fpfinite). exact H. Qed.
+Lemma pfinite_rel_core_fold t1 t2 :
+  pfinite_relF pfinite_rel_core t1 t2 -> pfinite_rel_core t1 t2.
+Proof. intro H. unfold pfinite_rel_core. apply (gfp_fp fpfinite_rel). exact H. Qed.
 
-Definition pfinite : ptree E MN R1 -> ptree E MN R2 -> Prop :=
-  finite_tau_closure pfinite_core.
+Definition pfinite_rel : ptree E MN R1 -> ptree E MN R2 -> Prop :=
+  finite_tau_closure pfinite_rel_core.
 
-Theorem pstrong_pfinite : forall t1 t2,
-  pstrong RR t1 t2 -> pfinite t1 t2.
+Theorem pstrong_pfinite_rel : forall t1 t2,
+  pstrong RR t1 t2 -> pfinite_rel t1 t2.
 Proof.
-  intros t1 t2 H. apply FTBase. apply pfinite_core_fold.
+  intros t1 t2 H. apply FTBase. apply pfinite_rel_core_fold.
   now apply PFiniteStrong.
 Qed.
 
@@ -166,13 +167,13 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 Context {R1 R2 : Type}.
 Variable RR : R1 -> R2 -> Prop.
 
-Theorem pfinite_core_converse : forall t1 t2,
-  @pfinite_core E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2 ->
-  @pfinite_core E MN MF NI NC FI FC MX FO R2 R1
+Theorem pfinite_rel_core_converse : forall t1 t2,
+  @pfinite_rel_core E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2 ->
+  @pfinite_rel_core E MN MF NI NC FI FC MX FO R2 R1
     (fun y x => RR x y) t2 t1.
 Proof.
-  unfold pfinite_core at 2. coinduction CH CIH.
-  intros t1 t2 Hrel. pose proof (pfinite_core_unfold Hrel) as Hstep.
+  unfold pfinite_rel_core at 2. coinduction CH CIH.
+  intros t1 t2 Hrel. pose proof (pfinite_rel_core_unfold Hrel) as Hstep.
   inversion Hstep as
       [u1 u2 Hstrong|u1 u2 out1 out2 Hhit1 Hhit2 Hlift]; subst.
   - apply PFiniteStrong. now apply pstrong_sym.
@@ -185,14 +186,14 @@ Proof.
       intros v1 v2 Hv. exact (CIH _ _ Hv).
 Qed.
 
-Theorem pfinite_converse : forall t1 t2,
-  @pfinite E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2 ->
-  @pfinite E MN MF NI NC FI FC MX FO R2 R1
+Theorem pfinite_rel_converse : forall t1 t2,
+  @pfinite_rel E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2 ->
+  @pfinite_rel E MN MF NI NC FI FC MX FO R2 R1
     (fun y x => RR x y) t2 t1.
 Proof.
   intros t1 t2 Hrel.
   eapply finite_tau_closure_converse; [|exact Hrel].
-  intros u1 u2 Hu. now apply pfinite_core_converse.
+  intros u1 u2 Hu. now apply pfinite_rel_core_converse.
 Qed.
 
 End PFiniteConverse.
@@ -207,13 +208,13 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FO : @SemanticOmega MF FI}.
 Context {R1 R2 : Type}.
 
-Theorem pfinite_core_rel_mono (RR SS : R1 -> R2 -> Prop)
+Theorem pfinite_rel_core_mono (RR SS : R1 -> R2 -> Prop)
     (Hsub : forall r1 r2, RR r1 r2 -> SS r1 r2) : forall t1 t2,
-  @pfinite_core E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2 ->
-  @pfinite_core E MN MF NI NC FI FC MX FO R1 R2 SS t1 t2.
+  @pfinite_rel_core E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2 ->
+  @pfinite_rel_core E MN MF NI NC FI FC MX FO R1 R2 SS t1 t2.
 Proof.
-  unfold pfinite_core at 2. coinduction CH CIH.
-  intros t1 t2 Hrel. pose proof (pfinite_core_unfold Hrel) as Hstep.
+  unfold pfinite_rel_core at 2. coinduction CH CIH.
+  intros t1 t2 Hrel. pose proof (pfinite_rel_core_unfold Hrel) as Hstep.
   inversion Hstep as
       [u1 u2 Hstrong|u1 u2 out1 out2 Hhit1 Hhit2 Hlift]; subst.
   - apply PFiniteStrong. eapply pstrong_rel_mono; eauto.
@@ -228,11 +229,11 @@ Qed.
 
 Theorem pfinite_rel_mono (RR SS : R1 -> R2 -> Prop)
     (Hsub : forall r1 r2, RR r1 r2 -> SS r1 r2) : forall t1 t2,
-  @pfinite E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2 ->
-  @pfinite E MN MF NI NC FI FC MX FO R1 R2 SS t1 t2.
+  @pfinite_rel E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2 ->
+  @pfinite_rel E MN MF NI NC FI FC MX FO R1 R2 SS t1 t2.
 Proof.
   intros t1 t2 Hrel. eapply finite_tau_closure_mono; [|exact Hrel].
-  intros u1 u2 Hu. eapply pfinite_core_rel_mono; eauto.
+  intros u1 u2 Hu. eapply pfinite_rel_core_mono; eauto.
 Qed.
 
 End PFiniteRelationMonotonicity.
@@ -246,48 +247,110 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
 
-Lemma pfinite_refl {R} :
-  Reflexive (@pfinite E MN MF NI NC FI FC MX FO R R eq).
-Proof. intro t. apply pstrong_pfinite. apply pstrong_refl. Qed.
+Lemma pfinite_rel_refl {R} :
+  Reflexive (@pfinite_rel E MN MF NI NC FI FC MX FO R R eq).
+Proof. intro t. apply pstrong_pfinite_rel. apply pstrong_refl. Qed.
 
-Lemma pfinite_sym {R} :
-  Symmetric (@pfinite E MN MF NI NC FI FC MX FO R R eq).
+Lemma pfinite_rel_sym {R} :
+  Symmetric (@pfinite_rel E MN MF NI NC FI FC MX FO R R eq).
 Proof.
-  intros t1 t2 Hrel. eapply pfinite_converse in Hrel.
+  intros t1 t2 Hrel. eapply pfinite_rel_converse in Hrel.
   eapply pfinite_rel_mono; [|exact Hrel].
   intros x y Hxy. symmetry. exact Hxy.
 Qed.
 
-Lemma pfinite_tau_l {R} (t : ptree E MN R) :
-  @pfinite E MN MF NI NC FI FC MX FO R R eq (Tau t) t.
-Proof. apply FTTauL. apply pfinite_refl. Qed.
+Lemma pfinite_rel_tau_l {R} (t : ptree E MN R) :
+  @pfinite_rel E MN MF NI NC FI FC MX FO R R eq (Tau t) t.
+Proof. apply FTTauL. apply pfinite_rel_refl. Qed.
 
-Lemma pfinite_tau_r {R} (t : ptree E MN R) :
-  @pfinite E MN MF NI NC FI FC MX FO R R eq t (Tau t).
-Proof. apply FTTauR. apply pfinite_refl. Qed.
+Lemma pfinite_rel_tau_r {R} (t : ptree E MN R) :
+  @pfinite_rel E MN MF NI NC FI FC MX FO R R eq t (Tau t).
+Proof. apply FTTauR. apply pfinite_rel_refl. Qed.
 
-Lemma pfinite_collapse {R1 R2} (RR : R1 -> R2 -> Prop)
+Lemma pfinite_rel_collapse {R1 R2} (RR : R1 -> R2 -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
   finite_stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
   finite_stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
   sem_lift (frontier_head_rel RR
-    (@pfinite E MN MF NI NC FI FC MX FO R1 R2 RR)) out1 out2 ->
-  @pfinite E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2.
+    (@pfinite_rel E MN MF NI NC FI FC MX FO R1 R2 RR)) out1 out2 ->
+  @pfinite_rel E MN MF NI NC FI FC MX FO R1 R2 RR t1 t2.
 Proof.
-  intros H1 H2 Hl. apply FTBase. apply pfinite_core_fold.
+  intros H1 H2 Hl. apply FTBase. apply pfinite_rel_core_fold.
   eapply PFiniteCollapse; eauto.
 Qed.
 
-#[global] Instance pstrong_pfinite_subrelation {R} :
+#[global] Instance pstrong_pfinite_rel_subrelation {R} :
   subrelation (@pstrong E MN NI NC R R eq)
-    (@pfinite E MN MF NI NC FI FC MX FO R R eq).
-Proof. intros t1 t2. apply pstrong_pfinite. Qed.
+    (@pfinite_rel E MN MF NI NC FI FC MX FO R R eq).
+Proof. intros t1 t2. apply pstrong_pfinite_rel. Qed.
 
-#[global] Instance pstruct_pfinite_subrelation {R} :
+#[global] Instance pstruct_pfinite_rel_subrelation {R} :
   subrelation (@pstruct E MN R R eq)
-    (@pfinite E MN MF NI NC FI FC MX FO R R eq).
-Proof. intros t1 t2 H. apply pstrong_pfinite. apply pstruct_pstrong. exact H. Qed.
+    (@pfinite_rel E MN MF NI NC FI FC MX FO R R eq).
+Proof. intros t1 t2 H. apply pstrong_pfinite_rel. apply pstruct_pstrong. exact H. Qed.
 
 End PFiniteFacts.
+
+(** The public homogeneous relation is the finite equivalence closure of the
+    heterogeneous one-round proof relation above.  A derivation therefore
+    contains only finitely many finite weak rewrites; taking this closure does
+    not introduce an omega-limit rule. *)
+Section PFiniteEquivalence.
+Context {E : Type -> Type} {MN MF : Type -> Type}
+  `{NI : SemanticMeasure MN}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FI : SemanticMeasure MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
+Context {R : Type}.
+
+Definition pfinite : relation (ptree E MN R) :=
+  @clos_refl_sym_trans (ptree E MN R)
+    (@pfinite_rel E MN MF NI NC FI FC MX FO R R eq).
+
+Lemma pfinite_of_rel t1 t2 :
+  @pfinite_rel E MN MF NI NC FI FC MX FO R R eq t1 t2 ->
+  pfinite t1 t2.
+Proof. apply rst_step. Qed.
+
+Lemma pfinite_refl : Reflexive pfinite.
+Proof. intro t. apply rst_refl. Qed.
+
+Lemma pfinite_sym : Symmetric pfinite.
+Proof. intros t1 t2 H. now apply rst_sym. Qed.
+
+Lemma pfinite_trans : Transitive pfinite.
+Proof.
+  intros t1 t2 t3 H12 H23.
+  exact (@rst_trans _ _ t1 t2 t3 H12 H23).
+Qed.
+
+#[global] Instance pfinite_equivalence : Equivalence pfinite.
+Proof.
+  split; [exact pfinite_refl|exact pfinite_sym|exact pfinite_trans].
+Qed.
+
+Lemma pstrong_pfinite (t1 t2 : ptree E MN R) :
+  pstrong eq t1 t2 -> pfinite t1 t2.
+Proof. intro H. apply pfinite_of_rel. now apply pstrong_pfinite_rel. Qed.
+
+Lemma pfinite_tau_l (t : ptree E MN R) : pfinite (Tau t) t.
+Proof. apply pfinite_of_rel. apply pfinite_rel_tau_l. Qed.
+
+Lemma pfinite_tau_r (t : ptree E MN R) : pfinite t (Tau t).
+Proof. apply pfinite_of_rel. apply pfinite_rel_tau_r. Qed.
+
+#[global] Instance pstrong_pfinite_subrelation :
+  subrelation (@pstrong E MN NI NC R R eq) pfinite.
+Proof. intros t1 t2. apply pstrong_pfinite. Qed.
+
+#[global] Instance pstruct_pfinite_subrelation :
+  subrelation (@pstruct E MN R R eq) pfinite.
+Proof.
+  intros t1 t2 H. apply pstrong_pfinite. now apply pstruct_pstrong.
+Qed.
+
+End PFiniteEquivalence.

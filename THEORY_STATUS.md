@@ -127,14 +127,17 @@ pstruct ⊆ pstrong ⊆ pfinite ⊆ peutt.
 `pstruct` is exact structural lockstep.  `pstrong` uses the canonical
 `SemanticMeasure` coupling while retaining lockstep control flow;
 `pstrong_bind` threads a heterogeneous coupling through monadic composition.
-`pfinite`
-adds an inductively finite one-sided Tau closure and finite-complete
-stable-prefix collapse; the inductive closure is intentionally outside the
-greatest fixed point, so an infinite one-sided Tau loop cannot justify an
-arbitrary relation.  `OperationalProbabilisticPTSFreeOmegaBase.v` proves
-`free_peutt_of_pstrong` and `free_peutt_of_pfinite`; the adjacent inclusions
-are registered with Rocq's `subrelation`.  `PEuttRewrite.v` supplies generic
-endpoint rewriting for every registered stronger relation.
+The heterogeneous `pfinite_rel` adds an inductively finite one-sided Tau
+closure and finite-complete stable-prefix collapse; the inductive closure is
+intentionally outside the greatest fixed point, so an infinite one-sided Tau
+loop cannot justify an arbitrary relation.  The public homogeneous `pfinite`
+is its finite reflexive-symmetric-transitive closure.  Consequently
+`pfinite_refl`, `pfinite_sym`, `pfinite_trans`, and
+`pfinite_equivalence` are available without introducing any omega execution
+rule.  `OperationalProbabilisticPTSFreeOmegaBase.v` proves soundness first for
+`pfinite_rel` and then for the whole equivalence closure.  The adjacent
+inclusions are registered with Rocq's `subrelation`.  `PEuttRewrite.v`
+supplies generic endpoint rewriting for every registered stronger relation.
 
 The following laws are checked:
 
