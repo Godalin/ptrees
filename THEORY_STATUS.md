@@ -1653,6 +1653,34 @@ targeted `coqchk`.  Their assumptions are existing classical
 choice/description, extensionality and dependent-equality principles.
 No new semantic axiom or extra backend capability is introduced.
 
+`Prob/FreeOmegaUpperContinuitySubEnum.v` now proves the analytic
+interchange identities needed for the remaining sampling/bind limit
+cases.  `free_omega_upper_continuous` exchanges an increasing sequence of
+unit-interval tests with the upper expectation of **any raw FreeOmega
+term**.  Its finite-sample step retains all actual weights; its raw-Lub
+step exchanges bounded suprema, not arbitrary convergent limits.
+`enum_real_expect_countable_ae` requires test monotonicity only at
+positive-weight entries.
+
+Consequently, `free_omega_sample_lub_upper` validates sample/supremum
+interchange with only AE-monotone branch chains, and
+`free_omega_bind_lub_upper` validates the bind diagonal when the outer
+source and each kernel chain increase.  Arbitrary formal Lub terms may
+still occur inside each source term.  There is no hidden AST, totality,
+uniform execution bound or hereditary well-formedness premise.
+
+`Examples/FreeOmegaUpperContinuity.v` tests a syntactically present
+zero-weight branch that **provably fails** pointwise monotonicity, while
+its AE sample/limit equation and mass-one result remain valid.  It also
+instantiates the bind equation with the escaping source of the earlier
+mass-safety audit.  Full-library compilation, targeted `coqchk`, and
+assumption inspection pass; only the existing classical
+choice/description, extensionality and dependent-equality principles are
+reported (the nonmonotonicity regression is closed under the global
+context).  These are the numerical algebra identities underlying the
+quotient constructors, not yet an induction over arbitrary quotient
+couplings or a proof of observation/denotation consistency.
+
 This groundwork passes full-library compilation, targeted `coqchk`, and
 assumption inspection.  It uses the existing MathComp classical
 choice/extensionality principles and functional extensionality, not an
