@@ -1732,10 +1732,38 @@ Full-library compilation, targeted `coqchk`, and assumption inspection
 pass for these results.  They use existing classical choice/description, extensionality
 and dependent-equality principles, not an axiom asserting quotient
 soundness.  **Arbitrary-relation native joint extraction from the proved
-test inequalities is still unproved.**  In particular scalar preservation
-does not itself construct a native coupling or the joint rows required by
-residual coinduction.  The residual-GFP soundness gap is not yet closed,
-and public `PFinite` is not replaced.
+test inequalities is still not connected to the native API.**  The finite
+transport existence theorem needed for that connection is now proved:
+
+- `Prob/FiniteMatching.v::finite_hall_matching` constructs an injective
+  matching of finite sets from all neighborhood-cardinality inequalities.
+  Its induction splits at a tight proper subset, or removes one edge when
+  all proper nonempty subsets have slack;
+- `Prob/FiniteCapacityMatching.v::finite_capacity_transport` expands
+  integer capacities into numbered copies and counts a bijective matching,
+  producing a nonnegative integer matrix with exact row and column sums;
+- `Prob/FiniteRationalTransport.v::finite_rational_transport` constructs a
+  shared positive denominator, scales both marginals to integer capacities,
+  and scales the resulting matrix back to rational weights.  Subprobability,
+  zero mass and empty carriers are allowed; total mass need only agree;
+- `finite_rational_transport_of_tests` derives the required neighborhood
+  inequalities from bounded rational test comparison.  Joint weights are
+  proved to exist, not postulated as a semantic capability.
+
+`Examples/FiniteTransport.v` checks a two-label problem in which a source
+node MUST split its weight across two targets, obtains a rational joint for
+the `(2/3,1/3)` and `(1/3,2/3)` marginals, rejects identity-only transport
+despite equal nonempty supports, and exercises an empty source with zero
+target mass.  Full-library compilation and targeted `coqchk` pass.  The
+matching, capacity, rational-transport and bounded-test endpoint theorems
+are all **closed under the global context** in the assumption audit.
+These matrix results are not yet a theorem returning the
+repository's native `semantic_coupling` certificate: the remaining bridge
+must derive finite-index test comparisons from quotient-related native
+presentations (including noninjective higher-universe decoders), construct
+the actual `SubEnum` joint, and prove its graph marginals.  The residual-GFP
+soundness gap is therefore not yet closed, and public `PFinite` is not
+replaced.
 
 The shortcut through an **up-to-equivalence closure** is now explicitly
 refuted by `Examples/ResidualClosureAudit.v`.  Let `spin = Tau spin`,
