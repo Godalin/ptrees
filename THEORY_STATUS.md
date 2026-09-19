@@ -945,12 +945,48 @@ A second regression exhibits a two-stage terminating kernel with a valid
 completion equation but a non-raw-increasing completion sequence, ruling out
 the shortcut of applying monotone cofinality to such sequences without proof.
 
+`Eq/FreeOmega/FiniteInternalJointCoverage.v` now supplies a reverse coverage
+theorem for **structurally realized** graph marginals:
+
+- `finite_internal_execution_covers_hitting` proves that the macro-round
+  hitting approximant covers the original tree's approximant at the same
+  fuel index (an initial kernel step, then n further residual transitions).
+  The induction uses
+  validity of each well-founded cut followed by the genuine primitive
+  guard, and AE closure for the next correlated state.  There is no uniform
+  bound on the cuts and no factorization into independent marginal policies.
+- `finite_internal_execution_limit_covers` lifts those raw inequalities
+  pointwise to the formal complete hitting limits.
+- `free_omega_lift_structural_realization` retains structural graph
+  marginals in the existing structural joint extraction proof; the previous
+  observable endpoint is now its corollary.  Likewise the primitive guard
+  realizer exposes structural graphs before promotion to the quotient.
+  `finite_internal_structural_paired_kernel_exists` constructs an entire
+  paired kernel from structural residual couplings, using the proved node
+  realizer rather than assuming residual witnesses.
+
+`CorrelatedInternalRounds.v` exercises this reverse coverage on an explicit
+realization of the partner-dependent cut, and on the internally retrying
+programs via the generic structural kernel construction.  Neither example
+assumes the desired coverage or the original programs' behavioral equality.
+
+The structural qualification cannot simply be removed from this raw-order
+statement.  `quotient_round_kernel_spec` wraps the valid correlated kernel
+in a constant `FOLub` and proves that the general quotient round contract is
+still satisfied.  `quotient_round_raw_coverage_fails` then refutes raw
+coverage even for the returning pair at fuel zero, because raw approximation
+does not identify Ret-shaped and Lub-shaped representations.  This is a
+counterexample to that **raw coverage formulation**, not to residual-pfinite
+soundness; general coverage must allow equality-related representatives.
+
 These paired-round results are still **not full** correlated acceleration
-adequacy.  The reverse coverage argument must use actual progress through
-primitive steps in each valid cut-and-guard round.  The projected limits
-have not yet been proved equal to the original trees' complete hitting.
-That identification and unrestricted residual realizability remain
-necessary for the residual GFP soundness theorem.
+adequacy.  Even the structural reverse bound and the earlier upper bound
+have not been turned into equality: the upper bound ends at an explicit
+representative equality-coupled to original hitting, and raw order is not
+assumed quotient-proper.  A justified quotient-level sandwich/cofinality
+argument, as well as realizability for unrestricted residual couplings,
+remains necessary for the residual GFP soundness theorem.  The public
+PFinite definition has not been replaced by the structural special case.
 
 `Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
 before divergence, Prob branch compression, and the negative core regression
