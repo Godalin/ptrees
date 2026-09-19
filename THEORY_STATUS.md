@@ -1248,6 +1248,32 @@ joint in a kernel.  They do not yet extract a joint or an adequate primitive
 schedule from arbitrary **residual FreeOmega quotient** couplings; the
 unrestricted `pfinite` soundness/API replacement remains unproved.
 
+There is now an exact **native-presentation reduction** for all well-founded
+compression witnesses, not just selected unary policies.
+`Prob/FreeOmegaNative.v::free_omega_sample_sigma` flattens dependent nested
+sampling while retaining the tagged sample values.  A
+`free_omega_native_presentation` consists of a small native sample type,
+its measure, and a potentially higher-universe decoder.  Presentations
+are closed under bind; no native measure of PTree values is required.
+`FiniteInternalNative.v::finite_internal_native_presentation` proves that
+every `finite_internal` output has such a single-sample presentation, and
+`finite_internal_round_native_presentation` includes the subsequent guard.
+No uniform branch-depth bound, finite-support assumption, or AST premise
+is used.  MathComp instantiation uses its existing core/gluing, Dirac AE,
+and exact bind AE capabilities, **not** node relational bind laws.
+
+`pfinite_residual_native_characterization` is a proved iff for the original
+candidate generator.  It transports the guard coupling to these native
+sample presentations without narrowing the candidate.  Importantly the
+transported coupling is still **FreeOmega quotient** coupling, not native
+coupling between the sample spaces.  Pulling it back through the decoders
+to a native coupling has not been proved.  The presentations also assert
+distribution equality, not primitive execution histories or an adequate
+joint scheduler.  Thus this reduction exposes a more concrete remaining
+proof target; it does not complete unrestricted soundness or authorize
+replacing the public definition.  Regressions cover dependent branch
+types, nonuniform Tau depths, SubEnum's mass bound, and MathComp.
+
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
 GFP soundness or API migration is claimed on the strength of this result.
