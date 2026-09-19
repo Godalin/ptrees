@@ -1262,17 +1262,46 @@ No uniform branch-depth bound, finite-support assumption, or AST premise
 is used.  MathComp instantiation uses its existing core/gluing, Dirac AE,
 and exact bind AE capabilities, **not** node relational bind laws.
 
-`pfinite_residual_native_characterization` is a proved iff for the original
-candidate generator.  It transports the guard coupling to these native
-sample presentations without narrowing the candidate.  Importantly the
-transported coupling is still **FreeOmega quotient** coupling, not native
-coupling between the sample spaces.  Pulling it back through the decoders
-to a native coupling has not been proved.  The presentations also assert
-distribution equality, not primitive execution histories or an adequate
-joint scheduler.  Thus this reduction exposes a more concrete remaining
-proof target; it does not complete unrestricted soundness or authorize
-replacing the public definition.  Regressions cover dependent branch
-types, nonuniform Tau depths, SubEnum's mass bound, and MathComp.
+This reduction now retains typed execution plans, not just arbitrary
+equal-distribution presentations.  `Eq/FiniteInternalPlan.v` reifies every
+`finite_internal` witness into a `finite_internal_plan` indexed by its
+original tree, with **exactly the original frontier**.  Each plan has a small
+dependent sample space, a native path measure, a residual decoder, an
+actual finite step count, and a state at every prefix.  Prefix and suffix
+validity theorems prove the syntactic Tau/Prob path; probabilities reside
+in the path measure, not in claims about individual positive-mass atoms.
+Plans stop at Ret/Vis without executing external interaction and also
+allow internal/divergent residuals.
+
+`internal_plan_native_eq` proves that sampling these actual plan paths
+preserves the frontier distribution.  The earlier bare-presentation proof
+now follows from this stronger result.  `pfinite_residual_native_characterization`
+is a proved iff between the original candidate generator and the existence
+of two typed plans whose decoded native samples have the guard coupling.
+This does not narrow the candidate.  The coupling is still **FreeOmega
+quotient** coupling, not native coupling between the path spaces; its
+pullback through the decoders has not been proved.
+
+`FiniteInternalPlanHitting.v::internal_plan_hitting_approx` identifies every
+primitive finite hitting approximant with completed-path sampling: paths
+longer than the observation budget contribute zero, while the others
+continue at their residual with that path's actual step count deducted.
+`internal_plan_budget_mono` proves raw monotonicity on the same native
+sample space, and `internal_plan_stable_hitting` identifies the complete
+limit.  These budgets belong to the semantic proof, not the no-fuel
+definition of compression.  No AST/total-mass assumption is used.
+
+The negative regression `completed_paths_do_not_preserve_prefix_mass`
+explains why this hitting-specific statement matters: a later zero-mass
+sample can kill completed paths, so their projection to time zero does
+NOT have the mass of the original time-zero state.  The tests also cover
+unbounded syntactic branch depths, computed prefixes/residuals, stopping
+before Vis or divergence, and the exact budget at which Vis becomes visible.
+SubEnum mass bounds and MathComp instantiation remain checked.
+What remains is native coupling extraction and an adequate **joint**
+execution/acceleration construction across recurring correlated rounds.
+These results do not yet prove unrestricted GFP soundness or authorize
+replacing the public definition.
 
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
