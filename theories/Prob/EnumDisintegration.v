@@ -4,7 +4,7 @@ From Coq Require Import List.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrfun ssralg ssrnum order rat.
 From PTree.Prob Require Import RatSubTypes DiscreteMC EnumMap EnumBindFacts
   Coupling FrontierLiftEnum MeasureIterationEnum TwoLevelMeasure
-  TwoLevelMeasureEnum TwoLevelMeasureSubEnum SemanticCouplingEnum.
+  TwoLevelMeasureEnum TwoLevelMeasureSubEnum SemanticCoupling SemanticCouplingEnum.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -202,4 +202,82 @@ Proof.
   split; [exact (@subenum_disintegration_fiber EA EB joint)|].
   split; [exact (@subenum_disintegration_support EA EB joint)|].
   exact (@subenum_disintegration_total_ae EA EB joint).
+Qed.
+
+Lemma subenum_bind_ret_r {A} (mu : SubEnum A) :
+  sem_eq (subenum_bind mu subenum_ret) mu.
+Proof.
+  change (enum_meas_eq (bind_Enum (subenum_raw mu) ret_Enum) (subenum_raw mu)).
+  rewrite (@bind_ret_emap _ _ (fun x => x) (subenum_raw mu)) emap_id.
+  apply enum_repr_eq_implies_meas_eq. reflexivity.
+Qed.
+
+(** A graph coupling identifies the actual marginal, even when the caller's
+    measure has a different list representation (split/reordered weights). *)
+Lemma subenum_graph_marginal {A B} (f : A -> B)
+    (joint : SubEnum A) (mu : SubEnum B) :
+  sem_lift (fun x y => f x = y) joint mu ->
+  sem_eq (subenum_bind joint (fun x => subenum_ret (f x))) mu.
+Proof.
+  intro Hgraph.
+  change (sem_lift eq (subenum_bind joint (fun x => subenum_ret (f x))) mu).
+  eapply sem_lift_proper_r; [apply subenum_bind_ret_r|].
+  eapply (@sem_lift_bind SubEnum SubEnum_SemanticMeasure
+    SubEnum_SemanticMeasureBindLaws A B B B (fun x y => f x = y) eq
+    joint mu (fun x => subenum_ret (f x)) subenum_ret).
+  - exact Hgraph.
+  - intros x y Hxy. apply (@sem_lift_ret SubEnum SubEnum_SemanticMeasure
+      SubEnum_SemanticMeasureCoreLaws). exact Hxy.
+Qed.
+
+(** Disintegrate over the SPECIFIED marginal rather than only the list
+    obtained by mapping fst.  Equality lifting transports the law and AE
+    normalization; support-only partner selection would not suffice. *)
+Theorem subenum_disintegration_over {A B : Type}
+    (joint : SubEnum (A * B)) (mu : SubEnum A) :
+  sem_lift (fun p x => fst p = x) joint mu ->
+  exists conditional : A -> SubEnum (A * B),
+    sem_eq (subenum_bind mu conditional) joint /\
+    (forall a, sem_ae (conditional a) (fun ab => fst ab = a)) /\
+    (forall P : A * B -> Prop, sem_ae joint P ->
+      forall a, sem_ae (conditional a) P) /\
+    sem_ae mu (fun a => subenum_total (conditional a)).
+Proof.
+  intro Hgraph.
+  pose proof (subenum_graph_marginal Hgraph) as Hmarginal.
+  destruct (subenum_disintegration joint) as [k [Hreconstruct [Hfiber [Hsupport Htotal]]]].
+  exists k. split.
+  - eapply sem_eq_trans; [|exact Hreconstruct].
+    change (sem_lift eq (subenum_bind mu k)
+      (subenum_bind (subenum_first_marginal joint) k)).
+    eapply (@sem_lift_bind SubEnum SubEnum_SemanticMeasure
+      SubEnum_SemanticMeasureBindLaws A A (A * B) (A * B) eq eq).
+    + change (sem_eq mu (subenum_first_marginal joint)).
+      apply sem_eq_sym. exact Hmarginal.
+    + intros x y ->. apply sem_lift_refl. intro p. reflexivity.
+  - split; [exact Hfiber|]. split; [exact Hsupport|].
+    eapply sem_ae_mono; [|exact (sem_lift_ae_transport_r Hmarginal Htotal)].
+    intros y [x [-> Hx]]. exact Hx.
+Qed.
+
+(** Turn a native coupling into conditional RANDOM resampling on its left
+    marginal.  The original joint and both marginals are retained. *)
+Theorem subenum_coupling_disintegration {A B : Type}
+    (R : A -> B -> Prop) (mu : SubEnum A) (nu : SubEnum B) :
+  sem_lift R mu nu ->
+  exists joint conditional,
+    semantic_coupling R mu nu joint /\
+    sem_eq (subenum_bind mu conditional) joint /\
+    (forall a, sem_ae (conditional a) (fun p => fst p = a /\ R a (snd p))) /\
+    sem_ae mu (fun a => subenum_total (conditional a)).
+Proof.
+  intro Hlift. destruct (subenum_coupling_realization Hlift) as [j Hj].
+  destruct (subenum_disintegration_over (proj1 Hj))
+    as [k [Hreconstruct [Hfiber [Hsupport Htotal]]]].
+  exists j, k. split; [exact Hj|]. split; [exact Hreconstruct|].
+  split; [|exact Htotal]. intro a.
+  eapply sem_ae_mono with (P := fun p => fst p = a /\ R (fst p) (snd p)).
+  - intros p [Hp HR]. split; [exact Hp|]. rewrite <- Hp. exact HR.
+  - apply sem_ae_conj; [apply Hfiber|].
+    apply Hsupport. exact (proj2 (proj2 Hj)).
 Qed.
