@@ -1222,6 +1222,32 @@ This is a native finite-measure ingredient, **not** a disintegration theorem
 for arbitrary FreeOmega quotient liftings or a proof of unrestricted
 correlated acceleration.  The soundness gap above remains open.
 
+The native ingredient now connects to execution rather than stopping at
+finite-list reconstruction.  `subenum_disintegration_over` accepts a
+specified graph-coupled marginal, including a different weight-list
+representation; `subenum_coupling_disintegration` obtains both a joint and
+its conditional sampler from a native coupling.  The conditional sampler
+preserves the related pair and is total only AE under the specified
+marginal, as required when null fibers are present.
+`Prob/FreeOmegaDisintegration.v::free_omega_sample_disintegration` transports
+joint reconstruction through an arbitrary higher-universe FreeOmega
+continuation.  `Eq/FreeOmega/KernelDisintegration.v` then proves complete
+hitting equality when this resampling is done in every kernel round.
+`kernel_disintegration_exists` constructs state-indexed conditionals from
+native graph marginals; distributions and conditionals may depend on the
+entire state/history, without a unary-policy, AST, or round-bound premise.
+The continuation may inspect both components of the sampled pair.
+
+`Examples/ConditionalResampling.v` checks split-weight marginals,
+higher-universe PTree continuations, and an unbounded retry-count kernel.
+In the latter, the rescheduled first sample is a Dirac measure and the
+conditional second sample retains the hidden fair retry bit.  This is
+genuine random resampling after a deterministic marginal, not arbitrary
+partner selection.  These results reschedule an already supplied native
+joint in a kernel.  They do not yet extract a joint or an adequate primitive
+schedule from arbitrary **residual FreeOmega quotient** couplings; the
+unrestricted `pfinite` soundness/API replacement remains unproved.
+
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
 GFP soundness or API migration is claimed on the strength of this result.
