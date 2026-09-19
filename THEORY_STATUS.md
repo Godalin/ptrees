@@ -832,6 +832,51 @@ of the residual and guard couplings and for infinitely many correlated guard rou
 the new certificate API nor its finite-round preservation lemmas silently
 discharge those two obligations.
 
+Joint-witness extraction now has concrete proved cases:
+
+- `Prob/SemanticCouplingEnum.v::enum_coupling_realization` recovers a joint
+  enumeration from the backend's position-indexed coupling.  The public
+  theorem permits arbitrary value types, including functions; classical
+  equality is local to the conversion proof, not a client `eqType` premise.
+  `subenum_coupling_realization` additionally proves the joint's mass is that
+  of its marginal and therefore packages it within the native SubEnum bound.
+- `Prob/FreeOmegaCoupling.v::free_omega_lift_realization` constructs joint
+  FreeOmega measures by induction over the **structural** lifting, including
+  its `Lub` constructor, from a node witness-extraction theorem.  Concrete
+  Enum and SubEnum corollaries in `FreeOmegaCouplingEnum.v` discharge that
+  premise; they do not register an unproved capability class.
+  The `Lub` case provides graph marginals and AE support, but does **not**
+  assert that independently selected row joints form an increasing chain.
+  A later infinite-history argument must establish monotonicity separately
+  wherever it uses cofinality or diagonalization.
+- `semantic_coupling_transport` preserves an explicit joint under equality
+  lifting of both marginals, without equality reflection.  Consequently
+  `free_omega_lift_realization_mod_eq` realizes general many-to-many
+  structural couplings after quotient-equality rewrites on either side.
+  It does not assume that every relational quotient coupling can be put
+  in this form.
+- `free_omega_qlift_graph_realization` handles the **full quotient lifting**
+  for function-graph relations.  Its equality specialization constructs a
+  diagonal joint without disintegration or a new backend assumption.
+  Consequently `finite_internal_acceleration_joint` realizes the complete
+  acceleration equality, including its cofinal/diagonal limit proof, as an
+  explicit joint certificate.  This result is not restricted to bounded
+  cuts or bounded numbers of guard rounds.
+
+`Examples/CouplingRealization.v` checks function-valued node carriers,
+structural `Lub` witnesses, relational marginal rewrites, and a quotient
+equality that provably has no
+structural lifting derivation.  `PairedFiniteCompression.v` now also extracts
+its residual joint from the structural coupling proof instead of requiring
+the example's hand-written joint.
+
+The extraction gap is therefore narrower but not closed: arbitrary
+relational `free_omega_qlift` witnesses are still not realized by these
+theorems.  Neither the structural theorem nor the graph theorem is silently
+applied to general many-to-many guard relations.  The unrestricted residual
+GFP soundness theorem remains unproved, and the public `PFinite` API is not
+replaced on the strength of these partial realization results.
+
 `Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
 before divergence, Prob branch compression, and the negative core regression
 `residual_finite_spin_not_ret`.  `residual_services_peutt` checks the sound

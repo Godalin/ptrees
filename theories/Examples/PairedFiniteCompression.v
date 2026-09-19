@@ -5,7 +5,7 @@ From Coq Require Import Program.Equality.
 From mathcomp Require Import ssralg ssrnum rat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureEnum
-  FreeOmegaMeasure DiscreteMC RatSubTypes SemanticCoupling.
+  FreeOmegaMeasure DiscreteMC RatSubTypes SemanticCoupling FreeOmegaCouplingEnum.
 From PTree.Eq Require Import FiniteInternal FiniteInternalJoint
   PFiniteResidual PStrong UnifiedFrontier PTreeKernel.
 From PTree.Examples Require Import RandomWalk.
@@ -111,6 +111,19 @@ Proof.
   - split.
     + apply FOQLStructural, FOLRet. reflexivity.
     + apply FOAERet. exact (partner_guarded Htu).
+Qed.
+
+(** In the structural case, the joint needed by correlated execution is
+    now extracted from the coupling proof, rather than supplied by hand. *)
+Theorem paired_residual_joint_exists :
+  exists out, @semantic_coupling MF FI _ _ (pfinite_guard eq candidate)
+    (free_omega_bind joint left_cut) (free_omega_bind joint right_cut) out.
+Proof.
+  apply free_enum_structural_coupling_realization.
+  apply FOLSample with (S := eq).
+  - apply sem_lift_refl. intro b. reflexivity.
+  - intros x y ->. apply FOLRet.
+    exact (partner_guarded (candidate_source y)).
 Qed.
 
 Lemma deterministic_prefix_cannot_sample n (r : bool) out :
