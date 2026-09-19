@@ -103,6 +103,58 @@ Example quotient_round_raw_coverage_fails :
         Pair Heads quotient_round_kernel 0 (done,done)) (fun h => FORet (fst h))).
 Proof. intro H. inversion H. Qed.
 
+(** The failed raw statement is repaired by retaining an equality-related
+    representative, not by strengthening raw order with an unproved law. *)
+Example quotient_round_coverage_modulo_eq n t u : candidate t u ->
+  exists covered,
+    free_omega_approx eq
+      (@ptree_hitting_approx event Enum MF FI FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega bool n (observe t)) covered /\
+    free_omega_qlift eq covered
+      (free_omega_bind
+        (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+          Pair Heads quotient_round_kernel n (t,u)) (fun h => FORet (fst h))).
+Proof.
+  intro Htu. eapply (finite_internal_execution_covers_modulo_eq
+    (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega)) with
+    (kernel := correlated_kernel) (n := n) (s := (t,u))
+    (project_output := @fst (stable_head event Enum bool) (stable_head event Enum bool))
+    (project_state := @fst tree tree)
+    (D := fun p => candidate (fst p) (snd p)) (cut := left_cut).
+  - intros [x y] Hxy. eapply free_omega_ae_mono;
+      [|exact (proj2 (proj2 (correlated_kernel_spec Hxy)))].
+    intros [heads|trees] Hgood; cbn; [exact I|exact Hgood].
+  - intros [x y] Hxy. exact (left_cut_valid Hxy).
+  - intros [x y] _. apply correlated_kernel_left_structural.
+  - intros p _. apply FOQLLubConstantR, free_omega_qlift_refl. intro z. reflexivity.
+  - exact Htu.
+Qed.
+
+Example quotient_round_complete_coverage_modulo_eq t u : candidate t u ->
+  exists covered,
+    free_omega_approx eq
+      (FOLub (fun n => @ptree_hitting_approx event Enum MF FI FreeOmegaMixedMeasure
+        FreeOmegaObservableSemanticOmega bool n (observe t))) covered /\
+    free_omega_qlift eq covered
+      (free_omega_bind
+        (FOLub (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+          Pair Heads quotient_round_kernel n (t,u))) (fun h => FORet (fst h))).
+Proof.
+  intro Htu. eapply (finite_internal_execution_limit_covers_modulo_eq
+    (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega)) with
+    (kernel := correlated_kernel) (s := (t,u))
+    (project_output := @fst (stable_head event Enum bool) (stable_head event Enum bool))
+    (project_state := @fst tree tree)
+    (D := fun p => candidate (fst p) (snd p)) (cut := left_cut).
+  - intros [x y] Hxy. eapply free_omega_ae_mono;
+      [|exact (proj2 (proj2 (correlated_kernel_spec Hxy)))].
+    intros [heads|trees] Hgood; cbn; [exact I|exact Hgood].
+  - intros [x y] Hxy. exact (left_cut_valid Hxy).
+  - intros [x y] _. apply correlated_kernel_left_structural.
+  - intros p _. apply FOQLLubConstantR, free_omega_qlift_refl. intro z. reflexivity.
+  - exact Htu.
+Qed.
+
 Example correlated_primitive_steps_covered n t u : candidate t u ->
   free_omega_approx eq
     (@ptree_hitting_approx event Enum MF FI FreeOmegaMixedMeasure

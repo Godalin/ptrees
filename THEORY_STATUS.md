@@ -979,6 +979,31 @@ does not identify Ret-shaped and Lub-shaped representations.  This is a
 counterexample to that **raw coverage formulation**, not to residual-pfinite
 soundness; general coverage must allow equality-related representatives.
 
+`Eq/FreeOmega/KernelCongruence.v` now proves the representation-invariance
+needed to use such representatives.  Pointwise quotient equality of two
+kernels on an AE-closed state domain yields equality of each finite hitting
+approximant, their canonical limits, and **any** two complete hitting
+representatives (`kernel_stable_hitting_eq`).  Neither raw-order properness
+nor a bound on internal rounds is assumed.
+
+`finite_internal_execution_covers_modulo_eq` and
+`finite_internal_execution_limit_covers_modulo_eq` use an equivalent,
+structurally realized reference kernel to construct the coverage witness:
+raw approximation ends at that witness, followed by quotient equality to
+the requested kernel's projected behavior.  The complete witness comes from
+one reference kernel, not an unproved monotone choice of per-fuel witnesses.
+The reference is needed only for the selected marginal; left and right
+coverage need not use the same reference presentation.  Existence of such
+a reference for an arbitrary residual coupling is **not** assumed or proved.
+
+The constant-`FOLub` regression in `CorrelatedInternalRounds.v` now has both
+the negative raw statement and the positive finite/complete coverage
+statements modulo equality.  `Examples/KernelCongruence.v` additionally
+checks swapping two SubEnum samples in every round of an arbitrary kernel,
+including kernels that continue internally with changed states.  Product
+exchange is proved locally for those node measures; it is not added as a
+required capability for general kernel congruence.
+
 These paired-round results are still **not full** correlated acceleration
 adequacy.  Even the structural reverse bound and the earlier upper bound
 have not been turned into equality: the upper bound ends at an explicit
