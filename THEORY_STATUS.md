@@ -1169,6 +1169,43 @@ cannot close the gap merely by proving a universal reference-extraction
 lemma.  This is a limitation of the proof certificate, not a counterexample
 to the intended residual GFP soundness.
 
+There is now a separate, non-structural route for **projectable marginal
+policies**.  `Eq/FreeOmega/KernelProjection.v` proves that quotient graph
+marginals commute with finite and complete hitting, on an AE-closed source
+domain.  The state projection may forget random information; neither
+structural reference kernels nor joint-witness extraction are required.
+The essential hypothesis is that the projected one-round kernel is the
+target kernel at the projected state, not just a completion equation.
+
+`FiniteInternalProjectedPolicy.v::finite_internal_projected_policy_adequate`
+combines that projection theorem with well-founded unary-cut acceleration.
+The joint state may contain a partner and execution history, but this
+particular marginal must use a globally valid policy depending only on its
+projected tree.  No condition is imposed on how another marginal will be
+proved adequate.  This removes the structural-marginal obstruction in this
+case, without claiming that arbitrary pair-dependent cut choices factor
+through a unary policy.
+
+`Examples/HiddenRandomState.v` tests an arbitrary kernel with a fresh random
+state component sampled after **every internal transition**, not just in a
+bounded prefix.  `random_state_complete_hitting` proves preservation of
+complete hitting; `fair_hidden_compressed_hitting` exercises the new
+adequacy theorem on arbitrary well-founded PTree compression policies,
+including eventful trees and unbounded execution.  The fair-coin instance
+discharges the native total-mass premise with an actual coupling to Dirac.
+`free_omega_sample_to_constant` is the generic probability-algebra step;
+AE support alone is not used to erase mass.  The negative test
+`zero_hidden_sample_rejected` rejects an attempted zero-mass noise sample.
+`hidden_step_has_no_structural_reference` additionally proves that the
+instrumented first step of a simple terminating kernel has no
+quotient-equal structurally marginalized reference.  The projection route
+therefore handles an actual case outside the earlier reference method.
+
+The unrestricted residual GFP still permits genuinely pair-dependent cuts
+whose projected rounds are not unary policies.  Neither projectability nor
+structural references may be silently imposed on that definition.  Removing
+both restrictions from correlated acceleration remains the soundness gap.
+
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
 GFP soundness or API migration is claimed on the strength of this result.
