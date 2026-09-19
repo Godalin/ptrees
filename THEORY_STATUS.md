@@ -796,6 +796,42 @@ not silently strengthen the generator to require such policies.  Neither
 uniformization nor unrestricted GFP soundness is currently claimed solved;
 no new capability axiom replaces this obligation.
 
+`Prob/SemanticCoupling.v` and `Eq/FiniteInternalJoint.v` begin the
+pair-dependent execution bridge, without assuming independent policies:
+
+- `semantic_coupling` records an **explicit joint measure**, its two graph
+  couplings to the marginals, and AE support in the candidate relation.  It
+  is a certificate, not a new typeclass axiom.  `semantic_coupling_sound`
+  recovers ordinary `sem_lift` from the certificate; the converse is **not**
+  assumed or claimed proved for arbitrary FreeOmega quotient couplings.
+- `semantic_coupling_dependent_bind` permits continuations to depend on the
+  entire sampled pair.  Its left/right marginal lemmas and
+  `semantic_coupling_bind_dependent` preserve the joint's probabilities and
+  compose concrete next-joint certificates, including off-support branches.
+- `pfinite_residual_paired_cuts` applies classical choice at the correct
+  domain: pairs of related trees.  It extracts valid paired cut functions
+  from any post-fixed candidate without a uniformization hypothesis.
+- `finite_internal_joint_guarded` couples the resulting marginal residual
+  distributions.  `finite_internal_joint_hitting_left/right` prove that
+  completing those residuals preserves each original marginal's hitting
+  behavior.  These are finite-round results, not yet the GFP soundness
+  theorem or an infinite-history acceleration theorem.
+
+`Examples/PairedFiniteCompression.v` checks a correlated stopping choice:
+the same left tree `Tau (Tau (Ret true))` is cut by two steps or one step
+according to its right partner.  The resulting left residual distribution
+mixes `Ret true` and `Tau (Ret true)` with positive weights.  It is proved
+not equality-coupled to **any** unary finite-internal cut of that left tree,
+yet the joint-compression theorem preserves its complete hitting behavior.
+This rules out replacing the chosen paired strategy by a unary cut merely
+by changing its measure representation.  It does not claim that the program
+pair admits no other useful unary policy.
+
+To complete this joint-execution route, one must account for joint witnesses
+of the residual and guard couplings and for infinitely many correlated guard rounds.  Neither
+the new certificate API nor its finite-round preservation lemmas silently
+discharge those two obligations.
+
 `Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
 before divergence, Prob branch compression, and the negative core regression
 `residual_finite_spin_not_ret`.  `residual_services_peutt` checks the sound
