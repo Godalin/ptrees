@@ -1679,7 +1679,27 @@ choice/description, extensionality and dependent-equality principles are
 reported (the nonmonotonicity regression is closed under the global
 context).  These are the numerical algebra identities underlying the
 quotient constructors, not yet an induction over arbitrary quotient
-couplings or a proof of observation/denotation consistency.
+couplings.
+
+`Prob/FreeOmegaUpperObservationSubEnum.v` proves observation consistency,
+including the increasing-chain `FOOObserveLub` rule.
+`free_omega_observes_upper` identifies the upper expectation of every
+test `f ∘ obs`, where `f` takes real values in `[0,1]`, with the actual
+weighted expectation of `f` on the native output.  The proof derives
+monotonicity of the native observable chain from raw approximation,
+then connects its existing rational eventwise limit to real expectations.
+It does not assume a numerical-consistency capability.  The result allows
+arbitrary high-universe input carriers and native observable carriers.
+`free_omega_denotes_upper` also allows replacing the native output by a
+semantically equal native measure; it does **not** assert invariance under
+an arbitrary quotient coupling of the input.
+
+`Examples/FreeOmegaUpperObservation.v` obtains numeric mass one for the
+actual unbounded, infinite-state RandomWalk hitting limit, using the
+extracted `walk_limit_observes_unit` certificate.  It also gives an
+independent numerical rejection of the former escaping-row observation:
+that row has upper mass one, so it cannot observe the proposed mass-half
+output.  This regression does not use inversion of the observation rule.
 
 This groundwork passes full-library compilation, targeted `coqchk`, and
 assumption inspection.  It uses the existing MathComp classical

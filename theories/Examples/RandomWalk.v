@@ -642,6 +642,17 @@ Proof.
   - intros h h' ->. reflexivity.
 Qed.
 
+Lemma walk_limit_observes_unit x y :
+  free_omega_observes (fun _ : walk_head => tt) (walk_limit x y) (subenum_ret tt).
+Proof.
+  apply FOOObserveLub with
+      (outs := fun rounds => walk_observation (fun _ => tt) rounds x y).
+  - intros rounds. apply (walk_hitting_observes (fun _ => tt)).
+  - apply walk_unit_converges.
+  - intro n. apply (ptree_hitting_mono (FI := rwFI) (FO := rwFO)).
+    cbn [walk_schedule]. lia.
+Qed.
+
 Theorem walk_ast x y :
   ptree_stable_hitting_ast (FI := rwFI) (FO := rwFO)
     (observe (@run_until_zero rwE SubEnum rw_coin x y)) (walk_limit x y).
@@ -650,12 +661,7 @@ Proof.
   apply free_omega_observable_total_intro.
   exists unit, (fun _ : walk_head => tt), (subenum_ret tt).
   split.
-  - apply FOOObserveLub with
-      (outs := fun rounds => walk_observation (fun _ => tt) rounds x y).
-    + intros rounds. apply (walk_hitting_observes (fun _ => tt)).
-    + apply walk_unit_converges.
-    + intro n. apply (ptree_hitting_mono (FI := rwFI) (FO := rwFO)).
-      cbn [walk_schedule]. lia.
+  - apply walk_limit_observes_unit.
   - change (enum_mass (ret_Enum tt) = 1).
     exact (enum_expect_ret (fun _ : unit => (1 : rat)) tt).
 Qed.
