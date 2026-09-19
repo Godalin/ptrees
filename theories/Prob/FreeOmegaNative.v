@@ -44,6 +44,28 @@ Proof.
   - intros a b Hba. symmetry. exact Hba.
 Qed.
 
+(** The quotient satisfies sampled left-unit even when the node interface
+    exposes only exact AE laws for bind, not native monad equalities.
+    Consequently native normalization is not automatically a reflection
+    theorem for the node lifting. *)
+Lemma free_omega_sample_bind_ret_l {X Y A} (x : X) (k : X -> MN Y)
+    (decode : Y -> FreeOmega MN A) :
+  free_omega_qlift eq (FOSample (sem_bind (sem_ret x) k) decode)
+    (FOSample (k x) decode).
+Proof.
+  eapply FOQLComp with (T := eq) (U := eq)
+    (mid := FOSample (sem_ret x) (fun y => FOSample (k y) decode)).
+  - apply FOQLMono with (T := fun a b => b = a).
+    + apply FOQLSym, FOQLSampleBind.
+      * intro P. apply sem_ae_bind_iff.
+      * intro y. apply free_omega_qlift_refl. intro a. reflexivity.
+    + intros a b Hba. symmetry. exact Hba.
+  - apply FOQLSampleRetL.
+    + intro P. apply sem_ae_ret_iff.
+    + apply free_omega_qlift_refl. intro a. reflexivity.
+  - intros a c [b [-> ->]]. reflexivity.
+Qed.
+
 (** Flatten DEPENDENT nested sampling by retaining the entire tagged path.
     Sampling spaces may differ between branches; no fixed-depth or finite
     branching assumption is used. *)

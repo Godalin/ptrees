@@ -1314,8 +1314,8 @@ NOT have the mass of the original time-zero state.  The tests also cover
 unbounded syntactic branch depths, computed prefixes/residuals, stopping
 before Vis or divergence, and the exact budget at which Vis becomes visible.
 SubEnum mass bounds and MathComp instantiation remain checked.
-The recurring-round adequacy gap is now reduced to actual native path
-coupling extraction.  `FreeOmega/CostedKernel.v` proves that a native
+The recurring-round adequacy theorem is now available when actual native
+path couplings are supplied.  `FreeOmega/CostedKernel.v` proves that a native
 kernel's complete hitting is unchanged when its rounds are charged their
 finite, potentially nonuniform costs.  The proof truncates per-round
 costs, applies kernel continuity, and establishes mutual raw cofinality
@@ -1337,10 +1337,37 @@ path cost.  The new limit proofs inherit the existing `Eq_rect_eq`
 dependency; no new semantic or soundness axiom is introduced.
 
 The unrestricted residual generator still supplies only a **quotient**
-coupling of decoded cut outputs.  Extraction of a compatible native joint
-of their actual paths (and guard samples) remains unproved.  The new
-multiround theorem keeps that marginal premise explicit; it does not yet
-prove unrestricted GFP soundness or authorize replacing the public definition.
+coupling of decoded cut outputs.  The multiround theorem keeps the native
+marginal premise explicit; it does not yet prove unrestricted GFP soundness
+or authorize replacing the public definition.
+
+An assumption audit now rules out unconditional native reflection under
+the capabilities used by the normalization/multiround route.
+`Examples/NativeReflection.v::AttenuatedDirac` is a small interface model:
+`Some (n,x)` represents a Dirac of dyadic mass `2^(-n)`, but its deliberately
+faulty bind introduces an extra factor `1/2`.  It satisfies core coupling,
+Dirac AE, exact bind AE, AE Kleisli, AE restriction/transport, countable AE,
+intrinsic subprobability validity, and native joint realization; only the
+raw node omega structure (not its laws) is used here.  Its native bind
+does NOT satisfy left-unit.  The FreeOmega `SampleBind` and `SampleRetL`
+rules nevertheless identify the sampled bound Dirac with the original.
+`actual_plans_quotient_coupled` and `actual_plans_have_no_native_joint`
+exhibit this failure for two actual well-founded compression plans;
+`actual_residual_step` checks that their guard coupling really gives a
+step of the proposed `pfinite_residualF` generator.
+
+`native_reflection_requires_left_unit` makes one missing necessary
+condition precise: even identity-decoder reflection entails native
+relational left-unit.  SubEnum and MathComp both pass that necessary-law
+check, using MathComp's existing ordinary kernel left-unit theorem without
+assuming its missing full relational bind class.  Left-unit alone is NOT
+claimed sufficient for reflection.  This audit is neither a counterexample
+to residual-pfinite soundness nor to either maintained backend.  It means
+the remaining extraction theorem cannot be proved from the current minimal
+capability list alone: this route needs additional justified native
+algebra/selection laws with backend proofs, or a proof working directly
+with quotient couplings.  No reflection axiom or change to `pfinite` has
+been introduced to bypass that boundary.
 
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
