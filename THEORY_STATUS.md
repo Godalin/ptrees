@@ -1314,8 +1314,8 @@ NOT have the mass of the original time-zero state.  The tests also cover
 unbounded syntactic branch depths, computed prefixes/residuals, stopping
 before Vis or divergence, and the exact budget at which Vis becomes visible.
 SubEnum mass bounds and MathComp instantiation remain checked.
-The recurring-round adequacy theorem is now available when actual native
-path couplings are supplied.  `FreeOmega/CostedKernel.v` proves that a native
+The recurring-round adequacy theorem is now available when actual path
+couplings are supplied.  `FreeOmega/CostedKernel.v` proves that a native
 kernel's complete hitting is unchanged when its rounds are charged their
 finite, potentially nonuniform costs.  The proof truncates per-round
 costs, applies kernel continuity, and establishes mutual raw cofinality
@@ -1326,9 +1326,13 @@ finite-support, total-mass, or AST premise is required.
 finite-budget one-round decomposition and AE-positive cost of internal
 successors.  The state, costs, and cut may depend on the whole correlated
 execution.  `FiniteInternalCostedProjection.v::costed_round_stable_hitting`
-instantiates this for PTree: a native coupling between a joint round's
-sample space and the selected compression-plus-guard path space, preserving
-cost and projected target, suffices for complete marginal adequacy.
+instantiates this for PTree: a **quotient** coupling between identity
+samples of a joint round's sample space and the selected
+compression-plus-guard path space, preserving cost and projected target,
+suffices for complete marginal adequacy.  This premise has been weakened
+from native node lifting: the finite-budget proof now uses quotient bind,
+and AE progress is transferred by quotient support transport followed by
+`free_omega_native_ae_iff`.  Native marginals still embed as a special case.
 It does NOT require the marginal cut to factor through the projected tree,
 nor a structural reference marginal.  `Examples/CostedRounds.v` checks
 alternating hidden-state-dependent cuts, including different projected
@@ -1337,7 +1341,7 @@ path cost.  The new limit proofs inherit the existing `Eq_rect_eq`
 dependency; no new semantic or soundness axiom is introduced.
 
 The unrestricted residual generator still supplies only a **quotient**
-coupling of decoded cut outputs.  The multiround theorem keeps the native
+coupling of decoded cut outputs.  The multiround theorem keeps its path
 marginal premise explicit; it does not yet prove unrestricted GFP soundness
 or authorize replacing the public definition.
 
@@ -1363,11 +1367,41 @@ check, using MathComp's existing ordinary kernel left-unit theorem without
 assuming its missing full relational bind class.  Left-unit alone is NOT
 claimed sufficient for reflection.  This audit is neither a counterexample
 to residual-pfinite soundness nor to either maintained backend.  It means
-the remaining extraction theorem cannot be proved from the current minimal
-capability list alone: this route needs additional justified native
-algebra/selection laws with backend proofs, or a proof working directly
-with quotient couplings.  No reflection axiom or change to `pfinite` has
+the stronger native extraction theorem cannot be proved from the current
+minimal capability list alone.  The updated route instead keeps path
+couplings in the quotient; no reflection axiom or change to `pfinite` has
 been introduced to bypass that boundary.
+
+`Prob/FreeOmegaRecovery.v::free_omega_native_coupling_pullback` now gives
+a precise conditional-resampling route from decoded couplings to path
+couplings.  A `free_omega_native_recovery` certificate is individual to a
+presentation, independent of the compared relation: on an AE set of decoded
+outputs, its kernel is normalized and supported in the correct decoder
+fiber, and averaging it over the decoded measure reconstructs the WHOLE
+original sample distribution.  From certificates on both sides the theorem
+pulls any decoded quotient coupling back to a quotient coupling of the
+actual sample spaces.  This is a proved theorem about explicit data, not
+an assumed reflection/realization capability.
+
+Recovery constructors cover an actual inverse decoder (without original
+totality) and constant decoders with quotient-normalized original samples.
+The latter resamples all latent randomness; it does not select a preimage.
+`Examples/NativeRecovery.v` tests a discarded fair bit whose common decoded
+value is a higher-universe PTree, full marginal reconstruction, the resulting
+path coupling, and zero-mass inverse recovery.  The certificate fixes the
+existing quotient judgment's intermediate bind/composition universes at the
+frontier level, so small recovered paths can be used under high PTree-valued
+binds without placing PTree itself in the native carrier.
+
+The previous negative model is also a positive regression for this route:
+`actual_plans_paths_quotient_coupled` recovers the guard coupling on the exact
+plans whose native joint does not exist, and `attenuated_round_complete_hitting`
+instantiates the upgraded costed projection theorem despite a provably
+impossible native marginal.  What remains is constructing recovery data for
+general compression plans and compatible joint rounds with these quotient
+path marginals, then closing the unrestricted GFP soundness proof.  The
+constant/inverse constructors are not claimed to discharge that general
+obligation or provide a full backend disintegration theorem.
 
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted

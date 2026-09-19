@@ -3,9 +3,11 @@ Local Unset Universe Minimization ToSet.
 From Coq Require Import Lia.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import FreeOmegaNative.
+From PTree.Prob Require Import FreeOmegaNative FreeOmegaRecovery.
 From PTree.Eq Require Import FiniteInternalPlan PFiniteResidual PStrong.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative.
+From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
+From PTree.Eq.FreeOmega Require Import FiniteInternalRound CostedKernel FiniteInternalCostedProjection.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -246,6 +248,103 @@ Proof.
   - apply FiniteInternal.FIStop.
   - apply (@FOQLSampleRetL M Measure Omega); [intro P; reflexivity|].
     apply FOQLStructural, FOLRet. unfold pfinite_guard. constructor. reflexivity.
+Qed.
+
+(** Staying in the quotient avoids the refuted reflection step. *)
+Lemma tagged_sample_ret {A} n (x : A) :
+  free_omega_qlift eq (FOSample (Some (n,x)) (fun y => FORet y)) (FORet x).
+Proof.
+  induction n as [|n IH].
+  - apply (@FOQLSampleRetL M Measure Omega); [intro P; reflexivity|].
+    apply FOQLStructural, FOLRet. reflexivity.
+  - eapply FOQLComp with (T := eq) (U := eq); [|exact IH|].
+    + exact (@free_omega_sample_bind_ret_l M Measure Core Omega DiracAE BindAE
+        unit A A tt (fun _ => Some (n,x)) (fun y => FORet y)).
+    + intros a c [b [-> ->]]. reflexivity.
+Qed.
+
+Definition sampled_plan_recovery :
+    free_omega_native_recovery (internal_plan_native sampled_plan).
+Proof.
+  apply (constant_native_recovery (mu := internal_plan_measure sampled_plan) (Ret true : tree)).
+  eapply FOQLComp with (T := eq) (U := fun _ _ => True)
+    (mid := FORet (existT _ tt tt)).
+  - apply tagged_sample_ret.
+  - apply FOQLStructural, FOLRet. exact I.
+  - intros x y _. exact I.
+Defined.
+
+Definition direct_plan_recovery :
+    free_omega_native_recovery (internal_plan_native direct_plan).
+Proof.
+  apply (constant_native_recovery (mu := internal_plan_measure direct_plan) (Ret true : tree)).
+  eapply FOQLComp with (T := eq) (U := fun _ _ => True) (mid := FORet tt).
+  - apply tagged_sample_ret.
+  - apply FOQLStructural, FOLRet. exact I.
+  - intros x y _. exact I.
+Defined.
+
+(** The new pullback succeeds on the very plans for which NATIVE
+    reflection was disproved.  It preserves the quotient-level marginal
+    requirement rather than silently imposing node coupling. *)
+Theorem actual_plans_paths_quotient_coupled :
+  free_omega_qlift
+    (fun x y => pfinite_guard eq eq
+      (internal_plan_residual sampled_plan x) (internal_plan_residual direct_plan y))
+    (FOSample (internal_plan_measure sampled_plan) (fun x => FORet x))
+    (FOSample (internal_plan_measure direct_plan) (fun y => FORet y)).
+Proof.
+  exact (free_omega_native_coupling_pullback sampled_plan_recovery direct_plan_recovery
+    actual_plans_are_guard_coupled).
+Qed.
+
+Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := Measure) (NO := Omega)).
+Definition round_tree (_ : unit) : tree := Prob (ret tt) (fun _ => Ret true).
+Definition round_plan (_ : unit) := sampled_plan.
+Definition round_target (_ _ : unit) : stable_target unit bool := SHStable true.
+Definition round_cost (_ _ : unit) := 1.
+
+Definition round_path_relation :=
+  costed_round_path_rel (state_tree := round_tree) (plan := round_plan)
+    (fun b => @FHRet Event M bool b) round_target round_cost (s := tt).
+
+Lemma round_path_relation_all x y : round_path_relation x y.
+Proof. split; reflexivity. Qed.
+
+Lemma attenuated_round_quotient_marginal :
+  free_omega_qlift round_path_relation
+    (FOSample (ret tt) (fun x => FORet x))
+    (FOSample (native_sample_measure (internal_plan_round_native sampled_plan))
+      (fun y => FORet y)).
+Proof.
+  eapply FOQLComp with (T := fun _ _ => True) (U := eq)
+    (mid := FORet (existT _ (existT _ tt tt) tt)).
+  - apply (@FOQLSampleRetL M Measure Omega); [intro P; reflexivity|].
+    apply FOQLStructural, FOLRet. exact I.
+  - apply FOQLMono with (T := fun x y => y = x).
+    + apply FOQLSym. apply tagged_sample_ret.
+    + intros x y Hyx. symmetry. exact Hyx.
+  - intros x z _. apply round_path_relation_all.
+Qed.
+
+Lemma attenuated_round_not_native :
+  ~ sem_lift round_path_relation (ret tt)
+    (native_sample_measure (internal_plan_round_native sampled_plan)).
+Proof. cbn. intros [H _]. discriminate. Qed.
+
+(** The upgraded multiround theorem accepts this case, although its old
+    node-lifting marginal premise is provably impossible. *)
+Theorem attenuated_round_complete_hitting out joint_out :
+  @ptree_stable_hitting Event M (FreeOmega M) FI FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool (observe (round_tree tt)) out ->
+  @stable_hitting (FreeOmega M) FI FreeOmegaObservableSemanticOmega unit bool
+    (costed_kernel (fun _ : unit => ret tt) round_target) tt joint_out ->
+  free_omega_qlift eq out
+    (free_omega_bind joint_out (fun b => FORet (@FHRet Event M bool b))).
+Proof.
+  apply costed_round_stable_hitting with
+    (state_tree := round_tree) (plan := round_plan) (cost := round_cost) (s := tt).
+  intros []. exact attenuated_round_quotient_marginal.
 Qed.
 End AttenuatedDirac.
 

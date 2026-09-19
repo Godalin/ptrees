@@ -74,7 +74,8 @@ Proof.
   apply costed_round_stable_hitting with
     (state_tree := fun s => countdown (fst s)) (plan := alternating_plan)
     (cost := alternating_cost) (s := (n,b)).
-  apply alternating_native_marginal.
+  intro s. eapply FOQLSample; [apply alternating_native_marginal|].
+  intros x y Hxy. apply FOQLStructural, FOLRet. exact Hxy.
 Qed.
 End AlternatingRounds.
 
