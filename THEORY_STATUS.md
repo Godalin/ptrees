@@ -1575,6 +1575,31 @@ such rows is no longer an additional unproved step.  The raw GFP is still
 not assumed transitive, and the finite equivalence closure is still not
 assumed generator-postfixed.
 
+The shortcut through an **up-to-equivalence closure** is now explicitly
+refuted by `Examples/ResidualClosureAudit.v`.  Let `spin = Tau spin`,
+`r = Ret true`, and take the two candidate edges `spin R Tau r` and
+`Tau r R r`.  Both satisfy `R ⊆ pfinite_residualF eq (eqcl R)`: the first
+uses the Tau guard and the composed continuation pair, while the second
+compresses its finite Tau.  Nevertheless, `spin` and `r` have different
+complete hitting behaviors.  The file proves this using primitive hitting
+and quotient support, not a native-reflection assumption.
+
+`reflexive_symmetric_residual_upto_is_unsound` shows that adding reflexivity
+and converse to this candidate does not fix the rule.
+`residual_generator_does_not_preserve_equivalences` also supplies an
+equivalence input whose generator image is not transitive.  Thus neither
+generic up-to-equivalence compatibility nor generic preservation of
+equivalences can be invoked to remove the extraction premise.  These
+negative results concern arbitrary candidates; they do **not** refute
+soundness/transitivity of the raw GFP, or establish that its particular
+equivalence closure is not postfixed.  That stronger, specific question
+remains open.  No change to the residual definition is justified by this
+audit alone.
+
+The audit passes full-library compilation and targeted `coqchk`; its
+assumptions are only the inherited functional-extensionality and
+dependent-equality principles.  No new semantic or choice axiom is used.
+
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
 GFP soundness or API migration is claimed on the strength of this result.

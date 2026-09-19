@@ -53,7 +53,10 @@ Qed.
 (** This is a complete behavioral endpoint for equivalence candidates,
     not just one-step joint construction.  All recurring states and both
     costed marginal proofs are assembled by the library.  Postfixedness
-    and equivalence are explicit; no raw-GFP transitivity is assumed. *)
+    and equivalence are explicit; no raw-GFP transitivity is assumed.
+    Do not replace these premises by R <= F(equivalence_closure R):
+    Examples/ResidualClosureAudit refutes that proposed up-to rule, even
+    for reflexive and symmetric R over the maintained SubEnum backend. *)
 Theorem peutt_coinduction_residual_equivalence_subenum
     (postfixed : forall t u, sim t u ->
       @pfinite_residualF E SubEnum MF SubEnum_SemanticMeasure FI
