@@ -310,5 +310,6 @@ The main dependencies, installed automatically by opam, are:
 - `coq-paco` (through the ITree ecosystem)
 - `coq-mathcomp-algebra`
 - `coq-mathcomp-analysis`
+- `coq-mathcomp-reals-stdlib` (standard real model for native coupling reflection)
 
 If you do not want to use the local `opam` switch, you can manually install the dependencies above.

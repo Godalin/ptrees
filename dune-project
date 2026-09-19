@@ -31,4 +31,6 @@
   (coq-mathcomp-algebra
    (and (>= 2.3.0) (< 2.4.0)))
   (coq-mathcomp-analysis
+   (and (>= 1.13.0) (< 1.15.0)))
+  (coq-mathcomp-reals-stdlib
    (and (>= 1.13.0) (< 1.15.0)))))

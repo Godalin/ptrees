@@ -16,6 +16,7 @@
    mathcomp
    HB
    mathcomp.analysis
+   mathcomp.reals_stdlib
    elpi
    elpi_elpi
  )

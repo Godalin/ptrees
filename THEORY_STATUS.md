@@ -74,8 +74,9 @@ mass.  `escaped_row_not_observable` rejects every observation of the
 offending decreasing row under the repaired constructor;
 `unrestricted_observation_rule_rejected` proves that the old rule cannot
 be reinstated.  The earlier transient-atom audit likewise now rejects its
-bad observation directly.  This is a checked repair of this construction,
-not a proof that all quotient constructors have a mass-preserving model.
+bad observation directly.  The subsequent scalar-model audit now also
+proves preservation of all bounded tests, and hence total mass, for every
+quotient constructor over SubEnum; see `FreeOmegaUpperQuotientSubEnum.v`.
 The positive regression `increasing_kernel_observable` observes the
 increasing direction of the same grid without the former rule.  Existing
 RandomWalk, Von Neumann, Bernoulli-factory, and MathComp oracle observations
@@ -84,11 +85,12 @@ discharge the new premise from their increasing approximation schedules.
 `Examples/FreeOmegaLimitSafety.v` records the rejected decreasing-mass and
 moving-diagonal inputs.  The former uses a valid mass-one coin and compares
 mass one with mass two thirds, so this is not a raw-weight validity issue.
-These tests repair the identified rule-boundary vulnerabilities; they are
-**not** a claim of a complete mass-preserving denotational soundness theorem
-for every FreeOmega quotient constructor.  That stronger theorem remains
-unproved.  The unrestricted residual `pfinite` soundness result below also
-remains open; unary-policy acceleration is not silently generalized to it.
+These tests repair the identified rule-boundary vulnerabilities.  The newer
+bounded-test model covers the complete SubEnum quotient, but is not an
+additive measure model for arbitrary non-increasing raw Lub expressions.
+The unrestricted residual GFP is now sound over SubEnum/FreeOmega, through
+actual finite transport rather than an assumed extension of unary-policy
+acceleration.  This does not establish the same theorem for every backend.
 
 `Examples/BackendCapabilities.v` is the compile-time audit of the bounded
 finite profile, the raw weighted compatibility profile, and the MathComp
@@ -733,10 +735,66 @@ separate migration; it is not part of the current compatibility claim.
 
 The proposed replacement for `pfinite` is implemented separately in
 `Eq/PFiniteResidual.v`, and is **not yet the public `pfinite` relation**.
-The current `PFinite.v`, its soundness theorem, and the public facade are
-unchanged until greatest-fixed-point soundness of the replacement is proved.
+The current `PFinite.v`, its generic soundness theorem, and the public facade
+are unchanged pending the backend-capability boundary and client migration.
+Greatest-fixed-point soundness of the replacement is now proved for
+SubEnum/FreeOmega, without an equivalence premise on the recursive candidate.
 The temporary candidate names are migration scaffolding, not a second
 intended public behavioral relation.
+
+### Current checkpoint: unrestricted SubEnum soundness
+
+`Eq/FreeOmega/FiniteInternalTransportSubEnum.v` proves:
+
+```text
+sim ⊆ pfinite_residualF RR sim  ->  sim ⊆ peutt RR
+pfinite_residual_rel RR        ⊆   peutt RR
+pfinite_residual               ⊆   peutt eq
+```
+
+The names are `peutt_coinduction_residual_subenum`,
+`pfinite_residual_rel_peutt_subenum`, and `pfinite_residual_peutt_subenum`.
+These endpoints allow arbitrary heterogeneous candidates and do not require
+AST, total mass, a uniform fuel bound, an equivalence proof, or supplied
+joint rows.  The last implication is ordinary induction over finite
+equational chaining, not an up-to-equivalence rule.  Raw-GFP transitivity
+and closure postfixedness are neither used nor asserted.
+
+The missing bridge is now proved in
+`Prob/FreeOmegaNativeTransportSubEnum.v::subenum_native_quotient_coupling`:
+any quotient coupling of two native presentations yields an actual native
+joint for their original sample measures.  The relation is arbitrary;
+decoders may be noninjective and return higher-universe values.  The proof
+first uses ordinal positions to retain duplicate and zero-weight entries,
+pulls the quotient back to these finite carriers, derives Hall inequalities
+and equal mass from the scalar model, constructs a rational transport, and
+transports it back to the original carriers.  The only finite-support
+restriction is the existing SubEnum carrier, not an extra client premise.
+
+The scalar lemmas are parameterized by a MathComp `realType`; the behavioral
+endpoints instantiate them internally with Coq's standard reals, using
+`coq-mathcomp-reals-stdlib`.  No numerical model parameter or new
+probability/reflection axiom is required from clients.  Standard-real axioms
+remain part of the proof's logical dependencies, alongside the previously
+used classical and extensionality principles.
+In particular, `Print Assumptions` reports
+`ClassicalDedekindReals.sig_not_dec` and
+`ClassicalDedekindReals.sig_forall_dec` from this concrete real model; these
+are not being presented as an axiom-free proof or hidden backend laws.
+
+`Examples/ResidualTransport.v` exercises a non-reflexive three-pair retry
+candidate and the heterogeneous raw-GFP endpoint.
+`Examples/ResidualJointCoinduction.v` now uses the unrestricted rule for its
+unbounded retry with discarded bits, including its eventful and
+always-failing instances.
+
+The generic public `pfinite` replacement, generic/backend-qualified
+subrelation API and RandomWalk migration are still pending.  This
+SubEnum theorem must not silently replace the existing all-backend theorem.
+The following development notes record earlier stages; their historical
+extraction gaps are superseded by this checkpoint for SubEnum.
+
+### Development notes
 
 `Eq/FiniteInternal.v` defines the inductive operational judgment
 `finite_internal t out`, with `FIStop`, `FITau`, and `FIProb`.  It returns a
@@ -1731,9 +1789,9 @@ actual high-universe stable-head carrier.
 Full-library compilation, targeted `coqchk`, and assumption inspection
 pass for these results.  They use existing classical choice/description, extensionality
 and dependent-equality principles, not an axiom asserting quotient
-soundness.  **Arbitrary-relation native joint extraction from the proved
-test inequalities is still not connected to the native API.**  The finite
-transport existence theorem needed for that connection is now proved:
+soundness.  Arbitrary-relation native joint extraction is now connected to
+the native API by the transport bridge described in the checkpoint above.
+The finite transport construction consists of:
 
 - `Prob/FiniteMatching.v::finite_hall_matching` constructs an injective
   matching of finite sets from all neighborhood-cardinality inequalities.
@@ -1771,13 +1829,12 @@ pass.  `finite_enum_transport` is closed under the global context; the
 native wrapper inherits only existing functional extensionality, definite
 description and excluded middle from the existing coupling realizer.
 
-The remaining bridge must derive finite-index Hall constraints from
-quotient-related native presentations (including noninjective
-higher-universe decoders), then transport the constructed finite coupling
-back to their actual sample spaces and graph marginals.  These premises
-are not yet proved from an arbitrary native-presentation quotient coupling.
-The residual-GFP soundness gap is therefore not yet closed, and public
-`PFinite` is not replaced.
+`FiniteEnumPresentation.v` now supplies lossless ordinal-indexed native
+presentations, including empty carriers and duplicate entries.
+`FreeOmegaNativeTransportSubEnum.v` derives the finite-index Hall constraints
+from arbitrary quotient-related native presentations and transports the
+constructed coupling back.  This closes the SubEnum residual-GFP soundness
+gap; the public all-backend `PFinite` migration is still separate work.
 
 The shortcut through an **up-to-equivalence closure** is now explicitly
 refuted by `Examples/ResidualClosureAudit.v`.  Let `spin = Tau spin`,

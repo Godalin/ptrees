@@ -5,7 +5,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure
   FreeOmegaCoupling.
 From PTree.Eq Require Import FiniteInternal PFiniteResidual PEutt.
-From PTree.Eq.FreeOmega Require Import FiniteInternalEquivalenceJointSubEnum.
+From PTree.Eq.FreeOmega Require Import FiniteInternalTransportSubEnum.
 From PTree.Examples Require Import SubEnumRegression HiddenRandomState.
 
 Set Implicit Arguments.
@@ -116,8 +116,7 @@ Theorem retry_discarded_bits_peutt :
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A A eq
     (retry_with_noise true) (retry_with_noise false).
 Proof.
-  apply peutt_coinduction_residual_equivalence_subenum with (sim := retry_equiv).
-  - exact retry_equiv_equivalence.
+  apply peutt_coinduction_residual_subenum with (sim := retry_equiv).
   - exact retry_equiv_postfixed.
   - right. split; eexists; apply RetryBase.
 Qed.
