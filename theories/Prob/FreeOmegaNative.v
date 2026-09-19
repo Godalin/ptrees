@@ -83,6 +83,29 @@ Proof.
   - intros a c [b [-> ->]]. reflexivity.
 Qed.
 
+(** Push a SMALL deterministic map through native sampling; the result
+    continuation may still return values in a larger universe. *)
+Lemma free_omega_sample_map {X Y A} (mu : MN X) (f : X -> Y)
+    (k : Y -> FreeOmega MN A) :
+  free_omega_qlift eq
+    (FOSample (sem_bind mu (fun x => sem_ret (f x))) k)
+    (FOSample mu (fun x => k (f x))).
+Proof.
+  eapply FOQLComp with (T := eq) (U := eq)
+    (mid := FOSample mu (fun x => FOSample (sem_ret (f x)) k)).
+  - apply FOQLMono with (T := fun a b => b = a).
+    + apply FOQLSym, FOQLSampleBind.
+      * intro P. apply sem_ae_bind_iff.
+      * intro y. apply free_omega_qlift_refl. intro a. reflexivity.
+    + intros a b Hba. symmetry. exact Hba.
+  - eapply FOQLSample with (T := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. apply FOQLSampleRetL.
+      * intro P. apply sem_ae_ret_iff.
+      * apply free_omega_qlift_refl. intro a. reflexivity.
+  - intros a c [b [-> ->]]. reflexivity.
+Qed.
+
 (** Flatten DEPENDENT nested sampling by retaining the entire tagged path.
     Sampling spaces may differ between branches; no fixed-depth or finite
     branching assumption is used. *)

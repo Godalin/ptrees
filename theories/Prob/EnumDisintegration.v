@@ -212,6 +212,36 @@ Proof.
   apply enum_repr_eq_implies_meas_eq. reflexivity.
 Qed.
 
+(** Numeric totality supplies an actual mass-preserving coupling to a
+    Dirac measure.  AE support alone would not justify this step. *)
+Lemma subenum_total_same_mass {A} (mu : SubEnum A) :
+  subenum_total mu -> sem_same_mass mu (subenum_ret tt).
+Proof.
+  intro Htotal.
+  assert (Hunit : sem_eq (subenum_bind mu (fun _ => subenum_ret tt))
+    (subenum_ret tt)).
+  { change (enum_meas_eq
+      (bind_Enum (subenum_raw mu) (fun _ => ret_Enum tt)) (ret_Enum tt)).
+    rewrite bind_ret_emap. apply enum_meas_eq_of_eqenum. intros [].
+    apply val_inj.
+    have Hmass : forall xs : Enum A,
+      Qval (acc_mass tt (emap (fun _ => tt) xs)) = enum_mass xs.
+    { elim=> [|[p x] xs IH] //=.
+      rewrite /acc_mass /emap /= -/acc_mass in IH *.
+      by rewrite IH /enum_mass /= mulr1. }
+    change (Qval (acc_mass tt (emap (fun _ => tt) (subenum_raw mu))) =
+      Qval (acc_mass tt (ret_Enum tt))).
+    rewrite Hmass. exact Htotal. }
+  eapply sem_lift_proper_l; [apply subenum_bind_ret_r|].
+  eapply sem_lift_proper_r; [exact Hunit|].
+  eapply (@sem_lift_bind SubEnum SubEnum_SemanticMeasure
+    SubEnum_SemanticMeasureBindLaws A A A unit eq (fun _ _ => True)
+    mu mu subenum_ret (fun _ => subenum_ret tt)).
+  - apply sem_lift_refl. intro x. reflexivity.
+  - intros x y _. apply (@sem_lift_ret SubEnum SubEnum_SemanticMeasure
+      SubEnum_SemanticMeasureCoreLaws). exact I.
+Qed.
+
 (** A graph coupling identifies the actual marginal, even when the caller's
     measure has a different list representation (split/reordered weights). *)
 Lemma subenum_graph_marginal {A B} (f : A -> B)
