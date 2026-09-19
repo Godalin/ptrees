@@ -24,6 +24,23 @@ Arguments native_sample_value {MN A} _ _.
 Definition free_omega_native {MN A} (p : free_omega_native_presentation MN A) :=
   FOSample (native_sample_measure p) (fun x => FORet (native_sample_value p x)).
 
+(** AE reflection through an explicit native presentation is valid even
+    though reflection of quotient COUPLING to node lifting need not be. *)
+Lemma free_omega_native_ae_iff {MN}
+    `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+    {A} (p : free_omega_native_presentation MN A) (P : A -> Prop) :
+  free_omega_ae P (free_omega_native p) <->
+  sem_ae (native_sample_measure p) (fun x => P (native_sample_value p x)).
+Proof.
+  split.
+  - intro Hae. apply free_omega_ae_sample_inv in Hae.
+    eapply sem_ae_mono; [|exact Hae].
+    intros x Hx. inversion Hx. assumption.
+  - intro Hae. apply FOAESample with
+      (Good := fun x => P (native_sample_value p x)); [exact Hae|].
+    intros x Hx. apply FOAERet. exact Hx.
+Qed.
+
 Section DependentSampling.
 Context {MN : Type -> Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
