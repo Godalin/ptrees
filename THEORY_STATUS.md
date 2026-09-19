@@ -1757,13 +1757,27 @@ despite equal nonempty supports, and exercises an empty source with zero
 target mass.  Full-library compilation and targeted `coqchk` pass.  The
 matching, capacity, rational-transport and bounded-test endpoint theorems
 are all **closed under the global context** in the assumption audit.
-These matrix results are not yet a theorem returning the
-repository's native `semantic_coupling` certificate: the remaining bridge
-must derive finite-index test comparisons from quotient-related native
-presentations (including noninjective higher-universe decoders), construct
-the actual `SubEnum` joint, and prove its graph marginals.  The residual-GFP
-soundness gap is therefore not yet closed, and public `PFinite` is not
-replaced.
+
+`Prob/FiniteEnumTransport.v` then realizes the matrix as an actual weighted
+enumeration.  `finite_enum_transport` proves exact `EqEnum` marginals,
+allowing zero entries and duplicate entries in either input enumeration.
+`subenum_finite_transport_joint` returns the maintained
+`semantic_coupling` certificate, including a bounded `SubEnum` joint and
+both semantic marginals, for finite carriers satisfying the Hall and
+equal-mass premises.  `split_subenum_joint` instantiates this native
+endpoint on the forced-splitting `(2/3,1/3)` example; it is no longer merely
+an external matrix certificate.  Full compilation and targeted `coqchk`
+pass.  `finite_enum_transport` is closed under the global context; the
+native wrapper inherits only existing functional extensionality, definite
+description and excluded middle from the existing coupling realizer.
+
+The remaining bridge must derive finite-index Hall constraints from
+quotient-related native presentations (including noninjective
+higher-universe decoders), then transport the constructed finite coupling
+back to their actual sample spaces and graph marginals.  These premises
+are not yet proved from an arbitrary native-presentation quotient coupling.
+The residual-GFP soundness gap is therefore not yet closed, and public
+`PFinite` is not replaced.
 
 The shortcut through an **up-to-equivalence closure** is now explicitly
 refuted by `Examples/ResidualClosureAudit.v`.  Let `spin = Tau spin`,

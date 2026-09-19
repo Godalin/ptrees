@@ -3,7 +3,8 @@ Set Warnings "-ambiguous-paths".
 From Coq Require Import Lia.
 From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype finset
   bigop ssralg ssrnum order rat.
-From PTree.Prob Require Import FiniteMatching FiniteCapacityMatching FiniteRationalTransport.
+From PTree.Prob Require Import FiniteMatching FiniteCapacityMatching FiniteRationalTransport
+  RatSubTypes TwoLevelMeasureSubEnum SemanticCoupling FiniteEnumTransport.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -68,6 +69,13 @@ Local Open Scope ring_scope.
 Definition source_probability (b : bool) : rat := if b then 2 / 3 else 1 / 3.
 Definition target_probability (b : bool) : rat := if b then 1 / 3 else 2 / 3.
 
+Lemma split_rational_hall : rational_hall source_probability target_probability edge.
+Proof.
+  intro S. rewrite big_mkcond big_bool.
+  rewrite [X in _ <= X]big_mkcond big_bool neighbors_true neighbors_false.
+  case: (true \in S); case: (false \in S); vm_compute; reflexivity.
+Qed.
+
 Theorem split_rational_joint : exists w : bool -> bool -> rat,
   (forall x y, 0 <= w x y) /\
   (forall x, \sum_y w x y = source_probability x) /\
@@ -77,10 +85,40 @@ Proof.
   apply finite_rational_transport.
   - intros []; vm_compute; reflexivity.
   - intros []; vm_compute; reflexivity.
-  - intro S. rewrite big_mkcond big_bool.
-    rewrite [X in _ <= X]big_mkcond big_bool neighbors_true neighbors_false.
-    case: (true \in S); case: (false \in S); vm_compute; reflexivity.
+  - exact split_rational_hall.
   - rewrite !big_bool. apply addrC.
+Qed.
+
+Definition source_weight (b : bool) : nnQ.
+Proof. refine (mknnQ (source_probability b) _). destruct b; vm_compute; reflexivity. Defined.
+Definition target_weight (b : bool) : nnQ.
+Proof. refine (mknnQ (target_probability b) _). destruct b; vm_compute; reflexivity. Defined.
+
+Definition source_measure : SubEnum bool.
+Proof.
+  refine {| subenum_raw := finite_weighted_enum source_weight id |}.
+  rewrite /enum_subprob /enum_mass /finite_weighted_enum enumT unlock.
+  vm_compute. reflexivity.
+Defined.
+
+Definition target_measure : SubEnum bool.
+Proof.
+  refine {| subenum_raw := finite_weighted_enum target_weight id |}.
+  rewrite /enum_subprob /enum_mass /finite_weighted_enum enumT unlock.
+  vm_compute. reflexivity.
+Defined.
+
+(** The same forced-splitting problem now yields an actual native joint,
+    not only an external matrix certificate. *)
+Theorem split_subenum_joint : exists joint : SubEnum (bool * bool),
+  @semantic_coupling SubEnum SubEnum_SemanticMeasure bool bool
+    (fun x y => edge x y) source_measure target_measure joint.
+Proof.
+  apply subenum_finite_transport_joint.
+  - intro S. cbn [subenum_raw source_measure target_measure].
+    rewrite !finite_weighted_enum_sum. exact (split_rational_hall S).
+  - cbn [subenum_raw source_measure target_measure].
+    rewrite !finite_weighted_enum_sum !big_bool. apply addrC.
 Qed.
 
 (** Having the same nonempty support on both sides is not a sufficient
