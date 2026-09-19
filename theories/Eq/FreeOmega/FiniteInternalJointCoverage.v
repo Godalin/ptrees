@@ -7,7 +7,7 @@ From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import FiniteInternal PrimitiveStableHitting
   UnifiedFrontier PTreeKernel.
 From PTree.Eq.FreeOmega Require Import FiniteInternal FiniteInternalJoint
-  FiniteInternalJointHitting KernelCompletion.
+  FiniteInternalJointHitting KernelCompletion KernelCongruence.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -126,6 +126,60 @@ Corollary finite_internal_execution_limit_covers s : D s ->
 Proof.
   intro HD. apply FOApproxLub. intro n.
   apply finite_internal_execution_covers_hitting. exact HD.
+Qed.
+
+Variable represented_kernel : S -> MF (stable_target S O).
+Hypothesis kernels_equal : forall s, D s ->
+  free_omega_qlift eq (kernel s) (represented_kernel s).
+
+(** Representation-independent coverage for an equivalent presentation of
+    a structurally realized kernel.  The raw inequality ends at an explicit
+    representative; the second conjunct relates it to the requested one.
+    An arbitrary quotient kernel is NOT assumed to have such a structural
+    presentation. *)
+Theorem finite_internal_execution_covers_modulo_eq n s : D s ->
+  exists covered,
+    free_omega_approx eq (hit n (observe (project_state s))) covered /\
+    free_omega_qlift eq covered
+      (free_omega_bind
+        (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+          S O represented_kernel n s) (fun o => FORet (project_output o))).
+Proof.
+  intro HD. exists (free_omega_bind
+    (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O kernel n s)
+    (fun o => FORet (project_output o))). split.
+  - apply finite_internal_execution_covers_hitting. exact HD.
+  - eapply FOQLBind with (T := eq).
+    + eapply (kernel_hitting_approx_eq (NI := NI) (NO := NO)) with (D := D).
+      * exact execution_closed.
+      * exact kernels_equal.
+      * exact HD.
+    + intros x y ->. apply FOQLStructural, FOLRet. reflexivity.
+Qed.
+
+(** The complete witness comes from one fixed reference kernel, not from
+    an unproved monotone selection of the finite existential witnesses. *)
+Theorem finite_internal_execution_limit_covers_modulo_eq s : D s ->
+  exists covered,
+    free_omega_approx eq
+      (FOLub (fun n => hit n (observe (project_state s)))) covered /\
+    free_omega_qlift eq covered
+      (free_omega_bind
+        (FOLub (fun n => @stable_hitting_approx MF FI
+          FreeOmegaObservableSemanticOmega S O represented_kernel n s))
+        (fun o => FORet (project_output o))).
+Proof.
+  intro HD. exists (free_omega_bind
+    (FOLub (fun n => @stable_hitting_approx MF FI
+      FreeOmegaObservableSemanticOmega S O kernel n s))
+    (fun o => FORet (project_output o))). split.
+  - apply finite_internal_execution_limit_covers. exact HD.
+  - eapply FOQLBind with (T := eq).
+    + eapply (kernel_hitting_limit_eq (NI := NI) (NO := NO)) with (D := D).
+      * exact execution_closed.
+      * exact kernels_equal.
+      * exact HD.
+    + intros x y ->. apply FOQLStructural, FOLRet. reflexivity.
 Qed.
 
 End CorrelatedCoverage.
