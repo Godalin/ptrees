@@ -1497,9 +1497,42 @@ and is not just a renamed native-reflection requirement.
 the maintained SubEnum backend with two genuinely probabilistic guards:
 one coin splits each native weight into repeated entries, and the joint
 preserves equality of the sampled continuations.  The remaining
-work is to extract suitable compression joints from the residual quotient
-couplings and package the recurring correlated states for the costed
-coinduction endpoint.
+work at that stage was to extract suitable compression joints from the
+residual quotient couplings and package the recurring correlated states for
+the costed coinduction endpoint.
+
+There is now genuine joint extraction for **equivalence-related native
+presentations over SubEnum**.  `FreeOmegaCodedJointSubEnum.v` first extracts
+a native joint from a quotient coupling that equates two common codes.
+Disintegration retains the conditional probability weights and establishes
+both quotient graph marginals; it does not choose a single supported partner.
+`FreeOmegaEquivalenceJointSubEnum.v::subenum_equivalence_quotient_joint`
+codes equivalence classes using finite Boolean signatures over the left
+native support.  Decoded values may be higher-universe trees; only the
+signatures and latent samples need native carriers.  Neither source
+totality nor injectivity of the decoders is required.
+
+`pfinite_guard_equivalence` proves that an equivalence continuation
+candidate induces an equivalence guard.  Consequently,
+`FiniteInternalEquivalenceJointSubEnum.v::pfinite_subenum_equivalence_joint_round`
+extracts a complete compression-plus-guard joint directly from a residual
+generator step **provided its continuation candidate is an equivalence**.
+The caller supplies no joint or marginal certificates.  NativeRecovery
+regressions exercise this endpoint on a discarded random bit and test
+extraction with a non-total source and a noninjective tree-valued decoder.
+
+The equivalence premise is a real remaining restriction.  The raw residual
+GFP has not been proved transitive; its reflexive-symmetric-transitive
+closure is an equivalence, but has not been proved generator-postfixed.
+Thus this extraction does not yet supply recurring rows for every state
+required by unrestricted GFP soundness.  Neither arbitrary heterogeneous
+joint realization nor closure postfixedness is assumed.
+
+The new extraction endpoints and regressions pass full-library compilation
+and targeted `coqchk`.  Their assumption audit reports the existing
+classical choice/description, functional extensionality and dependent
+equality principles; no new probability, reflection or soundness axiom is
+introduced.  The guard-equivalence lemma alone uses dependent equality.
 
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted

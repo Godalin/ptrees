@@ -1,13 +1,15 @@
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
+From Coq Require Import Classes.RelationClasses.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   FreeOmegaMeasure FreeOmegaNative FreeOmegaRecovery FreeOmegaCoupling
-  FreeOmegaRecoverySubEnum SemanticCouplingEnum.
+  FreeOmegaRecoverySubEnum SemanticCouplingEnum FreeOmegaEquivalenceJointSubEnum.
 From PTree.Examples Require Import FiniteInternalPlan SubEnumRegression HiddenRandomState.
 From PTree.Eq Require Import PStrong PFiniteResidual FiniteInternal FiniteInternalPlan.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative
-  FiniteInternalRoundCoupling FiniteInternalRecoverySubEnum FiniteInternalNativeJoint.
+  FiniteInternalRoundCoupling FiniteInternalRecoverySubEnum FiniteInternalNativeJoint
+  FiniteInternalEquivalenceJointSubEnum.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -57,6 +59,28 @@ Example latent_cut_full_round_paths :
       (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x))
       (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)).
 Proof. apply pfinite_residual_subenum_round_paths. exact latent_cut_residual_step. Qed.
+
+(** Unlike the assembly tests below, the caller supplies NO joint or
+    marginal certificates: both are extracted from the generator step.
+    Equality of continuations supplies the stated equivalence premise. *)
+Example latent_cut_automatically_realized_round :
+  exists (p : @finite_internal_plan planE SubEnum bool latent_cut_tree)
+         (q : @finite_internal_plan planE SubEnum bool (Ret true))
+         (W : Type) (round : SubEnum W)
+         (left : W -> native_sample_type (internal_plan_round_native p))
+         (right : W -> native_sample_type (internal_plan_round_native q)),
+    free_omega_qlift (fun w x => left w = x)
+      (FOSample round (fun w => FORet w))
+      (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x)) /\
+    free_omega_qlift (fun w y => right w = y)
+      (FOSample round (fun w => FORet w))
+      (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)) /\
+    sem_ae round (fun w => internal_round_path_rel eq eq p q (left w) (right w)).
+Proof.
+  apply pfinite_subenum_equivalence_joint_round; [apply eq_equivalence|].
+  eapply pfinite_residualF_monotone; [|exact latent_cut_residual_step].
+  intros x y Hfalse. contradiction.
+Qed.
 
 (** Both guards really sample: the right coin has split native
     weights.  Native realization couples the outcomes rather than drawing
@@ -212,6 +236,21 @@ Proof.
   exact (subenum_native_coupling_pullback
     (p := partial_latent_presentation) (q := partial_visible_presentation)
     partial_decoded_coupling).
+Qed.
+
+(** The extracted joint preserves a non-total source and a noninjective
+    high-tree decoder.  Conditional rows are not assumed total everywhere. *)
+Example partial_noninjective_native_quotient_joint :
+  exists (Z : Type) (joint : SubEnum Z) (left : Z -> bool * bool) (right : Z -> bool),
+    free_omega_qlift (fun z bits => left z = bits)
+      (FOSample joint (fun z => FORet z))
+      (FOSample partial_latent_sample (fun bits => FORet bits)) /\
+    free_omega_qlift (fun z b => right z = b)
+      (FOSample joint (fun z => FORet z))
+      (FOSample (native_sample_measure partial_visible_presentation) (fun b => FORet b)) /\
+    sem_ae joint (fun z => (Ret (fst (left z)) : ptree planE SubEnum bool) = Ret (right z)).
+Proof.
+  exact (subenum_equivalence_quotient_joint eq_equivalence partial_decoded_coupling).
 Qed.
 
 (** A null source with the SAME noninjective high decoder is also valid;

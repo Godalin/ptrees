@@ -219,3 +219,46 @@ Proof.
 Qed.
 
 End ResidualFiniteEquivalence.
+
+(** This law is about a supplied equivalence candidate, not a claim that
+    the raw residual greatest fixed point is transitive.  It permits finite
+    support class-coding of a guard relation when that hypothesis is known. *)
+Section GuardEquivalence.
+Context {E MN : Type -> Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI} {A : Type}.
+Variable sim : relation (ptree E MN A).
+
+Lemma pfinite_guard_equivalence : Equivalence sim -> Equivalence (pfinite_guard eq sim).
+Proof.
+  intros [Hrefl Hsym Htrans]. split; unfold pfinite_guard.
+  - intro t. destruct (observe t); constructor.
+    + reflexivity.
+    + apply Hrefl.
+    + intro x. apply Hrefl.
+    + apply sem_lift_refl. intro x. apply Hrefl.
+  - intros t u H.
+    remember (observe t) as ot in H |- *.
+    remember (observe u) as ou in H |- *.
+    destruct H; constructor.
+    + symmetry. exact H.
+    + apply Hsym. exact H.
+    + intro x. apply Hsym, H.
+    + eapply sem_lift_mono; [|apply sem_lift_sym; exact H].
+      intros x y Hxy. apply Hsym. exact Hxy.
+  - intros t u v Htu Huv.
+    set ot := observe t in Htu |- *.
+    set ou := observe u in Htu Huv.
+    set ov := observe v in Huv |- *.
+    destruct ou.
+    + dependent destruction Htu. dependent destruction Huv.
+      rewrite <- x0, <- x. constructor. reflexivity.
+    + dependent destruction Htu. dependent destruction Huv.
+      rewrite <- x0, <- x. constructor. eapply Htrans; eassumption.
+    + dependent destruction Htu. dependent destruction Huv.
+      rewrite <- x0, <- x. constructor. intro y. eapply Htrans; [apply H|apply H0].
+    + dependent destruction Htu. dependent destruction Huv.
+      rewrite <- x0, <- x. constructor.
+      eapply sem_lift_mono; [|exact (sem_lift_comp H H0)].
+      intros a b [z [Ha Hb]]. eapply Htrans; eassumption.
+Qed.
+End GuardEquivalence.
