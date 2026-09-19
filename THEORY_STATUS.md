@@ -1701,14 +1701,41 @@ independent numerical rejection of the former escaping-row observation:
 that row has upper mass one, so it cannot observe the proposed mass-half
 output.  This regression does not use inversion of the observation rule.
 
-This groundwork passes full-library compilation, targeted `coqchk`, and
-assumption inspection.  It uses the existing MathComp classical
-choice/extensionality principles and functional extensionality, not an
-axiom asserting quotient soundness.  **Preservation by all quotient
-constructors is still unproved**, as is arbitrary-relation native joint
-extraction from such preservation.  The scalar evaluator alone therefore
-does not remove the residual-GFP soundness gap and does not authorize
-replacing public `PFinite`.
+`Prob/FreeOmegaUpperRelationalSubEnum.v` removes the restriction that tests
+must factor through the observation map.  Bounded upper/lower envelopes on
+observation fibers (with explicit defaults for empty fibers) prove
+`free_omega_observes_upper_rel` for arbitrary related unit-interval tests.
+The same construction proves relational composition without assuming that
+the candidate is an equivalence.  AE restriction, bind, sample and formal
+Lub preserve these directed test inequalities as well.
+
+`Prob/FreeOmegaUpperQuotientSubEnum.v` now proves
+`free_omega_qlift_upper_birel` by induction over **every constructor of the
+actual quotient lifting**.  It carries the two directed inequalities
+together; symmetry is not inferred by complementing a possibly nonadditive
+raw upper expectation.  Observation, arbitrary relation composition,
+sampling exchange, AE sample/limit interchange, bind diagonalization and
+cofinality are all covered.  `free_omega_qlift_eq_upper` preserves every
+bounded real test under equality coupling.  The stronger mass endpoint
+`free_omega_qlift_upper_mass` preserves constant-one tests under **any**
+result relation, including a universal relation.
+
+`Examples/FreeOmegaUpperQuotient.v` therefore excludes the original
+mass-one/mass-half quotient coupling itself, not just the defective
+observation certificate.  It also excludes the decreasing escaping row's
+proposed mass-half quotient and distinguishes a nonadditive raw choice
+from a fair distribution despite equal total mass.  The RandomWalk
+regression transports numeric mass one through quotient rewrites on its
+actual high-universe stable-head carrier.
+
+Full-library compilation, targeted `coqchk`, and assumption inspection
+pass for these results.  They use existing classical choice/description, extensionality
+and dependent-equality principles, not an axiom asserting quotient
+soundness.  **Arbitrary-relation native joint extraction from the proved
+test inequalities is still unproved.**  In particular scalar preservation
+does not itself construct a native coupling or the joint rows required by
+residual coinduction.  The residual-GFP soundness gap is not yet closed,
+and public `PFinite` is not replaced.
 
 The shortcut through an **up-to-equivalence closure** is now explicitly
 refuted by `Examples/ResidualClosureAudit.v`.  Let `spin = Tau spin`,
