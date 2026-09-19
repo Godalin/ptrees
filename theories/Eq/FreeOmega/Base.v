@@ -37,6 +37,23 @@ Proof.
     (MX := FreeOmegaMixedMeasure)).
 Qed.
 
+(** Explicit observable-interface endpoint for limit-rule premises. *)
+Lemma ptree_observable_hitting_increasing {F R} (ot : ptree' F MN R) n :
+  free_omega_approx eq
+    (@ptree_hitting_approx F MN MF
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R n ot)
+    (@ptree_hitting_approx F MN MF
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R (S n) ot).
+Proof.
+  exact (@PTreeKernel.ptree_hitting_mono F MN MF
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
+    FreeOmegaObservableSemanticMeasureOrderLaws R ot n (S n)
+    (Nat.le_succ_diag_r n)).
+Qed.
+
 Section TranslateApproximants.
 Context {F : Type -> Type}.
 Variable rename : forall X, E X -> F X.
@@ -123,7 +140,14 @@ Lemma translate_canonical_lift {R} (t : ptree E MN R) :
     (FOLub (fun fuel => ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.translate rename t)))).
 Proof.
-  apply FOQLCofinal. apply translate_hitting_cofinal.
+  apply FOQLCofinal.
+  - intro n. apply ptree_hitting_mono. apply Nat.le_succ_diag_r.
+  - intro n. exact (@PTreeKernel.ptree_hitting_mono F MN MF
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
+      FreeOmegaObservableSemanticMeasureOrderLaws R
+      (observe (PTree.translate rename t)) n (S n) (Nat.le_succ_diag_r n)).
+  - apply translate_hitting_cofinal.
 Qed.
 
 Lemma translate_hitting_lift {R} (t : ptree E MN R) out out' :
@@ -367,4 +391,3 @@ Qed.
 End TranslatePreservation.
 
 End FreeOmegaBase.
-

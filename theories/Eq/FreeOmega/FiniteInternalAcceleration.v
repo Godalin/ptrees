@@ -162,15 +162,17 @@ Lemma finite_internal_advance_lub
     (next : ptree E MN R -> MF (stable_head E MN R))
     (chain : ptree E MN R -> nat -> MF (stable_head E MN R)) :
   (forall u, free_omega_qlift eq (next u) (FOLub (chain u))) ->
+  (forall u n, free_omega_approx eq (chain u n) (chain u (S n))) ->
   forall t, free_omega_qlift eq (finite_internal_advance next t)
     (FOLub (fun n => finite_internal_advance (fun u => chain u n) t)).
 Proof.
-  intros Hnext t. unfold finite_internal_advance. destruct (observe t).
+  intros Hnext Hinc t. unfold finite_internal_advance. destruct (observe t).
   - apply FOQLLubConstantR. apply free_omega_qlift_refl. intro h. reflexivity.
   - apply Hnext.
   - apply FOQLLubConstantR. apply free_omega_qlift_refl. intro h. reflexivity.
   - apply FOQLSampleLub with (Good := fun _ => True).
     + apply sem_ae_true.
+    + intros x _ n. apply Hinc.
     + intros x _. apply Hnext.
 Qed.
 
@@ -183,6 +185,8 @@ Lemma finite_internal_cut_bind_lub t
     (FOLub (fun n => free_omega_bind (trunc t n) (fun u => kernels u n))).
 Proof.
   intros Hnext Hinc. apply FOQLBindLub.
+  - exact (proj1 (trunc_spec t)).
+  - exact Hinc.
   - exact (proj1 (proj2 (trunc_spec t))).
   - exact Hnext.
   - apply free_omega_support_lift_bind_diagonal.
@@ -203,7 +207,9 @@ Proof.
       apply free_omega_qlift_refl. intro h. reflexivity.
     + intros u m. apply free_omega_approx_refl. intro h. reflexivity.
   - apply finite_internal_cut_bind_lub.
-    + intro u. apply finite_internal_advance_lub. exact IH.
+    + intro u. apply finite_internal_advance_lub.
+      * exact IH.
+      * intros v m. apply finite_internal_grid_inner.
     + intros u m. apply finite_internal_advance_mono.
       intro v. apply finite_internal_grid_inner.
 Qed.
@@ -226,7 +232,14 @@ Proof.
         -- intros n m. apply finite_internal_grid_inner.
         -- intros n m. apply finite_internal_grid_outer.
     + apply FOQLSym. eapply FOQLMono.
-      * apply FOQLCofinal. apply finite_internal_grid_cofinal.
+      * apply FOQLCofinal.
+        -- intro n. apply (@PTreeKernel.ptree_hitting_mono E MN MF FI
+             FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega);
+             try typeclasses eauto; lia.
+        -- intro n. eapply free_omega_approx_trans.
+           ++ apply finite_internal_grid_inner.
+           ++ apply finite_internal_grid_outer.
+        -- apply finite_internal_grid_cofinal.
       * intros x y ->. reflexivity.
     + intros x z [y [-> ->]]. reflexivity.
   - intros x z [y [-> ->]]. reflexivity.

@@ -632,7 +632,13 @@ Proof.
     (FOLub (fun rounds => walk_hitting (walk_schedule rounds) x y))
     (FOLub (fun fuel => walk_hitting fuel x y))).
   apply FOQLSym. eapply FOQLMono.
-  - apply FOQLCofinal. apply walk_hitting_cofinal.
+  - apply FOQLCofinal.
+    + intro n. unfold walk_hitting.
+      apply (ptree_hitting_mono (FI := rwFI) (FO := rwFO)). lia.
+    + intro n. unfold walk_hitting.
+      apply (ptree_hitting_mono (FI := rwFI) (FO := rwFO)).
+      cbn [walk_schedule]. lia.
+    + apply walk_hitting_cofinal.
   - intros h h' ->. reflexivity.
 Qed.
 
@@ -745,7 +751,13 @@ Proof.
       (FOLub (fun rounds => joint_hitting (walk_schedule rounds) 1 0))
       (FOLub (fun fuel => joint_hitting fuel 1 0))).
     apply FOQLSym. eapply FOQLMono.
-    + apply FOQLCofinal. split.
+    + apply FOQLCofinal.
+      { intro n. unfold joint_hitting.
+        apply (ptree_hitting_mono (FI := rwFI) (FO := rwFO)). lia. }
+      { intro n. unfold joint_hitting.
+        apply (ptree_hitting_mono (FI := rwFI) (FO := rwFO)).
+        cbn [walk_schedule]. lia. }
+      split.
       * intros fuel. exists fuel.
         apply (ptree_hitting_mono (MF := FreeOmega SubEnum)
           (FI := FreeOmegaObservableSemanticMeasure

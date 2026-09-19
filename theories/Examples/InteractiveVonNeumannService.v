@@ -235,9 +235,15 @@ Lemma service_vn_weak :
     FreeOmegaObservableSemanticOmega bool
     (observe (@von_neumann_third_in coin_serviceE)) service_vn_heads.
 Proof.
-  unfold ptree_stable_hitting, service_vn_heads, service_vn_hitting.
-  cbn. apply FOQLSym. eapply FOQLMono.
-  - apply FOQLCofinal. exact service_vn_chains_cofinal.
+  change (free_omega_qlift eq
+    (FOLub (fun n => service_vn_hitting (ptree_vn_raw_schedule n)))
+    (FOLub service_vn_hitting)).
+  apply FOQLSym. eapply FOQLMono.
+  - apply FOQLCofinal.
+    + intro n. apply ptree_hitting_mono. apply le_S, le_n.
+    + intro n. apply ptree_hitting_mono.
+      cbn [ptree_vn_raw_schedule]. repeat apply le_S. apply le_n.
+    + exact service_vn_chains_cofinal.
   - intros x y ->. reflexivity.
 Qed.
 

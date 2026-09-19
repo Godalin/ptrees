@@ -130,6 +130,9 @@ Proof.
       * intros x y ->. exact (proj1 (Hchains y) n).
     + apply FOQLSampleLub with (Good := fun _ => True).
       * apply sem_ae_true.
+      * intros x _ [|n].
+        -- apply FOApproxZero.
+        -- exact (proj1 (Hchains x) n).
       * intros x _. apply finite_internal_prefix_limit.
         exact (proj1 (proj2 (Hchains x))).
     + intros [|n] m.

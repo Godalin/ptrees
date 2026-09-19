@@ -124,7 +124,14 @@ Theorem ptree_bind_cofinal {A R}
     FreeOmegaObservableSemanticOmega A R t k.
 Proof.
   intros Hcofinal out. unfold PTreeKernel.ptree_bind_cofinal.
-  apply free_omega_cofinal_lub_iff. exact Hcofinal.
+  apply free_omega_cofinal_lub_iff.
+  - intro n. apply ptree_observable_hitting_increasing.
+  - intro n. exact (@PTreeKernel.ptree_bind_diagonal_mono E MN MF
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
+      FreeOmegaObservableSemanticMeasureOrderLaws A R t k n (S n)
+      (Nat.le_succ_diag_r n)).
+  - exact Hcofinal.
 Qed.
 
 Lemma ptree_bind_ret_approx_cofinal {A R}
@@ -631,7 +638,13 @@ Corollary ptree_interp_cofinal_all {R}
 Proof.
   intro out. unfold PTreeKernel.ptree_interp_cofinal.
   apply free_omega_cofinal_lub_iff.
-  apply ptree_interp_approx_cofinal_all.
+  - intro n. apply ptree_observable_hitting_increasing.
+  - intro n. unfold ptree_interp_diagonal_approx.
+    apply free_omega_approx_bind with (R := eq).
+    + apply ptree_observable_hitting_increasing.
+    + intros x y ->. unfold ptree_interp_head_approx.
+      apply ptree_observable_hitting_increasing.
+  - apply ptree_interp_approx_cofinal_all.
 Qed.
 
 End InterpCofinality.
@@ -1196,7 +1209,12 @@ Theorem nested_productivity_diagonal_cofinal (i : I) :
     (observe (nested_program i))
     (fun outer inner => nested_execution_grid outer inner i).
 Proof.
-  intro cert. intro out. apply free_omega_cofinal_lub_iff. split.
+  intro cert. intro out. apply free_omega_cofinal_lub_iff.
+  { intro n. apply ptree_observable_hitting_increasing. }
+  { intro n. eapply free_omega_approx_trans.
+    - apply nested_execution_grid_inner_increasing.
+    - apply nested_execution_grid_outer_increasing. }
+  split.
   - intro fuel.
     set (outer := nested_ptree_to_grid_outer cert fuel).
     set (inner := nested_ptree_to_grid_inner cert fuel).
@@ -1847,7 +1865,12 @@ Theorem iter_grid_diagonal_cofinal i :
     (observe (PTree.iter step i))
     (fun rounds inner => iter_execution_grid rounds inner i).
 Proof.
-  intro out. apply free_omega_cofinal_lub_iff. split.
+  intro out. apply free_omega_cofinal_lub_iff.
+  { intro n. apply ptree_observable_hitting_increasing. }
+  { intro n. eapply free_omega_approx_trans.
+    - apply iter_execution_grid_inner_increasing.
+    - apply iter_execution_grid_outer_increasing. }
+  split.
   - intro fuel. exists (S fuel).
     eapply free_omega_approx_trans.
     + apply iter_ptree_to_grid_sound.
@@ -2088,6 +2111,28 @@ Proof.
     exact (round_to_ptree_sound cert rounds).
 Qed.
 
+Lemma ptree_iter_round_increasing {I R}
+    (transition : I -> MN (I + R)) n i :
+  free_omega_approx eq
+    (@ptree_iter_round_approx E MN MF
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega I R n transition i)
+    (@ptree_iter_round_approx E MN MF
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega I R (S n) transition i).
+Proof.
+  unfold ptree_iter_round_approx.
+  apply free_omega_approx_bind with (R := eq).
+  - induction n as [|n IH] in i |- *.
+    + constructor.
+    + cbn [mixed_iter_approx]. apply FOApproxSample with (S := eq).
+      * apply sem_lift_refl. intros x. reflexivity.
+      * intros [j|r] y <-.
+        -- apply IH.
+        -- apply free_omega_approx_refl. intros x. reflexivity.
+  - intros x y ->. apply free_omega_approx_refl. intros h. reflexivity.
+Qed.
+
 Corollary ptree_iter_certificate_cofinal {I R}
     (step : I -> ptree E MN (I + R))
     (transition : I -> MN (I + R)) (i : I) :
@@ -2099,7 +2144,9 @@ Corollary ptree_iter_certificate_cofinal {I R}
 Proof.
   intros cert out. unfold PTreeKernel.ptree_iter_cofinal.
   apply free_omega_cofinal_lub_iff.
-  exact (ptree_iter_certificate_approx_cofinal cert).
+  - intro n. apply ptree_observable_hitting_increasing.
+  - intro n. apply ptree_iter_round_increasing.
+  - exact (ptree_iter_certificate_approx_cofinal cert).
 Qed.
 
 (** A primitive Markov step has a uniform syntactic cost: one probabilistic
@@ -2302,7 +2349,10 @@ Theorem ptree_iter_cofinal {I R}
     FreeOmegaObservableSemanticOmega I R step transition i.
 Proof.
   intros Hcofinal out. unfold PTreeKernel.ptree_iter_cofinal.
-  apply free_omega_cofinal_lub_iff. exact Hcofinal.
+  apply free_omega_cofinal_lub_iff.
+  - intro n. apply ptree_observable_hitting_increasing.
+  - intro n. apply ptree_iter_round_increasing.
+  - exact Hcofinal.
 Qed.
 
 End FreeOmegaBind.

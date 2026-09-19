@@ -1341,6 +1341,8 @@ Polymorphic Inductive free_omega_qlift {MN}
       (chain : C -> nat -> FreeOmega MN B)
       (out : C -> FreeOmega MN A) :
       sem_ae mu Good ->
+      (forall x, Good x -> forall n,
+        free_omega_approx eq (chain x n) (chain x (S n))) ->
       (forall x, Good x ->
         free_omega_qlift R (out x) (FOLub (chain x))) ->
       free_omega_qlift R
@@ -1355,6 +1357,11 @@ Polymorphic Inductive free_omega_qlift {MN}
       (source_out : FreeOmega MN C)
       (kernels : C -> nat -> FreeOmega MN B)
       (kernel_out : C -> FreeOmega MN A) :
+      (* Diagonalization is valid for increasing source AND kernel chains.
+         Support transport alone does not prevent a moving diagonal from
+         having more mass than any of its pointwise limits. *)
+      (forall n, free_omega_approx eq (source n) (source (S n))) ->
+      (forall x n, free_omega_approx eq (kernels x n) (kernels x (S n))) ->
       free_omega_qlift eq source_out (FOLub source) ->
       (forall x, free_omega_qlift R (kernel_out x) (FOLub (kernels x))) ->
       free_omega_support_lift R
@@ -1384,6 +1391,10 @@ Polymorphic Inductive free_omega_qlift {MN}
           (FOLub (fun fuel => grid fuel fuel)) B HAB)
   | FOQLCofinal (left : nat -> FreeOmega MN A)
       (right : nat -> FreeOmega MN B) :
+      (* Mutual finite domination preserves increasing limits, not
+         arbitrary convergent sequences with transient larger terms. *)
+      (forall n, free_omega_approx eq (left n) (left (S n))) ->
+      (forall n, free_omega_approx eq (right n) (right (S n))) ->
       free_omega_chains_cofinal R left right ->
       free_omega_qlift R (FOLub left) (FOLub right).
 
@@ -1430,7 +1441,7 @@ Proof.
   - apply free_omega_support_lift_lub_constant_r. assumption.
   - assumption.
   - assumption.
-  - destruct H as [Hlr Hrl]. split.
+  - destruct H1 as [Hlr Hrl]. split.
     + intros P HP. dependent destruction HP. constructor. intro m.
       destruct (Hrl m) as [n Happrox].
       eapply free_omega_approx_ae_backward; [exact Happrox|]. eauto.
@@ -1695,6 +1706,8 @@ Qed.
 
 Lemma free_omega_cofinal_lub_iff {A}
     (left right : nat -> FreeOmega MN A) out :
+  (forall n, free_omega_approx eq (left n) (left (S n))) ->
+  (forall n, free_omega_approx eq (right n) (right (S n))) ->
   free_omega_chains_cofinal eq left right ->
   @sem_lub (FreeOmega MN)
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -1703,10 +1716,10 @@ Lemma free_omega_cofinal_lub_iff {A}
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega A right out.
 Proof.
-  intro Hcofinal. cbn. split; intro Hlim.
-  - refine (FOQLComp (R := eq) Hlim (FOQLCofinal Hcofinal) _).
+  intros Hleft Hright Hcofinal. cbn. split; intro Hlim.
+  - refine (FOQLComp (R := eq) Hlim (FOQLCofinal Hleft Hright Hcofinal) _).
     intros x z [y [-> ->]]. reflexivity.
-  - refine (FOQLComp (R := eq) Hlim (FOQLSym (FOQLCofinal Hcofinal)) _).
+  - refine (FOQLComp (R := eq) Hlim (FOQLSym (FOQLCofinal Hleft Hright Hcofinal)) _).
     intros x z [y [-> ->]]. reflexivity.
 Qed.
 
@@ -1801,7 +1814,7 @@ Qed.
 Proof.
   constructor.
   - intros A B mu. cbn. apply FOQLSampleZero.
-  - intros A B mu Good chain out Hae _ Hlim.
+  - intros A B mu Good chain out Hae Hinc Hlim.
     cbn in Hlim |- *.
     eapply FOQLSampleLub; eauto.
 Qed.
@@ -1816,7 +1829,8 @@ Proof.
   constructor. intros A B source source_out kernels kernel_out
     Hsource_inc Hkernels_inc Hsource Hkernels.
   cbn in Hsource, Hkernels |- *.
-  eapply FOQLBindLub; [exact Hsource|exact Hkernels|].
+  eapply FOQLBindLub;
+    [exact Hsource_inc|exact Hkernels_inc|exact Hsource|exact Hkernels|].
   eapply free_omega_support_lift_bind_diagonal; eauto.
   - apply free_omega_qlift_support. exact Hsource.
   - intro x. apply free_omega_qlift_support. exact (Hkernels x).

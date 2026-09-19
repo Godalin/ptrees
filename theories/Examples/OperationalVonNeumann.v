@@ -301,10 +301,15 @@ Lemma ptree_vn_raw_weak :
     FreeOmegaObservableSemanticOmega bool
     (observe von_neumann_third) ptree_vn_raw_heads.
 Proof.
-  unfold ptree_stable_hitting, ptree_vn_raw_heads,
-    ptree_vn_raw_limit, ptree_vn_raw_hitting.
-  cbn. apply FOQLSym. eapply FOQLMono.
-  - apply FOQLCofinal. exact ptree_vn_raw_chains_cofinal.
+  change (free_omega_qlift eq
+    (FOLub (fun n => ptree_vn_raw_hitting (ptree_vn_raw_schedule n)))
+    (FOLub ptree_vn_raw_hitting)).
+  apply FOQLSym. eapply FOQLMono.
+  - apply FOQLCofinal.
+    + intro n. apply ptree_hitting_mono. apply le_S, le_n.
+    + intro n. apply ptree_hitting_mono.
+      cbn [ptree_vn_raw_schedule]. repeat apply le_S. apply le_n.
+    + exact ptree_vn_raw_chains_cofinal.
   - intros x y ->. reflexivity.
 Qed.
 
