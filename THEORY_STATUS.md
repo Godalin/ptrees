@@ -1534,6 +1534,47 @@ classical choice/description, functional extensionality and dependent
 equality principles; no new probability, reflection or soundness axiom is
 introduced.  The guard-equivalence lemma alone uses dependent equality.
 
+The recurring-process packaging obligation is now discharged separately
+from row extraction.  `FiniteInternalJointRows.v::peutt_coinduction_joint_rows`
+accepts a genuine native row for every related pair, each with two quotient
+path marginals and AE-related targets, and proves actual `peutt`.  Classical
+choice selects whole proved rows.  Internal states retain the related pair;
+the two projected paths keep their own costs.  Unsupported samples fall
+back to the current pair and do not affect either AE marginal certificate.
+The generic theorem does not require an equivalence candidate, unary cuts,
+AST, total node measures, or a bound on internal execution.
+
+Combining automatic SubEnum extraction with this packaging gives
+`peutt_coinduction_residual_equivalence_subenum`:
+
+```text
+Equivalence sim /\ (sim ⊆ pfinite_residualF eq sim) -> sim ⊆ peutt eq.
+```
+
+Clients of this endpoint supply neither joint rows nor costed-process
+certificates.  `Examples/ResidualJointCoinduction.v` tests unbounded retry
+with an extra discarded fair bit after every failed attempt.  The retry
+measure is an arbitrary SubEnum coin, and success resumes an arbitrary
+possibly eventful continuation.  No positivity or AST premise is used;
+there are concrete eventful and always-failing instances.  The chosen
+noise-compressing cuts provably lack a structural lifting, so the proof
+uses quotient probability algebra.  This negative fact concerns those
+cuts only, not all possible witnesses.
+
+Full-library compilation and targeted `coqchk` pass for the row assembly,
+the SubEnum endpoint and this example.  Their assumption audit introduces
+no new semantic axiom; it reports the existing classical choice/description
+and dependent-equality principles, plus inherited functional extensionality
+for the concrete extraction.  The structural-cut negative test is closed
+under the global context.
+
+For unrestricted residual-GFP soundness, the remaining obligation is now
+row extraction for its actual continuation relation (or a justified route
+through an equivalence candidate).  Building the recurring process from
+such rows is no longer an additional unproved step.  The raw GFP is still
+not assumed transitive, and the finite equivalence closure is still not
+assumed generator-postfixed.
+
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
 GFP soundness or API migration is claimed on the strength of this result.
