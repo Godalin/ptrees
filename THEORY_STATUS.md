@@ -1096,6 +1096,30 @@ The missing correlated truncation construction is now proved for
   lifting is required to be structural.  The candidate itself supplies the
   continuation relation, not an assumed prior behavioral equality.
 
+`FiniteInternalJointReference.v::peutt_coinduction_finite_internal_references`
+now permits **different, quotient-equal reference kernels** for the two
+marginals.  Each reference must have a proved structural graph to its own
+cut-followed-by-guard round; neither a structural lifting between the two
+cuts nor a shared structural reference is required.  AE closure of the
+references follows from equality with the actual invariant-preserving
+kernel.  Marginal adequacy identifies both projections of that kernel's
+complete hitting with the original trees' hitting, giving the native
+coinduction step.  The structural rule above is now a corollary of this
+reference rule rather than a duplicate adequacy proof.
+
+`Examples/CorrelatedSampleAlgebra.v` exercises this extension by exchanging
+two independent SubEnum samples **in every iteration of an unbounded
+internal retry loop**.  Its `exchange_inside_unbounded_retry` theorem proves
+`peutt` without AST, positivity, or a retry bound.  Sample exchange is proved
+locally; commutativity is not added to the generic rule's assumptions.
+For the concrete Dirac-false/fair-coin instance,
+`exchange_fair_retry_equivalent` proves the behavioral equality while
+`exchange_fair_residuals_not_structural` shows that the selected residual
+cuts have no structural guard lifting for any continuation relation.
+Thus the extension genuinely covers non-structurally-aligned cuts.  This
+negative result concerns those selected cuts, not every possible choice of
+cuts or the desired unrestricted soundness theorem.
+
 `CorrelatedInternalRounds.v` now proves actual `peutt` via this rule for the
 partner-dependent cuts and the purely internal unbounded retry loops.
 The constant-Lub wrapper that refutes raw coverage also has a positive
@@ -1104,8 +1128,9 @@ complete-hitting equality regression via the reference-kernel theorem.
 Thus structural correlated acceleration adequacy is solved.  The remaining
 gap to the unrestricted residual GFP is its larger **quotient** residual
 lifting: general joint extraction and adequate marginal realization are
-not supplied by structural extraction.  This distinction matters for
-non-shape-preserving probability algebra.  The public `PFinite` definition
+not supplied by structural extraction.  The new reference rule handles
+some non-shape-preserving probability algebra, but does not construct its
+reference kernels from every arbitrary quotient lifting.  The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
 GFP soundness or API migration is claimed on the strength of this result.
 
