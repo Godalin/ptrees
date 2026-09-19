@@ -1044,13 +1044,43 @@ including kernels that continue internally with changed states.  Product
 exchange is proved locally for those node measures; it is not added as a
 required capability for general kernel congruence.
 
+`Eq/FreeOmega/KernelContinuity.v` supplies the general limit-exchange step
+for a genuinely increasing family of truncated kernels.  If each full
+kernel row is equality-coupled to the formal limit of those rows, then
+`kernel_hitting_approx_limit` commutes each finite hitting approximation
+with the kernel limit, and `kernel_hitting_limit_diagonal` identifies the
+complete hitting with a single diagonal increasing both kernel accuracy
+and execution fuel.  The state may contain a correlated program pair and
+history; no factorization into unary policies is required.  Raw monotonicity
+of the kernel chain is an explicit premise, not inferred from quotient
+equality.  `kernel_stable_hitting_diagonal_adequate` additionally turns
+**mutual raw finite coverage** of the projected diagonal and a reference
+kernel's hitting chain into equality of their complete representatives.
+
+This continuity theorem is used by `finite_internal_rounds_limit` in the
+existing unary acceleration proof.  `finite_internal_rounds_kernelE`
+identifies those rounds with hitting for the cut-followed-by-guard kernel;
+the former specialized advance/bind limit helpers have been removed.
+`Examples/KernelContinuity.v` independently tests state-rank truncation of
+arbitrary SubEnum/FreeOmega kernels, without AST or a global state bound,
+and shows that no fixed cutoff suffices for every returning state.
+
+For correlated finite compression, the remaining construction is a
+finite-internal-guided truncation of the actual realized round kernel,
+with raw monotonicity, convergence, primitive-fuel upper bounds, and finite
+coverage.  The unary cut truncation theorem does not automatically supply
+such a chain on paired states.  In particular, a structural node match
+must retain its sampled pair rather than choose an arbitrary partner.
+Kernel continuity discharges the later limit exchange, not this construction.
+
 These paired-round results are still **not full** correlated acceleration
 adequacy.  Even the structural reverse bound and the earlier upper bound
 have not been turned into equality: the upper bound ends at an explicit
 representative equality-coupled to original hitting, and raw order is not
-assumed quotient-proper.  A justified quotient-level sandwich/cofinality
-argument, as well as realizability for unrestricted residual couplings,
-remains necessary for the residual GFP soundness theorem.  The public
+assumed quotient-proper.  Constructing the finite truncations and mutual
+coverage needed by the diagonal adequacy criterion, as well as realizing
+unrestricted residual couplings, remains necessary for the residual GFP
+soundness theorem.  The public
 PFinite definition has not been replaced by the structural special case.
 
 `Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
