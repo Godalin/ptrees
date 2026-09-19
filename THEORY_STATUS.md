@@ -1627,6 +1627,32 @@ an arbitrary raw `FOLub` need not denote an additive probability measure.
 No new public behavioral relation, probability backend or WP API is
 introduced.
 
+`Prob/FreeOmegaUpperCouplingSubEnum.v` now connects that evaluator to
+actual coupling and order proofs:
+
+- `subenum_lift_real_expect` proves the weighted inequality for arbitrary
+  real-valued tests related pointwise by a native coupling.  Its public
+  statement needs no `eqType` on either carrier and no totality premise;
+- `free_omega_approx_upper` and `free_omega_structural_upper` prove numeric
+  preservation by raw approximation and structural lifting;
+- `free_omega_upper_ae_mono` and `free_omega_upper_ae_ext` justify changing
+  tests only almost everywhere, including unreachable branches;
+- `free_omega_sample_bind_upper` validates nested finite sampling against
+  the actual weighted native bind;
+- `free_omega_cofinal_upper_le` and `free_omega_cofinal_upper_eq` validate
+  cofinal domination and mutual cofinality numerically;
+- `free_omega_diagonal_upper` validates a double supremum's diagonal
+  using raw monotonicity in both coordinates.  Each grid cell is dominated
+  by a later diagonal cell; no exchange of arbitrary convergent limits
+  or quotient equality is assumed.
+
+The scalar regressions now also check splitting a sampling weight for
+arbitrary real tests, changes on an unreachable branch, and a doubly
+padded sampling grid.  These additions pass full-library compilation and
+targeted `coqchk`.  Their assumptions are existing classical
+choice/description, extensionality and dependent-equality principles.
+No new semantic axiom or extra backend capability is introduced.
+
 This groundwork passes full-library compilation, targeted `coqchk`, and
 assumption inspection.  It uses the existing MathComp classical
 choice/extensionality principles and functional extensionality, not an

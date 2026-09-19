@@ -4,8 +4,8 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Logic.FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
-From PTree.Prob Require Import DiscreteMC MeasureIterationEnum TwoLevelMeasureSubEnum
-  FreeOmegaMeasure FreeOmegaUpperExpectationSubEnum.
+From PTree.Prob Require Import DiscreteMC MeasureIterationEnum TwoLevelMeasure TwoLevelMeasureSubEnum
+  FreeOmegaMeasure FreeOmegaUpperExpectationSubEnum FreeOmegaUpperCouplingSubEnum.
 From PTree.Examples Require Import SubEnumRegression FreeOmegaEscapingMass.
 
 Set Implicit Arguments.
@@ -103,5 +103,63 @@ Proof.
     intros []; split; try exact: ler01; exact: lexx. }
   rewrite H1 Htrue Hfalse. change ((1%:R : R) < 2%:R).
   by rewrite ltr_nat.
+Qed.
+
+(** Splitting a weight changes the enumeration, not any real-valued test.
+    The proof uses the actual native coupling, not literal list equality. *)
+Theorem upper_split_mass_real_test (f : bool -> R) :
+  enum_real_expect f (subenum_raw subenum_fair) =
+  enum_real_expect f (subenum_raw subenum_fair_split).
+Proof.
+  apply/eqP. rewrite eq_le. apply/andP. split.
+  - eapply subenum_lift_real_expect; [exact subenum_fair_split_lift|].
+    intros x y ->. exact: lexx.
+  - eapply subenum_lift_real_expect; [apply sem_lift_sym; exact subenum_fair_split_lift|].
+    intros x y ->. exact: lexx.
+Qed.
+
+Theorem upper_unreachable_test_change :
+  upper (FOSample (subenum_ret true) (fun b : bool => FORet b)) (fun _ => 1) =
+  upper (FOSample (subenum_ret true) (fun b : bool => FORet b))
+    (fun b => if b then 1 else 0).
+Proof.
+  apply free_omega_upper_ae_ext.
+  - intro b. split; [exact: ler01|exact: lexx].
+  - intros []; split; try exact: ler01; exact: lexx.
+  - apply FOAESample with (Good := fun b => b = true).
+    + apply (@sem_ae_ret SubEnum SubEnum_SemanticMeasure
+        SubEnum_SemanticMeasureAEKleisliLaws bool (fun b => b = true) true).
+      reflexivity.
+    + intros b ->. apply FOAERet. reflexivity.
+Qed.
+
+Definition padded_grid (i j : nat) : FreeOmega SubEnum bool :=
+  match i, j with
+  | S _, S _ => FOSample subenum_fair (fun b => FORet b)
+  | _, _ => FOZero
+  end.
+
+Theorem upper_padded_double_limit (f : bool -> R)
+    (Hf : forall b, 0 <= f b /\ f b <= 1) :
+  upper (FOLub (fun i => FOLub (padded_grid i))) f =
+  enum_real_expect f (subenum_raw subenum_fair).
+Proof.
+  rewrite (@free_omega_diagonal_upper R _ padded_grid f).
+  - change (upper (FOLub (fun n => padded_grid n n)) f =
+      upper (FOSample subenum_fair (fun b => FORet b)) f).
+    rewrite -(@countable_upper_constant R
+      (upper (FOSample subenum_fair (fun b => FORet b)) f)).
+    change (upper (FOLub (fun n => padded_grid n n)) f =
+      upper (FOLub (fun _ => FOSample subenum_fair (fun b => FORet b))) f).
+    apply free_omega_cofinal_upper_eq; [split|exact Hf].
+    + intros [|n]; exists 0%nat; cbn [padded_grid].
+      * apply FOApproxZero.
+      * apply free_omega_approx_refl. intro b. reflexivity.
+    + intro n. exists 1%nat. apply free_omega_approx_refl. intro b. reflexivity.
+  - intros [|i] [|j]; cbn [padded_grid]; try apply FOApproxZero.
+    apply free_omega_approx_refl. intro b. reflexivity.
+  - intros [|i] [|j]; cbn [padded_grid]; try apply FOApproxZero.
+    apply free_omega_approx_refl. intro b. reflexivity.
+  - exact Hf.
 Qed.
 End ScalarAudit.
