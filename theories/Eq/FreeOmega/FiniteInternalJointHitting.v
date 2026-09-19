@@ -1,11 +1,12 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
+From Coq Require Import FunctionalExtensionality.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import FiniteInternal PrimitiveStableHitting
   UnifiedFrontier PTreeKernel FiniteInternalHitting.
-From PTree.Eq.FreeOmega Require Import FiniteInternalJoint.
+From PTree.Eq.FreeOmega Require Import FiniteInternalJoint KernelCompletion.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -100,5 +101,57 @@ Proof.
     + intros x z [y [-> ->]]. reflexivity.
   - intros x z [y [-> ->]]. reflexivity.
 Qed.
+
+Section CorrelatedExecution.
+Context {S O : Type}.
+Variable kernel : S -> MF (stable_target S O).
+Variable project_state : S -> tree.
+Variable project_output : O -> head.
+Variable D : S -> Prop.
+Variable cut : S -> MF tree.
+
+Definition finite_internal_execution_projection (target : stable_target S O) :=
+  match target with
+  | SHStable o => SHStable (project_output o)
+  | SHInternal s => SHInternal (project_state s)
+  end.
+
+Hypothesis execution_closed : forall s, D s ->
+  free_omega_ae (kernel_completion_invariant D) (kernel s).
+Hypothesis cut_valid : forall s, D s ->
+  @finite_internal E MN MF FI FreeOmegaMixedMeasure A (project_state s) (cut s).
+Hypothesis execution_marginal : forall s, D s ->
+  free_omega_qlift (fun z target => finite_internal_execution_projection z = target)
+    (kernel s) (free_omega_bind (cut s) finite_internal_guard_transition).
+
+(** Upper half of correlated acceleration adequacy, for actual valid cuts.
+    A state can contain both trees or extra execution history; neither the
+    cut nor the choice of the next state must factor through project_state.
+    The explicit [upper] avoids assuming raw order is quotient-proper. *)
+Theorem finite_internal_execution_hitting_upper s : D s ->
+  exists upper,
+    free_omega_approx eq
+      (free_omega_bind
+        (FOLub (fun n => @stable_hitting_approx MF FI
+          FreeOmegaObservableSemanticOmega S O kernel n s))
+        (fun o => FORet (project_output o))) upper /\
+    free_omega_qlift eq upper (front (project_state s)).
+Proof.
+  intro HD. eapply kernel_hitting_limit_upper with
+    (D := D) (tail := fun s => front (project_state s)).
+  - exact execution_closed.
+  - intros s' HD'.
+    assert (Hresolve :
+      kernel_completion_resolve project_output (fun s => front (project_state s)) =
+      (fun z => finite_internal_guard_complete (finite_internal_execution_projection z))).
+    { apply functional_extensionality. intros [o|state]; reflexivity. }
+    cbn [kernel_completion]. rewrite Hresolve.
+    eapply finite_internal_realized_round_hitting.
+    + apply cut_valid. exact HD'.
+    + apply execution_marginal. exact HD'.
+  - exact HD.
+Qed.
+
+End CorrelatedExecution.
 
 End CompleteMarginal.
