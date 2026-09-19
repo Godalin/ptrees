@@ -1383,9 +1383,9 @@ pulls any decoded quotient coupling back to a quotient coupling of the
 actual sample spaces.  This is a proved theorem about explicit data, not
 an assumed reflection/realization capability.
 
-Recovery constructors cover an actual inverse decoder (without original
-totality) and constant decoders with quotient-normalized original samples.
-The latter resamples all latent randomness; it does not select a preimage.
+Generic recovery constructors cover an actual inverse decoder (without
+original totality) and constant decoders with quotient-normalized original
+samples.  The latter resamples all latent randomness; it does not select a preimage.
 `Examples/NativeRecovery.v` tests a discarded fair bit whose common decoded
 value is a higher-universe PTree, full marginal reconstruction, the resulting
 path coupling, and zero-mass inverse recovery.  The certificate fixes the
@@ -1393,15 +1393,42 @@ existing quotient judgment's intermediate bind/composition universes at the
 frontier level, so small recovered paths can be used under high PTree-valued
 binds without placing PTree itself in the native carrier.
 
+`Prob/FreeOmegaRecoverySubEnum.v::subenum_native_recovery` additionally
+constructs a recovery for **every SubEnum native presentation**, with no
+injectivity, constant-decoder, or source-totality premise.  Classical
+preimage choice supplies only a small fiber LABEL (`option X`); finite
+disintegration of the tagged measure on `option X * X` supplies the actual
+conditional random sample.  The proof preserves the whole original
+distribution and only requires conditional normalization almost everywhere,
+so null fibers and missing source mass are retained.  The decoded type may
+be a higher-universe PTree and is never used as a native measure carrier.
+`subenum_total_same_mass` proves the normalization-to-Dirac coupling from
+numeric totality; it is not inferred from support alone.
+
+`subenum_native_coupling_pullback` consequently needs no per-presentation
+recovery premise.  `FiniteInternalRecoverySubEnum.v` applies it to arbitrary
+well-founded compression plans: `pfinite_residual_subenum_path_characterization`
+characterizes the full SubEnum residual generator using quotient couplings
+of actual path samples.  The converse follows by mapping paths back to
+their residuals.  These remain **quotient** couplings, not native reflection
+or a joint-round realization theorem.  New regressions reconstruct a
+non-total source with a nonconstant, noninjective tree decoder, recover its
+coupling to its visible marginal, and handle the same decoder over a
+zero-mass source.  Classical choice is explicit; no semantic or soundness
+axiom is introduced.  `Print Assumptions` records classical description/
+choice, functional extensionality and the inherited `Eq_rect_eq`; the
+plan characterization also inherits the existing plan-reification choice
+dependencies.  These results are not advertised as axiom-free.
+
 The previous negative model is also a positive regression for this route:
 `actual_plans_paths_quotient_coupled` recovers the guard coupling on the exact
 plans whose native joint does not exist, and `attenuated_round_complete_hitting`
 instantiates the upgraded costed projection theorem despite a provably
-impossible native marginal.  What remains is constructing recovery data for
-general compression plans and compatible joint rounds with these quotient
-path marginals, then closing the unrestricted GFP soundness proof.  The
-constant/inverse constructors are not claimed to discharge that general
-obligation or provide a full backend disintegration theorem.
+impossible native marginal.  What remains is constructing compatible joint
+rounds with these quotient path marginals, then closing the unrestricted
+GFP soundness proof.  General recovery is now discharged for SubEnum, not
+for arbitrary node backends or MathComp.  The new SubEnum theorem alone
+does not authorize replacing the public `PFinite` definition.
 
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
