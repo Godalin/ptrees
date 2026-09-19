@@ -1314,10 +1314,33 @@ NOT have the mass of the original time-zero state.  The tests also cover
 unbounded syntactic branch depths, computed prefixes/residuals, stopping
 before Vis or divergence, and the exact budget at which Vis becomes visible.
 SubEnum mass bounds and MathComp instantiation remain checked.
-What remains is native coupling extraction and an adequate **joint**
-execution/acceleration construction across recurring correlated rounds.
-These results do not yet prove unrestricted GFP soundness or authorize
-replacing the public definition.
+The recurring-round adequacy gap is now reduced to actual native path
+coupling extraction.  `FreeOmega/CostedKernel.v` proves that a native
+kernel's complete hitting is unchanged when its rounds are charged their
+finite, potentially nonuniform costs.  The proof truncates per-round
+costs, applies kernel continuity, and establishes mutual raw cofinality
+with the cumulative-budget approximants.  No uniform cost bound,
+finite-support, total-mass, or AST premise is required.
+
+`costed_hitting_reference_limit` then proves multiround adequacy from a
+finite-budget one-round decomposition and AE-positive cost of internal
+successors.  The state, costs, and cut may depend on the whole correlated
+execution.  `FiniteInternalCostedProjection.v::costed_round_stable_hitting`
+instantiates this for PTree: a native coupling between a joint round's
+sample space and the selected compression-plus-guard path space, preserving
+cost and projected target, suffices for complete marginal adequacy.
+It does NOT require the marginal cut to factor through the projected tree,
+nor a structural reference marginal.  `Examples/CostedRounds.v` checks
+alternating hidden-state-dependent cuts, including different projected
+targets at the same tree, and a sampled natural number used as an unbounded
+path cost.  The new limit proofs inherit the existing `Eq_rect_eq`
+dependency; no new semantic or soundness axiom is introduced.
+
+The unrestricted residual generator still supplies only a **quotient**
+coupling of decoded cut outputs.  Extraction of a compatible native joint
+of their actual paths (and guard samples) remains unproved.  The new
+multiround theorem keeps that marginal premise explicit; it does not yet
+prove unrestricted GFP soundness or authorize replacing the public definition.
 
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
