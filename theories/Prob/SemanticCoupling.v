@@ -1,4 +1,5 @@
 Set Universe Polymorphism.
+From Coq Require Import Logic.ClassicalChoice.
 From PTree.Prob Require Import TwoLevelMeasure.
 
 Set Implicit Arguments.
@@ -20,6 +21,30 @@ Definition semantic_coupling {A B} (R : A -> B -> Prop)
 
 Context `{MC : @SemanticMeasureCoreLaws M MI}
   `{MCAE : @SemanticMeasureCouplingAELaws M MI}.
+
+Lemma semantic_coupling_mono {A B} (R T : A -> B -> Prop)
+    (mu : M A) (nu : M B) joint :
+  (forall x y, R x y -> T x y) ->
+  semantic_coupling R mu nu joint -> semantic_coupling T mu nu joint.
+Proof.
+  intros Hsub [Hl [Hr Hae]]. split; [exact Hl|]. split; [exact Hr|].
+  eapply sem_ae_mono; [|exact Hae]. intros [x y] Hxy. apply Hsub. exact Hxy.
+Qed.
+
+(** Restricting the relation by AE properties of the marginals retains
+    the SAME joint; no conditioning or renormalization is performed. *)
+Lemma semantic_coupling_ae_restrict {A B} (R : A -> B -> Prop)
+    (mu : M A) (nu : M B) joint (P : A -> Prop) (Q : B -> Prop) :
+  semantic_coupling R mu nu joint -> sem_ae mu P -> sem_ae nu Q ->
+  semantic_coupling (fun x y => R x y /\ P x /\ Q y) mu nu joint.
+Proof.
+  intros [Hl [Hr Hae]] HP HQ. split; [exact Hl|]. split; [exact Hr|].
+  apply sem_ae_conj; [exact Hae|]. apply sem_ae_conj.
+  - eapply sem_ae_mono; [|exact (sem_lift_ae_transport_r (sem_lift_sym Hl) HP)].
+    intros p [x [Hx HPx]]. rewrite Hx. exact HPx.
+  - eapply sem_ae_mono; [|exact (sem_lift_ae_transport_r (sem_lift_sym Hr) HQ)].
+    intros p [y [Hy HQy]]. rewrite Hy. exact HQy.
+Qed.
 
 (** Change marginal representations without selecting a new joint.  This
     uses equality lifting, not representation equality or equality
@@ -151,6 +176,56 @@ Proof.
     + eapply sem_ae_bind with (P := fun p => R (fst p) (snd p)).
       * exact (proj2 (proj2 Hjoint)).
       * intros [x y] Hxy. exact (proj2 (proj2 (Hnext x y Hxy))).
+Qed.
+
+(** Realization is closed under the ordinary relational bind rule.  The
+    chosen branch joint depends on BOTH source values, but its marginals
+    are precisely [k x] and [h y].  The conclusion keeps the original
+    marginal binds, rather than replacing them by integrals on the joint. *)
+Theorem semantic_coupling_bind {A B C D}
+    (R : A -> B -> Prop) (T : C -> D -> Prop)
+    (mu : M A) (nu : M B) joint
+    (k : A -> M C) (h : B -> M D)
+    (next_joint : A * B -> M (C * D)) :
+  semantic_coupling R mu nu joint ->
+  (forall x y, R x y -> semantic_coupling T (k x) (h y) (next_joint (x,y))) ->
+  semantic_coupling T (sem_bind mu k) (sem_bind nu h)
+    (sem_bind joint next_joint).
+Proof.
+  intros Hjoint Hnext. split.
+  - eapply sem_lift_bind; [exact (semantic_coupling_left_supported Hjoint)|].
+    intros [x y] z [<- Hxy]. exact (proj1 (Hnext x y Hxy)).
+  - split.
+    + eapply sem_lift_bind; [exact (semantic_coupling_right_supported Hjoint)|].
+      intros [x y] z [<- Hxy]. exact (proj1 (proj2 (Hnext x y Hxy))).
+    + eapply sem_ae_bind with (P := fun p => R (fst p) (snd p)).
+      * exact (proj2 (proj2 Hjoint)).
+      * intros [x y] Hxy. exact (proj2 (proj2 (Hnext x y Hxy))).
+Qed.
+
+(** The existential version matches the induction hypotheses of a lifting
+    derivation.  Off the related support, an ordinary product provides a
+    default measure; neither inhabited value types nor zero/omega or
+    commutativity capabilities are needed. *)
+Theorem semantic_coupling_bind_realization {A B C D}
+    (R : A -> B -> Prop) (T : C -> D -> Prop)
+    (mu : M A) (nu : M B) (k : A -> M C) (h : B -> M D) :
+  (exists joint, semantic_coupling R mu nu joint) ->
+  (forall x y, R x y -> exists joint, semantic_coupling T (k x) (h y) joint) ->
+  exists joint, semantic_coupling T (sem_bind mu k) (sem_bind nu h) joint.
+Proof.
+  intros [joint Hjoint] Hbranches.
+  assert (Hex : forall p : A * B, exists branch : M (C * D),
+    R (fst p) (snd p) -> semantic_coupling T (k (fst p)) (h (snd p)) branch).
+  { intros [x y]. destruct (classic (R x y)) as [Hxy|Hnot].
+    - destruct (Hbranches x y Hxy) as [branch Hbranch].
+      exists branch. intros _. exact Hbranch.
+    - exists (sem_bind (k x) (fun c => sem_bind (h y) (fun d => sem_ret (c,d)))).
+      intro Hxy. contradiction. }
+  destruct (choice _ Hex) as [next_joint Hnext].
+  exists (sem_bind joint next_joint).
+  eapply semantic_coupling_bind; [exact Hjoint|].
+  intros x y Hxy. exact (Hnext (x,y) Hxy).
 Qed.
 
 End JointMeasure.

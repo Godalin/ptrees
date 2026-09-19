@@ -103,6 +103,52 @@ Proof.
   exists joint. eapply semantic_coupling_transport; eassumption.
 Qed.
 
+(** The sample constructor does not require structural branch couplings:
+    any already-realized quotient couplings can be composed underneath it. *)
+Theorem free_omega_sample_coupling_realization {X Y A B}
+    (S : X -> Y -> Prop) (R : A -> B -> Prop)
+    (mu : MN X) (nu : MN Y) (k : X -> MF A) (h : Y -> MF B) :
+  sem_lift S mu nu ->
+  (forall x y, S x y ->
+    exists joint, @semantic_coupling MF FI A B R (k x) (h y) joint) ->
+  exists joint, @semantic_coupling MF FI A B R (FOSample mu k) (FOSample nu h) joint.
+Proof.
+  intros Hnode Hbranches. destruct (node_realizes Hnode) as [node_joint Hjoint].
+  assert (Hex : forall p : X * Y, exists branch : MF (A * B),
+    S (fst p) (snd p) ->
+    @semantic_coupling MF FI A B R (k (fst p)) (h (snd p)) branch).
+  { intros [x y]. destruct (classic (S x y)) as [Hxy|Hnot].
+    - destruct (Hbranches x y Hxy) as [branch Hbranch].
+      exists branch. intros _. exact Hbranch.
+    - exists FOZero. intro Hxy. contradiction. }
+  destruct (choice _ Hex) as [next_joint Hnext].
+  exists (FOSample node_joint next_joint). split.
+  - eapply FOQLSample; [exact (semantic_coupling_left_supported Hjoint)|].
+    intros [x y] z [<- Hxy]. exact (proj1 (Hnext (x,y) Hxy)).
+  - split.
+    + eapply FOQLSample; [exact (semantic_coupling_right_supported Hjoint)|].
+      intros [x y] z [<- Hxy]. exact (proj1 (proj2 (Hnext (x,y) Hxy))).
+    + apply FOAESample with (Good := fun p => S (fst p) (snd p)).
+      * exact (proj2 (proj2 Hjoint)).
+      * intros [x y] Hxy. exact (proj2 (proj2 (Hnext (x,y) Hxy))).
+Qed.
+
+(** This realizes the FORMAL Lub constructor.  No monotonicity of the
+    selected joint rows is asserted; the theorem must not be used as a
+    monotone joint-limit selection result in an adequacy argument. *)
+Theorem free_omega_lub_coupling_realization {A B} (R : A -> B -> Prop)
+    (left : nat -> MF A) (right : nat -> MF B) :
+  (forall n, exists joint, @semantic_coupling MF FI A B R (left n) (right n) joint) ->
+  exists joint, @semantic_coupling MF FI A B R (FOLub left) (FOLub right) joint.
+Proof.
+  intro Hrows. destruct (choice _ Hrows) as [joint Hjoint].
+  exists (FOLub joint). split.
+  - apply FOQLLub. intro n. exact (proj1 (Hjoint n)).
+  - split.
+    + apply FOQLLub. intro n. exact (proj1 (proj2 (Hjoint n))).
+    + apply FOAELub. intro n. exact (proj2 (proj2 (Hjoint n))).
+Qed.
+
 End StructuralRealization.
 
 Section GraphRealization.
@@ -178,6 +224,33 @@ Corollary free_omega_qlift_eq_realization {A} (mu nu : MF A) :
     (free_omega_graph_joint (fun x => x) mu).
 Proof.
   intro H. exact (free_omega_qlift_graph_realization (f := fun x => x) H).
+Qed.
+
+(** Converse is realized by swapping the sampled pair.  Marginal bind/Ret
+    normalization is proved for FreeOmega, not assumed as an additional
+    generic right-unit capability. *)
+Theorem free_omega_coupling_converse {A B} (R : A -> B -> Prop)
+    (mu : MF A) (nu : MF B) joint :
+  @semantic_coupling MF FI A B R mu nu joint ->
+  @semantic_coupling MF FI B A (fun y x => R x y) nu mu
+    (free_omega_bind joint (fun p => FORet (snd p, fst p))).
+Proof.
+  intros [Hl [Hr Hae]]. split.
+  - eapply FOQLComp with (T := fun p y => fst p = y) (U := eq)
+      (mid := free_omega_bind nu (fun y => FORet y)).
+    + eapply FOQLBind; [exact Hr|].
+      intros p y Hpy. apply FOQLStructural, FOLRet. exact Hpy.
+    + apply FOQLStructural, free_omega_bind_return_lift.
+    + intros p y [z [Hp ->]]. exact Hp.
+  - split.
+    + eapply FOQLComp with (T := fun p x => snd p = x) (U := eq)
+        (mid := free_omega_bind mu (fun x => FORet x)).
+      * eapply FOQLBind; [exact Hl|].
+        intros p x Hpx. apply FOQLStructural, FOLRet. exact Hpx.
+      * apply FOQLStructural, free_omega_bind_return_lift.
+      * intros p x [z [Hp ->]]. exact Hp.
+    + eapply free_omega_ae_bind; [exact Hae|].
+      intros [x y] Hxy. apply FOAERet. exact Hxy.
 Qed.
 
 End GraphRealization.
