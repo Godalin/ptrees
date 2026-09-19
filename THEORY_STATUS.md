@@ -1467,6 +1467,40 @@ graph marginals.  Constructing that compatible joint process remains the
 central soundness obligation.  Neither arbitrary partner selection nor an
 unproved native-reflection rule is used to fill it.
 
+The **extension of an already supplied compression joint** is now proved
+without requiring native graph marginals.
+`Prob/FreeOmegaJointExtension.v` constructs a dependent native joint by
+sampling the whole latent state and then its conditional native joint.
+`extended_joint_left_marginal` and `extended_joint_right_marginal` preserve
+the two quotient graph certificates; `extended_joint_support` retains the
+AE source/conditional invariants.  Each sample carries its source together
+with both dependent successor values.  The proof needs exact native AE
+laws and quotient bind, not native relational bind or native reflection.
+
+`FiniteInternalNativeJoint.v::finite_internal_native_joint_round` applies
+this construction to compression plans and their matched guards.  A
+native node-coupling realizer is used ONLY on the liftings already present
+in `pstrongF`; classical dependent choice selects whole proved conditional
+joints.  The resulting native sample space projects to each complete
+compression-plus-guard path, with quotient graph marginals and AE-related
+targets.  The source compression joint, its two quotient graph laws and
+guard support remain explicit inputs; arbitrary residual couplings are
+not claimed to supply them automatically.
+
+The `AttenuatedDirac` regression now invokes this generic assembly on the
+actual plans previously proved to have no native coupling/joint.  It
+obtains `actual_plans_native_round_with_quotient_marginals`, an actual native
+round with quotient-only marginals, while the old negative native-joint
+theorem remains valid.  Thus assembly genuinely uses the weaker boundary
+and is not just a renamed native-reflection requirement.
+`Examples/NativeRecovery.v::split_coin_native_joint_round` also exercises
+the maintained SubEnum backend with two genuinely probabilistic guards:
+one coin splits each native weight into repeated entries, and the joint
+preserves equality of the sampled continuations.  The remaining
+work is to extract suitable compression joints from the residual quotient
+couplings and package the recurring correlated states for the costed
+coinduction endpoint.
+
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
 GFP soundness or API migration is claimed on the strength of this result.

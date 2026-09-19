@@ -7,7 +7,8 @@ From PTree.Prob Require Import FreeOmegaNative FreeOmegaRecovery.
 From PTree.Eq Require Import FiniteInternalPlan PFiniteResidual PStrong.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
-From PTree.Eq.FreeOmega Require Import FiniteInternalRound CostedKernel FiniteInternalCostedProjection.
+From PTree.Eq.FreeOmega Require Import FiniteInternalRound CostedKernel FiniteInternalCostedProjection
+  FiniteInternalRoundCoupling FiniteInternalNativeJoint.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -296,6 +297,49 @@ Theorem actual_plans_paths_quotient_coupled :
 Proof.
   exact (free_omega_native_coupling_pullback sampled_plan_recovery direct_plan_recovery
     actual_plans_are_guard_coupled).
+Qed.
+
+(** The new assembly really accepts quotient-only compression marginals.
+    The source below CANNOT be a native joint of these plans (their tags
+    differ), but it is an actual native sample with quotient graph laws. *)
+Lemma tagged_sample_graph {X Y} n m (x : X) (y : Y) (f : X -> Y) :
+  f x = y ->
+  free_omega_qlift (fun a b => f a = b)
+    (FOSample (Some (n,x)) (fun a => FORet a))
+    (FOSample (Some (m,y)) (fun b => FORet b)).
+Proof.
+  intro Hxy. eapply FOQLComp with (T := eq) (U := fun a b => f a = b)
+    (mid := FORet x); [apply tagged_sample_ret| |].
+  - eapply FOQLComp with (T := fun a b => f a = b) (U := eq) (mid := FORet y).
+    + apply FOQLStructural, FOLRet. exact Hxy.
+    + apply FOQLMono with (T := fun a b => b = a).
+      * apply FOQLSym, tagged_sample_ret.
+      * intros a b Hba. symmetry. exact Hba.
+    + intros a c [b [Hab ->]]. exact Hab.
+  - intros a c [b [-> Hbc]]. exact Hbc.
+Qed.
+
+Theorem actual_plans_native_round_with_quotient_marginals :
+  exists (W : Type) (round : M W)
+    (left : W -> native_sample_type (internal_plan_round_native sampled_plan))
+    (right : W -> native_sample_type (internal_plan_round_native direct_plan)),
+    free_omega_qlift (fun w x => left w = x)
+      (FOSample round (fun w => FORet w))
+      (FOSample (native_sample_measure (internal_plan_round_native sampled_plan)) (fun x => FORet x)) /\
+    free_omega_qlift (fun w y => right w = y)
+      (FOSample round (fun w => FORet w))
+      (FOSample (native_sample_measure (internal_plan_round_native direct_plan)) (fun y => FORet y)) /\
+    sem_ae round (fun w => internal_round_path_rel eq (fun _ _ => False)
+      sampled_plan direct_plan (left w) (right w)).
+Proof.
+  eapply finite_internal_native_joint_round with (joint := ret tt)
+    (left := fun _ : unit => existT (fun _ : unit => unit) tt tt)
+    (right := fun _ : unit => tt).
+  - exact (@native_joints).
+  - apply tagged_sample_graph. reflexivity.
+  - apply tagged_sample_graph. reflexivity.
+  - change (pfinite_guard eq (fun _ _ => False) (Ret true : tree) (Ret true)).
+    unfold pfinite_guard. constructor. reflexivity.
 Qed.
 
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := Measure) (NO := Omega)).

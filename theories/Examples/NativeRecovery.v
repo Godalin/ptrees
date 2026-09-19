@@ -3,11 +3,11 @@ Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   FreeOmegaMeasure FreeOmegaNative FreeOmegaRecovery FreeOmegaCoupling
-  FreeOmegaRecoverySubEnum.
+  FreeOmegaRecoverySubEnum SemanticCouplingEnum.
 From PTree.Examples Require Import FiniteInternalPlan SubEnumRegression HiddenRandomState.
 From PTree.Eq Require Import PStrong PFiniteResidual FiniteInternal FiniteInternalPlan.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative
-  FiniteInternalRoundCoupling FiniteInternalRecoverySubEnum.
+  FiniteInternalRoundCoupling FiniteInternalRecoverySubEnum FiniteInternalNativeJoint.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -57,6 +57,37 @@ Example latent_cut_full_round_paths :
       (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x))
       (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)).
 Proof. apply pfinite_residual_subenum_round_paths. exact latent_cut_residual_step. Qed.
+
+(** Both guards really sample: the right coin has split native
+    weights.  Native realization couples the outcomes rather than drawing
+    the two guards independently. *)
+Definition coin_left_plan := FIPStop subenum_direct_coin.
+Definition coin_right_plan := FIPStop subenum_split_coin.
+
+Example split_coin_native_joint_round :
+  exists (W : Type) (round : SubEnum W)
+    (left : W -> native_sample_type (internal_plan_round_native coin_left_plan))
+    (right : W -> native_sample_type (internal_plan_round_native coin_right_plan)),
+    free_omega_qlift (fun w x => left w = x)
+      (FOSample round (fun w => FORet w))
+      (FOSample (native_sample_measure (internal_plan_round_native coin_left_plan)) (fun x => FORet x)) /\
+    free_omega_qlift (fun w y => right w = y)
+      (FOSample round (fun w => FORet w))
+      (FOSample (native_sample_measure (internal_plan_round_native coin_right_plan)) (fun y => FORet y)) /\
+    sem_ae round (fun w => internal_round_path_rel eq eq
+      coin_left_plan coin_right_plan (left w) (right w)).
+Proof.
+  eapply finite_internal_native_joint_round with (joint := subenum_ret tt)
+    (left := fun z : unit => z) (right := fun z : unit => z).
+  - exact (@subenum_coupling_realization).
+  - apply free_omega_qlift_refl. intro z. reflexivity.
+  - apply free_omega_qlift_refl. intro z. reflexivity.
+  - apply (@sem_ae_ret_iff SubEnum SubEnum_SemanticMeasure
+      SubEnum_SemanticMeasureDiracAELaws).
+    unfold pfinite_guard. constructor.
+    eapply sem_lift_mono; [|exact subenum_fair_split_lift].
+    intros x y ->. reflexivity.
+Qed.
 
 Lemma direct_path_normalized :
   free_omega_qlift (fun _ _ => True)
