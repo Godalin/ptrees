@@ -786,7 +786,7 @@ argument.  The old proof, which recurs only after stable observations,
 does not supply this connection.  No additional capability axiom, intersection
 with `peutt`, or unfinished proof has been used to disguise this gap.
 
-The acceleration limit obligation is now solved.  The remaining gap to the
+The unary-policy acceleration limit obligation is solved.  The remaining gap to the
 unrestricted residual GFP is witness dependency: the existential
 compression witnesses in `pfinite_residual_unfold` may
 depend on the whole related pair.  Classical choice on pairs does **not**
@@ -828,9 +828,9 @@ by changing its measure representation.  It does not claim that the program
 pair admits no other useful unary policy.
 
 To complete this joint-execution route, one must account for joint witnesses
-of the residual and guard couplings and for infinitely many correlated guard rounds.  Neither
-the new certificate API nor its finite-round preservation lemmas silently
-discharge those two obligations.
+of arbitrary residual couplings and for acceleration adequacy of infinitely
+many correlated guard rounds.  The certificate API and finite-round
+preservation lemmas alone do not discharge those obligations.
 
 Joint-witness extraction now has concrete proved cases:
 
@@ -865,8 +865,8 @@ Joint-witness extraction now has concrete proved cases:
 
 `Examples/CouplingRealization.v` checks function-valued node carriers,
 structural `Lub` witnesses, relational marginal rewrites, and a quotient
-equality that provably has no
-structural lifting derivation.  `PairedFiniteCompression.v` now also extracts
+equality that provably has no structural lifting derivation.
+`PairedFiniteCompression.v` now also extracts
 its residual joint from the structural coupling proof instead of requiring
 the example's hand-written joint.
 
@@ -876,6 +876,51 @@ theorems.  Neither the structural theorem nor the graph theorem is silently
 applied to general many-to-many guard relations.  The unrestricted residual
 GFP soundness theorem remains unproved, and the public `PFinite` API is not
 replaced on the strength of these partial realization results.
+
+`Eq/FreeOmega/FiniteInternalJoint.v` now constructs actual paired execution:
+
+- `finite_internal_guard_joint_exists` realizes one `pstrongF` guard using
+  only a node coupling realizer.  Ret/Vis produce related paired heads;
+  Tau/Prob produce paired residual trees.  Enum and SubEnum discharge the
+  node premise with proved theorems, not new capability axioms.
+- `finite_internal_paired_kernel_exists` chooses residual and guard joints
+  on **pairs**, then composes them into a fixed joint kernel.  It proves
+  both graph marginals equal the corresponding cut-followed-by-guard
+  transitions and proves AE closure of residual/head relations.  It still
+  explicitly requires realizability of each residual coupling.
+- `finite_internal_paired_rounds_increasing` and
+  `finite_internal_paired_hitting_coupled` establish increasing joint-round
+  approximants, head support at the complete hitting limit, and a coupling
+  of that limit's two projections.  The chain is obtained by executing one
+  fixed kernel, not by independently choosing a coupling at each fuel.
+
+`Eq/FreeOmega/FiniteInternalJointHitting.v` additionally proves
+`finite_internal_realized_round_hitting`: resolving a realized round's
+stable outputs immediately and completing its residuals with their original
+hitting distributions recovers the source tree's complete hitting up to
+equality lifting.  This uses validity of the finite cut and the round's
+graph marginal, and is therefore probability preservation rather than only
+support preservation.  It is a one-round completion equation, not yet a
+proof that an infinite sequence of uncompleted rounds is adequate.
+
+`Examples/CorrelatedInternalRounds.v` instantiates the construction with the
+partner-dependent cuts from `PairedFiniteCompression` and with the purely
+internal, unbounded retry loops from `ResidualFinite`.  The latter's existing
+cut proof now exposes its structural lifting before promotion to the quotient
+lifting, so the residual joint can be extracted automatically.  A negative
+regression rules out an always-zero kernel as a round certificate for the
+returning pair: AE closure alone would permit it, but the graph-marginal
+obligations do not.
+
+The correlated example also checks the completion equation for each of the
+two original marginals; neither proof substitutes an independent policy.
+
+These paired-round theorems are **not** correlated acceleration adequacy:
+their projected limits have not yet been identified with the original
+trees' complete primitive hitting.  In particular, support preservation is
+not promoted to probability preservation across infinitely many cuts.  That
+identification and unrestricted residual realizability remain necessary for
+the residual GFP soundness theorem.
 
 `Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
 before divergence, Prob branch compression, and the negative core regression

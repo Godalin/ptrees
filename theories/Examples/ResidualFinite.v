@@ -125,9 +125,9 @@ Inductive residual_retry_pairs :
 | ResidualRetryDelay : residual_retry_pairs
     (Tau residual_retry_left) (Tau (Tau residual_retry_right)).
 
-Lemma residual_retry_cuts_coupled t1 t2 :
+Lemma residual_retry_cuts_structural t1 t2 :
   residual_retry_pairs t1 t2 ->
-  free_omega_qlift (pfinite_guard eq residual_retry_pairs)
+  free_omega_lift (pfinite_guard eq residual_retry_pairs)
     (residual_retry_cut1 t1) (residual_retry_cut2 t2).
 Proof.
   intro Hpair. destruct Hpair;
@@ -137,11 +137,17 @@ Proof.
   all: try solve [exfalso; apply H1; reflexivity | exfalso; apply H2; reflexivity].
   all: try solve [apply (f_equal (@observe residualE SubEnum bool)) in H1; discriminate H1
     | apply (f_equal (@observe residualE SubEnum bool)) in H2; discriminate H2].
-  all: apply FOQLStructural; apply FOLRet; unfold pfinite_guard, observe; cbn.
+  all: apply FOLRet; unfold pfinite_guard, observe; cbn.
   - constructor. reflexivity.
   - constructor. apply sem_lift_refl. intros []; constructor.
   - constructor. apply sem_lift_refl. intros []; constructor.
 Qed.
+
+Lemma residual_retry_cuts_coupled t1 t2 :
+  residual_retry_pairs t1 t2 ->
+  free_omega_qlift (pfinite_guard eq residual_retry_pairs)
+    (residual_retry_cut1 t1) (residual_retry_cut2 t2).
+Proof. intro Hpair. apply FOQLStructural, residual_retry_cuts_structural, Hpair. Qed.
 
 Lemma residual_retries_peutt :
   @peutt residualE SubEnum (FreeOmega SubEnum) SFI
