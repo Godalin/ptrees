@@ -197,6 +197,27 @@ Proof.
   - apply FOAELub. exact IH.
 Qed.
 
+(** A native sample of total mass may be forgotten when each branch has
+    the same related behavior.  The native coupling to a Dirac measure
+    proves the mass premise; it is not inferred merely from AE support.
+    Results may live above the native carrier universe. *)
+Theorem free_omega_sample_to_constant {X Y A B}
+    (mu : MN X) (point : Y) (R : A -> B -> Prop)
+    (k : X -> MF A) (nu : MF B) :
+  (forall P, sem_ae (sem_ret point) P <-> P point) ->
+  sem_same_mass mu (sem_ret point) ->
+  (forall x, free_omega_qlift R (k x) nu) ->
+  free_omega_qlift R (FOSample mu k) nu.
+Proof.
+  intros Hdirac Hmass Hbranches.
+  eapply FOQLComp with (T := R) (U := eq)
+    (mid := FOSample (sem_ret point) (fun _ => nu)).
+  - eapply FOQLSample; [exact Hmass|]. intros x y _. apply Hbranches.
+  - apply FOQLSampleRetL; [exact Hdirac|].
+    apply free_omega_qlift_refl. intro b. reflexivity.
+  - intros a b [c [Hac ->]]. exact Hac.
+Qed.
+
 (** Unlike the structural theorem, this handles the FULL quotient lifting.
     The graph premise supplies the functional correspondence explicitly;
     arbitrary relational couplings are not assumed to be functional. *)
