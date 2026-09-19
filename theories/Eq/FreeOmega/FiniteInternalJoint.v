@@ -4,7 +4,8 @@ Set Universe Polymorphism.
 
 From Coq Require Import Logic.ClassicalChoice.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure.
+From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure
+  FreeOmegaCoupling.
 From PTree.Eq Require Import PStrong PFiniteResidual UnifiedFrontier
   PrimitiveStableHitting.
 
@@ -69,12 +70,12 @@ Hypothesis node_realizes : forall {X Y} (S : X -> Y -> Prop)
 (** Only a node-coupling realizer is required for the guard itself.
     Realization of arbitrary residual quotient couplings is a separate
     obligation; it is not hidden in this statement. *)
-Theorem finite_internal_guard_joint_exists t u :
+Theorem finite_internal_guard_structural_joint_exists t u :
   pfinite_guard RR sim t u ->
   exists joint : MF (stable_target Pair Heads),
-    free_omega_qlift (fun z x => finite_internal_pair_left z = x)
+    free_omega_lift (fun z x => finite_internal_pair_left z = x)
       joint (finite_internal_guard_transition t) /\
-    free_omega_qlift (fun z y => finite_internal_pair_right z = y)
+    free_omega_lift (fun z y => finite_internal_pair_right z = y)
       joint (finite_internal_guard_transition u) /\
     free_omega_ae (finite_internal_pair_invariant RR sim) joint.
 Proof.
@@ -83,30 +84,113 @@ Proof.
   remember (observe u) as ou in Hguard |- *.
   destruct Hguard.
   - exists (FORet (SHStable (FHRet r1, FHRet r2))). split.
-    + apply FOQLStructural, FOLRet. reflexivity.
-    + split; [apply FOQLStructural, FOLRet; reflexivity|].
+    + apply FOLRet. reflexivity.
+    + split; [apply FOLRet; reflexivity|].
       apply FOAERet. cbn. constructor. exact H.
   - exists (FORet (SHInternal (t1,t2))). split.
-    + apply FOQLStructural, FOLRet. reflexivity.
-    + split; [apply FOQLStructural, FOLRet; reflexivity|].
+    + apply FOLRet. reflexivity.
+    + split; [apply FOLRet; reflexivity|].
       apply FOAERet. exact H.
   - exists (FORet (SHStable (FHVis e k1, FHVis e k2))). split.
-    + apply FOQLStructural, FOLRet. reflexivity.
-    + split; [apply FOQLStructural, FOLRet; reflexivity|].
+    + apply FOLRet. reflexivity.
+    + split; [apply FOLRet; reflexivity|].
       apply FOAERet. cbn. constructor. exact H.
   - destruct (node_realizes H) as [node_joint Hjoint].
     exists (FOSample node_joint
       (fun p => FORet (SHInternal (k1 (fst p), k2 (snd p))))). split.
-    + eapply FOQLSample; [exact (semantic_coupling_left_supported Hjoint)|].
-      intros [x y] z [<- Hxy]. apply FOQLStructural, FOLRet. reflexivity.
+    + eapply FOLSample; [exact (semantic_coupling_left_supported Hjoint)|].
+      intros [x y] z [<- Hxy]. apply FOLRet. reflexivity.
     + split.
-      * eapply FOQLSample; [exact (semantic_coupling_right_supported Hjoint)|].
-        intros [x y] z [<- Hxy]. apply FOQLStructural, FOLRet. reflexivity.
+      * eapply FOLSample; [exact (semantic_coupling_right_supported Hjoint)|].
+        intros [x y] z [<- Hxy]. apply FOLRet. reflexivity.
       * eapply FOAESample; [exact (proj2 (proj2 Hjoint))|].
         intros [x y] Hxy. apply FOAERet. exact Hxy.
 Qed.
 
+Corollary finite_internal_guard_joint_exists t u :
+  pfinite_guard RR sim t u ->
+  exists joint : MF (stable_target Pair Heads),
+    free_omega_qlift (fun z x => finite_internal_pair_left z = x)
+      joint (finite_internal_guard_transition t) /\
+    free_omega_qlift (fun z y => finite_internal_pair_right z = y)
+      joint (finite_internal_guard_transition u) /\
+    free_omega_ae (finite_internal_pair_invariant RR sim) joint.
+Proof.
+  intro Hguard. destruct (finite_internal_guard_structural_joint_exists Hguard)
+    as [joint [Hl [Hr Hae]]].
+  exists joint. split; [apply FOQLStructural; exact Hl|].
+  split; [apply FOQLStructural; exact Hr|exact Hae].
+Qed.
+
 End JointGuard.
+
+Section StructuralJointRounds.
+Context {E MN : Type -> Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NCAE : @SemanticMeasureCouplingAELaws MN NI}.
+Context {A B : Type} (RR : A -> B -> Prop).
+Variable sim : ptree E MN A -> ptree E MN B -> Prop.
+Local Notation Pair := (ptree E MN A * ptree E MN B)%type.
+Local Notation Heads := (stable_head E MN A * stable_head E MN B)%type.
+Local Notation MF := (FreeOmega MN).
+Local Notation SI := (FreeOmegaSemanticMeasure (NI := NI)).
+Hypothesis node_realizes : forall {X Y} (S : X -> Y -> Prop)
+    (mu : MN X) (nu : MN Y), sem_lift S mu nu ->
+    exists joint, semantic_coupling S mu nu joint.
+Variable cut1 : Pair -> MF (ptree E MN A).
+Variable cut2 : Pair -> MF (ptree E MN B).
+Hypothesis cuts_structural : forall t u, sim t u ->
+  free_omega_lift (pfinite_guard RR sim) (cut1 (t,u)) (cut2 (t,u)).
+
+(** A proved source of STRUCTURAL graph marginals for the coverage theorem.
+    Unlike the general quotient constructor below, this needs no residual
+    realization premise: its stronger cut coupling supplies that witness.
+    It does not redefine pfinite or claim every quotient cut is structural. *)
+Theorem finite_internal_structural_paired_kernel_exists :
+  exists kernel : Pair -> MF (stable_target Pair Heads),
+    forall t u, sim t u ->
+      free_omega_lift (fun z x => finite_internal_pair_left z = x)
+        (kernel (t,u))
+        (free_omega_bind (cut1 (t,u)) finite_internal_guard_transition) /\
+      free_omega_lift (fun z y => finite_internal_pair_right z = y)
+        (kernel (t,u))
+        (free_omega_bind (cut2 (t,u)) finite_internal_guard_transition) /\
+      free_omega_ae (finite_internal_pair_invariant RR sim) (kernel (t,u)).
+Proof.
+  assert (Hcuts : forall p : Pair, exists joint : MF Pair,
+    sim (fst p) (snd p) ->
+      @semantic_coupling MF SI _ _ (pfinite_guard RR sim)
+        (cut1 p) (cut2 p) joint).
+  { intros [t u]. destruct (classic (sim t u)) as [Hsim|Hnot].
+    - destruct (free_omega_lift_structural_realization
+        (@node_realizes) (cuts_structural Hsim)) as [joint Hjoint].
+      exists joint. intros _. exact Hjoint.
+    - exists FOZero. intro Hsim. contradiction. }
+  destruct (choice _ Hcuts) as [cut_joint Hcut_joint].
+  assert (Hex : forall p : Pair, exists step : MF (stable_target Pair Heads),
+    pfinite_guard RR sim (fst p) (snd p) ->
+      free_omega_lift (fun z x => finite_internal_pair_left z = x)
+        step (finite_internal_guard_transition (fst p)) /\
+      free_omega_lift (fun z y => finite_internal_pair_right z = y)
+        step (finite_internal_guard_transition (snd p)) /\
+      free_omega_ae (finite_internal_pair_invariant RR sim) step).
+  { intros [t u]. destruct (classic (pfinite_guard RR sim t u)) as [Hguard|Hnot].
+    - destruct (finite_internal_guard_structural_joint_exists (@node_realizes) Hguard)
+        as [step Hstep]. exists step. intros _. exact Hstep.
+    - exists FOZero. intro Hguard. contradiction. }
+  destruct (choice _ Hex) as [step Hstep].
+  exists (fun p => free_omega_bind (cut_joint p) step).
+  intros t u Hsim. pose proof (Hcut_joint (t,u) Hsim) as Hjoint. split.
+  - eapply free_omega_lift_bind; [exact (semantic_coupling_left_supported Hjoint)|].
+    intros [x y] z [<- Hxy]. exact (proj1 (Hstep (x,y) Hxy)).
+  - split.
+    + eapply free_omega_lift_bind; [exact (semantic_coupling_right_supported Hjoint)|].
+      intros [x y] z [<- Hxy]. exact (proj1 (proj2 (Hstep (x,y) Hxy))).
+    + eapply free_omega_ae_bind; [exact (proj2 (proj2 Hjoint))|].
+      intros [x y] Hxy. exact (proj2 (proj2 (Hstep (x,y) Hxy))).
+Qed.
+
+End StructuralJointRounds.
 
 Section JointRounds.
 Context {E MN : Type -> Type}

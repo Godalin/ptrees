@@ -13,6 +13,7 @@ Context {MN : Type -> Type}
   `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
+Local Notation SI := (FreeOmegaSemanticMeasure (NI := NI)).
 
 (** A concrete witness-extraction theorem for the node backend, not an
     added law of the measure interface.  Enum/SubEnum discharge this premise
@@ -29,36 +30,36 @@ Hypothesis node_realizes : forall {X Y} (S : X -> Y -> Prop)
     the selected row joints are not asserted to form an increasing chain;
     their graph marginals and AE support suffice for this certificate, but
     not for a later use of cofinality or diagonalization. *)
-Theorem free_omega_lift_realization {A B} (R : A -> B -> Prop)
+Theorem free_omega_lift_structural_realization {A B} (R : A -> B -> Prop)
     (mu : MF A) (nu : MF B) :
   free_omega_lift R mu nu ->
-  exists joint, @semantic_coupling MF FI A B R mu nu joint.
+  exists joint, @semantic_coupling MF SI A B R mu nu joint.
 Proof.
   intro Hlift. induction Hlift as
     [x y Hxy | | X Y S mu nu k h Hnode Hbranches IH | c d Hbranches IH].
   - exists (FORet (x,y)). split.
-    + apply FOQLStructural, FOLRet. reflexivity.
+    + apply FOLRet. reflexivity.
     + split.
-      * apply FOQLStructural, FOLRet. reflexivity.
+      * apply FOLRet. reflexivity.
       * apply FOAERet. exact Hxy.
   - exists FOZero. split.
-    + apply FOQLStructural, FOLZero.
-    + split; [apply FOQLStructural, FOLZero|apply FOAEZero].
+    + apply FOLZero.
+    + split; [apply FOLZero|apply FOAEZero].
   - destruct (node_realizes Hnode) as [node_joint Hjoint].
     assert (Hex : forall p : X * Y, exists joint : MF (A * B),
       S (fst p) (snd p) ->
-      @semantic_coupling MF FI A B R (k (fst p)) (h (snd p)) joint).
+      @semantic_coupling MF SI A B R (k (fst p)) (h (snd p)) joint).
     { intros [x y]. destruct (classic (S x y)) as [Hxy|Hnot].
       - destruct (IH x y Hxy) as [joint Hgood].
         exists joint. intros _. exact Hgood.
       - exists FOZero. intro Hxy. contradiction. }
     destruct (choice _ Hex) as [next_joint Hnext].
     exists (FOSample node_joint next_joint). split.
-    + eapply FOQLSample.
+    + eapply FOLSample.
       * exact (semantic_coupling_left_supported Hjoint).
       * intros [x y] z [<- Hxy]. exact (proj1 (Hnext (x,y) Hxy)).
     + split.
-      * eapply FOQLSample.
+      * eapply FOLSample.
         -- exact (semantic_coupling_right_supported Hjoint).
         -- intros [x y] z [<- Hxy]. exact (proj1 (proj2 (Hnext (x,y) Hxy))).
       * apply FOAESample with (Good := fun p => S (fst p) (snd p)).
@@ -66,10 +67,25 @@ Proof.
         -- intros [x y] Hxy. exact (proj2 (proj2 (Hnext (x,y) Hxy))).
   - destruct (choice _ IH) as [joint Hjoint].
     exists (FOLub joint). split.
-    + apply FOQLLub. intro n. exact (proj1 (Hjoint n)).
+    + apply FOLLub. intro n. exact (proj1 (Hjoint n)).
     + split.
-      * apply FOQLLub. intro n. exact (proj1 (proj2 (Hjoint n))).
+      * apply FOLLub. intro n. exact (proj1 (proj2 (Hjoint n))).
       * apply FOAELub. intro n. exact (proj2 (proj2 (Hjoint n))).
+Qed.
+
+(** The observable endpoint follows by embedding the two structural graph
+    couplings.  Retaining the stronger certificate above also permits raw
+    approximation arguments without quotient/order transport. *)
+Theorem free_omega_lift_realization {A B} (R : A -> B -> Prop)
+    (mu : MF A) (nu : MF B) :
+  free_omega_lift R mu nu ->
+  exists joint, @semantic_coupling MF FI A B R mu nu joint.
+Proof.
+  intro Hlift.
+  destruct (free_omega_lift_structural_realization Hlift)
+    as [joint [Hl [Hr Hae]]].
+  exists joint. split; [apply FOQLStructural; exact Hl|].
+  split; [apply FOQLStructural; exact Hr|exact Hae].
 Qed.
 
 (** A many-to-many structural coupling remains realizable after arbitrary
