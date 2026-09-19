@@ -1107,11 +1107,25 @@ complete hitting with the original trees' hitting, giving the native
 coinduction step.  The structural rule above is now a corollary of this
 reference rule rather than a duplicate adequacy proof.
 
+The rule now also has a residual-level entry point:
+`peutt_coinduction_finite_internal_coupling_references`.  Its client supplies
+two equivalent joint presentations of the selected residual cuts, with a
+structural left marginal on one and a structural right marginal on the
+other.  `finite_internal_reference_kernels_exists` constructs the shared
+guard continuation and both execution kernels automatically.  The
+`free_omega_coupling_references` certificate in `FreeOmegaCoupling.v` is
+proof data, not a new semantic relation or backend capability.  It yields
+an ordinary joint certificate, handles arbitrary quotient equality via
+diagonal graphs, and is closed under pair-dependent bind.
+
 `Examples/CorrelatedSampleAlgebra.v` exercises this extension by exchanging
 two independent SubEnum samples **in every iteration of an unbounded
 internal retry loop**.  Its `exchange_inside_unbounded_retry` theorem proves
 `peutt` without AST, positivity, or a retry bound.  Sample exchange is proved
 locally; commutativity is not added to the generic rule's assumptions.
+The example now uses the residual-level entry point: its manually defined
+execution kernels and their separate marginal/closure proofs have been
+removed.
 For the concrete Dirac-false/fair-coin instance,
 `exchange_fair_retry_equivalent` proves the behavioral equality while
 `exchange_fair_residuals_not_structural` shows that the selected residual
@@ -1130,7 +1144,32 @@ gap to the unrestricted residual GFP is its larger **quotient** residual
 lifting: general joint extraction and adequate marginal realization are
 not supplied by structural extraction.  The new reference rule handles
 some non-shape-preserving probability algebra, but does not construct its
-reference kernels from every arbitrary quotient lifting.  The public `PFinite` definition
+reference kernels from every arbitrary quotient lifting.  In fact a general
+extraction theorem with structural reference marginals is **false**:
+`free_omega_coupling_references_ret_deterministic` proves that a literal
+right-hand `FORet` forces the left marginal to be AE concentrated at a
+single value.  `Examples/CouplingReferences.v` exhibits a genuine fair-coin
+quotient coupling to a discarded result for which no such references exist.
+`reference_coin_discard_ordinary_joint` nevertheless constructs its ordinary
+joint certificate, isolating the obstruction to structural reference
+marginals rather than to joint realizability itself.
+This is not confined to arbitrary test relations:
+`discarded_coin_is_residual_finite` uses a fair coin to choose between
+`Tau (Ret false)` and `Tau (Tau (Ret false))`, with valid `finite_internal`
+cuts coupled under the actual `pstrongF` guard and residual GFP candidate.
+`discarded_coin_cuts_have_no_references` rules out residual reference pairs
+for those cuts; `discarded_coin_rounds_have_no_reference_kernels` also rules
+out execution-kernel references after the guard is advanced.  Other cuts
+can still succeed on this terminating example.  The result specifically
+refutes extraction from arbitrary GIVEN cuts, not existence of alternative
+proofs or the behavioral equality of these programs.
+Thus future work must allow latent randomness in marginal realization, or
+use a soundness proof not requiring structural reference marginals.  It
+cannot close the gap merely by proving a universal reference-extraction
+lemma.  This is a limitation of the proof certificate, not a counterexample
+to the intended residual GFP soundness.
+
+The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
 GFP soundness or API migration is claimed on the strength of this result.
 
