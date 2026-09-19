@@ -4,9 +4,9 @@ From Coq Require Import Classes.RelationClasses.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum SemanticCouplingEnum
   FreeOmegaMeasure FreeOmegaNative FreeOmegaEquivalenceJointSubEnum.
-From PTree.Eq Require Import PFiniteResidual FiniteInternalPlan.
+From PTree.Eq Require Import PFiniteResidual FiniteInternalPlan PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative FiniteInternalRoundCoupling
-  FiniteInternalNativeJoint.
+  FiniteInternalNativeJoint FiniteInternalJointRows.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -48,5 +48,34 @@ Proof.
     as [Z [joint [left [right [Hl [Hr Hguard]]]]]].
   exists p, q.
   exact (finite_internal_native_joint_round (@subenum_coupling_realization) Hl Hr Hguard).
+Qed.
+
+(** This is a complete behavioral endpoint for equivalence candidates,
+    not just one-step joint construction.  All recurring states and both
+    costed marginal proofs are assembled by the library.  Postfixedness
+    and equivalence are explicit; no raw-GFP transitivity is assumed. *)
+Theorem peutt_coinduction_residual_equivalence_subenum
+    (postfixed : forall t u, sim t u ->
+      @pfinite_residualF E SubEnum MF SubEnum_SemanticMeasure FI
+        FreeOmegaMixedMeasure A A eq sim t u) t u :
+  sim t u -> @peutt E SubEnum MF FI
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega A A eq t u.
+Proof.
+  apply peutt_coinduction_joint_rows with (sim := sim).
+  intros x y Hxy.
+  destruct (pfinite_subenum_equivalence_joint_round (postfixed x y Hxy))
+    as [p [q [W [round [left [right [Hl [Hr Hrelated]]]]]]]].
+  constructor. exact {|
+    joint_row_left_plan := p;
+    joint_row_right_plan := q;
+    joint_row_sample := W;
+    joint_row_measure := round;
+    joint_row_left := left;
+    joint_row_right := right;
+    joint_row_left_marginal := Hl;
+    joint_row_right_marginal := Hr;
+    joint_row_related := Hrelated
+  |}.
 Qed.
 End EquivalenceRounds.
