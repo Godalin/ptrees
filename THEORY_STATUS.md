@@ -1291,6 +1291,22 @@ sample space, and `internal_plan_stable_hitting` identifies the complete
 limit.  These budgets belong to the semantic proof, not the no-fuel
 definition of compression.  No AST/total-mass assumption is used.
 
+`FiniteInternalRound.v` extends this exact budget law to a complete
+compression-plus-guard round.  `internal_plan_round_native` now retains
+both the compression path and the subsequent guard sample explicitly,
+instead of choosing an arbitrary native presentation of the guard.
+`internal_round_steps` adds the guard's actual cost: zero at Ret/Vis,
+one at Tau/Prob.  `internal_round_progress` proves strictly positive
+cost whenever the decoded round target is internal.  The round therefore
+cannot reenter its recursive candidate without genuine internal progress.
+`internal_round_hitting_approx`, `internal_round_budget_mono`, and
+`internal_round_stable_hitting` respectively establish exact finite-budget
+reconstruction, raw monotonicity, and equality of complete hitting limits.
+These are single-round decomposition laws, not yet adequacy for iterating
+arbitrary correlated rounds.  `Examples/FiniteInternalRound.v` checks the
+Ret/Vis boundary costs, an internal guard before divergence, a zero-mass
+sampling guard, and nonuniform branch costs including the guard step.
+
 The negative regression `completed_paths_do_not_preserve_prefix_mass`
 explains why this hitting-specific statement matters: a later zero-mass
 sample can kill completed paths, so their projection to time zero does

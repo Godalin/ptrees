@@ -73,18 +73,52 @@ Proof.
   exists (internal_plan_native p). exact Hp.
 Qed.
 
+Definition internal_guard_native (t : tree) :
+    free_omega_native_presentation MN
+      (PrimitiveStableHitting.stable_target tree (UnifiedFrontier.stable_head E MN R)) :=
+  match observe t with
+  | RetF r => {| native_sample_type := unit; native_sample_measure := sem_ret tt;
+      native_sample_value := fun _ => PrimitiveStableHitting.SHStable (UnifiedFrontier.FHRet r) |}
+  | TauF u => {| native_sample_type := unit; native_sample_measure := sem_ret tt;
+      native_sample_value := fun _ => PrimitiveStableHitting.SHInternal u |}
+  | VisF _ e k => {| native_sample_type := unit; native_sample_measure := sem_ret tt;
+      native_sample_value := fun _ => PrimitiveStableHitting.SHStable (UnifiedFrontier.FHVis e k) |}
+  | ProbF _ mu k => {| native_sample_type := _; native_sample_measure := mu;
+      native_sample_value := fun x => PrimitiveStableHitting.SHInternal (k x) |}
+  end.
+
+Lemma internal_guard_native_eq t :
+  free_omega_qlift eq (@finite_internal_guard_transition E MN R t)
+    (free_omega_native (internal_guard_native t)).
+Proof.
+  unfold finite_internal_guard_transition, internal_guard_native.
+  destruct (observe t) as [r|u|X e k|X mu k].
+  all: try solve [apply free_omega_qlift_refl; intro z; reflexivity].
+  all: apply FOQLMono with (T := fun x y => y = x).
+  all: try solve [intros x y Hyx; symmetry; exact Hyx].
+  all: apply FOQLSym, FOQLSampleRetL; [apply sem_ae_ret_iff|].
+  all: apply FOQLStructural, FOLRet; reflexivity.
+Qed.
+
 Lemma finite_internal_guard_native_presentation t :
   exists p, free_omega_qlift eq
     (@finite_internal_guard_transition E MN R t) (free_omega_native p).
+Proof. exists (internal_guard_native t). apply internal_guard_native_eq. Qed.
+
+Definition internal_plan_round_native {t} (p : @finite_internal_plan E MN R t) :=
+  free_omega_native_bind (internal_plan_native p) internal_guard_native.
+
+Lemma internal_plan_round_native_eq t (p : @finite_internal_plan E MN R t) :
+  free_omega_qlift eq
+    (free_omega_bind (@internal_plan_frontier E MN R MF FI FreeOmegaMixedMeasure t p)
+      finite_internal_guard_transition)
+    (free_omega_native (internal_plan_round_native p)).
 Proof.
-  unfold finite_internal_guard_transition.
-  destruct (observe t) as [r|u|X e k|X mu k].
-  - apply free_omega_ret_native_presentation.
-  - apply free_omega_ret_native_presentation.
-  - apply free_omega_ret_native_presentation.
-  - exists {| native_sample_type := X; native_sample_measure := mu;
-      native_sample_value := fun x => PrimitiveStableHitting.SHInternal (k x) |}.
-    apply free_omega_qlift_refl. intro z. reflexivity.
+  eapply FOQLComp with (T := eq) (U := eq).
+  - eapply FOQLBind with (T := eq); [apply internal_plan_native_eq|].
+    intros x y ->. apply internal_guard_native_eq.
+  - apply free_omega_native_bind_eq.
+  - intros x z [y [-> ->]]. reflexivity.
 Qed.
 
 (** The full compression-plus-guard round is native-presentable as well.
@@ -94,9 +128,9 @@ Theorem finite_internal_round_native_presentation t out :
   exists p, free_omega_qlift eq
     (free_omega_bind out finite_internal_guard_transition) (free_omega_native p).
 Proof.
-  intro Hcut. destruct (finite_internal_native_presentation Hcut) as [p Hp].
-  eapply free_omega_native_bind_presentation; [exact Hp|].
-  intro u. apply finite_internal_guard_native_presentation.
+  intro Hcut. destruct (finite_internal_plan_exists Hcut) as [p Hp].
+  exists (internal_plan_round_native p). rewrite <- Hp.
+  apply internal_plan_round_native_eq.
 Qed.
 End NativeCompression.
 
