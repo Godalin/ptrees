@@ -1340,6 +1340,23 @@ targets at the same tree, and a sampled natural number used as an unbounded
 path cost.  The new limit proofs inherit the existing `Eq_rect_eq`
 dependency; no new semantic or soundness axiom is introduced.
 
+`FiniteInternalCostedCoinduction.v` now closes the **given-joint** part of
+the soundness pipeline.  `costed_round_pair_hitting` compares the two
+complete primitive hitting distributions using the same correlated
+round process, with separate left/right plans, costs and quotient path
+marginals.  Only the emitted stable heads need satisfy the candidate's
+head relation, almost everywhere.  `peutt_coinduction_costed_rounds` turns
+coverage of a program candidate by those correlated states into `peutt`.
+No AST/totality, uniform cost bound, structural reference marginal, native
+reflection, node joint-realization assumption, or unary policy is used by
+this endpoint.  The correlated process itself and BOTH cost-preserving
+path marginals are still explicit proved premises, not synthesized from
+an arbitrary generator step.  `Examples/CostedRounds.v` uses the endpoint
+to prove `t ≈ Tau (Tau t)` for arbitrary eventful/probabilistic/diverging
+trees, with genuinely different left/right costs and recursive treatment
+of visible continuations.  This is a regression of the certificate API,
+not a replacement for unrestricted residual-GFP soundness.
+
 The unrestricted residual generator still supplies only a **quotient**
 coupling of decoded cut outputs.  The multiround theorem keeps its path
 marginal premise explicit; it does not yet prove unrestricted GFP soundness
@@ -1429,6 +1446,26 @@ rounds with these quotient path marginals, then closing the unrestricted
 GFP soundness proof.  General recovery is now discharged for SubEnum, not
 for arbitrary node backends or MathComp.  The new SubEnum theorem alone
 does not authorize replacing the public `PFinite` definition.
+
+The guard-execution bridge is also available:
+`FiniteInternalRoundCoupling.v::internal_guard_native_coupled` inverts the
+matched `pstrongF` guard to its genuine native sample coupling (in the Prob
+case, exactly the coupling in the guard premise).
+`internal_plan_round_paths_coupled` then extends a quotient compression-path
+coupling to a quotient coupling of the **complete compression-plus-guard
+paths**.  Each path retains its compression component and guard sample,
+so separate costs remain accessible.  This generic lemma is closed under
+the global context; it adds no reflection or realization axiom.
+`pfinite_residual_subenum_round_paths` applies the full bridge to every
+SubEnum residual-generator step.  A regression starts with a discarded fair
+bit followed by a Tau and actually executes the matched Ret guards, rather
+than stopping at an arbitrary decoded-measure example.
+
+These two ends of the pipeline do not yet meet: a quotient coupling of
+full round paths is not itself a correlated native row with both quotient
+graph marginals.  Constructing that compatible joint process remains the
+central soundness obligation.  Neither arbitrary partner selection nor an
+unproved native-reflection rule is used to fill it.
 
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted

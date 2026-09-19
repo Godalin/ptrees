@@ -5,6 +5,9 @@ From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   FreeOmegaMeasure FreeOmegaNative FreeOmegaRecovery FreeOmegaCoupling
   FreeOmegaRecoverySubEnum.
 From PTree.Examples Require Import FiniteInternalPlan SubEnumRegression HiddenRandomState.
+From PTree.Eq Require Import PStrong PFiniteResidual FiniteInternal FiniteInternalPlan.
+From PTree.Eq.FreeOmega Require Import FiniteInternalNative
+  FiniteInternalRoundCoupling FiniteInternalRecoverySubEnum.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -19,6 +22,41 @@ Proof.
   - exact hidden_fair_same_mass.
   - intro b. apply FOQLStructural, FOLRet. exact I.
 Qed.
+
+(** A complete residual-generator step, not just an arbitrary decoded
+    measure: the fair bit is discarded, then one Tau is compressed, and
+    the matched Ret guard is executed.  Recovery keeps both path pieces. *)
+Definition latent_cut_tree : ptree planE SubEnum bool :=
+  Prob subenum_fair (fun _ => Tau (Ret true)).
+
+Lemma latent_cut_residual_step :
+  @pfinite_residualF planE SubEnum (FreeOmega SubEnum)
+    SubEnum_SemanticMeasure
+    (FreeOmegaObservableSemanticMeasure
+      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+    FreeOmegaMixedMeasure bool bool eq (fun _ _ => False)
+    latent_cut_tree (Ret true).
+Proof.
+  eapply PFiniteResidualStep.
+  - apply FIProb. intro b. apply FITau, FIStop.
+  - apply FIStop.
+  - change (free_omega_qlift (pfinite_guard (E := planE) (MN := SubEnum)
+      eq (fun _ _ => False))
+      (FOSample subenum_fair (fun _ => FORet (Ret true))) (FORet (Ret true))).
+    eapply free_omega_sample_to_constant with (point := false).
+    + intro P. apply sem_ae_ret_iff.
+    + exact hidden_fair_same_mass.
+    + intro b. apply FOQLStructural, FOLRet. unfold pfinite_guard.
+      constructor. reflexivity.
+Qed.
+
+Example latent_cut_full_round_paths :
+  exists (p : @finite_internal_plan planE SubEnum bool latent_cut_tree)
+         (q : @finite_internal_plan planE SubEnum bool (Ret true)),
+    free_omega_qlift (internal_round_path_rel eq (fun _ _ => False) p q)
+      (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x))
+      (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)).
+Proof. apply pfinite_residual_subenum_round_paths. exact latent_cut_residual_step. Qed.
 
 Lemma direct_path_normalized :
   free_omega_qlift (fun _ _ => True)

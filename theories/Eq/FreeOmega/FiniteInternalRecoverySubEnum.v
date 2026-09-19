@@ -4,7 +4,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   FreeOmegaMeasure FreeOmegaNative FreeOmegaRecoverySubEnum.
 From PTree.Eq Require Import FiniteInternalPlan PFiniteResidual.
-From PTree.Eq.FreeOmega Require Import FiniteInternalNative.
+From PTree.Eq.FreeOmega Require Import FiniteInternalNative FiniteInternalRoundCoupling.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -46,5 +46,22 @@ Proof.
         (fun y => FORet (internal_plan_residual q y)))).
     eapply FOQLBind; [exact H|].
     intros x y Hxy. apply FOQLStructural, FOLRet. exact Hxy.
+Qed.
+
+(** The recovered compression path can now execute its matched guard.
+    Each sample retains BOTH pieces of its path, hence its actual cost is
+    still available to costed projection.  This is not yet a joint row. *)
+Theorem pfinite_residual_subenum_round_paths t u :
+  @pfinite_residualF E SubEnum MF SubEnum_SemanticMeasure FI
+    FreeOmegaMixedMeasure A B RR sim t u ->
+  exists (p : @finite_internal_plan E SubEnum A t)
+         (q : @finite_internal_plan E SubEnum B u),
+    free_omega_qlift (internal_round_path_rel RR sim p q)
+      (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x))
+      (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)).
+Proof.
+  intro H. apply pfinite_residual_subenum_path_characterization in H.
+  destruct H as [p [q Hpaths]]. exists p, q.
+  apply internal_plan_round_paths_coupled. exact Hpaths.
 Qed.
 End Paths.
