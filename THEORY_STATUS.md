@@ -1206,6 +1206,22 @@ whose projected rounds are not unary policies.  Neither projectability nor
 structural references may be silently imposed on that definition.  Removing
 both restrictions from correlated acceleration remains the soundness gap.
 
+`Prob/EnumDisintegration.v` now supplies a concrete native conditional
+resampling construction: `subenum_disintegration` reconstructs any finite
+SubEnum joint by sampling its first marginal and then the full conditional
+pair.  It preserves the original joint (not merely its support), stays in
+SubEnum, retains every AE joint invariant, and is total almost everywhere
+under the first marginal.  Null fibers have zero mass, not an arbitrary
+chosen partner.  The explicit construction uses decidable equality; the
+existential endpoint uses proof-local classical equality and requires no
+client `eqType`, including for function-valued states.  No new semantic
+axiom or backend capability is assumed.
+`Examples/EnumDisintegration.v` checks preservation of a latent fair bit,
+null-fiber mass, zero-joint reconstruction, and function-valued carriers.
+This is a native finite-measure ingredient, **not** a disintegration theorem
+for arbitrary FreeOmega quotient liftings or a proof of unrestricted
+correlated acceleration.  The soundness gap above remains open.
+
 The public `PFinite` definition
 has not been replaced by the structural special case, and no unrestricted
 GFP soundness or API migration is claimed on the strength of this result.
