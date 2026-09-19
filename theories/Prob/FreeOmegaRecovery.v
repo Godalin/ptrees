@@ -22,7 +22,7 @@ Context {MN : Type@{node} -> Type@{node_rep}}
     universe would make an otherwise valid certificate unusable by bind.
     This notation is exactly the existing quotient judgment. *)
 Local Notation qlift := (@free_omega_qlift@{
-  frontier frontier node node node node frontier frontier frontier
+  frontier frontier node node node node node node node node node node frontier frontier frontier
   node node node node node_rep node node node node node node node node
   node node node node node node node node node node} MN NI NO _ _).
 

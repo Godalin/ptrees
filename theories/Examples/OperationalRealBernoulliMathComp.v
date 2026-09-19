@@ -1,6 +1,7 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 
 Require Import Program.Equality.
 
@@ -65,8 +66,9 @@ Lemma ptree_mathcomp_oracle_out_observes :
 Proof.
   apply FOOObserveLub with
     (outs := fun fuel => mathcomp_oracle_result_approx R qbit fuel 0).
-  - intro fuel. exact: unified_mathcomp_oracle_approx_observes.
+  - intro fuel. exact (unified_mathcomp_oracle_approx_observes R Head qbit fuel 0).
   - exact: mathcomp_binary_oracle_lub q01 Hrep.
+  - exact ptree_mathcomp_oracle_increasing.
 Qed.
 
 Definition ptree_mathcomp_oracle_heads : MF Head :=

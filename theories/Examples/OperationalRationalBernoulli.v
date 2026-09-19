@@ -144,6 +144,7 @@ Proof.
   unfold ptree_rational_limit. eapply FOOObserveLub.
   - intro fuel. exact (ptree_rational_approx_observes fuel q).
   - exact (rational_binary_iteration_converges q0 q1).
+  - apply ptree_rational_increasing.
 Qed.
 
 Definition ptree_rational_heads : MF rational_head :=

@@ -287,6 +287,8 @@ Proof.
   unfold ptree_vn_raw_limit. eapply FOOObserveLub.
   - exact ptree_vn_raw_hitting_rounds_observes.
   - exact vn_iteration_converges.
+  - intro n. apply ptree_hitting_mono.
+    cbn [ptree_vn_raw_schedule]. repeat apply le_S. apply le_n.
 Qed.
 
 Definition ptree_vn_raw_heads : MF vn_head :=
@@ -463,6 +465,7 @@ Proof.
   unfold ptree_vn_limit. eapply FOOObserveLub.
   - exact ptree_vn_approx_observes.
   - exact vn_iteration_converges.
+  - exact ptree_vn_round_increasing.
 Qed.
 
 Definition ptree_vn_heads : MF vn_head :=

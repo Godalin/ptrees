@@ -43,15 +43,12 @@ Proof.
   cbn. exact Heps.
 Qed.
 
-Lemma transient_bad_limit_observes_zero :
-  @free_omega_observes Enum Enum_SemanticMeasure
-    Enum_SemanticOmega bool bool id
-    transient_bad_limit [::].
+Lemma transient_bad_limit_not_observable out :
+  ~ @free_omega_observes Enum Enum_SemanticMeasure
+    Enum_SemanticOmega bool bool id transient_bad_limit out.
 Proof.
-  unfold transient_bad_limit. eapply FOOObserveLub with
-    (outs := transient_observation).
-  - intros [|n]; constructor.
-  - exact transient_observation_converges_zero.
+  intro H. dependent destruction H.
+  specialize (H1 O). dependent destruction H1.
 Qed.
 
 Lemma zero_free_limit_observes_zero :
@@ -64,6 +61,7 @@ Proof.
     (fun _ : nat => (@nil (RatSubTypes.nnQ * bool))) [::]).
   - intro n. constructor.
   - intros P eps Heps. exists O. intros n _. cbn. exact Heps.
+  - intro n. apply FOApproxZero.
 Qed.
 
 Lemma enum_empty_lift_false :
@@ -85,11 +83,10 @@ Proof.
   specialize (H O). dependent destruction H.
 Qed.
 
-(** Equal low-level observations alone still forget the transient [false]
-    return, but the repaired observation constructor additionally asks for
-    this support coupling.  The missing certificate is now provably
-    impossible, so the former omega-AE counterexample is rejected at the
-    quotient boundary rather than contradicting the backend laws. *)
+(** The native sequence converges to zero, but its formal Lub is now
+    rejected already by observation's raw-monotonicity premise.  Its
+    missing support certificate is an independent obstruction to the
+    quotient observation rule and remains a useful AE regression. *)
 Theorem transient_bad_support_zero_impossible :
   ~ @free_omega_support_lift Enum Enum_SemanticMeasure bool bool eq
       transient_bad_limit zero_free_limit.

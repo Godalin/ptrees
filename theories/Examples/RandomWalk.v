@@ -654,6 +654,8 @@ Proof.
       (outs := fun rounds => walk_observation (fun _ => tt) rounds x y).
     + intros rounds. apply (walk_hitting_observes (fun _ => tt)).
     + apply walk_unit_converges.
+    + intro n. apply (ptree_hitting_mono (FI := rwFI) (FO := rwFO)).
+      cbn [walk_schedule]. lia.
   - change (enum_mass (ret_Enum tt) = 1).
     exact (enum_expect_ret (fun _ : unit => (1 : rat)) tt).
 Qed.
@@ -774,6 +776,8 @@ Proof.
         (outs := fun rounds => walk_observation (fun _ => tt) rounds 1 0).
       * intros rounds. apply (joint_hitting_observes (fun _ => tt)).
       * apply walk_unit_converges.
+      * intro n. apply (ptree_hitting_mono (FI := rwFI) (FO := rwFO)).
+        cbn [walk_schedule]. lia.
     + change (enum_mass (ret_Enum tt) = 1).
       exact (enum_expect_ret (fun _ : unit => (1 : rat)) tt).
 Qed.

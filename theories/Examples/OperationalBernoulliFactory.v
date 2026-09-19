@@ -272,6 +272,8 @@ Proof.
     rewrite Hrows.
     exact (param_iteration_converges_of_normalized_bias
       (p := pfalse) (q := ptrue) pnormalized pnontrivial).
+  - intro n. apply ptree_hitting_mono.
+    cbn [ptree_factory_raw_schedule]. repeat apply le_S. apply le_n.
 Qed.
 
 Lemma ptree_factory_fair_heads_total
@@ -436,6 +438,8 @@ Proof.
     { apply functional_extensionality=> rounds.
       apply ptree_factory_binary_measure_row_eq. }
     rewrite Hchain. rewrite <- fair_binary_round_measure. exact Hmap.
+  - intro n. apply ptree_hitting_mono.
+    cbn [ptree_factory_raw_schedule]. repeat apply le_S. apply le_n.
 Qed.
 
 Definition ptree_factory_binary_step_heads (x : rat) :
@@ -675,6 +679,14 @@ Proof.
   eapply FOOObserveLub.
   - intro outer. apply ptree_factory_standard_q_row_observes.
   - exact (rational_binary_iteration_converges q0 q1).
+  - generalize q. intro x. intro n. revert x.
+    induction n as [|n IH]; intro x; cbn [ptree_factory_standard_q_row].
+    + apply FOApproxZero.
+    + eapply free_omega_approx_bind with (R := eq).
+      * apply free_omega_approx_refl. intro h. reflexivity.
+      * intros h h' ->. destruct (iter_head_next factoryE_no_event h') as [next|b].
+        -- apply IH.
+        -- apply FOApproxRet. reflexivity.
 Qed.
 
 Lemma ptree_factory_standard_q_heads_total

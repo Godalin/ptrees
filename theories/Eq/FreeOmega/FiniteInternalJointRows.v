@@ -29,7 +29,7 @@ Variable sim : ptree E MN A -> ptree E MN B -> Prop.
 Let treeA : Type@{frontier} := ptree E MN A.
 Let treeB : Type@{frontier} := ptree E MN B.
 Local Notation qlift := (@free_omega_qlift@{
-  frontier frontier node node node node frontier frontier frontier
+  frontier frontier node node node node node node node node node node frontier frontier frontier
   node node node node node_rep node node node node node node node node
   node node node node node node node node node node} MN NI NO _ _).
 

@@ -1,6 +1,7 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum reals.
 

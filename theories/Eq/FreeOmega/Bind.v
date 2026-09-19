@@ -1029,6 +1029,19 @@ End NestedRowDenotation.
 Section NestedLimitDenotation.
 Context `{DO : @FreeOmegaDenotationOmegaLaws MN NI NO}.
 
+Lemma nested_row_out_increasing sample_out outer : forall i,
+  free_omega_approx eq (nested_row_out sample_out outer i)
+    (nested_row_out sample_out (S outer) i).
+Proof.
+  induction outer as [|outer IH]; intro i; cbn [nested_row_out].
+  - apply FOApproxZero.
+  - eapply free_omega_approx_bind with (R := eq).
+    + apply free_omega_approx_refl. intro h. reflexivity.
+    + intros h h' ->. destruct (round i (no_event_head_value h')) as [next|r].
+      * apply IH.
+      * apply FOApproxRet. reflexivity.
+Qed.
+
 Lemma nested_rows_lub_denotes
     (sample_out : MF (stable_head E MN A))
     (sample_measure : MN A)
@@ -1047,6 +1060,7 @@ Proof.
   intro Hlub. eapply free_omega_denotes_lub.
   - intro outer. apply Hrows.
   - exact Hlub.
+  - intro outer. apply nested_row_out_increasing.
 Qed.
 
 End NestedLimitDenotation.
@@ -2053,6 +2067,14 @@ Proof.
   intro Hlub. eapply free_omega_denotes_lub.
   - intro rounds. apply Hrows.
   - exact Hlub.
+  - intro rounds. clear Hlub. revert i. induction rounds as [|rounds IH]; intro i;
+      cbn [iter_complete_rows].
+    + apply FOApproxZero.
+    + eapply free_omega_approx_bind with (R := eq).
+      * apply free_omega_approx_refl. intro h. reflexivity.
+      * intros h h' ->. destruct (iter_head_next h') as [next|r].
+        -- apply IH.
+        -- apply FOApproxRet. reflexivity.
 Qed.
 
 End DirectUnboundedIterationLimitDenotation.

@@ -54,6 +54,33 @@ interfaces rather than discarding them.  Primitive hitting, bind/interp
 diagonals, iteration grids, and sampler schedules discharge these premises
 from their existing order theory.
 
+Observation now enforces the same distinction between a formal omega
+supremum and an arbitrary convergent sequence.  `FOOObserveLub` and
+`FreeOmegaDenotationOmegaLaws` require the underlying FreeOmega chain to be
+raw-increasing, not merely its finite-dimensional observable images to
+converge.  This closes a concrete escape-mass construction missed by the
+outer monotonicity checks alone: `FOLub (fun n => FORet n)` can be placed
+inside a constant outer source chain, after which bind continuity exchanges
+the order of two limits.  Keeping a permanent half-mass return makes both
+outputs have identical support, so support transport does not reject the
+construction.  With the former unrestricted observation rule, it yields
+quotient equality between legitimate SubEnum behaviors of mass one and
+one half.
+
+`Examples/FreeOmegaEscapingMass.v` retains that derivation as a conditional
+audit of the **former** rule (`unrestricted_observation_collapses_mass`),
+not as an axiom or theorem asserting that the repaired backend collapses
+mass.  `escaped_row_not_observable` rejects every observation of the
+offending decreasing row under the repaired constructor;
+`unrestricted_observation_rule_rejected` proves that the old rule cannot
+be reinstated.  The earlier transient-atom audit likewise now rejects its
+bad observation directly.  This is a checked repair of this construction,
+not a proof that all quotient constructors have a mass-preserving model.
+The positive regression `increasing_kernel_observable` observes the
+increasing direction of the same grid without the former rule.  Existing
+RandomWalk, Von Neumann, Bernoulli-factory, and MathComp oracle observations
+discharge the new premise from their increasing approximation schedules.
+
 `Examples/FreeOmegaLimitSafety.v` records the rejected decreasing-mass and
 moving-diagonal inputs.  The former uses a valid mass-one coin and compares
 mass one with mass two thirds, so this is not a raw-weight validity issue.

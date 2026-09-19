@@ -26,7 +26,7 @@ Let treeB : Type@{frontier} := ptree E MN B.
     bind carriers: their incoming coupling was obtained through high-tree
     decoding/recovery and must not be specialized back to the node level. *)
 Local Notation qlift := (@free_omega_qlift@{
-  frontier frontier node node node node frontier frontier frontier
+  frontier frontier node node node node node node node node node node frontier frontier frontier
   node node node node node_rep node node node node node node node node
   node node node node node node node node node node} MN NI NO _ _).
 

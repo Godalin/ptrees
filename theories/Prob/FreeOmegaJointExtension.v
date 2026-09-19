@@ -20,7 +20,7 @@ Context {MN : Type@{node} -> Type@{node_rep}}
   `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}.
 Context {Anchor : Type@{frontier}}.
 Local Notation qlift := (@free_omega_qlift@{
-  frontier frontier node node node node frontier frontier frontier
+  frontier frontier node node node node node node node node node node frontier frontier frontier
   node node node node node_rep node node node node node node node node
   node node node node node node node node node node} MN NI NO _ _).
 

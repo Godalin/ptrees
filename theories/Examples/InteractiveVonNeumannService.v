@@ -224,6 +224,8 @@ Proof.
   unfold service_vn_heads. eapply FOOObserveLub.
   - exact service_vn_hitting_rounds_observes.
   - exact vn_iteration_converges.
+  - intro n. apply ptree_hitting_mono.
+    cbn [ptree_vn_raw_schedule]. repeat apply le_S. apply le_n.
 Qed.
 
 Lemma service_vn_weak :
