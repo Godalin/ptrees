@@ -5,9 +5,9 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureEnum
   TwoLevelMeasureSubEnum DiscreteMC SemanticCoupling SemanticCouplingEnum
   FreeOmegaMeasure FreeOmegaCouplingEnum.
-From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PFiniteResidual PTreeKernel.
+From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PFiniteResidual PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint FiniteInternalJointHitting
-  FiniteInternalJointCoverage.
+  FiniteInternalJointCoverage FiniteInternalJointAcceleration FiniteInternalJointCoinduction.
 From PTree.Examples Require Import PairedFiniteCompression ResidualFinite.
 Import Enum.
 Set Implicit Arguments.
@@ -80,6 +80,21 @@ Proof.
       * apply FOAERet. cbn. constructor. reflexivity.
 Qed.
 
+(** The actual partner-dependent strategy is now a sound native proof,
+    without replacing its cuts by independent marginal policies. *)
+Example correlated_cuts_prove_peutt t u : candidate t u ->
+  @peutt event Enum MF FI FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool bool eq t u.
+Proof.
+  intro Htu. eapply peutt_coinduction_finite_internal_structural with
+    (sim := candidate) (cut1 := left_cut) (cut2 := right_cut).
+  - intros x y Hxy. exact (left_cut_valid Hxy).
+  - intros x y Hxy. exact (right_cut_valid Hxy).
+  - intros x y Hxy. apply FOLRet. exact (partner_guarded Hxy).
+  - exact (@enum_coupling_realization).
+  - exact Htu.
+Qed.
+
 (** An equivalent representation of every round still satisfies the
     QUOTIENT graph-marginal contract, but need not satisfy raw coverage. *)
 Definition quotient_round_kernel (p : Pair) := FOLub (fun _ => correlated_kernel p).
@@ -102,6 +117,34 @@ Example quotient_round_raw_coverage_fails :
       (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
         Pair Heads quotient_round_kernel 0 (done,done)) (fun h => FORet (fst h))).
 Proof. intro H. inversion H. Qed.
+
+(** Despite that raw failure, COMPLETE hitting is now proved equal to
+    the original marginal, using a structurally realized reference kernel. *)
+Example quotient_round_complete_hitting_exact t u joint_out original_out :
+  candidate t u ->
+  @stable_hitting MF FI FreeOmegaObservableSemanticOmega
+    Pair Heads quotient_round_kernel (t,u) joint_out ->
+  @ptree_stable_hitting event Enum MF FI FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool (observe t) original_out ->
+  free_omega_qlift eq
+    (free_omega_bind joint_out (fun h => FORet (fst h))) original_out.
+Proof.
+  intros Htu Hjoint Horiginal.
+  eapply finite_internal_structural_execution_adequate_modulo_eq with
+    (kernel := correlated_kernel) (represented := quotient_round_kernel)
+    (project_state := @fst tree tree)
+    (D := fun p => candidate (fst p) (snd p)) (cut := left_cut) (s := (t,u)).
+  - intros [x y] Hxy. eapply free_omega_ae_mono;
+      [|exact (proj2 (proj2 (correlated_kernel_spec Hxy)))].
+    intros [heads|trees] Hgood; cbn; [exact I|exact Hgood].
+  - intros [x y] Hxy. exact (left_cut_valid Hxy).
+  - intros [x y] _. apply correlated_kernel_left_structural.
+  - exact (@enum_coupling_realization).
+  - intros p _. apply FOQLLubConstantR, free_omega_qlift_refl. intro z. reflexivity.
+  - exact Htu.
+  - exact Hjoint.
+  - exact Horiginal.
+Qed.
 
 (** The failed raw statement is repaired by retaining an equality-related
     representative, not by strengthening raw order with an unproved law. *)
@@ -342,6 +385,25 @@ Proof.
   exists kernel. intros t u Htu. destruct (Hkernel t u Htu) as [Hl [Hr Hae]].
   split; [apply FOQLStructural; exact Hl|].
   split; [apply FOQLStructural; exact Hr|exact Hae].
+Qed.
+
+(** No assumption of [residual_retries_peutt] or independent policies:
+    this uses the newly proved joint-execution route through arbitrarily
+    many internal Prob guards. *)
+Example retry_joint_coinduction_proves_peutt :
+  @peutt residualE SubEnum MF FI FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool bool eq
+    residual_retry_left residual_retry_right.
+Proof.
+  eapply peutt_coinduction_finite_internal_structural with
+    (sim := residual_retry_pairs)
+    (cut1 := fun p => residual_retry_cut1 (fst p))
+    (cut2 := fun p => residual_retry_cut2 (snd p)).
+  - intros x y _. apply residual_retry_cut1_valid.
+  - intros x y _. apply residual_retry_cut2_valid.
+  - intros x y Hxy. exact (residual_retry_cuts_structural Hxy).
+  - exact (@subenum_coupling_realization).
+  - constructor.
 Qed.
 
 Example retry_primitive_steps_covered kernel (Hkernel : structural_round_spec kernel)

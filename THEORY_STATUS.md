@@ -786,15 +786,16 @@ argument.  The old proof, which recurs only after stable observations,
 does not supply this connection.  No additional capability axiom, intersection
 with `peutt`, or unfinished proof has been used to disguise this gap.
 
-The unary-policy acceleration limit obligation is solved.  The remaining gap to the
-unrestricted residual GFP is witness dependency: the existential
+The unary-policy acceleration limit obligation is solved.  Witness dependency
+prevents applying that theorem directly to the unrestricted residual GFP: the existential
 compression witnesses in `pfinite_residual_unfold` may
 depend on the whole related pair.  Classical choice on pairs does **not**
 produce the independent marginal policies assumed by
 `peutt_coinduction_finite_internal_policies`.  A proof must handle this dependency,
-not silently strengthen the generator to require such policies.  Neither
-uniformization nor unrestricted GFP soundness is currently claimed solved;
-no new capability axiom replaces this obligation.
+not silently strengthen the generator to require such policies.  The paired
+execution development below now resolves this dependency for structural
+residual liftings; it does not uniformize the witnesses.  Unrestricted GFP
+soundness is still not claimed, and no new capability axiom replaces it.
 
 `Prob/SemanticCoupling.v` and `Eq/FiniteInternalJoint.v` begin the
 pair-dependent execution bridge, without assuming independent policies:
@@ -827,10 +828,10 @@ This rules out replacing the chosen paired strategy by a unary cut merely
 by changing its measure representation.  It does not claim that the program
 pair admits no other useful unary policy.
 
-To complete this joint-execution route, one must account for joint witnesses
-of arbitrary residual couplings and for acceleration adequacy of infinitely
-many correlated guard rounds.  The certificate API and finite-round
-preservation lemmas alone do not discharge those obligations.
+The certificate API and finite-round preservation lemmas alone do not
+establish unrestricted soundness.  The development below proves unbounded
+correlated acceleration for structurally realized rounds; arbitrary residual
+quotient couplings still need joint witnesses and suitable marginal realizations.
 
 Joint-witness extraction now has concrete proved cases:
 
@@ -1065,23 +1066,48 @@ the former specialized advance/bind limit helpers have been removed.
 arbitrary SubEnum/FreeOmega kernels, without AST or a global state bound,
 and shows that no fixed cutoff suffices for every returning state.
 
-For correlated finite compression, the remaining construction is a
-finite-internal-guided truncation of the actual realized round kernel,
-with raw monotonicity, convergence, primitive-fuel upper bounds, and finite
-coverage.  The unary cut truncation theorem does not automatically supply
-such a chain on paired states.  In particular, a structural node match
-must retain its sampled pair rather than choose an arbitrary partner.
-Kernel continuity discharges the later limit exchange, not this construction.
+The missing correlated truncation construction is now proved for
+**structurally realized** marginal rounds:
 
-These paired-round results are still **not full** correlated acceleration
-adequacy.  Even the structural reverse bound and the earlier upper bound
-have not been turned into equality: the upper bound ends at an explicit
-representative equality-coupled to original hitting, and raw order is not
-assumed quotient-proper.  Constructing the finite truncations and mutual
-coverage needed by the diagonal adequacy criterion, as well as realizing
-unrestricted residual couplings, remains necessary for the residual GFP
-soundness theorem.  The public
-PFinite definition has not been replaced by the structural special case.
+- `FiniteInternalJointTruncation.v::finite_internal_joint_approximation_exists`
+  constructs an increasing chain on the original joint carrier, with
+  convergence, raw approximation below the full round, primitive-fuel
+  upper bounds, and finite coverage.  At a sampling node it uses an actual
+  node joint and recursively selects a child chain for each related pair.
+  It never replaces that joint by a deterministic partner selection.
+- `FiniteInternalJointAcceleration.v` chooses these chains on entire
+  correlated states.  Outside the invariant domain it uses constant chains;
+  inside the domain, raw approximation below the full round preserves AE
+  closure.  The resulting two-dimensional grid has proved raw upper bounds
+  and lower coverage, so its diagonal is cofinal with primitive hitting.
+- `finite_internal_structural_execution_adequate` consequently identifies
+  the projected COMPLETE joint hitting with the original tree's complete
+  hitting.  This is equality lifting, not just the earlier upper/lower bounds.
+  There is no uniform cut bound, AST assumption, or requirement to encounter
+  Vis between successive internal rounds.
+- `finite_internal_structural_execution_adequate_modulo_eq` extends the result
+  to a kernel quotient-equal to a structurally realized reference.  It does
+  not assume raw-order properness or existence of such a reference for every
+  arbitrary quotient round.
+- `FiniteInternalJointCoinduction.v::peutt_coinduction_finite_internal_structural`
+  combines the actual paired-kernel construction, both marginal adequacy
+  theorems, and the coupling of projected outputs into a native behavioral
+  coinduction rule.  Cuts may depend on both trees; only their residual
+  lifting is required to be structural.  The candidate itself supplies the
+  continuation relation, not an assumed prior behavioral equality.
+
+`CorrelatedInternalRounds.v` now proves actual `peutt` via this rule for the
+partner-dependent cuts and the purely internal unbounded retry loops.
+The constant-Lub wrapper that refutes raw coverage also has a positive
+complete-hitting equality regression via the reference-kernel theorem.
+
+Thus structural correlated acceleration adequacy is solved.  The remaining
+gap to the unrestricted residual GFP is its larger **quotient** residual
+lifting: general joint extraction and adequate marginal realization are
+not supplied by structural extraction.  This distinction matters for
+non-shape-preserving probability algebra.  The public `PFinite` definition
+has not been replaced by the structural special case, and no unrestricted
+GFP soundness or API migration is claimed on the strength of this result.
 
 `Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
 before divergence, Prob branch compression, and the negative core regression
