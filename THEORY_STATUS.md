@@ -862,10 +862,27 @@ Joint-witness extraction now has concrete proved cases:
   acceleration equality, including its cofinal/diagonal limit proof, as an
   explicit joint certificate.  This result is not restricted to bounded
   cuts or bounded numbers of guard rounds.
+- Realization now has proved closure rules for several quotient operations.
+  `semantic_coupling_bind` and its existential variant compose source and
+  branch witnesses into a joint for the **original marginal binds**.  The
+  branch joint may depend on both sampled values; no independent-policy
+  choice is made.  The existential proof needs neither inhabited result
+  types nor a zero-measure capability.  Monotonicity and AE restriction
+  retain the same joint; AE restriction does not condition or normalize it.
+- `free_omega_sample_coupling_realization` allows arbitrary already-realized
+  quotient branch couplings under node sampling, and
+  `free_omega_coupling_converse` constructs the swapped joint.  The latter
+  proves the needed FreeOmega bind/Ret normalization rather than adding a
+  generic right-unit law.  `free_omega_lub_coupling_realization` composes
+  formal Lub rows without a structural premise, but still does **not**
+  assert monotonicity of the chosen row joints.
 
 `Examples/CouplingRealization.v` checks function-valued node carriers,
 structural `Lub` witnesses, relational marginal rewrites, and a quotient
 equality that provably has no structural lifting derivation.
+It also exercises quotient-source bind with relational branches, sampling
+and formal Lub with quotient-rewritten branches, converse, AE restriction
+with an unchanged joint, and empty result types with no related source pairs.
 `PairedFiniteCompression.v` now also extracts
 its residual joint from the structural coupling proof instead of requiring
 the example's hand-written joint.
@@ -876,6 +893,10 @@ theorems.  Neither the structural theorem nor the graph theorem is silently
 applied to general many-to-many guard relations.  The unrestricted residual
 GFP soundness theorem remains unproved, and the public `PFinite` API is not
 replaced on the strength of these partial realization results.
+In particular, the closure rules do not yet supply a general realizer for
+quotient composition, observation, or relational cofinal limits: composing
+ordinary liftings is not the same as gluing their joint witnesses, and
+independent choices of row witnesses do not establish a monotone joint limit.
 
 `Eq/FreeOmega/FiniteInternalJoint.v` now constructs actual paired execution:
 
