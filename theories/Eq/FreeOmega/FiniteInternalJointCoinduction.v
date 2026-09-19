@@ -7,7 +7,7 @@ From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure
 From PTree.Eq Require Import FiniteInternal PFiniteResidual PrimitiveStableHitting
   UnifiedFrontier PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint
-  FiniteInternalJointAcceleration.
+  FiniteInternalJointReference.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -52,55 +52,20 @@ Proof.
   intros Hsim Hhit1 Hhit2.
   destruct (finite_internal_structural_paired_kernel_exists
     (@node_realizes) cuts_structural) as [kernel Hkernel].
-  pose (joint_out := FOLub (fun n => @stable_hitting_approx MF FI
-    FreeOmegaObservableSemanticOmega Pair Heads kernel n (t,u))).
-  assert (Hjoint : @stable_hitting MF FI FreeOmegaObservableSemanticOmega
-    Pair Heads kernel (t,u) joint_out).
-  { apply free_omega_qlift_refl. intro h. reflexivity. }
-  assert (Hclosed : forall p : Pair, sim (fst p) (snd p) ->
-    free_omega_ae
-      (KernelCompletion.kernel_completion_invariant (fun q => sim (fst q) (snd q)))
-      (kernel p)).
-  { intros [x y] Hxy. eapply free_omega_ae_mono;
-      [|exact (proj2 (proj2 (Hkernel x y Hxy)))].
-    intros [heads|trees] Hgood; cbn; [exact I|exact Hgood]. }
-  assert (Hleft : free_omega_qlift eq
-    (free_omega_bind joint_out (fun h => FORet (fst h))) out1).
-  { eapply finite_internal_structural_execution_adequate with
-      (project_state := @fst (ptree E MN A) (ptree E MN B))
-      (D := fun p => sim (fst p) (snd p)) (cut := cut1)
-      (kernel := kernel) (s := (t,u)).
-    - exact Hclosed.
-    - intros [x y] Hxy. exact (cut1_valid Hxy).
-    - intros [x y] Hxy. exact (proj1 (Hkernel x y Hxy)).
-    - exact (@node_realizes).
-    - exact Hsim.
-    - exact Hjoint.
-    - exact Hhit1. }
-  assert (Hright : free_omega_qlift eq
-    (free_omega_bind joint_out (fun h => FORet (snd h))) out2).
-  { eapply finite_internal_structural_execution_adequate with
-      (project_state := @snd (ptree E MN A) (ptree E MN B))
-      (D := fun p => sim (fst p) (snd p)) (cut := cut2)
-      (kernel := kernel) (s := (t,u)).
-    - exact Hclosed.
-    - intros [x y] Hxy. exact (cut2_valid Hxy).
-    - intros [x y] Hxy. exact (proj1 (proj2 (Hkernel x y Hxy))).
-    - exact (@node_realizes).
-    - exact Hsim.
-    - exact Hjoint.
-    - exact Hhit2. }
-  pose proof (proj2 (finite_internal_paired_hitting_coupled
-    (fun x y Hxy => proj2 (proj2 (Hkernel x y Hxy))) Hsim Hjoint)) as Hcoupled.
-  eapply FOQLComp with (T := eq) (U := stable_head_rel RR sim).
-  - apply FOQLMono with (T := fun x y => y = x).
-    + apply FOQLSym. exact Hleft.
-    + intros x y Hxy. symmetry. exact Hxy.
-  - eapply FOQLComp with (T := stable_head_rel RR sim) (U := eq).
-    + exact Hcoupled.
-    + exact Hright.
-    + intros x z [y [Hxy ->]]. exact Hxy.
-  - intros x z [y [-> Hyz]]. exact Hyz.
+  eapply finite_internal_reference_pair_hitting with
+    (cut1 := cut1) (cut2 := cut2) (kernel := kernel)
+    (left_reference := kernel) (right_reference := kernel) (t := t) (u := u).
+  - exact cut1_valid.
+  - exact cut2_valid.
+  - exact (@node_realizes).
+  - intros x y Hxy. exact (proj2 (proj2 (Hkernel x y Hxy))).
+  - intros x y _. apply free_omega_qlift_refl. intro z. reflexivity.
+  - intros x y _. apply free_omega_qlift_refl. intro z. reflexivity.
+  - intros x y Hxy. exact (proj1 (Hkernel x y Hxy)).
+  - intros x y Hxy. exact (proj1 (proj2 (Hkernel x y Hxy))).
+  - exact Hsim.
+  - exact Hhit1.
+  - exact Hhit2.
 Qed.
 
 Theorem peutt_coinduction_finite_internal_structural t u :
