@@ -1,10 +1,12 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
-From Coq Require Import Program.Equality.
+From Coq Require Import Program.Equality Logic.ClassicalChoice.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure.
-From PTree.Eq Require Import FiniteInternal PrimitiveStableHitting UnifiedFrontier PTreeKernel PEutt.
+From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure
+  FreeOmegaCoupling.
+From PTree.Eq Require Import FiniteInternal PFiniteResidual PrimitiveStableHitting
+  UnifiedFrontier PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint FiniteInternalJointAcceleration.
 
 Set Implicit Arguments.
@@ -153,3 +155,99 @@ Proof.
 Qed.
 
 End ReferenceCoinduction.
+
+(** The client supplies references only for residual distributions.  The
+    library constructs the paired guard and both execution kernels; it
+    never asks for a pre-existing equivalence of the continuations. *)
+Section ResidualReferences.
+Context {E MN : Type -> Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NAE : @SemanticMeasureAELiftLaws MN NI}
+  `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+  `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
+  `{NO : @SemanticOmega MN NI} {A B : Type}.
+Variable RR : A -> B -> Prop.
+Variable sim : ptree E MN A -> ptree E MN B -> Prop.
+Local Notation Pair := (ptree E MN A * ptree E MN B)%type.
+Local Notation Heads := (stable_head E MN A * stable_head E MN B)%type.
+Local Notation MF := (FreeOmega MN).
+Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
+Variable cut1 : Pair -> MF (ptree E MN A).
+Variable cut2 : Pair -> MF (ptree E MN B).
+Variables left_joint right_joint : Pair -> MF Pair.
+Hypothesis cuts_references : forall t u, sim t u ->
+  free_omega_coupling_references (pfinite_guard RR sim)
+    (cut1 (t,u)) (cut2 (t,u)) (left_joint (t,u)) (right_joint (t,u)).
+Hypothesis node_realizes : forall {X Y} (R : X -> Y -> Prop)
+    (mu : MN X) (nu : MN Y), sem_lift R mu nu ->
+    exists joint, semantic_coupling R mu nu joint.
+
+Theorem finite_internal_reference_kernels_exists :
+  exists left right : Pair -> MF (stable_target Pair Heads),
+    forall t u, sim t u ->
+      free_omega_qlift eq (left (t,u)) (right (t,u)) /\
+      free_omega_lift (fun z target => finite_internal_pair_left z = target)
+        (left (t,u))
+        (free_omega_bind (cut1 (t,u)) finite_internal_guard_transition) /\
+      free_omega_lift (fun z target => finite_internal_pair_right z = target)
+        (right (t,u))
+        (free_omega_bind (cut2 (t,u)) finite_internal_guard_transition) /\
+      free_omega_ae (finite_internal_pair_invariant RR sim) (left (t,u)).
+Proof.
+  assert (Hex : forall p : Pair, exists step : MF (stable_target Pair Heads),
+    pfinite_guard RR sim (fst p) (snd p) ->
+      free_omega_lift (fun z x => finite_internal_pair_left z = x)
+        step (finite_internal_guard_transition (fst p)) /\
+      free_omega_lift (fun z y => finite_internal_pair_right z = y)
+        step (finite_internal_guard_transition (snd p)) /\
+      free_omega_ae (finite_internal_pair_invariant RR sim) step).
+  { intros [t u]. destruct (classic (pfinite_guard RR sim t u)) as [Hguard|Hnot].
+    - destruct (finite_internal_guard_structural_joint_exists (@node_realizes) Hguard)
+        as [step Hstep]. exists step. intros _. exact Hstep.
+    - exists FOZero. intro Hguard. contradiction. }
+  destruct (choice _ Hex) as [step Hstep].
+  exists (fun p => free_omega_bind (left_joint p) step),
+    (fun p => free_omega_bind (right_joint p) step).
+  intros t u Hsim. pose proof (cuts_references Hsim) as Hcut. split.
+  - eapply FOQLBind; [exact (proj1 Hcut)|].
+    intros p q ->. apply free_omega_qlift_refl. intro z. reflexivity.
+  - split.
+    + eapply free_omega_lift_bind;
+        [exact (free_omega_coupling_references_left_supported Hcut)|].
+      intros [x y] z [<- Hxy]. exact (proj1 (Hstep (x,y) Hxy)).
+    + split.
+      * eapply free_omega_lift_bind;
+          [exact (free_omega_coupling_references_right_supported Hcut)|].
+        intros [x y] z [<- Hxy]. exact (proj1 (proj2 (Hstep (x,y) Hxy))).
+      * eapply free_omega_ae_bind; [exact (proj2 (proj2 (proj2 Hcut)))|].
+        intros [x y] Hxy. exact (proj2 (proj2 (Hstep (x,y) Hxy))).
+Qed.
+
+Hypothesis cut1_valid : forall t u, sim t u ->
+  @finite_internal E MN MF FI FreeOmegaMixedMeasure A t (cut1 (t,u)).
+Hypothesis cut2_valid : forall t u, sim t u ->
+  @finite_internal E MN MF FI FreeOmegaMixedMeasure B u (cut2 (t,u)).
+
+Theorem peutt_coinduction_finite_internal_coupling_references t u :
+  sim t u ->
+  @peutt E MN MF FI FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A B RR t u.
+Proof.
+  intro Hsim. destruct finite_internal_reference_kernels_exists as [left [right Hkernels]].
+  eapply peutt_coinduction_finite_internal_references with
+    (sim := sim) (cut1 := cut1) (cut2 := cut2)
+    (kernel := left) (left_reference := left) (right_reference := right).
+  - exact cut1_valid.
+  - exact cut2_valid.
+  - exact (@node_realizes).
+  - intros x y Hxy. exact (proj2 (proj2 (proj2 (Hkernels x y Hxy)))).
+  - intros x y _. apply free_omega_qlift_refl. intro z. reflexivity.
+  - intros x y Hxy. apply FOQLMono with (T := fun p q => q = p).
+    + apply FOQLSym. exact (proj1 (Hkernels x y Hxy)).
+    + intros p q Hpq. symmetry. exact Hpq.
+  - intros x y Hxy. exact (proj1 (proj2 (Hkernels x y Hxy))).
+  - intros x y Hxy. exact (proj1 (proj2 (proj2 (Hkernels x y Hxy)))).
+  - exact Hsim.
+Qed.
+
+End ResidualReferences.

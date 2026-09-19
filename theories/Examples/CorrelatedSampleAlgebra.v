@@ -4,7 +4,7 @@ From Coq Require Import Program.Equality.
 From mathcomp Require Import eqtype.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
-  SemanticCouplingEnum FreeOmegaMeasure.
+  SemanticCouplingEnum FreeOmegaMeasure FreeOmegaCoupling.
 From PTree.Eq Require Import FiniteInternal PrimitiveStableHitting UnifiedFrontier PEutt
   PFiniteResidual.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint FiniteInternalJointReference.
@@ -23,7 +23,6 @@ Local Notation E := exchangeE.
 Variables mu nu : SubEnum bool.
 Local Notation tree := (ptree E SubEnum bool).
 Local Notation Pair := (tree * tree)%type.
-Local Notation Heads := (stable_head E SubEnum bool * stable_head E SubEnum bool)%type.
 Local Notation MF := (FreeOmega SubEnum).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
@@ -72,71 +71,53 @@ Proof.
     apply (@FIStop E SubEnum MF FI FreeOmegaMixedMeasure bool).
 Qed.
 
-Definition exchange_target x y : stable_target Pair Heads :=
-  if Bool.eqb x y then SHInternal (exchange_retry_left, exchange_retry_right)
-  else SHStable (FHRet x, FHRet x).
-Definition exchange_kernel (p : Pair) : MF (stable_target Pair Heads) :=
+Definition exchange_residual_pair x y : Pair :=
+  if Bool.eqb x y then (Tau exchange_retry_left, Tau exchange_retry_right)
+  else (Ret x, Ret x).
+Definition exchange_left_joint (p : Pair) : MF Pair :=
   match observe (fst p) with
-  | TauF _ => FORet (SHInternal (exchange_left_round exchange_retry_left,
-      exchange_right_round exchange_retry_right))
-  | _ => FOSample mu (fun x => FOSample nu (fun y => FORet (exchange_target x y)))
+  | TauF _ => FORet p
+  | _ => FOSample mu (fun x => FOSample nu (fun y => FORet (exchange_residual_pair x y)))
   end.
-Definition exchange_right_reference (p : Pair) : MF (stable_target Pair Heads) :=
+Definition exchange_right_joint (p : Pair) : MF Pair :=
   match observe (fst p) with
-  | TauF _ => FORet (SHInternal (exchange_left_round exchange_retry_left,
-      exchange_right_round exchange_retry_right))
-  | _ => FOSample nu (fun y => FOSample mu (fun x => FORet (exchange_target x y)))
+  | TauF _ => FORet p
+  | _ => FOSample nu (fun y => FOSample mu (fun x => FORet (exchange_residual_pair x y)))
   end.
 
-Lemma exchange_reference_equal t u : exchange_retry_pairs t u ->
-  free_omega_qlift eq (exchange_right_reference (t,u)) (exchange_kernel (t,u)).
+Lemma exchange_residual_references t u : exchange_retry_pairs t u ->
+  free_omega_coupling_references (pfinite_guard eq exchange_retry_pairs)
+    (exchange_left_cut (t,u)) (exchange_right_cut (t,u))
+    (exchange_left_joint (t,u)) (exchange_right_joint (t,u)).
 Proof.
   intro H. destruct H.
-  - apply free_omega_qlift_refl. intro z. reflexivity.
-  - apply free_omega_mixed_exchange_of_product.
-    + exact (enum_semantic_product_swap (subenum_raw nu) (subenum_raw mu)).
-    + intros y x. apply free_omega_qlift_refl. intro z. reflexivity.
-Qed.
-
-Lemma exchange_kernel_closed t u : exchange_retry_pairs t u ->
-  free_omega_ae (finite_internal_pair_invariant eq exchange_retry_pairs)
-    (exchange_kernel (t,u)).
-Proof.
-  intro H. destruct H.
-  - apply FOAERet. constructor.
-  - apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
-    intros x _. apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
-    intros y _. apply FOAERet. unfold exchange_target. destruct (Bool.eqb x y).
-    + constructor.
-    + constructor. reflexivity.
-Qed.
-
-Lemma exchange_left_marginal t u : exchange_retry_pairs t u ->
-  free_omega_lift (fun z target => finite_internal_pair_left z = target)
-    (exchange_kernel (t,u))
-    (free_omega_bind (exchange_left_cut (t,u)) finite_internal_guard_transition).
-Proof.
-  intro H. destruct H.
-  - apply FOLRet. reflexivity.
-  - apply FOLSample with (S := eq); [apply sem_lift_refl; intro x; reflexivity|].
-    intros x x' ->.
-    apply FOLSample with (S := eq); [apply sem_lift_refl; intro y; reflexivity|].
-    intros y y' ->. unfold exchange_target. destruct (Bool.eqb x' y');
-      apply FOLRet; reflexivity.
-Qed.
-
-Lemma exchange_right_marginal t u : exchange_retry_pairs t u ->
-  free_omega_lift (fun z target => finite_internal_pair_right z = target)
-    (exchange_right_reference (t,u))
-    (free_omega_bind (exchange_right_cut (t,u)) finite_internal_guard_transition).
-Proof.
-  intro H. destruct H.
-  - apply FOLRet. reflexivity.
-  - apply FOLSample with (S := eq); [apply sem_lift_refl; intro y; reflexivity|].
-    intros y y' ->.
-    apply FOLSample with (S := eq); [apply sem_lift_refl; intro x; reflexivity|].
-    intros x x' ->. unfold exchange_target. destruct (Bool.eqb x' y');
-      apply FOLRet; reflexivity.
+  - split; [apply free_omega_qlift_refl; intro z; reflexivity|].
+    split; [apply FOLRet; reflexivity|]. split; [apply FOLRet; reflexivity|].
+    apply FOAERet. unfold pfinite_guard.
+    change (PStrong.pstrongF eq exchange_retry_pairs
+      (TauF (exchange_left_round exchange_retry_left))
+      (TauF (exchange_right_round exchange_retry_right))).
+    constructor. constructor.
+  - split.
+    + apply free_omega_mixed_exchange_of_product.
+      * exact (enum_semantic_product_swap (subenum_raw mu) (subenum_raw nu)).
+      * intros x y. apply free_omega_qlift_refl. intro z. reflexivity.
+    + split.
+      * apply FOLSample with (S := eq); [apply sem_lift_refl; intro x; reflexivity|].
+        intros x x' ->.
+        apply FOLSample with (S := eq); [apply sem_lift_refl; intro y; reflexivity|].
+        intros y y' ->. unfold exchange_residual_pair. destruct (Bool.eqb x' y');
+          apply FOLRet; reflexivity.
+      * split.
+        -- apply FOLSample with (S := eq); [apply sem_lift_refl; intro y; reflexivity|].
+           intros y y' ->.
+           apply FOLSample with (S := eq); [apply sem_lift_refl; intro x; reflexivity|].
+           intros x x' ->. unfold exchange_residual_pair. destruct (Bool.eqb x' y');
+             apply FOLRet; reflexivity.
+        -- apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+           intros x _. apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+           intros y _. apply FOAERet. unfold exchange_residual_pair, pfinite_guard.
+           destruct (Bool.eqb x y); constructor; [constructor|reflexivity].
 Qed.
 
 Theorem exchange_inside_unbounded_retry :
@@ -144,18 +125,13 @@ Theorem exchange_inside_unbounded_retry :
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool bool eq
     exchange_retry_left exchange_retry_right.
 Proof.
-  eapply peutt_coinduction_finite_internal_references with
+  eapply peutt_coinduction_finite_internal_coupling_references with
     (sim := exchange_retry_pairs) (cut1 := exchange_left_cut) (cut2 := exchange_right_cut)
-    (kernel := exchange_kernel) (left_reference := exchange_kernel)
-    (right_reference := exchange_right_reference).
+    (left_joint := exchange_left_joint) (right_joint := exchange_right_joint).
+  - exact exchange_residual_references.
+  - exact (@subenum_coupling_realization).
   - exact exchange_left_cut_valid.
   - exact exchange_right_cut_valid.
-  - exact (@subenum_coupling_realization).
-  - exact exchange_kernel_closed.
-  - intros t u _. apply free_omega_qlift_refl. intro z. reflexivity.
-  - exact exchange_reference_equal.
-  - exact exchange_left_marginal.
-  - exact exchange_right_marginal.
   - constructor.
 Qed.
 
