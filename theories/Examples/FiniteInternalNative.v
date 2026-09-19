@@ -5,7 +5,7 @@ From mathcomp Require Import reals.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   MathCompMeasure TwoLevelMeasureMathComp FreeOmegaMeasure FreeOmegaNative.
-From PTree.Eq Require Import FiniteInternal PFiniteResidual.
+From PTree.Eq Require Import FiniteInternal FiniteInternalPlan PFiniteResidual.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative FiniteInternalJoint.
 
 Set Implicit Arguments.
@@ -41,17 +41,14 @@ Proof.
 Qed.
 
 Example nonuniform_candidate_native (mu : MN nat) (k : nat -> tree) :
-  exists out1 out2 p q,
-    @finite_internal E MN MF FI FreeOmegaMixedMeasure R
-      (Prob mu (fun n => tau_prefix n (k n))) out1 /\
-    @finite_internal E MN MF FI FreeOmegaMixedMeasure R (Prob mu k) out2 /\
-    free_omega_qlift eq out1 (free_omega_native p) /\
-    free_omega_qlift eq out2 (free_omega_native q) /\
+  exists (p : @finite_internal_plan E MN R (Prob mu (fun n => tau_prefix n (k n))))
+    (q : @finite_internal_plan E MN R (Prob mu k)),
     free_omega_qlift
       (pfinite_guard eq
         (@pfinite_residual_rel E MN MF NI NC FI
           FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure R R eq))
-      (free_omega_native p) (free_omega_native q).
+      (free_omega_native (internal_plan_native p))
+      (free_omega_native (internal_plan_native q)).
 Proof.
   apply pfinite_residual_native_characterization.
   apply pfinite_residual_unfold.

@@ -1,21 +1,17 @@
 Set Universe Polymorphism.
-From Coq Require Import Logic.ClassicalChoice.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure FreeOmegaNative.
-From PTree.Eq Require Import FiniteInternal PFiniteResidual.
+From PTree.Eq Require Import FiniteInternal FiniteInternalPlan PFiniteResidual.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** Every well-founded internal compression can be presented as ONE native
-    sample decoded to its residual tree.  The sampled type is small; the
-    residual tree need not be.  Dependent sigma samples combine complete
-    branch distributions, not just selected supported results.  This is a
-    distribution-presentation certificate, not yet a primitive execution
-    trace/schedule certificate.  There is no fuel, uniform branch-depth
-    bound, or AST premise here. *)
+(** Reified plans retain actual Tau/Prob histories, while the native
+    sample type stays small.  Their normalization preserves the complete
+    distribution, not merely its support.  A joint online scheduler and
+    its adequacy still require additional proof. *)
 Section NativeCompression.
 Context {E MN : Type -> Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -26,32 +22,55 @@ Local Notation tree := (ptree E MN R).
 Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 
+Definition internal_plan_native {t} (p : @finite_internal_plan E MN R t) :
+    free_omega_native_presentation MN tree :=
+  {| native_sample_type := internal_plan_path p;
+     native_sample_measure := internal_plan_measure p;
+     native_sample_value := internal_plan_residual p |}.
+
+Lemma internal_plan_native_eq t (p : @finite_internal_plan E MN R t) :
+  free_omega_qlift eq
+    (@internal_plan_frontier E MN R MF FI FreeOmegaMixedMeasure t p)
+    (free_omega_native (internal_plan_native p)).
+Proof.
+  induction p as [t|t next IH|X mu k next IH].
+  - apply FOQLMono with (T := fun x y => y = x).
+    + apply FOQLSym, FOQLSampleRetL.
+      * apply sem_ae_ret_iff.
+      * apply FOQLStructural, FOLRet. reflexivity.
+    + intros x y Hyx. symmetry. exact Hyx.
+  - exact IH.
+  - cbn [internal_plan_frontier].
+    eapply FOQLComp with (T := eq) (U := eq)
+      (mid := FOSample mu (fun x => free_omega_native (internal_plan_native (next x)))).
+    + eapply FOQLSample with (T := eq).
+      * apply sem_lift_refl. intro x. reflexivity.
+      * intros x y ->. apply IH.
+    + unfold free_omega_native, internal_plan_native. cbn.
+      exact (@free_omega_sample_sigma MN NI NC NO ND NBAE X
+        (fun x => internal_plan_path (next x)) tree mu
+        (fun x => internal_plan_measure (next x))
+        (fun x y => FORet (internal_plan_residual (next x) y))).
+    + intros x z [y [-> ->]]. reflexivity.
+Qed.
+
+Theorem finite_internal_native_plan t out :
+  @finite_internal E MN MF FI FreeOmegaMixedMeasure R t out ->
+  exists p : @finite_internal_plan E MN R t,
+    @internal_plan_frontier E MN R MF FI FreeOmegaMixedMeasure t p = out /\
+    free_omega_qlift eq out (free_omega_native (internal_plan_native p)).
+Proof.
+  intro Hcut. destruct (finite_internal_plan_exists Hcut) as [p Hp].
+  exists p. split; [exact Hp|]. rewrite <- Hp. apply internal_plan_native_eq.
+Qed.
+
 Theorem finite_internal_native_presentation t out :
   @finite_internal E MN MF FI FreeOmegaMixedMeasure R t out ->
   exists p : free_omega_native_presentation MN tree,
     free_omega_qlift eq out (free_omega_native p).
 Proof.
-  intro Hcut. induction Hcut as [t|t out Hcut IH|X mu k out Hcut IH].
-  - apply free_omega_ret_native_presentation.
-  - exact IH.
-  - destruct (choice _ IH) as [p Hp].
-    exists {| native_sample_type := {x : X & native_sample_type (p x)};
-      native_sample_measure := sem_bind mu (fun x =>
-        sem_bind (native_sample_measure (p x))
-          (fun y => sem_ret (existT (fun x => native_sample_type (p x)) x y)));
-      native_sample_value := fun z =>
-        native_sample_value (p (projT1 z)) (projT2 z) |}.
-    eapply FOQLComp with (T := eq) (U := eq)
-      (mid := FOSample mu (fun x => free_omega_native (p x))).
-    + eapply FOQLSample with (T := eq).
-      * apply sem_lift_refl. intro x. reflexivity.
-      * intros x y ->. apply Hp.
-    + unfold free_omega_native. cbn.
-      exact (@free_omega_sample_sigma MN NI NC NO ND NBAE X
-        (fun x => native_sample_type (p x)) tree mu
-        (fun x => native_sample_measure (p x))
-        (fun x y => FORet (native_sample_value (p x) y))).
-    + intros x z [y [-> ->]]. reflexivity.
+  intro Hcut. destruct (finite_internal_native_plan Hcut) as [p [_ Hp]].
+  exists (internal_plan_native p). exact Hp.
 Qed.
 
 Lemma finite_internal_guard_native_presentation t :
@@ -98,32 +117,31 @@ Variable sim : ptree E MN A -> ptree E MN B -> Prop.
 
 Theorem pfinite_residual_native_characterization t u :
   @pfinite_residualF E MN MF NI FI FreeOmegaMixedMeasure A B RR sim t u <->
-  exists out1 out2
-    (p : free_omega_native_presentation MN (ptree E MN A))
-    (q : free_omega_native_presentation MN (ptree E MN B)),
-    @finite_internal E MN MF FI FreeOmegaMixedMeasure A t out1 /\
-    @finite_internal E MN MF FI FreeOmegaMixedMeasure B u out2 /\
-    free_omega_qlift eq out1 (free_omega_native p) /\
-    free_omega_qlift eq out2 (free_omega_native q) /\
-    free_omega_qlift (pfinite_guard RR sim) (free_omega_native p) (free_omega_native q).
+  exists (p : @finite_internal_plan E MN A t) (q : @finite_internal_plan E MN B u),
+    free_omega_qlift (pfinite_guard RR sim)
+      (free_omega_native (internal_plan_native p))
+      (free_omega_native (internal_plan_native q)).
 Proof.
   split.
   - intros [t' u' out1 out2 Hcut1 Hcut2 Hlift].
-    destruct (finite_internal_native_presentation Hcut1) as [p Hp].
-    destruct (finite_internal_native_presentation Hcut2) as [q Hq].
-    exists out1, out2, p, q.
-    split; [exact Hcut1|]. split; [exact Hcut2|].
-    split; [exact Hp|]. split; [exact Hq|].
+    destruct (finite_internal_native_plan Hcut1) as [p [_ Hp]].
+    destruct (finite_internal_native_plan Hcut2) as [q [_ Hq]].
+    exists p, q.
     change (@sem_lift MF FI _ _ (pfinite_guard RR sim)
-      (free_omega_native p) (free_omega_native q)).
+      (free_omega_native (internal_plan_native p))
+      (free_omega_native (internal_plan_native q))).
     eapply sem_lift_proper_l; [exact Hp|].
     eapply sem_lift_proper_r; [exact Hq|exact Hlift].
-  - intros [out1 [out2 [p [q [Hcut1 [Hcut2 [Hp [Hq Hlift]]]]]]]].
-    eapply PFiniteResidualStep; [exact Hcut1|exact Hcut2|].
-    eapply (@sem_lift_proper_l MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
-    + apply (@sem_eq_sym MF FI FreeOmegaObservableSemanticMeasureCoreLaws). exact Hp.
-    + eapply (@sem_lift_proper_r MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
-      * apply (@sem_eq_sym MF FI FreeOmegaObservableSemanticMeasureCoreLaws). exact Hq.
-      * exact Hlift.
+  - intros [p [q Hlift]].
+    eapply PFiniteResidualStep.
+    + exact (@internal_plan_frontier_valid E MN A MF FI FreeOmegaMixedMeasure t p).
+    + exact (@internal_plan_frontier_valid E MN B MF FI FreeOmegaMixedMeasure u q).
+    + eapply (@sem_lift_proper_l MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
+      * apply (@sem_eq_sym MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
+        apply internal_plan_native_eq.
+      * eapply (@sem_lift_proper_r MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
+        -- apply (@sem_eq_sym MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
+           apply internal_plan_native_eq.
+        -- exact Hlift.
 Qed.
 End NativeCandidate.
