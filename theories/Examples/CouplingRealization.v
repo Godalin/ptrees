@@ -169,3 +169,75 @@ Proof.
 Qed.
 
 End RealizationClosure.
+
+Section FiberGluing.
+Local Notation MF := (FreeOmega SubEnum).
+Local Notation FI := (FreeOmegaObservableSemanticMeasure
+  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+
+Definition embedded_node {A} (mu : SubEnum A) : MF A :=
+  FOSample mu (fun x => FORet x).
+
+Lemma embedded_node_coupling {A B} (R : A -> B -> Prop)
+    (mu : SubEnum A) (nu : SubEnum B) joint :
+  @semantic_coupling SubEnum SubEnum_SemanticMeasure A B R mu nu joint ->
+  @semantic_coupling MF FI A B R
+    (embedded_node mu) (embedded_node nu) (embedded_node joint).
+Proof.
+  intros [Hl [Hr Hae]]. split.
+  - eapply FOQLSample; [exact Hl|].
+    intros p x Hpx. apply FOQLStructural, FOLRet. exact Hpx.
+  - split.
+    + eapply FOQLSample; [exact Hr|].
+      intros p y Hpy. apply FOQLStructural, FOLRet. exact Hpy.
+    + eapply FOAESample; [exact Hae|].
+      intros p Hp. apply FOAERet. exact Hp.
+Qed.
+
+(** Truly relational node couplings (not necessarily function graphs)
+    supply the fiber match.  Outer marginals use a different, quotient
+    representation.  No fiber-realization or gluing axiom is assumed. *)
+Example embedded_node_quotient_gluing {A B C}
+    (R : A -> B -> Prop) (T : B -> C -> Prop)
+    (mu : SubEnum A) (mid : SubEnum B) (nu : SubEnum C) :
+  @sem_lift SubEnum SubEnum_SemanticMeasure A B R mu mid ->
+  @sem_lift SubEnum SubEnum_SemanticMeasure B C T mid nu ->
+  exists joint, @semantic_coupling MF FI A C
+    (fun x z => exists y, R x y /\ T y z)
+    (FOLub (fun _ => embedded_node mu))
+    (FOLub (fun _ => embedded_node nu)) joint.
+Proof.
+  intros Hleft Hright.
+  destruct (subenum_coupling_realization Hleft) as [jl Hl].
+  destruct (subenum_coupling_realization Hright) as [jr Hr].
+  assert (Hfiber : free_omega_lift (fun p q => snd p = fst q)
+    (embedded_node jl) (embedded_node jr)).
+  { eapply FOLSample.
+    - exact (semantic_coupling_fiber_lift Hl Hr).
+    - intros p q Hpq. apply FOLRet. exact Hpq. }
+  destruct (free_omega_coupling_glue_structural
+    (@subenum_coupling_realization)
+    (embedded_node_coupling Hl) (embedded_node_coupling Hr) Hfiber)
+    as [joint Hjoint].
+  exists joint. eapply semantic_coupling_transport; [| |exact Hjoint].
+  - apply FOQLLubConstantR, free_omega_qlift_refl. intro x. reflexivity.
+  - apply FOQLLubConstantR, free_omega_qlift_refl. intro z. reflexivity.
+Qed.
+
+(** Independent copies of a nondegenerate bit do NOT match their middle
+    values almost everywhere.  Product sampling cannot replace gluing. *)
+Example independent_copies_fail_fiber (mu : SubEnum bool)
+    (both_values : forall P, @sem_ae SubEnum SubEnum_SemanticMeasure bool mu P ->
+      P true /\ P false) :
+  ~ free_omega_ae (fun w : (bool * bool) * (bool * bool) =>
+      snd (fst w) = fst (snd w))
+    (FOSample mu (fun x => FOSample mu (fun y => FORet ((x,x),(y,y))))).
+Proof.
+  intro Hae. apply free_omega_ae_sample_inv in Hae.
+  destruct (both_values _ Hae) as [Htrue _].
+  apply free_omega_ae_sample_inv in Htrue.
+  destruct (both_values _ Htrue) as [_ Hfalse].
+  inversion Hfalse. discriminate.
+Qed.
+
+End FiberGluing.

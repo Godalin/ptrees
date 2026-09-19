@@ -898,6 +898,25 @@ quotient composition, observation, or relational cofinal limits: composing
 ordinary liftings is not the same as gluing their joint witnesses, and
 independent choices of row witnesses do not establish a monotone joint limit.
 
+The composition gap now has a proved factorization, rather than an implicit
+appeal to gluing.  Given certificates for `mu --R--> mid --T--> nu`,
+`semantic_coupling_fiber_lift` relates their two existing joints by equality
+of the middle projections (`snd p = fst q`).  This is an ordinary lifting,
+**not** a realization theorem for that lifting.
+`free_omega_coupling_glue` takes an explicit realization of this fiber match
+and projects it to an outer joint for relational composition.  Its proof
+retains both original marginals and transports both support predicates.
+`free_omega_coupling_glue_structural` discharges the fiber realization when
+the fiber match has a structural lifting, even if the supplied marginal
+certificates use quotient equality.  No general gluing capability is added.
+
+The node-embedding regression in `CouplingRealization.v` constructs the
+fiber match from arbitrary relational SubEnum couplings and glues them with
+quotient-rewritten outer marginals.  A negative regression proves that two
+independent copies of a bit with both values in its AE support do not satisfy
+the equality-fiber condition.  Thus independently sampling the two joints
+cannot silently replace the remaining unrestricted fiber-realization proof.
+
 `Eq/FreeOmega/FiniteInternalJoint.v` now constructs actual paired execution:
 
 - `finite_internal_guard_joint_exists` realizes one `pstrongF` guard using
