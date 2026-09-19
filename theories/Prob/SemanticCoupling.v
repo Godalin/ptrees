@@ -102,6 +102,41 @@ Proof.
     + exact (proj1 (proj2 Hjoint)).
 Qed.
 
+(** Composable joint certificates determine a lifting between the TWO
+    JOINTS, matching their copies of the middle value.  This is not yet a
+    joint witness for that lifting: extracting one is precisely the gluing
+    obligation, and cannot be replaced by [sem_lift_comp] alone. *)
+Lemma semantic_coupling_fiber_lift {A B C}
+    (R : A -> B -> Prop) (T : B -> C -> Prop)
+    (mu : M A) (mid : M B) (nu : M C) left_joint right_joint :
+  semantic_coupling R mu mid left_joint ->
+  semantic_coupling T mid nu right_joint ->
+  sem_lift (fun p q => snd p = fst q) left_joint right_joint.
+Proof.
+  intros [_ [Hl _]] [Hr _]. eapply sem_lift_mono with
+    (R := fun p q => exists y, snd p = y /\ fst q = y).
+  - intros p q [y [Hp Hq]]. now rewrite Hp, Hq.
+  - eapply sem_lift_comp; [exact Hl|apply sem_lift_sym; exact Hr].
+Qed.
+
+(** A realized fiber match retains both original support relations, on
+    the same joint-of-joints.  No conditional distribution is chosen. *)
+Lemma semantic_coupling_fiber_support {A B C}
+    (R : A -> B -> Prop) (T : B -> C -> Prop)
+    (mu : M A) (mid : M B) (nu : M C) left_joint right_joint fiber_joint :
+  semantic_coupling R mu mid left_joint ->
+  semantic_coupling T mid nu right_joint ->
+  semantic_coupling (fun p q => snd p = fst q)
+    left_joint right_joint fiber_joint ->
+  sem_ae fiber_joint (fun w =>
+    snd (fst w) = fst (snd w) /\
+    R (fst (fst w)) (snd (fst w)) /\
+    T (fst (snd w)) (snd (snd w))).
+Proof.
+  intros [_ [_ Hl]] [_ [_ Hr]] Hfiber.
+  exact (proj2 (proj2 (semantic_coupling_ae_restrict Hfiber Hl Hr))).
+Qed.
+
 Context `{MB : @SemanticMeasureBindLaws M MI}.
 
 (** A continuation may depend on the whole sampled pair.  The premise is

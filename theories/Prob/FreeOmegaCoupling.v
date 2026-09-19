@@ -254,3 +254,83 @@ Proof.
 Qed.
 
 End GraphRealization.
+
+(** Gluing is factored through a concrete equality-fiber witness.  This
+    section neither assumes a new gluing class nor asserts that arbitrary
+    quotient couplings have realizations. *)
+Section Gluing.
+Context {MN : Type -> Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+  `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
+  `{NO : @SemanticOmega MN NI}.
+Local Notation MF := (FreeOmega MN).
+Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
+
+Lemma free_omega_qlift_map_left {A B C} (f : A -> B) (R : B -> C -> Prop)
+    (mu : MF A) (nu : MF C) :
+  free_omega_qlift (fun x y => R (f x) y) mu nu ->
+  free_omega_qlift R (free_omega_bind mu (fun x => FORet (f x))) nu.
+Proof.
+  intro Hlift. eapply FOQLComp with (T := R) (U := eq)
+    (mid := free_omega_bind nu (fun y => FORet y)).
+  - eapply FOQLBind; [exact Hlift|].
+    intros x y Hxy. apply FOQLStructural, FOLRet. exact Hxy.
+  - apply FOQLStructural, free_omega_bind_return_lift.
+  - intros x z [y [Hxy ->]]. exact Hxy.
+Qed.
+
+(** Once a joint of the two existing witnesses matches the middle values,
+    project away those values.  Its outer marginals are the ORIGINAL mu/nu,
+    and its support is relational composition. *)
+Theorem free_omega_coupling_glue {A B C}
+    (R : A -> B -> Prop) (T : B -> C -> Prop)
+    (mu : MF A) (mid : MF B) (nu : MF C) left_joint right_joint fiber_joint :
+  @semantic_coupling MF FI A B R mu mid left_joint ->
+  @semantic_coupling MF FI B C T mid nu right_joint ->
+  @semantic_coupling MF FI (A * B) (B * C)
+    (fun p q => snd p = fst q) left_joint right_joint fiber_joint ->
+  @semantic_coupling MF FI A C (fun x z => exists y, R x y /\ T y z) mu nu
+    (free_omega_bind fiber_joint (fun w => FORet (fst (fst w), snd (snd w)))).
+Proof.
+  intros Hl Hr Hfiber. split.
+  - apply free_omega_qlift_map_left.
+    eapply FOQLComp with (T := fun w p => fst w = p)
+      (U := fun p x => fst p = x) (mid := left_joint).
+    + exact (proj1 Hfiber).
+    + exact (proj1 Hl).
+    + intros w x [p [<- Hp]]. exact Hp.
+  - split.
+    + apply free_omega_qlift_map_left.
+      eapply FOQLComp with (T := fun w q => snd w = q)
+        (U := fun q z => snd q = z) (mid := right_joint).
+      * exact (proj1 (proj2 Hfiber)).
+      * exact (proj1 (proj2 Hr)).
+      * intros w z [q [<- Hq]]. exact Hq.
+    + eapply free_omega_ae_bind.
+      * exact (semantic_coupling_fiber_support Hl Hr Hfiber).
+      * intros [[x y] [y' z]] [Heq [HR HT]]. cbn in *.
+        apply FOAERet. exists y. split; [exact HR|now rewrite Heq].
+Qed.
+
+(** This proved case supplies the fiber witness by structural extraction,
+    while the two given marginal certificates may be quotient-level.  The
+    structural premise is explicit, not inferred from [fiber_lift]. *)
+Theorem free_omega_coupling_glue_structural {A B C}
+    (R : A -> B -> Prop) (T : B -> C -> Prop)
+    (mu : MF A) (mid : MF B) (nu : MF C) left_joint right_joint
+    (node_realizes : forall {X Y} (S : X -> Y -> Prop)
+      (mu : MN X) (nu : MN Y), sem_lift S mu nu ->
+      exists joint, semantic_coupling S mu nu joint) :
+  @semantic_coupling MF FI A B R mu mid left_joint ->
+  @semantic_coupling MF FI B C T mid nu right_joint ->
+  free_omega_lift (fun p q => snd p = fst q) left_joint right_joint ->
+  exists joint, @semantic_coupling MF FI A C
+    (fun x z => exists y, R x y /\ T y z) mu nu joint.
+Proof.
+  intros Hl Hr Hfiber.
+  destruct (free_omega_lift_realization node_realizes Hfiber) as [joint Hjoint].
+  eexists. exact (free_omega_coupling_glue Hl Hr Hjoint).
+Qed.
+
+End Gluing.
