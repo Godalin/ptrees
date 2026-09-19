@@ -1602,6 +1602,40 @@ such rows is no longer an additional unproved step.  The raw GFP is still
 not assumed transitive, and the finite equivalence closure is still not
 assumed generator-postfixed.
 
+An independent scalar-model route to the missing arbitrary-relation
+realization is now being developed in
+`Prob/FreeOmegaUpperExpectationSubEnum.v`.  It does not change the residual
+generator or add a semantic capability assumption.  `free_omega_upper`
+interprets SubEnum sampling by its actual rational weights embedded in a
+MathComp `realType`, and a raw `FOLub` by a supremum.  The following are
+proved for arbitrary raw FreeOmega terms, with no AST or increasing-chain
+premise:
+
+- `free_omega_upper_bounds`: unit-interval tests have unit-interval values;
+- `free_omega_upper_mono`: monotonicity in a test bounded above by a
+  unit-interval test;
+- `free_omega_upper_bind`: exact compositional interpretation of bind;
+- `free_omega_upper_zero`: the zero test has value zero;
+- `free_omega_upper_native_rat`: agreement with the genuine weighted
+  rational expectation on a native finite presentation.
+
+`Examples/FreeOmegaUpperExpectation.v` distinguishes the mass-one and
+mass-half endpoints of the escaping-mass audit.  The offending decreasing
+row has upper mass one, not its eventual mass one half.  A separate
+nonadditivity regression records why this is only an internal audit model:
+an arbitrary raw `FOLub` need not denote an additive probability measure.
+No new public behavioral relation, probability backend or WP API is
+introduced.
+
+This groundwork passes full-library compilation, targeted `coqchk`, and
+assumption inspection.  It uses the existing MathComp classical
+choice/extensionality principles and functional extensionality, not an
+axiom asserting quotient soundness.  **Preservation by all quotient
+constructors is still unproved**, as is arbitrary-relation native joint
+extraction from such preservation.  The scalar evaluator alone therefore
+does not remove the residual-GFP soundness gap and does not authorize
+replacing public `PFinite`.
+
 The shortcut through an **up-to-equivalence closure** is now explicitly
 refuted by `Examples/ResidualClosureAudit.v`.  Let `spin = Tau spin`,
 `r = Ret true`, and take the two candidate edges `spin R Tau r` and
