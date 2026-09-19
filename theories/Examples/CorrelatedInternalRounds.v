@@ -91,6 +91,33 @@ Proof.
   - exact (proj1 (proj2 (Hkernel t u Htu))).
 Qed.
 
+(** The COMPLETE correlated execution is below a representative of the
+    original left hitting.  This is not yet equality of their limits. *)
+Example correlated_left_hitting_upper kernel (Hkernel : round_spec kernel)
+    (front : tree -> MF (stable_head event Enum bool))
+    (Hfront : forall t, @ptree_stable_hitting event Enum MF FI
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
+      (observe t) (front t)) t u : candidate t u ->
+  exists upper,
+    free_omega_approx eq
+      (free_omega_bind
+        (FOLub (fun n => @stable_hitting_approx MF FI
+          FreeOmegaObservableSemanticOmega Pair Heads kernel n (t,u)))
+        (fun h => FORet (fst h))) upper /\
+    free_omega_qlift eq upper (front t).
+Proof.
+  intro Htu. eapply finite_internal_execution_hitting_upper with
+    (project_state := @fst tree tree)
+    (D := fun p => candidate (fst p) (snd p)) (cut := left_cut).
+  - exact Hfront.
+  - intros [x y] Hxy. eapply free_omega_ae_mono;
+      [|exact (proj2 (proj2 (Hkernel x y Hxy)))].
+    intros [heads|trees] Hgood; cbn; [exact I|exact Hgood].
+  - intros [x y] Hxy. exact (left_cut_valid Hxy).
+  - intros [x y] Hxy. exact (proj1 (Hkernel x y Hxy)).
+  - exact Htu.
+Qed.
+
 Example correlated_round_complete_coupling kernel
     (Hkernel : round_spec kernel) t u : candidate t u ->
   exists out, @stable_hitting MF FI FreeOmegaObservableSemanticOmega
@@ -160,5 +187,34 @@ Proof.
     SubEnum_SemanticOmega bool bool eq residual_retry_pairs kernel
     (fun x y Hxy => proj2 (proj2 (Hkernel x y Hxy)))
     residual_retry_left residual_retry_right out ResidualRetryLoop Hout)).
+Qed.
+
+(** The upper bound also covers the purely internal retry loop; it does
+    not require reaching a visible observation after each round. *)
+Example retry_left_hitting_upper kernel (Hkernel : round_spec kernel)
+    (front : tree -> MF (stable_head residualE SubEnum bool))
+    (Hfront : forall t, @ptree_stable_hitting residualE SubEnum MF FI
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
+      (observe t) (front t)) :
+  exists upper,
+    free_omega_approx eq
+      (free_omega_bind
+        (FOLub (fun n => @stable_hitting_approx MF FI
+          FreeOmegaObservableSemanticOmega Pair Heads kernel n
+          (residual_retry_left, residual_retry_right)))
+        (fun h => FORet (fst h))) upper /\
+    free_omega_qlift eq upper (front residual_retry_left).
+Proof.
+  eapply finite_internal_execution_hitting_upper with
+    (project_state := @fst tree tree)
+    (D := fun p => residual_retry_pairs (fst p) (snd p))
+    (cut := fun p => residual_retry_cut1 (fst p)).
+  - exact Hfront.
+  - intros [x y] Hxy. eapply free_omega_ae_mono;
+      [|exact (proj2 (proj2 (Hkernel x y Hxy)))].
+    intros [heads|trees] Hgood; cbn; [exact I|exact Hgood].
+  - intros [x y] _. apply residual_retry_cut1_valid.
+  - intros [x y] Hxy. exact (proj1 (Hkernel x y Hxy)).
+  - constructor.
 Qed.
 End InternalRetryRounds.

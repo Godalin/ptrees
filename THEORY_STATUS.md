@@ -915,12 +915,42 @@ obligations do not.
 The correlated example also checks the completion equation for each of the
 two original marginals; neither proof substitutes an independent policy.
 
-These paired-round theorems are **not** correlated acceleration adequacy:
-their projected limits have not yet been identified with the original
-trees' complete primitive hitting.  In particular, support preservation is
-not promoted to probability preservation across infinitely many cuts.  That
-identification and unrestricted residual realizability remain necessary for
-the residual GFP soundness theorem.
+`Eq/FreeOmega/KernelCompletion.v` proves the upper-bound direction of
+infinite execution using completion of finite prefixes:
+
+- `kernel_completion_eq` propagates a one-round completion equation to
+  every finite number of rounds, on an AE-closed domain of states.
+- `kernel_hitting_approx_below_completion` gives a **raw** approximation
+  bound from actual truncated hitting to the corresponding completed
+  prefix.  Unresolved mass is zero on the former side.
+- `kernel_hitting_limit_upper` constructs an explicit `upper` with raw
+  approximation from the complete projected hitting to `upper`, and an
+  equality coupling from `upper` to the proposed full behavior.  It does
+  not transport the raw order across that equality.  Its formal completion
+  limit is related to a constant chain by pointwise equality; no claim of
+  raw monotonicity, or use of cofinality, is made for that completion chain.
+- `FiniteInternalJointHitting.v::finite_internal_execution_hitting_upper`
+  discharges the completion equation using **valid finite cuts** and the
+  actual graph marginal of a realized round.  States may contain both
+  trees or richer history: cuts need not factor through the projected tree.
+  The correlated-cut and internal-retry regressions both instantiate this
+  complete-hitting upper bound against their original tree semantics.
+
+`Examples/KernelCompletion.v` guards against mistaking this upper half for
+adequacy: a pure internal self-loop admits a returning tail that satisfies
+the completion equation, and has an upper bound of the above form, but its
+actual hitting is zero and is **not** equality-coupled to that returning
+tail.  A fixed-point equation alone does not identify the least solution.
+A second regression exhibits a two-stage terminating kernel with a valid
+completion equation but a non-raw-increasing completion sequence, ruling out
+the shortcut of applying monotone cofinality to such sequences without proof.
+
+These paired-round results are still **not full** correlated acceleration
+adequacy.  The reverse coverage argument must use actual progress through
+primitive steps in each valid cut-and-guard round.  The projected limits
+have not yet been proved equal to the original trees' complete hitting.
+That identification and unrestricted residual realizability remain
+necessary for the residual GFP soundness theorem.
 
 `Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
 before divergence, Prob branch compression, and the negative core regression
