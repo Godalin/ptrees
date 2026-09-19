@@ -5,7 +5,8 @@ Set Universe Polymorphism.
 From Coq Require Import Arith.PeanoNat Lia Logic.ClassicalChoice
   FunctionalExtensionality Program.Equality.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
+From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure
+  SemanticCoupling FreeOmegaCoupling.
 From PTree.Eq Require Import
   FiniteInternal UnifiedFrontier PrimitiveStableHitting PTreeKernel
   PFiniteResidual PEutt.
@@ -272,6 +273,32 @@ Proof.
   { intro t. apply finite_internal_approximation_exists. apply Hcut. }
   destruct (choice _ Hex) as [trunc Htrunc]. intro t.
   exact (finite_internal_acceleration_limit Htrunc t).
+Qed.
+
+(** The complete acceleration equality also has an explicit joint witness.
+    Unlike structural realization, this corollary accepts the quotient
+    equality proved above, including its diagonal/cofinal limit steps. *)
+Corollary finite_internal_acceleration_joint
+    {E MN : Type -> Type}
+    `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+    `{NO : @SemanticOmega MN NI}
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
+    {R : Type}
+    (cut : ptree E MN R -> FreeOmega MN (ptree E MN R))
+    (Hcut : forall t, @finite_internal E MN (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure R t (cut t)) t :
+  exists joint, @semantic_coupling (FreeOmega MN)
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    (stable_head E MN R) (stable_head E MN R) eq
+    (FOLub (fun n => finite_internal_rounds cut n t))
+    (FOLub (fun n => @ptree_hitting_approx E MN (FreeOmega MN)
+      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R n (observe t))) joint.
+Proof.
+  eexists. apply free_omega_qlift_eq_realization.
+  exact (finite_internal_acceleration Hcut t).
 Qed.
 
 Section PolicyCoinduction.

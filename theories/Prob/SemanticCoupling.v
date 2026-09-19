@@ -21,6 +21,27 @@ Definition semantic_coupling {A B} (R : A -> B -> Prop)
 Context `{MC : @SemanticMeasureCoreLaws M MI}
   `{MCAE : @SemanticMeasureCouplingAELaws M MI}.
 
+(** Change marginal representations without selecting a new joint.  This
+    uses equality lifting, not representation equality or equality
+    reflection; it therefore also applies to quotient-level rewrites. *)
+Lemma semantic_coupling_transport {A B} (R : A -> B -> Prop)
+    (mu mu' : M A) (nu nu' : M B) joint :
+  sem_lift eq mu mu' -> sem_lift eq nu nu' ->
+  semantic_coupling R mu nu joint -> semantic_coupling R mu' nu' joint.
+Proof.
+  intros Hmu Hnu [Hl [Hr Hae]]. split.
+  - eapply sem_lift_mono with
+      (R := fun p x => exists z, fst p = z /\ z = x).
+    + intros p x [z [Hp ->]]. exact Hp.
+    + eapply sem_lift_comp; eassumption.
+  - split.
+    + eapply sem_lift_mono with
+        (R := fun p y => exists z, snd p = z /\ z = y).
+      * intros p y [z [Hp ->]]. exact Hp.
+      * eapply sem_lift_comp; eassumption.
+    + exact Hae.
+Qed.
+
 Lemma semantic_coupling_left_supported {A B} (R : A -> B -> Prop)
     (mu : M A) (nu : M B) joint :
   semantic_coupling R mu nu joint ->
