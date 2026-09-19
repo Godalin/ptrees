@@ -42,6 +42,27 @@ for every inhabitant.  Raw Enum deliberately lacks only the last package.
 
 ## Backend capability profiles
 
+### FreeOmega limit-rule safety
+
+The FreeOmega quotient lifting requires increasing chains when using
+cofinality (`FOQLCofinal`), source/kernel diagonalization (`FOQLBindLub`),
+and integration of pointwise limits (`FOQLSampleLub`).  Cofinality alone
+does not identify limits of arbitrary sequences; support preservation alone
+does not justify exchanging a limit with a changing kernel.  The instances
+now pass the monotonicity premises already present in their capability
+interfaces rather than discarding them.  Primitive hitting, bind/interp
+diagonals, iteration grids, and sampler schedules discharge these premises
+from their existing order theory.
+
+`Examples/FreeOmegaLimitSafety.v` records the rejected decreasing-mass and
+moving-diagonal inputs.  The former uses a valid mass-one coin and compares
+mass one with mass two thirds, so this is not a raw-weight validity issue.
+These tests repair the identified rule-boundary vulnerabilities; they are
+**not** a claim of a complete mass-preserving denotational soundness theorem
+for every FreeOmega quotient constructor.  That stronger theorem remains
+unproved.  The unrestricted residual `pfinite` soundness result below also
+remains open; unary-policy acceleration is not silently generalized to it.
+
 `Examples/BackendCapabilities.v` is the compile-time audit of the bounded
 finite profile, the raw weighted compatibility profile, and the MathComp
 profile:
