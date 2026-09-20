@@ -5,7 +5,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureEnum
   TwoLevelMeasureSubEnum DiscreteMC SemanticCoupling SemanticCouplingEnum
   FreeOmegaMeasure FreeOmegaCouplingEnum.
-From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PFinite PTreeKernel PEutt.
+From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PStrong PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint FiniteInternalJointHitting
   FiniteInternalJointCoverage FiniteInternalJointAcceleration FiniteInternalJointCoinduction.
 From PTree.Examples Require Import PairedFiniteCompression ResidualFinite.

@@ -6,7 +6,7 @@ From Coq Require Import Logic.ClassicalChoice.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure
   FreeOmegaCoupling.
-From PTree.Eq Require Import PStrong PFinite UnifiedFrontier
+From PTree.Eq Require Import PStrong UnifiedFrontier
   PrimitiveStableHitting.
 
 Set Implicit Arguments.
@@ -71,7 +71,7 @@ Hypothesis node_realizes : forall {X Y} (S : X -> Y -> Prop)
     Realization of arbitrary residual quotient couplings is a separate
     obligation; it is not hidden in this statement. *)
 Theorem finite_internal_guard_structural_joint_exists t u :
-  pfinite_guard RR sim t u ->
+  (fun t u => pstrongF RR sim (observe t) (observe u)) t u ->
   exists joint : MF (stable_target Pair Heads),
     free_omega_lift (fun z x => finite_internal_pair_left z = x)
       joint (finite_internal_guard_transition t) /\
@@ -79,7 +79,7 @@ Theorem finite_internal_guard_structural_joint_exists t u :
       joint (finite_internal_guard_transition u) /\
     free_omega_ae (finite_internal_pair_invariant RR sim) joint.
 Proof.
-  intro Hguard. unfold pfinite_guard, finite_internal_guard_transition in *.
+  intro Hguard. unfold finite_internal_guard_transition in *.
   remember (observe t) as ot in Hguard |- *.
   remember (observe u) as ou in Hguard |- *.
   destruct Hguard.
@@ -108,7 +108,7 @@ Proof.
 Qed.
 
 Corollary finite_internal_guard_joint_exists t u :
-  pfinite_guard RR sim t u ->
+  (fun t u => pstrongF RR sim (observe t) (observe u)) t u ->
   exists joint : MF (stable_target Pair Heads),
     free_omega_qlift (fun z x => finite_internal_pair_left z = x)
       joint (finite_internal_guard_transition t) /\
@@ -140,12 +140,12 @@ Hypothesis node_realizes : forall {X Y} (S : X -> Y -> Prop)
 Variable cut1 : Pair -> MF (ptree E MN A).
 Variable cut2 : Pair -> MF (ptree E MN B).
 Hypothesis cuts_structural : forall t u, sim t u ->
-  free_omega_lift (pfinite_guard RR sim) (cut1 (t,u)) (cut2 (t,u)).
+  free_omega_lift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 (t,u)) (cut2 (t,u)).
 
 (** A proved source of STRUCTURAL graph marginals for the coverage theorem.
     Unlike the general quotient constructor below, this needs no residual
     realization premise: its stronger cut coupling supplies that witness.
-    It does not redefine pfinite or claim every quotient cut is structural. *)
+    It does not claim that every quotient cut is structurally coupled. *)
 Theorem finite_internal_structural_paired_kernel_exists :
   exists kernel : Pair -> MF (stable_target Pair Heads),
     forall t u, sim t u ->
@@ -159,7 +159,7 @@ Theorem finite_internal_structural_paired_kernel_exists :
 Proof.
   assert (Hcuts : forall p : Pair, exists joint : MF Pair,
     sim (fst p) (snd p) ->
-      @semantic_coupling MF SI _ _ (pfinite_guard RR sim)
+      @semantic_coupling MF SI _ _ (fun t u => pstrongF RR sim (observe t) (observe u))
         (cut1 p) (cut2 p) joint).
   { intros [t u]. destruct (classic (sim t u)) as [Hsim|Hnot].
     - destruct (free_omega_lift_structural_realization
@@ -168,13 +168,13 @@ Proof.
     - exists FOZero. intro Hsim. contradiction. }
   destruct (choice _ Hcuts) as [cut_joint Hcut_joint].
   assert (Hex : forall p : Pair, exists step : MF (stable_target Pair Heads),
-    pfinite_guard RR sim (fst p) (snd p) ->
+    (fun t u => pstrongF RR sim (observe t) (observe u)) (fst p) (snd p) ->
       free_omega_lift (fun z x => finite_internal_pair_left z = x)
         step (finite_internal_guard_transition (fst p)) /\
       free_omega_lift (fun z y => finite_internal_pair_right z = y)
         step (finite_internal_guard_transition (snd p)) /\
       free_omega_ae (finite_internal_pair_invariant RR sim) step).
-  { intros [t u]. destruct (classic (pfinite_guard RR sim t u)) as [Hguard|Hnot].
+  { intros [t u]. destruct (classic ((fun t u => pstrongF RR sim (observe t) (observe u)) t u)) as [Hguard|Hnot].
     - destruct (finite_internal_guard_structural_joint_exists (@node_realizes) Hguard)
         as [step Hstep]. exists step. intros _. exact Hstep.
     - exists FOZero. intro Hguard. contradiction. }
@@ -212,7 +212,7 @@ Hypothesis node_realizes : forall {X Y} (S : X -> Y -> Prop)
 Variable cut1 : Pair -> MF (ptree E MN A).
 Variable cut2 : Pair -> MF (ptree E MN B).
 Hypothesis cuts_realized : forall t u, sim t u ->
-  exists joint, @semantic_coupling MF FI _ _ (pfinite_guard RR sim)
+  exists joint, @semantic_coupling MF FI _ _ (fun t u => pstrongF RR sim (observe t) (observe u))
     (cut1 (t,u)) (cut2 (t,u)) joint.
 
 (** The two cut functions and their coupling depend on the PAIR.  No
@@ -233,7 +233,7 @@ Theorem finite_internal_paired_kernel_exists :
 Proof.
   assert (Hcuts : forall p : Pair, exists joint : MF Pair,
     sim (fst p) (snd p) ->
-      @semantic_coupling MF FI _ _ (pfinite_guard RR sim)
+      @semantic_coupling MF FI _ _ (fun t u => pstrongF RR sim (observe t) (observe u))
         (cut1 p) (cut2 p) joint).
   { intros [t u]. destruct (classic (sim t u)) as [Hsim|Hnot].
     - destruct (cuts_realized Hsim) as [joint Hjoint].
@@ -241,13 +241,13 @@ Proof.
     - exists FOZero. intro Hsim. contradiction. }
   destruct (choice _ Hcuts) as [cut_joint Hcut_joint].
   assert (Hex : forall p : Pair, exists step : MF (stable_target Pair Heads),
-    pfinite_guard RR sim (fst p) (snd p) ->
+    (fun t u => pstrongF RR sim (observe t) (observe u)) (fst p) (snd p) ->
       free_omega_qlift (fun z x => finite_internal_pair_left z = x)
         step (finite_internal_guard_transition (fst p)) /\
       free_omega_qlift (fun z y => finite_internal_pair_right z = y)
         step (finite_internal_guard_transition (snd p)) /\
       free_omega_ae (finite_internal_pair_invariant RR sim) step).
-  { intros [t u]. destruct (classic (pfinite_guard RR sim t u)) as [Hguard|Hnot].
+  { intros [t u]. destruct (classic ((fun t u => pstrongF RR sim (observe t) (observe u)) t u)) as [Hguard|Hnot].
     - destruct (finite_internal_guard_joint_exists (@node_realizes) Hguard)
         as [step Hstep]. exists step. intros _. exact Hstep.
     - exists FOZero. intro Hguard. contradiction. }

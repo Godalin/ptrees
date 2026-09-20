@@ -59,6 +59,7 @@ Notation stable_hitting_ret := PEutt.stable_hitting_ret.
 Notation stable_hitting_vis := PEutt.stable_hitting_vis.
 Notation stable_hitting_tau_iff := PEutt.stable_hitting_tau_iff.
 Notation stable_hitting_tau := StableHittingComputation.stable_hitting_tau.
+Notation stable_hitting_tau_iter := StableHittingComputation.stable_hitting_tau_iter.
 Notation stable_hitting_prob := PEutt.stable_hitting_prob.
 Notation stable_hitting_bind := PEutt.stable_hitting_bind.
 Notation stable_hitting_ret_iff := StableHittingComputation.stable_hitting_ret_iff.

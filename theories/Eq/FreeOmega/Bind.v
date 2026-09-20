@@ -9,7 +9,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  PTreeKernel PEutt PStruct PStrong PFinite.
+  PTreeKernel PEutt PStruct PStrong.
 From PTree.Eq.FreeOmega Require Import Base Relation.
 
 Set Implicit Arguments.

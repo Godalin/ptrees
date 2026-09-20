@@ -100,32 +100,6 @@ Import Enum RatSubTypes GRing.Theory.
 
 (** A concrete nondegenerate sample discharges the TOTAL-MASS premise.
     Support alone would not justify forgetting a subprobability sample. *)
-Lemma hidden_fair_same_mass :
-  @sem_same_mass SubEnum SubEnum_SemanticMeasure bool bool
-    subenum_fair (subenum_ret false).
-Proof.
-  assert (Hret : @sem_eq SubEnum SubEnum_SemanticMeasure bool
-    (subenum_bind subenum_fair subenum_ret) subenum_fair).
-  { change (enum_meas_eq (bind_Enum reg_fair ret_Enum) reg_fair).
-    apply enum_meas_eq_of_eqenum.
-    intro b. destruct b; rewrite /reg_fair /bind_Enum /ret_Enum /acc_mass /=.
-    all: apply val_inj; cbn; ring_to_rat; reflexivity. }
-  assert (Hbind : @sem_lift SubEnum SubEnum_SemanticMeasure bool bool (fun _ _ => True)
-    (subenum_bind subenum_fair subenum_ret)
-    (subenum_bind subenum_fair (fun _ => subenum_ret false))).
-  { eapply (@sem_lift_bind SubEnum SubEnum_SemanticMeasure
-      SubEnum_SemanticMeasureBindLaws bool bool bool bool eq
-      (fun _ _ => True) subenum_fair subenum_fair subenum_ret
-      (fun _ => subenum_ret false)).
-    - apply sem_lift_refl. intro b. reflexivity.
-    - intros x y _. apply (@sem_lift_ret SubEnum SubEnum_SemanticMeasure
-        SubEnum_SemanticMeasureCoreLaws). exact I. }
-  eapply sem_lift_mono with (R := fun x z => exists y, True /\ y = z).
-  - intros x z _. exact I.
-  - eapply sem_lift_comp; [|exact fair_discard_node].
-    eapply sem_lift_proper_l; [exact Hret|exact Hbind].
-Qed.
-
 Example fair_hidden_state_preserves_hitting {S O}
     (base : S -> FreeOmega SubEnum (stable_target S O)) s b out1 out2 :
   @stable_hitting (FreeOmega SubEnum)
@@ -140,7 +114,7 @@ Example fair_hidden_state_preserves_hitting {S O}
   free_omega_qlift eq out1 out2.
 Proof.
   apply random_state_complete_hitting with (point := false).
-  - exact hidden_fair_same_mass.
+  - exact fair_discard_same_mass.
   - intro P. apply (@sem_ae_ret_iff SubEnum SubEnum_SemanticMeasure
       SubEnum_SemanticMeasureDiracAELaws).
 Qed.
@@ -178,7 +152,7 @@ Proof.
     + apply (@sem_ae_true MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
   - intros p _. exact (@random_state_kernel_marginal SubEnum SubEnum_SemanticMeasure
       SubEnum_SemanticMeasureCoreLaws SubEnum_SemanticOmega bool bool tree head
-      subenum_fair false hidden_fair_same_mass
+      subenum_fair false fair_discard_same_mass
       (fun P => @sem_ae_ret_iff SubEnum SubEnum_SemanticMeasure
         SubEnum_SemanticMeasureDiracAELaws bool false P)
       (finite_internal_round_kernel policy) p).

@@ -34,6 +34,7 @@ Local Notation facade_stable_hitting_unique := stable_hitting_unique.
 Local Notation facade_stable_hitting_ret_iff := stable_hitting_ret_iff.
 Local Notation facade_stable_hitting_vis_iff := stable_hitting_vis_iff.
 Local Notation facade_stable_hitting_tau_iff := stable_hitting_tau_iff.
+Local Notation facade_stable_hitting_tau_iter := stable_hitting_tau_iter.
 Local Notation facade_stable_hitting_prob_decompose := stable_hitting_prob_decompose.
 Local Notation facade_stable_hitting_prob_compute := stable_hitting_prob_compute.
 Local Notation facade_stable_hitting_prob_dirac := stable_hitting_prob_dirac.

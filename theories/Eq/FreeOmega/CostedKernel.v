@@ -12,7 +12,7 @@ Unset Printing Implicit Defensive.
 (** A native kernel whose paths carry finite, nonuniform internal costs.
     The state may contain a correlated pair and its history.  No cost bound,
     totality, AST, or restriction to a unary compression policy is imposed.
-    Both indices below are observation budgets, not parameters of pfinite. *)
+    Both indices below are observation budgets, not program-equivalence indices. *)
 Section CostedKernel.
 Context {MN : Type -> Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}

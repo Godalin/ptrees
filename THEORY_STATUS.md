@@ -21,26 +21,27 @@ PTree syntax
 `Eq/ProbabilisticSemantics.v` is the generic public facade for this graph.
 It exposes curated notation and endpoint laws without transitively exporting
 the proof-oriented implementation modules.  The current source tree contains
-the canonical public relation and backend module names; the internal
-`pfinite` removal is in progress as recorded below.
+the canonical public relation and backend module names.  The independent
+`pfinite` relation and its dedicated promotion/recovery modules have been removed.
 
-### Internal-computation API migration (in progress)
+### Internal-computation API
 
-The independent `pfinite` relation is being retired, not renamed.  Finite
+The independent `pfinite` relation has been removed, not renamed.  Finite
 internal rewrites belong to stable-hitting computation and probability
 algebra, followed by the existing canonical `peutt` interface.
 
 Completed:
 
 - `Eq/StableHittingComputation.v`: exact Ret/Vis characterizations,
-  tree-facing Tau rewriting, complete Prob decomposition and AE computation,
+  tree-facing Tau/prefix rewriting, complete Prob decomposition and AE computation,
   Dirac/flatten output coupling, and `peutt_iff_hitting`.
 - `Eq/FreeOmega/Hitting.v`: equality-coupled output transport and exact
   Prob decomposition, Dirac elimination, and flattening `iff` laws.
   Dirac-AE and exact bind-AE capabilities remain explicit where needed;
   no native coupling-realization capability is used.
-- `Examples/StableHittingComputation.v`: double Tau, Dirac, nested joint
-  distribution, flattening, and sampled visible-head regressions, generic
+- `Examples/StableHittingComputation.v`: double Tau, nonuniform branchwise
+  Tau depths, Dirac, nested joint distribution, flattening, and sampled
+  visible-head regressions, generic
   over qualifying native backends.
 - RandomWalk's structural normal form and `passage_unfold` now go directly
   to `peutt`; the intermediate finite theorem and explicit native recovery
@@ -56,26 +57,23 @@ context.  Prob decomposition uses classical choice; the concrete
 FreeOmega/RandomWalk proofs retain choice, function extensionality and
 Eqdep, with no newly introduced semantic axiom or native recovery premise.
 
-Remaining audit/deletion work:
+The source-level deletion is complete: no old relation, generator,
+equivalence closure, subrelation instance, compatibility alias, or import
+remains.  The only code mentions are negative facade checks rejecting the
+removed names.  Full post-deletion `opam exec -- dune build` passes; deleted
+modules are absent from the generated source/vo tree as well.
 
-- Remove `Eq/PFinite.v`, its conditional subrelation registrations and
-  `FreeOmega/FiniteInternalTransport.v` after migrating remaining clients.
-- Classify `FiniteInternal*` plan, joint, acceleration and costed-kernel
-  machinery by independent use.  Do not preserve the retired relation by
-  changing its name.  Retain genuinely useful computation/certificate laws
-  only if their remaining clients justify them.
-- Migrate behavioral examples (`ResidualJointCoinduction`,
-  `CorrelatedInternalRounds`, hierarchy rewriting tests); discard tests that
-  only verify the retired relation.  Preserve independent quotient safety,
-  native-coupling countermodels and scalar continuity results.
-- Complete source/documentation cleanup and full build/assumption audit.
+The unbounded AST regression remains `ptree_von_neumann_raw_ast` in
+`OperationalVonNeumann.v`; RandomWalk retains `random_walk_closed_form`.
+Both compile in the post-deletion build.  The retry-with-discarded-bits
+endpoint now depends on the existing classical choice, extensionality
+and Eqdep principles, not native reflection or a real-number model.
+The repeated-Tau computation lemma is closed under the global context.
 
 The generic base interface does not equate `sem_lift eq` with `sem_eq` or
 directly postulate output saturation of `sem_lub`.  The exact FreeOmega
-laws prove those needed transports from its existing quotient definition;
-no new class or semantic axiom has been added.  The source still contains
-the old internal development during migration; the historical description
-below is not the new public API.
+laws prove the needed transports from its existing quotient definition;
+no new class or semantic axiom has been added.
 
 The canonical measure capabilities follow the same operations/laws split:
 `SemanticMeasure`, `SemanticOmega`, and `MixedMeasure` contain structure,
@@ -777,66 +775,76 @@ The artifact support range is Coq `>= 8.20` and `< 9.0`, with CI explicitly
 installing Coq 8.20.1.  Coq 9 changes Stdlib load paths and requires a
 separate migration; it is not part of the current compatibility claim.
 
-## Retiring internal compression development (historical; removal pending)
+## Internal computation certificates and independent measure audits
 
-The former public definition remains temporarily in `Eq/PFinite.v` while
-its internal clients are migrated; the facade no longer exports it.
-The following paragraphs document that retiring implementation.  There is no parallel
-candidate relation, stable-hitting premise, fuel index, or omega interface
-in its definition.
+Finite internal computation is not a separate program equivalence.
+`Eq/PFinite.v`, `FreeOmega/FiniteInternalTransport.v`, and
+`FreeOmega/FiniteInternalRecoverySubEnum.v` have been deleted, together
+with the generator's native characterization, paired-choice wrapper,
+one-round soundness wrapper and dedicated closure tests.  Their previous
+implementation remains available in Git history before this migration.
 
-`finite_internal t out` is inductive.  FIStop returns the current residual
-tree, FITau consumes one silent node, and FIProb integrates the residual
-distributions of its branches.  A derivation is well-founded: every branch
-must finish its selected compression, but infinitely many branches may
-have no common finite depth bound.  The residual tree need not terminate,
-be stable, or be almost-surely terminating.
+### Why some certificate modules remain
 
-`pfinite_guard RR sim` matches the two observed residual constructors using
-`pstrongF RR sim`.  Only their continuations recurse.  The generator
-`pfiniteF RR sim` chooses two finite_internal derivations and couples their
-outputs with this guard.  Its greatest fixed point is `pfinite_rel RR`.
-The homogeneous `pfinite` is its finite reflexive-symmetric-transitive
-closure.  `pfinite_refl`, `pfinite_sym`, `pfinite_trans` and
-`pfinite_equivalence` are proved; no transitivity of the raw heterogeneous
-GFP is assumed.
+`finite_internal t out` is an inductive execution certificate from one
+tree to a distribution of residual trees.  It has no pair of programs, no
+greatest fixed point, and no Equivalence or behavioral hierarchy instance.
+FIStop stops at a residual, FITau consumes a silent node, and FIProb
+integrates branch certificates; branchwise well-foundedness need not
+supply a common finite depth bound.
 
-The structural inclusions are backend-generic.  `pfinite_rel_tau_prefix`
-and `pfinite_prob_tau_prefix` remove selected administrative Tau prefixes,
-including prefixes under a Prob node.  This is a finite-compression law,
-not a generic congruence axiom for arbitrary branchwise pfinite proofs.
-`ResidualFinite.v` checks nonuniform branch depths and rejects
-silent divergence versus return.
+The surviving modules have independent semantic clients:
 
-### Behavioral soundness and the capability boundary
+- `FiniteInternalHitting.v` proves that integrating complete hitting from
+  residuals preserves the original complete hitting.  Its up-to closure
+  is a proved compatible transformer for the **canonical hitting
+  generator**, not a second program relation.
+- `FreeOmega/FiniteInternalAcceleration.v` and the paired/costed
+  execution modules relate explicit computation schedules to primitive
+  hitting.  Their local matches are written directly with the existing
+  `pstrongF`.  Policies, joint/reference witnesses, or per-round plans
+  stay explicit in their respective theorems.
+- `HiddenRandomState.v` uses this hitting adequacy to remove freshly sampled
+  hidden state across indefinitely many rounds.
+- `CorrelatedInternalRounds.v` preserves complete marginal hitting for
+  genuinely partner-dependent strategies, and distinguishes quotient
+  equality from raw approximation coverage.
+- `FiniteInternalPlan.v`, native normalization and costed projection
+  support those computations, including dependent path types, MathComp
+  paths and subprobability bounds; they do not restore an auxiliary GFP.
 
-`Eq/FreeOmega/FiniteInternalTransport.v` proves the generic implications
+### Migrated program regressions
 
-~~~text
-sim ⊆ pfiniteF RR sim  ->  sim ⊆ peutt RR
-pfinite_rel RR         ⊆   peutt RR
-pfinite               ⊆   peutt eq
-~~~
+`ResidualFinite.v` now tests the complete-hitting comparison for unbounded
+retries with one versus two administrative Taus, plus an infinitely
+interactive service.  `ResidualTransport.v` retains the non-reflexive
+three-pair classification and derives its behavioral result directly.
+The obsolete finite-relation membership tests have been removed.
 
-The endpoints are `peutt_coinduction_residual`, `peutt_of_pfinite_rel`
-and `peutt_of_pfinite`.  They use the maintained core, Dirac-AE,
-bind-AE-exactness, coupling-AE and countable-AE capabilities, plus the
-explicit optional `FreeOmegaNativeCouplingLaws`.  This last capability
-realizes a quotient coupling of two native presentations as an actual
-joint on their original sample carriers.  It mentions neither trees,
-stable hitting nor behavioral equivalence, and also implies ordinary
-node-lifting realization via identity decoders.
+`ResidualJointCoinduction.v` selects a single computation policy per
+tree and uses its proved hitting adequacy.  It retains unbounded retry
+with a discarded bit on every failure, an arbitrary eventful success
+continuation, and an always-failing instance.  The proof no longer uses
+native coupling realization or an extra program fixed point.
 
-This extra capability is PROVED for SubEnum, by
-`SubEnum_FreeOmegaNativeCouplingLaws`; importing
-`FreeOmegaNativeCouplingSubEnum` makes the instance available.  The generic
-facade does not import concrete backend instances.  No instance is claimed for raw
-Enum or MathComp.  Consequently the NEW finite relation's behavioral
-inclusion is conditional for those backends.  This is an explicit change
-from the old finite-stable-prefix API, not an assertion that core measure
-laws alone now imply the stronger result.  The shared behavioral backend
-profile remains unchanged; this optional proof-relation capability is
-audited separately in `BackendCapabilities.v`.
+`ProbabilisticRelationHierarchy.v` tests structural/strong promotion,
+behavioral Tau rewriting under probability, bind and fmap, divergent
+continuations, and the generic stopping/barrier iteration law.
+`CouplingReferences.v` proves the discarded-coin program equivalence by
+computing its complete heads directly.
+
+`HittingDivergence.v` preserves the independently meaningful negative
+test: silent divergence cannot equal a returning program.  The old tests
+of up-to-equivalence for the removed generator were deleted rather than
+recreating that generator under a new name.
+
+### Independent native coupling and scalar facts
+
+`FreeOmegaNativeCouplingLaws` remains an optional **measure** capability;
+it mentions no trees or behavioral relation.  SubEnum's proved realization
+and its backend audit remain useful independent results.  It is not
+needed by RandomWalk's structural/behavioral rewrite or the migrated
+discarded-bit retry proof.  No such instance is claimed for MathComp.
 
 Ordinary native witness recovery is now proved for MathComp as
 `mathcomp_coupling_realization` in `SemanticCouplingMathComp.v`, without
@@ -849,32 +857,14 @@ This removes the native repackaging obligation, NOT the stronger
 quotient-to-native reflection obligation above; in particular it does not
 yet provide `FreeOmegaNativeCouplingLaws` for MathComp.
 
-For raw Enum, the remaining reflection proof cannot reuse SubEnum's
-unit-interval bounds: arbitrary intermediate weighted terms can have
-infinite upper mass.  The internal audit in
-`FreeOmegaUpperExpectationEnum.v`, `FreeOmegaUpperCouplingEnum.v`,
-`FreeOmegaUpperContinuityEnum.v`, and `FreeOmegaUpperObservationEnum.v`
-now interprets such terms in extended nonnegative reals.  It proves native
-coupling comparison, AE extensionality, monotone convergence (including
-AE-only monotonicity at sample nodes), and consistency of the complete
-`free_omega_observes` judgment, including its raw-increasing Lub rule.
-It reuses the existing rational-to-real finite-atomic limit lemmas rather
-than adding a measure-consistency axiom.  `ExtendedEnum.v` checks mass two,
-zero times infinity, null-entry continuity, and a raw-increasing chain with
-upper mass +infinity that admits no finite native observation.
-Preservation by ALL quotient-coupling constructors is still to be proved;
-these scalar results alone do not yet justify an Enum instance of
-`FreeOmegaNativeCouplingLaws` or unconditional Enum `pfinite` soundness.
-The evaluator is a proof-internal upper functional, not a new public
-probability API or a claim that arbitrary formal Lub syntax is additive.
 
-The soundness proof does not assume equivalence of the recursive candidate,
-AST, total mass, a uniform fuel bound, a chosen joint from each client, or
-that the candidate is already behaviorally sound.  It extracts a native
-joint for each compression pair, extends it through the strong guard, and
-uses the library's correlated, separately costed recurring-process theorem
-`peutt_coinduction_joint_rows`.  Finite equational chaining is handled by
-ordinary induction AFTER raw-GFP soundness, not by an up-to-equivalence rule.
+The extended-real raw Enum modules retain native coupling comparison,
+AE extensionality, monotone convergence and observation consistency for
+arbitrary nonnegative finite weights.  `ExtendedEnum.v` checks mass two,
+zero times infinity, null-entry continuity and an increasing expression
+with infinite upper mass.  This is a proof-internal upper functional,
+not a new public probability backend or an additive interpretation of
+arbitrary non-increasing Lub syntax.
 
 ### Proved SubEnum realization
 
@@ -908,33 +898,15 @@ real dependencies `ClassicalDedekindReals.sig_not_dec` and
 `ClassicalDedekindReals.sig_forall_dec`.  No reflection, gluing or soundness
 axiom was added for SubEnum.
 
-### Regressions and rejected shortcuts
 
-`ResidualTransport.v` proves that its three-pair retry candidate is not
-reflexive, embeds it into the raw pfinite GFP by coinduction, and promotes
-that result to peutt.  It also checks heterogeneous result relations.
-`ResidualJointCoinduction.v` uses the generic rule for unbounded retry
-with discarded random bits, an eventful success continuation, and an
-always-failing instance.  `NativeRecovery.v` checks automatic round
-extraction even with the constantly false continuation candidate.
-
-`FiniteTransport.v` forces one source atom to split across two targets,
-checks zero mass and empty carriers, and rejects identity transport between
-unequal marginals with the same support.  Scalar-model regressions reject
-mass collapse and preserve the RandomWalk limit's mass.
-
-The negative audits remain important.  `ResidualClosureAudit.v` refutes
-`sim ⊆ pfiniteF (equivalence_closure sim)` as a sound general rule,
-including for reflexive/symmetric candidates: spin can then be falsely
-related to a return.  `NativeReflection.v` supplies a backend showing
-that quotient-to-native reflection does not follow from the generic core
-laws alone.  These are reasons to keep the new capability explicit, not
-counterexamples to the proved SubEnum theorem.
-
-The earlier policy-only, reference-coupling and equivalence-class coding
-lemmas remain internal proof infrastructure where independently useful.
-Obsolete public relation definitions and the superseded
-equivalence-only/concrete-only coinduction wrappers have been removed.
+`FiniteTransport.v` retains atom splitting, zero-mass/empty-carrier tests
+and rejection of equal-support but unequal-mass marginals.
+`NativeReflection.v` retains the countermodel showing that generic core
+and AE laws alone do not imply quotient-to-native reflection.
+`NativeRecovery.v` retains native joint and recovery tests; wrappers whose
+only purpose was extraction from the deleted generator were removed.
+The separate repaired-limit, escaping-mass and scalar consistency audits
+are unchanged.
 
 ## Infinite-state random walk
 
@@ -1004,9 +976,8 @@ finite relation, AST premise, or native coupling-realization requirement.
 The generic `peutt_prob_rewrite` remains useful for arbitrary local
 relations registered below peutt, including coupled different sample types.
 The hierarchy tests cover that contextual rule, bind/fmap promotion, and
-the stronger finite administrative Prob/Tau law with a divergent branch.
-No arbitrary eventful iter congruence or new general Prob congruence is
-asserted for pfinite.
+Tau transparency under Prob even with a divergent branch.
+No arbitrary eventful iter congruence is inferred from these local laws.
 The quantitative proof uses a bounded harmonic candidate instead of the
 proposal's scalar equation `m = p + q*m*m`: the former constructs the
 required limits directly without first requiring a real-valued mass for an

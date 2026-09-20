@@ -5,7 +5,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
 From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureSubEnum FreeOmegaMeasure FreeOmegaCoupling.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Eq Require Import FiniteInternal PFinite.
+From PTree.Eq Require Import FiniteInternal PStrong PEutt PrimitiveStableHitting UnifiedFrontier PTreeKernel.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint.
 From PTree.Examples Require Import EnumMeasureRegression SubEnumRegression
   CorrelatedSampleAlgebra.
@@ -25,6 +25,32 @@ Proof.
   apply enum_meas_eq_of_eqenum.
   intro b. destruct b; rewrite /reg_fair /bind_Enum /ret_Enum /acc_mass /=.
   all: apply val_inj; cbn; ring_to_rat; reflexivity.
+Qed.
+
+Lemma fair_discard_same_mass :
+  @sem_same_mass SubEnum SubEnum_SemanticMeasure bool bool
+    subenum_fair (subenum_ret false).
+Proof.
+  assert (Hret : @sem_eq SubEnum SubEnum_SemanticMeasure bool
+    (subenum_bind subenum_fair subenum_ret) subenum_fair).
+  { change (enum_meas_eq (bind_Enum reg_fair ret_Enum) reg_fair).
+    apply enum_meas_eq_of_eqenum.
+    intro b. destruct b; rewrite /reg_fair /bind_Enum /ret_Enum /acc_mass /=.
+    all: apply val_inj; cbn; ring_to_rat; reflexivity. }
+  assert (Hbind : @sem_lift SubEnum SubEnum_SemanticMeasure bool bool (fun _ _ => True)
+    (subenum_bind subenum_fair subenum_ret)
+    (subenum_bind subenum_fair (fun _ => subenum_ret false))).
+  { eapply (@sem_lift_bind SubEnum SubEnum_SemanticMeasure
+      SubEnum_SemanticMeasureBindLaws bool bool bool bool eq
+      (fun _ _ => True) subenum_fair subenum_fair subenum_ret
+      (fun _ => subenum_ret false)).
+    - apply sem_lift_refl. intro b. reflexivity.
+    - intros x y _. apply (@sem_lift_ret SubEnum SubEnum_SemanticMeasure
+        SubEnum_SemanticMeasureCoreLaws). exact I. }
+  eapply sem_lift_mono with (R := fun x z => exists y, True /\ y = z).
+  - intros x z _. exact I.
+  - eapply sem_lift_comp; [|exact fair_discard_node].
+    eapply sem_lift_proper_l; [exact Hret|exact Hbind].
 Qed.
 
 Definition reference_coin : MF bool := FOSample subenum_fair (fun b => FORet b).
@@ -52,7 +78,7 @@ Qed.
 
 (** No pair of structurally marginalized references realizes this valid
     quotient coupling.  This refutes the proposed general reference-
-    extraction shortcut, not the intended pfinite soundness theorem. *)
+    extraction shortcut, not behavioral equivalence. *)
 Example reference_coin_discard_has_no_references :
   ~ exists left right, free_omega_coupling_references (fun _ _ : bool => True)
     reference_coin (FORet false) left right.
@@ -101,13 +127,13 @@ Qed.
     intended pstrongF guard, not only on an arbitrary test relation.  Both
     programs terminate; the coin only decides whether to insert one more
     Tau.  Different cuts can still be useful: this theorem rules out a
-    universal extraction lemma for the GIVEN cuts, not pfinite soundness. *)
+    universal extraction lemma for the GIVEN cuts, not their hitting semantics. *)
 Local Notation tree := (ptree exchangeE SubEnum bool).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
-Local Notation residual := (@pfinite_rel exchangeE SubEnum MF
-  SubEnum_SemanticMeasure SubEnum_SemanticMeasureCoreLaws FI
-  FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure bool bool eq).
+Local Notation residual := (@peutt exchangeE SubEnum MF FI
+  FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+  FreeOmegaObservableSemanticOmega bool bool eq).
 
 Definition discarded_coin_delay (b : bool) : tree :=
   if b then Tau (Tau (Ret false)) else Tau (Ret false).
@@ -135,15 +161,15 @@ Proof.
 Qed.
 
 Lemma discarded_coin_guard b :
-  pfinite_guard eq residual (discarded_coin_delay b) (discarded_coin_delay false).
+  (fun t u => pstrongF eq residual (observe t) (observe u)) (discarded_coin_delay b) (discarded_coin_delay false).
 Proof.
-  unfold pfinite_guard, discarded_coin_delay. destruct b; cbn; constructor.
-  - exact (pfinite_rel_tau_prefix 1 (Ret false : tree)).
-  - apply pfinite_rel_refl.
+  unfold discarded_coin_delay. destruct b; cbn; constructor.
+  - apply peutt_tau_l.
+  - apply peutt_refl.
 Qed.
 
 Lemma discarded_coin_residual_lift :
-  free_omega_qlift (pfinite_guard eq residual)
+  free_omega_qlift (fun t u => pstrongF eq residual (observe t) (observe u))
     discarded_coin_cut (FORet (discarded_coin_delay false)).
 Proof.
   eapply FOQLObserve with
@@ -182,18 +208,39 @@ Proof.
       split; [apply discarded_coin_guard|assumption].
 Qed.
 
-Example discarded_coin_is_residual_finite :
+(** Compute the complete heads directly; the sampled bit is discarded,
+    while both administrative delays disappear by Tau transparency. *)
+Example discarded_coin_delay_peutt :
   residual (Prob subenum_fair discarded_coin_delay) (discarded_coin_delay false).
 Proof.
-  apply pfinite_rel_fold. eapply PFiniteStep.
-  - apply (@FIProb exchangeE SubEnum MF FI FreeOmegaMixedMeasure bool).
-    intro b. apply (@FIStop exchangeE SubEnum MF FI FreeOmegaMixedMeasure bool).
-  - apply (@FIStop exchangeE SubEnum MF FI FreeOmegaMixedMeasure bool).
-  - exact discarded_coin_residual_lift.
+  eapply (peutt_of_hitting_lift (FI := FI)
+    (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)) with
+    (out1 := FOSample subenum_fair (fun _ => FORet (FHRet false)))
+    (out2 := FORet (FHRet false)).
+  - eapply (stable_hitting_prob (FI := FI)
+      (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))
+      with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros [] _; unfold discarded_coin_delay.
+      * apply (proj2 (stable_hitting_tau_iff _ _)).
+        apply (proj2 (stable_hitting_tau_iff _ _)).
+        apply (stable_hitting_ret (FI := FI)
+          (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)).
+      * apply (proj2 (stable_hitting_tau_iff _ _)).
+        apply (stable_hitting_ret (FI := FI)
+          (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)).
+  - unfold discarded_coin_delay.
+    apply (proj2 (stable_hitting_tau_iff _ _)).
+    apply (stable_hitting_ret (FI := FI)
+      (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)).
+  - eapply free_omega_sample_to_constant with (point := false).
+    + intro P. apply sem_ae_ret_iff.
+    + exact fair_discard_same_mass.
+    + intro b. apply FOQLStructural, FOLRet. constructor. reflexivity.
 Qed.
 
 Example discarded_coin_cuts_have_no_references :
-  ~ exists left right, free_omega_coupling_references (pfinite_guard eq residual)
+  ~ exists left right, free_omega_coupling_references (fun t u => pstrongF eq residual (observe t) (observe u))
     discarded_coin_cut (FORet (discarded_coin_delay false)) left right.
 Proof.
   intros [left [right H]].

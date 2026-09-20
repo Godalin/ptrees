@@ -13,7 +13,7 @@ Unset Printing Implicit Defensive.
     has a more precise decomposition.  Paths longer than the observation
     budget contribute zero; other paths spend their ACTUAL length before
     continuing from the residual.  Fuel here is a semantic observation
-    budget, not a bound on plans or a parameter of pfinite. *)
+    budget, not a bound on plans or a program-equivalence index. *)
 Section PlanHitting.
 Context {E MN : Type -> Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}

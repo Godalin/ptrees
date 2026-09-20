@@ -5,7 +5,7 @@ From Coq Require Import Program.Equality Logic.ClassicalChoice.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure
   FreeOmegaCoupling.
-From PTree.Eq Require Import FiniteInternal PFinite PrimitiveStableHitting
+From PTree.Eq Require Import FiniteInternal PStrong PrimitiveStableHitting
   UnifiedFrontier PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint FiniteInternalJointAcceleration.
 
@@ -176,7 +176,7 @@ Variable cut1 : Pair -> MF (ptree E MN A).
 Variable cut2 : Pair -> MF (ptree E MN B).
 Variables left_joint right_joint : Pair -> MF Pair.
 Hypothesis cuts_references : forall t u, sim t u ->
-  free_omega_coupling_references (pfinite_guard RR sim)
+  free_omega_coupling_references (fun t u => pstrongF RR sim (observe t) (observe u))
     (cut1 (t,u)) (cut2 (t,u)) (left_joint (t,u)) (right_joint (t,u)).
 Hypothesis node_realizes : forall {X Y} (R : X -> Y -> Prop)
     (mu : MN X) (nu : MN Y), sem_lift R mu nu ->
@@ -195,13 +195,13 @@ Theorem finite_internal_reference_kernels_exists :
       free_omega_ae (finite_internal_pair_invariant RR sim) (left (t,u)).
 Proof.
   assert (Hex : forall p : Pair, exists step : MF (stable_target Pair Heads),
-    pfinite_guard RR sim (fst p) (snd p) ->
+    (fun t u => pstrongF RR sim (observe t) (observe u)) (fst p) (snd p) ->
       free_omega_lift (fun z x => finite_internal_pair_left z = x)
         step (finite_internal_guard_transition (fst p)) /\
       free_omega_lift (fun z y => finite_internal_pair_right z = y)
         step (finite_internal_guard_transition (snd p)) /\
       free_omega_ae (finite_internal_pair_invariant RR sim) step).
-  { intros [t u]. destruct (classic (pfinite_guard RR sim t u)) as [Hguard|Hnot].
+  { intros [t u]. destruct (classic ((fun t u => pstrongF RR sim (observe t) (observe u)) t u)) as [Hguard|Hnot].
     - destruct (finite_internal_guard_structural_joint_exists (@node_realizes) Hguard)
         as [step Hstep]. exists step. intros _. exact Hstep.
     - exists FOZero. intro Hguard. contradiction. }

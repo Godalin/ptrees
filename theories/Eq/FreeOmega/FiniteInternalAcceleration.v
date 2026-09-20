@@ -9,7 +9,7 @@ From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure
   SemanticCoupling FreeOmegaCoupling.
 From PTree.Eq Require Import
   FiniteInternal UnifiedFrontier PrimitiveStableHitting PTreeKernel
-  PFinite PEutt.
+  PStrong PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternal FiniteInternalJoint KernelContinuity.
 
 Set Implicit Arguments.
@@ -324,7 +324,7 @@ Hypothesis cut1_valid : forall t,
 Hypothesis cut2_valid : forall t,
   @finite_internal E MN MF FI FreeOmegaMixedMeasure B t (cut2 t).
 Hypothesis cuts_coupled : forall t1 t2, sim t1 t2 ->
-  free_omega_qlift (pfinite_guard RR sim) (cut1 t1) (cut2 t2).
+  free_omega_qlift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 t1) (cut2 t2).
 
 (** A sound guarded coinduction rule allowing internal progress forever,
     not merely between visible events.  The marginal policies are explicit:

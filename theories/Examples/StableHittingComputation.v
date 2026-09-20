@@ -43,6 +43,22 @@ Proof.
     (MX := FreeOmegaMixedMeasure)).
 Qed.
 
+(** Arbitrarily many branches may require different finite Tau depths.
+    The result uses branch limits, not a maximum depth or finite support. *)
+Example nonuniform_tau_depth_compute {R X}
+    (mu : MN X) (depth : X -> nat) (k : X -> ptree E MN R)
+    (front : X -> MF (stable_head E MN R)) :
+  (forall x, hits (k x) (front x)) ->
+  hits (Prob mu (fun x => Nat.iter (depth x) (fun u => Tau u) (k x)))
+    (FOSample mu front).
+Proof.
+  intro Hfront.
+  eapply (stable_hitting_prob (FI := FI) (FO := FO)
+    (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+  - apply sem_ae_true.
+  - intros x _. apply (proj2 (stable_hitting_tau_iter _ _ _)). apply Hfront.
+Qed.
+
 Example nested_joint_compute {X Y} (mu : MN X) (nu : X -> MN Y) :
   hits (Prob mu (fun x => Prob (nu x) (fun y => Ret (x,y))))
     (FOSample mu (fun x => FOSample (nu x) (fun y => FORet (FHRet (x,y))))).

@@ -61,7 +61,7 @@ Qed.
 
 (** Genuine extraction from a quotient coupling, under an explicit
     EQUIVALENCE hypothesis.  This does not assert realization for arbitrary
-    relations, nor replace the pfinite generator with an equivalence test. *)
+    relations; equivalence remains an explicit hypothesis of this lemma. *)
 Theorem subenum_equivalence_quotient_joint :
   free_omega_qlift R (free_omega_native p) (free_omega_native q) ->
   exists (Z : Type) (joint : SubEnum Z)

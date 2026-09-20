@@ -8,7 +8,7 @@ Require Import List Arith.PeanoNat FunctionalExtensionality Lia
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  PStruct PStrong PFinite PEutt PTreeKernel.
+  PStruct PStrong PEutt PTreeKernel.
 From PTree.Eq.FreeOmega Require Import Base.
 
 Set Implicit Arguments.
@@ -232,39 +232,3 @@ Proof.
 Qed.
 
 End FreeOmegaRelation.
-
-(** The finite relation has a different proof obligation from lockstep
-    structural relations: native quotient couplings must be realizable.
-    Keep that additional capability local to this proof-rewriting API. *)
-From PTree.Eq.FreeOmega Require Export FiniteInternalTransport.
-From PTree.Prob Require Import FreeOmegaNativeCoupling.
-
-Section FreeOmegaFiniteSubrelations.
-Context {E MN : Type -> Type}
-  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
-  `{NO : @SemanticOmega MN NI}
-  `{ND : @SemanticMeasureDiracAELaws MN NI}
-  `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
-  `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
-  `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
-  `{NJ : @FreeOmegaNativeCouplingLaws MN NI NO}.
-Local Notation MF := (FreeOmega MN).
-Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
-
-#[global] Instance pfinite_rel_peutt_subrelation {R} :
-  subrelation
-    (@pfinite_rel E MN MF NI NC FI FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure R R eq)
-    (@peutt E MN MF FI FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R R eq).
-Proof. intros t1 t2. apply peutt_of_pfinite_rel. Qed.
-
-#[global] Instance pfinite_peutt_subrelation {R} :
-  subrelation
-    (@pfinite E MN MF NI NC FI FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure R)
-    (@peutt E MN MF FI FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R R eq).
-Proof. intros t1 t2. apply peutt_of_pfinite. Qed.
-
-End FreeOmegaFiniteSubrelations.

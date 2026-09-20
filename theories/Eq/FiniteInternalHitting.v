@@ -8,7 +8,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import
   FiniteInternal UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt
-  PStrong PFinite.
+  PStrong.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -177,37 +177,5 @@ Proof.
 Qed.
 
 End FiniteInternalCoinduction.
-
-(** A single guarded round is sound when its recursive obligations are
-    already proved.  This pre-fixed-point fact alone does NOT establish
-    inclusion of the greatest fixed point [pfinite_rel]. *)
-Theorem pfinite_round_sound {A B} (RR : A -> B -> Prop)
-    (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  pfiniteF RR (@peutt E MN MF FI FC MX FO A B RR) t1 t2 ->
-  peutt RR t1 t2.
-Proof.
-  intro Hstep. destruct Hstep.
-  eapply peutt_of_finite_internal; [exact H|exact H0|].
-  eapply sem_lift_mono; [|exact H1].
-  intros u1 u2 Hguard. unfold pfinite_guard in Hguard.
-  change (peutt_state RR (observe u1) (observe u2)).
-  remember (observe u1) as o1 in Hguard |- *.
-  remember (observe u2) as o2 in Hguard |- *.
-  destruct Hguard as [r1 r2 Hret|v1 v2 Hv|X e k1 k2 Hk|X Y mu nu k1 k2 Hk].
-  - apply peutt_ret. exact Hret.
-  - change (peutt RR (Tau v1) (Tau v2)).
-    apply peutt_fold. apply peutt_unfold in Hv.
-    destruct Hv as [Hforward Hbackward]. split; intros out Htau.
-    + apply (proj1 (stable_hitting_tau_iff v1 out)) in Htau.
-      destruct (Hforward out Htau) as [result2 [Hhit Hlift]].
-      exists result2. split; [|exact Hlift].
-      apply (proj2 (stable_hitting_tau_iff v2 result2)). exact Hhit.
-    + apply (proj1 (stable_hitting_tau_iff v2 out)) in Htau.
-      destruct (Hbackward out Htau) as [result1 [Hhit Hlift]].
-      exists result1. split; [|exact Hlift].
-      apply (proj2 (stable_hitting_tau_iff v1 result1)). exact Hhit.
-  - apply peutt_vis. exact Hk.
-  - eapply peutt_prob; [exact Hk|]. intros x y Hxy. exact Hxy.
-Qed.
 
 End FiniteInternalHitting.

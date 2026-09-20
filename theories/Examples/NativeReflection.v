@@ -4,7 +4,7 @@ From Coq Require Import Lia.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import FreeOmegaNative FreeOmegaRecovery.
-From PTree.Eq Require Import FiniteInternalPlan PFinite PStrong.
+From PTree.Eq Require Import FiniteInternalPlan PStrong.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Eq.FreeOmega Require Import FiniteInternalRound CostedKernel FiniteInternalCostedProjection
@@ -32,8 +32,8 @@ Theorem native_reflection_requires_left_unit {A B}
 Proof. apply reflect, free_omega_sample_bind_ret_l. Qed.
 End NecessaryLaw.
 
-(** Audit of a proposed proof route, NOT a counterexample to pfinite
-    soundness or to a maintained probability backend.
+(** Audit of a proposed native-coupling reflection principle, NOT a
+    counterexample to a maintained probability backend.
 
     Think of Some (n,x) as a Dirac with mass 2^(-n), and None as zero.
     The deliberately faulty bind loses another factor 1/2.  Core coupling,
@@ -222,33 +222,20 @@ Proof.
   - eapply sem_lift_comp; [apply sem_lift_sym; exact Hleft|exact Hright].
 Qed.
 
-(** This is an actual step of the proposed generator.  Thus the failed
-    extraction was not stronger merely because of unrelated endpoints. *)
+(** These actual finite plans also match under the existing strong
+    one-step constructor relation; their path-coupling obstruction remains. *)
 Theorem actual_plans_are_guard_coupled :
-  free_omega_qlift (pfinite_guard eq eq)
+  free_omega_qlift (fun t u => pstrongF eq eq (observe t) (observe u))
     (free_omega_native (internal_plan_native sampled_plan))
     (free_omega_native (internal_plan_native direct_plan)).
 Proof.
   eapply FOQLMono with (T := eq); [apply actual_plans_quotient_coupled|].
-  intros t u ->. unfold pfinite_guard.
+  intros t u ->. cbn beta.
   destruct (observe u).
   - constructor. reflexivity.
   - constructor. reflexivity.
   - constructor. intro x. reflexivity.
   - constructor. apply sem_lift_refl. intro x. reflexivity.
-Qed.
-
-Theorem actual_residual_step :
-  @pfiniteF Event M (FreeOmega M) Measure
-    (FreeOmegaObservableSemanticMeasure (NI := Measure) (NO := Omega))
-    FreeOmegaMixedMeasure
-    bool bool eq eq (Prob (ret tt) (fun _ => Ret true)) (Ret true).
-Proof.
-  eapply PFiniteStep.
-  - apply FiniteInternal.FIProb. intro x. apply FiniteInternal.FIStop.
-  - apply FiniteInternal.FIStop.
-  - apply (@FOQLSampleRetL M Measure Omega); [intro P; reflexivity|].
-    apply FOQLStructural, FOLRet. unfold pfinite_guard. constructor. reflexivity.
 Qed.
 
 (** Staying in the quotient avoids the refuted reflection step. *)
@@ -290,7 +277,7 @@ Defined.
     requirement rather than silently imposing node coupling. *)
 Theorem actual_plans_paths_quotient_coupled :
   free_omega_qlift
-    (fun x y => pfinite_guard eq eq
+    (fun x y => (fun t u => pstrongF eq eq (observe t) (observe u))
       (internal_plan_residual sampled_plan x) (internal_plan_residual direct_plan y))
     (FOSample (internal_plan_measure sampled_plan) (fun x => FORet x))
     (FOSample (internal_plan_measure direct_plan) (fun y => FORet y)).
@@ -338,8 +325,8 @@ Proof.
   - exact (@native_joints).
   - apply tagged_sample_graph. reflexivity.
   - apply tagged_sample_graph. reflexivity.
-  - change (pfinite_guard eq (fun _ _ => False) (Ret true : tree) (Ret true)).
-    unfold pfinite_guard. constructor. reflexivity.
+  - change ((fun t u => pstrongF eq (fun _ _ => False) (observe t) (observe u)) (Ret true : tree) (Ret true)).
+    cbn beta. constructor. reflexivity.
 Qed.
 
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := Measure) (NO := Omega)).

@@ -63,9 +63,11 @@ RandomWalk proves `passage_unfold` by structural unfolding followed by
 `peutt_prob` and Tau transparency, even when the residual continuations
 perform unbounded retries.  Bind and fmap reuse behavioral congruence.
 
-The former `pfinite` implementation is being removed: it is no longer
-exposed by the public facade, and RandomWalk no longer depends on it.
-Remaining internal clients and deletion work are tracked in `THEORY_STATUS.md`.
+The former `pfinite` relation and its dedicated promotion/recovery modules
+have been removed without compatibility aliases.  Internal execution
+certificates remain only as proof tools for stable-hitting computation
+and schedule adequacy; they do not define another program equivalence.
+`THEORY_STATUS.md` records the retained clients and capability boundaries.
 
 `frontier_certificate`, `pstruct`, and `pstrong` belong to
 mechanization infrastructure.  The first is a

@@ -8,8 +8,7 @@ From Coq Require Import Program.Equality.
 From PTree.Core Require Import PTreeDefinition PTreeEnum.
 From PTree.Prob Require Import
   DiscreteMC TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
-From PTree.Prob Require Import FreeOmegaNativeCouplingSubEnum.
-From PTree.Eq Require Import PStruct PStrong PFinite PEutt
+From PTree.Eq Require Import PStruct PStrong PEutt
   FreeOmega.
 
 Set Implicit Arguments.
@@ -19,31 +18,21 @@ Unset Printing Implicit Defensive.
 
 Variant hierarchyE : Type -> Type := .
 Local Notation MF := (FreeOmega SubEnum).
-Local Notation hierarchy_pfinite :=
-  (@pfinite hierarchyE SubEnum MF SubEnum_SemanticMeasure
-    SubEnum_SemanticMeasureCoreLaws
+Local Notation W :=
+  (@peutt hierarchyE SubEnum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasure bool).
+    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool bool eq).
 
-Lemma pfinite_equivalence_regression : Equivalence hierarchy_pfinite.
-Proof. exact pfinite_equivalence. Qed.
+Lemma behavioral_equivalence_regression : Equivalence W.
+Proof. exact peutt_equivalence. Qed.
 
-(** A finite weak step removes one Tau even when the remaining computation
-    has no stable observation.  Thus "finite" describes the compressed
-    prefix, not global termination. *)
+(** Tau transparency does not assert termination of the residual program. *)
 CoFixpoint hierarchy_spin : ptree hierarchyE SubEnum bool := Tau hierarchy_spin.
 
-Lemma pfinite_tau_before_divergence :
-  @pfinite hierarchyE SubEnum MF SubEnum_SemanticMeasure
-    SubEnum_SemanticMeasureCoreLaws
-    (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasure
-    bool (Tau hierarchy_spin) hierarchy_spin.
-Proof. apply pfinite_tau_l. Qed.
+Lemma tau_before_divergence : W (Tau hierarchy_spin) hierarchy_spin.
+Proof. apply peutt_tau_l. Qed.
 
 Lemma tau_ret_not_pstrong :
   ~ @pstrong hierarchyE SubEnum SubEnum_SemanticMeasure
@@ -100,120 +89,58 @@ Qed.
 
 End IterationStoppingRegressions.
 
-Lemma tau_ret_pfinite :
-  @pfinite hierarchyE SubEnum MF SubEnum_SemanticMeasure
-    SubEnum_SemanticMeasureCoreLaws
-    (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasure
-    bool (Tau (Ret true)) (Ret true).
-Proof. apply pfinite_tau_l. Qed.
 
-Lemma pfinite_promotes_to_peutt :
-  @peutt hierarchyE SubEnum MF
-    (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
-    bool bool eq (Tau (Ret true)) (Ret true).
-Proof. apply peutt_of_pfinite. exact tau_ret_pfinite. Qed.
+Lemma tau_ret_peutt : W (Tau (Ret true)) (Ret true).
+Proof. apply peutt_tau_l. Qed.
 
-(** Generic endpoint rewriting consumes the native [subrelation] instance;
-    it is not specialized to [pfinite]. *)
-Lemma pfinite_endpoint_rewrite (t : ptree hierarchyE SubEnum bool) :
-  @peutt hierarchyE SubEnum MF
-    (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
-    bool bool eq (Tau t) t.
-Proof.
-  eapply peutt_rewrite_l
-    with (R := @pfinite hierarchyE SubEnum MF SubEnum_SemanticMeasure
-      SubEnum_SemanticMeasureCoreLaws
-      (FreeOmegaObservableSemanticMeasure
-        (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
-      FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure
-      bool).
-  - apply pfinite_peutt_subrelation.
-  - apply pfinite_tau_l.
-  - apply peutt_refl.
-Qed.
-
-(** Local finite rewrites under probability have a behavioral conclusion;
-    no congruence or contextual closure is added to [pfinite]. *)
-Section FiniteContextualRewriting.
-Local Notation W :=
-  (@peutt hierarchyE SubEnum MF
-    (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool bool eq).
-
-Lemma pfinite_prob_context_rewrite {X} (mu : SubEnum X)
+(** The registered structural inclusion works under behavioral contexts. *)
+Lemma structural_prob_context_rewrite {X} (mu : SubEnum X)
     (k1 k2 : X -> ptree hierarchyE SubEnum bool)
-    (Hk : forall x, hierarchy_pfinite (k1 x) (k2 x)) :
+    (Hk : forall x, pstruct eq (k1 x) (k2 x)) :
   W (Prob mu k1) (Prob mu k2).
 Proof.
-  eapply (peutt_prob_rewrite (Hsub := pfinite_peutt_subrelation))
-    with (XR := eq).
+  eapply peutt_prob_rewrite with (S := pstruct eq) (XR := eq).
+  - intros t u Htu. apply peutt_of_pstruct, Htu.
   - apply sem_lift_refl. intro x. reflexivity.
   - intros x y ->. apply Hk.
 Qed.
 
-Lemma pfinite_prob_coupled_context_rewrite {X Y}
+Lemma strong_prob_coupled_context_rewrite {X Y}
     (XR : X -> Y -> Prop) (mu : SubEnum X) (nu : SubEnum Y)
     (k1 : X -> ptree hierarchyE SubEnum bool)
     (k2 : Y -> ptree hierarchyE SubEnum bool)
     (Hmu : sem_lift XR mu nu)
-    (Hk : forall x y, XR x y -> hierarchy_pfinite (k1 x) (k2 y)) :
+    (Hk : forall x y, XR x y -> pstrong eq (k1 x) (k2 y)) :
   W (Prob mu k1) (Prob nu k2).
 Proof.
-  eapply (peutt_prob_rewrite (Hsub := pfinite_peutt_subrelation));
-    [exact Hmu|exact Hk].
+  eapply peutt_prob_rewrite with (S := pstrong eq).
+  - intros t u Htu. apply peutt_of_pstrong, Htu.
+  - exact Hmu.
+  - exact Hk.
 Qed.
 
-(** Removing a local Tau does not require the continuation to terminate. *)
-Lemma pfinite_prob_divergent_branch (mu : SubEnum bool) :
+(** A local administrative rewrite is justified by hitting transparency,
+    even under a probability node with a divergent continuation. *)
+Lemma tau_prob_divergent_branch (mu : SubEnum bool) :
   W (Prob mu (fun b : bool => Tau (if b then Ret true else hierarchy_spin)))
     (Prob mu (fun b : bool => if b then Ret true else hierarchy_spin)).
 Proof.
-  apply pfinite_prob_context_rewrite. intro b. apply pfinite_tau_l.
+  eapply peutt_prob with (XR := eq).
+  - apply sem_lift_refl. intro b. reflexivity.
+  - intros b b' ->. apply peutt_tau_l.
 Qed.
 
-(** Existing behavioral Proper instances suffice for the other monadic
-    contexts: promote locally, then use their behavioral congruence. *)
-Lemma pfinite_bind_context_rewrite
-    (t1 t2 : ptree hierarchyE SubEnum bool)
-    (k1 k2 : bool -> ptree hierarchyE SubEnum bool)
-    (Ht : hierarchy_pfinite t1 t2)
-    (Hk : forall x, hierarchy_pfinite (k1 x) (k2 x)) :
-  W (PTree.bind t1 k1) (PTree.bind t2 k2).
+Lemma tau_bind_context_rewrite
+    (t : ptree hierarchyE SubEnum bool)
+    (k : bool -> ptree hierarchyE SubEnum bool) :
+  W (PTree.bind (Tau t) (fun x => Tau (k x))) (PTree.bind t k).
 Proof.
   apply peutt_bind_Proper.
-  - apply pfinite_peutt_subrelation. exact Ht.
-  - intro x. apply pfinite_peutt_subrelation. apply Hk.
+  - apply peutt_tau_l.
+  - intro x. apply peutt_tau_l.
 Qed.
 
-Lemma pfinite_fmap_context_rewrite (f : bool -> bool)
-    (t1 t2 : ptree hierarchyE SubEnum bool)
-    (Ht : hierarchy_pfinite t1 t2) :
-  W (PTree.fmap f t1) (PTree.fmap f t2).
-Proof.
-  apply peutt_fmap_Proper. apply pfinite_peutt_subrelation. exact Ht.
-Qed.
-
-End FiniteContextualRewriting.
-
-(** The particular administrative rewrite is itself finite: it is not
-    merely a behavioral contextual consequence.  Continuations may diverge. *)
-Lemma pfinite_prob_tau_inside (mu : SubEnum bool) :
-  hierarchy_pfinite
-    (Prob mu (fun b : bool => Tau (if b then Ret true else hierarchy_spin)))
-    (Prob mu (fun b : bool => if b then Ret true else hierarchy_spin)).
-Proof.
-  exact (pfinite_prob_tau_prefix mu (fun _ => 1)
-    (fun b : bool => if b then Ret true else hierarchy_spin)).
-Qed.
+Lemma tau_fmap_context_rewrite (f : bool -> bool)
+    (t : ptree hierarchyE SubEnum bool) :
+  W (PTree.fmap f (Tau t)) (PTree.fmap f t).
+Proof. apply peutt_fmap_Proper, peutt_tau_l. Qed.

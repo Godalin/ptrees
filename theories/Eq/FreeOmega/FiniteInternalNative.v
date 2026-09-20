@@ -1,7 +1,7 @@
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure FreeOmegaNative.
-From PTree.Eq Require Import FiniteInternal FiniteInternalPlan PFinite.
+From PTree.Eq Require Import FiniteInternal FiniteInternalPlan.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint.
 
 Set Implicit Arguments.
@@ -133,49 +133,3 @@ Proof.
   apply internal_plan_round_native_eq.
 Qed.
 End NativeCompression.
-
-(** Exact reduction of a candidate round to native SAMPLE PRESENTATIONS.
-    The coupling here remains the full FreeOmega quotient lifting.  Do not
-    replace it by a native path coupling without proving the required
-    pullback/inversion theorem: normalization alone does not give that. *)
-Section NativeCandidate.
-Context {E MN : Type -> Type}
-  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
-  `{NO : @SemanticOmega MN NI}
-  `{ND : @SemanticMeasureDiracAELaws MN NI}
-  `{NBAE : @SemanticMeasureBindAEExactLaws MN NI} {A B : Type}.
-Local Notation MF := (FreeOmega MN).
-Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
-Variable RR : A -> B -> Prop.
-Variable sim : ptree E MN A -> ptree E MN B -> Prop.
-
-Theorem pfinite_native_characterization t u :
-  @pfiniteF E MN MF NI FI FreeOmegaMixedMeasure A B RR sim t u <->
-  exists (p : @finite_internal_plan E MN A t) (q : @finite_internal_plan E MN B u),
-    free_omega_qlift (pfinite_guard RR sim)
-      (free_omega_native (internal_plan_native p))
-      (free_omega_native (internal_plan_native q)).
-Proof.
-  split.
-  - intros [t' u' out1 out2 Hcut1 Hcut2 Hlift].
-    destruct (finite_internal_native_plan Hcut1) as [p [_ Hp]].
-    destruct (finite_internal_native_plan Hcut2) as [q [_ Hq]].
-    exists p, q.
-    change (@sem_lift MF FI _ _ (pfinite_guard RR sim)
-      (free_omega_native (internal_plan_native p))
-      (free_omega_native (internal_plan_native q))).
-    eapply sem_lift_proper_l; [exact Hp|].
-    eapply sem_lift_proper_r; [exact Hq|exact Hlift].
-  - intros [p [q Hlift]].
-    eapply PFiniteStep.
-    + exact (@internal_plan_frontier_valid E MN A MF FI FreeOmegaMixedMeasure t p).
-    + exact (@internal_plan_frontier_valid E MN B MF FI FreeOmegaMixedMeasure u q).
-    + eapply (@sem_lift_proper_l MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
-      * apply (@sem_eq_sym MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
-        apply internal_plan_native_eq.
-      * eapply (@sem_lift_proper_r MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
-        -- apply (@sem_eq_sym MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
-           apply internal_plan_native_eq.
-        -- exact Hlift.
-Qed.
-End NativeCandidate.

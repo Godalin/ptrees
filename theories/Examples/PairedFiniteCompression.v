@@ -7,7 +7,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure DiscreteMC RatSubTypes SemanticCoupling FreeOmegaCouplingEnum.
 From PTree.Eq Require Import FiniteInternal FiniteInternalJoint
-  PFinite PStrong UnifiedFrontier PTreeKernel.
+  PStrong UnifiedFrontier PTreeKernel.
 From PTree.Examples Require Import RandomWalk.
 Import Enum.
 Local Open Scope ring_scope.
@@ -73,9 +73,9 @@ Qed.
 Lemma right_cut_valid t u : candidate t u -> execute u (right_cut (t,u)).
 Proof. intros _. exact (@FIStop event Enum MF FI FreeOmegaMixedMeasure bool u). Qed.
 
-Lemma partner_guarded t u : candidate t u -> pfinite_guard eq candidate u u.
+Lemma partner_guarded t u : candidate t u -> (fun t u => pstrongF eq candidate (observe t) (observe u)) u u.
 Proof.
-  intro H. unfold pfinite_guard. destruct H as [b|].
+  intro H. cbn beta. destruct H as [b|].
   - destruct b.
     + apply PSRet. reflexivity.
     + apply PSTau. apply candidate_done.
@@ -83,14 +83,14 @@ Proof.
 Qed.
 
 Lemma cuts_guarded t u : candidate t u ->
-  free_omega_qlift (pfinite_guard eq candidate)
+  free_omega_qlift (fun t u => pstrongF eq candidate (observe t) (observe u))
     (left_cut (t,u)) (right_cut (t,u)).
 Proof.
   intro H. apply FOQLStructural, FOLRet. exact (partner_guarded H).
 Qed.
 
 Theorem paired_residuals_guarded :
-  free_omega_qlift (pfinite_guard eq candidate)
+  free_omega_qlift (fun t u => pstrongF eq candidate (observe t) (observe u))
     (free_omega_bind joint left_cut) (free_omega_bind joint right_cut).
 Proof.
   exact (finite_internal_joint_guarded
@@ -101,7 +101,7 @@ Definition residual_joint (p : tree * tree) : MF (tree * tree) :=
   FORet (snd p, snd p).
 
 Theorem paired_residual_joint_spec :
-  @semantic_coupling MF FI _ _ (pfinite_guard eq candidate)
+  @semantic_coupling MF FI _ _ (fun t u => pstrongF eq candidate (observe t) (observe u))
     (free_omega_bind joint left_cut) (free_omega_bind joint right_cut)
     (free_omega_bind joint residual_joint).
 Proof.
@@ -116,7 +116,7 @@ Qed.
 (** In the structural case, the joint needed by correlated execution is
     now extracted from the coupling proof, rather than supplied by hand. *)
 Theorem paired_residual_joint_exists :
-  exists out, @semantic_coupling MF FI _ _ (pfinite_guard eq candidate)
+  exists out, @semantic_coupling MF FI _ _ (fun t u => pstrongF eq candidate (observe t) (observe u))
     (free_omega_bind joint left_cut) (free_omega_bind joint right_cut) out.
 Proof.
   apply free_enum_structural_coupling_realization.

@@ -7,7 +7,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
 From PTree.Eq Require Import
   FiniteInternal UnifiedFrontier PrimitiveStableHitting PTreeKernel
-  PStrong PFinite.
+  PStrong.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -264,20 +264,20 @@ Variable cut2 : ptree E MN B -> FreeOmega MN (ptree E MN B).
 
 (** Here the cuts are independently chosen functions of each marginal
     state.  This hypothesis must not be inferred just by choosing witnesses
-    in [pfinite_rel_unfold]: those witnesses may depend on the pair. *)
+    for arbitrary paired certificates: those witnesses may depend on the pair. *)
 Hypothesis cuts_coupled : forall t1 t2, sim t1 t2 ->
-  free_omega_qlift (pfinite_guard RR sim) (cut1 t1) (cut2 t2).
+  free_omega_qlift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 t1) (cut2 t2).
 
 Lemma finite_internal_advance_coupled next1 next2 :
   (forall t1 t2, sim t1 t2 ->
     free_omega_qlift (stable_head_rel RR sim) (next1 t1) (next2 t2)) ->
-  forall t1 t2, pfinite_guard RR sim t1 t2 ->
+  forall t1 t2, (fun t u => pstrongF RR sim (observe t) (observe u)) t1 t2 ->
     free_omega_qlift (stable_head_rel RR sim)
       (finite_internal_advance next1 t1)
       (finite_internal_advance next2 t2).
 Proof.
   intros Hnext t1 t2 Hguard.
-  unfold finite_internal_advance, pfinite_guard in *.
+  unfold finite_internal_advance in *.
   remember (observe t1) as o1 in Hguard |- *.
   remember (observe t2) as o2 in Hguard |- *.
   destruct Hguard.

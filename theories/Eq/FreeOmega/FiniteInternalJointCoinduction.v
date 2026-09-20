@@ -4,7 +4,7 @@ Set Universe Polymorphism.
 From Coq Require Import Program.Equality.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure.
-From PTree.Eq Require Import FiniteInternal PFinite PrimitiveStableHitting
+From PTree.Eq Require Import FiniteInternal PStrong PrimitiveStableHitting
   UnifiedFrontier PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint
   FiniteInternalJointReference.
@@ -36,7 +36,7 @@ Hypothesis cut1_valid : forall t u, sim t u ->
 Hypothesis cut2_valid : forall t u, sim t u ->
   @finite_internal E MN MF FI FreeOmegaMixedMeasure B u (cut2 (t,u)).
 Hypothesis cuts_structural : forall t u, sim t u ->
-  free_omega_lift (pfinite_guard RR sim) (cut1 (t,u)) (cut2 (t,u)).
+  free_omega_lift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 (t,u)) (cut2 (t,u)).
 Hypothesis node_realizes : forall {X Y} (R : X -> Y -> Prop)
     (mu : MN X) (nu : MN Y), sem_lift R mu nu ->
     exists joint, semantic_coupling R mu nu joint.

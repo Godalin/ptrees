@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From Coq Require Import Logic.ClassicalChoice.
+From Coq Require Import Logic.ClassicalChoice Arith.PeanoNat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting
@@ -66,6 +66,18 @@ Lemma stable_hitting_tau {R} (t : ptree E MN R) out :
     (observe (Tau t)) out <->
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out.
 Proof. apply stable_hitting_tau_iff. Qed.
+
+Lemma stable_hitting_tau_iter {R} n (t : ptree E MN R) out :
+  stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
+    (observe (Nat.iter n (fun u => Tau u) t)) out <->
+  stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out.
+Proof.
+  induction n as [|n IH]; [reflexivity|].
+  change (stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
+    (observe (Tau (Nat.iter n (fun u => Tau u) t))) out <->
+    stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out).
+  rewrite stable_hitting_tau. exact IH.
+Qed.
 End StableHeads.
 
 Section ProbabilityComputation.

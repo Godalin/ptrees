@@ -4,7 +4,7 @@ From Coq Require Import Logic.ClassicalChoice Logic.ChoiceFacts.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling
   FreeOmegaMeasure FreeOmegaNative FreeOmegaJointExtension.
-From PTree.Eq Require Import PFinite FiniteInternalPlan.
+From PTree.Eq Require Import PStrong FiniteInternalPlan.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative FiniteInternalRoundCoupling.
 
 Set Implicit Arguments.
@@ -47,7 +47,7 @@ Hypothesis joint_left : qlift (fun z x => left z = x)
 Hypothesis joint_right : qlift (fun z y => right z = y)
   (FOSample joint (fun z => FORet z))
   (FOSample (internal_plan_measure q) (fun y => FORet y)).
-Hypothesis joint_guard : sem_ae joint (fun z => pfinite_guard RR sim
+Hypothesis joint_guard : sem_ae joint (fun z => (fun t u => pstrongF RR sim (observe t) (observe u))
   (internal_plan_residual p (left z)) (internal_plan_residual q (right z))).
 
 Theorem finite_internal_native_joint_round :
@@ -63,7 +63,7 @@ Theorem finite_internal_native_joint_round :
     sem_ae round (fun w => internal_round_path_rel RR sim p q
       (project_left w) (project_right w)).
 Proof.
-  pose (Good := fun z => pfinite_guard RR sim
+  pose (Good := fun z => (fun t u => pstrongF RR sim (observe t) (observe u))
     (internal_plan_residual p (left z)) (internal_plan_residual q (right z))).
   pose (U := fun x => native_sample_type (internal_guard_native (internal_plan_residual p x))).
   pose (V := fun y => native_sample_type (internal_guard_native (internal_plan_residual q y))).

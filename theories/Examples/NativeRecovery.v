@@ -6,11 +6,11 @@ From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   FreeOmegaMeasure FreeOmegaNative FreeOmegaRecovery FreeOmegaCoupling
   FreeOmegaRecoverySubEnum SemanticCouplingEnum FreeOmegaEquivalenceJointSubEnum
   FreeOmegaNativeCouplingSubEnum.
-From PTree.Examples Require Import FiniteInternalPlan SubEnumRegression HiddenRandomState.
-From PTree.Eq Require Import PStrong PFinite FiniteInternal FiniteInternalPlan.
+From PTree.Examples Require Import FiniteInternalPlan SubEnumRegression HiddenRandomState CouplingReferences.
+From PTree.Eq Require Import PStrong FiniteInternal FiniteInternalPlan.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative
-  FiniteInternalRoundCoupling FiniteInternalRecoverySubEnum FiniteInternalNativeJoint
-  FiniteInternalJointRows FiniteInternalTransport.
+  FiniteInternalRoundCoupling FiniteInternalNativeJoint
+  FiniteInternalJointRows.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -22,51 +22,9 @@ Lemma fair_paths_normalized :
 Proof.
   eapply free_omega_sample_to_constant with (point := false).
   - intro P. apply sem_ae_ret_iff.
-  - exact hidden_fair_same_mass.
+  - exact fair_discard_same_mass.
   - intro b. apply FOQLStructural, FOLRet. exact I.
 Qed.
-
-(** A complete residual-generator step, not just an arbitrary decoded
-    measure: the fair bit is discarded, then one Tau is compressed, and
-    the matched Ret guard is executed.  Recovery keeps both path pieces. *)
-Definition latent_cut_tree : ptree planE SubEnum bool :=
-  Prob subenum_fair (fun _ => Tau (Ret true)).
-
-Lemma latent_cut_residual_step :
-  @pfiniteF planE SubEnum (FreeOmega SubEnum)
-    SubEnum_SemanticMeasure
-    (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
-    FreeOmegaMixedMeasure bool bool eq (fun _ _ => False)
-    latent_cut_tree (Ret true).
-Proof.
-  eapply PFiniteStep.
-  - apply FIProb. intro b. apply FITau, FIStop.
-  - apply FIStop.
-  - change (free_omega_qlift (pfinite_guard (E := planE) (MN := SubEnum)
-      eq (fun _ _ => False))
-      (FOSample subenum_fair (fun _ => FORet (Ret true))) (FORet (Ret true))).
-    eapply free_omega_sample_to_constant with (point := false).
-    + intro P. apply sem_ae_ret_iff.
-    + exact hidden_fair_same_mass.
-    + intro b. apply FOQLStructural, FOLRet. unfold pfinite_guard.
-      constructor. reflexivity.
-Qed.
-
-Example latent_cut_full_round_paths :
-  exists (p : @finite_internal_plan planE SubEnum bool latent_cut_tree)
-         (q : @finite_internal_plan planE SubEnum bool (Ret true)),
-    free_omega_qlift (internal_round_path_rel eq (fun _ _ => False) p q)
-      (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x))
-      (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)).
-Proof. apply pfinite_subenum_round_paths. exact latent_cut_residual_step. Qed.
-
-(** The caller supplies no joint, marginal, or equivalence certificate.
-    Even the constantly false continuation candidate is accepted here. *)
-Example latent_cut_automatically_realized_round :
-  inhabited (@finite_internal_joint_row planE SubEnum SubEnum_SemanticMeasure
-    SubEnum_SemanticOmega bool bool eq (fun _ _ => False) latent_cut_tree (Ret true)).
-Proof. apply pfinite_joint_round. exact latent_cut_residual_step. Qed.
 
 (** Both guards really sample: the right coin has split native
     weights.  Native realization couples the outcomes rather than drawing
@@ -94,7 +52,7 @@ Proof.
   - apply free_omega_qlift_refl. intro z. reflexivity.
   - apply (@sem_ae_ret_iff SubEnum SubEnum_SemanticMeasure
       SubEnum_SemanticMeasureDiracAELaws).
-    unfold pfinite_guard. constructor.
+    cbn beta. constructor.
     eapply sem_lift_mono; [|exact subenum_fair_split_lift].
     intros x y ->. reflexivity.
 Qed.

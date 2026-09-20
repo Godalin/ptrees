@@ -2,7 +2,7 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure FreeOmegaNative.
-From PTree.Eq Require Import PStrong PFinite FiniteInternalPlan
+From PTree.Eq Require Import PStrong FiniteInternalPlan
   UnifiedFrontier PrimitiveStableHitting.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative.
 
@@ -44,14 +44,14 @@ Definition internal_round_target_rel
     arbitrary quotient coupling.  In the Prob case it is precisely the
     node coupling carried by the guard premise. *)
 Lemma internal_guard_native_coupled t u :
-  pfinite_guard RR sim t u ->
+  (fun t u => pstrongF RR sim (observe t) (observe u)) t u ->
   sem_lift (fun x y => internal_round_target_rel
     (native_sample_value (internal_guard_native t) x)
     (native_sample_value (internal_guard_native u) y))
     (native_sample_measure (internal_guard_native t))
     (native_sample_measure (internal_guard_native u)).
 Proof.
-  intro Hguard. unfold pfinite_guard, internal_guard_native in *.
+  intro Hguard. unfold internal_guard_native in *.
   remember (observe t) as ot in Hguard |- *.
   remember (observe u) as ou in Hguard |- *.
   destruct Hguard; cbn [native_sample_measure native_sample_value internal_round_target_rel].
@@ -77,7 +77,7 @@ Arguments internal_round_path_rel {t u} p q x y.
 Theorem internal_plan_round_paths_coupled t u
     (p : @finite_internal_plan E MN A t) (q : @finite_internal_plan E MN B u) :
   qlift
-    (fun x y => pfinite_guard RR sim (internal_plan_residual p x) (internal_plan_residual q y))
+    (fun x y => (fun t u => pstrongF RR sim (observe t) (observe u)) (internal_plan_residual p x) (internal_plan_residual q y))
     (FOSample (internal_plan_measure p) (fun x => FORet x))
     (FOSample (internal_plan_measure q) (fun y => FORet y)) ->
   qlift (internal_round_path_rel p q)
