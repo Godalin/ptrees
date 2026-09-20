@@ -268,6 +268,12 @@ now suffices: `peutt_interp_guarded` preserves equivalence through handlers
 whose complete first behavior is almost everywhere visible, allowing
 internal probability and divergence. The same two-round handler therefore
 preserves peutt even though it does not preserve transition bisimulation.
+For transition bisimulation, [atomic interpretation](theories/Semantics/AtomicInterp.v)
+now provides a stronger sufficient contract: a response-preserving event
+permutation, with complete Dirac hitting at one visible head and then at
+the returned response. `tree_trans_bisim_interp_atomic` allows internal
+computation but does not claim preservation for event merging or general
+multi-interaction handlers.
 
 [THEORY_STATUS.md](THEORY_STATUS.md) is the current theorem/capability map,
 including raw-tree transition comparison and MDP-fragment coincidence.

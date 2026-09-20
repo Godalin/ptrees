@@ -7,8 +7,8 @@ library is part of this work.
 | Stage | Deliverable | Status |
 | --- | --- | --- |
 | 1. InterpExposure | Decide whether arbitrary interpretation preserves `tree_trans_bisim` | Accepted baseline `4703035` |
-| 2. GuardedInterp | Semantic visible guarding, then `interp_vis_fusion` and peutt preservation | Proved; awaiting review |
-| 3. AtomicInterp | A sufficient atomic-handler contract for transition preservation | Not started |
+| 2. GuardedInterp | Semantic visible guarding, then `interp_vis_fusion` and peutt preservation | Accepted baseline `268a223` |
+| 3. AtomicInterp | A sufficient atomic-handler contract for transition preservation | Proved for response-preserving event permutations; awaiting review |
 | 4. MDPInterp | An explicit handler contract preserving `mdp_state` | Not started |
 | 5. StateInterp | Focused StateT interpreter, algebra, and rewrite-oriented example | Not started |
 | 6. General interp | Revisit arbitrary-handler peutt preservation without making it a blocker | Deferred |
@@ -211,9 +211,9 @@ proof for an arbitrary handler. The regression uses actual `setoid_rewrite`.
 - Local Proper/setoid rewriting works, and preservation supports a
   non-equality relation between Boolean and natural-number returns.
 
-Stage 3's atomic-handler definition and theorem remain unstarted. In
-particular, this result does not strengthen the known false transition
-congruence claim or establish arbitrary-handler peutt preservation.
+This guarded result alone does not strengthen the known false transition
+congruence claim or establish arbitrary-handler peutt preservation. Stage 3
+below uses a strictly stronger, explicitly delimited handler contract.
 
 ### Stage 2 assumptions and validation
 
@@ -237,8 +237,141 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Semantics.GuardedInterp
 ```
 
-The inventory now contains 194 modules (193 imports plus `AllImports`).
+The stage-2 inventory contained 194 modules (193 imports plus `AllImports`).
 The kernel command loads their shared universe context but rechecks only
 the three listed modules, not every existing proof in the repository.
 The stored layout/client report reproduces exactly. No remote CI result
 is asserted by this local validation record.
+
+## Stage 3: atomic interpretation, a sufficient permutation profile
+
+`Semantics/AtomicInterp.v` is a comparison-theory API; it is imported
+directly, not exported as another canonical behavioral equivalence.
+Neither peutt nor any transition/bisimulation definition changes.
+
+The condition deliberately states a **sufficient profile, not a necessary
+characterization of atomic handlers**. Source and target have the same
+event interface. An `atomic_handler h` certificate supplies:
+
+1. A response-type-preserving event permutation `rho` and its inverse.
+2. Continuations `c_e : X -> ptree E MN X` for each `e : E X`.
+3. Complete hitting `H(h(e)) = delta(Vis rho(e) c_e)`.
+4. For every response `x`, complete hitting
+   `H(c_e(x)) = delta(Ret x)`.
+
+Here the equations mean the existing `ptree_stable_hitting` predicate with
+the displayed `FORet` witness, not literal equality of representations.
+The record is explicit data in `Type`, not a new backend typeclass. No
+field assumes interpretation preservation or any bisimulation theorem.
+
+Thus one source interaction becomes exactly one target interaction, with
+the same response value. Before and after it there may be internal Tau/Prob
+computation, with **no finite-fuel bound**. The complete behavior of each
+segment is nevertheless the specified total Dirac measure. Unlike stage-2
+guarding, this profile does not admit missing mass on these segments.
+It does not require all syntactic branches to terminate: null branches can
+be ignored by the underlying hitting semantics.
+
+This first profile **does not cover event merging, changes of response
+values, random selection of target events, or arbitrary effect signatures**.
+In particular we do not claim that one visible interaction alone suffices
+for every such generalization. The permutation lets each target action be
+related to one source action through its inverse. For a many-to-one event
+map, summing preimage action classes would need a different argument;
+that obligation is not hidden in a new measure axiom.
+
+### Direct transition proof
+
+For a source stable head define the semantic head map:
+
+```text
+Ret r    |-> Ret r
+Vis e k  |-> Vis rho(e) (fun x => c_e(x) >>= (interp h . k))
+```
+
+`atomic_interp_hitting` proves that interpretation maps the complete source
+frontier by this function. `atomic_finish_bind` proves that the handler's
+post-response internal segment disappears from complete hitting because
+its behavior is `delta(Ret x)`.
+
+`atomic_normalizes_trans` then transports any source transition witness to
+any target transition witness by a graph coupling of these mapped heads.
+It uses AE restriction and relational bind on the entire frontier. Missing
+or disabled heads still contribute zero; all other masses keep their
+original weights. There is no conditioning or normalization.
+
+The coinductive candidate relates target trees whose complete behaviors
+are mapped frontiers of some **transition-bisimilar** source trees. This
+also covers selected mapped successor heads, not just literal `interp`
+applications. Return and offered-event projections are transported
+separately. For each target action, the inverse permutation provides the
+source action; its source coupling is composed with the two graph
+couplings. The successor candidate closes using `atomic_normalizes_head`.
+
+The resulting endpoints are:
+
+```coq
+atomic_handler_guarded
+atomic_candidate_postfixed
+tree_trans_bisim_interp_atomic
+```
+
+The last theorem states, for an explicit certificate `atom` and any relation
+`RR : R -> R -> Prop` on a **common** return carrier:
+
+```text
+tree_trans_bisim RR t u
+  -> tree_trans_bisim RR (interp h t) (interp h u).
+```
+
+It invokes the existing transition GFP coinduction theorem directly, not
+peutt soundness or fragment coincidence. The module imports existing
+complete-hitting selection plumbing from `PEutt.v`; it never assumes
+peutt of the source pair. Its backend is `MN / FreeOmega MN`, under the
+same native Core, AE-lifting, Coupling-AE, Countable-AE and Omega
+capabilities as stage 2.
+
+### Checked boundaries and assumptions
+
+`Regression/Semantics/AtomicInterp.v` checks:
+
+- A handler with Tau before its interaction and a Dirac Prob/Tau response
+  segment satisfies the semantic certificate, despite not being a bare
+  syntactic `Vis e Ret`.
+- This handler preserves the accepted 2x2 source pair, which is transition
+  bisimilar but **not** peutt. Thus the test cannot be discharged by assuming
+  the stronger source relation.
+- A non-identity permutation exchanges two Boolean events and also two
+  `Empty_set` events; its preservation theorem keeps arbitrary `RR`.
+- `two_query_handler_not_atomic` rules out any certificate for the stage-1
+  two-interaction handler: a certificate would contradict its independently
+  proved transition-congruence counterexample.
+
+`atomic_handler_guarded` inherits `eq_rect_eq`. The hitting/transition
+mapping lemmas also inherit functional extensionality, relational choice,
+and dependent unique choice. The postfixed/preservation endpoints and the
+positive/negative regressions additionally inherit excluded middle from
+existing totalized transition-witness existence. No axiom or backend class
+is added. These are the results of `Print Assumptions`, not a claim of
+constructivity.
+
+The stage stops here for review; MDP preservation and state interpretation
+are not part of this change.
+
+### Stage 3 local validation
+
+The full build and aggregate inventory guard passed (196 modules: 195
+imports plus `AllImports`). The targeted joint kernel check also passed:
+
+```sh
+python3 tools/check_aggregate.py
+opam exec -- dune build
+opam exec -- coqchk -silent -R _build/default/theories PTree \
+  -norec PTree.Regression.Infrastructure.AllImports \
+  -norec PTree.Semantics.AtomicInterp \
+  -norec PTree.Regression.Semantics.AtomicInterp
+```
+
+This loads the full-library universe context and rechecks the listed
+modules, not every old proof. The layout audit has been regenerated and
+reproduces exactly; no remote CI success is claimed.

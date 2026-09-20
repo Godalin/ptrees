@@ -167,6 +167,7 @@ Require PTree.Regression.Probability.ConditionalResampling.
 Require PTree.Regression.Probability.CorrelatedSampleAlgebra.
 Require PTree.Regression.Probability.EnumDisintegration.
 Require PTree.Regression.Probability.FiniteTransport.
+Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
 Require PTree.Regression.Semantics.GuardedInterp.
 Require PTree.Regression.Semantics.HeadTransition.
@@ -186,6 +187,7 @@ Require PTree.Regression.Semantics.TreeTransition.
 Require PTree.Regression.Semantics.TreeTransitionBisim.
 Require PTree.Regression.Semantics.TreeTransitionSoundness.
 Require PTree.Regression.Semantics.TreeTransitionStrictness.
+Require PTree.Semantics.AtomicInterp.
 Require PTree.Semantics.HeadTransition.
 Require PTree.Semantics.MDPCoincidence.
 Require PTree.Semantics.MDPCoincidenceFreeOmega.

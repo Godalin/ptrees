@@ -296,7 +296,20 @@ return-relation preservation from the existing theorem. An explicit
 `peutt_interp_guarded_Proper` endpoint supports local setoid rewriting.
 The same stage-1 handler preserves peutt despite its transition counterexample;
 additional regressions check partial divergence and null return branches.
-Atomic/MDP handler contracts and state interpretation await separate review.
+Stage 3 supplies `Semantics/AtomicInterp.v`: an explicit `atomic_handler`
+certificate for response-preserving event permutations. Its two semantic
+clauses require complete Dirac hitting at one renamed Vis head, and at
+`Ret x` after response `x`, without a finite-fuel or syntactic restriction.
+`tree_trans_bisim_interp_atomic` is proved by a direct transition-GFP
+postfixed argument, for arbitrary `RR` on a common return carrier.
+The proof transports return/event projections and mass-weighted action
+successors; it does not assume peutt of the source trees. This is a sufficient
+profile, not a characterization: event merging, response transformations,
+and multi-interaction handlers are not covered. Regressions preserve the
+non-peutt 2x2 pair, check a non-identity event permutation (including empty
+response events), and rule out atomicity for the two-query counterexample.
+Stage 3 awaits review; MDP handler contracts and state interpretation have
+not started.
 
 ### Semantic comparison and classical MDPs
 
@@ -383,6 +396,7 @@ global dependencies are:
 | 2×2 positive and negative witnesses | functional extensionality and `eq_rect_eq`; no classical witness choice |
 | two-round interpretation exposure counterexample | functional extensionality and `eq_rect_eq`; no classical witness choice |
 | guarded-handler fusion / peutt preservation / Proper | functional extensionality, `eq_rect_eq`, relational choice and dependent unique choice from existing hitting witness selection |
+| atomic-handler transition preservation | functional extensionality, `eq_rect_eq`, relational choice, dependent unique choice, and excluded middle from existing transition witness existence |
 | generic reverse coincidence | `eq_rect_eq` only |
 | FreeOmega exact Dirac AE proof | closed; passed explicitly rather than a global instance |
 | FreeOmega reverse coincidence | functional extensionality and `eq_rect_eq` |
