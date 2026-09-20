@@ -3,7 +3,7 @@
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
-## Staged MDP development: peutt inclusion accepted; 2x2 strictness awaiting review
+## Staged MDP development: 2x2 strictness accepted; fragment coincidence awaiting review
 
 The stable-head transition layer is in `Semantics/HeadTransition.v`, and
 the unary MDP fragment is in `Semantics/MDPFragment.v`. The canonical tree
@@ -12,10 +12,10 @@ to a lower module. Step 3a supplied an unlabelled baseline; Step 3.5 adds
 observable state structure to the maintained total MDP embedding.
 The raw-tree marginal transition and observation API has been accepted.
 Its independent transition-bisimulation GFP has also been accepted.
-The generic `peutt` inclusion has been accepted. The current stage proves
-only concrete 2x2 strictness. Fragment coincidence, the final MDP
-correspondence, handler classes and `prutt` remain later work; each requires
-a separate user acceptance gate.
+The generic `peutt` inclusion and concrete 2x2 strictness have been accepted.
+The current stage proves only fragment coincidence. The final MDP encoding
+corollary, handler classes and `prutt` remain later work; each requires a
+separate user acceptance gate.
 
 - `obs_label` packages an event together with a response of its dependent
   result type. `head_step (FHVis e k) (Obs e x) out` holds exactly when
@@ -452,7 +452,7 @@ only functional extensionality and `eq_rect_eq`, not classical witness
 choice. No new axiom declaration, measure class, `Admitted`, or outstanding
 obligation was added. Remote CI has not been checked for this stage.
 
-### 2x2 correlated-continuation strictness (next acceptance gate)
+### 2x2 correlated-continuation strictness (accepted)
 
 `Examples/TreeTransitionStrictness.v` uses the canonical SubEnum/FreeOmega
 backend and a single visible event `Query : correlationE bool`:
@@ -514,10 +514,95 @@ also inherits the accepted general inclusion's classical-choice premises.
 No new axiom declaration, measure class, `Admitted`, or outstanding proof
 obligation was added. Remote CI has not been checked for this stage.
 
-The remaining sequence is coincidence on `mdp_state`, then composition
-with the labelled MDP embedding. Neither is claimed here. No representation
-theorem for arbitrary fragment members is required. This stage stops for
-acceptance of strictness before attempting coincidence.
+### MDP fragment coincidence (next acceptance gate)
+
+`Semantics/MDPCoincidence.v` proves the missing reverse direction:
+
+```text
+mdp_state_tree_trans_bisim_peutt:
+  mdp_state t -> mdp_state u -> tree_trans_bisim eq t u -> peutt eq t u
+
+mdp_state_peutt_tree_trans_iff:
+  mdp_state t -> mdp_state u -> (peutt eq t u <-> tree_trans_bisim eq t u)
+```
+
+The extra separation capability is the EXISTING
+`SemanticMeasureDiracAELaws` on the behavior carrier. Together with
+coupling/AE transport, exact AE at Dirac measures recovers relations from
+Dirac couplings. Together with zero's empty AE support, it separates Ret
+from Vis. Offered-event equality then determines the dependent event,
+including an event with an empty response type. No unconditional
+characterization is claimed for nonseparating abstract liftings.
+
+Crucially, the proof keeps the actual complete witnesses from `mdp_state`:
+their semantic equality to Dirac is NOT replaced by an assumed hitting
+closure under output equality. `mdp_dirac_observations` and
+`mdp_dirac_transition` construct legitimate observations and action outputs
+from those witnesses, and relate them to the selected head's results by
+equality couplings. `mdp_lift_transport` composes such couplings; no
+`sem_lift eq -> sem_eq` reflection or extra bind equality law is used.
+
+The coinductive invariant has two proof-engineering levels:
+
+- `fragment_head_pair` retains two qualifying heads, arbitrary raw
+  representatives with Dirac hitting behavior, and their transition
+  bisimilarity;
+- `fragment_distribution_pair` couples the complete hitting distributions
+  of two continuation states under that head relation.
+
+These are auxiliary proof relations, not additional public behavioral
+equivalences. They are needed because an action continuation need not be
+an `mdp_state`: it may denote a genuine distribution over qualifying heads.
+For every matching response, the transition endpoint couples successor
+heads under the raw-tree candidate. Restricting this coupling to the two
+`mdp_head` AE invariants closes the proof at the next interaction. The
+result is directly a postfixed candidate for `peutt`; no arbitrary-fragment
+representation theorem or MDP encoding is used.
+
+Totality remains part of the unchanged `mdp_head` definition, but the
+reverse proof uses its recursive AE closure, not the totality conjunct.
+No larger partial fragment is introduced or claimed as a new API here.
+
+`Semantics/MDPCoincidenceFreeOmega.v` proves exact Dirac AE structurally
+for FreeOmega and supplies it explicitly to the generic theorem. The
+capability proof is not registered as a new global instance.
+`free_mdp_state_tree_trans_bisim_peutt` and
+`free_mdp_state_peutt_tree_trans_iff` therefore have no extra separation
+premise: they need only the existing node Core, AELift, CouplingAE,
+CountableAE and Omega capabilities. In particular it does not require a
+node relational bind law. `Examples/MDPCoincidence.v` checks the endpoint
+on SubEnum/FreeOmega and MathComp/FreeOmega (with MathComp's existing
+explicit coupling-gluing premise).
+
+The regressions independently construct delayed-tree transition
+bisimulations, then consume the REVERSE coincidence endpoint for the
+visible/sample/visible decision program and the infinite random service.
+They retain the negative check that the decision's hidden-choice
+continuation is not itself an `mdp_state`, and include terminal-state
+coincidence. Finally the accepted 2x2 strictness pair is proved unable to
+satisfy BOTH fragment premises. This last statement does not claim that
+each tree has separately been proved outside the fragment.
+
+The generic reverse theorem inherits only `eq_rect_eq` globally; it needs
+neither classical witness choice nor `SemanticMeasureOrderLaws`. The full
+iff inherits these from the previously accepted forward inclusion. The
+FreeOmega Dirac-AE capability proof is closed under the global context.
+The FreeOmega reverse endpoint and the concrete decision/service reverse
+regressions inherit functional extensionality and `eq_rect_eq`, without
+classical witness choice. The MathComp iff endpoint retains the existing
+MathComp functional/propositional extensionality and constructive
+indefinite-description dependencies in addition to the forward theorem's
+classical-choice dependencies; its gluing capability remains a parameter.
+
+Validation: full `opam exec -- dune build`, `coqchk -norec` for all three
+new modules, and the generic and concrete endpoint assumption audits pass.
+No existing semantic definition was modified. No new axiom declaration,
+typeclass, global instance, `Admitted`, or outstanding obligation was added.
+Remote CI has not been checked for this stage.
+
+The remaining step is composition with the labelled MDP embedding. That
+corollary is not claimed here. This stage stops for acceptance of fragment
+coincidence before the final classical correspondence.
 
 ## Canonical architecture
 
