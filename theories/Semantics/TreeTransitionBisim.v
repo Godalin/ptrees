@@ -57,6 +57,22 @@ Proof.
   eapply sem_lift_mono; [|eapply sem_lift_comp; [exact Hlift|exact (Hunique _ _ Hnu' Hnu)]].
   intros a b [c [Hac ->]]. exact Hac.
 Qed.
+
+(** Construct a full match from convenient representatives. Equality
+    couplings, rather than equality reflection, transport other witnesses. *)
+Lemma tree_measure_match_of_witnesses rel left right mu nu :
+  (forall mu1 mu2, left mu1 -> left mu2 -> sem_lift eq mu1 mu2) ->
+  (forall nu1 nu2, right nu1 -> right nu2 -> sem_lift eq nu1 nu2) ->
+  left mu -> right nu -> sem_lift rel mu nu -> tree_measure_match rel left right.
+Proof.
+  intros Hu Hv Hmu Hnu Hlift. split.
+  - intros mu' Hmu'. exists nu. split; [exact Hnu|].
+    eapply sem_lift_mono; [|eapply sem_lift_comp; [exact (Hu _ _ Hmu' Hmu)|exact Hlift]].
+    intros a b [c [-> Hcb]]. exact Hcb.
+  - intros nu' Hnu'. exists mu. split; [exact Hmu|].
+    eapply sem_lift_mono; [|eapply sem_lift_comp; [exact Hlift|exact (Hv _ _ Hnu Hnu')]].
+    intros a b [c [Hac ->]]. exact Hac.
+Qed.
 End MeasureMatch.
 
 Section Bisimulation.

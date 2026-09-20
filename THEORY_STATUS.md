@@ -3,7 +3,7 @@
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
-## Staged MDP development: transition GFP accepted; peutt inclusion awaiting review
+## Staged MDP development: peutt inclusion accepted; 2x2 strictness awaiting review
 
 The stable-head transition layer is in `Semantics/HeadTransition.v`, and
 the unary MDP fragment is in `Semantics/MDPFragment.v`. The canonical tree
@@ -12,8 +12,9 @@ to a lower module. Step 3a supplied an unlabelled baseline; Step 3.5 adds
 observable state structure to the maintained total MDP embedding.
 The raw-tree marginal transition and observation API has been accepted.
 Its independent transition-bisimulation GFP has also been accepted.
-The current stage proves only `peutt` inclusion. Strictness/coincidence
-results, handler classes and `prutt` remain unimplemented; each requires
+The generic `peutt` inclusion has been accepted. The current stage proves
+only concrete 2x2 strictness. Fragment coincidence, the final MDP
+correspondence, handler classes and `prutt` remain later work; each requires
 a separate user acceptance gate.
 
 - `obs_label` packages an event together with a response of its dependent
@@ -382,7 +383,7 @@ extensionality and `eq_rect_eq` dependencies. No new axiom declaration,
 measure class, `Admitted`, or outstanding obligation was added. Remote CI
 has not been checked for this stage.
 
-### peutt inclusion in raw-tree transition bisimulation (next acceptance gate)
+### peutt inclusion in raw-tree transition bisimulation (accepted)
 
 `Semantics/TreeTransitionSoundness.v` is the explicit comparison layer.
 It imports both independent theories; neither transition definitions nor
@@ -451,10 +452,72 @@ only functional extensionality and `eq_rect_eq`, not classical witness
 choice. No new axiom declaration, measure class, `Admitted`, or outstanding
 obligation was added. Remote CI has not been checked for this stage.
 
-The remaining sequence is correlated-continuation strictness; coincidence
-on `mdp_state`; composition with the labelled MDP embedding. None is
-claimed here. No representation theorem for arbitrary fragment members is
-required. This stage stops for acceptance before the 2x2 example.
+### 2x2 correlated-continuation strictness (next acceptance gate)
+
+`Examples/TreeTransitionStrictness.v` uses the canonical SubEnum/FreeOmega
+backend and a single visible event `Query : correlationE bool`:
+
+```text
+P = Prob fair (fun b => Vis Query (fun x => Ret b))
+Q = Prob fair (fun b => Vis Query (fun x => Ret (if x then negb b else b)))
+```
+
+Both programs sample the entire continuation BEFORE receiving the external
+response. Their two possible continuation rows, each of probability 1/2,
+are:
+
+| Program / hidden bit | response false | response true |
+| --- | --- | --- |
+| P / false | false | false |
+| P / true | true | true |
+| Q / false | false | true |
+| Q / true | true | false |
+
+`correlation_hitting`, `correlation_returns`, `correlation_offers`, and
+`correlation_transition` provide explicit witnesses. The programs have the
+same current return and event observation measures. For each response,
+`response_marginals_equal` proves equality coupling of the successor
+distributions: the false response uses the diagonal native coupling, while
+the true response uses the crossed joint with mass 1/2 on `(false,true)`
+and `(true,false)`. This is equality of unnormalized marginals, not an
+action-conditioned normalization.
+
+`correlated_response_tree_trans_bisim` is proved by transition coinduction
+with candidate equality plus the pair `(P,Q)`. All later heads are returns.
+The small generic helper `tree_measure_match_of_witnesses` completes the
+existing elimination API: it extends these convenient witnesses to FULL
+bidirectional matching using equality-coupling uniqueness and composition,
+without reflecting coupling into `sem_eq`. No generator changes.
+
+`correlated_response_not_peutt` is an independent negative proof. A
+hypothetical whole-head coupling transports the fact that every left head
+is a constant continuation to a supported right head. But any such pair
+would require both `b = c` (false response) and `b = negb c` (true response).
+Concrete Ret inversion is proved by support transport, not by assuming a
+new Dirac-injectivity law. Thus **no** coupling can match the whole
+continuations; it is not merely failure of a proposed diagonal coupling.
+
+`peutt_strictly_contained_in_tree_trans_bisim` packages the general forward
+implication on this concrete event/return/backend instance and the witness
+`tree_trans_bisim eq P Q /\ ~ peutt eq P Q`. This establishes genuine
+proper inclusion on SubEnum/FreeOmega, not on every abstract backend
+(whose lifting need not separate observations). Neither half of the
+counterexample invokes fragment coincidence or an MDP embedding.
+
+Validation: full `opam exec -- dune build`, `coqchk -norec` for the extended
+GFP helper module and the new strictness example, and endpoint assumption
+audits pass. The native crossed coupling and the generic witness helper
+are closed under the global context. The positive and negative example
+theorems inherit only functional extensionality and `eq_rect_eq`; neither
+requires classical witness choice. The packaged proper-inclusion theorem
+also inherits the accepted general inclusion's classical-choice premises.
+No new axiom declaration, measure class, `Admitted`, or outstanding proof
+obligation was added. Remote CI has not been checked for this stage.
+
+The remaining sequence is coincidence on `mdp_state`, then composition
+with the labelled MDP embedding. Neither is claimed here. No representation
+theorem for arbitrary fragment members is required. This stage stops for
+acceptance of strictness before attempting coincidence.
 
 ## Canonical architecture
 
