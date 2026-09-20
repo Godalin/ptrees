@@ -7,6 +7,28 @@ acceptance records remain in Git. The artifact targets Coq 8.20
 (`>= 8.20, < 9.0`); the CI configuration pins 8.20.1. Local verification
 does not imply a successful remote CI run.
 
+## Theory-freeze preparation
+
+Interpretation Stages 1–4 are accepted at `4703035`, `268a223`, `8e09561`,
+and `ec96b90`. Their theory is frozen while repository architecture and
+assumption hygiene are cleaned up. No StateInterp or FreeOmega adequacy
+development has started.
+
+The [cleanup architecture and review gates](docs/ARCHITECTURE_CLEANUP.md)
+distinguish component ownership, generic/FreeOmega/concrete profiles,
+curated versus expert imports, and five kinds of premise. The
+[complete 200-module inventory](docs/ARCHITECTURE_AUDIT.md) records actual
+Coq dependencies and proposed dispositions, including FiniteInternal and
+the single Experimental file. The
+[compiled capability baseline](docs/CAPABILITY_BASELINE.md) records full
+types and logical assumptions for 25 selected endpoints; it is not yet
+the exhaustive public-theorem/minimality audit.
+
+Cleanup Gate A (inventory and baseline) is implemented and awaits review.
+Migration/facades, capability minimization, and the final whole-library
+kernel audit remain separate pending gates. No `.v` definitions or proofs
+change in this first gate.
+
 ## 1. Public semantic architecture
 
 ```text
@@ -325,8 +347,8 @@ unbounded interaction. Existing fragment coincidence is reused at the
 interpreted states, and a direct transition-preservation proof can then be
 converted to peutt. This is preservation, not source/target reflection;
 there is no unconditional MathComp total-map specialization in this stage.
-The proof approach and `E -> F` API of `98b93aa` were accepted; the final
-regression fix awaits Stage 4 baseline acceptance. A genuinely heterogeneous
+Stage 4 is accepted at `ec96b90`, including the `E -> F` API of `98b93aa`
+and the independent-source regression fix. A genuinely heterogeneous
 regression proves the handler contract independently and transports an infinite
 Ask/Reply protocol across two distinct inductive event families. Its
 source Tau-equivalence is proved directly by transition coinduction,

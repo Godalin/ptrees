@@ -9,8 +9,8 @@ library is part of this work.
 | 1. InterpExposure | Decide whether arbitrary interpretation preserves `tree_trans_bisim` | Accepted baseline `4703035` |
 | 2. GuardedInterp | Semantic visible guarding, then `interp_vis_fusion` and peutt preservation | Accepted baseline `268a223` |
 | 3. AtomicInterp | A sufficient atomic-handler contract for transition preservation | Accepted baseline `8e09561` |
-| 4. MDPInterp | An explicit handler contract preserving `mdp_state` | `98b93aa` core/API accepted; independent-source regression fix awaiting final review |
-| 5. StateInterp | Focused StateT interpreter, algebra, and rewrite-oriented example | Not started |
+| 4. MDPInterp | An explicit handler contract preserving `mdp_state` | Accepted baseline `ec96b90` |
+| 5. StateInterp | Focused StateT interpreter, algebra, and rewrite-oriented example | Deferred until architecture/capability cleanup and FreeOmega adequacy review |
 | 6. General interp | Revisit arbitrary-handler peutt preservation without making it a blocker | Deferred |
 
 ## Stage 1: a two-round handler exposes the hidden correlation
@@ -563,19 +563,21 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
 
 This rechecks the four Stage 4 modules and the aggregate harness in the
 full-library universe context, not every existing proof. The layout report
-reproduces exactly. No remote CI success is asserted. Stage 4 now pauses
-for acceptance before any StateInterp work.
+reproduces exactly. No remote CI success is asserted. The final accepted
+Stage 4 baseline is recorded below; StateInterp has not started.
 
 The `E -> F` interface follow-up repeated all of these checks successfully,
 including the original homogeneous regressions and new heterogeneous
 contract, preservation, coincidence and infinite-service regressions.
 The aggregate remains 200 modules. `AtomicInterp.v`,
 `MDPInterpSubEnum.v`, and the total-map backend proof are unchanged; no
-module or directory was moved. This follow-up is the candidate final
-Stage 4 baseline, pending acceptance before layout-only work.
+module or directory was moved. The `E -> F` interface was accepted;
+the regression-only fix below completes the accepted Stage 4 baseline.
 
-The regression-only independent-source fix repeated the full build,
+The regression-only independent-source fix at `ec96b90` repeated the full build,
 aggregate inventory, the same targeted joint kernel check and assumption
 audit successfully. The layout report is unchanged. Only the regression
 and its documentation changed; the accepted generic and atomic theory
-interfaces remain untouched. This fix awaits final Stage 4 acceptance.
+interfaces remain untouched. Stage 4 is accepted at `ec96b90`; its theory is
+now frozen. Next is the staged [repository architecture and assumption
+cleanup](ARCHITECTURE_CLEANUP.md), not StateInterp or additional Stage 4 theory.

@@ -243,6 +243,14 @@ explicit `MathCompOracleSupportLaws` and coupling-gluing premises.
 
 ## Repository guide
 
+The interpretation theory through Stage 4 is accepted at `ec96b90` and
+frozen. Current work is the staged
+[repository architecture and assumption cleanup](docs/ARCHITECTURE_CLEANUP.md),
+starting with a [complete module inventory](docs/ARCHITECTURE_AUDIT.md) and
+[compiled capability baseline](docs/CAPABILITY_BASELINE.md), not new
+interpreter theory. These audits distinguish the target layout from the
+current, not-yet-migrated repository.
+
 The maintained theory lives in `Core/`, `Prob/`, `Eq/`, and
 `Semantics/` under `theories/`. Paper-facing programs form four groups:
 
