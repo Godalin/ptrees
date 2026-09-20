@@ -3,13 +3,13 @@
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
-## Staged MDP development: Step 1 accepted; Step 1.5 awaiting review
+## Staged MDP development: Steps 1 / 1.5 accepted; Step 2 awaiting review
 
-Only the stable-head transition layer is implemented in this step, in
-`Semantics/HeadTransition.v`. The canonical tree relation is unchanged;
-Step 1.5 only moves its shared matching infrastructure to a lower module.
-MDP-fragment predicates, classical embeddings, weak/marginal
-transitions, handler classes and `prutt` remain later, unimplemented steps;
+The stable-head transition layer is in `Semantics/HeadTransition.v`, and
+the unary MDP fragment is in `Semantics/MDPFragment.v`. The canonical tree
+relation is unchanged. Step 1.5 moved its shared matching infrastructure
+to a lower module. Classical embeddings, weak/marginal transitions,
+handler classes and `prutt` remain later, unimplemented steps;
 each requires a separate user acceptance gate.
 
 - `obs_label` packages an event together with a response of its dependent
@@ -48,7 +48,7 @@ is assumed by the implementation.
 Step 1 verification: full `opam exec -- dune build` and `coqchk` for both
 new modules pass; there are no `Admitted` or new axiom declarations and no
 unfinished Step 1 obligations. Remote CI is not part of this local result.
-Step 1 has been accepted. Step 2 has not started.
+Step 1 has been accepted.
 
 ### Step 1.5: generic hitting relation infrastructure
 
@@ -79,7 +79,69 @@ Validation: full `opam exec -- dune build` and kernel checks of
 `Examples.HeadTransition` pass. The three moved helper lemmas are closed
 under the global context; the head equivalence's existing Eqdep dependency
 is unchanged. Remote CI has not been checked for this step.
-Implementation pauses again for acceptance before Step 2.
+Step 1.5 has been accepted.
+
+### Step 2: unary coinductive MDP fragment
+
+`Semantics/MDPFragment.v` defines `mdp_headF` and its coq-coinduction GFP
+`mdp_head`, independently of `head_bisim` and without importing `PEutt`.
+Returns qualify unconditionally. A visible head qualifies exactly when,
+for every response, its complete hitting distribution is total and almost
+everywhere supported on qualifying successor heads:
+
+```text
+mdp_head (FHVis e k) <->
+  forall x, exists out,
+    ptree_stable_hitting (observe (k x)) out /\
+    sem_total out /\ sem_ae out mdp_head.
+```
+
+The generator reuses `head_step`. Its monotonicity, fold/unfold and unary
+coinduction rule are proved. `mdp_head_successor_closed` establishes
+totality and AE closure for **any** complete successor witness;
+`mdp_head_vis_hitting_iff` gives the selected-witness formulation.
+
+`mdp_state t` means that the complete hitting distribution of `t` is
+`sem_eq` to `sem_ret h` for some qualifying head `h`. The API includes
+`mdp_state_of_hitting`, witness independence (`mdp_state_hitting_iff`),
+Ret and Vis introduction rules, and transparency of one or any finite
+number of Tau nodes. In particular, the Vis rule does **not** require
+`mdp_state (k x)`: its successor may be a non-Dirac distribution of states.
+There is no generic Dirac-injectivity claim hidden in these rules.
+
+No new measure class or axiom is introduced. Beyond the base structures
+and `SemanticMeasureCoreLaws`, witness independence uses
+`SemanticOmegaLaws`. Arbitrary-witness successor closure additionally
+uses `SemanticTotalProperLaws` and `SemanticMeasureCouplingAELaws`.
+The Ret/Vis/Tau computation rules reuse the existing behavior-level bind,
+omega and cofinality laws. The unary coinduction and generic Tau theorem
+are closed under the global context; the Vis characterization and
+successor closure inherit the existing dependent-inversion
+`Eqdep.Eq_rect_eq.eq_rect_eq` assumption from `head_step_vis_iff`.
+
+`Examples/MDPFragment.v` uses `SubEnum -> FreeOmega SubEnum` and proves:
+
+- `visible_sample_visible_is_mdp`: a visible action followed by a hidden
+  fair choice of two visible successor states is in the fragment;
+- `hidden_choice_not_mdp_state`: that continuation alone is **not** a
+  single state. Coupling support transport forces both heads to equal the
+  same Dirac head, contradicting their distinct events. This is a proved
+  negation, not a failed tactic, and the two heads are also proved not
+  `head_bisim`-related;
+- `successor_need_not_be_a_state`: packages both facts together;
+- `infinite_service_mdp`: an infinite service with fresh sampling after
+  every response belongs to the fragment, by unary coinduction;
+- finite Tau transparency and an import-boundary regression excluding
+  transitive loading of `PEutt` by the semantic modules.
+
+Concrete endpoint assumption checks report only the already-used
+functional extensionality and `eq_rect_eq`, not new measure axioms.
+Validation: full `opam exec -- dune build` and `coqchk -norec` for both
+new modules pass (native conversion checks also pass via the kernel
+checker's VM fallback). No `Admitted` or new axiom declarations are used.
+Remote CI has not been checked for this step.
+No Step 2 proof obligations remain. Step 3 (MDP embedding) has not started;
+implementation pauses here for acceptance.
 
 ## Canonical architecture
 
