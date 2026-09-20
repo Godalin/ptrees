@@ -3,13 +3,13 @@
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
-## Staged MDP development: Steps 1 / 1.5 accepted; Step 2 awaiting review
+## Staged MDP development: Steps 1 / 1.5 / 2 accepted; Step 3 awaiting review
 
 The stable-head transition layer is in `Semantics/HeadTransition.v`, and
 the unary MDP fragment is in `Semantics/MDPFragment.v`. The canonical tree
 relation is unchanged. Step 1.5 moved its shared matching infrastructure
-to a lower module. Classical embeddings, weak/marginal transitions,
-handler classes and `prutt` remain later, unimplemented steps;
+to a lower module. Step 3 adds the minimal classical MDP embedding.
+Weak/marginal transitions, handler classes and `prutt` remain later, unimplemented steps;
 each requires a separate user acceptance gate.
 
 - `obs_label` packages an event together with a response of its dependent
@@ -140,8 +140,86 @@ Validation: full `opam exec -- dune build` and `coqchk -norec` for both
 new modules pass (native conversion checks also pass via the kernel
 checker's VM fallback). No `Admitted` or new axiom declarations are used.
 Remote CI has not been checked for this step.
-No Step 2 proof obligations remain. Step 3 (MDP embedding) has not started;
-implementation pauses here for acceptance.
+No Step 2 proof obligations remain. Step 2 has been accepted. The induced
+fragment admits terminal states: `FHRet` has no action, rather than being
+silently replaced by an absorbing self-loop.
+
+### Step 3: minimal classical MDP embedding
+
+`Semantics/MDPEmbedding.v` defines a source `MDP` with arbitrary state and
+action types, a native transition kernel, and a totality proof for every
+state/action pair. `mdp_bisim` is an independent source-state coupling GFP.
+The guarded encoding is:
+
+```text
+mdp_encode s = Vis Choose (fun a => Prob (mdp_transition D s a) mdp_encode)
+mdp_successors mu = mixed_bind mu (fun s => sem_ret (mdp_encode_head s))
+```
+
+`mdp_encode_hitting` gives the Dirac current head; `mdp_sample_hitting`
+gives the pushforward successor distribution. `mdp_encode_step` constructs
+the corresponding action transition, and `mdp_encode_step_unique` proves
+that every complete target of that transition is semantically equal to
+the pushforward. Generic soundness is proved by explicit kernel matching:
+`mdp_bisim_head_sound` and `mdp_bisim_peutt_sound`. The latter's two-form
+candidate distinguishes selected encoded states from sampled successor
+distributions; it is only a local coinductive proof device.
+
+Two generic boundaries stay explicit, without new classes or axioms:
+
+- `mdp_encode_mdp_state` asks for totality and AE encoded-head support of
+  the mixed successor measures. Native totality alone does not imply these
+  facts in the base mixed interface.
+- Existing omega laws give uniqueness of hitting, but not arbitrary
+  replacement of an output by a `sem_eq` representative. Thus the generic
+  transition endpoint gives a constructed witness and uniqueness, not an
+  unjustified equality-to-hitting converse.
+
+`Semantics/MDPEmbeddingSubEnum.v` discharges both boundaries for
+`SubEnum -> FreeOmega SubEnum`, and proves:
+
+```text
+subenum_encode_mdp_state
+subenum_encode_step_iff
+subenum_mdp_head_bisim_iff : mdp_bisim s t <-> head_bisim (encode_head s) (encode_head t)
+subenum_mdp_peutt_iff     : mdp_bisim s t <-> peutt eq (encode s) (encode t)
+subenum_encoded_head_peutt_iff
+```
+
+The inverse proofs use the existing, proved
+`SubEnum_FreeOmegaNativeCouplingLaws` instance to recover a coupling on
+the original source carriers. No injectivity of `mdp_encode_head` is
+assumed, and state/action types need not be finite. Dirac-head inversion
+is proved by support transport. No reflection capability is postulated
+for an arbitrary backend. The positive generic proofs are closed under
+the global context; concrete membership inherits functional extensionality
+and `eq_rect_eq`. Concrete inverse/full-iff proofs additionally inherit
+the existing native-coupling realization's classical choice, propositional
+extensionality and standard Dedekind-real construction assumptions
+(`sig_not_dec` / `sig_forall_dec`). This is a stronger dependency footprint
+than Step 2, not a newly declared measure axiom.
+
+**Important source-model limitation.** This minimal MDP has no state
+labels, no observable termination, and every action enabled at every state.
+`subenum_unlabelled_mdp_universal` proves that all its states are bisimilar:
+total distributions can always be coupled by the universal relation.
+The correspondence proofs above do not use this collapse, but their
+GFP-level iff must not be advertised as a discriminating conservativity
+result for labelled or terminating MDPs. Such a result needs an observable
+source-state label or terminal-state structure and a matching encoding;
+that extension is deliberately left for user review, not silently added.
+
+`Examples/MDPEmbedding.v` instantiates an infinite natural-number state
+space with two actions and fair random increments. It checks fragment
+membership, the exact transition kernel, the iff endpoint, and explicitly
+demonstrates equivalence of different unobserved counter values.
+Validation: full `opam exec -- dune build`, `coqchk -norec` for all three
+new modules, and endpoint assumption audits pass. The example's native
+conversion is rechecked using the kernel checker's VM fallback. There are
+no `Admitted`, new axiom declarations, or remaining proof obligations for
+the specified minimal model. Remote CI has not been checked for Step 3.
+Step 4 (weak/marginal transitions) has not started. Implementation pauses
+for acceptance and review of the source-model limitation.
 
 ## Canonical architecture
 
