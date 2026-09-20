@@ -3,11 +3,12 @@
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
-## Staged MDP development: Step 1 (awaiting review)
+## Staged MDP development: Step 1 accepted; Step 1.5 awaiting review
 
 Only the stable-head transition layer is implemented in this step, in
-`Semantics/HeadTransition.v`. `PEutt.v` and the canonical tree relation are
-unchanged. MDP-fragment predicates, classical embeddings, weak/marginal
+`Semantics/HeadTransition.v`. The canonical tree relation is unchanged;
+Step 1.5 only moves its shared matching infrastructure to a lower module.
+MDP-fragment predicates, classical embeddings, weak/marginal
 transitions, handler classes and `prutt` remain later, unimplemented steps;
 each requires a separate user acceptance gate.
 
@@ -47,7 +48,38 @@ is assumed by the implementation.
 Step 1 verification: full `opam exec -- dune build` and `coqchk` for both
 new modules pass; there are no `Admitted` or new axiom declarations and no
 unfinished Step 1 obligations. Remote CI is not part of this local result.
-Implementation stops here pending user acceptance; Step 2 has not started.
+Step 1 has been accepted. Step 2 has not started.
+
+### Step 1.5: generic hitting relation infrastructure
+
+`Eq/StableHittingRelation.v` now owns `stable_hitting_match`, its monotonicity
+lemma, and the two selected-witness helper lemmas
+`stable_hitting_match_of_hitting_lift` / `stable_hitting_match_hitting_lift`.
+Their definitions, theorem statements and proofs are preserved. The new
+module imports only `TwoLevelMeasure` and `PrimitiveStableHitting`; it has
+no PTree-syntax or behavioral-GFP dependency.
+
+`PEutt.v` re-exports this module and retains the generic GFP and PTree
+instantiation. This preserves unqualified client imports without creating
+duplicate definitions or compatibility aliases. `HeadTransition.v` imports
+the lower module directly, eliminating its dependency on `PEutt`:
+
+```text
+PrimitiveStableHitting -> StableHittingRelation -> PEutt
+                                              -> HeadTransition
+```
+
+The head-transition regression checks `Fail Check PTree.Eq.PEutt.peutt`
+before explicitly importing the tree computation lemmas used by the
+examples. Thus it checks the transitive import boundary, not just the
+absence of an unqualified name. No semantic definitions, theorem contracts,
+measure capabilities or logical assumptions are added in Step 1.5.
+Validation: full `opam exec -- dune build` and kernel checks of
+`StableHittingRelation`, `PEutt`, `Semantics.HeadTransition` and
+`Examples.HeadTransition` pass. The three moved helper lemmas are closed
+under the global context; the head equivalence's existing Eqdep dependency
+is unchanged. Remote CI has not been checked for this step.
+Implementation pauses again for acceptance before Step 2.
 
 ## Canonical architecture
 

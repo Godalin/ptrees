@@ -6,8 +6,14 @@ Local Unset Universe Minimization ToSet.
 From Coq Require Import Program.Equality Classes.RelationClasses.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
-From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
+From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Semantics Require Import HeadTransition.
+
+(** Architectural regression: the head transition theory does not even
+    load PEutt transitively. Tests of concrete hitting computations below
+    import its existing computation lemmas explicitly, after this check. *)
+Fail Check PTree.Eq.PEutt.peutt.
+From PTree.Eq Require Import PEutt.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
