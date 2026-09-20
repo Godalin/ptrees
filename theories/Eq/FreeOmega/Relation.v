@@ -62,6 +62,45 @@ Proof.
     + intros z z' ->. apply IH. exact (H z').
 Qed.
 
+(** Structural equations preserve finite observations exactly, not merely
+    up to a coupling.  The two result types and head observers may differ;
+    only their agreement on related stable heads matters.  This lets a
+    quantitative client analyse a simpler return type and transport its
+    finite calculations through a structural program equation. *)
+Theorem ptree_hitting_observes_pstruct {A B O}
+    (RR : A -> B -> Prop)
+    (obs1 : stable_head E MN A -> O)
+    (obs2 : stable_head E MN B -> O)
+    (Hobs : forall h1 h2, stable_head_rel RR (pstruct RR) h1 h2 ->
+      obs1 h1 = obs2 h2)
+    fuel (t1 : ptree E MN A) (t2 : ptree E MN B) out :
+  pstruct RR t1 t2 ->
+  free_omega_observes obs1
+    (ptree_hitting_approx (MF := MF) fuel (observe t1)) out ->
+  free_omega_observes obs2
+    (ptree_hitting_approx (MF := MF) fuel (observe t2)) out.
+Proof.
+  revert t1 t2 out. induction fuel as [|fuel IH]; intros t1 t2 out Hstruct Hout;
+    pose proof (pstruct_unfold Hstruct) as Hstep;
+    dependent destruction Hstep;
+    rewrite <- x0, <- x in *.
+  all: cbn [ptree_hitting_approx ptree_primitive_kernel
+    stable_hitting_approx stable_target_approx sem_bind sem_ret mixed_bind
+    free_omega_bind FreeOmegaMixedMeasure FreeOmegaObservableSemanticMeasure
+    FreeOmegaSemanticMeasure] in *.
+  - dependent destruction Hout. rewrite (Hobs _ _ (FHRRet _ H)). constructor.
+  - dependent destruction Hout. constructor.
+  - dependent destruction Hout. rewrite (Hobs _ _ (FHRVis _ _ H)). constructor.
+  - dependent destruction Hout. eapply FOOObserveSample.
+    intro z. specialize (H z). dependent destruction H.
+    rewrite <- x. constructor.
+  - dependent destruction Hout. rewrite (Hobs _ _ (FHRRet _ H)). constructor.
+  - eapply IH; eassumption.
+  - dependent destruction Hout. rewrite (Hobs _ _ (FHRVis _ _ H)). constructor.
+  - dependent destruction Hout. eapply FOOObserveSample.
+    intro z. eapply IH; [apply H0|apply H].
+Qed.
+
 (** State-level closure used to interpret syntax-sensitive structural
     equivalence inside the canonical stable-hitting coinduction principle. *)
 Definition pstruct_state {A B} (RR : A -> B -> Prop)

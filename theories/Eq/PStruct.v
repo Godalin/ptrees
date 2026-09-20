@@ -114,6 +114,26 @@ Proof.
   apply pstruct_unfold. apply pstruct_refl.
 Qed.
 
+(** Heterogeneous converse, useful when transporting observations from a
+    simpler return type back to the original program. *)
+Lemma pstruct_converse {A B} (RR : A -> B -> Prop)
+    (t1 : ptree E M A) (t2 : ptree E M B) :
+  pstruct RR t1 t2 -> pstruct (fun b a => RR a b) t2 t1.
+Proof.
+  revert t1 t2. unfold pstruct at 2. coinduction CH CIH.
+  move=> t1 t2 Hrel. move: (pstruct_unfold Hrel)=> Hstep.
+  set ot1 := observe t1 in Hstep |- *.
+  set ot2 := observe t2 in Hstep |- *.
+  change (pstructF (fun b a => RR a b) (` CH) ot2 ot1).
+  inversion Hstep as
+      [r1 r2 HR | u1 u2 Hsim | X e k1 k2 Hk
+       | X mu k1 k2 Hk]; subst.
+  - constructor. exact HR.
+  - constructor. exact: CIH Hsim.
+  - constructor=> x. exact: CIH (Hk x).
+  - constructor=> x. exact: CIH (Hk x).
+Qed.
+
 Lemma pstruct_sym {R : Type} :
   Symmetric (@pstruct E M R R eq).
 Proof.
