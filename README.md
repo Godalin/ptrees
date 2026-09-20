@@ -141,6 +141,12 @@ height and reset the streak.  Starting from `(1,0)`, it stops at height zero.
 `run_split` factors a descent through an intermediate level using `pstruct`,
 and `passage_unfold` proves the genuine `peutt` renewal equation
 `D_y ≈ₚ Prob coin (fun down => if down then Ret (y+1) else D_0 >>= D)`.
+`run_as_successive_passages` extends the decomposition to any initial
+height, as a finite bind composition of unbounded one-level passages.
+`random_walk_bind` makes the normalization usable in arbitrary client
+continuations.  The full-state observation proof reuses the passage proof
+through `ptree_hitting_observes_pstruct`; `random_walk_outputs_expect`
+expresses the joint law as deterministic pushforward along `n ↦ (0,n)`.
 `random_walk_closed_form` proves native stable-hitting AST and the normalized
 joint output law `Pr[(0,n)] = 2/3^n` for `n >= 1` (zero elsewhere).
 Finite observations are connected directly to the source's primitive kernel;

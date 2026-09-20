@@ -979,6 +979,11 @@ The proof has two explicitly distinguished layers:
   `height_two_split` identifies the reset branch with `D_0 >>= passage`.
   `random_walk_passage_normal_form` and `passage_unfold` promote structural
   control-flow reasoning to actual `peutt` equations.
+  `run_as_successive_passages` now extends the decomposition to every
+  initial height: a finite Kleisli composition of unbounded one-level
+  passages. `random_walk_as_successive_passages` restores the joint return
+  value; `random_walk_bind` performs normalization under an arbitrary client
+  continuation, with no restriction on its effects or termination.
 - `walk_harmonic_error` proves the uniform-in-streak error bound
   `|(finite evaluation) - H(x,y)| <= (3/2)^x (17/18)^rounds` for every
   bounded harmonic candidate with the stated boundary values.
@@ -986,15 +991,31 @@ The proof has two explicitly distinguished layers:
   output atom.  This is an elementary rational convergence argument, not an
   imported random-walk theorem or an assumed uniqueness of fixed points.
 
-`walk_hitting_observes` and `joint_hitting_observes` connect these calculations
-to the existing primitive stable-hitting approximants.  A complete round
+`walk_hitting_observes` connects these calculations to the primitive
+stable-hitting approximants. `joint_hitting_observes` no longer repeats
+the execution induction: it is an application of the library theorem
+`ptree_hitting_observes_pstruct` to `random_walk_result_relation`, using
+the heterogeneous `pstruct_converse`. This theorem preserves the exact
+finite observation witness for observers agreeing on related stable heads;
+it does **not** assume observation transport along arbitrary `peutt` or
+quotient couplings. A complete round
 consumes two internal steps (`Prob`, then the `Tau` introduced by `iter`);
-`walk_schedule_ge` and cofinality justify taking that subsequence of fuels.
+`walk_schedule_ge` and the library theorem `stable_hitting_subsequence`
+justify taking that subsequence of fuels. Both its monotonicity and its
+domination of the identity are explicit premises. The new library theorem
+`stable_hitting_ast_of_observations` combines finite observation certificates,
+their native-measure limit, and totality of that limit. It replaces the
+example-local cofinality/totality boilerplate in `random_walk_ast`.
 `random_walk_ast` is consequently the maintained `ptree_stable_hitting_ast`
 predicate for the original source tree, not a separate numerical definition
 of AST.
 
 `random_walk_outputs_spec` identifies the source's finite joint observations.
+`random_walk_outputs_expect` gives the pushforward equation for arbitrary
+tests: testing the joint output by `f` equals testing the passage output by
+`fun n => f (0,n)`, at every finite round. The full-state atom proof now
+uses this equation and `initial_walk_geometric_limit`, without reproving
+harmonic convergence for the joint program.
 `random_walk_output_dist` proves their pointwise limits are `joint_pmf`:
 `joint_pmf (0,S n) = (2/3)(1/3)^n`, and zero for all other states.
 `joint_pmf_normalized` proves the finite sums converge to one.
@@ -1012,6 +1033,12 @@ under the global context, as is the new `pstruct_iter_split_at` library law.
 functional-extensionality and dependent-equality axioms; `passage_unfold`
 additionally inherits the generic behavioral theory's choice principles.
 No example-specific probability axiom or unfinished proof is introduced.
+The compositional refactor passes the full `dune build` and kernel checking
+of `PStruct`, `FreeOmega.Relation`, `FreeOmega.Hitting`, and `RandomWalk`.
+`pstruct_converse` and `random_walk_outputs_expect` are closed under the
+global context. The observation/scheduling transport uses the existing
+dependent-equality axiom; the final closed-form theorem still requires only
+functional extensionality and dependent equality, not a new semantic law.
 
 `walk_approx` is now the identity specialization of `walk_observation`,
 rather than a duplicate recursive execution function.  Its expectation law
