@@ -1,7 +1,7 @@
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure FreeOmegaNative.
-From PTree.Eq Require Import FiniteInternal FiniteInternalPlan PFiniteResidual.
+From PTree.Eq Require Import FiniteInternal FiniteInternalPlan PFinite.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint.
 
 Set Implicit Arguments.
@@ -149,8 +149,8 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Variable RR : A -> B -> Prop.
 Variable sim : ptree E MN A -> ptree E MN B -> Prop.
 
-Theorem pfinite_residual_native_characterization t u :
-  @pfinite_residualF E MN MF NI FI FreeOmegaMixedMeasure A B RR sim t u <->
+Theorem pfinite_native_characterization t u :
+  @pfiniteF E MN MF NI FI FreeOmegaMixedMeasure A B RR sim t u <->
   exists (p : @finite_internal_plan E MN A t) (q : @finite_internal_plan E MN B u),
     free_omega_qlift (pfinite_guard RR sim)
       (free_omega_native (internal_plan_native p))
@@ -167,7 +167,7 @@ Proof.
     eapply sem_lift_proper_l; [exact Hp|].
     eapply sem_lift_proper_r; [exact Hq|exact Hlift].
   - intros [p [q Hlift]].
-    eapply PFiniteResidualStep.
+    eapply PFiniteStep.
     + exact (@internal_plan_frontier_valid E MN A MF FI FreeOmegaMixedMeasure t p).
     + exact (@internal_plan_frontier_valid E MN B MF FI FreeOmegaMixedMeasure u q).
     + eapply (@sem_lift_proper_l MF FI FreeOmegaObservableSemanticMeasureCoreLaws).

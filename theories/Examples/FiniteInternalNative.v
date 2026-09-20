@@ -5,7 +5,7 @@ From mathcomp Require Import reals.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   MathCompMeasure TwoLevelMeasureMathComp FreeOmegaMeasure FreeOmegaNative.
-From PTree.Eq Require Import FiniteInternal FiniteInternalPlan PFiniteResidual.
+From PTree.Eq Require Import FiniteInternal FiniteInternalPlan PFinite.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative FiniteInternalJoint.
 
 Set Implicit Arguments.
@@ -45,14 +45,14 @@ Example nonuniform_candidate_native (mu : MN nat) (k : nat -> tree) :
     (q : @finite_internal_plan E MN R (Prob mu k)),
     free_omega_qlift
       (pfinite_guard eq
-        (@pfinite_residual_rel E MN MF NI NC FI
+        (@pfinite_rel E MN MF NI NC FI
           FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure R R eq))
       (free_omega_native (internal_plan_native p))
       (free_omega_native (internal_plan_native q)).
 Proof.
-  apply pfinite_residual_native_characterization.
-  apply pfinite_residual_unfold.
-  apply pfinite_residual_prob_tau_prefix.
+  apply pfinite_native_characterization.
+  apply pfinite_rel_unfold.
+  apply pfinite_rel_prob_tau_prefix.
 Qed.
 End GenericPaths.
 

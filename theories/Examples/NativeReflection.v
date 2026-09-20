@@ -4,7 +4,7 @@ From Coq Require Import Lia.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import FreeOmegaNative FreeOmegaRecovery.
-From PTree.Eq Require Import FiniteInternalPlan PFiniteResidual PStrong.
+From PTree.Eq Require Import FiniteInternalPlan PFinite PStrong.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Eq.FreeOmega Require Import FiniteInternalRound CostedKernel FiniteInternalCostedProjection
@@ -239,12 +239,12 @@ Proof.
 Qed.
 
 Theorem actual_residual_step :
-  @pfinite_residualF Event M (FreeOmega M) Measure
+  @pfiniteF Event M (FreeOmega M) Measure
     (FreeOmegaObservableSemanticMeasure (NI := Measure) (NO := Omega))
     FreeOmegaMixedMeasure
     bool bool eq eq (Prob (ret tt) (fun _ => Ret true)) (Ret true).
 Proof.
-  eapply PFiniteResidualStep.
+  eapply PFiniteStep.
   - apply FiniteInternal.FIProb. intro x. apply FiniteInternal.FIStop.
   - apply FiniteInternal.FIStop.
   - apply (@FOQLSampleRetL M Measure Omega); [intro P; reflexivity|].

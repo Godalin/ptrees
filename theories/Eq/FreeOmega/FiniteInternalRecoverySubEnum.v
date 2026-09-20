@@ -3,7 +3,7 @@ Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   FreeOmegaMeasure FreeOmegaNative FreeOmegaRecoverySubEnum.
-From PTree.Eq Require Import FiniteInternalPlan PFiniteResidual.
+From PTree.Eq Require Import FiniteInternalPlan PFinite.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative FiniteInternalRoundCoupling.
 
 Set Implicit Arguments.
@@ -22,8 +22,8 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure
 Variable RR : A -> B -> Prop.
 Variable sim : ptree E SubEnum A -> ptree E SubEnum B -> Prop.
 
-Theorem pfinite_residual_subenum_path_characterization t u :
-  @pfinite_residualF E SubEnum MF SubEnum_SemanticMeasure FI
+Theorem pfinite_subenum_path_characterization t u :
+  @pfiniteF E SubEnum MF SubEnum_SemanticMeasure FI
     FreeOmegaMixedMeasure A B RR sim t u <->
   exists (p : @finite_internal_plan E SubEnum A t)
          (q : @finite_internal_plan E SubEnum B u),
@@ -35,7 +35,7 @@ Theorem pfinite_residual_subenum_path_characterization t u :
       (FOSample (internal_plan_measure q) (fun y => FORet y) :
         FreeOmegaAt SubEnum (ptree E SubEnum B) (internal_plan_path q)).
 Proof.
-  rewrite pfinite_residual_native_characterization.
+  rewrite pfinite_native_characterization.
   split; intros [p [q H]]; exists p, q.
   - exact (subenum_native_coupling_pullback
       (p := internal_plan_native p) (q := internal_plan_native q) H).
@@ -51,8 +51,8 @@ Qed.
 (** The recovered compression path can now execute its matched guard.
     Each sample retains BOTH pieces of its path, hence its actual cost is
     still available to costed projection.  This is not yet a joint row. *)
-Theorem pfinite_residual_subenum_round_paths t u :
-  @pfinite_residualF E SubEnum MF SubEnum_SemanticMeasure FI
+Theorem pfinite_subenum_round_paths t u :
+  @pfiniteF E SubEnum MF SubEnum_SemanticMeasure FI
     FreeOmegaMixedMeasure A B RR sim t u ->
   exists (p : @finite_internal_plan E SubEnum A t)
          (q : @finite_internal_plan E SubEnum B u),
@@ -60,7 +60,7 @@ Theorem pfinite_residual_subenum_round_paths t u :
       (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x))
       (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)).
 Proof.
-  intro H. apply pfinite_residual_subenum_path_characterization in H.
+  intro H. apply pfinite_subenum_path_characterization in H.
   destruct H as [p [q Hpaths]]. exists p, q.
   apply internal_plan_round_paths_coupled. exact Hpaths.
 Qed.

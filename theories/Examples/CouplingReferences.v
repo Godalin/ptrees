@@ -5,7 +5,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
 From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLiftEnum TwoLevelMeasure
   TwoLevelMeasureSubEnum FreeOmegaMeasure FreeOmegaCoupling.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Eq Require Import FiniteInternal PFiniteResidual.
+From PTree.Eq Require Import FiniteInternal PFinite.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint.
 From PTree.Examples Require Import EnumMeasureRegression SubEnumRegression
   CorrelatedSampleAlgebra.
@@ -105,7 +105,7 @@ Qed.
 Local Notation tree := (ptree exchangeE SubEnum bool).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
-Local Notation residual := (@pfinite_residual_rel exchangeE SubEnum MF
+Local Notation residual := (@pfinite_rel exchangeE SubEnum MF
   SubEnum_SemanticMeasure SubEnum_SemanticMeasureCoreLaws FI
   FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure bool bool eq).
 
@@ -138,8 +138,8 @@ Lemma discarded_coin_guard b :
   pfinite_guard eq residual (discarded_coin_delay b) (discarded_coin_delay false).
 Proof.
   unfold pfinite_guard, discarded_coin_delay. destruct b; cbn; constructor.
-  - exact (pfinite_residual_tau_prefix 1 (Ret false : tree)).
-  - apply pfinite_residual_refl.
+  - exact (pfinite_rel_tau_prefix 1 (Ret false : tree)).
+  - apply pfinite_rel_refl.
 Qed.
 
 Lemma discarded_coin_residual_lift :
@@ -185,7 +185,7 @@ Qed.
 Example discarded_coin_is_residual_finite :
   residual (Prob subenum_fair discarded_coin_delay) (discarded_coin_delay false).
 Proof.
-  apply pfinite_residual_fold. eapply PFiniteResidualStep.
+  apply pfinite_rel_fold. eapply PFiniteStep.
   - apply (@FIProb exchangeE SubEnum MF FI FreeOmegaMixedMeasure bool).
     intro b. apply (@FIStop exchangeE SubEnum MF FI FreeOmegaMixedMeasure bool).
   - apply (@FIStop exchangeE SubEnum MF FI FreeOmegaMixedMeasure bool).

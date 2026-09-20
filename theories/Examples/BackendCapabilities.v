@@ -5,7 +5,7 @@ Set Universe Polymorphism.
 From mathcomp Require Import reals.
 From PTree.Prob Require Import DiscreteMC MathCompMeasure TwoLevelMeasure
   FreeOmegaMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum
-  TwoLevelMeasureMathComp.
+  TwoLevelMeasureMathComp FreeOmegaNativeCoupling FreeOmegaNativeCouplingSubEnum.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -171,6 +171,12 @@ Definition subenum_profile_mixed_omega :
     @MixedMeasureOmegaLaws SubEnum MF NI FI FreeOmegaMixedMeasure FO := _.
 
 End SubEnumFreeOmegaProfile.
+
+(** Optional proof-relation capability.  Unlike the shared behavioral
+    profile, native quotient-joint realization is currently established
+    for SubEnum only; no Enum/MathComp instance is asserted here. *)
+Definition subenum_profile_native_quotient_coupling :
+  @FreeOmegaNativeCouplingLaws SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega := _.
 
 Section MathCompFoundationalProfile.
 Context (R : realType).

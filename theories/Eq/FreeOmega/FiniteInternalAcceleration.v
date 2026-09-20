@@ -9,7 +9,7 @@ From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure
   SemanticCoupling FreeOmegaCoupling.
 From PTree.Eq Require Import
   FiniteInternal UnifiedFrontier PrimitiveStableHitting PTreeKernel
-  PFiniteResidual PEutt.
+  PFinite PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternal FiniteInternalJoint KernelContinuity.
 
 Set Implicit Arguments.

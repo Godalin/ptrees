@@ -8,7 +8,7 @@ From PTree.Prob Require Import
   TwoLevelMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum
   FreeOmegaMeasure DiscreteMC.
 From PTree.Eq Require Import
-  FiniteInternal FiniteInternalHitting PFiniteResidual PStrong PEutt.
+  FiniteInternal FiniteInternalHitting PFinite PStrong PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternalAcceleration.
 From PTree.Examples Require Import RandomWalk.
 
@@ -19,7 +19,7 @@ Import Enum.
 
 Variant residualE : Type -> Type := .
 Local Notation RF :=
-  (@pfinite_residual_rel residualE Enum (FreeOmega Enum)
+  (@pfinite_rel residualE Enum (FreeOmega Enum)
     Enum_SemanticMeasure Enum_SemanticMeasureCoreLaws
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega))
@@ -29,12 +29,12 @@ Local Notation RF :=
 CoFixpoint residual_spin : ptree residualE Enum bool := Tau residual_spin.
 
 Lemma residual_finite_tau_divergence : RF (Tau residual_spin) residual_spin.
-Proof. exact (pfinite_residual_tau_prefix 1 residual_spin). Qed.
+Proof. exact (pfinite_rel_tau_prefix 1 residual_spin). Qed.
 
 Lemma residual_finite_prob_tau (mu : Enum bool)
     (k : bool -> ptree residualE Enum bool) :
   RF (Prob mu (fun b => Tau (k b))) (Prob mu k).
-Proof. exact (pfinite_residual_prob_tau_prefix mu (fun _ => 1) k). Qed.
+Proof. exact (pfinite_rel_prob_tau_prefix mu (fun _ => 1) k). Qed.
 
 (** The law is generic in the node carrier, so the nat-indexed branch
     depths need not be bounded.  This is not a finite-support Enum claim. *)
@@ -46,9 +46,9 @@ Context {E MN MF : Type -> Type}
 Context {R : Type}.
 
 Lemma residual_finite_nonuniform (mu : MN nat) (k : nat -> ptree E MN R) :
-  @pfinite_residual_rel E MN MF NI NC FI FC MX R R eq
+  @pfinite_rel E MN MF NI NC FI FC MX R R eq
     (Prob mu (fun n => tau_prefix n (k n))) (Prob mu k).
-Proof. apply pfinite_residual_prob_tau_prefix. Qed.
+Proof. apply pfinite_rel_prob_tau_prefix. Qed.
 
 End UnboundedBranchDepth.
 
@@ -56,7 +56,7 @@ End UnboundedBranchDepth.
     cannot be related to a return by an unguarded coinductive self-reference. *)
 Lemma residual_finite_spin_not_ret : ~ RF residual_spin (Ret true).
 Proof.
-  intro Hrel. pose proof (pfinite_residual_unfold Hrel) as Hstep.
+  intro Hrel. pose proof (pfinite_rel_unfold Hrel) as Hstep.
   inversion Hstep as [t1 t2 out1 out2 Hexec1 Hexec2 Hlift]; subst.
   pose proof (finite_internal_self_loop_inv Hexec1 eq_refl) as Hout1.
   pose proof (finite_internal_ret_inv Hexec2) as Hout2.
@@ -210,7 +210,7 @@ Qed.
     candidate, without invoking [peutt_prob] or stable hitting.  It remains
     a candidate regression until greatest-fixed-point soundness is proved. *)
 Lemma random_walk_passage_residual_finite y :
-  @pfinite_residual rwE SubEnum (FreeOmega SubEnum)
+  @pfinite rwE SubEnum (FreeOmega SubEnum)
     SubEnum_SemanticMeasure SubEnum_SemanticMeasureCoreLaws
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
@@ -219,8 +219,8 @@ Lemma random_walk_passage_residual_finite y :
     (Prob rw_coin (fun down : bool => if down then Ret (S y) else rw_continuation)).
 Proof.
   etransitivity.
-  - apply pstruct_pfinite_residual. apply passage_unfold_guarded.
-  - apply pfinite_residual_of_rel.
-    exact (pfinite_residual_prob_tau_prefix rw_coin (fun _ => 1)
+  - apply pstruct_pfinite. apply passage_unfold_guarded.
+  - apply pfinite_of_rel.
+    exact (pfinite_rel_prob_tau_prefix rw_coin (fun _ => 1)
       (fun down : bool => if down then Ret (S y) else rw_continuation)).
 Qed.

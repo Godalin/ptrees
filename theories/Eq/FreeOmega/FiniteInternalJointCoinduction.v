@@ -4,7 +4,7 @@ Set Universe Polymorphism.
 From Coq Require Import Program.Equality.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure.
-From PTree.Eq Require Import FiniteInternal PFiniteResidual PrimitiveStableHitting
+From PTree.Eq Require Import FiniteInternal PFinite PrimitiveStableHitting
   UnifiedFrontier PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint
   FiniteInternalJointReference.

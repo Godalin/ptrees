@@ -5,7 +5,7 @@ From Coq Require Import Program.Equality Logic.ClassicalChoice.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure
   FreeOmegaCoupling.
-From PTree.Eq Require Import FiniteInternal PFiniteResidual PrimitiveStableHitting
+From PTree.Eq Require Import FiniteInternal PFinite PrimitiveStableHitting
   UnifiedFrontier PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint FiniteInternalJointAcceleration.
 

@@ -7,7 +7,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureEnum
   FreeOmegaMeasure DiscreteMC RatSubTypes SemanticCoupling FreeOmegaCouplingEnum.
 From PTree.Eq Require Import FiniteInternal FiniteInternalJoint
-  PFiniteResidual PStrong UnifiedFrontier PTreeKernel.
+  PFinite PStrong UnifiedFrontier PTreeKernel.
 From PTree.Examples Require Import RandomWalk.
 Import Enum.
 Local Open Scope ring_scope.

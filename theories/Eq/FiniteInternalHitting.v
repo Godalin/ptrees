@@ -8,7 +8,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure.
 From PTree.Eq Require Import
   FiniteInternal UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt
-  PStrong PFiniteResidual.
+  PStrong PFinite.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -180,10 +180,10 @@ End FiniteInternalCoinduction.
 
 (** A single guarded round is sound when its recursive obligations are
     already proved.  This pre-fixed-point fact alone does NOT establish
-    inclusion of the greatest fixed point [pfinite_residual_rel]. *)
-Theorem pfinite_residual_round_sound {A B} (RR : A -> B -> Prop)
+    inclusion of the greatest fixed point [pfinite_rel]. *)
+Theorem pfinite_round_sound {A B} (RR : A -> B -> Prop)
     (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  pfinite_residualF RR (@peutt E MN MF FI FC MX FO A B RR) t1 t2 ->
+  pfiniteF RR (@peutt E MN MF FI FC MX FO A B RR) t1 t2 ->
   peutt RR t1 t2.
 Proof.
   intro Hstep. destruct Hstep.

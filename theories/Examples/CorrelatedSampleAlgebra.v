@@ -6,7 +6,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   SemanticCouplingEnum FreeOmegaMeasure FreeOmegaCoupling.
 From PTree.Eq Require Import FiniteInternal PrimitiveStableHitting UnifiedFrontier PEutt
-  PFiniteResidual.
+  PFinite.
 From PTree.Eq.FreeOmega Require Import FiniteInternalJoint FiniteInternalJointReference.
 From PTree.Examples Require Import PEuttAlgebra EnumMeasureRegression SubEnumRegression.
 

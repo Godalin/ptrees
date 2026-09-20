@@ -6,7 +6,7 @@ From Coq Require Import Logic.ClassicalChoice.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure
   FreeOmegaCoupling.
-From PTree.Eq Require Import PStrong PFiniteResidual UnifiedFrontier
+From PTree.Eq Require Import PStrong PFinite UnifiedFrontier
   PrimitiveStableHitting.
 
 Set Implicit Arguments.

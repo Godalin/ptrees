@@ -4,12 +4,13 @@ From Coq Require Import Classes.RelationClasses.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   FreeOmegaMeasure FreeOmegaNative FreeOmegaRecovery FreeOmegaCoupling
-  FreeOmegaRecoverySubEnum SemanticCouplingEnum FreeOmegaEquivalenceJointSubEnum.
+  FreeOmegaRecoverySubEnum SemanticCouplingEnum FreeOmegaEquivalenceJointSubEnum
+  FreeOmegaNativeCouplingSubEnum.
 From PTree.Examples Require Import FiniteInternalPlan SubEnumRegression HiddenRandomState.
-From PTree.Eq Require Import PStrong PFiniteResidual FiniteInternal FiniteInternalPlan.
+From PTree.Eq Require Import PStrong PFinite FiniteInternal FiniteInternalPlan.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative
   FiniteInternalRoundCoupling FiniteInternalRecoverySubEnum FiniteInternalNativeJoint
-  FiniteInternalEquivalenceJointSubEnum.
+  FiniteInternalJointRows FiniteInternalTransport.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -32,14 +33,14 @@ Definition latent_cut_tree : ptree planE SubEnum bool :=
   Prob subenum_fair (fun _ => Tau (Ret true)).
 
 Lemma latent_cut_residual_step :
-  @pfinite_residualF planE SubEnum (FreeOmega SubEnum)
+  @pfiniteF planE SubEnum (FreeOmega SubEnum)
     SubEnum_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
     FreeOmegaMixedMeasure bool bool eq (fun _ _ => False)
     latent_cut_tree (Ret true).
 Proof.
-  eapply PFiniteResidualStep.
+  eapply PFiniteStep.
   - apply FIProb. intro b. apply FITau, FIStop.
   - apply FIStop.
   - change (free_omega_qlift (pfinite_guard (E := planE) (MN := SubEnum)
@@ -58,29 +59,14 @@ Example latent_cut_full_round_paths :
     free_omega_qlift (internal_round_path_rel eq (fun _ _ => False) p q)
       (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x))
       (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)).
-Proof. apply pfinite_residual_subenum_round_paths. exact latent_cut_residual_step. Qed.
+Proof. apply pfinite_subenum_round_paths. exact latent_cut_residual_step. Qed.
 
-(** Unlike the assembly tests below, the caller supplies NO joint or
-    marginal certificates: both are extracted from the generator step.
-    Equality of continuations supplies the stated equivalence premise. *)
+(** The caller supplies no joint, marginal, or equivalence certificate.
+    Even the constantly false continuation candidate is accepted here. *)
 Example latent_cut_automatically_realized_round :
-  exists (p : @finite_internal_plan planE SubEnum bool latent_cut_tree)
-         (q : @finite_internal_plan planE SubEnum bool (Ret true))
-         (W : Type) (round : SubEnum W)
-         (left : W -> native_sample_type (internal_plan_round_native p))
-         (right : W -> native_sample_type (internal_plan_round_native q)),
-    free_omega_qlift (fun w x => left w = x)
-      (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x)) /\
-    free_omega_qlift (fun w y => right w = y)
-      (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)) /\
-    sem_ae round (fun w => internal_round_path_rel eq eq p q (left w) (right w)).
-Proof.
-  apply pfinite_subenum_equivalence_joint_round; [apply eq_equivalence|].
-  eapply pfinite_residualF_monotone; [|exact latent_cut_residual_step].
-  intros x y Hfalse. contradiction.
-Qed.
+  inhabited (@finite_internal_joint_row planE SubEnum SubEnum_SemanticMeasure
+    SubEnum_SemanticOmega bool bool eq (fun _ _ => False) latent_cut_tree (Ret true)).
+Proof. apply pfinite_joint_round. exact latent_cut_residual_step. Qed.
 
 (** Both guards really sample: the right coin has split native
     weights.  Native realization couples the outcomes rather than drawing

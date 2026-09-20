@@ -47,26 +47,31 @@ pstruct  ⊆  pstrong  ⊆  pfinite  ⊆  peutt
 ```
 
 `pstruct` matches the tree representation exactly; `pstrong` retains
-lockstep control flow but permits coupled sampling measures; `pfinite` may
-remove an inductively finite number of one-sided `Tau` nodes and may collapse
-a stable-hitting prefix once its complete measure is attained at a finite
-approximant; `peutt` additionally admits genuinely unbounded internal
+lockstep control flow but permits coupled sampling measures; `pfinite`
+performs a well-founded internal `Tau`/`Prob` compression to residual trees,
+then requires one guarded strong match before recurring.  It has no fuel or
+stable-hitting premise; `peutt` additionally admits genuinely unbounded internal
 probability through the omega limit.  In particular, `pfinite (Tau spin)
 spin` does not assert that `spin` terminates: only the removed prefix is
 finite.  The public homogeneous `pfinite` is the reflexive-symmetric-
-transitive closure of this one-round finite proof relation, so its composition
-still contains only finitely many finite weak rewrites.  All four homogeneous
-relations are registered as `Equivalence` instances.  The inclusions use
+transitive closure of this guarded greatest fixed point: equational chaining
+is finite, while each guarded proof may describe recurring behavior.  All four homogeneous
+relations are registered as `Equivalence` instances.  The last inclusion
+uses the explicit `FreeOmegaNativeCouplingLaws` capability, proved for
+SubEnum and not assumed for raw Enum or MathComp.  The inclusions use
 Rocq's standard `subrelation`, and
 `PEutt.v` provides relation-generic left, right, and two-sided endpoint
 rewriting.
+SubEnum clients import `PTree.Prob.FreeOmegaNativeCouplingSubEnum` for the
+proved realization instance; the generic facade does not select a backend.
 
 Local finite rewrites may also be used under a behavioral context without
 making `pfinite` itself a congruence.  `peutt_prob_rewrite` combines a
 registered subrelation with the probabilistic coupling rule: branchwise
 `pfinite` proofs yield a `peutt` conclusion for the probability nodes.
-RandomWalk's `passage_unfold` uses precisely this pattern.  Bind and fmap
-reuse their existing behavioral Proper instances after local promotion.
+RandomWalk now proves the stronger `passage_unfold_finite` directly using
+finite Prob/Tau compression, then promotes it to `passage_unfold : peutt`.
+Bind and fmap reuse their existing behavioral Proper instances after local promotion.
 
 `frontier_certificate`, `pstruct`, `pstrong`, and `pfinite` belong to
 mechanization infrastructure.  The first is a

@@ -3,7 +3,7 @@ Local Unset Universe Minimization ToSet.
 From Coq Require Import Program.Equality Classes.RelationClasses Relations.Relation_Operators.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
-From PTree.Eq Require Import FiniteInternal PFiniteResidual PEutt PTreeKernel
+From PTree.Eq Require Import FiniteInternal PFinite PEutt PTreeKernel
   PrimitiveStableHitting UnifiedFrontier.
 
 Set Implicit Arguments.
@@ -19,7 +19,7 @@ Local Notation tree := (ptree closure_event SubEnum bool).
 Local Notation MF := (FreeOmega SubEnum).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
-Local Notation step := (@pfinite_residualF closure_event SubEnum MF
+Local Notation step := (@pfiniteF closure_event SubEnum MF
   SubEnum_SemanticMeasure FI FreeOmegaMixedMeasure bool bool eq).
 Local Notation hit := (@ptree_hitting_approx closure_event SubEnum MF FI
   FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool).
@@ -52,10 +52,10 @@ Qed.
 Lemma closure_edges_upto_postfixed t u : closure_edges t u -> step closed_edges t u.
 Proof.
   intro H. destruct H.
-  - eapply PFiniteResidualStep; [apply FIStop|apply FIStop|].
+  - eapply PFiniteStep; [apply FIStop|apply FIStop|].
     apply sem_lift_ret. unfold pfinite_guard, observe. cbn.
     constructor. apply closure_spin_return.
-  - eapply PFiniteResidualStep; [apply FITau, FIStop|apply FIStop|].
+  - eapply PFiniteStep; [apply FITau, FIStop|apply FIStop|].
     apply sem_lift_ret. unfold pfinite_guard, observe. cbn.
     constructor. reflexivity.
 Qed.
@@ -162,16 +162,16 @@ Lemma symmetric_edges_upto_postfixed t u :
   symmetric_edges t u -> step symmetric_closed t u.
 Proof.
   intros [->|[H|H]].
-  - eapply PFiniteResidualStep; [apply FIStop|apply FIStop|].
+  - eapply PFiniteStep; [apply FIStop|apply FIStop|].
     apply sem_lift_ret.
     exact (@Equivalence_Reflexive _ _ (pfinite_guard_equivalence symmetric_closed_equivalence) u).
-  - eapply pfinite_residualF_monotone; [|apply closure_edges_upto_postfixed; exact H].
+  - eapply pfiniteF_monotone; [|apply closure_edges_upto_postfixed; exact H].
     intros x y Hxy. apply closed_edges_in_symmetric_closed. exact Hxy.
   - destruct H.
-    + eapply PFiniteResidualStep; [apply FIStop|apply FIStop|].
+    + eapply PFiniteStep; [apply FIStop|apply FIStop|].
       apply sem_lift_ret. unfold pfinite_guard, observe. cbn. constructor.
       apply rst_sym, closed_edges_in_symmetric_closed, closure_spin_return.
-    + eapply PFiniteResidualStep; [apply FIStop|apply FITau, FIStop|].
+    + eapply PFiniteStep; [apply FIStop|apply FITau, FIStop|].
       apply sem_lift_ret. unfold pfinite_guard, observe. cbn. constructor. reflexivity.
 Qed.
 

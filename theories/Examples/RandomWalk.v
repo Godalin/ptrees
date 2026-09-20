@@ -8,6 +8,7 @@ From PTree.Core Require Import PTreeDefinition PTreeProbability.
 From PTree.Prob Require Import RatSubTypes DiscreteMC TwoLevelMeasure
   TwoLevelMeasureEnum TwoLevelMeasureSubEnum FreeOmegaMeasure
   MeasureIterationEnum RatGeometric.
+From PTree.Prob Require Import FreeOmegaNativeCouplingSubEnum.
 From PTree.Eq Require Import Shallow PStruct PStrong PFinite PEutt FreeOmega
   UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 
@@ -191,25 +192,29 @@ Proof.
   apply random_walk_as_passage.
 Qed.
 
-(** Renewal is an equation between trees.  The down branch terminates;
-    the reset branch consists of two successive one-level passages.
-    Structural normalization promotes through [pfinite]; each branch then
-    removes just one Tau using [pfinite_tau_l].  [peutt_prob_rewrite] lifts
-    those local finite rewrites into a behavioral probability context.
-    No Prob congruence or unguarded renewal equation is claimed in [pfinite]. *)
+(** Renewal already holds in the finite-compression relation.  Structural
+    normalization leaves one administrative Tau in each coin branch;
+    FIProb/FITau remove exactly those nodes, stopping at the residual
+    continuations even when they themselves perform unbounded retries. *)
+Theorem passage_unfold_finite y :
+  @pfinite rwE SubEnum (FreeOmega SubEnum)
+    SubEnum_SemanticMeasure SubEnum_SemanticMeasureCoreLaws
+    (FreeOmegaObservableSemanticMeasure (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure nat
+    (rw_passage y)
+    (Prob rw_coin (fun down => if down then Ret (S y) else rw_continuation)).
+Proof.
+  eapply pfinite_trans.
+  - apply pstruct_pfinite. apply passage_unfold_guarded.
+  - exact (pfinite_prob_tau_prefix rw_coin (fun _ => 1%nat)
+      (fun down => if down then Ret (S y) else rw_continuation)).
+Qed.
+
 Theorem passage_unfold y :
   rwpeutt eq (rw_passage y)
     (Prob rw_coin (fun down =>
       if down then Ret (S y) else rw_continuation)).
-Proof.
-  eapply peutt_trans.
-  - apply pfinite_peutt_subrelation.
-    apply pstruct_pfinite_subrelation. apply passage_unfold_guarded.
-  - eapply (peutt_prob_rewrite (Hsub := pfinite_peutt_subrelation))
-      with (XR := eq).
-    + apply sem_lift_refl. intros b. reflexivity.
-    + intros b b' ->. apply pfinite_tau_l.
-Qed.
+Proof. apply pfinite_peutt_subrelation, passage_unfold_finite. Qed.
 
 (** Quantitative semantics (separate from finite administrative rewrites).
     The analytic part uses rational finite approximants.  A countable output

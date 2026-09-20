@@ -4,8 +4,9 @@ From Coq Require Import Classes.RelationClasses.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure
   FreeOmegaCoupling.
-From PTree.Eq Require Import FiniteInternal PFiniteResidual PEutt.
-From PTree.Eq.FreeOmega Require Import FiniteInternalTransportSubEnum.
+From PTree.Prob Require Import FreeOmegaNativeCouplingSubEnum.
+From PTree.Eq Require Import FiniteInternal PFinite PEutt.
+From PTree.Eq.FreeOmega Require Import FiniteInternalTransport.
 From PTree.Examples Require Import SubEnumRegression HiddenRandomState.
 
 Set Implicit Arguments.
@@ -90,16 +91,16 @@ Lemma retry_noise_cut_not_structural b c :
 Proof. intro H. inversion H. Qed.
 
 Lemma retry_equiv_postfixed t u : retry_equiv t u ->
-  @pfinite_residualF E SubEnum MF SubEnum_SemanticMeasure FI
+  @pfiniteF E SubEnum MF SubEnum_SemanticMeasure FI
     FreeOmegaMixedMeasure A A eq retry_equiv t u.
 Proof.
   intros [->|[[b Hb] [c Hc]]].
-  - eapply PFiniteResidualStep; [apply FIStop|apply FIStop|].
+  - eapply PFiniteStep; [apply FIStop|apply FIStop|].
     apply sem_lift_ret.
     exact (@Equivalence_Reflexive _ _ (pfinite_guard_equivalence retry_equiv_equivalence) u).
   - destruct (retry_prefix_cut Hb) as [out1 [Hcut1 Heq1]].
     destruct (retry_prefix_cut Hc) as [out2 [Hcut2 Heq2]].
-    eapply PFiniteResidualStep; [exact Hcut1|exact Hcut2|].
+    eapply PFiniteStep; [exact Hcut1|exact Hcut2|].
     change (free_omega_qlift (pfinite_guard eq retry_equiv) out1 out2).
     eapply FOQLComp with (T := eq) (U := pfinite_guard eq retry_equiv); [exact Heq1| |].
     + eapply FOQLComp with (T := pfinite_guard eq retry_equiv) (U := eq).
@@ -116,7 +117,7 @@ Theorem retry_discarded_bits_peutt :
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A A eq
     (retry_with_noise true) (retry_with_noise false).
 Proof.
-  apply peutt_coinduction_residual_subenum with (sim := retry_equiv).
+  apply peutt_coinduction_residual with (sim := retry_equiv).
   - exact retry_equiv_postfixed.
   - right. split; eexists; apply RetryBase.
 Qed.

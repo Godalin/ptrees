@@ -4,7 +4,7 @@ From Coq Require Import Logic.ClassicalChoice Logic.ChoiceFacts.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling
   FreeOmegaMeasure FreeOmegaNative FreeOmegaJointExtension.
-From PTree.Eq Require Import PFiniteResidual FiniteInternalPlan.
+From PTree.Eq Require Import PFinite FiniteInternalPlan.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative FiniteInternalRoundCoupling.
 
 Set Implicit Arguments.

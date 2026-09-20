@@ -231,116 +231,40 @@ Proof.
   - exists t1, t2. repeat split; try reflexivity. exact Hstrong.
 Qed.
 
-Definition pfinite_rel_state {A B} (RR : A -> B -> Prop)
-    (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
-  exists (t1 : ptree E MN A) (t2 : ptree E MN B),
-    s1 = observe t1 /\ s2 = observe t2 /\
-    @pfinite_rel E MN MF NI NC
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
-      A B RR t1 t2.
+End FreeOmegaRelation.
 
-(** Every finite weak proof is sound for the unbounded endpoint.  The key
-    distinction is visible in the proof: finite Tau prefixes are eliminated
-    by induction, while visible continuations return to coinduction. *)
-Theorem peutt_of_pfinite_rel {A B}
-    (RR : A -> B -> Prop) (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  @pfinite_rel E MN MF NI NC
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
-      A B RR t1 t2 ->
-  @peutt E MN MF
-    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega A B RR t1 t2.
-Proof.
-  intro Hfinite. eapply peutt_coinduction_upto with
-    (sim := pfinite_rel_state RR).
-  - intros s1 s2 [u1 [u2 [-> [-> Hrel]]]].
-    induction Hrel as [u1 u2 Hcore|u1 u2 Hrel IH|u1 u2 Hrel IH].
-    + pose proof (pfinite_rel_core_unfold Hcore) as Hstep.
-      inversion Hstep as
-          [v1 v2 Hstrong|v1 v2 out1 out2 Hhit1 Hhit2 Hlift]; subst.
-      * pose proof (peutt_of_pstrong (RR := RR) Hstrong) as Hknown.
-        apply peutt_unfold in Hknown.
-        eapply stable_hitting_match_mono.
-        -- apply ptree_stable_head_rel_mono.
-        -- intros x1 x2 Hx. right. exact Hx.
-        -- exact Hknown.
-      * eapply stable_hitting_match_of_hitting_lift.
-        -- exact (finite_stable_hitting_stable Hhit1).
-        -- exact (finite_stable_hitting_stable Hhit2).
-        -- eapply sem_lift_mono; [|exact Hlift].
-           intros h1 h2 Hhead. dependent destruction Hhead.
-           ++ constructor. exact H.
-           ++ constructor. intro x. left.
-              exists (k1 x), (k2 x). repeat split; try reflexivity.
-              exact (H x).
-    + unfold stable_hitting_match in IH |- *.
-      destruct IH as [IHforward IHbackward]. split.
-      * intros out Htau.
-        apply (proj1 (stable_hitting_tau_iff u1 out)) in Htau.
-        exact (IHforward out Htau).
-      * intros out Hright.
-        destruct (IHbackward out Hright) as [out1 [Hleft Hlift]].
-        exists out1. split; [|exact Hlift].
-        apply (proj2 (stable_hitting_tau_iff u1 out1)). exact Hleft.
-    + unfold stable_hitting_match in IH |- *.
-      destruct IH as [IHforward IHbackward]. split.
-      * intros out Hleft.
-        destruct (IHforward out Hleft) as [out2 [Hright Hlift]].
-        exists out2. split; [|exact Hlift].
-        apply (proj2 (stable_hitting_tau_iff u2 out2)). exact Hright.
-      * intros out Htau.
-        apply (proj1 (stable_hitting_tau_iff u2 out)) in Htau.
-        exact (IHbackward out Htau).
-  - exists t1, t2. repeat split; try reflexivity. exact Hfinite.
-Qed.
+(** The finite relation has a different proof obligation from lockstep
+    structural relations: native quotient couplings must be realizable.
+    Keep that additional capability local to this proof-rewriting API. *)
+From PTree.Eq.FreeOmega Require Export FiniteInternalTransport.
+From PTree.Prob Require Import FreeOmegaNativeCoupling.
 
-Theorem peutt_of_pfinite {R}
-    (t1 t2 : ptree E MN R) :
-  @pfinite E MN MF NI NC
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R t1 t2 ->
-  @peutt E MN MF
-    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticMeasureCoreLaws
-    FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega R R eq t1 t2.
-Proof.
-  intro Hfinite. induction Hfinite.
-  - now apply peutt_of_pfinite_rel.
-  - apply peutt_refl.
-  - now apply peutt_sym.
-  - eapply peutt_trans; eauto.
-Qed.
+Section FreeOmegaFiniteSubrelations.
+Context {E MN : Type -> Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NO : @SemanticOmega MN NI}
+  `{ND : @SemanticMeasureDiracAELaws MN NI}
+  `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
+  `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+  `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
+  `{NJ : @FreeOmegaNativeCouplingLaws MN NI NO}.
+Local Notation MF := (FreeOmega MN).
+Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 
 #[global] Instance pfinite_rel_peutt_subrelation {R} :
   subrelation
-    (@pfinite_rel E MN MF NI NC
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R R eq)
-    (@peutt E MN MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws
+    (@pfinite_rel E MN MF NI NC FI FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasure R R eq)
+    (@peutt E MN MF FI FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R R eq).
 Proof. intros t1 t2. apply peutt_of_pfinite_rel. Qed.
 
 #[global] Instance pfinite_peutt_subrelation {R} :
   subrelation
-    (@pfinite E MN MF NI NC
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R)
-    (@peutt E MN MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws
+    (@pfinite E MN MF NI NC FI FreeOmegaObservableSemanticMeasureCoreLaws
+      FreeOmegaMixedMeasure R)
+    (@peutt E MN MF FI FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R R eq).
 Proof. intros t1 t2. apply peutt_of_pfinite. Qed.
 
-End FreeOmegaRelation.
+End FreeOmegaFiniteSubrelations.

@@ -2,7 +2,7 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure FreeOmegaNative.
-From PTree.Eq Require Import PStrong PFiniteResidual FiniteInternalPlan
+From PTree.Eq Require Import PStrong PFinite FiniteInternalPlan
   UnifiedFrontier PrimitiveStableHitting.
 From PTree.Eq.FreeOmega Require Import FiniteInternalNative.
 

@@ -2,7 +2,7 @@ Set Universe Polymorphism.
 From Coq Require Import Logic.ClassicalChoice.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling.
-From PTree.Eq Require Import FiniteInternal PFiniteResidual
+From PTree.Eq Require Import FiniteInternal PFinite
   UnifiedFrontier PrimitiveStableHitting PTreeKernel FiniteInternalHitting.
 
 Set Implicit Arguments.
@@ -21,8 +21,8 @@ Context {E MN MF : Type -> Type}
 Context {A B : Type} (RR : A -> B -> Prop).
 Variable sim : ptree E MN A -> ptree E MN B -> Prop.
 
-Theorem pfinite_residual_paired_cuts
-    (Hstep : forall t u, sim t u -> pfinite_residualF RR sim t u) :
+Theorem pfinite_paired_cuts
+    (Hstep : forall t u, sim t u -> pfiniteF RR sim t u) :
   exists (cut1 : ptree E MN A * ptree E MN B -> MF (ptree E MN A))
          (cut2 : ptree E MN A * ptree E MN B -> MF (ptree E MN B)),
     (forall t u, finite_internal t (cut1 (t,u))) /\

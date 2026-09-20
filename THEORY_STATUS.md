@@ -173,16 +173,19 @@ pstruct ⊆ pstrong ⊆ pfinite ⊆ peutt.
 `pstruct` is exact structural lockstep.  `pstrong` uses the canonical
 `SemanticMeasure` coupling while retaining lockstep control flow;
 `pstrong_bind` threads a heterogeneous coupling through monadic composition.
-The heterogeneous `pfinite_rel` adds an inductively finite one-sided Tau
-closure and finite-complete stable-prefix collapse; the inductive closure is
-intentionally outside the greatest fixed point, so an infinite one-sided Tau
-loop cannot justify an arbitrary relation.  The public homogeneous `pfinite`
-is its finite reflexive-symmetric-transitive closure.  Consequently
+The heterogeneous `pfinite_rel` alternates well-founded internal Tau/Prob
+compression with one guarded `pstrongF` match.  Compression stops at residual
+trees, not necessarily stable heads, and has no fuel or omega interface.
+An infinite one-sided silent loop cannot justify an arbitrary relation.
+The public homogeneous `pfinite` is the finite reflexive-symmetric-transitive
+closure of this GFP.  Consequently
 `pfinite_refl`, `pfinite_sym`, `pfinite_trans`, and
 `pfinite_equivalence` are available without introducing any omega execution
-rule.  `Eq/FreeOmega/Relation.v` proves soundness first for `pfinite_rel` and
-then for the whole equivalence closure.  The adjacent
-inclusions are registered with Rocq's `subrelation`.  `PEutt.v`
+rule.  `Eq/FreeOmega/FiniteInternalTransport.v` proves soundness first for
+`pfinite_rel` and then for the equivalence closure, under the explicit native
+coupling-realization capability proved for SubEnum.  Raw Enum and MathComp
+do not currently instantiate this optional capability.  `Relation.v`
+registers the corresponding conditional `subrelation` instances.  `PEutt.v`
 supplies generic endpoint rewriting for every registered stronger relation.
 
 The following laws are checked:
@@ -731,1152 +734,132 @@ The artifact support range is Coq `>= 8.20` and `< 9.0`, with CI explicitly
 installing Coq 8.20.1.  Coq 9 changes Stdlib load paths and requires a
 separate migration; it is not part of the current compatibility claim.
 
-## Residual finite-compression redesign (in progress)
-
-The proposed replacement for `pfinite` is implemented separately in
-`Eq/PFiniteResidual.v`, and is **not yet the public `pfinite` relation**.
-The current `PFinite.v`, its generic soundness theorem, and the public facade
-are unchanged pending the backend-capability boundary and client migration.
-Greatest-fixed-point soundness of the replacement is now proved for
-SubEnum/FreeOmega, without an equivalence premise on the recursive candidate.
-The temporary candidate names are migration scaffolding, not a second
-intended public behavioral relation.
-
-### Current checkpoint: unrestricted SubEnum soundness
-
-`Eq/FreeOmega/FiniteInternalTransportSubEnum.v` proves:
-
-```text
-sim ⊆ pfinite_residualF RR sim  ->  sim ⊆ peutt RR
-pfinite_residual_rel RR        ⊆   peutt RR
-pfinite_residual               ⊆   peutt eq
-```
-
-The names are `peutt_coinduction_residual_subenum`,
-`pfinite_residual_rel_peutt_subenum`, and `pfinite_residual_peutt_subenum`.
-These endpoints allow arbitrary heterogeneous candidates and do not require
-AST, total mass, a uniform fuel bound, an equivalence proof, or supplied
-joint rows.  The last implication is ordinary induction over finite
-equational chaining, not an up-to-equivalence rule.  Raw-GFP transitivity
-and closure postfixedness are neither used nor asserted.
-
-The missing bridge is now proved in
-`Prob/FreeOmegaNativeTransportSubEnum.v::subenum_native_quotient_coupling`:
-any quotient coupling of two native presentations yields an actual native
-joint for their original sample measures.  The relation is arbitrary;
-decoders may be noninjective and return higher-universe values.  The proof
-first uses ordinal positions to retain duplicate and zero-weight entries,
-pulls the quotient back to these finite carriers, derives Hall inequalities
-and equal mass from the scalar model, constructs a rational transport, and
-transports it back to the original carriers.  The only finite-support
-restriction is the existing SubEnum carrier, not an extra client premise.
-
-The scalar lemmas are parameterized by a MathComp `realType`; the behavioral
-endpoints instantiate them internally with Coq's standard reals, using
-`coq-mathcomp-reals-stdlib`.  No numerical model parameter or new
-probability/reflection axiom is required from clients.  Standard-real axioms
-remain part of the proof's logical dependencies, alongside the previously
-used classical and extensionality principles.
-In particular, `Print Assumptions` reports
-`ClassicalDedekindReals.sig_not_dec` and
-`ClassicalDedekindReals.sig_forall_dec` from this concrete real model; these
-are not being presented as an axiom-free proof or hidden backend laws.
-
-`Examples/ResidualTransport.v` exercises a non-reflexive three-pair retry
-candidate and the heterogeneous raw-GFP endpoint.
-`Examples/ResidualJointCoinduction.v` now uses the unrestricted rule for its
-unbounded retry with discarded bits, including its eventful and
-always-failing instances.
-
-The generic public `pfinite` replacement, generic/backend-qualified
-subrelation API and RandomWalk migration are still pending.  This
-SubEnum theorem must not silently replace the existing all-backend theorem.
-The following development notes record earlier stages; their historical
-extraction gaps are superseded by this checkpoint for SubEnum.
-
-### Development notes
-
-`Eq/FiniteInternal.v` defines the inductive operational judgment
-`finite_internal t out`, with `FIStop`, `FITau`, and `FIProb`.  It returns a
-distribution of residual trees, not stable heads.  There is no fuel or
-stable-hitting condition.  Infinitely many sampling branches may have
-different finite depths with no uniform bound; the derivation is
-well-founded, not necessarily a finite tree.
-
-The candidate generator couples these residual distributions under
-`pfinite_guard RR sim`, a single `pstrongF` match whose continuations use
-`sim`.  Thus `FIStop` cannot make an unguarded recursive proof valid.  The
-candidate has proved `pstrong` inclusion, heterogeneous converse, return
-relation monotonicity, and reflexivity.  As in the current API, its
-homogeneous equivalence is the finite reflexive-symmetric-transitive closure;
-this does not assert transitivity of the raw heterogeneous greatest fixed
-point.
-
-The completed semantic results in `Eq/FiniteInternalHitting.v` are:
-
-- `finite_internal_hitting_lift`: the original complete hitting behavior
-  couples by equality to the bind of the residual distribution with its
-  complete hitting behaviors.  The conclusion is a coupling, not an
-  unjustified equality or closure of a chosen limit representative.
-- `peutt_of_finite_internal`: coupling residuals by **already proved**
-  `peutt` is a sound behavioral rewrite.
-- `pfinite_residual_round_sound`: one candidate round with `peutt` as its
-  recursive relation is sound, including heterogeneous return relations.
-- `finite_internal_match` and `finite_internal_closure_compatible`: finite
-  compression preserves native generator matching for arbitrary continuation
-  candidates.  Thus `peutt_coinduction_upto_finite_internal` is a proved
-  compatible-closure rule, rather than an appeal to a final congruence inside
-  its own coinductive proof.  Its progress premise is still a complete
-  stable-hitting match, not merely a `pstrongF` internal guard.
-- `FreeOmega/FiniteInternal.v::finite_internal_hitting_covered`: every
-  primitive n-step observation is below the result of first performing any
-  well-founded compression and then running each residual for n steps.
-  The index is a proof-level semantic approximation; it imposes no uniform
-  depth bound on `finite_internal`.
-- `finite_internal_rounds_cover_hitting`: for any independently selected
-  valid compression policy, n+1 compression/guard rounds cover every
-  observation reached within n primitive internal steps.  The accelerated
-  approximants are increasing (`finite_internal_rounds_increasing`).
-  This establishes lower coverage through arbitrarily many internal rounds,
-  not just preservation of a single compression.
-- `finite_internal_round_limits_coupled`: if two independently selected
-  policies couple their residuals under `pfinite_guard RR sim` at every
-  related state pair, their complete accelerated chains are coupled under
-  `stable_head_rel RR sim`.  This is a coupling of actual omega chains;
-  no assumed inclusion in `peutt` occurs in its proof.
-- `finite_internal_approximation_exists`: every well-founded cut has an
-  increasing chain of uniform-depth truncations converging to its residual
-  distribution.  The truncations have both primitive-fuel upper bounds and
-  lower coverage.  This does not put a uniform bound on the original cut.
-
-`Eq/FreeOmega/FiniteInternalAcceleration.v` completes the acceleration
-adequacy argument for any selected compression policy:
-
-- `finite_internal_grid_cofinal` proves that primitive hitting and the
-  diagonal of the truncated-round grid are mutually cofinal.
-- `finite_internal_acceleration` couples the complete accelerated limit
-  by equality to the original primitive hitting limit.  The scheduling grid
-  is constructed from the well-founded derivations; it is not an extra
-  hypothesis, and branch depths need not have a uniform bound.
-- `peutt_coinduction_finite_internal_policies` is therefore a proved native
-  coinduction rule for two valid marginal policies with guarded residual
-  coupling.  Unlike `peutt_coinduction_upto_finite_internal`, its premise
-  needs only `pstrongF` matching after compression.  It handles indefinitely
-  repeated internal Tau/Prob rounds with no intervening visible event.
-
-The round-soundness lemma establishes `F(peutt) ⊆ peutt`, **not**
-`νF ⊆ peutt`.  Greatest-fixed-point soundness still needs to connect its
-pair-dependent compression witnesses to the proved unbounded execution
-argument.  The old proof, which recurs only after stable observations,
-does not supply this connection.  No additional capability axiom, intersection
-with `peutt`, or unfinished proof has been used to disguise this gap.
-
-The unary-policy acceleration limit obligation is solved.  Witness dependency
-prevents applying that theorem directly to the unrestricted residual GFP: the existential
-compression witnesses in `pfinite_residual_unfold` may
-depend on the whole related pair.  Classical choice on pairs does **not**
-produce the independent marginal policies assumed by
-`peutt_coinduction_finite_internal_policies`.  A proof must handle this dependency,
-not silently strengthen the generator to require such policies.  The paired
-execution development below now resolves this dependency for structural
-residual liftings; it does not uniformize the witnesses.  Unrestricted GFP
-soundness is still not claimed, and no new capability axiom replaces it.
-
-`Prob/SemanticCoupling.v` and `Eq/FiniteInternalJoint.v` begin the
-pair-dependent execution bridge, without assuming independent policies:
-
-- `semantic_coupling` records an **explicit joint measure**, its two graph
-  couplings to the marginals, and AE support in the candidate relation.  It
-  is a certificate, not a new typeclass axiom.  `semantic_coupling_sound`
-  recovers ordinary `sem_lift` from the certificate; the converse is **not**
-  assumed or claimed proved for arbitrary FreeOmega quotient couplings.
-- `semantic_coupling_dependent_bind` permits continuations to depend on the
-  entire sampled pair.  Its left/right marginal lemmas and
-  `semantic_coupling_bind_dependent` preserve the joint's probabilities and
-  compose concrete next-joint certificates, including off-support branches.
-- `pfinite_residual_paired_cuts` applies classical choice at the correct
-  domain: pairs of related trees.  It extracts valid paired cut functions
-  from any post-fixed candidate without a uniformization hypothesis.
-- `finite_internal_joint_guarded` couples the resulting marginal residual
-  distributions.  `finite_internal_joint_hitting_left/right` prove that
-  completing those residuals preserves each original marginal's hitting
-  behavior.  These are finite-round results, not yet the GFP soundness
-  theorem or an infinite-history acceleration theorem.
-
-`Examples/PairedFiniteCompression.v` checks a correlated stopping choice:
-the same left tree `Tau (Tau (Ret true))` is cut by two steps or one step
-according to its right partner.  The resulting left residual distribution
-mixes `Ret true` and `Tau (Ret true)` with positive weights.  It is proved
-not equality-coupled to **any** unary finite-internal cut of that left tree,
-yet the joint-compression theorem preserves its complete hitting behavior.
-This rules out replacing the chosen paired strategy by a unary cut merely
-by changing its measure representation.  It does not claim that the program
-pair admits no other useful unary policy.
-
-The certificate API and finite-round preservation lemmas alone do not
-establish unrestricted soundness.  The development below proves unbounded
-correlated acceleration for structurally realized rounds; arbitrary residual
-quotient couplings still need joint witnesses and suitable marginal realizations.
-
-Joint-witness extraction now has concrete proved cases:
-
-- `Prob/SemanticCouplingEnum.v::enum_coupling_realization` recovers a joint
-  enumeration from the backend's position-indexed coupling.  The public
-  theorem permits arbitrary value types, including functions; classical
-  equality is local to the conversion proof, not a client `eqType` premise.
-  `subenum_coupling_realization` additionally proves the joint's mass is that
-  of its marginal and therefore packages it within the native SubEnum bound.
-- `Prob/FreeOmegaCoupling.v::free_omega_lift_realization` constructs joint
-  FreeOmega measures by induction over the **structural** lifting, including
-  its `Lub` constructor, from a node witness-extraction theorem.  Concrete
-  Enum and SubEnum corollaries in `FreeOmegaCouplingEnum.v` discharge that
-  premise; they do not register an unproved capability class.
-  The `Lub` case provides graph marginals and AE support, but does **not**
-  assert that independently selected row joints form an increasing chain.
-  A later infinite-history argument must establish monotonicity separately
-  wherever it uses cofinality or diagonalization.
-- `semantic_coupling_transport` preserves an explicit joint under equality
-  lifting of both marginals, without equality reflection.  Consequently
-  `free_omega_lift_realization_mod_eq` realizes general many-to-many
-  structural couplings after quotient-equality rewrites on either side.
-  It does not assume that every relational quotient coupling can be put
-  in this form.
-- `free_omega_qlift_graph_realization` handles the **full quotient lifting**
-  for function-graph relations.  Its equality specialization constructs a
-  diagonal joint without disintegration or a new backend assumption.
-  Consequently `finite_internal_acceleration_joint` realizes the complete
-  acceleration equality, including its cofinal/diagonal limit proof, as an
-  explicit joint certificate.  This result is not restricted to bounded
-  cuts or bounded numbers of guard rounds.
-- Realization now has proved closure rules for several quotient operations.
-  `semantic_coupling_bind` and its existential variant compose source and
-  branch witnesses into a joint for the **original marginal binds**.  The
-  branch joint may depend on both sampled values; no independent-policy
-  choice is made.  The existential proof needs neither inhabited result
-  types nor a zero-measure capability.  Monotonicity and AE restriction
-  retain the same joint; AE restriction does not condition or normalize it.
-- `free_omega_sample_coupling_realization` allows arbitrary already-realized
-  quotient branch couplings under node sampling, and
-  `free_omega_coupling_converse` constructs the swapped joint.  The latter
-  proves the needed FreeOmega bind/Ret normalization rather than adding a
-  generic right-unit law.  `free_omega_lub_coupling_realization` composes
-  formal Lub rows without a structural premise, but still does **not**
-  assert monotonicity of the chosen row joints.
-
-`Examples/CouplingRealization.v` checks function-valued node carriers,
-structural `Lub` witnesses, relational marginal rewrites, and a quotient
-equality that provably has no structural lifting derivation.
-It also exercises quotient-source bind with relational branches, sampling
-and formal Lub with quotient-rewritten branches, converse, AE restriction
-with an unchanged joint, and empty result types with no related source pairs.
-`PairedFiniteCompression.v` now also extracts
-its residual joint from the structural coupling proof instead of requiring
-the example's hand-written joint.
-
-The extraction gap is therefore narrower but not closed: arbitrary
-relational `free_omega_qlift` witnesses are still not realized by these
-theorems.  Neither the structural theorem nor the graph theorem is silently
-applied to general many-to-many guard relations.  The unrestricted residual
-GFP soundness theorem remains unproved, and the public `PFinite` API is not
-replaced on the strength of these partial realization results.
-In particular, the closure rules do not yet supply a general realizer for
-quotient composition, observation, or relational cofinal limits: composing
-ordinary liftings is not the same as gluing their joint witnesses, and
-independent choices of row witnesses do not establish a monotone joint limit.
-
-The composition gap now has a proved factorization, rather than an implicit
-appeal to gluing.  Given certificates for `mu --R--> mid --T--> nu`,
-`semantic_coupling_fiber_lift` relates their two existing joints by equality
-of the middle projections (`snd p = fst q`).  This is an ordinary lifting,
-**not** a realization theorem for that lifting.
-`free_omega_coupling_glue` takes an explicit realization of this fiber match
-and projects it to an outer joint for relational composition.  Its proof
-retains both original marginals and transports both support predicates.
-`free_omega_coupling_glue_structural` discharges the fiber realization when
-the fiber match has a structural lifting, even if the supplied marginal
-certificates use quotient equality.  No general gluing capability is added.
-
-The node-embedding regression in `CouplingRealization.v` constructs the
-fiber match from arbitrary relational SubEnum couplings and glues them with
-quotient-rewritten outer marginals.  A negative regression proves that two
-independent copies of a bit with both values in its AE support do not satisfy
-the equality-fiber condition.  Thus independently sampling the two joints
-cannot silently replace the remaining unrestricted fiber-realization proof.
-
-`Eq/FreeOmega/FiniteInternalJoint.v` now constructs actual paired execution:
-
-- `finite_internal_guard_joint_exists` realizes one `pstrongF` guard using
-  only a node coupling realizer.  Ret/Vis produce related paired heads;
-  Tau/Prob produce paired residual trees.  Enum and SubEnum discharge the
-  node premise with proved theorems, not new capability axioms.
-- `finite_internal_paired_kernel_exists` chooses residual and guard joints
-  on **pairs**, then composes them into a fixed joint kernel.  It proves
-  both graph marginals equal the corresponding cut-followed-by-guard
-  transitions and proves AE closure of residual/head relations.  It still
-  explicitly requires realizability of each residual coupling.
-- `finite_internal_paired_rounds_increasing` and
-  `finite_internal_paired_hitting_coupled` establish increasing joint-round
-  approximants, head support at the complete hitting limit, and a coupling
-  of that limit's two projections.  The chain is obtained by executing one
-  fixed kernel, not by independently choosing a coupling at each fuel.
-
-`Eq/FreeOmega/FiniteInternalJointHitting.v` additionally proves
-`finite_internal_realized_round_hitting`: resolving a realized round's
-stable outputs immediately and completing its residuals with their original
-hitting distributions recovers the source tree's complete hitting up to
-equality lifting.  This uses validity of the finite cut and the round's
-graph marginal, and is therefore probability preservation rather than only
-support preservation.  It is a one-round completion equation, not yet a
-proof that an infinite sequence of uncompleted rounds is adequate.
-
-`Examples/CorrelatedInternalRounds.v` instantiates the construction with the
-partner-dependent cuts from `PairedFiniteCompression` and with the purely
-internal, unbounded retry loops from `ResidualFinite`.  The latter's existing
-cut proof now exposes its structural lifting before promotion to the quotient
-lifting, so the residual joint can be extracted automatically.  A negative
-regression rules out an always-zero kernel as a round certificate for the
-returning pair: AE closure alone would permit it, but the graph-marginal
-obligations do not.
-
-The correlated example also checks the completion equation for each of the
-two original marginals; neither proof substitutes an independent policy.
-
-`Eq/FreeOmega/KernelCompletion.v` proves the upper-bound direction of
-infinite execution using completion of finite prefixes:
-
-- `kernel_completion_eq` propagates a one-round completion equation to
-  every finite number of rounds, on an AE-closed domain of states.
-- `kernel_hitting_approx_below_completion` gives a **raw** approximation
-  bound from actual truncated hitting to the corresponding completed
-  prefix.  Unresolved mass is zero on the former side.
-- `kernel_hitting_limit_upper` constructs an explicit `upper` with raw
-  approximation from the complete projected hitting to `upper`, and an
-  equality coupling from `upper` to the proposed full behavior.  It does
-  not transport the raw order across that equality.  Its formal completion
-  limit is related to a constant chain by pointwise equality; no claim of
-  raw monotonicity, or use of cofinality, is made for that completion chain.
-- `FiniteInternalJointHitting.v::finite_internal_execution_hitting_upper`
-  discharges the completion equation using **valid finite cuts** and the
-  actual graph marginal of a realized round.  States may contain both
-  trees or richer history: cuts need not factor through the projected tree.
-  The correlated-cut and internal-retry regressions both instantiate this
-  complete-hitting upper bound against their original tree semantics.
-
-`Examples/KernelCompletion.v` guards against mistaking this upper half for
-adequacy: a pure internal self-loop admits a returning tail that satisfies
-the completion equation, and has an upper bound of the above form, but its
-actual hitting is zero and is **not** equality-coupled to that returning
-tail.  A fixed-point equation alone does not identify the least solution.
-A second regression exhibits a two-stage terminating kernel with a valid
-completion equation but a non-raw-increasing completion sequence, ruling out
-the shortcut of applying monotone cofinality to such sequences without proof.
-
-`Eq/FreeOmega/FiniteInternalJointCoverage.v` now supplies a reverse coverage
-theorem for **structurally realized** graph marginals:
-
-- `finite_internal_execution_covers_hitting` proves that the macro-round
-  hitting approximant covers the original tree's approximant at the same
-  fuel index (an initial kernel step, then n further residual transitions).
-  The induction uses
-  validity of each well-founded cut followed by the genuine primitive
-  guard, and AE closure for the next correlated state.  There is no uniform
-  bound on the cuts and no factorization into independent marginal policies.
-- `finite_internal_execution_limit_covers` lifts those raw inequalities
-  pointwise to the formal complete hitting limits.
-- `free_omega_lift_structural_realization` retains structural graph
-  marginals in the existing structural joint extraction proof; the previous
-  observable endpoint is now its corollary.  Likewise the primitive guard
-  realizer exposes structural graphs before promotion to the quotient.
-  `finite_internal_structural_paired_kernel_exists` constructs an entire
-  paired kernel from structural residual couplings, using the proved node
-  realizer rather than assuming residual witnesses.
-
-`CorrelatedInternalRounds.v` exercises this reverse coverage on an explicit
-realization of the partner-dependent cut, and on the internally retrying
-programs via the generic structural kernel construction.  Neither example
-assumes the desired coverage or the original programs' behavioral equality.
-
-The structural qualification cannot simply be removed from this raw-order
-statement.  `quotient_round_kernel_spec` wraps the valid correlated kernel
-in a constant `FOLub` and proves that the general quotient round contract is
-still satisfied.  `quotient_round_raw_coverage_fails` then refutes raw
-coverage even for the returning pair at fuel zero, because raw approximation
-does not identify Ret-shaped and Lub-shaped representations.  This is a
-counterexample to that **raw coverage formulation**, not to residual-pfinite
-soundness; general coverage must allow equality-related representatives.
-
-`Eq/FreeOmega/KernelCongruence.v` now proves the representation-invariance
-needed to use such representatives.  Pointwise quotient equality of two
-kernels on an AE-closed state domain yields equality of each finite hitting
-approximant, their canonical limits, and **any** two complete hitting
-representatives (`kernel_stable_hitting_eq`).  Neither raw-order properness
-nor a bound on internal rounds is assumed.
-
-`finite_internal_execution_covers_modulo_eq` and
-`finite_internal_execution_limit_covers_modulo_eq` use an equivalent,
-structurally realized reference kernel to construct the coverage witness:
-raw approximation ends at that witness, followed by quotient equality to
-the requested kernel's projected behavior.  The complete witness comes from
-one reference kernel, not an unproved monotone choice of per-fuel witnesses.
-The reference is needed only for the selected marginal; left and right
-coverage need not use the same reference presentation.  Existence of such
-a reference for an arbitrary residual coupling is **not** assumed or proved.
-
-The constant-`FOLub` regression in `CorrelatedInternalRounds.v` now has both
-the negative raw statement and the positive finite/complete coverage
-statements modulo equality.  `Examples/KernelCongruence.v` additionally
-checks swapping two SubEnum samples in every round of an arbitrary kernel,
-including kernels that continue internally with changed states.  Product
-exchange is proved locally for those node measures; it is not added as a
-required capability for general kernel congruence.
-
-`Eq/FreeOmega/KernelContinuity.v` supplies the general limit-exchange step
-for a genuinely increasing family of truncated kernels.  If each full
-kernel row is equality-coupled to the formal limit of those rows, then
-`kernel_hitting_approx_limit` commutes each finite hitting approximation
-with the kernel limit, and `kernel_hitting_limit_diagonal` identifies the
-complete hitting with a single diagonal increasing both kernel accuracy
-and execution fuel.  The state may contain a correlated program pair and
-history; no factorization into unary policies is required.  Raw monotonicity
-of the kernel chain is an explicit premise, not inferred from quotient
-equality.  `kernel_stable_hitting_diagonal_adequate` additionally turns
-**mutual raw finite coverage** of the projected diagonal and a reference
-kernel's hitting chain into equality of their complete representatives.
-
-This continuity theorem is used by `finite_internal_rounds_limit` in the
-existing unary acceleration proof.  `finite_internal_rounds_kernelE`
-identifies those rounds with hitting for the cut-followed-by-guard kernel;
-the former specialized advance/bind limit helpers have been removed.
-`Examples/KernelContinuity.v` independently tests state-rank truncation of
-arbitrary SubEnum/FreeOmega kernels, without AST or a global state bound,
-and shows that no fixed cutoff suffices for every returning state.
-
-The missing correlated truncation construction is now proved for
-**structurally realized** marginal rounds:
-
-- `FiniteInternalJointTruncation.v::finite_internal_joint_approximation_exists`
-  constructs an increasing chain on the original joint carrier, with
-  convergence, raw approximation below the full round, primitive-fuel
-  upper bounds, and finite coverage.  At a sampling node it uses an actual
-  node joint and recursively selects a child chain for each related pair.
-  It never replaces that joint by a deterministic partner selection.
-- `FiniteInternalJointAcceleration.v` chooses these chains on entire
-  correlated states.  Outside the invariant domain it uses constant chains;
-  inside the domain, raw approximation below the full round preserves AE
-  closure.  The resulting two-dimensional grid has proved raw upper bounds
-  and lower coverage, so its diagonal is cofinal with primitive hitting.
-- `finite_internal_structural_execution_adequate` consequently identifies
-  the projected COMPLETE joint hitting with the original tree's complete
-  hitting.  This is equality lifting, not just the earlier upper/lower bounds.
-  There is no uniform cut bound, AST assumption, or requirement to encounter
-  Vis between successive internal rounds.
-- `finite_internal_structural_execution_adequate_modulo_eq` extends the result
-  to a kernel quotient-equal to a structurally realized reference.  It does
-  not assume raw-order properness or existence of such a reference for every
-  arbitrary quotient round.
-- `FiniteInternalJointCoinduction.v::peutt_coinduction_finite_internal_structural`
-  combines the actual paired-kernel construction, both marginal adequacy
-  theorems, and the coupling of projected outputs into a native behavioral
-  coinduction rule.  Cuts may depend on both trees; only their residual
-  lifting is required to be structural.  The candidate itself supplies the
-  continuation relation, not an assumed prior behavioral equality.
-
-`FiniteInternalJointReference.v::peutt_coinduction_finite_internal_references`
-now permits **different, quotient-equal reference kernels** for the two
-marginals.  Each reference must have a proved structural graph to its own
-cut-followed-by-guard round; neither a structural lifting between the two
-cuts nor a shared structural reference is required.  AE closure of the
-references follows from equality with the actual invariant-preserving
-kernel.  Marginal adequacy identifies both projections of that kernel's
-complete hitting with the original trees' hitting, giving the native
-coinduction step.  The structural rule above is now a corollary of this
-reference rule rather than a duplicate adequacy proof.
-
-The rule now also has a residual-level entry point:
-`peutt_coinduction_finite_internal_coupling_references`.  Its client supplies
-two equivalent joint presentations of the selected residual cuts, with a
-structural left marginal on one and a structural right marginal on the
-other.  `finite_internal_reference_kernels_exists` constructs the shared
-guard continuation and both execution kernels automatically.  The
-`free_omega_coupling_references` certificate in `FreeOmegaCoupling.v` is
-proof data, not a new semantic relation or backend capability.  It yields
-an ordinary joint certificate, handles arbitrary quotient equality via
-diagonal graphs, and is closed under pair-dependent bind.
-
-`Examples/CorrelatedSampleAlgebra.v` exercises this extension by exchanging
-two independent SubEnum samples **in every iteration of an unbounded
-internal retry loop**.  Its `exchange_inside_unbounded_retry` theorem proves
-`peutt` without AST, positivity, or a retry bound.  Sample exchange is proved
-locally; commutativity is not added to the generic rule's assumptions.
-The example now uses the residual-level entry point: its manually defined
-execution kernels and their separate marginal/closure proofs have been
-removed.
-For the concrete Dirac-false/fair-coin instance,
-`exchange_fair_retry_equivalent` proves the behavioral equality while
-`exchange_fair_residuals_not_structural` shows that the selected residual
-cuts have no structural guard lifting for any continuation relation.
-Thus the extension genuinely covers non-structurally-aligned cuts.  This
-negative result concerns those selected cuts, not every possible choice of
-cuts or the desired unrestricted soundness theorem.
-
-`CorrelatedInternalRounds.v` now proves actual `peutt` via this rule for the
-partner-dependent cuts and the purely internal unbounded retry loops.
-The constant-Lub wrapper that refutes raw coverage also has a positive
-complete-hitting equality regression via the reference-kernel theorem.
-
-Thus structural correlated acceleration adequacy is solved.  The remaining
-gap to the unrestricted residual GFP is its larger **quotient** residual
-lifting: general joint extraction and adequate marginal realization are
-not supplied by structural extraction.  The new reference rule handles
-some non-shape-preserving probability algebra, but does not construct its
-reference kernels from every arbitrary quotient lifting.  In fact a general
-extraction theorem with structural reference marginals is **false**:
-`free_omega_coupling_references_ret_deterministic` proves that a literal
-right-hand `FORet` forces the left marginal to be AE concentrated at a
-single value.  `Examples/CouplingReferences.v` exhibits a genuine fair-coin
-quotient coupling to a discarded result for which no such references exist.
-`reference_coin_discard_ordinary_joint` nevertheless constructs its ordinary
-joint certificate, isolating the obstruction to structural reference
-marginals rather than to joint realizability itself.
-This is not confined to arbitrary test relations:
-`discarded_coin_is_residual_finite` uses a fair coin to choose between
-`Tau (Ret false)` and `Tau (Tau (Ret false))`, with valid `finite_internal`
-cuts coupled under the actual `pstrongF` guard and residual GFP candidate.
-`discarded_coin_cuts_have_no_references` rules out residual reference pairs
-for those cuts; `discarded_coin_rounds_have_no_reference_kernels` also rules
-out execution-kernel references after the guard is advanced.  Other cuts
-can still succeed on this terminating example.  The result specifically
-refutes extraction from arbitrary GIVEN cuts, not existence of alternative
-proofs or the behavioral equality of these programs.
-Thus future work must allow latent randomness in marginal realization, or
-use a soundness proof not requiring structural reference marginals.  It
-cannot close the gap merely by proving a universal reference-extraction
-lemma.  This is a limitation of the proof certificate, not a counterexample
-to the intended residual GFP soundness.
-
-There is now a separate, non-structural route for **projectable marginal
-policies**.  `Eq/FreeOmega/KernelProjection.v` proves that quotient graph
-marginals commute with finite and complete hitting, on an AE-closed source
-domain.  The state projection may forget random information; neither
-structural reference kernels nor joint-witness extraction are required.
-The essential hypothesis is that the projected one-round kernel is the
-target kernel at the projected state, not just a completion equation.
-
-`FiniteInternalProjectedPolicy.v::finite_internal_projected_policy_adequate`
-combines that projection theorem with well-founded unary-cut acceleration.
-The joint state may contain a partner and execution history, but this
-particular marginal must use a globally valid policy depending only on its
-projected tree.  No condition is imposed on how another marginal will be
-proved adequate.  This removes the structural-marginal obstruction in this
-case, without claiming that arbitrary pair-dependent cut choices factor
-through a unary policy.
-
-`Examples/HiddenRandomState.v` tests an arbitrary kernel with a fresh random
-state component sampled after **every internal transition**, not just in a
-bounded prefix.  `random_state_complete_hitting` proves preservation of
-complete hitting; `fair_hidden_compressed_hitting` exercises the new
-adequacy theorem on arbitrary well-founded PTree compression policies,
-including eventful trees and unbounded execution.  The fair-coin instance
-discharges the native total-mass premise with an actual coupling to Dirac.
-`free_omega_sample_to_constant` is the generic probability-algebra step;
-AE support alone is not used to erase mass.  The negative test
-`zero_hidden_sample_rejected` rejects an attempted zero-mass noise sample.
-`hidden_step_has_no_structural_reference` additionally proves that the
-instrumented first step of a simple terminating kernel has no
-quotient-equal structurally marginalized reference.  The projection route
-therefore handles an actual case outside the earlier reference method.
-
-The unrestricted residual GFP still permits genuinely pair-dependent cuts
-whose projected rounds are not unary policies.  Neither projectability nor
-structural references may be silently imposed on that definition.  Removing
-both restrictions from correlated acceleration remains the soundness gap.
-
-`Prob/EnumDisintegration.v` now supplies a concrete native conditional
-resampling construction: `subenum_disintegration` reconstructs any finite
-SubEnum joint by sampling its first marginal and then the full conditional
-pair.  It preserves the original joint (not merely its support), stays in
-SubEnum, retains every AE joint invariant, and is total almost everywhere
-under the first marginal.  Null fibers have zero mass, not an arbitrary
-chosen partner.  The explicit construction uses decidable equality; the
-existential endpoint uses proof-local classical equality and requires no
-client `eqType`, including for function-valued states.  No new semantic
-axiom or backend capability is assumed.
-`Examples/EnumDisintegration.v` checks preservation of a latent fair bit,
-null-fiber mass, zero-joint reconstruction, and function-valued carriers.
-This is a native finite-measure ingredient, **not** a disintegration theorem
-for arbitrary FreeOmega quotient liftings or a proof of unrestricted
-correlated acceleration.  The soundness gap above remains open.
-
-The native ingredient now connects to execution rather than stopping at
-finite-list reconstruction.  `subenum_disintegration_over` accepts a
-specified graph-coupled marginal, including a different weight-list
-representation; `subenum_coupling_disintegration` obtains both a joint and
-its conditional sampler from a native coupling.  The conditional sampler
-preserves the related pair and is total only AE under the specified
-marginal, as required when null fibers are present.
-`Prob/FreeOmegaDisintegration.v::free_omega_sample_disintegration` transports
-joint reconstruction through an arbitrary higher-universe FreeOmega
-continuation.  `Eq/FreeOmega/KernelDisintegration.v` then proves complete
-hitting equality when this resampling is done in every kernel round.
-`kernel_disintegration_exists` constructs state-indexed conditionals from
-native graph marginals; distributions and conditionals may depend on the
-entire state/history, without a unary-policy, AST, or round-bound premise.
-The continuation may inspect both components of the sampled pair.
-
-`Examples/ConditionalResampling.v` checks split-weight marginals,
-higher-universe PTree continuations, and an unbounded retry-count kernel.
-In the latter, the rescheduled first sample is a Dirac measure and the
-conditional second sample retains the hidden fair retry bit.  This is
-genuine random resampling after a deterministic marginal, not arbitrary
-partner selection.  These results reschedule an already supplied native
-joint in a kernel.  They do not yet extract a joint or an adequate primitive
-schedule from arbitrary **residual FreeOmega quotient** couplings; the
-unrestricted `pfinite` soundness/API replacement remains unproved.
-
-There is now an exact **native-presentation reduction** for all well-founded
-compression witnesses, not just selected unary policies.
-`Prob/FreeOmegaNative.v::free_omega_sample_sigma` flattens dependent nested
-sampling while retaining the tagged sample values.  A
-`free_omega_native_presentation` consists of a small native sample type,
-its measure, and a potentially higher-universe decoder.  Presentations
-are closed under bind; no native measure of PTree values is required.
-`FiniteInternalNative.v::finite_internal_native_presentation` proves that
-every `finite_internal` output has such a single-sample presentation, and
-`finite_internal_round_native_presentation` includes the subsequent guard.
-No uniform branch-depth bound, finite-support assumption, or AST premise
-is used.  MathComp instantiation uses its existing core/gluing, Dirac AE,
-and exact bind AE capabilities, **not** node relational bind laws.
-
-This reduction now retains typed execution plans, not just arbitrary
-equal-distribution presentations.  `Eq/FiniteInternalPlan.v` reifies every
-`finite_internal` witness into a `finite_internal_plan` indexed by its
-original tree, with **exactly the original frontier**.  Each plan has a small
-dependent sample space, a native path measure, a residual decoder, an
-actual finite step count, and a state at every prefix.  Prefix and suffix
-validity theorems prove the syntactic Tau/Prob path; probabilities reside
-in the path measure, not in claims about individual positive-mass atoms.
-Plans stop at Ret/Vis without executing external interaction and also
-allow internal/divergent residuals.
-
-`internal_plan_native_eq` proves that sampling these actual plan paths
-preserves the frontier distribution.  The earlier bare-presentation proof
-now follows from this stronger result.  `pfinite_residual_native_characterization`
-is a proved iff between the original candidate generator and the existence
-of two typed plans whose decoded native samples have the guard coupling.
-This does not narrow the candidate.  The coupling is still **FreeOmega
-quotient** coupling, not native coupling between the path spaces; its
-pullback through the decoders has not been proved.
-
-`FiniteInternalPlanHitting.v::internal_plan_hitting_approx` identifies every
-primitive finite hitting approximant with completed-path sampling: paths
-longer than the observation budget contribute zero, while the others
-continue at their residual with that path's actual step count deducted.
-`internal_plan_budget_mono` proves raw monotonicity on the same native
-sample space, and `internal_plan_stable_hitting` identifies the complete
-limit.  These budgets belong to the semantic proof, not the no-fuel
-definition of compression.  No AST/total-mass assumption is used.
-
-`FiniteInternalRound.v` extends this exact budget law to a complete
-compression-plus-guard round.  `internal_plan_round_native` now retains
-both the compression path and the subsequent guard sample explicitly,
-instead of choosing an arbitrary native presentation of the guard.
-`internal_round_steps` adds the guard's actual cost: zero at Ret/Vis,
-one at Tau/Prob.  `internal_round_progress` proves strictly positive
-cost whenever the decoded round target is internal.  The round therefore
-cannot reenter its recursive candidate without genuine internal progress.
-`internal_round_hitting_approx`, `internal_round_budget_mono`, and
-`internal_round_stable_hitting` respectively establish exact finite-budget
-reconstruction, raw monotonicity, and equality of complete hitting limits.
-These are single-round decomposition laws, not yet adequacy for iterating
-arbitrary correlated rounds.  `Examples/FiniteInternalRound.v` checks the
-Ret/Vis boundary costs, an internal guard before divergence, a zero-mass
-sampling guard, and nonuniform branch costs including the guard step.
-
-The negative regression `completed_paths_do_not_preserve_prefix_mass`
-explains why this hitting-specific statement matters: a later zero-mass
-sample can kill completed paths, so their projection to time zero does
-NOT have the mass of the original time-zero state.  The tests also cover
-unbounded syntactic branch depths, computed prefixes/residuals, stopping
-before Vis or divergence, and the exact budget at which Vis becomes visible.
-SubEnum mass bounds and MathComp instantiation remain checked.
-The recurring-round adequacy theorem is now available when actual path
-couplings are supplied.  `FreeOmega/CostedKernel.v` proves that a native
-kernel's complete hitting is unchanged when its rounds are charged their
-finite, potentially nonuniform costs.  The proof truncates per-round
-costs, applies kernel continuity, and establishes mutual raw cofinality
-with the cumulative-budget approximants.  No uniform cost bound,
-finite-support, total-mass, or AST premise is required.
-
-`costed_hitting_reference_limit` then proves multiround adequacy from a
-finite-budget one-round decomposition and AE-positive cost of internal
-successors.  The state, costs, and cut may depend on the whole correlated
-execution.  `FiniteInternalCostedProjection.v::costed_round_stable_hitting`
-instantiates this for PTree: a **quotient** coupling between identity
-samples of a joint round's sample space and the selected
-compression-plus-guard path space, preserving cost and projected target,
-suffices for complete marginal adequacy.  This premise has been weakened
-from native node lifting: the finite-budget proof now uses quotient bind,
-and AE progress is transferred by quotient support transport followed by
-`free_omega_native_ae_iff`.  Native marginals still embed as a special case.
-It does NOT require the marginal cut to factor through the projected tree,
-nor a structural reference marginal.  `Examples/CostedRounds.v` checks
-alternating hidden-state-dependent cuts, including different projected
-targets at the same tree, and a sampled natural number used as an unbounded
-path cost.  The new limit proofs inherit the existing `Eq_rect_eq`
-dependency; no new semantic or soundness axiom is introduced.
-
-`FiniteInternalCostedCoinduction.v` now closes the **given-joint** part of
-the soundness pipeline.  `costed_round_pair_hitting` compares the two
-complete primitive hitting distributions using the same correlated
-round process, with separate left/right plans, costs and quotient path
-marginals.  Only the emitted stable heads need satisfy the candidate's
-head relation, almost everywhere.  `peutt_coinduction_costed_rounds` turns
-coverage of a program candidate by those correlated states into `peutt`.
-No AST/totality, uniform cost bound, structural reference marginal, native
-reflection, node joint-realization assumption, or unary policy is used by
-this endpoint.  The correlated process itself and BOTH cost-preserving
-path marginals are still explicit proved premises, not synthesized from
-an arbitrary generator step.  `Examples/CostedRounds.v` uses the endpoint
-to prove `t ≈ Tau (Tau t)` for arbitrary eventful/probabilistic/diverging
-trees, with genuinely different left/right costs and recursive treatment
-of visible continuations.  This is a regression of the certificate API,
-not a replacement for unrestricted residual-GFP soundness.
-
-The unrestricted residual generator still supplies only a **quotient**
-coupling of decoded cut outputs.  The multiround theorem keeps its path
-marginal premise explicit; it does not yet prove unrestricted GFP soundness
-or authorize replacing the public definition.
-
-An assumption audit now rules out unconditional native reflection under
-the capabilities used by the normalization/multiround route.
-`Examples/NativeReflection.v::AttenuatedDirac` is a small interface model:
-`Some (n,x)` represents a Dirac of dyadic mass `2^(-n)`, but its deliberately
-faulty bind introduces an extra factor `1/2`.  It satisfies core coupling,
-Dirac AE, exact bind AE, AE Kleisli, AE restriction/transport, countable AE,
-intrinsic subprobability validity, and native joint realization; only the
-raw node omega structure (not its laws) is used here.  Its native bind
-does NOT satisfy left-unit.  The FreeOmega `SampleBind` and `SampleRetL`
-rules nevertheless identify the sampled bound Dirac with the original.
-`actual_plans_quotient_coupled` and `actual_plans_have_no_native_joint`
-exhibit this failure for two actual well-founded compression plans;
-`actual_residual_step` checks that their guard coupling really gives a
-step of the proposed `pfinite_residualF` generator.
-
-`native_reflection_requires_left_unit` makes one missing necessary
-condition precise: even identity-decoder reflection entails native
-relational left-unit.  SubEnum and MathComp both pass that necessary-law
-check, using MathComp's existing ordinary kernel left-unit theorem without
-assuming its missing full relational bind class.  Left-unit alone is NOT
-claimed sufficient for reflection.  This audit is neither a counterexample
-to residual-pfinite soundness nor to either maintained backend.  It means
-the stronger native extraction theorem cannot be proved from the current
-minimal capability list alone.  The updated route instead keeps path
-couplings in the quotient; no reflection axiom or change to `pfinite` has
-been introduced to bypass that boundary.
-
-`Prob/FreeOmegaRecovery.v::free_omega_native_coupling_pullback` now gives
-a precise conditional-resampling route from decoded couplings to path
-couplings.  A `free_omega_native_recovery` certificate is individual to a
-presentation, independent of the compared relation: on an AE set of decoded
-outputs, its kernel is normalized and supported in the correct decoder
-fiber, and averaging it over the decoded measure reconstructs the WHOLE
-original sample distribution.  From certificates on both sides the theorem
-pulls any decoded quotient coupling back to a quotient coupling of the
-actual sample spaces.  This is a proved theorem about explicit data, not
-an assumed reflection/realization capability.
-
-Generic recovery constructors cover an actual inverse decoder (without
-original totality) and constant decoders with quotient-normalized original
-samples.  The latter resamples all latent randomness; it does not select a preimage.
-`Examples/NativeRecovery.v` tests a discarded fair bit whose common decoded
-value is a higher-universe PTree, full marginal reconstruction, the resulting
-path coupling, and zero-mass inverse recovery.  The certificate fixes the
-existing quotient judgment's intermediate bind/composition universes at the
-frontier level, so small recovered paths can be used under high PTree-valued
-binds without placing PTree itself in the native carrier.
-
-`Prob/FreeOmegaRecoverySubEnum.v::subenum_native_recovery` additionally
-constructs a recovery for **every SubEnum native presentation**, with no
-injectivity, constant-decoder, or source-totality premise.  Classical
-preimage choice supplies only a small fiber LABEL (`option X`); finite
-disintegration of the tagged measure on `option X * X` supplies the actual
-conditional random sample.  The proof preserves the whole original
-distribution and only requires conditional normalization almost everywhere,
-so null fibers and missing source mass are retained.  The decoded type may
-be a higher-universe PTree and is never used as a native measure carrier.
-`subenum_total_same_mass` proves the normalization-to-Dirac coupling from
-numeric totality; it is not inferred from support alone.
-
-`subenum_native_coupling_pullback` consequently needs no per-presentation
-recovery premise.  `FiniteInternalRecoverySubEnum.v` applies it to arbitrary
-well-founded compression plans: `pfinite_residual_subenum_path_characterization`
-characterizes the full SubEnum residual generator using quotient couplings
-of actual path samples.  The converse follows by mapping paths back to
-their residuals.  These remain **quotient** couplings, not native reflection
-or a joint-round realization theorem.  New regressions reconstruct a
-non-total source with a nonconstant, noninjective tree decoder, recover its
-coupling to its visible marginal, and handle the same decoder over a
-zero-mass source.  Classical choice is explicit; no semantic or soundness
-axiom is introduced.  `Print Assumptions` records classical description/
-choice, functional extensionality and the inherited `Eq_rect_eq`; the
-plan characterization also inherits the existing plan-reification choice
-dependencies.  These results are not advertised as axiom-free.
-
-The previous negative model is also a positive regression for this route:
-`actual_plans_paths_quotient_coupled` recovers the guard coupling on the exact
-plans whose native joint does not exist, and `attenuated_round_complete_hitting`
-instantiates the upgraded costed projection theorem despite a provably
-impossible native marginal.  What remains is constructing compatible joint
-rounds with these quotient path marginals, then closing the unrestricted
-GFP soundness proof.  General recovery is now discharged for SubEnum, not
-for arbitrary node backends or MathComp.  The new SubEnum theorem alone
-does not authorize replacing the public `PFinite` definition.
-
-The guard-execution bridge is also available:
-`FiniteInternalRoundCoupling.v::internal_guard_native_coupled` inverts the
-matched `pstrongF` guard to its genuine native sample coupling (in the Prob
-case, exactly the coupling in the guard premise).
-`internal_plan_round_paths_coupled` then extends a quotient compression-path
-coupling to a quotient coupling of the **complete compression-plus-guard
-paths**.  Each path retains its compression component and guard sample,
-so separate costs remain accessible.  This generic lemma is closed under
-the global context; it adds no reflection or realization axiom.
-`pfinite_residual_subenum_round_paths` applies the full bridge to every
-SubEnum residual-generator step.  A regression starts with a discarded fair
-bit followed by a Tau and actually executes the matched Ret guards, rather
-than stopping at an arbitrary decoded-measure example.
-
-These two ends of the pipeline do not yet meet: a quotient coupling of
-full round paths is not itself a correlated native row with both quotient
-graph marginals.  Constructing that compatible joint process remains the
-central soundness obligation.  Neither arbitrary partner selection nor an
-unproved native-reflection rule is used to fill it.
-
-The **extension of an already supplied compression joint** is now proved
-without requiring native graph marginals.
-`Prob/FreeOmegaJointExtension.v` constructs a dependent native joint by
-sampling the whole latent state and then its conditional native joint.
-`extended_joint_left_marginal` and `extended_joint_right_marginal` preserve
-the two quotient graph certificates; `extended_joint_support` retains the
-AE source/conditional invariants.  Each sample carries its source together
-with both dependent successor values.  The proof needs exact native AE
-laws and quotient bind, not native relational bind or native reflection.
-
-`FiniteInternalNativeJoint.v::finite_internal_native_joint_round` applies
-this construction to compression plans and their matched guards.  A
-native node-coupling realizer is used ONLY on the liftings already present
-in `pstrongF`; classical dependent choice selects whole proved conditional
-joints.  The resulting native sample space projects to each complete
-compression-plus-guard path, with quotient graph marginals and AE-related
-targets.  The source compression joint, its two quotient graph laws and
-guard support remain explicit inputs; arbitrary residual couplings are
-not claimed to supply them automatically.
-
-The `AttenuatedDirac` regression now invokes this generic assembly on the
-actual plans previously proved to have no native coupling/joint.  It
-obtains `actual_plans_native_round_with_quotient_marginals`, an actual native
-round with quotient-only marginals, while the old negative native-joint
-theorem remains valid.  Thus assembly genuinely uses the weaker boundary
-and is not just a renamed native-reflection requirement.
-`Examples/NativeRecovery.v::split_coin_native_joint_round` also exercises
-the maintained SubEnum backend with two genuinely probabilistic guards:
-one coin splits each native weight into repeated entries, and the joint
-preserves equality of the sampled continuations.  The remaining
-work at that stage was to extract suitable compression joints from the
-residual quotient couplings and package the recurring correlated states for
-the costed coinduction endpoint.
-
-There is now genuine joint extraction for **equivalence-related native
-presentations over SubEnum**.  `FreeOmegaCodedJointSubEnum.v` first extracts
-a native joint from a quotient coupling that equates two common codes.
-Disintegration retains the conditional probability weights and establishes
-both quotient graph marginals; it does not choose a single supported partner.
-`FreeOmegaEquivalenceJointSubEnum.v::subenum_equivalence_quotient_joint`
-codes equivalence classes using finite Boolean signatures over the left
-native support.  Decoded values may be higher-universe trees; only the
-signatures and latent samples need native carriers.  Neither source
-totality nor injectivity of the decoders is required.
-
-`pfinite_guard_equivalence` proves that an equivalence continuation
-candidate induces an equivalence guard.  Consequently,
-`FiniteInternalEquivalenceJointSubEnum.v::pfinite_subenum_equivalence_joint_round`
-extracts a complete compression-plus-guard joint directly from a residual
-generator step **provided its continuation candidate is an equivalence**.
-The caller supplies no joint or marginal certificates.  NativeRecovery
-regressions exercise this endpoint on a discarded random bit and test
-extraction with a non-total source and a noninjective tree-valued decoder.
-
-The equivalence premise is a real remaining restriction.  The raw residual
-GFP has not been proved transitive; its reflexive-symmetric-transitive
-closure is an equivalence, but has not been proved generator-postfixed.
-Thus this extraction does not yet supply recurring rows for every state
-required by unrestricted GFP soundness.  Neither arbitrary heterogeneous
-joint realization nor closure postfixedness is assumed.
-
-The new extraction endpoints and regressions pass full-library compilation
-and targeted `coqchk`.  Their assumption audit reports the existing
-classical choice/description, functional extensionality and dependent
-equality principles; no new probability, reflection or soundness axiom is
-introduced.  The guard-equivalence lemma alone uses dependent equality.
-
-The recurring-process packaging obligation is now discharged separately
-from row extraction.  `FiniteInternalJointRows.v::peutt_coinduction_joint_rows`
-accepts a genuine native row for every related pair, each with two quotient
-path marginals and AE-related targets, and proves actual `peutt`.  Classical
-choice selects whole proved rows.  Internal states retain the related pair;
-the two projected paths keep their own costs.  Unsupported samples fall
-back to the current pair and do not affect either AE marginal certificate.
-The generic theorem does not require an equivalence candidate, unary cuts,
-AST, total node measures, or a bound on internal execution.
-
-Combining automatic SubEnum extraction with this packaging gives
-`peutt_coinduction_residual_equivalence_subenum`:
-
-```text
-Equivalence sim /\ (sim ⊆ pfinite_residualF eq sim) -> sim ⊆ peutt eq.
-```
-
-Clients of this endpoint supply neither joint rows nor costed-process
-certificates.  `Examples/ResidualJointCoinduction.v` tests unbounded retry
-with an extra discarded fair bit after every failed attempt.  The retry
-measure is an arbitrary SubEnum coin, and success resumes an arbitrary
-possibly eventful continuation.  No positivity or AST premise is used;
-there are concrete eventful and always-failing instances.  The chosen
-noise-compressing cuts provably lack a structural lifting, so the proof
-uses quotient probability algebra.  This negative fact concerns those
-cuts only, not all possible witnesses.
-
-Full-library compilation and targeted `coqchk` pass for the row assembly,
-the SubEnum endpoint and this example.  Their assumption audit introduces
-no new semantic axiom; it reports the existing classical choice/description
-and dependent-equality principles, plus inherited functional extensionality
-for the concrete extraction.  The structural-cut negative test is closed
-under the global context.
-
-For unrestricted residual-GFP soundness, the remaining obligation is now
-row extraction for its actual continuation relation (or a justified route
-through an equivalence candidate).  Building the recurring process from
-such rows is no longer an additional unproved step.  The raw GFP is still
-not assumed transitive, and the finite equivalence closure is still not
-assumed generator-postfixed.
-
-An independent scalar-model route to the missing arbitrary-relation
-realization is now being developed in
-`Prob/FreeOmegaUpperExpectationSubEnum.v`.  It does not change the residual
-generator or add a semantic capability assumption.  `free_omega_upper`
-interprets SubEnum sampling by its actual rational weights embedded in a
-MathComp `realType`, and a raw `FOLub` by a supremum.  The following are
-proved for arbitrary raw FreeOmega terms, with no AST or increasing-chain
-premise:
-
-- `free_omega_upper_bounds`: unit-interval tests have unit-interval values;
-- `free_omega_upper_mono`: monotonicity in a test bounded above by a
-  unit-interval test;
-- `free_omega_upper_bind`: exact compositional interpretation of bind;
-- `free_omega_upper_zero`: the zero test has value zero;
-- `free_omega_upper_native_rat`: agreement with the genuine weighted
-  rational expectation on a native finite presentation.
-
-`Examples/FreeOmegaUpperExpectation.v` distinguishes the mass-one and
-mass-half endpoints of the escaping-mass audit.  The offending decreasing
-row has upper mass one, not its eventual mass one half.  A separate
-nonadditivity regression records why this is only an internal audit model:
-an arbitrary raw `FOLub` need not denote an additive probability measure.
-No new public behavioral relation, probability backend or WP API is
-introduced.
-
-`Prob/FreeOmegaUpperCouplingSubEnum.v` now connects that evaluator to
-actual coupling and order proofs:
-
-- `subenum_lift_real_expect` proves the weighted inequality for arbitrary
-  real-valued tests related pointwise by a native coupling.  Its public
-  statement needs no `eqType` on either carrier and no totality premise;
-- `free_omega_approx_upper` and `free_omega_structural_upper` prove numeric
-  preservation by raw approximation and structural lifting;
-- `free_omega_upper_ae_mono` and `free_omega_upper_ae_ext` justify changing
-  tests only almost everywhere, including unreachable branches;
-- `free_omega_sample_bind_upper` validates nested finite sampling against
-  the actual weighted native bind;
-- `free_omega_cofinal_upper_le` and `free_omega_cofinal_upper_eq` validate
-  cofinal domination and mutual cofinality numerically;
-- `free_omega_diagonal_upper` validates a double supremum's diagonal
-  using raw monotonicity in both coordinates.  Each grid cell is dominated
-  by a later diagonal cell; no exchange of arbitrary convergent limits
-  or quotient equality is assumed.
-
-The scalar regressions now also check splitting a sampling weight for
-arbitrary real tests, changes on an unreachable branch, and a doubly
-padded sampling grid.  These additions pass full-library compilation and
-targeted `coqchk`.  Their assumptions are existing classical
-choice/description, extensionality and dependent-equality principles.
-No new semantic axiom or extra backend capability is introduced.
-
-`Prob/FreeOmegaUpperContinuitySubEnum.v` now proves the analytic
-interchange identities needed for the remaining sampling/bind limit
-cases.  `free_omega_upper_continuous` exchanges an increasing sequence of
-unit-interval tests with the upper expectation of **any raw FreeOmega
-term**.  Its finite-sample step retains all actual weights; its raw-Lub
-step exchanges bounded suprema, not arbitrary convergent limits.
-`enum_real_expect_countable_ae` requires test monotonicity only at
-positive-weight entries.
-
-Consequently, `free_omega_sample_lub_upper` validates sample/supremum
-interchange with only AE-monotone branch chains, and
-`free_omega_bind_lub_upper` validates the bind diagonal when the outer
-source and each kernel chain increase.  Arbitrary formal Lub terms may
-still occur inside each source term.  There is no hidden AST, totality,
-uniform execution bound or hereditary well-formedness premise.
-
-`Examples/FreeOmegaUpperContinuity.v` tests a syntactically present
-zero-weight branch that **provably fails** pointwise monotonicity, while
-its AE sample/limit equation and mass-one result remain valid.  It also
-instantiates the bind equation with the escaping source of the earlier
-mass-safety audit.  Full-library compilation, targeted `coqchk`, and
-assumption inspection pass; only the existing classical
-choice/description, extensionality and dependent-equality principles are
-reported (the nonmonotonicity regression is closed under the global
-context).  These are the numerical algebra identities underlying the
-quotient constructors, not yet an induction over arbitrary quotient
-couplings.
-
-`Prob/FreeOmegaUpperObservationSubEnum.v` proves observation consistency,
-including the increasing-chain `FOOObserveLub` rule.
-`free_omega_observes_upper` identifies the upper expectation of every
-test `f ∘ obs`, where `f` takes real values in `[0,1]`, with the actual
-weighted expectation of `f` on the native output.  The proof derives
-monotonicity of the native observable chain from raw approximation,
-then connects its existing rational eventwise limit to real expectations.
-It does not assume a numerical-consistency capability.  The result allows
-arbitrary high-universe input carriers and native observable carriers.
-`free_omega_denotes_upper` also allows replacing the native output by a
-semantically equal native measure; it does **not** assert invariance under
-an arbitrary quotient coupling of the input.
-
-`Examples/FreeOmegaUpperObservation.v` obtains numeric mass one for the
-actual unbounded, infinite-state RandomWalk hitting limit, using the
-extracted `walk_limit_observes_unit` certificate.  It also gives an
-independent numerical rejection of the former escaping-row observation:
-that row has upper mass one, so it cannot observe the proposed mass-half
-output.  This regression does not use inversion of the observation rule.
-
-`Prob/FreeOmegaUpperRelationalSubEnum.v` removes the restriction that tests
-must factor through the observation map.  Bounded upper/lower envelopes on
-observation fibers (with explicit defaults for empty fibers) prove
-`free_omega_observes_upper_rel` for arbitrary related unit-interval tests.
-The same construction proves relational composition without assuming that
-the candidate is an equivalence.  AE restriction, bind, sample and formal
-Lub preserve these directed test inequalities as well.
-
-`Prob/FreeOmegaUpperQuotientSubEnum.v` now proves
-`free_omega_qlift_upper_birel` by induction over **every constructor of the
-actual quotient lifting**.  It carries the two directed inequalities
-together; symmetry is not inferred by complementing a possibly nonadditive
-raw upper expectation.  Observation, arbitrary relation composition,
-sampling exchange, AE sample/limit interchange, bind diagonalization and
-cofinality are all covered.  `free_omega_qlift_eq_upper` preserves every
-bounded real test under equality coupling.  The stronger mass endpoint
-`free_omega_qlift_upper_mass` preserves constant-one tests under **any**
-result relation, including a universal relation.
-
-`Examples/FreeOmegaUpperQuotient.v` therefore excludes the original
-mass-one/mass-half quotient coupling itself, not just the defective
-observation certificate.  It also excludes the decreasing escaping row's
-proposed mass-half quotient and distinguishes a nonadditive raw choice
-from a fair distribution despite equal total mass.  The RandomWalk
-regression transports numeric mass one through quotient rewrites on its
-actual high-universe stable-head carrier.
-
-Full-library compilation, targeted `coqchk`, and assumption inspection
-pass for these results.  They use existing classical choice/description, extensionality
-and dependent-equality principles, not an axiom asserting quotient
-soundness.  Arbitrary-relation native joint extraction is now connected to
-the native API by the transport bridge described in the checkpoint above.
-The finite transport construction consists of:
-
-- `Prob/FiniteMatching.v::finite_hall_matching` constructs an injective
-  matching of finite sets from all neighborhood-cardinality inequalities.
-  Its induction splits at a tight proper subset, or removes one edge when
-  all proper nonempty subsets have slack;
-- `Prob/FiniteCapacityMatching.v::finite_capacity_transport` expands
-  integer capacities into numbered copies and counts a bijective matching,
-  producing a nonnegative integer matrix with exact row and column sums;
-- `Prob/FiniteRationalTransport.v::finite_rational_transport` constructs a
-  shared positive denominator, scales both marginals to integer capacities,
-  and scales the resulting matrix back to rational weights.  Subprobability,
-  zero mass and empty carriers are allowed; total mass need only agree;
-- `finite_rational_transport_of_tests` derives the required neighborhood
-  inequalities from bounded rational test comparison.  Joint weights are
-  proved to exist, not postulated as a semantic capability.
-
-`Examples/FiniteTransport.v` checks a two-label problem in which a source
-node MUST split its weight across two targets, obtains a rational joint for
-the `(2/3,1/3)` and `(1/3,2/3)` marginals, rejects identity-only transport
-despite equal nonempty supports, and exercises an empty source with zero
-target mass.  Full-library compilation and targeted `coqchk` pass.  The
-matching, capacity, rational-transport and bounded-test endpoint theorems
-are all **closed under the global context** in the assumption audit.
-
-`Prob/FiniteEnumTransport.v` then realizes the matrix as an actual weighted
-enumeration.  `finite_enum_transport` proves exact `EqEnum` marginals,
-allowing zero entries and duplicate entries in either input enumeration.
-`subenum_finite_transport_joint` returns the maintained
-`semantic_coupling` certificate, including a bounded `SubEnum` joint and
-both semantic marginals, for finite carriers satisfying the Hall and
-equal-mass premises.  `split_subenum_joint` instantiates this native
-endpoint on the forced-splitting `(2/3,1/3)` example; it is no longer merely
-an external matrix certificate.  Full compilation and targeted `coqchk`
-pass.  `finite_enum_transport` is closed under the global context; the
-native wrapper inherits only existing functional extensionality, definite
-description and excluded middle from the existing coupling realizer.
-
-`FiniteEnumPresentation.v` now supplies lossless ordinal-indexed native
-presentations, including empty carriers and duplicate entries.
-`FreeOmegaNativeTransportSubEnum.v` derives the finite-index Hall constraints
-from arbitrary quotient-related native presentations and transports the
-constructed coupling back.  This closes the SubEnum residual-GFP soundness
-gap; the public all-backend `PFinite` migration is still separate work.
-
-The shortcut through an **up-to-equivalence closure** is now explicitly
-refuted by `Examples/ResidualClosureAudit.v`.  Let `spin = Tau spin`,
-`r = Ret true`, and take the two candidate edges `spin R Tau r` and
-`Tau r R r`.  Both satisfy `R ⊆ pfinite_residualF eq (eqcl R)`: the first
-uses the Tau guard and the composed continuation pair, while the second
-compresses its finite Tau.  Nevertheless, `spin` and `r` have different
-complete hitting behaviors.  The file proves this using primitive hitting
-and quotient support, not a native-reflection assumption.
-
-`reflexive_symmetric_residual_upto_is_unsound` shows that adding reflexivity
-and converse to this candidate does not fix the rule.
-`residual_generator_does_not_preserve_equivalences` also supplies an
-equivalence input whose generator image is not transitive.  Thus neither
-generic up-to-equivalence compatibility nor generic preservation of
-equivalences can be invoked to remove the extraction premise.  These
-negative results concern arbitrary candidates; they do **not** refute
-soundness/transitivity of the raw GFP, or establish that its particular
-equivalence closure is not postfixed.  That stronger, specific question
-remains open.  No change to the residual definition is justified by this
-audit alone.
-
-The audit passes full-library compilation and targeted `coqchk`; its
-assumptions are only the inherited functional-extensionality and
-dependent-equality principles.  No new semantic or choice axiom is used.
-
-The public `PFinite` definition
-has not been replaced by the structural special case, and no unrestricted
-GFP soundness or API migration is claimed on the strength of this result.
-
-`Examples/ResidualFinite.v` checks nonuniform branch depths, local Tau removal
-before divergence, Prob branch compression, and the negative core regression
-`residual_finite_spin_not_ret`.  `residual_services_peutt` checks the sound
-up-to-compression rule on infinitely interacting services with different
-finite delays on every continuation.  It also derives the actual RandomWalk renewal
-equation as `random_walk_passage_residual_finite`, without behavioral Prob
-congruence.  That example is a client of the candidate, not a replacement for
-the maintained `passage_unfold` until the soundness bridge is complete.
-`residual_retries_peutt` checks the stronger policy-based rule on purely
-internal retry loops, with one Tau per failed toss on one side and two on
-the other.  There is no Vis guard between retries and the proof does not
-first assume a behavioral equivalence for the recursive continuations.
+## Finite internal compression
+
+The public definition is now in `Eq/PFinite.v`.  There is no parallel
+candidate relation, stable-hitting premise, fuel index, or omega interface
+in its definition.
+
+`finite_internal t out` is inductive.  FIStop returns the current residual
+tree, FITau consumes one silent node, and FIProb integrates the residual
+distributions of its branches.  A derivation is well-founded: every branch
+must finish its selected compression, but infinitely many branches may
+have no common finite depth bound.  The residual tree need not terminate,
+be stable, or be almost-surely terminating.
+
+`pfinite_guard RR sim` matches the two observed residual constructors using
+`pstrongF RR sim`.  Only their continuations recurse.  The generator
+`pfiniteF RR sim` chooses two finite_internal derivations and couples their
+outputs with this guard.  Its greatest fixed point is `pfinite_rel RR`.
+The homogeneous `pfinite` is its finite reflexive-symmetric-transitive
+closure.  `pfinite_refl`, `pfinite_sym`, `pfinite_trans` and
+`pfinite_equivalence` are proved; no transitivity of the raw heterogeneous
+GFP is assumed.
+
+The structural inclusions are backend-generic.  `pfinite_rel_tau_prefix`
+and `pfinite_prob_tau_prefix` remove selected administrative Tau prefixes,
+including prefixes under a Prob node.  This is a finite-compression law,
+not a generic congruence axiom for arbitrary branchwise pfinite proofs.
+`ResidualFinite.v` checks nonuniform branch depths and rejects
+silent divergence versus return.
+
+### Behavioral soundness and the capability boundary
+
+`Eq/FreeOmega/FiniteInternalTransport.v` proves the generic implications
+
+~~~text
+sim ⊆ pfiniteF RR sim  ->  sim ⊆ peutt RR
+pfinite_rel RR         ⊆   peutt RR
+pfinite               ⊆   peutt eq
+~~~
+
+The endpoints are `peutt_coinduction_residual`, `peutt_of_pfinite_rel`
+and `peutt_of_pfinite`.  They use the maintained core, Dirac-AE,
+bind-AE-exactness, coupling-AE and countable-AE capabilities, plus the
+explicit optional `FreeOmegaNativeCouplingLaws`.  This last capability
+realizes a quotient coupling of two native presentations as an actual
+joint on their original sample carriers.  It mentions neither trees,
+stable hitting nor behavioral equivalence, and also implies ordinary
+node-lifting realization via identity decoders.
+
+This extra capability is PROVED for SubEnum, by
+`SubEnum_FreeOmegaNativeCouplingLaws`; importing
+`FreeOmegaNativeCouplingSubEnum` makes the instance available.  The generic
+facade does not import concrete backend instances.  No instance is claimed for raw
+Enum or MathComp.  Consequently the NEW finite relation's behavioral
+inclusion is conditional for those backends.  This is an explicit change
+from the old finite-stable-prefix API, not an assertion that core measure
+laws alone now imply the stronger result.  The shared behavioral backend
+profile remains unchanged; this optional proof-relation capability is
+audited separately in `BackendCapabilities.v`.
+
+The soundness proof does not assume equivalence of the recursive candidate,
+AST, total mass, a uniform fuel bound, a chosen joint from each client, or
+that the candidate is already behaviorally sound.  It extracts a native
+joint for each compression pair, extends it through the strong guard, and
+uses the library's correlated, separately costed recurring-process theorem
+`peutt_coinduction_joint_rows`.  Finite equational chaining is handled by
+ordinary induction AFTER raw-GFP soundness, not by an up-to-equivalence rule.
+
+### Proved SubEnum realization
+
+The construction in `FreeOmegaNativeTransportSubEnum.v` covers arbitrary
+heterogeneous relations and noninjective, higher-universe decoders:
+
+1. `FiniteEnumPresentation.v` represents native enumerations by ordinal
+   positions.  Decoding exactly recovers the original list, retaining
+   duplicates and zero weights; empty carriers need no default element.
+2. Conditional recovery pulls quotient couplings back to these finite
+   positions without replacing a random sample by a selected partner.
+3. `FreeOmegaUpperQuotientSubEnum.v` proves bounded-test comparison for
+   ALL quotient constructors, including observation, composition,
+   AE restriction and continuous limit rules.  Indicator tests yield Hall
+   inequalities; constant tests yield equal total mass.
+4. `FiniteMatching.v`, `FiniteCapacityMatching.v` and
+   `FiniteRationalTransport.v` construct a rational transportation matrix
+   from those inequalities.  The matching/capacity/transport existence
+   theorems are closed under the global context.
+5. `FiniteEnumTransport.v` realizes that matrix as an actual enumeration
+   with exact marginals, then transports the joint back to the original
+   carriers.
+
+The scalar model is an internal audit of formal FreeOmega terms, not a
+second public probability backend or a claim that arbitrary non-increasing
+Lub terms define additive measures.  Its abstract realType is instantiated
+internally with Coq's standard real construction via
+`coq-mathcomp-reals-stdlib`.  Assumption inspection records the inherited
+classical/extensionality/dependent-equality principles and the standard
+real dependencies `ClassicalDedekindReals.sig_not_dec` and
+`ClassicalDedekindReals.sig_forall_dec`.  No reflection, gluing or soundness
+axiom was added for SubEnum.
+
+### Regressions and rejected shortcuts
+
+`ResidualTransport.v` proves that its three-pair retry candidate is not
+reflexive, embeds it into the raw pfinite GFP by coinduction, and promotes
+that result to peutt.  It also checks heterogeneous result relations.
+`ResidualJointCoinduction.v` uses the generic rule for unbounded retry
+with discarded random bits, an eventful success continuation, and an
+always-failing instance.  `NativeRecovery.v` checks automatic round
+extraction even with the constantly false continuation candidate.
+
+`FiniteTransport.v` forces one source atom to split across two targets,
+checks zero mass and empty carriers, and rejects identity transport between
+unequal marginals with the same support.  Scalar-model regressions reject
+mass collapse and preserve the RandomWalk limit's mass.
+
+The negative audits remain important.  `ResidualClosureAudit.v` refutes
+`sim ⊆ pfiniteF (equivalence_closure sim)` as a sound general rule,
+including for reflexive/symmetric candidates: spin can then be falsely
+related to a return.  `NativeReflection.v` supplies a backend showing
+that quotient-to-native reflection does not follow from the generic core
+laws alone.  These are reasons to keep the new capability explicit, not
+counterexamples to the proved SubEnum theorem.
+
+The earlier policy-only, reference-coupling and equivalence-class coding
+lemmas remain internal proof infrastructure where independently useful.
+Obsolete public relation definitions and the superseded
+equivalence-only/concrete-only coinduction wrappers have been removed.
 
 ## Infinite-state random walk
 
@@ -1938,26 +921,22 @@ specializes `walk_observation_expect`.  The scalar fold `walk_eval` remains
 useful for the harmonic induction and executable regressions; both folds
 are certified against primitive execution by `walk_hitting_observes`.
 
-The renewal proof now uses local finite rewriting with a behavioral
-contextual conclusion.  `passage_unfold_guarded` first promotes from
-`pstruct` through `pfinite` to `peutt`.  Each branch removes one Tau using
-`pfinite_tau_l`, and `peutt_prob_rewrite` promotes these branchwise proofs
-under the probability node.  The result is `passage_unfold : peutt ...`,
-not a claimed `passage_unfold_finite` equation.  No Prob congruence has been
-added to `pfinite`: local finite rewrites need only remain behaviorally sound
-when placed under a context, not globally finite.
+The renewal proof now stays in the finite layer.
+`passage_unfold_guarded` supplies the structural equation; promotion to
+pfinite followed by `pfinite_prob_tau_prefix` removes one Tau in each
+coin branch.  The result is `passage_unfold_finite`, with no stable-hitting
+or AST premise.  `passage_unfold` is then a direct application of the
+SubEnum behavioral subrelation.
+Assumption inspection of `passage_unfold_finite` reports only
+`Eqdep.Eq_rect_eq.eq_rect_eq`; the finite equation itself does not use
+the real-model assumptions needed by its behavioral promotion.
 
-`peutt_prob_rewrite` is backend-neutral and accepts any registered
-subrelation of homogeneous `peutt`; it also accepts a coupling between
-different sample types/measures.  The hierarchy regressions cover same-measure
-and coupled sampling, a divergent continuation, and promotion under the
-existing bind/fmap Proper instances.  Direct branchwise `setoid_rewrite`
-under `Prob` currently unfolds the constructor to `go/ProbF` and fails to
-find the needed morphisms; explicit contextual promotion avoids adding a
-new typeclass search graph.  This does not claim arbitrary eventful iter
-congruence: the existing eventless behavioral theorem and eventful
-generator-closure obligation retain their documented scope.
-
+The generic `peutt_prob_rewrite` remains useful for arbitrary local
+relations registered below peutt, including coupled different sample types.
+The hierarchy tests cover that contextual rule, bind/fmap promotion, and
+the stronger finite administrative Prob/Tau law with a divergent branch.
+No arbitrary eventful iter congruence or new general Prob congruence is
+asserted for pfinite.
 The quantitative proof uses a bounded harmonic candidate instead of the
 proposal's scalar equation `m = p + q*m*m`: the former constructs the
 required limits directly without first requiring a real-valued mass for an

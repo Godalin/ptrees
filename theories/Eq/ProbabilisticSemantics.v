@@ -79,6 +79,7 @@ Notation pfinite_equivalence := PFinite.pfinite_equivalence.
 Notation pfinite_sym := PFinite.pfinite_sym.
 Notation pfinite_tau_l := PFinite.pfinite_tau_l.
 Notation pfinite_tau_r := PFinite.pfinite_tau_r.
+Notation pfinite_prob_tau_prefix := PFinite.pfinite_prob_tau_prefix.
 Notation peutt_rewrite_l := PEutt.peutt_rewrite_l.
 Notation peutt_rewrite_r := PEutt.peutt_rewrite_r.
 Notation peutt_rewrite := PEutt.peutt_rewrite.
