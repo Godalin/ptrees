@@ -5,7 +5,8 @@ Set Universe Polymorphism.
 From mathcomp Require Import reals.
 From PTree.Prob Require Import DiscreteMC MathCompMeasure TwoLevelMeasure
   FreeOmegaMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum
-  TwoLevelMeasureMathComp FreeOmegaNativeCoupling FreeOmegaNativeCouplingSubEnum.
+  TwoLevelMeasureMathComp FreeOmegaNativeCoupling FreeOmegaNativeCouplingSubEnum
+  SemanticCoupling SemanticCouplingMathComp.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -213,6 +214,27 @@ Definition mathcomp_profile_coupling_ae :
 Definition mathcomp_profile_bind_ae_exact :
     @SemanticMeasureBindAEExactLaws (MathCompKernelMeasure R)
       (MathCompNodeSemanticMeasure R) := _.
+
+(** Native witness recovery needs no gluing.  Do not confuse this with
+    reflection from [FreeOmega] quotient couplings, which remains open. *)
+Definition mathcomp_profile_native_coupling {A B} (rel : A -> B -> Prop)
+    (mu : MathCompKernelMeasure R A) (nu : MathCompKernelMeasure R B) :
+  @sem_lift (MathCompKernelMeasure R) (MathCompNodeSemanticMeasure R)
+    A B rel mu nu ->
+  exists joint, @semantic_coupling (MathCompKernelMeasure R)
+    (MathCompNodeSemanticMeasure R) A B rel mu nu joint :=
+  @mathcomp_coupling_realization R A B rel mu nu.
+
+(** No default value or nonempty return-carrier premise was introduced
+    while repacking the backend's bookkeeping bottom points. *)
+Example mathcomp_profile_empty_carrier_joint
+    (mu : MathCompKernelMeasure R Empty_set) :
+  exists joint, @semantic_coupling (MathCompKernelMeasure R)
+    (MathCompNodeSemanticMeasure R) Empty_set Empty_set eq mu mu joint.
+Proof.
+  apply mathcomp_coupling_realization.
+  apply mathcomp_kernel_lift_refl. intros x. reflexivity.
+Qed.
 
 End MathCompFoundationalProfile.
 

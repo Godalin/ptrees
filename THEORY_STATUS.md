@@ -793,6 +793,17 @@ laws alone now imply the stronger result.  The shared behavioral backend
 profile remains unchanged; this optional proof-relation capability is
 audited separately in `BackendCapabilities.v`.
 
+Ordinary native witness recovery is now proved for MathComp as
+`mathcomp_coupling_realization` in `SemanticCouplingMathComp.v`, without
+`MathCompCouplingGluing`.  It pushes the backend's existing joint on
+`mc_joint A B` into a kernel on `mc_carrier (A * B)`, preserving both graph
+marginals and the AE relation.  One-sided bookkeeping bottoms are null
+under a valid coupling; no normalization or default returned value is
+introduced.  The foundational audit includes an empty-carrier regression.
+This removes the native repackaging obligation, NOT the stronger
+quotient-to-native reflection obligation above; in particular it does not
+yet provide `FreeOmegaNativeCouplingLaws` for MathComp.
+
 The soundness proof does not assume equivalence of the recursive candidate,
 AST, total mass, a uniform fuel bound, a chosen joint from each client, or
 that the candidate is already behaviorally sound.  It extracts a native
