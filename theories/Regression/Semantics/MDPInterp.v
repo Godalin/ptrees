@@ -5,9 +5,10 @@ Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
   FreeOmegaMeasure FreeOmegaTotalSubEnum.
-From PTree.Eq Require Import UnifiedFrontier PTreeKernel PEutt.
+From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
+From PTree.Eq.FreeOmega Require Import Bind GuardedInterp.
 From PTree.Semantics Require Import MDPFragment AtomicInterp MDPInterp
-  MDPInterpSubEnum TreeTransitionBisim.
+  MDPInterpSubEnum TreeTransitionBisim TreeTransitionSoundness.
 From PTree.Regression.Semantics Require Import MDPFragment MDPCoincidence AtomicInterp.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -120,3 +121,192 @@ Proof.
   - apply infinite_service_mdp.
   - apply delay_transition_bisim.
 Qed.
+
+Section HeterogeneousEffects.
+
+(** Genuinely different inductive families, not aliases or permutations
+    of one signature. AtomicInterp's E -> E certificate is not used. *)
+Variant sourceE : Type -> Type :=
+| AskS : sourceE bool | ReplyS : bool -> sourceE unit.
+Variant targetE : Type -> Type :=
+| AskT : targetE bool | ReplyT : bool -> targetE unit.
+
+Definition hetero_event X (e : sourceE X) : targetE X :=
+  match e in sourceE X return targetE X with
+  | AskS => AskT | ReplyS b => ReplyT (negb b)
+  end.
+Definition hetero_handler X (e : sourceE X) : ptree targetE SubEnum X :=
+  Tau (Vis (hetero_event e) (fun x => Ret x)).
+
+Lemma hetero_handler_guarded : guarded_handler
+  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega) hetero_handler.
+Proof.
+  apply (guarded_handler_of_hitting
+    (NI := SubEnum_SemanticMeasure) (NC := SubEnum_SemanticMeasureCoreLaws)
+    (NO := SubEnum_SemanticOmega) (NCAE := SubEnum_SemanticMeasureCouplingAELaws)
+    (NCount := SubEnum_SemanticMeasureCountableAELaws)).
+  intros X e. exists (FORet (FHVis (hetero_event e) (fun x => Ret x))).
+  split.
+  - apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
+    apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
+  - constructor. exact I.
+Qed.
+
+Section ReturnCarrier.
+Context {R : Type}.
+Local Notation SH := (stable_head sourceE SubEnum R).
+Local Notation TH := (stable_head targetE SubEnum R).
+Local Notation SG := (@mdp_head sourceE SubEnum MF FI FC FreeOmegaMixedMeasure FO R).
+Local Notation TG := (@mdp_head targetE SubEnum MF FI FC FreeOmegaMixedMeasure FO R).
+Local Notation SS := (@mdp_state sourceE SubEnum MF FI FC FreeOmegaMixedMeasure FO R).
+Local Notation TS := (@mdp_state targetE SubEnum MF FI FC FreeOmegaMixedMeasure FO R).
+Local Notation shits t out := (@ptree_stable_hitting sourceE SubEnum MF FI
+  FreeOmegaMixedMeasure FO R (observe t) out).
+Local Notation thits t out := (@ptree_stable_hitting targetE SubEnum MF FI
+  FreeOmegaMixedMeasure FO R (observe t) out).
+
+Definition hetero_head (h : SH) : TH :=
+  match h with
+  | FHRet r => FHRet r
+  | @FHVis _ _ _ X e k => FHVis (hetero_event e)
+      (fun x => PTree.bind (Ret x) (fun a => PTree.interp hetero_handler (k a)))
+  end.
+Definition hetero_map (mu : MF SH) : MF TH :=
+  free_omega_bind mu (fun h => FORet (hetero_head h)).
+
+Lemma hetero_head_hitting h :
+  thits (ptree_interp_head_tree hetero_handler h) (FORet (hetero_head h)).
+Proof.
+  destruct h as [r|X e k].
+  - apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)).
+  - destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
+      (fun x => PTree.interp hetero_handler (k x))) as [front Hfront].
+    apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
+    change (thits (PTree.bind (hetero_handler e)
+      (fun x => PTree.interp hetero_handler (k x)))
+      (sem_bind (FORet (FHVis (hetero_event e) (fun x => Ret x)))
+        (stable_head_bind_front (FI := FI)
+          (fun x => PTree.interp hetero_handler (k x)) front))).
+    eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO)).
+    + apply ptree_bind_cofinal_all.
+    + apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
+      apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
+    + exact Hfront.
+Qed.
+
+Lemma hetero_interp_hitting t mu :
+  shits t mu -> thits (PTree.interp hetero_handler t) (hetero_map mu).
+Proof.
+  intro Hhit. eapply (ptree_stable_hitting_interp (FI := FI) (FO := FO));
+    [apply ptree_interp_cofinal_all|exact Hhit|apply hetero_head_hitting].
+Qed.
+
+(** Independently discharge the heterogeneous contract for ALL qualifying
+    source heads, including heads with non-Dirac probabilistic successors. *)
+Lemma hetero_head_mdp h : SG h -> TG (hetero_head h).
+Proof.
+  intro Hh. eapply mdp_head_coinduction with
+    (P := fun target => exists source, SG source /\ target = hetero_head source).
+  - intros target [source [Hgood ->]]. destruct source as [r|X e k]; [exact I|].
+    intro x. destruct (proj1 (mdp_head_vis_iff e k) Hgood x)
+      as [mu [Hhit [Htotal Hae]]].
+    exists (hetero_map mu). split.
+    + constructor. change (thits (PTree.interp hetero_handler (k x)) (hetero_map mu)).
+      apply hetero_interp_hitting. exact Hhit.
+    + split.
+      * exact (subenum_free_omega_total_map hetero_head Htotal).
+      * unfold hetero_map. eapply (free_omega_ae_bind (NI := SubEnum_SemanticMeasure));
+          [exact Hae|].
+        intros source Hsource. constructor. exists source. auto.
+  - exists h. auto.
+Qed.
+
+Theorem hetero_handler_mdp : mdp_handler
+  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega) (R := R) hetero_handler.
+Proof.
+  intros h Hh. eapply mdp_state_of_hitting with
+    (h := hetero_head h) (out := FORet (hetero_head h)).
+  - apply hetero_head_hitting.
+  - apply (sem_eq_refl (SI := FI)).
+  - apply hetero_head_mdp. exact Hh.
+Qed.
+
+Theorem heterogeneous_mdp_preservation t : SS t -> TS (PTree.interp hetero_handler t).
+Proof. apply mdp_state_interp. exact hetero_handler_mdp. Qed.
+
+Theorem heterogeneous_guarded_transition_preservation t u : SS t -> SS u ->
+  @tree_trans_bisim sourceE SubEnum MF FI FC FreeOmegaMixedMeasure FO R R eq t u ->
+  @tree_trans_bisim targetE SubEnum MF FI FC FreeOmegaMixedMeasure FO R R eq
+    (PTree.interp hetero_handler t) (PTree.interp hetero_handler u).
+Proof.
+  intros Ht Hu Htu.
+  exact (mdp_guarded_interp_tree_trans hetero_handler_mdp hetero_handler_guarded Ht Hu Htu).
+Qed.
+
+Theorem heterogeneous_target_coincidence t u : SS t -> SS u ->
+  (@peutt targetE SubEnum MF FI FC FreeOmegaMixedMeasure FO R R eq
+      (PTree.interp hetero_handler t) (PTree.interp hetero_handler u) <->
+   @tree_trans_bisim targetE SubEnum MF FI FC FreeOmegaMixedMeasure FO R R eq
+      (PTree.interp hetero_handler t) (PTree.interp hetero_handler u)).
+Proof. apply mdp_interp_peutt_tree_trans_iff. exact hetero_handler_mdp. Qed.
+
+End ReturnCarrier.
+
+(** An infinite protocol, with distinct source and target event types. *)
+CoFixpoint hetero_service : ptree sourceE SubEnum unit :=
+  Vis AskS (fun b => Vis (ReplyS b) (fun _ => hetero_service)).
+Definition hetero_service_head : stable_head sourceE SubEnum unit :=
+  FHVis AskS (fun b => Vis (ReplyS b) (fun _ => hetero_service)).
+Definition hetero_reply_head b : stable_head sourceE SubEnum unit :=
+  FHVis (ReplyS b) (fun _ => hetero_service).
+Local Notation SState := (@mdp_state sourceE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit).
+Local Notation TState := (@mdp_state targetE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit).
+
+Lemma hetero_dirac_total (h : stable_head sourceE SubEnum unit) :
+  @sem_total MF FI FO _ (FORet h).
+Proof.
+  apply free_omega_observable_total_intro.
+  exists unit, (fun _ => tt), (subenum_ret tt). split; [constructor|].
+  native_compute. reflexivity.
+Qed.
+
+Lemma hetero_service_mdp : SState hetero_service.
+Proof.
+  eapply mdp_state_of_hitting with
+    (h := hetero_service_head) (out := FORet hetero_service_head).
+  - apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
+  - apply (sem_eq_refl (SI := FI)).
+  - eapply mdp_head_coinduction with
+      (P := fun h => h = hetero_service_head \/ exists b, h = hetero_reply_head b).
+    + intros h [-> | [b ->]].
+      * intro x. exists (FORet (hetero_reply_head x)). split.
+        -- constructor. apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
+        -- split; [apply hetero_dirac_total|]. constructor. right. exists x. reflexivity.
+      * intro x. exists (FORet hetero_service_head). split.
+        -- constructor. apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
+        -- split; [apply hetero_dirac_total|]. constructor. left. reflexivity.
+    + left. reflexivity.
+Qed.
+
+Example heterogeneous_infinite_service_state :
+  TState (PTree.interp hetero_handler hetero_service).
+Proof. exact (heterogeneous_mdp_preservation hetero_service_mdp). Qed.
+
+Example heterogeneous_infinite_service_transition :
+  @tree_trans_bisim targetE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit unit eq
+    (PTree.interp hetero_handler (Tau hetero_service))
+    (PTree.interp hetero_handler hetero_service).
+Proof.
+  apply heterogeneous_guarded_transition_preservation.
+  - apply (proj2 (mdp_state_tau_iff (FI := FI) (FO := FO) _)). exact hetero_service_mdp.
+  - exact hetero_service_mdp.
+  - assert (Htau : @peutt sourceE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit unit eq
+      (Tau hetero_service) hetero_service) by apply peutt_tau_l.
+    exact (peutt_tree_trans_bisim (FI := FI) (FC := FC) (FO := FO) Htau).
+Qed.
+
+Example heterogeneous_reply_label b :
+  hetero_handler (ReplyS b) = Tau (Vis (ReplyT (negb b)) (fun x => Ret x)).
+Proof. reflexivity. Qed.
+
+End HeterogeneousEffects.

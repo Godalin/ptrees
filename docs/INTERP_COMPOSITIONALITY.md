@@ -9,7 +9,7 @@ library is part of this work.
 | 1. InterpExposure | Decide whether arbitrary interpretation preserves `tree_trans_bisim` | Accepted baseline `4703035` |
 | 2. GuardedInterp | Semantic visible guarding, then `interp_vis_fusion` and peutt preservation | Accepted baseline `268a223` |
 | 3. AtomicInterp | A sufficient atomic-handler contract for transition preservation | Accepted baseline `8e09561` |
-| 4. MDPInterp | An explicit handler contract preserving `mdp_state` | Proved; awaiting review |
+| 4. MDPInterp | An explicit handler contract preserving `mdp_state` | `c74ee64` proof approach accepted; generic `E -> F` follow-up awaiting review |
 | 5. StateInterp | Focused StateT interpreter, algebra, and rewrite-oriented example | Not started |
 | 6. General interp | Revisit arbitrary-handler peutt preservation without making it a blocker | Deferred |
 
@@ -379,22 +379,30 @@ reproduces exactly; no remote CI success is claimed.
 ## Stage 4: preserving the MDP fragment
 
 `Semantics/MDPInterp.v` introduces a local semantic contract, not a fourth
-interpreter semantics or a new equivalence. For a fixed return carrier:
+interpreter semantics or a new equivalence. The generic section supports
+`handler : forall X, E X -> ptree F MN X`, with distinct source and target
+signatures. For a fixed return carrier:
 
 ```text
 mdp_handler h :=
-  forall selected head a,
-    mdp_head a -> mdp_state (ptree_interp_head_tree h a).
+  forall selected source head a,
+    mdp_head_E a -> mdp_state_F (ptree_interp_head_tree h a).
 ```
 
-It asks that interpreting a qualifying **selected stable head** again give
-one deterministic qualifying state. It does not assume preservation for
+It asks that interpreting a qualifying **selected source stable head** give
+one deterministic qualifying **target** state. It does not assume preservation for
 arbitrary raw trees. `mdp_state_interp` derives that extension: the source
 tree has a complete hitting measure semantically equal to a Dirac head;
 the existing interp-hitting theorem and relational bind reduce its
 interpreted frontier to the interpreted selected head. Hitting uniqueness
 identifies the chosen witnesses. No atomicity or total-map premise is
 needed for this head-to-tree extension.
+
+The endpoint is `mdp_state_E t -> mdp_state_F (interp h t)`. Its original
+hitting/bind proof is retained, with no new semantic assumption. The file
+separates `GenericMDPInterp` (`E -> F`) from `AtomicMDPInterp` (`E -> E`).
+This interface correction does not generalize `atomic_handler`, its inverse
+label machinery, or the SubEnum atomic endpoints, and moves no directories.
 
 The contract must still be discharged, and is not advertised as an
 automatic fact about arbitrary handlers. We do so for the accepted atomic
@@ -457,15 +465,17 @@ subenum_mdp_interp_transition_to_peutt
 ### Rejoining the compositionality results
 
 `mdp_interp_peutt_tree_trans_iff` applies the **existing** fragment
-coincidence theorem to the two preserved target states. It is an iff
+coincidence theorem to the two preserved target states, with both relations
+on signature `F`. It is an iff
 between the two target relations, not a reflection theorem asserting that
 interpretation preserves and reflects source behavior.
 
 There are now two reusable routes:
 
 - For a semantic `mdp_handler` that is also guarded, source coincidence
-  gives peutt, stage 2 preserves it, and target coincidence recovers
-  transition bisimulation (`mdp_guarded_interp_tree_trans`).
+  gives `peutt_E`, stage 2 transports it through `E -> F`, and target
+  coincidence recovers `tree_trans_bisim_F`
+  (`mdp_guarded_interp_tree_trans`).
 - For an atomic SubEnum handler, stage 3 preserves transition bisimulation
   directly, stage 4 preserves the fragment, and target coincidence recovers
   peutt (`subenum_mdp_interp_transition_to_peutt`).
@@ -484,6 +494,17 @@ initial states, terminal returns, and a non-injective totality map. The
 transition-to-peutt example starts from the independently constructed
 `delay_transition_bisim`, not peutt soundness. Neither `mdp_state` nor
 `mdp_head` is changed.
+
+The same regression module additionally declares separate `sourceE` and
+`targetE` inductive families, with Boolean Ask and Boolean-indexed,
+unit-response Reply events. The heterogeneous handler emits a Tau-prefixed
+target event, negates the Reply label, and returns the unchanged response.
+It has an independent unary-coinductive `hetero_handler_mdp` proof for all
+source MDP heads; no atomic certificate or source=target identification is
+used. The checks include general state preservation, guarded transition
+preservation, target-fragment coincidence, and an actual infinite Ask/Reply
+service with a delayed source counterpart. The latter is interpreted into
+the distinct target family, not merely re-elaborated at the old signature.
 
 This stage does not start StateInterp or broaden the atomic profile.
 
@@ -506,6 +527,14 @@ introduced. The explicit generic `Htotal_map` premise is discharged by a
 theorem at the SubEnum endpoints, not included in their assumption audit
 as an unresolved constant.
 
+The `E -> F` follow-up reruns this audit: the generic preservation,
+target-coincidence and guarded-compositionality endpoints have exactly the
+same dependencies as before generalization. The heterogeneous handler
+contract and state-membership regressions use functional extensionality,
+`eq_rect_eq` and the two existing choice principles; their transition and
+coincidence endpoints additionally inherit excluded middle. No axiom,
+source/target equality premise, or new backend capability is introduced.
+
 ### Stage 4 local validation
 
 The full build, 200-module aggregate inventory (199 imports plus
@@ -522,7 +551,15 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Semantics.MDPInterp
 ```
 
-This rechecks the four new modules and the aggregate harness in the
+This rechecks the four Stage 4 modules and the aggregate harness in the
 full-library universe context, not every existing proof. The layout report
 reproduces exactly. No remote CI success is asserted. Stage 4 now pauses
 for acceptance before any StateInterp work.
+
+The `E -> F` interface follow-up repeated all of these checks successfully,
+including the original homogeneous regressions and new heterogeneous
+contract, preservation, coincidence and infinite-service regressions.
+The aggregate remains 200 modules. `AtomicInterp.v`,
+`MDPInterpSubEnum.v`, and the total-map backend proof are unchanged; no
+module or directory was moved. This follow-up is the candidate final
+Stage 4 baseline, pending acceptance before layout-only work.

@@ -275,7 +275,9 @@ the returned response. `tree_trans_bisim_interp_atomic` allows internal
 computation but does not claim preservation for event merging or general
 multi-interaction handlers.
 For the MDP fragment, [MDPInterp](theories/Semantics/MDPInterp.v) derives
-`mdp_state` preservation from a local stable-head handler contract. The
+`mdp_state` preservation for effect refinement `E -> F` from a local
+stable-head handler contract. Its guarded route transports source
+transition bisimulation to the target signature. The homogeneous `E -> E`
 atomic profile satisfies it on SubEnum/FreeOmega, using a proved
 totality-under-mapping lemma. Thus interpretation retains the fragment
 where peutt and transition bisimulation coincide; no MDP reconstruction or

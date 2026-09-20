@@ -16,7 +16,7 @@ Regenerate with `python3 tools/audit_layout.py` after a full `opam exec -- dune 
 
 ## Dependency method and retained roots
 
-Coq's `.PTree.theory.d` supplies 1684 direct local Require edges covering 199 ordinary modules out of 200 maintained modules. External libraries are excluded. Transitive clients include re-export paths; an import does not prove use of each declaration.
+Coq's `.PTree.theory.d` supplies 1688 direct local Require edges covering 199 ordinary modules out of 200 maintained modules. External libraries are excluded. Transitive clients include re-export paths; an import does not prove use of each declaration.
 
 `AllImports` is checked to import every other module, then excluded from client/reachability counts: an integration harness must not make every otherwise-unused module look substantively live.
 

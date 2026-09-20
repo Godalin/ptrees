@@ -311,7 +311,10 @@ response events), and rule out atomicity for the two-query counterexample.
 Stage 3 was accepted at `8e09561`. Stage 4 adds `Semantics/MDPInterp.v`:
 `mdp_handler` is a local contract preserving selected MDP heads under the
 existing `ptree_interp_head_tree`. `mdp_state_interp` extends it to arbitrary
-raw MDP states. Atomic handlers discharge the contract by unary
+raw MDP states. The generic contract and guarded compositionality route
+support distinct effect signatures `E -> F`; coincidence is stated on the
+target signature `F`. The accepted atomic permutation profile and SubEnum
+atomic endpoints remain `E -> E`. Atomic handlers discharge the contract by unary
 coinduction, under an explicit total-head-map premise; abstract
 `SemanticTotalProperLaws` alone does not supply that premise.
 `Prob/FreeOmegaTotalSubEnum.v` proves totality under **every** value map on
@@ -322,7 +325,11 @@ unbounded interaction. Existing fragment coincidence is reused at the
 interpreted states, and a direct transition-preservation proof can then be
 converted to peutt. This is preservation, not source/target reflection;
 there is no unconditional MathComp total-map specialization in this stage.
-Stage 4 awaits review; state interpretation has not started.
+The proof approach of `c74ee64` was accepted; the `E -> F` follow-up awaits
+final Stage 4 baseline acceptance. A genuinely heterogeneous regression
+proves the handler contract independently and transports an infinite
+Ask/Reply protocol across two distinct inductive event families. State
+interpretation and directory moves have not started.
 
 ### Semantic comparison and classical MDPs
 

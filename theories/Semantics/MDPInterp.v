@@ -12,8 +12,8 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Section MDPInterp.
-Context {E MN : Type -> Type}
+Section GenericMDPInterp.
+Context {E F MN : Type -> Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI} `{NO : @SemanticOmega MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -22,26 +22,26 @@ Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega MN NI NO).
-Variable handler : forall X, E X -> ptree E MN X.
+Variable handler : forall X, E X -> ptree F MN X.
 Context {R : Type}.
-Local Notation head := (stable_head E MN R).
+Local Notation shead := (stable_head E MN R).
 Local Notation tree := (ptree E MN R).
-Local Notation good := (@mdp_head E MN MF FI FC FreeOmegaMixedMeasure FO R).
-Local Notation state := (@mdp_state E MN MF FI FC FreeOmegaMixedMeasure FO R).
-Local Notation hits t out := (@ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure FO R (observe t) out).
+Local Notation sgood := (@mdp_head E MN MF FI FC FreeOmegaMixedMeasure FO R).
+Local Notation sstate := (@mdp_state E MN MF FI FC FreeOmegaMixedMeasure FO R).
+Local Notation tstate := (@mdp_state F MN MF FI FC FreeOmegaMixedMeasure FO R).
 
 (** A local stable-head contract, not a new interpreter semantics or a
     definition assuming the desired raw-tree preservation theorem. The
     atomic profile below discharges it by unary coinduction. *)
 Definition mdp_handler : Prop :=
-  forall h : head, good h -> state (ptree_interp_head_tree handler h).
+  forall h : shead, sgood h -> tstate (ptree_interp_head_tree handler h).
 
 Theorem mdp_state_interp (Hhandler : mdp_handler) (t : tree) :
-  state t -> state (PTree.interp handler t).
+  sstate t -> tstate (PTree.interp handler t).
 Proof.
   intros [h [mu [Hhit [Heq Hgood]]]].
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-    (fun h : head => ptree_interp_head_tree handler h)) as [front Hfront].
+    (fun h : shead => ptree_interp_head_tree handler h)) as [front Hfront].
   destruct (Hhandler h Hgood) as [h' [out [Hout [Hdirac Hgood']]]].
   eapply mdp_state_of_hitting with
     (h := h') (out := free_omega_bind mu front).
@@ -60,10 +60,10 @@ Qed.
 (** Coincidence is reused, not reproved or built into the handler contract.
     No source bisimulation premise is needed for this target-fragment iff. *)
 Theorem mdp_interp_peutt_tree_trans_iff (Hhandler : mdp_handler) t u :
-  state t -> state u ->
-  (@peutt E MN MF FI FC FreeOmegaMixedMeasure FO R R eq
+  sstate t -> sstate u ->
+  (@peutt F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
       (PTree.interp handler t) (PTree.interp handler u) <->
-   @tree_trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO R R eq
+   @tree_trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
       (PTree.interp handler t) (PTree.interp handler u)).
 Proof.
   intros Ht Hu. apply free_mdp_state_peutt_tree_trans_iff;
@@ -72,9 +72,9 @@ Qed.
 
 Theorem mdp_guarded_interp_tree_trans (Hhandler : mdp_handler)
     (Hguard : guarded_handler (NI := NI) (NO := NO) handler) t u :
-  state t -> state u ->
+  sstate t -> sstate u ->
   @tree_trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO R R eq t u ->
-  @tree_trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO R R eq
+  @tree_trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
     (PTree.interp handler t) (PTree.interp handler u).
 Proof.
   intros Ht Hu Htu.
@@ -83,7 +83,25 @@ Proof.
   exact (free_mdp_state_tree_trans_bisim_peutt Ht Hu Htu).
 Qed.
 
-Section AtomicProfile.
+End GenericMDPInterp.
+
+(** The accepted permutation profile stays homogeneous. No inverse-label
+    machinery or atomic-handler statement is generalized here. *)
+Section AtomicMDPInterp.
+Context {E MN : Type -> Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NAE : @SemanticMeasureAELiftLaws MN NI} `{NO : @SemanticOmega MN NI}
+  `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+  `{NCount : @SemanticMeasureCountableAELaws MN NI}.
+Local Notation MF := (FreeOmega MN).
+Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
+Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO)).
+Local Notation FO := (@FreeOmegaObservableSemanticOmega MN NI NO).
+Variable handler : forall X, E X -> ptree E MN X.
+Context {R : Type}.
+Local Notation head := (stable_head E MN R).
+Local Notation good := (@mdp_head E MN MF FI FC FreeOmegaMixedMeasure FO R).
+Local Notation state := (@mdp_state E MN MF FI FC FreeOmegaMixedMeasure FO R).
 Variable atom : atomic_handler (NI := NI) (NO := NO) handler.
 
 (** This is a measure-side mapping obligation, not a preservation premise.
@@ -117,7 +135,7 @@ Proof.
   - exists h. auto.
 Qed.
 
-Theorem atomic_handler_mdp : mdp_handler.
+Theorem atomic_handler_mdp : mdp_handler (R := R) handler.
 Proof.
   intros h Hh. eapply mdp_state_of_hitting with
     (h := atomic_head atom h) (out := FORet (atomic_head atom h)).
@@ -129,5 +147,4 @@ Qed.
 Theorem mdp_state_interp_atomic t : state t -> state (PTree.interp handler t).
 Proof. apply mdp_state_interp. exact atomic_handler_mdp. Qed.
 
-End AtomicProfile.
-End MDPInterp.
+End AtomicMDPInterp.
