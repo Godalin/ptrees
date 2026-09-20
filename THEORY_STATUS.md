@@ -3,15 +3,16 @@
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
-## Staged MDP development: Steps 1 / 1.5 / 2 / 3a accepted; Step 3.5 awaiting review
+## Staged MDP development: raw-tree transition API awaiting review
 
 The stable-head transition layer is in `Semantics/HeadTransition.v`, and
 the unary MDP fragment is in `Semantics/MDPFragment.v`. The canonical tree
 relation is unchanged. Step 1.5 moved its shared matching infrastructure
 to a lower module. Step 3a supplied an unlabelled baseline; Step 3.5 adds
 observable state structure to the maintained total MDP embedding.
-Weak/marginal transitions, handler classes and `prutt` remain later, unimplemented steps;
-each requires a separate user acceptance gate.
+The next stage adds only raw-tree marginal transitions and observations.
+Its bisimulation, coincidence results, handler classes and `prutt` remain
+unimplemented; each requires a separate user acceptance gate.
 
 - `obs_label` packages an event together with a response of its dependent
   result type. `head_step (FHVis e k) (Obs e x) out` holds exactly when
@@ -267,8 +268,70 @@ used. The source-level positive and quantitative negative regressions
 report only functional extensionality in their global assumption audit.
 Remote CI has not been checked for this step.
 
-Step 4 (weak/marginal transitions) has not started. Implementation pauses
-for acceptance of Step 3.5 and the completed labelled correspondence.
+### Raw-tree transition and observation API (next acceptance gate)
+
+`Semantics/TreeTransition.v` starts from an arbitrary raw tree, rather than
+an already selected head. It imports `HeadTransition`, not `PEutt`, and
+does not change `mdp_state` or define any new bisimulation.
+
+- `tree_return_observation t out` integrates return values over the complete
+  current hitting distribution; visible heads contribute zero.
+- `tree_offered_event_observation t out` integrates dependent event labels
+  packaged as `Offered e`; returns contribute zero. This observation is
+  independent of the existence of responses, including for `E Empty_set`.
+- `tree_trans t (Obs e x) out` first obtains the complete current hitting
+  distribution `front`. For almost every head, `head_action_result` assigns
+  its complete successor hitting distribution if it enables `(e,x)`, and
+  zero otherwise. The result is `sem_bind front next`: **all** matching
+  heads contribute with their original mass. Nothing selects one supported
+  head, divides by offered-event mass, or requires totality.
+
+This is a totalized action subkernel: even an absent label has a zero
+output. Such a zero entry does not assert that an action is enabled.
+`head_step` still has no step from Ret, and offered-event observations
+retain events whose every continuation diverges or whose response type is
+empty. The raw source is a PTree; targets are distributions of stable heads.
+
+Complete-hitting existence plus classical choice constructs contribution
+witnesses for every head. Choice here selects distributions, not one head
+from the current mixture. No decidable dependent-event equality or new
+measure capability is assumed. `tree_trans_unique` and
+`tree_head_observation_unique` show witness independence up to `sem_lift eq`,
+not an unjustified generic reflection into `sem_eq`. The transition proof
+uses existing bind lifting and coupling/AE restriction; per-head uniqueness
+uses complete-hitting uniqueness. Ret, Vis and Tau computation rules are
+included.
+
+The generic assumption audit reports observation uniqueness and the Vis
+transition rule closed under the global context. Transition uniqueness
+inherits `Eqdep.Eq_rect_eq.eq_rect_eq` from dependent head-step inversion.
+Transition existence uses classical excluded middle, relational choice and
+dependent unique choice from `ClassicalChoice`. These are explicit logical
+dependencies, not new measure axioms.
+
+`Examples/TreeTransition.v` tests return observations, two distinct empty
+response events, and a hidden mixture with two matching Ask heads of mass
+`1/4` each and an unmatched Other head of mass `1/2`. Its action output
+observes true and false each with mass `1/4`, total mass `1/2`, rather than
+normalizing to one. It also checks Tau invariance and the absence of a
+transitive `PEutt` dependency before importing concrete example utilities.
+
+The concrete empty-event separation and weighted transition regressions
+inherit functional extensionality and `eq_rect_eq`. The numeric observation
+certificate and all three rational mass computations are closed under the
+global context.
+
+Validation: full `opam exec -- dune build`, `coqchk -norec` of both new
+modules, and endpoint assumption audits pass. The kernel checker uses its
+VM fallback for native numeric conversions. No new axiom declaration,
+measure class, `Admitted`, or outstanding proof obligation was added.
+Remote CI has not been checked for this stage.
+
+The revised remaining sequence is: raw-tree transition GFP; general
+`peutt` inclusion; correlated-continuation strictness; coincidence on
+`mdp_state`; composition with the labelled MDP embedding. No representation
+theorem for arbitrary fragment members is required. This stage stops for
+acceptance before the GFP.
 
 ## Canonical architecture
 
