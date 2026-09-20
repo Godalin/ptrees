@@ -169,6 +169,7 @@ Require PTree.Regression.Probability.FiniteTransport.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
 Require PTree.Regression.Semantics.HeadTransition.
 Require PTree.Regression.Semantics.HittingDivergence.
+Require PTree.Regression.Semantics.InterpExposure.
 Require PTree.Regression.Semantics.LabelledMDP.
 Require PTree.Regression.Semantics.MDPCoincidence.
 Require PTree.Regression.Semantics.MDPEmbedding.

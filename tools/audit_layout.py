@@ -137,7 +137,8 @@ print("- Classification: 15 files in four case-study groups; 50 regressions "
       "Factory contains ordinary Von Neumann support shared by the interactive service.")
 print("- The later [universe repair](UNIVERSE_CONSISTENCY.md) updates two old Enum/Enum regressions "
       "and adds one import-only integration harness; it is not asserted to be a namespace-only change.")
-print("- No final MDP-encoding transition corollary or new semantic theorem is part of this milestone.\n")
+print("- The layout milestone introduced no final MDP-encoding transition corollary or new semantic theorem; "
+      "later theory work is recorded in [THEORY_STATUS](../THEORY_STATUS.md).\n")
 print("## Dependency method and retained roots\n")
 print(f"Coq's `.PTree.theory.d` supplies {sum(map(len, graph.values()))} direct local Require edges "
       f"covering {len(graph)} ordinary modules out of {len(current)} maintained modules. External libraries are excluded. "

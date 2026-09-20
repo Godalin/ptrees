@@ -277,6 +277,18 @@ head. Ordinary up-to-bind compatibility is proved but does not justify an
 unguarded use of the desired interpreter theorem.
 Eventful behavioral iter fusion has the analogous candidate-closure boundary.
 
+The first [interpretation-compositionality stage](docs/INTERP_COMPOSITIONALITY.md)
+now proves that `tree_trans_bisim` is **not** an arbitrary-interpreter
+congruence. `Regression/Semantics/InterpExposure.v` reuses the 2x2 source pair
+and replaces one Query by two, ignoring the first answer. The first target
+action exposes a distribution of second-round states for which no single
+coupling can match both possible second answers. Current return and event
+observations still agree. The handler already has a Dirac visible first
+head, so visible guarding alone cannot suffice for transition preservation.
+This does not settle peutt preservation: the source pair is not peutt-related.
+Guarded/atomic/MDP handler contracts and state interpretation await later
+separately reviewed stages; no such capability is claimed here.
+
 ### Semantic comparison and classical MDPs
 
 | Endpoint | Scope / important premises |
@@ -360,6 +372,7 @@ global dependencies are:
 | fixed-witness `peutt_preserves_tree_trans` | inherited `eq_rect_eq` |
 | general inclusion / full coincidence iff | additionally classical witness-choice principles from transition existence |
 | 2×2 positive and negative witnesses | functional extensionality and `eq_rect_eq`; no classical witness choice |
+| two-round interpretation exposure counterexample | functional extensionality and `eq_rect_eq`; no classical witness choice |
 | generic reverse coincidence | `eq_rect_eq` only |
 | FreeOmega exact Dirac AE proof | closed; passed explicitly rather than a global instance |
 | FreeOmega reverse coincidence | functional extensionality and `eq_rect_eq` |

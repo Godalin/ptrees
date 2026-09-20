@@ -260,6 +260,9 @@ The maintained theory lives in `Core/`, `Prob/`, `Eq/`, and
 theorem regressions, negative examples, capability checks and proof-tool
 clients, not additional paper-facing case studies. In particular, the
 2×2 strictness witness belongs to the semantic comparison regressions.
+Its [two-round interpretation experiment](docs/INTERP_COMPOSITIONALITY.md)
+also proves that response-wise transition bisimulation is not preserved by
+arbitrary effectful interpretation.
 
 [THEORY_STATUS.md](THEORY_STATUS.md) is the current theorem/capability map,
 including raw-tree transition comparison and MDP-fragment coincidence.
