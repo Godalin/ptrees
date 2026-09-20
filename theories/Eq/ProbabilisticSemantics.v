@@ -20,8 +20,8 @@ From PTree.Eq Require Import
   PrimitiveStableHitting
   PStruct
   PStrong
-  PFinite
   PEutt
+  StableHittingComputation
   ProbabilisticTrace.
 
 (** Curated aliases are declared here because [Require Import] deliberately
@@ -39,7 +39,6 @@ Notation stable_head_rel := UnifiedFrontier.stable_head_rel.
 Notation stable_hitting := PrimitiveStableHitting.stable_hitting.
 Notation pstruct := PStruct.pstruct.
 Notation pstrong := PStrong.pstrong.
-Notation pfinite := PFinite.pfinite.
 Notation peutt := PEutt.peutt.
 Notation finite_interaction_pattern :=
   ProbabilisticTrace.finite_interaction_pattern.
@@ -56,6 +55,25 @@ Notation stable_hitting_exists :=
   PrimitiveStableHitting.stable_hitting_exists.
 Notation stable_hitting_unique :=
   PrimitiveStableHitting.stable_hitting_unique.
+Notation stable_hitting_ret := PEutt.stable_hitting_ret.
+Notation stable_hitting_vis := PEutt.stable_hitting_vis.
+Notation stable_hitting_tau_iff := PEutt.stable_hitting_tau_iff.
+Notation stable_hitting_tau := StableHittingComputation.stable_hitting_tau.
+Notation stable_hitting_prob := PEutt.stable_hitting_prob.
+Notation stable_hitting_bind := PEutt.stable_hitting_bind.
+Notation stable_hitting_ret_iff := StableHittingComputation.stable_hitting_ret_iff.
+Notation stable_hitting_vis_iff := StableHittingComputation.stable_hitting_vis_iff.
+Notation stable_hitting_prob_decompose :=
+  StableHittingComputation.stable_hitting_prob_decompose.
+Notation stable_hitting_prob_compute :=
+  StableHittingComputation.stable_hitting_prob_compute.
+Notation stable_hitting_prob_dirac :=
+  StableHittingComputation.stable_hitting_prob_dirac.
+Notation stable_hitting_prob_flatten :=
+  StableHittingComputation.stable_hitting_prob_flatten.
+Notation peutt_iff_hitting := StableHittingComputation.peutt_iff_hitting.
+Notation peutt_of_hitting_lift := PEutt.peutt_of_hitting_lift.
+Notation peutt_hitting_lift := PEutt.peutt_hitting_lift.
 Notation peutt_coinduction :=
   PEutt.peutt_coinduction.
 Notation peutt_refl := PEutt.peutt_refl.
@@ -73,13 +91,6 @@ Notation pstruct_pstrong := PStrong.pstruct_pstrong.
 Notation pstruct_equivalence := PStruct.pstruct_equivalence.
 Notation pstrong_equivalence := PStrong.pstrong_equivalence.
 Notation pstrong_bind := PStrong.pstrong_bind.
-Notation pstrong_pfinite := PFinite.pstrong_pfinite.
-Notation pfinite_rel_mono := PFinite.pfinite_rel_mono.
-Notation pfinite_equivalence := PFinite.pfinite_equivalence.
-Notation pfinite_sym := PFinite.pfinite_sym.
-Notation pfinite_tau_l := PFinite.pfinite_tau_l.
-Notation pfinite_tau_r := PFinite.pfinite_tau_r.
-Notation pfinite_prob_tau_prefix := PFinite.pfinite_prob_tau_prefix.
 Notation peutt_rewrite_l := PEutt.peutt_rewrite_l.
 Notation peutt_rewrite_r := PEutt.peutt_rewrite_r.
 Notation peutt_rewrite := PEutt.peutt_rewrite.

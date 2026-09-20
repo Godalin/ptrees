@@ -3,4 +3,4 @@
     FreeOmega-specific semantic proofs and equational endpoints. *)
 From PTree.Eq Require Export ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Export
-  Base Relation Bind Algebra Iter Interp.
+  Base Hitting Relation Bind Algebra Iter Interp.

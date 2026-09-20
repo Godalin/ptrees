@@ -15,6 +15,8 @@ Unset Printing Implicit Defensive.
 Fail Check frontier_certificate.
 Fail Check ptree_stable_hitting.
 Fail Check stable_head_bind_front.
+Fail Check pfinite.
+Fail Check pfinite_rel.
 
 Local Notation facade_ptree := ptree.
 Local Notation facade_probabilistic_ptree := probabilistic_ptree.
@@ -29,6 +31,14 @@ Local Notation facade_stable_head_rel := stable_head_rel.
 Local Notation facade_stable_hitting := stable_hitting.
 Local Notation facade_stable_hitting_exists := stable_hitting_exists.
 Local Notation facade_stable_hitting_unique := stable_hitting_unique.
+Local Notation facade_stable_hitting_ret_iff := stable_hitting_ret_iff.
+Local Notation facade_stable_hitting_vis_iff := stable_hitting_vis_iff.
+Local Notation facade_stable_hitting_tau_iff := stable_hitting_tau_iff.
+Local Notation facade_stable_hitting_prob_decompose := stable_hitting_prob_decompose.
+Local Notation facade_stable_hitting_prob_compute := stable_hitting_prob_compute.
+Local Notation facade_stable_hitting_prob_dirac := stable_hitting_prob_dirac.
+Local Notation facade_stable_hitting_prob_flatten := stable_hitting_prob_flatten.
+Local Notation facade_peutt_iff_hitting := peutt_iff_hitting.
 Local Notation facade_peutt := peutt.
 Local Notation facade_peutt_coinduction :=
   peutt_coinduction.

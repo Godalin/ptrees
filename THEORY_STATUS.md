@@ -21,7 +21,61 @@ PTree syntax
 `Eq/ProbabilisticSemantics.v` is the generic public facade for this graph.
 It exposes curated notation and endpoint laws without transitively exporting
 the proof-oriented implementation modules.  The current source tree contains
-only the canonical relation and backend module names.
+the canonical public relation and backend module names; the internal
+`pfinite` removal is in progress as recorded below.
+
+### Internal-computation API migration (in progress)
+
+The independent `pfinite` relation is being retired, not renamed.  Finite
+internal rewrites belong to stable-hitting computation and probability
+algebra, followed by the existing canonical `peutt` interface.
+
+Completed:
+
+- `Eq/StableHittingComputation.v`: exact Ret/Vis characterizations,
+  tree-facing Tau rewriting, complete Prob decomposition and AE computation,
+  Dirac/flatten output coupling, and `peutt_iff_hitting`.
+- `Eq/FreeOmega/Hitting.v`: equality-coupled output transport and exact
+  Prob decomposition, Dirac elimination, and flattening `iff` laws.
+  Dirac-AE and exact bind-AE capabilities remain explicit where needed;
+  no native coupling-realization capability is used.
+- `Examples/StableHittingComputation.v`: double Tau, Dirac, nested joint
+  distribution, flattening, and sampled visible-head regressions, generic
+  over qualifying native backends.
+- RandomWalk's structural normal form and `passage_unfold` now go directly
+  to `peutt`; the intermediate finite theorem and explicit native recovery
+  import have been removed.  The quantitative unbounded AST proof is unchanged.
+- The curated facade no longer exposes `pfinite`; it exposes the computation
+  and hitting/coupling endpoints instead.
+
+This stage passes full `opam exec -- dune build` and kernel checking of
+the new generic/backend computation modules, their regressions, RandomWalk
+and the public-facade regression.  Assumption inspection of
+`stable_hitting_ret_iff` and `peutt_iff_hitting` is closed under the global
+context.  Prob decomposition uses classical choice; the concrete
+FreeOmega/RandomWalk proofs retain choice, function extensionality and
+Eqdep, with no newly introduced semantic axiom or native recovery premise.
+
+Remaining audit/deletion work:
+
+- Remove `Eq/PFinite.v`, its conditional subrelation registrations and
+  `FreeOmega/FiniteInternalTransport.v` after migrating remaining clients.
+- Classify `FiniteInternal*` plan, joint, acceleration and costed-kernel
+  machinery by independent use.  Do not preserve the retired relation by
+  changing its name.  Retain genuinely useful computation/certificate laws
+  only if their remaining clients justify them.
+- Migrate behavioral examples (`ResidualJointCoinduction`,
+  `CorrelatedInternalRounds`, hierarchy rewriting tests); discard tests that
+  only verify the retired relation.  Preserve independent quotient safety,
+  native-coupling countermodels and scalar continuity results.
+- Complete source/documentation cleanup and full build/assumption audit.
+
+The generic base interface does not equate `sem_lift eq` with `sem_eq` or
+directly postulate output saturation of `sem_lub`.  The exact FreeOmega
+laws prove those needed transports from its existing quotient definition;
+no new class or semantic axiom has been added.  The source still contains
+the old internal development during migration; the historical description
+below is not the new public API.
 
 The canonical measure capabilities follow the same operations/laws split:
 `SemanticMeasure`, `SemanticOmega`, and `MixedMeasure` contain structure,
@@ -167,26 +221,15 @@ convention.  `peutt` is the only public behavioral relation;
 the maintained proof hierarchy below it is
 
 ```text
-pstruct ⊆ pstrong ⊆ pfinite ⊆ peutt.
+pstruct ⊆ pstrong ⊆ peutt.
 ```
 
 `pstruct` is exact structural lockstep.  `pstrong` uses the canonical
 `SemanticMeasure` coupling while retaining lockstep control flow;
 `pstrong_bind` threads a heterogeneous coupling through monadic composition.
-The heterogeneous `pfinite_rel` alternates well-founded internal Tau/Prob
-compression with one guarded `pstrongF` match.  Compression stops at residual
-trees, not necessarily stable heads, and has no fuel or omega interface.
-An infinite one-sided silent loop cannot justify an arbitrary relation.
-The public homogeneous `pfinite` is the finite reflexive-symmetric-transitive
-closure of this GFP.  Consequently
-`pfinite_refl`, `pfinite_sym`, `pfinite_trans`, and
-`pfinite_equivalence` are available without introducing any omega execution
-rule.  `Eq/FreeOmega/FiniteInternalTransport.v` proves soundness first for
-`pfinite_rel` and then for the equivalence closure, under the explicit native
-coupling-realization capability proved for SubEnum.  Raw Enum and MathComp
-do not currently instantiate this optional capability.  `Relation.v`
-registers the corresponding conditional `subrelation` instances.  `PEutt.v`
-supplies generic endpoint rewriting for every registered stronger relation.
+`PEutt.v` supplies generic endpoint rewriting for every registered stronger
+relation.  Finite Tau/Prob simplifications now use computation laws and
+behavioral congruence rather than an intermediate equivalence.
 
 The following laws are checked:
 
@@ -734,9 +777,11 @@ The artifact support range is Coq `>= 8.20` and `< 9.0`, with CI explicitly
 installing Coq 8.20.1.  Coq 9 changes Stdlib load paths and requires a
 separate migration; it is not part of the current compatibility claim.
 
-## Finite internal compression
+## Retiring internal compression development (historical; removal pending)
 
-The public definition is now in `Eq/PFinite.v`.  There is no parallel
+The former public definition remains temporarily in `Eq/PFinite.v` while
+its internal clients are migrated; the facade no longer exports it.
+The following paragraphs document that retiring implementation.  There is no parallel
 candidate relation, stable-hitting premise, fuel index, or omega interface
 in its definition.
 
@@ -951,15 +996,10 @@ specializes `walk_observation_expect`.  The scalar fold `walk_eval` remains
 useful for the harmonic induction and executable regressions; both folds
 are certified against primitive execution by `walk_hitting_observes`.
 
-The renewal proof now stays in the finite layer.
-`passage_unfold_guarded` supplies the structural equation; promotion to
-pfinite followed by `pfinite_prob_tau_prefix` removes one Tau in each
-coin branch.  The result is `passage_unfold_finite`, with no stable-hitting
-or AST premise.  `passage_unfold` is then a direct application of the
-SubEnum behavioral subrelation.
-Assumption inspection of `passage_unfold_finite` reports only
-`Eqdep.Eq_rect_eq.eq_rect_eq`; the finite equation itself does not use
-the real-model assumptions needed by its behavioral promotion.
+The renewal proof uses `passage_unfold_guarded` for the structural equation,
+promotes it directly with `peutt_of_pstruct`, then removes one Tau per coin
+branch using `peutt_prob` and `peutt_tau_l`.  There is no intermediate
+finite relation, AST premise, or native coupling-realization requirement.
 
 The generic `peutt_prob_rewrite` remains useful for arbitrary local
 relations registered below peutt, including coupled different sample types.

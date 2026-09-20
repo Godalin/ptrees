@@ -43,42 +43,35 @@ Proofs may use the following strength hierarchy before promoting their result
 to the canonical behavioral endpoint:
 
 ```text
-pstruct  ⊆  pstrong  ⊆  pfinite  ⊆  peutt
+pstruct  ⊆  pstrong  ⊆  peutt
 ```
 
 `pstruct` matches the tree representation exactly; `pstrong` retains
-lockstep control flow but permits coupled sampling measures; `pfinite`
-performs a well-founded internal `Tau`/`Prob` compression to residual trees,
-then requires one guarded strong match before recurring.  It has no fuel or
-stable-hitting premise; `peutt` additionally admits genuinely unbounded internal
-probability through the omega limit.  In particular, `pfinite (Tau spin)
-spin` does not assert that `spin` terminates: only the removed prefix is
-finite.  The public homogeneous `pfinite` is the reflexive-symmetric-
-transitive closure of this guarded greatest fixed point: equational chaining
-is finite, while each guarded proof may describe recurring behavior.  All four homogeneous
-relations are registered as `Equivalence` instances.  The last inclusion
-uses the explicit `FreeOmegaNativeCouplingLaws` capability, proved for
-SubEnum and not assumed for raw Enum or MathComp.  The inclusions use
-Rocq's standard `subrelation`, and
-`PEutt.v` provides relation-generic left, right, and two-sided endpoint
-rewriting.
-SubEnum clients import `PTree.Prob.FreeOmegaNativeCouplingSubEnum` for the
-proved realization instance; the generic facade does not select a backend.
+lockstep control flow but permits coupled sampling measures.  Internal
+`Tau`/`Prob` computation is handled by stable-hitting calculation laws,
+not by another equivalence relation.  The FreeOmega realization supplies
+the inclusions into `peutt`; it does not require native coupling recovery
+for these structural inclusions.
 
-Local finite rewrites may also be used under a behavioral context without
-making `pfinite` itself a congruence.  `peutt_prob_rewrite` combines a
-registered subrelation with the probabilistic coupling rule: branchwise
-`pfinite` proofs yield a `peutt` conclusion for the probability nodes.
-RandomWalk now proves the stronger `passage_unfold_finite` directly using
-finite Prob/Tau compression, then promotes it to `passage_unfold : peutt`.
-Bind and fmap reuse their existing behavioral Proper instances after local promotion.
+`Eq/StableHittingComputation.v` provides constructor characterizations,
+Prob decomposition, distribution-level Dirac/flatten laws, and
+`peutt_iff_hitting`.  `Eq/FreeOmega/Hitting.v` adds exact output rewriting
+and Prob/Dirac/flatten `iff` rules for the observable FreeOmega backend.
+Generic probability algebra uses equality coupling; it does not silently
+identify that with arbitrary backends' semantic equality.
+RandomWalk proves `passage_unfold` by structural unfolding followed by
+`peutt_prob` and Tau transparency, even when the residual continuations
+perform unbounded retries.  Bind and fmap reuse behavioral congruence.
 
-`frontier_certificate`, `pstruct`, `pstrong`, and `pfinite` belong to
+The former `pfinite` implementation is being removed: it is no longer
+exposed by the public facade, and RandomWalk no longer depends on it.
+Remaining internal clients and deletion work are tracked in `THEORY_STATUS.md`.
+
+`frontier_certificate`, `pstruct`, and `pstrong` belong to
 mechanization infrastructure.  The first is a
 syntax-directed certificate system for proving stable-hitting facts;
 `pstruct` is the lockstep relation used to establish structural equations;
-`pstrong` permits coupled probability nodes; and `pfinite` packages finite
-weakening steps.  None is a competing public behavioral semantics.  The
+`pstrong` permits coupled probability nodes.  None is a competing public behavioral semantics.  The
 coinductive layers use `coq-coinduction`;
 Paco remains only an inherited ITree build dependency.
 
