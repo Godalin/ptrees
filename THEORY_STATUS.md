@@ -75,6 +75,33 @@ directly postulate output saturation of `sem_lub`.  The exact FreeOmega
 laws prove the needed transports from its existing quotient definition;
 no new class or semantic axiom has been added.
 
+### Removal acceptance checks
+
+The final local verification includes a full `opam exec -- dune build`,
+kernel checking of every modified Eq/Examples module plus the new
+`HittingDivergence` regression, and a separate kernel check of the five
+retained raw Enum audit modules.  The deleted modules are absent from
+both the source tree and generated `.v`/`.vo` artifacts.  The only source
+mentions of the retired relation are two negative public-facade checks.
+
+| Proposal requirement | Checked endpoint or regression |
+| --- | --- |
+| No independent finite relation | Definition, generator, closure, dedicated soundness and aliases deleted |
+| Constructor computation without unfolding | `stable_hitting_ret_iff`, `stable_hitting_vis_iff`, `stable_hitting_tau`, `stable_hitting_prob` |
+| Bidirectional Tau transparency | `stable_hitting_tau`, `stable_hitting_tau_iter`, `nonuniform_tau_depth_compute` |
+| Prob as integration of branch behavior | `stable_hitting_prob_compute`, `stable_hitting_prob_decompose`; FreeOmega `stable_hitting_prob_iff` |
+| Existence and uniqueness | `stable_hitting_exists`, `stable_hitting_unique` under the existing order/omega laws |
+| Nested sampling algebra | `nested_joint_compute`, `stable_hitting_prob_flatten`; exact FreeOmega flattening iff |
+| Hitting/coupling behavioral endpoint | `peutt_iff_hitting`, `peutt_of_hitting_lift`, `peutt_hitting_lift` |
+| Migrated clients | RandomWalk, hierarchy, retries, correlated rounds, coupling-reference and native-reflection tests |
+| Joint distribution and unbounded loop | `nested_joint_compute`, `ptree_von_neumann_raw_ast`, `retry_discarded_bits_peutt` |
+| No renamed replacement equivalence | Retained execution-certificate modules contain no GFP, equivalence closure or Equivalence instance |
+
+Bind computation continues to use `stable_hitting_bind` with its explicit
+generic cofinality premise, discharged for arbitrary eventful trees by
+the existing FreeOmega theorem `ptree_bind_cofinal_all`.  No new head type,
+transition semantics, scheduler or automatic rewriting framework was added.
+
 The canonical measure capabilities follow the same operations/laws split:
 `SemanticMeasure`, `SemanticOmega`, and `MixedMeasure` contain structure,
 while their property packages retain the `Laws` suffix.  The unrelated
