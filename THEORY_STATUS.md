@@ -3,7 +3,7 @@
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
-## Staged MDP development: raw-tree transition API accepted; GFP awaiting review
+## Staged MDP development: transition GFP accepted; peutt inclusion awaiting review
 
 The stable-head transition layer is in `Semantics/HeadTransition.v`, and
 the unary MDP fragment is in `Semantics/MDPFragment.v`. The canonical tree
@@ -11,9 +11,10 @@ relation is unchanged. Step 1.5 moved its shared matching infrastructure
 to a lower module. Step 3a supplied an unlabelled baseline; Step 3.5 adds
 observable state structure to the maintained total MDP embedding.
 The raw-tree marginal transition and observation API has been accepted.
-The current stage adds only its independent transition-bisimulation GFP
-and basic regressions. Inclusion/coincidence results, handler classes and
-`prutt` remain unimplemented; each requires a separate user acceptance gate.
+Its independent transition-bisimulation GFP has also been accepted.
+The current stage proves only `peutt` inclusion. Strictness/coincidence
+results, handler classes and `prutt` remain unimplemented; each requires
+a separate user acceptance gate.
 
 - `obs_label` packages an event together with a response of its dependent
   result type. `head_step (FHVis e k) (Obs e x) out` holds exactly when
@@ -328,7 +329,7 @@ VM fallback for native numeric conversions. No new axiom declaration,
 measure class, `Admitted`, or outstanding proof obligation was added.
 Remote CI has not been checked for this stage.
 
-### Raw-tree transition bisimulation GFP (next acceptance gate)
+### Raw-tree transition bisimulation GFP (accepted)
 
 `Semantics/TreeTransitionBisim.v` defines `tree_trans_bisim` with
 coq-coinduction. Its candidate relates raw PTrees, not selected stable
@@ -381,11 +382,79 @@ extensionality and `eq_rect_eq` dependencies. No new axiom declaration,
 measure class, `Admitted`, or outstanding obligation was added. Remote CI
 has not been checked for this stage.
 
-The revised remaining sequence is: general `peutt` inclusion;
-correlated-continuation strictness; coincidence on `mdp_state`; composition
-with the labelled MDP embedding. None is claimed here. No representation
-theorem for arbitrary fragment members is required. This stage stops for
-acceptance of the GFP before attempting inclusion.
+### peutt inclusion in raw-tree transition bisimulation (next acceptance gate)
+
+`Semantics/TreeTransitionSoundness.v` is the explicit comparison layer.
+It imports both independent theories; neither transition definitions nor
+`TreeTransitionBisim.v` acquire a dependency on `PEutt`. No existing
+semantic definition or `mdp_state` changes.
+
+The core theorem is `peutt_tree_trans_postfixed`:
+
+```text
+peutt RR t u -> tree_trans_bisimF RR (peutt RR) t u.
+```
+
+The final `peutt_tree_trans_bisim` follows directly by the transition GFP's
+coinduction principle. The comparison supports arbitrary relations
+`RR : R -> R -> Prop` on a common return carrier; `RR = eq` is the requested
+behavioral inclusion. A fully heterogeneous `R1`/`R2` comparison is not
+claimed here. In particular we do not add a heterogeneous zero-coupling
+axiom to make that extension automatic.
+
+The three preservation endpoints take arbitrary complete witnesses:
+
+- `peutt_preserves_tree_return_observation` couples returns under `RR`;
+- `peutt_preserves_tree_offered_event_observation` couples offered events
+  under equality;
+- `peutt_preserves_tree_trans` couples action results under
+  `tree_trans_head_rel (peutt RR)`.
+
+Their common starting point is the whole-head coupling supplied by
+`peutt_hitting_lift`. Observation preservation uses relational bind on the
+projection kernels. Transition preservation restricts that same coupling
+to both AE contribution predicates before using relational bind. Related
+current heads enable exactly the same dependent labels; matching heads use
+continuation hitting couplings, while nonmatching heads contribute zero.
+`peutt_stable_heads_as_trees` turns the resulting stable-head relation into
+the recursive raw-tree candidate using derived Ret/Vis laws. There is no
+appeal to `head_bisim`, no normalized conditioning, and no assumption that
+the source or successors are MDP states or total.
+
+On a common carrier, coupling two zeros under any relation is **derived**:
+restrict their reflexive equality coupling to the empty AE support, then
+weaken its relation. The proof uses existing `SemanticOmegaAELaws` and
+`SemanticMeasureCouplingAELaws`, not a new class. Other capabilities are
+the existing core, bind, omega and cofinality laws; the postfixed-point
+construction also needs order laws to obtain opposite-side witnesses.
+
+The generic transition preservation endpoint inherits only `eq_rect_eq`
+globally. The inclusion additionally inherits excluded middle, relational
+choice and dependent unique choice from `tree_trans_exists`. These logical
+dependencies are explicit; no new measure axiom is declared.
+Both generic observation-preservation endpoints and the derived zero
+coupling lemma are closed under the global context.
+
+`Examples/TreeTransitionSoundness.v` instantiates inclusion and the
+postfixed-point theorem on the delayed half-mass mixture in SubEnum/FreeOmega,
+checks the coupling of its unnormalized action outputs, and tests a
+non-equality return relation. It also reuses the existing unbounded
+Von Neumann interactive service theorem to obtain transition bisimilarity
+with the direct fair service in Enum/FreeOmega. This is a client of the
+general inclusion, not a new sampler proof or an MDP coincidence result.
+
+Validation: full `opam exec -- dune build`, `coqchk -norec` for the comparison
+module and its example module, and endpoint assumption audits pass.
+Concrete inclusion regressions additionally inherit the existing backend's
+functional extensionality. The fixed-witness mixture action coupling needs
+only functional extensionality and `eq_rect_eq`, not classical witness
+choice. No new axiom declaration, measure class, `Admitted`, or outstanding
+obligation was added. Remote CI has not been checked for this stage.
+
+The remaining sequence is correlated-continuation strictness; coincidence
+on `mdp_state`; composition with the labelled MDP embedding. None is
+claimed here. No representation theorem for arbitrary fragment members is
+required. This stage stops for acceptance before the 2x2 example.
 
 ## Canonical architecture
 
