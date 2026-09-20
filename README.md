@@ -263,6 +263,11 @@ clients, not additional paper-facing case studies. In particular, the
 Its [two-round interpretation experiment](docs/INTERP_COMPOSITIONALITY.md)
 also proves that response-wise transition bisimulation is not preserved by
 arbitrary effectful interpretation.
+For peutt, [semantic visible guarding](theories/Eq/FreeOmega/GuardedInterp.v)
+now suffices: `peutt_interp_guarded` preserves equivalence through handlers
+whose complete first behavior is almost everywhere visible, allowing
+internal probability and divergence. The same two-round handler therefore
+preserves peutt even though it does not preserve transition bisimulation.
 
 [THEORY_STATUS.md](THEORY_STATUS.md) is the current theorem/capability map,
 including raw-tree transition comparison and MDP-fragment coincidence.

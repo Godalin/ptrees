@@ -286,8 +286,17 @@ coupling can match both possible second answers. Current return and event
 observations still agree. The handler already has a Dirac visible first
 head, so visible guarding alone cannot suffice for transition preservation.
 This does not settle peutt preservation: the source pair is not peutt-related.
-Guarded/atomic/MDP handler contracts and state interpretation await later
-separately reviewed stages; no such capability is claimed here.
+Stage 2 now supplies `Eq/FreeOmega/GuardedInterp.v`: `guarded_handler`
+requires every complete handler hitting witness to be AE-supported on Vis
+heads, without totality or a syntactic-prefix restriction.
+`guarded_handler_vis_fusion` proves the existing fusion obligation by
+AE-restricting the handler's diagonal coupling and using up-to-bind at the
+first visible guard. `peutt_interp_guarded` then derives heterogeneous
+return-relation preservation from the existing theorem. An explicit
+`peutt_interp_guarded_Proper` endpoint supports local setoid rewriting.
+The same stage-1 handler preserves peutt despite its transition counterexample;
+additional regressions check partial divergence and null return branches.
+Atomic/MDP handler contracts and state interpretation await separate review.
 
 ### Semantic comparison and classical MDPs
 
@@ -373,6 +382,7 @@ global dependencies are:
 | general inclusion / full coincidence iff | additionally classical witness-choice principles from transition existence |
 | 2×2 positive and negative witnesses | functional extensionality and `eq_rect_eq`; no classical witness choice |
 | two-round interpretation exposure counterexample | functional extensionality and `eq_rect_eq`; no classical witness choice |
+| guarded-handler fusion / peutt preservation / Proper | functional extensionality, `eq_rect_eq`, relational choice and dependent unique choice from existing hitting witness selection |
 | generic reverse coincidence | `eq_rect_eq` only |
 | FreeOmega exact Dirac AE proof | closed; passed explicitly rather than a global instance |
 | FreeOmega reverse coincidence | functional extensionality and `eq_rect_eq` |

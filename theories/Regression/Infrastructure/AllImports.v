@@ -49,6 +49,7 @@ Require PTree.Eq.FreeOmega.FiniteInternalPlanHitting.
 Require PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy.
 Require PTree.Eq.FreeOmega.FiniteInternalRound.
 Require PTree.Eq.FreeOmega.FiniteInternalRoundCoupling.
+Require PTree.Eq.FreeOmega.GuardedInterp.
 Require PTree.Eq.FreeOmega.Hitting.
 Require PTree.Eq.FreeOmega.Interp.
 Require PTree.Eq.FreeOmega.Iter.
@@ -167,6 +168,7 @@ Require PTree.Regression.Probability.CorrelatedSampleAlgebra.
 Require PTree.Regression.Probability.EnumDisintegration.
 Require PTree.Regression.Probability.FiniteTransport.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
+Require PTree.Regression.Semantics.GuardedInterp.
 Require PTree.Regression.Semantics.HeadTransition.
 Require PTree.Regression.Semantics.HittingDivergence.
 Require PTree.Regression.Semantics.InterpExposure.
