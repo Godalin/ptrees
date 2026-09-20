@@ -3,12 +3,13 @@
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
-## Staged MDP development: Steps 1 / 1.5 / 2 accepted; Step 3 awaiting review
+## Staged MDP development: Steps 1 / 1.5 / 2 / 3a accepted; Step 3.5 awaiting review
 
 The stable-head transition layer is in `Semantics/HeadTransition.v`, and
 the unary MDP fragment is in `Semantics/MDPFragment.v`. The canonical tree
 relation is unchanged. Step 1.5 moved its shared matching infrastructure
-to a lower module. Step 3 adds the minimal classical MDP embedding.
+to a lower module. Step 3a supplied an unlabelled baseline; Step 3.5 adds
+observable state structure to the maintained total MDP embedding.
 Weak/marginal transitions, handler classes and `prutt` remain later, unimplemented steps;
 each requires a separate user acceptance gate.
 
@@ -144,15 +145,32 @@ No Step 2 proof obligations remain. Step 2 has been accepted. The induced
 fragment admits terminal states: `FHRet` has no action, rather than being
 silently replaced by an absorbing self-loop.
 
-### Step 3: minimal classical MDP embedding
+### Steps 3a / 3.5: labelled total MDP embedding
+
+The unlabelled baseline at `424f47a` was accepted as an implementation,
+not as the paper's classical MDP correspondence milestone. Its universal
+bisimilarity audit identified missing source observations. The maintained
+model is now labelled; the unlabelled case survives as a specialization,
+not a second source model or a compatibility alias.
 
 `Semantics/MDPEmbedding.v` defines a source `MDP` with arbitrary state and
-action types, a native transition kernel, and a totality proof for every
-state/action pair. `mdp_bisim` is an independent source-state coupling GFP.
-The guarded encoding is:
+action and observation types, `mdp_observe : State -> Observation`, a native
+transition kernel, and a totality proof for every state/action pair.
+`mdp_bisim` is an independent source-state GFP with generator:
 
 ```text
-mdp_encode s = Vis Choose (fun a => Prob (mdp_transition D s a) mdp_encode)
+mdp_bisimF sim s t :=
+  mdp_observe D s = mdp_observe D t /\
+  forall a, sem_lift sim (mdp_transition D s a) (mdp_transition D t a)
+```
+
+`mdpE O A` has one constructor `Choose (o : O) : mdpE O A A`.
+The guarded encoding exposes observation and action interface together,
+without an extra observation-only interaction:
+
+```text
+mdp_encode s = Vis (Choose (mdp_observe D s))
+                  (fun a => Prob (mdp_transition D s a) mdp_encode)
 mdp_successors mu = mixed_bind mu (fun s => sem_ret (mdp_encode_head s))
 ```
 
@@ -164,6 +182,13 @@ the pushforward. Generic soundness is proved by explicit kernel matching:
 `mdp_bisim_head_sound` and `mdp_bisim_peutt_sound`. The latter's two-form
 candidate distinguishes selected encoded states from sampled successor
 distributions; it is only a local coinductive proof device.
+`mdp_choose_head_rel_iff` characterizes matching two such visible heads
+as observation equality AND related continuations for every action.
+This dependent-head inversion inherits the existing `eq_rect_eq` assumption.
+`mdp_bisim_observe` and `mdp_bisim_step` expose the two source obligations.
+Both inverse proofs recover the observation equality as well as source
+couplings. No termination machinery was added: these are total labelled
+MDPs, embedded in the broader terminal-state-admitting PTree fragment.
 
 Two generic boundaries stay explicit, without new classes or axioms:
 
@@ -199,27 +224,51 @@ extensionality and standard Dedekind-real construction assumptions
 (`sig_not_dec` / `sig_forall_dec`). This is a stronger dependency footprint
 than Step 2, not a newly declared measure axiom.
 
-**Important source-model limitation.** This minimal MDP has no state
-labels, no observable termination, and every action enabled at every state.
-`subenum_unlabelled_mdp_universal` proves that all its states are bisimilar:
-total distributions can always be coupled by the universal relation.
-The correspondence proofs above do not use this collapse, but their
-GFP-level iff must not be advertised as a discriminating conservativity
-result for labelled or terminating MDPs. Such a result needs an observable
-source-state label or terminal-state structure and a matching encoding;
-that extension is deliberately left for user review, not silently added.
+**Constant-observation audit.** `subenum_unlabelled_mdp_universal` now
+requires `forall s t, mdp_observe D s = mdp_observe D t`. Under precisely
+that additional premise it recovers universal bisimilarity of the old
+unlabelled total model. It no longer claims universal bisimilarity of an
+arbitrary labelled MDP, and the correspondence proofs never use it.
 
 `Examples/MDPEmbedding.v` instantiates an infinite natural-number state
 space with two actions and fair random increments. It checks fragment
 membership, the exact transition kernel, the iff endpoint, and explicitly
 demonstrates equivalence of different unobserved counter values.
-Validation: full `opam exec -- dune build`, `coqchk -norec` for all three
-new modules, and endpoint assumption audits pass. The example's native
-conversion is rechecked using the kernel checker's VM fallback. There are
-no `Admitted`, new axiom declarations, or remaining proof obligations for
-the specified minimal model. Remote CI has not been checked for Step 3.
+Its observation type is `unit`, so it is explicitly the constant-label
+specialization.
+
+`Examples/LabelledMDP.v` supplies the discriminating acceptance tests:
+
+- `StartHalf` and `StartBiased` both expose `Running`, but reach the `Good`
+  class with probabilities `1/2` and `3/4`, respectively. All successor
+  states are total visible self-loops labelled `Good` or `Bad`, not Ret.
+  `different_successor_probabilities_not_bisimilar` projects a hypothetical
+  successor coupling to the Boolean Good observation and derives a false
+  equality of probability masses. Corresponding negative `head_bisim`
+  and `peutt` theorems follow by the proved reflection endpoints.
+- `StartHalf` and `StartClone` are distinct states with different kernels:
+  they sample disjoint pairs of successor states, but put the same mass
+  on their related Good/Bad classes. A three-pair coinductive candidate
+  proves `distinct_states_same_class_probabilities`, then encoded head
+  bisimilarity and `peutt`. This is not just equality of source states or
+  equality of labels.
+- The numeric `good_probability_*` checks, source-state inequality,
+  unequal positive kernels, fragment membership and full-iff endpoints
+  are separately checked regressions.
+
+Step 3.5 validation: full `opam exec -- dune build`, `coqchk -norec` for
+both embedding modules and both MDP example modules, and endpoint
+assumption audits pass. Numeric proof conversions are independently
+checked using the kernel checker's VM fallback. No new measure class,
+axiom declaration, `Admitted`, or outstanding proof obligation was added.
+The labelled iff retains the baseline native-coupling realization's
+logical dependencies listed above; no encoding-injectivity assumption is
+used. The source-level positive and quantitative negative regressions
+report only functional extensionality in their global assumption audit.
+Remote CI has not been checked for this step.
+
 Step 4 (weak/marginal transitions) has not started. Implementation pauses
-for acceptance and review of the source-model limitation.
+for acceptance of Step 3.5 and the completed labelled correspondence.
 
 ## Canonical architecture
 

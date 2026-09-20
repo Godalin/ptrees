@@ -12,50 +12,77 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** The source model has a total kernel for every state/action pair.
+(** The source model exposes a state observation and has a total kernel
+    for every state/action pair.
     The target fragment additionally admits observable terminal states;
     this particular encoding never returns. *)
 Record MDP (MN : Type -> Type) `{NI : SemanticMeasure MN}
     `{NO : @SemanticOmega MN NI} := {
   mdp_states : Type;
   mdp_actions : Type;
+  mdp_observations : Type;
+  mdp_observe : mdp_states -> mdp_observations;
   mdp_transition : mdp_states -> mdp_actions -> MN mdp_states;
   mdp_transition_total : forall s a, sem_total (mdp_transition s a)
 }.
 Arguments MDP MN {NI NO}.
 Arguments mdp_states {MN NI NO} _.
 Arguments mdp_actions {MN NI NO} _.
+Arguments mdp_observations {MN NI NO} _.
+Arguments mdp_observe {MN NI NO} _ _.
 Arguments mdp_transition {MN NI NO} _ _ _.
 Arguments mdp_transition_total {MN NI NO} _ _ _.
 
-Variant mdpE (A : Type) : Type -> Type := Choose : mdpE A A.
-Arguments Choose {A}.
+Variant mdpE (O A : Type) : Type -> Type := Choose (o : O) : mdpE O A A.
+Arguments Choose {O A} _.
+
+(** One visible interaction exposes the current observation and accepts
+    an action. No extra observation-only event is inserted. *)
+Lemma mdp_choose_head_rel_iff {O A MN R1 R2} (RR : R1 -> R2 -> Prop)
+    (sim : ptree (mdpE O A) MN R1 -> ptree (mdpE O A) MN R2 -> Prop)
+    (o1 o2 : O) k1 k2 :
+  stable_head_rel RR sim (FHVis (Choose o1) k1) (FHVis (Choose o2) k2) <->
+  o1 = o2 /\ forall a, sim (k1 a) (k2 a).
+Proof.
+  split.
+  - intro H. dependent destruction H. split; [reflexivity|assumption].
+  - intros [-> H]. constructor. exact H.
+Qed.
 
 Section Source.
 Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI} `{NO : @SemanticOmega MN NI}.
 Variable D : MDP MN.
 
-CoFixpoint mdp_encode (s : mdp_states D) : ptree (mdpE (mdp_actions D)) MN unit :=
-  Vis Choose (fun a => Prob (mdp_transition D s a) mdp_encode).
+CoFixpoint mdp_encode (s : mdp_states D) :
+    ptree (mdpE (mdp_observations D) (mdp_actions D)) MN unit :=
+  Vis (Choose (mdp_observe D s)) (fun a => Prob (mdp_transition D s a) mdp_encode).
 
-Definition mdp_encode_head s : stable_head (mdpE (mdp_actions D)) MN unit :=
-  FHVis Choose (fun a => Prob (mdp_transition D s a) mdp_encode).
+Definition mdp_encode_head s :
+    stable_head (mdpE (mdp_observations D) (mdp_actions D)) MN unit :=
+  FHVis (Choose (mdp_observe D s)) (fun a => Prob (mdp_transition D s a) mdp_encode).
 
 (** Independent textbook coupling bisimulation, over SOURCE states. *)
 Definition mdp_bisimF (sim : mdp_states D -> mdp_states D -> Prop) s t :=
+  mdp_observe D s = mdp_observe D t /\
   forall a, sem_lift sim (mdp_transition D s a) (mdp_transition D t a).
 
 Program Definition fmdp_bisim : mon (mdp_states D -> mdp_states D -> Prop) :=
   {| body := mdp_bisimF |}.
 Next Obligation.
-  intros P Q Hsub s t H a. eapply sem_lift_mono; [exact Hsub|apply H].
+  intros P Q Hsub s t [Hobs H]. split; [exact Hobs|].
+  intro a. eapply sem_lift_mono; [exact Hsub|apply H].
 Qed.
 Definition mdp_bisim := gfp fmdp_bisim.
 Lemma mdp_bisim_unfold s t : mdp_bisim s t -> mdp_bisimF mdp_bisim s t.
 Proof. intro H. apply (gfp_pfp fmdp_bisim) in H. exact H. Qed.
 Lemma mdp_bisim_fold s t : mdp_bisimF mdp_bisim s t -> mdp_bisim s t.
 Proof. intro H. unfold mdp_bisim. apply (gfp_fp fmdp_bisim). exact H. Qed.
+Lemma mdp_bisim_observe s t : mdp_bisim s t -> mdp_observe D s = mdp_observe D t.
+Proof. intro H. exact (proj1 (mdp_bisim_unfold H)). Qed.
+Lemma mdp_bisim_step s t : mdp_bisim s t ->
+  forall a, sem_lift mdp_bisim (mdp_transition D s a) (mdp_transition D t a).
+Proof. intro H. exact (proj2 (mdp_bisim_unfold H)). Qed.
 Theorem mdp_bisim_coinduction (sim : mdp_states D -> mdp_states D -> Prop)
     (Hpost : forall s t, sim s t -> mdp_bisimF sim s t) :
   forall s t, sim s t -> mdp_bisim s t.
@@ -82,7 +109,7 @@ Definition mdp_successors (mu : MN (mdp_states D)) :=
 Lemma mdp_encode_hitting s : hits (mdp_encode s) (sem_ret (mdp_encode_head s)).
 Proof.
   change (ptree_stable_hitting (MF := MF)
-    (VisF Choose (fun a => Prob (mdp_transition D s a) mdp_encode))
+    (VisF (Choose (mdp_observe D s)) (fun a => Prob (mdp_transition D s a) mdp_encode))
     (sem_ret (mdp_encode_head s))).
   apply ptree_stable_hitting_vis.
 Qed.
@@ -96,14 +123,14 @@ Proof.
 Qed.
 
 Theorem mdp_encode_step s a :
-  head_step (mdp_encode_head s) (Obs Choose a)
+  head_step (mdp_encode_head s) (Obs (Choose (mdp_observe D s)) a)
     (mdp_successors (mdp_transition D s a)).
 Proof. constructor. apply mdp_sample_hitting. Qed.
 
 (** Exact kernel agreement, modulo the interface's equality of measures.
     No choice of a canonical complete-hitting representative is needed. *)
 Theorem mdp_encode_step_unique s a out :
-  head_step (mdp_encode_head s) (Obs Choose a) out ->
+  head_step (mdp_encode_head s) (Obs (Choose (mdp_observe D s)) a) out ->
   sem_eq out (mdp_successors (mdp_transition D s a)).
 Proof.
   intro H. eapply head_step_unique; [exact H|apply mdp_encode_step].
@@ -135,10 +162,12 @@ Proof.
   intro H. eapply head_bisim_coinduction with
     (sim := fun h k => exists s t, h = mdp_encode_head s /\
       k = mdp_encode_head t /\ mdp_bisim s t).
-  - intros h k [u [v [-> [-> Huv]]]]. constructor. intro a.
+  - intros h k [u [v [-> [-> Huv]]]].
+    destruct (mdp_bisim_unfold Huv) as [Hobs Hsteps].
+    unfold head_bisimF, mdp_encode_head. rewrite Hobs. constructor. intro a.
     eapply stable_hitting_match_of_hitting_lift;
       [apply mdp_sample_hitting|apply mdp_sample_hitting|].
-    eapply mixed_lift_bind; [exact (mdp_bisim_unfold Huv a)|].
+    eapply mixed_lift_bind; [exact (Hsteps a)|].
     intros x y Hxy. apply sem_lift_ret. exists x, y. auto.
   - exists s, t. auto.
 Qed.
@@ -146,8 +175,8 @@ Qed.
 (** The two forms are proof states only: a selected encoded state, or an
     action's sampled successor distribution. They do not define semantics. *)
 Inductive mdp_encoding_candidate :
-    ptree' (mdpE (mdp_actions D)) MN unit ->
-    ptree' (mdpE (mdp_actions D)) MN unit -> Prop :=
+    ptree' (mdpE (mdp_observations D) (mdp_actions D)) MN unit ->
+    ptree' (mdpE (mdp_observations D) (mdp_actions D)) MN unit -> Prop :=
   | MECState s t : mdp_bisim s t ->
       mdp_encoding_candidate (observe (mdp_encode s)) (observe (mdp_encode t))
   | MECSample mu nu : sem_lift mdp_bisim mu nu ->
@@ -157,7 +186,9 @@ Lemma mdp_encoding_head_related s t : mdp_bisim s t ->
   ptree_stable_head_rel eq mdp_encoding_candidate
     (mdp_encode_head s) (mdp_encode_head t).
 Proof.
-  intro H. constructor. intro a. constructor. exact (mdp_bisim_unfold H a).
+  intro H. destruct (mdp_bisim_unfold H) as [Hobs Hsteps].
+  unfold ptree_stable_head_rel, mdp_encode_head. rewrite Hobs.
+  constructor. intro a. constructor. exact (Hsteps a).
 Qed.
 
 Theorem mdp_bisim_peutt_sound s t :

@@ -72,15 +72,15 @@ Local Notation encode := (mdp_encode (D := D)).
 Local Notation ehead := (mdp_encode_head (D := D)).
 Local Notation successors := (@mdp_successors SubEnum SubEnum_SemanticMeasure
   SubEnum_SemanticOmega D MF FI FreeOmegaMixedMeasure).
-Local Notation hb := (@head_bisim (mdpE (mdp_actions D)) SubEnum MF FI FC
+Local Notation hb := (@head_bisim (mdpE (mdp_observations D) (mdp_actions D)) SubEnum MF FI FC
   FreeOmegaMixedMeasure FO unit unit eq).
-Local Notation pb := (@peutt (mdpE (mdp_actions D)) SubEnum MF FI FC
+Local Notation pb := (@peutt (mdpE (mdp_observations D) (mdp_actions D)) SubEnum MF FI FC
   FreeOmegaMixedMeasure FO unit unit eq).
-Local Notation hits t out := (@ptree_stable_hitting (mdpE (mdp_actions D))
+Local Notation hits t out := (@ptree_stable_hitting (mdpE (mdp_observations D) (mdp_actions D))
   SubEnum MF FI FreeOmegaMixedMeasure FO unit (observe t) out).
 
 Theorem subenum_encode_mdp_state s :
-  @mdp_state (mdpE (mdp_actions D)) SubEnum MF FI FC
+  @mdp_state (mdpE (mdp_observations D) (mdp_actions D)) SubEnum MF FI FC
     FreeOmegaMixedMeasure FO unit (encode s).
 Proof.
   apply (mdp_encode_mdp_state (FI := FI) (FO := FO)
@@ -103,8 +103,8 @@ Qed.
 (** This concrete backend also makes hitting closed under semantic
     equality of outputs, giving the literal iff for arbitrary targets. *)
 Theorem subenum_encode_step_iff s a out :
-  @head_step (mdpE (mdp_actions D)) SubEnum MF FI FreeOmegaMixedMeasure FO unit
-    (ehead s) (Obs Choose a) out <->
+  @head_step (mdpE (mdp_observations D) (mdp_actions D)) SubEnum MF FI FreeOmegaMixedMeasure FO unit
+    (ehead s) (Obs (Choose (mdp_observe D s)) a) out <->
   @sem_eq MF FI _ out (successors (mdp_transition D s a)).
 Proof.
   split; [apply (mdp_encode_step_unique (FI := FI) (FO := FO))|].
@@ -120,12 +120,14 @@ Qed.
 Theorem subenum_head_bisim_reflect s t : hb (ehead s) (ehead t) -> mdp_bisim (D := D) s t.
 Proof.
   intro H. eapply mdp_bisim_coinduction with (sim := fun u v => hb (ehead u) (ehead v)).
-  - intros u v Huv a.
-    pose proof (proj1 (head_bisim_vis_hitting_iff eq Choose
-      (fun a => mdp_sample_hitting (FI := FI) (FO := FO)
+  - intros u v Huv. apply head_bisim_unfold in Huv.
+    apply mdp_choose_head_rel_iff in Huv. destruct Huv as [Hobs Hsteps].
+    split; [exact Hobs|]. intro a.
+    pose proof (stable_hitting_match_hitting_lift (Hsteps a)
+      (mdp_sample_hitting (FI := FI) (FO := FO)
         (MX := FreeOmegaMixedMeasure) (D := D) (mdp_transition D u a))
-      (fun a => mdp_sample_hitting (FI := FI) (FO := FO)
-        (MX := FreeOmegaMixedMeasure) (D := D) (mdp_transition D v a))) Huv a) as Hfront.
+      (mdp_sample_hitting (FI := FI) (FO := FO)
+        (MX := FreeOmegaMixedMeasure) (D := D) (mdp_transition D v a))) as Hfront.
     exact (subenum_sampled_heads_reflect Hfront).
   - exact H.
 Qed.
@@ -136,6 +138,7 @@ Proof.
 Qed.
 
 Lemma subenum_encoded_vis_inversion s t : pb (encode s) (encode t) ->
+  mdp_observe D s = mdp_observe D t /\
   forall a, pb (Prob (mdp_transition D s a) encode)
     (Prob (mdp_transition D t a) encode).
 Proof.
@@ -144,14 +147,15 @@ Proof.
     (mdp_encode_hitting (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure) (D := D) s)
     (mdp_encode_hitting (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure) (D := D) t)) as Hheads.
   apply subenum_dirac_heads_reflect in Hheads.
-  dependent destruction Hheads. exact H0.
+  apply mdp_choose_head_rel_iff in Hheads. exact Hheads.
 Qed.
 
 Theorem subenum_peutt_mdp_reflect s t : pb (encode s) (encode t) -> mdp_bisim (D := D) s t.
 Proof.
   intro H. eapply mdp_bisim_coinduction with (sim := fun u v => pb (encode u) (encode v)).
-  - intros u v Huv a.
-    pose proof (peutt_hitting_lift (subenum_encoded_vis_inversion Huv a)
+  - intros u v Huv. destruct (subenum_encoded_vis_inversion Huv) as [Hobs Hsteps].
+    split; [exact Hobs|]. intro a.
+    pose proof (peutt_hitting_lift (Hsteps a)
       (mdp_sample_hitting (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
         (D := D) (mdp_transition D u a))
       (mdp_sample_hitting (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
@@ -174,15 +178,14 @@ Corollary subenum_encoded_head_peutt_iff s t :
   hb (ehead s) (ehead t) <-> pb (encode s) (encode t).
 Proof. rewrite <- subenum_mdp_head_bisim_iff, <- subenum_mdp_peutt_iff. reflexivity. Qed.
 
-(** Scope audit, not the proof of the correspondence above: with no state
-    observations, no termination and all actions enabled everywhere, the
-    universal relation is a bisimulation. A labelled/terminal source model
-    is required for a discriminating MDP case study. Do not overstate the
-    full-abstraction theorem for this deliberately minimal source model. *)
-Theorem subenum_unlabelled_mdp_universal s t : mdp_bisim (D := D) s t.
+(** The old unlabelled baseline is recovered by CONSTANT observations.
+    This is not true for arbitrary labelled MDPs. *)
+Theorem subenum_unlabelled_mdp_universal
+    (Hconstant : forall s t, mdp_observe D s = mdp_observe D t)
+    s t : mdp_bisim (D := D) s t.
 Proof.
   eapply mdp_bisim_coinduction with (sim := fun _ _ => True).
-  - intros u v _ a.
+  - intros u v _. split; [apply Hconstant|]. intro a.
     eapply sem_lift_mono with
       (R := fun _ _ => exists z : unit, True /\ True).
     + intros x y _. exact I.
