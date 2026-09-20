@@ -1,12 +1,17 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 From mathcomp Require Import reals.
-From PTree.Prob Require Import DiscreteMC MathCompMeasure TwoLevelMeasure
-  FreeOmegaMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum
-  TwoLevelMeasureMathComp FreeOmegaNativeCoupling FreeOmegaNativeCouplingSubEnum
-  SemanticCoupling SemanticCouplingMathComp.
+From PTree.Prob.Backend Require Import DiscreteMC MathCompMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum TwoLevelMeasureMathComp.
+From PTree.Prob.FreeOmega Require Import FreeOmegaNativeCoupling.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaNativeCouplingSubEnum.
+From PTree.Prob.Interface Require Import SemanticCoupling.
+From PTree.Prob.Backend Require Import SemanticCouplingMathComp.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

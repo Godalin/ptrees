@@ -1,3 +1,4 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -5,8 +6,10 @@ Set Universe Polymorphism.
 From mathcomp Require Import ssreflect ssralg ssrnum reals.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
-  TwoLevelMeasure TwoLevelMeasureMathComp.
+From PTree.Prob.Backend Require Import MathCompMeasure.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureMathComp.
 From PTree.Eq Require Import UnifiedFrontier PEutt.
 
 Set Implicit Arguments.

@@ -1,12 +1,15 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 From mathcomp Require Import reals.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
-  MathCompMeasure TwoLevelMeasureMathComp FreeOmegaMeasure FreeOmegaNative.
-From PTree.Eq Require Import FiniteInternal FiniteInternalPlan PStrong.
-From PTree.Eq.FreeOmega Require Import FiniteInternalNative FiniteInternalJoint.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum MathCompMeasure TwoLevelMeasureMathComp.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaNative.
+From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalPlan.
+From PTree.Eq Require Import PStrong.
+From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalNative FiniteInternalJoint.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

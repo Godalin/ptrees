@@ -1,17 +1,22 @@
+(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 
-Require Import Program.Equality.
+From Coq.Program Require Import Equality.
 
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum reals.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
-  TwoLevelMeasure TwoLevelMeasureMathComp.
-From PTree.Eq Require Import PrimitiveStableHitting PTreeKernel
-  FreeOmega UnifiedFrontier PEutt.
+From PTree.Prob.Backend Require Import MathCompMeasure.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureMathComp.
+From PTree.Eq Require Import PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
+From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
+From PTree.Interp.FreeOmega Require Import Base Guarded.
+From PTree.Eq Require Import UnifiedFrontier PEutt.
 From PTree.CaseStudies.BernoulliFactory Require Import RealBernoulliOracle RealBernoulliMathComp.
 From PTree.CaseStudies.BernoulliFactory Require Import UnifiedRealBernoulliMathCompCore.
 

@@ -1,9 +1,12 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
-From Coq Require Import Program.Equality.
+From Coq.Program Require Import Equality.
 From mathcomp Require Import ssralg ssrnum rat.
-From PTree.Prob Require Import RatSubTypes DiscreteMC TwoLevelMeasure
-  TwoLevelMeasureEnum TwoLevelMeasureSubEnum MeasureIterationEnum FreeOmegaMeasure.
+From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum MeasureIterationEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.CaseStudies Require Import RandomWalk.
 Import Enum.
 Local Open Scope ring_scope.

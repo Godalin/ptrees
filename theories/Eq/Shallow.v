@@ -1,3 +1,4 @@
+(** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
 (** * Shallow equivalence
     This file comes from the [ITree] library *)
 

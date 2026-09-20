@@ -1,3 +1,4 @@
+(** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
@@ -7,7 +8,7 @@ From Coinduction Require Import all.
 From mathcomp Require Import ssreflect ssrbool eqtype seq.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import FrontierLift TwoLevelMeasure.
+From PTree.Prob.Interface Require Import FrontierLift TwoLevelMeasure.
 From PTree.Eq Require Import Shallow PStruct.
 
 Set Implicit Arguments.

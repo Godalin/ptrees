@@ -1,15 +1,20 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
-From Coq Require Import Arith.PeanoNat.
+From Coq.Arith Require Import PeanoNat.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
-  RatSubTypes DiscreteMC EnumMap Coupling FrontierLiftEnum
-  SemanticCoupling EnumDisintegration FreeOmegaMeasure FreeOmegaDisintegration.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum RatSubTypes DiscreteMC EnumMap Coupling FrontierLiftEnum.
+From PTree.Prob.Interface Require Import SemanticCoupling.
+From PTree.Prob.Backend Require Import EnumDisintegration.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaDisintegration.
 From PTree.Eq Require Import PrimitiveStableHitting.
 From PTree.Eq Require Import UnifiedFrontier.
-From PTree.Eq.FreeOmega Require Import KernelCompletion KernelDisintegration.
+From PTree.Eq.Internal.FreeOmega Require Import KernelCompletion.
+From PTree.Eq.Internal.Backend Require Import KernelDisintegration.
 From PTree.Regression.Backend Require Import EnumMeasureRegression SubEnumRegression.
 From PTree.Regression.Probability Require Import EnumDisintegration.
 

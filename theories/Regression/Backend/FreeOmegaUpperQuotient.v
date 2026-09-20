@@ -1,11 +1,12 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
-From PTree.Prob Require Import TwoLevelMeasureSubEnum FreeOmegaMeasure
-  FreeOmegaUpperExpectationSubEnum FreeOmegaUpperRelationalSubEnum
-  FreeOmegaUpperQuotientSubEnum.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaUpperExpectationSubEnum FreeOmegaUpperRelationalSubEnum FreeOmegaUpperQuotientSubEnum.
 From PTree.Regression.Backend Require Import SubEnumRegression FreeOmegaEscapingMass FreeOmegaUpperExpectation FreeOmegaUpperObservation.
 From PTree.CaseStudies Require Import RandomWalk.
 

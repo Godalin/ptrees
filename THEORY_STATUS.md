@@ -17,17 +17,30 @@ development has started.
 The [cleanup architecture and review gates](docs/ARCHITECTURE_CLEANUP.md)
 distinguish component ownership, generic/FreeOmega/concrete profiles,
 curated versus expert imports, and five kinds of premise. The
-[complete 200-module inventory](docs/ARCHITECTURE_AUDIT.md) records actual
-Coq dependencies and proposed dispositions, including FiniteInternal and
-the single Experimental file. The
+[frozen Gate A inventory](docs/ARCHITECTURE_BASELINE.md) records 200 modules.
+The [current 208-module inventory](docs/ARCHITECTURE_AUDIT.md) enforces
+ownership dependencies after five Section extractions and facade assembly,
+including the disposition of FiniteInternal and the former Experimental file. The
 [compiled capability baseline](docs/CAPABILITY_BASELINE.md) records full
 types and logical assumptions for 25 selected endpoints; it is not yet
 the exhaustive public-theorem/minimality audit.
 
-Cleanup Gate A (inventory and baseline) is implemented and awaits review.
-Migration/facades, capability minimization, and the final whole-library
-kernel audit remain separate pending gates. No `.v` definitions or proofs
-change in this first gate.
+Cleanup Gate A is accepted at `2258907`. Gate B implements the
+[architecture migration](docs/ARCHITECTURE_MIGRATION.md) and awaits review.
+The [current compiled capability report](docs/CAPABILITY_CURRENT.md)
+preserves all 25 baseline endpoint types and logical assumptions after
+namespace normalization. Capability minimization (Gate C) and the final
+whole-library kernel audit (Gate D) have not been claimed complete.
+
+| Component | Role / import surface |
+| --- | --- |
+| `Core` | syntax only; no local measure dependency |
+| `Prob/Interface`, `Prob/FreeOmega` | generic operations/laws and canonical model |
+| `Prob/Backend`, `Prob/Legacy` | concrete carriers and explicitly legacy adapters |
+| `Eq`, `Eq/Internal` | stable hitting / equality; internal certificates and schedules |
+| `Semantics` | transitions, MDP fragment and comparison; no Interp dependency |
+| `Interp/FreeOmega`, `Interp/Backend` | canonical-model compositionality and concrete endpoints |
+| `API`, top-level `PTree` / `Semantics` | curated imports; implementation modules remain explicit expert imports |
 
 ## 1. Public semantic architecture
 
@@ -51,7 +64,7 @@ labelled traditional MDP --encode--> mdp_state PTrees
 `tree_trans_bisim` is a comparison semantics, not its replacement.
 `head_bisim` compares already-selected stable heads. These have different
 domains or observation power and must not be interchanged by definition.
-The generic facade `Eq/ProbabilisticSemantics.v` exposes curated vocabulary
+The generic facade `API/Generic.v` exposes curated vocabulary
 and endpoint laws without re-exporting all proof machinery.
 Comparison theory is imported explicitly from `Semantics/`.
 
@@ -232,7 +245,7 @@ selection development.
 `SemanticSubprobabilityLaws` provides equality/return/bind closure.
 `SemanticSubprobabilityCarrierLaws` certifies all carrier inhabitants.
 Raw Enum has the predicate and closure laws but deliberately not the last
-package. `Core/PTreeProbability.v` proves program well-formedness closure
+package. `Eq/WellFormedness.v` proves program well-formedness closure
 under bind, fmap, guarded iter and the supported interpretation contracts.
 These contracts do not assert AST; termination and normalization are
 different obligations.
@@ -280,7 +293,8 @@ still quantify over measure-law records.
 | `peutt_iter_rel` | heterogeneous fusion under structural step relations |
 | `peutt_iter_behavioral_rel` | behavioral step fusion for eventless unbounded loops |
 
-`Eq/FreeOmega.v` aggregates the backend equational theory. All maintained
+`API/FreeOmega.v` exposes selected canonical-model equational endpoints,
+without bulk-exporting the implementation modules. All maintained
 probabilistic GFPs use coq-coinduction; Paco is an inherited ITree dependency.
 
 Interpreter laws include structural preservation, bind/iter morphisms,
@@ -291,7 +305,7 @@ composition of translation are behavioral, accounting for administrative Tau.
 establish the general scheduling/complete-limit composition theorem.
 
 Full preservation by an arbitrary effectful handler is still conditional:
-`Eq/FreeOmega/Interp.v` isolates `interp_vis_fusion`, and
+`Interp/FreeOmega/Base.v` isolates `interp_vis_fusion`, and
 `peutt_interp_of_vis_fusion` derives preservation from it.
 The unresolved part is progress when an internally returning handled Vis
 continues into the next interpreted continuation before exposing a stable
@@ -308,7 +322,7 @@ coupling can match both possible second answers. Current return and event
 observations still agree. The handler already has a Dirac visible first
 head, so visible guarding alone cannot suffice for transition preservation.
 This does not settle peutt preservation: the source pair is not peutt-related.
-Stage 2 now supplies `Eq/FreeOmega/GuardedInterp.v`: `guarded_handler`
+Stage 2 now supplies `Interp/FreeOmega/Guarded.v`: `guarded_handler`
 requires every complete handler hitting witness to be AE-supported on Vis
 heads, without totality or a syntactic-prefix restriction.
 `guarded_handler_vis_fusion` proves the existing fusion obligation by
@@ -318,7 +332,7 @@ return-relation preservation from the existing theorem. An explicit
 `peutt_interp_guarded_Proper` endpoint supports local setoid rewriting.
 The same stage-1 handler preserves peutt despite its transition counterexample;
 additional regressions check partial divergence and null return branches.
-Stage 3 supplies `Semantics/AtomicInterp.v`: an explicit `atomic_handler`
+Stage 3 supplies `Interp/FreeOmega/Atomic.v`: an explicit `atomic_handler`
 certificate for response-preserving event permutations. Its two semantic
 clauses require complete Dirac hitting at one renamed Vis head, and at
 `Ret x` after response `x`, without a finite-fuel or syntactic restriction.
@@ -330,7 +344,7 @@ profile, not a characterization: event merging, response transformations,
 and multi-interaction handlers are not covered. Regressions preserve the
 non-peutt 2x2 pair, check a non-identity event permutation (including empty
 response events), and rule out atomicity for the two-query counterexample.
-Stage 3 was accepted at `8e09561`. Stage 4 adds `Semantics/MDPInterp.v`:
+Stage 3 was accepted at `8e09561`. Stage 4 adds `Interp/FreeOmega/MDP.v`:
 `mdp_handler` is a local contract preserving selected MDP heads under the
 existing `ptree_interp_head_tree`. `mdp_state_interp` extends it to arbitrary
 raw MDP states. The generic contract and guarded compositionality route
@@ -339,7 +353,7 @@ target signature `F`. The accepted atomic permutation profile and SubEnum
 atomic endpoints remain `E -> E`. Atomic handlers discharge the contract by unary
 coinduction, under an explicit total-head-map premise; abstract
 `SemanticTotalProperLaws` alone does not supply that premise.
-`Prob/FreeOmegaTotalSubEnum.v` proves totality under **every** value map on
+`Prob/Backend/FreeOmega/FreeOmegaTotalSubEnum.v` proves totality under **every** value map on
 SubEnum/FreeOmega by reducing total observations to unit observations.
 Consequently `MDPInterpSubEnum.v` supplies atomic MDP preservation without
 an extra client premise, including non-Dirac successor distributions and
@@ -459,12 +473,14 @@ may be silently inferred from that interface.
 
 `frontier_certificate`, finite-internal execution plans, kernel completion,
 joint rounds and costed schedules are proof infrastructure, not additional
-behavioral equivalences. They currently remain under `Eq/` pending a separate
-namespace migration. [The complete layout/client audit](docs/LAYOUT_AUDIT.md)
+behavioral equivalences. They now live under `Eq/Internal/`.
+[The complete layout/client audit](docs/LAYOUT_AUDIT.md)
 records their actual imports, direct/transitive clients and zero-client
 modules. No zero-client module is automatically treated as dead code:
 public endpoints and independent regression leaves naturally have none.
-The [move manifest](docs/module-moves.tsv) lists every namespace change.
+The [Gate B manifest](docs/gate-b-moves.json) records the current moves and
+extractions; [module-moves.tsv](docs/module-moves.tsv) records the earlier
+historical layout milestone.
 
 `Regression/Infrastructure/AllImports.v` checks that all maintained modules
 coexist in one universe context; CI checks its inventory is complete.

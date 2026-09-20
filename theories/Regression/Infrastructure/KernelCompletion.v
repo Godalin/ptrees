@@ -1,7 +1,10 @@
-From Coq Require Import Program.Equality.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
+From Coq.Program Require Import Equality.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.Eq Require Import PrimitiveStableHitting.
-From PTree.Eq.FreeOmega Require Import KernelCompletion.
+From PTree.Eq.Internal.FreeOmega Require Import KernelCompletion.
 
 Set Implicit Arguments.
 Local Notation MF := (FreeOmega SubEnum).

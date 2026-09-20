@@ -1,19 +1,23 @@
+(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 
-Require Import FunctionalExtensionality Program.Equality.
-From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order
-  rat.
+Require Import FunctionalExtensionality.
+From Coq.Program Require Import Equality.
+From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import DiscreteMC FrontierLiftEnum TwoLevelMeasure
-  TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration MeasureIterationEnum
-  EnumMap.
-From PTree.Eq Require Import Shallow PrimitiveStableHitting
-  PTreeKernel
-  FreeOmega UnifiedFrontier
-  PEutt.
+From PTree.Prob.Backend Require Import DiscreteMC FrontierLiftEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Interface Require Import MeasureIteration.
+From PTree.Prob.Backend Require Import MeasureIterationEnum EnumMap.
+From PTree.Eq Require Import Shallow PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
+From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
+From PTree.Interp.FreeOmega Require Import Base Guarded.
+From PTree.Eq Require Import UnifiedFrontier PEutt.
 From PTree.CaseStudies.BernoulliFactory Require Import RationalBernoulli.
 
 Set Implicit Arguments.

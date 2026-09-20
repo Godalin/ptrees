@@ -1,13 +1,19 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
-Require Import Program.Equality.
+From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool seq ssralg ssrnum order rat.
-From PTree.Core Require Import PTreeDefinition PTreeProbability.
-From PTree.Prob Require Import DiscreteMC FreeOmegaMeasure
-  TwoLevelMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
-From PTree.Eq Require Import FreeOmega
-  PEutt.
+From PTree.Core Require Import PTreeDefinition.
+From PTree.Eq Require Import WellFormedness.
+From PTree.Prob.Backend Require Import DiscreteMC.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
+From PTree.Eq Require Import ProbabilisticTrace.
+From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
+From PTree.Interp.FreeOmega Require Import Base Guarded.
+From PTree.Eq Require Import PEutt.
 From PTree.Regression.Backend Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.

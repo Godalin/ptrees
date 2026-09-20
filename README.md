@@ -30,7 +30,7 @@ PTree syntax (intensional representation)
        -> finite interaction observations / Prₜ[t | pattern] (quantitative)
 ```
 
-The generic public facade is `Eq/ProbabilisticSemantics.v`.  It imports its
+The generic public facade is `API/Generic.v`.  It imports its
 implementation dependencies without transitively exporting implementation
 names, then exposes the curated semantic vocabulary and endpoint laws.
 PTree has one public behavioral equivalence: `peutt`, written
@@ -100,7 +100,7 @@ The choice-based `finite_interaction_sem` packages a representative, and
 `peutt_preserves_finite_interaction_sem` is its extensional soundness
 theorem.  Generic witness independence is stated as diagonal coupling;
 backends may reflect that coupling to their own semantic equality.
-`Eq/ProbabilisticTraceSubEnum.v` is the bounded paper-facing concrete
+`Eq/Backend/ProbabilisticTraceSubEnum.v` is the bounded paper-facing concrete
 projection.  It defines `Prₛ[t | tr] = p` using an Enum expectation of a
 `FreeOmega SubEnum`
 representative coupled to a valid query, without pretending that the
@@ -118,7 +118,7 @@ expectation-transformer calculus.
 
 ### Unbounded stable hitting
 
-`Prob/MeasureIteration.v` defines finite absorbing approximants and their
+`Prob/Interface/MeasureIteration.v` defines finite absorbing approximants and their
 omega limits.  `meas_iter_ast` adds totality of that limit.  The maintained
 FreeOmega backend supplies the support-aware omega, AE, coupling, diagonal,
 and Fubini laws needed by arbitrary eventful PTree programs.  Finite programs
@@ -213,10 +213,10 @@ contract needs neither source nondegeneracy nor termination. Raw Enum is the
 executable representation; the certificates establish membership in its
 subprobabilistic fragment.
 
-`Prob/EnumSupport.v` proves AE continuity for increasing, convergent Enum
+`Prob/Backend/EnumSupport.v` proves AE continuity for increasing, convergent Enum
 chains over outcomes with decidable equality, and proves that absorbing
 iteration approximations are increasing.
-`Prob/FreeOmegaSupport.v` transports a concrete observation coupling back to
+`Prob/FreeOmega/FreeOmegaSupport.v` transports a concrete observation coupling back to
 high-universe support when both observations preserve and reflect AE.
 Observation equality or injectivity alone is insufficient: the disappearing
 atom regression in `FreeOmegaMeasureEnumAudit.v` remains rejected.
@@ -246,13 +246,30 @@ explicit `MathCompOracleSupportLaws` and coupling-gluing premises.
 The interpretation theory through Stage 4 is accepted at `ec96b90` and
 frozen. Current work is the staged
 [repository architecture and assumption cleanup](docs/ARCHITECTURE_CLEANUP.md),
-starting with a [complete module inventory](docs/ARCHITECTURE_AUDIT.md) and
-[compiled capability baseline](docs/CAPABILITY_BASELINE.md), not new
-interpreter theory. These audits distinguish the target layout from the
-current, not-yet-migrated repository.
+with Gate A accepted at `2258907`. Gate B implements the
+[ownership boundaries and module splits](docs/ARCHITECTURE_MIGRATION.md).
+The [current inventory](docs/ARCHITECTURE_AUDIT.md) checks actual dependency
+directions; the [current capability audit](docs/CAPABILITY_CURRENT.md)
+compares 25 compiled endpoint signatures against the frozen
+[Gate A baseline](docs/CAPABILITY_BASELINE.md). Capability minimization
+and the final whole-library kernel audit remain separate gates.
 
-The maintained theory lives in `Core/`, `Prob/`, `Eq/`, and
-`Semantics/` under `theories/`. Paper-facing programs form four groups:
+Ordinary clients can import the curated entry points:
+
+```coq
+From PTree Require Import PTree.      (* syntax and canonical equational API *)
+From PTree Require Import Semantics.  (* transition and MDP comparison API *)
+From PTree.API Require Import SubEnum. (* optional concrete probability adapter *)
+```
+
+`Core/` owns syntax; `Prob/{Interface,FreeOmega,Backend,Legacy}/` separates
+measure interfaces, the canonical model, concrete realizations and legacy
+adapters. `Eq/` owns stable hitting and equality; `Eq/Internal/` holds proof
+machinery. `Semantics/` owns independent comparison semantics. `Interp/`
+owns interpretation preservation, with FreeOmega-qualified theory distinct
+from concrete endpoints. `API/` assembles these layers without bulk exports.
+Experts may import implementation modules explicitly. Paper-facing programs
+form four groups:
 
 - [MixedHeadProtocol](theories/CaseStudies/MixedHeadProtocol.v): the flagship
   mixed Ret/Vis, whole-continuation coupling example;
@@ -271,18 +288,18 @@ clients, not additional paper-facing case studies. In particular, the
 Its [two-round interpretation experiment](docs/INTERP_COMPOSITIONALITY.md)
 also proves that response-wise transition bisimulation is not preserved by
 arbitrary effectful interpretation.
-For peutt, [semantic visible guarding](theories/Eq/FreeOmega/GuardedInterp.v)
+For peutt, [semantic visible guarding](theories/Interp/FreeOmega/Guarded.v)
 now suffices: `peutt_interp_guarded` preserves equivalence through handlers
 whose complete first behavior is almost everywhere visible, allowing
 internal probability and divergence. The same two-round handler therefore
 preserves peutt even though it does not preserve transition bisimulation.
-For transition bisimulation, [atomic interpretation](theories/Semantics/AtomicInterp.v)
+For transition bisimulation, [atomic interpretation](theories/Interp/FreeOmega/Atomic.v)
 now provides a stronger sufficient contract: a response-preserving event
 permutation, with complete Dirac hitting at one visible head and then at
 the returned response. `tree_trans_bisim_interp_atomic` allows internal
 computation but does not claim preservation for event merging or general
 multi-interaction handlers.
-For the MDP fragment, [MDPInterp](theories/Semantics/MDPInterp.v) derives
+For the MDP fragment, [MDPInterp](theories/Interp/FreeOmega/MDP.v) derives
 `mdp_state` preservation for effect refinement `E -> F` from a local
 stable-head handler contract. Its guarded route transports source
 transition bisimulation to the target signature. The homogeneous `E -> E`
@@ -298,8 +315,9 @@ reachability and the retained internal infrastructure's clients.
 [Local validation](docs/LAYOUT_VALIDATION.md) records the layout checks;
 [joint universe consistency](docs/UNIVERSE_CONSISTENCY.md) explains the
 subsequent two-level regression repair and the full-library import guard.
-Finite-internal/kernel infrastructure stays in `Eq/` pending a separate
-namespace migration; no theorem was deleted in this reorganization.
+Finite-internal/kernel infrastructure is grouped under `Eq/Internal/`;
+it is not another behavioral relation. The universe representation probes
+now live in `Regression/Infrastructure`, not an active Experimental layer.
 
 ## Artifact claims
 

@@ -1,17 +1,18 @@
+(** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 Require Import Program.
-From Coq Require Import Logic.ClassicalChoice Morphisms Program.Basics
-  Relations.Relation_Definitions.
+From Coq.Logic Require Import ClassicalChoice.
+From Coq Require Import Morphisms.
+From Coq.Program Require Import Basics.
+From Coq.Relations Require Import Relation_Definitions.
 From Coinduction Require Import all.
 From mathcomp Require Import ssreflect.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure.
-From PTree.Eq Require Import
-  PrimitiveStableHitting UnifiedFrontier
-  PTreeKernel.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PTreeKernel.
 (** Preserve the usual import surface without duplicate compatibility
     definitions: generic matching now belongs to the lower semantic layer. *)
 From PTree.Eq Require Export StableHittingRelation.

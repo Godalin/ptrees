@@ -1,3 +1,4 @@
+(** Role: Primitive tree syntax/combinators and utilities. No local probability-model or behavioral-theory dependency. *)
 Set Warnings "-warn-library-file-stdlib-vector".
 From Coq Require Import Fin.
 

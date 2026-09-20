@@ -1,12 +1,15 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import Arith.PeanoNat Lia.
+From Coq.Arith Require Import PeanoNat.
+From Coq Require Import Lia.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
-  FreeOmegaMeasure FreeOmegaNative.
-From PTree.Eq Require Import FiniteInternalPlan UnifiedFrontier
-  PrimitiveStableHitting PTreeKernel.
-From PTree.Eq.FreeOmega Require Import FiniteInternalNative FiniteInternalRound.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaNative.
+From PTree.Eq.Internal Require Import FiniteInternalPlan.
+From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
+From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalNative FiniteInternalRound.
 From PTree.Regression.Infrastructure Require Import FiniteInternalPlan.
 
 Set Implicit Arguments.

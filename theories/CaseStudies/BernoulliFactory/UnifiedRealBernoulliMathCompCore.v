@@ -1,3 +1,4 @@
+(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -6,8 +7,11 @@ Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum reals.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import FrontierLift MathCompMeasure FreeOmegaMeasure
-  MeasureIteration TwoLevelMeasure TwoLevelMeasureMathComp.
+From PTree.Prob.Interface Require Import FrontierLift.
+From PTree.Prob.Backend Require Import MathCompMeasure.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Interface Require Import MeasureIteration TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureMathComp.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.CaseStudies.BernoulliFactory Require Import RealBernoulliOracle RealBernoulliMathComp.
 

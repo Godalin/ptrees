@@ -1,14 +1,17 @@
+(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
 Require Import Utf8 FunctionalExtensionality.
 
-From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order
-  rat.
+From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLift
-  FrontierLiftEnum EnumBindFacts MeasureIteration MeasureIterationEnum.
+From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
+From PTree.Prob.Interface Require Import FrontierLift.
+From PTree.Prob.Backend Require Import FrontierLiftEnum EnumBindFacts.
+From PTree.Prob.Interface Require Import MeasureIteration.
+From PTree.Prob.Backend Require Import MeasureIterationEnum.
 From PTree.CaseStudies.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli.
 
 Set Implicit Arguments.

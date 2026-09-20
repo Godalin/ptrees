@@ -1,15 +1,17 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
-From Coq Require Import Program.Equality.
+From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
-  RatSubTypes DiscreteMC FrontierLiftEnum FreeOmegaMeasure FreeOmegaCoupling.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum RatSubTypes DiscreteMC FrontierLiftEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaCoupling.
 From PTree.Eq Require Import PrimitiveStableHitting.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Eq Require Import FiniteInternal UnifiedFrontier PTreeKernel.
-From PTree.Eq.FreeOmega Require Import KernelCompletion KernelProjection
-  FiniteInternalAcceleration FiniteInternalProjectedPolicy.
+From PTree.Eq.Internal Require Import FiniteInternal.
+From PTree.Eq Require Import UnifiedFrontier PTreeKernel.
+From PTree.Eq.Internal.FreeOmega Require Import KernelCompletion KernelProjection FiniteInternalAcceleration FiniteInternalProjectedPolicy.
 From PTree.Regression.Backend Require Import EnumMeasureRegression SubEnumRegression.
 From PTree.Regression.Infrastructure Require Import CouplingReferences.
 

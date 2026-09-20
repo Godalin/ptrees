@@ -1,10 +1,11 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From Coq Require Import Lia.
-From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype finset
-  bigop ssralg ssrnum order rat.
-From PTree.Prob Require Import FiniteMatching FiniteCapacityMatching FiniteRationalTransport
-  RatSubTypes TwoLevelMeasureSubEnum SemanticCoupling FiniteEnumTransport.
+From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype finset bigop ssralg ssrnum order rat.
+From PTree.Prob.Backend Require Import FiniteMatching FiniteCapacityMatching FiniteRationalTransport RatSubTypes TwoLevelMeasureSubEnum.
+From PTree.Prob.Interface Require Import SemanticCoupling.
+From PTree.Prob.Backend Require Import FiniteEnumTransport.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

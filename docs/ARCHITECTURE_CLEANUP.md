@@ -9,8 +9,8 @@ review. No StateInterp or FreeOmega adequacy development starts here.
 
 | Gate | Deliverable | Status |
 | --- | --- | --- |
-| A | unique ownership policy, complete module inventory, compiled capability baseline | implemented; awaiting review |
-| B | migrate/split modules, strict facades, role comments, experimental disposition | pending |
+| A | unique ownership policy, complete module inventory, compiled capability baseline | accepted at `2258907` |
+| B | migrate/split modules, strict facades, role comments, experimental disposition | implemented; awaiting review |
 | C | minimize capabilities, remove unused contexts/imports, audit every agreed public endpoint | pending |
 | D | final dependency checks, facade regressions, full joint kernel audit and scope review | pending |
 
@@ -67,16 +67,27 @@ are `Interp/FreeOmega/{Base,Guarded,Atomic,MDP}` and
 `Interp/Backend/SubEnum`. This refines the proposed flat Interp directory
 without changing any theorem or generalizing the homogeneous atomic profile.
 
-Ordinary clients should eventually use curated `PTree`/`Semantics` entry
+Ordinary clients can now use curated `PTree`/`Semantics` entry
 points; backend implementers deliberately import `Prob/...`; advanced
 equational users may explicitly import implementation modules. These are
-target import contracts, **not currently available top-level facades**.
+implemented import contracts; [Gate B](ARCHITECTURE_MIGRATION.md) describes
+the exact splits, explicit expert imports, and boundary regressions.
 
 ## What the actual inventory found
 
-The [machine-generated inventory](ARCHITECTURE_AUDIT.md) covers all 200
+The [frozen Gate A inventory](ARCHITECTURE_BASELINE.md) covers all 200
 modules using Coq's `.PTree.theory.d`. The integration harness imports all
 199 others and is excluded from substantive client counts.
+
+The following findings record the accepted starting point. Gate B implements
+these dispositions; the [current inventory](ARCHITECTURE_AUDIT.md) covers
+208 modules and enforces the dependency directions. Declaration inspection
+also refined four placements: `Coupling`/`IndexedCoupling` are Enum-specific,
+`RelLift` is a legacy discrete-interface adapter, and both
+`FreeOmegaDisintegration` and `KernelDisintegration` specialize SubEnum.
+They therefore belong to concrete/legacy layers, not generic FreeOmega.
+Interpreter sections in `PStruct` and `PTreeKernel` were also extracted;
+moving only the five principal interpreter files would not suffice.
 
 - `Core/PTreeDefinition` imports the old `Prob/Monad` because `stuckM`
   uses `MonadMeasure`/`score`. Removing that import alone is incorrect:
@@ -176,8 +187,8 @@ to a local semantic contract needs explicit review.
 
 ## Validation and completion criteria
 
-Gate A has no `.v` modifications, no new axioms, no module moves and no
-new public API. Its executable checks are:
+Gate A had no `.v` modifications, no new axioms, no module moves and no
+new public API. Its executable checks at `2258907` were:
 
 ```sh
 opam exec -- dune build
@@ -204,10 +215,14 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Semantics.MDPInterp
 ```
 
-All `.v` files are unchanged from `ec96b90`. The eight audit-tool tests
+At that baseline all `.v` files were unchanged from `ec96b90`. The audit-tool tests
 include negative cases for Coq errors with a zero process exit code,
 missing output markers, unparseable logical assumptions, and unclassified
 experiments. No remote CI outcome is asserted.
+
+Gate B's current-path validation and proof-text/signature conservation are
+recorded separately in [ARCHITECTURE_MIGRATION](ARCHITECTURE_MIGRATION.md).
+The historical commands above intentionally retain the Gate A namespaces.
 
 Final cleanup acceptance additionally requires: enforced target dependency
 directions; no interpretation scattered back into Eq/Semantics; explicit

@@ -1,19 +1,21 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 (** Keep the zero query in the behavior carrier's universe, rather than
     minimizing its otherwise unconstrained [FOZero] representation to Set. *)
 Local Unset Universe Minimization ToSet.
 
-From Coq Require Import Program.Equality.
+From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool ssrnat seq ssralg ssrnum rat reals.
 From mathcomp.analysis Require Import ereal.
 From mathcomp.reals_stdlib Require Import Rstruct.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import DiscreteMC FrontierLiftEnum MeasureIterationEnum
-  TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure
-  FreeOmegaUpperExpectationEnum FreeOmegaUpperQuotientEnum.
-From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier
-  PTreeKernel PEutt ProbabilisticTrace.
+From PTree.Prob.Backend Require Import DiscreteMC FrontierLiftEnum MeasureIterationEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaUpperExpectationEnum FreeOmegaUpperQuotientEnum.
+From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PTreeKernel PEutt ProbabilisticTrace.
 From PTree.Regression.Backend Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.

@@ -1,3 +1,4 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -5,13 +6,22 @@ Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From mathcomp Require Import eqtype.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
-  TwoLevelMeasure TwoLevelMeasureEnum
-  FreeOmegaMeasure MeasureIterationEnum.
-From PTree.Eq Require Import PTreeKernel
-  FreeOmega PEutt PStruct PStrong.
+From PTree.Prob.Backend Require Import DiscreteMC.
+From PTree.Prob.Interface Require Import FrontierLift.
+From PTree.Prob.Backend Require Import FrontierLiftEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend Require Import MeasureIterationEnum.
+From PTree.Eq Require Import PTreeKernel ProbabilisticTrace.
+From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
+From PTree.Interp.FreeOmega Require Import Base Guarded.
+From PTree.Eq Require Import PEutt PStruct PStrong.
 From PTree.Regression.Backend Require Import EnumMeasureRegression.
+Require Import PTree.Interp.FreeOmega.Translate.
+Require Import PTree.Interp.Kernel.
 
+From PTree.Interp.FreeOmega Require Import Cofinality.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -380,7 +390,7 @@ Qed.
     source-head/handler diagonal for every source tree. *)
 Lemma canonical_interp_cofinal_regression {R}
     (t : ptree sourceE Enum R) :
-  @PTreeKernel.ptree_interp_cofinal sourceE algebraE Enum MF
+  @PTree.Interp.Kernel.ptree_interp_cofinal sourceE algebraE Enum MF
     (FreeOmegaObservableSemanticMeasure
       (NI := Enum_SemanticMeasure)
       (NO := Enum_SemanticOmega))

@@ -6,6 +6,7 @@ Proof-text invariance compares the two frozen layout revisions; client
 analysis uses the current build, allowing subsequent reviewed theory fixes.
 """
 import csv
+import json
 import re
 import subprocess
 from pathlib import Path
@@ -82,7 +83,8 @@ for line in depfile.read_text().splitlines():
             assert dependency in graph, "Missing local dependency: " + dependency
             graph[mod].add(dependency)
 assert seen == set(graph), "coqdep does not cover every maintained source"
-library = ("PTree.Core.", "PTree.Prob.", "PTree.Eq.", "PTree.Semantics.")
+library = ("PTree.Core.", "PTree.Prob.", "PTree.Eq.", "PTree.Semantics.",
+           "PTree.Interp.", "PTree.API.")
 for module, dependencies in graph.items():
     if module.startswith(library):
         assert not any(d.startswith(("PTree.Regression.", "PTree.CaseStudies.")) for d in dependencies), \
@@ -115,10 +117,13 @@ def listing(items):
 
 roots = {m for m in graph if m.startswith(("PTree.Core.", "PTree.Semantics.", "PTree.CaseStudies."))}
 roots |= {"PTree.Eq." + n for n in ("ProbabilisticSemantics", "FreeOmega", "PStruct", "PStrong", "ProbabilisticTraceSubEnum", "ProbabilisticTraceEnum")}
+gate_b_moves = {logical(a): logical(b) for a, b in
+                json.loads((ROOT / "docs/gate-b-moves.json").read_text())["moves"].items()}
+roots = {gate_b_moves.get(m, m) for m in roots}
+roots |= {m for m in graph if m.startswith(("PTree.API.", "PTree.Interp."))}
+roots |= {"PTree.PTree", "PTree.Semantics"}
 reachable = closure(roots, graph)
-family = {m for m in graph if m.startswith("PTree.Eq.") and
-          (m.split(".")[-1].startswith("FiniteInternal") or
-           m in {"PTree.Eq.FreeOmega." + n for n in ("KernelCompletion", "KernelCongruence", "KernelProjection", "KernelDisintegration", "KernelContinuity", "CostedKernel")})}
+family = {m for m in graph if m.startswith("PTree.Eq.Internal.")}
 
 print("# Structural layout audit\n")
 print("This is a repository-local dependency audit, not a theorem-usage or external-client census. "
@@ -129,7 +134,8 @@ print("## Scope and invariance\n")
 print(f"- Layout comparison: `{BASE}` -> `{LAYOUT}`; {len(baseline)} Coq modules before and after; {len(moves)} moves; zero theorem/module deletions.")
 print("- Between those snapshots all definition, theorem-statement and proof text is identical after normalizing Require paths; "
       "the only other Coq edit updates one comment's regression path.")
-print("- All nine `Semantics/` modules and all finite-internal/kernel implementations remain in place.")
+print("- In that historical snapshot all nine `Semantics/` modules and all finite-internal/kernel implementations remained in place. "
+      "The later [Gate B migration](ARCHITECTURE_MIGRATION.md) relocates modules; current client paths below include those moves.")
 print("- [Complete file move manifest](module-moves.tsv): each row also determines the old/new qualified module name; "
       "file basenames and declaration names are unchanged. No compatibility wrapper modules were added.")
 print("- Classification: 15 files in four case-study groups; 50 regressions "
@@ -145,9 +151,9 @@ print(f"Coq's `.PTree.theory.d` supplies {sum(map(len, graph.values()))} direct 
       "Transitive clients include re-export paths; an import does not prove use of each declaration.\n")
 print("`AllImports` is checked to import every other module, then excluded from client/reachability "
       "counts: an integration harness must not make every otherwise-unused module look substantively live.\n")
-print("Checked layer boundaries: Core/Prob/Eq/Semantics import no case study or regression; "
+print("Checked layer boundaries: Core/Prob/Eq/Semantics/Interp/API import no case study or regression; "
       "case studies import no regression. Regression-to-case-study reuse is allowed.\n")
-print("Roots are every Core module, every semantic comparison module, the curated facade, "
+print("Roots are every Core module, every semantic comparison module, the API/Interp modules and top-level facades, "
       "the structural/strong and FreeOmega equational endpoints, both concrete trace probability endpoints, "
       "and all four retained case-study groups. This deliberately does not treat every regression as a public root.\n")
 print(listing(roots) + "\n")
@@ -166,8 +172,8 @@ print("\n## Finite-internal / kernel family: complete local client report\n")
 print("Scope: every `Eq/**/FiniteInternal*.v`, plus FreeOmega KernelCompletion, "
       "KernelCongruence, KernelProjection, KernelDisintegration, KernelContinuity and CostedKernel. "
       "Incoming/outgoing direct lists and transitive client lists are exhaustive within `theories/`. "
-      "This family is NOT migrated here. Future migration must update its clients together, "
-      "not infer dead code from historical names.\n")
+      "Gate B moved this family under Eq/Internal, updating all clients together. "
+      "No dead-code conclusion follows from historical names.\n")
 for m in sorted(family):
     print(f"### `{m}`\n")
     print("- In retained-root closure: " + ("yes" if m in reachable else "no") + ".")
@@ -177,7 +183,7 @@ for m in sorted(family):
 print("## All changed Require paths\n")
 print(f"{len(import_changes)} imported-module occurrences in "
       f"{len({c for c, _, _ in import_changes})} client files change namespace.\n")
-print("Each row is one imported module occurrence (source now uses the new namespace). "
+print("Each row is one imported module occurrence at the historical layout snapshot (before Gate B). "
       "Multi-module statements were split only when their destinations differ, preserving import order.\n")
 print("| Client after move | Previous import | Current import |\n| --- | --- | --- |")
 for client, old, new in sorted(import_changes):

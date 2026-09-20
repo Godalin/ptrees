@@ -1,12 +1,13 @@
+(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 (** The executable raw-Enum implementation inhabits the probabilistic
     fragment.  Normalization is needed for the source measure; termination
     and nondegeneracy are not needed for this syntax-level contract. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
-From PTree.Core Require Import PTreeDefinition PTreeProbability.
-From PTree.Prob Require Import RatSubTypes DiscreteMC MeasureIterationEnum
-  TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
+From PTree.Core Require Import PTreeDefinition.
+From PTree.Eq Require Import WellFormedness.
+From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC MeasureIterationEnum TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
 From PTree.CaseStudies.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli BernoulliFactory.
 Set Implicit Arguments.
 Unset Strict Implicit.

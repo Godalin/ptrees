@@ -1,14 +1,17 @@
+(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
 Require Import Utf8 Program Ring Field Lia FunctionalExtensionality.
 
-From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum
-  order rat archimedean.
+From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum order rat archimedean.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts FrontierLift
-  FrontierLiftEnum MeasureIteration MeasureIterationEnum RatGeometric.
+From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC EnumBindFacts.
+From PTree.Prob.Interface Require Import FrontierLift.
+From PTree.Prob.Backend Require Import FrontierLiftEnum.
+From PTree.Prob.Interface Require Import MeasureIteration.
+From PTree.Prob.Backend Require Import MeasureIterationEnum RatGeometric.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

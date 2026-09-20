@@ -1,8 +1,9 @@
+(** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From PTree.Prob Require Import TwoLevelMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

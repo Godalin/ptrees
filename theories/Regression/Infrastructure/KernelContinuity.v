@@ -1,8 +1,13 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Universe Polymorphism.
-From Coq Require Import Arith.PeanoNat Lia Program.Equality.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
+From Coq.Arith Require Import PeanoNat.
+From Coq Require Import Lia.
+From Coq.Program Require Import Equality.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.Eq Require Import PrimitiveStableHitting.
-From PTree.Eq.FreeOmega Require Import KernelContinuity.
+From PTree.Eq.Internal.FreeOmega Require Import KernelContinuity.
 
 Set Implicit Arguments.
 

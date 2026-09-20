@@ -1,18 +1,20 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import Classes.RelationClasses.
+From Coq.Classes Require Import RelationClasses.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
-  FreeOmegaMeasure FreeOmegaNative FreeOmegaRecovery FreeOmegaCoupling
-  FreeOmegaRecoverySubEnum SemanticCouplingEnum FreeOmegaEquivalenceJointSubEnum
-  FreeOmegaNativeCouplingSubEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaNative FreeOmegaRecovery FreeOmegaCoupling.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaRecoverySubEnum.
+From PTree.Prob.Backend Require Import SemanticCouplingEnum.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaEquivalenceJointSubEnum FreeOmegaNativeCouplingSubEnum.
 From PTree.Regression.Infrastructure Require Import FiniteInternalPlan.
 From PTree.Regression.Backend Require Import SubEnumRegression.
 From PTree.Regression.Infrastructure Require Import HiddenRandomState CouplingReferences.
-From PTree.Eq Require Import PStrong FiniteInternal FiniteInternalPlan.
-From PTree.Eq.FreeOmega Require Import FiniteInternalNative
-  FiniteInternalRoundCoupling FiniteInternalNativeJoint
-  FiniteInternalJointRows.
+From PTree.Eq Require Import PStrong.
+From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalPlan.
+From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalNative FiniteInternalRoundCoupling FiniteInternalNativeJoint FiniteInternalJointRows.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

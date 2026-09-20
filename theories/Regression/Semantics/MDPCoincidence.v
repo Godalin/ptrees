@@ -1,14 +1,18 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.Semantics Require Import MDPFragment TreeTransition TreeTransitionBisim.
 Fail Check PTree.Eq.PEutt.peutt.
 From PTree.Eq Require Import PEutt.
-From PTree.Semantics Require Import MDPCoincidence MDPCoincidenceFreeOmega.
+From PTree.Semantics Require Import MDPCoincidence.
+From PTree.Semantics.FreeOmega Require Import MDPCoincidenceFreeOmega.
 From PTree.Regression.Semantics Require Import MDPFragment TreeTransitionStrictness.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -118,7 +122,7 @@ Qed.
     Its existing gluing premise stays explicit; no node relational bind
     or new measurable selection premise is introduced by coincidence. *)
 From mathcomp Require Import reals.
-From PTree.Prob Require Import MathCompMeasure TwoLevelMeasureMathComp.
+From PTree.Prob.Backend Require Import MathCompMeasure TwoLevelMeasureMathComp.
 Section MathCompEndpoint.
 Context (Real : realType) `{MathCompCouplingGluing Real}.
 Let Node := MathCompKernelMeasure Real.

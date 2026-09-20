@@ -1,9 +1,13 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import Classes.RelationClasses.
+From Coq.Classes Require Import RelationClasses.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
-From PTree.Eq Require Import FiniteInternal PStrong PEutt.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Eq.Internal Require Import FiniteInternal.
+From PTree.Eq Require Import PStrong PEutt.
 From PTree.Regression.Infrastructure Require Import ResidualFinite.
 
 Set Implicit Arguments.

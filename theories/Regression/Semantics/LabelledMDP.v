@@ -1,13 +1,16 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum rat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum
-  DiscreteMC MeasureIterationEnum RatSubTypes Coupling SemanticCouplingEnum FreeOmegaMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum DiscreteMC MeasureIterationEnum RatSubTypes Coupling SemanticCouplingEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.Eq Require Import PEutt.
-From PTree.Semantics Require Import HeadTransition MDPFragment MDPEmbedding MDPEmbeddingSubEnum.
+From PTree.Semantics Require Import HeadTransition MDPFragment MDPEmbedding.
+From PTree.Semantics.Backend Require Import MDPEmbeddingSubEnum.
 From PTree.Regression.Backend Require Import SubEnumRegression.
 Set Implicit Arguments.
 Unset Strict Implicit.

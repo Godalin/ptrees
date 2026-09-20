@@ -1,15 +1,19 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Automatic Proposition Inductives.
 
-From Coq Require Import Program.Equality RelationClasses Logic.ClassicalDescription.
+From Coq.Program Require Import Equality.
+From Coq Require Import RelationClasses.
+From Coq.Logic Require Import ClassicalDescription.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import
-  TwoLevelMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum
-  FreeOmegaMeasure DiscreteMC.
-From PTree.Eq Require Import
-  FiniteInternal FiniteInternalHitting PStrong PEutt.
-From PTree.Eq.FreeOmega Require Import FiniteInternalAcceleration.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend Require Import DiscreteMC.
+From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalHitting.
+From PTree.Eq Require Import PStrong PEutt.
+From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalAcceleration.
 From PTree.CaseStudies Require Import RandomWalk.
 
 Set Implicit Arguments.

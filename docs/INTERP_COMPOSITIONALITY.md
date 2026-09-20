@@ -132,7 +132,7 @@ proof in the repository has been independently rechecked this round.
 
 ## Stage 2: semantic guarded interpretation
 
-`Eq/FreeOmega/GuardedInterp.v`, exported by `Eq/FreeOmega.v`, supplies the
+`Interp/FreeOmega/Guarded.v`, with selected endpoints exposed by `API/FreeOmega.v`, supplies the
 new sufficient condition without changing `interp_vis_fusion`, `interp`,
 peutt, or either transition semantics.
 
@@ -233,7 +233,7 @@ python3 tools/check_aggregate.py
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Infrastructure.AllImports \
-  -norec PTree.Eq.FreeOmega.GuardedInterp \
+  -norec PTree.Interp.FreeOmega.Guarded \
   -norec PTree.Regression.Semantics.GuardedInterp
 ```
 
@@ -245,7 +245,7 @@ is asserted by this local validation record.
 
 ## Stage 3: atomic interpretation, a sufficient permutation profile
 
-`Semantics/AtomicInterp.v` is a comparison-theory API; it is imported
+`Interp/FreeOmega/Atomic.v` is a comparison-theory API; it is imported
 directly, not exported as another canonical behavioral equivalence.
 Neither peutt nor any transition/bisimulation definition changes.
 
@@ -368,7 +368,7 @@ python3 tools/check_aggregate.py
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Infrastructure.AllImports \
-  -norec PTree.Semantics.AtomicInterp \
+  -norec PTree.Interp.FreeOmega.Atomic \
   -norec PTree.Regression.Semantics.AtomicInterp
 ```
 
@@ -378,7 +378,7 @@ reproduces exactly; no remote CI success is claimed.
 
 ## Stage 4: preserving the MDP fragment
 
-`Semantics/MDPInterp.v` introduces a local semantic contract, not a fourth
+`Interp/FreeOmega/MDP.v` introduces a local semantic contract, not a fourth
 interpreter semantics or a new equivalence. The generic section supports
 `handler : forall X, E X -> ptree F MN X`, with distinct source and target
 signatures. For a fixed return carrier:
@@ -435,7 +435,7 @@ desired MDP-preservation theorem. It is a capability premise of these
 generic atomic endpoints. Other backends must discharge it before using
 them; this stage makes no unconditional MathComp specialization claim.
 
-`Prob/FreeOmegaTotalSubEnum.v` proves the stronger result for **every** map
+`Prob/Backend/FreeOmega/FreeOmegaTotalSubEnum.v` proves the stronger result for **every** map
 `f : A -> B`, including non-injective maps:
 
 ```text
@@ -451,7 +451,7 @@ The unit observation can then be carried through any value map, with no
 inverse or injectivity assumption. Relational bind transports the
 representative equivalence. The definition of `sem_total` is unchanged.
 
-`Semantics/MDPInterpSubEnum.v` uses this fact to discharge the entire
+`Interp/Backend/SubEnum.v` uses this fact to discharge the entire
 measure-side premise. Its endpoints need only the explicit atomic
 certificate, with no extra totality obligation for clients:
 
@@ -555,9 +555,9 @@ python3 tools/check_aggregate.py
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Infrastructure.AllImports \
-  -norec PTree.Prob.FreeOmegaTotalSubEnum \
-  -norec PTree.Semantics.MDPInterp \
-  -norec PTree.Semantics.MDPInterpSubEnum \
+  -norec PTree.Prob.Backend.FreeOmega.FreeOmegaTotalSubEnum \
+  -norec PTree.Interp.FreeOmega.MDP \
+  -norec PTree.Interp.Backend.SubEnum \
   -norec PTree.Regression.Semantics.MDPInterp
 ```
 

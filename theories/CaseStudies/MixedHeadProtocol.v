@@ -1,19 +1,25 @@
+(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 (** A canonical probabilistic-LTS example: one coupling matches both Ret
     and Vis heads; visible pairs generate response-dependent recursive
     obligations. All native probability nodes use the bounded SubEnum carrier. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
-From Coq Require Import Program.Equality FunctionalExtensionality.
+From Coq.Program Require Import Equality.
+From Coq Require Import FunctionalExtensionality.
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
-From PTree.Core Require Import PTreeDefinition PTreeProbability.
-From PTree.Prob Require Import RatSubTypes DiscreteMC EnumBindFacts EnumMap
-  Coupling IndexedCoupling FrontierLiftEnum MeasureIterationEnum
-  TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
-From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  PTreeKernel FreeOmega
-  PEutt ProbabilisticTraceSubEnum.
+From PTree.Core Require Import PTreeDefinition.
+From PTree.Eq Require Import WellFormedness.
+From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC EnumBindFacts EnumMap Coupling IndexedCoupling FrontierLiftEnum MeasureIterationEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
+From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
+From PTree.Interp.FreeOmega Require Import Base Guarded.
+From PTree.Eq Require Import PEutt.
+From PTree.Eq.Backend Require Import ProbabilisticTraceSubEnum.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

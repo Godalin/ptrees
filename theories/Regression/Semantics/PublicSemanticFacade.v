@@ -1,10 +1,11 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 (** Regression: a client importing only the public facade can elaborate the
     curated semantic vocabulary and canonical equivalence notation. *)
-From PTree.Eq Require Import ProbabilisticSemantics.
+From PTree.API Require Import Generic.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

@@ -8,7 +8,7 @@ Regenerate with `python3 tools/audit_layout.py` after a full `opam exec -- dune 
 
 - Layout comparison: `92e0841` -> `6194bdf`; 190 Coq modules before and after; 65 moves; zero theorem/module deletions.
 - Between those snapshots all definition, theorem-statement and proof text is identical after normalizing Require paths; the only other Coq edit updates one comment's regression path.
-- All nine `Semantics/` modules and all finite-internal/kernel implementations remain in place.
+- In that historical snapshot all nine `Semantics/` modules and all finite-internal/kernel implementations remained in place. The later [Gate B migration](ARCHITECTURE_MIGRATION.md) relocates modules; current client paths below include those moves.
 - [Complete file move manifest](module-moves.tsv): each row also determines the old/new qualified module name; file basenames and declaration names are unchanged. No compatibility wrapper modules were added.
 - Classification: 15 files in four case-study groups; 50 regressions (17 semantics, 14 backend, 4 probability, 15 infrastructure). Factory contains ordinary Von Neumann support shared by the interactive service.
 - The later [universe repair](UNIVERSE_CONSISTENCY.md) updates two old Enum/Enum regressions and adds one import-only integration harness; it is not asserted to be a namespace-only change.
@@ -16,67 +16,66 @@ Regenerate with `python3 tools/audit_layout.py` after a full `opam exec -- dune 
 
 ## Dependency method and retained roots
 
-Coq's `.PTree.theory.d` supplies 1688 direct local Require edges covering 199 ordinary modules out of 200 maintained modules. External libraries are excluded. Transitive clients include re-export paths; an import does not prove use of each declaration.
+Coq's `.PTree.theory.d` supplies 1831 direct local Require edges covering 207 ordinary modules out of 208 maintained modules. External libraries are excluded. Transitive clients include re-export paths; an import does not prove use of each declaration.
 
 `AllImports` is checked to import every other module, then excluded from client/reachability counts: an integration harness must not make every otherwise-unused module look substantively live.
 
-Checked layer boundaries: Core/Prob/Eq/Semantics import no case study or regression; case studies import no regression. Regression-to-case-study reuse is allowed.
+Checked layer boundaries: Core/Prob/Eq/Semantics/Interp/API import no case study or regression; case studies import no regression. Regression-to-case-study reuse is allowed.
 
-Roots are every Core module, every semantic comparison module, the curated facade, the structural/strong and FreeOmega equational endpoints, both concrete trace probability endpoints, and all four retained case-study groups. This deliberately does not treat every regression as a public root.
+Roots are every Core module, every semantic comparison module, the API/Interp modules and top-level facades, the structural/strong and FreeOmega equational endpoints, both concrete trace probability endpoints, and all four retained case-study groups. This deliberately does not treat every regression as a public root.
 
-`PTree.CaseStudies.BernoulliFactory.BernoulliFactory`, `PTree.CaseStudies.BernoulliFactory.BernoulliFactoryComposition`, `PTree.CaseStudies.BernoulliFactory.BernoulliFactoryProbability`, `PTree.CaseStudies.BernoulliFactory.OperationalBernoulliFactory`, `PTree.CaseStudies.BernoulliFactory.OperationalRationalBernoulli`, `PTree.CaseStudies.BernoulliFactory.OperationalRealBernoulliMathComp`, `PTree.CaseStudies.BernoulliFactory.OperationalVonNeumann`, `PTree.CaseStudies.BernoulliFactory.RationalBernoulli`, `PTree.CaseStudies.BernoulliFactory.RealBernoulliMathComp`, `PTree.CaseStudies.BernoulliFactory.RealBernoulliOracle`, `PTree.CaseStudies.BernoulliFactory.UnifiedRealBernoulliMathCompCore`, `PTree.CaseStudies.BernoulliFactory.VonNeumannUnbounded`, `PTree.CaseStudies.InteractiveVonNeumann.InteractiveVonNeumannService`, `PTree.CaseStudies.MixedHeadProtocol`, `PTree.CaseStudies.RandomWalk`, `PTree.Core.PTreeDefinition`, `PTree.Core.PTreeEnum`, `PTree.Core.PTreeProbability`, `PTree.Core.PTreeSubEnum`, `PTree.Core.Utils`, `PTree.Eq.FreeOmega`, `PTree.Eq.PStrong`, `PTree.Eq.PStruct`, `PTree.Eq.ProbabilisticSemantics`, `PTree.Eq.ProbabilisticTraceEnum`, `PTree.Eq.ProbabilisticTraceSubEnum`, `PTree.Semantics.AtomicInterp`, `PTree.Semantics.HeadTransition`, `PTree.Semantics.MDPCoincidence`, `PTree.Semantics.MDPCoincidenceFreeOmega`, `PTree.Semantics.MDPEmbedding`, `PTree.Semantics.MDPEmbeddingSubEnum`, `PTree.Semantics.MDPFragment`, `PTree.Semantics.MDPInterp`, `PTree.Semantics.MDPInterpSubEnum`, `PTree.Semantics.TreeTransition`, `PTree.Semantics.TreeTransitionBisim`, `PTree.Semantics.TreeTransitionSoundness`
+`PTree.API.Enum`, `PTree.API.FreeOmega`, `PTree.API.Generic`, `PTree.API.SubEnum`, `PTree.API.Weighted`, `PTree.CaseStudies.BernoulliFactory.BernoulliFactory`, `PTree.CaseStudies.BernoulliFactory.BernoulliFactoryComposition`, `PTree.CaseStudies.BernoulliFactory.BernoulliFactoryProbability`, `PTree.CaseStudies.BernoulliFactory.OperationalBernoulliFactory`, `PTree.CaseStudies.BernoulliFactory.OperationalRationalBernoulli`, `PTree.CaseStudies.BernoulliFactory.OperationalRealBernoulliMathComp`, `PTree.CaseStudies.BernoulliFactory.OperationalVonNeumann`, `PTree.CaseStudies.BernoulliFactory.RationalBernoulli`, `PTree.CaseStudies.BernoulliFactory.RealBernoulliMathComp`, `PTree.CaseStudies.BernoulliFactory.RealBernoulliOracle`, `PTree.CaseStudies.BernoulliFactory.UnifiedRealBernoulliMathCompCore`, `PTree.CaseStudies.BernoulliFactory.VonNeumannUnbounded`, `PTree.CaseStudies.InteractiveVonNeumann.InteractiveVonNeumannService`, `PTree.CaseStudies.MixedHeadProtocol`, `PTree.CaseStudies.RandomWalk`, `PTree.Core.PTreeDefinition`, `PTree.Core.Utils`, `PTree.Eq.Backend.ProbabilisticTraceEnum`, `PTree.Eq.Backend.ProbabilisticTraceSubEnum`, `PTree.Eq.PStrong`, `PTree.Eq.PStruct`, `PTree.Interp.Backend.SubEnum`, `PTree.Interp.FreeOmega.Atomic`, `PTree.Interp.FreeOmega.Base`, `PTree.Interp.FreeOmega.Cofinality`, `PTree.Interp.FreeOmega.Guarded`, `PTree.Interp.FreeOmega.MDP`, `PTree.Interp.FreeOmega.Translate`, `PTree.Interp.Kernel`, `PTree.Interp.Structural`, `PTree.PTree`, `PTree.Semantics`, `PTree.Semantics.Backend.MDPEmbeddingSubEnum`, `PTree.Semantics.FreeOmega.MDPCoincidenceFreeOmega`, `PTree.Semantics.HeadTransition`, `PTree.Semantics.MDPCoincidence`, `PTree.Semantics.MDPEmbedding`, `PTree.Semantics.MDPFragment`, `PTree.Semantics.TreeTransition`, `PTree.Semantics.TreeTransitionBisim`, `PTree.Semantics.TreeTransitionSoundness`
 
-Root closure reaches 98 modules; 101 lie outside it. Unreachable modules can still be meaningful regressions or independent measure theorems. All remain built by Dune; no deletion follows from this classification.
+Root closure reaches 105 modules; 102 lie outside it. Unreachable modules can still be meaningful regressions or independent measure theorems. All remain built by Dune; no deletion follows from this classification.
 
 ### Outside the selected root closure
 
-- `PTree.Eq.FiniteInternal` (24 direct local clients)
-- `PTree.Eq.FiniteInternalHitting` (3 direct local clients)
-- `PTree.Eq.FiniteInternalJoint` (1 direct local clients)
-- `PTree.Eq.FiniteInternalPlan` (14 direct local clients)
-- `PTree.Eq.FreeOmega.CostedKernel` (4 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternal` (4 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalAcceleration` (4 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction` (2 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalCostedProjection` (4 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalJoint` (13 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration` (2 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction` (1 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalJointCoverage` (3 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalJointHitting` (3 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalJointReference` (2 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalJointRows` (1 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalJointTruncation` (1 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalNative` (12 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalNativeJoint` (2 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalPlanHitting` (2 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy` (1 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalRound` (6 direct local clients)
-- `PTree.Eq.FreeOmega.FiniteInternalRoundCoupling` (4 direct local clients)
-- `PTree.Eq.FreeOmega.KernelCompletion` (11 direct local clients)
-- `PTree.Eq.FreeOmega.KernelCongruence` (4 direct local clients)
-- `PTree.Eq.FreeOmega.KernelContinuity` (4 direct local clients)
-- `PTree.Eq.FreeOmega.KernelDisintegration` (1 direct local clients)
-- `PTree.Eq.FreeOmega.KernelProjection` (2 direct local clients)
-- `PTree.Experimental.UniverseSeparatedPTree` (0 direct local clients)
-- `PTree.Prob.Discrete` (0 direct local clients)
-- `PTree.Prob.EnumCofinality` (0 direct local clients)
-- `PTree.Prob.FinSupp` (0 direct local clients)
-- `PTree.Prob.FreeOmegaCodedJointSubEnum` (1 direct local clients)
-- `PTree.Prob.FreeOmegaCouplingEnum` (3 direct local clients)
-- `PTree.Prob.FreeOmegaEquivalenceJointSubEnum` (1 direct local clients)
-- `PTree.Prob.FreeOmegaJointExtension` (2 direct local clients)
-- `PTree.Prob.FreeOmegaMeasureEnumAudit` (0 direct local clients)
-- `PTree.Prob.FreeOmegaNativeTransportEnum` (0 direct local clients)
-- `PTree.Prob.FreeOmegaUpperContinuityEnum` (3 direct local clients)
-- `PTree.Prob.FreeOmegaUpperCouplingEnum` (5 direct local clients)
-- `PTree.Prob.FreeOmegaUpperExpectationEnum` (8 direct local clients)
-- `PTree.Prob.FreeOmegaUpperObservationEnum` (2 direct local clients)
-- `PTree.Prob.FreeOmegaUpperQuotientEnum` (2 direct local clients)
-- `PTree.Prob.FreeOmegaUpperRelationalEnum` (2 direct local clients)
-- `PTree.Prob.MonadList` (0 direct local clients)
-- `PTree.Prob.RealSubTypes` (1 direct local clients)
-- `PTree.Prob.SemanticCouplingMathComp` (1 direct local clients)
+- `PTree.Eq.Backend.EnumCofinality` (0 direct local clients)
+- `PTree.Eq.Internal.Backend.KernelDisintegration` (1 direct local clients)
+- `PTree.Eq.Internal.FiniteInternal` (24 direct local clients)
+- `PTree.Eq.Internal.FiniteInternalHitting` (3 direct local clients)
+- `PTree.Eq.Internal.FiniteInternalJoint` (1 direct local clients)
+- `PTree.Eq.Internal.FiniteInternalPlan` (14 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.CostedKernel` (4 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternal` (4 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration` (4 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction` (2 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection` (4 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint` (13 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration` (2 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction` (1 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage` (3 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting` (3 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference` (2 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows` (1 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation` (1 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalNative` (12 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalNativeJoint` (2 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalPlanHitting` (2 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy` (1 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalRound` (6 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.FiniteInternalRoundCoupling` (4 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.KernelCompletion` (11 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.KernelCongruence` (4 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.KernelContinuity` (4 direct local clients)
+- `PTree.Eq.Internal.FreeOmega.KernelProjection` (2 direct local clients)
+- `PTree.Prob.Backend.FinSupp` (0 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaCodedJointSubEnum` (1 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaCouplingEnum` (3 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaEquivalenceJointSubEnum` (1 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaMeasureEnumAudit` (0 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaNativeTransportEnum` (0 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaUpperContinuityEnum` (3 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaUpperCouplingEnum` (5 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaUpperExpectationEnum` (8 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaUpperObservationEnum` (2 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaUpperQuotientEnum` (2 direct local clients)
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaUpperRelationalEnum` (2 direct local clients)
+- `PTree.Prob.Backend.RealSubTypes` (1 direct local clients)
+- `PTree.Prob.Backend.SemanticCouplingMathComp` (1 direct local clients)
+- `PTree.Prob.FreeOmega.FreeOmegaJointExtension` (2 direct local clients)
+- `PTree.Prob.Legacy.Discrete` (0 direct local clients)
+- `PTree.Prob.Legacy.MonadList` (0 direct local clients)
 - `PTree.Regression.Backend.BackendCapabilities` (0 direct local clients)
 - `PTree.Regression.Backend.CouplingRealization` (0 direct local clients)
 - `PTree.Regression.Backend.EnumMeasureRegression` (12 direct local clients)
@@ -91,6 +90,7 @@ Root closure reaches 98 modules; 101 lie outside it. Unreachable modules can sti
 - `PTree.Regression.Backend.SubEnumRegression` (17 direct local clients)
 - `PTree.Regression.Backend.UnifiedFrontierEnum` (0 direct local clients)
 - `PTree.Regression.Backend.UnifiedMathCompFrontier` (0 direct local clients)
+- `PTree.Regression.Infrastructure.ArchitectureBoundaries` (0 direct local clients)
 - `PTree.Regression.Infrastructure.CorrelatedInternalRounds` (0 direct local clients)
 - `PTree.Regression.Infrastructure.CostedRounds` (0 direct local clients)
 - `PTree.Regression.Infrastructure.CouplingReferences` (3 direct local clients)
@@ -106,6 +106,7 @@ Root closure reaches 98 modules; 101 lie outside it. Unreachable modules can sti
 - `PTree.Regression.Infrastructure.ResidualFinite` (2 direct local clients)
 - `PTree.Regression.Infrastructure.ResidualJointCoinduction` (0 direct local clients)
 - `PTree.Regression.Infrastructure.ResidualTransport` (0 direct local clients)
+- `PTree.Regression.Infrastructure.UniverseSeparatedPTree` (0 direct local clients)
 - `PTree.Regression.Probability.ConditionalResampling` (0 direct local clients)
 - `PTree.Regression.Probability.CorrelatedSampleAlgebra` (4 direct local clients)
 - `PTree.Regression.Probability.EnumDisintegration` (1 direct local clients)
@@ -134,21 +135,21 @@ Root closure reaches 98 modules; 101 lie outside it. Unreachable modules can sti
 
 ### Zero direct local clients (report only)
 
-48 modules have no direct local client. This includes exported roots and executable/negative regression leaves, not just potential dead code.
+50 modules have no direct local client. This includes exported roots and executable/negative regression leaves, not just potential dead code.
 
+- `PTree.API.SubEnum` — retained root
+- `PTree.API.Weighted` — retained root
 - `PTree.CaseStudies.BernoulliFactory.BernoulliFactoryComposition` — retained root
 - `PTree.CaseStudies.BernoulliFactory.BernoulliFactoryProbability` — retained root
 - `PTree.CaseStudies.BernoulliFactory.OperationalRationalBernoulli` — retained root
 - `PTree.CaseStudies.BernoulliFactory.OperationalRealBernoulliMathComp` — retained root
 - `PTree.CaseStudies.MixedHeadProtocol` — retained root
-- `PTree.Core.PTreeSubEnum` — retained root
-- `PTree.Experimental.UniverseSeparatedPTree` — built leaf
-- `PTree.Prob.Discrete` — built leaf
-- `PTree.Prob.EnumCofinality` — built leaf
-- `PTree.Prob.FinSupp` — built leaf
-- `PTree.Prob.FreeOmegaMeasureEnumAudit` — built leaf
-- `PTree.Prob.FreeOmegaNativeTransportEnum` — built leaf
-- `PTree.Prob.MonadList` — built leaf
+- `PTree.Eq.Backend.EnumCofinality` — built leaf
+- `PTree.Prob.Backend.FinSupp` — built leaf
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaMeasureEnumAudit` — built leaf
+- `PTree.Prob.Backend.FreeOmega.FreeOmegaNativeTransportEnum` — built leaf
+- `PTree.Prob.Legacy.Discrete` — built leaf
+- `PTree.Prob.Legacy.MonadList` — built leaf
 - `PTree.Regression.Backend.BackendCapabilities` — built leaf
 - `PTree.Regression.Backend.CouplingRealization` — built leaf
 - `PTree.Regression.Backend.ExtendedEnum` — built leaf
@@ -158,6 +159,7 @@ Root closure reaches 98 modules; 101 lie outside it. Unreachable modules can sti
 - `PTree.Regression.Backend.NativeReflection` — built leaf
 - `PTree.Regression.Backend.UnifiedFrontierEnum` — built leaf
 - `PTree.Regression.Backend.UnifiedMathCompFrontier` — built leaf
+- `PTree.Regression.Infrastructure.ArchitectureBoundaries` — built leaf
 - `PTree.Regression.Infrastructure.CorrelatedInternalRounds` — built leaf
 - `PTree.Regression.Infrastructure.CostedRounds` — built leaf
 - `PTree.Regression.Infrastructure.FiniteInternalNative` — built leaf
@@ -168,6 +170,7 @@ Root closure reaches 98 modules; 101 lie outside it. Unreachable modules can sti
 - `PTree.Regression.Infrastructure.NativeRecovery` — built leaf
 - `PTree.Regression.Infrastructure.ResidualJointCoinduction` — built leaf
 - `PTree.Regression.Infrastructure.ResidualTransport` — built leaf
+- `PTree.Regression.Infrastructure.UniverseSeparatedPTree` — built leaf
 - `PTree.Regression.Probability.ConditionalResampling` — built leaf
 - `PTree.Regression.Probability.FiniteTransport` — built leaf
 - `PTree.Regression.Semantics.CanonicalPartialDivergence` — built leaf
@@ -187,209 +190,209 @@ Root closure reaches 98 modules; 101 lie outside it. Unreachable modules can sti
 
 ## Finite-internal / kernel family: complete local client report
 
-Scope: every `Eq/**/FiniteInternal*.v`, plus FreeOmega KernelCompletion, KernelCongruence, KernelProjection, KernelDisintegration, KernelContinuity and CostedKernel. Incoming/outgoing direct lists and transitive client lists are exhaustive within `theories/`. This family is NOT migrated here. Future migration must update its clients together, not infer dead code from historical names.
+Scope: every `Eq/**/FiniteInternal*.v`, plus FreeOmega KernelCompletion, KernelCongruence, KernelProjection, KernelDisintegration, KernelContinuity and CostedKernel. Incoming/outgoing direct lists and transitive client lists are exhaustive within `theories/`. Gate B moved this family under Eq/Internal, updating all clients together. No dead-code conclusion follows from historical names.
 
-### `PTree.Eq.FiniteInternal`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FiniteInternalHitting`, `PTree.Eq.FiniteInternalJoint`, `PTree.Eq.FiniteInternalPlan`, `PTree.Eq.FreeOmega.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.PairedFiniteCompression`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`.
-- All transitive clients: `PTree.Eq.FiniteInternalHitting`, `PTree.Eq.FiniteInternalJoint`, `PTree.Eq.FiniteInternalPlan`, `PTree.Eq.FreeOmega.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.FreeOmega.FiniteInternalPlanHitting`, `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Eq.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.PairedFiniteCompression`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FiniteInternalHitting`
+### `PTree.Eq.Internal.Backend.KernelDisintegration`
 
 - In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.PEutt`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FiniteInternalJoint`, `PTree.Eq.FreeOmega.FiniteInternalJointHitting`, `PTree.Regression.Infrastructure.ResidualFinite`.
-- All transitive clients: `PTree.Eq.FiniteInternalJoint`, `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.PairedFiniteCompression`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FiniteInternalJoint`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.FiniteInternalHitting`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.SemanticCoupling`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Regression.Infrastructure.PairedFiniteCompression`.
-- All transitive clients: `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.PairedFiniteCompression`.
-
-### `PTree.Eq.FiniteInternalPlan`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.FreeOmega.FiniteInternalPlanHitting`, `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Eq.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.FreeOmega.FiniteInternalPlanHitting`, `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Eq.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
-
-### `PTree.Eq.FreeOmega.CostedKernel`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Eq.FreeOmega.KernelContinuity`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.NativeRecovery`.
-
-### `PTree.Eq.FreeOmega.FiniteInternal`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalAcceleration`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternalJoint`, `PTree.Eq.FreeOmega.KernelContinuity`, `PTree.Eq.PEutt`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaCoupling`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.SemanticCoupling`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternalPlan`, `PTree.Eq.FreeOmega.CostedKernel`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Eq.PEutt`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.FreeOmegaNative`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Infrastructure.CostedRounds`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.NativeRecovery`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternalPlan`, `PTree.Eq.FreeOmega.CostedKernel`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.FreeOmegaNative`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.NativeRecovery`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalJoint`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.PStrong`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaCoupling`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.SemanticCoupling`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Eq.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternalJoint`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.FreeOmega.KernelCompletion`, `PTree.Eq.FreeOmega.KernelCongruence`, `PTree.Eq.FreeOmega.KernelContinuity`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.SemanticCoupling`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternalJoint`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.PEutt`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.SemanticCoupling`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Regression.Infrastructure.CorrelatedInternalRounds`.
-- All transitive clients: `PTree.Regression.Infrastructure.CorrelatedInternalRounds`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternalJoint`, `PTree.Eq.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.FreeOmega.KernelCompletion`, `PTree.Eq.FreeOmega.KernelCongruence`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalJointHitting`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.FiniteInternalHitting`, `PTree.Eq.FreeOmega.FiniteInternalJoint`, `PTree.Eq.FreeOmega.KernelCompletion`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalJointReference`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternalJoint`, `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.PEutt`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaCoupling`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.SemanticCoupling`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalJointRows`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternalPlan`, `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Eq.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Eq.PEutt`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.FreeOmegaNative`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Regression.Infrastructure.NativeRecovery`.
-- All transitive clients: `PTree.Regression.Infrastructure.NativeRecovery`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternalJoint`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.SemanticCoupling`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalNative`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.FiniteInternalPlan`, `PTree.Eq.FreeOmega.FiniteInternalJoint`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.FreeOmegaNative`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Eq.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Eq.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalNativeJoint`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternalPlan`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Eq.PStrong`, `PTree.Prob.FreeOmegaJointExtension`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.FreeOmegaNative`, `PTree.Prob.SemanticCoupling`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.NativeRecovery`.
-- All transitive clients: `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.NativeRecovery`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalPlanHitting`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternalPlan`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.FreeOmegaNative`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Regression.Infrastructure.FiniteInternalPlan`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.FreeOmega.FiniteInternalRound`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternal`, `PTree.Eq.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJoint`, `PTree.Eq.FreeOmega.KernelCompletion`, `PTree.Eq.FreeOmega.KernelProjection`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Regression.Infrastructure.HiddenRandomState`.
-- All transitive clients: `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalRound`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternalPlan`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.FreeOmega.FiniteInternalPlanHitting`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.FreeOmegaNative`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalRound`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
-
-### `PTree.Eq.FreeOmega.FiniteInternalRoundCoupling`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.FiniteInternalPlan`, `PTree.Eq.FreeOmega.FiniteInternalNative`, `PTree.Eq.PStrong`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.FreeOmegaNative`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.FreeOmega.FiniteInternalNativeJoint`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.NativeRecovery`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.FreeOmega.FiniteInternalNativeJoint`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.NativeRecovery`.
-
-### `PTree.Eq.FreeOmega.KernelCompletion`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Eq.FreeOmega.KernelCongruence`, `PTree.Eq.FreeOmega.KernelDisintegration`, `PTree.Eq.FreeOmega.KernelProjection`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.KernelCompletion`, `PTree.Regression.Infrastructure.KernelCongruence`, `PTree.Regression.Probability.ConditionalResampling`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Eq.FreeOmega.KernelCongruence`, `PTree.Eq.FreeOmega.KernelDisintegration`, `PTree.Eq.FreeOmega.KernelProjection`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.KernelCompletion`, `PTree.Regression.Infrastructure.KernelCongruence`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.ConditionalResampling`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FreeOmega.KernelCongruence`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Eq.FreeOmega.KernelCompletion`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.KernelDisintegration`, `PTree.Regression.Infrastructure.KernelCongruence`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.FreeOmega.KernelDisintegration`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.KernelCongruence`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.ConditionalResampling`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FreeOmega.KernelContinuity`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.CostedKernel`, `PTree.Eq.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Regression.Infrastructure.KernelContinuity`.
-- All transitive clients: `PTree.Eq.FreeOmega.CostedKernel`, `PTree.Eq.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.KernelContinuity`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
-
-### `PTree.Eq.FreeOmega.KernelDisintegration`
-
-- In retained-root closure: no.
-- Direct imports: `PTree.Eq.FreeOmega.KernelCompletion`, `PTree.Eq.FreeOmega.KernelCongruence`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.EnumDisintegration`, `PTree.Prob.FreeOmegaDisintegration`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.TwoLevelMeasure`, `PTree.Prob.TwoLevelMeasureSubEnum`.
+- Direct imports: `PTree.Eq.Internal.FreeOmega.KernelCompletion`, `PTree.Eq.Internal.FreeOmega.KernelCongruence`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.Backend.EnumDisintegration`, `PTree.Prob.Backend.FreeOmega.FreeOmegaDisintegration`, `PTree.Prob.Backend.TwoLevelMeasureSubEnum`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.TwoLevelMeasure`.
 - Direct clients: `PTree.Regression.Probability.ConditionalResampling`.
 - All transitive clients: `PTree.Regression.Probability.ConditionalResampling`.
 
-### `PTree.Eq.FreeOmega.KernelProjection`
+### `PTree.Eq.Internal.FiniteInternal`
 
 - In retained-root closure: no.
-- Direct imports: `PTree.Eq.FreeOmega.KernelCompletion`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.FreeOmegaCoupling`, `PTree.Prob.FreeOmegaMeasure`, `PTree.Prob.TwoLevelMeasure`.
-- Direct clients: `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.HiddenRandomState`.
-- All transitive clients: `PTree.Eq.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FiniteInternalHitting`, `PTree.Eq.Internal.FiniteInternalJoint`, `PTree.Eq.Internal.FiniteInternalPlan`, `PTree.Eq.Internal.FreeOmega.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.PairedFiniteCompression`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`.
+- All transitive clients: `PTree.Eq.Internal.FiniteInternalHitting`, `PTree.Eq.Internal.FiniteInternalJoint`, `PTree.Eq.Internal.FiniteInternalPlan`, `PTree.Eq.Internal.FreeOmega.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalPlanHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.PairedFiniteCompression`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FiniteInternalHitting`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.PEutt`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FiniteInternalJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`, `PTree.Regression.Infrastructure.ResidualFinite`.
+- All transitive clients: `PTree.Eq.Internal.FiniteInternalJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.PairedFiniteCompression`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FiniteInternalJoint`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.Internal.FiniteInternalHitting`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.Interface.SemanticCoupling`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Regression.Infrastructure.PairedFiniteCompression`.
+- All transitive clients: `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.PairedFiniteCompression`.
+
+### `PTree.Eq.Internal.FiniteInternalPlan`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalPlanHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalPlanHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
+
+### `PTree.Eq.Internal.FreeOmega.CostedKernel`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Eq.Internal.FreeOmega.KernelContinuity`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.NativeRecovery`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternal`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint`, `PTree.Eq.Internal.FreeOmega.KernelContinuity`, `PTree.Eq.PEutt`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaCoupling`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.SemanticCoupling`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternalPlan`, `PTree.Eq.Internal.FreeOmega.CostedKernel`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Eq.PEutt`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.FreeOmega.FreeOmegaNative`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Infrastructure.CostedRounds`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.NativeRecovery`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternalPlan`, `PTree.Eq.Internal.FreeOmega.CostedKernel`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.FreeOmega.FreeOmegaNative`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.NativeRecovery`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.PStrong`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaCoupling`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.SemanticCoupling`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.Internal.FreeOmega.KernelCompletion`, `PTree.Eq.Internal.FreeOmega.KernelCongruence`, `PTree.Eq.Internal.FreeOmega.KernelContinuity`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.SemanticCoupling`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.PEutt`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.SemanticCoupling`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Regression.Infrastructure.CorrelatedInternalRounds`.
+- All transitive clients: `PTree.Regression.Infrastructure.CorrelatedInternalRounds`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.Internal.FreeOmega.KernelCompletion`, `PTree.Eq.Internal.FreeOmega.KernelCongruence`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.Internal.FiniteInternalHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint`, `PTree.Eq.Internal.FreeOmega.KernelCompletion`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.PEutt`, `PTree.Eq.PStrong`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaCoupling`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.SemanticCoupling`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternalPlan`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Eq.PEutt`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.FreeOmega.FreeOmegaNative`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Regression.Infrastructure.NativeRecovery`.
+- All transitive clients: `PTree.Regression.Infrastructure.NativeRecovery`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.SemanticCoupling`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.Internal.FiniteInternalPlan`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.FreeOmega.FreeOmegaNative`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNativeJoint`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalNative`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalNativeJoint`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternalPlan`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRoundCoupling`, `PTree.Eq.PStrong`, `PTree.Prob.FreeOmega.FreeOmegaJointExtension`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.FreeOmega.FreeOmegaNative`, `PTree.Prob.Interface.SemanticCoupling`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.NativeRecovery`.
+- All transitive clients: `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.NativeRecovery`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalPlanHitting`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternalPlan`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.FreeOmega.FreeOmegaNative`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Regression.Infrastructure.FiniteInternalPlan`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalPlan`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternal`, `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJoint`, `PTree.Eq.Internal.FreeOmega.KernelCompletion`, `PTree.Eq.Internal.FreeOmega.KernelProjection`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Regression.Infrastructure.HiddenRandomState`.
+- All transitive clients: `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalRound`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternalPlan`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.Internal.FreeOmega.FiniteInternalPlanHitting`, `PTree.Eq.PTreeKernel`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.FreeOmega.FreeOmegaNative`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalRound`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.FiniteInternalRound`, `PTree.Regression.Infrastructure.NativeRecovery`.
+
+### `PTree.Eq.Internal.FreeOmega.FiniteInternalRoundCoupling`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Core.PTreeDefinition`, `PTree.Eq.Internal.FiniteInternalPlan`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNative`, `PTree.Eq.PStrong`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Eq.UnifiedFrontier`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.FreeOmega.FreeOmegaNative`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNativeJoint`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.NativeRecovery`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.Internal.FreeOmega.FiniteInternalNativeJoint`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.NativeRecovery`.
+
+### `PTree.Eq.Internal.FreeOmega.KernelCompletion`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.Backend.KernelDisintegration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Eq.Internal.FreeOmega.KernelCongruence`, `PTree.Eq.Internal.FreeOmega.KernelProjection`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.KernelCompletion`, `PTree.Regression.Infrastructure.KernelCongruence`, `PTree.Regression.Probability.ConditionalResampling`.
+- All transitive clients: `PTree.Eq.Internal.Backend.KernelDisintegration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointHitting`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Eq.Internal.FreeOmega.KernelCongruence`, `PTree.Eq.Internal.FreeOmega.KernelProjection`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.KernelCompletion`, `PTree.Regression.Infrastructure.KernelCongruence`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.ConditionalResampling`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FreeOmega.KernelCongruence`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Eq.Internal.FreeOmega.KernelCompletion`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.Backend.KernelDisintegration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Regression.Infrastructure.KernelCongruence`.
+- All transitive clients: `PTree.Eq.Internal.Backend.KernelDisintegration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoverage`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointTruncation`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.KernelCongruence`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Probability.ConditionalResampling`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FreeOmega.KernelContinuity`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.CostedKernel`, `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Regression.Infrastructure.KernelContinuity`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.CostedKernel`, `PTree.Eq.Internal.FreeOmega.FiniteInternalAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalCostedProjection`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointAcceleration`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointCoinduction`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointReference`, `PTree.Eq.Internal.FreeOmega.FiniteInternalJointRows`, `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Backend.NativeReflection`, `PTree.Regression.Infrastructure.CorrelatedInternalRounds`, `PTree.Regression.Infrastructure.CostedRounds`, `PTree.Regression.Infrastructure.CouplingReferences`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.KernelContinuity`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualFinite`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`, `PTree.Regression.Infrastructure.ResidualTransport`, `PTree.Regression.Probability.CorrelatedSampleAlgebra`, `PTree.Regression.Semantics.AtomicInterp`, `PTree.Regression.Semantics.GuardedInterp`, `PTree.Regression.Semantics.InterpExposure`, `PTree.Regression.Semantics.MDPCoincidence`, `PTree.Regression.Semantics.MDPFragment`, `PTree.Regression.Semantics.MDPInterp`, `PTree.Regression.Semantics.TreeTransitionStrictness`.
+
+### `PTree.Eq.Internal.FreeOmega.KernelProjection`
+
+- In retained-root closure: no.
+- Direct imports: `PTree.Eq.Internal.FreeOmega.KernelCompletion`, `PTree.Eq.PrimitiveStableHitting`, `PTree.Prob.FreeOmega.FreeOmegaCoupling`, `PTree.Prob.FreeOmega.FreeOmegaMeasure`, `PTree.Prob.Interface.TwoLevelMeasure`.
+- Direct clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.HiddenRandomState`.
+- All transitive clients: `PTree.Eq.Internal.FreeOmega.FiniteInternalProjectedPolicy`, `PTree.Regression.Infrastructure.HiddenRandomState`, `PTree.Regression.Infrastructure.NativeRecovery`, `PTree.Regression.Infrastructure.ResidualJointCoinduction`.
 
 ## All changed Require paths
 
 83 imported-module occurrences in 43 client files change namespace.
 
-Each row is one imported module occurrence (source now uses the new namespace). Multi-module statements were split only when their destinations differ, preserving import order.
+Each row is one imported module occurrence at the historical layout snapshot (before Gate B). Multi-module statements were split only when their destinations differ, preserving import order.
 
 | Client after move | Previous import | Current import |
 | --- | --- | --- |

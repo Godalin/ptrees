@@ -1,10 +1,11 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Universe Polymorphism.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
-From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel
-  PEutt StableHittingComputation.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt StableHittingComputation.
 From PTree.Eq.FreeOmega Require Import Hitting.
 
 Set Implicit Arguments.

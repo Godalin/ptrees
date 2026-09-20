@@ -1,13 +1,15 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
-From Coq Require Import Logic.FunctionalExtensionality.
-From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg ssrnum
-  order rat reals archimedean.
+From Coq.Logic Require Import FunctionalExtensionality.
+From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg ssrnum order rat reals archimedean.
 From mathcomp.classical Require Import classical_sets set_interval.
 From mathcomp.analysis Require Import ereal sequences.
-From PTree.Prob Require Import RatSubTypes DiscreteMC TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure
-  FreeOmegaUpperExpectationEnum FreeOmegaUpperCouplingEnum FreeOmegaUpperContinuityEnum
-  FreeOmegaUpperObservationEnum.
+From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaUpperExpectationEnum FreeOmegaUpperCouplingEnum FreeOmegaUpperContinuityEnum FreeOmegaUpperObservationEnum.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

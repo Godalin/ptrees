@@ -1,15 +1,23 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
-  FreeOmegaMeasure FreeOmegaTotalSubEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaTotalSubEnum.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
-From PTree.Eq.FreeOmega Require Import Bind GuardedInterp.
-From PTree.Semantics Require Import MDPFragment AtomicInterp MDPInterp
-  MDPInterpSubEnum TreeTransition TreeTransitionBisim.
+From PTree.Eq.FreeOmega Require Import Bind.
+From PTree.Interp.FreeOmega Require Import Guarded.
+From PTree.Semantics Require Import MDPFragment.
+From PTree.Interp.FreeOmega Require Import Atomic MDP.
+From PTree.Interp.Backend Require Import SubEnum.
+From PTree.Semantics Require Import TreeTransition TreeTransitionBisim.
 From PTree.Regression.Semantics Require Import MDPFragment MDPCoincidence AtomicInterp.
+Require Import PTree.Interp.Kernel.
+From PTree.Interp.FreeOmega Require Import Cofinality.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

@@ -1,13 +1,18 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Automatic Proposition Inductives.
-From Coq Require Import Program.Equality.
+From Coq.Program Require Import Equality.
 From mathcomp Require Import ssralg ssrnum rat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureEnum
-  FreeOmegaMeasure DiscreteMC RatSubTypes SemanticCoupling FreeOmegaCouplingEnum.
-From PTree.Eq Require Import FiniteInternal FiniteInternalJoint
-  PStrong UnifiedFrontier PTreeKernel.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend Require Import DiscreteMC RatSubTypes.
+From PTree.Prob.Interface Require Import SemanticCoupling.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaCouplingEnum.
+From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalJoint.
+From PTree.Eq Require Import PStrong UnifiedFrontier PTreeKernel.
 From PTree.CaseStudies Require Import RandomWalk.
 Import Enum.
 Local Open Scope ring_scope.

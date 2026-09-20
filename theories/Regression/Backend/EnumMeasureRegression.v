@@ -1,3 +1,4 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
@@ -5,8 +6,9 @@ Require Import Program.
 
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg rat.
 
-From PTree.Prob Require Import RatSubTypes DiscreteMC FrontierLift
-  FrontierLiftEnum.
+From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
+From PTree.Prob.Interface Require Import FrontierLift.
+From PTree.Prob.Backend Require Import FrontierLiftEnum.
 From PTree.Core Require Import PTreeDefinition.
 
 Set Implicit Arguments.

@@ -1,11 +1,15 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import Logic.FunctionalExtensionality.
+From Coq.Logic Require Import FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
-From PTree.Prob Require Import DiscreteMC MeasureIterationEnum TwoLevelMeasure TwoLevelMeasureSubEnum
-  FreeOmegaMeasure FreeOmegaUpperExpectationSubEnum FreeOmegaUpperCouplingSubEnum.
+From PTree.Prob.Backend Require Import DiscreteMC MeasureIterationEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaUpperExpectationSubEnum FreeOmegaUpperCouplingSubEnum.
 From PTree.Regression.Backend Require Import SubEnumRegression FreeOmegaEscapingMass.
 
 Set Implicit Arguments.

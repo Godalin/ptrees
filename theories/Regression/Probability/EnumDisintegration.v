@@ -1,8 +1,10 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
-From PTree.Prob Require Import RatSubTypes DiscreteMC EnumMap Coupling FrontierLiftEnum
-  TwoLevelMeasure TwoLevelMeasureEnum TwoLevelMeasureSubEnum EnumDisintegration.
+From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC EnumMap Coupling FrontierLiftEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum EnumDisintegration.
 From PTree.Regression.Backend Require Import EnumMeasureRegression SubEnumRegression.
 
 Import Enum EnumMap RatSubTypes GRing.Theory.

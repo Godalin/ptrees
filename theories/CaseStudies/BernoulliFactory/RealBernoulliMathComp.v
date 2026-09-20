@@ -1,15 +1,16 @@
+(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
 Require Import Utf8 Ring Field.
 
-From mathcomp Require Import ssreflect ssrbool eqtype ssrnat ssralg ssrnum
-  order rat reals normedtype boolp classical_sets.
+From mathcomp Require Import ssreflect ssrbool eqtype ssrnat ssralg ssrnum order rat reals normedtype boolp classical_sets.
 From mathcomp Require Import numfun.
 From mathcomp.analysis Require Import topology sequences ereal measure.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import FrontierLift MeasureIteration MathCompMeasure.
+From PTree.Prob.Interface Require Import FrontierLift MeasureIteration.
+From PTree.Prob.Backend Require Import MathCompMeasure.
 From PTree.CaseStudies.BernoulliFactory Require Import RealBernoulliOracle.
 
 Set Implicit Arguments.

@@ -1,15 +1,24 @@
+(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 
-Require Import Program.Equality FunctionalExtensionality Arith.PeanoNat Lia Ring Field.
+From Coq.Program Require Import Equality.
+Require Import FunctionalExtensionality.
+From Coq.Arith Require Import PeanoNat.
+Require Import Lia Ring Field.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum order rat.
-From PTree.Core Require Import PTreeDefinition PTreeProbability.
-From PTree.Prob Require Import RatSubTypes DiscreteMC TwoLevelMeasure
-  TwoLevelMeasureEnum TwoLevelMeasureSubEnum FreeOmegaMeasure
-  MeasureIterationEnum RatGeometric.
-From PTree.Eq Require Import Shallow PStruct PStrong PEutt FreeOmega
-  UnifiedFrontier PrimitiveStableHitting PTreeKernel.
+From PTree.Core Require Import PTreeDefinition.
+From PTree.Eq Require Import WellFormedness.
+From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Backend Require Import MeasureIterationEnum RatGeometric.
+From PTree.Eq Require Import Shallow PStruct PStrong PEutt ProbabilisticTrace.
+From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
+From PTree.Interp.FreeOmega Require Import Base Guarded.
+From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

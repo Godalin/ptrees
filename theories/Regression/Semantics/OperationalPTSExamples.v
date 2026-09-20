@@ -1,14 +1,18 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-Require Import Program.Equality.
+From Coq.Program Require Import Equality.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
-  TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
-From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier
-  PTreeKernel PEutt.
+From PTree.Prob.Backend Require Import DiscreteMC.
+From PTree.Prob.Interface Require Import FrontierLift.
+From PTree.Prob.Backend Require Import FrontierLiftEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PTreeKernel PEutt.
 From PTree.Regression.Backend Require Import EnumMeasureRegression.
 
 Set Implicit Arguments.

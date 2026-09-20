@@ -1,12 +1,16 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import Program.Equality Morphisms.
+From Coq.Program Require Import Equality.
+From Coq Require Import Morphisms.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum FreeOmegaMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
-From PTree.Eq.FreeOmega Require Import GuardedInterp.
+From PTree.Interp.FreeOmega Require Import Guarded.
 From PTree.Regression.Backend Require Import SubEnumRegression.
 From PTree.Regression.Semantics Require Import TreeTransitionStrictness InterpExposure.
 Set Implicit Arguments.

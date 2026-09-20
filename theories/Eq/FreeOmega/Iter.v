@@ -1,12 +1,14 @@
+(** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-Require Import Logic.ClassicalChoice Program.Equality.
+From Coq.Logic Require Import ClassicalChoice.
+From Coq.Program Require Import Equality.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure FreeOmegaMeasure.
-From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting
-  PTreeKernel PEutt PStruct PStrong.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt PStruct PStrong.
 From PTree.Eq.FreeOmega Require Import Base Relation Bind.
 
 Set Implicit Arguments.

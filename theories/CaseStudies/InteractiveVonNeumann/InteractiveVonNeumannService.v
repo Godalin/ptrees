@@ -1,17 +1,24 @@
+(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From Coq Require Import Logic.FunctionalExtensionality Program.Equality.
+From Coq.Logic Require Import FunctionalExtensionality.
+From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssralg rat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import RatSubTypes DiscreteMC TwoLevelMeasure
-  TwoLevelMeasureEnum FreeOmegaMeasure MeasureIteration EnumBindFacts.
-From PTree.Prob Require Import EnumMap MeasureIterationEnum.
-From PTree.Eq Require Import Shallow PrimitiveStableHitting UnifiedFrontier
-  PTreeKernel
-  PEutt ProbabilisticTraceEnum
-  FreeOmega.
+From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+From PTree.Prob.Interface Require Import MeasureIteration.
+From PTree.Prob.Backend Require Import EnumBindFacts.
+From PTree.Prob.Backend Require Import EnumMap MeasureIterationEnum.
+From PTree.Eq Require Import Shallow PrimitiveStableHitting UnifiedFrontier PTreeKernel PEutt.
+From PTree.Eq.Backend Require Import ProbabilisticTraceEnum.
+From PTree.Eq Require Import ProbabilisticTrace.
+From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
+From PTree.Interp.FreeOmega Require Import Base Guarded.
 From PTree.CaseStudies.BernoulliFactory Require Import VonNeumannUnbounded OperationalVonNeumann.
 
 Set Implicit Arguments.

@@ -1,3 +1,4 @@
+(** Role: Primitive tree syntax/combinators and utilities. No local probability-model or behavioral-theory dependency. *)
 (** Native probabilistic interaction trees.
 
     [PTree] combines coinductive Ret/Tau/Vis interaction with an internal
@@ -13,9 +14,9 @@
 Require Import Program.
 Require Import Utf8.
 
-From ExtLib Require Import Structures.Functor.
-From ExtLib Require Import Structures.Applicative.
-From ExtLib Require Import Structures.Monads.
+From ExtLib.Structures Require Import Functor.
+From ExtLib.Structures Require Import Applicative.
+From ExtLib.Structures Require Import Monads.
 
 From ITree.Basics Require Import Basics.
 From ITree.Basics Require Import Monad.
@@ -27,7 +28,6 @@ From mathcomp Require Import eqtype seq.
 From mathcomp Require Import ssreflect ssrbool.
 
 From PTree.Core Require Import Utils.
-From PTree.Prob Require Import Monad.
 
 Set Implicit Arguments.
 Set Contextual Implicit.
@@ -248,18 +248,5 @@ Fixpoint burn (n : nat) {E M R} (t : ptree E M R) :=
 
 
 
-(** Compatibility constructors used by examples.  They are convenience
-    programs, not additional PTree syntax or semantic observations. *)
-Section stuck.
-Context {E M : Type -> Type}.
-Context `{Monad M}.
-Context `{MonadMeasure M}.
-(** Thus M is a valid Inference Representation *)
-
-Definition stuckE (e : E void) : ptree E M void
-  := PTree.trigger e.
-
-Definition stuckM {R} (u : ptree E M R) : ptree E M R
-  := Prob (score 0) (fun _ => u).
-
-End stuck.
+(** Weighted convenience programs [stuckE] and [stuckM] are available by
+    explicitly importing [PTree.API.Weighted]; they are not core syntax. *)

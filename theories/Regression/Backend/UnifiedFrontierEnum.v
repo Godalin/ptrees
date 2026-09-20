@@ -1,10 +1,15 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
 From mathcomp Require Import ssreflect ssrbool eqtype.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import DiscreteMC FrontierLift FrontierLiftEnum
-  TwoLevelMeasure TwoLevelMeasureEnum FreeOmegaMeasure.
+From PTree.Prob.Backend Require Import DiscreteMC.
+From PTree.Prob.Interface Require Import FrontierLift.
+From PTree.Prob.Backend Require Import FrontierLiftEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.Regression.Backend Require Import EnumMeasureRegression.
 

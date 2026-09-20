@@ -1,10 +1,11 @@
+(** Role: Comparison semantics. Depends on canonical theory; not the canonical peutt relation or interpreter theory. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import Program.Equality.
+From Coq.Program Require Import Equality.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
 From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim.
 Set Implicit Arguments.

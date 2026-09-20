@@ -1,14 +1,16 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Lia.
-From PTree.Prob Require Import TwoLevelMeasure SemanticCoupling FreeOmegaMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure SemanticCoupling.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import FreeOmegaNative FreeOmegaRecovery.
-From PTree.Eq Require Import FiniteInternalPlan PStrong.
-From PTree.Eq.FreeOmega Require Import FiniteInternalNative.
+From PTree.Prob.FreeOmega Require Import FreeOmegaNative FreeOmegaRecovery.
+From PTree.Eq.Internal Require Import FiniteInternalPlan.
+From PTree.Eq Require Import PStrong.
+From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalNative.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
-From PTree.Eq.FreeOmega Require Import FiniteInternalRound CostedKernel FiniteInternalCostedProjection
-  FiniteInternalRoundCoupling FiniteInternalNativeJoint.
+From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalRound CostedKernel FiniteInternalCostedProjection FiniteInternalRoundCoupling FiniteInternalNativeJoint.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -380,7 +382,7 @@ Qed.
 End AttenuatedDirac.
 
 From mathcomp Require Import reals.
-From PTree.Prob Require Import TwoLevelMeasureSubEnum MathCompMeasure TwoLevelMeasureMathComp.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum MathCompMeasure TwoLevelMeasureMathComp.
 
 (** Both maintained node backends satisfy the necessary relational
     left-unit law.  For MathComp we use its existing ordinary kernel law,

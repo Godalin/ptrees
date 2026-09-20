@@ -1,8 +1,12 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
-From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
-  SemanticCoupling SemanticCouplingEnum FreeOmegaMeasure FreeOmegaCoupling
-  FreeOmegaCouplingEnum.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
+From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+From PTree.Prob.Interface Require Import SemanticCoupling.
+From PTree.Prob.Backend Require Import SemanticCouplingEnum.
+From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaCoupling.
+From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaCouplingEnum.
 
 Set Implicit Arguments.
 

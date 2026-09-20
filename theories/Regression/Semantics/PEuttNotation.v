@@ -1,9 +1,10 @@
+(** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob Require Import TwoLevelMeasure.
+From PTree.Prob.Interface Require Import TwoLevelMeasure.
 From PTree.Eq Require Import PTreeKernel PEutt.
 
 Set Implicit Arguments.
