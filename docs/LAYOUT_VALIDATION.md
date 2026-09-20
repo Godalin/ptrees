@@ -1,57 +1,62 @@
-# Layout milestone validation
+# Local validation
 
-The cleanup preserves the theory baseline `92e0841`. Its scope and exhaustive
-path/client inventory are in [LAYOUT_AUDIT.md](LAYOUT_AUDIT.md).
+## Layout snapshot
 
-## Passed local checks
+The structural cleanup at `6194bdf` preserved the theory baseline
+`92e0841` modulo import paths: 190 Coq modules, 65 moves, no proof changes.
+Its clean full build and 74 independent kernel checks passed. The initial
+single-process aggregate check failed with a universe inconsistency; it was
+not counted as passing.
 
-- `opam exec -- dune clean`, followed by a full `opam exec -- dune build`.
-  A further full build passed after the final MathComp support-file move.
-  The old `Examples` build tree is absent.
-- `python3 tools/audit_layout.py`: all 190 Coq modules match the baseline
-  after namespace normalization, with zero added/deleted declarations or
-  changed proofs. The stored report reproduces byte-for-byte.
-- All 65 moved modules and all nine `Semantics` modules passed `coqchk`
-  **in separate processes**: 74/74. No source fix or axiom was used to obtain
-  these results. Native-computation tests may emit the standard VM fallback
-  warning when native compilation is disabled.
-- `git diff --check` and the staged equivalent passed.
-- No legacy `PTree.Examples` imports remain in maintained Coq sources.
-  Core/Prob/Eq/Semantics have no dependencies on cases or regressions;
-  cases have no regression dependencies.
+The historical source-invariance check remains pinned to those two revisions.
+`python3 tools/audit_layout.py` also reports the **current** dependency graph,
+excluding the import-only harness from substantive client counts. The stored
+report reproduces exactly.
 
-The per-module kernel checks can be reproduced from the manifest:
+## Universe repair
+
+The [root-cause report](UNIVERSE_CONSISTENCY.md) identifies the two incompatible
+legacy Enum/Enum regressions and their migration to Enum/FreeOmega Enum.
+It also records the preserved regression properties and the inherited
+logical dependencies of the revised quotient-mass separation proof.
+
+Current checks:
+
+- Full `opam exec -- dune build` passes, including `AllImports.v`.
+- All 190 pre-existing modules load together in ordinary Coq, in both
+  forward and reverse order.
+- `python3 tools/check_aggregate.py` verifies complete aggregate-import
+  coverage; CI runs this guard before building.
+- A single `coqchk` process loads `AllImports` (hence all 190 other modules)
+  and rechecks both repaired regressions plus the original failing
+  `PEuttAlgebra` module: **PASS**. All universe constraints coexist during
+  those proof checks; this is not a set of isolated module checks.
+  CI now runs this same command after building.
+- The expanded audit rechecking **every proof** in all 191 modules was
+  manually interrupted after roughly 40 minutes without a final result.
+  A repeat of the original 74-module audit was also interrupted while still
+  computing. Neither is counted as passing. An optional VM-enabled run hit
+  a Coq checker assertion, documented in the root-cause report.
+- `git diff --check` passes; no new axiom or unfinished proof is added.
+  Core/Prob/Eq/Semantics implementations are unchanged.
+
+Reproduce the build and the **passed single-process regression check** with:
 
 ```sh
-python3 - <<'PY'
-import csv
-import subprocess
-from pathlib import Path
-
-with Path('docs/module-moves.tsv').open() as manifest:
-    paths = [r['new_path'] for r in csv.DictReader(manifest, delimiter='\t')]
-paths += [str(p) for p in sorted(Path('theories/Semantics').glob('*.v'))]
-for path in paths:
-    module = 'PTree.' + path.removeprefix('theories/').removesuffix('.v').replace('/', '.')
-    subprocess.run(['opam', 'exec', '--', 'coqchk', '-silent',
-                    '-R', '_build/default/theories', 'PTree',
-                    '-norec', module], check=True)
-    print('PASS', module, flush=True)
-PY
+python3 tools/check_aggregate.py
+opam exec -- dune build
+opam exec -- coqchk -silent -R _build/default/theories PTree \
+  -norec PTree.Regression.Infrastructure.AllImports \
+  -norec PTree.Regression.Backend.UnifiedFrontierEnum \
+  -norec PTree.Regression.Semantics.CanonicalPartialDivergence \
+  -norec PTree.Regression.Semantics.PEuttAlgebra
 ```
 
-## Aggregate-check limitation
-
-An additional attempt to pass all 74 modules to **one** `coqchk` process
-failed with `Universe inconsistency`. Separate checks of every one of those
-modules then passed. The full build also passes, but these facts do not
-establish that all independent case/regression modules can be jointly loaded
-into a single universe context.
-
-The conflicting subset and whether the same aggregate conflict occurs at
-the pre-migration baseline were not determined. This is recorded, not
-silently counted as a passing check. Resolving aggregate-import compatibility
-must be a separate audit; this milestone does not change universe declarations,
-theorem statements or proofs to make that extra check pass.
+The command loads every project module, checks the four listed modules, and
+trusts the compiled proofs of the other modules. To additionally recheck
+every project's proof in that shared context, run
+`python3 tools/check_aggregate.py --kernel`; this broader audit is available
+but has **not** completed in this repair. Native-computation tests may emit
+the standard VM fallback warning when native compilation is disabled.
 
 These are local results. No remote CI success is asserted here.

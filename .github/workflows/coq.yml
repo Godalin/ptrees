@@ -31,6 +31,7 @@ jobs:
 
       - name: Audit maintained sources
         run: |
+          python3 tools/check_aggregate.py
           if git grep -n -E '^[[:space:]]*(Admitted|admit)\.' -- '*.v'; then
             echo 'Maintained theories contain an unfinished proof.' >&2
             exit 1
@@ -42,3 +43,11 @@ jobs:
 
       - name: Build all theories
         run: opam exec -- dune build
+
+      - name: Recheck universe regression in the full-library context
+        run: |
+          opam exec -- coqchk -silent -R _build/default/theories PTree \
+            -norec PTree.Regression.Infrastructure.AllImports \
+            -norec PTree.Regression.Backend.UnifiedFrontierEnum \
+            -norec PTree.Regression.Semantics.CanonicalPartialDivergence \
+            -norec PTree.Regression.Semantics.PEuttAlgebra

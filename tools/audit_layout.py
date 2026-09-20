@@ -2,7 +2,8 @@
 """Read-only namespace/proof-text and coqdep client audit.
 
 Run after `opam exec -- dune build`. Output is Markdown; no files are written.
-The baseline is deliberately pinned to the pre-layout theory revision.
+Proof-text invariance compares the two frozen layout revisions; client
+analysis uses the current build, allowing subsequent reviewed theory fixes.
 """
 import csv
 import re
@@ -11,6 +12,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = "92e0841"
+LAYOUT = "6194bdf"
+AGGREGATE = "PTree.Regression.Infrastructure.AllImports"
 
 
 def git(*args):
@@ -45,12 +48,14 @@ def normalize(source, old=False):
 baseline = git("ls-tree", "-r", "--name-only", BASE, "theories").splitlines()
 baseline = [p for p in baseline if p.endswith(".v")]
 current = {str(p.relative_to(ROOT)) for p in (ROOT / "theories").rglob("*.v")}
-assert current == {moves.get(p, p) for p in baseline}, "Added/deleted Coq modules beyond the move manifest"
+layout = {p for p in git("ls-tree", "-r", "--name-only", LAYOUT, "theories").splitlines()
+          if p.endswith(".v")}
+assert layout == {moves.get(p, p) for p in baseline}, "Layout snapshot differs from move manifest"
 import_changes = []
 for old_path in baseline:
     new_path = moves.get(old_path, old_path)
     old = git("show", BASE + ":" + old_path)
-    new = (ROOT / new_path).read_text()
+    new = git("show", LAYOUT + ":" + new_path)
     assert normalize(old, old=True) == normalize(new), "Non-namespace source change: " + new_path
     for match in require.finditer(old):
         prefix, mode, names = match.groups()
@@ -85,6 +90,12 @@ for module, dependencies in graph.items():
     if module.startswith("PTree.CaseStudies."):
         assert not any(d.startswith("PTree.Regression.") for d in dependencies), \
             "Case study depends on regression fixtures: " + module
+# An import-only integration harness is not a substantive theorem client.
+# Check it covers every other module, then omit it from reachability counts.
+if AGGREGATE in graph:
+    assert graph[AGGREGATE] == set(graph) - {AGGREGATE}, "Incomplete aggregate imports"
+    assert not any(AGGREGATE in ds for ds in graph.values()), "Aggregate has an ordinary client"
+    graph.pop(AGGREGATE)
 clients = {m: {c for c, ds in graph.items() if m in ds} for m in graph}
 
 
@@ -111,12 +122,12 @@ family = {m for m in graph if m.startswith("PTree.Eq.") and
 
 print("# Structural layout audit\n")
 print("This is a repository-local dependency audit, not a theorem-usage or external-client census. "
-      "It preserves every Coq declaration and proof from the accepted theory baseline.\n")
+      "It separately verifies historical layout invariance and reports current clients.\n")
 print("Regenerate with `python3 tools/audit_layout.py` after a full `opam exec -- dune build`. "
-      "The script is read-only and fails on any proof-text change outside the namespace transformation.\n")
+      "The read-only proof-text check is pinned to the layout snapshot, not later reviewed fixes.\n")
 print("## Scope and invariance\n")
-print(f"- Baseline: `{BASE}`; {len(baseline)} Coq modules before and after; {len(moves)} moves; zero theorem/module deletions.")
-print("- All definition, theorem-statement and proof text is identical after normalizing Require paths; "
+print(f"- Layout comparison: `{BASE}` -> `{LAYOUT}`; {len(baseline)} Coq modules before and after; {len(moves)} moves; zero theorem/module deletions.")
+print("- Between those snapshots all definition, theorem-statement and proof text is identical after normalizing Require paths; "
       "the only other Coq edit updates one comment's regression path.")
 print("- All nine `Semantics/` modules and all finite-internal/kernel implementations remain in place.")
 print("- [Complete file move manifest](module-moves.tsv): each row also determines the old/new qualified module name; "
@@ -124,11 +135,15 @@ print("- [Complete file move manifest](module-moves.tsv): each row also determin
 print("- Classification: 15 files in four case-study groups; 50 regressions "
       "(17 semantics, 14 backend, 4 probability, 15 infrastructure). "
       "Factory contains ordinary Von Neumann support shared by the interactive service.")
+print("- The later [universe repair](UNIVERSE_CONSISTENCY.md) updates two old Enum/Enum regressions "
+      "and adds one import-only integration harness; it is not asserted to be a namespace-only change.")
 print("- No final MDP-encoding transition corollary or new semantic theorem is part of this milestone.\n")
 print("## Dependency method and retained roots\n")
 print(f"Coq's `.PTree.theory.d` supplies {sum(map(len, graph.values()))} direct local Require edges "
-      f"covering all {len(graph)} maintained modules. External libraries are excluded. "
+      f"covering {len(graph)} ordinary modules out of {len(current)} maintained modules. External libraries are excluded. "
       "Transitive clients include re-export paths; an import does not prove use of each declaration.\n")
+print("`AllImports` is checked to import every other module, then excluded from client/reachability "
+      "counts: an integration harness must not make every otherwise-unused module look substantively live.\n")
 print("Checked layer boundaries: Core/Prob/Eq/Semantics import no case study or regression; "
       "case studies import no regression. Regression-to-case-study reuse is allowed.\n")
 print("Roots are every Core module, every semantic comparison module, the curated facade, "

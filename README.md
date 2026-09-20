@@ -265,8 +265,9 @@ clients, not additional paper-facing case studies. In particular, the
 including raw-tree transition comparison and MDP-fragment coincidence.
 [The layout audit](docs/LAYOUT_AUDIT.md) records module moves, imports,
 reachability and the retained internal infrastructure's clients.
-[Local validation](docs/LAYOUT_VALIDATION.md) records the clean build,
-per-module kernel checks and the separate aggregate-check limitation.
+[Local validation](docs/LAYOUT_VALIDATION.md) records the layout checks;
+[joint universe consistency](docs/UNIVERSE_CONSISTENCY.md) explains the
+subsequent two-level regression repair and the full-library import guard.
 Finite-internal/kernel infrastructure stays in `Eq/` pending a separate
 namespace migration; no theorem was deleted in this reorganization.
 

@@ -1,21 +1,24 @@
 # Structural layout audit
 
-This is a repository-local dependency audit, not a theorem-usage or external-client census. It preserves every Coq declaration and proof from the accepted theory baseline.
+This is a repository-local dependency audit, not a theorem-usage or external-client census. It separately verifies historical layout invariance and reports current clients.
 
-Regenerate with `python3 tools/audit_layout.py` after a full `opam exec -- dune build`. The script is read-only and fails on any proof-text change outside the namespace transformation.
+Regenerate with `python3 tools/audit_layout.py` after a full `opam exec -- dune build`. The read-only proof-text check is pinned to the layout snapshot, not later reviewed fixes.
 
 ## Scope and invariance
 
-- Baseline: `92e0841`; 190 Coq modules before and after; 65 moves; zero theorem/module deletions.
-- All definition, theorem-statement and proof text is identical after normalizing Require paths; the only other Coq edit updates one comment's regression path.
+- Layout comparison: `92e0841` -> `6194bdf`; 190 Coq modules before and after; 65 moves; zero theorem/module deletions.
+- Between those snapshots all definition, theorem-statement and proof text is identical after normalizing Require paths; the only other Coq edit updates one comment's regression path.
 - All nine `Semantics/` modules and all finite-internal/kernel implementations remain in place.
 - [Complete file move manifest](module-moves.tsv): each row also determines the old/new qualified module name; file basenames and declaration names are unchanged. No compatibility wrapper modules were added.
 - Classification: 15 files in four case-study groups; 50 regressions (17 semantics, 14 backend, 4 probability, 15 infrastructure). Factory contains ordinary Von Neumann support shared by the interactive service.
+- The later [universe repair](UNIVERSE_CONSISTENCY.md) updates two old Enum/Enum regressions and adds one import-only integration harness; it is not asserted to be a namespace-only change.
 - No final MDP-encoding transition corollary or new semantic theorem is part of this milestone.
 
 ## Dependency method and retained roots
 
-Coq's `.PTree.theory.d` supplies 1574 direct local Require edges covering all 190 maintained modules. External libraries are excluded. Transitive clients include re-export paths; an import does not prove use of each declaration.
+Coq's `.PTree.theory.d` supplies 1578 direct local Require edges covering 190 ordinary modules out of 191 maintained modules. External libraries are excluded. Transitive clients include re-export paths; an import does not prove use of each declaration.
+
+`AllImports` is checked to import every other module, then excluded from client/reachability counts: an integration harness must not make every otherwise-unused module look substantively live.
 
 Checked layer boundaries: Core/Prob/Eq/Semantics import no case study or regression; case studies import no regression. Regression-to-case-study reuse is allowed.
 
@@ -67,9 +70,9 @@ Root closure reaches 93 modules; 97 lie outside it. Unreachable modules can stil
 - `PTree.Prob.FreeOmegaNativeTransportEnum` (0 direct local clients)
 - `PTree.Prob.FreeOmegaUpperContinuityEnum` (3 direct local clients)
 - `PTree.Prob.FreeOmegaUpperCouplingEnum` (5 direct local clients)
-- `PTree.Prob.FreeOmegaUpperExpectationEnum` (7 direct local clients)
+- `PTree.Prob.FreeOmegaUpperExpectationEnum` (8 direct local clients)
 - `PTree.Prob.FreeOmegaUpperObservationEnum` (2 direct local clients)
-- `PTree.Prob.FreeOmegaUpperQuotientEnum` (1 direct local clients)
+- `PTree.Prob.FreeOmegaUpperQuotientEnum` (2 direct local clients)
 - `PTree.Prob.FreeOmegaUpperRelationalEnum` (2 direct local clients)
 - `PTree.Prob.MonadList` (0 direct local clients)
 - `PTree.Prob.RealSubTypes` (1 direct local clients)

@@ -383,6 +383,13 @@ modules. No zero-client module is automatically treated as dead code:
 public endpoints and independent regression leaves naturally have none.
 The [move manifest](docs/module-moves.tsv) lists every namespace change.
 
+`Regression/Infrastructure/AllImports.v` checks that all maintained modules
+coexist in one universe context; CI checks its inventory is complete.
+The older frontier/partial-divergence Enum regressions now use FreeOmega Enum
+for behavior, avoiding incompatible constraints from using the same native
+Enum universe for recursive heads. The [universe audit](docs/UNIVERSE_CONSISTENCY.md)
+records the repair and its inherited scalar-model assumptions.
+
 ## 4. Non-claims and bounded next work
 
 The maintained artifact does **not** claim:
@@ -405,6 +412,7 @@ already rule out the generic universal-lifting countermodel, but a maintained
 ITree embedding, pure-tree zero/Dirac hitting classification (including spin),
 and dependent visible-head inversion into eutt remain unproved.
 
-The structural cleanup freezes definitions and proofs. Internal namespace
-migration, the final encoding corollary and a README theory-overview rewrite
-remain separate reviewed milestones; no further case study is added here.
+Core semantic definitions remain unchanged by the layout cleanup and the
+subsequent universe repair of two legacy regression backends. Internal
+namespace migration, the final encoding corollary and a README theory-overview
+rewrite remain separate reviewed milestones; no further case study is added.
