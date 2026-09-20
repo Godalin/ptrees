@@ -804,6 +804,25 @@ This removes the native repackaging obligation, NOT the stronger
 quotient-to-native reflection obligation above; in particular it does not
 yet provide `FreeOmegaNativeCouplingLaws` for MathComp.
 
+For raw Enum, the remaining reflection proof cannot reuse SubEnum's
+unit-interval bounds: arbitrary intermediate weighted terms can have
+infinite upper mass.  The internal audit in
+`FreeOmegaUpperExpectationEnum.v`, `FreeOmegaUpperCouplingEnum.v`,
+`FreeOmegaUpperContinuityEnum.v`, and `FreeOmegaUpperObservationEnum.v`
+now interprets such terms in extended nonnegative reals.  It proves native
+coupling comparison, AE extensionality, monotone convergence (including
+AE-only monotonicity at sample nodes), and consistency of the complete
+`free_omega_observes` judgment, including its raw-increasing Lub rule.
+It reuses the existing rational-to-real finite-atomic limit lemmas rather
+than adding a measure-consistency axiom.  `ExtendedEnum.v` checks mass two,
+zero times infinity, null-entry continuity, and a raw-increasing chain with
+upper mass +infinity that admits no finite native observation.
+Preservation by ALL quotient-coupling constructors is still to be proved;
+these scalar results alone do not yet justify an Enum instance of
+`FreeOmegaNativeCouplingLaws` or unconditional Enum `pfinite` soundness.
+The evaluator is a proof-internal upper functional, not a new public
+probability API or a claim that arbitrary formal Lub syntax is additive.
+
 The soundness proof does not assume equivalence of the recursive candidate,
 AST, total mass, a uniform fuel bound, a chosen joint from each client, or
 that the candidate is already behaviorally sound.  It extracts a native
