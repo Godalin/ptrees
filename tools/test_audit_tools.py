@@ -8,6 +8,16 @@ import audit_capabilities as capabilities
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_semantic_freeomega_model_is_not_concrete_backend(self):
+        self.assertEqual(architecture.ownership("Semantics/MDPCoincidenceFreeOmega"),
+                         ("Semantics/FreeOmega", "FreeOmega",
+                          "retain comparison semantics; not canonical equality"))
+
+    def test_semantic_subenum_endpoint_is_concrete_backend(self):
+        self.assertEqual(architecture.ownership("Semantics/MDPEmbeddingSubEnum"),
+                         ("Semantics/Backend", "SubEnum",
+                          "retain comparison semantics; not canonical equality"))
+
     def test_interpretation_is_freeomega_qualified(self):
         self.assertEqual(architecture.ownership("Semantics/MDPInterp")[:2],
                          ("Interp/FreeOmega/MDP", "FreeOmega"))

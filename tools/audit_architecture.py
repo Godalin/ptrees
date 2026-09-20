@@ -87,7 +87,10 @@ def ownership(path):
         return path.rsplit("/", 1)[0], "FreeOmega" if "/FreeOmega/" in path else "generic", "retain canonical/equational theory"
     if path.startswith("Semantics/"):
         profile = "FreeOmega" if name.endswith("FreeOmega") else "SubEnum" if name.endswith("SubEnum") else "generic"
-        return "Semantics" + ("/Backend" if profile != "generic" else ""), profile, "retain comparison semantics; not canonical equality"
+        # Fixing MF := FreeOmega MN still leaves the native model generic.
+        # Only a concrete native carrier belongs under Backend.
+        area = "Semantics/FreeOmega" if profile == "FreeOmega" else "Semantics/Backend" if profile == "SubEnum" else "Semantics"
+        return area, profile, "retain comparison semantics; not canonical equality"
     raise AssertionError("Module needs an explicit architectural owner: " + path)
 
 

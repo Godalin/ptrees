@@ -215,7 +215,7 @@ These are reported obligations, not silently whitelisted as the final architectu
 | `Semantics/AtomicInterp` | `Interp/FreeOmega/Atomic` | FreeOmega | move; freeze statements | 4 |
 | `Semantics/HeadTransition` | `Semantics` | generic | retain comparison semantics; not canonical equality | 16 |
 | `Semantics/MDPCoincidence` | `Semantics` | generic | retain comparison semantics; not canonical equality | 2 |
-| `Semantics/MDPCoincidenceFreeOmega` | `Semantics/Backend` | FreeOmega | retain comparison semantics; not canonical equality | 3 |
+| `Semantics/MDPCoincidenceFreeOmega` | `Semantics/FreeOmega` | FreeOmega | retain comparison semantics; not canonical equality | 3 |
 | `Semantics/MDPEmbedding` | `Semantics` | generic | retain comparison semantics; not canonical equality | 3 |
 | `Semantics/MDPEmbeddingSubEnum` | `Semantics/Backend` | SubEnum | retain comparison semantics; not canonical equality | 2 |
 | `Semantics/MDPFragment` | `Semantics` | generic | retain comparison semantics; not canonical equality | 11 |
