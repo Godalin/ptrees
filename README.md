@@ -125,17 +125,17 @@ and Fubini laws needed by arbitrary eventful PTree programs.  Finite programs
 and unbounded AST programs therefore use the same semantics; bounded chains
 are simply chains that stabilize early.
 
-`Examples/VonNeumannUnbounded.v` proves the analytic convergence and AST
+`CaseStudies/BernoulliFactory/VonNeumannUnbounded.v` proves the analytic convergence and AST
 certificates for the genuinely unbounded biased-coin extractor.
-`Examples/OperationalVonNeumann.v` interprets those certificates through
+`CaseStudies/BernoulliFactory/OperationalVonNeumann.v` interprets those certificates through
 stable hitting and proves the canonical endpoint
 `von_neumann_third_equivalent_to_fair`.
-`Examples/InteractiveVonNeumannService.v` places the extractor between an
+`CaseStudies/InteractiveVonNeumann/InteractiveVonNeumannService.v` places the extractor between an
 infinite sequence of request/reply events and proves
 `interactive_von_neumann_service_equivalent` using guarded `Vis` matching and
 coinduction up to `≈ₚ`.
 
-`Examples/RandomWalk.v` studies an infinite-state loop: with probability
+`CaseStudies/RandomWalk.v` studies an infinite-state loop: with probability
 `2/3`, decrement the height and increment a streak; otherwise increment the
 height and reset the streak.  Starting from `(1,0)`, it stops at height zero.
 `run_split` factors a descent through an intermediate level using `pstruct`,
@@ -155,7 +155,7 @@ library or an additional measure axiom.  This is an output-distribution
 endpoint, **not** a claim of `peutt` equivalence to a countably supported
 distribution node or a geometric sampler.
 
-`Examples/MixedHeadProtocol.v` is the canonical mixed-head bisimulation
+`CaseStudies/MixedHeadProtocol.v` is the canonical mixed-head bisimulation
 example. A hidden-state implementation receives a Boolean challenge, samples
 independent bits r (fair), s (P(true)=3/4), and h (fair). It either returns
 c xor s or publishes it in a Reply, whose Boolean acknowledgement selects
@@ -190,7 +190,7 @@ and analytic certificates only.  Their maintained behavioral endpoints are
 `Operational*` files.  The superseded `PWeak*` modules and
 `apweak`/`auweak`/`auequiv` endpoints have been removed.
 
-`Examples/BernoulliFactoryComposition.v` exposes the compositional route.
+`CaseStudies/BernoulliFactory/BernoulliFactoryComposition.v` exposes the compositional route.
 `factory_with_sampler sampler q` accepts a Boolean sampler;
 `peutt_factory_sampler_congr` preserves equivalence of closed
 samplers using bind and eventless iteration congruence. The parametric
@@ -205,7 +205,7 @@ any rational in `[0,1]`, including the endpoints. Independently verified VN
 and standard-binary components live in `OperationalBernoulliFactory.v`;
 `BernoulliFactoryComposition.v` contains their algebraic composition.
 
-`Examples/BernoulliFactoryProbability.v` separately certifies the executable
+`CaseStudies/BernoulliFactory/BernoulliFactoryProbability.v` separately certifies the executable
 raw `Enum` programs as `probabilistic_ptree`: normalized source weights make
 the VN sampler well formed, and `probabilistic_factory_with_sampler` lifts
 any sampler's probability contract through the entire Factory loop. This
@@ -225,10 +225,10 @@ The underlying raw `Enum` `meas_eq` is extensional: two enumerations are equal w
 every outcome has the same accumulated mass.  Raw list equality is exposed
 separately as `enum_repr_eq`.  In particular, reordering entries, duplicating
 an outcome, or splitting its mass does not change the measure.  The regression
-file `Examples/EnumMeasureRegression.v` checks these cases together with
+file `Regression/Backend/EnumMeasureRegression.v` checks these cases together with
 Dirac elimination and nested-probability flattening.  `SubEnum` reuses this
 extensional theory while carrying the missing total-weight bound;
-`Examples/SubEnumRegression.v` checks bind closure and rejects the legacy
+`Regression/Backend/SubEnumRegression.v` checks bind closure and rejects the legacy
 weight-two flip.
 
 The MathComp Analysis backend now supplies the same foundational AE profile
@@ -237,8 +237,38 @@ exact bind support decomposition.  Through the FreeOmega behavior layer these
 instances derive omega AE, diagonal continuity, Fubini, mixed unit, and
 nested-`Prob` flattening.  Coupling composition remains the explicit
 `MathCompCouplingGluing` capability.  The compile-time matrix lives in
-`Examples/BackendCapabilities.v`.  The maintained real binary-oracle example
-is canonically bisimilar to a direct real Bernoulli sample.
+`Regression/Backend/BackendCapabilities.v`.  The maintained real binary-oracle
+example is canonically bisimilar to a direct real Bernoulli sample under its
+explicit `MathCompOracleSupportLaws` and coupling-gluing premises.
+
+## Repository guide
+
+The maintained theory lives in `Core/`, `Prob/`, `Eq/`, and
+`Semantics/` under `theories/`. Paper-facing programs form four groups:
+
+- [MixedHeadProtocol](theories/CaseStudies/MixedHeadProtocol.v): the flagship
+  mixed Ret/Vis, whole-continuation coupling example;
+- [RandomWalk](theories/CaseStudies/RandomWalk.v): infinite-state descent,
+  compositional equations and an analytic joint output law;
+- [InteractiveVonNeumann](theories/CaseStudies/InteractiveVonNeumann/):
+  unbounded internal sampling between infinitely many interactions;
+- [BernoulliFactory](theories/CaseStudies/BernoulliFactory/):
+  sampler correctness, replacement and composition, including the shared
+  rational/real Bernoulli and ordinary Von Neumann proofs.
+
+`Regression/{Semantics,Probability,Backend,Infrastructure}/` contains
+theorem regressions, negative examples, capability checks and proof-tool
+clients, not additional paper-facing case studies. In particular, the
+2×2 strictness witness belongs to the semantic comparison regressions.
+
+[THEORY_STATUS.md](THEORY_STATUS.md) is the current theorem/capability map,
+including raw-tree transition comparison and MDP-fragment coincidence.
+[The layout audit](docs/LAYOUT_AUDIT.md) records module moves, imports,
+reachability and the retained internal infrastructure's clients.
+[Local validation](docs/LAYOUT_VALIDATION.md) records the clean build,
+per-module kernel checks and the separate aggregate-check limitation.
+Finite-internal/kernel infrastructure stays in `Eq/` pending a separate
+namespace migration; no theorem was deleted in this reorganization.
 
 ## Artifact claims
 
@@ -261,7 +291,7 @@ The maintained artifact establishes:
 
 Two stronger statements are intentionally not claimed.  The remaining
 arbitrary-effectful-handler premise is now isolated as
-`free_interp_vis_fusion`; `free_peutt_interp_of_vis_fusion`
+`interp_vis_fusion`; `peutt_interp_of_vis_fusion`
 derives full preservation once that one collapsed handled-`Vis` segment is
 supplied.  Ordinary up-to-bind compatibility cannot discharge it without an
 unguarded recursive use after the handler returns internally.  Likewise,

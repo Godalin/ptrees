@@ -134,7 +134,7 @@ Qed.
     [sem_lub] rather than by a choice function.  A formal [FOLub] is observed
     only along an increasing raw chain.  Mere convergence of its images
     is insufficient: it permits escaping mass under subsequent bind
-    continuity (see Examples/FreeOmegaEscapingMass). *)
+    continuity (see Regression/Backend/FreeOmegaEscapingMass). *)
 Section FreeOmegaObservationDefinition.
 Universes node node_rep frontier.
 (** Observations land in the native node universe; the observed carrier

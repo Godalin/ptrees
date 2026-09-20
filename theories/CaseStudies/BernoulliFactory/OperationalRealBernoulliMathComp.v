@@ -1,0 +1,293 @@
+Set Warnings "-notation-overridden".
+Set Warnings "-ambiguous-paths".
+Unset Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
+
+Require Import Program.Equality.
+
+From mathcomp Require Import ssreflect ssrbool ssralg ssrnum reals.
+
+From PTree.Core Require Import PTreeDefinition.
+From PTree.Prob Require Import MathCompMeasure FreeOmegaMeasure
+  TwoLevelMeasure TwoLevelMeasureMathComp.
+From PTree.Eq Require Import PrimitiveStableHitting PTreeKernel
+  FreeOmega UnifiedFrontier PEutt.
+From PTree.CaseStudies.BernoulliFactory Require Import RealBernoulliOracle RealBernoulliMathComp.
+From PTree.CaseStudies.BernoulliFactory Require Import UnifiedRealBernoulliMathCompCore.
+
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+
+Import GRing.Theory.
+Local Open Scope ring_scope.
+
+Section OperationalRealOracle.
+Context (R : realType).
+Context `{MathCompCouplingGluing R}.
+Context `{MathCompOracleSupportLaws R}.
+
+Local Notation MN := (MathCompKernelMeasure R).
+Local Notation MF := (MathCompBehaviorMeasure R).
+Local Notation Head :=
+  (stable_head real_mathcomp_coinE MN bool).
+
+Variable qbit : binary_oracle.
+Variable q : R.
+Hypothesis q01 : (0 <= q <= 1)%R.
+Hypothesis Hrep : mathcomp_oracle_represents qbit q.
+
+Lemma ptree_mathcomp_oracle_increasing :
+  @sem_increasing MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) bool
+    (fun fuel => unified_mathcomp_oracle_approx R Head qbit fuel 0).
+Proof.
+  intro fuel. unfold unified_mathcomp_oracle_approx.
+  generalize (0 : nat). induction fuel as [|fuel IH]; intro n.
+  - cbn [mixed_iter_approx]. constructor.
+  - cbn [mixed_iter_approx].
+    eapply FOApproxSample with (S := @eq (nat + bool)).
+    + apply mathcomp_kernel_lift_refl. intros next. reflexivity.
+    + intros next next' ->. destruct next' as [n'|b].
+      * apply IH.
+      * apply free_omega_approx_refl. intros y. reflexivity.
+Qed.
+
+Lemma ptree_mathcomp_oracle_out_observes :
+  @free_omega_observes MN
+    (MathCompNodeSemanticMeasure R)
+    (MathCompNodeSemanticOmega R)
+    bool bool id (unified_mathcomp_oracle_out R Head qbit)
+    (mathcomp_bernoulli q).
+Proof.
+  apply FOOObserveLub with
+    (outs := fun fuel => mathcomp_oracle_result_approx R qbit fuel 0).
+  - intro fuel. exact (unified_mathcomp_oracle_approx_observes R Head qbit fuel 0).
+  - exact: mathcomp_binary_oracle_lub q01 Hrep.
+  - exact ptree_mathcomp_oracle_increasing.
+Qed.
+
+Definition ptree_mathcomp_oracle_heads : MF Head :=
+  @sem_bind MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R)) _ _
+    (unified_mathcomp_oracle_out R Head qbit)
+    (fun b => @sem_ret MF
+      (FreeOmegaObservableSemanticMeasure
+        (NI := MathCompNodeSemanticMeasure R)) Head (FHRet b)).
+
+Definition ptree_mathcomp_direct_heads : MF Head :=
+  @mixed_bind MN MF FreeOmegaMixedMeasure bool Head
+    (mathcomp_bernoulli q)
+    (fun b => @sem_ret MF
+      (FreeOmegaObservableSemanticMeasure
+        (NI := MathCompNodeSemanticMeasure R)) Head (FHRet b)).
+
+Definition ptree_mathcomp_direct_observation : MN bool :=
+  sem_bind (mathcomp_bernoulli q) (fun b => sem_ret b).
+
+Definition ptree_mathcomp_head_value (h : Head) : bool :=
+  match h with
+  | FHRet b => b
+  | @FHVis _ _ _ X e _ => match e with end
+  end.
+
+Lemma ptree_mathcomp_oracle_heads_observes :
+  free_omega_observes ptree_mathcomp_head_value
+    ptree_mathcomp_oracle_heads (mathcomp_bernoulli q).
+Proof.
+  unfold ptree_mathcomp_oracle_heads.
+  eapply free_omega_observes_bind_ret with (obsA := id).
+  - exact ptree_mathcomp_oracle_out_observes.
+  - intros b. reflexivity.
+Qed.
+
+Lemma ptree_mathcomp_direct_heads_observes :
+  free_omega_observes ptree_mathcomp_head_value
+    ptree_mathcomp_direct_heads
+    ptree_mathcomp_direct_observation.
+Proof.
+  unfold ptree_mathcomp_direct_heads,
+    ptree_mathcomp_direct_observation.
+  eapply FOOObserveSample. intro b. constructor.
+Qed.
+
+Lemma ptree_mathcomp_oracle_heads_total :
+  @sem_total MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) _
+    ptree_mathcomp_oracle_heads.
+Proof.
+  apply free_omega_observable_total_intro.
+  exists bool, ptree_mathcomp_head_value, (mathcomp_bernoulli q).
+  split; [exact ptree_mathcomp_oracle_heads_observes|].
+  exact: mathcomp_bernoulli_total.
+Qed.
+
+Lemma ptree_mathcomp_direct_heads_total :
+  @sem_total MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) _
+    ptree_mathcomp_direct_heads.
+Proof.
+  apply free_omega_observable_total_intro.
+  exists bool, ptree_mathcomp_head_value,
+    ptree_mathcomp_direct_observation.
+  split; [exact ptree_mathcomp_direct_heads_observes|].
+  unfold ptree_mathcomp_direct_observation.
+  assert (Heq : mathcomp_kernel_eq (mathcomp_bernoulli q)
+      (sem_bind (mathcomp_bernoulli q) (fun b => sem_ret b))).
+  { apply mathcomp_kernel_eq_sym. exact: mathcomp_kernel_bind_ret_r. }
+  apply (proj1 (mathcomp_kernel_total_proper Heq)).
+  exact: mathcomp_bernoulli_total.
+Qed.
+
+Theorem ptree_mathcomp_oracle_ast :
+  @ptree_stable_hitting_ast real_mathcomp_coinE MN MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) bool
+    (observe (mathcomp_binary_oracle_coin R qbit))
+    ptree_mathcomp_oracle_heads.
+Proof.
+  unfold mathcomp_binary_oracle_coin,
+    ptree_mathcomp_oracle_heads.
+  eapply ptree_stable_hitting_ast_iter.
+  - exact ptree_mathcomp_oracle_increasing.
+  - change (@PTreeKernel.ptree_iter_cofinal real_mathcomp_coinE MN MF
+      (FreeOmegaObservableSemanticMeasure
+        (NI := MathCompNodeSemanticMeasure R))
+      FreeOmegaMixedMeasure
+      (FreeOmegaObservableSemanticOmega
+        (NI := MathCompNodeSemanticMeasure R)
+        (NO := MathCompNodeSemanticOmega R)) nat bool
+      (primitive_iter_step
+        (mathcomp_oracle_transition R qbit))
+      (mathcomp_oracle_transition R qbit) 0).
+    apply primitive_iter_cofinal.
+  - exact: unified_mathcomp_oracle_mixed_iter.
+  - exact ptree_mathcomp_oracle_heads_total.
+Qed.
+
+Corollary ptree_mathcomp_oracle_primitive_ast :
+  @stable_hitting_ast MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R))
+    (ptree' real_mathcomp_coinE MN bool) Head
+    (@ptree_primitive_kernel real_mathcomp_coinE MN MF
+      (FreeOmegaObservableSemanticMeasure
+        (NI := MathCompNodeSemanticMeasure R))
+      FreeOmegaMixedMeasure bool)
+    (observe (mathcomp_binary_oracle_coin R qbit))
+    ptree_mathcomp_oracle_heads.
+Proof.
+  apply (proj2 (ptree_primitive_ast_adequate
+    (observe (mathcomp_binary_oracle_coin R qbit))
+    ptree_mathcomp_oracle_heads)).
+  exact ptree_mathcomp_oracle_ast.
+Qed.
+
+Theorem ptree_mathcomp_direct_ast :
+  @ptree_stable_hitting_ast real_mathcomp_coinE MN MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) bool
+    (observe (mathcomp_direct_bernoulli (R := R) q))
+    ptree_mathcomp_direct_heads.
+Proof.
+  split.
+  - assert (Hobserve : observe (mathcomp_direct_bernoulli (R := R) q) =
+      ProbF (mathcomp_bernoulli q) (fun b => Ret b)) by reflexivity.
+    rewrite Hobserve. unfold ptree_mathcomp_direct_heads.
+    eapply ptree_stable_hitting_prob with (Good := fun _ => True).
+    + exact: mathcomp_kernel_ae_true.
+    + intros b _. apply ptree_stable_hitting_ret.
+  - exact ptree_mathcomp_direct_heads_total.
+Qed.
+
+Lemma ptree_mathcomp_oracle_heads_lift
+    (sim : ptree real_mathcomp_coinE MN bool ->
+      ptree real_mathcomp_coinE MN bool -> Prop) :
+  @sem_lift MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R)) _ _
+    (stable_head_rel eq sim)
+    ptree_mathcomp_oracle_heads ptree_mathcomp_direct_heads.
+Proof.
+  eapply FOQLObserve with
+    (obsA := ptree_mathcomp_head_value)
+    (obsB := ptree_mathcomp_head_value)
+    (outA := mathcomp_bernoulli q)
+    (outB := ptree_mathcomp_direct_observation)
+    (S := eq).
+  - exact ptree_mathcomp_oracle_heads_observes.
+  - exact ptree_mathcomp_direct_heads_observes.
+  - unfold ptree_mathcomp_direct_observation.
+    eapply sem_lift_proper_r.
+    + apply mathcomp_kernel_eq_sym.
+      exact: mathcomp_kernel_bind_ret_r.
+    + apply mathcomp_kernel_lift_refl. intros b. reflexivity.
+  - intros h1 h2 Hvalue.
+    destruct h1 as [b1|X e1 k1];
+      destruct h2 as [b2|Y e2 k2];
+      try destruct e1; try destruct e2.
+    cbn in Hvalue. subst b2. constructor. reflexivity.
+  - unfold ptree_mathcomp_oracle_heads,
+      ptree_mathcomp_direct_heads.
+    change (free_omega_support_lift (stable_head_rel eq sim)
+      (free_omega_bind (unified_mathcomp_oracle_out R Head qbit)
+        (fun b => FORet (FHRet b)))
+      (free_omega_bind
+        (FOSample (mathcomp_bernoulli q) (fun b => FORet b))
+        (fun b => FORet (FHRet b)))).
+    eapply free_omega_support_lift_bind with (T := eq).
+    + exact (mathcomp_oracle_support Head
+        (qbit := qbit) (q := q) q01 Hrep).
+    + intros b1 b2 ->. split.
+      * intros P HP. dependent destruction HP. apply FOAERet.
+        exists (FHRet b2). split; [apply FHRRet; reflexivity|assumption].
+      * intros P HP. dependent destruction HP. apply FOAERet.
+        exists (FHRet b2). split; [apply FHRRet; reflexivity|assumption].
+Qed.
+
+Theorem peutt_mathcomp_binary_oracle_direct :
+  @peutt real_mathcomp_coinE MN MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := MathCompNodeSemanticMeasure R))
+    (FreeOmegaObservableSemanticMeasureCoreLaws
+      (NI := MathCompNodeSemanticMeasure R))
+    FreeOmegaMixedMeasure
+    (FreeOmegaObservableSemanticOmega
+      (NI := MathCompNodeSemanticMeasure R)
+      (NO := MathCompNodeSemanticOmega R)) bool bool eq
+    (mathcomp_binary_oracle_coin R qbit)
+    (mathcomp_direct_bernoulli (R := R) q).
+Proof.
+  eapply peutt_of_hitting_lift.
+  - apply (proj2 (ptree_primitive_stable_hitting_adequate _ _)).
+    exact (proj1 ptree_mathcomp_oracle_ast).
+  - apply (proj2 (ptree_primitive_stable_hitting_adequate _ _)).
+    exact (proj1 ptree_mathcomp_direct_ast).
+  - exact (ptree_mathcomp_oracle_heads_lift _).
+Qed.
+
+End OperationalRealOracle.
