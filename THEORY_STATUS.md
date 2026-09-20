@@ -3,16 +3,17 @@
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
-## Staged MDP development: raw-tree transition API awaiting review
+## Staged MDP development: raw-tree transition API accepted; GFP awaiting review
 
 The stable-head transition layer is in `Semantics/HeadTransition.v`, and
 the unary MDP fragment is in `Semantics/MDPFragment.v`. The canonical tree
 relation is unchanged. Step 1.5 moved its shared matching infrastructure
 to a lower module. Step 3a supplied an unlabelled baseline; Step 3.5 adds
 observable state structure to the maintained total MDP embedding.
-The next stage adds only raw-tree marginal transitions and observations.
-Its bisimulation, coincidence results, handler classes and `prutt` remain
-unimplemented; each requires a separate user acceptance gate.
+The raw-tree marginal transition and observation API has been accepted.
+The current stage adds only its independent transition-bisimulation GFP
+and basic regressions. Inclusion/coincidence results, handler classes and
+`prutt` remain unimplemented; each requires a separate user acceptance gate.
 
 - `obs_label` packages an event together with a response of its dependent
   result type. `head_step (FHVis e k) (Obs e x) out` holds exactly when
@@ -268,7 +269,7 @@ used. The source-level positive and quantitative negative regressions
 report only functional extensionality in their global assumption audit.
 Remote CI has not been checked for this step.
 
-### Raw-tree transition and observation API (next acceptance gate)
+### Raw-tree transition and observation API (accepted)
 
 `Semantics/TreeTransition.v` starts from an arbitrary raw tree, rather than
 an already selected head. It imports `HeadTransition`, not `PEutt`, and
@@ -327,11 +328,64 @@ VM fallback for native numeric conversions. No new axiom declaration,
 measure class, `Admitted`, or outstanding proof obligation was added.
 Remote CI has not been checked for this stage.
 
-The revised remaining sequence is: raw-tree transition GFP; general
-`peutt` inclusion; correlated-continuation strictness; coincidence on
-`mdp_state`; composition with the labelled MDP embedding. No representation
+### Raw-tree transition bisimulation GFP (next acceptance gate)
+
+`Semantics/TreeTransitionBisim.v` defines `tree_trans_bisim` with
+coq-coinduction. Its candidate relates raw PTrees, not selected stable
+heads. It does not import `PEutt`, use `head_bisim` in its definition, or
+change `mdp_state`.
+
+For a candidate `sim`, the successor relation is precisely
+`tree_trans_head_rel sim h k := sim (stable_head_tree h) (stable_head_tree k)`.
+Here `stable_head_tree (FHRet r) = Ret r` and
+`stable_head_tree (FHVis e k) = Vis e k`. This is restriction of the raw-tree
+candidate to stable trees, **not** `stable_head_rel RR sim`: the latter
+would prematurely prescribe whole-continuation comparison at successors.
+There is no separate head GFP hidden in this lifting.
+
+The generator conjoins three independent bidirectional measure matches:
+
+1. current return observations, coupled under `RR` (equality in the
+   homogeneous case);
+2. current offered-event observations, coupled under equality;
+3. for every dependent label `(e,x)`, all raw-tree transition witnesses,
+   matched under `tree_trans_head_rel sim`.
+
+`tree_measure_match` leaves representatives unchosen. Its witness-elimination
+lemma uses equality-coupling uniqueness and coupling composition, without
+assuming equality reflection into `sem_eq`. The three public endpoint
+lemmas `tree_trans_bisim_return_observations`,
+`tree_trans_bisim_offered_observations`, and `tree_trans_bisim_transitions`
+therefore apply to any supplied observation/transition witnesses.
+
+The API includes generator monotonicity, fold/unfold, coinduction and
+homogeneous reflexivity. The GFP, fold and coinduction need neither limit
+existence nor classical representative choice. Observation endpoints use
+existing bind and omega laws; the transition endpoint additionally uses
+coupling/AE laws and inherits the existing `eq_rect_eq` dependence of
+transition uniqueness. The generic coinduction, fold, reflexivity and
+return-observation endpoint audit as closed under the global context.
+
+`Examples/TreeTransitionBisim.v` checks the lifting's beta rule, fold/unfold,
+Ret reflexivity and Boolean return discrimination, and empty-event
+reflexivity/discrimination. In particular it proves that `deadA` and
+`deadB` pass the **full bidirectional action-only matching test**, for all
+witnesses, yet are not `tree_trans_bisim`: the independent offered-event
+condition prevents their collapse. An import-boundary regression again
+checks that this semantic module does not load `PEutt` transitively.
+
+Validation: full `opam exec -- dune build` and `coqchk -norec` for both new
+modules pass. Assumption audits of Boolean Ret discrimination and both
+empty-event regressions report the backend's existing functional
+extensionality and `eq_rect_eq` dependencies. No new axiom declaration,
+measure class, `Admitted`, or outstanding obligation was added. Remote CI
+has not been checked for this stage.
+
+The revised remaining sequence is: general `peutt` inclusion;
+correlated-continuation strictness; coincidence on `mdp_state`; composition
+with the labelled MDP embedding. None is claimed here. No representation
 theorem for arbitrary fragment members is required. This stage stops for
-acceptance before the GFP.
+acceptance of the GFP before attempting inclusion.
 
 ## Canonical architecture
 
