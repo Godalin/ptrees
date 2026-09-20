@@ -147,4 +147,49 @@ Proof.
     eapply free_omega_approx_extended_upper; [exact (Hinc p x Hpx Hnz n)|exact Hf|].
     intros a b ->. exact: lexx.
 Qed.
+Theorem free_omega_sample_bind_extended_upper {A X Y} (mu : Enum X)
+    (k : X -> Enum Y) (h : Y -> FreeOmega Enum A) (f : A -> \bar R) :
+  (forall x, 0 <= f x) ->
+  free_omega_extended_upper (FOSample mu (fun x => FOSample (k x) h)) f =
+    free_omega_extended_upper (FOSample (bind_Enum mu k) h) f.
+Proof.
+  intro Hf. cbn [free_omega_extended_upper]. symmetry.
+  apply enum_extended_expect_bind=> y. exact: free_omega_extended_upper_nonnegative.
+Qed.
+
+Theorem free_omega_bind_lub_extended_upper {A X}
+    (source : nat -> FreeOmega Enum X)
+    (kernels : X -> nat -> FreeOmega Enum A) (f : A -> \bar R) :
+  (forall n, free_omega_approx eq (source n) (source (S n))) ->
+  (forall x n, free_omega_approx eq (kernels x n) (kernels x (S n))) ->
+  (forall x, 0 <= f x) ->
+  free_omega_extended_upper (free_omega_bind (FOLub source) (fun x => FOLub (kernels x))) f =
+  free_omega_extended_upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f.
+Proof.
+  intros Hsource Hkernels Hf.
+  have Hrow : forall i,
+    free_omega_extended_upper (free_omega_bind (source i) (fun x => FOLub (kernels x))) f =
+    free_omega_extended_upper (FOLub (fun n => free_omega_bind (source i) (fun x => kernels x n))) f.
+  { intro i. rewrite free_omega_extended_upper_bind. cbn [free_omega_extended_upper].
+    rewrite (free_omega_extended_upper_continuous (source i)
+      (tests := fun n x => free_omega_extended_upper (kernels x n) f)).
+    - f_equal. apply functional_extensionality=> n. symmetry. apply free_omega_extended_upper_bind.
+    - intros n x. exact: free_omega_extended_upper_nonnegative.
+    - intro x. apply/nondecreasing_seqP=> n.
+      exact (free_omega_extended_upper_approx_mono (Hkernels x n) Hf). }
+  change (extended_upper (fun i =>
+    free_omega_extended_upper (free_omega_bind (source i) (fun x => FOLub (kernels x))) f) =
+    free_omega_extended_upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f).
+  rewrite (functional_extensionality _ _ Hrow).
+  change (free_omega_extended_upper (FOLub (fun i => FOLub
+    (fun n => free_omega_bind (source i) (fun x => kernels x n)))) f =
+    free_omega_extended_upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f).
+  apply free_omega_diagonal_extended_upper; [| |exact Hf].
+  - intros i n. eapply free_omega_approx_bind with (R := eq).
+    + apply free_omega_approx_refl. intro x. reflexivity.
+    + intros x y ->. exact (Hkernels y n).
+  - intros i n. eapply free_omega_approx_bind with (R := eq).
+    + exact (Hsource i).
+    + intros x y ->. apply free_omega_approx_refl. intro z. reflexivity.
+Qed.
 End ExtendedContinuity.

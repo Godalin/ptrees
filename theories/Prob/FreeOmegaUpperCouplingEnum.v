@@ -2,7 +2,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import List Program.Equality.
+From Coq Require Import List Program.Equality Arith.PeanoNat.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg ssrnum order rat reals.
 From mathcomp.analysis Require Import ereal.
 From PTree.Prob Require Import RatSubTypes DiscreteMC EnumMap EnumBindFacts
@@ -162,5 +162,58 @@ Proof.
     apply free_omega_extended_upper_ae_mono;
     eapply free_omega_ae_mono; [|exact Hae| |exact Hae];
     intros x Hx; rewrite Hx; exact: lexx.
+Qed.
+Lemma free_omega_extended_upper_approx_mono {A}
+    (mu nu : FreeOmega Enum A) (f : A -> \bar F) :
+  free_omega_approx eq mu nu -> (forall x, 0 <= f x) -> upper mu f <= upper nu f.
+Proof.
+  intros H Hf. eapply free_omega_approx_extended_upper; [exact H|exact Hf|].
+  intros x y ->. exact: lexx.
+Qed.
+
+Theorem free_omega_structural_extended_upper {A B} (T : A -> B -> Prop)
+    (mu : FreeOmega Enum A) (nu : FreeOmega Enum B)
+    (f : A -> \bar F) (g : B -> \bar F) :
+  free_omega_lift T mu nu -> (forall y, 0 <= g y) ->
+  (forall x y, T x y -> f x <= g y) -> upper mu f <= upper nu g.
+Proof.
+  intro H. apply free_omega_approx_extended_upper.
+  exact (free_omega_lift_to_approx H).
+Qed.
+
+Theorem free_omega_cofinal_extended_upper_le {A B} (T : A -> B -> Prop)
+    (left : nat -> FreeOmega Enum A) (right : nat -> FreeOmega Enum B)
+    (f : A -> \bar F) (g : B -> \bar F) :
+  (forall n, exists m, free_omega_approx T (left n) (right m)) ->
+  (forall y, 0 <= g y) -> (forall x y, T x y -> f x <= g y) ->
+  upper (FOLub left) f <= upper (FOLub right) g.
+Proof.
+  intros Hcover Hg Hfg. cbn [free_omega_extended_upper]. apply extended_upper_le=> n.
+  destruct (Hcover n) as [m Hnm].
+  eapply le_trans; [exact (free_omega_approx_extended_upper Hnm Hg Hfg)|].
+  exact (extended_upper_ge (fun i => upper (right i) g) m).
+Qed.
+
+Theorem free_omega_diagonal_extended_upper {A}
+    (grid : nat -> nat -> FreeOmega Enum A) (f : A -> \bar F) :
+  (forall i j, free_omega_approx eq (grid i j) (grid i (S j))) ->
+  (forall i j, free_omega_approx eq (grid i j) (grid (S i) j)) ->
+  (forall x, 0 <= f x) ->
+  upper (FOLub (fun i => FOLub (grid i))) f = upper (FOLub (fun n => grid n n)) f.
+Proof.
+  intros Hrow Hcol Hf.
+  have Hcover : forall i j, free_omega_approx eq (grid i j)
+      (grid (Nat.add i j) (Nat.add i j)).
+  { intros i j. eapply free_omega_approx_trans with (nu := grid i (Nat.add i j)).
+    - pose proof (free_omega_approx_steps (Hrow i) j i) as Hr.
+      rewrite (Nat.add_comm j i) in Hr. exact Hr.
+    - exact (free_omega_approx_steps (fun k => Hcol k (Nat.add i j)) i j). }
+  apply/eqP. rewrite eq_le. apply/andP; split; cbn [free_omega_extended_upper].
+  - apply extended_upper_le=> i. apply extended_upper_le=> j.
+    eapply le_trans; [exact (free_omega_extended_upper_approx_mono (Hcover i j) Hf)|].
+    exact (extended_upper_ge (fun n => upper (grid n n) f) (Nat.add i j)).
+  - apply extended_upper_le=> n. eapply le_trans.
+    + exact (extended_upper_ge (fun j => upper (grid n j) f) n).
+    + exact (extended_upper_ge (fun i => extended_upper (fun j => upper (grid i j) f)) n).
 Qed.
 End RawExtendedCoupling.

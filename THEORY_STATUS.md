@@ -866,6 +866,30 @@ with infinite upper mass.  This is a proof-internal upper functional,
 not a new public probability backend or an additive interpretation of
 arbitrary non-increasing Lub syntax.
 
+The independently useful work that was already in the worktree before
+the relation removal is also retained:
+
+- `FreeOmegaUpperRelationalEnum.v` supplies nonnegative extended-test
+  comparison, using upper/lower envelopes rather than bounded complements.
+- `FreeOmegaUpperQuotientEnum.v` proves preservation for every quotient
+  constructor, including observation, relational composition, AE
+  restriction and the increasing-limit rules.  In particular,
+  `free_omega_qlift_extended_upper_mass` preserves total upper mass, even
+  for arbitrary nonnegative raw Enum weights and heterogeneous carriers.
+- `FreeOmegaNativeTransportEnum.v` derives
+  `enum_native_quotient_coupling`: a quotient coupling between decoded
+  native presentations has an actual finite native joint.  Indicator
+  tests saturate source sets under possibly noninjective decoders and
+  establish finite Hall inequalities; finite rational transport then
+  realizes the joint.  No inverse decoder or disintegration is assumed.
+
+These results are parameterized by a MathComp `realType`.  They do not add
+another program relation, make raw Enum an intrinsic subprobability
+carrier, or register a new automatic behavioral capability.  Their five
+modified/new modules pass kernel checking; assumption inspection records
+the existing classical-choice, propositional/function-extensionality and
+dependent-equality principles, with no added reflection or semantic axiom.
+
 ### Proved SubEnum realization
 
 The construction in `FreeOmegaNativeTransportSubEnum.v` covers arbitrary
