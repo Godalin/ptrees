@@ -8,7 +8,7 @@ From PTree.Prob Require Import TwoLevelMeasure TwoLevelMeasureSubEnum
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import Bind GuardedInterp.
 From PTree.Semantics Require Import MDPFragment AtomicInterp MDPInterp
-  MDPInterpSubEnum TreeTransitionBisim TreeTransitionSoundness.
+  MDPInterpSubEnum TreeTransition TreeTransitionBisim.
 From PTree.Regression.Semantics Require Import MDPFragment MDPCoincidence AtomicInterp.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -250,6 +250,41 @@ Theorem heterogeneous_target_coincidence t u : SS t -> SS u ->
       (PTree.interp hetero_handler t) (PTree.interp hetero_handler u)).
 Proof. apply mdp_interp_peutt_tree_trans_iff. exact hetero_handler_mdp. Qed.
 
+(** Independent source transition evidence. This local regression helper
+    deliberately uses neither peutt nor its transition-soundness theorem. *)
+Lemma hetero_delay_transition_bisim (t : ptree sourceE SubEnum R) :
+  @tree_trans_bisim sourceE SubEnum MF FI FC FreeOmegaMixedMeasure FO R R eq (Tau t) t.
+Proof.
+  eapply tree_trans_bisim_coinduction with
+    (sim := fun a b => a = b \/ a = Tau b); [|right; reflexivity].
+  intros a b [Heq | Heq]; subst a.
+  - split.
+    + split; intros out Hout; exists out; split; try exact Hout;
+        apply sem_lift_refl; intro x; reflexivity.
+    + split.
+      * split; intros out Hout; exists out; split; try exact Hout;
+          apply sem_lift_refl; intro e; reflexivity.
+      * intro label. split; intros out Hout; exists out; split; try exact Hout;
+          apply sem_lift_refl; intro h; left; reflexivity.
+  - split.
+    + split; intros out Hout; exists out; split.
+      * exact (proj1 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
+      * apply sem_lift_refl. intro r. reflexivity.
+      * exact (proj2 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
+      * apply sem_lift_refl. intro r. reflexivity.
+    + split.
+      * split; intros out Hout; exists out; split.
+        -- exact (proj1 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
+        -- apply sem_lift_refl. intro e. reflexivity.
+        -- exact (proj2 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
+        -- apply sem_lift_refl. intro e. reflexivity.
+      * intro label. split; intros out Hout; exists out; split.
+        -- exact (proj1 (tree_trans_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
+        -- apply sem_lift_refl. intro h. left; reflexivity.
+        -- exact (proj2 (tree_trans_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
+        -- apply sem_lift_refl. intro h. left; reflexivity.
+Qed.
+
 End ReturnCarrier.
 
 (** An infinite protocol, with distinct source and target event types. *)
@@ -300,9 +335,7 @@ Proof.
   apply heterogeneous_guarded_transition_preservation.
   - apply (proj2 (mdp_state_tau_iff (FI := FI) (FO := FO) _)). exact hetero_service_mdp.
   - exact hetero_service_mdp.
-  - assert (Htau : @peutt sourceE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit unit eq
-      (Tau hetero_service) hetero_service) by apply peutt_tau_l.
-    exact (peutt_tree_trans_bisim (FI := FI) (FC := FC) (FO := FO) Htau).
+  - apply hetero_delay_transition_bisim.
 Qed.
 
 Example heterogeneous_reply_label b :

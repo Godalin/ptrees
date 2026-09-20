@@ -325,10 +325,12 @@ unbounded interaction. Existing fragment coincidence is reused at the
 interpreted states, and a direct transition-preservation proof can then be
 converted to peutt. This is preservation, not source/target reflection;
 there is no unconditional MathComp total-map specialization in this stage.
-The proof approach of `c74ee64` was accepted; the `E -> F` follow-up awaits
-final Stage 4 baseline acceptance. A genuinely heterogeneous regression
-proves the handler contract independently and transports an infinite
-Ask/Reply protocol across two distinct inductive event families. State
+The proof approach and `E -> F` API of `98b93aa` were accepted; the final
+regression fix awaits Stage 4 baseline acceptance. A genuinely heterogeneous
+regression proves the handler contract independently and transports an infinite
+Ask/Reply protocol across two distinct inductive event families. Its
+source Tau-equivalence is proved directly by transition coinduction,
+not imported from peutt soundness. State
 interpretation and directory moves have not started.
 
 ### Semantic comparison and classical MDPs

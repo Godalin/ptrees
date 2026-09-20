@@ -9,7 +9,7 @@ library is part of this work.
 | 1. InterpExposure | Decide whether arbitrary interpretation preserves `tree_trans_bisim` | Accepted baseline `4703035` |
 | 2. GuardedInterp | Semantic visible guarding, then `interp_vis_fusion` and peutt preservation | Accepted baseline `268a223` |
 | 3. AtomicInterp | A sufficient atomic-handler contract for transition preservation | Accepted baseline `8e09561` |
-| 4. MDPInterp | An explicit handler contract preserving `mdp_state` | `c74ee64` proof approach accepted; generic `E -> F` follow-up awaiting review |
+| 4. MDPInterp | An explicit handler contract preserving `mdp_state` | `98b93aa` core/API accepted; independent-source regression fix awaiting final review |
 | 5. StateInterp | Focused StateT interpreter, algebra, and rewrite-oriented example | Not started |
 | 6. General interp | Revisit arbitrary-handler peutt preservation without making it a blocker | Deferred |
 
@@ -505,6 +505,13 @@ used. The checks include general state preservation, guarded transition
 preservation, target-fragment coincidence, and an actual infinite Ask/Reply
 service with a delayed source counterpart. The latter is interpreted into
 the distinct target family, not merely re-elaborated at the old signature.
+`hetero_delay_transition_bisim` supplies the delayed source pair's evidence
+by direct transition-GFP coinduction, matching return observations,
+offered-event observations, and action successors using their Tau laws.
+The infinite-service regression therefore starts from independent
+`tree_trans_bisim_E` evidence; it no longer constructs that evidence via
+`peutt_E` or `peutt_tree_trans_bisim`. The helper remains local to the
+regression module, with no new public theorem or directory reorganization.
 
 This stage does not start StateInterp or broaden the atomic profile.
 
@@ -534,6 +541,9 @@ contract and state-membership regressions use functional extensionality,
 `eq_rect_eq` and the two existing choice principles; their transition and
 coincidence endpoints additionally inherit excluded middle. No axiom,
 source/target equality premise, or new backend capability is introduced.
+The independent `hetero_delay_transition_bisim` helper inherits only
+functional extensionality and `eq_rect_eq`; the final interpreted-service
+endpoint retains the previously audited dependencies of the guarded route.
 
 ### Stage 4 local validation
 
@@ -563,3 +573,9 @@ The aggregate remains 200 modules. `AtomicInterp.v`,
 `MDPInterpSubEnum.v`, and the total-map backend proof are unchanged; no
 module or directory was moved. This follow-up is the candidate final
 Stage 4 baseline, pending acceptance before layout-only work.
+
+The regression-only independent-source fix repeated the full build,
+aggregate inventory, the same targeted joint kernel check and assumption
+audit successfully. The layout report is unchanged. Only the regression
+and its documentation changed; the accepted generic and atomic theory
+interfaces remain untouched. This fix awaits final Stage 4 acceptance.
