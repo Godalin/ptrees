@@ -3,6 +3,52 @@
 This file describes the maintained Coq API.  The named results are checked
 without `Admitted` by the default `dune build`.
 
+## Staged MDP development: Step 1 (awaiting review)
+
+Only the stable-head transition layer is implemented in this step, in
+`Semantics/HeadTransition.v`. `PEutt.v` and the canonical tree relation are
+unchanged. MDP-fragment predicates, classical embeddings, weak/marginal
+transitions, handler classes and `prutt` remain later, unimplemented steps;
+each requires a separate user acceptance gate.
+
+- `obs_label` packages an event together with a response of its dependent
+  result type. `head_step (FHVis e k) (Obs e x) out` holds exactly when
+  `out` is a complete stable-hitting result of `k x`. Returns have no step;
+  the selected current head is never marginalized over.
+- `head_bisimF` reuses `stable_head_rel` and bidirectional
+  `stable_hitting_match`. Its recursive candidate relates successor heads,
+  not the raw continuation trees. `head_bisim` is its coq-coinduction GFP,
+  with fold/unfold, Ret/Vis iff rules, coinduction and action matching.
+- `head_bisim_vis_hitting_iff` is the selected-witness equation:
+  given complete witnesses `front1 x`, `front2 x`, related Vis heads are
+  equivalent to `forall x, sem_lift head_bisim (front1 x) (front2 x)`.
+  `head_bisim_vis_exists_iff` additionally constructs the witnesses.
+- For `RR = eq`, reflexivity, symmetry, transitivity and `Equivalence` are
+  proved using the existing frontier `SemanticMeasureCoreLaws` package.
+  Transitivity uses its `sem_lift_comp`; it needs no additional gluing,
+  node-bind, totality or finite-support assumption. No measure class or
+  axiom has been added. Transition uniqueness and selected-witness rules
+  use `SemanticOmegaLaws`; transition existence and the existential Vis
+  rule additionally use `SemanticMeasureOrderLaws`.
+  The global assumption audit reports coinduction and reflexivity closed
+  under the global context. Dependent-label/head inversion, including
+  symmetry and transitivity, uses the project's existing
+  `Eqdep.Eq_rect_eq.eq_rect_eq`; this is explicit, not a new measure axiom.
+- `Examples/HeadTransition.v` checks probabilistic successors after an
+  action, dependent event discrimination, heterogeneous return relations,
+  equivalence, an infinite interaction loop with a Tau after each response,
+  and a response that diverges with empty stable support. Totality is not
+  claimed for arbitrary steps; that restriction belongs to Step 2.
+
+This induced state relation is not yet claimed equivalent to `peutt` on
+any fragment, and no full-abstraction or handler result from later steps
+is assumed by the implementation.
+
+Step 1 verification: full `opam exec -- dune build` and `coqchk` for both
+new modules pass; there are no `Admitted` or new axiom declarations and no
+unfinished Step 1 obligations. Remote CI is not part of this local result.
+Implementation stops here pending user acceptance; Step 2 has not started.
+
 ## Canonical architecture
 
 PTree syntax is the intensional representation; stable hitting extracts its
