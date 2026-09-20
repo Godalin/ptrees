@@ -8,8 +8,8 @@ library is part of this work.
 | --- | --- | --- |
 | 1. InterpExposure | Decide whether arbitrary interpretation preserves `tree_trans_bisim` | Accepted baseline `4703035` |
 | 2. GuardedInterp | Semantic visible guarding, then `interp_vis_fusion` and peutt preservation | Accepted baseline `268a223` |
-| 3. AtomicInterp | A sufficient atomic-handler contract for transition preservation | Proved for response-preserving event permutations; awaiting review |
-| 4. MDPInterp | An explicit handler contract preserving `mdp_state` | Not started |
+| 3. AtomicInterp | A sufficient atomic-handler contract for transition preservation | Accepted baseline `8e09561` |
+| 4. MDPInterp | An explicit handler contract preserving `mdp_state` | Proved; awaiting review |
 | 5. StateInterp | Focused StateT interpreter, algebra, and rewrite-oriented example | Not started |
 | 6. General interp | Revisit arbitrary-handler peutt preservation without making it a blocker | Deferred |
 
@@ -355,8 +355,8 @@ existing totalized transition-witness existence. No axiom or backend class
 is added. These are the results of `Print Assumptions`, not a claim of
 constructivity.
 
-The stage stops here for review; MDP preservation and state interpretation
-are not part of this change.
+Stage 3 stopped here for review; MDP preservation is developed separately
+in stage 4 below. State interpretation remains unstarted.
 
 ### Stage 3 local validation
 
@@ -375,3 +375,154 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
 This loads the full-library universe context and rechecks the listed
 modules, not every old proof. The layout audit has been regenerated and
 reproduces exactly; no remote CI success is claimed.
+
+## Stage 4: preserving the MDP fragment
+
+`Semantics/MDPInterp.v` introduces a local semantic contract, not a fourth
+interpreter semantics or a new equivalence. For a fixed return carrier:
+
+```text
+mdp_handler h :=
+  forall selected head a,
+    mdp_head a -> mdp_state (ptree_interp_head_tree h a).
+```
+
+It asks that interpreting a qualifying **selected stable head** again give
+one deterministic qualifying state. It does not assume preservation for
+arbitrary raw trees. `mdp_state_interp` derives that extension: the source
+tree has a complete hitting measure semantically equal to a Dirac head;
+the existing interp-hitting theorem and relational bind reduce its
+interpreted frontier to the interpreted selected head. Hitting uniqueness
+identifies the chosen witnesses. No atomicity or total-map premise is
+needed for this head-to-tree extension.
+
+The contract must still be discharged, and is not advertised as an
+automatic fact about arbitrary handlers. We do so for the accepted atomic
+permutation profile by a separate unary coinduction:
+
+```text
+candidate(a') := exists a, mdp_head a /\ a' = atomic_head a.
+```
+
+Return heads are terminal states, as before. For a Vis head and any
+response, `atomic_finish_bind` and `atomic_interp_hitting` produce the
+mapped source successor measure. AE closure follows from mapping the
+source invariant; **totality must also be preserved**. Importantly, this
+argument allows a distribution over many successor heads, not just a
+Dirac successor, and uses no finite-interaction induction.
+
+### Totality: an explicit backend boundary, discharged for SubEnum
+
+The existing abstract `SemanticTotalProperLaws` only transports totality
+along `sem_eq`. It does not assert that arbitrary value maps preserve
+totality. Therefore `atomic_handler_mdp` and `mdp_state_interp_atomic`
+expose the exact remaining measure-side obligation:
+
+```text
+forall mu, sem_total mu -> sem_total (atomic_map atom mu).
+```
+
+This is not a new axiom, a new backend class, or an assumption of the
+desired MDP-preservation theorem. It is a capability premise of these
+generic atomic endpoints. Other backends must discharge it before using
+them; this stage makes no unconditional MathComp specialization claim.
+
+`Prob/FreeOmegaTotalSubEnum.v` proves the stronger result for **every** map
+`f : A -> B`, including non-injective maps:
+
+```text
+sem_total mu -> sem_total (free_omega_bind mu (fun x => FORet (f x))).
+```
+
+FreeOmega observable totality is witnessed by a semantically equivalent
+representative and a total native observation. `subenum_observes_unit`
+first forgets that observation's values, preserving its mass in a unit
+observation. Its proof covers Ret, Zero, Sample, and increasing Lub;
+the Lub case uses the existing rational indicator-test convergence.
+The unit observation can then be carried through any value map, with no
+inverse or injectivity assumption. Relational bind transports the
+representative equivalence. The definition of `sem_total` is unchanged.
+
+`Semantics/MDPInterpSubEnum.v` uses this fact to discharge the entire
+measure-side premise. Its endpoints need only the explicit atomic
+certificate, with no extra totality obligation for clients:
+
+```coq
+subenum_atomic_handler_mdp
+subenum_mdp_state_interp_atomic
+subenum_mdp_interp_peutt_tree_trans_iff
+subenum_mdp_interp_transition_to_peutt
+```
+
+### Rejoining the compositionality results
+
+`mdp_interp_peutt_tree_trans_iff` applies the **existing** fragment
+coincidence theorem to the two preserved target states. It is an iff
+between the two target relations, not a reflection theorem asserting that
+interpretation preserves and reflects source behavior.
+
+There are now two reusable routes:
+
+- For a semantic `mdp_handler` that is also guarded, source coincidence
+  gives peutt, stage 2 preserves it, and target coincidence recovers
+  transition bisimulation (`mdp_guarded_interp_tree_trans`).
+- For an atomic SubEnum handler, stage 3 preserves transition bisimulation
+  directly, stage 4 preserves the fragment, and target coincidence recovers
+  peutt (`subenum_mdp_interp_transition_to_peutt`).
+
+Thus the earlier general strictness/congruence counterexamples remain
+intact; it is the explicit source-and-target MDP restriction that lets the
+two proof routes meet.
+
+### Regression coverage
+
+`Regression/Semantics/MDPInterp.v` uses a non-identity handler that flips
+the `Reply` label, retains `Ask`, and includes the stage-3 internal Tau/Prob
+response implementation. It checks a request followed by a genuinely
+non-Dirac probabilistic successor, an infinite interacting service, delayed
+initial states, terminal returns, and a non-injective totality map. The
+transition-to-peutt example starts from the independently constructed
+`delay_transition_bisim`, not peutt soundness. Neither `mdp_state` nor
+`mdp_head` is changed.
+
+This stage does not start StateInterp or broaden the atomic profile.
+
+### Stage 4 assumptions
+
+The `Print Assumptions` audit distinguishes these endpoints:
+
+- `mdp_state_interp`: existing `eq_rect_eq`, relational choice and dependent
+  unique choice (no functional-extensionality or excluded-middle dependency).
+- `subenum_observes_unit`: functional extensionality and the two choice
+  principles, for selecting unit-observation witnesses.
+- `subenum_free_omega_total_map`, `mdp_head_atomic`,
+  `subenum_mdp_state_interp_atomic`, and the infinite-service membership
+  regression: the same dependencies plus `eq_rect_eq`.
+- The coincidence/compositionality routes additionally inherit excluded
+  middle from the existing transition/fragment infrastructure.
+
+No axiom, backend typeclass, unfinished proof, or change to totality is
+introduced. The explicit generic `Htotal_map` premise is discharged by a
+theorem at the SubEnum endpoints, not included in their assumption audit
+as an unresolved constant.
+
+### Stage 4 local validation
+
+The full build, 200-module aggregate inventory (199 imports plus
+`AllImports`), and targeted joint kernel check all passed locally:
+
+```sh
+python3 tools/check_aggregate.py
+opam exec -- dune build
+opam exec -- coqchk -silent -R _build/default/theories PTree \
+  -norec PTree.Regression.Infrastructure.AllImports \
+  -norec PTree.Prob.FreeOmegaTotalSubEnum \
+  -norec PTree.Semantics.MDPInterp \
+  -norec PTree.Semantics.MDPInterpSubEnum \
+  -norec PTree.Regression.Semantics.MDPInterp
+```
+
+This rechecks the four new modules and the aggregate harness in the
+full-library universe context, not every existing proof. The layout report
+reproduces exactly. No remote CI success is asserted. Stage 4 now pauses
+for acceptance before any StateInterp work.

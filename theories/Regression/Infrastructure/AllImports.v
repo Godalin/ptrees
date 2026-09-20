@@ -103,6 +103,7 @@ Require PTree.Prob.FreeOmegaNativeTransportSubEnum.
 Require PTree.Prob.FreeOmegaRecovery.
 Require PTree.Prob.FreeOmegaRecoverySubEnum.
 Require PTree.Prob.FreeOmegaSupport.
+Require PTree.Prob.FreeOmegaTotalSubEnum.
 Require PTree.Prob.FreeOmegaUpperContinuityEnum.
 Require PTree.Prob.FreeOmegaUpperContinuitySubEnum.
 Require PTree.Prob.FreeOmegaUpperCouplingEnum.
@@ -177,6 +178,7 @@ Require PTree.Regression.Semantics.LabelledMDP.
 Require PTree.Regression.Semantics.MDPCoincidence.
 Require PTree.Regression.Semantics.MDPEmbedding.
 Require PTree.Regression.Semantics.MDPFragment.
+Require PTree.Regression.Semantics.MDPInterp.
 Require PTree.Regression.Semantics.OperationalPTSExamples.
 Require PTree.Regression.Semantics.PEuttAlgebra.
 Require PTree.Regression.Semantics.PEuttNotation.
@@ -194,6 +196,8 @@ Require PTree.Semantics.MDPCoincidenceFreeOmega.
 Require PTree.Semantics.MDPEmbedding.
 Require PTree.Semantics.MDPEmbeddingSubEnum.
 Require PTree.Semantics.MDPFragment.
+Require PTree.Semantics.MDPInterp.
+Require PTree.Semantics.MDPInterpSubEnum.
 Require PTree.Semantics.TreeTransition.
 Require PTree.Semantics.TreeTransitionBisim.
 Require PTree.Semantics.TreeTransitionSoundness.

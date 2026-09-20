@@ -308,8 +308,21 @@ profile, not a characterization: event merging, response transformations,
 and multi-interaction handlers are not covered. Regressions preserve the
 non-peutt 2x2 pair, check a non-identity event permutation (including empty
 response events), and rule out atomicity for the two-query counterexample.
-Stage 3 awaits review; MDP handler contracts and state interpretation have
-not started.
+Stage 3 was accepted at `8e09561`. Stage 4 adds `Semantics/MDPInterp.v`:
+`mdp_handler` is a local contract preserving selected MDP heads under the
+existing `ptree_interp_head_tree`. `mdp_state_interp` extends it to arbitrary
+raw MDP states. Atomic handlers discharge the contract by unary
+coinduction, under an explicit total-head-map premise; abstract
+`SemanticTotalProperLaws` alone does not supply that premise.
+`Prob/FreeOmegaTotalSubEnum.v` proves totality under **every** value map on
+SubEnum/FreeOmega by reducing total observations to unit observations.
+Consequently `MDPInterpSubEnum.v` supplies atomic MDP preservation without
+an extra client premise, including non-Dirac successor distributions and
+unbounded interaction. Existing fragment coincidence is reused at the
+interpreted states, and a direct transition-preservation proof can then be
+converted to peutt. This is preservation, not source/target reflection;
+there is no unconditional MathComp total-map specialization in this stage.
+Stage 4 awaits review; state interpretation has not started.
 
 ### Semantic comparison and classical MDPs
 
@@ -397,6 +410,8 @@ global dependencies are:
 | two-round interpretation exposure counterexample | functional extensionality and `eq_rect_eq`; no classical witness choice |
 | guarded-handler fusion / peutt preservation / Proper | functional extensionality, `eq_rect_eq`, relational choice and dependent unique choice from existing hitting witness selection |
 | atomic-handler transition preservation | functional extensionality, `eq_rect_eq`, relational choice, dependent unique choice, and excluded middle from existing transition witness existence |
+| MDP handler head-to-tree preservation | `eq_rect_eq`, relational choice and dependent unique choice |
+| atomic SubEnum MDP preservation / total-map theorem | functional extensionality, `eq_rect_eq`, relational choice and dependent unique choice; coincidence routes also inherit excluded middle |
 | generic reverse coincidence | `eq_rect_eq` only |
 | FreeOmega exact Dirac AE proof | closed; passed explicitly rather than a global instance |
 | FreeOmega reverse coincidence | functional extensionality and `eq_rect_eq` |

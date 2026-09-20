@@ -274,6 +274,12 @@ permutation, with complete Dirac hitting at one visible head and then at
 the returned response. `tree_trans_bisim_interp_atomic` allows internal
 computation but does not claim preservation for event merging or general
 multi-interaction handlers.
+For the MDP fragment, [MDPInterp](theories/Semantics/MDPInterp.v) derives
+`mdp_state` preservation from a local stable-head handler contract. The
+atomic profile satisfies it on SubEnum/FreeOmega, using a proved
+totality-under-mapping lemma. Thus interpretation retains the fragment
+where peutt and transition bisimulation coincide; no MDP reconstruction or
+new interpretation semantics is introduced.
 
 [THEORY_STATUS.md](THEORY_STATUS.md) is the current theorem/capability map,
 including raw-tree transition comparison and MDP-fragment coincidence.
