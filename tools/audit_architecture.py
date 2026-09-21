@@ -19,7 +19,7 @@ def external_validation(path):
     Classify adapters before they exist so a future soundness file cannot
     silently enter the mainline through an otherwise ordinary Backend edge.
     """
-    return path.startswith("Prob/Domain/") or path in {
+    return path.startswith(("Prob/Domain/", "Prob/FreeOmega/Validation/")) or path in {
         "Prob/Backend/Common/DomainTransport",
         "Prob/Backend/Common/CountableCoupling",
         "Prob/Backend/SubEnum/Domain", "Prob/Backend/MathComp/Domain",
@@ -29,6 +29,7 @@ def external_validation(path):
         "Prob/Backend/SubEnum/FreeOmega/CountableSupport",
         "Prob/Backend/SubEnum/FreeOmega/CouplingSoundness",
         "Prob/Backend/SubEnum/FreeOmega/JointSoundness",
+        "Prob/Backend/SubEnum/FreeOmega/GenericValidation",
         "Eq/Backend/StableHittingDomainSubEnum",
     }
 
@@ -48,6 +49,8 @@ def ownership(path):
         return path.rsplit("/", 1)[0], "contract test", "retained; not public theory"
     if path.startswith("Examples/"):
         return "Examples", "application", "retained; no regression dependency"
+    if path.startswith("Prob/FreeOmega/Validation/"):
+        return "Prob/FreeOmega/Validation", "external validation", "native-parametric bridge to independent mathematical models"
     if path.startswith("Core/"):
         return "Core", "syntax", "primitive syntax/combinators only"
     if path.startswith("API/"):
@@ -95,6 +98,8 @@ def permitted(module, dependency):
         return False
     if module.startswith("Prob/Domain/"):
         return under("Prob/Domain")
+    if module.startswith("Prob/FreeOmega/Validation/"):
+        return under("Prob/Domain", "Prob/Interface", "Prob/FreeOmega")
     if module in {"Prob/Backend/Common/DomainTransport", "Prob/Backend/Common/CountableCoupling"}:
         return under("Prob/Domain", "Prob/Backend/Common")
     # A generic theorem layer may not silently fix its observable carrier.

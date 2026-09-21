@@ -53,3 +53,48 @@ Full local `dune build` (including AllImports), architecture/API/source audits,
 all 48 tool tests, and the 505-entry compiled signature/assumption snapshot
 passed. A targeted `coqchk -norec` of BackendCapabilities passed; this is not
 a new recursive whole-library kernel audit. No CI claim is made.
+
+## Native-parametric external validation
+
+`Prob/FreeOmega/Validation/Expectation.v` parameterizes the raw upper evaluator
+by `native : forall X, MN X -> OmegaVal R X`. The external mathematical domain
+is deliberately **OmegaVal-qualified**, not an arbitrary abstract `MF` and not
+a newly added project-wide `Model` parameter. The ordinary generic PTree
+interfaces are unchanged.
+
+`free_omega_modelable` means the evaluator satisfies the independent
+expectation laws; `free_omega_model_denotes` compares bounded tests. It is a
+semantic validity condition, not an inductive all-subterms-valid certificate.
+It does not redefine the internal `free_omega_denotes` observation relation.
+
+The new layer proves bounds, structural bind interpretation, uniqueness and
+properness of denotation, sample/bind/lub closure, AE sample/bind closure and
+denotation, approximation soundness, cofinality, double-lub interchange and
+diagonalization. The additional native bridges are separately scoped:
+
+- AE rules require native AE support to preserve bounded expectations.
+- Approximation/cofinality require native relational bounded-test inequalities.
+- Plain bind/lub rules need neither of those bridges, native relational bind,
+  nor native omega completeness.
+
+Outside the AE support, kernels are totalized by a valid zero using explicit
+classical selection. Invalid raw terms themselves do not thereby gain a model.
+Double-lub interchange is not a claim that arbitrary native sampling commutes.
+
+`SubEnum/FreeOmega/GenericValidation.v` proves the new specialized evaluator
+is definitionally the old `free_omega_upper`; modelability is equivalent to
+DS admissibility and both denotations agree. It supplies the AE/test bridges
+from finite expectation facts. No frozen DS theorem or old proof is changed.
+General qlift joint realization is still the existing SubEnum theorem; the
+new generic approximation result must not be advertised as generic qlift
+soundness. In particular, no new induction over qlift intermediates is used.
+
+Regressions include a second, option-valued native interpretation, import
+isolation, null-weight invalid branches, invalid alternation, unbounded
+geometric support, proof-independent model values and large-universe results.
+
+Validation of this checkpoint: full build/AllImports; architecture, API and
+source contracts; all 49 tool tests; all 505 frozen compiled contracts;
+18 new endpoint `Check`/`Print Assumptions` probes against the existing axiom
+whitelist; joint `coqchk -norec` of the generic validation, SubEnum adapter and
+regression. All passed locally. The frozen DS sources were not edited.

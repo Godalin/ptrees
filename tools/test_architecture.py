@@ -4,6 +4,18 @@ import audit_architecture as architecture
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_generic_completion_validation_is_one_way(self):
+        bridge = "Prob/FreeOmega/Validation/Expectation"
+        self.assertTrue(architecture.external_validation(bridge))
+        self.assertTrue(architecture.permitted(bridge, "Prob/Domain/Expectation"))
+        self.assertTrue(architecture.permitted(bridge, "Prob/FreeOmega/Definition"))
+        for target in ["Prob/Backend/SubEnum/Domain", "Prob/Backend/MathComp/Domain",
+                       "Core/PTreeDefinition"]:
+            self.assertFalse(architecture.permitted(bridge, target))
+        for source in ["Prob/Domain/Expectation", "Prob/FreeOmega/Measure",
+                       "API/FreeOmega", "Eq/PEutt", "Examples/RandomWalk"]:
+            self.assertFalse(architecture.permitted(source, bridge))
+
     def test_external_domain_is_independent(self):
         domain = "Prob/Domain/Expectation"
         self.assertEqual(architecture.ownership(domain)[:2],
