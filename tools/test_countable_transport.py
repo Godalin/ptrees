@@ -10,8 +10,7 @@ class CountableTransportAuditTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.before = frozen(transport.BASE)
-        cls.after = {p.relative_to(transport.ROOT).as_posix(): p.read_text()
-                     for p in (transport.ROOT / "theories").rglob("*.v")}
+        cls.after = frozen("b91df98")
 
     def test_isolation(self):
         self.assertEqual(transport.audit_sources(self.before, self.after), (245, 249))

@@ -273,9 +273,14 @@ representation, external dual/Hall constraints, and equality joints.
 It is accepted at `086f2c1`.
 [DS5a.2 preparation](DOMAIN_TRANSPORT_PREPARATION.md) adds atomic-series
 normal form, finite-prefix tightness, realization of supplied real-weight
-transport plans, and code/decode reduction. The implication from Hall/dual
-constraints to existence of those weights is still open.
-**General joint realization is not yet proved; DS5a remains in progress.**
+transport plans, and code/decode reduction, accepted at `c189a2e`.
+[Finite real transport](DOMAIN_REAL_TRANSPORT.md) is accepted at `f00478d`;
+[countable transport existence](DOMAIN_COUNTABLE_TRANSPORT.md) at `b91df98`.
+[DS5a.3 general joint realization](DOMAIN_JOINT_SOUNDNESS.md) connects arbitrary
+countably supported carriers to that nat theorem and proves
+`free_omega_qlift_sound` for admissible **FreeOmega SubEnum** endpoints.
+DS5a's general relational soundness target is now implemented, pending review
+of this final increment. This does not assert completeness of syntactic qlift.
 DS5b and subsequent stages have not started.
 
 `free_omega_denote_approx`, `free_omega_denote_bind` and `free_omega_denote_lub`
@@ -285,8 +290,9 @@ are now implemented for SubEnum in DS2. DS3 adds
 by the SubEnum model and the admissibility boundary. DS4 implements
 `stable_hitting_admissible` and `stable_hitting_denotational_adequacy`:
 complete hitting discharges validity automatically for SubEnum PTrees.
-`free_omega_qlift_sound` remains a **proposed, unimplemented** general
-relational endpoint. Completeness, infinite interaction measures, general
+`free_omega_qlift_sound` realizes a standard external joint for any relation
+between admissible SubEnum endpoints; raw intermediates need not be admissible.
+Completeness, infinite interaction measures, general
 WP, arbitrary measurable-space samplers and new interpreter stages are not
 acceptance requirements for this work.
 
