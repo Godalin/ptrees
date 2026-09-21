@@ -3,6 +3,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Automatic Proposition Inductives.
 
+From PTree.Eq Require Import StableHittingRelation.
 From Coq.Program Require Import Equality.
 From Coq Require Import RelationClasses.
 From Coq.Logic Require Import ClassicalDescription.

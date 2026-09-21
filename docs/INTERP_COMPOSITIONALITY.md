@@ -120,7 +120,7 @@ The targeted kernel check passed: it loads the full-library universe context
 and rechecks the new module and the import harness together:
 
 ```sh
-python3 tools/check_aggregate.py
+python3 tools/audit_architecture.py --aggregate-only
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Infrastructure.AllImports \
@@ -229,7 +229,7 @@ The full build, aggregate inventory check, and targeted joint kernel check
 all passed locally. The stage-2 validation commands are:
 
 ```sh
-python3 tools/check_aggregate.py
+python3 tools/audit_architecture.py --aggregate-only
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Infrastructure.AllImports \
@@ -364,7 +364,7 @@ The full build and aggregate inventory guard passed (196 modules: 195
 imports plus `AllImports`). The targeted joint kernel check also passed:
 
 ```sh
-python3 tools/check_aggregate.py
+python3 tools/audit_architecture.py --aggregate-only
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Infrastructure.AllImports \
@@ -551,7 +551,7 @@ The full build, 200-module aggregate inventory (199 imports plus
 `AllImports`), and targeted joint kernel check all passed locally:
 
 ```sh
-python3 tools/check_aggregate.py
+python3 tools/audit_architecture.py --aggregate-only
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Infrastructure.AllImports \
@@ -580,4 +580,4 @@ audit successfully. The layout report is unchanged. Only the regression
 and its documentation changed; the accepted generic and atomic theory
 interfaces remain untouched. Stage 4 is accepted at `ec96b90`; its theory is
 now frozen. Next is the staged [repository architecture and assumption
-cleanup](ARCHITECTURE_CLEANUP.md), not StateInterp or additional Stage 4 theory.
+cleanup](ARCHITECTURE.md), not StateInterp or additional Stage 4 theory.

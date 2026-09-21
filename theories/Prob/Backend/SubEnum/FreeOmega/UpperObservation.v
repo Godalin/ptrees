@@ -1,3 +1,4 @@
+From PTree.Prob.Backend.SubEnum Require Import Expectation.
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".

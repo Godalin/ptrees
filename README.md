@@ -243,27 +243,17 @@ explicit `MathCompOracleSupportLaws` and coupling-gluing premises.
 
 ## Repository guide
 
-The interpretation theory through Stage 4 is accepted at `ec96b90` and
-frozen. Current work is the staged
-[repository architecture and assumption cleanup](docs/ARCHITECTURE_CLEANUP.md),
-with Gate A accepted at `2258907` and Gate B accepted at `20e6ff2`. Gate B implements the
-[ownership boundaries and module splits](docs/ARCHITECTURE_MIGRATION.md).
-The [Examples follow-up](docs/EXAMPLES_FOLLOWUP.md), accepted at `2af47aa`,
-renamed the application directory without changing its programs or proofs.
-The [Gate C capability review](docs/CAPABILITY_REVIEW.md) records public
-signatures, logical assumptions, proof-helper dependencies and focused
-context/import cleanup at `05a2431`. The subsequent
-[Prob organization follow-up](docs/PROB_ORGANIZATION.md) separates capability
-files, groups concrete backends and splits the FreeOmega implementation without
-changing theorem statements or proofs.
-The [current inventory](docs/ARCHITECTURE_AUDIT.md) checks actual dependency
-directions; the [current capability audit](docs/CAPABILITY_CURRENT.md)
-compares 25 compiled endpoint signatures against the frozen
-[Gate A baseline](docs/CAPABILITY_BASELINE.md). The expanded
-[306-entry public index](docs/CAPABILITY_PUBLIC_INDEX.md) retains complete
-before/after signatures; the organization audit compares them modulo explicit
-namespace moves and additionally checks 250 extracted constants. The final whole-library kernel audit is Gate D,
-not part of this handoff.
+The accepted interpretation theory and probability-domain soundness are frozen.
+See [repository architecture](docs/ARCHITECTURE.md) for ownership and the
+generic / FreeOmega / concrete-backend boundaries, and the
+[current inventory](docs/ARCHITECTURE_AUDIT.md) for machine-checked dependencies.
+The [external soundness account](docs/FREEOMEGA_SOUNDNESS.md) explains admissible
+FreeOmega SubEnum, standard measures, general joint coupling and stable-hitting
+adequacy. These validation modules are not imported by program reasoning.
+The [compiled contracts](docs/CONTRACTS.json) preserve all 306 public/helper
+and 199 soundness endpoints, including the original 25 capability probes.
+Stage-specific migration narratives and snapshots remain in git history.
+The final whole-library kernel audit (Gate D) remains separate.
 
 Ordinary clients can import the curated entry points:
 
@@ -324,11 +314,11 @@ new interpretation semantics is introduced.
 
 [THEORY_STATUS.md](THEORY_STATUS.md) is the current theorem/capability map,
 including raw-tree transition comparison and MDP-fragment coincidence.
-[The layout audit](docs/LAYOUT_AUDIT.md) records module moves, imports,
-reachability and the retained internal infrastructure's clients.
-[Local validation](docs/LAYOUT_VALIDATION.md) records the layout checks;
-[joint universe consistency](docs/UNIVERSE_CONSISTENCY.md) explains the
-subsequent two-level regression repair and the full-library import guard.
+The [architecture inventory](docs/ARCHITECTURE_AUDIT.md) records maintained
+modules and clients; [Cleanup B validation](docs/CLEANUP_B_VALIDATION.md)
+records the consolidation and its check scope.
+[Joint universe consistency](docs/UNIVERSE_CONSISTENCY.md) explains the
+two-level regression repair and full-library import guard.
 Finite-internal/kernel infrastructure is grouped under `Eq/Internal/`;
 it is not another behavioral relation. The universe representation probes
 now live in `Regression/Infrastructure`, not an active Experimental layer.

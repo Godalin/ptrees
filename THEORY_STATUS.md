@@ -7,67 +7,29 @@ acceptance records remain in Git. The artifact targets Coq 8.20
 (`>= 8.20, < 9.0`); the CI configuration pins 8.20.1. Local verification
 does not imply a successful remote CI run.
 
-## Theory-freeze preparation
+## Frozen theory and maintained validation
 
-Interpretation Stages 1–4 are accepted at `4703035`, `268a223`, `8e09561`,
-and `ec96b90`. Their theory is frozen while repository architecture and
-assumption hygiene are cleaned up. No StateInterp development has started.
-FreeOmega domain soundness has an accepted DS0 design and an accepted
-[DS1a expectation domain](docs/DOMAIN_DS1A.md) at `e65ca85`.
-The independent evaluator/laws domain has order, increasing-chain Lubs and
-continuous bind. [DS1b standard-measure correspondence](docs/DOMAIN_DS1B.md)
-is accepted at `01cbc4c`: countable additivity, integral recovery and both
-roundtrips with MathComp probability measures on the discrete lifted carrier.
-[DS2 admissibility/domain soundness](docs/DOMAIN_DS2.md) is implemented,
-pending review: SubEnum interpretation, AE Sample/bind closure, increasing
-Lub and approximation soundness, and the alternating-Dirac negative test.
-FreeOmega quotient-equality soundness (DS3), stable-hitting adequacy (DS4)
-and general joint-coupling realization remain pending. The mainline does
-not depend on this external validation model.
+Interpretation Stages 1–4 are accepted through `ec96b90`. DS1–DS5a are
+accepted through `2dbba82`: the independent expectation domain has a standard
+measure correspondence; admissible FreeOmega SubEnum has algebra/equality and
+general joint-coupling soundness; every complete SubEnum stable-hitting witness
+is automatically admissible and denotes the independent finite-iterate Lub.
+The [soundness account](docs/FREEOMEGA_SOUNDNESS.md) gives exact claims and
+limitations. MathComp-native external soundness and StateInterp are not part
+of this cleanup. Mainline reasoning does not depend on external validation.
 
-The [cleanup architecture and review gates](docs/ARCHITECTURE_CLEANUP.md)
-distinguish component ownership, generic/FreeOmega/concrete profiles,
-curated versus expert imports, and five kinds of premise. The
-[frozen Gate A inventory](docs/ARCHITECTURE_BASELINE.md) records 200 modules.
-The [current module inventory](docs/ARCHITECTURE_AUDIT.md) enforces
-ownership dependencies after five Section extractions and facade assembly,
-including the disposition of FiniteInternal and the former Experimental file. The
-[compiled capability baseline](docs/CAPABILITY_BASELINE.md) records full
-types and logical assumptions for 25 selected endpoints. The expanded
-[Gate C public index](docs/CAPABILITY_PUBLIC_INDEX.md) covers 306 entries,
-with full before/after types and a [proof-helper review](docs/CAPABILITY_REVIEW.md).
-Neither is a mathematical minimality claim.
+[Architecture](docs/ARCHITECTURE.md) specifies ownership, curated facades,
+generic/canonical/concrete specialization, retained auxiliary infrastructure
+and five kinds of premise. The [generated inventory](docs/ARCHITECTURE_AUDIT.md)
+checks actual edges and transitive isolation. The
+[compiled contracts](docs/CONTRACTS.json) retain 306 public/helper and 199
+soundness endpoints, with full types and logical assumptions. This is neither
+an exhaustive theorem audit nor a mathematical minimality claim.
 
-Cleanup Gate A is accepted at `2258907`; Gate B's
-[architecture migration](docs/ARCHITECTURE_MIGRATION.md) is accepted at `20e6ff2`.
-The [Examples namespace follow-up](docs/EXAMPLES_FOLLOWUP.md) is accepted at
-`2af47aa`. It changes no theorem statement or proof.
-The [current compiled capability report](docs/CAPABILITY_CURRENT.md)
-preserves all 25 baseline endpoint types and logical assumptions after
-namespace normalization. Gate C removes an unused explicit AELift premise
-from structural interpretation and simplifies three definitional hitting
-bridges, removing their inherited overstrong requirements from translation.
-Other edits are source Context/import hygiene. Five translation endpoints
-also shed the inherited functional-extensionality dependency. Stage 1–4
-contracts and FiniteInternal are untouched. The full build, public signature
-and logical audits, 26 tool tests, and a 17-module joint targeted kernel
-check passed locally at `05a2431`.
-
-The [Prob organization follow-up](docs/PROB_ORGANIZATION.md) precedes Gate D:
-six capability modules replace `TwoLevelMeasure`; seven implementation
-modules replace `FreeOmegaMeasure`; concrete probability code is grouped by
-native carrier. The exact source-conservation audit uses `05a2431`, and the
-Gate A/C capability snapshots remain frozen. This is an organization change,
-not the FreeOmega adequacy audit. The follow-up is accepted at `3120df0`.
-Before the final whole-library kernel audit (Gate D), the next work is
-[FreeOmega domain soundness](docs/FREEOMEGA_DOMAIN_SOUNDNESS.md), beginning
-with a separately reviewed independent-domain design. In particular, raw
-non-increasing `FOLub` terms cannot all denote standard subprobability
-measures; the design distinguishes raw evaluators from admissible probability
-representations. No further organization-only split is planned.
-Its local checks cover the full build, exact source conservation, all 306
-public/helper endpoints, 250 extracted constants, 34 audit-tool tests and a
-27-module targeted joint kernel check. The latter is not a full Gate D audit.
+Cleanup B consolidates regressions, tools and phase documents without changing
+the accepted theory. Its baseline is `5c1a0df`; phase histories remain in git.
+See [validation](docs/CLEANUP_B_VALIDATION.md) for source conservation, counts
+and the explicitly targeted joint kernel-check scope. Gate D is still separate.
 
 | Component | Role / import surface |
 | --- | --- |
@@ -516,18 +478,11 @@ FiniteInternal is auxiliary proof infrastructure for well-founded internal
 compression and related adequacy arguments. It is not part of the canonical
 PTree semantics or public equivalence theory. The formal peutt/Interp/facade
 dependency closure does not include it; some Stage 1–4 regression files
-indirectly load it through shared fixtures. Gate C will not redesign its API.
-Final retention/deletion decisions belong to the later FreeOmega adequacy
-audit: retain chains needed by final adequacy results; remove obsolete
-regression-only branches only after that dependency review.
-[The complete layout/client audit](docs/LAYOUT_AUDIT.md)
-records their actual imports, direct/transitive clients and zero-client
-modules. No zero-client module is automatically treated as dead code:
-public endpoints and independent regression leaves naturally have none.
-The [Gate B manifest](docs/gate-b-moves.json) records its moves and
-extractions; [examples-moves.json](docs/examples-moves.json) records the
-follow-up; [module-moves.tsv](docs/module-moves.tsv) records the earlier
-historical layout milestone.
+indirectly load it through shared fixtures. Completed external soundness does
+not depend on it, but its independent contracts remain maintained; cleanup
+does not delete FiniteInternal/Recovery/residual infrastructure. The
+[current inventory](docs/ARCHITECTURE_AUDIT.md) records clients. Zero clients
+alone never imply dead code. Historical move/extraction manifests remain in git.
 
 `Regression/Infrastructure/AllImports.v` checks that all maintained modules
 coexist in one universe context; CI checks its inventory is complete.

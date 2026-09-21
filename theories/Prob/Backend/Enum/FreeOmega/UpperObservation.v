@@ -3,6 +3,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
+From PTree.Prob.Backend.SubEnum Require Import Expectation.
 From Coq.Logic Require Import FunctionalExtensionality.
 From Coq.Arith Require Import PeanoNat.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat reals.

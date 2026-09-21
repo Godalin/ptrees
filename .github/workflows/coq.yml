@@ -26,12 +26,26 @@ jobs:
       - name: Install supported Coq
         run: opam install "coq.${PTREE_COQ_VERSION}" -y
 
+      # Exact printed types include HB-generated names. Test the recorded
+      # contract profile, not whichever compatible dependency release is newest.
+      # These are CI pins, not tighter library/package compatibility bounds.
+      - name: Pin compiled-contract dependency profile
+        run: |
+          opam pin add --no-action coq-hierarchy-builder 1.8.1 -y
+          opam pin add --no-action coq-elpi 2.4.0 -y
+          opam pin add --no-action coq-ext-lib 0.13.0 -y
+          opam pin add --no-action coq-itree 5.2.1 -y
+          opam pin add --no-action coq-coinduction 1.20 -y
+          opam pin add --no-action coq-mathcomp-algebra 2.3.0 -y
+          opam pin add --no-action coq-mathcomp-analysis 1.13.0 -y
+          opam pin add --no-action coq-mathcomp-reals-stdlib 1.13.0 -y
+
       - name: Install dependencies
         run: opam install . --deps-only --with-test -y
 
       - name: Audit maintained sources
         run: |
-          python3 tools/check_aggregate.py
+          python3 tools/audit_architecture.py --aggregate-only
           if git grep -n -E '^[[:space:]]*(Admitted|admit)\.' -- '*.v'; then
             echo 'Maintained theories contain an unfinished proof.' >&2
             exit 1
@@ -44,10 +58,13 @@ jobs:
       - name: Build all theories
         run: opam exec -- dune build
 
-      - name: Recheck universe regression in the full-library context
+      - name: Audit architecture, API, soundness and assumptions
         run: |
-          opam exec -- coqchk -silent -R _build/default/theories PTree \
-            -norec PTree.Regression.Infrastructure.AllImports \
-            -norec PTree.Regression.Backend.UnifiedFrontierEnum \
-            -norec PTree.Regression.Semantics.CanonicalPartialDivergence \
-            -norec PTree.Regression.Semantics.PEuttAlgebra
+          python3 tools/audit_architecture.py --check
+          python3 tools/audit_api.py --surface-only
+          python3 tools/audit_soundness.py --source-only
+          python3 tools/audit_assumptions.py --check
+          python3 -m unittest discover -s tools -p 'test_*.py'
+
+      - name: Recheck universe regression in the full-library context
+        run: python3 tools/audit_api.py --surface-only --kernel

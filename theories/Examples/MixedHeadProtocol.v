@@ -5,6 +5,7 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
+From PTree.Eq Require Import StableHittingRelation.
 From Coq.Program Require Import Equality.
 From Coq Require Import FunctionalExtensionality.
 From HB Require Import structures.

@@ -2,6 +2,7 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
+From PTree.Eq Require Import StableHittingRelation.
 From Coq Require Import Morphisms.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.

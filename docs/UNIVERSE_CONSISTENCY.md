@@ -76,24 +76,27 @@ calculation, not a new axiom or a new premise asserting the desired result.
 
 `Regression/Infrastructure/AllImports.v` requires every other maintained
 Coq module in one universe context. Dune compiles it as part of the normal
-build. `tools/check_aggregate.py` fails if that inventory omits a new module,
+build. `tools/audit_architecture.py --aggregate-only` fails if that inventory omits a new module,
 contains extras, duplicates or is unsorted; CI runs this inventory check
 before building. `Require` rather than `Require Import` avoids exporting
 all short names while still merging the universe constraints.
 After building, CI also rechecks the two repaired regressions and
 `PEuttAlgebra` together with `AllImports` in a single `coqchk` process.
 
-After building, the stronger kernel audit runs **one** process over every
-module, not a loop of independent checks. This expanded audit was interrupted
-after roughly 40 minutes and is not claimed to pass; the
-[validation record](LAYOUT_VALIDATION.md) gives the passed targeted kernel
-check in the same full-library universe context:
+The historical whole-library proof audit was interrupted after roughly
+40 minutes and is not claimed to pass. The maintained targeted check is
+documented in [architecture](ARCHITECTURE.md) and
+[Cleanup B validation](CLEANUP_B_VALIDATION.md):
 
 ```sh
-python3 tools/check_aggregate.py
+python3 tools/audit_architecture.py --aggregate-only
 opam exec -- dune build
-python3 tools/check_aggregate.py --kernel
+python3 tools/audit_api.py --surface-only --kernel
 ```
+
+It checks selected module bodies together using `-norec`; dependencies load
+into the same universe context but their proofs are not recursively rechecked.
+This does not replace the separate final Gate D whole-library audit.
 
 The checker uses its default ordinary conversion, which can be slow on
 `native_compute`/`vm_compute` casts. A separate diagnostic run enabling

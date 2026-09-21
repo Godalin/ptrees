@@ -13,9 +13,8 @@ From mathcomp Require Import ssreflect.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PTreeKernel.
-(** Preserve the usual import surface without duplicate compatibility
-    definitions: generic matching now belongs to the lower semantic layer. *)
-From PTree.Eq Require Export StableHittingRelation.
+(** Generic matching belongs to its explicit lower-layer owner. *)
+From PTree.Eq Require Import StableHittingRelation.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

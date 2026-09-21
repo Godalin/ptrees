@@ -1,3 +1,4 @@
+From PTree.Eq Require Import StableHittingRelation.
 (** Role: Comparison semantics. Depends on canonical theory; not the canonical peutt relation or interpreter theory. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".

@@ -1,3 +1,4 @@
+From PTree.Prob.Backend.SubEnum Require Import Expectation.
 (** Role: DS2 admissibility/soundness boundary tests. In particular, a raw
     alternating FOLub is rejected, while null-probability bad branches are
     permitted. This file does not test or assume DS3 quotient soundness. *)
@@ -25,30 +26,7 @@ Unset Printing Implicit Defensive.
 Import RatSubTypes GRing.Theory Num.Theory Order.Theory ListNotations.
 Local Open Scope ring_scope.
 
-Definition alternating_bool : FreeOmega SubEnum bool :=
-  FOLub (fun n => FORet (if Nat.even n then false else true)).
-
-Definition null_weight_node : SubEnum bool.
-Proof.
-  refine {| subenum_raw := [((1 : nnQ), true); (nnQ_0, false)] |}.
-  by vm_compute.
-Defined.
-
-Definition nullable_kernel (b : bool) : FreeOmega SubEnum bool :=
-  if b then FORet true else alternating_bool.
-
-Definition domain_half : nnQ.
-Proof. refine (mknnQ (1/2) _); by vm_compute. Defined.
-Definition domain_fair : SubEnum bool.
-Proof.
-  refine {| subenum_raw := [(domain_half,true); (domain_half,false)] |}.
-  by vm_compute.
-Defined.
-Fixpoint retry_approx (n : nat) : FreeOmega SubEnum bool :=
-  match n with
-  | O => FOZero
-  | S m => FOSample domain_fair (fun b => if b then FORet true else retry_approx m)
-  end.
+From PTree.Regression.Fixtures Require Import FreeOmegaSamples.
 
 Section DomainTests.
 Variable R : realType.

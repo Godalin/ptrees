@@ -1,3 +1,4 @@
+From PTree.Eq Require Import StableHittingRelation.
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.

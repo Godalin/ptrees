@@ -2,6 +2,7 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
+From PTree.Eq Require Import StableHittingRelation.
 From Coq.Program Require Import Equality.
 From Coq.Logic Require Import ClassicalChoice.
 From PTree.Core Require Import PTreeDefinition.

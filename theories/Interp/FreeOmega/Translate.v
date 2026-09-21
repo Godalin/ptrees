@@ -1,3 +1,4 @@
+From PTree.Eq Require Import StableHittingRelation.
 (** Role: Interpreter compositionality. Depends on equational theory (and comparison semantics for Atomic/MDP); not primitive syntax. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".

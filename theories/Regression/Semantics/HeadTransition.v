@@ -1,3 +1,4 @@
+From PTree.Eq Require Import StableHittingRelation.
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".

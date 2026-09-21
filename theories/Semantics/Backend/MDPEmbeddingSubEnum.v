@@ -3,6 +3,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
+From PTree.Eq Require Import StableHittingRelation.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum rat.
 From PTree.Core Require Import PTreeDefinition.

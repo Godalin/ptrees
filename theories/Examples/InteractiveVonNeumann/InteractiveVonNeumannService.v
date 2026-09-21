@@ -3,6 +3,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
+From PTree.Eq Require Import StableHittingRelation.
 From Coq.Logic Require Import FunctionalExtensionality.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssralg rat.

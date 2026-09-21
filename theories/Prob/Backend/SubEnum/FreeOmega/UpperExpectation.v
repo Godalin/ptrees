@@ -11,7 +11,7 @@ From mathcomp.classical Require Import classical_sets.
 Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.SubEnum.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 
-Require Export PTree.Prob.Backend.SubEnum.Expectation.
+Require Import PTree.Prob.Backend.SubEnum.Expectation.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

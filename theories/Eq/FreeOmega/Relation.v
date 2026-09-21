@@ -1,3 +1,4 @@
+From PTree.Eq Require Import StableHittingRelation.
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
