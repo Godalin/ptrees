@@ -11,8 +11,9 @@ does not imply a successful remote CI run.
 
 Interpretation Stages 1–4 are accepted at `4703035`, `268a223`, `8e09561`,
 and `ec96b90`. Their theory is frozen while repository architecture and
-assumption hygiene are cleaned up. No StateInterp or FreeOmega adequacy
-development has started.
+assumption hygiene are cleaned up. No StateInterp development has started.
+FreeOmega domain soundness is at the design-review stage; no new domain
+soundness theorem has been proved.
 
 The [cleanup architecture and review gates](docs/ARCHITECTURE_CLEANUP.md)
 distinguish component ownership, generic/FreeOmega/concrete profiles,
@@ -47,8 +48,13 @@ six capability modules replace `TwoLevelMeasure`; seven implementation
 modules replace `FreeOmegaMeasure`; concrete probability code is grouped by
 native carrier. The exact source-conservation audit uses `05a2431`, and the
 Gate A/C capability snapshots remain frozen. This is an organization change,
-not the FreeOmega adequacy audit. Pause for acceptance of this follow-up
-before the final whole-library kernel audit (Gate D).
+not the FreeOmega adequacy audit. The follow-up is accepted at `3120df0`.
+Before the final whole-library kernel audit (Gate D), the next work is
+[FreeOmega domain soundness](docs/FREEOMEGA_DOMAIN_SOUNDNESS.md), beginning
+with a separately reviewed independent-domain design. In particular, raw
+non-increasing `FOLub` terms cannot all denote standard subprobability
+measures; the design distinguishes raw evaluators from admissible probability
+representations. No further organization-only split is planned.
 Its local checks cover the full build, exact source conservation, all 306
 public/helper endpoints, 250 extracted constants, 34 audit-tool tests and a
 27-module targeted joint kernel check. The latter is not a full Gate D audit.
