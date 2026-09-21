@@ -156,6 +156,7 @@ Require PTree.Regression.Backend.SubEnumRegression.
 Require PTree.Regression.Backend.UnifiedFrontierEnum.
 Require PTree.Regression.Backend.UnifiedMathCompFrontier.
 Require PTree.Regression.Infrastructure.ArchitectureBoundaries.
+Require PTree.Regression.Infrastructure.CapabilityBoundaries.
 Require PTree.Regression.Infrastructure.CorrelatedInternalRounds.
 Require PTree.Regression.Infrastructure.CostedRounds.
 Require PTree.Regression.Infrastructure.CouplingReferences.

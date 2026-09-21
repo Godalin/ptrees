@@ -11,14 +11,16 @@ review. No StateInterp or FreeOmega adequacy development starts here.
 | --- | --- | --- |
 | A | unique ownership policy, complete module inventory, compiled capability baseline | accepted at `2258907` |
 | B | migrate/split modules, strict facades, role comments, experimental disposition | accepted at `20e6ff2` |
-| B follow-up | CaseStudies → Examples, synchronized import/audit/docs surface | implemented; awaiting review |
-| C | minimize capabilities, remove unused contexts/imports, audit every agreed public endpoint | pending |
+| B follow-up | CaseStudies → Examples, synchronized import/audit/docs surface | accepted at `2af47aa` |
+| C | minimize capabilities, remove unused contexts/imports, audit the frozen public endpoint scope | locally validated; awaiting acceptance |
 | D | final dependency checks, facade regressions, full joint kernel audit and scope review | pending |
 
 Pause at each gate. Gate A deliberately changes no `.v` file: it makes the
 starting obligations checkable before namespace and proof changes are mixed.
-The whole cleanup is **not** complete at Gate B. Review the
-[Examples follow-up](EXAMPLES_FOLLOWUP.md) before starting Gate C.
+The whole cleanup is **not** complete at Gate B. The accepted
+[Examples follow-up](EXAMPLES_FOLLOWUP.md) is Gate C's source baseline.
+The [Gate C capability review](CAPABILITY_REVIEW.md) records its explicit
+scope, source changes, helper paths, and retained semantic premises.
 No local `Events/` component is introduced: reuse ITree definitions for
 standard effects; example-specific protocol signatures stay local.
 
@@ -85,7 +87,7 @@ modules using Coq's `.PTree.theory.d`. The integration harness imports all
 
 The following findings record the accepted starting point. Gate B implements
 these dispositions; the [current inventory](ARCHITECTURE_AUDIT.md) covers
-208 modules and enforces the dependency directions. Declaration inspection
+209 modules (including Gate C's capability regression) and enforces the dependency directions. Declaration inspection
 also refined four placements: `Coupling`/`IndexedCoupling` are Enum-specific,
 `RelLift` is a legacy discrete-interface adapter, and both
 `FreeOmegaDisintegration` and `KernelDisintegration` specialize SubEnum.
@@ -191,11 +193,12 @@ infrastructure. Do not describe `Print Assumptions` as a theorem-only audit.
 route; the SubEnum endpoint discharges it. A concrete endpoint with no
 class parameters is **instantiated**, not model-independent.
 
-Gate C must still inspect proof bodies for overstrong helpers, minimize
-unused contexts/imports, and extend this selected list to all agreed public
-endpoints. Do not label the current 25-endpoint snapshot exhaustive or
-mathematically minimal. Preserve before/after full signatures; any change
-to a local semantic contract needs explicit review.
+Gate C extends the selected list to the frozen 306-entry public/helper scope
+and preserves before/after full signatures. It distinguishes actual premise
+weakening from source-only hygiene and reviews the helper paths in
+[CAPABILITY_REVIEW](CAPABILITY_REVIEW.md). Neither the old 25-entry snapshot
+nor the expanded review claims mathematical minimality of the interfaces.
+No local semantic contract is changed.
 
 ## Validation and completion criteria
 

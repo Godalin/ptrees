@@ -7,8 +7,8 @@ From Coq Require Import Morphisms.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import TwoLevelMeasure.
 From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Eq Require Import Shallow PEutt PStruct PStrong.
-From PTree.Eq.FreeOmega Require Import Base Relation Bind.
+From PTree.Eq Require Import Shallow PEutt PStruct.
+From PTree.Eq.FreeOmega Require Import Relation Bind.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

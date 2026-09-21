@@ -1,8 +1,8 @@
 (** Role: User-facing assembly or tree/backend adapter. Imports lower layers explicitly; not new semantic theory. *)
 (** Curated canonical-model API. Uses FreeOmega equational/interpreter theory;
     exposes endpoint names, not quotient lifts, schedules or acceleration grids. *)
-From PTree.Eq.FreeOmega Require Import Algebra Iter Relation.
-From PTree.Interp.FreeOmega Require Import Base Guarded Atomic MDP.
+From PTree.Eq.FreeOmega Require Import Algebra Iter.
+From PTree.Interp.FreeOmega Require Import Guarded Atomic MDP.
 Notation peutt_bind_assoc := Algebra.peutt_bind_assoc.
 Notation peutt_bind_ret_l := Algebra.peutt_bind_ret_l.
 Notation peutt_bind_ret_r := Algebra.peutt_bind_ret_r.

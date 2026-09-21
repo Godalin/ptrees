@@ -16,7 +16,7 @@ Regenerate with `python3 tools/audit_layout.py` after a full `opam exec -- dune 
 
 ## Dependency method and retained roots
 
-Coq's `.PTree.theory.d` supplies 1831 direct local Require edges covering 207 ordinary modules out of 208 maintained modules. External libraries are excluded. Transitive clients include re-export paths; an import does not prove use of each declaration.
+Coq's `.PTree.theory.d` supplies 1821 direct local Require edges covering 208 ordinary modules out of 209 maintained modules. External libraries are excluded. Transitive clients include re-export paths; an import does not prove use of each declaration.
 
 `AllImports` is checked to import every other module, then excluded from client/reachability counts: an integration harness must not make every otherwise-unused module look substantively live.
 
@@ -26,7 +26,7 @@ Roots are every Core module, every semantic comparison module, the API/Interp mo
 
 `PTree.API.Enum`, `PTree.API.FreeOmega`, `PTree.API.Generic`, `PTree.API.SubEnum`, `PTree.API.Weighted`, `PTree.Core.PTreeDefinition`, `PTree.Core.Utils`, `PTree.Eq.Backend.ProbabilisticTraceEnum`, `PTree.Eq.Backend.ProbabilisticTraceSubEnum`, `PTree.Eq.PStrong`, `PTree.Eq.PStruct`, `PTree.Examples.BernoulliFactory.BernoulliFactory`, `PTree.Examples.BernoulliFactory.BernoulliFactoryComposition`, `PTree.Examples.BernoulliFactory.BernoulliFactoryProbability`, `PTree.Examples.BernoulliFactory.OperationalBernoulliFactory`, `PTree.Examples.BernoulliFactory.OperationalRationalBernoulli`, `PTree.Examples.BernoulliFactory.OperationalRealBernoulliMathComp`, `PTree.Examples.BernoulliFactory.OperationalVonNeumann`, `PTree.Examples.BernoulliFactory.RationalBernoulli`, `PTree.Examples.BernoulliFactory.RealBernoulliMathComp`, `PTree.Examples.BernoulliFactory.RealBernoulliOracle`, `PTree.Examples.BernoulliFactory.UnifiedRealBernoulliMathCompCore`, `PTree.Examples.BernoulliFactory.VonNeumannUnbounded`, `PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService`, `PTree.Examples.MixedHeadProtocol`, `PTree.Examples.RandomWalk`, `PTree.Interp.Backend.SubEnum`, `PTree.Interp.FreeOmega.Atomic`, `PTree.Interp.FreeOmega.Base`, `PTree.Interp.FreeOmega.Cofinality`, `PTree.Interp.FreeOmega.Guarded`, `PTree.Interp.FreeOmega.MDP`, `PTree.Interp.FreeOmega.Translate`, `PTree.Interp.Kernel`, `PTree.Interp.Structural`, `PTree.PTree`, `PTree.Semantics`, `PTree.Semantics.Backend.MDPEmbeddingSubEnum`, `PTree.Semantics.FreeOmega.MDPCoincidenceFreeOmega`, `PTree.Semantics.HeadTransition`, `PTree.Semantics.MDPCoincidence`, `PTree.Semantics.MDPEmbedding`, `PTree.Semantics.MDPFragment`, `PTree.Semantics.TreeTransition`, `PTree.Semantics.TreeTransitionBisim`, `PTree.Semantics.TreeTransitionSoundness`
 
-Root closure reaches 105 modules; 102 lie outside it. Unreachable modules can still be meaningful regressions or independent measure theorems. All remain built by Dune; no deletion follows from this classification.
+Root closure reaches 105 modules; 103 lie outside it. Unreachable modules can still be meaningful regressions or independent measure theorems. All remain built by Dune; no deletion follows from this classification.
 
 ### Outside the selected root closure
 
@@ -91,6 +91,7 @@ Root closure reaches 105 modules; 102 lie outside it. Unreachable modules can st
 - `PTree.Regression.Backend.UnifiedFrontierEnum` (0 direct local clients)
 - `PTree.Regression.Backend.UnifiedMathCompFrontier` (0 direct local clients)
 - `PTree.Regression.Infrastructure.ArchitectureBoundaries` (0 direct local clients)
+- `PTree.Regression.Infrastructure.CapabilityBoundaries` (0 direct local clients)
 - `PTree.Regression.Infrastructure.CorrelatedInternalRounds` (0 direct local clients)
 - `PTree.Regression.Infrastructure.CostedRounds` (0 direct local clients)
 - `PTree.Regression.Infrastructure.CouplingReferences` (3 direct local clients)
@@ -135,7 +136,7 @@ Root closure reaches 105 modules; 102 lie outside it. Unreachable modules can st
 
 ### Zero direct local clients (report only)
 
-50 modules have no direct local client. This includes exported roots and executable/negative regression leaves, not just potential dead code.
+51 modules have no direct local client. This includes exported roots and executable/negative regression leaves, not just potential dead code.
 
 - `PTree.API.SubEnum` — retained root
 - `PTree.API.Weighted` — retained root
@@ -160,6 +161,7 @@ Root closure reaches 105 modules; 102 lie outside it. Unreachable modules can st
 - `PTree.Regression.Backend.UnifiedFrontierEnum` — built leaf
 - `PTree.Regression.Backend.UnifiedMathCompFrontier` — built leaf
 - `PTree.Regression.Infrastructure.ArchitectureBoundaries` — built leaf
+- `PTree.Regression.Infrastructure.CapabilityBoundaries` — built leaf
 - `PTree.Regression.Infrastructure.CorrelatedInternalRounds` — built leaf
 - `PTree.Regression.Infrastructure.CostedRounds` — built leaf
 - `PTree.Regression.Infrastructure.FiniteInternalNative` — built leaf

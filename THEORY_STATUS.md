@@ -18,21 +18,30 @@ The [cleanup architecture and review gates](docs/ARCHITECTURE_CLEANUP.md)
 distinguish component ownership, generic/FreeOmega/concrete profiles,
 curated versus expert imports, and five kinds of premise. The
 [frozen Gate A inventory](docs/ARCHITECTURE_BASELINE.md) records 200 modules.
-The [current 208-module inventory](docs/ARCHITECTURE_AUDIT.md) enforces
+The [current module inventory](docs/ARCHITECTURE_AUDIT.md) enforces
 ownership dependencies after five Section extractions and facade assembly,
 including the disposition of FiniteInternal and the former Experimental file. The
 [compiled capability baseline](docs/CAPABILITY_BASELINE.md) records full
-types and logical assumptions for 25 selected endpoints; it is not yet
-the exhaustive public-theorem/minimality audit.
+types and logical assumptions for 25 selected endpoints. The expanded
+[Gate C public index](docs/CAPABILITY_PUBLIC_INDEX.md) covers 306 entries,
+with full before/after types and a [proof-helper review](docs/CAPABILITY_REVIEW.md).
+Neither is a mathematical minimality claim.
 
 Cleanup Gate A is accepted at `2258907`; Gate B's
 [architecture migration](docs/ARCHITECTURE_MIGRATION.md) is accepted at `20e6ff2`.
-The [Examples namespace follow-up](docs/EXAMPLES_FOLLOWUP.md) is submitted
-separately before Gate C. It changes no theorem statement or proof.
+The [Examples namespace follow-up](docs/EXAMPLES_FOLLOWUP.md) is accepted at
+`2af47aa`. It changes no theorem statement or proof.
 The [current compiled capability report](docs/CAPABILITY_CURRENT.md)
 preserves all 25 baseline endpoint types and logical assumptions after
-namespace normalization. Capability minimization (Gate C) and the final
-whole-library kernel audit (Gate D) have not been claimed complete.
+namespace normalization. Gate C removes an unused explicit AELift premise
+from structural interpretation and simplifies three definitional hitting
+bridges, removing their inherited overstrong requirements from translation.
+Other edits are source Context/import hygiene. Five translation endpoints
+also shed the inherited functional-extensionality dependency. Stage 1–4
+contracts and FiniteInternal are untouched. The full build, public signature
+and logical audits, 26 tool tests, and a 17-module joint targeted kernel
+check passed locally. Pause for Gate C acceptance before the final
+whole-library kernel audit (Gate D).
 
 | Component | Role / import surface |
 | --- | --- |

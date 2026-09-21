@@ -81,7 +81,9 @@ def report(answers):
         "Use `--check` to compare with this baseline. Queries run together against the compiled library.", "",
         f"Scope: **{len(answers)} selected definitions/helpers/endpoints**. This is a migration "
         "signature baseline, not an audit of every public theorem or a proof that these capabilities "
-        "are mathematically minimal. No theorem statements or proofs were changed to obtain it.", "",
+        "are mathematically minimal. The expanded Gate C review and before/after snapshots "
+        "are separate (`CAPABILITY_REVIEW.md`); retaining this comparison does not imply "
+        "that every theorem elsewhere in the library is unchanged.", "",
         "The table lists operation and law class names occurring in the elaborated type "
         "(`Check @endpoint`, with implicit arguments printed). Full types below retain the "
         "carrier assignments, relation parameters and local semantic premises. Repeated class "

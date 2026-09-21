@@ -1,7 +1,7 @@
 # Accepted Gate B: Examples namespace follow-up
 
-Baseline: `20e6ff2`. This follow-up is submitted for separate review before
-Gate C. The interpretation theory remains frozen through `ec96b90`.
+Baseline: `20e6ff2`; accepted follow-up: `2af47aa`.
+The interpretation theory remains frozen through `ec96b90`.
 
 ## Scope
 
@@ -77,4 +77,6 @@ All commands above completed successfully locally: the full build,
 the dependency/client reports, and the two-module joint kernel check.
 This import/universe kernel check is not the full per-proof Gate D audit.
 No remote CI result is asserted.
-Pause for acceptance of this follow-up before capability minimization.
+After acceptance, this exact historical comparison is reproducible with
+`python3 tools/audit_migration.py --revision 2af47aa`. Gate C's authorized
+source changes are checked separately, not exempted by broadening this audit.

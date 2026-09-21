@@ -3,8 +3,6 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-Require Import Program.
-From Coinduction Require Import all.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import TwoLevelMeasure.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier.
@@ -16,7 +14,6 @@ Unset Printing Implicit Defensive.
 From PTree.Eq Require Import PTreeKernel.
 Section KernelInterpDiagonal.
 Context {E F : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
@@ -58,7 +55,6 @@ End KernelInterpDiagonal.
 
 Section KernelInterpSoundness.
 Context {E F : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF}

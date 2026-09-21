@@ -248,14 +248,18 @@ frozen. Current work is the staged
 [repository architecture and assumption cleanup](docs/ARCHITECTURE_CLEANUP.md),
 with Gate A accepted at `2258907` and Gate B accepted at `20e6ff2`. Gate B implements the
 [ownership boundaries and module splits](docs/ARCHITECTURE_MIGRATION.md).
-The small [Examples follow-up](docs/EXAMPLES_FOLLOWUP.md) renames the
-application directory without changing its programs or proofs; Gate C has
-not started.
+The [Examples follow-up](docs/EXAMPLES_FOLLOWUP.md), accepted at `2af47aa`,
+renamed the application directory without changing its programs or proofs.
+The [Gate C capability review](docs/CAPABILITY_REVIEW.md) records public
+signatures, logical assumptions, proof-helper dependencies and focused
+context/import cleanup; local validation is complete and it awaits acceptance.
 The [current inventory](docs/ARCHITECTURE_AUDIT.md) checks actual dependency
 directions; the [current capability audit](docs/CAPABILITY_CURRENT.md)
 compares 25 compiled endpoint signatures against the frozen
-[Gate A baseline](docs/CAPABILITY_BASELINE.md). Capability minimization
-and the final whole-library kernel audit remain separate gates.
+[Gate A baseline](docs/CAPABILITY_BASELINE.md). The expanded
+[306-entry public index](docs/CAPABILITY_PUBLIC_INDEX.md) retains complete
+before/after signatures. The final whole-library kernel audit is Gate D,
+not part of this handoff.
 
 Ordinary clients can import the curated entry points:
 

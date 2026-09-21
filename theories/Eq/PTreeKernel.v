@@ -256,95 +256,37 @@ End PTreeKernelLaws.
 
 Section GenericKernelAdequacy.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
-  `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF}
-  `{ML : @MixedMeasureLaws MN MF NI FI MX}
   `{FO : @SemanticOmega MF FI}.
 
-(** Adequacy of the PTree adapter for the syntax-independent primitive
-    kernel semantics.  This is pointwise in finite fuel, so the later
-    and AST correspondence does not assume omega-limit uniqueness or a
-    structured frontier-certificate derivation. *)
+(** These adapter bridges are now definitional: [ptree_hitting_approx]
+    and [ptree_stable_hitting] use the primitive kernel directly. Only
+    equality reflexivity is needed for the finite [sem_eq] endpoint;
+    the complete-hitting and AST iff endpoints need no measure laws. *)
 Theorem ptree_primitive_hitting_adequate {R} fuel
     (ot : ptree' E MN R) :
   sem_eq
     (stable_hitting_approx
       (@ptree_primitive_kernel E MN MF FI MX R) fuel ot)
     (ptree_hitting_approx (MF := MF) fuel ot).
-Proof.
-  induction fuel as [|fuel IH] in ot |- *; destruct ot as [r|t|X e k|X mu k].
-  - unfold stable_hitting_approx, ptree_primitive_kernel.
-    eapply sem_eq_trans; [apply sem_bind_ret_l|].
-    rewrite stable_target_stableE.
-    apply sem_eq_sym. apply ptree_hitting_ret.
-  - unfold stable_hitting_approx, ptree_primitive_kernel.
-    eapply sem_eq_trans; [apply sem_bind_ret_l|].
-    rewrite stable_target_internal_zeroE.
-    apply sem_eq_sym. apply ptree_hitting_tau_zero.
-  - unfold stable_hitting_approx, ptree_primitive_kernel.
-    eapply sem_eq_trans; [apply sem_bind_ret_l|].
-    rewrite stable_target_stableE.
-    apply sem_eq_sym. apply ptree_hitting_vis.
-  - unfold stable_hitting_approx, ptree_primitive_kernel.
-    eapply sem_eq_trans; [apply mixed_bind_assoc|].
-    eapply sem_eq_trans.
-    + apply mixed_bind_ae_proper.
-      eapply sem_ae_mono; [|apply sem_ae_true].
-      intros x _. eapply sem_eq_trans; [apply sem_bind_ret_l|].
-      rewrite stable_target_internal_zeroE. apply sem_eq_refl.
-    + apply sem_eq_sym. apply ptree_hitting_prob_zero.
-  - unfold stable_hitting_approx, ptree_primitive_kernel.
-    eapply sem_eq_trans; [apply sem_bind_ret_l|].
-    rewrite stable_target_stableE.
-    apply sem_eq_sym. apply ptree_hitting_ret.
-  - unfold stable_hitting_approx, ptree_primitive_kernel.
-    eapply sem_eq_trans; [apply sem_bind_ret_l|].
-    rewrite stable_target_internal_succE.
-    eapply sem_eq_trans; [apply IH|].
-    apply sem_eq_sym. apply ptree_hitting_tau_succ.
-  - unfold stable_hitting_approx, ptree_primitive_kernel.
-    eapply sem_eq_trans; [apply sem_bind_ret_l|].
-    rewrite stable_target_stableE.
-    apply sem_eq_sym. apply ptree_hitting_vis.
-  - unfold stable_hitting_approx, ptree_primitive_kernel.
-    eapply sem_eq_trans; [apply mixed_bind_assoc|].
-    eapply sem_eq_trans.
-    + apply mixed_bind_ae_proper.
-      eapply sem_ae_mono; [|apply sem_ae_true].
-      intros x _. eapply sem_eq_trans; [apply sem_bind_ret_l|].
-      rewrite stable_target_internal_succE. apply IH.
-    + apply sem_eq_sym. apply ptree_hitting_prob_succ.
-Qed.
+Proof. apply sem_eq_refl. Qed.
 
-Context `{FOL : @SemanticOmegaLaws MF FI FO}.
 
 Theorem ptree_primitive_stable_hitting_adequate {R}
     (ot : ptree' E MN R) out :
   stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R) ot out <->
   ptree_stable_hitting (MF := MF) ot out.
-Proof.
-  unfold stable_hitting, ptree_stable_hitting. split; intro Hlim.
-  - eapply sem_lub_chain_proper; [|exact Hlim].
-    intro fuel. apply ptree_primitive_hitting_adequate.
-  - eapply sem_lub_chain_proper; [|exact Hlim].
-    intro fuel. apply sem_eq_sym.
-    apply ptree_primitive_hitting_adequate.
-Qed.
+Proof. reflexivity. Qed.
 
 Theorem ptree_primitive_ast_adequate {R}
     (ot : ptree' E MN R) out :
   stable_hitting_ast
       (@ptree_primitive_kernel E MN MF FI MX R) ot out <->
   ptree_stable_hitting_ast (MF := MF) ot out.
-Proof.
-  unfold stable_hitting_ast, ptree_stable_hitting_ast.
-  rewrite ptree_primitive_stable_hitting_adequate. reflexivity.
-Qed.
+Proof. reflexivity. Qed.
 
 End GenericKernelAdequacy.
 

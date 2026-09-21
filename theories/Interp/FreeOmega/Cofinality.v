@@ -3,19 +3,14 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-Require Import List.
 From Coq.Arith Require Import PeanoNat.
-Require Import FunctionalExtensionality Lia.
-From Coq.Logic Require Import ClassicalChoice.
-From Coq.Program Require Import Equality.
-Require Import Morphisms.
+Require Import Lia.
 
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import TwoLevelMeasure.
 From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Interface Require Import MeasureIteration.
-From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt PStruct PStrong.
-From PTree.Eq.FreeOmega Require Import Base Relation.
+From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel.
+From PTree.Eq.FreeOmega Require Import Base.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -27,7 +22,6 @@ Section FreeOmegaInterpCofinality.
 Context {E : Type -> Type} {MN : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
-  `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 

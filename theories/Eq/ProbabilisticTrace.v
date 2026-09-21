@@ -47,7 +47,6 @@ End StableHeadObservation.
 
 Section ProbabilisticHeadQuery.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
@@ -130,7 +129,6 @@ End ProbabilisticHeadQuery.
     assuming decidable equality on the event signature. *)
 Section FiniteTraceQuery.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}

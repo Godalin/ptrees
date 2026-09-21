@@ -1,5 +1,5 @@
 (** Curated comparison-semantics entry point; not a replacement for peutt. *)
-From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment MDPCoincidence.
+From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment.
 Notation head_step := HeadTransition.head_step.
 Notation head_bisim := HeadTransition.head_bisim.
 Notation tree_trans := TreeTransition.tree_trans.

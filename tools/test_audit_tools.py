@@ -1,11 +1,14 @@
 """Fast negative/positive tests for the read-only cleanup audit tools."""
 import subprocess
+import json
 import unittest
 from unittest.mock import patch
 
 import audit_architecture as architecture
 import audit_capabilities as capabilities
 import audit_migration as migration
+import audit_gate_c as gate_c
+import audit_public_capabilities as public
 
 
 class ArchitectureTests(unittest.TestCase):
@@ -125,6 +128,63 @@ class CapabilityTests(unittest.TestCase):
             with patch.object(capabilities.subprocess, "run", return_value=result):
                 self.assertEqual(capabilities.query(),
                     [("Test.endpoint", "@Test.endpoint : True", "Closed under the global context")])
+
+
+class GateCTests(unittest.TestCase):
+    def test_reviewed_full_type_and_axiom_deltas(self):
+        before = json.loads(public.BASELINE.read_text())
+        after = json.loads(public.CURRENT.read_text())
+        self.assertEqual(set(public.check_delta(before, after)), public.WEAKENED)
+        after["endpoints"][0]["assumptions"] += "\nNewAxiom : False"
+        with self.assertRaises(AssertionError):
+            public.check_delta(before, after)
+
+    def test_kernel_bridge_edit_does_not_license_other_proof_edits(self):
+        path = "theories/Eq/PTreeKernel.v"
+        before = {path: migration.frozen("2af47aa")[path]}
+        after = {path: gate_c.simplify_kernel_bridge(before[path]), **dict.fromkeys(gate_c.NEW, "")}
+        gate_c.audit(before, after)
+        after[path] = after[path].replace("Proof. apply sem_eq_refl. Qed.", "Proof. admit. Admitted.", 1)
+        with self.assertRaises(AssertionError):
+            gate_c.audit(before, after)
+
+    def test_scope_covers_facades_and_proper_instances(self):
+        names = public.scope(migration.frozen("2af47aa"))
+        for name in ["PTree.API.Generic.peutt", "PTree.API.FreeOmega.mdp_state_interp",
+                     "PTree.Semantics.tree_trans", "PTree.Eq.FreeOmega.Algebra.peutt_bind_Proper",
+                     "PTree.Interp.FreeOmega.Base.peutt_interp_structural"]:
+            self.assertIn(name, names)
+        self.assertNotIn("PTree.Core.PTreeDefinition.Ret", names)  # parameterized notation
+        self.assertIn("PTree.Core.PTreeDefinition.RetF", names)
+
+    def test_duplicate_or_missing_endpoint_fails(self):
+        e = {"name": "p", "type": "True", "assumptions": "closed"}
+        for entries in [[], [e, e]]:
+            with self.assertRaises(AssertionError):
+                public.changes({"endpoints": [e]}, {"endpoints": entries})
+
+    def test_import_cleanup_does_not_hide_proof_change(self):
+        path = "theories/Eq/FreeOmega/Algebra.v"
+        before = {path: "Require Import List.\nLemma p : True. Proof. exact I. Qed.\n"}
+        after = {path: "Lemma p : True. Proof. exact I. Qed.\n", **dict.fromkeys(gate_c.NEW, "")}
+        gate_c.audit(before, after)
+        for replacement in ["Lemma p : False. Proof. exact I. Qed.\n",
+                            "Lemma p : True. Admitted.\n"]:
+            with self.assertRaises(AssertionError):
+                gate_c.audit(before, {**after, path: replacement})
+
+    def test_only_named_context_removal_is_allowed(self):
+        path = "theories/Eq/FreeOmega/Base.v"
+        text = "Context {MN : Type -> Type}\n" + gate_c.AE + "  `{NO : SemanticOmega MN}.\n"
+        before = {path: text}
+        after = {path: text.replace(gate_c.AE, ""), **dict.fromkeys(gate_c.NEW, "")}
+        gate_c.audit(before, after)
+        with self.assertRaises(AssertionError):
+            gate_c.audit(before, {**after, path: after[path].replace("Type -> Type", "Type -> Prop")})
+
+    def test_no_axiom_in_new_regression(self):
+        with self.assertRaises(AssertionError):
+            gate_c.audit({}, dict.fromkeys(gate_c.NEW, "Axiom shortcut : False."))
 
 
 if __name__ == "__main__":

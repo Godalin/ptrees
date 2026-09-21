@@ -7,6 +7,7 @@ namespace relocation map; do not ignore theorem statements or proof bodies.
 The API/aggregate exceptions are explicitly enumerated, not blanket globs.
 """
 import io
+import argparse
 import json
 import re
 import subprocess
@@ -124,20 +125,27 @@ def normalizer():
     return normalize
 
 
-def audit():
+def current_sources(revision=None):
+    return frozen(revision) if revision else {
+        p.relative_to(ROOT).as_posix(): p.read_text()
+        for p in (ROOT / "theories").rglob("*.v")}
+
+
+def audit(revision=None):
     sources = frozen()
+    target_sources = current_sources(revision)
     normalize = normalizer()
     for src, target, start, end in EXTRACTS:
         filename = "theories/" + src + ".v"
         body, sources[filename] = interval(sources[filename], start, end)
-        current, _ = interval((ROOT / ("theories/" + target + ".v")).read_text(), start, end)
+        current, _ = interval(target_sources["theories/" + target + ".v"], start, end)
         assert normalize(body) == normalize(current), "Changed extracted section: " + target
     count = 0
     for old, source in sources.items():
         if old in ASSEMBLY:
             continue
         new = MOVES.get(old, old)
-        current = (ROOT / new).read_text()
+        current = target_sources[new]
         if old == "theories/Core/PTreeSubEnum.v":
             current = re.sub(r"Notation subenum_mdp_state_interp_atomic :=[\s\S]*?\.\n", "", current)
         if normalize(source) != normalize(current):
@@ -149,15 +157,16 @@ def audit():
           f"{len(ASSEMBLY)} explicit facade/aggregate exceptions. No proof/theorem deletion.")
 
 
-def audit_examples_followup():
+def audit_examples_followup(revision=None):
     sources = frozen(FOLLOWUP["baseline"])
+    target_sources = current_sources(revision)
     expected = {FOLLOWUP["moves"].get(p, p) for p in sources}
-    actual = {p.relative_to(ROOT).as_posix() for p in (ROOT / "theories").rglob("*.v")}
+    actual = set(target_sources)
     assert actual == expected, "Follow-up added or deleted a theory module"
     for old, source in sources.items():
         new = FOLLOWUP["moves"].get(old, old)
         expected_text = source.replace("CaseStudies", "Examples")
-        actual_text = (ROOT / new).read_text()
+        actual_text = target_sources[new]
         if old.endswith("/AllImports.v"):
             # The renamed imports must move to their new alphabetic position.
             lines = expected_text.splitlines()
@@ -170,5 +179,10 @@ def audit_examples_followup():
 
 
 if __name__ == "__main__":
-    audit()
-    audit_examples_followup()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--revision", help="Audit an accepted historical target (e.g. 2af47aa), not today's tree")
+    args = parser.parse_args()
+    if args.revision:
+        print("Historical migration target:", args.revision)
+    audit(args.revision)
+    audit_examples_followup(args.revision)

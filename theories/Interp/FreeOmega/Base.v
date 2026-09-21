@@ -23,7 +23,6 @@ Section FreeOmegaTranslateIdentity.
 Context {E : Type -> Type} {MN : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
-  `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 
@@ -125,7 +124,6 @@ Section FreeOmegaTranslateComposition.
 Context {E : Type -> Type} {MN : Type -> Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
-  `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 Context {F G : Type -> Type}.
@@ -238,7 +236,6 @@ Theorem peutt_interp_structural
     {E F : Type -> Type} {MN : Type -> Type}
     `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
-    `{NAE : @SemanticMeasureAELiftLaws MN NI}
     `{NO : @SemanticOmega MN NI}
     {A B} (RR : A -> B -> Prop)
     (handler : forall X, E X -> ptree F MN X)
