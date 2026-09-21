@@ -104,7 +104,9 @@ mathematical minimality. `CONTRACT_POLICY.json` fixes existing class bodies,
 curated facade text and named regression coverage. The audits are read-only;
 changing a contract requires explicit review, not automatic regeneration.
 
-The printed-contract CI profile fixes Coq 8.20.1, HB 1.8.1, Coq-Elpi 2.4.0,
+The [printed-contract CI profile](../.github/ci/README.md) fixes OCaml 5.2.1,
+Dune 3.17.2 and all 67 recorded dependency versions, including
+Coq 8.20.1, HB 1.8.1, Coq-Elpi 2.4.0,
 ExtLib 0.13.0, ITree 5.2.1, coinduction 1.20, MathComp algebra 2.3.0 and
 analysis/reals-stdlib 1.13.0, matching the captured local contracts. In
 particular, HB-generated names are part of elaborated types. These CI pins

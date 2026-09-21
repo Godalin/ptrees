@@ -370,14 +370,22 @@ cd ptrees
 
 ### Setting up the environment
 
-Create a local `opam` switch, activate it, and install the dependencies:
+For a new checkout, create a local `opam` switch and install the frozen CI
+dependency profile. Do not recreate or upgrade an existing working switch.
 
 ```sh
-opam switch create . 4.14.2 \
+opam switch create . ocaml-base-compiler.5.2.1 \
   --repos default,coq-released=https://coq.inria.fr/opam/released
 eval $(opam env)
+opam install ./.github/ci/ptree-ci.opam -y
 opam install . --deps-only --with-test
+python3 tools/check_ci_environment.py
 ```
+
+The [CI profile](.github/ci/README.md) fixes the compiler and all recorded
+dependency versions, including Dune 3.17.2 and Coq 8.20.1. It does not change the
+library's general compatibility bounds or claim identical macOS/Linux system
+environments.
 
 ### Build the project
 

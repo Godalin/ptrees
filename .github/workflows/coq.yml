@@ -10,38 +10,47 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
-      PTREE_COQ_VERSION: 8.20.1
+      OPAMNOSELFUPGRADE: "true"
     steps:
       - uses: actions/checkout@v7
 
       - uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: 4.14.x
+          ocaml-compiler: ocaml-base-compiler.5.2.1
+          cache-prefix: ptree-local-profile-v1
           opam-repositories: |
             default: https://github.com/ocaml/opam-repository.git
             coq-released: https://coq.inria.fr/opam/released
 
-      - name: Install supported Coq
-        run: opam install "coq.${PTREE_COQ_VERSION}" -y
-
-      # Exact printed types include HB-generated names. Test the recorded
-      # contract profile, not whichever compatible dependency release is newest.
-      # These are CI pins, not tighter library/package compatibility bounds.
-      - name: Pin compiled-contract dependency profile
+      # setup-ocaml bootstraps the switch using its bundled opam. All dependency
+      # solves below use the local environment's exact opam frontend instead.
+      - name: Select local opam version
+        shell: bash
         run: |
-          opam pin add --no-action coq-hierarchy-builder 1.8.1 -y
-          opam pin add --no-action coq-elpi 2.4.0 -y
-          opam pin add --no-action coq-ext-lib 0.13.0 -y
-          opam pin add --no-action coq-itree 5.2.1 -y
-          opam pin add --no-action coq-coinduction 1.20 -y
-          opam pin add --no-action coq-mathcomp-algebra 2.3.0 -y
-          opam pin add --no-action coq-mathcomp-analysis 1.13.0 -y
-          opam pin add --no-action coq-mathcomp-reals-stdlib 1.13.0 -y
+          mkdir -p "$RUNNER_TEMP/ptree-opam"
+          curl --fail --location --retry 3 \
+            https://github.com/ocaml/opam/releases/download/2.5.1/opam-2.5.1-x86_64-linux \
+            --output "$RUNNER_TEMP/ptree-opam/opam"
+          printf '%s  %s\n' \
+            33705e328d9f740026ce182079e2457639791bcf04a0e4bafbdb2024dd4d6092 \
+            "$RUNNER_TEMP/ptree-opam/opam" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/ptree-opam/opam"
+          test "$("$RUNNER_TEMP/ptree-opam/opam" --version)" = 2.5.1
+          echo "$RUNNER_TEMP/ptree-opam" >> "$GITHUB_PATH"
+
+      # Install the constraint package itself, not just --deps-only: keeping it
+      # installed prevents the later project solve from upgrading dependencies.
+      # Dune and all transitive constraints apply BEFORE Coq/Elpi are built.
+      - name: Install frozen local dependency profile
+        run: opam install ./.github/ci/ptree-ci.opam -y
 
       - name: Install dependencies
         run: opam install . --deps-only --with-test -y
+
+      - name: Verify frozen toolchain and dependency versions
+        run: python3 tools/check_ci_environment.py
 
       - name: Audit maintained sources
         run: |
