@@ -23,6 +23,8 @@ def external_validation(path):
         "Prob/Backend/Common/DomainTransport",
         "Prob/Backend/Common/CountableCoupling",
         "Prob/Backend/SubEnum/Domain", "Prob/Backend/MathComp/Domain",
+        "Prob/Backend/SubEnumR/Domain",
+        "Prob/Backend/SubEnumR/FreeOmega/Validation",
         "Prob/Backend/SubEnum/FreeOmega/Admissibility",
         "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",
         "Prob/Backend/SubEnum/FreeOmega/QuotientSoundness",
@@ -57,7 +59,7 @@ def ownership(path):
         return "API", "curated endpoint/adapter", "explicit assembly; no bulk export"
     if path.startswith("Prob/Backend/"):
         parts = path.split("/")
-        assert len(parts) >= 4 and parts[2] in {"Common", "Enum", "SubEnum", "MathComp"}, "Ungrouped concrete probability module: " + path
+        assert len(parts) >= 4 and parts[2] in {"Common", "Enum", "SubEnum", "SubEnumR", "MathComp"}, "Ungrouped concrete probability module: " + path
         family = parts[2]
         owner = "/".join(parts[:3])
         if path in {"Prob/Backend/Common/DomainTransport", "Prob/Backend/Common/CountableCoupling"}:
@@ -119,6 +121,12 @@ def permitted(module, dependency):
         return under("Prob/Interface", "Prob/Backend/Common")
     if module.startswith("Prob/Backend/MathComp/"):
         return under("Prob/Interface", "Prob/FreeOmega", "Prob/Backend/Common", "Prob/Backend/MathComp", "Prob/Domain")
+    if module.startswith("Prob/Backend/SubEnumR/"):
+        if module == "Prob/Backend/SubEnumR/RationalEmbedding":
+            return under("Prob/Backend/SubEnumR", "Prob/Backend/SubEnum",
+                         "Prob/Backend/Enum", "Prob/Backend/Common")
+        return under("Prob/Interface", "Prob/FreeOmega", "Prob/Backend/Common",
+                     "Prob/Backend/SubEnumR", "Prob/Domain")
     if module.startswith(("Prob/Backend/Enum/", "Prob/Backend/SubEnum/")):
         # SubEnum is a validated Enum carrier, not an unrelated implementation.
         # Realization/observation adapters legitimately cross this boundary.
@@ -183,7 +191,8 @@ def check_native_expectation_boundary(edges):
     # indirect finite-helper imports. Upper evaluators may use finite facts,
     # but finite facts must never depend on external validation in return.
     roots = {m for m in ("Prob/Backend/SubEnum/Expectation",
-                         "Prob/Backend/SubEnum/Domain") if m in edges}
+                         "Prob/Backend/SubEnum/Domain", "Prob/Backend/SubEnumR/Domain",
+                         "Prob/Backend/SubEnumR/Representation", "Prob/Backend/SubEnumR/Measure") if m in edges}
     leaked = {m for m in closure(edges, roots) if "/FreeOmega/" in m}
     assert not leaked, "Native expectation/domain depends on FreeOmega: " + str(sorted(leaked))
     finite = "Prob/Backend/SubEnum/Expectation"
@@ -249,7 +258,7 @@ def report():
         "- Every edge is checked against the ownership policy, not merely displayed as debt.",
         "- Core has no local probability dependency; Prob has no tree-theory dependency.",
         "- Generic interfaces and FreeOmega measure infrastructure import no concrete backend.",
-        "- Concrete probability modules name Common/Enum/SubEnum/MathComp ownership; Common cannot import a native carrier.",
+        "- Concrete probability modules name Common/Enum/SubEnum/SubEnumR/MathComp ownership; Common cannot import a native carrier.",
         "- Native SubEnum expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.",
         "- MathComp and Enum/SubEnum do not depend on each other; Enum/SubEnum realization adapters may reuse each other.",
         "- Eq imports no Interp/Semantics/API; Semantics imports no Interp/API.",

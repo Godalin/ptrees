@@ -75,6 +75,14 @@
     "theories/Semantics.v": "From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment. Notation head_step := HeadTransition.head_step. Notation head_bisim := HeadTransition.head_bisim. Notation tree_trans := TreeTransition.tree_trans. Notation tree_return_observation := TreeTransition.tree_return_observation. Notation tree_offered_event_observation := TreeTransition.tree_offered_event_observation. Notation tree_trans_bisim := TreeTransitionBisim.tree_trans_bisim. Notation tree_trans_bisim_coinduction := TreeTransitionBisim.tree_trans_bisim_coinduction. Notation mdp_head := MDPFragment.mdp_head. Notation mdp_state := MDPFragment.mdp_state."
   },
   "regressions": {
+    "theories/Regression/Backend/SubEnumR.v": [
+      "real_sqrt_coin_probability",
+      "real_sqrt_coin_total",
+      "real_bind_valid",
+      "real_alternating_invalid",
+      "real_null_bad_branch_valid",
+      "real_delayed_dirac_valid"
+    ],
     "theories/Regression/Probability/GenericFreeOmegaValidation.v": [
       "option_sample_denotes",
       "generic_null_bad_sample",

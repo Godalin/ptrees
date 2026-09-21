@@ -106,6 +106,9 @@ class ArchitectureTests(unittest.TestCase):
         self.assertTrue(architecture.permitted("Interp/FreeOmega/MDP", "Semantics/MDPFragment"))
 
     def test_probability_native_axis_and_canonical_boundary(self):
+        self.assertFalse(architecture.permitted("Prob/Backend/SubEnumR/Representation", "Prob/Domain/Expectation"))
+        self.assertFalse(architecture.permitted("Prob/Backend/SubEnumR/Measure", "Prob/Backend/SubEnum/Measure"))
+        self.assertTrue(architecture.permitted("Prob/Backend/SubEnumR/Domain", "Prob/Domain/Expectation"))
         self.assertEqual(architecture.ownership("Prob/FreeOmega/Measure")[:2],
                          ("Prob/FreeOmega", "FreeOmega"))
         self.assertEqual(architecture.ownership("Prob/Backend/SubEnum/FreeOmega/Total")[:2],

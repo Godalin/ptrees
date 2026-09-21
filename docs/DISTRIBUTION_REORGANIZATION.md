@@ -98,3 +98,39 @@ source contracts; all 49 tool tests; all 505 frozen compiled contracts;
 18 new endpoint `Check`/`Print Assumptions` probes against the existing axiom
 whitelist; joint `coqchk -norec` of the generic validation, SubEnum adapter and
 regression. All passed locally. The frozen DS sources were not edited.
+
+## Finite-real native checkpoint (partial backend profile)
+
+`SubEnumR R A` is a finite list of **real** weights/values, with proofs of
+nonnegative coefficients and mass at most one. Ret, zero and list-based bind
+construct inhabitants; bind mass closure and ordinary monad equations are
+proved. Equality compares real-valued finite expectations; lifting requires
+an actual finite joint with both expectation marginals and supported relation.
+
+The native `SemanticMeasure`, subprobability predicate/closure/carrier, Dirac
+AE, countable AE, AE Kleisli and exact bind AE instances are proved. Its
+independent expectation model proves monotone continuity by finite weighted
+supremum interchange. Native AE and coupling test soundness are proved.
+`SubEnumR/FreeOmega/Validation.v` is only a thin specialization of the same
+generic validation used by SubEnum: no duplicated completion proof chain.
+
+`RationalEmbedding.v` gives `SubEnum -> SubEnumR R`, preserving all finite
+real expectations and ret/zero/bind equality. Existing `SubEnum` keeps its
+name and API; it is the rational (`SubEnumQ`) backend in the proposal.
+The only permitted native cross-family import is this explicit embedding.
+
+**Not completed:** finite-real coupling composition/gluing, the full native
+Core/Bind packages, and therefore the full canonical FreeOmega behavioral
+capability profile over SubEnumR. No gluing/existence assumption was added
+to make the capability table look complete. The independent completion
+validity results do not imply those missing relational capabilities.
+
+The regression constructs an actual `sqrt(1/2)`-weighted coin (no rational
+conversion), checks its expectation/totality, bind validity, invalid raw
+alternation, an invalid null branch accepted by AE closure, and a valid
+formal limit. It does not claim to prove irrationality of the coefficient.
+
+Finite-real checkpoint validation passed: full build/AllImports; 254-module
+architecture/source checks; API surface; all 49 tool tests; unchanged 505
+compiled contracts; 13 new endpoint assumption probes; targeted joint
+`coqchk -norec` of all six new modules. No CI was inspected or changed.
