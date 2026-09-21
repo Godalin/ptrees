@@ -256,8 +256,10 @@ choice of a representative and no second recursive evaluator are needed.
 There is **no second free completion / free probability monad / syntactic
 domain**. The domain and its soundness adapters form a one-way validation
 layer, excluded from the mainline's transitive dependencies.
-[DS1a implementation and verification](DOMAIN_DS1A.md) is now ready for review;
-DS1b and the FreeOmega-specific stages have not started.
+[DS1a implementation and verification](DOMAIN_DS1A.md) is accepted at `e65ca85`.
+[DS1b standard-measure correspondence](DOMAIN_DS1B.md) is implemented and
+ready for review, including countable additivity, integral recovery and both
+roundtrips on the lifted carrier. FreeOmega-specific stages have not started.
 
 Names such as `free_omega_denote_approx`, `free_omega_denote_bind`,
 `free_omega_denote_lub`, `free_omega_sem_eq_sound`,

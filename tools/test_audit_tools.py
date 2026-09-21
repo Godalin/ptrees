@@ -11,6 +11,7 @@ import audit_gate_c as gate_c
 import audit_public_capabilities as public
 import audit_prob_organization as prob
 import audit_domain as domain
+import audit_domain_measure as domain_measure
 
 
 class ArchitectureTests(unittest.TestCase):
@@ -139,6 +140,35 @@ class DomainAuditTests(unittest.TestCase):
                 domain.report()
         self.assertIs(capabilities.GROUPS, groups)
         self.assertIs(capabilities.ENDPOINTS, endpoints)
+
+
+class DomainMeasureAuditTests(unittest.TestCase):
+    def test_scope_includes_additivity_integral_and_both_roundtrips(self):
+        names = domain_measure.GROUPS["PTree.Prob.Domain.MeasureModel"]
+        for name in ["oval_set_measure_sigma_additive", "oval_integral_recovery",
+                     "measure_oval_eval_continuous", "oval_probability_integral",
+                     "oval_probability_roundtrip", "probability_oval_roundtrip"]:
+            self.assertIn(name, names)
+        self.assertIs(domain_measure.ALLOWED_AXIOMS, domain.ALLOWED_AXIOMS)
+
+    def test_rejects_mainline_premise_or_new_axiom(self):
+        for typ, assumptions in [
+                ("SemanticMeasure M -> True", "Closed under the global context"),
+                ("FreeOmega M A -> True", "Closed under the global context"),
+                ("True", "Axioms:\nshortcut : False"),
+                ("True", "Axioms:\nunparsed")]:
+            with patch.object(capabilities, "query", return_value=[("endpoint", typ, assumptions)]):
+                with self.assertRaises(AssertionError):
+                    domain_measure.report()
+
+    def test_preserves_ds1a_and_historical_query_scopes_on_failure(self):
+        groups, endpoints, ds1a = capabilities.GROUPS, capabilities.ENDPOINTS, domain.GROUPS
+        with patch.object(capabilities, "query", side_effect=SystemExit("query failure")):
+            with self.assertRaises(SystemExit):
+                domain_measure.report()
+        self.assertIs(capabilities.GROUPS, groups)
+        self.assertIs(capabilities.ENDPOINTS, endpoints)
+        self.assertIs(domain.GROUPS, ds1a)
 
 
 class MigrationTests(unittest.TestCase):

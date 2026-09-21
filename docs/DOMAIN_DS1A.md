@@ -2,8 +2,9 @@
 
 Implementation baseline: DS0 `466429d`, with the accepted follow-up plan
 splitting DS1 into DS1a/DS1b and postponing general coupling realization until
-after stable-hitting adequacy. **DS1a is implemented, pending acceptance.**
-DS1b has not started. This stage does not claim standard-measure
+after stable-hitting adequacy. **DS1a is accepted at `e65ca85`.**
+The subsequent [DS1b implementation](DOMAIN_DS1B.md) is reported separately.
+This stage alone does not claim standard-measure
 correspondence, FreeOmega soundness, or stable-hitting adequacy.
 
 ## Mathematical object

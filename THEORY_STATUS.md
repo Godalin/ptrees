@@ -12,11 +12,14 @@ does not imply a successful remote CI run.
 Interpretation Stages 1–4 are accepted at `4703035`, `268a223`, `8e09561`,
 and `ec96b90`. Their theory is frozen while repository architecture and
 assumption hygiene are cleaned up. No StateInterp development has started.
-FreeOmega domain soundness has an accepted DS0 design and a
-[DS1a expectation-domain implementation](docs/DOMAIN_DS1A.md) ready for review.
+FreeOmega domain soundness has an accepted DS0 design and an accepted
+[DS1a expectation domain](docs/DOMAIN_DS1A.md) at `e65ca85`.
 The independent evaluator/laws domain has order, increasing-chain Lubs and
-continuous bind. Standard-measure correspondence (DS1b) and FreeOmega-specific
-soundness (DS2 onward) remain unproved; this is not yet the full domain model.
+continuous bind. [DS1b standard-measure correspondence](docs/DOMAIN_DS1B.md)
+is implemented, pending review: countable additivity, integral recovery and
+both roundtrips with MathComp probability measures on the discrete lifted
+carrier. FreeOmega-specific soundness (DS2 onward) remains unproved; the
+mainline does not depend on this external validation model.
 
 The [cleanup architecture and review gates](docs/ARCHITECTURE_CLEANUP.md)
 distinguish component ownership, generic/FreeOmega/concrete profiles,
