@@ -13,7 +13,7 @@ From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.Prob.Interface Require Import MeasureIteration TwoLevelMeasure.
 From PTree.Prob.Backend Require Import TwoLevelMeasureMathComp.
 From PTree.Eq Require Import UnifiedFrontier.
-From PTree.CaseStudies.BernoulliFactory Require Import RealBernoulliOracle RealBernoulliMathComp.
+From PTree.Examples.BernoulliFactory Require Import RealBernoulliOracle RealBernoulliMathComp.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

@@ -8,7 +8,7 @@ From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
 From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC MeasureIterationEnum TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
-From PTree.CaseStudies.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli BernoulliFactory.
+From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli BernoulliFactory.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Import Enum GRing.Theory Num.Theory Order.Theory.

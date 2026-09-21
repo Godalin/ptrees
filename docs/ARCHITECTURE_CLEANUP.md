@@ -10,13 +10,17 @@ review. No StateInterp or FreeOmega adequacy development starts here.
 | Gate | Deliverable | Status |
 | --- | --- | --- |
 | A | unique ownership policy, complete module inventory, compiled capability baseline | accepted at `2258907` |
-| B | migrate/split modules, strict facades, role comments, experimental disposition | implemented; awaiting review |
+| B | migrate/split modules, strict facades, role comments, experimental disposition | accepted at `20e6ff2` |
+| B follow-up | CaseStudies → Examples, synchronized import/audit/docs surface | implemented; awaiting review |
 | C | minimize capabilities, remove unused contexts/imports, audit every agreed public endpoint | pending |
 | D | final dependency checks, facade regressions, full joint kernel audit and scope review | pending |
 
 Pause at each gate. Gate A deliberately changes no `.v` file: it makes the
 starting obligations checkable before namespace and proof changes are mixed.
-The whole cleanup is **not** complete at Gate A.
+The whole cleanup is **not** complete at Gate B. Review the
+[Examples follow-up](EXAMPLES_FOLLOWUP.md) before starting Gate C.
+No local `Events/` component is introduced: reuse ITree definitions for
+standard effects; example-specific protocol signatures stay local.
 
 ## One ownership model
 
@@ -36,9 +40,9 @@ meaning: it points from a component to the components it **uses**.
 | `Semantics` | independent observations, transitions, MDPs, comparison/coincidence | Core, Prob, Eq; not Interp |
 | `Interp` | interpreter compositionality | Core, Prob, Eq; Atomic/MDP additionally use Semantics |
 | `API` and top-level facades | curated user-facing assembly and tree/backend adapters | the needed lower layers, without indiscriminate Export |
-| `CaseStudies` | applications demonstrating equational usability | maintained library/API; no Regression or Experimental |
+| `Examples` | applications demonstrating equational usability | maintained library/API; no Regression or Experimental |
 | `Regression` | positive/negative contract tests and integration harnesses | any tested layer; may reuse case-study results |
-| `Experimental` | explicitly unsupported active experiments | never imported by maintained theory or CaseStudies |
+| `Experimental` | explicitly unsupported active experiments | never imported by maintained theory or Examples |
 
 This is acyclic at the ownership level: Semantics and the basic interpreter
 theory share Eq; MDP interpretation can use Semantics, **not vice versa**.
@@ -115,14 +119,22 @@ moving only the five principal interpreter files would not suffice.
 `finite_internal` is an inductive execution certificate to a distribution
 of residual trees, not `pfinite` and not another behavioral equivalence.
 The complete client report distinguishes ordinary and regression clients.
-Schedule and kernel adequacy modules remain proof infrastructure; group them
-under `Eq/Internal` rather than presenting them alongside peutt as peers.
+Schedule and kernel adequacy modules are grouped under `Eq/Internal`,
+rather than presented alongside peutt as peers.
 
 Do not delete this family wholesale, nor call every member indispensable
 merely because AllImports imports it. For each regression-only component,
-Gate B must decide whether it tests a maintained certificate contract or
-is a superseded experiment. Zero clients is evidence to investigate, not
+Gate B records its auxiliary certificate contract. Final chain liveness and
+deletion decisions are deferred to the FreeOmega adequacy audit. Gate C may
+remove obvious unused contexts/imports, but will not optimize this API as a
+main theory surface. Zero clients is evidence to investigate, not
 proof of dead code. No deletion has been authorized by this inventory alone.
+
+FiniteInternal is auxiliary proof infrastructure for well-founded internal
+compression and related adequacy arguments. It is not part of the canonical
+PTree semantics or public equivalence theory. The dependency audit checks
+that peutt/Interp/public facades have no transitive Eq/Internal dependency.
+This does not assert the same for all Stage 1–4 regression fixtures.
 
 ### Experimental and regression boundaries
 
@@ -136,7 +148,7 @@ FreeOmega model is not awaiting that proposed representation change.
 
 The fixed contract-test catalogue includes InterpExposure, GuardedInterp,
 AtomicInterp, MDPInterp, MDPCoincidence, BackendCapabilities, FreeOmega
-limit/escaping-mass tests, and SubEnum total-map endpoints. CaseStudies
+limit/escaping-mass tests, and SubEnum total-map endpoints. Examples
 remain application proofs; do not move a negative API test there because
 it happens to define an example program.
 

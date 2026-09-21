@@ -87,9 +87,9 @@ library = ("PTree.Core.", "PTree.Prob.", "PTree.Eq.", "PTree.Semantics.",
            "PTree.Interp.", "PTree.API.")
 for module, dependencies in graph.items():
     if module.startswith(library):
-        assert not any(d.startswith(("PTree.Regression.", "PTree.CaseStudies.")) for d in dependencies), \
+        assert not any(d.startswith(("PTree.Regression.", "PTree.Examples.")) for d in dependencies), \
             "Library depends on a regression/case study: " + module
-    if module.startswith("PTree.CaseStudies."):
+    if module.startswith("PTree.Examples."):
         assert not any(d.startswith("PTree.Regression.") for d in dependencies), \
             "Case study depends on regression fixtures: " + module
 # An import-only integration harness is not a substantive theorem client.
@@ -115,7 +115,7 @@ def listing(items):
     return ", ".join("`" + m + "`" for m in sorted(items)) or "none"
 
 
-roots = {m for m in graph if m.startswith(("PTree.Core.", "PTree.Semantics.", "PTree.CaseStudies."))}
+roots = {m for m in graph if m.startswith(("PTree.Core.", "PTree.Semantics.", "PTree.Examples."))}
 roots |= {"PTree.Eq." + n for n in ("ProbabilisticSemantics", "FreeOmega", "PStruct", "PStrong", "ProbabilisticTraceSubEnum", "ProbabilisticTraceEnum")}
 gate_b_moves = {logical(a): logical(b) for a, b in
                 json.loads((ROOT / "docs/gate-b-moves.json").read_text())["moves"].items()}

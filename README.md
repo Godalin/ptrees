@@ -125,17 +125,17 @@ and Fubini laws needed by arbitrary eventful PTree programs.  Finite programs
 and unbounded AST programs therefore use the same semantics; bounded chains
 are simply chains that stabilize early.
 
-`CaseStudies/BernoulliFactory/VonNeumannUnbounded.v` proves the analytic convergence and AST
+`Examples/BernoulliFactory/VonNeumannUnbounded.v` proves the analytic convergence and AST
 certificates for the genuinely unbounded biased-coin extractor.
-`CaseStudies/BernoulliFactory/OperationalVonNeumann.v` interprets those certificates through
+`Examples/BernoulliFactory/OperationalVonNeumann.v` interprets those certificates through
 stable hitting and proves the canonical endpoint
 `von_neumann_third_equivalent_to_fair`.
-`CaseStudies/InteractiveVonNeumann/InteractiveVonNeumannService.v` places the extractor between an
+`Examples/InteractiveVonNeumann/InteractiveVonNeumannService.v` places the extractor between an
 infinite sequence of request/reply events and proves
 `interactive_von_neumann_service_equivalent` using guarded `Vis` matching and
 coinduction up to `≈ₚ`.
 
-`CaseStudies/RandomWalk.v` studies an infinite-state loop: with probability
+`Examples/RandomWalk.v` studies an infinite-state loop: with probability
 `2/3`, decrement the height and increment a streak; otherwise increment the
 height and reset the streak.  Starting from `(1,0)`, it stops at height zero.
 `run_split` factors a descent through an intermediate level using `pstruct`,
@@ -155,7 +155,7 @@ library or an additional measure axiom.  This is an output-distribution
 endpoint, **not** a claim of `peutt` equivalence to a countably supported
 distribution node or a geometric sampler.
 
-`CaseStudies/MixedHeadProtocol.v` is the canonical mixed-head bisimulation
+`Examples/MixedHeadProtocol.v` is the canonical mixed-head bisimulation
 example. A hidden-state implementation receives a Boolean challenge, samples
 independent bits r (fair), s (P(true)=3/4), and h (fair). It either returns
 c xor s or publishes it in a Reply, whose Boolean acknowledgement selects
@@ -190,7 +190,7 @@ and analytic certificates only.  Their maintained behavioral endpoints are
 `Operational*` files.  The superseded `PWeak*` modules and
 `apweak`/`auweak`/`auequiv` endpoints have been removed.
 
-`CaseStudies/BernoulliFactory/BernoulliFactoryComposition.v` exposes the compositional route.
+`Examples/BernoulliFactory/BernoulliFactoryComposition.v` exposes the compositional route.
 `factory_with_sampler sampler q` accepts a Boolean sampler;
 `peutt_factory_sampler_congr` preserves equivalence of closed
 samplers using bind and eventless iteration congruence. The parametric
@@ -205,7 +205,7 @@ any rational in `[0,1]`, including the endpoints. Independently verified VN
 and standard-binary components live in `OperationalBernoulliFactory.v`;
 `BernoulliFactoryComposition.v` contains their algebraic composition.
 
-`CaseStudies/BernoulliFactory/BernoulliFactoryProbability.v` separately certifies the executable
+`Examples/BernoulliFactory/BernoulliFactoryProbability.v` separately certifies the executable
 raw `Enum` programs as `probabilistic_ptree`: normalized source weights make
 the VN sampler well formed, and `probabilistic_factory_with_sampler` lifts
 any sampler's probability contract through the entire Factory loop. This
@@ -246,8 +246,11 @@ explicit `MathCompOracleSupportLaws` and coupling-gluing premises.
 The interpretation theory through Stage 4 is accepted at `ec96b90` and
 frozen. Current work is the staged
 [repository architecture and assumption cleanup](docs/ARCHITECTURE_CLEANUP.md),
-with Gate A accepted at `2258907`. Gate B implements the
+with Gate A accepted at `2258907` and Gate B accepted at `20e6ff2`. Gate B implements the
 [ownership boundaries and module splits](docs/ARCHITECTURE_MIGRATION.md).
+The small [Examples follow-up](docs/EXAMPLES_FOLLOWUP.md) renames the
+application directory without changing its programs or proofs; Gate C has
+not started.
 The [current inventory](docs/ARCHITECTURE_AUDIT.md) checks actual dependency
 directions; the [current capability audit](docs/CAPABILITY_CURRENT.md)
 compares 25 compiled endpoint signatures against the frozen
@@ -271,13 +274,13 @@ from concrete endpoints. `API/` assembles these layers without bulk exports.
 Experts may import implementation modules explicitly. Paper-facing programs
 form four groups:
 
-- [MixedHeadProtocol](theories/CaseStudies/MixedHeadProtocol.v): the flagship
+- [MixedHeadProtocol](theories/Examples/MixedHeadProtocol.v): the flagship
   mixed Ret/Vis, whole-continuation coupling example;
-- [RandomWalk](theories/CaseStudies/RandomWalk.v): infinite-state descent,
+- [RandomWalk](theories/Examples/RandomWalk.v): infinite-state descent,
   compositional equations and an analytic joint output law;
-- [InteractiveVonNeumann](theories/CaseStudies/InteractiveVonNeumann/):
+- [InteractiveVonNeumann](theories/Examples/InteractiveVonNeumann/):
   unbounded internal sampling between infinitely many interactions;
-- [BernoulliFactory](theories/CaseStudies/BernoulliFactory/):
+- [BernoulliFactory](theories/Examples/BernoulliFactory/):
   sampler correctness, replacement and composition, including the shared
   rational/real Bernoulli and ordinary Von Neumann proofs.
 

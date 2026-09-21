@@ -17,6 +17,10 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE = "2258907"
 MANIFEST = json.loads((ROOT / "docs/gate-b-moves.json").read_text())
 MOVES = MANIFEST["moves"]
+FOLLOWUP = json.loads((ROOT / "docs/examples-moves.json").read_text())
+# Compose the follow-up without rewriting the accepted Gate B manifest.
+MOVES = {old: FOLLOWUP["moves"].get(new, new) for old, new in MOVES.items()}
+MOVES.update(FOLLOWUP["moves"])
 REQUIRE = re.compile(r"\b(?:From\s+([\w.]+)\s+)?Require\s+(?:(Import|Export)\s+)?([\w.\s]+?)\.(?=\s|$)")
 EXTRACTS = [
     ("Core/PTreeDefinition", "API/Weighted", "Section stuck.", "End stuck."),
@@ -63,8 +67,8 @@ def without_comments(source):
     return "".join(result)
 
 
-def frozen():
-    data = subprocess.check_output(["git", "archive", BASE, "theories"], cwd=ROOT)
+def frozen(revision=BASE):
+    data = subprocess.check_output(["git", "archive", revision, "theories"], cwd=ROOT)
     with tarfile.open(fileobj=io.BytesIO(data)) as archive:
         return {m.name: archive.extractfile(m).read().decode()
                 for m in archive.getmembers() if m.name.endswith(".v")}
@@ -145,5 +149,26 @@ def audit():
           f"{len(ASSEMBLY)} explicit facade/aggregate exceptions. No proof/theorem deletion.")
 
 
+def audit_examples_followup():
+    sources = frozen(FOLLOWUP["baseline"])
+    expected = {FOLLOWUP["moves"].get(p, p) for p in sources}
+    actual = {p.relative_to(ROOT).as_posix() for p in (ROOT / "theories").rglob("*.v")}
+    assert actual == expected, "Follow-up added or deleted a theory module"
+    for old, source in sources.items():
+        new = FOLLOWUP["moves"].get(old, old)
+        expected_text = source.replace("CaseStudies", "Examples")
+        actual_text = (ROOT / new).read_text()
+        if old.endswith("/AllImports.v"):
+            # The renamed imports must move to their new alphabetic position.
+            lines = expected_text.splitlines()
+            imports = sorted(l for l in lines if l.startswith("Require PTree."))
+            header = [l for l in lines if not l.startswith("Require PTree.")]
+            expected_text = "\n".join(header).rstrip() + "\n" + "\n".join(imports) + "\n"
+        assert actual_text == expected_text, "Non-rename source change in follow-up: " + new
+    print(f"Examples follow-up conservation passes: all {len(sources)} modules match "
+          f"{FOLLOWUP['baseline']} exactly apart from the namespace rename and sorted aggregate.")
+
+
 if __name__ == "__main__":
     audit()
+    audit_examples_followup()

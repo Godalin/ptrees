@@ -7,7 +7,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat re
 From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
 From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaUpperExpectationSubEnum FreeOmegaUpperObservationSubEnum.
-From PTree.CaseStudies Require Import RandomWalk.
+From PTree.Examples Require Import RandomWalk.
 From PTree.Regression.Backend Require Import FreeOmegaEscapingMass FreeOmegaUpperExpectation.
 
 Set Implicit Arguments.

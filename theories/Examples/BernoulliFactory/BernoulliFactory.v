@@ -12,7 +12,7 @@ From PTree.Prob.Interface Require Import FrontierLift.
 From PTree.Prob.Backend Require Import FrontierLiftEnum EnumBindFacts.
 From PTree.Prob.Interface Require Import MeasureIteration.
 From PTree.Prob.Backend Require Import MeasureIterationEnum.
-From PTree.CaseStudies.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli.
+From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

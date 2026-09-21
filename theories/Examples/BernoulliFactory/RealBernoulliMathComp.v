@@ -11,7 +11,7 @@ From mathcomp.analysis Require Import topology sequences ereal measure.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import FrontierLift MeasureIteration.
 From PTree.Prob.Backend Require Import MathCompMeasure.
-From PTree.CaseStudies.BernoulliFactory Require Import RealBernoulliOracle.
+From PTree.Examples.BernoulliFactory Require Import RealBernoulliOracle.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

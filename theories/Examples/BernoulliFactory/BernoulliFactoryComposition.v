@@ -18,7 +18,7 @@ From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTre
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
 From PTree.Eq Require Import PEutt PStruct PStrong.
-From PTree.CaseStudies.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli BernoulliFactory OperationalBernoulliFactory.
+From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli BernoulliFactory OperationalBernoulliFactory.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

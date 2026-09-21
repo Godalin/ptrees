@@ -13,7 +13,7 @@ From PTree.Prob.Interface Require Import SemanticCoupling.
 From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaCouplingEnum.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalJoint.
 From PTree.Eq Require Import PStrong UnifiedFrontier PTreeKernel.
-From PTree.CaseStudies Require Import RandomWalk.
+From PTree.Examples Require Import RandomWalk.
 Import Enum.
 Local Open Scope ring_scope.
 

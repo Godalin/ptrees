@@ -25,8 +25,10 @@ including the disposition of FiniteInternal and the former Experimental file. Th
 types and logical assumptions for 25 selected endpoints; it is not yet
 the exhaustive public-theorem/minimality audit.
 
-Cleanup Gate A is accepted at `2258907`. Gate B implements the
-[architecture migration](docs/ARCHITECTURE_MIGRATION.md) and awaits review.
+Cleanup Gate A is accepted at `2258907`; Gate B's
+[architecture migration](docs/ARCHITECTURE_MIGRATION.md) is accepted at `20e6ff2`.
+The [Examples namespace follow-up](docs/EXAMPLES_FOLLOWUP.md) is submitted
+separately before Gate C. It changes no theorem statement or proof.
 The [current compiled capability report](docs/CAPABILITY_CURRENT.md)
 preserves all 25 baseline endpoint types and logical assumptions after
 namespace normalization. Capability minimization (Gate C) and the final
@@ -41,6 +43,7 @@ whole-library kernel audit (Gate D) have not been claimed complete.
 | `Semantics` | transitions, MDP fragment and comparison; no Interp dependency |
 | `Interp/FreeOmega`, `Interp/Backend` | canonical-model compositionality and concrete endpoints |
 | `API`, top-level `PTree` / `Semantics` | curated imports; implementation modules remain explicit expert imports |
+| `Examples` / `Regression` | application proofs / contract tests; Examples never depends on Regression |
 
 ## 1. Public semantic architecture
 
@@ -407,13 +410,13 @@ guard this boundary.
 
 | Group / endpoint | What is proved |
 | --- | --- |
-| `CaseStudies/MixedHeadProtocol.v`: `masked_protocol_equivalent` | flagship SubEnum mixed Ret/Vis whole-head coupling; response-dependent infinite continuations |
+| `Examples/MixedHeadProtocol.v`: `masked_protocol_equivalent` | flagship SubEnum mixed Ret/Vis whole-head coupling; response-dependent infinite continuations |
 | same: `masked_challenge_true_reply_probability` | challenge/reply pattern probability 3/8 or 1/8 depending on the environment challenge |
-| `CaseStudies/RandomWalk.v`: `run_split`, `passage_unfold`, `random_walk_bind` | structural barrier decomposition, behavioral renewal equation, normalization under arbitrary continuations |
+| `Examples/RandomWalk.v`: `run_split`, `passage_unfold`, `random_walk_bind` | structural barrier decomposition, behavioral renewal equation, normalization under arbitrary continuations |
 | same: `random_walk_closed_form` | native AST and joint law Pr[(0,n)] = 2/3^n for n ≥ 1, zero elsewhere |
-| `CaseStudies/InteractiveVonNeumann/`: `interactive_von_neumann_service_equivalent` | unbounded internal retries between infinitely many request/reply interactions |
+| `Examples/InteractiveVonNeumann/`: `interactive_von_neumann_service_equivalent` | unbounded internal retries between infinitely many request/reply interactions |
 | same: `von_neumann_request_true_reply_trace_probability` | concrete two-event cylinder has probability 1/2 |
-| `CaseStudies/BernoulliFactory/`: `peutt_factory_vn_direct` | parametric compositional biased-coin-to-rational-coin equivalence |
+| `Examples/BernoulliFactory/`: `peutt_factory_vn_direct` | parametric compositional biased-coin-to-rational-coin equivalence |
 | same: `probabilistic_factory_with_sampler` | probability contract preserved by the Factory context independently of termination |
 | `finite_interaction_query_exists`, `finite_interaction_query_unique_up_to_coupling` | well-defined finite cylinder queries under the stated limit/bind/AE capabilities |
 | `peutt_preserves_finite_interaction_sem` | behavioral invariance of the choice-packaged measure-valued semantics |
@@ -474,12 +477,21 @@ may be silently inferred from that interface.
 `frontier_certificate`, finite-internal execution plans, kernel completion,
 joint rounds and costed schedules are proof infrastructure, not additional
 behavioral equivalences. They now live under `Eq/Internal/`.
+FiniteInternal is auxiliary proof infrastructure for well-founded internal
+compression and related adequacy arguments. It is not part of the canonical
+PTree semantics or public equivalence theory. The formal peutt/Interp/facade
+dependency closure does not include it; some Stage 1–4 regression files
+indirectly load it through shared fixtures. Gate C will not redesign its API.
+Final retention/deletion decisions belong to the later FreeOmega adequacy
+audit: retain chains needed by final adequacy results; remove obsolete
+regression-only branches only after that dependency review.
 [The complete layout/client audit](docs/LAYOUT_AUDIT.md)
 records their actual imports, direct/transitive clients and zero-client
 modules. No zero-client module is automatically treated as dead code:
 public endpoints and independent regression leaves naturally have none.
-The [Gate B manifest](docs/gate-b-moves.json) records the current moves and
-extractions; [module-moves.tsv](docs/module-moves.tsv) records the earlier
+The [Gate B manifest](docs/gate-b-moves.json) records its moves and
+extractions; [examples-moves.json](docs/examples-moves.json) records the
+follow-up; [module-moves.tsv](docs/module-moves.tsv) records the earlier
 historical layout milestone.
 
 `Regression/Infrastructure/AllImports.v` checks that all maintained modules

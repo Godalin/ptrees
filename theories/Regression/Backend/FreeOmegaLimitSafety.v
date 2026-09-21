@@ -7,7 +7,7 @@ From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
 From PTree.Prob.Interface Require Import TwoLevelMeasure.
 From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum MeasureIterationEnum.
 From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.CaseStudies Require Import RandomWalk.
+From PTree.Examples Require Import RandomWalk.
 Import Enum.
 Local Open Scope ring_scope.
 

@@ -8,7 +8,7 @@ From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
 From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
 From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaUpperExpectationSubEnum FreeOmegaUpperRelationalSubEnum FreeOmegaUpperQuotientSubEnum.
 From PTree.Regression.Backend Require Import SubEnumRegression FreeOmegaEscapingMass FreeOmegaUpperExpectation FreeOmegaUpperObservation.
-From PTree.CaseStudies Require Import RandomWalk.
+From PTree.Examples Require Import RandomWalk.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

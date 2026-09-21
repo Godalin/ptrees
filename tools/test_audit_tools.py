@@ -9,6 +9,26 @@ import audit_migration as migration
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_examples_owns_applications_not_regressions(self):
+        self.assertEqual(architecture.ownership("Examples/RandomWalk")[:2],
+                         ("Examples", "application"))
+        self.assertTrue(architecture.permitted("Regression/Semantics/TreeTransitionSoundness",
+                                             "Examples/RandomWalk"))
+        self.assertFalse(architecture.permitted("Eq/PEutt", "Examples/RandomWalk"))
+
+    def test_no_old_application_or_local_events_namespace(self):
+        for name in ["CaseStudies/RandomWalk", "Events/State"]:
+            with self.assertRaises(AssertionError):
+                architecture.ownership(name)
+
+    def test_auxiliary_check_follows_transitive_dependencies(self):
+        graph = {"Eq/PEutt": set(), "PTree": set(), "Semantics": set(),
+                 "Interp/FreeOmega/Base": {"Eq/FreeOmega/Bind"},
+                 "Eq/FreeOmega/Bind": {"Eq/Internal/FiniteInternal"},
+                 "Eq/Internal/FiniteInternal": set()}
+        with self.assertRaises(AssertionError):
+            architecture.check_auxiliary_boundary(graph)
+
     def test_semantic_freeomega_model_is_not_concrete_backend(self):
         self.assertEqual(architecture.ownership("Semantics/FreeOmega/MDPCoincidenceFreeOmega"),
                          ("Semantics/FreeOmega", "FreeOmega",
@@ -37,7 +57,7 @@ class ArchitectureTests(unittest.TestCase):
             ("Semantics/MDPFragment", "Interp/FreeOmega/MDP"),
             ("Interp/FreeOmega/MDP", "Interp/Backend/SubEnum"),
             ("Eq/PEutt", "Regression/Semantics/PEuttAlgebra"),
-            ("CaseStudies/RandomWalk", "Regression/Backend/SubEnumRegression"),
+            ("Examples/RandomWalk", "Regression/Backend/SubEnumRegression"),
         ]:
             with self.subTest(source=source, target=target):
                 self.assertFalse(architecture.permitted(source, target))

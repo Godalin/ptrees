@@ -3,7 +3,8 @@
 Gate A is frozen at `2258907`; interpretation Stages 1–4 remain the accepted
 theory through `ec96b90`. This is an architecture migration, not a new
 interpretation theorem, capability-minimization pass, or FreeOmega adequacy
-claim. Gate B is submitted for review; stop before Gate C.
+claim. Gate B is accepted at `20e6ff2`. The separate
+[Examples follow-up](EXAMPLES_FOLLOWUP.md) precedes Gate C.
 
 ## What moved, and what was split
 

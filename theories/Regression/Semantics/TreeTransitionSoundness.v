@@ -15,7 +15,7 @@ Fail Check PTree.Eq.PEutt.peutt.
 From PTree.Eq Require Import PEutt.
 From PTree.Semantics Require Import TreeTransitionSoundness.
 From PTree.Regression.Semantics Require Import TreeTransition.
-From PTree.CaseStudies.InteractiveVonNeumann Require Import InteractiveVonNeumannService.
+From PTree.Examples.InteractiveVonNeumann Require Import InteractiveVonNeumannService.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

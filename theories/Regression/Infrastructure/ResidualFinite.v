@@ -14,7 +14,7 @@ From PTree.Prob.Backend Require Import DiscreteMC.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalHitting.
 From PTree.Eq Require Import PStrong PEutt.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalAcceleration.
-From PTree.CaseStudies Require Import RandomWalk.
+From PTree.Examples Require Import RandomWalk.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

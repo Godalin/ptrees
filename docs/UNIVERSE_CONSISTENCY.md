@@ -6,8 +6,11 @@ The aggregate failure was a real incompatibility between compiled clients,
 not merely a `coqchk` invocation problem. At the layout snapshot, each of
 these two-module imports reproduced it in ordinary `coqtop`:
 
+The example import below is displayed in the current `Examples` namespace;
+at that historical snapshot its prefix was `PTree.CaseStudies`.
+
 ```coq
-From PTree.CaseStudies.BernoulliFactory Require Import BernoulliFactoryComposition.
+From PTree.Examples.BernoulliFactory Require Import BernoulliFactoryComposition.
 From PTree.Regression.Semantics Require Import CanonicalPartialDivergence.
 ```
 

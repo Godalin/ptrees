@@ -17,8 +17,8 @@ From PTree.Eq Require Import PrimitiveStableHitting PTreeKernel ProbabilisticTra
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
 From PTree.Eq Require Import UnifiedFrontier PEutt.
-From PTree.CaseStudies.BernoulliFactory Require Import RealBernoulliOracle RealBernoulliMathComp.
-From PTree.CaseStudies.BernoulliFactory Require Import UnifiedRealBernoulliMathCompCore.
+From PTree.Examples.BernoulliFactory Require Import RealBernoulliOracle RealBernoulliMathComp.
+From PTree.Examples.BernoulliFactory Require Import UnifiedRealBernoulliMathCompCore.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
