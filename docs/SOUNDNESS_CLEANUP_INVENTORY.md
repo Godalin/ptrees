@@ -45,6 +45,13 @@ No new build or kernel-verification result is claimed by this inventory.
 Accepted `2dbba82` validation remains historical evidence; Cleanup B needs
 its own complete verification after actual pruning.
 
+CI follow-up after Cleanup A: the user separately authorized repair of the
+three misplaced AllImports entries. That minimal patch sorts those entries,
+updates the exact DS5a.3 insertion audit and adds an ordering regression.
+The ordering failure above records the inspected baseline, not an outstanding
+Cleanup B task after that patch. No pruning or Cleanup B work is authorized
+by this CI repair.
+
 ## 2. Compatibility, facade and re-export inventory
 
 ### 2.1 Complete list of modules without substantive declarations

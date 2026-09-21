@@ -16,6 +16,16 @@ class DomainJointAuditTests(unittest.TestCase):
     def test_isolation(self):
         self.assertEqual(joint.audit_sources(self.before, self.after), (249, 252))
 
+    def test_aggregate_insertions_preserve_ci_order(self):
+        source = self.before["theories/Regression/Infrastructure/AllImports.v"]
+        old = [line for line in source.splitlines() if line.startswith("Require PTree.")]
+        actual = [line for line in joint.aggregate_after(source).splitlines()
+                  if line.startswith("Require PTree.")]
+        added = ["Require PTree." + name.replace("/", ".") + "."
+                 for name in (joint.EXTERNAL, joint.BRIDGE, joint.TEST)]
+        self.assertEqual(actual, sorted(old + added))
+        self.assertEqual(len(actual), len(set(actual)))
+
     def test_frozen_theory_is_byte_exact(self):
         path = "theories/Prob/Backend/Common/DomainTransport.v"
         with self.assertRaises(AssertionError):

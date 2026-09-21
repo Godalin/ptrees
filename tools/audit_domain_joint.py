@@ -33,13 +33,13 @@ GROUPS = {
 
 def aggregate_after(text):
     for marker, addition in [
-        ("Prob.Backend.Common.DomainTransport", EXTERNAL),
-        ("Prob.Backend.SubEnum.FreeOmega.CouplingSoundness", BRIDGE),
-        ("Regression.Probability.FreeOmegaRelationalDomain", TEST),
+        ("Prob.Backend.Common.CountableRealTransport", EXTERNAL),
+        ("Prob.Backend.SubEnum.FreeOmega.NativeCoupling", BRIDGE),
+        ("Regression.Probability.FreeOmegaQuotientDomain", TEST),
     ]:
         line = "Require PTree." + marker + ".\n"
         assert text.count(line) == 1, "Missing/duplicate aggregate marker"
-        text = text.replace(line, line + "Require PTree." + addition.replace("/", ".") + ".\n")
+        text = text.replace(line, "Require PTree." + addition.replace("/", ".") + ".\n" + line)
     return text
 
 

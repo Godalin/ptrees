@@ -81,9 +81,9 @@ Require PTree.Interp.FreeOmega.Translate.
 Require PTree.Interp.Kernel.
 Require PTree.Interp.Structural.
 Require PTree.PTree.
+Require PTree.Prob.Backend.Common.CountableCoupling.
 Require PTree.Prob.Backend.Common.CountableRealTransport.
 Require PTree.Prob.Backend.Common.DomainTransport.
-Require PTree.Prob.Backend.Common.CountableCoupling.
 Require PTree.Prob.Backend.Common.FinSupp.
 Require PTree.Prob.Backend.Common.FiniteCapacityMatching.
 Require PTree.Prob.Backend.Common.FiniteMatching.
@@ -123,10 +123,10 @@ Require PTree.Prob.Backend.SubEnum.FreeOmega.Admissibility.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.CodedJoint.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.CountableSupport.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.CouplingSoundness.
-Require PTree.Prob.Backend.SubEnum.FreeOmega.JointSoundness.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Disintegration.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.DomainSoundness.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.EquivalenceJoint.
+Require PTree.Prob.Backend.SubEnum.FreeOmega.JointSoundness.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.NativeCoupling.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.NativeTransport.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.QuotientSoundness.
@@ -212,9 +212,9 @@ Require PTree.Regression.Probability.CountableTransportExistence.
 Require PTree.Regression.Probability.EnumDisintegration.
 Require PTree.Regression.Probability.FiniteTransport.
 Require PTree.Regression.Probability.FreeOmegaDomain.
+Require PTree.Regression.Probability.FreeOmegaJointDomain.
 Require PTree.Regression.Probability.FreeOmegaQuotientDomain.
 Require PTree.Regression.Probability.FreeOmegaRelationalDomain.
-Require PTree.Regression.Probability.FreeOmegaJointDomain.
 Require PTree.Regression.Probability.IrrationalHitting.
 Require PTree.Regression.Probability.OmegaVal.
 Require PTree.Regression.Probability.OmegaValMeasure.
