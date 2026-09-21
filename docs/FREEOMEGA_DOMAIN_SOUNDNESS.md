@@ -260,13 +260,18 @@ layer, excluded from the mainline's transitive dependencies.
 [DS1b standard-measure correspondence](DOMAIN_DS1B.md) is accepted at `01cbc4c`.
 [DS2 admissibility/domain soundness](DOMAIN_DS2.md) is accepted at `bc8f9d2`;
 it includes AE Sample/bind closure and the alternating-Dirac negative example.
-[DS2.5 dependency hygiene](DOMAIN_DS25.md) extracts the native finite
-expectation facts without changing that theory. Pause for its acceptance;
-DS3 and subsequent stages have not started.
+[DS2.5 dependency hygiene](DOMAIN_DS25.md) is accepted at `7a3bf82`; native
+finite expectation facts are independent of FreeOmega and the external
+domain. [DS3 quotient equality soundness](DOMAIN_DS3.md) adds admissibility
+transport and observational equality via the existing all-raw evaluator
+bridge. Pause for DS3 acceptance; DS4 and subsequent stages have not started.
 
 `free_omega_denote_approx`, `free_omega_denote_bind` and `free_omega_denote_lub`
-are now implemented for SubEnum in DS2. The names `free_omega_sem_eq_sound`,
-`free_omega_qlift_sound`, and `stable_hitting_denotational_adequacy` remain
+are now implemented for SubEnum in DS2. DS3 adds
+`free_omega_qlift_eq_admissible`, `free_omega_qlift_eq_sound`,
+`free_omega_sem_eq_admissible` and `free_omega_sem_eq_sound`, all qualified
+by the SubEnum model and the admissibility boundary. The names
+`free_omega_qlift_sound` and `stable_hitting_denotational_adequacy` remain
 proposed endpoint names, **not implemented declarations**. Their signatures
 must expose admissibility/backend qualifications until the relevant coverage
 theorems discharge them. Completeness, infinite interaction measures, general

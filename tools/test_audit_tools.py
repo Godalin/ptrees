@@ -14,6 +14,7 @@ import audit_domain as domain
 import audit_domain_measure as domain_measure
 import audit_domain_soundness as domain_soundness
 import audit_ds25 as ds25
+import audit_domain_quotient as domain_quotient
 
 
 class ArchitectureTests(unittest.TestCase):
@@ -32,6 +33,7 @@ class ArchitectureTests(unittest.TestCase):
                        "Prob/Legacy/Discrete", "Semantics/MDPFragment"]:
             for target in ["Prob/Domain/Expectation",
                            "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",
+                           "Prob/Backend/SubEnum/FreeOmega/QuotientSoundness",
                            "Eq/Backend/StableHittingDomainSubEnum"]:
                 self.assertFalse(architecture.permitted(source, target))
         self.assertTrue(architecture.permitted("Prob/Backend/SubEnum/Domain", "Prob/Domain/Expectation"))
@@ -317,6 +319,56 @@ class GateCTests(unittest.TestCase):
     def test_no_axiom_in_new_regression(self):
         with self.assertRaises(AssertionError):
             gate_c.audit({}, dict.fromkeys(gate_c.NEW, "Axiom shortcut : False."))
+
+
+class DS3Tests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.before = migration.frozen(domain_quotient.BASE)
+        cls.after = dict(cls.before)
+        for path in domain_quotient.NEW:
+            cls.after[path] = (domain_quotient.ROOT / path).read_text()
+        aggregate = "theories/Regression/Infrastructure/AllImports.v"
+        cls.after[aggregate] = domain_quotient.aggregate_after(cls.before[aggregate])
+
+    def test_source_isolation(self):
+        self.assertEqual(domain_quotient.audit_sources(self.before, self.after), (229, 231))
+
+    def test_frozen_admissibility_quotient_and_model_are_untouched(self):
+        for path in ["theories/Prob/FreeOmega/Quotient.v",
+                     "theories/Prob/Backend/SubEnum/FreeOmega/Admissibility.v",
+                     "theories/Prob/Domain/Expectation.v"]:
+            with self.subTest(path=path), self.assertRaises(AssertionError):
+                domain_quotient.audit_sources(self.before, {**self.after, path: self.after[path] + "\n"})
+
+    def test_no_new_axiom_or_qlift_induction(self):
+        path = "theories/" + domain_quotient.CORE + ".v"
+        for extra in ["Axiom bad : False.", "Lemma bad : False. Admitted.",
+                      "Lemma bad : True. Proof. induction H. Qed."]:
+            with self.subTest(extra=extra), self.assertRaises(AssertionError):
+                domain_quotient.audit_sources(self.before, {**self.after, path: self.after[path] + extra})
+
+    def test_compiled_contract_requires_validity_and_observable_instance(self):
+        name = "PTree." + domain_quotient.CORE.replace("/", ".") + ".free_omega_sem_eq_sound"
+        for typ in ["oval_eq L M", "free_omega_admissible t -> oval_eq L M",
+                    "forall NI : SemanticMeasure M, free_omega_admissible t -> oval_eq L M"]:
+            with patch.object(capabilities, "query", return_value=[(name, typ, "Closed under the global context")]):
+                with self.assertRaises(AssertionError):
+                    domain_quotient.report()
+
+    def test_rejects_new_or_unparsed_axiom(self):
+        for axioms in ["Axioms:\nshortcut : False", "Axioms:\nunparsed"]:
+            with patch.object(capabilities, "query", return_value=[("endpoint", "True", axioms)]):
+                with self.assertRaises(AssertionError):
+                    domain_quotient.report()
+
+    def test_compiled_failure_restores_scope(self):
+        groups, endpoints = capabilities.GROUPS, capabilities.ENDPOINTS
+        with patch.object(capabilities, "query", side_effect=SystemExit("query failure")):
+            with self.assertRaises(SystemExit):
+                domain_quotient.report()
+        self.assertIs(capabilities.GROUPS, groups)
+        self.assertIs(capabilities.ENDPOINTS, endpoints)
 
 
 class DS25Tests(unittest.TestCase):
