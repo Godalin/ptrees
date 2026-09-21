@@ -112,8 +112,11 @@ Require PTree.Prob.Backend.Enum.Support.
 Require PTree.Prob.Backend.MathComp.Coupling.
 Require PTree.Prob.Backend.MathComp.Kernel.
 Require PTree.Prob.Backend.MathComp.Measure.
+Require PTree.Prob.Backend.SubEnum.Domain.
+Require PTree.Prob.Backend.SubEnum.FreeOmega.Admissibility.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.CodedJoint.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Disintegration.
+Require PTree.Prob.Backend.SubEnum.FreeOmega.DomainSoundness.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.EquivalenceJoint.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.NativeCoupling.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.NativeTransport.
@@ -190,6 +193,7 @@ Require PTree.Regression.Probability.ConditionalResampling.
 Require PTree.Regression.Probability.CorrelatedSampleAlgebra.
 Require PTree.Regression.Probability.EnumDisintegration.
 Require PTree.Regression.Probability.FiniteTransport.
+Require PTree.Regression.Probability.FreeOmegaDomain.
 Require PTree.Regression.Probability.OmegaVal.
 Require PTree.Regression.Probability.OmegaValMeasure.
 Require PTree.Regression.Semantics.AtomicInterp.

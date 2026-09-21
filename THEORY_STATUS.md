@@ -16,10 +16,14 @@ FreeOmega domain soundness has an accepted DS0 design and an accepted
 [DS1a expectation domain](docs/DOMAIN_DS1A.md) at `e65ca85`.
 The independent evaluator/laws domain has order, increasing-chain Lubs and
 continuous bind. [DS1b standard-measure correspondence](docs/DOMAIN_DS1B.md)
-is implemented, pending review: countable additivity, integral recovery and
-both roundtrips with MathComp probability measures on the discrete lifted
-carrier. FreeOmega-specific soundness (DS2 onward) remains unproved; the
-mainline does not depend on this external validation model.
+is accepted at `01cbc4c`: countable additivity, integral recovery and both
+roundtrips with MathComp probability measures on the discrete lifted carrier.
+[DS2 admissibility/domain soundness](docs/DOMAIN_DS2.md) is implemented,
+pending review: SubEnum interpretation, AE Sample/bind closure, increasing
+Lub and approximation soundness, and the alternating-Dirac negative test.
+FreeOmega quotient-equality soundness (DS3), stable-hitting adequacy (DS4)
+and general joint-coupling realization remain pending. The mainline does
+not depend on this external validation model.
 
 The [cleanup architecture and review gates](docs/ARCHITECTURE_CLEANUP.md)
 distinguish component ownership, generic/FreeOmega/concrete profiles,

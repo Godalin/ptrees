@@ -1,7 +1,7 @@
 # DS1b: standard countably additive measure correspondence
 
-Baseline: **DS1a accepted at `e65ca85`**. DS1b is implemented and ready for
-review. This stage adds the independent measure adapter and its tests;
+Baseline: **DS1a accepted at `e65ca85`**. **DS1b is accepted at `01cbc4c`.**
+This stage adds the independent measure adapter and its tests;
 it does not connect FreeOmega to the domain or begin DS2.
 
 ## Mathematical model

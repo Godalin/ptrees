@@ -12,6 +12,7 @@ import audit_public_capabilities as public
 import audit_prob_organization as prob
 import audit_domain as domain
 import audit_domain_measure as domain_measure
+import audit_domain_soundness as domain_soundness
 
 
 class ArchitectureTests(unittest.TestCase):
@@ -169,6 +170,38 @@ class DomainMeasureAuditTests(unittest.TestCase):
         self.assertIs(capabilities.GROUPS, groups)
         self.assertIs(capabilities.ENDPOINTS, endpoints)
         self.assertIs(domain.GROUPS, ds1a)
+
+
+class DomainSoundnessAuditTests(unittest.TestCase):
+    def test_scope_covers_validity_negative_example_and_external_order(self):
+        names = {n for ns in domain_soundness.GROUPS.values() for n in ns}
+        for n in ["admissible_sample_ae", "admissible_bind_ae", "admissible_lub_approx",
+                  "free_omega_denote_bind", "free_omega_denote_lub",
+                  "free_omega_denote_approx", "alternating_bool_not_admissible",
+                  "null_weight_sample_denotes", "unbounded_retry_denotes_lub"]:
+            self.assertIn(n, names)
+        self.assertNotIn("free_omega_qlift_eq_sound", names)  # DS3, not DS2
+
+    def test_rejects_generic_capability_or_tree_premise(self):
+        for typ in ["forall NI : @Measure.SemanticMeasure M, True", "ptree E M A -> True"]:
+            with patch.object(capabilities, "query", return_value=[
+                    ("endpoint", typ, "Closed under the global context")]):
+                with self.assertRaises(AssertionError):
+                    domain_soundness.report()
+
+    def test_rejects_new_or_unparsed_logical_axiom(self):
+        for assumptions in ["Axioms:\nshortcut : False", "Axioms:\nunparsed"]:
+            with patch.object(capabilities, "query", return_value=[("endpoint", "True", assumptions)]):
+                with self.assertRaises(AssertionError):
+                    domain_soundness.report()
+
+    def test_preserves_existing_scopes_on_failure(self):
+        groups, endpoints = capabilities.GROUPS, capabilities.ENDPOINTS
+        with patch.object(capabilities, "query", side_effect=SystemExit("query failure")):
+            with self.assertRaises(SystemExit):
+                domain_soundness.report()
+        self.assertIs(capabilities.GROUPS, groups)
+        self.assertIs(capabilities.ENDPOINTS, endpoints)
 
 
 class MigrationTests(unittest.TestCase):

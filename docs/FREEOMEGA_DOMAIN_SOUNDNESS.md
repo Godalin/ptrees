@@ -257,12 +257,13 @@ There is **no second free completion / free probability monad / syntactic
 domain**. The domain and its soundness adapters form a one-way validation
 layer, excluded from the mainline's transitive dependencies.
 [DS1a implementation and verification](DOMAIN_DS1A.md) is accepted at `e65ca85`.
-[DS1b standard-measure correspondence](DOMAIN_DS1B.md) is implemented and
-ready for review, including countable additivity, integral recovery and both
-roundtrips on the lifted carrier. FreeOmega-specific stages have not started.
+[DS1b standard-measure correspondence](DOMAIN_DS1B.md) is accepted at `01cbc4c`.
+[DS2 admissibility/domain soundness](DOMAIN_DS2.md) is implemented and ready
+for review; it includes AE Sample/bind closure and the alternating-Dirac
+negative example. DS3 and subsequent stages have not started.
 
-Names such as `free_omega_denote_approx`, `free_omega_denote_bind`,
-`free_omega_denote_lub`, `free_omega_sem_eq_sound`,
+`free_omega_denote_approx`, `free_omega_denote_bind` and `free_omega_denote_lub`
+are now implemented for SubEnum in DS2. The names `free_omega_sem_eq_sound`,
 `free_omega_qlift_sound`, and `stable_hitting_denotational_adequacy` remain
 proposed endpoint names, **not implemented declarations**. Their signatures
 must expose admissibility/backend qualifications until the relevant coverage
