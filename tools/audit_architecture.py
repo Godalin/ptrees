@@ -159,6 +159,20 @@ def check_external_validation_boundary(edges):
     assert not leaked, "Mainline depends on external validation: " + str(sorted(leaked))
 
 
+def check_native_expectation_boundary(edges):
+    # Native SubEnum validation precedes formal omega completion, even through
+    # indirect finite-helper imports. Upper evaluators may use finite facts,
+    # but finite facts must never depend on external validation in return.
+    roots = {m for m in ("Prob/Backend/SubEnum/Expectation",
+                         "Prob/Backend/SubEnum/Domain") if m in edges}
+    leaked = {m for m in closure(edges, roots) if "/FreeOmega/" in m}
+    assert not leaked, "Native expectation/domain depends on FreeOmega: " + str(sorted(leaked))
+    finite = "Prob/Backend/SubEnum/Expectation"
+    if finite in edges:
+        leaked = {m for m in closure(edges, {finite}) if external_validation(m)}
+        assert not leaked, "Finite expectation depends on validation: " + str(sorted(leaked))
+
+
 def graph():
     paths = {p.relative_to(THEORIES).with_suffix("").as_posix() for p in THEORIES.rglob("*.v")}
     edges = {p: set() for p in paths}
@@ -185,6 +199,7 @@ def graph():
             assert permitted(module, dep), "Forbidden ownership edge: " + module + " -> " + dep
     check_auxiliary_boundary(edges)
     check_external_validation_boundary(edges)
+    check_native_expectation_boundary(edges)
     return edges
 
 
@@ -204,6 +219,7 @@ def report():
         "- Core has no local probability dependency; Prob has no tree-theory dependency.",
         "- Generic interfaces and FreeOmega measure infrastructure import no concrete backend.",
         "- Concrete probability modules name Common/Enum/SubEnum/MathComp ownership; Common cannot import a native carrier.",
+        "- Native SubEnum expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.",
         "- MathComp and Enum/SubEnum do not depend on each other; Enum/SubEnum realization adapters may reuse each other.",
         "- Eq imports no Interp/Semantics/API; Semantics imports no Interp/API.",
         "- Generic/canonical-model Eq, Semantics and Interp modules import no concrete backend endpoint.",

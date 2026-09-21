@@ -13,134 +13,14 @@ Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measur
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.SubEnum.FreeOmega.UpperExpectation.
 
+Require Export PTree.Prob.Backend.SubEnum.Expectation.
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Import Enum PTree.Prob.Backend.Enum.Map PTree.Prob.Backend.Enum.Coupling RatSubTypes GRing.Theory Num.Theory Order.Theory.
 Import EnumCouplingClassical.
 Local Open Scope ring_scope.
-
-(** Weighted numeric soundness of native coupling.  These lemmas compare
-    arbitrary real-valued tests, not only rational tests or supports.
-    Classical equality is confined to the native realization bridge. *)
-Section NativeScalarCoupling.
-Variable F : realType.
-Local Notation expect := (enum_real_expect (R := F)).
-
-Lemma enum_real_expect_app {A} (f : A -> F) mu nu :
-  expect f (mu ++ nu) = expect f mu + expect f nu.
-Proof. by elim: mu=> [|[p x] tail IH] /=; rewrite ?add0r ?IH ?addrA. Qed.
-
-Lemma enum_real_expect_scale {A} (f : A -> F) p mu :
-  expect f (scale_Enum p mu) = ratr (Qval p) * expect f mu.
-Proof.
-  elim: mu=> [|[q x] tail IH] /=; first by rewrite mulr0.
-  rewrite IH mulrDr. congr (_ + _).
-  change (ratr (Qval p * Qval q) * f x = ratr (Qval p) * (ratr (Qval q) * f x)).
-  by rewrite rmorphM mulrA.
-Qed.
-
-Lemma enum_real_expect_bind {A B} (f : B -> F) (mu : Enum A) (k : A -> Enum B) :
-  expect f (bind_Enum mu k) = expect (fun x => expect f (k x)) mu.
-Proof.
-  by elim: mu=> [|[p x] tail IH] //=; rewrite enum_real_expect_app enum_real_expect_scale IH.
-Qed.
-
-Lemma enum_real_expect_filter_split {A : eqType} (f : A -> F) mu a :
-  expect f mu = ratr (Qval (acc_mass a mu)) * f a +
-    expect f [seq h <- mu | snd h != a].
-Proof.
-  induction mu as [|[p x] tail IH]; cbn [enum_real_expect filter].
-  - by rewrite /= rmorph0 mul0r add0r.
-  - rewrite acc_mass_cons. destruct (x == a) eqn:Hxa.
-    + move/eqP: Hxa=> Hxa. subst x. cbn. rewrite IH eq_refl /=.
-      change (ratr (Qval p) * f a +
-        (ratr (Qval (acc_mass a tail)) * f a + expect f [seq h <- tail | snd h != a]) =
-        ratr (Qval (acc_mass a tail) + Qval p) * f a +
-          expect f [seq h <- tail | snd h != a]).
-      rewrite rmorphD mulrDl !addrA. congr (_ + _). exact: addrC.
-    + rewrite Hxa /= IH addr0. exact: addrCA.
-Qed.
-
-Lemma enum_real_expect_mass_zero {A : eqType} (f : A -> F) mu :
-  (forall a, acc_mass a mu = 0) -> expect f mu = 0.
-Proof.
-  elim: mu=> [|[p x] tail IH] Hzero //=.
-  have Hp : p = 0.
-  { have Hx := Hzero x. rewrite acc_mass_cons eq_refl in Hx.
-    apply/eqP. have Hsum : acc_mass x tail + p == 0 by rewrite Hx.
-    have Hparts : (acc_mass x tail == 0) && (p == 0).
-    { rewrite -paddr_eq0 ?le_nnQ0 //. }
-    exact (proj2 (andP Hparts)). }
-  rewrite Hp /= rmorph0 mul0r add0r. apply IH=> a.
-  move: (Hzero a). rewrite (@acc_mass_cons_zero _ tail a (p, x) Hp). exact.
-Qed.
-
-Lemma enum_real_expect_eqenum {A : eqType} (f : A -> F) mu nu :
-  mu ==Enum nu -> expect f mu = expect f nu.
-Proof.
-  move: mu nu. refine (seq_strong_induction (P := fun mu => forall nu,
-    mu ==Enum nu -> expect f mu = expect f nu) _).
-  move=> mu IH nu Hmn. destruct mu as [|[p a] tail].
-  - symmetry. apply enum_real_expect_mass_zero=> x.
-    symmetry. move: (Hmn x). cbn. exact.
-  - rewrite (enum_real_expect_filter_split f ((p,a) :: tail) a).
-    rewrite (enum_real_expect_filter_split f nu a) (Hmn a).
-    congr (_ + _). apply IH.
-    + apply/ssrnat.ltP. rewrite size_filter /= eq_refl /=.
-      apply/ssrnat.ltP. exact: leq_ltn_trans (count_size _ _) (ltnSn _).
-    + exact: (enum_filter_proper (fun x : A => x != a) Hmn).
-Qed.
-
-Lemma enum_real_expect_emap {A B} (k : A -> B) (f : B -> F) mu :
-  expect f (emap k mu) = expect (fun x => f (k x)) mu.
-Proof. by elim: mu=> [|[p x] tail IH] //=; rewrite IH. Qed.
-
-Lemma enum_real_expect_ae_mono {A} (f g : A -> F) mu :
-  enum_ae mu (fun x => f x <= g x) -> expect f mu <= expect g mu.
-Proof.
-  induction mu as [|[p x] tail IH]; intro Hae; cbn [enum_real_expect].
-  - exact: lexx.
-  - destruct (p == nnQ_0) eqn:Hp.
-    + move/eqP: Hp=> ->. cbn [Qval nnQ_0]. rewrite rmorph0 !mul0r !add0r.
-      apply IH. intros q y Hy Hq. apply (Hae q y (or_intror Hy) Hq).
-    + apply lerD.
-      * apply ler_wpM2l; [by rewrite ler0q; apply Qval_nnQ_ge0|].
-        apply (Hae p x (or_introl (Logic.eq_refl (p,x)))).
-        intro Hz. rewrite Hz eq_refl in Hp. discriminate.
-      * apply IH. intros q y Hy Hq. apply (Hae q y (or_intror Hy) Hq).
-Qed.
-
-Lemma enum_coupling_real_expect {A B : eqType} (T : A -> B -> Prop)
-    (mu : Enum A) (nu : Enum B) (f : A -> F) (g : B -> F) :
-  coupling T mu nu -> (forall x y, T x y -> f x <= g y) ->
-  expect f mu <= expect g nu.
-Proof.
-  intros [joint Hl Hr Hrel] Hfg.
-  rewrite -(enum_real_expect_eqenum f Hl) -(enum_real_expect_eqenum g Hr).
-  rewrite !enum_real_expect_emap. apply enum_real_expect_ae_mono.
-  intros p [x y] Hin Hnz. apply Hfg, Hrel.
-  exact (enum_entry_mass_nonzero Hin Hnz).
-Qed.
-
-Lemma subenum_lift_real_expect_eqtype {A B : eqType} (T : A -> B -> Prop)
-    (mu : SubEnum A) (nu : SubEnum B) (f : A -> F) (g : B -> F) :
-  sem_lift T mu nu -> (forall x y, T x y -> f x <= g y) ->
-  expect f (subenum_raw mu) <= expect g (subenum_raw nu).
-Proof. intro H. apply enum_coupling_real_expect. exact (enum_sem_lift_to_coupling H). Qed.
-
-Theorem subenum_lift_real_expect {A B : Type} (T : A -> B -> Prop)
-    (mu : SubEnum A) (nu : SubEnum B) (f : A -> F) (g : B -> F) :
-  sem_lift T mu nu -> (forall x y, T x y -> f x <= g y) ->
-  expect f (subenum_raw mu) <= expect g (subenum_raw nu).
-Proof.
-  exact (@subenum_lift_real_expect_eqtype
-    (@Equality.Pack (EnumCouplingClassical.carrier A)
-      (Equality.on (EnumCouplingClassical.carrier A)))
-    (@Equality.Pack (EnumCouplingClassical.carrier B)
-      (Equality.on (EnumCouplingClassical.carrier B))) T mu nu f g).
-Qed.
-End NativeScalarCoupling.
 
 (** Raw finite-subbehavior order is numerically monotone even on arbitrary
     formal Lub terms.  This is a proved bridge to the numeric model, not

@@ -113,6 +113,7 @@ Require PTree.Prob.Backend.MathComp.Coupling.
 Require PTree.Prob.Backend.MathComp.Kernel.
 Require PTree.Prob.Backend.MathComp.Measure.
 Require PTree.Prob.Backend.SubEnum.Domain.
+Require PTree.Prob.Backend.SubEnum.Expectation.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Admissibility.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.CodedJoint.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Disintegration.

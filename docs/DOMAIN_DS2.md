@@ -21,10 +21,12 @@ finite rational weighted expectation `enum_real_expect f (subenum_raw mu)`.
 Finite-sum algebra proves scaling/additivity, `subenum_bound` proves the
 mass bound, and the existing finite expectation/supremum interchange proves
 monotone continuity. Thus `subenum_domain_laws` is proved, not assumed.
-The adapter reuses finite-expectation facts located in the existing
-SubEnum `UpperExpectation/UpperCoupling/UpperContinuity` modules; it does not
-claim its imports are independent of FreeOmega. The independent **Domain**
-itself remains entirely separate.
+At the accepted DS2 baseline `bc8f9d2`, those facts lived in the SubEnum
+`UpperExpectation/UpperCoupling/UpperContinuity` modules. The strictly
+conservative [DS2.5 follow-up](DOMAIN_DS25.md) moves their finite dependency
+closure to `Prob/Backend/SubEnum/Expectation.v`. The native adapter now has
+no transitive FreeOmega dependency; the independent **Domain** itself remains
+entirely separate. The accepted DS2 compiled snapshot is retained unchanged.
 
 Endpoints cover ret, zero, bind and native semantic equality. The native
 `subenum_sem_lift_test_sound` theorem gives relational test inequalities;

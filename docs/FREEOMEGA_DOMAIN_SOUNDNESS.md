@@ -258,9 +258,11 @@ domain**. The domain and its soundness adapters form a one-way validation
 layer, excluded from the mainline's transitive dependencies.
 [DS1a implementation and verification](DOMAIN_DS1A.md) is accepted at `e65ca85`.
 [DS1b standard-measure correspondence](DOMAIN_DS1B.md) is accepted at `01cbc4c`.
-[DS2 admissibility/domain soundness](DOMAIN_DS2.md) is implemented and ready
-for review; it includes AE Sample/bind closure and the alternating-Dirac
-negative example. DS3 and subsequent stages have not started.
+[DS2 admissibility/domain soundness](DOMAIN_DS2.md) is accepted at `bc8f9d2`;
+it includes AE Sample/bind closure and the alternating-Dirac negative example.
+[DS2.5 dependency hygiene](DOMAIN_DS25.md) extracts the native finite
+expectation facts without changing that theory. Pause for its acceptance;
+DS3 and subsequent stages have not started.
 
 `free_omega_denote_approx`, `free_omega_denote_bind` and `free_omega_denote_lub`
 are now implemented for SubEnum in DS2. The names `free_omega_sem_eq_sound`,

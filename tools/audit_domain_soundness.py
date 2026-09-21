@@ -6,6 +6,7 @@ from pathlib import Path
 
 import audit_capabilities as compiled
 from audit_domain import ALLOWED_AXIOMS as DOMAIN_AXIOMS
+from audit_ds25 import relocation, normalize
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "docs/DOMAIN_DS2_AUDIT.md"
@@ -58,8 +59,14 @@ ALLOWED_AXIOMS = DOMAIN_AXIOMS | {
 def report():
     previous = compiled.GROUPS, compiled.ENDPOINTS
     try:
-        compiled.GROUPS = GROUPS
-        compiled.ENDPOINTS = [m + "." + n for m, ns in GROUPS.items() for n in ns]
+        moves = relocation()
+        compiled.ENDPOINTS = [moves.get(m + "." + n, m + "." + n)
+                              for m, ns in GROUPS.items() for n in ns]
+        compiled.GROUPS = {m: list(ns) for m, ns in GROUPS.items()}
+        for endpoint in compiled.ENDPOINTS:
+            module, name = endpoint.rsplit(".", 1)
+            if module not in compiled.GROUPS:
+                compiled.GROUPS[module] = [name]
         answers = compiled.query()
     finally:
         compiled.GROUPS, compiled.ENDPOINTS = previous
@@ -88,7 +95,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     text = report()
     if args.check:
-        assert REPORT.read_text() == text, "DS2 report differs; review the compiled change."
+        # Keep the accepted DS2 report byte-for-byte; only the enumerated
+        # DS2.5 helper relocation and Coq printer line wrapping may differ.
+        assert normalize(REPORT.read_text()) == normalize(text), "DS2 report differs; review the compiled change."
         print("DS2 compiled signatures and logical assumptions agree with the checked report.")
     else:
         print(text, end="")

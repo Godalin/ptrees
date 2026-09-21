@@ -13,6 +13,7 @@ import audit_prob_organization as prob
 import audit_domain as domain
 import audit_domain_measure as domain_measure
 import audit_domain_soundness as domain_soundness
+import audit_ds25 as ds25
 
 
 class ArchitectureTests(unittest.TestCase):
@@ -316,6 +317,56 @@ class GateCTests(unittest.TestCase):
     def test_no_axiom_in_new_regression(self):
         with self.assertRaises(AssertionError):
             gate_c.audit({}, dict.fromkeys(gate_c.NEW, "Axiom shortcut : False."))
+
+
+class DS25Tests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.before = migration.frozen(ds25.BASE)
+        cls.after, cls.moves = ds25.expected_sources(cls.before)
+
+    def test_exact_extraction(self):
+        self.assertEqual(ds25.audit_sources(self.before, self.after), (228, 229))
+
+    def test_rejects_statement_proof_context_comment_or_layout_edit(self):
+        for path in [ds25.NEW, ds25.UPPER[0], ds25.DIR + "Domain.v"]:
+            for old, new in [("Qed.", "Admitted."), ("realType", "Type"),
+                             ("Proof.", "Proof. ")]:
+                with self.subTest(path=path, old=old), self.assertRaises(AssertionError):
+                    ds25.audit_sources(self.before, {**self.after,
+                        path: self.after[path].replace(old, new, 1)})
+
+    def test_frozen_math_cannot_change(self):
+        for path in ["theories/Prob/Domain/Expectation.v",
+                     "theories/Prob/Domain/MeasureModel.v",
+                     ds25.DIR + "FreeOmega/Admissibility.v"]:
+            with self.subTest(path=path), self.assertRaises(AssertionError):
+                ds25.audit_sources(self.before, {**self.after, path: self.after[path] + "\n"})
+
+    def test_compiled_relocation_is_exact(self):
+        old = "PTree.Prob.Backend.SubEnum.FreeOmega.UpperCoupling.subenum_lift_real_expect"
+        new = "PTree.Prob.Backend.SubEnum.Expectation.subenum_lift_real_expect"
+        self.assertEqual(ds25.normalize(old), ds25.normalize(new))
+        self.assertEqual(ds25.normalize('"' + old + '"'), '"' + old + '"')
+        e = dict(name=old, type="forall H : True, True", assumptions="Closed under the global context")
+        before = {"endpoints": [e]}
+        ds25.compare(before, {"endpoints": [{**e, "name": new}]})
+        for change in [{"type": "True"}, {"assumptions": "Axioms: added : False"}]:
+            with self.assertRaises(AssertionError):
+                ds25.compare(before, {"endpoints": [{**e, **change}]})
+
+    def test_native_domain_cannot_import_freeomega_indirectly(self):
+        domain = "Prob/Backend/SubEnum/Domain"
+        finite = "Prob/Backend/SubEnum/Expectation"
+        helper = "Prob/Backend/Enum/Iteration"
+        upper = "Prob/Backend/SubEnum/FreeOmega/UpperExpectation"
+        graph = {domain: {finite}, finite: {helper}, helper: set(), upper: {finite}}
+        architecture.check_native_expectation_boundary(graph)
+        for bad in [upper, "Prob/FreeOmega/Definition"]:
+            with self.assertRaises(AssertionError):
+                architecture.check_native_expectation_boundary({**graph, helper: {bad}, bad: set()})
+        with self.assertRaises(AssertionError):
+            architecture.check_native_expectation_boundary({**graph, finite: {domain}})
 
 
 class ProbOrganizationTests(unittest.TestCase):

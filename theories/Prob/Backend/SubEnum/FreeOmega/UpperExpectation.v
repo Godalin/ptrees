@@ -11,6 +11,8 @@ From mathcomp.classical Require Import classical_sets.
 Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.SubEnum.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 
+Require Export PTree.Prob.Backend.SubEnum.Expectation.
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -24,75 +26,7 @@ Local Open Scope ring_scope.
     This file does not yet assert soundness of free_omega_qlift. *)
 Section UpperExpectation.
 Variable R : realType.
-
-Fixpoint enum_real_expect {A} (f : A -> R) (mu : Enum A) : R :=
-  match mu with
-  | nil => 0
-  | (p, x) :: tail => ratr (Qval p) * f x + enum_real_expect f tail
-  end.
-
-Lemma enum_real_expect_rat {A} (f : A -> rat) mu :
-  enum_real_expect (fun x => ratr (f x)) mu = ratr (enum_expect f mu).
-Proof.
-  elim: mu=> [|[p x] tail IH] /=.
-  - by rewrite rmorph0.
-  - by rewrite rmorphD rmorphM IH.
-Qed.
-
-Lemma enum_real_expect_nonnegative {A} (f : A -> R) mu :
-  (forall x, 0 <= f x) -> 0 <= enum_real_expect f mu.
-Proof.
-  move=> Hf. elim: mu=> [|[p x] tail IH] /=; first exact: lexx.
-  apply: addr_ge0 IH. apply: mulr_ge0 (Hf x).
-  by rewrite ler0q; apply: Qval_nnQ_ge0.
-Qed.
-
-Lemma enum_real_expect_mono {A} (f g : A -> R) mu :
-  (forall x, f x <= g x) -> enum_real_expect f mu <= enum_real_expect g mu.
-Proof.
-  move=> Hfg. elim: mu=> [|[p x] tail IH] /=; first exact: lexx.
-  apply lerD.
-  - apply ler_wpM2l; [|exact (Hfg x)].
-    by rewrite ler0q; apply: Qval_nnQ_ge0.
-  - exact IH.
-Qed.
-
-Lemma subenum_real_expect_bound {A} (mu : SubEnum A) (f : A -> R) :
-  (forall x, f x <= 1) -> enum_real_expect f (subenum_raw mu) <= 1.
-Proof.
-  move=> Hf.
-  apply: le_trans (enum_real_expect_mono (subenum_raw mu) Hf) _.
-  rewrite (_ : (fun _ : A => (1 : R)) = (fun _ => ratr (1 : rat)));
-    last by apply functional_extensionality=> x; rewrite rmorph1.
-  rewrite enum_real_expect_rat.
-  rewrite -(rmorph1 (ratr : {rmorphism rat -> R})) ler_rat.
-  exact (subenum_bound mu).
-Qed.
-
-Definition countable_upper (values : nat -> R) : R := sup (range values).
-
-Lemma countable_upper_le values b :
-  (forall n, values n <= b) -> countable_upper values <= b.
-Proof.
-  move=> Hb. apply: sup_le_ub.
-  - exists (values 0%nat). by exists 0%nat.
-  - apply/ubP=> x [n _ <-]. exact: Hb.
-Qed.
-
-Lemma countable_upper_ge values b n :
-  (forall i, values i <= b) -> values n <= countable_upper values.
-Proof.
-  move=> Hb. apply: sup_ubound.
-  - exists b. apply/ubP=> x [i _ <-]. exact: Hb.
-  - by exists n.
-Qed.
-
-Lemma countable_upper_constant c : countable_upper (fun _ => c) = c.
-Proof.
-  apply/eqP. rewrite eq_le. apply/andP. split.
-  - apply countable_upper_le. intro n. exact: lexx.
-  - exact (@countable_upper_ge (fun _ => c) c 0%nat (fun _ => lexx c)).
-Qed.
+Local Notation countable_upper_ge := (@Expectation.countable_upper_ge R).
 
 Fixpoint free_omega_upper {A} (mu : FreeOmega SubEnum A) (f : A -> R) : R :=
   match mu with
@@ -147,10 +81,6 @@ Proof.
   - f_equal. apply functional_extensionality. exact IH.
 Qed.
 
-Lemma enum_real_expect_zero {A} (mu : Enum A) :
-  enum_real_expect (fun _ => 0) mu = 0.
-Proof. elim: mu=> [|[p x] tail IH] //=. by rewrite mulr0 IH addr0. Qed.
-
 Lemma free_omega_upper_zero {A} (mu : FreeOmega SubEnum A) :
   free_omega_upper mu (fun _ => 0) = 0.
 Proof.
@@ -169,13 +99,5 @@ Lemma free_omega_upper_native_rat {A} (mu : SubEnum A) (f : A -> rat) :
   free_omega_upper (FOSample mu (fun x => FORet x)) (fun x => ratr (f x)) =
   ratr (enum_expect f (subenum_raw mu)).
 Proof. exact: enum_real_expect_rat. Qed.
-
-Lemma enum_real_expect_one {A} (mu : Enum A) :
-  enum_real_expect (fun _ => 1) mu = ratr (enum_mass mu).
-Proof.
-  rewrite (_ : (fun _ : A => (1 : R)) = (fun _ => ratr (1 : rat)));
-    last by apply functional_extensionality=> x; rewrite rmorph1.
-  exact: enum_real_expect_rat.
-Qed.
 
 End UpperExpectation.

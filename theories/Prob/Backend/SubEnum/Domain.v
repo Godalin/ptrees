@@ -11,8 +11,7 @@ From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Backend.Common Require Import RatSubTypes.
 From PTree.Prob.Backend.Enum Require Import Representation.
 From PTree.Prob.Backend.SubEnum Require Import Measure.
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import
-  UpperExpectation UpperCoupling UpperContinuity.
+From PTree.Prob.Backend.SubEnum Require Import Expectation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

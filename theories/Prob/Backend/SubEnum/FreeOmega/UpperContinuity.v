@@ -12,6 +12,8 @@ Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Rep
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.SubEnum.FreeOmega.UpperExpectation PTree.Prob.Backend.SubEnum.FreeOmega.UpperCoupling.
 
+Require Export PTree.Prob.Backend.SubEnum.Expectation.
+
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -24,64 +26,6 @@ Local Open Scope ring_scope.
 Section ScalarSuprema.
 Variable R : realType.
 Local Notation upper := (@countable_upper R).
-
-Lemma scalar_increasing_le (f : nat -> R) :
-  (forall n, f n <= f (S n)) ->
-  forall n m, Peano.le n m -> f n <= f m.
-Proof.
-  intros Hinc n m Hle. induction Hle.
-  - exact: lexx.
-  - eapply le_trans; [exact IHHle|exact (Hinc m)].
-Qed.
-
-Lemma countable_upper_scale (f : nat -> R) p bound :
-  0 <= p -> (forall n, f n <= bound) ->
-  upper (fun n => p * f n) = p * upper f.
-Proof.
-  intros Hp Hb. destruct (eqVneq p 0) as [->|Hnz].
-  - have Hz : (fun n => (0 : R) * f n) = (fun _ => 0).
-    { apply functional_extensionality=> n. exact: mul0r. }
-    by rewrite Hz countable_upper_constant mul0r.
-  - have Hpos : 0 < p by rewrite lt0r Hnz Hp.
-    have Hscaled : forall n, p * f n <= p * bound :=
-      fun n => ler_wpM2l Hp (Hb n).
-    apply/eqP. rewrite eq_le. apply/andP. split.
-    + apply countable_upper_le. intro n. apply ler_wpM2l; [exact Hp|].
-      exact (@countable_upper_ge R f bound n Hb).
-    + rewrite -ler_pdivlMl //.
-      apply countable_upper_le. intro n. rewrite ler_pdivlMl //.
-      exact (@countable_upper_ge R (fun i => p * f i) (p * bound) n Hscaled).
-Qed.
-
-Lemma countable_upper_add (f g : nat -> R) bf bg :
-  (forall n, f n <= f (S n)) -> (forall n, g n <= g (S n)) ->
-  (forall n, f n <= bf) -> (forall n, g n <= bg) ->
-  upper (fun n => f n + g n) = upper f + upper g.
-Proof.
-  intros Hf Hg Hbf Hbg.
-  have Hsf : has_sup (range f).
-  { split; [exists (f 0%nat); by exists 0%nat|].
-    exists bf. apply/ubP=> x [n _ <-]. exact (Hbf n). }
-  have Hsg : has_sup (range g).
-  { split; [exists (g 0%nat); by exists 0%nat|].
-    exists bg. apply/ubP=> x [n _ <-]. exact (Hbg n). }
-  have Hsum : forall n, f n + g n <= bf + bg := fun n => lerD (Hbf n) (Hbg n).
-  apply/eqP. rewrite eq_le. apply/andP. split.
-  - apply countable_upper_le. intro n. apply lerD.
-    + exact (@countable_upper_ge R f bf n Hbf).
-    + exact (@countable_upper_ge R g bg n Hbg).
-  - change (sup (range f) + sup (range g) <= upper (fun n => f n + g n)).
-    rewrite -(sup_sumE Hsf Hsg). apply sup_le_ub.
-    + exists (f 0%nat + g 0%nat), (f 0%nat).
-      * by exists 0%nat.
-      * exists (g 0%nat); [by exists 0%nat|reflexivity].
-    + intros z [x [i _ <-] [y [j _ <-] <-]].
-      eapply le_trans with (y := f (Nat.max i j) + g (Nat.max i j)).
-      * apply lerD.
-        -- exact (scalar_increasing_le Hf (Nat.le_max_l i j)).
-        -- exact (scalar_increasing_le Hg (Nat.le_max_r i j)).
-      * exact (@countable_upper_ge R (fun n => f n + g n) (bf+bg) (Nat.max i j) Hsum).
-Qed.
 
 Lemma countable_upper_swap (grid : nat -> nat -> R) bound :
   (forall i j, grid i j <= bound) ->
@@ -108,46 +52,6 @@ Section UpperContinuity.
 Variable R : realType.
 Local Notation expect := (enum_real_expect (R := R)).
 Local Notation upper := (free_omega_upper (R := R)).
-
-Lemma enum_real_expect_countable_ae {A} (mu : Enum A) (tests : nat -> A -> R) :
-  (forall n x, 0 <= tests n x /\ tests n x <= 1) ->
-  enum_ae mu (fun x => forall n, tests n x <= tests (S n) x) ->
-  expect (fun x => countable_upper (fun n => tests n x)) mu =
-  countable_upper (fun n => expect (tests n) mu).
-Proof.
-  intro Hb. induction mu as [|[p x] tail IH]; intro Hi; cbn [enum_real_expect].
-  - symmetry. apply countable_upper_constant.
-  - have Htail : enum_ae tail (fun x => forall n, tests n x <= tests (S n) x).
-    { intros q y Hy Hq. exact (Hi q y (or_intror Hy) Hq). }
-    rewrite (IH Htail).
-    destruct (eqVneq p nnQ_0) as [->|Hnz].
-    { cbn [Qval nnQ_0]. rewrite rmorph0 mul0r add0r.
-      f_equal. apply functional_extensionality=> n. by rewrite mul0r add0r. }
-    have Hx : forall n, tests n x <= tests (S n) x.
-    { apply (Hi p x (or_introl (Logic.eq_refl (p,x)))).
-      intro Hz. move/eqP: Hnz. intro Hneq. apply Hneq. exact Hz. }
-    have Hp : (0 : R) <= ratr (Qval p) by rewrite ler0q; apply Qval_nnQ_ge0.
-    rewrite -(@countable_upper_scale R (fun n => tests n x) (ratr (Qval p)) 1
-      Hp (fun n => proj2 (Hb n x))).
-    symmetry. apply countable_upper_add with
-      (bf := ratr (Qval p)) (bg := ratr (enum_mass tail)).
-    + intro n. exact (ler_wpM2l Hp (Hx n)).
-    + intro n. apply enum_real_expect_ae_mono.
-      intros q y Hy Hq. exact (Htail q y Hy Hq n).
-    + intro n. exact (ler_piMr Hp (proj2 (Hb n x))).
-    + intro n. rewrite -enum_real_expect_one.
-      apply enum_real_expect_mono. intro y. exact (proj2 (Hb n y)).
-Qed.
-
-Lemma enum_real_expect_countable {A} (mu : Enum A) (tests : nat -> A -> R) :
-  (forall n x, 0 <= tests n x /\ tests n x <= 1) ->
-  (forall n x, tests n x <= tests (S n) x) ->
-  expect (fun x => countable_upper (fun n => tests n x)) mu =
-  countable_upper (fun n => expect (tests n) mu).
-Proof.
-  intros Hb Hi. apply enum_real_expect_countable_ae; [exact Hb|].
-  intros p x _ _ n. exact (Hi n x).
-Qed.
 
 (** Scott continuity in increasing unit-interval tests holds even when
     the raw term contains arbitrary (not necessarily increasing) FOLub
