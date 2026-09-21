@@ -91,4 +91,32 @@ Proof.
   - intros [|n]; [apply modelable_zero|apply modelable_ret].
   - intros [|n] f Hf; [exact (proj1 (Hf true))|exact: lexx].
 Qed.
+
+(** Genuine unbounded retry with a real-valued native weight; validity is
+    proved by the generic domain lub rule, not by a rational surrogate. *)
+Fixpoint real_retry (n : nat) : FreeOmega (SubEnumR R) bool :=
+  match n with
+  | O => FOZero
+  | S m => FOSample real_sqrt_coin (fun b => if b then FORet true else real_retry m)
+  end.
+Lemma real_retry_prefix_valid n : free_omega_modelable native (real_retry n).
+Proof.
+  induction n; first apply modelable_zero.
+  apply modelable_sample; intros []; [apply modelable_ret|exact IHn].
+Qed.
+Lemma real_retry_increasing : model_chain_increasing native real_retry.
+Proof.
+  intro n; induction n as [|n IH]; intros f Hf.
+  - exact (proj1 (model_upper_bounds native (real_retry 1) Hf)).
+  - change (oval_eval (subenumR_domain real_sqrt_coin)
+      (fun b => if b then f true else free_omega_model_upper native (real_retry n) f) <=
+      oval_eval (subenumR_domain real_sqrt_coin)
+      (fun b => if b then f true else free_omega_model_upper native (real_retry (S n)) f)).
+    apply (oval_mono (oval_laws (subenumR_domain real_sqrt_coin))).
+    + intros []; [exact (Hf true)|exact (model_upper_bounds native (real_retry n) Hf)].
+    + intros []; [exact (Hf true)|exact (model_upper_bounds native (real_retry (S n)) Hf)].
+    + intros []; [exact: lexx|exact (IH f Hf)].
+Qed.
+Example real_unbounded_retry_valid : free_omega_modelable native (FOLub real_retry).
+Proof. exact (modelable_lub real_retry_prefix_valid real_retry_increasing). Qed.
 End Tests.
