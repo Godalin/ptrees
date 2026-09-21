@@ -1,5 +1,7 @@
 """Frozen CI profile must fail closed on dependency/toolchain drift."""
 import unittest
+import os
+import subprocess
 from unittest.mock import patch
 import check_ci_environment as ci
 
@@ -46,10 +48,31 @@ class FrozenEnvironmentTests(unittest.TestCase):
         project = 'opam install . --deps-only --with-test -y'
         self.assertLess(workflow.index(profile), workflow.index(project))
         self.assertLess(workflow.index(project), workflow.index('python3 tools/check_ci_environment.py'))
-        self.assertIn('ocaml-compiler: ocaml-base-compiler.5.2.1', workflow)
         self.assertIn('OPAMNOSELFUPGRADE: "true"', workflow)
-        self.assertLess(workflow.index('- name: Select local opam version'), workflow.index(profile))
+        self.assertLess(workflow.index('bash .github/ci/bootstrap.sh'), workflow.index(profile))
         self.assertNotIn('Install supported Coq', workflow)
+
+    def test_single_frontend_fresh_root_bootstrap(self):
+        workflow = (ci.ROOT / '.github/workflows/coq.yml').read_text()
+        script = (ci.ROOT / '.github/ci/bootstrap.sh').read_text()
+        self.assertNotIn('setup-ocaml', workflow)
+        self.assertNotIn('actions/cache', workflow)
+        self.assertIn('mktemp -d "$RUNNER_TEMP/ptree-toolchain.XXXXXX"', script)
+        self.assertIn('test ! -e "$OPAMROOT"', script)
+        self.assertIn('export OPAMNOSELFUPGRADE=true', script)
+        self.assertLess(script.index('test "$(opam --version)" = 2.5.1'),
+                        script.index('opam init --bare'))
+        self.assertIn('opam switch create ptree-ci ocaml-base-compiler.5.2.1', script)
+        self.assertIn('OPAMROOT=%s\\nOPAMSWITCH=ptree-ci\\n', script)
+        self.assertRegex(script, r'opam-repository.git#[0-9a-f]{40}')
+        self.assertRegex(script, r'coq_revision=[0-9a-f]{40}')
+
+    def test_bootstrap_refuses_local_execution(self):
+        env = dict(os.environ, GITHUB_ACTIONS='false')
+        result = subprocess.run(['bash', str(ci.ROOT / '.github/ci/bootstrap.sh')],
+                                env=env, capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('only for disposable Linux x64 GitHub runners', result.stderr)
 
 
 if __name__ == '__main__':

@@ -25,17 +25,29 @@ active installation. No local package was installed, upgraded or removed.
 
 ## Reproduction boundary
 
-This freezes **compiler and dependency package versions**, not an entire OS
+This freezes **opam, compiler and dependency package versions and repository
+revisions**, not an entire OS
 image. The working local environment is macOS; CI remains Linux, with the runner
 label fixed to `ubuntu-24.04` instead of `ubuntu-latest`. Architecture, C compiler,
-system libraries, runner image updates, opam repository metadata and GitHub
-Actions are not claimed to be byte-identical. Extra `conf-*` packages may be
+system libraries and runner image updates are not claimed to be byte-identical.
+Extra `conf-*` packages may be
 needed for Linux system probes; all probes already in the profile remain pinned.
-The opam frontend for dependency solves is also fixed to local version 2.5.1,
-using the official Linux binary with a checked SHA-256 digest. Self-upgrade is
-disabled. `setup-ocaml` still bootstraps the compiler switch with its bundled
-opam; the version check runs against the selected 2.5.1 binary before building
-the project.
+`bootstrap.sh` downloads the official opam 2.5.1 Linux binary with a checked
+SHA-256 digest and uses it from the **first `opam init`** onward. Self-upgrade is
+disabled. A fresh `mktemp` directory owns the root and named `ptree-ci` switch;
+neither a cached root nor the runner's default `~/.opam` is reused. The same
+binary/root/switch is explicitly propagated to every subsequent step. There is
+no `setup-ocaml` action and no mid-run opam downgrade.
+
+The metadata repositories are frozen at:
+
+- opam-repository: `3c79a939b221caf909b254fdff9616f8c0266e4f`;
+- Rocq's `released/` repository: `a506e0a4a2983bf3b4248281c487327eb19fd2b6`.
+
+Checkout is also pinned to a commit. The bootstrap refuses ordinary local
+execution and runs only on disposable Linux x64 GitHub runners. Its package
+builds do not use opam's bubblewrap sandbox (the hosted Ubuntu user-namespace
+restriction); this does not weaken Coq's proof checking or any project audit.
 
 Do not run the installation command in the existing local switch just to check
 this profile: the local environment is intentionally left unchanged. The strict

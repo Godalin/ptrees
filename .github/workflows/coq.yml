@@ -13,32 +13,21 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       OPAMNOSELFUPGRADE: "true"
+      OPAMYES: "true"
+      OPAMRETRIES: "5"
+      OPAMJOBS: "2"
+      OPAMERRLOGLEN: "0"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: ocaml/setup-ocaml@v3
-        with:
-          ocaml-compiler: ocaml-base-compiler.5.2.1
-          cache-prefix: ptree-local-profile-v1
-          opam-repositories: |
-            default: https://github.com/ocaml/opam-repository.git
-            coq-released: https://coq.inria.fr/opam/released
-
-      # setup-ocaml bootstraps the switch using its bundled opam. All dependency
-      # solves below use the local environment's exact opam frontend instead.
-      - name: Select local opam version
-        shell: bash
+      - name: Install Linux build prerequisites
         run: |
-          mkdir -p "$RUNNER_TEMP/ptree-opam"
-          curl --fail --location --retry 3 \
-            https://github.com/ocaml/opam/releases/download/2.5.1/opam-2.5.1-x86_64-linux \
-            --output "$RUNNER_TEMP/ptree-opam/opam"
-          printf '%s  %s\n' \
-            33705e328d9f740026ce182079e2457639791bcf04a0e4bafbdb2024dd4d6092 \
-            "$RUNNER_TEMP/ptree-opam/opam" | sha256sum --check
-          chmod +x "$RUNNER_TEMP/ptree-opam/opam"
-          test "$("$RUNNER_TEMP/ptree-opam/opam" --version)" = 2.5.1
-          echo "$RUNNER_TEMP/ptree-opam" >> "$GITHUB_PATH"
+          sudo apt-get update
+          sudo apt-get install -y build-essential m4 pkg-config libgmp-dev unzip curl git rsync
+
+      - name: Initialize fresh root with fixed opam and compiler
+        shell: bash
+        run: bash .github/ci/bootstrap.sh
 
       # Install the constraint package itself, not just --deps-only: keeping it
       # installed prevents the later project solve from upgrading dependencies.
