@@ -270,6 +270,11 @@ primitive kernel and its finite iterations to every complete
 SubEnum/FreeOmega hitting witness. The core soundness line is complete.
 [DS5a's first increment](DOMAIN_DS5A_FOUNDATIONS.md) adds countable-carrier
 representation, external dual/Hall constraints, and equality joints.
+It is accepted at `086f2c1`.
+[DS5a.2 preparation](DOMAIN_TRANSPORT_PREPARATION.md) adds atomic-series
+normal form, finite-prefix tightness, realization of supplied real-weight
+transport plans, and code/decode reduction. The implication from Hall/dual
+constraints to existence of those weights is still open.
 **General joint realization is not yet proved; DS5a remains in progress.**
 DS5b and subsequent stages have not started.
 

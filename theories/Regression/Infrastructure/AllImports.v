@@ -134,10 +134,13 @@ Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperObservation.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperQuotient.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperRelational.
 Require PTree.Prob.Backend.SubEnum.Measure.
+Require PTree.Prob.Domain.Atomic.
 Require PTree.Prob.Domain.Countable.
+Require PTree.Prob.Domain.CountableTransport.
 Require PTree.Prob.Domain.Coupling.
 Require PTree.Prob.Domain.Expectation.
 Require PTree.Prob.Domain.MeasureModel.
+Require PTree.Prob.Domain.Series.
 Require PTree.Prob.FreeOmega.Approximation.
 Require PTree.Prob.FreeOmega.Coupling.
 Require PTree.Prob.FreeOmega.Definition.
@@ -198,6 +201,7 @@ Require PTree.Regression.Infrastructure.ResidualTransport.
 Require PTree.Regression.Infrastructure.UniverseSeparatedPTree.
 Require PTree.Regression.Probability.ConditionalResampling.
 Require PTree.Regression.Probability.CorrelatedSampleAlgebra.
+Require PTree.Regression.Probability.CountableTransport.
 Require PTree.Regression.Probability.EnumDisintegration.
 Require PTree.Regression.Probability.FiniteTransport.
 Require PTree.Regression.Probability.FreeOmegaDomain.
