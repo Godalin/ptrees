@@ -54,6 +54,8 @@ def source_check(sources=None, policy=None):
         code = code_only(text)
         assert not re.search(r'\b(?:Admitted|admit|Axiom|Axioms|Parameter|Parameters)\b', code), \
             'Unfinished proof or semantic assumption: ' + path
+        assert not re.search(r'\bUnset\s+Universe\s+Checking\b', code), \
+            'Unsafe universe setting in maintained theory: ' + path
         for name, decl in classes(text).items():
             found_classes[path + ':' + name] = decl
     assert found_classes == policy['classes'], 'Capability declaration drift (new or changed Class)'

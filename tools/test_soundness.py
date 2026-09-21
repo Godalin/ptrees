@@ -32,6 +32,11 @@ class SoundnessTests(unittest.TestCase):
                             soundness.classes('Class C := { p : False }.'))
         self.assertEqual(soundness.classes('Class C := p : True.'),{'C':'Class C := p : True.'})
 
+    def test_no_unsafe_universe_escape_in_maintained_theory(self):
+        path='theories/Prob/Backend/MathComp/SelfModel.v'
+        with self.assertRaises(AssertionError):
+            soundness.source_check({**self.sources,path:self.sources[path]+'\nLocal Unset Universe Checking.\n'},self.policy)
+
     def test_domain_and_scalar_isolation_mutations(self):
         for path, addition in [
             ('theories/Prob/Domain/Expectation.v', 'Check SemanticMeasure.'),

@@ -134,3 +134,119 @@ Finite-real checkpoint validation passed: full build/AllImports; 254-module
 architecture/source checks; API surface; all 49 tool tests; unchanged 505
 compiled contracts; 13 new endpoint assumption probes; targeted joint
 `coqchk -norec` of all six new modules. No CI was inspected or changed.
+
+## MathComp same-carrier investigation
+
+`MathComp/SelfModel.v` safely fixes `MN = MF = MathCompKernelMeasure R` at
+the native carrier universe. It adds actual mixed-bind operations, mixed
+unit, mixed node-bind flattening, total properness and zero-prefix/constant
+chain cofinality instances, without a gluing context. It also proves
+returned-event zero, order reflexivity/transitivity/bottom and continuation
+bind monotonicity. Ordinary native monad equations already existed; these
+new instances reuse them. No full relational bind instance is claimed.
+
+There are **two distinct remaining issues**, not one:
+
+| Obligation | Current status |
+| --- | --- |
+| Ordinary bind and same-carrier mixed operation | proved |
+| Mixed unit / nested native flattening | proved, no gluing premise |
+| Foundational native AE | pre-existing |
+| Total properness / zero-prefix and constant lub | proved |
+| Full order package (including source-measure bind monotonicity) | incomplete |
+| Increasing-chain limit existence and bind continuity | incomplete |
+| Diagonal / Fubini capability packages | incomplete |
+| Coupling composition | existing explicit `MathCompCouplingGluing` assumption |
+| Relational kernel bind | incomplete, not supplied by ordinary bind |
+| Jointly usable recursive PTree frontier with the same sealed carrier | universe obstruction reproduced |
+
+### Important integration finding
+
+A standalone file can typecheck the current canonical PTree head type,
+its same-MathComp frontier, primitive kernel and `peutt` definition. This
+is **not** sufficient evidence for a self-model: importing its compiled
+module into AllImports failed with a universe inconsistency.
+
+Dependency reduction found that one existing module,
+`Regression/Backend/FreeOmegaUpperContracts`, suffices to reproduce the
+conflict. With that module loaded first, a native PTree and its stable head
+still typecheck, but applying the sealed MathComp carrier to that head is
+rejected: the required strict inequality conflicts with
+`MathCompKernelMeasure.u0 = PTree.Core.PTreeDefinition.61`.
+The primitive kernel and `peutt` instantiations fail as well.
+
+`Regression/Backend/MathCompSelfModel.v` preserves these as checked `Fail`
+commands with positive tree/head controls and actual safe capability tests.
+The failure was independently inspected without `Fail`: it is a universe
+inconsistency, not a missing identifier or incorrectly supplied argument.
+The standalone positive instantiations are not retained as jointly usable
+trusted results.
+
+No `Unset Universe Checking` experiment has been added. Such an experiment
+would not close the independent omega/relational-bind mathematical gaps,
+and isolated compilation already demonstrated why joint checking matters.
+This checkpoint neither claims MathComp direct self-model success nor that
+universe constraints are its only remaining obstacle.
+
+The MathComp carriers here are fully discrete/powerset measurable carriers.
+This is not a continuous/Gaussian/Borel backend, and discreteness alone is
+not a countable-support certificate.
+
+## Convergence and next work
+
+Completed checkpoints: generic capability inventory; native-parametric
+OmegaVal validation; unchanged SubEnum DS bridge; finite-real representation,
+ordinary/AE laws, native model and Q-to-R embedding; safe partial MathComp
+same-carrier capabilities and a reproducible joint-universe boundary.
+
+The real-weight regression additionally constructs a genuinely unbounded
+retry chain using the square-root-weight coin. Increasing approximants and
+validity of their lub use the generic completion proof, with no rational
+conversion and no assumption of eventual stabilization. This is validity,
+not yet a theorem computing its termination probability.
+
+Remaining priorities:
+
+1. Prove finite-real joint composition and relational bind, then instantiate
+   the complete generic FreeOmega behavioral profile. Do not add gluing as
+   a placeholder assumption for this finite backend.
+2. Decide whether/when to generalize full qlift external joint soundness.
+   The existing SubEnum DS5 theorem is preserved, not generalized by fiat;
+   approximation/test soundness is a different claim.
+3. Develop safe MathComp omega/order/relational kernel laws, then revisit
+   the universe obstruction with a joint-import test from the start.
+
+No public facade changes, new semantic class, transport-existence axiom,
+environment upgrade, remote CI work, or cleanup of retained internal
+infrastructure was performed. Native weighted lists and their validity
+record are the new representation; the only formal completion is FreeOmega.
+
+## Review checkpoints
+
+| Commit | Purpose |
+| --- | --- |
+| `55b6809` | Compile existing FreeOmega capabilities over arbitrary MN, with separately scoped prerequisites |
+| `efa262e` | Generic OmegaVal validation, AE closure, limit algebra and unchanged SubEnum DS bridge |
+| `d0b2411` | Finite-real native distributions, ordinary/AE laws, external model and Q-to-R embedding |
+| `c970eea` | Genuinely unbounded real-weight retry, using the generic validity/lub theory |
+| MathComp checkpoint (this commit) | Safe same-carrier laws, reproducible joint-universe boundary and maintained-theory unsafe-setting rejection |
+
+All old formal theory/proof files were compared byte-for-byte with `28ae229`.
+Only two old `.v` files changed: the capability regression gained generic
+probes and AllImports gained sorted imports. DS1--DS5, public facades,
+FreeOmega syntax/quotient and all existing theorem statements/proofs stayed
+unchanged. Modules: 245 -> 256; regression modules: 62 -> 65.
+
+The existing 505 compiled signatures and per-endpoint logical assumptions
+remain exactly unchanged. Another 38 new endpoint probes were checked against
+the existing logical-axiom whitelist; all passed. New MathComp safe endpoints
+do not require `MathCompCouplingGluing`. Generic AE/test-soundness bridge
+premises are explicit parameters, discharged for both rational and real
+finite backends, not new axioms or a new typeclass hierarchy.
+
+The final source audit also rejects `Unset Universe Checking` in maintained
+theory. Build/AllImports, architecture, API, source checks and all 50 tool
+tests passed. The final joint `coqchk -silent -norec` of all 11 added formal
+modules passed (exit status 0), in addition to the earlier targeted checks.
+This checks those modules together; it is not a recursive whole-library
+kernel audit. No remote-CI success is claimed by these checks.
