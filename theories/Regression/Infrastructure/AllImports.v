@@ -117,6 +117,8 @@ Require PTree.Prob.Backend.SubEnum.Domain.
 Require PTree.Prob.Backend.SubEnum.Expectation.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Admissibility.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.CodedJoint.
+Require PTree.Prob.Backend.SubEnum.FreeOmega.CountableSupport.
+Require PTree.Prob.Backend.SubEnum.FreeOmega.CouplingSoundness.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Disintegration.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.DomainSoundness.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.EquivalenceJoint.
@@ -132,6 +134,8 @@ Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperObservation.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperQuotient.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperRelational.
 Require PTree.Prob.Backend.SubEnum.Measure.
+Require PTree.Prob.Domain.Countable.
+Require PTree.Prob.Domain.Coupling.
 Require PTree.Prob.Domain.Expectation.
 Require PTree.Prob.Domain.MeasureModel.
 Require PTree.Prob.FreeOmega.Approximation.
@@ -198,6 +202,7 @@ Require PTree.Regression.Probability.EnumDisintegration.
 Require PTree.Regression.Probability.FiniteTransport.
 Require PTree.Regression.Probability.FreeOmegaDomain.
 Require PTree.Regression.Probability.FreeOmegaQuotientDomain.
+Require PTree.Regression.Probability.FreeOmegaRelationalDomain.
 Require PTree.Regression.Probability.IrrationalHitting.
 Require PTree.Regression.Probability.OmegaVal.
 Require PTree.Regression.Probability.OmegaValMeasure.

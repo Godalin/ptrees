@@ -16,6 +16,7 @@ import audit_domain_soundness as domain_soundness
 import audit_ds25 as ds25
 import audit_domain_quotient as domain_quotient
 import audit_domain_hitting as domain_hitting
+import audit_domain_relational as domain_relational
 
 
 class ArchitectureTests(unittest.TestCase):
@@ -35,6 +36,8 @@ class ArchitectureTests(unittest.TestCase):
             for target in ["Prob/Domain/Expectation",
                            "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",
                            "Prob/Backend/SubEnum/FreeOmega/QuotientSoundness",
+                           "Prob/Backend/SubEnum/FreeOmega/CountableSupport",
+                           "Prob/Backend/SubEnum/FreeOmega/CouplingSoundness",
                            "Eq/Backend/StableHittingDomainSubEnum"]:
                 self.assertFalse(architecture.permitted(source, target))
         self.assertTrue(architecture.permitted("Prob/Backend/SubEnum/Domain", "Prob/Domain/Expectation"))
@@ -368,6 +371,57 @@ class DS3Tests(unittest.TestCase):
         with patch.object(capabilities, "query", side_effect=SystemExit("query failure")):
             with self.assertRaises(SystemExit):
                 domain_quotient.report()
+        self.assertIs(capabilities.GROUPS, groups)
+        self.assertIs(capabilities.ENDPOINTS, endpoints)
+
+
+class DomainRelationalTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.before = migration.frozen(domain_relational.BASE)
+        cls.after = dict(cls.before)
+        aggregate = "theories/Regression/Infrastructure/AllImports.v"
+        cls.after[aggregate] = domain_relational.aggregate_after(cls.before[aggregate])
+        for path in domain_relational.NEW:
+            cls.after[path] = (domain_relational.ROOT / path).read_text()
+
+    def test_frozen_source_boundary(self):
+        self.assertEqual(domain_relational.audit_sources(self.before, self.after), (234, 239))
+
+    def test_frozen_ds4_cannot_change(self):
+        path = "theories/Eq/Backend/StableHittingDomainSubEnum.v"
+        with self.assertRaises(AssertionError):
+            domain_relational.audit_sources(self.before, {**self.after, path: self.after[path] + "\n"})
+
+    def test_domain_cannot_depend_on_syntax(self):
+        path = "theories/" + domain_relational.COUNTABLE + ".v"
+        with self.assertRaises(AssertionError):
+            domain_relational.audit_sources(self.before, {**self.after,
+                path: self.after[path].replace("OmegaVal R A", "FreeOmega MN A", 1)})
+
+    def test_joint_existence_cannot_be_assumed(self):
+        path = "theories/" + domain_relational.COUPLING + ".v"
+        for extra in ["Axiom strassen : False.", "Class JointExists := {}."]:
+            with self.subTest(extra=extra), self.assertRaises(AssertionError):
+                domain_relational.audit_sources(self.before, {**self.after, path: self.after[path] + extra})
+
+    def test_dual_is_not_a_realization_claim(self):
+        name = "PTree.Prob.Backend.SubEnum.FreeOmega.CouplingSoundness.free_omega_qlift_domain_bidual"
+        good = "forall H : free_omega_admissible t, oval_bidual T L M"
+        domain_relational.check_answer(name, good, "Closed under the global context")
+        for bad in ["oval_bidual T L M", good.replace("oval_bidual", "oval_coupled")]:
+            with self.assertRaises(AssertionError):
+                domain_relational.check_answer(name, bad, "Closed under the global context")
+
+    def test_new_axiom_is_rejected(self):
+        with self.assertRaises(AssertionError):
+            domain_relational.check_answer("test", "True", "Axioms:\nstrassen : False")
+
+    def test_query_failure_restores_scope(self):
+        groups, endpoints = capabilities.GROUPS, capabilities.ENDPOINTS
+        with patch.object(capabilities, "query", side_effect=SystemExit("query failure")):
+            with self.assertRaises(SystemExit):
+                domain_relational.report()
         self.assertIs(capabilities.GROUPS, groups)
         self.assertIs(capabilities.ENDPOINTS, endpoints)
 

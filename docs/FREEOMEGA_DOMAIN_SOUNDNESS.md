@@ -265,9 +265,13 @@ finite expectation facts are independent of FreeOmega and the external
 domain. [DS3 quotient equality soundness](DOMAIN_DS3.md) is accepted at
 `8082a52`; it adds admissibility transport and observational equality via
 the existing all-raw evaluator bridge. [DS4 stable-hitting adequacy](DOMAIN_DS4.md)
-connects an independently defined OmegaVal primitive kernel and its finite
-iterations to every complete SubEnum/FreeOmega hitting witness. Pause for
-DS4 acceptance; DS5 and subsequent stages have not started.
+is accepted at `10b5563`; it connects an independently defined OmegaVal
+primitive kernel and its finite iterations to every complete
+SubEnum/FreeOmega hitting witness. The core soundness line is complete.
+[DS5a's first increment](DOMAIN_DS5A_FOUNDATIONS.md) adds countable-carrier
+representation, external dual/Hall constraints, and equality joints.
+**General joint realization is not yet proved; DS5a remains in progress.**
+DS5b and subsequent stages have not started.
 
 `free_omega_denote_approx`, `free_omega_denote_bind` and `free_omega_denote_lub`
 are now implemented for SubEnum in DS2. DS3 adds
