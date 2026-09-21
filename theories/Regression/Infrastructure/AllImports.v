@@ -88,6 +88,7 @@ Require PTree.Prob.Backend.Common.FiniteRationalTransport.
 Require PTree.Prob.Backend.Common.RatGeometric.
 Require PTree.Prob.Backend.Common.RatSubTypes.
 Require PTree.Prob.Backend.Common.RealSubTypes.
+Require PTree.Prob.Backend.Common.RealTransport.
 Require PTree.Prob.Backend.Enum.Bind.
 Require PTree.Prob.Backend.Enum.Coupling.
 Require PTree.Prob.Backend.Enum.Disintegration.
@@ -210,6 +211,7 @@ Require PTree.Regression.Probability.FreeOmegaRelationalDomain.
 Require PTree.Regression.Probability.IrrationalHitting.
 Require PTree.Regression.Probability.OmegaVal.
 Require PTree.Regression.Probability.OmegaValMeasure.
+Require PTree.Regression.Probability.RealTransport.
 Require PTree.Regression.Probability.StableHittingDomain.
 Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.

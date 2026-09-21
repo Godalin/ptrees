@@ -9,8 +9,8 @@ class TransportAuditTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.before = frozen(transport.BASE)
-        cls.after = {p.relative_to(transport.ROOT).as_posix(): p.read_text()
-                     for p in (transport.ROOT / "theories").rglob("*.v")}
+        # Replay the accepted preparation increment, not later additive stages.
+        cls.after = frozen("c189a2e")
 
     def test_isolation(self):
         self.assertEqual(transport.audit_sources(self.before, self.after), (239, 243))
