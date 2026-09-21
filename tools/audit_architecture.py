@@ -19,6 +19,7 @@ def external_validation(path):
     silently enter the mainline through an otherwise ordinary Backend edge.
     """
     return path.startswith("Prob/Domain/") or path in {
+        "Prob/Backend/Common/DomainTransport",
         "Prob/Backend/SubEnum/Domain", "Prob/Backend/MathComp/Domain",
         "Prob/Backend/SubEnum/FreeOmega/Admissibility",
         "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",
@@ -51,6 +52,8 @@ def ownership(path):
         assert len(parts) >= 4 and parts[2] in {"Common", "Enum", "SubEnum", "MathComp"}, "Ungrouped concrete probability module: " + path
         family = parts[2]
         owner = "/".join(parts[:3])
+        if path == "Prob/Backend/Common/DomainTransport":
+            return owner, "external validation", "one-way adapter: independent real transport to expectation-domain joints"
         if family == "Common":
             return owner, "shared arithmetic/combinatorics", "no native carrier specialization"
         if len(parts) >= 5 and parts[3] == "FreeOmega":
@@ -87,6 +90,8 @@ def permitted(module, dependency):
         return False
     if module.startswith("Prob/Domain/"):
         return under("Prob/Domain")
+    if module == "Prob/Backend/Common/DomainTransport":
+        return under("Prob/Domain", "Prob/Backend/Common")
     # A generic theorem layer may not silently fix its observable carrier.
     if ownership(module)[1] == "generic" and ownership(dependency)[1] == "FreeOmega":
         return False

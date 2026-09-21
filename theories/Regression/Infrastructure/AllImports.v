@@ -81,6 +81,8 @@ Require PTree.Interp.FreeOmega.Translate.
 Require PTree.Interp.Kernel.
 Require PTree.Interp.Structural.
 Require PTree.PTree.
+Require PTree.Prob.Backend.Common.CountableRealTransport.
+Require PTree.Prob.Backend.Common.DomainTransport.
 Require PTree.Prob.Backend.Common.FinSupp.
 Require PTree.Prob.Backend.Common.FiniteCapacityMatching.
 Require PTree.Prob.Backend.Common.FiniteMatching.
@@ -140,6 +142,7 @@ Require PTree.Prob.Domain.Countable.
 Require PTree.Prob.Domain.CountableTransport.
 Require PTree.Prob.Domain.Coupling.
 Require PTree.Prob.Domain.Expectation.
+Require PTree.Prob.Domain.Matrix.
 Require PTree.Prob.Domain.MeasureModel.
 Require PTree.Prob.Domain.Series.
 Require PTree.Prob.FreeOmega.Approximation.
@@ -203,6 +206,7 @@ Require PTree.Regression.Infrastructure.UniverseSeparatedPTree.
 Require PTree.Regression.Probability.ConditionalResampling.
 Require PTree.Regression.Probability.CorrelatedSampleAlgebra.
 Require PTree.Regression.Probability.CountableTransport.
+Require PTree.Regression.Probability.CountableTransportExistence.
 Require PTree.Regression.Probability.EnumDisintegration.
 Require PTree.Regression.Probability.FiniteTransport.
 Require PTree.Regression.Probability.FreeOmegaDomain.

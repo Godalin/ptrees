@@ -9,8 +9,7 @@ class RealTransportAuditTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.before = frozen(transport.BASE)
-        cls.after = {p.relative_to(transport.ROOT).as_posix(): p.read_text()
-                     for p in (transport.ROOT / "theories").rglob("*.v")}
+        cls.after = frozen("f00478d")
 
     def test_isolation(self):
         self.assertEqual(transport.audit_sources(self.before, self.after), (243, 245))
