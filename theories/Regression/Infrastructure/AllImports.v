@@ -10,6 +10,7 @@ Require PTree.Core.Utils.
 Require PTree.Eq.Backend.EnumCofinality.
 Require PTree.Eq.Backend.ProbabilisticTraceEnum.
 Require PTree.Eq.Backend.ProbabilisticTraceSubEnum.
+Require PTree.Eq.Backend.StableHittingDomainSubEnum.
 Require PTree.Eq.FreeOmega.Algebra.
 Require PTree.Eq.FreeOmega.Base.
 Require PTree.Eq.FreeOmega.Bind.
@@ -197,8 +198,10 @@ Require PTree.Regression.Probability.EnumDisintegration.
 Require PTree.Regression.Probability.FiniteTransport.
 Require PTree.Regression.Probability.FreeOmegaDomain.
 Require PTree.Regression.Probability.FreeOmegaQuotientDomain.
+Require PTree.Regression.Probability.IrrationalHitting.
 Require PTree.Regression.Probability.OmegaVal.
 Require PTree.Regression.Probability.OmegaValMeasure.
+Require PTree.Regression.Probability.StableHittingDomain.
 Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
 Require PTree.Regression.Semantics.GuardedInterp.

@@ -262,19 +262,22 @@ layer, excluded from the mainline's transitive dependencies.
 it includes AE Sample/bind closure and the alternating-Dirac negative example.
 [DS2.5 dependency hygiene](DOMAIN_DS25.md) is accepted at `7a3bf82`; native
 finite expectation facts are independent of FreeOmega and the external
-domain. [DS3 quotient equality soundness](DOMAIN_DS3.md) adds admissibility
-transport and observational equality via the existing all-raw evaluator
-bridge. Pause for DS3 acceptance; DS4 and subsequent stages have not started.
+domain. [DS3 quotient equality soundness](DOMAIN_DS3.md) is accepted at
+`8082a52`; it adds admissibility transport and observational equality via
+the existing all-raw evaluator bridge. [DS4 stable-hitting adequacy](DOMAIN_DS4.md)
+connects an independently defined OmegaVal primitive kernel and its finite
+iterations to every complete SubEnum/FreeOmega hitting witness. Pause for
+DS4 acceptance; DS5 and subsequent stages have not started.
 
 `free_omega_denote_approx`, `free_omega_denote_bind` and `free_omega_denote_lub`
 are now implemented for SubEnum in DS2. DS3 adds
 `free_omega_qlift_eq_admissible`, `free_omega_qlift_eq_sound`,
 `free_omega_sem_eq_admissible` and `free_omega_sem_eq_sound`, all qualified
-by the SubEnum model and the admissibility boundary. The names
-`free_omega_qlift_sound` and `stable_hitting_denotational_adequacy` remain
-proposed endpoint names, **not implemented declarations**. Their signatures
-must expose admissibility/backend qualifications until the relevant coverage
-theorems discharge them. Completeness, infinite interaction measures, general
+by the SubEnum model and the admissibility boundary. DS4 implements
+`stable_hitting_admissible` and `stable_hitting_denotational_adequacy`:
+complete hitting discharges validity automatically for SubEnum PTrees.
+`free_omega_qlift_sound` remains a **proposed, unimplemented** general
+relational endpoint. Completeness, infinite interaction measures, general
 WP, arbitrary measurable-space samplers and new interpreter stages are not
 acceptance requirements for this work.
 

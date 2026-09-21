@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+"""DS4 stable-hitting external adequacy: frozen sources and compiled contracts."""
+import argparse
+import re
+from pathlib import Path
+
+import audit_capabilities as compiled
+from audit_domain_soundness import ALLOWED_AXIOMS
+from audit_migration import frozen, without_comments
+
+ROOT = Path(__file__).resolve().parents[1]
+BASE = "8082a52"
+REPORT = ROOT / "docs/DOMAIN_DS4_AUDIT.md"
+CORE = "Eq/Backend/StableHittingDomainSubEnum"
+BASIC = "Regression/Probability/StableHittingDomain"
+IRRATIONAL = "Regression/Probability/IrrationalHitting"
+NEW = {"theories/" + p + ".v" for p in (CORE, BASIC, IRRATIONAL)}
+GROUPS = {
+    "PTree." + CORE.replace("/", "."): [
+        "domain_target_approx", "domain_hitting_approx", "domain_hitting",
+        "domain_target_approx_increasing", "domain_hitting_approx_increasing",
+        "stable_target_denotational_commutation", "stable_hitting_finite_commutation",
+        "ptree_domain_kernel", "ptree_domain_approx", "ptree_domain_hitting",
+        "ptree_kernel_denotational_commutation", "ptree_hitting_finite_commutation",
+        "ptree_hitting_approx_admissible", "ptree_hitting_approx_domain_increasing",
+        "ptree_canonical_hitting_spec", "ptree_canonical_hitting_admissible",
+        "ptree_canonical_hitting_denotes", "stable_hitting_admissible",
+        "stable_hitting_denotational_adequacy", "stable_hitting_domain_eq",
+        "stable_hitting_mass_lub",
+    ],
+    "PTree." + BASIC.replace("/", "."): [
+        "arbitrary_witness_valid", "arbitrary_witness_denotes", "return_is_dirac",
+        "silent_hitting_bottom", "native_loss_hitting_bottom",
+        "infinite_visible_service_mass_one", "ret_noncanonical_witness_valid",
+        "ret_noncanonical_witness_sound",
+    ],
+    "PTree." + IRRATIONAL.replace("/", "."): [
+        "schedule_coin_total", "scheduled_retry_finite_mass",
+        "scheduled_retry_hitting_mass", "rational_chain_sup",
+        "real_schedule_hitting_mass", "pi_quarter_irrational",
+        "pi_schedule_mass", "pi_canonical_hitting_mass", "pi_canonical_hitting_irrational",
+    ],
+}
+
+
+def aggregate_after(text):
+    for marker, module in [
+        ("Require PTree.Eq.Backend.ProbabilisticTraceSubEnum.\n", CORE),
+        ("Require PTree.Regression.Probability.FreeOmegaQuotientDomain.\n", IRRATIONAL),
+        ("Require PTree.Regression.Probability.OmegaValMeasure.\n", BASIC),
+    ]:
+        assert text.count(marker) == 1, "Missing/duplicate frozen aggregate marker"
+        text = text.replace(marker, marker + "Require PTree." + module.replace("/", ".") + ".\n")
+    return text
+
+
+def audit_sources(before, after):
+    assert set(after) == set(before) | NEW, "Unexpected new/deleted theory module"
+    for path, text in before.items():
+        if path == "theories/Regression/Infrastructure/AllImports.v":
+            text = aggregate_after(text)
+        assert after[path] == text, "Frozen source changed: " + path
+    for path in NEW:
+        assert not re.search(r"\b(?:Axiom|Axioms|Parameter|Parameters|Admitted|admit)\b",
+                             without_comments(after[path])), path
+    core = without_comments(after["theories/" + CORE + ".v"])
+    kernel = core.split("Section DomainKernel.")[1].split("End DomainKernel.")[0]
+    primitive = core.split("Definition ptree_domain_kernel")[1].split("Definition ptree_domain_approx")[0]
+    for block in [kernel, primitive]:
+        assert not re.search(r"\b(?:FreeOmega|free_omega_\w+|stable_hitting_approx|ptree_hitting_approx|sem_\w+)\b", block), "Model must use independent mathematical operations"
+    assert "induction n" in core.split("Section FiniteCommutation.")[1].split("End FiniteCommutation.")[0], "Missing finite-fuel commuting proof"
+    assert "free_omega_sem_eq_sound" in core, "Missing DS3 witness transport"
+    return len(before), len(after)
+
+
+def check_answer(name, typ, assumptions):
+    assert not re.search(r":\s*@?(?:\w+\.)*Semantic\w+\b", typ), "Unexpected capability premise: " + name
+    axioms = {n for n in re.findall(r"^([\w.]+)\s*:", assumptions, re.M) if n != "Axioms"}
+    if "Axioms:" in assumptions:
+        assert axioms, "Unparsed assumptions: " + name
+    assert axioms <= ALLOWED_AXIOMS, (name, axioms - ALLOWED_AXIOMS)
+    if name.endswith(".stable_hitting_denotational_adequacy"):
+        assert "free_omega_admissible" not in typ, "Adequacy must discharge validity"
+        assert "free_omega_domain_denotes" in typ and "SubEnum" in typ, "Wrong adequacy endpoint"
+        assert "peutt" not in typ, "Adequacy cannot assume behavioral equivalence"
+
+
+def report():
+    previous = compiled.GROUPS, compiled.ENDPOINTS
+    try:
+        compiled.GROUPS = GROUPS
+        compiled.ENDPOINTS = [m + "." + n for m, ns in GROUPS.items() for n in ns]
+        answers = compiled.query()
+    finally:
+        compiled.GROUPS, compiled.ENDPOINTS = previous
+    lines = ["# DS4 compiled stable-hitting adequacy audit", "",
+             "Generated by `python3 tools/audit_domain_hitting.py`; compare with `--check`.", "",
+             f"Scope: {len(answers)} mathematical kernel, adequacy and regression endpoints; not a whole-library kernel audit.",
+             "PTree adequacy is SubEnum/FreeOmega-qualified, for any complete hitting witness, without an admissibility premise.",
+             "The logical-axiom whitelist is unchanged from DS2/DS3. The irrational schedule is a classical representation witness, not an effective sampler for arbitrary real inputs.",
+             "Frozen DS1/DS2/DS3/mainline snapshots are checked separately, not regenerated.", ""]
+    for name, typ, assumptions in answers:
+        check_answer(name, typ, assumptions)
+        lines += ["## `" + name + "`", "", "```coq", typ, "```", "",
+                  "```text", assumptions, "```", ""]
+    return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--check", action="store_true")
+    parser.add_argument("--source", action="store_true")
+    args = parser.parse_args()
+    if args.check or args.source:
+        after = {p.relative_to(ROOT).as_posix(): p.read_text() for p in (ROOT / "theories").rglob("*.v")}
+        counts = audit_sources(frozen(BASE), after)
+        print(f"DS4 source isolation: {counts[0]} frozen modules unchanged except exact AllImports additions; {counts[1]} modules now.")
+    if not args.source:
+        text = report()
+        if args.check:
+            assert REPORT.read_text() == text, "DS4 compiled report changed"
+            print("DS4 compiled signatures and logical assumptions agree with the checked report.")
+        else:
+            print(text, end="")

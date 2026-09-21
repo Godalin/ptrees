@@ -15,6 +15,7 @@ import audit_domain_measure as domain_measure
 import audit_domain_soundness as domain_soundness
 import audit_ds25 as ds25
 import audit_domain_quotient as domain_quotient
+import audit_domain_hitting as domain_hitting
 
 
 class ArchitectureTests(unittest.TestCase):
@@ -367,6 +368,52 @@ class DS3Tests(unittest.TestCase):
         with patch.object(capabilities, "query", side_effect=SystemExit("query failure")):
             with self.assertRaises(SystemExit):
                 domain_quotient.report()
+        self.assertIs(capabilities.GROUPS, groups)
+        self.assertIs(capabilities.ENDPOINTS, endpoints)
+
+
+class DomainHittingTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.before = migration.frozen(domain_hitting.BASE)
+        cls.after = dict(cls.before)
+        aggregate = "theories/Regression/Infrastructure/AllImports.v"
+        cls.after[aggregate] = domain_hitting.aggregate_after(cls.before[aggregate])
+        for path in domain_hitting.NEW:
+            cls.after[path] = (domain_hitting.ROOT / path).read_text()
+
+    def test_exact_frozen_source_boundary(self):
+        self.assertEqual(domain_hitting.audit_sources(self.before, self.after), (231, 234))
+
+    def test_rejects_frozen_edit(self):
+        path = "theories/Prob/Backend/SubEnum/FreeOmega/QuotientSoundness.v"
+        with self.assertRaises(AssertionError):
+            domain_hitting.audit_sources(self.before, {**self.after, path: self.after[path] + "\n"})
+
+    def test_rejects_circular_mathematical_kernel(self):
+        path = "theories/" + domain_hitting.CORE + ".v"
+        for source in ["free_omega_upper", "ptree_hitting_approx", "sem_bind"]:
+            with self.subTest(source=source), self.assertRaises(AssertionError):
+                domain_hitting.audit_sources(self.before, {**self.after,
+                    path: self.after[path].replace("oval_bind (K s)", source + " (K s)", 1)})
+
+    def test_rejects_new_axiom(self):
+        with self.assertRaises(AssertionError):
+            domain_hitting.check_answer("test", "True", "Axioms:\nnew_model_axiom : False")
+
+    def test_adequacy_cannot_assume_validity(self):
+        name = "M.stable_hitting_denotational_adequacy"
+        typ = "forall t : SubEnum, free_omega_domain_denotes t model"
+        domain_hitting.check_answer(name, typ, "Closed under the global context")
+        with self.assertRaises(AssertionError):
+            domain_hitting.check_answer(name, "free_omega_admissible t -> " + typ,
+                                       "Closed under the global context")
+
+    def test_compiled_failure_restores_scope(self):
+        groups, endpoints = capabilities.GROUPS, capabilities.ENDPOINTS
+        with patch.object(capabilities, "query", side_effect=SystemExit("query failure")):
+            with self.assertRaises(SystemExit):
+                domain_hitting.report()
         self.assertIs(capabilities.GROUPS, groups)
         self.assertIs(capabilities.ENDPOINTS, endpoints)
 
