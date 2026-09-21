@@ -2,12 +2,12 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
-From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC EnumMap Coupling FrontierLiftEnum.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum EnumDisintegration.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Map PTree.Prob.Backend.Enum.Coupling PTree.Prob.Backend.Enum.FrontierLift.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.Enum.Disintegration.
 From PTree.Regression.Backend Require Import EnumMeasureRegression SubEnumRegression.
 
-Import Enum EnumMap RatSubTypes GRing.Theory.
+Import Enum PTree.Prob.Backend.Enum.Map RatSubTypes GRing.Theory.
 Local Open Scope ring_scope.
 
 (** Conditioning on a constant visible component must retain the latent

@@ -7,7 +7,7 @@ Require Import Setoid.
 Require Import Program.
 Require Import Morphisms.
 
-From PTree.Prob.Backend Require Import RealSubTypes.
+Require Import PTree.Prob.Backend.Common.RealSubTypes.
 
 Set Implicit Arguments.
 Set Contextual Implicit.

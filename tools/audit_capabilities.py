@@ -36,6 +36,8 @@ def logical(path):
 MODULE_MOVES = {logical(a): logical(b) for a, b in
                 json.loads((ROOT / "docs/gate-b-moves.json").read_text())["moves"].items()}
 GROUPS = {MODULE_MOVES.get(module, module): names for module, names in GROUPS.items()}
+from audit_prob_organization import MODULES as PROB_MOVES
+GROUPS = {PROB_MOVES.get(module, module): names for module, names in GROUPS.items()}
 ENDPOINTS = [module + "." + name for module, names in GROUPS.items() for name in names]
 
 
@@ -114,12 +116,14 @@ def report(answers):
 
 def compare_baseline(answers):
     from audit_migration import normalizer
-    normalize = normalizer()
+    from audit_prob_organization import normalize_compiled
+    historical = normalizer()
+    normalize = lambda text: historical(normalize_compiled(text))
     baseline = (ROOT / "docs/CAPABILITY_BASELINE.md").read_text()
     pattern = r"## `([^`]+)`\n\n### Elaborated type\n\n```coq\n(.*?)\n```\n\n### Logical assumptions \(separate from capabilities\)\n\n```text\n(.*?)\n```"
     prior = {endpoint: (typ, axioms) for endpoint, typ, axioms in re.findall(pattern, baseline, re.S)}
     assert len(prior) == len(answers), "Incomplete Gate A baseline"
-    reverse = {new: old for old, new in MODULE_MOVES.items()}
+    reverse = {PROB_MOVES.get(new, new): old for old, new in MODULE_MOVES.items()}
     for endpoint, typ, axioms in answers:
         module, name = endpoint.rsplit(".", 1)
         old = reverse.get(module, module) + "." + name

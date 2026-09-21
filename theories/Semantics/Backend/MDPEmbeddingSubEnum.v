@@ -6,12 +6,12 @@ Local Unset Universe Minimization ToSet.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum rat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum MeasureIterationEnum DiscreteMC.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.Enum.Representation.
 From PTree.Prob.Interface Require Import SemanticCoupling.
-From PTree.Prob.Backend Require Import EnumDisintegration.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaNative FreeOmegaNativeCoupling.
-From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaNativeCouplingSubEnum.
+Require Import PTree.Prob.Backend.Enum.Disintegration.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Native PTree.Prob.FreeOmega.NativeCoupling.
+Require Import PTree.Prob.Backend.SubEnum.FreeOmega.NativeCoupling.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
 From PTree.Semantics Require Import HeadTransition MDPFragment MDPEmbedding.
 Set Implicit Arguments.

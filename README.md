@@ -118,7 +118,7 @@ expectation-transformer calculus.
 
 ### Unbounded stable hitting
 
-`Prob/Interface/MeasureIteration.v` defines finite absorbing approximants and their
+`Prob/Interface/Iteration.v` defines finite absorbing approximants and their
 omega limits.  `meas_iter_ast` adds totality of that limit.  The maintained
 FreeOmega backend supplies the support-aware omega, AE, coupling, diagonal,
 and Fubini laws needed by arbitrary eventful PTree programs.  Finite programs
@@ -213,13 +213,13 @@ contract needs neither source nondegeneracy nor termination. Raw Enum is the
 executable representation; the certificates establish membership in its
 subprobabilistic fragment.
 
-`Prob/Backend/EnumSupport.v` proves AE continuity for increasing, convergent Enum
+`Prob/Backend/Enum/Support.v` proves AE continuity for increasing, convergent Enum
 chains over outcomes with decidable equality, and proves that absorbing
 iteration approximations are increasing.
-`Prob/FreeOmega/FreeOmegaSupport.v` transports a concrete observation coupling back to
+`Prob/FreeOmega/Support.v` transports a concrete observation coupling back to
 high-universe support when both observations preserve and reflect AE.
 Observation equality or injectivity alone is insufficient: the disappearing
-atom regression in `FreeOmegaMeasureEnumAudit.v` remains rejected.
+atom regression in `Prob/Backend/Enum/FreeOmega/MeasureAudit.v` remains rejected.
 
 The underlying raw `Enum` `meas_eq` is extensional: two enumerations are equal when
 every outcome has the same accumulated mass.  Raw list equality is exposed
@@ -252,13 +252,17 @@ The [Examples follow-up](docs/EXAMPLES_FOLLOWUP.md), accepted at `2af47aa`,
 renamed the application directory without changing its programs or proofs.
 The [Gate C capability review](docs/CAPABILITY_REVIEW.md) records public
 signatures, logical assumptions, proof-helper dependencies and focused
-context/import cleanup; local validation is complete and it awaits acceptance.
+context/import cleanup at `05a2431`. The subsequent
+[Prob organization follow-up](docs/PROB_ORGANIZATION.md) separates capability
+files, groups concrete backends and splits the FreeOmega implementation without
+changing theorem statements or proofs.
 The [current inventory](docs/ARCHITECTURE_AUDIT.md) checks actual dependency
 directions; the [current capability audit](docs/CAPABILITY_CURRENT.md)
 compares 25 compiled endpoint signatures against the frozen
 [Gate A baseline](docs/CAPABILITY_BASELINE.md). The expanded
 [306-entry public index](docs/CAPABILITY_PUBLIC_INDEX.md) retains complete
-before/after signatures. The final whole-library kernel audit is Gate D,
+before/after signatures; the organization audit compares them modulo explicit
+namespace moves and additionally checks 250 extracted constants. The final whole-library kernel audit is Gate D,
 not part of this handoff.
 
 Ordinary clients can import the curated entry points:
@@ -271,7 +275,10 @@ From PTree.API Require Import SubEnum. (* optional concrete probability adapter 
 
 `Core/` owns syntax; `Prob/{Interface,FreeOmega,Backend,Legacy}/` separates
 measure interfaces, the canonical model, concrete realizations and legacy
-adapters. `Eq/` owns stable hitting and equality; `Eq/Internal/` holds proof
+adapters. `Prob/Backend/{Common,Enum,SubEnum,MathComp}/` makes the native
+carrier explicit; `Prob/FreeOmega/` stays generic in `MN`, while
+`Prob/Backend/SubEnum/FreeOmega/` specializes that completion to SubEnum.
+`Eq/` owns stable hitting and equality; `Eq/Internal/` holds proof
 machinery. `Semantics/` owns independent comparison semantics. `Interp/`
 owns interpretation preservation, with FreeOmega-qualified theory distinct
 from concrete endpoints. `API/` assembles these layers without bulk exports.

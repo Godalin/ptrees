@@ -7,7 +7,7 @@ From mathcomp Require Import eqtype.
 From ExtLib.Structures Require Import Monads.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Backend Require Import DiscreteMC.
+Require Import PTree.Prob.Backend.Enum.Representation.
 
 Set Implicit Arguments.
 Set Contextual Implicit.

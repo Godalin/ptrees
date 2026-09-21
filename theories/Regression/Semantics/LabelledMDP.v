@@ -5,9 +5,9 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum rat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum DiscreteMC MeasureIterationEnum RatSubTypes Coupling SemanticCouplingEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Coupling PTree.Prob.Backend.Enum.SemanticCoupling.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import PEutt.
 From PTree.Semantics Require Import HeadTransition MDPFragment MDPEmbedding.
 From PTree.Semantics.Backend Require Import MDPEmbeddingSubEnum.
@@ -99,7 +99,7 @@ Proof.
       SubEnum_SemanticMeasureCoreLaws).
     exact (f_equal is_good_label (mdp_bisim_observe Hst)). }
   pose proof (Coupling.coupling_eq_enum_eq (enum_sem_lift_to_coupling Htest) true) as Hmass.
-  pose proof (f_equal RatSubTypes.Qval Hmass) as Hrat.
+  pose proof (f_equal PTree.Prob.Backend.Common.RatSubTypes.Qval Hmass) as Hrat.
   change ((1 / 2 : rat) = 3 / 4) in Hrat.
   vm_compute in Hrat. discriminate.
 Qed.

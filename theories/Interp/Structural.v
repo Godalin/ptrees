@@ -8,7 +8,7 @@ From Coinduction Require Import all.
 From mathcomp Require Import ssreflect ssrbool eqtype seq.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import FrontierLift TwoLevelMeasure.
+Require Import PTree.Prob.Interface.FrontierLift PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 From PTree.Eq Require Import Shallow.
 
 Set Implicit Arguments.

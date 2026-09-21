@@ -6,7 +6,7 @@ Set Universe Polymorphism.
 Require Import Utf8.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

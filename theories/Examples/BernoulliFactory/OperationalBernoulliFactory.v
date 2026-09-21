@@ -9,13 +9,13 @@ From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype ssralg ssrnum order rat.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC EnumBindFacts.
-From PTree.Prob.Interface Require Import MeasureIteration.
-From PTree.Prob.Backend Require Import MeasureIterationEnum.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaSupport.
-From PTree.Prob.Backend Require Import EnumSupport EnumMap.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Bind.
+Require Import PTree.Prob.Interface.Iteration.
+Require Import PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Support.
+Require Import PTree.Prob.Backend.Enum.Support PTree.Prob.Backend.Enum.Map.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
@@ -27,9 +27,9 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum.
-Import EnumMap.
+Import PTree.Prob.Backend.Enum.Map.
 Import GRing.Theory.
-Import RatSubTypes.NonnegQNotations.
+Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
 Local Open Scope ring_scope.
 
 Local Notation MF := (FreeOmega Enum).
@@ -82,7 +82,7 @@ Proof.
   cbn [ptree_factory_fair_measure_row meas_iter_approx].
   unfold factory_round_measure.
   cbn [FrontierLift.meas_bind FrontierLift.meas_ret
-    FrontierLiftEnum.Enum_MeasureInterface].
+    PTree.Prob.Backend.Enum.FrontierLift.Enum_MeasureInterface].
   rewrite bind_Enum_assoc. apply bind_Enum_ext=> b1.
   rewrite bind_Enum_assoc. apply bind_Enum_ext=> b2.
   destruct (vn_round_result b1 b2) as [[]|b].
@@ -576,7 +576,7 @@ Proof.
   - exact (ptree_factory_standard_step_heads_observes x).
   - cbn [sem_bind sem_ret Enum_SemanticMeasure
       FrontierLift.meas_bind FrontierLift.meas_ret
-      FrontierLiftEnum.Enum_MeasureInterface].
+      PTree.Prob.Backend.Enum.FrontierLift.Enum_MeasureInterface].
     rewrite bind_ret_emap emap_id.
     apply sem_lift_refl. intros next. reflexivity.
   - intros h1 h2 Hnext.
@@ -827,7 +827,7 @@ Proof.
   unfold ptree_factory_direct_q_observation.
   cbn [sem_bind sem_ret Enum_SemanticMeasure
     FrontierLift.meas_bind FrontierLift.meas_ret
-    FrontierLiftEnum.Enum_MeasureInterface].
+    PTree.Prob.Backend.Enum.FrontierLift.Enum_MeasureInterface].
   rewrite bind_ret_emap. apply emap_id.
 Qed.
 
@@ -922,7 +922,7 @@ Lemma ptree_factory_standard_q_heads_ae
 Proof.
   change (free_omega_ae (fun h => P (ptree_factory_head_value h))
     (FOLub (fun n => ptree_factory_standard_q_row n q)) <->
-    FrontierLiftEnum.enum_ae (rational_bernoulli_measure q0 q1) P).
+    PTree.Prob.Backend.Enum.FrontierLift.enum_ae (rational_bernoulli_measure q0 q1) P).
   rewrite (enum_converges_ae_iff
     (enum_iter_approx_increasing binary_coin_transition q)
     (rational_binary_iteration_converges q0 q1)).

@@ -6,13 +6,13 @@ Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From mathcomp Require Import eqtype.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Backend Require Import DiscreteMC.
+Require Import PTree.Prob.Backend.Enum.Representation.
 From PTree.Prob.Interface Require Import FrontierLift.
-From PTree.Prob.Backend Require Import FrontierLiftEnum.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Backend Require Import MeasureIterationEnum.
+Require Import PTree.Prob.Backend.Enum.FrontierLift.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
+Require Import PTree.Prob.Backend.Enum.Iteration.
 From PTree.Eq Require Import PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.

@@ -6,7 +6,7 @@ Require Import Morphisms.
 
 From mathcomp Require Import eqtype.
 
-From PTree.Prob.Backend Require Import DiscreteMC.
+Require Import PTree.Prob.Backend.Enum.Representation.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

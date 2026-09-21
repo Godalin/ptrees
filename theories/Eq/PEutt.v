@@ -11,7 +11,7 @@ From Coq.Relations Require Import Relation_Definitions.
 From Coinduction Require Import all.
 From mathcomp Require Import ssreflect.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PTreeKernel.
 (** Preserve the usual import surface without duplicate compatibility
     definitions: generic matching now belongs to the lower semantic layer. *)

@@ -3,7 +3,7 @@
     backend.  Raw [Enum] remains available for unnormalised finite weights;
     native probability programs should prefer [SubEnum]. *)
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
+Require Import PTree.Prob.Backend.SubEnum.Measure.
 From PTree.Interp.Backend Require Import SubEnum.
 
 Notation subenum_mdp_state_interp_atomic :=

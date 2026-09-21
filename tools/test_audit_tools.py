@@ -9,6 +9,7 @@ import audit_capabilities as capabilities
 import audit_migration as migration
 import audit_gate_c as gate_c
 import audit_public_capabilities as public
+import audit_prob_organization as prob
 
 
 class ArchitectureTests(unittest.TestCase):
@@ -53,7 +54,7 @@ class ArchitectureTests(unittest.TestCase):
     def test_forbidden_reverse_dependencies(self):
         for source, target in [
             ("Core/PTreeDefinition", "Prob/Legacy/Monad"),
-            ("Prob/FreeOmega/FreeOmegaMeasure", "Prob/Backend/TwoLevelMeasureEnum"),
+            ("Prob/FreeOmega/Measure", "Prob/Backend/Enum/Measure"),
             ("Eq/FreeOmega/Bind", "Interp/FreeOmega/Cofinality"),
             ("Eq/PEutt", "Eq/FreeOmega/Bind"),
             ("Semantics/MDPFragment", "Semantics/FreeOmega/MDPCoincidenceFreeOmega"),
@@ -67,6 +68,20 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_allowed_interpreter_comparison_direction(self):
         self.assertTrue(architecture.permitted("Interp/FreeOmega/MDP", "Semantics/MDPFragment"))
+
+    def test_probability_native_axis_and_canonical_boundary(self):
+        self.assertEqual(architecture.ownership("Prob/FreeOmega/Measure")[:2],
+                         ("Prob/FreeOmega", "FreeOmega"))
+        self.assertEqual(architecture.ownership("Prob/Backend/SubEnum/FreeOmega/Total")[:2],
+                         ("Prob/Backend/SubEnum/FreeOmega", "SubEnum"))
+        for m in ["Prob/Backend/FreeOmega/TotalSubEnum", "Prob/Backend/TwoLevelMeasureEnum"]:
+            with self.assertRaises(AssertionError):
+                architecture.ownership(m)
+        for m, d in [("Prob/Backend/Common/FiniteMatching", "Prob/Backend/Enum/Measure"),
+                     ("Prob/Backend/MathComp/Measure", "Prob/Backend/SubEnum/Measure"),
+                     ("Prob/Backend/Enum/Measure", "Prob/Backend/MathComp/Measure")]:
+            self.assertFalse(architecture.permitted(m, d))
+        self.assertTrue(architecture.permitted("Prob/Backend/SubEnum/Measure", "Prob/Backend/Enum/Measure"))
 
     def test_unknown_experiment_requires_review(self):
         with self.assertRaises(AssertionError):
@@ -185,6 +200,56 @@ class GateCTests(unittest.TestCase):
     def test_no_axiom_in_new_regression(self):
         with self.assertRaises(AssertionError):
             gate_c.audit({}, dict.fromkeys(gate_c.NEW, "Axiom shortcut : False."))
+
+
+class ProbOrganizationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.before = migration.frozen(prob.BASE)
+        cls.after = prob.expected_sources(cls.before)
+
+    def test_every_source_line_accounted_for(self):
+        self.assertEqual(prob.audit(self.before, self.after), (209, 220))
+
+    def test_exact_extraction_rejects_comment_proof_context_or_layout_edits(self):
+        path = "theories/Prob/FreeOmega/StructuralMeasure.v"
+        for old, new in [("Qed.", "Admitted."), ("Type -> Type", "Type -> Prop"),
+                         ("(** Role:", "(** Changed:"), ("Proof.", "Proof. ")]:
+            with self.subTest(old=old), self.assertRaises(AssertionError):
+                prob.audit(self.before, {**self.after, path: self.after[path].replace(old, new, 1)})
+
+    def test_split_qualified_names_follow_declaration_owner(self):
+        self.assertEqual(prob.relocate_token("PTree.Prob.Interface.TwoLevelMeasure.SemanticOmega"),
+                         "PTree.Prob.Interface.Omega.SemanticOmega")
+        self.assertEqual(prob.relocate_token("FreeOmegaMeasure.free_omega_observes"),
+                         "PTree.Prob.FreeOmega.Observation.free_omega_observes")
+
+    def test_signature_normalization_does_not_erase_assumptions(self):
+        self.assertEqual(prob.normalize_compiled("TwoLevelMeasure.SemanticOmega"),
+                         prob.normalize_compiled("Omega.SemanticOmega"))
+        self.assertNotEqual(prob.normalize_compiled("forall (L : Omega.SemanticOmega), True"),
+                            prob.normalize_compiled("True"))
+
+    def test_signature_normalization_preserves_literal_strings(self):
+        self.assertNotEqual(prob.normalize_compiled('"a  b"'), prob.normalize_compiled('"a b"'))
+        self.assertEqual(prob.normalize_compiled('"TwoLevelMeasure.SemanticOmega"'),
+                         '"TwoLevelMeasure.SemanticOmega"')
+        self.assertEqual(prob.rewrite('Definition name := "TwoLevelMeasure.SemanticOmega".'),
+                         'Definition name := "TwoLevelMeasure.SemanticOmega".')
+
+    def test_lost_module_is_not_hidden_by_import_migration(self):
+        after = dict(self.after)
+        del after["theories/Prob/Interface/AE.v"]
+        with self.assertRaises(AssertionError):
+            prob.audit(self.before, after)
+
+    def test_compiled_comparison_rejects_lost_contract_or_new_axiom(self):
+        e = dict(name="Test.endpoint", type="forall H : True, True", assumptions="Closed under the global context")
+        old = {"endpoints": [e]}
+        prob.compare_snapshots(old, old)
+        for changed in [{**e, "type": "True"}, {**e, "assumptions": "Axioms: added : False"}]:
+            with self.assertRaises(AssertionError):
+                prob.compare_snapshots(old, {"endpoints": [changed]})
 
 
 if __name__ == "__main__":

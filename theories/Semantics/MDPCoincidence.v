@@ -5,7 +5,7 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Program Require Import Equality.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
 From PTree.Semantics Require Import HeadTransition MDPFragment TreeTransition TreeTransitionBisim TreeTransitionSoundness.
 Set Implicit Arguments.

@@ -4,9 +4,9 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
-From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaUpperExpectationSubEnum FreeOmegaUpperRelationalSubEnum FreeOmegaUpperQuotientSubEnum.
+Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
+Require Import PTree.Prob.Backend.SubEnum.FreeOmega.UpperExpectation PTree.Prob.Backend.SubEnum.FreeOmega.UpperRelational PTree.Prob.Backend.SubEnum.FreeOmega.UpperQuotient.
 From PTree.Regression.Backend Require Import SubEnumRegression FreeOmegaEscapingMass FreeOmegaUpperExpectation FreeOmegaUpperObservation.
 From PTree.Examples Require Import RandomWalk.
 

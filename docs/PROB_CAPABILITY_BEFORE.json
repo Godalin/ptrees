@@ -1,0 +1,1255 @@
+{
+  "source_baseline": "05a2431",
+  "endpoints": [
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasure",
+      "type": "TwoLevelMeasure.SemanticMeasure\n     : (Type -> Type) -> Type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ret",
+      "type": "@TwoLevelMeasure.sem_ret\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> forall A : Type, A -> S A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_bind",
+      "type": "@TwoLevelMeasure.sem_bind\n     : forall S : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure S -> forall A B : Type, S A -> (A -> S B) -> S B",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_eq",
+      "type": "@TwoLevelMeasure.sem_eq\n     : forall S : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure S -> forall A : Type, S A -> S A -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae",
+      "type": "@TwoLevelMeasure.sem_ae\n     : forall S : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure S -> forall A : Type, S A -> (A -> Prop) -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift",
+      "type": "@TwoLevelMeasure.sem_lift\n     : forall S : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure S ->\n       forall A B : Type, (A -> B -> Prop) -> S A -> S B -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticSubprobability",
+      "type": "@TwoLevelMeasure.SemanticSubprobability\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> Type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_subprob",
+      "type": "@TwoLevelMeasure.sem_subprob\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticSubprobability S SI -> forall A : Type, S A -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticSubprobabilityLaws",
+      "type": "@TwoLevelMeasure.SemanticSubprobabilityLaws\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticSubprobability S SI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_subprob_ret",
+      "type": "@TwoLevelMeasure.sem_subprob_ret\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SP : @TwoLevelMeasure.SemanticSubprobability S SI),\n       @TwoLevelMeasure.SemanticSubprobabilityLaws S SI SP ->\n       forall (A : Type) (x : A),\n       @TwoLevelMeasure.sem_subprob S SI SP A (@TwoLevelMeasure.sem_ret S SI A x)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_subprob_bind",
+      "type": "@TwoLevelMeasure.sem_subprob_bind\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SP : @TwoLevelMeasure.SemanticSubprobability S SI),\n       @TwoLevelMeasure.SemanticSubprobabilityLaws S SI SP ->\n       forall (A B : Type) (mu : S A) (k : A -> S B),\n       @TwoLevelMeasure.sem_subprob S SI SP A mu ->\n       (forall x : A, @TwoLevelMeasure.sem_subprob S SI SP B (k x)) ->\n       @TwoLevelMeasure.sem_subprob S SI SP B (@TwoLevelMeasure.sem_bind S SI A B mu k)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_subprob_proper",
+      "type": "@TwoLevelMeasure.sem_subprob_proper\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SP : @TwoLevelMeasure.SemanticSubprobability S SI),\n       @TwoLevelMeasure.SemanticSubprobabilityLaws S SI SP ->\n       forall (A : Type) (mu nu : S A),\n       @TwoLevelMeasure.sem_eq S SI A mu nu ->\n       @TwoLevelMeasure.sem_subprob S SI SP A mu <-> @TwoLevelMeasure.sem_subprob S SI SP A nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticSubprobabilityCarrierLaws",
+      "type": "@TwoLevelMeasure.SemanticSubprobabilityCarrierLaws\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticSubprobability S SI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_subprob_all",
+      "type": "@TwoLevelMeasure.sem_subprob_all\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SP : @TwoLevelMeasure.SemanticSubprobability S SI),\n       @TwoLevelMeasure.SemanticSubprobabilityCarrierLaws S SI SP ->\n       forall (A : Type) (mu : S A), @TwoLevelMeasure.sem_subprob S SI SP A mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasure",
+      "type": "TwoLevelMeasure.MixedMeasure\n     : (Type -> Type) -> (Type -> Type) -> Type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind",
+      "type": "@TwoLevelMeasure.mixed_bind\n     : forall MN MF : Type -> Type,\n       TwoLevelMeasure.MixedMeasure MN MF -> forall A B : Type, MN A -> (A -> MF B) -> MF B",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureCoreLaws",
+      "type": "@TwoLevelMeasure.SemanticMeasureCoreLaws\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_eq_refl",
+      "type": "@TwoLevelMeasure.sem_eq_refl\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall A : Type, @RelationClasses.Reflexive (S A) (@TwoLevelMeasure.sem_eq S SI A)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_eq_sym",
+      "type": "@TwoLevelMeasure.sem_eq_sym\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall A : Type, @RelationClasses.Symmetric (S A) (@TwoLevelMeasure.sem_eq S SI A)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_eq_trans",
+      "type": "@TwoLevelMeasure.sem_eq_trans\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall A : Type, @RelationClasses.Transitive (S A) (@TwoLevelMeasure.sem_eq S SI A)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_true",
+      "type": "@TwoLevelMeasure.sem_ae_true\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A : Type) (mu : S A), @TwoLevelMeasure.sem_ae S SI A mu (fun _ : A => True)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_mono",
+      "type": "@TwoLevelMeasure.sem_ae_mono\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A : Type) (mu : S A) (P Q : A -> Prop),\n       (forall x : A, P x -> Q x) ->\n       @TwoLevelMeasure.sem_ae S SI A mu P -> @TwoLevelMeasure.sem_ae S SI A mu Q",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_conj",
+      "type": "@TwoLevelMeasure.sem_ae_conj\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A : Type) (mu : S A) (P Q : A -> Prop),\n       @TwoLevelMeasure.sem_ae S SI A mu P ->\n       @TwoLevelMeasure.sem_ae S SI A mu Q ->\n       @TwoLevelMeasure.sem_ae S SI A mu (fun x : A => P x /\\ Q x)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_mono",
+      "type": "@TwoLevelMeasure.sem_lift_mono\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A B : Type) (R T : A -> B -> Prop) (mu : S A) (nu : S B),\n       (forall (x : A) (y : B), R x y -> T x y) ->\n       @TwoLevelMeasure.sem_lift S SI A B R mu nu -> @TwoLevelMeasure.sem_lift S SI A B T mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_refl",
+      "type": "@TwoLevelMeasure.sem_lift_refl\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A : Type) (R : A -> A -> Prop) (mu : S A),\n       @RelationClasses.Reflexive A R -> @TwoLevelMeasure.sem_lift S SI A A R mu mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_ret",
+      "type": "@TwoLevelMeasure.sem_lift_ret\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A B : Type) (R : A -> B -> Prop) (x : A) (y : B),\n       R x y ->\n       @TwoLevelMeasure.sem_lift S SI A B R (@TwoLevelMeasure.sem_ret S SI A x)\n         (@TwoLevelMeasure.sem_ret S SI B y)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_proper_l",
+      "type": "@TwoLevelMeasure.sem_lift_proper_l\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu mu' : S A) (nu : S B),\n       @TwoLevelMeasure.sem_eq S SI A mu mu' ->\n       @TwoLevelMeasure.sem_lift S SI A B R mu nu -> @TwoLevelMeasure.sem_lift S SI A B R mu' nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_proper_r",
+      "type": "@TwoLevelMeasure.sem_lift_proper_r\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : S A) (nu nu' : S B),\n       @TwoLevelMeasure.sem_eq S SI B nu nu' ->\n       @TwoLevelMeasure.sem_lift S SI A B R mu nu -> @TwoLevelMeasure.sem_lift S SI A B R mu nu'",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_sym",
+      "type": "@TwoLevelMeasure.sem_lift_sym\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : S A) (nu : S B),\n       @TwoLevelMeasure.sem_lift S SI A B R mu nu ->\n       @TwoLevelMeasure.sem_lift S SI B A (fun (y : B) (x : A) => R x y) nu mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_comp",
+      "type": "@TwoLevelMeasure.sem_lift_comp\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A B C : Type) (R : A -> B -> Prop) (T : B -> C -> Prop)\n         (mu : S A) (nu : S B) (xi : S C),\n       @TwoLevelMeasure.sem_lift S SI A B R mu nu ->\n       @TwoLevelMeasure.sem_lift S SI B C T nu xi ->\n       @TwoLevelMeasure.sem_lift S SI A C (fun (x : A) (z : C) => exists y : B, R x y /\\ T y z) mu\n         xi",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_same_mass",
+      "type": "@TwoLevelMeasure.sem_same_mass\n     : forall S : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure S -> forall A B : Type, S A -> S B -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_same_mass",
+      "type": "@TwoLevelMeasure.sem_lift_same_mass\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : S A) (nu : S B),\n       @TwoLevelMeasure.sem_lift S SI A B R mu nu -> @TwoLevelMeasure.sem_same_mass S SI A B mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureBindLaws",
+      "type": "@TwoLevelMeasure.SemanticMeasureBindLaws\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_ret_l",
+      "type": "@TwoLevelMeasure.sem_bind_ret_l\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureBindLaws S SI ->\n       forall (A B : Type) (x : A) (k : A -> S B),\n       @TwoLevelMeasure.sem_eq S SI B\n         (@TwoLevelMeasure.sem_bind S SI A B (@TwoLevelMeasure.sem_ret S SI A x) k)\n         (k x)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_assoc",
+      "type": "@TwoLevelMeasure.sem_bind_assoc\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureBindLaws S SI ->\n       forall (A B C : Type) (mu : S A) (k : A -> S B) (h : B -> S C),\n       @TwoLevelMeasure.sem_eq S SI C\n         (@TwoLevelMeasure.sem_bind S SI B C (@TwoLevelMeasure.sem_bind S SI A B mu k) h)\n         (@TwoLevelMeasure.sem_bind S SI A C mu\n            (fun x : A => @TwoLevelMeasure.sem_bind S SI B C (k x) h))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_ae_proper",
+      "type": "@TwoLevelMeasure.sem_bind_ae_proper\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureBindLaws S SI ->\n       forall (A B : Type) (mu : S A) (k h : A -> S B),\n       @TwoLevelMeasure.sem_ae S SI A mu (fun x : A => @TwoLevelMeasure.sem_eq S SI B (k x) (h x)) ->\n       @TwoLevelMeasure.sem_eq S SI B (@TwoLevelMeasure.sem_bind S SI A B mu k)\n         (@TwoLevelMeasure.sem_bind S SI A B mu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_bind",
+      "type": "@TwoLevelMeasure.sem_lift_bind\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureBindLaws S SI ->\n       forall (A B C D : Type) (R : A -> B -> Prop) (T : C -> D -> Prop)\n         (mu : S A) (nu : S B) (k : A -> S C) (h : B -> S D),\n       @TwoLevelMeasure.sem_lift S SI A B R mu nu ->\n       (forall (x : A) (y : B), R x y -> @TwoLevelMeasure.sem_lift S SI C D T (k x) (h y)) ->\n       @TwoLevelMeasure.sem_lift S SI C D T (@TwoLevelMeasure.sem_bind S SI A C mu k)\n         (@TwoLevelMeasure.sem_bind S SI B D nu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureAELiftLaws",
+      "type": "@TwoLevelMeasure.SemanticMeasureAELiftLaws\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_refl_ae",
+      "type": "@TwoLevelMeasure.sem_lift_refl_ae\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureAELiftLaws S SI ->\n       forall (A : Type) (mu : S A) (P : A -> Prop),\n       @TwoLevelMeasure.sem_ae S SI A mu P ->\n       @TwoLevelMeasure.sem_lift S SI A A (fun x y : A => x = y /\\ P x) mu mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureCouplingAELaws",
+      "type": "@TwoLevelMeasure.SemanticMeasureCouplingAELaws\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_ae_transport_r",
+      "type": "@TwoLevelMeasure.sem_lift_ae_transport_r\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws S SI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : S A) (nu : S B) (P : A -> Prop),\n       @TwoLevelMeasure.sem_lift S SI A B R mu nu ->\n       @TwoLevelMeasure.sem_ae S SI A mu P ->\n       @TwoLevelMeasure.sem_ae S SI B nu (fun y : B => exists x : A, R x y /\\ P x)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_ae_restrict",
+      "type": "@TwoLevelMeasure.sem_lift_ae_restrict\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws S SI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : S A) (nu : S B) (P : A -> Prop)\n         (Q : B -> Prop),\n       @TwoLevelMeasure.sem_lift S SI A B R mu nu ->\n       @TwoLevelMeasure.sem_ae S SI A mu P ->\n       @TwoLevelMeasure.sem_ae S SI B nu Q ->\n       @TwoLevelMeasure.sem_lift S SI A B (fun (x : A) (y : B) => R x y /\\ P x /\\ Q y) mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureCountableAELaws",
+      "type": "@TwoLevelMeasure.SemanticMeasureCountableAELaws\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_countable",
+      "type": "@TwoLevelMeasure.sem_ae_countable\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws S SI ->\n       forall (A : Type) (mu : S A) (P : nat -> A -> Prop),\n       (forall n : nat, @TwoLevelMeasure.sem_ae S SI A mu (P n)) ->\n       @TwoLevelMeasure.sem_ae S SI A mu (fun x : A => forall n : nat, P n x)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureAEKleisliLaws",
+      "type": "@TwoLevelMeasure.SemanticMeasureAEKleisliLaws\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_ret",
+      "type": "@TwoLevelMeasure.sem_ae_ret\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureAEKleisliLaws S SI ->\n       forall (A : Type) (P : A -> Prop) (x : A),\n       P x -> @TwoLevelMeasure.sem_ae S SI A (@TwoLevelMeasure.sem_ret S SI A x) P",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_bind",
+      "type": "@TwoLevelMeasure.sem_ae_bind\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureAEKleisliLaws S SI ->\n       forall (A B : Type) (mu : S A) (k : A -> S B) (P : A -> Prop) (Q : B -> Prop),\n       @TwoLevelMeasure.sem_ae S SI A mu P ->\n       (forall x : A, P x -> @TwoLevelMeasure.sem_ae S SI B (k x) Q) ->\n       @TwoLevelMeasure.sem_ae S SI B (@TwoLevelMeasure.sem_bind S SI A B mu k) Q",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasureLaws",
+      "type": "@TwoLevelMeasure.MixedMeasureLaws\n     : forall MN MF : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       TwoLevelMeasure.SemanticMeasure MF -> TwoLevelMeasure.MixedMeasure MN MF -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_ae_proper",
+      "type": "@TwoLevelMeasure.mixed_bind_ae_proper\n     : forall (MN MF : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (FI : TwoLevelMeasure.SemanticMeasure MF) (MX : TwoLevelMeasure.MixedMeasure MN MF),\n       @TwoLevelMeasure.MixedMeasureLaws MN MF NI FI MX ->\n       forall (A B : Type) (mu : MN A) (k h : A -> MF B),\n       @TwoLevelMeasure.sem_ae MN NI A mu\n         (fun x : A => @TwoLevelMeasure.sem_eq MF FI B (k x) (h x)) ->\n       @TwoLevelMeasure.sem_eq MF FI B (@TwoLevelMeasure.mixed_bind MN MF MX A B mu k)\n         (@TwoLevelMeasure.mixed_bind MN MF MX A B mu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_assoc",
+      "type": "@TwoLevelMeasure.mixed_bind_assoc\n     : forall (MN MF : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (FI : TwoLevelMeasure.SemanticMeasure MF) (MX : TwoLevelMeasure.MixedMeasure MN MF),\n       @TwoLevelMeasure.MixedMeasureLaws MN MF NI FI MX ->\n       forall (A B C : Type) (mu : MN A) (k : A -> MF B) (h : B -> MF C),\n       @TwoLevelMeasure.sem_eq MF FI C\n         (@TwoLevelMeasure.sem_bind MF FI B C (@TwoLevelMeasure.mixed_bind MN MF MX A B mu k) h)\n         (@TwoLevelMeasure.mixed_bind MN MF MX A C mu\n            (fun x : A => @TwoLevelMeasure.sem_bind MF FI B C (k x) h))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.mixed_lift_bind",
+      "type": "@TwoLevelMeasure.mixed_lift_bind\n     : forall (MN MF : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (FI : TwoLevelMeasure.SemanticMeasure MF) (MX : TwoLevelMeasure.MixedMeasure MN MF),\n       @TwoLevelMeasure.MixedMeasureLaws MN MF NI FI MX ->\n       forall (A B C D : Type) (R : A -> B -> Prop) (T : C -> D -> Prop)\n         (mu : MN A) (nu : MN B) (k : A -> MF C) (h : B -> MF D),\n       @TwoLevelMeasure.sem_lift MN NI A B R mu nu ->\n       (forall (x : A) (y : B), R x y -> @TwoLevelMeasure.sem_lift MF FI C D T (k x) (h y)) ->\n       @TwoLevelMeasure.sem_lift MF FI C D T (@TwoLevelMeasure.mixed_bind MN MF MX A C mu k)\n         (@TwoLevelMeasure.mixed_bind MN MF MX B D nu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasureUnitLaws",
+      "type": "@TwoLevelMeasure.MixedMeasureUnitLaws\n     : forall MN MF : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       TwoLevelMeasure.SemanticMeasure MF -> TwoLevelMeasure.MixedMeasure MN MF -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_ret_l",
+      "type": "@TwoLevelMeasure.mixed_bind_ret_l\n     : forall (MN MF : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (FI : TwoLevelMeasure.SemanticMeasure MF) (MX : TwoLevelMeasure.MixedMeasure MN MF),\n       @TwoLevelMeasure.MixedMeasureUnitLaws MN MF NI FI MX ->\n       forall (A B : Type) (x : A) (k : A -> MF B),\n       @TwoLevelMeasure.sem_lift MF FI B B (@eq B)\n         (@TwoLevelMeasure.mixed_bind MN MF MX A B (@TwoLevelMeasure.sem_ret MN NI A x) k)\n         (k x)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasureNodeBindLaws",
+      "type": "@TwoLevelMeasure.MixedMeasureNodeBindLaws\n     : forall MN MF : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       TwoLevelMeasure.SemanticMeasure MF -> TwoLevelMeasure.MixedMeasure MN MF -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_node_assoc",
+      "type": "@TwoLevelMeasure.mixed_bind_node_assoc\n     : forall (MN MF : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (FI : TwoLevelMeasure.SemanticMeasure MF) (MX : TwoLevelMeasure.MixedMeasure MN MF),\n       @TwoLevelMeasure.MixedMeasureNodeBindLaws MN MF NI FI MX ->\n       forall (A B C : Type) (mu : MN A) (h : A -> MN B) (k : B -> MF C),\n       @TwoLevelMeasure.sem_lift MF FI C C (@eq C)\n         (@TwoLevelMeasure.mixed_bind MN MF MX A C mu\n            (fun x : A => @TwoLevelMeasure.mixed_bind MN MF MX B C (h x) k))\n         (@TwoLevelMeasure.mixed_bind MN MF MX B C (@TwoLevelMeasure.sem_bind MN NI A B mu h) k)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.mixed_measure_exchange",
+      "type": "@TwoLevelMeasure.mixed_measure_exchange\n     : forall MN MF : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       TwoLevelMeasure.SemanticMeasure MF ->\n       TwoLevelMeasure.MixedMeasure MN MF -> forall A B : Type, MN A -> MN B -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasureCommutativeLaws",
+      "type": "@TwoLevelMeasure.MixedMeasureCommutativeLaws\n     : forall MN MF : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       TwoLevelMeasure.SemanticMeasure MF -> TwoLevelMeasure.MixedMeasure MN MF -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.mixed_lift_exchange",
+      "type": "@TwoLevelMeasure.mixed_lift_exchange\n     : forall (MN MF : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (FI : TwoLevelMeasure.SemanticMeasure MF) (MX : TwoLevelMeasure.MixedMeasure MN MF),\n       @TwoLevelMeasure.MixedMeasureCommutativeLaws MN MF NI FI MX ->\n       forall (A B : Type) (mu : MN A) (nu : MN B),\n       @TwoLevelMeasure.mixed_measure_exchange MN MF NI FI MX A B mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureDiracAELaws",
+      "type": "@TwoLevelMeasure.SemanticMeasureDiracAELaws\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_ret_iff",
+      "type": "@TwoLevelMeasure.sem_ae_ret_iff\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureDiracAELaws S SI ->\n       forall (A : Type) (x : A) (P : A -> Prop),\n       @TwoLevelMeasure.sem_ae S SI A (@TwoLevelMeasure.sem_ret S SI A x) P <-> P x",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureBindAEExactLaws",
+      "type": "@TwoLevelMeasure.SemanticMeasureBindAEExactLaws\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_bind_iff",
+      "type": "@TwoLevelMeasure.sem_ae_bind_iff\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureBindAEExactLaws S SI ->\n       forall (A B : Type) (mu : S A) (k : A -> S B) (P : B -> Prop),\n       @TwoLevelMeasure.sem_ae S SI B (@TwoLevelMeasure.sem_bind S SI A B mu k) P <->\n       @TwoLevelMeasure.sem_ae S SI A mu (fun x : A => @TwoLevelMeasure.sem_ae S SI B (k x) P)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticOmega",
+      "type": "@TwoLevelMeasure.SemanticOmega\n     : forall S : Type -> Type, TwoLevelMeasure.SemanticMeasure S -> Type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_zero",
+      "type": "@TwoLevelMeasure.sem_zero\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> forall A : Type, S A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_le",
+      "type": "@TwoLevelMeasure.sem_le\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> forall A : Type, S A -> S A -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lub",
+      "type": "@TwoLevelMeasure.sem_lub\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> forall A : Type, (nat -> S A) -> S A -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_total",
+      "type": "@TwoLevelMeasure.sem_total\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> forall A : Type, S A -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_increasing",
+      "type": "@TwoLevelMeasure.sem_increasing\n     : forall (SM : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure SM),\n       @TwoLevelMeasure.SemanticOmega SM SI -> forall A : Type, (nat -> SM A) -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_zero_prefix",
+      "type": "@TwoLevelMeasure.sem_zero_prefix\n     : forall (SM : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure SM),\n       @TwoLevelMeasure.SemanticOmega SM SI -> forall A : Type, (nat -> SM A) -> nat -> SM A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureOrderLaws",
+      "type": "@TwoLevelMeasure.SemanticMeasureOrderLaws\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_le_refl",
+      "type": "@TwoLevelMeasure.sem_le_refl\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticMeasureOrderLaws S SI SO ->\n       forall (A : Type) (mu : S A), @TwoLevelMeasure.sem_le S SI SO A mu mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_le_trans",
+      "type": "@TwoLevelMeasure.sem_le_trans\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticMeasureOrderLaws S SI SO ->\n       forall (A : Type) (mu nu xi : S A),\n       @TwoLevelMeasure.sem_le S SI SO A mu nu ->\n       @TwoLevelMeasure.sem_le S SI SO A nu xi -> @TwoLevelMeasure.sem_le S SI SO A mu xi",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_zero_le",
+      "type": "@TwoLevelMeasure.sem_zero_le\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticMeasureOrderLaws S SI SO ->\n       forall (A : Type) (mu : S A),\n       @TwoLevelMeasure.sem_le S SI SO A (@TwoLevelMeasure.sem_zero S SI SO A) mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_le_mu",
+      "type": "@TwoLevelMeasure.sem_bind_le_mu\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticMeasureOrderLaws S SI SO ->\n       forall (A B : Type) (mu nu : S A) (k : A -> S B),\n       @TwoLevelMeasure.sem_le S SI SO A mu nu ->\n       @TwoLevelMeasure.sem_le S SI SO B (@TwoLevelMeasure.sem_bind S SI A B mu k)\n         (@TwoLevelMeasure.sem_bind S SI A B nu k)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_le_k",
+      "type": "@TwoLevelMeasure.sem_bind_le_k\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticMeasureOrderLaws S SI SO ->\n       forall (A B : Type) (mu : S A) (k h : A -> S B),\n       (forall x : A, @TwoLevelMeasure.sem_le S SI SO B (k x) (h x)) ->\n       @TwoLevelMeasure.sem_le S SI SO B (@TwoLevelMeasure.sem_bind S SI A B mu k)\n         (@TwoLevelMeasure.sem_bind S SI A B mu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticOmegaLaws",
+      "type": "@TwoLevelMeasure.SemanticOmegaLaws\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_exists",
+      "type": "@TwoLevelMeasure.sem_lub_exists\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticOmegaLaws S SI SO ->\n       forall (A : Type) (chain : nat -> S A),\n       @TwoLevelMeasure.sem_increasing S SI SO A chain ->\n       exists out : S A, @TwoLevelMeasure.sem_lub S SI SO A chain out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_unique",
+      "type": "@TwoLevelMeasure.sem_lub_unique\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticOmegaLaws S SI SO ->\n       forall (A : Type) (chain : nat -> S A) (mu nu : S A),\n       @TwoLevelMeasure.sem_lub S SI SO A chain mu ->\n       @TwoLevelMeasure.sem_lub S SI SO A chain nu -> @TwoLevelMeasure.sem_eq S SI A mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_proper",
+      "type": "@TwoLevelMeasure.sem_lub_proper\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticOmegaLaws S SI SO ->\n       forall (A : Type) (chain chain' : nat -> S A) (mu nu : S A),\n       (forall n : nat, @TwoLevelMeasure.sem_eq S SI A (chain n) (chain' n)) ->\n       @TwoLevelMeasure.sem_lub S SI SO A chain mu ->\n       @TwoLevelMeasure.sem_lub S SI SO A chain' nu -> @TwoLevelMeasure.sem_eq S SI A mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_chain_proper",
+      "type": "@TwoLevelMeasure.sem_lub_chain_proper\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticOmegaLaws S SI SO ->\n       forall (A : Type) (chain chain' : nat -> S A) (mu : S A),\n       (forall n : nat, @TwoLevelMeasure.sem_eq S SI A (chain n) (chain' n)) ->\n       @TwoLevelMeasure.sem_lub S SI SO A chain mu -> @TwoLevelMeasure.sem_lub S SI SO A chain' mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_lub",
+      "type": "@TwoLevelMeasure.sem_bind_lub\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticOmegaLaws S SI SO ->\n       forall (A B : Type) (chain : nat -> S A) (mu : S A) (k : A -> S B),\n       @TwoLevelMeasure.sem_increasing S SI SO A chain ->\n       @TwoLevelMeasure.sem_lub S SI SO A chain mu ->\n       @TwoLevelMeasure.sem_lub S SI SO B\n         (fun n : nat => @TwoLevelMeasure.sem_bind S SI A B (chain n) k)\n         (@TwoLevelMeasure.sem_bind S SI A B mu k)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticOmegaAELaws",
+      "type": "@TwoLevelMeasure.SemanticOmegaAELaws\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_zero",
+      "type": "@TwoLevelMeasure.sem_ae_zero\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticOmegaAELaws S SI SO ->\n       forall (A : Type) (P : A -> Prop),\n       @TwoLevelMeasure.sem_ae S SI A (@TwoLevelMeasure.sem_zero S SI SO A) P",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_lub",
+      "type": "@TwoLevelMeasure.sem_ae_lub\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticOmegaAELaws S SI SO ->\n       forall (A : Type) (chain : nat -> S A) (out : S A) (P : A -> Prop),\n       @TwoLevelMeasure.sem_lub S SI SO A chain out ->\n       (forall n : nat, @TwoLevelMeasure.sem_ae S SI A (chain n) P) ->\n       @TwoLevelMeasure.sem_ae S SI A out P",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticTotalProperLaws",
+      "type": "@TwoLevelMeasure.SemanticTotalProperLaws\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_total_proper",
+      "type": "@TwoLevelMeasure.sem_total_proper\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticTotalProperLaws S SI SO ->\n       forall (A : Type) (mu nu : S A),\n       @TwoLevelMeasure.sem_eq S SI A mu nu ->\n       @TwoLevelMeasure.sem_total S SI SO A mu <-> @TwoLevelMeasure.sem_total S SI SO A nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticOmegaCofinalityLaws",
+      "type": "@TwoLevelMeasure.SemanticOmegaCofinalityLaws\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_zero_prefix",
+      "type": "@TwoLevelMeasure.sem_lub_zero_prefix\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticOmegaCofinalityLaws S SI SO ->\n       forall (A : Type) (chain : nat -> S A) (out : S A),\n       @TwoLevelMeasure.sem_lub S SI SO A chain out <->\n       @TwoLevelMeasure.sem_lub S SI SO A (@TwoLevelMeasure.sem_zero_prefix S SI SO A chain) out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_constant",
+      "type": "@TwoLevelMeasure.sem_lub_constant\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticOmegaCofinalityLaws S SI SO ->\n       forall (A : Type) (mu : S A), @TwoLevelMeasure.sem_lub S SI SO A (fun _ : nat => mu) mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasureOmegaLaws",
+      "type": "@TwoLevelMeasure.MixedMeasureOmegaLaws\n     : forall MN MF : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       forall FI : TwoLevelMeasure.SemanticMeasure MF,\n       TwoLevelMeasure.MixedMeasure MN MF -> @TwoLevelMeasure.SemanticOmega MF FI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_zero",
+      "type": "@TwoLevelMeasure.mixed_bind_zero\n     : forall (MN MF : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (FI : TwoLevelMeasure.SemanticMeasure MF) (MX : TwoLevelMeasure.MixedMeasure MN MF)\n         (FO : @TwoLevelMeasure.SemanticOmega MF FI),\n       @TwoLevelMeasure.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (A B : Type) (mu : MN A),\n       @TwoLevelMeasure.sem_eq MF FI B\n         (@TwoLevelMeasure.mixed_bind MN MF MX A B mu\n            (fun _ : A => @TwoLevelMeasure.sem_zero MF FI FO B))\n         (@TwoLevelMeasure.sem_zero MF FI FO B)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_lub",
+      "type": "@TwoLevelMeasure.mixed_bind_lub\n     : forall (MN MF : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (FI : TwoLevelMeasure.SemanticMeasure MF) (MX : TwoLevelMeasure.MixedMeasure MN MF)\n         (FO : @TwoLevelMeasure.SemanticOmega MF FI),\n       @TwoLevelMeasure.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (A B : Type) (mu : MN A) (Good : A -> Prop) (chain : A -> nat -> MF B)\n         (out : A -> MF B),\n       @TwoLevelMeasure.sem_ae MN NI A mu Good ->\n       (forall x : A, Good x -> @TwoLevelMeasure.sem_increasing MF FI FO B (chain x)) ->\n       (forall x : A, Good x -> @TwoLevelMeasure.sem_lub MF FI FO B (chain x) (out x)) ->\n       @TwoLevelMeasure.sem_lub MF FI FO B\n         (fun n : nat => @TwoLevelMeasure.mixed_bind MN MF MX A B mu (fun x : A => chain x n))\n         (@TwoLevelMeasure.mixed_bind MN MF MX A B mu out)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureDiagonalLaws",
+      "type": "@TwoLevelMeasure.SemanticMeasureDiagonalLaws\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_diagonal_lub",
+      "type": "@TwoLevelMeasure.sem_bind_diagonal_lub\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticMeasureDiagonalLaws S SI SO ->\n       forall (A B : Type) (source : nat -> S A) (source_out : S A) (kernels : A -> nat -> S B)\n         (kernel_out : A -> S B),\n       @TwoLevelMeasure.sem_increasing S SI SO A source ->\n       (forall x : A, @TwoLevelMeasure.sem_increasing S SI SO B (kernels x)) ->\n       @TwoLevelMeasure.sem_lub S SI SO A source source_out ->\n       (forall x : A, @TwoLevelMeasure.sem_lub S SI SO B (kernels x) (kernel_out x)) ->\n       @TwoLevelMeasure.sem_lub S SI SO B\n         (fun n : nat => @TwoLevelMeasure.sem_bind S SI A B (source n) (fun x : A => kernels x n))\n         (@TwoLevelMeasure.sem_bind S SI A B source_out kernel_out)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.SemanticOmegaFubiniLaws",
+      "type": "@TwoLevelMeasure.SemanticOmegaFubiniLaws\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticOmega S SI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_double_diagonal",
+      "type": "@TwoLevelMeasure.sem_lub_double_diagonal\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S)\n         (SO : @TwoLevelMeasure.SemanticOmega S SI),\n       @TwoLevelMeasure.SemanticOmegaFubiniLaws S SI SO ->\n       forall (A : Type) (grid : nat -> nat -> S A) (row_out : nat -> S A) (out : S A),\n       (forall outer : nat, @TwoLevelMeasure.sem_increasing S SI SO A (grid outer)) ->\n       (forall inner : nat,\n        @TwoLevelMeasure.sem_increasing S SI SO A (fun outer : nat => grid outer inner)) ->\n       (forall outer : nat, @TwoLevelMeasure.sem_lub S SI SO A (grid outer) (row_out outer)) ->\n       @TwoLevelMeasure.sem_lub S SI SO A row_out out ->\n       @TwoLevelMeasure.sem_lub S SI SO A (fun fuel : nat => grid fuel fuel) out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmega",
+      "type": "FreeOmegaMeasure.FreeOmega\n     : (Type -> Type) -> Type -> Type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FORet",
+      "type": "@FreeOmegaMeasure.FORet\n     : forall (MN : Type -> Type) (A : Type), A -> FreeOmegaMeasure.FreeOmega MN A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOZero",
+      "type": "@FreeOmegaMeasure.FOZero\n     : forall (MN : Type -> Type) (A : Type), FreeOmegaMeasure.FreeOmega MN A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOSample",
+      "type": "@FreeOmegaMeasure.FOSample\n     : forall (MN : Type -> Type) (A X : Type),\n       MN X -> (X -> FreeOmegaMeasure.FreeOmega MN A) -> FreeOmegaMeasure.FreeOmega MN A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOLub",
+      "type": "@FreeOmegaMeasure.FOLub\n     : forall (MN : Type -> Type) (A : Type),\n       (nat -> FreeOmegaMeasure.FreeOmega MN A) -> FreeOmegaMeasure.FreeOmega MN A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmega_rect",
+      "type": "FreeOmegaMeasure.FreeOmega_rect\n     : forall (MN : Type -> Type) (A : Type) (P : FreeOmegaMeasure.FreeOmega MN A -> Type),\n       (forall x : A, P (@FreeOmegaMeasure.FORet MN A x)) ->\n       P (@FreeOmegaMeasure.FOZero MN A) ->\n       (forall (X : Type) (mu : MN X) (k : X -> FreeOmegaMeasure.FreeOmega MN A),\n        (forall x : X, P (k x)) -> P (@FreeOmegaMeasure.FOSample MN A X mu k)) ->\n       (forall chain : nat -> FreeOmegaMeasure.FreeOmega MN A,\n        (forall n : nat, P (chain n)) -> P (@FreeOmegaMeasure.FOLub MN A chain)) ->\n       forall f : FreeOmegaMeasure.FreeOmega MN A, P f",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmega_ind",
+      "type": "FreeOmegaMeasure.FreeOmega_ind\n     : forall (MN : Type -> Type) (A : Type) (P : FreeOmegaMeasure.FreeOmega MN A -> Prop),\n       (forall x : A, P (@FreeOmegaMeasure.FORet MN A x)) ->\n       P (@FreeOmegaMeasure.FOZero MN A) ->\n       (forall (X : Type) (mu : MN X) (k : X -> FreeOmegaMeasure.FreeOmega MN A),\n        (forall x : X, P (k x)) -> P (@FreeOmegaMeasure.FOSample MN A X mu k)) ->\n       (forall chain : nat -> FreeOmegaMeasure.FreeOmega MN A,\n        (forall n : nat, P (chain n)) -> P (@FreeOmegaMeasure.FOLub MN A chain)) ->\n       forall f : FreeOmegaMeasure.FreeOmega MN A, P f",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmega_rec",
+      "type": "FreeOmegaMeasure.FreeOmega_rec\n     : forall (MN : Type -> Type) (A : Type) (P : FreeOmegaMeasure.FreeOmega MN A -> Set),\n       (forall x : A, P (@FreeOmegaMeasure.FORet MN A x)) ->\n       P (@FreeOmegaMeasure.FOZero MN A) ->\n       (forall (X : Type) (mu : MN X) (k : X -> FreeOmegaMeasure.FreeOmega MN A),\n        (forall x : X, P (k x)) -> P (@FreeOmegaMeasure.FOSample MN A X mu k)) ->\n       (forall chain : nat -> FreeOmegaMeasure.FreeOmega MN A,\n        (forall n : nat, P (chain n)) -> P (@FreeOmegaMeasure.FOLub MN A chain)) ->\n       forall f : FreeOmegaMeasure.FreeOmega MN A, P f",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmega_sind",
+      "type": "FreeOmegaMeasure.FreeOmega_sind\n     : forall (MN : Type -> Type) (A : Type) (P : FreeOmegaMeasure.FreeOmega MN A -> SProp),\n       (forall x : A, P (@FreeOmegaMeasure.FORet MN A x)) ->\n       P (@FreeOmegaMeasure.FOZero MN A) ->\n       (forall (X : Type) (mu : MN X) (k : X -> FreeOmegaMeasure.FreeOmega MN A),\n        (forall x : X, P (k x)) -> P (@FreeOmegaMeasure.FOSample MN A X mu k)) ->\n       (forall chain : nat -> FreeOmegaMeasure.FreeOmega MN A,\n        (forall n : nat, P (chain n)) -> P (@FreeOmegaMeasure.FOLub MN A chain)) ->\n       forall f : FreeOmegaMeasure.FreeOmega MN A, P f",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaAt",
+      "type": "FreeOmegaMeasure.FreeOmegaAt\n     : (Type -> Type) -> Type -> Type -> Type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_bind",
+      "type": "@FreeOmegaMeasure.free_omega_bind\n     : forall (MN : Type -> Type) (A B : Type),\n       FreeOmegaMeasure.FreeOmega MN A ->\n       (A -> FreeOmegaMeasure.FreeOmega MN B) -> FreeOmegaMeasure.FreeOmega MN B",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae",
+      "type": "@FreeOmegaMeasure.free_omega_ae\n     : forall MN : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       forall A : Type, (A -> Prop) -> FreeOmegaMeasure.FreeOmega MN A -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOAERet",
+      "type": "@FreeOmegaMeasure.FOAERet\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A : Type) (P : A -> Prop) (x : A),\n       P x -> @FreeOmegaMeasure.free_omega_ae MN NI A P (@FreeOmegaMeasure.FORet MN A x)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOAEZero",
+      "type": "@FreeOmegaMeasure.FOAEZero\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A : Type) (P : A -> Prop),\n       @FreeOmegaMeasure.free_omega_ae MN NI A P (@FreeOmegaMeasure.FOZero MN A)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOAESample",
+      "type": "@FreeOmegaMeasure.FOAESample\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A : Type) (P : A -> Prop) (X : Type) (mu : MN X)\n         (k : X -> FreeOmegaMeasure.FreeOmega MN A) (Good : X -> Prop),\n       @TwoLevelMeasure.sem_ae MN NI X mu Good ->\n       (forall x : X, Good x -> @FreeOmegaMeasure.free_omega_ae MN NI A P (k x)) ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A P (@FreeOmegaMeasure.FOSample MN A X mu k)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOAELub",
+      "type": "@FreeOmegaMeasure.FOAELub\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A : Type) (P : A -> Prop) (chain : nat -> FreeOmegaMeasure.FreeOmega MN A),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_ae MN NI A P (chain n)) ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A P (@FreeOmegaMeasure.FOLub MN A chain)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_ind",
+      "type": "FreeOmegaMeasure.free_omega_ae_ind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A : Type) (P : A -> Prop) (P0 : FreeOmegaMeasure.FreeOmega MN A -> Prop),\n       (forall x : A, P x -> P0 (@FreeOmegaMeasure.FORet MN A x)) ->\n       P0 (@FreeOmegaMeasure.FOZero MN A) ->\n       (forall (X : Type) (mu : MN X) (k : X -> FreeOmegaMeasure.FreeOmega MN A) (Good : X -> Prop),\n        @TwoLevelMeasure.sem_ae MN NI X mu Good ->\n        (forall x : X, Good x -> @FreeOmegaMeasure.free_omega_ae MN NI A P (k x)) ->\n        (forall x : X, Good x -> P0 (k x)) -> P0 (@FreeOmegaMeasure.FOSample MN A X mu k)) ->\n       (forall chain : nat -> FreeOmegaMeasure.FreeOmega MN A,\n        (forall n : nat, @FreeOmegaMeasure.free_omega_ae MN NI A P (chain n)) ->\n        (forall n : nat, P0 (chain n)) -> P0 (@FreeOmegaMeasure.FOLub MN A chain)) ->\n       forall f : FreeOmegaMeasure.FreeOmega MN A,\n       @FreeOmegaMeasure.free_omega_ae MN NI A P f -> P0 f",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_sind",
+      "type": "FreeOmegaMeasure.free_omega_ae_sind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A : Type) (P : A -> Prop) (P0 : FreeOmegaMeasure.FreeOmega MN A -> SProp),\n       (forall x : A, P x -> P0 (@FreeOmegaMeasure.FORet MN A x)) ->\n       P0 (@FreeOmegaMeasure.FOZero MN A) ->\n       (forall (X : Type) (mu : MN X) (k : X -> FreeOmegaMeasure.FreeOmega MN A) (Good : X -> Prop),\n        @TwoLevelMeasure.sem_ae MN NI X mu Good ->\n        (forall x : X, Good x -> @FreeOmegaMeasure.free_omega_ae MN NI A P (k x)) ->\n        (forall x : X, Good x -> P0 (k x)) -> P0 (@FreeOmegaMeasure.FOSample MN A X mu k)) ->\n       (forall chain : nat -> FreeOmegaMeasure.FreeOmega MN A,\n        (forall n : nat, @FreeOmegaMeasure.free_omega_ae MN NI A P (chain n)) ->\n        (forall n : nat, P0 (chain n)) -> P0 (@FreeOmegaMeasure.FOLub MN A chain)) ->\n       forall f : FreeOmegaMeasure.FreeOmega MN A,\n       @FreeOmegaMeasure.free_omega_ae MN NI A P f -> P0 f",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift",
+      "type": "@FreeOmegaMeasure.free_omega_lift\n     : forall MN : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       forall A B : Type,\n       (A -> B -> Prop) ->\n       FreeOmegaMeasure.FreeOmega MN A -> FreeOmegaMeasure.FreeOmega MN B -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOLRet",
+      "type": "@FreeOmegaMeasure.FOLRet\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (x : A) (y : B),\n       R x y ->\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R (@FreeOmegaMeasure.FORet MN A x)\n         (@FreeOmegaMeasure.FORet MN B y)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOLZero",
+      "type": "@FreeOmegaMeasure.FOLZero\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R (@FreeOmegaMeasure.FOZero MN A)\n         (@FreeOmegaMeasure.FOZero MN B)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOLSample",
+      "type": "@FreeOmegaMeasure.FOLSample\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (X Y : Type) (S : X -> Y -> Prop)\n         (mu : MN X) (nu : MN Y) (k : X -> FreeOmegaMeasure.FreeOmega MN A)\n         (h : Y -> FreeOmegaMeasure.FreeOmega MN B),\n       @TwoLevelMeasure.sem_lift MN NI X Y S mu nu ->\n       (forall (x : X) (y : Y), S x y -> @FreeOmegaMeasure.free_omega_lift MN NI A B R (k x) (h y)) ->\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R (@FreeOmegaMeasure.FOSample MN A X mu k)\n         (@FreeOmegaMeasure.FOSample MN B Y nu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOLLub",
+      "type": "@FreeOmegaMeasure.FOLLub\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n         (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_lift MN NI A B R (c n) (d n)) ->\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R (@FreeOmegaMeasure.FOLub MN A c)\n         (@FreeOmegaMeasure.FOLub MN B d)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_ind",
+      "type": "FreeOmegaMeasure.free_omega_lift_ind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop)\n         (P : FreeOmegaMeasure.FreeOmega MN A -> FreeOmegaMeasure.FreeOmega MN B -> Prop),\n       (forall (x : A) (y : B),\n        R x y -> P (@FreeOmegaMeasure.FORet MN A x) (@FreeOmegaMeasure.FORet MN B y)) ->\n       P (@FreeOmegaMeasure.FOZero MN A) (@FreeOmegaMeasure.FOZero MN B) ->\n       (forall (X Y : Type) (S : X -> Y -> Prop) (mu : MN X) (nu : MN Y)\n          (k : X -> FreeOmegaMeasure.FreeOmega MN A) (h : Y -> FreeOmegaMeasure.FreeOmega MN B),\n        @TwoLevelMeasure.sem_lift MN NI X Y S mu nu ->\n        (forall (x : X) (y : Y), S x y -> @FreeOmegaMeasure.free_omega_lift MN NI A B R (k x) (h y)) ->\n        (forall (x : X) (y : Y), S x y -> P (k x) (h y)) ->\n        P (@FreeOmegaMeasure.FOSample MN A X mu k) (@FreeOmegaMeasure.FOSample MN B Y nu h)) ->\n       (forall (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_lift MN NI A B R (c n) (d n)) ->\n        (forall n : nat, P (c n) (d n)) ->\n        P (@FreeOmegaMeasure.FOLub MN A c) (@FreeOmegaMeasure.FOLub MN B d)) ->\n       forall (f : FreeOmegaMeasure.FreeOmega MN A) (f0 : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R f f0 -> P f f0",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_sind",
+      "type": "FreeOmegaMeasure.free_omega_lift_sind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop)\n         (P : FreeOmegaMeasure.FreeOmega MN A -> FreeOmegaMeasure.FreeOmega MN B -> SProp),\n       (forall (x : A) (y : B),\n        R x y -> P (@FreeOmegaMeasure.FORet MN A x) (@FreeOmegaMeasure.FORet MN B y)) ->\n       P (@FreeOmegaMeasure.FOZero MN A) (@FreeOmegaMeasure.FOZero MN B) ->\n       (forall (X Y : Type) (S : X -> Y -> Prop) (mu : MN X) (nu : MN Y)\n          (k : X -> FreeOmegaMeasure.FreeOmega MN A) (h : Y -> FreeOmegaMeasure.FreeOmega MN B),\n        @TwoLevelMeasure.sem_lift MN NI X Y S mu nu ->\n        (forall (x : X) (y : Y), S x y -> @FreeOmegaMeasure.free_omega_lift MN NI A B R (k x) (h y)) ->\n        (forall (x : X) (y : Y), S x y -> P (k x) (h y)) ->\n        P (@FreeOmegaMeasure.FOSample MN A X mu k) (@FreeOmegaMeasure.FOSample MN B Y nu h)) ->\n       (forall (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_lift MN NI A B R (c n) (d n)) ->\n        (forall n : nat, P (c n) (d n)) ->\n        P (@FreeOmegaMeasure.FOLub MN A c) (@FreeOmegaMeasure.FOLub MN B d)) ->\n       forall (f : FreeOmegaMeasure.FreeOmega MN A) (f0 : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R f f0 -> P f f0",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx",
+      "type": "@FreeOmegaMeasure.free_omega_approx\n     : forall MN : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       forall A B : Type,\n       (A -> B -> Prop) ->\n       FreeOmegaMeasure.FreeOmega MN A -> FreeOmegaMeasure.FreeOmega MN B -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOApproxZero",
+      "type": "@FreeOmegaMeasure.FOApproxZero\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R (@FreeOmegaMeasure.FOZero MN A) nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOApproxRet",
+      "type": "@FreeOmegaMeasure.FOApproxRet\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (x : A) (y : B),\n       R x y ->\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R (@FreeOmegaMeasure.FORet MN A x)\n         (@FreeOmegaMeasure.FORet MN B y)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOApproxSample",
+      "type": "@FreeOmegaMeasure.FOApproxSample\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (X Y : Type) (S : X -> Y -> Prop)\n         (mu : MN X) (nu : MN Y) (k : X -> FreeOmegaMeasure.FreeOmega MN A)\n         (h : Y -> FreeOmegaMeasure.FreeOmega MN B),\n       @TwoLevelMeasure.sem_lift MN NI X Y S mu nu ->\n       (forall (x : X) (y : Y),\n        S x y -> @FreeOmegaMeasure.free_omega_approx MN NI A B R (k x) (h y)) ->\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R (@FreeOmegaMeasure.FOSample MN A X mu k)\n         (@FreeOmegaMeasure.FOSample MN B Y nu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOApproxLub",
+      "type": "@FreeOmegaMeasure.FOApproxLub\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n         (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_approx MN NI A B R (c n) (d n)) ->\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R (@FreeOmegaMeasure.FOLub MN A c)\n         (@FreeOmegaMeasure.FOLub MN B d)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_ind",
+      "type": "FreeOmegaMeasure.free_omega_approx_ind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop)\n         (P : FreeOmegaMeasure.FreeOmega MN A -> FreeOmegaMeasure.FreeOmega MN B -> Prop),\n       (forall nu : FreeOmegaMeasure.FreeOmega MN B, P (@FreeOmegaMeasure.FOZero MN A) nu) ->\n       (forall (x : A) (y : B),\n        R x y -> P (@FreeOmegaMeasure.FORet MN A x) (@FreeOmegaMeasure.FORet MN B y)) ->\n       (forall (X Y : Type) (S : X -> Y -> Prop) (mu : MN X) (nu : MN Y)\n          (k : X -> FreeOmegaMeasure.FreeOmega MN A) (h : Y -> FreeOmegaMeasure.FreeOmega MN B),\n        @TwoLevelMeasure.sem_lift MN NI X Y S mu nu ->\n        (forall (x : X) (y : Y),\n         S x y -> @FreeOmegaMeasure.free_omega_approx MN NI A B R (k x) (h y)) ->\n        (forall (x : X) (y : Y), S x y -> P (k x) (h y)) ->\n        P (@FreeOmegaMeasure.FOSample MN A X mu k) (@FreeOmegaMeasure.FOSample MN B Y nu h)) ->\n       (forall (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_approx MN NI A B R (c n) (d n)) ->\n        (forall n : nat, P (c n) (d n)) ->\n        P (@FreeOmegaMeasure.FOLub MN A c) (@FreeOmegaMeasure.FOLub MN B d)) ->\n       forall (f : FreeOmegaMeasure.FreeOmega MN A) (f0 : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R f f0 -> P f f0",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_sind",
+      "type": "FreeOmegaMeasure.free_omega_approx_sind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop)\n         (P : FreeOmegaMeasure.FreeOmega MN A -> FreeOmegaMeasure.FreeOmega MN B -> SProp),\n       (forall nu : FreeOmegaMeasure.FreeOmega MN B, P (@FreeOmegaMeasure.FOZero MN A) nu) ->\n       (forall (x : A) (y : B),\n        R x y -> P (@FreeOmegaMeasure.FORet MN A x) (@FreeOmegaMeasure.FORet MN B y)) ->\n       (forall (X Y : Type) (S : X -> Y -> Prop) (mu : MN X) (nu : MN Y)\n          (k : X -> FreeOmegaMeasure.FreeOmega MN A) (h : Y -> FreeOmegaMeasure.FreeOmega MN B),\n        @TwoLevelMeasure.sem_lift MN NI X Y S mu nu ->\n        (forall (x : X) (y : Y),\n         S x y -> @FreeOmegaMeasure.free_omega_approx MN NI A B R (k x) (h y)) ->\n        (forall (x : X) (y : Y), S x y -> P (k x) (h y)) ->\n        P (@FreeOmegaMeasure.FOSample MN A X mu k) (@FreeOmegaMeasure.FOSample MN B Y nu h)) ->\n       (forall (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_approx MN NI A B R (c n) (d n)) ->\n        (forall n : nat, P (c n) (d n)) ->\n        P (@FreeOmegaMeasure.FOLub MN A c) (@FreeOmegaMeasure.FOLub MN B d)) ->\n       forall (f : FreeOmegaMeasure.FreeOmega MN A) (f0 : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R f f0 -> P f f0",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_to_approx",
+      "type": "@FreeOmegaMeasure.free_omega_lift_to_approx\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_chains_cofinal",
+      "type": "@FreeOmegaMeasure.free_omega_chains_cofinal\n     : forall MN : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       forall A B : Type,\n       (A -> B -> Prop) ->\n       (nat -> FreeOmegaMeasure.FreeOmega MN A) -> (nat -> FreeOmegaMeasure.FreeOmega MN B) -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_bind",
+      "type": "@FreeOmegaMeasure.free_omega_approx_bind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B C D : Type) (R : A -> B -> Prop) (T : C -> D -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B)\n         (k : A -> FreeOmegaMeasure.FreeOmega MN C) (h : B -> FreeOmegaMeasure.FreeOmega MN D),\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R mu nu ->\n       (forall (x : A) (y : B),\n        R x y -> @FreeOmegaMeasure.free_omega_approx MN NI C D T (k x) (h y)) ->\n       @FreeOmegaMeasure.free_omega_approx MN NI C D T\n         (@FreeOmegaMeasure.free_omega_bind MN A C mu k)\n         (@FreeOmegaMeasure.free_omega_bind MN B D nu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes",
+      "type": "@FreeOmegaMeasure.free_omega_observes\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticOmega MN NI ->\n       forall A O : Type, (A -> O) -> FreeOmegaMeasure.FreeOmega MN A -> MN O -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOOObserveRet",
+      "type": "@FreeOmegaMeasure.FOOObserveRet\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A O : Type) (obs : A -> O)\n         (x : A),\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs (@FreeOmegaMeasure.FORet MN A x)\n         (@TwoLevelMeasure.sem_ret MN NI O (obs x))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOOObserveZero",
+      "type": "@FreeOmegaMeasure.FOOObserveZero\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A O : Type) (obs : A -> O),\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs (@FreeOmegaMeasure.FOZero MN A)\n         (@TwoLevelMeasure.sem_zero MN NI NO O)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOOObserveSample",
+      "type": "@FreeOmegaMeasure.FOOObserveSample\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A O : Type) (obs : A -> O)\n         (X : Type) (mu : MN X) (k : X -> FreeOmegaMeasure.FreeOmega MN A)\n         (front : X -> MN O),\n       (forall x : X, @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs (k x) (front x)) ->\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs\n         (@FreeOmegaMeasure.FOSample MN A X mu k) (@TwoLevelMeasure.sem_bind MN NI X O mu front)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOOObserveLub",
+      "type": "@FreeOmegaMeasure.FOOObserveLub\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A O : Type) (obs : A -> O)\n         (chain : nat -> FreeOmegaMeasure.FreeOmega MN A) (outs : nat -> MN O)\n         (out : MN O),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs (chain n) (outs n)) ->\n       @TwoLevelMeasure.sem_lub MN NI NO O outs out ->\n       (forall n : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (chain n) (chain (S n))) ->\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs (@FreeOmegaMeasure.FOLub MN A chain)\n         out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes_ind",
+      "type": "@FreeOmegaMeasure.free_omega_observes_ind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A O : Type) (obs : A -> O)\n         (P : FreeOmegaMeasure.FreeOmega MN A -> MN O -> Prop),\n       (forall x : A, P (@FreeOmegaMeasure.FORet MN A x) (@TwoLevelMeasure.sem_ret MN NI O (obs x))) ->\n       P (@FreeOmegaMeasure.FOZero MN A) (@TwoLevelMeasure.sem_zero MN NI NO O) ->\n       (forall (X : Type) (mu : MN X) (k : X -> FreeOmegaMeasure.FreeOmega MN A)\n          (front : X -> MN O),\n        (forall x : X, @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs (k x) (front x)) ->\n        (forall x : X, P (k x) (front x)) ->\n        P (@FreeOmegaMeasure.FOSample MN A X mu k) (@TwoLevelMeasure.sem_bind MN NI X O mu front)) ->\n       (forall (chain : nat -> FreeOmegaMeasure.FreeOmega MN A) (outs : nat -> MN O) (out : MN O),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs (chain n) (outs n)) ->\n        (forall n : nat, P (chain n) (outs n)) ->\n        @TwoLevelMeasure.sem_lub MN NI NO O outs out ->\n        (forall n : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (chain n) (chain (S n))) ->\n        P (@FreeOmegaMeasure.FOLub MN A chain) out) ->\n       forall (f : FreeOmegaMeasure.FreeOmega MN A) (m : MN O),\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs f m -> P f m",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes_sind",
+      "type": "@FreeOmegaMeasure.free_omega_observes_sind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A O : Type) (obs : A -> O)\n         (P : FreeOmegaMeasure.FreeOmega MN A -> MN O -> SProp),\n       (forall x : A, P (@FreeOmegaMeasure.FORet MN A x) (@TwoLevelMeasure.sem_ret MN NI O (obs x))) ->\n       P (@FreeOmegaMeasure.FOZero MN A) (@TwoLevelMeasure.sem_zero MN NI NO O) ->\n       (forall (X : Type) (mu : MN X) (k : X -> FreeOmegaMeasure.FreeOmega MN A)\n          (front : X -> MN O),\n        (forall x : X, @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs (k x) (front x)) ->\n        (forall x : X, P (k x) (front x)) ->\n        P (@FreeOmegaMeasure.FOSample MN A X mu k) (@TwoLevelMeasure.sem_bind MN NI X O mu front)) ->\n       (forall (chain : nat -> FreeOmegaMeasure.FreeOmega MN A) (outs : nat -> MN O) (out : MN O),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs (chain n) (outs n)) ->\n        (forall n : nat, P (chain n) (outs n)) ->\n        @TwoLevelMeasure.sem_lub MN NI NO O outs out ->\n        (forall n : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (chain n) (chain (S n))) ->\n        P (@FreeOmegaMeasure.FOLub MN A chain) out) ->\n       forall (f : FreeOmegaMeasure.FreeOmega MN A) (m : MN O),\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs f m -> P f m",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_denotes",
+      "type": "@FreeOmegaMeasure.free_omega_denotes\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticOmega MN NI ->\n       forall A O : Type, (A -> O) -> FreeOmegaMeasure.FreeOmega MN A -> MN O -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes_denotes",
+      "type": "@FreeOmegaMeasure.free_omega_observes_denotes\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A O : Type)\n         (obs : A -> O) (mu : FreeOmegaMeasure.FreeOmega MN A) (out : MN O),\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs mu out ->\n       @FreeOmegaMeasure.free_omega_denotes MN NI NO A O obs mu out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_denotes_proper",
+      "type": "@FreeOmegaMeasure.free_omega_denotes_proper\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A O : Type)\n         (obs : A -> O) (mu : FreeOmegaMeasure.FreeOmega MN A) (out1 out2 : MN O),\n       @FreeOmegaMeasure.free_omega_denotes MN NI NO A O obs mu out1 ->\n       @TwoLevelMeasure.sem_eq MN NI O out1 out2 ->\n       @FreeOmegaMeasure.free_omega_denotes MN NI NO A O obs mu out2",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaDenotationBindLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaDenotationBindLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticOmega MN NI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_denotes_bind",
+      "type": "@FreeOmegaMeasure.free_omega_denotes_bind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI),\n       @FreeOmegaMeasure.FreeOmegaDenotationBindLaws MN NI NO ->\n       forall (A B OA OB : Type) (obsA : A -> OA) (obsB : B -> OB)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (out : MN OA)\n         (k : A -> FreeOmegaMeasure.FreeOmega MN B) (front : OA -> MN OB),\n       @FreeOmegaMeasure.free_omega_denotes MN NI NO A OA obsA mu out ->\n       (forall x : A,\n        @FreeOmegaMeasure.free_omega_denotes MN NI NO B OB obsB (k x) (front (obsA x))) ->\n       @FreeOmegaMeasure.free_omega_denotes MN NI NO B OB obsB\n         (@FreeOmegaMeasure.free_omega_bind MN A B mu k)\n         (@TwoLevelMeasure.sem_bind MN NI OA OB out front)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaDenotationOmegaLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaDenotationOmegaLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticOmega MN NI -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_denotes_lub",
+      "type": "@FreeOmegaMeasure.free_omega_denotes_lub\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI),\n       @FreeOmegaMeasure.FreeOmegaDenotationOmegaLaws MN NI NO ->\n       forall (A O : Type) (obs : A -> O) (chain : nat -> FreeOmegaMeasure.FreeOmega MN A)\n         (outs : nat -> MN O) (out : MN O),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_denotes MN NI NO A O obs (chain n) (outs n)) ->\n       @TwoLevelMeasure.sem_lub MN NI NO O outs out ->\n       (forall n : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (chain n) (chain (S n))) ->\n       @FreeOmegaMeasure.free_omega_denotes MN NI NO A O obs (@FreeOmegaMeasure.FOLub MN A chain)\n         out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes_bind_ret",
+      "type": "@FreeOmegaMeasure.free_omega_observes_bind_ret\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B O : Type) (obsA : A -> O)\n         (obsB : B -> O) (f : A -> B) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (out : MN O),\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A O obsA mu out ->\n       (forall x : A, obsB (f x) = obsA x) ->\n       @FreeOmegaMeasure.free_omega_observes MN NI NO B O obsB\n         (@FreeOmegaMeasure.free_omega_bind MN A B mu\n            (fun x : A => @FreeOmegaMeasure.FORet MN B (f x))) out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes_unique",
+      "type": "@FreeOmegaMeasure.free_omega_observes_unique\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureBindLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticOmegaLaws MN NI NO ->\n       forall (A O : Type) (obs : A -> O) (mu : FreeOmegaMeasure.FreeOmega MN A) (out1 out2 : MN O),\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs mu out1 ->\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs mu out2 ->\n       @TwoLevelMeasure.sem_eq MN NI O out1 out2",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_sem_retE",
+      "type": "@FreeOmegaMeasure.free_omega_sem_retE\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN) (A : Type) (x : A),\n       @TwoLevelMeasure.sem_ret (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaSemanticMeasure MN NI) A x = @FreeOmegaMeasure.FORet MN A x",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_mono",
+      "type": "@FreeOmegaMeasure.free_omega_ae_mono\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A : Type) (P Q : A -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A),\n       (forall x : A, P x -> Q x) ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A P mu -> @FreeOmegaMeasure.free_omega_ae MN NI A Q mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_conj",
+      "type": "@FreeOmegaMeasure.free_omega_ae_conj\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A : Type) (P Q : A -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A),\n       @FreeOmegaMeasure.free_omega_ae MN NI A P mu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A Q mu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A (fun x : A => P x /\\ Q x) mu",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_bind",
+      "type": "@FreeOmegaMeasure.free_omega_ae_bind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (k : A -> FreeOmegaMeasure.FreeOmega MN B) (P : A -> Prop) (Q : B -> Prop),\n       @FreeOmegaMeasure.free_omega_ae MN NI A P mu ->\n       (forall x : A, P x -> @FreeOmegaMeasure.free_omega_ae MN NI B Q (k x)) ->\n       @FreeOmegaMeasure.free_omega_ae MN NI B Q (@FreeOmegaMeasure.free_omega_bind MN A B mu k)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_bind_inv",
+      "type": "@FreeOmegaMeasure.free_omega_ae_bind_inv\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (k : A -> FreeOmegaMeasure.FreeOmega MN B) (P : B -> Prop),\n       @FreeOmegaMeasure.free_omega_ae MN NI B P (@FreeOmegaMeasure.free_omega_bind MN A B mu k) ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A\n         (fun x : A => @FreeOmegaMeasure.free_omega_ae MN NI B P (k x)) mu",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_mono",
+      "type": "@FreeOmegaMeasure.free_omega_lift_mono\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R T : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       (forall (x : A) (y : B), R x y -> T x y) ->\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_lift MN NI A B T mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_refl",
+      "type": "@FreeOmegaMeasure.free_omega_lift_refl\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A : Type) (R : A -> A -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A),\n       @RelationClasses.Reflexive A R -> @FreeOmegaMeasure.free_omega_lift MN NI A A R mu mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_refl",
+      "type": "@FreeOmegaMeasure.free_omega_approx_refl\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A : Type) (R : A -> A -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A),\n       @RelationClasses.Reflexive A R -> @FreeOmegaMeasure.free_omega_approx MN NI A A R mu mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_mono",
+      "type": "@FreeOmegaMeasure.free_omega_approx_mono\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R T : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       (forall (x : A) (y : B), R x y -> T x y) ->\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_approx MN NI A B T mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_comp",
+      "type": "@FreeOmegaMeasure.free_omega_approx_comp\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A B C : Type) (R : A -> B -> Prop) (T : B -> C -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B)\n         (xi : FreeOmegaMeasure.FreeOmega MN C),\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_approx MN NI B C T nu xi ->\n       @FreeOmegaMeasure.free_omega_approx MN NI A C\n         (fun (x : A) (z : C) => exists y : B, R x y /\\ T y z) mu xi",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_trans",
+      "type": "@FreeOmegaMeasure.free_omega_approx_trans\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A : Type) (mu nu xi : FreeOmegaMeasure.FreeOmega MN A),\n       @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) mu nu ->\n       @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) nu xi ->\n       @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) mu xi",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_steps",
+      "type": "@FreeOmegaMeasure.free_omega_approx_steps\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A : Type) (c : nat -> FreeOmegaMeasure.FreeOmega MN A),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (c n) (c (S n))) ->\n       forall n k : nat, @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (c n) (c (n + k))",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_sym",
+      "type": "@FreeOmegaMeasure.free_omega_lift_sym\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_lift MN NI B A (fun (y : B) (x : A) => R x y) nu mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_comp",
+      "type": "@FreeOmegaMeasure.free_omega_lift_comp\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A B C : Type) (R : A -> B -> Prop) (T : B -> C -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B)\n         (xi : FreeOmegaMeasure.FreeOmega MN C),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_lift MN NI B C T nu xi ->\n       @FreeOmegaMeasure.free_omega_lift MN NI A C\n         (fun (x : A) (z : C) => exists y : B, R x y /\\ T y z) mu xi",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_countable",
+      "type": "@FreeOmegaMeasure.free_omega_ae_countable\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->\n       forall (A : Type) (mu : FreeOmegaMeasure.FreeOmega MN A) (P : nat -> A -> Prop),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_ae MN NI A (P n) mu) ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A (fun x : A => forall n : nat, P n x) mu",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_ae_restrict",
+      "type": "@FreeOmegaMeasure.free_omega_lift_ae_restrict\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B) (P : A -> Prop) (Q : B -> Prop),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A P mu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI B Q nu ->\n       @FreeOmegaMeasure.free_omega_lift MN NI A B (fun (x : A) (y : B) => R x y /\\ P x /\\ Q y) mu\n         nu",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_ae_transport_r",
+      "type": "@FreeOmegaMeasure.free_omega_lift_ae_transport_r\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B) (P : A -> Prop),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A P mu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI B (fun y : B => exists x : A, R x y /\\ P x) nu",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_bind_assoc",
+      "type": "@FreeOmegaMeasure.free_omega_bind_assoc\n     : forall (MN : Type -> Type) (A B C : Type) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (k : A -> FreeOmegaMeasure.FreeOmega MN B) (h : B -> FreeOmegaMeasure.FreeOmega MN C),\n       @FreeOmegaMeasure.free_omega_bind MN B C (@FreeOmegaMeasure.free_omega_bind MN A B mu k) h =\n       @FreeOmegaMeasure.free_omega_bind MN A C mu\n         (fun x : A => @FreeOmegaMeasure.free_omega_bind MN B C (k x) h)",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_bind",
+      "type": "@FreeOmegaMeasure.free_omega_lift_bind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B C D : Type) (R : A -> B -> Prop) (T : C -> D -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B)\n         (k : A -> FreeOmegaMeasure.FreeOmega MN C) (h : B -> FreeOmegaMeasure.FreeOmega MN D),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu ->\n       (forall (x : A) (y : B), R x y -> @FreeOmegaMeasure.free_omega_lift MN NI C D T (k x) (h y)) ->\n       @FreeOmegaMeasure.free_omega_lift MN NI C D T\n         (@FreeOmegaMeasure.free_omega_bind MN A C mu k)\n         (@FreeOmegaMeasure.free_omega_bind MN B D nu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_bind_ae_proper",
+      "type": "@FreeOmegaMeasure.free_omega_bind_ae_proper\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->\n       forall (A B : Type) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (k h : A -> FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_ae MN NI A\n         (fun x : A => @FreeOmegaMeasure.free_omega_lift MN NI B B (@eq B) (k x) (h x)) mu ->\n       @FreeOmegaMeasure.free_omega_lift MN NI B B (@eq B)\n         (@FreeOmegaMeasure.free_omega_bind MN A B mu k)\n         (@FreeOmegaMeasure.free_omega_bind MN A B mu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_mixed_bindE",
+      "type": "@FreeOmegaMeasure.free_omega_mixed_bindE\n     : forall (MN : Type -> Type) (A B : Type) (mu : MN A)\n         (k : A -> FreeOmegaMeasure.FreeOmega MN B),\n       @TwoLevelMeasure.mixed_bind MN (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN) A B mu k =\n       @FreeOmegaMeasure.FOSample MN B A mu k",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift\n     : forall MN : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       forall A B : Type,\n       (A -> B -> Prop) ->\n       FreeOmegaMeasure.FreeOmega MN A -> FreeOmegaMeasure.FreeOmega MN B -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_support_lift",
+      "type": "@FreeOmegaMeasure.free_omega_lift_support_lift\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu nu",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_ae_backward",
+      "type": "@FreeOmegaMeasure.free_omega_approx_ae_backward\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B) (Q : B -> Prop),\n       @FreeOmegaMeasure.free_omega_approx MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI B Q nu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A (fun x : A => exists y : B, R x y /\\ Q y) mu",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_mono",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_mono\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R T : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu nu ->\n       (forall (x : A) (y : B), R x y -> T x y) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B T mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sym",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_sym\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI B A (fun (y : B) (x : A) => R x y) nu mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_comp",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_comp\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B C : Type) (R : A -> B -> Prop) (T : B -> C -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (mid : FreeOmegaMeasure.FreeOmega MN B)\n         (nu : FreeOmegaMeasure.FreeOmega MN C),\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu mid ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI B C T mid nu ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A C\n         (fun (x : A) (z : C) => exists y : B, R x y /\\ T y z) mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_restrict",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_restrict\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B) (P : A -> Prop) (Q : B -> Prop),\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A P mu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI B Q nu ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B\n         (fun (x : A) (y : B) => R x y /\\ P x /\\ Q y) mu nu",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_bind",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_bind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A B C D : Type) (T : C -> D -> Prop) (R : A -> B -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN C) (nu : FreeOmegaMeasure.FreeOmega MN D)\n         (k : C -> FreeOmegaMeasure.FreeOmega MN A) (h : D -> FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_support_lift MN NI C D T mu nu ->\n       (forall (x : C) (y : D),\n        T x y -> @FreeOmegaMeasure.free_omega_support_lift MN NI A B R (k x) (h y)) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n         (@FreeOmegaMeasure.free_omega_bind MN C A mu k)\n         (@FreeOmegaMeasure.free_omega_bind MN D B nu h)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sample",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_sample\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       forall (A B C D : Type) (T : C -> D -> Prop) (R : A -> B -> Prop)\n         (mu : MN C) (nu : MN D) (k : C -> FreeOmegaMeasure.FreeOmega MN A)\n         (h : D -> FreeOmegaMeasure.FreeOmega MN B),\n       @TwoLevelMeasure.sem_lift MN NI C D T mu nu ->\n       (forall (x : C) (y : D),\n        T x y -> @FreeOmegaMeasure.free_omega_support_lift MN NI A B R (k x) (h y)) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n         (@FreeOmegaMeasure.FOSample MN A C mu k) (@FreeOmegaMeasure.FOSample MN B D nu h)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_sample_inv",
+      "type": "@FreeOmegaMeasure.free_omega_ae_sample_inv\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A C : Type) (mu : MN C) (k : C -> FreeOmegaMeasure.FreeOmega MN A) (P : A -> Prop),\n       @FreeOmegaMeasure.free_omega_ae MN NI A P (@FreeOmegaMeasure.FOSample MN A C mu k) ->\n       @TwoLevelMeasure.sem_ae MN NI C mu\n         (fun x : C => @FreeOmegaMeasure.free_omega_ae MN NI A P (k x))",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sample_lub",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_sample_lub\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->\n       forall (A B C : Type) (R : A -> B -> Prop) (mu : MN C) (Good : C -> Prop)\n         (chain : C -> nat -> FreeOmegaMeasure.FreeOmega MN B)\n         (out : C -> FreeOmegaMeasure.FreeOmega MN A),\n       @TwoLevelMeasure.sem_ae MN NI C mu Good ->\n       (forall x : C,\n        Good x ->\n        @FreeOmegaMeasure.free_omega_support_lift MN NI A B R (out x)\n          (@FreeOmegaMeasure.FOLub MN B (chain x))) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n         (@FreeOmegaMeasure.FOSample MN A C mu out)\n         (@FreeOmegaMeasure.FOLub MN B\n            (fun n : nat => @FreeOmegaMeasure.FOSample MN B C mu (fun x : C => chain x n)))",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_lub",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_lub\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n         (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_support_lift MN NI A B R (c n) (d n)) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R (@FreeOmegaMeasure.FOLub MN A c)\n         (@FreeOmegaMeasure.FOLub MN B d)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_lub_zero_prefix_l",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_lub_zero_prefix_l\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n         (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_support_lift MN NI A B R (c n) (d n)) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n         (@FreeOmegaMeasure.FOLub MN A\n            (fun n : nat => match n with\n                            | 0 => @FreeOmegaMeasure.FOZero MN A\n                            | S n' => c n'\n                            end)) (@FreeOmegaMeasure.FOLub MN B d)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sample_zero",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_sample_zero\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A B C : Type) (R : A -> B -> Prop) (mu : MN C),\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n         (@FreeOmegaMeasure.FOSample MN A C mu (fun _ : C => @FreeOmegaMeasure.FOZero MN A))\n         (@FreeOmegaMeasure.FOZero MN B)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_lub_constant_r",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_lub_constant_r\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu\n         (@FreeOmegaMeasure.FOLub MN B (fun _ : nat => nu))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_bind_diagonal",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_bind_diagonal\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->\n       forall (A B : Type) (R : B -> B -> Prop) (source : nat -> FreeOmegaMeasure.FreeOmega MN A)\n         (source_out : FreeOmegaMeasure.FreeOmega MN A)\n         (kernels : A -> nat -> FreeOmegaMeasure.FreeOmega MN B)\n         (kernel_out : A -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall n : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (source n) (source (S n))) ->\n       (forall (x : A) (n : nat),\n        @FreeOmegaMeasure.free_omega_approx MN NI B B (@eq B) (kernels x n) (kernels x (S n))) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A A (@eq A) source_out\n         (@FreeOmegaMeasure.FOLub MN A source) ->\n       (forall x : A,\n        @FreeOmegaMeasure.free_omega_support_lift MN NI B B R (kernel_out x)\n          (@FreeOmegaMeasure.FOLub MN B (kernels x))) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI B B R\n         (@FreeOmegaMeasure.free_omega_bind MN A B source_out kernel_out)\n         (@FreeOmegaMeasure.FOLub MN B\n            (fun n : nat =>\n             @FreeOmegaMeasure.free_omega_bind MN A B (source n) (fun x : A => kernels x n)))",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_double_diagonal",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_double_diagonal\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       forall (A : Type) (grid : nat -> nat -> FreeOmegaMeasure.FreeOmega MN A),\n       (forall outer inner : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (grid outer inner)\n          (grid outer (S inner))) ->\n       (forall outer inner : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (grid outer inner)\n          (grid (S outer) inner)) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A A (@eq A)\n         (@FreeOmegaMeasure.FOLub MN A\n            (fun outer : nat => @FreeOmegaMeasure.FOLub MN A (grid outer)))\n         (@FreeOmegaMeasure.FOLub MN A (fun fuel : nat => grid fuel fuel))",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sample_bind",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_sample_bind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (A B C D : Type) (R : A -> B -> Prop) (mu : MN C) (h : C -> MN D)\n         (k : D -> FreeOmegaMeasure.FreeOmega MN A) (l : D -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall P : D -> Prop,\n        @TwoLevelMeasure.sem_ae MN NI D (@TwoLevelMeasure.sem_bind MN NI C D mu h) P <->\n        @TwoLevelMeasure.sem_ae MN NI C mu (fun x : C => @TwoLevelMeasure.sem_ae MN NI D (h x) P)) ->\n       (forall y : D, @FreeOmegaMeasure.free_omega_support_lift MN NI A B R (k y) (l y)) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n         (@FreeOmegaMeasure.FOSample MN A C mu\n            (fun x : C => @FreeOmegaMeasure.FOSample MN A D (h x) k))\n         (@FreeOmegaMeasure.FOSample MN B D (@TwoLevelMeasure.sem_bind MN NI C D mu h) l)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.semantic_product",
+      "type": "@FreeOmegaMeasure.semantic_product\n     : forall MN : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN -> forall X Y : Type, MN X -> MN Y -> MN (X * Y)%type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_sample2_product_iff",
+      "type": "@FreeOmegaMeasure.free_omega_ae_sample2_product_iff\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureDiracAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureBindAEExactLaws MN NI ->\n       forall (A X Y : Type) (P : A -> Prop) (mu : MN X) (nu : MN Y)\n         (k : X -> Y -> FreeOmegaMeasure.FreeOmega MN A),\n       @FreeOmegaMeasure.free_omega_ae MN NI A P\n         (@FreeOmegaMeasure.FOSample MN A X mu\n            (fun x : X => @FreeOmegaMeasure.FOSample MN A Y nu (k x))) <->\n       @TwoLevelMeasure.sem_ae MN NI (X * Y) (@FreeOmegaMeasure.semantic_product MN NI X Y mu nu)\n         (fun p : X * Y => @FreeOmegaMeasure.free_omega_ae MN NI A P (k (@fst X Y p) (@snd X Y p)))",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.semantic_pair_swap_rel",
+      "type": "@FreeOmegaMeasure.semantic_pair_swap_rel\n     : forall X Y : Type, X * Y -> Y * X -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sample_exchange",
+      "type": "@FreeOmegaMeasure.free_omega_support_lift_sample_exchange\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureDiracAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureBindAEExactLaws MN NI ->\n       forall (A B X Y : Type) (R : A -> B -> Prop) (mu : MN X) (nu : MN Y)\n         (k1 : X -> Y -> FreeOmegaMeasure.FreeOmega MN A)\n         (k2 : Y -> X -> FreeOmegaMeasure.FreeOmega MN B),\n       @TwoLevelMeasure.sem_lift MN NI (X * Y) (Y * X)\n         (@FreeOmegaMeasure.semantic_pair_swap_rel X Y)\n         (@FreeOmegaMeasure.semantic_product MN NI X Y mu nu)\n         (@FreeOmegaMeasure.semantic_product MN NI Y X nu mu) ->\n       (forall (x : X) (y : Y),\n        @FreeOmegaMeasure.free_omega_support_lift MN NI A B R (k1 x y) (k2 y x)) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n         (@FreeOmegaMeasure.FOSample MN A X mu\n            (fun x : X => @FreeOmegaMeasure.FOSample MN A Y nu (k1 x)))\n         (@FreeOmegaMeasure.FOSample MN B Y nu\n            (fun y : Y => @FreeOmegaMeasure.FOSample MN B X mu (k2 y)))",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift",
+      "type": "@FreeOmegaMeasure.free_omega_qlift\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticOmega MN NI ->\n       forall A B : Type,\n       (A -> B -> Prop) ->\n       FreeOmegaMeasure.FreeOmega MN A -> FreeOmegaMeasure.FreeOmega MN B -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLStructural",
+      "type": "@FreeOmegaMeasure.FOQLStructural\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLObserve",
+      "type": "@FreeOmegaMeasure.FOQLObserve\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (OA OB : Type) (obsA : A -> OA) (obsB : B -> OB) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B) (outA : MN OA) (outB : MN OB)\n         (S : OA -> OB -> Prop),\n       @FreeOmegaMeasure.free_omega_observes MN NI NO A OA obsA mu outA ->\n       @FreeOmegaMeasure.free_omega_observes MN NI NO B OB obsB nu outB ->\n       @TwoLevelMeasure.sem_lift MN NI OA OB S outA outB ->\n       (forall (x : A) (y : B), S (obsA x) (obsB y) -> R x y) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLAERestrict",
+      "type": "@FreeOmegaMeasure.FOQLAERestrict\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R T : A -> B -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B)\n         (P : A -> Prop) (Q : B -> Prop),\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B T mu nu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI A P mu ->\n       @FreeOmegaMeasure.free_omega_ae MN NI B Q nu ->\n       (forall (x : A) (y : B), T x y /\\ P x /\\ Q y -> R x y) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLMono",
+      "type": "@FreeOmegaMeasure.FOQLMono\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R T : A -> B -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B T mu nu ->\n       (forall (x : A) (y : B), T x y -> R x y) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSym",
+      "type": "@FreeOmegaMeasure.FOQLSym\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO B A (fun (y : B) (x : A) => R x y) nu mu ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLComp",
+      "type": "@FreeOmegaMeasure.FOQLComp\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (C : Type) (T : A -> C -> Prop) (U : C -> B -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (mid : FreeOmegaMeasure.FreeOmega MN C)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A C T mu mid ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO C B U mid nu ->\n       (forall (x : A) (z : B), (exists y : C, T x y /\\ U y z) -> R x z) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLBind",
+      "type": "@FreeOmegaMeasure.FOQLBind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (C D : Type) (T : C -> D -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN C)\n         (nu : FreeOmegaMeasure.FreeOmega MN D) (k : C -> FreeOmegaMeasure.FreeOmega MN A)\n         (h : D -> FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO C D T mu nu ->\n       (forall (x : C) (y : D),\n        T x y -> @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x) (h y)) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R\n         (@FreeOmegaMeasure.free_omega_bind MN C A mu k)\n         (@FreeOmegaMeasure.free_omega_bind MN D B nu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSample",
+      "type": "@FreeOmegaMeasure.FOQLSample\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (C D : Type) (T : C -> D -> Prop) (mu : MN C) (nu : MN D)\n         (k : C -> FreeOmegaMeasure.FreeOmega MN A) (h : D -> FreeOmegaMeasure.FreeOmega MN B),\n       @TwoLevelMeasure.sem_lift MN NI C D T mu nu ->\n       (forall (x : C) (y : D),\n        T x y -> @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x) (h y)) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (@FreeOmegaMeasure.FOSample MN A C mu k)\n         (@FreeOmegaMeasure.FOSample MN B D nu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSampleRetL",
+      "type": "@FreeOmegaMeasure.FOQLSampleRetL\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (C : Type) (x : C) (k : C -> FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       (forall P : C -> Prop,\n        @TwoLevelMeasure.sem_ae MN NI C (@TwoLevelMeasure.sem_ret MN NI C x) P <-> P x) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x) nu ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R\n         (@FreeOmegaMeasure.FOSample MN A C (@TwoLevelMeasure.sem_ret MN NI C x) k) nu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSampleBind",
+      "type": "@FreeOmegaMeasure.FOQLSampleBind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (C D : Type) (mu : MN C) (h : C -> MN D) (k : D -> FreeOmegaMeasure.FreeOmega MN A)\n         (l : D -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall P : D -> Prop,\n        @TwoLevelMeasure.sem_ae MN NI D (@TwoLevelMeasure.sem_bind MN NI C D mu h) P <->\n        @TwoLevelMeasure.sem_ae MN NI C mu (fun x : C => @TwoLevelMeasure.sem_ae MN NI D (h x) P)) ->\n       (forall y : D, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k y) (l y)) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R\n         (@FreeOmegaMeasure.FOSample MN A C mu\n            (fun x : C => @FreeOmegaMeasure.FOSample MN A D (h x) k))\n         (@FreeOmegaMeasure.FOSample MN B D (@TwoLevelMeasure.sem_bind MN NI C D mu h) l)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSampleExchange",
+      "type": "@FreeOmegaMeasure.FOQLSampleExchange\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (C D : Type) (mu : MN C) (nu : MN D) (k : C -> D -> FreeOmegaMeasure.FreeOmega MN A)\n         (l : D -> C -> FreeOmegaMeasure.FreeOmega MN B),\n       @TwoLevelMeasure.sem_lift MN NI (C * D) (D * C)\n         (@FreeOmegaMeasure.semantic_pair_swap_rel C D)\n         (@FreeOmegaMeasure.semantic_product MN NI C D mu nu)\n         (@FreeOmegaMeasure.semantic_product MN NI D C nu mu) ->\n       (forall (x : C) (y : D), @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x y) (l y x)) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n         (@FreeOmegaMeasure.FOSample MN A C mu\n            (fun x : C => @FreeOmegaMeasure.FOSample MN A D nu (k x)))\n         (@FreeOmegaMeasure.FOSample MN B D nu\n            (fun y : D => @FreeOmegaMeasure.FOSample MN B C mu (l y))) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R\n         (@FreeOmegaMeasure.FOSample MN A C mu\n            (fun x : C => @FreeOmegaMeasure.FOSample MN A D nu (k x)))\n         (@FreeOmegaMeasure.FOSample MN B D nu\n            (fun y : D => @FreeOmegaMeasure.FOSample MN B C mu (l y)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLLub",
+      "type": "@FreeOmegaMeasure.FOQLLub\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (c : nat -> FreeOmegaMeasure.FreeOmega MN A) (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (c n) (d n)) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (@FreeOmegaMeasure.FOLub MN A c)\n         (@FreeOmegaMeasure.FOLub MN B d)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLLubZeroPrefixL",
+      "type": "@FreeOmegaMeasure.FOQLLubZeroPrefixL\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (c : nat -> FreeOmegaMeasure.FreeOmega MN A) (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (c n) (d n)) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R\n         (@FreeOmegaMeasure.FOLub MN A\n            (fun n : nat => match n with\n                            | 0 => @FreeOmegaMeasure.FOZero MN A\n                            | S n' => c n'\n                            end)) (@FreeOmegaMeasure.FOLub MN B d)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLLubZeroPrefixR",
+      "type": "@FreeOmegaMeasure.FOQLLubZeroPrefixR\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (c : nat -> FreeOmegaMeasure.FreeOmega MN A) (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (c n) (d n)) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (@FreeOmegaMeasure.FOLub MN A c)\n         (@FreeOmegaMeasure.FOLub MN B\n            (fun n : nat => match n with\n                            | 0 => @FreeOmegaMeasure.FOZero MN B\n                            | S n' => d n'\n                            end))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSampleLub",
+      "type": "@FreeOmegaMeasure.FOQLSampleLub\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (C : Type) (mu : MN C) (Good : C -> Prop)\n         (chain : C -> nat -> FreeOmegaMeasure.FreeOmega MN B)\n         (out : C -> FreeOmegaMeasure.FreeOmega MN A),\n       @TwoLevelMeasure.sem_ae MN NI C mu Good ->\n       (forall x : C,\n        Good x ->\n        forall n : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI B B (@eq B) (chain x n) (chain x (S n))) ->\n       (forall x : C,\n        Good x ->\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (out x)\n          (@FreeOmegaMeasure.FOLub MN B (chain x))) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (@FreeOmegaMeasure.FOSample MN A C mu out)\n         (@FreeOmegaMeasure.FOLub MN B\n            (fun n : nat => @FreeOmegaMeasure.FOSample MN B C mu (fun x : C => chain x n)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSampleZero",
+      "type": "@FreeOmegaMeasure.FOQLSampleZero\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (C : Type) (mu : MN C),\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R\n         (@FreeOmegaMeasure.FOSample MN A C mu (fun _ : C => @FreeOmegaMeasure.FOZero MN A))\n         (@FreeOmegaMeasure.FOZero MN B)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLLubConstantR",
+      "type": "@FreeOmegaMeasure.FOQLLubConstantR\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu\n         (@FreeOmegaMeasure.FOLub MN B (fun _ : nat => nu))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLBindLub",
+      "type": "@FreeOmegaMeasure.FOQLBindLub\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (C : Type) (source : nat -> FreeOmegaMeasure.FreeOmega MN C)\n         (source_out : FreeOmegaMeasure.FreeOmega MN C)\n         (kernels : C -> nat -> FreeOmegaMeasure.FreeOmega MN B)\n         (kernel_out : C -> FreeOmegaMeasure.FreeOmega MN A),\n       (forall n : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI C C (@eq C) (source n) (source (S n))) ->\n       (forall (x : C) (n : nat),\n        @FreeOmegaMeasure.free_omega_approx MN NI B B (@eq B) (kernels x n) (kernels x (S n))) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO C C (@eq C) source_out\n         (@FreeOmegaMeasure.FOLub MN C source) ->\n       (forall x : C,\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (kernel_out x)\n          (@FreeOmegaMeasure.FOLub MN B (kernels x))) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n         (@FreeOmegaMeasure.free_omega_bind MN C A source_out kernel_out)\n         (@FreeOmegaMeasure.FOLub MN B\n            (fun n : nat =>\n             @FreeOmegaMeasure.free_omega_bind MN C B (source n) (fun x : C => kernels x n))) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R\n         (@FreeOmegaMeasure.free_omega_bind MN C A source_out kernel_out)\n         (@FreeOmegaMeasure.FOLub MN B\n            (fun n : nat =>\n             @FreeOmegaMeasure.free_omega_bind MN C B (source n) (fun x : C => kernels x n)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLDoubleDiagonal",
+      "type": "@FreeOmegaMeasure.FOQLDoubleDiagonal\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (HAB : A = B) (grid : nat -> nat -> FreeOmegaMeasure.FreeOmega MN A),\n       (forall outer inner : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (grid outer inner)\n          (grid outer (S inner))) ->\n       (forall outer inner : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (grid outer inner)\n          (grid (S outer) inner)) ->\n       (forall x : A, R x (@eq_rect Type A (fun T : Type => T) x B HAB)) ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n         (@FreeOmegaMeasure.FOLub MN A\n            (fun outer : nat => @FreeOmegaMeasure.FOLub MN A (grid outer)))\n         (@eq_rect Type A (fun T : Type => FreeOmegaMeasure.FreeOmega MN T)\n            (@FreeOmegaMeasure.FOLub MN A (fun fuel : nat => grid fuel fuel)) B HAB) ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R\n         (@FreeOmegaMeasure.FOLub MN A\n            (fun outer : nat => @FreeOmegaMeasure.FOLub MN A (grid outer)))\n         (@eq_rect Type A (fun T : Type => FreeOmegaMeasure.FreeOmega MN T)\n            (@FreeOmegaMeasure.FOLub MN A (fun fuel : nat => grid fuel fuel)) B HAB)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLCofinal",
+      "type": "@FreeOmegaMeasure.FOQLCofinal\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type) (R : A -> B -> Prop)\n         (left : nat -> FreeOmegaMeasure.FreeOmega MN A)\n         (right : nat -> FreeOmegaMeasure.FreeOmega MN B),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (left n) (left (S n))) ->\n       (forall n : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI B B (@eq B) (right n) (right (S n))) ->\n       @FreeOmegaMeasure.free_omega_chains_cofinal MN NI A B R left right ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (@FreeOmegaMeasure.FOLub MN A left)\n         (@FreeOmegaMeasure.FOLub MN B right)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift_ind",
+      "type": "FreeOmegaMeasure.free_omega_qlift_ind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI)\n         (P : forall A B : Type,\n              (A -> B -> Prop) ->\n              FreeOmegaMeasure.FreeOmega MN A -> FreeOmegaMeasure.FreeOmega MN B -> Prop),\n       (forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu -> P A B R mu nu) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (OA OB : Type) (obsA : A -> OA)\n          (obsB : B -> OB) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B) (outA : MN OA) (outB : MN OB)\n          (S : OA -> OB -> Prop),\n        @FreeOmegaMeasure.free_omega_observes MN NI NO A OA obsA mu outA ->\n        @FreeOmegaMeasure.free_omega_observes MN NI NO B OB obsB nu outB ->\n        @TwoLevelMeasure.sem_lift MN NI OA OB S outA outB ->\n        (forall (x : A) (y : B), S (obsA x) (obsB y) -> R x y) ->\n        @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu nu -> P A B R mu nu) ->\n       (forall (A B : Type) (R T : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B) (P0 : A -> Prop) (Q : B -> Prop),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A B T mu nu ->\n        P A B T mu nu ->\n        @FreeOmegaMeasure.free_omega_ae MN NI A P0 mu ->\n        @FreeOmegaMeasure.free_omega_ae MN NI B Q nu ->\n        (forall (x : A) (y : B), T x y /\\ P0 x /\\ Q y -> R x y) -> P A B R mu nu) ->\n       (forall (A B : Type) (R T : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A B T mu nu ->\n        P A B T mu nu -> (forall (x : A) (y : B), T x y -> R x y) -> P A B R mu nu) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO B A (fun (y : B) (x : A) => R x y) nu mu ->\n        P B A (fun (y : B) (x : A) => R x y) nu mu -> P A B R mu nu) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C : Type) (T : A -> C -> Prop)\n          (U : C -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (mid : FreeOmegaMeasure.FreeOmega MN C) (nu : FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A C T mu mid ->\n        P A C T mu mid ->\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO C B U mid nu ->\n        P C B U mid nu ->\n        (forall (x : A) (z : B), (exists y : C, T x y /\\ U y z) -> R x z) -> P A B R mu nu) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C D : Type) (T : C -> D -> Prop)\n          (mu : FreeOmegaMeasure.FreeOmega MN C) (nu : FreeOmegaMeasure.FreeOmega MN D)\n          (k : C -> FreeOmegaMeasure.FreeOmega MN A) (h : D -> FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO C D T mu nu ->\n        P C D T mu nu ->\n        (forall (x : C) (y : D),\n         T x y -> @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x) (h y)) ->\n        (forall (x : C) (y : D), T x y -> P A B R (k x) (h y)) ->\n        P A B R (@FreeOmegaMeasure.free_omega_bind MN C A mu k)\n          (@FreeOmegaMeasure.free_omega_bind MN D B nu h)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C D : Type) (T : C -> D -> Prop)\n          (mu : MN C) (nu : MN D) (k : C -> FreeOmegaMeasure.FreeOmega MN A)\n          (h : D -> FreeOmegaMeasure.FreeOmega MN B),\n        @TwoLevelMeasure.sem_lift MN NI C D T mu nu ->\n        (forall (x : C) (y : D),\n         T x y -> @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x) (h y)) ->\n        (forall (x : C) (y : D), T x y -> P A B R (k x) (h y)) ->\n        P A B R (@FreeOmegaMeasure.FOSample MN A C mu k) (@FreeOmegaMeasure.FOSample MN B D nu h)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C : Type) (x : C)\n          (k : C -> FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B),\n        (forall P0 : C -> Prop,\n         @TwoLevelMeasure.sem_ae MN NI C (@TwoLevelMeasure.sem_ret MN NI C x) P0 <-> P0 x) ->\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x) nu ->\n        P A B R (k x) nu ->\n        P A B R (@FreeOmegaMeasure.FOSample MN A C (@TwoLevelMeasure.sem_ret MN NI C x) k) nu) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C D : Type) (mu : MN C)\n          (h : C -> MN D) (k : D -> FreeOmegaMeasure.FreeOmega MN A)\n          (l : D -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall P0 : D -> Prop,\n         @TwoLevelMeasure.sem_ae MN NI D (@TwoLevelMeasure.sem_bind MN NI C D mu h) P0 <->\n         @TwoLevelMeasure.sem_ae MN NI C mu (fun x : C => @TwoLevelMeasure.sem_ae MN NI D (h x) P0)) ->\n        (forall y : D, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k y) (l y)) ->\n        (forall y : D, P A B R (k y) (l y)) ->\n        P A B R\n          (@FreeOmegaMeasure.FOSample MN A C mu\n             (fun x : C => @FreeOmegaMeasure.FOSample MN A D (h x) k))\n          (@FreeOmegaMeasure.FOSample MN B D (@TwoLevelMeasure.sem_bind MN NI C D mu h) l)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C D : Type) (mu : MN C)\n          (nu : MN D) (k : C -> D -> FreeOmegaMeasure.FreeOmega MN A)\n          (l : D -> C -> FreeOmegaMeasure.FreeOmega MN B),\n        @TwoLevelMeasure.sem_lift MN NI (C * D) (D * C)\n          (@FreeOmegaMeasure.semantic_pair_swap_rel C D)\n          (@FreeOmegaMeasure.semantic_product MN NI C D mu nu)\n          (@FreeOmegaMeasure.semantic_product MN NI D C nu mu) ->\n        (forall (x : C) (y : D), @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x y) (l y x)) ->\n        (forall (x : C) (y : D), P A B R (k x y) (l y x)) ->\n        @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n          (@FreeOmegaMeasure.FOSample MN A C mu\n             (fun x : C => @FreeOmegaMeasure.FOSample MN A D nu (k x)))\n          (@FreeOmegaMeasure.FOSample MN B D nu\n             (fun y : D => @FreeOmegaMeasure.FOSample MN B C mu (l y))) ->\n        P A B R\n          (@FreeOmegaMeasure.FOSample MN A C mu\n             (fun x : C => @FreeOmegaMeasure.FOSample MN A D nu (k x)))\n          (@FreeOmegaMeasure.FOSample MN B D nu\n             (fun y : D => @FreeOmegaMeasure.FOSample MN B C mu (l y)))) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (c n) (d n)) ->\n        (forall n : nat, P A B R (c n) (d n)) ->\n        P A B R (@FreeOmegaMeasure.FOLub MN A c) (@FreeOmegaMeasure.FOLub MN B d)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (c n) (d n)) ->\n        (forall n : nat, P A B R (c n) (d n)) ->\n        P A B R\n          (@FreeOmegaMeasure.FOLub MN A\n             (fun n : nat => match n with\n                             | 0 => @FreeOmegaMeasure.FOZero MN A\n                             | S n' => c n'\n                             end)) (@FreeOmegaMeasure.FOLub MN B d)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (c n) (d n)) ->\n        (forall n : nat, P A B R (c n) (d n)) ->\n        P A B R (@FreeOmegaMeasure.FOLub MN A c)\n          (@FreeOmegaMeasure.FOLub MN B\n             (fun n : nat => match n with\n                             | 0 => @FreeOmegaMeasure.FOZero MN B\n                             | S n' => d n'\n                             end))) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C : Type) (mu : MN C)\n          (Good : C -> Prop) (chain : C -> nat -> FreeOmegaMeasure.FreeOmega MN B)\n          (out : C -> FreeOmegaMeasure.FreeOmega MN A),\n        @TwoLevelMeasure.sem_ae MN NI C mu Good ->\n        (forall x : C,\n         Good x ->\n         forall n : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI B B (@eq B) (chain x n) (chain x (S n))) ->\n        (forall x : C,\n         Good x ->\n         @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (out x)\n           (@FreeOmegaMeasure.FOLub MN B (chain x))) ->\n        (forall x : C, Good x -> P A B R (out x) (@FreeOmegaMeasure.FOLub MN B (chain x))) ->\n        P A B R (@FreeOmegaMeasure.FOSample MN A C mu out)\n          (@FreeOmegaMeasure.FOLub MN B\n             (fun n : nat => @FreeOmegaMeasure.FOSample MN B C mu (fun x : C => chain x n)))) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C : Type) (mu : MN C),\n        P A B R (@FreeOmegaMeasure.FOSample MN A C mu (fun _ : C => @FreeOmegaMeasure.FOZero MN A))\n          (@FreeOmegaMeasure.FOZero MN B)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu nu ->\n        P A B R mu nu -> P A B R mu (@FreeOmegaMeasure.FOLub MN B (fun _ : nat => nu))) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C : Type)\n          (source : nat -> FreeOmegaMeasure.FreeOmega MN C)\n          (source_out : FreeOmegaMeasure.FreeOmega MN C)\n          (kernels : C -> nat -> FreeOmegaMeasure.FreeOmega MN B)\n          (kernel_out : C -> FreeOmegaMeasure.FreeOmega MN A),\n        (forall n : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI C C (@eq C) (source n) (source (S n))) ->\n        (forall (x : C) (n : nat),\n         @FreeOmegaMeasure.free_omega_approx MN NI B B (@eq B) (kernels x n) (kernels x (S n))) ->\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO C C (@eq C) source_out\n          (@FreeOmegaMeasure.FOLub MN C source) ->\n        P C C (@eq C) source_out (@FreeOmegaMeasure.FOLub MN C source) ->\n        (forall x : C,\n         @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (kernel_out x)\n           (@FreeOmegaMeasure.FOLub MN B (kernels x))) ->\n        (forall x : C, P A B R (kernel_out x) (@FreeOmegaMeasure.FOLub MN B (kernels x))) ->\n        @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n          (@FreeOmegaMeasure.free_omega_bind MN C A source_out kernel_out)\n          (@FreeOmegaMeasure.FOLub MN B\n             (fun n : nat =>\n              @FreeOmegaMeasure.free_omega_bind MN C B (source n) (fun x : C => kernels x n))) ->\n        P A B R (@FreeOmegaMeasure.free_omega_bind MN C A source_out kernel_out)\n          (@FreeOmegaMeasure.FOLub MN B\n             (fun n : nat =>\n              @FreeOmegaMeasure.free_omega_bind MN C B (source n) (fun x : C => kernels x n)))) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (HAB : A = B)\n          (grid : nat -> nat -> FreeOmegaMeasure.FreeOmega MN A),\n        (forall outer inner : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (grid outer inner)\n           (grid outer (S inner))) ->\n        (forall outer inner : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (grid outer inner)\n           (grid (S outer) inner)) ->\n        (forall x : A, R x (@eq_rect Type A (fun T : Type => T) x B HAB)) ->\n        @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n          (@FreeOmegaMeasure.FOLub MN A\n             (fun outer : nat => @FreeOmegaMeasure.FOLub MN A (grid outer)))\n          (@eq_rect Type A (fun T : Type => FreeOmegaMeasure.FreeOmega MN T)\n             (@FreeOmegaMeasure.FOLub MN A (fun fuel : nat => grid fuel fuel)) B HAB) ->\n        P A B R\n          (@FreeOmegaMeasure.FOLub MN A\n             (fun outer : nat => @FreeOmegaMeasure.FOLub MN A (grid outer)))\n          (@eq_rect Type A (fun T : Type => FreeOmegaMeasure.FreeOmega MN T)\n             (@FreeOmegaMeasure.FOLub MN A (fun fuel : nat => grid fuel fuel)) B HAB)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (left : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (right : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (left n) (left (S n))) ->\n        (forall n : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI B B (@eq B) (right n) (right (S n))) ->\n        @FreeOmegaMeasure.free_omega_chains_cofinal MN NI A B R left right ->\n        P A B R (@FreeOmegaMeasure.FOLub MN A left) (@FreeOmegaMeasure.FOLub MN B right)) ->\n       forall (A B : Type) (R : A -> B -> Prop) (f : FreeOmegaMeasure.FreeOmega MN A)\n         (f0 : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R f f0 -> P A B R f f0",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift_sind",
+      "type": "FreeOmegaMeasure.free_omega_qlift_sind\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI)\n         (P : forall A B : Type,\n              (A -> B -> Prop) ->\n              FreeOmegaMeasure.FreeOmega MN A -> FreeOmegaMeasure.FreeOmega MN B -> SProp),\n       (forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_lift MN NI A B R mu nu -> P A B R mu nu) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (OA OB : Type) (obsA : A -> OA)\n          (obsB : B -> OB) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B) (outA : MN OA) (outB : MN OB)\n          (S : OA -> OB -> Prop),\n        @FreeOmegaMeasure.free_omega_observes MN NI NO A OA obsA mu outA ->\n        @FreeOmegaMeasure.free_omega_observes MN NI NO B OB obsB nu outB ->\n        @TwoLevelMeasure.sem_lift MN NI OA OB S outA outB ->\n        (forall (x : A) (y : B), S (obsA x) (obsB y) -> R x y) ->\n        @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu nu -> P A B R mu nu) ->\n       (forall (A B : Type) (R T : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B) (P0 : A -> Prop) (Q : B -> Prop),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A B T mu nu ->\n        P A B T mu nu ->\n        @FreeOmegaMeasure.free_omega_ae MN NI A P0 mu ->\n        @FreeOmegaMeasure.free_omega_ae MN NI B Q nu ->\n        (forall (x : A) (y : B), T x y /\\ P0 x /\\ Q y -> R x y) -> P A B R mu nu) ->\n       (forall (A B : Type) (R T : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A B T mu nu ->\n        P A B T mu nu -> (forall (x : A) (y : B), T x y -> R x y) -> P A B R mu nu) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO B A (fun (y : B) (x : A) => R x y) nu mu ->\n        P B A (fun (y : B) (x : A) => R x y) nu mu -> P A B R mu nu) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C : Type) (T : A -> C -> Prop)\n          (U : C -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (mid : FreeOmegaMeasure.FreeOmega MN C) (nu : FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A C T mu mid ->\n        P A C T mu mid ->\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO C B U mid nu ->\n        P C B U mid nu ->\n        (forall (x : A) (z : B), (exists y : C, T x y /\\ U y z) -> R x z) -> P A B R mu nu) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C D : Type) (T : C -> D -> Prop)\n          (mu : FreeOmegaMeasure.FreeOmega MN C) (nu : FreeOmegaMeasure.FreeOmega MN D)\n          (k : C -> FreeOmegaMeasure.FreeOmega MN A) (h : D -> FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO C D T mu nu ->\n        P C D T mu nu ->\n        (forall (x : C) (y : D),\n         T x y -> @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x) (h y)) ->\n        (forall (x : C) (y : D), T x y -> P A B R (k x) (h y)) ->\n        P A B R (@FreeOmegaMeasure.free_omega_bind MN C A mu k)\n          (@FreeOmegaMeasure.free_omega_bind MN D B nu h)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C D : Type) (T : C -> D -> Prop)\n          (mu : MN C) (nu : MN D) (k : C -> FreeOmegaMeasure.FreeOmega MN A)\n          (h : D -> FreeOmegaMeasure.FreeOmega MN B),\n        @TwoLevelMeasure.sem_lift MN NI C D T mu nu ->\n        (forall (x : C) (y : D),\n         T x y -> @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x) (h y)) ->\n        (forall (x : C) (y : D), T x y -> P A B R (k x) (h y)) ->\n        P A B R (@FreeOmegaMeasure.FOSample MN A C mu k) (@FreeOmegaMeasure.FOSample MN B D nu h)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C : Type) (x : C)\n          (k : C -> FreeOmegaMeasure.FreeOmega MN A) (nu : FreeOmegaMeasure.FreeOmega MN B),\n        (forall P0 : C -> Prop,\n         @TwoLevelMeasure.sem_ae MN NI C (@TwoLevelMeasure.sem_ret MN NI C x) P0 <-> P0 x) ->\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x) nu ->\n        P A B R (k x) nu ->\n        P A B R (@FreeOmegaMeasure.FOSample MN A C (@TwoLevelMeasure.sem_ret MN NI C x) k) nu) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C D : Type) (mu : MN C)\n          (h : C -> MN D) (k : D -> FreeOmegaMeasure.FreeOmega MN A)\n          (l : D -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall P0 : D -> Prop,\n         @TwoLevelMeasure.sem_ae MN NI D (@TwoLevelMeasure.sem_bind MN NI C D mu h) P0 <->\n         @TwoLevelMeasure.sem_ae MN NI C mu (fun x : C => @TwoLevelMeasure.sem_ae MN NI D (h x) P0)) ->\n        (forall y : D, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k y) (l y)) ->\n        (forall y : D, P A B R (k y) (l y)) ->\n        P A B R\n          (@FreeOmegaMeasure.FOSample MN A C mu\n             (fun x : C => @FreeOmegaMeasure.FOSample MN A D (h x) k))\n          (@FreeOmegaMeasure.FOSample MN B D (@TwoLevelMeasure.sem_bind MN NI C D mu h) l)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C D : Type) (mu : MN C)\n          (nu : MN D) (k : C -> D -> FreeOmegaMeasure.FreeOmega MN A)\n          (l : D -> C -> FreeOmegaMeasure.FreeOmega MN B),\n        @TwoLevelMeasure.sem_lift MN NI (C * D) (D * C)\n          (@FreeOmegaMeasure.semantic_pair_swap_rel C D)\n          (@FreeOmegaMeasure.semantic_product MN NI C D mu nu)\n          (@FreeOmegaMeasure.semantic_product MN NI D C nu mu) ->\n        (forall (x : C) (y : D), @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (k x y) (l y x)) ->\n        (forall (x : C) (y : D), P A B R (k x y) (l y x)) ->\n        @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n          (@FreeOmegaMeasure.FOSample MN A C mu\n             (fun x : C => @FreeOmegaMeasure.FOSample MN A D nu (k x)))\n          (@FreeOmegaMeasure.FOSample MN B D nu\n             (fun y : D => @FreeOmegaMeasure.FOSample MN B C mu (l y))) ->\n        P A B R\n          (@FreeOmegaMeasure.FOSample MN A C mu\n             (fun x : C => @FreeOmegaMeasure.FOSample MN A D nu (k x)))\n          (@FreeOmegaMeasure.FOSample MN B D nu\n             (fun y : D => @FreeOmegaMeasure.FOSample MN B C mu (l y)))) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (c n) (d n)) ->\n        (forall n : nat, P A B R (c n) (d n)) ->\n        P A B R (@FreeOmegaMeasure.FOLub MN A c) (@FreeOmegaMeasure.FOLub MN B d)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (c n) (d n)) ->\n        (forall n : nat, P A B R (c n) (d n)) ->\n        P A B R\n          (@FreeOmegaMeasure.FOLub MN A\n             (fun n : nat => match n with\n                             | 0 => @FreeOmegaMeasure.FOZero MN A\n                             | S n' => c n'\n                             end)) (@FreeOmegaMeasure.FOLub MN B d)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (c : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (d : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat, @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (c n) (d n)) ->\n        (forall n : nat, P A B R (c n) (d n)) ->\n        P A B R (@FreeOmegaMeasure.FOLub MN A c)\n          (@FreeOmegaMeasure.FOLub MN B\n             (fun n : nat => match n with\n                             | 0 => @FreeOmegaMeasure.FOZero MN B\n                             | S n' => d n'\n                             end))) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C : Type) (mu : MN C)\n          (Good : C -> Prop) (chain : C -> nat -> FreeOmegaMeasure.FreeOmega MN B)\n          (out : C -> FreeOmegaMeasure.FreeOmega MN A),\n        @TwoLevelMeasure.sem_ae MN NI C mu Good ->\n        (forall x : C,\n         Good x ->\n         forall n : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI B B (@eq B) (chain x n) (chain x (S n))) ->\n        (forall x : C,\n         Good x ->\n         @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (out x)\n           (@FreeOmegaMeasure.FOLub MN B (chain x))) ->\n        (forall x : C, Good x -> P A B R (out x) (@FreeOmegaMeasure.FOLub MN B (chain x))) ->\n        P A B R (@FreeOmegaMeasure.FOSample MN A C mu out)\n          (@FreeOmegaMeasure.FOLub MN B\n             (fun n : nat => @FreeOmegaMeasure.FOSample MN B C mu (fun x : C => chain x n)))) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C : Type) (mu : MN C),\n        P A B R (@FreeOmegaMeasure.FOSample MN A C mu (fun _ : C => @FreeOmegaMeasure.FOZero MN A))\n          (@FreeOmegaMeasure.FOZero MN B)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n          (nu : FreeOmegaMeasure.FreeOmega MN B),\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu nu ->\n        P A B R mu nu -> P A B R mu (@FreeOmegaMeasure.FOLub MN B (fun _ : nat => nu))) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (C : Type)\n          (source : nat -> FreeOmegaMeasure.FreeOmega MN C)\n          (source_out : FreeOmegaMeasure.FreeOmega MN C)\n          (kernels : C -> nat -> FreeOmegaMeasure.FreeOmega MN B)\n          (kernel_out : C -> FreeOmegaMeasure.FreeOmega MN A),\n        (forall n : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI C C (@eq C) (source n) (source (S n))) ->\n        (forall (x : C) (n : nat),\n         @FreeOmegaMeasure.free_omega_approx MN NI B B (@eq B) (kernels x n) (kernels x (S n))) ->\n        @FreeOmegaMeasure.free_omega_qlift MN NI NO C C (@eq C) source_out\n          (@FreeOmegaMeasure.FOLub MN C source) ->\n        P C C (@eq C) source_out (@FreeOmegaMeasure.FOLub MN C source) ->\n        (forall x : C,\n         @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R (kernel_out x)\n           (@FreeOmegaMeasure.FOLub MN B (kernels x))) ->\n        (forall x : C, P A B R (kernel_out x) (@FreeOmegaMeasure.FOLub MN B (kernels x))) ->\n        @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n          (@FreeOmegaMeasure.free_omega_bind MN C A source_out kernel_out)\n          (@FreeOmegaMeasure.FOLub MN B\n             (fun n : nat =>\n              @FreeOmegaMeasure.free_omega_bind MN C B (source n) (fun x : C => kernels x n))) ->\n        P A B R (@FreeOmegaMeasure.free_omega_bind MN C A source_out kernel_out)\n          (@FreeOmegaMeasure.FOLub MN B\n             (fun n : nat =>\n              @FreeOmegaMeasure.free_omega_bind MN C B (source n) (fun x : C => kernels x n)))) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (HAB : A = B)\n          (grid : nat -> nat -> FreeOmegaMeasure.FreeOmega MN A),\n        (forall outer inner : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (grid outer inner)\n           (grid outer (S inner))) ->\n        (forall outer inner : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (grid outer inner)\n           (grid (S outer) inner)) ->\n        (forall x : A, R x (@eq_rect Type A (fun T : Type => T) x B HAB)) ->\n        @FreeOmegaMeasure.free_omega_support_lift MN NI A B R\n          (@FreeOmegaMeasure.FOLub MN A\n             (fun outer : nat => @FreeOmegaMeasure.FOLub MN A (grid outer)))\n          (@eq_rect Type A (fun T : Type => FreeOmegaMeasure.FreeOmega MN T)\n             (@FreeOmegaMeasure.FOLub MN A (fun fuel : nat => grid fuel fuel)) B HAB) ->\n        P A B R\n          (@FreeOmegaMeasure.FOLub MN A\n             (fun outer : nat => @FreeOmegaMeasure.FOLub MN A (grid outer)))\n          (@eq_rect Type A (fun T : Type => FreeOmegaMeasure.FreeOmega MN T)\n             (@FreeOmegaMeasure.FOLub MN A (fun fuel : nat => grid fuel fuel)) B HAB)) ->\n       (forall (A B : Type) (R : A -> B -> Prop) (left : nat -> FreeOmegaMeasure.FreeOmega MN A)\n          (right : nat -> FreeOmegaMeasure.FreeOmega MN B),\n        (forall n : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (left n) (left (S n))) ->\n        (forall n : nat,\n         @FreeOmegaMeasure.free_omega_approx MN NI B B (@eq B) (right n) (right (S n))) ->\n        @FreeOmegaMeasure.free_omega_chains_cofinal MN NI A B R left right ->\n        P A B R (@FreeOmegaMeasure.FOLub MN A left) (@FreeOmegaMeasure.FOLub MN B right)) ->\n       forall (A B : Type) (R : A -> B -> Prop) (f : FreeOmegaMeasure.FreeOmega MN A)\n         (f0 : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R f f0 -> P A B R f f0",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift_support",
+      "type": "@FreeOmegaMeasure.free_omega_qlift_support\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->\n       forall (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B : Type)\n         (R : A -> B -> Prop) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (nu : FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO A B R mu nu ->\n       @FreeOmegaMeasure.free_omega_support_lift MN NI A B R mu nu",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observable_sem_retE",
+      "type": "@FreeOmegaMeasure.free_omega_observable_sem_retE\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A : Type) (x : A),\n       @TwoLevelMeasure.sem_ret (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO) A x =\n       @FreeOmegaMeasure.FORet MN A x",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift_refl",
+      "type": "@FreeOmegaMeasure.free_omega_qlift_refl\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A : Type) (R : A -> A -> Prop)\n         (mu : FreeOmegaMeasure.FreeOmega MN A),\n       @RelationClasses.Reflexive A R -> @FreeOmegaMeasure.free_omega_qlift MN NI NO A A R mu mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift_bind_ae",
+      "type": "@FreeOmegaMeasure.free_omega_qlift_bind_ae\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI),\n       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->\n       forall (A B : Type) (mu : FreeOmegaMeasure.FreeOmega MN A)\n         (k h : A -> FreeOmegaMeasure.FreeOmega MN B),\n       @FreeOmegaMeasure.free_omega_ae MN NI A\n         (fun x : A => @FreeOmegaMeasure.free_omega_qlift MN NI NO B B (@eq B) (k x) (h x)) mu ->\n       @FreeOmegaMeasure.free_omega_qlift MN NI NO B B (@eq B)\n         (@FreeOmegaMeasure.free_omega_bind MN A B mu k)\n         (@FreeOmegaMeasure.free_omega_bind MN A B mu h)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_mixed_exchange_of_product",
+      "type": "@FreeOmegaMeasure.free_omega_mixed_exchange_of_product\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureDiracAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureBindAEExactLaws MN NI ->\n       forall (X Y : Type) (mu : MN X) (nu : MN Y),\n       @TwoLevelMeasure.sem_lift MN NI (X * Y) (Y * X)\n         (@FreeOmegaMeasure.semantic_pair_swap_rel X Y)\n         (@FreeOmegaMeasure.semantic_product MN NI X Y mu nu)\n         (@FreeOmegaMeasure.semantic_product MN NI Y X nu mu) ->\n       @TwoLevelMeasure.mixed_measure_exchange MN (FreeOmegaMeasure.FreeOmega MN) NI\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN) X Y mu nu",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observable_total_intro",
+      "type": "@FreeOmegaMeasure.free_omega_observable_total_intro\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A : Type)\n         (mu : FreeOmegaMeasure.FreeOmega MN A),\n       (exists (O : Type) (obs : A -> O) (out : MN O),\n          @FreeOmegaMeasure.free_omega_observes MN NI NO A O obs mu out /\\\n          @TwoLevelMeasure.sem_total MN NI NO O out) ->\n       @TwoLevelMeasure.sem_total (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) A mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_cofinal_lub_iff",
+      "type": "@FreeOmegaMeasure.free_omega_cofinal_lub_iff\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A : Type)\n         (left right : nat -> FreeOmegaMeasure.FreeOmega MN A)\n         (out : FreeOmegaMeasure.FreeOmega MN A),\n       (forall n : nat, @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (left n) (left (S n))) ->\n       (forall n : nat,\n        @FreeOmegaMeasure.free_omega_approx MN NI A A (@eq A) (right n) (right (S n))) ->\n       @FreeOmegaMeasure.free_omega_chains_cofinal MN NI A A (@eq A) left right ->\n       @TwoLevelMeasure.sem_lub (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) A left out <->\n       @TwoLevelMeasure.sem_lub (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) A right out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Interface.TwoLevelMeasure.sem_eq_equivalence",
+      "type": "@TwoLevelMeasure.sem_eq_equivalence\n     : forall (S : Type -> Type) (SI : TwoLevelMeasure.SemanticMeasure S),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws S SI ->\n       forall A : Type, @RelationClasses.Equivalence (S A) (@TwoLevelMeasure.sem_eq S SI A)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasure",
+      "type": "@FreeOmegaMeasure.FreeOmegaSemanticMeasure\n     : forall MN : Type -> Type,\n       TwoLevelMeasure.SemanticMeasure MN ->\n       TwoLevelMeasure.SemanticMeasure (FreeOmegaMeasure.FreeOmega MN)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureCoreLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaSemanticMeasureCoreLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCoreLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaSemanticMeasure MN NI)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureAEKleisliLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaSemanticMeasureAEKleisliLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureAEKleisliLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaSemanticMeasure MN NI)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureCountableAELaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaSemanticMeasureCountableAELaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaSemanticMeasure MN NI)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureCouplingAELaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaSemanticMeasureCouplingAELaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaSemanticMeasure MN NI)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureBindLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaSemanticMeasureBindLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureBindLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaSemanticMeasure MN NI)",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaMixedMeasure",
+      "type": "@FreeOmegaMeasure.FreeOmegaMixedMeasure\n     : forall MN : Type -> Type, TwoLevelMeasure.MixedMeasure MN (FreeOmegaMeasure.FreeOmega MN)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaMixedMeasureLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaMixedMeasureLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->\n       @TwoLevelMeasure.MixedMeasureLaws MN (FreeOmegaMeasure.FreeOmega MN) NI\n         (@FreeOmegaMeasure.FreeOmegaSemanticMeasure MN NI)\n         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticOmega",
+      "type": "@FreeOmegaMeasure.FreeOmegaSemanticOmega\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticOmega MN NI ->\n       @TwoLevelMeasure.SemanticOmega (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaSemanticMeasure MN NI)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticOmegaLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaSemanticOmegaLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticOmegaLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaSemanticMeasure MN NI)\n         (@FreeOmegaMeasure.FreeOmegaSemanticOmega MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureOrderLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaSemanticMeasureOrderLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureOrderLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaSemanticMeasure MN NI)\n         (@FreeOmegaMeasure.FreeOmegaSemanticOmega MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticOmega MN NI ->\n       TwoLevelMeasure.SemanticMeasure (FreeOmegaMeasure.FreeOmega MN)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureCoreLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureAEKleisliLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureAEKleisliLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI),\n       @TwoLevelMeasure.SemanticMeasureAEKleisliLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCountableAELaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCountableAELaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCouplingAELaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCouplingAELaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureBindLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureBindLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureBindLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableMixedMeasureLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableMixedMeasureLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->\n       @TwoLevelMeasure.MixedMeasureLaws MN (FreeOmegaMeasure.FreeOmega MN) NI\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableMixedMeasureUnitLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableMixedMeasureUnitLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureDiracAELaws MN NI ->\n       @TwoLevelMeasure.MixedMeasureUnitLaws MN (FreeOmegaMeasure.FreeOmega MN) NI\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableMixedMeasureNodeBindLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableMixedMeasureNodeBindLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureBindAEExactLaws MN NI ->\n       @TwoLevelMeasure.MixedMeasureNodeBindLaws MN (FreeOmegaMeasure.FreeOmega MN) NI\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticOmega",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI),\n       @TwoLevelMeasure.SemanticOmega (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticTotalProperLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticTotalProperLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI),\n       @TwoLevelMeasure.SemanticTotalProperLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticOmegaLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaAELaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaAELaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->\n       @TwoLevelMeasure.SemanticOmegaAELaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaCofinalityLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaCofinalityLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticOmegaCofinalityLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableMixedMeasureOmegaLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableMixedMeasureOmegaLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)\n         (NO : @TwoLevelMeasure.SemanticOmega MN NI),\n       @TwoLevelMeasure.MixedMeasureOmegaLaws MN (FreeOmegaMeasure.FreeOmega MN) NI\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureDiagonalLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureDiagonalLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->\n       @TwoLevelMeasure.SemanticMeasureDiagonalLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaFubiniLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaFubiniLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->\n       @TwoLevelMeasure.SemanticOmegaFubiniLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureOrderLaws",
+      "type": "@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureOrderLaws\n     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),\n       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->\n       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,\n       @TwoLevelMeasure.SemanticMeasureOrderLaws (FreeOmegaMeasure.FreeOmega MN)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    }
+  ]
+}

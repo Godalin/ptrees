@@ -12,6 +12,7 @@ from pathlib import Path
 
 import audit_capabilities as compiled
 from audit_migration import frozen, without_comments
+from audit_prob_organization import MODULES as PROB_MOVES, compare_snapshots
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = "2af47aa"
@@ -149,6 +150,9 @@ def index(snapshot):
             "| --- | --- | --- |"]
     for e in snapshot["endpoints"]:
         module, _ = e["name"].rsplit(".", 1)
+        if module in PROB_MOVES:
+            e = {**e, "name": PROB_MOVES[module] + "." + e["name"].rsplit(".", 1)[-1]}
+            module = PROB_MOVES[module]
         path = "../theories/" + module.removeprefix("PTree.").replace(".", "/") + ".v"
         classes = sorted(set(re.findall(
             r"\b(?:Semantic\w+|MixedMeasure\w*|[A-Z]\w*Laws|MathCompCouplingGluing)\b", e["type"])))
@@ -173,10 +177,14 @@ if __name__ == "__main__":
     else:
         result = query()
         if args.check:
-            assert result == json.loads(CURRENT.read_text()), "Current public capability snapshot is stale"
+            # Gate C snapshots remain immutable. This organization follow-up
+            # permits only explicit module relocation and printer line wraps.
+            accepted = json.loads(CURRENT.read_text())
+            compare_snapshots(accepted, result)
             assert index(result) == INDEX.read_text(), "Public capability index is stale"
-            delta = check_delta(json.loads(BASELINE.read_text()), result)
-            print(f"Checked {len(result['endpoints'])} public/helper endpoints; {len(delta)} full-signature/assumption deltas.")
+            delta = check_delta(json.loads(BASELINE.read_text()), accepted)
+            print(f"Checked {len(result['endpoints'])} public/helper endpoints: unchanged from the Gate C after snapshot modulo relocation.")
+            print(f"Historical Gate C before/after comparison: {len(delta)} reviewed full-signature/assumption deltas (not new changes).")
             for endpoint in delta:
                 print(endpoint)
         else:

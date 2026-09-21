@@ -7,9 +7,9 @@ From Coq.Arith Require Import PeanoNat.
 Require Import FunctionalExtensionality Lia.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Interface Require Import MeasureIteration.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
+Require Import PTree.Prob.Interface.Iteration.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt PStruct.
 From PTree.Eq.FreeOmega Require Import Base Relation.
 

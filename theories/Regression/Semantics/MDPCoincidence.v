@@ -4,9 +4,9 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.Semantics Require Import MDPFragment TreeTransition TreeTransitionBisim.
 Fail Check PTree.Eq.PEutt.peutt.
@@ -122,7 +122,7 @@ Qed.
     Its existing gluing premise stays explicit; no node relational bind
     or new measurable selection premise is introduced by coincidence. *)
 From mathcomp Require Import reals.
-From PTree.Prob.Backend Require Import MathCompMeasure TwoLevelMeasureMathComp.
+Require Import PTree.Prob.Backend.MathComp.Kernel PTree.Prob.Backend.MathComp.Measure.
 Section MathCompEndpoint.
 Context (Real : realType) `{MathCompCouplingGluing Real}.
 Let Node := MathCompKernelMeasure Real.

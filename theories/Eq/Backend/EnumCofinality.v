@@ -6,9 +6,9 @@ Set Universe Polymorphism.
 Require Import List.
 From Coq.Arith Require Import PeanoNat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Backend Require Import DiscreteMC.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+Require Import PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import PTreeKernel.
 From PTree.Eq.FreeOmega Require Import Base Relation Bind.
 

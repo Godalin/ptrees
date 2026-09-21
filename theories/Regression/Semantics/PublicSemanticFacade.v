@@ -67,10 +67,10 @@ Local Notation facade_peutt_preserves_finite_interaction_sem :=
     measure module rather than becoming extra facade aliases. *)
 Section NotationRegression.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{FI : TwoLevelMeasure.SemanticMeasure MF}
-  `{FC : @TwoLevelMeasure.SemanticMeasureCoreLaws MF FI}
-  `{MX : TwoLevelMeasure.MixedMeasure MN MF}
-  `{FO : @TwoLevelMeasure.SemanticOmega MF FI}.
+  `{FI : PTree.Prob.Interface.Measure.SemanticMeasure MF}
+  `{FC : @PTree.Prob.Interface.Measure.SemanticMeasureCoreLaws MF FI}
+  `{MX : PTree.Prob.Interface.Mixed.MixedMeasure MN MF}
+  `{FO : @PTree.Prob.Interface.Omega.SemanticOmega MF FI}.
 Context {R : Type}.
 
 Lemma public_peutt_notation (t u : ptree E MN R) :

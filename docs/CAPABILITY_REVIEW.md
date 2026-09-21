@@ -154,12 +154,14 @@ completed successfully with exit status 0; it checks the changed formal
 modules and the capability/facade/AllImports harnesses, not every proof in
 all 209 modules. No new axioms or admitted proofs were introduced.
 
-Reproduction commands:
+Reproduction commands (Gate C's source delta is frozen at `05a2431`;
+the subsequent [Prob organization audit](PROB_ORGANIZATION.md) checks today's
+namespaces against it without rewriting these snapshots):
 
 ```sh
 opam exec -- dune build
 python3 tools/check_aggregate.py
-python3 tools/audit_gate_c.py
+python3 tools/audit_gate_c.py --revision 05a2431
 python3 tools/audit_migration.py --revision 2af47aa
 python3 tools/audit_architecture.py --check
 python3 tools/audit_capabilities.py --check --compare-baseline

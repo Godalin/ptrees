@@ -1,0 +1,533 @@
+{
+  "baseline": "05a2431",
+  "moves": {
+    "theories/Prob/FreeOmega/FreeOmegaCoupling.v": "theories/Prob/FreeOmega/Coupling.v",
+    "theories/Prob/FreeOmega/FreeOmegaRecovery.v": "theories/Prob/FreeOmega/Recovery.v",
+    "theories/Prob/FreeOmega/FreeOmegaNative.v": "theories/Prob/FreeOmega/Native.v",
+    "theories/Prob/FreeOmega/FreeOmegaJointExtension.v": "theories/Prob/FreeOmega/JointExtension.v",
+    "theories/Prob/FreeOmega/FreeOmegaSupport.v": "theories/Prob/FreeOmega/Support.v",
+    "theories/Prob/FreeOmega/FreeOmegaNativeCoupling.v": "theories/Prob/FreeOmega/NativeCoupling.v",
+    "theories/Prob/Interface/MeasureIteration.v": "theories/Prob/Interface/Iteration.v",
+    "theories/Prob/Backend/FinSupp.v": "theories/Prob/Backend/Common/FinSupp.v",
+    "theories/Prob/Backend/FiniteMatching.v": "theories/Prob/Backend/Common/FiniteMatching.v",
+    "theories/Prob/Backend/FiniteCapacityMatching.v": "theories/Prob/Backend/Common/FiniteCapacityMatching.v",
+    "theories/Prob/Backend/FiniteRationalTransport.v": "theories/Prob/Backend/Common/FiniteRationalTransport.v",
+    "theories/Prob/Backend/RatSubTypes.v": "theories/Prob/Backend/Common/RatSubTypes.v",
+    "theories/Prob/Backend/RealSubTypes.v": "theories/Prob/Backend/Common/RealSubTypes.v",
+    "theories/Prob/Backend/RatGeometric.v": "theories/Prob/Backend/Common/RatGeometric.v",
+    "theories/Prob/Backend/DiscreteMC.v": "theories/Prob/Backend/Enum/Representation.v",
+    "theories/Prob/Backend/EnumBindFacts.v": "theories/Prob/Backend/Enum/Bind.v",
+    "theories/Prob/Backend/EnumMap.v": "theories/Prob/Backend/Enum/Map.v",
+    "theories/Prob/Backend/EnumSupport.v": "theories/Prob/Backend/Enum/Support.v",
+    "theories/Prob/Backend/Coupling.v": "theories/Prob/Backend/Enum/Coupling.v",
+    "theories/Prob/Backend/IndexedCoupling.v": "theories/Prob/Backend/Enum/IndexedCoupling.v",
+    "theories/Prob/Backend/FrontierLiftEnum.v": "theories/Prob/Backend/Enum/FrontierLift.v",
+    "theories/Prob/Backend/MeasureIterationEnum.v": "theories/Prob/Backend/Enum/Iteration.v",
+    "theories/Prob/Backend/TwoLevelMeasureEnum.v": "theories/Prob/Backend/Enum/Measure.v",
+    "theories/Prob/Backend/SemanticCouplingEnum.v": "theories/Prob/Backend/Enum/SemanticCoupling.v",
+    "theories/Prob/Backend/EnumDisintegration.v": "theories/Prob/Backend/Enum/Disintegration.v",
+    "theories/Prob/Backend/FiniteEnumPresentation.v": "theories/Prob/Backend/Enum/FinitePresentation.v",
+    "theories/Prob/Backend/FiniteEnumTransport.v": "theories/Prob/Backend/Enum/FiniteTransport.v",
+    "theories/Prob/Backend/TwoLevelMeasureSubEnum.v": "theories/Prob/Backend/SubEnum/Measure.v",
+    "theories/Prob/Backend/MathCompMeasure.v": "theories/Prob/Backend/MathComp/Kernel.v",
+    "theories/Prob/Backend/TwoLevelMeasureMathComp.v": "theories/Prob/Backend/MathComp/Measure.v",
+    "theories/Prob/Backend/SemanticCouplingMathComp.v": "theories/Prob/Backend/MathComp/Coupling.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaEquivalenceJointSubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/EquivalenceJoint.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaDisintegration.v": "theories/Prob/Backend/SubEnum/FreeOmega/Disintegration.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperObservationEnum.v": "theories/Prob/Backend/Enum/FreeOmega/UpperObservation.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperRelationalEnum.v": "theories/Prob/Backend/Enum/FreeOmega/UpperRelational.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperExpectationSubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/UpperExpectation.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaNativeTransportSubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/NativeTransport.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaNativeTransportEnum.v": "theories/Prob/Backend/Enum/FreeOmega/NativeTransport.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaTotalSubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/Total.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperQuotientEnum.v": "theories/Prob/Backend/Enum/FreeOmega/UpperQuotient.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperObservationSubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/UpperObservation.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperExpectationEnum.v": "theories/Prob/Backend/Enum/FreeOmega/UpperExpectation.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaMeasureEnumAudit.v": "theories/Prob/Backend/Enum/FreeOmega/MeasureAudit.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperContinuitySubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/UpperContinuity.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperRelationalSubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/UpperRelational.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaNativeCouplingSubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/NativeCoupling.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaCodedJointSubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/CodedJoint.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperQuotientSubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/UpperQuotient.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaRecoverySubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/Recovery.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaCouplingEnum.v": "theories/Prob/Backend/Enum/FreeOmega/Coupling.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperContinuityEnum.v": "theories/Prob/Backend/Enum/FreeOmega/UpperContinuity.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperCouplingEnum.v": "theories/Prob/Backend/Enum/FreeOmega/UpperCoupling.v",
+    "theories/Prob/Backend/FreeOmega/FreeOmegaUpperCouplingSubEnum.v": "theories/Prob/Backend/SubEnum/FreeOmega/UpperCoupling.v"
+  },
+  "splits": {
+    "theories/Prob/Interface/TwoLevelMeasure.v": {
+      "preamble": [
+        1,
+        11
+      ],
+      "parts": {
+        "Measure": [
+          [
+            12,
+            27
+          ],
+          [
+            79,
+            121
+          ],
+          [
+            144,
+            166
+          ],
+          [
+            514,
+            521
+          ]
+        ],
+        "Subprobability": [
+          [
+            28,
+            66
+          ]
+        ],
+        "AE": [
+          [
+            167,
+            178
+          ],
+          [
+            197,
+            227
+          ],
+          [
+            316,
+            337
+          ]
+        ],
+        "Coupling": [
+          [
+            122,
+            143
+          ],
+          [
+            179,
+            196
+          ]
+        ],
+        "Omega": [
+          [
+            338,
+            448
+          ],
+          [
+            471,
+            513
+          ]
+        ],
+        "Mixed": [
+          [
+            67,
+            78
+          ],
+          [
+            228,
+            315
+          ],
+          [
+            449,
+            470
+          ]
+        ]
+      },
+      "imports": {
+        "Measure": [],
+        "Subprobability": [
+          "Measure"
+        ],
+        "AE": [
+          "Measure"
+        ],
+        "Coupling": [
+          "Measure"
+        ],
+        "Omega": [
+          "Measure"
+        ],
+        "Mixed": [
+          "Measure",
+          "Omega"
+        ]
+      }
+    },
+    "theories/Prob/FreeOmega/FreeOmegaMeasure.v": {
+      "preamble": [
+        1,
+        15
+      ],
+      "parts": {
+        "Definition": [
+          [
+            16,
+            76
+          ]
+        ],
+        "Approximation": [
+          [
+            77,
+            133
+          ]
+        ],
+        "Observation": [
+          [
+            134,
+            281
+          ]
+        ],
+        "StructuralMeasure": [
+          [
+            282,
+            762
+          ]
+        ],
+        "SupportLift": [
+          [
+            763,
+            1260
+          ]
+        ],
+        "Quotient": [
+          [
+            1261,
+            1468
+          ]
+        ],
+        "Measure": [
+          [
+            1469,
+            1904
+          ]
+        ]
+      },
+      "imports": {
+        "Definition": [],
+        "Approximation": [
+          "Definition"
+        ],
+        "Observation": [
+          "Definition",
+          "Approximation"
+        ],
+        "StructuralMeasure": [
+          "Definition",
+          "Approximation",
+          "Observation"
+        ],
+        "SupportLift": [
+          "Definition",
+          "Approximation",
+          "StructuralMeasure"
+        ],
+        "Quotient": [
+          "Definition",
+          "Approximation",
+          "Observation",
+          "StructuralMeasure",
+          "SupportLift"
+        ],
+        "Measure": [
+          "Definition",
+          "Approximation",
+          "Observation",
+          "StructuralMeasure",
+          "SupportLift",
+          "Quotient"
+        ]
+      },
+      "capabilities": {
+        "Definition": [
+          "Measure"
+        ],
+        "Approximation": [
+          "Measure"
+        ],
+        "Observation": [
+          "Measure",
+          "Omega"
+        ],
+        "StructuralMeasure": [
+          "Measure",
+          "AE",
+          "Coupling",
+          "Omega",
+          "Mixed"
+        ],
+        "SupportLift": [
+          "Measure",
+          "AE",
+          "Coupling"
+        ],
+        "Quotient": [
+          "Measure",
+          "AE",
+          "Coupling",
+          "Omega"
+        ],
+        "Measure": [
+          "Measure",
+          "AE",
+          "Coupling",
+          "Omega",
+          "Mixed"
+        ]
+      }
+    }
+  },
+  "symbols": {
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasure": "PTree.Prob.Interface.Measure.SemanticMeasure",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ret": "PTree.Prob.Interface.Measure.sem_ret",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_bind": "PTree.Prob.Interface.Measure.sem_bind",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_eq": "PTree.Prob.Interface.Measure.sem_eq",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae": "PTree.Prob.Interface.Measure.sem_ae",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift": "PTree.Prob.Interface.Measure.sem_lift",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticSubprobability": "PTree.Prob.Interface.Subprobability.SemanticSubprobability",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_subprob": "PTree.Prob.Interface.Subprobability.sem_subprob",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticSubprobabilityLaws": "PTree.Prob.Interface.Subprobability.SemanticSubprobabilityLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_subprob_ret": "PTree.Prob.Interface.Subprobability.sem_subprob_ret",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_subprob_bind": "PTree.Prob.Interface.Subprobability.sem_subprob_bind",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_subprob_proper": "PTree.Prob.Interface.Subprobability.sem_subprob_proper",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticSubprobabilityCarrierLaws": "PTree.Prob.Interface.Subprobability.SemanticSubprobabilityCarrierLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_subprob_all": "PTree.Prob.Interface.Subprobability.sem_subprob_all",
+    "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasure": "PTree.Prob.Interface.Mixed.MixedMeasure",
+    "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind": "PTree.Prob.Interface.Mixed.mixed_bind",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureCoreLaws": "PTree.Prob.Interface.Measure.SemanticMeasureCoreLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_eq_refl": "PTree.Prob.Interface.Measure.sem_eq_refl",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_eq_sym": "PTree.Prob.Interface.Measure.sem_eq_sym",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_eq_trans": "PTree.Prob.Interface.Measure.sem_eq_trans",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_true": "PTree.Prob.Interface.Measure.sem_ae_true",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_mono": "PTree.Prob.Interface.Measure.sem_ae_mono",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_conj": "PTree.Prob.Interface.Measure.sem_ae_conj",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_mono": "PTree.Prob.Interface.Measure.sem_lift_mono",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_refl": "PTree.Prob.Interface.Measure.sem_lift_refl",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_ret": "PTree.Prob.Interface.Measure.sem_lift_ret",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_proper_l": "PTree.Prob.Interface.Measure.sem_lift_proper_l",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_proper_r": "PTree.Prob.Interface.Measure.sem_lift_proper_r",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_sym": "PTree.Prob.Interface.Measure.sem_lift_sym",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_comp": "PTree.Prob.Interface.Measure.sem_lift_comp",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_same_mass": "PTree.Prob.Interface.Coupling.sem_same_mass",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_same_mass": "PTree.Prob.Interface.Coupling.sem_lift_same_mass",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureBindLaws": "PTree.Prob.Interface.Measure.SemanticMeasureBindLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_ret_l": "PTree.Prob.Interface.Measure.sem_bind_ret_l",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_assoc": "PTree.Prob.Interface.Measure.sem_bind_assoc",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_ae_proper": "PTree.Prob.Interface.Measure.sem_bind_ae_proper",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_bind": "PTree.Prob.Interface.Measure.sem_lift_bind",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureAELiftLaws": "PTree.Prob.Interface.AE.SemanticMeasureAELiftLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_refl_ae": "PTree.Prob.Interface.AE.sem_lift_refl_ae",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureCouplingAELaws": "PTree.Prob.Interface.Coupling.SemanticMeasureCouplingAELaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_ae_transport_r": "PTree.Prob.Interface.Coupling.sem_lift_ae_transport_r",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lift_ae_restrict": "PTree.Prob.Interface.Coupling.sem_lift_ae_restrict",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureCountableAELaws": "PTree.Prob.Interface.AE.SemanticMeasureCountableAELaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_countable": "PTree.Prob.Interface.AE.sem_ae_countable",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureAEKleisliLaws": "PTree.Prob.Interface.AE.SemanticMeasureAEKleisliLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_ret": "PTree.Prob.Interface.AE.sem_ae_ret",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_bind": "PTree.Prob.Interface.AE.sem_ae_bind",
+    "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasureLaws": "PTree.Prob.Interface.Mixed.MixedMeasureLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_ae_proper": "PTree.Prob.Interface.Mixed.mixed_bind_ae_proper",
+    "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_assoc": "PTree.Prob.Interface.Mixed.mixed_bind_assoc",
+    "PTree.Prob.Interface.TwoLevelMeasure.mixed_lift_bind": "PTree.Prob.Interface.Mixed.mixed_lift_bind",
+    "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasureUnitLaws": "PTree.Prob.Interface.Mixed.MixedMeasureUnitLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_ret_l": "PTree.Prob.Interface.Mixed.mixed_bind_ret_l",
+    "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasureNodeBindLaws": "PTree.Prob.Interface.Mixed.MixedMeasureNodeBindLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_node_assoc": "PTree.Prob.Interface.Mixed.mixed_bind_node_assoc",
+    "PTree.Prob.Interface.TwoLevelMeasure.mixed_measure_exchange": "PTree.Prob.Interface.Mixed.mixed_measure_exchange",
+    "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasureCommutativeLaws": "PTree.Prob.Interface.Mixed.MixedMeasureCommutativeLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.mixed_lift_exchange": "PTree.Prob.Interface.Mixed.mixed_lift_exchange",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureDiracAELaws": "PTree.Prob.Interface.AE.SemanticMeasureDiracAELaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_ret_iff": "PTree.Prob.Interface.AE.sem_ae_ret_iff",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureBindAEExactLaws": "PTree.Prob.Interface.AE.SemanticMeasureBindAEExactLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_bind_iff": "PTree.Prob.Interface.AE.sem_ae_bind_iff",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticOmega": "PTree.Prob.Interface.Omega.SemanticOmega",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_zero": "PTree.Prob.Interface.Omega.sem_zero",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_le": "PTree.Prob.Interface.Omega.sem_le",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lub": "PTree.Prob.Interface.Omega.sem_lub",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_total": "PTree.Prob.Interface.Omega.sem_total",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_increasing": "PTree.Prob.Interface.Omega.sem_increasing",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_zero_prefix": "PTree.Prob.Interface.Omega.sem_zero_prefix",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureOrderLaws": "PTree.Prob.Interface.Omega.SemanticMeasureOrderLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_le_refl": "PTree.Prob.Interface.Omega.sem_le_refl",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_le_trans": "PTree.Prob.Interface.Omega.sem_le_trans",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_zero_le": "PTree.Prob.Interface.Omega.sem_zero_le",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_le_mu": "PTree.Prob.Interface.Omega.sem_bind_le_mu",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_le_k": "PTree.Prob.Interface.Omega.sem_bind_le_k",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticOmegaLaws": "PTree.Prob.Interface.Omega.SemanticOmegaLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_exists": "PTree.Prob.Interface.Omega.sem_lub_exists",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_unique": "PTree.Prob.Interface.Omega.sem_lub_unique",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_proper": "PTree.Prob.Interface.Omega.sem_lub_proper",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_chain_proper": "PTree.Prob.Interface.Omega.sem_lub_chain_proper",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_lub": "PTree.Prob.Interface.Omega.sem_bind_lub",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticOmegaAELaws": "PTree.Prob.Interface.Omega.SemanticOmegaAELaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_zero": "PTree.Prob.Interface.Omega.sem_ae_zero",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_ae_lub": "PTree.Prob.Interface.Omega.sem_ae_lub",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticTotalProperLaws": "PTree.Prob.Interface.Omega.SemanticTotalProperLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_total_proper": "PTree.Prob.Interface.Omega.sem_total_proper",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticOmegaCofinalityLaws": "PTree.Prob.Interface.Omega.SemanticOmegaCofinalityLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_zero_prefix": "PTree.Prob.Interface.Omega.sem_lub_zero_prefix",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_constant": "PTree.Prob.Interface.Omega.sem_lub_constant",
+    "PTree.Prob.Interface.TwoLevelMeasure.MixedMeasureOmegaLaws": "PTree.Prob.Interface.Mixed.MixedMeasureOmegaLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_zero": "PTree.Prob.Interface.Mixed.mixed_bind_zero",
+    "PTree.Prob.Interface.TwoLevelMeasure.mixed_bind_lub": "PTree.Prob.Interface.Mixed.mixed_bind_lub",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasureDiagonalLaws": "PTree.Prob.Interface.Omega.SemanticMeasureDiagonalLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_bind_diagonal_lub": "PTree.Prob.Interface.Omega.sem_bind_diagonal_lub",
+    "PTree.Prob.Interface.TwoLevelMeasure.SemanticOmegaFubiniLaws": "PTree.Prob.Interface.Omega.SemanticOmegaFubiniLaws",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_lub_double_diagonal": "PTree.Prob.Interface.Omega.sem_lub_double_diagonal",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmega": "PTree.Prob.FreeOmega.Definition.FreeOmega",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FORet": "PTree.Prob.FreeOmega.Definition.FORet",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOZero": "PTree.Prob.FreeOmega.Definition.FOZero",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOSample": "PTree.Prob.FreeOmega.Definition.FOSample",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOLub": "PTree.Prob.FreeOmega.Definition.FOLub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmega_rect": "PTree.Prob.FreeOmega.Definition.FreeOmega_rect",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmega_ind": "PTree.Prob.FreeOmega.Definition.FreeOmega_ind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmega_rec": "PTree.Prob.FreeOmega.Definition.FreeOmega_rec",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmega_sind": "PTree.Prob.FreeOmega.Definition.FreeOmega_sind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaAt": "PTree.Prob.FreeOmega.Definition.FreeOmegaAt",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_bind": "PTree.Prob.FreeOmega.Definition.free_omega_bind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae": "PTree.Prob.FreeOmega.Definition.free_omega_ae",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOAERet": "PTree.Prob.FreeOmega.Definition.FOAERet",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOAEZero": "PTree.Prob.FreeOmega.Definition.FOAEZero",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOAESample": "PTree.Prob.FreeOmega.Definition.FOAESample",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOAELub": "PTree.Prob.FreeOmega.Definition.FOAELub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_ind": "PTree.Prob.FreeOmega.Definition.free_omega_ae_ind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_sind": "PTree.Prob.FreeOmega.Definition.free_omega_ae_sind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift": "PTree.Prob.FreeOmega.Definition.free_omega_lift",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOLRet": "PTree.Prob.FreeOmega.Definition.FOLRet",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOLZero": "PTree.Prob.FreeOmega.Definition.FOLZero",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOLSample": "PTree.Prob.FreeOmega.Definition.FOLSample",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOLLub": "PTree.Prob.FreeOmega.Definition.FOLLub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_ind": "PTree.Prob.FreeOmega.Definition.free_omega_lift_ind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_sind": "PTree.Prob.FreeOmega.Definition.free_omega_lift_sind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx": "PTree.Prob.FreeOmega.Approximation.free_omega_approx",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOApproxZero": "PTree.Prob.FreeOmega.Approximation.FOApproxZero",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOApproxRet": "PTree.Prob.FreeOmega.Approximation.FOApproxRet",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOApproxSample": "PTree.Prob.FreeOmega.Approximation.FOApproxSample",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOApproxLub": "PTree.Prob.FreeOmega.Approximation.FOApproxLub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_ind": "PTree.Prob.FreeOmega.Approximation.free_omega_approx_ind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_sind": "PTree.Prob.FreeOmega.Approximation.free_omega_approx_sind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_to_approx": "PTree.Prob.FreeOmega.Approximation.free_omega_lift_to_approx",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_chains_cofinal": "PTree.Prob.FreeOmega.Approximation.free_omega_chains_cofinal",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_bind": "PTree.Prob.FreeOmega.Approximation.free_omega_approx_bind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes": "PTree.Prob.FreeOmega.Observation.free_omega_observes",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOOObserveRet": "PTree.Prob.FreeOmega.Observation.FOOObserveRet",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOOObserveZero": "PTree.Prob.FreeOmega.Observation.FOOObserveZero",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOOObserveSample": "PTree.Prob.FreeOmega.Observation.FOOObserveSample",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOOObserveLub": "PTree.Prob.FreeOmega.Observation.FOOObserveLub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes_ind": "PTree.Prob.FreeOmega.Observation.free_omega_observes_ind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes_sind": "PTree.Prob.FreeOmega.Observation.free_omega_observes_sind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_denotes": "PTree.Prob.FreeOmega.Observation.free_omega_denotes",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes_denotes": "PTree.Prob.FreeOmega.Observation.free_omega_observes_denotes",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_denotes_proper": "PTree.Prob.FreeOmega.Observation.free_omega_denotes_proper",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaDenotationBindLaws": "PTree.Prob.FreeOmega.Observation.FreeOmegaDenotationBindLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_denotes_bind": "PTree.Prob.FreeOmega.Observation.free_omega_denotes_bind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaDenotationOmegaLaws": "PTree.Prob.FreeOmega.Observation.FreeOmegaDenotationOmegaLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_denotes_lub": "PTree.Prob.FreeOmega.Observation.free_omega_denotes_lub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes_bind_ret": "PTree.Prob.FreeOmega.Observation.free_omega_observes_bind_ret",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observes_unique": "PTree.Prob.FreeOmega.Observation.free_omega_observes_unique",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_sem_retE": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_sem_retE",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_mono": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_ae_mono",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_conj": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_ae_conj",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_bind": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_ae_bind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_bind_inv": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_ae_bind_inv",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_mono": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_lift_mono",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_refl": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_lift_refl",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_refl": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_approx_refl",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_mono": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_approx_mono",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_comp": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_approx_comp",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_trans": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_approx_trans",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_steps": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_approx_steps",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_sym": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_lift_sym",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_comp": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_lift_comp",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_countable": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_ae_countable",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_ae_restrict": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_lift_ae_restrict",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_ae_transport_r": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_lift_ae_transport_r",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_bind_assoc": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_bind_assoc",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_bind": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_lift_bind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_bind_ae_proper": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_bind_ae_proper",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_mixed_bindE": "PTree.Prob.FreeOmega.StructuralMeasure.free_omega_mixed_bindE",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_lift_support_lift": "PTree.Prob.FreeOmega.SupportLift.free_omega_lift_support_lift",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_approx_ae_backward": "PTree.Prob.FreeOmega.SupportLift.free_omega_approx_ae_backward",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_mono": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_mono",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sym": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_sym",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_comp": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_comp",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_restrict": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_restrict",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_bind": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_bind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sample": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_sample",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_sample_inv": "PTree.Prob.FreeOmega.SupportLift.free_omega_ae_sample_inv",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sample_lub": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_sample_lub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_lub": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_lub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_lub_zero_prefix_l": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_lub_zero_prefix_l",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sample_zero": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_sample_zero",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_lub_constant_r": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_lub_constant_r",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_bind_diagonal": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_bind_diagonal",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_double_diagonal": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_double_diagonal",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sample_bind": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_sample_bind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.semantic_product": "PTree.Prob.FreeOmega.SupportLift.semantic_product",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_ae_sample2_product_iff": "PTree.Prob.FreeOmega.SupportLift.free_omega_ae_sample2_product_iff",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.semantic_pair_swap_rel": "PTree.Prob.FreeOmega.SupportLift.semantic_pair_swap_rel",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_support_lift_sample_exchange": "PTree.Prob.FreeOmega.SupportLift.free_omega_support_lift_sample_exchange",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift": "PTree.Prob.FreeOmega.Quotient.free_omega_qlift",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLStructural": "PTree.Prob.FreeOmega.Quotient.FOQLStructural",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLObserve": "PTree.Prob.FreeOmega.Quotient.FOQLObserve",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLAERestrict": "PTree.Prob.FreeOmega.Quotient.FOQLAERestrict",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLMono": "PTree.Prob.FreeOmega.Quotient.FOQLMono",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSym": "PTree.Prob.FreeOmega.Quotient.FOQLSym",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLComp": "PTree.Prob.FreeOmega.Quotient.FOQLComp",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLBind": "PTree.Prob.FreeOmega.Quotient.FOQLBind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSample": "PTree.Prob.FreeOmega.Quotient.FOQLSample",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSampleRetL": "PTree.Prob.FreeOmega.Quotient.FOQLSampleRetL",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSampleBind": "PTree.Prob.FreeOmega.Quotient.FOQLSampleBind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSampleExchange": "PTree.Prob.FreeOmega.Quotient.FOQLSampleExchange",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLLub": "PTree.Prob.FreeOmega.Quotient.FOQLLub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLLubZeroPrefixL": "PTree.Prob.FreeOmega.Quotient.FOQLLubZeroPrefixL",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLLubZeroPrefixR": "PTree.Prob.FreeOmega.Quotient.FOQLLubZeroPrefixR",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSampleLub": "PTree.Prob.FreeOmega.Quotient.FOQLSampleLub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLSampleZero": "PTree.Prob.FreeOmega.Quotient.FOQLSampleZero",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLLubConstantR": "PTree.Prob.FreeOmega.Quotient.FOQLLubConstantR",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLBindLub": "PTree.Prob.FreeOmega.Quotient.FOQLBindLub",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLDoubleDiagonal": "PTree.Prob.FreeOmega.Quotient.FOQLDoubleDiagonal",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FOQLCofinal": "PTree.Prob.FreeOmega.Quotient.FOQLCofinal",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift_ind": "PTree.Prob.FreeOmega.Quotient.free_omega_qlift_ind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift_sind": "PTree.Prob.FreeOmega.Quotient.free_omega_qlift_sind",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift_support": "PTree.Prob.FreeOmega.Quotient.free_omega_qlift_support",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observable_sem_retE": "PTree.Prob.FreeOmega.Measure.free_omega_observable_sem_retE",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift_refl": "PTree.Prob.FreeOmega.Measure.free_omega_qlift_refl",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_qlift_bind_ae": "PTree.Prob.FreeOmega.Measure.free_omega_qlift_bind_ae",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_mixed_exchange_of_product": "PTree.Prob.FreeOmega.Measure.free_omega_mixed_exchange_of_product",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_observable_total_intro": "PTree.Prob.FreeOmega.Measure.free_omega_observable_total_intro",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.free_omega_cofinal_lub_iff": "PTree.Prob.FreeOmega.Measure.free_omega_cofinal_lub_iff",
+    "PTree.Prob.Interface.TwoLevelMeasure.sem_eq_equivalence": "PTree.Prob.Interface.Measure.sem_eq_equivalence",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasure": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaSemanticMeasure",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureCoreLaws": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaSemanticMeasureCoreLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureAEKleisliLaws": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaSemanticMeasureAEKleisliLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureCountableAELaws": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaSemanticMeasureCountableAELaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureCouplingAELaws": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaSemanticMeasureCouplingAELaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureBindLaws": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaSemanticMeasureBindLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaMixedMeasure": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaMixedMeasure",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaMixedMeasureLaws": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaMixedMeasureLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticOmega": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaSemanticOmega",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticOmegaLaws": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaSemanticOmegaLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaSemanticMeasureOrderLaws": "PTree.Prob.FreeOmega.StructuralMeasure.FreeOmegaSemanticMeasureOrderLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticMeasure",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticMeasureCoreLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureAEKleisliLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticMeasureAEKleisliLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCountableAELaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticMeasureCountableAELaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCouplingAELaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticMeasureCouplingAELaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureBindLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticMeasureBindLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableMixedMeasureLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableMixedMeasureLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableMixedMeasureUnitLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableMixedMeasureUnitLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableMixedMeasureNodeBindLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableMixedMeasureNodeBindLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticOmega": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticOmega",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticTotalProperLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticTotalProperLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticOmegaLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaAELaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticOmegaAELaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaCofinalityLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticOmegaCofinalityLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableMixedMeasureOmegaLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableMixedMeasureOmegaLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureDiagonalLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticMeasureDiagonalLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticOmegaFubiniLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticOmegaFubiniLaws",
+    "PTree.Prob.FreeOmega.FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureOrderLaws": "PTree.Prob.FreeOmega.Measure.FreeOmegaObservableSemanticMeasureOrderLaws"
+  }
+}

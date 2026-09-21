@@ -7,7 +7,7 @@ Set Warnings "-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
-From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC MeasureIterationEnum TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli BernoulliFactory.
 Set Implicit Arguments.
 Unset Strict Implicit.

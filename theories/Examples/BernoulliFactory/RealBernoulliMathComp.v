@@ -9,8 +9,8 @@ From mathcomp Require Import numfun.
 From mathcomp.analysis Require Import topology sequences ereal measure.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import FrontierLift MeasureIteration.
-From PTree.Prob.Backend Require Import MathCompMeasure.
+Require Import PTree.Prob.Interface.FrontierLift PTree.Prob.Interface.Iteration.
+Require Import PTree.Prob.Backend.MathComp.Kernel.
 From PTree.Examples.BernoulliFactory Require Import RealBernoulliOracle.
 
 Set Implicit Arguments.

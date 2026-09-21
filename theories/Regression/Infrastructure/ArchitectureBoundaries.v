@@ -3,7 +3,7 @@
 From PTree.Core Require PTreeDefinition.
 Module CoreLoadingBoundary.
 Import PTreeDefinition.
-Fail Check PTree.Prob.Interface.TwoLevelMeasure.SemanticMeasure.
+Fail Check PTree.Prob.Interface.Measure.SemanticMeasure.
 Fail Check PTree.Eq.PEutt.peutt.
 End CoreLoadingBoundary.
 
@@ -36,5 +36,5 @@ Fail Check interp_bisim_candidate.
 Fail Check atomic_candidate.
 Fail Check finite_internal.
 Fail Check kernel_completion_invariant.
-Fail Check PTree.Prob.Backend.TwoLevelMeasureSubEnum.SubEnum.
+Fail Check PTree.Prob.Backend.SubEnum.Measure.SubEnum.
 End CanonicalFacadeBoundary.

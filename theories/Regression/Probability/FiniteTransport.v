@@ -3,9 +3,9 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From Coq Require Import Lia.
 From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype finset bigop ssralg ssrnum order rat.
-From PTree.Prob.Backend Require Import FiniteMatching FiniteCapacityMatching FiniteRationalTransport RatSubTypes TwoLevelMeasureSubEnum.
+Require Import PTree.Prob.Backend.Common.FiniteMatching PTree.Prob.Backend.Common.FiniteCapacityMatching PTree.Prob.Backend.Common.FiniteRationalTransport PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.SubEnum.Measure.
 From PTree.Prob.Interface Require Import SemanticCoupling.
-From PTree.Prob.Backend Require Import FiniteEnumTransport.
+Require Import PTree.Prob.Backend.Enum.FiniteTransport.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

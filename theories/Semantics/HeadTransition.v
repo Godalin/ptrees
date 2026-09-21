@@ -7,7 +7,7 @@ From Coq Require Import Program Morphisms.
 From Coq.Relations Require Import Relation_Definitions.
 From Coinduction Require Import all.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel StableHittingRelation.
 
 Set Implicit Arguments.

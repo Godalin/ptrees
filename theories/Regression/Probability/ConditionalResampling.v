@@ -5,12 +5,12 @@ Set Universe Polymorphism.
 From Coq.Arith Require Import PeanoNat.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum RatSubTypes DiscreteMC EnumMap Coupling FrontierLiftEnum.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Map PTree.Prob.Backend.Enum.Coupling PTree.Prob.Backend.Enum.FrontierLift.
 From PTree.Prob.Interface Require Import SemanticCoupling.
-From PTree.Prob.Backend Require Import EnumDisintegration.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaDisintegration.
+Require Import PTree.Prob.Backend.Enum.Disintegration.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
+Require Import PTree.Prob.Backend.SubEnum.FreeOmega.Disintegration.
 From PTree.Eq Require Import PrimitiveStableHitting.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.Eq.Internal.FreeOmega Require Import KernelCompletion.

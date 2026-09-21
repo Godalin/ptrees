@@ -7,10 +7,10 @@ From Coq.Program Require Import Equality.
 From Coq Require Import RelationClasses.
 From Coq.Logic Require Import ClassicalDescription.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Backend Require Import DiscreteMC.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
+Require Import PTree.Prob.Backend.Enum.Representation.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalHitting.
 From PTree.Eq Require Import PStrong PEutt.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalAcceleration.

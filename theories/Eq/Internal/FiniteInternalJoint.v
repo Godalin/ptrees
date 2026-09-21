@@ -2,7 +2,7 @@
 Set Universe Polymorphism.
 From Coq.Logic Require Import ClassicalChoice.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure SemanticCoupling.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed PTree.Prob.Interface.SemanticCoupling.
 From PTree.Eq.Internal Require Import FiniteInternal.
 From PTree.Eq Require Import PStrong UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Eq.Internal Require Import FiniteInternalHitting.

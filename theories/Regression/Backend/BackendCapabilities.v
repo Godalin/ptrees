@@ -4,14 +4,14 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 From mathcomp Require Import reals.
-From PTree.Prob.Backend Require Import DiscreteMC MathCompMeasure.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum TwoLevelMeasureMathComp.
-From PTree.Prob.FreeOmega Require Import FreeOmegaNativeCoupling.
-From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaNativeCouplingSubEnum.
+Require Import PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.MathComp.Kernel.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
+Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.MathComp.Measure.
+Require Import PTree.Prob.FreeOmega.NativeCoupling.
+Require Import PTree.Prob.Backend.SubEnum.FreeOmega.NativeCoupling.
 From PTree.Prob.Interface Require Import SemanticCoupling.
-From PTree.Prob.Backend Require Import SemanticCouplingMathComp.
+Require Import PTree.Prob.Backend.MathComp.Coupling.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

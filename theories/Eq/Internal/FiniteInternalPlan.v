@@ -2,7 +2,7 @@
 Set Universe Polymorphism.
 From Coq.Logic Require Import ClassicalChoice ChoiceFacts FunctionalExtensionality.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 From PTree.Eq.Internal Require Import FiniteInternal.
 
 Set Implicit Arguments.

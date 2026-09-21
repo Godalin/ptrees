@@ -32,7 +32,7 @@ The table lists operation and law class names occurring in the elaborated type (
 | `PTree.Interp.FreeOmega.MDP.mdp_head_atomic` | `SemanticMeasure`, `SemanticOmega` | `SemanticMeasureAELiftLaws`, `SemanticMeasureCoreLaws`, `SemanticMeasureCountableAELaws`, `SemanticMeasureCouplingAELaws` | `RelationalChoice.relational_choice`, `FunctionalExtensionality.functional_extensionality_dep`, `Eqdep.Eq_rect_eq.eq_rect_eq`, `ClassicalUniqueChoice.dependent_unique_choice` |
 | `PTree.Interp.FreeOmega.MDP.atomic_handler_mdp` | `SemanticMeasure`, `SemanticOmega` | `SemanticMeasureAELiftLaws`, `SemanticMeasureCoreLaws`, `SemanticMeasureCountableAELaws`, `SemanticMeasureCouplingAELaws` | `RelationalChoice.relational_choice`, `FunctionalExtensionality.functional_extensionality_dep`, `Eqdep.Eq_rect_eq.eq_rect_eq`, `ClassicalUniqueChoice.dependent_unique_choice` |
 | `PTree.Interp.FreeOmega.MDP.mdp_state_interp_atomic` | `SemanticMeasure`, `SemanticOmega` | `SemanticMeasureAELiftLaws`, `SemanticMeasureCoreLaws`, `SemanticMeasureCountableAELaws`, `SemanticMeasureCouplingAELaws` | `RelationalChoice.relational_choice`, `FunctionalExtensionality.functional_extensionality_dep`, `Eqdep.Eq_rect_eq.eq_rect_eq`, `ClassicalUniqueChoice.dependent_unique_choice` |
-| `PTree.Prob.Backend.FreeOmega.FreeOmegaTotalSubEnum.subenum_free_omega_total_map` | none | none | `RelationalChoice.relational_choice`, `FunctionalExtensionality.functional_extensionality_dep`, `Eqdep.Eq_rect_eq.eq_rect_eq`, `ClassicalUniqueChoice.dependent_unique_choice` |
+| `PTree.Prob.Backend.SubEnum.FreeOmega.Total.subenum_free_omega_total_map` | none | none | `RelationalChoice.relational_choice`, `FunctionalExtensionality.functional_extensionality_dep`, `Eqdep.Eq_rect_eq.eq_rect_eq`, `ClassicalUniqueChoice.dependent_unique_choice` |
 | `PTree.Interp.Backend.SubEnum.subenum_atomic_handler_mdp` | none | none | `RelationalChoice.relational_choice`, `FunctionalExtensionality.functional_extensionality_dep`, `Eqdep.Eq_rect_eq.eq_rect_eq`, `ClassicalUniqueChoice.dependent_unique_choice` |
 | `PTree.Interp.Backend.SubEnum.subenum_mdp_state_interp_atomic` | none | none | `RelationalChoice.relational_choice`, `FunctionalExtensionality.functional_extensionality_dep`, `Eqdep.Eq_rect_eq.eq_rect_eq`, `ClassicalUniqueChoice.dependent_unique_choice` |
 
@@ -42,10 +42,10 @@ The table lists operation and law class names occurring in the elaborated type (
 
 ```coq
 @PEutt.peutt
-     : forall (E MN MF : Type -> Type) (FI : TwoLevelMeasure.SemanticMeasure MF),
-       @TwoLevelMeasure.SemanticMeasureCoreLaws MF FI ->
-       TwoLevelMeasure.MixedMeasure MN MF ->
-       @TwoLevelMeasure.SemanticOmega MF FI ->
+     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),
+       @Measure.SemanticMeasureCoreLaws MF FI ->
+       Mixed.MixedMeasure MN MF ->
+       @Omega.SemanticOmega MF FI ->
        forall R1 R2 : Type,
        (R1 -> R2 -> Prop) -> PTreeDefinition.ptree E MN R1 -> PTreeDefinition.ptree E MN R2 -> Prop
 ```
@@ -62,14 +62,14 @@ Closed under the global context
 
 ```coq
 @PEutt.peutt_bind
-     : forall (E MN MF : Type -> Type) (FI : TwoLevelMeasure.SemanticMeasure MF)
-         (FC : @TwoLevelMeasure.SemanticMeasureCoreLaws MF FI),
-       @TwoLevelMeasure.SemanticMeasureBindLaws MF FI ->
-       forall (MX : TwoLevelMeasure.MixedMeasure MN MF) (FO : @TwoLevelMeasure.SemanticOmega MF FI),
-       @TwoLevelMeasure.SemanticMeasureOrderLaws MF FI FO ->
-       @TwoLevelMeasure.SemanticOmegaLaws MF FI FO ->
-       @TwoLevelMeasure.SemanticOmegaCofinalityLaws MF FI FO ->
-       @TwoLevelMeasure.SemanticMeasureDiagonalLaws MF FI FO ->
+     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)
+         (FC : @Measure.SemanticMeasureCoreLaws MF FI),
+       @Measure.SemanticMeasureBindLaws MF FI ->
+       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),
+       @Omega.SemanticMeasureOrderLaws MF FI FO ->
+       @Omega.SemanticOmegaLaws MF FI FO ->
+       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->
+       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->
        (forall (A R : Type) (t : PTreeDefinition.ptree E MN A)
           (k : A -> PTreeDefinition.ptree E MN R),
         @PTreeKernel.ptree_bind_cofinal E MN MF FI MX FO A R t k) ->
@@ -102,17 +102,15 @@ ClassicalUniqueChoice.dependent_unique_choice :
 
 ```coq
 @Algebra.peutt_bind_assoc
-     : forall (E MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI)
-         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (A B C : Type)
-         (t : PTreeDefinition.ptree E MN A) (k : A -> PTreeDefinition.ptree E MN B)
+     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)
+         (A B C : Type) (t : PTreeDefinition.ptree E MN A) (k : A -> PTreeDefinition.ptree E MN B)
          (h : B -> PTreeDefinition.ptree E MN C),
-       @PEutt.peutt E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) C C
-         (@eq C)
+       @PEutt.peutt E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) C C (@eq C)
          (@PTreeDefinition.PTree.bind E MN B C (@PTreeDefinition.PTree.bind E MN A B t k) h)
          (@PTreeDefinition.PTree.bind E MN A C t
             (fun x : A => @PTreeDefinition.PTree.bind E MN B C (k x) h))
@@ -132,10 +130,9 @@ Eqdep.Eq_rect_eq.eq_rect_eq :
 
 ```coq
 @Iter.peutt_iter_rel
-     : forall (E MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI)
-         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (I1 I2 R1 R2 : Type)
-         (SI : I1 -> I2 -> Prop) (RR : R1 -> R2 -> Prop)
+     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)
+         (I1 I2 R1 R2 : Type) (SI : I1 -> I2 -> Prop) (RR : R1 -> R2 -> Prop)
          (f : I1 -> PTreeDefinition.ptree E MN (I1 + R1))
          (g : I2 -> PTreeDefinition.ptree E MN (I2 + R2)),
        (forall (i1 : I1) (i2 : I2),
@@ -144,11 +141,11 @@ Eqdep.Eq_rect_eq.eq_rect_eq :
           (f i1) (g i2)) ->
        forall (i1 : I1) (i2 : I2),
        SI i1 i2 ->
-       @PEutt.peutt E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R1 R2 RR
+       @PEutt.peutt E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R1 R2 RR
          (@PTreeDefinition.PTree.iter E MN R1 I1 f i1)
          (@PTreeDefinition.PTree.iter E MN R2 I2 g i2)
 ```
@@ -167,31 +164,31 @@ Eqdep.Eq_rect_eq.eq_rect_eq :
 
 ```coq
 @Iter.peutt_iter_behavioral_rel
-     : forall (E MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI)
-         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (I1 I2 R1 R2 : Type),
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)
+         (I1 I2 R1 R2 : Type),
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        (forall X : Type, E X -> False) ->
        forall (step1 : I1 -> PTreeDefinition.ptree E MN (I1 + R1))
          (step2 : I2 -> PTreeDefinition.ptree E MN (I2 + R2)) (SI : I1 -> I2 -> Prop)
          (RR : R1 -> R2 -> Prop),
        (forall (i1 : I1) (i2 : I2),
         SI i1 i2 ->
-        @PEutt.peutt E MN (FreeOmegaMeasure.FreeOmega MN)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-          (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)
-          (I1 + R1) (I2 + R2) (@Iter.iter_behavioral_sum_rel I1 I2 R1 R2 SI RR)
-          (step1 i1) (step2 i2)) ->
+        @PEutt.peutt E MN (Definition.FreeOmega MN)
+          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+          (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+          (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+          (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) (I1 + R1)
+          (I2 + R2) (@Iter.iter_behavioral_sum_rel I1 I2 R1 R2 SI RR) (step1 i1)
+          (step2 i2)) ->
        forall (i1 : I1) (i2 : I2),
        SI i1 i2 ->
-       @PEutt.peutt E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R1 R2 RR
+       @PEutt.peutt E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R1 R2 RR
          (@PTreeDefinition.PTree.iter E MN R1 I1 step1 i1)
          (@PTreeDefinition.PTree.iter E MN R2 I2 step2 i2)
 ```
@@ -217,20 +214,19 @@ ClassicalUniqueChoice.dependent_unique_choice :
 
 ```coq
 @Iter.peutt_iter_eventful_of_generator_closed
-     : forall (E MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI)
-         (NO : @TwoLevelMeasure.SemanticOmega MN NI) (I1 I2 R1 R2 : Type)
-         (step1 : I1 -> PTreeDefinition.ptree E MN (I1 + R1))
+     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)
+         (I1 I2 R1 R2 : Type) (step1 : I1 -> PTreeDefinition.ptree E MN (I1 + R1))
          (step2 : I2 -> PTreeDefinition.ptree E MN (I2 + R2)) (SI : I1 -> I2 -> Prop)
          (RR : R1 -> R2 -> Prop),
        @Iter.iter_eventful_generator_closed E MN NI NO I1 I2 R1 R2 step1 step2 SI RR ->
        forall (i1 : I1) (i2 : I2),
        SI i1 i2 ->
-       @PEutt.peutt E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R1 R2 RR
+       @PEutt.peutt E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R1 R2 RR
          (@PTreeDefinition.PTree.iter E MN R1 I1 step1 i1)
          (@PTreeDefinition.PTree.iter E MN R2 I2 step2 i2)
 ```
@@ -249,9 +245,8 @@ Eqdep.Eq_rect_eq.eq_rect_eq :
 
 ```coq
 @Guarded.guarded_handler
-     : forall (E F MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),
-       @TwoLevelMeasure.SemanticOmega MN NI ->
-       (forall X : Type, E X -> PTreeDefinition.ptree F MN X) -> Prop
+     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN),
+       @Omega.SemanticOmega MN NI -> (forall X : Type, E X -> PTreeDefinition.ptree F MN X) -> Prop
 ```
 
 ### Logical assumptions (separate from capabilities)
@@ -266,21 +261,21 @@ Closed under the global context
 
 ```coq
 @Guarded.guarded_handler_of_hitting
-     : forall (E F MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),
-       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->
-       forall (NO : @TwoLevelMeasure.SemanticOmega MN NI)
+     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN),
+       @Measure.SemanticMeasureCoreLaws MN NI ->
+       forall (NO : @Omega.SemanticOmega MN NI)
          (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X),
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        (forall (X : Type) (e : E X),
-        exists out : FreeOmegaMeasure.FreeOmega MN (UnifiedFrontier.stable_head F MN X),
-          @PTreeKernel.ptree_stable_hitting F MN (FreeOmegaMeasure.FreeOmega MN)
-            (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-            (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-            (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) X
+        exists out : Definition.FreeOmega MN (UnifiedFrontier.stable_head F MN X),
+          @PTreeKernel.ptree_stable_hitting F MN (Definition.FreeOmega MN)
+            (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+            (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+            (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) X
             (@PTreeDefinition.observe F MN X (handler X e)) out /\
-          @TwoLevelMeasure.sem_ae (FreeOmegaMeasure.FreeOmega MN)
-            (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
+          @Measure.sem_ae (Definition.FreeOmega MN)
+            (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
             (UnifiedFrontier.stable_head F MN X) out (@Guarded.stable_head_is_visible F MN X)) ->
        @Guarded.guarded_handler E F MN NI NO handler
 ```
@@ -299,13 +294,13 @@ Eqdep.Eq_rect_eq.eq_rect_eq :
 
 ```coq
 @Guarded.guarded_handler_vis_fusion
-     : forall (E F MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI),
-       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->
-       forall (NO : @TwoLevelMeasure.SemanticOmega MN NI)
+     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI),
+       @AE.SemanticMeasureAELiftLaws MN NI ->
+       forall (NO : @Omega.SemanticOmega MN NI)
          (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X),
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall (A B : Type) (RR : A -> B -> Prop),
        @Guarded.guarded_handler E F MN NI NO handler ->
        @Base.interp_vis_fusion E F MN NI NC NO A B RR handler
@@ -334,26 +329,26 @@ ClassicalUniqueChoice.dependent_unique_choice :
 
 ```coq
 @Guarded.peutt_interp_guarded
-     : forall (E F MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI),
-       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->
-       forall (NO : @TwoLevelMeasure.SemanticOmega MN NI)
+     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI),
+       @AE.SemanticMeasureAELiftLaws MN NI ->
+       forall (NO : @Omega.SemanticOmega MN NI)
          (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X),
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall (A B : Type) (RR : A -> B -> Prop),
        @Guarded.guarded_handler E F MN NI NO handler ->
        forall (t1 : PTreeDefinition.ptree E MN A) (t2 : PTreeDefinition.ptree E MN B),
-       @PEutt.peutt E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR t1 t2 ->
-       @PEutt.peutt F MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR
+       @PEutt.peutt E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR t1 t2 ->
+       @PEutt.peutt F MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR
          (@PTreeDefinition.PTree.interp E F MN handler A t1)
          (@PTreeDefinition.PTree.interp E F MN handler B t2)
 ```
@@ -381,28 +376,28 @@ ClassicalUniqueChoice.dependent_unique_choice :
 
 ```coq
 @Guarded.peutt_interp_guarded_Proper
-     : forall (E F MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI),
-       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->
-       forall (NO : @TwoLevelMeasure.SemanticOmega MN NI)
+     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI),
+       @AE.SemanticMeasureAELiftLaws MN NI ->
+       forall (NO : @Omega.SemanticOmega MN NI)
          (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X),
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall R : Type,
        @Guarded.guarded_handler E F MN NI NO handler ->
        @Morphisms.Proper (PTreeDefinition.ptree E MN R -> PTreeDefinition.ptree F MN R)
          (@Morphisms.respectful (PTreeDefinition.ptree E MN R) (PTreeDefinition.ptree F MN R)
-            (@PEutt.peutt E MN (FreeOmegaMeasure.FreeOmega MN)
-               (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-               (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-               (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-               (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R R
+            (@PEutt.peutt E MN (Definition.FreeOmega MN)
+               (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+               (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+               (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+               (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R
                (@eq R))
-            (@PEutt.peutt F MN (FreeOmegaMeasure.FreeOmega MN)
-               (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-               (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-               (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-               (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R R
+            (@PEutt.peutt F MN (Definition.FreeOmega MN)
+               (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+               (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+               (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+               (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R
                (@eq R))) (@PTreeDefinition.PTree.interp E F MN handler R)
 ```
 
@@ -429,9 +424,8 @@ ClassicalUniqueChoice.dependent_unique_choice :
 
 ```coq
 @Atomic.atomic_handler
-     : forall (E MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),
-       @TwoLevelMeasure.SemanticOmega MN NI ->
-       (forall X : Type, E X -> PTreeDefinition.ptree E MN X) -> Type
+     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN),
+       @Omega.SemanticOmega MN NI -> (forall X : Type, E X -> PTreeDefinition.ptree E MN X) -> Type
 ```
 
 ### Logical assumptions (separate from capabilities)
@@ -446,11 +440,11 @@ Closed under the global context
 
 ```coq
 @Atomic.atomic_handler_guarded
-     : forall (E MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),
-       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->
-       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN),
+       @Measure.SemanticMeasureCoreLaws MN NI ->
+       forall NO : @Omega.SemanticOmega MN NI,
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall handler : forall X : Type, E X -> PTreeDefinition.ptree E MN X,
        @Atomic.atomic_handler E MN NI NO handler -> @Guarded.guarded_handler E E MN NI NO handler
 ```
@@ -469,25 +463,25 @@ Eqdep.Eq_rect_eq.eq_rect_eq :
 
 ```coq
 @Atomic.tree_trans_bisim_interp_atomic
-     : forall (E MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI),
-       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->
-       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI),
+       @AE.SemanticMeasureAELiftLaws MN NI ->
+       forall NO : @Omega.SemanticOmega MN NI,
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall handler : forall X : Type, E X -> PTreeDefinition.ptree E MN X,
        @Atomic.atomic_handler E MN NI NO handler ->
        forall (R : Type) (RR : R -> R -> Prop) (t u : PTreeDefinition.ptree E MN R),
-       @TreeTransitionBisim.tree_trans_bisim E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R R RR t u ->
-       @TreeTransitionBisim.tree_trans_bisim E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R R RR
+       @TreeTransitionBisim.tree_trans_bisim E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R RR t u ->
+       @TreeTransitionBisim.tree_trans_bisim E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R RR
          (@PTreeDefinition.PTree.interp E E MN handler R t)
          (@PTreeDefinition.PTree.interp E E MN handler R u)
 ```
@@ -516,35 +510,32 @@ Classical_Prop.classic : forall P : Prop, P \/ ~ P
 
 ```coq
 @MDPCoincidenceFreeOmega.free_mdp_state_peutt_tree_trans_iff
-     : forall (MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI)
-         (NO : @TwoLevelMeasure.SemanticOmega MN NI),
-       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI),
+       @AE.SemanticMeasureAELiftLaws MN NI ->
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall (E : Type -> Type) (R : Type) (t u : PTreeDefinition.ptree E MN R),
-       @MDPFragment.mdp_state E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->
-       @MDPFragment.mdp_state E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R u ->
-       @PEutt.peutt E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R R
-         (@eq R) t u <->
-       @TreeTransitionBisim.tree_trans_bisim E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R R
-         (@eq R) t u
+       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->
+       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R u ->
+       @PEutt.peutt E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R) t u <->
+       @TreeTransitionBisim.tree_trans_bisim E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R) t u
 ```
 
 ### Logical assumptions (separate from capabilities)
@@ -571,9 +562,9 @@ Classical_Prop.classic : forall P : Prop, P \/ ~ P
 
 ```coq
 @MDP.mdp_handler
-     : forall (E F MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN),
-       @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI ->
-       @TwoLevelMeasure.SemanticOmega MN NI ->
+     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN),
+       @Measure.SemanticMeasureCoreLaws MN NI ->
+       @Omega.SemanticOmega MN NI ->
        (forall X : Type, E X -> PTreeDefinition.ptree F MN X) -> Type -> Prop
 ```
 
@@ -591,24 +582,23 @@ Eqdep.Eq_rect_eq.eq_rect_eq :
 
 ```coq
 @MDP.mdp_state_interp
-     : forall (E F MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI)
-         (NO : @TwoLevelMeasure.SemanticOmega MN NI),
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI),
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X) (R : Type),
        @MDP.mdp_handler E F MN NI NC NO handler R ->
        forall t : PTreeDefinition.ptree E MN R,
-       @MDPFragment.mdp_state E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->
-       @MDPFragment.mdp_state F MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R
+       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->
+       @MDPFragment.mdp_state F MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R
          (@PTreeDefinition.PTree.interp E F MN handler R t)
 ```
 
@@ -633,38 +623,38 @@ ClassicalUniqueChoice.dependent_unique_choice :
 
 ```coq
 @MDP.mdp_interp_peutt_tree_trans_iff
-     : forall (E F MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI),
-       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->
-       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI),
+       @AE.SemanticMeasureAELiftLaws MN NI ->
+       forall NO : @Omega.SemanticOmega MN NI,
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X) (R : Type),
        @MDP.mdp_handler E F MN NI NC NO handler R ->
        forall t u : PTreeDefinition.ptree E MN R,
-       @MDPFragment.mdp_state E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->
-       @MDPFragment.mdp_state E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R u ->
-       @PEutt.peutt F MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R R
-         (@eq R) (@PTreeDefinition.PTree.interp E F MN handler R t)
+       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->
+       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R u ->
+       @PEutt.peutt F MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R)
+         (@PTreeDefinition.PTree.interp E F MN handler R t)
          (@PTreeDefinition.PTree.interp E F MN handler R u) <->
-       @TreeTransitionBisim.tree_trans_bisim F MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R R
-         (@eq R) (@PTreeDefinition.PTree.interp E F MN handler R t)
+       @TreeTransitionBisim.tree_trans_bisim F MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R)
+         (@PTreeDefinition.PTree.interp E F MN handler R t)
          (@PTreeDefinition.PTree.interp E F MN handler R u)
 ```
 
@@ -692,38 +682,37 @@ Classical_Prop.classic : forall P : Prop, P \/ ~ P
 
 ```coq
 @MDP.mdp_guarded_interp_tree_trans
-     : forall (E F MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI),
-       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->
-       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI),
+       @AE.SemanticMeasureAELiftLaws MN NI ->
+       forall NO : @Omega.SemanticOmega MN NI,
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X) (R : Type),
        @MDP.mdp_handler E F MN NI NC NO handler R ->
        @Guarded.guarded_handler E F MN NI NO handler ->
        forall t u : PTreeDefinition.ptree E MN R,
-       @MDPFragment.mdp_state E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->
-       @MDPFragment.mdp_state E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R u ->
-       @TreeTransitionBisim.tree_trans_bisim E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R R
-         (@eq R) t u ->
-       @TreeTransitionBisim.tree_trans_bisim F MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R R
-         (@eq R) (@PTreeDefinition.PTree.interp E F MN handler R t)
+       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->
+       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R u ->
+       @TreeTransitionBisim.tree_trans_bisim E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R) t u ->
+       @TreeTransitionBisim.tree_trans_bisim F MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R)
+         (@PTreeDefinition.PTree.interp E F MN handler R t)
          (@PTreeDefinition.PTree.interp E F MN handler R u)
 ```
 
@@ -751,34 +740,34 @@ Classical_Prop.classic : forall P : Prop, P \/ ~ P
 
 ```coq
 @MDP.mdp_head_atomic
-     : forall (E MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI),
-       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->
-       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI),
+       @AE.SemanticMeasureAELiftLaws MN NI ->
+       forall NO : @Omega.SemanticOmega MN NI,
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall (handler : forall X : Type, E X -> PTreeDefinition.ptree E MN X)
          (R : Type) (atom : @Atomic.atomic_handler E MN NI NO handler),
-       (forall mu : FreeOmegaMeasure.FreeOmega MN (UnifiedFrontier.stable_head E MN R),
-        @TwoLevelMeasure.sem_total (FreeOmegaMeasure.FreeOmega MN)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)
-          (UnifiedFrontier.stable_head E MN R) mu ->
-        @TwoLevelMeasure.sem_total (FreeOmegaMeasure.FreeOmega MN)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)
-          (UnifiedFrontier.stable_head E MN R) (@Atomic.atomic_map E MN NI NO handler atom R mu)) ->
+       (forall mu : Definition.FreeOmega MN (UnifiedFrontier.stable_head E MN R),
+        @Omega.sem_total (Definition.FreeOmega MN)
+          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+          (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) (UnifiedFrontier.stable_head E MN R)
+          mu ->
+        @Omega.sem_total (Definition.FreeOmega MN)
+          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+          (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) (UnifiedFrontier.stable_head E MN R)
+          (@Atomic.atomic_map E MN NI NO handler atom R mu)) ->
        forall h : UnifiedFrontier.stable_head E MN R,
-       @MDPFragment.mdp_head E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R h ->
-       @MDPFragment.mdp_head E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R
+       @MDPFragment.mdp_head E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R h ->
+       @MDPFragment.mdp_head E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R
          (@Atomic.atomic_head E MN NI NO handler atom R h)
 ```
 
@@ -805,23 +794,23 @@ ClassicalUniqueChoice.dependent_unique_choice :
 
 ```coq
 @MDP.atomic_handler_mdp
-     : forall (E MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI),
-       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->
-       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI),
+       @AE.SemanticMeasureAELiftLaws MN NI ->
+       forall NO : @Omega.SemanticOmega MN NI,
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall (handler : forall X : Type, E X -> PTreeDefinition.ptree E MN X)
          (R : Type) (atom : @Atomic.atomic_handler E MN NI NO handler),
-       (forall mu : FreeOmegaMeasure.FreeOmega MN (UnifiedFrontier.stable_head E MN R),
-        @TwoLevelMeasure.sem_total (FreeOmegaMeasure.FreeOmega MN)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)
-          (UnifiedFrontier.stable_head E MN R) mu ->
-        @TwoLevelMeasure.sem_total (FreeOmegaMeasure.FreeOmega MN)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)
-          (UnifiedFrontier.stable_head E MN R) (@Atomic.atomic_map E MN NI NO handler atom R mu)) ->
+       (forall mu : Definition.FreeOmega MN (UnifiedFrontier.stable_head E MN R),
+        @Omega.sem_total (Definition.FreeOmega MN)
+          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+          (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) (UnifiedFrontier.stable_head E MN R)
+          mu ->
+        @Omega.sem_total (Definition.FreeOmega MN)
+          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+          (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) (UnifiedFrontier.stable_head E MN R)
+          (@Atomic.atomic_map E MN NI NO handler atom R mu)) ->
        @MDP.mdp_handler E E MN NI NC NO handler R
 ```
 
@@ -848,34 +837,34 @@ ClassicalUniqueChoice.dependent_unique_choice :
 
 ```coq
 @MDP.mdp_state_interp_atomic
-     : forall (E MN : Type -> Type) (NI : TwoLevelMeasure.SemanticMeasure MN)
-         (NC : @TwoLevelMeasure.SemanticMeasureCoreLaws MN NI),
-       @TwoLevelMeasure.SemanticMeasureAELiftLaws MN NI ->
-       forall NO : @TwoLevelMeasure.SemanticOmega MN NI,
-       @TwoLevelMeasure.SemanticMeasureCouplingAELaws MN NI ->
-       @TwoLevelMeasure.SemanticMeasureCountableAELaws MN NI ->
+     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)
+         (NC : @Measure.SemanticMeasureCoreLaws MN NI),
+       @AE.SemanticMeasureAELiftLaws MN NI ->
+       forall NO : @Omega.SemanticOmega MN NI,
+       @Coupling.SemanticMeasureCouplingAELaws MN NI ->
+       @AE.SemanticMeasureCountableAELaws MN NI ->
        forall (handler : forall X : Type, E X -> PTreeDefinition.ptree E MN X)
          (R : Type) (atom : @Atomic.atomic_handler E MN NI NO handler),
-       (forall mu : FreeOmegaMeasure.FreeOmega MN (UnifiedFrontier.stable_head E MN R),
-        @TwoLevelMeasure.sem_total (FreeOmegaMeasure.FreeOmega MN)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)
-          (UnifiedFrontier.stable_head E MN R) mu ->
-        @TwoLevelMeasure.sem_total (FreeOmegaMeasure.FreeOmega MN)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-          (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO)
-          (UnifiedFrontier.stable_head E MN R) (@Atomic.atomic_map E MN NI NO handler atom R mu)) ->
+       (forall mu : Definition.FreeOmega MN (UnifiedFrontier.stable_head E MN R),
+        @Omega.sem_total (Definition.FreeOmega MN)
+          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+          (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) (UnifiedFrontier.stable_head E MN R)
+          mu ->
+        @Omega.sem_total (Definition.FreeOmega MN)
+          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+          (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) (UnifiedFrontier.stable_head E MN R)
+          (@Atomic.atomic_map E MN NI NO handler atom R mu)) ->
        forall t : PTreeDefinition.ptree E MN R,
-       @MDPFragment.mdp_state E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->
-       @MDPFragment.mdp_state E MN (FreeOmegaMeasure.FreeOmega MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure MN NI NO)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure MN)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega MN NI NO) R
+       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->
+       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)
+         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)
+         (@StructuralMeasure.FreeOmegaMixedMeasure MN)
+         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R
          (@PTreeDefinition.PTree.interp E E MN handler R t)
 ```
 
@@ -896,30 +885,25 @@ ClassicalUniqueChoice.dependent_unique_choice :
   (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)
 ```
 
-## `PTree.Prob.Backend.FreeOmega.FreeOmegaTotalSubEnum.subenum_free_omega_total_map`
+## `PTree.Prob.Backend.SubEnum.FreeOmega.Total.subenum_free_omega_total_map`
 
 ### Elaborated type
 
 ```coq
-@FreeOmegaTotalSubEnum.subenum_free_omega_total_map
-     : forall (A B : Type) (f : A -> B)
-         (mu : FreeOmegaMeasure.FreeOmega TwoLevelMeasureSubEnum.SubEnum A),
-       @TwoLevelMeasure.sem_total (FreeOmegaMeasure.FreeOmega TwoLevelMeasureSubEnum.SubEnum)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure TwoLevelMeasureSubEnum.SubEnum
-            TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-            TwoLevelMeasureSubEnum.SubEnum_SemanticOmega)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega TwoLevelMeasureSubEnum.SubEnum
-            TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-            TwoLevelMeasureSubEnum.SubEnum_SemanticOmega) A mu ->
-       @TwoLevelMeasure.sem_total (FreeOmegaMeasure.FreeOmega TwoLevelMeasureSubEnum.SubEnum)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure TwoLevelMeasureSubEnum.SubEnum
-            TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-            TwoLevelMeasureSubEnum.SubEnum_SemanticOmega)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega TwoLevelMeasureSubEnum.SubEnum
-            TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-            TwoLevelMeasureSubEnum.SubEnum_SemanticOmega) B
-         (@FreeOmegaMeasure.free_omega_bind TwoLevelMeasureSubEnum.SubEnum A B mu
-            (fun x : A => @FreeOmegaMeasure.FORet TwoLevelMeasureSubEnum.SubEnum B (f x)))
+@Total.subenum_free_omega_total_map
+     : forall (A B : Type) (f : A -> B) (mu : Definition.FreeOmega Measure.SubEnum A),
+       @Omega.sem_total (Definition.FreeOmega Measure.SubEnum)
+         (@Measure.FreeOmegaObservableSemanticMeasure Measure.SubEnum
+            Measure.SubEnum_SemanticMeasure Measure.SubEnum_SemanticOmega)
+         (@Measure.FreeOmegaObservableSemanticOmega Measure.SubEnum Measure.SubEnum_SemanticMeasure
+            Measure.SubEnum_SemanticOmega) A mu ->
+       @Omega.sem_total (Definition.FreeOmega Measure.SubEnum)
+         (@Measure.FreeOmegaObservableSemanticMeasure Measure.SubEnum
+            Measure.SubEnum_SemanticMeasure Measure.SubEnum_SemanticOmega)
+         (@Measure.FreeOmegaObservableSemanticOmega Measure.SubEnum Measure.SubEnum_SemanticMeasure
+            Measure.SubEnum_SemanticOmega) B
+         (@Definition.free_omega_bind Measure.SubEnum A B mu
+            (fun x : A => @Definition.FORet Measure.SubEnum B (f x)))
 ```
 
 ### Logical assumptions (separate from capabilities)
@@ -946,15 +930,11 @@ ClassicalUniqueChoice.dependent_unique_choice :
 ```coq
 @SubEnum.subenum_atomic_handler_mdp
      : forall (E : Type -> Type) (R : Type)
-         (handler : forall X : Type,
-                    E X -> PTreeDefinition.ptree E TwoLevelMeasureSubEnum.SubEnum X),
-       @Atomic.atomic_handler E TwoLevelMeasureSubEnum.SubEnum
-         TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-         TwoLevelMeasureSubEnum.SubEnum_SemanticOmega handler ->
-       @MDP.mdp_handler E E TwoLevelMeasureSubEnum.SubEnum
-         TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-         TwoLevelMeasureSubEnum.SubEnum_SemanticMeasureCoreLaws
-         TwoLevelMeasureSubEnum.SubEnum_SemanticOmega handler R
+         (handler : forall X : Type, E X -> PTreeDefinition.ptree E Measure.SubEnum X),
+       @Atomic.atomic_handler E Measure.SubEnum Measure.SubEnum_SemanticMeasure
+         Measure.SubEnum_SemanticOmega handler ->
+       @MDP.mdp_handler E E Measure.SubEnum Measure.SubEnum_SemanticMeasure
+         Measure.SubEnum_SemanticMeasureCoreLaws Measure.SubEnum_SemanticOmega handler R
 ```
 
 ### Logical assumptions (separate from capabilities)
@@ -981,39 +961,29 @@ ClassicalUniqueChoice.dependent_unique_choice :
 ```coq
 @SubEnum.subenum_mdp_state_interp_atomic
      : forall (E : Type -> Type) (R : Type)
-         (handler : forall X : Type,
-                    E X -> PTreeDefinition.ptree E TwoLevelMeasureSubEnum.SubEnum X),
-       @Atomic.atomic_handler E TwoLevelMeasureSubEnum.SubEnum
-         TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-         TwoLevelMeasureSubEnum.SubEnum_SemanticOmega handler ->
-       forall t : PTreeDefinition.ptree E TwoLevelMeasureSubEnum.SubEnum R,
-       @MDPFragment.mdp_state E TwoLevelMeasureSubEnum.SubEnum
-         (FreeOmegaMeasure.FreeOmega TwoLevelMeasureSubEnum.SubEnum)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure TwoLevelMeasureSubEnum.SubEnum
-            TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-            TwoLevelMeasureSubEnum.SubEnum_SemanticOmega)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws
-            TwoLevelMeasureSubEnum.SubEnum TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-            TwoLevelMeasureSubEnum.SubEnum_SemanticMeasureCoreLaws
-            TwoLevelMeasureSubEnum.SubEnum_SemanticOmega)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure TwoLevelMeasureSubEnum.SubEnum)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega TwoLevelMeasureSubEnum.SubEnum
-            TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-            TwoLevelMeasureSubEnum.SubEnum_SemanticOmega) R t ->
-       @MDPFragment.mdp_state E TwoLevelMeasureSubEnum.SubEnum
-         (FreeOmegaMeasure.FreeOmega TwoLevelMeasureSubEnum.SubEnum)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasure TwoLevelMeasureSubEnum.SubEnum
-            TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-            TwoLevelMeasureSubEnum.SubEnum_SemanticOmega)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticMeasureCoreLaws
-            TwoLevelMeasureSubEnum.SubEnum TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-            TwoLevelMeasureSubEnum.SubEnum_SemanticMeasureCoreLaws
-            TwoLevelMeasureSubEnum.SubEnum_SemanticOmega)
-         (@FreeOmegaMeasure.FreeOmegaMixedMeasure TwoLevelMeasureSubEnum.SubEnum)
-         (@FreeOmegaMeasure.FreeOmegaObservableSemanticOmega TwoLevelMeasureSubEnum.SubEnum
-            TwoLevelMeasureSubEnum.SubEnum_SemanticMeasure
-            TwoLevelMeasureSubEnum.SubEnum_SemanticOmega) R
-         (@PTreeDefinition.PTree.interp E E TwoLevelMeasureSubEnum.SubEnum handler R t)
+         (handler : forall X : Type, E X -> PTreeDefinition.ptree E Measure.SubEnum X),
+       @Atomic.atomic_handler E Measure.SubEnum Measure.SubEnum_SemanticMeasure
+         Measure.SubEnum_SemanticOmega handler ->
+       forall t : PTreeDefinition.ptree E Measure.SubEnum R,
+       @MDPFragment.mdp_state E Measure.SubEnum (Definition.FreeOmega Measure.SubEnum)
+         (@Measure.FreeOmegaObservableSemanticMeasure Measure.SubEnum
+            Measure.SubEnum_SemanticMeasure Measure.SubEnum_SemanticOmega)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Measure.SubEnum
+            Measure.SubEnum_SemanticMeasure Measure.SubEnum_SemanticMeasureCoreLaws
+            Measure.SubEnum_SemanticOmega)
+         (@StructuralMeasure.FreeOmegaMixedMeasure Measure.SubEnum)
+         (@Measure.FreeOmegaObservableSemanticOmega Measure.SubEnum Measure.SubEnum_SemanticMeasure
+            Measure.SubEnum_SemanticOmega) R t ->
+       @MDPFragment.mdp_state E Measure.SubEnum (Definition.FreeOmega Measure.SubEnum)
+         (@Measure.FreeOmegaObservableSemanticMeasure Measure.SubEnum
+            Measure.SubEnum_SemanticMeasure Measure.SubEnum_SemanticOmega)
+         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Measure.SubEnum
+            Measure.SubEnum_SemanticMeasure Measure.SubEnum_SemanticMeasureCoreLaws
+            Measure.SubEnum_SemanticOmega)
+         (@StructuralMeasure.FreeOmegaMixedMeasure Measure.SubEnum)
+         (@Measure.FreeOmegaObservableSemanticOmega Measure.SubEnum Measure.SubEnum_SemanticMeasure
+            Measure.SubEnum_SemanticOmega) R
+         (@PTreeDefinition.PTree.interp E E Measure.SubEnum handler R t)
 ```
 
 ### Logical assumptions (separate from capabilities)

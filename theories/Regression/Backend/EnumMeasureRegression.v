@@ -6,9 +6,9 @@ Require Import Program.
 
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg rat.
 
-From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation.
 From PTree.Prob.Interface Require Import FrontierLift.
-From PTree.Prob.Backend Require Import FrontierLiftEnum.
+Require Import PTree.Prob.Backend.Enum.FrontierLift.
 From PTree.Core Require Import PTreeDefinition.
 
 Set Implicit Arguments.
@@ -16,7 +16,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum GRing.Theory.
-Import RatSubTypes.NonnegQNotations.
+Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
 #[local] Open Scope ring_scope.
 
 #[program] Definition reg_half : nnQ := [nn 1/2].

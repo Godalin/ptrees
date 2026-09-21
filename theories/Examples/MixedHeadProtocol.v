@@ -11,10 +11,10 @@ From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
-From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC EnumBindFacts EnumMap Coupling IndexedCoupling FrontierLiftEnum MeasureIterationEnum.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Bind PTree.Prob.Backend.Enum.Map PTree.Prob.Backend.Enum.Coupling PTree.Prob.Backend.Enum.IndexedCoupling PTree.Prob.Backend.Enum.FrontierLift PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
@@ -23,7 +23,7 @@ From PTree.Eq.Backend Require Import ProbabilisticTraceSubEnum.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import Enum EnumMap IndexedCoupling Coupling GRing.Theory Num.Theory Order.Theory.
+Import Enum PTree.Prob.Backend.Enum.Map IndexedCoupling PTree.Prob.Backend.Enum.Coupling GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope subenum_probability_scope.
 

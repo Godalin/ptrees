@@ -3,8 +3,8 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Logic Require Import ClassicalChoice ChoiceFacts.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure SemanticCoupling.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaNative FreeOmegaJointExtension.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed PTree.Prob.Interface.SemanticCoupling.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Native PTree.Prob.FreeOmega.JointExtension.
 From PTree.Eq Require Import PStrong.
 From PTree.Eq.Internal Require Import FiniteInternalPlan.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalNative FiniteInternalRoundCoupling.

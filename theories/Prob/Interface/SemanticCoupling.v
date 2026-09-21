@@ -1,7 +1,7 @@
 (** Role: Generic measure interfaces. Depends on probability interfaces; provides operations/laws, not tree semantics. *)
 Set Universe Polymorphism.
 From Coq.Logic Require Import ClassicalChoice.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

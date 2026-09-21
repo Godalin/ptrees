@@ -7,13 +7,13 @@ From Coq.Logic Require Import FunctionalExtensionality.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssralg rat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Interface Require Import MeasureIteration.
-From PTree.Prob.Backend Require Import EnumBindFacts.
-From PTree.Prob.Backend Require Import EnumMap MeasureIterationEnum.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
+Require Import PTree.Prob.Interface.Iteration.
+Require Import PTree.Prob.Backend.Enum.Bind.
+Require Import PTree.Prob.Backend.Enum.Map PTree.Prob.Backend.Enum.Iteration.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting UnifiedFrontier PTreeKernel PEutt.
 From PTree.Eq.Backend Require Import ProbabilisticTraceEnum.
 From PTree.Eq Require Import ProbabilisticTrace.
@@ -26,7 +26,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum.
-Import EnumMap.
+Import PTree.Prob.Backend.Enum.Map.
 Import GRing.Theory.
 Local Open Scope ring_scope.
 

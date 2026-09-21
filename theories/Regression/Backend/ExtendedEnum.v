@@ -5,11 +5,11 @@ From Coq.Logic Require Import FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg ssrnum order rat reals archimedean.
 From mathcomp.classical Require Import classical_sets set_interval.
 From mathcomp.analysis Require Import ereal sequences.
-From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaUpperExpectationEnum FreeOmegaUpperCouplingEnum FreeOmegaUpperContinuityEnum FreeOmegaUpperObservationEnum.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
+Require Import PTree.Prob.Backend.Enum.FreeOmega.UpperExpectation PTree.Prob.Backend.Enum.FreeOmega.UpperCoupling PTree.Prob.Backend.Enum.FreeOmega.UpperContinuity PTree.Prob.Backend.Enum.FreeOmega.UpperObservation.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

@@ -3,10 +3,10 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssralg ssrnum rat.
-From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum MeasureIterationEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Examples Require Import RandomWalk.
 Import Enum.
 Local Open Scope ring_scope.

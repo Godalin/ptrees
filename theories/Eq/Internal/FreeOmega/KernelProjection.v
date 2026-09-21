@@ -1,7 +1,7 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
 Set Universe Polymorphism.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaCoupling.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Coupling.
 From PTree.Eq Require Import PrimitiveStableHitting.
 From PTree.Eq.Internal.FreeOmega Require Import KernelCompletion.
 

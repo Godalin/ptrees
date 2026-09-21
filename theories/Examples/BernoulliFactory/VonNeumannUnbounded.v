@@ -7,19 +7,19 @@ Require Import Utf8 Program Ring Field Lia FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum order rat archimedean.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC EnumBindFacts.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Bind.
 From PTree.Prob.Interface Require Import FrontierLift.
-From PTree.Prob.Backend Require Import FrontierLiftEnum.
-From PTree.Prob.Interface Require Import MeasureIteration.
-From PTree.Prob.Backend Require Import MeasureIterationEnum RatGeometric.
+Require Import PTree.Prob.Backend.Enum.FrontierLift.
+Require Import PTree.Prob.Interface.Iteration.
+Require Import PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.Common.RatGeometric.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import Enum.
-Import EnumMap.
-Import RatSubTypes.NonnegQNotations.
+Import PTree.Prob.Backend.Enum.Map.
+Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
 Import GRing.Theory.
 Import Num.Theory.
 Import Order.Theory.

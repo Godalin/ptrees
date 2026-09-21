@@ -3,12 +3,12 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Classes Require Import RelationClasses.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaNative FreeOmegaRecovery FreeOmegaCoupling.
-From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaRecoverySubEnum.
-From PTree.Prob.Backend Require Import SemanticCouplingEnum.
-From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaEquivalenceJointSubEnum FreeOmegaNativeCouplingSubEnum.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Native PTree.Prob.FreeOmega.Recovery PTree.Prob.FreeOmega.Coupling.
+Require Import PTree.Prob.Backend.SubEnum.FreeOmega.Recovery.
+Require Import PTree.Prob.Backend.Enum.SemanticCoupling.
+Require Import PTree.Prob.Backend.SubEnum.FreeOmega.EquivalenceJoint PTree.Prob.Backend.SubEnum.FreeOmega.NativeCoupling.
 From PTree.Regression.Infrastructure Require Import FiniteInternalPlan.
 From PTree.Regression.Backend Require Import SubEnumRegression.
 From PTree.Regression.Infrastructure Require Import HiddenRandomState CouplingReferences.

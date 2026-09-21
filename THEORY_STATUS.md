@@ -40,8 +40,18 @@ Other edits are source Context/import hygiene. Five translation endpoints
 also shed the inherited functional-extensionality dependency. Stage 1–4
 contracts and FiniteInternal are untouched. The full build, public signature
 and logical audits, 26 tool tests, and a 17-module joint targeted kernel
-check passed locally. Pause for Gate C acceptance before the final
-whole-library kernel audit (Gate D).
+check passed locally at `05a2431`.
+
+The [Prob organization follow-up](docs/PROB_ORGANIZATION.md) precedes Gate D:
+six capability modules replace `TwoLevelMeasure`; seven implementation
+modules replace `FreeOmegaMeasure`; concrete probability code is grouped by
+native carrier. The exact source-conservation audit uses `05a2431`, and the
+Gate A/C capability snapshots remain frozen. This is an organization change,
+not the FreeOmega adequacy audit. Pause for acceptance of this follow-up
+before the final whole-library kernel audit (Gate D).
+Its local checks cover the full build, exact source conservation, all 306
+public/helper endpoints, 250 extracted constants, 34 audit-tool tests and a
+27-module targeted joint kernel check. The latter is not a full Gate D audit.
 
 | Component | Role / import surface |
 | --- | --- |
@@ -365,7 +375,7 @@ target signature `F`. The accepted atomic permutation profile and SubEnum
 atomic endpoints remain `E -> E`. Atomic handlers discharge the contract by unary
 coinduction, under an explicit total-head-map premise; abstract
 `SemanticTotalProperLaws` alone does not supply that premise.
-`Prob/Backend/FreeOmega/FreeOmegaTotalSubEnum.v` proves totality under **every** value map on
+`Prob/Backend/SubEnum/FreeOmega/Total.v` proves totality under **every** value map on
 SubEnum/FreeOmega by reducing total observations to unit observations.
 Consequently `MDPInterpSubEnum.v` supplies atomic MDP preservation without
 an extra client premise, including non-Dirac successor distributions and

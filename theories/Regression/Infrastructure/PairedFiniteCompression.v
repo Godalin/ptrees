@@ -5,12 +5,12 @@ Unset Automatic Proposition Inductives.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssralg ssrnum rat.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Backend Require Import DiscreteMC RatSubTypes.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
+Require Import PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Common.RatSubTypes.
 From PTree.Prob.Interface Require Import SemanticCoupling.
-From PTree.Prob.Backend.FreeOmega Require Import FreeOmegaCouplingEnum.
+Require Import PTree.Prob.Backend.Enum.FreeOmega.Coupling.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalJoint.
 From PTree.Eq Require Import PStrong UnifiedFrontier PTreeKernel.
 From PTree.Examples Require Import RandomWalk.

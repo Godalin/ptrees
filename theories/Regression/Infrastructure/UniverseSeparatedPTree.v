@@ -6,7 +6,7 @@ Set Universe Polymorphism.
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype choice ssralg ssrnum reals boolp classical_sets numfun lebesgue_integral.
 From mathcomp.analysis Require Import measure probability kernel measurable_realfun ereal.
-From PTree.Prob.Backend Require Import MathCompMeasure.
+Require Import PTree.Prob.Backend.MathComp.Kernel.
 
 Import GRing.Theory.
 #[local] Open Scope ring_scope.

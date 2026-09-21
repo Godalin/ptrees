@@ -10,11 +10,11 @@ Require Import Lia Ring Field.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
-From PTree.Prob.Backend Require Import RatSubTypes DiscreteMC.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureEnum TwoLevelMeasureSubEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
-From PTree.Prob.Backend Require Import MeasureIterationEnum RatGeometric.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
+Require Import PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.Common.RatGeometric.
 From PTree.Eq Require Import Shallow PStruct PStrong PEutt ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
@@ -212,7 +212,7 @@ Qed.
 End PassageControlFlow.
 
 Import Enum RatSubTypes GRing.Theory Order.Theory.
-Import RatSubTypes.NonnegQNotations.
+Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
 Local Open Scope ring_scope.
 Local Open Scope order_scope.
 

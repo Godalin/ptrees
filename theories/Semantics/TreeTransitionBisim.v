@@ -7,7 +7,7 @@ From Coq Require Import Program.
 From Coq.Classes Require Import RelationClasses.
 From Coinduction Require Import all.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.Semantics Require Import HeadTransition TreeTransition.
 Set Implicit Arguments.

@@ -103,7 +103,11 @@ def audit(before=None, after=None):
 
 
 if __name__ == "__main__":
-    changed = audit()
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--revision", help="Check an accepted historical target, e.g. 05a2431")
+    args = parser.parse_args()
+    changed = audit(after=frozen(args.revision)) if args.revision else audit()
     print(f"Gate C conservation passes: {len(changed)} reviewed hygiene/signature files; "
           "one regression plus its aggregate import; only three enumerated definitional bridge proofs simplified.")
     for path in changed:

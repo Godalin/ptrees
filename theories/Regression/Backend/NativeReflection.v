@@ -2,10 +2,10 @@
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Lia.
-From PTree.Prob.Interface Require Import TwoLevelMeasure SemanticCoupling.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed PTree.Prob.Interface.SemanticCoupling.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.FreeOmega Require Import FreeOmegaNative FreeOmegaRecovery.
+Require Import PTree.Prob.FreeOmega.Native PTree.Prob.FreeOmega.Recovery.
 From PTree.Eq.Internal Require Import FiniteInternalPlan.
 From PTree.Eq Require Import PStrong.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalNative.
@@ -382,7 +382,7 @@ Qed.
 End AttenuatedDirac.
 
 From mathcomp Require Import reals.
-From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum MathCompMeasure TwoLevelMeasureMathComp.
+Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.MathComp.Kernel PTree.Prob.Backend.MathComp.Measure.
 
 (** Both maintained node backends satisfy the necessary relational
     left-unit law.  For MathComp we use its existing ordinary kernel law,

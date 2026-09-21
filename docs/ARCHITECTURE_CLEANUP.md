@@ -12,7 +12,8 @@ review. No StateInterp or FreeOmega adequacy development starts here.
 | A | unique ownership policy, complete module inventory, compiled capability baseline | accepted at `2258907` |
 | B | migrate/split modules, strict facades, role comments, experimental disposition | accepted at `20e6ff2` |
 | B follow-up | CaseStudies → Examples, synchronized import/audit/docs surface | accepted at `2af47aa` |
-| C | minimize capabilities, remove unused contexts/imports, audit the frozen public endpoint scope | locally validated; awaiting acceptance |
+| C | minimize capabilities, remove unused contexts/imports, audit the frozen public endpoint scope | baseline `05a2431` |
+| Prob follow-up | group native backends, split capability/completion modules, exact source/signature conservation | see [organization record](PROB_ORGANIZATION.md) |
 | D | final dependency checks, facade regressions, full joint kernel audit and scope review | pending |
 
 Pause at each gate. Gate A deliberately changes no `.v` file: it makes the
@@ -35,7 +36,7 @@ meaning: it points from a component to the components it **uses**.
 | `Core` | tree syntax, observe, primitive bind/iter/interp/translate, syntax utilities | external foundational libraries; no local measure or behavioral module |
 | `Prob/Interface` | operations, laws and measure-only relational interfaces | other probability infrastructure; no PTree syntax |
 | `Prob/FreeOmega` | formal omega completion and measure-only proofs | generic probability interfaces; no concrete backend or PTree theory |
-| `Prob/Backend` | concrete measure implementations and specialized FreeOmega realization proofs | probability infrastructure; no tree equality |
+| `Prob/Backend/{Common,Enum,SubEnum,MathComp}` | shared arithmetic/combinatorics or named native implementations; concrete completion proofs stay under that carrier's `FreeOmega/` | probability infrastructure; no tree equality; Common has no concrete-carrier dependency |
 | `Prob/Legacy` | still-used weighted/old measure adapters | probability infrastructure; not the canonical probability contract |
 | `Eq` | stable hitting, peutt, stronger structural proof relations, probability validity, algebra | Core, Prob; not comparison semantics or interpreter compositionality |
 | `Eq/Internal` | execution certificates and schedule/kernel adequacy proof machinery | Core, Prob, lower-level Eq infrastructure; no new equality API |
@@ -53,7 +54,7 @@ interpreter would restore a reverse edge.
 
 `API/Enum` and `API/SubEnum` are tree-facing convenience adapters. They do
 not belong in measure-only `Prob/Backend`: `Prob mu Ret` already mentions
-PTree syntax. Conversely, `FreeOmegaTotalSubEnum` is measure-only and does
+PTree syntax. Conversely, `Prob/Backend/SubEnum/FreeOmega/Total` is measure-only and does
 belong in the concrete probability realization layer.
 
 ### Generic, canonical model, concrete endpoint
@@ -87,7 +88,7 @@ modules using Coq's `.PTree.theory.d`. The integration harness imports all
 
 The following findings record the accepted starting point. Gate B implements
 these dispositions; the [current inventory](ARCHITECTURE_AUDIT.md) covers
-209 modules (including Gate C's capability regression) and enforces the dependency directions. Declaration inspection
+220 modules after the Prob organization follow-up (209 at Gate C) and enforces the dependency directions. Declaration inspection
 also refined four placements: `Coupling`/`IndexedCoupling` are Enum-specific,
 `RelLift` is a legacy discrete-interface adapter, and both
 `FreeOmegaDisintegration` and `KernelDisintegration` specialize SubEnum.

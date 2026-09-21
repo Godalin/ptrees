@@ -4,9 +4,9 @@ Set Warnings "-ambiguous-paths".
 From Coq.Program Require Import Equality.
 From mathcomp Require Import eqtype.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import TwoLevelMeasure.
-From PTree.Prob.Backend Require Import TwoLevelMeasureSubEnum SemanticCouplingEnum.
-From PTree.Prob.FreeOmega Require Import FreeOmegaMeasure FreeOmegaCoupling.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
+Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.Enum.SemanticCoupling.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Coupling.
 From PTree.Eq.Internal Require Import FiniteInternal.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PEutt PStrong.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalJoint FiniteInternalJointReference.
@@ -186,9 +186,9 @@ Lemma exchange_fair_both_values (P : bool -> Prop) :
   P true /\ P false.
 Proof.
   intro Hae.
-  change (FrontierLiftEnum.enum_ae reg_fair P) in Hae.
-  assert (Hhalf : reg_half <> RatSubTypes.nnQ_0).
-  { intro H. apply (f_equal RatSubTypes.Qval) in H. discriminate H. }
+  change (PTree.Prob.Backend.Enum.FrontierLift.enum_ae reg_fair P) in Hae.
+  assert (Hhalf : reg_half <> PTree.Prob.Backend.Common.RatSubTypes.nnQ_0).
+  { intro H. apply (f_equal PTree.Prob.Backend.Common.RatSubTypes.Qval) in H. discriminate H. }
   split; apply (Hae reg_half); cbn; auto.
 Qed.
 
