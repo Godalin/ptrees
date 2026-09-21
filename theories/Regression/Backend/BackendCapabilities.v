@@ -19,6 +19,50 @@ Unset Printing Implicit Defensive.
 
 Import Enum.
 
+(** Native-backend independent probes. In particular [NO] supplies operations,
+    not native omega completeness; neither native BindLaws nor OmegaLaws is
+    assumed. These definitions test the existing completion, not new laws. *)
+Section GenericCompletionProfile.
+Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
+  `{NC : @SemanticMeasureCoreLaws MN NI} `{NO : @SemanticOmega MN NI}.
+Let MF := FreeOmega MN.
+Let FI := FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO).
+Let FO := FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO).
+Definition generic_completion_core : @SemanticMeasureCoreLaws MF FI := _.
+Definition generic_completion_order : @SemanticMeasureOrderLaws MF FI FO := _.
+Definition generic_completion_omega : @SemanticOmegaLaws MF FI FO := _.
+Definition generic_completion_total : @SemanticTotalProperLaws MF FI FO := _.
+Definition generic_completion_cofinal : @SemanticOmegaCofinalityLaws MF FI FO := _.
+Definition generic_completion_mixed_omega :
+  @MixedMeasureOmegaLaws MN MF NI FI FreeOmegaMixedMeasure FO := _.
+Section AELift.
+Context `{NAL : @SemanticMeasureAELiftLaws MN NI}.
+Definition generic_completion_bind : @SemanticMeasureBindLaws MF FI := _.
+Definition generic_completion_mixed :
+  @MixedMeasureLaws MN MF NI FI FreeOmegaMixedMeasure := _.
+End AELift.
+Section Unit.
+Context `{ND : @SemanticMeasureDiracAELaws MN NI}.
+Definition generic_completion_unit :
+  @MixedMeasureUnitLaws MN MF NI FI FreeOmegaMixedMeasure := _.
+End Unit.
+Section Flatten.
+Context `{NB : @SemanticMeasureBindAEExactLaws MN NI}.
+Definition generic_completion_flatten :
+  @MixedMeasureNodeBindLaws MN MF NI FI FreeOmegaMixedMeasure := _.
+End Flatten.
+Section Fubini.
+Context `{NCA : @SemanticMeasureCouplingAELaws MN NI}.
+Definition generic_completion_fubini : @SemanticOmegaFubiniLaws MF FI FO := _.
+Section Countable.
+Context `{NAC : @SemanticMeasureCountableAELaws MN NI}.
+Definition generic_completion_diagonal : @SemanticMeasureDiagonalLaws MF FI FO := _.
+Definition generic_completion_omega_ae : @SemanticOmegaAELaws MF FI FO := _.
+Definition generic_completion_coupling_ae : @SemanticMeasureCouplingAELaws MF FI := _.
+End Countable.
+End Fubini.
+End GenericCompletionProfile.
+
 (** Compile-time audit of the maintained two-level backend profiles.
 
     Structure and elementary AE facts belong to the node measure [MN].
