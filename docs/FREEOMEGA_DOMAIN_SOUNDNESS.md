@@ -1,7 +1,8 @@
 # FreeOmega domain soundness: design review
 
-Status: **design proposed, awaiting acceptance**. Source baseline: `3120df0`.
-This review introduces no Rocq definitions, instances, axioms or theorems.
+Status: **DS0 accepted with the follow-up staging refinements below**.
+Source baseline: `3120df0`; design review commit: `466429d`.
+The original review introduced no Rocq definitions, instances, axioms or theorems.
 It precedes Gate D. Implementation proceeds in separately accepted stages;
 neither StateInterp nor another probability-directory reorganization starts here.
 
@@ -239,12 +240,24 @@ Missing mass requires precise wording:
 | Stage | Deliverable required before pausing |
 | --- | --- |
 | DS0 (this review) | Independent domain choice; raw-term/admissibility boundary; corrected lifting and missing-mass claims |
-| DS1 | Concrete `OmegaVal`, standard-measure correspondence, pointed omega-CPO and both bind continuities; no FreeOmega dependency |
+| DS1a | Concrete evaluator/laws `OmegaVal`, order, pointed omega-CPO up to extensional equality, both bind continuities and diagonal law; no FreeOmega/interface dependency |
+| DS1b | Independent MathComp standard-measure correspondence, optionally through a cemetery-point carrier; only then is DS1 a standard probability model |
 | DS2 | SubEnum native interpretation; raw-evaluator bridge; admissibility/constructor/bind/order theorems; non-increasing Boolean negative test |
-| DS3 | Quotient equality soundness and admissibility transport; countable-support and actual coupling realization, with explicit assumptions |
+| DS3 | Quotient equality soundness and admissibility transport through the existing all-raw evaluator equality theorem |
 | DS4 | Independent finite-kernel commuting theorem and stable-hitting denotational adequacy for SubEnum; irrational-limit example |
-| DS5 | MathComp native adapter and its explicitly scoped FreeOmega soundness results; do not report SubEnum-only results as generic |
+| DS5a | Countable support and general qlift joint-coupling realization, after stable-hitting adequacy rather than blocking it |
+| DS5b | MathComp native adapter and explicitly scoped soundness results; do not report SubEnum-only results as generic |
 | DS6 | Adequacy dependency/liveness review, justified pruning, then Gate D |
+
+The accepted implementation refinement uses real-valued evaluators with laws
+restricted to bounded tests (rather than a unit-interval subtype everywhere).
+It packages the existing `free_omega_upper` directly with law proofs; no
+choice of a representative and no second recursive evaluator are needed.
+There is **no second free completion / free probability monad / syntactic
+domain**. The domain and its soundness adapters form a one-way validation
+layer, excluded from the mainline's transitive dependencies.
+[DS1a implementation and verification](DOMAIN_DS1A.md) is now ready for review;
+DS1b and the FreeOmega-specific stages have not started.
 
 Names such as `free_omega_denote_approx`, `free_omega_denote_bind`,
 `free_omega_denote_lub`, `free_omega_sem_eq_sound`,
@@ -261,7 +274,7 @@ positive and negative contract regressions; pause for acceptance. Preserve
 the frozen historical source-conservation audits against their accepted
 revisions instead of weakening them to tolerate new mathematical edits.
 
-## 9. External anchors and this review's evidence
+## 9. External anchors and the original DS0 review's evidence
 
 [Alea's author documentation](https://www.lri.fr/~paulin/ALEA/) describes
 bounded expectation functionals with measure laws and continuity, and an

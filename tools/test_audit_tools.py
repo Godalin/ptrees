@@ -10,9 +10,40 @@ import audit_migration as migration
 import audit_gate_c as gate_c
 import audit_public_capabilities as public
 import audit_prob_organization as prob
+import audit_domain as domain
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_external_domain_is_independent(self):
+        domain = "Prob/Domain/Expectation"
+        self.assertEqual(architecture.ownership(domain)[:2],
+                         ("Prob/Domain", "external validation"))
+        for dependency in ["Prob/Interface/Measure", "Prob/FreeOmega/Definition",
+                           "Core/PTreeDefinition", "Eq/PEutt", "Prob/Backend/SubEnum/Measure"]:
+            self.assertFalse(architecture.permitted(domain, dependency))
+        self.assertTrue(architecture.permitted("Prob/Domain/MeasureModel", domain))
+
+    def test_external_validation_is_not_mainline_infrastructure(self):
+        for source in ["Eq/PEutt", "API/Generic", "Examples/RandomWalk",
+                       "Interp/FreeOmega/Guarded", "Prob/Backend/SubEnum/Measure",
+                       "Prob/Legacy/Discrete", "Semantics/MDPFragment"]:
+            for target in ["Prob/Domain/Expectation",
+                           "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",
+                           "Eq/Backend/StableHittingDomainSubEnum"]:
+                self.assertFalse(architecture.permitted(source, target))
+        self.assertTrue(architecture.permitted("Prob/Backend/SubEnum/Domain", "Prob/Domain/Expectation"))
+        self.assertTrue(architecture.permitted("Regression/Probability/OmegaVal", "Prob/Domain/Expectation"))
+
+    def test_external_boundary_checks_transitive_closure(self):
+        graph = {"Examples/RandomWalk": {"Prob/Backend/SubEnum/Measure"},
+                 "Prob/Backend/SubEnum/Measure": {"Prob/Backend/SubEnum/Domain"},
+                 "Prob/Backend/SubEnum/Domain": {"Prob/Domain/Expectation"},
+                 "Prob/Domain/Expectation": set()}
+        with self.assertRaises(AssertionError):
+            architecture.check_external_validation_boundary(graph)
+        graph["Prob/Backend/SubEnum/Measure"] = set()
+        architecture.check_external_validation_boundary(graph)
+
     def test_examples_owns_applications_not_regressions(self):
         self.assertEqual(architecture.ownership("Examples/RandomWalk")[:2],
                          ("Examples", "application"))
@@ -86,6 +117,28 @@ class ArchitectureTests(unittest.TestCase):
     def test_unknown_experiment_requires_review(self):
         with self.assertRaises(AssertionError):
             architecture.ownership("Experimental/UnreviewedTheory")
+
+
+class DomainAuditTests(unittest.TestCase):
+    def test_no_semantic_interface_premise(self):
+        with patch.object(capabilities, "query", return_value=[
+                ("endpoint", "SemanticMeasure M -> True", "Closed under the global context")]):
+            with self.assertRaises(AssertionError):
+                domain.report()
+
+    def test_new_or_unparsed_axiom_is_rejected(self):
+        for assumptions in ["Axioms:\nshortcut : False", "Axioms:\nunparsed"]:
+            with patch.object(capabilities, "query", return_value=[("endpoint", "True", assumptions)]):
+                with self.assertRaises(AssertionError):
+                    domain.report()
+
+    def test_domain_query_does_not_mutate_historical_audit_scope(self):
+        groups, endpoints = capabilities.GROUPS, capabilities.ENDPOINTS
+        with patch.object(capabilities, "query", side_effect=SystemExit("query failure")):
+            with self.assertRaises(SystemExit):
+                domain.report()
+        self.assertIs(capabilities.GROUPS, groups)
+        self.assertIs(capabilities.ENDPOINTS, endpoints)
 
 
 class MigrationTests(unittest.TestCase):

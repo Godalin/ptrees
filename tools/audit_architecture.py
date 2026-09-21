@@ -12,6 +12,21 @@ INTERNAL_REASON = (
 )
 
 
+def external_validation(path):
+    """Independent domain and the explicitly planned one-way adapters.
+
+    Classify adapters before they exist so a future soundness file cannot
+    silently enter the mainline through an otherwise ordinary Backend edge.
+    """
+    return path.startswith("Prob/Domain/") or path in {
+        "Prob/Backend/SubEnum/Domain", "Prob/Backend/MathComp/Domain",
+        "Prob/Backend/SubEnum/FreeOmega/Admissibility",
+        "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",
+        "Prob/Backend/SubEnum/FreeOmega/CouplingSoundness",
+        "Eq/Backend/StableHittingDomainSubEnum",
+    }
+
+
 def ownership(path):
     if path.startswith(("CaseStudies/", "Events/")):
         raise AssertionError("Unsupported top-level namespace: " + path)
@@ -40,6 +55,7 @@ def ownership(path):
             return owner + "/FreeOmega", family, "FreeOmega over a concrete native carrier, not generic FreeOmega MN"
         return owner, family, "native representation, laws or realization adapters"
     for prefix, profile, disposition in (
+        ("Prob/Domain", "external validation", "independent mathematical domain; not a free completion or mainline premise"),
         ("Prob/Interface", "generic", "operation/law interfaces"),
         ("Prob/FreeOmega", "FreeOmega", "canonical measure model, not a concrete native backend"),
         ("Prob/Legacy", "weighted legacy", "explicit retained clients; not canonical probability"),
@@ -64,6 +80,11 @@ def ownership(path):
 def permitted(module, dependency):
     def under(*prefixes):
         return any(dependency.startswith(p + "/") for p in prefixes)
+    if external_validation(dependency) and not (
+            external_validation(module) or module.startswith("Regression/")):
+        return False
+    if module.startswith("Prob/Domain/"):
+        return under("Prob/Domain")
     # A generic theorem layer may not silently fix its observable carrier.
     if ownership(module)[1] == "generic" and ownership(dependency)[1] == "FreeOmega":
         return False
@@ -80,12 +101,12 @@ def permitted(module, dependency):
     if module.startswith("Prob/Backend/Common/"):
         return under("Prob/Interface", "Prob/Backend/Common")
     if module.startswith("Prob/Backend/MathComp/"):
-        return under("Prob/Interface", "Prob/FreeOmega", "Prob/Backend/Common", "Prob/Backend/MathComp")
+        return under("Prob/Interface", "Prob/FreeOmega", "Prob/Backend/Common", "Prob/Backend/MathComp", "Prob/Domain")
     if module.startswith(("Prob/Backend/Enum/", "Prob/Backend/SubEnum/")):
         # SubEnum is a validated Enum carrier, not an unrelated implementation.
         # Realization/observation adapters legitimately cross this boundary.
         return under("Prob/Interface", "Prob/FreeOmega", "Prob/Backend/Common",
-                     "Prob/Backend/Enum", "Prob/Backend/SubEnum", "Prob/Legacy")
+                     "Prob/Backend/Enum", "Prob/Backend/SubEnum", "Prob/Legacy", "Prob/Domain")
     if module.startswith("Prob/Legacy/"):
         return under("Prob")
     if module.startswith("Eq/"):
@@ -130,6 +151,14 @@ def check_auxiliary_boundary(edges):
     assert not internal, "Formal mainline depends on auxiliary internal machinery: " + str(sorted(internal))
 
 
+def check_external_validation_boundary(edges):
+    roots = {m for m in edges if m.startswith(
+        ("API/", "Eq/FreeOmega/", "Interp/", "Examples/"))}
+    roots |= {m for m in ("PTree", "Eq/PEutt") if m in edges}
+    leaked = {m for m in closure(edges, roots) if external_validation(m)}
+    assert not leaked, "Mainline depends on external validation: " + str(sorted(leaked))
+
+
 def graph():
     paths = {p.relative_to(THEORIES).with_suffix("").as_posix() for p in THEORIES.rglob("*.v")}
     edges = {p: set() for p in paths}
@@ -155,6 +184,7 @@ def graph():
         for dep in deps:
             assert permitted(module, dep), "Forbidden ownership edge: " + module + " -> " + dep
     check_auxiliary_boundary(edges)
+    check_external_validation_boundary(edges)
     return edges
 
 
@@ -180,6 +210,8 @@ def report():
         "- No maintained library imports Regression, Examples or Experimental.",
         "- Cases do not depend on tests. Experimental has no remaining source module.", "",
         "- The peutt/Interp/public-facade dependency closure contains no Eq/Internal module.", "",
+        "- Prob/Domain depends only on mathematical libraries and itself, never the existing probability interfaces or FreeOmega.",
+        "- The PTree/API/peutt/Eq-FreeOmega/Interp/Examples dependency closure contains no external Domain/Soundness validation module.", "",
         "This is an import-graph check, not declaration-use liveness, capability minimality, "
         "FreeOmega adequacy, or the final whole-library kernel audit.", "",
         "## Complete module ownership", "",
