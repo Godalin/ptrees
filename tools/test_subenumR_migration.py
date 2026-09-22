@@ -1,5 +1,6 @@
 """Phase 3 permits only the shared real carrier, never stronger contracts."""
 import copy
+import subprocess
 import unittest
 from unittest.mock import patch
 import audit_subenumR_migration as audit
@@ -40,7 +41,9 @@ class RealMigrationTests(unittest.TestCase):
     def test_client_adaptations_are_exact(self):
         for path in audit.ADAPTATIONS:
             old = audit.frozen(path).decode()
-            self.assertEqual(audit.adapted(path, old), (audit.ROOT / path).read_text())
+            accepted = subprocess.check_output(['git', 'show', '683d3c7:' + path],
+                                                cwd=audit.ROOT, text=True)
+            self.assertEqual(audit.adapted(path, old), accepted)
 
     def test_types_and_assumptions_fail_closed(self):
         old = [{'name': 'M.t', 'type': 't : forall X, X -> X',

@@ -8,6 +8,7 @@ From Coq Require Import List.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals boolp.
 From PTree.Prob.Interface Require Import Measure AE Coupling.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure.
+From PTree.Prob.Backend.Common Require Import FiniteSupport.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -34,12 +35,7 @@ Lemma real_enum_expect_entry_le {A} (mu : list (R * A)) f p x :
   real_enum_nonnegative mu -> (forall y, 0 <= f y) ->
   List.In (p,x) mu -> p * f x <= real_enum_expect f mu.
 Proof.
-  induction mu as [|[q y] tl IH]; intros Hnn Hf Hin; first contradiction.
-  have Htl : real_enum_nonnegative tl := fun r z Hz => Hnn r z (or_intror Hz).
-  rewrite real_enum_expect_cons; destruct Hin as [He|Hin].
-  - inversion He; subst; rewrite lerDl; exact: real_enum_expect_nonnegative.
-  - apply: le_trans (IH Htl Hf Hin) _.
-    rewrite lerDr; apply mulr_ge0; [exact (Hnn q y (or_introl (Logic.eq_refl _)))|exact (Hf y)].
+  exact: finite_expect_entry_le.
 Qed.
 
 Definition real_indicator (P : Prop) : R := if asbool P then 1 else 0.

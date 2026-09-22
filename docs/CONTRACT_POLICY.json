@@ -1063,6 +1063,16 @@
       "atom_observations_agree",
       "ordinary_q_to_r_mass",
       "ordinary_q_to_r_bind"
+    ],
+    "theories/Regression/Backend/FiniteSupport.v": [
+      "ordinary_rat_zero_atom",
+      "real_positive_atom",
+      "function_values_have_indicator_support",
+      "duplicate_zero_entries",
+      "negative_cancellation_has_zero_atom",
+      "negative_cancellation_not_nonnegative",
+      "zero_atom_without_nonnegative_cannot_kill_entries",
+      "high_carrier_indicator_support"
     ]
   }
 }

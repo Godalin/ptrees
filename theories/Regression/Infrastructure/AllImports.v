@@ -95,6 +95,7 @@ Require PTree.Prob.Backend.Common.FinitePruning.
 Require PTree.Prob.Backend.Common.FiniteRationalTransport.
 Require PTree.Prob.Backend.Common.FiniteScalarMap.
 Require PTree.Prob.Backend.Common.FiniteSubdist.
+Require PTree.Prob.Backend.Common.FiniteSupport.
 Require PTree.Prob.Backend.Common.RatGeometric.
 Require PTree.Prob.Backend.Common.RatSubTypes.
 Require PTree.Prob.Backend.Common.RealSubTypes.
@@ -206,6 +207,7 @@ Require PTree.Regression.Backend.BackendCapabilities.
 Require PTree.Regression.Backend.CouplingRealization.
 Require PTree.Regression.Backend.EnumQMeasureRegression.
 Require PTree.Regression.Backend.ExtendedEnumQ.
+Require PTree.Regression.Backend.FiniteSupport.
 Require PTree.Regression.Backend.FreeOmegaEscapingMass.
 Require PTree.Regression.Backend.FreeOmegaLimitSafety.
 Require PTree.Regression.Backend.FreeOmegaUpperContracts.
