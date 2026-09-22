@@ -1033,6 +1033,25 @@
       "checked_prune_bound",
       "general_discard_can_lose_mass",
       "large_carrier_prune"
+    ],
+    "theories/Regression/Backend/RationalPresentation.v": [
+      "native_position_exact",
+      "native_entry_exact",
+      "native_positions_exact",
+      "native_positions_use_shared",
+      "native_decode_exact",
+      "native_subdistribution_raw_exact",
+      "rational_decoded_presentation",
+      "presentation_retains_every_slot",
+      "presentation_indices_not_values",
+      "presentation_duplicate_zero_roundtrip",
+      "presentation_does_not_require_inhabitant",
+      "signed_observable_preserved",
+      "shared_subdistribution_mass",
+      "shared_subdistribution_bound",
+      "shared_subdistribution_decode",
+      "shared_function_carrier",
+      "large_carrier_presentation"
     ]
   }
 }

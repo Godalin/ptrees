@@ -6,6 +6,7 @@ From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype 
 Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.FiniteTransport PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.EnumQ.IndexedCoupling.
+From PTree.Prob.Backend.Common Require Import FinitePresentation.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -16,26 +17,20 @@ Local Open Scope ring_scope.
 (** Positions, not values, form the finite carrier.  In particular this
     representation needs neither an inhabitant nor decidable equality on A,
     and retains duplicate entries and zero weights. *)
-Definition enumQ_position {A} (mu : EnumQ A) := 'I_(size mu).
+Definition enumQ_position {A} (mu : EnumQ A) := finite_position mu.
 Definition enumQ_position_entry {A} (mu : EnumQ A) (i : enumQ_position mu) :=
-  tnth (in_tuple mu) i.
+  finite_position_entry mu i.
 Arguments enumQ_position_entry {A} mu i.
-Definition enumQ_position_weight {A} (mu : EnumQ A) i := (enumQ_position_entry mu i).1.
-Definition enumQ_position_value {A} (mu : EnumQ A) i := (enumQ_position_entry mu i).2.
+Definition enumQ_position_weight {A} (mu : EnumQ A) (i : enumQ_position mu) := finite_position_weight mu i.
+Definition enumQ_position_value {A} (mu : EnumQ A) (i : enumQ_position mu) := finite_position_value mu i.
 Arguments enumQ_position_weight {A} mu i.
 Arguments enumQ_position_value {A} mu i.
 Definition enumQ_positions {A} (mu : EnumQ A) : EnumQ (enumQ_position mu) :=
-  finite_weighted_enumQ (enumQ_position_weight mu) id.
+  finite_positions mu.
 
 Lemma enumQ_positions_decode {A} (mu : EnumQ A) :
   emap (enumQ_position_value mu) (enumQ_positions mu) = mu.
-Proof.
-  rewrite /enumQ_positions finite_weighted_enumQ_map /finite_weighted_enumQ.
-  transitivity (map (tnth (in_tuple mu)) (enum 'I_(size mu))).
-  - apply eq_map=> i. unfold enumQ_position_weight, enumQ_position_value, enumQ_position_entry.
-    by case: (tnth (in_tuple mu) i).
-  - exact: map_tnth_enum.
-Qed.
+Proof. exact: finite_positions_decode. Qed.
 
 Lemma enumQ_positions_subprob {A} (mu : SubEnumQ A) :
   enumQ_subprob (enumQ_positions (subenumQ_raw mu)).
