@@ -1,13 +1,15 @@
 (** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 
 Require Import Utf8 Ring Field Lia Lra FunctionalExtensionality.
 
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq ssralg ssrnum order rat.
 
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
+Require Import PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Prob.Interface Require Import FrontierLift.
 Require Import PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Iteration.
@@ -36,9 +38,9 @@ Definition binary_oracle := nat -> bool.
 Definition oracle_coin_transition (qbit : binary_oracle) (n : nat) :
     EnumQ (nat + bool) :=
   if qbit n then
-    [:: (one_div_two, inr true); (one_div_two, inl n.+1)]
+    unif2 (inr true) (inl n.+1)
   else
-    [:: (one_div_two, inl n.+1); (one_div_two, inr false)].
+    unif2 (inl n.+1) (inr false).
 
 Definition oracle_coin_step (qbit : binary_oracle) (n : nat) :
     ptree real_oracle_coinE EnumQ (nat + bool) :=
@@ -60,7 +62,7 @@ Lemma oracle_transition_total qbit n :
     (oracle_coin_transition qbit n) = 1.
 Proof.
   rewrite /oracle_coin_transition.
-  case: (qbit n); rewrite /= !mulr1 !addr0 -mulrDl.
+  case: (qbit n); rewrite enumQ_expect_unif2 /one_div_two /= !mulr1 !addr0 -mulrDl.
   all: change ((2 : rat) / 2 = 1).
   all: by rewrite divrr // unitfE pnatr_eq0.
 Qed.
@@ -69,7 +71,7 @@ Lemma oracle_transition_continue qbit n :
   enumQ_expect oracle_continue (oracle_coin_transition qbit n) = 1 / 2.
 Proof.
   rewrite /oracle_coin_transition.
-  by case: (qbit n); rewrite /= !mulr1 !mulr0 !addr0 ?add0r.
+  by case: (qbit n); rewrite enumQ_expect_unif2 /one_div_two /= !mulr1 !mulr0 !addr0 ?add0r.
 Qed.
 
 Lemma rat_half_add : (1 / 2 : rat) + 1 / 2 = 1.
@@ -111,9 +113,9 @@ Lemma oracle_iter_true_prefix qbit fuel n :
 Proof.
   elim: fuel n=> [|fuel IH] n; first reflexivity.
   rewrite /= enumQ_expect_bind /oracle_coin_transition.
-  case E: (qbit n); rewrite /=.
-  - by rewrite /= mulr1 IH mulrDr mulr1 mulr0 !addr0.
-  - by rewrite /= mulr0 add0r IH !addr0.
+  case E: (qbit n); rewrite enumQ_expect_unif2 /one_div_two /= !enumQ_expect_ret /oracle_true_indicator /=.
+  - by rewrite IH mulr1 addr0.
+  - by rewrite IH mulr0 !addr0 add0r.
 Qed.
 
 Lemma oracle_iter_total_mass qbit fuel n :
@@ -124,7 +126,7 @@ Proof.
   elim: fuel n=> [|fuel IH] n.
   - by rewrite /= expr0 subrr.
   - rewrite /= enumQ_expect_bind /oracle_coin_transition.
-    case: (qbit n); rewrite /= IH.
+    case: (qbit n); rewrite enumQ_expect_unif2 /one_div_two /= enumQ_expect_ret IH.
     all: rewrite !mulr1 !addr0 exprS.
     - exact: rat_half_contract.
     - rewrite addrC. exact: rat_half_contract.

@@ -1,12 +1,14 @@
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 
 Require Import Program.
 
-From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg rat.
+From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum rat.
 
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
+Require Import PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Prob.Interface Require Import FrontierLift.
 Require Import PTree.Prob.Backend.EnumQ.FrontierLift.
 From PTree.Core Require Import PTreeDefinition.
@@ -16,42 +18,37 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import EnumQ GRing.Theory.
-Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
 #[local] Open Scope ring_scope.
 
-#[program] Definition reg_half : nnQ := [nn 1/2].
-#[program] Definition reg_quarter : nnQ := [nn 1/4].
+Definition reg_half : rat := 1/2.
+Definition reg_quarter : rat := 1/4.
 
-Lemma reg_half_val : Qval reg_half = (1 / 2 : rat).
+Lemma reg_half_val : reg_half = (1 / 2 : rat).
 Proof. reflexivity. Qed.
 
-Lemma reg_quarter_val : Qval reg_quarter = (1 / 4 : rat).
+Lemma reg_quarter_val : reg_quarter = (1 / 4 : rat).
 Proof. reflexivity. Qed.
 
 Definition reg_fair : EnumQ bool :=
-  [:: (reg_half, false); (reg_half, true)].
+  unif2 false true.
 
 Definition reg_fair_reordered : EnumQ bool :=
-  [:: (reg_half, true); (reg_half, false)].
+  unif2 true false.
 
-Definition reg_fair_split : EnumQ bool :=
-  [:: (reg_quarter, false); (reg_quarter, false);
-      (reg_quarter, true); (reg_quarter, true)].
+Definition reg_fair_split : EnumQ bool.
+Proof.
+  refine (enumQ_of_list (mu := [:: (reg_quarter, false); (reg_quarter, false);
+      (reg_quarter, true); (reg_quarter, true)]) _).
+  intros p x [He|[He|[He|[He|[]]]]]; inversion He; subst; by vm_compute.
+Defined.
 
 Lemma reg_fair_reordered_eqenum :
   reg_fair ==EnumQ reg_fair_reordered.
-Proof.
-  move=> b; case: b; rewrite /reg_fair /reg_fair_reordered /acc_mass /=.
-  all: apply val_inj; cbn; ring_to_rat; reflexivity.
-Qed.
+Proof. intros []; by vm_compute. Qed.
 
 Lemma reg_fair_split_eqenum :
   reg_fair ==EnumQ reg_fair_split.
-Proof.
-  move=> b; case: b;
-    rewrite /reg_fair /reg_fair_split /acc_mass /=.
-  all: apply val_inj; cbn; ring_to_rat; reflexivity.
-Qed.
+Proof. intros []; by vm_compute. Qed.
 
 (** Ordering is representation-visible but measure-invisible. *)
 Lemma reg_reordering_not_repr_eq :
@@ -96,24 +93,21 @@ Definition reg_dirac_program : ptree regE EnumQ bool :=
 
     is weakly equivalent to [1/2 A + 1/4 B + 1/4 C]. *)
 Definition reg_inner (side : bool) : EnumQ nat :=
-  if side then [:: (reg_half, 0); (reg_half, 2)]
-  else [:: (reg_half, 0); (reg_half, 1)].
+  if side then unif2 0 2 else unif2 0 1.
 
 Definition reg_nested_program : ptree regE EnumQ nat :=
   Prob reg_fair (fun side =>
     Prob (reg_inner side) (fun outcome => Ret outcome)).
 
-Definition reg_merged_three : EnumQ nat :=
-  [:: (reg_half, 0); (reg_quarter, 1); (reg_quarter, 2)].
+Definition reg_merged_three : EnumQ nat.
+Proof.
+  refine (enumQ_of_list (mu := [:: (reg_half, 0); (reg_quarter, 1); (reg_quarter, 2)]) _).
+  intros p x [He|[He|[He|[]]]]; inversion He; subst; by vm_compute.
+Defined.
 
 Definition reg_merged_program : ptree regE EnumQ nat :=
   Prob reg_merged_three (fun outcome => Ret outcome).
 
 Lemma reg_nested_outcomes_eqenum :
   bind_EnumQ reg_fair reg_inner ==EnumQ reg_merged_three.
-Proof.
-  move=> outcome.
-  rewrite /reg_fair /reg_inner /reg_merged_three /bind_EnumQ /acc_mass /=.
-  case: outcome=> [|[|[|outcome]]];
-    apply val_inj; cbn; ring_to_rat; reflexivity.
-Qed.
+Proof. intros [|[|[|n]]]; by vm_compute. Qed.

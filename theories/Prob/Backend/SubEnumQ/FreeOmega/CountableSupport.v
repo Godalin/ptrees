@@ -23,7 +23,7 @@ Fixpoint free_omega_enumerate {A} (t : FreeOmega SubEnumQ A) (n : nat) : option 
   | @FOSample _ _ X mu k =>
       match (@unpickle _ n : option (nat * nat)) with
       | Some (i,j) =>
-          match List.nth_error (subenumQ_raw mu) i with
+          match List.nth_error (subenumQ_data mu) i with
           | Some (_,x) => free_omega_enumerate (k x) j
           | None => None
           end
@@ -42,7 +42,7 @@ Proof.
   induction t as [x| |X mu k IH|c IH].
   - apply FOAERet; exists O; reflexivity.
   - apply FOAEZero.
-  - apply FOAESample with (Good := fun x => exists w, List.In (w,x) (subenumQ_raw mu)).
+  - apply FOAESample with (Good := fun x => exists w, List.In (w,x) (subenumQ_data mu)).
     + intros w x Hin _; exists w; exact Hin.
     + intros x [w Hin]. apply List.In_nth_error in Hin; destruct Hin as [i Hi].
       eapply free_omega_ae_mono; [|exact (IH x)].

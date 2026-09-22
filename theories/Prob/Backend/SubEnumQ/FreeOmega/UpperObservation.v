@@ -1,4 +1,5 @@
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
+From PTree.Prob.Backend.Common Require Import FiniteEnum.
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
@@ -9,7 +10,7 @@ From Coq.Arith Require Import PeanoNat.
 From Coq.Logic Require Import FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg ssrnum order rat reals interval.
 From mathcomp.classical Require Import classical_sets.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.Support PTree.Prob.Backend.EnumQ.SemanticCoupling.
+Require Import PTree.Prob.Backend.Common.FiniteAtoms PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.Support PTree.Prob.Backend.EnumQ.SemanticCoupling.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -18,7 +19,7 @@ Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation PTree.Prob
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import EnumQ PTree.Prob.Backend.EnumQ.Map RatSubTypes GRing.Theory Num.Theory Order.Theory.
+Import EnumQ PTree.Prob.Backend.EnumQ.Map GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 (** Observation uses a native, eventwise rational limit.  The first part
@@ -86,73 +87,73 @@ Local Notation expect := (enumQ_real_expect (R := R)).
 
 Lemma enumQ_real_expect_atom_le {A : eqType} (f : A -> R) mu nu :
   (forall x, 0 <= f x) ->
-  (forall x, ratr (Qval (acc_mass x mu)) <= (ratr (Qval (acc_mass x nu)) : R)) ->
+  (forall x, ratr ((acc_mass x mu)) <= (ratr ((acc_mass x nu)) : R)) ->
   expect f mu <= expect f nu.
 Proof.
-  intro Hf. move: mu nu. refine (seq_strong_induction (P := fun mu => forall nu,
-    (forall x, ratr (Qval (acc_mass x mu)) <= (ratr (Qval (acc_mass x nu)) : R)) ->
+  intro Hf. move: mu nu. refine (enumQ_size_induction (P := fun mu => forall nu,
+    (forall x, ratr ((acc_mass x mu)) <= (ratr ((acc_mass x nu)) : R)) ->
     expect f mu <= expect f nu) _).
-  intros mu IH nu Hmass. destruct mu as [|[p a] tail].
-  - apply enumQ_real_expect_nonnegative. exact Hf.
-  - rewrite (enumQ_real_expect_filter_split f ((p,a)::tail) a).
+  intros mu IH nu Hmass. case Hraw: (enumQ_raw mu)=> [|[p a] tail].
+  - rewrite /enumQ_real_expect Hraw /=; apply enumQ_real_expect_nonnegative. exact Hf.
+  - rewrite (enumQ_real_expect_filter_split f mu a).
     rewrite (enumQ_real_expect_filter_split f nu a). apply lerD.
     + apply ler_wpM2r; [exact (Hf a)|exact (Hmass a)].
     + apply IH.
-      * apply/ssrnat.ltP. rewrite size_filter /= eq_refl /=.
-        apply/ssrnat.ltP. exact: leq_ltn_trans (count_size _ _) (ltnSn _).
+      * change (List.length (List.filter (fun px => snd px != a) (enumQ_raw mu)) < List.length (enumQ_raw mu))%coq_nat.
+        rewrite Hraw /= eq_refl /=.
+        apply Nat.lt_succ_r; apply List.filter_length_le.
       * intro x. rewrite !(@acc_mass_filter A (fun y => y != a)).
         destruct (x != a); [apply Hmass|exact: lexx].
 Qed.
 
 Lemma enumQ_indicator_atom {A : eqType} (mu : EnumQ A) a :
-  enumQ_expect (fun x => if x == a then 1 else 0) mu = Qval (acc_mass a mu).
+  enumQ_expect (fun x => if x == a then 1 else 0) mu = (acc_mass a mu).
 Proof.
-  induction mu as [|[p x] tail IH]; cbn [enumQ_expect]; [reflexivity|].
-  rewrite acc_mass_cons IH. cbn [fst snd]. destruct (x == a).
-  - change (Qval p * 1 + Qval (acc_mass a tail) = Qval (acc_mass a tail) + Qval p).
-    rewrite mulr1. exact: addrC.
-  - change (Qval p * 0 + Qval (acc_mass a tail) = Qval (acc_mass a tail) + 0).
-    by rewrite mulr0 add0r addr0.
+  change (finite_expect (fun x => if x == a then 1 else 0) (enumQ_raw mu) = finite_atom a (enumQ_raw mu)).
+  reflexivity.
 Qed.
 
 Theorem enumQ_real_expect_atomic_lub {A : eqType} (out : EnumQ A)
     (chain : nat -> EnumQ A) (f : A -> R) :
   (forall x, 0 <= f x) ->
-  (forall x n, ratr (Qval (acc_mass x (chain n))) <=
-    (ratr (Qval (acc_mass x (chain (S n)))) : R)) ->
-  (forall x, countable_upper (fun n => (ratr (Qval (acc_mass x (chain n))) : R)) =
-    ratr (Qval (acc_mass x out))) ->
-  (forall x n, (ratr (Qval (acc_mass x (chain n))) : R) <= ratr (Qval (acc_mass x out))) ->
+  (forall x n, ratr ((acc_mass x (chain n))) <=
+    (ratr ((acc_mass x (chain (S n)))) : R)) ->
+  (forall x, countable_upper (fun n => (ratr ((acc_mass x (chain n))) : R)) =
+    ratr ((acc_mass x out))) ->
+  (forall x n, (ratr ((acc_mass x (chain n))) : R) <= ratr ((acc_mass x out))) ->
   countable_upper (fun n => expect f (chain n)) = expect f out.
 Proof.
   intro Hf. revert chain.
-  refine (seq_strong_induction (P := fun out => forall chain,
-    (forall x n, ratr (Qval (acc_mass x (chain n))) <=
-      (ratr (Qval (acc_mass x (chain (S n)))) : R)) ->
-    (forall x, countable_upper (fun n => (ratr (Qval (acc_mass x (chain n))) : R)) =
-      ratr (Qval (acc_mass x out))) ->
-    (forall x n, (ratr (Qval (acc_mass x (chain n))) : R) <= ratr (Qval (acc_mass x out))) ->
+  refine (enumQ_size_induction (P := fun out => forall chain,
+    (forall x n, ratr ((acc_mass x (chain n))) <=
+      (ratr ((acc_mass x (chain (S n)))) : R)) ->
+    (forall x, countable_upper (fun n => (ratr ((acc_mass x (chain n))) : R)) =
+      ratr ((acc_mass x out))) ->
+    (forall x n, (ratr ((acc_mass x (chain n))) : R) <= ratr ((acc_mass x out))) ->
     countable_upper (fun n => expect f (chain n)) = expect f out) _ out).
   intros target IH chain Hinc Hlim Hbound.
   have Hexpect : forall n, expect f (chain n) <= expect f target.
   { intro n. apply enumQ_real_expect_atom_le; [exact Hf|]. intro x. exact (Hbound x n). }
-  destruct target as [|[p a] tail].
-  - apply/eqP. rewrite eq_le. apply/andP. split.
+  case Hraw: (enumQ_raw target)=> [|[p a] tail].
+  - have Hzero : expect f target = 0 by rewrite /enumQ_real_expect Hraw.
+    rewrite Hzero in Hexpect *.
+    apply/eqP. rewrite eq_le. apply/andP. split.
     + exact (countable_upper_le Hexpect).
     + cbn [enumQ_real_expect]. eapply le_trans.
       * exact (enumQ_real_expect_nonnegative (chain 0%nat) Hf).
       * exact (@countable_upper_ge R (fun n => expect f (chain n)) 0 0%nat Hexpect).
-  - pose (rest := fun mu : EnumQ A => [seq h <- mu | snd h != a]).
+  - pose (rest := fun mu : EnumQ A => enumQ_filter (fun h => snd h != a) mu).
     have Hrest : countable_upper (fun n => expect f (rest (chain n))) =
-        expect f (rest ((p,a)::tail)).
+        expect f (rest target).
     { apply IH.
-      - apply/ssrnat.ltP. rewrite /rest size_filter /= eq_refl /=.
-        apply/ssrnat.ltP. exact: leq_ltn_trans (count_size _ _) (ltnSn _).
+      - change (List.length (List.filter (fun px => snd px != a) (enumQ_raw target)) < List.length (enumQ_raw target))%coq_nat.
+        rewrite Hraw /= eq_refl /=.
+        apply Nat.lt_succ_r; apply List.filter_length_le.
       - intros x n. rewrite /rest !(@acc_mass_filter A (fun y => y != a)).
         destruct (x != a); [apply Hinc|exact: lexx].
       - intro x.
-        have Heq : (fun n => (ratr (Qval (acc_mass x (rest (chain n)))) : R)) =
-          (fun n => ratr (Qval (if x != a then acc_mass x (chain n) else sumq nil))).
+        have Heq : (fun n => (ratr ((acc_mass x (rest (chain n)))) : R)) =
+          (fun n => ratr ((if x != a then acc_mass x (chain n) else sumq nil))).
         { apply functional_extensionality=> n.
           by rewrite /rest (@acc_mass_filter A (fun y => y != a)). }
         rewrite Heq /rest (@acc_mass_filter A (fun y => y != a)). destruct (x != a).
@@ -161,17 +162,17 @@ Proof.
       - intros x n. rewrite /rest !(@acc_mass_filter A (fun y => y != a)).
         destruct (x != a); [apply Hbound|exact: lexx]. }
     have Hsplit : (fun n => expect f (chain n)) =
-      (fun n => f a * ratr (Qval (acc_mass a (chain n))) + expect f (rest (chain n))).
+      (fun n => f a * ratr ((acc_mass a (chain n))) + expect f (rest (chain n))).
     { apply functional_extensionality=> n.
       rewrite (enumQ_real_expect_filter_split f (chain n) a) mulrC. reflexivity. }
     rewrite Hsplit.
     rewrite (@countable_upper_add R
-      (fun n => f a * ratr (Qval (acc_mass a (chain n))))
+      (fun n => f a * ratr ((acc_mass a (chain n))))
       (fun n => expect f (rest (chain n)))
-      (f a * ratr (Qval (acc_mass a ((p,a)::tail)))) (expect f (rest ((p,a)::tail)))).
-    + rewrite (@countable_upper_scale R _ (f a) (ratr (Qval (acc_mass a ((p,a)::tail))))
+      (f a * ratr ((acc_mass a target))) (expect f (rest target))).
+    + rewrite (@countable_upper_scale R _ (f a) (ratr ((acc_mass a target)))
         (Hf a) (Hbound a)) Hlim Hrest.
-      rewrite (enumQ_real_expect_filter_split f ((p,a)::tail) a) mulrC. reflexivity.
+      rewrite (enumQ_real_expect_filter_split f target a) mulrC. reflexivity.
     + intro n. exact (ler_wpM2l (Hf a) (Hinc a n)).
     + intro n. apply enumQ_real_expect_atom_le; [exact Hf|]. intro x.
       rewrite /rest !(@acc_mass_filter A (fun y => y != a)). destruct (x != a); [apply Hinc|exact: lexx].
@@ -192,12 +193,12 @@ Lemma enumQ_monotone_converges_upper_eqtype {A : eqType}
   countable_upper (fun n => expect f (chain n)) = expect f out.
 Proof.
   intros Hmono Hlim Hf.
-  have Hstep : forall x n, Qval (acc_mass x (chain n)) <= Qval (acc_mass x (chain (S n))).
+  have Hstep : forall x n, (acc_mass x (chain n)) <= (acc_mass x (chain (S n))).
   { intros x n. rewrite -!enumQ_indicator_atom.
     exact (Hmono (fun y => y == x) n (S n) (Nat.le_succ_diag_r n)). }
   have Hatom : forall x eps, (0 : rat) < eps -> exists N,
       forall n, Peano.le N n ->
-        `|Qval (acc_mass x (chain n)) - Qval (acc_mass x out)| < eps.
+        `|(acc_mass x (chain n)) - (acc_mass x out)| < eps.
   { intros x eps Heps. destruct (Hlim (fun y => y == x) eps Heps) as [N HN].
     exists N. intros n Hn. rewrite -!enumQ_indicator_atom. exact (HN n Hn). }
   apply enumQ_real_expect_atomic_lub; [exact Hf| | |].

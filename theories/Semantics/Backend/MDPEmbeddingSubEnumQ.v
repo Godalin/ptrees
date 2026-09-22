@@ -68,7 +68,7 @@ Lemma subenumQ_total_forget {X} (mu : SubEnumQ X) :
 Proof.
   intro H. change (enumQ_expect (fun _ => 1)
     (bind_EnumQ (subenumQ_raw mu) (fun _ => ret_EnumQ tt)) = 1).
-  rewrite enumQ_expect_bind /= mulr1 addr0. exact H.
+  rewrite enumQ_expect_bind enumQ_expect_ret. exact H.
 Qed.
 
 Section Embedding.

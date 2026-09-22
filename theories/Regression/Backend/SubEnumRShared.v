@@ -13,7 +13,7 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure.
 Fail Check PTree.Prob.Backend.SubEnumR.Representation.Build_SubEnumR.
 Fail Check PTree.Prob.Backend.SubEnumR.Representation.SubEnumR_rect.
 Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
-Fail Check PTree.Prob.Backend.Common.RatSubTypes.nnQ.
+Fail Check PTree.Prob.Legacy.RatSubTypes.nnQ.
 Fail Check PTree.Prob.Backend.MathComp.Kernel.MathCompKernelMeasure.
 
 Set Implicit Arguments.

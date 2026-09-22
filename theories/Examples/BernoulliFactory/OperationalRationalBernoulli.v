@@ -4,6 +4,7 @@ Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 
 Require Import FunctionalExtensionality.
+From PTree.Prob.Backend.Common Require Import FiniteRecordExtensionality.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 
@@ -219,7 +220,9 @@ Lemma ptree_rational_first_round_mass :
     (meas_iter_approx 1 binary_coin_transition q) = 1 / 2.
 Proof.
   rewrite /meas_iter_approx /binary_coin_transition.
-  case: (q < 1 / 2); rewrite /= !mulr1 !addr0; reflexivity.
+  case: (q < 1 / 2); rewrite enumQ_expect_bind enumQ_expect_unif2 /one_div_two /= enumQ_expect_ret.
+  - change ((1/2 : rat)*0+((1/2)*1+0)=1/2); by rewrite mulr0 mulr1 addr0 add0r.
+  - change ((1/2 : rat)*1+((1/2)*0+0)=1/2); by rewrite mulr0 mulr1 !addr0.
 Qed.
 
 (** In particular, the first implementation prefix is a strict
@@ -264,8 +267,9 @@ Lemma ptree_rational_direct_observation_eq :
     rational_bernoulli_measure q0 q1.
 Proof.
   unfold ptree_rational_direct_observation.
-  change (bind_EnumQ (rational_bernoulli_measure q0 q1)
-    (fun b => ret_EnumQ b) = rational_bernoulli_measure q0 q1).
+  apply finite_enum_raw_eq.
+  change (enumQ_raw (bind_EnumQ (rational_bernoulli_measure q0 q1)
+    (fun b => ret_EnumQ b)) = enumQ_raw (rational_bernoulli_measure q0 q1)).
   rewrite bind_ret_emap. apply emap_id.
 Qed.
 

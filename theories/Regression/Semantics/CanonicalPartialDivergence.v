@@ -101,7 +101,7 @@ Lemma divergent_trace_query_mass_zero :
     @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
       bool bool (fun b => b) divergent_trace_query out /\
     enumQ_expect (fun _ : bool => (1 : rat)) out = 0.
-Proof. exists [::]. split; [constructor|reflexivity]. Qed.
+Proof. exists enumQ_zero. split; [constructor|reflexivity]. Qed.
 
 Lemma divergent_trace_query_not_rejection_mass :
   ~ @sem_same_mass MF FI bool bool divergent_trace_query (FORet false).
@@ -138,11 +138,11 @@ Proof.
   have Hweight := free_omega_qlift_extended_upper_mass scalar Hmass.
   change (enumQ_extended_expect (R := scalar)
     (fun b : bool => if b then 1 else 0) reg_fair = 1)%E in Hweight.
-  cbn [enumQ_extended_expect reg_fair] in Hweight.
-  rewrite !reg_half_val mule0 mule1 !adde0 in Hweight.
+  change ((ratr (1 / 2 : rat) : scalar)%:E * 0 +
+    ((ratr (1 / 2 : rat) : scalar)%:E * 1 + 0) = 1)%E in Hweight.
+  rewrite mule0 mule1 !adde0 add0e in Hweight.
   have Hone : (1 : \bar scalar)%E = (ratr (1 : rat) : scalar)%:E by rewrite rmorph1.
   rewrite Hone in Hweight. injection Hweight as Hrat.
-  rewrite add0r in Hrat.
   have Hbad := fmorph_inj (ratr : {rmorphism rat -> scalar}) Hrat.
   move: Hbad. native_compute. discriminate.
 Qed.

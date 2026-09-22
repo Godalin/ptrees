@@ -11,10 +11,15 @@ stable `Ret` or `Vis` head, while preserving missing termination mass.
 Native `Prob` is instantiated with a subprobability carrier.  The canonical
 finite executable carrier is `SubEnumQ`, a finite nonnegative enumeration
 whose total weight is proved at most one; `SubEnumR R` provides finite real
-weights with the same validity bound. Raw `EnumQ` remains a compatibility representation
-for arbitrary finite nonnegative weights and is therefore not, by itself, a
+weights with the same validity bound. Both use the shared `FiniteSubdist`
+record, instantiated at ordinary `rat` or real scalars. `EnumQ = FiniteEnum rat`
+represents arbitrary finite nonnegative weights and is therefore not, by itself, a
 valid native-probability backend.  This distinction keeps Bayesian `score`
 weights separate from probabilistic choice.
+Nonnegativity and the mass bound belong to the containers, not scalar
+subtypes. The old `nnQ` representation is isolated in `Prob/Legacy`; Q-to-R
+transport uses the shared scalar-map construction. See the
+[finite-backend consolidation](docs/FINITE_BACKEND_CONSOLIDATION.md).
 The generic boundary is recorded by `SemanticSubprobability`: raw EnumQ
 supports its per-measure predicate and closure laws, whereas SubEnumQ, SubEnumR
 and the native MathComp kernel provide `SemanticSubprobabilityCarrierLaws`, certifying

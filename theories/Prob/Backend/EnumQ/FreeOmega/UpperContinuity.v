@@ -8,14 +8,14 @@ From Coq.Logic Require Import FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg ssrnum order rat reals archimedean.
 From mathcomp.classical Require Import classical_sets set_interval.
 From mathcomp.analysis Require Import ereal sequences topology normedtype.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.EnumQ.FreeOmega.UpperExpectation PTree.Prob.Backend.EnumQ.FreeOmega.UpperCoupling.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import EnumQ RatSubTypes GRing.Theory Num.Theory Order.Theory.
+Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
 Local Open Scope classical_set_scope.
@@ -76,27 +76,32 @@ Lemma enumQ_extended_expect_countable_ae {A} (mu : EnumQ A)
   expect (fun x => upper (fun n => tests n x)) mu =
     upper (fun n => expect (tests n) mu).
 Proof.
-  move=> Hnonneg. induction mu as [|[p x] tail IH]; move=> Hinc;
-    cbn [enumQ_extended_expect].
-  - symmetry. exact: extended_upper_constant.
-  - have Htail : enumQ_ae tail (fun x => nondecreasing_seq (fun n => tests n x)).
+  move=> Hnonneg; apply (enumQ_ind_raw (P := fun mu =>
+    enumQ_ae mu (fun x => nondecreasing_seq (fun n => tests n x)) ->
+    expect (fun x => upper (fun n => tests n x)) mu = upper (fun n => expect (tests n) mu))).
+  - move=> _; symmetry; exact: extended_upper_constant.
+  - move=> p Hp x tail IH Hinc; rewrite enumQ_extended_expect_cons.
+    have Htail : enumQ_ae tail (fun x => nondecreasing_seq (fun n => tests n x)).
     { intros q y Hy Hq. exact (Hinc q y (or_intror Hy) Hq). }
     rewrite (IH Htail).
-    destruct (eqVneq p nnQ_0) as [->|Hnz].
-    { cbn [Qval nnQ_0]. rewrite rmorph0 mul0e add0e.
+    have Heval : (fun n => expect (tests n) (enumQ_cons Hp x tail)) =
+      (fun n => (ratr p)%:E*tests n x+expect (tests n) tail) by reflexivity.
+    rewrite Heval; destruct (eqVneq p 0%R) as [Hz|Hnz].
+    { rewrite Hz rmorph0 mul0e add0e.
       f_equal. apply functional_extensionality=> n. by rewrite mul0e add0e. }
     have Hx : nondecreasing_seq (fun n => tests n x).
     { apply (Hinc p x (or_introl (Logic.eq_refl (p,x)))).
       move=> Hz. move/eqP: Hnz=> Hneq. exact: Hneq Hz. }
-    rewrite -extended_upper_scale; last by rewrite ler0q; apply: le_nnQ0.
+    rewrite -extended_upper_scale; last by rewrite ler0q.
     symmetry. apply extended_upper_add.
     + move=> n. apply mule_ge0; [|exact: Hnonneg].
-      by rewrite lee_fin ler0q; apply: le_nnQ0.
+      by rewrite lee_fin ler0q.
     + move=> n. exact: enumQ_extended_expect_nonnegative.
     + move=> n m Hnm. apply: lee_wpmul2l (Hx n m Hnm).
-      by rewrite lee_fin ler0q; apply: le_nnQ0.
+      by rewrite lee_fin ler0q.
     + move=> n m Hnm. apply enumQ_extended_expect_ae_mono.
       intros q y Hy Hq. exact (Htail q y Hy Hq n m Hnm).
+  - move=> a b He IH; move: IH; by rewrite /enumQ_ae /enumQ_extended_expect He.
 Qed.
 
 Lemma enumQ_extended_expect_countable {A} (mu : EnumQ A)
@@ -120,7 +125,7 @@ Proof.
   move=> Hnonneg Hinc.
   induction mu as [x| |X node k IH|c IH]; cbn [free_omega_extended_upper].
   - reflexivity.
-  - symmetry. exact: extended_upper_constant.
+  - symmetry; exact: extended_upper_constant.
   - have Hrows :
       (fun x => free_omega_extended_upper (k x) (fun y => upper (fun n => tests n y))) =
       (fun x => upper (fun n => free_omega_extended_upper (k x) (tests n))).

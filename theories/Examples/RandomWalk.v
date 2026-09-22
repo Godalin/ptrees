@@ -2,6 +2,7 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 
 From Coq.Program Require Import Equality.
 Require Import FunctionalExtensionality.
@@ -10,7 +11,7 @@ Require Import Lia Ring Field.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
+Require Import PTree.Prob.Backend.EnumQ.Representation.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -211,20 +212,21 @@ Qed.
 
 End PassageControlFlow.
 
-Import EnumQ RatSubTypes GRing.Theory Order.Theory.
-Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
+Import EnumQ GRing.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope order_scope.
 
-#[program] Definition rw_down_weight : nnQ := [nn 2/3].
-#[program] Definition rw_up_weight : nnQ := [nn 1/3].
-Definition rw_coin_raw : EnumQ bool :=
-  [:: (rw_down_weight, true); (rw_up_weight, false)].
+Definition rw_down_weight : rat := 2/3.
+Definition rw_up_weight : rat := 1/3.
+Definition rw_coin_raw : EnumQ bool.
+Proof.
+  refine (enumQ_of_list (mu := [:: (rw_down_weight,true); (rw_up_weight,false)]) _).
+  intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
+Defined.
 
 Lemma rw_coin_subprob : enumQ_subprob rw_coin_raw.
 Proof.
-  rewrite /enumQ_subprob /enumQ_mass /rw_coin_raw /= !mulr1 addr0.
-  native_compute. reflexivity.
+  by vm_compute.
 Qed.
 
 Definition rw_coin : SubEnumQ bool :=
@@ -472,7 +474,7 @@ Proof.
   revert x y. induction rounds as [|rounds IH]; intros [|x] y.
   - exact (enumQ_expect_ret f (obs y)).
   - change (enumQ_expect f (bind_EnumQ (subenumQ_raw rw_coin)
-      (fun _ => [::])) = 0).
+      (fun _ => enumQ_zero)) = 0).
     rewrite enumQ_expect_bind rw_coin_expect /= !mulr0 addr0. reflexivity.
   - exact (enumQ_expect_ret f (obs y)).
   - change (enumQ_expect f (bind_EnumQ (subenumQ_raw rw_coin)

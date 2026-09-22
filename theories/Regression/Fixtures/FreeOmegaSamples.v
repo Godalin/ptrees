@@ -6,7 +6,7 @@ From Coq Require Import List Arith.PeanoNat FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
 From PTree.Prob.Domain Require Import Expectation Countable.
 From PTree.Prob.Interface Require Import Measure.
-From PTree.Prob.Backend.Common Require Import RatSubTypes.
+From PTree.Prob.Backend.Common Require Import FiniteEnum.
 From PTree.Prob.Backend.EnumQ Require Import Representation.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation.
@@ -17,7 +17,7 @@ From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import RatSubTypes GRing.Theory Num.Theory Order.Theory ListNotations.
+Import GRing.Theory Num.Theory Order.Theory ListNotations.
 Local Open Scope ring_scope.
 
 From mathcomp Require Import choice ssrnat.
@@ -27,19 +27,20 @@ Definition alternating_bool : FreeOmega SubEnumQ bool :=
 
 Definition null_weight_node : SubEnumQ bool.
 Proof.
-  refine {| subenumQ_raw := [((1 : nnQ), true); (nnQ_0, false)] |}.
-  by vm_compute.
+  refine (@subenumQ_of_list bool [(1,true); (0,false)] _ _).
+  - intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
+  - by vm_compute.
 Defined.
 
 Definition nullable_kernel (b : bool) : FreeOmega SubEnumQ bool :=
   if b then FORet true else alternating_bool.
 
-Definition domain_half : nnQ.
-Proof. refine (mknnQ (1/2) _); by vm_compute. Defined.
+Definition domain_half : rat := 1/2.
 Definition domain_fair : SubEnumQ bool.
 Proof.
-  refine {| subenumQ_raw := [(domain_half,true); (domain_half,false)] |}.
-  by vm_compute.
+  refine (@subenumQ_of_list bool [(domain_half,true); (domain_half,false)] _ _).
+  - intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
+  - by vm_compute.
 Defined.
 Fixpoint retry_approx (n : nat) : FreeOmega SubEnumQ bool :=
   match n with

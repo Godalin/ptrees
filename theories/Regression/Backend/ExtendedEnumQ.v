@@ -1,11 +1,13 @@
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From Coq.Logic Require Import FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg ssrnum order rat reals archimedean.
 From mathcomp.classical Require Import classical_sets set_interval.
 From mathcomp.analysis Require Import ereal sequences.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
+Require Import PTree.Prob.Backend.EnumQ.Representation.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -14,7 +16,7 @@ Require Import PTree.Prob.Backend.EnumQ.FreeOmega.UpperExpectation PTree.Prob.Ba
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import EnumQ RatSubTypes GRing.Theory Num.Theory Order.Theory.
+Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
 Local Open Scope classical_set_scope.
@@ -23,12 +25,18 @@ Section ExtendedEnumQRegression.
 Variable R : realType.
 
 Example extended_enumQ_keeps_weight_two :
-  @enumQ_extended_expect R unit (fun _ => 1) [:: (2%R, tt)] = 2%:E.
-Proof. cbn [enumQ_extended_expect]. by rewrite /= rmorphD rmorph1 mule1 adde0. Qed.
+  @enumQ_extended_expect R unit (fun _ => 1) (enumQ_cons (ler0n rat 2) tt enumQ_zero) = 2%:E.
+Proof.
+  change ((ratr (2 : rat) : R)%:E * 1 + 0 = 2%:E).
+  by rewrite rmorph_nat mule1 adde0.
+Qed.
 
 Example extended_enumQ_zero_times_infinity :
-  @enumQ_extended_expect R unit (fun _ => +oo) [:: (0%R, tt)] = 0.
-Proof. cbn [enumQ_extended_expect]. by rewrite /= rmorph0 mul0e add0e. Qed.
+  @enumQ_extended_expect R unit (fun _ => +oo) (enumQ_cons (lexx (0 : rat)) tt enumQ_zero) = 0.
+Proof.
+  change ((ratr (0 : rat) : R)%:E * +oo + 0 = 0).
+  by rewrite rmorph0 mul0e add0e.
+Qed.
 
 (** This is increasing even in the RAW approximation order, not just
     numerically.  Each iteration adds one returned unit of weight while
@@ -36,7 +44,7 @@ Proof. cbn [enumQ_extended_expect]. by rewrite /= rmorph0 mul0e add0e. Qed.
 Fixpoint growing_weight (n : nat) : FreeOmega EnumQ unit :=
   match n with
   | O => FOZero
-  | S m => FOSample [:: (1%R, true); (1%R, false)]
+  | S m => FOSample (enumQ_cons (ler01 : ((0 : rat) <= 1)%R) true (enumQ_cons (ler01 : ((0 : rat) <= 1)%R) false enumQ_zero))
       (fun b => if b then FORet tt else growing_weight m)
   end.
 
@@ -55,7 +63,10 @@ Lemma growing_weight_value n :
 Proof.
   induction n as [|n IH]; cbn [growing_weight free_omega_extended_upper enumQ_extended_expect].
   - reflexivity.
-  - rewrite /= rmorph1 !mul1e adde0 IH -EFinD.
+  - change ((ratr (1 : rat) : R)%:E * 1 +
+      ((ratr (1 : rat) : R)%:E * free_omega_extended_upper (growing_weight n) (fun _ => 1) + 0)
+      = ((S n)%:R)%:E).
+    rewrite rmorph1 !mul1e adde0 IH -EFinD.
     congr (_%:E). by rewrite addrC natr1.
 Qed.
 
@@ -86,18 +97,18 @@ Example weight_two_preserves_monotone_limit (f : nat -> unit -> \bar R) :
   (forall n x, 0 <= f n x) ->
   (forall x, nondecreasing_seq (fun n => f n x)) ->
   @enumQ_extended_expect R unit (fun x => extended_upper (fun n => f n x))
-    [:: (2%R, tt)] =
-  extended_upper (fun n => enumQ_extended_expect (f n) [:: (2%R, tt)]).
-Proof. intros Hf Hi. exact (@enumQ_extended_expect_countable R unit [:: (2%R, tt)] f Hf Hi). Qed.
+    (enumQ_cons (ler0n rat 2) tt enumQ_zero) =
+  extended_upper (fun n => enumQ_extended_expect (f n) (enumQ_cons (ler0n rat 2) tt enumQ_zero)).
+Proof. intros Hf Hi. exact (@enumQ_extended_expect_countable R unit (enumQ_cons (ler0n rat 2) tt enumQ_zero) f Hf Hi). Qed.
 
 Example zero_weight_needs_no_monotonicity (f : nat -> unit -> \bar R) :
   (forall n x, 0 <= f n x) ->
   @enumQ_extended_expect R unit (fun x => extended_upper (fun n => f n x))
-    [:: (0%R, tt)] =
-  extended_upper (fun n => enumQ_extended_expect (f n) [:: (0%R, tt)]).
+    (enumQ_cons (lexx (0 : rat)) tt enumQ_zero) =
+  extended_upper (fun n => enumQ_extended_expect (f n) (enumQ_cons (lexx (0 : rat)) tt enumQ_zero)).
 Proof.
   intro Hf. apply enumQ_extended_expect_countable_ae; [exact Hf|].
   intros p x [Heq|[]] Hnz. inversion Heq; subst p x.
-  exfalso. apply Hnz. apply val_inj. reflexivity.
+  exfalso. apply Hnz. reflexivity.
 Qed.
 End ExtendedEnumQRegression.

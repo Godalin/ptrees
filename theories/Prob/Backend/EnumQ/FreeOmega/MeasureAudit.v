@@ -37,11 +37,11 @@ Definition zero_free_limit : MF bool := FOLub zero_free_chain.
 Definition transient_observation (n : nat) : EnumQ bool :=
   match n with
   | O => ret_EnumQ false
-  | Datatypes.S _ => [::]
+  | Datatypes.S _ => enumQ_zero
   end.
 
 Lemma transient_observation_converges_zero :
-  enumQ_converges transient_observation [::].
+  enumQ_converges transient_observation enumQ_zero.
 Proof.
   intros P eps Heps. exists 1%nat. intros [|n] Hn; first inversion Hn.
   cbn. exact Heps.
@@ -57,12 +57,12 @@ Qed.
 
 Lemma zero_free_limit_observes_zero :
   @free_omega_observes EnumQ EnumQ_SemanticMeasure
-    EnumQ_SemanticOmega bool bool id zero_free_limit [::].
+    EnumQ_SemanticOmega bool bool id zero_free_limit enumQ_zero.
 Proof.
   unfold zero_free_limit.
   eapply (@FOOObserveLub EnumQ EnumQ_SemanticMeasure
     EnumQ_SemanticOmega bool bool id zero_free_chain
-    (fun _ : nat => (@nil (PTree.Prob.Backend.Common.RatSubTypes.nnQ * bool))) [::]).
+    (fun _ : nat => (@enumQ_zero bool)) enumQ_zero).
   - intro n. constructor.
   - intros P eps Heps. exists O. intros n _. cbn. exact Heps.
   - intro n. apply FOApproxZero.
@@ -70,10 +70,11 @@ Qed.
 
 Lemma enumQ_empty_lift_false :
   @sem_lift EnumQ EnumQ_SemanticMeasure bool bool
-    (fun _ _ => False) [::] [::].
+    (fun _ _ => False) enumQ_zero enumQ_zero.
 Proof.
-  cbn. unfold indexed_coupling. exists [::]; try reflexivity.
-  intros i j Hnz. cbn in Hnz. discriminate.
+  cbn; unfold indexed_coupling.
+  eapply coupling_raw with (mu := enumQ_zero) (nu := enumQ_zero);
+    [reflexivity|reflexivity|apply coupling_zero].
 Qed.
 
 Lemma zero_chain_ae_true : forall n,

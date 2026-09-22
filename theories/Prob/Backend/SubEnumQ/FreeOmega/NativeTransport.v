@@ -6,7 +6,7 @@ Local Unset Universe Minimization ToSet.
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
 From Coq.Logic Require Import ClassicalDescription.
 From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype finset bigop ssralg ssrnum order rat reals.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Iteration.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 From PTree.Prob.Interface Require Import SemanticCoupling.

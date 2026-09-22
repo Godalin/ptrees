@@ -17,6 +17,8 @@ From PTree.Semantics Require Import HeadTransition TreeTransition.
 Fail Check PTree.Eq.PEutt.peutt.
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum rat.
 From PTree.Regression.Backend Require Import SubEnumQRegression.
+From PTree.Prob.Backend.EnumQ Require Import Representation.
+Import EnumQ.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

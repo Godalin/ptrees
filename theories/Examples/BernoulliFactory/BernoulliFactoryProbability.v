@@ -7,7 +7,7 @@ Set Warnings "-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli BernoulliFactory.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -34,30 +34,33 @@ Proof.
   apply probabilistic_factory_sampler_step. exact Hsampler.
 Qed.
 
-Lemma factory_biased_coin_subprob pfalse ptrue :
-  Qval pfalse + Qval ptrue = 1 ->
-  enumQ_subprob (factory_biased_coin pfalse ptrue).
+Lemma factory_biased_coin_subprob pfalse ptrue
+    (pfalse0 : 0 <= pfalse) (ptrue0 : 0 <= ptrue) :
+  pfalse + ptrue = 1 ->
+  enumQ_subprob (factory_biased_coin pfalse0 ptrue0).
 Proof.
   intro Hsum. unfold enumQ_subprob, enumQ_mass, factory_biased_coin.
-  change (Qval pfalse * 1 + (Qval ptrue * 1 + 0) <= 1).
+  change (pfalse * 1 + (ptrue * 1 + 0) <= 1).
   by rewrite !mulr1 addr0 Hsum.
 Qed.
 
-Theorem probabilistic_factory_fair_coin pfalse ptrue :
-  Qval pfalse + Qval ptrue = 1 ->
-  probabilistic_ptree (factory_fair_coin pfalse ptrue).
+Theorem probabilistic_factory_fair_coin pfalse ptrue
+    (pfalse0 : 0 <= pfalse) (ptrue0 : 0 <= ptrue) :
+  pfalse + ptrue = 1 ->
+  probabilistic_ptree (factory_fair_coin pfalse0 ptrue0).
 Proof.
   intro Hsum. unfold factory_fair_coin.
   apply probabilistic_ptree_iter. intro u. unfold factory_vn_step.
-  apply probabilistic_ptree_prob; [apply factory_biased_coin_subprob; exact Hsum|].
+  apply probabilistic_ptree_prob; [exact (factory_biased_coin_subprob pfalse0 ptrue0 Hsum)|].
   intro b1.
-  apply probabilistic_ptree_prob; [apply factory_biased_coin_subprob; exact Hsum|].
+  apply probabilistic_ptree_prob; [exact (factory_biased_coin_subprob pfalse0 ptrue0 Hsum)|].
   intro b2. apply probabilistic_ptree_ret.
 Qed.
 
-Theorem probabilistic_biased_to_rational_coin pfalse ptrue q :
-  Qval pfalse + Qval ptrue = 1 ->
-  probabilistic_ptree (biased_to_rational_coin pfalse ptrue q).
+Theorem probabilistic_biased_to_rational_coin pfalse ptrue
+    (pfalse0 : 0 <= pfalse) (ptrue0 : 0 <= ptrue) q :
+  pfalse + ptrue = 1 ->
+  probabilistic_ptree (biased_to_rational_coin pfalse0 ptrue0 q).
 Proof.
   intro Hsum. unfold biased_to_rational_coin.
   apply probabilistic_factory_with_sampler.

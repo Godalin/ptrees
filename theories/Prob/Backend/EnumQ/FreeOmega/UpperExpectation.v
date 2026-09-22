@@ -8,13 +8,13 @@ From Coq.Logic Require Import FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat reals.
 From mathcomp.classical Require Import classical_sets.
 From mathcomp.analysis Require Import ereal.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.Measure.
+Require Import PTree.Prob.Backend.Common.FiniteEnum PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import EnumQ RatSubTypes GRing.Theory Num.Theory Order.Theory.
+Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
 
@@ -26,65 +26,106 @@ Local Open Scope ereal_scope.
 Section ExtendedUpper.
 Variable R : realType.
 
-Fixpoint enumQ_extended_expect {A} (f : A -> \bar R) (mu : EnumQ A) : \bar R :=
+Fixpoint enumQ_extended_raw {A} (f : A -> \bar R) (mu : list (rat*A)) : \bar R :=
   match mu with
   | nil => 0
-  | (p, x) :: tail => (ratr (Qval p))%:E * f x + enumQ_extended_expect f tail
+  | (p,x)::tail => (ratr p)%:E * f x + enumQ_extended_raw f tail
   end.
+Definition enumQ_extended_expect {A} (f : A -> \bar R) (mu : EnumQ A) :=
+  enumQ_extended_raw f (enumQ_raw mu).
+
+Lemma enumQ_extended_expect_cons {A} (f : A -> \bar R) p (Hp : (0 <= p)%R) x mu :
+  enumQ_extended_expect f (enumQ_cons Hp x mu) =
+  (ratr p)%:E * f x + enumQ_extended_expect f mu.
+Proof. reflexivity. Qed.
 
 Lemma enumQ_extended_expect_nonnegative {A} (f : A -> \bar R) mu :
   (forall x, 0 <= f x) -> 0 <= enumQ_extended_expect f mu.
 Proof.
-  move=> Hf. elim: mu=> [|[p x] tail IH] /=; first exact: lexx.
-  apply: adde_ge0 IH. apply: mule_ge0 (Hf x).
-  by rewrite lee_fin ler0q; apply: le_nnQ0.
+  move=> Hf; apply (enumQ_ind_raw (P := fun mu => 0 <= enumQ_extended_expect f mu)).
+  - exact: lexx.
+  - move=> p Hp x tail IH; change (0 <= (ratr p)%:E * f x + enumQ_extended_expect f tail).
+    apply: adde_ge0 IH; apply: mule_ge0 (Hf x).
+    by rewrite lee_fin ler0q.
+  - move=> a b He IH; by rewrite /enumQ_extended_expect -He.
 Qed.
-
 Lemma enumQ_extended_expect_mono {A} (f g : A -> \bar R) mu :
   (forall x, f x <= g x) -> enumQ_extended_expect f mu <= enumQ_extended_expect g mu.
 Proof.
-  move=> Hfg. elim: mu=> [|[p x] tail IH] /=; first exact: lexx.
-  apply: leeD IH. apply: lee_wpmul2l (Hfg x).
-  by rewrite lee_fin ler0q; apply: le_nnQ0.
+  move=> Hfg; apply (enumQ_ind_raw (P := fun mu =>
+    enumQ_extended_expect f mu <= enumQ_extended_expect g mu)).
+  - exact: lexx.
+  - move=> p Hp x tail IH; change
+      ((ratr p)%:E*f x+enumQ_extended_expect f tail <=
+       (ratr p)%:E*g x+enumQ_extended_expect g tail).
+    apply: leeD IH; apply: lee_wpmul2l (Hfg x).
+    by rewrite lee_fin ler0q.
+  - move=> a b He IH; by rewrite /enumQ_extended_expect -He.
 Qed.
-
 Lemma enumQ_extended_expect_zero {A} (mu : EnumQ A) :
   enumQ_extended_expect (fun _ => 0) mu = 0.
-Proof. by elim: mu=> [|[p x] tail IH] //=; rewrite mule0 IH adde0. Qed.
-
-Lemma enumQ_extended_expect_app {A} (f : A -> \bar R) mu nu :
-  enumQ_extended_expect f (mu ++ nu) = enumQ_extended_expect f mu + enumQ_extended_expect f nu.
-Proof. by elim: mu=> [|[p x] tail IH] /=; rewrite ?add0e ?IH ?addeA. Qed.
-
-Lemma enumQ_extended_expect_scale {A} (f : A -> \bar R) p mu :
-  (forall x, 0 <= f x) ->
-  enumQ_extended_expect f (scale_EnumQ p mu) =
-    (ratr (Qval p))%:E * enumQ_extended_expect f mu.
 Proof.
-  move=> Hf. elim: mu=> [|[q x] tail IH] /=; first by rewrite mule0.
-  rewrite IH ge0_muleDr; last 2 first.
-  - apply mule_ge0; [|exact: Hf]. by rewrite lee_fin ler0q; apply: le_nnQ0.
-  - exact: enumQ_extended_expect_nonnegative.
-  congr (_ + _).
-  change ((ratr (Qval p * Qval q))%:E * f x =
-    (ratr (Qval p))%:E * ((ratr (Qval q))%:E * f x)).
-  by rewrite rmorphM EFinM muleA.
+  rewrite /enumQ_extended_expect; elim: (enumQ_raw mu)=> [|[p x] tail IH] //=.
+  by rewrite mule0 IH adde0.
 Qed.
+Lemma enumQ_extended_raw_app {A} (f : A -> \bar R) mu nu :
+  enumQ_extended_raw f (mu++nu) = enumQ_extended_raw f mu + enumQ_extended_raw f nu.
+Proof. by elim: mu=> [|[p x] tail IH] /=; rewrite ?add0e ?IH ?addeA. Qed.
+Lemma enumQ_extended_expect_app {A} (f : A -> \bar R) mu nu :
+  enumQ_extended_expect f (enumQ_app mu nu) =
+  enumQ_extended_expect f mu + enumQ_extended_expect f nu.
+Proof. exact: enumQ_extended_raw_app. Qed.
 
+Lemma enumQ_extended_expect_scale {A} (f : A -> \bar R) p (Hp : (0 <= p)%R) mu :
+  (forall x, 0 <= f x) ->
+  enumQ_extended_expect f (scale_EnumQ Hp mu) = (ratr p)%:E * enumQ_extended_expect f mu.
+Proof.
+  move=> Hf; apply (enumQ_ind_raw (P := fun mu =>
+    enumQ_extended_expect f (scale_EnumQ Hp mu) =
+    (ratr p)%:E * enumQ_extended_expect f mu)).
+  - by rewrite /enumQ_extended_expect /= mule0.
+  - move=> q Hq x tail IH; change
+      ((ratr (p*q))%:E*f x+enumQ_extended_expect f (scale_EnumQ Hp tail) =
+       (ratr p)%:E*((ratr q)%:E*f x+enumQ_extended_expect f tail)).
+    rewrite IH ge0_muleDr; last 2 first.
+    + apply mule_ge0; [|exact: Hf]; by rewrite lee_fin ler0q.
+    + exact: enumQ_extended_expect_nonnegative.
+    by rewrite rmorphM EFinM muleA.
+  - move=> a b He IH; move: IH.
+    change (enumQ_extended_raw f (finite_weight_map p (enumQ_raw a)) =
+      (ratr p)%:E*enumQ_extended_raw f (enumQ_raw a) ->
+      enumQ_extended_raw f (finite_weight_map p (enumQ_raw b)) =
+      (ratr p)%:E*enumQ_extended_raw f (enumQ_raw b)).
+    by rewrite He.
+Qed.
 Lemma enumQ_extended_expect_bind {A B} (f : B -> \bar R)
     (mu : EnumQ A) (k : A -> EnumQ B) :
   (forall x, 0 <= f x) ->
   enumQ_extended_expect f (bind_EnumQ mu k) =
     enumQ_extended_expect (fun x => enumQ_extended_expect f (k x)) mu.
 Proof.
-  move=> Hf. elim: mu=> [|[p x] tail IH] //=.
-  by rewrite enumQ_extended_expect_app enumQ_extended_expect_scale // IH.
+  move=> Hf; apply (enumQ_ind_raw (P := fun mu =>
+    enumQ_extended_expect f (bind_EnumQ mu k) =
+    enumQ_extended_expect (fun x => enumQ_extended_expect f (k x)) mu)).
+  - reflexivity.
+  - move=> p Hp x tail IH.
+    change (enumQ_extended_expect f (enumQ_app (scale_EnumQ Hp (k x)) (bind_EnumQ tail k)) =
+      (ratr p)%:E*enumQ_extended_expect f (k x)+
+      enumQ_extended_expect (fun x => enumQ_extended_expect f (k x)) tail).
+    by rewrite enumQ_extended_expect_app enumQ_extended_expect_scale // IH.
+  - move=> a b He IH; move: IH.
+    change (enumQ_extended_raw f (finite_bind (enumQ_raw a) (fun x => enumQ_raw (k x))) =
+      enumQ_extended_raw (fun x => enumQ_extended_expect f (k x)) (enumQ_raw a) ->
+      enumQ_extended_raw f (finite_bind (enumQ_raw b) (fun x => enumQ_raw (k x))) =
+      enumQ_extended_raw (fun x => enumQ_extended_expect f (k x)) (enumQ_raw b)).
+    by rewrite He.
 Qed.
-
 Lemma enumQ_extended_expect_rat {A} (f : A -> rat) mu :
   enumQ_extended_expect (fun x => (ratr (f x))%:E) mu = (ratr (enumQ_expect f mu))%:E.
 Proof.
-  elim: mu=> [|[p x] tail IH] /=; first by rewrite rmorph0.
+  change (enumQ_extended_raw (fun x => (ratr (f x))%:E) (enumQ_raw mu) =
+    (ratr (finite_expect f (enumQ_raw mu)))%:E).
+  elim: (enumQ_raw mu)=> [|[p x] tail IH] /=; first by rewrite rmorph0.
   by rewrite IH rmorphD rmorphM EFinD EFinM.
 Qed.
 

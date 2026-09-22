@@ -2,14 +2,16 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 
 From Coq Require Import Lia.
+From PTree.Prob.Backend.Common Require Import FiniteListAlgebra.
 From Coq.Logic Require Import FunctionalExtensionality.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrnat eqtype ssralg ssrnum rat.
 
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
+Require Import PTree.Prob.Backend.Common.FiniteRecordExtensionality PTree.Prob.Backend.Common.FiniteEnum PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -29,20 +31,37 @@ Unset Printing Implicit Defensive.
 Import EnumQ.
 Import PTree.Prob.Backend.EnumQ.Map.
 Import GRing.Theory.
-Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
 Local Open Scope ring_scope.
+
+Local Lemma vn_raw_eq {A} (mu nu : EnumQ A) :
+  enumQ_raw mu = enumQ_raw nu -> mu = nu.
+Proof. exact: finite_enum_raw_eq. Qed.
 
 Lemma ptree_vn_bind_ret_eq {A B} (x : A) (k : A -> EnumQ B) :
   bind_EnumQ (ret_EnumQ x) k = k x.
 Proof.
-  cbn [ret_EnumQ bind_EnumQ].
-  change (List.app (scale_EnumQ (fst (1, x)) (k x)) nil = k x).
-  have Hone : scale_EnumQ (fst (1, x)) (k x) = k x.
-  { induction (k x) as [|[p y] tl IH]=> //=.
-    rewrite IH. f_equal. f_equal. apply val_inj.
-    exact: mul1r (Qval p). }
-  rewrite Hone List.app_nil_r. reflexivity.
+  apply finite_enum_raw_eq.
+  change (finite_bind ((1,x)::nil) (fun a => enumQ_raw(k a)) = enumQ_raw(k x)).
+  rewrite -finite_bind_with_numeric.
+  exact (@finite_bind_with_left_unit rat (fun p q => p*q) A B 1 x
+    (fun a => enumQ_raw(k a)) (fun p => mul1r p)).
 Qed.
+Local Lemma vn_round_record_eq : vn_round_measure = vn_transition.
+Proof. apply finite_enum_raw_eq; exact: vn_round_measure_eq. Qed.
+Local Lemma vn_bind_nil_eq {A} B (mu : EnumQ A) :
+  bind_EnumQ mu (fun _ => @enumQ_zero B) = enumQ_zero.
+Proof.
+  apply finite_enum_raw_eq.
+  change (finite_bind (enumQ_raw mu) (fun _ => @nil (rat*B)) = nil).
+  by elim: (enumQ_raw mu)=> [|[p x] tl IH] //=.
+Qed.
+Local Lemma vn_bind_assoc_eq {A B C} (mu : EnumQ A) (k : A -> EnumQ B) (h : B -> EnumQ C) :
+  bind_EnumQ (bind_EnumQ mu k) h = bind_EnumQ mu (fun x => bind_EnumQ (k x) h).
+Proof. apply finite_enum_raw_eq; exact: bind_EnumQ_assoc. Qed.
+Local Lemma vn_bind_ext_eq {A B} (mu : EnumQ A) (k h : A -> EnumQ B) :
+  (forall x, k x = h x) -> bind_EnumQ mu k = bind_EnumQ mu h.
+Proof. move=> H; apply finite_enum_raw_eq, bind_EnumQ_ext=> x; by rewrite H. Qed.
+
 Local Notation MF := (FreeOmega EnumQ).
 Local Notation vn_head := (stable_head vnE EnumQ bool).
 Local Notation vn_round_head := (stable_head vnE EnumQ (unit + bool)).
@@ -79,10 +98,10 @@ Proof.
   change (free_omega_observes ptree_vn_round_head_value
     (FOSample vn_biased_coin (fun _ =>
       FOSample vn_biased_coin (fun _ => FOZero)))
-    (nil : EnumQ (unit + bool))).
-  rewrite <- (enumQ_bind_nil (A := bool) (unit + bool) vn_biased_coin).
+    (enumQ_zero : EnumQ (unit + bool))).
+  rewrite <- (vn_bind_nil_eq (A := bool) (unit + bool) vn_biased_coin).
   constructor. intro b1.
-  rewrite <- (enumQ_bind_nil (A := bool) (unit + bool) vn_biased_coin).
+  rewrite <- (vn_bind_nil_eq (A := bool) (unit + bool) vn_biased_coin).
   constructor. intro b2. constructor.
 Qed.
 
@@ -100,7 +119,7 @@ Proof.
     (FOSample vn_biased_coin (fun b1 =>
       FOSample vn_biased_coin (fun b2 =>
         FORet (FHRet (vn_round_result b1 b2))))) vn_transition).
-  rewrite <- vn_round_measure_eq.
+  rewrite <- vn_round_record_eq.
   unfold vn_round_measure.
   constructor. intro b1.
   constructor. intro b2. constructor.
@@ -110,7 +129,7 @@ Corollary ptree_vn_raw_round_is_transition :
   free_omega_observes ptree_vn_round_head_value
     ptree_vn_raw_round vn_round_measure.
 Proof.
-  rewrite vn_round_measure_eq. exact ptree_vn_raw_round_observes.
+  rewrite vn_round_record_eq. exact ptree_vn_raw_round_observes.
 Qed.
 
 Definition ptree_vn_compiled_round : MF vn_round_head :=
@@ -127,7 +146,7 @@ Proof.
     vn_transition).
   assert (Hbind : bind_EnumQ vn_transition (fun next => ret_EnumQ next) =
       vn_transition).
-  { rewrite bind_ret_emap. apply emap_id. }
+  { apply vn_raw_eq; rewrite bind_ret_emap; apply emap_id. }
   replace vn_transition with
     (bind_EnumQ vn_transition (fun next => ret_EnumQ next)) at 2
     by exact Hbind.
@@ -203,8 +222,8 @@ Lemma ptree_vn_raw_hitting_zero_observes :
 Proof.
   unfold ptree_vn_raw_hitting. rewrite ptree_vn_raw_observe.
   change (free_omega_observes ptree_vn_head_value
-    (FOSample vn_biased_coin (fun _ => FOZero)) (nil : EnumQ bool)).
-  rewrite <- (enumQ_bind_nil (A := bool) bool vn_biased_coin).
+    (FOSample vn_biased_coin (fun _ => FOZero)) (enumQ_zero : EnumQ bool)).
+  rewrite <- (vn_bind_nil_eq (A := bool) bool vn_biased_coin).
   constructor. intro b. constructor.
 Qed.
 
@@ -249,10 +268,10 @@ Proof.
                 (fun _ : unit => vn_transition) tt
             | inr b => ret_EnumQ b
             end))).
-      rewrite <- vn_round_measure_eq. unfold vn_round_measure.
-      rewrite bind_EnumQ_assoc.
-      apply bind_EnumQ_ext=> b1. rewrite bind_EnumQ_assoc.
-      apply bind_EnumQ_ext=> b2.
+      rewrite <- vn_round_record_eq. unfold vn_round_measure.
+      rewrite vn_bind_assoc_eq.
+      apply vn_bind_ext_eq=> b1. rewrite vn_bind_assoc_eq.
+      apply vn_bind_ext_eq=> b2.
       rewrite ptree_vn_bind_ret_eq.
       destruct (vn_round_result b1 b2) as [u|b]; [destruct u|]; reflexivity. }
     rewrite Hout.
@@ -521,7 +540,7 @@ Lemma ptree_vn_direct_observation_eq :
 Proof.
   unfold ptree_vn_direct_observation.
   change (bind_EnumQ vn_fair (fun b => ret_EnumQ b) = vn_fair).
-  rewrite bind_ret_emap. apply emap_id.
+  apply vn_raw_eq; rewrite bind_ret_emap; apply emap_id.
 Qed.
 
 Lemma ptree_vn_heads_total :

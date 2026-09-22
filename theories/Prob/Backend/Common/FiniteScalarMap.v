@@ -5,8 +5,8 @@ Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import List.
-From mathcomp Require Import ssreflect ssrbool ssrfun seq ssralg ssrnum order.
-From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist FiniteListAlgebra.
+From mathcomp Require Import ssreflect ssrbool ssrfun eqtype seq ssralg ssrnum order.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist FiniteListAlgebra FiniteAtoms.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -51,6 +51,29 @@ Proof.
   rewrite -!finite_bind_with_numeric.
   apply finite_bind_with_scalar_map=> p q; exact: rmorphM.
 Qed.
+
+Lemma finite_map_weights_atom {A : eqType} (mu : list (R*A)) x :
+  finite_atom x (finite_map_weights mu) = f (finite_atom x mu).
+Proof.
+  elim: mu=> [|[p y] tl IH]; first by rewrite /= rmorph0.
+  rewrite /finite_map_weights /= !finite_atom_cons -/finite_map_weights IH rmorphD.
+  case: (y == x); by rewrite ?rmorph0.
+Qed.
+Lemma finite_map_weights_scale {A} p (mu : list (R*A)) :
+  finite_map_weights (finite_weight_map p mu) =
+  finite_weight_map (f p) (finite_map_weights mu).
+Proof. by elim: mu=> [|[q x] tl IH] //=; rewrite rmorphM IH. Qed.
+Lemma finite_map_weights_map {A B} (g : A -> B) (mu : list (R*A)) :
+  finite_map_weights (List.map (fun px => (px.1,g px.2)) mu) =
+  List.map (fun px => (px.1,g px.2)) (finite_map_weights mu).
+Proof. by elim: mu=> [|[p x] tl IH] //=; rewrite IH. Qed.
+Lemma finite_map_weights_app {A} (mu nu : list (R*A)) :
+  finite_map_weights (mu++nu) = finite_map_weights mu ++ finite_map_weights nu.
+Proof. exact: List.map_app. Qed.
+Lemma finite_map_weights_filter {A} (P : A -> bool) (mu : list (R*A)) :
+  finite_map_weights (List.filter (fun px => P px.2) mu) =
+  List.filter (fun px => P px.2) (finite_map_weights mu).
+Proof. by elim: mu=> [|[p x] tl IH] //=; case: (P x)=> /=; rewrite IH. Qed.
 
 Definition finite_enum_map_weights {A} (mu : FiniteEnum R A) : FiniteEnum S A :=
   finite_enum_of_list (finite_map_weights_nonnegative (finite_enum_nonnegative mu)).

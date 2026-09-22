@@ -1,4 +1,7 @@
-(** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+(** Deprecated weighted-legacy scalar representation. Maintained finite
+    backends store ordinary rat/real coefficients with container invariants.
+    This module remains only for legacy syntax and historical migration tests;
+    it is not re-exported by any maintained backend or public facade. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Warnings "-redundant-canonical-projection".

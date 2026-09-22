@@ -8,7 +8,7 @@ From Coq.Program Require Import Equality.
 From Coq.Arith Require Import PeanoNat.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg ssrnum order rat reals.
 From mathcomp.analysis Require Import ereal.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.SemanticCoupling.
+Require Import PTree.Prob.Backend.Common.FiniteAtoms PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.SemanticCoupling.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -17,7 +17,7 @@ Require Import PTree.Prob.Backend.EnumQ.FreeOmega.UpperExpectation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import EnumQ PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling RatSubTypes GRing.Theory Num.Theory Order.Theory.
+Import EnumQ PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling GRing.Theory Num.Theory Order.Theory.
 Import EnumQCouplingClassical.
 Local Open Scope ring_scope.
 Local Open Scope ereal_scope.
@@ -27,73 +27,90 @@ Variable F : realType.
 Local Notation expect := (@enumQ_extended_expect F).
 
 Lemma enumQ_extended_expect_filter_split {A : eqType} (f : A -> \bar F) mu a :
-  expect f mu = (ratr (Qval (acc_mass a mu)))%:E * f a +
-    expect f [seq h <- mu | snd h != a].
+  expect f mu = (ratr (acc_mass a mu))%:E * f a +
+    expect f (enumQ_filter (fun h => snd h != a) mu).
 Proof.
-  induction mu as [|[p x] tail IH]; cbn [enumQ_extended_expect filter].
-  - by rewrite /= rmorph0 mul0e add0e.
-  - rewrite acc_mass_cons. destruct (x == a) eqn:Hxa.
-    + move/eqP: Hxa=> Hxa. subst x. cbn. rewrite IH eq_refl /=.
-      change ((ratr (Qval p))%:E * f a +
-        ((ratr (Qval (acc_mass a tail)))%:E * f a + expect f [seq h <- tail | snd h != a]) =
-        (ratr (Qval (acc_mass a tail) + Qval p))%:E * f a +
-          expect f [seq h <- tail | snd h != a]).
-      rewrite rmorphD EFinD ge0_muleDl; last 2 first;
-        try by rewrite lee_fin ler0q; apply: le_nnQ0.
-      rewrite !addeA. congr (_ + _). exact: addeC.
-    + rewrite Hxa /= IH addr0. exact: addeCA.
+  apply (enumQ_ind_raw (P := fun mu =>
+    expect f mu = (ratr (acc_mass a mu))%:E*f a+
+      expect f (enumQ_filter (fun h => snd h != a) mu))).
+  - by rewrite /enumQ_extended_expect /acc_mass /= rmorph0 mul0e add0e.
+  - move=> p Hp x tail IH.
+    change ((ratr p)%:E*f x+expect f tail =
+      (ratr (acc_mass a (enumQ_cons Hp x tail)))%:E*f a+
+      enumQ_extended_raw f (List.filter (fun h => snd h != a) ((p,x)::enumQ_raw tail))).
+    rewrite acc_mass_cons /=.
+    case Hxa: (x == a).
+    + move/eqP: Hxa=> Hxa; subst x; rewrite /= IH.
+      rewrite rmorphD EFinD ge0_muleDl; last 2 first.
+      * rewrite lee_fin ler0q; exact: finite_atom_nonnegative (enumQ_nonnegative tail).
+      * by rewrite lee_fin ler0q.
+      by rewrite addeA [(_ * f a + _ * f a)]addeC.
+    + by rewrite addr0 IH /= addeCA.
+  - move=> b c He IH; move: IH; unfold enumQ_raw in He.
+    by rewrite /enumQ_extended_expect /acc_mass /enumQ_filter /enumQ_raw /= He.
 Qed.
 
 Lemma enumQ_extended_expect_mass_zero {A : eqType} (f : A -> \bar F) mu :
   (forall a, acc_mass a mu = 0%R) -> expect f mu = 0.
 Proof.
-  elim: mu=> [|[p x] tail IH] Hzero //=.
-  have Hp : p = 0%R.
-  { have Hx := Hzero x. rewrite acc_mass_cons eq_refl in Hx.
-    apply/eqP. have Hsum : (acc_mass x tail + p == 0)%R by rewrite Hx.
-    have Hparts : (acc_mass x tail == 0%R) && (p == 0%R).
-    { rewrite -paddr_eq0 ?le_nnQ0 //. }
-    exact (proj2 (andP Hparts)). }
-  rewrite Hp /= rmorph0 mul0e add0e. apply IH=> a.
-  move: (Hzero a). rewrite (@acc_mass_cons_zero _ tail a (p, x) Hp). exact.
+  apply (enumQ_ind_raw (P := fun mu =>
+    (forall a, acc_mass a mu = 0%R) -> expect f mu = 0)).
+  - reflexivity.
+  - move=> p Hp x tail IH Hzero.
+    have Hx := Hzero x; rewrite acc_mass_cons eq_refl in Hx.
+    have Hatom : (0 <= acc_mass x tail)%R := finite_atom_nonnegative x (enumQ_nonnegative tail).
+    have Hpzero : p = 0%R.
+    { apply/eqP; have Hsum : (acc_mass x tail + p == 0)%R by rewrite Hx.
+      rewrite paddr_eq0 // in Hsum; exact (proj2 (andP Hsum)). }
+    change ((ratr p)%:E*f x+expect f tail=0).
+    rewrite Hpzero rmorph0 mul0e add0e; apply IH=> a.
+    have Ha := Hzero a; rewrite acc_mass_cons Hpzero in Ha.
+    by case: (x == a) in Ha; rewrite addr0 in Ha.
+  - move=> b c He IH; move: IH; by rewrite /enumQ_extended_expect /acc_mass He.
 Qed.
 
 Lemma enumQ_extended_expect_eqenum {A : eqType} (f : A -> \bar F) mu nu :
   mu ==EnumQ nu -> expect f mu = expect f nu.
 Proof.
-  move: mu nu. refine (seq_strong_induction (P := fun mu => forall nu,
+  move: mu nu; refine (enumQ_size_induction (P := fun mu => forall nu,
     mu ==EnumQ nu -> expect f mu = expect f nu) _).
-  move=> mu IH nu Hmn. destruct mu as [|[p a] tail].
-  - symmetry. apply enumQ_extended_expect_mass_zero=> x.
-    symmetry. move: (Hmn x). cbn. exact.
-  - rewrite (enumQ_extended_expect_filter_split f ((p,a) :: tail) a).
-    rewrite (enumQ_extended_expect_filter_split f nu a) (Hmn a).
-    congr (_ + _). apply IH.
-    + apply/ssrnat.ltP. rewrite size_filter /= eq_refl /=.
-      apply/ssrnat.ltP. exact: leq_ltn_trans (count_size _ _) (ltnSn _).
+  move=> mu IH nu Hmn; case Hraw: (enumQ_raw mu)=> [|[p a] tail].
+  - have Hz : expect f mu = 0 by rewrite /enumQ_extended_expect Hraw.
+    rewrite Hz; symmetry; apply enumQ_extended_expect_mass_zero=> x.
+    rewrite -(Hmn x) /acc_mass Hraw; reflexivity.
+  - rewrite (enumQ_extended_expect_filter_split f mu a)
+      (enumQ_extended_expect_filter_split f nu a) (Hmn a).
+    congr (_+_); apply IH.
+    + change (List.length (List.filter (fun px => snd px != a) (enumQ_raw mu)) < List.length (enumQ_raw mu))%coq_nat.
+      rewrite Hraw /= eq_refl /=; apply Nat.lt_succ_r; apply List.filter_length_le.
     + exact: (enumQ_filter_proper (fun x : A => x != a) Hmn).
 Qed.
 
 Lemma enumQ_extended_expect_emap {A B} (k : A -> B) (f : B -> \bar F) mu :
   expect f (emap k mu) = expect (fun x => f (k x)) mu.
-Proof. by elim: mu=> [|[p x] tail IH] //=; rewrite IH. Qed.
+Proof.
+  change (enumQ_extended_raw f (List.map (fun px => (fst px,k(snd px))) (enumQ_raw mu)) =
+    enumQ_extended_raw (fun x => f(k x)) (enumQ_raw mu)).
+  by elim: (enumQ_raw mu)=> [|[p x] tail IH] //=; rewrite IH.
+Qed.
 
 Lemma enumQ_extended_expect_ae_mono {A} (f g : A -> \bar F) mu :
   enumQ_ae mu (fun x => f x <= g x) -> expect f mu <= expect g mu.
 Proof.
-  induction mu as [|[p x] tail IH]; intro Hae; cbn [enumQ_extended_expect].
-  - exact: lexx.
-  - destruct (p == nnQ_0) eqn:Hp.
-    + move/eqP: Hp=> ->. cbn [Qval nnQ_0]. rewrite rmorph0 !mul0e !add0e.
-      apply IH. intros q y Hy Hq. apply (Hae q y (or_intror Hy) Hq).
-    + have Htail : enumQ_ae tail (fun y => f y <= g y).
-      { intros q y Hy Hq. apply (Hae q y (or_intror Hy) Hq). }
-      apply: leeD (IH Htail).
-      have Hpx : f x <= g x.
-      { apply (Hae p x (or_introl (Logic.eq_refl (p,x)))).
-        intro Hz. rewrite Hz eq_refl in Hp. discriminate. }
-      apply: lee_wpmul2l Hpx.
-      by rewrite lee_fin ler0q; apply le_nnQ0.
+  apply (enumQ_ind_raw (P := fun mu =>
+    enumQ_ae mu (fun x => f x <= g x) -> expect f mu <= expect g mu)).
+  - move=> _; exact: lexx.
+  - move=> p Hp x tail IH Hae.
+    have Htail : enumQ_ae tail (fun y => f y <= g y).
+    { intros q y Hy Hq; exact (Hae q y (or_intror Hy) Hq). }
+    change ((ratr p)%:E*f x+expect f tail <= (ratr p)%:E*g x+expect g tail).
+    case Hzero: (p == 0%R).
+    + move/eqP: Hzero=> ->; rewrite rmorph0 !mul0e !add0e; exact: IH.
+    + apply: leeD (IH Htail); apply: lee_wpmul2l.
+      * by rewrite lee_fin ler0q.
+      * apply (Hae p x (or_introl (Logic.eq_refl _)))=> Hz.
+        by rewrite Hz eq_refl in Hzero.
+  - move=> b c He IH; move: IH; by rewrite /enumQ_ae /enumQ_extended_expect He.
 Qed.
 
 Lemma enumQ_coupling_extended_expect {A B : eqType} (T : A -> B -> Prop)

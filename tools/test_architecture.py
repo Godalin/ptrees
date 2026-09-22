@@ -4,6 +4,13 @@ import audit_architecture as architecture
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_native_rational_backends_do_not_import_legacy(self):
+        for owner in ['Prob/Backend/EnumQ/Representation', 'Prob/Backend/SubEnumQ/Measure',
+                      'Prob/Backend/SubEnumR/Representation', 'Prob/Backend/Common/FiniteEnum']:
+            for legacy in ['Prob/Legacy/RatSubTypes', 'Prob/Legacy/RationalDiscrete']:
+                with self.subTest(owner=owner, legacy=legacy):
+                    self.assertFalse(architecture.permitted(owner, legacy))
+
     def test_mathcomp_native_excludes_completion(self):
         self.assertFalse(architecture.permitted('Prob/Backend/MathComp/Measure',
                                                'Prob/FreeOmega/Definition'))

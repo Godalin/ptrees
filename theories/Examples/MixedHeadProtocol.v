@@ -5,6 +5,7 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From PTree.Eq Require Import StableHittingRelation.
 From Coq.Program Require Import Equality.
 From Coq Require Import FunctionalExtensionality.
@@ -12,7 +13,7 @@ From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.IndexedCoupling PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.EnumQ.Iteration.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.IndexedCoupling PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -45,31 +46,37 @@ HB.instance Definition _ := hasDecEq.Build mixed_outcome mixed_outcome_eqP.
 
 (** Independent bits: r and h are fair, s has P(true)=3/4. Public c
     flips s; hidden h affects only the continuation, not the current label. *)
-Definition mixed_eighth : nnQ := mknnQ (1 / 8) ltac:(by []).
-Definition mixed_three_eighths : nnQ := mknnQ (3 / 8) ltac:(by []).
-Definition mixed_sixteenth : nnQ := mknnQ (1 / 16) ltac:(by []).
-Definition mixed_three_sixteenths : nnQ := mknnQ (3 / 16) ltac:(by []).
-Definition biased_triple_raw : EnumQ (bool * bool * bool) :=
-  [:: (mixed_sixteenth, (false,false,false));
+Definition mixed_eighth : rat := 1 / 8.
+Definition mixed_three_eighths : rat := 3 / 8.
+Definition mixed_sixteenth : rat := 1 / 16.
+Definition mixed_three_sixteenths : rat := 3 / 16.
+Definition biased_triple_raw : EnumQ (bool * bool * bool).
+Proof.
+  refine (enumQ_of_list (mu := [:: (mixed_sixteenth, (false,false,false));
       (mixed_sixteenth, (false,false,true));
       (mixed_three_sixteenths, (false,true,false));
       (mixed_three_sixteenths, (false,true,true));
       (mixed_sixteenth, (true,false,false));
       (mixed_sixteenth, (true,false,true));
       (mixed_three_sixteenths, (true,true,false));
-      (mixed_three_sixteenths, (true,true,true))].
-Definition mixed_outcomes_raw (c : bool) : EnumQ mixed_outcome :=
-  let w0 := if c then mixed_three_eighths else mixed_eighth in
+      (mixed_three_sixteenths, (true,true,true))]) _).
+  intros p x [He|[He|[He|[He|[He|[He|[He|[He|[]]]]]]]]]; inversion He; subst; by vm_compute.
+Defined.
+Definition mixed_outcomes_raw (c : bool) : EnumQ mixed_outcome.
+Proof.
+  refine (enumQ_of_list (mu := let w0 := if c then mixed_three_eighths else mixed_eighth in
   let w1 := if c then mixed_eighth else mixed_three_eighths in
   [:: (w0, Stop false); (w1, Stop true);
-      (w0, Continue false); (w1, Continue true)].
+      (w0, Continue false); (w1, Continue true)]) _).
+  intros p x [He|[He|[He|[He|[]]]]]; inversion He; subst; destruct c; by vm_compute.
+Defined.
 Lemma biased_triple_bound : enumQ_subprob biased_triple_raw.
 Proof. by vm_compute. Qed.
 Lemma mixed_outcomes_bound c : enumQ_subprob (mixed_outcomes_raw c).
 Proof. destruct c; by vm_compute. Qed.
 Definition biased_triple := enumQ_as_subprob biased_triple_bound.
 Definition mixed_outcomes c := enumQ_as_subprob (mixed_outcomes_bound c).
-Lemma mixed_outcomes_prune c : enumQ_prune (mixed_outcomes_raw c) = mixed_outcomes_raw c.
+Lemma mixed_outcomes_prune c : enumQ_raw (enumQ_prune (mixed_outcomes_raw c)) = enumQ_raw (mixed_outcomes_raw c).
 Proof. destruct c; reflexivity. Qed.
 
 Definition mixed_encode m c (rsh : bool * bool * bool) : mixed_outcome :=
@@ -103,11 +110,12 @@ Polymorphic Lemma mixed_triple_outcome_lift m c :
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ (mixed_outcome_rel m c)
     biased_triple (mixed_outcomes c).
 Proof.
-  change (indexed_coupling (mixed_outcome_rel m c) biased_triple_raw (enumQ_prune (mixed_outcomes_raw c))).
-  rewrite mixed_outcomes_prune.
+  change (indexed_coupling (mixed_outcome_rel m c) (enumQ_prune biased_triple_raw) (enumQ_prune (mixed_outcomes_raw c))).
+  eapply indexed_coupling_raw with (mu := biased_triple_raw) (nu := mixed_outcomes_raw c);
+    [reflexivity|symmetry; apply mixed_outcomes_prune|].
   apply indexed_coupling_of_coupling. exists (mixed_joint m c).
   - apply enumQ_eq_eq. reflexivity.
-  - intros [b|b]; destruct m,c,b; apply val_inj; vm_compute; reflexivity.
+  - intros [b|b]; destruct m,c,b; vm_compute; reflexivity.
   - intros [[r s] h] [b|b] Hmass; destruct m,c,r,s,h,b;
       try reflexivity; vm_compute in Hmass; discriminate.
 Qed.

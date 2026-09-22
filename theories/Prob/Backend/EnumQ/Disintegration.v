@@ -1,108 +1,114 @@
-(** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
-Set Warnings "-notation-overridden".
-Set Warnings "-ambiguous-paths".
+(** Conditional resampling of an actual rational joint. The complete pair
+    is retained, positive fibers are normalized, and null fibers stay zero. *)
+Set Warnings "-notation-overridden,-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From Coq Require Import List.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrfun ssralg ssrnum order rat.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.EnumQ.Iteration.
-Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure.
-From PTree.Prob.Interface Require Import SemanticCoupling.
-Require Import PTree.Prob.Backend.EnumQ.SemanticCoupling.
-
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteAtoms FiniteListAlgebra.
+From PTree.Prob.Backend.EnumQ Require Import Representation Map Bind Coupling FrontierLift Iteration Measure SemanticCoupling.
+From PTree.Prob.Backend.SubEnumQ Require Import Measure.
+From PTree.Prob.Interface Require Import Measure Subprobability AE Coupling Omega Mixed SemanticCoupling.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import EnumQ PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling RatSubTypes GRing.Theory Order.Theory.
+Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Import EnumQCouplingClassical.
 Local Open Scope ring_scope.
-Local Open Scope order_scope.
 
-(** Conditional resampling retains the WHOLE pair, including latent
-    randomness, rather than selecting an arbitrary related partner.
-    A null fiber has zero mass; a positive fiber is normalized. *)
-Definition enumQ_fiber_row {A B : eqType}
-    (marginal : EnumQ A) (joint : EnumQ (A * B)) (a : A) : EnumQ (A * B) :=
-  [seq (nnq_div (fst ab) (acc_mass a marginal), snd ab)
-    | ab <- joint & fst (snd ab) == a].
-
-Definition enumQ_fiber_kernel {A B : eqType} (joint : EnumQ (A * B)) :=
+Definition enumQ_fiber_row {A B : eqType} (marginal : EnumQ A)
+    (joint : EnumQ (A*B)) (a : A) : EnumQ (A*B).
+Proof.
+  refine (enumQ_of_list (mu := [seq (ab.1 / acc_mass a marginal,ab.2)
+    | ab <- enumQ_raw joint & ab.2.1 == a]) _).
+  move=> w ab /List.in_map_iff [[p xy] [He Hin]].
+  move/List.filter_In: Hin=> [Hin _]; inversion He; subst w ab.
+  apply divr_ge0; [exact (enumQ_nonnegative joint p xy Hin)|exact: acc_mass_nonnegative].
+Defined.
+Definition enumQ_fiber_kernel {A B : eqType} (joint : EnumQ (A*B)) :=
   enumQ_fiber_row (emap fst joint) joint.
 
-Lemma nnq_scale_div p q m :
-  p * nnq_div q m = nnq_div (p * q) m.
-Proof. apply val_inj. by rewrite /nnq_div /= mulrA. Qed.
-
-Lemma enumQ_fiber_row_glue {A B : eqType}
-    (marginal : EnumQ A) (joint : EnumQ (A * B)) a p :
-  scale_EnumQ p (enumQ_fiber_row marginal joint a) =
-  emap snd (glue_row marginal (emap (fun ab => (fst ab, ab)) joint) (p, (tt,a))).
+Lemma enumQ_fiber_row_glue {A B : eqType} (marginal : EnumQ A)
+    (joint : EnumQ (A*B)) a p (Hp : 0 <= p) :
+  enumQ_raw (scale_EnumQ Hp (enumQ_fiber_row marginal joint a)) =
+  List.map (fun px => (px.1,px.2.2))
+    (glue_row marginal (emap (fun ab => (ab.1,ab)) joint) (p,(tt,a))).
 Proof.
-  elim: joint => [|[q [x y]] joint IH] //=.
-  rewrite /enumQ_fiber_row /glue_row /emap /=.
-  case Hxa: (x == a) => /=; rewrite -/enumQ_fiber_row -/glue_row -/emap in IH *.
-  - by rewrite nnq_scale_div IH.
-  - exact IH.
+  change (finite_weight_map p [seq (ab.1 / acc_mass a marginal,ab.2)
+    | ab <- enumQ_raw joint & ab.2.1 == a] =
+    List.map (fun px => (px.1,px.2.2))
+      (glue_row marginal (emap (fun ab => (ab.1,ab)) joint) (p,(tt,a)))).
+  rewrite /glue_row /enumQ_raw /emap /enumQ_map /finite_enum_map /=.
+  elim: (finite_enum_raw joint)=> [|[q [x y]] tl IH] //=.
+  case: (x == a)=> /=; by rewrite ?mulrA IH.
+Qed.
+Lemma enumQ_fiber_bind_glue {A B : eqType} (marginal outer : EnumQ A)
+    (joint : EnumQ (A*B)) :
+  enumQ_raw (bind_EnumQ outer (enumQ_fiber_row marginal joint)) =
+  enumQ_raw (emap snd (glue marginal (emap (fun a => (tt,a)) outer)
+    (emap (fun ab => (ab.1,ab)) joint))).
+Proof.
+  apply (enumQ_ind_raw (P := fun outer =>
+    enumQ_raw (bind_EnumQ outer (enumQ_fiber_row marginal joint)) =
+    enumQ_raw (emap snd (glue marginal (emap (fun a => (tt,a)) outer)
+      (emap (fun ab => (ab.1,ab)) joint))))).
+  - reflexivity.
+  - move=> p Hp a mu IH.
+    rewrite enumQ_cons_bind /enumQ_app /enumQ_raw /=.
+    change (finite_enum_raw (scale_EnumQ Hp (enumQ_fiber_row marginal joint a)) ++
+      finite_enum_raw (bind_EnumQ mu (enumQ_fiber_row marginal joint)) =
+      List.map (fun px => (px.1,px.2.2))
+        (glue_row marginal (emap (fun ab => (ab.1,ab)) joint) (p,(tt,a)) ++
+        List.flat_map (glue_row marginal (emap (fun ab => (ab.1,ab)) joint))
+          [seq (px.1,(tt,px.2)) | px <- enumQ_raw mu])).
+    rewrite List.map_app -enumQ_fiber_row_glue; congr (_ ++ _); exact IH.
+  - move=> mu nu H IH.
+    unfold enumQ_raw in H; move: IH.
+    by rewrite /enumQ_raw /bind_EnumQ /finite_enum_bind /emap /enumQ_map
+      /finite_enum_map /glue /= H.
 Qed.
 
-Lemma enumQ_fiber_bind_glue {A B : eqType}
-    (marginal outer : EnumQ A) (joint : EnumQ (A * B)) :
-  bind_EnumQ outer (enumQ_fiber_row marginal joint) =
-  emap snd (glue marginal (emap (fun a => (tt,a)) outer)
-    (emap (fun ab => (fst ab,ab)) joint)).
-Proof.
-  elim: outer => [|[p a] outer IH]; first reflexivity.
-  rewrite enumQ_cons_bind.
-  rewrite /glue /= emap_app enumQ_fiber_row_glue IH. reflexivity.
-Qed.
-
-(** Reconstruct the original joint, not merely its support or one
-    marginal.  Existing finite gluing supplies the probability calculation. *)
-Theorem enumQ_fiber_kernel_reconstruct {A B : eqType} (joint : EnumQ (A * B)) :
+Theorem enumQ_fiber_kernel_reconstruct {A B : eqType} (joint : EnumQ (A*B)) :
   bind_EnumQ (emap fst joint) (enumQ_fiber_kernel joint) ==EnumQ joint.
 Proof.
-  rewrite /enumQ_fiber_kernel enumQ_fiber_bind_glue.
   have Hleft : emap snd (emap (fun a : A => (tt,a)) (emap fst joint)) ==EnumQ emap fst joint.
-  { rewrite emap_comp emap_id. exact: enumQ_eq_refl. }
-  have Hright : emap fst (emap (fun ab : A * B => (fst ab,ab)) joint) ==EnumQ emap fst joint.
-  { rewrite emap_comp. exact: enumQ_eq_refl. }
-  eapply enumQ_eq_trans; [exact (glue_right_marginal Hleft Hright)|].
-  rewrite emap_comp. apply enumQ_eq_eq. exact (emap_id joint).
+  { apply enumQ_eq_eq; rewrite emap_comp; exact: emap_id. }
+  have Hright : emap fst (emap (fun ab : A*B => (ab.1,ab)) joint) ==EnumQ emap fst joint.
+  { apply enumQ_eq_eq; by rewrite emap_comp. }
+  eapply enumQ_eq_trans; first (apply enumQ_eq_eq; exact: enumQ_fiber_bind_glue).
+  eapply enumQ_eq_trans; first exact (glue_right_marginal Hleft Hright).
+  apply enumQ_eq_eq; rewrite emap_comp; exact: emap_id.
 Qed.
-
 Lemma enumQ_mass_sumq {A} (mu : EnumQ A) :
-  enumQ_mass mu = Qval (sumq (unzip1 mu)).
+  enumQ_mass mu = sumq (unzip1 (enumQ_raw mu)).
 Proof.
-  elim: mu => [|[p x] mu IH]; first reflexivity.
-  change (Qval p * 1 + enumQ_mass mu = Qval (p + sumq (unzip1 mu))).
-  rewrite mulr1 IH. reflexivity.
+  change (finite_expect (fun _ => 1) (enumQ_raw mu) = sumq (unzip1 (enumQ_raw mu))).
+  by elim: (enumQ_raw mu)=> [|[p x] tl IH] //=; rewrite mulr1 IH.
 Qed.
-
-Lemma enumQ_fiber_row_mass {A B : eqType}
-    (marginal : EnumQ A) (joint : EnumQ (A * B)) a :
-  enumQ_mass (enumQ_fiber_row marginal joint a) =
-  Qval (nnq_div (acc_mass a (emap fst joint)) (acc_mass a marginal)).
+Lemma enumQ_fiber_row_mass {A B : eqType} (marginal : EnumQ A)
+    (joint : EnumQ (A*B)) a :
+  enumQ_mass (enumQ_fiber_row marginal joint a) = acc_mass a (emap fst joint) / acc_mass a marginal.
 Proof.
-  have Hscale : scale_EnumQ 1 (enumQ_fiber_row marginal joint a) = enumQ_fiber_row marginal joint a.
-  { elim: (enumQ_fiber_row marginal joint a) => [|[p v] xs IH] //=.
-    by rewrite mul1r IH. }
-  rewrite -Hscale enumQ_fiber_row_glue.
-  unfold enumQ_mass at 1. rewrite enumQ_expect_one_emap.
-  change (enumQ_mass (glue_row marginal
-    (emap (fun ab : A * B => (fst ab, ab)) joint) (1, (tt,a))) =
-    Qval (nnq_div (acc_mass a (emap fst joint)) (acc_mass a marginal))).
-  rewrite enumQ_mass_sumq glue_row_sum /= emap_comp mul1r.
-  reflexivity.
+  have Ha : acc_mass a (emap fst joint) =
+    finite_expect (fun xy => if xy.1 == a then 1 else 0) (enumQ_raw joint).
+  { exact: finite_expect_map. }
+  rewrite Ha.
+  change (finite_expect (fun _ => 1)
+    [seq (ab.1 / acc_mass a marginal,ab.2) | ab <- enumQ_raw joint & ab.2.1 == a] =
+    finite_expect (fun xy => if xy.1 == a then 1 else 0) (enumQ_raw joint) / acc_mass a marginal).
+  elim: (enumQ_raw joint)=> [|[p [x y]] tl IH] /=; first by rewrite mul0r.
+  case: (x == a)=> /=.
+  - by rewrite !mulr1 IH mulrDl.
+  - by rewrite mulr0 add0r.
 Qed.
-
-Theorem enumQ_fiber_kernel_mass {A B : eqType} (joint : EnumQ (A * B)) a :
+Theorem enumQ_fiber_kernel_mass {A B : eqType} (joint : EnumQ (A*B)) a :
   enumQ_mass (enumQ_fiber_kernel joint a) =
   if acc_mass a (emap fst joint) == 0 then 0 else 1.
 Proof.
   rewrite /enumQ_fiber_kernel enumQ_fiber_row_mass.
-  case Hmass: (acc_mass a (emap fst joint) == 0).
-  - move/eqP: Hmass => ->. by rewrite nnq_div_zero_l.
-  - have Hnz : acc_mass a (emap fst joint) != 0 by rewrite /negb Hmass.
-    rewrite nnq_divE divff //.
+  case H: (acc_mass a (emap fst joint) == 0).
+  - by rewrite (eqP H) mul0r.
+  - by rewrite divff // H.
 Qed.
 
 Lemma enumQ_fiber_kernel_subprob {A B : eqType} (joint : EnumQ (A * B)) a :
@@ -133,7 +139,9 @@ Proof.
   change (enumQ_meas_eq
     (bind_EnumQ (bind_EnumQ (subenumQ_raw joint) (fun ab => ret_EnumQ (fst ab)))
       (enumQ_fiber_kernel (subenumQ_raw joint))) (subenumQ_raw joint)).
-  rewrite bind_ret_emap. apply enumQ_meas_eq_of_eqenum, enumQ_fiber_kernel_reconstruct.
+  apply enumQ_meas_eq_of_eqenum.
+  eapply enumQ_eq_trans; last exact: enumQ_fiber_kernel_reconstruct.
+  apply bind_EnumQ_outer_proper; apply enumQ_eq_eq; exact: bind_ret_emap.
 Qed.
 
 Lemma enumQ_fiber_row_fiber {A B : eqType}
@@ -155,7 +163,7 @@ Proof.
   apply List.filter_In in Hin. destruct Hin as [Hin Hfiber].
   injection Heq as Hw Hab. subst ab w.
   apply (HP p xy Hin). intro Hp. apply Hnz.
-  rewrite Hp. apply val_inj. by rewrite /nnq_div /= mul0r.
+  by rewrite Hp mul0r.
 Qed.
 
 Theorem subenumQ_disintegration_fiber {A B : eqType}
@@ -177,11 +185,10 @@ Theorem subenumQ_disintegration_total_ae {A B : eqType} (joint : SubEnumQ (A * B
 Proof.
   change (enumQ_ae (bind_EnumQ (subenumQ_raw joint) (fun ab => ret_EnumQ (fst ab)))
     (fun a => enumQ_mass (enumQ_fiber_kernel (subenumQ_raw joint) a) = 1)).
-  rewrite bind_ret_emap. intros p a Hin Hnz.
+  unfold enumQ_ae; rewrite bind_ret_emap. intros p a Hin Hnz.
   rewrite enumQ_fiber_kernel_mass.
   have Hmass := enumQ_entry_mass_nonzero Hin Hnz.
-  have Hz : (0 : nnQ) = nnQ_0 by apply val_inj.
-  by rewrite Hz (negbTE Hmass).
+  by rewrite (negbTE Hmass).
 Qed.
 
 (** This endpoint does not require clients to equip values (in particular
@@ -212,8 +219,8 @@ Lemma subenumQ_bind_ret_r {A} (mu : SubEnumQ A) :
   sem_eq (subenumQ_bind mu subenumQ_ret) mu.
 Proof.
   change (enumQ_meas_eq (bind_EnumQ (subenumQ_raw mu) ret_EnumQ) (subenumQ_raw mu)).
-  rewrite (@bind_ret_emap _ _ (fun x => x) (subenumQ_raw mu)) emap_id.
-  apply enumQ_repr_eq_implies_meas_eq. reflexivity.
+  apply enumQ_repr_eq_implies_meas_eq.
+  by rewrite /enumQ_repr_eq (@bind_ret_emap _ _ (fun x => x) (subenumQ_raw mu)) emap_id.
 Qed.
 
 (** Numeric totality supplies an actual mass-preserving coupling to a
@@ -226,16 +233,13 @@ Proof.
     (subenumQ_ret tt)).
   { change (enumQ_meas_eq
       (bind_EnumQ (subenumQ_raw mu) (fun _ => ret_EnumQ tt)) (ret_EnumQ tt)).
-    rewrite bind_ret_emap. apply enumQ_meas_eq_of_eqenum. intros [].
-    apply val_inj.
-    have Hmass : forall xs : EnumQ A,
-      Qval (acc_mass tt (emap (fun _ => tt) xs)) = enumQ_mass xs.
-    { elim=> [|[p x] xs IH] //=.
-      rewrite /acc_mass /emap /= -/acc_mass in IH *.
-      by rewrite IH /enumQ_mass /= mulr1. }
-    change (Qval (acc_mass tt (emap (fun _ => tt) (subenumQ_raw mu))) =
-      Qval (acc_mass tt (ret_EnumQ tt))).
-    rewrite Hmass. exact Htotal. }
+    apply enumQ_meas_eq_of_eqenum; intros [].
+    change (enumQ_expect (fun _ : unit => 1)
+      (bind_EnumQ (subenumQ_raw mu) (fun _ => ret_EnumQ tt)) =
+      enumQ_expect (fun _ : unit => 1) (ret_EnumQ tt)).
+    rewrite enumQ_expect_bind enumQ_expect_ret.
+    transitivity (enumQ_mass (subenumQ_raw mu)); last exact Htotal.
+    apply finite_expect_ext=> x; reflexivity. }
   eapply sem_lift_proper_l; [apply subenumQ_bind_ret_r|].
   eapply sem_lift_proper_r; [exact Hunit|].
   eapply (@sem_lift_bind SubEnumQ SubEnumQ_SemanticMeasure

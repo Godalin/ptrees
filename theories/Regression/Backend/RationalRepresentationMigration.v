@@ -1,6 +1,6 @@
-(** Phase 4a migration certificate, NOT a second maintained rational backend.
-    Relate the still-current nnQ lists to ordinary-rat shared records before
-    replacing their many indexed/support clients. Conversions are confined to
+(** Historical Phase 4a migration certificate, NOT a maintained backend.
+    The private snapshot below preserves the former nnQ-list operations while
+    production EnumQ/SubEnumQ now use shared records. Conversions are confined to
     Regression: no library or public facade may consume this file.
 
     Compare raw projections, not equality of invariant proofs. No quotient,
@@ -10,9 +10,11 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import List.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat.
-From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist RatSubTypes.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist.
+From PTree.Prob.Legacy Require Import RatSubTypes.
 From PTree.Prob.Backend.EnumQ Require Import Representation Map FrontierLift Iteration.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
+From PTree.Prob.Backend.Common Require Import FiniteListAlgebra.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -20,6 +22,38 @@ Unset Printing Implicit Defensive.
 Import EnumQ GRing.Theory Num.Theory Order.Theory ListNotations.
 Local Open Scope ring_scope.
 Local Notation Q := rat_rat__canonical__Num_NumDomain.
+
+(** A minimal test-only snapshot: no instances, coercions or runtime clients. *)
+Module HistoricalRepresentation.
+Definition EnumQ (A : Type) := list (nnQ*A).
+Definition one_div_two : nnQ := mknnQ (1/2) ltac:(by vm_compute).
+Definition ret_EnumQ {A} (x : A) : EnumQ A := [(1,x)].
+Definition scale_EnumQ {A} (p : nnQ) (mu : EnumQ A) :=
+  finite_scale_with (fun p q : nnQ => p*q) p mu.
+Definition bind_EnumQ {A B} (mu : EnumQ A) (k : A -> EnumQ B) :=
+  finite_bind_with (fun p q : nnQ => p*q) mu k.
+Module EnumQMap.
+Definition emap {A B} (f : A -> B) (mu : EnumQ A) :=
+  List.map (fun px => (fst px, f(snd px))) mu.
+End EnumQMap.
+Definition enumQ_ae {A} (mu : EnumQ A) (P : A -> Prop) :=
+  forall p x, In (p,x) mu -> p <> 0 -> P x.
+Fixpoint enumQ_expect {A} (f : A -> rat) (mu : EnumQ A) : rat :=
+  match mu with [] => 0 | (p,x)::tl => Qval p*f x+enumQ_expect f tl end.
+Definition enumQ_mass {A} (mu : EnumQ A) := enumQ_expect (fun _ => 1) mu.
+Definition enumQ_subprob {A} (mu : EnumQ A) := enumQ_mass mu <= 1.
+Record SubEnumQ A := { subenumQ_raw : EnumQ A; subenumQ_bound : enumQ_subprob subenumQ_raw }.
+Arguments subenumQ_raw {A} _.
+Arguments subenumQ_bound {A} _.
+Definition subenumQ_ret {A} (x : A) : SubEnumQ A.
+Proof. refine (@Build_SubEnumQ A (ret_EnumQ x) _); by rewrite /enumQ_subprob /enumQ_mass /= mulr1 addr0. Defined.
+Definition subenumQ_zero {A} : SubEnumQ A.
+Proof. refine (@Build_SubEnumQ A [] _); by vm_compute. Defined.
+End HistoricalRepresentation.
+Import HistoricalRepresentation.
+
+Lemma Qval_nnQ_ge0 (p : nnQ) : 0 <= Qval p.
+Proof. exact: valP. Qed.
 
 Definition rational_raw {A : Type} (mu : EnumQ A) : list (rat * A) :=
   List.map (fun px => (Qval (fst px), snd px)) mu.
@@ -173,6 +207,17 @@ Proof.
   exact (finite_subdist_mass_bound mu).
 Defined.
 
+Definition subenumQ_bind {A B} (mu : SubEnumQ A) (k : A -> SubEnumQ B) : SubEnumQ B.
+Proof.
+  refine (@Build_SubEnumQ B (bind_EnumQ (subenumQ_raw mu) (fun x => subenumQ_raw(k x))) _).
+  rewrite /enumQ_subprob /enumQ_mass -rational_shared_expect.
+  change (finite_expect (fun _ : B => 1)
+    (rational_raw (bind_EnumQ (subenumQ_raw mu) (fun x => subenumQ_raw(k x)))) <= 1).
+  rewrite rational_raw_bind.
+  exact (finite_subdist_mass_bound (finite_subdist_bind
+    (rational_subshared mu) (fun x => rational_subshared(k x)))).
+Defined.
+
 Theorem rational_sub_old_roundtrip {A} (mu : SubEnumQ A) :
   subenumQ_raw (rational_subunshare (rational_subshared mu)) = subenumQ_raw mu.
 Proof. exact: rational_old_roundtrip. Qed.
@@ -236,3 +281,11 @@ Example rational_high_carrier (X : Type@{u}) :
   rational_unshare (rational_shared (ret_EnumQ X)) = ret_EnumQ X.
 Proof. exact: rational_old_roundtrip. Qed.
 End LargeCarrier.
+
+(** The production aliases now use precisely the target representation. *)
+Example production_enumQ_shared A :
+  PTree.Prob.Backend.EnumQ.Representation.EnumQ.EnumQ A = FiniteEnum Q A.
+Proof. reflexivity. Qed.
+Example production_subenumQ_shared A :
+  PTree.Prob.Backend.SubEnumQ.Representation.SubEnumQ A = FiniteSubdist Q A.
+Proof. reflexivity. Qed.

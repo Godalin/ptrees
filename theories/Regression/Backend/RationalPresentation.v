@@ -1,5 +1,4 @@
-(** Phase 4b.3: shared finite positional presentations, without changing
-    native coupling or rational carriers. Historical definitions are test-only. *)
+(** Shared checked rational presentations preserve raw slots and decoding. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -8,45 +7,44 @@ From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype 
 From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist FinitePresentation.
 
 Fail Check PTree.Prob.Interface.Measure.SemanticMeasure.
-Fail Check PTree.Prob.Backend.Common.RatSubTypes.nnQ.
+Fail Check PTree.Prob.Legacy.RatSubTypes.nnQ.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 
 From PTree.Prob.Backend.EnumQ Require Import Representation Map FiniteTransport FinitePresentation.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
-From PTree.Prob.Backend.Common Require Import RatSubTypes.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
-Definition reference_position {A} (mu : EnumQ A) := 'I_(size mu).
-Definition reference_entry {A} (mu : EnumQ A) (i : reference_position mu) := tnth (in_tuple mu) i.
+Definition reference_position {A} (mu : EnumQ A) := 'I_(size (enumQ_raw mu)).
+Definition reference_entry {A} (mu : EnumQ A) (i : reference_position mu) := tnth (in_tuple (enumQ_raw mu)) i.
 Arguments reference_entry {A} mu i.
-Definition reference_positions {A} (mu : EnumQ A) : EnumQ (reference_position mu) :=
-  finite_weighted_enumQ (fun i => (reference_entry mu i).1) id.
+Definition reference_positions {A} (mu : EnumQ A) : list (rat * reference_position mu) :=
+  [seq ((reference_entry mu i).1, i) | i <- enum (reference_position mu)].
 
 Example native_position_exact {A} (mu : EnumQ A) : enumQ_position mu = reference_position mu.
 Proof. reflexivity. Qed.
 Example native_entry_exact {A} (mu : EnumQ A) i : enumQ_position_entry mu i = reference_entry mu i.
 Proof. reflexivity. Qed.
-Example native_positions_exact {A} (mu : EnumQ A) : enumQ_positions mu = reference_positions mu.
+Example native_positions_exact {A} (mu : EnumQ A) : enumQ_raw (enumQ_positions mu) = reference_positions mu.
 Proof. reflexivity. Qed.
-Example native_positions_use_shared {A} (mu : EnumQ A) : enumQ_positions mu = finite_positions mu.
+Example native_positions_use_shared {A} (mu : EnumQ A) : enumQ_raw (enumQ_positions mu) = finite_positions (enumQ_raw mu).
 Proof. reflexivity. Qed.
 Example native_decode_exact {A} (mu : EnumQ A) :
-  emap (fun i => (reference_entry mu i).2) (enumQ_positions mu) = mu.
+  enumQ_raw (emap (fun i => (reference_entry mu i).2) (enumQ_positions mu)) = enumQ_raw mu.
 Proof. exact: enumQ_positions_decode. Qed.
 Example native_subdistribution_raw_exact {A} (mu : SubEnumQ A) :
-  subenumQ_raw (subenumQ_positions mu) = reference_positions (subenumQ_raw mu).
+  enumQ_raw (subenumQ_raw (subenumQ_positions mu)) = reference_positions (subenumQ_raw mu).
 Proof. reflexivity. Qed.
 
 (** The old/new scalar layers decode to the same coefficient-mapped list;
     this is not a runtime conversion layer, nor a new scalar transport API. *)
 Example rational_decoded_presentation {A} (mu : EnumQ A) :
-  let raw := [seq (Qval px.1, px.2) | px <- mu] in
+  let raw := enumQ_raw mu in
   [seq (px.1, finite_position_value raw px.2) | px <- finite_positions raw] =
-  [seq (Qval px.1, px.2) | px <- emap (enumQ_position_value mu) (enumQ_positions mu)].
+  enumQ_raw (emap (enumQ_position_value mu) (enumQ_positions mu)).
 Proof. cbn zeta; by rewrite finite_positions_decode enumQ_positions_decode. Qed.
 
 Definition duplicate_zero_list : list (rat * bool) := [:: (0,false); (1,true); (2,true); (0,true)].

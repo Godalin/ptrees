@@ -1,6 +1,5 @@
-(** Phase 4b.1: a real indexed-coupling client uses common position operations.
-    The native rational carrier has NOT yet changed. Historical reference
-    functions below exist only to check exact preservation of its recursion. *)
+(** Native checked rational positions retain the accepted raw-list recursion.
+    Historical scalar conversion checks are regression-only, not backend adapters. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -9,10 +8,11 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat.
 From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist FinitePositions.
 
 Fail Check PTree.Prob.Interface.Measure.SemanticMeasure.
-Fail Check PTree.Prob.Backend.Common.RatSubTypes.nnQ.
+Fail Check PTree.Prob.Legacy.RatSubTypes.nnQ.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 
 From PTree.Prob.Backend.EnumQ Require Import Representation IndexedCoupling.
+From PTree.Prob.Legacy Require Import RatSubTypes.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -21,38 +21,38 @@ Local Open Scope ring_scope.
 Local Notation Q := rat_rat__canonical__Num_NumDomain.
 
 (** Exact copies of the two accepted native recursions; not a backend adapter. *)
-Fixpoint reference_index {A} (n : nat) (mu : EnumQ A) : EnumQ nat :=
+Fixpoint reference_index {A} (n : nat) (mu : list (rat*A)) : list (rat*nat) :=
   match mu with [] => [] | (p,_)::tl => (p,n)::reference_index (S n) tl end.
-Fixpoint reference_value_index {A} (n : nat) (mu : EnumQ A) : EnumQ (A * nat) :=
+Fixpoint reference_value_index {A} (n : nat) (mu : list (rat*A)) : list (rat*(A*nat)) :=
   match mu with [] => [] | (p,x)::tl => (p,(x,n))::reference_value_index (S n) tl end.
 
-Example native_index_exact {A} n (mu : EnumQ A) : index_from n mu = reference_index n mu.
+Example native_index_exact {A} n (mu : EnumQ A) : enumQ_raw (index_from n mu) = reference_index n (enumQ_raw mu).
 Proof. reflexivity. Qed.
 Example native_value_index_exact {A} n (mu : EnumQ A) :
-  value_index_joint_from n mu = reference_value_index n mu.
+  enumQ_raw (value_index_joint_from n mu) = reference_value_index n (enumQ_raw mu).
 Proof. reflexivity. Qed.
 
 Example native_index_uses_shared {A} n (mu : EnumQ A) :
-  index_from n mu = finite_index_from n mu.
+  enumQ_raw (index_from n mu) = finite_index_from n (enumQ_raw mu).
 Proof. reflexivity. Qed.
 Example native_value_index_uses_shared {A} n (mu : EnumQ A) :
-  value_index_joint_from n mu = finite_value_index_from n mu.
+  enumQ_raw (value_index_joint_from n mu) = finite_value_index_from n (enumQ_raw mu).
 Proof. reflexivity. Qed.
 
-Example rational_scalar_index_commutes {A} n (mu : EnumQ A) :
+Example rational_scalar_index_commutes {A} n (mu : list (RatSubTypes.nnQ*A)) :
   finite_index_from n (List.map (fun px => (RatSubTypes.Qval (fst px), snd px)) mu) =
-  List.map (fun pi => (RatSubTypes.Qval (fst pi), snd pi)) (index_from n mu).
+  List.map (fun pi => (RatSubTypes.Qval (fst pi), snd pi)) (finite_index_from n mu).
 Proof. exact: finite_index_map_weights. Qed.
 
-Example rational_scalar_joint_commutes {A} n (mu : EnumQ A) :
+Example rational_scalar_joint_commutes {A} n (mu : list (RatSubTypes.nnQ*A)) :
   finite_value_index_from n (List.map (fun px => (RatSubTypes.Qval (fst px), snd px)) mu) =
-  List.map (fun pxi => (RatSubTypes.Qval (fst pxi), snd pxi)) (value_index_joint_from n mu).
+  List.map (fun pxi => (RatSubTypes.Qval (fst pxi), snd pxi)) (finite_value_index_from n mu).
 Proof. exact: finite_value_index_map_weights. Qed.
 
-Example rational_checked_index_commutes {A} n (mu : EnumQ A)
+Example rational_checked_index_commutes {A} n (mu : list (RatSubTypes.nnQ*A))
     (Hnn : @finite_nonnegative Q A (List.map (fun px => (RatSubTypes.Qval (fst px), snd px)) mu)) :
   finite_enum_raw (finite_enum_index_from n (finite_enum_of_list Hnn)) =
-  List.map (fun pi => (RatSubTypes.Qval (fst pi), snd pi)) (index_from n mu).
+  List.map (fun pi => (RatSubTypes.Qval (fst pi), snd pi)) (finite_index_from n mu).
 Proof. exact: finite_index_map_weights. Qed.
 
 (** Positions are never merged or pruned: duplicates and zero weights still

@@ -10,7 +10,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype choice ssralg ssrnum order
 From mathcomp Require Import trigo pi_irrational.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Domain Require Import Expectation.
-From PTree.Prob.Backend.Common Require Import RatSubTypes.
+From PTree.Prob.Backend.EnumQ Require Import Representation.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Expectation.
 From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility.
 From PTree.Eq Require Import UnifiedFrontier.
@@ -18,7 +18,7 @@ From PTree.Eq.Backend Require Import StableHittingDomainSubEnumQ.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import RatSubTypes GRing.Theory Num.Theory Order.Theory.
+Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Section RationalSchedule.
@@ -40,8 +40,9 @@ Proof. rewrite subr_ge0; exact: continue_weight_le_one. Qed.
 
 Definition schedule_coin (n : nat) : SubEnumQ bool.
 Proof.
-  refine {| subenumQ_raw := ((mknnQ (1 - continue_weight n) (stop_weight_nonnegative n), false) ::
-    (mknnQ (continue_weight n) (continue_weight_nonnegative n), true) :: nil)%list |}.
+  refine (@enumQ_as_subprob bool
+    (enumQ_cons (stop_weight_nonnegative n) false
+      (enumQ_cons (continue_weight_nonnegative n) true enumQ_zero)) _).
   change ((1 - continue_weight n) * 1 + (continue_weight n * 1 + 0) <= 1).
   by rewrite !mulr1 addr0 subrK.
 Defined.

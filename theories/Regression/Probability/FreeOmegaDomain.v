@@ -9,7 +9,6 @@ From Coq Require Import List Arith.PeanoNat FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
 From PTree.Prob.Domain Require Import Expectation.
 From PTree.Prob.Interface Require Import Measure.
-From PTree.Prob.Backend.Common Require Import RatSubTypes.
 From PTree.Prob.Backend.EnumQ Require Import Representation.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation.
@@ -23,7 +22,7 @@ Fail Check PTree.Eq.PEutt.peutt.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import RatSubTypes GRing.Theory Num.Theory Order.Theory ListNotations.
+Import GRing.Theory Num.Theory Order.Theory ListNotations.
 Local Open Scope ring_scope.
 
 From PTree.Regression.Fixtures Require Import FreeOmegaSamples.
@@ -73,8 +72,8 @@ Qed.
 Lemma nullable_kernel_ae :
   sem_ae null_weight_node (fun b => free_omega_admissible R (nullable_kernel b)).
 Proof.
-  change (forall p b, List.In (p,b) [((1 : nnQ),true); (nnQ_0,false)] ->
-    p <> nnQ_0 -> free_omega_admissible R (nullable_kernel b)).
+  change (forall p b, List.In (p,b) [((1 : rat),true); (0,false)] ->
+    p <> 0 -> free_omega_admissible R (nullable_kernel b)).
   intros p b [H|[H|[]]] Hnz; inversion H; subst.
   - exact: admissible_ret.
   - exfalso; apply Hnz; reflexivity.
@@ -103,8 +102,8 @@ Example null_weight_sample_denotes :
     (oval_bind (subenumQ_domain R null_weight_node) (fun _ => oval_ret R true)).
 Proof.
   apply free_omega_denote_sample_ae.
-  change (forall p b, List.In (p,b) [((1 : nnQ),true); (nnQ_0,false)] ->
-    p <> nnQ_0 -> free_omega_domain_denotes (nullable_kernel b) (oval_ret R true)).
+  change (forall p b, List.In (p,b) [((1 : rat),true); (0,false)] ->
+    p <> 0 -> free_omega_domain_denotes (nullable_kernel b) (oval_ret R true)).
   intros p b [H|[H|[]]] Hnz; inversion H; subst.
   - exact: free_omega_denote_ret.
   - exfalso; apply Hnz; reflexivity.
@@ -115,9 +114,10 @@ Example positive_bad_branch_not_admissible :
 Proof.
   intro H; apply alternating_bool_not_admissible.
   eapply free_omega_admissible_ext; [exact H|].
-  intros f Hf; cbn [free_omega_upper subenumQ_ret subenumQ_raw
-    EnumQ.ret_EnumQ enumQ_real_expect nullable_kernel].
-  by rewrite rmorph1 mul1r addr0.
+  intros f Hf; cbn [free_omega_upper].
+  change (enumQ_real_expect (fun b => free_omega_upper (nullable_kernel b) f)
+    (EnumQ.ret_EnumQ false) = free_omega_upper alternating_bool f).
+  rewrite enumQ_real_expect_ret; reflexivity.
 Qed.
 
 Definition delayed (n : nat) : FreeOmega SubEnumQ bool :=

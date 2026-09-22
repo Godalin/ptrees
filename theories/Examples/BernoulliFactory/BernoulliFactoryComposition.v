@@ -3,11 +3,12 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From Coq Require Import FunctionalExtensionality.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind.
 Require Import PTree.Prob.Interface.Iteration.
 Require Import PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
@@ -110,17 +111,18 @@ Qed.
 (** Parametric source bias followed by an arbitrary rational target.
     Both component support obligations are proved; no example-specific law is used. *)
 Theorem peutt_factory_vn_direct
-    (pfalse ptrue : nnQ)
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : 0 < Qval pfalse * Qval ptrue) :
-  peutt eq (biased_to_rational_coin pfalse ptrue q) (factory_direct_q q0 q1).
+    (pfalse ptrue : rat)
+    (pfalse0 : 0 <= pfalse) (ptrue0 : 0 <= ptrue)
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : 0 < pfalse * ptrue) :
+  peutt eq (biased_to_rational_coin pfalse0 ptrue0 q) (factory_direct_q q0 q1).
 Proof.
   change (peutt eq
-    (factory_with_sampler (factory_fair_coin pfalse ptrue) q)
+    (factory_with_sampler (factory_fair_coin pfalse0 ptrue0) q)
     (factory_direct_q q0 q1)).
   eapply peutt_trans.
   - apply peutt_factory_sampler_congr.
-    exact (peutt_factory_vn_fair pnormalized pnontrivial).
+    exact (peutt_factory_vn_fair pfalse0 ptrue0 pnormalized pnontrivial).
   - exact peutt_factory_fair_direct.
 Qed.
 End RationalTarget.
@@ -130,6 +132,7 @@ Corollary peutt_third_to_two_fifths_compositional :
 Proof.
   exact (peutt_factory_vn_direct
     two_fifths_nonnegative two_fifths_at_most_one
+    third_false_nonnegative third_true_nonnegative
     third_bias_normalized third_bias_nontrivial).
 Qed.
 

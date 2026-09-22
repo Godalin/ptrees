@@ -70,7 +70,7 @@ Example zero_guard_cost :
 Proof. reflexivity. Qed.
 
 Example zero_guard_measure_raw :
-  subenumQ_raw (native_sample_measure (internal_plan_round_native zero_guard_plan)) = nil.
+  subenumQ_data (native_sample_measure (internal_plan_round_native zero_guard_plan)) = nil.
 Proof. reflexivity. Qed.
 
 Section NonuniformRound.

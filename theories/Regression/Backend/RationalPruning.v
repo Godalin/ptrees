@@ -1,5 +1,5 @@
-(** Phase 4b.2: exact preservation of the native zero-pruning operation.
-    This is not a carrier migration or a new definition of coupling. *)
+(** Checked rational pruning preserves the accepted raw-list operation.
+    Equality/lifting still uses indexed coupling after zero-pruning. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -8,11 +8,11 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat.
 From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist FinitePruning.
 
 Fail Check PTree.Prob.Interface.Measure.SemanticMeasure.
-Fail Check PTree.Prob.Backend.Common.RatSubTypes.nnQ.
+Fail Check PTree.Prob.Legacy.RatSubTypes.nnQ.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 
 From PTree.Prob.Backend.EnumQ Require Import Representation FrontierLift IndexedCoupling.
-From PTree.Prob.Backend.Common Require Import RatSubTypes.
+From PTree.Prob.Legacy Require Import RatSubTypes.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -20,28 +20,29 @@ Import EnumQ IndexedCoupling ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 (** The accepted recursion, kept only in this test, not as a runtime adapter. *)
-Fixpoint reference_prune {A} (mu : EnumQ A) : EnumQ A :=
+Fixpoint reference_prune {A} (mu : list (rat*A)) : list (rat*A) :=
   match mu with
   | [] => []
-  | (p,x)::tl => if p == RatSubTypes.nnQ_0 then reference_prune tl
+  | (p,x)::tl => if p == 0 then reference_prune tl
                  else (p,x)::reference_prune tl
   end.
 
-Example native_prune_exact {A} (mu : EnumQ A) : enumQ_prune mu = reference_prune mu.
+Example native_prune_exact {A} (mu : EnumQ A) : enumQ_raw (enumQ_prune mu) = reference_prune (enumQ_raw mu).
 Proof. reflexivity. Qed.
 
 Example native_prune_uses_shared {A} (mu : EnumQ A) :
-  enumQ_prune mu = finite_prune (fun p => p == RatSubTypes.nnQ_0) mu.
+  enumQ_raw (enumQ_prune mu) = finite_prune (fun p => p == 0) (enumQ_raw mu).
 Proof. reflexivity. Qed.
 
 Example native_equality_unchanged {A} (mu nu : EnumQ A) :
-  enumQ_meas_eq mu nu <-> indexed_coupling eq (reference_prune mu) (reference_prune nu).
+  enumQ_meas_eq mu nu <-> indexed_coupling eq
+    (finite_enum_prune (fun p => p == 0) mu) (finite_enum_prune (fun p => p == 0) nu).
 Proof. reflexivity. Qed.
 
-Example rational_scalar_prune_commutes {A} (mu : EnumQ A) :
+Example rational_scalar_prune_commutes {A} (mu : list (RatSubTypes.nnQ*A)) :
   finite_prune (fun p : rat => p == 0)
     (List.map (fun px => (RatSubTypes.Qval (fst px), snd px)) mu) =
-  List.map (fun px => (RatSubTypes.Qval (fst px), snd px)) (enumQ_prune mu).
+  List.map (fun px => (RatSubTypes.Qval (fst px), snd px)) (finite_prune (fun p => p == RatSubTypes.nnQ_0) mu).
 Proof.
   apply finite_prune_map_weights=> p.
   apply/idP/idP.
@@ -73,8 +74,8 @@ Example duplicate_signed_observation_preserved (f : bool -> rat) :
 Proof. exact: finite_expect_prune_zero. Qed.
 
 Example retained_native_support {A} (mu : EnumQ A) p (x : A) :
-  List.In (p,x) (enumQ_prune mu) <->
-  List.In (p,x) mu /\ p <> RatSubTypes.nnQ_0.
+  List.In (p,x) (enumQ_raw (enumQ_prune mu)) <->
+  List.In (p,x) (enumQ_raw mu) /\ p <> 0.
 Proof.
   split; first exact: enumQ_prune_in_source.
   intros [Hin Hnz]; apply finite_prune_in; split; first exact Hin.

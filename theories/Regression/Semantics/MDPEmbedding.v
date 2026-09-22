@@ -33,7 +33,7 @@ Proof.
   change (enumQ_expect (fun _ => 1)
     (bind_EnumQ (subenumQ_raw subenumQ_fair)
       (fun b => ret_EnumQ (counter_next n a b))) = 1).
-  rewrite enumQ_expect_bind /= !mulr1 !addr0.
+  rewrite enumQ_expect_bind.
   native_compute. reflexivity.
 Qed.
 

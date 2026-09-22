@@ -4,6 +4,7 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteScalarMap.
 From Coq.Logic Require Import FunctionalExtensionality.
 From Coq.Arith Require Import PeanoNat.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat reals.
@@ -32,9 +33,9 @@ Variable R : realType.
 Lemma enumQ_extended_expect_real {A} (f : A -> R) mu :
   enumQ_extended_expect (fun x => (f x)%:E) mu = (enumQ_real_expect f mu)%:E.
 Proof.
-  induction mu as [|[p x] tail IH]; cbn [enumQ_extended_expect enumQ_real_expect].
-  - reflexivity.
-  - by rewrite IH EFinD EFinM.
+  rewrite /enumQ_extended_expect /enumQ_real_expect.
+  elim: (enumQ_raw mu)=> [|[p x] tail IH]; first reflexivity.
+  by rewrite /finite_map_weights /= IH EFinD EFinM.
 Qed.
 
 Lemma extended_upper_real (c : nat -> R) b :
@@ -58,7 +59,7 @@ Proof.
   move=> Hinc Hlim Hf n. apply enumQ_real_expect_atom_le; [exact Hf|].
   intro x. rewrite ler_rat.
   apply (rat_monotone_limit_bound
-    (values := fun i => PTree.Prob.Backend.Common.RatSubTypes.Qval (acc_mass x (chain i)))).
+    (values := fun i => acc_mass x (chain i))).
   - intro i. rewrite -!enumQ_indicator_atom.
     exact (Hinc (fun y => y == x) i (S i) (Nat.le_succ_diag_r i)).
   - intros eps Heps. destruct (Hlim (fun y => y == x) eps Heps) as [N HN].

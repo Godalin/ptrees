@@ -7,7 +7,7 @@ From Coq Require Import Lia.
 From Coq.Program Require Import Equality.
 From Coq.Arith Require Import PeanoNat.
 From mathcomp Require Import ssreflect ssralg ssrnum rat.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
+Require Import PTree.Prob.Backend.EnumQ.Representation.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -16,7 +16,7 @@ From PTree.Regression.Backend Require Import EnumQMeasureRegression SubEnumQRegr
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import EnumQ RatSubTypes GRing.Theory Num.Theory.
+Import EnumQ GRing.Theory Num.Theory.
 Local Open Scope ring_scope.
 
 Module EscapingMass.
@@ -57,7 +57,7 @@ Lemma fair_true_ae P : sem_ae subenumQ_fair P -> P true.
 Proof.
   intro H. apply (H reg_half true).
   - right. left. reflexivity.
-  - intro Hz. apply (f_equal Qval) in Hz. vm_compute in Hz. discriminate.
+  - intro Hz. vm_compute in Hz. discriminate.
 Qed.
 
 Lemma big_ae P : free_omega_ae P big <-> P tt.
@@ -209,7 +209,7 @@ Lemma fair_false_ae P : sem_ae subenumQ_fair P -> P false.
 Proof.
   intro H. apply (H reg_half false).
   - left. reflexivity.
-  - intro Hz. apply (f_equal Qval) in Hz. vm_compute in Hz. discriminate.
+  - intro Hz. vm_compute in Hz. discriminate.
 Qed.
 
 Lemma big_not_below_small : ~ free_omega_approx eq big small.

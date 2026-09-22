@@ -3,7 +3,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssralg ssrnum rat.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
+Require Import PTree.Prob.Backend.EnumQ.Representation.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -62,8 +62,8 @@ Proof.
   intro H. unfold big, small in H. dependent destruction H.
   pose proof (sem_lift_ae_transport_r H
     (sem_ae_true rw_coin_raw)) as Hsupport.
-  assert (Hnonzero : rw_up_weight <> nnQ_0).
-  { intro Hz. apply (f_equal Qval) in Hz.
+  assert (Hnonzero : rw_up_weight <> 0).
+  { intro Hz.
     change ((1 / 3 : rat) = 0) in Hz. vm_compute in Hz. discriminate. }
   destruct (Hsupport rw_up_weight false (or_intror (or_introl eq_refl))
     Hnonzero) as [x [Hxy _]].

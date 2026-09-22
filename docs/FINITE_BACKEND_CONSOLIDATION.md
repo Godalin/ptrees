@@ -1,5 +1,59 @@
 # Finite discrete backend consolidation
 
+## Current representation (final carrier migration)
+
+The production definitions now specialize the shared invariant-bearing records:
+
+```text
+EnumQ A       = FiniteEnum rat A
+SubEnumQ A    = FiniteSubdist rat A
+SubEnumR R A  = FiniteSubdist R A
+```
+
+Coefficients are ordinary scalars. Nonnegativity is a property of the whole
+finite list; SubEnumQ/SubEnumR additionally carry the mass-at-most-one proof.
+List order, repeated atoms and zero entries remain observable at the raw-data
+level. No carrier coerces silently to a list: use `enumQ_raw`, `subenumQ_data`
+or the corresponding shared projection. `subenumQ_raw` returns a checked
+EnumQ, not an unvalidated list. Constructors with arbitrary rational weights
+take explicit nonnegativity proofs, replacing the former implicit nnQ proof.
+
+Both rational/real bind use the shared finite construction. Q-to-R transport
+uses `finite_subdist_map_weights` with `ratr`; it is not a restore/repack
+pipeline. The deprecated subtype lives only in `Prob/Legacy/RatSubTypes.v`.
+Historical migration regressions may import it, but native backends and
+Examples may not. The historical old/shared isomorphism is a test fixture,
+not a production conversion layer.
+
+Shared list algebra, atoms, positions, pruning, finite presentation and indexed
+bind machinery are reused without moving coupling semantics into Common.
+The rational backend retains its actual finite joint and indexed lifting
+semantics; FreeOmega and the PTree relation hierarchy are unchanged.
+
+Raw-list equality is the ordinary algebra API. Some exact observation-witness
+clients additionally need equality of checked records. The optional
+`Common/FiniteRecordExtensionality.v` proves this using existing functional
+extensionality and decidable equality of Boolean proofs. It is not imported
+by native finite algebra or instances, and does not assume general proof
+irrelevance. Its logical dependency is explicit.
+
+`tools/audit_finite_consolidation.py` is the current migration gate. It protects
+125 generic/MathComp/real-backend source files byte-for-byte against `1cba6c5`
+and compares all 505 frozen compiled endpoints. Only reviewed definition-owner
+relocations and the definitional rat carrier projection are normalized; added
+premises or logical assumptions are rejected. Snapshot refresh is allowed only
+after that comparison. The old Phase 0–4 preparation audits below remain
+historical exact checks at their named commits, not constraints to relax for
+the new representation.
+
+Phases 0–7 are now implemented. The complete client rebuild, preservation
+checks and targeted kernel validation passed locally; see
+[the final migration report](FINITE_BACKEND_FINAL_MIGRATION.md) for the exact
+scope, commands and remaining trust qualifications. The sections below record
+the historical naming gate, not the current implementation status.
+
+## Historical naming checkpoint
+
 Accepted pre-refactor baseline: `ba509e1`. CI and environment changes are out
 of scope. MathComp mathematics and the exact two-file Gate M trust boundary
 are not being redesigned.

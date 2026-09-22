@@ -1,13 +1,15 @@
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.FrontierLift.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Disintegration.
 From PTree.Regression.Backend Require Import EnumQMeasureRegression SubEnumQRegression.
 
-Import EnumQ PTree.Prob.Backend.EnumQ.Map RatSubTypes GRing.Theory.
+Import EnumQ PTree.Prob.Backend.EnumQ.Map GRing.Theory.
 Local Open Scope ring_scope.
 
 (** Conditioning on a constant visible component must retain the latent
@@ -19,12 +21,7 @@ Example conditional_latent_coin :
   sem_eq (subenumQ_fiber_kernel latent_coin true) latent_coin.
 Proof.
   apply enumQ_meas_eq_of_eqenum. intros [a b].
-  destruct a, b;
-    rewrite /latent_coin /subenumQ_fiber_kernel /enumQ_fiber_kernel
-      /enumQ_fiber_row /subenumQ_bind /subenumQ_ret /subenumQ_fair
-      /reg_fair /enumQ_as_subprob /= /bind_EnumQ /ret_EnumQ /emap
-      /acc_mass /Coupling.nnq_div /=;
-    apply val_inj; cbn; ring_to_rat; reflexivity.
+  destruct a, b; vm_compute; reflexivity.
 Qed.
 
 Example absent_fiber_zero_mass :

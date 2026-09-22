@@ -2,10 +2,11 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Coupling.
 From PTree.Eq Require Import PrimitiveStableHitting.
 From PTree.Core Require Import PTreeDefinition.
@@ -98,7 +99,7 @@ Qed.
 
 End Instrumentation.
 
-Import EnumQ RatSubTypes GRing.Theory.
+Import EnumQ GRing.Theory.
 #[local] Open Scope ring_scope.
 
 (** A concrete nondegenerate sample discharges the TOTAL-MASS premise.

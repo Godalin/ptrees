@@ -5,9 +5,12 @@
     tests; no classical predicate-to-Boolean choice is needed. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From Coq Require Import Lia.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSupport.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Iteration.
 Require Import PTree.Prob.Backend.EnumQ.Iteration.
 Set Implicit Arguments.
@@ -17,57 +20,18 @@ Local Open Scope ring_scope.
 
 Lemma enumQ_expect_mono {A} (mu : EnumQ A) (f g : A -> rat) :
   (forall x, f x <= g x) -> enumQ_expect f mu <= enumQ_expect g mu.
-Proof.
-  intro Hfg. induction mu as [|[p x] tl IH]; [by []|].
-  change (Qval p * f x + enumQ_expect f tl <= Qval p * g x + enumQ_expect g tl).
-  apply lerD; [exact (ler_wpM2l (le_nnQ0 p) (Hfg x))|exact IH].
-Qed.
-
+Proof. exact (finite_expect_mono (enumQ_nonnegative mu)). Qed.
 Lemma enumQ_indicator_nonnegative {A} (mu : EnumQ A) (P : A -> bool) :
   0 <= enumQ_expect (fun x => if P x then 1 else 0) mu.
-Proof.
-  induction mu as [|[p x] tl IH]; [by []|].
-  change (0 <= Qval p * (if P x then 1 else 0) + enumQ_expect (fun x => if P x then 1 else 0) tl).
-  apply addr_ge0; [|exact IH]. apply mulr_ge0; [exact (le_nnQ0 p)|].
-  destruct (P x); by [].
-Qed.
-
+Proof. exact (finite_indicator_nonnegative P (enumQ_nonnegative mu)). Qed.
 Lemma enumQ_indicator_positive_member {A} (mu : EnumQ A) (P : A -> bool) :
   0 < enumQ_expect (fun x => if P x then 1 else 0) mu ->
-  exists w x, List.In (w, x) mu /\ w <> nnQ_0 /\ P x.
-Proof.
-  induction mu as [|[w x] tl IH]; [by []|].
-  intro Hpos. change (is_true (0 < Qval w * (if P x then 1 else 0) +
-    enumQ_expect (fun x => if P x then 1 else 0) tl)) in Hpos.
-  case Hw: (w == nnQ_0).
-  - move/eqP: Hw=> Hw. rewrite Hw mul0r add0r in Hpos.
-    destruct (IH Hpos) as [v [y [Hin [Hnz Hy]]]].
-    exists v, y. split; [right; exact Hin|]. split; assumption.
-  - case Hx: (P x).
-    + exists w, x. split; [left; reflexivity|]. split; [by apply/eqP; rewrite Hw|exact Hx].
-    + rewrite Hx mulr0 add0r in Hpos.
-      destruct (IH Hpos) as [v [y [Hin [Hnz Hy]]]].
-      exists v, y. split; [right; exact Hin|]. split; assumption.
-Qed.
-
+  exists w x, List.In (w,x) (enumQ_raw mu) /\ w <> 0 /\ P x.
+Proof. exact: finite_indicator_positive_member. Qed.
 Lemma enumQ_indicator_member_positive {A} (mu : EnumQ A) (P : A -> bool) w x :
-  List.In (w, x) mu -> w <> nnQ_0 -> P x ->
+  List.In (w,x) (enumQ_raw mu) -> w <> 0 -> P x ->
   0 < enumQ_expect (fun x => if P x then 1 else 0) mu.
-Proof.
-  induction mu as [|[v y] tl IH]; [intros H; contradiction|].
-  intros [Heq|Hin] Hnz Hx.
-  - inversion Heq; subst v y.
-    change (0 < Qval w * (if P x then 1 else 0) +
-      enumQ_expect (fun x => if P x then 1 else 0) tl).
-    rewrite Hx mulr1. apply lt_le_trans with (y := Qval w).
-    + apply (proj1 (@lt_0_nnQ_iff_ne_0 w)). apply/eqP. exact Hnz.
-    + rewrite lerDl. apply enumQ_indicator_nonnegative.
-  - change (0 < Qval v * (if P y then 1 else 0) +
-      enumQ_expect (fun x => if P x then 1 else 0) tl).
-    eapply lt_le_trans; [exact (IH Hin Hnz Hx)|].
-    rewrite lerDr. apply mulr_ge0; [exact (le_nnQ0 v)|].
-    destruct (P y); by [].
-Qed.
+Proof. exact (finite_indicator_member_positive (P := P) (enumQ_nonnegative mu)). Qed.
 
 Definition enumQ_chain_increasing {A} (chain : nat -> EnumQ A) : Prop :=
   forall (P : A -> bool) n m, Peano.le n m ->

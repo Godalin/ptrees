@@ -12,7 +12,7 @@ Fail Check PTree.Prob.Interface.Measure.SemanticMeasure.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Fail Check PTree.Core.PTreeDefinition.ptree.
-Fail Check PTree.Prob.Backend.Common.RatSubTypes.nnQ.
+Fail Check PTree.Prob.Legacy.RatSubTypes.nnQ.
 Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 Fail Check PTree.Prob.Backend.SubEnumR.Representation.SubEnumR.
 

@@ -6,7 +6,7 @@ Local Unset Universe Minimization ToSet.
 From Coq Require Import List.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat reals.
 From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteAtoms FiniteSupport.
-Fail Check PTree.Prob.Backend.Common.RatSubTypes.nnQ.
+Fail Check PTree.Prob.Legacy.RatSubTypes.nnQ.
 Fail Check PTree.Prob.Interface.Measure.SemanticMeasure.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Set Implicit Arguments.

@@ -1,9 +1,11 @@
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From Coq Require Import Lia.
 From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype finset bigop ssralg ssrnum order rat.
-Require Import PTree.Prob.Backend.Common.FiniteMatching PTree.Prob.Backend.Common.FiniteCapacityMatching PTree.Prob.Backend.Common.FiniteRationalTransport PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.SubEnumQ.Measure.
+Require Import PTree.Prob.Backend.Common.FiniteMatching PTree.Prob.Backend.Common.FiniteCapacityMatching PTree.Prob.Backend.Common.FiniteRationalTransport PTree.Prob.Backend.SubEnumQ.Measure.
 From PTree.Prob.Interface Require Import SemanticCoupling.
 Require Import PTree.Prob.Backend.EnumQ.FiniteTransport.
 
@@ -90,21 +92,23 @@ Proof.
   - rewrite !big_bool. apply addrC.
 Qed.
 
-Definition source_weight (b : bool) : nnQ.
-Proof. refine (mknnQ (source_probability b) _). destruct b; vm_compute; reflexivity. Defined.
-Definition target_weight (b : bool) : nnQ.
-Proof. refine (mknnQ (target_probability b) _). destruct b; vm_compute; reflexivity. Defined.
+Definition source_weight := source_probability.
+Definition target_weight := target_probability.
+Lemma source_weight_nonnegative b : 0 <= source_weight b.
+Proof. destruct b; by vm_compute. Qed.
+Lemma target_weight_nonnegative b : 0 <= target_weight b.
+Proof. destruct b; by vm_compute. Qed.
 
 Definition source_measure : SubEnumQ bool.
 Proof.
-  refine {| subenumQ_raw := finite_weighted_enumQ source_weight id |}.
+  refine (@enumQ_as_subprob bool (finite_weighted_enumQ source_weight_nonnegative id) _).
   rewrite /enumQ_subprob /enumQ_mass /finite_weighted_enumQ enumT unlock.
   vm_compute. reflexivity.
 Defined.
 
 Definition target_measure : SubEnumQ bool.
 Proof.
-  refine {| subenumQ_raw := finite_weighted_enumQ target_weight id |}.
+  refine (@enumQ_as_subprob bool (finite_weighted_enumQ target_weight_nonnegative id) _).
   rewrite /enumQ_subprob /enumQ_mass /finite_weighted_enumQ enumT unlock.
   vm_compute. reflexivity.
 Defined.

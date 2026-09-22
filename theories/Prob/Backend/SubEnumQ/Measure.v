@@ -1,111 +1,25 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 Require Import List.
 
 From mathcomp Require Import ssreflect ssrbool seq ssralg ssrnum order rat.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Iteration.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure.
+
+From PTree.Prob.Backend.SubEnumQ Require Export Representation.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import EnumQ.
-Import RatSubTypes.
 Import GRing.Theory Order.Theory.
 #[local] Open Scope ring_scope.
 #[local] Open Scope order_scope.
-
-(** Raw [EnumQ] is a finite nonnegative-weight representation: neither its
-    type nor its legacy [Discrete] instance bounds the total weight.  This
-    predicate records the probability-specific invariant without changing
-    the reusable weighted representation. *)
-Definition enumQ_mass {A} (mu : EnumQ A) : rat :=
-  enumQ_expect (fun _ : A => 1) mu.
-
-Definition enumQ_subprob {A} (mu : EnumQ A) : Prop :=
-  enumQ_mass mu <= 1.
-
-Lemma Qval_nnQ_ge0 (p : nnQ) : 0 <= Qval p.
-Proof. by case: p=> q Hq. Qed.
-
-Lemma enumQ_subprob_ret {A} (x : A) :
-  enumQ_subprob (ret_EnumQ x).
-Proof. by rewrite /enumQ_subprob /enumQ_mass enumQ_expect_ret. Qed.
-
-Lemma enumQ_subprob_zero {A} :
-  enumQ_subprob (@nil (nnQ * A)).
-Proof. by rewrite /enumQ_subprob /enumQ_mass enumQ_expect_nil. Qed.
-
-(** Integrating a pointwise-[<= 1] observable cannot exceed the raw total
-    weight.  Nonnegativity of EnumQ coefficients is the only analytic fact
-    needed here. *)
-Lemma enumQ_expect_le_mass {A} (mu : EnumQ A) (f : A -> rat) :
-  (forall p x, List.In (p, x) mu -> f x <= 1) ->
-  enumQ_expect f mu <= enumQ_mass mu.
-Proof.
-  elim: mu=> [|[p x] tl IH] Hf //=.
-  have Hhead : f x <= 1 := Hf p x (or_introl (eq_refl (p, x))).
-  have Htail : forall q y, List.In (q, y) tl -> f y <= 1.
-  { move=> q y Hy. exact (Hf q y (or_intror Hy)). }
-  clear Hf.
-  apply: ssrnum.Num.Theory.lerD.
-  - rewrite mulr1.
-    exact (ssrnum.Num.Theory.ler_piMr (Qval_nnQ_ge0 p) Hhead).
-  - exact (IH Htail).
-Qed.
-
-Lemma enumQ_expect_nonnegative {A} (mu : EnumQ A) (f : A -> rat) :
-  (forall p x, List.In (p, x) mu -> 0 <= f x) ->
-  0 <= enumQ_expect f mu.
-Proof.
-  elim: mu=> [|[p x] tl IH] Hf //=.
-  apply: ssrnum.Num.Theory.addr_ge0.
-  - apply: ssrnum.Num.Theory.mulr_ge0.
-    + exact (Qval_nnQ_ge0 p).
-    + exact (Hf p x (or_introl (eq_refl (p, x)))).
-  - apply: IH=> q y Hy. exact (Hf q y (or_intror Hy)).
-Qed.
-
-Lemma enumQ_subprob_bind {A B} (mu : EnumQ A) (k : A -> EnumQ B) :
-  enumQ_subprob mu ->
-  (forall x, enumQ_subprob (k x)) ->
-  enumQ_subprob (bind_EnumQ mu k).
-Proof.
-  move=> Hmu Hk.
-  rewrite /enumQ_subprob /enumQ_mass enumQ_expect_bind.
-  apply: le_trans Hmu.
-  apply: enumQ_expect_le_mass=> p x _.
-  exact (Hk x).
-Qed.
-
-(** A finite subdistribution is a raw finite weighting together with the
-    invariant required by native [Prob] nodes.  The proof field is erased;
-    semantic equality and coupling continue to compare only raw measures. *)
-Record SubEnumQ (A : Type) := {
-  subenumQ_raw : EnumQ A;
-  subenumQ_bound : enumQ_subprob subenumQ_raw
-}.
-
-Arguments subenumQ_raw {A} _.
-Arguments subenumQ_bound {A} _.
-
-Definition subenumQ_ret {A} (x : A) : SubEnumQ A :=
-  {| subenumQ_raw := ret_EnumQ x;
-     subenumQ_bound := enumQ_subprob_ret x |}.
-
-Definition subenumQ_zero {A} : SubEnumQ A :=
-  {| subenumQ_raw := [::];
-     subenumQ_bound := enumQ_subprob_zero |}.
-
-Definition subenumQ_bind {A B}
-    (mu : SubEnumQ A) (k : A -> SubEnumQ B) : SubEnumQ B :=
-  {| subenumQ_raw := bind_EnumQ (subenumQ_raw mu)
-        (fun x => subenumQ_raw (k x));
-     subenumQ_bound := enumQ_subprob_bind (subenumQ_bound mu)
-        (fun x => subenumQ_bound (k x)) |}.
 
 Definition subenumQ_eq {A} (mu nu : SubEnumQ A) : Prop :=
   @sem_eq EnumQ EnumQ_SemanticMeasure A
@@ -308,10 +222,3 @@ Definition subenumQ_total {A} (mu : SubEnumQ A) : Prop :=
   sem_lub := @subenumQ_sem_lub;
   sem_total := @subenumQ_total
 }.
-
-(** Constructor for public examples: the caller supplies precisely the
-    missing probability-side obligation and receives a carrier that cannot
-    later be used as an arbitrary weighting. *)
-Definition enumQ_as_subprob {A} (mu : EnumQ A)
-    (Hmu : enumQ_subprob mu) : SubEnumQ A :=
-  {| subenumQ_raw := mu; subenumQ_bound := Hmu |}.

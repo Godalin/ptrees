@@ -6,7 +6,7 @@ Require Import Morphisms.
 
 From mathcomp Require Import eqtype.
 
-Require Import PTree.Prob.Backend.EnumQ.Representation.
+Require Import PTree.Prob.Legacy.RationalDiscrete.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

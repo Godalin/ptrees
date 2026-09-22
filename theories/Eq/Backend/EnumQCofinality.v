@@ -26,9 +26,9 @@ Context {E : Type -> Type}.
 Lemma enumQ_uniform_nat_bound {X} (mu : EnumQ X) (P : X -> nat -> Prop) :
   (forall x, exists n, P x n) ->
   (forall x n m, Peano.le n m -> P x n -> P x m) ->
-  exists n, forall p x, List.In (p, x) mu -> P x n.
+  exists n, forall p x, List.In (p, x) (enumQ_raw mu) -> P x n.
 Proof.
-  intros Hex Hmono. induction mu as [|[p x] mu IH].
+  intros Hex Hmono. induction (enumQ_raw mu) as [|[p x] tail IH].
   - exists 0. intros q y Hin. inversion Hin.
   - destruct (Hex x) as [nx Hx].
     destruct IH as [nt Htail].

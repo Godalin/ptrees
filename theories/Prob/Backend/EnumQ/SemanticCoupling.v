@@ -1,11 +1,13 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From Coq Require Import List.
 From Coq.Logic Require Import ClassicalDescription.
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg order rat.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.IndexedCoupling PTree.Prob.Backend.EnumQ.FrontierLift.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.IndexedCoupling PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure.
 From PTree.Prob.Interface Require Import SemanticCoupling.
@@ -29,7 +31,9 @@ Proof.
   intros x y. unfold equal.
   destruct (excluded_middle_informative (x = y)) as [H|H]; constructor; exact H.
 Qed.
+Local Unset Universe Polymorphism.
 HB.instance Definition _ A := hasDecEq.Build (carrier A) (@equalP A).
+Set Universe Polymorphism.
 End EnumQCouplingClassical.
 Import EnumQCouplingClassical.
 
@@ -73,17 +77,10 @@ Proof.
 Qed.
 
 Lemma enumQ_entry_mass_nonzero {A : eqType} (mu : EnumQ A) p x :
-  List.In (p,x) mu -> p <> nnQ_0 -> acc_mass x mu != nnQ_0.
+  List.In (p,x) (enumQ_raw mu) -> p <> 0 -> acc_mass x mu != 0.
 Proof.
-  intros Hin Hnz. apply/(in_supp_iff_acc_mass_ne_0 x mu).
-  rewrite /supp mem_undup. apply/mapP. exists (p,x); [|reflexivity].
-  rewrite mem_filter. apply/andP. split.
-  - apply/eqP. intro Hz. apply Hnz.
-    transitivity (0 : nnQ); [exact Hz|]. apply val_inj. reflexivity.
-  - induction mu as [|z tl IH]; [contradiction|].
-    destruct Hin as [->|Hin]; rewrite in_cons.
-    + by rewrite eq_refl.
-    + apply/orP. right. apply IH. exact Hin.
+  move=> Hin Hnz; apply entry_nonzero_acc_mass with p; last exact/eqP.
+  exact (proj2 (enumQ_raw_mem p x mu) Hin).
 Qed.
 
 Lemma enumQ_coupling_realization_eqtype {A B : eqType}
@@ -95,14 +92,16 @@ Proof.
   exists j. split.
   - apply enumQ_sem_lift_of_coupling.
     eapply coupling_proper_r; [exact Hl|].
-    rewrite <- (emap_id j) at 1.
-    eapply coupling_emap; [|apply coupling_refl].
+    eapply coupling_proper_l.
+    + apply enumQ_eq_eq; exact: emap_id.
+    + eapply coupling_emap; [|apply coupling_refl].
     intros x y ->. reflexivity.
   - split.
     + apply enumQ_sem_lift_of_coupling.
       eapply coupling_proper_r; [exact Hr|].
-      rewrite <- (emap_id j) at 1.
-      eapply coupling_emap; [|apply coupling_refl].
+      eapply coupling_proper_l.
+      * apply enumQ_eq_eq; exact: emap_id.
+      * eapply coupling_emap; [|apply coupling_refl].
       intros x y ->. reflexivity.
     + intros p [x y] Hin Hnz. apply Hsupport.
       exact (enumQ_entry_mass_nonzero Hin Hnz).
@@ -136,5 +135,5 @@ Proof.
     exact (proj1 Hj). }
   assert (Hbound : enumQ_subprob j).
   { unfold enumQ_subprob. rewrite Hmass. exact (subenumQ_bound mu). }
-  exists {| subenumQ_raw := j; subenumQ_bound := Hbound |}. exact Hj.
+  exists (enumQ_as_subprob Hbound). exact Hj.
 Qed.

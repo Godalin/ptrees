@@ -137,9 +137,8 @@ Example completed_paths_do_not_preserve_prefix_mass :
       (subenumQ_ret true).
 Proof.
   intro Hmass.
-  change (@sem_same_mass SubEnumQ SubEnumQ_SemanticMeasure bool bool
-    subenumQ_zero (subenumQ_ret true)) in Hmass.
-  assert (Hzero : @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool subenumQ_zero
+  assert (Hzero : @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool
+    (subenumQ_bind (internal_plan_measure killed_plan) (fun _ => subenumQ_ret true))
     (fun _ => False)).
   { intros w x Hempty. contradiction. }
   pose proof (sem_lift_ae_transport_r Hmass Hzero) as Hret.

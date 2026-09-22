@@ -143,7 +143,7 @@ def permitted(module, dependency):
         # SubEnumQ is a validated EnumQ carrier, not an unrelated implementation.
         # Realization/observation adapters legitimately cross this boundary.
         return under("Prob/Interface", "Prob/FreeOmega", "Prob/Backend/Common",
-                     "Prob/Backend/EnumQ", "Prob/Backend/SubEnumQ", "Prob/Legacy", "Prob/Domain")
+                     "Prob/Backend/EnumQ", "Prob/Backend/SubEnumQ", "Prob/Domain")
     if module.startswith("Prob/Legacy/"):
         return under("Prob")
     if module.startswith("Eq/"):

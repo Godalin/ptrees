@@ -105,6 +105,43 @@ Qed.
 Definition finite_enum_prune {A} d (mu : FiniteEnum R A) : FiniteEnum R A :=
   finite_enum_of_list (@finite_prune_nonnegative A d _ (finite_enum_nonnegative mu)).
 
+Lemma finite_prune_zero_scale {A} p (mu : list (R*A)) :
+  finite_prune (fun q => q == 0) (finite_weight_map p mu) =
+  if p == 0 then nil else finite_weight_map p (finite_prune (fun q => q == 0) mu).
+Proof.
+  case Hp: (p == 0).
+  - move/eqP: Hp=> ->; elim: mu=> [|[q x] tl IH] //=.
+    by rewrite mul0r eqxx IH.
+  - elim: mu=> [|[q x] tl IH] //=.
+    rewrite mulf_eq0 Hp /=; case: (q == 0)=> /=; by rewrite IH.
+Qed.
+
+Lemma finite_prune_zero_bind {A B} (mu : list (R*A)) (k : A -> list (R*B)) :
+  finite_prune (fun p => p == 0) (finite_bind mu k) =
+  finite_bind (finite_prune (fun p => p == 0) mu)
+    (fun x => finite_prune (fun p => p == 0) (k x)).
+Proof.
+  elim: mu=> [|[p x] tl IH] //=.
+  rewrite finite_prune_app finite_prune_zero_scale IH.
+  by case: (p == 0).
+Qed.
+
+Lemma finite_prune_zero_bind_ae {A B} (mu : list (R*A)) (k h : A -> list (R*B)) :
+  (forall p x, List.In (p,x) mu -> p <> 0 ->
+    finite_prune (fun q => q == 0) (k x) = finite_prune (fun q => q == 0) (h x)) ->
+  finite_prune (fun p => p == 0) (finite_bind mu k) =
+  finite_prune (fun p => p == 0) (finite_bind mu h).
+Proof.
+  elim: mu=> [|[p x] tl IH] H //=.
+  rewrite !finite_prune_app !finite_prune_zero_scale.
+  have Htl : forall q y, List.In (q,y) tl -> q <> 0 ->
+    finite_prune (fun r => r == 0) (k y) = finite_prune (fun r => r == 0) (h y).
+  { move=> q y Hy Hq; exact (H q y (or_intror Hy) Hq). }
+  rewrite (IH Htl); case Hp: (p == 0)=> //=.
+  have Hnz : p <> 0 by apply/eqP; rewrite Hp.
+  by rewrite (H p x (or_introl (Logic.eq_refl _)) Hnz).
+Qed.
+
 Lemma finite_enum_prune_mass_le {A} d (mu : FiniteEnum R A) :
   finite_mass (finite_enum_prune d mu) <= finite_mass mu.
 Proof. apply finite_expect_prune_le; [exact: finite_enum_nonnegative|intro; exact: ler01]. Qed.

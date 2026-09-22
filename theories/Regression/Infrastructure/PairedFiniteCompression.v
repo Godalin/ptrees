@@ -8,7 +8,7 @@ From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.Common.RatSubTypes.
+Require Import PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Prob.Interface Require Import SemanticCoupling.
 Require Import PTree.Prob.Backend.EnumQ.FreeOmega.Coupling.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalJoint.
@@ -158,12 +158,12 @@ Proof.
   assert (Htrue : Good true).
   { apply (H rw_down_weight true).
     - left. reflexivity.
-    - intro Hz. apply (f_equal Qval) in Hz.
+    - intro Hz.
       change ((2 / 3 : rat) = 0) in Hz. vm_compute in Hz. discriminate. }
   assert (Hfalse : Good false).
   { apply (H rw_up_weight false).
     - right. left. reflexivity.
-    - intro Hz. apply (f_equal Qval) in Hz.
+    - intro Hz.
       change ((1 / 3 : rat) = 0) in Hz. vm_compute in Hz. discriminate. }
   split.
   - pose proof (H0 true Htrue) as Hp. inversion Hp. assumption.

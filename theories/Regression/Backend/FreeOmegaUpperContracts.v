@@ -10,6 +10,7 @@ Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperCoupling.
 From PTree.Regression.Backend Require Import SubEnumQRegression FreeOmegaEscapingMass.
+Import EnumQ.
 Module ExpectationTests.
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
@@ -178,7 +179,7 @@ End ExpectationTests.
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
 From Coq Require Import List.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.SubEnumQ.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperContinuity.
 From PTree.Regression.Backend Require Import FreeOmegaEscapingMass.
@@ -192,7 +193,7 @@ Local Unset Universe Minimization ToSet.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import EnumQ RatSubTypes GRing.Theory Num.Theory Order.Theory.
+Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 (** A syntactically present, zero-weight branch deliberately decreases.
@@ -200,8 +201,9 @@ Local Open Scope ring_scope.
     everywhere, not on all syntactic samples. *)
 Definition null_branch_node : SubEnumQ bool.
 Proof.
-  refine {| subenumQ_raw := (1,true) :: (0,false) :: nil |}.
-  vm_compute. reflexivity.
+  refine (subenumQ_of_list (mu := (1,true) :: (0,false) :: nil) _ _).
+  - intros p x [H|[H|[]]]; inversion H; subst; vm_compute; reflexivity.
+  - vm_compute. reflexivity.
 Defined.
 
 Definition null_branch_chain (b : bool) (n : nat) : FreeOmega SubEnumQ bool :=
@@ -240,8 +242,9 @@ Qed.
 Theorem null_branch_sample_mass :
   upper (FOSample null_branch_node (fun b => FOLub (null_branch_chain b))) (fun _ => 1) = 1.
 Proof.
-  cbn [free_omega_upper null_branch_node subenumQ_raw enumQ_real_expect null_branch_chain].
-  rewrite ?rmorph1 ?rmorph0 mul1r mul0r !addr0.
+  change ((ratr (1 : rat) : R) * countable_upper (fun _ => (1 : R)) +
+    ((ratr (0 : rat) : R) * countable_upper (fun n => upper (null_branch_chain false n) (fun _ => 1)) + 0) = 1).
+  rewrite rmorph1 rmorph0 mul1r mul0r !addr0.
   apply countable_upper_constant.
 Qed.
 

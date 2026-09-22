@@ -9,7 +9,7 @@ From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.SemanticCoupling PTree.Prob.Backend.EnumQ.FrontierLift.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.SemanticCoupling PTree.Prob.Backend.EnumQ.FrontierLift.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim.
 Fail Check PTree.Eq.PEutt.peutt.
@@ -90,7 +90,7 @@ Proof.
   apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)).
 Qed.
 
-Import EnumQ RatSubTypes PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling GRing.Theory.
+Import EnumQ PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling GRing.Theory.
 Local Open Scope ring_scope.
 
 (** Crossed coupling for the true response; false uses the diagonal one. *)
@@ -101,9 +101,9 @@ Proof.
   change (@sem_lift EnumQ EnumQ_SemanticMeasure bool bool
     (fun b c => b = negb c) reg_fair reg_fair).
   apply enumQ_sem_lift_of_coupling.
-  exists [:: (reg_half, (false,true)); (reg_half, (true,false))].
-  - intros []; apply val_inj; native_compute; reflexivity.
-  - intros []; apply val_inj; native_compute; reflexivity.
+  exists (unif2 (false,true) (true,false)).
+  - intros []; native_compute; reflexivity.
+  - intros []; native_compute; reflexivity.
   - intros [] [] Hmass; try reflexivity; native_compute in Hmass; discriminate.
 Qed.
 

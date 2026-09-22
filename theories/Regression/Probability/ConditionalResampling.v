@@ -2,11 +2,12 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From Coq.Arith Require Import PeanoNat.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.FrontierLift.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.FrontierLift.
 From PTree.Prob.Interface Require Import SemanticCoupling.
 Require Import PTree.Prob.Backend.EnumQ.Disintegration.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -99,12 +100,7 @@ Proof.
   eapply sem_eq_trans.
   - apply (@sem_bind_ret_l SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticMeasureBindLaws).
   - apply enumQ_meas_eq_of_eqenum. intros [a b].
-    unfold retry_joint. destruct (Nat.even n), a, b;
-      rewrite /subenumQ_fiber_kernel /enumQ_fiber_kernel
-        /enumQ_fiber_row /subenumQ_bind /subenumQ_ret /subenumQ_fair
-        /reg_fair /enumQ_as_subprob /= /EnumQ.bind_EnumQ /EnumQ.ret_EnumQ /EnumQMap.emap
-        /EnumQ.acc_mass /Coupling.nnq_div /=;
-      apply val_inj; cbn; ring_to_rat; reflexivity.
+    unfold retry_joint. destruct (Nat.even n), a, b; vm_compute; reflexivity.
 Qed.
 
 Example unbounded_retry_resampling n out1 out2 :

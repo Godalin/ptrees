@@ -4,11 +4,11 @@
     "theories/Core/Utils.v:MonadBr": "Class MonadBr (M : Type -> Type) : Type := mbr : forall (b : bool) (n: nat), M (Fin.t n).",
     "theories/Core/Utils.v:MonadTrigger": "Class MonadTrigger (E : Type -> Type) (M : Type -> Type) : Type := mtrigger : forall X, E X -> M X.",
     "theories/Eq/UnifiedFrontier.v:UnifiedFrontierCoherence": "Class UnifiedFrontierCoherence := { unified_frontier_unique : forall {R} (ot : ptree' E MN R) hs1 hs2, frontier_certificate ot hs1 -> frontier_certificate ot hs2 -> sem_eq hs1 hs2; unified_frontier_tau_inv : forall {R} (t : ptree E MN R) hs, frontier_certificate (TauF t) hs -> frontier_certificate (observe t) hs }.",
-    "theories/Examples/BernoulliFactory/OperationalBernoulliFactory.v:OperationalFactoryStepSupportLaws": "Class OperationalFactoryStepSupportLaws := { ptree_factory_binary_step_support : forall (pnormalized : Qval pfalse + Qval ptrue = 1) (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x, free_omega_support_lift eq (ptree_factory_binary_step_heads x) (ptree_factory_standard_step_heads x) }.",
+    "theories/Examples/BernoulliFactory/OperationalBernoulliFactory.v:OperationalFactoryStepSupportLaws": "Class OperationalFactoryStepSupportLaws := { ptree_factory_binary_step_support : forall (pnormalized : pfalse + ptrue = 1) (pnontrivial : (0 < pfalse * ptrue)%Q) x, free_omega_support_lift eq (ptree_factory_binary_step_heads x) (ptree_factory_standard_step_heads x) }.",
     "theories/Prob/Backend/Common/RealSubTypes.v:RealSub": "Class RealSub (T : Type) := { inject : T -> R; }.",
-    "theories/Prob/Backend/EnumQ/Representation.v:Discrete": "Class Discrete (m : Type → Type) := { disc_ret : forall {A}, A → m A; disc_bind : forall {A B}, m A → (A → m B) → m B; disc_flip : () → m bool; disc_score : nnQ → m ()%type; }.",
-    "theories/Prob/Backend/EnumQ/Representation.v:DiscreteInterface": "Class DiscreteInterface (M : Type → Type) : Type := { disc_rep :: Discrete M ; disc_eq : ∀ {R : eqType}, M R → M R → Prop ; disc_eq_equiv :: ∀ R : eqType, Equivalence (@disc_eq R) ; disc_RT : ∀ {R1 R2 : eqType}, (R1 → R2 → Prop) → M R1 → M R2 → Prop ; disc_RTeq : ∀ (R : eqType) (μ1 μ2 : M R), disc_eq μ1 μ2 ↔ disc_RT eq μ1 μ2 ; disc_mass {R : eqType} : R → M R → nnQ ; disc_mass_proper {R : eqType} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) ; disc_supp {R : eqType} : M R → seq R }.",
-    "theories/Prob/Backend/EnumQ/Representation.v:DiscreteLaws": "Class DiscreteLaws (m : Type → Type) `{Discrete m} (R : forall {a}, m a → m a → Prop) := { disc_ret_bind : forall A B (x : A) (f : A → m B), R (disc_bind (disc_ret x) f) (f x) ; disc_bind_ret : forall A (u : m A), R (disc_bind u disc_ret) u ; disc_bind_assoc : forall A B C (u : m A) (f : A → m B) (g : B → m C), R (disc_bind u (λ x, disc_bind (f x) g)) (disc_bind (disc_bind u f) g) ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A → B → m C), R (disc_bind u (λ x, disc_bind v (λ y, f x y))) (disc_bind v (λ y, disc_bind u (λ x, f x y))) }.",
+    "theories/Prob/Legacy/RationalDiscrete.v:Discrete": "Class Discrete (m : Type → Type) := { disc_ret : forall {A}, A → m A; disc_bind : forall {A B}, m A → (A → m B) → m B; disc_flip : () → m bool; disc_score : nnQ → m ()%type; }.",
+    "theories/Prob/Legacy/RationalDiscrete.v:DiscreteInterface": "Class DiscreteInterface (M : Type → Type) : Type := { disc_rep :: Discrete M ; disc_eq : ∀ {R : eqType}, M R → M R → Prop ; disc_eq_equiv :: ∀ R : eqType, Equivalence (@disc_eq R) ; disc_RT : ∀ {R1 R2 : eqType}, (R1 → R2 → Prop) → M R1 → M R2 → Prop ; disc_RTeq : ∀ (R : eqType) (μ1 μ2 : M R), disc_eq μ1 μ2 ↔ disc_RT eq μ1 μ2 ; disc_mass {R : eqType} : R → M R → nnQ ; disc_mass_proper {R : eqType} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) ; disc_supp {R : eqType} : M R → seq R }.",
+    "theories/Prob/Legacy/RationalDiscrete.v:DiscreteLaws": "Class DiscreteLaws (m : Type → Type) `{Discrete m} (R : forall {a}, m a → m a → Prop) := { disc_ret_bind : forall A B (x : A) (f : A → m B), R (disc_bind (disc_ret x) f) (f x) ; disc_bind_ret : forall A (u : m A), R (disc_bind u disc_ret) u ; disc_bind_assoc : forall A B C (u : m A) (f : A → m B) (g : B → m C), R (disc_bind u (λ x, disc_bind (f x) g)) (disc_bind (disc_bind u f) g) ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A → B → m C), R (disc_bind u (λ x, disc_bind v (λ y, f x y))) (disc_bind v (λ y, disc_bind u (λ x, f x y))) }.",
     "theories/Prob/Backend/MathComp/Kernel.v:MathCompCouplingGluing": "Class MathCompCouplingGluing := { mathcomp_kernel_lift_comp : forall {A B C} (rel : A -> B -> Prop) (rel' : B -> C -> Prop) (mu : MathCompKernelMeasure A) (nu : MathCompKernelMeasure B) (xi : MathCompKernelMeasure C), mathcomp_kernel_lift rel mu nu -> mathcomp_kernel_lift rel' nu xi -> mathcomp_kernel_lift (fun x z => exists y, rel x y /\\ rel' y z) mu xi }.",
     "theories/Prob/FreeOmega/NativeCoupling.v:FreeOmegaNativeCouplingLaws": "Class FreeOmegaNativeCouplingLaws {MN : Type -> Type} (NI : SemanticMeasure MN) (NO : @SemanticOmega MN NI) := { free_omega_native_coupling : forall {A B} (p : free_omega_native_presentation MN A) (q : free_omega_native_presentation MN B) (R : A -> B -> Prop), @free_omega_qlift MN NI NO A B R (free_omega_native p) (free_omega_native q) -> exists joint : MN (native_sample_type p * native_sample_type q)%type, @semantic_coupling MN NI _ _ (fun x y => R (native_sample_value p x) (native_sample_value q y)) (native_sample_measure p) (native_sample_measure q) joint }.",
     "theories/Prob/FreeOmega/Observation.v:FreeOmegaDenotationBindLaws": "Class FreeOmegaDenotationBindLaws {MN} `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI} := { free_omega_denotes_bind : forall {A B OA OB} (obsA : A -> OA) (obsB : B -> OB) (mu : FreeOmega MN A) (out : MN OA) (k : A -> FreeOmega MN B) (front : OA -> MN OB), free_omega_denotes obsA mu out -> (forall x, free_omega_denotes obsB (k x) (front (obsA x))) -> free_omega_denotes obsB (free_omega_bind mu k) (sem_bind out front) }.",
@@ -1073,6 +1073,19 @@
       "negative_cancellation_not_nonnegative",
       "zero_atom_without_nonnegative_cannot_kill_entries",
       "high_carrier_indicator_support"
+    ],
+    "theories/Regression/Backend/FiniteBackendConsolidation.v": [
+      "rational_weighting_is_shared",
+      "rational_subdistribution_is_shared",
+      "real_subdistribution_is_shared",
+      "rational_bind_is_shared",
+      "rational_subbind_is_shared",
+      "entries_preserve_order_and_duplicates",
+      "pruning_only_removes_zero",
+      "signed_test_is_preserved",
+      "rational_to_real_uses_shared_transport",
+      "high_carrier_native",
+      "high_carrier_bridge"
     ]
   }
 }

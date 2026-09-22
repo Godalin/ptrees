@@ -6,9 +6,10 @@ Local Unset Universe Minimization ToSet.
 From Coq.Logic Require Import ClassicalDescription FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype finset bigop ssralg ssrnum order rat reals.
 From mathcomp.analysis Require Import ereal.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.Support.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.Support.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure.
+Require Import PTree.Prob.Backend.EnumQ.FrontierLift.
 From PTree.Prob.Interface Require Import SemanticCoupling.
 Require Import PTree.Prob.Backend.EnumQ.SemanticCoupling PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.Common.FiniteMatching PTree.Prob.Backend.Common.FiniteRationalTransport PTree.Prob.Backend.EnumQ.FiniteTransport PTree.Prob.Backend.EnumQ.FinitePresentation.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Native.
@@ -44,13 +45,8 @@ Proof.
   have H := free_omega_qlift_extended_upper Hq Hf' Hg' Hfg'.
   change (is_true (enumQ_extended_expect (fun x => (ratr (f (decode x)) : F)%:E) mu <=
     enumQ_extended_expect (fun y => (ratr (g (decode' y)) : F)%:E) nu)%E) in H.
-  (* Fix both the native-carrier and scalar universes.  Leaving the latter
-     implicit here makes Coq 8.20 elaborate a phantom universe differently
-     in the rewrite proof; it then fails kernel checking at Qed. *)
-  rewrite (@enumQ_extended_expect_rat@{PTree.Prob.Backend.EnumQ.Representation.EnumQ.EnumQ.u0 constructive_ereal.adde_ge0.u1}
-    F X (fun x => f (decode x)) mu) in H.
-  rewrite (@enumQ_extended_expect_rat@{PTree.Prob.Backend.EnumQ.Representation.EnumQ.EnumQ.u0 constructive_ereal.adde_ge0.u1}
-    F Y (fun y => g (decode' y)) nu) in H.
+  rewrite (@enumQ_extended_expect_rat F X (fun x => f (decode x)) mu) in H.
+  rewrite (@enumQ_extended_expect_rat F Y (fun y => g (decode' y)) nu) in H.
   by rewrite lee_fin ler_rat in H.
 Qed.
 
@@ -139,7 +135,8 @@ Lemma enumQ_positions_lift_decode {A} (mu : EnumQ A) :
   sem_lift (fun i x => enumQ_position_value mu i = x) (enumQ_positions mu) mu.
 Proof.
   have H := enumQ_lift_decode (enumQ_positions mu) (enumQ_position_value mu).
-  rewrite enumQ_positions_decode in H. exact H.
+  eapply sem_lift_proper_r; last exact H.
+  apply enumQ_repr_eq_implies_meas_eq; exact: enumQ_positions_decode.
 Qed.
 
 Lemma enumQ_finite_presentation_correct {A} (p : free_omega_native_presentation EnumQ A) :

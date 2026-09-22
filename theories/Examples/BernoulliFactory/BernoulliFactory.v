@@ -1,13 +1,15 @@
 (** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 
 Require Import Utf8 FunctionalExtensionality.
 
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
+Require Import PTree.Prob.Backend.Common.FiniteRecordExtensionality PTree.Prob.Backend.Common.FiniteEnum PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Prob.Interface Require Import FrontierLift.
 Require Import PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.EnumQ.Bind.
 Require Import PTree.Prob.Interface.Iteration.
@@ -28,11 +30,12 @@ Unset Automatic Proposition Inductives.
 Variant factoryE : Type -> Type := .
 
 Section Factory.
-Variables pfalse ptrue : nnQ.
+Variables pfalse ptrue : rat.
+Hypotheses (pfalse0 : 0 <= pfalse) (ptrue0 : 0 <= ptrue).
 Variable q : rat.
 
 Definition factory_biased_coin : EnumQ bool :=
-  [:: (pfalse, false); (ptrue, true)].
+  enumQ_cons pfalse0 false (enumQ_cons ptrue0 true enumQ_zero).
 
 Definition factory_round_measure : EnumQ (unit + bool) :=
   bind_EnumQ factory_biased_coin (fun b1 =>
@@ -48,11 +51,11 @@ Definition factory_fair_coin : ptree factoryE EnumQ bool :=
   PTree.iter factory_vn_step tt.
 
 Lemma factory_round_is_param_round :
-  factory_round_measure = param_round_measure pfalse ptrue.
+  factory_round_measure = param_round_measure pfalse0 ptrue0.
 Proof. reflexivity. Qed.
 
-Hypothesis pnormalized : Qval pfalse + Qval ptrue = 1.
-Hypothesis pnontrivial : 0 < Qval pfalse * Qval ptrue.
+Hypothesis pnormalized : pfalse + ptrue = 1.
+Hypothesis pnontrivial : 0 < pfalse * ptrue.
 
 Definition binary_round_result (x : rat) (b : bool) : rat + bool :=
   if x < 1 / 2 then
@@ -64,8 +67,9 @@ Lemma fair_binary_round_measure x :
   bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)) =
   binary_coin_transition x.
 Proof.
+  apply finite_enum_raw_eq.
   rewrite /vn_fair /binary_round_result /binary_coin_transition.
-  by case: (x < 1 / 2); rewrite /bind_EnumQ /ret_EnumQ /= !mulr1.
+  case: (x < 1 / 2); reflexivity.
 Qed.
 
 (** The algorithm only depends on the behavior of its Boolean sampler. *)
@@ -96,18 +100,22 @@ End Factory.
 (** A closed, non-trivial executable instance: two tosses of the [1/3]
     source coin are repeatedly von-Neumann-filtered, and the resulting fair
     bits drive the binary algorithm for a [2/5] target coin. *)
+Lemma third_false_nonnegative : 0 <= vn_one_third.
+Proof. vm_compute; reflexivity. Qed.
+Lemma third_true_nonnegative : 0 <= vn_two_thirds.
+Proof. vm_compute; reflexivity. Qed.
 Definition third_to_two_fifths : ptree factoryE EnumQ bool :=
-  biased_to_rational_coin vn_one_third vn_two_thirds (2 / 5).
+  biased_to_rational_coin third_false_nonnegative third_true_nonnegative (2 / 5).
 
 Lemma third_bias_normalized :
-  Qval vn_one_third + Qval vn_two_thirds = 1.
+  vn_one_third + vn_two_thirds = 1.
 Proof.
   change ((1 / 3 : rat) + 2 / 3 = 1).
   ring_to_rat; reflexivity.
 Qed.
 
 Lemma third_bias_nontrivial :
-  0 < Qval vn_one_third * Qval vn_two_thirds.
+  0 < vn_one_third * vn_two_thirds.
 Proof.
   change (0 < (1 / 3 : rat) * (2 / 3)).
   apply mulr_gt0.

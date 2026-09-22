@@ -1,6 +1,8 @@
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool seq ssralg ssrnum order rat.
@@ -21,8 +23,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Import EnumQ.
-Import RatSubTypes.
-Import GRing.Theory Order.Theory.
+Import GRing.Theory Num.Theory Order.Theory.
 #[local] Open Scope ring_scope.
 #[local] Open Scope order_scope.
 
@@ -31,7 +32,7 @@ Variant subenumQE : Type -> Type := .
 
 Lemma reg_fair_subprob : enumQ_subprob reg_fair.
 Proof.
-  rewrite /enumQ_subprob /enumQ_mass /reg_fair /= !mulr1 addr0.
+  rewrite /enumQ_subprob /enumQ_mass /reg_fair enumQ_expect_unif2 !mulr1 addr0.
   native_compute.
   reflexivity.
 Qed.
@@ -41,7 +42,7 @@ Definition subenumQ_fair : SubEnumQ bool :=
 
 Lemma reg_fair_split_subprob : enumQ_subprob reg_fair_split.
 Proof.
-  rewrite /enumQ_subprob /enumQ_mass /reg_fair_split /= !mulr1 addr0.
+  unfold enumQ_subprob, enumQ_mass, reg_fair_split.
   native_compute. reflexivity.
 Qed.
 
@@ -82,7 +83,8 @@ Qed.
     [disc_flip] has total weight two.  It is a valid [EnumQ] weighting but
     cannot be admitted as a native probability node through [SubEnumQ]. *)
 Definition enumQ_overweight_flip : EnumQ bool :=
-  [:: ((1 : nnQ), false); ((1 : nnQ), true)].
+  enumQ_cons (ler01 : (0 : rat) <= 1) false
+    (enumQ_cons (ler01 : (0 : rat) <= 1) true enumQ_zero).
 
 Lemma enumQ_overweight_flip_mass : enumQ_mass enumQ_overweight_flip = 2.
 Proof. reflexivity. Qed.

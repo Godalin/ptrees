@@ -8,9 +8,9 @@ From Coq Require Import List.
 From Coq.Program Require Import Equality.
 From Coq.Arith Require Import PeanoNat.
 From Coq.Logic Require Import FunctionalExtensionality.
-From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg ssrnum order rat reals.
+From mathcomp Require Import ssreflect ssrfun ssrbool eqtype seq ssrnat ssralg ssrnum order rat reals.
 From mathcomp.classical Require Import classical_sets.
-From PTree.Prob.Backend.Common Require Import RatSubTypes.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteAtoms FiniteScalarMap.
 From PTree.Prob.Backend.EnumQ Require Import
   Representation Map Bind Coupling SemanticCoupling Measure FrontierLift Iteration.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
@@ -19,44 +19,36 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Import EnumQ PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling
-  RatSubTypes GRing.Theory Num.Theory Order.Theory.
+  GRing.Theory Num.Theory Order.Theory.
 Import EnumQCouplingClassical.
 Local Open Scope ring_scope.
 
 Section FiniteExpectation.
 Variable R : realType.
 
-Fixpoint enumQ_real_expect {A} (f : A -> R) (mu : EnumQ A) : R :=
-  match mu with
-  | nil => 0
-  | (p, x) :: tail => ratr (Qval p) * f x + enumQ_real_expect f tail
-  end.
-
+Definition enumQ_real_expect {A} (f : A -> R) (mu : EnumQ A) : R :=
+  finite_expect f (finite_map_weights (ratr : {rmorphism rat -> R}) (enumQ_raw mu)).
+Lemma enumQ_real_weights_nonnegative {A} (mu : EnumQ A) :
+  finite_nonnegative (finite_map_weights (ratr : {rmorphism rat -> R}) (enumQ_raw mu)).
+Proof.
+  apply finite_map_weights_nonnegative; last exact (enumQ_nonnegative mu).
+  move=> x y H; by rewrite ler_rat.
+Qed.
 Lemma enumQ_real_expect_rat {A} (f : A -> rat) mu :
   enumQ_real_expect (fun x => ratr (f x)) mu = ratr (enumQ_expect f mu).
-Proof.
-  elim: mu=> [|[p x] tail IH] /=.
-  - by rewrite rmorph0.
-  - by rewrite rmorphD rmorphM IH.
-Qed.
-
+Proof. exact: finite_map_weights_expect. Qed.
 Lemma enumQ_real_expect_nonnegative {A} (f : A -> R) mu :
   (forall x, 0 <= f x) -> 0 <= enumQ_real_expect f mu.
-Proof.
-  move=> Hf. elim: mu=> [|[p x] tail IH] /=; first exact: lexx.
-  apply: addr_ge0 IH. apply: mulr_ge0 (Hf x).
-  by rewrite ler0q; apply: Qval_nnQ_ge0.
-Qed.
-
+Proof. apply finite_expect_nonnegative; exact: enumQ_real_weights_nonnegative. Qed.
 Lemma enumQ_real_expect_mono {A} (f g : A -> R) mu :
   (forall x, f x <= g x) -> enumQ_real_expect f mu <= enumQ_real_expect g mu.
-Proof.
-  move=> Hfg. elim: mu=> [|[p x] tail IH] /=; first exact: lexx.
-  apply lerD.
-  - apply ler_wpM2l; [|exact (Hfg x)].
-    by rewrite ler0q; apply: Qval_nnQ_ge0.
-  - exact IH.
-Qed.
+Proof. move=> H; apply finite_expect_mono; [exact: enumQ_real_weights_nonnegative|exact H]. Qed.
+Lemma enumQ_real_expect_cons {A} (f : A -> R) p (Hp : 0 <= p) x mu :
+  enumQ_real_expect f (enumQ_cons Hp x mu) = ratr p * f x + enumQ_real_expect f mu.
+Proof. reflexivity. Qed.
+Lemma enumQ_real_expect_ret {A} (f : A -> R) x :
+  enumQ_real_expect f (ret_EnumQ x) = f x.
+Proof. by rewrite /enumQ_real_expect /= rmorph1 mul1r addr0. Qed.
 
 Lemma subenumQ_real_expect_bound {A} (mu : SubEnumQ A) (f : A -> R) :
   (forall x, f x <= 1) -> enumQ_real_expect f (subenumQ_raw mu) <= 1.
@@ -97,7 +89,7 @@ Qed.
 
 Lemma enumQ_real_expect_zero {A} (mu : EnumQ A) :
   enumQ_real_expect (fun _ => 0) mu = 0.
-Proof. elim: mu=> [|[p x] tail IH] //=. by rewrite mulr0 IH addr0. Qed.
+Proof. exact: finite_expect_zero. Qed.
 
 Lemma enumQ_real_expect_one {A} (mu : EnumQ A) :
   enumQ_real_expect (fun _ => 1) mu = ratr (enumQ_mass mu).
@@ -117,87 +109,66 @@ Variable F : realType.
 Local Notation expect := (enumQ_real_expect (R := F)).
 
 Lemma enumQ_real_expect_app {A} (f : A -> F) mu nu :
-  expect f (mu ++ nu) = expect f mu + expect f nu.
-Proof. by elim: mu=> [|[p x] tail IH] /=; rewrite ?add0r ?IH ?addrA. Qed.
-
-Lemma enumQ_real_expect_scale {A} (f : A -> F) p mu :
-  expect f (scale_EnumQ p mu) = ratr (Qval p) * expect f mu.
+  expect f (enumQ_app mu nu) = expect f mu + expect f nu.
 Proof.
-  elim: mu=> [|[q x] tail IH] /=; first by rewrite mulr0.
-  rewrite IH mulrDr. congr (_ + _).
-  change (ratr (Qval p * Qval q) * f x = ratr (Qval p) * (ratr (Qval q) * f x)).
-  by rewrite rmorphM mulrA.
+  change (finite_expect f (finite_map_weights (ratr : {rmorphism rat -> F})
+    (enumQ_raw mu ++ enumQ_raw nu)) = expect f mu + expect f nu).
+  by rewrite finite_map_weights_app finite_expect_app.
 Qed.
-
+Lemma enumQ_real_expect_scale {A} (f : A -> F) p (Hp : 0 <= p) mu :
+  expect f (scale_EnumQ Hp mu) = ratr p * expect f mu.
+Proof.
+  change (finite_expect f (finite_map_weights (ratr : {rmorphism rat -> F})
+    (finite_weight_map p (enumQ_raw mu))) = ratr p * expect f mu).
+  by rewrite finite_map_weights_scale finite_expect_weight_map.
+Qed.
 Lemma enumQ_real_expect_bind {A B} (f : B -> F) (mu : EnumQ A) (k : A -> EnumQ B) :
   expect f (bind_EnumQ mu k) = expect (fun x => expect f (k x)) mu.
 Proof.
-  by elim: mu=> [|[p x] tail IH] //=; rewrite enumQ_real_expect_app enumQ_real_expect_scale IH.
+  change (finite_expect f (finite_map_weights (ratr : {rmorphism rat -> F})
+    (finite_bind (enumQ_raw mu) (fun x => enumQ_raw (k x)))) =
+    expect (fun x => expect f (k x)) mu).
+  by rewrite finite_map_weights_bind finite_expect_bind.
 Qed.
-
 Lemma enumQ_real_expect_filter_split {A : eqType} (f : A -> F) mu a :
-  expect f mu = ratr (Qval (acc_mass a mu)) * f a +
-    expect f [seq h <- mu | snd h != a].
+  expect f mu = ratr (acc_mass a mu) * f a +
+    expect f (enumQ_filter (fun px => px.2 != a) mu).
 Proof.
-  induction mu as [|[p x] tail IH]; cbn [enumQ_real_expect filter].
-  - by rewrite /= rmorph0 mul0r add0r.
-  - rewrite acc_mass_cons. destruct (x == a) eqn:Hxa.
-    + move/eqP: Hxa=> Hxa. subst x. cbn. rewrite IH eq_refl /=.
-      change (ratr (Qval p) * f a +
-        (ratr (Qval (acc_mass a tail)) * f a + expect f [seq h <- tail | snd h != a]) =
-        ratr (Qval (acc_mass a tail) + Qval p) * f a +
-          expect f [seq h <- tail | snd h != a]).
-      rewrite rmorphD mulrDl !addrA. congr (_ + _). exact: addrC.
-    + rewrite Hxa /= IH addr0. exact: addrCA.
+  rewrite /enumQ_real_expect (finite_expect_atom_split _ f a) finite_map_weights_atom.
+  change (ratr (acc_mass a mu)*f a + finite_expect f
+    (List.filter (fun px => px.2 != a) (finite_map_weights (ratr : {rmorphism rat -> F}) (enumQ_raw mu))) =
+    ratr (acc_mass a mu)*f a + finite_expect f
+    (finite_map_weights (ratr : {rmorphism rat -> F}) (List.filter (fun px => px.2 != a) (enumQ_raw mu)))).
+  by rewrite (finite_map_weights_filter (ratr : {rmorphism rat -> F}) (fun x : A => x != a) (enumQ_raw mu)).
 Qed.
-
 Lemma enumQ_real_expect_mass_zero {A : eqType} (f : A -> F) mu :
   (forall a, acc_mass a mu = 0) -> expect f mu = 0.
 Proof.
-  elim: mu=> [|[p x] tail IH] Hzero //=.
-  have Hp : p = 0.
-  { have Hx := Hzero x. rewrite acc_mass_cons eq_refl in Hx.
-    apply/eqP. have Hsum : acc_mass x tail + p == 0 by rewrite Hx.
-    have Hparts : (acc_mass x tail == 0) && (p == 0).
-    { rewrite -paddr_eq0 ?le_nnQ0 //. }
-    exact (proj2 (andP Hparts)). }
-  rewrite Hp /= rmorph0 mul0r add0r. apply IH=> a.
-  move: (Hzero a). rewrite (@acc_mass_cons_zero _ tail a (p, x) Hp). exact.
+  move=> H; change (expect f mu = finite_expect f nil).
+  apply finite_expect_atoms_eq=> x.
+  rewrite finite_map_weights_atom.
+  change ((ratr (acc_mass x mu) : F) = 0); by rewrite (H x) rmorph0.
 Qed.
-
 Lemma enumQ_real_expect_eqenum {A : eqType} (f : A -> F) mu nu :
   mu ==EnumQ nu -> expect f mu = expect f nu.
 Proof.
-  move: mu nu. refine (seq_strong_induction (P := fun mu => forall nu,
-    mu ==EnumQ nu -> expect f mu = expect f nu) _).
-  move=> mu IH nu Hmn. destruct mu as [|[p a] tail].
-  - symmetry. apply enumQ_real_expect_mass_zero=> x.
-    symmetry. move: (Hmn x). cbn. exact.
-  - rewrite (enumQ_real_expect_filter_split f ((p,a) :: tail) a).
-    rewrite (enumQ_real_expect_filter_split f nu a) (Hmn a).
-    congr (_ + _). apply IH.
-    + apply/ssrnat.ltP. rewrite size_filter /= eq_refl /=.
-      apply/ssrnat.ltP. exact: leq_ltn_trans (count_size _ _) (ltnSn _).
-    + exact: (enumQ_filter_proper (fun x : A => x != a) Hmn).
+  move=> H; apply finite_expect_atoms_eq=> x.
+  rewrite !finite_map_weights_atom.
+  change ((ratr (acc_mass x mu) : F) = ratr (acc_mass x nu)); by rewrite (H x).
 Qed.
-
 Lemma enumQ_real_expect_emap {A B} (k : A -> B) (f : B -> F) mu :
   expect f (emap k mu) = expect (fun x => f (k x)) mu.
-Proof. by elim: mu=> [|[p x] tail IH] //=; rewrite IH. Qed.
-
+Proof.
+  change (finite_expect f (finite_map_weights (ratr : {rmorphism rat -> F})
+    (List.map (fun px => (px.1,k px.2)) (enumQ_raw mu))) = expect (fun x => f (k x)) mu).
+  by rewrite finite_map_weights_map finite_expect_map.
+Qed.
 Lemma enumQ_real_expect_ae_mono {A} (f g : A -> F) mu :
   enumQ_ae mu (fun x => f x <= g x) -> expect f mu <= expect g mu.
 Proof.
-  induction mu as [|[p x] tail IH]; intro Hae; cbn [enumQ_real_expect].
-  - exact: lexx.
-  - destruct (p == nnQ_0) eqn:Hp.
-    + move/eqP: Hp=> ->. cbn [Qval nnQ_0]. rewrite rmorph0 !mul0r !add0r.
-      apply IH. intros q y Hy Hq. apply (Hae q y (or_intror Hy) Hq).
-    + apply lerD.
-      * apply ler_wpM2l; [by rewrite ler0q; apply Qval_nnQ_ge0|].
-        apply (Hae p x (or_introl (Logic.eq_refl (p,x)))).
-        intro Hz. rewrite Hz eq_refl in Hp. discriminate.
-      * apply IH. intros q y Hy Hq. apply (Hae q y (or_intror Hy) Hq).
+  move=> H; apply finite_expect_ae_mono; first exact: enumQ_real_weights_nonnegative.
+  move=> p x /List.in_map_iff [[q y] [He Hin]] Hnz; inversion He; subst p y.
+  apply (H q x Hin)=> Hq; apply Hnz; by rewrite Hq rmorph0.
 Qed.
 
 Lemma enumQ_coupling_real_expect {A B : eqType} (T : A -> B -> Prop)
@@ -305,28 +276,34 @@ Lemma enumQ_real_expect_countable_ae {A} (mu : EnumQ A) (tests : nat -> A -> R) 
   expect (fun x => countable_upper (fun n => tests n x)) mu =
   countable_upper (fun n => expect (tests n) mu).
 Proof.
-  intro Hb. induction mu as [|[p x] tail IH]; intro Hi; cbn [enumQ_real_expect].
-  - symmetry. apply countable_upper_constant.
-  - have Htail : enumQ_ae tail (fun x => forall n, tests n x <= tests (S n) x).
-    { intros q y Hy Hq. exact (Hi q y (or_intror Hy) Hq). }
+  intro Hb; apply (enumQ_ind_raw (P := fun mu =>
+    enumQ_ae mu (fun x => forall n, tests n x <= tests (S n) x) ->
+    expect (fun x => countable_upper (fun n => tests n x)) mu =
+    countable_upper (fun n => expect (tests n) mu))).
+  - move=> _; symmetry; exact: countable_upper_constant.
+  - move=> p Hp x tail IH Hi; rewrite enumQ_real_expect_cons.
+    have Htail : enumQ_ae tail (fun x => forall n, tests n x <= tests (S n) x).
+    { intros q y Hy Hq; exact (Hi q y (or_intror Hy) Hq). }
     rewrite (IH Htail).
-    destruct (eqVneq p nnQ_0) as [->|Hnz].
-    { cbn [Qval nnQ_0]. rewrite rmorph0 mul0r add0r.
-      f_equal. apply functional_extensionality=> n. by rewrite mul0r add0r. }
-    have Hx : forall n, tests n x <= tests (S n) x.
-    { apply (Hi p x (or_introl (Logic.eq_refl (p,x)))).
-      intro Hz. move/eqP: Hnz. intro Hneq. apply Hneq. exact Hz. }
-    have Hp : (0 : R) <= ratr (Qval p) by rewrite ler0q; apply Qval_nnQ_ge0.
-    rewrite -(@countable_upper_scale R (fun n => tests n x) (ratr (Qval p)) 1
-      Hp (fun n => proj2 (Hb n x))).
-    symmetry. apply countable_upper_add with
-      (bf := ratr (Qval p)) (bg := ratr (enumQ_mass tail)).
-    + intro n. exact (ler_wpM2l Hp (Hx n)).
-    + intro n. apply enumQ_real_expect_ae_mono.
-      intros q y Hy Hq. exact (Htail q y Hy Hq n).
-    + intro n. exact (ler_piMr Hp (proj2 (Hb n x))).
-    + intro n. rewrite -enumQ_real_expect_one.
-      apply enumQ_real_expect_mono. intro y. exact (proj2 (Hb n y)).
+    have Heval : (fun n => expect (tests n) (enumQ_cons Hp x tail)) =
+      (fun n => ratr p * tests n x + expect (tests n) tail).
+    { reflexivity. }
+    rewrite Heval; case Hzero: (p == 0).
+    + move/eqP: Hzero=> Hzero.
+      rewrite Hzero rmorph0 mul0r add0r.
+      f_equal; apply functional_extensionality=> n; by rewrite mul0r add0r.
+    + have Hx : forall n, tests n x <= tests (S n) x.
+      { apply (Hi p x (or_introl (Logic.eq_refl _))); by apply/eqP; rewrite Hzero. }
+      have Hreal : (0 : R) <= ratr p by rewrite ler0q.
+      rewrite -(@countable_upper_scale R (fun n => tests n x) (ratr p) 1
+        Hreal (fun n => proj2 (Hb n x))).
+      symmetry; apply countable_upper_add with (bf := ratr p) (bg := ratr (enumQ_mass tail)).
+      * move=> n; exact (ler_wpM2l Hreal (Hx n)).
+      * move=> n; apply enumQ_real_expect_ae_mono=> q y Hy Hq; exact (Htail q y Hy Hq n).
+      * move=> n; exact (ler_piMr Hreal (proj2 (Hb n x))).
+      * move=> n; rewrite -enumQ_real_expect_one.
+        apply enumQ_real_expect_mono=> y; exact (proj2 (Hb n y)).
+  - move=> a b He IH; move: IH; by rewrite /enumQ_ae /enumQ_real_expect He.
 Qed.
 
 Lemma enumQ_real_expect_countable {A} (mu : EnumQ A) (tests : nat -> A -> R) :

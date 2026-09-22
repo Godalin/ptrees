@@ -8,14 +8,14 @@ From Coq Require Import List.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
 From PTree.Prob.Domain Require Import Expectation.
 From PTree.Prob.Interface Require Import Measure.
-From PTree.Prob.Backend.Common Require Import RatSubTypes.
+From PTree.Prob.Backend.Common Require Import FiniteEnum.
 From PTree.Prob.Backend.EnumQ Require Import Representation.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import EnumQ RatSubTypes GRing.Theory Num.Theory Order.Theory.
+Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Section NativeDomain.
@@ -23,18 +23,12 @@ Variable R : realType.
 
 Lemma enumQ_real_expect_test_scale {A} (mu : EnumQ A) (f : A -> R) p :
   enumQ_real_expect (fun x => p * f x) mu = p * enumQ_real_expect f mu.
-Proof.
-  elim: mu=> [|[q x] tl IH]; cbn [enumQ_real_expect]; first by rewrite mulr0.
-  rewrite IH mulrDr; congr (_ + _); exact: mulrCA.
-Qed.
+Proof. exact: finite_expect_scale. Qed.
 
 Lemma enumQ_real_expect_test_add {A} (mu : EnumQ A) (f g : A -> R) :
   enumQ_real_expect (fun x => f x + g x) mu =
     enumQ_real_expect f mu + enumQ_real_expect g mu.
-Proof.
-  elim: mu=> [|[q x] tl IH]; cbn [enumQ_real_expect]; first by rewrite addr0.
-  rewrite IH mulrDr. exact: addrACA.
-Qed.
+Proof. exact: finite_expect_add. Qed.
 
 Definition subenumQ_domain_laws {A} (mu : SubEnumQ A) :
   OmegaValLaws (fun f : A -> R => enumQ_real_expect f (subenumQ_raw mu)).
@@ -54,7 +48,7 @@ Definition subenumQ_domain {A} (mu : SubEnumQ A) : OmegaVal R A :=
 
 Theorem subenumQ_domain_ret {A} (x : A) :
   oval_eq (subenumQ_domain (subenumQ_ret x)) (oval_ret R x).
-Proof. intros f Hf; by rewrite /= rmorph1 mul1r addr0. Qed.
+Proof. intros f Hf; exact: enumQ_real_expect_ret. Qed.
 Theorem subenumQ_domain_zero {A} :
   oval_eq (subenumQ_domain (@subenumQ_zero A)) (oval_bottom R).
 Proof. intros f Hf; reflexivity. Qed.

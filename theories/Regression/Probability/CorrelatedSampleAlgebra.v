@@ -1,8 +1,10 @@
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From Coq.Program Require Import Equality.
-From mathcomp Require Import eqtype.
+From mathcomp Require Import eqtype ssralg rat.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.SemanticCoupling.
@@ -187,8 +189,8 @@ Lemma exchange_fair_both_values (P : bool -> Prop) :
 Proof.
   intro Hae.
   change (PTree.Prob.Backend.EnumQ.FrontierLift.enumQ_ae reg_fair P) in Hae.
-  assert (Hhalf : reg_half <> PTree.Prob.Backend.Common.RatSubTypes.nnQ_0).
-  { intro H. apply (f_equal PTree.Prob.Backend.Common.RatSubTypes.Qval) in H. discriminate H. }
+  assert (Hhalf : reg_half <> (0%R : rat.rat)).
+  { intro H. vm_compute in H. discriminate H. }
   split; apply (Hae reg_half); cbn; auto.
 Qed.
 

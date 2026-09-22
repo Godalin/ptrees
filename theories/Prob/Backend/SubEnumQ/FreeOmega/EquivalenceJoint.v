@@ -53,7 +53,7 @@ Let X := native_sample_type p.
 Let Y := native_sample_type q.
 Let mu := native_sample_measure p.
 Let nu := native_sample_measure q.
-Let probes := List.map (fun wx => native_sample_value p (snd wx)) (subenumQ_raw mu).
+Let probes := List.map (fun wx => native_sample_value p (snd wx)) (subenumQ_data mu).
 Let code := finite_equivalence_code R probes.
 Let lc := fun x => code (native_sample_value p x).
 Let rc := fun y => code (native_sample_value q y).

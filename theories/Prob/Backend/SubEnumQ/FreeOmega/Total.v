@@ -7,6 +7,7 @@ From Coq Require Import ClassicalChoice FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrfun ssrbool seq ssralg ssrnum rat.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
+From PTree.Prob.Backend.Common Require Import FiniteEnum.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.Representation.
 Set Implicit Arguments.
@@ -68,9 +69,7 @@ Proof.
              enumQ_mass (subenumQ_raw out)| < eps).
            rewrite (proj2 (Houts n)). exact HN.
         -- have Hz : forall (T : Type) (mu : EnumQ T), enumQ_expect (fun _ => 0) mu = 0.
-           { intros T m. induction m as [|[p x] m IH]; [reflexivity|].
-             change (PTree.Prob.Backend.Common.RatSubTypes.Qval p * 0 + enumQ_expect (fun _ => 0) m = 0).
-             by rewrite mulr0 IH addr0. }
+           { intros T m. exact: finite_expect_zero. }
            rewrite !Hz subrr normr0. exact Heps.
       * exact H2.
     + change (enumQ_expect (fun _ => 1) (bind_EnumQ (subenumQ_raw out)

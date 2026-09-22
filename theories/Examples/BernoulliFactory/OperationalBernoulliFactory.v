@@ -2,6 +2,8 @@
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
+From PTree.Prob.Backend.Common Require Import FiniteRecordExtensionality FiniteEnum.
 
 From Coq Require Import FunctionalExtensionality.
 From Coq.Program Require Import Equality.
@@ -9,7 +11,7 @@ From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype ssralg ssrnum order rat.
 
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind.
 Require Import PTree.Prob.Interface.Iteration.
 Require Import PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
@@ -29,7 +31,6 @@ Unset Printing Implicit Defensive.
 Import EnumQ.
 Import PTree.Prob.Backend.EnumQ.Map.
 Import GRing.Theory.
-Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
 Local Open Scope ring_scope.
 
 Local Notation MF := (FreeOmega EnumQ).
@@ -38,7 +39,8 @@ Definition factoryE_no_event : forall X, factoryE X -> False :=
   fun X e => match e with end.
 
 Section FactoryOperationalNormalization.
-Variables pfalse ptrue : nnQ.
+Variables pfalse ptrue : rat.
+Hypotheses (pfalse0 : 0 <= pfalse) (ptrue0 : 0 <= ptrue).
 
 Local Notation factory_head A := (stable_head factoryE EnumQ A).
 
@@ -51,86 +53,65 @@ Polymorphic Definition ptree_factory_head_value {X}
 
 Fixpoint ptree_factory_fair_measure_row (outer : nat) : EnumQ bool :=
   match outer with
-  | O => nil
+  | O => enumQ_zero
   | S outer' =>
-      bind_EnumQ (factory_biased_coin pfalse ptrue) (fun b1 =>
-        bind_EnumQ (factory_biased_coin pfalse ptrue) (fun b2 =>
+      bind_EnumQ (factory_biased_coin pfalse0 ptrue0) (fun b1 =>
+        bind_EnumQ (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
           match vn_round_result b1 b2 with
           | inl _ => ptree_factory_fair_measure_row outer'
           | inr b => ret_EnumQ b
           end))
   end.
 
-Lemma scale_EnumQ_one {X} (mu : EnumQ X) : scale_EnumQ 1 mu = mu.
-Proof.
-  induction mu as [|[w x] mu IH]; first reflexivity.
-  simpl scale_EnumQ. rewrite mul1r IH. reflexivity.
-Qed.
-
-Lemma enumQ_cat_nil {X} (mu : EnumQ X) : (mu ++ nil)%list = mu.
-Proof.
-  induction mu as [|x mu IH]; first reflexivity.
-  simpl. rewrite IH. reflexivity.
-Qed.
-
 Lemma ptree_factory_fair_measure_row_eq outer :
   ptree_factory_fair_measure_row outer =
     meas_iter_approx outer
-      (fun _ : unit => factory_round_measure pfalse ptrue) tt.
+      (fun _ : unit => factory_round_measure pfalse0 ptrue0) tt.
 Proof.
   induction outer as [|outer IH]; first reflexivity.
   cbn [ptree_factory_fair_measure_row meas_iter_approx].
   unfold factory_round_measure.
   cbn [FrontierLift.meas_bind FrontierLift.meas_ret
     PTree.Prob.Backend.EnumQ.FrontierLift.EnumQ_MeasureInterface].
-  rewrite bind_EnumQ_assoc. apply bind_EnumQ_ext=> b1.
-  rewrite bind_EnumQ_assoc. apply bind_EnumQ_ext=> b2.
-  destruct (vn_round_result b1 b2) as [[]|b].
-  - rewrite IH. cbn [ret_EnumQ bind_EnumQ scale_EnumQ].
-    fold (factory_round_measure pfalse ptrue).
-    rewrite /ret_EnumQ /bind_EnumQ /=.
-    change (meas_iter_approx outer (fun _ : unit => factory_round_measure pfalse ptrue) tt =
-      (scale_EnumQ 1 (meas_iter_approx outer
-        (fun _ : unit => factory_round_measure pfalse ptrue) tt) ++ nil)%list).
-    rewrite scale_EnumQ_one.
-    symmetry. apply enumQ_cat_nil.
-  - rewrite /ret_EnumQ /bind_EnumQ /=.
-    change (ret_EnumQ b = (scale_EnumQ 1 (ret_EnumQ b) ++ nil)%list).
-    rewrite scale_EnumQ_one. symmetry. apply enumQ_cat_nil.
+  unfold bind_EnumQ, ret_EnumQ.
+  rewrite finite_enum_bind_assoc_eq. apply finite_enum_bind_ext_eq=> b1.
+  rewrite finite_enum_bind_assoc_eq. apply finite_enum_bind_ext_eq=> b2.
+  rewrite finite_enum_bind_ret_eq.
+  destruct (vn_round_result b1 b2) as [[]|b]; [exact IH|reflexivity].
 Qed.
 
 Definition ptree_factory_raw_after (next : unit + bool) :
     ptree factoryE EnumQ bool :=
   match next with
-  | inl u => Tau (PTree.iter (factory_vn_step pfalse ptrue) u)
+  | inl u => Tau (PTree.iter (factory_vn_step pfalse0 ptrue0) u)
   | inr b => Ret b
   end.
 
 Definition ptree_factory_raw_second (b1 : bool) :
     ptree factoryE EnumQ bool :=
   PTree.bind
-    (Prob (factory_biased_coin pfalse ptrue) (fun b2 =>
+    (Prob (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
       Ret (vn_round_result b1 b2)))
     ptree_factory_raw_after.
 
 Lemma ptree_factory_raw_observe :
-  observe (factory_fair_coin pfalse ptrue) =
-  ProbF (factory_biased_coin pfalse ptrue)
+  observe (factory_fair_coin pfalse0 ptrue0) =
+  ProbF (factory_biased_coin pfalse0 ptrue0)
     ptree_factory_raw_second.
 Proof.
   unfold factory_fair_coin.
-  pose proof (unfold_aloop_ (factory_vn_step pfalse ptrue) tt) as Hunfold.
+  pose proof (unfold_aloop_ (factory_vn_step pfalse0 ptrue0) tt) as Hunfold.
   rewrite (observing_observe Hunfold). rewrite observe_bind.
-  assert (Hstep : observe (factory_vn_step pfalse ptrue tt) =
-    ProbF (factory_biased_coin pfalse ptrue) (fun b1 =>
-      Prob (factory_biased_coin pfalse ptrue) (fun b2 =>
+  assert (Hstep : observe (factory_vn_step pfalse0 ptrue0 tt) =
+    ProbF (factory_biased_coin pfalse0 ptrue0) (fun b1 =>
+      Prob (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
         Ret (vn_round_result b1 b2)))) by reflexivity.
   rewrite Hstep. reflexivity.
 Qed.
 
 Lemma ptree_factory_raw_second_observe b1 :
   observe (ptree_factory_raw_second b1) =
-  ProbF (factory_biased_coin pfalse ptrue) (fun b2 =>
+  ProbF (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
     PTree.bind (Ret (vn_round_result b1 b2))
       ptree_factory_raw_after).
 Proof.
@@ -139,13 +120,13 @@ Qed.
 
 Definition ptree_factory_raw_hitting (fuel : nat) : MF (factory_head bool) :=
   ptree_hitting_approx (MF := MF) fuel
-    (observe (factory_fair_coin pfalse ptrue)).
+    (observe (factory_fair_coin pfalse0 ptrue0)).
 
 Lemma ptree_factory_raw_hitting_three fuel :
   ptree_factory_raw_hitting
     (Datatypes.S (Datatypes.S (Datatypes.S fuel))) =
-  FOSample (factory_biased_coin pfalse ptrue) (fun b1 =>
-    FOSample (factory_biased_coin pfalse ptrue) (fun b2 =>
+  FOSample (factory_biased_coin pfalse0 ptrue0) (fun b1 =>
+    FOSample (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
       match vn_round_result b1 b2 with
       | inl _ => ptree_factory_raw_hitting fuel
       | inr b => FORet (FHRet b)
@@ -176,15 +157,16 @@ Fixpoint ptree_factory_raw_schedule (rounds : nat) : nat :=
 
 Lemma ptree_factory_raw_hitting_zero_observes :
   free_omega_observes ptree_factory_head_value
-    (ptree_factory_raw_hitting 0) (nil : EnumQ bool).
+    (ptree_factory_raw_hitting 0) (enumQ_zero : EnumQ bool).
 Proof.
   unfold ptree_factory_raw_hitting.
   rewrite ptree_factory_raw_observe.
   change (free_omega_observes ptree_factory_head_value
-    (FOSample (factory_biased_coin pfalse ptrue) (fun _ => FOZero))
-    (nil : EnumQ bool)).
-  rewrite <- (enumQ_bind_nil (A := bool) bool
-    (factory_biased_coin pfalse ptrue)).
+    (FOSample (factory_biased_coin pfalse0 ptrue0) (fun _ => FOZero))
+    (enumQ_zero : EnumQ bool)).
+  replace (@enumQ_zero bool) with
+    (bind_EnumQ (factory_biased_coin pfalse0 ptrue0) (fun _ => @enumQ_zero bool))
+    by apply finite_enum_bind_zero_eq.
   constructor. intro b. constructor.
 Qed.
 
@@ -200,17 +182,17 @@ Proof.
       ptree_factory_fair_measure_row].
     rewrite ptree_factory_raw_hitting_three.
     change (free_omega_observes ptree_factory_head_value
-      (FOSample (factory_biased_coin pfalse ptrue) (fun b1 =>
-        FOSample (factory_biased_coin pfalse ptrue) (fun b2 =>
+      (FOSample (factory_biased_coin pfalse0 ptrue0) (fun b1 =>
+        FOSample (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
           match vn_round_result b1 b2 with
           | inl _ => ptree_factory_raw_hitting
               (ptree_factory_raw_schedule rounds)
           | inr b => FORet (FHRet b)
           end)))
       (@sem_bind EnumQ EnumQ_SemanticMeasure _ _
-        (factory_biased_coin pfalse ptrue) (fun b1 =>
+        (factory_biased_coin pfalse0 ptrue0) (fun b1 =>
           @sem_bind EnumQ EnumQ_SemanticMeasure _ _
-            (factory_biased_coin pfalse ptrue) (fun b2 =>
+            (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
               match vn_round_result b1 b2 with
               | inl _ => ptree_factory_fair_measure_row rounds
               | inr b => @sem_ret EnumQ EnumQ_SemanticMeasure _ b
@@ -249,7 +231,7 @@ Theorem ptree_factory_fair_coin_weak :
       (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
-    (observe (factory_fair_coin pfalse ptrue))
+    (observe (factory_fair_coin pfalse0 ptrue0))
     ptree_factory_raw_heads.
 Proof.
   change (free_omega_qlift eq
@@ -265,8 +247,8 @@ Proof.
 Qed.
 
 Lemma ptree_factory_fair_heads_observes
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) :
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q) :
   free_omega_observes ptree_factory_head_value
     ptree_factory_raw_heads vn_fair.
 Proof.
@@ -274,20 +256,20 @@ Proof.
   - exact ptree_factory_raw_hitting_rounds_observes.
   - assert (Hrows : ptree_factory_fair_measure_row =
       fun outer => meas_iter_approx outer
-        (fun _ : unit => param_round_measure pfalse ptrue) tt).
+        (fun _ : unit => param_round_measure pfalse0 ptrue0) tt).
     { apply functional_extensionality=> outer.
       rewrite ptree_factory_fair_measure_row_eq.
-      rewrite (factory_round_is_param_round pfalse ptrue). reflexivity. }
+      rewrite (factory_round_is_param_round pfalse0 ptrue0). reflexivity. }
     rewrite Hrows.
     exact (param_iteration_converges_of_normalized_bias
-      (p := pfalse) (q := ptrue) pnormalized pnontrivial).
+      pfalse0 ptrue0 pnormalized pnontrivial).
   - intro n. apply ptree_hitting_mono.
     cbn [ptree_factory_raw_schedule]. repeat apply le_S. apply le_n.
 Qed.
 
 Lemma ptree_factory_fair_heads_total
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) :
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q) :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)
@@ -304,15 +286,15 @@ Proof.
 Qed.
 
 Theorem ptree_factory_fair_coin_ast
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) :
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q) :
   @ptree_stable_hitting_ast factoryE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)
       (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
-    (observe (factory_fair_coin pfalse ptrue))
+    (observe (factory_fair_coin pfalse0 ptrue0))
     ptree_factory_raw_heads.
 Proof.
   split.
@@ -327,10 +309,10 @@ Variable q : rat.
 Fixpoint ptree_factory_binary_measure_row
     (rounds : nat) (x : rat) : EnumQ (rat + bool) :=
   match rounds with
-  | O => nil
+  | O => enumQ_zero
   | S rounds' =>
-      bind_EnumQ (factory_biased_coin pfalse ptrue) (fun b1 =>
-        bind_EnumQ (factory_biased_coin pfalse ptrue) (fun b2 =>
+      bind_EnumQ (factory_biased_coin pfalse0 ptrue0) (fun b1 =>
+        bind_EnumQ (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
           match vn_round_result b1 b2 with
           | inl _ => ptree_factory_binary_measure_row rounds' x
           | inr b => ret_EnumQ (binary_round_result x b)
@@ -342,17 +324,14 @@ Lemma ptree_factory_binary_measure_row_eq rounds x :
   bind_EnumQ (ptree_factory_fair_measure_row rounds)
     (fun b => ret_EnumQ (binary_round_result x b)).
 Proof.
-  induction rounds as [|rounds IH]; first reflexivity.
-  cbn [ptree_factory_binary_measure_row
-    ptree_factory_fair_measure_row].
-  rewrite bind_EnumQ_assoc. apply bind_EnumQ_ext=> b1.
-  rewrite bind_EnumQ_assoc. apply bind_EnumQ_ext=> b2.
-  destruct (vn_round_result b1 b2) as [[]|b].
-  - exact IH.
-  - rewrite /ret_EnumQ /bind_EnumQ /=.
-    change (ret_EnumQ (binary_round_result x b) =
-      (scale_EnumQ 1 (ret_EnumQ (binary_round_result x b)) ++ nil)%list).
-    rewrite scale_EnumQ_one. symmetry. apply enumQ_cat_nil.
+  induction rounds as [|rounds IH].
+  - apply finite_enum_raw_eq; reflexivity.
+  - cbn [ptree_factory_binary_measure_row ptree_factory_fair_measure_row].
+  unfold bind_EnumQ, ret_EnumQ.
+  rewrite finite_enum_bind_assoc_eq. apply finite_enum_bind_ext_eq=> b1.
+  rewrite finite_enum_bind_assoc_eq. apply finite_enum_bind_ext_eq=> b2.
+  destruct (vn_round_result b1 b2) as [[]|b]; first exact IH.
+  rewrite finite_enum_bind_ret_eq; reflexivity.
 Qed.
 
 Lemma enumQ_converges_bind_ret_map {A B}
@@ -386,27 +365,28 @@ Proof.
     rewrite ptree_factory_raw_observe.
     change (free_omega_observes
       (fun h => binary_round_result x (ptree_factory_head_value h))
-      (FOSample (factory_biased_coin pfalse ptrue) (fun _ => FOZero))
-      (nil : EnumQ (rat + bool))).
-    rewrite <- (enumQ_bind_nil (A := bool) (rat + bool)
-      (factory_biased_coin pfalse ptrue)).
+      (FOSample (factory_biased_coin pfalse0 ptrue0) (fun _ => FOZero))
+      (enumQ_zero : EnumQ (rat + bool))).
+    replace (@enumQ_zero (rat + bool)) with
+      (bind_EnumQ (factory_biased_coin pfalse0 ptrue0) (fun _ => @enumQ_zero (rat + bool)))
+      by apply finite_enum_bind_zero_eq.
     constructor=> b. constructor.
   - cbn [ptree_factory_raw_schedule
       ptree_factory_binary_measure_row].
     rewrite ptree_factory_raw_hitting_three.
     change (free_omega_observes
       (fun h => binary_round_result x (ptree_factory_head_value h))
-      (FOSample (factory_biased_coin pfalse ptrue) (fun b1 =>
-        FOSample (factory_biased_coin pfalse ptrue) (fun b2 =>
+      (FOSample (factory_biased_coin pfalse0 ptrue0) (fun b1 =>
+        FOSample (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
           match vn_round_result b1 b2 with
           | inl _ => ptree_factory_raw_hitting
               (ptree_factory_raw_schedule rounds)
           | inr b => FORet (FHRet b)
           end)))
       (@sem_bind EnumQ EnumQ_SemanticMeasure _ _
-        (factory_biased_coin pfalse ptrue) (fun b1 =>
+        (factory_biased_coin pfalse0 ptrue0) (fun b1 =>
           @sem_bind EnumQ EnumQ_SemanticMeasure _ _
-            (factory_biased_coin pfalse ptrue) (fun b2 =>
+            (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
               match vn_round_result b1 b2 with
               | inl _ => ptree_factory_binary_measure_row rounds x
               | inr b => @sem_ret EnumQ EnumQ_SemanticMeasure _
@@ -417,8 +397,8 @@ Proof.
 Qed.
 
 Lemma ptree_factory_raw_heads_observes_binary
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x :
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q) x :
   free_omega_observes
     (fun h => binary_round_result x (ptree_factory_head_value h))
     ptree_factory_raw_heads (binary_coin_transition x).
@@ -430,12 +410,12 @@ Proof.
         vn_fair).
     { assert (Hrows : ptree_factory_fair_measure_row =
         fun rounds => meas_iter_approx rounds
-          (fun _ : unit => param_round_measure pfalse ptrue) tt).
+          (fun _ : unit => param_round_measure pfalse0 ptrue0) tt).
       { apply functional_extensionality=> rounds.
         rewrite ptree_factory_fair_measure_row_eq.
-        rewrite (factory_round_is_param_round pfalse ptrue). reflexivity. }
+        rewrite (factory_round_is_param_round pfalse0 ptrue0). reflexivity. }
       rewrite Hrows. exact (param_iteration_converges_of_normalized_bias
-        (p := pfalse) (q := ptrue) pnormalized pnontrivial). }
+        pfalse0 ptrue0 pnormalized pnontrivial). }
     pose proof (@enumQ_converges_bind_ret_map bool (rat + bool)
       ptree_factory_fair_measure_row vn_fair
       (fun b => binary_round_result x b) Hfair)
@@ -487,7 +467,7 @@ Lemma ptree_factory_binary_step_weak x :
       (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega (rat + bool)
-    (observe (factory_binary_step pfalse ptrue x))
+    (observe (factory_binary_step pfalse0 ptrue0 x))
     (ptree_factory_binary_step_heads x).
 Proof.
   unfold factory_binary_step, ptree_factory_binary_step_heads.
@@ -501,8 +481,8 @@ Proof.
 Qed.
 
 Lemma ptree_factory_binary_step_heads_observes
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x :
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q) x :
   free_omega_observes
     (iter_head_next factoryE_no_event)
     (ptree_factory_binary_step_heads x)
@@ -551,8 +531,8 @@ Qed.
 
 Class OperationalFactoryStepSupportLaws := {
   ptree_factory_binary_step_support : forall
-      (pnormalized : Qval pfalse + Qval ptrue = 1)
-      (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x,
+      (pnormalized : pfalse + ptrue = 1)
+      (pnontrivial : (0 < pfalse * ptrue)%Q) x,
     free_omega_support_lift eq
       (ptree_factory_binary_step_heads x)
       (ptree_factory_standard_step_heads x)
@@ -561,8 +541,8 @@ Class OperationalFactoryStepSupportLaws := {
 Context `{FactoryStepSupport : OperationalFactoryStepSupportLaws}.
 
 Lemma ptree_factory_binary_step_heads_lift
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x :
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q) x :
   free_omega_qlift eq
     (ptree_factory_binary_step_heads x)
     (ptree_factory_standard_step_heads x).
@@ -580,7 +560,7 @@ Proof.
   - cbn [sem_bind sem_ret EnumQ_SemanticMeasure
       FrontierLift.meas_bind FrontierLift.meas_ret
       PTree.Prob.Backend.EnumQ.FrontierLift.EnumQ_MeasureInterface].
-    rewrite bind_ret_emap emap_id.
+    rewrite /bind_EnumQ /ret_EnumQ finite_enum_bind_right_unit_eq.
     apply sem_lift_refl. intros next. reflexivity.
   - intros h1 h2 Hnext.
     destruct h1 as [next1|X e1 k1];
@@ -607,8 +587,8 @@ Definition ptree_factory_standard_q_heads : MF (factory_head bool) :=
   FOLub (fun outer => ptree_factory_standard_q_row outer q).
 
 Lemma ptree_factory_q_row_lift
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) :
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q) :
   forall outer x,
     free_omega_qlift eq
       (iter_complete_rows factoryE_no_event
@@ -636,8 +616,8 @@ Definition ptree_factory_q_heads : MF (factory_head bool) :=
   FOLub ptree_factory_q_row.
 
 Lemma ptree_factory_q_heads_lift_standard
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) :
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q) :
   free_omega_qlift eq ptree_factory_q_heads
     ptree_factory_standard_q_heads.
 Proof.
@@ -722,7 +702,7 @@ Theorem ptree_biased_to_rational_coin_weak :
       (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
-    (observe (biased_to_rational_coin pfalse ptrue q))
+    (observe (biased_to_rational_coin pfalse0 ptrue0 q))
     ptree_factory_q_heads.
 Proof.
   unfold biased_to_rational_coin.
@@ -734,15 +714,15 @@ Proof.
 Qed.
 
 Theorem ptree_biased_to_rational_coin_weak_standard
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) :
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q) :
   @ptree_stable_hitting factoryE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)
       (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
-    (observe (biased_to_rational_coin pfalse ptrue q))
+    (observe (biased_to_rational_coin pfalse0 ptrue0 q))
     ptree_factory_standard_q_heads.
 Proof.
   pose proof ptree_biased_to_rational_coin_weak as Hweak.
@@ -755,8 +735,8 @@ Proof.
 Qed.
 
 Theorem ptree_biased_to_rational_coin_ast
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q)
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q)
     (q0 : 0 <= q) (q1 : q <= 1) :
   @ptree_stable_hitting_ast factoryE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
@@ -764,7 +744,7 @@ Theorem ptree_biased_to_rational_coin_ast
       (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
-    (observe (biased_to_rational_coin pfalse ptrue q))
+    (observe (biased_to_rational_coin pfalse0 ptrue0 q))
     ptree_factory_standard_q_heads.
 Proof.
   split.
@@ -774,8 +754,8 @@ Proof.
 Qed.
 
 Corollary ptree_biased_to_rational_coin_primitive_ast
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q)
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q)
     (q0 : 0 <= q) (q1 : q <= 1) :
   @stable_hitting_ast MF
     (FreeOmegaObservableSemanticMeasure
@@ -788,11 +768,11 @@ Corollary ptree_biased_to_rational_coin_primitive_ast
         (NI := EnumQ_SemanticMeasure)
         (NO := EnumQ_SemanticOmega))
       FreeOmegaMixedMeasure bool)
-    (observe (biased_to_rational_coin pfalse ptrue q))
+    (observe (biased_to_rational_coin pfalse0 ptrue0 q))
     ptree_factory_standard_q_heads.
 Proof.
   apply (proj2 (ptree_primitive_ast_adequate
-    (observe (biased_to_rational_coin pfalse ptrue q))
+    (observe (biased_to_rational_coin pfalse0 ptrue0 q))
     ptree_factory_standard_q_heads)).
   exact (ptree_biased_to_rational_coin_ast
     pnormalized pnontrivial q0 q1).
@@ -831,7 +811,7 @@ Proof.
   cbn [sem_bind sem_ret EnumQ_SemanticMeasure
     FrontierLift.meas_bind FrontierLift.meas_ret
     PTree.Prob.Backend.EnumQ.FrontierLift.EnumQ_MeasureInterface].
-  rewrite bind_ret_emap. apply emap_id.
+  apply finite_enum_bind_right_unit_eq.
 Qed.
 
 Lemma ptree_factory_direct_q_heads_total
@@ -1000,8 +980,8 @@ Proof.
 Qed.
 
 Theorem peutt_biased_to_rational_coin_direct
-    (pnormalized : Qval pfalse + Qval ptrue = 1)
-    (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q)
+    (pnormalized : pfalse + ptrue = 1)
+    (pnontrivial : (0 < pfalse * ptrue)%Q)
     (q0 : 0 <= q) (q1 : q <= 1) :
   @peutt factoryE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
@@ -1011,7 +991,7 @@ Theorem peutt_biased_to_rational_coin_direct
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega
     bool bool eq
-    (biased_to_rational_coin pfalse ptrue q) (factory_direct_q q0 q1).
+    (biased_to_rational_coin pfalse0 ptrue0 q) (factory_direct_q q0 q1).
 Proof.
   eapply peutt_of_hitting_lift.
   - apply (proj2 (ptree_primitive_stable_hitting_adequate _ _)).
@@ -1028,7 +1008,7 @@ End FactoryOperationalNormalization.
 
 Definition ptree_third_to_two_fifths_heads :
     MF (stable_head factoryE EnumQ bool) :=
-  ptree_factory_q_heads vn_one_third vn_two_thirds (2 / 5).
+  ptree_factory_q_heads third_false_nonnegative third_true_nonnegative (2 / 5).
 
 Theorem ptree_third_to_two_fifths_weak :
   @ptree_stable_hitting factoryE EnumQ MF
@@ -1041,11 +1021,12 @@ Theorem ptree_third_to_two_fifths_weak :
     ptree_third_to_two_fifths_heads.
 Proof.
   exact (ptree_biased_to_rational_coin_weak
-    vn_one_third vn_two_thirds (2 / 5)).
+    third_false_nonnegative third_true_nonnegative (2 / 5)).
 Qed.
 
 Theorem peutt_third_to_two_fifths_direct
-    `{OperationalFactoryStepSupportLaws vn_one_third vn_two_thirds} :
+    `{Hsupport : @OperationalFactoryStepSupportLaws vn_one_third vn_two_thirds
+      third_false_nonnegative third_true_nonnegative} :
   @peutt factoryE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)
@@ -1096,27 +1077,26 @@ Lemma factory_fair_heads_observes :
 Proof.
   unfold factory_fair_heads.
   replace vn_fair with (bind_EnumQ vn_fair (fun b => ret_EnumQ b)) at 2
-    by (rewrite bind_ret_emap emap_id; reflexivity).
+    by apply finite_enum_bind_right_unit_eq.
   constructor. intro b. constructor.
 Qed.
 
 Section ParametricVN.
-Variables pfalse ptrue : nnQ.
-Hypothesis pnormalized : Qval pfalse + Qval ptrue = 1.
-Hypothesis pnontrivial : 0 < Qval pfalse * Qval ptrue.
+Variables pfalse ptrue : rat.
+Hypotheses (pfalse0 : 0 <= pfalse) (ptrue0 : 0 <= ptrue).
+Hypothesis pnormalized : pfalse + ptrue = 1.
+Hypothesis pnontrivial : 0 < pfalse * ptrue.
 
 Lemma factory_vn_fair_support
     (sim : ptree factoryE EnumQ bool -> ptree factoryE EnumQ bool -> Prop) :
   free_omega_support_lift (stable_head_rel eq sim)
-    (ptree_factory_raw_heads pfalse ptrue) factory_fair_heads.
+    (ptree_factory_raw_heads pfalse0 ptrue0) factory_fair_heads.
 Proof.
-  assert (Hpfalse : pfalse <> nnQ_0).
+  assert (Hpfalse : pfalse <> 0).
   { intro Hzero. pose proof pnontrivial as Hpos. rewrite Hzero in Hpos.
-    cbn [nnQ_0 Qval] in Hpos.
     rewrite mul0r ltxx in Hpos. discriminate. }
-  assert (Hptrue : ptrue <> nnQ_0).
+  assert (Hptrue : ptrue <> 0).
   { intro Hzero. pose proof pnontrivial as Hpos. rewrite Hzero in Hpos.
-    cbn [nnQ_0 Qval] in Hpos.
     rewrite mulr0 ltxx in Hpos. discriminate. }
   unfold free_omega_support_lift. split.
     + intros P HP. unfold ptree_factory_raw_heads in HP.
@@ -1125,18 +1105,18 @@ Proof.
       rewrite ptree_factory_raw_hitting_three in H.
       pose proof (free_omega_ae_sample_inv H) as Hfirst.
       assert (Hfirst_false : free_omega_ae P
-          (FOSample (factory_biased_coin pfalse ptrue) (fun b2 =>
+          (FOSample (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
             match vn_round_result false b2 with
-            | inl _ => ptree_factory_raw_hitting pfalse ptrue 0
+            | inl _ => ptree_factory_raw_hitting pfalse0 ptrue0 0
             | inr b => FORet (FHRet b)
             end))).
       { apply Hfirst with (p := pfalse).
         - cbn. auto.
         - exact Hpfalse. }
       assert (Hfirst_true : free_omega_ae P
-          (FOSample (factory_biased_coin pfalse ptrue) (fun b2 =>
+          (FOSample (factory_biased_coin pfalse0 ptrue0) (fun b2 =>
             match vn_round_result true b2 with
-            | inl _ => ptree_factory_raw_hitting pfalse ptrue 0
+            | inl _ => ptree_factory_raw_hitting pfalse0 ptrue0 0
             | inr b => FORet (FHRet b)
             end))).
       { apply Hfirst with (p := ptrue).
@@ -1176,7 +1156,7 @@ Proof.
       * intros h _. destruct h as [b|X e k]; [|destruct e].
         exists (FHRet b). split; [constructor; reflexivity|].
         destruct b; assumption.
-      * generalize (ptree_factory_raw_heads pfalse ptrue). intro mu. induction mu.
+      * generalize (ptree_factory_raw_heads pfalse0 ptrue0). intro mu. induction mu.
         -- constructor. exact I.
         -- constructor.
         -- eapply FOAESample with (Good := fun _ => True).
@@ -1189,13 +1169,13 @@ Qed.
 Lemma factory_vn_fair_heads_lift
     (sim : ptree factoryE EnumQ bool -> ptree factoryE EnumQ bool -> Prop) :
   free_omega_qlift (stable_head_rel eq sim)
-    (ptree_factory_raw_heads pfalse ptrue) factory_fair_heads.
+    (ptree_factory_raw_heads pfalse0 ptrue0) factory_fair_heads.
 Proof.
   eapply FOQLObserve with
     (obsA := ptree_factory_head_value)
     (obsB := ptree_factory_head_value)
     (outA := vn_fair) (outB := vn_fair) (S := eq).
-  - exact (ptree_factory_fair_heads_observes pnormalized pnontrivial).
+  - exact (ptree_factory_fair_heads_observes pfalse0 ptrue0 pnormalized pnontrivial).
   - exact factory_fair_heads_observes.
   - apply sem_lift_refl. intro b. reflexivity.
   - intros h1 h2 Hvalue.
@@ -1206,10 +1186,10 @@ Proof.
 Qed.
 
 Theorem peutt_factory_vn_fair :
-  peutt eq (factory_fair_coin pfalse ptrue) factory_direct_fair.
+  peutt eq (factory_fair_coin pfalse0 ptrue0) factory_direct_fair.
 Proof.
   eapply peutt_of_hitting_lift.
-  - exact (ptree_factory_fair_coin_weak pfalse ptrue).
+  - exact (ptree_factory_fair_coin_weak pfalse0 ptrue0).
   - exact factory_direct_fair_weak.
   - exact (factory_vn_fair_heads_lift _).
 Qed.

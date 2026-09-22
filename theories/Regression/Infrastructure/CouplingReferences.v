@@ -1,10 +1,12 @@
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
 From Coq.Program Require Import Equality.
 From Coq.Logic Require Import ClassicalDescription.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Coupling.
@@ -16,7 +18,7 @@ From PTree.Regression.Backend Require Import EnumQMeasureRegression SubEnumQRegr
 From PTree.Regression.Probability Require Import CorrelatedSampleAlgebra.
 
 Set Implicit Arguments.
-Import EnumQ RatSubTypes GRing.Theory.
+Import EnumQ GRing.Theory.
 #[local] Open Scope ring_scope.
 Local Notation MF := (FreeOmega SubEnumQ).
 
@@ -28,8 +30,7 @@ Lemma fair_discard_node :
 Proof.
   change (enumQ_meas_eq (bind_EnumQ reg_fair (fun _ => ret_EnumQ false)) (ret_EnumQ false)).
   apply enumQ_meas_eq_of_eqenum.
-  intro b. destruct b; rewrite /reg_fair /bind_EnumQ /ret_EnumQ /acc_mass /=.
-  all: apply val_inj; cbn; ring_to_rat; reflexivity.
+  intro b. destruct b; vm_compute; reflexivity.
 Qed.
 
 Lemma fair_discard_same_mass :
@@ -40,8 +41,7 @@ Proof.
     (subenumQ_bind subenumQ_fair subenumQ_ret) subenumQ_fair).
   { change (enumQ_meas_eq (bind_EnumQ reg_fair ret_EnumQ) reg_fair).
     apply enumQ_meas_eq_of_eqenum.
-    intro b. destruct b; rewrite /reg_fair /bind_EnumQ /ret_EnumQ /acc_mass /=.
-    all: apply val_inj; cbn; ring_to_rat; reflexivity. }
+    intro b. destruct b; vm_compute; reflexivity. }
   assert (Hbind : @sem_lift SubEnumQ SubEnumQ_SemanticMeasure bool bool (fun _ _ => True)
     (subenumQ_bind subenumQ_fair subenumQ_ret)
     (subenumQ_bind subenumQ_fair (fun _ => subenumQ_ret false))).
