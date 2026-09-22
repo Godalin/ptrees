@@ -998,6 +998,25 @@
       "rational_null_branch_ignored",
       "rational_empty_carrier",
       "rational_high_carrier"
+    ],
+    "theories/Regression/Backend/RationalPositions.v": [
+      "native_index_exact",
+      "native_value_index_exact",
+      "native_index_uses_shared",
+      "native_value_index_uses_shared",
+      "rational_scalar_index_commutes",
+      "rational_scalar_joint_commutes",
+      "rational_checked_index_commutes",
+      "positions_retain_zero_and_duplicates",
+      "empty_positions",
+      "out_of_range_has_no_slot",
+      "indexed_subdistribution_mass",
+      "indexed_subdistribution_bound",
+      "joint_subdistribution_mass",
+      "joint_left_marginal",
+      "joint_right_marginal",
+      "large_carrier_index",
+      "large_carrier_joint"
     ]
   }
 }

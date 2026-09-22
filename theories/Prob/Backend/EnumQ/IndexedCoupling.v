@@ -7,6 +7,7 @@ Require Import Utf8 List Morphisms Lia PeanoNat.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg order rat.
 
 Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Coupling.
+From PTree.Prob.Backend.Common Require Import FinitePositions.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -23,11 +24,8 @@ Module IndexedCoupling.
   stored in an [EnumQ], positions have decidable equality even when the values
   are functions or observable heads containing continuations.
 *)
-Fixpoint index_from {A} (n : nat) (mu : EnumQ A) : EnumQ nat :=
-  match mu with
-  | [::] => [::]
-  | (p, _) :: tl => (p, n) :: index_from n.+1 tl
-  end.
+Definition index_from {A} (n : nat) (mu : EnumQ A) : EnumQ nat :=
+  finite_index_from n mu.
 
 Definition indexed {A} (mu : EnumQ A) : EnumQ nat :=
   index_from 0 mu.
@@ -52,20 +50,17 @@ Definition indexed_coupling {A B}
     (R : A -> B -> Prop) (mu : EnumQ A) (nu : EnumQ B) : Prop :=
   coupling (at_index R mu nu) (indexed mu) (indexed nu).
 
-Fixpoint value_index_joint_from {A} (n : nat) (mu : EnumQ A)
+Definition value_index_joint_from {A} (n : nat) (mu : EnumQ A)
     : EnumQ (A * nat) :=
-  match mu with
-  | [::] => [::]
-  | (p, a) :: tl => (p, (a, n)) :: value_index_joint_from n.+1 tl
-  end.
+  finite_value_index_from n mu.
 
 Lemma emap_fst_value_index_joint_from {A : eqType} n (mu : EnumQ A) :
   emap fst (value_index_joint_from n mu) = mu.
-Proof. by elim: mu n=> [|[p a] mu IH] n //=; rewrite IH. Qed.
+Proof. exact: finite_value_index_fst. Qed.
 
 Lemma emap_snd_value_index_joint_from {A} n (mu : EnumQ A) :
   emap snd (value_index_joint_from n mu) = index_from n mu.
-Proof. by elim: mu n=> [|[p a] mu IH] n //=; rewrite IH. Qed.
+Proof. exact: finite_value_index_snd. Qed.
 
 Lemma value_index_joint_nth {A : eqType} n (mu : EnumQ A) a i :
   acc_mass (a, i) (value_index_joint_from n mu) !=
@@ -214,6 +209,7 @@ Proof.
   - reflexivity.
   - unfold shift_index at 1.
     rewrite <- Nat.add_succ_r.
+    unfold index_from in IH.
     rewrite IH. reflexivity.
 Qed.
 
@@ -231,6 +227,7 @@ Lemma index_from_scale {A} offset p (mu : EnumQ A) :
 Proof.
   revert offset.
   induction mu as [|[q a] mu IH]; intro offset; cbn=> //.
+  unfold index_from in IH.
   rewrite IH. reflexivity.
 Qed.
 
@@ -242,7 +239,7 @@ Proof.
   revert offset.
   induction mu as [|[p a] mu IH]; intro offset; cbn.
   - rewrite Nat.add_0_r. reflexivity.
-  - rewrite IH Nat.add_succ_r. reflexivity.
+  - unfold index_from in IH. rewrite IH Nat.add_succ_r. reflexivity.
 Qed.
 
 Lemma index_from_in_ge {A} n (mu : EnumQ A) p i :
@@ -270,7 +267,8 @@ Lemma index_from_bind_EnumQ {A B} offset
   index_from offset (bind_EnumQ mu k) = indexed_bind_blocks mu k offset.
 Proof.
   revert offset.
-  induction mu as [|[p a] mu IH]; intro offset; cbn=> //.
+  induction mu as [|[p a] mu IH]; intro offset;
+    cbn [bind_EnumQ seq.foldr indexed_bind_blocks]=> //.
   rewrite index_from_app index_from_scale size_scale_EnumQ IH.
   reflexivity.
 Qed.
@@ -300,7 +298,12 @@ Lemma index_from_bind_as_position_bind {A B}
     (indexed_bind_block_from mu k start offset).
 Proof.
   revert start offset.
-  induction mu as [|[p a] mu IH]; intros start offset; cbn=> //.
+  induction mu as [|[p a] mu IH]; intros start offset;
+    cbn [bind_EnumQ seq.foldr index_from finite_index_from]=> //.
+  change (index_from offset (scale_EnumQ p (k a) ++ bind_EnumQ mu k) =
+    scale_EnumQ p (indexed_bind_block_from ((p,a)::mu) k start offset start) ++
+    bind_EnumQ (index_from start.+1 mu)
+      (indexed_bind_block_from ((p,a)::mu) k start offset)).
   rewrite index_from_app index_from_scale size_scale_EnumQ.
   rewrite (IH start.+1 (Nat.add offset (size (k a)))).
   congr (_ ++ _).
