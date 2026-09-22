@@ -8,6 +8,7 @@ From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg order rat.
 Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.IndexedCoupling PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Map.
 From PTree.Prob.Interface Require Import FrontierLift.
+From PTree.Prob.Backend.Common Require Import FinitePruning.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -27,28 +28,16 @@ Proof.
   exact: ssrnum.Num.Theory.mulr_gt0 Hp Hq.
 Qed.
 
-Fixpoint enumQ_prune {A} (mu : EnumQ A) : EnumQ A :=
-  match mu with
-  | [::] => [::]
-  | (p, x) :: tl =>
-      if p == PTree.Prob.Backend.Common.RatSubTypes.nnQ_0
-      then enumQ_prune tl
-      else (p, x) :: enumQ_prune tl
-  end.
+Definition enumQ_prune {A} (mu : EnumQ A) : EnumQ A :=
+  finite_prune (fun p => p == PTree.Prob.Backend.Common.RatSubTypes.nnQ_0) mu.
 
 Lemma enumQ_prune_app {A} (mu nu : EnumQ A) :
   enumQ_prune (mu ++ nu) = enumQ_prune mu ++ enumQ_prune nu.
-Proof.
-  elim: mu=> [//=|[p x] mu IH] //=.
-  by case: (p == PTree.Prob.Backend.Common.RatSubTypes.nnQ_0); rewrite IH.
-Qed.
+Proof. exact: finite_prune_app. Qed.
 
 Lemma enumQ_prune_emap {A B} (f : A -> B) (mu : EnumQ A) :
   enumQ_prune (emap f mu) = emap f (enumQ_prune mu).
-Proof.
-  elim: mu=> [|[p a] mu IH] //=.
-  by case: (p == PTree.Prob.Backend.Common.RatSubTypes.nnQ_0); rewrite /= IH.
-Qed.
+Proof. exact: finite_prune_map. Qed.
 
 Lemma enumQ_prune_eqenum {A : eqType} (mu : EnumQ A) :
   enumQ_prune mu ==EnumQ mu.
@@ -249,13 +238,8 @@ Lemma enumQ_prune_in_source {A} (mu : EnumQ A) p x :
   List.In (p, x) (enumQ_prune mu) ->
   List.In (p, x) mu /\ p <> PTree.Prob.Backend.Common.RatSubTypes.nnQ_0.
 Proof.
-  elim: mu=> [//|[q y] mu IH] //=.
-  case Hq: (q == PTree.Prob.Backend.Common.RatSubTypes.nnQ_0).
-  - move=> Hin. have [Hs Hnz] := IH Hin. split=> //; right; exact Hs.
-  - move=> [Heq|Hin].
-    + inversion Heq; subst. split; first by left.
-      move=> Hp. subst p. by rewrite eq_refl in Hq.
-    + have [Hs Hnz] := IH Hin. split=> //; right; exact Hs.
+  move/finite_prune_in=> [Hin Hp]. split; first exact Hin.
+  move=> Heq. subst p. by rewrite eq_refl in Hp.
 Qed.
 
 Lemma scale_entry_preimage {A} (p w : nnQ) (x : A) (mu : EnumQ A) :
@@ -340,7 +324,9 @@ Qed.
     @MeasureLiftBindLaws EnumQ EnumQ_MeasureInterface.
 Proof.
   constructor. move=> A B C D R S mu nu k h Hmn Hkh.
-  cbn in Hmn, Hkh |- *. rewrite !enumQ_prune_bind.
+  change (indexed_coupling S (enumQ_prune (bind_EnumQ mu k))
+    (enumQ_prune (bind_EnumQ nu h))).
+  rewrite !enumQ_prune_bind.
   eapply indexed_coupling_bind; [exact Hmn|].
   move=> x y Hxy. exact (Hkh x y Hxy).
 Qed.
@@ -376,7 +362,9 @@ Proof.
     have [Hinsrc Hqnz] := enumQ_prune_in_source Hinprune.
     exact: Hmu q x Hinsrc Hqnz.
   - move=> A B C D R S mu nu k h P Q Hmn HP HQ Hkh.
-    cbn in Hmn, HP, HQ, Hkh |- *. rewrite !enumQ_prune_bind.
+    change (indexed_coupling S (enumQ_prune (bind_EnumQ mu k))
+      (enumQ_prune (bind_EnumQ nu h))).
+    rewrite !enumQ_prune_bind.
     eapply indexed_coupling_bind_ae
       with (P := P) (Q := Q); [exact Hmn|..].
     + move=> p x Hin. have [Hsrc Hnz] := enumQ_prune_in_source Hin.

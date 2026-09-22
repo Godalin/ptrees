@@ -1017,6 +1017,22 @@
       "joint_right_marginal",
       "large_carrier_index",
       "large_carrier_joint"
+    ],
+    "theories/Regression/Backend/RationalPruning.v": [
+      "native_prune_exact",
+      "native_prune_uses_shared",
+      "native_equality_unchanged",
+      "rational_scalar_prune_commutes",
+      "zero_pruning_preserves_order_and_duplicates",
+      "pruning_does_not_renormalize",
+      "all_zero_prunes_to_empty",
+      "empty_carrier_prune",
+      "duplicate_signed_observation_preserved",
+      "retained_native_support",
+      "checked_prune_mass",
+      "checked_prune_bound",
+      "general_discard_can_lose_mass",
+      "large_carrier_prune"
     ]
   }
 }
