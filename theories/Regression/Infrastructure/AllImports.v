@@ -141,9 +141,11 @@ Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperObservation.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperQuotient.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperRelational.
 Require PTree.Prob.Backend.SubEnum.Measure.
+Require PTree.Prob.Backend.SubEnumR.Coupling.
 Require PTree.Prob.Backend.SubEnumR.Domain.
 Require PTree.Prob.Backend.SubEnumR.FreeOmega.Validation.
 Require PTree.Prob.Backend.SubEnumR.Measure.
+Require PTree.Prob.Backend.SubEnumR.Omega.
 Require PTree.Prob.Backend.SubEnumR.RationalEmbedding.
 Require PTree.Prob.Backend.SubEnumR.Representation.
 Require PTree.Prob.Domain.Atomic.
@@ -191,6 +193,7 @@ Require PTree.Regression.Backend.FreeOmegaUpperContracts.
 Require PTree.Regression.Backend.MathCompSelfModel.
 Require PTree.Regression.Backend.NativeReflection.
 Require PTree.Regression.Backend.SubEnumR.
+Require PTree.Regression.Backend.SubEnumRRelational.
 Require PTree.Regression.Backend.SubEnumRegression.
 Require PTree.Regression.Backend.UnifiedFrontierEnum.
 Require PTree.Regression.Backend.UnifiedMathCompFrontier.
