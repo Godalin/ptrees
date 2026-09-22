@@ -1,0 +1,117 @@
+{
+  "baseline": "8610c68",
+  "edits": {
+    "theories/Prob/Backend/EnumQ/Representation.v": [
+      {
+        "start": 14,
+        "old": "",
+        "new": "From PTree.Prob.Backend.Common Require Import FiniteListAlgebra.\n"
+      },
+      {
+        "start": 170,
+        "old": "Fixpoint scale_EnumQ {A} (r : ℚ≥0) (e : EnumQ A) : EnumQ A :=\n  match e with\n  | [::] => [::]\n  | (s, x) :: e' => (r * s, x) :: scale_EnumQ r e'\n  end.\n",
+        "new": "Definition scale_EnumQ {A} (r : ℚ≥0) (e : EnumQ A) : EnumQ A :=\n  finite_scale_with (fun p q => p * q) r e.\n"
+      },
+      {
+        "start": 178,
+        "old": "Proof. move=> A r u v. move: r. elim: u => [//|[t a] us] IH r //=.\n  congr cons. rewrite IH //.\nQed.\n",
+        "new": "Proof. exact: finite_scale_with_app. Qed.\n"
+      },
+      {
+        "start": 184,
+        "old": "Proof. move=> A r s u. elim: u => [//|[t a] us] IH //=.\nrewrite {}IH. congr cons. congr pair. rewrite mulrA //.\nQed.\n",
+        "new": "Proof. move=> A r s u; apply finite_scale_with_comp=> p q t; exact: mulrA. Qed.\n"
+      },
+      {
+        "start": 191,
+        "old": "  foldr (λ '(s, x) ys, scale_EnumQ s (f x) ++ ys) [::] xs.\n",
+        "new": "  finite_bind_with (fun p q => p * q) xs f.\n"
+      },
+      {
+        "start": 203,
+        "old": "Proof. move=> A B r u f. elim: u => [//|[s a] us] IH //=.\nrewrite !scale_app {}IH. congr app. rewrite !scale_scale.\ncongr scale_EnumQ. rewrite mulrC //.\n",
+        "new": "Proof.\n  move=> A B r u f; apply finite_scale_with_bind.\n  - move=> p q t; exact: mulrA.\n  - move=> p q; exact: mulrC.\n"
+      },
+      {
+        "start": 353,
+        "old": "  intros. rewrite enumQ_cons_bind. simpl.\n",
+        "new": "  intros. rewrite enumQ_cons_bind.\n"
+      },
+      {
+        "start": 356,
+        "old": "  - destruct a0. simpl. repeat rewrite scale_app.\n",
+        "new": "  - destruct a0. rewrite !enumQ_cons_bind. repeat rewrite scale_app.\n"
+      }
+    ],
+    "theories/Prob/Backend/EnumQ/Bind.v": [
+      {
+        "start": 9,
+        "old": "",
+        "new": "From PTree.Prob.Backend.Common Require Import FiniteListAlgebra.\n"
+      },
+      {
+        "start": 24,
+        "old": "Proof.\n  elim: mu => [//=|[p a] mu IH] //=.\n  by rewrite IH catA.\nQed.\n",
+        "new": "Proof. exact: finite_bind_with_app. Qed.\n"
+      },
+      {
+        "start": 147,
+        "old": "Proof.\n  elim: mu => [//=|[q a] mu IH] //=.\n  by rewrite IH scale_app !scale_scale.\nQed.\n",
+        "new": "Proof. apply finite_bind_with_scale=> p' q r; exact: mulrA. Qed.\n"
+      },
+      {
+        "start": 156,
+        "old": "Proof.\n  elim: mu => [//=|[p a] mu IH] //=.\n  by rewrite bind_EnumQ_app bind_EnumQ_scale IH.\nQed.\n",
+        "new": "Proof. apply finite_bind_with_assoc=> p q r; exact: mulrA. Qed.\n"
+      },
+      {
+        "start": 213,
+        "old": "Proof. by elim: mu=> [|[q a] mu IH] //=; rewrite IH. Qed.\n",
+        "new": "Proof. exact: finite_scale_with_length. Qed.\n"
+      }
+    ],
+    "theories/Prob/Backend/EnumQ/FrontierLift.v": [
+      {
+        "start": 10,
+        "old": "From PTree.Prob.Backend.Common Require Import FinitePruning.\n",
+        "new": "From PTree.Prob.Backend.Common Require Import FinitePruning FiniteListAlgebra.\n"
+      },
+      {
+        "start": 428,
+        "old": "  - move=> A B x k. cbn [EnumQ_MeasureInterface].\n    unfold enumQ_meas_eq. cbn.\n    have Hone : scale_EnumQ (fst (1, x)) (k x) = k x.\n    { induction (k x) as [|[p y] tl IH]=> //=.\n      rewrite IH. congr ((_ , _) :: _). apply val_inj.\n      exact: mul1r (Qval p). }\n    rewrite Hone cats0. apply indexed_coupling_refl.\n",
+        "new": "  - move=> A B x k.\n    change (enumQ_meas_eq (bind_EnumQ (ret_EnumQ x) k) (k x)).\n    have Hone : bind_EnumQ (ret_EnumQ x) k = k x.\n    { apply finite_bind_with_left_unit=> p. exact: mul1r. }\n    rewrite Hone. apply indexed_coupling_refl.\n"
+      }
+    ],
+    "theories/Prob/Backend/EnumQ/FinitePresentation.v": [
+      {
+        "start": 9,
+        "old": "",
+        "new": "From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteAtoms.\n"
+      },
+      {
+        "start": 83,
+        "old": "",
+        "new": "Lemma enumQ_expect_finite {A} (mu : EnumQ A) f :\n  enumQ_expect f mu =\n  finite_expect f (List.map (fun px => (Qval px.1, px.2)) mu).\nProof. by elim: mu=> [|[p x] tl IH] //=; rewrite IH. Qed.\n\nLemma enumQ_atom_finite {A : eqType} (mu : EnumQ A) x :\n  Qval (acc_mass x mu) =\n  finite_atom x (List.map (fun px => (Qval px.1, px.2)) mu).\nProof.\n  elim: mu=> [|[p a] tl IH]; first reflexivity.\n  rewrite acc_mass_cons /= finite_atom_cons.\n  case: (a == x).\n  - change (Qval (acc_mass x tl) + Qval p = Qval p +\n      finite_atom x (List.map (fun px => (Qval px.1, px.2)) tl)).\n    by rewrite IH addrC.\n  - change (Qval (acc_mass x tl) + 0 = 0 +\n      finite_atom x (List.map (fun px => (Qval px.1, px.2)) tl)).\n    by rewrite IH addr0 add0r.\nQed.\n\n"
+      },
+      {
+        "start": 86,
+        "old": "  elim: mu=> [|[p a] mu IH].\n  - rewrite /= big1 // => x _. exact: mul0r.\n  - rewrite /= IH. transitivity\n      (\\sum_x ((if a == x then Qval p else 0) * f x + Qval (acc_mass x mu) * f x)).\n    + rewrite big_split. apply congr1 with (f := fun z => z + \\sum_x Qval (acc_mass x mu) * f x).\n      transitivity (\\sum_x (if a == x then Qval p * f x else 0)).\n      * by rewrite -big_mkcond (big_pred1 a).\n      * apply eq_bigr=> x _. by case: (a == x); rewrite ?mul0r.\n    + apply eq_bigr=> x _. rewrite acc_mass_cons. cbn [fst snd].\n      case: (a == x).\n      * change (Qval p * f x + Qval (acc_mass x mu) * f x =\n          (Qval (acc_mass x mu) + Qval p) * f x).\n        by rewrite mulrDl addrC.\n      * change (0 * f x + Qval (acc_mass x mu) * f x =\n          (Qval (acc_mass x mu) + 0) * f x).\n        by rewrite mul0r add0r addr0.\n",
+        "new": "  rewrite enumQ_expect_finite finite_expect_by_atoms.\n  apply eq_bigr=> x _; by rewrite enumQ_atom_finite.\n"
+      }
+    ],
+    "theories/Prob/Backend/EnumQ/Disintegration.v": [
+      {
+        "start": 52,
+        "old": "  elim: outer => [|[p a] outer IH] //=.\n",
+        "new": "  elim: outer => [|[p a] outer IH]; first reflexivity.\n  rewrite enumQ_cons_bind.\n"
+      }
+    ],
+    "theories/Examples/BernoulliFactory/OperationalBernoulliFactory.v": [
+      {
+        "start": 91,
+        "old": "",
+        "new": "    change (meas_iter_approx outer (fun _ : unit => factory_round_measure pfalse ptrue) tt =\n      (scale_EnumQ 1 (meas_iter_approx outer\n        (fun _ : unit => factory_round_measure pfalse ptrue) tt) ++ nil)%list).\n"
+      }
+    ]
+  }
+}

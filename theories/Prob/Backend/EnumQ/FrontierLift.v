@@ -8,7 +8,7 @@ From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg order rat.
 Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.IndexedCoupling PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Map.
 From PTree.Prob.Interface Require Import FrontierLift.
-From PTree.Prob.Backend.Common Require Import FinitePruning.
+From PTree.Prob.Backend.Common Require Import FinitePruning FiniteListAlgebra.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -426,13 +426,11 @@ Proof.
   - move=> A x P Hx p y Hin Hnz. cbn in Hin.
     destruct Hin as [Hin|Hin]; last contradiction.
     inversion Hin; subst. exact Hx.
-  - move=> A B x k. cbn [EnumQ_MeasureInterface].
-    unfold enumQ_meas_eq. cbn.
-    have Hone : scale_EnumQ (fst (1, x)) (k x) = k x.
-    { induction (k x) as [|[p y] tl IH]=> //=.
-      rewrite IH. congr ((_ , _) :: _). apply val_inj.
-      exact: mul1r (Qval p). }
-    rewrite Hone cats0. apply indexed_coupling_refl.
+  - move=> A B x k.
+    change (enumQ_meas_eq (bind_EnumQ (ret_EnumQ x) k) (k x)).
+    have Hone : bind_EnumQ (ret_EnumQ x) k = k x.
+    { apply finite_bind_with_left_unit=> p. exact: mul1r. }
+    rewrite Hone. apply indexed_coupling_refl.
     intros z. reflexivity.
   - move=> A B C mu k h. cbn [EnumQ_MeasureInterface].
     unfold enumQ_meas_eq.

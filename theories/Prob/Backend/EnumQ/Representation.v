@@ -12,6 +12,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq ssrfun.
 From mathcomp Require Import order ssralg ssrint rat.
 
 Require Import PTree.Prob.Backend.Common.RatSubTypes.
+From PTree.Prob.Backend.Common Require Import FiniteListAlgebra.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -168,28 +169,21 @@ Bind Scope enumQ_scope with EnumQ.
 Delimit Scope enumQ_scope with enumQ.
 #[local] Open Scope enumQ_scope.
 
-Fixpoint scale_EnumQ {A} (r : ℚ≥0) (e : EnumQ A) : EnumQ A :=
-  match e with
-  | [::] => [::]
-  | (s, x) :: e' => (r * s, x) :: scale_EnumQ r e'
-  end.
+Definition scale_EnumQ {A} (r : ℚ≥0) (e : EnumQ A) : EnumQ A :=
+  finite_scale_with (fun p q => p * q) r e.
 
 Lemma scale_app : ∀ A r (u v : EnumQ A),
   scale_EnumQ r (u ++ v) = scale_EnumQ r u ++ scale_EnumQ r v.
-Proof. move=> A r u v. move: r. elim: u => [//|[t a] us] IH r //=.
-  congr cons. rewrite IH //.
-Qed.
+Proof. exact: finite_scale_with_app. Qed.
 
 Lemma scale_scale : ∀ {A} r s (u : EnumQ A),
   scale_EnumQ r (scale_EnumQ s u) = scale_EnumQ (r * s) u.
-Proof. move=> A r s u. elim: u => [//|[t a] us] IH //=.
-rewrite {}IH. congr cons. congr pair. rewrite mulrA //.
-Qed.
+Proof. move=> A r s u; apply finite_scale_with_comp=> p q t; exact: mulrA. Qed.
 
 Definition ret_EnumQ {A} (x : A) : EnumQ A := [:: (1, x)].
 
 Definition bind_EnumQ {A B} (xs : EnumQ A) (f : A → EnumQ B) : EnumQ B :=
-  foldr (λ '(s, x) ys, scale_EnumQ s (f x) ++ ys) [::] xs.
+  finite_bind_with (fun p q => p * q) xs f.
 
 #[global] Instance EnumQ_Discrete : Discrete EnumQ :=
   {|disc_ret := @ret_EnumQ
@@ -201,9 +195,10 @@ Definition bind_EnumQ {A B} (xs : EnumQ A) (f : A → EnumQ B) : EnumQ B :=
 
 Definition scale_bind : ∀ {A B} r (u : EnumQ A) (f : A → EnumQ B),
   scale_EnumQ r (bind_EnumQ u f) = bind_EnumQ u (λ x, scale_EnumQ r (f x)).
-Proof. move=> A B r u f. elim: u => [//|[s a] us] IH //=.
-rewrite !scale_app {}IH. congr app. rewrite !scale_scale.
-congr scale_EnumQ. rewrite mulrC //.
+Proof.
+  move=> A B r u f; apply finite_scale_with_bind.
+  - move=> p q t; exact: mulrA.
+  - move=> p q; exact: mulrC.
 Qed.
 
 
@@ -351,10 +346,10 @@ Lemma enumQ_comm_cons : ∀
       ==EnumQ
     bind_EnumQ v (λ y, bind_EnumQ ((r, a) :: u) (λ x, f x y)).
 Proof.
-  intros. rewrite enumQ_cons_bind. simpl.
+  intros. rewrite enumQ_cons_bind.
   induction v.
   - simpl. rewrite enumQ_bind_nil. now apply enumQ_eq_eq.
-  - destruct a0. simpl. repeat rewrite scale_app.
+  - destruct a0. rewrite !enumQ_cons_bind. repeat rewrite scale_app.
     repeat rewrite enumQ_bind_app.
     repeat rewrite <- catA.
     rewrite (catA (scale_EnumQ r (bind_EnumQ v (λ y : B, f a y)))).

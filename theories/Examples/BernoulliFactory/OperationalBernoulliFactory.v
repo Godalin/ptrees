@@ -89,6 +89,9 @@ Proof.
   - rewrite IH. cbn [ret_EnumQ bind_EnumQ scale_EnumQ].
     fold (factory_round_measure pfalse ptrue).
     rewrite /ret_EnumQ /bind_EnumQ /=.
+    change (meas_iter_approx outer (fun _ : unit => factory_round_measure pfalse ptrue) tt =
+      (scale_EnumQ 1 (meas_iter_approx outer
+        (fun _ : unit => factory_round_measure pfalse ptrue) tt) ++ nil)%list).
     rewrite scale_EnumQ_one.
     symmetry. apply enumQ_cat_nil.
   - rewrite /ret_EnumQ /bind_EnumQ /=.

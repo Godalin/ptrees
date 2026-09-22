@@ -50,7 +50,8 @@ Lemma enumQ_fiber_bind_glue {A B : eqType}
   emap snd (glue marginal (emap (fun a => (tt,a)) outer)
     (emap (fun ab => (fst ab,ab)) joint)).
 Proof.
-  elim: outer => [|[p a] outer IH] //=.
+  elim: outer => [|[p a] outer IH]; first reflexivity.
+  rewrite enumQ_cons_bind.
   rewrite /glue /= emap_app enumQ_fiber_row_glue IH. reflexivity.
 Qed.
 

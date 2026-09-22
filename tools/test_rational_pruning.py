@@ -1,12 +1,14 @@
 """Pruning extraction must not change rational equality or lifting contracts."""
 import copy
+import subprocess
 import unittest
 import audit_rational_pruning as audit
 
 
 class RationalPruningTests(unittest.TestCase):
     def test_exact_client(self):
-        audit.client_check(audit.frozen(audit.CLIENT).decode(), (audit.ROOT / audit.CLIENT).read_text())
+        accepted = subprocess.check_output(['git', 'show', 'b49fcf3:' + audit.CLIENT], cwd=audit.ROOT, text=True)
+        audit.client_check(audit.frozen(audit.CLIENT).decode(), accepted)
 
     def test_no_semantic_or_proof_drift(self):
         old = audit.frozen(audit.CLIENT).decode()

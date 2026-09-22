@@ -7,6 +7,7 @@ Require Import List Lia Lra PeanoNat Arith.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssrnat ssralg rat ssrint.
 
 Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map.
+From PTree.Prob.Backend.Common Require Import FiniteListAlgebra.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -22,10 +23,7 @@ Lemma bind_EnumQ_app {A B}
     (mu nu : EnumQ A) (k : A -> EnumQ B) :
   bind_EnumQ (mu ++ nu) k =
   bind_EnumQ mu k ++ bind_EnumQ nu k.
-Proof.
-  elim: mu => [//=|[p a] mu IH] //=.
-  by rewrite IH catA.
-Qed.
+Proof. exact: finite_bind_with_app. Qed.
 
 Fixpoint enumQ_weightQ {A} (f : A -> rat) (mu : EnumQ A) : rat :=
   if mu is h :: tl then Qval (fst h) * f (snd h) + enumQ_weightQ f tl else 0.
@@ -145,19 +143,13 @@ Lemma bind_EnumQ_scale {A B}
     (p : nnQ) (mu : EnumQ A) (k : A -> EnumQ B) :
   bind_EnumQ (scale_EnumQ p mu) k =
   scale_EnumQ p (bind_EnumQ mu k).
-Proof.
-  elim: mu => [//=|[q a] mu IH] //=.
-  by rewrite IH scale_app !scale_scale.
-Qed.
+Proof. apply finite_bind_with_scale=> p' q r; exact: mulrA. Qed.
 
 Lemma bind_EnumQ_assoc {A B C}
     (mu : EnumQ A) (k : A -> EnumQ B) (h : B -> EnumQ C) :
   bind_EnumQ (bind_EnumQ mu k) h =
   bind_EnumQ mu (fun x => bind_EnumQ (k x) h).
-Proof.
-  elim: mu => [//=|[p a] mu IH] //=.
-  by rewrite bind_EnumQ_app bind_EnumQ_scale IH.
-Qed.
+Proof. apply finite_bind_with_assoc=> p q r; exact: mulrA. Qed.
 
 Lemma bind_EnumQ_ext {A B}
     (mu : EnumQ A) (k1 k2 : A -> EnumQ B) :
@@ -211,7 +203,7 @@ Fixpoint bind_offset {A B} (mu : EnumQ A) (k : A -> EnumQ B)
 
 Lemma size_scale_EnumQ {A} p (mu : EnumQ A) :
   size (scale_EnumQ p mu) = size mu.
-Proof. by elim: mu=> [|[q a] mu IH] //=; rewrite IH. Qed.
+Proof. exact: finite_scale_with_length. Qed.
 
 Lemma nth_error_scale_EnumQ {A} p (mu : EnumQ A) i q a :
   nth_error mu i = Some (q, a) ->

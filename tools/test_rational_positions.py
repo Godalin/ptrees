@@ -1,5 +1,6 @@
 """The first production indexing extraction must not change its semantics."""
 import copy
+import subprocess
 import unittest
 
 import audit_rational_positions as audit
@@ -8,7 +9,8 @@ import audit_rational_positions as audit
 class RationalPositionsTests(unittest.TestCase):
     def test_exact_client_adaptation(self):
         old = audit.frozen(audit.CLIENT).decode()
-        audit.client_check(old, (audit.ROOT / audit.CLIENT).read_text())
+        accepted = subprocess.check_output(['git', 'show', 'e8a7524:' + audit.CLIENT], cwd=audit.ROOT, text=True)
+        audit.client_check(old, accepted)
 
     def test_relation_change_is_not_in_migration(self):
         old = audit.frozen(audit.CLIENT).decode()

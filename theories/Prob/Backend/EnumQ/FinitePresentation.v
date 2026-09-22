@@ -7,6 +7,7 @@ Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Re
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.FiniteTransport PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.EnumQ.IndexedCoupling.
 From PTree.Prob.Backend.Common Require Import FinitePresentation.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteAtoms.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -81,23 +82,29 @@ Proof. by rewrite /finite_weighted_enumQ weighted_seq_expect big_enum. Qed.
 
 (** The atom-sum form needed by finite transportation is independent of
     the list representation, including repeated atoms. *)
+Lemma enumQ_expect_finite {A} (mu : EnumQ A) f :
+  enumQ_expect f mu =
+  finite_expect f (List.map (fun px => (Qval px.1, px.2)) mu).
+Proof. by elim: mu=> [|[p x] tl IH] //=; rewrite IH. Qed.
+
+Lemma enumQ_atom_finite {A : eqType} (mu : EnumQ A) x :
+  Qval (acc_mass x mu) =
+  finite_atom x (List.map (fun px => (Qval px.1, px.2)) mu).
+Proof.
+  elim: mu=> [|[p a] tl IH]; first reflexivity.
+  rewrite acc_mass_cons /= finite_atom_cons.
+  case: (a == x).
+  - change (Qval (acc_mass x tl) + Qval p = Qval p +
+      finite_atom x (List.map (fun px => (Qval px.1, px.2)) tl)).
+    by rewrite IH addrC.
+  - change (Qval (acc_mass x tl) + 0 = 0 +
+      finite_atom x (List.map (fun px => (Qval px.1, px.2)) tl)).
+    by rewrite IH addr0 add0r.
+Qed.
+
 Lemma finite_enumQ_expect {X : finType} (mu : EnumQ X) f :
   enumQ_expect f mu = \sum_x Qval (acc_mass x mu) * f x.
 Proof.
-  elim: mu=> [|[p a] mu IH].
-  - rewrite /= big1 // => x _. exact: mul0r.
-  - rewrite /= IH. transitivity
-      (\sum_x ((if a == x then Qval p else 0) * f x + Qval (acc_mass x mu) * f x)).
-    + rewrite big_split. apply congr1 with (f := fun z => z + \sum_x Qval (acc_mass x mu) * f x).
-      transitivity (\sum_x (if a == x then Qval p * f x else 0)).
-      * by rewrite -big_mkcond (big_pred1 a).
-      * apply eq_bigr=> x _. by case: (a == x); rewrite ?mul0r.
-    + apply eq_bigr=> x _. rewrite acc_mass_cons. cbn [fst snd].
-      case: (a == x).
-      * change (Qval p * f x + Qval (acc_mass x mu) * f x =
-          (Qval (acc_mass x mu) + Qval p) * f x).
-        by rewrite mulrDl addrC.
-      * change (0 * f x + Qval (acc_mass x mu) * f x =
-          (Qval (acc_mass x mu) + 0) * f x).
-        by rewrite mul0r add0r addr0.
+  rewrite enumQ_expect_finite finite_expect_by_atoms.
+  apply eq_bigr=> x _; by rewrite enumQ_atom_finite.
 Qed.

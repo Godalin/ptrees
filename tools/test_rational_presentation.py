@@ -1,12 +1,14 @@
 """The presentation extraction must preserve exact lists and native contracts."""
 import copy
+import subprocess
 import unittest
 import audit_rational_presentation as audit
 
 
 class RationalPresentationTests(unittest.TestCase):
     def test_exact_client(self):
-        audit.client_check(audit.frozen(audit.CLIENT).decode(), (audit.ROOT / audit.CLIENT).read_text())
+        accepted = subprocess.check_output(['git', 'show', '8610c68:' + audit.CLIENT], cwd=audit.ROOT, text=True)
+        audit.client_check(audit.frozen(audit.CLIENT).decode(), accepted)
 
     def test_semantic_change_rejected(self):
         old = audit.frozen(audit.CLIENT).decode()

@@ -1052,6 +1052,17 @@
       "shared_subdistribution_decode",
       "shared_function_carrier",
       "large_carrier_presentation"
+    ],
+    "theories/Regression/Backend/RationalFiniteAlgebra.v": [
+      "native_scale_exact",
+      "native_bind_exact",
+      "ordinary_scalar_scale",
+      "ordinary_scalar_bind",
+      "bind_keeps_zero_blocks_and_duplicates",
+      "duplicate_atom_mass",
+      "atom_observations_agree",
+      "ordinary_q_to_r_mass",
+      "ordinary_q_to_r_bind"
     ]
   }
 }
