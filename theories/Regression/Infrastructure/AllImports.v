@@ -193,6 +193,7 @@ Require PTree.Regression.Backend.FreeOmegaUpperContracts.
 Require PTree.Regression.Backend.MathCompSelfModel.
 Require PTree.Regression.Backend.NativeReflection.
 Require PTree.Regression.Backend.SubEnumR.
+Require PTree.Regression.Backend.SubEnumRBehavior.
 Require PTree.Regression.Backend.SubEnumRRelational.
 Require PTree.Regression.Backend.SubEnumRegression.
 Require PTree.Regression.Backend.UnifiedFrontierEnum.

@@ -3,6 +3,9 @@
 Baseline: `7e75db0`. Local verification only; CI and MathComp universe work
 are outside this increment. No existing DS1--DS5 proof or public facade changes.
 
+Checkpoints: `fc15702` proves native relational infrastructure; the follow-up
+commit contains only its generic completion/PTree clients and audit/docs.
+
 ## Native finite-real couplings
 
 `Prob/Backend/SubEnumR/Coupling.v` completes the existing actual-joint
@@ -51,10 +54,52 @@ coupling/instance endpoints were separately checked against the existing
 logical-axiom whitelist: only MathComp boolp extensionality and classical
 indefinite description occur, with no new semantic assumption.
 
-## Completion acceptance target
+## Generic completion and PTree client
 
-The next checkpoint must instantiate the existing generic FreeOmega
-capabilities and actual PTree endpoints. No copied completion proof and
-no `SemanticOmegaLaws (SubEnumR R)` assumption is acceptable. General qlift
-external joint soundness is a separate later strengthening; the SubEnum
-DS5 theorem is not silently generalized by these native instances.
+`Regression/Backend/SubEnumRBehavior.v` instantiates the existing generic
+FreeOmega capabilities: Core, Bind, AE Kleisli/countable/coupling, Order,
+Omega, total properness, cofinality, OmegaAE, diagonal, Fubini and the mixed
+bind/unit/node-bind/omega laws. These are typeclass assembly, not new proofs
+of completion. Native `SemanticOmegaLaws (SubEnumR R)` is deliberately absent.
+
+The same module instantiates actual, heterogeneous-return PTree endpoints:
+`pstruct -> peutt`, `pstrong -> peutt`, complete stable-hitting existence,
+arbitrary eventful behavioral bind, and iter unfolding. It proves a crossed
+sampling equality using the new native graph coupling, promotes it through
+PStrong to peutt, and composes it with an infinite visible service using a
+square-root-weight native coin. No rational backend, MathComp kernel backend
+or external OmegaVal model is imported. In particular, ordinary behavioral
+reasoning does not depend on external validation or a supplied gluing law.
+
+This is the maintained behavioral capability profile, not a claim that
+every optional recovery, native-reflection or external soundness capability
+has been instantiated. In particular general qlift external joint soundness
+remains a separate later strengthening; the SubEnum DS5 theorem is not
+silently generalized by these native instances. The next useful step is a
+native-independent raw-qlift bounded-test bridge, before attempting general
+external joint realization. MathComp mathematical/universe gaps are unchanged.
+
+## Final verification and assumption boundary
+
+- Full local build and AllImports passed with all 260 modules together.
+- Architecture, API, soundness-source checks and all 50 tool tests passed.
+- All 505 frozen compiled signatures and per-endpoint assumptions are unchanged.
+- All 27 new completion/behavior endpoints were inspected by `Check @` and
+  `Print Assumptions`. No supplied native gluing, native omega completeness,
+  transport existence, or new semantic class occurs in their signatures.
+- Joint targeted `coqchk -silent -norec` of Coupling, Omega,
+  SubEnumRRelational and SubEnumRBehavior passed. This is not a recursive
+  whole-library kernel audit.
+
+The native proofs and completion clients stay within the existing Domain/
+native logical-axiom whitelist. Two PTree bind clients additionally inherit
+`RelationalChoice.relational_choice` and
+`ClassicalUniqueChoice.dependent_unique_choice` from the **already frozen**
+`Eq.FreeOmega.Bind.peutt_bind`. Their assumptions were checked against that
+exact existing endpoint as well as the native whitelist; neither whitelist
+nor the old contract snapshot was widened. These are inherited logical
+foundations, not new probability or backend assumptions.
+
+No new `Axiom`, `Parameter`, `Admitted`, `Class`, unsafe universe setting,
+external-model dependency in native theory, or public API change was added.
+CI and dependencies were not inspected or modified.

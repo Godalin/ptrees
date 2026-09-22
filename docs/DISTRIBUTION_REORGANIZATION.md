@@ -1,5 +1,10 @@
 # Discrete two-level distributions: implementation checkpoints
 
+Follow-up: [SubEnumR behavioral backend](SUBENUMR_BEHAVIORAL_BACKEND.md)
+completes the native relational laws and checks generic FreeOmega/PTree
+assembly. The partial SubEnumR status below records the earlier `7e75db0`
+checkpoint, not the current capability boundary.
+
 Baseline: `28ae229`. Local validation only; CI is deliberately out of scope.
 
 `MN` supplies native discrete sampling; `MF` supplies stable frontiers. The
