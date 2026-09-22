@@ -4,6 +4,9 @@ Direct pair: `MN = MF = MathCompKernelMeasure R`. There is no MathComp +
 FreeOmega backend. The universe policy accepted at `c9a1a6f` is unchanged;
 the native order baseline is `561dc9a`. This increment completes the requested
 native omega/relational-bind mathematics and direct program acceptance.
+Accepted theory-completion baseline: `5dac49a`. This round is closed;
+coupling composition retains its explicit gluing premise and Gate M retains
+its isolated universe relaxation.
 No CI work or environment changes are included.
 
 ## Capabilities
@@ -69,8 +72,10 @@ Its client `Regression/Backend/MathCompDirect.v` performs that instantiation:
   the chosen value, with independently chosen positive success probabilities.
 - `direct_nested_retry_diagonal`: split source/continuation approximants
   converge along their common diagonal to the same returned head. This consumes
-  the proved diagonal law, which depends on Fubini, not finite stabilization
-  of the inner loop.
+  the proved diagonal law, not finite stabilization of the inner loop.
+  Diagonal and Fubini both derive from `mathcomp_native_double_diagonal`,
+  the same diagonal cofinality theorem; neither instance requires the other
+  instance as a typeclass premise.
 - `direct_retry_vis_interaction` and `direct_retry_before_vis`: visible
   interaction and weak Tau rewriting.
 

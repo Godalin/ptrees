@@ -384,9 +384,10 @@ End AttenuatedDirac.
 From mathcomp Require Import reals.
 Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.MathComp.Kernel PTree.Prob.Backend.MathComp.Measure.
 
-(** Both maintained node backends satisfy the necessary relational
-    left-unit law.  For MathComp we use its existing ordinary kernel law,
-    NOT the missing full relational SemanticMeasureBindLaws instance.
+(** Both node backends tested here satisfy the necessary relational
+    left-unit law. For MathComp this proof uses only the ordinary kernel law;
+    the full relational SemanticMeasureBindLaws instance is now available
+    separately in Prob/Backend/MathComp/BindLaws, but is not needed here.
     These checks do not claim that left-unit alone suffices for reflection. *)
 Example subenum_native_relational_left_unit {A B} (x : A) (k : A -> SubEnum B) :
   @sem_lift SubEnum SubEnum_SemanticMeasure B B eq

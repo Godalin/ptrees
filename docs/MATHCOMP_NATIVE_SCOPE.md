@@ -1,8 +1,10 @@
 # MathComp: native mathematics, not a completion backend
 
-Historical removal record. The subsequent [direct MathComp proposal and first
-increment](MATHCOMP_DIRECT.md) supersede the native-only future-work decision,
-but preserve removal of MathComp + FreeOmega and all checked native mathematics.
+Historical removal record: roles, counts and validation results below describe
+that checkpoint, not the current backend. The [accepted direct MathComp
+backend](MATHCOMP_DIRECT.md) at `5dac49a` supersedes the native-only future-work
+decision, but preserves removal of MathComp + FreeOmega and all checked native
+mathematics. Direct use remains isolated in Gate M, with explicit gluing.
 
 Baseline: `965e7b1`. This is a removal/scope-consolidation stage, not new
 probability theory. CI and environment changes are deliberately excluded.

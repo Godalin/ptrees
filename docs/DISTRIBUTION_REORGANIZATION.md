@@ -1,12 +1,15 @@
 # Discrete two-level distributions: implementation checkpoints
 
-Current scope supersedes the earlier work sequence below: the complete PTree
-probability pairs are SubEnum/FreeOmega and SubEnumR/FreeOmega. MathComp remains
-an independent native discrete kernel/measure development; its completion
-frontend has been deleted. The checked recursive-frontier universe limitation
-is retained as a negative regression. A separate universe-unchecked direct
-assembly is now authorized, with exact Gate M isolation and missing native
-order/omega obligations still open; see [MathComp direct scope](MATHCOMP_DIRECT.md).
+Current scope supersedes the earlier work sequence below: the fully
+universe-checked PTree probability pairs are SubEnum/FreeOmega and
+SubEnumR/FreeOmega. MathComp's direct pair `MN = MF = MathCompKernelMeasure R`
+is complete under the accepted Gate M trust boundary at `5dac49a`, with
+coupling composition still conditional on `MathCompCouplingGluing`.
+Native order, omega, continuity, diagonal/Fubini and relational bind are
+proved with normal checking; only direct recursive-frontier assembly and its
+regression use the two-file universe bypass. The checked negative universe
+regression remains. MathComp + FreeOmega stays deleted; see
+[MathComp direct status](MATHCOMP_DIRECT.md).
 
 Follow-up: [SubEnumR behavioral backend](SUBENUMR_BEHAVIORAL_BACKEND.md)
 completes the native relational laws and checks generic FreeOmega/PTree
@@ -44,7 +47,7 @@ not contain all countable limits).
 Commutativity remains optional. This table records sufficient, compiled
 dependency profiles, not a claim of mathematical minimality.
 
-## Work sequence and boundaries
+## Historical work sequence and boundaries
 
 1. Freeze the generic capability probes and baseline validation.
 2. Add native-parametric external validation with AE-sensitive sample/bind
@@ -52,7 +55,7 @@ dependency profiles, not a claim of mathematical minimality.
 3. Connect the existing SubEnum interpretation without changing DS1--DS5
    statements or replacing the qlift proof through inadmissible intermediates.
 4. Develop finite-real native distributions, reusing generic completion work.
-5. The earlier MathComp self-model investigation is closed as a scope decision:
+5. At the removal checkpoint, the MathComp self-model investigation was closed:
    retain native mathematics, not a third PTree behavioral backend. Ordinary
    bind, relational bind and omega completeness remain distinct mathematical
    properties; no new proofs of them are part of this removal.
@@ -149,7 +152,7 @@ architecture/source checks; API surface; all 49 tool tests; unchanged 505
 compiled contracts; 13 new endpoint assumption probes; targeted joint
 `coqchk -norec` of all six new modules. No CI was inspected or changed.
 
-## MathComp same-carrier investigation
+## MathComp same-carrier investigation and accepted outcome
 
 The investigation's useful results now live in `MathComp/NativeLaws.v`, at
 the native carrier universe. They include actual mixed-bind operations, mixed
@@ -157,10 +160,11 @@ unit, mixed node-bind flattening, total properness and zero-prefix/constant
 chain cofinality instances, without a gluing context. It also proves
 returned-event zero, order reflexivity/transitivity/bottom and continuation
 bind monotonicity. Ordinary native monad equations already existed; these
-new instances reuse them. No full relational bind instance is claimed.
+instances reuse them. At that checkpoint no full relational bind instance
+was claimed; `BindLaws.v` now supplies it by an actual joint-kernel construction.
 
-The investigation recorded two distinct limits. This table is not a checklist
-for a maintained PTree backend:
+The original investigation separated mathematical gaps from the universe
+boundary. The mathematical gaps are now closed; current status at `5dac49a`:
 
 | Obligation | Current status |
 | --- | --- |
@@ -168,16 +172,16 @@ for a maintained PTree backend:
 | Mixed unit / nested native flattening | proved, no gluing premise |
 | Foundational native AE | pre-existing |
 | Total properness / zero-prefix and constant lub | proved |
-| Full order package (including source-measure bind monotonicity) | incomplete |
-| Increasing-chain limit existence and bind continuity | incomplete |
-| Diagonal / Fubini capability packages | incomplete |
+| Full order package (including source-measure bind monotonicity) | proved in checked `OrderLaws.v` |
+| Increasing-chain limit existence and bind continuity | proved in checked `OmegaLaws.v` |
+| Diagonal / Fubini capability packages | proved from the same diagonal cofinality theorem |
 | Coupling composition | existing explicit `MathCompCouplingGluing` assumption |
-| Relational kernel bind | incomplete, not supplied by ordinary bind |
-| Jointly usable recursive PTree frontier with the same sealed carrier | universe obstruction reproduced |
+| Relational kernel bind | proved in checked `BindLaws.v`, without gluing |
+| Recursive PTree frontier, hitting existence and eventful bind | available only in isolated Gate M; not a universe-checked instantiation |
 
-### Important integration finding
+### Historical integration finding and retained checked boundary
 
-A standalone file can typecheck the current canonical PTree head type,
+A standalone file could typecheck the canonical PTree head type,
 its same-MathComp frontier, primitive kernel and `peutt` definition. This
 is **not** sufficient evidence for a self-model: importing its compiled
 module into AllImports failed with a universe inconsistency.
@@ -197,11 +201,11 @@ inconsistency, not a missing identifier or incorrectly supplied argument.
 The standalone positive instantiations are not retained as jointly usable
 trusted results.
 
-No `Unset Universe Checking` experiment has been added. Such an experiment
-would not close the independent omega/relational-bind mathematical gaps,
-and isolated compilation already demonstrated why joint checking matters.
-This checkpoint neither claims MathComp direct self-model success nor that
-universe constraints are its only remaining obstacle.
+That checkpoint added no `Unset Universe Checking` experiment. The later
+Gate M policy explicitly permits it in exactly two direct-client files;
+the independent omega/relational-bind mathematics was proved normally, not
+discharged by the bypass. The negative probes above continue to document
+why Gate M is not a normally universe-checked backend.
 
 The MathComp carriers here are fully discrete/powerset measurable carriers.
 This is not a continuous/Gaussian/Borel backend, and discreteness alone is
@@ -209,7 +213,7 @@ not a countable-support certificate.
 
 ## Convergence and next work
 
-Completed checkpoints: generic capability inventory; native-parametric
+The original completed checkpoints were: generic capability inventory; native-parametric
 OmegaVal validation; unchanged SubEnum DS bridge; finite-real representation,
 ordinary/AE laws, native model and Q-to-R embedding; safe partial MathComp
 same-carrier capabilities and a reproducible joint-universe boundary.
@@ -224,14 +228,15 @@ Subsequent work completed finite-real native relational laws, the full generic
 behavioral profile, generic bidual validation and concrete SubEnumR external
 joint realization. Coupling soundness is closed for the two maintained finite
 native backends. Arbitrary-native actual-joint existence is not a current goal.
-Direct MathComp recursive-frontier work has since reopened under the separate
-Gate M trust boundary described above. Native MathComp analysis stays checked
-independently; do not reintroduce the deleted completion path.
+Direct MathComp theory is now accepted at `5dac49a` under the separate Gate M
+trust boundary described above. Native MathComp analysis stays checked
+independently; do not reintroduce the deleted completion path. This theory
+round is closed; further probability infrastructure is not a follow-up goal.
 
-No public facade changes, new semantic class, transport-existence axiom,
-environment upgrade, remote CI work, or cleanup of retained internal
-infrastructure was performed. Native weighted lists and their validity
-record are the new representation; the only formal completion is FreeOmega.
+The original checkpoint did not change public facades, add semantic classes
+or transport-existence axioms, upgrade the environment, work on remote CI,
+or clean up retained internal infrastructure. Native weighted lists and their
+validity record were the new representation; the only formal completion is FreeOmega.
 
 ## Review checkpoints
 
@@ -241,7 +246,11 @@ record are the new representation; the only formal completion is FreeOmega.
 | `efa262e` | Generic OmegaVal validation, AE closure, limit algebra and unchanged SubEnum DS bridge |
 | `d0b2411` | Finite-real native distributions, ordinary/AE laws, external model and Q-to-R embedding |
 | `c970eea` | Genuinely unbounded real-weight retry, using the generic validity/lub theory |
-| MathComp checkpoint (this commit) | Safe same-carrier laws, reproducible joint-universe boundary and maintained-theory unsafe-setting rejection |
+| Original MathComp checkpoint | Safe same-carrier laws and reproducible joint-universe boundary |
+| `5dac49a` (accepted follow-up) | Checked native omega/relational bind and complete Gate M direct behavioral backend, with explicit gluing premise |
+
+The validation record below is for the original checkpoint, not `5dac49a`.
+Current verification scope and results are recorded in [MathComp direct status](MATHCOMP_DIRECT.md).
 
 All old formal theory/proof files were compared byte-for-byte with `28ae229`.
 Only two old `.v` files changed: the capability regression gained generic
