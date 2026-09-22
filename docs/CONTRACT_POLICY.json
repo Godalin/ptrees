@@ -911,7 +911,19 @@
     ],
     "theories/Regression/Backend/MathCompDirect.v": [
       "direct_ret_reflexivity",
-      "direct_eventful_reflexivity"
+      "direct_eventful_reflexivity",
+      "direct_retry_hitting",
+      "direct_unbounded_retry",
+      "direct_retry_before_vis",
+      "direct_eventful_bind_rewrite",
+      "direct_nested_unbounded_retry",
+      "direct_nested_retry_diagonal",
+      "direct_retry_vis_interaction"
+    ],
+    "theories/Regression/Backend/MathCompOmega.v": [
+      "increasing_has_actual_lub",
+      "null_branches_need_no_continuity",
+      "relation_survives_kernel_bind"
     ],
     "theories/Regression/Backend/MathCompOrder.v": [
       "bottom_below_return",

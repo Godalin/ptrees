@@ -132,5 +132,17 @@ class SoundnessTests(unittest.TestCase):
                     'name': name, 'type': typ, 'assumptions': axioms}]), self.assertRaises(AssertionError):
                 soundness.mathcomp_native_check()
 
+    def test_native_completion_and_bind_are_not_assumed(self):
+        for module, name in [('OmegaLaws', 'mathcomp_native_bind_diagonal'),
+                             ('BindLaws', 'mathcomp_native_lift_bind'),
+                             ('Retry', 'mathcomp_retry_fixed_point')]:
+            for typ in ['x : SemanticOmegaLaws M -> True',
+                        'x : SemanticMeasureBindLaws M -> True',
+                        'x : MathCompCouplingGluing R -> True']:
+                with self.subTest(module=module, typ=typ), patch.object(soundness, 'query', return_value=[{
+                    'name': 'PTree.Prob.Backend.MathComp.' + module + '.' + name,
+                    'type': typ, 'assumptions': 'Closed under the global context'}]), self.assertRaises(AssertionError):
+                    soundness.mathcomp_native_check()
+
 
 if __name__=='__main__': unittest.main()

@@ -67,6 +67,7 @@ Require PTree.Examples.BernoulliFactory.RealBernoulliMathComp.
 Require PTree.Examples.BernoulliFactory.RealBernoulliOracle.
 Require PTree.Examples.BernoulliFactory.VonNeumannUnbounded.
 Require PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService.
+Require PTree.Examples.MathCompPrograms.
 Require PTree.Examples.MixedHeadProtocol.
 Require PTree.Examples.RandomWalk.
 Require PTree.Interp.Backend.SubEnum.
@@ -112,11 +113,14 @@ Require PTree.Prob.Backend.Enum.Measure.
 Require PTree.Prob.Backend.Enum.Representation.
 Require PTree.Prob.Backend.Enum.SemanticCoupling.
 Require PTree.Prob.Backend.Enum.Support.
+Require PTree.Prob.Backend.MathComp.BindLaws.
 Require PTree.Prob.Backend.MathComp.Coupling.
 Require PTree.Prob.Backend.MathComp.Kernel.
 Require PTree.Prob.Backend.MathComp.Measure.
 Require PTree.Prob.Backend.MathComp.NativeLaws.
+Require PTree.Prob.Backend.MathComp.OmegaLaws.
 Require PTree.Prob.Backend.MathComp.OrderLaws.
+Require PTree.Prob.Backend.MathComp.Retry.
 Require PTree.Prob.Backend.SubEnum.Domain.
 Require PTree.Prob.Backend.SubEnum.Expectation.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Admissibility.
@@ -197,6 +201,7 @@ Require PTree.Regression.Backend.ExtendedEnum.
 Require PTree.Regression.Backend.FreeOmegaEscapingMass.
 Require PTree.Regression.Backend.FreeOmegaLimitSafety.
 Require PTree.Regression.Backend.FreeOmegaUpperContracts.
+Require PTree.Regression.Backend.MathCompOmega.
 Require PTree.Regression.Backend.MathCompOrder.
 Require PTree.Regression.Backend.NativeReflection.
 Require PTree.Regression.Backend.SubEnumR.

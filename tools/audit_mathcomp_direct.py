@@ -18,14 +18,25 @@ SNAPSHOT = ROOT / 'docs/MATHCOMP_DIRECT_CONTRACTS.json'
 ENDPOINTS = ['PTree.' + DIRECT.replace('/', '.') + '.' + n for n in [
     'mathcomp_direct_mixed', 'mathcomp_direct_tree', 'mathcomp_direct_head',
     'mathcomp_direct_frontier', 'mathcomp_direct_kernel', 'mathcomp_direct_hitting',
-    'mathcomp_direct_peutt', 'mathcomp_direct_peutt_refl']]
+    'mathcomp_direct_peutt', 'mathcomp_direct_peutt_refl',
+    'mathcomp_direct_hitting_exists', 'mathcomp_direct_approx_unfold',
+    'mathcomp_direct_global_le_diagonal', 'mathcomp_direct_split_le_global',
+    'mathcomp_direct_bind_cofinal', 'mathcomp_direct_peutt_bind']]
 ENDPOINTS += ['PTree.Regression.Backend.MathCompDirect.' + n for n in [
     'direct_ret', 'direct_frontier', 'direct_kernel', 'direct_hitting',
-    'direct_ret_reflexivity', 'direct_eventful_reflexivity']]
+    'direct_ret_reflexivity', 'direct_eventful_reflexivity',
+    'available_native_order', 'available_native_omega', 'available_general_hitting_exists',
+    'direct_retry_hitting', 'direct_unbounded_retry', 'direct_retry_before_vis',
+    'direct_eventful_bind_rewrite', 'direct_nested_unbounded_retry',
+    'direct_nested_retry_diagonal', 'direct_retry_vis_interaction']]
 # Importing the unchecked modules must not retrospectively taint safe facts.
 SAFE_CONTROLS = [
     'PTree.Prob.Backend.MathComp.NativeLaws.mathcomp_native_bind_le_k',
-    'PTree.Prob.Backend.MathComp.NativeLaws.MathCompNativeMixedMeasure']
+    'PTree.Prob.Backend.MathComp.NativeLaws.MathCompNativeMixedMeasure',
+    'PTree.Prob.Backend.MathComp.OmegaLaws.MathCompNativeOmegaLaws',
+    'PTree.Prob.Backend.MathComp.OmegaLaws.MathCompNativeFubiniLaws',
+    'PTree.Prob.Backend.MathComp.BindLaws.MathCompNativeBindLaws',
+    'PTree.Prob.Backend.MathComp.Retry.mathcomp_retry_fixed_point']
 
 
 def parse_direct(result, endpoints):

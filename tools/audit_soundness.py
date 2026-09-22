@@ -122,6 +122,31 @@ def mathcomp_native_check():
             'cemetery_mass_not_monotone', 'partial_sampling_returned_mass',
             'partial_sampling_bind_monotone', 'generic_source_bind_order',
             'supplied_lub_is_least'],
+        'PTree.Prob.Backend.MathComp.OmegaLaws': [
+            'mathcomp_native_lub', 'mathcomp_native_lub_spec',
+            'mathcomp_native_sintegral_cvg', 'mathcomp_native_integral_lub',
+            'mathcomp_native_bind_lub', 'MathCompNativeOmegaLaws',
+            'mathcomp_native_bind_lub_k', 'mathcomp_native_bind_ae_eq',
+            'mathcomp_native_bind_lub_ae', 'mathcomp_native_bind_zero',
+            'MathCompNativeMixedOmegaLaws', 'mathcomp_native_double_diagonal',
+            'MathCompNativeFubiniLaws', 'mathcomp_native_bind_diagonal',
+            'MathCompNativeDiagonalLaws', 'mathcomp_native_ae_zero',
+            'mathcomp_native_ae_lub', 'MathCompNativeOmegaAELaws',
+            'mathcomp_native_lub_cofinal'],
+        'PTree.Prob.Backend.MathComp.BindLaws': [
+            'mathcomp_joint_bind', 'mathcomp_joint_bindE',
+            'mathcomp_joint_integral_projection', 'mathcomp_native_bind_zero_left',
+            'mathcomp_native_eq_le', 'mathcomp_native_le_eq_r', 'mathcomp_native_le_eq_l',
+            'mathcomp_native_eq_Equivalence', 'mathcomp_native_le_Proper',
+            'mathcomp_native_bind_Proper', 'mathcomp_native_lift_bind',
+            'MathCompNativeBindLaws', 'MathCompNativeMixedLaws'],
+        'PTree.Prob.Backend.MathComp.Retry': [
+            'mathcomp_root_finite', 'mathcomp_retry_fixed_point'],
+        'PTree.Regression.Backend.MathCompOmega': [
+            'checked_omega', 'checked_mixed_omega', 'checked_diagonal',
+            'checked_fubini', 'checked_bind', 'checked_mixed', 'checked_omega_ae',
+            'increasing_has_actual_lub', 'null_branches_need_no_continuity',
+            'relation_survives_kernel_bind'],
         'PTree.Examples.BernoulliFactory.RealBernoulliMathComp': [
             'mathcomp_binary_oracle_lub', 'mathcomp_binary_oracle_is_ast'],
         'PTree.Regression.Infrastructure.MathCompUniverse': ['self_nested_sampling'],
@@ -134,6 +159,15 @@ def mathcomp_native_check():
             assert 'MathCompCouplingGluing' not in e['type'], 'Order must not assume gluing'
             if not e['name'].endswith(('MathCompNativeOrderLaws', 'checked_native_order')):
                 assert not re.search(r'\bSemantic\w*Laws\b', e['type']), 'Native math must not assume the desired law'
+        if any(part in e['name'] for part in [
+                '.MathComp.OmegaLaws.', '.MathComp.BindLaws.', '.MathComp.Retry.',
+                '.Backend.MathCompOmega.']):
+            assert 'MathCompCouplingGluing' not in e['type'], 'Native continuity/bind must not assume gluing'
+            # Instance endpoints conclude a capability; mathematical lemmas
+            # must not receive any capability or provided transport witness.
+            short = e['name'].rsplit('.', 1)[-1]
+            if not short.startswith(('MathCompNative', 'checked_')):
+                assert not re.search(r'\bSemantic\w*Laws\b', e['type']), 'Native math assumes its desired law'
     print(f'{len(entries)} native MathComp endpoints checked; no completion/frontier in signatures; unchanged logical whitelist.')
 
 

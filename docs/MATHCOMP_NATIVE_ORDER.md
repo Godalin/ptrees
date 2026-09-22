@@ -1,5 +1,8 @@
 # MathComp native order: checked mathematical increment
 
+Historical increment record. The subsequent completed native omega/bind and
+direct program validation is described in [MathComp direct status](MATHCOMP_DIRECT.md).
+
 Baseline: `c9a1a6f`. This completes the native `SemanticMeasureOrderLaws`
 package, not the full direct MathComp backend or the entire native omega phase.
 All new mathematics is in Gate S with normal universe checking.

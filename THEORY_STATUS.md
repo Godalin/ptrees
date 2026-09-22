@@ -10,10 +10,14 @@ does not imply a successful remote CI run.
 ## Frozen theory and maintained validation
 
 Direct MathComp is now an explicitly universe-unchecked, isolated Gate M
-development (`MN = MF = MathCompKernelMeasure R`), not a completed third safe
-backend. Frontier/kernel/hitting definitions and reflexivity probes compile;
-native order laws are proved in Gate S, but general hitting existence still
-lacks native omega laws. The two exact
+backend (`MN = MF = MathCompKernelMeasure R`), not a third safe backend.
+Gate S proves native order, increasing-chain lub existence, both bind
+continuities (including AE), diagonal/Fubini, omega AE and relational bind.
+Gate M now proves general hitting existence, global/diagonal bind cofinality
+and unconditional eventful bind congruence. Positive-probability unbounded
+retry, Vis composition and nested unbounded diagonal-limit regressions pass.
+Coupling composition still requires the explicit `MathCompCouplingGluing`.
+The two exact
 Gate M modules are absent from safe AllImports and public facades. See
 [MathComp direct status](docs/MATHCOMP_DIRECT.md). Native mathematics remains
 in Gate S; no MathComp + FreeOmega combination is restored.
@@ -227,10 +231,10 @@ Structures use noun names: `SemanticMeasure`, `SemanticOmega`,
 The maintained probability pairs are
 `SubEnum -> FreeOmega SubEnum` and
 `SubEnumR R -> FreeOmega (SubEnumR R)`.
-MathComp is a separate native discrete kernel/measure model, not a maintained
-recursive PTree frontier backend. The removed combination is not replaced by
-another wrapper. The direct same-carrier universe obstruction is a documented
-scope boundary, not a paper completion requirement.
+MathComp is a separate native discrete kernel/measure model. Its direct
+same-carrier recursive PTree frontier is available only in isolated Gate M,
+with local universe checking disabled; it is not a third safe backend.
+The removed MathComp + FreeOmega combination remains absent.
 
 | Capability | SubEnum / SubEnumR node | raw Enum node | MathComp native | FreeOmega behavior (finite native backends) |
 | --- | --- | --- | --- | --- |
@@ -240,20 +244,20 @@ scope boundary, not a paper completion requirement.
 | AE Kleisli / exact Dirac AE / countable AE | yes | yes | yes, without gluing | derived capabilities |
 | Coupling AE transport/restriction | yes | yes | yes, without gluing | derived |
 | Exact bind-AE support | yes | yes | yes, without gluing | used in mixed node-bind |
-| Relational kernel-bind coupling | yes | yes | intentionally not supplied | proved directly |
-| Order / omega / cofinality | node-specific | node-specific | node-specific | maintained profile |
-| Omega AE / diagonal / Fubini | not the node obligation | not the node obligation | not the node obligation | derived |
-| Mixed unit / node-bind / omega | pair-level | pair-level | native same-carrier algebra only | maintained profile |
+| Relational kernel-bind coupling | yes | yes | proved, without gluing | proved directly |
+| Order / omega / cofinality | node-specific | node-specific | proved | maintained profile |
+| Omega AE / diagonal / Fubini | not the node obligation | not the node obligation | proved | derived |
+| Mixed unit / node-bind / omega | pair-level | pair-level | proved, same-carrier | maintained profile |
 | Mixed commutativity | optional | optional | optional | not a required capability |
 
-`Regression/Backend/BackendCapabilities.v` checks the profiles.
+`Regression/Backend/BackendCapabilities.v` checks the finite-native profiles;
+`MathCompOmega.v` checks the new native omega/bind profile without gluing.
 Foundational MathComp AE laws are checked without
 `MathCompCouplingGluing`; only its relational core needs that hypothesis.
-The missing MathComp node bind capability is coupling through a kernel,
-not ordinary measure bind. No MathComp behavioral completion is maintained.
-Its useful same-carrier algebra is retained in `MathComp/NativeLaws.v`, without
-claiming a recursive frontier. Matrix symmetry does not justify an additional
-joint-kernel selection development.
+Relational kernel bind now constructs an actual integrated joint in
+`MathComp/BindLaws.v`. `MathComp/OmegaLaws.v` proves the remaining native
+omega mathematics with normal checking. Only their recursive-frontier
+instantiation and program acceptance tests use the explicit Gate M relaxation.
 
 `SemanticSubprobability` exposes validity of an individual measure.
 `SemanticSubprobabilityLaws` provides equality/return/bind closure.

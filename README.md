@@ -24,11 +24,11 @@ The maintained complete PTree behavioral backends are
 `SubEnum -> FreeOmega SubEnum` and `SubEnumR R -> FreeOmega (SubEnumR R)`.
 MathComp supplies a separate discrete kernel/measure model for native analytic
 results and native joint witnesses. An explicitly universe-unchecked
-`MN = MF = MathCompKernelMeasure R` assembly is now being developed separately
-as Gate M; it is not a third fully checked/complete backend. Its first probes
-instantiate the recursive frontier and `peutt_refl`; native order laws are now
-proved normally, while omega laws and general hitting existence remain pending.
-There is no MathComp-plus-
+`MN = MF = MathCompKernelMeasure R` assembly is maintained separately as Gate M.
+Native order, omega continuity, diagonal/Fubini and relational bind are proved
+with normal universe checking. The isolated direct layer proves general hitting
+existence and eventful bind congruence, with unbounded/nested retry regressions.
+It is **not** a third fully universe-checked backend. There is no MathComp-plus-
 completion workaround. See [direct MathComp trust boundary](docs/MATHCOMP_DIRECT.md).
 
 The public conceptual architecture has four layers and two semantic clients:
@@ -244,8 +244,8 @@ weight-two flip.
 
 The MathComp Analysis backend now supplies the same foundational AE profile
 as Enum: AE Kleisli extension, exact Dirac AE, countable AE, coupling AE, and
-exact bind support decomposition. These remain native mathematical results,
-not a MathComp behavioral completion profile. Coupling composition remains the explicit
+exact bind support decomposition, plus checked omega, diagonal/Fubini and
+relational kernel-bind laws. Coupling composition remains the explicit
 `MathCompCouplingGluing` capability.  The compile-time matrix lives in
 `Regression/Backend/BackendCapabilities.v`. The direct real binary-oracle
 analysis in `Examples/BernoulliFactory/RealBernoulliMathComp.v` is retained;

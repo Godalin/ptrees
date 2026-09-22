@@ -1,123 +1,156 @@
-# Direct MathComp: trust boundary and capability probes
+# Direct MathComp: native completeness and explicit trust boundary
 
-Baseline: `bb927a5`. This is the first direct-backend increment, NOT final
-backend acceptance. Existing native mathematics and generic PTree theory
-are unchanged. No CI work or environment changes are included.
+Direct pair: `MN = MF = MathCompKernelMeasure R`. There is no MathComp +
+FreeOmega backend. The universe policy accepted at `c9a1a6f` is unchanged;
+the native order baseline is `561dc9a`. This increment completes the requested
+native omega/relational-bind mathematics and direct program acceptance.
+No CI work or environment changes are included.
 
-## Goal and current status
+## Capabilities
 
-The intended direct pair is `MN = MF = MathCompKernelMeasure R`. The removed
-MathComp + FreeOmega combination stays removed. The two normally checked,
-complete behavioral backends remain SubEnum/FreeOmega and SubEnumR/FreeOmega.
-
-| Direct capability | Current result |
+| Capability | Location / status |
 | --- | --- |
-| Native same-carrier mixed operation | Reuse checked MathCompNativeMixedMeasure |
-| PTree, stable head, measure of stable heads | Compiles with explicit universe bypass |
-| Primitive kernel and stable-hitting predicate | Compiles with explicit universe bypass |
-| peutt and generic eventful reflexivity | Compiles; MathCompCouplingGluing remains explicit |
-| Native SemanticMeasureOrderLaws | Proved in checked OrderLaws.v; positive inference probe |
-| Native SemanticOmegaLaws | Missing; negative inference probe |
-| General stable-hitting existence | Pending both preceding law packages |
-| Native Bernoulli / bind / recursive cross-checks | Pending; not replaced by reflexivity |
+| Returned-value order; source bind monotonicity | Checked `OrderLaws.v` |
+| Increasing-chain lub existence; source bind continuity | Checked `OmegaLaws.v` |
+| Continuation bind continuity, including AE hypotheses | Checked `OmegaLaws.v` |
+| Mixed omega, diagonal, double-limit Fubini, omega AE | Checked `OmegaLaws.v` |
+| Actual joint-kernel bind; BindLaws / MixedMeasureLaws | Checked `BindLaws.v` |
+| Coupling composition | Existing explicit `MathCompCouplingGluing R` premise |
+| Every PTree has complete stable hitting | Gate M `mathcomp_direct_hitting_exists` |
+| Arbitrary eventful bind fuel cofinality | Gate M `mathcomp_direct_bind_cofinal` |
+| Unconditional eventful bind congruence | Gate M `mathcomp_direct_peutt_bind` |
+| Unbounded retry, bind, Vis, nested retry / diagonal limit | Gate M `MathCompDirect.v` regressions |
 
-The negative existence probe applies the actual generic
-`ptree_stable_hitting_exists` with inference for the order/omega packages.
-Order is now available; omega is still missing.
-There is no assumed instance making this endpoint appear complete.
-Reflexivity alone does not establish existence: its generic proof matches
-whatever complete witnesses exist, without requiring a witness for every tree.
+“Unconditional” bind means no supplied scheduling/cofinality premise; the
+existing explicit gluing premise of the behavioral core remains. No new
+probability axiom, class or representation has been introduced.
 
-The [native-order increment](MATHCOMP_NATIVE_ORDER.md) completes source-side
-bind monotonicity without gluing or other law premises. The next mathematical
-work stays in checked native modules: increasing-chain lub existence and
-required bind continuity. Do not add unrelated capabilities for symmetry.
+## Checked mathematics (Gate S)
+
+`OmegaLaws.v` constructs an actual MathComp subprobability for each increasing
+native chain. On a set `U` it takes `sup_n mu_n(U ∩ returned)`. The construction
+proves finite additivity, countable subadditivity and mass at most one, then
+builds the standard MathComp measure. It does not take a supremum of cemetery
+mass, which need not increase, and does not assume lub existence.
+
+Source continuity first proves convergence of integrals of nonnegative simple
+functions zero at bottom, then uses the supremum over simple minorants.
+Continuation continuity uses MathComp monotone convergence. For the AE version,
+bad branches are replaced by zero and the result is transported back through
+AE equality. Diagonal continuity is derived from these two continuities and
+the double-limit theorem: `(i,j) <= (max i j,max i j)` makes the diagonal cofinal.
+Omega AE follows from zero measures of complement events.
+
+`BindLaws.v` chooses an existing continuation joint on each related input pair,
+using classical choice. Off-support choices are irrelevant by AE support.
+All sets of the joint carrier are measurable, so the selected family is a
+measurable subprobability kernel. Integrating it against the input joint gives
+an actual output joint. Projection integrals prove both returned marginals;
+integration of the null complement proves relational support. Neither this
+construction nor any new native omega theorem assumes gluing.
+
+`Retry.v` independently proves that, for `0 < q <= 1`, the equation
+`mu ≡ bind (Bernoulli q) (fun b => if b then target else mu)` forces `mu ≡ target`.
+All root masses are finite (at most one), so ordinary real cancellation is
+valid. This is a checked mathematical result, not an unchecked PTree argument.
+
+## Direct program tests (Gate M)
+
+`Examples/MathCompPrograms.v` defines guarded retry and nested-retry syntax
+with normal checking; it does not instantiate a recursive measure of heads.
+Its client `Regression/Backend/MathCompDirect.v` performs that instantiation:
+
+- `direct_retry_hitting`: any positive success probability yields the Dirac
+  returned head; existence comes from the proved native omega laws.
+- `direct_unbounded_retry`: retry is `peutt` to immediate return.
+- `direct_eventful_bind_rewrite`: retry followed by an arbitrary eventful
+  continuation rewrites to that continuation.
+- `direct_nested_unbounded_retry`: two sequential unbounded retries return
+  the chosen value, with independently chosen positive success probabilities.
+- `direct_nested_retry_diagonal`: split source/continuation approximants
+  converge along their common diagonal to the same returned head. This consumes
+  the proved diagonal law, which depends on Fubini, not finite stabilization
+  of the inner loop.
+- `direct_retry_vis_interaction` and `direct_retry_before_vis`: visible
+  interaction and weak Tau rewriting.
+
+`Direct.v` proves the PTree-specific fuel bridge: global fuel `n` is bounded
+by diagonal fuel `n`, while split fuel `(n,m)` is bounded by global fuel `n+m`.
+Native setwise supremum cofinality discharges the scheduling premise of
+the generic bind-hitting theorem. Bind congruence reuses the generic
+`bind_bisim_candidate` and specializes its postfixed proof: hitting witnesses
+are selected using MathComp's existing `cid`. Directly calling the old generic
+`peutt_bind` would inherit `ClassicalChoice.choice`'s additional logical axioms;
+the specialization avoids that without modifying frozen generic theory or
+expanding the existing logical-axiom whitelist. No FreeOmega instantiation is
+used.
+
+The old negative hitting-existence probe had an extra explicit interface
+argument. It is now a genuinely typechecked positive application with the
+correct signature, rather than evidence of a missing capability.
+The isolated `MathCompOrder.v` still tests that importing only order does not
+load the later omega module.
 
 ## Exact trust split
 
-Gate S is every source module except these two Gate M entries:
+Only these two exact files may contain one `Local Unset Universe Checking.`:
 
-- `Eq/Backend/MathComp/Direct.v`: assembly using already checked operations and
-  theorems, located under Eq because it consumes PTree/Eq theory.
-- `Regression/Backend/MathCompDirect.v`: explicit direct-backend client/probes.
+- `Eq/Backend/MathComp/Direct.v`
+- `Regression/Backend/MathCompDirect.v`
 
-Only these exact files may contain exactly one
-`Local Unset Universe Checking.` command. Native MathComp modules, generic
-theory, finite backends, Domain, other regressions and examples may not use it.
-No safe module may import either Gate M module, directly or transitively.
-Every Gate M client must depend on the direct assembly. New entries require
-changes to the explicit policy, its test and compiled snapshot.
+The allowlist is unchanged. No native mathematics, safe example, Domain,
+generic theory or public facade may use the bypass or depend transitively on
+Gate M. Safe AllImports contains every Gate S module and excludes both Gate M
+files. Full `dune build` builds both groups, so it must **not** be called a
+universe-checked whole-library build.
 
-Safe `Regression/Infrastructure/AllImports.v` remains byte-for-byte unchanged
-and covers all 267 Gate S modules (including itself), not the two new Gate M
-modules. Ordinary `dune build` builds both groups in separate compiler
-processes; it must NOT be reported as a universe-checked whole-library build.
-The gate runner also offers an explicit safe-only build target list.
-
-Loading Gate M into the existing all-imports universe environment also needs
-the bypass at the client import site. The dedicated Gate M audit loads safe
-AllImports first, then explicitly disables checking before requiring the
-direct modules. No safe audit uses that session or command.
-
-## Reliability claim, and its limit
-
-Native measure-theoretic proofs and generic PTree proofs remain independently
-universe-checked. Gate M instantiates them at a universe combination rejected
-by the normal checker. Even a short `exact existing_theorem` is not proof
-that the rejected universe instantiation is consistent.
-
-Coq 8.20 reports both per-declaration `relies on an unsafe hierarchy` lines
-and `Theory: Type hierarchy is collapsed (logic is inconsistent)`. The latter
-also appears for safe facts queried in the unchecked session; it describes
-the current session, not necessarily that constant. Our separate snapshot
-records both categories verbatim in structured form, preserves the existing
-logical-axiom whitelist, and checks that native control constants have no
-per-declaration unsafe flags. Unknown output/errors fail the audit.
-
-Gate M is explicitly **not** a universe-consistency result or a normal
-kernel-checked endpoint. Future concrete cross-checks will compare meanings
-but will not repair this logical trust gap. No new probability axiom, class,
-carrier, completion, quotient, or public API is introduced here.
+Gate M remains **not a universe-consistency result**. The dedicated audit
+records Coq's per-declaration unsafe-hierarchy flags and session-level
+`Type hierarchy is collapsed (logic is inconsistent)` report separately
+from logical axioms. Safe controls must have no unsafe declaration flags,
+even when queried in that session. No safe audit uses the bypass.
+The original checked negative universe probes remain intact.
 
 ## Local verification
 
 ```sh
+opam exec -- dune build
 python3 tools/audit_mathcomp_direct.py --gate S --build
 python3 tools/audit_assumptions.py --check
 python3 tools/audit_soundness.py --check
 python3 tools/audit_api.py --check --surface-only
 python3 tools/audit_architecture.py --check
 python3 -m unittest discover -s tools -p 'test_*.py'
-python3 tools/audit_mathcomp_direct.py --gate M --build
+python3 tools/audit_mathcomp_direct.py --gate M
+opam exec -- coqchk -silent -R _build/default/theories PTree \
+  -norec PTree.Prob.Backend.MathComp.OmegaLaws \
+  -norec PTree.Prob.Backend.MathComp.BindLaws \
+  -norec PTree.Prob.Backend.MathComp.Retry \
+  -norec PTree.Regression.Backend.MathCompOmega \
+  -norec PTree.Examples.MathCompPrograms \
+  -norec PTree.Regression.Infrastructure.AllImports
 ```
 
-Gate S's normal targeted kernel check can include native Measure/NativeLaws,
-the checked MathCompUniverse regression and BackendCapabilities. Gate M's
-compiled snapshot is separate (`MATHCOMP_DIRECT_CONTRACTS.json`); it never
-replaces the frozen 505 normal contracts. No Gate M kernel-consistency pass
-is claimed. The checked negative universe regression remains in Gate S.
+The frozen 505 safe compiled contracts and logical-axiom whitelist are not
+regenerated. New native endpoints are checked independently for absence of
+gluing or circular semantic-law premises. Gate M's expanded snapshot is
+separate. Targeted safe `coqchk -norec` is not a whole-library recursive Gate D
+audit and makes no normal kernel-consistency claim about Gate M.
 
-## First-increment verification result
+`-norec` is repeated for every target: it is a per-module option, not a
+global switch. An initial command with only one `-norec` accidentally started
+a larger recursive dependency check; that run was stopped and is not counted
+as passing validation.
 
-- Full local `dune build`: passed, 269 modules = 267 Gate S + 2 Gate M.
-- Explicit Gate S target build and safe AllImports: passed.
-- All 505 frozen compiled signatures/assumptions unchanged.
-- Full soundness check: 199 frozen, 36 generic validation, 18 finite-real
-  realization and 22 native MathComp endpoints passed with the existing
-  logical-axiom whitelist.
-- Curated API, architecture and source checks: passed; all 67 tool tests passed.
-- Gate M: 14 direct endpoints plus 2 native controls matched the separate
-  compiled type/assumption/unsafe-hierarchy snapshot, in a session that first
-  loads safe AllImports. Safe controls have no unsafe declaration flags.
-- Four-module joint targeted `coqchk` passed for native Measure, NativeLaws,
-  MathCompUniverse and BackendCapabilities, using `-norec` for those four
-  modules (dependencies trusted). This is not recursive whole-library Gate D.
-- No existing mathematical definition, theorem statement or proof changed;
-  the only existing `.v` edit is the MathCompUniverse role comment.
-- No new probability assumption/class, public facade change, completion,
-  environment change or CI action.
+Completed locally for this increment:
 
-This records the original isolation/probe increment only. The subsequent
-native-order increment is linked above; omega proofs,
-general direct hitting existence and nontrivial semantic cross-checks remain
-open; complete direct-backend acceptance is not claimed.
+- Full `dune build`: 276 modules (274 Gate S, 2 Gate M); safe-only build also passed.
+- AllImports, architecture and curated API checks passed.
+- All 505 frozen compiled contracts and their assumptions unchanged.
+- Soundness audit: 199 frozen contracts unchanged, plus 36 generic, 18
+  finite-real and 80 native MathComp endpoints passed the existing axiom whitelist.
+- All 69 Python tool tests passed.
+- Gate M: 30 direct endpoints and 6 safe controls passed; every previously
+  recorded endpoint retained its exact type, assumptions and unsafe flags.
+- The six-module joint targeted kernel check shown above completed successfully.
+- No CI run was checked or claimed successful; no environment was changed.
