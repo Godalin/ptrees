@@ -28,7 +28,7 @@ Definition real_native_coupling_ae : @SemanticMeasureCouplingAELaws M NI := _.
     duplicate-free representation, nor an inhabited carrier. *)
 Definition duplicated_half : M bool.
 Proof.
-  refine (@Build_SubEnumR R bool [(1/4,true); (1/4,true); (0,false)] _ _).
+  refine (@subenumR_of_list R bool [(1/4,true); (1/4,true); (0,false)] _ _).
   - intros p b [H|[H|[H|[]]]]; inversion H; subst;
       first [exact: lexx | apply divr_ge0; first [exact: ler01 | exact: ler0n]].
   - cbn; rewrite !mulr1 add0r addr0 -mulr2n -mulr_natl.

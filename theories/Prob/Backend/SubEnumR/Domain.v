@@ -21,7 +21,8 @@ Lemma real_enum_expect_continuous {A} (mu : list (R * A)) (f : nat -> A -> R) :
   (forall n x, f n x <= f (S n) x) ->
   real_enum_expect (oval_pointwise_sup f) mu = oval_sup (fun n => real_enum_expect (f n) mu).
 Proof.
-  intros Hnn Hf Hi; induction mu as [|[p x] tl IH]; cbn [real_enum_expect].
+  intros Hnn Hf Hi; induction mu as [|[p x] tl IH];
+    rewrite ?real_enum_expect_cons ?real_enum_expect_nil.
   - symmetry; exact: oval_sup_const.
   - have Hp : 0 <= p := Hnn p x (or_introl (Logic.eq_refl _)).
     have Htl : real_enum_nonnegative tl := fun q y Hy => Hnn q y (or_intror Hy).
@@ -62,7 +63,8 @@ Lemma real_enum_expect_support_ext {A} (mu : list (R * A)) (f g : A -> R) :
   (forall p x, List.In (p,x) mu -> p <> 0 -> f x = g x) ->
   real_enum_expect f mu = real_enum_expect g mu.
 Proof.
-  induction mu as [|[p x] tl IH]; intros H; cbn [real_enum_expect]; first reflexivity.
+  induction mu as [|[p x] tl IH]; intros H;
+    rewrite ?real_enum_expect_cons ?real_enum_expect_nil; first reflexivity.
   have He : real_enum_expect f tl = real_enum_expect g tl.
   { apply IH; intros q y Hy Hq; exact (H q y (or_intror Hy) Hq). }
   rewrite He; destruct (eqVneq p 0) as [->|Hp]; first by rewrite !mul0r.

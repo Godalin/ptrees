@@ -210,6 +210,7 @@ Require PTree.Regression.Backend.SubEnumQRegression.
 Require PTree.Regression.Backend.SubEnumR.
 Require PTree.Regression.Backend.SubEnumRBehavior.
 Require PTree.Regression.Backend.SubEnumRRelational.
+Require PTree.Regression.Backend.SubEnumRShared.
 Require PTree.Regression.Backend.UnifiedFrontierEnumQ.
 Require PTree.Regression.Fixtures.FreeOmegaSamples.
 Require PTree.Regression.Infrastructure.ArchitectureBoundaries.

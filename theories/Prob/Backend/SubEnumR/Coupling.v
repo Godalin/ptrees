@@ -21,7 +21,8 @@ Lemma real_enum_expect_ae_ext {A} (mu : list (R * A)) f g :
   (forall p x, List.In (p,x) mu -> p <> 0 -> f x = g x) ->
   real_enum_expect f mu = real_enum_expect g mu.
 Proof.
-  induction mu as [|[p x] tl IH]; intros H; cbn [real_enum_expect]; first reflexivity.
+  induction mu as [|[p x] tl IH]; intros H;
+    rewrite ?real_enum_expect_cons ?real_enum_expect_nil; first reflexivity.
   have He : real_enum_expect f tl = real_enum_expect g tl.
   { apply IH; intros q y Hy Hq; exact (H q y (or_intror Hy) Hq). }
   rewrite He; destruct (eqVneq p 0) as [->|Hp]; first by rewrite !mul0r.
@@ -35,7 +36,7 @@ Lemma real_enum_expect_entry_le {A} (mu : list (R * A)) f p x :
 Proof.
   induction mu as [|[q y] tl IH]; intros Hnn Hf Hin; first contradiction.
   have Htl : real_enum_nonnegative tl := fun r z Hz => Hnn r z (or_intror Hz).
-  cbn [real_enum_expect]; destruct Hin as [He|Hin].
+  rewrite real_enum_expect_cons; destruct Hin as [He|Hin].
   - inversion He; subst; rewrite lerDl; exact: real_enum_expect_nonnegative.
   - apply: le_trans (IH Htl Hf Hin) _.
     rewrite lerDr; apply mulr_ge0; [exact (Hnn q y (or_introl (Logic.eq_refl _)))|exact (Hf y)].
@@ -98,8 +99,10 @@ Lemma real_enum_expect_product {A B C} (mu : list (R*A)) (nu : list (R*B)) w h (
 Proof.
   induction mu as [|[p x] tl IH]; first reflexivity.
   cbn [real_enum_product List.flat_map]; rewrite real_enum_expect_app IH.
-  cbn [real_enum_expect fst snd]; congr (_ + _).
-  clear IH tl; induction nu as [|[q y] rest IHn]; cbn; first by rewrite mulr0.
+  rewrite real_enum_expect_cons; cbn [fst snd]; congr (_ + _).
+  clear IH tl; induction nu as [|[q y] rest IHn];
+    cbn [List.map fst snd]; rewrite ?real_enum_expect_cons ?real_enum_expect_nil;
+    first by rewrite mulr0.
   by rewrite IHn mulrDr !mulrA.
 Qed.
 
@@ -107,7 +110,8 @@ Lemma real_enum_expect_swap {A B} (mu : list (R*A)) (nu : list (R*B)) f :
   real_enum_expect (fun x => real_enum_expect (f x) nu) mu =
   real_enum_expect (fun y => real_enum_expect (fun x => f x y) mu) nu.
 Proof.
-  induction mu as [|[p x] tl IH]; cbn [real_enum_expect].
+  induction mu as [|[p x] tl IH];
+    rewrite ?real_enum_expect_cons ?real_enum_expect_nil.
   - symmetry; apply real_enum_expect_zero.
   - rewrite real_enum_expect_add real_enum_expect_scale IH; reflexivity.
 Qed.
@@ -222,7 +226,7 @@ Qed.
 
 Definition subenumR_glue : SubEnumR R (A*C).
 Proof.
-  refine (@Build_SubEnumR R (A*C) raw _ _).
+  refine (@subenumR_of_list R (A*C) raw _ _).
   - intros r xz Hin; apply List.in_flat_map in Hin.
     destruct Hin as [[p xy] [Hp Hin]]; apply List.in_map_iff in Hin.
     destruct Hin as [[q yz] [He Hq]]; cbn in He; inversion He; subst.

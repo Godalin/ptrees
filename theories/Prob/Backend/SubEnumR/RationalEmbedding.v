@@ -21,11 +21,16 @@ Definition real_of_enumQ {A} (mu : EnumQ A) : list (R*A) :=
   List.map (fun px => (ratr (Qval (fst px)), snd px)) mu.
 Lemma real_of_enumQ_expect {A} (mu : EnumQ A) f :
   real_enum_expect f (real_of_enumQ mu) = enumQ_real_expect f mu.
-Proof. induction mu as [|[p x] tl IH]; cbn; [reflexivity|by rewrite IH]. Qed.
+Proof.
+  induction mu as [|[p x] tl IH]; first reflexivity.
+  change (real_enum_expect f ((ratr (Qval p),x)::real_of_enumQ tl) =
+    ratr (Qval p) * f x + enumQ_real_expect f tl).
+  by rewrite real_enum_expect_cons IH.
+Qed.
 
 Definition subenumQ_to_R {A} (mu : SubEnumQ A) : SubEnumR R A.
 Proof.
-  refine (@Build_SubEnumR R A (real_of_enumQ (subenumQ_raw mu)) _ _).
+  refine (@subenumR_of_list R A (real_of_enumQ (subenumQ_raw mu)) _ _).
   - intros p x Hin; apply List.in_map_iff in Hin; destruct Hin as [[q y] [He Hq]].
     cbn in He; inversion He; subst; rewrite ler0q; exact: Qval_nnQ_ge0.
   - rewrite real_of_enumQ_expect; apply subenumQ_real_expect_bound=> x; exact: lexx.

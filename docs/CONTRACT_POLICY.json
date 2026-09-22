@@ -90,6 +90,19 @@
       "zero_empty_coupling",
       "duplicate_zero_branch_restrict"
     ],
+    "theories/Regression/Backend/SubEnumRShared.v": [
+      "shared_carrier",
+      "shared_ret",
+      "shared_zero",
+      "shared_bind",
+      "shared_expectation",
+      "shared_raw_projection",
+      "no_conversion_roundtrip",
+      "shared_input_native_ae",
+      "shared_input_native_crossed_coupling",
+      "shared_bind_native_mass",
+      "high_shared_native_bind"
+    ],
     "theories/Regression/Backend/SubEnumR.v": [
       "real_sqrt_coin_probability",
       "real_sqrt_coin_total",
