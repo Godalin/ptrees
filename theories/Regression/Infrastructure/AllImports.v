@@ -206,6 +206,7 @@ Require PTree.Regression.Backend.FreeOmegaUpperContracts.
 Require PTree.Regression.Backend.MathCompOmega.
 Require PTree.Regression.Backend.MathCompOrder.
 Require PTree.Regression.Backend.NativeReflection.
+Require PTree.Regression.Backend.RationalRepresentationMigration.
 Require PTree.Regression.Backend.SubEnumQRegression.
 Require PTree.Regression.Backend.SubEnumR.
 Require PTree.Regression.Backend.SubEnumRBehavior.
