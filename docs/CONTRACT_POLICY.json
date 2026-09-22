@@ -103,6 +103,23 @@
       "real_delayed_dirac_valid",
       "real_unbounded_retry_valid"
     ],
+    "theories/Regression/Probability/GenericQuotientValidation.v": [
+      "real_heterogeneous_invalid_middle",
+      "generic_real_middle_is_invalid",
+      "generic_real_raw_constraints_through_invalid",
+      "generic_real_endpoint_dual_through_invalid",
+      "generic_real_equality_is_not_validity",
+      "generic_real_missing_mass_preserved",
+      "generic_real_crossed_sqrt_tests",
+      "generic_real_partial_sample_mass",
+      "real_delayed_hitting",
+      "generic_real_lub_observation_tests",
+      "real_null_sample_lub_qlift",
+      "generic_real_null_nonmonotone_chain",
+      "generic_real_retry_equality_transports_validity",
+      "generic_real_large_carriers",
+      "generic_rational_tests_agree_with_DS5"
+    ],
     "theories/Regression/Probability/GenericFreeOmegaValidation.v": [
       "option_sample_denotes",
       "generic_null_bad_sample",

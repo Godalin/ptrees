@@ -1,5 +1,9 @@
 # SubEnumR relational and behavioral backend
 
+The next follow-up is tracked separately in
+[native-parametric qlift validation](GENERIC_QLIFT_VALIDATION.md): shared
+bounded-test/dual constraints, without a generic joint-existence claim.
+
 Baseline: `7e75db0`. Local verification only; CI and MathComp universe work
 are outside this increment. No existing DS1--DS5 proof or public facade changes.
 

@@ -133,6 +133,7 @@ Require PTree.Prob.Backend.SubEnum.FreeOmega.NativeCoupling.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.NativeTransport.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.QuotientSoundness.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Recovery.
+Require PTree.Prob.Backend.SubEnum.FreeOmega.RelationalValidation.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Total.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperContinuity.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperCoupling.
@@ -143,6 +144,7 @@ Require PTree.Prob.Backend.SubEnum.FreeOmega.UpperRelational.
 Require PTree.Prob.Backend.SubEnum.Measure.
 Require PTree.Prob.Backend.SubEnumR.Coupling.
 Require PTree.Prob.Backend.SubEnumR.Domain.
+Require PTree.Prob.Backend.SubEnumR.FreeOmega.RelationalValidation.
 Require PTree.Prob.Backend.SubEnumR.FreeOmega.Validation.
 Require PTree.Prob.Backend.SubEnumR.Measure.
 Require PTree.Prob.Backend.SubEnumR.Omega.
@@ -169,7 +171,11 @@ Require PTree.Prob.FreeOmega.Recovery.
 Require PTree.Prob.FreeOmega.StructuralMeasure.
 Require PTree.Prob.FreeOmega.Support.
 Require PTree.Prob.FreeOmega.SupportLift.
+Require PTree.Prob.FreeOmega.Validation.Continuity.
 Require PTree.Prob.FreeOmega.Validation.Expectation.
+Require PTree.Prob.FreeOmega.Validation.Observation.
+Require PTree.Prob.FreeOmega.Validation.Quotient.
+Require PTree.Prob.FreeOmega.Validation.Relational.
 Require PTree.Prob.Interface.AE.
 Require PTree.Prob.Interface.Coupling.
 Require PTree.Prob.Interface.FrontierLift.
@@ -225,6 +231,7 @@ Require PTree.Regression.Probability.FiniteTransport.
 Require PTree.Regression.Probability.FreeOmegaDomain.
 Require PTree.Regression.Probability.FreeOmegaSoundness.
 Require PTree.Regression.Probability.GenericFreeOmegaValidation.
+Require PTree.Regression.Probability.GenericQuotientValidation.
 Require PTree.Regression.Probability.IrrationalHitting.
 Require PTree.Regression.Probability.OmegaVal.
 Require PTree.Regression.Probability.OmegaValMeasure.

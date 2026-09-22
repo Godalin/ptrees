@@ -3,7 +3,7 @@
 import argparse
 import json
 import re
-from audit_assumptions import ROOT, MANIFEST, check, without_comments
+from audit_assumptions import ROOT, MANIFEST, check, without_comments, query, logical_axioms, SOUNDNESS_AXIOMS
 from audit_architecture import graph
 
 POLICY = ROOT / 'docs/CONTRACT_POLICY.json'
@@ -87,11 +87,46 @@ def manifest_check():
         assert endpoint in names, 'Missing final contract'
 
 
+def generic_quotient_check():
+    """New native-parametric bridge; do not regenerate frozen DS snapshots."""
+    groups = {
+        'PTree.Prob.FreeOmega.Validation.Continuity': [
+            'model_upper_continuous', 'model_native_continuous_ae',
+            'model_sample_lub', 'model_bind_lub'],
+        'PTree.Prob.FreeOmega.Validation.Observation': ['model_observes_upper'],
+        'PTree.Prob.FreeOmega.Validation.Relational': ['model_upper_rel_comp'],
+        'PTree.Prob.FreeOmega.Validation.Quotient': [
+            'model_qlift_bidual_raw', 'model_qlift_bidual', 'model_qlift_upper',
+            'model_qlift_upper_mass', 'model_qlift_eq_upper',
+            'model_qlift_eq_modelable', 'model_qlift_eq_sound'],
+        'PTree.Prob.Backend.SubEnumR.FreeOmega.RelationalValidation': [
+            'subenumR_native_model_lub', 'subenumR_qlift_bidual_raw',
+            'subenumR_qlift_bidual', 'subenumR_qlift_eq_modelable'],
+        'PTree.Prob.Backend.SubEnum.FreeOmega.RelationalValidation': [
+            'subenum_native_model_lub', 'subenum_qlift_bidual_raw',
+            'subenum_generic_qlift_bidual', 'subenum_generic_qlift_tests'],
+    }
+    policy = json.loads(POLICY.read_text())
+    path = 'theories/Regression/Probability/GenericQuotientValidation.v'
+    groups['PTree.Regression.Probability.GenericQuotientValidation'] = policy['regressions'][path]
+    entries = query([module+'.'+name for module, names in groups.items() for name in names])
+    for e in entries:
+        assert logical_axioms(e['assumptions']) <= SOUNDNESS_AXIOMS, e['name']
+        if e['name'].startswith('PTree.Prob.FreeOmega.Validation.'):
+            assert not re.search(r'\b(?:SubEnum\w*|ptree|SemanticOmegaLaws|SemanticMeasureBindLaws)\b', e['type']), e['name']
+        if e['name'].endswith('.model_qlift_bidual_raw'):
+            assert 'free_omega_modelable' not in e['type'], 'Raw bridge must allow invalid middle terms'
+    print(f'{len(entries)} generic quotient/adapter/regression endpoints checked; unchanged logical whitelist.')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
     parser.add_argument('--source-only', action='store_true')
+    parser.add_argument('--generic-quotient-only', action='store_true')
     args = parser.parse_args()
     source_check(); manifest_check(); graph()
     if not args.source_only:
-        check('soundness')
+        if not args.generic_quotient_only:
+            check('soundness')
+        generic_quotient_check()

@@ -94,5 +94,20 @@ class SoundnessTests(unittest.TestCase):
                   'stable_hitting_denotational_adequacy','oval_bidual_coupled_nat']:
             self.assertIn(n,names)
 
+    def test_generic_quotient_audit_rejects_strengthening_or_new_axiom(self):
+        name = 'PTree.Prob.FreeOmega.Validation.Quotient.model_qlift_bidual_raw'
+        for typ, axioms in [
+            ('x : SubEnum A', 'Closed under the global context'),
+            ('x : SemanticOmegaLaws MN', 'Closed under the global context'),
+            ('x : SemanticMeasureBindLaws MN', 'Closed under the global context'),
+            ('x : free_omega_modelable t -> True', 'Closed under the global context'),
+            ('x : True', 'Axioms:\ntransport_exists : False'),
+        ]:
+            with self.subTest(typ=typ, axioms=axioms), \
+                 patch.object(soundness, 'query', return_value=[{
+                     'name': name, 'type': typ, 'assumptions': axioms}]), \
+                 self.assertRaises(AssertionError):
+                soundness.generic_quotient_check()
+
 
 if __name__=='__main__': unittest.main()

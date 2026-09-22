@@ -25,6 +25,7 @@ def external_validation(path):
         "Prob/Backend/SubEnum/Domain", "Prob/Backend/MathComp/Domain",
         "Prob/Backend/SubEnumR/Domain",
         "Prob/Backend/SubEnumR/FreeOmega/Validation",
+        "Prob/Backend/SubEnumR/FreeOmega/RelationalValidation",
         "Prob/Backend/SubEnum/FreeOmega/Admissibility",
         "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",
         "Prob/Backend/SubEnum/FreeOmega/QuotientSoundness",
@@ -32,6 +33,7 @@ def external_validation(path):
         "Prob/Backend/SubEnum/FreeOmega/CouplingSoundness",
         "Prob/Backend/SubEnum/FreeOmega/JointSoundness",
         "Prob/Backend/SubEnum/FreeOmega/GenericValidation",
+        "Prob/Backend/SubEnum/FreeOmega/RelationalValidation",
         "Eq/Backend/StableHittingDomainSubEnum",
     }
 

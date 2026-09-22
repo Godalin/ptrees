@@ -4,6 +4,15 @@ import audit_architecture as architecture
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_relational_validation_adapters_are_one_way(self):
+        for family in ["SubEnum", "SubEnumR"]:
+            bridge = f"Prob/Backend/{family}/FreeOmega/RelationalValidation"
+            self.assertTrue(architecture.external_validation(bridge))
+            self.assertTrue(architecture.permitted(bridge, "Prob/FreeOmega/Validation/Quotient"))
+            for source in [f"Prob/Backend/{family}/Measure", "API/FreeOmega",
+                           "Eq/PEutt", "Examples/RandomWalk"]:
+                self.assertFalse(architecture.permitted(source, bridge))
+
     def test_generic_completion_validation_is_one_way(self):
         bridge = "Prob/FreeOmega/Validation/Expectation"
         self.assertTrue(architecture.external_validation(bridge))
