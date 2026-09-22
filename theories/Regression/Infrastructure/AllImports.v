@@ -61,12 +61,10 @@ Require PTree.Examples.BernoulliFactory.BernoulliFactoryComposition.
 Require PTree.Examples.BernoulliFactory.BernoulliFactoryProbability.
 Require PTree.Examples.BernoulliFactory.OperationalBernoulliFactory.
 Require PTree.Examples.BernoulliFactory.OperationalRationalBernoulli.
-Require PTree.Examples.BernoulliFactory.OperationalRealBernoulliMathComp.
 Require PTree.Examples.BernoulliFactory.OperationalVonNeumann.
 Require PTree.Examples.BernoulliFactory.RationalBernoulli.
 Require PTree.Examples.BernoulliFactory.RealBernoulliMathComp.
 Require PTree.Examples.BernoulliFactory.RealBernoulliOracle.
-Require PTree.Examples.BernoulliFactory.UnifiedRealBernoulliMathCompCore.
 Require PTree.Examples.BernoulliFactory.VonNeumannUnbounded.
 Require PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService.
 Require PTree.Examples.MixedHeadProtocol.
@@ -117,7 +115,7 @@ Require PTree.Prob.Backend.Enum.Support.
 Require PTree.Prob.Backend.MathComp.Coupling.
 Require PTree.Prob.Backend.MathComp.Kernel.
 Require PTree.Prob.Backend.MathComp.Measure.
-Require PTree.Prob.Backend.MathComp.SelfModel.
+Require PTree.Prob.Backend.MathComp.NativeLaws.
 Require PTree.Prob.Backend.SubEnum.Domain.
 Require PTree.Prob.Backend.SubEnum.Expectation.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Admissibility.
@@ -198,14 +196,12 @@ Require PTree.Regression.Backend.ExtendedEnum.
 Require PTree.Regression.Backend.FreeOmegaEscapingMass.
 Require PTree.Regression.Backend.FreeOmegaLimitSafety.
 Require PTree.Regression.Backend.FreeOmegaUpperContracts.
-Require PTree.Regression.Backend.MathCompSelfModel.
 Require PTree.Regression.Backend.NativeReflection.
 Require PTree.Regression.Backend.SubEnumR.
 Require PTree.Regression.Backend.SubEnumRBehavior.
 Require PTree.Regression.Backend.SubEnumRRelational.
 Require PTree.Regression.Backend.SubEnumRegression.
 Require PTree.Regression.Backend.UnifiedFrontierEnum.
-Require PTree.Regression.Backend.UnifiedMathCompFrontier.
 Require PTree.Regression.Fixtures.FreeOmegaSamples.
 Require PTree.Regression.Infrastructure.ArchitectureBoundaries.
 Require PTree.Regression.Infrastructure.CapabilityBoundaries.
@@ -219,6 +215,7 @@ Require PTree.Regression.Infrastructure.HiddenRandomState.
 Require PTree.Regression.Infrastructure.KernelCompletion.
 Require PTree.Regression.Infrastructure.KernelCongruence.
 Require PTree.Regression.Infrastructure.KernelContinuity.
+Require PTree.Regression.Infrastructure.MathCompUniverse.
 Require PTree.Regression.Infrastructure.NativeRecovery.
 Require PTree.Regression.Infrastructure.PairedFiniteCompression.
 Require PTree.Regression.Infrastructure.ResidualFinite.

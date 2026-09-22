@@ -96,6 +96,32 @@ def manifest_check():
         assert endpoint in names, 'Missing final contract'
 
 
+def mathcomp_native_check():
+    """Retained native mathematics, not a recursive behavioral backend."""
+    groups = {
+        'PTree.Prob.Backend.MathComp.Measure': [
+            'MathCompNodeSemanticMeasure', 'MathCompNodeSemanticSubprobability',
+            'MathCompNodeSemanticMeasureCoreLaws', 'MathCompNodeSemanticMeasureDiracAELaws',
+            'MathCompNodeSemanticMeasureCouplingAELaws', 'MathCompNodeSemanticOmega'],
+        'PTree.Prob.Backend.MathComp.NativeLaws': [
+            'MathCompNativeMixedMeasure', 'MathCompNativeMixedMeasureUnitLaws',
+            'MathCompNativeMixedMeasureNodeBindLaws', 'MathCompNativeTotalProperLaws',
+            'mathcomp_native_zero_returned', 'mathcomp_native_le_refl',
+            'mathcomp_native_le_trans', 'mathcomp_native_zero_le',
+            'mathcomp_native_lub_constant', 'mathcomp_native_prefix_sup',
+            'MathCompNativeCofinalityLaws', 'mathcomp_native_bind_le_k'],
+        'PTree.Prob.Backend.MathComp.Coupling': ['mathcomp_coupling_realization'],
+        'PTree.Examples.BernoulliFactory.RealBernoulliMathComp': [
+            'mathcomp_binary_oracle_lub', 'mathcomp_binary_oracle_is_ast'],
+        'PTree.Regression.Infrastructure.MathCompUniverse': ['self_nested_sampling'],
+    }
+    entries = query([module+'.'+name for module, names in groups.items() for name in names])
+    for e in entries:
+        assert logical_axioms(e['assumptions']) <= SOUNDNESS_AXIOMS, e['name']
+        assert not re.search(r'\b(?:FreeOmega\w*|free_omega_\w*|peutt|stable_head)\b', e['type']), e['name']
+    print(f'{len(entries)} native MathComp endpoints checked; no completion/frontier in signatures; unchanged logical whitelist.')
+
+
 def real_joint_check():
     """Concrete realization strengthening; keep frozen DS signatures intact."""
     groups = {
@@ -158,12 +184,18 @@ if __name__ == '__main__':
     parser.add_argument('--source-only', action='store_true')
     parser.add_argument('--generic-quotient-only', action='store_true')
     parser.add_argument('--real-joint-only', action='store_true')
+    parser.add_argument('--mathcomp-native-only', action='store_true')
     args = parser.parse_args()
+    only = [args.generic_quotient_only, args.real_joint_only, args.mathcomp_native_only]
+    if sum(only) > 1:
+        parser.error('Select at most one compiled audit scope')
     source_check(); manifest_check(); graph()
     if not args.source_only:
-        if not args.generic_quotient_only and not args.real_joint_only:
+        if not any(only):
             check('soundness')
-        if not args.real_joint_only:
+        if not any(only) or args.generic_quotient_only:
             generic_quotient_check()
-        if not args.generic_quotient_only:
+        if not any(only) or args.real_joint_only:
             real_joint_check()
+        if not any(only) or args.mathcomp_native_only:
+            mathcomp_native_check()

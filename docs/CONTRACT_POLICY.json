@@ -5,7 +5,6 @@
     "theories/Core/Utils.v:MonadTrigger": "Class MonadTrigger (E : Type -> Type) (M : Type -> Type) : Type := mtrigger : forall X, E X -> M X.",
     "theories/Eq/UnifiedFrontier.v:UnifiedFrontierCoherence": "Class UnifiedFrontierCoherence := { unified_frontier_unique : forall {R} (ot : ptree' E MN R) hs1 hs2, frontier_certificate ot hs1 -> frontier_certificate ot hs2 -> sem_eq hs1 hs2; unified_frontier_tau_inv : forall {R} (t : ptree E MN R) hs, frontier_certificate (TauF t) hs -> frontier_certificate (observe t) hs }.",
     "theories/Examples/BernoulliFactory/OperationalBernoulliFactory.v:OperationalFactoryStepSupportLaws": "Class OperationalFactoryStepSupportLaws := { ptree_factory_binary_step_support : forall (pnormalized : Qval pfalse + Qval ptrue = 1) (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x, free_omega_support_lift eq (ptree_factory_binary_step_heads x) (ptree_factory_standard_step_heads x) }.",
-    "theories/Examples/BernoulliFactory/UnifiedRealBernoulliMathCompCore.v:MathCompOracleSupportLaws": "Class MathCompOracleSupportLaws := { mathcomp_oracle_support : forall (Anchor : Type) (qbit : binary_oracle) (q : R), (0 <= q <= 1)%R -> mathcomp_oracle_represents qbit q -> @free_omega_support_lift MN (MathCompNodeSemanticMeasure R) bool bool eq (unified_mathcomp_oracle_out Anchor qbit) (FOSample (mathcomp_bernoulli q) (fun b => FORet b)) }.",
     "theories/Prob/Backend/Common/RealSubTypes.v:RealSub": "Class RealSub (T : Type) := { inject : T -> R; }.",
     "theories/Prob/Backend/Enum/Representation.v:Discrete": "Class Discrete (m : Type \u2192 Type) := { disc_ret : forall {A}, A \u2192 m A; disc_bind : forall {A B}, m A \u2192 (A \u2192 m B) \u2192 m B; disc_flip : () \u2192 m bool; disc_score : nnQ \u2192 m ()%type; }.",
     "theories/Prob/Backend/Enum/Representation.v:DiscreteInterface": "Class DiscreteInterface (M : Type \u2192 Type) : Type := { disc_rep :: Discrete M ; disc_eq : \u2200 {R : eqType}, M R \u2192 M R \u2192 Prop ; disc_eq_equiv :: \u2200 R : eqType, Equivalence (@disc_eq R) ; disc_RT : \u2200 {R1 R2 : eqType}, (R1 \u2192 R2 \u2192 Prop) \u2192 M R1 \u2192 M R2 \u2192 Prop ; disc_RTeq : \u2200 (R : eqType) (\u03bc1 \u03bc2 : M R), disc_eq \u03bc1 \u03bc2 \u2194 disc_RT eq \u03bc1 \u03bc2 ; disc_mass {R : eqType} : R \u2192 M R \u2192 nnQ ; disc_mass_proper {R : eqType} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) ; disc_supp {R : eqType} : M R \u2192 seq R }.",
@@ -90,9 +89,6 @@
       "relational_bind_heterogeneous",
       "zero_empty_coupling",
       "duplicate_zero_branch_restrict"
-    ],
-    "theories/Regression/Backend/MathCompSelfModel.v": [
-      "self_nested_sampling"
     ],
     "theories/Regression/Backend/SubEnumR.v": [
       "real_sqrt_coin_probability",
@@ -275,10 +271,6 @@
       "reg_split_program_unified_frontier",
       "unified_reg_split_extensional"
     ],
-    "theories/Regression/Backend/UnifiedMathCompFrontier.v": [
-      "unified_mathcomp_direct_coin_frontier",
-      "unified_mathcomp_direct_coin_peutt_reflexive"
-    ],
     "theories/Regression/Fixtures/FreeOmegaSamples.v": [
       "geometric_prefix_increasing",
       "geometric_prefix_enumerates",
@@ -346,8 +338,7 @@
     ],
     "theories/Regression/Infrastructure/FiniteInternalNative.v": [
       "dependent_compression_round_native",
-      "subenum_compression_measure_bounded",
-      "mathcomp_compression_native"
+      "subenum_compression_measure_bounded"
     ],
     "theories/Regression/Infrastructure/FiniteInternalPlan.v": [
       "delay_path_steps",
@@ -403,6 +394,9 @@
       "ranked_kernel_limit",
       "state_truncation_recovers_complete_hitting",
       "no_uniform_state_cutoff"
+    ],
+    "theories/Regression/Infrastructure/MathCompUniverse.v": [
+      "self_nested_sampling"
     ],
     "theories/Regression/Infrastructure/NativeRecovery.v": [
       "fair_paths_normalized",
@@ -748,8 +742,7 @@
       "distribution_successor_coincidence",
       "infinite_service_peutt_from_transitions",
       "terminal_fragment_coincidence",
-      "strictness_pair_outside_joint_fragment",
-      "mathcomp_fragment_coincidence"
+      "strictness_pair_outside_joint_fragment"
     ],
     "theories/Regression/Semantics/MDPEmbedding.v": [
       "counter_step_total",

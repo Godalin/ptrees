@@ -4,8 +4,8 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 From mathcomp Require Import reals.
 From PTree.Core Require Import PTreeDefinition.
+Require Import PTree.Prob.Backend.SubEnum.Measure.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.MathComp.Kernel PTree.Prob.Backend.MathComp.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Native.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalPlan.
 From PTree.Eq Require Import PStrong.
@@ -60,19 +60,3 @@ Proof.
   intro Hcut. destruct (finite_internal_native_presentation Hcut) as [p Hp].
   exists p. split; [exact Hp|apply subenum_bound].
 Qed.
-
-(** MathComp needs its existing core gluing capability, Dirac AE, and bind
-    AE exactness.  No node SemanticMeasureBindLaws is postulated. *)
-Section MathCompPaths.
-Context (Real : realType) `{MathCompCouplingGluing Real}.
-Context {E : Type -> Type} {R : Type}.
-Local Notation MN := (MathCompKernelMeasure Real).
-Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := MathCompNodeSemanticMeasure Real) (NO := MathCompNodeSemanticOmega Real)).
-
-Example mathcomp_compression_native (t : ptree E MN R) out :
-  @finite_internal E MN (FreeOmega MN) FI FreeOmegaMixedMeasure R t out ->
-  exists p : free_omega_native_presentation MN (ptree E MN R),
-    free_omega_qlift eq out (free_omega_native p).
-Proof. apply finite_internal_native_presentation. Qed.
-End MathCompPaths.

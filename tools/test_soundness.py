@@ -44,7 +44,7 @@ class SoundnessTests(unittest.TestCase):
             soundness.source_check({**self.sources,path:self.sources[path]+'\nCheck free_omega_qlift.'},self.policy)
 
     def test_no_unsafe_universe_escape_in_maintained_theory(self):
-        path='theories/Prob/Backend/MathComp/SelfModel.v'
+        path='theories/Prob/Backend/MathComp/NativeLaws.v'
         with self.assertRaises(AssertionError):
             soundness.source_check({**self.sources,path:self.sources[path]+'\nLocal Unset Universe Checking.\n'},self.policy)
 

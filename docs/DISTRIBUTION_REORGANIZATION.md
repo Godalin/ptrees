@@ -1,5 +1,12 @@
 # Discrete two-level distributions: implementation checkpoints
 
+Current scope supersedes the earlier work sequence below: the complete PTree
+probability pairs are SubEnum/FreeOmega and SubEnumR/FreeOmega. MathComp remains
+an independent native discrete kernel/measure development; its completion
+frontend has been deleted. The direct recursive-frontier universe limitation
+is retained as a checked scope boundary, not a planned workaround. See
+[MathComp native scope](MATHCOMP_NATIVE_SCOPE.md).
+
 Follow-up: [SubEnumR behavioral backend](SUBENUMR_BEHAVIORAL_BACKEND.md)
 completes the native relational laws and checks generic FreeOmega/PTree
 assembly. The partial SubEnumR status below records the earlier `7e75db0`
@@ -44,9 +51,10 @@ dependency profiles, not a claim of mathematical minimality.
 3. Connect the existing SubEnum interpretation without changing DS1--DS5
    statements or replacing the qlift proof through inadmissible intermediates.
 4. Develop finite-real native distributions, reusing generic completion work.
-5. Audit/prove MathComp direct `MN = MF` capabilities before claiming the
-   remaining obstacle is universe-level. Ordinary bind, relational bind,
-   omega completeness and coupling gluing are separate obligations.
+5. The earlier MathComp self-model investigation is closed as a scope decision:
+   retain native mathematics, not a third PTree behavioral backend. Ordinary
+   bind, relational bind and omega completeness remain distinct mathematical
+   properties; no new proofs of them are part of this removal.
 
 No unsafe universe experiment is part of the trusted theory. No such
 experiment has been introduced at this checkpoint. Existing soundness,
@@ -142,15 +150,16 @@ compiled contracts; 13 new endpoint assumption probes; targeted joint
 
 ## MathComp same-carrier investigation
 
-`MathComp/SelfModel.v` safely fixes `MN = MF = MathCompKernelMeasure R` at
-the native carrier universe. It adds actual mixed-bind operations, mixed
+The investigation's useful results now live in `MathComp/NativeLaws.v`, at
+the native carrier universe. They include actual mixed-bind operations, mixed
 unit, mixed node-bind flattening, total properness and zero-prefix/constant
 chain cofinality instances, without a gluing context. It also proves
 returned-event zero, order reflexivity/transitivity/bottom and continuation
 bind monotonicity. Ordinary native monad equations already existed; these
 new instances reuse them. No full relational bind instance is claimed.
 
-There are **two distinct remaining issues**, not one:
+The investigation recorded two distinct limits. This table is not a checklist
+for a maintained PTree backend:
 
 | Obligation | Current status |
 | --- | --- |
@@ -180,7 +189,7 @@ rejected: the required strict inequality conflicts with
 `MathCompKernelMeasure.u0 = PTree.Core.PTreeDefinition.61`.
 The primitive kernel and `peutt` instantiations fail as well.
 
-`Regression/Backend/MathCompSelfModel.v` preserves these as checked `Fail`
+`Regression/Infrastructure/MathCompUniverse.v` preserves these as checked `Fail`
 commands with positive tree/head controls and actual safe capability tests.
 The failure was independently inspected without `Fail`: it is a universe
 inconsistency, not a missing identifier or incorrectly supplied argument.
@@ -210,16 +219,12 @@ validity of their lub use the generic completion proof, with no rational
 conversion and no assumption of eventual stabilization. This is validity,
 not yet a theorem computing its termination probability.
 
-Remaining priorities:
-
-1. Prove finite-real joint composition and relational bind, then instantiate
-   the complete generic FreeOmega behavioral profile. Do not add gluing as
-   a placeholder assumption for this finite backend.
-2. Decide whether/when to generalize full qlift external joint soundness.
-   The existing SubEnum DS5 theorem is preserved, not generalized by fiat;
-   approximation/test soundness is a different claim.
-3. Develop safe MathComp omega/order/relational kernel laws, then revisit
-   the universe obstruction with a joint-import test from the start.
+Subsequent work completed finite-real native relational laws, the full generic
+behavioral profile, generic bidual validation and concrete SubEnumR external
+joint realization. Coupling soundness is closed for the two maintained finite
+native backends. Arbitrary-native actual-joint existence and MathComp recursive
+frontier work are not current goals. Native MathComp analysis is retained
+independently; do not reintroduce the deleted completion path.
 
 No public facade changes, new semantic class, transport-existence axiom,
 environment upgrade, remote CI work, or cleanup of retained internal

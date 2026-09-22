@@ -10,15 +10,23 @@ stable `Ret` or `Vis` head, while preserving missing termination mass.
 
 Native `Prob` is instantiated with a subprobability carrier.  The canonical
 finite executable carrier is `SubEnum`, a finite nonnegative enumeration
-whose total weight is proved at most one; the MathComp carrier is intrinsically
-a subprobability kernel.  Raw `Enum` remains a compatibility representation
+whose total weight is proved at most one; `SubEnumR R` provides finite real
+weights with the same validity bound. Raw `Enum` remains a compatibility representation
 for arbitrary finite nonnegative weights and is therefore not, by itself, a
 valid native-probability backend.  This distinction keeps Bayesian `score`
 weights separate from probabilistic choice.
 The generic boundary is recorded by `SemanticSubprobability`: raw Enum
-supports its per-measure predicate and closure laws, whereas SubEnum and
-MathComp additionally provide `SemanticSubprobabilityCarrierLaws`, certifying
+supports its per-measure predicate and closure laws, whereas SubEnum, SubEnumR
+and the native MathComp kernel provide `SemanticSubprobabilityCarrierLaws`, certifying
 that every inhabitant is admissible at a native probability node.
+
+The maintained complete PTree behavioral backends are
+`SubEnum -> FreeOmega SubEnum` and `SubEnumR R -> FreeOmega (SubEnumR R)`.
+MathComp supplies a separate discrete kernel/measure model for native analytic
+results and native joint witnesses. It is not a recursive PTree frontier
+backend: the sealed carrier has a checked recursive-frontier universe
+obstruction. This is a scope boundary, not a missing requirement for the paper;
+there is no maintained MathComp-plus-completion workaround.
 
 The public conceptual architecture has four layers and two semantic clients:
 
@@ -233,13 +241,12 @@ weight-two flip.
 
 The MathComp Analysis backend now supplies the same foundational AE profile
 as Enum: AE Kleisli extension, exact Dirac AE, countable AE, coupling AE, and
-exact bind support decomposition.  Through the FreeOmega behavior layer these
-instances derive omega AE, diagonal continuity, Fubini, mixed unit, and
-nested-`Prob` flattening.  Coupling composition remains the explicit
+exact bind support decomposition. These remain native mathematical results,
+not a MathComp behavioral completion profile. Coupling composition remains the explicit
 `MathCompCouplingGluing` capability.  The compile-time matrix lives in
-`Regression/Backend/BackendCapabilities.v`.  The maintained real binary-oracle
-example is canonically bisimilar to a direct real Bernoulli sample under its
-explicit `MathCompOracleSupportLaws` and coupling-gluing premises.
+`Regression/Backend/BackendCapabilities.v`. The direct real binary-oracle
+analysis in `Examples/BernoulliFactory/RealBernoulliMathComp.v` is retained;
+its MathComp--FreeOmega `peutt` frontend has been removed.
 
 ## Repository guide
 
@@ -347,8 +354,9 @@ The maintained artifact establishes:
 - one semantics for bounded and genuinely unbounded AST computation;
 - eventful iteration, interpretation/translation laws, and quantitative
   next-event observations;
-- SubEnum and MathComp Analysis subprobability instances, plus a legacy raw
-  Enum weighted instance; executable rational examples are being migrated
+- SubEnum and SubEnumR complete probability backend instances, separate
+  native MathComp Analysis results, and a legacy raw Enum weighted instance;
+  executable rational examples are being migrated
   to the bounded carrier without changing the generic behavioral theory.
 
 Two stronger statements are intentionally not claimed.  The remaining

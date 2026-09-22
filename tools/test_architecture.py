@@ -4,6 +4,31 @@ import audit_architecture as architecture
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_mathcomp_native_excludes_completion(self):
+        self.assertFalse(architecture.permitted('Prob/Backend/MathComp/Measure',
+                                               'Prob/FreeOmega/Definition'))
+        with self.assertRaises(AssertionError):
+            architecture.ownership('Prob/Backend/MathComp/FreeOmega/Replacement')
+        graph = {'Prob/Backend/MathComp/Measure': {'Prob/Backend/Common/Helper'},
+                 'Prob/Backend/Common/Helper': {'Prob/FreeOmega/Definition'},
+                 'Prob/FreeOmega/Definition': set()}
+        with self.assertRaises(AssertionError):
+            architecture.check_mathcomp_native_boundary(graph)
+
+    def test_mathcomp_completion_source_guards(self):
+        for bad in ['Definition MathCompBehaviorMeasure := Something.',
+                    'Check FreeOmega (MathCompKernelMeasure R).',
+                    'Let Node := MathCompKernelMeasure R.\nCheck FreeOmega Node.',
+                    'Local Notation MN := (MathCompKernelMeasure R).\nCheck FreeOmegaAt MN A.',
+                    'Definition Node := MathCompKernelMeasure R.\nLet Other := Node.\nCheck FreeOmega Other.']:
+            with self.subTest(bad=bad), self.assertRaises(AssertionError):
+                architecture.check_mathcomp_native_sources({'Regression/Probe': bad})
+        with self.assertRaises(AssertionError):
+            architecture.check_mathcomp_native_sources({'Prob/Backend/MathComp/Measure':
+                'From PTree.Prob.FreeOmega Require Import Definition.'})
+        architecture.check_mathcomp_native_sources({'Eq/Generic':
+            'Context (MN : Type -> Type).\nCheck FreeOmega MN.'})
+
     def test_real_joint_realization_is_concrete_validation(self):
         bridge = "Prob/Backend/SubEnumR/FreeOmega/JointRealization"
         generic = "Prob/FreeOmega/Validation/Quotient"

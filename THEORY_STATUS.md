@@ -217,9 +217,13 @@ Structures use noun names: `SemanticMeasure`, `SemanticOmega`,
 `MeasureInterface` is distinct and is not the new semantic interface.
 The maintained probability pairs are
 `SubEnum -> FreeOmega SubEnum` and
-`MathCompKernelMeasure -> FreeOmega MathCompKernelMeasure`.
+`SubEnumR R -> FreeOmega (SubEnumR R)`.
+MathComp is a separate native discrete kernel/measure model, not a maintained
+recursive PTree frontier backend. The removed combination is not replaced by
+another wrapper. The direct same-carrier universe obstruction is a documented
+scope boundary, not a paper completion requirement.
 
-| Capability | SubEnum node | raw Enum node | MathComp node | FreeOmega behavior |
+| Capability | SubEnum / SubEnumR node | raw Enum node | MathComp native | FreeOmega behavior (finite native backends) |
 | --- | --- | --- | --- | --- |
 | Every native measure has mass ≤ 1 | intrinsic | no | intrinsic | inherits valid-node behavior |
 | Measure structure / AE lift | yes | yes | yes | yes |
@@ -230,16 +234,17 @@ The maintained probability pairs are
 | Relational kernel-bind coupling | yes | yes | intentionally not supplied | proved directly |
 | Order / omega / cofinality | node-specific | node-specific | node-specific | maintained profile |
 | Omega AE / diagonal / Fubini | not the node obligation | not the node obligation | not the node obligation | derived |
-| Mixed unit / node-bind / omega | pair-level | pair-level | pair-level | maintained profile |
+| Mixed unit / node-bind / omega | pair-level | pair-level | native same-carrier algebra only | maintained profile |
 | Mixed commutativity | optional | optional | optional | not a required capability |
 
 `Regression/Backend/BackendCapabilities.v` checks the profiles.
 Foundational MathComp AE laws are checked without
 `MathCompCouplingGluing`; only its relational core needs that hypothesis.
 The missing MathComp node bind capability is coupling through a kernel,
-not ordinary measure bind. Its behavioral FreeOmega layer already has
-relational bind; matrix symmetry does not justify an additional joint-kernel
-selection development.
+not ordinary measure bind. No MathComp behavioral completion is maintained.
+Its useful same-carrier algebra is retained in `MathComp/NativeLaws.v`, without
+claiming a recursive frontier. Matrix symmetry does not justify an additional
+joint-kernel selection development.
 
 `SemanticSubprobability` exposes validity of an individual measure.
 `SemanticSubprobabilityLaws` provides equality/return/bind closure.
@@ -264,8 +269,8 @@ bounded-test/Hall inequalities, rational transport and exact marginal
 reconstruction, allowing heterogeneous carriers, noninjective decoders and
 empty carriers. Raw Enum has an analogous native transport result.
 MathComp's `mathcomp_coupling_realization` repackages an existing native
-joint without gluing; this does **not** supply quotient-to-native
-`FreeOmegaNativeCouplingLaws` for MathComp.
+joint without gluing. It is retained independently of completion theory;
+MathComp quotient-to-native completion reflection is outside the maintained scope.
 
 ## 3. Theorem inventory and assumptions
 
@@ -388,7 +393,8 @@ interpretation and directory moves have not started.
 
 The FreeOmega coincidence endpoints use native Core, AELift, CouplingAE,
 CountableAE and Omega capabilities, not a native relational bind law.
-The MathComp instantiation retains explicit `MathCompCouplingGluing`.
+The former MathComp-specific completion regression has been removed;
+the generic theorem and finite-backend clients are unchanged.
 The reverse generic proof needs neither order/existence laws nor classical
 witness choice; the full iff inherits them from general inclusion.
 
@@ -429,10 +435,10 @@ use intrinsic SubEnum.
 
 The compositional rational Factory endpoint proves the necessary support
 facts; it does not need the older monolithic route's
-`OperationalFactoryStepSupportLaws`. The MathComp real-oracle endpoint
-still takes `MathCompOracleSupportLaws` as an explicit example-specific
-support adequacy premise in addition to gluing. This must not be hidden
-behind the general backend capability matrix.
+`OperationalFactoryStepSupportLaws`. The MathComp--FreeOmega real-oracle
+frontend and its example-specific `MathCompOracleSupportLaws` have been
+deleted. The direct native analytic results in `RealBernoulliMathComp.v`
+remain; they are not advertised as a canonical `peutt` result.
 
 
 RandomWalk's countable joint law is a limit of finite primitive observations,
@@ -460,7 +466,6 @@ global dependencies are:
 | generic reverse coincidence | `eq_rect_eq` only |
 | FreeOmega exact Dirac AE proof | closed; passed explicitly rather than a global instance |
 | FreeOmega reverse coincidence | functional extensionality and `eq_rect_eq` |
-| MathComp coincidence iff | existing extensionality/description principles, plus forward witness choice; gluing remains a parameter |
 | RandomWalk closed-form result | functional extensionality and dependent equality |
 | concrete SubEnum native realization | inherited classical/extensionality principles and standard-real construction dependencies |
 

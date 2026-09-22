@@ -16,8 +16,8 @@ Import GRing.Theory.
 (** Historical universe-separated representation probes, retained as contract tests.  The
     sampled carrier universe and the universe containing a measure value are
     deliberately independent.  These alternative representations test sealed MathComp universe boundaries;
-    the maintained two-level FreeOmega model already avoids using the native
-    measure carrier at recursive-head universes. This is not a migration plan. *)
+    maintained finite-native behavioral backends use separate frontier carriers.
+    MathComp is native analytic infrastructure only. This is not a migration plan. *)
 Polymorphic Section UniverseSeparatedPTree.
 
 Universe sample measure event result tree.

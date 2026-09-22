@@ -117,26 +117,3 @@ Proof.
     (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega) Hp Hq).
   exact correlated_response_tree_trans_bisim.
 Qed.
-
-(** Compile-time endpoint audit on the other maintained native backend.
-    Its existing gluing premise stays explicit; no node relational bind
-    or new measurable selection premise is introduced by coincidence. *)
-From mathcomp Require Import reals.
-Require Import PTree.Prob.Backend.MathComp.Kernel PTree.Prob.Backend.MathComp.Measure.
-Section MathCompEndpoint.
-Context (Real : realType) `{MathCompCouplingGluing Real}.
-Let Node := MathCompKernelMeasure Real.
-Let NI := MathCompNodeSemanticMeasure Real.
-Let NO := MathCompNodeSemanticOmega Real.
-Let Frontier := FreeOmega Node.
-Let FMI := FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO).
-Let FMC := FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO).
-Let FMO := @FreeOmegaObservableSemanticOmega Node NI NO.
-
-Example mathcomp_fragment_coincidence {E A} (t u : ptree E Node A) :
-  @mdp_state E Node Frontier FMI FMC FreeOmegaMixedMeasure FMO A t ->
-  @mdp_state E Node Frontier FMI FMC FreeOmegaMixedMeasure FMO A u ->
-  (@peutt E Node Frontier FMI FMC FreeOmegaMixedMeasure FMO A A eq t u <->
-   @tree_trans_bisim E Node Frontier FMI FMC FreeOmegaMixedMeasure FMO A A eq t u).
-Proof. apply (free_mdp_state_peutt_tree_trans_iff (NI := NI) (NO := NO)). Qed.
-End MathCompEndpoint.

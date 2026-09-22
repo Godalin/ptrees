@@ -1,4 +1,5 @@
-(** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+(** Native discrete MathComp adapter. This is not a recursive PTree frontier
+    backend; no formal completion is part of this adapter. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -9,7 +10,6 @@ From mathcomp.analysis Require Import measure ereal.
 Require Import PTree.Prob.Interface.FrontierLift PTree.Prob.Interface.Iteration.
 Require Import PTree.Prob.Backend.MathComp.Kernel.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -25,7 +25,7 @@ Context (R : realType).
 
 (** MathComp kernels instantiate the low-universe node layer.  This adapter
     does not claim that the same sealed HB type can also contain recursive
-    frontier heads; the behavior layer is intentionally separate. *)
+    frontier heads; only native kernel/measure laws are maintained here. *)
 #[global] Instance MathCompNodeSemanticMeasure :
     SemanticMeasure (MathCompKernelMeasure R) := {
   sem_ret := @mathcomp_kernel_ret R;
@@ -235,10 +235,3 @@ Lemma mathcomp_node_sem_totalE {A} (mu : MathCompKernelMeasure R A) :
 Proof. reflexivity. Qed.
 
 End MathCompNodeLayer.
-
-(** The high-universe behavior instance is the free omega completion over
-    MathComp sampling nodes.  Unlike [MathCompKernelMeasure] itself, this type
-    constructor can be instantiated at the universe containing recursive
-    frontier heads. *)
-Polymorphic Definition MathCompBehaviorMeasure (R : realType) :=
-  FreeOmega (MathCompKernelMeasure R).

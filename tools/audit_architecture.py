@@ -3,6 +3,7 @@
 import argparse
 import re
 from pathlib import Path
+from audit_assumptions import without_comments
 
 ROOT = Path(__file__).resolve().parents[1]
 THEORIES = ROOT / "theories"
@@ -65,6 +66,8 @@ def ownership(path):
         parts = path.split("/")
         assert len(parts) >= 4 and parts[2] in {"Common", "Enum", "SubEnum", "SubEnumR", "MathComp"}, "Ungrouped concrete probability module: " + path
         family = parts[2]
+        assert not (family == "MathComp" and "FreeOmega" in parts[3:]), \
+            "Removed MathComp completion namespace: " + path
         owner = "/".join(parts[:3])
         if path in {"Prob/Backend/Common/DomainTransport", "Prob/Backend/Common/CountableCoupling"}:
             return owner, "external validation", "one-way adapter: independent real transport to expectation-domain joints"
@@ -124,7 +127,7 @@ def permitted(module, dependency):
     if module.startswith("Prob/Backend/Common/"):
         return under("Prob/Interface", "Prob/Backend/Common")
     if module.startswith("Prob/Backend/MathComp/"):
-        return under("Prob/Interface", "Prob/FreeOmega", "Prob/Backend/Common", "Prob/Backend/MathComp", "Prob/Domain")
+        return under("Prob/Interface", "Prob/Backend/Common", "Prob/Backend/MathComp", "Prob/Domain")
     if module.startswith("Prob/Backend/SubEnumR/"):
         if module == "Prob/Backend/SubEnumR/RationalEmbedding":
             return under("Prob/Backend/SubEnumR", "Prob/Backend/SubEnum",
@@ -218,8 +221,46 @@ def aggregate_check(actual=None, expected=None):
     assert actual == sorted(set(expected)), 'AllImports must contain every other module exactly once, sorted'
 
 
+def check_mathcomp_native_sources(sources):
+    """Reject the removed concrete completion, including simple local aliases.
+
+    This is a source guard, not a Coq elaborator. The import-closure check
+    independently excludes completion dependencies from all native modules.
+    Generic arbitrary-MN completion theorems remain unrestricted.
+    """
+    for module, text in sources.items():
+        code = re.sub(r'"(?:""|[^"\n])*"', '""', without_comments(text))
+        assert not re.search(r'\bMathCompBehaviorMeasure\b', code), \
+            'Removed behavioral alias: ' + module
+        if module.startswith('Prob/Backend/MathComp/'):
+            assert not re.search(r'\b(?:FreeOmega\w*|free_omega_\w*)\b', code), \
+                'Native MathComp source mentions formal completion: ' + module
+        native_names = {'MathCompKernelMeasure'}
+        aliases = re.findall(
+            r'\b(?:Notation|Let|Definition)\s+(\w+)[^\n]*?:=\s*\(?\s*@?\s*'
+            r'((?:\w+\.)*\w+)\b', code)
+        while True:
+            extended = native_names | {name for name, target in aliases
+                                       if target.rsplit('.', 1)[-1] in native_names}
+            if extended == native_names:
+                break
+            native_names = extended
+        names = '|'.join(re.escape(n) for n in sorted(native_names))
+        assert not re.search(r'\b(?:FreeOmega|FreeOmegaAt)\s*\(?\s*@?\s*'
+                             r'(?:\w+\.)*(?:' + names + r')\b', code), \
+            'Removed MathComp completion instantiation: ' + module
+
+
+def check_mathcomp_native_boundary(edges):
+    roots = {m for m in edges if m.startswith('Prob/Backend/MathComp/')}
+    leaked = {m for m in closure(edges, roots) if m.startswith('Prob/FreeOmega/')}
+    assert not leaked, 'Native MathComp transitively loads completion: ' + str(sorted(leaked))
+
+
 def graph():
     aggregate_check()
+    check_mathcomp_native_sources({p.relative_to(THEORIES).with_suffix('').as_posix(): p.read_text()
+                                  for p in THEORIES.rglob('*.v')})
     paths = {p.relative_to(THEORIES).with_suffix("").as_posix() for p in THEORIES.rglob("*.v")}
     edges = {p: set() for p in paths}
     seen = set()
@@ -246,6 +287,7 @@ def graph():
     check_auxiliary_boundary(edges)
     check_external_validation_boundary(edges)
     check_native_expectation_boundary(edges)
+    check_mathcomp_native_boundary(edges)
     return edges
 
 
@@ -267,6 +309,7 @@ def report():
         "- Concrete probability modules name Common/Enum/SubEnum/SubEnumR/MathComp ownership; Common cannot import a native carrier.",
         "- Native SubEnum expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.",
         "- MathComp and Enum/SubEnum do not depend on each other; Enum/SubEnum realization adapters may reuse each other.",
+        "- MathComp native sources and their transitive dependencies exclude formal completion; no MathComp behavioral alias or concrete FreeOmega instantiation is maintained.",
         "- Eq imports no Interp/Semantics/API; Semantics imports no Interp/API.",
         "- Generic/canonical-model Eq, Semantics and Interp modules import no concrete backend endpoint.",
         "- No maintained library imports Regression, Examples or Experimental.",

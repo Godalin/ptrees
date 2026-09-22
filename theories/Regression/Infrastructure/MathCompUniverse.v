@@ -1,9 +1,11 @@
-(** Safe same-carrier capabilities and maintained recursive-frontier probes.
+(** Native kernel algebra and the excluded recursive-frontier boundary.
+    The negative probes record a scope limit, not a future backend obligation.
     No unsafe universe setting is used, and no missing capability is assumed. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import reals.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
-From PTree.Prob.Backend.MathComp Require Import Kernel Measure SelfModel.
+From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws.
+Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 (** One existing maintained client suffices to expose the incompatible
     global universe constraints; a standalone file misses this boundary. *)
 Require PTree.Regression.Backend.FreeOmegaUpperContracts.
@@ -15,7 +17,7 @@ Variable R : realType.
 Local Notation M := (MathCompKernelMeasure R).
 Local Notation NI := (MathCompNodeSemanticMeasure R).
 Local Notation NO := (MathCompNodeSemanticOmega R).
-Definition self_mixed : MixedMeasure M M := MathCompSelfMixedMeasure R.
+Definition self_mixed : MixedMeasure M M := MathCompNativeMixedMeasure R.
 Definition self_unit : @MixedMeasureUnitLaws M M NI NI self_mixed := _.
 Definition self_node_bind : @MixedMeasureNodeBindLaws M M NI NI self_mixed := _.
 Definition self_total : @SemanticTotalProperLaws M NI NO := _.

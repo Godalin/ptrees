@@ -264,8 +264,8 @@ Definition mathcomp_profile_bind_ae_exact :
     @SemanticMeasureBindAEExactLaws (MathCompKernelMeasure R)
       (MathCompNodeSemanticMeasure R) := _.
 
-(** Native witness recovery needs no gluing.  Do not confuse this with
-    reflection from [FreeOmega] quotient couplings, which remains open. *)
+(** Native witness recovery needs no gluing. MathComp is a native analytic
+    model, not a maintained formal-completion behavioral backend. *)
 Definition mathcomp_profile_native_coupling {A B} (rel : A -> B -> Prop)
     (mu : MathCompKernelMeasure R A) (nu : MathCompKernelMeasure R B) :
   @sem_lift (MathCompKernelMeasure R) (MathCompNodeSemanticMeasure R)
@@ -299,56 +299,3 @@ Definition mathcomp_profile_core :
       (MathCompNodeSemanticMeasure R) := _.
 
 End MathCompRelationalCoreProfile.
-
-Section MathCompFreeOmegaProfile.
-Context (R : realType).
-Context `{MathCompCouplingGluing R}.
-
-Let NI := MathCompNodeSemanticMeasure R.
-Let NO := MathCompNodeSemanticOmega R.
-Let MF := FreeOmega (MathCompKernelMeasure R).
-Let FI := FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO).
-Let FO := FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO).
-
-Definition mathcomp_profile_behavior_core :
-    @SemanticMeasureCoreLaws MF FI := _.
-Definition mathcomp_profile_behavior_bind :
-    @SemanticMeasureBindLaws MF FI := _.
-Definition mathcomp_profile_behavior_ae_kleisli :
-    @SemanticMeasureAEKleisliLaws MF FI := _.
-Definition mathcomp_profile_behavior_countable_ae :
-    @SemanticMeasureCountableAELaws MF FI := _.
-Definition mathcomp_profile_behavior_coupling_ae :
-    @SemanticMeasureCouplingAELaws MF FI := _.
-Definition mathcomp_profile_behavior_omega :
-    @SemanticOmega MF FI := FO.
-Definition mathcomp_profile_behavior_order :
-    @SemanticMeasureOrderLaws MF FI FO := _.
-Definition mathcomp_profile_behavior_omega_laws :
-    @SemanticOmegaLaws MF FI FO := _.
-Definition mathcomp_profile_behavior_total_proper :
-    @SemanticTotalProperLaws MF FI FO := _.
-Definition mathcomp_profile_behavior_cofinality :
-    @SemanticOmegaCofinalityLaws MF FI FO := _.
-Definition mathcomp_profile_behavior_omega_ae :
-    @SemanticOmegaAELaws MF FI FO := _.
-Definition mathcomp_profile_behavior_diagonal :
-    @SemanticMeasureDiagonalLaws MF FI FO := _.
-Definition mathcomp_profile_behavior_fubini :
-    @SemanticOmegaFubiniLaws MF FI FO := _.
-Definition mathcomp_profile_mixed :
-    @MixedMeasure (MathCompKernelMeasure R) MF := _.
-Definition mathcomp_profile_mixed_laws :
-    @MixedMeasureLaws (MathCompKernelMeasure R) MF NI FI
-      FreeOmegaMixedMeasure := _.
-Definition mathcomp_profile_mixed_unit :
-    @MixedMeasureUnitLaws (MathCompKernelMeasure R) MF NI FI
-      FreeOmegaMixedMeasure := _.
-Definition mathcomp_profile_mixed_node_bind :
-    @MixedMeasureNodeBindLaws (MathCompKernelMeasure R) MF NI FI
-      FreeOmegaMixedMeasure := _.
-Definition mathcomp_profile_mixed_omega :
-    @MixedMeasureOmegaLaws (MathCompKernelMeasure R) MF NI FI
-      FreeOmegaMixedMeasure FO := _.
-
-End MathCompFreeOmegaProfile.
