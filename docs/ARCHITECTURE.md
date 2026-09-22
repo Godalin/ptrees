@@ -12,7 +12,8 @@ theorems are described in [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md).
 | `Core` | PTree syntax and combinators | Core only |
 | `Prob/Interface` | Operations and explicit law capabilities | No tree or concrete-backend dependency |
 | `Prob/FreeOmega` | Formal completion syntax, approximation, observation and quotient | Generic native carrier; no concrete backend |
-| `Prob/Backend/{Common,Enum,SubEnum,MathComp}` | Arithmetic, native models and their specialized endpoints | Common has no native-carrier dependency; MathComp is independent of Enum/SubEnum |
+| `Prob/FreeOmega/Validation` | Native-parametric external bounded-test validation | May consume Domain and generic FreeOmega; no concrete backend |
+| `Prob/Backend/{Common,Enum,SubEnum,SubEnumR,MathComp}` | Arithmetic, native models and their specialized endpoints | Common has no native-carrier dependency; MathComp is independent of Enum/SubEnum |
 | `Prob/Domain` | Independent continuous expectations and standard measure correspondence | Domain and mathematical libraries only |
 | `Eq` | Stable hitting, `pstruct`, `pstrong`, canonical `peutt` | No Semantics, Interp or API dependency |
 | `Semantics` | Raw/head transitions, comparison bisimulation and MDP fragment | No Interp or API dependency |
@@ -31,6 +32,55 @@ validated Enum carrier, not an unrelated implementation.
 `Prob/Legacy` remains noncanonical weighted infrastructure. It is not an
 alternative to the subprobability-validity contract. Its existing clients
 are retained; no deletion follows merely from its name.
+
+## Three layers of probability reasoning
+
+The architecture is fixed around the following distinction, not a stronger
+unified probability interface:
+
+| Layer | What it establishes | What it does not require or claim |
+| --- | --- | --- |
+| Generic behavioral theory | Native capabilities give `FreeOmega MN`, relational lifting, `pstrong`/`peutt`, stable hitting, bind and iter laws | No independent external model or external joint-existence premise |
+| Generic external validation | A native interpretation into `OmegaVal` and its explicit mathematical links give modelability and `qlift -> oval_bidual` for modelable endpoints | No actual-joint existence conclusion; raw derivation intermediates need not be modelable |
+| Concrete-model realization | A particular probability model discharges the hypotheses for actual external joints | Not a prerequisite for being a usable behavioral backend |
+
+**Generic layer proves necessary relational semantics; concrete probability
+models prove realization/completeness when required.** Here completeness means
+recovering an external joint from suitable external constraints, with the
+model's required support hypotheses. It does **not** mean completeness of the
+syntactic `free_omega_qlift` relation.
+
+`Prob/FreeOmega/Validation/{Expectation,Continuity,Observation,Relational,Quotient}`
+owns the second layer; see [generic validation](GENERIC_QLIFT_VALIDATION.md).
+The independent Domain and Common transport theorems can be shared by concrete
+realizations; their application must not become a premise of behavioral theory.
+
+SubEnum's frozen DS1–DS4 account supplies denotational validation, and DS5
+supplies backend-specific external joint realization. Keep those existing
+owners and theorem names. SubEnumR already instantiates generic validation;
+an eventual actual-joint endpoint belongs in
+`Prob/Backend/SubEnumR/FreeOmega/JointRealization.v`, alongside `Validation.v`
+and `RelationalValidation.v`, not in generic `Validation/Quotient.v`.
+That future file is reserved by the dependency checker, not implemented by
+this policy. MathComp realization remains model-specific; no generic external
+joint theorem for its completion is claimed here.
+
+Do not introduce an `ExternalJointRealization` capability merely to package
+these strengthening theorems. Reconsider only if an actual generic consumer
+needs that premise, with explicit review of the dependency boundary.
+
+### Three meanings often called “coupling”
+
+| Preferred term | Code | Meaning |
+| --- | --- | --- |
+| Relational lifting | `sem_lift`, `free_omega_qlift` | A relation between measures/representations; an external joint is not part of the generic contract |
+| Semantic joint witness | `semantic_coupling` | An explicit joint in the same semantic carrier, with graph-lifting marginal constraints and AE relational support |
+| External joint realization | `oval_joint`, `oval_coupled` | An independent `OmegaVal` joint with bounded-test marginal equality and concentration on the relation; `oval_coupled` asserts its existence |
+
+The internal witness does not by itself provide an independent model. Likewise,
+`oval_bidual` gives bounded-test constraints, not a joint witness. Use these
+qualified terms in reports and paper claims; “coupling soundness” alone does
+not specify which bridge was proved.
 
 ## Program-facing versus expert imports
 
@@ -54,13 +104,17 @@ closure, and that of native `SubEnum/Domain`, exclude FreeOmega.
 
 ## External validation is one-way
 
-Only named validation adapters may connect the independent domain with
-SubEnum/FreeOmega or PTree. In particular, Common/DomainTransport and
+Generic `Prob/FreeOmega/Validation` and explicitly classified concrete
+validation adapters may connect the independent domain with FreeOmega or
+PTree. In particular, Common/DomainTransport and
 Common/CountableCoupling connect independent scalar transport to OmegaVal;
 they are not ordinary mainline Common dependencies.
 
-The transitive closures of PTree/API/peutt/Eq-FreeOmega/Interp/Examples
-exclude all validation modules. The model validates reasoning infrastructure;
+The transitive closures of Core/Eq/Semantics/Interp/API/Examples and the
+PTree/Semantics facades exclude all validation modules. Explicit external
+adapters such as `Eq/Backend/StableHittingDomainSubEnum` are validation owners,
+not reasoning roots, despite their physical namespace.
+The model validates reasoning infrastructure;
 reasoning infrastructure does not assume its own validating model.
 Interpretation remains FreeOmega-qualified, not a claim about arbitrary MF.
 

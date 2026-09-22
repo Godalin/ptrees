@@ -19,7 +19,7 @@ See [architecture policy](ARCHITECTURE.md); migration-stage inventories live in 
 - The peutt/Interp/public-facade dependency closure contains no Eq/Internal module.
 
 - Prob/Domain depends only on mathematical libraries and itself, never the existing probability interfaces or FreeOmega.
-- The PTree/API/peutt/Eq-FreeOmega/Interp/Examples dependency closure contains no external Domain/Soundness validation module.
+- The Core/Eq/Semantics/Interp/API/Examples and facade dependency closures exclude external validation; explicit validation adapters are not reasoning roots.
 
 This is an import-graph check, not declaration-use liveness, capability minimality, FreeOmega adequacy, or the final whole-library kernel audit.
 

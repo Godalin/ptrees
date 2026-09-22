@@ -26,6 +26,7 @@ def external_validation(path):
         "Prob/Backend/SubEnumR/Domain",
         "Prob/Backend/SubEnumR/FreeOmega/Validation",
         "Prob/Backend/SubEnumR/FreeOmega/RelationalValidation",
+        "Prob/Backend/SubEnumR/FreeOmega/JointRealization",
         "Prob/Backend/SubEnum/FreeOmega/Admissibility",
         "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",
         "Prob/Backend/SubEnum/FreeOmega/QuotientSoundness",
@@ -181,9 +182,11 @@ def check_auxiliary_boundary(edges):
 
 
 def check_external_validation_boundary(edges):
-    roots = {m for m in edges if m.startswith(
-        ("API/", "Eq/FreeOmega/", "Interp/", "Examples/"))}
-    roots |= {m for m in ("PTree", "Eq/PEutt") if m in edges}
+    # Explicit validation adapters can live under Eq/Backend; they validate
+    # reasoning and must not themselves be counted as reasoning roots.
+    roots = {m for m in edges if not external_validation(m) and m.startswith(
+        ("Core/", "Eq/", "Semantics/", "Interp/", "API/", "Examples/"))}
+    roots |= {m for m in ("PTree", "Semantics") if m in edges}
     leaked = {m for m in closure(edges, roots) if external_validation(m)}
     assert not leaked, "Mainline depends on external validation: " + str(sorted(leaked))
 
@@ -269,7 +272,7 @@ def report():
         "- Cases do not depend on tests. Experimental has no remaining source module.", "",
         "- The peutt/Interp/public-facade dependency closure contains no Eq/Internal module.", "",
         "- Prob/Domain depends only on mathematical libraries and itself, never the existing probability interfaces or FreeOmega.",
-        "- The PTree/API/peutt/Eq-FreeOmega/Interp/Examples dependency closure contains no external Domain/Soundness validation module.", "",
+        "- The Core/Eq/Semantics/Interp/API/Examples and facade dependency closures exclude external validation; explicit validation adapters are not reasoning roots.", "",
         "This is an import-graph check, not declaration-use liveness, capability minimality, "
         "FreeOmega adequacy, or the final whole-library kernel audit.", "",
         "## Complete module ownership", "",

@@ -1,10 +1,17 @@
-# FreeOmega: external probability semantics and coupling soundness
+# FreeOmega: external probability semantics and joint realization
 
 The completed soundness results validate **admissible `FreeOmega SubEnum`**
 in an independent standard subprobability model. They do not interpret every
 raw term as a probability, prove syntactic completeness, or supply a
 MathComp-native FreeOmega adapter. Program reasoning does not depend on this
 validation layer; see [architecture](ARCHITECTURE.md).
+
+This is the frozen SubEnum account: DS1–DS4 establish denotational validation;
+DS5 establishes backend-specific external joint realization. The later
+[native-parametric validation](GENERIC_QLIFT_VALIDATION.md) factors out
+bounded-test/bidual soundness, now instantiated by SubEnum and SubEnumR.
+It does not generalize the actual-joint existence claim below to every native
+backend. See the [three-layer policy and terminology](ARCHITECTURE.md#three-layers-of-probability-reasoning).
 
 ## Independent mathematical domain
 

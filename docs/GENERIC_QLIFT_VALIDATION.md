@@ -15,6 +15,13 @@ This is **not** a generic actual-joint realization theorem. The existing
 SubEnum DS1–DS5 results, definitions, proofs and public APIs are unchanged.
 No MathComp self-model work, new completion, or new capability class is added.
 
+This is the middle layer of the fixed
+[architecture policy](ARCHITECTURE.md#three-layers-of-probability-reasoning):
+relational lifting belongs to behavioral theory, bounded-test validation is
+native-parametric, and external joint realization remains model-qualified.
+Future SubEnumR joint existence belongs in its backend `JointRealization.v`,
+not in the generic quotient validation proved here.
+
 ## Interpretation obligations, not new probability axioms
 
 The generic theorem takes `native : forall X, MN X -> OmegaVal R X`, native

@@ -4,6 +4,35 @@ import audit_architecture as architecture
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_future_real_joint_realization_is_concrete_validation(self):
+        bridge = "Prob/Backend/SubEnumR/FreeOmega/JointRealization"
+        generic = "Prob/FreeOmega/Validation/Quotient"
+        self.assertTrue(architecture.external_validation(bridge))
+        self.assertTrue(architecture.permitted(bridge, generic))
+        self.assertFalse(architecture.permitted(generic, bridge))
+        for source in ["Core/PTreeDefinition", "Eq/PEutt", "Semantics/MDPFragment",
+                       "API/FreeOmega", "Examples/RandomWalk",
+                       "Prob/Backend/SubEnumR/Measure"]:
+            self.assertFalse(architecture.permitted(source, bridge))
+
+    def test_all_reasoning_layers_exclude_indirect_validation(self):
+        for root in ["Core/PTreeDefinition", "Eq/PStrong", "Semantics/MDPFragment",
+                     "PTree", "Semantics"]:
+            with self.subTest(root=root):
+                graph = {root: {"Prob/Backend/SubEnumR/Measure"},
+                         "Prob/Backend/SubEnumR/Measure": {"Prob/Domain/Expectation"},
+                         "Prob/Domain/Expectation": set()}
+                with self.assertRaises(AssertionError):
+                    architecture.check_external_validation_boundary(graph)
+
+    def test_explicit_eq_validation_adapter_is_not_reasoning_root(self):
+        graph = {"Eq/Backend/StableHittingDomainSubEnum": {"Prob/Domain/Expectation"},
+                 "Prob/Domain/Expectation": set(), "Eq/PEutt": set()}
+        architecture.check_external_validation_boundary(graph)
+        graph["Eq/PEutt"] = {"Eq/Backend/StableHittingDomainSubEnum"}
+        with self.assertRaises(AssertionError):
+            architecture.check_external_validation_boundary(graph)
+
     def test_relational_validation_adapters_are_one_way(self):
         for family in ["SubEnum", "SubEnumR"]:
             bridge = f"Prob/Backend/{family}/FreeOmega/RelationalValidation"

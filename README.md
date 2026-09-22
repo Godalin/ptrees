@@ -250,6 +250,13 @@ generic / FreeOmega / concrete-backend boundaries, and the
 The [external soundness account](docs/FREEOMEGA_SOUNDNESS.md) explains admissible
 FreeOmega SubEnum, standard measures, general joint coupling and stable-hitting
 adequacy. These validation modules are not imported by program reasoning.
+The [generic validation layer](docs/GENERIC_QLIFT_VALIDATION.md) proves
+native-parametric bounded-test/bidual soundness, instantiated by SubEnum and
+SubEnumR. Actual external joint existence is a separate, model-specific
+strengthening, not a behavioral backend requirement. The
+[three-layer policy](docs/ARCHITECTURE.md#three-layers-of-probability-reasoning)
+distinguishes relational lifting, semantic joint witnesses and external joint
+realization.
 The [compiled contracts](docs/CONTRACTS.json) preserve all 306 public/helper
 and 199 soundness endpoints, including the original 25 capability probes.
 Stage-specific migration narratives and snapshots remain in git history.
@@ -265,7 +272,7 @@ From PTree.API Require Import SubEnum. (* optional concrete probability adapter 
 
 `Core/` owns syntax; `Prob/{Interface,FreeOmega,Backend,Legacy}/` separates
 measure interfaces, the canonical model, concrete realizations and legacy
-adapters. `Prob/Backend/{Common,Enum,SubEnum,MathComp}/` makes the native
+adapters. `Prob/Backend/{Common,Enum,SubEnum,SubEnumR,MathComp}/` makes the native
 carrier explicit; `Prob/FreeOmega/` stays generic in `MN`, while
 `Prob/Backend/SubEnum/FreeOmega/` specializes that completion to SubEnum.
 `Eq/` owns stable hitting and equality; `Eq/Internal/` holds proof
