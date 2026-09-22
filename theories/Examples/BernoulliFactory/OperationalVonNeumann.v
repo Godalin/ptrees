@@ -9,13 +9,13 @@ From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrnat eqtype ssralg ssrnum rat.
 
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.FrontierLift.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Interface.Iteration.
-Require Import PTree.Prob.Backend.Enum.Map PTree.Prob.Backend.Enum.Bind.
-Require Import PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Bind.
+Require Import PTree.Prob.Backend.EnumQ.Iteration.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
@@ -26,26 +26,26 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Import Enum.
-Import PTree.Prob.Backend.Enum.Map.
+Import EnumQ.
+Import PTree.Prob.Backend.EnumQ.Map.
 Import GRing.Theory.
 Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
 Local Open Scope ring_scope.
 
-Lemma ptree_vn_bind_ret_eq {A B} (x : A) (k : A -> Enum B) :
-  bind_Enum (ret_Enum x) k = k x.
+Lemma ptree_vn_bind_ret_eq {A B} (x : A) (k : A -> EnumQ B) :
+  bind_EnumQ (ret_EnumQ x) k = k x.
 Proof.
-  cbn [ret_Enum bind_Enum].
-  change (List.app (scale_Enum (fst (1, x)) (k x)) nil = k x).
-  have Hone : scale_Enum (fst (1, x)) (k x) = k x.
+  cbn [ret_EnumQ bind_EnumQ].
+  change (List.app (scale_EnumQ (fst (1, x)) (k x)) nil = k x).
+  have Hone : scale_EnumQ (fst (1, x)) (k x) = k x.
   { induction (k x) as [|[p y] tl IH]=> //=.
     rewrite IH. f_equal. f_equal. apply val_inj.
     exact: mul1r (Qval p). }
   rewrite Hone List.app_nil_r. reflexivity.
 Qed.
-Local Notation MF := (FreeOmega Enum).
-Local Notation vn_head := (stable_head vnE Enum bool).
-Local Notation vn_round_head := (stable_head vnE Enum (unit + bool)).
+Local Notation MF := (FreeOmega EnumQ).
+Local Notation vn_head := (stable_head vnE EnumQ bool).
+Local Notation vn_round_head := (stable_head vnE EnumQ (unit + bool)).
 
 Definition ptree_vn_head_value (h : vn_head) : bool :=
   match h with
@@ -69,7 +69,7 @@ Definition ptree_vn_raw_round : MF vn_round_head :=
 Lemma ptree_vn_raw_round_one_observes_zero :
   free_omega_observes ptree_vn_round_head_value
     (ptree_hitting_approx (MF := MF) 1 (observe (vn_step tt)))
-    (sem_zero : Enum (unit + bool)).
+    (sem_zero : EnumQ (unit + bool)).
 Proof.
   assert (Hstep : observe (vn_step tt) =
     ProbF vn_biased_coin (fun b1 =>
@@ -79,10 +79,10 @@ Proof.
   change (free_omega_observes ptree_vn_round_head_value
     (FOSample vn_biased_coin (fun _ =>
       FOSample vn_biased_coin (fun _ => FOZero)))
-    (nil : Enum (unit + bool))).
-  rewrite <- (enum_bind_nil (A := bool) (unit + bool) vn_biased_coin).
+    (nil : EnumQ (unit + bool))).
+  rewrite <- (enumQ_bind_nil (A := bool) (unit + bool) vn_biased_coin).
   constructor. intro b1.
-  rewrite <- (enum_bind_nil (A := bool) (unit + bool) vn_biased_coin).
+  rewrite <- (enumQ_bind_nil (A := bool) (unit + bool) vn_biased_coin).
   constructor. intro b2. constructor.
 Qed.
 
@@ -125,22 +125,22 @@ Proof.
   change (free_omega_observes ptree_vn_round_head_value
     (FOSample vn_transition (fun next => FORet (FHRet next)))
     vn_transition).
-  assert (Hbind : bind_Enum vn_transition (fun next => ret_Enum next) =
+  assert (Hbind : bind_EnumQ vn_transition (fun next => ret_EnumQ next) =
       vn_transition).
   { rewrite bind_ret_emap. apply emap_id. }
   replace vn_transition with
-    (bind_Enum vn_transition (fun next => ret_Enum next)) at 2
+    (bind_EnumQ vn_transition (fun next => ret_EnumQ next)) at 2
     by exact Hbind.
   constructor. intro next. constructor.
 Qed.
 
-Definition ptree_vn_raw_after (next : unit + bool) : ptree vnE Enum bool :=
+Definition ptree_vn_raw_after (next : unit + bool) : ptree vnE EnumQ bool :=
   match next with
   | inl u => Tau (PTree.iter vn_step u)
   | inr b => Ret b
   end.
 
-Definition ptree_vn_raw_second (b1 : bool) : ptree vnE Enum bool :=
+Definition ptree_vn_raw_second (b1 : bool) : ptree vnE EnumQ bool :=
   PTree.bind
     (Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2)))
     ptree_vn_raw_after.
@@ -199,12 +199,12 @@ Qed.
 
 Lemma ptree_vn_raw_hitting_zero_observes :
   free_omega_observes ptree_vn_head_value
-    (ptree_vn_raw_hitting 0) (sem_zero : Enum bool).
+    (ptree_vn_raw_hitting 0) (sem_zero : EnumQ bool).
 Proof.
   unfold ptree_vn_raw_hitting. rewrite ptree_vn_raw_observe.
   change (free_omega_observes ptree_vn_head_value
-    (FOSample vn_biased_coin (fun _ => FOZero)) (nil : Enum bool)).
-  rewrite <- (enum_bind_nil (A := bool) bool vn_biased_coin).
+    (FOSample vn_biased_coin (fun _ => FOZero)) (nil : EnumQ bool)).
+  rewrite <- (enumQ_bind_nil (A := bool) bool vn_biased_coin).
   constructor. intro b. constructor.
 Qed.
 
@@ -228,31 +228,31 @@ Proof.
     assert (Hout :
       meas_iter_approx (Datatypes.S rounds)
         (fun _ : unit => vn_transition) tt =
-      bind_Enum vn_biased_coin (fun b1 =>
-        bind_Enum vn_biased_coin (fun b2 =>
+      bind_EnumQ vn_biased_coin (fun b1 =>
+        bind_EnumQ vn_biased_coin (fun b2 =>
           match vn_round_result b1 b2 with
           | inl _ => meas_iter_approx rounds
               (fun _ : unit => vn_transition) tt
-          | inr b => ret_Enum b
+          | inr b => ret_EnumQ b
           end))).
     { cbn [meas_iter_approx].
-      change (bind_Enum vn_transition (fun next =>
+      change (bind_EnumQ vn_transition (fun next =>
         match next with
         | inl i' => meas_iter_approx rounds
             (fun _ : unit => vn_transition) i'
-        | inr b => ret_Enum b
+        | inr b => ret_EnumQ b
         end) =
-        bind_Enum vn_biased_coin (fun b1 =>
-          bind_Enum vn_biased_coin (fun b2 =>
+        bind_EnumQ vn_biased_coin (fun b1 =>
+          bind_EnumQ vn_biased_coin (fun b2 =>
             match vn_round_result b1 b2 with
             | inl _ => meas_iter_approx rounds
                 (fun _ : unit => vn_transition) tt
-            | inr b => ret_Enum b
+            | inr b => ret_EnumQ b
             end))).
       rewrite <- vn_round_measure_eq. unfold vn_round_measure.
-      rewrite bind_Enum_assoc.
-      apply bind_Enum_ext=> b1. rewrite bind_Enum_assoc.
-      apply bind_Enum_ext=> b2.
+      rewrite bind_EnumQ_assoc.
+      apply bind_EnumQ_ext=> b1. rewrite bind_EnumQ_assoc.
+      apply bind_EnumQ_ext=> b2.
       rewrite ptree_vn_bind_ret_eq.
       destruct (vn_round_result b1 b2) as [u|b]; [destruct u|]; reflexivity. }
     rewrite Hout.
@@ -302,10 +302,10 @@ Definition ptree_vn_raw_heads : MF vn_head :=
   ptree_vn_raw_limit.
 
 Lemma ptree_vn_raw_weak :
-  @ptree_stable_hitting vnE Enum MF
+  @ptree_stable_hitting vnE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe von_neumann_third) ptree_vn_raw_heads.
@@ -325,8 +325,8 @@ Qed.
 Lemma ptree_vn_raw_heads_total :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega _ ptree_vn_raw_heads.
 Proof.
   apply free_omega_observable_total_intro.
@@ -335,10 +335,10 @@ Proof.
 Qed.
 
 Theorem ptree_von_neumann_raw_ast :
-  @ptree_stable_hitting_ast vnE Enum MF
+  @ptree_stable_hitting_ast vnE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe von_neumann_third) ptree_vn_raw_heads.
@@ -346,21 +346,21 @@ Proof.
   split; [exact ptree_vn_raw_weak|exact ptree_vn_raw_heads_total].
 Qed.
 
-Definition ptree_vn_compiled : ptree vnE Enum bool :=
+Definition ptree_vn_compiled : ptree vnE EnumQ bool :=
   PTree.iter vn_compiled_step tt.
 
 Lemma ptree_vn_round_increasing :
   @sem_increasing MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     (FreeOmegaObservableSemanticOmega
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega)) _
-    (fun rounds => @mixed_iter_approx Enum MF
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega)) _
+    (fun rounds => @mixed_iter_approx EnumQ MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega))
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega unit bool rounds
       (fun _ => vn_transition) tt).
@@ -380,18 +380,18 @@ Proof.
 Qed.
 
 Corollary ptree_vn_cofinal :
-  @PTreeKernel.ptree_iter_cofinal vnE Enum MF
+  @PTreeKernel.ptree_iter_cofinal vnE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega unit bool
     vn_compiled_step (fun _ : unit => vn_transition) tt.
 Proof.
-  change (@PTreeKernel.ptree_iter_cofinal vnE Enum MF
+  change (@PTreeKernel.ptree_iter_cofinal vnE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega unit bool
     (primitive_iter_step (fun _ : unit => vn_transition))
@@ -400,10 +400,10 @@ Proof.
 Qed.
 
 Definition ptree_vn_iter_approx (fuel : nat) : MF bool :=
-  @mixed_iter_approx Enum MF
+  @mixed_iter_approx EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega unit bool fuel
     (fun _ : unit => vn_transition) tt.
@@ -412,10 +412,10 @@ Definition ptree_vn_limit : MF bool :=
   FOLub ptree_vn_iter_approx.
 
 Lemma ptree_vn_mixed_iter :
-  @mixed_iter Enum MF
+  @mixed_iter EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega unit bool
     (fun _ : unit => vn_transition) tt ptree_vn_limit.
@@ -433,32 +433,32 @@ Proof.
   - constructor.
   - cbn [mixed_iter_approx meas_iter_approx mixed_bind
       FreeOmegaMixedMeasure sem_bind
-      Enum_SemanticMeasure].
+      EnumQ_SemanticMeasure].
     change (free_omega_observes (fun b : bool => b)
       (FOSample vn_transition (fun next : unit + bool =>
         match next with
-        | inl u => @mixed_iter_approx Enum MF
+        | inl u => @mixed_iter_approx EnumQ MF
             (FreeOmegaObservableSemanticMeasure
-              (NI := Enum_SemanticMeasure)
-              (NO := Enum_SemanticOmega))
+              (NI := EnumQ_SemanticMeasure)
+              (NO := EnumQ_SemanticOmega))
             FreeOmegaMixedMeasure
             FreeOmegaObservableSemanticOmega unit bool fuel
             (fun _ : unit => vn_transition) u
         | inr b => FORet b
         end))
-      (@sem_bind Enum Enum_SemanticMeasure _ _ vn_transition
+      (@sem_bind EnumQ EnumQ_SemanticMeasure _ _ vn_transition
         (fun next : unit + bool =>
           match next with
           | inl u => meas_iter_approx fuel
               (fun _ : unit => vn_transition) u
-          | inr b => @sem_ret Enum Enum_SemanticMeasure bool b
+          | inr b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b
           end))).
     eapply FOOObserveSample with
       (front := fun next : unit + bool =>
         match next with
         | inl u => meas_iter_approx fuel
             (fun _ : unit => vn_transition) u
-        | inr b => @sem_ret Enum Enum_SemanticMeasure bool b
+        | inr b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b
         end).
     intros [u|b].
     + destruct u. exact IH.
@@ -478,23 +478,23 @@ Qed.
 Definition ptree_vn_heads : MF vn_head :=
   @sem_bind MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega)) _ _ ptree_vn_limit
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega)) _ _ ptree_vn_limit
     (fun b => @sem_ret MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega)) vn_head (FHRet b)).
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega)) vn_head (FHRet b)).
 
 Definition ptree_vn_direct_heads : MF vn_head :=
-  @mixed_bind Enum MF FreeOmegaMixedMeasure bool vn_head vn_fair
+  @mixed_bind EnumQ MF FreeOmegaMixedMeasure bool vn_head vn_fair
     (fun b => @sem_ret MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega)) vn_head (FHRet b)).
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega)) vn_head (FHRet b)).
 
-Definition ptree_vn_direct_observation : Enum bool :=
-  @sem_bind Enum Enum_SemanticMeasure _ _ vn_fair
-    (fun b => @sem_ret Enum Enum_SemanticMeasure bool b).
+Definition ptree_vn_direct_observation : EnumQ bool :=
+  @sem_bind EnumQ EnumQ_SemanticMeasure _ _ vn_fair
+    (fun b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b).
 
 Lemma ptree_vn_heads_observes :
   free_omega_observes ptree_vn_head_value
@@ -520,15 +520,15 @@ Lemma ptree_vn_direct_observation_eq :
   ptree_vn_direct_observation = vn_fair.
 Proof.
   unfold ptree_vn_direct_observation.
-  change (bind_Enum vn_fair (fun b => ret_Enum b) = vn_fair).
+  change (bind_EnumQ vn_fair (fun b => ret_EnumQ b) = vn_fair).
   rewrite bind_ret_emap. apply emap_id.
 Qed.
 
 Lemma ptree_vn_heads_total :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega _ ptree_vn_heads.
 Proof.
   apply free_omega_observable_total_intro.
@@ -539,8 +539,8 @@ Qed.
 Lemma ptree_vn_direct_heads_total :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega _ ptree_vn_direct_heads.
 Proof.
   apply free_omega_observable_total_intro.
@@ -550,10 +550,10 @@ Proof.
 Qed.
 
 Theorem ptree_vn_compiled_ast :
-  @ptree_stable_hitting_ast vnE Enum MF
+  @ptree_stable_hitting_ast vnE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe ptree_vn_compiled) ptree_vn_heads.
@@ -569,14 +569,14 @@ Qed.
 Corollary ptree_vn_compiled_primitive_ast :
   @stable_hitting_ast MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega
-    (ptree' vnE Enum bool) vn_head
-    (@ptree_primitive_kernel vnE Enum MF
+    (ptree' vnE EnumQ bool) vn_head
+    (@ptree_primitive_kernel vnE EnumQ MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega))
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega))
       FreeOmegaMixedMeasure bool)
     (observe ptree_vn_compiled) ptree_vn_heads.
 Proof.
@@ -586,17 +586,17 @@ Proof.
 Qed.
 
 Definition ptree_vn_compiled_after (next : unit + bool) :
-    ptree vnE Enum bool :=
+    ptree vnE EnumQ bool :=
   match next with
   | inl u => Tau (PTree.iter vn_compiled_step u)
   | inr b => Ret b
   end.
 
-Definition ptree_vn_compiled_body : ptree vnE Enum bool :=
+Definition ptree_vn_compiled_body : ptree vnE EnumQ bool :=
   PTree.bind (vn_compiled_step tt) ptree_vn_compiled_after.
 
 Definition ptree_vn_compiled_cont (next : unit + bool) :
-    ptree vnE Enum bool :=
+    ptree vnE EnumQ bool :=
   PTree.bind (Ret next) ptree_vn_compiled_after.
 
 Lemma ptree_vn_compiled_observe_unfold :
@@ -615,7 +615,7 @@ Proof.
   rewrite observe_bind.
   assert (Hstep : observe
       (Prob vn_transition (fun next : unit + bool => Ret next) :
-        ptree vnE Enum (unit + bool)) =
+        ptree vnE EnumQ (unit + bool)) =
       ProbF vn_transition (fun next => Ret next)) by reflexivity.
   rewrite Hstep. reflexivity.
 Qed.
@@ -631,8 +631,8 @@ Qed.
 Lemma ptree_vn_limit_total :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega bool ptree_vn_limit.
 Proof.
   apply free_omega_observable_total_intro.
@@ -642,10 +642,10 @@ Proof.
 Qed.
 
 Lemma ptree_vn_compiled_frontier :
-  @frontier_certificate vnE Enum MF Enum_SemanticMeasure
+  @frontier_certificate vnE EnumQ MF EnumQ_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe ptree_vn_compiled) ptree_vn_heads.
@@ -671,10 +671,10 @@ Definition ptree_vn_compiled_after_heads (next : unit + bool) :
   end.
 
 Lemma ptree_vn_compiled_after_frontier next :
-  @frontier_certificate vnE Enum MF Enum_SemanticMeasure
+  @frontier_certificate vnE EnumQ MF EnumQ_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe (ptree_vn_compiled_after next))
@@ -689,10 +689,10 @@ Proof.
 Qed.
 
 Lemma ptree_vn_compiled_cont_frontier next :
-  @frontier_certificate vnE Enum MF Enum_SemanticMeasure
+  @frontier_certificate vnE EnumQ MF EnumQ_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe (ptree_vn_compiled_cont next))
@@ -705,8 +705,8 @@ Qed.
 Definition ptree_vn_compiled_body_heads : MF vn_head :=
   @sem_bind MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega)) _ _
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega)) _ _
     ptree_vn_compiled_round
     (stable_head_bind_front
       (FI := FreeOmegaObservableSemanticMeasure)
@@ -714,10 +714,10 @@ Definition ptree_vn_compiled_body_heads : MF vn_head :=
       ptree_vn_compiled_after_heads).
 
 Lemma ptree_vn_compiled_body_frontier :
-  @frontier_certificate vnE Enum MF Enum_SemanticMeasure
+  @frontier_certificate vnE EnumQ MF EnumQ_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe ptree_vn_compiled_body)
@@ -728,15 +728,15 @@ Proof.
   - unfold ptree_vn_compiled_round, vn_compiled_step.
     assert (Hstep : observe
       (Prob vn_transition (fun next : unit + bool => Ret next) :
-        ptree vnE Enum (unit + bool)) =
+        ptree vnE EnumQ (unit + bool)) =
       ProbF vn_transition (fun next => Ret next)) by reflexivity.
     rewrite Hstep.
     cbn [ptree_hitting_approx ptree_primitive_kernel
       ptree_stable_target_approx].
-    change (@frontier_certificate vnE Enum MF Enum_SemanticMeasure
+    change (@frontier_certificate vnE EnumQ MF EnumQ_SemanticMeasure
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega))
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega (unit + bool)
       (ProbF vn_transition (fun next => Ret next))
@@ -753,10 +753,10 @@ Import GRing.Theory.
 Local Open Scope ring_scope.
 
 Theorem ptree_vn_direct_ast :
-  @ptree_stable_hitting_ast vnE Enum MF
+  @ptree_stable_hitting_ast vnE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe direct_fair) ptree_vn_direct_heads.
@@ -770,21 +770,21 @@ Proof.
     + apply ptree_stable_hitting_ret.
     + apply free_omega_observable_total_intro.
       exists bool, ptree_vn_head_value,
-        (@sem_ret Enum Enum_SemanticMeasure bool b).
+        (@sem_ret EnumQ EnumQ_SemanticMeasure bool b).
       split; [constructor|].
-      change (meas_total (ret_Enum b)).
-      change (enum_expect (fun _ : bool => (1 : rat)) (ret_Enum b) =
+      change (meas_total (ret_EnumQ b)).
+      change (enumQ_expect (fun _ : bool => (1 : rat)) (ret_EnumQ b) =
         (1 : rat)).
-      rewrite enum_expect_ret. reflexivity.
+      rewrite enumQ_expect_ret. reflexivity.
   - exact ptree_vn_direct_heads_total.
 Qed.
 
 Lemma ptree_vn_heads_lift
-    (sim : ptree vnE Enum bool -> ptree vnE Enum bool -> Prop) :
+    (sim : ptree vnE EnumQ bool -> ptree vnE EnumQ bool -> Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega)) _ _
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega)) _ _
     (stable_head_rel eq sim)
     ptree_vn_heads ptree_vn_direct_heads.
 Proof.
@@ -848,18 +848,18 @@ Proof.
         -- constructor. exact I.
         -- constructor.
         -- eapply FOAESample with (Good := fun _ => True).
-           ++ apply (@sem_ae_true Enum Enum_SemanticMeasure
-                Enum_SemanticMeasureCoreLaws).
+           ++ apply (@sem_ae_true EnumQ EnumQ_SemanticMeasure
+                EnumQ_SemanticMeasureCoreLaws).
            ++ intros x _. exact (H x).
         -- constructor. exact H.
 Qed.
 
 Lemma ptree_vn_raw_heads_lift
-    (sim : ptree vnE Enum bool -> ptree vnE Enum bool -> Prop) :
+    (sim : ptree vnE EnumQ bool -> ptree vnE EnumQ bool -> Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega)) _ _
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega)) _ _
     (stable_head_rel eq sim)
     ptree_vn_raw_heads ptree_vn_direct_heads.
 Proof.
@@ -941,8 +941,8 @@ Proof.
         -- constructor. exact I.
         -- constructor.
         -- eapply FOAESample with (Good := fun _ => True).
-           ++ apply (@sem_ae_true Enum Enum_SemanticMeasure
-                Enum_SemanticMeasureCoreLaws).
+           ++ apply (@sem_ae_true EnumQ EnumQ_SemanticMeasure
+                EnumQ_SemanticMeasureCoreLaws).
            ++ intros x _. exact (H x).
         -- constructor. exact H.
 Qed.
@@ -951,10 +951,10 @@ Qed.
     one-step fair coin are compared only at their subprobabilistic
     stable-hitting limits. *)
 Theorem peutt_von_neumann_raw_direct :
-  @peutt vnE Enum MF
+  @peutt vnE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq
@@ -967,10 +967,10 @@ Proof.
 Qed.
 
 Theorem peutt_von_neumann_compiled_direct :
-  @peutt vnE Enum MF
+  @peutt vnE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq
@@ -983,10 +983,10 @@ Proof.
 Qed.
 
 Lemma ptree_vn_direct_frontier :
-  @frontier_certificate vnE Enum MF Enum_SemanticMeasure
+  @frontier_certificate vnE EnumQ MF EnumQ_SemanticMeasure
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe direct_fair) ptree_vn_direct_heads.

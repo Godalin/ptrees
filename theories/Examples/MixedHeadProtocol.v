@@ -1,7 +1,7 @@
 (** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
 (** A canonical probabilistic-LTS example: one coupling matches both Ret
     and Vis heads; visible pairs generate response-dependent recursive
-    obligations. All native probability nodes use the bounded SubEnum carrier. *)
+    obligations. All native probability nodes use the bounded SubEnumQ carrier. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
@@ -12,21 +12,21 @@ From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Bind PTree.Prob.Backend.Enum.Map PTree.Prob.Backend.Enum.Coupling PTree.Prob.Backend.Enum.IndexedCoupling PTree.Prob.Backend.Enum.FrontierLift PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.IndexedCoupling PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
 From PTree.Eq Require Import PEutt.
-From PTree.Eq.Backend Require Import ProbabilisticTraceSubEnum.
+From PTree.Eq.Backend Require Import ProbabilisticTraceSubEnumQ.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import Enum PTree.Prob.Backend.Enum.Map IndexedCoupling PTree.Prob.Backend.Enum.Coupling GRing.Theory Num.Theory Order.Theory.
+Import EnumQ PTree.Prob.Backend.EnumQ.Map IndexedCoupling PTree.Prob.Backend.EnumQ.Coupling GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
-Local Open Scope subenum_probability_scope.
+Local Open Scope subenumQ_probability_scope.
 
 (** The event universe is invariant in PTree. This two-response wrapper
     lifts an ordinary Boolean to that universe without changing its choices. *)
@@ -49,7 +49,7 @@ Definition mixed_eighth : nnQ := mknnQ (1 / 8) ltac:(by []).
 Definition mixed_three_eighths : nnQ := mknnQ (3 / 8) ltac:(by []).
 Definition mixed_sixteenth : nnQ := mknnQ (1 / 16) ltac:(by []).
 Definition mixed_three_sixteenths : nnQ := mknnQ (3 / 16) ltac:(by []).
-Definition biased_triple_raw : Enum (bool * bool * bool) :=
+Definition biased_triple_raw : EnumQ (bool * bool * bool) :=
   [:: (mixed_sixteenth, (false,false,false));
       (mixed_sixteenth, (false,false,true));
       (mixed_three_sixteenths, (false,true,false));
@@ -58,18 +58,18 @@ Definition biased_triple_raw : Enum (bool * bool * bool) :=
       (mixed_sixteenth, (true,false,true));
       (mixed_three_sixteenths, (true,true,false));
       (mixed_three_sixteenths, (true,true,true))].
-Definition mixed_outcomes_raw (c : bool) : Enum mixed_outcome :=
+Definition mixed_outcomes_raw (c : bool) : EnumQ mixed_outcome :=
   let w0 := if c then mixed_three_eighths else mixed_eighth in
   let w1 := if c then mixed_eighth else mixed_three_eighths in
   [:: (w0, Stop false); (w1, Stop true);
       (w0, Continue false); (w1, Continue true)].
-Lemma biased_triple_bound : enum_subprob biased_triple_raw.
+Lemma biased_triple_bound : enumQ_subprob biased_triple_raw.
 Proof. by vm_compute. Qed.
-Lemma mixed_outcomes_bound c : enum_subprob (mixed_outcomes_raw c).
+Lemma mixed_outcomes_bound c : enumQ_subprob (mixed_outcomes_raw c).
 Proof. destruct c; by vm_compute. Qed.
-Definition biased_triple := enum_as_subprob biased_triple_bound.
-Definition mixed_outcomes c := enum_as_subprob (mixed_outcomes_bound c).
-Lemma mixed_outcomes_prune c : enum_prune (mixed_outcomes_raw c) = mixed_outcomes_raw c.
+Definition biased_triple := enumQ_as_subprob biased_triple_bound.
+Definition mixed_outcomes c := enumQ_as_subprob (mixed_outcomes_bound c).
+Lemma mixed_outcomes_prune c : enumQ_prune (mixed_outcomes_raw c) = mixed_outcomes_raw c.
 Proof. destruct c; reflexivity. Qed.
 
 Definition mixed_encode m c (rsh : bool * bool * bool) : mixed_outcome :=
@@ -97,16 +97,16 @@ Definition mixed_outcome_rel m c rsh o := o = mixed_encode m c rsh.
 
 (** Eight source atoms feed four target outcomes. Each target marginal
     adds its two h-preimages: 1/16+1/16=1/8 or 3/16+3/16=3/8. *)
-Definition mixed_joint m c : Enum ((bool * bool * bool) * mixed_outcome) :=
+Definition mixed_joint m c : EnumQ ((bool * bool * bool) * mixed_outcome) :=
   emap (fun rsh => (rsh, mixed_encode m c rsh)) biased_triple_raw.
 Polymorphic Lemma mixed_triple_outcome_lift m c :
-  @sem_lift SubEnum SubEnum_SemanticMeasure _ _ (mixed_outcome_rel m c)
+  @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ (mixed_outcome_rel m c)
     biased_triple (mixed_outcomes c).
 Proof.
-  change (indexed_coupling (mixed_outcome_rel m c) biased_triple_raw (enum_prune (mixed_outcomes_raw c))).
+  change (indexed_coupling (mixed_outcome_rel m c) biased_triple_raw (enumQ_prune (mixed_outcomes_raw c))).
   rewrite mixed_outcomes_prune.
   apply indexed_coupling_of_coupling. exists (mixed_joint m c).
-  - apply enum_eq_eq. reflexivity.
+  - apply enumQ_eq_eq. reflexivity.
   - intros [b|b]; destruct m,c,b; apply val_inj; vm_compute; reflexivity.
   - intros [[r s] h] [b|b] Hmass; destruct m,c,r,s,h,b;
       try reflexivity; vm_compute in Hmass; discriminate.
@@ -116,7 +116,7 @@ Set Universe Polymorphism.
 
 Definition masked_update (rsh : bool * bool * bool) ack :=
   let '(r,s,h) := rsh in if ack then h else r.
-CoFixpoint masked_impl (m : bool) : ptree mixedE SubEnum bool :=
+CoFixpoint masked_impl (m : bool) : ptree mixedE SubEnumQ bool :=
   Vis Challenge (fun answer =>
     let c := response_value answer in
     Prob biased_triple (fun rsh =>
@@ -124,19 +124,19 @@ CoFixpoint masked_impl (m : bool) : ptree mixedE SubEnum bool :=
       | Stop b => Ret b
       | Continue b => Vis (Reply b) (fun ack => masked_impl (masked_update rsh (response_value ack)))
       end)).
-CoFixpoint mixed_spec : ptree mixedE SubEnum bool :=
+CoFixpoint mixed_spec : ptree mixedE SubEnumQ bool :=
   Vis Challenge (fun answer =>
     Prob (mixed_outcomes (response_value answer)) (fun o =>
       match o with
       | Stop b => Ret b
       | Continue b => Vis (Reply b) (fun _ => mixed_spec)
       end)).
-Definition masked_branch m c rsh : ptree mixedE SubEnum bool :=
+Definition masked_branch m c rsh : ptree mixedE SubEnumQ bool :=
   match mixed_encode m c rsh with
   | Stop b => Ret b
   | Continue b => Vis (Reply b) (fun ack => masked_impl (masked_update rsh (response_value ack)))
   end.
-Definition spec_branch o : ptree mixedE SubEnum bool :=
+Definition spec_branch o : ptree mixedE SubEnumQ bool :=
   match o with
   | Stop b => Ret b
   | Continue b => Vis (Reply b) (fun _ => mixed_spec)
@@ -153,14 +153,14 @@ Proof. apply probabilistic_ptree_intrinsic. Qed.
 Example mixed_spec_probabilistic : probabilistic_ptree mixed_spec.
 Proof. apply probabilistic_ptree_intrinsic. Qed.
 
-Local Notation MF := (FreeOmega SubEnum).
-Local Notation mixed_head := (stable_head mixedE SubEnum bool).
+Local Notation MF := (FreeOmega SubEnumQ).
+Local Notation mixed_head := (stable_head mixedE SubEnumQ bool).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
-Local Notation kernel := (@ptree_primitive_kernel mixedE SubEnum MF FI FreeOmegaMixedMeasure bool).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+Local Notation kernel := (@ptree_primitive_kernel mixedE SubEnumQ MF FI FreeOmegaMixedMeasure bool).
 Local Notation hitting := (@stable_hitting MF FI FreeOmegaObservableSemanticOmega
-  (ptree' mixedE SubEnum bool) mixed_head kernel).
-Local Notation peutt := (@peutt mixedE SubEnum MF FI
+  (ptree' mixedE SubEnumQ bool) mixed_head kernel).
+Local Notation peutt := (@peutt mixedE SubEnumQ MF FI
   FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
   FreeOmegaObservableSemanticOmega).
 
@@ -213,7 +213,7 @@ Qed.
 
 (** Root quantifies over every hidden bit. After additionally remembers the
     challenge supplied by the environment. No up-to closure is involved. *)
-Definition mixed_protocol_sim (s1 s2 : ptree' mixedE SubEnum bool) : Prop :=
+Definition mixed_protocol_sim (s1 s2 : ptree' mixedE SubEnumQ bool) : Prop :=
   (exists m, s1 = observe (masked_impl m) /\ s2 = observe mixed_spec) \/
   (exists m c, s1 = observe (masked_after m c) /\ s2 = observe (mixed_after c)).
 Lemma MPSRoot m : mixed_protocol_sim (observe (masked_impl m)) (observe mixed_spec).
@@ -222,11 +222,11 @@ Lemma MPSAfter m c : mixed_protocol_sim (observe (masked_after m c)) (observe (m
 Proof. right. exists m, c. split; reflexivity. Qed.
 
 Lemma mixed_heads_lift m c :
-  @sem_lift MF FI _ _ (@ptree_stable_head_rel mixedE SubEnum bool bool eq mixed_protocol_sim)
+  @sem_lift MF FI _ _ (@ptree_stable_head_rel mixedE SubEnumQ bool bool eq mixed_protocol_sim)
     (masked_after_heads m c) (spec_after_heads c).
 Proof.
   unfold masked_after_heads, spec_after_heads.
-  eapply (mixed_lift_bind (NI := SubEnum_SemanticMeasure) (FI := FI)
+  eapply (mixed_lift_bind (NI := SubEnumQ_SemanticMeasure) (FI := FI)
     (MX := FreeOmegaMixedMeasure)) with (R := mixed_outcome_rel m c).
   - exact (mixed_triple_outcome_lift m c).
   - intros rsh o ->. apply (sem_lift_ret (SI := FI)).
@@ -238,9 +238,9 @@ Qed.
 
 Lemma mixed_protocol_sim_postfixed : forall s1 s2, mixed_protocol_sim s1 s2 ->
   @stable_hitting_match MF FI FreeOmegaObservableSemanticOmega
-    (ptree' mixedE SubEnum bool) (ptree' mixedE SubEnum bool)
+    (ptree' mixedE SubEnumQ bool) (ptree' mixedE SubEnumQ bool)
     mixed_head mixed_head kernel kernel
-    (@ptree_stable_head_rel mixedE SubEnum bool bool eq) mixed_protocol_sim s1 s2.
+    (@ptree_stable_head_rel mixedE SubEnumQ bool bool eq) mixed_protocol_sim s1 s2.
 Proof.
   intros s1 s2 [[m [-> ->]]|[m [c [-> ->]]]].
   - rewrite masked_impl_unfold mixed_spec_unfold.
@@ -268,22 +268,22 @@ Definition stable_outcome (h : mixed_head) : mixed_outcome :=
   end.
 Lemma masked_head_outcome m c rsh : stable_outcome (masked_head m c rsh) = mixed_encode m c rsh.
 Proof. unfold masked_head. destruct (mixed_encode m c rsh); reflexivity. Qed.
-Definition masked_outcome_observation m c : SubEnum mixed_outcome :=
-  subenum_bind biased_triple (fun rsh => subenum_ret (mixed_encode m c rsh)).
+Definition masked_outcome_observation m c : SubEnumQ mixed_outcome :=
+  subenumQ_bind biased_triple (fun rsh => subenumQ_ret (mixed_encode m c rsh)).
 
 (** The observation is stated extensionally: list order may change with
     m and c; the four masses depend on c but never on hidden m. *)
 Lemma masked_after_heads_denote_four m c :
-  @free_omega_denotes SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega
+  @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
     mixed_head mixed_outcome stable_outcome (masked_after_heads m c) (mixed_outcomes c).
 Proof.
   exists (masked_outcome_observation m c). split.
   - unfold masked_after_heads, masked_outcome_observation.
-    apply (FOOObserveSample (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)). intro rsh.
+    apply (FOOObserveSample (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)). intro rsh.
     rewrite <- (masked_head_outcome m c rsh). constructor.
-  - change (enum_meas_eq
-      (bind_Enum biased_triple_raw (fun rsh => ret_Enum (mixed_encode m c rsh))) (mixed_outcomes_raw c)).
-    apply enum_meas_eq_of_eqenum. intros [b|b]; destruct m,c,b;
+  - change (enumQ_meas_eq
+      (bind_EnumQ biased_triple_raw (fun rsh => ret_EnumQ (mixed_encode m c rsh))) (mixed_outcomes_raw c)).
+    apply enumQ_meas_eq_of_eqenum. intros [b|b]; destruct m,c,b;
       apply val_inj; vm_compute; reflexivity.
 Qed.
 
@@ -292,7 +292,7 @@ Qed.
 Theorem masked_after_stable_hitting m c :
   exists out : MF mixed_head,
     hitting (observe (masked_after m c)) out /\
-    @free_omega_denotes SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega
+    @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
       mixed_head mixed_outcome stable_outcome out (mixed_outcomes c).
 Proof.
   exists (masked_after_heads m c). split.
@@ -317,12 +317,12 @@ Definition accepts_true_reply {X} (e : mixedE X) : bool :=
 Definition spec_true_reply_query c : MF bool :=
   @sem_bind MF FI mixed_head bool (spec_after_heads c) (fun h =>
     @sem_ret MF FI bool (observe_stable_head (fun _ => false) (@accepts_true_reply) h)).
-Definition spec_true_reply_observation c : SubEnum bool :=
-  subenum_bind (mixed_outcomes c) (fun o =>
-    subenum_ret (match o with Stop _ => false | Continue b => b end)).
+Definition spec_true_reply_observation c : SubEnumQ bool :=
+  subenumQ_bind (mixed_outcomes c) (fun o =>
+    subenumQ_ret (match o with Stop _ => false | Continue b => b end)).
 
 Lemma spec_after_true_reply_query c :
-  @next_event_query mixedE SubEnum MF FI FreeOmegaMixedMeasure
+  @next_event_query mixedE SubEnumQ MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool (@accepts_true_reply) (mixed_after c) (spec_true_reply_query c).
 Proof.
   exists (spec_after_heads c). split; [exact (spec_after_hitting c)|apply sem_eq_refl].
@@ -335,12 +335,12 @@ Proof.
   destruct b; reflexivity.
 Qed.
 Lemma spec_challenge_true_reply_query c :
-  @finite_interaction_query mixedE SubEnum MF FI FreeOmegaMixedMeasure
+  @finite_interaction_query mixedE SubEnumQ MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool (challenge_true_reply_trace c)
     mixed_spec (spec_true_reply_query c).
 Proof.
   unfold challenge_true_reply_trace.
-  change (@finite_interaction_query mixedE SubEnum MF FI FreeOmegaMixedMeasure
+  change (@finite_interaction_query mixedE SubEnumQ MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (cons (@select_challenge c) (cons (@select_true_reply) nil))
     (Vis Challenge (fun answer => mixed_after (response_value answer))) (spec_true_reply_query c)).
@@ -351,16 +351,16 @@ Proof.
     rewrite true_reply_selector_accepts. exact (spec_after_true_reply_query c).
 Qed.
 Lemma spec_true_reply_query_denotes c :
-  @free_omega_denotes SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega
+  @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
     bool bool id (spec_true_reply_query c) (spec_true_reply_observation c).
 Proof.
   exists (spec_true_reply_observation c). split; [|apply sem_eq_refl].
   unfold spec_true_reply_query, spec_after_heads, spec_true_reply_observation.
-  cbn [free_omega_bind]. apply (FOOObserveSample (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  cbn [free_omega_bind]. apply (FOOObserveSample (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
   intros [b|b]; constructor.
 Qed.
 Lemma spec_true_reply_mass c :
-  enum_expect subenum_bool_indicator (subenum_raw (spec_true_reply_observation c)) =
+  enumQ_expect subenumQ_bool_indicator (subenumQ_raw (spec_true_reply_observation c)) =
     (if c then 1 / 8 else 3 / 8).
 Proof. destruct c; vm_compute; reflexivity. Qed.
 
@@ -373,7 +373,7 @@ Proof.
   destruct (peutt_preserves_finite_interaction_query
     (peutt_sym (masked_protocol_equivalent m))
     (spec_challenge_true_reply_query c)) as [query [Hquery Hlift]].
-  eapply subenum_finite_interaction_probability_intro
+  eapply subenumQ_finite_interaction_probability_intro
     with (query := query) (representative := spec_true_reply_query c)
       (out := spec_true_reply_observation c).
   - exact Hquery.

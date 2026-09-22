@@ -7,17 +7,17 @@ Require Import Utf8 Ring Field Lia Lra FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype ssrnat seq ssralg ssrnum order rat.
 
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Prob.Interface Require Import FrontierLift.
-Require Import PTree.Prob.Backend.Enum.FrontierLift.
+Require Import PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Iteration.
-Require Import PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.Common.RatGeometric.
+Require Import PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.Common.RatGeometric.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Import Enum.
+Import EnumQ.
 Import GRing.Theory Num.Theory Order.Theory.
 #[local] Open Scope ring_scope.
 #[local] Open Scope order_scope.
@@ -34,19 +34,19 @@ Definition binary_oracle := nat -> bool.
     difference, [random < q] returns [true] and [random > q] returns [false];
     equality consumes another bit. *)
 Definition oracle_coin_transition (qbit : binary_oracle) (n : nat) :
-    Enum (nat + bool) :=
+    EnumQ (nat + bool) :=
   if qbit n then
     [:: (one_div_two, inr true); (one_div_two, inl n.+1)]
   else
     [:: (one_div_two, inl n.+1); (one_div_two, inr false)].
 
 Definition oracle_coin_step (qbit : binary_oracle) (n : nat) :
-    ptree real_oracle_coinE Enum (nat + bool) :=
+    ptree real_oracle_coinE EnumQ (nat + bool) :=
   Prob (oracle_coin_transition qbit n)
     (fun next : nat + bool => Ret next).
 
 Definition binary_oracle_coin (qbit : binary_oracle) :
-    ptree real_oracle_coinE Enum bool :=
+    ptree real_oracle_coinE EnumQ bool :=
   PTree.iter (oracle_coin_step qbit) 0.
 
 Definition oracle_continue (next : nat + bool) : rat :=
@@ -56,7 +56,7 @@ Definition oracle_true (next : nat + bool) : rat :=
   match next with inl _ => 0 | inr b => if b then 1 else 0 end.
 
 Lemma oracle_transition_total qbit n :
-  enum_expect (fun _ : nat + bool => 1)
+  enumQ_expect (fun _ : nat + bool => 1)
     (oracle_coin_transition qbit n) = 1.
 Proof.
   rewrite /oracle_coin_transition.
@@ -66,7 +66,7 @@ Proof.
 Qed.
 
 Lemma oracle_transition_continue qbit n :
-  enum_expect oracle_continue (oracle_coin_transition qbit n) = 1 / 2.
+  enumQ_expect oracle_continue (oracle_coin_transition qbit n) = 1 / 2.
 Proof.
   rewrite /oracle_coin_transition.
   by case: (qbit n); rewrite /= !mulr1 !mulr0 !addr0 ?add0r.
@@ -105,25 +105,25 @@ Definition oracle_prefix qbit fuel := oracle_prefix_from qbit 0 fuel.
 Definition oracle_true_indicator (b : bool) : rat := if b then 1 else 0.
 
 Lemma oracle_iter_true_prefix qbit fuel n :
-  enum_expect oracle_true_indicator
+  enumQ_expect oracle_true_indicator
     (meas_iter_approx fuel (oracle_coin_transition qbit) n) =
   oracle_prefix_from qbit n fuel.
 Proof.
   elim: fuel n=> [|fuel IH] n; first reflexivity.
-  rewrite /= enum_expect_bind /oracle_coin_transition.
+  rewrite /= enumQ_expect_bind /oracle_coin_transition.
   case E: (qbit n); rewrite /=.
   - by rewrite /= mulr1 IH mulrDr mulr1 mulr0 !addr0.
   - by rewrite /= mulr0 add0r IH !addr0.
 Qed.
 
 Lemma oracle_iter_total_mass qbit fuel n :
-  enum_expect (fun _ : bool => 1)
+  enumQ_expect (fun _ : bool => 1)
     (meas_iter_approx fuel (oracle_coin_transition qbit) n) =
   1 - (1 / 2 : rat) ^+ fuel.
 Proof.
   elim: fuel n=> [|fuel IH] n.
   - by rewrite /= expr0 subrr.
-  - rewrite /= enum_expect_bind /oracle_coin_transition.
+  - rewrite /= enumQ_expect_bind /oracle_coin_transition.
     case: (qbit n); rewrite /= IH.
     all: rewrite !mulr1 !addr0 exprS.
     - exact: rat_half_contract.
@@ -131,7 +131,7 @@ Proof.
 Qed.
 
 Lemma oracle_iter_missing_mass qbit fuel n :
-  1 - enum_expect (fun _ : bool => 1)
+  1 - enumQ_expect (fun _ : bool => 1)
         (meas_iter_approx fuel (oracle_coin_transition qbit) n) =
   (1 / 2 : rat) ^+ fuel.
 Proof. by rewrite oracle_iter_total_mass subKr. Qed.
@@ -140,7 +140,7 @@ Proof. by rewrite oracle_iter_total_mass subKr. Qed.
     of requiring more than [fuel] comparisons tends to zero geometrically. *)
 Theorem oracle_missing_mass_vanishes qbit n eps : 0 < eps ->
   exists N, forall fuel, Peano.le N fuel ->
-    1 - enum_expect (fun _ : bool => 1)
+    1 - enumQ_expect (fun _ : bool => 1)
           (meas_iter_approx fuel (oracle_coin_transition qbit) n) < eps.
 Proof.
   move=> eps0.

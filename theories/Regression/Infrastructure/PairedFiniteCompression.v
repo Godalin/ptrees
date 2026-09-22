@@ -6,15 +6,15 @@ From Coq.Program Require Import Equality.
 From mathcomp Require Import ssralg ssrnum rat.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Common.RatSubTypes.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.Common.RatSubTypes.
 From PTree.Prob.Interface Require Import SemanticCoupling.
-Require Import PTree.Prob.Backend.Enum.FreeOmega.Coupling.
+Require Import PTree.Prob.Backend.EnumQ.FreeOmega.Coupling.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalJoint.
 From PTree.Eq Require Import PStrong UnifiedFrontier PTreeKernel.
 From PTree.Examples Require Import RandomWalk.
-Import Enum.
+Import EnumQ.
 Local Open Scope ring_scope.
 
 Set Implicit Arguments.
@@ -23,11 +23,11 @@ Unset Printing Implicit Defensive.
 
 Module PairedCompression.
 Variant event : Type -> Type := .
-Local Notation tree := (ptree event Enum bool).
-Local Notation MF := (FreeOmega Enum).
+Local Notation tree := (ptree event EnumQ bool).
+Local Notation MF := (FreeOmega EnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega)).
-Local Notation execute := (@finite_internal event Enum MF FI FreeOmegaMixedMeasure bool).
+  (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega)).
+Local Notation execute := (@finite_internal event EnumQ MF FI FreeOmegaMixedMeasure bool).
 
 Definition done : tree := Ret true.
 Definition delayed : tree := Tau done.
@@ -69,14 +69,14 @@ Proof.
   intro H. destruct H as [b|].
   - destruct b.
     + apply FITau, FITau.
-      exact (@FIStop event Enum MF FI FreeOmegaMixedMeasure bool done).
+      exact (@FIStop event EnumQ MF FI FreeOmegaMixedMeasure bool done).
     + apply FITau.
-      exact (@FIStop event Enum MF FI FreeOmegaMixedMeasure bool delayed).
-  - exact (@FIStop event Enum MF FI FreeOmegaMixedMeasure bool done).
+      exact (@FIStop event EnumQ MF FI FreeOmegaMixedMeasure bool delayed).
+  - exact (@FIStop event EnumQ MF FI FreeOmegaMixedMeasure bool done).
 Qed.
 
 Lemma right_cut_valid t u : candidate t u -> execute u (right_cut (t,u)).
-Proof. intros _. exact (@FIStop event Enum MF FI FreeOmegaMixedMeasure bool u). Qed.
+Proof. intros _. exact (@FIStop event EnumQ MF FI FreeOmegaMixedMeasure bool u). Qed.
 
 Lemma partner_guarded t u : candidate t u -> (fun t u => pstrongF eq candidate (observe t) (observe u)) u u.
 Proof.
@@ -124,7 +124,7 @@ Theorem paired_residual_joint_exists :
   exists out, @semantic_coupling MF FI _ _ (fun t u => pstrongF eq candidate (observe t) (observe u))
     (free_omega_bind joint left_cut) (free_omega_bind joint right_cut) out.
 Proof.
-  apply free_enum_structural_coupling_realization.
+  apply free_enumQ_structural_coupling_realization.
   apply FOLSample with (S := eq).
   - apply sem_lift_refl. intro b. reflexivity.
   - intros x y ->. apply FOLRet.
@@ -136,7 +136,7 @@ Lemma deterministic_prefix_cannot_sample n (r : bool) out :
 Proof.
   induction n as [|n IH] in out |- *; intro H.
   - exists (Ret r).
-    exact (@finite_internal_ret_inv event Enum MF FI FreeOmegaMixedMeasure bool r out H).
+    exact (@finite_internal_ret_inv event EnumQ MF FI FreeOmegaMixedMeasure bool r out H).
   - cbn [tau_prefix] in H. dependent destruction H.
     + eexists. reflexivity.
     + apply IH. exact H.
@@ -181,7 +181,7 @@ Proof.
   change (execute (tau_prefix 2 (Ret true)) out) in Hcut.
   destruct (deterministic_prefix_cannot_sample Hcut) as [t ->].
   pose proof (free_omega_qlift_support Hlift) as [_ Hback].
-  assert (Hret : free_omega_ae (fun u : tree => u = t) (@FORet Enum tree t)).
+  assert (Hret : free_omega_ae (fun u : tree => u = t) (@FORet EnumQ tree t)).
   { constructor. reflexivity. }
   specialize (Hback _ Hret).
   assert (Hae : free_omega_ae (fun u => u = t) (free_omega_bind joint left_cut)).
@@ -192,8 +192,8 @@ Proof.
 Qed.
 
 Theorem paired_compression_preserves_left_hitting
-    (front : tree -> MF (stable_head event Enum bool))
-    (Hfront : forall t, @ptree_stable_hitting event Enum MF FI
+    (front : tree -> MF (stable_head event EnumQ bool))
+    (Hfront : forall t, @ptree_stable_hitting event EnumQ MF FI
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
       (observe t) (front t)) :
   free_omega_qlift eq

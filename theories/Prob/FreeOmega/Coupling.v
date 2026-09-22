@@ -19,7 +19,7 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation SI := (FreeOmegaSemanticMeasure (NI := NI)).
 
 (** A concrete witness-extraction theorem for the node backend, not an
-    added law of the measure interface.  Enum/SubEnum discharge this premise
+    added law of the measure interface.  EnumQ/SubEnumQ discharge this premise
     by their existing position-indexed joint weights. *)
 Hypothesis node_realizes : forall {X Y} (S : X -> Y -> Prop)
     (mu : MN X) (nu : MN Y), sem_lift S mu nu ->

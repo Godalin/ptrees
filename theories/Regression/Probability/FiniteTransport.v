@@ -3,9 +3,9 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From Coq Require Import Lia.
 From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype finset bigop ssralg ssrnum order rat.
-Require Import PTree.Prob.Backend.Common.FiniteMatching PTree.Prob.Backend.Common.FiniteCapacityMatching PTree.Prob.Backend.Common.FiniteRationalTransport PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.Common.FiniteMatching PTree.Prob.Backend.Common.FiniteCapacityMatching PTree.Prob.Backend.Common.FiniteRationalTransport PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.SubEnumQ.Measure.
 From PTree.Prob.Interface Require Import SemanticCoupling.
-Require Import PTree.Prob.Backend.Enum.FiniteTransport.
+Require Import PTree.Prob.Backend.EnumQ.FiniteTransport.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -95,31 +95,31 @@ Proof. refine (mknnQ (source_probability b) _). destruct b; vm_compute; reflexiv
 Definition target_weight (b : bool) : nnQ.
 Proof. refine (mknnQ (target_probability b) _). destruct b; vm_compute; reflexivity. Defined.
 
-Definition source_measure : SubEnum bool.
+Definition source_measure : SubEnumQ bool.
 Proof.
-  refine {| subenum_raw := finite_weighted_enum source_weight id |}.
-  rewrite /enum_subprob /enum_mass /finite_weighted_enum enumT unlock.
+  refine {| subenumQ_raw := finite_weighted_enumQ source_weight id |}.
+  rewrite /enumQ_subprob /enumQ_mass /finite_weighted_enumQ enumT unlock.
   vm_compute. reflexivity.
 Defined.
 
-Definition target_measure : SubEnum bool.
+Definition target_measure : SubEnumQ bool.
 Proof.
-  refine {| subenum_raw := finite_weighted_enum target_weight id |}.
-  rewrite /enum_subprob /enum_mass /finite_weighted_enum enumT unlock.
+  refine {| subenumQ_raw := finite_weighted_enumQ target_weight id |}.
+  rewrite /enumQ_subprob /enumQ_mass /finite_weighted_enumQ enumT unlock.
   vm_compute. reflexivity.
 Defined.
 
 (** The same forced-splitting problem now yields an actual native joint,
     not only an external matrix certificate. *)
-Theorem split_subenum_joint : exists joint : SubEnum (bool * bool),
-  @semantic_coupling SubEnum SubEnum_SemanticMeasure bool bool
+Theorem split_subenumQ_joint : exists joint : SubEnumQ (bool * bool),
+  @semantic_coupling SubEnumQ SubEnumQ_SemanticMeasure bool bool
     (fun x y => edge x y) source_measure target_measure joint.
 Proof.
-  apply subenum_finite_transport_joint.
-  - intro S. cbn [subenum_raw source_measure target_measure].
-    rewrite !finite_weighted_enum_sum. exact (split_rational_hall S).
-  - cbn [subenum_raw source_measure target_measure].
-    rewrite !finite_weighted_enum_sum !big_bool. apply addrC.
+  apply subenumQ_finite_transport_joint.
+  - intro S. cbn [subenumQ_raw source_measure target_measure].
+    rewrite !finite_weighted_enumQ_sum. exact (split_rational_hall S).
+  - cbn [subenumQ_raw source_measure target_measure].
+    rewrite !finite_weighted_enumQ_sum !big_bool. apply addrC.
 Qed.
 
 (** Having the same nonempty support on both sides is not a sufficient

@@ -7,13 +7,13 @@ From Coq Require Import FunctionalExtensionality.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Bind.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind.
 Require Import PTree.Prob.Interface.Iteration.
-Require Import PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.Enum.Map.
+Require Import PTree.Prob.Backend.EnumQ.Map.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
@@ -22,17 +22,17 @@ From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded Rational
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import Enum PTree.Prob.Backend.Enum.Map GRing.Theory Num.Theory Order.Theory.
+Import EnumQ PTree.Prob.Backend.EnumQ.Map GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
-Local Notation MF := (FreeOmega Enum).
-Local Notation peutt := (@peutt factoryE Enum MF
-  (FreeOmegaObservableSemanticMeasure (NI := Enum_SemanticMeasure)
-    (NO := Enum_SemanticOmega)) FreeOmegaObservableSemanticMeasureCoreLaws
+Local Notation MF := (FreeOmega EnumQ).
+Local Notation peutt := (@peutt factoryE EnumQ MF
+  (FreeOmegaObservableSemanticMeasure (NI := EnumQ_SemanticMeasure)
+    (NO := EnumQ_SemanticOmega)) FreeOmegaObservableSemanticMeasureCoreLaws
   FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega).
 
 (** No termination hypothesis: the closed loop respects sampler equivalence. *)
 Theorem peutt_factory_sampler_congr
-    (s1 s2 : ptree factoryE Enum bool) q :
+    (s1 s2 : ptree factoryE EnumQ bool) q :
   peutt eq s1 s2 ->
   peutt eq (factory_with_sampler s1 q) (factory_with_sampler s2 q).
 Proof.
@@ -53,21 +53,21 @@ Lemma factory_fair_step_standard x :
 Proof.
   unfold factory_sampler_step, factory_direct_fair, factory_standard_step.
   transitivity (Prob vn_fair (fun b => Ret (binary_round_result x b))
-    : ptree factoryE Enum (rat + bool)).
+    : ptree factoryE EnumQ (rat + bool)).
   - apply peutt_of_pstruct.
     apply pstruct_fold. rewrite observe_bind. cbn.
     constructor. intro b. apply observe_eq_pstruct. reflexivity.
   - rewrite <- (fair_binary_round_measure x).
     transitivity (Prob vn_fair (fun b =>
-        Prob (ret_Enum (binary_round_result x b)) (fun next => Ret next))
-      : ptree factoryE Enum (rat + bool)).
+        Prob (ret_EnumQ (binary_round_result x b)) (fun next => Ret next))
+      : ptree factoryE EnumQ (rat + bool)).
     + eapply peutt_prob with (XR := eq).
       * apply sem_lift_refl. intro b. reflexivity.
       * intros a b ->. apply peutt_sym.
-        exact (peutt_prob_ret (NI := Enum_SemanticMeasure)
+        exact (peutt_prob_ret (NI := EnumQ_SemanticMeasure)
           (FI := FreeOmegaObservableSemanticMeasure) (MX := FreeOmegaMixedMeasure)
-          (binary_round_result x b) (fun next => (Ret next : ptree factoryE Enum (rat + bool)))).
-    + apply (peutt_prob_flatten (NI := Enum_SemanticMeasure)
+          (binary_round_result x b) (fun next => (Ret next : ptree factoryE EnumQ (rat + bool)))).
+    + apply (peutt_prob_flatten (NI := EnumQ_SemanticMeasure)
         (FI := FreeOmegaObservableSemanticMeasure) (MX := FreeOmegaMixedMeasure)).
 Qed.
 
@@ -98,7 +98,7 @@ Qed.
 (** Any equivalent closed sampler can be installed without redoing the
     arithmetic/convergence proof of the binary algorithm. *)
 Theorem peutt_factory_correct
-    (sampler : ptree factoryE Enum bool)
+    (sampler : ptree factoryE EnumQ bool)
     (Hsampler : peutt eq sampler factory_direct_fair) :
   peutt eq (factory_with_sampler sampler q) (factory_direct_q q0 q1).
 Proof.

@@ -28,7 +28,7 @@ def classes(text):
 
 def independent_math(sources):
     """Keep the actual external mathematics independent, not only its signatures."""
-    forbidden = r'\b(?:FreeOmega|free_omega_\w+|Semantic\w+|ptree|SubEnum)\b'
+    forbidden = r'\b(?:FreeOmega|free_omega_\w+|Semantic\w+|ptree|SubEnumQ)\b'
     for path, text in sources.items():
         if path.startswith('theories/Prob/Domain/'):
             assert not re.search(forbidden, code_only(text)), 'Domain is not independent: ' + path
@@ -37,7 +37,7 @@ def independent_math(sources):
         assert not re.search(forbidden, code), 'Transport mathematics imports program semantics: ' + name
         if name in ['RealTransport', 'CountableRealTransport']:
             assert not re.search(r'\bOmegaVal\b', code), 'Scalar transport depends on the domain'
-    hitting = code_only(sources['theories/Eq/Backend/StableHittingDomainSubEnum.v'])
+    hitting = code_only(sources['theories/Eq/Backend/StableHittingDomainSubEnumQ.v'])
     for start, end in [('Section DomainKernel.', 'End DomainKernel.'),
                        ('Definition ptree_domain_kernel', 'Definition ptree_domain_approx')]:
         assert start in hitting and end in hitting, 'Missing independent kernel block'
@@ -67,7 +67,7 @@ def source_check(sources=None, policy=None):
         for name in names:
             assert re.search(r'\b(?:Example|Lemma|Theorem)\s+'+re.escape(name)+r'\b',code), \
                 'Missing regression: ' + name
-    joint = code_only(sources['theories/Prob/Backend/SubEnum/FreeOmega/JointSoundness.v'])
+    joint = code_only(sources['theories/Prob/Backend/SubEnumQ/FreeOmega/JointSoundness.v'])
     assert 'free_omega_qlift_countable_constraints' in joint and 'oval_bidual_coupled' in joint
     assert not re.search(r'\b(?:induction|elim|FOQLComp)\b', joint), 'Final bridge must not require intermediate validity'
     real_joint = code_only(sources['theories/Prob/Backend/SubEnumR/FreeOmega/JointRealization.v'])
@@ -79,7 +79,7 @@ def source_check(sources=None, policy=None):
     real_cover = code_only(sources['theories/Prob/Backend/SubEnumR/FreeOmega/CountableSupport.v'])
     assert not re.search(r'\b(?:free_omega_qlift|FOQL\w*)\b', real_cover), \
         'Countable support must be independent of quotient derivations'
-    hitting = code_only(sources['theories/Eq/Backend/StableHittingDomainSubEnum.v'])
+    hitting = code_only(sources['theories/Eq/Backend/StableHittingDomainSubEnumQ.v'])
     assert 'stable_hitting_denotational_adequacy' in hitting and 'stable_hitting_admissible' in hitting
     print(f'Soundness source contracts: {len(sources)} modules; {len(GATE_M)} explicitly universe-unchecked Gate M modules; no unfinished proofs/new assumptions or capability drift.')
 
@@ -89,9 +89,9 @@ def manifest_check():
     names = set(data['soundness'])
     assert len(names) == 199 and names <= {e['name'] for e in data['endpoints']}
     for endpoint in [
-        'PTree.Prob.Backend.SubEnum.FreeOmega.JointSoundness.free_omega_qlift_sound',
-        'PTree.Prob.Backend.SubEnum.FreeOmega.QuotientSoundness.free_omega_qlift_eq_sound',
-        'PTree.Eq.Backend.StableHittingDomainSubEnum.stable_hitting_denotational_adequacy',
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.JointSoundness.free_omega_qlift_sound',
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.QuotientSoundness.free_omega_qlift_eq_sound',
+        'PTree.Eq.Backend.StableHittingDomainSubEnumQ.stable_hitting_denotational_adequacy',
         'PTree.Prob.Backend.Common.DomainTransport.oval_bidual_coupled_nat',
     ]:
         assert endpoint in names, 'Missing final contract'
@@ -210,9 +210,9 @@ def generic_quotient_check():
         'PTree.Prob.Backend.SubEnumR.FreeOmega.RelationalValidation': [
             'subenumR_native_model_lub', 'subenumR_qlift_bidual_raw',
             'subenumR_qlift_bidual', 'subenumR_qlift_eq_modelable'],
-        'PTree.Prob.Backend.SubEnum.FreeOmega.RelationalValidation': [
-            'subenum_native_model_lub', 'subenum_qlift_bidual_raw',
-            'subenum_generic_qlift_bidual', 'subenum_generic_qlift_tests'],
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.RelationalValidation': [
+            'subenumQ_native_model_lub', 'subenumQ_qlift_bidual_raw',
+            'subenumQ_generic_qlift_bidual', 'subenumQ_generic_qlift_tests'],
     }
     policy = json.loads(POLICY.read_text())
     path = 'theories/Regression/Probability/GenericQuotientValidation.v'
@@ -221,7 +221,7 @@ def generic_quotient_check():
     for e in entries:
         assert logical_axioms(e['assumptions']) <= SOUNDNESS_AXIOMS, e['name']
         if e['name'].startswith('PTree.Prob.FreeOmega.Validation.'):
-            assert not re.search(r'\b(?:SubEnum\w*|ptree|SemanticOmegaLaws|SemanticMeasureBindLaws)\b', e['type']), e['name']
+            assert not re.search(r'\b(?:SubEnumQ\w*|ptree|SemanticOmegaLaws|SemanticMeasureBindLaws)\b', e['type']), e['name']
         if e['name'].endswith('.model_qlift_bidual_raw'):
             assert 'free_omega_modelable' not in e['type'], 'Raw bridge must allow invalid middle terms'
     print(f'{len(entries)} generic quotient/adapter/regression endpoints checked; unchanged logical whitelist.')

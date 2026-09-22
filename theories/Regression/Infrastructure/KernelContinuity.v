@@ -4,7 +4,7 @@ From Coq.Arith Require Import PeanoNat.
 From Coq Require Import Lia.
 From Coq.Program Require Import Equality.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import PrimitiveStableHitting.
 From PTree.Eq.Internal.FreeOmega Require Import KernelContinuity.
@@ -16,9 +16,9 @@ Set Implicit Arguments.
     internally divergent, or have infinitely many reachable states. *)
 Section StateTruncation.
 Context {S O : Type}.
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Variable kernel : S -> MF (stable_target S O).
 Variable rank : S -> nat.
 
@@ -62,7 +62,7 @@ Example state_truncation_recovers_complete_hitting s out :
       FreeOmegaObservableSemanticOmega S O (ranked_kernel n) n s)).
 Proof.
   intro Hhit. exact (kernel_stable_hitting_diagonal
-    (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)
+    (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)
     ranked_kernel_increasing ranked_kernel_limit Hhit).
 Qed.
 
@@ -71,9 +71,9 @@ End StateTruncation.
 (** There is no global cutoff hiding in the preceding theorem.  Every
     fixed cutoff loses a returning state, so its hitting differs from the
     original.  Increasing the cutoff at the diagonal is essential. *)
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 
 Definition return_index_kernel (s : nat) : MF (stable_target nat nat) :=
   FORet (SHStable s).

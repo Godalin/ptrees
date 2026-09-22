@@ -1,15 +1,15 @@
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 From Coq.Program Require Import Equality.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import PrimitiveStableHitting.
 From PTree.Eq.Internal.FreeOmega Require Import KernelCompletion.
 
 Set Implicit Arguments.
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 
 Definition spinning_kernel (_ : unit) : MF (stable_target unit unit) :=
   FORet (SHInternal tt).
@@ -67,7 +67,7 @@ Example spin_limit_not_returning_tail :
     (free_omega_bind spinning_limit (fun _ => FORet true)) (returning_tail tt).
 Proof.
   intro Hlift. pose proof (proj1 (free_omega_qlift_support Hlift)) as Hsupport.
-  assert (Hzero : @free_omega_ae SubEnum SubEnum_SemanticMeasure bool
+  assert (Hzero : @free_omega_ae SubEnumQ SubEnumQ_SemanticMeasure bool
     (fun _ => False)
     (free_omega_bind spinning_limit (fun _ => FORet true))).
   { apply FOAELub. intro n. rewrite spinning_approx_zero. apply FOAEZero. }

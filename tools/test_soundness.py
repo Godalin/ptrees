@@ -20,7 +20,7 @@ class SoundnessTests(unittest.TestCase):
         soundness.manifest_check()
 
     def test_reject_assumptions_and_unfinished_proof(self):
-        path='theories/Prob/Backend/SubEnum/FreeOmega/JointSoundness.v'
+        path='theories/Prob/Backend/SubEnumQ/FreeOmega/JointSoundness.v'
         for bad in ['Axiom shortcut : False.','Parameter shortcut : False.',
                     'Lemma bad : False. Proof. admit. Admitted.',
                     'Class TransportExists := {}.', 'Check FOQLComp.', 'induction H.', 'elim H.']:
@@ -54,13 +54,13 @@ class SoundnessTests(unittest.TestCase):
             ('theories/Prob/Domain/CountableTransport.v', 'Check FreeOmega.'),
             ('theories/Prob/Backend/Common/RealTransport.v', 'Check OmegaVal.'),
             ('theories/Prob/Backend/Common/CountableRealTransport.v', 'Check ptree.'),
-            ('theories/Prob/Backend/Common/CountableCoupling.v', 'Check SubEnum.'),
+            ('theories/Prob/Backend/Common/CountableCoupling.v', 'Check SubEnumQ.'),
         ]:
             with self.subTest(path=path), self.assertRaises(AssertionError):
                 soundness.independent_math({**self.sources,path:self.sources[path]+'\n'+addition})
 
     def test_independent_kernel_cannot_be_formal_denotation(self):
-        path='theories/Eq/Backend/StableHittingDomainSubEnum.v'
+        path='theories/Eq/Backend/StableHittingDomainSubEnumQ.v'
         for marker in ['Section DomainKernel.', 'Definition ptree_domain_kernel']:
             changed=self.sources[path].replace(marker,marker+' Check ptree_hitting_approx.')
             with self.assertRaises(AssertionError):
@@ -108,7 +108,7 @@ class SoundnessTests(unittest.TestCase):
     def test_generic_quotient_audit_rejects_strengthening_or_new_axiom(self):
         name = 'PTree.Prob.FreeOmega.Validation.Quotient.model_qlift_bidual_raw'
         for typ, axioms in [
-            ('x : SubEnum A', 'Closed under the global context'),
+            ('x : SubEnumQ A', 'Closed under the global context'),
             ('x : SemanticOmegaLaws MN', 'Closed under the global context'),
             ('x : SemanticMeasureBindLaws MN', 'Closed under the global context'),
             ('x : free_omega_modelable t -> True', 'Closed under the global context'),

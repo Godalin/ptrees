@@ -5,7 +5,7 @@ From Coq.Arith Require Import PeanoNat.
 From Coq Require Import Lia.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Native.
 From PTree.Eq.Internal Require Import FiniteInternalPlan.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
@@ -16,7 +16,7 @@ Set Implicit Arguments.
 
 (** Stable guards do not execute external interaction or consume a step. *)
 Example return_round_cost :
-  internal_round_steps (FIPStop (Ret true : ptree planE SubEnum bool))
+  internal_round_steps (FIPStop (Ret true : ptree planE SubEnumQ bool))
     (existT _ tt tt) = 0.
 Proof. reflexivity. Qed.
 
@@ -51,9 +51,9 @@ Proof. reflexivity. Qed.
 
 Example divergent_round_budget fuel :
   free_omega_qlift eq
-    (@ptree_hitting_approx planE SubEnum (FreeOmega SubEnum)
+    (@ptree_hitting_approx planE SubEnumQ (FreeOmega SubEnumQ)
       (FreeOmegaObservableSemanticMeasure
-        (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+        (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool fuel
       (observe (Tau plan_spin)))
     (internal_round_budget spin_prefix_plan fuel).
@@ -62,15 +62,15 @@ Proof. apply internal_round_hitting_approx. Qed.
 (** Sampling in the guard also consumes one step.  A zero-mass guard
     remains zero-mass; it is not silently replaced by a total sample. *)
 Definition zero_guard_plan : finite_internal_plan
-    (Prob (@subenum_zero bool) (fun b => Ret b) : ptree planE SubEnum bool) :=
-  FIPStop (Prob (@subenum_zero bool) (fun b => Ret b)).
+    (Prob (@subenumQ_zero bool) (fun b => Ret b) : ptree planE SubEnumQ bool) :=
+  FIPStop (Prob (@subenumQ_zero bool) (fun b => Ret b)).
 
 Example zero_guard_cost :
   internal_round_steps zero_guard_plan (existT _ tt true) = 1.
 Proof. reflexivity. Qed.
 
 Example zero_guard_measure_raw :
-  subenum_raw (native_sample_measure (internal_plan_round_native zero_guard_plan)) = nil.
+  subenumQ_raw (native_sample_measure (internal_plan_round_native zero_guard_plan)) = nil.
 Proof. reflexivity. Qed.
 
 Section NonuniformRound.

@@ -382,20 +382,20 @@ Qed.
 End AttenuatedDirac.
 
 From mathcomp Require Import reals.
-Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.MathComp.Kernel PTree.Prob.Backend.MathComp.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.MathComp.Kernel PTree.Prob.Backend.MathComp.Measure.
 
 (** Both node backends tested here satisfy the necessary relational
     left-unit law. For MathComp this proof uses only the ordinary kernel law;
     the full relational SemanticMeasureBindLaws instance is now available
     separately in Prob/Backend/MathComp/BindLaws, but is not needed here.
     These checks do not claim that left-unit alone suffices for reflection. *)
-Example subenum_native_relational_left_unit {A B} (x : A) (k : A -> SubEnum B) :
-  @sem_lift SubEnum SubEnum_SemanticMeasure B B eq
-    (subenum_bind (subenum_ret x) k) (k x).
+Example subenumQ_native_relational_left_unit {A B} (x : A) (k : A -> SubEnumQ B) :
+  @sem_lift SubEnumQ SubEnumQ_SemanticMeasure B B eq
+    (subenumQ_bind (subenumQ_ret x) k) (k x).
 Proof.
-  eapply (@sem_lift_proper_r SubEnum SubEnum_SemanticMeasure
-    SubEnum_SemanticMeasureCoreLaws).
-  - apply (@sem_bind_ret_l SubEnum SubEnum_SemanticMeasure SubEnum_SemanticMeasureBindLaws).
+  eapply (@sem_lift_proper_r SubEnumQ SubEnumQ_SemanticMeasure
+    SubEnumQ_SemanticMeasureCoreLaws).
+  - apply (@sem_bind_ret_l SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticMeasureBindLaws).
   - apply sem_lift_refl. intro y. reflexivity.
 Qed.
 

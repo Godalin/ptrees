@@ -10,48 +10,48 @@ From mathcomp Require Import ssreflect ssrbool ssrnat seq ssralg ssrnum rat real
 From mathcomp.analysis Require Import ereal.
 From mathcomp.reals_stdlib Require Import Rstruct.
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.FrontierLift PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.Enum.FreeOmega.UpperExpectation PTree.Prob.Backend.Enum.FreeOmega.UpperQuotient.
+Require Import PTree.Prob.Backend.EnumQ.FreeOmega.UpperExpectation PTree.Prob.Backend.EnumQ.FreeOmega.UpperQuotient.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PTreeKernel PEutt ProbabilisticTrace.
-From PTree.Regression.Backend Require Import EnumMeasureRegression.
+From PTree.Regression.Backend Require Import EnumQMeasureRegression.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import Enum GRing.Theory Num.Theory.
+Import EnumQ GRing.Theory Num.Theory.
 Local Open Scope ring_scope.
 
-(** Native samples remain Enum. Complete heads belong to FreeOmega Enum,
-    not to the same monomorphic native Enum universe. In particular these
+(** Native samples remain EnumQ. Complete heads belong to FreeOmega EnumQ,
+    not to the same monomorphic native EnumQ universe. In particular these
     missing-mass tests must coexist with arbitrary sampled continuations. *)
-Local Notation MF := (FreeOmega Enum).
+Local Notation MF := (FreeOmega EnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega)).
+  (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
-  (NI := Enum_SemanticMeasure) (NC := Enum_SemanticMeasureCoreLaws)
-  (NO := Enum_SemanticOmega)).
+  (NI := EnumQ_SemanticMeasure) (NC := EnumQ_SemanticMeasureCoreLaws)
+  (NO := EnumQ_SemanticOmega)).
 Local Notation FO := (FreeOmegaObservableSemanticOmega
-  (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega)).
-Local Notation K := (@ptree_primitive_kernel regE Enum MF FI
+  (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega)).
+Local Notation K := (@ptree_primitive_kernel regE EnumQ MF FI
   FreeOmegaMixedMeasure bool).
 Local Notation hits t out := (@stable_hitting MF FI FO _ _ K (observe t) out).
-Local Notation W := (@peutt regE Enum MF FI FC
+Local Notation W := (@peutt regE EnumQ MF FI FC
   FreeOmegaMixedMeasure FO bool bool eq).
 Local Notation scalar := (@Real.Pack Rdefinitions.R (Real.on Rdefinitions.R)).
 
-CoFixpoint canonical_spin : ptree regE Enum bool := Tau canonical_spin.
+CoFixpoint canonical_spin : ptree regE EnumQ bool := Tau canonical_spin.
 
 Lemma observe_canonical_spin :
   observe canonical_spin = TauF canonical_spin.
 Proof. reflexivity. Qed.
 
-Definition half_return_half_diverge : ptree regE Enum bool :=
+Definition half_return_half_diverge : ptree regE EnumQ bool :=
   Prob reg_fair (fun b => if b then Ret true else canonical_spin).
 
-Definition half_return_heads : MF (stable_head regE Enum bool) :=
+Definition half_return_heads : MF (stable_head regE EnumQ bool) :=
   FOSample reg_fair (fun b => if b then FORet (FHRet true) else FOZero).
 
 Lemma canonical_spin_target_approx_zero fuel :
@@ -86,10 +86,10 @@ Definition divergent_one_event_trace : @finite_interaction_pattern regE :=
 Definition divergent_trace_query : MF bool := FOZero.
 
 Lemma canonical_spin_nonempty_trace_query_zero :
-  @finite_interaction_query regE Enum MF FI FreeOmegaMixedMeasure FO bool
+  @finite_interaction_query regE EnumQ MF FI FreeOmegaMixedMeasure FO bool
     divergent_one_event_trace canonical_spin divergent_trace_query.
 Proof.
-  exists FOZero, (fun _ : stable_head regE Enum bool => FOZero).
+  exists FOZero, (fun _ : stable_head regE EnumQ bool => FOZero).
   repeat split.
   - exact canonical_spin_stable_hitting_zero.
   - apply FOAEZero.
@@ -97,10 +97,10 @@ Proof.
 Qed.
 
 Lemma divergent_trace_query_mass_zero :
-  exists out : Enum bool,
-    @free_omega_observes Enum Enum_SemanticMeasure Enum_SemanticOmega
+  exists out : EnumQ bool,
+    @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
       bool bool (fun b => b) divergent_trace_query out /\
-    enum_expect (fun _ : bool => (1 : rat)) out = 0.
+    enumQ_expect (fun _ : bool => (1 : rat)) out = 0.
 Proof. exists [::]. split; [constructor|reflexivity]. Qed.
 
 Lemma divergent_trace_query_not_rejection_mass :
@@ -113,7 +113,7 @@ Proof.
   destruct H as [x [_ Hfalse]]. exact Hfalse.
 Qed.
 
-Lemma enum_ret_true_stable_hitting : hits (Ret true) (FORet (FHRet true)).
+Lemma enumQ_ret_true_stable_hitting : hits (Ret true) (FORet (FHRet true)).
 Proof. apply (stable_hitting_ret (FI := FI) (FO := FO)). Qed.
 
 Lemma half_return_half_diverge_stable_hitting :
@@ -123,7 +123,7 @@ Proof.
   apply (stable_hitting_prob (FI := FI) (FO := FO)
     (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
   - apply sem_ae_true.
-  - intros [] _; [exact enum_ret_true_stable_hitting|exact canonical_spin_stable_hitting_zero].
+  - intros [] _; [exact enumQ_ret_true_stable_hitting|exact canonical_spin_stable_hitting_zero].
 Qed.
 
 (** Scalar soundness of the observable quotient separates mass 1/2 from
@@ -131,14 +131,14 @@ Qed.
     The standard-real instance is the same one used by native recovery. *)
 Lemma half_return_heads_not_same_mass_ret :
   ~ @sem_same_mass MF FI
-      (stable_head regE Enum bool) (stable_head regE Enum bool)
+      (stable_head regE EnumQ bool) (stable_head regE EnumQ bool)
       half_return_heads (FORet (FHRet true)).
 Proof.
   intro Hmass.
   have Hweight := free_omega_qlift_extended_upper_mass scalar Hmass.
-  change (enum_extended_expect (R := scalar)
+  change (enumQ_extended_expect (R := scalar)
     (fun b : bool => if b then 1 else 0) reg_fair = 1)%E in Hweight.
-  cbn [enum_extended_expect reg_fair] in Hweight.
+  cbn [enumQ_extended_expect reg_fair] in Hweight.
   rewrite !reg_half_val mule0 mule1 !adde0 in Hweight.
   have Hone : (1 : \bar scalar)%E = (ratr (1 : rat) : scalar)%:E by rewrite rmorph1.
   rewrite Hone in Hweight. injection Hweight as Hrat.
@@ -153,8 +153,8 @@ Proof.
   intro Hrel.
   have Hlift := peutt_hitting_lift (FI := FI) (FC := FC) (FO := FO)
     (FOL := FreeOmegaObservableSemanticOmegaLaws
-      (NC := Enum_SemanticMeasureCoreLaws)) Hrel
-    half_return_half_diverge_stable_hitting enum_ret_true_stable_hitting.
+      (NC := EnumQ_SemanticMeasureCoreLaws)) Hrel
+    half_return_half_diverge_stable_hitting enumQ_ret_true_stable_hitting.
   apply half_return_heads_not_same_mass_ret.
   exact (sem_lift_same_mass Hlift).
 Qed.
@@ -164,7 +164,7 @@ From Coq.Classes Require Import RelationClasses.
 From Coq.Relations Require Import Relation_Operators.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import PEutt PTreeKernel PrimitiveStableHitting UnifiedFrontier.
 Module HittingDivergenceTests.
@@ -179,13 +179,13 @@ Unset Printing Implicit Defensive.
 (** Complete stable hitting distinguishes silent divergence from return.
     This sanity check is independent of any finite-compression relation. *)
 Variant closure_event : Type -> Type := .
-Local Notation tree := (ptree closure_event SubEnum bool).
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation tree := (ptree closure_event SubEnumQ bool).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
-Local Notation hit := (@ptree_hitting_approx closure_event SubEnum MF FI
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+Local Notation hit := (@ptree_hitting_approx closure_event SubEnumQ MF FI
   FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool).
-Local Notation PE := (@peutt closure_event SubEnum MF FI
+Local Notation PE := (@peutt closure_event SubEnumQ MF FI
   FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
   FreeOmegaObservableSemanticOmega bool bool eq).
 
@@ -203,14 +203,14 @@ Lemma closure_spin_not_peutt_return : ~ PE closure_spin closure_return.
 Proof.
   intro Hpeutt.
   pose (out := FOLub (fun n => hit n (observe closure_spin))).
-  assert (Hspin : @ptree_stable_hitting closure_event SubEnum MF FI
+  assert (Hspin : @ptree_stable_hitting closure_event SubEnumQ MF FI
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
     (observe closure_spin) out).
   { apply free_omega_qlift_refl. intro h. reflexivity. }
-  assert (Hret : @ptree_stable_hitting closure_event SubEnum MF FI
+  assert (Hret : @ptree_stable_hitting closure_event SubEnumQ MF FI
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
     (observe closure_return) (FORet (FHRet true))).
-  { exact (@stable_hitting_ret closure_event SubEnum MF
+  { exact (@stable_hitting_ret closure_event SubEnumQ MF
       FI FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaObservableSemanticMeasureBindLaws
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega FreeOmegaObservableSemanticOmegaLaws
       FreeOmegaObservableSemanticOmegaCofinalityLaws bool true). }

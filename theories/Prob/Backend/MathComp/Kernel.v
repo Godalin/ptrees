@@ -413,7 +413,7 @@ HB.instance Definition mc_bool_value_is_measurable :=
     measurable_mc_bool_value.
 
 (** A genuine real-valued Bernoulli law, transported into the carrier.  In
-    contrast with finite rational [Enum], this representation is closed
+    contrast with finite rational [EnumQ], this representation is closed
     under irrational parameters. *)
 Definition mathcomp_bernoulli_probability (q : R) :
     probability (mc_carrier bool) R :=

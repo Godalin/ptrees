@@ -11,14 +11,14 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
   PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure
   PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient.
 From PTree.Prob.FreeOmega.Validation Require Import Expectation Continuity Observation Quotient.
-Fail Check PTree.Prob.Backend.SubEnum.Measure.SubEnum.
+Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 Fail Check PTree.Prob.Backend.SubEnumR.Representation.SubEnumR.
 Fail Check PTree.Core.PTreeDefinition.ptree.
 Fail Check PTree.Eq.PEutt.peutt.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega Domain.
 From PTree.Prob.Backend.SubEnumR.FreeOmega Require Import Validation RelationalValidation.
 From PTree.Regression.Backend Require Import SubEnumR SubEnumRRelational.
-Fail Check PTree.Prob.Backend.SubEnum.Measure.SubEnum.
+Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -169,13 +169,13 @@ Example generic_real_large_carriers (A : Type@{u}) (B : Type@{v}) :
 Proof. apply subenumR_qlift_bidual_raw; apply FOQLStructural, FOLRet; exact I. Qed.
 End HighUniverse.
 
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import RelationalValidation GenericValidation UpperQuotient.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import RelationalValidation GenericValidation UpperQuotient.
 From PTree.Regression.Fixtures Require Import FreeOmegaSamples.
 Section RationalAgreement.
 Variable R : realType.
 Example generic_rational_tests_agree_with_DS5 {A B} (T : A -> B -> Prop) t u :
   free_omega_qlift T t u ->
   free_omega_upper_birel R T t u /\
-  model_upper_birel (fun X => @PTree.Prob.Backend.SubEnum.Domain.subenum_domain R X) T t u.
-Proof. intro H; split; [exact (free_omega_qlift_upper_birel R H)|exact (subenum_qlift_bidual_raw R H)]. Qed.
+  model_upper_birel (fun X => @PTree.Prob.Backend.SubEnumQ.Domain.subenumQ_domain R X) T t u.
+Proof. intro H; split; [exact (free_omega_qlift_upper_birel R H)|exact (subenumQ_qlift_bidual_raw R H)]. Qed.
 End RationalAgreement.

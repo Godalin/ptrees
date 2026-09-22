@@ -13,7 +13,7 @@ From PTree.Prob.FreeOmega.Validation Require Import Expectation.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega Domain.
 From PTree.Prob.Backend.SubEnumR.FreeOmega Require Import CountableSupport JointRealization.
 From PTree.Regression.Backend Require Import SubEnumR SubEnumRRelational.
-Fail Check PTree.Prob.Backend.SubEnum.Measure.SubEnum.
+Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 Fail Check PTree.Core.PTreeDefinition.ptree.
 Fail Check PTree.Eq.PEutt.peutt.
 Set Implicit Arguments.

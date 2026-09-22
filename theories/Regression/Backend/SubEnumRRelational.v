@@ -9,7 +9,7 @@ From PTree.Prob.Interface Require Import Measure AE Coupling.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
-Fail Check PTree.Prob.Backend.SubEnum.Measure.SubEnum.
+Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Import GRing.Theory Num.Theory Order.Theory ListNotations.

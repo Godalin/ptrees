@@ -24,21 +24,21 @@ def external_validation(path):
     return path.startswith(("Prob/Domain/", "Prob/FreeOmega/Validation/")) or path in {
         "Prob/Backend/Common/DomainTransport",
         "Prob/Backend/Common/CountableCoupling",
-        "Prob/Backend/SubEnum/Domain", "Prob/Backend/MathComp/Domain",
+        "Prob/Backend/SubEnumQ/Domain", "Prob/Backend/MathComp/Domain",
         "Prob/Backend/SubEnumR/Domain",
         "Prob/Backend/SubEnumR/FreeOmega/Validation",
         "Prob/Backend/SubEnumR/FreeOmega/RelationalValidation",
         "Prob/Backend/SubEnumR/FreeOmega/CountableSupport",
         "Prob/Backend/SubEnumR/FreeOmega/JointRealization",
-        "Prob/Backend/SubEnum/FreeOmega/Admissibility",
-        "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",
-        "Prob/Backend/SubEnum/FreeOmega/QuotientSoundness",
-        "Prob/Backend/SubEnum/FreeOmega/CountableSupport",
-        "Prob/Backend/SubEnum/FreeOmega/CouplingSoundness",
-        "Prob/Backend/SubEnum/FreeOmega/JointSoundness",
-        "Prob/Backend/SubEnum/FreeOmega/GenericValidation",
-        "Prob/Backend/SubEnum/FreeOmega/RelationalValidation",
-        "Eq/Backend/StableHittingDomainSubEnum",
+        "Prob/Backend/SubEnumQ/FreeOmega/Admissibility",
+        "Prob/Backend/SubEnumQ/FreeOmega/DomainSoundness",
+        "Prob/Backend/SubEnumQ/FreeOmega/QuotientSoundness",
+        "Prob/Backend/SubEnumQ/FreeOmega/CountableSupport",
+        "Prob/Backend/SubEnumQ/FreeOmega/CouplingSoundness",
+        "Prob/Backend/SubEnumQ/FreeOmega/JointSoundness",
+        "Prob/Backend/SubEnumQ/FreeOmega/GenericValidation",
+        "Prob/Backend/SubEnumQ/FreeOmega/RelationalValidation",
+        "Eq/Backend/StableHittingDomainSubEnumQ",
     }
 
 
@@ -67,7 +67,7 @@ def ownership(path):
         return "API", "curated endpoint/adapter", "explicit assembly; no bulk export"
     if path.startswith("Prob/Backend/"):
         parts = path.split("/")
-        assert len(parts) >= 4 and parts[2] in {"Common", "Enum", "SubEnum", "SubEnumR", "MathComp"}, "Ungrouped concrete probability module: " + path
+        assert len(parts) >= 4 and parts[2] in {"Common", "EnumQ", "SubEnumQ", "SubEnumR", "MathComp"}, "Ungrouped concrete probability module: " + path
         family = parts[2]
         assert not (family == "MathComp" and "FreeOmega" in parts[3:]), \
             "Removed MathComp completion namespace: " + path
@@ -90,10 +90,10 @@ def ownership(path):
         ("Eq/Backend", "concrete", "tree equations/quantitative endpoints for concrete carriers"),
         ("Eq/FreeOmega", "FreeOmega", "canonical-model equational theory"),
         ("Eq", "generic", "canonical equivalence, validity and hitting algebra"),
-        ("Semantics/Backend", "SubEnum", "retain comparison semantics; not canonical equality"),
+        ("Semantics/Backend", "SubEnumQ", "retain comparison semantics; not canonical equality"),
         ("Semantics/FreeOmega", "FreeOmega", "retain comparison semantics; not canonical equality"),
         ("Semantics", "generic", "independent comparison semantics"),
-        ("Interp/Backend", "SubEnum", "concrete interpreter endpoint"),
+        ("Interp/Backend", "SubEnumQ", "concrete interpreter endpoint"),
         ("Interp/FreeOmega", "FreeOmega", "canonical-model interpreter compositionality"),
         ("Interp", "generic", "structural interpretation or generic hitting infrastructure"),
     ):
@@ -135,15 +135,15 @@ def permitted(module, dependency):
         return under("Prob/Interface", "Prob/Backend/Common", "Prob/Backend/MathComp", "Prob/Domain")
     if module.startswith("Prob/Backend/SubEnumR/"):
         if module == "Prob/Backend/SubEnumR/RationalEmbedding":
-            return under("Prob/Backend/SubEnumR", "Prob/Backend/SubEnum",
-                         "Prob/Backend/Enum", "Prob/Backend/Common")
+            return under("Prob/Backend/SubEnumR", "Prob/Backend/SubEnumQ",
+                         "Prob/Backend/EnumQ", "Prob/Backend/Common")
         return under("Prob/Interface", "Prob/FreeOmega", "Prob/Backend/Common",
                      "Prob/Backend/SubEnumR", "Prob/Domain")
-    if module.startswith(("Prob/Backend/Enum/", "Prob/Backend/SubEnum/")):
-        # SubEnum is a validated Enum carrier, not an unrelated implementation.
+    if module.startswith(("Prob/Backend/EnumQ/", "Prob/Backend/SubEnumQ/")):
+        # SubEnumQ is a validated EnumQ carrier, not an unrelated implementation.
         # Realization/observation adapters legitimately cross this boundary.
         return under("Prob/Interface", "Prob/FreeOmega", "Prob/Backend/Common",
-                     "Prob/Backend/Enum", "Prob/Backend/SubEnum", "Prob/Legacy", "Prob/Domain")
+                     "Prob/Backend/EnumQ", "Prob/Backend/SubEnumQ", "Prob/Legacy", "Prob/Domain")
     if module.startswith("Prob/Legacy/"):
         return under("Prob")
     if module.startswith("Eq/"):
@@ -201,15 +201,15 @@ def check_external_validation_boundary(edges):
 
 
 def check_native_expectation_boundary(edges):
-    # Native SubEnum validation precedes formal omega completion, even through
+    # Native SubEnumQ validation precedes formal omega completion, even through
     # indirect finite-helper imports. Upper evaluators may use finite facts,
     # but finite facts must never depend on external validation in return.
-    roots = {m for m in ("Prob/Backend/SubEnum/Expectation",
-                         "Prob/Backend/SubEnum/Domain", "Prob/Backend/SubEnumR/Domain",
+    roots = {m for m in ("Prob/Backend/SubEnumQ/Expectation",
+                         "Prob/Backend/SubEnumQ/Domain", "Prob/Backend/SubEnumR/Domain",
                          "Prob/Backend/SubEnumR/Representation", "Prob/Backend/SubEnumR/Measure") if m in edges}
     leaked = {m for m in closure(edges, roots) if "/FreeOmega/" in m}
     assert not leaked, "Native expectation/domain depends on FreeOmega: " + str(sorted(leaked))
-    finite = "Prob/Backend/SubEnum/Expectation"
+    finite = "Prob/Backend/SubEnumQ/Expectation"
     if finite in edges:
         leaked = {m for m in closure(edges, {finite}) if external_validation(m)}
         assert not leaked, "Finite expectation depends on validation: " + str(sorted(leaked))
@@ -314,9 +314,9 @@ def report():
         "- Every edge is checked against the ownership policy, not merely displayed as debt.",
         "- Core has no local probability dependency; Prob has no tree-theory dependency.",
         "- Generic interfaces and FreeOmega measure infrastructure import no concrete backend.",
-        "- Concrete probability modules name Common/Enum/SubEnum/SubEnumR/MathComp ownership; Common cannot import a native carrier.",
-        "- Native SubEnum expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.",
-        "- MathComp and Enum/SubEnum do not depend on each other; Enum/SubEnum realization adapters may reuse each other.",
+        "- Concrete probability modules name Common/EnumQ/SubEnumQ/SubEnumR/MathComp ownership; Common cannot import a native carrier.",
+        "- Native SubEnumQ expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.",
+        "- MathComp and EnumQ/SubEnumQ do not depend on each other; EnumQ/SubEnumQ realization adapters may reuse each other.",
         "- MathComp native sources and their transitive dependencies exclude formal completion; no MathComp behavioral alias or concrete FreeOmega instantiation is maintained.",
         "- Eq imports no Interp/Semantics/API; Semantics imports no Interp/API.",
         "- Generic/canonical-model Eq, Semantics and Interp modules import no concrete backend endpoint.",
@@ -338,7 +338,7 @@ def report():
              "FiniteInternal is auxiliary proof infrastructure for well-founded internal compression "
              "and related adequacy arguments. It is not part of the canonical PTree semantics or "
              "public equivalence theory. Members remain maintained independent infrastructure; completed "
-             "SubEnum domain soundness does not use this branch. Regression-only leaves "
+             "SubEnumQ domain soundness does not use this branch. Regression-only leaves "
              "are retained as checked execution, coupling, schedule or recovery contracts; none "
              "is re-exported as a public equality. No theorem deletion is inferred from client counts.", ""]
     rows += ["The formal peutt/Interp/facade mainline has no transitive Eq/Internal dependency. "

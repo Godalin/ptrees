@@ -56,15 +56,15 @@ class ArchitectureTests(unittest.TestCase):
                     architecture.check_external_validation_boundary(graph)
 
     def test_explicit_eq_validation_adapter_is_not_reasoning_root(self):
-        graph = {"Eq/Backend/StableHittingDomainSubEnum": {"Prob/Domain/Expectation"},
+        graph = {"Eq/Backend/StableHittingDomainSubEnumQ": {"Prob/Domain/Expectation"},
                  "Prob/Domain/Expectation": set(), "Eq/PEutt": set()}
         architecture.check_external_validation_boundary(graph)
-        graph["Eq/PEutt"] = {"Eq/Backend/StableHittingDomainSubEnum"}
+        graph["Eq/PEutt"] = {"Eq/Backend/StableHittingDomainSubEnumQ"}
         with self.assertRaises(AssertionError):
             architecture.check_external_validation_boundary(graph)
 
     def test_relational_validation_adapters_are_one_way(self):
-        for family in ["SubEnum", "SubEnumR"]:
+        for family in ["SubEnumQ", "SubEnumR"]:
             bridge = f"Prob/Backend/{family}/FreeOmega/RelationalValidation"
             self.assertTrue(architecture.external_validation(bridge))
             self.assertTrue(architecture.permitted(bridge, "Prob/FreeOmega/Validation/Quotient"))
@@ -77,7 +77,7 @@ class ArchitectureTests(unittest.TestCase):
         self.assertTrue(architecture.external_validation(bridge))
         self.assertTrue(architecture.permitted(bridge, "Prob/Domain/Expectation"))
         self.assertTrue(architecture.permitted(bridge, "Prob/FreeOmega/Definition"))
-        for target in ["Prob/Backend/SubEnum/Domain", "Prob/Backend/MathComp/Domain",
+        for target in ["Prob/Backend/SubEnumQ/Domain", "Prob/Backend/MathComp/Domain",
                        "Core/PTreeDefinition"]:
             self.assertFalse(architecture.permitted(bridge, target))
         for source in ["Prob/Domain/Expectation", "Prob/FreeOmega/Measure",
@@ -89,32 +89,32 @@ class ArchitectureTests(unittest.TestCase):
         self.assertEqual(architecture.ownership(domain)[:2],
                          ("Prob/Domain", "external validation"))
         for dependency in ["Prob/Interface/Measure", "Prob/FreeOmega/Definition",
-                           "Core/PTreeDefinition", "Eq/PEutt", "Prob/Backend/SubEnum/Measure"]:
+                           "Core/PTreeDefinition", "Eq/PEutt", "Prob/Backend/SubEnumQ/Measure"]:
             self.assertFalse(architecture.permitted(domain, dependency))
         self.assertTrue(architecture.permitted("Prob/Domain/MeasureModel", domain))
 
     def test_external_validation_is_not_mainline_infrastructure(self):
         for source in ["Eq/PEutt", "API/Generic", "Examples/RandomWalk",
-                       "Interp/FreeOmega/Guarded", "Prob/Backend/SubEnum/Measure",
+                       "Interp/FreeOmega/Guarded", "Prob/Backend/SubEnumQ/Measure",
                        "Prob/Legacy/Discrete", "Semantics/MDPFragment"]:
             for target in ["Prob/Domain/Expectation",
-                           "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",
-                           "Prob/Backend/SubEnum/FreeOmega/QuotientSoundness",
-                           "Prob/Backend/SubEnum/FreeOmega/CountableSupport",
-                           "Prob/Backend/SubEnum/FreeOmega/CouplingSoundness",
-                           "Eq/Backend/StableHittingDomainSubEnum"]:
+                           "Prob/Backend/SubEnumQ/FreeOmega/DomainSoundness",
+                           "Prob/Backend/SubEnumQ/FreeOmega/QuotientSoundness",
+                           "Prob/Backend/SubEnumQ/FreeOmega/CountableSupport",
+                           "Prob/Backend/SubEnumQ/FreeOmega/CouplingSoundness",
+                           "Eq/Backend/StableHittingDomainSubEnumQ"]:
                 self.assertFalse(architecture.permitted(source, target))
-        self.assertTrue(architecture.permitted("Prob/Backend/SubEnum/Domain", "Prob/Domain/Expectation"))
+        self.assertTrue(architecture.permitted("Prob/Backend/SubEnumQ/Domain", "Prob/Domain/Expectation"))
         self.assertTrue(architecture.permitted("Regression/Probability/OmegaVal", "Prob/Domain/Expectation"))
 
     def test_external_boundary_checks_transitive_closure(self):
-        graph = {"Examples/RandomWalk": {"Prob/Backend/SubEnum/Measure"},
-                 "Prob/Backend/SubEnum/Measure": {"Prob/Backend/SubEnum/Domain"},
-                 "Prob/Backend/SubEnum/Domain": {"Prob/Domain/Expectation"},
+        graph = {"Examples/RandomWalk": {"Prob/Backend/SubEnumQ/Measure"},
+                 "Prob/Backend/SubEnumQ/Measure": {"Prob/Backend/SubEnumQ/Domain"},
+                 "Prob/Backend/SubEnumQ/Domain": {"Prob/Domain/Expectation"},
                  "Prob/Domain/Expectation": set()}
         with self.assertRaises(AssertionError):
             architecture.check_external_validation_boundary(graph)
-        graph["Prob/Backend/SubEnum/Measure"] = set()
+        graph["Prob/Backend/SubEnumQ/Measure"] = set()
         architecture.check_external_validation_boundary(graph)
 
     def test_examples_owns_applications_not_regressions(self):
@@ -142,9 +142,9 @@ class ArchitectureTests(unittest.TestCase):
                          ("Semantics/FreeOmega", "FreeOmega",
                           "retain comparison semantics; not canonical equality"))
 
-    def test_semantic_subenum_endpoint_is_concrete_backend(self):
-        self.assertEqual(architecture.ownership("Semantics/Backend/MDPEmbeddingSubEnum"),
-                         ("Semantics/Backend", "SubEnum",
+    def test_semantic_subenumQ_endpoint_is_concrete_backend(self):
+        self.assertEqual(architecture.ownership("Semantics/Backend/MDPEmbeddingSubEnumQ"),
+                         ("Semantics/Backend", "SubEnumQ",
                           "retain comparison semantics; not canonical equality"))
 
     def test_interpretation_is_freeomega_qualified(self):
@@ -152,20 +152,20 @@ class ArchitectureTests(unittest.TestCase):
                          ("Interp/FreeOmega", "FreeOmega"))
 
     def test_tree_cofinality_is_not_measure_infrastructure(self):
-        self.assertEqual(architecture.ownership("Eq/Backend/EnumCofinality")[0],
+        self.assertEqual(architecture.ownership("Eq/Backend/EnumQCofinality")[0],
                          "Eq/Backend")
 
     def test_forbidden_reverse_dependencies(self):
         for source, target in [
             ("Core/PTreeDefinition", "Prob/Legacy/Monad"),
-            ("Prob/FreeOmega/Measure", "Prob/Backend/Enum/Measure"),
+            ("Prob/FreeOmega/Measure", "Prob/Backend/EnumQ/Measure"),
             ("Eq/FreeOmega/Bind", "Interp/FreeOmega/Cofinality"),
             ("Eq/PEutt", "Eq/FreeOmega/Bind"),
             ("Semantics/MDPFragment", "Semantics/FreeOmega/MDPCoincidenceFreeOmega"),
             ("Semantics/MDPFragment", "Interp/FreeOmega/MDP"),
-            ("Interp/FreeOmega/MDP", "Interp/Backend/SubEnum"),
+            ("Interp/FreeOmega/MDP", "Interp/Backend/SubEnumQ"),
             ("Eq/PEutt", "Regression/Semantics/PEuttAlgebra"),
-            ("Examples/RandomWalk", "Regression/Backend/SubEnumRegression"),
+            ("Examples/RandomWalk", "Regression/Backend/SubEnumQRegression"),
         ]:
             with self.subTest(source=source, target=target):
                 self.assertFalse(architecture.permitted(source, target))
@@ -175,20 +175,20 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_probability_native_axis_and_canonical_boundary(self):
         self.assertFalse(architecture.permitted("Prob/Backend/SubEnumR/Representation", "Prob/Domain/Expectation"))
-        self.assertFalse(architecture.permitted("Prob/Backend/SubEnumR/Measure", "Prob/Backend/SubEnum/Measure"))
+        self.assertFalse(architecture.permitted("Prob/Backend/SubEnumR/Measure", "Prob/Backend/SubEnumQ/Measure"))
         self.assertTrue(architecture.permitted("Prob/Backend/SubEnumR/Domain", "Prob/Domain/Expectation"))
         self.assertEqual(architecture.ownership("Prob/FreeOmega/Measure")[:2],
                          ("Prob/FreeOmega", "FreeOmega"))
-        self.assertEqual(architecture.ownership("Prob/Backend/SubEnum/FreeOmega/Total")[:2],
-                         ("Prob/Backend/SubEnum/FreeOmega", "SubEnum"))
-        for m in ["Prob/Backend/FreeOmega/TotalSubEnum", "Prob/Backend/TwoLevelMeasureEnum"]:
+        self.assertEqual(architecture.ownership("Prob/Backend/SubEnumQ/FreeOmega/Total")[:2],
+                         ("Prob/Backend/SubEnumQ/FreeOmega", "SubEnumQ"))
+        for m in ["Prob/Backend/FreeOmega/TotalSubEnumQ", "Prob/Backend/TwoLevelMeasureEnumQ"]:
             with self.assertRaises(AssertionError):
                 architecture.ownership(m)
-        for m, d in [("Prob/Backend/Common/FiniteMatching", "Prob/Backend/Enum/Measure"),
-                     ("Prob/Backend/MathComp/Measure", "Prob/Backend/SubEnum/Measure"),
-                     ("Prob/Backend/Enum/Measure", "Prob/Backend/MathComp/Measure")]:
+        for m, d in [("Prob/Backend/Common/FiniteMatching", "Prob/Backend/EnumQ/Measure"),
+                     ("Prob/Backend/MathComp/Measure", "Prob/Backend/SubEnumQ/Measure"),
+                     ("Prob/Backend/EnumQ/Measure", "Prob/Backend/MathComp/Measure")]:
             self.assertFalse(architecture.permitted(m, d))
-        self.assertTrue(architecture.permitted("Prob/Backend/SubEnum/Measure", "Prob/Backend/Enum/Measure"))
+        self.assertTrue(architecture.permitted("Prob/Backend/SubEnumQ/Measure", "Prob/Backend/EnumQ/Measure"))
 
     def test_unknown_experiment_requires_review(self):
         with self.assertRaises(AssertionError):
@@ -207,24 +207,24 @@ class AggregateAndFixtureTests(unittest.TestCase):
     def test_fixture_has_no_final_regression_dependency(self):
         source='Regression/Fixtures/FreeOmegaSamples'
         self.assertFalse(architecture.permitted(source,'Regression/Probability/FreeOmegaSoundness'))
-        self.assertTrue(architecture.permitted(source,'Prob/Backend/SubEnum/FreeOmega/DomainSoundness'))
+        self.assertTrue(architecture.permitted(source,'Prob/Backend/SubEnumQ/FreeOmega/DomainSoundness'))
         self.assertTrue(architecture.permitted('Regression/Probability/CountableCoupling',source))
 
     def test_native_validation_has_no_completion_dependency(self):
-        edges={'Prob/Backend/SubEnum/Domain': {'Prob/Backend/SubEnum/Expectation'},
-               'Prob/Backend/SubEnum/Expectation': {'Prob/Backend/SubEnum/FreeOmega/UpperExpectation'},
-               'Prob/Backend/SubEnum/FreeOmega/UpperExpectation':set()}
+        edges={'Prob/Backend/SubEnumQ/Domain': {'Prob/Backend/SubEnumQ/Expectation'},
+               'Prob/Backend/SubEnumQ/Expectation': {'Prob/Backend/SubEnumQ/FreeOmega/UpperExpectation'},
+               'Prob/Backend/SubEnumQ/FreeOmega/UpperExpectation':set()}
         with self.assertRaises(AssertionError):
             architecture.check_native_expectation_boundary(edges)
-        edges['Prob/Backend/SubEnum/Expectation']=set()
+        edges['Prob/Backend/SubEnumQ/Expectation']=set()
         architecture.check_native_expectation_boundary(edges)
 
     def test_final_joint_adapter_stays_external(self):
         for target in ['Prob/Backend/Common/CountableCoupling',
-                       'Prob/Backend/SubEnum/FreeOmega/JointSoundness']:
+                       'Prob/Backend/SubEnumQ/FreeOmega/JointSoundness']:
             self.assertTrue(architecture.external_validation(target))
             for source in ['API/FreeOmega','Eq/PEutt','Examples/RandomWalk',
-                           'Prob/Backend/SubEnum/Measure']:
+                           'Prob/Backend/SubEnumQ/Measure']:
                 self.assertFalse(architecture.permitted(source,target))
         self.assertFalse(architecture.permitted('Prob/Domain/Coupling','Prob/Backend/Common/DomainTransport'))
         self.assertTrue(architecture.permitted('Prob/Backend/Common/CountableCoupling','Prob/Domain/CountableTransport'))

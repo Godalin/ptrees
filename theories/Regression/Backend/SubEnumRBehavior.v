@@ -12,7 +12,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import PStruct PStrong PEutt UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Eq.FreeOmega Require Import Relation Bind Algebra Iter Hitting.
 
-Fail Check PTree.Prob.Backend.SubEnum.Measure.SubEnum.
+Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 Fail Check PTree.Prob.Backend.MathComp.Kernel.MathCompKernelMeasure.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Set Implicit Arguments.

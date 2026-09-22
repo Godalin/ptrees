@@ -4,12 +4,12 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
 From mathcomp Require Import reals.
-Require Import PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.MathComp.Kernel.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.MathComp.Kernel.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.MathComp.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.MathComp.Measure.
 Require Import PTree.Prob.FreeOmega.NativeCoupling.
-Require Import PTree.Prob.Backend.SubEnum.FreeOmega.NativeCoupling.
+Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.NativeCoupling.
 From PTree.Prob.Interface Require Import SemanticCoupling.
 Require Import PTree.Prob.Backend.MathComp.Coupling.
 
@@ -17,7 +17,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Import Enum.
+Import EnumQ.
 
 (** Native-backend independent probes. In particular [NO] supplies operations,
     not native omega completeness; neither native BindLaws nor OmegaLaws is
@@ -70,163 +70,163 @@ End GenericCompletionProfile.
     completed behavior measure [MF = FreeOmega MN].  Commutativity remains
     optional and is deliberately absent from this required profile. *)
 
-Section EnumNodeProfile.
+Section EnumQNodeProfile.
 
-Definition enum_profile_subprobability_predicate :
-    @SemanticSubprobability Enum Enum_SemanticMeasure := _.
-Definition enum_profile_subprobability_closure :
-    @SemanticSubprobabilityLaws Enum Enum_SemanticMeasure
-      Enum_SemanticSubprobability := _.
-(** Intentionally no [SemanticSubprobabilityCarrierLaws Enum]: raw Enum
+Definition enumQ_profile_subprobability_predicate :
+    @SemanticSubprobability EnumQ EnumQ_SemanticMeasure := _.
+Definition enumQ_profile_subprobability_closure :
+    @SemanticSubprobabilityLaws EnumQ EnumQ_SemanticMeasure
+      EnumQ_SemanticSubprobability := _.
+(** Intentionally no [SemanticSubprobabilityCarrierLaws EnumQ]: raw EnumQ
     contains arbitrary finite weights. *)
-Definition enum_profile_core :
-    @SemanticMeasureCoreLaws Enum Enum_SemanticMeasure := _.
-Definition enum_profile_ae_lift :
-    @SemanticMeasureAELiftLaws Enum Enum_SemanticMeasure := _.
-Definition enum_profile_ae_kleisli :
-    @SemanticMeasureAEKleisliLaws Enum Enum_SemanticMeasure := _.
-Definition enum_profile_dirac_ae :
-    @SemanticMeasureDiracAELaws Enum Enum_SemanticMeasure := _.
-Definition enum_profile_countable_ae :
-    @SemanticMeasureCountableAELaws Enum Enum_SemanticMeasure := _.
-Definition enum_profile_coupling_ae :
-    @SemanticMeasureCouplingAELaws Enum Enum_SemanticMeasure := _.
-Definition enum_profile_bind :
-    @SemanticMeasureBindLaws Enum Enum_SemanticMeasure := _.
-Definition enum_profile_bind_ae_exact :
-    @SemanticMeasureBindAEExactLaws Enum Enum_SemanticMeasure := _.
+Definition enumQ_profile_core :
+    @SemanticMeasureCoreLaws EnumQ EnumQ_SemanticMeasure := _.
+Definition enumQ_profile_ae_lift :
+    @SemanticMeasureAELiftLaws EnumQ EnumQ_SemanticMeasure := _.
+Definition enumQ_profile_ae_kleisli :
+    @SemanticMeasureAEKleisliLaws EnumQ EnumQ_SemanticMeasure := _.
+Definition enumQ_profile_dirac_ae :
+    @SemanticMeasureDiracAELaws EnumQ EnumQ_SemanticMeasure := _.
+Definition enumQ_profile_countable_ae :
+    @SemanticMeasureCountableAELaws EnumQ EnumQ_SemanticMeasure := _.
+Definition enumQ_profile_coupling_ae :
+    @SemanticMeasureCouplingAELaws EnumQ EnumQ_SemanticMeasure := _.
+Definition enumQ_profile_bind :
+    @SemanticMeasureBindLaws EnumQ EnumQ_SemanticMeasure := _.
+Definition enumQ_profile_bind_ae_exact :
+    @SemanticMeasureBindAEExactLaws EnumQ EnumQ_SemanticMeasure := _.
 
-End EnumNodeProfile.
+End EnumQNodeProfile.
 
-Section EnumFreeOmegaProfile.
+Section EnumQFreeOmegaProfile.
 
-Let NI := Enum_SemanticMeasure.
-Let NO := Enum_SemanticOmega.
-Let MF := FreeOmega Enum.
+Let NI := EnumQ_SemanticMeasure.
+Let NO := EnumQ_SemanticOmega.
+Let MF := FreeOmega EnumQ.
 Let FI := FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO).
 Let FO := FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO).
 
-Definition enum_profile_behavior_core :
+Definition enumQ_profile_behavior_core :
     @SemanticMeasureCoreLaws MF FI := _.
-Definition enum_profile_behavior_bind :
+Definition enumQ_profile_behavior_bind :
     @SemanticMeasureBindLaws MF FI := _.
-Definition enum_profile_behavior_ae_kleisli :
+Definition enumQ_profile_behavior_ae_kleisli :
     @SemanticMeasureAEKleisliLaws MF FI := _.
-Definition enum_profile_behavior_countable_ae :
+Definition enumQ_profile_behavior_countable_ae :
     @SemanticMeasureCountableAELaws MF FI := _.
-Definition enum_profile_behavior_coupling_ae :
+Definition enumQ_profile_behavior_coupling_ae :
     @SemanticMeasureCouplingAELaws MF FI := _.
-Definition enum_profile_behavior_omega :
+Definition enumQ_profile_behavior_omega :
     @SemanticOmega MF FI := FO.
-Definition enum_profile_behavior_order :
+Definition enumQ_profile_behavior_order :
     @SemanticMeasureOrderLaws MF FI FO := _.
-Definition enum_profile_behavior_omega_laws :
+Definition enumQ_profile_behavior_omega_laws :
     @SemanticOmegaLaws MF FI FO := _.
-Definition enum_profile_behavior_total_proper :
+Definition enumQ_profile_behavior_total_proper :
     @SemanticTotalProperLaws MF FI FO := _.
-Definition enum_profile_behavior_cofinality :
+Definition enumQ_profile_behavior_cofinality :
     @SemanticOmegaCofinalityLaws MF FI FO := _.
-Definition enum_profile_behavior_omega_ae :
+Definition enumQ_profile_behavior_omega_ae :
     @SemanticOmegaAELaws MF FI FO := _.
-Definition enum_profile_behavior_diagonal :
+Definition enumQ_profile_behavior_diagonal :
     @SemanticMeasureDiagonalLaws MF FI FO := _.
-Definition enum_profile_behavior_fubini :
+Definition enumQ_profile_behavior_fubini :
     @SemanticOmegaFubiniLaws MF FI FO := _.
-Definition enum_profile_mixed : @MixedMeasure Enum MF := _.
-Definition enum_profile_mixed_laws :
-    @MixedMeasureLaws Enum MF NI FI FreeOmegaMixedMeasure := _.
-Definition enum_profile_mixed_unit :
-    @MixedMeasureUnitLaws Enum MF NI FI FreeOmegaMixedMeasure := _.
-Definition enum_profile_mixed_node_bind :
-    @MixedMeasureNodeBindLaws Enum MF NI FI FreeOmegaMixedMeasure := _.
-Definition enum_profile_mixed_omega :
-    @MixedMeasureOmegaLaws Enum MF NI FI FreeOmegaMixedMeasure FO := _.
+Definition enumQ_profile_mixed : @MixedMeasure EnumQ MF := _.
+Definition enumQ_profile_mixed_laws :
+    @MixedMeasureLaws EnumQ MF NI FI FreeOmegaMixedMeasure := _.
+Definition enumQ_profile_mixed_unit :
+    @MixedMeasureUnitLaws EnumQ MF NI FI FreeOmegaMixedMeasure := _.
+Definition enumQ_profile_mixed_node_bind :
+    @MixedMeasureNodeBindLaws EnumQ MF NI FI FreeOmegaMixedMeasure := _.
+Definition enumQ_profile_mixed_omega :
+    @MixedMeasureOmegaLaws EnumQ MF NI FI FreeOmegaMixedMeasure FO := _.
 
-End EnumFreeOmegaProfile.
+End EnumQFreeOmegaProfile.
 
-(** The canonical finite probability backend.  Unlike raw [Enum], every
-    inhabitant of [SubEnum] carries a proof that its total weight is at most
+(** The canonical finite probability backend.  Unlike raw [EnumQ], every
+    inhabitant of [SubEnumQ] carries a proof that its total weight is at most
     one.  The FreeOmega behavior profile is otherwise the same. *)
-Section SubEnumNodeProfile.
+Section SubEnumQNodeProfile.
 
-Definition subenum_profile_measure : SemanticMeasure SubEnum := _.
-Definition subenum_profile_subprobability :
-    @SemanticSubprobability SubEnum SubEnum_SemanticMeasure := _.
-Definition subenum_profile_subprobability_closure :
-    @SemanticSubprobabilityLaws SubEnum SubEnum_SemanticMeasure
-      SubEnum_SemanticSubprobability := _.
-Definition subenum_profile_intrinsically_bounded :
-    @SemanticSubprobabilityCarrierLaws SubEnum SubEnum_SemanticMeasure
-      SubEnum_SemanticSubprobability := _.
-Definition subenum_profile_core :
-    @SemanticMeasureCoreLaws SubEnum SubEnum_SemanticMeasure := _.
-Definition subenum_profile_ae_lift :
-    @SemanticMeasureAELiftLaws SubEnum SubEnum_SemanticMeasure := _.
-Definition subenum_profile_ae_kleisli :
-    @SemanticMeasureAEKleisliLaws SubEnum SubEnum_SemanticMeasure := _.
-Definition subenum_profile_dirac_ae :
-    @SemanticMeasureDiracAELaws SubEnum SubEnum_SemanticMeasure := _.
-Definition subenum_profile_countable_ae :
-    @SemanticMeasureCountableAELaws SubEnum SubEnum_SemanticMeasure := _.
-Definition subenum_profile_coupling_ae :
-    @SemanticMeasureCouplingAELaws SubEnum SubEnum_SemanticMeasure := _.
-Definition subenum_profile_bind :
-    @SemanticMeasureBindLaws SubEnum SubEnum_SemanticMeasure := _.
-Definition subenum_profile_bind_ae_exact :
-    @SemanticMeasureBindAEExactLaws SubEnum SubEnum_SemanticMeasure := _.
+Definition subenumQ_profile_measure : SemanticMeasure SubEnumQ := _.
+Definition subenumQ_profile_subprobability :
+    @SemanticSubprobability SubEnumQ SubEnumQ_SemanticMeasure := _.
+Definition subenumQ_profile_subprobability_closure :
+    @SemanticSubprobabilityLaws SubEnumQ SubEnumQ_SemanticMeasure
+      SubEnumQ_SemanticSubprobability := _.
+Definition subenumQ_profile_intrinsically_bounded :
+    @SemanticSubprobabilityCarrierLaws SubEnumQ SubEnumQ_SemanticMeasure
+      SubEnumQ_SemanticSubprobability := _.
+Definition subenumQ_profile_core :
+    @SemanticMeasureCoreLaws SubEnumQ SubEnumQ_SemanticMeasure := _.
+Definition subenumQ_profile_ae_lift :
+    @SemanticMeasureAELiftLaws SubEnumQ SubEnumQ_SemanticMeasure := _.
+Definition subenumQ_profile_ae_kleisli :
+    @SemanticMeasureAEKleisliLaws SubEnumQ SubEnumQ_SemanticMeasure := _.
+Definition subenumQ_profile_dirac_ae :
+    @SemanticMeasureDiracAELaws SubEnumQ SubEnumQ_SemanticMeasure := _.
+Definition subenumQ_profile_countable_ae :
+    @SemanticMeasureCountableAELaws SubEnumQ SubEnumQ_SemanticMeasure := _.
+Definition subenumQ_profile_coupling_ae :
+    @SemanticMeasureCouplingAELaws SubEnumQ SubEnumQ_SemanticMeasure := _.
+Definition subenumQ_profile_bind :
+    @SemanticMeasureBindLaws SubEnumQ SubEnumQ_SemanticMeasure := _.
+Definition subenumQ_profile_bind_ae_exact :
+    @SemanticMeasureBindAEExactLaws SubEnumQ SubEnumQ_SemanticMeasure := _.
 
-End SubEnumNodeProfile.
+End SubEnumQNodeProfile.
 
-Section SubEnumFreeOmegaProfile.
+Section SubEnumQFreeOmegaProfile.
 
-Let NI := SubEnum_SemanticMeasure.
-Let NO := SubEnum_SemanticOmega.
-Let MF := FreeOmega SubEnum.
+Let NI := SubEnumQ_SemanticMeasure.
+Let NO := SubEnumQ_SemanticOmega.
+Let MF := FreeOmega SubEnumQ.
 Let FI := FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO).
 Let FO := FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO).
 
-Definition subenum_profile_behavior_core :
+Definition subenumQ_profile_behavior_core :
     @SemanticMeasureCoreLaws MF FI := _.
-Definition subenum_profile_behavior_bind :
+Definition subenumQ_profile_behavior_bind :
     @SemanticMeasureBindLaws MF FI := _.
-Definition subenum_profile_behavior_ae_kleisli :
+Definition subenumQ_profile_behavior_ae_kleisli :
     @SemanticMeasureAEKleisliLaws MF FI := _.
-Definition subenum_profile_behavior_countable_ae :
+Definition subenumQ_profile_behavior_countable_ae :
     @SemanticMeasureCountableAELaws MF FI := _.
-Definition subenum_profile_behavior_coupling_ae :
+Definition subenumQ_profile_behavior_coupling_ae :
     @SemanticMeasureCouplingAELaws MF FI := _.
-Definition subenum_profile_behavior_omega : @SemanticOmega MF FI := FO.
-Definition subenum_profile_behavior_order :
+Definition subenumQ_profile_behavior_omega : @SemanticOmega MF FI := FO.
+Definition subenumQ_profile_behavior_order :
     @SemanticMeasureOrderLaws MF FI FO := _.
-Definition subenum_profile_behavior_omega_laws :
+Definition subenumQ_profile_behavior_omega_laws :
     @SemanticOmegaLaws MF FI FO := _.
-Definition subenum_profile_behavior_total_proper :
+Definition subenumQ_profile_behavior_total_proper :
     @SemanticTotalProperLaws MF FI FO := _.
-Definition subenum_profile_behavior_cofinality :
+Definition subenumQ_profile_behavior_cofinality :
     @SemanticOmegaCofinalityLaws MF FI FO := _.
-Definition subenum_profile_behavior_omega_ae :
+Definition subenumQ_profile_behavior_omega_ae :
     @SemanticOmegaAELaws MF FI FO := _.
-Definition subenum_profile_behavior_diagonal :
+Definition subenumQ_profile_behavior_diagonal :
     @SemanticMeasureDiagonalLaws MF FI FO := _.
-Definition subenum_profile_behavior_fubini :
+Definition subenumQ_profile_behavior_fubini :
     @SemanticOmegaFubiniLaws MF FI FO := _.
-Definition subenum_profile_mixed : @MixedMeasure SubEnum MF := _.
-Definition subenum_profile_mixed_laws :
-    @MixedMeasureLaws SubEnum MF NI FI FreeOmegaMixedMeasure := _.
-Definition subenum_profile_mixed_unit :
-    @MixedMeasureUnitLaws SubEnum MF NI FI FreeOmegaMixedMeasure := _.
-Definition subenum_profile_mixed_node_bind :
-    @MixedMeasureNodeBindLaws SubEnum MF NI FI FreeOmegaMixedMeasure := _.
-Definition subenum_profile_mixed_omega :
-    @MixedMeasureOmegaLaws SubEnum MF NI FI FreeOmegaMixedMeasure FO := _.
+Definition subenumQ_profile_mixed : @MixedMeasure SubEnumQ MF := _.
+Definition subenumQ_profile_mixed_laws :
+    @MixedMeasureLaws SubEnumQ MF NI FI FreeOmegaMixedMeasure := _.
+Definition subenumQ_profile_mixed_unit :
+    @MixedMeasureUnitLaws SubEnumQ MF NI FI FreeOmegaMixedMeasure := _.
+Definition subenumQ_profile_mixed_node_bind :
+    @MixedMeasureNodeBindLaws SubEnumQ MF NI FI FreeOmegaMixedMeasure := _.
+Definition subenumQ_profile_mixed_omega :
+    @MixedMeasureOmegaLaws SubEnumQ MF NI FI FreeOmegaMixedMeasure FO := _.
 
-End SubEnumFreeOmegaProfile.
+End SubEnumQFreeOmegaProfile.
 
 (** Optional proof-relation capability.  Unlike the shared behavioral
     profile, native quotient-joint realization is currently established
-    for SubEnum only; no Enum/MathComp instance is asserted here. *)
-Definition subenum_profile_native_quotient_coupling :
-  @FreeOmegaNativeCouplingLaws SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega := _.
+    for SubEnumQ only; no EnumQ/MathComp instance is asserted here. *)
+Definition subenumQ_profile_native_quotient_coupling :
+  @FreeOmegaNativeCouplingLaws SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega := _.
 
 Section MathCompFoundationalProfile.
 Context (R : realType).

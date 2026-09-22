@@ -7,18 +7,18 @@ Require Import Utf8 Program Ring Field Lia FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum order rat archimedean.
 
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Bind.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind.
 From PTree.Prob.Interface Require Import FrontierLift.
-Require Import PTree.Prob.Backend.Enum.FrontierLift.
+Require Import PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Iteration.
-Require Import PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.Common.RatGeometric.
+Require Import PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.Common.RatGeometric.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Import Enum.
-Import PTree.Prob.Backend.Enum.Map.
+Import EnumQ.
+Import PTree.Prob.Backend.EnumQ.Map.
 Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
 Import GRing.Theory.
 Import Num.Theory.
@@ -47,54 +47,54 @@ Proof. reflexivity. Qed.
 
 (** One von Neumann round for a coin with probability [1/3] of [false]
     and [2/3] of [true].  Equal tosses retry; unequal tosses return a bit. *)
-Definition vn_transition : Enum (unit + bool) :=
+Definition vn_transition : EnumQ (unit + bool) :=
   [:: (vn_one_ninth, inl tt);
       (vn_two_ninths, inr false);
       (vn_two_ninths, inr true);
       (vn_four_ninths, inl tt)].
 
-Definition vn_compiled_step (_ : unit) : ptree vnE Enum (unit + bool) :=
+Definition vn_compiled_step (_ : unit) : ptree vnE EnumQ (unit + bool) :=
   Prob vn_transition (fun next => Ret next).
 
-Definition vn_biased_coin : Enum bool :=
+Definition vn_biased_coin : EnumQ bool :=
   [:: (vn_one_third, false); (vn_two_thirds, true)].
 
 Definition vn_round_result (b1 b2 : bool) : unit + bool :=
   if b1 == b2 then inl tt else inr b1.
 
 (** The source program really performs two independent biased tosses. *)
-Definition vn_step (_ : unit) : ptree vnE Enum (unit + bool) :=
+Definition vn_step (_ : unit) : ptree vnE EnumQ (unit + bool) :=
   Prob vn_biased_coin (fun b1 =>
     Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2))).
 
-Definition vn_round_measure : Enum (unit + bool) :=
-  bind_Enum vn_biased_coin (fun b1 =>
-    bind_Enum vn_biased_coin (fun b2 =>
-      ret_Enum (vn_round_result b1 b2))).
+Definition vn_round_measure : EnumQ (unit + bool) :=
+  bind_EnumQ vn_biased_coin (fun b1 =>
+    bind_EnumQ vn_biased_coin (fun b2 =>
+      ret_EnumQ (vn_round_result b1 b2))).
 
 Lemma vn_round_measure_eq : vn_round_measure = vn_transition.
 Proof.
   rewrite /vn_round_measure /vn_biased_coin /vn_round_result
-    /vn_transition /bind_Enum /ret_Enum /=.
+    /vn_transition /bind_EnumQ /ret_EnumQ /=.
   repeat f_equal; apply val_inj; cbn.
   all: ring_to_rat; reflexivity.
 Qed.
 
-Definition von_neumann_third : ptree vnE Enum bool :=
+Definition von_neumann_third : ptree vnE EnumQ bool :=
   PTree.iter vn_step tt.
 
-Definition vn_fair : Enum bool :=
+Definition vn_fair : EnumQ bool :=
   [:: (one_div_two, false); (one_div_two, true)].
 
 Lemma vn_fair_total : meas_total vn_fair.
 Proof.
-  change (enum_expect (fun _ : bool => 1) vn_fair = 1).
+  change (enumQ_expect (fun _ : bool => 1) vn_fair = 1).
   rewrite /vn_fair /= !mulr1 addr0 -mulrDl.
   change ((2 : rat) / 2 = 1).
   by rewrite divrr // unitfE pnatr_eq0.
 Qed.
 
-Definition direct_fair : ptree vnE Enum bool :=
+Definition direct_fair : ptree vnE EnumQ bool :=
   Prob vn_fair (fun b => Ret b).
 
 (** Event-polymorphic forms of the closed samplers.  Although these programs
@@ -102,14 +102,14 @@ Definition direct_fair : ptree vnE Enum bool :=
     when they are used inside an interactive client.  The historical [vnE]
     definitions above remain the closed executable API. *)
 Definition vn_step_in {E : Type -> Type} (_ : unit) :
-    ptree E Enum (unit + bool) :=
+    ptree E EnumQ (unit + bool) :=
   Prob vn_biased_coin (fun b1 =>
     Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2))).
 
-Definition von_neumann_third_in {E : Type -> Type} : ptree E Enum bool :=
+Definition von_neumann_third_in {E : Type -> Type} : ptree E EnumQ bool :=
   PTree.iter vn_step_in tt.
 
-Definition direct_fair_in {E : Type -> Type} : ptree E Enum bool :=
+Definition direct_fair_in {E : Type -> Type} : ptree E EnumQ bool :=
   Prob vn_fair (fun b => Ret b).
 
 Lemma vn_step_in_closed : @vn_step_in vnE = vn_step.
@@ -145,14 +145,14 @@ Proof.
 Qed.
 
 Lemma vn_approx_expect_succ n (P : bool -> bool) :
-  enum_expect (indicator P)
+  enumQ_expect (indicator P)
     (meas_iter_approx (S n) (fun _ => vn_transition) tt) =
-  (5 / 9 : rat) * enum_expect (indicator P)
+  (5 / 9 : rat) * enumQ_expect (indicator P)
     (meas_iter_approx n (fun _ => vn_transition) tt) +
   (2 / 9 : rat) * (indicator P false + indicator P true).
 Proof.
-  cbn [meas_iter_approx]. rewrite enum_expect_bind.
-  set z := enum_expect (fun x : bool => if P x then 1 else 0)
+  cbn [meas_iter_approx]. rewrite enumQ_expect_bind.
+  set z := enumQ_expect (fun x : bool => if P x then 1 else 0)
     (meas_iter_approx n (fun _ : unit =>
       [:: (vn_one_ninth, inl tt);
           (vn_two_ninths, inr false);
@@ -169,7 +169,7 @@ Proof.
 Qed.
 
 Lemma vn_fair_expect (P : bool -> bool) :
-  enum_expect (indicator P) vn_fair =
+  enumQ_expect (indicator P) vn_fair =
     (1 / 2 : rat) * (indicator P false + indicator P true).
 Proof.
   rewrite /vn_fair /indicator /=.
@@ -214,18 +214,18 @@ Qed.
 
 Lemma vn_success_is_escape (P : bool -> bool) :
   (2 / 9 : rat) * (indicator P false + indicator P true) =
-  (1 - 5 / 9) * enum_expect (indicator P) vn_fair.
+  (1 - 5 / 9) * enumQ_expect (indicator P) vn_fair.
 Proof.
   by rewrite vn_fair_expect mulrA vn_half_escape.
 Qed.
 
 Lemma vn_approx_closed_form n (P : bool -> bool) :
-  enum_expect (indicator P)
+  enumQ_expect (indicator P)
       (meas_iter_approx n (fun _ => vn_transition) tt) =
-    (1 - (5 / 9 : rat) ^+ n) * enum_expect (indicator P) vn_fair.
+    (1 - (5 / 9 : rat) ^+ n) * enumQ_expect (indicator P) vn_fair.
 Proof.
   elim: n=> [|n IH].
-  - rewrite /= /meas_zero /Enum_MeasureOmegaInterface /=.
+  - rewrite /= /meas_zero /EnumQ_MeasureOmegaInterface /=.
     by rewrite expr0 subrr mul0r.
   - rewrite vn_approx_expect_succ IH vn_fair_expect exprS.
     rewrite -vn_fair_expect vn_success_is_escape.
@@ -315,7 +315,7 @@ Proof.
 Qed.
 
 Lemma vn_fair_expect_norm (P : bool -> bool) :
-  `|enum_expect (indicator P) vn_fair| <= 1.
+  `|enumQ_expect (indicator P) vn_fair| <= 1.
 Proof.
   rewrite vn_fair_expect /indicator.
   case Hf: (P false); case Ht: (P true); simpl.
@@ -326,8 +326,8 @@ Qed.
 Lemma vn_iteration_converges :
   meas_iter (fun _ : unit => vn_transition) tt vn_fair.
 Proof.
-  unfold meas_iter, meas_lub, Enum_MeasureOmegaInterface,
-    enum_converges.
+  unfold meas_iter, meas_lub, EnumQ_MeasureOmegaInterface,
+    enumQ_converges.
   move=> P eps eps_gt0.
   destruct (vn_ratio_vanishes eps_gt0) as [N HN].
   exists N=> n Hfuel.
@@ -353,19 +353,19 @@ Section ParametricVonNeumann.
 
 Variables p q : nnQ.
 
-Definition param_biased_coin : Enum bool :=
+Definition param_biased_coin : EnumQ bool :=
   [:: (p, false); (q, true)].
 
-Definition param_round_measure : Enum (unit + bool) :=
-  bind_Enum param_biased_coin (fun b1 =>
-    bind_Enum param_biased_coin (fun b2 =>
-      ret_Enum (vn_round_result b1 b2))).
+Definition param_round_measure : EnumQ (unit + bool) :=
+  bind_EnumQ param_biased_coin (fun b1 =>
+    bind_EnumQ param_biased_coin (fun b2 =>
+      ret_EnumQ (vn_round_result b1 b2))).
 
-Definition param_step (_ : unit) : ptree vnE Enum (unit + bool) :=
+Definition param_step (_ : unit) : ptree vnE EnumQ (unit + bool) :=
   Prob param_biased_coin (fun b1 =>
     Prob param_biased_coin (fun b2 => Ret (vn_round_result b1 b2))).
 
-Definition param_von_neumann : ptree vnE Enum bool :=
+Definition param_von_neumann : ptree vnE EnumQ bool :=
   PTree.iter param_step tt.
 
 Definition param_a : rat := Qval p.
@@ -437,7 +437,7 @@ Proof.
 Qed.
 
 Lemma param_round_expect (P : bool -> bool) z :
-  enum_expect
+  enumQ_expect
     (fun next => match next with
       | inl _ => z
       | inr b => indicator P b
@@ -445,7 +445,7 @@ Lemma param_round_expect (P : bool -> bool) z :
   param_retry * z +
     param_success * (indicator P false + indicator P true).
 Proof.
-  rewrite /param_round_measure !enum_expect_bind
+  rewrite /param_round_measure !enumQ_expect_bind
     /param_biased_coin /=.
   rewrite /param_a /param_b /param_retry /param_success.
   rewrite !mulr1 !addr0.
@@ -453,19 +453,19 @@ Proof.
 Qed.
 
 Lemma param_approx_expect_succ n (P : bool -> bool) :
-  enum_expect (indicator P)
+  enumQ_expect (indicator P)
     (meas_iter_approx (S n)
       (fun _ : unit => param_round_measure) tt) =
-  param_retry * enum_expect (indicator P)
+  param_retry * enumQ_expect (indicator P)
     (meas_iter_approx n (fun _ : unit => param_round_measure) tt) +
   param_success * (indicator P false + indicator P true).
 Proof.
-  cbn [meas_iter_approx]. rewrite enum_expect_bind.
-  set z := enum_expect (indicator P)
+  cbn [meas_iter_approx]. rewrite enumQ_expect_bind.
+  set z := enumQ_expect (indicator P)
     (meas_iter_approx n (fun _ : unit => param_round_measure) tt).
   have Hfun :
       (fun x : unit + bool =>
-        enum_expect (indicator P)
+        enumQ_expect (indicator P)
           match x with
           | inl i' =>
               meas_iter_approx n
@@ -479,7 +479,7 @@ Proof.
   { apply functional_extensionality=> x.
     destruct x as [u|b].
     - destruct u. reflexivity.
-    - apply enum_expect_ret. }
+    - apply enumQ_expect_ret. }
   rewrite Hfun. exact: param_round_expect.
 Qed.
 
@@ -487,7 +487,7 @@ Lemma param_success_is_escape
     (Hescape : param_success = (1 - param_retry) * (1 / 2))
     (P : bool -> bool) :
   param_success * (indicator P false + indicator P true) =
-  (1 - param_retry) * enum_expect (indicator P) vn_fair.
+  (1 - param_retry) * enumQ_expect (indicator P) vn_fair.
 Proof.
   rewrite Hescape vn_fair_expect.
   by rewrite -mulrA.
@@ -496,13 +496,13 @@ Qed.
 Lemma param_approx_closed_form
     (Hescape : param_success = (1 - param_retry) * (1 / 2))
     n (P : bool -> bool) :
-  enum_expect (indicator P)
+  enumQ_expect (indicator P)
       (meas_iter_approx n
         (fun _ : unit => param_round_measure) tt) =
-    (1 - param_retry ^+ n) * enum_expect (indicator P) vn_fair.
+    (1 - param_retry ^+ n) * enumQ_expect (indicator P) vn_fair.
 Proof.
   elim: n=> [|n IH].
-  - rewrite /= /meas_zero /Enum_MeasureOmegaInterface /=.
+  - rewrite /= /meas_zero /EnumQ_MeasureOmegaInterface /=.
     by rewrite expr0 subrr mul0r.
   - rewrite param_approx_expect_succ IH exprS.
     rewrite (param_success_is_escape Hescape).
@@ -516,8 +516,8 @@ Lemma param_iteration_converges_of_contract
     (Hcontract : param_retry <= (K%:R : rat) / K.+1%:R) :
   meas_iter (fun _ : unit => param_round_measure) tt vn_fair.
 Proof.
-  unfold meas_iter, meas_lub, Enum_MeasureOmegaInterface,
-    enum_converges.
+  unfold meas_iter, meas_lub, EnumQ_MeasureOmegaInterface,
+    enumQ_converges.
   move=> P eps eps0.
   destruct (rat_contract_vanishes Kpos retry0 Hcontract eps0)
     as [N HN].

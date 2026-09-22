@@ -6,11 +6,11 @@ Local Unset Universe Minimization ToSet.
 From Coq.Program Require Import Equality.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel.
 From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim.
-From PTree.Regression.Backend Require Import SubEnumRegression.
+From PTree.Regression.Backend Require Import SubEnumQRegression.
 From PTree.Regression.Probability Require Import CorrelatedSampleAlgebra.
 From PTree.Regression.Semantics Require Import TreeTransitionStrictness.
 Set Implicit Arguments.
@@ -21,24 +21,24 @@ Unset Printing Implicit Defensive.
     Reuse exactly the accepted 2x2 pair, on the SAME event interface.
     The handler ignores its first answer and returns its second answer.
     It is deterministic, total, and visibly guarded, but not atomic. *)
-Definition two_query_handler X (e : correlationE X) : ptree correlationE SubEnum X :=
-  match e in correlationE X return ptree correlationE SubEnum X with
+Definition two_query_handler X (e : correlationE X) : ptree correlationE SubEnumQ X :=
+  match e in correlationE X return ptree correlationE SubEnumQ X with
   | Query => Vis Query (fun _ => Vis Query (fun x => Ret x))
   end.
 
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
-  SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-Local Notation tree := (ptree correlationE SubEnum bool).
-Local Notation head := (stable_head correlationE SubEnum bool).
-Local Notation TB := (@tree_trans_bisim correlationE SubEnum MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
-Local Notation hits t out := (@ptree_stable_hitting correlationE SubEnum MF FI
+  SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+Local Notation tree := (ptree correlationE SubEnumQ bool).
+Local Notation head := (stable_head correlationE SubEnumQ bool).
+Local Notation TB := (@tree_trans_bisim correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
+Local Notation hits t out := (@ptree_stable_hitting correlationE SubEnumQ MF FI
   FreeOmegaMixedMeasure FO bool (observe t) out).
-Local Notation trans := (@tree_trans correlationE SubEnum MF FI FreeOmegaMixedMeasure FO bool).
+Local Notation trans := (@tree_trans correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
 
 (** Even semantic visible guarding alone will not suffice for transition
     congruence: the handler's complete first behavior is this Dirac Vis. *)
@@ -59,9 +59,9 @@ Definition exposure_second_head anti b : head :=
 Definition exposure_first_head anti b : head :=
   FHVis Query (fun _ => exposure_second anti b).
 Definition exposure_front anti : MF head :=
-  FOSample subenum_fair (fun b => FORet (exposure_first_head anti b)).
+  FOSample subenumQ_fair (fun b => FORet (exposure_first_head anti b)).
 Definition exposure_successors anti : MF head :=
-  FOSample subenum_fair (fun b => FORet (exposure_second_head anti b)).
+  FOSample subenumQ_fair (fun b => FORet (exposure_second_head anti b)).
 
 Lemma exposure_last_hitting anti b x :
   hits (exposure_last anti b x) (FORet (FHRet (answer anti b x))).
@@ -80,7 +80,7 @@ Qed.
 
 Lemma exposure_hitting anti : hits (exposure anti) (exposure_front anti).
 Proof.
-  change (hits (Prob subenum_fair (fun b =>
+  change (hits (Prob subenumQ_fair (fun b =>
     PTree.interp two_query_handler (Vis Query (fun x => Ret (answer anti b x)))))
     (exposure_front anti)).
   eapply (ptree_stable_hitting_prob (FI := FI) (FO := FO)
@@ -98,13 +98,13 @@ Qed.
 (** Both interpreted programs still have identical current return and
     offered-event observations. Separation happens AFTER the first action. *)
 Lemma exposure_returns anti :
-  @tree_return_observation correlationE SubEnum MF FI FreeOmegaMixedMeasure FO bool
-    (exposure anti) (FOSample subenum_fair (fun _ => FOZero)).
+  @tree_return_observation correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool
+    (exposure anti) (FOSample subenumQ_fair (fun _ => FOZero)).
 Proof. exists (exposure_front anti). split; [apply exposure_hitting|apply sem_eq_refl]. Qed.
 
 Lemma exposure_offers anti :
-  @tree_offered_event_observation correlationE SubEnum MF FI FreeOmegaMixedMeasure FO bool
-    (exposure anti) (FOSample subenum_fair (fun _ => FORet (Offered Query))).
+  @tree_offered_event_observation correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool
+    (exposure anti) (FOSample subenumQ_fair (fun _ => FORet (Offered Query))).
 Proof. exists (exposure_front anti). split; [apply exposure_hitting|apply sem_eq_refl]. Qed.
 
 (** A finite witness used only by this experiment. It is not a general
@@ -146,7 +146,7 @@ Proof.
   pose proof (tree_trans_bisim_return_observations Hrel
     (tree_return_ret (FI := FI) (FO := FO) b)
     (tree_return_ret (FI := FI) (FO := FO) c)) as Hlift.
-  assert (Hb : free_omega_ae (NI := SubEnum_SemanticMeasure)
+  assert (Hb : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
     (fun x : bool => x = b) (FORet b)).
   { constructor. reflexivity. }
   pose proof (proj1 (free_omega_qlift_support Hlift) _ Hb) as Hc.
@@ -165,7 +165,7 @@ Proof.
     pose proof (tree_trans_bisim_transitions Hrel
       (exposure_second_transition false b x)
       (exposure_second_transition true c x)) as Hlift.
-    assert (Hb : free_omega_ae (NI := SubEnum_SemanticMeasure)
+    assert (Hb : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
       (fun h : head => h = FHRet (answer false b x))
       (FORet (FHRet (answer false b x)))).
     { constructor. reflexivity. }
@@ -183,7 +183,7 @@ Proof.
   pose proof (tree_trans_bisim_transitions Hrel
     (exposure_first_transition false false)
     (exposure_first_transition true false)) as Hlift.
-  assert (Hleft : free_omega_ae (NI := SubEnum_SemanticMeasure)
+  assert (Hleft : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
     (fun h => exists b, h = exposure_second_head false b) (exposure_successors false)).
   { eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
     intros b _. apply FOAERet. exists b. reflexivity. }
@@ -205,7 +205,7 @@ Proof.
 Qed.
 
 Corollary tree_trans_bisim_not_interp_congruent :
-  ~ (forall (handler : forall X, correlationE X -> ptree correlationE SubEnum X)
+  ~ (forall (handler : forall X, correlationE X -> ptree correlationE SubEnumQ X)
       (t u : tree), TB t u -> TB (PTree.interp handler t) (PTree.interp handler u)).
 Proof.
   intro Hpreserve. apply two_query_interp_not_tree_trans_bisim.

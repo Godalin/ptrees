@@ -6,9 +6,9 @@
     "theories/Eq/UnifiedFrontier.v:UnifiedFrontierCoherence": "Class UnifiedFrontierCoherence := { unified_frontier_unique : forall {R} (ot : ptree' E MN R) hs1 hs2, frontier_certificate ot hs1 -> frontier_certificate ot hs2 -> sem_eq hs1 hs2; unified_frontier_tau_inv : forall {R} (t : ptree E MN R) hs, frontier_certificate (TauF t) hs -> frontier_certificate (observe t) hs }.",
     "theories/Examples/BernoulliFactory/OperationalBernoulliFactory.v:OperationalFactoryStepSupportLaws": "Class OperationalFactoryStepSupportLaws := { ptree_factory_binary_step_support : forall (pnormalized : Qval pfalse + Qval ptrue = 1) (pnontrivial : (0 < Qval pfalse * Qval ptrue)%Q) x, free_omega_support_lift eq (ptree_factory_binary_step_heads x) (ptree_factory_standard_step_heads x) }.",
     "theories/Prob/Backend/Common/RealSubTypes.v:RealSub": "Class RealSub (T : Type) := { inject : T -> R; }.",
-    "theories/Prob/Backend/Enum/Representation.v:Discrete": "Class Discrete (m : Type \u2192 Type) := { disc_ret : forall {A}, A \u2192 m A; disc_bind : forall {A B}, m A \u2192 (A \u2192 m B) \u2192 m B; disc_flip : () \u2192 m bool; disc_score : nnQ \u2192 m ()%type; }.",
-    "theories/Prob/Backend/Enum/Representation.v:DiscreteInterface": "Class DiscreteInterface (M : Type \u2192 Type) : Type := { disc_rep :: Discrete M ; disc_eq : \u2200 {R : eqType}, M R \u2192 M R \u2192 Prop ; disc_eq_equiv :: \u2200 R : eqType, Equivalence (@disc_eq R) ; disc_RT : \u2200 {R1 R2 : eqType}, (R1 \u2192 R2 \u2192 Prop) \u2192 M R1 \u2192 M R2 \u2192 Prop ; disc_RTeq : \u2200 (R : eqType) (\u03bc1 \u03bc2 : M R), disc_eq \u03bc1 \u03bc2 \u2194 disc_RT eq \u03bc1 \u03bc2 ; disc_mass {R : eqType} : R \u2192 M R \u2192 nnQ ; disc_mass_proper {R : eqType} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) ; disc_supp {R : eqType} : M R \u2192 seq R }.",
-    "theories/Prob/Backend/Enum/Representation.v:DiscreteLaws": "Class DiscreteLaws (m : Type \u2192 Type) `{Discrete m} (R : forall {a}, m a \u2192 m a \u2192 Prop) := { disc_ret_bind : forall A B (x : A) (f : A \u2192 m B), R (disc_bind (disc_ret x) f) (f x) ; disc_bind_ret : forall A (u : m A), R (disc_bind u disc_ret) u ; disc_bind_assoc : forall A B C (u : m A) (f : A \u2192 m B) (g : B \u2192 m C), R (disc_bind u (\u03bb x, disc_bind (f x) g)) (disc_bind (disc_bind u f) g) ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A \u2192 B \u2192 m C), R (disc_bind u (\u03bb x, disc_bind v (\u03bb y, f x y))) (disc_bind v (\u03bb y, disc_bind u (\u03bb x, f x y))) }.",
+    "theories/Prob/Backend/EnumQ/Representation.v:Discrete": "Class Discrete (m : Type → Type) := { disc_ret : forall {A}, A → m A; disc_bind : forall {A B}, m A → (A → m B) → m B; disc_flip : () → m bool; disc_score : nnQ → m ()%type; }.",
+    "theories/Prob/Backend/EnumQ/Representation.v:DiscreteInterface": "Class DiscreteInterface (M : Type → Type) : Type := { disc_rep :: Discrete M ; disc_eq : ∀ {R : eqType}, M R → M R → Prop ; disc_eq_equiv :: ∀ R : eqType, Equivalence (@disc_eq R) ; disc_RT : ∀ {R1 R2 : eqType}, (R1 → R2 → Prop) → M R1 → M R2 → Prop ; disc_RTeq : ∀ (R : eqType) (μ1 μ2 : M R), disc_eq μ1 μ2 ↔ disc_RT eq μ1 μ2 ; disc_mass {R : eqType} : R → M R → nnQ ; disc_mass_proper {R : eqType} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) ; disc_supp {R : eqType} : M R → seq R }.",
+    "theories/Prob/Backend/EnumQ/Representation.v:DiscreteLaws": "Class DiscreteLaws (m : Type → Type) `{Discrete m} (R : forall {a}, m a → m a → Prop) := { disc_ret_bind : forall A B (x : A) (f : A → m B), R (disc_bind (disc_ret x) f) (f x) ; disc_bind_ret : forall A (u : m A), R (disc_bind u disc_ret) u ; disc_bind_assoc : forall A B C (u : m A) (f : A → m B) (g : B → m C), R (disc_bind u (λ x, disc_bind (f x) g)) (disc_bind (disc_bind u f) g) ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A → B → m C), R (disc_bind u (λ x, disc_bind v (λ y, f x y))) (disc_bind v (λ y, disc_bind u (λ x, f x y))) }.",
     "theories/Prob/Backend/MathComp/Kernel.v:MathCompCouplingGluing": "Class MathCompCouplingGluing := { mathcomp_kernel_lift_comp : forall {A B C} (rel : A -> B -> Prop) (rel' : B -> C -> Prop) (mu : MathCompKernelMeasure A) (nu : MathCompKernelMeasure B) (xi : MathCompKernelMeasure C), mathcomp_kernel_lift rel mu nu -> mathcomp_kernel_lift rel' nu xi -> mathcomp_kernel_lift (fun x z => exists y, rel x y /\\ rel' y z) mu xi }.",
     "theories/Prob/FreeOmega/NativeCoupling.v:FreeOmegaNativeCouplingLaws": "Class FreeOmegaNativeCouplingLaws {MN : Type -> Type} (NI : SemanticMeasure MN) (NO : @SemanticOmega MN NI) := { free_omega_native_coupling : forall {A B} (p : free_omega_native_presentation MN A) (q : free_omega_native_presentation MN B) (R : A -> B -> Prop), @free_omega_qlift MN NI NO A B R (free_omega_native p) (free_omega_native q) -> exists joint : MN (native_sample_type p * native_sample_type q)%type, @semantic_coupling MN NI _ _ (fun x y => R (native_sample_value p x) (native_sample_value q y)) (native_sample_measure p) (native_sample_measure q) joint }.",
     "theories/Prob/FreeOmega/Observation.v:FreeOmegaDenotationBindLaws": "Class FreeOmegaDenotationBindLaws {MN} `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI} := { free_omega_denotes_bind : forall {A B OA OB} (obsA : A -> OA) (obsB : B -> OB) (mu : FreeOmega MN A) (out : MN OA) (k : A -> FreeOmega MN B) (front : OA -> MN OB), free_omega_denotes obsA mu out -> (forall x, free_omega_denotes obsB (k x) (front (obsA x))) -> free_omega_denotes obsB (free_omega_bind mu k) (sem_bind out front) }.",
@@ -54,21 +54,21 @@
     "theories/Prob/Interface/Subprobability.v:SemanticSubprobability": "Class SemanticSubprobability@{carrier representation} (S : Type@{carrier} -> Type@{representation}) `{SI : SemanticMeasure S} := { sem_subprob : forall {A : Type@{carrier}}, S A -> Prop }.",
     "theories/Prob/Interface/Subprobability.v:SemanticSubprobabilityCarrierLaws": "Class SemanticSubprobabilityCarrierLaws@{carrier representation} (S : Type@{carrier} -> Type@{representation}) `{SI : SemanticMeasure S} `{SP : @SemanticSubprobability S SI} := { sem_subprob_all : forall {A : Type@{carrier}} (mu : S A), sem_subprob mu }.",
     "theories/Prob/Interface/Subprobability.v:SemanticSubprobabilityLaws": "Class SemanticSubprobabilityLaws@{carrier representation} (S : Type@{carrier} -> Type@{representation}) `{SI : SemanticMeasure S} `{SP : @SemanticSubprobability S SI} := { sem_subprob_ret : forall {A : Type@{carrier}} (x : A), sem_subprob (sem_ret x); sem_subprob_bind : forall {A B : Type@{carrier}} (mu : S A) (k : A -> S B), sem_subprob mu -> (forall x, sem_subprob (k x)) -> sem_subprob (sem_bind mu k); sem_subprob_proper : forall {A : Type@{carrier}} (mu nu : S A), sem_eq mu nu -> (sem_subprob mu <-> sem_subprob nu) }.",
-    "theories/Prob/Legacy/Discrete.v:Discrete": "Class Discrete (m : Type \u2192 Type) := { disc_ret : forall {A}, A \u2192 m A; disc_bind : forall {A B}, m A \u2192 (A \u2192 m B) \u2192 m B; disc_flip : unit \u2192 m bool; disc_score : \u211d\u208a \u2192 m unit; }.",
-    "theories/Prob/Legacy/Discrete.v:DiscreteInterface": "Class DiscreteInterface (M : Type \u2192 Type) : Type := { disc_rep :: Discrete M ; disc_eq : \u2200 R `{EqDec R eq}, M R \u2192 M R \u2192 Prop ; disc_eq_equiv :: \u2200 R `{EqDec R eq}, Equivalence (@disc_eq R _ _) ; disc_RT : \u2200 R1 R2 `{EqDec R1 eq} `{EqDec R2 eq}, (R1 \u2192 R2 \u2192 Prop) \u2192 M R1 \u2192 M R2 \u2192 Prop ; disc_RTeq : \u2200 R `{EqDec R eq} (\u03bc1 \u03bc2 : M R), disc_eq \u03bc1 \u03bc2 \u2194 disc_RT eq \u03bc1 \u03bc2 ; disc_mass {R} `{EqDec R eq} : R \u2192 M R \u2192 \u211d\u208a ; disc_mass_proper {R} `{EqDec R eq} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) }.",
-    "theories/Prob/Legacy/Discrete.v:DiscreteLaws": "Class DiscreteLaws (m : Type \u2192 Type) `{Discrete m} (R : forall {a}, m a \u2192 m a \u2192 Prop) := { disc_ret_bind : forall A B (x : A) (f : A \u2192 m B), R (disc_bind (disc_ret x) f) (f x) ; disc_bind_ret : forall A (u : m A), R (disc_bind u disc_ret) u ; disc_bind_assoc : forall A B C (u : m A) (f : A \u2192 m B) (g : B \u2192 m C), R (disc_bind u (\u03bb x, disc_bind (f x) g)) (disc_bind (disc_bind u f) g) ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A \u2192 B \u2192 m C), R (disc_bind u (\u03bb x, disc_bind v (\u03bb y, f x y))) (disc_bind v (\u03bb y, disc_bind u (\u03bb x, f x y))) }.",
-    "theories/Prob/Legacy/Monad.v:MonadDistribution": "Class MonadDistribution (m : Type \u2192 Type) `{Monad m} : Type := random : m \ud835\udd40.",
-    "theories/Prob/Legacy/Monad.v:MonadFactor": "Class MonadFactor (m : Type \u2192 Type) `{Monad m} : Type := score : R \u2192 m unit.",
-    "theories/Prob/Legacy/Monad.v:MonadMeasure": "Class MonadMeasure (m : Type \u2192 Type) `{Monad m} := { MeasureDistribution :: MonadDistribution m; MeasureFactor :: MonadFactor m; }.",
+    "theories/Prob/Legacy/Discrete.v:Discrete": "Class Discrete (m : Type → Type) := { disc_ret : forall {A}, A → m A; disc_bind : forall {A B}, m A → (A → m B) → m B; disc_flip : unit → m bool; disc_score : ℝ₊ → m unit; }.",
+    "theories/Prob/Legacy/Discrete.v:DiscreteInterface": "Class DiscreteInterface (M : Type → Type) : Type := { disc_rep :: Discrete M ; disc_eq : ∀ R `{EqDec R eq}, M R → M R → Prop ; disc_eq_equiv :: ∀ R `{EqDec R eq}, Equivalence (@disc_eq R _ _) ; disc_RT : ∀ R1 R2 `{EqDec R1 eq} `{EqDec R2 eq}, (R1 → R2 → Prop) → M R1 → M R2 → Prop ; disc_RTeq : ∀ R `{EqDec R eq} (μ1 μ2 : M R), disc_eq μ1 μ2 ↔ disc_RT eq μ1 μ2 ; disc_mass {R} `{EqDec R eq} : R → M R → ℝ₊ ; disc_mass_proper {R} `{EqDec R eq} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) }.",
+    "theories/Prob/Legacy/Discrete.v:DiscreteLaws": "Class DiscreteLaws (m : Type → Type) `{Discrete m} (R : forall {a}, m a → m a → Prop) := { disc_ret_bind : forall A B (x : A) (f : A → m B), R (disc_bind (disc_ret x) f) (f x) ; disc_bind_ret : forall A (u : m A), R (disc_bind u disc_ret) u ; disc_bind_assoc : forall A B C (u : m A) (f : A → m B) (g : B → m C), R (disc_bind u (λ x, disc_bind (f x) g)) (disc_bind (disc_bind u f) g) ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A → B → m C), R (disc_bind u (λ x, disc_bind v (λ y, f x y))) (disc_bind v (λ y, disc_bind u (λ x, f x y))) }.",
+    "theories/Prob/Legacy/Monad.v:MonadDistribution": "Class MonadDistribution (m : Type → Type) `{Monad m} : Type := random : m 𝕀.",
+    "theories/Prob/Legacy/Monad.v:MonadFactor": "Class MonadFactor (m : Type → Type) `{Monad m} : Type := score : R → m unit.",
+    "theories/Prob/Legacy/Monad.v:MonadMeasure": "Class MonadMeasure (m : Type → Type) `{Monad m} := { MeasureDistribution :: MonadDistribution m; MeasureFactor :: MonadFactor m; }.",
     "theories/Prob/Legacy/RelLift.v:ComposableProbRelLift": "Class ComposableProbRelLift (M : Type -> Type) (DI : DiscreteInterface M) (PL : @ProbRelLift M DI) := { prob_lift_comp : forall {A B C : eqType} (R : A -> B -> Prop) (S : B -> C -> Prop) (mu : M A) (nu : M B) (xi : M C), prob_lift R mu nu -> prob_lift S nu xi -> prob_lift (fun a c => exists b, R a b /\\ S b c) mu xi }.",
     "theories/Prob/Legacy/RelLift.v:ProbRelLift": "Class ProbRelLift (M : Type -> Type) `{DiscreteInterface M} := { prob_lift : forall {A B : eqType}, (A -> B -> Prop) -> M A -> M B -> Prop; prob_lift_mono : forall {A B : eqType} (R S : A -> B -> Prop) (mu : M A) (nu : M B), (forall a b, R a b -> S a b) -> prob_lift R mu nu -> prob_lift S mu nu; prob_lift_proper_l : forall {A B : eqType} (R : A -> B -> Prop) (mu mu' : M A) (nu : M B), disc_eq mu mu' -> prob_lift R mu nu -> prob_lift R mu' nu; prob_lift_proper_r : forall {A B : eqType} (R : A -> B -> Prop) (mu : M A) (nu nu' : M B), disc_eq nu nu' -> prob_lift R mu nu -> prob_lift R mu nu'; prob_lift_refl : forall {A : eqType} (mu : M A), prob_lift eq mu mu; prob_lift_of_eq : forall {A : eqType} (mu nu : M A), disc_eq mu nu -> prob_lift eq mu nu; prob_lift_sym : forall {A B : eqType} (R : A -> B -> Prop) (mu : M A) (nu : M B), prob_lift R mu nu -> prob_lift (fun b a => R a b) nu mu }.",
     "theories/Regression/Infrastructure/UniverseSeparatedPTree.v:TwoLevelMeasureInterface": "Class TwoLevelMeasureInterface@{sample node_measure frontier_sample frontier_measure} (MN : Type@{sample} -> Type@{node_measure}) (MF : Type@{frontier_sample} -> Type@{frontier_measure}) := { frontier_ret : forall {A : Type@{frontier_sample}}, A -> MF A; frontier_bind_node : forall {A : Type@{sample}} {B : Type@{frontier_sample}}, MN A -> (A -> MF B) -> MF B }."
   },
   "facades": {
-    "theories/API/Enum.v": "From mathcomp Require Import eqtype. From ExtLib.Structures Require Import Monads. From PTree.Core Require Import PTreeDefinition. Require Import PTree.Prob.Backend.Enum.Representation. Set Implicit Arguments. Set Contextual Implicit. Import Enum. Definition meas {E} {X : eqType} (mu : Enum X) : ptree E Enum X := Prob mu ret. Definition kernel {E} {X Y : eqType} (k : X -> Enum Y) : X -> ptree E Enum Y := fun x => meas (k x). Variant sampleE : eqType -> Type := | Sample {A : eqType} : Enum A -> sampleE A. Definition handle_sample {E} {R : eqType} (e : sampleE R) : ptree E Enum R := match e with | Sample _ mu => meas mu end.",
+    "theories/API/EnumQ.v": "From mathcomp Require Import eqtype. From ExtLib.Structures Require Import Monads. From PTree.Core Require Import PTreeDefinition. Require Import PTree.Prob.Backend.EnumQ.Representation. Set Implicit Arguments. Set Contextual Implicit. Import EnumQ. Definition meas {E} {X : eqType} (mu : EnumQ X) : ptree E EnumQ X := Prob mu ret. Definition kernel {E} {X Y : eqType} (k : X -> EnumQ Y) : X -> ptree E EnumQ Y := fun x => meas (k x). Variant sampleE : eqType -> Type := | Sample {A : eqType} : EnumQ A -> sampleE A. Definition handle_sample {E} {R : eqType} (e : sampleE R) : ptree E EnumQ R := match e with | Sample _ mu => meas mu end.",
     "theories/API/FreeOmega.v": "From PTree.Eq.FreeOmega Require Import Algebra Iter. From PTree.Interp.FreeOmega Require Import Guarded Atomic MDP. Notation peutt_bind_assoc := Algebra.peutt_bind_assoc. Notation peutt_bind_ret_l := Algebra.peutt_bind_ret_l. Notation peutt_bind_ret_r := Algebra.peutt_bind_ret_r. Notation peutt_iter_rel := Iter.peutt_iter_rel. Notation peutt_iter_unfold := Iter.peutt_iter_unfold. Notation guarded_handler := Guarded.guarded_handler. Notation peutt_interp_guarded := Guarded.peutt_interp_guarded. Notation peutt_interp_guarded_Proper := Guarded.peutt_interp_guarded_Proper. Notation atomic_handler := Atomic.atomic_handler. Notation tree_trans_bisim_interp_atomic := Atomic.tree_trans_bisim_interp_atomic. Notation mdp_handler := MDP.mdp_handler. Notation mdp_state_interp := MDP.mdp_state_interp. Notation mdp_guarded_interp_tree_trans := MDP.mdp_guarded_interp_tree_trans.",
-    "theories/API/Generic.v": "Set Warnings \"-notation-overridden\". Set Warnings \"-ambiguous-paths\". Set Universe Polymorphism. From PTree.Core Require Import PTreeDefinition. From PTree.Eq Require Import WellFormedness. From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PStruct PStrong PEutt StableHittingComputation ProbabilisticTrace. Notation ptree := PTreeDefinition.ptree. Notation Ret x := (PTreeDefinition.Ret x). Notation Tau t := (PTreeDefinition.Tau t). Notation Vis e k := (PTreeDefinition.Vis e k). Notation Prob mu k := (PTreeDefinition.Prob mu k). Notation bind := PTreeDefinition.PTree.bind. Notation iter := PTreeDefinition.PTree.iter. Notation interp := PTreeDefinition.PTree.interp. Notation translate := PTreeDefinition.PTree.translate. Notation probabilistic_ptree := WellFormedness.probabilistic_ptree. Notation probabilistic_ptree_ret := WellFormedness.probabilistic_ptree_ret. Notation probabilistic_ptree_tau := WellFormedness.probabilistic_ptree_tau. Notation probabilistic_ptree_vis := WellFormedness.probabilistic_ptree_vis. Notation probabilistic_ptree_prob := WellFormedness.probabilistic_ptree_prob. Notation probabilistic_ptree_bind := WellFormedness.probabilistic_ptree_bind. Notation probabilistic_ptree_iter := WellFormedness.probabilistic_ptree_iter. Notation stable_head := UnifiedFrontier.stable_head. Notation stable_head_rel := UnifiedFrontier.stable_head_rel. Notation stable_hitting := PrimitiveStableHitting.stable_hitting. Notation pstruct := PStruct.pstruct. Notation pstrong := PStrong.pstrong. Notation peutt := PEutt.peutt. Notation finite_interaction_pattern := ProbabilisticTrace.finite_interaction_pattern. Notation finite_interaction_query := ProbabilisticTrace.finite_interaction_query. Notation finite_interaction_sem := ProbabilisticTrace.finite_interaction_sem. Notation \"t \u2248\u209a[ RR ] u\" := (peutt RR t u) (at level 70, RR at next level, no associativity) : type_scope. Notation \"t \u2248\u209a u\" := (peutt eq t u) (at level 70, no associativity) : type_scope. Notation stable_hitting_exists := PrimitiveStableHitting.stable_hitting_exists. Notation stable_hitting_unique := PrimitiveStableHitting.stable_hitting_unique. Notation stable_hitting_ret := PEutt.stable_hitting_ret. Notation stable_hitting_vis := PEutt.stable_hitting_vis. Notation stable_hitting_tau_iff := PEutt.stable_hitting_tau_iff. Notation stable_hitting_tau := StableHittingComputation.stable_hitting_tau. Notation stable_hitting_tau_iter := StableHittingComputation.stable_hitting_tau_iter. Notation stable_hitting_prob := PEutt.stable_hitting_prob. Notation stable_hitting_bind := PEutt.stable_hitting_bind. Notation stable_hitting_ret_iff := StableHittingComputation.stable_hitting_ret_iff. Notation stable_hitting_vis_iff := StableHittingComputation.stable_hitting_vis_iff. Notation stable_hitting_prob_decompose := StableHittingComputation.stable_hitting_prob_decompose. Notation stable_hitting_prob_compute := StableHittingComputation.stable_hitting_prob_compute. Notation stable_hitting_prob_dirac := StableHittingComputation.stable_hitting_prob_dirac. Notation stable_hitting_prob_flatten := StableHittingComputation.stable_hitting_prob_flatten. Notation peutt_iff_hitting := StableHittingComputation.peutt_iff_hitting. Notation peutt_of_hitting_lift := PEutt.peutt_of_hitting_lift. Notation peutt_hitting_lift := PEutt.peutt_hitting_lift. Notation peutt_coinduction := PEutt.peutt_coinduction. Notation peutt_refl := PEutt.peutt_refl. Notation peutt_sym := PEutt.peutt_sym. Notation peutt_trans := PEutt.peutt_trans. Notation peutt_equivalence := PEutt.peutt_equivalence. Notation peutt_ret := PEutt.peutt_ret. Notation peutt_tau_l := PEutt.peutt_tau_l. Notation peutt_tau_r := PEutt.peutt_tau_r. Notation peutt_vis := PEutt.peutt_vis. Notation peutt_prob := PEutt.peutt_prob. Notation peutt_prob_rewrite := PEutt.peutt_prob_rewrite. Notation peutt_bind := PEutt.peutt_bind. Notation pstruct_pstrong := PStrong.pstruct_pstrong. Notation pstruct_equivalence := PStruct.pstruct_equivalence. Notation pstrong_equivalence := PStrong.pstrong_equivalence. Notation pstrong_bind := PStrong.pstrong_bind. Notation peutt_rewrite_l := PEutt.peutt_rewrite_l. Notation peutt_rewrite_r := PEutt.peutt_rewrite_r. Notation peutt_rewrite := PEutt.peutt_rewrite. Notation finite_interaction_sem_spec := ProbabilisticTrace.finite_interaction_sem_spec. Notation peutt_preserves_finite_interaction_sem := ProbabilisticTrace.peutt_preserves_finite_interaction_sem.",
-    "theories/API/SubEnum.v": "From PTree.Core Require Import PTreeDefinition. Require Import PTree.Prob.Backend.SubEnum.Measure. From PTree.Interp.Backend Require Import SubEnum. Notation subenum_mdp_state_interp_atomic := PTree.Interp.Backend.SubEnum.subenum_mdp_state_interp_atomic. Set Implicit Arguments. Set Contextual Implicit. Definition submeas {E} {X} (mu : SubEnum X) : ptree E SubEnum X := Prob mu (fun x : X => Ret x). Definition subkernel {E} {X Y} (k : X -> SubEnum Y) : X -> ptree E SubEnum Y := fun x => submeas (k x). Variant subSampleE : Type -> Type := | SubSample {A : Type} : SubEnum A -> subSampleE A. Definition handle_subsample {E} {R} (e : subSampleE R) : ptree E SubEnum R := match e with | SubSample _ mu => submeas mu end.",
+    "theories/API/Generic.v": "Set Warnings \"-notation-overridden\". Set Warnings \"-ambiguous-paths\". Set Universe Polymorphism. From PTree.Core Require Import PTreeDefinition. From PTree.Eq Require Import WellFormedness. From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PStruct PStrong PEutt StableHittingComputation ProbabilisticTrace. Notation ptree := PTreeDefinition.ptree. Notation Ret x := (PTreeDefinition.Ret x). Notation Tau t := (PTreeDefinition.Tau t). Notation Vis e k := (PTreeDefinition.Vis e k). Notation Prob mu k := (PTreeDefinition.Prob mu k). Notation bind := PTreeDefinition.PTree.bind. Notation iter := PTreeDefinition.PTree.iter. Notation interp := PTreeDefinition.PTree.interp. Notation translate := PTreeDefinition.PTree.translate. Notation probabilistic_ptree := WellFormedness.probabilistic_ptree. Notation probabilistic_ptree_ret := WellFormedness.probabilistic_ptree_ret. Notation probabilistic_ptree_tau := WellFormedness.probabilistic_ptree_tau. Notation probabilistic_ptree_vis := WellFormedness.probabilistic_ptree_vis. Notation probabilistic_ptree_prob := WellFormedness.probabilistic_ptree_prob. Notation probabilistic_ptree_bind := WellFormedness.probabilistic_ptree_bind. Notation probabilistic_ptree_iter := WellFormedness.probabilistic_ptree_iter. Notation stable_head := UnifiedFrontier.stable_head. Notation stable_head_rel := UnifiedFrontier.stable_head_rel. Notation stable_hitting := PrimitiveStableHitting.stable_hitting. Notation pstruct := PStruct.pstruct. Notation pstrong := PStrong.pstrong. Notation peutt := PEutt.peutt. Notation finite_interaction_pattern := ProbabilisticTrace.finite_interaction_pattern. Notation finite_interaction_query := ProbabilisticTrace.finite_interaction_query. Notation finite_interaction_sem := ProbabilisticTrace.finite_interaction_sem. Notation \"t ≈ₚ[ RR ] u\" := (peutt RR t u) (at level 70, RR at next level, no associativity) : type_scope. Notation \"t ≈ₚ u\" := (peutt eq t u) (at level 70, no associativity) : type_scope. Notation stable_hitting_exists := PrimitiveStableHitting.stable_hitting_exists. Notation stable_hitting_unique := PrimitiveStableHitting.stable_hitting_unique. Notation stable_hitting_ret := PEutt.stable_hitting_ret. Notation stable_hitting_vis := PEutt.stable_hitting_vis. Notation stable_hitting_tau_iff := PEutt.stable_hitting_tau_iff. Notation stable_hitting_tau := StableHittingComputation.stable_hitting_tau. Notation stable_hitting_tau_iter := StableHittingComputation.stable_hitting_tau_iter. Notation stable_hitting_prob := PEutt.stable_hitting_prob. Notation stable_hitting_bind := PEutt.stable_hitting_bind. Notation stable_hitting_ret_iff := StableHittingComputation.stable_hitting_ret_iff. Notation stable_hitting_vis_iff := StableHittingComputation.stable_hitting_vis_iff. Notation stable_hitting_prob_decompose := StableHittingComputation.stable_hitting_prob_decompose. Notation stable_hitting_prob_compute := StableHittingComputation.stable_hitting_prob_compute. Notation stable_hitting_prob_dirac := StableHittingComputation.stable_hitting_prob_dirac. Notation stable_hitting_prob_flatten := StableHittingComputation.stable_hitting_prob_flatten. Notation peutt_iff_hitting := StableHittingComputation.peutt_iff_hitting. Notation peutt_of_hitting_lift := PEutt.peutt_of_hitting_lift. Notation peutt_hitting_lift := PEutt.peutt_hitting_lift. Notation peutt_coinduction := PEutt.peutt_coinduction. Notation peutt_refl := PEutt.peutt_refl. Notation peutt_sym := PEutt.peutt_sym. Notation peutt_trans := PEutt.peutt_trans. Notation peutt_equivalence := PEutt.peutt_equivalence. Notation peutt_ret := PEutt.peutt_ret. Notation peutt_tau_l := PEutt.peutt_tau_l. Notation peutt_tau_r := PEutt.peutt_tau_r. Notation peutt_vis := PEutt.peutt_vis. Notation peutt_prob := PEutt.peutt_prob. Notation peutt_prob_rewrite := PEutt.peutt_prob_rewrite. Notation peutt_bind := PEutt.peutt_bind. Notation pstruct_pstrong := PStrong.pstruct_pstrong. Notation pstruct_equivalence := PStruct.pstruct_equivalence. Notation pstrong_equivalence := PStrong.pstrong_equivalence. Notation pstrong_bind := PStrong.pstrong_bind. Notation peutt_rewrite_l := PEutt.peutt_rewrite_l. Notation peutt_rewrite_r := PEutt.peutt_rewrite_r. Notation peutt_rewrite := PEutt.peutt_rewrite. Notation finite_interaction_sem_spec := ProbabilisticTrace.finite_interaction_sem_spec. Notation peutt_preserves_finite_interaction_sem := ProbabilisticTrace.peutt_preserves_finite_interaction_sem.",
+    "theories/API/SubEnumQ.v": "From PTree.Core Require Import PTreeDefinition. Require Import PTree.Prob.Backend.SubEnumQ.Measure. From PTree.Interp.Backend Require Import SubEnumQ. Notation subenumQ_mdp_state_interp_atomic := PTree.Interp.Backend.SubEnumQ.subenumQ_mdp_state_interp_atomic. Set Implicit Arguments. Set Contextual Implicit. Definition submeas {E} {X} (mu : SubEnumQ X) : ptree E SubEnumQ X := Prob mu (fun x : X => Ret x). Definition subkernel {E} {X Y} (k : X -> SubEnumQ Y) : X -> ptree E SubEnumQ Y := fun x => submeas (k x). Variant subSampleE : Type -> Type := | SubSample {A : Type} : SubEnumQ A -> subSampleE A. Definition handle_subsample {E} {R} (e : subSampleE R) : ptree E SubEnumQ R := match e with | SubSample _ mu => submeas mu end.",
     "theories/API/Weighted.v": "Set Warnings \"-notation-overridden\". Set Warnings \"-ambiguous-paths\". From ExtLib.Structures Require Import Monads. From PTree.Prob.Legacy Require Import Monad. From PTree.Core Require Import PTreeDefinition. From ITree.Basics Require Import Basics. Set Implicit Arguments. Set Contextual Implicit. Set Primitive Projections. Section stuck. Context {E M : Type -> Type}. Definition stuckE (e : E void) : ptree E M void := PTree.trigger e. Context `{Monad M}. Context `{MonadMeasure M}. Definition stuckM {R} (u : ptree E M R) : ptree E M R := Prob (score 0) (fun _ => u). End stuck.",
     "theories/PTree.v": "From PTree.API Require Export Generic FreeOmega.",
     "theories/Semantics.v": "From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment. Notation head_step := HeadTransition.head_step. Notation head_bisim := HeadTransition.head_bisim. Notation tree_trans := TreeTransition.tree_trans. Notation tree_return_observation := TreeTransition.tree_return_observation. Notation tree_offered_event_observation := TreeTransition.tree_offered_event_observation. Notation tree_trans_bisim := TreeTransitionBisim.tree_trans_bisim. Notation tree_trans_bisim_coinduction := TreeTransitionBisim.tree_trans_bisim_coinduction. Notation mdp_head := MDPFragment.mdp_head. Notation mdp_state := MDPFragment.mdp_state."
@@ -130,9 +130,9 @@
       "mathcomp_profile_empty_carrier_joint"
     ],
     "theories/Regression/Backend/CouplingRealization.v": [
-      "subenum_function_coupling_realizes",
-      "subenum_structural_lub_realizes",
-      "subenum_relational_constant_limits_realize",
+      "subenumQ_function_coupling_realizes",
+      "subenumQ_structural_lub_realizes",
+      "subenumQ_relational_constant_limits_realize",
       "point_limit_not_structural",
       "point_limit_quotient_realizes",
       "quotient_graph_bind_realizes",
@@ -145,7 +145,7 @@
       "embedded_node_quotient_gluing",
       "independent_copies_fail_fiber"
     ],
-    "theories/Regression/Backend/EnumMeasureRegression.v": [
+    "theories/Regression/Backend/EnumQMeasureRegression.v": [
       "reg_half_val",
       "reg_quarter_val",
       "reg_fair_reordered_eqenum",
@@ -157,9 +157,9 @@
       "reg_split_mass_lift_eq",
       "reg_nested_outcomes_eqenum"
     ],
-    "theories/Regression/Backend/ExtendedEnum.v": [
-      "extended_enum_keeps_weight_two",
-      "extended_enum_zero_times_infinity",
+    "theories/Regression/Backend/ExtendedEnumQ.v": [
+      "extended_enumQ_keeps_weight_two",
+      "extended_enumQ_zero_times_infinity",
       "growing_weight_increasing",
       "growing_weight_value",
       "growing_weight_has_infinite_upper",
@@ -253,21 +253,21 @@
       "attenuated_round_quotient_marginal",
       "attenuated_round_not_native",
       "attenuated_round_complete_hitting",
-      "subenum_native_relational_left_unit",
+      "subenumQ_native_relational_left_unit",
       "mathcomp_native_relational_left_unit"
     ],
-    "theories/Regression/Backend/SubEnumRegression.v": [
+    "theories/Regression/Backend/SubEnumQRegression.v": [
       "reg_fair_subprob",
       "reg_fair_split_subprob",
-      "subenum_fair_split_lift",
-      "subenum_split_coin_equivalent",
-      "enum_overweight_flip_mass",
-      "enum_overweight_flip_not_subprob",
-      "enum_overweight_program_not_probabilistic",
-      "subenum_direct_coin_probabilistic",
-      "subenum_two_coins_bounded"
+      "subenumQ_fair_split_lift",
+      "subenumQ_split_coin_equivalent",
+      "enumQ_overweight_flip_mass",
+      "enumQ_overweight_flip_not_subprob",
+      "enumQ_overweight_program_not_probabilistic",
+      "subenumQ_direct_coin_probabilistic",
+      "subenumQ_two_coins_bounded"
     ],
-    "theories/Regression/Backend/UnifiedFrontierEnum.v": [
+    "theories/Regression/Backend/UnifiedFrontierEnumQ.v": [
       "reg_split_program_unified_frontier",
       "unified_reg_split_extensional"
     ],
@@ -338,7 +338,7 @@
     ],
     "theories/Regression/Infrastructure/FiniteInternalNative.v": [
       "dependent_compression_round_native",
-      "subenum_compression_measure_bounded"
+      "subenumQ_compression_measure_bounded"
     ],
     "theories/Regression/Infrastructure/FiniteInternalPlan.v": [
       "delay_path_steps",
@@ -491,7 +491,7 @@
       "geometric_successor_plan",
       "geometric_successor_joint_exists"
     ],
-    "theories/Regression/Probability/EnumDisintegration.v": [
+    "theories/Regression/Probability/EnumQDisintegration.v": [
       "conditional_latent_coin",
       "absent_fiber_zero_mass",
       "latent_coin_reconstruction",
@@ -505,7 +505,7 @@
       "forced_split_integer_joint",
       "split_rational_hall",
       "split_rational_joint",
-      "split_subenum_joint",
+      "split_subenumQ_joint",
       "identity_edges_fail_hall",
       "zero_transport_empty_source"
     ],
@@ -672,7 +672,7 @@
       "canonical_spin_nonempty_trace_query_zero",
       "divergent_trace_query_mass_zero",
       "divergent_trace_query_not_rejection_mass",
-      "enum_ret_true_stable_hitting",
+      "enumQ_ret_true_stable_hitting",
       "half_return_half_diverge_stable_hitting",
       "half_return_heads_not_same_mass_ret",
       "half_return_half_diverge_not_peutt_ret",
@@ -812,7 +812,7 @@
       "canonical_prob_ret_regression",
       "canonical_prob_flatten_regression",
       "canonical_prob_measure_setoid_rewrite",
-      "enum_semantic_product_swap",
+      "enumQ_semantic_product_swap",
       "canonical_prob_interchange_regression",
       "canonical_iter_unfold_regression",
       "canonical_iter_structural_regression",

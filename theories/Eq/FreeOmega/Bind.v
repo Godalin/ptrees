@@ -1436,7 +1436,7 @@ Qed.
 
 (** Prob requires a genuinely stronger productivity condition than pointwise
     branch cofinality: each outer approximant needs one fuel bound that works
-    almost everywhere for the sampled branches.  Finite Enum support can
+    almost everywhere for the sampled branches.  Finite EnumQ support can
     obtain such a bound by taking a maximum; arbitrary measures must provide
     it analytically. *)
 Definition ptree_bind_prob_uniform {A R X}

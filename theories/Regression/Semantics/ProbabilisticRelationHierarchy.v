@@ -7,10 +7,10 @@ Require Import RelationClasses.
 From Coq.Program Require Import Equality.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.API Require Import Enum.
-Require Import PTree.Prob.Backend.Enum.Representation.
+From PTree.API Require Import EnumQ.
+Require Import PTree.Prob.Backend.EnumQ.Representation.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import PStruct PStrong PEutt ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
@@ -22,11 +22,11 @@ Unset Printing Implicit Defensive.
 
 
 Variant hierarchyE : Type -> Type := .
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation W :=
-  (@peutt hierarchyE SubEnum MF
+  (@peutt hierarchyE SubEnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+      (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool bool eq).
 
@@ -34,14 +34,14 @@ Lemma behavioral_equivalence_regression : Equivalence W.
 Proof. exact peutt_equivalence. Qed.
 
 (** Tau transparency does not assert termination of the residual program. *)
-CoFixpoint hierarchy_spin : ptree hierarchyE SubEnum bool := Tau hierarchy_spin.
+CoFixpoint hierarchy_spin : ptree hierarchyE SubEnumQ bool := Tau hierarchy_spin.
 
 Lemma tau_before_divergence : W (Tau hierarchy_spin) hierarchy_spin.
 Proof. apply peutt_tau_l. Qed.
 
 Lemma tau_ret_not_pstrong :
-  ~ @pstrong hierarchyE SubEnum SubEnum_SemanticMeasure
-      SubEnum_SemanticMeasureCoreLaws bool bool eq
+  ~ @pstrong hierarchyE SubEnumQ SubEnumQ_SemanticMeasure
+      SubEnumQ_SemanticMeasureCoreLaws bool bool eq
       (Tau (Ret true)) (Ret true).
 Proof.
   intro H. apply pstrong_unfold in H. dependent destruction H.
@@ -99,8 +99,8 @@ Lemma tau_ret_peutt : W (Tau (Ret true)) (Ret true).
 Proof. apply peutt_tau_l. Qed.
 
 (** The registered structural inclusion works under behavioral contexts. *)
-Lemma structural_prob_context_rewrite {X} (mu : SubEnum X)
-    (k1 k2 : X -> ptree hierarchyE SubEnum bool)
+Lemma structural_prob_context_rewrite {X} (mu : SubEnumQ X)
+    (k1 k2 : X -> ptree hierarchyE SubEnumQ bool)
     (Hk : forall x, pstruct eq (k1 x) (k2 x)) :
   W (Prob mu k1) (Prob mu k2).
 Proof.
@@ -111,9 +111,9 @@ Proof.
 Qed.
 
 Lemma strong_prob_coupled_context_rewrite {X Y}
-    (XR : X -> Y -> Prop) (mu : SubEnum X) (nu : SubEnum Y)
-    (k1 : X -> ptree hierarchyE SubEnum bool)
-    (k2 : Y -> ptree hierarchyE SubEnum bool)
+    (XR : X -> Y -> Prop) (mu : SubEnumQ X) (nu : SubEnumQ Y)
+    (k1 : X -> ptree hierarchyE SubEnumQ bool)
+    (k2 : Y -> ptree hierarchyE SubEnumQ bool)
     (Hmu : sem_lift XR mu nu)
     (Hk : forall x y, XR x y -> pstrong eq (k1 x) (k2 y)) :
   W (Prob mu k1) (Prob nu k2).
@@ -126,7 +126,7 @@ Qed.
 
 (** A local administrative rewrite is justified by hitting transparency,
     even under a probability node with a divergent continuation. *)
-Lemma tau_prob_divergent_branch (mu : SubEnum bool) :
+Lemma tau_prob_divergent_branch (mu : SubEnumQ bool) :
   W (Prob mu (fun b : bool => Tau (if b then Ret true else hierarchy_spin)))
     (Prob mu (fun b : bool => if b then Ret true else hierarchy_spin)).
 Proof.
@@ -136,8 +136,8 @@ Proof.
 Qed.
 
 Lemma tau_bind_context_rewrite
-    (t : ptree hierarchyE SubEnum bool)
-    (k : bool -> ptree hierarchyE SubEnum bool) :
+    (t : ptree hierarchyE SubEnumQ bool)
+    (k : bool -> ptree hierarchyE SubEnumQ bool) :
   W (PTree.bind (Tau t) (fun x => Tau (k x))) (PTree.bind t k).
 Proof.
   apply peutt_bind_Proper.
@@ -146,6 +146,6 @@ Proof.
 Qed.
 
 Lemma tau_fmap_context_rewrite (f : bool -> bool)
-    (t : ptree hierarchyE SubEnum bool) :
+    (t : ptree hierarchyE SubEnumQ bool) :
   W (PTree.fmap f (Tau t)) (PTree.fmap f t).
 Proof. apply peutt_fmap_Proper, peutt_tau_l. Qed.

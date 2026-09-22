@@ -1,7 +1,7 @@
 # Discrete two-level distributions: implementation checkpoints
 
 Current scope supersedes the earlier work sequence below: the fully
-universe-checked PTree probability pairs are SubEnum/FreeOmega and
+universe-checked PTree probability pairs are SubEnumQ/FreeOmega and
 SubEnumR/FreeOmega. MathComp's direct pair `MN = MF = MathCompKernelMeasure R`
 is complete under the accepted Gate M trust boundary at `5dac49a`, with
 coupling composition still conditional on `MathCompCouplingGluing`.
@@ -52,7 +52,7 @@ dependency profiles, not a claim of mathematical minimality.
 1. Freeze the generic capability probes and baseline validation.
 2. Add native-parametric external validation with AE-sensitive sample/bind
    closure; preserve the existing internal `free_omega_denotes` name and meaning.
-3. Connect the existing SubEnum interpretation without changing DS1--DS5
+3. Connect the existing SubEnumQ interpretation without changing DS1--DS5
    statements or replacing the qlift proof through inadmissible intermediates.
 4. Develop finite-real native distributions, reusing generic completion work.
 5. At the removal checkpoint, the MathComp self-model investigation was closed:
@@ -98,11 +98,11 @@ Outside the AE support, kernels are totalized by a valid zero using explicit
 classical selection. Invalid raw terms themselves do not thereby gain a model.
 Double-lub interchange is not a claim that arbitrary native sampling commutes.
 
-`SubEnum/FreeOmega/GenericValidation.v` proves the new specialized evaluator
+`SubEnumQ/FreeOmega/GenericValidation.v` proves the new specialized evaluator
 is definitionally the old `free_omega_upper`; modelability is equivalent to
 DS admissibility and both denotations agree. It supplies the AE/test bridges
 from finite expectation facts. No frozen DS theorem or old proof is changed.
-General qlift joint realization is still the existing SubEnum theorem; the
+General qlift joint realization is still the existing SubEnumQ theorem; the
 new generic approximation result must not be advertised as generic qlift
 soundness. In particular, no new induction over qlift intermediates is used.
 
@@ -113,7 +113,7 @@ geometric support, proof-independent model values and large-universe results.
 Validation of this checkpoint: full build/AllImports; architecture, API and
 source contracts; all 49 tool tests; all 505 frozen compiled contracts;
 18 new endpoint `Check`/`Print Assumptions` probes against the existing axiom
-whitelist; joint `coqchk -norec` of the generic validation, SubEnum adapter and
+whitelist; joint `coqchk -norec` of the generic validation, SubEnumQ adapter and
 regression. All passed locally. The frozen DS sources were not edited.
 
 ## Finite-real native checkpoint (partial backend profile)
@@ -129,10 +129,10 @@ AE, countable AE, AE Kleisli and exact bind AE instances are proved. Its
 independent expectation model proves monotone continuity by finite weighted
 supremum interchange. Native AE and coupling test soundness are proved.
 `SubEnumR/FreeOmega/Validation.v` is only a thin specialization of the same
-generic validation used by SubEnum: no duplicated completion proof chain.
+generic validation used by SubEnumQ: no duplicated completion proof chain.
 
-`RationalEmbedding.v` gives `SubEnum -> SubEnumR R`, preserving all finite
-real expectations and ret/zero/bind equality. Existing `SubEnum` keeps its
+`RationalEmbedding.v` gives `SubEnumQ -> SubEnumR R`, preserving all finite
+real expectations and ret/zero/bind equality. Existing `SubEnumQ` keeps its
 name and API; it is the rational (`SubEnumQ`) backend in the proposal.
 The only permitted native cross-family import is this explicit embedding.
 
@@ -214,7 +214,7 @@ not a countable-support certificate.
 ## Convergence and next work
 
 The original completed checkpoints were: generic capability inventory; native-parametric
-OmegaVal validation; unchanged SubEnum DS bridge; finite-real representation,
+OmegaVal validation; unchanged SubEnumQ DS bridge; finite-real representation,
 ordinary/AE laws, native model and Q-to-R embedding; safe partial MathComp
 same-carrier capabilities and a reproducible joint-universe boundary.
 
@@ -243,7 +243,7 @@ validity record were the new representation; the only formal completion is FreeO
 | Commit | Purpose |
 | --- | --- |
 | `55b6809` | Compile existing FreeOmega capabilities over arbitrary MN, with separately scoped prerequisites |
-| `efa262e` | Generic OmegaVal validation, AE closure, limit algebra and unchanged SubEnum DS bridge |
+| `efa262e` | Generic OmegaVal validation, AE closure, limit algebra and unchanged SubEnumQ DS bridge |
 | `d0b2411` | Finite-real native distributions, ordinary/AE laws, external model and Q-to-R embedding |
 | `c970eea` | Genuinely unbounded real-weight retry, using the generic validity/lub theory |
 | Original MathComp checkpoint | Safe same-carrier laws and reproducible joint-universe boundary |

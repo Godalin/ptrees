@@ -78,7 +78,7 @@ reasoning does not depend on external validation or a supplied gluing law.
 This is the maintained behavioral capability profile, not a claim that
 every optional recovery, native-reflection or external soundness capability
 has been instantiated. In particular general qlift external joint soundness
-remains a separate later strengthening; the SubEnum DS5 theorem is not
+remains a separate later strengthening; the SubEnumQ DS5 theorem is not
 silently generalized by these native instances. The next useful step is a
 native-independent raw-qlift bounded-test bridge, before attempting general
 external joint realization. MathComp mathematical/universe gaps are unchanged.

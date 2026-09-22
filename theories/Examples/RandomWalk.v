@@ -10,11 +10,11 @@ Require Import Lia Ring Field.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.Common.RatGeometric.
+Require Import PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.Common.RatGeometric.
 From PTree.Eq Require Import Shallow PStruct PStrong PEutt ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
@@ -211,40 +211,40 @@ Qed.
 
 End PassageControlFlow.
 
-Import Enum RatSubTypes GRing.Theory Order.Theory.
+Import EnumQ RatSubTypes GRing.Theory Order.Theory.
 Import PTree.Prob.Backend.Common.RatSubTypes.NonnegQNotations.
 Local Open Scope ring_scope.
 Local Open Scope order_scope.
 
 #[program] Definition rw_down_weight : nnQ := [nn 2/3].
 #[program] Definition rw_up_weight : nnQ := [nn 1/3].
-Definition rw_coin_raw : Enum bool :=
+Definition rw_coin_raw : EnumQ bool :=
   [:: (rw_down_weight, true); (rw_up_weight, false)].
 
-Lemma rw_coin_subprob : enum_subprob rw_coin_raw.
+Lemma rw_coin_subprob : enumQ_subprob rw_coin_raw.
 Proof.
-  rewrite /enum_subprob /enum_mass /rw_coin_raw /= !mulr1 addr0.
+  rewrite /enumQ_subprob /enumQ_mass /rw_coin_raw /= !mulr1 addr0.
   native_compute. reflexivity.
 Qed.
 
-Definition rw_coin : SubEnum bool :=
-  @enum_as_subprob bool rw_coin_raw rw_coin_subprob.
+Definition rw_coin : SubEnumQ bool :=
+  @enumQ_as_subprob bool rw_coin_raw rw_coin_subprob.
 
 Unset Automatic Proposition Inductives.
 Variant rwE : Type -> Type := .
 Local Notation rwFI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation rwFO := (@FreeOmegaObservableSemanticOmega
-  SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
+  SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Local Notation rwpeutt :=
-  (@peutt rwE SubEnum (FreeOmega SubEnum)
+  (@peutt rwE SubEnumQ (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+      (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega).
 
-Definition random_walk : ptree rwE SubEnum rw_state := random_walk_prog rw_coin.
-Definition rw_passage : nat -> ptree rwE SubEnum nat := passage rw_coin.
+Definition random_walk : ptree rwE SubEnumQ rw_state := random_walk_prog rw_coin.
+Definition rw_passage : nat -> ptree rwE SubEnumQ nat := passage rw_coin.
 Definition rw_D0 := rw_passage 0.
 Definition rw_continuation := PTree.bind rw_D0 rw_passage.
 
@@ -258,7 +258,7 @@ Proof.
   apply random_walk_as_passage.
 Qed.
 
-Theorem random_walk_bind_normal_form {A} (k : rw_state -> ptree rwE SubEnum A) :
+Theorem random_walk_bind_normal_form {A} (k : rw_state -> ptree rwE SubEnumQ A) :
   rwpeutt eq (PTree.bind random_walk k)
     (PTree.bind rw_D0 (fun n => k (0%nat,n))).
 Proof. apply peutt_of_pstruct. apply random_walk_bind. Qed.
@@ -283,16 +283,16 @@ Qed.
 (** Quantitative semantics (separate from finite administrative rewrites).
     The analytic part uses rational finite approximants.  A countable output
     is specified by the limits of its individual masses, without packaging
-    infinitely many atoms into the finite [SubEnum] carrier.
+    infinitely many atoms into the finite [SubEnumQ] carrier.
 
     The renewal route m = p + q*m*m would first need an existing scalar
     mass for each completed passage, and an unconditional observation/bind
     theorem computing the mass of C from those scalars.  [sem_total] is a
     predicate, not such a mass function.  [free_omega_denotes_bind] is an
-    additional capability, not an available SubEnum instance, and requires
+    additional capability, not an available SubEnumQ instance, and requires
     represented observations up front.  The atom calculation likewise needs
     integration against D0's countably supported law, which cannot itself be
-    represented in finite SubEnum.  Thus assuming those limits here would
+    represented in finite SubEnumQ.  Thus assuming those limits here would
     beg the existence question.  We retain the constructive rational-limit
     argument; no scalar cancellation or PMF-to-peutt converse is assumed. *)
 Import Num.Theory.
@@ -421,13 +421,13 @@ Qed.
 
 (** [rounds] counts complete sample/Tau pairs, not an artificial bound on
     the walk's state space.  The absorbing state is observed immediately. *)
-Fixpoint walk_observation {A} (obs : nat -> A) (rounds x y : nat) : SubEnum A :=
+Fixpoint walk_observation {A} (obs : nat -> A) (rounds x y : nat) : SubEnumQ A :=
   match x with
-  | O => subenum_ret (obs y)
+  | O => subenumQ_ret (obs y)
   | S h =>
-      subenum_bind rw_coin (fun down =>
+      subenumQ_bind rw_coin (fun down =>
         match rounds with
-        | O => subenum_zero
+        | O => subenumQ_zero
         | S fuel => if down then walk_observation obs fuel h (S y)
                     else walk_observation obs fuel (S (S h)) 0
         end)
@@ -436,7 +436,7 @@ Fixpoint walk_observation {A} (obs : nat -> A) (rounds x y : nat) : SubEnum A :=
 (** The identity observation is a specialization, not a second execution
     recurrence.  [walk_hitting_observes] below certifies this executable fold
     against the maintained primitive kernel; [walk_eval] is its scalar fold. *)
-Definition walk_approx (rounds x y : nat) : SubEnum nat :=
+Definition walk_approx (rounds x y : nat) : SubEnumQ nat :=
   walk_observation (fun n => n) rounds x y.
 
 Fixpoint walk_eval (rounds : nat) (f : nat -> rat) (x y : nat) : rat :=
@@ -459,32 +459,32 @@ Proof.
 Qed.
 
 Lemma rw_coin_expect (f : bool -> rat) :
-  enum_expect f (subenum_raw rw_coin) = p * f true + q * f false.
+  enumQ_expect f (subenumQ_raw rw_coin) = p * f true + q * f false.
 Proof.
   change (p * f true + (q * f false + 0) = p * f true + q * f false).
   by rewrite addr0.
 Qed.
 
 Lemma walk_observation_expect {A} (obs : nat -> A) f rounds x y :
-  enum_expect f (subenum_raw (walk_observation obs rounds x y)) =
+  enumQ_expect f (subenumQ_raw (walk_observation obs rounds x y)) =
     walk_eval rounds (fun n => f (obs n)) x y.
 Proof.
   revert x y. induction rounds as [|rounds IH]; intros [|x] y.
-  - exact (enum_expect_ret f (obs y)).
-  - change (enum_expect f (bind_Enum (subenum_raw rw_coin)
+  - exact (enumQ_expect_ret f (obs y)).
+  - change (enumQ_expect f (bind_EnumQ (subenumQ_raw rw_coin)
       (fun _ => [::])) = 0).
-    rewrite enum_expect_bind rw_coin_expect /= !mulr0 addr0. reflexivity.
-  - exact (enum_expect_ret f (obs y)).
-  - change (enum_expect f (bind_Enum (subenum_raw rw_coin)
-      (fun b => subenum_raw (if b then walk_observation obs rounds x (S y)
+    rewrite enumQ_expect_bind rw_coin_expect /= !mulr0 addr0. reflexivity.
+  - exact (enumQ_expect_ret f (obs y)).
+  - change (enumQ_expect f (bind_EnumQ (subenumQ_raw rw_coin)
+      (fun b => subenumQ_raw (if b then walk_observation obs rounds x (S y)
                             else walk_observation obs rounds (S (S x)) 0))) =
       p * walk_eval rounds (fun n => f (obs n)) x (S y) +
       q * walk_eval rounds (fun n => f (obs n)) (S (S x)) 0).
-    by rewrite enum_expect_bind rw_coin_expect !IH.
+    by rewrite enumQ_expect_bind rw_coin_expect !IH.
 Qed.
 
 Lemma walk_approx_expect rounds f x y :
-  enum_expect f (subenum_raw (walk_approx rounds x y)) = walk_eval rounds f x y.
+  enumQ_expect f (subenumQ_raw (walk_approx rounds x y)) = walk_eval rounds f x y.
 Proof. exact (walk_observation_expect (fun n => n) f rounds x y). Qed.
 
 Local Notation radius := (3 / 2 : rat).
@@ -572,9 +572,9 @@ Proof.
 Qed.
 
 Theorem walk_mass_limit x y :
-  rational_limit (fun rounds => enum_mass (subenum_raw (walk_approx rounds x y))) 1.
+  rational_limit (fun rounds => enumQ_mass (subenumQ_raw (walk_approx rounds x y))) 1.
 Proof.
-  unfold enum_mass, rational_limit. setoid_rewrite walk_approx_expect.
+  unfold enumQ_mass, rational_limit. setoid_rewrite walk_approx_expect.
   apply (walk_harmonic_limit (H := fun _ _ => 1)).
   - by intros.
   - reflexivity.
@@ -582,9 +582,9 @@ Proof.
 Qed.
 
 Theorem walk_atom_limit x y n :
-  rational_limit (fun rounds => enum_expect
+  rational_limit (fun rounds => enumQ_expect
     (fun z => if Nat.eqb n z then 1 else 0)
-    (subenum_raw (walk_approx rounds x y))) (passage_pmf x y n).
+    (subenumQ_raw (walk_approx rounds x y))) (passage_pmf x y n).
 Proof.
   unfold rational_limit. setoid_rewrite walk_approx_expect.
   apply (walk_harmonic_limit (H := fun x y => passage_pmf x y n)).
@@ -594,13 +594,13 @@ Proof.
 Qed.
 
 Corollary initial_walk_geometric_limit n :
-  rational_limit (fun rounds => enum_expect
+  rational_limit (fun rounds => enumQ_expect
     (fun z => if Nat.eqb n z then 1 else 0)
-    (subenum_raw (walk_approx rounds 1 0))) (geometric_pmf n).
+    (subenumQ_raw (walk_approx rounds 1 0))) (geometric_pmf n).
 Proof. rewrite -passage_pmf_initial. apply walk_atom_limit. Qed.
 
 (** Link the finite calculations to the maintained primitive kernel. *)
-Local Notation walk_head := (stable_head rwE SubEnum nat).
+Local Notation walk_head := (stable_head rwE SubEnumQ nat).
 
 Definition walk_head_value (h : walk_head) : nat :=
   match h with
@@ -611,9 +611,9 @@ Definition walk_head_value (h : walk_head) : nat :=
 Fixpoint walk_schedule (rounds : nat) : nat :=
   match rounds with O => O | S n => S (S (walk_schedule n)) end.
 
-Definition walk_hitting fuel x y : FreeOmega SubEnum walk_head :=
+Definition walk_hitting fuel x y : FreeOmega SubEnumQ walk_head :=
   ptree_hitting_approx (FI := rwFI) (FO := rwFO) fuel
-    (observe (@run_until_zero rwE SubEnum rw_coin x y)).
+    (observe (@run_until_zero rwE SubEnumQ rw_coin x y)).
 
 Lemma walk_hitting_two fuel x y :
   walk_hitting (S (S fuel)) (S x) y =
@@ -635,35 +635,35 @@ Lemma walk_hitting_observes {A} (obs : nat -> A) rounds x y :
 Proof.
   revert x y. induction rounds as [|rounds IH]; intros [|x] y.
   - change (free_omega_observes (fun h => obs (walk_head_value h))
-      (FORet (FHRet y)) (subenum_ret (obs y))).
+      (FORet (FHRet y)) (subenumQ_ret (obs y))).
     constructor.
   - change (free_omega_observes (fun h => obs (walk_head_value h))
       (FOSample rw_coin (fun _ => FOZero))
-      (subenum_bind rw_coin (fun _ => subenum_zero))).
-    eapply (@FOOObserveSample SubEnum SubEnum_SemanticMeasure
-      SubEnum_SemanticOmega) with (front := fun _ => @subenum_zero A).
+      (subenumQ_bind rw_coin (fun _ => subenumQ_zero))).
+    eapply (@FOOObserveSample SubEnumQ SubEnumQ_SemanticMeasure
+      SubEnumQ_SemanticOmega) with (front := fun _ => @subenumQ_zero A).
     intros b. constructor.
   - change (free_omega_observes (fun h => obs (walk_head_value h))
-      (FORet (FHRet y)) (subenum_ret (obs y))).
+      (FORet (FHRet y)) (subenumQ_ret (obs y))).
     constructor.
   - cbn [walk_schedule]. rewrite walk_hitting_two.
     change (free_omega_observes (fun h => obs (walk_head_value h))
       (FOSample rw_coin (fun down =>
         if down then walk_hitting (walk_schedule rounds) x (S y)
                 else walk_hitting (walk_schedule rounds) (S (S x)) 0))
-      (subenum_bind rw_coin (fun down =>
+      (subenumQ_bind rw_coin (fun down =>
         if down then walk_observation obs rounds x (S y)
                 else walk_observation obs rounds (S (S x)) 0))).
-    eapply (@FOOObserveSample SubEnum SubEnum_SemanticMeasure
-      SubEnum_SemanticOmega) with (front := fun down =>
+    eapply (@FOOObserveSample SubEnumQ SubEnumQ_SemanticMeasure
+      SubEnumQ_SemanticOmega) with (front := fun down =>
       if down then walk_observation obs rounds x (S y)
               else walk_observation obs rounds (S (S x)) 0).
     intros []; apply IH.
 Qed.
 
 Lemma walk_unit_converges x y :
-  subenum_sem_lub (fun rounds => walk_observation (fun _ => tt) rounds x y)
-    (subenum_ret tt).
+  subenumQ_sem_lub (fun rounds => walk_observation (fun _ => tt) rounds x y)
+    (subenumQ_ret tt).
 Proof.
   intros P eps Heps.
   have Hlimit : rational_limit
@@ -675,7 +675,7 @@ Proof.
     - intros. destruct (P tt); rw_rat; field; vm_compute; intuition discriminate. }
   destruct (Hlimit eps Heps) as [N HN].
   exists N. intros rounds Hrounds.
-  rewrite walk_observation_expect enum_expect_ret.
+  rewrite walk_observation_expect enumQ_expect_ret.
   exact (HN rounds Hrounds).
 Qed.
 
@@ -687,7 +687,7 @@ Proof. induction rounds; cbn [walk_schedule]; lia. Qed.
 
 Lemma walk_limit_hitting x y :
   ptree_stable_hitting (FI := rwFI) (FO := rwFO)
-    (observe (@run_until_zero rwE SubEnum rw_coin x y)) (walk_limit x y).
+    (observe (@run_until_zero rwE SubEnumQ rw_coin x y)) (walk_limit x y).
 Proof.
   apply stable_hitting_subsequence.
   - intro n. cbn [walk_schedule]. lia.
@@ -695,7 +695,7 @@ Proof.
 Qed.
 
 Lemma walk_limit_observes_unit x y :
-  free_omega_observes (fun _ : walk_head => tt) (walk_limit x y) (subenum_ret tt).
+  free_omega_observes (fun _ : walk_head => tt) (walk_limit x y) (subenumQ_ret tt).
 Proof.
   apply FOOObserveLub with
       (outs := fun rounds => walk_observation (fun _ => tt) rounds x y).
@@ -707,15 +707,15 @@ Qed.
 
 Theorem walk_ast x y :
   ptree_stable_hitting_ast (FI := rwFI) (FO := rwFO)
-    (observe (@run_until_zero rwE SubEnum rw_coin x y)) (walk_limit x y).
+    (observe (@run_until_zero rwE SubEnumQ rw_coin x y)) (walk_limit x y).
 Proof.
   split; first apply walk_limit_hitting.
   apply free_omega_observable_total_intro.
-  exists unit, (fun _ : walk_head => tt), (subenum_ret tt).
+  exists unit, (fun _ : walk_head => tt), (subenumQ_ret tt).
   split.
   - apply walk_limit_observes_unit.
-  - change (enum_mass (ret_Enum tt) = 1).
-    exact (enum_expect_ret (fun _ : unit => (1 : rat)) tt).
+  - change (enumQ_mass (ret_EnumQ tt) = 1).
+    exact (enumQ_expect_ret (fun _ : unit => (1 : rat)) tt).
 Qed.
 
 (** Transport the same native limit through the structural splitting law.
@@ -728,7 +728,7 @@ Proof.
   destruct (walk_ast 2 0) as [Hhit Htotal]. split; last exact Htotal.
   apply (proj1 (ptree_stable_hitting_pstruct_no_event
     (fun X (e : rwE X) => match e with end)
-    (@height_two_split rwE SubEnum rw_coin) (walk_limit 2 0))).
+    (@height_two_split rwE SubEnumQ rw_coin) (walk_limit 2 0))).
   exact Hhit.
 Qed.
 
@@ -736,7 +736,7 @@ Qed.
     Everything below reuses the passage analysis: structural transport for
     finite observations, the generic observation-to-AST theorem for totality,
     and deterministic pushforward for the limiting joint probabilities. *)
-Local Notation joint_head := (stable_head rwE SubEnum rw_state).
+Local Notation joint_head := (stable_head rwE SubEnumQ rw_state).
 
 Definition joint_head_value (h : joint_head) : rw_state :=
   match h with
@@ -744,7 +744,7 @@ Definition joint_head_value (h : joint_head) : rw_state :=
   | @FHVis _ _ _ X e _ => match e with end
   end.
 
-Definition joint_hitting fuel x y : FreeOmega SubEnum joint_head :=
+Definition joint_hitting fuel x y : FreeOmega SubEnumQ joint_head :=
   ptree_hitting_approx (FI := rwFI) (FO := rwFO) fuel
     (observe (PTree.iter (rw_body rw_coin) (x,y))).
 
@@ -773,16 +773,16 @@ Proof.
   eapply stable_hitting_ast_of_observations with
     (obs := fun _ : joint_head => tt)
     (outs := fun rounds => walk_observation (fun _ => tt) rounds 1 0)
-    (out := subenum_ret tt).
+    (out := subenumQ_ret tt).
   - intro n. cbn [walk_schedule]. lia.
   - apply walk_schedule_ge.
   - intro rounds. apply (joint_hitting_observes (fun _ => tt)).
   - apply walk_unit_converges.
-  - change (enum_mass (ret_Enum tt) = 1).
-    exact (enum_expect_ret (fun _ : unit => (1 : rat)) tt).
+  - change (enumQ_mass (ret_EnumQ tt) = 1).
+    exact (enumQ_expect_ret (fun _ : unit => (1 : rat)) tt).
 Qed.
 
-Definition random_walk_outputs rounds : SubEnum rw_state :=
+Definition random_walk_outputs rounds : SubEnumQ rw_state :=
   walk_observation (fun n => (0%nat,n)) rounds 1 0.
 
 Lemma random_walk_outputs_spec rounds :
@@ -793,9 +793,9 @@ Proof. apply (joint_hitting_observes (fun s => s)). Qed.
 (** Quantitative composition is pushforward along [n |-> (0,n)].  Every
     finite joint test reduces to a passage test, before any limit is taken. *)
 Lemma random_walk_outputs_expect rounds (f : rw_state -> rat) :
-  enum_expect f (subenum_raw (random_walk_outputs rounds)) =
-  enum_expect (fun n => f (0%nat,n))
-    (subenum_raw (walk_approx rounds 1 0)).
+  enumQ_expect f (subenumQ_raw (random_walk_outputs rounds)) =
+  enumQ_expect (fun n => f (0%nat,n))
+    (subenumQ_raw (walk_approx rounds 1 0)).
 Proof.
   unfold random_walk_outputs.
   by rewrite walk_observation_expect walk_approx_expect.
@@ -808,14 +808,14 @@ Definition state_indicator (s t : rw_state) : rat :=
     This is not a converse from pointwise probability equality to [peutt]. *)
 Theorem random_walk_output_dist s :
   rational_limit (fun rounds =>
-    enum_expect (state_indicator s) (subenum_raw (random_walk_outputs rounds)))
+    enumQ_expect (state_indicator s) (subenumQ_raw (random_walk_outputs rounds)))
     (joint_pmf s).
 Proof.
   unfold rational_limit. setoid_rewrite random_walk_outputs_expect.
   destruct s as [[|x] n].
   - change (rational_limit
-      (fun rounds => enum_expect (fun z => if Nat.eqb n z then 1 else 0)
-        (subenum_raw (walk_approx rounds 1 0)))
+      (fun rounds => enumQ_expect (fun z => if Nat.eqb n z then 1 else 0)
+        (subenumQ_raw (walk_approx rounds 1 0)))
       (geometric_pmf n)).
     apply initial_walk_geometric_limit.
   - setoid_rewrite walk_approx_expect.
@@ -834,8 +834,8 @@ Proof.
 Qed.
 
 Corollary random_walk_joint_probability n :
-  rational_limit (fun rounds => enum_expect (state_indicator (0%nat, S n))
-    (subenum_raw (random_walk_outputs rounds))) (2 / (3 : rat) ^+ S n).
+  rational_limit (fun rounds => enumQ_expect (state_indicator (0%nat, S n))
+    (subenumQ_raw (random_walk_outputs rounds))) (2 / (3 : rat) ^+ S n).
 Proof. rewrite -joint_pmf_power. apply random_walk_output_dist. Qed.
 
 Lemma joint_pmf_x_nonzero x y :
@@ -858,9 +858,9 @@ Proof.
 Qed.
 
 Corollary continuation_output_limit n :
-  rational_limit (fun rounds => enum_expect
+  rational_limit (fun rounds => enumQ_expect
     (fun z => if Nat.eqb n z then 1 else 0)
-    (subenum_raw (walk_approx rounds 2 0))) (geometric_pmf (n-1)%nat).
+    (subenumQ_raw (walk_approx rounds 2 0))) (geometric_pmf (n-1)%nat).
 Proof. rewrite -continuation_pmf. apply walk_atom_limit. Qed.
 
 Lemma D0_geometric_equation n :
@@ -868,7 +868,7 @@ Lemma D0_geometric_equation n :
     q * geometric_pmf (n-1)%nat.
 Proof. have H := geometric_recurrence n 0. by rewrite subn0 in H. Qed.
 
-(** Normalization is a limit of finite sums, not an infinite list in Enum. *)
+(** Normalization is a limit of finite sums, not an infinite list in EnumQ. *)
 Fixpoint geometric_partial_mass (length : nat) : rat :=
   match length with
   | O => 0
@@ -903,8 +903,8 @@ Theorem random_walk_closed_form :
     (observe random_walk) random_walk_heads /\
   (forall rounds, free_omega_observes joint_head_value
     (joint_hitting (walk_schedule rounds) 1 0) (random_walk_outputs rounds)) /\
-  (forall s, rational_limit (fun rounds => enum_expect (state_indicator s)
-    (subenum_raw (random_walk_outputs rounds))) (joint_pmf s)) /\
+  (forall s, rational_limit (fun rounds => enumQ_expect (state_indicator s)
+    (subenumQ_raw (random_walk_outputs rounds))) (joint_pmf s)) /\
   rational_limit geometric_partial_mass 1.
 Proof.
   split; first exact random_walk_ast.
@@ -915,8 +915,8 @@ Qed.
 (** Regression: three rounds do not yet realize the limiting second atom.
     The extra mass 2/9 - 4/27 is contributed by genuinely longer paths. *)
 Example random_walk_three_rounds_second_atom :
-  enum_expect (state_indicator (0%nat,2%nat))
-    (subenum_raw (random_walk_outputs 3)) = 4 / 27.
+  enumQ_expect (state_indicator (0%nat,2%nat))
+    (subenumQ_raw (random_walk_outputs 3)) = 4 / 27.
 Proof. native_compute. reflexivity. Qed.
 
 Example random_walk_limiting_second_atom : joint_pmf (0%nat,2%nat) = 2 / 9.

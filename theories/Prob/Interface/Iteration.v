@@ -71,7 +71,7 @@ Fixpoint meas_iter_approx {I A}
 
 (** An unbounded iteration denotes precisely a limit of all its finite
     absorbing approximations.  This is a relation because a representation
-    such as finite rational [Enum] is not closed under every omega-limit. *)
+    such as finite rational [EnumQ] is not closed under every omega-limit. *)
 Definition meas_iter {I A} (step : I -> M (I + A))
     (i : I) (out : M A) : Prop :=
   meas_lub (fun n => meas_iter_approx n step i) out.

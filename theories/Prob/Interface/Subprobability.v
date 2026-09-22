@@ -41,8 +41,8 @@ Polymorphic Class SemanticSubprobabilityLaws@{carrier representation}
       sem_eq mu nu -> (sem_subprob mu <-> sem_subprob nu)
 }.
 
-(** Intrinsically bounded carriers validate every inhabitant.  [SubEnum] and
-    MathComp's subprobability kernels implement this package; raw [Enum]
+(** Intrinsically bounded carriers validate every inhabitant.  [SubEnumQ] and
+    MathComp's subprobability kernels implement this package; raw [EnumQ]
     implements only the predicate and closure laws above. *)
 Polymorphic Class SemanticSubprobabilityCarrierLaws@{carrier representation}
     (S : Type@{carrier} -> Type@{representation})

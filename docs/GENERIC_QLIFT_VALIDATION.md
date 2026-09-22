@@ -12,7 +12,7 @@ oval_bidual T (model t) (model u)
 ```
 
 This is **not** a generic actual-joint realization theorem. The existing
-SubEnum DS1–DS5 results, definitions, proofs and public APIs are unchanged.
+SubEnumQ DS1–DS5 results, definitions, proofs and public APIs are unchanged.
 No MathComp self-model work, new completion, or new capability class is added.
 
 This is the middle layer of the fixed
@@ -43,7 +43,7 @@ The six links are ordinary explicit theorem arguments. Both concrete
 adapters discharge every one of them, without leaving a model capability
 for callers to assume.
 
-`SubEnum/FreeOmega/RelationalValidation.v` uses its existing finite expectation
+`SubEnumQ/FreeOmega/RelationalValidation.v` uses its existing finite expectation
 theory and scalar monotone-convergence lemma. The latter is still owned by
 the frozen `UpperObservation` module; no native `Domain -> FreeOmega` edge is
 introduced. It does not use old quotient soundness to prove the new bridge.

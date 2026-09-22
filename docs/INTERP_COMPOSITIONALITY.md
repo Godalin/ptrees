@@ -21,7 +21,7 @@ witness rather than duplicating its programs or its source-bisimulation proof.
 It belongs with the comparison regressions; no library or paper-facing case
 study acquires a dependency on regression fixtures.
 
-The native/behavior pair is `SubEnum / FreeOmega SubEnum`. On the single
+The native/behavior pair is `SubEnumQ / FreeOmega SubEnumQ`. On the single
 event interface `Query : correlationE bool`, the source programs are:
 
 ```text
@@ -402,7 +402,7 @@ The endpoint is `mdp_state_E t -> mdp_state_F (interp h t)`. Its original
 hitting/bind proof is retained, with no new semantic assumption. The file
 separates `GenericMDPInterp` (`E -> F`) from `AtomicMDPInterp` (`E -> E`).
 This interface correction does not generalize `atomic_handler`, its inverse
-label machinery, or the SubEnum atomic endpoints, and moves no directories.
+label machinery, or the SubEnumQ atomic endpoints, and moves no directories.
 
 The contract must still be discharged, and is not advertised as an
 automatic fact about arbitrary handlers. We do so for the accepted atomic
@@ -419,7 +419,7 @@ source invariant; **totality must also be preserved**. Importantly, this
 argument allows a distribution over many successor heads, not just a
 Dirac successor, and uses no finite-interaction induction.
 
-### Totality: an explicit backend boundary, discharged for SubEnum
+### Totality: an explicit backend boundary, discharged for SubEnumQ
 
 The existing abstract `SemanticTotalProperLaws` only transports totality
 along `sem_eq`. It does not assert that arbitrary value maps preserve
@@ -435,7 +435,7 @@ desired MDP-preservation theorem. It is a capability premise of these
 generic atomic endpoints. Other backends must discharge it before using
 them; this stage makes no unconditional MathComp specialization claim.
 
-`Prob/Backend/FreeOmega/FreeOmegaTotalSubEnum.v` proves the stronger result for **every** map
+`Prob/Backend/FreeOmega/FreeOmegaTotalSubEnumQ.v` proves the stronger result for **every** map
 `f : A -> B`, including non-injective maps:
 
 ```text
@@ -443,7 +443,7 @@ sem_total mu -> sem_total (free_omega_bind mu (fun x => FORet (f x))).
 ```
 
 FreeOmega observable totality is witnessed by a semantically equivalent
-representative and a total native observation. `subenum_observes_unit`
+representative and a total native observation. `subenumQ_observes_unit`
 first forgets that observation's values, preserving its mass in a unit
 observation. Its proof covers Ret, Zero, Sample, and increasing Lub;
 the Lub case uses the existing rational indicator-test convergence.
@@ -451,15 +451,15 @@ The unit observation can then be carried through any value map, with no
 inverse or injectivity assumption. Relational bind transports the
 representative equivalence. The definition of `sem_total` is unchanged.
 
-`Interp/Backend/SubEnum.v` uses this fact to discharge the entire
+`Interp/Backend/SubEnumQ.v` uses this fact to discharge the entire
 measure-side premise. Its endpoints need only the explicit atomic
 certificate, with no extra totality obligation for clients:
 
 ```coq
-subenum_atomic_handler_mdp
-subenum_mdp_state_interp_atomic
-subenum_mdp_interp_peutt_tree_trans_iff
-subenum_mdp_interp_transition_to_peutt
+subenumQ_atomic_handler_mdp
+subenumQ_mdp_state_interp_atomic
+subenumQ_mdp_interp_peutt_tree_trans_iff
+subenumQ_mdp_interp_transition_to_peutt
 ```
 
 ### Rejoining the compositionality results
@@ -476,9 +476,9 @@ There are now two reusable routes:
   gives `peutt_E`, stage 2 transports it through `E -> F`, and target
   coincidence recovers `tree_trans_bisim_F`
   (`mdp_guarded_interp_tree_trans`).
-- For an atomic SubEnum handler, stage 3 preserves transition bisimulation
+- For an atomic SubEnumQ handler, stage 3 preserves transition bisimulation
   directly, stage 4 preserves the fragment, and target coincidence recovers
-  peutt (`subenum_mdp_interp_transition_to_peutt`).
+  peutt (`subenumQ_mdp_interp_transition_to_peutt`).
 
 Thus the earlier general strictness/congruence counterexamples remain
 intact; it is the explicit source-and-target MDP restriction that lets the
@@ -521,17 +521,17 @@ The `Print Assumptions` audit distinguishes these endpoints:
 
 - `mdp_state_interp`: existing `eq_rect_eq`, relational choice and dependent
   unique choice (no functional-extensionality or excluded-middle dependency).
-- `subenum_observes_unit`: functional extensionality and the two choice
+- `subenumQ_observes_unit`: functional extensionality and the two choice
   principles, for selecting unit-observation witnesses.
-- `subenum_free_omega_total_map`, `mdp_head_atomic`,
-  `subenum_mdp_state_interp_atomic`, and the infinite-service membership
+- `subenumQ_free_omega_total_map`, `mdp_head_atomic`,
+  `subenumQ_mdp_state_interp_atomic`, and the infinite-service membership
   regression: the same dependencies plus `eq_rect_eq`.
 - The coincidence/compositionality routes additionally inherit excluded
   middle from the existing transition/fragment infrastructure.
 
 No axiom, backend typeclass, unfinished proof, or change to totality is
 introduced. The explicit generic `Htotal_map` premise is discharged by a
-theorem at the SubEnum endpoints, not included in their assumption audit
+theorem at the SubEnumQ endpoints, not included in their assumption audit
 as an unresolved constant.
 
 The `E -> F` follow-up reruns this audit: the generic preservation,
@@ -555,9 +555,9 @@ python3 tools/audit_architecture.py --aggregate-only
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Regression.Infrastructure.AllImports \
-  -norec PTree.Prob.Backend.FreeOmega.FreeOmegaTotalSubEnum \
+  -norec PTree.Prob.Backend.FreeOmega.FreeOmegaTotalSubEnumQ \
   -norec PTree.Interp.FreeOmega.MDP \
-  -norec PTree.Interp.Backend.SubEnum \
+  -norec PTree.Interp.Backend.SubEnumQ \
   -norec PTree.Regression.Semantics.MDPInterp
 ```
 
@@ -570,7 +570,7 @@ The `E -> F` interface follow-up repeated all of these checks successfully,
 including the original homogeneous regressions and new heterogeneous
 contract, preservation, coincidence and infinite-service regressions.
 The aggregate remains 200 modules. `AtomicInterp.v`,
-`MDPInterpSubEnum.v`, and the total-map backend proof are unchanged; no
+`MDPInterpSubEnumQ.v`, and the total-map backend proof are unchanged; no
 module or directory was moved. The `E -> F` interface was accepted;
 the regression-only fix below completes the accepted Stage 4 baseline.
 

@@ -9,7 +9,7 @@ From Coq.Program Require Import Equality.
 From Coq.Classes Require Import RelationClasses.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Semantics Require Import HeadTransition.
@@ -28,21 +28,21 @@ Variant head_testE : Type -> Type :=
   | Ask : head_testE bool
   | Tell : head_testE unit.
 
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
-  SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-Local Notation step := (@head_step head_testE SubEnum MF FI FreeOmegaMixedMeasure FO).
-Local Notation bisim := (@head_bisim head_testE SubEnum MF FI FC
+  SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+Local Notation step := (@head_step head_testE SubEnumQ MF FI FreeOmegaMixedMeasure FO).
+Local Notation bisim := (@head_bisim head_testE SubEnumQ MF FI FC
   FreeOmegaMixedMeasure FO bool bool eq).
-Local Notation hits t out := (@ptree_stable_hitting head_testE SubEnum MF FI
+Local Notation hits t out := (@ptree_stable_hitting head_testE SubEnumQ MF FI
   FreeOmegaMixedMeasure FO _ (observe t) out).
 
 (** The action selects a distribution, not a single successor tree. *)
-Example sampled_successor_step (mu : SubEnum bool) answer :
+Example sampled_successor_step (mu : SubEnumQ bool) answer :
   step
     (FHVis Ask (fun a => Prob mu (fun b => Tau (Ret (xorb a b)))))
     (Obs Ask answer)
@@ -60,7 +60,7 @@ Example terminal_has_no_step label out : ~ step (FHRet true) label out.
 Proof. apply head_step_ret. Qed.
 
 Example action_event_is_not_erased k out :
-  ~ step (FHVis Ask k) (Obs Tell tt) (out : MF (stable_head head_testE SubEnum bool)).
+  ~ step (FHVis Ask k) (Obs Tell tt) (out : MF (stable_head head_testE SubEnumQ bool)).
 Proof. intro H. dependent destruction H. Qed.
 
 Example distinct_returns_not_head_bisim :
@@ -68,7 +68,7 @@ Example distinct_returns_not_head_bisim :
 Proof. rewrite head_bisim_ret_iff. discriminate. Qed.
 
 Example heterogeneous_return_relation :
-  @head_bisim head_testE SubEnum MF FI FC FreeOmegaMixedMeasure FO
+  @head_bisim head_testE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO
     bool nat (fun b n => n = if b then 1 else 0) (FHRet true) (FHRet 1).
 Proof. apply head_bisim_ret_iff. reflexivity. Qed.
 
@@ -79,9 +79,9 @@ Proof. apply head_bisim_equivalence. Qed.
 (** A genuinely infinite interaction loop. The delayed implementation
     performs an internal Tau after every response. The proof is coinductive
     on selected visible heads, with complete successor hitting on each side. *)
-CoFixpoint immediate_service : ptree head_testE SubEnum bool :=
+CoFixpoint immediate_service : ptree head_testE SubEnumQ bool :=
   Vis Ask (fun _ => immediate_service).
-CoFixpoint delayed_service : ptree head_testE SubEnum bool :=
+CoFixpoint delayed_service : ptree head_testE SubEnumQ bool :=
   Vis Ask (fun _ => Tau delayed_service).
 
 Definition immediate_head := FHVis Ask (fun _ => immediate_service).
@@ -117,7 +117,7 @@ Qed.
 (** Acceptance formula at the actual chosen successor witnesses. *)
 Example service_successors_coupled (answer : bool) :
   @sem_lift MF FI _ _ bisim
-    (FORet immediate_head : MF (stable_head head_testE SubEnum bool))
+    (FORet immediate_head : MF (stable_head head_testE SubEnumQ bool))
     (FORet delayed_head).
 Proof.
   exact (proj1 (head_bisim_vis_hitting_iff eq Ask
@@ -127,7 +127,7 @@ Qed.
 
 (** A response may diverge internally. Step 1 is a SUBprobabilistic
     transition system, not the total MDP fragment planned for Step 2. *)
-CoFixpoint silent_response : ptree head_testE SubEnum bool := Tau silent_response.
+CoFixpoint silent_response : ptree head_testE SubEnumQ bool := Tau silent_response.
 
 Definition silent_successors := FOLub (fun n =>
   ptree_hitting_approx (FI := FI) (FO := FO) n (observe silent_response)).

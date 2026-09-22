@@ -13,7 +13,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 (** Clients compute without unfolding stable hitting.  These regressions
-    apply to every qualifying native backend, not just SubEnum. *)
+    apply to every qualifying native backend, not just SubEnumQ. *)
 Section ComputationRegressions.
 Context {E MN : Type -> Type}
   `{NI : SemanticMeasure MN}

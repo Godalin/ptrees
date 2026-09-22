@@ -36,7 +36,7 @@ Context (R : realType).
 }.
 
 (** The HB carrier is intrinsically a subprobability kernel.  Unlike raw
-    Enum, no per-value side condition is needed at a [Prob] node. *)
+    EnumQ, no per-value side condition is needed at a [Prob] node. *)
 Definition mathcomp_node_subprob {A}
     (mu : MathCompKernelMeasure R A) : Prop :=
   is_true (mathcomp_kernel_root mu [set: mc_carrier A] <= (1 : R)%:E).

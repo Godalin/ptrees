@@ -1,4 +1,4 @@
-From PTree.Prob.Backend.SubEnum Require Import Expectation.
+From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
 (** Role: DS2 admissibility/soundness boundary tests. In particular, a raw
     alternating FOLub is rejected, while null-probability bad branches are
     permitted. This file does not test or assume DS3 quotient soundness. *)
@@ -10,10 +10,10 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat re
 From PTree.Prob.Domain Require Import Expectation.
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Backend.Common Require Import RatSubTypes.
-From PTree.Prob.Backend.Enum Require Import Representation.
-From PTree.Prob.Backend.SubEnum Require Import Measure Domain.
+From PTree.Prob.Backend.EnumQ Require Import Representation.
+From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation.
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
   UpperExpectation Admissibility DomainSoundness.
 
 Fail Check PTree.Prob.Domain.MeasureModel.oval_probability.
@@ -100,7 +100,7 @@ Proof. exact alternating_bool_not_admissible. Qed.
 
 Example null_weight_sample_denotes :
   free_omega_domain_denotes (FOSample null_weight_node nullable_kernel)
-    (oval_bind (subenum_domain R null_weight_node) (fun _ => oval_ret R true)).
+    (oval_bind (subenumQ_domain R null_weight_node) (fun _ => oval_ret R true)).
 Proof.
   apply free_omega_denote_sample_ae.
   change (forall p b, List.In (p,b) [((1 : nnQ),true); (nnQ_0,false)] ->
@@ -111,16 +111,16 @@ Proof.
 Qed.
 
 Example positive_bad_branch_not_admissible :
-  ~ free_omega_admissible R (FOSample (subenum_ret false) nullable_kernel).
+  ~ free_omega_admissible R (FOSample (subenumQ_ret false) nullable_kernel).
 Proof.
   intro H; apply alternating_bool_not_admissible.
   eapply free_omega_admissible_ext; [exact H|].
-  intros f Hf; cbn [free_omega_upper subenum_ret subenum_raw
-    Enum.ret_Enum enum_real_expect nullable_kernel].
+  intros f Hf; cbn [free_omega_upper subenumQ_ret subenumQ_raw
+    EnumQ.ret_EnumQ enumQ_real_expect nullable_kernel].
   by rewrite rmorph1 mul1r addr0.
 Qed.
 
-Definition delayed (n : nat) : FreeOmega SubEnum bool :=
+Definition delayed (n : nat) : FreeOmega SubEnumQ bool :=
   match n with O => FOZero | S _ => FORet true end.
 Lemma delayed_valid n : free_omega_admissible R (delayed n).
 Proof. destruct n; [exact: admissible_zero|exact: admissible_ret]. Qed.
@@ -143,11 +143,11 @@ Proof.
   exact: delayed_approx.
 Qed.
 
-Example native_bind_denotes {A B} (mu : SubEnum A) (k : A -> SubEnum B) :
+Example native_bind_denotes {A B} (mu : SubEnumQ A) (k : A -> SubEnumQ B) :
   free_omega_domain_denotes
     (free_omega_bind (FOSample mu (fun x => FORet x))
       (fun x => FOSample (k x) (fun y => FORet y)))
-    (oval_bind (subenum_domain R mu) (fun x => subenum_domain R (k x))).
+    (oval_bind (subenumQ_domain R mu) (fun x => subenumQ_domain R (k x))).
 Proof. apply free_omega_denote_bind; [exact: free_omega_denote_native|].
   intro x; exact: free_omega_denote_native. Qed.
 

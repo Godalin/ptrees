@@ -8,12 +8,12 @@ From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.FrontierLift.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Interface.Iteration.
-Require Import PTree.Prob.Backend.Enum.Iteration PTree.Prob.Backend.Enum.Map.
+Require Import PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.Map.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
@@ -24,14 +24,14 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Import Enum PTree.Prob.Backend.Enum.Map.
+Import EnumQ PTree.Prob.Backend.EnumQ.Map.
 Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope order_scope.
 
-Local Notation MF := (FreeOmega Enum).
+Local Notation MF := (FreeOmega EnumQ).
 Local Notation rational_head :=
-  (stable_head rational_coinE Enum bool).
+  (stable_head rational_coinE EnumQ bool).
 
 Section OperationalRationalCoin.
 Variable q : rat.
@@ -39,10 +39,10 @@ Hypothesis q0 : 0 <= q.
 Hypothesis q1 : q <= 1.
 
 Definition ptree_rational_iter_approx (fuel : nat) : MF bool :=
-  @mixed_iter_approx Enum MF
+  @mixed_iter_approx EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega rat bool fuel
     binary_coin_transition q.
@@ -50,13 +50,13 @@ Definition ptree_rational_iter_approx (fuel : nat) : MF bool :=
 Definition ptree_rational_head_approx (fuel : nat) : MF rational_head :=
   @sem_bind MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega)) _ _
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega)) _ _
     (ptree_rational_iter_approx fuel)
     (fun b => @sem_ret MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega)) rational_head (FHRet b)).
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega)) rational_head (FHRet b)).
 
 Definition ptree_rational_limit : MF bool :=
   FOLub ptree_rational_iter_approx.
@@ -64,8 +64,8 @@ Definition ptree_rational_limit : MF bool :=
 Lemma ptree_rational_increasing :
   @sem_increasing MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega bool
     ptree_rational_iter_approx.
 Proof.
@@ -81,10 +81,10 @@ Proof.
 Qed.
 
 Lemma ptree_rational_mixed_iter :
-  @mixed_iter Enum MF
+  @mixed_iter EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega rat bool
     binary_coin_transition q ptree_rational_limit.
@@ -96,10 +96,10 @@ Qed.
 
 Lemma ptree_rational_approx_observes fuel : forall x,
   free_omega_observes (fun b : bool => b)
-    (@mixed_iter_approx Enum MF
+    (@mixed_iter_approx EnumQ MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega))
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega rat bool fuel
       binary_coin_transition x)
@@ -109,32 +109,32 @@ Proof.
   - constructor.
   - cbn [mixed_iter_approx meas_iter_approx mixed_bind
       FreeOmegaMixedMeasure sem_bind
-      Enum_SemanticMeasure].
+      EnumQ_SemanticMeasure].
     change (free_omega_observes (fun b : bool => b)
       (FOSample (binary_coin_transition x)
         (fun next : rat + bool =>
           match next with
-          | inl x' => @mixed_iter_approx Enum MF
+          | inl x' => @mixed_iter_approx EnumQ MF
               (FreeOmegaObservableSemanticMeasure
-                (NI := Enum_SemanticMeasure)
-                (NO := Enum_SemanticOmega))
+                (NI := EnumQ_SemanticMeasure)
+                (NO := EnumQ_SemanticOmega))
               FreeOmegaMixedMeasure
               FreeOmegaObservableSemanticOmega rat bool fuel
               binary_coin_transition x'
           | inr b => FORet b
           end))
-      (@sem_bind Enum Enum_SemanticMeasure _ _
+      (@sem_bind EnumQ EnumQ_SemanticMeasure _ _
         (binary_coin_transition x)
         (fun next : rat + bool =>
           match next with
           | inl x' => meas_iter_approx fuel binary_coin_transition x'
-          | inr b => @sem_ret Enum Enum_SemanticMeasure bool b
+          | inr b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b
           end))).
     eapply FOOObserveSample with
       (front := fun next : rat + bool =>
         match next with
         | inl x' => meas_iter_approx fuel binary_coin_transition x'
-        | inr b => @sem_ret Enum Enum_SemanticMeasure bool b
+        | inr b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b
         end).
     intros [x'|b].
     + apply IH.
@@ -154,24 +154,24 @@ Qed.
 Definition ptree_rational_heads : MF rational_head :=
   @sem_bind MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega)) _ _
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega)) _ _
     ptree_rational_limit
     (fun b => @sem_ret MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega)) rational_head (FHRet b)).
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega)) rational_head (FHRet b)).
 
-Definition ptree_rational_direct : ptree rational_coinE Enum bool :=
+Definition ptree_rational_direct : ptree rational_coinE EnumQ bool :=
   Prob (rational_bernoulli_measure q0 q1) (fun b => Ret b).
 
 Definition ptree_rational_direct_heads : MF rational_head :=
-  @mixed_bind Enum MF FreeOmegaMixedMeasure bool rational_head
+  @mixed_bind EnumQ MF FreeOmegaMixedMeasure bool rational_head
     (rational_bernoulli_measure q0 q1)
     (fun b => @sem_ret MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega)) rational_head (FHRet b)).
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega)) rational_head (FHRet b)).
 
 Definition ptree_rational_head_value (h : rational_head) : bool :=
   match h with
@@ -179,10 +179,10 @@ Definition ptree_rational_head_value (h : rational_head) : bool :=
   | @FHVis _ _ _ X e _ => match e with end
   end.
 
-Definition ptree_rational_direct_observation : Enum bool :=
-  @sem_bind Enum Enum_SemanticMeasure _ _
+Definition ptree_rational_direct_observation : EnumQ bool :=
+  @sem_bind EnumQ EnumQ_SemanticMeasure _ _
     (rational_bernoulli_measure q0 q1)
-    (fun b => @sem_ret Enum Enum_SemanticMeasure bool b).
+    (fun b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b).
 
 (** The implementation and specification already differ at finite fuel.
     One unit of primitive fuel exposes exactly one binary-algorithm round on
@@ -215,7 +215,7 @@ Lemma ptree_rational_direct_hitting_one :
 Proof. reflexivity. Qed.
 
 Lemma ptree_rational_first_round_mass :
-  enum_expect (fun _ : bool => (1 : rat))
+  enumQ_expect (fun _ : bool => (1 : rat))
     (meas_iter_approx 1 binary_coin_transition q) = 1 / 2.
 Proof.
   rewrite /meas_iter_approx /binary_coin_transition.
@@ -230,7 +230,7 @@ Lemma ptree_rational_first_round_not_direct :
 Proof.
   intro Heq.
   pose proof (rational_bernoulli_total q0 q1) as Htotal.
-  change (enum_expect (fun _ : bool => (1 : rat))
+  change (enumQ_expect (fun _ : bool => (1 : rat))
     (rational_bernoulli_measure q0 q1) = 1) in Htotal.
   rewrite <- Heq, ptree_rational_first_round_mass in Htotal.
   have Hlt : (1 / 2 : rat) < 1.
@@ -264,16 +264,16 @@ Lemma ptree_rational_direct_observation_eq :
     rational_bernoulli_measure q0 q1.
 Proof.
   unfold ptree_rational_direct_observation.
-  change (bind_Enum (rational_bernoulli_measure q0 q1)
-    (fun b => ret_Enum b) = rational_bernoulli_measure q0 q1).
+  change (bind_EnumQ (rational_bernoulli_measure q0 q1)
+    (fun b => ret_EnumQ b) = rational_bernoulli_measure q0 q1).
   rewrite bind_ret_emap. apply emap_id.
 Qed.
 
 Lemma ptree_rational_heads_total :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega _ ptree_rational_heads.
 Proof.
   apply free_omega_observable_total_intro.
@@ -286,8 +286,8 @@ Qed.
 Lemma ptree_rational_direct_heads_total :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega _
     ptree_rational_direct_heads.
 Proof.
@@ -300,10 +300,10 @@ Proof.
 Qed.
 
 Theorem ptree_rational_coin_ast :
-  @ptree_stable_hitting_ast rational_coinE Enum MF
+  @ptree_stable_hitting_ast rational_coinE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe (binary_rational_coin q)) ptree_rational_heads.
@@ -311,10 +311,10 @@ Proof.
   unfold binary_rational_coin, ptree_rational_heads.
   eapply ptree_stable_hitting_ast_iter.
   - exact ptree_rational_increasing.
-  - change (@PTreeKernel.ptree_iter_cofinal rational_coinE Enum MF
+  - change (@PTreeKernel.ptree_iter_cofinal rational_coinE EnumQ MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega))
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega rat bool
       (primitive_iter_step binary_coin_transition)
@@ -327,14 +327,14 @@ Qed.
 Corollary ptree_rational_coin_primitive_ast :
   @stable_hitting_ast MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega
-    (ptree' rational_coinE Enum bool) rational_head
-    (@ptree_primitive_kernel rational_coinE Enum MF
+    (ptree' rational_coinE EnumQ bool) rational_head
+    (@ptree_primitive_kernel rational_coinE EnumQ MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega))
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega))
       FreeOmegaMixedMeasure bool)
     (observe (binary_rational_coin q)) ptree_rational_heads.
 Proof.
@@ -344,10 +344,10 @@ Proof.
 Qed.
 
 Theorem ptree_rational_direct_ast :
-  @ptree_stable_hitting_ast rational_coinE Enum MF
+  @ptree_stable_hitting_ast rational_coinE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe ptree_rational_direct)
@@ -363,25 +363,25 @@ Proof.
     + apply ptree_stable_hitting_ret.
     + apply free_omega_observable_total_intro.
       exists bool, ptree_rational_head_value,
-        (@sem_ret Enum Enum_SemanticMeasure bool b).
+        (@sem_ret EnumQ EnumQ_SemanticMeasure bool b).
       split; [constructor|].
-      change (enum_expect (fun _ : bool => (1 : rat)) (ret_Enum b) =
+      change (enumQ_expect (fun _ : bool => (1 : rat)) (ret_EnumQ b) =
         (1 : rat)).
-      rewrite enum_expect_ret. reflexivity.
+      rewrite enumQ_expect_ret. reflexivity.
   - exact ptree_rational_direct_heads_total.
 Qed.
 
 Corollary ptree_rational_direct_primitive_ast :
   @stable_hitting_ast MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega
-    (ptree' rational_coinE Enum bool) rational_head
-    (@ptree_primitive_kernel rational_coinE Enum MF
+    (ptree' rational_coinE EnumQ bool) rational_head
+    (@ptree_primitive_kernel rational_coinE EnumQ MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega))
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega))
       FreeOmegaMixedMeasure bool)
     (observe ptree_rational_direct) ptree_rational_direct_heads.
 Proof.
@@ -395,12 +395,12 @@ Lemma ptree_rational_heads_lift
     (Hsupport : free_omega_support_lift eq ptree_rational_limit
       (FOSample (rational_bernoulli_measure q0 q1)
         (fun b => FORet b)))
-    (sim : ptree rational_coinE Enum bool ->
-      ptree rational_coinE Enum bool -> Prop) :
+    (sim : ptree rational_coinE EnumQ bool ->
+      ptree rational_coinE EnumQ bool -> Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega)) _ _
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega)) _ _
     (stable_head_rel eq sim)
     ptree_rational_heads ptree_rational_direct_heads.
 Proof.
@@ -439,10 +439,10 @@ Qed.
 Theorem peutt_binary_rational_coin_direct :
   free_omega_support_lift eq ptree_rational_limit
     (FOSample (rational_bernoulli_measure q0 q1) (fun b => FORet b)) ->
-  @peutt rational_coinE Enum MF
+  @peutt rational_coinE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq

@@ -1,11 +1,11 @@
-(** Role: SubEnum-specific conditional resampling for internal kernels.
+(** Role: SubEnumQ-specific conditional resampling for internal kernels.
     Uses concrete disintegration; not generic FreeOmega theory or a new equality. *)
 Set Universe Polymorphism.
 From Coq.Logic Require Import ClassicalChoice.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.Enum.Disintegration.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Disintegration.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.SubEnum.FreeOmega.Disintegration.
+Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.Disintegration.
 From PTree.Eq Require Import PrimitiveStableHitting.
 From PTree.Eq.Internal.FreeOmega Require Import KernelCompletion KernelCongruence.
 
@@ -20,16 +20,16 @@ Unset Printing Implicit Defensive.
     FreeOmega quotient coupling or adequacy of arbitrary residual cuts. *)
 Section Resampling.
 Context {S O A B : Type}.
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
-Variable joint : S -> SubEnum B.
-Variable marginal : S -> SubEnum A.
-Variable conditional : S -> A -> SubEnum B.
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+Variable joint : S -> SubEnumQ B.
+Variable marginal : S -> SubEnumQ A.
+Variable conditional : S -> A -> SubEnumQ B.
 Variable continue : S -> B -> MF (stable_target S O).
 Variable D : S -> Prop.
 Hypothesis reconstruct : forall s, D s ->
-  sem_eq (subenum_bind (marginal s) (conditional s)) (joint s).
+  sem_eq (subenumQ_bind (marginal s) (conditional s)) (joint s).
 Hypothesis closed : forall s, D s ->
   free_omega_ae (kernel_completion_invariant D)
     (FOSample (joint s) (continue s)).
@@ -63,32 +63,32 @@ End Resampling.
     conditionals depend on that S; no unary-policy uniformization occurs.
     Only the sampled A/B values belong to the native carrier universe. *)
 Theorem kernel_disintegration_exists {S O A B : Type}
-    (joint : S -> SubEnum (A * B)) (marginal : S -> SubEnum A)
-    (continue : S -> A * B -> FreeOmega SubEnum (stable_target S O))
+    (joint : S -> SubEnumQ (A * B)) (marginal : S -> SubEnumQ A)
+    (continue : S -> A * B -> FreeOmega SubEnumQ (stable_target S O))
     (Hgraph : forall s, sem_lift (fun p x => fst p = x) (joint s) (marginal s)) :
-  exists conditional : S -> A -> SubEnum (A * B),
-    (forall s, sem_eq (subenum_bind (marginal s) (conditional s)) (joint s)) /\
+  exists conditional : S -> A -> SubEnumQ (A * B),
+    (forall s, sem_eq (subenumQ_bind (marginal s) (conditional s)) (joint s)) /\
     (forall s a, sem_ae (conditional s a) (fun p => fst p = a)) /\
-    (forall s, sem_ae (marginal s) (fun a => subenum_total (conditional s a))) /\
+    (forall s, sem_ae (marginal s) (fun a => subenumQ_total (conditional s a))) /\
     forall s out1 out2,
-      @stable_hitting (FreeOmega SubEnum)
+      @stable_hitting (FreeOmega SubEnumQ)
         (FreeOmegaObservableSemanticMeasure
-          (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+          (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
         FreeOmegaObservableSemanticOmega S O
         (fun s => FOSample (joint s) (continue s)) s out1 ->
-      @stable_hitting (FreeOmega SubEnum)
+      @stable_hitting (FreeOmega SubEnumQ)
         (FreeOmegaObservableSemanticMeasure
-          (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+          (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
         FreeOmegaObservableSemanticOmega S O
         (fun s => FOSample (marginal s)
           (fun a => FOSample (conditional s a) (continue s))) s out2 ->
       free_omega_qlift eq out1 out2.
 Proof.
-  assert (Hex : forall s, exists k : A -> SubEnum (A * B),
-    sem_eq (subenum_bind (marginal s) k) (joint s) /\
+  assert (Hex : forall s, exists k : A -> SubEnumQ (A * B),
+    sem_eq (subenumQ_bind (marginal s) k) (joint s) /\
     (forall a, sem_ae (k a) (fun p => fst p = a)) /\
-    sem_ae (marginal s) (fun a => subenum_total (k a))).
-  { intro s. destruct (subenum_disintegration_over (Hgraph s))
+    sem_ae (marginal s) (fun a => subenumQ_total (k a))).
+  { intro s. destruct (subenumQ_disintegration_over (Hgraph s))
       as [k [Hr [Hf [_ Ht]]]].
     exists k. repeat split; assumption. }
   destruct (choice _ Hex) as [k Hk]. exists k.
@@ -100,9 +100,9 @@ Proof.
   - intros q _. exact (proj1 (Hk q)).
   - intros q _. eapply free_omega_ae_mono with (P := fun _ => True).
     + intros [o|q'] _; exact I.
-    + apply (@sem_ae_true (FreeOmega SubEnum)
+    + apply (@sem_ae_true (FreeOmega SubEnumQ)
         (FreeOmegaObservableSemanticMeasure
-          (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+          (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
         FreeOmegaObservableSemanticMeasureCoreLaws).
   - exact I.
   - exact Hleft.

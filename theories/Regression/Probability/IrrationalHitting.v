@@ -11,10 +11,10 @@ From mathcomp Require Import trigo pi_irrational.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Domain Require Import Expectation.
 From PTree.Prob.Backend.Common Require Import RatSubTypes.
-From PTree.Prob.Backend.SubEnum Require Import Measure Expectation.
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import Admissibility.
+From PTree.Prob.Backend.SubEnumQ Require Import Measure Expectation.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility.
 From PTree.Eq Require Import UnifiedFrontier.
-From PTree.Eq.Backend Require Import StableHittingDomainSubEnum.
+From PTree.Eq.Backend Require Import StableHittingDomainSubEnumQ.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -38,22 +38,22 @@ Qed.
 Lemma stop_weight_nonnegative n : 0 <= 1 - continue_weight n.
 Proof. rewrite subr_ge0; exact: continue_weight_le_one. Qed.
 
-Definition schedule_coin (n : nat) : SubEnum bool.
+Definition schedule_coin (n : nat) : SubEnumQ bool.
 Proof.
-  refine {| subenum_raw := ((mknnQ (1 - continue_weight n) (stop_weight_nonnegative n), false) ::
+  refine {| subenumQ_raw := ((mknnQ (1 - continue_weight n) (stop_weight_nonnegative n), false) ::
     (mknnQ (continue_weight n) (continue_weight_nonnegative n), true) :: nil)%list |}.
   change ((1 - continue_weight n) * 1 + (continue_weight n * 1 + 0) <= 1).
   by rewrite !mulr1 addr0 subrK.
 Defined.
 
-Lemma schedule_coin_total n : subenum_total (schedule_coin n).
+Lemma schedule_coin_total n : subenumQ_total (schedule_coin n).
 Proof.
   change ((1 - continue_weight n) * 1 + (continue_weight n * 1 + 0) = 1).
   by rewrite !mulr1 addr0 subrK.
 Qed.
 
 Context {E : Type -> Type}.
-CoFixpoint scheduled_retry n : ptree E SubEnum unit :=
+CoFixpoint scheduled_retry n : ptree E SubEnumQ unit :=
   Prob (schedule_coin n) (fun again => if again then scheduled_retry (S n) else Ret tt).
 
 Variable R : realType.
@@ -175,7 +175,7 @@ Proof.
   have Hbad := lt_le_trans Hlo Hsup; by rewrite ltxx in Hbad.
 Qed.
 
-Definition real_schedule_tree {E : Type -> Type} : ptree E SubEnum unit :=
+Definition real_schedule_tree {E : Type -> Type} : ptree E SubEnumQ unit :=
   @scheduled_retry rational_chain rational_chain_bound rational_chain_increasing E O.
 
 Theorem real_schedule_hitting_mass {E : Type -> Type} :
@@ -202,7 +202,7 @@ Proof.
   by rewrite !divfK ?pnatr_eq0.
 Qed.
 
-Definition pi_schedule_tree {E : Type -> Type} : ptree E SubEnum unit :=
+Definition pi_schedule_tree {E : Type -> Type} : ptree E SubEnumQ unit :=
   @real_schedule_tree R pi_quarter pi_quarter_pos pi_quarter_lt_one E.
 
 Theorem pi_schedule_mass {E : Type -> Type} :

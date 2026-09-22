@@ -7,19 +7,19 @@ Require Import Utf8 FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Prob.Interface Require Import FrontierLift.
-Require Import PTree.Prob.Backend.Enum.FrontierLift PTree.Prob.Backend.Enum.Bind.
+Require Import PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.EnumQ.Bind.
 Require Import PTree.Prob.Interface.Iteration.
-Require Import PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.Backend.EnumQ.Iteration.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Import Enum.
-Import PTree.Prob.Backend.Enum.Map.
+Import EnumQ.
+Import PTree.Prob.Backend.EnumQ.Map.
 Import GRing.Theory Num.Theory Order.Theory.
 #[local] Open Scope ring_scope.
 #[local] Open Scope order_scope.
@@ -31,20 +31,20 @@ Section Factory.
 Variables pfalse ptrue : nnQ.
 Variable q : rat.
 
-Definition factory_biased_coin : Enum bool :=
+Definition factory_biased_coin : EnumQ bool :=
   [:: (pfalse, false); (ptrue, true)].
 
-Definition factory_round_measure : Enum (unit + bool) :=
-  bind_Enum factory_biased_coin (fun b1 =>
-    bind_Enum factory_biased_coin (fun b2 =>
-      ret_Enum (vn_round_result b1 b2))).
+Definition factory_round_measure : EnumQ (unit + bool) :=
+  bind_EnumQ factory_biased_coin (fun b1 =>
+    bind_EnumQ factory_biased_coin (fun b2 =>
+      ret_EnumQ (vn_round_result b1 b2))).
 
 Definition factory_vn_step (_ : unit) :
-    ptree factoryE Enum (unit + bool) :=
+    ptree factoryE EnumQ (unit + bool) :=
   Prob factory_biased_coin (fun b1 =>
     Prob factory_biased_coin (fun b2 => Ret (vn_round_result b1 b2))).
 
-Definition factory_fair_coin : ptree factoryE Enum bool :=
+Definition factory_fair_coin : ptree factoryE EnumQ bool :=
   PTree.iter factory_vn_step tt.
 
 Lemma factory_round_is_param_round :
@@ -61,34 +61,34 @@ Definition binary_round_result (x : rat) (b : bool) : rat + bool :=
     if b then inl (2 * x - 1) else inr true.
 
 Lemma fair_binary_round_measure x :
-  bind_Enum vn_fair (fun b => ret_Enum (binary_round_result x b)) =
+  bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)) =
   binary_coin_transition x.
 Proof.
   rewrite /vn_fair /binary_round_result /binary_coin_transition.
-  by case: (x < 1 / 2); rewrite /bind_Enum /ret_Enum /= !mulr1.
+  by case: (x < 1 / 2); rewrite /bind_EnumQ /ret_EnumQ /= !mulr1.
 Qed.
 
 (** The algorithm only depends on the behavior of its Boolean sampler. *)
 Definition factory_sampler_step {E : Type -> Type}
-    (sampler : ptree E Enum bool) (x : rat) : ptree E Enum (rat + bool) :=
+    (sampler : ptree E EnumQ bool) (x : rat) : ptree E EnumQ (rat + bool) :=
   PTree.bind sampler (fun b => Ret (binary_round_result x b)).
 
 Definition factory_with_sampler {E : Type -> Type}
-    (sampler : ptree E Enum bool) (target : rat) : ptree E Enum bool :=
+    (sampler : ptree E EnumQ bool) (target : rat) : ptree E EnumQ bool :=
   PTree.iter (factory_sampler_step sampler) target.
 
-Definition factory_direct_fair : ptree factoryE Enum bool :=
+Definition factory_direct_fair : ptree factoryE EnumQ bool :=
   Prob vn_fair (fun b => Ret b).
 
 Definition factory_binary_step (x : rat) :
-    ptree factoryE Enum (rat + bool) :=
+    ptree factoryE EnumQ (rat + bool) :=
   factory_sampler_step factory_fair_coin x.
 
-Definition biased_to_rational_coin : ptree factoryE Enum bool :=
+Definition biased_to_rational_coin : ptree factoryE EnumQ bool :=
   factory_with_sampler factory_fair_coin q.
 
 Definition factory_direct_q (q0 : 0 <= q) (q1 : q <= 1) :
-    ptree factoryE Enum bool :=
+    ptree factoryE EnumQ bool :=
   Prob (rational_bernoulli_measure q0 q1) (fun b => Ret b).
 
 End Factory.
@@ -96,7 +96,7 @@ End Factory.
 (** A closed, non-trivial executable instance: two tosses of the [1/3]
     source coin are repeatedly von-Neumann-filtered, and the resulting fair
     bits drive the binary algorithm for a [2/5] target coin. *)
-Definition third_to_two_fifths : ptree factoryE Enum bool :=
+Definition third_to_two_fifths : ptree factoryE EnumQ bool :=
   biased_to_rational_coin vn_one_third vn_two_thirds (2 / 5).
 
 Lemma third_bias_normalized :
@@ -123,6 +123,6 @@ Proof.
   apply ler_pdivrMr; exact (@ltr0Sn rat 4).
 Qed.
 
-Definition direct_two_fifths : ptree factoryE Enum bool :=
+Definition direct_two_fifths : ptree factoryE EnumQ bool :=
   factory_direct_q (q := 2 / 5)
     two_fifths_nonnegative two_fifths_at_most_one.

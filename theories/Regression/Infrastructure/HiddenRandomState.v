@@ -5,14 +5,14 @@ Set Universe Polymorphism.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.FrontierLift.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Coupling.
 From PTree.Eq Require Import PrimitiveStableHitting.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq.Internal Require Import FiniteInternal.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel.
 From PTree.Eq.Internal.FreeOmega Require Import KernelCompletion KernelProjection FiniteInternalAcceleration FiniteInternalProjectedPolicy.
-From PTree.Regression.Backend Require Import EnumMeasureRegression SubEnumRegression.
+From PTree.Regression.Backend Require Import EnumQMeasureRegression SubEnumQRegression.
 From PTree.Regression.Infrastructure Require Import CouplingReferences.
 
 Set Implicit Arguments.
@@ -98,40 +98,40 @@ Qed.
 
 End Instrumentation.
 
-Import Enum RatSubTypes GRing.Theory.
+Import EnumQ RatSubTypes GRing.Theory.
 #[local] Open Scope ring_scope.
 
 (** A concrete nondegenerate sample discharges the TOTAL-MASS premise.
     Support alone would not justify forgetting a subprobability sample. *)
 Example fair_hidden_state_preserves_hitting {S O}
-    (base : S -> FreeOmega SubEnum (stable_target S O)) s b out1 out2 :
-  @stable_hitting (FreeOmega SubEnum)
+    (base : S -> FreeOmega SubEnumQ (stable_target S O)) s b out1 out2 :
+  @stable_hitting (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+      (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega (S * bool) O
-    (random_state_kernel subenum_fair base) (s,b) out1 ->
-  @stable_hitting (FreeOmega SubEnum)
+    (random_state_kernel subenumQ_fair base) (s,b) out1 ->
+  @stable_hitting (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+      (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega S O base s out2 ->
   free_omega_qlift eq out1 out2.
 Proof.
   apply random_state_complete_hitting with (point := false).
   - exact fair_discard_same_mass.
-  - intro P. apply (@sem_ae_ret_iff SubEnum SubEnum_SemanticMeasure
-      SubEnum_SemanticMeasureDiracAELaws).
+  - intro P. apply (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
+      SubEnumQ_SemanticMeasureDiracAELaws).
 Qed.
 
 Section CompressedPrograms.
 Context {E : Type -> Type} {A : Type}.
-Local Notation tree := (ptree E SubEnum A).
-Local Notation head := (stable_head E SubEnum A).
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation tree := (ptree E SubEnumQ A).
+Local Notation head := (stable_head E SubEnumQ A).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Variable policy : tree -> MF tree.
 Hypothesis policy_valid : forall t,
-  @finite_internal E SubEnum MF FI FreeOmegaMixedMeasure A t (policy t).
+  @finite_internal E SubEnumQ MF FI FreeOmegaMixedMeasure A t (policy t).
 
 (** Fresh hidden coins are added after arbitrary well-founded cuts, in
     every subsequent round too.  Their sampled bits remain in the joint
@@ -139,25 +139,25 @@ Hypothesis policy_valid : forall t,
     reference, joint extraction assumption, AST, or uniform cut bound. *)
 Example fair_hidden_compressed_hitting t b out original :
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega (tree * bool) head
-    (random_state_kernel subenum_fair (finite_internal_round_kernel policy)) (t,b) out ->
-  @ptree_stable_hitting E SubEnum MF FI FreeOmegaMixedMeasure
+    (random_state_kernel subenumQ_fair (finite_internal_round_kernel policy)) (t,b) out ->
+  @ptree_stable_hitting E SubEnumQ MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A (observe t) original ->
   free_omega_qlift eq (free_omega_bind out (fun h => FORet h)) original.
 Proof.
   intros Hout Horiginal.
   eapply finite_internal_projected_policy_adequate with
-    (kernel := random_state_kernel subenum_fair (finite_internal_round_kernel policy))
+    (kernel := random_state_kernel subenumQ_fair (finite_internal_round_kernel policy))
     (project_state := @fst tree bool) (project_output := fun h : head => h)
     (policy := policy) (D := fun _ => True) (s := (t,b)).
   - exact policy_valid.
   - intros p _. eapply free_omega_ae_mono with (P := fun _ => True).
     + intros [h|q] _; exact I.
     + apply (@sem_ae_true MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
-  - intros p _. exact (@random_state_kernel_marginal SubEnum SubEnum_SemanticMeasure
-      SubEnum_SemanticMeasureCoreLaws SubEnum_SemanticOmega bool bool tree head
-      subenum_fair false fair_discard_same_mass
-      (fun P => @sem_ae_ret_iff SubEnum SubEnum_SemanticMeasure
-        SubEnum_SemanticMeasureDiracAELaws bool false P)
+  - intros p _. exact (@random_state_kernel_marginal SubEnumQ SubEnumQ_SemanticMeasure
+      SubEnumQ_SemanticMeasureCoreLaws SubEnumQ_SemanticOmega bool bool tree head
+      subenumQ_fair false fair_discard_same_mass
+      (fun P => @sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
+        SubEnumQ_SemanticMeasureDiracAELaws bool false P)
       (finite_internal_round_kernel policy) p).
   - exact I.
   - exact Hout.
@@ -169,21 +169,21 @@ End CompressedPrograms.
 (** This marginal really lies outside the previous reference method.
     The base takes one deterministic internal step and then returns;
     instrumentation stores a fair bit at that intermediate state. *)
-Definition delayed_return_kernel (state : bool) : FreeOmega SubEnum (stable_target bool bool) :=
+Definition delayed_return_kernel (state : bool) : FreeOmega SubEnumQ (stable_target bool bool) :=
   if state then FORet (SHInternal false) else FORet (SHStable false).
 
 Example hidden_step_has_no_structural_reference :
-  ~ exists reference : FreeOmega SubEnum (stable_target (bool * bool) bool),
+  ~ exists reference : FreeOmega SubEnumQ (stable_target (bool * bool) bool),
     free_omega_qlift eq
-      (random_state_kernel subenum_fair delayed_return_kernel (true,false)) reference /\
+      (random_state_kernel subenumQ_fair delayed_return_kernel (true,false)) reference /\
     free_omega_lift
       (fun z target => kernel_target_projection (@fst bool bool) (fun b : bool => b) z = target)
       reference (delayed_return_kernel true).
 Proof.
   intros [reference [Heq Hmarginal]].
   assert (Hself : free_omega_lift eq
-    (random_state_kernel subenum_fair delayed_return_kernel (true,false))
-    (random_state_kernel subenum_fair delayed_return_kernel (true,false))).
+    (random_state_kernel subenumQ_fair delayed_return_kernel (true,false))
+    (random_state_kernel subenumQ_fair delayed_return_kernel (true,false))).
   { apply free_omega_lift_refl. intro z. reflexivity. }
   pose proof (free_omega_reference_marginals_ret_deterministic
     (project_left := fun z : stable_target (bool * bool) bool => z)
@@ -197,16 +197,16 @@ Qed.
 (** A missing-mass sample cannot be silently treated as unobservable
     total noise.  The mass premise of the projection example rejects it. *)
 Example zero_hidden_sample_rejected :
-  ~ @sem_same_mass SubEnum SubEnum_SemanticMeasure bool bool
-      subenum_zero (subenum_ret false).
+  ~ @sem_same_mass SubEnumQ SubEnumQ_SemanticMeasure bool bool
+      subenumQ_zero (subenumQ_ret false).
 Proof.
   intro Hmass.
-  assert (Hzero : @sem_ae SubEnum SubEnum_SemanticMeasure bool subenum_zero
+  assert (Hzero : @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool subenumQ_zero
     (fun _ => False)).
   { intros p x Hempty. contradiction. }
   pose proof (sem_lift_ae_transport_r Hmass Hzero) as Hret.
-  apply (proj1 (@sem_ae_ret_iff SubEnum SubEnum_SemanticMeasure
-    SubEnum_SemanticMeasureDiracAELaws bool false
+  apply (proj1 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
+    SubEnumQ_SemanticMeasureDiracAELaws bool false
     (fun y => exists x : bool, True /\ False))) in Hret.
   destruct Hret as [x [_ Hfalse]]. exact Hfalse.
 Qed.

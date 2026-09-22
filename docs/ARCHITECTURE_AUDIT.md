@@ -9,9 +9,9 @@ See [architecture policy](ARCHITECTURE.md); migration-stage inventories live in 
 - Every edge is checked against the ownership policy, not merely displayed as debt.
 - Core has no local probability dependency; Prob has no tree-theory dependency.
 - Generic interfaces and FreeOmega measure infrastructure import no concrete backend.
-- Concrete probability modules name Common/Enum/SubEnum/SubEnumR/MathComp ownership; Common cannot import a native carrier.
-- Native SubEnum expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.
-- MathComp and Enum/SubEnum do not depend on each other; Enum/SubEnum realization adapters may reuse each other.
+- Concrete probability modules name Common/EnumQ/SubEnumQ/SubEnumR/MathComp ownership; Common cannot import a native carrier.
+- Native SubEnumQ expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.
+- MathComp and EnumQ/SubEnumQ do not depend on each other; EnumQ/SubEnumQ realization adapters may reuse each other.
 - MathComp native sources and their transitive dependencies exclude formal completion; no MathComp behavioral alias or concrete FreeOmega instantiation is maintained.
 - Eq imports no Interp/Semantics/API; Semantics imports no Interp/API.
 - Generic/canonical-model Eq, Semantics and Interp modules import no concrete backend endpoint.
@@ -29,18 +29,18 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 
 | Module | Owner | Profile | Disposition | Ordinary clients |
 | --- | --- | --- | --- | ---: |
-| `API/Enum` | `API` | curated endpoint/adapter | explicit assembly; no bulk export | 1 |
+| `API/EnumQ` | `API` | curated endpoint/adapter | explicit assembly; no bulk export | 1 |
 | `API/FreeOmega` | `API` | curated endpoint/adapter | explicit assembly; no bulk export | 1 |
 | `API/Generic` | `API` | curated endpoint/adapter | explicit assembly; no bulk export | 2 |
-| `API/SubEnum` | `API` | curated endpoint/adapter | explicit assembly; no bulk export | 0 |
+| `API/SubEnumQ` | `API` | curated endpoint/adapter | explicit assembly; no bulk export | 0 |
 | `API/Weighted` | `API` | curated endpoint/adapter | explicit assembly; no bulk export | 0 |
 | `Core/PTreeDefinition` | `Core` | syntax | primitive syntax/combinators only | 122 |
 | `Core/Utils` | `Core` | syntax | primitive syntax/combinators only | 1 |
-| `Eq/Backend/EnumCofinality` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 0 |
+| `Eq/Backend/EnumQCofinality` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 0 |
 | `Eq/Backend/MathComp/Direct` | `Eq/Backend/MathComp` | universe-unchecked Gate M | direct MathComp assembly/probes; excluded from safe aggregate | 1 |
-| `Eq/Backend/ProbabilisticTraceEnum` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 1 |
-| `Eq/Backend/ProbabilisticTraceSubEnum` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 1 |
-| `Eq/Backend/StableHittingDomainSubEnum` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 2 |
+| `Eq/Backend/ProbabilisticTraceEnumQ` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 1 |
+| `Eq/Backend/ProbabilisticTraceSubEnumQ` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 1 |
+| `Eq/Backend/StableHittingDomainSubEnumQ` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 2 |
 | `Eq/FreeOmega/Algebra` | `Eq/FreeOmega` | FreeOmega | canonical-model equational theory | 12 |
 | `Eq/FreeOmega/Base` | `Eq/FreeOmega` | FreeOmega | canonical-model equational theory | 19 |
 | `Eq/FreeOmega/Bind` | `Eq/FreeOmega` | FreeOmega | canonical-model equational theory | 21 |
@@ -100,7 +100,7 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 | `Examples/MathCompPrograms` | `Examples` | application | retained; no regression dependency | 1 |
 | `Examples/MixedHeadProtocol` | `Examples` | application | retained; no regression dependency | 0 |
 | `Examples/RandomWalk` | `Examples` | application | retained; no regression dependency | 4 |
-| `Interp/Backend/SubEnum` | `Interp/Backend` | SubEnum | concrete interpreter endpoint | 2 |
+| `Interp/Backend/SubEnumQ` | `Interp/Backend` | SubEnumQ | concrete interpreter endpoint | 2 |
 | `Interp/FreeOmega/Atomic` | `Interp/FreeOmega` | FreeOmega | canonical-model interpreter compositionality | 5 |
 | `Interp/FreeOmega/Base` | `Interp/FreeOmega` | FreeOmega | canonical-model interpreter compositionality | 13 |
 | `Interp/FreeOmega/Cofinality` | `Interp/FreeOmega` | FreeOmega | canonical-model interpreter compositionality | 6 |
@@ -121,28 +121,28 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 | `Prob/Backend/Common/RatSubTypes` | `Prob/Backend/Common` | shared arithmetic/combinatorics | no native carrier specialization | 51 |
 | `Prob/Backend/Common/RealSubTypes` | `Prob/Backend/Common` | shared arithmetic/combinatorics | no native carrier specialization | 1 |
 | `Prob/Backend/Common/RealTransport` | `Prob/Backend/Common` | shared arithmetic/combinatorics | no native carrier specialization | 3 |
-| `Prob/Backend/Enum/Bind` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 18 |
-| `Prob/Backend/Enum/Coupling` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 15 |
-| `Prob/Backend/Enum/Disintegration` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 7 |
-| `Prob/Backend/Enum/FinitePresentation` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 2 |
-| `Prob/Backend/Enum/FiniteTransport` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 4 |
-| `Prob/Backend/Enum/FreeOmega/Coupling` | `Prob/Backend/Enum/FreeOmega` | Enum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
-| `Prob/Backend/Enum/FreeOmega/MeasureAudit` | `Prob/Backend/Enum/FreeOmega` | Enum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 0 |
-| `Prob/Backend/Enum/FreeOmega/NativeTransport` | `Prob/Backend/Enum/FreeOmega` | Enum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 0 |
-| `Prob/Backend/Enum/FreeOmega/UpperContinuity` | `Prob/Backend/Enum/FreeOmega` | Enum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
-| `Prob/Backend/Enum/FreeOmega/UpperCoupling` | `Prob/Backend/Enum/FreeOmega` | Enum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 5 |
-| `Prob/Backend/Enum/FreeOmega/UpperExpectation` | `Prob/Backend/Enum/FreeOmega` | Enum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 8 |
-| `Prob/Backend/Enum/FreeOmega/UpperObservation` | `Prob/Backend/Enum/FreeOmega` | Enum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
-| `Prob/Backend/Enum/FreeOmega/UpperQuotient` | `Prob/Backend/Enum/FreeOmega` | Enum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
-| `Prob/Backend/Enum/FreeOmega/UpperRelational` | `Prob/Backend/Enum/FreeOmega` | Enum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
-| `Prob/Backend/Enum/FrontierLift` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 32 |
-| `Prob/Backend/Enum/IndexedCoupling` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 5 |
-| `Prob/Backend/Enum/Iteration` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 37 |
-| `Prob/Backend/Enum/Map` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 21 |
-| `Prob/Backend/Enum/Measure` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 41 |
-| `Prob/Backend/Enum/Representation` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 75 |
-| `Prob/Backend/Enum/SemanticCoupling` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 16 |
-| `Prob/Backend/Enum/Support` | `Prob/Backend/Enum` | Enum | native representation, laws or realization adapters | 5 |
+| `Prob/Backend/EnumQ/Bind` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 18 |
+| `Prob/Backend/EnumQ/Coupling` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 15 |
+| `Prob/Backend/EnumQ/Disintegration` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 7 |
+| `Prob/Backend/EnumQ/FinitePresentation` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 2 |
+| `Prob/Backend/EnumQ/FiniteTransport` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 4 |
+| `Prob/Backend/EnumQ/FreeOmega/Coupling` | `Prob/Backend/EnumQ/FreeOmega` | EnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
+| `Prob/Backend/EnumQ/FreeOmega/MeasureAudit` | `Prob/Backend/EnumQ/FreeOmega` | EnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 0 |
+| `Prob/Backend/EnumQ/FreeOmega/NativeTransport` | `Prob/Backend/EnumQ/FreeOmega` | EnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 0 |
+| `Prob/Backend/EnumQ/FreeOmega/UpperContinuity` | `Prob/Backend/EnumQ/FreeOmega` | EnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
+| `Prob/Backend/EnumQ/FreeOmega/UpperCoupling` | `Prob/Backend/EnumQ/FreeOmega` | EnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 5 |
+| `Prob/Backend/EnumQ/FreeOmega/UpperExpectation` | `Prob/Backend/EnumQ/FreeOmega` | EnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 8 |
+| `Prob/Backend/EnumQ/FreeOmega/UpperObservation` | `Prob/Backend/EnumQ/FreeOmega` | EnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
+| `Prob/Backend/EnumQ/FreeOmega/UpperQuotient` | `Prob/Backend/EnumQ/FreeOmega` | EnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
+| `Prob/Backend/EnumQ/FreeOmega/UpperRelational` | `Prob/Backend/EnumQ/FreeOmega` | EnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
+| `Prob/Backend/EnumQ/FrontierLift` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 32 |
+| `Prob/Backend/EnumQ/IndexedCoupling` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 5 |
+| `Prob/Backend/EnumQ/Iteration` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 37 |
+| `Prob/Backend/EnumQ/Map` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 21 |
+| `Prob/Backend/EnumQ/Measure` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 41 |
+| `Prob/Backend/EnumQ/Representation` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 75 |
+| `Prob/Backend/EnumQ/SemanticCoupling` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 16 |
+| `Prob/Backend/EnumQ/Support` | `Prob/Backend/EnumQ` | EnumQ | native representation, laws or realization adapters | 5 |
 | `Prob/Backend/MathComp/BindLaws` | `Prob/Backend/MathComp` | MathComp | native representation, laws or realization adapters | 3 |
 | `Prob/Backend/MathComp/Coupling` | `Prob/Backend/MathComp` | MathComp | native representation, laws or realization adapters | 1 |
 | `Prob/Backend/MathComp/Kernel` | `Prob/Backend/MathComp` | MathComp | native representation, laws or realization adapters | 17 |
@@ -151,30 +151,30 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 | `Prob/Backend/MathComp/OmegaLaws` | `Prob/Backend/MathComp` | MathComp | native representation, laws or realization adapters | 4 |
 | `Prob/Backend/MathComp/OrderLaws` | `Prob/Backend/MathComp` | MathComp | native representation, laws or realization adapters | 6 |
 | `Prob/Backend/MathComp/Retry` | `Prob/Backend/MathComp` | MathComp | native representation, laws or realization adapters | 1 |
-| `Prob/Backend/SubEnum/Domain` | `Prob/Backend/SubEnum` | SubEnum | native representation, laws or realization adapters | 8 |
-| `Prob/Backend/SubEnum/Expectation` | `Prob/Backend/SubEnum` | SubEnum | native representation, laws or realization adapters | 16 |
-| `Prob/Backend/SubEnum/FreeOmega/Admissibility` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 14 |
-| `Prob/Backend/SubEnum/FreeOmega/CodedJoint` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 1 |
-| `Prob/Backend/SubEnum/FreeOmega/CountableSupport` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
-| `Prob/Backend/SubEnum/FreeOmega/CouplingSoundness` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
-| `Prob/Backend/SubEnum/FreeOmega/Disintegration` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 4 |
-| `Prob/Backend/SubEnum/FreeOmega/DomainSoundness` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
-| `Prob/Backend/SubEnum/FreeOmega/EquivalenceJoint` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 1 |
-| `Prob/Backend/SubEnum/FreeOmega/GenericValidation` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
-| `Prob/Backend/SubEnum/FreeOmega/JointSoundness` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 1 |
-| `Prob/Backend/SubEnum/FreeOmega/NativeCoupling` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
-| `Prob/Backend/SubEnum/FreeOmega/NativeTransport` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 1 |
-| `Prob/Backend/SubEnum/FreeOmega/QuotientSoundness` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
-| `Prob/Backend/SubEnum/FreeOmega/Recovery` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
-| `Prob/Backend/SubEnum/FreeOmega/RelationalValidation` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 1 |
-| `Prob/Backend/SubEnum/FreeOmega/Total` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
-| `Prob/Backend/SubEnum/FreeOmega/UpperContinuity` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 4 |
-| `Prob/Backend/SubEnum/FreeOmega/UpperCoupling` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 9 |
-| `Prob/Backend/SubEnum/FreeOmega/UpperExpectation` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 15 |
-| `Prob/Backend/SubEnum/FreeOmega/UpperObservation` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 4 |
-| `Prob/Backend/SubEnum/FreeOmega/UpperQuotient` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 5 |
-| `Prob/Backend/SubEnum/FreeOmega/UpperRelational` | `Prob/Backend/SubEnum/FreeOmega` | SubEnum | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 4 |
-| `Prob/Backend/SubEnum/Measure` | `Prob/Backend/SubEnum` | SubEnum | native representation, laws or realization adapters | 84 |
+| `Prob/Backend/SubEnumQ/Domain` | `Prob/Backend/SubEnumQ` | SubEnumQ | native representation, laws or realization adapters | 8 |
+| `Prob/Backend/SubEnumQ/Expectation` | `Prob/Backend/SubEnumQ` | SubEnumQ | native representation, laws or realization adapters | 16 |
+| `Prob/Backend/SubEnumQ/FreeOmega/Admissibility` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 14 |
+| `Prob/Backend/SubEnumQ/FreeOmega/CodedJoint` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 1 |
+| `Prob/Backend/SubEnumQ/FreeOmega/CountableSupport` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
+| `Prob/Backend/SubEnumQ/FreeOmega/CouplingSoundness` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
+| `Prob/Backend/SubEnumQ/FreeOmega/Disintegration` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 4 |
+| `Prob/Backend/SubEnumQ/FreeOmega/DomainSoundness` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
+| `Prob/Backend/SubEnumQ/FreeOmega/EquivalenceJoint` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 1 |
+| `Prob/Backend/SubEnumQ/FreeOmega/GenericValidation` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
+| `Prob/Backend/SubEnumQ/FreeOmega/JointSoundness` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 1 |
+| `Prob/Backend/SubEnumQ/FreeOmega/NativeCoupling` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
+| `Prob/Backend/SubEnumQ/FreeOmega/NativeTransport` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 1 |
+| `Prob/Backend/SubEnumQ/FreeOmega/QuotientSoundness` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
+| `Prob/Backend/SubEnumQ/FreeOmega/Recovery` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 3 |
+| `Prob/Backend/SubEnumQ/FreeOmega/RelationalValidation` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 1 |
+| `Prob/Backend/SubEnumQ/FreeOmega/Total` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
+| `Prob/Backend/SubEnumQ/FreeOmega/UpperContinuity` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 4 |
+| `Prob/Backend/SubEnumQ/FreeOmega/UpperCoupling` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 9 |
+| `Prob/Backend/SubEnumQ/FreeOmega/UpperExpectation` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 15 |
+| `Prob/Backend/SubEnumQ/FreeOmega/UpperObservation` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 4 |
+| `Prob/Backend/SubEnumQ/FreeOmega/UpperQuotient` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 5 |
+| `Prob/Backend/SubEnumQ/FreeOmega/UpperRelational` | `Prob/Backend/SubEnumQ/FreeOmega` | SubEnumQ | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 4 |
+| `Prob/Backend/SubEnumQ/Measure` | `Prob/Backend/SubEnumQ` | SubEnumQ | native representation, laws or realization adapters | 84 |
 | `Prob/Backend/SubEnumR/Coupling` | `Prob/Backend/SubEnumR` | SubEnumR | native representation, laws or realization adapters | 7 |
 | `Prob/Backend/SubEnumR/Domain` | `Prob/Backend/SubEnumR` | SubEnumR | native representation, laws or realization adapters | 7 |
 | `Prob/Backend/SubEnumR/FreeOmega/CountableSupport` | `Prob/Backend/SubEnumR/FreeOmega` | SubEnumR | FreeOmega over a concrete native carrier, not generic FreeOmega MN | 2 |
@@ -226,8 +226,8 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 | `Prob/Legacy/RelLift` | `Prob/Legacy` | weighted legacy | explicit retained clients; not canonical probability | 1 |
 | `Regression/Backend/BackendCapabilities` | `Regression/Backend` | contract test | retained; not public theory | 0 |
 | `Regression/Backend/CouplingRealization` | `Regression/Backend` | contract test | retained; not public theory | 0 |
-| `Regression/Backend/EnumMeasureRegression` | `Regression/Backend` | contract test | retained; not public theory | 12 |
-| `Regression/Backend/ExtendedEnum` | `Regression/Backend` | contract test | retained; not public theory | 0 |
+| `Regression/Backend/EnumQMeasureRegression` | `Regression/Backend` | contract test | retained; not public theory | 12 |
+| `Regression/Backend/ExtendedEnumQ` | `Regression/Backend` | contract test | retained; not public theory | 0 |
 | `Regression/Backend/FreeOmegaEscapingMass` | `Regression/Backend` | contract test | retained; not public theory | 1 |
 | `Regression/Backend/FreeOmegaLimitSafety` | `Regression/Backend` | contract test | retained; not public theory | 0 |
 | `Regression/Backend/FreeOmegaUpperContracts` | `Regression/Backend` | contract test | retained; not public theory | 2 |
@@ -235,11 +235,11 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 | `Regression/Backend/MathCompOmega` | `Regression/Backend` | contract test | retained; not public theory | 0 |
 | `Regression/Backend/MathCompOrder` | `Regression/Backend` | contract test | retained; not public theory | 0 |
 | `Regression/Backend/NativeReflection` | `Regression/Backend` | contract test | retained; not public theory | 0 |
+| `Regression/Backend/SubEnumQRegression` | `Regression/Backend` | contract test | retained; not public theory | 16 |
 | `Regression/Backend/SubEnumR` | `Regression/Backend` | contract test | retained; not public theory | 2 |
 | `Regression/Backend/SubEnumRBehavior` | `Regression/Backend` | contract test | retained; not public theory | 0 |
 | `Regression/Backend/SubEnumRRelational` | `Regression/Backend` | contract test | retained; not public theory | 2 |
-| `Regression/Backend/SubEnumRegression` | `Regression/Backend` | contract test | retained; not public theory | 16 |
-| `Regression/Backend/UnifiedFrontierEnum` | `Regression/Backend` | contract test | retained; not public theory | 0 |
+| `Regression/Backend/UnifiedFrontierEnumQ` | `Regression/Backend` | contract test | retained; not public theory | 0 |
 | `Regression/Fixtures/FreeOmegaSamples` | `Regression/Fixtures` | private test fixture | shared samples only; no final regression dependency | 5 |
 | `Regression/Infrastructure/AllImports` | `Regression/Infrastructure` | integration | exclude from substantive clients | 0 |
 | `Regression/Infrastructure/ArchitectureBoundaries` | `Regression/Infrastructure` | contract test | retained; not public theory | 0 |
@@ -264,7 +264,7 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 | `Regression/Probability/ConditionalResampling` | `Regression/Probability` | contract test | retained; not public theory | 0 |
 | `Regression/Probability/CorrelatedSampleAlgebra` | `Regression/Probability` | contract test | retained; not public theory | 4 |
 | `Regression/Probability/CountableCoupling` | `Regression/Probability` | contract test | retained; not public theory | 0 |
-| `Regression/Probability/EnumDisintegration` | `Regression/Probability` | contract test | retained; not public theory | 1 |
+| `Regression/Probability/EnumQDisintegration` | `Regression/Probability` | contract test | retained; not public theory | 1 |
 | `Regression/Probability/FiniteTransport` | `Regression/Probability` | contract test | retained; not public theory | 0 |
 | `Regression/Probability/FreeOmegaDomain` | `Regression/Probability` | contract test | retained; not public theory | 2 |
 | `Regression/Probability/FreeOmegaSoundness` | `Regression/Probability` | contract test | retained; not public theory | 0 |
@@ -296,7 +296,7 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 | `Regression/Semantics/TreeTransitionSoundness` | `Regression/Semantics` | contract test | retained; not public theory | 0 |
 | `Regression/Semantics/TreeTransitionStrictness` | `Regression/Semantics` | contract test | retained; not public theory | 4 |
 | `Semantics` | `API` | curated facade | explicit user entry point; no implementation exports | 1 |
-| `Semantics/Backend/MDPEmbeddingSubEnum` | `Semantics/Backend` | SubEnum | retain comparison semantics; not canonical equality | 2 |
+| `Semantics/Backend/MDPEmbeddingSubEnumQ` | `Semantics/Backend` | SubEnumQ | retain comparison semantics; not canonical equality | 2 |
 | `Semantics/FreeOmega/MDPCoincidenceFreeOmega` | `Semantics/FreeOmega` | FreeOmega | retain comparison semantics; not canonical equality | 3 |
 | `Semantics/HeadTransition` | `Semantics` | generic | independent comparison semantics | 17 |
 | `Semantics/MDPCoincidence` | `Semantics` | generic | independent comparison semantics | 2 |
@@ -308,7 +308,7 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 
 ## Internal certificate/kernel disposition
 
-FiniteInternal is auxiliary proof infrastructure for well-founded internal compression and related adequacy arguments. It is not part of the canonical PTree semantics or public equivalence theory. Members remain maintained independent infrastructure; completed SubEnum domain soundness does not use this branch. Regression-only leaves are retained as checked execution, coupling, schedule or recovery contracts; none is re-exported as a public equality. No theorem deletion is inferred from client counts.
+FiniteInternal is auxiliary proof infrastructure for well-founded internal compression and related adequacy arguments. It is not part of the canonical PTree semantics or public equivalence theory. Members remain maintained independent infrastructure; completed SubEnumQ domain soundness does not use this branch. Regression-only leaves are retained as checked execution, coupling, schedule or recovery contracts; none is re-exported as a public equality. No theorem deletion is inferred from client counts.
 
 The formal peutt/Interp/facade mainline has no transitive Eq/Internal dependency. Some Stage 1-4 regressions do load it via Regression/Probability/CorrelatedSampleAlgebra; this is a fixture import, not evidence that the formal preservation theorems need it. Cleanup does not redesign or delete this auxiliary API merely because the final soundness proof does not depend on it.
 

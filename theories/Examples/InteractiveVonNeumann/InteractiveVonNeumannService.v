@@ -8,15 +8,15 @@ From Coq.Logic Require Import FunctionalExtensionality.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssralg rat.
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Interface.Iteration.
-Require Import PTree.Prob.Backend.Enum.Bind.
-Require Import PTree.Prob.Backend.Enum.Map PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.Backend.EnumQ.Bind.
+Require Import PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Iteration.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting UnifiedFrontier PTreeKernel PEutt.
-From PTree.Eq.Backend Require Import ProbabilisticTraceEnum.
+From PTree.Eq.Backend Require Import ProbabilisticTraceEnumQ.
 From PTree.Eq Require Import ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
@@ -26,8 +26,8 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Import Enum.
-Import PTree.Prob.Backend.Enum.Map.
+Import EnumQ.
+Import PTree.Prob.Backend.EnumQ.Map.
 Import GRing.Theory.
 Local Open Scope ring_scope.
 
@@ -43,22 +43,22 @@ Polymorphic Variant coin_serviceE@{u} : Type@{u} -> Type@{u} :=
   | CoinRequest : coin_serviceE service_unit@{u}
   | CoinReply (b : bool) : coin_serviceE service_unit@{u}.
 
-Definition publish (b : bool) (next : ptree coin_serviceE Enum bool) :
-    ptree coin_serviceE Enum bool :=
+Definition publish (b : bool) (next : ptree coin_serviceE EnumQ bool) :
+    ptree coin_serviceE EnumQ bool :=
   Vis (CoinReply b) (fun _ => next).
 
 (** One request is followed by a closed sampler and one visible reply. *)
-Definition serve_round (sampler : ptree coin_serviceE Enum bool)
-    (next : ptree coin_serviceE Enum bool) :
-    ptree coin_serviceE Enum bool :=
+Definition serve_round (sampler : ptree coin_serviceE EnumQ bool)
+    (next : ptree coin_serviceE EnumQ bool) :
+    ptree coin_serviceE EnumQ bool :=
   Vis CoinRequest (fun _ =>
     PTree.bind sampler (fun b => publish b next)).
 
 (** The recursive call is guarded by the request [Vis]. *)
-CoFixpoint von_neumann_service : ptree coin_serviceE Enum bool :=
+CoFixpoint von_neumann_service : ptree coin_serviceE EnumQ bool :=
   serve_round von_neumann_third_in von_neumann_service.
 
-CoFixpoint direct_fair_service : ptree coin_serviceE Enum bool :=
+CoFixpoint direct_fair_service : ptree coin_serviceE EnumQ bool :=
   serve_round direct_fair_in direct_fair_service.
 
 Lemma observe_von_neumann_service :
@@ -75,9 +75,9 @@ Lemma observe_direct_fair_service :
       (fun b => publish b direct_fair_service)).
 Proof. reflexivity. Qed.
 
-Local Notation MF := (FreeOmega Enum).
+Local Notation MF := (FreeOmega EnumQ).
 Local Notation service_head :=
-  (stable_head coin_serviceE Enum bool).
+  (stable_head coin_serviceE EnumQ bool).
 
 Definition service_head_value (h : service_head) : bool :=
   match h with
@@ -86,14 +86,14 @@ Definition service_head_value (h : service_head) : bool :=
   end.
 
 Definition service_vn_after (next : unit + bool) :
-    ptree coin_serviceE Enum bool :=
+    ptree coin_serviceE EnumQ bool :=
   match next with
   | inl u => Tau (PTree.iter vn_step_in u)
   | inr b => Ret b
   end.
 
 Definition service_vn_second (b1 : bool) :
-    ptree coin_serviceE Enum bool :=
+    ptree coin_serviceE EnumQ bool :=
   PTree.bind
     (Prob vn_biased_coin
       (fun b2 => Ret (vn_round_result b1 b2)))
@@ -155,12 +155,12 @@ Qed.
 
 Lemma service_vn_hitting_zero_observes :
   free_omega_observes service_head_value
-    (service_vn_hitting 0) (sem_zero : Enum bool).
+    (service_vn_hitting 0) (sem_zero : EnumQ bool).
 Proof.
   unfold service_vn_hitting. rewrite service_vn_observe.
   change (free_omega_observes service_head_value
-    (FOSample vn_biased_coin (fun _ => FOZero)) (nil : Enum bool)).
-  rewrite <- (enum_bind_nil (A := bool) bool vn_biased_coin).
+    (FOSample vn_biased_coin (fun _ => FOZero)) (nil : EnumQ bool)).
+  rewrite <- (enumQ_bind_nil (A := bool) bool vn_biased_coin).
   constructor. intro b. constructor.
 Qed.
 
@@ -175,31 +175,31 @@ Proof.
     rewrite service_vn_hitting_three.
     assert (Hout :
       meas_iter_approx (S rounds) (fun _ : unit => vn_transition) tt =
-      bind_Enum vn_biased_coin (fun b1 =>
-        bind_Enum vn_biased_coin (fun b2 =>
+      bind_EnumQ vn_biased_coin (fun b1 =>
+        bind_EnumQ vn_biased_coin (fun b2 =>
           match vn_round_result b1 b2 with
           | inl _ => meas_iter_approx rounds
               (fun _ : unit => vn_transition) tt
-          | inr b => ret_Enum b
+          | inr b => ret_EnumQ b
           end))).
     { cbn [meas_iter_approx].
-      change (bind_Enum vn_transition (fun next =>
+      change (bind_EnumQ vn_transition (fun next =>
         match next with
         | inl i' => meas_iter_approx rounds
             (fun _ : unit => vn_transition) i'
-        | inr b => ret_Enum b
+        | inr b => ret_EnumQ b
         end) =
-        bind_Enum vn_biased_coin (fun b1 =>
-          bind_Enum vn_biased_coin (fun b2 =>
+        bind_EnumQ vn_biased_coin (fun b1 =>
+          bind_EnumQ vn_biased_coin (fun b2 =>
             match vn_round_result b1 b2 with
             | inl _ => meas_iter_approx rounds
                 (fun _ : unit => vn_transition) tt
-            | inr b => ret_Enum b
+            | inr b => ret_EnumQ b
             end))).
       rewrite <- vn_round_measure_eq. unfold vn_round_measure.
-      rewrite bind_Enum_assoc.
-      apply bind_Enum_ext=> b1. rewrite bind_Enum_assoc.
-      apply bind_Enum_ext=> b2.
+      rewrite bind_EnumQ_assoc.
+      apply bind_EnumQ_ext=> b1. rewrite bind_EnumQ_assoc.
+      apply bind_EnumQ_ext=> b2.
       rewrite ptree_vn_bind_ret_eq.
       destruct (vn_round_result b1 b2) as [u|b];
         [destruct u|]; reflexivity. }
@@ -237,10 +237,10 @@ Proof.
 Qed.
 
 Lemma service_vn_weak :
-  @ptree_stable_hitting coin_serviceE Enum MF
+  @ptree_stable_hitting coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe (@von_neumann_third_in coin_serviceE)) service_vn_heads.
@@ -260,8 +260,8 @@ Qed.
 Lemma service_vn_heads_total :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega _ service_vn_heads.
 Proof.
   apply free_omega_observable_total_intro.
@@ -270,26 +270,26 @@ Proof.
 Qed.
 
 Theorem service_von_neumann_ast :
-  @ptree_stable_hitting_ast coin_serviceE Enum MF
+  @ptree_stable_hitting_ast coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe (@von_neumann_third_in coin_serviceE)) service_vn_heads.
 Proof. split; [exact service_vn_weak|exact service_vn_heads_total]. Qed.
 
 Definition service_direct_heads : MF service_head :=
-  @mixed_bind Enum MF FreeOmegaMixedMeasure bool service_head
+  @mixed_bind EnumQ MF FreeOmegaMixedMeasure bool service_head
     vn_fair
     (fun b => @sem_ret MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega)) service_head (FHRet b)).
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega)) service_head (FHRet b)).
 
-Definition service_direct_observation : Enum bool :=
-  @sem_bind Enum Enum_SemanticMeasure _ _ vn_fair
-    (fun b => @sem_ret Enum Enum_SemanticMeasure bool b).
+Definition service_direct_observation : EnumQ bool :=
+  @sem_bind EnumQ EnumQ_SemanticMeasure _ _ vn_fair
+    (fun b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b).
 
 Lemma service_direct_heads_observes :
   free_omega_observes service_head_value
@@ -303,15 +303,15 @@ Lemma service_direct_observation_eq :
   service_direct_observation = vn_fair.
 Proof.
   unfold service_direct_observation.
-  change (bind_Enum vn_fair (fun b => ret_Enum b) = vn_fair).
+  change (bind_EnumQ vn_fair (fun b => ret_EnumQ b) = vn_fair).
   rewrite bind_ret_emap. apply emap_id.
 Qed.
 
 Lemma service_direct_heads_total :
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega _ service_direct_heads.
 Proof.
   apply free_omega_observable_total_intro.
@@ -321,10 +321,10 @@ Proof.
 Qed.
 
 Theorem service_direct_fair_ast :
-  @ptree_stable_hitting_ast coin_serviceE Enum MF
+  @ptree_stable_hitting_ast coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (observe (@direct_fair_in coin_serviceE)) service_direct_heads.
@@ -338,12 +338,12 @@ Proof.
     + apply ptree_stable_hitting_ret.
     + apply free_omega_observable_total_intro.
       exists bool, service_head_value,
-        (@sem_ret Enum Enum_SemanticMeasure bool b).
+        (@sem_ret EnumQ EnumQ_SemanticMeasure bool b).
       split; [constructor|].
-      change (meas_total (ret_Enum b)).
-      change (enum_expect (fun _ : bool => (1 : rat)) (ret_Enum b) =
+      change (meas_total (ret_EnumQ b)).
+      change (enumQ_expect (fun _ : bool => (1 : rat)) (ret_EnumQ b) =
         (1 : rat)).
-      rewrite enum_expect_ret. reflexivity.
+      rewrite enumQ_expect_ret. reflexivity.
   - exact service_direct_heads_total.
 Qed.
 
@@ -468,12 +468,12 @@ Proof.
 Qed.
 
 Lemma service_vn_direct_heads_lift
-    (sim : ptree coin_serviceE Enum bool ->
-      ptree coin_serviceE Enum bool -> Prop) :
+    (sim : ptree coin_serviceE EnumQ bool ->
+      ptree coin_serviceE EnumQ bool -> Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega)) _ _
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega)) _ _
     (stable_head_rel eq sim)
     service_vn_heads service_direct_heads.
 Proof.
@@ -502,10 +502,10 @@ Proof.
 Qed.
 
 Theorem service_sampler_equivalent :
-  @peutt coin_serviceE Enum MF
+  @peutt coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq
@@ -521,30 +521,30 @@ Qed.
     instead retains its recursive continuation in an explicit coinduction
     candidate. *)
 Lemma serve_round_congruence
-    (sampler1 sampler2 : ptree coin_serviceE Enum bool)
-    (next1 next2 : ptree coin_serviceE Enum bool)
+    (sampler1 sampler2 : ptree coin_serviceE EnumQ bool)
+    (next1 next2 : ptree coin_serviceE EnumQ bool)
     (Hsampler :
-      @peutt coin_serviceE Enum MF
+      @peutt coin_serviceE EnumQ MF
         (FreeOmegaObservableSemanticMeasure
-          (NI := Enum_SemanticMeasure)
-          (NO := Enum_SemanticOmega))
+          (NI := EnumQ_SemanticMeasure)
+          (NO := EnumQ_SemanticOmega))
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega bool bool eq
         sampler1 sampler2)
     (Hnext :
-      @peutt coin_serviceE Enum MF
+      @peutt coin_serviceE EnumQ MF
         (FreeOmegaObservableSemanticMeasure
-          (NI := Enum_SemanticMeasure)
-          (NO := Enum_SemanticOmega))
+          (NI := EnumQ_SemanticMeasure)
+          (NO := EnumQ_SemanticOmega))
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega bool bool eq
         next1 next2) :
-  @peutt coin_serviceE Enum MF
+  @peutt coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq
@@ -559,26 +559,26 @@ Proof.
 Qed.
 
 Local Definition service_kernel {R} :
-    ptree' coin_serviceE Enum R ->
-    MF (stable_target (ptree' coin_serviceE Enum R)
-      (stable_head coin_serviceE Enum R)) :=
-  @ptree_primitive_kernel coin_serviceE Enum MF
+    ptree' coin_serviceE EnumQ R ->
+    MF (stable_target (ptree' coin_serviceE EnumQ R)
+      (stable_head coin_serviceE EnumQ R)) :=
+  @ptree_primitive_kernel coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure R.
 
 Local Definition service_stable_rel {R1 R2}
     (RR : R1 -> R2 -> Prop)
-    (sim : ptree' coin_serviceE Enum R1 ->
-      ptree' coin_serviceE Enum R2 -> Prop) :=
-  @ptree_stable_head_rel coin_serviceE Enum R1 R2 RR sim.
+    (sim : ptree' coin_serviceE EnumQ R1 ->
+      ptree' coin_serviceE EnumQ R2 -> Prop) :=
+  @ptree_stable_head_rel coin_serviceE EnumQ R1 R2 RR sim.
 
 Local Notation service_hitting :=
-  (@ptree_stable_hitting coin_serviceE Enum MF
+  (@ptree_stable_hitting coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega
     bool).
@@ -587,25 +587,25 @@ Local Definition service_lift {A B} (R : A -> B -> Prop)
     (mu : MF A) (nu : MF B) : Prop :=
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     A B R mu nu.
 
-Definition vn_after_request : ptree coin_serviceE Enum bool :=
+Definition vn_after_request : ptree coin_serviceE EnumQ bool :=
   PTree.bind von_neumann_third_in
     (fun b => publish b von_neumann_service).
 
-Definition direct_after_request : ptree coin_serviceE Enum bool :=
+Definition direct_after_request : ptree coin_serviceE EnumQ bool :=
   PTree.bind direct_fair_in
     (fun b => publish b direct_fair_service).
 
 Definition vn_reply_front (b : bool) :
-    MF (stable_head coin_serviceE Enum bool) :=
+    MF (stable_head coin_serviceE EnumQ bool) :=
   sem_ret (FHVis (CoinReply b)
     (fun _ => von_neumann_service)).
 
 Definition direct_reply_front (b : bool) :
-    MF (stable_head coin_serviceE Enum bool) :=
+    MF (stable_head coin_serviceE EnumQ bool) :=
   sem_ret (FHVis (CoinReply b)
     (fun _ => direct_fair_service)).
 
@@ -613,12 +613,12 @@ Local Opaque von_neumann_service direct_fair_service
   service_vn_heads service_direct_heads.
 
 Definition vn_after_request_heads :
-    MF (stable_head coin_serviceE Enum bool) :=
+    MF (stable_head coin_serviceE EnumQ bool) :=
   free_omega_bind service_vn_heads
     (stable_head_ret_bind_front vn_reply_front).
 
 Definition direct_after_request_heads :
-    MF (stable_head coin_serviceE Enum bool) :=
+    MF (stable_head coin_serviceE EnumQ bool) :=
   free_omega_bind service_direct_heads
     (stable_head_ret_bind_front direct_reply_front).
 
@@ -658,26 +658,26 @@ Lemma service_first_sampling_measure_not_direct :
 Proof.
   intro Heq.
   have Hmass := f_equal
-    (fun mu => enum_expect
+    (fun mu => enumQ_expect
       (fun b => if b then (0 : rat) else (1 : rat)) mu) Heq.
   cbn [vn_biased_coin vn_fair] in Hmass.
   vm_compute in Hmass. discriminate.
 Qed.
 
 Definition interactive_service_sim
-    (s1 s2 : ptree' coin_serviceE Enum bool) : Prop :=
+    (s1 s2 : ptree' coin_serviceE EnumQ bool) : Prop :=
   (s1 = observe von_neumann_service /\
     s2 = observe direct_fair_service) \/
   (s1 = observe vn_after_request /\
     s2 = observe direct_after_request).
 
 Definition interactive_service_upto
-    (s1 s2 : ptree' coin_serviceE Enum bool) : Prop :=
+    (s1 s2 : ptree' coin_serviceE EnumQ bool) : Prop :=
   interactive_service_sim s1 s2 \/
-  @peutt_state coin_serviceE Enum MF
+  @peutt_state coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq s1 s2.
@@ -715,10 +715,10 @@ Lemma interactive_service_sim_postfixed :
   forall s1 s2, interactive_service_sim s1 s2 ->
     @stable_hitting_match MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega))
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega))
       FreeOmegaObservableSemanticOmega
-      (ptree' coin_serviceE Enum bool) (ptree' coin_serviceE Enum bool)
+      (ptree' coin_serviceE EnumQ bool) (ptree' coin_serviceE EnumQ bool)
       service_head service_head service_kernel service_kernel
       (@service_stable_rel bool bool eq)
       interactive_service_upto s1 s2.
@@ -734,10 +734,10 @@ Proof.
 Qed.
 
 Theorem interactive_von_neumann_service_equivalent :
-  @peutt coin_serviceE Enum MF
+  @peutt coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq
@@ -764,10 +764,10 @@ Definition direct_true_reply_query : MF bool :=
       (observe_stable_head (fun _ : bool => false) (@accepts_true_reply) h)).
 
 Lemma direct_after_request_true_reply_query :
-  @next_event_query coin_serviceE Enum MF
+  @next_event_query coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (@accepts_true_reply) direct_after_request direct_true_reply_query.
@@ -796,16 +796,16 @@ Proof.
 Qed.
 
 Lemma direct_true_reply_probability_half :
-  enum_expect (indicator (fun b => b)) vn_fair = (1 / 2 : rat).
+  enumQ_expect (indicator (fun b => b)) vn_fair = (1 / 2 : rat).
 Proof.
   by rewrite vn_fair_expect /indicator /= add0r mulr1.
 Qed.
 
 Lemma after_request_peutt :
-  @peutt coin_serviceE Enum MF
+  @peutt coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure)
-      (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure)
+      (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq
@@ -823,17 +823,17 @@ Qed.
     concrete observation backend reads probability [1/2] from it. *)
 Theorem von_neumann_true_reply_probability_half :
   exists query,
-    @next_event_query coin_serviceE Enum MF
+    @next_event_query coin_serviceE EnumQ MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega))
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool
       (@accepts_true_reply) vn_after_request query /\
     @sem_lift MF
       (FreeOmegaObservableSemanticMeasure
-        (NI := Enum_SemanticMeasure)
-        (NO := Enum_SemanticOmega)) bool bool eq
+        (NI := EnumQ_SemanticMeasure)
+        (NO := EnumQ_SemanticOmega)) bool bool eq
       direct_true_reply_query query.
 Proof.
   eapply peutt_preserves_next_event_query.
@@ -875,7 +875,7 @@ Proof.
 Qed.
 
 Lemma direct_after_request_true_reply_prefix_query :
-  @finite_interaction_query coin_serviceE Enum MF
+  @finite_interaction_query coin_serviceE EnumQ MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega
@@ -890,7 +890,7 @@ Proof.
 Qed.
 
 Lemma direct_request_true_reply_prefix_query :
-  @finite_interaction_query coin_serviceE Enum MF
+  @finite_interaction_query coin_serviceE EnumQ MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega
@@ -898,7 +898,7 @@ Lemma direct_request_true_reply_prefix_query :
     request_true_reply_trace direct_fair_service direct_true_reply_query.
 Proof.
   unfold request_true_reply_trace.
-  change (@finite_interaction_query coin_serviceE Enum MF
+  change (@finite_interaction_query coin_serviceE EnumQ MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
@@ -912,7 +912,7 @@ Qed.
 
 Lemma direct_request_true_reply_sem_coupled_to_fair :
   @sem_lift MF FreeOmegaObservableSemanticMeasure bool bool eq
-    (@finite_interaction_sem coin_serviceE Enum MF
+    (@finite_interaction_sem coin_serviceE EnumQ MF
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool
@@ -928,7 +928,7 @@ Qed.
     explicit fair measure whose true mass is [1/2]. *)
 Theorem von_neumann_request_true_reply_probability_half :
   exists query,
-    @finite_interaction_query coin_serviceE Enum MF
+    @finite_interaction_query coin_serviceE EnumQ MF
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega
@@ -945,30 +945,30 @@ Proof.
 Qed.
 
 (** Paper-facing numeric statement: all FreeOmega witnesses and coupling
-    plumbing are hidden behind the concrete Enum trace-probability API. *)
+    plumbing are hidden behind the concrete EnumQ trace-probability API. *)
 Theorem von_neumann_request_true_reply_trace_probability :
   Prₜ[ von_neumann_service | request_true_reply_trace ] = (1 / 2 : rat).
 Proof.
   destruct von_neumann_request_true_reply_probability_half
     as [query [Hquery Hlift]].
-  eapply enum_finite_interaction_probability_intro
+  eapply enumQ_finite_interaction_probability_intro
     with (query := query) (representative := direct_true_reply_query)
       (out := vn_fair).
   - exact Hquery.
   - exact Hlift.
   - exact direct_true_reply_query_denotes_fair.
-  - unfold enum_bool_indicator, indicator.
+  - unfold enumQ_bool_indicator, indicator.
     exact direct_true_reply_probability_half.
 Qed.
 
 Theorem von_neumann_request_true_reply_sem_preserved :
   @sem_lift MF FreeOmegaObservableSemanticMeasure bool bool eq
-    (@finite_interaction_sem coin_serviceE Enum MF
+    (@finite_interaction_sem coin_serviceE EnumQ MF
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool
       request_true_reply_trace direct_fair_service)
-    (@finite_interaction_sem coin_serviceE Enum MF
+    (@finite_interaction_sem coin_serviceE EnumQ MF
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool
@@ -982,7 +982,7 @@ Qed.
 (** A non-matching cylinder fails at the first event: the service initially
     offers [CoinRequest], not a reply. *)
 Lemma direct_reply_first_prefix_rejected :
-  @finite_interaction_query coin_serviceE Enum MF
+  @finite_interaction_query coin_serviceE EnumQ MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega
@@ -990,14 +990,14 @@ Lemma direct_reply_first_prefix_rejected :
     (cons (@select_true_reply) nil)
     direct_fair_service (sem_ret false).
 Proof.
-  change (@finite_interaction_query coin_serviceE Enum MF
+  change (@finite_interaction_query coin_serviceE EnumQ MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (cons (@select_true_reply) nil)
     (Vis CoinRequest (fun _ => direct_after_request)) (sem_ret false)).
   eapply (@finite_interaction_query_vis_reject
-    coin_serviceE Enum MF
+    coin_serviceE EnumQ MF
     FreeOmegaObservableSemanticMeasure
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaObservableSemanticMeasureBindLaws

@@ -13,14 +13,14 @@ probability theory. CI and environment changes are deliberately excluded.
 
 | Model | Maintained role |
 | --- | --- |
-| SubEnum | Finite exact-rational native sampling, with `FreeOmega SubEnum` for complete PTree behavior |
+| SubEnumQ | Finite exact-rational native sampling, with `FreeOmega SubEnumQ` for complete PTree behavior |
 | SubEnumR R | Finite-real native sampling, with `FreeOmega (SubEnumR R)` for complete PTree behavior |
 | MathComp | Direct discrete kernel/measure and real-valued analytic results, including native joint witnesses; no recursive PTree frontier specialization |
 
 Generic `MN`/`MF`, SemanticMeasure/SemanticOmega/MixedMeasure, PTree, stable
 hitting, `peutt` and generic FreeOmega remain unchanged. Finite native models
 are the maintained complete probability instances, not a new restriction on
-generic theorems. The raw Enum compatibility development is also untouched.
+generic theorems. The raw EnumQ compatibility development is also untouched.
 MathComp Analysis continues to anchor the independent OmegaVal measure model;
 removing the concrete MathComp-kernel completion does not remove that library
 or its role in external validation.

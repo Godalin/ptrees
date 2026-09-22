@@ -112,7 +112,7 @@ Local Notation state := (@mdp_state E MN MF FI FC FreeOmegaMixedMeasure FO R).
 Variable atom : atomic_handler (NI := NI) (NO := NO) handler.
 
 (** This is a measure-side mapping obligation, not a preservation premise.
-    [sem_total_proper] alone does not imply it. The SubEnum specialization
+    [sem_total_proper] alone does not imply it. The SubEnumQ specialization
     proves it for all maps, not merely this handler's head map. *)
 Hypothesis Htotal_map : forall mu : MF head,
   @sem_total MF FI FO _ mu ->

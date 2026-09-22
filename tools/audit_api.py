@@ -10,7 +10,7 @@ KERNEL_MODULES = [
     'PTree.Regression.Infrastructure.AllImports',
     'PTree.Regression.Infrastructure.ArchitectureBoundaries',
     'PTree.Regression.Infrastructure.UniverseSeparatedPTree',
-    'PTree.Regression.Backend.UnifiedFrontierEnum',
+    'PTree.Regression.Backend.UnifiedFrontierEnumQ',
     'PTree.Regression.Semantics.CanonicalPartialDivergence',
     'PTree.Regression.Semantics.PEuttAlgebra',
     'PTree.Regression.Semantics.PublicSemanticFacade',

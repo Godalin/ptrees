@@ -36,5 +36,5 @@ Fail Check interp_bisim_candidate.
 Fail Check atomic_candidate.
 Fail Check finite_internal.
 Fail Check kernel_completion_invariant.
-Fail Check PTree.Prob.Backend.SubEnum.Measure.SubEnum.
+Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 End CanonicalFacadeBoundary.

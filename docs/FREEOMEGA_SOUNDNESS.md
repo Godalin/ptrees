@@ -1,20 +1,20 @@
 # FreeOmega: external probability semantics and joint realization
 
-The completed soundness results validate **admissible `FreeOmega SubEnum`**
+The completed soundness results validate **admissible `FreeOmega SubEnumQ`**
 in an independent standard subprobability model. They do not interpret every
 raw term as a probability, prove syntactic completeness, or supply a
 MathComp-native FreeOmega adapter. Program reasoning does not depend on this
 validation layer; see [architecture](ARCHITECTURE.md).
 
-This is the frozen SubEnum account: DS1–DS4 establish denotational validation;
+This is the frozen SubEnumQ account: DS1–DS4 establish denotational validation;
 DS5 establishes backend-specific external joint realization. The later
 [native-parametric validation](GENERIC_QLIFT_VALIDATION.md) factors out
-bounded-test/bidual soundness, now instantiated by SubEnum and SubEnumR.
+bounded-test/bidual soundness, now instantiated by SubEnumQ and SubEnumR.
 It does not generalize the actual-joint existence claim below to every native
 backend. See the [three-layer policy and terminology](ARCHITECTURE.md#three-layers-of-probability-reasoning).
 SubEnumR now has its own [external joint realization](SUBENUMR_JOINT_REALIZATION.md),
 composing generic bidual validation with the same independent countable
-transport theorem. The frozen SubEnum proofs below remain unchanged.
+transport theorem. The frozen SubEnumQ proofs below remain unchanged.
 
 ## Independent mathematical domain
 
@@ -49,8 +49,8 @@ OmegaVal itself and the later coupling bridge support larger carriers.
 
 ## Native sampling and admissible completion
 
-`SubEnum` consists of finite rational subdistributions. Native expectation
-facts live in `Prob/Backend/SubEnum/Expectation.v`; `SubEnum/Domain.v`
+`SubEnumQ` consists of finite rational subdistributions. Native expectation
+facts live in `Prob/Backend/SubEnumQ/Expectation.v`; `SubEnumQ/Domain.v`
 interprets this carrier directly into OmegaVal, independently of FreeOmega.
 
 `FreeOmega` remains the sole formal completion syntax: FORet, FOZero,
@@ -58,7 +58,7 @@ FOSample and raw FOLub. Its existing `free_omega_upper` is a bounded upper
 evaluator on every raw term. A Lub alternating between two distinct Dirac
 measures is generally nonadditive, so raw syntax alone is not validity.
 
-`SubEnum/FreeOmega/Admissibility.v` defines `free_omega_admissible` by the
+`SubEnumQ/FreeOmega/Admissibility.v` defines `free_omega_admissible` by the
 probability-functional laws of that evaluator. `DomainSoundness.v` packages
 the evaluator, rather than inventing a second recursive denotation.
 Ret/zero, AE-valid sampling/bind, and increasing admissible Lubs are closed;
@@ -81,13 +81,13 @@ No induction over qlift that assumes valid intermediates is used. In particular
 FOQLComp can pass through an inadmissible alternating Lub. Reflexive qlift
 does not itself imply admissibility, and zero is not quotient-equal to Dirac.
 
-The general endpoint in `SubEnum/FreeOmega/JointSoundness.v` is, with canonical
-SubEnum interfaces understood:
+The general endpoint in `SubEnumQ/FreeOmega/JointSoundness.v` is, with canonical
+SubEnumQ interfaces understood:
 
 ```coq
 free_omega_qlift_sound
   (R : realType) {A B} (T : A -> B -> Prop)
-  (t : FreeOmega SubEnum A) (u : FreeOmega SubEnum B)
+  (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)
   (Ht : free_omega_admissible R t) (Hu : free_omega_admissible R u) :
   free_omega_qlift T t u ->
   oval_coupled T (free_omega_domain Ht) (free_omega_domain Hu).
@@ -127,13 +127,13 @@ FreeOmega bridge composes these results without inspecting FOQLComp.
 
 ## Stable-hitting adequacy
 
-`Eq/Backend/StableHittingDomainSubEnum.v` defines a separate mathematical
+`Eq/Backend/StableHittingDomainSubEnumQ.v` defines a separate mathematical
 primitive kernel: Ret/Vis give stable Dirac heads, Tau an internal Dirac state,
 and Prob a bind of native subprobability with internal successors. Independent
 finite hitting iterates are increasing; their OmegaVal Lub is the behavior.
 Finite-fuel commutation connects the existing formal iterates to these values.
 
-With canonical SubEnum/FreeOmega instances understood:
+With canonical SubEnumQ/FreeOmega instances understood:
 
 ```text
 stable_hitting_admissible:

@@ -1,7 +1,7 @@
 (** Role: Canonical FreeOmega measure infrastructure. Depends on generic measures; not a concrete native backend or program equivalence. *)
 (** Observation-level coupling recovers high-universe support when the
     observations both preserve and reflect AE predicates.  Injectivity alone
-    does not establish this premise (see FreeOmegaMeasureEnumAudit). *)
+    does not establish this premise (see FreeOmegaMeasureEnumQAudit). *)
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Set Implicit Arguments.

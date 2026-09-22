@@ -9,9 +9,9 @@ From Coq Require Import RelationClasses.
 From Coq.Logic Require Import ClassicalDescription.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalHitting.
 From PTree.Eq Require Import PStrong PEutt.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalAcceleration.
@@ -20,59 +20,59 @@ From PTree.Examples Require Import RandomWalk.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import Enum.
+Import EnumQ.
 
 Variant residualE : Type -> Type := .
 (** Purely internal, potentially unbounded retry: there is no Vis guard
     between retries.  Each failed toss has one administrative Tau on the
     left and two on the right. *)
-CoFixpoint residual_retry_left : ptree residualE SubEnum bool :=
+CoFixpoint residual_retry_left : ptree residualE SubEnumQ bool :=
   Prob rw_coin (fun b : bool => if b then Ret true else Tau residual_retry_left).
 
-CoFixpoint residual_retry_right : ptree residualE SubEnum bool :=
+CoFixpoint residual_retry_right : ptree residualE SubEnumQ bool :=
   Prob rw_coin (fun b : bool => if b then Ret true else Tau (Tau residual_retry_right)).
 
 (** Select only the explicit administrative prefixes.  Propositional
     equality avoids assuming an eta law or dependent elimination for the
     coinductive tree.  These are proof witnesses, not executable samplers. *)
-Definition residual_retry_cut1 (t : ptree residualE SubEnum bool) :
-    FreeOmega SubEnum (ptree residualE SubEnum bool) :=
+Definition residual_retry_cut1 (t : ptree residualE SubEnumQ bool) :
+    FreeOmega SubEnumQ (ptree residualE SubEnumQ bool) :=
   if excluded_middle_informative (t = Tau residual_retry_left)
   then FORet residual_retry_left else FORet t.
 
-Definition residual_retry_cut2 (t : ptree residualE SubEnum bool) :
-    FreeOmega SubEnum (ptree residualE SubEnum bool) :=
+Definition residual_retry_cut2 (t : ptree residualE SubEnumQ bool) :
+    FreeOmega SubEnumQ (ptree residualE SubEnumQ bool) :=
   if excluded_middle_informative (t = Tau (Tau residual_retry_right))
   then FORet residual_retry_right else FORet t.
 
 Local Notation SFI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 
 Lemma residual_retry_cut1_valid t :
-  @finite_internal residualE SubEnum (FreeOmega SubEnum) SFI FreeOmegaMixedMeasure
+  @finite_internal residualE SubEnumQ (FreeOmega SubEnumQ) SFI FreeOmegaMixedMeasure
     bool t (residual_retry_cut1 t).
 Proof.
   unfold residual_retry_cut1. destruct (excluded_middle_informative _) as [->|Hne].
-  - apply FITau. exact (@FIStop residualE SubEnum (FreeOmega SubEnum) SFI
+  - apply FITau. exact (@FIStop residualE SubEnumQ (FreeOmega SubEnumQ) SFI
       FreeOmegaMixedMeasure bool _).
-  - exact (@FIStop residualE SubEnum (FreeOmega SubEnum) SFI
+  - exact (@FIStop residualE SubEnumQ (FreeOmega SubEnumQ) SFI
       FreeOmegaMixedMeasure bool _).
 Qed.
 
 Lemma residual_retry_cut2_valid t :
-  @finite_internal residualE SubEnum (FreeOmega SubEnum) SFI FreeOmegaMixedMeasure
+  @finite_internal residualE SubEnumQ (FreeOmega SubEnumQ) SFI FreeOmegaMixedMeasure
     bool t (residual_retry_cut2 t).
 Proof.
   unfold residual_retry_cut2. destruct (excluded_middle_informative _) as [->|Hne].
   - apply FITau. apply FITau.
-    exact (@FIStop residualE SubEnum (FreeOmega SubEnum) SFI
+    exact (@FIStop residualE SubEnumQ (FreeOmega SubEnumQ) SFI
       FreeOmegaMixedMeasure bool _).
-  - exact (@FIStop residualE SubEnum (FreeOmega SubEnum) SFI
+  - exact (@FIStop residualE SubEnumQ (FreeOmega SubEnumQ) SFI
       FreeOmegaMixedMeasure bool _).
 Qed.
 
 Inductive residual_retry_pairs :
-    ptree residualE SubEnum bool -> ptree residualE SubEnum bool -> Prop :=
+    ptree residualE SubEnumQ bool -> ptree residualE SubEnumQ bool -> Prop :=
 | ResidualRetryReturn : residual_retry_pairs (Ret true) (Ret true)
 | ResidualRetryLoop : residual_retry_pairs residual_retry_left residual_retry_right
 | ResidualRetryDelay : residual_retry_pairs
@@ -88,8 +88,8 @@ Proof.
     destruct (excluded_middle_informative _) as [H1|H1];
     destruct (excluded_middle_informative _) as [H2|H2].
   all: try solve [exfalso; apply H1; reflexivity | exfalso; apply H2; reflexivity].
-  all: try solve [apply (f_equal (@observe residualE SubEnum bool)) in H1; discriminate H1
-    | apply (f_equal (@observe residualE SubEnum bool)) in H2; discriminate H2].
+  all: try solve [apply (f_equal (@observe residualE SubEnumQ bool)) in H1; discriminate H1
+    | apply (f_equal (@observe residualE SubEnumQ bool)) in H2; discriminate H2].
   all: apply FOLRet; unfold observe; cbn.
   - constructor. reflexivity.
   - constructor. apply sem_lift_refl. intros []; constructor.
@@ -103,7 +103,7 @@ Lemma residual_retry_cuts_coupled t1 t2 :
 Proof. intro Hpair. apply FOQLStructural, residual_retry_cuts_structural, Hpair. Qed.
 
 Lemma residual_retries_peutt :
-  @peutt residualE SubEnum (FreeOmega SubEnum) SFI
+  @peutt residualE SubEnumQ (FreeOmega SubEnumQ) SFI
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq
     residual_retry_left residual_retry_right.
@@ -122,16 +122,16 @@ Qed.
     is the visible head, not an administrative internal step. *)
 Variant residual_tickE : Type -> Type := ResidualTick : residual_tickE unit.
 
-CoFixpoint residual_service_left : ptree residual_tickE SubEnum bool :=
+CoFixpoint residual_service_left : ptree residual_tickE SubEnumQ bool :=
   Vis ResidualTick (fun _ => Tau residual_service_left).
 
-CoFixpoint residual_service_right : ptree residual_tickE SubEnum bool :=
+CoFixpoint residual_service_right : ptree residual_tickE SubEnumQ bool :=
   Vis ResidualTick (fun _ => Tau (Tau residual_service_right)).
 
 Lemma residual_services_peutt :
-  @peutt residual_tickE SubEnum (FreeOmega SubEnum)
+  @peutt residual_tickE SubEnumQ (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+      (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq
     residual_service_left residual_service_right.
@@ -145,15 +145,15 @@ Proof.
       (FORet residual_service_left), (FORet residual_service_right).
     split; [reflexivity|]. split; [reflexivity|].
     split.
-    + apply FITau. exact (@FIStop residual_tickE SubEnum (FreeOmega SubEnum)
+    + apply FITau. exact (@FIStop residual_tickE SubEnumQ (FreeOmega SubEnumQ)
         (FreeOmegaObservableSemanticMeasure
-          (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+          (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
         FreeOmegaMixedMeasure bool residual_service_left).
     + split.
       * apply FITau. apply FITau.
-        exact (@FIStop residual_tickE SubEnum (FreeOmega SubEnum)
+        exact (@FIStop residual_tickE SubEnumQ (FreeOmega SubEnumQ)
           (FreeOmegaObservableSemanticMeasure
-            (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+            (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
           FreeOmegaMixedMeasure bool residual_service_right).
       * apply FOQLStructural. apply FOLRet. split; reflexivity.
   - split; reflexivity.

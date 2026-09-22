@@ -7,16 +7,16 @@ From Coq.Program Require Import Equality.
 From Coq.Logic Require Import FunctionalExtensionality.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.Backend.EnumQ.Iteration.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Semantics Require Import HeadTransition TreeTransition.
 
 (** The semantic API itself must remain independent of behavioral equality. *)
 Fail Check PTree.Eq.PEutt.peutt.
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum rat.
-From PTree.Regression.Backend Require Import SubEnumRegression.
+From PTree.Regression.Backend Require Import SubEnumQRegression.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -24,17 +24,17 @@ Unset Printing Implicit Defensive.
 Variant rawE : Type -> Type :=
   | Ask : rawE unit | Other : rawE unit
   | EmptyA : rawE Empty_set | EmptyB : rawE Empty_set.
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
-  SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-Local Notation head := (stable_head rawE SubEnum bool).
-Local Notation tree := (ptree rawE SubEnum bool).
-Local Notation trans := (@tree_trans rawE SubEnum MF FI FreeOmegaMixedMeasure FO bool).
-Local Notation returns := (@tree_return_observation rawE SubEnum MF FI FreeOmegaMixedMeasure FO bool).
-Local Notation offers := (@tree_offered_event_observation rawE SubEnum MF FI FreeOmegaMixedMeasure FO bool).
-Local Notation hits t out := (@ptree_stable_hitting rawE SubEnum MF FI
+  SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+Local Notation head := (stable_head rawE SubEnumQ bool).
+Local Notation tree := (ptree rawE SubEnumQ bool).
+Local Notation trans := (@tree_trans rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
+Local Notation returns := (@tree_return_observation rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
+Local Notation offers := (@tree_offered_event_observation rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
+Local Notation hits t out := (@ptree_stable_hitting rawE SubEnumQ MF FI
   FreeOmegaMixedMeasure FO bool (observe t) out).
 
 Example return_observation : returns (Ret true) (FORet true).
@@ -56,7 +56,7 @@ Lemma empty_offers_distinct :
   ~ @sem_lift MF FI _ _ eq (FORet (Offered EmptyA)) (FORet (Offered EmptyB)).
 Proof.
   intro H.
-  assert (Ha : free_omega_ae (NI := SubEnum_SemanticMeasure)
+  assert (Ha : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
       (fun e => e = Offered EmptyA) (FORet (Offered EmptyA))).
   { constructor. reflexivity. }
   pose proof (proj1 (free_omega_qlift_support H) _ Ha) as Hb.
@@ -87,14 +87,14 @@ Qed.
 Definition ask_head b : head := FHVis Ask (fun _ => Ret b).
 Definition other_head : head := FHVis Other (fun _ => Ret true).
 Definition mixture : tree :=
-  Prob subenum_fair (fun b => if b then Vis Other (fun _ => Ret true)
-    else Prob subenum_fair (fun c => Vis Ask (fun _ => Ret c))).
+  Prob subenumQ_fair (fun b => if b then Vis Other (fun _ => Ret true)
+    else Prob subenumQ_fair (fun c => Vis Ask (fun _ => Ret c))).
 Definition mixed_front : MF head :=
-  FOSample subenum_fair (fun b => if b then FORet other_head
-    else FOSample subenum_fair (fun c => FORet (ask_head c))).
+  FOSample subenumQ_fair (fun b => if b then FORet other_head
+    else FOSample subenumQ_fair (fun c => FORet (ask_head c))).
 Definition mixed_out : MF head :=
-  FOSample subenum_fair (fun b => if b then FOZero
-    else FOSample subenum_fair (fun c => FORet (FHRet c))).
+  FOSample subenumQ_fair (fun b => if b then FOZero
+    else FOSample subenumQ_fair (fun c => FORet (FHRet c))).
 
 Lemma mixture_hitting : hits mixture mixed_front.
 Proof.
@@ -127,7 +127,7 @@ Definition follow_ask (h : head) : MF head :=
 Theorem mixture_action_weighted_sum : trans mixture (Obs Ask tt) mixed_out.
 Proof.
   assert (Hae : @sem_ae MF FI head mixed_front
-    (fun h => @head_action_result rawE SubEnum MF FI FreeOmegaMixedMeasure FO bool
+    (fun h => @head_action_result rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool
       (Obs Ask tt) h (follow_ask h))).
   { eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
     intros [|] _; cbn.
@@ -151,39 +151,39 @@ Qed.
 
 Definition head_bool (h : head) :=
   match h with FHRet r => r | @FHVis _ _ _ _ _ _ => false end.
-Definition mixed_native : SubEnum bool :=
-  subenum_bind subenum_fair (fun b => if b then subenum_zero
-    else subenum_bind subenum_fair (fun c => subenum_ret c)).
+Definition mixed_native : SubEnumQ bool :=
+  subenumQ_bind subenumQ_fair (fun b => if b then subenumQ_zero
+    else subenumQ_bind subenumQ_fair (fun c => subenumQ_ret c)).
 
 Lemma mixture_numeric_observation :
-  free_omega_observes (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)
+  free_omega_observes (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)
     head_bool mixed_out mixed_native.
 Proof.
   unfold mixed_out, mixed_native.
   change (free_omega_observes head_bool
-    (FOSample subenum_fair (fun b => if b then FOZero
-      else FOSample subenum_fair (fun c => FORet (FHRet c))))
-    (@sem_bind SubEnum SubEnum_SemanticMeasure bool bool subenum_fair
-      (fun b => if b then subenum_zero
-        else subenum_bind subenum_fair (fun c => subenum_ret c)))).
+    (FOSample subenumQ_fair (fun b => if b then FOZero
+      else FOSample subenumQ_fair (fun c => FORet (FHRet c))))
+    (@sem_bind SubEnumQ SubEnumQ_SemanticMeasure bool bool subenumQ_fair
+      (fun b => if b then subenumQ_zero
+        else subenumQ_bind subenumQ_fair (fun c => subenumQ_ret c)))).
   apply FOOObserveSample. intros [|].
-  - exact (@FOOObserveZero SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega
+  - exact (@FOOObserveZero SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
       head bool head_bool).
   - change (free_omega_observes head_bool
-      (FOSample subenum_fair (fun c => FORet (FHRet c)))
-      (@sem_bind SubEnum SubEnum_SemanticMeasure bool bool subenum_fair subenum_ret)).
+      (FOSample subenumQ_fair (fun c => FORet (FHRet c)))
+      (@sem_bind SubEnumQ SubEnumQ_SemanticMeasure bool bool subenumQ_fair subenumQ_ret)).
     apply FOOObserveSample. intro c.
-    exact (@FOOObserveRet SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega
+    exact (@FOOObserveRet SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
       head bool head_bool (FHRet c)).
 Qed.
 
 Import GRing.Theory.
 Local Open Scope ring_scope.
-Example mixture_mass_not_normalized : enum_mass (subenum_raw mixed_native) = (1 / 2 : rat).
+Example mixture_mass_not_normalized : enumQ_mass (subenumQ_raw mixed_native) = (1 / 2 : rat).
 Proof. native_compute. reflexivity. Qed.
 Example mixture_true_mass :
-  enum_expect (fun b => if b then 1 else 0) (subenum_raw mixed_native) = (1 / 4 : rat).
+  enumQ_expect (fun b => if b then 1 else 0) (subenumQ_raw mixed_native) = (1 / 4 : rat).
 Proof. native_compute. reflexivity. Qed.
 Example mixture_false_mass :
-  enum_expect (fun b => if b then 0 else 1) (subenum_raw mixed_native) = (1 / 4 : rat).
+  enumQ_expect (fun b => if b then 0 else 1) (subenumQ_raw mixed_native) = (1 / 4 : rat).
 Proof. native_compute. reflexivity. Qed.

@@ -13,7 +13,7 @@ theorems are described in [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md).
 | `Prob/Interface` | Operations and explicit law capabilities | No tree or concrete-backend dependency |
 | `Prob/FreeOmega` | Formal completion syntax, approximation, observation and quotient | Generic native carrier; no concrete backend |
 | `Prob/FreeOmega/Validation` | Native-parametric external bounded-test validation | May consume Domain and generic FreeOmega; no concrete backend |
-| `Prob/Backend/{Common,Enum,SubEnum,SubEnumR,MathComp}` | Arithmetic, native models and their specialized endpoints | Common has no native-carrier dependency; MathComp is independent of Enum/SubEnum |
+| `Prob/Backend/{Common,EnumQ,SubEnumQ,SubEnumR,MathComp}` | Arithmetic, native models and their specialized endpoints | Common has no native-carrier dependency; MathComp is independent of EnumQ/SubEnumQ |
 | `Prob/Domain` | Independent continuous expectations and standard measure correspondence | Domain and mathematical libraries only |
 | `Eq` | Stable hitting, `pstruct`, `pstrong`, canonical `peutt` | No Semantics, Interp or API dependency |
 | `Semantics` | Raw/head transitions, comparison bisimulation and MDP fragment | No Interp or API dependency |
@@ -26,8 +26,8 @@ In Eq, Semantics and Interp, the `FreeOmega/` namespace fixes only
 `MF := FreeOmega MN`; `Backend/` additionally fixes a native model. These
 are different specializations. Generic layers cannot import either kind
 of specialization, and canonical-model layers cannot import concrete ones.
-Enum and SubEnum can reuse each other's realization facts: SubEnum is a
-validated Enum carrier, not an unrelated implementation.
+EnumQ and SubEnumQ can reuse each other's realization facts: SubEnumQ is a
+validated EnumQ carrier, not an unrelated implementation.
 
 `Prob/Legacy` remains noncanonical weighted infrastructure. It is not an
 alternative to the subprobability-validity contract. Its existing clients
@@ -55,7 +55,7 @@ owns the second layer; see [generic validation](GENERIC_QLIFT_VALIDATION.md).
 The independent Domain and Common transport theorems can be shared by concrete
 realizations; their application must not become a premise of behavioral theory.
 
-SubEnum's frozen DS1–DS4 account supplies denotational validation, and DS5
+SubEnumQ's frozen DS1–DS4 account supplies denotational validation, and DS5
 supplies backend-specific external joint realization. Keep those existing
 owners and theorem names. SubEnumR instantiates generic validation and now
 proves countable support and external joint realization in
@@ -67,7 +67,7 @@ theorem without strengthening generic validation beyond bidual constraints.
 MathComp's native joint witness theorem remains separate; no MathComp
 completion backend is maintained.
 
-The maintained complete probability pairs are `SubEnum / FreeOmega SubEnum`
+The maintained complete probability pairs are `SubEnumQ / FreeOmega SubEnumQ`
 and `SubEnumR R / FreeOmega (SubEnumR R)`. MathComp native discrete
 kernel/measure mathematics remains checked normally. Its probability-backend dependency closure
 excludes `Prob/FreeOmega`; the former combination alias and specialized
@@ -115,11 +115,11 @@ behavioral relation is `peutt`, with notation `≈ₚ` / `≈ₚ[RR]`; auxiliary
 structural relations are not competing public behavioral semantics.
 
 Expert clients import actual owners. In particular, `Eq/PEutt` no longer
-forwards `Eq/StableHittingRelation`, and the three SubEnum FreeOmega
+forwards `Eq/StableHittingRelation`, and the three SubEnumQ FreeOmega
 UpperExpectation/UpperCoupling/UpperContinuity modules no longer forward
-`Prob/Backend/SubEnum/Expectation`. The latter owns finite expectation,
+`Prob/Backend/SubEnumQ/Expectation`. The latter owns finite expectation,
 AE extensionality and finite/countable-sup interchange. Its dependency
-closure, and that of native `SubEnum/Domain`, exclude FreeOmega.
+closure, and that of native `SubEnumQ/Domain`, exclude FreeOmega.
 
 ## External validation is one-way
 
@@ -131,7 +131,7 @@ they are not ordinary mainline Common dependencies.
 
 The transitive closures of Core/Eq/Semantics/Interp/API/Examples and the
 PTree/Semantics facades exclude all validation modules. Explicit external
-adapters such as `Eq/Backend/StableHittingDomainSubEnum` are validation owners,
+adapters such as `Eq/Backend/StableHittingDomainSubEnumQ` are validation owners,
 not reasoning roots, despite their physical namespace.
 The model validates reasoning infrastructure;
 reasoning infrastructure does not assume its own validating model.
@@ -142,7 +142,7 @@ Interpretation remains FreeOmega-qualified, not a claim about arbitrary MF.
 FiniteInternal is auxiliary proof infrastructure for well-founded internal
 compression and related adequacy arguments. It is not part of the canonical
 PTree semantics or public equivalence theory. The peutt/Interp/facade closure
-does not use `Eq/Internal`; the final SubEnum domain-soundness proof does not
+does not use `Eq/Internal`; the final SubEnumQ domain-soundness proof does not
 need it either. Nevertheless its independent execution/scheduling/coupling
 contracts, Recovery and residual infrastructure remain maintained. This cleanup
 does not delete them on the basis of zero clients or absence from one proof.

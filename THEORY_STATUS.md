@@ -24,8 +24,8 @@ in Gate S; no MathComp + FreeOmega combination is restored.
 
 Interpretation Stages 1–4 are accepted through `ec96b90`. DS1–DS5a are
 accepted through `2dbba82`: the independent expectation domain has a standard
-measure correspondence; admissible FreeOmega SubEnum has algebra/equality and
-general joint-coupling soundness; every complete SubEnum stable-hitting witness
+measure correspondence; admissible FreeOmega SubEnumQ has algebra/equality and
+general joint-coupling soundness; every complete SubEnumQ stable-hitting witness
 is automatically admissible and denotes the independent finite-iterate Lub.
 The [soundness account](docs/FREEOMEGA_SOUNDNESS.md) gives exact claims and
 limitations. MathComp-native external soundness and StateInterp are not part
@@ -67,7 +67,7 @@ PTree syntax
             -> tree_trans_bisim              response-wise coupling
 
 peutt ⊆ tree_trans_bisim                      generic capability-qualified
-peutt ⊊ tree_trans_bisim                      SubEnum/FreeOmega counterexample
+peutt ⊊ tree_trans_bisim                      SubEnumQ/FreeOmega counterexample
 peutt = tree_trans_bisim on mdp_state         fragment coincidence
 
 labelled traditional MDP --encode--> mdp_state PTrees
@@ -151,7 +151,7 @@ The nine `Semantics/` modules keep definition and comparison layers separate:
 | `MDPCoincidence` | generic fragment reverse implication and iff |
 | `MDPCoincidenceFreeOmega` | proved FreeOmega separation endpoint |
 | `MDPEmbedding` | labelled total MDP encoding and generic soundness |
-| `MDPEmbeddingSubEnum` | concrete native reflection and encoding iff |
+| `MDPEmbeddingSubEnumQ` | concrete native reflection and encoding iff |
 
 `head_step (FHVis e k) (Obs e x) out` means that `k x` completely
 stable-hits `out`; Ret has no head step. No totality is required here.
@@ -187,7 +187,7 @@ It does **not** use `stable_head_rel sim` for those successor pairs, nor
 mention `peutt` or `head_bisim` in its definition. Fold/unfold, coinduction,
 reflexivity and arbitrary-witness endpoints are available.
 
-On SubEnum/FreeOmega the inclusion is strict: fair mixtures of continuation
+On SubEnumQ/FreeOmega the inclusion is strict: fair mixtures of continuation
 rows `(false,false)/(true,true)` and `(false,true)/(true,false)` agree
 response-wise but admit no whole-continuation coupling.
 This separates `forall response, exists coupling` from
@@ -215,10 +215,10 @@ are proved. `finite_interaction_sem` chooses a representative by classical
 choice; the function itself is not a canonical executable probability
 measure. The meaning is well-defined up to the exposed semantic coupling.
 
-`ProbabilisticTraceSubEnum.v` provides the bounded numeric predicate
+`ProbabilisticTraceSubEnumQ.v` provides the bounded numeric predicate
 `Prₛ[t | pattern] = p`, relating a valid query to an observable representative
 and an indicator expectation; every such value lies in [0,1].
-The raw Enum wrapper `Prₜ` remains a weighted compatibility endpoint:
+The raw EnumQ wrapper `Prₜ` remains a weighted compatibility endpoint:
 without a separate program probability contract its numbers are weights,
 not intrinsically bounded probabilities. Neither wrapper computes by
 inspecting the arbitrary choice-selected representative.
@@ -229,14 +229,14 @@ Structures use noun names: `SemanticMeasure`, `SemanticOmega`,
 `MixedMeasure`. Property packages retain `Laws`. The legacy
 `MeasureInterface` is distinct and is not the new semantic interface.
 The maintained probability pairs are
-`SubEnum -> FreeOmega SubEnum` and
+`SubEnumQ -> FreeOmega SubEnumQ` and
 `SubEnumR R -> FreeOmega (SubEnumR R)`.
 MathComp is a separate native discrete kernel/measure model. Its direct
 same-carrier recursive PTree frontier is available only in isolated Gate M,
 with local universe checking disabled; it is not a third safe backend.
 The removed MathComp + FreeOmega combination remains absent.
 
-| Capability | SubEnum / SubEnumR node | raw Enum node | MathComp native | FreeOmega behavior (finite native backends) |
+| Capability | SubEnumQ / SubEnumR node | raw EnumQ node | MathComp native | FreeOmega behavior (finite native backends) |
 | --- | --- | --- | --- | --- |
 | Every native measure has mass ≤ 1 | intrinsic | no | intrinsic | inherits valid-node behavior |
 | Measure structure / AE lift | yes | yes | yes | yes |
@@ -262,7 +262,7 @@ instantiation and program acceptance tests use the explicit Gate M relaxation.
 `SemanticSubprobability` exposes validity of an individual measure.
 `SemanticSubprobabilityLaws` provides equality/return/bind closure.
 `SemanticSubprobabilityCarrierLaws` certifies all carrier inhabitants.
-Raw Enum has the predicate and closure laws but deliberately not the last
+Raw EnumQ has the predicate and closure laws but deliberately not the last
 package. `Eq/WellFormedness.v` proves program well-formedness closure
 under bind, fmap, guarded iter and the supported interpretation contracts.
 These contracts do not assert AST; termination and normalization are
@@ -277,10 +277,10 @@ moving-diagonal and escaping-mass regressions enforce these boundaries.
 No unrestricted interchange of two arbitrary convergent sequences is valid.
 
 `FreeOmegaNativeCouplingLaws` is an optional measure capability, not a
-program relation. SubEnum realization is proved by finite presentations,
+program relation. SubEnumQ realization is proved by finite presentations,
 bounded-test/Hall inequalities, rational transport and exact marginal
 reconstruction, allowing heterogeneous carriers, noninjective decoders and
-empty carriers. Raw Enum has an analogous native transport result.
+empty carriers. Raw EnumQ has an analogous native transport result.
 MathComp's `mathcomp_coupling_realization` repackages an existing native
 joint without gluing. It is retained independently of completion theory;
 MathComp quotient-to-native completion reflection is outside the maintained scope.
@@ -367,13 +367,13 @@ Stage 3 was accepted at `8e09561`. Stage 4 adds `Interp/FreeOmega/MDP.v`:
 existing `ptree_interp_head_tree`. `mdp_state_interp` extends it to arbitrary
 raw MDP states. The generic contract and guarded compositionality route
 support distinct effect signatures `E -> F`; coincidence is stated on the
-target signature `F`. The accepted atomic permutation profile and SubEnum
+target signature `F`. The accepted atomic permutation profile and SubEnumQ
 atomic endpoints remain `E -> E`. Atomic handlers discharge the contract by unary
 coinduction, under an explicit total-head-map premise; abstract
 `SemanticTotalProperLaws` alone does not supply that premise.
-`Prob/Backend/SubEnum/FreeOmega/Total.v` proves totality under **every** value map on
-SubEnum/FreeOmega by reducing total observations to unit observations.
-Consequently `MDPInterpSubEnum.v` supplies atomic MDP preservation without
+`Prob/Backend/SubEnumQ/FreeOmega/Total.v` proves totality under **every** value map on
+SubEnumQ/FreeOmega by reducing total observations to unit observations.
+Consequently `MDPInterpSubEnumQ.v` supplies atomic MDP preservation without
 an extra client premise, including non-Dirac successor distributions and
 unbounded interaction. Existing fragment coincidence is reused at the
 interpreted states, and a direct transition-preservation proof can then be
@@ -397,12 +397,12 @@ interpretation and directory moves have not started.
 | `tree_trans_bisim_coinduction` | independent three-observation GFP |
 | `peutt_preserves_tree_trans` | arbitrary transition witnesses; relational bind and AE-restricted whole-head coupling |
 | `peutt_tree_trans_postfixed`, `peutt_tree_trans_bisim` | direct general inclusion; common return carrier with arbitrary `RR` |
-| `peutt_strictly_contained_in_tree_trans_bisim` | concrete SubEnum/FreeOmega proper inclusion, not every abstract lifting |
+| `peutt_strictly_contained_in_tree_trans_bisim` | concrete SubEnumQ/FreeOmega proper inclusion, not every abstract lifting |
 | `mdp_state_tree_trans_bisim_peutt` | generic reverse; existing behavior-level `SemanticMeasureDiracAELaws` |
 | `mdp_state_peutt_tree_trans_iff` | unchanged MDP fragment on both sides; combines reverse and inclusion |
 | `free_mdp_state_peutt_tree_trans_iff` | FreeOmega supplies exact Dirac AE structurally, no new global instance |
-| `subenum_encode_mdp_state` | labelled total MDP encodes into the fragment |
-| `subenum_mdp_head_bisim_iff`, `subenum_mdp_peutt_iff` | full correspondence on encoded MDPs, using proved native coupling reflection |
+| `subenumQ_encode_mdp_state` | labelled total MDP encodes into the fragment |
+| `subenumQ_mdp_head_bisim_iff`, `subenumQ_mdp_peutt_iff` | full correspondence on encoded MDPs, using proved native coupling reflection |
 
 The FreeOmega coincidence endpoints use native Core, AELift, CouplingAE,
 CountableAE and Omega capabilities, not a native relational bind law.
@@ -426,7 +426,7 @@ guard this boundary.
 
 | Group / endpoint | What is proved |
 | --- | --- |
-| `Examples/MixedHeadProtocol.v`: `masked_protocol_equivalent` | flagship SubEnum mixed Ret/Vis whole-head coupling; response-dependent infinite continuations |
+| `Examples/MixedHeadProtocol.v`: `masked_protocol_equivalent` | flagship SubEnumQ mixed Ret/Vis whole-head coupling; response-dependent infinite continuations |
 | same: `masked_challenge_true_reply_probability` | challenge/reply pattern probability 3/8 or 1/8 depending on the environment challenge |
 | `Examples/RandomWalk.v`: `run_split`, `passage_unfold`, `random_walk_bind` | structural barrier decomposition, behavioral renewal equation, normalization under arbitrary continuations |
 | same: `random_walk_closed_form` | native AST and joint law Pr[(0,n)] = 2/3^n for n ≥ 1, zero elsewhere |
@@ -436,15 +436,15 @@ guard this boundary.
 | same: `probabilistic_factory_with_sampler` | probability contract preserved by the Factory context independently of termination |
 | `finite_interaction_query_exists`, `finite_interaction_query_unique_up_to_coupling` | well-defined finite cylinder queries under the stated limit/bind/AE capabilities |
 | `peutt_preserves_finite_interaction_sem` | behavioral invariance of the choice-packaged measure-valued semantics |
-| `subenum_finite_interaction_probability_range` | every supplied bounded numeric probability witness lies in [0,1] |
+| `subenumQ_finite_interaction_probability_range` | every supplied bounded numeric probability witness lies in [0,1] |
 
 Factory groups definitions, analytic certificates, ordinary Von Neumann
 support, rational/real samplers, correctness and composition. The interactive
 service reuses that support, not a copied extractor proof. Existing
 `Operational*` basenames remain; this is classification, not theorem/API
-renaming. The current VN service and rational Factory use raw Enum with
+renaming. The current VN service and rational Factory use raw EnumQ with
 appropriate normalization/support proofs; MixedHeadProtocol and RandomWalk
-use intrinsic SubEnum.
+use intrinsic SubEnumQ.
 
 The compositional rational Factory endpoint proves the necessary support
 facts; it does not need the older monolithic route's
@@ -455,7 +455,7 @@ remain; they are not advertised as a canonical `peutt` result.
 
 
 RandomWalk's countable joint law is a limit of finite primitive observations,
-not a countably supported SubEnum node or a proved geometric-sampler peutt
+not a countably supported SubEnumQ node or a proved geometric-sampler peutt
 equivalence. Its rational harmonic bound constructs convergence and AST.
 
 ### Logical assumptions and mechanization boundaries
@@ -475,12 +475,12 @@ global dependencies are:
 | guarded-handler fusion / peutt preservation / Proper | functional extensionality, `eq_rect_eq`, relational choice and dependent unique choice from existing hitting witness selection |
 | atomic-handler transition preservation | functional extensionality, `eq_rect_eq`, relational choice, dependent unique choice, and excluded middle from existing transition witness existence |
 | MDP handler head-to-tree preservation | `eq_rect_eq`, relational choice and dependent unique choice |
-| atomic SubEnum MDP preservation / total-map theorem | functional extensionality, `eq_rect_eq`, relational choice and dependent unique choice; coincidence routes also inherit excluded middle |
+| atomic SubEnumQ MDP preservation / total-map theorem | functional extensionality, `eq_rect_eq`, relational choice and dependent unique choice; coincidence routes also inherit excluded middle |
 | generic reverse coincidence | `eq_rect_eq` only |
 | FreeOmega exact Dirac AE proof | closed; passed explicitly rather than a global instance |
 | FreeOmega reverse coincidence | functional extensionality and `eq_rect_eq` |
 | RandomWalk closed-form result | functional extensionality and dependent equality |
-| concrete SubEnum native realization | inherited classical/extensionality principles and standard-real construction dependencies |
+| concrete SubEnumQ native realization | inherited classical/extensionality principles and standard-real construction dependencies |
 
 The standard-real realization route uses the existing
 `ClassicalDedekindReals.sig_not_dec` and `sig_forall_dec` dependencies;
@@ -504,9 +504,9 @@ alone never imply dead code. Historical move/extraction manifests remain in git.
 
 `Regression/Infrastructure/AllImports.v` checks that all maintained modules
 coexist in one universe context; CI checks its inventory is complete.
-The older frontier/partial-divergence Enum regressions now use FreeOmega Enum
+The older frontier/partial-divergence EnumQ regressions now use FreeOmega EnumQ
 for behavior, avoiding incompatible constraints from using the same native
-Enum universe for recursive heads. The [universe audit](docs/UNIVERSE_CONSISTENCY.md)
+EnumQ universe for recursive heads. The [universe audit](docs/UNIVERSE_CONSISTENCY.md)
 records the repair and its inherited scalar-model assumptions.
 
 ## 4. Non-claims and bounded next work
@@ -520,7 +520,7 @@ The maintained artifact does **not** claim:
 - exact no-Prob `peutt <-> ITree.eutt` from the generic positive interface;
 - quotient-to-native coupling reflection for every backend;
 - an additive interpretation of arbitrary non-increasing FreeOmega Lub terms;
-- that raw Enum enforces native probability, or that AST follows from
+- that raw EnumQ enforces native probability, or that AST follows from
   a well-formedness contract;
 - strictness of transition inclusion for every abstract backend;
 - reconstruction of every `mdp_state` as an encoded textbook MDP;

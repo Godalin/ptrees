@@ -3,7 +3,7 @@ Set Universe Polymorphism.
 From Coq.Arith Require Import PeanoNat.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Native.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalPlan.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel.
@@ -83,7 +83,7 @@ End NonuniformHitting.
 Unset Automatic Proposition Inductives.
 Variant planE : Type -> Type := PlanAsk : planE bool.
 
-CoFixpoint plan_spin : ptree planE SubEnum bool := Tau plan_spin.
+CoFixpoint plan_spin : ptree planE SubEnumQ bool := Tau plan_spin.
 
 Definition spin_prefix_plan : finite_internal_plan (Tau plan_spin) := FIPTau (FIPStop plan_spin).
 
@@ -93,7 +93,7 @@ Example spin_prefix_stops_before_divergence :
 Proof. split; reflexivity. Qed.
 
 Definition visible_plan : finite_internal_plan
-    (Tau (Vis PlanAsk (fun b => Ret b)) : ptree planE SubEnum bool) :=
+    (Tau (Vis PlanAsk (fun b => Ret b)) : ptree planE SubEnumQ bool) :=
   FIPTau (FIPStop (Vis PlanAsk (fun b => Ret b))).
 
 Example visible_boundary_not_executed :
@@ -109,7 +109,7 @@ Example visible_budget_one :
   free_omega_qlift eq (internal_plan_budget visible_plan 1)
     (FORet (FHVis PlanAsk (fun b => Ret b))).
 Proof.
-  apply (@FOQLSampleRetL SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
+  apply (@FOQLSampleRetL SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
   - apply sem_ae_ret_iff.
   - apply FOQLStructural, FOLRet. reflexivity.
 Qed.
@@ -119,32 +119,32 @@ Qed.
     the primitive time-zero state.  Any online scheduler must account for
     this instead of claiming a mass-preserving prefix projection. *)
 Definition killed_plan :
-    finite_internal_plan (Prob (@subenum_zero bool) (fun _ => Ret true) : ptree planE SubEnum bool) :=
-  FIPProb (@subenum_zero bool) (fun _ => FIPStop (Ret true)).
+    finite_internal_plan (Prob (@subenumQ_zero bool) (fun _ => Ret true) : ptree planE SubEnumQ bool) :=
+  FIPProb (@subenumQ_zero bool) (fun _ => FIPStop (Ret true)).
 
 Example killed_plan_is_valid :
-  @finite_internal planE SubEnum (FreeOmega SubEnum)
+  @finite_internal planE SubEnumQ (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+      (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
     FreeOmegaMixedMeasure bool
-    (Prob (@subenum_zero bool) (fun _ => Ret true))
-    (FOSample (@subenum_zero bool) (fun _ => FORet (Ret true))).
+    (Prob (@subenumQ_zero bool) (fun _ => Ret true))
+    (FOSample (@subenumQ_zero bool) (fun _ => FORet (Ret true))).
 Proof. exact (internal_plan_frontier_valid killed_plan). Qed.
 
 Example completed_paths_do_not_preserve_prefix_mass :
   ~ sem_same_mass
-      (subenum_bind (internal_plan_measure killed_plan) (fun _ => subenum_ret true))
-      (subenum_ret true).
+      (subenumQ_bind (internal_plan_measure killed_plan) (fun _ => subenumQ_ret true))
+      (subenumQ_ret true).
 Proof.
   intro Hmass.
-  change (@sem_same_mass SubEnum SubEnum_SemanticMeasure bool bool
-    subenum_zero (subenum_ret true)) in Hmass.
-  assert (Hzero : @sem_ae SubEnum SubEnum_SemanticMeasure bool subenum_zero
+  change (@sem_same_mass SubEnumQ SubEnumQ_SemanticMeasure bool bool
+    subenumQ_zero (subenumQ_ret true)) in Hmass.
+  assert (Hzero : @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool subenumQ_zero
     (fun _ => False)).
   { intros w x Hempty. contradiction. }
   pose proof (sem_lift_ae_transport_r Hmass Hzero) as Hret.
-  apply (proj1 (@sem_ae_ret_iff SubEnum SubEnum_SemanticMeasure
-    SubEnum_SemanticMeasureDiracAELaws bool true
+  apply (proj1 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
+    SubEnumQ_SemanticMeasureDiracAELaws bool true
     (fun y => exists x : bool, True /\ False))) in Hret.
   destruct Hret as [x [_ Hfalse]]. exact Hfalse.
 Qed.

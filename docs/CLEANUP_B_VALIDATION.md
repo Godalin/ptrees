@@ -19,7 +19,7 @@ inventory. It adds no theory and does not start MathComp self-model work.
 
 No whole formal module is deleted. Four historical forwarding `Export`
 edges become ordinary imports; actual clients import StableHittingRelation
-or native SubEnum/Expectation explicitly. Canonical owners, theorem names,
+or native SubEnumQ/Expectation explicitly. Canonical owners, theorem names,
 definitions, proofs and curated API remain unchanged. Legacy/Rbase is retained.
 
 The approved 11 old regression files are removed **after** relocation:
@@ -63,8 +63,8 @@ The one-off comparison against `git show 5c1a0df:<path>` checked:
   was captured **before** removing exports or rebuilding changed sources.
   Its 306 public/helper and 199 formal DS endpoints match the union selected
   by the old scripts. The one native forwarded name is explicitly canonicalized:
-  `UpperCoupling.subenum_lift_real_expect` becomes
-  `SubEnum.Expectation.subenum_lift_real_expect`.
+  `UpperCoupling.subenumQ_lift_real_expect` becomes
+  `SubEnumQ.Expectation.subenumQ_lift_real_expect`.
 - The post-change compiled query compares all **505** complete types and
   `Print Assumptions` outputs exactly in the same module-loading context.
   No shortened capability-count comparison or automatic baseline refresh occurs.

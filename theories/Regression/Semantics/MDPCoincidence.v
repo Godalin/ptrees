@@ -5,7 +5,7 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.Semantics Require Import MDPFragment TreeTransition TreeTransitionBisim.
@@ -17,17 +17,17 @@ From PTree.Regression.Semantics Require Import MDPFragment TreeTransitionStrictn
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
-  SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-Local Notation tree := (ptree decisionE SubEnum unit).
-Local Notation state := (@mdp_state decisionE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit).
-Local Notation W := (@peutt decisionE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit unit eq).
-Local Notation TB := (@tree_trans_bisim decisionE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit unit eq).
+  SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+Local Notation tree := (ptree decisionE SubEnumQ unit).
+Local Notation state := (@mdp_state decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit).
+Local Notation W := (@peutt decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq).
+Local Notation TB := (@tree_trans_bisim decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq).
 
 (** Build transition evidence independently, NOT by peutt soundness, so
     the reverse coincidence endpoint is genuinely exercised below. *)
@@ -69,7 +69,7 @@ Proof.
   { apply (proj2 (mdp_state_tau_iff (FI := FI) (FO := FO) _)).
     exact visible_sample_visible_is_mdp. }
   apply (free_mdp_state_tree_trans_bisim_peutt
-    (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)
+    (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)
     (t := Tau decision) (u := decision) Hstate visible_sample_visible_is_mdp).
   apply delay_transition_bisim.
 Qed.
@@ -82,7 +82,7 @@ Example distribution_successor_coincidence :
 Proof.
   split; [exact hidden_choice_not_mdp_state|].
   apply (free_mdp_state_peutt_tree_trans_iff
-    (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+    (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
   - apply (proj2 (mdp_state_tau_iff (FI := FI) (FO := FO) _)).
     exact visible_sample_visible_is_mdp.
   - exact visible_sample_visible_is_mdp.
@@ -94,7 +94,7 @@ Proof.
   { apply (proj2 (mdp_state_tau_iff (FI := FI) (FO := FO) _)).
     apply infinite_service_mdp. }
   apply (free_mdp_state_tree_trans_bisim_peutt
-    (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)
+    (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)
     (t := Tau (service b)) (u := service b) Hstate (infinite_service_mdp b)).
   apply delay_transition_bisim.
 Qed.
@@ -102,18 +102,18 @@ Qed.
 Example terminal_fragment_coincidence : W (Ret tt) (Ret tt) <-> TB (Ret tt) (Ret tt).
 Proof.
   apply (free_mdp_state_peutt_tree_trans_iff
-    (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega));
+    (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega));
     apply (mdp_state_ret (FI := FI) (FO := FO)).
 Qed.
 
 (** The accepted strictness pair cannot satisfy both fragment premises.
     This uses the new reverse direction, not an added syntactic restriction. *)
 Example strictness_pair_outside_joint_fragment :
-  ~ (@mdp_state correlationE SubEnum MF FI FC FreeOmegaMixedMeasure FO bool P /\
-     @mdp_state correlationE SubEnum MF FI FC FreeOmegaMixedMeasure FO bool Q).
+  ~ (@mdp_state correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool P /\
+     @mdp_state correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool Q).
 Proof.
   intros [Hp Hq]. apply correlated_response_not_peutt.
   apply (free_mdp_state_tree_trans_bisim_peutt
-    (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega) Hp Hq).
+    (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega) Hp Hq).
   exact correlated_response_tree_trans_bisim.
 Qed.

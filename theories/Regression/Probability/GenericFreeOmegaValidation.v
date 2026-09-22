@@ -8,7 +8,7 @@ From PTree.Prob.Domain Require Import Expectation.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega.Validation Require Import Expectation.
 
-Fail Check PTree.Prob.Backend.SubEnum.Measure.SubEnum.
+Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 Fail Check PTree.Prob.Backend.MathComp.Kernel.MathCompKernelMeasure.
 Fail Check PTree.Prob.FreeOmega.Observation.free_omega_denotes.
 Fail Check PTree.Core.PTreeDefinition.ptree.
@@ -29,39 +29,39 @@ Example option_sample_denotes (R : realType) :
 Proof. intros f Hf; reflexivity. Qed.
 
 From PTree.Prob.Interface Require Import Measure.
-From PTree.Prob.Backend.SubEnum Require Import Measure Domain.
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import Admissibility GenericValidation.
+From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility GenericValidation.
 From PTree.Regression.Fixtures Require Import FreeOmegaSamples.
 From PTree.Regression.Probability Require Import FreeOmegaDomain.
 
-Section SubEnumContracts.
+Section SubEnumQContracts.
 Variable R : realType.
-Local Notation native := (fun X => @subenum_domain R X).
+Local Notation native := (fun X => @subenumQ_domain R X).
 
 Example generic_null_bad_sample :
   free_omega_modelable native (FOSample null_weight_node nullable_kernel).
 Proof.
-  apply (modelable_sample_ae (NI := SubEnum_SemanticMeasure)); first exact (@subenum_native_model_ae R).
+  apply (modelable_sample_ae (NI := SubEnumQ_SemanticMeasure)); first exact (@subenumQ_native_model_ae R).
   eapply sem_ae_mono; [|exact (nullable_kernel_ae R)].
-  intros x Hx; exact (proj2 (subenum_modelable_iff_admissible R _) Hx).
+  intros x Hx; exact (proj2 (subenumQ_modelable_iff_admissible R _) Hx).
 Qed.
 
 Example generic_null_bad_bind :
   free_omega_modelable native
     (free_omega_bind (FOSample null_weight_node (fun b => FORet b)) nullable_kernel).
 Proof.
-  apply (modelable_bind_ae (NI := SubEnum_SemanticMeasure)); first exact (@subenum_native_model_ae R).
+  apply (modelable_bind_ae (NI := SubEnumQ_SemanticMeasure)); first exact (@subenumQ_native_model_ae R).
   - apply modelable_sample=> b; exact: modelable_ret.
   - eapply FOAESample; [exact (nullable_kernel_ae R)|].
-    intros b Hb; apply FOAERet; exact (proj2 (subenum_modelable_iff_admissible R _) Hb).
+    intros b Hb; apply FOAERet; exact (proj2 (subenumQ_modelable_iff_admissible R _) Hb).
 Qed.
 
 Example generic_rejects_raw_alternation : ~ free_omega_modelable native alternating_bool.
-Proof. intro H; apply (@alternating_bool_not_admissible R); exact (proj1 (subenum_modelable_iff_admissible R _) H). Qed.
+Proof. intro H; apply (@alternating_bool_not_admissible R); exact (proj1 (subenumQ_modelable_iff_admissible R _) H). Qed.
 
 Example generic_geometric_modelable : free_omega_modelable native geometric.
 Proof.
-  apply (modelable_lub_approx (NI := SubEnum_SemanticMeasure)); first exact (@subenum_native_model_lift R).
+  apply (modelable_lub_approx (NI := SubEnumQ_SemanticMeasure)); first exact (@subenumQ_native_model_lift R).
   - intro n; generalize O as start; induction n=> start; first apply modelable_zero.
     cbn [geometric_prefix]; apply modelable_sample.
     intro b; destruct b; [apply modelable_ret|apply IHn].
@@ -70,18 +70,18 @@ Qed.
 
 Example generic_geometric_agrees :
   oval_eq (free_omega_model generic_geometric_modelable) (free_omega_domain (geometric_valid R)).
-Proof. exact: subenum_generic_domain_agrees. Qed.
+Proof. exact: subenumQ_generic_domain_agrees. Qed.
 
 Example generic_validity_proof_independent (H K : free_omega_modelable native geometric) :
   oval_eq (free_omega_model H) (free_omega_model K).
 Proof. intros f Hf; reflexivity. Qed.
-End SubEnumContracts.
+End SubEnumQContracts.
 
 Section HighUniverse.
 Universe u.
 Variable R : realType.
 Example generic_high_result (A : Type@{u}) :
-  free_omega_modelable (fun X => @subenum_domain R X)
-    (@FORet SubEnum Type@{u} A).
+  free_omega_modelable (fun X => @subenumQ_domain R X)
+    (@FORet SubEnumQ Type@{u} A).
 Proof. exact: modelable_ret. Qed.
 End HighUniverse.

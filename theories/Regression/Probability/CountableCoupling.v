@@ -227,7 +227,7 @@ End IndependentTests.
 
 (** Integration with the previous increment's infinite retry example. The
     transport construction remains independent of all FreeOmega machinery. *)
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import Admissibility.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility.
 From PTree.Regression.Fixtures Require Import FreeOmegaSamples.
 
 Example geometric_successor_plan (R : realType) :
@@ -240,7 +240,7 @@ Proof. apply successor_plan. Qed.
 
 (** Instantiation on the already checked unbounded geometric retry behavior.
     This time the witness is obtained from the general existence theorem. *)
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import Admissibility.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility.
 From PTree.Regression.Fixtures Require Import FreeOmegaSamples.
 
 Example geometric_successor_joint_exists (R : realType) :

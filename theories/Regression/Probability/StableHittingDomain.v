@@ -6,12 +6,12 @@ Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Domain Require Import Expectation.
-From PTree.Prob.Backend.SubEnum Require Import Measure.
+From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Measure StructuralMeasure.
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import Admissibility.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel.
-From PTree.Eq.Backend Require Import StableHittingDomainSubEnum.
+From PTree.Eq.Backend Require Import StableHittingDomainSubEnumQ.
 Fail Check PTree.Eq.PEutt.peutt.
 Fail Check PTree.Prob.Domain.MeasureModel.oval_probability.
 Set Implicit Arguments.
@@ -21,20 +21,20 @@ Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Variant domainE : Type -> Type := Tick : domainE unit.
-Local Notation tree := (ptree domainE SubEnum unit).
+Local Notation tree := (ptree domainE SubEnumQ unit).
 CoFixpoint silent_forever : tree := Tau silent_forever.
 CoFixpoint visible_forever : tree := Vis Tick (fun _ => visible_forever).
-Definition native_loss : tree := Prob (@subenum_zero unit) (fun _ => Ret tt).
+Definition native_loss : tree := Prob (@subenumQ_zero unit) (fun _ => Ret tt).
 
 Section Tests.
 Variable R : realType.
 Local Notation D := (@ptree_domain_hitting R domainE unit).
 Local Notation Hn := (@ptree_domain_approx R domainE unit).
-Local Notation FI := (@FreeOmegaObservableSemanticMeasure SubEnum
-  SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-Local Notation FO := (@FreeOmegaObservableSemanticOmega SubEnum
-  SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-Local Notation hits := (@ptree_stable_hitting domainE SubEnum (FreeOmega SubEnum)
+Local Notation FI := (@FreeOmegaObservableSemanticMeasure SubEnumQ
+  SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+Local Notation FO := (@FreeOmegaObservableSemanticOmega SubEnumQ
+  SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+Local Notation hits := (@ptree_stable_hitting domainE SubEnumQ (FreeOmega SubEnumQ)
   FI FreeOmegaMixedMeasure FO unit).
 
 Example arbitrary_witness_valid t out :
@@ -72,9 +72,9 @@ Qed.
 Lemma native_loss_approx_zero n f : oval_eval (Hn n (observe native_loss)) f = 0.
 Proof.
   destruct n.
-  - change (oval_eval (Hn O (ProbF (@subenum_zero unit) (fun _ => Ret tt))) f = 0).
+  - change (oval_eval (Hn O (ProbF (@subenumQ_zero unit) (fun _ => Ret tt))) f = 0).
     exact: ptree_domain_approx_prob_zero.
-  - change (oval_eval (Hn (S n) (ProbF (@subenum_zero unit) (fun _ => Ret tt))) f = 0).
+  - change (oval_eval (Hn (S n) (ProbF (@subenumQ_zero unit) (fun _ => Ret tt))) f = 0).
     rewrite ptree_domain_approx_prob_succ; reflexivity.
 Qed.
 
@@ -96,14 +96,14 @@ Proof.
 Qed.
 
 Example ret_noncanonical_witness_valid :
-  free_omega_admissible R (@FORet SubEnum (stable_head domainE SubEnum unit) (FHRet tt)).
+  free_omega_admissible R (@FORet SubEnumQ (stable_head domainE SubEnumQ unit) (FHRet tt)).
 Proof.
   apply (@stable_hitting_admissible R domainE unit (RetF tt)).
   apply (ptree_stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
 Qed.
 
 Example ret_noncanonical_witness_sound :
-  free_omega_domain_denotes (@FORet SubEnum (stable_head domainE SubEnum unit) (FHRet tt))
+  free_omega_domain_denotes (@FORet SubEnumQ (stable_head domainE SubEnumQ unit) (FHRet tt))
     (D (RetF tt)).
 Proof.
   apply (@stable_hitting_denotational_adequacy R domainE unit (RetF tt)).

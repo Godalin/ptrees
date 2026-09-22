@@ -6,7 +6,7 @@ Local Unset Universe Minimization ToSet.
 From Coq.Program Require Import Equality.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim.
@@ -17,17 +17,17 @@ From PTree.Regression.Semantics Require Import TreeTransition.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
-  SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-Local Notation tree := (ptree rawE SubEnum bool).
-Local Notation bisim := (@tree_trans_bisim rawE SubEnum MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
-Local Notation generator := (@tree_trans_bisimF rawE SubEnum MF FI FreeOmegaMixedMeasure FO bool bool eq).
-Local Notation trans := (@tree_trans rawE SubEnum MF FI FreeOmegaMixedMeasure FO bool).
+  SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+Local Notation tree := (ptree rawE SubEnumQ bool).
+Local Notation bisim := (@tree_trans_bisim rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
+Local Notation generator := (@tree_trans_bisimF rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool bool eq).
+Local Notation trans := (@tree_trans rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
 
 Example successor_relation_is_raw_tree_candidate (sim : tree -> tree -> Prop)
     {X} (e : rawE X) k l :
@@ -42,14 +42,14 @@ Example fold_unfold_regression t u : bisim t u <-> generator bisim t u.
 Proof. split; [apply tree_trans_bisim_unfold|apply tree_trans_bisim_fold]. Qed.
 
 (** Ret is observed now, not only after a future action. No generic Dirac
-    injectivity is postulated: this negative result uses SubEnum/FreeOmega. *)
+    injectivity is postulated: this negative result uses SubEnumQ/FreeOmega. *)
 Theorem distinct_returns_not_tree_trans_bisim : ~ bisim (Ret true) (Ret false).
 Proof.
   intro H.
   assert (Hobs : @sem_lift MF FI bool bool eq (FORet true) (FORet false)).
   { refine (tree_trans_bisim_return_observations H _ _);
       apply (tree_return_ret (FI := FI) (FO := FO)). }
-  assert (Htrue : free_omega_ae (NI := SubEnum_SemanticMeasure)
+  assert (Htrue : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
     (fun b => b = true) (FORet true)).
   { constructor. reflexivity. }
   pose proof (proj1 (free_omega_qlift_support Hobs) _ Htrue) as Hfalse.
@@ -65,7 +65,7 @@ Proof.
     assert (Hobs : @sem_lift MF FI bool bool eq (FORet false) (FORet true)).
     { refine (tree_trans_bisim_return_observations H _ _);
         apply (tree_return_ret (FI := FI) (FO := FO)). }
-    assert (Hfalse : free_omega_ae (NI := SubEnum_SemanticMeasure)
+    assert (Hfalse : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
       (fun b => b = false) (FORet false)).
     { constructor. reflexivity. }
     pose proof (proj1 (free_omega_qlift_support Hobs) _ Hfalse) as Htrue.

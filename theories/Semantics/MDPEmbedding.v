@@ -140,7 +140,7 @@ Qed.
 
 (** Explicit sufficient premises for the unary fragment. The base mixed
     interface alone says nothing about totality or AE of mixed binds.
-    The SubEnum endpoint below discharges these premises, not axiomatizes them. *)
+    The SubEnumQ endpoint below discharges these premises, not axiomatizes them. *)
 Theorem mdp_encode_mdp_state
     (Htotal : forall s a, sem_total (mdp_successors (mdp_transition D s a)))
     (Hsupport : forall s a, sem_ae (mdp_successors (mdp_transition D s a))

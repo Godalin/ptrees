@@ -7,7 +7,7 @@ Local Unset Universe Minimization ToSet.
 From Coq.Program Require Import Equality.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Semantics Require Import HeadTransition MDPFragment.
@@ -16,60 +16,60 @@ From PTree.Semantics Require Import HeadTransition MDPFragment.
 Fail Check PTree.Eq.PEutt.peutt.
 
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum rat.
-Require Import PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Measure.
-From PTree.Regression.Backend Require Import SubEnumRegression.
+Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Measure.
+From PTree.Regression.Backend Require Import SubEnumQRegression.
 From PTree.Regression.Probability Require Import CorrelatedSampleAlgebra.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import Enum.
+Import EnumQ.
 #[local] Open Scope ring_scope.
 
 Variant decisionE : Type -> Type :=
   | Ask : decisionE unit
   | Reply : bool -> decisionE unit.
 
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
-  SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-Local Notation good := (@mdp_head decisionE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit).
-Local Notation state := (@mdp_state decisionE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit).
-Local Notation hits t out := (@ptree_stable_hitting decisionE SubEnum MF FI
+  SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+Local Notation good := (@mdp_head decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit).
+Local Notation state := (@mdp_state decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit).
+Local Notation hits t out := (@ptree_stable_hitting decisionE SubEnumQ MF FI
   FreeOmegaMixedMeasure FO unit (observe t) out).
 
-Lemma dirac_head_total (h : stable_head decisionE SubEnum unit) :
+Lemma dirac_head_total (h : stable_head decisionE SubEnumQ unit) :
   @sem_total MF FI FO _ (FORet h).
 Proof.
   apply free_omega_observable_total_intro.
-  exists unit, (fun _ => tt), (subenum_ret tt). split; [constructor|].
+  exists unit, (fun _ => tt), (subenumQ_ret tt). split; [constructor|].
   native_compute. reflexivity.
 Qed.
 
-Lemma fair_heads_total (f : bool -> stable_head decisionE SubEnum unit) :
-  @sem_total MF FI FO _ (FOSample subenum_fair (fun b => FORet (f b))).
+Lemma fair_heads_total (f : bool -> stable_head decisionE SubEnumQ unit) :
+  @sem_total MF FI FO _ (FOSample subenumQ_fair (fun b => FORet (f b))).
 Proof.
   apply free_omega_observable_total_intro.
   exists unit, (fun _ => tt),
-    (subenum_bind subenum_fair (fun _ => subenum_ret tt)).
+    (subenumQ_bind subenumQ_fair (fun _ => subenumQ_ret tt)).
   split.
-  - change (free_omega_observes (NI := SubEnum_SemanticMeasure)
-      (fun _ => tt) (FOSample subenum_fair (fun b => FORet (f b)))
-      (@sem_bind SubEnum SubEnum_SemanticMeasure _ _ subenum_fair
-        (fun _ => subenum_ret tt))).
+  - change (free_omega_observes (NI := SubEnumQ_SemanticMeasure)
+      (fun _ => tt) (FOSample subenumQ_fair (fun b => FORet (f b)))
+      (@sem_bind SubEnumQ SubEnumQ_SemanticMeasure _ _ subenumQ_fair
+        (fun _ => subenumQ_ret tt))).
     eapply FOOObserveSample. intro b. constructor.
   - native_compute. reflexivity.
 Qed.
 
-Definition leaf b : ptree decisionE SubEnum unit := Vis (Reply b) (fun _ => Ret tt).
-Definition leaf_head b : stable_head decisionE SubEnum unit :=
+Definition leaf b : ptree decisionE SubEnumQ unit := Vis (Reply b) (fun _ => Ret tt).
+Definition leaf_head b : stable_head decisionE SubEnumQ unit :=
   FHVis (Reply b) (fun _ => Ret tt).
-Definition hidden_choice := Prob subenum_fair leaf.
-Definition hidden_front := FOSample subenum_fair (fun b => FORet (leaf_head b)).
+Definition hidden_choice := Prob subenumQ_fair leaf.
+Definition hidden_front := FOSample subenumQ_fair (fun b => FORet (leaf_head b)).
 Definition decision := Vis Ask (fun _ => hidden_choice).
 
 Lemma leaf_head_mdp b : good (leaf_head b).
@@ -104,7 +104,7 @@ Example delayed_decision_is_mdp : state (Tau (Tau decision)).
 Proof. rewrite !mdp_state_tau_iff. apply visible_sample_visible_is_mdp. Qed.
 
 Example leaf_heads_inequivalent :
-  ~ @head_bisim decisionE SubEnum MF FI FC FreeOmegaMixedMeasure FO unit unit eq
+  ~ @head_bisim decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq
       (leaf_head true) (leaf_head false).
 Proof. intro H. apply head_bisim_unfold in H. dependent destruction H. Qed.
 
@@ -134,14 +134,14 @@ Proof. split; [apply visible_sample_visible_is_mdp|apply hidden_choice_not_mdp_s
 
 (** Infinite interaction with a fresh random visible state after every
     response. This exercises the unary GFP, not just finite constructors. *)
-CoFixpoint service b : ptree decisionE SubEnum unit :=
-  Vis (Reply b) (fun _ => Prob subenum_fair service).
-Definition service_head b : stable_head decisionE SubEnum unit :=
-  FHVis (Reply b) (fun _ => Prob subenum_fair service).
+CoFixpoint service b : ptree decisionE SubEnumQ unit :=
+  Vis (Reply b) (fun _ => Prob subenumQ_fair service).
+Definition service_head b : stable_head decisionE SubEnumQ unit :=
+  FHVis (Reply b) (fun _ => Prob subenumQ_fair service).
 
 Lemma service_hitting b : hits (service b) (FORet (service_head b)).
 Proof.
-  change (hits (Vis (Reply b) (fun _ => Prob subenum_fair service))
+  change (hits (Vis (Reply b) (fun _ => Prob subenumQ_fair service))
     (FORet (service_head b))).
   apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
 Qed.
@@ -150,7 +150,7 @@ Theorem service_head_mdp b : good (service_head b).
 Proof.
   eapply mdp_head_coinduction with (P := fun h => exists b, h = service_head b).
   - intros h [c ->]. intro x.
-    exists (FOSample subenum_fair (fun d => FORet (service_head d))).
+    exists (FOSample subenumQ_fair (fun d => FORet (service_head d))).
     split.
     + constructor. eapply (ptree_stable_hitting_prob (FI := FI) (FO := FO)
         (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).

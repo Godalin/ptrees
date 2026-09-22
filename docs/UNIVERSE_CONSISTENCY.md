@@ -15,13 +15,13 @@ From PTree.Regression.Semantics Require Import CanonicalPartialDivergence.
 ```
 
 Replacing the second import by
-`PTree.Regression.Backend.UnifiedFrontierEnum` reproduced another instance.
+`PTree.Regression.Backend.UnifiedFrontierEnumQ` reproduced another instance.
 Coq reported a strict inequality between shared PTree sampling universes
 that the other client had already equated (for example,
 `PTreeDefinition.61 < PTreeDefinition.51` versus their equality).
 
 Both old regressions instantiated native samples and behavior with the same
-monomorphic Enum interface. Heads contain recursive trees, and therefore
+monomorphic EnumQ interface. Heads contain recursive trees, and therefore
 live above the sampled carrier universe. Those regressions could compile
 alone by constraining the shared universe levels, but the constraints were
 incompatible with clients using the general native-sampling universe.
@@ -29,12 +29,12 @@ incompatible with clients using the general native-sampling universe.
 The repair migrates those two clients to the maintained two-level pair:
 
 ```text
-native samples:       Enum
-complete head measures: FreeOmega Enum
+native samples:       EnumQ
+complete head measures: FreeOmega EnumQ
 ```
 
 No constructor, `peutt` generator, MDP/transition definition, measure axiom,
-or global universe declaration is changed. Raw Enum numerical calculations
+or global universe declaration is changed. Raw EnumQ numerical calculations
 remain legitimate on low-universe observations. They are not used as the
 high-universe carrier of complete recursive heads.
 The partial-divergence regression also locally disables minimization to Set:
@@ -42,10 +42,10 @@ its unconstrained `FOZero` query must remain in that behavior universe.
 
 ## Preserved regression content
 
-- `UnifiedFrontierEnum` still proves the sampled program's frontier
+- `UnifiedFrontierEnumQ` still proves the sampled program's frontier
   certificate and equality of split-mass representations. Its equality is
-  now the observable FreeOmega quotient, derived from native Enum coupling.
-- `CanonicalPartialDivergence` keeps the original Enum programs. Finite
+  now the observable FreeOmega quotient, derived from native EnumQ coupling.
+- `CanonicalPartialDivergence` keeps the original EnumQ programs. Finite
   spin approximants are now proved exactly `FOZero`, strengthening the old
   indicator-expectation calculation. Complete hitting and the nonempty
   interaction query are zero; an explicit native observation has mass zero.
@@ -69,7 +69,7 @@ proved extended-real quotient-mass model instantiated with the standard
 real construction, so its assumption audit includes the existing choice,
 functional/propositional extensionality, dependent equality, and
 `ClassicalDedekindReals.sig_not_dec` / `sig_forall_dec` dependencies.
-This is a larger inherited dependency footprint than the old direct Enum
+This is a larger inherited dependency footprint than the old direct EnumQ
 calculation, not a new axiom or a new premise asserting the desired result.
 
 ## Permanent prevention

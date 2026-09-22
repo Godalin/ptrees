@@ -7,53 +7,53 @@ From Coq Require Import Lia.
 From Coq.Program Require Import Equality.
 From Coq.Arith Require Import PeanoNat.
 From mathcomp Require Import ssreflect ssralg ssrnum rat.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.Enum.Iteration.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Iteration.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-From PTree.Regression.Backend Require Import EnumMeasureRegression SubEnumRegression.
+From PTree.Regression.Backend Require Import EnumQMeasureRegression SubEnumQRegression.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
-Import Enum RatSubTypes GRing.Theory Num.Theory.
+Import EnumQ RatSubTypes GRing.Theory Num.Theory.
 Local Open Scope ring_scope.
 
 Module EscapingMass.
-Local Notation MF := (FreeOmega SubEnum).
-Local Notation observe_unit := (@free_omega_observes SubEnum SubEnum_SemanticMeasure
-  SubEnum_SemanticOmega unit unit (fun x => x)).
+Local Notation MF := (FreeOmega SubEnumQ).
+Local Notation observe_unit := (@free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure
+  SubEnumQ_SemanticOmega unit unit (fun x => x)).
 Lemma qsym (mu nu : MF unit) : free_omega_qlift eq mu nu -> free_omega_qlift eq nu mu.
 Proof.
   intro H. eapply FOQLMono; [apply FOQLSym; exact H|].
   intros x y Hyx. symmetry. exact Hyx.
 Qed.
-Definition big : MF unit := FOSample subenum_fair (fun _ => FORet tt).
-Definition small : MF unit := FOSample subenum_fair (fun b : bool => if b then FORet tt else FOZero).
-Definition big_out := subenum_bind subenum_fair (fun _ => subenum_ret tt).
-Definition small_out := subenum_bind subenum_fair
-  (fun b : bool => if b then subenum_ret tt else subenum_zero).
+Definition big : MF unit := FOSample subenumQ_fair (fun _ => FORet tt).
+Definition small : MF unit := FOSample subenumQ_fair (fun b : bool => if b then FORet tt else FOZero).
+Definition big_out := subenumQ_bind subenumQ_fair (fun _ => subenumQ_ret tt).
+Definition small_out := subenumQ_bind subenumQ_fair
+  (fun b : bool => if b then subenumQ_ret tt else subenumQ_zero).
 
 Lemma big_observes : observe_unit big big_out.
 Proof.
-  eapply (@FOOObserveSample SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-  intro b. apply (@FOOObserveRet SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
+  eapply (@FOOObserveSample SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+  intro b. apply (@FOOObserveRet SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Qed.
 Lemma small_observes : observe_unit small small_out.
 Proof.
-  eapply (@FOOObserveSample SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
+  eapply (@FOOObserveSample SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
   intros [].
-  - apply (@FOOObserveRet SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-  - apply (@FOOObserveZero SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
+  - apply (@FOOObserveRet SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+  - apply (@FOOObserveZero SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Qed.
-Lemma big_small_masses_differ : enum_mass (subenum_raw big_out) <> enum_mass (subenum_raw small_out).
+Lemma big_small_masses_differ : enumQ_mass (subenumQ_raw big_out) <> enumQ_mass (subenumQ_raw small_out).
 Proof. vm_compute. discriminate. Qed.
-Lemma big_mass_one : enum_mass (subenum_raw big_out) = 1.
+Lemma big_mass_one : enumQ_mass (subenumQ_raw big_out) = 1.
 Proof. vm_compute. reflexivity. Qed.
-Lemma small_mass_half : enum_mass (subenum_raw small_out) = 1 / 2.
+Lemma small_mass_half : enumQ_mass (subenumQ_raw small_out) = 1 / 2.
 Proof. vm_compute. reflexivity. Qed.
 
-Lemma fair_true_ae P : sem_ae subenum_fair P -> P true.
+Lemma fair_true_ae P : sem_ae subenumQ_fair P -> P true.
 Proof.
   intro H. apply (H reg_half true).
   - right. left. reflexivity.
@@ -99,7 +99,7 @@ Qed.
 Section FormerObservationRule.
 Hypothesis unrestricted_observe_lub : forall (chain : nat -> MF unit) outs out,
   (forall n, observe_unit (chain n) (outs n)) ->
-  subenum_sem_lub outs out -> observe_unit (FOLub chain) out.
+  subenumQ_sem_lub outs out -> observe_unit (FOLub chain) out.
 
 Lemma eventually_observed_constant (chain : nat -> MF unit) outs mu out N
     (Hrows : forall n, observe_unit (chain n) (outs n))
@@ -205,7 +205,7 @@ Proof.
   - apply kernel_increasing.
 Qed.
 
-Lemma fair_false_ae P : sem_ae subenum_fair P -> P false.
+Lemma fair_false_ae P : sem_ae subenumQ_fair P -> P false.
 Proof.
   intro H. apply (H reg_half false).
   - left. reflexivity.
@@ -215,7 +215,7 @@ Qed.
 Lemma big_not_below_small : ~ free_omega_approx eq big small.
 Proof.
   intro H. unfold big, small in H. dependent destruction H.
-  pose proof (sem_lift_ae_transport_r H (sem_ae_true subenum_fair)) as Hsupport.
+  pose proof (sem_lift_ae_transport_r H (sem_ae_true subenumQ_fair)) as Hsupport.
   destruct (fair_false_ae Hsupport) as [x [Hxy _]].
   specialize (H0 x false Hxy). dependent destruction H0.
 Qed.
@@ -240,7 +240,7 @@ Qed.
 Theorem unrestricted_observation_rule_rejected :
   ~ (forall (chain : nat -> MF unit) outs out,
     (forall n, observe_unit (chain n) (outs n)) ->
-    subenum_sem_lub outs out -> observe_unit (FOLub chain) out).
+    subenumQ_sem_lub outs out -> observe_unit (FOLub chain) out).
 Proof.
   intro Hrule. apply (@escaped_row_not_observable O small_out).
   eapply Hrule with (outs := fun x => kernel_out x O).

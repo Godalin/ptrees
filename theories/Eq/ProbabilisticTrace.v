@@ -17,7 +17,7 @@ Unset Printing Implicit Defensive.
     behavior.  A query classifies the next stable Ret/Vis head and pushes
     that value through the semantic measure.  In particular, choosing
     [O := bool] gives the semantic weight of a return or visible-event class;
-    it is a subprobability on bounded backends such as SubEnum or MathComp.
+    it is a subprobability on bounded backends such as SubEnumQ or MathComp.
     No numeric representation is required by the generic theory. *)
 Section StableHeadObservation.
 Context {E : Type -> Type} {MN : Type -> Type}.
@@ -57,7 +57,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
     a bounded backend).  This is a
     weakest-preexpectation-style interface with indicator/result carrier
     [O], retaining missing mass and postponing numeric integration to a
-    concrete backend such as Enum or MathComp. *)
+    concrete backend such as EnumQ or MathComp. *)
 Definition probabilistic_head_query {R O}
     (on_ret : R -> O) (on_vis : forall X, E X -> O)
     (t : ptree E MN R) (query : MF O) : Prop :=

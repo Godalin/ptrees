@@ -4,7 +4,7 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 From mathcomp Require Import reals.
 From PTree.Core Require Import PTreeDefinition.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Native.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalPlan.
@@ -47,16 +47,16 @@ End GenericPaths.
 
 (** Native path normalization preserves the carrier's subprobability bound;
     it does not normalize a partial computation to total mass one. *)
-Example subenum_compression_measure_bounded {E : Type -> Type} {R}
-    (t : ptree E SubEnum R) out :
-  @finite_internal E SubEnum (FreeOmega SubEnum)
+Example subenumQ_compression_measure_bounded {E : Type -> Type} {R}
+    (t : ptree E SubEnumQ R) out :
+  @finite_internal E SubEnumQ (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
-      (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+      (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
     FreeOmegaMixedMeasure R t out ->
-  exists p : free_omega_native_presentation SubEnum (ptree E SubEnum R),
+  exists p : free_omega_native_presentation SubEnumQ (ptree E SubEnumQ R),
     free_omega_qlift eq out (free_omega_native p) /\
-    enum_subprob (subenum_raw (native_sample_measure p)).
+    enumQ_subprob (subenumQ_raw (native_sample_measure p)).
 Proof.
   intro Hcut. destruct (finite_internal_native_presentation Hcut) as [p Hp].
-  exists p. split; [exact Hp|apply subenum_bound].
+  exists p. split; [exact Hp|apply subenumQ_bound].
 Qed.

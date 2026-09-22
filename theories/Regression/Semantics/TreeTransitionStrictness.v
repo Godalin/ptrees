@@ -7,38 +7,38 @@ From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg rat.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure PTree.Prob.Backend.Enum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.Enum.Representation PTree.Prob.Backend.Enum.Map PTree.Prob.Backend.Enum.Coupling PTree.Prob.Backend.Enum.SemanticCoupling PTree.Prob.Backend.Enum.FrontierLift.
+Require Import PTree.Prob.Backend.Common.RatSubTypes PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling PTree.Prob.Backend.EnumQ.SemanticCoupling PTree.Prob.Backend.EnumQ.FrontierLift.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim.
 Fail Check PTree.Eq.PEutt.peutt.
 From PTree.Eq Require Import PEutt.
 From PTree.Semantics Require Import TreeTransitionSoundness.
-From PTree.Regression.Backend Require Import EnumMeasureRegression SubEnumRegression.
+From PTree.Regression.Backend Require Import EnumQMeasureRegression SubEnumQRegression.
 From PTree.Regression.Probability Require Import CorrelatedSampleAlgebra.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Variant correlationE : Type -> Type := Query : correlationE bool.
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
-  SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-Local Notation tree := (ptree correlationE SubEnum bool).
-Local Notation head := (stable_head correlationE SubEnum bool).
-Local Notation W := (@peutt correlationE SubEnum MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
-Local Notation TB := (@tree_trans_bisim correlationE SubEnum MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
+  SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+Local Notation tree := (ptree correlationE SubEnumQ bool).
+Local Notation head := (stable_head correlationE SubEnumQ bool).
+Local Notation W := (@peutt correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
+Local Notation TB := (@tree_trans_bisim correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
 Local Notation HR := (stable_head_rel eq W).
-Local Notation hits t out := (@ptree_stable_hitting correlationE SubEnum MF FI
+Local Notation hits t out := (@ptree_stable_hitting correlationE SubEnumQ MF FI
   FreeOmegaMixedMeasure FO bool (observe t) out).
-Local Notation trans := (@tree_trans correlationE SubEnum MF FI FreeOmegaMixedMeasure FO bool).
-Local Notation returns := (@tree_return_observation correlationE SubEnum MF FI FreeOmegaMixedMeasure FO bool).
-Local Notation offers := (@tree_offered_event_observation correlationE SubEnum MF FI FreeOmegaMixedMeasure FO bool).
+Local Notation trans := (@tree_trans correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
+Local Notation returns := (@tree_return_observation correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
+Local Notation offers := (@tree_offered_event_observation correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
 
 (** The two rows are the two possible hidden coins; the columns are the
     two responses. P has rows (false,false), (true,true), whereas Q has
@@ -46,13 +46,13 @@ Local Notation offers := (@tree_offered_event_observation correlationE SubEnum M
 Definition answer (anti b x : bool) := if anti then (if x then negb b else b) else b.
 Definition correlation_head anti b : head := FHVis Query (fun x => Ret (answer anti b x)).
 Definition correlation_program anti : tree :=
-  Prob subenum_fair (fun b => Vis Query (fun x => Ret (answer anti b x))).
+  Prob subenumQ_fair (fun b => Vis Query (fun x => Ret (answer anti b x))).
 Definition P := correlation_program false.
 Definition Q := correlation_program true.
 Definition correlation_front anti : MF head :=
-  FOSample subenum_fair (fun b => FORet (correlation_head anti b)).
+  FOSample subenumQ_fair (fun b => FORet (correlation_head anti b)).
 Definition response_front anti x : MF head :=
-  FOSample subenum_fair (fun b => FORet (FHRet (answer anti b x))).
+  FOSample subenumQ_fair (fun b => FORet (FHRet (answer anti b x))).
 
 Lemma correlation_hitting anti : hits (correlation_program anti) (correlation_front anti).
 Proof.
@@ -63,10 +63,10 @@ Proof.
 Qed.
 
 Lemma correlation_returns anti :
-  returns (correlation_program anti) (FOSample subenum_fair (fun _ => FOZero)).
+  returns (correlation_program anti) (FOSample subenumQ_fair (fun _ => FOZero)).
 Proof. exists (correlation_front anti). split; [apply correlation_hitting|apply sem_eq_refl]. Qed.
 Lemma correlation_offers anti :
-  offers (correlation_program anti) (FOSample subenum_fair (fun _ => FORet (Offered Query))).
+  offers (correlation_program anti) (FOSample subenumQ_fair (fun _ => FORet (Offered Query))).
 Proof. exists (correlation_front anti). split; [apply correlation_hitting|apply sem_eq_refl]. Qed.
 
 (** A contribution witness only for these finite supported continuations. *)
@@ -90,17 +90,17 @@ Proof.
   apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)).
 Qed.
 
-Import Enum RatSubTypes PTree.Prob.Backend.Enum.Map PTree.Prob.Backend.Enum.Coupling GRing.Theory.
+Import EnumQ RatSubTypes PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Coupling GRing.Theory.
 Local Open Scope ring_scope.
 
 (** Crossed coupling for the true response; false uses the diagonal one. *)
 Lemma fair_complement_coupling :
-  @sem_lift SubEnum SubEnum_SemanticMeasure bool bool
-    (fun b c => b = negb c) subenum_fair subenum_fair.
+  @sem_lift SubEnumQ SubEnumQ_SemanticMeasure bool bool
+    (fun b c => b = negb c) subenumQ_fair subenumQ_fair.
 Proof.
-  change (@sem_lift Enum Enum_SemanticMeasure bool bool
+  change (@sem_lift EnumQ EnumQ_SemanticMeasure bool bool
     (fun b c => b = negb c) reg_fair reg_fair).
-  apply enum_sem_lift_of_coupling.
+  apply enumQ_sem_lift_of_coupling.
   exists [:: (reg_half, (false,true)); (reg_half, (true,false))].
   - intros []; apply val_inj; native_compute; reflexivity.
   - intros []; apply val_inj; native_compute; reflexivity.
@@ -123,7 +123,7 @@ Qed.
 Definition correlation_candidate (t u : tree) := t = u \/ (t = P /\ u = Q).
 
 Lemma correlation_postfixed t u : correlation_candidate t u ->
-  @tree_trans_bisimF correlationE SubEnum MF FI FreeOmegaMixedMeasure FO bool bool eq
+  @tree_trans_bisimF correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool bool eq
     correlation_candidate t u.
 Proof.
   intros [->|[-> ->]].
@@ -174,7 +174,7 @@ Proof.
   assert (Hlift : @sem_lift MF FI head head HR (FORet (FHRet b)) (FORet (FHRet c))).
   { eapply peutt_couples_complete_heads; [exact Hrel| |];
       apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)). }
-  assert (Hb : free_omega_ae (NI := SubEnum_SemanticMeasure)
+  assert (Hb : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
     (fun h : head => h = FHRet b) (FORet (FHRet b))).
   { constructor. reflexivity. }
   pose proof (proj1 (free_omega_qlift_support Hlift) _ Hb) as Hc.
@@ -194,7 +194,7 @@ Proof.
   intro Hrel.
   pose proof (peutt_couples_complete_heads Hrel (correlation_hitting false)
     (correlation_hitting true)) as Hfront.
-  assert (Hleft : free_omega_ae (NI := SubEnum_SemanticMeasure)
+  assert (Hleft : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
     (fun h => exists b, h = correlation_head false b) (correlation_front false)).
   { eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
     intros b _. apply FOAERet. exists b. reflexivity. }

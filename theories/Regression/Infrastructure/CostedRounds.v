@@ -3,7 +3,7 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Native.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalPlan.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
@@ -84,13 +84,13 @@ End AlternatingRounds.
 
 (** Same projected tree, but different projected round targets. *)
 Example alternating_round_is_not_unary :
-  costed_round_projection (fun s => @countdown planE SubEnum bool true (fst s))
-    (fun h : stable_head planE SubEnum bool => h)
-    (@alternating_target planE SubEnum SubEnum_SemanticMeasure bool true
+  costed_round_projection (fun s => @countdown planE SubEnumQ bool true (fst s))
+    (fun h : stable_head planE SubEnumQ bool => h)
+    (@alternating_target planE SubEnumQ SubEnumQ_SemanticMeasure bool true
       (1, false) (existT _ tt tt)) <>
-  costed_round_projection (fun s => @countdown planE SubEnum bool true (fst s))
-    (fun h : stable_head planE SubEnum bool => h)
-    (@alternating_target planE SubEnum SubEnum_SemanticMeasure bool true
+  costed_round_projection (fun s => @countdown planE SubEnumQ bool true (fst s))
+    (fun h : stable_head planE SubEnumQ bool => h)
+    (@alternating_target planE SubEnumQ SubEnumQ_SemanticMeasure bool true
       (1, true) (existT _ tt tt)).
 Proof. discriminate. Qed.
 

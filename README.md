@@ -9,19 +9,19 @@ behavior: it absorbs internal `Tau` and `Prob` evolution until reaching a
 stable `Ret` or `Vis` head, while preserving missing termination mass.
 
 Native `Prob` is instantiated with a subprobability carrier.  The canonical
-finite executable carrier is `SubEnum`, a finite nonnegative enumeration
+finite executable carrier is `SubEnumQ`, a finite nonnegative enumeration
 whose total weight is proved at most one; `SubEnumR R` provides finite real
-weights with the same validity bound. Raw `Enum` remains a compatibility representation
+weights with the same validity bound. Raw `EnumQ` remains a compatibility representation
 for arbitrary finite nonnegative weights and is therefore not, by itself, a
 valid native-probability backend.  This distinction keeps Bayesian `score`
 weights separate from probabilistic choice.
-The generic boundary is recorded by `SemanticSubprobability`: raw Enum
-supports its per-measure predicate and closure laws, whereas SubEnum, SubEnumR
+The generic boundary is recorded by `SemanticSubprobability`: raw EnumQ
+supports its per-measure predicate and closure laws, whereas SubEnumQ, SubEnumR
 and the native MathComp kernel provide `SemanticSubprobabilityCarrierLaws`, certifying
 that every inhabitant is admissible at a native probability node.
 
 The maintained complete PTree behavioral backends are
-`SubEnum -> FreeOmega SubEnum` and `SubEnumR R -> FreeOmega (SubEnumR R)`.
+`SubEnumQ -> FreeOmega SubEnumQ` and `SubEnumR R -> FreeOmega (SubEnumR R)`.
 MathComp supplies a separate discrete kernel/measure model for native analytic
 results and native joint witnesses. An explicitly universe-unchecked
 `MN = MF = MathCompKernelMeasure R` assembly is maintained separately as Gate M.
@@ -102,7 +102,7 @@ continuation; a list of selectors is therefore a
 selectors represent ordinary concrete traces.
 `peutt_preserves_finite_interaction_query` shows that `≈ₚ` preserves
 every such finite cylinder without fixing the generic
-theory to Enum, MathComp, rationals, or reals.  Continuation obligations hold
+theory to EnumQ, MathComp, rationals, or reals.  Continuation obligations hold
 almost everywhere, so zero-mass branches need no artificial trace witness.
 On backends with the order/omega laws needed to construct every complete
 hitting limit, `finite_interaction_query_exists` and
@@ -111,17 +111,17 @@ The choice-based `finite_interaction_sem` packages a representative, and
 `peutt_preserves_finite_interaction_sem` is its extensional soundness
 theorem.  Generic witness independence is stated as diagonal coupling;
 backends may reflect that coupling to their own semantic equality.
-`Eq/Backend/ProbabilisticTraceSubEnum.v` is the bounded paper-facing concrete
-projection.  It defines `Prₛ[t | tr] = p` using an Enum expectation of a
-`FreeOmega SubEnum`
+`Eq/Backend/ProbabilisticTraceSubEnumQ.v` is the bounded paper-facing concrete
+projection.  It defines `Prₛ[t | tr] = p` using an EnumQ expectation of a
+`FreeOmega SubEnumQ`
 representative coupled to a valid query, without pretending that the
 choice-selected `finite_interaction_sem` representative is executable.  The
-theorem `subenum_finite_interaction_probability_range` proves every such
-number lies in `[0,1]`.  The existing raw-Enum projection is retained for
+theorem `subenumQ_finite_interaction_probability_range` proves every such
+number lies in `[0,1]`.  The existing raw-EnumQ projection is retained for
 compatibility with the current interactive case studies while they are
 migrated to the bounded carrier; its numeric result is a finite weight unless
 the program's node measures are separately shown subprobabilistic.  The
-interactive Von Neumann example currently proves the compact raw-Enum endpoint
+interactive Von Neumann example currently proves the compact raw-EnumQ endpoint
 `Prₜ[von_neumann_service | request_true_reply_trace] = 1/2`.
 This is prefix-satisfaction/cylinder semantics, not a pushforward trace
 distribution.  The API does not claim an infinite-trace sigma-algebra or a general
@@ -184,7 +184,7 @@ A two-phase relation closes
 all response-dependent continuations using plain
 `peutt_coinduction` (no up-to closure). The theorem
 `masked_protocol_equivalent` holds for either initial hidden bit.
-The bounded backend is `SubEnum`, with intrinsic `probabilistic_ptree`
+The bounded backend is `SubEnumQ`, with intrinsic `probabilistic_ptree`
 certificates. `masked_challenge_true_reply_probability` proves that the
 pattern `[Challenge(c); Reply(true)]` has probability `3/8` when c=false
 and `1/8` when c=true: the environment changes the observable probability
@@ -217,33 +217,33 @@ and standard-binary components live in `OperationalBernoulliFactory.v`;
 `BernoulliFactoryComposition.v` contains their algebraic composition.
 
 `Examples/BernoulliFactory/BernoulliFactoryProbability.v` separately certifies the executable
-raw `Enum` programs as `probabilistic_ptree`: normalized source weights make
+raw `EnumQ` programs as `probabilistic_ptree`: normalized source weights make
 the VN sampler well formed, and `probabilistic_factory_with_sampler` lifts
 any sampler's probability contract through the entire Factory loop. This
-contract needs neither source nondegeneracy nor termination. Raw Enum is the
+contract needs neither source nondegeneracy nor termination. Raw EnumQ is the
 executable representation; the certificates establish membership in its
 subprobabilistic fragment.
 
-`Prob/Backend/Enum/Support.v` proves AE continuity for increasing, convergent Enum
+`Prob/Backend/EnumQ/Support.v` proves AE continuity for increasing, convergent EnumQ
 chains over outcomes with decidable equality, and proves that absorbing
 iteration approximations are increasing.
 `Prob/FreeOmega/Support.v` transports a concrete observation coupling back to
 high-universe support when both observations preserve and reflect AE.
 Observation equality or injectivity alone is insufficient: the disappearing
-atom regression in `Prob/Backend/Enum/FreeOmega/MeasureAudit.v` remains rejected.
+atom regression in `Prob/Backend/EnumQ/FreeOmega/MeasureAudit.v` remains rejected.
 
-The underlying raw `Enum` `meas_eq` is extensional: two enumerations are equal when
+The underlying raw `EnumQ` `meas_eq` is extensional: two enumerations are equal when
 every outcome has the same accumulated mass.  Raw list equality is exposed
-separately as `enum_repr_eq`.  In particular, reordering entries, duplicating
+separately as `enumQ_repr_eq`.  In particular, reordering entries, duplicating
 an outcome, or splitting its mass does not change the measure.  The regression
-file `Regression/Backend/EnumMeasureRegression.v` checks these cases together with
-Dirac elimination and nested-probability flattening.  `SubEnum` reuses this
+file `Regression/Backend/EnumQMeasureRegression.v` checks these cases together with
+Dirac elimination and nested-probability flattening.  `SubEnumQ` reuses this
 extensional theory while carrying the missing total-weight bound;
-`Regression/Backend/SubEnumRegression.v` checks bind closure and rejects the legacy
+`Regression/Backend/SubEnumQRegression.v` checks bind closure and rejects the legacy
 weight-two flip.
 
 The MathComp Analysis backend now supplies the same foundational AE profile
-as Enum: AE Kleisli extension, exact Dirac AE, countable AE, coupling AE, and
+as EnumQ: AE Kleisli extension, exact Dirac AE, countable AE, coupling AE, and
 exact bind support decomposition, plus checked omega, diagonal/Fubini and
 relational kernel-bind laws. Coupling composition remains the explicit
 `MathCompCouplingGluing` capability.  The compile-time matrix lives in
@@ -258,14 +258,14 @@ See [repository architecture](docs/ARCHITECTURE.md) for ownership and the
 generic / FreeOmega / concrete-backend boundaries, and the
 [current inventory](docs/ARCHITECTURE_AUDIT.md) for machine-checked dependencies.
 The [external soundness account](docs/FREEOMEGA_SOUNDNESS.md) explains admissible
-FreeOmega SubEnum, standard measures, general joint coupling and stable-hitting
+FreeOmega SubEnumQ, standard measures, general joint coupling and stable-hitting
 adequacy. These validation modules are not imported by program reasoning.
 The [generic validation layer](docs/GENERIC_QLIFT_VALIDATION.md) proves
-native-parametric bounded-test/bidual soundness, instantiated by SubEnum and
+native-parametric bounded-test/bidual soundness, instantiated by SubEnumQ and
 SubEnumR. Actual external joint existence is a separate, model-specific
 strengthening, not a behavioral backend requirement. The
 [SubEnumR realization](docs/SUBENUMR_JOINT_REALIZATION.md) now closes that
-strengthening for the finite-real completion as well as SubEnum. The
+strengthening for the finite-real completion as well as SubEnumQ. The
 [three-layer policy](docs/ARCHITECTURE.md#three-layers-of-probability-reasoning)
 distinguishes relational lifting, semantic joint witnesses and external joint
 realization.
@@ -279,14 +279,14 @@ Ordinary clients can import the curated entry points:
 ```coq
 From PTree Require Import PTree.      (* syntax and canonical equational API *)
 From PTree Require Import Semantics.  (* transition and MDP comparison API *)
-From PTree.API Require Import SubEnum. (* optional concrete probability adapter *)
+From PTree.API Require Import SubEnumQ. (* optional concrete probability adapter *)
 ```
 
 `Core/` owns syntax; `Prob/{Interface,FreeOmega,Backend,Legacy}/` separates
 measure interfaces, the canonical model, concrete realizations and legacy
-adapters. `Prob/Backend/{Common,Enum,SubEnum,SubEnumR,MathComp}/` makes the native
+adapters. `Prob/Backend/{Common,EnumQ,SubEnumQ,SubEnumR,MathComp}/` makes the native
 carrier explicit; `Prob/FreeOmega/` stays generic in `MN`, while
-`Prob/Backend/SubEnum/FreeOmega/` specializes that completion to SubEnum.
+`Prob/Backend/SubEnumQ/FreeOmega/` specializes that completion to SubEnumQ.
 `Eq/` owns stable hitting and equality; `Eq/Internal/` holds proof
 machinery. `Semantics/` owns independent comparison semantics. `Interp/`
 owns interpretation preservation, with FreeOmega-qualified theory distinct
@@ -326,7 +326,7 @@ For the MDP fragment, [MDPInterp](theories/Interp/FreeOmega/MDP.v) derives
 `mdp_state` preservation for effect refinement `E -> F` from a local
 stable-head handler contract. Its guarded route transports source
 transition bisimulation to the target signature. The homogeneous `E -> E`
-atomic profile satisfies it on SubEnum/FreeOmega, using a proved
+atomic profile satisfies it on SubEnumQ/FreeOmega, using a proved
 totality-under-mapping lemma. Thus interpretation retains the fragment
 where peutt and transition bisimulation coincide; no MDP reconstruction or
 new interpretation semantics is introduced.
@@ -357,8 +357,8 @@ The maintained artifact establishes:
 - one semantics for bounded and genuinely unbounded AST computation;
 - eventful iteration, interpretation/translation laws, and quantitative
   next-event observations;
-- SubEnum and SubEnumR complete probability backend instances, separate
-  native MathComp Analysis results, and a legacy raw Enum weighted instance;
+- SubEnumQ and SubEnumR complete probability backend instances, separate
+  native MathComp Analysis results, and a legacy raw EnumQ weighted instance;
   executable rational examples are being migrated
   to the bounded carrier without changing the generic behavioral theory.
 

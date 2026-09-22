@@ -4,7 +4,7 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 From mathcomp Require Import eqtype.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import PrimitiveStableHitting.
 From PTree.Eq.Internal.FreeOmega Require Import KernelCompletion KernelCongruence.
@@ -17,11 +17,11 @@ Set Implicit Arguments.
     bounded-prefix test, and no AST or round bound is assumed. *)
 Section ExchangeInEveryRound.
 Context {S O : Type}.
-Variables mu nu : SubEnum bool.
+Variables mu nu : SubEnumQ bool.
 Variable next : S -> bool -> bool -> stable_target S O.
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 
 Definition first_sample_kernel s : MF (stable_target S O) :=
   FOSample mu (fun x => FOSample nu (fun y => FORet (next s x y))).
@@ -32,7 +32,7 @@ Lemma sample_exchange_kernel_equal s :
   free_omega_qlift eq (first_sample_kernel s) (swapped_sample_kernel s).
 Proof.
   apply free_omega_mixed_exchange_of_product.
-  - exact (enum_semantic_product_swap (subenum_raw mu) (subenum_raw nu)).
+  - exact (enumQ_semantic_product_swap (subenumQ_raw mu) (subenumQ_raw nu)).
   - intros x y. apply free_omega_qlift_refl. intro z. reflexivity.
 Qed.
 
@@ -54,7 +54,7 @@ Example sample_exchange_preserves_complete_hitting s out1 out2 :
 Proof.
   intros Hleft Hright.
   eapply (kernel_stable_hitting_eq
-    (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega))
+    (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
     with (D := fun _ => True) (s := s).
   - intros state _. apply first_sample_kernel_closed.
   - intros state _. apply sample_exchange_kernel_equal.

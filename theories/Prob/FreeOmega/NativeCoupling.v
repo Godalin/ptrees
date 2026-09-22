@@ -12,7 +12,7 @@ Unset Printing Implicit Defensive.
     interface.  A quotient coupling of two finite/native presentations
     admits an actual joint on the original sample carriers.  This law
     mentions neither trees, stable hitting, nor behavioral equivalence.
-    It is proved for SubEnum rather than assumed there.  In particular it
+    It is proved for SubEnumQ rather than assumed there.  In particular it
     must not be registered for arbitrary backends from core laws alone. *)
 Class FreeOmegaNativeCouplingLaws {MN : Type -> Type}
     (NI : SemanticMeasure MN) (NO : @SemanticOmega MN NI) := {

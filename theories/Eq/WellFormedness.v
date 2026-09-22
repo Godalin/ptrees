@@ -46,7 +46,7 @@ Definition probabilistic_ptree (t : ptree E M R) : Prop :=
   probabilistic_observation (observe t).
 
 (** The syntax constructors preserve probability well-formedness.  These
-    lemmas are useful for carriers such as raw [Enum], where validity is a
+    lemmas are useful for carriers such as raw [EnumQ], where validity is a
     genuine predicate rather than an intrinsic property of every measure. *)
 Definition probabilistic_ptree_ret (r : R) :
     probabilistic_ptree (PTree.ret r) :=
@@ -71,7 +71,7 @@ Definition probabilistic_ptree_prob {X} (mu : M X)
   ProbabilisticProb Hmu Hk.
 
 (** Every tree over an intrinsically bounded carrier is a probability tree.
-    This is the theorem used by the canonical SubEnum and MathComp APIs, so
+    This is the theorem used by the canonical SubEnumQ and MathComp APIs, so
     their clients carry no recurring side conditions. *)
 CoFixpoint probabilistic_observation_intrinsic
     `{SA : @SemanticSubprobabilityCarrierLaws M SI SP}

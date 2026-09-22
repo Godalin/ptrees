@@ -58,8 +58,8 @@ From PTree.Prob.Domain Require Import Expectation.
 From PTree.Prob.Interface Require Import Measure.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Quotient Measure.
-From PTree.Prob.Backend.SubEnum Require Import Measure.
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import
+From PTree.Prob.Backend.SubEnumQ Require Import Measure.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
   Admissibility QuotientSoundness.
 
 Fail Check PTree.Prob.Domain.MeasureModel.oval_probability.
@@ -74,9 +74,9 @@ Unset Printing Implicit Defensive.
 Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Notation observable_measure := (@FreeOmegaObservableSemanticMeasure
-  SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
+  SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 
-Definition constant_unit : FreeOmega SubEnum unit := FOLub (fun _ => FORet tt).
+Definition constant_unit : FreeOmega SubEnumQ unit := FOLub (fun _ => FORet tt).
 
 Lemma constant_to_invalid :
   free_omega_qlift (fun (_ : unit) (_ : bool) => True) constant_unit alternating_bool.
@@ -133,7 +133,7 @@ Proof.
   exact: alternating_bool_not_admissible.
 Qed.
 
-Example invalid_not_equal_to_valid (t : FreeOmega SubEnum bool) :
+Example invalid_not_equal_to_valid (t : FreeOmega SubEnumQ bool) :
   free_omega_admissible R t -> ~ @sem_eq _ observable_measure _ alternating_bool t.
 Proof.
   intros Hv H; apply (@alternating_bool_not_admissible R).
@@ -160,7 +160,7 @@ Example soundness_ignores_validity_proofs
 Proof. split; apply free_omega_sem_eq_sound; exact equality_through_invalid_middle. Qed.
 
 Example quotient_cannot_erase_missing_mass :
-  ~ @sem_eq _ observable_measure _ (@FOZero SubEnum unit) (FORet tt).
+  ~ @sem_eq _ observable_measure _ (@FOZero SubEnumQ unit) (FORet tt).
 Proof.
   intro H.
   have Heq := free_omega_sem_eq_sound (@admissible_zero R unit) (@admissible_ret R unit tt) H.
@@ -182,8 +182,8 @@ From PTree.Prob.Domain Require Import Expectation Countable Coupling.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.FreeOmega Require Import Approximation Quotient.
-From PTree.Prob.Backend.SubEnum Require Import Measure.
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import
+From PTree.Prob.Backend.SubEnumQ Require Import Measure.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
   Admissibility CountableSupport CouplingSoundness.
 Fail Check PTree.Prob.Domain.MeasureModel.oval_probability.
 Fail Check PTree.Eq.PEutt.peutt.
@@ -195,7 +195,7 @@ Unset Printing Implicit Defensive.
 Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
-Example empty_cover n : free_omega_enumerate (@FOZero SubEnum Empty_set) n = None.
+Example empty_cover n : free_omega_enumerate (@FOZero SubEnumQ Empty_set) n = None.
 Proof. reflexivity. Qed.
 
 Example raw_invalid_cover :
@@ -274,8 +274,8 @@ End Tests.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.FreeOmega Require Import Quotient Measure.
-From PTree.Prob.Backend.SubEnum Require Import Measure.
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import
+From PTree.Prob.Backend.SubEnumQ Require Import Measure.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
   Admissibility JointSoundness.
 Fail Check PTree.Prob.Domain.MeasureModel.oval_probability.
 Fail Check PTree.Core.PTreeDefinition.ptree.
@@ -318,9 +318,9 @@ Example empty_endpoint_qlift_joint :
     (free_omega_domain (@admissible_zero R bool)).
 Proof. apply free_omega_qlift_sound; apply FOQLStructural, FOLZero. Qed.
 
-Definition partial_bool : FreeOmega SubEnum bool :=
+Definition partial_bool : FreeOmega SubEnumQ bool :=
   FOSample domain_fair (fun b => if b then FORet true else FOZero).
-Definition partial_nat : FreeOmega SubEnum nat :=
+Definition partial_nat : FreeOmega SubEnumQ nat :=
   FOSample domain_fair (fun b => if b then FORet 7%N else FOZero).
 Lemma partial_bool_valid : free_omega_admissible R partial_bool.
 Proof. apply admissible_sample; intros []; [apply admissible_ret|apply admissible_zero]. Qed.
@@ -330,8 +330,8 @@ Lemma partial_heterogeneous_qlift :
   free_omega_qlift (fun b n => b = true /\ n = 7%N) partial_bool partial_nat.
 Proof.
   apply FOQLStructural, FOLSample with (S := eq).
-  - exact (@sem_lift_refl SubEnum SubEnum_SemanticMeasure
-      SubEnum_SemanticMeasureCoreLaws bool eq domain_fair (fun b => @Logic.eq_refl bool b)).
+  - exact (@sem_lift_refl SubEnumQ SubEnumQ_SemanticMeasure
+      SubEnumQ_SemanticMeasureCoreLaws bool eq domain_fair (fun b => @Logic.eq_refl bool b)).
   - intros b c ->; destruct c; [apply FOLRet; auto|apply FOLZero].
 Qed.
 

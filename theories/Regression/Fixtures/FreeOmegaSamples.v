@@ -7,10 +7,10 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat re
 From PTree.Prob.Domain Require Import Expectation Countable.
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Backend.Common Require Import RatSubTypes.
-From PTree.Prob.Backend.Enum Require Import Representation.
-From PTree.Prob.Backend.SubEnum Require Import Measure Domain.
+From PTree.Prob.Backend.EnumQ Require Import Representation.
+From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation.
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
   UpperExpectation Admissibility DomainSoundness.
 
 
@@ -21,27 +21,27 @@ Import RatSubTypes GRing.Theory Num.Theory Order.Theory ListNotations.
 Local Open Scope ring_scope.
 
 From mathcomp Require Import choice ssrnat.
-From PTree.Prob.Backend.SubEnum.FreeOmega Require Import CountableSupport.
-Definition alternating_bool : FreeOmega SubEnum bool :=
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import CountableSupport.
+Definition alternating_bool : FreeOmega SubEnumQ bool :=
   FOLub (fun n => FORet (if Nat.even n then false else true)).
 
-Definition null_weight_node : SubEnum bool.
+Definition null_weight_node : SubEnumQ bool.
 Proof.
-  refine {| subenum_raw := [((1 : nnQ), true); (nnQ_0, false)] |}.
+  refine {| subenumQ_raw := [((1 : nnQ), true); (nnQ_0, false)] |}.
   by vm_compute.
 Defined.
 
-Definition nullable_kernel (b : bool) : FreeOmega SubEnum bool :=
+Definition nullable_kernel (b : bool) : FreeOmega SubEnumQ bool :=
   if b then FORet true else alternating_bool.
 
 Definition domain_half : nnQ.
 Proof. refine (mknnQ (1/2) _); by vm_compute. Defined.
-Definition domain_fair : SubEnum bool.
+Definition domain_fair : SubEnumQ bool.
 Proof.
-  refine {| subenum_raw := [(domain_half,true); (domain_half,false)] |}.
+  refine {| subenumQ_raw := [(domain_half,true); (domain_half,false)] |}.
   by vm_compute.
 Defined.
-Fixpoint retry_approx (n : nat) : FreeOmega SubEnum bool :=
+Fixpoint retry_approx (n : nat) : FreeOmega SubEnumQ bool :=
   match n with
   | O => FOZero
   | S m => FOSample domain_fair (fun b => if b then FORet true else retry_approx m)
@@ -52,7 +52,7 @@ Definition repeated_unit n : option unit :=
 Definition repeated_bool n : option bool :=
   match n with O => None | _ => Some true end.
 
-Fixpoint geometric_prefix fuel start : FreeOmega SubEnum nat :=
+Fixpoint geometric_prefix fuel start : FreeOmega SubEnumQ nat :=
   match fuel with
   | O => FOZero
   | S n => FOSample domain_fair

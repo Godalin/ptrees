@@ -5,9 +5,9 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
-Require Import PTree.Prob.Backend.SubEnum.Measure.
+Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.Enum.Measure PTree.Prob.Backend.Enum.Representation.
+Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.Semantics Require Import TreeTransition TreeTransitionBisim.
 Fail Check PTree.Eq.PEutt.peutt.
@@ -20,15 +20,15 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Local Notation MF := (FreeOmega SubEnum).
+Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
-  (NI := SubEnum_SemanticMeasure) (NO := SubEnum_SemanticOmega)).
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
-  SubEnum SubEnum_SemanticMeasure SubEnum_SemanticOmega).
-Local Notation W := (@peutt rawE SubEnum MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
-Local Notation TB := (@tree_trans_bisim rawE SubEnum MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
+  SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+Local Notation W := (@peutt rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
+Local Notation TB := (@tree_trans_bisim rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
 
 (** Exercise the comparison at a probability mixture, not just Ret/Vis. *)
 Lemma delayed_mixture_peutt : W (Tau mixture) mixture.
@@ -38,7 +38,7 @@ Example delayed_mixture_transition_bisim : TB (Tau mixture) mixture.
 Proof. exact (peutt_tree_trans_bisim (FI := FI) (FC := FC) (FO := FO) (RR := eq) delayed_mixture_peutt). Qed.
 
 Example delayed_mixture_postfixed :
-  @tree_trans_bisimF rawE SubEnum MF FI FreeOmegaMixedMeasure FO bool bool eq
+  @tree_trans_bisimF rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool bool eq
     W (Tau mixture) mixture.
 Proof. exact (peutt_tree_trans_postfixed (FI := FI) (FC := FC) (FO := FO) (RR := eq) delayed_mixture_peutt). Qed.
 
@@ -54,10 +54,10 @@ Qed.
 (** Arbitrary relations on the common return type are supported, rather
     than silently baking equality into the comparison theorem. *)
 Example related_returns_transition_bisim :
-  @tree_trans_bisim rawE SubEnum MF FI FC FreeOmegaMixedMeasure FO bool bool
+  @tree_trans_bisim rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool
     (fun x y => x = negb y) (Ret true) (Ret false).
 Proof.
-  assert (Hret : @peutt rawE SubEnum MF FI FC FreeOmegaMixedMeasure FO bool bool
+  assert (Hret : @peutt rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool
     (fun x y => x = negb y) (Ret true) (Ret false)).
   { apply peutt_ret. reflexivity. }
   exact (peutt_tree_trans_bisim (FI := FI) (FC := FC) (FO := FO) Hret).
@@ -65,18 +65,18 @@ Qed.
 
 (** Reuse the existing infinite interaction / unbounded internal-retry
     theorem as a client. No MDP coincidence or converse is invoked. The
-    existing service uses Enum/FreeOmega; the tests above use SubEnum. *)
+    existing service uses EnumQ/FreeOmega; the tests above use SubEnumQ. *)
 Theorem interactive_von_neumann_service_transition_bisim :
-  @tree_trans_bisim coin_serviceE Enum.Enum (FreeOmega Enum.Enum)
+  @tree_trans_bisim coin_serviceE EnumQ.EnumQ (FreeOmega EnumQ.EnumQ)
     (FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega))
+      (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq
     von_neumann_service direct_fair_service.
 Proof.
   exact (peutt_tree_trans_bisim
     (FI := FreeOmegaObservableSemanticMeasure
-      (NI := Enum_SemanticMeasure) (NO := Enum_SemanticOmega))
-    (FO := @FreeOmegaObservableSemanticOmega Enum.Enum Enum_SemanticMeasure Enum_SemanticOmega)
+      (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
+    (FO := @FreeOmegaObservableSemanticOmega EnumQ.EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)
     (RR := eq) interactive_von_neumann_service_equivalent).
 Qed.
