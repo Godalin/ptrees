@@ -12,6 +12,9 @@ DS5 establishes backend-specific external joint realization. The later
 bounded-test/bidual soundness, now instantiated by SubEnum and SubEnumR.
 It does not generalize the actual-joint existence claim below to every native
 backend. See the [three-layer policy and terminology](ARCHITECTURE.md#three-layers-of-probability-reasoning).
+SubEnumR now has its own [external joint realization](SUBENUMR_JOINT_REALIZATION.md),
+composing generic bidual validation with the same independent countable
+transport theorem. The frozen SubEnum proofs below remain unchanged.
 
 ## Independent mathematical domain
 

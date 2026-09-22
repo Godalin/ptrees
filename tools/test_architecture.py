@@ -4,7 +4,7 @@ import audit_architecture as architecture
 
 
 class ArchitectureTests(unittest.TestCase):
-    def test_future_real_joint_realization_is_concrete_validation(self):
+    def test_real_joint_realization_is_concrete_validation(self):
         bridge = "Prob/Backend/SubEnumR/FreeOmega/JointRealization"
         generic = "Prob/FreeOmega/Validation/Quotient"
         self.assertTrue(architecture.external_validation(bridge))
@@ -14,6 +14,11 @@ class ArchitectureTests(unittest.TestCase):
                        "API/FreeOmega", "Examples/RandomWalk",
                        "Prob/Backend/SubEnumR/Measure"]:
             self.assertFalse(architecture.permitted(source, bridge))
+
+        cover = "Prob/Backend/SubEnumR/FreeOmega/CountableSupport"
+        self.assertTrue(architecture.external_validation(cover))
+        self.assertTrue(architecture.permitted(bridge, cover))
+        self.assertFalse(architecture.permitted("Prob/Backend/SubEnumR/Measure", cover))
 
     def test_all_reasoning_layers_exclude_indirect_validation(self):
         for root in ["Core/PTreeDefinition", "Eq/PStrong", "Semantics/MDPFragment",

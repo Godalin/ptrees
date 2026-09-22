@@ -254,6 +254,8 @@ The [generic validation layer](docs/GENERIC_QLIFT_VALIDATION.md) proves
 native-parametric bounded-test/bidual soundness, instantiated by SubEnum and
 SubEnumR. Actual external joint existence is a separate, model-specific
 strengthening, not a behavioral backend requirement. The
+[SubEnumR realization](docs/SUBENUMR_JOINT_REALIZATION.md) now closes that
+strengthening for the finite-real completion as well as SubEnum. The
 [three-layer policy](docs/ARCHITECTURE.md#three-layers-of-probability-reasoning)
 distinguishes relational lifting, semantic joint witnesses and external joint
 realization.

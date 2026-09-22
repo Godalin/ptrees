@@ -638,6 +638,19 @@
       "zero_demand_empty_target",
       "positive_demand_empty_target_impossible"
     ],
+    "theories/Regression/Probability/SubEnumRJointRealization.v": [
+      "retry_left_modelable",
+      "retry_right_modelable",
+      "retry_complement_qlift",
+      "real_retry_external_joint",
+      "real_retry_joint_exact_mass_support",
+      "real_retry_equality_via_joint",
+      "invalid_real_lub_still_enumerable",
+      "partial_term_modelable",
+      "partial_term_mass",
+      "real_partial_joint_not_normalized",
+      "real_joint_large_heterogeneous"
+    ],
     "theories/Regression/Probability/StableHittingDomain.v": [
       "arbitrary_witness_valid",
       "arbitrary_witness_denotes",

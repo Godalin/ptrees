@@ -19,8 +19,9 @@ This is the middle layer of the fixed
 [architecture policy](ARCHITECTURE.md#three-layers-of-probability-reasoning):
 relational lifting belongs to behavioral theory, bounded-test validation is
 native-parametric, and external joint realization remains model-qualified.
-Future SubEnumR joint existence belongs in its backend `JointRealization.v`,
-not in the generic quotient validation proved here.
+SubEnumR joint existence is now proved in its backend `JointRealization.v`,
+not in the generic quotient validation proved here; see the separate
+[realization account](SUBENUMR_JOINT_REALIZATION.md).
 
 ## Interpretation obligations, not new probability axioms
 

@@ -26,6 +26,7 @@ def external_validation(path):
         "Prob/Backend/SubEnumR/Domain",
         "Prob/Backend/SubEnumR/FreeOmega/Validation",
         "Prob/Backend/SubEnumR/FreeOmega/RelationalValidation",
+        "Prob/Backend/SubEnumR/FreeOmega/CountableSupport",
         "Prob/Backend/SubEnumR/FreeOmega/JointRealization",
         "Prob/Backend/SubEnum/FreeOmega/Admissibility",
         "Prob/Backend/SubEnum/FreeOmega/DomainSoundness",

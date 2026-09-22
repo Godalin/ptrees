@@ -57,12 +57,14 @@ realizations; their application must not become a premise of behavioral theory.
 
 SubEnum's frozen DS1–DS4 account supplies denotational validation, and DS5
 supplies backend-specific external joint realization. Keep those existing
-owners and theorem names. SubEnumR already instantiates generic validation;
-an eventual actual-joint endpoint belongs in
+owners and theorem names. SubEnumR instantiates generic validation and now
+proves countable support and external joint realization in
 `Prob/Backend/SubEnumR/FreeOmega/JointRealization.v`, alongside `Validation.v`
-and `RelationalValidation.v`, not in generic `Validation/Quotient.v`.
-That future file is reserved by the dependency checker, not implemented by
-this policy. MathComp realization remains model-specific; no generic external
+and `RelationalValidation.v`, not in generic `Validation/Quotient.v`; see the
+[finite-real realization account](SUBENUMR_JOINT_REALIZATION.md).
+The two finite native backends therefore share the external countable transport
+theorem without strengthening generic validation beyond bidual constraints.
+MathComp realization remains model-specific; no generic external
 joint theorem for its completion is claimed here.
 
 Do not introduce an `ExternalJointRealization` capability merely to package

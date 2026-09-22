@@ -32,6 +32,17 @@ class SoundnessTests(unittest.TestCase):
                             soundness.classes('Class C := { p : False }.'))
         self.assertEqual(soundness.classes('Class C := p : True.'),{'C':'Class C := p : True.'})
 
+    def test_real_joint_bridge_cannot_reanalyze_qlift(self):
+        path='theories/Prob/Backend/SubEnumR/FreeOmega/JointRealization.v'
+        for bad in ['induction H.', 'elim H.', 'Check FOQLComp.', 'Check FOQLSampleLub.']:
+            with self.subTest(bad=bad), self.assertRaises(AssertionError):
+                soundness.source_check({**self.sources,path:self.sources[path]+'\n'+bad},self.policy)
+
+    def test_real_countable_support_does_not_use_qlift(self):
+        path='theories/Prob/Backend/SubEnumR/FreeOmega/CountableSupport.v'
+        with self.assertRaises(AssertionError):
+            soundness.source_check({**self.sources,path:self.sources[path]+'\nCheck free_omega_qlift.'},self.policy)
+
     def test_no_unsafe_universe_escape_in_maintained_theory(self):
         path='theories/Prob/Backend/MathComp/SelfModel.v'
         with self.assertRaises(AssertionError):
