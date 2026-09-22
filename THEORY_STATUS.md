@@ -9,6 +9,14 @@ does not imply a successful remote CI run.
 
 ## Frozen theory and maintained validation
 
+Direct MathComp is now an explicitly universe-unchecked, isolated Gate M
+development (`MN = MF = MathCompKernelMeasure R`), not a completed third safe
+backend. Frontier/kernel/hitting definitions and reflexivity probes compile;
+general hitting existence still lacks native order/omega laws. The two exact
+Gate M modules are absent from safe AllImports and public facades. See
+[MathComp direct status](docs/MATHCOMP_DIRECT.md). Native mathematics remains
+in Gate S; no MathComp + FreeOmega combination is restored.
+
 Interpretation Stages 1–4 are accepted through `ec96b90`. DS1–DS5a are
 accepted through `2dbba82`: the independent expectation domain has a standard
 measure correspondence; admissible FreeOmega SubEnum has algebra/equality and

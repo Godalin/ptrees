@@ -74,12 +74,16 @@ calculation, not a new axiom or a new premise asserting the desired result.
 
 ## Permanent prevention
 
-`Regression/Infrastructure/AllImports.v` requires every other maintained
+`Regression/Infrastructure/AllImports.v` requires every other Gate S (normally checked)
 Coq module in one universe context. Dune compiles it as part of the normal
 build. `tools/audit_architecture.py --aggregate-only` fails if that inventory omits a new module,
 contains extras, duplicates or is unsorted; CI runs this inventory check
 before building. `Require` rather than `Require Import` avoids exporting
 all short names while still merging the universe constraints.
+The two explicitly universe-unchecked MathComp direct modules are excluded
+from this safe aggregate and checked in a separate Gate M session; see
+[the direct-backend trust boundary](MATHCOMP_DIRECT.md). This does not repair
+their universe inconsistency or weaken Gate S's checked negative probes.
 After building, CI also rechecks the two repaired regressions and
 `PEuttAlgebra` together with `AllImports` in a single `coqchk` process.
 

@@ -908,6 +908,10 @@
       "no_correlated_head_pair",
       "correlated_response_not_peutt",
       "peutt_strictly_contained_in_tree_trans_bisim"
+    ],
+    "theories/Regression/Backend/MathCompDirect.v": [
+      "direct_ret_reflexivity",
+      "direct_eventful_reflexivity"
     ]
   }
 }

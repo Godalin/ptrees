@@ -3,9 +3,10 @@
 Current scope supersedes the earlier work sequence below: the complete PTree
 probability pairs are SubEnum/FreeOmega and SubEnumR/FreeOmega. MathComp remains
 an independent native discrete kernel/measure development; its completion
-frontend has been deleted. The direct recursive-frontier universe limitation
-is retained as a checked scope boundary, not a planned workaround. See
-[MathComp native scope](MATHCOMP_NATIVE_SCOPE.md).
+frontend has been deleted. The checked recursive-frontier universe limitation
+is retained as a negative regression. A separate universe-unchecked direct
+assembly is now authorized, with exact Gate M isolation and missing native
+order/omega obligations still open; see [MathComp direct scope](MATHCOMP_DIRECT.md).
 
 Follow-up: [SubEnumR behavioral backend](SUBENUMR_BEHAVIORAL_BACKEND.md)
 completes the native relational laws and checks generic FreeOmega/PTree
@@ -222,8 +223,9 @@ not yet a theorem computing its termination probability.
 Subsequent work completed finite-real native relational laws, the full generic
 behavioral profile, generic bidual validation and concrete SubEnumR external
 joint realization. Coupling soundness is closed for the two maintained finite
-native backends. Arbitrary-native actual-joint existence and MathComp recursive
-frontier work are not current goals. Native MathComp analysis is retained
+native backends. Arbitrary-native actual-joint existence is not a current goal.
+Direct MathComp recursive-frontier work has since reopened under the separate
+Gate M trust boundary described above. Native MathComp analysis stays checked
 independently; do not reintroduce the deleted completion path.
 
 No public facade changes, new semantic class, transport-existence axiom,

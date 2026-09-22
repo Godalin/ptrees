@@ -23,10 +23,12 @@ that every inhabitant is admissible at a native probability node.
 The maintained complete PTree behavioral backends are
 `SubEnum -> FreeOmega SubEnum` and `SubEnumR R -> FreeOmega (SubEnumR R)`.
 MathComp supplies a separate discrete kernel/measure model for native analytic
-results and native joint witnesses. It is not a recursive PTree frontier
-backend: the sealed carrier has a checked recursive-frontier universe
-obstruction. This is a scope boundary, not a missing requirement for the paper;
-there is no maintained MathComp-plus-completion workaround.
+results and native joint witnesses. An explicitly universe-unchecked
+`MN = MF = MathCompKernelMeasure R` assembly is now being developed separately
+as Gate M; it is not a third fully checked/complete backend. Its first probes
+instantiate the recursive frontier and `peutt_refl`; native order/omega laws
+and general hitting existence are still pending. There is no MathComp-plus-
+completion workaround. See [direct MathComp trust boundary](docs/MATHCOMP_DIRECT.md).
 
 The public conceptual architecture has four layers and two semantic clients:
 

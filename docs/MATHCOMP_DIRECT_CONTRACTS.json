@@ -1,0 +1,159 @@
+{
+  "gate_m_modules": [
+    "Eq/Backend/MathComp/Direct",
+    "Regression/Backend/MathCompDirect"
+  ],
+  "endpoints": [
+    {
+      "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_mixed",
+      "type": "Direct.mathcomp_direct_mixed\n     : forall R : reals.Real.type,\n       Mixed.MixedMeasure (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_mixed"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_tree",
+      "type": "Direct.mathcomp_direct_tree\n     : reals.Real.type -> (Type -> Type) -> Type -> Type",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_tree"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_head",
+      "type": "Direct.mathcomp_direct_head\n     : reals.Real.type -> (Type -> Type) -> Type -> Type",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_head"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_frontier",
+      "type": "Direct.mathcomp_direct_frontier\n     : reals.Real.type -> (Type -> Type) -> Type -> Type",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_frontier",
+        "Direct.mathcomp_direct_head"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_kernel",
+      "type": "Direct.mathcomp_direct_kernel\n     : forall (R : reals.Real.type) (E : Type -> Type) (A : Type),\n       PTreeDefinition.ptreeF E (Kernel.MathCompKernelMeasure R) A\n         (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A) ->\n       Kernel.MathCompKernelMeasure R\n         (PrimitiveStableHitting.stable_target\n            (PTreeDefinition.ptreeF E (Kernel.MathCompKernelMeasure R) A\n               (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A))\n            (UnifiedFrontier.stable_head E (Kernel.MathCompKernelMeasure R) A))",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_kernel"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_hitting",
+      "type": "Direct.mathcomp_direct_hitting\n     : forall (R : reals.Real.type) (E : Type -> Type) (A : Type),\n       PTreeDefinition.ptreeF E (Kernel.MathCompKernelMeasure R) A\n         (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A) ->\n       Kernel.MathCompKernelMeasure R\n         (UnifiedFrontier.stable_head E (Kernel.MathCompKernelMeasure R) A) -> Prop",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_hitting"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt",
+      "type": "Direct.mathcomp_direct_peutt\n     : forall R : reals.Real.type,\n       Kernel.MathCompCouplingGluing R ->\n       forall (E : Type -> Type) (A : Type),\n       PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A ->\n       PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A -> Prop",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_peutt"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt_refl",
+      "type": "Direct.mathcomp_direct_peutt_refl\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A : Type) (t : @Direct.mathcomp_direct_tree R E A),\n       @Direct.mathcomp_direct_peutt R G E A t t",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_peutt_refl",
+        "Direct.mathcomp_direct_tree"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_ret",
+      "type": "MathCompDirect.direct_ret\n     : forall R : reals.Real.type,\n       PTreeDefinition.ptree (fun _ : Type => Empty_set) (Kernel.MathCompKernelMeasure R) bool",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "MathCompDirect.direct_ret"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_frontier",
+      "type": "MathCompDirect.direct_frontier\n     : reals.Real.type -> Type",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_frontier",
+        "Direct.mathcomp_direct_head",
+        "MathCompDirect.direct_frontier"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_kernel",
+      "type": "MathCompDirect.direct_kernel\n     : forall R : reals.Real.type,\n       PTreeDefinition.ptreeF (fun _ : Type => Empty_set) (Kernel.MathCompKernelMeasure R) bool\n         (PTreeDefinition.ptree (fun _ : Type => Empty_set) (Kernel.MathCompKernelMeasure R) bool) ->\n       Kernel.MathCompKernelMeasure R\n         (PrimitiveStableHitting.stable_target\n            (PTreeDefinition.ptreeF (fun _ : Type => Empty_set) (Kernel.MathCompKernelMeasure R)\n               bool\n               (PTreeDefinition.ptree (fun _ : Type => Empty_set) (Kernel.MathCompKernelMeasure R)\n                  bool))\n            (UnifiedFrontier.stable_head (fun _ : Type => Empty_set)\n               (Kernel.MathCompKernelMeasure R) bool))",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_kernel",
+        "MathCompDirect.direct_kernel"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_hitting",
+      "type": "MathCompDirect.direct_hitting\n     : forall R : reals.Real.type,\n       PTreeDefinition.ptreeF (fun _ : Type => Empty_set) (Kernel.MathCompKernelMeasure R) bool\n         (PTreeDefinition.ptree (fun _ : Type => Empty_set) (Kernel.MathCompKernelMeasure R) bool) ->\n       Kernel.MathCompKernelMeasure R\n         (UnifiedFrontier.stable_head (fun _ : Type => Empty_set) (Kernel.MathCompKernelMeasure R)\n            bool) -> Prop",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_hitting",
+        "MathCompDirect.direct_hitting"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_ret_reflexivity",
+      "type": "MathCompDirect.direct_ret_reflexivity\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R),\n       @Direct.mathcomp_direct_peutt R G (fun _ : Type => Empty_set) bool\n         (MathCompDirect.direct_ret R) (MathCompDirect.direct_ret R)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_peutt_refl",
+        "Direct.mathcomp_direct_tree",
+        "MathCompDirect.direct_ret",
+        "MathCompDirect.direct_ret_reflexivity"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_eventful_reflexivity",
+      "type": "MathCompDirect.direct_eventful_reflexivity\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (F : Type -> Type) (A : Type)\n         (t : PTreeDefinition.ptree F (Kernel.MathCompKernelMeasure R) A),\n       @Direct.mathcomp_direct_peutt R G F A t t",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "Direct.mathcomp_direct_peutt_refl",
+        "Direct.mathcomp_direct_tree",
+        "MathCompDirect.direct_eventful_reflexivity"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Prob.Backend.MathComp.NativeLaws.mathcomp_native_bind_le_k",
+      "type": "NativeLaws.mathcomp_native_bind_le_k\n     : forall (R : reals.Real.type) (A B : Type) (mu : Kernel.MathCompKernelMeasure R A)\n         (k h : A -> Kernel.MathCompKernelMeasure R B),\n       (forall x : A, @Measure.mathcomp_node_le R B (k x) (h x)) ->\n       @Measure.mathcomp_node_le R B (@Kernel.mathcomp_kernel_bind R A B mu k)\n         (@Kernel.mathcomp_kernel_bind R A B mu h)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Prob.Backend.MathComp.NativeLaws.MathCompNativeMixedMeasure",
+      "type": "NativeLaws.MathCompNativeMixedMeasure\n     : forall R : reals.Real.type,\n       Mixed.MixedMeasure (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [],
+      "session_collapsed_universes": true
+    }
+  ]
+}

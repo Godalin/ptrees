@@ -5,6 +5,7 @@ import json
 import re
 from audit_assumptions import ROOT, MANIFEST, check, without_comments, query, logical_axioms, SOUNDNESS_AXIOMS
 from audit_architecture import graph
+from mathcomp_direct_policy import universe_source_check, check_build_flags, GATE_M
 
 POLICY = ROOT / 'docs/CONTRACT_POLICY.json'
 
@@ -47,6 +48,7 @@ def independent_math(sources):
 
 def source_check(sources=None, policy=None):
     if sources is None:
+        check_build_flags(ROOT)
         sources = {p.relative_to(ROOT).as_posix(): p.read_text() for p in (ROOT/'theories').rglob('*.v')}
     policy = policy or json.loads(POLICY.read_text())
     found_classes = {}
@@ -54,8 +56,7 @@ def source_check(sources=None, policy=None):
         code = code_only(text)
         assert not re.search(r'\b(?:Admitted|admit|Axiom|Axioms|Parameter|Parameters)\b', code), \
             'Unfinished proof or semantic assumption: ' + path
-        assert not re.search(r'\bUnset\s+Universe\s+Checking\b', code), \
-            'Unsafe universe setting in maintained theory: ' + path
+        universe_source_check(path, text)
         for name, decl in classes(text).items():
             found_classes[path + ':' + name] = decl
     assert found_classes == policy['classes'], 'Capability declaration drift (new or changed Class)'
@@ -80,7 +81,7 @@ def source_check(sources=None, policy=None):
         'Countable support must be independent of quotient derivations'
     hitting = code_only(sources['theories/Eq/Backend/StableHittingDomainSubEnum.v'])
     assert 'stable_hitting_denotational_adequacy' in hitting and 'stable_hitting_admissible' in hitting
-    print(f'Soundness source contracts: {len(sources)} modules; no unfinished proofs/new assumptions or capability drift.')
+    print(f'Soundness source contracts: {len(sources)} modules; {len(GATE_M)} explicitly universe-unchecked Gate M modules; no unfinished proofs/new assumptions or capability drift.')
 
 
 def manifest_check():

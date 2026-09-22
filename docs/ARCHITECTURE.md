@@ -68,14 +68,21 @@ MathComp's native joint witness theorem remains separate; no MathComp
 completion backend is maintained.
 
 The maintained complete probability pairs are `SubEnum / FreeOmega SubEnum`
-and `SubEnumR R / FreeOmega (SubEnumR R)`. MathComp is native discrete
-kernel/measure infrastructure only. Its entire backend dependency closure
+and `SubEnumR R / FreeOmega (SubEnumR R)`. MathComp native discrete
+kernel/measure mathematics remains checked normally. Its probability-backend dependency closure
 excludes `Prob/FreeOmega`; the former combination alias and specialized
 behavioral clients have been removed, without changing generic `MN`/`MF`.
 `MathComp/NativeLaws.v` retains same-carrier kernel algebra, while
-`Regression/Infrastructure/MathCompUniverse.v` records the excluded recursive
-frontier. No new wrapper, completion, or universe escape is planned here.
-See [removal and validation record](MATHCOMP_NATIVE_SCOPE.md).
+`Regression/Infrastructure/MathCompUniverse.v` records the recursive-frontier
+failure with universe checking enabled. The separate, exact-allowlisted
+`Eq/Backend/MathComp/Direct.v` and `Regression/Backend/MathCompDirect.v` use
+`Local Unset Universe Checking.` for direct assembly/probes only (Gate M).
+Every other module belongs to Gate S and must not import Gate M, even through
+regressions or helpers. Safe `AllImports` excludes both Gate M modules; its
+old all-module coverage rule is deliberately narrowed to all safe modules.
+Gate M is not part of the public facades or normally checked theory.
+See [direct scope and verification](MATHCOMP_DIRECT.md) and the historical
+[completion-removal record](MATHCOMP_NATIVE_SCOPE.md).
 
 Do not introduce an `ExternalJointRealization` capability merely to package
 these strengthening theorems. Reconsider only if an actual generic consumer

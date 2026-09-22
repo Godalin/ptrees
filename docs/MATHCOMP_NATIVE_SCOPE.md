@@ -1,5 +1,9 @@
 # MathComp: native mathematics, not a completion backend
 
+Historical removal record. The subsequent [direct MathComp proposal and first
+increment](MATHCOMP_DIRECT.md) supersede the native-only future-work decision,
+but preserve removal of MathComp + FreeOmega and all checked native mathematics.
+
 Baseline: `965e7b1`. This is a removal/scope-consolidation stage, not new
 probability theory. CI and environment changes are deliberately excluded.
 

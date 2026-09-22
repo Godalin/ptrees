@@ -1,6 +1,7 @@
-(** Native kernel algebra and the excluded recursive-frontier boundary.
-    The negative probes record a scope limit, not a future backend obligation.
-    No unsafe universe setting is used, and no missing capability is assumed. *)
+(** Native kernel algebra and the checked recursive-frontier boundary.
+    Gate S keeps these negative probes; the separate Gate M direct client
+    bypasses this check without repairing the universe inconsistency.
+    No unsafe universe setting is used here, and no capability is assumed. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import reals.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
