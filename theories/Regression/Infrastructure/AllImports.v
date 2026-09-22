@@ -85,8 +85,10 @@ Require PTree.Prob.Backend.Common.CountableRealTransport.
 Require PTree.Prob.Backend.Common.DomainTransport.
 Require PTree.Prob.Backend.Common.FinSupp.
 Require PTree.Prob.Backend.Common.FiniteCapacityMatching.
+Require PTree.Prob.Backend.Common.FiniteEnum.
 Require PTree.Prob.Backend.Common.FiniteMatching.
 Require PTree.Prob.Backend.Common.FiniteRationalTransport.
+Require PTree.Prob.Backend.Common.FiniteSubdist.
 Require PTree.Prob.Backend.Common.RatGeometric.
 Require PTree.Prob.Backend.Common.RatSubTypes.
 Require PTree.Prob.Backend.Common.RealSubTypes.
@@ -233,6 +235,7 @@ Require PTree.Regression.Probability.ConditionalResampling.
 Require PTree.Regression.Probability.CorrelatedSampleAlgebra.
 Require PTree.Regression.Probability.CountableCoupling.
 Require PTree.Regression.Probability.EnumQDisintegration.
+Require PTree.Regression.Probability.FiniteRepresentation.
 Require PTree.Regression.Probability.FiniteTransport.
 Require PTree.Regression.Probability.FreeOmegaDomain.
 Require PTree.Regression.Probability.FreeOmegaSoundness.

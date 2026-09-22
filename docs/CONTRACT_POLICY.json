@@ -498,6 +498,26 @@
       "zero_joint_reconstruction",
       "function_state_disintegration"
     ],
+    "theories/Regression/Probability/FiniteRepresentation.v": [
+      "duplicate_raw_preserved",
+      "weighting_mass_two",
+      "overweight_not_subdistribution",
+      "negative_list_rejected",
+      "null_branch_ignored",
+      "null_branch_ae_ext",
+      "bind_preserves_probability",
+      "bind_preserves_nonnegative",
+      "bind_computes_by_expectation",
+      "empty_result_carrier",
+      "half_nonnegative",
+      "half_bounded",
+      "rational_half_mass",
+      "rational_bind_quarter",
+      "sqrt_weight_nonnegative",
+      "sqrt_weight_bounded",
+      "real_weight_without_rational_encoding",
+      "high_finite_bind"
+    ],
     "theories/Regression/Probability/FiniteTransport.v": [
       "neighbors_true",
       "neighbors_false",
