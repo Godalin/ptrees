@@ -16,21 +16,22 @@ complete behavioral backends remain SubEnum/FreeOmega and SubEnumR/FreeOmega.
 | PTree, stable head, measure of stable heads | Compiles with explicit universe bypass |
 | Primitive kernel and stable-hitting predicate | Compiles with explicit universe bypass |
 | peutt and generic eventful reflexivity | Compiles; MathCompCouplingGluing remains explicit |
-| Native SemanticMeasureOrderLaws | Missing; negative inference probe |
+| Native SemanticMeasureOrderLaws | Proved in checked OrderLaws.v; positive inference probe |
 | Native SemanticOmegaLaws | Missing; negative inference probe |
 | General stable-hitting existence | Pending both preceding law packages |
 | Native Bernoulli / bind / recursive cross-checks | Pending; not replaced by reflexivity |
 
 The negative existence probe applies the actual generic
-`ptree_stable_hitting_exists` with holes for exactly the order/omega packages.
+`ptree_stable_hitting_exists` with inference for the order/omega packages.
+Order is now available; omega is still missing.
 There is no assumed instance making this endpoint appear complete.
 Reflexivity alone does not establish existence: its generic proof matches
 whatever complete witnesses exist, without requiring a witness for every tree.
 
-The next mathematical work belongs in checked native modules: source-side
-bind monotonicity, increasing-chain lub existence and laws, and required bind
-continuity. Existing native order basics and continuation monotonicity are
-already available. Do not add unrelated capabilities for symmetry.
+The [native-order increment](MATHCOMP_NATIVE_ORDER.md) completes source-side
+bind monotonicity without gluing or other law premises. The next mathematical
+work stays in checked native modules: increasing-chain lub existence and
+required bind continuity. Do not add unrelated capabilities for symmetry.
 
 ## Exact trust split
 
@@ -116,6 +117,7 @@ is claimed. The checked negative universe regression remains in Gate S.
 - No new probability assumption/class, public facade change, completion,
   environment change or CI action.
 
-This completes the isolation/probe increment only. Native order/omega proofs,
+This records the original isolation/probe increment only. The subsequent
+native-order increment is linked above; omega proofs,
 general direct hitting existence and nontrivial semantic cross-checks remain
 open; complete direct-backend acceptance is not claimed.

@@ -912,6 +912,14 @@
     "theories/Regression/Backend/MathCompDirect.v": [
       "direct_ret_reflexivity",
       "direct_eventful_reflexivity"
+    ],
+    "theories/Regression/Backend/MathCompOrder.v": [
+      "bottom_below_return",
+      "cemetery_mass_not_monotone",
+      "partial_sampling_returned_mass",
+      "partial_sampling_bind_monotone",
+      "generic_source_bind_order",
+      "supplied_lub_is_least"
     ]
   }
 }

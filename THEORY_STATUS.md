@@ -12,7 +12,8 @@ does not imply a successful remote CI run.
 Direct MathComp is now an explicitly universe-unchecked, isolated Gate M
 development (`MN = MF = MathCompKernelMeasure R`), not a completed third safe
 backend. Frontier/kernel/hitting definitions and reflexivity probes compile;
-general hitting existence still lacks native order/omega laws. The two exact
+native order laws are proved in Gate S, but general hitting existence still
+lacks native omega laws. The two exact
 Gate M modules are absent from safe AllImports and public facades. See
 [MathComp direct status](docs/MATHCOMP_DIRECT.md). Native mathematics remains
 in Gate S; no MathComp + FreeOmega combination is restored.

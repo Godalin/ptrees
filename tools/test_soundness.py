@@ -120,5 +120,17 @@ class SoundnessTests(unittest.TestCase):
                  self.assertRaises(AssertionError):
                 soundness.generic_quotient_check()
 
+    def test_native_order_audit_rejects_circular_or_gluing_assumptions(self):
+        name = 'PTree.Prob.Backend.MathComp.OrderLaws.mathcomp_native_bind_le_mu'
+        for typ, axioms in [
+            ('x : MathCompCouplingGluing R -> True', 'Closed under the global context'),
+            ('x : SemanticMeasureOrderLaws M -> True', 'Closed under the global context'),
+            ('x : SemanticOmegaLaws M -> True', 'Closed under the global context'),
+            ('x : True', 'Axioms:\nnew_integral_axiom : False'),
+        ]:
+            with self.subTest(typ=typ), patch.object(soundness, 'query', return_value=[{
+                    'name': name, 'type': typ, 'assumptions': axioms}]), self.assertRaises(AssertionError):
+                soundness.mathcomp_native_check()
+
 
 if __name__=='__main__': unittest.main()

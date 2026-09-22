@@ -1,4 +1,4 @@
-(** Integration regression: load every module in one universe context.
+(** Gate S integration regression: load every normally checked module in one universe context.
     Not a facade or an ordinary theorem client. *)
 Require PTree.API.Enum.
 Require PTree.API.FreeOmega.
@@ -116,6 +116,7 @@ Require PTree.Prob.Backend.MathComp.Coupling.
 Require PTree.Prob.Backend.MathComp.Kernel.
 Require PTree.Prob.Backend.MathComp.Measure.
 Require PTree.Prob.Backend.MathComp.NativeLaws.
+Require PTree.Prob.Backend.MathComp.OrderLaws.
 Require PTree.Prob.Backend.SubEnum.Domain.
 Require PTree.Prob.Backend.SubEnum.Expectation.
 Require PTree.Prob.Backend.SubEnum.FreeOmega.Admissibility.
@@ -196,6 +197,7 @@ Require PTree.Regression.Backend.ExtendedEnum.
 Require PTree.Regression.Backend.FreeOmegaEscapingMass.
 Require PTree.Regression.Backend.FreeOmegaLimitSafety.
 Require PTree.Regression.Backend.FreeOmegaUpperContracts.
+Require PTree.Regression.Backend.MathCompOrder.
 Require PTree.Regression.Backend.NativeReflection.
 Require PTree.Regression.Backend.SubEnumR.
 Require PTree.Regression.Backend.SubEnumRBehavior.

@@ -5,7 +5,7 @@ Local Unset Universe Checking.
 Require PTree.Regression.Backend.FreeOmegaUpperContracts.
 From mathcomp Require Import reals.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
-From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws.
+From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws OrderLaws.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel PEutt.
 From PTree.Eq.Backend.MathComp Require Import Direct.
@@ -23,10 +23,11 @@ Definition direct_frontier : Type := @mathcomp_direct_frontier R E bool.
 Definition direct_kernel := @mathcomp_direct_kernel R E bool.
 Definition direct_hitting := @mathcomp_direct_hitting R E bool.
 
-(** Actual missing native mathematics, not universe errors. No supplied
+(** Order is now proved in Gate S. Omega remains missing mathematics, not
+    a universe error. No supplied
     assumptions stand in for these instances. Replace each negative probe
     with a positive one when its checked native proof is implemented. *)
-Fail Definition missing_native_order : @SemanticMeasureOrderLaws M NI NO := _.
+Definition available_native_order : @SemanticMeasureOrderLaws M NI NO := _.
 Fail Definition missing_native_omega : @SemanticOmegaLaws M NI NO := _.
 Fail Definition missing_general_hitting_exists :=
   @ptree_stable_hitting_exists E M M NI NI MX NO _ _ bool.

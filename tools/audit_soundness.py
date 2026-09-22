@@ -112,6 +112,16 @@ def mathcomp_native_check():
             'mathcomp_native_lub_constant', 'mathcomp_native_prefix_sup',
             'MathCompNativeCofinalityLaws', 'mathcomp_native_bind_le_k'],
         'PTree.Prob.Backend.MathComp.Coupling': ['mathcomp_coupling_realization'],
+        'PTree.Prob.Backend.MathComp.OrderLaws': [
+            'mathcomp_native_sintegral_le', 'mathcomp_native_integral_le',
+            'mathcomp_native_bind_le_mu', 'mathcomp_native_le_antisym',
+            'mathcomp_native_lub_upper', 'mathcomp_native_lub_least',
+            'MathCompNativeOrderLaws'],
+        'PTree.Regression.Backend.MathCompOrder': [
+            'checked_native_order', 'bottom_below_return',
+            'cemetery_mass_not_monotone', 'partial_sampling_returned_mass',
+            'partial_sampling_bind_monotone', 'generic_source_bind_order',
+            'supplied_lub_is_least'],
         'PTree.Examples.BernoulliFactory.RealBernoulliMathComp': [
             'mathcomp_binary_oracle_lub', 'mathcomp_binary_oracle_is_ast'],
         'PTree.Regression.Infrastructure.MathCompUniverse': ['self_nested_sampling'],
@@ -120,6 +130,10 @@ def mathcomp_native_check():
     for e in entries:
         assert logical_axioms(e['assumptions']) <= SOUNDNESS_AXIOMS, e['name']
         assert not re.search(r'\b(?:FreeOmega\w*|free_omega_\w*|peutt|stable_head)\b', e['type']), e['name']
+        if '.MathComp.OrderLaws.' in e['name'] or '.Backend.MathCompOrder.' in e['name']:
+            assert 'MathCompCouplingGluing' not in e['type'], 'Order must not assume gluing'
+            if not e['name'].endswith(('MathCompNativeOrderLaws', 'checked_native_order')):
+                assert not re.search(r'\bSemantic\w*Laws\b', e['type']), 'Native math must not assume the desired law'
     print(f'{len(entries)} native MathComp endpoints checked; no completion/frontier in signatures; unchanged logical whitelist.')
 
 
