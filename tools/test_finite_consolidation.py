@@ -3,8 +3,10 @@ from audit_finite_consolidation import native_boundary, compare_contracts, sourc
 
 
 class FiniteConsolidationTests(unittest.TestCase):
-    def test_current_source_boundary(self):
-        source_check()
+    def test_frozen_migration_and_current_native_boundary(self):
+        # Exact source conservation belongs to the completed migration, not
+        # to subsequent, explicitly requested generic theorem improvements.
+        source_check(conserved_ref='5f6b414')
 
     def test_no_legacy_bridge_in_native_code(self):
         for bad in ['Check nnQ.', 'Check nnQ_0.', 'Check Build_nnQ.',

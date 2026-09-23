@@ -1536,29 +1536,37 @@ Proof.
            ++ exact Hk.
 Qed.
 
-(** Monadic congruence.  The only syntax-specific premise is the current
+(** Heterogeneous relational monadic congruence. The source relation [RR]
+    and result relation [RS] are arbitrary and independent. The existing
+    heterogeneous bind-compatible closure, with an empty recursive candidate,
+    suffices; neither relation needs to be an equivalence.
+    The only syntax-specific premise is the current
     global form of the global/diagonal fuel cofinality theorem; it is used as
     a proof-side scheduling fact by [stable_hitting_bind], never by the
     definition of [peutt]. *)
-Theorem peutt_bind : forall A R1 R2
+Theorem peutt_bind : forall A B R1 R2
     (RR : R1 -> R2 -> Prop)
+    (RS : A -> B -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
-    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A),
+    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN B),
   peutt RR t1 t2 ->
-  (forall r1 r2, RR r1 r2 -> peutt eq (k1 r1) (k2 r2)) ->
-  peutt eq (PTree.bind t1 k1) (PTree.bind t2 k2).
+  (forall r1 r2, RR r1 r2 -> peutt RS (k1 r1) (k2 r2)) ->
+  peutt RS (PTree.bind t1 k1) (PTree.bind t2 k2).
 Proof.
-  intros A R1 R2 RR t1 t2 k1 k2 Hsource Hk.
+  intros A B R1 R2 RR RS t1 t2 k1 k2 Hsource Hk.
   unfold peutt, peutt_state,
     stable_hitting_bisim.
   eapply (@leq_gfp _ _ (fstable_hitting_bisim
     (@ptree_primitive_kernel E MN MF FI MX A)
-    (@ptree_primitive_kernel E MN MF FI MX A)
-    (@ptree_stable_head_rel_mono E MN A A eq))
-    (bind_bisim_candidate (A := A))).
-  - exact (bind_bisim_candidate_postfixed (A := A)).
-  - right. exists R1, R2, RR, t1, t2, k1, k2.
-    repeat split; try reflexivity; assumption.
+    (@ptree_primitive_kernel E MN MF FI MX B)
+    (@ptree_stable_head_rel_mono E MN A B RS))
+    (bind_upto_closure RS (fun _ _ => False))).
+  - exact (bind_upto_closure_compatible
+      (RR0 := RS) (sim := fun _ _ => False)
+      (fun _ _ Hfalse => False_rect _ Hfalse)).
+  - right. right. exists R1, R2, RR, t1, t2, k1, k2.
+    repeat split; try reflexivity; try assumption.
+    intros r1 r2 Hr. right. exact (Hk r1 r2 Hr).
 Qed.
 
 (** Generator-level unfolding of monadic congruence.  This exposes the

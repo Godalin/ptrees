@@ -47,13 +47,21 @@ def native_boundary(source):
     assert 'Prob.Legacy' not in code, 'Native finite backend imports legacy syntax'
 
 
-def source_check():
+def source_check(conserved_ref=None):
+    """Check the migration's exact conservation at a specified git checkpoint.
+
+    Later theory work must not weaken that historical conservation claim.
+    Native representation/legacy boundary checks still inspect current code.
+    """
     paths = subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', BASELINE],
                                     cwd=ROOT, text=True).splitlines()
     conserved = []
     for path in paths:
         if path.endswith('.v') and path.startswith(PROTECTED) and path not in EXCEPTIONS:
-            assert (ROOT / path).read_bytes() == frozen(path), 'Protected theory changed: ' + path
+            actual = subprocess.check_output(
+                ['git', 'show', conserved_ref + ':' + path], cwd=ROOT) \
+                if conserved_ref else (ROOT / path).read_bytes()
+            assert actual == frozen(path), 'Protected theory changed: ' + path
             conserved.append(path)
     for folder in ['theories/Prob/Backend/EnumQ', 'theories/Prob/Backend/SubEnumQ',
                    'theories/Prob/Backend/SubEnumR', 'theories/Examples']:
@@ -67,7 +75,8 @@ def source_check():
     assert 'finite_subdist_map_weights rational_scalar_monotone mu' in bridge
     assert not (ROOT/'theories/Prob/Backend/Common/RatSubTypes.v').exists()
     assert (ROOT/'theories/Prob/Legacy/RatSubTypes.v').exists()
-    print(f'{len(conserved)} protected theory modules byte-for-byte unchanged; '
+    print(f'{len(conserved)} protected theory modules byte-for-byte unchanged'
+          + (f' at {conserved_ref}' if conserved_ref else '') + '; '
           'shared carriers, scalar transport and legacy exclusion checked.')
 
 

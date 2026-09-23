@@ -615,10 +615,11 @@ Qed.
 Corollary peutt_bind
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
-    {A R1 R2}
+    {A B R1 R2}
     (RR : R1 -> R2 -> Prop)
+    (RS : A -> B -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
-    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A) :
+    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN B) :
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
@@ -629,17 +630,17 @@ Corollary peutt_bind
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega A A eq (k1 r1) (k2 r2)) ->
+      FreeOmegaObservableSemanticOmega A B RS (k1 r1) (k2 r2)) ->
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega A A eq
+    FreeOmegaObservableSemanticOmega A B RS
     (PTree.bind t1 k1) (PTree.bind t2 k2).
 Proof.
   intros Hsource Hk.
   eapply peutt_bind.
-  - intros B S t k. apply ptree_bind_cofinal_all.
+  - intros X Y t k. apply ptree_bind_cofinal_all.
   - exact Hsource.
   - exact Hk.
   Unshelve. all: try typeclasses eauto.

@@ -68,6 +68,63 @@ Proof.
   intro Ht. setoid_rewrite Ht. reflexivity.
 Qed.
 
+(** Both return carriers and both relations are independent. In particular
+    no equivalence or reflexivity premise on either relation is available. *)
+Section HeterogeneousBind.
+Context {E : Type -> Type}.
+Local Notation W := (@PEutt.peutt E EnumQ MF
+  (FreeOmegaObservableSemanticMeasure
+    (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
+  FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+  FreeOmegaObservableSemanticOmega).
+
+Lemma canonical_heterogeneous_bind {R1 R2 A B}
+    (RR : R1 -> R2 -> Prop) (RS : A -> B -> Prop)
+    (t1 : ptree E EnumQ R1) (t2 : ptree E EnumQ R2)
+    (k1 : R1 -> ptree E EnumQ A) (k2 : R2 -> ptree E EnumQ B) :
+  W RR t1 t2 ->
+  (forall x y, RR x y -> W RS (k1 x) (k2 y)) ->
+  W RS (PTree.bind t1 k1) (PTree.bind t2 k2).
+Proof. apply Bind.peutt_bind. Qed.
+End HeterogeneousBind.
+
+Variant bindE : Type -> Type := BindAsk : bindE bool.
+Local Notation bindW := (@PEutt.peutt bindE EnumQ MF
+  (FreeOmegaObservableSemanticMeasure
+    (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
+  FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+  FreeOmegaObservableSemanticOmega).
+
+Definition bind_source_rel (b : bool) (n : nat) :=
+  n = if b then 1 else 0.
+Definition bind_result_rel (n : nat) (b : bool) :=
+  n = if b then 2 else 3.
+
+(** A real probabilistic/eventful client: bool/nat at the source and
+    nat/bool at the result, with different non-equality relations. *)
+Example eventful_heterogeneous_bind :
+  bindW bind_result_rel
+    (PTree.bind
+      (Vis BindAsk (fun _ => Prob reg_fair (fun b => Ret b)))
+      (fun b => Tau (Ret (if b then 2 else 3))))
+    (PTree.bind
+      (Vis BindAsk (fun _ => Prob reg_fair
+        (fun b => Ret (if b then 1 else 0))))
+      (fun n => Ret (Nat.eqb n 1))).
+Proof.
+  eapply Bind.peutt_bind with (RR := bind_source_rel).
+  - apply peutt_of_pstruct.
+    apply pstruct_fold. constructor. intro response.
+    apply pstruct_fold. constructor. intro b.
+    apply pstruct_fold. constructor. reflexivity.
+  - intros b n Hn. unfold bind_source_rel in Hn. subst n.
+    eapply peutt_of_hitting_lift.
+    + apply (proj2 (stable_hitting_tau_iff _ _)).
+      apply stable_hitting_ret.
+    + apply stable_hitting_ret.
+    + apply sem_lift_ret. constructor. destruct b; reflexivity.
+Qed.
+
 Lemma canonical_fmap_laws_regression {A B C}
     (f : A -> B) (g : B -> C) (t : ptree algebraE EnumQ A) :
   peutt eq (PTree.fmap (fun x => x) t) t /\

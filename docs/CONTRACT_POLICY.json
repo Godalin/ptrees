@@ -840,6 +840,8 @@
     "theories/Regression/Semantics/PEuttAlgebra.v": [
       "canonical_monad_laws_regression",
       "canonical_bind_setoid_rewrite",
+      "canonical_heterogeneous_bind",
+      "eventful_heterogeneous_bind",
       "canonical_fmap_laws_regression",
       "canonical_fmap_setoid_rewrite",
       "canonical_prob_ret_regression",

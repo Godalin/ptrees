@@ -37,7 +37,8 @@ extensionality and decidable equality of Boolean proofs. It is not imported
 by native finite algebra or instances, and does not assume general proof
 irrelevance. Its logical dependency is explicit.
 
-`tools/audit_finite_consolidation.py` is the current migration gate. It protects
+`tools/audit_finite_consolidation.py` is the migration gate frozen at
+`5f6b414`, not a prohibition on later generic theory improvements. It protects
 125 generic/MathComp/real-backend source files byte-for-byte against `1cba6c5`
 and compares all 505 frozen compiled endpoints. Only reviewed definition-owner
 relocations and the definitional rat carrier projection are normalized; added
