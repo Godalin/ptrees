@@ -127,7 +127,7 @@ def permitted(module, dependency):
         return dependency in {"PTree", "Eq", "Eq/UnifiedFrontier", "Eq/PrimitiveStableHitting",
             "Eq/WellFormedness", "Eq/StableHittingComputation", "Eq/ProbabilisticTrace", "Eq/Bind", "Eq/Algebra", "Eq/Iter",
             "Eq/FreeOmega/Bind", "Eq/FreeOmega/Algebra", "Eq/FreeOmega/Iter",
-            "Interp/FreeOmega/Guarded", "Interp/FreeOmega/Atomic", "Interp/FreeOmega/MDP"}
+            "Interp/Guarded", "Interp/FreeOmega/Atomic", "Interp/FreeOmega/MDP"}
     if module == "Semantics":
         return under("Semantics")
     if module.startswith("Core/"):

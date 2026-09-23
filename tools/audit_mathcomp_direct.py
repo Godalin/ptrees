@@ -29,7 +29,9 @@ ENDPOINTS += ['PTree.Regression.Backend.MathCompDirect.' + n for n in [
     'direct_eventful_bind_rewrite', 'direct_nested_unbounded_retry',
     'direct_nested_retry_diagonal', 'direct_retry_vis_interaction',
     'direct_heterogeneous_bind', 'direct_bind_setoid',
-    'direct_continuation_setoid', 'direct_fmap_setoid']]
+    'direct_continuation_setoid', 'direct_fmap_setoid',
+    'direct_eventful_iter', 'direct_handler_guarded',
+    'direct_guarded_interp', 'direct_guarded_tau']]
 ENDPOINTS += [
     'PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior',
     'PTree.Regression.Backend.MathCompDirect.direct_canonical_profile']

@@ -250,3 +250,46 @@ Example direct_eventful_iter
     (PTree.iter step1 i) (PTree.iter step2 j).
 Proof. intro Hij. exact (peutt_iter_eventful_of_generator_closed H Hij). Qed.
 End GenericIteration.
+
+(** Heterogeneous effect refinement, with a semantically checked guard.
+    All scheduling and preservation proofs come from generic owners. *)
+From PTree.Interp Require Import Kernel Scheduling Preservation Guarded.
+From PTree.Prob.Interface Require Import AE Coupling.
+Section GenericInterpretation.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E F : Type -> Type}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Variable rename : forall X, E X -> F X.
+
+Definition direct_guarded_handler X (e : E X) : ptree F M X :=
+  Tau (Vis (rename e) (fun x => Ret x)).
+
+Lemma direct_handler_guarded :
+  @guarded_handler E F M M NI MX NO direct_guarded_handler.
+Proof.
+  apply PTree.Interp.Guarded.guarded_handler_of_hitting.
+  intros X e. exists (sem_ret (FHVis (rename e) (fun x => Ret x))). split.
+  - apply (proj2 (ptree_stable_hitting_tau_iff (FI := NI) (FO := NO) _ _)).
+    apply stable_hitting_vis.
+  - apply sem_ae_ret. exact I.
+Qed.
+
+Example direct_guarded_interp {A B} (RR : A -> B -> Prop)
+    (t : ptree E M A) (u : ptree E M B) :
+  @peutt E M M NI NC MX NO A B RR t u ->
+  @peutt F M M NI NC MX NO A B RR
+    (PTree.interp direct_guarded_handler t)
+    (PTree.interp direct_guarded_handler u).
+Proof. apply PTree.Interp.Guarded.peutt_interp_guarded. exact direct_handler_guarded. Qed.
+
+Example direct_guarded_tau {A} (t : ptree E M A) :
+  @peutt F M M NI NC MX NO A A eq
+    (PTree.interp direct_guarded_handler (Tau t))
+    (PTree.interp direct_guarded_handler t).
+Proof. apply direct_guarded_interp. apply peutt_tau_l. Qed.
+End GenericInterpretation.

@@ -16,6 +16,7 @@ Require Import PTree.Interp.Kernel.
 Require Import PTree.Interp.Structural.
 
 From PTree.Interp.FreeOmega Require Import Cofinality.
+Require PTree.Interp.Preservation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -525,14 +526,7 @@ Context {A B : Type} (RR : A -> B -> Prop)
     already related by the canonical source equivalence. *)
 Definition interp_bisim_candidate
     (s1 : ptree' F MN A) (s2 : ptree' F MN B) : Prop :=
-  exists (t1 : ptree E MN A) (t2 : ptree E MN B),
-    s1 = observe (PTree.interp handler t1) /\
-    s2 = observe (PTree.interp handler t2) /\
-    @peutt E MN MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega A B RR t1 t2.
+  @Preservation.interp_bisim_candidate E F MN MF (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NC := NC) (NO := NO)) FreeOmegaMixedMeasure (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)) A B RR handler s1 s2.
 
 (** The irreducible handled-[Vis] obligation.  When the handler returns
     internally, stable hitting crosses the handler bind and immediately
@@ -542,33 +536,7 @@ Definition interp_bisim_candidate
     This property isolates exactly that collapsed segment; Ret heads and the
     outer source stable-hitting composition are derivable from existing laws. *)
 Definition interp_vis_fusion : Prop :=
-  forall X (e : E X) (k1 : X -> ptree E MN A) (k2 : X -> ptree E MN B),
-    (forall x,
-      @peutt E MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasure
-        FreeOmegaObservableSemanticOmega A B RR (k1 x) (k2 x)) ->
-    @stable_hitting_match MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticOmega
-      (ptree' F MN A) (ptree' F MN B)
-      (stable_head F MN A) (stable_head F MN B)
-      (@ptree_primitive_kernel F MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasure A)
-      (@ptree_primitive_kernel F MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasure B)
-      (@ptree_stable_head_rel F MN A B RR)
-      (@bind_upto_closure F MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaObservableSemanticMeasureCoreLaws
-        FreeOmegaMixedMeasure
-        FreeOmegaObservableSemanticOmega
-        A B RR interp_bisim_candidate)
-      (observe (ptree_interp_head_tree handler (FHVis e k1)))
-      (observe (ptree_interp_head_tree handler (FHVis e k2))).
+  @Preservation.interp_vis_fusion E F MN MF (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NC := NC) (NO := NO)) FreeOmegaMixedMeasure (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)) A B RR handler.
 
 (** Full effectful interpreter preservation follows once the single
     collapsed handled-[Vis] fusion above is supplied.  This theorem
@@ -590,111 +558,7 @@ Theorem peutt_interp_of_vis_fusion
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A B RR
       (PTree.interp handler t1) (PTree.interp handler t2).
-Proof.
-  intros t1 t2 Hsource.
-  eapply (peutt_coinduction_upto_bind
-    (E := F) (MN := MN) (MF := MF)
-    (fun A0 R0 (t : ptree F MN A0) (k : A0 -> ptree F MN R0) =>
-      ptree_bind_cofinal_all t k)
-    (A := A) (B := B) (RR0 := RR)
-    (sim := interp_bisim_candidate)).
-  - intros s1 s2 Hsim.
-    unfold interp_bisim_candidate in Hsim.
-    destruct Hsim as [u1 Hsim].
-    destruct Hsim as [u2 Hsim].
-    destruct Hsim as [Hs1 Hsim].
-    destruct Hsim as [Hs2 Hu].
-    rewrite Hs1, Hs2.
-    destruct (stable_hitting_exists
-      (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)
-      (@ptree_primitive_kernel E MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasure A) (observe u1))
-      as [source1 Hsource1].
-    destruct (stable_hitting_exists
-      (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)
-      (@ptree_primitive_kernel E MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasure B) (observe u2))
-      as [source2 Hsource2].
-    destruct (stable_hitting_front_choice
-      (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)
-      (fun h : stable_head E MN A =>
-        ptree_interp_head_tree handler h))
-      as [front1 Hfront1].
-    destruct (stable_hitting_front_choice
-      (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)
-      (fun h : stable_head E MN B =>
-        ptree_interp_head_tree handler h))
-      as [front2 Hfront2].
-    assert (HsourceLift :
-      @sem_lift MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        _ _
-        (@ptree_stable_head_rel E MN A B RR
-          (@peutt_state E MN MF
-            (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-            FreeOmegaObservableSemanticMeasureCoreLaws
-            FreeOmegaMixedMeasure
-            FreeOmegaObservableSemanticOmega A B RR))
-        source1 source2).
-    { eapply peutt_state_hitting_lift;
-        [exact Hu|exact Hsource1|exact Hsource2]. }
-    assert (Htarget1 : @ptree_stable_hitting F MN MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega A
-      (observe (PTree.interp handler u1))
-      (free_omega_bind source1 front1)).
-    { eapply (ptree_stable_hitting_interp
-        (FI := FreeOmegaObservableSemanticMeasure)
-        (FO := FreeOmegaObservableSemanticOmega)
-        (handler := handler) (t := u1) (hs := source1) (front := front1)).
-      - apply ptree_interp_cofinal_all.
-      - exact Hsource1.
-      - exact Hfront1. }
-    assert (Htarget2 : @ptree_stable_hitting F MN MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega B
-      (observe (PTree.interp handler u2))
-      (free_omega_bind source2 front2)).
-    { eapply (ptree_stable_hitting_interp
-        (FI := FreeOmegaObservableSemanticMeasure)
-        (FO := FreeOmegaObservableSemanticOmega)
-        (handler := handler) (t := u2) (hs := source2) (front := front2)).
-      - apply ptree_interp_cofinal_all.
-      - exact Hsource2.
-      - exact Hfront2. }
-    eapply stable_hitting_match_of_hitting_lift;
-      [exact Htarget1|exact Htarget2|].
-    eapply FOQLBind; [exact HsourceLift|].
-    intros h1 h2 Hhead. inversion Hhead; subst; clear Hhead.
-    + eapply (sem_lift_mono
-        (SI := FreeOmegaObservableSemanticMeasure
-          (NI := NI) (NO := NO))).
-      * apply ptree_stable_head_rel_mono.
-        intros x1 x2 Hknown. right. left. exact Hknown.
-      * eapply peutt_state_hitting_lift.
-        -- apply peutt_ret. exact H.
-        -- exact (Hfront1 (FHRet r1)).
-        -- exact (Hfront2 (FHRet r2)).
-    + pose proof (stable_hitting_match_hitting_lift
-        (FI := FreeOmegaObservableSemanticMeasure
-          (NI := NI) (NO := NO))
-        (FO := FreeOmegaObservableSemanticOmega
-          (NI := NI) (NO := NO))
-        (Hvis X e k1 k2 H)
-        (Hfront1 (FHVis e k1))
-        (Hfront2 (FHVis e k2))) as HvisLift.
-      cbn in HvisLift. exact HvisLift.
-  - exists t1, t2. repeat split; try reflexivity. exact Hsource.
-  Unshelve. all: typeclasses eauto.
-Qed.
+Proof. apply Preservation.peutt_interp_of_vis_fusion. exact Hvis. Qed.
 
 (** Exact closure obligation for an arbitrary effectful handler.  Compared
     with the generic PTree coinduction rule, the candidate is fixed to
@@ -702,27 +566,7 @@ Qed.
     premise cannot hide a different behavioral relation or strengthen the
     theorem's conclusion. *)
 Definition interp_generator_closed : Prop :=
-  forall (t1 : ptree E MN A) (t2 : ptree E MN B),
-    @peutt E MN MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws
-      FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega A B RR t1 t2 ->
-    @stable_hitting_match MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticOmega
-      (ptree' F MN A) (ptree' F MN B)
-      (stable_head F MN A) (stable_head F MN B)
-      (@ptree_primitive_kernel F MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasure A)
-      (@ptree_primitive_kernel F MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasure B)
-      (@ptree_stable_head_rel F MN A B RR)
-      interp_bisim_candidate
-      (observe (PTree.interp handler t1))
-      (observe (PTree.interp handler t2)).
+  @Preservation.interp_generator_closed E F MN MF (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NC := NC) (NO := NO)) FreeOmegaMixedMeasure (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)) A B RR handler.
 
 (** Full behavioral preservation follows from precisely the candidate-level
     handler closure above.  The canonical generator is unchanged. *)
@@ -740,12 +584,6 @@ Theorem peutt_interp_of_generator_closed
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A B RR
       (PTree.interp handler t1) (PTree.interp handler t2).
-Proof.
-  intros t1 t2 Hsource.
-  eapply peutt_coinduction with
-      (sim := interp_bisim_candidate).
-  - intros s1 s2 [u1 [u2 [-> [-> Hu]]]]. exact (Hclosed u1 u2 Hu).
-  - exists t1, t2. repeat split; try reflexivity. exact Hsource.
-Qed.
+Proof. apply Preservation.peutt_interp_of_generator_closed. exact Hclosed. Qed.
 
 End FreeOmegaInterpCoinduction.

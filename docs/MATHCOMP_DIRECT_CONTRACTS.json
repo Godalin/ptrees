@@ -331,6 +331,48 @@
       "session_collapsed_universes": true
     },
     {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_eventful_iter",
+      "type": "MathCompDirect.direct_eventful_iter\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (I1 I2 A B : Type)\n         (step1 : I1 -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) (I1 + A))\n         (step2 : I2 -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) (I2 + B))\n         (SI : I1 -> I2 -> Prop) (RR : A -> B -> Prop),\n       @Iter.iter_eventful_generator_closed E (Kernel.MathCompKernelMeasure R)\n         (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) I1 I2 A B\n         step1 step2 SI RR ->\n       forall (i : I1) (j : I2),\n       SI i j ->\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B RR\n         (@PTreeDefinition.PTree.iter E (Kernel.MathCompKernelMeasure R) A I1 step1 i)\n         (@PTreeDefinition.PTree.iter E (Kernel.MathCompKernelMeasure R) B I2 step2 j)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "MathCompDirect.direct_eventful_iter"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_handler_guarded",
+      "type": "MathCompDirect.direct_handler_guarded\n     : forall R : reals.Real.type,\n       Kernel.MathCompCouplingGluing R ->\n       forall (E F : Type -> Type) (rename : forall X : Type, E X -> F X),\n       @Interp.Guarded.guarded_handler E F (Kernel.MathCompKernelMeasure R)\n         (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R)\n         (@MathCompDirect.direct_guarded_handler R E F rename)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "MathCompDirect.direct_guarded_handler",
+        "MathCompDirect.direct_handler_guarded"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_guarded_interp",
+      "type": "MathCompDirect.direct_guarded_interp\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E F : Type -> Type) (rename : forall X : Type, E X -> F X) (A B : Type)\n         (RR : A -> B -> Prop) (t : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)\n         (u : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B),\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B RR t u ->\n       @PEutt.peutt F (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B RR\n         (@PTreeDefinition.PTree.interp E F (Kernel.MathCompKernelMeasure R)\n            (@MathCompDirect.direct_guarded_handler R E F rename) A t)\n         (@PTreeDefinition.PTree.interp E F (Kernel.MathCompKernelMeasure R)\n            (@MathCompDirect.direct_guarded_handler R E F rename) B u)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "MathCompDirect.direct_guarded_handler",
+        "MathCompDirect.direct_guarded_interp",
+        "MathCompDirect.direct_handler_guarded"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_guarded_tau",
+      "type": "MathCompDirect.direct_guarded_tau\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E F : Type -> Type) (rename : forall X : Type, E X -> F X) (A : Type)\n         (t : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A),\n       @PEutt.peutt F (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A A\n         (@eq A)\n         (@PTreeDefinition.PTree.interp E F (Kernel.MathCompKernelMeasure R)\n            (@MathCompDirect.direct_guarded_handler R E F rename) A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.TauF E (Kernel.MathCompKernelMeasure R) A\n                  (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A) t\n            |})\n         (@PTreeDefinition.PTree.interp E F (Kernel.MathCompKernelMeasure R)\n            (@MathCompDirect.direct_guarded_handler R E F rename) A t)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "MathCompDirect.direct_guarded_handler",
+        "MathCompDirect.direct_guarded_interp",
+        "MathCompDirect.direct_guarded_tau",
+        "MathCompDirect.direct_handler_guarded"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
       "name": "PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior",
       "type": "Direct.MathComp_CanonicalBehavior\n     : forall R : reals.Real.type, Canonical.CanonicalBehavior (Kernel.MathCompKernelMeasure R)",
       "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",

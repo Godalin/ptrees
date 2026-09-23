@@ -1,0 +1,125 @@
+{
+  "baseline": "c2dea6b",
+  "endpoints": [
+    {
+      "name": "PTree.Prob.FreeOmega.RelationalLimit.free_omega_lift_lub",
+      "type": "@RelationalLimit.free_omega_lift_lub\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (A B : Type) (RR : A -> B -> Prop)\n         (left : nat -> Definition.FreeOmega MN A) (right : nat -> Definition.FreeOmega MN B)\n         (out1 : Definition.FreeOmega MN A) (out2 : Definition.FreeOmega MN B),\n       @Omega.sem_lub (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A left out1 ->\n       @Omega.sem_lub (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) B right out2 ->\n       (forall n : nat,\n        @Measure.sem_lift (Definition.FreeOmega MN)\n          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO) A B RR\n          (left n) (right n)) ->\n       @Measure.sem_lift (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO) A B RR out1 out2",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Eq.Iter.iter_eventful_bisim_candidate",
+      "type": "@Iter.iter_eventful_bisim_candidate\n     : forall (E MN : Type -> Type) (I1 I2 R1 R2 : Type),\n       (I1 -> PTreeDefinition.ptree E MN (I1 + R1)) ->\n       (I2 -> PTreeDefinition.ptree E MN (I2 + R2)) ->\n       (I1 -> I2 -> Prop) ->\n       PTreeDefinition.ptreeF E MN R1 (PTreeDefinition.ptree E MN R1) ->\n       PTreeDefinition.ptreeF E MN R2 (PTreeDefinition.ptree E MN R2) -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.Iter.iter_eventful_generator_closed",
+      "type": "@Iter.iter_eventful_generator_closed\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI ->\n       forall I1 I2 R1 R2 : Type,\n       (I1 -> PTreeDefinition.ptree E MN (I1 + R1)) ->\n       (I2 -> PTreeDefinition.ptree E MN (I2 + R2)) ->\n       (I1 -> I2 -> Prop) -> (R1 -> R2 -> Prop) -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.Iter.peutt_iter_eventful_of_generator_closed",
+      "type": "@Iter.peutt_iter_eventful_of_generator_closed\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (I1 I2 R1 R2 : Type)\n         (step1 : I1 -> PTreeDefinition.ptree E MN (I1 + R1))\n         (step2 : I2 -> PTreeDefinition.ptree E MN (I2 + R2)) (SI : I1 -> I2 -> Prop)\n         (RR : R1 -> R2 -> Prop),\n       @Iter.iter_eventful_generator_closed E MN MF FI MX FO I1 I2 R1 R2 step1 step2 SI RR ->\n       forall (i1 : I1) (i2 : I2),\n       SI i1 i2 ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR (@PTreeDefinition.PTree.iter E MN R1 I1 step1 i1)\n         (@PTreeDefinition.PTree.iter E MN R2 I2 step2 i2)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Scheduling.ptree_interp_hitting_le_diagonal",
+      "type": "@Scheduling.ptree_interp_hitting_le_diagonal\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X)\n         (A : Type) (n : nat) (t : PTreeDefinition.ptree E MN A),\n       @Omega.sem_le MF FI FO (UnifiedFrontier.stable_head F MN A)\n         (@PTreeKernel.ptree_hitting_approx F MN MF FI MX FO A n\n            (@PTreeDefinition.observe F MN A (@PTreeDefinition.PTree.interp E F MN handler A t)))\n         (@Scheduling.ptree_interp_split_approx E F MN MF FI MX FO handler A n n t)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Scheduling.ptree_interp_split_le_hitting",
+      "type": "@Scheduling.ptree_interp_split_le_hitting\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X)\n         (A : Type) (n m : nat) (t : PTreeDefinition.ptree E MN A),\n       @Omega.sem_le MF FI FO (UnifiedFrontier.stable_head F MN A)\n         (@Scheduling.ptree_interp_split_approx E F MN MF FI MX FO handler A n m t)\n         (@PTreeKernel.ptree_hitting_approx F MN MF FI MX FO A (n + m)\n            (@PTreeDefinition.observe F MN A (@PTreeDefinition.PTree.interp E F MN handler A t)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Scheduling.ptree_interp_cofinal_all",
+      "type": "@Scheduling.ptree_interp_cofinal_all\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       @Omega.SemanticOmegaDirectedCofinalityLaws MF FI FO ->\n       forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X)\n         (A : Type) (t : PTreeDefinition.ptree E MN A),\n       @Kernel.ptree_interp_cofinal E F MN MF FI MX FO A handler t",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Preservation.interp_bisim_candidate",
+      "type": "@Preservation.interp_bisim_candidate\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI ->\n       forall A B : Type,\n       (A -> B -> Prop) ->\n       (forall X : Type, E X -> PTreeDefinition.ptree F MN X) ->\n       PTreeDefinition.ptreeF F MN A (PTreeDefinition.ptree F MN A) ->\n       PTreeDefinition.ptreeF F MN B (PTreeDefinition.ptree F MN B) -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Preservation.interp_vis_fusion",
+      "type": "@Preservation.interp_vis_fusion\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI ->\n       forall A B : Type,\n       (A -> B -> Prop) -> (forall X : Type, E X -> PTreeDefinition.ptree F MN X) -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Preservation.peutt_interp_of_vis_fusion",
+      "type": "@Preservation.peutt_interp_of_vis_fusion\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       @Omega.SemanticOmegaDirectedCofinalityLaws MF FI FO ->\n       @Omega.SemanticOmegaSelection MF FI FO ->\n       forall (A B : Type) (RR : A -> B -> Prop)\n         (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X),\n       @Preservation.interp_vis_fusion E F MN MF FI FC MX FO A B RR handler ->\n       forall (t1 : PTreeDefinition.ptree E MN A) (t2 : PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN MF FI FC MX FO A B RR t1 t2 ->\n       @PEutt.peutt F MN MF FI FC MX FO A B RR (@PTreeDefinition.PTree.interp E F MN handler A t1)\n         (@PTreeDefinition.PTree.interp E F MN handler B t2)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Preservation.interp_generator_closed",
+      "type": "@Preservation.interp_generator_closed\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI ->\n       forall A B : Type,\n       (A -> B -> Prop) -> (forall X : Type, E X -> PTreeDefinition.ptree F MN X) -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Preservation.peutt_interp_of_generator_closed",
+      "type": "@Preservation.peutt_interp_of_generator_closed\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A B : Type) (RR : A -> B -> Prop)\n         (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X),\n       @Preservation.interp_generator_closed E F MN MF FI FC MX FO A B RR handler ->\n       forall (t1 : PTreeDefinition.ptree E MN A) (t2 : PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN MF FI FC MX FO A B RR t1 t2 ->\n       @PEutt.peutt F MN MF FI FC MX FO A B RR (@PTreeDefinition.PTree.interp E F MN handler A t1)\n         (@PTreeDefinition.PTree.interp E F MN handler B t2)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Guarded.stable_head_is_visible",
+      "type": "@Guarded.stable_head_is_visible\n     : forall (E MN : Type -> Type) (R : Type), UnifiedFrontier.stable_head E MN R -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Guarded.guarded_handler",
+      "type": "@Guarded.guarded_handler\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI -> (forall X : Type, E X -> PTreeDefinition.ptree F MN X) -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Guarded.guarded_handler_of_hitting",
+      "type": "@Guarded.guarded_handler_of_hitting\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Coupling.SemanticMeasureCouplingAELaws MF FI ->\n       forall handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X,\n       (forall (X : Type) (e : E X),\n        exists out : MF (UnifiedFrontier.stable_head F MN X),\n          @PTreeKernel.ptree_stable_hitting F MN MF FI MX FO X\n            (@PTreeDefinition.observe F MN X (handler X e)) out /\\\n          @Measure.sem_ae MF FI (UnifiedFrontier.stable_head F MN X) out\n            (@Guarded.stable_head_is_visible F MN X)) ->\n       @Guarded.guarded_handler E F MN MF FI MX FO handler",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Guarded.guarded_handler_vis_fusion",
+      "type": "@Guarded.guarded_handler_vis_fusion\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       @Omega.SemanticOmegaDirectedCofinalityLaws MF FI FO ->\n       @Omega.SemanticOmegaSelection MF FI FO ->\n       @Coupling.SemanticMeasureCouplingAELaws MF FI ->\n       forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X)\n         (A B : Type) (RR : A -> B -> Prop),\n       @Guarded.guarded_handler E F MN MF FI MX FO handler ->\n       @Preservation.interp_vis_fusion E F MN MF FI FC MX FO A B RR handler",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Guarded.peutt_interp_guarded",
+      "type": "@Guarded.peutt_interp_guarded\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       @Omega.SemanticOmegaDirectedCofinalityLaws MF FI FO ->\n       @Omega.SemanticOmegaSelection MF FI FO ->\n       @Coupling.SemanticMeasureCouplingAELaws MF FI ->\n       forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X)\n         (A B : Type) (RR : A -> B -> Prop),\n       @Guarded.guarded_handler E F MN MF FI MX FO handler ->\n       forall (t1 : PTreeDefinition.ptree E MN A) (t2 : PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN MF FI FC MX FO A B RR t1 t2 ->\n       @PEutt.peutt F MN MF FI FC MX FO A B RR (@PTreeDefinition.PTree.interp E F MN handler A t1)\n         (@PTreeDefinition.PTree.interp E F MN handler B t2)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.Guarded.peutt_interp_guarded_Proper",
+      "type": "@Guarded.peutt_interp_guarded_Proper\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       @Omega.SemanticOmegaDirectedCofinalityLaws MF FI FO ->\n       @Omega.SemanticOmegaSelection MF FI FO ->\n       @Coupling.SemanticMeasureCouplingAELaws MF FI ->\n       forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X) (R : Type),\n       @Guarded.guarded_handler E F MN MF FI MX FO handler ->\n       @Morphisms.Proper (PTreeDefinition.ptree E MN R -> PTreeDefinition.ptree F MN R)\n         (@Morphisms.respectful (PTreeDefinition.ptree E MN R) (PTreeDefinition.ptree F MN R)\n            (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))\n            (@PEutt.peutt F MN MF FI FC MX FO R R (@eq R)))\n         (@PTreeDefinition.PTree.interp E F MN handler R)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.GenericConsumers.generic_eventful_iter",
+      "type": "GenericConsumers.generic_eventful_iter\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (I1 I2 R1 R2 : Type)\n         (step1 : I1 -> PTreeDefinition.ptree E MN (I1 + R1))\n         (step2 : I2 -> PTreeDefinition.ptree E MN (I2 + R2)) (SI : I1 -> I2 -> Prop)\n         (RR : R1 -> R2 -> Prop),\n       @Iter.iter_eventful_generator_closed E MN MF FI MX FO I1 I2 R1 R2 step1 step2 SI RR ->\n       forall (i1 : I1) (i2 : I2),\n       SI i1 i2 ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR (@PTreeDefinition.PTree.iter E MN R1 I1 step1 i1)\n         (@PTreeDefinition.PTree.iter E MN R2 I2 step2 i2)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.GenericConsumers.free_omega_eventful_iter",
+      "type": "@GenericConsumers.free_omega_eventful_iter\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (I1 I2 A B : Type) (step1 : I1 -> PTreeDefinition.ptree E MN (I1 + A))\n         (step2 : I2 -> PTreeDefinition.ptree E MN (I2 + B)) (SI : I1 -> I2 -> Prop)\n         (RR : A -> B -> Prop),\n       @Iter.iter_eventful_generator_closed E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) I1 I2 A B step1 step2 SI RR ->\n       forall (i : I1) (j : I2),\n       SI i j ->\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR\n         (@PTreeDefinition.PTree.iter E MN A I1 step1 i)\n         (@PTreeDefinition.PTree.iter E MN B I2 step2 j)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Regression.Semantics.GenericConsumers.generic_guarded_contract",
+      "type": "GenericConsumers.generic_guarded_contract\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI -> (forall X : Type, E X -> PTreeDefinition.ptree F MN X) -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.GenericConsumers.generic_guarded_interp",
+      "type": "GenericConsumers.generic_guarded_interp\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       @Omega.SemanticOmegaDirectedCofinalityLaws MF FI FO ->\n       @Omega.SemanticOmegaSelection MF FI FO ->\n       @Coupling.SemanticMeasureCouplingAELaws MF FI ->\n       forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X)\n         (A B : Type) (RR : A -> B -> Prop),\n       @Guarded.guarded_handler E F MN MF FI MX FO handler ->\n       forall (t1 : PTreeDefinition.ptree E MN A) (t2 : PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN MF FI FC MX FO A B RR t1 t2 ->\n       @PEutt.peutt F MN MF FI FC MX FO A B RR (@PTreeDefinition.PTree.interp E F MN handler A t1)\n         (@PTreeDefinition.PTree.interp E F MN handler B t2)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.GenericConsumers.generic_interp_schedule",
+      "type": "GenericConsumers.generic_interp_schedule\n     : forall (E F MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       @Omega.SemanticOmegaDirectedCofinalityLaws MF FI FO ->\n       forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X)\n         (A : Type) (t : PTreeDefinition.ptree E MN A),\n       @Kernel.ptree_interp_cofinal E F MN MF FI MX FO A handler t",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.GenericConsumers.real_guarded_interp",
+      "type": "GenericConsumers.real_guarded_interp\n     : forall (R : reals.Real.type) (E F : Type -> Type) (A B : Type)\n         (handler : forall X : Type, E X -> PTreeDefinition.ptree F (Representation.SubEnumR R) X)\n         (RR : A -> B -> Prop),\n       @Guarded.guarded_handler E F (Representation.SubEnumR R)\n         (Definition.FreeOmega (Representation.SubEnumR R))\n         (@Measure.FreeOmegaObservableSemanticMeasure (Representation.SubEnumR R)\n            (Measure.SubEnumR_SemanticMeasure R) (Omega.SubEnumR_SemanticOmega R))\n         (@StructuralMeasure.FreeOmegaMixedMeasure (Representation.SubEnumR R))\n         (@Measure.FreeOmegaObservableSemanticOmega (Representation.SubEnumR R)\n            (Measure.SubEnumR_SemanticMeasure R) (Omega.SubEnumR_SemanticOmega R)) handler ->\n       forall (t : PTreeDefinition.ptree E (Representation.SubEnumR R) A)\n         (u : PTreeDefinition.ptree E (Representation.SubEnumR R) B),\n       @PEutt.peutt E (Representation.SubEnumR R)\n         (Definition.FreeOmega (Representation.SubEnumR R))\n         (@Measure.FreeOmegaObservableSemanticMeasure (Representation.SubEnumR R)\n            (Measure.SubEnumR_SemanticMeasure R) (Omega.SubEnumR_SemanticOmega R))\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws (Representation.SubEnumR R)\n            (Measure.SubEnumR_SemanticMeasure R) (Coupling.SubEnumR_SemanticMeasureCoreLaws R)\n            (Omega.SubEnumR_SemanticOmega R))\n         (@StructuralMeasure.FreeOmegaMixedMeasure (Representation.SubEnumR R))\n         (@Measure.FreeOmegaObservableSemanticOmega (Representation.SubEnumR R)\n            (Measure.SubEnumR_SemanticMeasure R) (Omega.SubEnumR_SemanticOmega R)) A B RR t u ->\n       @PEutt.peutt F (Representation.SubEnumR R)\n         (Definition.FreeOmega (Representation.SubEnumR R))\n         (@Measure.FreeOmegaObservableSemanticMeasure (Representation.SubEnumR R)\n            (Measure.SubEnumR_SemanticMeasure R) (Omega.SubEnumR_SemanticOmega R))\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws (Representation.SubEnumR R)\n            (Measure.SubEnumR_SemanticMeasure R) (Coupling.SubEnumR_SemanticMeasureCoreLaws R)\n            (Omega.SubEnumR_SemanticOmega R))\n         (@StructuralMeasure.FreeOmegaMixedMeasure (Representation.SubEnumR R))\n         (@Measure.FreeOmegaObservableSemanticOmega (Representation.SubEnumR R)\n            (Measure.SubEnumR_SemanticMeasure R) (Omega.SubEnumR_SemanticOmega R)) A B RR\n         (@PTreeDefinition.PTree.interp E F (Representation.SubEnumR R) handler A t)\n         (@PTreeDefinition.PTree.interp E F (Representation.SubEnumR R) handler B u)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
+    }
+  ]
+}

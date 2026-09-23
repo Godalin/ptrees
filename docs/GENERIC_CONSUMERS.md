@@ -78,6 +78,74 @@ theorem. Both are conditional closure clients, not proofs that arbitrary
 handlers/loop steps satisfy the condition. Generic-only imports also exclude
 FreeOmega, MathComp and external validation.
 
+## Stage 4: generic guarded interpretation, including scheduling
+
+The interpreter chain now has generic owners:
+
+```
+Interp.Scheduling      finite approximation inequalities -> cofinality
+Interp.Preservation    complete-head Vis fusion -> peutt preservation
+Interp.Guarded         semantic visible guarding -> Vis fusion
+```
+
+Scheduling is not supplied as a new handler capability. The two finite
+inequalities are proved from existing preorder-compatible ret/zero/mixed-bind
+laws, reusing `Eq.BindScheduling`'s finite preorder algebra. Global fuel `n`
+is covered by diagonal fuel `n`; split source/head fuel `(n,m)` is covered by
+global fuel `n+m`. Directed cofinality then identifies their lubs. In
+particular there is no assumption that observable `sem_eq` reflects `sem_le`.
+
+The actual compiled profiles are:
+
+| Generic endpoint | Requirements |
+| --- | --- |
+| `guarded_handler` | FI / MX / FO operations only |
+| `guarded_handler_of_hitting` | frontier CoreLaws, OmegaLaws, CouplingAELaws |
+| finite interpreter scheduling | OrderLaws, BindOrderLaws, MixedMeasureBindOrderLaws |
+| interpreter cofinality | finite scheduling profile + DirectedCofinalityLaws |
+| fusion -> preservation | generic bind profile (Stage 1) |
+| guarded fusion / preservation / explicit Proper | preceding profile + frontier CouplingAELaws |
+
+Thus generic guarded interpretation requires no native SemanticMeasure,
+native CountableAE, commutativity, omega-Fubini, external model or FreeOmega
+carrier. All new generic interpreter theorems are closed under the global
+context. This does not say their concrete probability instances have no
+logical dependencies.
+
+The guarding definition still permits missing mass, arbitrary internal
+computation and zero-mass return branches. The convenient-witness helper now
+uses generic equality transport and CouplingAE rather than qlift-specific
+support transport. The fusion proof enters the recursive candidate only
+after a visible head, and preservation reuses generic up-to-bind coinduction.
+
+The existing FreeOmega `Base`, `Cofinality` and `Guarded` endpoints become
+explicit model specializations of these proofs. Their established statements
+are retained, with no second coinduction/scheduling proof. The old specialized
+predicates reduce to the generic definitions; this is intentional
+specialization, not competing typeclass routing. `PTreeFacts` exports the
+generic guarded owner directly instead of relying on export-order shadowing.
+Atomic and MDP interpretation are not generalized or redesigned in this task.
+
+Clients cover the existing SubEnumQ guarded suite, a SubEnumR completion
+specialization, and direct MathComp. The latter constructs an actual guarded
+heterogeneous handler `E -> F`, with `Tau; Vis; Ret`, and uses the same generic
+preservation theorem on arbitrary related input trees. Its Tau rewriting
+example is a consumer, not a MathComp copy of the proof. It remains in the
+already allowlisted Gate M file, with gluing explicit.
+
+## Convergence boundary
+
+Completed: generic bind/fmap Proper (Stage 1), probability-owned relational
+limit factoring, generic eventful closure, and the complete generic guarded
+interpreter chain, including derived scheduling. No acceptance pause remains.
+
+Not claimed: unrestricted eventful behavioral iter congruence, generic
+structural-to-behavioral bridges, generic eventless complete-row theory,
+arbitrary unguarded interpreter congruence, or generic Atomic/MDP consumers.
+The first three boundaries are explicitly classified above; the last two are
+not part of this extraction. In particular, a new relational-lub mathematics
+project is not silently turned into an extra axiom just to move more files.
+
 ## Validation discipline
 
 During development, compile changed owners and compare their actual types
@@ -85,3 +153,32 @@ and assumptions. Aggregate imports, the 465 maintained contracts, Gate M
 contracts, tool tests and targeted joint kernel checks are consolidated at
 the final convergence point. No whole-library universe-safe claim includes
 the two existing Gate M modules.
+
+Final local validation:
+
+- Complete `opam exec -- dune build`, including safe AllImports and direct
+  MathComp clients: passed.
+- 160 Python tool tests: passed. An initially missing regression-inventory
+  entry was fixed; the entire test suite was rerun successfully.
+- Architecture/ownership and soundness source contracts: passed. There are
+  319 modules: 317 Gate S and the unchanged two-file Gate M allowlist.
+- Exact source conservation: 305 old modules remain byte-for-byte unchanged;
+  the eight changed old modules are checked against explicit transformations.
+- 465 compiled contracts: 464 exactly unchanged from `c2dea6b`; the one
+  eventful iter theorem is relocated/generalized with a before/after ledger.
+  Its old `eq_rect_eq` dependency disappears in the generic proof.
+- 24 new compiled endpoints: checked, with the original logical-axiom
+  whitelist. All generic Eq/Interp endpoints are closed under the global
+  context. The FreeOmega relational-limit helper retains the existing
+  concrete model's `eq_rect_eq` dependency.
+- MathComp snapshot: all 39 old entries (33 direct endpoints and six safe
+  controls) unchanged; four new direct clients added. Unsafe-hierarchy
+  reports remain separate from logical assumptions, not suppressed.
+- Joint `coqchk -norec` of 11 safe module bodies: passed. Targets are
+  `RelationalLimit`, `Eq.FreeOmega.Relation`, `Eq.Iter`, `Eq.FreeOmega.Iter`,
+  `Interp.Scheduling`, `Interp.Preservation`, `Interp.Guarded`, their three
+  FreeOmega consumers, and `GenericConsumers`. Dependencies are trusted by
+  `-norec`; this is not a whole-library recursive kernel audit. Gate M is
+  excluded.
+
+CI was neither inspected nor changed. No environment changes were made.

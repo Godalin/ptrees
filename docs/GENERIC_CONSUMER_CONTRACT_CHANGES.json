@@ -1,0 +1,17 @@
+{
+  "baseline": "c2dea6b",
+  "changes": [
+    {
+      "before": {
+        "name": "PTree.Eq.FreeOmega.Iter.peutt_iter_eventful_of_generator_closed",
+        "type": "@Iter.peutt_iter_eventful_of_generator_closed\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (I1 I2 R1 R2 : Type) (step1 : I1 -> PTreeDefinition.ptree E MN (I1 + R1))\n         (step2 : I2 -> PTreeDefinition.ptree E MN (I2 + R2)) (SI : I1 -> I2 -> Prop)\n         (RR : R1 -> R2 -> Prop),\n       @Iter.iter_eventful_generator_closed E MN NI NO I1 I2 R1 R2 step1 step2 SI RR ->\n       forall (i1 : I1) (i2 : I2),\n       SI i1 i2 ->\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R1 R2 RR\n         (@PTreeDefinition.PTree.iter E MN R1 I1 step1 i1)\n         (@PTreeDefinition.PTree.iter E MN R2 I2 step2 i2)",
+        "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      },
+      "after": {
+        "name": "PTree.Eq.Iter.peutt_iter_eventful_of_generator_closed",
+        "type": "@Iter.peutt_iter_eventful_of_generator_closed\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (I1 I2 R1 R2 : Type)\n         (step1 : I1 -> PTreeDefinition.ptree E MN (I1 + R1))\n         (step2 : I2 -> PTreeDefinition.ptree E MN (I2 + R2)) (SI : I1 -> I2 -> Prop)\n         (RR : R1 -> R2 -> Prop),\n       @Iter.iter_eventful_generator_closed E MN MF FI MX FO I1 I2 R1 R2 step1 step2 SI RR ->\n       forall (i1 : I1) (i2 : I2),\n       SI i1 i2 ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR (@PTreeDefinition.PTree.iter E MN R1 I1 step1 i1)\n         (@PTreeDefinition.PTree.iter E MN R2 I2 step2 i2)",
+        "assumptions": "Closed under the global context"
+      }
+    }
+  ]
+}

@@ -20,6 +20,7 @@ Unset Printing Implicit Defensive.
 
 From PTree.Eq.FreeOmega Require Import Bind.
 Require Import PTree.Interp.Kernel.
+Require PTree.Interp.Scheduling.
 Section FreeOmegaInterpCofinality.
 Context {E : Type -> Type} {MN : Type -> Type}
   `{NI : SemanticMeasure MN}
@@ -45,49 +46,9 @@ Lemma ptree_interp_hitting_le_diagonal {R}
       (observe (PTree.interp handler t)))
     (ptree_interp_diagonal_approx fuel handler t).
 Proof.
-  revert t. induction fuel as [|fuel IH]; intro t.
-  all: unfold ptree_interp_diagonal_approx;
-    rewrite observe_interp; remember (observe t) as ot eqn:Hot;
-    destruct ot as [r|u|X e k|X mu k].
-  - cbn [ptree_hitting_approx ptree_primitive_kernel
-      ptree_interp_head_approx ptree_interp_head_tree
-      free_omega_bind].
-    apply free_omega_approx_refl. intro h. reflexivity.
-  - constructor.
-  - constructor.
-  - change (free_omega_approx eq
-      (FOSample mu (fun _ : X => FOZero))
-      (free_omega_bind (FOSample mu (fun _ : X => FOZero))
-        (ptree_interp_head_approx (MF := MF) (R := R) 0 handler))).
-    cbn [free_omega_bind]. eapply FOApproxSample with (S := eq).
-    + apply sem_lift_refl. intro x. reflexivity.
-    + intros x y ->. constructor.
-  - cbn [ptree_hitting_approx ptree_primitive_kernel
-      ptree_interp_head_approx ptree_interp_head_tree
-      free_omega_bind].
-    apply free_omega_approx_refl. intro h. reflexivity.
-  - cbn [ptree_hitting_approx ptree_primitive_kernel].
-    eapply free_omega_approx_trans; [apply IH|].
-    eapply free_omega_approx_bind with (R := eq) (T := eq).
-    + apply free_omega_approx_refl. intro h. reflexivity.
-    + intros h1 h2 ->. apply ptree_hitting_mono. lia.
-  - cbn [ptree_hitting_approx ptree_primitive_kernel
-      ptree_interp_head_approx free_omega_bind].
-    apply free_omega_approx_refl. intro h. reflexivity.
-  - change (free_omega_approx eq
-      (FOSample mu (fun x => ptree_hitting_approx (MF := MF)
-        fuel (observe (PTree.interp handler (k x)))))
-      (free_omega_bind
-        (FOSample mu (fun x => ptree_hitting_approx (MF := MF)
-          fuel (observe (k x))))
-        (ptree_interp_head_approx (MF := MF) (R := R)
-          (S fuel) handler))).
-    cbn [free_omega_bind]. eapply FOApproxSample with (S := eq).
-    + apply sem_lift_refl. intro x. reflexivity.
-    + intros x y ->. eapply free_omega_approx_trans; [apply IH|].
-      eapply free_omega_approx_bind with (R := eq) (T := eq).
-      * apply free_omega_approx_refl. intro h. reflexivity.
-      * intros h1 h2 ->. apply ptree_hitting_mono. lia.
+  exact (@Scheduling.ptree_interp_hitting_le_diagonal E F MN MF
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) FreeOmegaMixedMeasure (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO))
+    _ _ _ handler R fuel t).
 Qed.
 
 Definition ptree_interp_split_approx {R}
@@ -105,45 +66,9 @@ Lemma ptree_interp_split_le_hitting {R}
     (ptree_hitting_approx (MF := MF) (source_fuel + head_fuel)
       (observe (PTree.interp handler t))).
 Proof.
-  revert t. induction source_fuel as [|source_fuel IH]; intro t.
-  all: unfold ptree_interp_split_approx;
-    rewrite observe_interp; remember (observe t) as ot eqn:Hot;
-    destruct ot as [r|u|X e k|X mu k].
-  - cbn [ptree_hitting_approx ptree_primitive_kernel
-      ptree_interp_head_approx ptree_interp_head_tree
-      free_omega_bind].
-    apply free_omega_approx_refl. intro h. reflexivity.
-  - constructor.
-  - cbn [free_omega_bind ptree_interp_head_approx
-      ptree_interp_head_tree].
-    apply free_omega_approx_refl. intro h. reflexivity.
-  - change (free_omega_approx eq
-      (free_omega_bind (FOSample mu (fun _ : X => FOZero))
-        (ptree_interp_head_approx (MF := MF) (R := R)
-          head_fuel handler))
-      (ptree_hitting_approx (MF := MF) head_fuel
-        (observe (Prob mu (fun x => PTree.interp handler (k x)))))).
-    cbn [free_omega_bind ptree_hitting_approx ptree_primitive_kernel].
-    eapply FOApproxSample with (S := eq).
-    + apply sem_lift_refl. intro x. reflexivity.
-    + intros x y ->. constructor.
-  - unfold ptree_hitting_approx, ptree_primitive_kernel,
-      ptree_interp_head_approx, ptree_interp_head_tree.
-    cbn. rewrite !stable_target_stableE. cbn [free_omega_bind].
-    apply free_omega_approx_refl. intro h. reflexivity.
-  - cbn [ptree_hitting_approx ptree_primitive_kernel]. apply IH.
-  - cbn [free_omega_bind ptree_interp_head_approx
-      ptree_interp_head_tree].
-    apply ptree_hitting_mono. lia.
-  - change (free_omega_approx eq
-      (FOSample mu (fun x => ptree_interp_split_approx
-        source_fuel head_fuel (k x)))
-      (FOSample mu (fun x => ptree_hitting_approx (MF := MF)
-        (source_fuel + head_fuel)
-        (observe (PTree.interp handler (k x)))))).
-    eapply FOApproxSample with (S := eq).
-    + apply sem_lift_refl. intro x. reflexivity.
-    + intros x y ->. apply IH.
+  exact (@Scheduling.ptree_interp_split_le_hitting E F MN MF
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) FreeOmegaMixedMeasure (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO))
+    _ _ _ handler R source_fuel head_fuel t).
 Qed.
 
 Lemma ptree_interp_diagonal_le_hitting {R}
@@ -180,15 +105,9 @@ Corollary ptree_interp_cofinal_all {R}
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R handler t.
 Proof.
-  intro out. unfold PTree.Interp.Kernel.ptree_interp_cofinal.
-  apply free_omega_cofinal_lub_iff.
-  - intro n. apply ptree_observable_hitting_increasing.
-  - intro n. unfold ptree_interp_diagonal_approx.
-    apply free_omega_approx_bind with (R := eq).
-    + apply ptree_observable_hitting_increasing.
-    + intros x y ->. unfold ptree_interp_head_approx.
-      apply ptree_observable_hitting_increasing.
-  - apply ptree_interp_approx_cofinal_all.
+  exact (@Scheduling.ptree_interp_cofinal_all E F MN MF
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) FreeOmegaMixedMeasure (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO))
+    _ _ _ _ handler R t).
 Qed.
 
 End InterpCofinality.

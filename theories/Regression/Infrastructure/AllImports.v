@@ -82,7 +82,10 @@ Require PTree.Interp.FreeOmega.Cofinality.
 Require PTree.Interp.FreeOmega.Guarded.
 Require PTree.Interp.FreeOmega.MDP.
 Require PTree.Interp.FreeOmega.Translate.
+Require PTree.Interp.Guarded.
 Require PTree.Interp.Kernel.
+Require PTree.Interp.Preservation.
+Require PTree.Interp.Scheduling.
 Require PTree.Interp.Structural.
 Require PTree.PTree.
 Require PTree.PTreeFacts.
@@ -284,8 +287,8 @@ Require PTree.Regression.Probability.SubEnumRJointRealization.
 Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
 Require PTree.Regression.Semantics.GenericAlgebra.
-Require PTree.Regression.Semantics.GenericConsumers.
 Require PTree.Regression.Semantics.GenericBind.
+Require PTree.Regression.Semantics.GenericConsumers.
 Require PTree.Regression.Semantics.GuardedInterp.
 Require PTree.Regression.Semantics.HeadTransition.
 Require PTree.Regression.Semantics.InterpExposure.
