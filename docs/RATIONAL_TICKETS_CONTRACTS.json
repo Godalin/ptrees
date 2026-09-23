@@ -1,0 +1,136 @@
+{
+  "baseline": "09a1773",
+  "scope": "Constructive rational ticket distribution and extraction, not PRNG fairness",
+  "endpoints": [
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.ticket_coefficient",
+      "type": "RationalTickets.ticket_coefficient\n     : forall\n         p : @order.Order.POrder.sort ssrnum.ring_display\n               (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n                  (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__Num_POrderedZmodule\n                     rat.rat_rat__canonical__Num_NumDomain)),\n       is_true\n         (@order.Order.le ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__Num_POrderedZmodule\n                  rat.rat_rat__canonical__Num_NumDomain))\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__Num_POrderedZmodule\n                     rat.rat_rat__canonical__Num_NumDomain))) p) ->\n       @ssralg.GRing.mul\n         (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n            rat.rat_rat__canonical__Num_NumDomain) p\n         (@ssralg.GRing.natmul\n            (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  rat.rat_rat__canonical__Num_NumDomain))\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  rat.rat_rat__canonical__Num_NumDomain)) (RationalTickets.ticket_den p)) =\n       @ssralg.GRing.natmul\n         (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n            (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n               rat.rat_rat__canonical__Num_NumDomain))\n         (ssralg.GRing.one\n            (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n               rat.rat_rat__canonical__Num_NumDomain)) (RationalTickets.ticket_num p)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.compile_tickets_positive",
+      "type": "@RationalTickets.compile_tickets_positive\n     : forall (A : Type) (mu : list (rat.rat * A)),\n       is_true (ssrnat.leq 1 (@fst nat (list A) (@RationalTickets.compile_tickets A mu)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.compile_tickets_expectation",
+      "type": "@RationalTickets.compile_tickets_expectation\n     : forall (A : Type) (mu : list (rat.rat * A)) (f : A -> rat.rat),\n       @FiniteEnum.finite_nonnegative rat.rat_rat__canonical__Num_NumDomain A mu ->\n       @RationalTickets.ticket_sum A f (@snd nat (list A) (@RationalTickets.compile_tickets A mu)) =\n       @ssralg.GRing.mul\n         (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing\n            rat.rat_rat__canonical__Num_NumDomain)\n         (@ssralg.GRing.natmul\n            (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n               (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing\n                  rat.rat_rat__canonical__Num_NumDomain))\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing\n                  rat.rat_rat__canonical__Num_NumDomain))\n            (@fst nat (list A) (@RationalTickets.compile_tickets A mu)))\n         (@FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain A f mu)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.compile_tickets_bound",
+      "type": "@RationalTickets.compile_tickets_bound\n     : forall (A : Type) (mu : Representation.SubEnumQ A),\n       is_true\n         (ssrnat.leq\n            (@seq.size A\n               (@snd nat (list A)\n                  (@RationalTickets.compile_tickets A (@Representation.subenumQ_data A mu))))\n            (@fst nat (list A)\n               (@RationalTickets.compile_tickets A (@Representation.subenumQ_data A mu))))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.ticket_outcomes_size",
+      "type": "@RationalTickets.ticket_outcomes_size\n     : forall (A : Type) (mu : Representation.SubEnumQ A),\n       @seq.size (option A) (@RationalTickets.ticket_outcomes A mu) =\n       @RationalTickets.ticket_count A mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.ticket_outcomes_enumerated",
+      "type": "@RationalTickets.ticket_outcomes_enumerated\n     : forall (A : Type) (mu : Representation.SubEnumQ A),\n       @seq.map nat (option A) (@RationalTickets.draw_ticket A mu)\n         (seq.iota 0 (@RationalTickets.ticket_count A mu)) = @RationalTickets.ticket_outcomes A mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.uniform_ticket_expectation",
+      "type": "@RationalTickets.uniform_ticket_expectation\n     : forall (A : Type) (mu : Representation.SubEnumQ A) (f : option A -> rat.rat),\n       @RationalTickets.ticket_expectation A mu f =\n       @ssralg.GRing.add\n         (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_Nmodule\n            rat.rat_rat__canonical__Num_NumDomain)\n         (@FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain A\n            (fun x : A => f (@Some A x)) (@Representation.subenumQ_data A mu))\n         (@ssralg.GRing.mul\n            (ssralg.GRing.Ring.Exports.GRing_Ring__to__GRing_SemiRing\n               rat.rat_rat__canonical__GRing_Ring)\n            (@ssralg.GRing.add\n               (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n                  (ssralg.GRing.Ring.Exports.GRing_Ring__to__GRing_SemiRing\n                     rat.rat_rat__canonical__GRing_Ring))\n               (ssralg.GRing.one\n                  (ssralg.GRing.Ring.Exports.GRing_Ring__to__GRing_SemiRing\n                     rat.rat_rat__canonical__GRing_Ring))\n               (@ssralg.GRing.opp rat.rat_rat__canonical__GRing_Zmodule\n                  (@Representation.enumQ_mass A (@Representation.subenumQ_raw A mu))))\n            (f (@None A)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.uniform_ticket_returns",
+      "type": "@RationalTickets.uniform_ticket_returns\n     : forall (A : Type) (mu : Representation.SubEnumQ A) (f : A -> rat.rat),\n       @RationalTickets.ticket_expectation A mu\n         (fun v : option A =>\n          match v with\n          | @Some _ x => f x\n          | @None _ => @ssralg.GRing.zero rat.rat_rat__canonical__GRing_Nmodule\n          end) =\n       @FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain A f\n         (@Representation.subenumQ_data A mu)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.uniform_ticket_loss",
+      "type": "@RationalTickets.uniform_ticket_loss\n     : forall (A : Type) (mu : Representation.SubEnumQ A),\n       @RationalTickets.ticket_expectation A mu\n         (fun v : option A =>\n          match v with\n          | @Some _ _ => @ssralg.GRing.zero rat.rat_rat__canonical__GRing_Nmodule\n          | @None _ => ssralg.GRing.one rat.rat_rat__canonical__GRing_SemiRing\n          end) =\n       @ssralg.GRing.add\n         (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n            (ssralg.GRing.Ring.Exports.GRing_Ring__to__GRing_SemiRing\n               rat.rat_rat__canonical__GRing_Ring))\n         (ssralg.GRing.one\n            (ssralg.GRing.Ring.Exports.GRing_Ring__to__GRing_SemiRing\n               rat.rat_rat__canonical__GRing_Ring))\n         (@ssralg.GRing.opp rat.rat_rat__canonical__GRing_Zmodule\n            (@Representation.enumQ_mass A (@Representation.subenumQ_raw A mu)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.ticket_sample_valid",
+      "type": "@RationalTickets.ticket_sample_valid\n     : forall (Seed A : Type) (next : nat -> Seed -> option nat * Seed)\n         (mu : Representation.SubEnumQ A) (s s' : Seed) (i : nat),\n       next (@RationalTickets.ticket_count A mu) s = (@Some nat i, s') ->\n       is_true (ssrnat.leq (S i) (@RationalTickets.ticket_count A mu)) ->\n       @RationalTickets.ticket_sample Seed A next mu s =\n       (match @RationalTickets.draw_ticket A mu i with\n        | @Some _ x => @Runner.Drawn A x\n        | @None _ => @Runner.Missing A\n        end, s')",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.RationalTickets.ticket_sample_invalid",
+      "type": "@RationalTickets.ticket_sample_invalid\n     : forall (Seed A : Type) (next : nat -> Seed -> option nat * Seed)\n         (mu : Representation.SubEnumQ A) (s s' : Seed) (i : nat),\n       next (@RationalTickets.ticket_count A mu) s = (@Some nat i, s') ->\n       is_true (ssrnat.leq (@RationalTickets.ticket_count A mu) i) ->\n       @RationalTickets.ticket_sample Seed A next mu s = (@Runner.NoEntropy A, s')",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.RationalState.rational_counter",
+      "type": "@RationalState.rational_counter\n     : forall Seed : Type,\n       (nat -> Seed -> option nat * Seed) -> nat -> nat -> Seed -> Runner.outcome nat * Seed",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.RationalState.rational_ticket_layout",
+      "type": "RationalState.rational_ticket_layout\n     : @RationalTickets.ticket_count bool RationalState.attempt_coin = 6 /\\\n       @RationalTickets.ticket_outcomes bool RationalState.attempt_coin =\n       (@Some bool true\n        :: @Some bool true\n           :: @Some bool false\n              :: @Some bool false :: @Some bool false :: @None bool :: @nil (option bool))%list",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.RationalState.rational_two_attempts",
+      "type": "RationalState.rational_two_attempts\n     : @RationalState.rational_counter (list nat) RationalTickets.ticket_replay_source 7 0\n         (2 :: 0 :: 5 :: @nil nat)%list = (@Runner.Returned nat 2, (5 :: @nil nat)%list)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.RationalState.rational_missing_mass_stops",
+      "type": "RationalState.rational_missing_mass_stops\n     : @RationalState.rational_counter (list nat) RationalTickets.ticket_replay_source 100 0\n         (5 :: 0 :: @nil nat)%list = (@Runner.Lost nat, (0 :: @nil nat)%list)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.RationalState.rational_timeout_no_redraw",
+      "type": "RationalState.rational_timeout_no_redraw\n     : @RationalState.rational_counter (list nat) RationalTickets.ticket_replay_source 4 0\n         (2 :: 0 :: @nil nat)%list = (@Runner.Timeout nat, (0 :: @nil nat)%list)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.RationalState.rational_invalid_entropy_not_loss",
+      "type": "RationalState.rational_invalid_entropy_not_loss\n     : @RationalState.rational_counter (list nat) RationalTickets.ticket_replay_source 3 0\n         (6 :: @nil nat)%list = (@Runner.EntropyExhausted nat, @nil nat)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.RationalTickets.nonfair_success_mass",
+      "type": "RationalTickets.nonfair_success_mass\n     : @RationalTickets.ticket_expectation bool RationalState.attempt_coin\n         (fun o : option bool =>\n          match o with\n          | @Some _ (@true) => ssralg.GRing.one rat.rat_rat__canonical__GRing_SemiRing\n          | _ => @ssralg.GRing.zero rat.rat_rat__canonical__GRing_Nmodule\n          end) =\n       @ssralg.GRing.inv rat.rat_rat__canonical__GRing_UnitRing\n         (@ssralg.GRing.natmul\n            (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing))\n            (ssralg.GRing.one\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing)) 3)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.RationalTickets.nonfair_retry_mass",
+      "type": "RationalTickets.nonfair_retry_mass\n     : @RationalTickets.ticket_expectation bool RationalState.attempt_coin\n         (fun o : option bool =>\n          match o with\n          | @Some _ (@false) => ssralg.GRing.one rat.rat_rat__canonical__GRing_SemiRing\n          | _ => @ssralg.GRing.zero rat.rat_rat__canonical__GRing_Nmodule\n          end) =\n       @ssralg.GRing.inv rat.rat_rat__canonical__GRing_UnitRing\n         (@ssralg.GRing.natmul\n            (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing))\n            (ssralg.GRing.one\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing)) 2)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.RationalTickets.partial_loss_is_exact",
+      "type": "RationalTickets.partial_loss_is_exact\n     : @RationalTickets.ticket_expectation bool RationalState.attempt_coin\n         (fun o : option bool =>\n          match o with\n          | @Some _ _ => @ssralg.GRing.zero rat.rat_rat__canonical__GRing_Nmodule\n          | @None _ => ssralg.GRing.one rat.rat_rat__canonical__GRing_SemiRing\n          end) =\n       @ssralg.GRing.inv rat.rat_rat__canonical__GRing_UnitRing\n         (@ssralg.GRing.natmul\n            (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing))\n            (ssralg.GRing.one\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing)) 6)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.RationalTickets.arbitrary_signed_observable",
+      "type": "RationalTickets.arbitrary_signed_observable\n     : forall f : option bool -> rat.rat,\n       @RationalTickets.ticket_expectation bool RationalState.attempt_coin f =\n       @ssralg.GRing.add\n         (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_Nmodule\n            rat.rat_rat__canonical__Num_NumDomain)\n         (@FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain bool\n            (fun b : bool => f (@Some bool b)) RationalState.attempt_entries)\n         (@ssralg.GRing.mul\n            (ssralg.GRing.Ring.Exports.GRing_Ring__to__GRing_SemiRing\n               rat.rat_rat__canonical__GRing_Ring)\n            (@ssralg.GRing.add\n               (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n                  (ssralg.GRing.Ring.Exports.GRing_Ring__to__GRing_SemiRing\n                     rat.rat_rat__canonical__GRing_Ring))\n               (ssralg.GRing.one\n                  (ssralg.GRing.Ring.Exports.GRing_Ring__to__GRing_SemiRing\n                     rat.rat_rat__canonical__GRing_Ring))\n               (@ssralg.GRing.opp rat.rat_rat__canonical__GRing_Zmodule\n                  (@Representation.enumQ_mass bool\n                     (@Representation.subenumQ_raw bool RationalState.attempt_coin))))\n            (f (@None bool)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.RationalTickets.zero_duplicates_keep_mass",
+      "type": "RationalTickets.zero_duplicates_keep_mass\n     : @RationalTickets.ticket_count nat RationalTickets.noisy_coin = 16 /\\\n       @RationalTickets.ticket_outcomes nat RationalTickets.noisy_coin =\n       (@List.repeat (option nat) (@Some nat 7) 8 ++ @List.repeat (option nat) (@None nat) 8)%list",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.RationalTickets.zero_mass_has_one_missing_ticket",
+      "type": "RationalTickets.zero_mass_has_one_missing_ticket\n     : @RationalTickets.ticket_count Empty_set (@Representation.subenumQ_zero Empty_set) = 1 /\\\n       @RationalTickets.ticket_outcomes Empty_set (@Representation.subenumQ_zero Empty_set) =\n       (@None Empty_set :: @nil (option Empty_set))%list",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.RationalTickets.no_entropy_is_not_loss",
+      "type": "RationalTickets.no_entropy_is_not_loss\n     : @RationalTickets.ticket_replay bool RationalState.attempt_coin (@nil nat) =\n       (@Runner.NoEntropy bool, @nil nat)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.RationalTickets.last_valid_ticket_is_loss",
+      "type": "RationalTickets.last_valid_ticket_is_loss\n     : @RationalTickets.ticket_replay bool RationalState.attempt_coin (5 :: 0 :: @nil nat) =\n       (@Runner.Missing bool, (0 :: @nil nat)%list)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.RationalTickets.bound_is_checked",
+      "type": "RationalTickets.bound_is_checked\n     : @RationalTickets.ticket_replay bool RationalState.attempt_coin (6 :: 0 :: @nil nat) =\n       (@Runner.NoEntropy bool, (0 :: @nil nat)%list)",
+      "assumptions": "Closed under the global context"
+    }
+  ]
+}

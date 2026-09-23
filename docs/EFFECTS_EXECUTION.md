@@ -14,7 +14,10 @@ The [State-indexed follow-up](STATE_PRESERVATION.md) separately proves
 arbitrary heterogeneous `run_state` peutt preservation, including local
 setoid rewriting. [StateT/fold commutation](STATE_FOLD.md) is now proved
 from ordinary monad laws and pure-map iteration uniformity, with ITree as
-a checked target model. General sampler distribution correctness remains open.
+a checked target model. [Rational tickets](RATIONAL_TICKETS.md) now prove
+general single-draw distribution correctness and provide a second extracted
+State example with random/seed/replay modes. The whole-runner finite
+probability/semantic bridge remains open.
 
 [Standard effects](STANDARD_EFFECTS.md) now add Reader, Writer and Exception
 clients using ITree's event definitions. Reader/Writer preservation composes

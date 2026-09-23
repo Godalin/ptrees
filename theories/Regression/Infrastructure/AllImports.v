@@ -79,7 +79,9 @@ Require PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService.
 Require PTree.Examples.MathCompPrograms.
 Require PTree.Examples.MixedHeadProtocol.
 Require PTree.Examples.RandomWalk.
+Require PTree.Examples.RationalState.
 Require PTree.Examples.StateCounter.
+Require PTree.Execution.Backend.RationalTickets.
 Require PTree.Execution.Backend.SubEnumQ.
 Require PTree.Execution.ITreeFold.
 Require PTree.Execution.Runner.
@@ -277,6 +279,7 @@ Require PTree.Regression.Backend.SubEnumRBehavior.
 Require PTree.Regression.Backend.SubEnumRRelational.
 Require PTree.Regression.Backend.SubEnumRShared.
 Require PTree.Regression.Backend.UnifiedFrontierEnumQ.
+Require PTree.Regression.Execution.RationalTickets.
 Require PTree.Regression.Fixtures.FreeOmegaSamples.
 Require PTree.Regression.Infrastructure.ArchitectureBoundaries.
 Require PTree.Regression.Infrastructure.CanonicalBehavior.

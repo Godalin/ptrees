@@ -1,0 +1,9 @@
+From Coq Require Import Extraction ExtrOcamlBasic.
+From PTree.Examples Require Import RationalState.
+From PTree.Execution.Backend Require Import RationalTickets.
+Extraction Language OCaml.
+Set Warnings "-extraction-reserved-identifier".
+(* Only bounded entropy is supplied by the host. The general rational ticket
+   compiler, state handler, tree, and runner are extracted without overrides.
+   Keep mathematical naturals; do not map them to unchecked OCaml integers. *)
+Extraction "rational.ml" rational_counter ticket_replay_source.

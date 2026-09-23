@@ -1254,6 +1254,17 @@
       "state_get_fold",
       "unbounded_counter_fold_agrees",
       "bare_iterator_is_not_uniform"
+    ],
+    "theories/Regression/Execution/RationalTickets.v": [
+      "nonfair_success_mass",
+      "nonfair_retry_mass",
+      "partial_loss_is_exact",
+      "arbitrary_signed_observable",
+      "zero_duplicates_keep_mass",
+      "zero_mass_has_one_missing_ticket",
+      "no_entropy_is_not_loss",
+      "last_valid_ticket_is_loss",
+      "bound_is_checked"
     ]
   }
 }

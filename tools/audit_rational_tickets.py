@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""StateT/fold commutation: explicit algebraic law and a checked target model."""
+"""Executable rational tickets: exact finite law, not a PRNG fairness claim."""
 import argparse
 import json
 import re
@@ -7,19 +7,23 @@ import subprocess
 from functools import lru_cache
 from audit_assumptions import ROOT, query, compare, logical_axioms, SOUNDNESS_AXIOMS, without_comments
 
-BASELINE = '1cca4ca'
+BASELINE = '09a1773'
 ALL = 'theories/Regression/Infrastructure/AllImports.v'
-MODULES = ['Core/IterationLaws', 'Interp/StateFoldFacts', 'Execution/ITreeFold',
-           'Regression/Semantics/StateFold']
+MODULES = ['Execution/Backend/RationalTickets', 'Examples/RationalState',
+           'Regression/Execution/RationalTickets']
 NEW = {'theories/' + m + '.v' for m in MODULES}
 IMPORTS = {'Require PTree.' + m.replace('/', '.') + '.' for m in MODULES}
 ENDPOINTS = ['PTree.' + module + '.' + name for module, names in {
-    'Core.IterationLaws': ['iteration_map', 'iteration_uniform'],
-    'Interp.StateFoldFacts': ['fold_state_as_iter', 'state_fold_square', 'fold_run_state'],
-    'Execution.ITreeFold': ['itree_iteration_uniform', 'itree_fold_unfold', 'itree_fold_ret',
-                          'itree_fold_tau', 'itree_fold_vis', 'itree_fold_prob'],
-    'Regression.Semantics.StateFold': ['state_fold_commutes', 'sample_keeps_separate_algebra',
-        'state_get_fold', 'unbounded_counter_fold_agrees', 'bare_iterator_is_not_uniform'],
+    'Execution.Backend.RationalTickets': ['ticket_coefficient', 'compile_tickets_positive',
+        'compile_tickets_expectation', 'compile_tickets_bound', 'ticket_outcomes_size',
+        'ticket_outcomes_enumerated', 'uniform_ticket_expectation', 'uniform_ticket_returns',
+        'uniform_ticket_loss', 'ticket_sample_valid', 'ticket_sample_invalid'],
+    'Examples.RationalState': ['rational_counter', 'rational_ticket_layout', 'rational_two_attempts',
+        'rational_missing_mass_stops', 'rational_timeout_no_redraw', 'rational_invalid_entropy_not_loss'],
+    'Regression.Execution.RationalTickets': ['nonfair_success_mass', 'nonfair_retry_mass',
+        'partial_loss_is_exact', 'arbitrary_signed_observable', 'zero_duplicates_keep_mass',
+        'zero_mass_has_one_missing_ticket', 'no_entropy_is_not_loss',
+        'last_valid_ticket_is_loss', 'bound_is_checked'],
 }.items() for name in names]
 
 
@@ -29,26 +33,18 @@ def frozen(path):
 
 
 def check_new(sources):
-    assert NEW <= set(sources), 'Incomplete State/fold increment'
+    assert NEW <= set(sources), 'Incomplete rational ticket increment'
     for p in NEW:
         code = without_comments(sources[p])
         assert not re.search(r'\b(?:Axiom|Parameter|Admitted|admit|Abort|Class|Hint)\b|Unset .*Checking', code), p
-        if not p.startswith('theories/Regression/'):
-            assert not re.search(r'FreeOmega|MathComp|OmegaVal|SemanticMeasure|sem_lift|peutt', code), p
-    law = without_comments(sources['theories/Core/IterationLaws.v'])
-    assert not re.search(r'ptree|fold|stateE|Instance', law), 'Uniformity must be an independent explicit law'
-    proof = without_comments(sources['theories/Interp/StateFoldFacts.v'])
-    assert '(Hunif : @iteration_uniform T MT IT QT)' in proof
-    assert 'apply state_fold_square.' in proof
-    model = without_comments(sources['theories/Execution/ITreeFold.v'])
-    assert 'eutt_iter\'' in model, 'Must prove the target law, not assume it'
-    reg = without_comments(sources['theories/Regression/Semantics/StateFold.v'])
-    assert '~ @iteration_uniform option option_ops nonuniform_iter option_observation' in reg
+    code = without_comments(sources['theories/Execution/Backend/RationalTickets.v'])
+    assert not re.search(r'FreeOmega|MathComp|OmegaVal|SemanticMeasure|Classical|xchoose|epsilon', code)
+    for text in ['numq p', 'denq p', 'List.repeat None', 'uniform_ticket_expectation',
+                 '1 - enumQ_mass', 'else (NoEntropy, rest)']:
+        assert text in code, text
 
 
 def previous_sources(sources):
-    from audit_rational_tickets import previous_sources as before_tickets
-    sources = before_tickets(sources)
     if not (NEW & set(sources)):
         return sources
     check_new(sources)
@@ -60,8 +56,6 @@ def previous_sources(sources):
 
 
 def check_source(sources):
-    from audit_rational_tickets import previous_sources as before_tickets
-    sources = before_tickets(sources)
     old = {p for p in subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', BASELINE],
            cwd=ROOT, text=True).splitlines() if p.endswith('.v')}
     assert set(sources) == old | NEW, 'Unapproved theory addition/deletion'
@@ -72,24 +66,26 @@ def check_source(sources):
     assert lines[2:] == sorted(set(lines[2:])), 'Unsorted/duplicate aggregate'
     for p in ['docs/CONTRACTS.json', 'docs/MATHCOMP_DIRECT_CONTRACTS.json',
               'docs/EFFECT_EXECUTION_CONTRACTS.json', 'docs/HANDLER_MACHINE_CONTRACTS.json',
-              'docs/STATE_PRESERVATION_CONTRACTS.json', 'docs/STANDARD_EFFECTS_CONTRACTS.json']:
+              'docs/STATE_PRESERVATION_CONTRACTS.json', 'docs/STANDARD_EFFECTS_CONTRACTS.json',
+              'docs/STATE_FOLD_CONTRACTS.json']:
         assert (ROOT/p).read_text() == frozen(p), 'Frozen snapshot changed: ' + p
-    print(f'{len(old)} prior theory modules unchanged; four additive fold-law modules.')
+    extract = (ROOT/'extraction/rational-state/Extract.v.in').read_text()
+    assert 'Extraction "rational.ml" rational_counter ticket_replay_source.' in extract
+    assert not re.search(r'Extract Constant|Extract Inductive|ExtrOcamlNatInt|ExtrOcamlZInt', extract)
+    print(f'{len(old)} prior theory modules unchanged; verified tickets plus extracted State client.')
 
 
 def compiled_check():
-    snapshot = json.loads((ROOT/'docs/STATE_FOLD_CONTRACTS.json').read_text())
+    snapshot = json.loads((ROOT/'docs/RATIONAL_TICKETS_CONTRACTS.json').read_text())
     assert snapshot['baseline'] == BASELINE
     actual = query(ENDPOINTS)
     compare(snapshot['endpoints'], actual)
     for item in actual:
         assert logical_axioms(item['assumptions']) <= SOUNDNESS_AXIOMS, item['name']
-        if item['name'].startswith(('PTree.Core.', 'PTree.Interp.')):
+        if item['name'].startswith('PTree.Execution.'):
             assert not logical_axioms(item['assumptions']), item['name']
-        if item['name'] == 'PTree.Interp.StateFoldFacts.fold_run_state':
-            assert 'iteration_uniform' in item['type']
-            assert not re.search(r'FreeOmega|MathComp|OmegaVal|SemanticMeasure', item['type'])
-    print(f'{len(actual)} compiled contracts; no probability assumptions or new axioms.')
+            assert not re.search(r'FreeOmega|OmegaVal|SemanticMeasure|realType', item['type'])
+    print(f'{len(actual)} compiled contracts; rational sampler proofs have no logical axioms.')
 
 
 if __name__ == '__main__':
