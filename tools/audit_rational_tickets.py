@@ -45,6 +45,8 @@ def check_new(sources):
 
 
 def previous_sources(sources):
+    from audit_state_rewrite import previous_sources as before_rewrite
+    sources = before_rewrite(sources)
     if not (NEW & set(sources)):
         return sources
     check_new(sources)
@@ -56,6 +58,8 @@ def previous_sources(sources):
 
 
 def check_source(sources):
+    from audit_state_rewrite import previous_sources as before_rewrite
+    sources = before_rewrite(sources)
     old = {p for p in subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', BASELINE],
            cwd=ROOT, text=True).splitlines() if p.endswith('.v')}
     assert set(sources) == old | NEW, 'Unapproved theory addition/deletion'
@@ -69,7 +73,8 @@ def check_source(sources):
               'docs/STATE_PRESERVATION_CONTRACTS.json', 'docs/STANDARD_EFFECTS_CONTRACTS.json',
               'docs/STATE_FOLD_CONTRACTS.json']:
         assert (ROOT/p).read_text() == frozen(p), 'Frozen snapshot changed: ' + p
-    extract = (ROOT/'extraction/rational-state/Extract.v.in').read_text()
+    from audit_state_rewrite import previous_extraction
+    extract = previous_extraction((ROOT/'extraction/rational-state/Extract.v.in').read_text())
     assert 'Extraction "rational.ml" rational_counter ticket_replay_source.' in extract
     assert not re.search(r'Extract Constant|Extract Inductive|ExtrOcamlNatInt|ExtrOcamlZInt', extract)
     print(f'{len(old)} prior theory modules unchanged; verified tickets plus extracted State client.')

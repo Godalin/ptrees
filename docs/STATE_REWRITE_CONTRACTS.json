@@ -1,0 +1,71 @@
+{
+  "baseline": "60e1e77",
+  "scope": "End-to-end sampling fusion -> State preservation -> extracted programs",
+  "endpoints": [
+    {
+      "name": "PTree.Examples.StateRewrite.preparation_sampling_fusion",
+      "type": "StateRewrite.preparation_sampling_fusion\n     : forall s : nat,\n       @Canonical.canonical_peutt (Sum.sum1 (State.stateE nat) Sum.void1) Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) unit unit (@eq unit)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF (Sum.sum1 (State.stateE nat) Sum.void1) Representation.SubEnumQ\n               unit\n               (PTreeDefinition.ptree (Sum.sum1 (State.stateE nat) Sum.void1)\n                  Representation.SubEnumQ unit) bool StateCounter.coin\n               (fun b : bool =>\n                {|\n                  PTreeDefinition._observe :=\n                    @PTreeDefinition.ProbF (Sum.sum1 (State.stateE nat) Sum.void1)\n                      Representation.SubEnumQ unit\n                      (PTreeDefinition.ptree (Sum.sum1 (State.stateE nat) Sum.void1)\n                         Representation.SubEnumQ unit) bool (StateRewrite.preparation_coin b)\n                      (StateRewrite.after_preparation s)\n                |})\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF (Sum.sum1 (State.stateE nat) Sum.void1) Representation.SubEnumQ\n               unit\n               (PTreeDefinition.ptree (Sum.sum1 (State.stateE nat) Sum.void1)\n                  Representation.SubEnumQ unit) bool StateRewrite.fused_preparation\n               (StateRewrite.after_preparation s)\n         |}",
+      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.source_program_rewrite",
+      "type": "StateRewrite.source_program_rewrite\n     : @Canonical.canonical_peutt (Sum.sum1 (State.stateE nat) Sum.void1) Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) unit unit (@eq unit)\n         StateRewrite.original_state_program StateRewrite.rewritten_state_program",
+      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.rewrite_then_handle",
+      "type": "StateRewrite.rewrite_then_handle\n     : forall s : nat,\n       @Canonical.canonical_peutt Sum.void1 Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) (nat * unit) (nat * unit) (@eq (nat * unit))\n         (@State.run_state nat Sum.void1 Representation.SubEnumQ unit\n            StateRewrite.original_state_program s)\n         (@State.run_state nat Sum.void1 Representation.SubEnumQ unit\n            StateRewrite.rewritten_state_program s)",
+      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.original_counter",
+      "type": "@StateRewrite.original_counter\n     : forall Seed : Type,\n       (nat -> Seed -> option nat * Seed) -> nat -> nat -> Seed -> Runner.outcome nat * Seed",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.rewritten_counter",
+      "type": "@StateRewrite.rewritten_counter\n     : forall Seed : Type,\n       (nat -> Seed -> option nat * Seed) -> nat -> nat -> Seed -> Runner.outcome nat * Seed",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.original_preparation_trace",
+      "type": "StateRewrite.original_preparation_trace\n     : @StateRewrite.original_counter (list nat) RationalTickets.ticket_replay_source 7 0\n         (2 :: 0 :: 0 :: @nil nat)%list = (@Runner.Returned nat 11, @nil nat)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.rewritten_preparation_trace",
+      "type": "StateRewrite.rewritten_preparation_trace\n     : @StateRewrite.rewritten_counter (list nat) RationalTickets.ticket_replay_source 6 0\n         (24 :: 0 :: @nil nat)%list = (@Runner.Returned nat 11, @nil nat)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.original_needs_an_extra_transition",
+      "type": "StateRewrite.original_needs_an_extra_transition\n     : @StateRewrite.original_counter (list nat) RationalTickets.ticket_replay_source 6 0\n         (2 :: 0 :: 0 :: @nil nat)%list = (@Runner.Timeout nat, (0 :: @nil nat)%list)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.fused_missing_mass_is_not_normalized",
+      "type": "StateRewrite.fused_missing_mass_is_not_normalized\n     : @StateRewrite.rewritten_counter (list nat) RationalTickets.ticket_replay_source 100 0\n         (47 :: 0 :: @nil nat)%list = (@Runner.Lost nat, (0 :: @nil nat)%list)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.preparation_success_probability",
+      "type": "StateRewrite.preparation_success_probability\n     : @RationalTickets.ticket_expectation bool StateRewrite.fused_preparation\n         (fun o : option bool =>\n          match o with\n          | @Some _ (@true) => ssralg.GRing.one rat.rat_rat__canonical__GRing_SemiRing\n          | _ => @ssralg.GRing.zero rat.rat_rat__canonical__GRing_Nmodule\n          end) =\n       @ssralg.GRing.inv rat.rat_rat__canonical__GRing_UnitRing\n         (@ssralg.GRing.natmul\n            (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing))\n            (ssralg.GRing.one\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing)) 6)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.preparation_other_probability",
+      "type": "StateRewrite.preparation_other_probability\n     : @RationalTickets.ticket_expectation bool StateRewrite.fused_preparation\n         (fun o : option bool =>\n          match o with\n          | @Some _ (@false) => ssralg.GRing.one rat.rat_rat__canonical__GRing_SemiRing\n          | _ => @ssralg.GRing.zero rat.rat_rat__canonical__GRing_Nmodule\n          end) =\n       @ssralg.GRing.mul\n         (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n            rat.rat_rat__canonical__GRing_UnitRing)\n         (@ssralg.GRing.natmul\n            (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing))\n            (ssralg.GRing.one\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing)) 3)\n         (@ssralg.GRing.inv rat.rat_rat__canonical__GRing_UnitRing\n            (@ssralg.GRing.natmul\n               (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n                  (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                     rat.rat_rat__canonical__GRing_UnitRing))\n               (ssralg.GRing.one\n                  (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                     rat.rat_rat__canonical__GRing_UnitRing)) 4))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.preparation_lost_probability",
+      "type": "StateRewrite.preparation_lost_probability\n     : @RationalTickets.ticket_expectation bool StateRewrite.fused_preparation\n         (fun o : option bool =>\n          match o with\n          | @Some _ _ => @ssralg.GRing.zero rat.rat_rat__canonical__GRing_Nmodule\n          | @None _ => ssralg.GRing.one rat.rat_rat__canonical__GRing_SemiRing\n          end) =\n       @ssralg.GRing.inv rat.rat_rat__canonical__GRing_UnitRing\n         (@ssralg.GRing.natmul\n            (ssralg.GRing.SemiRing.Exports.GRing_SemiRing__to__GRing_Nmodule\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing))\n            (ssralg.GRing.one\n               (ssralg.GRing.UnitRing.Exports.GRing_UnitRing__to__GRing_SemiRing\n                  rat.rat_rat__canonical__GRing_UnitRing)) 12)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateRewrite.rewritten_trace_has_operational_path",
+      "type": "StateRewrite.rewritten_trace_has_operational_path\n     : @Runner.executes Representation.SubEnumQ (list nat)\n         (fun A : Type =>\n          @RationalTickets.ticket_sample (list nat) A RationalTickets.ticket_replay_source)\n         (nat * unit)\n         (@State.run_state nat Sum.void1 Representation.SubEnumQ unit\n            StateRewrite.rewritten_state_program 0) (24 :: 0 :: @nil nat)%list\n         (@Runner.Returned (nat * unit) (11, tt)) (@nil nat)",
+      "assumptions": "Closed under the global context"
+    }
+  ]
+}

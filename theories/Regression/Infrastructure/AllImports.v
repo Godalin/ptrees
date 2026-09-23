@@ -81,6 +81,7 @@ Require PTree.Examples.MixedHeadProtocol.
 Require PTree.Examples.RandomWalk.
 Require PTree.Examples.RationalState.
 Require PTree.Examples.StateCounter.
+Require PTree.Examples.StateRewrite.
 Require PTree.Execution.Backend.RationalTickets.
 Require PTree.Execution.Backend.SubEnumQ.
 Require PTree.Execution.ITreeFold.

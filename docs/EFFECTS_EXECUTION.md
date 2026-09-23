@@ -19,6 +19,11 @@ general single-draw distribution correctness and provide a second extracted
 State example with random/seed/replay modes. The whole-runner finite
 probability/semantic bridge remains open.
 
+The [end-to-end State rewrite](STATE_REWRITE.md) now fuses two probability
+nodes before State elimination, proves preservation through the handler,
+and extracts both theorem-linked programs. It explicitly tests the differing
+fuel/entropy requirements rather than asserting same-seed execution equality.
+
 [Standard effects](STANDARD_EFFECTS.md) now add Reader, Writer and Exception
 clients using ITree's event definitions. Reader/Writer preservation composes
 the existing handler/State results; early exceptions are explicit returned

@@ -49,7 +49,12 @@ let parse_trace text =
     xs
 
 let main () =
-  let fuel, initial, source = match Array.to_list Sys.argv with
+  let program, args = match Array.to_list Sys.argv with
+    | exe :: "original" :: rest -> `Original, exe :: rest
+    | exe :: "rewrite" :: rest -> `Rewritten, exe :: rest
+    | args -> `Counter, args
+  in
+  let fuel, initial, source = match args with
     | [_; "replay"; fuel; initial; trace] ->
         bounded_number "fuel" fuel, bounded_number "initial" initial,
         Replay (parse_trace trace)
@@ -59,9 +64,14 @@ let main () =
     | [_; "random"; fuel; initial; count] ->
         bounded_number "fuel" fuel, bounded_number "initial" initial,
         Generated (Random.State.make_self_init (), bounded_number "entropy length" count)
-    | _ -> invalid_arg "usage: main.exe replay FUEL INITIAL TICKETS | seed FUEL INITIAL SEED COUNT | random FUEL INITIAL COUNT"
+    | _ -> invalid_arg "usage: main.exe [original|rewrite] (replay FUEL INITIAL TICKETS | seed FUEL INITIAL SEED COUNT | random FUEL INITIAL COUNT)"
   in
-  let outcome, rest = Rational.rational_counter next (nat fuel) (nat initial)
+  let execute = match program with
+    | `Counter -> Rational.rational_counter
+    | `Original -> Rational.original_counter
+    | `Rewritten -> Rational.rewritten_counter
+  in
+  let outcome, rest = execute next (nat fuel) (nat initial)
       {source; drawn_rev = []} in
   let result = match outcome with
     | Rational.Returned n -> "Returned " ^ string_of_int (int_of_nat n)

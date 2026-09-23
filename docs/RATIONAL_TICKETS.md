@@ -53,6 +53,9 @@ carry a statistical correctness claim. The OCaml PRNG is an external entropy
 provider, not a mathematically verified random source; its statistical quality
 is not established by this theorem. The extracted sampler itself exactly
 implements the native rational law when supplied uniform bounded indices.
+For a sequential-program probability claim, each index must be uniform
+conditional on the preceding execution history; uniform marginals alone
+would not justify independence of successive samples.
 
 The first implementation materializes the ticket table, using a product
 rather than least-common-multiple denominator. It is intended as a simple
