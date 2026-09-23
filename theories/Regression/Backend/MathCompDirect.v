@@ -224,3 +224,29 @@ Proof.
   Timeout 10 setoid_rewrite H. apply peutt_refl.
 Qed.
 End GenericRewriting.
+
+(** The eventful closure rule is independent of completion. The caller must
+    still establish generator closure; this does not assert unrestricted
+    behavioral iteration congruence. *)
+From PTree.Eq Require Import Iter.
+Section GenericIteration.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E : Type -> Type} {I1 I2 A B : Type}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Variable step1 : I1 -> ptree E M (I1 + A).
+Variable step2 : I2 -> ptree E M (I2 + B).
+Variable SI : I1 -> I2 -> Prop.
+Variable RR : A -> B -> Prop.
+
+Example direct_eventful_iter
+    (H : @iter_eventful_generator_closed E M M NI MX NO I1 I2 A B
+      step1 step2 SI RR) i j :
+  SI i j -> @peutt E M M NI NC MX NO A B RR
+    (PTree.iter step1 i) (PTree.iter step2 j).
+Proof. intro Hij. exact (peutt_iter_eventful_of_generator_closed H Hij). Qed.
+End GenericIteration.

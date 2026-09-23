@@ -49,6 +49,7 @@ Require PTree.Eq.Internal.FreeOmega.KernelCompletion.
 Require PTree.Eq.Internal.FreeOmega.KernelCongruence.
 Require PTree.Eq.Internal.FreeOmega.KernelContinuity.
 Require PTree.Eq.Internal.FreeOmega.KernelProjection.
+Require PTree.Eq.Iter.
 Require PTree.Eq.PEutt.
 Require PTree.Eq.PStrong.
 Require PTree.Eq.PStruct.
@@ -283,6 +284,7 @@ Require PTree.Regression.Probability.SubEnumRJointRealization.
 Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
 Require PTree.Regression.Semantics.GenericAlgebra.
+Require PTree.Regression.Semantics.GenericConsumers.
 Require PTree.Regression.Semantics.GenericBind.
 Require PTree.Regression.Semantics.GuardedInterp.
 Require PTree.Regression.Semantics.HeadTransition.

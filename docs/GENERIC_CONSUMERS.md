@@ -56,6 +56,28 @@ Consequently the structural bridges and their six elementary FreeOmega
 algebra consumers remain at their existing owners. Universalizing them by
 assuming the desired PTree bridge would not count as progress.
 
+## Stage 3: iteration has three different obligations
+
+| Existing family | Actual dependency | Disposition |
+| --- | --- | --- |
+| Structural step/unfold/natural/codiagonal | `pstruct` theorem then structural bridge | Remains FreeOmega, for the Stage 2 limit reason |
+| Behavioral step plus `no_event` | Complete-row construction, unbounded-step hitting, relational lub | Remains FreeOmega; no-event is a program restriction, not a backend capability |
+| Eventful generator closure | Generic `peutt_coinduction` alone | Moved to `Eq.Iter` |
+
+`iter_eventful_bisim_candidate`, `iter_eventful_generator_closed`, and
+`peutt_iter_eventful_of_generator_closed` now have one generic owner. The
+FreeOmega module exports that owner, not a duplicate proof or alias. The
+compiled theorem needs only frontier measure/CoreLaws, mixed operations and
+omega operations; neither native capabilities nor omega laws are necessary.
+The proof is unchanged. The existing closure condition stays explicit and is
+not promoted to a class or presented as arbitrary eventful step congruence.
+
+`GenericConsumers.free_omega_eventful_iter` recovers the old specialization.
+The already allowlisted MathComp direct regression instantiates the same
+theorem. Both are conditional closure clients, not proofs that arbitrary
+handlers/loop steps satisfy the condition. Generic-only imports also exclude
+FreeOmega, MathComp and external validation.
+
 ## Validation discipline
 
 During development, compile changed owners and compare their actual types
