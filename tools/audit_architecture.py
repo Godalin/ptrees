@@ -64,6 +64,10 @@ def ownership(path):
         return "Prob/FreeOmega/Validation", "external validation", "native-parametric bridge to independent mathematical models"
     if path.startswith("Core/"):
         return "Core", "syntax", "primitive syntax/combinators only"
+    if path.startswith("Execution/Backend/"):
+        return "Execution/Backend", "concrete", "executable native sampling; no external validation or recursive frontier"
+    if path.startswith("Execution/"):
+        return "Execution", "generic", "operational runner and finite path correctness; sampler laws are separate"
     if path.startswith("Prob/Backend/"):
         parts = path.split("/")
         assert len(parts) >= 4 and parts[2] in {"Common", "EnumQ", "SubEnumQ", "SubEnumR", "MathComp"}, "Ungrouped concrete probability module: " + path
@@ -133,6 +137,10 @@ def permitted(module, dependency):
         return under("Semantics")
     if module.startswith("Core/"):
         return under("Core")
+    if module.startswith("Execution/Backend/"):
+        return under("Core", "Execution", "Prob/Backend/Common", "Prob/Backend/EnumQ", "Prob/Backend/SubEnumQ")
+    if module.startswith("Execution/"):
+        return under("Core", "Execution") and not under("Execution/Backend")
     if module.startswith("Prob/Interface/"):
         return under("Prob/Interface")
     if module.startswith("Prob/FreeOmega/"):
@@ -200,7 +208,7 @@ def check_external_validation_boundary(edges):
     # Explicit validation adapters can live under Eq/Backend; they validate
     # reasoning and must not themselves be counted as reasoning roots.
     roots = {m for m in edges if not external_validation(m) and m.startswith(
-        ("Core/", "Eq/", "Semantics/", "Interp/", "Examples/"))}
+        ("Core/", "Eq/", "Semantics/", "Interp/", "Execution/", "Examples/"))}
     roots |= {m for m in ("PTree", "Eq", "PTreeFacts", "Semantics") if m in edges}
     leaked = {m for m in closure(edges, roots) if external_validation(m)}
     assert not leaked, "Mainline depends on external validation: " + str(sorted(leaked))

@@ -129,6 +129,8 @@ def previous_sources(sources):
     Older mutation tests still run against their own source; unapproved old
     changes are never hidden. Not a generic reset-to-baseline escape hatch.
     """
+    from audit_effect_execution import previous_sources as execution_sources
+    sources = execution_sources(sources)
     if 'theories/Eq/Relation.v' not in sources:
         return sources
     check_changes(sources)
@@ -142,6 +144,8 @@ def previous_sources(sources):
 
 
 def check_source(sources):
+    from audit_effect_execution import previous_sources as execution_sources
+    sources = execution_sources(sources)
     old = {p for p in subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', BASELINE],
            cwd=ROOT, text=True).splitlines() if p.endswith('.v')}
     assert set(sources) == old | NEW, 'Unapproved addition/deletion'

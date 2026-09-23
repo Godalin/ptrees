@@ -203,6 +203,18 @@ class ArchitectureTests(unittest.TestCase):
 
 
 class AggregateAndFixtureTests(unittest.TestCase):
+    def test_execution_is_not_a_probability_model_or_theory_dependency(self):
+        self.assertEqual(architecture.ownership('Execution/Runner')[:2], ('Execution', 'generic'))
+        self.assertTrue(architecture.permitted('Execution/Runner', 'Core/PTreeDefinition'))
+        self.assertTrue(architecture.permitted('Execution/Backend/SubEnumQ', 'Prob/Backend/SubEnumQ/Representation'))
+        self.assertTrue(architecture.permitted('Examples/StateCounter', 'Execution/Runner'))
+        for source in ['Core/Fold', 'Eq/PEutt', 'Interp/State', 'Prob/Backend/SubEnumQ/Measure']:
+            self.assertFalse(architecture.permitted(source, 'Execution/Runner'))
+        for target in ['Prob/Domain/Expectation', 'Prob/FreeOmega/Measure',
+                       'Eq/PEutt', 'Execution/Backend/SubEnumQ']:
+            self.assertFalse(architecture.permitted('Execution/Runner', target))
+        self.assertFalse(architecture.permitted('Execution/Backend/SubEnumQ', 'Prob/Backend/SubEnumQ/Domain'))
+
     def test_sorted_complete_aggregate(self):
         architecture.aggregate_check(['PTree.A','PTree.B'], ['PTree.B','PTree.A'])
 

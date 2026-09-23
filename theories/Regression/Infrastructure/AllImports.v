@@ -1,5 +1,6 @@
 (** Gate S integration regression: load every normally checked module in one universe context.
     Not a facade or an ordinary theorem client. *)
+Require PTree.Core.Fold.
 Require PTree.Core.PTreeDefinition.
 Require PTree.Core.Utils.
 Require PTree.Eq.
@@ -77,6 +78,9 @@ Require PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService.
 Require PTree.Examples.MathCompPrograms.
 Require PTree.Examples.MixedHeadProtocol.
 Require PTree.Examples.RandomWalk.
+Require PTree.Examples.StateCounter.
+Require PTree.Execution.Backend.SubEnumQ.
+Require PTree.Execution.Runner.
 Require PTree.Interp.Backend.SubEnumQ.
 Require PTree.Interp.FreeOmega.Atomic.
 Require PTree.Interp.FreeOmega.Base.
@@ -88,6 +92,10 @@ Require PTree.Interp.Guarded.
 Require PTree.Interp.Kernel.
 Require PTree.Interp.Preservation.
 Require PTree.Interp.Scheduling.
+Require PTree.Interp.State.
+Require PTree.Interp.StateFacts.
+Require PTree.Interp.StateFold.
+Require PTree.Interp.StateStrong.
 Require PTree.Interp.Structural.
 Require PTree.PTree.
 Require PTree.PTreeFacts.
@@ -243,6 +251,7 @@ Require PTree.Regression.Backend.RationalFiniteAlgebra.
 Require PTree.Regression.Backend.RationalPositions.
 Require PTree.Regression.Backend.RationalPresentation.
 Require PTree.Regression.Backend.RationalPruning.
+Require PTree.Regression.Backend.RationalReplay.
 Require PTree.Regression.Backend.RationalRepresentationMigration.
 Require PTree.Regression.Backend.SubEnumQRegression.
 Require PTree.Regression.Backend.SubEnumR.
@@ -259,6 +268,7 @@ Require PTree.Regression.Infrastructure.CapabilityBoundaries.
 Require PTree.Regression.Infrastructure.CorrelatedInternalRounds.
 Require PTree.Regression.Infrastructure.CostedRounds.
 Require PTree.Regression.Infrastructure.CouplingReferences.
+Require PTree.Regression.Infrastructure.Execution.
 Require PTree.Regression.Infrastructure.FiniteInternalNative.
 Require PTree.Regression.Infrastructure.FiniteInternalPlan.
 Require PTree.Regression.Infrastructure.FiniteInternalRound.

@@ -1,0 +1,206 @@
+{
+  "baseline": "7b4c9714bb3845ed283a68fd084a6b4b33073e6f",
+  "scope": "Structural State, separate fold algebras, finite operational replay; arbitrary peutt State preservation and general rational random sampling OPEN",
+  "endpoints": [
+    {
+      "name": "PTree.Core.Fold.fold_step",
+      "type": "@Fold.fold_step\n     : forall E MN T : Type -> Type,\n       Monad.Monad T ->\n       (forall X : Type, E X -> T X) ->\n       (forall X : Type, MN X -> T X) ->\n       forall A : Type, PTreeDefinition.ptree E MN A -> T (PTreeDefinition.ptree E MN A + A)%type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.Fold.fold",
+      "type": "@Fold.fold\n     : forall E MN T : Type -> Type,\n       Monad.Monad T ->\n       Basics.MonadIter T ->\n       (forall X : Type, E X -> T X) ->\n       (forall X : Type, MN X -> T X) -> forall A : Type, PTreeDefinition.ptree E MN A -> T A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.Fold.fold_step_vis",
+      "type": "@Fold.fold_step_vis\n     : forall (E MN T : Type -> Type) (MT : Monad.Monad T) (handle : forall X : Type, E X -> T X)\n         (sample : forall X : Type, MN X -> T X) (A X : Type) (e : E X)\n         (k : X -> PTreeDefinition.ptree E MN A),\n       @Fold.fold_step E MN T MT handle sample A\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E MN A (PTreeDefinition.ptree E MN A) X e k\n         |} =\n       @Monad.bind T MT X (PTreeDefinition.ptree E MN A + A) (handle X e)\n         (fun x : X =>\n          @Monad.ret T MT (PTreeDefinition.ptree E MN A + A)\n            (@inl (PTreeDefinition.ptree E MN A) A (k x)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.Fold.fold_step_prob",
+      "type": "@Fold.fold_step_prob\n     : forall (E MN T : Type -> Type) (MT : Monad.Monad T) (handle : forall X : Type, E X -> T X)\n         (sample : forall X : Type, MN X -> T X) (A X : Type) (mu : MN X)\n         (k : X -> PTreeDefinition.ptree E MN A),\n       @Fold.fold_step E MN T MT handle sample A\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E MN A (PTreeDefinition.ptree E MN A) X mu k\n         |} =\n       @Monad.bind T MT X (PTreeDefinition.ptree E MN A + A) (sample X mu)\n         (fun x : X =>\n          @Monad.ret T MT (PTreeDefinition.ptree E MN A + A)\n            (@inl (PTreeDefinition.ptree E MN A) A (k x)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.State.get",
+      "type": "@State.get\n     : forall (S : Type) (E MN : Type -> Type),\n       @CategoryOps.ReSum (Type -> Type) Function.IFun (State.stateE S) E ->\n       PTreeDefinition.ptree E MN S",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.State.put",
+      "type": "@State.put\n     : forall (S : Type) (E MN : Type -> Type),\n       @CategoryOps.ReSum (Type -> Type) Function.IFun (State.stateE S) E ->\n       S -> PTreeDefinition.ptree E MN unit",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.State.run_state",
+      "type": "@State.run_state\n     : forall (S : Type) (E MN : Type -> Type) (A : Type),\n       PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A ->\n       S -> PTreeDefinition.ptree E MN (S * A)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.State.state_result_rel",
+      "type": "@State.state_result_rel\n     : forall S A B : Type, (A -> B -> Prop) -> S * A -> S * B -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.State.observe_run_state",
+      "type": "@State.observe_run_state\n     : forall (S : Type) (E MN : Type -> Type) (A : Type)\n         (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s : S),\n       @PTreeDefinition.observe E MN (S * A) (@State.run_state S E MN A t s) =\n       match @PTreeDefinition.observe (Sum.sum1 (State.stateE S) E) MN A t with\n       | @PTreeDefinition.RetF _ _ _ _ a =>\n           @PTreeDefinition.RetF E MN (S * A) (PTreeDefinition.ptree E MN (S * A)) (s, a)\n       | @PTreeDefinition.TauF _ _ _ _ u =>\n           @PTreeDefinition.TauF E MN (S * A) (PTreeDefinition.ptree E MN (S * A))\n             (@State.run_state S E MN A u s)\n       | @PTreeDefinition.VisF _ _ _ _ X (@Sum.inl1 _ _ _ se) k =>\n           let\n           '(s', x) := @State.state_response S X se s in\n            @PTreeDefinition.TauF E MN (S * A) (PTreeDefinition.ptree E MN (S * A))\n              (@State.run_state S E MN A (k x) s')\n       | @PTreeDefinition.VisF _ _ _ _ X (@Sum.inr1 _ _ _ fe) k =>\n           @PTreeDefinition.VisF E MN (S * A) (PTreeDefinition.ptree E MN (S * A)) X fe\n             (fun x : X => @State.run_state S E MN A (k x) s)\n       | @PTreeDefinition.ProbF _ _ _ _ X mu k =>\n           @PTreeDefinition.ProbF E MN (S * A) (PTreeDefinition.ptree E MN (S * A)) X mu\n             (fun x : X => @State.run_state S E MN A (k x) s)\n       end",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFacts.run_state_ret",
+      "type": "@StateFacts.run_state_ret\n     : forall (S : Type) (E MN : Type -> Type) (A : Type) (a : A) (s : S),\n       @PStruct.pstruct E MN (S * A) (S * A) (@eq (S * A))\n         (@State.run_state S E MN A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.RetF (Sum.sum1 (State.stateE S) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) a\n            |} s)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN (S * A) (PTreeDefinition.ptree E MN (S * A)) (s, a)\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFacts.run_state_tau",
+      "type": "@StateFacts.run_state_tau\n     : forall (S : Type) (E MN : Type -> Type) (A : Type)\n         (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s : S),\n       @PStruct.pstruct E MN (S * A) (S * A) (@eq (S * A))\n         (@State.run_state S E MN A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.TauF (Sum.sum1 (State.stateE S) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) t\n            |} s)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN (S * A) (PTreeDefinition.ptree E MN (S * A))\n               (@State.run_state S E MN A t s)\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFacts.run_state_prob",
+      "type": "@StateFacts.run_state_prob\n     : forall (S : Type) (E MN : Type -> Type) (A X : Type) (mu : MN X)\n         (k : X -> PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s : S),\n       @PStruct.pstruct E MN (S * A) (S * A) (@eq (S * A))\n         (@State.run_state S E MN A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF (Sum.sum1 (State.stateE S) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) X mu k\n            |} s)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E MN (S * A) (PTreeDefinition.ptree E MN (S * A)) X mu\n               (fun x : X => @State.run_state S E MN A (k x) s)\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFacts.run_state_get",
+      "type": "@StateFacts.run_state_get\n     : forall (S : Type) (E MN : Type -> Type) (A : Type)\n         (k : S -> PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s : S),\n       @PStruct.pstruct E MN (S * A) (S * A) (@eq (S * A))\n         (@State.run_state S E MN A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.VisF (Sum.sum1 (State.stateE S) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) S\n                  (@Sum.inl1 (State.stateE S) E S (State.Get S)) k\n            |} s)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN (S * A) (PTreeDefinition.ptree E MN (S * A))\n               (@State.run_state S E MN A (k s) s)\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFacts.run_state_put",
+      "type": "@StateFacts.run_state_put\n     : forall (S : Type) (E MN : Type -> Type) (A : Type)\n         (k : unit -> PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s s' : S),\n       @PStruct.pstruct E MN (S * A) (S * A) (@eq (S * A))\n         (@State.run_state S E MN A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.VisF (Sum.sum1 (State.stateE S) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) unit\n                  (@Sum.inl1 (State.stateE S) E unit (State.Put S s')) k\n            |} s)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN (S * A) (PTreeDefinition.ptree E MN (S * A))\n               (@State.run_state S E MN A (k tt) s')\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFacts.run_state_forward",
+      "type": "@StateFacts.run_state_forward\n     : forall (S : Type) (E MN : Type -> Type) (A X : Type) (e : E X)\n         (k : X -> PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s : S),\n       @PStruct.pstruct E MN (S * A) (S * A) (@eq (S * A))\n         (@State.run_state S E MN A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.VisF (Sum.sum1 (State.stateE S) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) X\n                  (@Sum.inr1 (State.stateE S) E X e) k\n            |} s)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E MN (S * A) (PTreeDefinition.ptree E MN (S * A)) X e\n               (fun x : X => @State.run_state S E MN A (k x) s)\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFacts.run_state_pstruct",
+      "type": "@StateFacts.run_state_pstruct\n     : forall (S : Type) (E MN : Type -> Type) (A B : Type) (RR : A -> B -> Prop)\n         (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (u : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN B)\n         (s : S),\n       @PStruct.pstruct (Sum.sum1 (State.stateE S) E) MN A B RR t u ->\n       @PStruct.pstruct E MN (S * A) (S * B) (@State.state_result_rel S A B RR)\n         (@State.run_state S E MN A t s) (@State.run_state S E MN B u s)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.StateFacts.run_state_bind",
+      "type": "@StateFacts.run_state_bind\n     : forall (S : Type) (E MN : Type -> Type) (A B : Type)\n         (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (k : A -> PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN B)\n         (s : S),\n       @PStruct.pstruct E MN (S * B) (S * B) (@eq (S * B))\n         (@State.run_state S E MN B\n            (@PTreeDefinition.PTree.bind (Sum.sum1 (State.stateE S) E) MN A B t k) s)\n         (@PTreeDefinition.PTree.bind E MN (S * A) (S * B) (@State.run_state S E MN A t s)\n            (fun sa : S * A => @State.run_state S E MN B (k (@snd S A sa)) (@fst S A sa)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateStrong.run_state_pstrong",
+      "type": "@StateStrong.run_state_pstrong\n     : forall (S : Type) (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (A B : Type) (RR : A -> B -> Prop)\n         (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (u : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN B)\n         (s : S),\n       @PStrong.pstrong (Sum.sum1 (State.stateE S) E) MN NI NC A B RR t u ->\n       @PStrong.pstrong E MN NI NC (S * A) (S * B) (@State.state_result_rel S A B RR)\n         (@State.run_state S E MN A t s) (@State.run_state S E MN B u s)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.StateFold.state_effect",
+      "type": "@StateFold.state_effect\n     : forall (S : Type) (E T : Type -> Type),\n       Monad.Monad T ->\n       (forall X : Type, E X -> T X) ->\n       forall X : Type, Sum.sum1 (State.stateE S) E X -> Basics.Monads.stateT S T X",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFold.state_sample",
+      "type": "@StateFold.state_sample\n     : forall (S : Type) (MN T : Type -> Type),\n       Monad.Monad T ->\n       (forall X : Type, MN X -> T X) -> forall X : Type, MN X -> Basics.Monads.stateT S T X",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFold.fold_state",
+      "type": "@StateFold.fold_state\n     : forall (S : Type) (E MN T : Type -> Type),\n       Monad.Monad T ->\n       Basics.MonadIter T ->\n       (forall X : Type, E X -> T X) ->\n       (forall X : Type, MN X -> T X) ->\n       forall A : Type,\n       PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A -> S -> T (S * A)%type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFold.state_effect_get",
+      "type": "@StateFold.state_effect_get\n     : forall (S : Type) (E T : Type -> Type) (MT : Monad.Monad T)\n         (handle : forall X : Type, E X -> T X) (s : S),\n       @StateFold.state_effect S E T MT handle S (@Sum.inl1 (State.stateE S) E S (State.Get S)) s =\n       @Monad.ret T MT (S * S) (s, s)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFold.state_effect_put",
+      "type": "@StateFold.state_effect_put\n     : forall (S : Type) (E T : Type -> Type) (MT : Monad.Monad T)\n         (handle : forall X : Type, E X -> T X) (s s' : S),\n       @StateFold.state_effect S E T MT handle unit\n         (@Sum.inl1 (State.stateE S) E unit (State.Put S s')) s =\n       @Monad.ret T MT (S * unit) (s', tt)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFold.state_effect_forward",
+      "type": "@StateFold.state_effect_forward\n     : forall (S : Type) (E T : Type -> Type) (MT : Monad.Monad T)\n         (handle : forall X : Type, E X -> T X) (X : Type) (e : E X) (s : S),\n       @StateFold.state_effect S E T MT handle X (@Sum.inr1 (State.stateE S) E X e) s =\n       @Monad.bind T MT X (S * X) (handle X e) (fun x : X => @Monad.ret T MT (S * X) (s, x))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFold.state_sample_preserves_state",
+      "type": "@StateFold.state_sample_preserves_state\n     : forall (S : Type) (MN T : Type -> Type) (MT : Monad.Monad T)\n         (sample : forall X : Type, MN X -> T X) (X : Type) (mu : MN X)\n         (s : S),\n       @StateFold.state_sample S MN T MT sample X mu s =\n       @Monad.bind T MT X (S * X) (sample X mu) (fun x : X => @Monad.ret T MT (S * X) (s, x))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.run",
+      "type": "@Runner.run\n     : forall (MN : Type -> Type) (Seed : Type),\n       (forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed) ->\n       forall A : Type,\n       nat -> PTreeDefinition.ptree Sum.void1 MN A -> Seed -> Runner.outcome A * Seed",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.executes",
+      "type": "@Runner.executes\n     : forall (MN : Type -> Type) (Seed : Type),\n       (forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed) ->\n       forall A : Type,\n       PTreeDefinition.ptree Sum.void1 MN A -> Seed -> Runner.outcome A -> Seed -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.run_sound",
+      "type": "@Runner.run_sound\n     : forall (MN : Type -> Type) (Seed : Type)\n         (sample : forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed)\n         (A : Type) (fuel : nat) (t : PTreeDefinition.ptree Sum.void1 MN A)\n         (seed : Seed) (result : Runner.outcome A) (seed' : Seed),\n       @Runner.run MN Seed sample A fuel t seed = (result, seed') ->\n       @Runner.finished A result -> @Runner.executes MN Seed sample A t seed result seed'",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.executes_complete",
+      "type": "@Runner.executes_complete\n     : forall (MN : Type -> Type) (Seed : Type)\n         (sample : forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed)\n         (A : Type) (t : PTreeDefinition.ptree Sum.void1 MN A) (seed : Seed)\n         (result : Runner.outcome A) (seed' : Seed),\n       @Runner.executes MN Seed sample A t seed result seed' ->\n       exists fuel : nat, @Runner.run MN Seed sample A fuel t seed = (result, seed')",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.run_finished_iff",
+      "type": "@Runner.run_finished_iff\n     : forall (MN : Type -> Type) (Seed : Type)\n         (sample : forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed)\n         (A : Type) (t : PTreeDefinition.ptree Sum.void1 MN A) (seed : Seed)\n         (result : Runner.outcome A) (seed' : Seed),\n       @Runner.executes MN Seed sample A t seed result seed' <->\n       @Runner.finished A result /\\\n       (exists fuel : nat, @Runner.run MN Seed sample A fuel t seed = (result, seed'))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.run_finished_more_fuel",
+      "type": "@Runner.run_finished_more_fuel\n     : forall (MN : Type -> Type) (Seed : Type)\n         (sample : forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed)\n         (A : Type) (n m : nat) (t : PTreeDefinition.ptree Sum.void1 MN A)\n         (seed : Seed) (result : Runner.outcome A) (seed' : Seed),\n       n <= m ->\n       @Runner.run MN Seed sample A n t seed = (result, seed') ->\n       @Runner.finished A result -> @Runner.run MN Seed sample A m t seed = (result, seed')",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.SubEnumQ.pick_interval_support",
+      "type": "@SubEnumQ.pick_interval_support\n     : forall (A : Type) (mu : list (rat.rat * A))\n         (q : @order.Order.POrder.sort ssrnum.ring_display\n                (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n                   rat.rat_rat__canonical__Num_POrderedZmodule)) (x : A),\n       is_true\n         (@order.Order.le ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               rat.rat_rat__canonical__Num_POrderedZmodule)\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  rat.rat_rat__canonical__Num_POrderedZmodule)) q) ->\n       @SubEnumQ.pick_interval A mu q = @Some A x ->\n       exists p : rat.rat,\n         @List.In (rat.rat * A) (p, x) mu /\\\n         is_true\n           (@order.Order.lt ssrnum.ring_display\n              (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n                 rat.rat_rat__canonical__Num_POrderedZmodule)\n              (@ssralg.GRing.zero\n                 (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                    rat.rat_rat__canonical__Num_POrderedZmodule)) p)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.SubEnumQ.pick_interval_missing",
+      "type": "@SubEnumQ.pick_interval_missing\n     : forall (A : Type) (mu : list (rat.rat * A))\n         (q : @order.Order.POrder.sort ssrnum.ring_display\n                (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n                   rat.rat_rat__canonical__Num_POrderedZmodule)),\n       @FiniteEnum.finite_nonnegative rat.rat_rat__canonical__Num_NumDomain A mu ->\n       is_true\n         (@order.Order.le ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               rat.rat_rat__canonical__Num_POrderedZmodule)\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  rat.rat_rat__canonical__Num_POrderedZmodule)) q) ->\n       @SubEnumQ.pick_interval A mu q = @None A <->\n       is_true\n         (@order.Order.le ssrnum.ring_display\n            (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__Order_POrder\n               rat.rat_rat__canonical__Num_NumDomain)\n            (@FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain A\n               (fun _ : A =>\n                ssralg.GRing.one\n                  (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing\n                     rat.rat_rat__canonical__Num_NumDomain)) mu) q)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.SubEnumQ.replay_sample_support",
+      "type": "@SubEnumQ.replay_sample_support\n     : forall (A : Type) (mu : Representation.SubEnumQ A) (q : SubEnumQ.quantile)\n         (rest : list SubEnumQ.quantile) (x : A),\n       @SubEnumQ.replay_sample A mu (q :: rest) = (@Runner.Drawn A x, rest) ->\n       exists p : ssrnum.Num.NumDomain.sort rat.rat_rat__canonical__Num_NumDomain,\n         @List.In (ssrnum.Num.NumDomain.sort rat.rat_rat__canonical__Num_NumDomain * A) (\n           p, x) (@Representation.subenumQ_data A mu) /\\\n         is_true\n           (@order.Order.lt ssrnum.ring_display\n              (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n                 (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__Num_POrderedZmodule\n                    rat.rat_rat__canonical__Num_NumDomain))\n              (@ssralg.GRing.zero\n                 (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                    (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__Num_POrderedZmodule\n                       rat.rat_rat__canonical__Num_NumDomain))) p)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Backend.SubEnumQ.replay_sample_missing",
+      "type": "@SubEnumQ.replay_sample_missing\n     : forall (A : Type) (mu : Representation.SubEnumQ A) (q : SubEnumQ.quantile)\n         (rest : list SubEnumQ.quantile),\n       @SubEnumQ.replay_sample A mu (q :: rest) = (@Runner.Missing A, rest) <->\n       is_true\n         (@order.Order.le ssrnum.ring_display rat.rat_rat__canonical__Order_POrder\n            (@Representation.enumQ_mass A (@Representation.subenumQ_raw A mu))\n            (SubEnumQ.quantile_value q))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateCounter.tick_state_equation",
+      "type": "StateCounter.tick_state_equation\n     : forall s : nat,\n       @PStruct.pstruct Sum.void1 Representation.SubEnumQ (nat * bool)\n         (nat * bool) (@eq (nat * bool))\n         (@State.run_state nat Sum.void1 Representation.SubEnumQ bool StateCounter.tick s)\n         (StateCounter.tick_normal s)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateCounter.replay_two_attempts_path",
+      "type": "StateCounter.replay_two_attempts_path\n     : @Runner.executes Representation.SubEnumQ (list SubEnumQ.quantile)\n         (@SubEnumQ.replay_sample) (nat * unit)\n         (@State.run_state nat Sum.void1 Representation.SubEnumQ unit\n            StateCounter.count_until_success 0)\n         (StateCounter.low_quantile :: StateCounter.high_quantile :: @nil SubEnumQ.quantile)%list\n         (@Runner.Returned (nat * unit) (2, tt)) (@nil SubEnumQ.quantile)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateCounter.coin_selects_bit",
+      "type": "StateCounter.coin_selects_bit\n     : forall b : bool,\n       @SubEnumQ.pick_interval bool (@Representation.subenumQ_data bool StateCounter.coin)\n         (SubEnumQ.quantile_value (StateCounter.bit_quantile b)) = @Some bool b",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateCounter.coin_bit_expectation",
+      "type": "StateCounter.coin_bit_expectation\n     : forall f : bool -> rat.rat,\n       @FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain bool\n         (fun b : bool =>\n          match\n            @SubEnumQ.pick_interval bool (@Representation.subenumQ_data bool StateCounter.coin)\n              (SubEnumQ.quantile_value (StateCounter.bit_quantile b))\n          with\n          | @Some _ x => f x\n          | @None _ =>\n              @ssralg.GRing.zero\n                (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_Nmodule\n                   rat.rat_rat__canonical__Num_NumDomain)\n          end) StateCounter.coin_entries =\n       @FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain bool f\n         (@Representation.subenumQ_data bool StateCounter.coin)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.StateCounter.counter_replay_contract",
+      "type": "StateCounter.counter_replay_contract\n     : StateCounter.counter_replay 7 0 (false :: true :: false :: @nil bool) =\n       (@Runner.Returned nat 2, 1)",
+      "assumptions": "Closed under the global context"
+    }
+  ]
+}

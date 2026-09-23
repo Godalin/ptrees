@@ -1,0 +1,7 @@
+From Coq Require Import Extraction ExtrOcamlBasic.
+From PTree.Examples Require Import StateCounter.
+Extraction Language OCaml.
+Set Warnings "-extraction-reserved-identifier".
+(* No external implementation of the tree, sampler, state handler, or runner.
+   Keep inductive naturals: no unchecked machine-integer arithmetic mapping. *)
+Extraction "counter.ml" counter_replay.

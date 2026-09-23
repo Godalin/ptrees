@@ -1180,6 +1180,33 @@
       "completion_assoc",
       "rational_eventful_assoc",
       "real_eventful_assoc"
+    ],
+    "theories/Regression/Infrastructure/Execution.v": [
+      "returned_needs_no_fuel",
+      "sampling_consumes_one_token",
+      "missing_mass_is_not_retry",
+      "fuel_exhaustion_preserves_entropy",
+      "replay_exhaustion_is_not_missing_mass",
+      "infinite_internal_computation",
+      "successful_path_has_operational_evidence",
+      "successful_path_has_stable_replay",
+      "timeout_is_not_a_terminal_path",
+      "execute_state_with_sampling",
+      "state_elimination_costs_fuel_not_entropy",
+      "state_bind_uses_updated_state",
+      "standard_subevent_get",
+      "standard_subevent_put",
+      "state_forwards_unhandled_event"
+    ],
+    "theories/Regression/Backend/RationalReplay.v": [
+      "zero_entry_never_selected",
+      "upper_endpoint_belongs_to_next_interval",
+      "partial_mass_not_normalized",
+      "duplicate_value_intervals_retained",
+      "half_nonnegative",
+      "half_bounded",
+      "half_mass_execution_is_lost",
+      "empty_replay_not_lost"
     ]
   }
 }
