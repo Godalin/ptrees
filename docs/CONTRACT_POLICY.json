@@ -1207,6 +1207,12 @@
       "half_bounded",
       "half_mass_execution_is_lost",
       "empty_replay_not_lost"
+    ],
+    "theories/Regression/Infrastructure/StateIteration.v": [
+      "eliminate_state_before_or_after_iter",
+      "iter_replay_threads_updated_state",
+      "transformed_iter_has_same_replay",
+      "eventful_probabilistic_iter_commutes"
     ]
   }
 }

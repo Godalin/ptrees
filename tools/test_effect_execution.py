@@ -42,6 +42,12 @@ class EffectExecutionTests(unittest.TestCase):
         self.reject(ALL, lambda s: s.replace(line, ''))
         self.reject(ALL, lambda s: s + line)
 
+    def test_operational_checkpoint_is_frozen(self):
+        self.reject('theories/Execution/Backend/SubEnumQ.v', lambda s: s + '\nCheck True.\n')
+
+    def test_state_iteration_requires_no_probability_capability(self):
+        self.reject('theories/Interp/StateIter.v', lambda s: s + '\nClass StateIterLaws := {}.\n')
+
 
 class ExtractedStateCounterTests(unittest.TestCase):
     @classmethod

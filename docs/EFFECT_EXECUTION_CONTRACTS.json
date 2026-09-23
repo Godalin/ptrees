@@ -201,6 +201,27 @@
       "name": "PTree.Examples.StateCounter.counter_replay_contract",
       "type": "StateCounter.counter_replay_contract\n     : StateCounter.counter_replay 7 0 (false :: true :: false :: @nil bool) =\n       (@Runner.Returned nat 2, 1)",
       "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateIter.run_state_iter",
+      "type": "@StateIter.run_state_iter\n     : forall (S I A : Type) (E MN : Type -> Type)\n         (step : I -> PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN (I + A))\n         (i : I) (s : S),\n       @PStruct.pstruct E MN (S * A) (S * A) (@eq (S * A))\n         (@State.run_state S E MN A\n            (@PTreeDefinition.PTree.iter (Sum.sum1 (State.stateE S) E) MN A I step i) s)\n         (@PTreeDefinition.PTree.iter E MN (S * A) (S * I)\n            (@StateIter.state_iter_step S I A E MN step) (s, i))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Infrastructure.StateIteration.eliminate_state_before_or_after_iter",
+      "type": "StateIteration.eliminate_state_before_or_after_iter\n     : @PStruct.pstruct Sum.void1 Representation.SubEnumQ (nat * unit)\n         (nat * unit) (@eq (nat * unit))\n         (@State.run_state nat Sum.void1 Representation.SubEnumQ unit\n            (@PTreeDefinition.PTree.iter (Sum.sum1 (State.stateE nat) Sum.void1)\n               Representation.SubEnumQ unit unit StateIteration.retry_step tt) 0)\n         (@PTreeDefinition.PTree.iter Sum.void1 Representation.SubEnumQ\n            (nat * unit) (nat * unit)\n            (@StateIter.state_iter_step nat unit unit Sum.void1 Representation.SubEnumQ\n               StateIteration.retry_step) (0, tt))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Infrastructure.StateIteration.iter_replay_threads_updated_state",
+      "type": "StateIteration.iter_replay_threads_updated_state\n     : @Runner.run Representation.SubEnumQ (list SubEnumQ.quantile) (@SubEnumQ.replay_sample)\n         (nat * unit) 7\n         (@State.run_state nat Sum.void1 Representation.SubEnumQ unit\n            (@PTreeDefinition.PTree.iter (Sum.sum1 (State.stateE nat) Sum.void1)\n               Representation.SubEnumQ unit unit StateIteration.retry_step tt) 0)\n         (StateCounter.low_quantile :: StateCounter.high_quantile :: @nil SubEnumQ.quantile)%list =\n       (@Runner.Returned (nat * unit) (2, tt), @nil SubEnumQ.quantile)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Infrastructure.StateIteration.eventful_probabilistic_iter_commutes",
+      "type": "@StateIteration.eventful_probabilistic_iter_commutes\n     : forall (E MN : Type -> Type) (e : E unit) (mu : MN bool) (s : nat),\n       @PStruct.pstruct E MN (nat * nat) (nat * nat) (@eq (nat * nat))\n         (@State.run_state nat E MN nat\n            (@PTreeDefinition.PTree.iter (Sum.sum1 (State.stateE nat) E) MN nat unit\n               (@StateIteration.eventful_step E MN e mu) tt) s)\n         (@PTreeDefinition.PTree.iter E MN (nat * nat) (nat * unit)\n            (@StateIter.state_iter_step nat unit nat E MN (@StateIteration.eventful_step E MN e mu))\n            (s, tt))",
+      "assumptions": "Closed under the global context"
     }
-  ]
+  ],
+  "state_iteration_followup": "b23c852: first forty endpoint contracts and all ten operational modules remain frozen"
 }

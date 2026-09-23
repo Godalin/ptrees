@@ -95,6 +95,7 @@ Require PTree.Interp.Scheduling.
 Require PTree.Interp.State.
 Require PTree.Interp.StateFacts.
 Require PTree.Interp.StateFold.
+Require PTree.Interp.StateIter.
 Require PTree.Interp.StateStrong.
 Require PTree.Interp.Structural.
 Require PTree.PTree.
@@ -283,6 +284,7 @@ Require PTree.Regression.Infrastructure.PublicBehavior.
 Require PTree.Regression.Infrastructure.ResidualFinite.
 Require PTree.Regression.Infrastructure.ResidualJointCoinduction.
 Require PTree.Regression.Infrastructure.ResidualTransport.
+Require PTree.Regression.Infrastructure.StateIteration.
 Require PTree.Regression.Infrastructure.StructuralRegistry.
 Require PTree.Regression.Infrastructure.UniverseSeparatedPTree.
 Require PTree.Regression.Probability.ConditionalResampling.

@@ -8,11 +8,14 @@ from functools import lru_cache
 from audit_assumptions import ROOT, query, compare, logical_axioms, SOUNDNESS_AXIOMS, without_comments
 
 BASELINE = '7b4c9714bb3845ed283a68fd084a6b4b33073e6f'
+OPERATIONAL_BASELINE = 'b23c852'
 ALL = 'theories/Regression/Infrastructure/AllImports.v'
 NEW = {'theories/' + p + '.v' for p in [
     'Core/Fold', 'Interp/State', 'Interp/StateFacts', 'Interp/StateStrong', 'Interp/StateFold',
     'Execution/Runner', 'Execution/Backend/SubEnumQ', 'Examples/StateCounter',
-    'Regression/Infrastructure/Execution', 'Regression/Backend/RationalReplay']}
+    'Regression/Infrastructure/Execution', 'Regression/Backend/RationalReplay',
+    'Interp/StateIter', 'Regression/Infrastructure/StateIteration']}
+ITER_NEW = {'theories/Interp/StateIter.v', 'theories/Regression/Infrastructure/StateIteration.v'}
 IMPORTS = {'Require PTree.' + p.removeprefix('theories/').removesuffix('.v').replace('/', '.') + '.'
            for p in NEW}
 ENDPOINTS = ['PTree.' + module + '.' + name for module, names in {
@@ -30,11 +33,20 @@ ENDPOINTS = ['PTree.' + module + '.' + name for module, names in {
     'Examples.StateCounter': ['tick_state_equation', 'replay_two_attempts_path',
                               'coin_selects_bit', 'coin_bit_expectation', 'counter_replay_contract'],
 }.items() for name in names]
+ENDPOINTS += ['PTree.Interp.StateIter.run_state_iter',
+              'PTree.Regression.Infrastructure.StateIteration.eliminate_state_before_or_after_iter',
+              'PTree.Regression.Infrastructure.StateIteration.iter_replay_threads_updated_state',
+              'PTree.Regression.Infrastructure.StateIteration.eventful_probabilistic_iter_commutes']
 
 
 @lru_cache(None)
 def frozen(path):
     return subprocess.check_output(['git', 'show', BASELINE + ':' + path], cwd=ROOT, text=True)
+
+
+@lru_cache(None)
+def operational_frozen(path):
+    return subprocess.check_output(['git', 'show', OPERATIONAL_BASELINE + ':' + path], cwd=ROOT, text=True)
 
 
 def check_new(sources):
@@ -58,6 +70,11 @@ def check_new(sources):
     assert 'CoFixpoint run_state' in state
     assert 'stateE S' in state
     assert 'Theorem run_state_pstrong' in sources['theories/Interp/StateStrong.v']
+    for p in NEW - ITER_NEW:
+        assert sources[p] == operational_frozen(p), 'Frozen operational checkpoint changed: ' + p
+    iteration = without_comments(sources['theories/Interp/StateIter.v'])
+    assert re.findall(r'\bTheorem (\w+)', iteration) == ['run_state_iter']
+    assert 'coinduction CH CIH' in iteration
 
 
 def previous_sources(sources):
@@ -85,12 +102,14 @@ def check_source(sources):
     extract = without_comments((ROOT / 'extraction/state-counter/Extract.v.in').read_text())
     assert 'Extraction "counter.ml" counter_replay.' in extract
     assert not re.search(r'Extract (?:Constant|Inductive)|Unset .*Checking|ExtrOcamlNatInt', extract)
-    print(f'{len(old)} existing theory modules unchanged; ten additive modules; no new capability/checker bypass.')
+    print(f'{len(old)} original modules and ten operational-checkpoint modules unchanged; State/iter additive.')
 
 
 def compiled_check():
     snapshot = json.loads((ROOT / 'docs/EFFECT_EXECUTION_CONTRACTS.json').read_text())
     assert snapshot['baseline'] == BASELINE
+    previous = json.loads(operational_frozen('docs/EFFECT_EXECUTION_CONTRACTS.json'))
+    assert snapshot['endpoints'][:40] == previous['endpoints'], 'Original forty contracts changed'
     results = query(ENDPOINTS, sorted({e.rsplit('.', 1)[0] for e in ENDPOINTS}))
     compare(snapshot['endpoints'], results)
     for e in results:

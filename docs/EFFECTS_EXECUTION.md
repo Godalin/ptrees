@@ -35,6 +35,15 @@ The return relation is equal final states together with the supplied result
 relation. These are actual structural preservation theorems, **not**
 arbitrary source `peutt` preservation.
 
+The subsequent `StateIter.v` follow-up proves `run_state_iter`: eliminating
+State around `iter step i` is structurally equivalent to iterating over
+the combined `(state, loop-index)` carrier. The transformed step runs the
+original body at the current state, then routes **its returned updated
+state** to either the next index or the final result. The theorem accepts
+arbitrary native probability and unhandled visible events, with no measure
+capabilities or logical axioms. Replay regressions check both sides on a
+two-attempt stateful probabilistic loop, alongside an eventful client.
+
 `Core/Fold.v` defines a Monad/MonadIter consumer with two distinct algebras:
 
 * `handle : E ~> T` for visible effects;
@@ -138,9 +147,9 @@ axiom. There are no unrealized-axiom stubs in the generated executable.
    guard. Assuming those continuations already `peutt`-related would be
    circular. A complete finite-collapse/cofinality argument is still needed.
    No theorem-level capability has been added to hide this obligation.
-2. **State behavioral preservation and iter.** The structural bind and
+2. **State behavioral preservation and fold.** The structural bind, iter and
    pstrong results above do not prove `peutt t u -> peutt (run_state t s)
-   (run_state u s)`. Full State/iter and StateT-fold commutation remain open.
+   (run_state u s)`. Full StateT-fold commutation remains open.
    State is a stateful transformer, not a fixed value-returning handler.
 3. **Reader/Writer/Exception.** Reuse the existing ITree signatures. Exception
    early exit must change the result type; it cannot manufacture a response
@@ -161,11 +170,14 @@ external OmegaVal validation, or the PTree equality theory. Core/Eq/Interp
 cannot depend back on execution. Existing Gate M remains exactly two files.
 
 `audit_effect_execution.py` freezes all 328 baseline theory files byte for
-byte except the ten exact sorted aggregate additions. The previous migration
+byte except the twelve exact sorted aggregate additions. Its State/iter
+follow-up also freezes the first ten new operational files at `b23c852`.
+The previous migration
 gates consume a checked additive projection, not relaxed source comparisons.
-The new snapshot checks 40 compiled endpoints. Of those, only the two
+The new snapshot checks 44 compiled endpoints (the first forty unchanged
+from `b23c852`). Of those, only the two
 structural relation-preservation proofs inherit existing `eq_rect_eq`;
-the other 38 are closed under the global context.
+the other 42 are closed under the global context.
 
 Validation commands (build once before tool/executable tests):
 
@@ -182,9 +194,16 @@ Targeted joint `coqchk -norec` checks the new safe module bodies with their
 dependencies trusted. It is not a full recursive whole-library kernel audit
 and never includes Gate M.
 
-Local checkpoint results: full build (including AllImports and the extracted
+Local `b23c852` checkpoint results: full build (including AllImports and the extracted
 executable), 191 tool/executable tests, architecture/source checks, all 465
 unchanged main contracts, the 40 new compiled contracts, and the ten-module
 joint `coqchk -norec` passed. There are 338 theory modules: 336 Gate S and the
 unchanged two Gate M modules. The targeted checker used VM conversion for
 native-compute proof bodies; this is not an unchecked proof bypass.
+
+State/iter follow-up: full build and AllImports, 44 compiled contracts,
+14 focused audit/executable tests, architecture/source conservation, and
+the two-new-module joint `coqchk -norec` passed. There are now 340 modules
+(338 Gate S, the same two Gate M). The full 191-test and 465-main-contract
+checks were run at `b23c852`; the follow-up keeps those operational sources
+and main snapshots frozen and does not report a second full-suite run.
