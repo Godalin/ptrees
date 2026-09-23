@@ -641,7 +641,7 @@ Corollary peutt_bind
     (PTree.bind t1 k1) (PTree.bind t2 k2).
 Proof.
   intros Hsource Hk.
-  eapply peutt_bind.
+  eapply peutt_bind_cofinal.
   - intros X Y t k. apply ptree_bind_cofinal_all.
   - exact Hsource.
   - exact Hk.

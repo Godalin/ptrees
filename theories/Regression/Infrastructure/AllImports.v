@@ -1,22 +1,20 @@
 (** Gate S integration regression: load every normally checked module in one universe context.
     Not a facade or an ordinary theorem client. *)
-Require PTree.API.Behavior.
-Require PTree.API.BehaviorFreeOmega.
-Require PTree.API.EnumQ.
-Require PTree.API.FreeOmega.
-Require PTree.API.Generic.
-Require PTree.API.SubEnumQ.
-Require PTree.API.SubEnumR.
-Require PTree.API.Weighted.
 Require PTree.Core.PTreeDefinition.
 Require PTree.Core.Utils.
+Require PTree.Eq.
+Require PTree.Eq.Backend.EnumQ.
 Require PTree.Eq.Backend.EnumQCofinality.
 Require PTree.Eq.Backend.ProbabilisticTraceEnumQ.
 Require PTree.Eq.Backend.ProbabilisticTraceSubEnumQ.
 Require PTree.Eq.Backend.StableHittingDomainSubEnumQ.
+Require PTree.Eq.Backend.SubEnumQ.
+Require PTree.Eq.Backend.SubEnumR.
+Require PTree.Eq.Canonical.
 Require PTree.Eq.FreeOmega.Algebra.
 Require PTree.Eq.FreeOmega.Base.
 Require PTree.Eq.FreeOmega.Bind.
+Require PTree.Eq.FreeOmega.Canonical.
 Require PTree.Eq.FreeOmega.Hitting.
 Require PTree.Eq.FreeOmega.Iter.
 Require PTree.Eq.FreeOmega.Relation.
@@ -83,6 +81,7 @@ Require PTree.Interp.FreeOmega.Translate.
 Require PTree.Interp.Kernel.
 Require PTree.Interp.Structural.
 Require PTree.PTree.
+Require PTree.PTreeFacts.
 Require PTree.Prob.Backend.Common.CountableCoupling.
 Require PTree.Prob.Backend.Common.CountableRealTransport.
 Require PTree.Prob.Backend.Common.DomainTransport.

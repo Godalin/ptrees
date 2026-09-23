@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Curated API/capability contracts and explicitly scoped kernel checks."""
+"""Public module/capability contracts and explicitly scoped kernel checks."""
 import argparse
 import json
 import subprocess
@@ -35,11 +35,11 @@ def surface_check():
     for path, expected in data['facades'].items():
         assert facade_surface((ROOT / path).read_text()) == expected, 'Public surface changed: ' + path
     manifest = json.loads(MANIFEST.read_text())
-    assert len(manifest['api']) == len(set(manifest['api'])) == 306
+    assert len(manifest['api']) == len(set(manifest['api'])) == 266
     assert len(manifest['capability']) == len(set(manifest['capability'])) == 25
     assert set(manifest['capability']) <= set(manifest['api'])
     assert set(manifest['api']) <= {e['name'] for e in manifest['endpoints']}
-    print('Curated facades and all 306 API/helper + 25 capability contracts covered.')
+    print('Public modules and all 266 owner/helper + 25 capability contracts covered.')
 
 
 def kernel_check():

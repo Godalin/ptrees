@@ -45,10 +45,10 @@ def external_validation(path):
 def ownership(path):
     if path in GATE_M:
         return path.rsplit('/', 1)[0], 'universe-unchecked Gate M', 'direct MathComp assembly/probes; excluded from safe aggregate'
-    if path.startswith(("CaseStudies/", "Events/")):
+    if path.startswith(("CaseStudies/", "Events/", "API/")):
         raise AssertionError("Unsupported top-level namespace: " + path)
-    if path in {"PTree", "Semantics"}:
-        return "API", "curated facade", "explicit user entry point; no implementation exports"
+    if path in {"PTree", "Eq", "PTreeFacts", "Semantics"}:
+        return "EntryPoint", "aggregate", "explicit syntax/relation/facts/comparison entry point"
     if path.startswith("Experimental/"):
         raise AssertionError("Unreviewed experiment: " + path)
     if path == AGGREGATE:
@@ -63,8 +63,6 @@ def ownership(path):
         return "Prob/FreeOmega/Validation", "external validation", "native-parametric bridge to independent mathematical models"
     if path.startswith("Core/"):
         return "Core", "syntax", "primitive syntax/combinators only"
-    if path.startswith("API/"):
-        return "API", "curated endpoint/adapter", "explicit assembly; no bulk export"
     if path.startswith("Prob/Backend/"):
         parts = path.split("/")
         assert len(parts) >= 4 and parts[2] in {"Common", "EnumQ", "SubEnumQ", "SubEnumR", "MathComp"}, "Ungrouped concrete probability module: " + path
@@ -103,12 +101,10 @@ def ownership(path):
 
 
 def permitted(module, dependency):
+    if module.startswith('API/') or dependency.startswith('API/'):
+        return False
     if dependency in GATE_M and module not in GATE_M:
         return False
-    # Direct assembly alone may register/use the API operation selector.
-    # This exact edge never permits safe theory to import the unchecked model.
-    if module in GATE_M and dependency == "API/Behavior":
-        return True
     def under(*prefixes):
         return any(dependency.startswith(p + "/") for p in prefixes)
     if external_validation(dependency) and not (
@@ -124,7 +120,14 @@ def permitted(module, dependency):
     if ownership(module)[1] == "generic" and ownership(dependency)[1] == "FreeOmega":
         return False
     if module == "PTree":
-        return under("API")
+        return under("Core")
+    if module == "Eq":
+        return dependency in {"Eq/PStruct", "Eq/PStrong", "Eq/PEutt", "Eq/Canonical"}
+    if module == "PTreeFacts":
+        return dependency in {"PTree", "Eq", "Eq/UnifiedFrontier", "Eq/PrimitiveStableHitting",
+            "Eq/WellFormedness", "Eq/StableHittingComputation", "Eq/ProbabilisticTrace",
+            "Eq/FreeOmega/Bind", "Eq/FreeOmega/Algebra", "Eq/FreeOmega/Iter",
+            "Interp/FreeOmega/Guarded", "Interp/FreeOmega/Atomic", "Interp/FreeOmega/MDP"}
     if module == "Semantics":
         return under("Semantics")
     if module.startswith("Core/"):
@@ -165,8 +168,6 @@ def permitted(module, dependency):
         if "/Backend/" not in module:
             ok = ok and not under("Prob/Backend", "Prob/Legacy", "Eq/Backend", "Eq/Internal/Backend", "Semantics/Backend", "Interp/Backend")
         return ok
-    if module.startswith("API/"):
-        return under("Core", "Prob", "Eq", "Semantics", "Interp", "API")
     if module.startswith("Examples/"):
         return not under("Regression", "Experimental")
     if module.startswith("Regression/"):
@@ -188,8 +189,8 @@ def closure(edges, roots):
 
 def check_auxiliary_boundary(edges):
     # Formal theory/facades, not the regression fixtures used to test them.
-    roots = {m for m in edges if m.startswith(("Interp/", "API/"))}
-    roots |= {"Eq/PEutt", "PTree", "Semantics"}
+    roots = {m for m in edges if m.startswith("Interp/")}
+    roots |= {m for m in {"Eq/PEutt", "Eq/Canonical", "PTree", "Eq", "PTreeFacts", "Semantics"} if m in edges}
     internal = {m for m in closure(edges, roots) if m.startswith("Eq/Internal/")}
     assert not internal, "Formal mainline depends on auxiliary internal machinery: " + str(sorted(internal))
 
@@ -198,8 +199,8 @@ def check_external_validation_boundary(edges):
     # Explicit validation adapters can live under Eq/Backend; they validate
     # reasoning and must not themselves be counted as reasoning roots.
     roots = {m for m in edges if not external_validation(m) and m.startswith(
-        ("Core/", "Eq/", "Semantics/", "Interp/", "API/", "Examples/"))}
-    roots |= {m for m in ("PTree", "Semantics") if m in edges}
+        ("Core/", "Eq/", "Semantics/", "Interp/", "Examples/"))}
+    roots |= {m for m in ("PTree", "Eq", "PTreeFacts", "Semantics") if m in edges}
     leaked = {m for m in closure(edges, roots) if external_validation(m)}
     assert not leaked, "Mainline depends on external validation: " + str(sorted(leaked))
 
@@ -322,13 +323,14 @@ def report():
         "- Native SubEnumQ expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.",
         "- MathComp and EnumQ/SubEnumQ do not depend on each other; EnumQ/SubEnumQ realization adapters may reuse each other.",
         "- MathComp native sources and their transitive dependencies exclude formal completion; no MathComp behavioral alias or concrete FreeOmega instantiation is maintained.",
-        "- Gate S Eq imports no Interp/Semantics/API; Semantics imports no Interp/API. Existing Gate M assembly/probes may import only API/Behavior as an exact selector exception.",
+        "- Eq imports no Interp/Semantics; Semantics imports no Interp. Canonical routing is owned by Eq; there is no API namespace or Gate M reverse-dependency exception.",
+        "- PTree exports only Core; Eq exports relation owners/notations; PTreeFacts aggregates selected reasoning modules without concrete backends.",
         "- Generic/canonical-model Eq, Semantics and Interp modules import no concrete backend endpoint.",
         "- No maintained library imports Regression, Examples or Experimental.",
         "- Cases do not depend on tests. Experimental has no remaining source module.", "",
         "- The peutt/Interp/public-facade dependency closure contains no Eq/Internal module.", "",
         "- Prob/Domain depends only on mathematical libraries and itself, never the existing probability interfaces or FreeOmega.",
-        "- The Core/Eq/Semantics/Interp/API/Examples and facade dependency closures exclude external validation; explicit validation adapters are not reasoning roots.", "",
+        "- The Core/Eq/Semantics/Interp/Examples and public entry-point closures exclude external validation; explicit validation adapters are not reasoning roots.", "",
         "This is an import-graph check, not declaration-use liveness, capability minimality, "
         "FreeOmega adequacy, or the final whole-library kernel audit.", "",
         "## Complete module ownership", "",

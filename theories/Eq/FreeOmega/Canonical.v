@@ -1,12 +1,12 @@
 (** Role: Explicit builder for an observable FreeOmega operation profile.
-    This is NOT a blanket CanonicalBehavior instance. Concrete API adapters
+    This is NOT a blanket CanonicalBehavior instance. Concrete Eq adapters
     decide which native backends use this profile. *)
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Prob.Interface Require Import Measure Omega.
 Require Import PTree.Prob.FreeOmega.Definition
   PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.Measure.
-From PTree.API Require Import Behavior.
+From PTree.Eq Require Import Canonical.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

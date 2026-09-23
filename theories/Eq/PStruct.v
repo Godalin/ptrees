@@ -866,3 +866,10 @@ Proof.
 Qed.
 
 End PStructIterSplitAt.
+
+Module PStructNotations.
+Notation "t ≡ₚ[ RR ] u" := (pstruct RR t u)
+  (at level 70, RR at next level, no associativity) : type_scope.
+Notation "t ≡ₚ u" := (pstruct eq t u)
+  (at level 70, no associativity) : type_scope.
+End PStructNotations.

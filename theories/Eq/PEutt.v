@@ -461,7 +461,7 @@ Qed.
 End PEuttContinuation.
 
 (** Raw [peutt] remains parameterized by arbitrary frontier operations.
-    Public behavioral notation is owned by API/Generic and selects the
+    Public behavioral notation is owned by Eq/Canonical and selects the
     complete canonical operation profile, not just the frontier carrier. *)
 
 Section PEuttEndpoint.
@@ -1268,7 +1268,7 @@ Qed.
 (** [bind_upto_closure] is compatible with the stable-hitting generator.
     The recursive continuation case consumes [Hprogress] directly at chosen
     hitting witnesses; the known case unfolds the final greatest fixed
-    point.  Thus this proof does not depend on [peutt_bind]. *)
+    point.  Thus this proof does not depend on [peutt_bind_cofinal]. *)
 Lemma bind_upto_closure_compatible A B (RR0 : A -> B -> Prop) sim
     (Hprogress : forall s1 s2, sim s1 s2 ->
       stable_hitting_match
@@ -1538,7 +1538,7 @@ Qed.
     global form of the global/diagonal fuel cofinality theorem; it is used as
     a proof-side scheduling fact by [stable_hitting_bind], never by the
     definition of [peutt]. *)
-Theorem peutt_bind : forall A B R1 R2
+Theorem peutt_bind_cofinal : forall A B R1 R2
     (RR : R1 -> R2 -> Prop)
     (RS : A -> B -> Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
@@ -1616,7 +1616,7 @@ Proof.
                 with (s1 := observe (k1 r1)) (s2 := observe (k2 r2));
                 [exact (Hk r1 r2 H)|exact (Hfront1 r1)|exact (Hfront2 r2)].
         -- apply sem_lift_ret. constructor. intro x.
-           eapply peutt_bind; [exact (H x)|]. exact Hk.
+           eapply peutt_bind_cofinal; [exact (H x)|]. exact Hk.
   - intros hs2 Hhit2.
     destruct (stable_hitting_exists
       (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2))
@@ -1650,7 +1650,7 @@ Proof.
                 with (s1 := observe (k1 r1)) (s2 := observe (k2 r2));
                 [exact (Hk r1 r2 H)|exact (Hfront1 r1)|exact (Hfront2 r2)].
         -- apply sem_lift_ret. constructor. intro x.
-           eapply peutt_bind; [exact (H x)|]. exact Hk.
+           eapply peutt_bind_cofinal; [exact (H x)|]. exact Hk.
 Qed.
 
 End PEuttBindCongruence.

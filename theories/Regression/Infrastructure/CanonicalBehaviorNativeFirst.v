@@ -7,8 +7,9 @@ Set Warnings "-notation-overridden".
 From mathcomp Require Import reals.
 From PTree.Prob.Backend.EnumQ Require Import Measure.
 Require Import PTree.Prob.FreeOmega.StructuralMeasure.
-From PTree Require Import PTree.
-From PTree.API Require Import Behavior EnumQ SubEnumQ SubEnumR.
+From PTree Require Import PTree PTreeFacts.
+From PTree.Eq Require Import Canonical.
+From PTree.Eq.Backend Require Import EnumQ SubEnumQ SubEnumR.
 
 Module NQ := PTree.Prob.Backend.EnumQ.Measure.
 Module SQ := PTree.Prob.Backend.SubEnumQ.Measure.

@@ -4,6 +4,7 @@ Historical accepted checkpoint: `a95734e`. The subsequent public notation
 switch is recorded in [PUBLIC_BEHAVIOR.md](PUBLIC_BEHAVIOR.md). The exact
 foundation source audit remains a checkpoint-specific audit, not a gate to
 be weakened for later intentional API changes.
+Current module ownership is documented in [PUBLIC_MODULES.md](PUBLIC_MODULES.md).
 
 Baseline: `04475b2`. This implements proposal steps 1–4, not the subsequent
 public-notation, bind-facade or example migration. No CI work is performed.

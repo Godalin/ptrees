@@ -5,17 +5,17 @@ Set Universe Polymorphism.
 
 (** Regression: a client importing only the public facade can elaborate the
     curated semantic vocabulary and canonical equivalence notation. *)
-From PTree.API Require Import Generic.
+From PTree Require Import PTree PTreeFacts.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** Implementation modules remain addressable by qualified names, but their
-    historical short names are not transitively imported by the facade. *)
-Fail Check frontier_certificate.
-Fail Check ptree_stable_hitting.
-Fail Check stable_head_bind_front.
+(** Direct exports expose the selected theorem modules, not a hand-maintained
+    list of aliases. Unselected implementation modules remain qualified. *)
+Check @frontier_certificate.
+Fail Check @ptree_stable_hitting.
+Check @stable_head_bind_front.
 Fail Check pfinite.
 Fail Check pfinite_rel.
 
@@ -66,19 +66,19 @@ Local Notation facade_peutt_preserves_finite_interaction_sem :=
     measure module rather than becoming extra facade aliases. *)
 Section NotationRegression.
 Context {E MN : Type -> Type}
-  `{CB : PTree.API.Behavior.CanonicalBehavior MN}
+  `{CB : PTree.Eq.Canonical.CanonicalBehavior MN}
   `{FC : @PTree.Prob.Interface.Measure.SemanticMeasureCoreLaws
-    (@PTree.API.Behavior.behavior_frontier MN CB)
-    (@PTree.API.Behavior.behavior_measure MN CB)}.
+    (@PTree.Eq.Canonical.behavior_frontier MN CB)
+    (@PTree.Eq.Canonical.behavior_measure MN CB)}.
 Context {R : Type}.
 
 Lemma public_peutt_notation (t u : ptree E MN R) :
-  t ≈ₚ u -> @PTree.API.Behavior.canonical_peutt E MN CB FC R R eq t u.
+  t ≈ₚ u -> @PTree.Eq.Canonical.canonical_peutt E MN CB FC R R eq t u.
 Proof. exact (fun H => H). Qed.
 
 End NotationRegression.
 
-From PTree.API Require Import FreeOmega.
+From PTree Require Import PTreeFacts.
 Local Notation facade_peutt_bind := peutt_bind.
 
 From PTree.Core Require Import PTreeDefinition.
@@ -97,19 +97,19 @@ Unset Printing Implicit Defensive.
 
 Section NotationRegression.
 Context {E MN : Type -> Type}
-  `{CB : PTree.API.Behavior.CanonicalBehavior MN}
+  `{CB : PTree.Eq.Canonical.CanonicalBehavior MN}
   `{FC : @SemanticMeasureCoreLaws
-    (@PTree.API.Behavior.behavior_frontier MN CB)
-    (@PTree.API.Behavior.behavior_measure MN CB)}.
+    (@PTree.Eq.Canonical.behavior_frontier MN CB)
+    (@PTree.Eq.Canonical.behavior_measure MN CB)}.
 
 Lemma peutt_notation_homogeneous {R}
     (t u : ptree E MN R) :
-  (t ≈ₚ u) <-> @PTree.API.Behavior.canonical_peutt E MN CB FC R R eq t u.
+  (t ≈ₚ u) <-> @PTree.Eq.Canonical.canonical_peutt E MN CB FC R R eq t u.
 Proof. reflexivity. Qed.
 
 Lemma peutt_notation_heterogeneous {R1 R2}
     (RR : R1 -> R2 -> Prop) (t : ptree E MN R1) (u : ptree E MN R2) :
-  (t ≈ₚ[RR] u) <-> @PTree.API.Behavior.canonical_peutt E MN CB FC R1 R2 RR t u.
+  (t ≈ₚ[RR] u) <-> @PTree.Eq.Canonical.canonical_peutt E MN CB FC R1 R2 RR t u.
 Proof. reflexivity. Qed.
 
 End NotationRegression.

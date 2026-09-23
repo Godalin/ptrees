@@ -1,40 +1,40 @@
-(** Role: import-contract regression for the public entry points and Core.
-    Qualified Fail checks test loading; short-name checks test API exposure. *)
-From PTree.Core Require PTreeDefinition.
-Module CoreLoadingBoundary.
-Import PTreeDefinition.
+(** Role: Independent loading and export contracts for syntax, relations,
+    reasoning and comparison semantics. Qualified failures test loading. *)
+From PTree Require Import PTree.
+Check @ptree.
+Check @bind.
+Check (Ret tt : ptree (fun _ => Empty_set) (fun A => A) unit).
 Fail Check PTree.Prob.Interface.Measure.SemanticMeasure.
 Fail Check PTree.Eq.PEutt.peutt.
-End CoreLoadingBoundary.
+Fail Check PTree.Eq.Canonical.CanonicalBehavior.
+
+From PTree Require Import Eq.
+Check @pstruct.
+Check @pstrong.
+Check @peutt.
+Check @canonical_peutt.
+Check @peutt_bind_cofinal.
+Fail Check PTree.Eq.FreeOmega.Bind.peutt_bind.
+Fail Check PTree.Interp.Kernel.ptree_interp_head_tree.
+Fail Definition no_default_backend {E MN R} (t : ptree E MN R) : Prop := t ≈ₚ t.
 
 From PTree Require Semantics.
-Module ComparisonFacadeBoundary.
+Module ComparisonBoundary.
 Import Semantics.
 Check @tree_trans.
 Check @tree_trans_bisim.
 Check @mdp_state.
-Fail Check PTree.Interp.Kernel.ptree_interp_head_tree.
 Fail Check PTree.Interp.FreeOmega.Atomic.atomic_handler.
-Fail Check head_action_result.
-Fail Check tree_trans_bisimF.
-End ComparisonFacadeBoundary.
+End ComparisonBoundary.
 
-From PTree Require PTree.
-Module CanonicalFacadeBoundary.
-Import PTree.
-Check @ptree.
-Check (Ret tt : ptree (fun _ => Empty_set) (fun A => A) unit).
-Check @bind.
-Check @peutt.
+From PTree Require Import PTreeFacts.
+Check @peutt_bind.
 Check @peutt_bind_assoc.
 Check @peutt_iter_rel.
 Check @peutt_interp_guarded.
 Check @mdp_guarded_interp_tree_trans.
-Fail Check free_omega_qlift.
-Fail Check ptree_interp_split_approx.
-Fail Check interp_bisim_candidate.
-Fail Check atomic_candidate.
-Fail Check finite_internal.
-Fail Check kernel_completion_invariant.
-Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
-End CanonicalFacadeBoundary.
+Check @ptree_bind_cofinal_all.
+Fail Check PTree.Eq.Internal.FiniteInternal.finite_internal.
+Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
+Fail Check PTree.Prob.Backend.SubEnumQ.Representation.SubEnumQ.
+Fail Check PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior.

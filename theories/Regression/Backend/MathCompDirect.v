@@ -12,7 +12,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel PEutt.
 From PTree.Eq.Backend.MathComp Require Import Direct.
 From PTree.Examples Require Import MathCompPrograms.
-From PTree.API Require Import Behavior.
+From PTree.Eq Require Import Canonical.
 Set Implicit Arguments.
 Import GRing.Theory Num.Theory Order.Theory.
 

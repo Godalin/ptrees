@@ -1,8 +1,8 @@
 """Mutation tests for canonical routing and structural registration boundaries."""
 import unittest
 from audit_assumptions import ROOT
-from audit_behavior_routing import (STRUCTURAL, REGISTRY, frozen, structural_check,
-                                    registry_check)
+from audit_behavior_routing import STRUCTURAL, frozen, structural_check
+from public_module_migration import REGISTRY, registry_check
 import audit_architecture as architecture
 
 
@@ -37,13 +37,13 @@ class BehaviorRoutingTests(unittest.TestCase):
         for extra in [
             '#[global] Instance any {MN} : CanonicalBehavior MN := builder.',
             'Instance any {MN} : CanonicalBehavior MN := builder.',
-            '#[global] Instance any {MN} : PTree.API.Behavior.CanonicalBehavior MN := builder.',
+            '#[global] Instance any {MN} : PTree.Eq.Canonical.CanonicalBehavior MN := builder.',
             '#[global] Existing Instance FreeOmegaSemanticMeasure.',
             '#[global] Existing Instances FreeOmegaSemanticMeasureCoreLaws FreeOmegaSemanticOmega.',
             '#[global] Existing Instance SubEnumQ_CanonicalBehavior.',
         ]:
             with self.subTest(extra=extra), self.assertRaises(AssertionError):
-                registry_check(dict(self.sources, **{'theories/API/Extra.v': extra}), self.internal)
+                registry_check(dict(self.sources, **{'theories/Eq/Extra.v': extra}), self.internal)
         for path, name in REGISTRY.items():
             with self.subTest(path=path), self.assertRaises(AssertionError):
                 changed = dict(self.sources)
@@ -56,13 +56,14 @@ class BehaviorRoutingTests(unittest.TestCase):
             ('behavior_measure :', 'behavior_measure :>'),
         ]:
             changed = dict(self.sources)
-            path = 'theories/API/Behavior.v'
+            path = 'theories/Eq/Canonical.v'
             changed[path] = changed[path].replace(*mutation)
             with self.subTest(mutation=mutation), self.assertRaises(AssertionError):
                 registry_check(changed, self.internal)
 
-    def test_gate_m_selector_exception_is_exact(self):
-        self.assertTrue(architecture.permitted('Eq/Backend/MathComp/Direct', 'API/Behavior'))
+    def test_selector_needs_no_gate_m_reverse_exception(self):
+        self.assertTrue(architecture.permitted('Eq/Backend/MathComp/Direct', 'Eq/Canonical'))
+        self.assertTrue(architecture.permitted('Eq/PEutt', 'Eq/Canonical'))
         for source, target in [
             ('Eq/PEutt', 'API/Behavior'),
             ('Eq/Backend/MathComp/Direct', 'API/SubEnumQ'),

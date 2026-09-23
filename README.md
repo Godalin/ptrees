@@ -46,9 +46,10 @@ PTree syntax (intensional representation)
        -> finite interaction observations / Prₜ[t | pattern] (quantitative)
 ```
 
-The generic public facade is `API/Generic.v`.  It imports its
-implementation dependencies without transitively exporting implementation
-names, then exposes the curated semantic vocabulary and endpoint laws.
+`PTree.v` exports program definitions, `Eq.v` exports relation owners and their
+notation modules, and `PTreeFacts.v` aggregates the actual reasoning modules.
+There is no alias-based `API/` layer. Canonical behavioral profiles live in
+`Eq/Canonical` and explicit `Eq/Backend` adapters.
 PTree has one public behavioral equivalence: `peutt`, written
 `t ≈ₚ u` (or `t ≈ₚ[RR] u`).  It is the greatest fixed point obtained by coupling the
 stable-hitting behaviors of the two trees and recursively relating visible
@@ -274,17 +275,20 @@ strengthening for the finite-real completion as well as SubEnumQ. The
 [three-layer policy](docs/ARCHITECTURE.md#three-layers-of-probability-reasoning)
 distinguishes relational lifting, semantic joint witnesses and external joint
 realization.
-The [compiled contracts](docs/CONTRACTS.json) preserve all 306 public/helper
+The [compiled contracts](docs/CONTRACTS.json) preserve 266 distinct owner/helper
 and 199 soundness endpoints, including the original 25 capability probes.
+The [module migration ledger](docs/PUBLIC_MODULES.md) accounts for every old
+alias and the ten removed convenience contracts.
 Stage-specific migration narratives and snapshots remain in git history.
 The final whole-library kernel audit (Gate D) remains separate.
 
-Ordinary clients can import the curated entry points:
+Ordinary clients can import the entry points:
 
 ```coq
-From PTree Require Import PTree.      (* syntax and canonical equational API *)
+From PTree Require Import PTree.      (* program construction only *)
+From PTree Require Import PTreeFacts. (* relation notation and reasoning *)
 From PTree Require Import Semantics.  (* transition and MDP comparison API *)
-From PTree.API Require Import SubEnumQ. (* optional concrete probability adapter *)
+From PTree.Eq.Backend Require Import SubEnumQ. (* explicit canonical profile *)
 ```
 
 `Core/` owns syntax; `Prob/{Interface,FreeOmega,Backend,Legacy}/` separates
@@ -295,8 +299,10 @@ carrier explicit; `Prob/FreeOmega/` stays generic in `MN`, while
 `Eq/` owns stable hitting and equality; `Eq/Internal/` holds proof
 machinery. `Semantics/` owns independent comparison semantics. `Interp/`
 owns interpretation preservation, with FreeOmega-qualified theory distinct
-from concrete endpoints. `API/` assembles these layers without bulk exports.
-Experts may import implementation modules explicitly. Paper-facing programs
+from concrete endpoints. Relation modules own `≡ₚ / ≃ₚ / ≈ₚ`, including their
+heterogeneous forms. `peutt_bind` is owned only by `Eq/FreeOmega/Bind`; the raw
+generic theorem is `peutt_bind_cofinal`. See [public module migration](docs/PUBLIC_MODULES.md).
+Experts may import owners directly. Paper-facing programs
 form four groups:
 
 - [MixedHeadProtocol](theories/Examples/MixedHeadProtocol.v): the flagship

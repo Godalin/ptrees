@@ -5,8 +5,9 @@ Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 Set Warnings "-notation-overridden".
 From mathcomp Require Import reals.
-From PTree Require Import PTree.
-From PTree.API Require Import Behavior EnumQ SubEnumQ SubEnumR.
+From PTree Require Import PTree PTreeFacts.
+From PTree.Eq Require Import Canonical.
+From PTree.Eq.Backend Require Import EnumQ SubEnumQ SubEnumR.
 Require PTree.Prob.FreeOmega.StructuralMeasure.
 Require PTree.Prob.Backend.EnumQ.Measure.
 

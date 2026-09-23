@@ -1,94 +1,15 @@
 {
   "api": [
-    "PTree.API.EnumQ.handle_sample",
-    "PTree.API.EnumQ.kernel",
-    "PTree.API.EnumQ.meas",
-    "PTree.API.EnumQ.sampleE",
-    "PTree.API.FreeOmega.atomic_handler",
-    "PTree.API.FreeOmega.guarded_handler",
-    "PTree.API.FreeOmega.mdp_guarded_interp_tree_trans",
-    "PTree.API.FreeOmega.mdp_handler",
-    "PTree.API.FreeOmega.mdp_state_interp",
-    "PTree.API.FreeOmega.peutt_bind_assoc",
-    "PTree.API.FreeOmega.peutt_bind_ret_l",
-    "PTree.API.FreeOmega.peutt_bind_ret_r",
-    "PTree.API.FreeOmega.peutt_interp_guarded",
-    "PTree.API.FreeOmega.peutt_interp_guarded_Proper",
-    "PTree.API.FreeOmega.peutt_iter_rel",
-    "PTree.API.FreeOmega.peutt_iter_unfold",
-    "PTree.API.FreeOmega.tree_trans_bisim_interp_atomic",
-    "PTree.API.Generic.bind",
-    "PTree.API.Generic.finite_interaction_pattern",
-    "PTree.API.Generic.finite_interaction_query",
-    "PTree.API.Generic.finite_interaction_sem",
-    "PTree.API.Generic.finite_interaction_sem_spec",
-    "PTree.API.Generic.interp",
-    "PTree.API.Generic.iter",
-    "PTree.API.Generic.peutt",
-    "PTree.API.Generic.peutt_bind",
-    "PTree.API.Generic.peutt_coinduction",
-    "PTree.API.Generic.peutt_equivalence",
-    "PTree.API.Generic.peutt_hitting_lift",
-    "PTree.API.Generic.peutt_iff_hitting",
-    "PTree.API.Generic.peutt_of_hitting_lift",
-    "PTree.API.Generic.peutt_preserves_finite_interaction_sem",
-    "PTree.API.Generic.peutt_prob",
-    "PTree.API.Generic.peutt_prob_rewrite",
-    "PTree.API.Generic.peutt_refl",
-    "PTree.API.Generic.peutt_ret",
-    "PTree.API.Generic.peutt_rewrite",
-    "PTree.API.Generic.peutt_rewrite_l",
-    "PTree.API.Generic.peutt_rewrite_r",
-    "PTree.API.Generic.peutt_sym",
-    "PTree.API.Generic.peutt_tau_l",
-    "PTree.API.Generic.peutt_tau_r",
-    "PTree.API.Generic.peutt_trans",
-    "PTree.API.Generic.peutt_vis",
-    "PTree.API.Generic.probabilistic_ptree",
-    "PTree.API.Generic.probabilistic_ptree_bind",
-    "PTree.API.Generic.probabilistic_ptree_iter",
-    "PTree.API.Generic.probabilistic_ptree_prob",
-    "PTree.API.Generic.probabilistic_ptree_ret",
-    "PTree.API.Generic.probabilistic_ptree_tau",
-    "PTree.API.Generic.probabilistic_ptree_vis",
-    "PTree.API.Generic.pstrong",
-    "PTree.API.Generic.pstrong_bind",
-    "PTree.API.Generic.pstrong_equivalence",
-    "PTree.API.Generic.pstruct",
-    "PTree.API.Generic.pstruct_equivalence",
-    "PTree.API.Generic.pstruct_pstrong",
-    "PTree.API.Generic.ptree",
-    "PTree.API.Generic.stable_head",
-    "PTree.API.Generic.stable_head_rel",
-    "PTree.API.Generic.stable_hitting",
-    "PTree.API.Generic.stable_hitting_bind",
-    "PTree.API.Generic.stable_hitting_exists",
-    "PTree.API.Generic.stable_hitting_prob",
-    "PTree.API.Generic.stable_hitting_prob_compute",
-    "PTree.API.Generic.stable_hitting_prob_decompose",
-    "PTree.API.Generic.stable_hitting_prob_dirac",
-    "PTree.API.Generic.stable_hitting_prob_flatten",
-    "PTree.API.Generic.stable_hitting_ret",
-    "PTree.API.Generic.stable_hitting_ret_iff",
-    "PTree.API.Generic.stable_hitting_tau",
-    "PTree.API.Generic.stable_hitting_tau_iff",
-    "PTree.API.Generic.stable_hitting_tau_iter",
-    "PTree.API.Generic.stable_hitting_unique",
-    "PTree.API.Generic.stable_hitting_vis",
-    "PTree.API.Generic.stable_hitting_vis_iff",
-    "PTree.API.Generic.translate",
-    "PTree.API.SubEnumQ.handle_subsample",
-    "PTree.API.SubEnumQ.subSampleE",
-    "PTree.API.SubEnumQ.subenumQ_mdp_state_interp_atomic",
-    "PTree.API.SubEnumQ.subkernel",
-    "PTree.API.SubEnumQ.submeas",
-    "PTree.API.Weighted.stuckE",
-    "PTree.API.Weighted.stuckM",
+    "PTree.Core.PTreeDefinition.PTree.bind",
+    "PTree.Core.PTreeDefinition.PTree.interp",
+    "PTree.Core.PTreeDefinition.PTree.iter",
+    "PTree.Core.PTreeDefinition.PTree.translate",
     "PTree.Core.PTreeDefinition.ProbF",
     "PTree.Core.PTreeDefinition.RetF",
     "PTree.Core.PTreeDefinition.TauF",
     "PTree.Core.PTreeDefinition.VisF",
     "PTree.Core.PTreeDefinition.go",
+    "PTree.Core.PTreeDefinition.ptree",
     "PTree.Eq.Backend.ProbabilisticTraceEnumQ.enumQ_finite_interaction_probability",
     "PTree.Eq.Backend.ProbabilisticTraceEnumQ.enumQ_finite_interaction_probability_intro",
     "PTree.Eq.Backend.ProbabilisticTraceSubEnumQ.subenumQ_finite_interaction_probability",
@@ -150,14 +71,16 @@
     "PTree.Eq.FreeOmega.Relation.peutt_of_pstruct",
     "PTree.Eq.FreeOmega.Relation.ptree_hitting_observes_pstruct",
     "PTree.Eq.PEutt.peutt",
-    "PTree.Eq.PEutt.peutt_bind",
+    "PTree.Eq.PEutt.peutt_bind_cofinal",
     "PTree.Eq.PEutt.peutt_coinduction",
     "PTree.Eq.PEutt.peutt_coinduction_upto",
     "PTree.Eq.PEutt.peutt_coinduction_upto_bind",
     "PTree.Eq.PEutt.peutt_coinduction_upto_closure",
     "PTree.Eq.PEutt.peutt_endpoint_Proper",
     "PTree.Eq.PEutt.peutt_equivalence",
+    "PTree.Eq.PEutt.peutt_hitting_lift",
     "PTree.Eq.PEutt.peutt_not_of_mass_mismatch",
+    "PTree.Eq.PEutt.peutt_of_hitting_lift",
     "PTree.Eq.PEutt.peutt_prob",
     "PTree.Eq.PEutt.peutt_prob_Proper",
     "PTree.Eq.PEutt.peutt_prob_flatten",
@@ -166,12 +89,20 @@
     "PTree.Eq.PEutt.peutt_prob_measure",
     "PTree.Eq.PEutt.peutt_prob_measure_Proper",
     "PTree.Eq.PEutt.peutt_prob_ret",
+    "PTree.Eq.PEutt.peutt_prob_rewrite",
     "PTree.Eq.PEutt.peutt_refl",
     "PTree.Eq.PEutt.peutt_rel_mono",
+    "PTree.Eq.PEutt.peutt_ret",
+    "PTree.Eq.PEutt.peutt_rewrite",
+    "PTree.Eq.PEutt.peutt_rewrite_l",
+    "PTree.Eq.PEutt.peutt_rewrite_r",
     "PTree.Eq.PEutt.peutt_state_refl",
     "PTree.Eq.PEutt.peutt_sym",
     "PTree.Eq.PEutt.peutt_tau_Proper",
+    "PTree.Eq.PEutt.peutt_tau_l",
+    "PTree.Eq.PEutt.peutt_tau_r",
     "PTree.Eq.PEutt.peutt_trans",
+    "PTree.Eq.PEutt.peutt_vis",
     "PTree.Eq.PEutt.peutt_vis_Proper",
     "PTree.Eq.PEutt.semantic_lift_eq_Equivalence",
     "PTree.Eq.PEutt.stable_hitting_bind",
@@ -182,11 +113,16 @@
     "PTree.Eq.PEutt.stable_hitting_bisim_converse",
     "PTree.Eq.PEutt.stable_hitting_bisim_refl",
     "PTree.Eq.PEutt.stable_hitting_front_choice",
+    "PTree.Eq.PEutt.stable_hitting_prob",
+    "PTree.Eq.PEutt.stable_hitting_ret",
     "PTree.Eq.PEutt.stable_hitting_tau_iff",
+    "PTree.Eq.PEutt.stable_hitting_vis",
+    "PTree.Eq.PStrong.pstrong",
     "PTree.Eq.PStrong.pstrong_bind",
     "PTree.Eq.PStrong.pstrong_equivalence",
     "PTree.Eq.PStrong.pstruct_pstrong",
     "PTree.Eq.PStrong.pstruct_pstrong_subrelation",
+    "PTree.Eq.PStruct.pstruct",
     "PTree.Eq.PStruct.pstruct_bind",
     "PTree.Eq.PStruct.pstruct_bind_assoc",
     "PTree.Eq.PStruct.pstruct_bind_ret_r",
@@ -202,16 +138,40 @@
     "PTree.Eq.PTreeKernel.ptree_stable_hitting_bind",
     "PTree.Eq.PTreeKernel.ptree_stable_hitting_ret",
     "PTree.Eq.PTreeKernel.ptree_stable_hitting_vis",
+    "PTree.Eq.PrimitiveStableHitting.stable_hitting",
+    "PTree.Eq.PrimitiveStableHitting.stable_hitting_exists",
+    "PTree.Eq.PrimitiveStableHitting.stable_hitting_unique",
+    "PTree.Eq.ProbabilisticTrace.finite_interaction_pattern",
+    "PTree.Eq.ProbabilisticTrace.finite_interaction_query",
     "PTree.Eq.ProbabilisticTrace.finite_interaction_query_exists",
     "PTree.Eq.ProbabilisticTrace.finite_interaction_query_related",
     "PTree.Eq.ProbabilisticTrace.finite_interaction_query_singleton_iff_next_event_query",
     "PTree.Eq.ProbabilisticTrace.finite_interaction_query_unique_up_to_coupling",
+    "PTree.Eq.ProbabilisticTrace.finite_interaction_sem",
     "PTree.Eq.ProbabilisticTrace.finite_interaction_sem_coupled_to_query",
     "PTree.Eq.ProbabilisticTrace.finite_interaction_sem_spec",
     "PTree.Eq.ProbabilisticTrace.peutt_preserves_finite_interaction_query",
     "PTree.Eq.ProbabilisticTrace.peutt_preserves_finite_interaction_sem",
     "PTree.Eq.ProbabilisticTrace.peutt_preserves_head_query",
     "PTree.Eq.ProbabilisticTrace.peutt_preserves_next_event_query",
+    "PTree.Eq.StableHittingComputation.peutt_iff_hitting",
+    "PTree.Eq.StableHittingComputation.stable_hitting_prob_compute",
+    "PTree.Eq.StableHittingComputation.stable_hitting_prob_decompose",
+    "PTree.Eq.StableHittingComputation.stable_hitting_prob_dirac",
+    "PTree.Eq.StableHittingComputation.stable_hitting_prob_flatten",
+    "PTree.Eq.StableHittingComputation.stable_hitting_ret_iff",
+    "PTree.Eq.StableHittingComputation.stable_hitting_tau",
+    "PTree.Eq.StableHittingComputation.stable_hitting_tau_iter",
+    "PTree.Eq.StableHittingComputation.stable_hitting_vis_iff",
+    "PTree.Eq.UnifiedFrontier.stable_head",
+    "PTree.Eq.UnifiedFrontier.stable_head_rel",
+    "PTree.Eq.WellFormedness.probabilistic_ptree",
+    "PTree.Eq.WellFormedness.probabilistic_ptree_bind",
+    "PTree.Eq.WellFormedness.probabilistic_ptree_iter",
+    "PTree.Eq.WellFormedness.probabilistic_ptree_prob",
+    "PTree.Eq.WellFormedness.probabilistic_ptree_ret",
+    "PTree.Eq.WellFormedness.probabilistic_ptree_tau",
+    "PTree.Eq.WellFormedness.probabilistic_ptree_vis",
     "PTree.Interp.Backend.SubEnumQ.subenumQ_atomic_handler_mdp",
     "PTree.Interp.Backend.SubEnumQ.subenumQ_mdp_interp_peutt_tree_trans_iff",
     "PTree.Interp.Backend.SubEnumQ.subenumQ_mdp_interp_transition_to_peutt",
@@ -308,31 +268,31 @@
     "PTree.Semantics.tree_trans_bisim_coinduction"
   ],
   "capability": [
-    "PTree.Eq.PEutt.peutt",
-    "PTree.Eq.PEutt.peutt_bind",
     "PTree.Eq.FreeOmega.Algebra.peutt_bind_assoc",
-    "PTree.Eq.FreeOmega.Iter.peutt_iter_rel",
     "PTree.Eq.FreeOmega.Iter.peutt_iter_behavioral_rel",
     "PTree.Eq.FreeOmega.Iter.peutt_iter_eventful_of_generator_closed",
+    "PTree.Eq.FreeOmega.Iter.peutt_iter_rel",
+    "PTree.Eq.PEutt.peutt",
+    "PTree.Eq.PEutt.peutt_bind_cofinal",
+    "PTree.Interp.Backend.SubEnumQ.subenumQ_atomic_handler_mdp",
+    "PTree.Interp.Backend.SubEnumQ.subenumQ_mdp_state_interp_atomic",
+    "PTree.Interp.FreeOmega.Atomic.atomic_handler",
+    "PTree.Interp.FreeOmega.Atomic.atomic_handler_guarded",
+    "PTree.Interp.FreeOmega.Atomic.tree_trans_bisim_interp_atomic",
     "PTree.Interp.FreeOmega.Guarded.guarded_handler",
     "PTree.Interp.FreeOmega.Guarded.guarded_handler_of_hitting",
     "PTree.Interp.FreeOmega.Guarded.guarded_handler_vis_fusion",
     "PTree.Interp.FreeOmega.Guarded.peutt_interp_guarded",
     "PTree.Interp.FreeOmega.Guarded.peutt_interp_guarded_Proper",
-    "PTree.Interp.FreeOmega.Atomic.atomic_handler",
-    "PTree.Interp.FreeOmega.Atomic.atomic_handler_guarded",
-    "PTree.Interp.FreeOmega.Atomic.tree_trans_bisim_interp_atomic",
-    "PTree.Semantics.FreeOmega.MDPCoincidenceFreeOmega.free_mdp_state_peutt_tree_trans_iff",
-    "PTree.Interp.FreeOmega.MDP.mdp_handler",
-    "PTree.Interp.FreeOmega.MDP.mdp_state_interp",
-    "PTree.Interp.FreeOmega.MDP.mdp_interp_peutt_tree_trans_iff",
-    "PTree.Interp.FreeOmega.MDP.mdp_guarded_interp_tree_trans",
-    "PTree.Interp.FreeOmega.MDP.mdp_head_atomic",
     "PTree.Interp.FreeOmega.MDP.atomic_handler_mdp",
+    "PTree.Interp.FreeOmega.MDP.mdp_guarded_interp_tree_trans",
+    "PTree.Interp.FreeOmega.MDP.mdp_handler",
+    "PTree.Interp.FreeOmega.MDP.mdp_head_atomic",
+    "PTree.Interp.FreeOmega.MDP.mdp_interp_peutt_tree_trans_iff",
+    "PTree.Interp.FreeOmega.MDP.mdp_state_interp",
     "PTree.Interp.FreeOmega.MDP.mdp_state_interp_atomic",
     "PTree.Prob.Backend.SubEnumQ.FreeOmega.Total.subenumQ_free_omega_total_map",
-    "PTree.Interp.Backend.SubEnumQ.subenumQ_atomic_handler_mdp",
-    "PTree.Interp.Backend.SubEnumQ.subenumQ_mdp_state_interp_atomic"
+    "PTree.Semantics.FreeOmega.MDPCoincidenceFreeOmega.free_mdp_state_peutt_tree_trans_iff"
   ],
   "soundness": [
     "PTree.Eq.Backend.StableHittingDomainSubEnumQ.domain_hitting",
@@ -536,11 +496,6 @@
     "PTree.Prob.Domain.Series.oval_weighted_prefix_continuous"
   ],
   "modules": [
-    "PTree.API.EnumQ",
-    "PTree.API.FreeOmega",
-    "PTree.API.Generic",
-    "PTree.API.SubEnumQ",
-    "PTree.API.Weighted",
     "PTree.Core.PTreeDefinition",
     "PTree.Eq.Backend.ProbabilisticTraceEnumQ",
     "PTree.Eq.Backend.ProbabilisticTraceSubEnumQ",
@@ -554,7 +509,11 @@
     "PTree.Eq.PStrong",
     "PTree.Eq.PStruct",
     "PTree.Eq.PTreeKernel",
+    "PTree.Eq.PrimitiveStableHitting",
     "PTree.Eq.ProbabilisticTrace",
+    "PTree.Eq.StableHittingComputation",
+    "PTree.Eq.UnifiedFrontier",
+    "PTree.Eq.WellFormedness",
     "PTree.Interp.Backend.SubEnumQ",
     "PTree.Interp.FreeOmega.Atomic",
     "PTree.Interp.FreeOmega.Base",
@@ -599,424 +558,24 @@
   ],
   "endpoints": [
     {
-      "name": "PTree.API.EnumQ.handle_sample",
-      "type": "@EnumQ.handle_sample\n     : forall (E : Type -> Type) (R : eqtype.Equality.type),\n       EnumQ.sampleE R ->\n       PTreeDefinition.ptree E Representation.EnumQ.EnumQ (eqtype.Equality.sort R)",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.EnumQ.kernel",
-      "type": "@EnumQ.kernel\n     : forall (E : Type -> Type) (X Y : eqtype.Equality.type),\n       (eqtype.Equality.sort X -> Representation.EnumQ.EnumQ (eqtype.Equality.sort Y)) ->\n       eqtype.Equality.sort X ->\n       PTreeDefinition.ptree E Representation.EnumQ.EnumQ (eqtype.Equality.sort Y)",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.EnumQ.meas",
-      "type": "@EnumQ.meas\n     : forall (E : Type -> Type) (X : eqtype.Equality.type),\n       Representation.EnumQ.EnumQ (eqtype.Equality.sort X) ->\n       PTreeDefinition.ptree E Representation.EnumQ.EnumQ (eqtype.Equality.sort X)",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.EnumQ.sampleE",
-      "type": "EnumQ.sampleE\n     : eqtype.Equality.type -> Type",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.FreeOmega.atomic_handler",
-      "type": "@Atomic.atomic_handler\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Omega.SemanticOmega MN NI -> (forall X : Type, E X -> PTreeDefinition.ptree E MN X) -> Type",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.FreeOmega.guarded_handler",
-      "type": "@Guarded.guarded_handler\n     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Omega.SemanticOmega MN NI -> (forall X : Type, E X -> PTreeDefinition.ptree F MN X) -> Prop",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.FreeOmega.mdp_guarded_interp_tree_trans",
-      "type": "@MDP.mdp_guarded_interp_tree_trans\n     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall NO : @Omega.SemanticOmega MN NI,\n       @Coupling.SemanticMeasureCouplingAELaws MN NI ->\n       @AE.SemanticMeasureCountableAELaws MN NI ->\n       forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X) (R : Type),\n       @MDP.mdp_handler E F MN NI NC NO handler R ->\n       @Guarded.guarded_handler E F MN NI NO handler ->\n       forall t u : PTreeDefinition.ptree E MN R,\n       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->\n       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R u ->\n       @TreeTransitionBisim.tree_trans_bisim E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R) t u ->\n       @TreeTransitionBisim.tree_trans_bisim F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R)\n         (@PTreeDefinition.PTree.interp E F MN handler R t)\n         (@PTreeDefinition.PTree.interp E F MN handler R u)",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P"
-    },
-    {
-      "name": "PTree.API.FreeOmega.mdp_handler",
-      "type": "@MDP.mdp_handler\n     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Omega.SemanticOmega MN NI ->\n       (forall X : Type, E X -> PTreeDefinition.ptree F MN X) -> Type -> Prop",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.FreeOmega.mdp_state_interp",
-      "type": "@MDP.mdp_state_interp\n     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI),\n       @Coupling.SemanticMeasureCouplingAELaws MN NI ->\n       @AE.SemanticMeasureCountableAELaws MN NI ->\n       forall (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X) (R : Type),\n       @MDP.mdp_handler E F MN NI NC NO handler R ->\n       forall t : PTreeDefinition.ptree E MN R,\n       @MDPFragment.mdp_state E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R t ->\n       @MDPFragment.mdp_state F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R\n         (@PTreeDefinition.PTree.interp E F MN handler R t)",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
-    },
-    {
-      "name": "PTree.API.FreeOmega.peutt_bind_assoc",
-      "type": "@Algebra.peutt_bind_assoc\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B C : Type) (t : PTreeDefinition.ptree E MN A) (k : A -> PTreeDefinition.ptree E MN B)\n         (h : B -> PTreeDefinition.ptree E MN C),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) C C (@eq C)\n         (@PTreeDefinition.PTree.bind E MN B C (@PTreeDefinition.PTree.bind E MN A B t k) h)\n         (@PTreeDefinition.PTree.bind E MN A C t\n            (fun x : A => @PTreeDefinition.PTree.bind E MN B C (k x) h))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.FreeOmega.peutt_bind_ret_l",
-      "type": "@Algebra.peutt_bind_ret_l\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B : Type) (a : A) (k : A -> PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) B B (@eq B)\n         (@PTreeDefinition.PTree.bind E MN A B\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.RetF E MN A (PTreeDefinition.ptree E MN A) a\n            |} k) (k a)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.FreeOmega.peutt_bind_ret_r",
-      "type": "@Algebra.peutt_bind_ret_r\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A : Type) (t : PTreeDefinition.ptree E MN A),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A (@eq A)\n         (@PTreeDefinition.PTree.bind E MN A A t\n            (fun x : A =>\n             {|\n               PTreeDefinition._observe :=\n                 @PTreeDefinition.RetF E MN A (PTreeDefinition.ptree E MN A) x\n             |})) t",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.FreeOmega.peutt_interp_guarded",
-      "type": "@Guarded.peutt_interp_guarded\n     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI)\n         (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X),\n       @Coupling.SemanticMeasureCouplingAELaws MN NI ->\n       @AE.SemanticMeasureCountableAELaws MN NI ->\n       forall (A B : Type) (RR : A -> B -> Prop),\n       @Guarded.guarded_handler E F MN NI NO handler ->\n       forall (t1 : PTreeDefinition.ptree E MN A) (t2 : PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR t1 t2 ->\n       @PEutt.peutt F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR\n         (@PTreeDefinition.PTree.interp E F MN handler A t1)\n         (@PTreeDefinition.PTree.interp E F MN handler B t2)",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
-    },
-    {
-      "name": "PTree.API.FreeOmega.peutt_interp_guarded_Proper",
-      "type": "@Guarded.peutt_interp_guarded_Proper\n     : forall (E F MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI)\n         (handler : forall X : Type, E X -> PTreeDefinition.ptree F MN X),\n       @Coupling.SemanticMeasureCouplingAELaws MN NI ->\n       @AE.SemanticMeasureCountableAELaws MN NI ->\n       forall R : Type,\n       @Guarded.guarded_handler E F MN NI NO handler ->\n       @Morphisms.Proper (PTreeDefinition.ptree E MN R -> PTreeDefinition.ptree F MN R)\n         (@Morphisms.respectful (PTreeDefinition.ptree E MN R) (PTreeDefinition.ptree F MN R)\n            (@PEutt.peutt E MN (Definition.FreeOmega MN)\n               (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n               (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n               (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n               (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R\n               (@eq R))\n            (@PEutt.peutt F MN (Definition.FreeOmega MN)\n               (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n               (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n               (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n               (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R\n               (@eq R))) (@PTreeDefinition.PTree.interp E F MN handler R)",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
-    },
-    {
-      "name": "PTree.API.FreeOmega.peutt_iter_rel",
-      "type": "@Iter.peutt_iter_rel\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (I1 I2 R1 R2 : Type) (SI : I1 -> I2 -> Prop) (RR : R1 -> R2 -> Prop)\n         (f : I1 -> PTreeDefinition.ptree E MN (I1 + R1))\n         (g : I2 -> PTreeDefinition.ptree E MN (I2 + R2)),\n       (forall (i1 : I1) (i2 : I2),\n        SI i1 i2 ->\n        @PStruct.pstruct E MN (I1 + R1) (I2 + R2) (@PStruct.pstruct_iter_sum_rel I1 I2 R1 R2 SI RR)\n          (f i1) (g i2)) ->\n       forall (i1 : I1) (i2 : I2),\n       SI i1 i2 ->\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R1 R2 RR\n         (@PTreeDefinition.PTree.iter E MN R1 I1 f i1)\n         (@PTreeDefinition.PTree.iter E MN R2 I2 g i2)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.FreeOmega.peutt_iter_unfold",
-      "type": "@Iter.peutt_iter_unfold\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (I R : Type) (step : I -> PTreeDefinition.ptree E MN (I + R))\n         (i : I),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R (@eq R)\n         (@PTreeDefinition.PTree.iter E MN R I step i)\n         (@PTreeDefinition.PTree.bind E MN (I + R) R (step i)\n            (fun lr : I + R =>\n             match lr with\n             | @inl _ _ i' =>\n                 {|\n                   PTreeDefinition._observe :=\n                     @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R)\n                       (@PTreeDefinition.PTree.iter E MN R I step i')\n                 |}\n             | @inr _ _ r =>\n                 {|\n                   PTreeDefinition._observe :=\n                     @PTreeDefinition.RetF E MN R (PTreeDefinition.ptree E MN R) r\n                 |}\n             end))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.FreeOmega.tree_trans_bisim_interp_atomic",
-      "type": "@Atomic.tree_trans_bisim_interp_atomic\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall NO : @Omega.SemanticOmega MN NI,\n       @Coupling.SemanticMeasureCouplingAELaws MN NI ->\n       @AE.SemanticMeasureCountableAELaws MN NI ->\n       forall handler : forall X : Type, E X -> PTreeDefinition.ptree E MN X,\n       @Atomic.atomic_handler E MN NI NO handler ->\n       forall (R : Type) (RR : R -> R -> Prop) (t u : PTreeDefinition.ptree E MN R),\n       @TreeTransitionBisim.tree_trans_bisim E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R RR t u ->\n       @TreeTransitionBisim.tree_trans_bisim E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) R R RR\n         (@PTreeDefinition.PTree.interp E E MN handler R t)\n         (@PTreeDefinition.PTree.interp E E MN handler R u)",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P"
-    },
-    {
-      "name": "PTree.API.Generic.bind",
+      "name": "PTree.Core.PTreeDefinition.PTree.bind",
       "type": "@PTreeDefinition.PTree.bind\n     : forall (E M : Type -> Type) (T U : Type),\n       PTreeDefinition.ptree E M T ->\n       (T -> PTreeDefinition.ptree E M U) -> PTreeDefinition.ptree E M U",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.API.Generic.finite_interaction_pattern",
-      "type": "@ProbabilisticTrace.finite_interaction_pattern\n     : (Type -> Type) -> Type",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.finite_interaction_query",
-      "type": "@ProbabilisticTrace.finite_interaction_query\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI ->\n       forall R : Type,\n       @ProbabilisticTrace.finite_interaction_pattern E ->\n       PTreeDefinition.ptree E MN R -> MF bool -> Prop",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.finite_interaction_sem",
-      "type": "@ProbabilisticTrace.finite_interaction_sem\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI ->\n       forall R : Type,\n       @ProbabilisticTrace.finite_interaction_pattern E -> PTreeDefinition.ptree E MN R -> MF bool",
-      "assumptions": "Axioms:\nClassicalEpsilon.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P"
-    },
-    {
-      "name": "PTree.API.Generic.finite_interaction_sem_spec",
-      "type": "@ProbabilisticTrace.finite_interaction_sem_spec\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       forall (R : Type) (tr : @ProbabilisticTrace.finite_interaction_pattern E)\n         (t : PTreeDefinition.ptree E MN R),\n       @ProbabilisticTrace.finite_interaction_query E MN MF FI MX FO R tr t\n         (@ProbabilisticTrace.finite_interaction_sem E MN MF FI MX FO R tr t)",
-      "assumptions": "Axioms:\nClassicalEpsilon.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P"
-    },
-    {
-      "name": "PTree.API.Generic.interp",
+      "name": "PTree.Core.PTreeDefinition.PTree.interp",
       "type": "@PTreeDefinition.PTree.interp\n     : forall E F M : Type -> Type,\n       (forall T : Type, E T -> PTreeDefinition.ptree F M T) ->\n       forall R : Type, PTreeDefinition.ptree E M R -> PTreeDefinition.ptree F M R",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.API.Generic.iter",
+      "name": "PTree.Core.PTreeDefinition.PTree.iter",
       "type": "@PTreeDefinition.PTree.iter\n     : forall (E M : Type -> Type) (R I : Type),\n       (I -> PTreeDefinition.ptree E M (I + R)) -> I -> PTreeDefinition.ptree E M R",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.API.Generic.peutt",
-      "type": "@PEutt.peutt\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI ->\n       forall R1 R2 : Type,\n       (R1 -> R2 -> Prop) -> PTreeDefinition.ptree E MN R1 -> PTreeDefinition.ptree E MN R2 -> Prop",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_bind",
-      "type": "@PEutt.peutt_bind\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       (forall (A R : Type) (t : PTreeDefinition.ptree E MN A)\n          (k : A -> PTreeDefinition.ptree E MN R),\n        @PTreeKernel.ptree_bind_cofinal E MN MF FI MX FO A R t k) ->\n       forall (A B R1 R2 : Type) (RR : R1 -> R2 -> Prop) (RS : A -> B -> Prop)\n         (t1 : PTreeDefinition.ptree E MN R1) (t2 : PTreeDefinition.ptree E MN R2)\n         (k1 : R1 -> PTreeDefinition.ptree E MN A) (k2 : R2 -> PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->\n       (forall (r1 : R1) (r2 : R2),\n        RR r1 r2 -> @PEutt.peutt E MN MF FI FC MX FO A B RS (k1 r1) (k2 r2)) ->\n       @PEutt.peutt E MN MF FI FC MX FO A B RS (@PTreeDefinition.PTree.bind E MN R1 A t1 k1)\n         (@PTreeDefinition.PTree.bind E MN R2 B t2 k2)",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_coinduction",
-      "type": "@PEutt.peutt_coinduction\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R1 R2 : Type) (RR : R1 -> R2 -> Prop)\n         (sim : PTreeDefinition.ptreeF E MN R1 (PTreeDefinition.ptree E MN R1) ->\n                PTreeDefinition.ptreeF E MN R2 (PTreeDefinition.ptree E MN R2) -> Prop),\n       (forall (s1 : PTreeDefinition.ptreeF E MN R1 (PTreeDefinition.ptree E MN R1))\n          (s2 : PTreeDefinition.ptreeF E MN R2 (PTreeDefinition.ptree E MN R2)),\n        sim s1 s2 ->\n        @StableHittingRelation.stable_hitting_match MF FI FO\n          (PTreeDefinition.ptreeF E MN R1 (PTreeDefinition.ptree E MN R1))\n          (PTreeDefinition.ptreeF E MN R2 (PTreeDefinition.ptree E MN R2))\n          (UnifiedFrontier.stable_head E MN R1) (UnifiedFrontier.stable_head E MN R2)\n          (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R1)\n          (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R2)\n          (@PEutt.ptree_stable_head_rel E MN R1 R2 RR) sim s1 s2) ->\n       forall (t1 : PTreeDefinition.ptree E MN R1) (t2 : PTreeDefinition.ptree E MN R2),\n       sim (@PTreeDefinition.observe E MN R1 t1) (@PTreeDefinition.observe E MN R2 t2) ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_equivalence",
-      "type": "@PEutt.peutt_equivalence\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Equivalence (PTreeDefinition.ptree E MN R)\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_hitting_lift",
-      "type": "@PEutt.peutt_hitting_lift\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (R1 R2 : Type) (RR : R1 -> R2 -> Prop) (t1 : PTreeDefinition.ptree E MN R1)\n         (t2 : PTreeDefinition.ptree E MN R2) (out1 : MF (UnifiedFrontier.stable_head E MN R1))\n         (out2 : MF (UnifiedFrontier.stable_head E MN R2)),\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R1 (PTreeDefinition.ptree E MN R1))\n         (UnifiedFrontier.stable_head E MN R1)\n         (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R1)\n         (@PTreeDefinition.observe E MN R1 t1) out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R2 (PTreeDefinition.ptree E MN R2))\n         (UnifiedFrontier.stable_head E MN R2)\n         (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R2)\n         (@PTreeDefinition.observe E MN R2 t2) out2 ->\n       @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN R1)\n         (UnifiedFrontier.stable_head E MN R2)\n         (@PEutt.ptree_stable_head_rel E MN R1 R2 RR\n            (@PEutt.peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_iff_hitting",
-      "type": "@StableHittingComputation.peutt_iff_hitting\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (A B : Type) (RR : A -> B -> Prop) (t : PTreeDefinition.ptree E MN A)\n         (u : PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN MF FI FC MX FO A B RR t u <->\n       (exists\n          (out1 : MF (UnifiedFrontier.stable_head E MN A)) (out2 : MF\n                                                                     (UnifiedFrontier.stable_head E\n                                                                      MN B)),\n          @PrimitiveStableHitting.stable_hitting MF FI FO\n            (PTreeDefinition.ptreeF E MN A (PTreeDefinition.ptree E MN A))\n            (UnifiedFrontier.stable_head E MN A)\n            (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX A)\n            (@PTreeDefinition.observe E MN A t) out1 /\\\n          @PrimitiveStableHitting.stable_hitting MF FI FO\n            (PTreeDefinition.ptreeF E MN B (PTreeDefinition.ptree E MN B))\n            (UnifiedFrontier.stable_head E MN B)\n            (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX B)\n            (@PTreeDefinition.observe E MN B u) out2 /\\\n          @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN A)\n            (UnifiedFrontier.stable_head E MN B)\n            (@PEutt.ptree_stable_head_rel E MN A B RR\n               (@PEutt.peutt_state E MN MF FI FC MX FO A B RR)) out1 out2)",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_of_hitting_lift",
-      "type": "@PEutt.peutt_of_hitting_lift\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (R1 R2 : Type) (RR : R1 -> R2 -> Prop) (t1 : PTreeDefinition.ptree E MN R1)\n         (t2 : PTreeDefinition.ptree E MN R2) (out1 : MF (UnifiedFrontier.stable_head E MN R1))\n         (out2 : MF (UnifiedFrontier.stable_head E MN R2)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R1 (PTreeDefinition.ptree E MN R1))\n         (UnifiedFrontier.stable_head E MN R1)\n         (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R1)\n         (@PTreeDefinition.observe E MN R1 t1) out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R2 (PTreeDefinition.ptree E MN R2))\n         (UnifiedFrontier.stable_head E MN R2)\n         (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R2)\n         (@PTreeDefinition.observe E MN R2 t2) out2 ->\n       @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN R1)\n         (UnifiedFrontier.stable_head E MN R2)\n         (@PEutt.ptree_stable_head_rel E MN R1 R2 RR\n            (@PEutt.peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_preserves_finite_interaction_sem",
-      "type": "@ProbabilisticTrace.peutt_preserves_finite_interaction_sem\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       @Coupling.SemanticMeasureCouplingAELaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       forall (R1 R2 : Type) (RR : R1 -> R2 -> Prop)\n         (tr : @ProbabilisticTrace.finite_interaction_pattern E)\n         (t1 : PTreeDefinition.ptree E MN R1) (t2 : PTreeDefinition.ptree E MN R2),\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->\n       @Measure.sem_lift MF FI bool bool (@eq bool)\n         (@ProbabilisticTrace.finite_interaction_sem E MN MF FI MX FO R1 tr t1)\n         (@ProbabilisticTrace.finite_interaction_sem E MN MF FI MX FO R2 tr t2)",
-      "assumptions": "Axioms:\nClassicalEpsilon.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_prob",
-      "type": "@PEutt.peutt_prob\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall FC : @Measure.SemanticMeasureCoreLaws MF FI,\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (R1 R2 X1 X2 : Type) (RR : R1 -> R2 -> Prop) (XR : X1 -> X2 -> Prop)\n         (mu1 : MN X1) (mu2 : MN X2) (k1 : X1 -> PTreeDefinition.ptree E MN R1)\n         (k2 : X2 -> PTreeDefinition.ptree E MN R2),\n       @Measure.sem_lift MN NI X1 X2 XR mu1 mu2 ->\n       (forall (x1 : X1) (x2 : X2),\n        XR x1 x2 -> @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR (k1 x1) (k2 x2)) ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E MN R1 (PTreeDefinition.ptree E MN R1) X1 mu1 k1\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E MN R2 (PTreeDefinition.ptree E MN R2) X2 mu2 k2\n         |}",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_prob_rewrite",
-      "type": "@PEutt.peutt_prob_rewrite\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall FC : @Measure.SemanticMeasureCoreLaws MF FI,\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (R X Y : Type) (S : Relation_Definitions.relation (PTreeDefinition.ptree E MN R)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN R) S\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R)) ->\n       forall (XR : X -> Y -> Prop) (mu : MN X) (nu : MN Y)\n         (k1 : X -> PTreeDefinition.ptree E MN R) (k2 : Y -> PTreeDefinition.ptree E MN R),\n       @Measure.sem_lift MN NI X Y XR mu nu ->\n       (forall (x : X) (y : Y), XR x y -> S (k1 x) (k2 y)) ->\n       @PEutt.peutt E MN MF FI FC MX FO R R (@eq R)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X mu k1\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) Y nu k2\n         |}",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_refl",
-      "type": "@PEutt.peutt_refl\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Reflexive (PTreeDefinition.ptree E MN R)\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_ret",
-      "type": "@PEutt.peutt_ret\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R1 R2 : Type) (RR : R1 -> R2 -> Prop) (r1 : R1) (r2 : R2),\n       RR r1 r2 ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN R1 (PTreeDefinition.ptree E MN R1) r1\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN R2 (PTreeDefinition.ptree E MN R2) r2\n         |}",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_rewrite",
-      "type": "@PEutt.peutt_rewrite\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type)\n         (R : Relation_Definitions.relation (PTreeDefinition.ptree E MN A)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN A) R\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A)) ->\n       forall x x' y' y : PTreeDefinition.ptree E MN A,\n       R x x' ->\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x' y' ->\n       R y' y -> @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_rewrite_l",
-      "type": "@PEutt.peutt_rewrite_l\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type)\n         (R : Relation_Definitions.relation (PTreeDefinition.ptree E MN A)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN A) R\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A)) ->\n       forall x x' y : PTreeDefinition.ptree E MN A,\n       R x x' ->\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x' y ->\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_rewrite_r",
-      "type": "@PEutt.peutt_rewrite_r\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type)\n         (R : Relation_Definitions.relation (PTreeDefinition.ptree E MN A)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN A) R\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A)) ->\n       forall x y' y : PTreeDefinition.ptree E MN A,\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y' ->\n       R y' y -> @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_sym",
-      "type": "@PEutt.peutt_sym\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Symmetric (PTreeDefinition.ptree E MN R)\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_tau_l",
-      "type": "@PEutt.peutt_tau_l\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (t : PTreeDefinition.ptree E MN R),\n       @PEutt.peutt E MN MF FI FC MX FO R R (@eq R)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) t\n         |} t",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_tau_r",
-      "type": "@PEutt.peutt_tau_r\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (t : PTreeDefinition.ptree E MN R),\n       @PEutt.peutt E MN MF FI FC MX FO R R (@eq R) t\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) t\n         |}",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_trans",
-      "type": "@PEutt.peutt_trans\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Transitive (PTreeDefinition.ptree E MN R)\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.peutt_vis",
-      "type": "@PEutt.peutt_vis\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R1 R2 X : Type) (RR : R1 -> R2 -> Prop) (e : E X)\n         (k1 : X -> PTreeDefinition.ptree E MN R1) (k2 : X -> PTreeDefinition.ptree E MN R2),\n       (forall x : X, @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR (k1 x) (k2 x)) ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E MN R1 (PTreeDefinition.ptree E MN R1) X e k1\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E MN R2 (PTreeDefinition.ptree E MN R2) X e k2\n         |}",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.probabilistic_ptree",
-      "type": "@WellFormedness.probabilistic_ptree\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M),\n       @Subprobability.SemanticSubprobability M SI ->\n       forall R : Type, PTreeDefinition.ptree E M R -> Prop",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.probabilistic_ptree_bind",
-      "type": "@WellFormedness.probabilistic_ptree_bind\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (T U : Type)\n         (t : PTreeDefinition.ptree E M T) (k : T -> PTreeDefinition.ptree E M U),\n       @WellFormedness.probabilistic_ptree E M SI SP T t ->\n       (forall x : T, @WellFormedness.probabilistic_ptree E M SI SP U (k x)) ->\n       @WellFormedness.probabilistic_ptree E M SI SP U (@PTreeDefinition.PTree.bind E M T U t k)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.probabilistic_ptree_iter",
-      "type": "@WellFormedness.probabilistic_ptree_iter\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (I R : Type)\n         (step : I -> PTreeDefinition.ptree E M (I + R)),\n       (forall i : I, @WellFormedness.probabilistic_ptree E M SI SP (I + R) (step i)) ->\n       forall i : I,\n       @WellFormedness.probabilistic_ptree E M SI SP R (@PTreeDefinition.PTree.iter E M R I step i)",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.probabilistic_ptree_prob",
-      "type": "@WellFormedness.probabilistic_ptree_prob\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (R X : Type)\n         (mu : M X) (k : X -> PTreeDefinition.ptree E M R),\n       @Subprobability.sem_subprob M SI SP X mu ->\n       (forall x : X, @WellFormedness.probabilistic_ptree E M SI SP R (k x)) ->\n       @WellFormedness.probabilistic_ptree E M SI SP R\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E M R (PTreeDefinition.ptree E M R) X mu k\n         |}",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.probabilistic_ptree_ret",
-      "type": "@WellFormedness.probabilistic_ptree_ret\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (R : Type)\n         (r : R),\n       @WellFormedness.probabilistic_ptree E M SI SP R (@PTreeDefinition.PTree.ret E M R r)",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.probabilistic_ptree_tau",
-      "type": "@WellFormedness.probabilistic_ptree_tau\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (R : Type)\n         (t : PTreeDefinition.ptree E M R),\n       @WellFormedness.probabilistic_ptree E M SI SP R t ->\n       @WellFormedness.probabilistic_ptree E M SI SP R\n         {|\n           PTreeDefinition._observe := @PTreeDefinition.TauF E M R (PTreeDefinition.ptree E M R) t\n         |}",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.probabilistic_ptree_vis",
-      "type": "@WellFormedness.probabilistic_ptree_vis\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (R X : Type)\n         (e : E X) (k : X -> PTreeDefinition.ptree E M R),\n       (forall x : X, @WellFormedness.probabilistic_ptree E M SI SP R (k x)) ->\n       @WellFormedness.probabilistic_ptree E M SI SP R\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E M R (PTreeDefinition.ptree E M R) X e k\n         |}",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.pstrong",
-      "type": "@PStrong.pstrong\n     : forall (E M : Type -> Type) (MI : Measure.SemanticMeasure M),\n       @Measure.SemanticMeasureCoreLaws M MI ->\n       forall R1 R2 : Type,\n       (R1 -> R2 -> Prop) -> PTreeDefinition.ptree E M R1 -> PTreeDefinition.ptree E M R2 -> Prop",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.pstrong_bind",
-      "type": "@PStrong.pstrong_bind\n     : forall (E M : Type -> Type) (MI : Measure.SemanticMeasure M)\n         (MC : @Measure.SemanticMeasureCoreLaws M MI) (A1 A2 B1 B2 : Type)\n         (RA : A1 -> A2 -> Prop) (RB : B1 -> B2 -> Prop) (k1 : A1 -> PTreeDefinition.ptree E M B1)\n         (k2 : A2 -> PTreeDefinition.ptree E M B2),\n       (forall (a1 : A1) (a2 : A2), RA a1 a2 -> @PStrong.pstrong E M MI MC B1 B2 RB (k1 a1) (k2 a2)) ->\n       forall (t1 : PTreeDefinition.ptree E M A1) (t2 : PTreeDefinition.ptree E M A2),\n       @PStrong.pstrong E M MI MC A1 A2 RA t1 t2 ->\n       @PStrong.pstrong E M MI MC B1 B2 RB (@PTreeDefinition.PTree.bind E M A1 B1 t1 k1)\n         (@PTreeDefinition.PTree.bind E M A2 B2 t2 k2)",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.pstrong_equivalence",
-      "type": "@PStrong.pstrong_equivalence\n     : forall (E M : Type -> Type) (MI : Measure.SemanticMeasure M)\n         (MC : @Measure.SemanticMeasureCoreLaws M MI) (R : Type),\n       @RelationClasses.Equivalence (PTreeDefinition.ptree E M R)\n         (@PStrong.pstrong E M MI MC R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.pstruct",
-      "type": "@PStruct.pstruct\n     : forall (E M : Type -> Type) (R1 R2 : Type),\n       (R1 -> R2 -> Prop) -> PTreeDefinition.ptree E M R1 -> PTreeDefinition.ptree E M R2 -> Prop",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.pstruct_equivalence",
-      "type": "@PStruct.pstruct_equivalence\n     : forall (E M : Type -> Type) (R : Type),\n       @RelationClasses.Equivalence (PTreeDefinition.ptree E M R)\n         (@PStruct.pstruct E M R R (@eq R))",
-      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
-    },
-    {
-      "name": "PTree.API.Generic.pstruct_pstrong",
-      "type": "@PStrong.pstruct_pstrong\n     : forall (E M : Type -> Type) (MI : Measure.SemanticMeasure M)\n         (MC : @Measure.SemanticMeasureCoreLaws M MI) (R1 R2 : Type) (RR : R1 -> R2 -> Prop)\n         (t1 : PTreeDefinition.ptree E M R1) (t2 : PTreeDefinition.ptree E M R2),\n       @PStruct.pstruct E M R1 R2 RR t1 t2 -> @PStrong.pstrong E M MI MC R1 R2 RR t1 t2",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.ptree",
-      "type": "PTreeDefinition.ptree\n     : (Type -> Type) -> (Type -> Type) -> Type -> Type",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_head",
-      "type": "UnifiedFrontier.stable_head\n     : (Type -> Type) -> (Type -> Type) -> Type -> Type",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_head_rel",
-      "type": "@UnifiedFrontier.stable_head_rel\n     : forall (E MN : Type -> Type) (R1 R2 : Type),\n       (R1 -> R2 -> Prop) ->\n       (PTreeDefinition.ptree E MN R1 -> PTreeDefinition.ptree E MN R2 -> Prop) ->\n       UnifiedFrontier.stable_head E MN R1 -> UnifiedFrontier.stable_head E MN R2 -> Prop",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting",
-      "type": "@PrimitiveStableHitting.stable_hitting\n     : forall (MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Omega.SemanticOmega MF FI ->\n       forall S A : Type, (S -> MF (PrimitiveStableHitting.stable_target S A)) -> S -> MF A -> Prop",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_bind",
-      "type": "@PEutt.stable_hitting_bind\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       forall (A R : Type) (t : PTreeDefinition.ptree E MN A)\n         (k : A -> PTreeDefinition.ptree E MN R) (hs : MF (UnifiedFrontier.stable_head E MN A))\n         (front : A -> MF (UnifiedFrontier.stable_head E MN R)),\n       @PTreeKernel.ptree_bind_cofinal E MN MF FI MX FO A R t k ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN A (PTreeDefinition.ptree E MN A))\n         (UnifiedFrontier.stable_head E MN A) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX A)\n         (@PTreeDefinition.observe E MN A t) hs ->\n       (forall a : A,\n        @PrimitiveStableHitting.stable_hitting MF FI FO\n          (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n          (UnifiedFrontier.stable_head E MN R)\n          (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n          (@PTreeDefinition.observe E MN R (k a)) (front a)) ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R (@PTreeDefinition.PTree.bind E MN A R t k))\n         (@Measure.sem_bind MF FI (UnifiedFrontier.stable_head E MN A)\n            (UnifiedFrontier.stable_head E MN R) hs\n            (@UnifiedFrontier.stable_head_bind_front E MN MF FI A R k front))",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_exists",
-      "type": "@PrimitiveStableHitting.stable_hitting_exists\n     : forall (MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (S A : Type) (kernel : S -> MF (PrimitiveStableHitting.stable_target S A))\n         (state : S),\n       exists out : MF A, @PrimitiveStableHitting.stable_hitting MF FI FO S A kernel state out",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_prob",
-      "type": "@PEutt.stable_hitting_prob\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (R X : Type) (mu : MN X) (k : X -> PTreeDefinition.ptree E MN R)\n         (front : X -> MF (UnifiedFrontier.stable_head E MN R)) (Good : X -> Prop),\n       @Measure.sem_ae MN NI X mu Good ->\n       (forall x : X,\n        Good x ->\n        @PrimitiveStableHitting.stable_hitting MF FI FO\n          (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n          (UnifiedFrontier.stable_head E MN R)\n          (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n          (@PTreeDefinition.observe E MN R (k x)) (front x)) ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X mu k\n            |}) (@Mixed.mixed_bind MN MF MX X (UnifiedFrontier.stable_head E MN R) mu front)",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_prob_compute",
-      "type": "@StableHittingComputation.stable_hitting_prob_compute\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (R X : Type) (mu : MN X) (k : X -> PTreeDefinition.ptree E MN R)\n         (front : X -> MF (UnifiedFrontier.stable_head E MN R)) (Good : X -> Prop)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @Measure.sem_ae MN NI X mu Good ->\n       (forall x : X,\n        Good x ->\n        @PrimitiveStableHitting.stable_hitting MF FI FO\n          (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n          (UnifiedFrontier.stable_head E MN R)\n          (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n          (@PTreeDefinition.observe E MN R (k x)) (front x)) ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X mu k\n            |}) out ->\n       @Measure.sem_eq MF FI (UnifiedFrontier.stable_head E MN R) out\n         (@Mixed.mixed_bind MN MF MX X (UnifiedFrontier.stable_head E MN R) mu front)",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_prob_decompose",
-      "type": "@StableHittingComputation.stable_hitting_prob_decompose\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (R X : Type) (mu : MN X) (k : X -> PTreeDefinition.ptree E MN R)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X mu k\n            |}) out ->\n       exists front : X -> MF (UnifiedFrontier.stable_head E MN R),\n         (forall x : X,\n          @PrimitiveStableHitting.stable_hitting MF FI FO\n            (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n            (UnifiedFrontier.stable_head E MN R)\n            (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n            (@PTreeDefinition.observe E MN R (k x)) (front x)) /\\\n         @Measure.sem_eq MF FI (UnifiedFrontier.stable_head E MN R) out\n           (@Mixed.mixed_bind MN MF MX X (UnifiedFrontier.stable_head E MN R) mu front)",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_prob_dirac",
-      "type": "@StableHittingComputation.stable_hitting_prob_dirac\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall R X : Type,\n       @Mixed.MixedMeasureUnitLaws MN MF NI FI MX ->\n       forall (x : X) (k : X -> PTreeDefinition.ptree E MN R)\n         (out1 out2 : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X\n                  (@Measure.sem_ret MN NI X x) k\n            |}) out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R (k x)) out2 ->\n       @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN R)\n         (UnifiedFrontier.stable_head E MN R) (@eq (UnifiedFrontier.stable_head E MN R)) out1 out2",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_prob_flatten",
-      "type": "@StableHittingComputation.stable_hitting_prob_flatten\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall R X Y : Type,\n       @Mixed.MixedMeasureNodeBindLaws MN MF NI FI MX ->\n       forall (mu : MN X) (h : X -> MN Y) (k : Y -> PTreeDefinition.ptree E MN R)\n         (out1 out2 : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X mu\n                  (fun x : X =>\n                   {|\n                     PTreeDefinition._observe :=\n                       @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) Y (h x) k\n                   |})\n            |}) out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) Y\n                  (@Measure.sem_bind MN NI X Y mu h) k\n            |}) out2 ->\n       @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN R)\n         (UnifiedFrontier.stable_head E MN R) (@eq (UnifiedFrontier.stable_head E MN R)) out1 out2",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_ret",
-      "type": "@PEutt.stable_hitting_ret\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (r : R),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.RetF E MN R (PTreeDefinition.ptree E MN R) r)\n         (@Measure.sem_ret MF FI (UnifiedFrontier.stable_head E MN R)\n            (@UnifiedFrontier.FHRet E MN R r))",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_ret_iff",
-      "type": "@StableHittingComputation.stable_hitting_ret_iff\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (r : R) (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.RetF E MN R (PTreeDefinition.ptree E MN R) r\n            |}) out <->\n       @Measure.sem_eq MF FI (UnifiedFrontier.stable_head E MN R) out\n         (@Measure.sem_ret MF FI (UnifiedFrontier.stable_head E MN R)\n            (@UnifiedFrontier.FHRet E MN R r))",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_tau",
-      "type": "@StableHittingComputation.stable_hitting_tau\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (t : PTreeDefinition.ptree E MN R)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) t\n            |}) out <->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R t) out",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_tau_iff",
-      "type": "@PEutt.stable_hitting_tau_iff\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (t : PTreeDefinition.ptree E MN R)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) t) out <->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R t) out",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_tau_iter",
-      "type": "@StableHittingComputation.stable_hitting_tau_iter\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (n : nat) (t : PTreeDefinition.ptree E MN R)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            (@PeanoNat.Nat.iter n (PTreeDefinition.ptree E MN R)\n               (fun u : PTreeDefinition.ptree E MN R =>\n                {|\n                  PTreeDefinition._observe :=\n                    @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) u\n                |}) t)) out <->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R t) out",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_unique",
-      "type": "@PrimitiveStableHitting.stable_hitting_unique\n     : forall (MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (S A : Type) (kernel : S -> MF (PrimitiveStableHitting.stable_target S A))\n         (state : S) (out1 out2 : MF A),\n       @PrimitiveStableHitting.stable_hitting MF FI FO S A kernel state out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO S A kernel state out2 ->\n       @Measure.sem_eq MF FI A out1 out2",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_vis",
-      "type": "@PEutt.stable_hitting_vis\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R X : Type) (e : E X) (k : X -> PTreeDefinition.ptree E MN R),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.VisF E MN R (PTreeDefinition.ptree E MN R) X e k)\n         (@Measure.sem_ret MF FI (UnifiedFrontier.stable_head E MN R)\n            (@UnifiedFrontier.FHVis E MN R X e k))",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.stable_hitting_vis_iff",
-      "type": "@StableHittingComputation.stable_hitting_vis_iff\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R X : Type) (e : E X) (k : X -> PTreeDefinition.ptree E MN R)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.VisF E MN R (PTreeDefinition.ptree E MN R) X e k\n            |}) out <->\n       @Measure.sem_eq MF FI (UnifiedFrontier.stable_head E MN R) out\n         (@Measure.sem_ret MF FI (UnifiedFrontier.stable_head E MN R)\n            (@UnifiedFrontier.FHVis E MN R X e k))",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Generic.translate",
+      "name": "PTree.Core.PTreeDefinition.PTree.translate",
       "type": "@PTreeDefinition.PTree.translate\n     : forall E F M : Type -> Type,\n       (forall T : Type, E T -> F T) ->\n       forall R : Type, PTreeDefinition.ptree E M R -> PTreeDefinition.ptree F M R",
       "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.SubEnumQ.handle_subsample",
-      "type": "@SubEnumQ.handle_subsample\n     : forall (E : Type -> Type) (R : Type),\n       SubEnumQ.subSampleE R -> PTreeDefinition.ptree E Representation.SubEnumQ R",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.SubEnumQ.subSampleE",
-      "type": "SubEnumQ.subSampleE\n     : Type -> Type",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.SubEnumQ.subenumQ_mdp_state_interp_atomic",
-      "type": "@Backend.SubEnumQ.subenumQ_mdp_state_interp_atomic\n     : forall (E : Type -> Type) (R : Type)\n         (handler : forall X : Type, E X -> PTreeDefinition.ptree E Representation.SubEnumQ X),\n       @Atomic.atomic_handler E Representation.SubEnumQ Measure.SubEnumQ_SemanticMeasure\n         Measure.SubEnumQ_SemanticOmega handler ->\n       forall t : PTreeDefinition.ptree E Representation.SubEnumQ R,\n       @MDPFragment.mdp_state E Representation.SubEnumQ\n         (Definition.FreeOmega Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticMeasure Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega)\n         (@StructuralMeasure.FreeOmegaMixedMeasure Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticOmega Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega) R t ->\n       @MDPFragment.mdp_state E Representation.SubEnumQ\n         (Definition.FreeOmega Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticMeasure Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega)\n         (@StructuralMeasure.FreeOmegaMixedMeasure Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticOmega Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega) R\n         (@PTreeDefinition.PTree.interp E E Representation.SubEnumQ handler R t)",
-      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
-    },
-    {
-      "name": "PTree.API.SubEnumQ.subkernel",
-      "type": "@SubEnumQ.subkernel\n     : forall (E : Type -> Type) (X Y : Type),\n       (X -> Representation.SubEnumQ Y) -> X -> PTreeDefinition.ptree E Representation.SubEnumQ Y",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.SubEnumQ.submeas",
-      "type": "@SubEnumQ.submeas\n     : forall (E : Type -> Type) (X : Type),\n       Representation.SubEnumQ X -> PTreeDefinition.ptree E Representation.SubEnumQ X",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Weighted.stuckE",
-      "type": "@Weighted.stuckE\n     : forall E M : Type -> Type, E Empty_set -> PTreeDefinition.ptree E M Empty_set",
-      "assumptions": "Closed under the global context"
-    },
-    {
-      "name": "PTree.API.Weighted.stuckM",
-      "type": "@Weighted.stuckM\n     : forall (E M : Type -> Type) (H0 : Monad.Monad M),\n       @Monad.MonadMeasure M H0 ->\n       forall R : Type, PTreeDefinition.ptree E M R -> PTreeDefinition.ptree E M R",
-      "assumptions": "Axioms:\nClassicalDedekindReals.sig_forall_dec :\n  forall P : nat -> Prop,\n  (forall n : nat, {P n} + {~ P n}) -> {n : nat | ~ P n} + {forall n : nat, P n}"
     },
     {
       "name": "PTree.Core.PTreeDefinition.ProbF",
@@ -1041,6 +600,11 @@
     {
       "name": "PTree.Core.PTreeDefinition.go",
       "type": "@PTreeDefinition.go\n     : forall (E M : Type -> Type) (R : Type),\n       PTreeDefinition.ptreeF E M R (PTreeDefinition.ptree E M R) -> PTreeDefinition.ptree E M R",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.PTreeDefinition.ptree",
+      "type": "PTreeDefinition.ptree\n     : (Type -> Type) -> (Type -> Type) -> Type -> Type",
       "assumptions": "Closed under the global context"
     },
     {
@@ -1454,8 +1018,8 @@
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Eq.PEutt.peutt_bind",
-      "type": "@PEutt.peutt_bind\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       (forall (A R : Type) (t : PTreeDefinition.ptree E MN A)\n          (k : A -> PTreeDefinition.ptree E MN R),\n        @PTreeKernel.ptree_bind_cofinal E MN MF FI MX FO A R t k) ->\n       forall (A B R1 R2 : Type) (RR : R1 -> R2 -> Prop) (RS : A -> B -> Prop)\n         (t1 : PTreeDefinition.ptree E MN R1) (t2 : PTreeDefinition.ptree E MN R2)\n         (k1 : R1 -> PTreeDefinition.ptree E MN A) (k2 : R2 -> PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->\n       (forall (r1 : R1) (r2 : R2),\n        RR r1 r2 -> @PEutt.peutt E MN MF FI FC MX FO A B RS (k1 r1) (k2 r2)) ->\n       @PEutt.peutt E MN MF FI FC MX FO A B RS (@PTreeDefinition.PTree.bind E MN R1 A t1 k1)\n         (@PTreeDefinition.PTree.bind E MN R2 B t2 k2)",
+      "name": "PTree.Eq.PEutt.peutt_bind_cofinal",
+      "type": "@PEutt.peutt_bind_cofinal\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       (forall (A R : Type) (t : PTreeDefinition.ptree E MN A)\n          (k : A -> PTreeDefinition.ptree E MN R),\n        @PTreeKernel.ptree_bind_cofinal E MN MF FI MX FO A R t k) ->\n       forall (A B R1 R2 : Type) (RR : R1 -> R2 -> Prop) (RS : A -> B -> Prop)\n         (t1 : PTreeDefinition.ptree E MN R1) (t2 : PTreeDefinition.ptree E MN R2)\n         (k1 : R1 -> PTreeDefinition.ptree E MN A) (k2 : R2 -> PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->\n       (forall (r1 : R1) (r2 : R2),\n        RR r1 r2 -> @PEutt.peutt E MN MF FI FC MX FO A B RS (k1 r1) (k2 r2)) ->\n       @PEutt.peutt E MN MF FI FC MX FO A B RS (@PTreeDefinition.PTree.bind E MN R1 A t1 k1)\n         (@PTreeDefinition.PTree.bind E MN R2 B t2 k2)",
       "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
     },
     {
@@ -1489,8 +1053,18 @@
       "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
     },
     {
+      "name": "PTree.Eq.PEutt.peutt_hitting_lift",
+      "type": "@PEutt.peutt_hitting_lift\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (R1 R2 : Type) (RR : R1 -> R2 -> Prop) (t1 : PTreeDefinition.ptree E MN R1)\n         (t2 : PTreeDefinition.ptree E MN R2) (out1 : MF (UnifiedFrontier.stable_head E MN R1))\n         (out2 : MF (UnifiedFrontier.stable_head E MN R2)),\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R1 (PTreeDefinition.ptree E MN R1))\n         (UnifiedFrontier.stable_head E MN R1)\n         (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R1)\n         (@PTreeDefinition.observe E MN R1 t1) out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R2 (PTreeDefinition.ptree E MN R2))\n         (UnifiedFrontier.stable_head E MN R2)\n         (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R2)\n         (@PTreeDefinition.observe E MN R2 t2) out2 ->\n       @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN R1)\n         (UnifiedFrontier.stable_head E MN R2)\n         (@PEutt.ptree_stable_head_rel E MN R1 R2 RR\n            (@PEutt.peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2",
+      "assumptions": "Closed under the global context"
+    },
+    {
       "name": "PTree.Eq.PEutt.peutt_not_of_mass_mismatch",
       "type": "@PEutt.peutt_not_of_mass_mismatch\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (R1 R2 : Type) (RR : R1 -> R2 -> Prop) (t1 : PTreeDefinition.ptree E MN R1)\n         (t2 : PTreeDefinition.ptree E MN R2) (out1 : MF (UnifiedFrontier.stable_head E MN R1))\n         (out2 : MF (UnifiedFrontier.stable_head E MN R2)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R1 (PTreeDefinition.ptree E MN R1))\n         (UnifiedFrontier.stable_head E MN R1)\n         (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R1)\n         (@PTreeDefinition.observe E MN R1 t1) out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R2 (PTreeDefinition.ptree E MN R2))\n         (UnifiedFrontier.stable_head E MN R2)\n         (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R2)\n         (@PTreeDefinition.observe E MN R2 t2) out2 ->\n       ~\n       @Coupling.sem_same_mass MF FI (UnifiedFrontier.stable_head E MN R1)\n         (UnifiedFrontier.stable_head E MN R2) out1 out2 ->\n       ~ @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PEutt.peutt_of_hitting_lift",
+      "type": "@PEutt.peutt_of_hitting_lift\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (R1 R2 : Type) (RR : R1 -> R2 -> Prop) (t1 : PTreeDefinition.ptree E MN R1)\n         (t2 : PTreeDefinition.ptree E MN R2) (out1 : MF (UnifiedFrontier.stable_head E MN R1))\n         (out2 : MF (UnifiedFrontier.stable_head E MN R2)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R1 (PTreeDefinition.ptree E MN R1))\n         (UnifiedFrontier.stable_head E MN R1)\n         (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R1)\n         (@PTreeDefinition.observe E MN R1 t1) out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R2 (PTreeDefinition.ptree E MN R2))\n         (UnifiedFrontier.stable_head E MN R2)\n         (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R2)\n         (@PTreeDefinition.observe E MN R2 t2) out2 ->\n       @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN R1)\n         (UnifiedFrontier.stable_head E MN R2)\n         (@PEutt.ptree_stable_head_rel E MN R1 R2 RR\n            (@PEutt.peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2",
       "assumptions": "Closed under the global context"
     },
     {
@@ -1534,6 +1108,11 @@
       "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
     },
     {
+      "name": "PTree.Eq.PEutt.peutt_prob_rewrite",
+      "type": "@PEutt.peutt_prob_rewrite\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall FC : @Measure.SemanticMeasureCoreLaws MF FI,\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (R X Y : Type) (S : Relation_Definitions.relation (PTreeDefinition.ptree E MN R)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN R) S\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R)) ->\n       forall (XR : X -> Y -> Prop) (mu : MN X) (nu : MN Y)\n         (k1 : X -> PTreeDefinition.ptree E MN R) (k2 : Y -> PTreeDefinition.ptree E MN R),\n       @Measure.sem_lift MN NI X Y XR mu nu ->\n       (forall (x : X) (y : Y), XR x y -> S (k1 x) (k2 y)) ->\n       @PEutt.peutt E MN MF FI FC MX FO R R (@eq R)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X mu k1\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) Y nu k2\n         |}",
+      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
+    },
+    {
       "name": "PTree.Eq.PEutt.peutt_refl",
       "type": "@PEutt.peutt_refl\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Reflexive (PTreeDefinition.ptree E MN R)\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))",
       "assumptions": "Closed under the global context"
@@ -1542,6 +1121,26 @@
       "name": "PTree.Eq.PEutt.peutt_rel_mono",
       "type": "@PEutt.peutt_rel_mono\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R1 R2 : Type) (RR RR' : R1 -> R2 -> Prop),\n       (forall (r1 : R1) (r2 : R2), RR r1 r2 -> RR' r1 r2) ->\n       forall (t1 : PTreeDefinition.ptree E MN R1) (t2 : PTreeDefinition.ptree E MN R2),\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR' t1 t2",
       "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PEutt.peutt_ret",
+      "type": "@PEutt.peutt_ret\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R1 R2 : Type) (RR : R1 -> R2 -> Prop) (r1 : R1) (r2 : R2),\n       RR r1 r2 ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN R1 (PTreeDefinition.ptree E MN R1) r1\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN R2 (PTreeDefinition.ptree E MN R2) r2\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PEutt.peutt_rewrite",
+      "type": "@PEutt.peutt_rewrite\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type)\n         (R : Relation_Definitions.relation (PTreeDefinition.ptree E MN A)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN A) R\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A)) ->\n       forall x x' y' y : PTreeDefinition.ptree E MN A,\n       R x x' ->\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x' y' ->\n       R y' y -> @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Eq.PEutt.peutt_rewrite_l",
+      "type": "@PEutt.peutt_rewrite_l\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type)\n         (R : Relation_Definitions.relation (PTreeDefinition.ptree E MN A)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN A) R\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A)) ->\n       forall x x' y : PTreeDefinition.ptree E MN A,\n       R x x' ->\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x' y ->\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Eq.PEutt.peutt_rewrite_r",
+      "type": "@PEutt.peutt_rewrite_r\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type)\n         (R : Relation_Definitions.relation (PTreeDefinition.ptree E MN A)),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E MN A) R\n         (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A)) ->\n       forall x y' y : PTreeDefinition.ptree E MN A,\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y' ->\n       R y' y -> @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) x y",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_state_refl",
@@ -1559,9 +1158,24 @@
       "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
     },
     {
+      "name": "PTree.Eq.PEutt.peutt_tau_l",
+      "type": "@PEutt.peutt_tau_l\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (t : PTreeDefinition.ptree E MN R),\n       @PEutt.peutt E MN MF FI FC MX FO R R (@eq R)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) t\n         |} t",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PEutt.peutt_tau_r",
+      "type": "@PEutt.peutt_tau_r\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (t : PTreeDefinition.ptree E MN R),\n       @PEutt.peutt E MN MF FI FC MX FO R R (@eq R) t\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) t\n         |}",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
       "name": "PTree.Eq.PEutt.peutt_trans",
       "type": "@PEutt.peutt_trans\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Transitive (PTreeDefinition.ptree E MN R)\n         (@PEutt.peutt E MN MF FI FC MX FO R R (@eq R))",
       "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Eq.PEutt.peutt_vis",
+      "type": "@PEutt.peutt_vis\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R1 R2 X : Type) (RR : R1 -> R2 -> Prop) (e : E X)\n         (k1 : X -> PTreeDefinition.ptree E MN R1) (k2 : X -> PTreeDefinition.ptree E MN R2),\n       (forall x : X, @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR (k1 x) (k2 x)) ->\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E MN R1 (PTreeDefinition.ptree E MN R1) X e k1\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E MN R2 (PTreeDefinition.ptree E MN R2) X e k2\n         |}",
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.PEutt.peutt_vis_Proper",
@@ -1614,8 +1228,28 @@
       "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
     },
     {
+      "name": "PTree.Eq.PEutt.stable_hitting_prob",
+      "type": "@PEutt.stable_hitting_prob\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (R X : Type) (mu : MN X) (k : X -> PTreeDefinition.ptree E MN R)\n         (front : X -> MF (UnifiedFrontier.stable_head E MN R)) (Good : X -> Prop),\n       @Measure.sem_ae MN NI X mu Good ->\n       (forall x : X,\n        Good x ->\n        @PrimitiveStableHitting.stable_hitting MF FI FO\n          (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n          (UnifiedFrontier.stable_head E MN R)\n          (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n          (@PTreeDefinition.observe E MN R (k x)) (front x)) ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X mu k\n            |}) (@Mixed.mixed_bind MN MF MX X (UnifiedFrontier.stable_head E MN R) mu front)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PEutt.stable_hitting_ret",
+      "type": "@PEutt.stable_hitting_ret\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (r : R),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.RetF E MN R (PTreeDefinition.ptree E MN R) r)\n         (@Measure.sem_ret MF FI (UnifiedFrontier.stable_head E MN R)\n            (@UnifiedFrontier.FHRet E MN R r))",
+      "assumptions": "Closed under the global context"
+    },
+    {
       "name": "PTree.Eq.PEutt.stable_hitting_tau_iff",
       "type": "@PEutt.stable_hitting_tau_iff\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (t : PTreeDefinition.ptree E MN R)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) t) out <->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R t) out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PEutt.stable_hitting_vis",
+      "type": "@PEutt.stable_hitting_vis\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R X : Type) (e : E X) (k : X -> PTreeDefinition.ptree E MN R),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.VisF E MN R (PTreeDefinition.ptree E MN R) X e k)\n         (@Measure.sem_ret MF FI (UnifiedFrontier.stable_head E MN R)\n            (@UnifiedFrontier.FHVis E MN R X e k))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PStrong.pstrong",
+      "type": "@PStrong.pstrong\n     : forall (E M : Type -> Type) (MI : Measure.SemanticMeasure M),\n       @Measure.SemanticMeasureCoreLaws M MI ->\n       forall R1 R2 : Type,\n       (R1 -> R2 -> Prop) -> PTreeDefinition.ptree E M R1 -> PTreeDefinition.ptree E M R2 -> Prop",
       "assumptions": "Closed under the global context"
     },
     {
@@ -1636,6 +1270,11 @@
     {
       "name": "PTree.Eq.PStrong.pstruct_pstrong_subrelation",
       "type": "@PStrong.pstruct_pstrong_subrelation\n     : forall (E M : Type -> Type) (MI : Measure.SemanticMeasure M)\n         (MC : @Measure.SemanticMeasureCoreLaws M MI) (R : Type),\n       @RelationClasses.subrelation (PTreeDefinition.ptree E M R)\n         (@PStruct.pstruct E M R R (@eq R)) (@PStrong.pstrong E M MI MC R R (@eq R))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PStruct.pstruct",
+      "type": "@PStruct.pstruct\n     : forall (E M : Type -> Type) (R1 R2 : Type),\n       (R1 -> R2 -> Prop) -> PTreeDefinition.ptree E M R1 -> PTreeDefinition.ptree E M R2 -> Prop",
       "assumptions": "Closed under the global context"
     },
     {
@@ -1714,6 +1353,31 @@
       "assumptions": "Closed under the global context"
     },
     {
+      "name": "PTree.Eq.PrimitiveStableHitting.stable_hitting",
+      "type": "@PrimitiveStableHitting.stable_hitting\n     : forall (MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Omega.SemanticOmega MF FI ->\n       forall S A : Type, (S -> MF (PrimitiveStableHitting.stable_target S A)) -> S -> MF A -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PrimitiveStableHitting.stable_hitting_exists",
+      "type": "@PrimitiveStableHitting.stable_hitting_exists\n     : forall (MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (S A : Type) (kernel : S -> MF (PrimitiveStableHitting.stable_target S A))\n         (state : S),\n       exists out : MF A, @PrimitiveStableHitting.stable_hitting MF FI FO S A kernel state out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PrimitiveStableHitting.stable_hitting_unique",
+      "type": "@PrimitiveStableHitting.stable_hitting_unique\n     : forall (MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (S A : Type) (kernel : S -> MF (PrimitiveStableHitting.stable_target S A))\n         (state : S) (out1 out2 : MF A),\n       @PrimitiveStableHitting.stable_hitting MF FI FO S A kernel state out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO S A kernel state out2 ->\n       @Measure.sem_eq MF FI A out1 out2",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.ProbabilisticTrace.finite_interaction_pattern",
+      "type": "@ProbabilisticTrace.finite_interaction_pattern\n     : (Type -> Type) -> Type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.ProbabilisticTrace.finite_interaction_query",
+      "type": "@ProbabilisticTrace.finite_interaction_query\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI ->\n       forall R : Type,\n       @ProbabilisticTrace.finite_interaction_pattern E ->\n       PTreeDefinition.ptree E MN R -> MF bool -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
       "name": "PTree.Eq.ProbabilisticTrace.finite_interaction_query_exists",
       "type": "@ProbabilisticTrace.finite_interaction_query_exists\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       forall (R : Type) (tr : @ProbabilisticTrace.finite_interaction_pattern E)\n         (t : PTreeDefinition.ptree E MN R),\n       exists query : MF bool,\n         @ProbabilisticTrace.finite_interaction_query E MN MF FI MX FO R tr t query",
       "assumptions": "Axioms:\nClassicalEpsilon.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
@@ -1732,6 +1396,11 @@
       "name": "PTree.Eq.ProbabilisticTrace.finite_interaction_query_unique_up_to_coupling",
       "type": "@ProbabilisticTrace.finite_interaction_query_unique_up_to_coupling\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       @Coupling.SemanticMeasureCouplingAELaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (R : Type) (tr : @ProbabilisticTrace.finite_interaction_pattern E)\n         (t : PTreeDefinition.ptree E MN R) (query1 query2 : MF bool),\n       @ProbabilisticTrace.finite_interaction_query E MN MF FI MX FO R tr t query1 ->\n       @ProbabilisticTrace.finite_interaction_query E MN MF FI MX FO R tr t query2 ->\n       @Measure.sem_lift MF FI bool bool (@eq bool) query1 query2",
       "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.ProbabilisticTrace.finite_interaction_sem",
+      "type": "@ProbabilisticTrace.finite_interaction_sem\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       Mixed.MixedMeasure MN MF ->\n       @Omega.SemanticOmega MF FI ->\n       forall R : Type,\n       @ProbabilisticTrace.finite_interaction_pattern E -> PTreeDefinition.ptree E MN R -> MF bool",
+      "assumptions": "Axioms:\nClassicalEpsilon.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P"
     },
     {
       "name": "PTree.Eq.ProbabilisticTrace.finite_interaction_sem_coupled_to_query",
@@ -1764,6 +1433,96 @@
       "assumptions": "Closed under the global context"
     },
     {
+      "name": "PTree.Eq.StableHittingComputation.peutt_iff_hitting",
+      "type": "@StableHittingComputation.peutt_iff_hitting\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       forall (A B : Type) (RR : A -> B -> Prop) (t : PTreeDefinition.ptree E MN A)\n         (u : PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN MF FI FC MX FO A B RR t u <->\n       (exists\n          (out1 : MF (UnifiedFrontier.stable_head E MN A)) (out2 : MF\n                                                                     (UnifiedFrontier.stable_head E\n                                                                      MN B)),\n          @PrimitiveStableHitting.stable_hitting MF FI FO\n            (PTreeDefinition.ptreeF E MN A (PTreeDefinition.ptree E MN A))\n            (UnifiedFrontier.stable_head E MN A)\n            (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX A)\n            (@PTreeDefinition.observe E MN A t) out1 /\\\n          @PrimitiveStableHitting.stable_hitting MF FI FO\n            (PTreeDefinition.ptreeF E MN B (PTreeDefinition.ptree E MN B))\n            (UnifiedFrontier.stable_head E MN B)\n            (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX B)\n            (@PTreeDefinition.observe E MN B u) out2 /\\\n          @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN A)\n            (UnifiedFrontier.stable_head E MN B)\n            (@PEutt.ptree_stable_head_rel E MN A B RR\n               (@PEutt.peutt_state E MN MF FI FC MX FO A B RR)) out1 out2)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.StableHittingComputation.stable_hitting_prob_compute",
+      "type": "@StableHittingComputation.stable_hitting_prob_compute\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (R X : Type) (mu : MN X) (k : X -> PTreeDefinition.ptree E MN R)\n         (front : X -> MF (UnifiedFrontier.stable_head E MN R)) (Good : X -> Prop)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @Measure.sem_ae MN NI X mu Good ->\n       (forall x : X,\n        Good x ->\n        @PrimitiveStableHitting.stable_hitting MF FI FO\n          (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n          (UnifiedFrontier.stable_head E MN R)\n          (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n          (@PTreeDefinition.observe E MN R (k x)) (front x)) ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X mu k\n            |}) out ->\n       @Measure.sem_eq MF FI (UnifiedFrontier.stable_head E MN R) out\n         (@Mixed.mixed_bind MN MF MX X (UnifiedFrontier.stable_head E MN R) mu front)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.StableHittingComputation.stable_hitting_prob_decompose",
+      "type": "@StableHittingComputation.stable_hitting_prob_decompose\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall (R X : Type) (mu : MN X) (k : X -> PTreeDefinition.ptree E MN R)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X mu k\n            |}) out ->\n       exists front : X -> MF (UnifiedFrontier.stable_head E MN R),\n         (forall x : X,\n          @PrimitiveStableHitting.stable_hitting MF FI FO\n            (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n            (UnifiedFrontier.stable_head E MN R)\n            (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n            (@PTreeDefinition.observe E MN R (k x)) (front x)) /\\\n         @Measure.sem_eq MF FI (UnifiedFrontier.stable_head E MN R) out\n           (@Mixed.mixed_bind MN MF MX X (UnifiedFrontier.stable_head E MN R) mu front)",
+      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
+    },
+    {
+      "name": "PTree.Eq.StableHittingComputation.stable_hitting_prob_dirac",
+      "type": "@StableHittingComputation.stable_hitting_prob_dirac\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall R X : Type,\n       @Mixed.MixedMeasureUnitLaws MN MF NI FI MX ->\n       forall (x : X) (k : X -> PTreeDefinition.ptree E MN R)\n         (out1 out2 : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X\n                  (@Measure.sem_ret MN NI X x) k\n            |}) out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R (k x)) out2 ->\n       @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN R)\n         (UnifiedFrontier.stable_head E MN R) (@eq (UnifiedFrontier.stable_head E MN R)) out1 out2",
+      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
+    },
+    {
+      "name": "PTree.Eq.StableHittingComputation.stable_hitting_prob_flatten",
+      "type": "@StableHittingComputation.stable_hitting_prob_flatten\n     : forall (E MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall MX : Mixed.MixedMeasure MN MF,\n       @Mixed.MixedMeasureLaws MN MF NI FI MX ->\n       forall FO : @Omega.SemanticOmega MF FI,\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Mixed.MixedMeasureOmegaLaws MN MF NI FI MX FO ->\n       forall R X Y : Type,\n       @Mixed.MixedMeasureNodeBindLaws MN MF NI FI MX ->\n       forall (mu : MN X) (h : X -> MN Y) (k : Y -> PTreeDefinition.ptree E MN R)\n         (out1 out2 : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) X mu\n                  (fun x : X =>\n                   {|\n                     PTreeDefinition._observe :=\n                       @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) Y (h x) k\n                   |})\n            |}) out1 ->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN R (PTreeDefinition.ptree E MN R) Y\n                  (@Measure.sem_bind MN NI X Y mu h) k\n            |}) out2 ->\n       @Measure.sem_lift MF FI (UnifiedFrontier.stable_head E MN R)\n         (UnifiedFrontier.stable_head E MN R) (@eq (UnifiedFrontier.stable_head E MN R)) out1 out2",
+      "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
+    },
+    {
+      "name": "PTree.Eq.StableHittingComputation.stable_hitting_ret_iff",
+      "type": "@StableHittingComputation.stable_hitting_ret_iff\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (r : R) (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.RetF E MN R (PTreeDefinition.ptree E MN R) r\n            |}) out <->\n       @Measure.sem_eq MF FI (UnifiedFrontier.stable_head E MN R) out\n         (@Measure.sem_ret MF FI (UnifiedFrontier.stable_head E MN R)\n            (@UnifiedFrontier.FHRet E MN R r))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.StableHittingComputation.stable_hitting_tau",
+      "type": "@StableHittingComputation.stable_hitting_tau\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (t : PTreeDefinition.ptree E MN R)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) t\n            |}) out <->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R t) out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.StableHittingComputation.stable_hitting_tau_iter",
+      "type": "@StableHittingComputation.stable_hitting_tau_iter\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R : Type) (n : nat) (t : PTreeDefinition.ptree E MN R)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            (@PeanoNat.Nat.iter n (PTreeDefinition.ptree E MN R)\n               (fun u : PTreeDefinition.ptree E MN R =>\n                {|\n                  PTreeDefinition._observe :=\n                    @PTreeDefinition.TauF E MN R (PTreeDefinition.ptree E MN R) u\n                |}) t)) out <->\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R t) out",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.StableHittingComputation.stable_hitting_vis_iff",
+      "type": "@StableHittingComputation.stable_hitting_vis_iff\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF),\n       @Measure.SemanticMeasureCoreLaws MF FI ->\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       forall (R X : Type) (e : E X) (k : X -> PTreeDefinition.ptree E MN R)\n         (out : MF (UnifiedFrontier.stable_head E MN R)),\n       @PrimitiveStableHitting.stable_hitting MF FI FO\n         (PTreeDefinition.ptreeF E MN R (PTreeDefinition.ptree E MN R))\n         (UnifiedFrontier.stable_head E MN R) (@PTreeKernel.ptree_primitive_kernel E MN MF FI MX R)\n         (@PTreeDefinition.observe E MN R\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.VisF E MN R (PTreeDefinition.ptree E MN R) X e k\n            |}) out <->\n       @Measure.sem_eq MF FI (UnifiedFrontier.stable_head E MN R) out\n         (@Measure.sem_ret MF FI (UnifiedFrontier.stable_head E MN R)\n            (@UnifiedFrontier.FHVis E MN R X e k))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.UnifiedFrontier.stable_head",
+      "type": "UnifiedFrontier.stable_head\n     : (Type -> Type) -> (Type -> Type) -> Type -> Type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.UnifiedFrontier.stable_head_rel",
+      "type": "@UnifiedFrontier.stable_head_rel\n     : forall (E MN : Type -> Type) (R1 R2 : Type),\n       (R1 -> R2 -> Prop) ->\n       (PTreeDefinition.ptree E MN R1 -> PTreeDefinition.ptree E MN R2 -> Prop) ->\n       UnifiedFrontier.stable_head E MN R1 -> UnifiedFrontier.stable_head E MN R2 -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.WellFormedness.probabilistic_ptree",
+      "type": "@WellFormedness.probabilistic_ptree\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M),\n       @Subprobability.SemanticSubprobability M SI ->\n       forall R : Type, PTreeDefinition.ptree E M R -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.WellFormedness.probabilistic_ptree_bind",
+      "type": "@WellFormedness.probabilistic_ptree_bind\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (T U : Type)\n         (t : PTreeDefinition.ptree E M T) (k : T -> PTreeDefinition.ptree E M U),\n       @WellFormedness.probabilistic_ptree E M SI SP T t ->\n       (forall x : T, @WellFormedness.probabilistic_ptree E M SI SP U (k x)) ->\n       @WellFormedness.probabilistic_ptree E M SI SP U (@PTreeDefinition.PTree.bind E M T U t k)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Eq.WellFormedness.probabilistic_ptree_iter",
+      "type": "@WellFormedness.probabilistic_ptree_iter\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (I R : Type)\n         (step : I -> PTreeDefinition.ptree E M (I + R)),\n       (forall i : I, @WellFormedness.probabilistic_ptree E M SI SP (I + R) (step i)) ->\n       forall i : I,\n       @WellFormedness.probabilistic_ptree E M SI SP R (@PTreeDefinition.PTree.iter E M R I step i)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Eq.WellFormedness.probabilistic_ptree_prob",
+      "type": "@WellFormedness.probabilistic_ptree_prob\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (R X : Type)\n         (mu : M X) (k : X -> PTreeDefinition.ptree E M R),\n       @Subprobability.sem_subprob M SI SP X mu ->\n       (forall x : X, @WellFormedness.probabilistic_ptree E M SI SP R (k x)) ->\n       @WellFormedness.probabilistic_ptree E M SI SP R\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E M R (PTreeDefinition.ptree E M R) X mu k\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.WellFormedness.probabilistic_ptree_ret",
+      "type": "@WellFormedness.probabilistic_ptree_ret\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (R : Type)\n         (r : R),\n       @WellFormedness.probabilistic_ptree E M SI SP R (@PTreeDefinition.PTree.ret E M R r)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.WellFormedness.probabilistic_ptree_tau",
+      "type": "@WellFormedness.probabilistic_ptree_tau\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (R : Type)\n         (t : PTreeDefinition.ptree E M R),\n       @WellFormedness.probabilistic_ptree E M SI SP R t ->\n       @WellFormedness.probabilistic_ptree E M SI SP R\n         {|\n           PTreeDefinition._observe := @PTreeDefinition.TauF E M R (PTreeDefinition.ptree E M R) t\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.WellFormedness.probabilistic_ptree_vis",
+      "type": "@WellFormedness.probabilistic_ptree_vis\n     : forall (E M : Type -> Type) (SI : Measure.SemanticMeasure M)\n         (SP : @Subprobability.SemanticSubprobability M SI) (R X : Type)\n         (e : E X) (k : X -> PTreeDefinition.ptree E M R),\n       (forall x : X, @WellFormedness.probabilistic_ptree E M SI SP R (k x)) ->\n       @WellFormedness.probabilistic_ptree E M SI SP R\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E M R (PTreeDefinition.ptree E M R) X e k\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
       "name": "PTree.Interp.Backend.SubEnumQ.subenumQ_atomic_handler_mdp",
       "type": "@SubEnumQ.subenumQ_atomic_handler_mdp\n     : forall (E : Type -> Type) (R : Type)\n         (handler : forall X : Type, E X -> PTreeDefinition.ptree E Representation.SubEnumQ X),\n       @Atomic.atomic_handler E Representation.SubEnumQ Measure.SubEnumQ_SemanticMeasure\n         Measure.SubEnumQ_SemanticOmega handler ->\n       @MDP.mdp_handler E E Representation.SubEnumQ Measure.SubEnumQ_SemanticMeasure\n         Measure.SubEnumQ_SemanticMeasureCoreLaws Measure.SubEnumQ_SemanticOmega handler R",
       "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
@@ -1780,7 +1539,7 @@
     },
     {
       "name": "PTree.Interp.Backend.SubEnumQ.subenumQ_mdp_state_interp_atomic",
-      "type": "@Backend.SubEnumQ.subenumQ_mdp_state_interp_atomic\n     : forall (E : Type -> Type) (R : Type)\n         (handler : forall X : Type, E X -> PTreeDefinition.ptree E Representation.SubEnumQ X),\n       @Atomic.atomic_handler E Representation.SubEnumQ Measure.SubEnumQ_SemanticMeasure\n         Measure.SubEnumQ_SemanticOmega handler ->\n       forall t : PTreeDefinition.ptree E Representation.SubEnumQ R,\n       @MDPFragment.mdp_state E Representation.SubEnumQ\n         (Definition.FreeOmega Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticMeasure Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega)\n         (@StructuralMeasure.FreeOmegaMixedMeasure Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticOmega Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega) R t ->\n       @MDPFragment.mdp_state E Representation.SubEnumQ\n         (Definition.FreeOmega Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticMeasure Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega)\n         (@StructuralMeasure.FreeOmegaMixedMeasure Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticOmega Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega) R\n         (@PTreeDefinition.PTree.interp E E Representation.SubEnumQ handler R t)",
+      "type": "@SubEnumQ.subenumQ_mdp_state_interp_atomic\n     : forall (E : Type -> Type) (R : Type)\n         (handler : forall X : Type, E X -> PTreeDefinition.ptree E Representation.SubEnumQ X),\n       @Atomic.atomic_handler E Representation.SubEnumQ Measure.SubEnumQ_SemanticMeasure\n         Measure.SubEnumQ_SemanticOmega handler ->\n       forall t : PTreeDefinition.ptree E Representation.SubEnumQ R,\n       @MDPFragment.mdp_state E Representation.SubEnumQ\n         (Definition.FreeOmega Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticMeasure Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega)\n         (@StructuralMeasure.FreeOmegaMixedMeasure Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticOmega Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega) R t ->\n       @MDPFragment.mdp_state E Representation.SubEnumQ\n         (Definition.FreeOmega Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticMeasure Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega)\n         (@StructuralMeasure.FreeOmegaMixedMeasure Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticOmega Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega) R\n         (@PTreeDefinition.PTree.interp E E Representation.SubEnumQ handler R t)",
       "assumptions": "Axioms:\nRelationalChoice.relational_choice :\n  forall (A B : Type) (R : A -> B -> Prop),\n  (forall x : A, exists y : B, R x y) ->\n  exists R' : A -> B -> Prop, @subrelation A B R' R /\\ (forall x : A, exists ! y : B, R' x y)\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nClassicalUniqueChoice.dependent_unique_choice :\n  forall (A : Type) (B : A -> Type) (R : forall x : A, B x -> Prop),\n  (forall x : A, exists ! y : B x, R x y) -> exists f : forall x : A, B x, forall x : A, R x (f x)"
     },
     {

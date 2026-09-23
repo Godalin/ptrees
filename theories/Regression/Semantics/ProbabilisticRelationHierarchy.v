@@ -7,7 +7,7 @@ Require Import RelationClasses.
 From Coq.Program Require Import Equality.
 
 From PTree.Core Require Import PTreeDefinition.
-From PTree.API Require Import EnumQ.
+From PTree.Eq.Backend Require Import EnumQ.
 Require Import PTree.Prob.Backend.EnumQ.Representation.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.

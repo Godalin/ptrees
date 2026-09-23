@@ -365,7 +365,7 @@
     },
     {
       "name": "PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior",
-      "type": "Direct.MathComp_CanonicalBehavior\n     : forall R : reals.Real.type, Behavior.CanonicalBehavior (Kernel.MathCompKernelMeasure R)",
+      "type": "Direct.MathComp_CanonicalBehavior\n     : forall R : reals.Real.type, Canonical.CanonicalBehavior (Kernel.MathCompKernelMeasure R)",
       "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
       "unsafe_hierarchy": [
         "Direct.MathComp_CanonicalBehavior"
@@ -374,7 +374,7 @@
     },
     {
       "name": "PTree.Regression.Backend.MathCompDirect.direct_canonical_profile",
-      "type": "MathCompDirect.direct_canonical_profile\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (F : Type -> Type) (A B : Type) (RR : A -> B -> Prop)\n         (t : PTreeDefinition.ptree F (Kernel.MathCompKernelMeasure R) A)\n         (u : PTreeDefinition.ptree F (Kernel.MathCompKernelMeasure R) B),\n       @Behavior.canonical_peutt F (Kernel.MathCompKernelMeasure R)\n         (Direct.MathComp_CanonicalBehavior R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G) A\n         B RR t u =\n       @PEutt.peutt F (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B RR t u",
+      "type": "MathCompDirect.direct_canonical_profile\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (F : Type -> Type) (A B : Type) (RR : A -> B -> Prop)\n         (t : PTreeDefinition.ptree F (Kernel.MathCompKernelMeasure R) A)\n         (u : PTreeDefinition.ptree F (Kernel.MathCompKernelMeasure R) B),\n       @Canonical.canonical_peutt F (Kernel.MathCompKernelMeasure R)\n         (Direct.MathComp_CanonicalBehavior R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G) A\n         B RR t u =\n       @PEutt.peutt F (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B RR t u",
       "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
       "unsafe_hierarchy": [
         "MathCompDirect.direct_canonical_profile"

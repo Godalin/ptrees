@@ -16,7 +16,7 @@ From PTree.Eq Require Import Shallow UnifiedFrontier PTreeKernel PEutt
   PrimitiveStableHitting StableHittingRelation.
 Require Import Lia.
 From Coq.Classes Require Morphisms.
-From PTree.API Require Import Behavior.
+From PTree.Eq Require Import Canonical.
 
 (** Only this existing unchecked assembly registers the direct route. No
     safe facade imports it; probability mathematics remains in Gate S. *)

@@ -245,8 +245,3 @@ Fixpoint burn (n : nat) {E M R} (t : ptree E M R) :=
     maintained coinductive relations: the auxiliary structural/strong
     proof relations where appropriate, and [peutt] for the
     public probabilistic behavioral equivalence. *)
-
-
-
-(** Weighted convenience programs [stuckE] and [stuckM] are available by
-    explicitly importing [PTree.API.Weighted]; they are not core syntax. *)

@@ -15,10 +15,10 @@ theorems are described in [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md).
 | `Prob/FreeOmega/Validation` | Native-parametric external bounded-test validation | May consume Domain and generic FreeOmega; no concrete backend |
 | `Prob/Backend/{Common,EnumQ,SubEnumQ,SubEnumR,MathComp}` | Arithmetic, native models and their specialized endpoints | Common has no native-carrier dependency; MathComp is independent of EnumQ/SubEnumQ |
 | `Prob/Domain` | Independent continuous expectations and standard measure correspondence | Domain and mathematical libraries only |
-| `Eq` | Stable hitting, `pstruct`, `pstrong`, canonical `peutt` | No Semantics/Interp/API dependency in Gate S; exact Gate M selector exception below |
-| `Semantics` | Raw/head transitions, comparison bisimulation and MDP fragment | No Interp or API dependency |
+| `Eq` | Stable hitting, `pstruct`, `pstrong`, canonical `peutt` and profile selection | No Semantics/Interp dependency |
+| `Semantics` | Raw/head transitions, comparison bisimulation and MDP fragment | No Interp dependency |
 | `Interp` | Structural and behavioral interpreter theory | May consume Eq and Semantics |
-| `API` | Curated endpoints and convenience programs | No bulk implementation export |
+| Top-level `PTree / Eq / PTreeFacts` | Program / relation / reasoning aggregates | Direct owner exports; no concrete backend or validating model |
 | `Examples` | Applications and program proofs | No Regression dependency |
 | `Regression` | Positive, negative, integration and capability tests | Not formal library dependencies |
 
@@ -35,15 +35,15 @@ are retained; no deletion follows merely from its name.
 
 ## Behavioral operation selection
 
-`API/Behavior.CanonicalBehavior MN` selects the complete operation profile
+`Eq/Canonical.CanonicalBehavior MN` selects the complete operation profile
 `(MF, FI, MX, FO)`, not just a frontier carrier. Its four fields contain no
 law capabilities and are not registered as capability instances. Law search
 then runs against the selected operations. There is no generic blanket
 `MN -> FreeOmega MN` registration.
 
-Concrete API adapters select observable FreeOmega for SubEnumQ, SubEnumR and
+Concrete `Eq/Backend` adapters select observable FreeOmega for SubEnumQ, SubEnumR and
 the still-maintained weighted EnumQ backend. The explicit builder lives in
-`API/BehaviorFreeOmega`; it is not an instance. Weighted EnumQ's route is not
+`Eq/FreeOmega/Canonical`; it is not an instance. Weighted EnumQ's route is not
 a subprobability-validity claim.
 
 Structural FreeOmega operations and laws remain mathematical constants, but
@@ -52,15 +52,15 @@ locally. `FreeOmegaMixedMeasure` remains a shared global operation because
 it selects neither structural nor quotient equality.
 
 The existing Gate M direct MathComp assembly selects the native self-frontier.
-There is exactly one architectural exception to Eq's no-API-import rule:
-the existing Gate M files may import `API/Behavior`. They may not import other
-API adapters through this exception. Safe modules still cannot depend on Gate
-M, directly or transitively; no unchecked file has been added.
+It imports `Eq/Canonical` through the ordinary Eq dependency direction;
+the former Eq-to-API exception has been deleted. Safe modules still cannot
+depend on Gate M, directly or transitively; no unchecked file has been added.
 
-This routing-foundation gate deliberately leaves raw `peutt`, public `≈ₚ`,
-and the public bind alias unchanged. `canonical_peutt` is the tested API hook;
-the notation/bind/client switch is a subsequent gate. See
-[canonical routing](CANONICAL_BEHAVIOR_ROUTING.md) for scope and checks.
+Raw `PEutt.peutt` remains generic. The public `≈ₚ` belongs to `PEuttNotations`
+in `Eq/Canonical` and selects the complete default profile. `PStructNotations`
+and `PStrongNotations` belong to their relation owners. The generic bind theorem
+is named `peutt_bind_cofinal`; only the unconditional observable FreeOmega
+corollary is named `peutt_bind`. See [public modules](PUBLIC_MODULES.md).
 
 ## Three layers of probability reasoning
 
@@ -133,15 +133,19 @@ not specify which bridge was proved.
 ## Program-facing versus expert imports
 
 ```coq
-From PTree Require Import PTree.     (* curated canonical reasoning API *)
+From PTree Require Import PTree.     (* syntax only *)
+From PTree Require Import Eq.        (* relations and notations *)
+From PTree Require Import PTreeFacts. (* usual reasoning theory *)
+From PTree.Eq.Backend Require Import SubEnumQ. (* optional default profile *)
 From PTree Require Import Semantics. (* curated comparison semantics *)
 ```
 
-The facades deliberately expose selected notation/aliases, rather than
-re-exporting approximation, scheduling, quotient implementation or concrete
-backends. `Core` does not expose probability interfaces. The canonical
-behavioral relation is `peutt`, with notation `≈ₚ` / `≈ₚ[RR]`; auxiliary
-structural relations are not competing public behavioral semantics.
+The three main entry points directly export their selected owning modules,
+not a parallel layer of theorem aliases. Helpers in an exported module are
+visible; that is intentional. No concrete backend, external validation or
+auxiliary Eq/Internal module enters those dependency closures. `PTree` alone
+does not load probability interfaces. `≈ₚ / ≈ₚ[RR]` denotes canonical behavior;
+`≡ₚ` and `≃ₚ` remain stronger proof relations, not competing weak semantics.
 
 Expert clients import actual owners. In particular, `Eq/PEutt` no longer
 forwards `Eq/StableHittingRelation`, and the three SubEnumQ FreeOmega
@@ -158,8 +162,8 @@ PTree. In particular, Common/DomainTransport and
 Common/CountableCoupling connect independent scalar transport to OmegaVal;
 they are not ordinary mainline Common dependencies.
 
-The transitive closures of Core/Eq/Semantics/Interp/API/Examples and the
-PTree/Semantics facades exclude all validation modules. Explicit external
+The transitive closures of Core/Eq/Semantics/Interp/Examples and the
+public entry points exclude all validation modules. Explicit external
 adapters such as `Eq/Backend/StableHittingDomainSubEnumQ` are validation owners,
 not reasoning roots, despite their physical namespace.
 The model validates reasoning infrastructure;
@@ -200,7 +204,7 @@ python3 tools/audit_api.py --surface-only --kernel
 ```
 
 `CONTRACTS.json` stores full compiled types and per-endpoint `Print Assumptions`
-for 306 public/helper endpoints (including the original 25 capability probes)
+for 266 distinct owner/helper endpoints (including the original 25 capability probes)
 and 199 soundness endpoints. It is not a list of class counts or a claim of
 mathematical minimality. `CONTRACT_POLICY.json` fixes existing class bodies,
 curated facade text and named regression coverage. The audits are read-only;

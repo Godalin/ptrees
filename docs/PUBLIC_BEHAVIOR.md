@@ -1,5 +1,8 @@
 # Public canonical behavioral notation and bind
 
+Historical accepted checkpoint: `33cb5d8`. For the current module ownership,
+see [PUBLIC_MODULES.md](PUBLIC_MODULES.md); this report records the prior gate.
+
 Baseline: accepted routing foundation `a95734e`. This gate changes the public
 notation/API, not the mathematical relations or backend capabilities. CI is
 intentionally out of scope.

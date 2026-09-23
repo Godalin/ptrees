@@ -390,3 +390,10 @@ Proof.
 Qed.
 
 End PStrongBind.
+
+Module PStrongNotations.
+Notation "t ≃ₚ[ RR ] u" := (pstrong RR t u)
+  (at level 70, RR at next level, no associativity) : type_scope.
+Notation "t ≃ₚ u" := (pstrong eq t u)
+  (at level 70, no associativity) : type_scope.
+End PStrongNotations.

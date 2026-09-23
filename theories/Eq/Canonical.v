@@ -1,4 +1,4 @@
-(** Role: API-only selection of existing behavioral operations. No laws are
+(** Role: Selection of the default interpretation of the raw relation. No laws are
     bundled here; raw [PEutt.peutt] remains parameterized by arbitrary MN/MF.
     Fields are deliberately not registered as capability instances. *)
 Set Universe Polymorphism.
@@ -25,3 +25,10 @@ Definition canonical_peutt {E MN} `{CB : CanonicalBehavior MN}
     (t : ptree E MN A) (u : ptree E MN B) : Prop :=
   @PEutt.peutt E MN behavior_frontier behavior_measure FC
     behavior_mixed behavior_omega A B RR t u.
+
+Module PEuttNotations.
+Notation "t ≈ₚ[ RR ] u" := (canonical_peutt RR t u)
+  (at level 70, RR at next level, no associativity) : type_scope.
+Notation "t ≈ₚ u" := (canonical_peutt eq t u)
+  (at level 70, no associativity) : type_scope.
+End PEuttNotations.
