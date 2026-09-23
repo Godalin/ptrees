@@ -1233,6 +1233,20 @@
       "retry_source_weak_rewrite",
       "state_update_is_not_reordered",
       "real_state_preservation"
+    ],
+    "theories/Regression/Semantics/StandardEffects.v": [
+      "reader_heterogeneous",
+      "writer_heterogeneous",
+      "exception_heterogeneous",
+      "reader_native_probability",
+      "writer_chronological_order",
+      "writer_probabilistic_other_branch",
+      "exception_is_a_returned_error",
+      "exception_success_branch",
+      "missing_mass_is_not_an_exception",
+      "reader_forwards_event",
+      "writer_forwards_event",
+      "infinite_exception_weak_rewrite"
     ]
   }
 }

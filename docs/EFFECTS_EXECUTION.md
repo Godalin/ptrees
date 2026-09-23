@@ -15,6 +15,11 @@ arbitrary heterogeneous `run_state` peutt preservation, including local
 setoid rewriting. Full StateT/fold commutation and general sampler
 distribution correctness remain open.
 
+[Standard effects](STANDARD_EFFECTS.md) now add Reader, Writer and Exception
+clients using ITree's event definitions. Reader/Writer preservation composes
+the existing handler/State results; early exceptions are explicit returned
+errors, proved by stable-head projection rather than a void-returning handler.
+
 ## Implemented chain
 
 ```
