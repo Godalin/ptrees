@@ -1247,6 +1247,13 @@
       "reader_forwards_event",
       "writer_forwards_event",
       "infinite_exception_weak_rewrite"
+    ],
+    "theories/Regression/Semantics/StateFold.v": [
+      "state_fold_commutes",
+      "sample_keeps_separate_algebra",
+      "state_get_fold",
+      "unbounded_counter_fold_agrees",
+      "bare_iterator_is_not_uniform"
     ]
   }
 }

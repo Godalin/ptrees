@@ -12,8 +12,9 @@ machine and checked finite/limit scheduling. It proves heterogeneous peutt
 preservation for arbitrary handlers under the existing relational-lub profile.
 The [State-indexed follow-up](STATE_PRESERVATION.md) separately proves
 arbitrary heterogeneous `run_state` peutt preservation, including local
-setoid rewriting. Full StateT/fold commutation and general sampler
-distribution correctness remain open.
+setoid rewriting. [StateT/fold commutation](STATE_FOLD.md) is now proved
+from ordinary monad laws and pure-map iteration uniformity, with ITree as
+a checked target model. General sampler distribution correctness remains open.
 
 [Standard effects](STANDARD_EFFECTS.md) now add Reader, Writer and Exception
 clients using ITree's event definitions. Reader/Writer preservation composes
@@ -67,7 +68,9 @@ Probability is never encoded as a visible event. `Interp/StateFold.v`
 instantiates these algebras in the existing ITree `Monads.stateT`, with
 Get/Put, forwarding, and state-preserving native sampling. The local
 equations are definitional; Monad/MonadIter operations alone do not prove
-fold laws or full State/fold commutation.
+fold laws or full State/fold commutation. `StateFoldFacts.v` now supplies
+that theorem under explicit iteration uniformity; `Execution/ITreeFold.v`
+proves the required law for ITree and the separate Vis/Prob fold equations.
 
 ## Finite execution contract
 

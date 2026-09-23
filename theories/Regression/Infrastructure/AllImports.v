@@ -1,6 +1,7 @@
 (** Gate S integration regression: load every normally checked module in one universe context.
     Not a facade or an ordinary theorem client. *)
 Require PTree.Core.Fold.
+Require PTree.Core.IterationLaws.
 Require PTree.Core.PTreeDefinition.
 Require PTree.Core.Utils.
 Require PTree.Eq.
@@ -80,6 +81,7 @@ Require PTree.Examples.MixedHeadProtocol.
 Require PTree.Examples.RandomWalk.
 Require PTree.Examples.StateCounter.
 Require PTree.Execution.Backend.SubEnumQ.
+Require PTree.Execution.ITreeFold.
 Require PTree.Execution.Runner.
 Require PTree.Interp.Backend.SubEnumQ.
 Require PTree.Interp.Exception.
@@ -104,6 +106,7 @@ Require PTree.Interp.StandardFacts.
 Require PTree.Interp.State.
 Require PTree.Interp.StateFacts.
 Require PTree.Interp.StateFold.
+Require PTree.Interp.StateFoldFacts.
 Require PTree.Interp.StateIter.
 Require PTree.Interp.StateMachine.
 Require PTree.Interp.StateMachineScheduling.
@@ -338,6 +341,7 @@ Require PTree.Regression.Semantics.PublicSemanticFacade.
 Require PTree.Regression.Semantics.RelationalConsumers.
 Require PTree.Regression.Semantics.StableHittingComputation.
 Require PTree.Regression.Semantics.StandardEffects.
+Require PTree.Regression.Semantics.StateFold.
 Require PTree.Regression.Semantics.StatePreservation.
 Require PTree.Regression.Semantics.TreeTransition.
 Require PTree.Regression.Semantics.TreeTransitionBisim.

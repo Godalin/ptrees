@@ -1,0 +1,86 @@
+{
+  "baseline": "1cca4ca",
+  "scope": "Pure iteration uniformity, generic StateT commutation, ITree realization; not sampling correctness",
+  "endpoints": [
+    {
+      "name": "PTree.Core.IterationLaws.iteration_map",
+      "type": "@IterationLaws.iteration_map\n     : forall I J A : Type, (I -> J) -> I + A -> J + A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.IterationLaws.iteration_uniform",
+      "type": "@IterationLaws.iteration_uniform\n     : forall T : Type -> Type, Monad.Monad T -> Basics.MonadIter T -> Monad.Eq1 T -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFoldFacts.fold_state_as_iter",
+      "type": "@StateFoldFacts.fold_state_as_iter\n     : forall (S : Type) (E MN T : Type -> Type) (MT : Monad.Monad T) (IT : Basics.MonadIter T)\n         (handle : forall X : Type, E X -> T X) (sample : forall X : Type, MN X -> T X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s : S),\n       @StateFold.fold_state S E MN T MT IT handle sample A t s =\n       @Basics.iter T IT (S * A) (S * PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (@StateFoldFacts.state_fold_step S E MN T MT handle sample A) (\n         s, t)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFoldFacts.state_fold_square",
+      "type": "@StateFoldFacts.state_fold_square\n     : forall (S : Type) (E MN T : Type -> Type) (MT : Monad.Monad T) (QT : Monad.Eq1 T),\n       @Monad.Eq1Equivalence T MT QT ->\n       @Monad.MonadLawsE T QT MT ->\n       forall (handle : forall X : Type, E X -> T X) (sample : forall X : Type, MN X -> T X)\n         (A : Type) (st : S * PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A),\n       @Monad.eq1 T QT (PTreeDefinition.ptree E MN (S * A) + S * A)\n         (@Monad.bind T MT (S * PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A + S * A)\n            (PTreeDefinition.ptree E MN (S * A) + S * A)\n            (@StateFoldFacts.state_fold_step S E MN T MT handle sample A st)\n            (fun v : S * PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A + S * A =>\n             @Monad.ret T MT (PTreeDefinition.ptree E MN (S * A) + S * A)\n               (@IterationLaws.iteration_map\n                  (S * PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n                  (PTreeDefinition.ptree E MN (S * A)) (S * A)\n                  (fun st0 : S * PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A =>\n                   @State.run_state S E MN A\n                     (@snd S (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) st0)\n                     (@fst S (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) st0)) v)))\n         (@Fold.fold_step E MN T MT handle sample (S * A)\n            (@State.run_state S E MN A\n               (@snd S (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) st)\n               (@fst S (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) st)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.StateFoldFacts.fold_run_state",
+      "type": "@StateFoldFacts.fold_run_state\n     : forall (S : Type) (E MN T : Type -> Type) (MT : Monad.Monad T) (IT : Basics.MonadIter T)\n         (QT : Monad.Eq1 T),\n       @Monad.Eq1Equivalence T MT QT ->\n       @Monad.MonadLawsE T QT MT ->\n       forall (handle : forall X : Type, E X -> T X) (sample : forall X : Type, MN X -> T X),\n       @IterationLaws.iteration_uniform T MT IT QT ->\n       forall (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) (s : S),\n       @Monad.eq1 T QT (S * A) (@StateFold.fold_state S E MN T MT IT handle sample A t s)\n         (@Fold.fold E MN T MT IT handle sample (S * A) (@State.run_state S E MN A t s))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.ITreeFold.itree_iteration_uniform",
+      "type": "@ITreeFold.itree_iteration_uniform\n     : forall E : Type -> Type,\n       @IterationLaws.iteration_uniform (ITreeDefinition.itree E) (@ITreeDefinition.Monad_itree E)\n         (@ITreeDefinition.MonadIter_itree E) (@ITreeMonad.Eq1_ITree E)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.ITreeFold.itree_fold_unfold",
+      "type": "@ITreeFold.itree_fold_unfold\n     : forall (E MN F : Type -> Type) (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree E MN A),\n       @Eqit.eutt F A A (@eq A)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A t)\n         (@ITreeDefinition.ITree.bind F (PTreeDefinition.ptree E MN A + A) A\n            (@Fold.fold_step E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F) handle\n               sample A t)\n            (fun v : PTreeDefinition.ptree E MN A + A =>\n             match v with\n             | @inl _ _ u =>\n                 @Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n                   (@ITreeDefinition.MonadIter_itree F) handle sample A u\n             | @inr _ _ a =>\n                 {|\n                   ITreeDefinition._observe :=\n                     @ITreeDefinition.RetF F A (ITreeDefinition.itree F A) a\n                 |}\n             end))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.ITreeFold.itree_fold_ret",
+      "type": "@ITreeFold.itree_fold_ret\n     : forall (E MN F : Type -> Type) (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (a : A),\n       @Eqit.eutt F A A (@eq A)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.RetF E MN A (PTreeDefinition.ptree E MN A) a\n            |})\n         {| ITreeDefinition._observe := @ITreeDefinition.RetF F A (ITreeDefinition.itree F A) a |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.ITreeFold.itree_fold_tau",
+      "type": "@ITreeFold.itree_fold_tau\n     : forall (E MN F : Type -> Type) (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree E MN A),\n       @Eqit.eutt F A A (@eq A)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.TauF E MN A (PTreeDefinition.ptree E MN A) t\n            |})\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A t)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.ITreeFold.itree_fold_vis",
+      "type": "@ITreeFold.itree_fold_vis\n     : forall (E MN F : Type -> Type) (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A X : Type) (e : E X) (k : X -> PTreeDefinition.ptree E MN A),\n       @Eqit.eutt F A A (@eq A)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.VisF E MN A (PTreeDefinition.ptree E MN A) X e k\n            |})\n         (@ITreeDefinition.ITree.bind F X A (handle X e)\n            (fun x : X =>\n             @Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n               (@ITreeDefinition.MonadIter_itree F) handle sample A (k x)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.ITreeFold.itree_fold_prob",
+      "type": "@ITreeFold.itree_fold_prob\n     : forall (E MN F : Type -> Type) (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A X : Type) (mu : MN X) (k : X -> PTreeDefinition.ptree E MN A),\n       @Eqit.eutt F A A (@eq A)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN A (PTreeDefinition.ptree E MN A) X mu k\n            |})\n         (@ITreeDefinition.ITree.bind F X A (sample X mu)\n            (fun x : X =>\n             @Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n               (@ITreeDefinition.MonadIter_itree F) handle sample A (k x)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.StateFold.state_fold_commutes",
+      "type": "@StateFold.state_fold_commutes\n     : forall (S : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s : S),\n       @Eqit.eutt F (S * A) (S * A) (@eq (S * A))\n         (@StateFold.fold_state S E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A t s)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample (S * A)\n            (@State.run_state S E MN A t s))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.StateFold.sample_keeps_separate_algebra",
+      "type": "@StateFold.sample_keeps_separate_algebra\n     : forall (E MN F : Type -> Type) (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A X : Type) (mu : MN X) (k : X -> PTreeDefinition.ptree E MN A),\n       @Eqit.eutt F A A (@eq A)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN A (PTreeDefinition.ptree E MN A) X mu k\n            |})\n         (@ITreeDefinition.ITree.bind F X A (sample X mu)\n            (fun x : X =>\n             @Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n               (@ITreeDefinition.MonadIter_itree F) handle sample A (k x)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.StateFold.state_get_fold",
+      "type": "@StateFold.state_get_fold\n     : forall (S : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (k : S -> PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s : S),\n       @Eqit.eutt F (S * A) (S * A) (@eq (S * A))\n         (@StateFold.fold_state S E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.VisF (Sum.sum1 (State.stateE S) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) S\n                  (@Sum.inl1 (State.stateE S) E S (State.Get S)) k\n            |} s)\n         (@StateFold.fold_state S E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A (k s) s)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.StateFold.unbounded_counter_fold_agrees",
+      "type": "@StateFold.unbounded_counter_fold_agrees\n     : forall (F : Type -> Type)\n         (sample : forall X : Type, Representation.SubEnumQ X -> ITreeDefinition.itree F X)\n         (s : nat),\n       @Eqit.eutt F (nat * unit) (nat * unit) (@eq (nat * unit))\n         (@StateFold.fold_state nat Sum.void1 Representation.SubEnumQ (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F)\n            (@StateFold.no_visible_event F) sample unit StateCounter.count_until_success s)\n         (@Fold.fold Sum.void1 Representation.SubEnumQ (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F)\n            (@StateFold.no_visible_event F) sample (nat * unit)\n            (@State.run_state nat Sum.void1 Representation.SubEnumQ unit\n               StateCounter.count_until_success s))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.StateFold.bare_iterator_is_not_uniform",
+      "type": "StateFold.bare_iterator_is_not_uniform\n     : ~\n       @IterationLaws.iteration_uniform option StateFold.option_ops StateFold.nonuniform_iter\n         StateFold.option_observation",
+      "assumptions": "Axioms:\nDescription.constructive_definite_description :\n  forall (A : Type) (P : A -> Prop), (exists ! x : A, P x) -> {x : A | P x}\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P"
+    }
+  ]
+}
