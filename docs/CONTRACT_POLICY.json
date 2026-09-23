@@ -1221,6 +1221,18 @@
       "eliminating_setoid_rewrite",
       "partial_mixed_handler",
       "real_arbitrary_handler"
+    ],
+    "theories/Regression/Semantics/StatePreservation.v": [
+      "weak_source_preserved",
+      "actual_state_setoid_rewrite",
+      "heterogeneous_state_result",
+      "get_is_eliminated",
+      "put_is_eliminated",
+      "state_bind_algebra",
+      "state_iter_algebra",
+      "retry_source_weak_rewrite",
+      "state_update_is_not_reordered",
+      "real_state_preservation"
     ]
   }
 }

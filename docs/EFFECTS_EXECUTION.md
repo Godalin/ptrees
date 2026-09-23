@@ -10,8 +10,10 @@ The subsequent [arbitrary-handler increment](UNRESTRICTED_INTERP.md) closes
 the fixed-handler eliminating/mixed fusion obligation, using a two-phase
 machine and checked finite/limit scheduling. It proves heterogeneous peutt
 preservation for arbitrary handlers under the existing relational-lub profile.
-This does not yet imply the state-indexed `run_state` peutt theorem, full
-StateT/fold commutation, or general sampler distribution correctness.
+The [State-indexed follow-up](STATE_PRESERVATION.md) separately proves
+arbitrary heterogeneous `run_state` peutt preservation, including local
+setoid rewriting. Full StateT/fold commutation and general sampler
+distribution correctness remain open.
 
 ## Implemented chain
 

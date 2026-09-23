@@ -87,6 +87,7 @@ Require PTree.Interp.FreeOmega.Base.
 Require PTree.Interp.FreeOmega.Cofinality.
 Require PTree.Interp.FreeOmega.Guarded.
 Require PTree.Interp.FreeOmega.MDP.
+Require PTree.Interp.FreeOmega.State.
 Require PTree.Interp.FreeOmega.Translate.
 Require PTree.Interp.FreeOmega.Unrestricted.
 Require PTree.Interp.Guarded.
@@ -100,6 +101,9 @@ Require PTree.Interp.State.
 Require PTree.Interp.StateFacts.
 Require PTree.Interp.StateFold.
 Require PTree.Interp.StateIter.
+Require PTree.Interp.StateMachine.
+Require PTree.Interp.StateMachineScheduling.
+Require PTree.Interp.StatePreservation.
 Require PTree.Interp.StateStrong.
 Require PTree.Interp.Structural.
 Require PTree.Interp.Unrestricted.
@@ -328,6 +332,7 @@ Require PTree.Regression.Semantics.ProbabilisticRelationHierarchy.
 Require PTree.Regression.Semantics.PublicSemanticFacade.
 Require PTree.Regression.Semantics.RelationalConsumers.
 Require PTree.Regression.Semantics.StableHittingComputation.
+Require PTree.Regression.Semantics.StatePreservation.
 Require PTree.Regression.Semantics.TreeTransition.
 Require PTree.Regression.Semantics.TreeTransitionBisim.
 Require PTree.Regression.Semantics.TreeTransitionSoundness.

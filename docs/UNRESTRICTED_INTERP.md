@@ -1,6 +1,8 @@
 # Arbitrary handler preservation
 
 Baseline: `525a57fc6e79e0e73e7a70ae98e77946af6371c4`.
+The subsequent [State-indexed follow-up](STATE_PRESERVATION.md) closes the
+State preservation item recorded as open at this checkpoint.
 This is the eliminating/mixed-handler foundation for the effects/execution
 roadmap. It does not change existing relations, canonical routing, probability
 classes, the guarded theorem, State implementation, or MathComp trust boundary.
