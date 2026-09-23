@@ -4,8 +4,12 @@ Baseline: `6f79c197`. This is additive probability mathematics, not another
 architecture migration. Existing interfaces, routing, FreeOmega relations,
 MathComp implementations and PTree proofs are unchanged.
 
-**Status: the countably supported external-measure case is proved. The
-unrestricted native MathComp case and generic structural bridges remain open.**
+**At this increment: the countably supported external-measure case is proved;
+the unrestricted native MathComp case remains open.** The subsequent
+[generic consumer extraction](GENERIC_RELATIONAL_CONSUMERS.md) proves the
+structural bridges with an explicit relational-limit premise, discharged for
+FreeOmega but not yet for unrestricted native MathComp. The proof and
+validation record below describes the original additive increment.
 
 ## 1. Countable support suffices for arbitrary relations
 

@@ -56,6 +56,8 @@ Require PTree.Eq.PStruct.
 Require PTree.Eq.PTreeKernel.
 Require PTree.Eq.PrimitiveStableHitting.
 Require PTree.Eq.ProbabilisticTrace.
+Require PTree.Eq.Relation.
+Require PTree.Eq.RelationalHitting.
 Require PTree.Eq.Shallow.
 Require PTree.Eq.StableHittingComputation.
 Require PTree.Eq.StableHittingRelation.
@@ -141,6 +143,7 @@ Require PTree.Prob.Backend.MathComp.Measure.
 Require PTree.Prob.Backend.MathComp.NativeLaws.
 Require PTree.Prob.Backend.MathComp.OmegaLaws.
 Require PTree.Prob.Backend.MathComp.OrderLaws.
+Require PTree.Prob.Backend.MathComp.RelationalClosure.
 Require PTree.Prob.Backend.MathComp.Retry.
 Require PTree.Prob.Backend.SubEnumQ.Domain.
 Require PTree.Prob.Backend.SubEnumQ.Expectation.
@@ -214,6 +217,7 @@ Require PTree.Prob.Interface.Iteration.
 Require PTree.Prob.Interface.Measure.
 Require PTree.Prob.Interface.Mixed.
 Require PTree.Prob.Interface.Omega.
+Require PTree.Prob.Interface.RelationalClosure.
 Require PTree.Prob.Interface.RelationalLimit.
 Require PTree.Prob.Interface.SemanticCoupling.
 Require PTree.Prob.Interface.Subprobability.
@@ -305,6 +309,7 @@ Require PTree.Regression.Semantics.OperationalPTSExamples.
 Require PTree.Regression.Semantics.PEuttAlgebra.
 Require PTree.Regression.Semantics.ProbabilisticRelationHierarchy.
 Require PTree.Regression.Semantics.PublicSemanticFacade.
+Require PTree.Regression.Semantics.RelationalConsumers.
 Require PTree.Regression.Semantics.StableHittingComputation.
 Require PTree.Regression.Semantics.TreeTransition.
 Require PTree.Regression.Semantics.TreeTransitionBisim.

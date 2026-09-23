@@ -2,9 +2,9 @@
     than ordinary equality-based lub properness. It is derived from qlift,
     not assumed by the generic probability interfaces. *)
 Set Universe Polymorphism.
-From PTree.Prob.Interface Require Import Measure Omega.
+From PTree.Prob.Interface Require Import Measure Omega Mixed RelationalClosure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Quotient
-  PTree.Prob.FreeOmega.Measure.
+  PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.StructuralMeasure.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -29,5 +29,23 @@ Proof.
   - eapply (sem_lift_proper_r (SI := FI)) with (nu := FOLub right).
     + apply sem_eq_sym. exact Hright.
     + apply FOQLLub. exact Hrel.
+Qed.
+
+(** These four certificates do not require native AELift: the relational
+    constructors themselves are weaker than the full bind-law bundles. *)
+Theorem free_omega_relational_bind : relational_bind FI.
+Proof. intros A B C D R T mu nu k h Hmu Hk. eapply FOQLBind; eassumption. Qed.
+
+Theorem free_omega_relational_mixed_bind :
+  relational_mixed_bind NI FI (FreeOmegaMixedMeasure (MN := MN)).
+Proof. intros A B C D R T mu nu k h Hmu Hk. eapply FOQLSample; eassumption. Qed.
+
+Theorem free_omega_relational_zero : relational_zero FO.
+Proof. intros A B R. apply FOQLStructural. constructor. Qed.
+
+Theorem free_omega_relational_lub : relational_lub FO.
+Proof.
+  intros A B R c d mu nu Hc Hd Hmu Hnu Hrel.
+  eapply free_omega_lift_lub; eassumption.
 Qed.
 End RelationalLimit.

@@ -1,3 +1,4 @@
+From PTree.Eq Require Import Relation.
 From PTree.Eq Require Import StableHittingRelation.
 From PTree.Prob.FreeOmega Require Import RelationalLimit.
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
@@ -123,32 +124,9 @@ Theorem peutt_of_pstruct {A B}
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A B RR t1 t2.
 Proof.
-  intro Hstruct. eapply peutt_coinduction with
-    (sim := pstruct_state RR).
-  - intros s1 s2 [u1 [u2 [-> [-> Hs]]]].
-    destruct (stable_hitting_exists
-      (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)
-      (@ptree_primitive_kernel E MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasure A) (observe u1)) as [out1 Hout1].
-    destruct (stable_hitting_exists
-      (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)
-      (@ptree_primitive_kernel E MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasure B) (observe u2)) as [out2 Hout2].
-    eapply stable_hitting_match_of_hitting_lift;
-      [exact Hout1|exact Hout2|].
-    eapply FOQLMono.
-    + eapply free_omega_lift_lub; [exact Hout1|exact Hout2|].
-      intro fuel. apply FOQLStructural.
-      exact (ptree_hitting_pstruct (RR := RR) fuel Hs).
-    + intros h1 h2 Hhead. dependent destruction Hhead.
-      * constructor. exact H.
-      * constructor. intro x. exists (k1 x), (k2 x).
-        repeat split; try reflexivity. exact (H x).
-  - exists t1, t2. repeat split; try reflexivity. exact Hstruct.
+  apply (Relation.peutt_of_pstruct
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 (** Strong lockstep coupling is also sound for the canonical weak endpoint.
@@ -210,32 +188,9 @@ Theorem peutt_of_pstrong {A B}
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A B RR t1 t2.
 Proof.
-  intro Hstrong. eapply peutt_coinduction with
-    (sim := pstrong_state RR).
-  - intros s1 s2 [u1 [u2 [-> [-> Hs]]]].
-    destruct (stable_hitting_exists
-      (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)
-      (@ptree_primitive_kernel E MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasure A) (observe u1)) as [out1 Hout1].
-    destruct (stable_hitting_exists
-      (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)
-      (@ptree_primitive_kernel E MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaMixedMeasure B) (observe u2)) as [out2 Hout2].
-    eapply stable_hitting_match_of_hitting_lift;
-      [exact Hout1|exact Hout2|].
-    eapply FOQLMono.
-    + eapply free_omega_lift_lub; [exact Hout1|exact Hout2|].
-      intro fuel. apply FOQLStructural.
-      exact (ptree_hitting_pstrong (RR := RR) fuel Hs).
-    + intros h1 h2 Hhead. dependent destruction Hhead.
-      * constructor. exact H.
-      * constructor. intro x. exists (k1 x), (k2 x).
-        repeat split; try reflexivity. exact (H x).
-  - exists t1, t2. repeat split; try reflexivity. exact Hstrong.
+  apply (Relation.peutt_of_pstrong
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 End FreeOmegaRelation.

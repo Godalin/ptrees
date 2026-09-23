@@ -1174,6 +1174,12 @@
     "theories/Regression/Semantics/GenericConsumers.v": [
       "free_omega_eventful_iter",
       "real_guarded_interp"
+    ],
+    "theories/Regression/Semantics/RelationalConsumers.v": [
+      "completion_strong",
+      "completion_assoc",
+      "rational_eventful_assoc",
+      "real_eventful_assoc"
     ]
   }
 }

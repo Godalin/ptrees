@@ -13,8 +13,14 @@ Relational omega limits now have a proved external countable-support theorem
 for arbitrary relations, and a generic sufficient theorem for increasing
 joint chains, also instantiated by normally checked native MathComp. A finite
 counterexample proves that increasing marginals do not guarantee an increasing
-joint selection. Unrestricted MathComp relational limits and generic structural
-bridges remain open; see [exact scope and proofs](docs/RELATIONAL_LIMITS.md).
+joint selection; see [exact scope and proofs](docs/RELATIONAL_LIMITS.md).
+Structural bridges, elementary algebra and structural iteration now have
+generic proofs using explicit operation-level relational closure certificates.
+FreeOmega proves all four certificates without strengthening its old native
+profile. Native MathComp proves the finite-operation certificates, but its
+unrestricted relational-lub theorem remains open; its complete structural
+clients are explicitly conditional on that premise. See
+[generic relational consumers](docs/GENERIC_RELATIONAL_CONSUMERS.md).
 
 Direct MathComp is now an explicitly universe-unchecked, isolated Gate M
 backend (`MN = MF = MathCompKernelMeasure R`), not a third safe backend.

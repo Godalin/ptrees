@@ -41,6 +41,8 @@ def previous_sources(sources):
     Unknown modules, changes to old proofs, and duplicate imports remain visible.
     This increment has its own source/compiled audit; the old gate is not relaxed.
     """
+    from audit_relational_consumers import previous_sources as consumer_sources
+    sources = consumer_sources(sources)
     result = {p: s for p, s in sources.items() if p not in NEW}
     for line in IMPORTS:
         assert result[ALL].splitlines().count(line) == 1, 'Missing/duplicate new import: ' + line
@@ -49,6 +51,8 @@ def previous_sources(sources):
 
 
 def check_source(sources):
+    from audit_relational_consumers import previous_sources as consumer_sources
+    sources = consumer_sources(sources)
     old = {p for p in subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', BASELINE],
            cwd=ROOT, text=True).splitlines() if p.endswith('.v')}
     assert set(sources) == old | NEW, 'Unexpected module addition/deletion'

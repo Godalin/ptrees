@@ -293,3 +293,51 @@ Example direct_guarded_tau {A} (t : ptree E M A) :
     (PTree.interp direct_guarded_handler t).
 Proof. apply direct_guarded_interp. apply peutt_tau_l. Qed.
 End GenericInterpretation.
+
+(** Same generic structural consumers. The native relational-limit theorem
+    is still open, so complete-limit endpoints explicitly retain Hlimit.
+    Finite approximants need no such premise. No new unsafe file is added. *)
+From PTree.Prob.Interface Require Import RelationalClosure.
+From PTree.Prob.Backend.MathComp Require Import RelationalClosure.
+From PTree.Eq Require Import Relation PStruct PStrong.
+Section RelationalConsumers.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E : Type -> Type}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+
+Example direct_finite_strong {A B} (RR : A -> B -> Prop)
+    (t : ptree E M A) (u : ptree E M B) n :
+  @pstrong E M NI NC A B RR t u ->
+  @sem_lift M NI _ _ (stable_head_rel RR (@pstrong E M NI NC A B RR))
+    (@ptree_hitting_approx E M M NI MX NO A n (observe t))
+    (@ptree_hitting_approx E M M NI MX NO B n (observe u)).
+Proof.
+  apply (PTree.Eq.Relation.ptree_hitting_pstrong (@mathcomp_relational_bind R)
+    (@mathcomp_relational_mixed_bind R) (@mathcomp_relational_zero R)).
+Qed.
+
+Variable Hlimit : relational_lub NO.
+
+Example direct_structural_bridge_of_relational_lub {A B} (RR : A -> B -> Prop)
+    (t : ptree E M A) (u : ptree E M B) :
+  pstruct RR t u -> @peutt E M M NI NC MX NO A B RR t u.
+Proof.
+  apply (PTree.Eq.Relation.peutt_of_pstruct (@mathcomp_relational_bind R)
+    (@mathcomp_relational_mixed_bind R) (@mathcomp_relational_zero R) Hlimit).
+Qed.
+
+Example direct_codiagonal_of_relational_lub {I A}
+    (step : I -> ptree E M (I + (I + A))) i :
+  @peutt E M M NI NC MX NO A A eq
+    (PTree.iter (fun j => PTree.iter step j) i)
+    (PTree.iter (pstruct_iter_codiagonal_flat_step step) i).
+Proof.
+  apply (PTree.Eq.Iter.peutt_iter_codiagonal (@mathcomp_relational_bind R)
+    (@mathcomp_relational_mixed_bind R) (@mathcomp_relational_zero R) Hlimit).
+Qed.
+End RelationalConsumers.

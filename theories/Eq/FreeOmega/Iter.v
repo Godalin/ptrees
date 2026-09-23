@@ -1,3 +1,4 @@
+From PTree.Prob.FreeOmega Require Import RelationalLimit.
 From PTree.Eq Require Export Iter.
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
 Set Warnings "-notation-overridden".
@@ -39,9 +40,9 @@ Theorem peutt_iter_unfold {I R}
       | inr r => Ret r
       end)).
 Proof.
-  apply peutt_of_pstruct.
-  apply observe_eq_pstruct.
-  exact (observing_observe (unfold_aloop_ step i)).
+  apply (Iter.peutt_iter_unfold
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 Theorem peutt_iter_structural {I R}
@@ -53,8 +54,9 @@ Theorem peutt_iter_structural {I R}
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.iter step1 i) (PTree.iter step2 i).
 Proof.
-  intro Hstep. apply peutt_of_pstruct.
-  apply pstruct_iter. exact Hstep.
+  apply (Iter.peutt_iter_structural
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 Theorem peutt_iter_rel
@@ -72,8 +74,10 @@ Theorem peutt_iter_rel
     FreeOmegaObservableSemanticOmega R1 R2 RR
     (PTree.iter f i1) (PTree.iter g i2).
 Proof.
-  intro Hij. apply peutt_of_pstruct.
-  eapply pstruct_iter_rel; eauto.
+  apply (Iter.peutt_iter_rel
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
+  exact Hstep.
 Qed.
 
 (** Parameter identity / naturality.  Post-processing the result of a loop
@@ -90,8 +94,9 @@ Theorem peutt_iter_natural {I A B}
     (PTree.bind (PTree.iter step i) k)
     (PTree.iter (pstruct_iter_natural_step step k) i).
 Proof.
-  apply peutt_of_pstruct.
-  apply pstruct_iter_natural.
+  apply (Iter.peutt_iter_natural
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 (** Double-dagger / codiagonal identity.  Nested retries at either sum layer
@@ -105,8 +110,9 @@ Theorem peutt_iter_codiagonal {I R}
     (PTree.iter (fun j => PTree.iter step j) i)
     (PTree.iter (pstruct_iter_codiagonal_flat_step step) i).
 Proof.
-  apply peutt_of_pstruct.
-  apply pstruct_iter_codiagonal.
+  apply (Iter.peutt_iter_codiagonal
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 Section EventlessBehavioralIterationFusion.

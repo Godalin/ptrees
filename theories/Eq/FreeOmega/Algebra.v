@@ -1,3 +1,4 @@
+From PTree.Prob.FreeOmega Require Import RelationalLimit.
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
@@ -34,9 +35,9 @@ Theorem peutt_bind_ret_l {A B}
     FreeOmegaObservableSemanticOmega B B eq
     (PTree.bind (Ret a) k) (k a).
 Proof.
-  apply peutt_of_pstruct.
-  apply observe_eq_pstruct.
-  exact (observing_observe (bind_ret_ a k)).
+  apply (Algebra.peutt_bind_ret_l
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 Theorem peutt_bind_ret_r {A} (t : ptree E MN A) :
@@ -46,8 +47,9 @@ Theorem peutt_bind_ret_r {A} (t : ptree E MN A) :
     FreeOmegaObservableSemanticOmega A A eq
     (PTree.bind t (fun x => Ret x)) t.
 Proof.
-  apply peutt_of_pstruct.
-  apply pstruct_bind_ret_r.
+  apply (Algebra.peutt_bind_ret_r
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 Theorem peutt_bind_assoc {A B C}
@@ -60,8 +62,9 @@ Theorem peutt_bind_assoc {A B C}
     (PTree.bind (PTree.bind t k) h)
     (PTree.bind t (fun x => PTree.bind (k x) h)).
 Proof.
-  apply peutt_of_pstruct.
-  apply pstruct_bind_assoc.
+  apply (Algebra.peutt_bind_assoc
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 Theorem peutt_fmap_id {A} (t : ptree E MN A) :
@@ -70,7 +73,11 @@ Theorem peutt_fmap_id {A} (t : ptree E MN A) :
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A A eq
     (PTree.fmap (fun x => x) t) t.
-Proof. unfold PTree.fmap. apply peutt_bind_ret_r. Qed.
+Proof.
+  apply (Algebra.peutt_fmap_id
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
+Qed.
 
 Theorem peutt_fmap_compose {A B C}
     (f : A -> B) (g : B -> C) (t : ptree E MN A) :
@@ -81,13 +88,9 @@ Theorem peutt_fmap_compose {A B C}
     (PTree.fmap g (PTree.fmap f t))
     (PTree.fmap (fun x => g (f x)) t).
 Proof.
-  apply peutt_of_pstruct. unfold PTree.fmap.
-  eapply pstruct_trans.
-  - apply pstruct_bind_assoc.
-  - eapply pstruct_bind with (RA := eq) (RB := eq).
-    + intros x1 x2 ->. apply observe_eq_pstruct.
-      exact (observing_observe (bind_ret_ (f x2) (fun y => Ret (g y)))).
-    + apply pstruct_refl.
+  apply (Algebra.peutt_fmap_compose
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 Theorem peutt_fmap_bind {A B C}
@@ -98,6 +101,10 @@ Theorem peutt_fmap_bind {A B C}
     FreeOmegaObservableSemanticOmega C C eq
     (PTree.fmap f (PTree.bind t k))
     (PTree.bind t (fun x => PTree.fmap f (k x))).
-Proof. unfold PTree.fmap. apply peutt_bind_assoc. Qed.
+Proof.
+  apply (Algebra.peutt_fmap_bind
+    free_omega_relational_bind free_omega_relational_mixed_bind
+    free_omega_relational_zero free_omega_relational_lub).
+Qed.
 
 End FreeOmegaAlgebra.
