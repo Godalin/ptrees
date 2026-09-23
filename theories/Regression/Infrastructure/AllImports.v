@@ -10,6 +10,8 @@ Require PTree.Eq.Backend.ProbabilisticTraceSubEnumQ.
 Require PTree.Eq.Backend.StableHittingDomainSubEnumQ.
 Require PTree.Eq.Backend.SubEnumQ.
 Require PTree.Eq.Backend.SubEnumR.
+Require PTree.Eq.Bind.
+Require PTree.Eq.BindScheduling.
 Require PTree.Eq.Canonical.
 Require PTree.Eq.FreeOmega.Algebra.
 Require PTree.Eq.FreeOmega.Base.
@@ -126,6 +128,7 @@ Require PTree.Prob.Backend.EnumQ.Representation.
 Require PTree.Prob.Backend.EnumQ.SemanticCoupling.
 Require PTree.Prob.Backend.EnumQ.Support.
 Require PTree.Prob.Backend.MathComp.BindLaws.
+Require PTree.Prob.Backend.MathComp.BindOrder.
 Require PTree.Prob.Backend.MathComp.Coupling.
 Require PTree.Prob.Backend.MathComp.Kernel.
 Require PTree.Prob.Backend.MathComp.Measure.
@@ -177,6 +180,7 @@ Require PTree.Prob.Domain.Matrix.
 Require PTree.Prob.Domain.MeasureModel.
 Require PTree.Prob.Domain.Series.
 Require PTree.Prob.FreeOmega.Approximation.
+Require PTree.Prob.FreeOmega.BindOrder.
 Require PTree.Prob.FreeOmega.Coupling.
 Require PTree.Prob.FreeOmega.Definition.
 Require PTree.Prob.FreeOmega.JointExtension.
@@ -195,6 +199,7 @@ Require PTree.Prob.FreeOmega.Validation.Observation.
 Require PTree.Prob.FreeOmega.Validation.Quotient.
 Require PTree.Prob.FreeOmega.Validation.Relational.
 Require PTree.Prob.Interface.AE.
+Require PTree.Prob.Interface.BindOrder.
 Require PTree.Prob.Interface.Coupling.
 Require PTree.Prob.Interface.FrontierLift.
 Require PTree.Prob.Interface.Iteration.
@@ -275,6 +280,7 @@ Require PTree.Regression.Probability.StableHittingDomain.
 Require PTree.Regression.Probability.SubEnumRJointRealization.
 Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
+Require PTree.Regression.Semantics.GenericBind.
 Require PTree.Regression.Semantics.GuardedInterp.
 Require PTree.Regression.Semantics.HeadTransition.
 Require PTree.Regression.Semantics.InterpExposure.

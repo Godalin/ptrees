@@ -300,8 +300,11 @@ carrier explicit; `Prob/FreeOmega/` stays generic in `MN`, while
 machinery. `Semantics/` owns independent comparison semantics. `Interp/`
 owns interpretation preservation, with FreeOmega-qualified theory distinct
 from concrete endpoints. Relation modules own `≡ₚ / ≃ₚ / ≈ₚ`, including their
-heterogeneous forms. `peutt_bind` is owned only by `Eq/FreeOmega/Bind`; the raw
-generic theorem is `peutt_bind_cofinal`. See [public module migration](docs/PUBLIC_MODULES.md).
+heterogeneous forms. `Eq/Bind` owns the backend-independent heterogeneous
+`peutt_bind`; FreeOmega and direct MathComp supply the same probability-level
+order/selection laws. `peutt_bind_cofinal` is the lower-level explicit-scheduling
+endpoint. See [generic bind extraction](docs/GENERIC_BIND.md) and
+[public module migration](docs/PUBLIC_MODULES.md).
 Experts may import owners directly. Paper-facing programs
 form four groups:
 

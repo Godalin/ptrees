@@ -562,7 +562,7 @@ Lemma serve_round_congruence
 Proof.
   unfold serve_round.
   apply peutt_vis. intros [].
-  eapply FreeOmega.Bind.peutt_bind.
+  eapply PTree.Eq.Bind.peutt_bind.
   - exact Hsampler.
   - intros b1 b2 ->. unfold publish.
     apply peutt_vis. intros []. exact Hnext.

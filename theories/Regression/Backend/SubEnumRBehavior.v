@@ -71,7 +71,10 @@ Example real_behavioral_bind {A B C} (RR : A -> B -> Prop)
     (k : A -> ptree E MN C) (h : B -> ptree E MN C) :
   W A B RR t u -> (forall x y, RR x y -> W C C eq (k x) (h y)) ->
   W C C eq (PTree.bind t k) (PTree.bind u h).
-Proof. exact: Bind.peutt_bind. Qed.
+Proof.
+  intros Ht Hk.
+  eapply (PTree.Eq.Bind.peutt_bind (MF := MF) (FI := FI) (FO := FO)); eassumption.
+Qed.
 
 Example real_behavioral_iter {I A} (step : I -> ptree E MN (I+A)) i :
   W A A eq (PTree.iter step i)

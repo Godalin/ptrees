@@ -159,3 +159,24 @@ Example direct_retry_vis_interaction {X} (e : E X)
   W (PTree.bind outer (fun _ => Vis e k)) (Vis e k).
 Proof. apply direct_eventful_bind_rewrite. Qed.
 End Composition.
+
+(** Both relations and both result carriers are independent; this endpoint
+    consumes the same generic theorem as FreeOmega, through native laws. *)
+Section HeterogeneousBind.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E : Type -> Type} {A B X Y : Type}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Local Notation W := (@peutt E M M NI NC MX NO).
+
+Example direct_heterogeneous_bind (RR : X -> Y -> Prop) (RS : A -> B -> Prop)
+    (t : ptree E M X) (u : ptree E M Y)
+    (k : X -> ptree E M A) (h : Y -> ptree E M B) :
+  W RR t u -> (forall x y, RR x y -> W RS (k x) (h y)) ->
+  W RS (PTree.bind t k) (PTree.bind u h).
+Proof. apply mathcomp_direct_peutt_bind. Qed.
+End HeterogeneousBind.

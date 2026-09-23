@@ -9,6 +9,12 @@ coupling composition retains its explicit gluing premise and Gate M retains
 its isolated universe relaxation.
 No CI work or environment changes are included.
 
+The subsequent [generic bind extraction](GENERIC_BIND.md), based on `6e35c19`,
+replaces the direct bind proof with the common `Eq/Bind` theorem. It preserves
+this trust split and all native mathematics; current bind ownership is described
+below. The final verification counts in this document record the earlier
+theory-completion increment.
+
 ## Capabilities
 
 | Capability | Location / status |
@@ -18,6 +24,7 @@ No CI work or environment changes are included.
 | Continuation bind continuity, including AE hypotheses | Checked `OmegaLaws.v` |
 | Mixed omega, diagonal, double-limit Fubini, omega AE | Checked `OmegaLaws.v` |
 | Actual joint-kernel bind; BindLaws / MixedMeasureLaws | Checked `BindLaws.v` |
+| Bind/order compatibility, directed cofinality, increasing-chain selector | Checked `BindOrder.v` |
 | Coupling composition | Existing explicit `MathCompCouplingGluing R` premise |
 | Every PTree has complete stable hitting | Gate M `mathcomp_direct_hitting_exists` |
 | Arbitrary eventful bind fuel cofinality | Gate M `mathcomp_direct_bind_cofinal` |
@@ -26,7 +33,8 @@ No CI work or environment changes are included.
 
 “Unconditional” bind means no supplied scheduling/cofinality premise; the
 existing explicit gluing premise of the behavioral core remains. No new
-probability axiom, class or representation has been introduced.
+probability axiom or representation has been introduced. The generic extraction
+adds only probability-level law/selection capabilities, proved by both backends.
 
 ## Checked mathematics (Gate S)
 
@@ -79,16 +87,16 @@ Its client `Regression/Backend/MathCompDirect.v` performs that instantiation:
 - `direct_retry_vis_interaction` and `direct_retry_before_vis`: visible
   interaction and weak Tau rewriting.
 
-`Direct.v` proves the PTree-specific fuel bridge: global fuel `n` is bounded
+`Eq/BindScheduling.v` proves the PTree-specific fuel bridge: global fuel `n` is bounded
 by diagonal fuel `n`, while split fuel `(n,m)` is bounded by global fuel `n+m`.
-Native setwise supremum cofinality discharges the scheduling premise of
-the generic bind-hitting theorem. Bind congruence reuses the generic
-`bind_bisim_candidate` and specializes its postfixed proof: hitting witnesses
-are selected using MathComp's existing `cid`. Directly calling the old generic
-`peutt_bind` would inherit `ClassicalChoice.choice`'s additional logical axioms;
-the specialization avoids that without modifying frozen generic theory or
-expanding the existing logical-axiom whitelist. No FreeOmega instantiation is
-used.
+`BindOrder.v` discharges its probability obligations using checked native
+algebra and setwise supremum cofinality, and supplies the increasing-chain lub
+selector. `Direct.v` now merely instantiates this generic bridge and applies
+`Eq/Bind.peutt_bind`, including heterogeneous final carriers and relations.
+The previous native-specific finite inductions, `cid` frontier selector and
+postfixed coinduction have been removed. Generic bind now uses the supplied
+selector instead of `ClassicalChoice.choice`; no extra logical axiom or
+FreeOmega instantiation is needed. `direct_heterogeneous_bind` tests this route.
 
 The old negative hitting-existence probe had an extra explicit interface
 argument. It is now a genuinely typechecked positive application with the

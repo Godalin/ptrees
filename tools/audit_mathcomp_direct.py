@@ -19,8 +19,7 @@ ENDPOINTS = ['PTree.' + DIRECT.replace('/', '.') + '.' + n for n in [
     'mathcomp_direct_mixed', 'mathcomp_direct_tree', 'mathcomp_direct_head',
     'mathcomp_direct_frontier', 'mathcomp_direct_kernel', 'mathcomp_direct_hitting',
     'mathcomp_direct_peutt', 'mathcomp_direct_peutt_refl',
-    'mathcomp_direct_hitting_exists', 'mathcomp_direct_approx_unfold',
-    'mathcomp_direct_global_le_diagonal', 'mathcomp_direct_split_le_global',
+    'mathcomp_direct_hitting_exists',
     'mathcomp_direct_bind_cofinal', 'mathcomp_direct_peutt_bind']]
 ENDPOINTS += ['PTree.Regression.Backend.MathCompDirect.' + n for n in [
     'direct_ret', 'direct_frontier', 'direct_kernel', 'direct_hitting',
@@ -28,7 +27,8 @@ ENDPOINTS += ['PTree.Regression.Backend.MathCompDirect.' + n for n in [
     'available_native_order', 'available_native_omega', 'available_general_hitting_exists',
     'direct_retry_hitting', 'direct_unbounded_retry', 'direct_retry_before_vis',
     'direct_eventful_bind_rewrite', 'direct_nested_unbounded_retry',
-    'direct_nested_retry_diagonal', 'direct_retry_vis_interaction']]
+    'direct_nested_retry_diagonal', 'direct_retry_vis_interaction',
+    'direct_heterogeneous_bind']]
 ENDPOINTS += [
     'PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior',
     'PTree.Regression.Backend.MathCompDirect.direct_canonical_profile']

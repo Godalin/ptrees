@@ -58,9 +58,12 @@ depend on Gate M, directly or transitively; no unchecked file has been added.
 
 Raw `PEutt.peutt` remains generic. The public `≈ₚ` belongs to `PEuttNotations`
 in `Eq/Canonical` and selects the complete default profile. `PStructNotations`
-and `PStrongNotations` belong to their relation owners. The generic bind theorem
-is named `peutt_bind_cofinal`; only the unconditional observable FreeOmega
-corollary is named `peutt_bind`. See [public modules](PUBLIC_MODULES.md).
+and `PStrongNotations` belong to their relation owners. `Eq/Bind` owns the single
+heterogeneous `peutt_bind`, using probability-level bind/order compatibility,
+directed cofinality and increasing-chain selection. FreeOmega and MathComp
+provide these laws without duplicating PTree coinduction. The lower-level
+`peutt_bind_cofinal` accepts explicit scheduling. See
+[generic bind extraction](GENERIC_BIND.md) and [public modules](PUBLIC_MODULES.md).
 
 ## Three layers of probability reasoning
 

@@ -14,7 +14,7 @@ Check @pstrong.
 Check @peutt.
 Check @canonical_peutt.
 Check @peutt_bind_cofinal.
-Fail Check PTree.Eq.FreeOmega.Bind.peutt_bind.
+Fail Check PTree.Eq.Bind.peutt_bind.
 Fail Check PTree.Interp.Kernel.ptree_interp_head_tree.
 Fail Definition no_default_backend {E MN R} (t : ptree E MN R) : Prop := t ≈ₚ t.
 

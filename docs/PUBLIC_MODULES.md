@@ -1,5 +1,9 @@
 # Public module reorganization
 
+Historical accepted gate. The subsequent [generic bind extraction](GENERIC_BIND.md)
+moves the public theorem from `Eq/FreeOmega/Bind` to `Eq/Bind`; the module
+migration below records the earlier checkpoint, not current bind ownership.
+
 Baseline: accepted `33cb5d8`. This is a module/notation/ownership migration,
 not a new probability or equivalence theory. CI is intentionally ignored.
 

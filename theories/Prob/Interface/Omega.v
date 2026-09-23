@@ -165,3 +165,26 @@ Polymorphic Class SemanticOmegaFubiniLaws@{carrier representation}
       sem_lub row_out out ->
       sem_lub (fun fuel => grid fuel fuel) out
 }.
+
+(** General increasing-chain cofinality, separate from the constant and
+    zero-prefix transformations. No compatibility of sem_eq with sem_le is
+    asserted, and no upper-bound axiom for arbitrary formal lubs is added. *)
+Polymorphic Class SemanticOmegaDirectedCofinalityLaws
+    (S : Type -> Type) `{SI : SemanticMeasure S}
+    `{SO : @SemanticOmega S SI} := {
+  sem_lub_cofinal : forall A (c d : nat -> S A) out,
+    sem_increasing c -> sem_increasing d ->
+    (forall n, exists m, sem_le (c n) (d m)) ->
+    (forall n, exists m, sem_le (d n) (c m)) ->
+    (sem_lub c out <-> sem_lub d out)
+}.
+
+(** A chosen limit only on the mathematical domain of increasing chains.
+    This is operation-bearing data, not a global classical-choice instance.
+    Backends construct it; generic clients need no Prop-to-Type choice. *)
+Polymorphic Class SemanticOmegaSelection
+    (S : Type -> Type) `{SI : SemanticMeasure S}
+    `{SO : @SemanticOmega S SI} := {
+  sem_lub_choose : forall A (chain : nat -> S A),
+    sem_increasing chain -> {out : S A | sem_lub chain out}
+}.

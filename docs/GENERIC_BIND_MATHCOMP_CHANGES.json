@@ -1,0 +1,243 @@
+{
+  "baseline": "6e35c19",
+  "changes": [
+    {
+      "before": {
+        "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_approx_unfold",
+        "type": "Direct.mathcomp_direct_approx_unfold\n     : forall R : reals.Real.type,\n       Kernel.MathCompCouplingGluing R ->\n       forall (E : Type -> Type) (A : Type) (n : nat)\n         (t : PTreeDefinition.ptreeF E (Kernel.MathCompKernelMeasure R) A\n                (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)),\n       @Kernel.mathcomp_kernel_eq R\n         (UnifiedFrontier.stable_head E (Kernel.MathCompKernelMeasure R) A)\n         (@PTreeKernel.ptree_hitting_approx E (Kernel.MathCompKernelMeasure R)\n            (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n            (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A n t)\n         match t with\n         | @PTreeDefinition.RetF _ _ _ _ a =>\n             @Kernel.mathcomp_kernel_ret R\n               (UnifiedFrontier.stable_head E (Kernel.MathCompKernelMeasure R) A)\n               (@UnifiedFrontier.FHRet E (Kernel.MathCompKernelMeasure R) A a)\n         | @PTreeDefinition.TauF _ _ _ _ u =>\n             match n with\n             | 0 =>\n                 @Kernel.mathcomp_kernel_zero R\n                   (UnifiedFrontier.stable_head E (Kernel.MathCompKernelMeasure R) A)\n             | @S m =>\n                 @PTreeKernel.ptree_hitting_approx E (Kernel.MathCompKernelMeasure R)\n                   (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n                   (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R)\n                   A m (@PTreeDefinition.observe E (Kernel.MathCompKernelMeasure R) A u)\n             end\n         | @PTreeDefinition.VisF _ _ _ _ X e k =>\n             @Kernel.mathcomp_kernel_ret R\n               (UnifiedFrontier.stable_head E (Kernel.MathCompKernelMeasure R) A)\n               (@UnifiedFrontier.FHVis E (Kernel.MathCompKernelMeasure R) A X e k)\n         | @PTreeDefinition.ProbF _ _ _ _ X mu k =>\n             match n with\n             | 0 =>\n                 @Kernel.mathcomp_kernel_zero R\n                   (UnifiedFrontier.stable_head E (Kernel.MathCompKernelMeasure R) A)\n             | @S m =>\n                 @Kernel.mathcomp_kernel_bind R X\n                   (UnifiedFrontier.stable_head E (Kernel.MathCompKernelMeasure R) A) mu\n                   (fun x : X =>\n                    @PTreeKernel.ptree_hitting_approx E (Kernel.MathCompKernelMeasure R)\n                      (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n                      (NativeLaws.MathCompNativeMixedMeasure R)\n                      (Measure.MathCompNodeSemanticOmega R) A m\n                      (@PTreeDefinition.observe E (Kernel.MathCompKernelMeasure R) A (k x)))\n             end\n         end",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_approx_unfold"
+        ],
+        "session_collapsed_universes": true
+      },
+      "after": null
+    },
+    {
+      "before": {
+        "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_bind_cofinal",
+        "type": "Direct.mathcomp_direct_bind_cofinal\n     : forall R : reals.Real.type,\n       Kernel.MathCompCouplingGluing R ->\n       forall (E : Type -> Type) (A B : Type)\n         (t : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)\n         (k : A -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B),\n       @PTreeKernel.ptree_bind_cofinal E (Kernel.MathCompKernelMeasure R)\n         (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B t k",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_approx_unfold",
+          "Direct.mathcomp_direct_bind_cofinal",
+          "Direct.mathcomp_direct_global_le_diagonal",
+          "Direct.mathcomp_direct_split",
+          "Direct.mathcomp_direct_split_le_global"
+        ],
+        "session_collapsed_universes": true
+      },
+      "after": {
+        "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_bind_cofinal",
+        "type": "Direct.mathcomp_direct_bind_cofinal\n     : forall (R : reals.Real.type) (E : Type -> Type) (A B : Type)\n         (t : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)\n         (k : A -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B),\n       @PTreeKernel.ptree_bind_cofinal E (Kernel.MathCompKernelMeasure R)\n         (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B t k",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_bind_cofinal"
+        ],
+        "session_collapsed_universes": true
+      }
+    },
+    {
+      "before": {
+        "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_global_le_diagonal",
+        "type": "Direct.mathcomp_direct_global_le_diagonal\n     : forall R : reals.Real.type,\n       Kernel.MathCompCouplingGluing R ->\n       forall (E : Type -> Type) (A B : Type) (n : nat)\n         (t : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)\n         (k : A -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B),\n       @Measure.mathcomp_node_le R\n         (UnifiedFrontier.stable_head E (Kernel.MathCompKernelMeasure R) B)\n         (@PTreeKernel.ptree_hitting_approx E (Kernel.MathCompKernelMeasure R)\n            (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n            (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) B n\n            (@PTreeDefinition.observe E (Kernel.MathCompKernelMeasure R) B\n               (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) A B t k)))\n         (@Direct.mathcomp_direct_split R E A B n n t k)",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_approx_unfold",
+          "Direct.mathcomp_direct_global_le_diagonal",
+          "Direct.mathcomp_direct_split"
+        ],
+        "session_collapsed_universes": true
+      },
+      "after": null
+    },
+    {
+      "before": {
+        "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt_bind",
+        "type": "Direct.mathcomp_direct_peutt_bind\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A B C : Type) (RR : A -> B -> Prop)\n         (t : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)\n         (u : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B)\n         (k : A -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) C)\n         (h : B -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) C),\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B RR t u ->\n       (forall (x : A) (y : B), RR x y -> @Direct.mathcomp_direct_peutt R G E C (k x) (h y)) ->\n       @Direct.mathcomp_direct_peutt R G E C\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) A C t k)\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) B C u h)",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_approx_unfold",
+          "Direct.mathcomp_direct_bind_cofinal",
+          "Direct.mathcomp_direct_bind_postfixed",
+          "Direct.mathcomp_direct_front_choice",
+          "Direct.mathcomp_direct_global_le_diagonal",
+          "Direct.mathcomp_direct_hitting",
+          "Direct.mathcomp_direct_hitting_exists",
+          "Direct.mathcomp_direct_peutt",
+          "Direct.mathcomp_direct_peutt_bind",
+          "Direct.mathcomp_direct_split",
+          "Direct.mathcomp_direct_split_le_global",
+          "Direct.mathcomp_direct_tree"
+        ],
+        "session_collapsed_universes": true
+      },
+      "after": {
+        "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt_bind",
+        "type": "Direct.mathcomp_direct_peutt_bind\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A B C D : Type) (RR : A -> B -> Prop) (RS : C -> D -> Prop)\n         (t : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)\n         (u : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B)\n         (k : A -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) C)\n         (h : B -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) D),\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B RR t u ->\n       (forall (x : A) (y : B),\n        RR x y ->\n        @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n          (Measure.MathCompNodeSemanticMeasure R)\n          (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n          (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) C D RS\n          (k x) (h y)) ->\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) C D RS\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) A C t k)\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) B D u h)",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_peutt_bind"
+        ],
+        "session_collapsed_universes": true
+      }
+    },
+    {
+      "before": {
+        "name": "PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_split_le_global",
+        "type": "Direct.mathcomp_direct_split_le_global\n     : forall R : reals.Real.type,\n       Kernel.MathCompCouplingGluing R ->\n       forall (E : Type -> Type) (A B : Type) (n m : nat)\n         (t : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)\n         (k : A -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B),\n       @Measure.mathcomp_node_le R\n         (UnifiedFrontier.stable_head E (Kernel.MathCompKernelMeasure R) B)\n         (@Direct.mathcomp_direct_split R E A B n m t k)\n         (@PTreeKernel.ptree_hitting_approx E (Kernel.MathCompKernelMeasure R)\n            (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n            (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) B\n            (n + m)\n            (@PTreeDefinition.observe E (Kernel.MathCompKernelMeasure R) B\n               (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) A B t k)))",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_approx_unfold",
+          "Direct.mathcomp_direct_split",
+          "Direct.mathcomp_direct_split_le_global"
+        ],
+        "session_collapsed_universes": true
+      },
+      "after": null
+    },
+    {
+      "before": {
+        "name": "PTree.Regression.Backend.MathCompDirect.direct_eventful_bind_rewrite",
+        "type": "MathCompDirect.direct_eventful_bind_rewrite\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A : Type) (q : reals.Real.sort R),\n       is_true\n         (@order.Order.lt ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))) q &&\n          @order.Order.le ssrnum.ring_display (reals.Real.Exports.reals_Real__to__Order_POrder R) q\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  (reals.Real.Exports.reals_Real__to__Num_NumDomain R)))) ->\n       forall k : unit -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A,\n       @Direct.mathcomp_direct_peutt R G E A\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) unit A\n            (@MathCompPrograms.mathcomp_retry E unit R (@Kernel.mathcomp_bernoulli R q) tt) k)\n         (k tt)",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_approx_unfold",
+          "Direct.mathcomp_direct_bind_cofinal",
+          "Direct.mathcomp_direct_bind_postfixed",
+          "Direct.mathcomp_direct_front_choice",
+          "Direct.mathcomp_direct_global_le_diagonal",
+          "Direct.mathcomp_direct_hitting",
+          "Direct.mathcomp_direct_hitting_exists",
+          "Direct.mathcomp_direct_peutt",
+          "Direct.mathcomp_direct_peutt_bind",
+          "Direct.mathcomp_direct_peutt_refl",
+          "Direct.mathcomp_direct_split",
+          "Direct.mathcomp_direct_split_le_global",
+          "Direct.mathcomp_direct_tree",
+          "MathCompDirect.direct_eventful_bind_rewrite",
+          "MathCompDirect.direct_retry_hitting",
+          "MathCompDirect.direct_unbounded_retry"
+        ],
+        "session_collapsed_universes": true
+      },
+      "after": {
+        "name": "PTree.Regression.Backend.MathCompDirect.direct_eventful_bind_rewrite",
+        "type": "MathCompDirect.direct_eventful_bind_rewrite\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A : Type) (q : reals.Real.sort R),\n       is_true\n         (@order.Order.lt ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))) q &&\n          @order.Order.le ssrnum.ring_display (reals.Real.Exports.reals_Real__to__Order_POrder R) q\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  (reals.Real.Exports.reals_Real__to__Num_NumDomain R)))) ->\n       forall k : unit -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A,\n       @Direct.mathcomp_direct_peutt R G E A\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) unit A\n            (@MathCompPrograms.mathcomp_retry E unit R (@Kernel.mathcomp_bernoulli R q) tt) k)\n         (k tt)",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_hitting",
+          "Direct.mathcomp_direct_hitting_exists",
+          "Direct.mathcomp_direct_peutt_bind",
+          "Direct.mathcomp_direct_peutt_refl",
+          "Direct.mathcomp_direct_tree",
+          "MathCompDirect.direct_eventful_bind_rewrite",
+          "MathCompDirect.direct_retry_hitting",
+          "MathCompDirect.direct_unbounded_retry"
+        ],
+        "session_collapsed_universes": true
+      }
+    },
+    {
+      "before": null,
+      "after": {
+        "name": "PTree.Regression.Backend.MathCompDirect.direct_heterogeneous_bind",
+        "type": "MathCompDirect.direct_heterogeneous_bind\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A B X Y : Type) (RR : X -> Y -> Prop) (RS : A -> B -> Prop)\n         (t : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) X)\n         (u : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) Y)\n         (k : X -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)\n         (h : Y -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B),\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) X Y RR t u ->\n       (forall (x : X) (y : Y),\n        RR x y ->\n        @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n          (Measure.MathCompNodeSemanticMeasure R)\n          (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n          (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B RS\n          (k x) (h y)) ->\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A B RS\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) X A t k)\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) Y B u h)",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_peutt_bind",
+          "MathCompDirect.direct_heterogeneous_bind"
+        ],
+        "session_collapsed_universes": true
+      }
+    },
+    {
+      "before": {
+        "name": "PTree.Regression.Backend.MathCompDirect.direct_nested_unbounded_retry",
+        "type": "MathCompDirect.direct_nested_unbounded_retry\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A : Type) (q p : reals.Real.sort R),\n       is_true\n         (@order.Order.lt ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))) q &&\n          @order.Order.le ssrnum.ring_display (reals.Real.Exports.reals_Real__to__Order_POrder R) q\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  (reals.Real.Exports.reals_Real__to__Num_NumDomain R)))) ->\n       is_true\n         (@order.Order.lt ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))) p &&\n          @order.Order.le ssrnum.ring_display (reals.Real.Exports.reals_Real__to__Order_POrder R) p\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  (reals.Real.Exports.reals_Real__to__Num_NumDomain R)))) ->\n       forall value : A,\n       @Direct.mathcomp_direct_peutt R G E A\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) unit A\n            (@MathCompPrograms.mathcomp_retry E unit R (@Kernel.mathcomp_bernoulli R q) tt)\n            (fun _ : unit =>\n             @MathCompPrograms.mathcomp_retry E A R (@Kernel.mathcomp_bernoulli R p) value))\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E (Kernel.MathCompKernelMeasure R) A\n               (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A) value\n         |}",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_approx_unfold",
+          "Direct.mathcomp_direct_bind_cofinal",
+          "Direct.mathcomp_direct_bind_postfixed",
+          "Direct.mathcomp_direct_front_choice",
+          "Direct.mathcomp_direct_global_le_diagonal",
+          "Direct.mathcomp_direct_hitting",
+          "Direct.mathcomp_direct_hitting_exists",
+          "Direct.mathcomp_direct_peutt",
+          "Direct.mathcomp_direct_peutt_bind",
+          "Direct.mathcomp_direct_peutt_refl",
+          "Direct.mathcomp_direct_split",
+          "Direct.mathcomp_direct_split_le_global",
+          "Direct.mathcomp_direct_tree",
+          "MathCompDirect.direct_eventful_bind_rewrite",
+          "MathCompDirect.direct_nested_unbounded_retry",
+          "MathCompDirect.direct_retry_hitting",
+          "MathCompDirect.direct_unbounded_retry"
+        ],
+        "session_collapsed_universes": true
+      },
+      "after": {
+        "name": "PTree.Regression.Backend.MathCompDirect.direct_nested_unbounded_retry",
+        "type": "MathCompDirect.direct_nested_unbounded_retry\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A : Type) (q p : reals.Real.sort R),\n       is_true\n         (@order.Order.lt ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))) q &&\n          @order.Order.le ssrnum.ring_display (reals.Real.Exports.reals_Real__to__Order_POrder R) q\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  (reals.Real.Exports.reals_Real__to__Num_NumDomain R)))) ->\n       is_true\n         (@order.Order.lt ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))) p &&\n          @order.Order.le ssrnum.ring_display (reals.Real.Exports.reals_Real__to__Order_POrder R) p\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  (reals.Real.Exports.reals_Real__to__Num_NumDomain R)))) ->\n       forall value : A,\n       @Direct.mathcomp_direct_peutt R G E A\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) unit A\n            (@MathCompPrograms.mathcomp_retry E unit R (@Kernel.mathcomp_bernoulli R q) tt)\n            (fun _ : unit =>\n             @MathCompPrograms.mathcomp_retry E A R (@Kernel.mathcomp_bernoulli R p) value))\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E (Kernel.MathCompKernelMeasure R) A\n               (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A) value\n         |}",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_hitting",
+          "Direct.mathcomp_direct_hitting_exists",
+          "Direct.mathcomp_direct_peutt_bind",
+          "Direct.mathcomp_direct_peutt_refl",
+          "Direct.mathcomp_direct_tree",
+          "MathCompDirect.direct_eventful_bind_rewrite",
+          "MathCompDirect.direct_nested_unbounded_retry",
+          "MathCompDirect.direct_retry_hitting",
+          "MathCompDirect.direct_unbounded_retry"
+        ],
+        "session_collapsed_universes": true
+      }
+    },
+    {
+      "before": {
+        "name": "PTree.Regression.Backend.MathCompDirect.direct_retry_vis_interaction",
+        "type": "MathCompDirect.direct_retry_vis_interaction\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A : Type) (q : reals.Real.sort R),\n       is_true\n         (@order.Order.lt ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))) q &&\n          @order.Order.le ssrnum.ring_display (reals.Real.Exports.reals_Real__to__Order_POrder R) q\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  (reals.Real.Exports.reals_Real__to__Num_NumDomain R)))) ->\n       forall (X : Type) (e : E X)\n         (k : X -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A),\n       @Direct.mathcomp_direct_peutt R G E A\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) unit A\n            (@MathCompPrograms.mathcomp_retry E unit R (@Kernel.mathcomp_bernoulli R q) tt)\n            (fun _ : unit =>\n             {|\n               PTreeDefinition._observe :=\n                 @PTreeDefinition.VisF E (Kernel.MathCompKernelMeasure R) A\n                   (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A) X e k\n             |}))\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E (Kernel.MathCompKernelMeasure R) A\n               (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A) X e k\n         |}",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_approx_unfold",
+          "Direct.mathcomp_direct_bind_cofinal",
+          "Direct.mathcomp_direct_bind_postfixed",
+          "Direct.mathcomp_direct_front_choice",
+          "Direct.mathcomp_direct_global_le_diagonal",
+          "Direct.mathcomp_direct_hitting",
+          "Direct.mathcomp_direct_hitting_exists",
+          "Direct.mathcomp_direct_peutt",
+          "Direct.mathcomp_direct_peutt_bind",
+          "Direct.mathcomp_direct_peutt_refl",
+          "Direct.mathcomp_direct_split",
+          "Direct.mathcomp_direct_split_le_global",
+          "Direct.mathcomp_direct_tree",
+          "MathCompDirect.direct_eventful_bind_rewrite",
+          "MathCompDirect.direct_retry_hitting",
+          "MathCompDirect.direct_retry_vis_interaction",
+          "MathCompDirect.direct_unbounded_retry"
+        ],
+        "session_collapsed_universes": true
+      },
+      "after": {
+        "name": "PTree.Regression.Backend.MathCompDirect.direct_retry_vis_interaction",
+        "type": "MathCompDirect.direct_retry_vis_interaction\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A : Type) (q : reals.Real.sort R),\n       is_true\n         (@order.Order.lt ssrnum.ring_display\n            (ssrnum.Num.POrderedZmodule.Exports.join_Num_POrderedZmodule_between_GRing_Nmodule_and_Order_POrder\n               (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))\n            (@ssralg.GRing.zero\n               (ssrnum.Num.POrderedZmodule.Exports.Num_POrderedZmodule__to__GRing_Nmodule\n                  (reals.Real.Exports.reals_Real__to__Num_POrderedZmodule R))) q &&\n          @order.Order.le ssrnum.ring_display (reals.Real.Exports.reals_Real__to__Order_POrder R) q\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  (reals.Real.Exports.reals_Real__to__Num_NumDomain R)))) ->\n       forall (X : Type) (e : E X)\n         (k : X -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A),\n       @Direct.mathcomp_direct_peutt R G E A\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) unit A\n            (@MathCompPrograms.mathcomp_retry E unit R (@Kernel.mathcomp_bernoulli R q) tt)\n            (fun _ : unit =>\n             {|\n               PTreeDefinition._observe :=\n                 @PTreeDefinition.VisF E (Kernel.MathCompKernelMeasure R) A\n                   (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A) X e k\n             |}))\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E (Kernel.MathCompKernelMeasure R) A\n               (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A) X e k\n         |}",
+        "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+        "unsafe_hierarchy": [
+          "Direct.mathcomp_direct_hitting",
+          "Direct.mathcomp_direct_hitting_exists",
+          "Direct.mathcomp_direct_peutt_bind",
+          "Direct.mathcomp_direct_peutt_refl",
+          "Direct.mathcomp_direct_tree",
+          "MathCompDirect.direct_eventful_bind_rewrite",
+          "MathCompDirect.direct_retry_hitting",
+          "MathCompDirect.direct_retry_vis_interaction",
+          "MathCompDirect.direct_unbounded_retry"
+        ],
+        "session_collapsed_universes": true
+      }
+    }
+  ]
+}

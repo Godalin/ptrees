@@ -1180,22 +1180,20 @@ Variable bind_cofinality : forall A R
     (t : ptree E MN A) (k : A -> ptree E MN R),
     ptree_bind_cofinal (MF := MF) t k.
 
+Context `{FSelect : @SemanticOmegaSelection MF FI FO}.
+
 Lemma stable_hitting_front_choice {A R} (k : A -> ptree E MN R) :
   exists front : A -> MF (stable_head E MN R),
     forall a, stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R)
       (observe (k a)) (front a).
 Proof.
-  assert (Hexists : forall a : A,
-      exists out : MF (stable_head E MN R),
-        stable_hitting
-          (@ptree_primitive_kernel E MN MF FI MX R)
-          (observe (k a)) out).
-  { intro a. apply stable_hitting_exists. }
-  exact (choice
-    (fun a out => stable_hitting
-      (@ptree_primitive_kernel E MN MF FI MX R)
-      (observe (k a)) out) Hexists).
+  exists (fun a => proj1_sig (sem_lub_choose
+    (chain := fun n => ptree_hitting_approx (MF := MF) n (observe (k a)))
+    (ptree_hitting_increasing (observe (k a))))).
+  intro a. exact (proj2_sig (sem_lub_choose
+    (chain := fun n => ptree_hitting_approx (MF := MF) n (observe (k a)))
+    (ptree_hitting_increasing (observe (k a))))).
 Qed.
 
 Lemma peutt_state_hitting_lift {R1 R2}

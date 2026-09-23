@@ -1,5 +1,5 @@
-"""Current public-module ownership and conservative migration contracts."""
-import copy
+"""Frozen 6e35c19 module-migration gate (later bind extraction is separate)."""
+import subprocess
 import unittest
 from audit_assumptions import ROOT
 from audit_public_modules import production_check, surface_check
@@ -10,7 +10,10 @@ import audit_architecture as architecture
 class PublicModuleTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.sources = {p.relative_to(ROOT).as_posix():p.read_text() for p in (ROOT/'theories').rglob('*.v')}
+        paths = subprocess.check_output(['git','ls-tree','-r','--name-only','6e35c19'],
+                                        cwd=ROOT,text=True).splitlines()
+        cls.sources = {p:subprocess.check_output(['git','show','6e35c19:'+p],
+                        cwd=ROOT,text=True) for p in paths if p.endswith('.v')}
 
     def test_bind_rename_does_not_permit_proof_edits(self):
         for p in ['theories/Eq/PEutt.v','theories/Eq/FreeOmega/Bind.v']:

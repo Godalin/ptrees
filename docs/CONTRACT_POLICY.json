@@ -63,13 +63,17 @@
     "theories/Prob/Legacy/RelLift.v:ComposableProbRelLift": "Class ComposableProbRelLift (M : Type -> Type) (DI : DiscreteInterface M) (PL : @ProbRelLift M DI) := { prob_lift_comp : forall {A B C : eqType} (R : A -> B -> Prop) (S : B -> C -> Prop) (mu : M A) (nu : M B) (xi : M C), prob_lift R mu nu -> prob_lift S nu xi -> prob_lift (fun a c => exists b, R a b /\\ S b c) mu xi }.",
     "theories/Prob/Legacy/RelLift.v:ProbRelLift": "Class ProbRelLift (M : Type -> Type) `{DiscreteInterface M} := { prob_lift : forall {A B : eqType}, (A -> B -> Prop) -> M A -> M B -> Prop; prob_lift_mono : forall {A B : eqType} (R S : A -> B -> Prop) (mu : M A) (nu : M B), (forall a b, R a b -> S a b) -> prob_lift R mu nu -> prob_lift S mu nu; prob_lift_proper_l : forall {A B : eqType} (R : A -> B -> Prop) (mu mu' : M A) (nu : M B), disc_eq mu mu' -> prob_lift R mu nu -> prob_lift R mu' nu; prob_lift_proper_r : forall {A B : eqType} (R : A -> B -> Prop) (mu : M A) (nu nu' : M B), disc_eq nu nu' -> prob_lift R mu nu -> prob_lift R mu nu'; prob_lift_refl : forall {A : eqType} (mu : M A), prob_lift eq mu mu; prob_lift_of_eq : forall {A : eqType} (mu nu : M A), disc_eq mu nu -> prob_lift eq mu nu; prob_lift_sym : forall {A B : eqType} (R : A -> B -> Prop) (mu : M A) (nu : M B), prob_lift R mu nu -> prob_lift (fun b a => R a b) nu mu }.",
     "theories/Regression/Infrastructure/UniverseSeparatedPTree.v:TwoLevelMeasureInterface": "Class TwoLevelMeasureInterface@{sample node_measure frontier_sample frontier_measure} (MN : Type@{sample} -> Type@{node_measure}) (MF : Type@{frontier_sample} -> Type@{frontier_measure}) := { frontier_ret : forall {A : Type@{frontier_sample}}, A -> MF A; frontier_bind_node : forall {A : Type@{sample}} {B : Type@{frontier_sample}}, MN A -> (A -> MF B) -> MF B }.",
-    "theories/Eq/Canonical.v:CanonicalBehavior": "Class CanonicalBehavior (MN : Type -> Type) := { behavior_frontier : Type -> Type; behavior_measure : SemanticMeasure behavior_frontier; behavior_mixed : MixedMeasure MN behavior_frontier; behavior_omega : @SemanticOmega behavior_frontier behavior_measure }."
+    "theories/Eq/Canonical.v:CanonicalBehavior": "Class CanonicalBehavior (MN : Type -> Type) := { behavior_frontier : Type -> Type; behavior_measure : SemanticMeasure behavior_frontier; behavior_mixed : MixedMeasure MN behavior_frontier; behavior_omega : @SemanticOmega behavior_frontier behavior_measure }.",
+    "theories/Prob/Interface/BindOrder.v:SemanticMeasureBindOrderLaws": "Class SemanticMeasureBindOrderLaws (MF : Type -> Type) `{FI : SemanticMeasure MF} `{FO : @SemanticOmega MF FI} := { sem_bind_ret_order : forall A B (x : A) (k : A -> MF B), sem_le (sem_bind (sem_ret x) k) (k x) /\\ sem_le (k x) (sem_bind (sem_ret x) k); sem_bind_zero_order : forall A B (k : A -> MF B), sem_le (sem_bind sem_zero k) sem_zero }.",
+    "theories/Prob/Interface/BindOrder.v:MixedMeasureBindOrderLaws": "Class MixedMeasureBindOrderLaws (MN MF : Type -> Type) `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI} := { mixed_bind_assoc_order : forall A B C (mu : MN A) (k : A -> MF B) (h : B -> MF C), sem_le (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)) /\\ sem_le (mixed_bind mu (fun x => sem_bind (k x) h)) (sem_bind (mixed_bind mu k) h); mixed_bind_le_k : forall A B (mu : MN A) (k h : A -> MF B), (forall x, sem_le (k x) (h x)) -> sem_le (mixed_bind mu k) (mixed_bind mu h) }.",
+    "theories/Prob/Interface/Omega.v:SemanticOmegaDirectedCofinalityLaws": "Class SemanticOmegaDirectedCofinalityLaws (S : Type -> Type) `{SI : SemanticMeasure S} `{SO : @SemanticOmega S SI} := { sem_lub_cofinal : forall A (c d : nat -> S A) out, sem_increasing c -> sem_increasing d -> (forall n, exists m, sem_le (c n) (d m)) -> (forall n, exists m, sem_le (d n) (c m)) -> (sem_lub c out <-> sem_lub d out) }.",
+    "theories/Prob/Interface/Omega.v:SemanticOmegaSelection": "Class SemanticOmegaSelection (S : Type -> Type) `{SI : SemanticMeasure S} `{SO : @SemanticOmega S SI} := { sem_lub_choose : forall A (chain : nat -> S A), sem_increasing chain -> {out : S A | sem_lub chain out} }."
   },
   "facades": {
     "theories/PTree.v": "From PTree.Core Require Export PTreeDefinition. Export PTreeDefinition.PTree PTreeNotations.",
     "theories/Semantics.v": "From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment. Notation head_step := HeadTransition.head_step. Notation head_bisim := HeadTransition.head_bisim. Notation tree_trans := TreeTransition.tree_trans. Notation tree_return_observation := TreeTransition.tree_return_observation. Notation tree_offered_event_observation := TreeTransition.tree_offered_event_observation. Notation tree_trans_bisim := TreeTransitionBisim.tree_trans_bisim. Notation tree_trans_bisim_coinduction := TreeTransitionBisim.tree_trans_bisim_coinduction. Notation mdp_head := MDPFragment.mdp_head. Notation mdp_state := MDPFragment.mdp_state.",
     "theories/Eq.v": "From PTree.Eq Require Export PStruct PStrong PEutt Canonical. Export PStructNotations PStrongNotations PEuttNotations.",
-    "theories/PTreeFacts.v": "From PTree Require Export PTree Eq. From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting WellFormedness StableHittingComputation ProbabilisticTrace. From PTree.Eq.FreeOmega Require Export Bind Algebra Iter. From PTree.Interp.FreeOmega Require Export Guarded Atomic MDP.",
+    "theories/PTreeFacts.v": "From PTree Require Export PTree Eq. From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting WellFormedness StableHittingComputation ProbabilisticTrace Bind. From PTree.Eq.FreeOmega Require Export Bind Algebra Iter. From PTree.Interp.FreeOmega Require Export Guarded Atomic MDP.",
     "theories/Eq/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Core Require Import PTreeDefinition. From PTree.Prob.Interface Require Import Measure Mixed Omega. From PTree.Eq Require Import PEutt. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Class CanonicalBehavior (MN : Type -> Type) := { behavior_frontier : Type -> Type; behavior_measure : SemanticMeasure behavior_frontier; behavior_mixed : MixedMeasure MN behavior_frontier; behavior_omega : @SemanticOmega behavior_frontier behavior_measure }. Definition canonical_peutt {E MN} `{CB : CanonicalBehavior MN} `{FC : @SemanticMeasureCoreLaws behavior_frontier behavior_measure} {A B} (RR : A -> B -> Prop) (t : ptree E MN A) (u : ptree E MN B) : Prop := @PEutt.peutt E MN behavior_frontier behavior_measure FC behavior_mixed behavior_omega A B RR t u. Module PEuttNotations. Notation \"t ≈ₚ[ RR ] u\" := (canonical_peutt RR t u) (at level 70, RR at next level, no associativity) : type_scope. Notation \"t ≈ₚ u\" := (canonical_peutt eq t u) (at level 70, no associativity) : type_scope. End PEuttNotations.",
     "theories/Eq/FreeOmega/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Prob.Interface Require Import Measure Omega. Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.Measure. From PTree.Eq Require Import Canonical. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Definition observable_free_omega_behavior {MN} (NI : SemanticMeasure MN) (NO : @SemanticOmega MN NI) : CanonicalBehavior MN := {| behavior_frontier := FreeOmega MN; behavior_measure := @FreeOmegaObservableSemanticMeasure MN NI NO; behavior_mixed := @FreeOmegaMixedMeasure MN; behavior_omega := @FreeOmegaObservableSemanticOmega MN NI NO |}.",
     "theories/Eq/Backend/EnumQ.v": "From PTree.Prob.Backend.EnumQ Require Import Measure. Require Export PTree.Prob.Backend.EnumQ.Representation. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. Export EnumQ. #[global] Polymorphic Instance EnumQ_CanonicalBehavior : CanonicalBehavior EnumQ := @observable_free_omega_behavior EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega.",
@@ -957,7 +961,8 @@
       "direct_nested_unbounded_retry",
       "direct_nested_retry_diagonal",
       "direct_retry_vis_interaction",
-      "direct_canonical_profile"
+      "direct_canonical_profile",
+      "direct_heterogeneous_bind"
     ],
     "theories/Regression/Backend/MathCompOmega.v": [
       "increasing_has_actual_lub",
@@ -1128,6 +1133,15 @@
       "public_structural_return",
       "public_strong_return",
       "public_bind_after_raw_import"
+    ],
+    "theories/Regression/Semantics/GenericBind.v": [
+      "constant_lub_quotient_equal",
+      "constant_lub_not_approx_forward",
+      "constant_lub_not_approx_backward",
+      "observable_equality_does_not_imply_order",
+      "sampled_zero_quotient_equal",
+      "sampled_zero_not_approx_bottom",
+      "free_omega_heterogeneous_bind"
     ]
   }
 }

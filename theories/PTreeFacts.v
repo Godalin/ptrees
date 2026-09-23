@@ -1,8 +1,8 @@
 (** Reasoning entry point. Export the actual theorem owners, not aliases.
-    The generic bind theorem is peutt_bind_cofinal; the unconditional
-    observable FreeOmega theorem is the unique peutt_bind. *)
+    Eq/Bind owns the heterogeneous peutt_bind theorem; backends provide only
+    probability-level algebra/order/limit obligations. *)
 From PTree Require Export PTree Eq.
 From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting
-  WellFormedness StableHittingComputation ProbabilisticTrace.
+  WellFormedness StableHittingComputation ProbabilisticTrace Bind.
 From PTree.Eq.FreeOmega Require Export Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Export Guarded Atomic MDP.

@@ -43,7 +43,7 @@ Proof.
   - intros x y ->. unfold factory_sampler_step.
     eapply peutt_rel_mono with (RR := eq).
     + intros u v ->. destruct v; reflexivity.
-    + eapply FreeOmega.Bind.peutt_bind with (RR := eq).
+    + eapply PTree.Eq.Bind.peutt_bind with (RR := eq).
       * exact Hsampler.
       * intros a b ->. apply peutt_refl.
   - reflexivity.
