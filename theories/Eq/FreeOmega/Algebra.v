@@ -8,6 +8,7 @@ From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import Shallow PEutt PStruct.
+From PTree.Eq Require Export Algebra.
 From PTree.Eq.FreeOmega Require Import Relation Bind.
 
 Set Implicit Arguments.
@@ -98,53 +99,5 @@ Theorem peutt_fmap_bind {A B C}
     (PTree.fmap f (PTree.bind t k))
     (PTree.bind t (fun x => PTree.fmap f (k x))).
 Proof. unfold PTree.fmap. apply peutt_bind_assoc. Qed.
-
-#[global] Instance peutt_bind_Proper
-    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
-    `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
-    {A B} :
-  Proper
-    (@peutt E MN MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega A A eq ==>
-      pointwise_relation A
-        (@peutt E MN MF
-          (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-          FreeOmegaObservableSemanticMeasureCoreLaws
-          FreeOmegaMixedMeasure
-          FreeOmegaObservableSemanticOmega B B eq) ==>
-      @peutt E MN MF
-        (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
-        FreeOmegaObservableSemanticOmega B B eq)
-    (@PTree.bind E MN A B).
-Proof.
-  intros t1 t2 Ht k1 k2 Hk.
-  eapply peutt_bind with (RR := eq).
-  - exact Ht.
-  - intros x1 x2 ->. exact (Hk x2).
-Qed.
-
-#[global] Instance peutt_fmap_Proper
-    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
-    `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
-    {A B} (f : A -> B) :
-  Proper
-    (@peutt E MN MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega A A eq ==>
-     @peutt E MN MF
-      (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega B B eq)
-    (PTree.fmap f).
-Proof.
-  intros t1 t2 Ht. unfold PTree.fmap.
-  eapply peutt_bind with (RR := eq).
-  - exact Ht.
-  - intros x1 x2 ->. apply peutt_refl.
-Qed.
 
 End FreeOmegaAlgebra.

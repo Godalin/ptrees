@@ -303,7 +303,10 @@ from concrete endpoints. Relation modules own `≡ₚ / ≃ₚ / ≈ₚ`, includ
 heterogeneous forms. `Eq/Bind` owns the backend-independent heterogeneous
 `peutt_bind`; FreeOmega and direct MathComp supply the same probability-level
 order/selection laws. `peutt_bind_cofinal` is the lower-level explicit-scheduling
-endpoint. See [generic bind extraction](docs/GENERIC_BIND.md) and
+endpoint. `Eq/Algebra` provides the same generic bind/fmap `Proper` proofs to
+both completion and direct-frontier clients; see the
+[consumer extraction and local rewriting profiles](docs/GENERIC_ALGEBRA.md).
+See [generic bind extraction](docs/GENERIC_BIND.md) and
 [public module migration](docs/PUBLIC_MODULES.md).
 Experts may import owners directly. Paper-facing programs
 form four groups:

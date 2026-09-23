@@ -64,6 +64,10 @@ directed cofinality and increasing-chain selection. FreeOmega and MathComp
 provide these laws without duplicating PTree coinduction. The lower-level
 `peutt_bind_cofinal` accepts explicit scheduling. See
 [generic bind extraction](GENERIC_BIND.md) and [public modules](PUBLIC_MODULES.md).
+`Eq/Algebra` owns generic bind/fmap `Proper` proofs. Probability-level derived
+AE facts live in `Prob`, not comparison semantics; see
+[consumer convergence Stage 1](GENERIC_ALGEBRA.md) for the capability surface,
+local rewriting profiles, and the remaining structural bridge boundary.
 
 ## Three layers of probability reasoning
 

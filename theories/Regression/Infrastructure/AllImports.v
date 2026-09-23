@@ -3,6 +3,7 @@
 Require PTree.Core.PTreeDefinition.
 Require PTree.Core.Utils.
 Require PTree.Eq.
+Require PTree.Eq.Algebra.
 Require PTree.Eq.Backend.EnumQ.
 Require PTree.Eq.Backend.EnumQCofinality.
 Require PTree.Eq.Backend.ProbabilisticTraceEnumQ.
@@ -280,6 +281,7 @@ Require PTree.Regression.Probability.StableHittingDomain.
 Require PTree.Regression.Probability.SubEnumRJointRealization.
 Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
+Require PTree.Regression.Semantics.GenericAlgebra.
 Require PTree.Regression.Semantics.GenericBind.
 Require PTree.Regression.Semantics.GuardedInterp.
 Require PTree.Regression.Semantics.HeadTransition.

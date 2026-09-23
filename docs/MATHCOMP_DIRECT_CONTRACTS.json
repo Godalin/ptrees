@@ -304,6 +304,33 @@
       "session_collapsed_universes": true
     },
     {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_bind_setoid",
+      "type": "MathCompDirect.direct_bind_setoid\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A B : Type)\n         (t u : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)\n         (k : A -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B),\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A A\n         (@eq A) t u ->\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) B B\n         (@eq B) (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) A B t k)\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) A B u k)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "MathCompDirect.direct_bind_setoid"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_continuation_setoid",
+      "type": "MathCompDirect.direct_continuation_setoid\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A B : Type)\n         (t : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A)\n         (k h : A -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B),\n       (forall x : A,\n        @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n          (Measure.MathCompNodeSemanticMeasure R)\n          (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n          (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) B B\n          (@eq B) (k x) (h x)) ->\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) B B\n         (@eq B) (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) A B t k)\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) A B t h)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "MathCompDirect.direct_continuation_setoid"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_fmap_setoid",
+      "type": "MathCompDirect.direct_fmap_setoid\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A B : Type) (f : A -> B)\n         (t u : PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A),\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) A A\n         (@eq A) t u ->\n       @PEutt.peutt E (Kernel.MathCompKernelMeasure R) (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n         (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R) B B\n         (@eq B) (@PTreeDefinition.PTree.fmap E (Kernel.MathCompKernelMeasure R) A B f t)\n         (@PTreeDefinition.PTree.fmap E (Kernel.MathCompKernelMeasure R) A B f u)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "MathCompDirect.direct_fmap_setoid"
+      ],
+      "session_collapsed_universes": true
+    },
+    {
       "name": "PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior",
       "type": "Direct.MathComp_CanonicalBehavior\n     : forall R : reals.Real.type, Canonical.CanonicalBehavior (Kernel.MathCompKernelMeasure R)",
       "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",

@@ -13,18 +13,6 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-(** A proof of an existing capability, not a new axiom or global instance.
-    This fact is structural in FreeOmega and needs no node separation law. *)
-Lemma free_omega_observable_dirac_ae_laws {MN}
-    `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI} :
-  @SemanticMeasureDiracAELaws (FreeOmega MN)
-    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
-Proof.
-  constructor. intros A x P. split; intro H.
-  - change (free_omega_ae P (FORet x)) in H. dependent destruction H. assumption.
-  - apply FOAERet. exact H.
-Qed.
-
 Section FreeOmegaCoincidence.
 Context {MN : Type -> Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}

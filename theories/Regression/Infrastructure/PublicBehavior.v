@@ -3,6 +3,7 @@
 Set Universe Polymorphism.
 From PTree Require Import PTree PTreeFacts.
 From PTree.Eq.Backend Require Import SubEnumQ.
+From Coq Require Import Morphisms.
 
 Local Notation MN := SubEnumQ.
 
@@ -70,3 +71,35 @@ Example public_bind_after_raw_import {E A B X Y}
     (Ht : t ≈ₚ[RR] u) (Hk : forall x y, RR x y -> k x ≈ₚ[RS] l y) :
   bind t k ≈ₚ[RS] bind u l.
 Proof. eapply peutt_bind; eassumption. Qed.
+
+(** Fix the intended relation locally before setoid search; the actual Proper
+    proof is generic. No concrete completion or new global hint is needed. *)
+Example public_bind_setoid {E A B} (t u : ptree E MN A)
+    (k : A -> ptree E MN B) (H : t ≈ₚ u) :
+  bind t k ≈ₚ bind u k.
+Proof.
+  assert (Hp : Proper ((fun a b => a ≈ₚ b) ==>
+    pointwise_relation A (fun a b => a ≈ₚ b) ==> (fun a b => a ≈ₚ b))
+    (@PTree.bind E MN A B)) by apply peutt_bind_Proper.
+  Timeout 10 setoid_rewrite H. apply peutt_refl.
+Qed.
+
+Example public_continuation_setoid {E A B} (t : ptree E MN A)
+    (k h : A -> ptree E MN B) (H : forall x, k x ≈ₚ h x) :
+  bind t k ≈ₚ bind t h.
+Proof.
+  assert (Hp : Proper ((fun a b => a ≈ₚ b) ==>
+    pointwise_relation A (fun a b => a ≈ₚ b) ==> (fun a b => a ≈ₚ b))
+    (@PTree.bind E MN A B)) by apply peutt_bind_Proper.
+  assert (Hpoint : pointwise_relation A (fun a b => a ≈ₚ b) k h) by exact H.
+  Timeout 10 setoid_rewrite Hpoint. apply peutt_refl.
+Qed.
+
+Example public_fmap_setoid {E A B} (f : A -> B)
+    (t u : ptree E MN A) (H : t ≈ₚ u) :
+  PTree.fmap f t ≈ₚ PTree.fmap f u.
+Proof.
+  assert (Hp : Proper ((fun a b => a ≈ₚ b) ==> (fun a b => a ≈ₚ b))
+    (@PTree.fmap E MN A B f)) by apply peutt_fmap_Proper.
+  Timeout 10 setoid_rewrite H. apply peutt_refl.
+Qed.

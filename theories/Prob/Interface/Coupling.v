@@ -9,7 +9,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Require Import PTree.Prob.Interface.Measure.
+Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.AE.
 
 (** Abstract equality of total semantic weight.  On a subprobability backend
     this is equality of total subprobability mass.  The formulation avoids
@@ -51,3 +51,19 @@ Polymorphic Class SemanticMeasureCouplingAELaws@{carrier representation}
       sem_ae mu P -> sem_ae nu Q ->
       sem_lift (fun x y => R x y /\ P x /\ Q y) mu nu
 }.
+
+(** Derived diagonal restriction. Deliberately not a global instance: clients
+    may use this constructor explicitly without adding a search cycle. *)
+Lemma coupling_ae_implies_ae_lift {S : Type -> Type}
+    `{SI : SemanticMeasure S} `{SC : @SemanticMeasureCoreLaws S SI}
+    `{CA : @SemanticMeasureCouplingAELaws S SI} :
+  @SemanticMeasureAELiftLaws S SI.
+Proof.
+  constructor. intros A mu P HP.
+  eapply sem_lift_mono with (R := fun x y => x = y /\ P x /\ P y).
+  - intros x y [Hxy [Hx Hy]]. split; assumption.
+  - eapply sem_lift_ae_restrict.
+    + apply sem_lift_refl. intro x. reflexivity.
+    + exact HP.
+    + exact HP.
+Qed.

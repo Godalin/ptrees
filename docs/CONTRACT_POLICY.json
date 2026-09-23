@@ -73,7 +73,7 @@
     "theories/PTree.v": "From PTree.Core Require Export PTreeDefinition. Export PTreeDefinition.PTree PTreeNotations.",
     "theories/Semantics.v": "From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment. Notation head_step := HeadTransition.head_step. Notation head_bisim := HeadTransition.head_bisim. Notation tree_trans := TreeTransition.tree_trans. Notation tree_return_observation := TreeTransition.tree_return_observation. Notation tree_offered_event_observation := TreeTransition.tree_offered_event_observation. Notation tree_trans_bisim := TreeTransitionBisim.tree_trans_bisim. Notation tree_trans_bisim_coinduction := TreeTransitionBisim.tree_trans_bisim_coinduction. Notation mdp_head := MDPFragment.mdp_head. Notation mdp_state := MDPFragment.mdp_state.",
     "theories/Eq.v": "From PTree.Eq Require Export PStruct PStrong PEutt Canonical. Export PStructNotations PStrongNotations PEuttNotations.",
-    "theories/PTreeFacts.v": "From PTree Require Export PTree Eq. From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting WellFormedness StableHittingComputation ProbabilisticTrace Bind. From PTree.Eq.FreeOmega Require Export Bind Algebra Iter. From PTree.Interp.FreeOmega Require Export Guarded Atomic MDP.",
+    "theories/PTreeFacts.v": "From PTree Require Export PTree Eq. From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting WellFormedness StableHittingComputation ProbabilisticTrace Bind Algebra. From PTree.Eq.FreeOmega Require Export Bind Algebra Iter. From PTree.Interp.FreeOmega Require Export Guarded Atomic MDP.",
     "theories/Eq/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Core Require Import PTreeDefinition. From PTree.Prob.Interface Require Import Measure Mixed Omega. From PTree.Eq Require Import PEutt. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Class CanonicalBehavior (MN : Type -> Type) := { behavior_frontier : Type -> Type; behavior_measure : SemanticMeasure behavior_frontier; behavior_mixed : MixedMeasure MN behavior_frontier; behavior_omega : @SemanticOmega behavior_frontier behavior_measure }. Definition canonical_peutt {E MN} `{CB : CanonicalBehavior MN} `{FC : @SemanticMeasureCoreLaws behavior_frontier behavior_measure} {A B} (RR : A -> B -> Prop) (t : ptree E MN A) (u : ptree E MN B) : Prop := @PEutt.peutt E MN behavior_frontier behavior_measure FC behavior_mixed behavior_omega A B RR t u. Module PEuttNotations. Notation \"t ≈ₚ[ RR ] u\" := (canonical_peutt RR t u) (at level 70, RR at next level, no associativity) : type_scope. Notation \"t ≈ₚ u\" := (canonical_peutt eq t u) (at level 70, no associativity) : type_scope. End PEuttNotations.",
     "theories/Eq/FreeOmega/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Prob.Interface Require Import Measure Omega. Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.Measure. From PTree.Eq Require Import Canonical. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Definition observable_free_omega_behavior {MN} (NI : SemanticMeasure MN) (NO : @SemanticOmega MN NI) : CanonicalBehavior MN := {| behavior_frontier := FreeOmega MN; behavior_measure := @FreeOmegaObservableSemanticMeasure MN NI NO; behavior_mixed := @FreeOmegaMixedMeasure MN; behavior_omega := @FreeOmegaObservableSemanticOmega MN NI NO |}.",
     "theories/Eq/Backend/EnumQ.v": "From PTree.Prob.Backend.EnumQ Require Import Measure. Require Export PTree.Prob.Backend.EnumQ.Representation. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. Export EnumQ. #[global] Polymorphic Instance EnumQ_CanonicalBehavior : CanonicalBehavior EnumQ := @observable_free_omega_behavior EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega.",
@@ -1132,7 +1132,10 @@
       "public_related_returns",
       "public_structural_return",
       "public_strong_return",
-      "public_bind_after_raw_import"
+      "public_bind_after_raw_import",
+      "public_bind_setoid",
+      "public_continuation_setoid",
+      "public_fmap_setoid"
     ],
     "theories/Regression/Semantics/GenericBind.v": [
       "constant_lub_quotient_equal",
@@ -1142,6 +1145,14 @@
       "sampled_zero_quotient_equal",
       "sampled_zero_not_approx_bottom",
       "free_omega_heterogeneous_bind"
+    ],
+    "theories/Regression/Semantics/GenericAlgebra.v": [
+      "free_omega_bind_Proper",
+      "free_omega_fmap_Proper",
+      "free_omega_frontier_ae_lift",
+      "free_omega_frontier_dirac_ae",
+      "real_bind_proper",
+      "real_fmap_proper"
     ]
   }
 }

@@ -15,11 +15,11 @@
     "PTree.Eq.Backend.ProbabilisticTraceSubEnumQ.subenumQ_finite_interaction_probability",
     "PTree.Eq.Backend.ProbabilisticTraceSubEnumQ.subenumQ_finite_interaction_probability_intro",
     "PTree.Eq.Backend.ProbabilisticTraceSubEnumQ.subenumQ_finite_interaction_probability_range",
-    "PTree.Eq.FreeOmega.Algebra.peutt_bind_Proper",
+    "PTree.Eq.Algebra.peutt_bind_Proper",
     "PTree.Eq.FreeOmega.Algebra.peutt_bind_assoc",
     "PTree.Eq.FreeOmega.Algebra.peutt_bind_ret_l",
     "PTree.Eq.FreeOmega.Algebra.peutt_bind_ret_r",
-    "PTree.Eq.FreeOmega.Algebra.peutt_fmap_Proper",
+    "PTree.Eq.Algebra.peutt_fmap_Proper",
     "PTree.Eq.FreeOmega.Algebra.peutt_fmap_bind",
     "PTree.Eq.FreeOmega.Algebra.peutt_fmap_compose",
     "PTree.Eq.FreeOmega.Algebra.peutt_fmap_id",
@@ -497,6 +497,7 @@
   ],
   "modules": [
     "PTree.Core.PTreeDefinition",
+    "PTree.Eq.Algebra",
     "PTree.Eq.Backend.ProbabilisticTraceEnumQ",
     "PTree.Eq.Backend.ProbabilisticTraceSubEnumQ",
     "PTree.Eq.Backend.StableHittingDomainSubEnumQ",
@@ -739,9 +740,9 @@
       "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
     },
     {
-      "name": "PTree.Eq.FreeOmega.Algebra.peutt_bind_Proper",
-      "type": "@Algebra.peutt_bind_Proper\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall NO : @Omega.SemanticOmega MN NI,\n       @Coupling.SemanticMeasureCouplingAELaws MN NI ->\n       @AE.SemanticMeasureCountableAELaws MN NI ->\n       forall A B : Type,\n       @Morphisms.Proper\n         (PTreeDefinition.ptree E MN A ->\n          (A -> PTreeDefinition.ptree E MN B) -> PTreeDefinition.ptree E MN B)\n         (@Morphisms.respectful (PTreeDefinition.ptree E MN A)\n            ((A -> PTreeDefinition.ptree E MN B) -> PTreeDefinition.ptree E MN B)\n            (@PEutt.peutt E MN (Definition.FreeOmega MN)\n               (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n               (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n               (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n               (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A\n               (@eq A))\n            (@Morphisms.respectful (A -> PTreeDefinition.ptree E MN B)\n               (PTreeDefinition.ptree E MN B)\n               (@Morphisms.pointwise_relation A (PTreeDefinition.ptree E MN B)\n                  (@PEutt.peutt E MN (Definition.FreeOmega MN)\n                     (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n                     (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n                     (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n                     (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) B B\n                     (@eq B)))\n               (@PEutt.peutt E MN (Definition.FreeOmega MN)\n                  (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n                  (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n                  (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n                  (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) B B\n                  (@eq B)))) (@PTreeDefinition.PTree.bind E MN A B)",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "name": "PTree.Eq.Algebra.peutt_bind_Proper",
+      "type": "@Algebra.peutt_bind_Proper\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       @Omega.SemanticOmegaDirectedCofinalityLaws MF FI FO ->\n       @Omega.SemanticOmegaSelection MF FI FO ->\n       forall A B : Type,\n       @Morphisms.Proper\n         (PTreeDefinition.ptree E MN A ->\n          (A -> PTreeDefinition.ptree E MN B) -> PTreeDefinition.ptree E MN B)\n         (@Morphisms.respectful (PTreeDefinition.ptree E MN A)\n            ((A -> PTreeDefinition.ptree E MN B) -> PTreeDefinition.ptree E MN B)\n            (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A))\n            (@Morphisms.respectful (A -> PTreeDefinition.ptree E MN B)\n               (PTreeDefinition.ptree E MN B)\n               (@Morphisms.pointwise_relation A (PTreeDefinition.ptree E MN B)\n                  (@PEutt.peutt E MN MF FI FC MX FO B B (@eq B)))\n               (@PEutt.peutt E MN MF FI FC MX FO B B (@eq B))))\n         (@PTreeDefinition.PTree.bind E MN A B)",
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Algebra.peutt_bind_assoc",
@@ -759,9 +760,9 @@
       "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
     },
     {
-      "name": "PTree.Eq.FreeOmega.Algebra.peutt_fmap_Proper",
-      "type": "@Algebra.peutt_fmap_Proper\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall NO : @Omega.SemanticOmega MN NI,\n       @Coupling.SemanticMeasureCouplingAELaws MN NI ->\n       @AE.SemanticMeasureCountableAELaws MN NI ->\n       forall (A B : Type) (f : A -> B),\n       @Morphisms.Proper (PTreeDefinition.ptree E MN A -> PTreeDefinition.ptree E MN B)\n         (@Morphisms.respectful (PTreeDefinition.ptree E MN A) (PTreeDefinition.ptree E MN B)\n            (@PEutt.peutt E MN (Definition.FreeOmega MN)\n               (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n               (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n               (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n               (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A\n               (@eq A))\n            (@PEutt.peutt E MN (Definition.FreeOmega MN)\n               (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n               (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n               (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n               (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) B B\n               (@eq B))) (@PTreeDefinition.PTree.fmap E MN A B f)",
-      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+      "name": "PTree.Eq.Algebra.peutt_fmap_Proper",
+      "type": "@Algebra.peutt_fmap_Proper\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Omega.SemanticMeasureDiagonalLaws MF FI FO ->\n       @BindOrder.SemanticMeasureBindOrderLaws MF FI FO ->\n       @BindOrder.MixedMeasureBindOrderLaws MN MF FI MX FO ->\n       @Omega.SemanticOmegaDirectedCofinalityLaws MF FI FO ->\n       @Omega.SemanticOmegaSelection MF FI FO ->\n       forall (A B : Type) (f : A -> B),\n       @Morphisms.Proper (PTreeDefinition.ptree E MN A -> PTreeDefinition.ptree E MN B)\n         (@Morphisms.respectful (PTreeDefinition.ptree E MN A) (PTreeDefinition.ptree E MN B)\n            (@PEutt.peutt E MN MF FI FC MX FO A A (@eq A))\n            (@PEutt.peutt E MN MF FI FC MX FO B B (@eq B)))\n         (@PTreeDefinition.PTree.fmap E MN A B f)",
+      "assumptions": "Closed under the global context"
     },
     {
       "name": "PTree.Eq.FreeOmega.Algebra.peutt_fmap_bind",

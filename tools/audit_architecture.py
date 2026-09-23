@@ -125,7 +125,7 @@ def permitted(module, dependency):
         return dependency in {"Eq/PStruct", "Eq/PStrong", "Eq/PEutt", "Eq/Canonical"}
     if module == "PTreeFacts":
         return dependency in {"PTree", "Eq", "Eq/UnifiedFrontier", "Eq/PrimitiveStableHitting",
-            "Eq/WellFormedness", "Eq/StableHittingComputation", "Eq/ProbabilisticTrace", "Eq/Bind",
+            "Eq/WellFormedness", "Eq/StableHittingComputation", "Eq/ProbabilisticTrace", "Eq/Bind", "Eq/Algebra",
             "Eq/FreeOmega/Bind", "Eq/FreeOmega/Algebra", "Eq/FreeOmega/Iter",
             "Interp/FreeOmega/Guarded", "Interp/FreeOmega/Atomic", "Interp/FreeOmega/MDP"}
     if module == "Semantics":

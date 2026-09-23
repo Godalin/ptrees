@@ -39,6 +39,17 @@ Local Notation peutt :=
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega).
 
+(** Pin this regression's observable profile before setoid search. These are
+    local specializations of the single generic proofs, not backend laws. *)
+#[local] Instance regression_bind_Proper {A B} :
+  Proper (peutt eq ==> pointwise_relation A (peutt eq) ==> peutt eq)
+    (@PTree.bind algebraE EnumQ A B).
+Proof. apply peutt_bind_Proper. Qed.
+
+#[local] Instance regression_fmap_Proper {A B} (f : A -> B) :
+  Proper (peutt eq ==> peutt eq) (@PTree.fmap algebraE EnumQ A B f).
+Proof. apply peutt_fmap_Proper. Qed.
+
 (** Regression: all three monad equations elaborate at the canonical
     FreeOmega endpoint. *)
 Lemma canonical_monad_laws_regression {A B C}

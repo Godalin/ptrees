@@ -180,3 +180,47 @@ Example direct_heterogeneous_bind (RR : X -> Y -> Prop) (RS : A -> B -> Prop)
   W RS (PTree.bind t k) (PTree.bind u h).
 Proof. apply mathcomp_direct_peutt_bind. Qed.
 End HeterogeneousBind.
+
+(** Direct assembly is still confined to this existing Gate M file. These
+    clients consume generic Proper proofs, not MathComp copies. *)
+From PTree.Eq Require Import Algebra.
+From Coq Require Import Morphisms.
+From PTree.Prob.Backend.MathComp Require Import BindOrder.
+Section GenericRewriting.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E : Type -> Type} {A B : Type}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Local Notation W := (@peutt E M M NI NC MX NO).
+
+Example direct_bind_setoid (t u : ptree E M A)
+    (k : A -> ptree E M B) (H : W eq t u) :
+  W eq (PTree.bind t k) (PTree.bind u k).
+Proof.
+  assert (Hp : Proper (W eq ==> pointwise_relation A (W eq) ==> W eq)
+    (@PTree.bind E M A B)) by apply peutt_bind_Proper.
+  Timeout 10 setoid_rewrite H. apply peutt_refl.
+Qed.
+
+Example direct_continuation_setoid (t : ptree E M A)
+    (k h : A -> ptree E M B) (H : forall x, W eq (k x) (h x)) :
+  W eq (PTree.bind t k) (PTree.bind t h).
+Proof.
+  assert (Hp : Proper (W eq ==> pointwise_relation A (W eq) ==> W eq)
+    (@PTree.bind E M A B)) by apply peutt_bind_Proper.
+  assert (Hpoint : pointwise_relation A (W eq) k h) by exact H.
+  Timeout 10 setoid_rewrite Hpoint. apply peutt_refl.
+Qed.
+
+Example direct_fmap_setoid (f : A -> B) (t u : ptree E M A)
+    (H : W eq t u) :
+  W eq (PTree.fmap f t) (PTree.fmap f u).
+Proof.
+  assert (Hp : Proper (W eq ==> W eq) (PTree.fmap f)) by apply peutt_fmap_Proper.
+  Timeout 10 setoid_rewrite H. apply peutt_refl.
+Qed.
+End GenericRewriting.

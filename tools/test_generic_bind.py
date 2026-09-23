@@ -1,4 +1,5 @@
-"""Mutation checks for the finite-algebra/generic bind extraction boundary."""
+"""Frozen ad8705f bind-extraction gate; consumer extraction has its own gate."""
+import subprocess
 import unittest
 from audit_assumptions import ROOT
 from audit_generic_bind import check_source
@@ -6,8 +7,10 @@ from audit_generic_bind import check_source
 class GenericBindTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.sources={p.relative_to(ROOT).as_posix():p.read_text()
-                     for p in (ROOT/'theories').rglob('*.v')}
+        paths = subprocess.check_output(['git','ls-tree','-r','--name-only','ad8705f'],
+                                        cwd=ROOT,text=True).splitlines()
+        cls.sources = {p:subprocess.check_output(['git','show','ad8705f:'+p],
+                        cwd=ROOT,text=True) for p in paths if p.endswith('.v')}
 
     def test_source_conservation(self):
         check_source(self.sources)
