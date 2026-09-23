@@ -97,6 +97,10 @@ Qed.''')
     return s
 
 def check_source(sources):
+    # Later additive mathematics is audited against this stage's frozen HEAD.
+    # Strip only its exact new module/import set, never old proof changes.
+    from audit_relational_limits import previous_sources
+    sources = previous_sources(sources)
     old={p for p in subprocess.check_output(['git','ls-tree','-r','--name-only',BASELINE],
         cwd=ROOT,text=True).splitlines() if p.endswith('.v')}
     assert set(sources)==old|NEW, 'Unexpected module addition/deletion'

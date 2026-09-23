@@ -9,6 +9,13 @@ does not imply a successful remote CI run.
 
 ## Frozen theory and maintained validation
 
+Relational omega limits now have a proved external countable-support theorem
+for arbitrary relations, and a generic sufficient theorem for increasing
+joint chains, also instantiated by normally checked native MathComp. A finite
+counterexample proves that increasing marginals do not guarantee an increasing
+joint selection. Unrestricted MathComp relational limits and generic structural
+bridges remain open; see [exact scope and proofs](docs/RELATIONAL_LIMITS.md).
+
 Direct MathComp is now an explicitly universe-unchecked, isolated Gate M
 backend (`MN = MF = MathCompKernelMeasure R`), not a third safe backend.
 Gate S proves native order, increasing-chain lub existence, both bind

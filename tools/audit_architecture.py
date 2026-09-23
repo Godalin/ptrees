@@ -24,6 +24,7 @@ def external_validation(path):
     return path.startswith(("Prob/Domain/", "Prob/FreeOmega/Validation/")) or path in {
         "Prob/Backend/Common/DomainTransport",
         "Prob/Backend/Common/CountableCoupling",
+        "Prob/Backend/Common/CountableRelationalLimit",
         "Prob/Backend/SubEnumQ/Domain", "Prob/Backend/MathComp/Domain",
         "Prob/Backend/SubEnumR/Domain",
         "Prob/Backend/SubEnumR/FreeOmega/Validation",
@@ -70,7 +71,7 @@ def ownership(path):
         assert not (family == "MathComp" and "FreeOmega" in parts[3:]), \
             "Removed MathComp completion namespace: " + path
         owner = "/".join(parts[:3])
-        if path in {"Prob/Backend/Common/DomainTransport", "Prob/Backend/Common/CountableCoupling"}:
+        if path in {"Prob/Backend/Common/DomainTransport", "Prob/Backend/Common/CountableCoupling", "Prob/Backend/Common/CountableRelationalLimit"}:
             return owner, "external validation", "one-way adapter: independent real transport to expectation-domain joints"
         if family == "Common":
             return owner, "shared arithmetic/combinatorics", "no native carrier specialization"
@@ -114,7 +115,7 @@ def permitted(module, dependency):
         return under("Prob/Domain")
     if module.startswith("Prob/FreeOmega/Validation/"):
         return under("Prob/Domain", "Prob/Interface", "Prob/FreeOmega")
-    if module in {"Prob/Backend/Common/DomainTransport", "Prob/Backend/Common/CountableCoupling"}:
+    if module in {"Prob/Backend/Common/DomainTransport", "Prob/Backend/Common/CountableCoupling", "Prob/Backend/Common/CountableRelationalLimit"}:
         return under("Prob/Domain", "Prob/Backend/Common")
     # A generic theorem layer may not silently fix its observable carrier.
     if ownership(module)[1] == "generic" and ownership(dependency)[1] == "FreeOmega":

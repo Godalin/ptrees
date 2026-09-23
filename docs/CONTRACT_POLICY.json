@@ -1158,6 +1158,19 @@
       "real_bind_proper",
       "real_fmap_proper"
     ],
+    "theories/Regression/Probability/RelationalLimit.v": [
+      "arbitrary_nat_relational_limit",
+      "successor_limit",
+      "equality_limit",
+      "empty_relation_zero_limit",
+      "half_le_fair",
+      "initial_joint",
+      "final_joint",
+      "initial_joint_has_no_increasing_extension",
+      "no_increasing_joint_selection",
+      "noncoherent_chain_has_limit_joint",
+      "mathcomp_coherent_joint_limit"
+    ],
     "theories/Regression/Semantics/GenericConsumers.v": [
       "free_omega_eventful_iter",
       "real_guarded_interp"
