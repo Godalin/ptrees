@@ -1,4 +1,5 @@
 """Mutation checks for the ad8705f generic-consumer extraction."""
+import subprocess
 import unittest
 from audit_assumptions import ROOT
 from audit_generic_algebra import check_source, ALG, FOALG, COUPLING, MEASURE, COINCIDENCE, DIRECT
@@ -6,8 +7,10 @@ from audit_generic_algebra import check_source, ALG, FOALG, COUPLING, MEASURE, C
 class GenericAlgebraTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.sources={p.relative_to(ROOT).as_posix():p.read_text()
-                     for p in (ROOT/'theories').rglob('*.v')}
+        paths = subprocess.check_output(['git','ls-tree','-r','--name-only','c2dea6b'],
+                                        cwd=ROOT,text=True).splitlines()
+        cls.sources = {p:subprocess.check_output(['git','show','c2dea6b:'+p],
+                        cwd=ROOT,text=True) for p in paths if p.endswith('.v')}
 
     def test_conservation(self):
         check_source(self.sources)

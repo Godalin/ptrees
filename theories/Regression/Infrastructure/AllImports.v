@@ -191,6 +191,7 @@ Require PTree.Prob.FreeOmega.NativeCoupling.
 Require PTree.Prob.FreeOmega.Observation.
 Require PTree.Prob.FreeOmega.Quotient.
 Require PTree.Prob.FreeOmega.Recovery.
+Require PTree.Prob.FreeOmega.RelationalLimit.
 Require PTree.Prob.FreeOmega.StructuralMeasure.
 Require PTree.Prob.FreeOmega.Support.
 Require PTree.Prob.FreeOmega.SupportLift.

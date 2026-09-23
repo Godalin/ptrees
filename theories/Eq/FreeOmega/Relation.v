@@ -1,4 +1,5 @@
 From PTree.Eq Require Import StableHittingRelation.
+From PTree.Prob.FreeOmega Require Import RelationalLimit.
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
@@ -140,26 +141,9 @@ Proof.
     eapply stable_hitting_match_of_hitting_lift;
       [exact Hout1|exact Hout2|].
     eapply FOQLMono.
-    + unfold stable_hitting in Hout1, Hout2.
-      cbn in Hout1, Hout2.
-      eapply FOQLComp with (T := eq)
-        (U := stable_head_rel RR (pstruct RR))
-        (mid := FOLub (fun fuel => ptree_hitting_approx
-          (MF := MF) fuel (observe u1))).
-      * exact Hout1.
-      * eapply FOQLComp with
-          (T := stable_head_rel RR (pstruct RR))
-          (U := eq)
-          (mid := FOLub (fun fuel => ptree_hitting_approx
-            (MF := MF) fuel (observe u2))).
-        -- apply FOQLLub. intro fuel.
-           apply FOQLStructural.
-           exact (ptree_hitting_pstruct
-             (RR := RR) fuel Hs).
-        -- apply FOQLSym. eapply FOQLMono; [exact Hout2|].
-           intros x y ->. reflexivity.
-        -- intros x z [y [Hxy ->]]. exact Hxy.
-      * intros x z [y [-> Hyz]]. exact Hyz.
+    + eapply free_omega_lift_lub; [exact Hout1|exact Hout2|].
+      intro fuel. apply FOQLStructural.
+      exact (ptree_hitting_pstruct (RR := RR) fuel Hs).
     + intros h1 h2 Hhead. dependent destruction Hhead.
       * constructor. exact H.
       * constructor. intro x. exists (k1 x), (k2 x).
@@ -244,26 +228,9 @@ Proof.
     eapply stable_hitting_match_of_hitting_lift;
       [exact Hout1|exact Hout2|].
     eapply FOQLMono.
-    + unfold stable_hitting in Hout1, Hout2.
-      cbn in Hout1, Hout2.
-      eapply FOQLComp with (T := eq)
-        (U := stable_head_rel RR (pstrong RR))
-        (mid := FOLub (fun fuel => ptree_hitting_approx
-          (MF := MF) fuel (observe u1))).
-      * exact Hout1.
-      * eapply FOQLComp with
-          (T := stable_head_rel RR (pstrong RR))
-          (U := eq)
-          (mid := FOLub (fun fuel => ptree_hitting_approx
-            (MF := MF) fuel (observe u2))).
-        -- apply FOQLLub. intro fuel.
-           apply FOQLStructural.
-           exact (ptree_hitting_pstrong
-             (RR := RR) fuel Hs).
-        -- apply FOQLSym. eapply FOQLMono; [exact Hout2|].
-           intros x y ->. reflexivity.
-        -- intros x z [y [Hxy ->]]. exact Hxy.
-      * intros x z [y [-> Hyz]]. exact Hyz.
+    + eapply free_omega_lift_lub; [exact Hout1|exact Hout2|].
+      intro fuel. apply FOQLStructural.
+      exact (ptree_hitting_pstrong (RR := RR) fuel Hs).
     + intros h1 h2 Hhead. dependent destruction Hhead.
       * constructor. exact H.
       * constructor. intro x. exists (k1 x), (k2 x).
