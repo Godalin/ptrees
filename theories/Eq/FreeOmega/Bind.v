@@ -14,6 +14,8 @@ From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTre
 From PTree.Eq.FreeOmega Require Import Base Relation.
 
 Set Implicit Arguments.
+#[local] Existing Instance FreeOmegaSemanticMeasure.
+#[local] Existing Instance FreeOmegaSemanticOmega.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 

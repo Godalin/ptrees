@@ -260,7 +260,6 @@ End StableHittingBisimulationComposition.
     and in the relation on stable Ret/Vis heads. *)
 Section PEutt.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF}

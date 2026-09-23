@@ -12,6 +12,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel PEutt.
 From PTree.Eq.Backend.MathComp Require Import Direct.
 From PTree.Examples Require Import MathCompPrograms.
+From PTree.API Require Import Behavior.
 Set Implicit Arguments.
 Import GRing.Theory Num.Theory Order.Theory.
 
@@ -35,6 +36,13 @@ Definition available_general_hitting_exists :=
   @ptree_stable_hitting_exists E M M NI MX NO _ _ bool.
 
 Context `{G : MathCompCouplingGluing R}.
+Example direct_canonical_profile {F A B} (RR : A -> B -> Prop)
+    (t : ptree F M A) (u : ptree F M B) :
+  canonical_peutt RR t u =
+  @peutt F M M NI (@MathCompNodeSemanticMeasureCoreLaws R G)
+    MX NO A B RR t u.
+Proof. reflexivity. Qed.
+
 Example direct_ret_reflexivity :
   @mathcomp_direct_peutt R G E bool direct_ret direct_ret.
 Proof. apply mathcomp_direct_peutt_refl. Qed.

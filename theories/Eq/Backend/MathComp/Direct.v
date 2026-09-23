@@ -16,6 +16,17 @@ From PTree.Eq Require Import Shallow UnifiedFrontier PTreeKernel PEutt
   PrimitiveStableHitting StableHittingRelation.
 Require Import Lia.
 From Coq.Classes Require Morphisms.
+From PTree.API Require Import Behavior.
+
+(** Only this existing unchecked assembly registers the direct route. No
+    safe facade imports it; probability mathematics remains in Gate S. *)
+#[global] Instance MathComp_CanonicalBehavior (R : realType) :
+    CanonicalBehavior (MathCompKernelMeasure R) := {|
+  behavior_frontier := MathCompKernelMeasure R;
+  behavior_measure := MathCompNodeSemanticMeasure R;
+  behavior_mixed := MathCompNativeMixedMeasure R;
+  behavior_omega := MathCompNodeSemanticOmega R
+|}.
 
 Section Direct.
 Variable R : realType.

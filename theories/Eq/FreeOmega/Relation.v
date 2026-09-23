@@ -12,6 +12,8 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PStruct PStrong PEutt PTreeKernel.
 
 Set Implicit Arguments.
+#[local] Existing Instance FreeOmegaSemanticMeasure.
+#[local] Existing Instance FreeOmegaSemanticOmega.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 

@@ -29,6 +29,9 @@ ENDPOINTS += ['PTree.Regression.Backend.MathCompDirect.' + n for n in [
     'direct_retry_hitting', 'direct_unbounded_retry', 'direct_retry_before_vis',
     'direct_eventful_bind_rewrite', 'direct_nested_unbounded_retry',
     'direct_nested_retry_diagonal', 'direct_retry_vis_interaction']]
+ENDPOINTS += [
+    'PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior',
+    'PTree.Regression.Backend.MathCompDirect.direct_canonical_profile']
 # Importing the unchecked modules must not retrospectively taint safe facts.
 SAFE_CONTROLS = [
     'PTree.Prob.Backend.MathComp.NativeLaws.mathcomp_native_bind_le_k',

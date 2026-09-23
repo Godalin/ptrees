@@ -25,6 +25,8 @@ From PTree.Eq Require Import PEutt.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli BernoulliFactory.
 
 Set Implicit Arguments.
+#[local] Existing Instance FreeOmegaSemanticMeasure.
+#[local] Existing Instance FreeOmegaSemanticOmega.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 

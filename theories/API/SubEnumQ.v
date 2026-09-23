@@ -5,6 +5,11 @@
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 From PTree.Interp.Backend Require Import SubEnumQ.
+From PTree.API Require Import Behavior BehaviorFreeOmega.
+
+#[global] Polymorphic Instance SubEnumQ_CanonicalBehavior : CanonicalBehavior SubEnumQ :=
+  @observable_free_omega_behavior SubEnumQ
+    SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega.
 
 Notation subenumQ_mdp_state_interp_atomic :=
   PTree.Interp.Backend.SubEnumQ.subenumQ_mdp_state_interp_atomic.

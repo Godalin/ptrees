@@ -15,10 +15,8 @@ Unset Printing Implicit Defensive.
 
 Section PTreeKernel.
 Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
-  `{MX : MixedMeasure MN MF}
-  `{FO : @SemanticOmega MF FI}.
+  `{MX : MixedMeasure MN MF}.
 
 (** The same primitive transition in the generic stable-hitting interface.
     Residual states are observations, not syntax constructors: taking the
@@ -32,6 +30,9 @@ Definition ptree_primitive_kernel {R} (ot : ptree' E MN R) :
   | ProbF _ mu k =>
       mixed_bind mu (fun x => sem_ret (SHInternal (observe (k x))))
   end.
+
+(** Only approximants/limits need the frontier zero/omega operations. *)
+Context `{FO : @SemanticOmega MF FI}.
 
 (** Resolve one stable target using at most [fuel] further primitive
     steps.  Unresolved internal mass goes to [sem_zero]. *)

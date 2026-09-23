@@ -15,7 +15,7 @@ theorems are described in [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md).
 | `Prob/FreeOmega/Validation` | Native-parametric external bounded-test validation | May consume Domain and generic FreeOmega; no concrete backend |
 | `Prob/Backend/{Common,EnumQ,SubEnumQ,SubEnumR,MathComp}` | Arithmetic, native models and their specialized endpoints | Common has no native-carrier dependency; MathComp is independent of EnumQ/SubEnumQ |
 | `Prob/Domain` | Independent continuous expectations and standard measure correspondence | Domain and mathematical libraries only |
-| `Eq` | Stable hitting, `pstruct`, `pstrong`, canonical `peutt` | No Semantics, Interp or API dependency |
+| `Eq` | Stable hitting, `pstruct`, `pstrong`, canonical `peutt` | No Semantics/Interp/API dependency in Gate S; exact Gate M selector exception below |
 | `Semantics` | Raw/head transitions, comparison bisimulation and MDP fragment | No Interp or API dependency |
 | `Interp` | Structural and behavioral interpreter theory | May consume Eq and Semantics |
 | `API` | Curated endpoints and convenience programs | No bulk implementation export |
@@ -32,6 +32,35 @@ validated EnumQ carrier, not an unrelated implementation.
 `Prob/Legacy` remains noncanonical weighted infrastructure. It is not an
 alternative to the subprobability-validity contract. Its existing clients
 are retained; no deletion follows merely from its name.
+
+## Behavioral operation selection
+
+`API/Behavior.CanonicalBehavior MN` selects the complete operation profile
+`(MF, FI, MX, FO)`, not just a frontier carrier. Its four fields contain no
+law capabilities and are not registered as capability instances. Law search
+then runs against the selected operations. There is no generic blanket
+`MN -> FreeOmega MN` registration.
+
+Concrete API adapters select observable FreeOmega for SubEnumQ, SubEnumR and
+the still-maintained weighted EnumQ backend. The explicit builder lives in
+`API/BehaviorFreeOmega`; it is not an instance. Weighted EnumQ's route is not
+a subprobability-validity claim.
+
+Structural FreeOmega operations and laws remain mathematical constants, but
+their ten instance registrations are local. Internal proof clients opt in
+locally. `FreeOmegaMixedMeasure` remains a shared global operation because
+it selects neither structural nor quotient equality.
+
+The existing Gate M direct MathComp assembly selects the native self-frontier.
+There is exactly one architectural exception to Eq's no-API-import rule:
+the existing Gate M files may import `API/Behavior`. They may not import other
+API adapters through this exception. Safe modules still cannot depend on Gate
+M, directly or transitively; no unchecked file has been added.
+
+This routing-foundation gate deliberately leaves raw `peutt`, public `≈ₚ`,
+and the public bind alias unchanged. `canonical_peutt` is the tested API hook;
+the notation/bind/client switch is a subsequent gate. See
+[canonical routing](CANONICAL_BEHAVIOR_ROUTING.md) for scope and checks.
 
 ## Three layers of probability reasoning
 

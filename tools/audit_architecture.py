@@ -105,6 +105,10 @@ def ownership(path):
 def permitted(module, dependency):
     if dependency in GATE_M and module not in GATE_M:
         return False
+    # Direct assembly alone may register/use the API operation selector.
+    # This exact edge never permits safe theory to import the unchecked model.
+    if module in GATE_M and dependency == "API/Behavior":
+        return True
     def under(*prefixes):
         return any(dependency.startswith(p + "/") for p in prefixes)
     if external_validation(dependency) and not (
@@ -318,7 +322,7 @@ def report():
         "- Native SubEnumQ expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.",
         "- MathComp and EnumQ/SubEnumQ do not depend on each other; EnumQ/SubEnumQ realization adapters may reuse each other.",
         "- MathComp native sources and their transitive dependencies exclude formal completion; no MathComp behavioral alias or concrete FreeOmega instantiation is maintained.",
-        "- Eq imports no Interp/Semantics/API; Semantics imports no Interp/API.",
+        "- Gate S Eq imports no Interp/Semantics/API; Semantics imports no Interp/API. Existing Gate M assembly/probes may import only API/Behavior as an exact selector exception.",
         "- Generic/canonical-model Eq, Semantics and Interp modules import no concrete backend endpoint.",
         "- No maintained library imports Regression, Examples or Experimental.",
         "- Cases do not depend on tests. Experimental has no remaining source module.", "",

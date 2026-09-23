@@ -25,6 +25,8 @@ From PTree.Interp.FreeOmega Require Import Base Guarded.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded OperationalVonNeumann.
 
 Set Implicit Arguments.
+#[local] Existing Instance FreeOmegaSemanticMeasure.
+#[local] Existing Instance FreeOmegaSemanticOmega.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 

@@ -16,7 +16,12 @@ Unset Printing Implicit Defensive.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation.
 
 
-#[global] Polymorphic Instance FreeOmegaSemanticMeasure {MN}
+(** Structural operations and their indexed laws are internal proof tools.
+    Their constants remain available, but importing this module does not
+    register them for global search. Structural clients opt in locally.
+    The shared [FreeOmegaMixedMeasure] operation below is the sole global
+    exception: it does not select an equality/lifting interpretation. *)
+#[local] Polymorphic Instance FreeOmegaSemanticMeasure {MN}
     `{NI : SemanticMeasure MN} :
     SemanticMeasure (FreeOmega MN) := {
   sem_ret := @FORet MN;
@@ -204,7 +209,7 @@ Proof.
   - constructor. intro n. eapply H0. exact (H1 n).
 Qed.
 
-#[global] Polymorphic Instance FreeOmegaSemanticMeasureCoreLaws :
+#[local] Polymorphic Instance FreeOmegaSemanticMeasureCoreLaws :
     @SemanticMeasureCoreLaws (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI)).
 Proof.
@@ -244,7 +249,7 @@ Proof.
   - exact @free_omega_lift_comp.
 Qed.
 
-#[global] Polymorphic Instance FreeOmegaSemanticMeasureAEKleisliLaws :
+#[local] Polymorphic Instance FreeOmegaSemanticMeasureAEKleisliLaws :
     @SemanticMeasureAEKleisliLaws (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI)).
 Proof.
@@ -274,7 +279,7 @@ Proof.
     dependent destruction HP. eauto.
 Qed.
 
-#[global] Polymorphic Instance FreeOmegaSemanticMeasureCountableAELaws
+#[local] Polymorphic Instance FreeOmegaSemanticMeasureCountableAELaws
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI} :
     @SemanticMeasureCountableAELaws (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI)).
@@ -318,7 +323,7 @@ Proof.
   - constructor. intro n. exact (H0 n (H1 n)).
 Qed.
 
-#[global] Polymorphic Instance FreeOmegaSemanticMeasureCouplingAELaws
+#[local] Polymorphic Instance FreeOmegaSemanticMeasureCouplingAELaws
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI} :
     @SemanticMeasureCouplingAELaws (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI)).
@@ -372,7 +377,7 @@ Proof.
   - constructor. exact H0.
 Qed.
 
-#[global] Polymorphic Instance FreeOmegaSemanticMeasureBindLaws
+#[local] Polymorphic Instance FreeOmegaSemanticMeasureBindLaws
     `{NAE : @SemanticMeasureAELiftLaws MN NI} :
     @SemanticMeasureBindLaws (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI)).
@@ -400,7 +405,7 @@ Lemma free_omega_mixed_bindE {A B} (mu : MN A)
     A B mu k = FOSample mu k.
 Proof. reflexivity. Qed.
 
-#[global] Polymorphic Instance FreeOmegaMixedMeasureLaws
+#[local] Polymorphic Instance FreeOmegaMixedMeasureLaws
     `{NAE : @SemanticMeasureAELiftLaws MN NI} :
     @MixedMeasureLaws MN (FreeOmega MN) NI
       (FreeOmegaSemanticMeasure (NI := NI))
@@ -421,7 +426,7 @@ Qed.
 (** The free completion has a canonical formal lub.  [sem_total] is kept
     explicit and conservative: totality certificates for analytic limits
     belong to an observable interpretation, not to the syntax alone. *)
-#[global] Polymorphic Instance FreeOmegaSemanticOmega :
+#[local] Polymorphic Instance FreeOmegaSemanticOmega :
     forall `{NO : @SemanticOmega MN NI},
     @SemanticOmega (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI)).
@@ -440,7 +445,7 @@ Defined.
     totality instead permits a formal omega limit exactly when it denotes a
     total low-universe node distribution. *)
 
-#[global] Polymorphic Instance FreeOmegaSemanticOmegaLaws :
+#[local] Polymorphic Instance FreeOmegaSemanticOmegaLaws :
     forall `{NO : @SemanticOmega MN NI},
     @SemanticOmegaLaws (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI))
@@ -470,7 +475,7 @@ Proof.
     intros z. reflexivity.
 Qed.
 
-#[global] Polymorphic Instance FreeOmegaSemanticMeasureOrderLaws :
+#[local] Polymorphic Instance FreeOmegaSemanticMeasureOrderLaws :
     forall `{NO : @SemanticOmega MN NI},
     @SemanticMeasureOrderLaws (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI))

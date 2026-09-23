@@ -1,9 +1,12 @@
 (** Gate S integration regression: load every normally checked module in one universe context.
     Not a facade or an ordinary theorem client. *)
+Require PTree.API.Behavior.
+Require PTree.API.BehaviorFreeOmega.
 Require PTree.API.EnumQ.
 Require PTree.API.FreeOmega.
 Require PTree.API.Generic.
 Require PTree.API.SubEnumQ.
+Require PTree.API.SubEnumR.
 Require PTree.API.Weighted.
 Require PTree.Core.PTreeDefinition.
 Require PTree.Core.Utils.
@@ -232,6 +235,9 @@ Require PTree.Regression.Backend.SubEnumRShared.
 Require PTree.Regression.Backend.UnifiedFrontierEnumQ.
 Require PTree.Regression.Fixtures.FreeOmegaSamples.
 Require PTree.Regression.Infrastructure.ArchitectureBoundaries.
+Require PTree.Regression.Infrastructure.CanonicalBehavior.
+Require PTree.Regression.Infrastructure.CanonicalBehaviorNativeFirst.
+Require PTree.Regression.Infrastructure.CanonicalBehaviorStructuralFirst.
 Require PTree.Regression.Infrastructure.CapabilityBoundaries.
 Require PTree.Regression.Infrastructure.CorrelatedInternalRounds.
 Require PTree.Regression.Infrastructure.CostedRounds.
@@ -249,6 +255,7 @@ Require PTree.Regression.Infrastructure.PairedFiniteCompression.
 Require PTree.Regression.Infrastructure.ResidualFinite.
 Require PTree.Regression.Infrastructure.ResidualJointCoinduction.
 Require PTree.Regression.Infrastructure.ResidualTransport.
+Require PTree.Regression.Infrastructure.StructuralRegistry.
 Require PTree.Regression.Infrastructure.UniverseSeparatedPTree.
 Require PTree.Regression.Probability.ConditionalResampling.
 Require PTree.Regression.Probability.CorrelatedSampleAlgebra.

@@ -8,11 +8,18 @@ From ExtLib.Structures Require Import Monads.
 
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Backend.EnumQ.Representation.
+From PTree.Prob.Backend.EnumQ Require Import Measure.
+From PTree.API Require Import Behavior BehaviorFreeOmega.
 
 Set Implicit Arguments.
 Set Contextual Implicit.
 
 Import EnumQ.
+
+(** Select observable completion, without asserting a subprobability bound. *)
+#[global] Polymorphic Instance EnumQ_CanonicalBehavior : CanonicalBehavior EnumQ :=
+  @observable_free_omega_behavior EnumQ
+    EnumQ_SemanticMeasure EnumQ_SemanticOmega.
 
 Definition meas {E} {X : eqType} (mu : EnumQ X) : ptree E EnumQ X :=
   Prob mu ret.
