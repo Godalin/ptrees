@@ -1213,6 +1213,14 @@
       "iter_replay_threads_updated_state",
       "transformed_iter_has_same_replay",
       "eventful_probabilistic_iter_commutes"
+    ],
+    "theories/Regression/Semantics/UnrestrictedInterp.v": [
+      "handler_return_is_internal",
+      "heterogeneous_elimination",
+      "infinitely_many_eliminated_events",
+      "eliminating_setoid_rewrite",
+      "partial_mixed_handler",
+      "real_arbitrary_handler"
     ]
   }
 }
