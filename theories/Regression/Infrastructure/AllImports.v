@@ -252,6 +252,7 @@ Require PTree.Regression.Infrastructure.KernelContinuity.
 Require PTree.Regression.Infrastructure.MathCompUniverse.
 Require PTree.Regression.Infrastructure.NativeRecovery.
 Require PTree.Regression.Infrastructure.PairedFiniteCompression.
+Require PTree.Regression.Infrastructure.PublicBehavior.
 Require PTree.Regression.Infrastructure.ResidualFinite.
 Require PTree.Regression.Infrastructure.ResidualJointCoinduction.
 Require PTree.Regression.Infrastructure.ResidualTransport.

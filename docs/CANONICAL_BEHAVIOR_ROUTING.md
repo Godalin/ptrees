@@ -1,5 +1,10 @@
 # Canonical behavioral routing — foundation gate
 
+Historical accepted checkpoint: `a95734e`. The subsequent public notation
+switch is recorded in [PUBLIC_BEHAVIOR.md](PUBLIC_BEHAVIOR.md). The exact
+foundation source audit remains a checkpoint-specific audit, not a gate to
+be weakened for later intentional API changes.
+
 Baseline: `04475b2`. This implements proposal steps 1–4, not the subsequent
 public-notation, bind-facade or example migration. No CI work is performed.
 
@@ -144,6 +149,7 @@ whole-library kernel audit or a universe-safe Gate M claim.
 Move `≈ₚ / ≈ₚ[RR]` ownership to the canonical API, align public heterogeneous
 `peutt_bind` with that relation using actual existing laws/corollaries, and run
 the minimal `PTree + API/SubEnumQ` client with no extra implementation import.
-Then introduce `≡ₚ / ≃ₚ` and migrate ordinary examples. Until then, the existing
-public glyph is still the raw notation: the selector's guarantees apply to
-`canonical_peutt`, not yet to every old `≈ₚ` occurrence.
+Then introduce `≡ₚ / ≃ₚ` and migrate ordinary examples. At this foundation
+checkpoint the public glyph was still raw notation: the selector's guarantees
+applied to `canonical_peutt`, not yet to every old `≈ₚ` occurrence. See the
+successor report above for the current public surface.

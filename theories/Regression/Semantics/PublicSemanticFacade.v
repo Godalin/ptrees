@@ -53,7 +53,6 @@ Local Notation facade_peutt_tau_r := peutt_tau_r.
 Local Notation facade_peutt_vis := peutt_vis.
 Local Notation facade_peutt_prob := peutt_prob.
 Local Notation facade_peutt_prob_rewrite := peutt_prob_rewrite.
-Local Notation facade_peutt_bind := peutt_bind.
 Local Notation facade_finite_interaction_pattern := finite_interaction_pattern.
 Local Notation facade_finite_interaction_query := finite_interaction_query.
 Local Notation facade_finite_interaction_sem := finite_interaction_sem.
@@ -66,18 +65,21 @@ Local Notation facade_peutt_preserves_finite_interaction_sem :=
     concrete measure instance.  Capability classes stay under their owning
     measure module rather than becoming extra facade aliases. *)
 Section NotationRegression.
-Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{FI : PTree.Prob.Interface.Measure.SemanticMeasure MF}
-  `{FC : @PTree.Prob.Interface.Measure.SemanticMeasureCoreLaws MF FI}
-  `{MX : PTree.Prob.Interface.Mixed.MixedMeasure MN MF}
-  `{FO : @PTree.Prob.Interface.Omega.SemanticOmega MF FI}.
+Context {E MN : Type -> Type}
+  `{CB : PTree.API.Behavior.CanonicalBehavior MN}
+  `{FC : @PTree.Prob.Interface.Measure.SemanticMeasureCoreLaws
+    (@PTree.API.Behavior.behavior_frontier MN CB)
+    (@PTree.API.Behavior.behavior_measure MN CB)}.
 Context {R : Type}.
 
 Lemma public_peutt_notation (t u : ptree E MN R) :
-  t ≈ₚ u -> peutt eq t u.
+  t ≈ₚ u -> @PTree.API.Behavior.canonical_peutt E MN CB FC R R eq t u.
 Proof. exact (fun H => H). Qed.
 
 End NotationRegression.
+
+From PTree.API Require Import FreeOmega.
+Local Notation facade_peutt_bind := peutt_bind.
 
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
@@ -94,21 +96,20 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section NotationRegression.
-Context {E : Type -> Type} {MN MF : Type -> Type}
-  `{NI : SemanticMeasure MN}
-  `{FI : SemanticMeasure MF}
-  `{FC : @SemanticMeasureCoreLaws MF FI}
-  `{MX : MixedMeasure MN MF}
-  `{FO : @SemanticOmega MF FI}.
+Context {E MN : Type -> Type}
+  `{CB : PTree.API.Behavior.CanonicalBehavior MN}
+  `{FC : @SemanticMeasureCoreLaws
+    (@PTree.API.Behavior.behavior_frontier MN CB)
+    (@PTree.API.Behavior.behavior_measure MN CB)}.
 
 Lemma peutt_notation_homogeneous {R}
     (t u : ptree E MN R) :
-  (t ≈ₚ u) <-> peutt eq t u.
+  (t ≈ₚ u) <-> @PTree.API.Behavior.canonical_peutt E MN CB FC R R eq t u.
 Proof. reflexivity. Qed.
 
 Lemma peutt_notation_heterogeneous {R1 R2}
     (RR : R1 -> R2 -> Prop) (t : ptree E MN R1) (u : ptree E MN R2) :
-  (t ≈ₚ[RR] u) <-> peutt RR t u.
+  (t ≈ₚ[RR] u) <-> @PTree.API.Behavior.canonical_peutt E MN CB FC R1 R2 RR t u.
 Proof. reflexivity. Qed.
 
 End NotationRegression.

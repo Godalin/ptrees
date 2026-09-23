@@ -1,8 +1,13 @@
 (** Role: User-facing assembly or tree/backend adapter. Imports lower layers explicitly; not new semantic theory. *)
 (** Curated canonical-model API. Uses FreeOmega equational/interpreter theory;
     exposes endpoint names, not quotient lifts, schedules or acceleration grids. *)
-From PTree.Eq.FreeOmega Require Import Algebra Iter.
+From PTree.Eq.FreeOmega Require Import Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Guarded Atomic MDP.
+(** This heterogeneous corollary fixes the observable FreeOmega profile and
+    discharges cofinality internally. It applies definitionally to the public
+    glyph for EnumQ/SubEnumQ/SubEnumR; it is not a law of an arbitrary
+    operation-only CanonicalBehavior. MathComp retains its direct endpoint. *)
+Notation peutt_bind := Bind.peutt_bind.
 Notation peutt_bind_assoc := Algebra.peutt_bind_assoc.
 Notation peutt_bind_ret_l := Algebra.peutt_bind_ret_l.
 Notation peutt_bind_ret_r := Algebra.peutt_bind_ret_r.

@@ -460,14 +460,9 @@ Qed.
 
 End PEuttContinuation.
 
-(** Public notation for the canonical behavioral equivalence.  It lives in
-    [type_scope], matching ITree's [≈] convention while retaining a visible
-    probabilistic subscript.  The bracketed form supports heterogeneous
-    return relations. *)
-Notation "t ≈ₚ[ RR ] u" := (peutt RR t u)
-  (at level 70, RR at next level, no associativity) : type_scope.
-Notation "t ≈ₚ u" := (peutt eq t u)
-  (at level 70, no associativity) : type_scope.
+(** Raw [peutt] remains parameterized by arbitrary frontier operations.
+    Public behavioral notation is owned by API/Generic and selects the
+    complete canonical operation profile, not just the frontier carrier. *)
 
 Section PEuttEndpoint.
 Context {E : Type -> Type} {MN MF : Type -> Type}

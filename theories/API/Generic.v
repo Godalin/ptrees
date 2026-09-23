@@ -18,6 +18,7 @@ Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PStruct PStrong PEutt StableHittingComputation ProbabilisticTrace.
+From PTree.API Require Import Behavior.
 
 (** Curated aliases are declared here because [Require Import] deliberately
     does not re-export the short names introduced by implementation modules. *)
@@ -48,9 +49,11 @@ Notation finite_interaction_pattern :=
 Notation finite_interaction_query := ProbabilisticTrace.finite_interaction_query.
 Notation finite_interaction_sem := ProbabilisticTrace.finite_interaction_sem.
 
-Notation "t ≈ₚ[ RR ] u" := (peutt RR t u)
+(** Only the public glyph chooses the canonical profile. The raw [peutt]
+    alias above remains available for explicitly parameterized theory. *)
+Notation "t ≈ₚ[ RR ] u" := (Behavior.canonical_peutt RR t u)
   (at level 70, RR at next level, no associativity) : type_scope.
-Notation "t ≈ₚ u" := (peutt eq t u)
+Notation "t ≈ₚ u" := (Behavior.canonical_peutt eq t u)
   (at level 70, no associativity) : type_scope.
 
 (** Stable-hitting and behavioral endpoints. *)
@@ -90,6 +93,10 @@ Notation peutt_tau_r := PEutt.peutt_tau_r.
 Notation peutt_vis := PEutt.peutt_vis.
 Notation peutt_prob := PEutt.peutt_prob.
 Notation peutt_prob_rewrite := PEutt.peutt_prob_rewrite.
+(** Unconditional public [peutt_bind] is supplied by API/FreeOmega.
+    This generic facade retains the arbitrary-frontier theorem and its
+    explicit scheduling premise. PTree exports API/FreeOmega after this
+    facade, selecting the unconditional corollary for ordinary clients. *)
 Notation peutt_bind := PEutt.peutt_bind.
 Notation pstruct_pstrong := PStrong.pstruct_pstrong.
 Notation pstruct_equivalence := PStruct.pstruct_equivalence.
