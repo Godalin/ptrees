@@ -138,9 +138,10 @@ arbitrary target with Monad laws, Eq1 equivalence and explicit
 
 This increment does not close these independent obligations:
 
-1. General source `ITree.eutt -> peutt`, hence lowering preservation and the
-   source-`ITree.interp` commuting square. The existing structural bridge and
-   bind/iter laws remain available, but are not substitutes for weak simulation.
+1. Source `ITree.eutt -> peutt`, lowering preservation and source-interp
+   commuting were separate obligations at this checkpoint. They are now
+   completed by the [source-preservation increment](ITREE_PRESERVATION.md).
+   Arbitrary eventful PTree behavioral iter congruence remains separate.
 2. Arbitrary-target ReaderT/WriterT commuting. The subsequent
    [ReaderT/WriterT increment](READER_WRITER_FOLD.md) completes their canonical
    operations, monad/uniformity laws, actual-ITree squares and append-form

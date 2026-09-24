@@ -32,7 +32,7 @@ explicitly requested; no environment changes are planned.
 | Arbitrary fixed-handler peutt preservation | Proved | Heterogeneous results and effects; requires the relational-limit profile. |
 | Pointwise behavioral handler replacement | Proved | Two handlers, heterogeneous results; the same generic relational-limit profile. |
 | Handler composition and sum calculus | Proved | Pure combinators; units/associativity, case and bimap congruence modulo pointwise peutt. |
-| ITree sampling-effect elaboration | Proved basic laws | Actual ITree source to native Prob; Ret/Tau/Vis/bind/iter and target-handler postcomposition. Source eutt preservation remains separate. |
+| ITree sampling-effect elaboration | Proved laws and source preservation | Actual ITree source to native Prob; Ret/Tau/Vis/bind/iter, heterogeneous source eutt preservation, and genuine source-interp commuting. |
 | Interpreted effect algebra and probability interaction | Proved finite equations and scoped transformer squares | Four State laws, Reader contraction, ordered Writer unit/fusion, Exception left-zero; no unconditional sample-before-throw erasure. Generic StateT/ExceptT squares and actual-ITree ReaderT/WriterT squares are proved. |
 | State peutt preservation | Proved | Same initial state; equal final states and related results. |
 | Reader / Writer / Exception | Implemented and proved | Basic clients and preservation, not a complete effect algebra. |
@@ -54,7 +54,9 @@ not entail monadic interpretation or probability-respecting laws.
 The [ITree bridge](ITREE_BRIDGE.md) now internalizes `Sample mu` as native
 `Prob mu`, with an actual two-coins ITree example and an unbounded retry
 iteration law. This is distinct from the existing PTree-to-ITree execution
-fold. It does not claim a general source-ITree `eutt` preservation theorem.
+fold. The later [source-preservation increment](ITREE_PRESERVATION.md) adds
+heterogeneous source-ITree `eutt` preservation and the actual source-interp
+commuting square; those are separate from the original structural bridge.
 
 The [effect-algebra increment](EFFECT_ALGEBRA.md) adds generic interpreted
 equations and a half-mass exception counterexample, without changing the

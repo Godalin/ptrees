@@ -113,6 +113,7 @@ Require PTree.Interp.FreeOmega.Cofinality.
 Require PTree.Interp.FreeOmega.Guarded.
 Require PTree.Interp.FreeOmega.HandlerCompletion.
 Require PTree.Interp.FreeOmega.ITreeCompletion.
+Require PTree.Interp.FreeOmega.ITreePreservation.
 Require PTree.Interp.FreeOmega.MDP.
 Require PTree.Interp.FreeOmega.State.
 Require PTree.Interp.FreeOmega.Translate.
@@ -123,7 +124,10 @@ Require PTree.Interp.HandlerMachine.
 Require PTree.Interp.HandlerMachineAcceleration.
 Require PTree.Interp.HandlerMachineScheduling.
 Require PTree.Interp.HandlerRelation.
+Require PTree.Interp.ITreeEutt.
 Require PTree.Interp.ITreeFacts.
+Require PTree.Interp.ITreePreservation.
+Require PTree.Interp.ITreeSourceInterp.
 Require PTree.Interp.ITreeStructural.
 Require PTree.Interp.Kernel.
 Require PTree.Interp.Preservation.
@@ -368,6 +372,7 @@ Require PTree.Regression.Semantics.GuardedInterp.
 Require PTree.Regression.Semantics.HandlerCalculus.
 Require PTree.Regression.Semantics.HeadTransition.
 Require PTree.Regression.Semantics.ITreeBridge.
+Require PTree.Regression.Semantics.ITreePreservation.
 Require PTree.Regression.Semantics.InterpExposure.
 Require PTree.Regression.Semantics.LabelledMDP.
 Require PTree.Regression.Semantics.MDPCoincidence.

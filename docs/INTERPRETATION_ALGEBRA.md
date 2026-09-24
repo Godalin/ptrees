@@ -38,6 +38,16 @@ See [handler calculus](HANDLER_CALCULUS.md),
 [finite effect algebra](EFFECT_ALGEBRA.md),
 [ExceptT](EXCEPTION_FOLD.md), and [ReaderT/WriterT](READER_WRITER_FOLD.md).
 
+## Completed source ITree bridge
+
+The subsequent [source-preservation increment](ITREE_PRESERVATION.md) proves
+heterogeneous `eutt RR -> peutt RR` for `from_itree` and probability lowering,
+plus the genuine source-`ITree.interp` commuting square. It handles returning,
+diverging and multi-event source handlers, without changing either interpreter.
+The base embedding uses an explicit classical convergence/divergence split;
+its compiled probability requirements are weaker than unrestricted interp's.
+These are no longer open source-bridge obligations.
+
 ## Deliberately not claimed
 
 1. **Arbitrary-target Reader/Writer commuting.** Existing interp-based
@@ -49,10 +59,9 @@ See [handler calculus](HANDLER_CALCULUS.md),
    desired commuting conclusion nor adds a theorem-level capability class.
 2. **Full iteration-law inheritance.** The new proofs establish uniformity,
    not a blanket assertion of every Conway/Elgot axiom for every transformer.
-3. **General source ITree eutt preservation and source-interp compatibility.**
-   The existing ITree-to-PTree structural bridge, native sampling elaboration,
-   bind/iter laws and target-handler postcomposition do not imply these
-   independent weak-equivalence theorems.
+3. **Arbitrary eventful behavioral iteration congruence.** The source ITree
+   obligations are now proved, but the independent PTree iteration theorem
+   still carries its explicit generator-closure requirement.
 4. **Additional effect interfaces.** New public local/catch operations,
    arbitrary effect-order interchange, and generic totality-conditioned
    sample erasure are not added. No synthetic Local/Catch event is introduced.

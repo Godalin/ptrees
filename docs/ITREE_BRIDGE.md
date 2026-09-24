@@ -108,17 +108,20 @@ interp_PTree g (interp_itree h t)
     ≈ interp_itree (Handler.cat h g) t.
 ```
 
-It is **not yet** a theorem comparing source `ITree.interp` with target
-`PTree.interp`. General source `eutt -> peutt` preservation is also not
-claimed: it requires a separate weak-simulation argument, not just these
-constructor, bind, and iter equations. The current proofs never assume it.
+That original postcomposition theorem does not itself compare source
+`ITree.interp` with target `PTree.interp`. The later
+[source-preservation increment](ITREE_PRESERVATION.md) now proves both that
+genuine source square and heterogeneous source `eutt -> peutt`, by separate
+weak-simulation and scheduling arguments. The original structural proofs
+remain unchanged and do not assume those later results.
 
-A future commuting square for a source of type `itree (probE MN +' E) A`
+A commuting square for a source of type `itree (probE MN +' E) A`
 must restrict the source transformation to preserve sampling. Arbitrary
 source handlers may replace `Sample mu`; after elaboration an ordinary
 PTree handler cannot do so, because it only handles Vis and preserves Prob.
-In addition, ITree and PTree interpreters place their administrative Tau
-differently, so a source-interp compatibility theorem needs a weak proof.
+ITree and PTree place their administrative Tau differently; the new square
+explicitly proves this scheduling difference harmless, including for
+internally returning and divergent handlers.
 
 ## Verification
 

@@ -52,6 +52,8 @@ def check_new(sources):
 
 
 def previous_sources(sources):
+    from audit_itree_preservation import previous_sources as before_itree_preservation
+    sources = before_itree_preservation(sources)
     if not (NEW & set(sources)):
         return sources
     check_new(sources)
@@ -63,6 +65,8 @@ def previous_sources(sources):
 
 
 def check_source(sources):
+    from audit_itree_preservation import previous_sources as before_itree_preservation
+    sources = before_itree_preservation(sources)
     old = {p for p in subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', BASELINE],
                cwd=ROOT, text=True).splitlines() if p.endswith('.v')}
     assert set(sources) == old | NEW, 'Unapproved theory addition/deletion'

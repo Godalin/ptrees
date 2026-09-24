@@ -81,6 +81,24 @@
     "theories/Eq/Backend/SubEnumR.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From mathcomp Require Import reals. From PTree.Prob.Backend.SubEnumR Require Export Representation. From PTree.Prob.Backend.SubEnumR Require Import Measure Coupling Omega. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. #[global] Instance SubEnumR_CanonicalBehavior (R : realType) : CanonicalBehavior (SubEnumR R) := @observable_free_omega_behavior (SubEnumR R) (SubEnumR_SemanticMeasure R) (SubEnumR_SemanticOmega R)."
   },
   "regressions": {
+    "theories/Regression/Semantics/ITreePreservation.v": [
+      "service_source_eutt",
+      "embedded_infinite_service",
+      "embedded_heterogeneous_return",
+      "embedded_divergence",
+      "divergence_has_no_head",
+      "source_divergence_not_return",
+      "returning_source_square",
+      "divergent_source_square",
+      "two_query_source_square",
+      "sampling_source_square",
+      "lowering_partial_source_equation",
+      "lowering_heterogeneous",
+      "lowering_setoid",
+      "real_embedded_service",
+      "real_lowering_eutt",
+      "high_source_eutt"
+    ],
     "theories/Regression/Backend/SubEnumRBehavior.v": [
       "real_pstruct_peutt",
       "real_pstrong_peutt",
