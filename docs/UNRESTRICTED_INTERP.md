@@ -127,13 +127,14 @@ positive returning mass with divergence; an independent SubEnumR client
 instantiates the same completion theorem. Import-boundary checks precede
 all backend imports.
 
-State is **not** falsely declared finished by this result: `run_state` carries
-an evolving state, whereas the theorem above interprets a fixed handler.
-Its arbitrary peutt theorem needs a state-indexed argument or a proved
-StateT correspondence. The previously proved structural State/bind/iter
-equations remain available. StateT fold commutation, general rational sampler
-probability correctness, and the full end-to-end execution/semantic bridge
-also remain open in the active roadmap.
+This theorem alone does not establish State preservation: `run_state` carries
+an evolving state, whereas this theorem interprets a fixed handler. The later
+[state-indexed proof](STATE_PRESERVATION.md) supplies that result separately.
+[StateT-fold commutation](STATE_FOLD.md), [single-draw rational sampling](RATIONAL_TICKETS.md)
+and the [extracted rewrite example](STATE_REWRITE.md) are also complete.
+The whole-runner probability correspondence is still open. See the
+[current status and follow-up queue](EFFECTS_EXECUTION.md#current-status);
+the verification below records this stage, not a later rerun.
 
 ## Verification boundary
 

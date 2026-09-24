@@ -1,10 +1,29 @@
 # Standard effects and executable PTree interpretation
 
-Baseline: `7b4c9714bb3845ed283a68fd084a6b4b33073e6f`.
-This is an additive operational checkpoint, not completion of the whole
-handler-preservation roadmap. Existing probability/equality/interpreter
-theorems and both mainline/MathComp contract snapshots are unchanged.
-No CI or environment changes are included.
+## Current status
+
+Implementation checkpoint: `145a9c9`. This is the current status entry point
+for effects, handlers and execution; linked stage reports retain their own
+historical baselines and validation results. The original operational
+checkpoint began at `7b4c9714bb3845ed283a68fd084a6b4b33073e6f`.
+
+The implementation goal is complete: proved rewriting can be followed by
+effect elimination, extraction and replay. **A theorem identifying the whole
+runner's output distribution with PTree denotational semantics is not yet
+proved.** Completing the implementation goal does not complete every item in
+the original theory/execution proposal. CI remains out of scope unless
+explicitly requested; no environment changes are planned.
+
+| Item | Current status | Scope |
+| --- | --- | --- |
+| Arbitrary fixed-handler peutt preservation | Proved | Heterogeneous results and effects; requires the relational-limit profile. |
+| State peutt preservation | Proved | Same initial state; equal final states and related results. |
+| Reader / Writer / Exception | Implemented and proved | Basic clients and preservation, not a complete effect algebra. |
+| Separate Vis/Prob fold and StateT commutation | Proved | Lawful target with iteration uniformity; checked ITree instance. |
+| Finite runner | Proved operationally | Returned/Lost paths relative to the supplied sampler. |
+| General rational tickets | Proved for one draw | Exact native distribution under a uniform bounded index. |
+| State+Prob rewrite, extraction, seed/replay | Implemented and checked | No same-seed, same-trace or same-fuel equality claim. |
+| Whole-runner probability correspondence | Open | Distinct from path correctness and single-draw correctness. |
 
 The subsequent [arbitrary-handler increment](UNRESTRICTED_INTERP.md) closes
 the fixed-handler eliminating/mixed fusion obligation, using a two-phase
@@ -38,7 +57,7 @@ ITree stateE/Get/Put + native Prob
                   |
         closed PTree void1 SubEnumQ
                   |
-     exact rational interval replay
+     rational interval replay / uniform-index tickets
                   |
          finite verified runner
                   |
@@ -90,7 +109,7 @@ and an entropy state. It only consumes closed trees. It distinguishes:
 | `Returned a` | Program returned; remaining entropy is retained. |
 | `Lost` | The native sampler selected missing mass; no retry or normalization. |
 | `Timeout` | Transition fuel exhausted; no sampling occurs at zero fuel. |
-| `EntropyExhausted` | Replay/provider cannot supply another draw. |
+| `EntropyExhausted` | Provider cannot supply another draw; the ticket adapter also uses this for an invalid index. |
 
 Ret costs no fuel. Tau and Prob each cost one transition. Handled State
 events therefore cost fuel but do not consume entropy.
@@ -122,10 +141,12 @@ coefficient. `replay_sample_missing` proves exactly:
 sample mu q = Missing  <->  mass(mu) <= q.
 ```
 
-This supplies a correct interval selector and deterministic replay, **not
-yet a verified uniform random sampler for arbitrary rational weights**.
+This interval adapter supplies a correct selector and deterministic replay,
+**not by itself a uniform random sampler for arbitrary rational weights**.
 An arbitrary sequence of rational quantiles is not a continuous uniform
-random variable.
+random variable. The separate ticket adapter now proves the exact general
+single-draw law under a uniform bounded-index assumption; see
+[Rational tickets](RATIONAL_TICKETS.md).
 
 `Examples/StateCounter.v` contains a fair-coin tick and a recursively
 defined counter that increments state and retries until the coin succeeds.
@@ -133,7 +154,7 @@ It proves the explicit state-eliminated tick equation and checks actual
 two-attempt execution, timeout, replay exhaustion and unused entropy.
 `replay_two_attempts_path` connects the computation to `executes`.
 
-The executable exposes only this fixed fair-coin program. A false bit maps
+The original `state-counter` executable exposes only this fixed fair-coin program. A false bit maps
 to quantile 1/4, a true bit to 3/4. `coin_selects_bit` and
 `coin_bit_expectation` prove the local correspondence with its native fair
 distribution. This two-quantile construction is deliberately **not exposed
@@ -164,30 +185,60 @@ separate from universe checking: no checker relaxation is added. The
 extracted impossible `Vis` case on `void1` is not an external probability
 axiom. There are no unrealized-axiom stubs in the generated executable.
 
-## Deliberately open work
+## Follow-up queue (not implemented by this documentation cleanup)
 
-1. **Eliminating/mixed handler fusion.** Existing guarded fusion can discard
-   return heads on AE support. An eliminating handler cannot: its return
-   enters the interpreted source continuation before a new target visible
-   guard. Assuming those continuations already `peutt`-related would be
-   circular. A complete finite-collapse/cofinality argument is still needed.
-   No theorem-level capability has been added to hide this obligation.
-2. **State behavioral preservation and fold.** The structural bind, iter and
-   pstrong results above do not prove `peutt t u -> peutt (run_state t s)
-   (run_state u s)`. Full StateT-fold commutation remains open.
-   State is a stateful transformer, not a fixed value-returning handler.
-3. **Reader/Writer/Exception.** Reuse the existing ITree signatures. Exception
-   early exit must change the result type; it cannot manufacture a response
-   to an empty-response Throw event. These clients are not implemented here.
-4. **General rational randomness and hitting correspondence.** Construct
-   denominator-indexed uniform tickets, prove their full native distribution
-   law, and then connect operational finite paths to probability/hitting.
-   Local fair-bit correctness is not a substitute for this general theorem.
+1. **Finite-runner probability correspondence — next semantic priority.**
+   State the history-conditional sampling contract, prove the finite outcome
+   distribution theorem, then relate returned mass and its increasing limit
+   to hitting approximants. Explicit Lost, finite Timeout and infinite
+   internal divergence must not be conflated. This was optional strengthening
+   in the original proposal, not a theorem already delivered by the runner.
+2. **Efficient sampling refinement and error classification — next execution
+   priority.** Replace denominator-product ticket materialization by an
+   integer-weight interval implementation, proving equivalence to the current
+   reference law. Distinguish invalid entropy from exhausted entropy. The
+   present extracted implementation can expand enormous lists, including
+   while computing a ticket count; the host bound is not a proved resource
+   bound on this work.
+3. **Fold/runner connection and application-driven effect laws — deferred.**
+   Relate finite execution to fold where appropriate. Arbitrary-fold peutt
+   preservation needs probability-respecting sampling laws, not just monad
+   laws. General state relations, effect-order laws and richer Writer/Exception
+   algebra are not yet supplied.
+4. **Separate theory backlog — deferred.** Generic eventless behavioral iter,
+   Atomic/MDP consumer cleanup and final assumption minimization are not
+   reported as completed by the execution work. Do not reopen foundational
+   interfaces merely to obtain backend symmetry.
 
-The goal remains active. This checkpoint makes the operational end-to-end
-path testable without claiming that the unresolved semantic bridge is done.
+This cleanup only records the queue; it does not start any of these tasks.
+Update this section when their status changes and link the corresponding
+proof/report instead of leaving contradictory pending lists in stage reports.
 
-## Isolation and validation
+## Assumption and trust boundaries
+
+Arbitrary-handler and State preservation consume order/omega, cofinality,
+bind-order, diagonal/Fubini, selection and relational-limit capabilities.
+These are proved model obligations where instances exist, not a claim that
+the hypotheses are minimal. FreeOmega supplies relational-lub closure;
+unrestricted MathComp closure remains a separate obligation, and MathComp
+coupling gluing is still explicit. The two Gate M files retain their accepted
+local universe-checking relaxation; safe mathematics does not depend on them.
+
+StateT-fold commutation requires iteration uniformity, proved for ITree.
+The State rewrite inherits the existing fusion theorem's relational and
+dependent unique choice, as well as the concrete specialization's
+extensionality/eq_rect_eq dependencies; see [its audit](STATE_REWRITE.md).
+The rational ticket law does not verify OCaml PRNG fairness. Extraction,
+the OCaml toolchain/runtime and the handwritten entropy provider remain
+explicit execution trust boundaries.
+
+## Isolation and historical validation
+
+The counts and commands below describe the initial operational checkpoints,
+not a new validation run or current whole-repository counts. Later validation
+is recorded in the linked stage reports; the latest implementation report is
+[State rewrite](STATE_REWRITE.md). Documentation-only cleanup does not rerun
+or reassert a full build/kernel audit.
 
 Generic `Execution` depends only on itself and Core. Its concrete rational
 adapter can consume finite representation mathematics, but not FreeOmega,

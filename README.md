@@ -444,7 +444,10 @@ opam exec -- dune exec extraction/state-counter/main.exe -- seed 40 0 42 10
 The program, state handler, rational interval selector and bounded runner are
 extracted from Rocq. The first command returns counter value 2 with one unused
 bit. See [effects and execution](docs/EFFECTS_EXECUTION.md) for the proved
-operational contracts and the remaining handler/sampling proof obligations.
+operational contracts, completed handler and single-draw sampling proofs,
+and the still-open whole-runner probability correspondence. The
+[State rewrite example](docs/STATE_REWRITE.md) also extracts both sides of a
+proved probability rewrite with general rational ticket sampling.
 
 ### Dependencies
 

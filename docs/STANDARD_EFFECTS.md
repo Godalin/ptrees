@@ -95,9 +95,12 @@ generic endpoints must be closed under the global context. The Exception
 signature is additionally checked not to acquire the stronger collapsed-loop
 limit capabilities.
 
-This finishes the small standard-effect client group, not the execution
-roadmap. StateT/fold commutation, a verified general rational sampler, and
-the remaining end-to-end execution/semantic bridge remain open.
+This finishes the small standard-effect client group, not a complete effect
+algebra. Subsequent increments prove [StateT-fold commutation](STATE_FOLD.md)
+and [general rational single-draw correctness](RATIONAL_TICKETS.md), and add
+the [extracted rewrite example](STATE_REWRITE.md). Whole-runner probability
+correspondence remains open; see the [current roadmap](EFFECTS_EXECUTION.md#current-status).
+The validation below is the historical result for this stage.
 
 Local verification passed: full `dune build` (including AllImports), 39 focused
 tool tests, architecture and soundness source audits, the 31 new compiled

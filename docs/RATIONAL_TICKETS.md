@@ -111,4 +111,8 @@ This closes the **single native draw** distribution-correctness gap and adds
 random/seed/replay extraction. It does not yet identify the entire finite
 runner's returned distribution with a hitting approximant, or prove a
 complete program's probability from PRNG runs. That finite execution/semantic
-bridge, and an end-to-end verified rewrite example, remain distinct work.
+bridge remains open. The [end-to-end rewrite example](STATE_REWRITE.md) is
+now implemented; it does not close that probability bridge. The
+[current roadmap](EFFECTS_EXECUTION.md#current-status) also records the
+ticket-materialization performance issue and invalid/exhausted entropy
+distinction as pending work, not completed optimizations.
