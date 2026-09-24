@@ -33,7 +33,7 @@ explicitly requested; no environment changes are planned.
 | Pointwise behavioral handler replacement | Proved | Two handlers, heterogeneous results; the same generic relational-limit profile. |
 | Handler composition and sum calculus | Proved | Pure combinators; units/associativity, case and bimap congruence modulo pointwise peutt. |
 | ITree sampling-effect elaboration | Proved basic laws | Actual ITree source to native Prob; Ret/Tau/Vis/bind/iter and target-handler postcomposition. Source eutt preservation remains separate. |
-| Interpreted effect algebra and probability interaction | Proved finite equations | Four State laws, Reader contraction, ordered Writer unit/fusion, Exception left-zero; no unconditional sample-before-throw erasure. StateT and ExceptT fold agreements are proved; ReaderT/WriterT remain pending. |
+| Interpreted effect algebra and probability interaction | Proved finite equations and scoped transformer squares | Four State laws, Reader contraction, ordered Writer unit/fusion, Exception left-zero; no unconditional sample-before-throw erasure. Generic StateT/ExceptT squares and actual-ITree ReaderT/WriterT squares are proved. |
 | State peutt preservation | Proved | Same initial state; equal final states and related results. |
 | Reader / Writer / Exception | Implemented and proved | Basic clients and preservation, not a complete effect algebra. |
 | Separate Vis/Prob fold and StateT commutation | Proved | Lawful target with iteration uniformity; checked ITree instance. |
@@ -59,8 +59,10 @@ fold. It does not claim a general source-ITree `eutt` preservation theorem.
 The [effect-algebra increment](EFFECT_ALGEBRA.md) adds generic interpreted
 equations and a half-mass exception counterexample, without changing the
 existing eliminators. Writer is still implemented through State, not WriterT.
-Its new bind law threads an accumulator; ReaderT/WriterT iteration and fold
-agreement remain separate obligations. [ExceptT](EXCEPTION_FOLD.md) now has
+The [ReaderT/WriterT increment](READER_WRITER_FOLD.md) now adds canonical
+transformer laws, actual-ITree fold agreements and Writer append-form bind.
+Arbitrary-target Reader/Writer commuting is not claimed; see the consolidated
+[scope map](INTERPRETATION_ALGEBRA.md). [ExceptT](EXCEPTION_FOLD.md) has
 proved monad laws, inherited uniformity and a generic `fold_run_exception`
 square, instantiated with an actual ITree target without probability assumptions.
 An actual

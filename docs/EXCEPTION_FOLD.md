@@ -3,6 +3,9 @@
 Baseline: `9431e4b`. This additive increment completes the canonical ExceptT
 fold/commuting slice of the interpretation-algebra proposal. It does not
 complete ReaderT, WriterT, or the source-ITree weak-equivalence bridge.
+The subsequent [ReaderT/WriterT checkpoint](READER_WRITER_FOLD.md) supplies
+their operations/laws and actual-ITree fold agreements; see the current
+[scope table](INTERPRETATION_ALGEBRA.md).
 
 ## Standard transformer, explicit laws
 
@@ -76,8 +79,9 @@ the square with actual ITree execution, using the previously proved
 - Loading this theory does not load peutt, FreeOmega, or OmegaVal.
 
 The generic files are opt-in; no public facade export or theorem owner is
-changed. The current Reader/Writer administrative-Tau obligations remain
-open, as do source `ITree.eutt` preservation and the source-interp square.
+changed. Reader/Writer administrative-Tau agreement has since been proved
+for the actual ITree target, but not arbitrary iteration targets. Source
+`ITree.eutt` preservation and the source-interp square remain separate.
 
 ## Verification and conservation
 

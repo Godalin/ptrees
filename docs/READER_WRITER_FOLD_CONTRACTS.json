@@ -1,0 +1,301 @@
+{
+  "baseline": "2d59640",
+  "scope": "Generic ReaderT/WriterT laws; ITree target fold/bind agreement",
+  "endpoints": [
+    {
+      "name": "PTree.Core.ReaderT.readerT_eq1",
+      "type": "@ReaderT.readerT_eq1\n     : forall (Env : Type) (T : Type -> Type), Monad.Eq1 T -> Monad.Eq1 (ReaderMonad.readerT Env T)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.ReaderT.readerT_eq_equivalence",
+      "type": "@ReaderT.readerT_eq_equivalence\n     : forall (Env : Type) (T : Type -> Type) (MT : Monad.Monad T) (QT : Monad.Eq1 T),\n       @Monad.Eq1Equivalence T MT QT ->\n       @Monad.Eq1Equivalence (ReaderMonad.readerT Env T) (@ReaderMonad.Monad_readerT Env T MT)\n         (@ReaderT.readerT_eq1 Env T QT)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.ReaderT.readerT_monad_laws",
+      "type": "@ReaderT.readerT_monad_laws\n     : forall (Env : Type) (T : Type -> Type) (MT : Monad.Monad T) (QT : Monad.Eq1 T),\n       @Monad.MonadLawsE T QT MT ->\n       @Monad.MonadLawsE (ReaderMonad.readerT Env T) (@ReaderT.readerT_eq1 Env T QT)\n         (@ReaderMonad.Monad_readerT Env T MT)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.ReaderT.readerT_iteration_uniform",
+      "type": "@ReaderT.readerT_iteration_uniform\n     : forall (Env : Type) (T : Type -> Type) (MT : Monad.Monad T) (QT : Monad.Eq1 T)\n         (IT : Basics.MonadIter T),\n       @IterationLaws.iteration_uniform T MT IT QT ->\n       @IterationLaws.iteration_uniform (ReaderMonad.readerT Env T)\n         (@ReaderMonad.Monad_readerT Env T MT) (@Basics.MonadIter_readerT T Env IT)\n         (@ReaderT.readerT_eq1 Env T QT)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.WriterT.writerT_monad",
+      "type": "@WriterT.writerT_monad\n     : forall (W : Type) (T : Type -> Type),\n       Monoid.Monoid W -> Monad.Monad T -> Monad.Monad (Basics.Monads.writerT W T)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.WriterT.writerT_step",
+      "type": "@WriterT.writerT_step\n     : forall (W : Type) (T : Type -> Type),\n       Monoid.Monoid W ->\n       Monad.Monad T ->\n       forall I A : Type,\n       (I -> Basics.Monads.writerT W T (I + A)) -> W * I -> T (W * I + W * A)%type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.WriterT.writerT_iter",
+      "type": "@WriterT.writerT_iter\n     : forall (W : Type) (T : Type -> Type),\n       Monoid.Monoid W ->\n       Monad.Monad T -> Basics.MonadIter T -> Basics.MonadIter (Basics.Monads.writerT W T)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.WriterT.writerT_eq1",
+      "type": "@WriterT.writerT_eq1\n     : forall (W : Type) (T : Type -> Type), Monad.Eq1 T -> Monad.Eq1 (Basics.Monads.writerT W T)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.WriterT.writerT_eq_equivalence",
+      "type": "@WriterT.writerT_eq_equivalence\n     : forall (W : Type) (T : Type -> Type) (op : Monoid.Monoid W) (MT : Monad.Monad T)\n         (QT : Monad.Eq1 T),\n       @Monad.Eq1Equivalence T MT QT ->\n       @Monad.Eq1Equivalence (Basics.Monads.writerT W T) (@WriterT.writerT_monad W T op MT)\n         (@WriterT.writerT_eq1 W T QT)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.WriterT.writerT_monad_laws",
+      "type": "@WriterT.writerT_monad_laws\n     : forall (W : Type) (T : Type -> Type) (op : Monoid.Monoid W) (MT : Monad.Monad T)\n         (QT : Monad.Eq1 T),\n       @Monad.Eq1Equivalence T MT QT ->\n       @Monad.MonadLawsE T QT MT ->\n       @Monoid.MonoidLaws W op ->\n       @Monad.MonadLawsE (Basics.Monads.writerT W T) (@WriterT.writerT_eq1 W T QT)\n         (@WriterT.writerT_monad W T op MT)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.WriterT.writerT_iteration_uniform",
+      "type": "@WriterT.writerT_iteration_uniform\n     : forall (W : Type) (T : Type -> Type) (op : Monoid.Monoid W) (MT : Monad.Monad T)\n         (QT : Monad.Eq1 T),\n       @Monad.Eq1Equivalence T MT QT ->\n       @Monad.MonadLawsE T QT MT ->\n       @Monoid.MonoidLaws W op ->\n       forall IT : Basics.MonadIter T,\n       @IterationLaws.iteration_uniform T MT IT QT ->\n       @IterationLaws.iteration_uniform (Basics.Monads.writerT W T)\n         (@WriterT.writerT_monad W T op MT) (@WriterT.writerT_iter W T op MT IT)\n         (@WriterT.writerT_eq1 W T QT)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.FoldITree.itree_strong_eq1",
+      "type": "@FoldITree.itree_strong_eq1\n     : forall F : Type -> Type, Monad.Eq1 (ITreeDefinition.itree F)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.FoldITree.itree_strong_equivalence",
+      "type": "@FoldITree.itree_strong_equivalence\n     : forall F : Type -> Type,\n       @Monad.Eq1Equivalence (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n         (@FoldITree.itree_strong_eq1 F)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.FoldITree.itree_strong_monad_laws",
+      "type": "@FoldITree.itree_strong_monad_laws\n     : forall F : Type -> Type,\n       @Monad.MonadLawsE (ITreeDefinition.itree F) (@FoldITree.itree_strong_eq1 F)\n         (@ITreeDefinition.Monad_itree F)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.FoldITree.itree_fold_observe",
+      "type": "@FoldITree.itree_fold_observe\n     : forall (E MN F : Type -> Type) (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree E MN A),\n       @Eqit.eq_itree F A A (@eq A)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A t)\n         match @PTreeDefinition.observe E MN A t with\n         | @PTreeDefinition.RetF _ _ _ _ a =>\n             {|\n               ITreeDefinition._observe := @ITreeDefinition.RetF F A (ITreeDefinition.itree F A) a\n             |}\n         | @PTreeDefinition.TauF _ _ _ _ u =>\n             {|\n               ITreeDefinition._observe :=\n                 @ITreeDefinition.TauF F A (ITreeDefinition.itree F A)\n                   (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n                      (@ITreeDefinition.MonadIter_itree F) handle sample A u)\n             |}\n         | @PTreeDefinition.VisF _ _ _ _ X e k =>\n             @ITreeDefinition.ITree.bind F X A (handle X e)\n               (fun x : X =>\n                {|\n                  ITreeDefinition._observe :=\n                    @ITreeDefinition.TauF F A (ITreeDefinition.itree F A)\n                      (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n                         (@ITreeDefinition.MonadIter_itree F) handle sample A\n                         (k x))\n                |})\n         | @PTreeDefinition.ProbF _ _ _ _ X mu k =>\n             @ITreeDefinition.ITree.bind F X A (sample X mu)\n               (fun x : X =>\n                {|\n                  ITreeDefinition._observe :=\n                    @ITreeDefinition.TauF F A (ITreeDefinition.itree F A)\n                      (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n                         (@ITreeDefinition.MonadIter_itree F) handle sample A\n                         (k x))\n                |})\n         end",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.FoldITree.itree_fold_observe_eq",
+      "type": "@FoldITree.itree_fold_observe_eq\n     : forall (E MN F : Type -> Type) (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t u : PTreeDefinition.ptree E MN A),\n       @PTreeDefinition.observe E MN A t = @PTreeDefinition.observe E MN A u ->\n       @Eqit.eq_itree F A A (@eq A)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A t)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A u)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.FoldITree.itree_fold_bind",
+      "type": "@FoldITree.itree_fold_bind\n     : forall (E MN F : Type -> Type) (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A B : Type) (t : PTreeDefinition.ptree E MN A) (k : A -> PTreeDefinition.ptree E MN B),\n       @Eqit.eq_itree F B B (@eq B)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample B\n            (@PTreeDefinition.PTree.bind E MN A B t k))\n         (@ITreeDefinition.ITree.bind F A B\n            (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n               (@ITreeDefinition.MonadIter_itree F) handle sample A t)\n            (fun a : A =>\n             @Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n               (@ITreeDefinition.MonadIter_itree F) handle sample B (k a)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ReaderFold.reader_effect",
+      "type": "@ReaderFold.reader_effect\n     : forall (Env : Type) (E T : Type -> Type),\n       Monad.Monad T ->\n       (forall X : Type, E X -> T X) ->\n       forall X : Type, Sum.sum1 (Reader.readerE Env) E X -> ReaderMonad.readerT Env T X",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ReaderFold.reader_sample",
+      "type": "@ReaderFold.reader_sample\n     : forall (Env : Type) (MN T : Type -> Type),\n       (forall X : Type, MN X -> T X) -> forall X : Type, MN X -> ReaderMonad.readerT Env T X",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ReaderFold.fold_reader",
+      "type": "@ReaderFold.fold_reader\n     : forall (Env : Type) (E MN T : Type -> Type),\n       Monad.Monad T ->\n       Basics.MonadIter T ->\n       (forall X : Type, E X -> T X) ->\n       (forall X : Type, MN X -> T X) ->\n       forall A : Type, PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A -> Env -> T A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ReaderFold.reader_fold_step",
+      "type": "@ReaderFold.reader_fold_step\n     : forall (Env : Type) (E MN T : Type -> Type),\n       Monad.Monad T ->\n       (forall X : Type, E X -> T X) ->\n       (forall X : Type, MN X -> T X) ->\n       forall A : Type,\n       Env ->\n       PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A ->\n       T (PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A + A)%type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ReaderFold.fold_reader_as_iter",
+      "type": "@ReaderFold.fold_reader_as_iter\n     : forall (Env : Type) (E MN T : Type -> Type) (MT : Monad.Monad T)\n         (IT : Basics.MonadIter T) (handle : forall X : Type, E X -> T X)\n         (sample : forall X : Type, MN X -> T X) (A : Type)\n         (t : PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A)\n         (env : Env),\n       @ReaderFold.fold_reader Env E MN T MT IT handle sample A t env =\n       @Basics.iter T IT A (PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A)\n         (@ReaderFold.reader_fold_step Env E MN T MT handle sample A env) t",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ReaderFold.reader_sample_independent",
+      "type": "@ReaderFold.reader_sample_independent\n     : forall (Env : Type) (MN T : Type -> Type) (sample : forall X : Type, MN X -> T X)\n         (X : Type) (mu : MN X) (env : Env),\n       @ReaderMonad.runReaderT Env T X (@ReaderFold.reader_sample Env MN T sample X mu) env =\n       sample X mu",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ReaderFoldITree.itree_reader_fold_observe",
+      "type": "@ReaderFoldITree.itree_reader_fold_observe\n     : forall (Env : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A)\n         (env : Env),\n       @Eqit.eq_itree F A A (@eq A)\n         (@ReaderFold.fold_reader Env E MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A t\n            env)\n         match @PTreeDefinition.observe (Sum.sum1 (Reader.readerE Env) E) MN A t with\n         | @PTreeDefinition.RetF _ _ _ _ a =>\n             {|\n               ITreeDefinition._observe := @ITreeDefinition.RetF F A (ITreeDefinition.itree F A) a\n             |}\n         | @PTreeDefinition.TauF _ _ _ _ u =>\n             {|\n               ITreeDefinition._observe :=\n                 @ITreeDefinition.TauF F A (ITreeDefinition.itree F A)\n                   (@ReaderFold.fold_reader Env E MN (ITreeDefinition.itree F)\n                      (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle\n                      sample A u env)\n             |}\n         | @PTreeDefinition.VisF _ _ _ _ X (@Sum.inl1 _ _ _ re) k =>\n             match\n               re in (Reader.readerE _ X0)\n               return\n                 ((X0 -> PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A) ->\n                  ITreeDefinition.itree F A)\n             with\n             | @Reader.Ask _ =>\n                 fun k0 : Env -> PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A =>\n                 {|\n                   ITreeDefinition._observe :=\n                     @ITreeDefinition.TauF F A (ITreeDefinition.itree F A)\n                       (@ReaderFold.fold_reader Env E MN (ITreeDefinition.itree F)\n                          (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F)\n                          handle sample A (k0 env) env)\n                 |}\n             end k\n         | @PTreeDefinition.VisF _ _ _ _ X (@Sum.inr1 _ _ _ fe) k =>\n             @ITreeDefinition.ITree.bind F X A (handle X fe)\n               (fun x : X =>\n                {|\n                  ITreeDefinition._observe :=\n                    @ITreeDefinition.TauF F A (ITreeDefinition.itree F A)\n                      (@ReaderFold.fold_reader Env E MN (ITreeDefinition.itree F)\n                         (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F)\n                         handle sample A (k x) env)\n                |})\n         | @PTreeDefinition.ProbF _ _ _ _ X mu k =>\n             @ITreeDefinition.ITree.bind F X A (sample X mu)\n               (fun x : X =>\n                {|\n                  ITreeDefinition._observe :=\n                    @ITreeDefinition.TauF F A (ITreeDefinition.itree F A)\n                      (@ReaderFold.fold_reader Env E MN (ITreeDefinition.itree F)\n                         (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F)\n                         handle sample A (k x) env)\n                |})\n         end",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ReaderFoldITree.itree_fold_run_reader",
+      "type": "@ReaderFoldITree.itree_fold_run_reader\n     : forall (Env : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A)\n         (env : Env),\n       @Eqit.eutt F A A (@eq A)\n         (@ReaderFold.fold_reader Env E MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A t\n            env)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A\n            (@Reader.run_reader Env E MN A t env))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ReaderFoldITree.itree_reader_fold_bind",
+      "type": "@ReaderFoldITree.itree_reader_fold_bind\n     : forall (Env : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A B : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A)\n         (k : A -> PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN B)\n         (env : Env),\n       @Eqit.eq_itree F B B (@eq B)\n         (@ReaderFold.fold_reader Env E MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample B\n            (@PTreeDefinition.PTree.bind (Sum.sum1 (Reader.readerE Env) E) MN A B t k) env)\n         (@ITreeDefinition.ITree.bind F A B\n            (@ReaderFold.fold_reader Env E MN (ITreeDefinition.itree F)\n               (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n               A t env)\n            (fun a : A =>\n             @ReaderFold.fold_reader Env E MN (ITreeDefinition.itree F)\n               (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n               B (k a) env))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ReaderFoldITree.itree_reader_fold_ret",
+      "type": "@ReaderFoldITree.itree_reader_fold_ret\n     : forall (Env : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (a : A) (env : Env),\n       @Eqit.eq_itree F A A (@eq A)\n         (@ReaderFold.fold_reader Env E MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.RetF (Sum.sum1 (Reader.readerE Env) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (Reader.readerE Env) E) MN A) a\n            |} env)\n         {| ITreeDefinition._observe := @ITreeDefinition.RetF F A (ITreeDefinition.itree F A) a |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFold.writer_effect",
+      "type": "@WriterFold.writer_effect\n     : forall (W : Type) (E T : Type -> Type),\n       Monoid.Monoid W ->\n       Monad.Monad T ->\n       (forall X : Type, E X -> T X) ->\n       forall X : Type, Sum.sum1 (Writer.writerE W) E X -> Basics.Monads.writerT W T X",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFold.writer_sample",
+      "type": "@WriterFold.writer_sample\n     : forall (W : Type) (MN T : Type -> Type),\n       Monoid.Monoid W ->\n       Monad.Monad T ->\n       (forall X : Type, MN X -> T X) -> forall X : Type, MN X -> Basics.Monads.writerT W T X",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFold.fold_writer",
+      "type": "@WriterFold.fold_writer\n     : forall (W : Type) (E MN T : Type -> Type),\n       Monoid.Monoid W ->\n       Monad.Monad T ->\n       Basics.MonadIter T ->\n       (forall X : Type, E X -> T X) ->\n       (forall X : Type, MN X -> T X) ->\n       forall A : Type,\n       PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A -> T (W * A)%type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFold.writer_fold_step",
+      "type": "@WriterFold.writer_fold_step\n     : forall (W : Type) (E MN T : Type -> Type),\n       Monoid.Monoid W ->\n       Monad.Monad T ->\n       (forall X : Type, E X -> T X) ->\n       (forall X : Type, MN X -> T X) ->\n       forall A : Type,\n       W * PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A ->\n       T (W * PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A + W * A)%type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFold.fold_writer_as_iter",
+      "type": "@WriterFold.fold_writer_as_iter\n     : forall (W : Type) (E MN T : Type -> Type) (op : Monoid.Monoid W)\n         (MT : Monad.Monad T) (IT : Basics.MonadIter T) (handle : forall X : Type, E X -> T X)\n         (sample : forall X : Type, MN X -> T X) (A : Type)\n         (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A),\n       @WriterFold.fold_writer W E MN T op MT IT handle sample A t =\n       @Basics.iter T IT (W * A) (W * PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A)\n         (@WriterFold.writer_fold_step W E MN T op MT handle sample A)\n         (@Monoid.monoid_unit W op, t)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFold.writer_sample_empty_log",
+      "type": "@WriterFold.writer_sample_empty_log\n     : forall (W : Type) (MN T : Type -> Type) (op : Monoid.Monoid W) (MT : Monad.Monad T)\n         (sample : forall X : Type, MN X -> T X) (X : Type) (mu : MN X),\n       @WriterFold.writer_sample W MN T op MT sample X mu =\n       @Monad.bind T MT X (W * X) (sample X mu)\n         (fun x : X => @Monad.ret T MT (W * X) (@Monoid.monoid_unit W op, x))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldFacts.writer_next",
+      "type": "@WriterFoldFacts.writer_next\n     : forall (W : Type) (E MN T : Type -> Type),\n       Monoid.Monoid W ->\n       Monad.Monad T ->\n       (forall X : Type, E X -> T X) ->\n       (forall X : Type, MN X -> T X) ->\n       forall A : Type,\n       W ->\n       PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A ->\n       T (W * PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A + W * A)%type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldFacts.writer_fold_step_normalize",
+      "type": "@WriterFoldFacts.writer_fold_step_normalize\n     : forall (W : Type) (E MN T : Type -> Type) (op : Monoid.Monoid W)\n         (MT : Monad.Monad T) (QT : Monad.Eq1 T),\n       @Monad.Eq1Equivalence T MT QT ->\n       @Monad.MonadLawsE T QT MT ->\n       @Monoid.MonoidLaws W op ->\n       forall (handle : forall X : Type, E X -> T X) (sample : forall X : Type, MN X -> T X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A)\n         (log : W),\n       @Monad.eq1 T QT (W * PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A + W * A)\n         (@WriterFold.writer_fold_step W E MN T op MT handle sample A (log, t))\n         (@WriterFoldFacts.writer_next W E MN T op MT handle sample A log t)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldITree.itree_writer_from",
+      "type": "@WriterFoldITree.itree_writer_from\n     : forall (W : Type) (E MN F : Type -> Type),\n       Monoid.Monoid W ->\n       (forall X : Type, E X -> ITreeDefinition.itree F X) ->\n       (forall X : Type, MN X -> ITreeDefinition.itree F X) ->\n       forall A : Type,\n       PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A ->\n       W -> ITreeDefinition.itree F (W * A)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldITree.itree_state_bind_ret",
+      "type": "@WriterFoldITree.itree_state_bind_ret\n     : forall (W : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (X A : Type) (x : X) (k : X -> PTreeDefinition.ptree (Sum.sum1 (State.stateE W) E) MN A)\n         (log : W),\n       @Eqit.eq_itree F (W * A) (W * A) (@eq (W * A))\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample (W * A)\n            (@State.run_state W E MN A\n               (@PTreeDefinition.PTree.bind (Sum.sum1 (State.stateE W) E) MN X A\n                  {|\n                    PTreeDefinition._observe :=\n                      @PTreeDefinition.RetF (Sum.sum1 (State.stateE W) E) MN X\n                        (PTreeDefinition.ptree (Sum.sum1 (State.stateE W) E) MN X) x\n                  |} k) log))\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample (W * A)\n            (@State.run_state W E MN A (k x) log))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldITree.itree_writer_fold_observe",
+      "type": "@WriterFoldITree.itree_writer_fold_observe\n     : forall (W : Type) (E MN F : Type -> Type) (op : Monoid.Monoid W),\n       @Monoid.MonoidLaws W op ->\n       forall (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A)\n         (log : W),\n       @Eqit.eq_itree F (W * A) (W * A) (@eq (W * A))\n         (@WriterFoldITree.itree_writer_from W E MN F op handle sample A t log)\n         match @PTreeDefinition.observe (Sum.sum1 (Writer.writerE W) E) MN A t with\n         | @PTreeDefinition.RetF _ _ _ _ a =>\n             {|\n               ITreeDefinition._observe :=\n                 @ITreeDefinition.RetF F (W * A) (ITreeDefinition.itree F (W * A)) (log, a)\n             |}\n         | @PTreeDefinition.TauF _ _ _ _ u =>\n             {|\n               ITreeDefinition._observe :=\n                 @ITreeDefinition.TauF F (W * A) (ITreeDefinition.itree F (W * A))\n                   (@WriterFoldITree.itree_writer_from W E MN F op handle sample A u log)\n             |}\n         | @PTreeDefinition.VisF _ _ _ _ X (@Sum.inl1 _ _ _ we) k =>\n             match\n               we in (Writer.writerE _ X0)\n               return\n                 ((X0 -> PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A) ->\n                  ITreeDefinition.itree F (W * A))\n             with\n             | @Writer.Tell _ w =>\n                 fun k0 : unit -> PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A =>\n                 {|\n                   ITreeDefinition._observe :=\n                     @ITreeDefinition.TauF F (W * A) (ITreeDefinition.itree F (W * A))\n                       (@WriterFoldITree.itree_writer_from W E MN F op handle sample A\n                          (k0 tt) (@Monoid.monoid_plus W op log w))\n                 |}\n             end k\n         | @PTreeDefinition.VisF _ _ _ _ X (@Sum.inr1 _ _ _ fe) k =>\n             @ITreeDefinition.ITree.bind F X (W * A) (handle X fe)\n               (fun x : X =>\n                {|\n                  ITreeDefinition._observe :=\n                    @ITreeDefinition.TauF F (W * A) (ITreeDefinition.itree F (W * A))\n                      (@WriterFoldITree.itree_writer_from W E MN F op handle sample A (k x) log)\n                |})\n         | @PTreeDefinition.ProbF _ _ _ _ X mu k =>\n             @ITreeDefinition.ITree.bind F X (W * A) (sample X mu)\n               (fun x : X =>\n                {|\n                  ITreeDefinition._observe :=\n                    @ITreeDefinition.TauF F (W * A) (ITreeDefinition.itree F (W * A))\n                      (@WriterFoldITree.itree_writer_from W E MN F op handle sample A (k x) log)\n                |})\n         end",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldITree.itree_fold_run_writer_from",
+      "type": "@WriterFoldITree.itree_fold_run_writer_from\n     : forall (W : Type) (E MN F : Type -> Type) (op : Monoid.Monoid W),\n       @Monoid.MonoidLaws W op ->\n       forall (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A)\n         (log : W),\n       @Eqit.eutt F (W * A) (W * A) (@eq (W * A))\n         (@WriterFoldITree.itree_writer_from W E MN F op handle sample A t log)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample (W * A)\n            (@State.run_state W E MN A\n               (@PTreeDefinition.PTree.interp (Sum.sum1 (Writer.writerE W) E)\n                  (Sum.sum1 (State.stateE W) E) MN (@Writer.writer_handler W E MN op) A t) log))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldITree.itree_fold_run_writer",
+      "type": "@WriterFoldITree.itree_fold_run_writer\n     : forall (W : Type) (E MN F : Type -> Type) (op : Monoid.Monoid W),\n       @Monoid.MonoidLaws W op ->\n       forall (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A),\n       @Eqit.eutt F (W * A) (W * A) (@eq (W * A))\n         (@WriterFold.fold_writer W E MN (ITreeDefinition.itree F) op\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A t)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample (W * A)\n            (@Writer.run_writer W E MN A op t))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldITree.itree_writer_prefix",
+      "type": "@WriterFoldITree.itree_writer_prefix\n     : forall (W : Type) (E MN F : Type -> Type) (op : Monoid.Monoid W),\n       @Monoid.MonoidLaws W op ->\n       forall (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A)\n         (prefix log : W),\n       @Eqit.eq_itree F (W * A) (W * A) (@eq (W * A))\n         (@WriterFoldITree.itree_writer_from W E MN F op handle sample A t\n            (@Monoid.monoid_plus W op prefix log))\n         (@ITreeDefinition.ITree.bind F (W * A) (W * A)\n            (@WriterFoldITree.itree_writer_from W E MN F op handle sample A t log)\n            (fun wa : W * A =>\n             {|\n               ITreeDefinition._observe :=\n                 @ITreeDefinition.RetF F (W * A) (ITreeDefinition.itree F (W * A))\n                   (@Monoid.monoid_plus W op prefix (@fst W A wa), @snd W A wa)\n             |}))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldITree.itree_writer_bind_from",
+      "type": "@WriterFoldITree.itree_writer_bind_from\n     : forall (W : Type) (E MN F : Type -> Type) (op : Monoid.Monoid W),\n       @Monoid.MonoidLaws W op ->\n       forall (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A B : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A)\n         (k : A -> PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN B)\n         (log : W),\n       @Eqit.eq_itree F (W * B) (W * B) (@eq (W * B))\n         (@WriterFoldITree.itree_writer_from W E MN F op handle sample B\n            (@PTreeDefinition.PTree.bind (Sum.sum1 (Writer.writerE W) E) MN A B t k) log)\n         (@ITreeDefinition.ITree.bind F (W * A) (W * B)\n            (@WriterFoldITree.itree_writer_from W E MN F op handle sample A t log)\n            (fun wa : W * A =>\n             @WriterFoldITree.itree_writer_from W E MN F op handle sample B\n               (k (@snd W A wa)) (@fst W A wa)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldITree.itree_writer_fold_bind",
+      "type": "@WriterFoldITree.itree_writer_fold_bind\n     : forall (W : Type) (E MN F : Type -> Type) (op : Monoid.Monoid W),\n       @Monoid.MonoidLaws W op ->\n       forall (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A B : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A)\n         (k : A -> PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN B),\n       @Eqit.eq_itree F (W * B) (W * B) (@eq (W * B))\n         (@WriterFold.fold_writer W E MN (ITreeDefinition.itree F) op\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample B\n            (@PTreeDefinition.PTree.bind (Sum.sum1 (Writer.writerE W) E) MN A B t k))\n         (@Monad.bind (Basics.Monads.writerT W (ITreeDefinition.itree F))\n            (@WriterT.writerT_monad W (ITreeDefinition.itree F) op (@ITreeDefinition.Monad_itree F))\n            A B\n            (@WriterFold.fold_writer W E MN (ITreeDefinition.itree F) op\n               (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n               A t)\n            (fun a : A =>\n             @WriterFold.fold_writer W E MN (ITreeDefinition.itree F) op\n               (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n               B (k a)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.WriterFoldITree.itree_writer_fold_ret",
+      "type": "@WriterFoldITree.itree_writer_fold_ret\n     : forall (W : Type) (E MN F : Type -> Type) (op : Monoid.Monoid W),\n       @Monoid.MonoidLaws W op ->\n       forall (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (a : A),\n       @Eqit.eq_itree F (W * A) (W * A) (@eq (W * A))\n         (@WriterFold.fold_writer W E MN (ITreeDefinition.itree F) op\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.RetF (Sum.sum1 (Writer.writerE W) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (Writer.writerE W) E) MN A) a\n            |})\n         {|\n           ITreeDefinition._observe :=\n             @ITreeDefinition.RetF F (W * A) (ITreeDefinition.itree F (W * A))\n               (@Monoid.monoid_unit W op, a)\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.logs",
+      "type": "ReaderWriterFold.logs\n     : Monoid.Monoid (list nat)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.logs_laws",
+      "type": "ReaderWriterFold.logs_laws\n     : @Monoid.MonoidLaws (list nat) ReaderWriterFold.logs",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.reader_target_monad",
+      "type": "@ReaderWriterFold.reader_target_monad\n     : forall F : Type -> Type,\n       @Monad.MonadLawsE (ReaderMonad.readerT bool (ITreeDefinition.itree F))\n         (@ReaderT.readerT_eq1 bool (ITreeDefinition.itree F) (@ITreeMonad.Eq1_ITree F))\n         (@ReaderMonad.Monad_readerT bool (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.reader_target_uniform",
+      "type": "@ReaderWriterFold.reader_target_uniform\n     : forall F : Type -> Type,\n       @IterationLaws.iteration_uniform (ReaderMonad.readerT bool (ITreeDefinition.itree F))\n         (@ReaderMonad.Monad_readerT bool (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F))\n         (@Basics.MonadIter_readerT (ITreeDefinition.itree F) bool\n            (@ITreeDefinition.MonadIter_itree F))\n         (@ReaderT.readerT_eq1 bool (ITreeDefinition.itree F) (@ITreeMonad.Eq1_ITree F))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.writer_target_monad",
+      "type": "@ReaderWriterFold.writer_target_monad\n     : forall F : Type -> Type,\n       @Monad.MonadLawsE (Basics.Monads.writerT (list nat) (ITreeDefinition.itree F))\n         (@WriterT.writerT_eq1 (list nat) (ITreeDefinition.itree F) (@ITreeMonad.Eq1_ITree F))\n         (@WriterT.writerT_monad (list nat) (ITreeDefinition.itree F) ReaderWriterFold.logs\n            (@ITreeDefinition.Monad_itree F))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.writer_target_uniform",
+      "type": "@ReaderWriterFold.writer_target_uniform\n     : forall F : Type -> Type,\n       @IterationLaws.iteration_uniform\n         (Basics.Monads.writerT (list nat) (ITreeDefinition.itree F))\n         (@WriterT.writerT_monad (list nat) (ITreeDefinition.itree F) ReaderWriterFold.logs\n            (@ITreeDefinition.Monad_itree F))\n         (@WriterT.writerT_iter (list nat) (ITreeDefinition.itree F) ReaderWriterFold.logs\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F))\n         (@WriterT.writerT_eq1 (list nat) (ITreeDefinition.itree F) (@ITreeMonad.Eq1_ITree F))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.writer_bind_keeps_order",
+      "type": "@ReaderWriterFold.writer_bind_keeps_order\n     : forall F : Type -> Type,\n       @Eqit.eq_itree F (list nat * unit) (list nat * unit) (@eq (list nat * unit))\n         (@Monad.bind (Basics.Monads.writerT (list nat) (ITreeDefinition.itree F))\n            (@WriterT.writerT_monad (list nat) (ITreeDefinition.itree F) ReaderWriterFold.logs\n               (@ITreeDefinition.Monad_itree F)) unit unit\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.RetF F (list nat * unit)\n                  (ITreeDefinition.itree F (list nat * unit)) ((1 :: @nil nat)%list, tt)\n            |}\n            (fun _ : unit =>\n             {|\n               ITreeDefinition._observe :=\n                 @ITreeDefinition.RetF F (list nat * unit)\n                   (ITreeDefinition.itree F (list nat * unit)) ((2 :: @nil nat)%list, tt)\n             |}))\n         {|\n           ITreeDefinition._observe :=\n             @ITreeDefinition.RetF F (list nat * unit) (ITreeDefinition.itree F (list nat * unit))\n               ((1 :: 2 :: @nil nat)%list, tt)\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.logs_not_commutative",
+      "type": "ReaderWriterFold.logs_not_commutative\n     : @Monoid.monoid_plus (list nat) ReaderWriterFold.logs (1 :: @nil nat)%list\n         (2 :: @nil nat)%list <>\n       @Monoid.monoid_plus (list nat) ReaderWriterFold.logs (2 :: @nil nat)%list\n         (1 :: @nil nat)%list",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.reader_recursive_square",
+      "type": "@ReaderWriterFold.reader_recursive_square\n     : forall (MN F : Type -> Type) (mu : MN bool)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (handle : forall X : Type, ReaderWriterFold.tickE X -> ITreeDefinition.itree F X)\n         (env : bool),\n       @Eqit.eutt F bool bool (@eq bool)\n         (@ReaderFold.fold_reader bool ReaderWriterFold.tickE MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n            bool (@ReaderWriterFold.reader_service MN mu) env)\n         (@Fold.fold ReaderWriterFold.tickE MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n            bool\n            (@Reader.run_reader bool ReaderWriterFold.tickE MN bool\n               (@ReaderWriterFold.reader_service MN mu) env))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.writer_recursive_square",
+      "type": "@ReaderWriterFold.writer_recursive_square\n     : forall (MN F : Type -> Type) (mu : MN bool)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (handle : forall X : Type, ReaderWriterFold.tickE X -> ITreeDefinition.itree F X),\n       @Eqit.eutt F (list nat * bool) (list nat * bool) (@eq (list nat * bool))\n         (@WriterFold.fold_writer (list nat) ReaderWriterFold.tickE MN\n            (ITreeDefinition.itree F) ReaderWriterFold.logs (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample bool\n            (@ReaderWriterFold.writer_service MN mu))\n         (@Fold.fold ReaderWriterFold.tickE MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n            (list nat * bool)\n            (@Writer.run_writer (list nat) ReaderWriterFold.tickE MN bool ReaderWriterFold.logs\n               (@ReaderWriterFold.writer_service MN mu)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.reader_bind_square",
+      "type": "@ReaderWriterFold.reader_bind_square\n     : forall (MN F : Type -> Type) (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (handle : forall X : Type, ReaderWriterFold.tickE X -> ITreeDefinition.itree F X)\n         (A B : Type)\n         (t : PTreeDefinition.ptree (Sum.sum1 (Reader.readerE bool) ReaderWriterFold.tickE) MN A)\n         (k : A ->\n              PTreeDefinition.ptree (Sum.sum1 (Reader.readerE bool) ReaderWriterFold.tickE) MN B)\n         (env : bool),\n       @Eqit.eq_itree F B B (@eq B)\n         (@ReaderFold.fold_reader bool ReaderWriterFold.tickE MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample B\n            (@PTreeDefinition.PTree.bind (Sum.sum1 (Reader.readerE bool) ReaderWriterFold.tickE) MN\n               A B t k) env)\n         (@ITreeDefinition.ITree.bind F A B\n            (@ReaderFold.fold_reader bool ReaderWriterFold.tickE MN (ITreeDefinition.itree F)\n               (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n               A t env)\n            (fun a : A =>\n             @ReaderFold.fold_reader bool ReaderWriterFold.tickE MN (ITreeDefinition.itree F)\n               (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n               B (k a) env))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.writer_bind_square",
+      "type": "@ReaderWriterFold.writer_bind_square\n     : forall (MN F : Type -> Type) (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (handle : forall X : Type, ReaderWriterFold.tickE X -> ITreeDefinition.itree F X)\n         (A B : Type)\n         (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE (list nat)) ReaderWriterFold.tickE)\n                MN A)\n         (k : A ->\n              PTreeDefinition.ptree (Sum.sum1 (Writer.writerE (list nat)) ReaderWriterFold.tickE)\n                MN B),\n       @Eqit.eq_itree F (list nat * B) (list nat * B) (@eq (list nat * B))\n         (@WriterFold.fold_writer (list nat) ReaderWriterFold.tickE MN\n            (ITreeDefinition.itree F) ReaderWriterFold.logs (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample B\n            (@PTreeDefinition.PTree.bind\n               (Sum.sum1 (Writer.writerE (list nat)) ReaderWriterFold.tickE) MN A B t k))\n         (@Monad.bind (Basics.Monads.writerT (list nat) (ITreeDefinition.itree F))\n            (@WriterT.writerT_monad (list nat) (ITreeDefinition.itree F) ReaderWriterFold.logs\n               (@ITreeDefinition.Monad_itree F)) A B\n            (@WriterFold.fold_writer (list nat) ReaderWriterFold.tickE MN\n               (ITreeDefinition.itree F) ReaderWriterFold.logs (@ITreeDefinition.Monad_itree F)\n               (@ITreeDefinition.MonadIter_itree F) handle sample A t)\n            (fun a : A =>\n             @WriterFold.fold_writer (list nat) ReaderWriterFold.tickE MN\n               (ITreeDefinition.itree F) ReaderWriterFold.logs (@ITreeDefinition.Monad_itree F)\n               (@ITreeDefinition.MonadIter_itree F) handle sample B (k a)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.writer_sampling_does_not_log",
+      "type": "@ReaderWriterFold.writer_sampling_does_not_log\n     : forall (MN F : Type -> Type) (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (X : Type) (m : MN X),\n       @WriterFold.writer_sample (list nat) MN (ITreeDefinition.itree F) ReaderWriterFold.logs\n         (@ITreeDefinition.Monad_itree F) sample X m =\n       @ITreeDefinition.ITree.bind F X (list nat * X) (sample X m)\n         (fun x : X =>\n          {|\n            ITreeDefinition._observe :=\n              @ITreeDefinition.RetF F (list nat * X) (ITreeDefinition.itree F (list nat * X))\n                (@nil nat, x)\n          |})",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.writer_high_square",
+      "type": "@ReaderWriterFold.writer_high_square\n     : forall (A : Type) (MN F : Type -> Type)\n         (handle : forall X : Type, ReaderWriterFold.tickE X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (t : PTreeDefinition.ptree (Sum.sum1 (Writer.writerE (list nat)) ReaderWriterFold.tickE)\n                MN A),\n       @Eqit.eutt F (list nat * A) (list nat * A) (@eq (list nat * A))\n         (@WriterFold.fold_writer (list nat) ReaderWriterFold.tickE MN\n            (ITreeDefinition.itree F) ReaderWriterFold.logs (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A t)\n         (@Fold.fold ReaderWriterFold.tickE MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n            (list nat * A)\n            (@Writer.run_writer (list nat) ReaderWriterFold.tickE MN A ReaderWriterFold.logs t))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ReaderWriterFold.reader_high_square",
+      "type": "@ReaderWriterFold.reader_high_square\n     : forall (A : Type) (MN F : Type -> Type)\n         (handle : forall X : Type, ReaderWriterFold.tickE X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (t : PTreeDefinition.ptree (Sum.sum1 (Reader.readerE bool) ReaderWriterFold.tickE) MN A)\n         (env : bool),\n       @Eqit.eutt F A A (@eq A)\n         (@ReaderFold.fold_reader bool ReaderWriterFold.tickE MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A t\n            env)\n         (@Fold.fold ReaderWriterFold.tickE MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A\n            (@Reader.run_reader bool ReaderWriterFold.tickE MN A t env))",
+      "assumptions": "Closed under the global context"
+    }
+  ]
+}

@@ -141,12 +141,12 @@ This increment does not close these independent obligations:
 1. General source `ITree.eutt -> peutt`, hence lowering preservation and the
    source-`ITree.interp` commuting square. The existing structural bridge and
    bind/iter laws remain available, but are not substitutes for weak simulation.
-2. Canonical ReaderT/WriterT targets, their lawful iteration evidence,
-   and their agreements with the existing PTree eliminators. StateT already
-   has its checked theorem. The subsequent [ExceptT increment](EXCEPTION_FOLD.md)
-   now proves ExceptT monad/uniformity laws and its generic fold agreement.
-3. WriterT's accumulated-log iteration and append-form bind law; derived
-   transformer `local` / `catch`, if included in the eventual public surface.
+2. Arbitrary-target ReaderT/WriterT commuting. The subsequent
+   [ReaderT/WriterT increment](READER_WRITER_FOLD.md) completes their canonical
+   operations, monad/uniformity laws, actual-ITree squares and append-form
+   Writer bind. StateT and [ExceptT](EXCEPTION_FOLD.md) already have generic
+   uniform-iteration squares. Their theorem strengths must not be conflated.
+3. Derived transformer `local` / `catch`, if included in the eventual public surface.
 4. A general *conditional* sample-before-throw elimination theorem under an
    appropriate native totality/coupling hypothesis. The negative theorem here
    rules out the unconditional version, but does not prove that positive theorem.

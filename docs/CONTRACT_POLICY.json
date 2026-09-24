@@ -1278,6 +1278,21 @@
       "public_case_beta",
       "public_bimap_replacement"
     ],
+    "theories/Regression/Semantics/ReaderWriterFold.v": [
+      "reader_target_monad",
+      "reader_target_uniform",
+      "writer_target_monad",
+      "writer_target_uniform",
+      "writer_bind_keeps_order",
+      "logs_not_commutative",
+      "reader_recursive_square",
+      "writer_recursive_square",
+      "reader_bind_square",
+      "writer_bind_square",
+      "writer_sampling_does_not_log",
+      "writer_high_square",
+      "reader_high_square"
+    ],
     "theories/Regression/Semantics/ExceptionFold.v": [
       "exception_target_monad",
       "exception_target_uniform",

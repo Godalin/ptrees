@@ -6,7 +6,9 @@ Require PTree.Core.Handler.
 Require PTree.Core.ITreeBridge.
 Require PTree.Core.IterationLaws.
 Require PTree.Core.PTreeDefinition.
+Require PTree.Core.ReaderT.
 Require PTree.Core.Utils.
+Require PTree.Core.WriterT.
 Require PTree.Eq.
 Require PTree.Eq.Algebra.
 Require PTree.Eq.Backend.EnumQ.
@@ -104,6 +106,7 @@ Require PTree.Interp.Exception.
 Require PTree.Interp.ExceptionFacts.
 Require PTree.Interp.ExceptionFold.
 Require PTree.Interp.ExceptionFoldFacts.
+Require PTree.Interp.FoldITree.
 Require PTree.Interp.FreeOmega.Atomic.
 Require PTree.Interp.FreeOmega.Base.
 Require PTree.Interp.FreeOmega.Cofinality.
@@ -125,6 +128,8 @@ Require PTree.Interp.ITreeStructural.
 Require PTree.Interp.Kernel.
 Require PTree.Interp.Preservation.
 Require PTree.Interp.Reader.
+Require PTree.Interp.ReaderFold.
+Require PTree.Interp.ReaderFoldITree.
 Require PTree.Interp.RelationalPreservation.
 Require PTree.Interp.Scheduling.
 Require PTree.Interp.StandardFacts.
@@ -140,6 +145,9 @@ Require PTree.Interp.StateStrong.
 Require PTree.Interp.Structural.
 Require PTree.Interp.Unrestricted.
 Require PTree.Interp.Writer.
+Require PTree.Interp.WriterFold.
+Require PTree.Interp.WriterFoldFacts.
+Require PTree.Interp.WriterFoldITree.
 Require PTree.PTree.
 Require PTree.PTreeFacts.
 Require PTree.Prob.Backend.Common.CountableCoupling.
@@ -370,6 +378,7 @@ Require PTree.Regression.Semantics.OperationalPTSExamples.
 Require PTree.Regression.Semantics.PEuttAlgebra.
 Require PTree.Regression.Semantics.ProbabilisticRelationHierarchy.
 Require PTree.Regression.Semantics.PublicSemanticFacade.
+Require PTree.Regression.Semantics.ReaderWriterFold.
 Require PTree.Regression.Semantics.RelationalConsumers.
 Require PTree.Regression.Semantics.StableHittingComputation.
 Require PTree.Regression.Semantics.StandardEffects.
