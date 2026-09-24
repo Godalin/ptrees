@@ -434,7 +434,22 @@ dune build
 
 to build the theories.
 
-### Executable State + probability example
+### Executable probability programs
+
+For **unbounded execution of an already proved sampler**, run:
+
+```sh
+opam exec -- dune exec extraction/unbounded/main.exe -- vn stats 10000 42
+opam exec -- dune exec extraction/unbounded/main.exe -- direct stats 10000 42
+```
+
+These extract the existing Von Neumann retry program and the direct fair
+sampler that it is proved `peutt`-equivalent to. Neither execution uses fuel.
+See [unbounded simulation](docs/UNBOUNDED_SIMULATION.md) for single-run,
+streamed replay, nontermination and trust boundaries. Simulation statistics
+are not a PRNG or end-to-end OCaml correctness proof.
+
+The bounded State examples remain available:
 
 ```sh
 opam exec -- dune exec extraction/state-counter/main.exe -- replay 7 0 010

@@ -9,6 +9,13 @@ for effects, handlers and execution; linked stage reports retain their own
 historical baselines and validation results. The original operational
 checkpoint began at `7b4c9714bb3845ed283a68fd084a6b4b33073e6f`.
 
+The [fuel-free simulation follow-up](UNBOUNDED_SIMULATION.md) now extracts
+the existing proved-equivalent Von Neumann and direct-fair programs into a
+separate OCaml executable. It supplies live random execution, statistics,
+and streamed replay without a transition budget. This is an executable
+demonstration with explicit host trust boundaries, not an extension of the
+finite runner correctness theorem. All old extraction targets are retained.
+
 The implementation goal is complete: proved rewriting can be followed by
 effect elimination, extraction and replay. **The finite runner distribution
 is now proved under an explicit history-conditional uniform entropy model;
@@ -27,6 +34,7 @@ explicitly requested; no environment changes are planned.
 | General rational tickets | Proved for one draw | Exact native distribution under a uniform bounded index. |
 | State+Prob rewrite, extraction, seed/replay | Implemented and checked | No same-seed, same-trace or same-fuel equality claim. |
 | Finite runner probability correspondence | Proved under conditional uniform entropy | All finite outcomes; returned projection agrees with same-fuel hitting, and its limit with complete hitting. Not PRNG verification. |
+| Fuel-free proved-sampler simulation | Implemented and tested | Extracts the actual Von Neumann/direct-fair theorem roots. Handwritten scheduling and PRNG remain trusted; individual runs may diverge. |
 
 The subsequent [arbitrary-handler increment](UNRESTRICTED_INTERP.md) closes
 the fixed-handler eliminating/mixed fusion obligation, using a two-phase

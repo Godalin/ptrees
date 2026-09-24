@@ -1,0 +1,69 @@
+(** Executable glue, deliberately outside the maintained semantic theory.
+    Extract the very same two roots named in the existing peutt theorem.
+    No fuel, recursion override, integer remapping, or checker relaxation. *)
+Set Warnings "-notation-overridden,-ambiguous-paths".
+From Coq Require Import Extraction ExtrOcamlBasic List Bool.
+From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
+From PTree.Core Require Import PTreeDefinition.
+From PTree.Execution Require Import Runner.
+From PTree.Execution.Backend Require Import RationalTickets.
+From PTree.Prob.Backend.EnumQ Require Import Representation.
+From PTree.Prob.Backend.SubEnumQ Require Import Representation.
+From PTree.Examples.BernoulliFactory Require Import
+  VonNeumannUnbounded OperationalVonNeumann.
+Import EnumQ GRing.Theory Num.Theory Order.Theory.
+Local Open Scope ring_scope.
+
+(* This checked proof reference pins the demonstration to the existing
+   theorem; its proof is not an executable sampling algorithm. *)
+Definition program_correct := peutt_von_neumann_raw_direct.
+
+Inductive machine_result (A Seed : Type) :=
+| Continue (tree : ptree vnE EnumQ A) (seed : Seed)
+| Done (result : outcome A) (seed : Seed)
+| InvalidMeasure (seed : Seed).
+Arguments Continue {A Seed} _ _.
+Arguments Done {A Seed} _ _.
+Arguments InvalidMeasure {A Seed} _.
+
+(* EnumQ allows mass greater than one. Check the bound, then reuse the
+   existing exact SubEnumQ ticket compiler WITHOUT normalization. *)
+Definition machine_step {A Seed}
+    (next : nat -> Seed -> option nat * Seed)
+    (tree : ptree vnE EnumQ A) (seed : Seed) : machine_result A Seed :=
+  match observe tree with
+  | RetF a => Done (Returned a) seed
+  | TauF t => Continue t seed
+  | @VisF _ _ _ _ X e _ => match e with end
+  | @ProbF _ _ _ _ X mu k =>
+      match Bool.bool_dec (enumQ_mass mu <= 1) true with
+      | left H =>
+          let '(draw, rest) := ticket_sample next (@enumQ_as_subprob X mu H) seed in
+          match draw with
+          | Drawn x => Continue (k x) rest
+          | Missing => Done Lost rest
+          | NoEntropy => Done EntropyExhausted rest
+          end
+      | right _ => InvalidMeasure seed
+      end
+  end.
+
+(* Runtime boundary fixtures, not extra claims about the main theorem. *)
+CoFixpoint spin : ptree vnE EnumQ bool := Tau spin.
+Definition lost : ptree vnE EnumQ bool := Prob enumQ_zero (fun b => Ret b).
+Definition returned : ptree vnE EnumQ bool := Ret true.
+Definition overweight : ptree vnE EnumQ bool.
+Proof.
+  refine (Prob (scale_EnumQ (p := 2) _ (ret_EnumQ true)) (fun b => Ret b)).
+  reflexivity.
+Defined.
+Definition partial : ptree vnE EnumQ bool.
+Proof.
+  refine (Prob (scale_EnumQ (p := 2^-1) _ (ret_EnumQ true)) (fun b => Ret b)).
+  reflexivity.
+Defined.
+
+Extraction Language OCaml.
+Set Warnings "-extraction-reserved-identifier".
+Extraction "simulation.ml" machine_step von_neumann_third direct_fair
+  spin lost returned overweight partial.
