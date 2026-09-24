@@ -445,6 +445,9 @@ opam exec -- dune exec extraction/unbounded/main.exe -- direct stats 10000 42
 
 These extract the existing Von Neumann retry program and the direct fair
 sampler that it is proved `peutt`-equivalent to. Neither execution uses fuel.
+The nested Bernoulli factory is also executable: use `factory` and
+`factory-direct` in place of `vn` and `direct` to compare the proved
+biased-coin-to-2/5 construction with direct Bernoulli(2/5) sampling.
 See [unbounded simulation](docs/UNBOUNDED_SIMULATION.md) for single-run,
 streamed replay, nontermination and trust boundaries. Simulation statistics
 are not a PRNG or end-to-end OCaml correctness proof.

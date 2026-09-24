@@ -112,6 +112,65 @@ class UnboundedExecutionTests(unittest.TestCase):
         self.assertEqual(self.cli('vn', 'sample', 42).stdout,
                          self.cli('vn', 'sample', 42).stdout)
 
+    def test_factory_uses_compositional_proof_and_actual_roots(self):
+        source = without_comments((ROOT/'extraction/unbounded/Extract.v.in').read_text())
+        self.assertIn('Definition factory_program_correct := peutt_third_to_two_fifths_compositional.', source)
+        self.assertIn('factory_machine_step third_to_two_fifths direct_two_fifths', source)
+        self.assertIn('@closed_machine_step factoryE A Seed', source)
+        self.assertNotIn('OperationalFactoryStepSupportLaws', source)
+        self.assertNotIn('peutt_third_to_two_fifths_direct', source)
+        driver = (ROOT/'extraction/unbounded/main.ml').read_text()
+        self.assertNotIn('Obj.magic', driver)
+
+    def test_factory_nested_loops_and_unused_entropy(self):
+        # A fair true at x=2/5 stops with false. A fair false continues to
+        # x=4/5, where another fair false stops with true.
+        for trace, result, draws in [('3,0,8', 'false', 2),
+                                     ('0,3,0,3,8', 'true', 4)]:
+            output = self.cli('factory', 'replay', trace).stdout
+            self.assertIn('Returned ' + result, output)
+            self.assertIn(f'draws={draws}\n', output)
+            self.assertIn('remaining=1\n', output)
+        # 1000 inner VN retries, then 200 full outer binary cycles
+        # 2/5 -> 4/5 -> 3/5 -> 1/5 -> 2/5, then a final return.
+        trace = ['0', '0'] * 1000 + ['0', '3', '3', '0', '3', '0', '0', '3'] * 200 + ['3', '0']
+        output = self.cli('factory', 'replay', ','.join(trace)).stdout
+        self.assertIn('Returned false', output)
+        self.assertIn('draws=3602\n', output)
+
+    def test_factory_direct_ticket_boundary_and_errors(self):
+        # Compiler creates 25 tickets: first 15 false, last 10 true.
+        for ticket, result in [(0, 'false'), (14, 'false'), (15, 'true'), (24, 'true')]:
+            output = self.cli('factory-direct', 'replay', ticket).stdout
+            self.assertIn('Returned ' + result, output)
+            self.assertIn('draws=1\n', output)
+        for program, trace, error in [('factory', '0,3', 'entropy exhausted'),
+                                      ('factory', '9', 'outside requested bound'),
+                                      ('factory-direct', '25', 'outside requested bound')]:
+            result = self.cli(program, 'replay', trace, success=False)
+            self.assertIn(error, result.stderr)
+            self.assertEqual(result.stdout, '')
+
+    def test_factory_stats_target_is_two_fifths_not_one_half(self):
+        for program in ['factory', 'factory-direct']:
+            fields = self.stats(program, 3000)
+            self.assertEqual(fields['lost'], '0')
+            self.assertTrue(0.35 < float(fields['true_frequency']) < 0.45)
+            self.assertTrue(0.55 < float(fields['false_frequency']) < 0.65)
+            output = self.cli(program, 'stats', 1, 42).stdout
+            self.assertIn('theory: true=2/5 false=3/5 lost=0', output)
+
+    def test_factory_stream_only_uses_biased_source_not_target_draws(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for program, bound in [('factory', '9'), ('factory-direct', '25')]:
+                path = Path(directory)/(program + '.trace')
+                original = self.cli(program, 'sample', 42, '--trace', path)
+                self.assertEqual(original.stdout, self.cli(program, 'replay-file', path).stdout)
+                self.assertTrue(path.read_text().strip())
+                self.assertTrue(all(line.split()[0] == bound for line in path.read_text().splitlines()))
+                # Random mode uses the very same step/tree pairing.
+                self.assertIn('Returned', self.cli(program, 'random').stdout)
+
     def test_partial_mass_not_conditionally_normalized(self):
         fields = self.stats('partial')
         self.assertEqual(fields['false'], '0')

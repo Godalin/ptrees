@@ -59,9 +59,9 @@ let next bound state =
 
 (* No recursive forcing of a complete tree and no repeated restart with
    larger fuel. Each call resumes exactly the residual extracted tree. *)
-let execute tree entropy =
+let execute step tree entropy =
   let rec loop steps tree entropy =
-    match S.machine_step next tree entropy with
+    match step next tree entropy with
     | S.Continue (tree, entropy) -> loop (increment steps) tree entropy
     | S.Done (outcome, entropy) -> outcome, entropy, increment steps
     | S.InvalidMeasure _ -> fail "native measure has mass greater than one"
@@ -84,7 +84,7 @@ let positive text =
   n
 
 let usage =
-  "usage: main.exe (vn|direct|lost|partial|spin|ret|overweight) \
+  "usage: main.exe (vn|direct|factory|factory-direct|lost|partial|spin|ret|overweight) \
    (sample SEED | random | replay TICKETS | replay-file PATH | \
     stats TRIALS SEED | stats-random TRIALS) [--trace NEW_PATH]"
 
@@ -101,18 +101,24 @@ let main () =
     | path :: "--trace" :: rest -> List.rev rest, Some path
     | _ -> List.tl (Array.to_list Sys.argv), None
   in
-  let program, tree, args = match args with
+  let program, run, target, args = match args with
     | name :: rest ->
-        let tree = match name with
-          | "vn" -> S.von_neumann_third
-          | "direct" -> S.direct_fair
-          | "lost" -> S.lost
-          | "partial" -> S.partial
-          | "spin" -> S.spin
-          | "ret" -> S.returned
-          | "overweight" -> S.overweight
+        (* Close over the correctly typed step/tree pair, so distinct empty
+           event signatures need neither a runtime cast nor a tree rewrite. *)
+        let ordinary tree = execute S.machine_step tree in
+        let factory tree = execute S.factory_machine_step tree in
+        let run, target = match name with
+          | "vn" -> ordinary S.von_neumann_third, Some ("1/2", "1/2")
+          | "direct" -> ordinary S.direct_fair, Some ("1/2", "1/2")
+          | "factory" -> factory S.third_to_two_fifths, Some ("2/5", "3/5")
+          | "factory-direct" -> factory S.direct_two_fifths, Some ("2/5", "3/5")
+          | "lost" -> ordinary S.lost, None
+          | "partial" -> ordinary S.partial, None
+          | "spin" -> ordinary S.spin, None
+          | "ret" -> ordinary S.returned, None
+          | "overweight" -> ordinary S.overweight, None
           | _ -> invalid_arg usage
-        in name, tree, rest
+        in name, run, target, rest
     | _ -> invalid_arg usage
   in
   let trials, source = match args with
@@ -130,13 +136,13 @@ let main () =
       let state = {source; draws = 0; trace} in
       match trials with
       | None ->
-          let result, rest, steps = execute tree state in
+          let result, rest, steps = run state in
           Printf.printf "%s\nsteps=%d\ndraws=%d\n" (result_name result) steps rest.draws;
           (match rest.source with Replay xs -> Printf.printf "remaining=%d\n" (List.length xs) | _ -> ())
       | Some trials ->
           let rec simulate remaining state yes no lost =
             if remaining = 0 then state, yes, no, lost else
-            let result, state, _ = execute tree state in
+            let result, state, _ = run state in
             match result with
             | S.Returned true -> simulate (remaining - 1) state (yes + 1) no lost
             | S.Returned false -> simulate (remaining - 1) state yes (no + 1) lost
@@ -149,8 +155,11 @@ let main () =
           (* Frequencies divide by ALL trials, not just successful returns. *)
           Printf.printf "true_frequency=%.6f\nfalse_frequency=%.6f\nlost_frequency=%.6f\n"
             (float yes /. float trials) (float no /. float trials) (float lost /. float trials);
-          if program = "vn" || program = "direct" then
-            print_endline "theory: true=1/2 false=1/2 lost=0 (ideal randomness; not a PRNG proof)"))
+          (match target with
+           | None -> ()
+           | Some (yes, no) ->
+               Printf.printf "theory: true=%s false=%s lost=0 (ideal randomness; not a PRNG proof)\n"
+                 yes no)))
 
 let () =
   Sys.catch_break true;

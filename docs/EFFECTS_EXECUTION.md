@@ -15,6 +15,9 @@ separate OCaml executable. It supplies live random execution, statistics,
 and streamed replay without a transition budget. This is an executable
 demonstration with explicit host trust boundaries, not an extension of the
 finite runner correctness theorem. All old extraction targets are retained.
+The same executable now includes the nested Bernoulli factory and its
+direct 2/5 specification, linked to the existing assumption-explicit
+compositional equivalence theorem; no factory algorithm is rewritten in OCaml.
 
 The implementation goal is complete: proved rewriting can be followed by
 effect elimination, extraction and replay. **The finite runner distribution
