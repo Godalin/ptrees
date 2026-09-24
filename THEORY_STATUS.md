@@ -41,8 +41,9 @@ measure correspondence; admissible FreeOmega SubEnumQ has algebra/equality and
 general joint-coupling soundness; every complete SubEnumQ stable-hitting witness
 is automatically admissible and denotes the independent finite-iterate Lub.
 The [soundness account](docs/FREEOMEGA_SOUNDNESS.md) gives exact claims and
-limitations. MathComp-native external soundness and StateInterp are not part
-of this cleanup. Mainline reasoning does not depend on external validation.
+limitations. MathComp-native external soundness remains separate. State,
+Reader, Writer and Exception interpretation now have maintained preservation
+theorems. Mainline reasoning does not depend on external validation.
 
 [Architecture](docs/ARCHITECTURE.md) specifies ownership, curated facades,
 generic/canonical/concrete specialization, retained auxiliary infrastructure
@@ -90,8 +91,9 @@ labelled traditional MDP --encode--> mdp_state PTrees
 `tree_trans_bisim` is a comparison semantics, not its replacement.
 `head_bisim` compares already-selected stable heads. These have different
 domains or observation power and must not be interchanged by definition.
-The generic facade `API/Generic.v` exposes curated vocabulary
-and endpoint laws without re-exporting all proof machinery.
+`PTree.v` exports pure syntax and handler combinators; `Eq.v` exports relation
+owners and canonical notation; `PTreeFacts.v` exports selected theorem owners.
+There is no `API/` namespace or shadowing alias facade.
 Comparison theory is imported explicitly from `Semantics/`.
 
 ### Representation, probability and stable hitting
@@ -324,25 +326,31 @@ still quantify over measure-law records.
 | `peutt_iter_rel` | heterogeneous fusion under structural step relations |
 | `peutt_iter_behavioral_rel` | behavioral step fusion for eventless unbounded loops |
 
-`API/FreeOmega.v` exposes selected canonical-model equational endpoints,
-without bulk-exporting the implementation modules. All maintained
+`PTreeFacts.v` exposes generic and selected canonical-model theorem owners.
+All maintained
 probabilistic GFPs use coq-coinduction; Paco is an inherited ITree dependency.
 
 Interpreter laws include structural preservation, bind/iter morphisms,
-effectful-handler composition, structurally related handler replacement,
-and full behavioral preservation for pure event renaming. Identity and
-composition of translation are behavioral, accounting for administrative Tau.
+effectful-handler composition and pointwise behavioral handler replacement.
+`Core/Handler.v` supplies identity, composition, sums, injections, bimap and
+empty handlers. `Interp/HandlerFacts.v` proves unit/associativity and sum
+combination laws modulo pointwise `peutt`, accounting for administrative Tau.
 `ptree_interp_approx_cofinal_all` and `ptree_stable_hitting_interp`
 establish the general scheduling/complete-limit composition theorem.
 
-Full preservation by an arbitrary effectful handler is still conditional:
-`Interp/FreeOmega/Base.v` isolates `interp_vis_fusion`, and
-`peutt_interp_of_vis_fusion` derives preservation from it.
-The unresolved part is progress when an internally returning handled Vis
-continues into the next interpreted continuation before exposing a stable
-head. Ordinary up-to-bind compatibility is proved but does not justify an
-unguarded use of the desired interpreter theorem.
-Eventful behavioral iter fusion has the analogous candidate-closure boundary.
+Arbitrary-handler preservation is proved in `Interp/Unrestricted.v` under
+the explicit probability-level relational-zero/relational-lub profile.
+The two-phase machine treats handler returns as internal transitions; its
+finite/limit scheduling and adequacy close the former returning-handler gap.
+`Interp/HandlerRelation.v` generalizes this proof to two pointwise `peutt`
+handlers and heterogeneous source results. The old fixed-handler theorem
+is now its specialization. FreeOmega discharges these probability obligations;
+native MathComp's unrestricted relational-lub obligation remains open.
+Guarded interpretation remains a useful sufficient route with different,
+more local assumptions. Eventful behavioral iter still has its separately
+documented generator-closure boundary; this result does not remove it.
+See [handler calculus](docs/HANDLER_CALCULUS.md) for precise signatures,
+public clients and retained limits (notably arbitrary-target fold laws).
 
 The first [interpretation-compositionality stage](docs/INTERP_COMPOSITIONALITY.md)
 now proves that `tree_trans_bisim` is **not** an arbitrary-interpreter
@@ -397,8 +405,9 @@ and the independent-source regression fix. A genuinely heterogeneous
 regression proves the handler contract independently and transports an infinite
 Ask/Reply protocol across two distinct inductive event families. Its
 source Tau-equivalence is proved directly by transition coinduction,
-not imported from peutt soundness. State
-interpretation and directory moves have not started.
+not imported from peutt soundness. These are accepted Stage 1–4 results;
+subsequent architecture cleanup, State preservation and standard effects
+are complete; see [current effects status](docs/EFFECTS_EXECUTION.md).
 
 ### Semantic comparison and classical MDPs
 

@@ -5,7 +5,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure Omega Mixed BindOrder.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel
   PEutt StableHittingRelation BindScheduling.
-From PTree.Interp Require Import Kernel Scheduling.
+From PTree.Interp Require Import Kernel Scheduling RelationalPreservation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -108,106 +108,8 @@ Theorem peutt_interp_of_vis_fusion
       FO A B RR
       (PTree.interp handler t1) (PTree.interp handler t2).
 Proof.
-  intros t1 t2 Hsource.
-  eapply (peutt_coinduction_upto_bind
-    (E := F) (MN := MN) (MF := MF)
-    (fun A0 R0 (t : ptree F MN A0) (k : A0 -> ptree F MN R0) =>
-      bind_cofinal_all t k)
-    (A := A) (B := B) (RR0 := RR)
-    (sim := interp_bisim_candidate)).
-  - intros s1 s2 Hsim.
-    unfold interp_bisim_candidate in Hsim.
-    destruct Hsim as [u1 Hsim].
-    destruct Hsim as [u2 Hsim].
-    destruct Hsim as [Hs1 Hsim].
-    destruct Hsim as [Hs2 Hu].
-    rewrite Hs1, Hs2.
-    destruct (stable_hitting_exists
-      (FI := FI)
-      (FO := FO)
-      (@ptree_primitive_kernel E MN MF
-        FI
-        MX A) (observe u1))
-      as [source1 Hsource1].
-    destruct (stable_hitting_exists
-      (FI := FI)
-      (FO := FO)
-      (@ptree_primitive_kernel E MN MF
-        FI
-        MX B) (observe u2))
-      as [source2 Hsource2].
-    destruct (stable_hitting_front_choice
-      (FI := FI)
-      (FO := FO)
-      (fun h : stable_head E MN A =>
-        ptree_interp_head_tree handler h))
-      as [front1 Hfront1].
-    destruct (stable_hitting_front_choice
-      (FI := FI)
-      (FO := FO)
-      (fun h : stable_head E MN B =>
-        ptree_interp_head_tree handler h))
-      as [front2 Hfront2].
-    assert (HsourceLift :
-      @sem_lift MF
-        FI
-        _ _
-        (@ptree_stable_head_rel E MN A B RR
-          (@peutt_state E MN MF
-            FI
-            FC
-            MX
-            FO A B RR))
-        source1 source2).
-    { eapply peutt_state_hitting_lift;
-        [exact Hu|exact Hsource1|exact Hsource2]. }
-    assert (Htarget1 : @ptree_stable_hitting F MN MF
-      FI
-      MX
-      FO A
-      (observe (PTree.interp handler u1))
-      (sem_bind source1 front1)).
-    { eapply (ptree_stable_hitting_interp
-        (FI := FI)
-        (FO := FO)
-        (handler := handler) (t := u1) (hs := source1) (front := front1)).
-      - exact (@Scheduling.ptree_interp_cofinal_all E F MN MF FI MX FO
-          Ord BindOrd MixedOrd Directed handler A u1).
-      - exact Hsource1.
-      - exact Hfront1. }
-    assert (Htarget2 : @ptree_stable_hitting F MN MF
-      FI
-      MX
-      FO B
-      (observe (PTree.interp handler u2))
-      (sem_bind source2 front2)).
-    { eapply (ptree_stable_hitting_interp
-        (FI := FI)
-        (FO := FO)
-        (handler := handler) (t := u2) (hs := source2) (front := front2)).
-      - exact (@Scheduling.ptree_interp_cofinal_all E F MN MF FI MX FO
-          Ord BindOrd MixedOrd Directed handler B u2).
-      - exact Hsource2.
-      - exact Hfront2. }
-    eapply stable_hitting_match_of_hitting_lift;
-      [exact Htarget1|exact Htarget2|].
-    eapply sem_lift_bind; [exact HsourceLift|].
-    intros h1 h2 Hhead. inversion Hhead; subst; clear Hhead.
-    + eapply (sem_lift_mono (SI := FI)).
-      * apply ptree_stable_head_rel_mono.
-        intros x1 x2 Hknown. right. left. exact Hknown.
-      * eapply peutt_state_hitting_lift.
-        -- apply peutt_ret. exact H.
-        -- exact (Hfront1 (FHRet r1)).
-        -- exact (Hfront2 (FHRet r2)).
-    + pose proof (stable_hitting_match_hitting_lift
-        (FI := FI) (FO := FO)
-        (Hvis X e k1 k2 H)
-        (Hfront1 (FHVis e k1))
-        (Hfront2 (FHVis e k2))) as HvisLift.
-      cbn in HvisLift. exact HvisLift.
-  - exists t1, t2. repeat split; try reflexivity. exact Hsource.
-  Unshelve. all: typeclasses eauto.
+  apply (peutt_interp_rel_of_vis_fusion (handler1 := handler) (handler2 := handler)).
+  exact Hvis.
 Qed.
 
 (** Exact closure obligation for an arbitrary effectful handler.  Compared

@@ -8,7 +8,8 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure Omega Mixed BindOrder RelationalClosure.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel
   PEutt StableHittingRelation.
-From PTree.Interp Require Import Kernel Preservation HandlerMachine HandlerMachineAcceleration.
+From PTree.Interp Require Import Kernel Preservation HandlerMachine HandlerMachineAcceleration
+  HandlerRelation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -61,9 +62,8 @@ Theorem peutt_interp {A B} (RR : A -> B -> Prop)
   @peutt F MN MF FI FC MX FO A B RR
     (PTree.interp handler t) (PTree.interp handler u).
 Proof.
-  apply (peutt_interp_of_vis_fusion
-    (BindOrd := BindOrd) (MixedOrd := MixedOrd) (Directed := Directed)).
-  apply handler_vis_fusion.
+  apply (peutt_interp_handler_rel Hzero Hlimit).
+  intros X e. apply peutt_refl.
 Qed.
 
 Lemma peutt_interp_Proper {A} :

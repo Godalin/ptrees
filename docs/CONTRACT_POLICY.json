@@ -70,10 +70,10 @@
     "theories/Prob/Interface/Omega.v:SemanticOmegaSelection": "Class SemanticOmegaSelection (S : Type -> Type) `{SI : SemanticMeasure S} `{SO : @SemanticOmega S SI} := { sem_lub_choose : forall A (chain : nat -> S A), sem_increasing chain -> {out : S A | sem_lub chain out} }."
   },
   "facades": {
-    "theories/PTree.v": "From PTree.Core Require Export PTreeDefinition. Export PTreeDefinition.PTree PTreeNotations.",
+    "theories/PTree.v": "From PTree.Core Require Export PTreeDefinition Handler. Export PTreeDefinition.PTree PTreeNotations.",
     "theories/Semantics.v": "From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment. Notation head_step := HeadTransition.head_step. Notation head_bisim := HeadTransition.head_bisim. Notation tree_trans := TreeTransition.tree_trans. Notation tree_return_observation := TreeTransition.tree_return_observation. Notation tree_offered_event_observation := TreeTransition.tree_offered_event_observation. Notation tree_trans_bisim := TreeTransitionBisim.tree_trans_bisim. Notation tree_trans_bisim_coinduction := TreeTransitionBisim.tree_trans_bisim_coinduction. Notation mdp_head := MDPFragment.mdp_head. Notation mdp_state := MDPFragment.mdp_state.",
     "theories/Eq.v": "From PTree.Eq Require Export PStruct PStrong PEutt Canonical. Export PStructNotations PStrongNotations PEuttNotations.",
-    "theories/PTreeFacts.v": "From PTree Require Export PTree Eq. From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting WellFormedness StableHittingComputation ProbabilisticTrace Bind Algebra Iter. From PTree.Eq.FreeOmega Require Export Bind Algebra Iter. From PTree.Interp Require Export Guarded. From PTree.Interp.FreeOmega Require Export Atomic MDP.",
+    "theories/PTreeFacts.v": "From PTree Require Export PTree Eq. From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting WellFormedness StableHittingComputation ProbabilisticTrace Bind Algebra Iter. From PTree.Eq.FreeOmega Require Export Bind Algebra Iter. From PTree.Interp Require Export Guarded Unrestricted HandlerRelation HandlerFacts State Reader Writer Exception StateFacts StatePreservation StandardFacts ExceptionFacts. From PTree.Interp.FreeOmega Require Export Atomic MDP HandlerCompletion.",
     "theories/Eq/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Core Require Import PTreeDefinition. From PTree.Prob.Interface Require Import Measure Mixed Omega. From PTree.Eq Require Import PEutt. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Class CanonicalBehavior (MN : Type -> Type) := { behavior_frontier : Type -> Type; behavior_measure : SemanticMeasure behavior_frontier; behavior_mixed : MixedMeasure MN behavior_frontier; behavior_omega : @SemanticOmega behavior_frontier behavior_measure }. Definition canonical_peutt {E MN} `{CB : CanonicalBehavior MN} `{FC : @SemanticMeasureCoreLaws behavior_frontier behavior_measure} {A B} (RR : A -> B -> Prop) (t : ptree E MN A) (u : ptree E MN B) : Prop := @PEutt.peutt E MN behavior_frontier behavior_measure FC behavior_mixed behavior_omega A B RR t u. Module PEuttNotations. Notation \"t ≈ₚ[ RR ] u\" := (canonical_peutt RR t u) (at level 70, RR at next level, no associativity) : type_scope. Notation \"t ≈ₚ u\" := (canonical_peutt eq t u) (at level 70, no associativity) : type_scope. End PEuttNotations.",
     "theories/Eq/FreeOmega/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Prob.Interface Require Import Measure Omega. Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.Measure. From PTree.Eq Require Import Canonical. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Definition observable_free_omega_behavior {MN} (NI : SemanticMeasure MN) (NO : @SemanticOmega MN NI) : CanonicalBehavior MN := {| behavior_frontier := FreeOmega MN; behavior_measure := @FreeOmegaObservableSemanticMeasure MN NI NO; behavior_mixed := @FreeOmegaMixedMeasure MN; behavior_omega := @FreeOmegaObservableSemanticOmega MN NI NO |}.",
     "theories/Eq/Backend/EnumQ.v": "From PTree.Prob.Backend.EnumQ Require Import Measure. Require Export PTree.Prob.Backend.EnumQ.Representation. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. Export EnumQ. #[global] Polymorphic Instance EnumQ_CanonicalBehavior : CanonicalBehavior EnumQ := @observable_free_omega_behavior EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega.",
@@ -1265,6 +1265,39 @@
       "no_entropy_is_not_loss",
       "last_valid_ticket_is_loss",
       "bound_is_checked"
+    ],
+    "theories/Regression/Infrastructure/PublicHandlers.v": [
+      "replacement_not_structural",
+      "public_handler_replacement",
+      "returning_handlers_on_infinite_source",
+      "different_return_carriers",
+      "rewriting_handler",
+      "public_left_unit",
+      "public_right_unit",
+      "public_associativity",
+      "public_case_beta",
+      "public_bimap_replacement"
+    ],
+    "theories/Regression/Semantics/HandlerCalculus.v": [
+      "real_sampling_handler_rel",
+      "real_infinite_sampling",
+      "real_handler_bind_client",
+      "real_right_identity"
+    ],
+    "theories/Regression/Execution/FiniteDistribution.v": [
+      "first_attempt_outcomes",
+      "two_attempt_outcomes",
+      "actual_runner_two_attempts",
+      "eliminated_state_distribution",
+      "divergence_is_timeout_not_loss",
+      "missing_mass_is_not_timeout",
+      "ret_requires_no_fuel",
+      "zero_fuel_draw_requests_no_entropy",
+      "biased_entropy_rejected",
+      "correlated_history_rejected",
+      "higher_universe_execution",
+      "arbitrary_fuel_hitting",
+      "unbounded_retry_limit"
     ]
   }
 }

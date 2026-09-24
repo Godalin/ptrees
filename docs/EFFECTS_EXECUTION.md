@@ -30,6 +30,8 @@ explicitly requested; no environment changes are planned.
 | Item | Current status | Scope |
 | --- | --- | --- |
 | Arbitrary fixed-handler peutt preservation | Proved | Heterogeneous results and effects; requires the relational-limit profile. |
+| Pointwise behavioral handler replacement | Proved | Two handlers, heterogeneous results; the same generic relational-limit profile. |
+| Handler composition and sum calculus | Proved | Pure combinators; units/associativity, case and bimap congruence modulo pointwise peutt. |
 | State peutt preservation | Proved | Same initial state; equal final states and related results. |
 | Reader / Writer / Exception | Implemented and proved | Basic clients and preservation, not a complete effect algebra. |
 | Separate Vis/Prob fold and StateT commutation | Proved | Lawful target with iteration uniformity; checked ITree instance. |
@@ -39,7 +41,15 @@ explicitly requested; no environment changes are planned.
 | Finite runner probability correspondence | Proved under conditional uniform entropy | All finite outcomes; returned projection agrees with same-fuel hitting, and its limit with complete hitting. Not PRNG verification. |
 | Fuel-free proved-sampler simulation | Implemented and tested | Extracts the actual Von Neumann/direct-fair theorem roots. Handwritten scheduling and PRNG remain trusted; individual runs may diverge. |
 
-The subsequent [arbitrary-handler increment](UNRESTRICTED_INTERP.md) closes
+The [handler-calculus follow-up](HANDLER_CALCULUS.md) now makes pointwise
+behavioral handler equivalence a first-class relation. Its generic two-machine
+proof subsumes fixed-handler preservation, and its FreeOmega clients reuse
+existing model obligations. The program/reasoning entry points expose actual
+owners, including State/Reader/Writer/Exception; no alias shadowing is introduced.
+Generic arbitrary-target fold algebra remains deferred: MonadIter alone does
+not entail monadic interpretation or probability-respecting laws.
+
+The earlier [arbitrary-handler increment](UNRESTRICTED_INTERP.md) closes
 the fixed-handler eliminating/mixed fusion obligation, using a two-phase
 machine and checked finite/limit scheduling. It proves heterogeneous peutt
 preservation for arbitrary handlers under the existing relational-lub profile.

@@ -41,6 +41,11 @@ class UnboundedExecutionTests(unittest.TestCase):
         self.assertNotIn('AXIOM TO BE REALIZED', generated)
 
     def test_old_theory_and_executables_unchanged(self):
+        # Validate the later handler increment before reconstructing this
+        # historical extraction checkpoint; never ignore arbitrary edits.
+        from audit_handler_calculus import previous_sources
+        prior = previous_sources({p.relative_to(ROOT).as_posix(): p.read_text()
+                                  for p in (ROOT/'theories').rglob('*.v')})
         paths = subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', BASELINE],
                                         cwd=ROOT, text=True).splitlines()
         for path in paths:
@@ -48,7 +53,8 @@ class UnboundedExecutionTests(unittest.TestCase):
                 path.startswith('docs/') and path.endswith('CONTRACTS.json')
             ):
                 expected = subprocess.check_output(['git', 'show', f'{BASELINE}:{path}'], cwd=ROOT)
-                self.assertEqual((ROOT/path).read_bytes(), expected, path)
+                actual = prior[path].encode() if path in prior else (ROOT/path).read_bytes()
+                self.assertEqual(actual, expected, path)
 
     def test_source_retries_then_returns_and_keeps_unused_entropy(self):
         result = self.cli('vn', 'replay', '0,0,0,3,8').stdout

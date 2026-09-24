@@ -1,5 +1,12 @@
 # Arbitrary handler preservation
 
+Current follow-up: [handler calculus](HANDLER_CALCULUS.md) generalizes the
+machine relation to two pointwise behaviorally related handlers. The public
+fixed-handler theorem retains its compiled type and assumptions, but now
+specializes that generic proof. The counts and exact-source claims below
+describe this report's original checkpoint; the new audit reconstructs that
+snapshot before running its historical conservation checks.
+
 Baseline: `525a57fc6e79e0e73e7a70ae98e77946af6371c4`.
 The subsequent [State-indexed follow-up](STATE_PRESERVATION.md) closes the
 State preservation item recorded as open at this checkpoint.

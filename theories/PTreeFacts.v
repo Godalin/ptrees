@@ -5,5 +5,6 @@ From PTree Require Export PTree Eq.
 From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting
   WellFormedness StableHittingComputation ProbabilisticTrace Bind Algebra Iter.
 From PTree.Eq.FreeOmega Require Export Bind Algebra Iter.
-From PTree.Interp Require Export Guarded.
-From PTree.Interp.FreeOmega Require Export Atomic MDP.
+From PTree.Interp Require Export Guarded Unrestricted HandlerRelation HandlerFacts
+  State Reader Writer Exception StateFacts StatePreservation StandardFacts ExceptionFacts.
+From PTree.Interp.FreeOmega Require Export Atomic MDP HandlerCompletion.

@@ -1,8 +1,9 @@
-# Interpretation: staged compositionality work
+# Interpretation: accepted stages and current follow-ups
 
-Each stage stops for review before the next one starts. No new equivalence,
-transition semantics, heterogeneous-effect framework, or general StateT
-library is part of this work.
+The Stage 1–4 sections below retain the accepted historical scope, not a
+current backlog. Subsequent work completed arbitrary-handler preservation,
+State and standard effects, and [behavioral handler calculus](HANDLER_CALCULUS.md).
+See [current effects/execution status](EFFECTS_EXECUTION.md) for the active boundary.
 
 | Stage | Deliverable | Status |
 | --- | --- | --- |
@@ -10,8 +11,8 @@ library is part of this work.
 | 2. GuardedInterp | Semantic visible guarding, then `interp_vis_fusion` and peutt preservation | Accepted baseline `268a223` |
 | 3. AtomicInterp | A sufficient atomic-handler contract for transition preservation | Accepted baseline `8e09561` |
 | 4. MDPInterp | An explicit handler contract preserving `mdp_state` | Accepted baseline `ec96b90` |
-| 5. StateInterp | Focused StateT interpreter, algebra, and rewrite-oriented example | Deferred until architecture/capability cleanup and FreeOmega adequacy review |
-| 6. General interp | Revisit arbitrary-handler peutt preservation without making it a blocker | Deferred |
+| 5. StateInterp | State-threading interpreter, heterogeneous preservation and StateT/fold bridge | Completed; see STATE_PRESERVATION.md / STATE_FOLD.md |
+| 6. General interp | Arbitrary fixed and pointwise-related handlers | Completed under the relational-limit profile; see UNRESTRICTED_INTERP.md / HANDLER_CALCULUS.md |
 
 ## Stage 1: a two-round handler exposes the hidden correlation
 
@@ -132,7 +133,8 @@ proof in the repository has been independently rechecked this round.
 
 ## Stage 2: semantic guarded interpretation
 
-`Interp/FreeOmega/Guarded.v`, with selected endpoints exposed by `API/FreeOmega.v`, supplies the
+`Interp/FreeOmega/Guarded.v` supplies the canonical specialization; the current
+generic owner `Interp/Guarded.v`, exported by `PTreeFacts.v`, supplies the
 new sufficient condition without changing `interp_vis_fusion`, `interp`,
 peutt, or either transition semantics.
 
@@ -356,7 +358,7 @@ is added. These are the results of `Print Assumptions`, not a claim of
 constructivity.
 
 Stage 3 stopped here for review; MDP preservation is developed separately
-in stage 4 below. State interpretation remains unstarted.
+in stage 4 below. State interpretation was outside that stage; it is now complete.
 
 ### Stage 3 local validation
 
@@ -564,7 +566,7 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
 This rechecks the four Stage 4 modules and the aggregate harness in the
 full-library universe context, not every existing proof. The layout report
 reproduces exactly. No remote CI success is asserted. The final accepted
-Stage 4 baseline is recorded below; StateInterp has not started.
+Stage 4 baseline is recorded below; StateInterp was not part of that checkpoint.
 
 The `E -> F` interface follow-up repeated all of these checks successfully,
 including the original homogeneous regressions and new heterogeneous

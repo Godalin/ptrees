@@ -3,6 +3,7 @@
 From PTree Require Import PTree.
 Check @ptree.
 Check @bind.
+Check @Handler.cat.
 Check (Ret tt : ptree (fun _ => Empty_set) (fun A => A) unit).
 Fail Check PTree.Prob.Interface.Measure.SemanticMeasure.
 Fail Check PTree.Eq.PEutt.peutt.
@@ -34,6 +35,13 @@ Check @peutt_iter_rel.
 Check @peutt_interp_guarded.
 Check @mdp_guarded_interp_tree_trans.
 Check @ptree_bind_cofinal_all.
+Check @peutt_interp_handler_rel.
+Check @free_omega_peutt_interp_handler_rel.
+Check @handler_cat_assoc.
+Check @run_state_peutt.
+Check @run_reader_peutt.
+Check @run_writer_peutt.
+Check @run_exception_peutt.
 Fail Check PTree.Eq.Internal.FiniteInternal.finite_internal.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Fail Check PTree.Prob.Backend.SubEnumQ.Representation.SubEnumQ.
