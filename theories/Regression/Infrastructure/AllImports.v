@@ -2,6 +2,7 @@
     Not a facade or an ordinary theorem client. *)
 Require PTree.Core.Fold.
 Require PTree.Core.Handler.
+Require PTree.Core.ITreeBridge.
 Require PTree.Core.IterationLaws.
 Require PTree.Core.PTreeDefinition.
 Require PTree.Core.Utils.
@@ -76,6 +77,7 @@ Require PTree.Examples.BernoulliFactory.RationalBernoulli.
 Require PTree.Examples.BernoulliFactory.RealBernoulliMathComp.
 Require PTree.Examples.BernoulliFactory.RealBernoulliOracle.
 Require PTree.Examples.BernoulliFactory.VonNeumannUnbounded.
+Require PTree.Examples.ITreeSampling.
 Require PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService.
 Require PTree.Examples.MathCompPrograms.
 Require PTree.Examples.MixedHeadProtocol.
@@ -98,6 +100,7 @@ Require PTree.Interp.FreeOmega.Base.
 Require PTree.Interp.FreeOmega.Cofinality.
 Require PTree.Interp.FreeOmega.Guarded.
 Require PTree.Interp.FreeOmega.HandlerCompletion.
+Require PTree.Interp.FreeOmega.ITreeCompletion.
 Require PTree.Interp.FreeOmega.MDP.
 Require PTree.Interp.FreeOmega.State.
 Require PTree.Interp.FreeOmega.Translate.
@@ -108,6 +111,8 @@ Require PTree.Interp.HandlerMachine.
 Require PTree.Interp.HandlerMachineAcceleration.
 Require PTree.Interp.HandlerMachineScheduling.
 Require PTree.Interp.HandlerRelation.
+Require PTree.Interp.ITreeFacts.
+Require PTree.Interp.ITreeStructural.
 Require PTree.Interp.Kernel.
 Require PTree.Interp.Preservation.
 Require PTree.Interp.Reader.
@@ -343,6 +348,7 @@ Require PTree.Regression.Semantics.GenericConsumers.
 Require PTree.Regression.Semantics.GuardedInterp.
 Require PTree.Regression.Semantics.HandlerCalculus.
 Require PTree.Regression.Semantics.HeadTransition.
+Require PTree.Regression.Semantics.ITreeBridge.
 Require PTree.Regression.Semantics.InterpExposure.
 Require PTree.Regression.Semantics.LabelledMDP.
 Require PTree.Regression.Semantics.MDPCoincidence.

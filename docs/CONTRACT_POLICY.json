@@ -1278,6 +1278,17 @@
       "public_case_beta",
       "public_bimap_replacement"
     ],
+    "theories/Regression/Semantics/ITreeBridge.v": [
+      "sample_is_native",
+      "native_observation",
+      "source_tau",
+      "ordinary_event_retained",
+      "open_sampling",
+      "partial_sampling_not_normalized",
+      "embedding_bind",
+      "target_handler_postcomposition",
+      "high_embedding"
+    ],
     "theories/Regression/Semantics/HandlerCalculus.v": [
       "real_sampling_handler_rel",
       "real_infinite_sampling",

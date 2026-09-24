@@ -32,6 +32,7 @@ explicitly requested; no environment changes are planned.
 | Arbitrary fixed-handler peutt preservation | Proved | Heterogeneous results and effects; requires the relational-limit profile. |
 | Pointwise behavioral handler replacement | Proved | Two handlers, heterogeneous results; the same generic relational-limit profile. |
 | Handler composition and sum calculus | Proved | Pure combinators; units/associativity, case and bimap congruence modulo pointwise peutt. |
+| ITree sampling-effect elaboration | Proved basic laws | Actual ITree source to native Prob; Ret/Tau/Vis/bind/iter and target-handler postcomposition. Source eutt preservation remains separate. |
 | State peutt preservation | Proved | Same initial state; equal final states and related results. |
 | Reader / Writer / Exception | Implemented and proved | Basic clients and preservation, not a complete effect algebra. |
 | Separate Vis/Prob fold and StateT commutation | Proved | Lawful target with iteration uniformity; checked ITree instance. |
@@ -48,6 +49,11 @@ existing model obligations. The program/reasoning entry points expose actual
 owners, including State/Reader/Writer/Exception; no alias shadowing is introduced.
 Generic arbitrary-target fold algebra remains deferred: MonadIter alone does
 not entail monadic interpretation or probability-respecting laws.
+
+The [ITree bridge](ITREE_BRIDGE.md) now internalizes `Sample mu` as native
+`Prob mu`, with an actual two-coins ITree example and an unbounded retry
+iteration law. This is distinct from the existing PTree-to-ITree execution
+fold. It does not claim a general source-ITree `eutt` preservation theorem.
 
 The earlier [arbitrary-handler increment](UNRESTRICTED_INTERP.md) closes
 the fixed-handler eliminating/mixed fusion obligation, using a two-phase

@@ -123,6 +123,8 @@ def check_new(sources):
 
 def previous_sources(sources):
     """Validate this increment, then reconstruct the exact previous snapshot."""
+    from audit_itree_bridge import previous_sources as previous_bridge
+    sources = previous_bridge(sources)
     if not (NEW & set(sources)):
         return sources
     check_new(sources)
@@ -136,6 +138,8 @@ def previous_sources(sources):
 
 
 def check_source(sources):
+    from audit_itree_bridge import previous_sources as previous_bridge
+    sources = previous_bridge(sources)
     old = {p for p in subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', BASELINE],
                cwd=ROOT, text=True).splitlines() if p.endswith('.v')}
     assert set(sources) == old | NEW, 'Unapproved theory addition/deletion'

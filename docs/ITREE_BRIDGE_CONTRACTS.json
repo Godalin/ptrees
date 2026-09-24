@@ -1,0 +1,311 @@
+{
+  "baseline": "002f0a6",
+  "scope": "ITree embedding and elaboration laws; no source-eutt preservation claim",
+  "endpoints": [
+    {
+      "name": "PTree.Core.ITreeBridge.from_itree",
+      "type": "@ITreeBridge.from_itree\n     : forall (E MN : Type -> Type) (A : Type),\n       ITreeDefinition.itree E A -> PTreeDefinition.ptree E MN A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.ITreeBridge.interp_itree",
+      "type": "@ITreeBridge.interp_itree\n     : forall (E F MN : Type -> Type) (A : Type),\n       Core.Handler.Handler MN E F -> ITreeDefinition.itree E A -> PTreeDefinition.ptree F MN A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.ITreeBridge.sample_handler",
+      "type": "@ITreeBridge.sample_handler\n     : forall MN F : Type -> Type, Core.Handler.Handler MN (ITreeBridge.probE MN) F",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.ITreeBridge.probability_handler",
+      "type": "@ITreeBridge.probability_handler\n     : forall MN E : Type -> Type, Core.Handler.Handler MN (Sum.sum1 (ITreeBridge.probE MN) E) E",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.ITreeBridge.elaborate",
+      "type": "@ITreeBridge.elaborate\n     : forall (MN E : Type -> Type) (A : Type),\n       ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A -> PTreeDefinition.ptree E MN A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.ITreeBridge.elaborate_closed",
+      "type": "@ITreeBridge.elaborate_closed\n     : forall (MN : Type -> Type) (A : Type),\n       ITreeDefinition.itree (ITreeBridge.probE MN) A -> PTreeDefinition.ptree Sum.void1 MN A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Core.ITreeBridge.observe_from_itree",
+      "type": "@ITreeBridge.observe_from_itree\n     : forall (E MN : Type -> Type) (A : Type) (t : ITreeDefinition.itree E A),\n       @PTreeDefinition.observe E MN A (@ITreeBridge.from_itree E MN A t) =\n       match @ITreeDefinition.observe E A t with\n       | @ITreeDefinition.RetF _ _ _ a =>\n           @PTreeDefinition.RetF E MN A (PTreeDefinition.ptree E MN A) a\n       | @ITreeDefinition.TauF _ _ _ u =>\n           @PTreeDefinition.TauF E MN A (PTreeDefinition.ptree E MN A)\n             (@ITreeBridge.from_itree E MN A u)\n       | @ITreeDefinition.VisF _ _ _ X e k =>\n           @PTreeDefinition.VisF E MN A (PTreeDefinition.ptree E MN A) X e\n             (fun x : X => @ITreeBridge.from_itree E MN A (k x))\n       end",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.from_itree_ret",
+      "type": "@ITreeStructural.from_itree_ret\n     : forall (E MN : Type -> Type) (A : Type) (a : A),\n       @PStruct.pstruct E MN A A (@eq A)\n         (@ITreeBridge.from_itree E MN A\n            {|\n              ITreeDefinition._observe := @ITreeDefinition.RetF E A (ITreeDefinition.itree E A) a\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN A (PTreeDefinition.ptree E MN A) a\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.from_itree_tau",
+      "type": "@ITreeStructural.from_itree_tau\n     : forall (E MN : Type -> Type) (A : Type) (t : ITreeDefinition.itree E A),\n       @PStruct.pstruct E MN A A (@eq A)\n         (@ITreeBridge.from_itree E MN A\n            {|\n              ITreeDefinition._observe := @ITreeDefinition.TauF E A (ITreeDefinition.itree E A) t\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN A (PTreeDefinition.ptree E MN A)\n               (@ITreeBridge.from_itree E MN A t)\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.from_itree_vis",
+      "type": "@ITreeStructural.from_itree_vis\n     : forall (E MN : Type -> Type) (A X : Type) (e : E X) (k : X -> ITreeDefinition.itree E A),\n       @PStruct.pstruct E MN A A (@eq A)\n         (@ITreeBridge.from_itree E MN A\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF E A (ITreeDefinition.itree E A) X e k\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E MN A (PTreeDefinition.ptree E MN A) X e\n               (fun x : X => @ITreeBridge.from_itree E MN A (k x))\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.from_itree_bind_candidate",
+      "type": "@ITreeStructural.from_itree_bind_candidate\n     : forall E MN : Type -> Type,\n       Type ->\n       forall B : Type, PTreeDefinition.ptree E MN B -> PTreeDefinition.ptree E MN B -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.from_itree_bind",
+      "type": "@ITreeStructural.from_itree_bind\n     : forall (E MN : Type -> Type) (A B : Type) (t : ITreeDefinition.itree E A)\n         (k : A -> ITreeDefinition.itree E B),\n       @PStruct.pstruct E MN B B (@eq B)\n         (@ITreeBridge.from_itree E MN B (@ITreeDefinition.ITree.bind E A B t k))\n         (@PTreeDefinition.PTree.bind E MN A B (@ITreeBridge.from_itree E MN A t)\n            (fun x : A => @ITreeBridge.from_itree E MN B (k x)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.from_itree_iter",
+      "type": "@ITreeStructural.from_itree_iter\n     : forall (E MN : Type -> Type) (I A : Type) (step : I -> ITreeDefinition.itree E (I + A))\n         (i : I),\n       @PStruct.pstruct E MN A A (@eq A)\n         (@ITreeBridge.from_itree E MN A (@ITreeDefinition.ITree.iter E A I step i))\n         (@PTreeDefinition.PTree.iter E MN A I\n            (fun j : I => @ITreeBridge.from_itree E MN (I + A) (step j)) i)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.interp_itree_ret",
+      "type": "@ITreeStructural.interp_itree_ret\n     : forall (E F MN : Type -> Type) (h : Core.Handler.Handler MN E F) (A : Type) (a : A),\n       @PStruct.pstruct F MN A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h\n            {|\n              ITreeDefinition._observe := @ITreeDefinition.RetF E A (ITreeDefinition.itree E A) a\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF F MN A (PTreeDefinition.ptree F MN A) a\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.interp_itree_tau",
+      "type": "@ITreeStructural.interp_itree_tau\n     : forall (E F MN : Type -> Type) (h : Core.Handler.Handler MN E F)\n         (A : Type) (t : ITreeDefinition.itree E A),\n       @PStruct.pstruct F MN A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h\n            {|\n              ITreeDefinition._observe := @ITreeDefinition.TauF E A (ITreeDefinition.itree E A) t\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF F MN A (PTreeDefinition.ptree F MN A)\n               (@ITreeBridge.interp_itree E F MN A h t)\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.interp_itree_vis",
+      "type": "@ITreeStructural.interp_itree_vis\n     : forall (E F MN : Type -> Type) (h : Core.Handler.Handler MN E F)\n         (A X : Type) (e : E X) (k : X -> ITreeDefinition.itree E A),\n       @PStruct.pstruct F MN A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF E A (ITreeDefinition.itree E A) X e k\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF F MN A (PTreeDefinition.ptree F MN A)\n               (@PTreeDefinition.PTree.bind F MN X A (h X e)\n                  (fun x : X => @ITreeBridge.interp_itree E F MN A h (k x)))\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.interp_itree_bind",
+      "type": "@ITreeStructural.interp_itree_bind\n     : forall (E F MN : Type -> Type) (h : Core.Handler.Handler MN E F)\n         (A B : Type) (t : ITreeDefinition.itree E A) (k : A -> ITreeDefinition.itree E B),\n       @PStruct.pstruct F MN B B (@eq B)\n         (@ITreeBridge.interp_itree E F MN B h (@ITreeDefinition.ITree.bind E A B t k))\n         (@PTreeDefinition.PTree.bind F MN A B (@ITreeBridge.interp_itree E F MN A h t)\n            (fun x : A => @ITreeBridge.interp_itree E F MN B h (k x)))",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.interp_itree_iter",
+      "type": "@ITreeStructural.interp_itree_iter\n     : forall (E F MN : Type -> Type) (h : Core.Handler.Handler MN E F)\n         (I A : Type) (step : I -> ITreeDefinition.itree E (I + A)) (i : I),\n       @PStruct.pstruct F MN A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h (@ITreeDefinition.ITree.iter E A I step i))\n         (@PTreeDefinition.PTree.iter F MN A I\n            (fun j : I => @ITreeBridge.interp_itree E F MN (I + A) h (step j)) i)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.interp_itree_postcompose",
+      "type": "@ITreeStructural.interp_itree_postcompose\n     : forall (E F G MN : Type -> Type) (A : Type) (h : Core.Handler.Handler MN E F)\n         (g : Core.Handler.Handler MN F G) (t : ITreeDefinition.itree E A),\n       @PStruct.pstruct G MN A A (@eq A)\n         (@PTreeDefinition.PTree.interp F G MN g A (@ITreeBridge.interp_itree E F MN A h t))\n         (@ITreeBridge.interp_itree E G MN A (@Handler.cat MN E F G h g) t)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.elaborate_sample_structural",
+      "type": "@ITreeStructural.elaborate_sample_structural\n     : forall (MN E : Type -> Type) (A X : Type) (mu : MN X)\n         (k : X -> ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A),\n       @PStruct.pstruct E MN A A (@eq A)\n         (@ITreeBridge.elaborate MN E A\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF (Sum.sum1 (ITreeBridge.probE MN) E) A\n                  (ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A) X\n                  (@Sum.inl1 (ITreeBridge.probE MN) E X (@ITreeBridge.Sample MN X mu)) k\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN A (PTreeDefinition.ptree E MN A)\n               {|\n                 PTreeDefinition._observe :=\n                   @PTreeDefinition.ProbF E MN A (PTreeDefinition.ptree E MN A) X mu\n                     (fun x : X => @ITreeBridge.elaborate MN E A (k x))\n               |}\n         |}",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.elaborate_vis_structural",
+      "type": "@ITreeStructural.elaborate_vis_structural\n     : forall (MN E : Type -> Type) (A X : Type) (e : E X)\n         (k : X -> ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A),\n       @PStruct.pstruct E MN A A (@eq A)\n         (@ITreeBridge.elaborate MN E A\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF (Sum.sum1 (ITreeBridge.probE MN) E) A\n                  (ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A) X\n                  (@Sum.inr1 (ITreeBridge.probE MN) E X e) k\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF E MN A (PTreeDefinition.ptree E MN A)\n               {|\n                 PTreeDefinition._observe :=\n                   @PTreeDefinition.VisF E MN A (PTreeDefinition.ptree E MN A) X e\n                     (fun x : X => @ITreeBridge.elaborate MN E A (k x))\n               |}\n         |}",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeStructural.interp_itree_trigger_structural",
+      "type": "@ITreeStructural.interp_itree_trigger_structural\n     : forall (E F MN : Type -> Type) (X : Type) (h : Core.Handler.Handler MN E F) (e : E X),\n       @PStruct.pstruct F MN X X (@eq X)\n         (@ITreeBridge.interp_itree E F MN X h (@ITreeDefinition.ITree.trigger E X e))\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.TauF F MN X (PTreeDefinition.ptree F MN X) (h X e)\n         |}",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeFacts.elab_ret",
+      "type": "@ITreeFacts.elab_ret\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F : Type -> Type) (A : Type) (h : Core.Handler.Handler MN E F) (a : A),\n       @PEutt.peutt F MN MF FI FC MX FO A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h\n            {|\n              ITreeDefinition._observe := @ITreeDefinition.RetF E A (ITreeDefinition.itree E A) a\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF F MN A (PTreeDefinition.ptree F MN A) a\n         |}",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.ITreeFacts.elab_tau",
+      "type": "@ITreeFacts.elab_tau\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F : Type -> Type) (A : Type) (h : Core.Handler.Handler MN E F)\n         (t : ITreeDefinition.itree E A),\n       @PEutt.peutt F MN MF FI FC MX FO A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h\n            {|\n              ITreeDefinition._observe := @ITreeDefinition.TauF E A (ITreeDefinition.itree E A) t\n            |}) (@ITreeBridge.interp_itree E F MN A h t)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeFacts.elab_event",
+      "type": "@ITreeFacts.elab_event\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F : Type -> Type) (A X : Type) (h : Core.Handler.Handler MN E F)\n         (e : E X) (k : X -> ITreeDefinition.itree E A),\n       @PEutt.peutt F MN MF FI FC MX FO A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF E A (ITreeDefinition.itree E A) X e k\n            |})\n         (@PTreeDefinition.PTree.bind F MN X A (h X e)\n            (fun x : X => @ITreeBridge.interp_itree E F MN A h (k x)))",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeFacts.elab_trigger",
+      "type": "@ITreeFacts.elab_trigger\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F : Type -> Type) (X : Type) (h : Core.Handler.Handler MN E F) (e : E X),\n       @PEutt.peutt F MN MF FI FC MX FO X X (@eq X)\n         (@ITreeBridge.interp_itree E F MN X h (@ITreeDefinition.ITree.trigger E X e))\n         (h X e)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeFacts.elab_sample",
+      "type": "@ITreeFacts.elab_sample\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E : Type -> Type) (A X : Type) (mu : MN X)\n         (k : X -> ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A),\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A)\n         (@ITreeBridge.elaborate MN E A\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF (Sum.sum1 (ITreeBridge.probE MN) E) A\n                  (ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A) X\n                  (@Sum.inl1 (ITreeBridge.probE MN) E X (@ITreeBridge.Sample MN X mu)) k\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E MN A (PTreeDefinition.ptree E MN A) X mu\n               (fun x : X => @ITreeBridge.elaborate MN E A (k x))\n         |}",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeFacts.elab_vis",
+      "type": "@ITreeFacts.elab_vis\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E : Type -> Type) (A X : Type) (e : E X)\n         (k : X -> ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A),\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A)\n         (@ITreeBridge.elaborate MN E A\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF (Sum.sum1 (ITreeBridge.probE MN) E) A\n                  (ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A) X\n                  (@Sum.inr1 (ITreeBridge.probE MN) E X e) k\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E MN A (PTreeDefinition.ptree E MN A) X e\n               (fun x : X => @ITreeBridge.elaborate MN E A (k x))\n         |}",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeFacts.elab_bind",
+      "type": "@ITreeFacts.elab_bind\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F : Type -> Type) (A B : Type) (h : Core.Handler.Handler MN E F)\n         (t : ITreeDefinition.itree E A) (k : A -> ITreeDefinition.itree E B),\n       @PEutt.peutt F MN MF FI FC MX FO B B (@eq B)\n         (@ITreeBridge.interp_itree E F MN B h (@ITreeDefinition.ITree.bind E A B t k))\n         (@PTreeDefinition.PTree.bind F MN A B (@ITreeBridge.interp_itree E F MN A h t)\n            (fun x : A => @ITreeBridge.interp_itree E F MN B h (k x)))",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeFacts.elab_iter",
+      "type": "@ITreeFacts.elab_iter\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F : Type -> Type) (I A : Type) (h : Core.Handler.Handler MN E F)\n         (step : I -> ITreeDefinition.itree E (I + A)) (i : I),\n       @PEutt.peutt F MN MF FI FC MX FO A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h (@ITreeDefinition.ITree.iter E A I step i))\n         (@PTreeDefinition.PTree.iter F MN A I\n            (fun j : I => @ITreeBridge.interp_itree E F MN (I + A) h (step j)) i)",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeFacts.elab_sample_trigger",
+      "type": "@ITreeFacts.elab_sample_trigger\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (X : Type) (mu : MN X),\n       @PEutt.peutt Sum.void1 MN MF FI FC MX FO X X (@eq X)\n         (@ITreeBridge.elaborate_closed MN X\n            (@ITreeDefinition.ITree.trigger (ITreeBridge.probE MN) X (@ITreeBridge.Sample MN X mu)))\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF Sum.void1 MN X (PTreeDefinition.ptree Sum.void1 MN X) X mu\n               (fun x : X =>\n                {|\n                  PTreeDefinition._observe :=\n                    @PTreeDefinition.RetF Sum.void1 MN X (PTreeDefinition.ptree Sum.void1 MN X) x\n                |})\n         |}",
+      "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.ITreeFacts.elab_postcompose",
+      "type": "@ITreeFacts.elab_postcompose\n     : forall (MN MF : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       @Measure.SemanticMeasureCoreLaws MN NI ->\n       forall (FI : Measure.SemanticMeasure MF) (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticMeasureOrderLaws MF FI FO ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @RelationalClosure.relational_mixed_bind MN MF NI FI MX ->\n       @RelationalClosure.relational_zero MF FI FO ->\n       @RelationalClosure.relational_lub MF FI FO ->\n       forall (E F G : Type -> Type) (A : Type) (h : Core.Handler.Handler MN E F)\n         (g : Core.Handler.Handler MN F G) (t : ITreeDefinition.itree E A),\n       @PEutt.peutt G MN MF FI FC MX FO A A (@eq A)\n         (@PTreeDefinition.PTree.interp F G MN g A (@ITreeBridge.interp_itree E F MN A h t))\n         (@ITreeBridge.interp_itree E G MN A (@Handler.cat MN E F G h g) t)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Interp.FreeOmega.ITreeCompletion.free_omega_elab_ret",
+      "type": "@ITreeCompletion.free_omega_elab_ret\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F : Type -> Type) (A : Type)\n         (h : Core.Handler.Handler MN E F) (a : A),\n       @PEutt.peutt F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h\n            {|\n              ITreeDefinition._observe := @ITreeDefinition.RetF E A (ITreeDefinition.itree E A) a\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF F MN A (PTreeDefinition.ptree F MN A) a\n         |}",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.FreeOmega.ITreeCompletion.free_omega_elab_tau",
+      "type": "@ITreeCompletion.free_omega_elab_tau\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F : Type -> Type) (A : Type)\n         (h : Core.Handler.Handler MN E F) (t : ITreeDefinition.itree E A),\n       @PEutt.peutt F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h\n            {|\n              ITreeDefinition._observe := @ITreeDefinition.TauF E A (ITreeDefinition.itree E A) t\n            |}) (@ITreeBridge.interp_itree E F MN A h t)",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.FreeOmega.ITreeCompletion.free_omega_elab_event",
+      "type": "@ITreeCompletion.free_omega_elab_event\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F : Type -> Type) (A X : Type)\n         (h : Core.Handler.Handler MN E F) (e : E X) (k : X -> ITreeDefinition.itree E A),\n       @PEutt.peutt F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF E A (ITreeDefinition.itree E A) X e k\n            |})\n         (@PTreeDefinition.PTree.bind F MN X A (h X e)\n            (fun x : X => @ITreeBridge.interp_itree E F MN A h (k x)))",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.FreeOmega.ITreeCompletion.free_omega_elab_trigger",
+      "type": "@ITreeCompletion.free_omega_elab_trigger\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F : Type -> Type) (X : Type)\n         (h : Core.Handler.Handler MN E F) (e : E X),\n       @PEutt.peutt F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) X X (@eq X)\n         (@ITreeBridge.interp_itree E F MN X h (@ITreeDefinition.ITree.trigger E X e))\n         (h X e)",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.FreeOmega.ITreeCompletion.free_omega_elab_sample",
+      "type": "@ITreeCompletion.free_omega_elab_sample\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E : Type -> Type) (A X : Type)\n         (mu : MN X) (k : X -> ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A (@eq A)\n         (@ITreeBridge.elaborate MN E A\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF (Sum.sum1 (ITreeBridge.probE MN) E) A\n                  (ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A) X\n                  (@Sum.inl1 (ITreeBridge.probE MN) E X (@ITreeBridge.Sample MN X mu)) k\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF E MN A (PTreeDefinition.ptree E MN A) X mu\n               (fun x : X => @ITreeBridge.elaborate MN E A (k x))\n         |}",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.FreeOmega.ITreeCompletion.free_omega_elab_vis",
+      "type": "@ITreeCompletion.free_omega_elab_vis\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E : Type -> Type) (A X : Type)\n         (e : E X) (k : X -> ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A (@eq A)\n         (@ITreeBridge.elaborate MN E A\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF (Sum.sum1 (ITreeBridge.probE MN) E) A\n                  (ITreeDefinition.itree (Sum.sum1 (ITreeBridge.probE MN) E) A) X\n                  (@Sum.inr1 (ITreeBridge.probE MN) E X e) k\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF E MN A (PTreeDefinition.ptree E MN A) X e\n               (fun x : X => @ITreeBridge.elaborate MN E A (k x))\n         |}",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.FreeOmega.ITreeCompletion.free_omega_elab_bind",
+      "type": "@ITreeCompletion.free_omega_elab_bind\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F : Type -> Type) (A B : Type)\n         (h : Core.Handler.Handler MN E F) (t : ITreeDefinition.itree E A)\n         (k : A -> ITreeDefinition.itree E B),\n       @PEutt.peutt F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) B B (@eq B)\n         (@ITreeBridge.interp_itree E F MN B h (@ITreeDefinition.ITree.bind E A B t k))\n         (@PTreeDefinition.PTree.bind F MN A B (@ITreeBridge.interp_itree E F MN A h t)\n            (fun x : A => @ITreeBridge.interp_itree E F MN B h (k x)))",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.FreeOmega.ITreeCompletion.free_omega_elab_iter",
+      "type": "@ITreeCompletion.free_omega_elab_iter\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F : Type -> Type) (I A : Type)\n         (h : Core.Handler.Handler MN E F) (step : I -> ITreeDefinition.itree E (I + A))\n         (i : I),\n       @PEutt.peutt F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A (@eq A)\n         (@ITreeBridge.interp_itree E F MN A h (@ITreeDefinition.ITree.iter E A I step i))\n         (@PTreeDefinition.PTree.iter F MN A I\n            (fun j : I => @ITreeBridge.interp_itree E F MN (I + A) h (step j)) i)",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.FreeOmega.ITreeCompletion.free_omega_elab_sample_trigger",
+      "type": "@ITreeCompletion.free_omega_elab_sample_trigger\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (X : Type) (mu : MN X),\n       @PEutt.peutt Sum.void1 MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) X X (@eq X)\n         (@ITreeBridge.elaborate_closed MN X\n            (@ITreeDefinition.ITree.trigger (ITreeBridge.probE MN) X (@ITreeBridge.Sample MN X mu)))\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF Sum.void1 MN X (PTreeDefinition.ptree Sum.void1 MN X) X mu\n               (fun x : X =>\n                {|\n                  PTreeDefinition._observe :=\n                    @PTreeDefinition.RetF Sum.void1 MN X (PTreeDefinition.ptree Sum.void1 MN X) x\n                |})\n         |}",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Interp.FreeOmega.ITreeCompletion.free_omega_elab_postcompose",
+      "type": "@ITreeCompletion.free_omega_elab_postcompose\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F G : Type -> Type)\n         (A : Type) (h : Core.Handler.Handler MN E F) (g : Core.Handler.Handler MN F G)\n         (t : ITreeDefinition.itree E A),\n       @PEutt.peutt G MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A A (@eq A)\n         (@PTreeDefinition.PTree.interp F G MN g A (@ITreeBridge.interp_itree E F MN A h t))\n         (@ITreeBridge.interp_itree E G MN A (@Handler.cat MN E F G h g) t)",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Examples.ITreeSampling.fair_entries",
+      "type": "ITreeSampling.fair_entries\n     : list (rat.rat * bool)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.ITreeSampling.fair_nonnegative",
+      "type": "ITreeSampling.fair_nonnegative\n     : @FiniteEnum.finite_nonnegative rat.rat_rat__canonical__Num_NumDomain bool\n         ITreeSampling.fair_entries",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.ITreeSampling.fair_bounded",
+      "type": "ITreeSampling.fair_bounded\n     : is_true\n         (@order.Order.le ssrnum.ring_display\n            (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__Order_POrder\n               rat.rat_rat__canonical__Num_NumDomain)\n            (@FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain bool\n               (fun _ : bool =>\n                ssralg.GRing.one\n                  (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing\n                     rat.rat_rat__canonical__Num_NumDomain)) ITreeSampling.fair_entries)\n            (ssralg.GRing.one\n               (ssrnum.Num.NumDomain.Exports.join_Num_NumDomain_between_Order_POrder_and_GRing_SemiRing\n                  rat.rat_rat__canonical__Num_NumDomain)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.ITreeSampling.fair_coin",
+      "type": "ITreeSampling.fair_coin\n     : Representation.SubEnumQ bool",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.ITreeSampling.two_coins",
+      "type": "ITreeSampling.two_coins\n     : ITreeDefinition.itree (ITreeBridge.probE Representation.SubEnumQ) bool",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.ITreeSampling.native_two_coins",
+      "type": "ITreeSampling.native_two_coins\n     : PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ bool",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.ITreeSampling.two_coins_elaborates",
+      "type": "ITreeSampling.two_coins_elaborates\n     : @Canonical.canonical_peutt Sum.void1 Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) bool bool (@eq bool)\n         (@ITreeBridge.elaborate_closed Representation.SubEnumQ bool ITreeSampling.two_coins)\n         ITreeSampling.native_two_coins",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Examples.ITreeSampling.retry_step",
+      "type": "ITreeSampling.retry_step\n     : unit -> ITreeDefinition.itree (ITreeBridge.probE Representation.SubEnumQ) (unit + bool)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.ITreeSampling.retry",
+      "type": "ITreeSampling.retry\n     : ITreeDefinition.itree (ITreeBridge.probE Representation.SubEnumQ) bool",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.ITreeSampling.retry_elaborates",
+      "type": "ITreeSampling.retry_elaborates\n     : @Canonical.canonical_peutt Sum.void1 Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) bool bool (@eq bool)\n         (@ITreeBridge.elaborate_closed Representation.SubEnumQ bool ITreeSampling.retry)\n         (@PTreeDefinition.PTree.iter Sum.void1 Representation.SubEnumQ bool unit\n            (fun i : unit =>\n             @ITreeBridge.elaborate_closed Representation.SubEnumQ (unit + bool)\n               (ITreeSampling.retry_step i)) tt)",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ITreeBridge.sample_is_native",
+      "type": "@ITreeBridge.sample_is_native\n     : forall (A : Type) (mu : Representation.SubEnumQ A),\n       @Canonical.canonical_peutt Sum.void1 Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) A A (@eq A)\n         (@ITreeBridge.elaborate_closed Representation.SubEnumQ A\n            (@ITreeDefinition.ITree.trigger (ITreeBridge.probE Representation.SubEnumQ) A\n               (@ITreeBridge.Sample Representation.SubEnumQ A mu)))\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF Sum.void1 Representation.SubEnumQ A\n               (PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A) A mu\n               (fun x : A =>\n                {|\n                  PTreeDefinition._observe :=\n                    @PTreeDefinition.RetF Sum.void1 Representation.SubEnumQ A\n                      (PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A) x\n                |})\n         |}",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ITreeBridge.native_observation",
+      "type": "@ITreeBridge.native_observation\n     : forall (MN : Type -> Type) (X : Type) (mu : MN X),\n       @PTreeDefinition.observe Sum.void1 MN X\n         (@ITreeBridge.elaborate_closed MN X\n            (@ITreeDefinition.ITree.trigger (ITreeBridge.probE MN) X (@ITreeBridge.Sample MN X mu))) =\n       @PTreeDefinition.TauF Sum.void1 MN X (PTreeDefinition.ptree Sum.void1 MN X)\n         (@PTreeDefinition.PTree.bind Sum.void1 MN X X\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF Sum.void1 MN X (PTreeDefinition.ptree Sum.void1 MN X) X mu\n                  (fun x : X =>\n                   {|\n                     PTreeDefinition._observe :=\n                       @PTreeDefinition.RetF Sum.void1 MN X (PTreeDefinition.ptree Sum.void1 MN X)\n                         x\n                   |})\n            |}\n            (fun x : X =>\n             @ITreeBridge.interp_itree (ITreeBridge.probE MN) Sum.void1 MN X\n               (@ITreeBridge.sample_handler MN Sum.void1)\n               {|\n                 ITreeDefinition._observe :=\n                   @ITreeDefinition.RetF (ITreeBridge.probE MN) X\n                     (ITreeDefinition.itree (ITreeBridge.probE MN) X) x\n               |}))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ITreeBridge.source_tau",
+      "type": "@ITreeBridge.source_tau\n     : forall (A : Type) (t : ITreeDefinition.itree (ITreeBridge.probE Representation.SubEnumQ) A),\n       @Canonical.canonical_peutt Sum.void1 Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) A A (@eq A)\n         (@ITreeBridge.elaborate_closed Representation.SubEnumQ A\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.TauF (ITreeBridge.probE Representation.SubEnumQ) A\n                  (ITreeDefinition.itree (ITreeBridge.probE Representation.SubEnumQ) A) t\n            |}) (@ITreeBridge.elaborate_closed Representation.SubEnumQ A t)",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ITreeBridge.ordinary_event_retained",
+      "type": "ITreeBridge.ordinary_event_retained\n     : @Canonical.canonical_peutt ITreeBridge.interactionE Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) bool bool (@eq bool)\n         (@ITreeBridge.elaborate Representation.SubEnumQ ITreeBridge.interactionE bool\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF\n                  (Sum.sum1 (ITreeBridge.probE Representation.SubEnumQ) ITreeBridge.interactionE)\n                  bool\n                  (ITreeDefinition.itree\n                     (Sum.sum1 (ITreeBridge.probE Representation.SubEnumQ) ITreeBridge.interactionE)\n                     bool) bool\n                  (@Sum.inr1 (ITreeBridge.probE Representation.SubEnumQ) ITreeBridge.interactionE\n                     bool ITreeBridge.Ask)\n                  (fun x : bool =>\n                   {|\n                     ITreeDefinition._observe :=\n                       @ITreeDefinition.RetF\n                         (Sum.sum1 (ITreeBridge.probE Representation.SubEnumQ)\n                            ITreeBridge.interactionE) bool\n                         (ITreeDefinition.itree\n                            (Sum.sum1 (ITreeBridge.probE Representation.SubEnumQ)\n                               ITreeBridge.interactionE) bool) x\n                   |})\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.VisF ITreeBridge.interactionE Representation.SubEnumQ bool\n               (PTreeDefinition.ptree ITreeBridge.interactionE Representation.SubEnumQ bool) bool\n               ITreeBridge.Ask\n               (fun x : bool =>\n                @ITreeBridge.elaborate Representation.SubEnumQ ITreeBridge.interactionE bool\n                  {|\n                    ITreeDefinition._observe :=\n                      @ITreeDefinition.RetF\n                        (Sum.sum1 (ITreeBridge.probE Representation.SubEnumQ)\n                           ITreeBridge.interactionE) bool\n                        (ITreeDefinition.itree\n                           (Sum.sum1 (ITreeBridge.probE Representation.SubEnumQ)\n                              ITreeBridge.interactionE) bool) x\n                  |})\n         |}",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ITreeBridge.open_sampling",
+      "type": "@ITreeBridge.open_sampling\n     : forall (X A : Type) (mu : Representation.SubEnumQ X)\n         (k : X ->\n              ITreeDefinition.itree\n                (Sum.sum1 (ITreeBridge.probE Representation.SubEnumQ) ITreeBridge.interactionE) A),\n       @Canonical.canonical_peutt ITreeBridge.interactionE Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) A A (@eq A)\n         (@ITreeBridge.elaborate Representation.SubEnumQ ITreeBridge.interactionE A\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.VisF\n                  (Sum.sum1 (ITreeBridge.probE Representation.SubEnumQ) ITreeBridge.interactionE) A\n                  (ITreeDefinition.itree\n                     (Sum.sum1 (ITreeBridge.probE Representation.SubEnumQ) ITreeBridge.interactionE)\n                     A) X\n                  (@Sum.inl1 (ITreeBridge.probE Representation.SubEnumQ) ITreeBridge.interactionE X\n                     (@ITreeBridge.Sample Representation.SubEnumQ X mu)) k\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF ITreeBridge.interactionE Representation.SubEnumQ A\n               (PTreeDefinition.ptree ITreeBridge.interactionE Representation.SubEnumQ A) X mu\n               (fun x : X =>\n                @ITreeBridge.elaborate Representation.SubEnumQ ITreeBridge.interactionE A (k x))\n         |}",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ITreeBridge.partial_sampling_not_normalized",
+      "type": "@ITreeBridge.partial_sampling_not_normalized\n     : forall A : Type,\n       @Canonical.canonical_peutt Sum.void1 Representation.SubEnumQ\n         SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) A A (@eq A)\n         (@ITreeBridge.elaborate_closed Representation.SubEnumQ A\n            (@ITreeDefinition.ITree.trigger (ITreeBridge.probE Representation.SubEnumQ) A\n               (@ITreeBridge.Sample Representation.SubEnumQ A (@Representation.subenumQ_zero A))))\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF Sum.void1 Representation.SubEnumQ A\n               (PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A) A\n               (@Representation.subenumQ_zero A)\n               (fun x : A =>\n                {|\n                  PTreeDefinition._observe :=\n                    @PTreeDefinition.RetF Sum.void1 Representation.SubEnumQ A\n                      (PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A) x\n                |})\n         |}",
+      "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ITreeBridge.embedding_bind",
+      "type": "@ITreeBridge.embedding_bind\n     : forall (E MN : Type -> Type) (A B : Type) (t : ITreeDefinition.itree E A)\n         (k : A -> ITreeDefinition.itree E B),\n       @PStruct.pstruct E MN B B (@eq B)\n         (@ITreeBridge.from_itree E MN B (@ITreeDefinition.ITree.bind E A B t k))\n         (@PTreeDefinition.PTree.bind E MN A B (@ITreeBridge.from_itree E MN A t)\n            (fun x : A => @ITreeBridge.from_itree E MN B (k x)))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ITreeBridge.target_handler_postcomposition",
+      "type": "@ITreeBridge.target_handler_postcomposition\n     : forall (E F G MN : Type -> Type) (A : Type) (h : Core.Handler.Handler MN E F)\n         (g : Core.Handler.Handler MN F G) (t : ITreeDefinition.itree E A),\n       @PStruct.pstruct G MN A A (@eq A)\n         (@PTreeDefinition.PTree.interp F G MN g A (@ITreeBridge.interp_itree E F MN A h t))\n         (@ITreeBridge.interp_itree E G MN A (@Handler.cat MN E F G h g) t)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.ITreeBridge.high_embedding",
+      "type": "ITreeBridge.high_embedding\n     : forall (A : Type) (a : A),\n       @PStruct.pstruct Sum.void1 Representation.SubEnumQ A A (@eq A)\n         (@ITreeBridge.from_itree Sum.void1 Representation.SubEnumQ A\n            {|\n              ITreeDefinition._observe :=\n                @ITreeDefinition.RetF Sum.void1 A (ITreeDefinition.itree Sum.void1 A) a\n            |})\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF Sum.void1 Representation.SubEnumQ A\n               (PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A) a\n         |}",
+      "assumptions": "Closed under the global context"
+    }
+  ]
+}
