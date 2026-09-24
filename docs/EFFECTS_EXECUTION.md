@@ -33,7 +33,7 @@ explicitly requested; no environment changes are planned.
 | Pointwise behavioral handler replacement | Proved | Two handlers, heterogeneous results; the same generic relational-limit profile. |
 | Handler composition and sum calculus | Proved | Pure combinators; units/associativity, case and bimap congruence modulo pointwise peutt. |
 | ITree sampling-effect elaboration | Proved basic laws | Actual ITree source to native Prob; Ret/Tau/Vis/bind/iter and target-handler postcomposition. Source eutt preservation remains separate. |
-| Interpreted effect algebra and probability interaction | Proved finite equations | Four State laws, Reader contraction, ordered Writer unit/fusion, Exception left-zero; no unconditional sample-before-throw erasure. Transformer agreements beyond State remain pending. |
+| Interpreted effect algebra and probability interaction | Proved finite equations | Four State laws, Reader contraction, ordered Writer unit/fusion, Exception left-zero; no unconditional sample-before-throw erasure. StateT and ExceptT fold agreements are proved; ReaderT/WriterT remain pending. |
 | State peutt preservation | Proved | Same initial state; equal final states and related results. |
 | Reader / Writer / Exception | Implemented and proved | Basic clients and preservation, not a complete effect algebra. |
 | Separate Vis/Prob fold and StateT commutation | Proved | Lawful target with iteration uniformity; checked ITree instance. |
@@ -59,8 +59,11 @@ fold. It does not claim a general source-ITree `eutt` preservation theorem.
 The [effect-algebra increment](EFFECT_ALGEBRA.md) adds generic interpreted
 equations and a half-mass exception counterexample, without changing the
 existing eliminators. Writer is still implemented through State, not WriterT.
-Its new bind law threads an accumulator; canonical transformer iteration and
-Reader/Writer/Exception fold agreement remain separate obligations. An actual
+Its new bind law threads an accumulator; ReaderT/WriterT iteration and fold
+agreement remain separate obligations. [ExceptT](EXCEPTION_FOLD.md) now has
+proved monad laws, inherited uniformity and a generic `fold_run_exception`
+square, instantiated with an actual ITree target without probability assumptions.
+An actual
 ITree Sample/Get/Put example now follows both existing State interpretation
 routes. Probability interaction clients retain the already-audited classical
 choice dependencies of generic `peutt_prob`; they are not claimed axiom-free.

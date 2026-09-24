@@ -1,5 +1,6 @@
 (** Gate S integration regression: load every normally checked module in one universe context.
     Not a facade or an ordinary theorem client. *)
+Require PTree.Core.ExceptT.
 Require PTree.Core.Fold.
 Require PTree.Core.Handler.
 Require PTree.Core.ITreeBridge.
@@ -101,6 +102,8 @@ Require PTree.Interp.Algebra.Writer.
 Require PTree.Interp.Backend.SubEnumQ.
 Require PTree.Interp.Exception.
 Require PTree.Interp.ExceptionFacts.
+Require PTree.Interp.ExceptionFold.
+Require PTree.Interp.ExceptionFoldFacts.
 Require PTree.Interp.FreeOmega.Atomic.
 Require PTree.Interp.FreeOmega.Base.
 Require PTree.Interp.FreeOmega.Cofinality.
@@ -349,6 +352,7 @@ Require PTree.Regression.Probability.SubEnumRJointRealization.
 Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
 Require PTree.Regression.Semantics.EffectAlgebra.
+Require PTree.Regression.Semantics.ExceptionFold.
 Require PTree.Regression.Semantics.GenericAlgebra.
 Require PTree.Regression.Semantics.GenericBind.
 Require PTree.Regression.Semantics.GenericConsumers.

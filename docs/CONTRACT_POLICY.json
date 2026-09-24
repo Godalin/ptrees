@@ -1278,6 +1278,16 @@
       "public_case_beta",
       "public_bimap_replacement"
     ],
+    "theories/Regression/Semantics/ExceptionFold.v": [
+      "exception_target_monad",
+      "exception_target_uniform",
+      "exception_fold_commutes",
+      "exception_throw_fold",
+      "exception_probability_fold",
+      "sample_then_exception",
+      "recursive_exception_square",
+      "high_exception_square"
+    ],
     "theories/Regression/Semantics/EffectAlgebra.v": [
       "reader_repeated",
       "state_restore",

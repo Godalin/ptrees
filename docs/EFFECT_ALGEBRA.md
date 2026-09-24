@@ -141,9 +141,10 @@ This increment does not close these independent obligations:
 1. General source `ITree.eutt -> peutt`, hence lowering preservation and the
    source-`ITree.interp` commuting square. The existing structural bridge and
    bind/iter laws remain available, but are not substitutes for weak simulation.
-2. Canonical ReaderT/WriterT/ExceptT targets, their lawful iteration evidence,
+2. Canonical ReaderT/WriterT targets, their lawful iteration evidence,
    and their agreements with the existing PTree eliminators. StateT already
-   has its checked theorem; it has not been generalized by assertion.
+   has its checked theorem. The subsequent [ExceptT increment](EXCEPTION_FOLD.md)
+   now proves ExceptT monad/uniformity laws and its generic fold agreement.
 3. WriterT's accumulated-log iteration and append-form bind law; derived
    transformer `local` / `catch`, if included in the eventual public surface.
 4. A general *conditional* sample-before-throw elimination theorem under an
