@@ -77,6 +77,7 @@ Require PTree.Examples.BernoulliFactory.RationalBernoulli.
 Require PTree.Examples.BernoulliFactory.RealBernoulliMathComp.
 Require PTree.Examples.BernoulliFactory.RealBernoulliOracle.
 Require PTree.Examples.BernoulliFactory.VonNeumannUnbounded.
+Require PTree.Examples.EffectInteractions.
 Require PTree.Examples.ITreeSampling.
 Require PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService.
 Require PTree.Examples.MathCompPrograms.
@@ -92,6 +93,11 @@ Require PTree.Execution.Backend.UniformReplay.
 Require PTree.Execution.ITreeFold.
 Require PTree.Execution.Runner.
 Require PTree.Execution.Validation.SubEnumQ.
+Require PTree.Interp.Algebra.Computation.
+Require PTree.Interp.Algebra.Exception.
+Require PTree.Interp.Algebra.Reader.
+Require PTree.Interp.Algebra.State.
+Require PTree.Interp.Algebra.Writer.
 Require PTree.Interp.Backend.SubEnumQ.
 Require PTree.Interp.Exception.
 Require PTree.Interp.ExceptionFacts.
@@ -342,6 +348,7 @@ Require PTree.Regression.Probability.StableHittingDomain.
 Require PTree.Regression.Probability.SubEnumRJointRealization.
 Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
+Require PTree.Regression.Semantics.EffectAlgebra.
 Require PTree.Regression.Semantics.GenericAlgebra.
 Require PTree.Regression.Semantics.GenericBind.
 Require PTree.Regression.Semantics.GenericConsumers.

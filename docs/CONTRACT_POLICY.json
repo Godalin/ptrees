@@ -1278,6 +1278,24 @@
       "public_case_beta",
       "public_bimap_replacement"
     ],
+    "theories/Regression/Semantics/EffectAlgebra.v": [
+      "reader_repeated",
+      "state_restore",
+      "state_overwrite",
+      "state_draw_swap",
+      "writer_fusion",
+      "writer_unit",
+      "log_monoid_not_commutative",
+      "writer_log_order",
+      "writer_draw_swap",
+      "exception_left_zero",
+      "half_nonnegative",
+      "half_bounded",
+      "partial_error_hitting",
+      "sampling_before_throw_not_erasable",
+      "real_state_draw_swap",
+      "high_reader"
+    ],
     "theories/Regression/Semantics/ITreeBridge.v": [
       "sample_is_native",
       "native_observation",
