@@ -4,6 +4,20 @@ import audit_architecture as architecture
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_runner_validation_is_one_way(self):
+        bridge = "Execution/Validation/SubEnumQ"
+        self.assertTrue(architecture.external_validation(bridge))
+        for dep in ["Execution/Backend/UniformReplay", "Eq/Backend/StableHittingDomainSubEnumQ",
+                    "Prob/Domain/Expectation"]:
+            self.assertTrue(architecture.permitted(bridge, dep))
+        for owner in ["Core/PTreeDefinition", "Execution/Runner", "Execution/Backend/RationalTickets",
+                      "Eq/PEutt", "Interp/State", "Examples/RationalState"]:
+            self.assertFalse(architecture.permitted(owner, bridge))
+        graph = {"Execution/Runner": {"Execution/Backend/Hidden"},
+                 "Execution/Backend/Hidden": {bridge}, bridge: set()}
+        with self.assertRaises(AssertionError):
+            architecture.check_external_validation_boundary(graph)
+
     def test_native_rational_backends_do_not_import_legacy(self):
         for owner in ['Prob/Backend/EnumQ/Representation', 'Prob/Backend/SubEnumQ/Measure',
                       'Prob/Backend/SubEnumR/Representation', 'Prob/Backend/Common/FiniteEnum']:

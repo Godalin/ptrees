@@ -40,6 +40,7 @@ def external_validation(path):
         "Prob/Backend/SubEnumQ/FreeOmega/GenericValidation",
         "Prob/Backend/SubEnumQ/FreeOmega/RelationalValidation",
         "Eq/Backend/StableHittingDomainSubEnumQ",
+        "Execution/Validation/SubEnumQ",
     }
 
 
@@ -64,6 +65,8 @@ def ownership(path):
         return "Prob/FreeOmega/Validation", "external validation", "native-parametric bridge to independent mathematical models"
     if path.startswith("Core/"):
         return "Core", "syntax", "primitive syntax/combinators only"
+    if path == "Execution/Validation/SubEnumQ":
+        return "Execution/Validation", "external validation", "one-way runner-to-hitting correspondence; never an executable dependency"
     if path.startswith("Execution/Backend/"):
         return "Execution/Backend", "concrete", "executable native sampling; no external validation or recursive frontier"
     if path.startswith("Execution/"):
@@ -137,6 +140,8 @@ def permitted(module, dependency):
         return under("Semantics")
     if module.startswith("Core/"):
         return under("Core")
+    if module == "Execution/Validation/SubEnumQ":
+        return under("Core", "Execution", "Prob", "Eq")
     if module.startswith("Execution/Backend/"):
         return under("Core", "Execution", "Prob/Backend/Common", "Prob/Backend/EnumQ", "Prob/Backend/SubEnumQ")
     if module.startswith("Execution/"):

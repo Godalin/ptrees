@@ -110,8 +110,9 @@ a weak-equivalence name.
 This closes State behavioral preservation. Subsequent increments complete
 [standard effects](STANDARD_EFFECTS.md), [StateT-fold commutation](STATE_FOLD.md),
 [single-draw rational sampling](RATIONAL_TICKETS.md) and an
-[extracted rewrite example](STATE_REWRITE.md). Whole-runner probability
-correspondence remains open. The [current roadmap](EFFECTS_EXECUTION.md#current-status)
+[extracted rewrite example](STATE_REWRITE.md). The subsequent
+[runner distribution theorem](RUNNER_DISTRIBUTION.md) proves the conditional
+probability bridge. The [current roadmap](EFFECTS_EXECUTION.md#current-status)
 owns the follow-up queue; the audit below records this stage's checks.
 
 ## Audit

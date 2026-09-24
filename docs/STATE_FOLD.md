@@ -72,8 +72,9 @@ No sampler-distribution theorem, peutt-to-arbitrary-fold preservation, or
 exact control-flow equality is claimed. ITree equality here is `eutt`, which
 ignores the administrative Taus introduced by iteration. The native rational
 uniform-ticket sampler was subsequently proved in [Rational tickets](RATIONAL_TICKETS.md).
-This does not prove a fold/runner correspondence or whole-runner probability
-law. See the [current roadmap](EFFECTS_EXECUTION.md#current-status) for the
+This does not prove a fold/runner correspondence. The separate
+[runner probability bridge](RUNNER_DISTRIBUTION.md) now proves the conditional
+finite law without using fold. See the [current roadmap](EFFECTS_EXECUTION.md#current-status) for the
 remaining queue; the validation below records this stage's checks.
 
 The audit freezes the preceding 357 theory modules and six existing contract

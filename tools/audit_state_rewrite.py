@@ -26,6 +26,8 @@ def frozen(path):
 
 
 def previous_sources(sources):
+    from audit_runner_distribution import previous_sources as before_distribution
+    sources = before_distribution(sources)
     if NEW not in sources:
         return sources
     code = without_comments(sources[NEW])
@@ -52,6 +54,8 @@ def previous_extraction(text):
 
 
 def check_source(sources):
+    from audit_runner_distribution import previous_sources as before_distribution
+    sources = before_distribution(sources)
     old = {p for p in subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', BASELINE],
            cwd=ROOT, text=True).splitlines() if p.endswith('.v')}
     assert set(sources) == old | {NEW}

@@ -445,7 +445,9 @@ The program, state handler, rational interval selector and bounded runner are
 extracted from Rocq. The first command returns counter value 2 with one unused
 bit. See [effects and execution](docs/EFFECTS_EXECUTION.md) for the proved
 operational contracts, completed handler and single-draw sampling proofs,
-and the still-open whole-runner probability correspondence. The
+and the [finite runner probability correspondence](docs/RUNNER_DISTRIBUTION.md)
+under an explicit history-conditional uniform entropy contract. This does not
+verify PRNG fairness. The
 [State rewrite example](docs/STATE_REWRITE.md) also extracts both sides of a
 proved probability rewrite with general rational ticket sampling.
 

@@ -2,15 +2,18 @@
 
 ## Current status
 
-Implementation checkpoint: `145a9c9`. This is the current status entry point
+Implementation chain through `145a9c9`, now extended by the
+[finite runner probability bridge](RUNNER_DISTRIBUTION.md) from baseline
+`892a6d3`. This is the current status entry point
 for effects, handlers and execution; linked stage reports retain their own
 historical baselines and validation results. The original operational
 checkpoint began at `7b4c9714bb3845ed283a68fd084a6b4b33073e6f`.
 
 The implementation goal is complete: proved rewriting can be followed by
-effect elimination, extraction and replay. **A theorem identifying the whole
-runner's output distribution with PTree denotational semantics is not yet
-proved.** Completing the implementation goal does not complete every item in
+effect elimination, extraction and replay. **The finite runner distribution
+is now proved under an explicit history-conditional uniform entropy model;
+its returned projection and limit agree with hitting semantics.** This does
+not verify the OCaml PRNG. Completing these goals does not complete every item in
 the original theory/execution proposal. CI remains out of scope unless
 explicitly requested; no environment changes are planned.
 
@@ -23,7 +26,7 @@ explicitly requested; no environment changes are planned.
 | Finite runner | Proved operationally | Returned/Lost paths relative to the supplied sampler. |
 | General rational tickets | Proved for one draw | Exact native distribution under a uniform bounded index. |
 | State+Prob rewrite, extraction, seed/replay | Implemented and checked | No same-seed, same-trace or same-fuel equality claim. |
-| Whole-runner probability correspondence | Open | Distinct from path correctness and single-draw correctness. |
+| Finite runner probability correspondence | Proved under conditional uniform entropy | All finite outcomes; returned projection agrees with same-fuel hitting, and its limit with complete hitting. Not PRNG verification. |
 
 The subsequent [arbitrary-handler increment](UNRESTRICTED_INTERP.md) closes
 the fixed-handler eliminating/mixed fusion obligation, using a two-phase
@@ -35,8 +38,9 @@ setoid rewriting. [StateT/fold commutation](STATE_FOLD.md) is now proved
 from ordinary monad laws and pure-map iteration uniformity, with ITree as
 a checked target model. [Rational tickets](RATIONAL_TICKETS.md) now prove
 general single-draw distribution correctness and provide a second extracted
-State example with random/seed/replay modes. The whole-runner finite
-probability/semantic bridge remains open.
+State example with random/seed/replay modes. The subsequent
+[finite probability bridge](RUNNER_DISTRIBUTION.md) composes these laws with
+the actual replay runner and existing hitting adequacy.
 
 The [end-to-end State rewrite](STATE_REWRITE.md) now fuses two probability
 nodes before State elimination, proves preservation through the handler,
@@ -187,12 +191,11 @@ axiom. There are no unrealized-axiom stubs in the generated executable.
 
 ## Follow-up queue (not implemented by this documentation cleanup)
 
-1. **Finite-runner probability correspondence — next semantic priority.**
-   State the history-conditional sampling contract, prove the finite outcome
-   distribution theorem, then relate returned mass and its increasing limit
-   to hitting approximants. Explicit Lost, finite Timeout and infinite
-   internal divergence must not be conflated. This was optional strengthening
-   in the original proposal, not a theorem already delivered by the runner.
+1. **Finite-runner probability correspondence — completed in the ideal
+   conditional model.** [The bridge](RUNNER_DISTRIBUTION.md) proves the finite
+   outcome law, same-fuel returned hitting projection and complete-hitting
+   limit. Explicit Lost, Timeout and divergence remain distinct. No claim is
+   made that the external PRNG meets the conditional uniformity premise.
 2. **Efficient sampling refinement and error classification — next execution
    priority.** Replace denominator-product ticket materialization by an
    integer-weight interval implementation, proving equivalence to the current
@@ -210,7 +213,7 @@ axiom. There are no unrealized-axiom stubs in the generated executable.
    reported as completed by the execution work. Do not reopen foundational
    interfaces merely to obtain backend symmetry.
 
-This cleanup only records the queue; it does not start any of these tasks.
+The probability bridge does not start the remaining execution optimizations.
 Update this section when their status changes and link the corresponding
 proof/report instead of leaving contradictory pending lists in stage reports.
 
@@ -237,8 +240,7 @@ explicit execution trust boundaries.
 The counts and commands below describe the initial operational checkpoints,
 not a new validation run or current whole-repository counts. Later validation
 is recorded in the linked stage reports; the latest implementation report is
-[State rewrite](STATE_REWRITE.md). Documentation-only cleanup does not rerun
-or reassert a full build/kernel audit.
+[Runner distribution](RUNNER_DISTRIBUTION.md).
 
 Generic `Execution` depends only on itself and Core. Its concrete rational
 adapter can consume finite representation mathematics, but not FreeOmega,

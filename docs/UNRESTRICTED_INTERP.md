@@ -132,7 +132,8 @@ an evolving state, whereas this theorem interprets a fixed handler. The later
 [state-indexed proof](STATE_PRESERVATION.md) supplies that result separately.
 [StateT-fold commutation](STATE_FOLD.md), [single-draw rational sampling](RATIONAL_TICKETS.md)
 and the [extracted rewrite example](STATE_REWRITE.md) are also complete.
-The whole-runner probability correspondence is still open. See the
+The subsequent [runner distribution theorem](RUNNER_DISTRIBUTION.md) proves
+the ideal conditional probability bridge, not PRNG correctness. See the
 [current status and follow-up queue](EFFECTS_EXECUTION.md#current-status);
 the verification below records this stage, not a later rerun.
 

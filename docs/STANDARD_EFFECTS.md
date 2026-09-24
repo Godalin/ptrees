@@ -98,8 +98,9 @@ limit capabilities.
 This finishes the small standard-effect client group, not a complete effect
 algebra. Subsequent increments prove [StateT-fold commutation](STATE_FOLD.md)
 and [general rational single-draw correctness](RATIONAL_TICKETS.md), and add
-the [extracted rewrite example](STATE_REWRITE.md). Whole-runner probability
-correspondence remains open; see the [current roadmap](EFFECTS_EXECUTION.md#current-status).
+the [extracted rewrite example](STATE_REWRITE.md). The later
+[runner distribution theorem](RUNNER_DISTRIBUTION.md) supplies the conditional
+probability bridge; see the [current roadmap](EFFECTS_EXECUTION.md#current-status).
 The validation below is the historical result for this stage.
 
 Local verification passed: full `dune build` (including AllImports), 39 focused

@@ -82,10 +82,10 @@ finite runner/path equivalence, exact rational single-draw probability, and
 extracted random/seed/replay execution of a proved rewrite.
 
 The proposal's stronger identification of **the full finite-runner outcome
-distribution with hitting approximants** is still unproved. It was optional
-for this implementation checkpoint and is now the next semantic priority in
-the [current follow-up queue](EFFECTS_EXECUTION.md#follow-up-queue-not-implemented-by-this-documentation-cleanup).
-No such theorem, PRNG fairness proof, or same-fuel peutt congruence is claimed.
+distribution with hitting approximants** was not proved at this checkpoint.
+The subsequent [runner probability bridge](RUNNER_DISTRIBUTION.md) proves the
+finite outcome law and returned hitting correspondence under conditional
+uniform entropy. No PRNG fairness proof or same-fuel peutt congruence is claimed.
 The generic-eventless-iteration/Atomic/MDP cleanup items are separate theory
 work, not silently reported as completed by this execution increment.
 
