@@ -1,5 +1,13 @@
 # Finite runner probability correspondence
 
+Current ownership: replay probability laws live in
+`Execution/Validation/UniformReplay.v`, separate from executable samplers in
+`Execution/Backend`. The move preserves every definition and proof; there is
+no old-path forwarding module. The runner now offers a typed result/failure
+view without changing its runtime representation. See the
+[execution role map](EFFECTS_EXECUTION.md#execution-roles-and-public-terminology).
+The baseline and verification counts below describe the original increment.
+
 Baseline: `892a6d3`. Four additive theory modules connect the existing runner
 and rational ticket implementation to the existing mathematical hitting
 semantics. No sampler, runtime, PRNG, native backend, FreeOmega or PTree
@@ -23,7 +31,7 @@ outcomes, so the statement is not merely a return-probability calculation.
 
 ## History-conditional sampling and the actual runner
 
-`Execution/Backend/UniformReplay.v` gives an explicit `uniform_entropy`
+`Execution/Validation/UniformReplay.v` gives an explicit `uniform_entropy`
 predicate, not a class or an axiom. A source maps the prior reversed ticket
 history and the newly requested bound to a finite rational law of indices.
 At every history and positive bound its weights must be nonnegative and its

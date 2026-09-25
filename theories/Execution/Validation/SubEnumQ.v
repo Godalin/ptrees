@@ -18,7 +18,8 @@ From PTree.Prob.FreeOmega Require Import StructuralMeasure Measure.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility.
 From PTree.Execution Require Import Runner.
-From PTree.Execution.Backend Require Import FiniteDistribution UniformReplay.
+From PTree.Execution.Backend Require Import FiniteDistribution.
+From PTree.Execution.Validation Require Import UniformReplay.
 Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Set Implicit Arguments.

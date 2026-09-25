@@ -1,4 +1,5 @@
-(** History-dependent ideal entropy laws, and their actual replay execution.
+(** Execution validation, not a sampler implementation or runtime dependency.
+    History-dependent ideal entropy laws, and their actual replay execution.
     No claim is made that a deterministic PRNG satisfies conditional uniformity.
     Histories are reversed lists of previously supplied ticket indices. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".

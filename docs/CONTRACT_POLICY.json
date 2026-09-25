@@ -1407,6 +1407,17 @@
       "real_handler_bind_client",
       "real_right_identity"
     ],
+    "theories/Regression/Execution/Outcome.v": [
+      "returned_is_semantic",
+      "loss_is_semantic",
+      "zero_fuel_is_resource_failure",
+      "no_entropy_is_resource_failure",
+      "native_missing_is_completed",
+      "typed_loss_path",
+      "entropy_failure_has_no_completed_path",
+      "timeout_has_no_completed_path",
+      "typed_result_agrees_with_existing_runner"
+    ],
     "theories/Regression/Execution/FiniteDistribution.v": [
       "first_attempt_outcomes",
       "two_attempt_outcomes",

@@ -24,6 +24,67 @@ Arguments EntropyExhausted {A}.
 Definition finished {A} (r : outcome A) : Prop :=
   match r with Returned _ | Lost => True | _ => False end.
 
+(** A loss is a completed result relative to the supplied sampler, not an
+    execution-resource failure. No probability law for that sampler is implied.
+    These views leave the existing runtime representation unchanged. *)
+Inductive semantic_result (A : Type) :=
+| ResultReturned (a : A)
+| ResultLost.
+Arguments ResultReturned {A} _.
+Arguments ResultLost {A}.
+
+Inductive runner_failure := FuelExhausted | EntropyUnavailable.
+
+Definition outcome_view {A} (r : outcome A) : semantic_result A + runner_failure :=
+  match r with
+  | Returned a => inl (ResultReturned a)
+  | Lost => inl ResultLost
+  | Timeout => inr FuelExhausted
+  | EntropyExhausted => inr EntropyUnavailable
+  end.
+
+Definition outcome_of_view {A} (r : semantic_result A + runner_failure) : outcome A :=
+  match r with
+  | inl (ResultReturned a) => Returned a
+  | inl ResultLost => Lost
+  | inr FuelExhausted => Timeout
+  | inr EntropyUnavailable => EntropyExhausted
+  end.
+
+Lemma outcome_view_roundtrip {A} (r : outcome A) :
+  outcome_of_view (outcome_view r) = r.
+Proof. destruct r; reflexivity. Qed.
+
+Lemma outcome_of_view_roundtrip {A} (r : semantic_result A + runner_failure) :
+  outcome_view (outcome_of_view r) = r.
+Proof. destruct r as [[a|]|[]]; reflexivity. Qed.
+
+Lemma finished_iff_semantic_result {A} (r : outcome A) :
+  finished r <-> exists result, outcome_view r = inl result.
+Proof.
+  destruct r; cbn; split; intros H; try contradiction.
+  - exists (ResultReturned a). reflexivity.
+  - exact I.
+  - exists ResultLost. reflexivity.
+  - exact I.
+  - destruct H as [? H]. discriminate.
+  - destruct H as [? H]. discriminate.
+Qed.
+
+Lemma unfinished_iff_runner_failure {A} (r : outcome A) :
+  ~ finished r <-> exists failure, outcome_view r = inr failure.
+Proof.
+  destruct r; cbn; split; intros H.
+  - exfalso. exact (H I).
+  - destruct H as [? H]. discriminate.
+  - exfalso. exact (H I).
+  - destruct H as [? H]. discriminate.
+  - exists FuelExhausted. reflexivity.
+  - tauto.
+  - exists EntropyUnavailable. reflexivity.
+  - tauto.
+Qed.
+
 Section Runner.
 Context {MN : Type -> Type} {Seed : Type}.
 Variable sample : forall X, MN X -> Seed -> draw_result X * Seed.
@@ -100,6 +161,21 @@ Proof.
   split.
   - intro H. split; [eapply executes_finished|apply executes_complete]; exact H.
   - intros [Hdone [n Hrun]]. eapply run_sound; eassumption.
+Qed.
+
+(* Typed view of the existing fuel-free relation; not another semantics. *)
+Definition executes_result {A} (t : ptree void1 MN A) seed
+    (result : semantic_result A) seed' : Prop :=
+  executes t seed (outcome_of_view (inl result)) seed'.
+
+Theorem run_result_iff {A} (t : ptree void1 MN A) seed result seed' :
+  executes_result t seed result seed' <->
+    exists fuel, run fuel t seed = (outcome_of_view (inl result), seed').
+Proof.
+  unfold executes_result. rewrite run_finished_iff.
+  assert (Hdone : finished (outcome_of_view (inl result)))
+    by (destruct result; exact I).
+  tauto.
 Qed.
 
 Theorem run_finished_more_fuel {A} n m (t : ptree void1 MN A) seed result seed' :

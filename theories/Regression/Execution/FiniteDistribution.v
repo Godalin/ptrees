@@ -9,7 +9,8 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Backend.Common Require Import FiniteEnum.
 From PTree.Prob.Backend.SubEnumQ Require Import Representation.
 From PTree.Execution Require Import Runner.
-From PTree.Execution.Backend Require Import RationalTickets FiniteDistribution UniformReplay.
+From PTree.Execution.Backend Require Import RationalTickets FiniteDistribution.
+From PTree.Execution.Validation Require Import UniformReplay.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Eq.PEutt.peutt.

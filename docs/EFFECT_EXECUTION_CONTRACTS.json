@@ -221,6 +221,76 @@
       "name": "PTree.Regression.Infrastructure.StateIteration.eventful_probabilistic_iter_commutes",
       "type": "@StateIteration.eventful_probabilistic_iter_commutes\n     : forall (E MN : Type -> Type) (e : E unit) (mu : MN bool) (s : nat),\n       @PStruct.pstruct E MN (nat * nat) (nat * nat) (@eq (nat * nat))\n         (@State.run_state nat E MN nat\n            (@PTreeDefinition.PTree.iter (Sum.sum1 (State.stateE nat) E) MN nat unit\n               (@StateIteration.eventful_step E MN e mu) tt) s)\n         (@PTreeDefinition.PTree.iter E MN (nat * nat) (nat * unit)\n            (@StateIter.state_iter_step nat unit nat E MN (@StateIteration.eventful_step E MN e mu))\n            (s, tt))",
       "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.semantic_result",
+      "type": "Runner.semantic_result\n     : Type -> Type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.runner_failure",
+      "type": "Runner.runner_failure\n     : Set",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.outcome_view",
+      "type": "@Runner.outcome_view\n     : forall A : Type, Runner.outcome A -> Runner.semantic_result A + Runner.runner_failure",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.outcome_of_view",
+      "type": "@Runner.outcome_of_view\n     : forall A : Type, Runner.semantic_result A + Runner.runner_failure -> Runner.outcome A",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.outcome_view_roundtrip",
+      "type": "@Runner.outcome_view_roundtrip\n     : forall (A : Type) (r : Runner.outcome A),\n       @Runner.outcome_of_view A (@Runner.outcome_view A r) = r",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.outcome_of_view_roundtrip",
+      "type": "@Runner.outcome_of_view_roundtrip\n     : forall (A : Type) (r : Runner.semantic_result A + Runner.runner_failure),\n       @Runner.outcome_view A (@Runner.outcome_of_view A r) = r",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.finished_iff_semantic_result",
+      "type": "@Runner.finished_iff_semantic_result\n     : forall (A : Type) (r : Runner.outcome A),\n       @Runner.finished A r <->\n       (exists result : Runner.semantic_result A,\n          @Runner.outcome_view A r = @inl (Runner.semantic_result A) Runner.runner_failure result)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.unfinished_iff_runner_failure",
+      "type": "@Runner.unfinished_iff_runner_failure\n     : forall (A : Type) (r : Runner.outcome A),\n       ~ @Runner.finished A r <->\n       (exists failure : Runner.runner_failure,\n          @Runner.outcome_view A r = @inr (Runner.semantic_result A) Runner.runner_failure failure)",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.executes_result",
+      "type": "@Runner.executes_result\n     : forall (MN : Type -> Type) (Seed : Type),\n       (forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed) ->\n       forall A : Type,\n       PTreeDefinition.ptree Sum.void1 MN A -> Seed -> Runner.semantic_result A -> Seed -> Prop",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.run_result_iff",
+      "type": "@Runner.run_result_iff\n     : forall (MN : Type -> Type) (Seed : Type)\n         (sample : forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed)\n         (A : Type) (t : PTreeDefinition.ptree Sum.void1 MN A) (seed : Seed)\n         (result : Runner.semantic_result A) (seed' : Seed),\n       @Runner.executes_result MN Seed sample A t seed result seed' <->\n       (exists fuel : nat,\n          @Runner.run MN Seed sample A fuel t seed =\n          (@Runner.outcome_of_view A (@inl (Runner.semantic_result A) Runner.runner_failure result),\n           seed'))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.Outcome.typed_loss_path",
+      "type": "Outcome.typed_loss_path\n     : @Runner.executes_result option unit (@Outcome.missing_sampler) bool Outcome.request tt\n         (@Runner.ResultLost bool) tt",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.Outcome.entropy_failure_has_no_completed_path",
+      "type": "Outcome.entropy_failure_has_no_completed_path\n     : ~\n       @Runner.executes option unit (@Outcome.empty_sampler) bool Outcome.request tt\n         (@Runner.EntropyExhausted bool) tt",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.Outcome.timeout_has_no_completed_path",
+      "type": "Outcome.timeout_has_no_completed_path\n     : ~\n       @Runner.executes option unit (@Outcome.missing_sampler) bool Outcome.request tt\n         (@Runner.Timeout bool) tt",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Execution.Outcome.typed_result_agrees_with_existing_runner",
+      "type": "@Outcome.typed_result_agrees_with_existing_runner\n     : forall (MN : Type -> Type) (Seed A : Type)\n         (sample : forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed)\n         (t : PTreeDefinition.ptree Sum.void1 MN A) (seed : Seed)\n         (result : Runner.semantic_result A) (seed' : Seed),\n       @Runner.executes_result MN Seed sample A t seed result seed' <->\n       (exists n : nat,\n          @Runner.run MN Seed sample A n t seed =\n          (@Runner.outcome_of_view A (@inl (Runner.semantic_result A) Runner.runner_failure result),\n           seed'))",
+      "assumptions": "Closed under the global context"
     }
   ],
   "state_iteration_followup": "b23c852: first forty endpoint contracts and all ten operational modules remain frozen"

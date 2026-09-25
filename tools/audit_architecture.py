@@ -21,7 +21,8 @@ def external_validation(path):
     Classify adapters before they exist so a future soundness file cannot
     silently enter the mainline through an otherwise ordinary Backend edge.
     """
-    return path.startswith(("Prob/Domain/", "Prob/FreeOmega/Validation/")) or path in {
+    return path.startswith(("Prob/Domain/", "Prob/FreeOmega/Validation/",
+                            "Execution/Validation/")) or path in {
         "Prob/Backend/Common/DomainTransport",
         "Prob/Backend/Common/CountableCoupling",
         "Prob/Backend/Common/CountableRelationalLimit",
@@ -41,7 +42,6 @@ def external_validation(path):
         "Prob/Backend/SubEnumQ/FreeOmega/GenericValidation",
         "Prob/Backend/SubEnumQ/FreeOmega/RelationalValidation",
         "Eq/Backend/StableHittingDomainSubEnumQ",
-        "Execution/Validation/SubEnumQ",
     }
 
 
@@ -68,6 +68,8 @@ def ownership(path):
         return "Core", "syntax", "primitive syntax/combinators only"
     if path == "Execution/Validation/SubEnumQ":
         return "Execution/Validation", "external validation", "one-way runner-to-hitting correspondence; never an executable dependency"
+    if path.startswith("Execution/Validation/"):
+        return "Execution/Validation", "execution validation", "conditional sampler/replay probability laws; never an executable dependency"
     if path.startswith("Execution/Backend/"):
         return "Execution/Backend", "concrete", "executable native sampling; no external validation or recursive frontier"
     if path.startswith("Execution/"):
@@ -147,6 +149,8 @@ def permitted(module, dependency):
         return under("Core")
     if module == "Execution/Validation/SubEnumQ":
         return under("Core", "Execution", "Prob", "Eq")
+    if module.startswith("Execution/Validation/"):
+        return under("Core", "Execution", "Prob/Backend/Common", "Prob/Backend/EnumQ", "Prob/Backend/SubEnumQ")
     if module.startswith("Execution/Backend/"):
         return under("Core", "Execution", "Prob/Backend/Common", "Prob/Backend/EnumQ", "Prob/Backend/SubEnumQ")
     if module.startswith("Execution/"):

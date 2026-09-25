@@ -92,10 +92,10 @@ Require PTree.Examples.StateRewrite.
 Require PTree.Execution.Backend.FiniteDistribution.
 Require PTree.Execution.Backend.RationalTickets.
 Require PTree.Execution.Backend.SubEnumQ.
-Require PTree.Execution.Backend.UniformReplay.
 Require PTree.Execution.ITreeFold.
 Require PTree.Execution.Runner.
 Require PTree.Execution.Validation.SubEnumQ.
+Require PTree.Execution.Validation.UniformReplay.
 Require PTree.Interp.Algebra.Computation.
 Require PTree.Interp.Algebra.Exception.
 Require PTree.Interp.Algebra.Reader.
@@ -327,6 +327,7 @@ Require PTree.Regression.Backend.SubEnumRRelational.
 Require PTree.Regression.Backend.SubEnumRShared.
 Require PTree.Regression.Backend.UnifiedFrontierEnumQ.
 Require PTree.Regression.Execution.FiniteDistribution.
+Require PTree.Regression.Execution.Outcome.
 Require PTree.Regression.Execution.RationalTickets.
 Require PTree.Regression.Fixtures.FreeOmegaSamples.
 Require PTree.Regression.Infrastructure.ArchitectureBoundaries.

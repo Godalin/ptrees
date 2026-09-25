@@ -1,5 +1,73 @@
 # Standard effects and executable PTree interpretation
 
+## Execution roles and public terminology
+
+`Core.fold handle sample` is the principal interpretation/execution abstraction:
+it consumes a PTree into a target with Monad/MonadIter operations, sending
+`Vis e` to `handle e` and `Prob mu` to `sample mu`. Those operations alone
+do not imply behavioral preservation. `Execution.ITreeFold` supplies an actual
+lawful target and proves Ret/Tau/Vis/Prob equations modulo ITree `eutt`.
+
+The closed-tree runner is a concrete execution backend, not a competing
+probability semantics. Eliminate external effects with `interp` first and run
+the resulting `ptree void1 MN A`, or fold directly into an effectful target.
+Runner does not accept a Vis handler. This architecture does **not** claim that
+the existing runner is itself a lawful MonadIter instance or that a fold/runner
+correspondence theorem has been proved.
+
+The unchanged runtime `outcome` now has a lossless typed view:
+
+| Runtime outcome | `outcome_view` | Role |
+| --- | --- | --- |
+| `Returned a` | `inl (ResultReturned a)` | Completed program result |
+| `Lost` | `inl ResultLost` | Completed missing-mass branch relative to the sampler |
+| `Timeout` | `inr FuelExhausted` | Finite execution budget artifact |
+| `EntropyExhausted` | `inr EntropyUnavailable` | Source/replay artifact, including invalid tickets |
+
+`semantic_result A` contains only the first two cases; `runner_failure`
+contains only the last two. `outcome_view` / `outcome_of_view` are mutual
+inverses, and `finished` holds exactly for the semantic-result view. No old
+constructor, sampler, runner or extraction representation changes.
+`executes_result` is only a typed wrapper around the existing fuel-free
+`executes`; `run_result_iff` relates it to existence of a sufficient finite
+fuel. Neither timeout nor entropy failure is a completed operational path.
+These are finite paths, not an infinite-trace measure or a termination claim.
+
+`Execution.Validation.UniformReplay` is probability validation, not execution
+infrastructure. It proves actual replay's finite law under an explicit ideal
+history-conditional uniform entropy contract, including zero probability of
+entropy failure in that model. `Execution.Validation.SubEnumQ` connects that
+law to hitting approximants and their limit. Neither module is a runtime
+dependency; architecture checks prohibit imports from ordinary execution or
+the main reasoning library, including indirect dependency paths.
+
+No `CorrectSampler` class is introduced: any supplied deterministic sampler
+can run, while a concrete validation theorem establishes its probability law
+under stated assumptions. Host PRNG fairness remains unverified. Finite Lost
+mass is not identified with all complete-hitting missing mass (which also
+accounts for divergence); Timeout does not belong to canonical PTree semantics.
+
+### Small execution cleanup: verification
+
+Baseline: `7815fb0`. Source comparison against that baseline confirmed that
+all pre-existing Runner definitions/proofs are unchanged, and UniformReplay
+is an exact relocation apart from its role comment. Extraction sources and
+samplers are untouched; no compatibility forwarding module was retained.
+
+Local full build (including AllImports and extracted executables), 126 tool
+and execution tests, architecture/source audits and registry metadata passed.
+The 465 main compiled contracts are unchanged. The 44 existing execution
+contracts were compared unchanged; 14 axiom-free result-view/client contracts
+were added to the same group. All 28 distribution contracts passed with only
+the six UniformReplay qualified owner names relocated; their types and
+assumptions were not regenerated. No audit script or contract group was added.
+
+Joint `coqchk -norec` passed for Runner, UniformReplay, the SubEnumQ validation
+bridge and the Outcome/FiniteDistribution regressions. This checks those five
+safe module bodies with dependencies trusted, not the whole library recursively.
+The library has 426 modules and the same two Gate M files. CI was not queried
+or changed; neither host randomness nor compiler/runtime correctness is claimed.
+
 ## Current status
 
 Implementation chain through `145a9c9`, now extended by the
@@ -305,7 +373,8 @@ Validation commands (build once before tool/executable tests):
 
 ```
 opam exec -- dune build
-python3 tools/audit_effect_execution.py --compiled
+python3 tools/audit_contracts.py --group effect_execution
+python3 tools/audit_contracts.py --group runner_distribution
 python3 tools/audit_architecture.py --check
 python3 tools/audit_soundness.py --source-only
 python3 tools/audit_assumptions.py

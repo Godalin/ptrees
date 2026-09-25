@@ -18,6 +18,9 @@ theorems are described in [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md).
 | `Eq` | Stable hitting, `pstruct`, `pstrong`, canonical `peutt` and profile selection | No Semantics/Interp dependency |
 | `Semantics` | Raw/head transitions, comparison bisimulation and MDP fragment | No Interp dependency |
 | `Interp` | Structural and behavioral interpreter theory | May consume Eq and Semantics |
+| `Execution` | Concrete closed-tree runner and lawful ITree target for generic `Core.fold` | Core/Execution only; no validating model |
+| `Execution/Backend` | Concrete samplers and finite outcome calculations | No dependency on execution validation |
+| `Execution/Validation` | Conditional replay probability laws and hitting correspondence | One-way consumer, never a runtime or ordinary reasoning dependency |
 | Top-level `PTree / Eq / PTreeFacts` | Program / relation / reasoning aggregates | Direct owner exports; no concrete backend or validating model |
 | `Examples` | Applications and program proofs | No Regression dependency |
 | `Regression` | Positive, negative, integration and capability tests | Not formal library dependencies |
@@ -175,7 +178,17 @@ adapters such as `Eq/Backend/StableHittingDomainSubEnumQ` are validation owners,
 not reasoning roots, despite their physical namespace.
 The model validates reasoning infrastructure;
 reasoning infrastructure does not assume its own validating model.
-Interpretation remains FreeOmega-qualified, not a claim about arbitrary MF.
+Interpretation's generic endpoints consume explicit model laws; see the
+[current capability map](GENERIC_CONSUMERS.md) for model-specific obligations.
+
+The same one-way boundary applies to `Execution/Validation/*`.
+`UniformReplay` validates the existing rational ticket runner under a
+history-conditional uniform entropy law; `SubEnumQ` connects it to hitting.
+Neither is part of the executable sampler or a required backend capability.
+The generic `Core.fold` owns the separate Vis-handler/Prob-sampler abstraction;
+Runner is a concrete closed-tree execution backend, not a second probability
+semantics. No fold/runner correspondence is asserted. See
+[execution roles](EFFECTS_EXECUTION.md#execution-roles-and-public-terminology).
 
 ## Internal proof facilities and tests
 

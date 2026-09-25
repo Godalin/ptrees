@@ -21,7 +21,7 @@ class ArchitectureTests(unittest.TestCase):
     def test_runner_validation_is_one_way(self):
         bridge = "Execution/Validation/SubEnumQ"
         self.assertTrue(architecture.external_validation(bridge))
-        for dep in ["Execution/Backend/UniformReplay", "Eq/Backend/StableHittingDomainSubEnumQ",
+        for dep in ["Execution/Validation/UniformReplay", "Eq/Backend/StableHittingDomainSubEnumQ",
                     "Prob/Domain/Expectation"]:
             self.assertTrue(architecture.permitted(bridge, dep))
         for owner in ["Core/PTreeDefinition", "Execution/Runner", "Execution/Backend/RationalTickets",
@@ -29,6 +29,22 @@ class ArchitectureTests(unittest.TestCase):
             self.assertFalse(architecture.permitted(owner, bridge))
         graph = {"Execution/Runner": {"Execution/Backend/Hidden"},
                  "Execution/Backend/Hidden": {bridge}, bridge: set()}
+        with self.assertRaises(AssertionError):
+            architecture.check_external_validation_boundary(graph)
+
+    def test_uniform_replay_is_validation_not_runtime(self):
+        validation = "Execution/Validation/UniformReplay"
+        self.assertEqual(architecture.ownership(validation)[:2],
+                         ("Execution/Validation", "execution validation"))
+        self.assertTrue(architecture.external_validation(validation))
+        for dep in ["Execution/Runner", "Execution/Backend/RationalTickets",
+                    "Execution/Backend/FiniteDistribution"]:
+            self.assertTrue(architecture.permitted(validation, dep))
+            self.assertFalse(architecture.permitted(dep, validation))
+        for owner in ["Examples/RationalState", "Core/Fold", "Eq/PEutt"]:
+            self.assertFalse(architecture.permitted(owner, validation))
+        graph = {"Execution/Runner": {"Execution/Backend/Hidden"},
+                 "Execution/Backend/Hidden": {validation}, validation: set()}
         with self.assertRaises(AssertionError):
             architecture.check_external_validation_boundary(graph)
 

@@ -438,6 +438,15 @@ to build the theories.
 
 ### Executable probability programs
 
+The main interpretation abstraction is `Core.fold handle sample`: visible
+effects and native sampling have separate algebras into a MonadIter target.
+The concrete runner accepts only closed trees after effect elimination.
+Its API separates completed results (`Returned`/`Lost`) from execution
+artifacts (`Timeout`/`EntropyExhausted`); ideal replay probability proofs live
+in `Execution.Validation`, not in the runtime. See the
+[execution role map](docs/EFFECTS_EXECUTION.md#execution-roles-and-public-terminology)
+for the precise theorem and trust boundaries.
+
 For **unbounded execution of an already proved sampler**, run:
 
 ```sh

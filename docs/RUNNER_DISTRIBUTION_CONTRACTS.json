@@ -23,32 +23,32 @@
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Execution.Backend.UniformReplay.fresh_uniform_entropy",
+      "name": "PTree.Execution.Validation.UniformReplay.fresh_uniform_entropy",
       "type": "UniformReplay.fresh_uniform_entropy\n     : UniformReplay.uniform_entropy\n         (fun (_ : list nat) (d : nat) => UniformReplay.uniform_indices d)",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Execution.Backend.UniformReplay.replay_prob_cons",
+      "name": "PTree.Execution.Validation.UniformReplay.replay_prob_cons",
       "type": "@UniformReplay.replay_prob_cons\n     : forall (A X : Type) (n : nat) (mu : Representation.SubEnumQ X)\n         (k : X -> PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A)\n         (i : nat) (tail : list nat),\n       @Runner.run Representation.SubEnumQ (list nat) (@RationalTickets.ticket_replay) A\n         (S n)\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.ProbF Sum.void1 Representation.SubEnumQ A\n               (PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A) X mu k\n         |} (i :: tail)%list =\n       (if ssrnat.leq (S i) (@RationalTickets.ticket_count X mu)\n        then\n         match @RationalTickets.draw_ticket X mu i with\n         | @Some _ x =>\n             @Runner.run Representation.SubEnumQ (list nat) (@RationalTickets.ticket_replay) A n\n               (k x) tail\n         | @None _ => (@Runner.Lost A, tail)\n         end\n        else (@Runner.EntropyExhausted A, tail))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Execution.Backend.UniformReplay.finite_runner_distribution",
+      "name": "PTree.Execution.Validation.UniformReplay.finite_runner_distribution",
       "type": "UniformReplay.finite_runner_distribution\n     : forall source : list nat -> nat -> list (rat.rat * nat),\n       UniformReplay.uniform_entropy source ->\n       forall (A : Type) (n : nat) (t : PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A)\n         (history : list nat)\n         (f : Runner.outcome A -> ssrnum.Num.NumDomain.sort rat.rat_rat__canonical__Num_NumDomain),\n       @UniformReplay.replay_expectation source A n t history f =\n       @FiniteDistribution.outcome_expectation A n t f",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Execution.Backend.UniformReplay.trace_distribution_mass",
+      "name": "PTree.Execution.Validation.UniformReplay.trace_distribution_mass",
       "type": "UniformReplay.trace_distribution_mass\n     : forall source : list nat -> nat -> list (rat.rat * nat),\n       UniformReplay.uniform_entropy source ->\n       forall (A : Type) (n : nat) (t : PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A)\n         (history : list nat),\n       @FiniteEnum.finite_expect rat.rat_rat__canonical__Num_NumDomain\n         (list nat)\n         (fun _ : list nat =>\n          ssralg.GRing.one\n            (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing\n               rat.rat_rat__canonical__Num_NumDomain))\n         (@UniformReplay.trace_distribution source A n t history) =\n       ssralg.GRing.one\n         (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing\n            rat.rat_rat__canonical__Num_NumDomain)",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Execution.Backend.UniformReplay.replay_no_entropy_failure",
+      "name": "PTree.Execution.Validation.UniformReplay.replay_no_entropy_failure",
       "type": "UniformReplay.replay_no_entropy_failure\n     : forall source : list nat -> nat -> list (rat.rat * nat),\n       UniformReplay.uniform_entropy source ->\n       forall (A : Type) (n : nat) (t : PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A)\n         (history : list nat),\n       @UniformReplay.replay_expectation source A n t history\n         (fun r : Runner.outcome A =>\n          match r with\n          | @Runner.EntropyExhausted _ =>\n              ssralg.GRing.one\n                (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_SemiRing\n                   rat.rat_rat__canonical__Num_NumDomain)\n          | _ =>\n              @ssralg.GRing.zero\n                (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_Nmodule\n                   rat.rat_rat__canonical__Num_NumDomain)\n          end) =\n       @ssralg.GRing.zero\n         (ssrnum.Num.NumDomain.Exports.Num_NumDomain__to__GRing_Nmodule\n            rat.rat_rat__canonical__Num_NumDomain)",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Execution.Backend.UniformReplay.trace_distribution_nonnegative",
+      "name": "PTree.Execution.Validation.UniformReplay.trace_distribution_nonnegative",
       "type": "UniformReplay.trace_distribution_nonnegative\n     : forall source : list nat -> nat -> list (rat.rat * nat),\n       UniformReplay.uniform_entropy source ->\n       forall (A : Type) (n : nat) (t : PTreeDefinition.ptree Sum.void1 Representation.SubEnumQ A)\n         (history : list nat),\n       @FiniteEnum.finite_nonnegative rat.rat_rat__canonical__Num_NumDomain\n         (list nat) (@UniformReplay.trace_distribution source A n t history)",
       "assumptions": "Closed under the global context"
     },
