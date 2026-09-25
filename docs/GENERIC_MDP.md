@@ -84,8 +84,8 @@ and guarded interpretation still support genuinely heterogeneous `E -> F`.
   is no copied SubEnumR proof or new backend hierarchy.
 - Direct MathComp instantiates generic MDP, guarded and atomic transition
   preservation. Its existing gluing premise remains explicit. The atomic MDP
-  client additionally exposes total-map as an obligation; this change does not
-  claim that all MathComp MDP backend obligations are discharged.
+  client now discharges total-map using the checked native mass theorem below;
+  this does not discharge gluing or relational-lub closure.
 - The two-file Gate M allowlist is unchanged. The new direct clients live in
   the already allowlisted regression, outside safe `AllImports` and safe kernel
   validation. Compilation of these clients is not a universe-safety claim.
@@ -125,3 +125,48 @@ endpoint. This report supersedes its statement that generic theory was unchanged
 
 No remote CI result is claimed. Gate M compilation/assumption audits remain
 explicitly distinct from normally universe-checked proofs.
+
+## Follow-up: MathComp pure-map mass preservation
+
+`Prob/Backend/MathComp/Kernel` proves `mathcomp_kernel_map_mass` for arbitrary
+carriers, arbitrary functions (not necessarily injective), and arbitrary native
+subprobability kernels:
+
+```text
+returned_mass (bind mu (ret ∘ f)) = returned_mass mu
+```
+
+The proof integrates the indicator of returned values. At the cemetery point
+both sides contribute zero; at every returned value the pure continuation
+contributes one. It requires neither gluing, totality, finite/countable support,
+nor a PTree-level assumption. `mathcomp_kernel_map_total` derives totality as an
+iff, so a pure map cannot normalize a partial distribution either.
+
+The existing Gate M `direct_atomic_mdp` now supplies this safe native fact to
+the unchanged generic theorem `MDPAtomic.mdp_state_interp_atomic`. Its explicit
+`Htotal` premise is removed. The gluing premise and the two-file unchecked
+assembly boundary are unchanged; all new probability mathematics is Gate S.
+
+Safe regressions cover a partial Bernoulli followed by a constant map (mass
+remains exactly `q`), a noninjective total map, and an empty source at zero mass.
+The existing generic-MDP contract snapshot records the two native theorems and
+these checks. Of its previous entries, only `direct_atomic_mdp` may change type;
+its logical assumptions must remain unchanged. No new audit runner is added.
+
+Follow-up local validation:
+
+- Full `dune build -j 4` passed, including AllImports and the direct client.
+- 465 central contracts and the 43 existing MathComp direct/control contracts
+  remained exact. The generic-MDP suite passed with 30 safe and 4 direct
+  contracts; only the intended direct atomic MDP type changed among old entries.
+- `Print Assumptions` for the new native facts contains the existing MathComp
+  propositional/functional extensionality and indefinite-description axioms.
+  The direct atomic MDP endpoint's logical assumptions and unsafe flags are
+  unchanged; the logical whitelist and Gate M allowlist were not modified.
+- Architecture/source-safety audits and all 124 tool tests passed.
+- Joint `coqchk -norec` passed for `Kernel` and `MathCompOrder`. This checks
+  their safe module bodies while trusting compiled dependencies, not the whole
+  library recursively; the unchecked direct client is excluded.
+
+SubEnumR native reflection and MathComp gluing/relational-limit existence remain
+separate future work. CI was not consulted for this follow-up.

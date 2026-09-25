@@ -1182,6 +1182,33 @@ Definition mathcomp_kernel_total {A}
     (mu : MathCompKernelMeasure A) : Prop :=
   mathcomp_kernel_root mu (@mc_returned A) = 1.
 
+(** Pure value maps preserve returned mass, even for partial measures and
+    noninjective maps. No coupling/gluing hypothesis is needed. *)
+Lemma mathcomp_kernel_map_mass {A B}
+    (mu : MathCompKernelMeasure A) (f : A -> B) :
+  mathcomp_kernel_root
+    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret (f x)))
+    (@mc_returned B) =
+  mathcomp_kernel_root mu (@mc_returned A).
+Proof.
+  rewrite mathcomp_kernel_root_bind.
+  transitivity (\int[mathcomp_kernel_root mu]_x
+    (indic (@mc_returned A) x : R)%:E).
+  - apply: eq_integral=> x _. destruct x as [|a].
+    + by rewrite /= /mathcomp_bottom_measure /dirac indicE
+        /mc_returned /=.
+    + by rewrite /= mathcomp_kernel_root_ret /dirac indicE
+        /mc_returned /=.
+  - by rewrite integral_indic // setIT.
+Qed.
+
+Lemma mathcomp_kernel_map_total {A B}
+    (mu : MathCompKernelMeasure A) (f : A -> B) :
+  mathcomp_kernel_total
+    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret (f x))) <->
+  mathcomp_kernel_total mu.
+Proof. by rewrite /mathcomp_kernel_total mathcomp_kernel_map_mass. Qed.
+
 Lemma mathcomp_bernoulli_total (q : R) :
   mathcomp_kernel_total (mathcomp_bernoulli q).
 Proof.

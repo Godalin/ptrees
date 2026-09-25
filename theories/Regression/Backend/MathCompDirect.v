@@ -425,8 +425,8 @@ Qed.
 End FullIterationUniformity.
 
 (** The SAME generic MDP/atomic theorems at MN = MF. These clients add no
-    unchecked probability mathematics. Gluing and, for MDP atomicity, the
-    explicit total-map obligation remain visible in their signatures. *)
+    unchecked probability mathematics. Gluing remains explicit; total-map is
+    discharged by the universe-checked native returned-mass theorem. *)
 From PTree.Interp Require Import MDP Atomic MDPAtomic.
 From PTree.Semantics Require Import MDPFragment TreeTransitionBisim.
 Section GenericMDPClients.
@@ -471,13 +471,12 @@ Proof.
 Qed.
 
 Example direct_atomic_mdp
-    (Htotal : forall mu : M (stable_head E M A),
-      @sem_total M NI NO _ mu -> @sem_total M NI NO _ (Atomic.atomic_map atom mu))
     (t : ptree E M A) :
   @mdp_state E M M NI NC MX NO A t ->
   @mdp_state E M M NI NC MX NO A (PTree.interp a t).
 Proof.
-  exact (MDPAtomic.mdp_state_interp_atomic (FI := NI) (FO := NO) (MX := MX)
-    (@mathcomp_kernel_lub_limit_proper R) (atom := atom) Htotal (t := t)).
+  apply (MDPAtomic.mdp_state_interp_atomic (FI := NI) (FO := NO) (MX := MX)
+    (@mathcomp_kernel_lub_limit_proper R) (atom := atom)).
+  intros mu Hmu. exact (proj2 (mathcomp_kernel_map_total _ _) Hmu).
 Qed.
 End GenericMDPClients.
