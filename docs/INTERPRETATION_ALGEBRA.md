@@ -48,6 +48,17 @@ The base embedding uses an explicit classical convergence/divergence split;
 its compiled probability requirements are weaker than unrestricted interp's.
 These are no longer open source-bridge obligations.
 
+## Full PTree target now available
+
+`Interp/IterationUniform.ptree_peutt_iteration_uniform` proves the complete
+Eq1-wide law using a direct restart machine, without the earlier auxiliary
+event-response universe constraint. Its FreeOmega specialization is consumed
+by the unchanged State/Exception fold theorems with an actual PTree target.
+ReaderT, WriterT and ExceptT also inherit full uniformity. These clients are
+checked jointly after safe AllImports, including a whole PTree as loop state.
+See [direct iteration](DIRECT_ITERATION.md). This does not establish the
+separate arbitrary-target Reader/Writer commuting squares below.
+
 ## Deliberately not claimed
 
 1. **Arbitrary-target Reader/Writer commuting.** Existing interp-based
@@ -59,19 +70,10 @@ These are no longer open source-bridge obligations.
    desired commuting conclusion nor adds a theorem-level capability class.
 2. **Full iteration-law inheritance.** The new proofs establish uniformity,
    not a blanket assertion of every Conway/Elgot axiom for every transformer.
-3. **Full PTree-target iteration interface.** Eventful behavioral congruence
-   is now proved without a generator-closure premise; see
-   [eventful iteration](EVENTFUL_ITERATION.md). Explicit PTree MonadLawsE,
-   specified-carrier uniformity and finite Tau stuttering are also proved.
-   However the protocol proof's universe constraints prevent its packaging
-   into the full Eq1-wide iteration_uniform interface in actual fold clients.
-   This boundary is tested, not bypassed; see
-   [iteration algebra](ITERATION_ALGEBRA.md). State/Exception fold theorems
-   remain conditional, and their PTree-target instantiation is not claimed.
-4. **Additional effect interfaces.** New public local/catch operations,
+3. **Additional effect interfaces.** New public local/catch operations,
    arbitrary effect-order interchange, and generic totality-conditioned
    sample erasure are not added. No synthetic Local/Catch event is introduced.
-5. **Automatic public re-export.** New transformer/fold modules are opt-in;
+4. **Automatic public re-export.** New transformer/fold modules are opt-in;
    facade selection can follow actual client needs, without export-order
    shadowing or competing global instances.
 

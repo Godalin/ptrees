@@ -402,3 +402,24 @@ Proof.
     (@mathcomp_relational_zero R) Hlimit).
 Qed.
 End BehavioralIterationAlgebra.
+
+(** Full Eq1-wide uniformity from the direct machine, not the protocol
+    proof. Mathematical premises and the existing Gate M boundary remain. *)
+From PTree.Interp Require Import IterationUniform.
+Section FullIterationUniformity.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E : Type -> Type}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Variable Hlimit : relational_lub NO.
+
+Example direct_full_uniformity_of_relational_lub :
+  @iteration_uniform (ptree E M) Monad_ptree MonadIter_ptree
+    (ptree_peutt_eq1 (FI := NI)).
+Proof.
+  exact (ptree_peutt_iteration_uniform (@mathcomp_relational_mixed_bind R)
+    (@mathcomp_relational_zero R) Hlimit).
+Qed.
+End FullIterationUniformity.

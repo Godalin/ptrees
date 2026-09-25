@@ -80,6 +80,8 @@ def check_new(sources):
         assert token in reg, token
 
 def previous_sources(sources):
+    from audit_direct_iteration import previous_sources as before_direct
+    sources = before_direct(sources)
     if not (NEW & set(sources)):
         return sources
     check_new(sources)
@@ -91,6 +93,8 @@ def previous_sources(sources):
     return result
 
 def check_source(sources):
+    from audit_direct_iteration import previous_sources as before_direct
+    sources = before_direct(sources)
     old = {p for p in subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', BASELINE],
            cwd=ROOT, text=True).splitlines() if p.endswith('.v')}
     assert set(sources) == old | NEW, 'Unapproved theory addition/deletion'

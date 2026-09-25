@@ -4,6 +4,11 @@ Baseline: `d864423b`. This is an additive consumer layer over the existing
 generic bind, structural bridge and eventful iteration proofs. It is **not**
 a completed arbitrary-target fold/Elgot interface.
 
+Update: the subsequent [direct-machine proof](DIRECT_ITERATION.md) fills the
+full PTree `iteration_uniform` interface and instantiates actual State/Exception
+fold clients. The protocol-only limitation documented below remains a checked
+fact about that older proof, not a remaining obstruction to these clients.
+
 ## Completed endpoints
 
 Opt in explicitly:
@@ -63,14 +68,14 @@ transparency. It is **PTree-specific**: it is not a new stuttering axiom for
 arbitrary MonadIter targets, nor a theorem about every possible inserted
 effect or arbitrary rescheduling.
 
-## Important open boundary: full iteration_uniform packaging
+## Protocol-only boundary: full iteration_uniform packaging
 
 The existing `Core/IterationLaws.iteration_uniform` quantifies over the
 entire input universe of the upstream, monomorphic Eq1 interface. A theorem
 for separately instantiated carriers is not automatically a value of this
 stronger interface.
 
-The current eventful iteration proof constructs an auxiliary event with
+The original protocol-based eventful iteration proof constructs an auxiliary event with
 response type `I+A`. Consequently its universe constraints put the loop
 state/result types in the PTree event-response universe. In the actual
 joint client context, lifting this proof to the entire Eq1 domain is rejected
@@ -90,12 +95,12 @@ distinction; the Python audit also reruns the attempted definition and
 requires the actual error to be **universe inconsistency**, not a missing
 name, wrong arity or missing instance.
 
-This is a limitation of the current proof/interface combination, **not**
+This is a limitation of that proof/interface combination, **not**
 a mathematical counterexample to PTree uniformity, and not a proof that no
-other checked proof can fill the interface. The natural next investigation
-is a direct iteration machine/adequacy argument that does not place the
-iteration state in an auxiliary Vis response. A redesign of the syntax,
-upstream interfaces, or additional checker relaxation has not been attempted.
+other checked proof can fill the interface. That alternative direct iteration
+machine/adequacy argument has now been completed: it never places iteration
+state in an auxiliary Vis response. No syntax or upstream-interface redesign,
+or additional checker relaxation, was needed.
 
 Therefore:
 
@@ -105,7 +110,8 @@ Therefore:
 | Specified-carrier pure-map uniformity | proved |
 | PTree fixed point and state-dependent finite Tau stuttering | proved |
 | Full Eq1-wide iteration_uniform from this protocol proof | rejected; checked boundary |
-| State/Exception generic fold square instantiated with this PTree target | not established |
+| Full Eq1-wide iteration_uniform from the direct machine | proved; see DIRECT_ITERATION.md |
+| State/Exception generic fold square instantiated with this PTree target | proved by the direct-machine package |
 | Arbitrary-target Reader/Writer commuting | remains open |
 | All Conway/Elgot iteration laws | not claimed |
 
@@ -152,7 +158,7 @@ rather than in an isolated context that could miss this kind of universe
 constraint. The negative full-interface probe is checked there too.
 Local validation results are recorded below; CI is excluded by request.
 
-## Local validation completed
+## Original checkpoint validation (88e9cf2)
 
 - Full `opam exec -- dune build`, including safe AllImports and extraction
   targets; existing extraction warnings are unchanged.
