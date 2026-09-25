@@ -96,6 +96,11 @@
       "context": "gate-m-joint"
     },
     {
+      "id": "mdp_correspondence",
+      "snapshot": "docs/MDP_CORRESPONDENCE_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
       "id": "rational_tickets",
       "snapshot": "docs/RATIONAL_TICKETS_CONTRACTS.json",
       "context": "owners"
@@ -346,6 +351,46 @@
     ],
     "PTree.Examples.StateRewrite.rewrite_then_handle": [
       "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Semantics.Backend.MDPEmbeddingSubEnumQ.subenumQ_mdp_tree_trans_bisim_iff": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.LabelledMDP.labelled_transition_full_abstraction": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.LabelledMDP.distinct_states_encoded_tree_trans_bisimilar": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.LabelledMDP.different_successor_probabilities_not_tree_trans_bisimilar": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.MDPEmbedding.counter_transition_full_abstraction": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description",
       "RelationalChoice.relational_choice"
     ]
   }

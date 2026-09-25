@@ -10,6 +10,7 @@ Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Repr
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import UnifiedFrontier PEutt.
 From PTree.Semantics Require Import HeadTransition MDPFragment MDPEmbedding.
+From PTree.Semantics Require Import TreeTransitionBisim.
 From PTree.Semantics.Backend Require Import MDPEmbeddingSubEnumQ.
 From PTree.Regression.Backend Require Import SubEnumQRegression.
 Set Implicit Arguments.
@@ -67,6 +68,13 @@ Proof. exact (subenumQ_encode_step_iff (D := counter_mdp) n a out). Qed.
 Example counter_full_abstraction n m :
   mdp_bisim (D := counter_mdp) n m <-> pb (encode n) (encode m).
 Proof. exact (subenumQ_mdp_peutt_iff (D := counter_mdp) n m). Qed.
+
+(** The new correspondence is not limited to finite state carriers. *)
+Example counter_transition_full_abstraction n m :
+  mdp_bisim (D := counter_mdp) n m <->
+  @tree_trans_bisim (mdpE unit bool) SubEnumQ MF FI FC
+    FreeOmegaMixedMeasure FO unit unit eq (encode n) (encode m).
+Proof. exact (subenumQ_mdp_tree_trans_bisim_iff (D := counter_mdp) n m). Qed.
 
 (** Intentional observability audit: source states are unlabelled, all
     actions are always enabled, and execution never terminates. Thus this

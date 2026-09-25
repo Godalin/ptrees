@@ -15,6 +15,8 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.NativeCoupling.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
 From PTree.Semantics Require Import HeadTransition MDPFragment MDPEmbedding.
+From PTree.Semantics Require Import TreeTransitionBisim.
+From PTree.Semantics.FreeOmega Require Import MDPCoincidenceFreeOmega.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -177,6 +179,20 @@ Qed.
 Theorem subenumQ_mdp_peutt_iff s t : mdp_bisim (D := D) s t <-> pb (encode s) (encode t).
 Proof.
   split; [apply (mdp_bisim_peutt_sound (FI := FI) (FO := FO))|apply subenumQ_peutt_mdp_reflect].
+Qed.
+
+(** Classical correspondence on encoded labelled MDPs. Native reflection
+    gives the first iff; fragment membership discharges BOTH premises of
+    the second. No finite-state or injective-encoding premise is required.
+    This does not identify the two tree relations outside the MDP fragment. *)
+Theorem subenumQ_mdp_tree_trans_bisim_iff s t :
+  mdp_bisim (D := D) s t <->
+  @tree_trans_bisim (mdpE (mdp_observations D) (mdp_actions D))
+    SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq (encode s) (encode t).
+Proof.
+  rewrite subenumQ_mdp_peutt_iff.
+  apply (free_mdp_state_peutt_tree_trans_iff (NI := SubEnumQ_SemanticMeasure)
+    (NO := SubEnumQ_SemanticOmega)); apply subenumQ_encode_mdp_state.
 Qed.
 
 Corollary subenumQ_encoded_head_peutt_iff s t :

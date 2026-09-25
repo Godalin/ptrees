@@ -451,6 +451,7 @@ are complete; see [current effects status](docs/EFFECTS_EXECUTION.md).
 | `free_mdp_state_peutt_tree_trans_iff` | FreeOmega supplies exact Dirac AE structurally, no new global instance |
 | `subenumQ_encode_mdp_state` | labelled total MDP encodes into the fragment |
 | `subenumQ_mdp_head_bisim_iff`, `subenumQ_mdp_peutt_iff` | full correspondence on encoded MDPs, using proved native coupling reflection |
+| `subenumQ_mdp_tree_trans_bisim_iff` | final composed iff on encoded labelled SubEnumQ MDPs; both fragment premises discharged by encoding |
 
 The FreeOmega coincidence endpoints use native Core, AELift, CouplingAE,
 CountableAE and Omega capabilities, not a native relational bind law.
@@ -459,10 +460,14 @@ the generic theorem and finite-backend clients are unchanged.
 The reverse generic proof needs neither order/existence laws nor classical
 witness choice; the full iff inherits them from general inclusion.
 
-The final composed statement
+The final composed statement is now packaged as
+`subenumQ_mdp_tree_trans_bisim_iff`:
 `mdp_bisim s t <-> tree_trans_bisim eq (encode s) (encode t)`
-has **not** yet been packaged as a theorem. It is the reserved next theory
-step, not a claim of this cleanup milestone.
+on `SubEnumQ` with the canonical observable FreeOmega frontier. It simply
+combines the existing encoding iff, fragment membership and coincidence.
+No finite-state, encoding-injectivity or new semantic premise is added.
+Labelled positive/negative and infinite-state clients are checked; see
+[the correspondence endpoint and assumptions](docs/MDP_CORRESPONDENCE.md).
 
 `strictness_pair_outside_joint_fragment` proves that the strictness pair
 cannot **both** satisfy the fragment premises, not that each was separately
@@ -571,8 +576,7 @@ The maintained artifact does **not** claim:
 - that raw EnumQ enforces native probability, or that AST follows from
   a well-formedness contract;
 - strictness of transition inclusion for every abstract backend;
-- reconstruction of every `mdp_state` as an encoded textbook MDP;
-- the final MDP-encoding-to-tree-transition corollary before it is proved.
+- reconstruction of every `mdp_state` as an encoded textbook MDP.
 
 For no-Prob conservativity, concrete FreeOmega support and mass separation
 already rule out the generic universal-lifting countermodel, but a maintained

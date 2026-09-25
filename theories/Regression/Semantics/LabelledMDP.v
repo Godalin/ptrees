@@ -10,6 +10,7 @@ Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Meas
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq Require Import PEutt.
 From PTree.Semantics Require Import HeadTransition MDPFragment MDPEmbedding.
+From PTree.Semantics Require Import TreeTransitionBisim.
 From PTree.Semantics.Backend Require Import MDPEmbeddingSubEnumQ.
 From PTree.Regression.Backend Require Import SubEnumQRegression.
 Set Implicit Arguments.
@@ -62,6 +63,8 @@ Local Notation ehead := (mdp_encode_head (D := labelled_mdp)).
 Local Notation hb := (@head_bisim (mdpE outcome_label unit) SubEnumQ MF FI FC
   FreeOmegaMixedMeasure FO unit unit eq).
 Local Notation pb := (@peutt (mdpE outcome_label unit) SubEnumQ MF FI FC
+  FreeOmegaMixedMeasure FO unit unit eq).
+Local Notation tb := (@tree_trans_bisim (mdpE outcome_label unit) SubEnumQ MF FI FC
   FreeOmegaMixedMeasure FO unit unit eq).
 
 Example labelled_encoding_in_fragment s :
@@ -168,3 +171,24 @@ Example labelled_full_abstraction s t :
   (source_bisim s t <-> hb (ehead s) (ehead t)) /\
   (source_bisim s t <-> pb (encode s) (encode t)).
 Proof. split; [apply subenumQ_mdp_head_bisim_iff|apply subenumQ_mdp_peutt_iff]. Qed.
+
+(** The composed endpoint preserves actual labelled successor probabilities:
+    the positive pair has different states/kernels, while the negative pair
+    has the same current label but different next-label probabilities. *)
+Example labelled_transition_full_abstraction s t :
+  source_bisim s t <-> tb (encode s) (encode t).
+Proof. apply subenumQ_mdp_tree_trans_bisim_iff. Qed.
+
+Example distinct_states_encoded_tree_trans_bisimilar :
+  tb (encode StartHalf) (encode StartClone).
+Proof.
+  apply (proj1 (subenumQ_mdp_tree_trans_bisim_iff (D := labelled_mdp) StartHalf StartClone)).
+  apply distinct_states_same_class_probabilities.
+Qed.
+
+Example different_successor_probabilities_not_tree_trans_bisimilar :
+  ~ tb (encode StartHalf) (encode StartBiased).
+Proof.
+  intro H. apply different_successor_probabilities_not_bisimilar.
+  exact (proj2 (subenumQ_mdp_tree_trans_bisim_iff (D := labelled_mdp) StartHalf StartBiased) H).
+Qed.
