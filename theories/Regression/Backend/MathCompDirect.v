@@ -341,3 +341,31 @@ Proof.
     (@mathcomp_relational_mixed_bind R) (@mathcomp_relational_zero R) Hlimit).
 Qed.
 End RelationalConsumers.
+
+(** Eventful behavioral congruence, not the entry-only closure rule above.
+    Only direct assembly is unchecked. Gluing and relational-lub remain
+    explicit mathematical premises; no claim that they are discharged. *)
+From PTree.Interp Require Import Iteration.
+Section BehavioralIteration.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E : Type -> Type} {I J A B : Type}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Variable Hlimit : relational_lub NO.
+
+Example direct_behavioral_iter_of_relational_lub
+    (step1 : I -> ptree E M (I+A)) (step2 : J -> ptree E M (J+B))
+    (SI : I -> J -> Prop) (RR : A -> B -> Prop) :
+  (forall i j, SI i j -> @peutt E M M NI NC MX NO (I+A) (J+B)
+    (pstruct_iter_sum_rel SI RR) (step1 i) (step2 j)) ->
+  forall i j, SI i j -> @peutt E M M NI NC MX NO A B RR
+    (PTree.iter step1 i) (PTree.iter step2 j).
+Proof.
+  apply (peutt_iter_eventful_rel (@mathcomp_relational_mixed_bind R)
+    (@mathcomp_relational_zero R) Hlimit).
+Qed.
+End BehavioralIteration.

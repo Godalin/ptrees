@@ -9,6 +9,17 @@ does not imply a successful remote CI run.
 
 ## Frozen theory and maintained validation
 
+Eventful behavioral iteration now has a generic heterogeneous congruence:
+`Interp/Iteration.peutt_iter_eventful_rel` lifts stepwise `peutt` under the
+sum of arbitrary state/return relations to `peutt` of the actual `PTree.iter`.
+It needs no no-event, termination, guarding or generator-closure premise.
+It reuses handler-machine adequacy under the existing relational-limit
+probability profile; FreeOmega discharges that profile, while direct
+MathComp still retains gluing and relational-lub premises. See
+[eventful iteration](docs/EVENTFUL_ITERATION.md). Source ITree `eutt`
+preservation and source-interpreter compatibility are also established;
+the converse no-Prob conservativity direction remains separate.
+
 Relational omega limits now have a proved external countable-support theorem
 for arbitrary relations, and a generic sufficient theorem for increasing
 joint chains, also instantiated by normally checked native MathComp. A finite
@@ -325,6 +336,7 @@ still quantify over measure-law records.
 | `pstruct_iter_natural`, `pstruct_iter_codiagonal` | structural iteration identities with canonical peutt endpoints |
 | `peutt_iter_rel` | heterogeneous fusion under structural step relations |
 | `peutt_iter_behavioral_rel` | behavioral step fusion for eventless unbounded loops |
+| `Interp.Iteration.peutt_iter_eventful_rel` | generic heterogeneous behavioral step congruence, including visible and nonreturning steps, under the handler-machine relational-limit profile |
 
 `PTreeFacts.v` exposes generic and selected canonical-model theorem owners.
 All maintained
@@ -347,8 +359,10 @@ handlers and heterogeneous source results. The old fixed-handler theorem
 is now its specialization. FreeOmega discharges these probability obligations;
 native MathComp's unrestricted relational-lub obligation remains open.
 Guarded interpretation remains a useful sufficient route with different,
-more local assumptions. Eventful behavioral iter still has its separately
-documented generator-closure boundary; this result does not remove it.
+more local assumptions. Eventful behavioral iter now reuses that machine
+adequacy with entry/exit/active-step configurations; the stronger probability
+profile yields step congruence without a caller-supplied generator closure.
+The older, weaker-profile conditional rule remains available unchanged.
 See [handler calculus](docs/HANDLER_CALCULUS.md) for precise signatures,
 public clients and retained limits (notably arbitrary-target fold laws).
 
@@ -537,8 +551,8 @@ The maintained artifact does **not** claim:
 
 - a probability measure on infinite traces, conditioning/MDP schedulers,
   general WP calculus, temporal logic or probabilistic metrics;
-- full arbitrary-effectful-handler peutt preservation without
-  `interp_vis_fusion`, or unrestricted eventful behavioral iteration fusion;
+- arbitrary-handler or eventful behavioral iter preservation for a backend
+  that has not supplied the stated probability-level relational-limit laws;
 - exact no-Prob `peutt <-> ITree.eutt` from the generic positive interface;
 - quotient-to-native coupling reflection for every backend;
 - an additive interpretation of arbitrary non-increasing FreeOmega Lub terms;
@@ -550,8 +564,9 @@ The maintained artifact does **not** claim:
 
 For no-Prob conservativity, concrete FreeOmega support and mass separation
 already rule out the generic universal-lifting countermodel, but a maintained
-ITree embedding, pure-tree zero/Dirac hitting classification (including spin),
-and dependent visible-head inversion into eutt remain unproved.
+ITree embedding and the forward `eutt -> peutt` direction now exist, including
+pure-tree zero/Dirac hitting classification and spin. The reverse direction
+and dependent visible-head inversion into source eutt remain separate work.
 
 Core semantic definitions remain unchanged by the layout cleanup and the
 subsequent universe repair of two legacy regression backends. Internal

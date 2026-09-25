@@ -379,17 +379,14 @@ The maintained artifact establishes:
   executable rational examples are being migrated
   to the bounded carrier without changing the generic behavioral theory.
 
-Two stronger statements are intentionally not claimed.  The remaining
-arbitrary-effectful-handler premise is now isolated as
-`interp_vis_fusion`; `peutt_interp_of_vis_fusion`
-derives full preservation once that one collapsed handled-`Vis` segment is
-supplied.  Ordinary up-to-bind compatibility cannot discharge it without an
-unguarded recursive use after the handler returns internally.  Likewise,
-the exact no-`Prob` correspondence with ITree `eutt` still requires the
-pure-tree hitting classification and dependent visible-head inversion
-described in [`THEORY_STATUS.md`](THEORY_STATUS.md).  The existing generic
-measure interface is deliberately not strengthened with representation-
-specific separation axioms merely to state that correspondence.
+Arbitrary-handler preservation and heterogeneous eventful behavioral iter
+congruence are now proved under the existing probability-level relational-limit
+profile, without a caller-supplied fusion/generator-closure premise. See
+[`EVENTFUL_ITERATION.md`](docs/EVENTFUL_ITERATION.md) for the iter theorem,
+its explicit backend requirements and logical assumptions. The source ITree
+bridge preserves `eutt`; the reverse no-`Prob` conservativity direction remains
+separate. The generic measure interface is not strengthened with
+representation-specific separation axioms to claim that converse.
 
 ## Meta
 

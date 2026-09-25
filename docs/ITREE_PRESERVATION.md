@@ -129,10 +129,11 @@ consume this adapter and retain their original snapshots.
 
 ## Remaining work
 
-The next substantive theoretical question is arbitrary **eventful behavioral
-iter congruence**. This increment proves source eutt congruence and source
-interp compatibility; it does not turn the existing PTree generator-closure
-iteration theorem into unconditional behavioral step congruence.
+At this checkpoint the next question was arbitrary **eventful behavioral
+iter congruence**. The subsequent [eventful iteration increment](EVENTFUL_ITERATION.md)
+now proves it through the generic handler machine. It does not depend on this
+source-ITree theorem or its classical head-existence split. The old
+generator-closure iteration theorem remains unchanged.
 
 Arbitrary-target Reader/Writer commuting, optional local/catch/listen/pass,
 and further public export selection remain deferred. No CI work is included.

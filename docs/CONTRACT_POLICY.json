@@ -81,6 +81,19 @@
     "theories/Eq/Backend/SubEnumR.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From mathcomp Require Import reals. From PTree.Prob.Backend.SubEnumR Require Export Representation. From PTree.Prob.Backend.SubEnumR Require Import Measure Coupling Omega. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. #[global] Instance SubEnumR_CanonicalBehavior (R : realType) : CanonicalBehavior (SubEnumR R) := @observable_free_omega_behavior (SubEnumR R) (SubEnumR_SemanticMeasure R) (SubEnumR_SemanticOmega R)."
   },
   "regressions": {
+    "theories/Regression/Semantics/EventfulIteration.v": [
+      "heterogeneous_steps",
+      "heterogeneous_eventful_iteration",
+      "sampled_eventful_iteration",
+      "partial_eventful_iteration",
+      "probability_algebra_inside_iteration",
+      "silent_endless_iteration",
+      "infinite_active_step",
+      "entry_candidate_excludes_residual",
+      "real_sampled_eventful_iteration",
+      "real_heterogeneous_iteration",
+      "high_eventful_iteration"
+    ],
     "theories/Regression/Semantics/ITreePreservation.v": [
       "service_source_eutt",
       "embedded_infinite_service",
@@ -984,7 +997,8 @@
       "direct_eventful_iter",
       "direct_handler_guarded",
       "direct_guarded_interp",
-      "direct_guarded_tau"
+      "direct_guarded_tau",
+      "direct_behavioral_iter_of_relational_lub"
     ],
     "theories/Regression/Backend/MathCompOmega.v": [
       "increasing_has_actual_lub",
