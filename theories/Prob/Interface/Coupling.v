@@ -33,6 +33,41 @@ Proof.
   intros x y Hxy. exact I.
 Qed.
 
+(** Same-carrier map reflection is derived relational algebra, not a new
+    backend capability. Neither decoder need be injective. The right unit
+    equation is explicit because [SemanticMeasureBindLaws] does not include
+    it. This does NOT reflect a lift across a distinct native/frontier bridge. *)
+Section MapReflection.
+Context {S : Type -> Type}
+  `{SI : SemanticMeasure S} `{SC : @SemanticMeasureCoreLaws S SI}
+  `{SB : @SemanticMeasureBindLaws S SI}.
+Hypothesis Hret : forall A (mu : S A), sem_eq (sem_bind mu sem_ret) mu.
+
+Lemma sem_lift_map_graph {A B} (mu : S A) (f : A -> B) :
+  sem_lift (fun x y => y = f x) mu
+    (sem_bind mu (fun x => sem_ret (f x))).
+Proof.
+  eapply sem_lift_proper_l; [apply Hret|].
+  eapply sem_lift_bind.
+  - apply sem_lift_refl. intro x. reflexivity.
+  - intros x y ->. apply sem_lift_ret. reflexivity.
+Qed.
+
+Theorem sem_lift_map_reflect {X Y A B} (mu : S X) (nu : S Y)
+    (f : X -> A) (g : Y -> B) (T : A -> B -> Prop) :
+  sem_lift T (sem_bind mu (fun x => sem_ret (f x)))
+    (sem_bind nu (fun y => sem_ret (g y))) ->
+  sem_lift (fun x y => T (f x) (g y)) mu nu.
+Proof.
+  intro H.
+  pose proof (sem_lift_comp (sem_lift_map_graph mu f) H) as Hleft.
+  pose proof (sem_lift_comp Hleft
+    (sem_lift_sym (sem_lift_map_graph nu g))) as Hboth.
+  eapply sem_lift_mono; [|exact Hboth].
+  intros x y [b [[a [Ha Hab]] Hb]]. subst a b. exact Hab.
+Qed.
+End MapReflection.
+
 (** A coupling can be replaced by one supported on predicates that hold
     almost everywhere in its two marginals.  This is the standard bridge
     from measure-theoretic AE invariants to pointwise relational coinduction;

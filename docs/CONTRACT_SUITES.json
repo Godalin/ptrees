@@ -431,6 +431,10 @@
     "PTree.Regression.Probability.SubEnumRNativeReflection.validated_mdp_tree_trans_bisim_iff": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Backend.MathCompDirect.direct_mdp_tree_trans_bisim_iff": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
     ]
   }
 }

@@ -480,3 +480,86 @@ Proof.
   intros mu Hmu. exact (proj2 (mathcomp_kernel_map_total _ _) Hmu).
 Qed.
 End GenericMDPClients.
+
+(** Classical MDP correspondence uses the existing generic proof in both
+    directions. No relational-lub premise, external validation model, or
+    native/frontier reflection assumption remains: native map reflection is
+    proved in Gate S. Gluing and the Gate M universe boundary remain explicit. *)
+From PTree.Semantics Require Import MDPEmbedding MDPReflection HeadTransition.
+From PTree.Prob.Interface Require Import AE.
+Section DirectMDPCorrespondence.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Variable D : MDP M.
+Local Notation E := (mdpE (mdp_observations D) (mdp_actions D)).
+Local Notation encode := (mdp_encode (D := D)).
+Local Notation ehead := (mdp_encode_head (D := D)).
+
+Lemma direct_mdp_successors_total s a :
+  @sem_total M NI NO _
+    (mdp_successors (FI := NI) (MX := MX) (D := D) (mdp_transition D s a)).
+Proof.
+  apply (proj2 (mathcomp_kernel_map_total _ _)).
+  exact (@mdp_transition_total M NI NO D s a).
+Qed.
+
+Lemma direct_mdp_successors_support s a :
+  @sem_ae M NI _
+    (mdp_successors (FI := NI) (MX := MX) (D := D) (mdp_transition D s a))
+    (fun h => exists t, h = ehead t).
+Proof.
+  unfold mdp_successors. change (sem_ae
+    (sem_bind (mdp_transition D s a) (fun t => sem_ret (ehead t)))
+    (fun h => exists t, h = ehead t)).
+  eapply sem_ae_bind with (P := fun _ => True); [apply sem_ae_true|].
+  intros t _. apply sem_ae_ret. exists t. reflexivity.
+Qed.
+
+Example direct_encode_mdp_state s :
+  @mdp_state E M M NI NC MX NO unit (encode s).
+Proof.
+  apply (mdp_encode_mdp_state (FI := NI) (FO := NO));
+    [apply direct_mdp_successors_total|apply direct_mdp_successors_support].
+Qed.
+
+Example direct_mdp_step_iff s a out :
+  @head_step E M M NI MX NO unit (ehead s)
+    (Obs (Choose (mdp_observe D s)) a) out <->
+  @sem_eq M NI _ out
+    (mdp_successors (FI := NI) (MX := MX) (D := D) (mdp_transition D s a)).
+Proof.
+  apply (mdp_encode_step_iff (FI := NI) (FO := NO)
+    (@mathcomp_kernel_lub_limit_proper R)).
+Qed.
+
+Example direct_mdp_head_bisim_iff s t :
+  mdp_bisim (D := D) s t <->
+  @head_bisim E M M NI NC MX NO unit unit eq (ehead s) (ehead t).
+Proof.
+  apply (mdp_head_bisim_iff (NI := NI) (NO := NO) (FI := NI) (FO := NO) (MX := MX)
+    (@mathcomp_kernel_map_reflect R G)).
+Qed.
+
+Example direct_mdp_peutt_iff s t :
+  mdp_bisim (D := D) s t <->
+  @peutt E M M NI NC MX NO unit unit eq (encode s) (encode t).
+Proof.
+  apply (mdp_peutt_iff (NI := NI) (NO := NO) (FI := NI) (FO := NO) (MX := MX)
+    (@mathcomp_kernel_map_reflect R G)).
+Qed.
+
+Example direct_mdp_tree_trans_bisim_iff s t :
+  mdp_bisim (D := D) s t <->
+  @tree_trans_bisim E M M NI NC MX NO unit unit eq (encode s) (encode t).
+Proof.
+  apply (mdp_tree_trans_bisim_iff (NI := NI) (NO := NO) (FI := NI) (FO := NO) (MX := MX)
+    (FOAE := MathCompNativeOmegaAELaws R)
+    (@mathcomp_kernel_map_reflect R G));
+    [apply direct_mdp_successors_total|apply direct_mdp_successors_support].
+Qed.
+End DirectMDPCorrespondence.

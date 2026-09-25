@@ -44,3 +44,33 @@ Proof.
   - intros x y H; apply mathcomp_kernel_lift_ret; exact H.
 Qed.
 End Checked.
+
+(** Map reflection stays universe-checked and does not need totality, an
+    injective decoder, a countable carrier, or an external validation model. *)
+Section NativeMapReflection.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Local Notation M := (MathCompKernelMeasure R).
+
+Example noninjective_map_reflection (mu : M bool) (nu : M nat) :
+  mathcomp_kernel_lift eq
+    (mathcomp_kernel_bind mu (fun _ => mathcomp_kernel_ret R tt))
+    (mathcomp_kernel_bind nu (fun _ => mathcomp_kernel_ret R tt)) ->
+  mathcomp_kernel_lift (fun _ _ => True) mu nu.
+Proof.
+  intro H.
+  pose proof (@mathcomp_kernel_map_reflect R G bool nat unit unit
+    mu nu (fun _ => tt) (fun _ => tt) eq H) as Hr.
+  eapply (@sem_lift_mono M (MathCompNodeSemanticMeasure R)
+    (@MathCompNodeSemanticMeasureCoreLaws R G)); [|exact Hr].
+  intros x y _. exact I.
+Qed.
+
+Example empty_map_reflection (mu : M Empty_set) :
+  mathcomp_kernel_lift (fun _ _ => False) mu mu.
+Proof.
+  apply (@mathcomp_kernel_map_reflect R G Empty_set Empty_set
+    Empty_set Empty_set mu mu (fun x => x) (fun x => x) (fun _ _ => False)).
+  apply mathcomp_kernel_lift_refl. intros [].
+Qed.
+End NativeMapReflection.

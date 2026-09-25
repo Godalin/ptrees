@@ -36,8 +36,10 @@ The established SubEnumQ endpoints keep their statements, but their reflection
 coinductions now call the generic proof. Its unconditional concrete full iff
 remains available. SubEnumR now has the explicit validation-side native
 reflection construction described below, not an automatically registered
-mainline instance. Direct MathComp native reflection remains open; external
-OmegaVal realization alone is not an internal native-reflection instance.
+mainline instance. For direct MathComp, native reflection now follows from
+generic same-carrier map reflection (see below), conditional on the existing
+gluing premise. External OmegaVal realization alone is not an internal
+native-reflection instance for a distinct native/frontier bridge.
 
 ## Atomicity: two previously implicit laws
 
@@ -236,3 +238,75 @@ SubEnumR follow-up local validation:
 - No existing production proof/definition or canonical route was modified;
   the only old theory source changed is the aggregate import list. CI was not
   consulted.
+
+## Follow-up: same-carrier reflection and direct MathComp correspondence
+
+`Prob/Interface/Coupling.sem_lift_map_reflect` derives
+
+```text
+lift T (bind mu (ret o f)) (bind nu (ret o g))
+  -> lift (fun x y => T (f x) (g y)) mu nu
+```
+
+from `SemanticMeasureCoreLaws`, `SemanticMeasureBindLaws`, and the explicit
+right-unit equation `sem_eq (bind mu ret) mu`. Bind laws currently supply the
+left unit but not the right unit, so the latter is not silently assumed.
+The proof builds the graph lift from `mu` to its map, composes with the given
+lift, then composes with the reversed graph of `g`. It uses neither decoder
+injectivity, total mass, countable support, an external model, nor a new class.
+The generic proof introduces no logical axiom.
+
+This is deliberately a **same-carrier** result. It does not recover native
+lifting from a different frontier representation such as `FreeOmega MN`.
+The previous SubEnumR validation-side bridge retains its separate ownership.
+
+`Prob/Backend/MathComp/BindLaws.mathcomp_kernel_map_reflect` specializes this
+proof with native right unit. This probability theorem is universe-checked.
+`MathCompCouplingGluing R` remains explicit because native CoreLaws obtains
+relational composition from it. No extra reflection/transport assumption is
+introduced, and no gluing existence theorem is claimed.
+
+The existing Gate M regression instantiates the unchanged generic MDP proofs:
+
+```text
+direct_encode_mdp_state
+direct_mdp_step_iff
+direct_mdp_head_bisim_iff
+direct_mdp_peutt_iff
+direct_mdp_tree_trans_bisim_iff
+```
+
+These apply to an arbitrary labelled `MDP (MathCompKernelMeasure R)`, not a
+fixed finite-state example. Successor totality follows from native map mass;
+encoded-head support follows from AE bind/return. The full correspondence is
+therefore conditional only on the existing native gluing obligation (besides
+the MDP's own total transition kernels), and the documented Gate M assembly.
+It has no supplied reflection, relational-lub, support or total-map premise.
+There is no copied MDP coinduction. The same generic MDP theory is used by all
+three backends, while their probability-level justifications differ.
+
+Safe regressions exercise heterogeneous noninjective constant decoders with
+arbitrary subprobability inputs and an empty carrier. Existing MathComp
+universe-negative probes and the exact two-file Gate M allowlist are retained.
+
+The existing generic-MDP snapshot is extended, not replaced: its 44 prior safe
+and 4 prior direct entries remain exact, with 5 safe and 7 direct entries added.
+The new transition-correspondence endpoint receives the same two named choice
+exceptions as its generic owner. The global axiom whitelist is unchanged.
+No new snapshot group or audit script is introduced.
+
+Local validation for this follow-up:
+
+- Full `dune build -j 4` passed, including AllImports and the existing Gate M
+  clients. This is not a claim that Gate M is universe-checked.
+- All 465 central contracts and 43 existing MathComp direct/control contracts
+  remain exact; their snapshot files were not changed. The extended generic-MDP
+  groups pass with 49 safe and 11 direct contracts.
+- All 125 tool tests, architecture checking, source-safety checking and the
+  32-group contract registry metadata check passed. No audit runner was added.
+- Joint `coqchk -norec` passed for `Prob/Interface/Coupling`, MathComp
+  `BindLaws`, and `Regression/Backend/MathCompOmega`. It checks these safe
+  module bodies while trusting compiled dependencies, not the whole library
+  recursively; Gate M is excluded.
+- No `Admitted`, new axiom/class, global hint, external-model dependency, or
+  additional checker bypass was introduced. Remote CI was not consulted.

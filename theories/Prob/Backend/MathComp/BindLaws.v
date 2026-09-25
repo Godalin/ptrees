@@ -6,7 +6,7 @@ From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra boolp classical_sets
   functions reals topology normedtype sequences measure probability kernel
   ereal numfun lebesgue_measure lebesgue_integral.
-From PTree.Prob.Interface Require Import Measure Mixed.
+From PTree.Prob.Interface Require Import Measure Mixed Coupling.
 From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws OrderLaws OmegaLaws.
 From Coq.Classes Require Morphisms.
 Set Implicit Arguments.
@@ -258,3 +258,20 @@ Proof.
   - exact @mathcomp_native_lift_bind.
 Qed.
 End RelationalBind.
+
+(** Safe native specialization of generic map reflection. Gluing is used
+    through CoreLaws composition; no countability or decoder injectivity is
+    required, and no recursive frontier is instantiated here. *)
+Theorem mathcomp_kernel_map_reflect (R : realType)
+    `{G : MathCompCouplingGluing R} {X Y A B : Type}
+    (mu : MathCompKernelMeasure R X) (nu : MathCompKernelMeasure R Y)
+    (f : X -> A) (g : Y -> B) (T : A -> B -> Prop) :
+  mathcomp_kernel_lift T
+    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret R (f x)))
+    (mathcomp_kernel_bind nu (fun y => mathcomp_kernel_ret R (g y))) ->
+  mathcomp_kernel_lift (fun x y => T (f x) (g y)) mu nu.
+Proof.
+  exact (@sem_lift_map_reflect _ (MathCompNodeSemanticMeasure R)
+    (@MathCompNodeSemanticMeasureCoreLaws R G) (@MathCompNativeBindLaws R)
+    (@mathcomp_kernel_bind_ret_r R) X Y A B mu nu f g T).
+Qed.

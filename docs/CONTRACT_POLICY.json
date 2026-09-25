@@ -1026,12 +1026,19 @@
       "direct_behavioral_iter_of_relational_lub",
       "direct_monad_laws_of_relational_lub",
       "direct_uniformity_of_relational_lub",
-      "direct_full_uniformity_of_relational_lub"
+      "direct_full_uniformity_of_relational_lub",
+      "direct_encode_mdp_state",
+      "direct_mdp_step_iff",
+      "direct_mdp_head_bisim_iff",
+      "direct_mdp_peutt_iff",
+      "direct_mdp_tree_trans_bisim_iff"
     ],
     "theories/Regression/Backend/MathCompOmega.v": [
       "increasing_has_actual_lub",
       "null_branches_need_no_continuity",
-      "relation_survives_kernel_bind"
+      "relation_survives_kernel_bind",
+      "noninjective_map_reflection",
+      "empty_map_reflection"
     ],
     "theories/Regression/Backend/MathCompOrder.v": [
       "bottom_below_return",
