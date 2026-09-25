@@ -34,9 +34,10 @@ native models supplying that existing optional law, not just SubEnumQ.
 
 The established SubEnumQ endpoints keep their statements, but their reflection
 coinductions now call the generic proof. Its unconditional concrete full iff
-remains available. This work does not claim to discharge native reflection for
-SubEnumR or direct MathComp; external OmegaVal realization alone is not an
-internal native-reflection instance.
+remains available. SubEnumR now has the explicit validation-side native
+reflection construction described below, not an automatically registered
+mainline instance. Direct MathComp native reflection remains open; external
+OmegaVal realization alone is not an internal native-reflection instance.
 
 ## Atomicity: two previously implicit laws
 
@@ -168,5 +169,70 @@ Follow-up local validation:
   their safe module bodies while trusting compiled dependencies, not the whole
   library recursively; the unchecked direct client is excluded.
 
-SubEnumR native reflection and MathComp gluing/relational-limit existence remain
-separate future work. CI was not consulted for this follow-up.
+MathComp gluing/relational-limit existence remain separate future work.
+CI was not consulted for this follow-up.
+
+## Follow-up: SubEnumR native reflection, with explicit validation ownership
+
+`SubEnumR/FiniteTransport` is ordinary native mathematics. The theorem
+`subenumR_transport_of_mapped_tests` takes bounded-test inequalities on decoded
+values and equality of actual mass, and constructs a finite joint on the
+**original sample carriers**. It does not mention FreeOmega or OmegaVal.
+
+The construction indexes the original finite lists (including duplicates and
+zero entries). For a set of left positions, its decoded image supplies the
+left indicator test, and its relational image supplies the right test. The
+left position mass is bounded by the decoded-image mass even with duplicate
+decoders. The resulting Hall inequality and equal mass feed the existing
+`finite_real_transport`. The resulting matrix is enumerated as a native
+SubEnumR joint, with exact marginals for arbitrary, even signed, tests.
+`subenumR_lift_realization` packages this as `semantic_coupling`.
+
+`SubEnumR/FreeOmega/NativeReflection` then consumes the existing all-raw
+`subenumR_qlift_bidual_raw`, derives these test and mass premises, and obtains
+`subenumR_native_quotient_coupling`. No qlift induction, admissibility premise
+on derivation intermediates, external joint witness, or new class is used.
+`subenumR_validated_native_coupling` supplies the existing optional
+`FreeOmegaNativeCouplingLaws` as an explicit proof value, **not an Instance**.
+
+This ownership distinction is deliberate. The reused scalar validation proof
+depends on OmegaVal. Importing it into ordinary Eq/Semantics/backend modules
+would violate the maintained one-way model-validation boundary. The new module
+is explicitly classified as external validation; architecture tests reject
+direct and indirect imports from mainline consumers. The native finite
+transport module itself remains independent of validation. We do not weaken
+the dependency policy or duplicate the entire raw quotient induction merely
+to obtain an automatic backend instance.
+
+Validation regressions consume the same generic correspondence proofs with
+this explicit certificate: `mdp_bisim <-> peutt`, `mdp_bisim <-> head_bisim`,
+and (using proved fragment membership) `mdp_bisim <-> tree_trans_bisim`.
+There is no copied MDP coinduction. A negative inference check confirms that
+importing the validation theorem does not install an automatic instance.
+Further checks retain duplicate/zero-weight partial native marginals under
+constant decoders, handle an empty carrier and empty relation at zero mass,
+and decode unit samples to types in independently quantified universes.
+
+Thus the mathematical native reflection obligation is proved for SubEnumR;
+making it part of the **model-independent mainline import profile** is a
+separate architectural decision, not claimed here. MathComp gluing and
+relational-limit closure are unchanged.
+
+SubEnumR follow-up local validation:
+
+- Full `dune build -j 4` passed, including safe AllImports and existing clients.
+- 465 central contracts remained exact; all previously recorded generic-MDP
+  safe/direct contracts are unchanged. Fourteen new safe endpoints are added
+  to the existing generic-MDP contract group, not a new audit framework.
+- The native transport/reflection proofs inherit only existing whitelisted
+  classical/extensional mathematical axioms. The transition-correspondence
+  client also inherits `relational_choice` and `dependent_unique_choice` from
+  generic coincidence; its exact endpoint receives the same two exceptions as
+  `MDPReflection.mdp_tree_trans_bisim_iff`. The global whitelist is unchanged.
+- Architecture/source-safety audits and all 125 tool tests passed. The source
+  inventory is 425 modules, with the unchanged two-file Gate M boundary.
+- Joint `coqchk -norec` passed for all three new safe modules. Dependencies
+  are trusted, so this is not a recursive whole-library kernel audit.
+- No existing production proof/definition or canonical route was modified;
+  the only old theory source changed is the aggregate import list. CI was not
+  consulted.

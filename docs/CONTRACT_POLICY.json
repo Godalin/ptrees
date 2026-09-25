@@ -1412,6 +1412,16 @@
       "higher_universe_execution",
       "arbitrary_fuel_hitting",
       "unbounded_retry_limit"
+    ],
+    "theories/Regression/Probability/SubEnumRNativeReflection.v": [
+      "mapped_native_reflection",
+      "duplicate_partial_decoded_joint",
+      "empty_native_joint",
+      "validated_mdp_peutt_iff",
+      "validated_mdp_head_bisim_iff",
+      "validated_encode_mdp_state",
+      "validated_mdp_tree_trans_bisim_iff",
+      "type_valued_native_joint"
     ]
   }
 }

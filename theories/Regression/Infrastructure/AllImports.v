@@ -245,8 +245,10 @@ Require PTree.Prob.Backend.SubEnumQ.Measure.
 Require PTree.Prob.Backend.SubEnumQ.Representation.
 Require PTree.Prob.Backend.SubEnumR.Coupling.
 Require PTree.Prob.Backend.SubEnumR.Domain.
+Require PTree.Prob.Backend.SubEnumR.FiniteTransport.
 Require PTree.Prob.Backend.SubEnumR.FreeOmega.CountableSupport.
 Require PTree.Prob.Backend.SubEnumR.FreeOmega.JointRealization.
+Require PTree.Prob.Backend.SubEnumR.FreeOmega.NativeReflection.
 Require PTree.Prob.Backend.SubEnumR.FreeOmega.RelationalValidation.
 Require PTree.Prob.Backend.SubEnumR.FreeOmega.Validation.
 Require PTree.Prob.Backend.SubEnumR.Measure.
@@ -371,6 +373,7 @@ Require PTree.Regression.Probability.RealTransport.
 Require PTree.Regression.Probability.RelationalLimit.
 Require PTree.Regression.Probability.StableHittingDomain.
 Require PTree.Regression.Probability.SubEnumRJointRealization.
+Require PTree.Regression.Probability.SubEnumRNativeReflection.
 Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
 Require PTree.Regression.Semantics.EffectAlgebra.

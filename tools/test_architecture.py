@@ -4,6 +4,20 @@ import audit_architecture as architecture
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_real_native_reflection_keeps_validation_boundary(self):
+        bridge = "Prob/Backend/SubEnumR/FreeOmega/NativeReflection"
+        native = "Prob/Backend/SubEnumR/FiniteTransport"
+        self.assertTrue(architecture.external_validation(bridge))
+        self.assertFalse(architecture.external_validation(native))
+        self.assertTrue(architecture.permitted(bridge, native))
+        self.assertTrue(architecture.permitted(bridge,
+            "Prob/Backend/SubEnumR/FreeOmega/RelationalValidation"))
+        for owner in [native, "Eq/Backend/SubEnumR", "Semantics/FreeOmega/MDPReflection"]:
+            self.assertFalse(architecture.permitted(owner, bridge))
+        graph = {"Eq/Backend/SubEnumR": {native}, native: {bridge}, bridge: set()}
+        with self.assertRaises(AssertionError):
+            architecture.check_external_validation_boundary(graph)
+
     def test_runner_validation_is_one_way(self):
         bridge = "Execution/Validation/SubEnumQ"
         self.assertTrue(architecture.external_validation(bridge))
