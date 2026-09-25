@@ -75,9 +75,10 @@ def parse_direct(result, endpoints):
     return entries
 
 
-def query_direct():
-    endpoints = ENDPOINTS + SAFE_CONTROLS
-    commands = ['Require PTree.Regression.Infrastructure.AllImports.']
+def query_direct(endpoints=None, joint=True):
+    endpoints = ENDPOINTS + SAFE_CONTROLS if endpoints is None else endpoints
+    assert len(endpoints) == len(set(endpoints)), 'Duplicate Gate M endpoint'
+    commands = ['Require PTree.Regression.Infrastructure.AllImports.'] if joint else []
     # Loading Gate M itself merges otherwise inconsistent universe constraints.
     # This dedicated audit session is a direct-backend client, never Gate S.
     commands += ['Local Unset Universe Checking.']

@@ -1,52 +1,7 @@
-"""Conservation, operational boundaries, and real extracted executable tests."""
+"""Actual extracted State counter behavior; no historical source replay."""
 import subprocess
 import unittest
 from audit_assumptions import ROOT
-from audit_effect_execution import check_source, ALL
-
-
-class EffectExecutionTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.sources = {p.relative_to(ROOT).as_posix(): p.read_text()
-                       for p in (ROOT/'theories').rglob('*.v')}
-
-    def reject(self, path, change):
-        sources = dict(self.sources)
-        sources[path] = change(sources[path])
-        with self.assertRaises(AssertionError):
-            check_source(sources)
-
-    def test_additive_only(self):
-        check_source(self.sources)
-
-    def test_existing_probability_and_handler_theory_frozen(self):
-        for p in ['Eq/PEutt', 'Eq/Canonical', 'Interp/Preservation', 'Interp/Guarded',
-                  'Prob/FreeOmega/Quotient']:
-            self.reject('theories/' + p + '.v', lambda s: s + '\nCheck True.\n')
-
-    def test_no_axiom_or_backend_capability(self):
-        for text in ['Class HandlerPreservation := {}.', 'Admitted.', 'Axiom run_ok : True.',
-                     'Local Unset Universe Checking.']:
-            self.reject('theories/Execution/Runner.v', lambda s: s + text)
-
-    def test_no_fake_behavioral_preservation(self):
-        self.reject('theories/Interp/StateFacts.v', lambda s: s + '\nCheck peutt.\n')
-
-    def test_no_resample_or_normalization_of_missing_mass(self):
-        self.reject('theories/Execution/Runner.v',
-                    lambda s: s.replace("Missing => (Lost, seed')", "Missing => (Timeout, seed')"))
-
-    def test_no_missing_or_duplicate_aggregate(self):
-        line = 'Require PTree.Execution.Runner.\n'
-        self.reject(ALL, lambda s: s.replace(line, ''))
-        self.reject(ALL, lambda s: s + line)
-
-    def test_operational_checkpoint_is_frozen(self):
-        self.reject('theories/Execution/Backend/SubEnumQ.v', lambda s: s + '\nCheck True.\n')
-
-    def test_state_iteration_requires_no_probability_capability(self):
-        self.reject('theories/Interp/StateIter.v', lambda s: s + '\nClass StateIterLaws := {}.\n')
 
 
 class ExtractedStateCounterTests(unittest.TestCase):

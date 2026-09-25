@@ -54,6 +54,8 @@ def source_check(sources=None, policy=None):
     found_classes = {}
     for path, text in sources.items():
         code = code_only(text)
+        assert not re.search(r'\b(?:PTreeDefinitionNew|ShallowNew)\b|\.bak\b', code), \
+            'Obsolete artifact reference: ' + path
         assert not re.search(r'\b(?:Admitted|admit|Axiom|Axioms|Parameter|Parameters)\b', code), \
             'Unfinished proof or semantic assumption: ' + path
         universe_source_check(path, text)
@@ -61,6 +63,12 @@ def source_check(sources=None, policy=None):
             found_classes[path + ':' + name] = decl
     assert found_classes == policy['classes'], 'Capability declaration drift (new or changed Class)'
     independent_math(sources)
+    for path, source in sources.items():
+        if path.startswith(('theories/Prob/Backend/EnumQ/', 'theories/Prob/Backend/SubEnumQ/',
+                            'theories/Prob/Backend/SubEnumR/', 'theories/Examples/')):
+            code = code_only(source)
+            assert not re.search(r'\b(?:nnQ\w*|Build_nnQ\w*|Qval|rational_shared|rational_unshare)\b', code), path
+            assert 'Prob.Legacy' not in code, 'Legacy native dependency: ' + path
     for path, names in policy['regressions'].items():
         assert path in sources, 'Missing regression module: ' + path
         code = code_only(sources[path])
@@ -238,8 +246,9 @@ if __name__ == '__main__':
     only = [args.generic_quotient_only, args.real_joint_only, args.mathcomp_native_only]
     if sum(only) > 1:
         parser.error('Select at most one compiled audit scope')
-    source_check(); manifest_check(); graph()
+    source_check(); manifest_check()
     if not args.source_only:
+        graph()
         if not any(only):
             check('soundness')
         if not any(only) or args.generic_quotient_only:

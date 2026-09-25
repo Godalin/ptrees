@@ -2,10 +2,22 @@
 """Public module/capability contracts and explicitly scoped kernel checks."""
 import argparse
 import json
+import re
 import subprocess
 from audit_assumptions import ROOT, MANIFEST, check, without_comments
 
 POLICY = ROOT / 'docs/CONTRACT_POLICY.json'
+STRUCTURAL = 'theories/Prob/FreeOmega/StructuralMeasure.v'
+STRUCTURAL_INSTANCES = {
+    'FreeOmegaSemanticMeasure', 'FreeOmegaSemanticMeasureCoreLaws',
+    'FreeOmegaSemanticMeasureAEKleisliLaws', 'FreeOmegaSemanticMeasureCountableAELaws',
+    'FreeOmegaSemanticMeasureCouplingAELaws', 'FreeOmegaSemanticMeasureBindLaws',
+    'FreeOmegaMixedMeasureLaws', 'FreeOmegaSemanticOmega',
+    'FreeOmegaSemanticOmegaLaws', 'FreeOmegaSemanticMeasureOrderLaws',
+}
+REGISTRY = {'theories/Eq/Backend/' + n + '.v': n + '_CanonicalBehavior'
+            for n in ['EnumQ', 'SubEnumQ', 'SubEnumR']}
+REGISTRY['theories/Eq/Backend/MathComp/Direct.v'] = 'MathComp_CanonicalBehavior'
 KERNEL_MODULES = [
     'PTree.Regression.Infrastructure.AllImports',
     'PTree.Regression.Infrastructure.ArchitectureBoundaries',
@@ -23,7 +35,65 @@ KERNEL_MODULES = [
     'PTree.Regression.Probability.OmegaVal',
     'PTree.Regression.Probability.OmegaValMeasure',
     'PTree.Regression.Probability.RealTransport',
+    'PTree.Regression.Infrastructure.PublicBehavior',
+    'PTree.Regression.Infrastructure.CanonicalBehaviorStructuralFirst',
+    'PTree.Regression.Infrastructure.CanonicalBehaviorNativeFirst',
+    'PTree.Interp.IterationMachine',
+    'PTree.Interp.IterationUniform',
+    'PTree.Interp.FreeOmega.IterationUniform',
+    'PTree.Regression.Semantics.PTreeUniformity',
 ]
+
+
+def current_surface(sources):
+    """Current routing/ownership contracts; deliberately no proof-text freeze."""
+    sources = {p: without_comments(s) for p, s in sources.items()}
+    structural = sources[STRUCTURAL]
+    for name in STRUCTURAL_INSTANCES:
+        assert re.search(r'^#\[local\] Polymorphic Instance ' + name + r'\b', structural, re.M), name
+    assert re.search(r'^#\[global\] Polymorphic Instance FreeOmegaMixedMeasure\b', structural, re.M)
+    found = {}
+    for path, code in sources.items():
+        assert not path.startswith('theories/API/'), 'Retired API namespace: ' + path
+        for name in STRUCTURAL_INSTANCES:
+            for match in re.finditer(r'(?m)^([^\n]*\b(?:Instance|Instances)\s+[^\n]*\b'
+                                     + name + r'\b[^\n]*)', code):
+                assert '#[local]' in match[0], 'Exported structural registration: ' + path
+        for match in re.finditer(r'(?m)^(?:#\[\w+\]\s+)?(?:Polymorphic\s+)?Instance\s+(\w+)'
+                                 r'[\s\S]*?\.(?=\s|$)', code):
+            if not re.search(r'\bCanonicalBehavior\b', match[0]):
+                continue
+            assert match[0].startswith('#[global]'), 'Unreviewed route: ' + path
+            assert path not in found, 'Duplicate route: ' + path
+            found[path] = match[1]
+        for name in REGISTRY.values():
+            assert not re.search(r'\bExisting\s+Instances?\s+[^.]*\b' + name + r'\b', code), path
+    assert found == REGISTRY, ('Canonical registry drift', found)
+    behavior = sources['theories/Eq/Canonical.v']
+    block = behavior.split('Class CanonicalBehavior', 1)[1].split('}.', 1)[0]
+    assert re.findall(r'\b(behavior_\w+)\s*:', block) == [
+        'behavior_frontier', 'behavior_measure', 'behavior_mixed', 'behavior_omega']
+    assert not re.search(r'Laws|:>|::|admissible|modelable', block), 'Selector is not a law bundle'
+    assert not re.search(r'Existing\s+Instances?\s+behavior_', behavior)
+    for glyph, owner, module, relation in [
+        ('≡ₚ', 'Eq/PStruct', 'PStructNotations', 'pstruct'),
+        ('≃ₚ', 'Eq/PStrong', 'PStrongNotations', 'pstrong'),
+        ('≈ₚ', 'Eq/Canonical', 'PEuttNotations', 'canonical_peutt')]:
+        owner = 'theories/' + owner + '.v'
+        matches = {p for p, s in sources.items() if re.search(r'Notation "[^"\n]*' + glyph, s)}
+        assert matches == {owner}, (glyph, matches)
+        block = sources[owner].split('Module ' + module + '.', 1)[1].split('End ' + module + '.', 1)[0]
+        assert block.count(':= (' + relation + ' ') == 2, 'Notation interpretation drift'
+    bind_owners = {p for p, s in sources.items()
+                   if re.search(r'\b(?:Theorem|Lemma|Corollary|Definition|Notation) peutt_bind\b', s)}
+    assert bind_owners == {'theories/Eq/Bind.v'}, ('Bind ownership/shadowing', bind_owners)
+    client = sources['theories/Regression/Infrastructure/PublicBehavior.v']
+    assert re.findall(r'^From .*?\.$', client, re.M) == [
+        'From PTree Require Import PTree PTreeFacts.',
+        'From PTree.Eq.Backend Require Import SubEnumQ.',
+        'From Coq Require Import Morphisms.',
+        'From PTree.Eq Require Import PEutt.']
+    assert not re.search(r'^\s*Require\b|\b(?:Instance|Hint|Coercion|Arguments)\b', client, re.M)
 
 
 def facade_surface(text):
@@ -31,6 +101,8 @@ def facade_surface(text):
 
 
 def surface_check():
+    current_surface({p.relative_to(ROOT).as_posix(): p.read_text()
+                     for p in (ROOT / 'theories').rglob('*.v')})
     data = json.loads(POLICY.read_text())
     for path, expected in data['facades'].items():
         assert facade_surface((ROOT / path).read_text()) == expected, 'Public surface changed: ' + path

@@ -282,6 +282,11 @@ alias and the ten removed convenience contracts.
 Stage-specific migration narratives and snapshots remain in git history.
 The final whole-library kernel audit (Gate D) remains separate.
 
+For current local/CI checks, use the [audit guide](docs/AUDITING.md).
+Daily checks no longer replay historical commits. The unified compiled
+contract runner includes both the central contracts and all registered
+extension snapshots, with separate safe and explicitly unchecked sessions.
+
 Ordinary clients can import the entry points:
 
 ```coq

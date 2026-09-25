@@ -70,5 +70,14 @@ opam exec -- dune build
 
 The installed constraint package is deliberate: using `--deps-only` for the
 profile would discard its persistent constraints. The normal project installation
-still uses `--deps-only --with-test`. Existing theorem/assumption snapshots and
-all audit/build/kernel-check steps are unchanged.
+still uses `--deps-only --with-test`. Audit maintenance does not change this
+toolchain or dependency profile.
+
+## Current-version audits
+
+Checkout deliberately uses `fetch-depth: 1`. Audit tooling requires only the
+current source tree, not historical commits. Fast source/API/contract-inventory
+checks run before toolchain installation; compilation is followed by dependency
+checks, tool/executable tests, all registered compiled contract groups, and the
+targeted joint kernel check. Safe and explicitly unchecked MathComp contracts
+run as separately named steps. See [the audit guide](../../docs/AUDITING.md).

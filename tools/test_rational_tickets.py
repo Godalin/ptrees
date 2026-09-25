@@ -1,40 +1,10 @@
-"""Exact-ticket source boundaries and actual extracted OCaml execution."""
+"""Actual extracted rational-ticket execution and missing-mass boundaries."""
 import subprocess
 import unittest
 from audit_assumptions import ROOT
-from audit_rational_tickets import ALL, check_source
 
 
 class RationalTicketTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.sources = {p.relative_to(ROOT).as_posix(): p.read_text()
-                       for p in (ROOT/'theories').rglob('*.v')}
-
-    def reject(self, path, change):
-        sources = dict(self.sources)
-        sources[path] = change(sources[path])
-        with self.assertRaises(AssertionError):
-            check_source(sources)
-
-    def test_source(self):
-        check_source(self.sources)
-
-    def test_no_sampler_axiom(self):
-        self.reject('theories/Execution/Backend/RationalTickets.v', lambda s: s + '\nAxiom uniform : True.\n')
-
-    def test_missing_mass_not_removed(self):
-        self.reject('theories/Execution/Backend/RationalTickets.v', lambda s: s.replace('List.repeat None', 'List.repeat arbitrary'))
-
-    def test_invalid_entropy_not_lost(self):
-        self.reject('theories/Execution/Backend/RationalTickets.v', lambda s: s.replace('else (NoEntropy, rest)', 'else (Missing, rest)'))
-
-    def test_frozen_runner(self):
-        self.reject('theories/Execution/Runner.v', lambda s: s + '\nCheck True.\n')
-
-    def test_required_import(self):
-        self.reject(ALL, lambda s: s.replace('Require PTree.Examples.RationalState.\n', ''))
-
     def run_cli(self, *args):
         exe = ROOT/'_build/default/extraction/rational-state/main.exe'
         self.assertTrue(exe.exists(), 'Build the extracted executable first')

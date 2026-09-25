@@ -1,0 +1,352 @@
+{
+  "version": 1,
+  "description": "Current contracts. Contexts preserve original safe/unchecked and joint/owner loading. No migration replay.",
+  "groups": [
+    {
+      "id": "bind_profile",
+      "snapshot": "docs/BIND_PROFILE_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "contracts",
+      "snapshot": "docs/CONTRACTS.json",
+      "context": "recorded"
+    },
+    {
+      "id": "direct_iteration",
+      "snapshot": "docs/DIRECT_ITERATION_CONTRACTS.json",
+      "context": "safe-joint"
+    },
+    {
+      "id": "direct_iteration_gate_m",
+      "snapshot": "docs/DIRECT_ITERATION_CONTRACTS.json",
+      "field": "direct",
+      "context": "gate-m"
+    },
+    {
+      "id": "effect_algebra",
+      "snapshot": "docs/EFFECT_ALGEBRA_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "effect_execution",
+      "snapshot": "docs/EFFECT_EXECUTION_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "eventful_iteration",
+      "snapshot": "docs/EVENTFUL_ITERATION_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "eventful_iteration_gate_m",
+      "snapshot": "docs/EVENTFUL_ITERATION_CONTRACTS.json",
+      "field": "direct",
+      "context": "gate-m"
+    },
+    {
+      "id": "exception_fold",
+      "snapshot": "docs/EXCEPTION_FOLD_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "generic_algebra",
+      "snapshot": "docs/GENERIC_ALGEBRA_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "generic_consumer",
+      "snapshot": "docs/GENERIC_CONSUMER_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "handler_calculus",
+      "snapshot": "docs/HANDLER_CALCULUS_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "handler_machine",
+      "snapshot": "docs/HANDLER_MACHINE_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "iteration_algebra",
+      "snapshot": "docs/ITERATION_ALGEBRA_CONTRACTS.json",
+      "context": "safe-joint"
+    },
+    {
+      "id": "iteration_algebra_gate_m",
+      "snapshot": "docs/ITERATION_ALGEBRA_CONTRACTS.json",
+      "field": "direct",
+      "context": "gate-m"
+    },
+    {
+      "id": "itree_bridge",
+      "snapshot": "docs/ITREE_BRIDGE_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "itree_preservation",
+      "snapshot": "docs/ITREE_PRESERVATION_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "mathcomp_direct",
+      "snapshot": "docs/MATHCOMP_DIRECT_CONTRACTS.json",
+      "context": "gate-m-joint"
+    },
+    {
+      "id": "rational_tickets",
+      "snapshot": "docs/RATIONAL_TICKETS_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "reader_writer_fold",
+      "snapshot": "docs/READER_WRITER_FOLD_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "relational_consumer",
+      "snapshot": "docs/RELATIONAL_CONSUMER_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "relational_consumer_direct",
+      "snapshot": "docs/RELATIONAL_CONSUMER_DIRECT_CONTRACTS.json",
+      "context": "gate-m-joint"
+    },
+    {
+      "id": "relational_limit",
+      "snapshot": "docs/RELATIONAL_LIMIT_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "runner_distribution",
+      "snapshot": "docs/RUNNER_DISTRIBUTION_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "standard_effects",
+      "snapshot": "docs/STANDARD_EFFECTS_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "state_fold",
+      "snapshot": "docs/STATE_FOLD_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "state_preservation",
+      "snapshot": "docs/STATE_PRESERVATION_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "state_rewrite",
+      "snapshot": "docs/STATE_REWRITE_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "subenumr_migration",
+      "snapshot": "docs/SUBENUMR_MIGRATION_CONTRACTS.json",
+      "context": "owners"
+    }
+  ],
+  "axiom_exceptions": {
+    "PTree.Eq.FreeOmega.Iter.peutt_iter_behavioral_rel": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.PEutt.peutt_prob": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.PEutt.peutt_prob_Proper": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.PEutt.peutt_prob_flatten": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.PEutt.peutt_prob_interchange": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.PEutt.peutt_prob_interchange_of": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.PEutt.peutt_prob_measure": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.PEutt.peutt_prob_measure_Proper": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.PEutt.peutt_prob_ret": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.PEutt.peutt_prob_rewrite": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.ProbabilisticTrace.finite_interaction_query_exists": [
+      "ClassicalEpsilon.constructive_indefinite_description"
+    ],
+    "PTree.Eq.ProbabilisticTrace.finite_interaction_sem": [
+      "ClassicalEpsilon.constructive_indefinite_description"
+    ],
+    "PTree.Eq.ProbabilisticTrace.finite_interaction_sem_coupled_to_query": [
+      "ClassicalEpsilon.constructive_indefinite_description"
+    ],
+    "PTree.Eq.ProbabilisticTrace.finite_interaction_sem_spec": [
+      "ClassicalEpsilon.constructive_indefinite_description"
+    ],
+    "PTree.Eq.ProbabilisticTrace.peutt_preserves_finite_interaction_query": [
+      "ClassicalEpsilon.constructive_indefinite_description"
+    ],
+    "PTree.Eq.ProbabilisticTrace.peutt_preserves_finite_interaction_sem": [
+      "ClassicalEpsilon.constructive_indefinite_description"
+    ],
+    "PTree.Eq.StableHittingComputation.stable_hitting_prob_decompose": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.StableHittingComputation.stable_hitting_prob_dirac": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.StableHittingComputation.stable_hitting_prob_flatten": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.Backend.SubEnumQ.subenumQ_atomic_handler_mdp": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.Backend.SubEnumQ.subenumQ_mdp_interp_peutt_tree_trans_iff": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.Backend.SubEnumQ.subenumQ_mdp_interp_transition_to_peutt": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.Backend.SubEnumQ.subenumQ_mdp_state_interp_atomic": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.FreeOmega.Atomic.tree_trans_bisim_interp_atomic": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.FreeOmega.MDP.mdp_guarded_interp_tree_trans": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.FreeOmega.MDP.mdp_interp_peutt_tree_trans_iff": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Prob.Backend.SubEnumQ.FreeOmega.Total.subenumQ_free_omega_total_map": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Semantics.Backend.MDPEmbeddingSubEnumQ.subenumQ_encoded_head_peutt_iff": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description"
+    ],
+    "PTree.Semantics.Backend.MDPEmbeddingSubEnumQ.subenumQ_head_bisim_reflect": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description"
+    ],
+    "PTree.Semantics.Backend.MDPEmbeddingSubEnumQ.subenumQ_mdp_head_bisim_iff": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description"
+    ],
+    "PTree.Semantics.Backend.MDPEmbeddingSubEnumQ.subenumQ_mdp_peutt_iff": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description"
+    ],
+    "PTree.Semantics.Backend.MDPEmbeddingSubEnumQ.subenumQ_peutt_mdp_reflect": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description"
+    ],
+    "PTree.Semantics.FreeOmega.MDPCoincidenceFreeOmega.free_mdp_state_peutt_tree_trans_iff": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Semantics.MDPCoincidence.mdp_state_peutt_tree_trans_iff": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Semantics.TreeTransition.tree_trans_exists": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Semantics.TreeTransitionSoundness.peutt_tree_trans_bisim": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Semantics.TreeTransitionSoundness.peutt_tree_trans_postfixed": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.Algebra.Reader.run_reader_ask_prob": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.Algebra.State.run_state_get_prob": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.Algebra.State.run_state_put_prob": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.Algebra.Writer.run_writer_tell_prob": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.EffectInteractions.lower_then_count": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.EffectAlgebra.state_draw_swap": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.EffectAlgebra.writer_draw_swap": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.EffectAlgebra.real_state_draw_swap": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.StateRewrite.preparation_sampling_fusion": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.StateRewrite.source_program_rewrite": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.StateRewrite.rewrite_then_handle": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ]
+  }
+}

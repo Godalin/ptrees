@@ -19,6 +19,16 @@ jobs:
       OPAMERRLOGLEN: "0"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          # Current-version audits intentionally require no old Git objects.
+          fetch-depth: 1
+
+      - name: Audit current source boundaries and contract inventory
+        run: |
+          python3 tools/audit_architecture.py --aggregate-only
+          python3 tools/audit_api.py --surface-only
+          python3 tools/audit_soundness.py --source-only
+          python3 tools/audit_contracts.py --metadata-only
 
       - name: Install Linux build prerequisites
         run: |
@@ -41,28 +51,20 @@ jobs:
       - name: Verify frozen toolchain and dependency versions
         run: python3 tools/check_ci_environment.py
 
-      - name: Audit maintained sources
-        run: |
-          python3 tools/audit_architecture.py --aggregate-only
-          if git grep -n -E '^[[:space:]]*(Admitted|admit)\.' -- '*.v'; then
-            echo 'Maintained theories contain an unfinished proof.' >&2
-            exit 1
-          fi
-          if git grep -n -E 'PTreeDefinitionNew|ShallowNew|\.bak' -- theories; then
-            echo 'Maintained theories reference an obsolete artifact name.' >&2
-            exit 1
-          fi
-
       - name: Build all theories
         run: opam exec -- dune build
 
-      - name: Audit architecture, API, soundness and assumptions
-        run: |
-          python3 tools/audit_architecture.py --check
-          python3 tools/audit_api.py --surface-only
-          python3 tools/audit_soundness.py --source-only
-          python3 tools/audit_assumptions.py --check
-          python3 -m unittest discover -s tools -p 'test_*.py'
+      - name: Audit compiled dependency graph
+        run: python3 tools/audit_architecture.py --check
+
+      - name: Test audit tools and extracted programs
+        run: python3 -m unittest discover -s tools -p 'test_*.py'
+
+      - name: Check all safe compiled contract groups
+        run: python3 -u tools/audit_contracts.py --gate S
+
+      - name: Check isolated MathComp contracts (not universe-checked)
+        run: python3 -u tools/audit_contracts.py --gate M
 
       - name: Recheck universe regression in the full-library context
         run: python3 tools/audit_api.py --surface-only --kernel

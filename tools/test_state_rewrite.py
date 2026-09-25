@@ -2,31 +2,9 @@
 import subprocess
 import unittest
 from audit_assumptions import ROOT
-from audit_state_rewrite import ALL, NEW, check_source
 
 
 class StateRewriteTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.sources = {p.relative_to(ROOT).as_posix(): p.read_text()
-                       for p in (ROOT/'theories').rglob('*.v')}
-
-    def test_additive_example(self):
-        check_source(self.sources)
-
-    def test_requires_both_theorem_links(self):
-        for name in ['peutt_prob_flatten', 'run_state_peutt_eq']:
-            sources = dict(self.sources)
-            sources[NEW] = sources[NEW].replace(name, 'missing_link')
-            with self.assertRaises(AssertionError):
-                check_source(sources)
-
-    def test_original_theory_frozen(self):
-        sources = dict(self.sources)
-        sources['theories/Execution/Backend/RationalTickets.v'] += '\nCheck True.\n'
-        with self.assertRaises(AssertionError):
-            check_source(sources)
-
     def run_cli(self, *args):
         exe = ROOT/'_build/default/extraction/rational-state/main.exe'
         self.assertTrue(exe.exists())
