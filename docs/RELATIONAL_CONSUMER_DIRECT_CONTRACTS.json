@@ -70,6 +70,15 @@
       "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
       "unsafe_hierarchy": [],
       "session_collapsed_universes": true
+    },
+    {
+      "name": "PTree.Regression.Backend.MathCompDirect.direct_left_unit_without_relational_lub",
+      "type": "MathCompDirect.direct_left_unit_without_relational_lub\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R)\n         (E : Type -> Type) (A B : Type) (a : A)\n         (k : A -> PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) B),\n       @Direct.mathcomp_direct_peutt R G E B\n         (@PTreeDefinition.PTree.bind E (Kernel.MathCompKernelMeasure R) A B\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.RetF E (Kernel.MathCompKernelMeasure R) A\n                  (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R) A) a\n            |} k) (k a)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
+      "unsafe_hierarchy": [
+        "MathCompDirect.direct_left_unit_without_relational_lub"
+      ],
+      "session_collapsed_universes": true
     }
   ]
 }

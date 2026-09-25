@@ -107,8 +107,7 @@ Proof.
       (fun v => Ret (iteration_map (fun _ : nat => tt) v)))) : ptree questionE SubEnumQ (unit+bool))
     ≈ₚ (Vis Question (fun b : bool => Ret (if b then inr true else inl tt)))).
   apply peutt_vis. intros [].
-  all: exact (PTree.Eq.Algebra.peutt_bind_ret_l (relational_bind_of_laws _)
-    free_omega_relational_mixed_bind free_omega_relational_zero free_omega_relational_lub
+  all: exact (PTree.Eq.Algebra.peutt_bind_ret_l
     _ (fun v : nat+bool => Ret (iteration_map (fun _ : nat => tt) v))).
 Qed.
 

@@ -1027,6 +1027,7 @@
       "direct_monad_laws_of_relational_lub",
       "direct_uniformity_of_relational_lub",
       "direct_full_uniformity_of_relational_lub",
+      "direct_left_unit_without_relational_lub",
       "direct_encode_mdp_state",
       "direct_mdp_step_iff",
       "direct_mdp_head_bisim_iff",
@@ -1218,6 +1219,7 @@
       "free_omega_heterogeneous_bind"
     ],
     "theories/Regression/Semantics/GenericAlgebra.v": [
+      "generic_left_unit_minimal",
       "free_omega_bind_Proper",
       "free_omega_fmap_Proper",
       "free_omega_frontier_ae_lift",

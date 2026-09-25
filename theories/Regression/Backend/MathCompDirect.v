@@ -481,6 +481,18 @@ Proof.
 Qed.
 End GenericMDPClients.
 
+(** Left unit is shallow: unlike structural bridge/iteration clients above,
+    this theorem needs no unresolved relational-limit certificate. *)
+Section ShallowDirectClient.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E : Type -> Type} {A B : Type}.
+Example direct_left_unit_without_relational_lub (a : A)
+    (k : A -> ptree E (MathCompKernelMeasure R) B) :
+  @mathcomp_direct_peutt R G E B (PTree.bind (Ret a) k) (k a).
+Proof. apply PTree.Eq.Algebra.peutt_bind_ret_l. Qed.
+End ShallowDirectClient.
+
 (** Classical MDP correspondence uses the existing generic proof in both
     directions. No relational-lub premise, external validation model, or
     native/frontier reflection assumption remains: native map reflection is

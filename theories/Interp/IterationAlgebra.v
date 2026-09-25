@@ -70,7 +70,7 @@ Definition ptree_peutt_monad_laws :
 Proof.
   constructor; intros; unfold eq1, ptree_peutt_eq1;
     cbn [Monad.bind Monad.ret Monad_ptree].
-  - apply (Algebra.peutt_bind_ret_l (relational_bind_of_laws FB) Hmixed Hzero Hlimit).
+  - apply Algebra.peutt_bind_ret_l.
   - apply (Algebra.peutt_bind_ret_r (relational_bind_of_laws FB) Hmixed Hzero Hlimit).
   - apply (Algebra.peutt_bind_assoc (relational_bind_of_laws FB) Hmixed Hzero Hlimit).
   - intros x y Hxy k h Hkh. eapply Bind.peutt_bind with (RR := eq).

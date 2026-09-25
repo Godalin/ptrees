@@ -2,6 +2,10 @@
 
 Baseline: `09d0ab2d71ede751093316a0f0f4be2f34705719`.
 
+Follow-up: shallow left unit no longer uses the structural bridge or its
+relational-lub premise. Other endpoints retain the profiles described below.
+See [current capability/model status](GENERIC_CONSUMERS.md#current-capability-and-model-status).
+
 ## Ownership
 
 The finite-kernel simulation, limit passage and PTree coinduction proofs now

@@ -80,6 +80,16 @@
       "name": "PTree.Regression.Infrastructure.PublicBehavior.public_fmap_setoid",
       "type": "@PublicBehavior.public_fmap_setoid\n     : forall (E : Type -> Type) (A B : Type) (f : A -> B)\n         (t u : PTreeDefinition.ptree E Representation.SubEnumQ A),\n       @Canonical.canonical_peutt E Representation.SubEnumQ SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) A A (@eq A) t u ->\n       @Canonical.canonical_peutt E Representation.SubEnumQ SubEnumQ.SubEnumQ_CanonicalBehavior\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n            Measure.SubEnumQ_SemanticOmega) B B (@eq B)\n         (@PTreeDefinition.PTree.fmap E Representation.SubEnumQ A B f t)\n         (@PTreeDefinition.PTree.fmap E Representation.SubEnumQ A B f u)",
       "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Eq.Algebra.peutt_observe_eq",
+      "type": "@Algebra.peutt_observe_eq\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A : Type) (t u : PTreeDefinition.ptree E MN A),\n       @PTreeDefinition.observe E MN A t = @PTreeDefinition.observe E MN A u ->\n       @PEutt.peutt E MN MF FI FC MX FO A A (@eq A) t u",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Regression.Semantics.GenericAlgebra.generic_left_unit_minimal",
+      "type": "@GenericAlgebra.generic_left_unit_minimal\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (A B : Type) (a : A)\n         (k : A -> PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN MF FI FC MX FO B B (@eq B)\n         (@PTreeDefinition.PTree.bind E MN A B\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.RetF E MN A (PTreeDefinition.ptree E MN A) a\n            |} k) (k a)",
+      "assumptions": "Closed under the global context"
     }
   ]
 }

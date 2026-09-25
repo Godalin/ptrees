@@ -13,6 +13,17 @@ Definition generic_bind_proper := @peutt_bind_Proper.
 Definition generic_fmap_proper := @peutt_fmap_Proper.
 Definition derived_ae_lift := @coupling_ae_implies_ae_lift.
 
+(** No native measure instance, bind/order/omega laws, or relational-lub
+    certificate is in scope. This is an explicit minimal client signature. *)
+Section ShallowClient.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
+Example generic_left_unit_minimal {A B} (a : A) (k : A -> ptree E MN B) :
+  @peutt E MN MF FI FC MX FO B B eq (PTree.bind (Ret a) k) (k a).
+Proof. apply peutt_bind_ret_l. Qed.
+End ShallowClient.
+
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure
   PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.BindOrder.
 

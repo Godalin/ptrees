@@ -1,5 +1,9 @@
 # Generic consumer convergence — Stage 1
 
+This is a historical stage report. For current backend certificates and the
+subsequent shallow left-unit premise reduction, see
+[the current consumer status](GENERIC_CONSUMERS.md#current-capability-and-model-status).
+
 Baseline: `ad8705f`. This stage moves consumers, not probability foundations.
 Stages 2 (structural bridges), 3 (iteration), and 4 (interpretation) require
 separate commits and review. They are not claimed here.

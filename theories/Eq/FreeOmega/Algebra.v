@@ -35,9 +35,7 @@ Theorem peutt_bind_ret_l {A B}
     FreeOmegaObservableSemanticOmega B B eq
     (PTree.bind (Ret a) k) (k a).
 Proof.
-  apply (Algebra.peutt_bind_ret_l
-    free_omega_relational_bind free_omega_relational_mixed_bind
-    free_omega_relational_zero free_omega_relational_lub).
+  apply Algebra.peutt_bind_ret_l.
 Qed.
 
 Theorem peutt_bind_ret_r {A} (t : ptree E MN A) :

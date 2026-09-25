@@ -12,6 +12,25 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
+(** Shallow equations do not need a structural-to-behavioral limit theorem.
+    Only the interpretation operations and frontier CoreLaws are required. *)
+Section ShallowAlgebra.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
+
+Lemma peutt_observe_eq {A} (t u : ptree E MN A) :
+  observe t = observe u -> @peutt E MN MF FI FC MX FO A A eq t u.
+Proof.
+  intro H. pose proof (@peutt_refl E MN MF FI FC MX FO A u) as Hu.
+  unfold peutt in Hu |- *. rewrite H. exact Hu.
+Qed.
+
+Theorem peutt_bind_ret_l {A B} (a : A) (k : A -> ptree E MN B) :
+  @peutt E MN MF FI FC MX FO B B eq (PTree.bind (Ret a) k) (k a).
+Proof. apply peutt_observe_eq. reflexivity. Qed.
+End ShallowAlgebra.
+
 Section Algebra.
 Context {E MN MF : Type -> Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -66,16 +85,6 @@ Variable Hbind : relational_bind FI.
 Variable Hmixed : relational_mixed_bind NI FI MX.
 Variable Hzero : relational_zero FO.
 Variable Hlimit : relational_lub FO.
-
-Theorem peutt_bind_ret_l {A B}
-    (a : A) (k : A -> ptree E MN B) :
-  @peutt E MN MF FI FC MX FO B B eq
-    (PTree.bind (Ret a) k) (k a).
-Proof.
-  apply (Relation.peutt_of_pstruct Hbind Hmixed Hzero Hlimit).
-  apply observe_eq_pstruct.
-  exact (observing_observe (bind_ret_ a k)).
-Qed.
 
 Theorem peutt_bind_ret_r {A} (t : ptree E MN A) :
   @peutt E MN MF FI FC MX FO A A eq
