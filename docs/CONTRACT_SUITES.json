@@ -154,6 +154,17 @@
       "id": "subenumr_migration",
       "snapshot": "docs/SUBENUMR_MIGRATION_CONTRACTS.json",
       "context": "owners"
+    },
+    {
+      "id": "generic_mdp",
+      "snapshot": "docs/GENERIC_MDP_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
+      "id": "generic_mdp_gate_m",
+      "snapshot": "docs/GENERIC_MDP_CONTRACTS.json",
+      "field": "direct",
+      "context": "gate-m"
     }
   ],
   "axiom_exceptions": {
@@ -391,6 +402,30 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "Epsilon.epsilon_statement",
       "IndefiniteDescription.constructive_indefinite_description",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Semantics.MDPReflection.mdp_tree_trans_bisim_iff": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.MDP.mdp_interp_peutt_tree_trans_iff": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.MDP.mdp_guarded_interp_tree_trans": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.Atomic.tree_trans_bisim_interp_atomic": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Backend.MathCompDirect.direct_mdp_guarded_transition": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Backend.MathCompDirect.direct_atomic_transition": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ]
   }

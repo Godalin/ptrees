@@ -101,6 +101,7 @@ Require PTree.Interp.Algebra.Exception.
 Require PTree.Interp.Algebra.Reader.
 Require PTree.Interp.Algebra.State.
 Require PTree.Interp.Algebra.Writer.
+Require PTree.Interp.Atomic.
 Require PTree.Interp.Backend.SubEnumQ.
 Require PTree.Interp.Exception.
 Require PTree.Interp.ExceptionFacts.
@@ -137,6 +138,8 @@ Require PTree.Interp.IterationAlgebra.
 Require PTree.Interp.IterationMachine.
 Require PTree.Interp.IterationUniform.
 Require PTree.Interp.Kernel.
+Require PTree.Interp.MDP.
+Require PTree.Interp.MDPAtomic.
 Require PTree.Interp.Preservation.
 Require PTree.Interp.Reader.
 Require PTree.Interp.ReaderFold.
@@ -407,10 +410,12 @@ Require PTree.Regression.Semantics.UnrestrictedInterp.
 Require PTree.Semantics.
 Require PTree.Semantics.Backend.MDPEmbeddingSubEnumQ.
 Require PTree.Semantics.FreeOmega.MDPCoincidenceFreeOmega.
+Require PTree.Semantics.FreeOmega.MDPReflection.
 Require PTree.Semantics.HeadTransition.
 Require PTree.Semantics.MDPCoincidence.
 Require PTree.Semantics.MDPEmbedding.
 Require PTree.Semantics.MDPFragment.
+Require PTree.Semantics.MDPReflection.
 Require PTree.Semantics.TreeTransition.
 Require PTree.Semantics.TreeTransitionBisim.
 Require PTree.Semantics.TreeTransitionSoundness.

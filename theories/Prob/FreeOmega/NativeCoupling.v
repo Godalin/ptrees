@@ -44,3 +44,25 @@ Proof.
   eapply FOQLSample; [exact Hlift|].
   intros x y Hxy. apply FOQLStructural, FOLRet. exact Hxy.
 Qed.
+
+(** Reflection through arbitrary value maps, derived from the existing
+    native joint realization capability. No injectivity is required. *)
+Lemma free_omega_sampled_heads_reflect {MN : Type -> Type}
+    `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+    `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+    `{NO : @SemanticOmega MN NI} `{NJ : @FreeOmegaNativeCouplingLaws MN NI NO}
+    {X Y A B} (mu : MN X) (nu : MN Y) (f : X -> A) (g : Y -> B)
+    (R : A -> B -> Prop) :
+  free_omega_qlift R (FOSample mu (fun x => FORet (f x)))
+    (FOSample nu (fun y => FORet (g y))) ->
+  sem_lift (fun x y => R (f x) (g y)) mu nu.
+Proof.
+  intro H.
+  pose (p := {| native_sample_type := X; native_sample_measure := mu;
+                native_sample_value := f |}).
+  pose (q := {| native_sample_type := Y; native_sample_measure := nu;
+                native_sample_value := g |}).
+  destruct (free_omega_native_coupling (p := p) (q := q) (R := R) H)
+    as [joint Hjoint].
+  exact (semantic_coupling_sound Hjoint).
+Qed.

@@ -79,6 +79,19 @@ class MathCompDirectTests(unittest.TestCase):
             with self.subTest(bad=bad), self.assertRaises(AssertionError):
                 parse_direct(result(bad), ['probe'])
 
+        inherited = block + 'RelationalChoice.relational_choice : True\n'
+        exceptions = {'probe': ['RelationalChoice.relational_choice']}
+        with self.assertRaises(AssertionError):
+            parse_direct(result(inherited), ['probe'])
+        entry = parse_direct(result(inherited), ['probe'], exceptions)[0]
+        self.assertTrue(entry['unsafe_hierarchy'])
+        # Exceptions are endpoint-specific and do not suppress new axioms or
+        # the separate unsafe-hierarchy report.
+        with self.assertRaises(AssertionError):
+            parse_direct(result(inherited), ['probe'], {'other': exceptions['probe']})
+        with self.assertRaises(AssertionError):
+            parse_direct(result(inherited + 'new_axiom : False\n'), ['probe'], exceptions)
+
 
 if __name__ == '__main__':
     unittest.main()

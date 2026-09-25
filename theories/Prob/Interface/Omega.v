@@ -188,3 +188,45 @@ Polymorphic Class SemanticOmegaSelection
   sem_lub_choose : forall A (chain : nat -> S A),
     sem_increasing chain -> {out : S A | sem_lub chain out}
 }.
+
+(** Source congruence of bind follows from constant limits and continuity.
+    In particular, this does NOT identify observational equality with the
+    approximation preorder. No extra capability or global instance is needed. *)
+Lemma sem_bind_eq_l {M} `{MI : SemanticMeasure M}
+    `{MO : @SemanticOmega M MI}
+    `{Ord : @SemanticMeasureOrderLaws M MI MO}
+    `{Omega : @SemanticOmegaLaws M MI MO}
+    `{Cofinal : @SemanticOmegaCofinalityLaws M MI MO}
+    {A B} (mu nu : M A) (k : A -> M B) :
+  sem_eq mu nu -> sem_eq (sem_bind mu k) (sem_bind nu k).
+Proof.
+  intro H.
+  assert (Hlimit : sem_lub (fun _ : nat => nu) mu).
+  { eapply sem_lub_chain_proper with (chain := fun _ => mu).
+    - intro n. exact H.
+    - apply sem_lub_constant. }
+  eapply sem_lub_unique with (chain := fun _ : nat => sem_bind nu k).
+  - eapply sem_bind_lub with (chain := fun _ : nat => nu);
+      [intro n; apply sem_le_refl|exact Hlimit].
+  - apply sem_lub_constant.
+Qed.
+
+(** Mutual approximation implies observational equality. The converse is
+    deliberately not required (and need not hold for formal completions). *)
+Lemma sem_eq_of_le_equiv {M} `{MI : SemanticMeasure M}
+    `{MO : @SemanticOmega M MI}
+    `{Ord : @SemanticMeasureOrderLaws M MI MO}
+    `{Omega : @SemanticOmegaLaws M MI MO}
+    `{Cofinal : @SemanticOmegaCofinalityLaws M MI MO}
+    `{Directed : @SemanticOmegaDirectedCofinalityLaws M MI MO}
+    {A} (mu nu : M A) :
+  sem_le mu nu -> sem_le nu mu -> sem_eq mu nu.
+Proof.
+  intros Hmn Hnm.
+  assert (H : sem_lub (fun _ : nat => nu) mu).
+  { apply (proj1 (sem_lub_cofinal (c := fun _ => mu) (d := fun _ => nu) mu
+      (fun _ => sem_le_refl mu) (fun _ => sem_le_refl nu)
+      (fun _ => ex_intro _ 0 Hmn) (fun _ => ex_intro _ 0 Hnm))).
+    apply sem_lub_constant. }
+  eapply sem_lub_unique; [exact H|apply sem_lub_constant].
+Qed.

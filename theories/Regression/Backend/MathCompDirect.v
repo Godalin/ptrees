@@ -423,3 +423,61 @@ Proof.
     (@mathcomp_relational_zero R) Hlimit).
 Qed.
 End FullIterationUniformity.
+
+(** The SAME generic MDP/atomic theorems at MN = MF. These clients add no
+    unchecked probability mathematics. Gluing and, for MDP atomicity, the
+    explicit total-map obligation remain visible in their signatures. *)
+From PTree.Interp Require Import MDP Atomic MDPAtomic.
+From PTree.Semantics Require Import MDPFragment TreeTransitionBisim.
+Section GenericMDPClients.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E F : Type -> Type} {A : Type}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Variable h : forall X, E X -> ptree F M X.
+
+Example direct_mdp_interp (Hh : MDP.mdp_handler (FI := NI) (MX := MX) (FO := NO) (R := A) h)
+    (t : ptree E M A) :
+  @mdp_state E M M NI NC MX NO A t ->
+  @mdp_state F M M NI NC MX NO A (PTree.interp h t).
+Proof. exact (MDP.mdp_state_interp (FI := NI) (FO := NO) (MX := MX) Hh (t := t)). Qed.
+
+Example direct_mdp_guarded_transition
+    (Hh : MDP.mdp_handler (FI := NI) (MX := MX) (FO := NO) (R := A) h)
+    (Hg : PTree.Interp.Guarded.guarded_handler (FI := NI) (MX := MX) (FO := NO) h)
+    (t u : ptree E M A) :
+  @mdp_state E M M NI NC MX NO A t ->
+  @mdp_state E M M NI NC MX NO A u ->
+  @tree_trans_bisim E M M NI NC MX NO A A eq t u ->
+  @tree_trans_bisim F M M NI NC MX NO A A eq (PTree.interp h t) (PTree.interp h u).
+Proof.
+  exact (MDP.mdp_guarded_interp_tree_trans (FI := NI) (FO := NO) (MX := MX)
+    Hh Hg (t := t) (u := u)).
+Qed.
+
+Variable a : forall X, E X -> ptree E M X.
+Variable atom : Atomic.atomic_handler (FI := NI) (MX := MX) (FO := NO) a.
+Example direct_atomic_transition (RR : A -> A -> Prop) (t u : ptree E M A) :
+  @tree_trans_bisim E M M NI NC MX NO A A RR t u ->
+  @tree_trans_bisim E M M NI NC MX NO A A RR (PTree.interp a t) (PTree.interp a u).
+Proof.
+  exact (Atomic.tree_trans_bisim_interp_atomic (FI := NI) (FO := NO) (MX := MX)
+    (@mathcomp_kernel_bind_ret_r R) (@mathcomp_kernel_lub_limit_proper R)
+    atom (RR := RR) (t := t) (u := u)).
+Qed.
+
+Example direct_atomic_mdp
+    (Htotal : forall mu : M (stable_head E M A),
+      @sem_total M NI NO _ mu -> @sem_total M NI NO _ (Atomic.atomic_map atom mu))
+    (t : ptree E M A) :
+  @mdp_state E M M NI NC MX NO A t ->
+  @mdp_state E M M NI NC MX NO A (PTree.interp a t).
+Proof.
+  exact (MDPAtomic.mdp_state_interp_atomic (FI := NI) (FO := NO) (MX := MX)
+    (@mathcomp_kernel_lub_limit_proper R) (atom := atom) Htotal (t := t)).
+Qed.
+End GenericMDPClients.

@@ -15,7 +15,7 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.NativeCoupling.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
 From PTree.Semantics Require Import HeadTransition MDPFragment MDPEmbedding.
-From PTree.Semantics Require Import TreeTransitionBisim.
+From PTree.Semantics Require Import TreeTransitionBisim MDPReflection.
 From PTree.Semantics.FreeOmega Require Import MDPCoincidenceFreeOmega.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -42,14 +42,7 @@ Lemma subenumQ_sampled_heads_reflect {X Y A B}
     (FOSample nu (fun y => FORet (g y))) ->
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ (fun x y => R (f x) (g y)) mu nu.
 Proof.
-  intro H.
-  pose (p := {| native_sample_type := X; native_sample_measure := mu;
-                native_sample_value := f |}).
-  pose (q := {| native_sample_type := Y; native_sample_measure := nu;
-                native_sample_value := g |}).
-  destruct (free_omega_native_coupling (p := p) (q := q) (R := R) H)
-    as [joint Hjoint].
-  exact (semantic_coupling_sound Hjoint).
+  exact: free_omega_sampled_heads_reflect.
 Qed.
 
 Lemma subenumQ_dirac_heads_reflect {A B} (R : A -> B -> Prop) x y :
@@ -114,29 +107,16 @@ Theorem subenumQ_encode_step_iff s a out :
     (ehead s) (Obs (Choose (mdp_observe D s)) a) out <->
   @sem_eq MF FI _ out (successors (mdp_transition D s a)).
 Proof.
-  split; [apply (mdp_encode_step_unique (FI := FI) (FO := FO))|].
-  intro Heq. constructor.
-  pose proof (mdp_sample_hitting (FI := FI) (FO := FO)
-    (MX := FreeOmegaMixedMeasure) (D := D) (mdp_transition D s a)) as Hhit.
-  change (@sem_eq MF FI _ out
-    (FOLub (fun n => ptree_hitting_approx (FI := FI) (FO := FO) n
-      (ProbF (mdp_transition D s a) encode)))).
-  eapply (@sem_eq_trans MF FI FC); [exact Heq|exact Hhit].
+  exact (mdp_encode_step_iff (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    (D := D) (@free_omega_observable_lub_limit_proper
+      SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticMeasureCoreLaws SubEnumQ_SemanticOmega)
+    s a out).
 Qed.
 
 Theorem subenumQ_head_bisim_reflect s t : hb (ehead s) (ehead t) -> mdp_bisim (D := D) s t.
 Proof.
-  intro H. eapply mdp_bisim_coinduction with (sim := fun u v => hb (ehead u) (ehead v)).
-  - intros u v Huv. apply head_bisim_unfold in Huv.
-    apply mdp_choose_head_rel_iff in Huv. destruct Huv as [Hobs Hsteps].
-    split; [exact Hobs|]. intro a.
-    pose proof (stable_hitting_match_hitting_lift (Hsteps a)
-      (mdp_sample_hitting (FI := FI) (FO := FO)
-        (MX := FreeOmegaMixedMeasure) (D := D) (mdp_transition D u a))
-      (mdp_sample_hitting (FI := FI) (FO := FO)
-        (MX := FreeOmegaMixedMeasure) (D := D) (mdp_transition D v a))) as Hfront.
-    exact (subenumQ_sampled_heads_reflect Hfront).
-  - exact H.
+  exact (mdp_head_bisim_reflect (FI := FI) (FO := FO)
+    (MX := FreeOmegaMixedMeasure) (@subenumQ_sampled_heads_reflect) (D := D) (s := s) (t := t)).
 Qed.
 
 Theorem subenumQ_mdp_head_bisim_iff s t : mdp_bisim (D := D) s t <-> hb (ehead s) (ehead t).
@@ -149,31 +129,16 @@ Lemma subenumQ_encoded_vis_inversion s t : pb (encode s) (encode t) ->
   forall a, pb (Prob (mdp_transition D s a) encode)
     (Prob (mdp_transition D t a) encode).
 Proof.
-  intro H.
-  pose proof (peutt_hitting_lift H
-    (mdp_encode_hitting (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure) (D := D) s)
-    (mdp_encode_hitting (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure) (D := D) t)) as Hheads.
-  apply subenumQ_dirac_heads_reflect in Hheads.
-  apply mdp_choose_head_rel_iff in Hheads. exact Hheads.
+  exact (mdp_encoded_vis_inversion (FI := FI) (FO := FO)
+    (MX := FreeOmegaMixedMeasure) (FD := free_omega_observable_dirac_ae_laws)
+    (D := D) (s := s) (t := t)).
 Qed.
 
 Theorem subenumQ_peutt_mdp_reflect s t : pb (encode s) (encode t) -> mdp_bisim (D := D) s t.
 Proof.
-  intro H. eapply mdp_bisim_coinduction with (sim := fun u v => pb (encode u) (encode v)).
-  - intros u v Huv. destruct (subenumQ_encoded_vis_inversion Huv) as [Hobs Hsteps].
-    split; [exact Hobs|]. intro a.
-    pose proof (peutt_hitting_lift (Hsteps a)
-      (mdp_sample_hitting (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
-        (D := D) (mdp_transition D u a))
-      (mdp_sample_hitting (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
-        (D := D) (mdp_transition D v a))) as Hfront.
-    pose proof (subenumQ_sampled_heads_reflect Hfront) as Hnative.
-    eapply sem_lift_mono; [|exact Hnative].
-    intros x y Hxy. eapply (peutt_of_hitting_lift (FI := FI) (FO := FO));
-      [apply (mdp_encode_hitting (FI := FI) (FO := FO))|
-       apply (mdp_encode_hitting (FI := FI) (FO := FO))|].
-    apply (@sem_lift_ret MF FI FC). exact Hxy.
-  - exact H.
+  exact (mdp_peutt_reflect (FI := FI) (FO := FO)
+    (MX := FreeOmegaMixedMeasure) (FD := free_omega_observable_dirac_ae_laws)
+    (@subenumQ_sampled_heads_reflect) (D := D) (s := s) (t := t)).
 Qed.
 
 Theorem subenumQ_mdp_peutt_iff s t : mdp_bisim (D := D) s t <-> pb (encode s) (encode t).

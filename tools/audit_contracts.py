@@ -74,7 +74,10 @@ def check_group(group, snapshot, entries):
     context = group['context']
     names = [e['name'] for e in entries]
     if context.startswith('gate-m'):
-        actual = query_direct(names, joint=context == 'gate-m-joint')
+        registered = json.loads(MANIFEST.read_text())['axiom_exceptions']
+        exceptions = {n: registered[n] for n in names if n in registered}
+        kwargs = {'axiom_exceptions': exceptions} if exceptions else {}
+        actual = query_direct(names, joint=context == 'gate-m-joint', **kwargs)
     else:
         modules = [ALLIMPORTS] if context == 'safe-joint' else (
             snapshot['modules'] if context == 'recorded' else None)

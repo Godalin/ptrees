@@ -15,6 +15,7 @@ From PTree.Semantics Require Import TreeTransitionBisim.
 From PTree.Semantics.FreeOmega Require Import MDPCoincidenceFreeOmega.
 Require Import PTree.Interp.Kernel.
 From PTree.Interp.FreeOmega Require Import Cofinality.
+Require PTree.Interp.MDP PTree.Interp.MDPAtomic.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -41,27 +42,17 @@ Local Notation tstate := (@mdp_state F MN MF FI FC FreeOmegaMixedMeasure FO R).
     definition assuming the desired raw-tree preservation theorem. The
     atomic profile below discharges it by unary coinduction. *)
 Definition mdp_handler : Prop :=
-  forall h : shead, sgood h -> tstate (ptree_interp_head_tree handler h).
+  @PTree.Interp.MDP.mdp_handler E F MN MF FI FC FreeOmegaMixedMeasure FO handler R.
+
+Local Lemma interp_bind_ret_l A B (x : A) (k : A -> MF B) :
+  @sem_eq MF FI _ (sem_bind (sem_ret x) k) (k x).
+Proof. apply (sem_eq_refl (SI := FI)). Qed.
 
 Theorem mdp_state_interp (Hhandler : mdp_handler) (t : tree) :
   sstate t -> tstate (PTree.interp handler t).
 Proof.
-  intros [h [mu [Hhit [Heq Hgood]]]].
-  destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-    (fun h : shead => ptree_interp_head_tree handler h)) as [front Hfront].
-  destruct (Hhandler h Hgood) as [h' [out [Hout [Hdirac Hgood']]]].
-  eapply mdp_state_of_hitting with
-    (h := h') (out := free_omega_bind mu front).
-  - eapply (ptree_stable_hitting_interp (FI := FI) (FO := FO));
-      [apply ptree_interp_cofinal_all|exact Hhit|exact Hfront].
-  - eapply (sem_eq_trans (SI := FI)) with (y := front h).
-    + change (free_omega_qlift eq (free_omega_bind mu front)
-        (free_omega_bind (FORet h) front)).
-      eapply FOQLBind; [exact Heq|].
-      intros a b ->. apply (sem_eq_refl (SI := FI)).
-    + eapply (sem_eq_trans (SI := FI)); [|exact Hdirac].
-      eapply stable_hitting_unique; [apply Hfront|exact Hout].
-  - exact Hgood'.
+  exact (PTree.Interp.MDP.mdp_state_interp_of_ret_l (FI := FI) (FC := FC)
+    (MX := FreeOmegaMixedMeasure) (FO := FO) interp_bind_ret_l Hhandler (t := t)).
 Qed.
 
 (** Coincidence is reused, not reproved or built into the handler contract.
@@ -73,8 +64,9 @@ Theorem mdp_interp_peutt_tree_trans_iff (Hhandler : mdp_handler) t u :
    @tree_trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
       (PTree.interp handler t) (PTree.interp handler u)).
 Proof.
-  intros Ht Hu. apply free_mdp_state_peutt_tree_trans_iff;
-    apply mdp_state_interp; assumption.
+  exact (PTree.Interp.MDP.mdp_interp_peutt_tree_trans_iff
+    (FI := FI) (FC := FC) (MX := FreeOmegaMixedMeasure) (FO := FO)
+    (FD := free_omega_observable_dirac_ae_laws) Hhandler (t := t) (u := u)).
 Qed.
 
 Theorem mdp_guarded_interp_tree_trans (Hhandler : mdp_handler)
@@ -84,10 +76,9 @@ Theorem mdp_guarded_interp_tree_trans (Hhandler : mdp_handler)
   @tree_trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
     (PTree.interp handler t) (PTree.interp handler u).
 Proof.
-  intros Ht Hu Htu.
-  apply (proj1 (mdp_interp_peutt_tree_trans_iff Hhandler Ht Hu)).
-  apply (peutt_interp_guarded Hguard).
-  exact (free_mdp_state_tree_trans_bisim_peutt Ht Hu Htu).
+  exact (PTree.Interp.MDP.mdp_guarded_interp_tree_trans
+    (FI := FI) (FC := FC) (MX := FreeOmegaMixedMeasure) (FO := FO)
+    (FD := free_omega_observable_dirac_ae_laws) Hhandler Hguard (t := t) (u := u)).
 Qed.
 
 End GenericMDPInterp.
@@ -125,33 +116,34 @@ Lemma mdp_atomic_candidate_postfixed h :
   mdp_atomic_candidate h ->
   @mdp_headF E MN MF FI FreeOmegaMixedMeasure FO R mdp_atomic_candidate h.
 Proof.
-  intros [source [Hgood ->]]. destruct source as [r|X e k]; [exact I|].
-  intro x. destruct (proj1 (mdp_head_vis_iff e k) Hgood x)
-    as [mu [Hhit [Htotal Hae]]].
-  exists (atomic_map atom mu). split.
-  - constructor. apply atomic_finish_bind. apply atomic_interp_hitting. exact Hhit.
-  - split; [apply Htotal_map; exact Htotal|].
-    unfold atomic_map. eapply (free_omega_ae_bind (NI := NI)); [exact Hae|].
-    intros source Hsource. constructor. exists source. auto.
+  exact (PTree.Interp.MDPAtomic.mdp_atomic_candidate_postfixed
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    (@free_omega_observable_lub_limit_proper MN NI NC NO)
+    (atom := atomic_generic atom) Htotal_map (h := h)).
 Qed.
 
 Theorem mdp_head_atomic h : good h -> good (atomic_head atom h).
 Proof.
-  intro Hh. eapply mdp_head_coinduction with (P := mdp_atomic_candidate).
-  - exact mdp_atomic_candidate_postfixed.
-  - exists h. auto.
+  exact (PTree.Interp.MDPAtomic.mdp_head_atomic
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    (@free_omega_observable_lub_limit_proper MN NI NC NO)
+    (atom := atomic_generic atom) Htotal_map (h := h)).
 Qed.
 
 Theorem atomic_handler_mdp : mdp_handler (R := R) handler.
 Proof.
-  intros h Hh. eapply mdp_state_of_hitting with
-    (h := atomic_head atom h) (out := FORet (atomic_head atom h)).
-  - apply atomic_interp_head_hitting.
-  - apply (sem_eq_refl (SI := FI)).
-  - apply mdp_head_atomic. exact Hh.
+  exact (PTree.Interp.MDPAtomic.atomic_handler_mdp
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    (@free_omega_observable_lub_limit_proper MN NI NC NO)
+    (atom := atomic_generic atom) Htotal_map ).
 Qed.
 
 Theorem mdp_state_interp_atomic t : state t -> state (PTree.interp handler t).
-Proof. apply mdp_state_interp. exact atomic_handler_mdp. Qed.
+Proof.
+  exact (PTree.Interp.MDPAtomic.mdp_state_interp_atomic
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    (@free_omega_observable_lub_limit_proper MN NI NC NO)
+    (atom := atomic_generic atom) Htotal_map (t := t)).
+Qed.
 
 End AtomicMDPInterp.

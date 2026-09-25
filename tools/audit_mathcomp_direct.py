@@ -45,7 +45,7 @@ SAFE_CONTROLS = [
     'PTree.Prob.Backend.MathComp.Retry.mathcomp_retry_fixed_point']
 
 
-def parse_direct(result, endpoints):
+def parse_direct(result, endpoints, axiom_exceptions=None):
     assert result.returncode == 0 and not re.search(r'\bError:', result.stdout + result.stderr), \
         result.stdout + result.stderr
     unsafe = {}
@@ -68,14 +68,15 @@ def parse_direct(result, endpoints):
     entries = parse(SimpleNamespace(returncode=result.returncode,
                                     stdout=output, stderr=result.stderr), endpoints)
     for entry in entries:
-        assert logical_axioms(entry['assumptions']) <= SOUNDNESS_AXIOMS, entry['name']
+        allowed = SOUNDNESS_AXIOMS | set((axiom_exceptions or {}).get(entry['name'], []))
+        assert logical_axioms(entry['assumptions']) <= allowed, entry['name']
         entry.update(unsafe[entry['name']])
         if entry['name'] in SAFE_CONTROLS:
             assert not entry['unsafe_hierarchy'], 'Safe native theorem is tainted'
     return entries
 
 
-def query_direct(endpoints=None, joint=True):
+def query_direct(endpoints=None, joint=True, axiom_exceptions=None):
     endpoints = ENDPOINTS + SAFE_CONTROLS if endpoints is None else endpoints
     assert len(endpoints) == len(set(endpoints)), 'Duplicate Gate M endpoint'
     commands = ['Require PTree.Regression.Infrastructure.AllImports.'] if joint else []
@@ -93,7 +94,7 @@ def query_direct(endpoints=None, joint=True):
     result = subprocess.run(['opam', 'exec', '--', 'coqtop', '-quiet', '-R',
                              '_build/default/theories', 'PTree'], cwd=ROOT,
                             input='\n'.join(commands) + '\n', text=True, capture_output=True)
-    return parse_direct(result, endpoints)
+    return parse_direct(result, endpoints, axiom_exceptions)
 
 
 def check():

@@ -463,3 +463,20 @@ Proof.
 Qed.
 
 End FreeOmegaObservableLaws.
+
+(** Output extensionality of the observable limit relation. This does not
+    assert that observable equality preserves syntactic approximation. *)
+Lemma free_omega_observable_lub_limit_proper {MN}
+    `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+    `{NO : @SemanticOmega MN NI} {A}
+    (c : nat -> FreeOmega MN A) mu nu :
+  free_omega_qlift eq mu nu ->
+  free_omega_qlift eq mu (FOLub c) ->
+  free_omega_qlift eq nu (FOLub c).
+Proof.
+  intros He Hlim.
+  eapply (@sem_eq_trans (FreeOmega MN)
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
+    (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO)));
+    [apply sem_eq_sym; exact He|exact Hlim].
+Qed.

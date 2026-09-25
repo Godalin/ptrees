@@ -1,5 +1,9 @@
 # Classical MDP correspondence: composed endpoint
 
+For the subsequent extraction of generic MDP/atomic proofs and their explicit
+probability-level premises, see [Generic MDP consumers](GENERIC_MDP.md).
+The validation below records the original concrete-endpoint addition.
+
 `Semantics/Backend/MDPEmbeddingSubEnumQ.v` now provides:
 
 ```coq

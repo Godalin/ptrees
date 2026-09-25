@@ -13,6 +13,8 @@ From PTree.Interp.FreeOmega Require Import Base Guarded.
 From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim.
 Require Import PTree.Interp.Kernel.
 From PTree.Interp.FreeOmega Require Import Cofinality.
+Require PTree.Interp.Atomic.
+From PTree.Prob.FreeOmega Require Import Coupling.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -47,13 +49,38 @@ Record atomic_handler := {
     hits (atomic_cont e x) (FORet (FHRet x))
 }.
 
+(** Preserve the established certificate API; its fields instantiate the
+    generic certificate definitionally. No second atomicity proof. *)
+Definition atomic_generic (a : atomic_handler) :
+  PTree.Interp.Atomic.atomic_handler (MF := MF) handler :=
+  {| PTree.Interp.Atomic.atomic_rename := atomic_rename a;
+     PTree.Interp.Atomic.atomic_unrename := atomic_unrename a;
+     PTree.Interp.Atomic.atomic_unrename_rename := atomic_unrename_rename a;
+     PTree.Interp.Atomic.atomic_rename_unrename := atomic_rename_unrename a;
+     PTree.Interp.Atomic.atomic_cont := atomic_cont a;
+     PTree.Interp.Atomic.atomic_start := atomic_start a;
+     PTree.Interp.Atomic.atomic_finish := atomic_finish a |}.
+
+Local Lemma atomic_bind_ret A (mu : MF A) :
+  @sem_eq MF FI _ (sem_bind mu sem_ret) mu.
+Proof. apply FOQLStructural, free_omega_bind_return_lift. Qed.
+
+Local Lemma atomic_bind_ret_l A B (x : A) (k : A -> MF B) :
+  @sem_eq MF FI _ (sem_bind (sem_ret x) k) (k x).
+Proof. apply (sem_eq_refl (SI := FI)). Qed.
+
+Local Lemma atomic_limit_proper A (c : nat -> MF A) mu nu :
+  @sem_eq MF FI _ mu nu ->
+  @sem_lub MF FI FO _ c mu -> @sem_lub MF FI FO _ c nu.
+Proof. apply free_omega_observable_lub_limit_proper. Qed.
+
 Variable atom : atomic_handler.
 
 Lemma atomic_handler_guarded : guarded_handler (NI := NI) (NO := NO) handler.
 Proof.
-  apply (guarded_handler_of_hitting (NC := NC) (NCAE := NCAE) (NCount := NCount)).
-  intros X e. exists (FORet (FHVis (atomic_rename atom e) (atomic_cont atom e))).
-  split; [apply atomic_start|constructor; exact I].
+  exact (PTree.Interp.Atomic.atomic_handler_guarded
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+     (atomic_generic atom)).
 Qed.
 
 Definition atomic_label (label : obs_label E) : obs_label E :=
@@ -85,56 +112,40 @@ Definition atomic_head_graph (h k : head) : Prop := k = atomic_head h.
 
 Lemma atomic_map_lift mu : @sem_lift MF FI _ _ atomic_head_graph mu (atomic_map mu).
 Proof.
-  unfold atomic_map. induction mu; cbn.
-  - apply FOQLStructural, FOLRet. reflexivity.
-  - apply FOQLStructural, FOLZero.
-  - eapply FOQLSample with (T := eq).
-    + apply sem_lift_refl. intro x. reflexivity.
-    + intros x y ->. apply H.
-  - apply FOQLLub. exact H.
+  (** Keep this old helper's weaker native signature: the primitive quotient
+      bind rule needs no native AELift capability. *)
+  unfold atomic_map.
+  eapply FOQLComp with (T := eq) (U := atomic_head_graph)
+    (mid := free_omega_bind mu (fun x => FORet x)).
+  - apply (sem_eq_sym (SI := FI)), FOQLStructural, free_omega_bind_return_lift.
+  - eapply FOQLBind.
+    + apply free_omega_qlift_refl. intro x. reflexivity.
+    + intros x y ->. apply FOQLStructural, FOLRet. reflexivity.
+  - intros x z [y [-> H]]. exact H.
 Qed.
 
 Lemma atomic_interp_head_hitting h :
   hits (ptree_interp_head_tree handler h) (FORet (atomic_head h)).
 Proof.
-  destruct h as [r|X e k].
-  - apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)).
-  - destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-      (fun x => PTree.interp handler (k x))) as [front Hfront].
-    apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
-    change (hits (PTree.bind (handler e) (fun x => PTree.interp handler (k x)))
-      (sem_bind (FORet (FHVis (atomic_rename atom e) (atomic_cont atom e)))
-        (stable_head_bind_front (FI := FI) (fun x => PTree.interp handler (k x)) front))).
-    eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO));
-      [apply ptree_bind_cofinal_all|apply atomic_start|exact Hfront].
+  exact (PTree.Interp.Atomic.atomic_interp_head_hitting
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_limit_proper (atomic_generic atom) h).
 Qed.
 
 Lemma atomic_interp_hitting (t : tree) mu :
   hits t mu -> hits (PTree.interp handler t) (atomic_map mu).
 Proof.
-  intro Hhit. eapply (ptree_stable_hitting_interp (FI := FI) (FO := FO)).
-  - apply ptree_interp_cofinal_all.
-  - exact Hhit.
-  - apply atomic_interp_head_hitting.
+  exact (PTree.Interp.Atomic.atomic_interp_hitting
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_limit_proper (atomic_generic atom) (t := t) (mu := mu)).
 Qed.
 
 Lemma atomic_finish_bind {X} (e : E X) x (k : X -> tree) mu :
   hits (k x) mu -> hits (PTree.bind (atomic_cont atom e x) k) mu.
 Proof.
-  intro Hhit.
-  destruct (stable_hitting_front_choice (FI := FI) (FO := FO) k) as [front Hfront].
-  assert (Hbind : hits (PTree.bind (atomic_cont atom e x) k) (front x)).
-  { change (hits (PTree.bind (atomic_cont atom e x) k)
-      (sem_bind (FORet (FHRet x)) (stable_head_bind_front (FI := FI) k front))).
-    eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO));
-      [apply ptree_bind_cofinal_all|apply atomic_finish|exact Hfront]. }
-  assert (Heq : @sem_eq MF FI _ (front x) mu).
-  { eapply stable_hitting_unique; [apply Hfront|exact Hhit]. }
-  unfold ptree_stable_hitting, stable_hitting in Hbind |- *.
-  eapply FOQLComp with (T := eq) (U := eq) (mid := front x).
-  - apply (sem_eq_sym (SI := FI)). exact Heq.
-  - exact Hbind.
-  - intros a c [b [-> ->]]. reflexivity.
+  exact (PTree.Interp.Atomic.atomic_finish_bind_of_ret_l
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_limit_proper (atomic_generic atom) atomic_bind_ret_l e (x := x) (k := k) (mu := mu)).
 Qed.
 
 (** This normalization relation mentions complete hitting only, never a
@@ -144,17 +155,17 @@ Definition atomic_normalizes (target source : tree) : Prop :=
 
 Lemma atomic_normalizes_interp t : atomic_normalizes (PTree.interp handler t) t.
 Proof.
-  destruct (stable_hitting_exists (FI := FI) (FO := FO)
-    (@ptree_primitive_kernel E MN MF FI FreeOmegaMixedMeasure R) (observe t)) as [mu Hmu].
-  exists mu. split; [exact Hmu|apply atomic_interp_hitting; exact Hmu].
+  exact (PTree.Interp.Atomic.atomic_normalizes_interp
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_limit_proper (atomic_generic atom) t).
 Qed.
 
 Lemma atomic_normalizes_head h :
   atomic_normalizes (stable_head_tree (atomic_head h)) (stable_head_tree h).
 Proof.
-  exists (FORet h). destruct h; split;
-    first [apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)) |
-           apply (ptree_stable_hitting_vis (FI := FI) (FO := FO))].
+  exact (PTree.Interp.Atomic.atomic_normalizes_head
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_limit_proper (atomic_generic atom) h).
 Qed.
 
 Lemma atomic_normalizes_heads target source mu nu :
@@ -192,14 +203,9 @@ Lemma atomic_action_result h label out :
   @head_action_result E MN MF FI FreeOmegaMixedMeasure FO R
     (atomic_label label) (atomic_head h) (atomic_map out).
 Proof.
-  intros [Hstep|Hmiss Hzero].
-  - destruct Hstep. apply HARMatch. constructor.
-    apply atomic_finish_bind. apply atomic_interp_hitting. assumption.
-  - apply HARMiss.
-    + intro H. apply Hmiss. apply atomic_enabled. exact H.
-    + change (free_omega_qlift eq (atomic_map out) (atomic_map FOZero)).
-      unfold atomic_map. eapply FOQLBind; [exact Hzero|].
-      intros a b ->. apply free_omega_qlift_refl. intro z. reflexivity.
+  exact (PTree.Interp.Atomic.atomic_action_result
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_limit_proper (atomic_generic atom) (h := h) (label := label) (out := out)).
 Qed.
 
 Lemma atomic_action_lift h label mu nu :
@@ -208,8 +214,9 @@ Lemma atomic_action_lift h label mu nu :
     (atomic_label label) (atomic_head h) nu ->
   @sem_lift MF FI _ _ atomic_head_graph mu nu.
 Proof.
-  intros Hmu Hnu. eapply (sem_lift_proper_r (SI := FI)); [|apply atomic_map_lift].
-  eapply head_action_result_unique; [apply atomic_action_result; exact Hmu|exact Hnu].
+  exact (PTree.Interp.Atomic.atomic_action_lift
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_bind_ret atomic_limit_proper (atom := atomic_generic atom) (h := h) (label := label) (mu := mu) (nu := nu)).
 Qed.
 
 Lemma atomic_normalizes_trans target source label mu nu :
@@ -218,13 +225,9 @@ Lemma atomic_normalizes_trans target source label mu nu :
   @tree_trans E MN MF FI FreeOmegaMixedMeasure FO R target (atomic_label label) nu ->
   @sem_lift MF FI _ _ atomic_head_graph mu nu.
 Proof.
-  intros Hnorm [fs [ks [Hs [Haes Hos]]]] [ft [kt [Ht [Haet Hot]]]].
-  pose proof (atomic_normalizes_heads Hnorm Hs Ht) as Hfront.
-  pose proof (sem_lift_ae_restrict Hfront Haes Haet) as Hrestricted.
-  eapply (sem_lift_proper_l (SI := FI)); [exact Hos|].
-  eapply (sem_lift_proper_r (SI := FI)); [exact Hot|].
-  eapply (sem_lift_bind (SI := FI)); [exact Hrestricted|].
-  intros h k [-> [Hleft Hright]]. eapply atomic_action_lift; eassumption.
+  exact (PTree.Interp.Atomic.atomic_normalizes_trans
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_bind_ret atomic_limit_proper (atom := atomic_generic atom) (target := target) (source := source) (label := label) (mu := mu) (nu := nu)).
 Qed.
 
 Lemma atomic_normalizes_projects {O1 O2} (OR : O1 -> O2 -> Prop)
@@ -236,11 +239,9 @@ Lemma atomic_normalizes_projects {O1 O2} (OR : O1 -> O2 -> Prop)
   @tree_head_observation E MN MF FI FreeOmegaMixedMeasure FO R _ p2 target nu ->
   @sem_lift MF FI _ _ OR mu nu.
 Proof.
-  intros Hnorm [fs [Hs Hos]] [ft [Ht Hot]].
-  eapply (sem_lift_proper_l (SI := FI)); [exact Hos|].
-  eapply (sem_lift_proper_r (SI := FI)); [exact Hot|].
-  eapply (sem_lift_bind (SI := FI)); [eapply atomic_normalizes_heads; eassumption|].
-  intros h k ->. apply Hp.
+  exact (PTree.Interp.Atomic.atomic_normalizes_projects
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_bind_ret (atom := atomic_generic atom) (OR := OR) (p1 := p1) (p2 := p2) Hp (target := target) (source := source) (mu := mu) (nu := nu)).
 Qed.
 
 Lemma atomic_normalizes_returns target source mu nu :
@@ -249,8 +250,9 @@ Lemma atomic_normalizes_returns target source mu nu :
   @tree_return_observation E MN MF FI FreeOmegaMixedMeasure FO R target nu ->
   @sem_lift MF FI _ _ (fun r s => s = r) mu nu.
 Proof.
-  eapply atomic_normalizes_projects. intros [r|X e k];
-    apply FOQLStructural; constructor; reflexivity.
+  exact (PTree.Interp.Atomic.atomic_normalizes_returns
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_bind_ret (atom := atomic_generic atom) (target := target) (source := source) (mu := mu) (nu := nu)).
 Qed.
 
 Lemma atomic_normalizes_offers target source mu nu :
@@ -259,8 +261,9 @@ Lemma atomic_normalizes_offers target source mu nu :
   @tree_offered_event_observation E MN MF FI FreeOmegaMixedMeasure FO R target nu ->
   @sem_lift MF FI _ _ (fun e f => f = atomic_offer e) mu nu.
 Proof.
-  eapply atomic_normalizes_projects. intros [r|X e k];
-    apply FOQLStructural; constructor; reflexivity.
+  exact (PTree.Interp.Atomic.atomic_normalizes_offers
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_bind_ret (atom := atomic_generic atom) (target := target) (source := source) (mu := mu) (nu := nu)).
 Qed.
 
 (** Push a source coupling across two graph couplings. This is ordinary
@@ -272,21 +275,8 @@ Lemma atomic_couple {A B} (f : A -> B) (AR : A -> A -> Prop) (BR : B -> B -> Pro
   @sem_lift MF FI _ _ (fun a b => b = f a) s2 t2 ->
   (forall a b, AR a b -> BR (f a) (f b)) -> @sem_lift MF FI _ _ BR t1 t2.
 Proof.
-  intros H1 Hmid H2 Hrel.
-  pose proof (sem_lift_comp Hmid H2) as Hright.
-  pose proof (sem_lift_comp (sem_lift_sym H1) Hright) as Hfull.
-  eapply (sem_lift_mono (SI := FI)); [|exact Hfull].
-  intros a b [x [-> [y [Hxy ->]]]]. apply Hrel. exact Hxy.
-Qed.
-
-Local Lemma atomic_match {A} (AR : A -> A -> Prop) (L U : MF A -> Prop) :
-  (exists mu, L mu) -> (exists nu, U nu) ->
-  (forall mu nu, L mu -> U nu -> @sem_lift MF FI _ _ AR mu nu) ->
-  @tree_measure_match MF FI A A AR L U.
-Proof.
-  intros [mu Hmu] [nu Hnu] Hlift. split.
-  - intros q Hq. exists nu. split; [exact Hnu|apply Hlift; assumption].
-  - intros q Hq. exists mu. split; [exact Hmu|apply Hlift; assumption].
+  exact (PTree.Interp.Atomic.atomic_couple (FI := FI)
+    (f := f) (AR := AR) (BR := BR) (s1 := s1) (s2 := s2) (t1 := t1) (t2 := t2)).
 Qed.
 
 Variable RR : R -> R -> Prop.
@@ -298,58 +288,17 @@ Definition atomic_candidate (t u : tree) : Prop :=
 Lemma atomic_candidate_postfixed t u : atomic_candidate t u ->
   @tree_trans_bisimF E MN MF FI FreeOmegaMixedMeasure FO R R RR atomic_candidate t u.
 Proof.
-  intros [s [v [Hts [Huv Hsv]]]]. split.
-  - eapply atomic_match.
-    + apply tree_head_observation_exists.
-    + apply tree_head_observation_exists.
-    + intros out1 out2 H1 H2.
-      destruct (tree_head_observation_exists (FI := FI) (FO := FO)
-        (return_projection (FI := FI)) s) as [mu Hmu].
-      destruct (tree_head_observation_exists (FI := FI) (FO := FO)
-        (return_projection (FI := FI)) v) as [nu Hnu].
-      eapply (atomic_couple (f := fun r : R => r) (AR := RR)).
-      * exact (atomic_normalizes_returns Hts Hmu H1).
-      * exact (tree_trans_bisim_return_observations Hsv Hmu Hnu).
-      * exact (atomic_normalizes_returns Huv Hnu H2).
-      * intros a b Hab. exact Hab.
-  - split.
-    + eapply atomic_match.
-      * apply tree_head_observation_exists.
-      * apply tree_head_observation_exists.
-      * intros out1 out2 H1 H2.
-        destruct (tree_head_observation_exists (FI := FI) (FO := FO)
-          (offered_event_projection (FI := FI)) s) as [mu Hmu].
-        destruct (tree_head_observation_exists (FI := FI) (FO := FO)
-          (offered_event_projection (FI := FI)) v) as [nu Hnu].
-        eapply (atomic_couple (f := atomic_offer) (AR := eq)).
-        -- exact (atomic_normalizes_offers Hts Hmu H1).
-        -- exact (tree_trans_bisim_offered_observations Hsv Hmu Hnu).
-        -- exact (atomic_normalizes_offers Huv Hnu H2).
-        -- intros a b ->. reflexivity.
-    + intro label. eapply atomic_match.
-      * apply tree_trans_exists.
-      * apply tree_trans_exists.
-      * intros out1 out2 H1 H2.
-        destruct (tree_trans_exists (FI := FI) (FO := FO) s (atomic_unlabel label)) as [mu Hmu].
-        destruct (tree_trans_exists (FI := FI) (FO := FO) v (atomic_unlabel label)) as [nu Hnu].
-        eapply (atomic_couple (f := atomic_head) (AR := tree_trans_head_rel TB)).
-        -- eapply atomic_normalizes_trans; [exact Hts|exact Hmu|].
-           rewrite atomic_label_unlabel. exact H1.
-        -- exact (tree_trans_bisim_transitions Hsv Hmu Hnu).
-        -- eapply atomic_normalizes_trans; [exact Huv|exact Hnu|].
-           rewrite atomic_label_unlabel. exact H2.
-        -- intros h k Hhk. exists (stable_head_tree h), (stable_head_tree k).
-           split; [apply atomic_normalizes_head|].
-           split; [apply atomic_normalizes_head|exact Hhk].
+  exact (PTree.Interp.Atomic.atomic_candidate_postfixed
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_bind_ret atomic_limit_proper (atom := atomic_generic atom) (RR := RR) (t := t) (u := u)).
 Qed.
 
 Theorem tree_trans_bisim_interp_atomic (t u : tree) :
   TB t u -> TB (PTree.interp handler t) (PTree.interp handler u).
 Proof.
-  intro Htu. eapply tree_trans_bisim_coinduction with (sim := atomic_candidate).
-  - exact atomic_candidate_postfixed.
-  - exists t, u. split; [apply atomic_normalizes_interp|].
-    split; [apply atomic_normalizes_interp|exact Htu].
+  exact (PTree.Interp.Atomic.tree_trans_bisim_interp_atomic
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    atomic_bind_ret atomic_limit_proper (atomic_generic atom) (RR := RR) (t := t) (u := u)).
 Qed.
 
 End Result.
