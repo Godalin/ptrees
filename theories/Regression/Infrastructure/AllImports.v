@@ -115,6 +115,7 @@ Require PTree.Interp.FreeOmega.HandlerCompletion.
 Require PTree.Interp.FreeOmega.ITreeCompletion.
 Require PTree.Interp.FreeOmega.ITreePreservation.
 Require PTree.Interp.FreeOmega.Iteration.
+Require PTree.Interp.FreeOmega.IterationAlgebra.
 Require PTree.Interp.FreeOmega.MDP.
 Require PTree.Interp.FreeOmega.State.
 Require PTree.Interp.FreeOmega.Translate.
@@ -131,6 +132,7 @@ Require PTree.Interp.ITreePreservation.
 Require PTree.Interp.ITreeSourceInterp.
 Require PTree.Interp.ITreeStructural.
 Require PTree.Interp.Iteration.
+Require PTree.Interp.IterationAlgebra.
 Require PTree.Interp.Kernel.
 Require PTree.Interp.Preservation.
 Require PTree.Interp.Reader.
@@ -384,6 +386,7 @@ Require PTree.Regression.Semantics.MDPFragment.
 Require PTree.Regression.Semantics.MDPInterp.
 Require PTree.Regression.Semantics.OperationalPTSExamples.
 Require PTree.Regression.Semantics.PEuttAlgebra.
+Require PTree.Regression.Semantics.PTreeIterationAlgebra.
 Require PTree.Regression.Semantics.ProbabilisticRelationHierarchy.
 Require PTree.Regression.Semantics.PublicSemanticFacade.
 Require PTree.Regression.Semantics.ReaderWriterFold.

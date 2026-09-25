@@ -369,3 +369,36 @@ Proof.
     (@mathcomp_relational_zero R) Hlimit).
 Qed.
 End BehavioralIteration.
+
+(** Explicit monad laws and pure-map uniformity, still conditional on native
+    relational-lub closure and confined to this existing direct client. *)
+From ITree.Basics Require Import Basics Monad.
+From PTree.Core Require Import IterationLaws.
+From PTree.Interp Require Import IterationAlgebra.
+Section BehavioralIterationAlgebra.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E : Type -> Type}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Local Notation Q := (ptree_peutt_eq1 (E := E) (FI := NI)).
+Variable Hlimit : relational_lub NO.
+
+Example direct_monad_laws_of_relational_lub :
+  @MonadLawsE (ptree E M) Q Monad_ptree.
+Proof.
+  exact (ptree_peutt_monad_laws (@mathcomp_relational_mixed_bind R)
+    (@mathcomp_relational_zero R) Hlimit).
+Qed.
+
+Example direct_uniformity_of_relational_lub {I J A}
+    (f : I -> ptree E M (I+A)) (g : J -> ptree E M (J+A)) (h : I -> J) :
+  (forall i, @eq1 _ Q _
+    (PTree.bind (f i) (fun v => Ret (iteration_map h v))) (g (h i))) ->
+  forall i, @eq1 _ Q _ (PTree.iter f i) (PTree.iter g (h i)).
+Proof.
+  apply (peutt_iter_uniform (@mathcomp_relational_mixed_bind R)
+    (@mathcomp_relational_zero R) Hlimit).
+Qed.
+End BehavioralIterationAlgebra.

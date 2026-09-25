@@ -59,9 +59,15 @@ These are no longer open source-bridge obligations.
    desired commuting conclusion nor adds a theorem-level capability class.
 2. **Full iteration-law inheritance.** The new proofs establish uniformity,
    not a blanket assertion of every Conway/Elgot axiom for every transformer.
-3. **Arbitrary eventful behavioral iteration congruence.** The source ITree
-   obligations are now proved, but the independent PTree iteration theorem
-   still carries its explicit generator-closure requirement.
+3. **Full PTree-target iteration interface.** Eventful behavioral congruence
+   is now proved without a generator-closure premise; see
+   [eventful iteration](EVENTFUL_ITERATION.md). Explicit PTree MonadLawsE,
+   specified-carrier uniformity and finite Tau stuttering are also proved.
+   However the protocol proof's universe constraints prevent its packaging
+   into the full Eq1-wide iteration_uniform interface in actual fold clients.
+   This boundary is tested, not bypassed; see
+   [iteration algebra](ITERATION_ALGEBRA.md). State/Exception fold theorems
+   remain conditional, and their PTree-target instantiation is not claimed.
 4. **Additional effect interfaces.** New public local/catch operations,
    arbitrary effect-order interchange, and generic totality-conditioned
    sample erasure are not added. No synthetic Local/Catch event is introduced.

@@ -9,6 +9,16 @@ does not imply a successful remote CI run.
 
 ## Frozen theory and maintained validation
 
+PTree now has explicit behavioral Eq1 / equivalence / MonadLawsE constructors,
+consumed by existing ReaderT/WriterT/ExceptT law proofs. Pure-map uniformity
+for specified carriers, a Tau-free behavioral fixed-point equation, and
+state-dependent finite Tau stuttering are proved. The stronger Eq1-wide
+iteration_uniform package is **not** established: the existing protocol
+proof imposes event-response universe constraints incompatible with the
+full interface in fold clients. A checked negative probe records the exact
+universe failure; no checker relaxation or foundational refactor is added.
+See [iteration algebra and remaining scope](docs/ITERATION_ALGEBRA.md).
+
 Eventful behavioral iteration now has a generic heterogeneous congruence:
 `Interp/Iteration.peutt_iter_eventful_rel` lifts stepwise `peutt` under the
 sum of arbitrary state/return relations to `peutt` of the actual `PTree.iter`.
