@@ -125,6 +125,7 @@ Require PTree.Interp.FreeOmega.Iteration.
 Require PTree.Interp.FreeOmega.IterationAlgebra.
 Require PTree.Interp.FreeOmega.IterationUniform.
 Require PTree.Interp.FreeOmega.MDP.
+Require PTree.Interp.FreeOmega.Rewriting.
 Require PTree.Interp.FreeOmega.State.
 Require PTree.Interp.FreeOmega.Translate.
 Require PTree.Interp.FreeOmega.Unrestricted.
@@ -387,6 +388,7 @@ Require PTree.Regression.Semantics.CanonicalPartialDivergence.
 Require PTree.Regression.Semantics.EffectAlgebra.
 Require PTree.Regression.Semantics.EventfulIteration.
 Require PTree.Regression.Semantics.ExceptionFold.
+Require PTree.Regression.Semantics.FreeOmegaRewriting.
 Require PTree.Regression.Semantics.GenericAlgebra.
 Require PTree.Regression.Semantics.GenericBind.
 Require PTree.Regression.Semantics.GenericConsumers.

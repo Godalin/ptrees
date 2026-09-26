@@ -58,12 +58,22 @@ endpoints used are `peutt_factory_vn_fair` and
 The `peutt_sample_bind` and `peutt_sample_map` equations belong to generic
 `Eq/Algebra.v`: neither selects EnumQ nor FreeOmega. The unchanged program
 contexts use generic `run_state_peutt_eq_Proper`, `peutt_interp_Proper`,
-`run_exception_peutt_eq_Proper` and `peutt_iter_Proper`. This example only
-registers their FreeOmega specializations locally; it contains no copies of
-these proofs. The three program-specific congruences (embedding, factory,
-controller) remain with their respective example owners. No new global
-instance is registered. See [generic algebra](GENERIC_ALGEBRA.md) for the
-different probability premises of these equations and congruences.
+`run_exception_peutt_eq_Proper` and `peutt_iter_Proper`. Their FreeOmega
+registrations are now provided once, for arbitrary native `MN`, by an opt-in
+library module:
+
+```coq
+From PTree.Interp.FreeOmega Require Import Rewriting.
+Import FreeOmegaRewriting.
+```
+
+The complete calculation declares **no instances, instance registrations or
+hints**. Its `≈ₚ` is a local notation for raw `PEutt.peutt` with the observable
+EnumQ/FreeOmega profile explicitly fixed; it does not use `canonical_peutt`.
+The three application congruences (embedding, factory, controller) are exported
+by their respective facts modules. No generic proof or probability certificate
+is repeated here. See [generic algebra](GENERIC_ALGEBRA.md) for the distinct
+probability premises and the opt-in registration boundary.
 
 `scripted_controller_program_rewrite` specializes this full calculation to the
 actual implementation/specification extracted to OCaml. The extraction proof

@@ -5,51 +5,34 @@
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import Morphisms FunctionalExtensionality.
+From Coq Require Import FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
 From ITree.Events Require Import State Exception.
 From PTree Require Import PTreeFacts.
-From PTree.Eq.Backend Require Import EnumQ.
 From PTree.Prob.Backend.EnumQ Require Import Representation Measure Bind.
-From PTree.Prob.Interface Require Import Measure Mixed.
-From PTree.Prob.FreeOmega Require Import RelationalLimit StructuralMeasure.
-Require Import PTree.Prob.FreeOmega.Measure.
-From PTree.Interp Require Import IterationUniform ExceptionFacts Unrestricted StatePreservation.
+Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure.
+From PTree.Interp.FreeOmega Require Import Rewriting.
+Import FreeOmegaRewriting.
 From PTree.Examples.BernoulliFactory Require Import
   BernoulliFactory BernoulliFactoryComposition OperationalBernoulliFactory
   VonNeumannUnbounded RationalBernoulli.
 From PTree.Examples.FactoryController Require Import Controller Scripted Facts.
-Import GRing.Theory Num.Theory Order.Theory.
+Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Set Default Timeout 20.
 
-(** Only local registration: the generic library owns these congruences.
-    The three program-specific contexts belong to their example owners. *)
-#[local] Existing Instance embed_Proper.
-#[local] Existing Instance factory_with_sampler_Proper.
-#[local] Existing Instance controller_Proper.
-
-#[local] Instance state_rewrite {S E A} :
-  Proper (canonical_peutt eq ==> eq ==> canonical_peutt eq)
-    (@run_state S E EnumQ A) :=
-  run_state_peutt_eq_Proper free_omega_relational_bind
-    free_omega_relational_zero free_omega_relational_lub.
-
-#[local] Instance interp_rewrite {E F A} (h : forall X, E X -> ptree F EnumQ X) :
-  Proper (canonical_peutt eq ==> canonical_peutt eq)
-    (PTree.interp h : ptree E EnumQ A -> ptree F EnumQ A) :=
-  peutt_interp_Proper free_omega_relational_zero free_omega_relational_lub h.
-
-#[local] Instance exception_rewrite {Err E A} :
-  Proper (canonical_peutt eq ==> canonical_peutt eq) (@run_exception Err E EnumQ A) :=
-  run_exception_peutt_eq_Proper free_omega_relational_bind.
-
-#[local] Instance iter_rewrite {E I A} :
-  Proper (pointwise_relation I (canonical_peutt eq) ==> eq ==> canonical_peutt eq)
-    (@PTree.iter E EnumQ A I) :=
-  peutt_iter_Proper free_omega_relational_zero free_omega_relational_lub.
+(** Select the observable interpretation explicitly. This is notation for
+    the raw generic relation, not a second relation or a canonical wrapper. *)
+Local Notation W :=
+  (PEutt.peutt (MN := EnumQ) (MF := FreeOmega EnumQ)
+    (FI := @FreeOmegaObservableSemanticMeasure EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)
+    (FC := @FreeOmegaObservableSemanticMeasureCoreLaws EnumQ EnumQ_SemanticMeasure EnumQ_SemanticMeasureCoreLaws EnumQ_SemanticOmega)
+    (MX := @StructuralMeasure.FreeOmegaMixedMeasure EnumQ)
+    (FO := @FreeOmegaObservableSemanticOmega EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)).
+Local Notation "t ≈ₚ u" := (W eq t u)
+  (at level 70, no associativity) : type_scope.
 
 Section FullProgram.
 Variables pfalse ptrue q : rat.

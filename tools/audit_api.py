@@ -80,7 +80,12 @@ def current_surface(sources):
         ('≃ₚ', 'Eq/PStrong', 'PStrongNotations', 'pstrong'),
         ('≈ₚ', 'Eq/Canonical', 'PEuttNotations', 'canonical_peutt')]:
         owner = 'theories/' + owner + '.v'
-        matches = {p for p, s in sources.items() if re.search(r'Notation "[^"\n]*' + glyph, s)}
+        # Local notation is a client's explicit interpretation, not a second
+        # exported glyph owner. Keep rejecting every nonlocal redefinition.
+        matches = {p for p, s in sources.items()
+                   for m in re.finditer(r'(?m)^[ \t]*(?:(#\[[^\]]*\])\s*)?'
+                                        r'(?:(Local|Global)\s+)?Notation\s+"[^"\n]*' + glyph, s)
+                   if m[2] != 'Local' and not (m[1] and re.fullmatch(r'#\[\s*local\s*\]', m[1]))}
         assert matches == {owner}, (glyph, matches)
         block = sources[owner].split('Module ' + module + '.', 1)[1].split('End ' + module + '.', 1)[0]
         assert block.count(':= (' + relation + ' ') == 2, 'Notation interpretation drift'

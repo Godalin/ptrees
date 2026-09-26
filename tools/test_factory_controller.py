@@ -71,13 +71,26 @@ class FactoryControllerTests(unittest.TestCase):
     def test_calculation_reuses_generic_algebra(self):
         source = without_comments((ROOT /
             'theories/Examples/FactoryController/Rewriting.v').read_text())
-        registration = source.split('Section FullProgram.', 1)[0]
-        self.assertNotIn('Proof.', registration)
+        preamble = source.split('Section FullProgram.', 1)[0]
+        self.assertNotIn('Proof.', preamble)
+        self.assertNotRegex(source, r'\b(?:Instance|Hint|canonical_peutt)\b')
+        self.assertIn('Import FreeOmegaRewriting.', preamble)
+        self.assertIn('PEutt.peutt', preamble)
+        support = without_comments((ROOT /
+            'theories/Interp/FreeOmega/Rewriting.v').read_text())
         for theorem in ['run_state_peutt_eq_Proper', 'peutt_interp_Proper',
                         'run_exception_peutt_eq_Proper', 'peutt_iter_Proper']:
-            self.assertIn(theorem, registration)
-        for theorem in ['embed_Proper', 'factory_with_sampler_Proper', 'controller_Proper']:
-            self.assertIn('Existing Instance ' + theorem, registration)
+            self.assertIn(theorem, support)
+        self.assertNotIn('Proof.', support)
+        self.assertNotIn('#[global]', support)
+        for concrete in ['EnumQ', 'SubEnumQ', 'SubEnumR', 'MathComp', 'CanonicalBehavior']:
+            self.assertNotIn(concrete, support)
+        for path, names in [
+            ('FactoryController/Facts.v', ['embed_Proper', 'controller_Proper']),
+            ('BernoulliFactory/BernoulliFactoryComposition.v', ['factory_with_sampler_Proper'])]:
+            owner = without_comments((ROOT/'theories/Examples'/path).read_text())
+            for name in names:
+                self.assertIn('#[export] Instance ' + name, owner)
         self.assertNotRegex(source, r'Local Lemma sample_(?:bind|map)\b')
 
     def test_impl_really_uses_nested_factory_draws(self):

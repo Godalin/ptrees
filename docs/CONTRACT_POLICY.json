@@ -1464,6 +1464,15 @@
       "rework_retries_same_job",
       "jam_requires_alarm_and_reset",
       "initial_offered_order"
+    ],
+    "theories/Regression/Semantics/FreeOmegaRewriting.v": [
+      "imported_state_proper",
+      "imported_interp_proper",
+      "imported_exception_proper",
+      "imported_iter_proper",
+      "imported_iter_rewrite",
+      "imported_real_iter_rewrite",
+      "imported_rational_iter_rewrite"
     ]
   }
 }

@@ -50,7 +50,7 @@ Proof.
 Qed.
 
 (** This context is specific to the factory, not to generic iteration. *)
-Lemma factory_with_sampler_Proper :
+#[export] Instance factory_with_sampler_Proper :
   Proper (peutt eq ==> eq ==> peutt eq) (@factory_with_sampler factoryE).
 Proof. intros t u H q q' ->. apply peutt_factory_sampler_congr. exact H. Qed.
 

@@ -22,7 +22,7 @@ Lemma embed_preserves {E A} (t u : ptree factoryE EnumQ A) :
   t ≈ₚ u -> @embed E A t ≈ₚ embed u.
 Proof. apply peutt_interp. Qed.
 
-Lemma embed_Proper {E A} :
+#[export] Instance embed_Proper {E A} :
   Proper (canonical_peutt eq ==> canonical_peutt eq) (@embed E A).
 Proof. intros t u H. apply embed_preserves. exact H. Qed.
 
@@ -52,7 +52,7 @@ Proof.
   - reflexivity.
 Qed.
 
-#[local] Instance controller_Proper :
+#[export] Instance controller_Proper :
   Proper (canonical_peutt eq ==> eq ==> canonical_peutt eq) controller.
 Proof. intros s t H pc pc' ->. now apply controller_congr. Qed.
 

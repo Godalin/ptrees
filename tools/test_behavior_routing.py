@@ -84,6 +84,22 @@ class BehaviorRoutingTests(unittest.TestCase):
             with self.subTest(source=source, target=target):
                 self.assertFalse(architecture.permitted(source, target))
 
+    def test_local_notation_does_not_change_public_owner(self):
+        path = 'theories/Examples/LocalNotationProbe.v'
+        for prefix in ['Local ', '#[local] ']:
+            current_surface({**self.sources, path:
+                prefix + 'Notation "t ≈ₚ u" := (peutt eq t u) (at level 70).'})
+        for prefix in ['', 'Global ', '#[global] ', '#[export] ']:
+            with self.subTest(prefix=prefix), self.assertRaises(AssertionError):
+                current_surface({**self.sources, path:
+                    prefix + 'Notation "t ≈ₚ u" := (peutt eq t u) (at level 70).'})
+
+    def test_factory_notation_must_remain_local(self):
+        path = 'theories/Examples/FactoryController/Rewriting.v'
+        with self.assertRaises(AssertionError):
+            current_surface({**self.sources, path: self.sources[path].replace(
+                'Local Notation "t ≈ₚ u"', 'Notation "t ≈ₚ u"')})
+
 
 if __name__ == '__main__':
     unittest.main()

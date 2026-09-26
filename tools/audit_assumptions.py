@@ -72,9 +72,21 @@ def parse(result, endpoints):
     return answers
 
 
+def declaration_module(endpoint):
+    """Require the source library, not a nested Rocq module inside it."""
+    parts = endpoint.split('.')
+    if parts[0] == 'PTree':
+        for end in range(len(parts) - 1, 1, -1):
+            source = ROOT.joinpath('theories', *parts[1:end]).with_suffix('.v')
+            if source.is_file():
+                return '.'.join(parts[:end])
+    # Unknown/foreign references still reach Rocq's checked error protocol.
+    return endpoint.rsplit('.', 1)[0]
+
+
 def query(endpoints, modules=None):
     assert len(endpoints) == len(set(endpoints)), "Duplicate endpoint"
-    modules = sorted(set(modules or [n.rsplit('.', 1)[0] for n in endpoints]))
+    modules = sorted(set(modules or [declaration_module(n) for n in endpoints]))
     commands = ["Require " + m + "." for m in modules]
     commands += ["Set Printing Width 100.", "Set Printing Depth 1000.", "Set Printing Implicit."]
     for i, name in enumerate(endpoints):

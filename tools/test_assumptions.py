@@ -50,6 +50,21 @@ class ParserTests(unittest.TestCase):
             with self.assertRaises(AssertionError): audit.query(['M.x','M.x'])
             run.assert_not_called()
 
+    def test_nested_module_requires_owning_library(self):
+        self.assertEqual(audit.declaration_module(
+            'PTree.Interp.FreeOmega.Rewriting.FreeOmegaRewriting.free_omega_iter_Proper'),
+            'PTree.Interp.FreeOmega.Rewriting')
+        self.assertEqual(audit.declaration_module(
+            'PTree.Regression.Semantics.FreeOmegaRewriting.OptIn.imported_iter_proper'),
+            'PTree.Regression.Semantics.FreeOmegaRewriting')
+        self.assertEqual(audit.declaration_module('PTree.Eq.Algebra.peutt_bind_ret_l'),
+                         'PTree.Eq.Algebra')
+
+    def test_unknown_owner_is_not_silently_dropped(self):
+        self.assertEqual(audit.declaration_module('PTree.MissingOwner.MissingModule.x'),
+                         'PTree.MissingOwner.MissingModule')
+        self.assertEqual(audit.declaration_module('Coq.Init.Logic.eq_refl'), 'Coq.Init.Logic')
+
     def test_comments_and_strings(self):
         self.assertEqual(audit.without_comments('x (* nested (* c *) *) y').split(),['x','y'])
         self.assertEqual(audit.without_comments('"(* literal *)"'),'"(* literal *)"')

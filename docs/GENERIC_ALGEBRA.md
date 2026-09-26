@@ -21,10 +21,58 @@ closure, a specific native representation, or a completion type. In particular,
 `peutt_prob_map` accepts an arbitrary continuation, not only `Ret`. Their compiled
 signatures and assumptions are recorded in `GENERIC_ALGEBRA_CONTRACTS.json`.
 
-The factory-controller calculation now invokes the generic sampling laws
-directly. Its four handler/iter `Proper` declarations are only local
-specializations. Embedding, factory and controller congruences remain in their
-example owners because they mention application programs.
+The factory-controller calculation invokes the generic sampling laws directly
+and contains no `Instance`, `Existing Instance` or hints. Its relation is a
+local notation for explicitly selected raw `PEutt.peutt`, not `canonical_peutt`.
+Embedding, factory and controller congruences are exported by their example
+owners because they mention application programs.
+
+### Opt-in completion registrations
+
+`Interp/FreeOmega/Rewriting.v` contains just four registrations of the generic
+State/interp/exception/iter `Proper` proofs. They are native-parametric, not
+copies for EnumQ, SubEnumQ and SubEnumR. Activate them with:
+
+```coq
+From PTree.Interp.FreeOmega Require Import Rewriting.
+Import FreeOmegaRewriting.
+```
+
+The nested module uses `#[export] Instance`, not `#[global]`. Loading the file
+without importing the nested module does not enable its hints; neither does an
+import inside another client module leak them. The public `PTreeFacts` facade
+does not automatically opt in. The support module has no dependency on
+`Eq/Canonical`, concrete backends or application programs. It fixes the
+observable FreeOmega interpretation and supplies existing probability
+certificates, without reproving congruence or making certificates new classes.
+
+`Regression/Semantics/FreeOmegaRewriting.v` checks both negative import
+boundaries, all four inferred `Proper` goals for arbitrary native `MN`, actual
+loop rewriting, and SubEnumR/SubEnumQ clients without local instances. The
+factory is the EnumQ client, exercising the complete handler/loop stack.
+Direct MathComp is intentionally not part of this completion module; its
+generic theorems and explicit mathematical premises are unchanged.
+
+The opt-in follow-up is based on `1ca9643`. Its full build and 140 tool tests
+passed, including positive/negative registration probes. Architecture, source
+safety and public-surface checks passed. All 465 mainline contracts and the 42
+previous generic-algebra entries remain exact; 11 new registrations/clients
+bring the latter to 53. The factory's 22 contracts pass: only its two complete
+rewrite endpoints have a different printed type because the local notation
+expands to raw `peutt`. Before recording those two types, Rocq checked each new
+proof term against the old canonical type by conversion; their assumptions are
+unchanged. The other 20 entries remain exact.
+
+Joint `coqchk -norec` passed for the support module, its regression, and the
+three changed example modules. This checks five safe module bodies, trusting
+dependencies and excluding Gate M, not the entire library recursively.
+Extracted controller OCaml hashes are unchanged; remote CI was not queried.
+
+The existing audit tooling now resolves nested declarations to their actual
+source library, and distinguishes explicitly local notation from public glyph
+ownership. Mutation tests continue to reject duplicate nonlocal glyphs;
+unknown declarations still reach the checked Rocq error protocol. No new audit
+script, historical replay or logical-axiom exception was added.
 
 `Regression/Semantics/GenericAlgebra.v` checks the minimal shallow profile,
 generic ownership/import isolation, arbitrary-native FreeOmega sampling and
