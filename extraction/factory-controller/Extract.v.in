@@ -9,13 +9,13 @@ From PTree.Execution Require Import Runner.
 From PTree.Execution.Backend Require Import RationalTickets.
 From PTree.Prob.Backend.EnumQ Require Import Representation.
 From PTree.Prob.Backend.SubEnumQ Require Import Representation.
-From PTree.Examples.FactoryController Require Import Controller Scripted Facts.
+From PTree.Examples.FactoryController Require Import Controller Scripted Facts Rewriting.
 Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Definition source_correct := controller_refinement.
 Definition state_correct := state_controller_refinement.
-Definition script_correct := scripted_controller_refinement.
+Definition script_correct := scripted_controller_program_rewrite.
 
 Inductive closed_result (A Seed : Type) :=
 | Continue (t : ptree void1 EnumQ A) (s : Seed)

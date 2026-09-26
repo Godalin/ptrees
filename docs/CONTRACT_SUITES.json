@@ -484,6 +484,14 @@
     "PTree.Examples.FactoryController.Observation.next_device_frontier": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.FactoryController.Rewriting.factory_controller_program_rewrite": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.FactoryController.Rewriting.scripted_controller_program_rewrite": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
     ]
   }
 }

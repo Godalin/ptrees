@@ -1,0 +1,159 @@
+(** Full-program calculation. Only the two unbounded sampler analyses are
+    opaque: VN -> fair, and the standard binary loop -> Bernoulli(q).
+    Everything between them is a visible program-algebra rewrite, inside
+    the SAME infinite controller and the SAME stack of effect handlers. *)
+Set Warnings "-notation-overridden,-ambiguous-paths".
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
+From Coq Require Import Morphisms FunctionalExtensionality.
+From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
+From ITree.Events Require Import State Exception.
+From PTree Require Import PTreeFacts.
+From PTree.Eq.Backend Require Import EnumQ.
+From PTree.Prob.Backend.EnumQ Require Import Representation Measure Bind.
+From PTree.Prob.Interface Require Import Measure Mixed.
+From PTree.Prob.FreeOmega Require Import RelationalLimit StructuralMeasure.
+Require Import PTree.Prob.FreeOmega.Measure.
+From PTree.Interp Require Import IterationUniform ExceptionFacts.
+From PTree.Interp.FreeOmega Require Import Unrestricted State.
+From PTree.Examples.BernoulliFactory Require Import
+  BernoulliFactory BernoulliFactoryComposition OperationalBernoulliFactory
+  VonNeumannUnbounded RationalBernoulli.
+From PTree.Examples.FactoryController Require Import Controller Scripted Facts.
+Import GRing.Theory Num.Theory Order.Theory.
+Local Open Scope ring_scope.
+Set Implicit Arguments.
+Unset Strict Implicit.
+Set Default Timeout 20.
+
+(** Local syntax-directed rewrite congruences. These only register existing
+    bind/iteration/handler laws; none knows the factory refinement theorem. *)
+#[local] Instance embed_rewrite {E A} :
+  Proper (canonical_peutt eq ==> canonical_peutt eq) (@embed E A).
+Proof. intros t u H. apply embed_preserves. exact H. Qed.
+
+#[local] Instance factory_rewrite :
+  Proper (canonical_peutt eq ==> eq ==> canonical_peutt eq)
+    (@factory_with_sampler factoryE).
+Proof. intros t u H q q' ->. apply peutt_factory_sampler_congr. exact H. Qed.
+
+#[local] Instance controller_rewrite :
+  Proper (canonical_peutt eq ==> eq ==> canonical_peutt eq) controller.
+Proof. intros t u H pc pc' ->. apply controller_congr. exact H. Qed.
+
+#[local] Instance state_rewrite {S E A} :
+  Proper (canonical_peutt eq ==> eq ==> canonical_peutt eq)
+    (@run_state S E EnumQ A).
+Proof. intros t u H s s' ->. apply run_state_peutt_eq. exact H. Qed.
+
+#[local] Instance interp_rewrite {E F A} (h : forall X, E X -> ptree F EnumQ X) :
+  Proper (canonical_peutt eq ==> canonical_peutt eq)
+    (PTree.interp h : ptree E EnumQ A -> ptree F EnumQ A).
+Proof. intros t u H. apply peutt_interp. exact H. Qed.
+
+#[local] Instance exception_rewrite {Err E A} :
+  Proper (canonical_peutt eq ==> canonical_peutt eq) (@run_exception Err E EnumQ A).
+Proof.
+  intros t u H. eapply peutt_rel_mono with (RR := exception_result_rel eq).
+  - intros [x|x] [y|y] Hxy; cbn in Hxy; try contradiction; now subst.
+  - apply (run_exception_peutt free_omega_relational_bind). exact H.
+Qed.
+
+#[local] Instance iter_rewrite {E I A} :
+  Proper (pointwise_relation I (canonical_peutt eq) ==> eq ==> canonical_peutt eq)
+    (@PTree.iter E EnumQ A I).
+Proof.
+  intros f g H i j ->.
+  eapply (peutt_iter_direct_rel free_omega_relational_zero free_omega_relational_lub)
+    with (SI := eq).
+  - intros x y ->. eapply peutt_rel_mono.
+    + intros v w ->. destruct w; constructor; reflexivity.
+    + apply H.
+  - reflexivity.
+Qed.
+
+(** Elementary probability algebra, not whole-factory correctness. *)
+Local Lemma sample_bind {E X A} (mu : EnumQ X) (k : X -> ptree E EnumQ A) :
+  PTree.bind (Prob mu (fun x => Ret x)) k ≈ₚ Prob mu k.
+Proof.
+  transitivity (Prob mu (fun x => PTree.bind (Ret x) k)).
+  - apply PTree.Eq.Algebra.peutt_observe_eq. reflexivity.
+  - eapply peutt_prob with (XR := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. exact (PTree.Eq.Algebra.peutt_bind_ret_l y k).
+Qed.
+
+Local Lemma sample_map {E X A} (mu : EnumQ X) (f : X -> A) :
+  (Prob mu (fun x => Ret (f x)) : ptree E EnumQ A) ≈ₚ
+  Prob (bind_EnumQ mu (fun x => ret_EnumQ (f x))) (fun a => Ret a).
+Proof.
+  transitivity (Prob mu (fun x => Prob (ret_EnumQ (f x)) (fun a => Ret a))
+    : ptree E EnumQ A).
+  - eapply peutt_prob with (XR := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. apply peutt_sym.
+      exact (peutt_prob_ret (NI := EnumQ_SemanticMeasure)
+        (FI := FreeOmegaObservableSemanticMeasure) (MX := FreeOmegaMixedMeasure)
+        (f y) (fun a => (Ret a : ptree E EnumQ A))).
+  - apply (peutt_prob_flatten (NI := EnumQ_SemanticMeasure)
+      (FI := FreeOmegaObservableSemanticMeasure) (MX := FreeOmegaMixedMeasure)).
+Qed.
+
+Section FullProgram.
+Variables pfalse ptrue q : rat.
+Variables (pf0 : 0 <= pfalse) (pt0 : 0 <= ptrue) (q0 : 0 <= q) (q1 : q <= 1).
+Hypotheses (pnorm : pfalse + ptrue = 1) (pnontrivial : 0 < pfalse * ptrue).
+Variables (pc : phase) (counts : counters) (script : script_state).
+
+(** A notation, not a new interpreter or an opaque refinement wrapper.
+    Every rewrite below acts under ALL these unchanged program contexts. *)
+Local Notation "'Run' sampler" :=
+  (run_exception
+    (run_state
+      (PTree.interp device_handler
+        (run_state (controller (embed sampler) pc) counts)) script))
+  (at level 10, sampler at next level).
+
+Theorem factory_controller_program_rewrite :
+  Run (biased_to_rational_coin pf0 pt0 q) ≈ₚ Run (factory_direct_q q0 q1).
+Proof.
+  unfold biased_to_rational_coin.
+  (* 1. Run[Controller[Factory(VN(p),q)]]
+        -> Run[Controller[Factory(Fair,q)]].
+        First and only VN probability-analysis lemma. *)
+  setoid_rewrite (peutt_factory_vn_fair pf0 pt0 pnorm pnontrivial).
+  change (Run (factory_with_sampler factory_direct_fair q) ≈ₚ
+    Run (factory_direct_q q0 q1)).
+
+  (* 2. Open the outer factory loop; distribute bind through sampling,
+        eliminate Ret, and combine the finite sampling/return step. *)
+  unfold factory_with_sampler, factory_sampler_step, factory_direct_fair.
+  setoid_rewrite (sample_bind (E := factoryE) vn_fair).
+  setoid_rewrite (sample_map (E := factoryE) vn_fair).
+  assert (Hround :
+    (fun x => (Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
+      (fun a => Ret a) : ptree factoryE EnumQ (rat + bool))) = factory_standard_step).
+  { apply functional_extensionality. intro x. unfold factory_standard_step.
+    rewrite fair_binary_round_measure. reflexivity. }
+  rewrite Hround.
+
+  (* 3. The residual program is the standard binary loop, still INSIDE
+        the controller, both State handlers, device interp and exception. *)
+  change (Run (factory_standard q) ≈ₚ Run (factory_direct_q q0 q1)).
+  (* Second probability-analysis lemma: the unbounded binary loop's law. *)
+  setoid_rewrite (peutt_factory_standard_direct q0 q1).
+  reflexivity.
+Qed.
+End FullProgram.
+
+(** This is the actual pair of closed programs used by OCaml extraction. *)
+Corollary scripted_controller_program_rewrite counts script :
+  scripted_impl counts script ≈ₚ scripted_spec counts script.
+Proof.
+  unfold scripted_impl, scripted_spec, close_controller,
+    device_controller_impl, device_controller_spec, controller_impl, controller_spec,
+    implementation_sampler, specification_sampler, third_to_two_fifths, direct_two_fifths.
+  apply factory_controller_program_rewrite.
+  - exact third_bias_normalized.
+  - exact third_bias_nontrivial.
+Qed.

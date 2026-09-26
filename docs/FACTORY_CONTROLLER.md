@@ -25,8 +25,47 @@ both VN and the outer binary factory can retry arbitrarily often. An
 environment may request Rework or Jam forever. No environment fairness or
 service termination assumption is used in the refinement theorem.
 
-`Facts.v` packages the existing bind and eventful-iteration congruences as
-small local Proper instances. Its user-facing proof is:
+Start with **`Rewriting.v:factory_controller_program_rewrite`** for the full
+program calculation, not the condensed corollaries in `Facts.v`. Its `Run`
+notation expands to the actual complete execution context:
+
+```coq
+run_exception
+  (run_state
+    (PTree.interp device_handler
+      (run_state (controller (embed sampler) pc) counts)) script)
+```
+
+Under this unchanged context the proof explicitly performs:
+
+```
+Factory(VN(p), q)
+  -> Factory(Fair, q)                     VN analysis
+  -> iter (bind (Prob fair Ret) round) q  unfold factory
+  -> iter (Prob fair round) q             bind/Ret algebra
+  -> iter (Prob (bind fair (ret ∘ round)) Ret) q
+                                         native sampling algebra
+  -> standard_binary_loop(q)              finite round-distribution identity
+  -> Prob Bernoulli(q) Ret                binary-loop analysis
+```
+
+These are `setoid_rewrite` / equality rewrites in the complete closed program,
+not applications of `controller_refinement` or
+`scripted_controller_refinement`. The only two unbounded probability-analysis
+endpoints used are `peutt_factory_vn_fair` and
+`peutt_factory_standard_direct`. The finite identity
+`fair_binary_round_measure` is just the exact two-outcome round calculation.
+The local `sample_bind` and `sample_map` lemmas are elementary bind/Prob/Ret
+equations; local Proper instances discharge unchanged program contexts with
+the existing iteration and handler congruences. No new global instance is
+registered.
+
+`scripted_controller_program_rewrite` specializes this full calculation to the
+actual implementation/specification extracted to OCaml. The extraction proof
+pin now points to this theorem. Both arbitrary initial state/script and the
+rational source/target parameters are retained in the general theorem.
+
+`Facts.v` retains the earlier convenient condensed proof:
 
 ```coq
 Theorem controller_refinement : controller_impl ≈ₚ controller_spec.
@@ -55,6 +94,7 @@ these hypotheses; an individual extracted execution may still diverge.
 | T2: nested sampler to rational Bernoulli | Existing `peutt_factory_vn_direct`; concrete `implementation_sampler_correct` |
 | T3: infinite controller refinement | `controller_refinement`, `rational_controller_refinement` |
 | T4: effect interpretation | `state_controller_refinement`, `device_handler_refinement`, `scripted_controller_refinement` |
+| Full program calculation | `factory_controller_program_rewrite`; extracted pair: `scripted_controller_program_rewrite` |
 | T5: explicit next-device probability | `next_action_probability`, `factory_next_action_probability` |
 | Node validity | `implementation_probability`, `specification_probability` |
 
@@ -171,3 +211,19 @@ endpoints have exact compiled type and `Print Assumptions` snapshots. Joint
 `coqchk -norec` passed for the five new application modules and their regression:
 this checks six normally checked module bodies while trusting their compiled
 dependencies, **not** an exhaustive recursive audit of the library.
+
+### Full-program calculation follow-up
+
+Relative to `f4873aa`, `Rewriting.v` adds the explicit calculation above without
+changing the accepted controller, samplers, old Facts, observation theorem or
+probability analysis. A regression consumes its concrete endpoint, and an
+execution-tool test rejects replacing the calculation with an already composed
+refinement theorem. The extraction proof pin uses the new endpoint; generated
+`controller.ml` and `controller.mli` are byte-for-byte unchanged.
+
+Local full build and all 135 tests passed. All 20 existing case-study compiled
+contracts were compared unchanged; the two new contracts inherit exactly the
+same logical-axiom set as the old closed-program refinement. The group now has
+22 contracts. Architecture/source/public-surface checks passed (433 modules,
+unchanged two-file Gate M allowlist). Joint `coqchk -norec` passed for Rewriting
+and its regression, with dependencies trusted. No CI check was requested.

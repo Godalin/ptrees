@@ -26,7 +26,7 @@ class FactoryControllerTests(unittest.TestCase):
     def test_actual_proof_roots_are_extracted(self):
         source = without_comments((ROOT/'extraction/factory-controller/Extract.v.in').read_text())
         for theorem in ['controller_refinement', 'state_controller_refinement',
-                        'scripted_controller_refinement']:
+                        'scripted_controller_program_rewrite']:
             self.assertIn(theorem, source)
         self.assertIn('closed_step demo_impl demo_spec', source)
         self.assertIn('live_step live_impl live_spec', source)
@@ -54,6 +54,19 @@ class FactoryControllerTests(unittest.TestCase):
                 self.assertEqual(events[9], 'ship 23')
                 self.assertIn('experiment=script-exhausted', out)
                 self.assertNotIn('Lost', out)
+
+    def test_complete_calculation_is_not_a_refinement_shortcut(self):
+        source = without_comments((ROOT /
+            'theories/Examples/FactoryController/Rewriting.v').read_text())
+        proof = source.split('Theorem factory_controller_program_rewrite :', 1)[1].split('Qed.', 1)[0]
+        for step in ['peutt_factory_vn_fair', 'sample_bind', 'sample_map',
+                     'fair_binary_round_measure', 'peutt_factory_standard_direct']:
+            self.assertIn(step, proof)
+        for shortcut in ['implementation_sampler_correct', 'peutt_factory_vn_direct',
+                         'peutt_factory_correct', 'peutt_factory_fair_direct',
+                         'peutt_factory_fair_standard', 'controller_refinement',
+                         'device_handler_refinement', 'scripted_controller_refinement']:
+            self.assertNotIn(shortcut, proof)
 
     def test_impl_really_uses_nested_factory_draws(self):
         impl = self.cli('impl', 'script', 42).stdout

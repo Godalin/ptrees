@@ -1446,6 +1446,7 @@
     "theories/Regression/Execution/FactoryController.v": [
       "infinite_source_refinement",
       "interpreted_refinement",
+      "full_program_calculation",
       "raw_factory_nodes_are_probabilities",
       "next_fast_after_state",
       "next_safe_after_state",

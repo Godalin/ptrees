@@ -9,7 +9,7 @@ From ITree.Indexed Require Import Sum.
 From PTree Require Import PTreeFacts.
 From PTree.Eq.Backend Require Import EnumQ ProbabilisticTraceEnumQ.
 From PTree.Interp Require Import State.
-From PTree.Examples.FactoryController Require Import Controller Facts Observation Probability Scripted.
+From PTree.Examples.FactoryController Require Import Controller Facts Observation Probability Scripted Rewriting.
 Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Set Default Timeout 20.
@@ -26,6 +26,9 @@ Example infinite_source_refinement : controller_impl ≈ₚ controller_spec.
 Proof. apply controller_refinement. Qed.
 Example interpreted_refinement : demo_impl ≈ₚ demo_spec.
 Proof. apply scripted_controller_refinement. Qed.
+Example full_program_calculation counts script :
+  scripted_impl counts script ≈ₚ scripted_spec counts script.
+Proof. apply scripted_controller_program_rewrite. Qed.
 Example raw_factory_nodes_are_probabilities : probabilistic_ptree controller_impl.
 Proof. apply implementation_probability. Qed.
 

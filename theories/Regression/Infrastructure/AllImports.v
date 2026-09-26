@@ -85,6 +85,7 @@ Require PTree.Examples.FactoryController.Controller.
 Require PTree.Examples.FactoryController.Facts.
 Require PTree.Examples.FactoryController.Observation.
 Require PTree.Examples.FactoryController.Probability.
+Require PTree.Examples.FactoryController.Rewriting.
 Require PTree.Examples.FactoryController.Scripted.
 Require PTree.Examples.ITreeSampling.
 Require PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService.
