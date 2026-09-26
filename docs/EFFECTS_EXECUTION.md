@@ -1,5 +1,11 @@
 # Standard effects and executable PTree interpretation
 
+The [Interactive Bernoulli Factory Controller](FACTORY_CONTROLLER.md) combines
+these layers in one application: the existing VN/factory is rewritten to a
+direct sampler inside an infinite device controller, then interpreted through
+State and a scripted device handler. Both a closed experiment and a live IO
+adapter execute the actual extracted implementation, without a retry fuel.
+
 ## Execution roles and public terminology
 
 `Core.fold handle sample` is the principal interpretation/execution abstraction:

@@ -81,6 +81,11 @@ Require PTree.Examples.BernoulliFactory.RealBernoulliMathComp.
 Require PTree.Examples.BernoulliFactory.RealBernoulliOracle.
 Require PTree.Examples.BernoulliFactory.VonNeumannUnbounded.
 Require PTree.Examples.EffectInteractions.
+Require PTree.Examples.FactoryController.Controller.
+Require PTree.Examples.FactoryController.Facts.
+Require PTree.Examples.FactoryController.Observation.
+Require PTree.Examples.FactoryController.Probability.
+Require PTree.Examples.FactoryController.Scripted.
 Require PTree.Examples.ITreeSampling.
 Require PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService.
 Require PTree.Examples.MathCompPrograms.
@@ -326,6 +331,7 @@ Require PTree.Regression.Backend.SubEnumRBehavior.
 Require PTree.Regression.Backend.SubEnumRRelational.
 Require PTree.Regression.Backend.SubEnumRShared.
 Require PTree.Regression.Backend.UnifiedFrontierEnumQ.
+Require PTree.Regression.Execution.FactoryController.
 Require PTree.Regression.Execution.FiniteDistribution.
 Require PTree.Regression.Execution.Outcome.
 Require PTree.Regression.Execution.RationalTickets.

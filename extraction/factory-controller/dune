@@ -1,0 +1,14 @@
+(rule
+ (target Extract.v)
+ (deps Extract.v.in)
+ (action (copy %{dep:Extract.v.in} %{target})))
+
+(rule
+ (targets controller.ml controller.mli)
+ (deps Extract.v (glob_files_rec ../../theories/*.vo))
+ (action (run coqtop -quiet -batch -R ../../theories PTree -l %{dep:Extract.v})))
+
+(executable
+ (name main)
+ (modules main controller)
+ (flags (:standard -w -a)))

@@ -1442,6 +1442,17 @@
       "validated_encode_mdp_state",
       "validated_mdp_tree_trans_bisim_iff",
       "type_valued_native_joint"
+    ],
+    "theories/Regression/Execution/FactoryController.v": [
+      "infinite_source_refinement",
+      "interpreted_refinement",
+      "raw_factory_nodes_are_probabilities",
+      "next_fast_after_state",
+      "next_safe_after_state",
+      "pass_increments_and_ships",
+      "rework_retries_same_job",
+      "jam_requires_alarm_and_reset",
+      "initial_offered_order"
     ]
   }
 }

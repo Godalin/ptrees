@@ -2,6 +2,11 @@
 
 ## Introduction
 
+For an end-to-end example, see the [Interactive Bernoulli Factory
+Controller](docs/FACTORY_CONTROLLER.md): a nested unbounded sampler, an infinite
+response-dependent device service, algebraic refinement, State interpretation,
+exact next-event probabilities, and execution of the same extracted program.
+
 PTree is an intensional representation of computations in which native
 probability, potentially infinite internal computation, and observable event
 sequences coexist.  Stable hitting extracts its extensional probabilistic
