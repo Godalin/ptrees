@@ -1245,6 +1245,24 @@ Proof.
   intros s1 s2 Hsim. left. exact Hsim.
 Qed.
 
+(** Client introduction rule: expose the related prefix and branch
+    obligations without unpacking the closure's existential encoding. *)
+Lemma bind_upto_closure_bind {A B R1 R2}
+    (RR0 : A -> B -> Prop) (RR : R1 -> R2 -> Prop) sim
+    (t1 : ptree E MN R1) (t2 : ptree E MN R2)
+    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN B) :
+  peutt RR t1 t2 ->
+  (forall r1 r2, RR r1 r2 ->
+    sim (observe (k1 r1)) (observe (k2 r2)) \/
+    peutt RR0 (k1 r1) (k2 r2)) ->
+  bind_upto_closure RR0 sim
+    (observe (PTree.bind t1 k1)) (observe (PTree.bind t2 k2)).
+Proof.
+  intros Ht Hk. right. right.
+  exists R1, R2, RR, t1, t2, k1, k2.
+  repeat split; assumption || reflexivity.
+Qed.
+
 Lemma bind_upto_closure_mono A B (RR0 : A -> B -> Prop) sim1 sim2 :
   (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
   forall s1 s2, bind_upto_closure RR0 sim1 s1 s2 ->

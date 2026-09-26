@@ -69,6 +69,7 @@ Require PTree.Eq.Shallow.
 Require PTree.Eq.StableHittingComputation.
 Require PTree.Eq.StableHittingRelation.
 Require PTree.Eq.UnifiedFrontier.
+Require PTree.Eq.UpToProb.
 Require PTree.Eq.WellFormedness.
 Require PTree.Examples.AdaptiveFactoryController.
 Require PTree.Examples.BernoulliFactory.BernoulliFactory.
@@ -416,6 +417,7 @@ Require PTree.Regression.Semantics.TreeTransitionBisim.
 Require PTree.Regression.Semantics.TreeTransitionSoundness.
 Require PTree.Regression.Semantics.TreeTransitionStrictness.
 Require PTree.Regression.Semantics.UnrestrictedInterp.
+Require PTree.Regression.Semantics.UpToProb.
 Require PTree.Semantics.
 Require PTree.Semantics.Backend.MDPEmbeddingSubEnumQ.
 Require PTree.Semantics.FreeOmega.MDPCoincidenceFreeOmega.

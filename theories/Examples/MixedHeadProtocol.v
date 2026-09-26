@@ -23,7 +23,8 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
-From PTree.Eq Require Import PEutt.
+From PTree.Eq Require Import PEutt UpToProb.
+From PTree.Prob.FreeOmega Require Import BindOrder.
 From PTree.Eq.Backend Require Import ProbabilisticTraceSubEnumQ.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -222,49 +223,44 @@ Proof.
   - intros [b|b] _; [apply (stable_hitting_ret (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))|apply (stable_hitting_vis (FI := FI) (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))].
 Qed.
 
-(** Root quantifies over every hidden bit. After additionally remembers the
-    challenge supplied by the environment. No up-to closure is involved. *)
+(** Only roots and replies belong to the invariant.  The
+    after-challenge sampling context is discharged by up-to-Prob; its
+    explicit hitting witnesses above remain available for analysis. *)
 Definition mixed_protocol_sim (s1 s2 : ptree' mixedE SubEnumQ bool) : Prop :=
   (exists m, s1 = observe (masked_impl m) /\ s2 = observe mixed_spec) \/
-  (exists m c, s1 = observe (masked_after m c) /\ s2 = observe (mixed_after c)).
+  (exists rsh b,
+    s1 = observe (Vis (Reply b) (fun ack =>
+      masked_impl (masked_update rsh (response_value ack)))) /\
+    s2 = observe (Vis (Reply b) (fun _ => mixed_spec))).
 Lemma MPSRoot m : mixed_protocol_sim (observe (masked_impl m)) (observe mixed_spec).
 Proof. left. exists m. split; reflexivity. Qed.
-Lemma MPSAfter m c : mixed_protocol_sim (observe (masked_after m c)) (observe (mixed_after c)).
-Proof. right. exists m, c. split; reflexivity. Qed.
-
-Lemma mixed_heads_lift m c :
-  @sem_lift MF FI _ _ (@ptree_stable_head_rel mixedE SubEnumQ bool bool eq mixed_protocol_sim)
-    (masked_after_heads m c) (spec_after_heads c).
-Proof.
-  unfold masked_after_heads, spec_after_heads.
-  eapply (mixed_lift_bind (NI := SubEnumQ_SemanticMeasure) (FI := FI)
-    (MX := FreeOmegaMixedMeasure)) with (R := mixed_outcome_rel m c).
-  - exact (mixed_triple_outcome_lift m c).
-  - intros rsh o ->. apply (sem_lift_ret (SI := FI)).
-    unfold ptree_stable_head_rel, masked_head, spec_head.
-    destruct (mixed_encode m c rsh) as [b|b].
-    + apply FHRRet. reflexivity.
-    + apply FHRVis. intro ack. apply MPSRoot.
-Qed.
 
 Lemma mixed_protocol_sim_postfixed : forall s1 s2, mixed_protocol_sim s1 s2 ->
   @stable_hitting_match MF FI FreeOmegaObservableSemanticOmega
     (ptree' mixedE SubEnumQ bool) (ptree' mixedE SubEnumQ bool)
     mixed_head mixed_head kernel kernel
-    (@ptree_stable_head_rel mixedE SubEnumQ bool bool eq) mixed_protocol_sim s1 s2.
+    (@ptree_stable_head_rel mixedE SubEnumQ bool bool eq)
+    (prob_upto_closure (FI := FI) eq mixed_protocol_sim) s1 s2.
 Proof.
-  intros s1 s2 [[m [-> ->]]|[m [c [-> ->]]]].
+  intros s1 s2 [[m [-> ->]]|[rsh [b [-> ->]]]].
   - rewrite masked_impl_unfold mixed_spec_unfold.
-    apply stable_hitting_match_vis. intro answer. apply MPSAfter.
-  - eapply stable_hitting_match_of_hitting_lift.
-    + exact (masked_after_hitting m c).
-    + exact (spec_after_hitting c).
-    + exact (mixed_heads_lift m c).
+    apply stable_hitting_match_vis. intro answer.
+    eapply prob_upto_closure_sample.
+    + exact (mixed_triple_outcome_lift m (response_value answer)).
+    + intros rsh o ->. unfold masked_branch, spec_branch.
+      destruct (mixed_encode m (response_value answer) rsh) as [b|b].
+      * right. apply peutt_ret. reflexivity.
+      * left. right. exists rsh, b. split; reflexivity.
+  - apply stable_hitting_match_vis. intro ack.
+    apply prob_upto_closure_includes. apply MPSRoot.
 Qed.
 
 Theorem masked_protocol_equivalent m : peutt eq (masked_impl m) mixed_spec.
 Proof.
-  eapply peutt_coinduction with (sim := mixed_protocol_sim).
+  eapply (peutt_coinduction_upto_prob (NI := SubEnumQ_SemanticMeasure)
+    (FI := FI) (FO := FreeOmegaObservableSemanticOmega)
+    (MX := FreeOmegaMixedMeasure))
+    with (sim := mixed_protocol_sim); try typeclasses eauto.
   - exact mixed_protocol_sim_postfixed.
   - apply MPSRoot.
 Qed.

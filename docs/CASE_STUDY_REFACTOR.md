@@ -42,8 +42,8 @@ arguments need not be disguised as rewrites.
 | `BernoulliFactory/OperationalBernoulliFactory.v` | Shared hitting analysis | Retain `peutt_factory_vn_fair` and `peutt_factory_standard_direct`; these are substantive analyses, not hidden composition proofs. |
 | `BernoulliFactory/RealBernoulliOracle.v` | Shared analysis/program | Retain binary-oracle representation conditions and missing-mass convergence. |
 | `BernoulliFactory/RealBernoulliMathComp.v` | Shared native MathComp analysis | Retain normally universe-checked measure/lub proof and its representation premise. No direct recursive frontier is introduced. |
-| `InteractiveVonNeumann/InteractiveVonNeumannService.v` | Paper case study | Retain the explicit request/reply simulation and its support/quantitative certificates. Do not conceal the invariant behind a purported unconditional loop rewrite. |
-| `MixedHeadProtocol.v` | Paper case study | Retain mixed return/visible-head invariant, finite coupling analysis and quantitative observation endpoint. |
+| `InteractiveVonNeumann/InteractiveVonNeumannService.v` | Paper case study | Root/reply invariant with up-to-bind for the sampler context; retain explicit hitting and quantitative certificates. See `UP_TO.md`. |
+| `MixedHeadProtocol.v` | Paper case study | Root/reply invariant with up-to-Prob for the finite native coupling; retain mixed-head analysis and quantitative observations. See `UP_TO.md`. |
 | `RandomWalk.v` | Paper case study | Retain height-translation stopping invariant, successive-passages normalization and harmonic/limit analysis. No unproved probability-to-bisimulation converse. |
 | `MathCompPrograms.v` | Supporting syntax | Retain safe retry/nested-retry definitions; actual direct-frontier clients stay in existing Gate M regressions. |
 

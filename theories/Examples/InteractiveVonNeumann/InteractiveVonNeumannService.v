@@ -25,6 +25,7 @@ From PTree.Eq.Backend Require Import ProbabilisticTraceEnumQ.
 From PTree.Eq Require Import ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
+From PTree.Prob.FreeOmega Require Import BindOrder.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded OperationalVonNeumann.
 
 Set Implicit Arguments.
@@ -681,27 +682,27 @@ Definition interactive_service_sim
     (s1 s2 : ptree' coin_serviceE EnumQ bool) : Prop :=
   (s1 = observe von_neumann_service /\
     s2 = observe direct_fair_service) \/
-  (s1 = observe vn_after_request /\
-    s2 = observe direct_after_request).
+  (exists b, s1 = observe (publish b von_neumann_service) /\
+    s2 = observe (publish b direct_fair_service)).
 
 Definition interactive_service_upto
     (s1 s2 : ptree' coin_serviceE EnumQ bool) : Prop :=
-  interactive_service_sim s1 s2 \/
-  @peutt_state coin_serviceE EnumQ MF
+  @bind_upto_closure coin_serviceE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)
       (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega bool bool eq s1 s2.
+    FreeOmegaObservableSemanticOmega bool bool eq interactive_service_sim s1 s2.
 
 Lemma ISSRoot : interactive_service_sim
     (observe von_neumann_service) (observe direct_fair_service).
 Proof. left. split; reflexivity. Qed.
 
-Lemma ISSAfterRequest : interactive_service_sim
-    (observe vn_after_request) (observe direct_after_request).
-Proof. right. split; reflexivity. Qed.
+Lemma ISSPublish b : interactive_service_sim
+    (observe (publish b von_neumann_service))
+    (observe (publish b direct_fair_service)).
+Proof. right. exists b. split; reflexivity. Qed.
 
 Lemma after_request_heads_lift :
   service_lift (service_stable_rel eq interactive_service_sim)
@@ -713,15 +714,6 @@ Proof.
   - intros b1 b2 ->. unfold vn_reply_front, direct_reply_front.
     apply FOQLStructural. apply FOLRet. apply FHRVis. intros [].
     exact ISSRoot.
-Qed.
-
-Lemma after_request_heads_lift_upto :
-  service_lift (service_stable_rel eq interactive_service_upto)
-    vn_after_request_heads direct_after_request_heads.
-Proof.
-  eapply sem_lift_mono; [|exact after_request_heads_lift].
-  apply stable_head_rel_mono. intros x1 x2 Hsim.
-  left. exact Hsim.
 Qed.
 
 Lemma interactive_service_sim_postfixed :
@@ -736,14 +728,14 @@ Lemma interactive_service_sim_postfixed :
       (@service_stable_rel bool bool eq)
       interactive_service_upto s1 s2.
 Proof.
-  intros s1 s2 [[-> ->]|[-> ->]].
+  intros s1 s2 [[-> ->]|[b [-> ->]]].
   - rewrite observe_von_neumann_service observe_direct_fair_service.
     apply stable_hitting_match_vis. intros [].
-    left. exact ISSAfterRequest.
-  - eapply stable_hitting_match_of_hitting_lift.
-    + exact vn_after_request_weak.
-    + exact direct_after_request_weak.
-    + exact after_request_heads_lift_upto.
+    eapply bind_upto_closure_bind.
+    + exact service_sampler_equivalent.
+    + intros b1 b2 ->. left. apply ISSPublish.
+  - apply stable_hitting_match_vis. intros [].
+    left. exact ISSRoot.
 Qed.
 
 Theorem interactive_von_neumann_service_equivalent :
@@ -756,8 +748,9 @@ Theorem interactive_von_neumann_service_equivalent :
     FreeOmegaObservableSemanticOmega bool bool eq
     von_neumann_service direct_fair_service.
 Proof.
-  eapply peutt_coinduction_upto
-    with (sim := interactive_service_sim).
+  eapply peutt_coinduction_upto_bind
+    with (sim := interactive_service_sim); try typeclasses eauto.
+  - intros. apply ptree_bind_cofinal_all.
   - exact interactive_service_sim_postfixed.
   - exact ISSRoot.
 Qed.
@@ -824,10 +817,11 @@ Lemma after_request_peutt :
     FreeOmegaObservableSemanticOmega bool bool eq
     vn_after_request direct_after_request.
 Proof.
-  eapply peutt_coinduction_upto
-    with (sim := interactive_service_sim).
-  - exact interactive_service_sim_postfixed.
-  - exact ISSAfterRequest.
+  unfold vn_after_request, direct_after_request.
+  eapply PTree.Eq.Bind.peutt_bind.
+  - exact service_sampler_equivalent.
+  - intros b1 b2 ->. apply peutt_vis. intros [].
+    exact interactive_von_neumann_service_equivalent.
 Qed.
 
 (** The implementation's unbounded retry loop has the same quantitative
@@ -1027,6 +1021,6 @@ Qed.
 (** This is an infinite visible behavior, not a terminating sampler theorem:
     both roots expose [CoinRequest], both replies recurse to the original
     service, and the proof above closes that recursive continuation only via
-    [peutt_coinduction].  The implementation nevertheless uses
+    [peutt_coinduction_upto_bind].  The implementation nevertheless uses
     the genuinely unbounded AST certificate [service_von_neumann_ast] between
     every request and reply. *)

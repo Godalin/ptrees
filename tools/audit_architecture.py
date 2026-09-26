@@ -133,7 +133,7 @@ def permitted(module, dependency):
     if module == "PTree":
         return under("Core")
     if module == "Eq":
-        return dependency in {"Eq/PStruct", "Eq/PStrong", "Eq/PEutt", "Eq/Canonical"}
+        return dependency in {"Eq/PStruct", "Eq/PStrong", "Eq/PEutt", "Eq/Canonical", "Eq/UpToProb"}
     if module == "PTreeFacts":
         return dependency in {"PTree", "Eq", "Eq/UnifiedFrontier", "Eq/PrimitiveStableHitting",
             "Eq/WellFormedness", "Eq/StableHittingComputation", "Eq/ProbabilisticTrace", "Eq/Bind", "Eq/Algebra", "Eq/Iter",

@@ -155,7 +155,8 @@ stable hitting and proves the canonical endpoint
 `Examples/InteractiveVonNeumann/InteractiveVonNeumannService.v` places the extractor between an
 infinite sequence of request/reply events and proves
 `interactive_von_neumann_service_equivalent` using guarded `Vis` matching and
-coinduction up to `≈ₚ`.
+coinduction up to bind: only service roots and reply states enter the
+candidate; the sampler equivalence discharges the bind prefix.
 
 `Examples/RandomWalk.v` studies an infinite-state loop: with probability
 `2/3`, decrement the height and increment a streak; otherwise increment the
@@ -191,9 +192,10 @@ forgets h and adds its two preimage masses for each abstract outcome.
 The eight sampled atoms yield six concrete stable head forms: two returns
 (h is discarded) and four Reply heads (two continuations per label).
 The coupling merges each pair of Reply heads into one specification head.
-A two-phase relation closes
-all response-dependent continuations using plain
-`peutt_coinduction` (no up-to closure). The theorem
+A root/reply relation closes all response-dependent continuations using
+`peutt_coinduction_upto_prob`: the finite native coupling discharges the
+after-challenge sampling context. Explicit hitting witnesses are retained
+for quantitative analysis, not needed in the coinductive proof. The theorem
 `masked_protocol_equivalent` holds for either initial hidden bit.
 The bounded backend is `SubEnumQ`, with intrinsic `probabilistic_ptree`
 certificates. `masked_challenge_true_reply_probability` proves that the
@@ -380,7 +382,8 @@ The maintained artifact establishes:
 - one canonical weak probabilistic equivalence `≈ₚ`, including reflexivity,
   symmetry, transitivity, Tau weakening, probability congruence, and bind
   congruence;
-- a sound heterogeneous coinduction-up-to-bind rule;
+- sound heterogeneous coinduction up to bind and coupled native sampling,
+  with concrete protocol clients ([up-to guide](docs/UP_TO.md));
 - one semantics for bounded and genuinely unbounded AST computation;
 - eventful iteration, interpretation/translation laws, and quantitative
   next-event observations;
