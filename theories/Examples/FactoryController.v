@@ -1,5 +1,4 @@
 (** Case role: paper case study.
-    Proof mode: algebraic rewriting.
     Reading entry: Rewriting.factory_controller_program_rewrite.
     Scope: EnumQ / observable FreeOmega; native validity and quantitative results are separate.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

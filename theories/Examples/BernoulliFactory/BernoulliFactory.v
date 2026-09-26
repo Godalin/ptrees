@@ -1,5 +1,4 @@
 (** Case role: shared supporting program.
-    Proof mode: program definitions and finite analysis.
     Reading entry: biased_to_rational_coin; fair_binary_round_measure.
     Scope: EnumQ concrete distributions are intentional; composition is in BernoulliFactoryComposition.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

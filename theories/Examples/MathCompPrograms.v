@@ -1,5 +1,4 @@
 (** Case role: supporting example.
-    Proof mode: execution/validation (program definitions only).
     Reading entry: mathcomp_retry; mathcomp_nested_retry.
     Scope: Safe native syntax; direct frontier validation lives in the existing Gate M client.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

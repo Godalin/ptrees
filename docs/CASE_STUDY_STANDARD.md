@@ -1,7 +1,7 @@
 # Case-study 展示与重写标准
 
-状态：**APPROVED with four clarifications**。
-草案基线：`e2c8a57`；四项澄清以 `e969912` 为迁移前基线。
+状态：**APPROVED**。
+草案基线：`e2c8a57`；迁移前基线：`e969912`。
 已获准按下述分类持续重构，进度记录于 `CASE_STUDY_REFACTOR.md`。
 
 ## 1. 目标与非目标
@@ -21,16 +21,7 @@ MathComp 的信任边界，也不要求所有例子覆盖所有框架功能。
 每个 case 文件开头明确四件事：native/frontier profile、使用的关系、
 effects/handlers、主结论与适用范围。
 
-另外声明文件角色和 proof mode，不把所有例子强制归为同一种证明：
-
-| Proof mode | 主贡献及验收重点 |
-| --- | --- |
-| algebraic rewriting | 完整程序的代数变换链 |
-| relational/coinductive | 明确的 relation/invariant；局部程序变换优先代数化 |
-| analysis-dominated | 概率定理；提供干净的程序端分析消费接口 |
-| execution/validation | 实际执行入口及其已证明保证，区分实验与概率证明 |
-
-混合案例可标主次 mode，但不能用分类掩盖本可复用代数的重复证明。
+另外说明文件职责（见 §3），不要求给证明方法分类。
 
 - 程序定义使用 `PTree`；等式推理使用 `Eq` / `PTreeFacts` 或明确的
   theorem owner。具体 backend 显式导入，不能依赖偶然的传递导入或
@@ -124,6 +115,9 @@ example、shared analysis、execution demo 或 regression-like example，
 
 ## 4. 主证明：以完整程序的代数链为主体
 
+“代数链”约束的是本可由程序代数完成的变换；不要求把真正的分析、
+互模拟或不变量证明伪装成 rewrite。
+
 主结论比较真实的源程序和规格程序；可以用透明记号表示完整 handler
 栈，但不能用不透明包装隐藏要展示的变换。
 
@@ -197,7 +191,7 @@ backend 与假设、明确未声称的性质、可选的运行入口。
 ## 7. 当前覆盖范围与候选顺序
 
 以下来自当前 `theories/Examples` 文件盘点，不是逐证明完成度验收。
-所有现有 Examples 都要获得文件角色、proof mode 和
+所有现有 Examples 都要说明文件职责，并给出
 “按标准改写 / 已符合 / 分析例外”的明确结论；并非都升级为论文主案例。
 Regression 不自动纳入论文 case 迁移，也不删其负向测试。
 
@@ -249,4 +243,5 @@ Regression 不自动纳入论文 case 迁移，也不删其负向测试。
 - 按职责清晰的批次提交并推送；保留用户其他工作；默认不查询 CI。
 
 **推进顺序：先完成 FactoryController 试点，将具体 round 计算移出主链；
-再按 proof mode 审查全部 case families。分析和执行支持文件不做无谓美化。**
+再逐项审查全部 case families 的实际程序变换与分析接口。
+分析和执行支持文件不做无谓美化。**

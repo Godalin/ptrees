@@ -1,5 +1,4 @@
 (** Case role: paper case study.
-    Proof mode: relational/coinductive.
     Reading entry: masked_protocol_equivalent; masked_challenge_true_reply_probability.
     Scope: SubEnumQ / observable FreeOmega; mixed return/visible frontiers require the displayed invariant.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

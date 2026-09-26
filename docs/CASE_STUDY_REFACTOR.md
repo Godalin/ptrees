@@ -1,7 +1,9 @@
 # Case-study algebraic presentation refactor
 
 Baseline: `e969912`. Standard: [CASE_STUDY_STANDARD.md](CASE_STUDY_STANDARD.md),
-approved with four clarifications. Local validation only; CI is not queried.
+approved, retaining the file-role, concrete-analysis and stable-endpoint
+clarifications without a proof-method classification. Local validation only;
+CI is not queried.
 
 ## Scope and stable contracts
 
@@ -13,19 +15,21 @@ change with an explicit replacement; compiled snapshots are not silently reset.
 The 20 source files below are the entire current Examples inventory. A retained
 analysis file is an intentional outcome, not an unfinished attempt to turn
 convergence or invariant arguments into rewrite scripts. Headers now identify
-each file's role, proof mode, reading entry and claim boundary.
+each file's role, reading entry and claim boundary. Algebraic transformations
+should use program equations; genuine analysis, bisimulation and invariant
+arguments need not be disguised as rewrites.
 
 ## Changes and disposition
 
-| File (relative to `theories/Examples`) | Role / main mode | Treatment |
+| File (relative to `theories/Examples`) | File role | Treatment |
 | --- | --- | --- |
-| `FactoryController.v` | Paper / algebraic | Isolate `fair_binary_round_step` before the main calculation. Its statement uses native `sem_bind`/`sem_ret`; only its proof consumes the concrete finite identity. Main chain rewrites directly inside the manufacturing step and through the full handler stack. |
-| `ITreeSampling.v` | Supporting / algebraic | Replace manual bind congruence with elaboration rewrites. Keep the unbounded iter endpoint, without claiming AST. |
-| `EffectInteractions.v` | Supporting / algebraic | Rewrite sampling elaboration and State equations; retain the separate lawful-target StateT theorem and its uniformity premise. |
-| `StateRewrite.v` | Paper / algebraic + execution | Lift the sampling-fusion equation by contextual rewriting, then rewrite under State. Preserve differing fuel/trace and missing-mass checks. |
+| `FactoryController.v` | Paper case study | Isolate `fair_binary_round_step` before the main calculation. Its statement uses native `sem_bind`/`sem_ret`; only its proof consumes the concrete finite identity. Main chain rewrites directly inside the manufacturing step and through the full handler stack. |
+| `ITreeSampling.v` | Supporting example | Replace manual bind congruence with elaboration rewrites. Keep the unbounded iter endpoint, without claiming AST. |
+| `EffectInteractions.v` | Supporting example | Rewrite sampling elaboration and State equations; retain the separate lawful-target StateT theorem and its uniformity premise. |
+| `StateRewrite.v` | Paper case study | Lift the sampling-fusion equation by contextual rewriting, then rewrite under State. Preserve differing fuel/trace and missing-mass checks. |
 | `StateCounter.v` | Shared execution demo | Retain exact structural equation and replay correctness. Concrete coin/quantile computations belong to execution validation, not a paper rewrite chain. |
 | `RationalState.v` | Shared execution demo | Retain partial native distribution and all Lost/Timeout/EntropyExhausted distinctions. |
-| `BernoulliFactory/BernoulliFactoryComposition.v` | Paper/shared algebra | Replace repeated structural/coupling and hand-applied bind/iter congruence by generic algebra. Keep the finite-round analysis as a clearly identified local endpoint. |
+| `BernoulliFactory/BernoulliFactoryComposition.v` | Paper case study / shared support | Replace repeated structural/coupling and hand-applied bind/iter congruence by generic algebra. Keep the finite-round analysis as a clearly identified local endpoint. |
 | `BernoulliFactory/BernoulliFactory.v` | Shared program/finite analysis | Retain concrete distribution definitions and the exact finite-round identity consumed by both composition and controller. |
 | `BernoulliFactory/BernoulliFactoryProbability.v` | Shared validity analysis | Retain native validity proofs; normalization is not a termination assertion. |
 | `BernoulliFactory/VonNeumannUnbounded.v` | Shared convergence analysis | Retain finite approximation and arbitrary normalized-bias convergence proofs. |
@@ -35,9 +39,9 @@ each file's role, proof mode, reading entry and claim boundary.
 | `BernoulliFactory/OperationalBernoulliFactory.v` | Shared hitting analysis | Retain `peutt_factory_vn_fair` and `peutt_factory_standard_direct`; these are substantive analyses, not hidden composition proofs. |
 | `BernoulliFactory/RealBernoulliOracle.v` | Shared analysis/program | Retain binary-oracle representation conditions and missing-mass convergence. |
 | `BernoulliFactory/RealBernoulliMathComp.v` | Shared native MathComp analysis | Retain normally universe-checked measure/lub proof and its representation premise. No direct recursive frontier is introduced. |
-| `InteractiveVonNeumann/InteractiveVonNeumannService.v` | Paper / relational-coinductive | Retain the explicit request/reply simulation and its support/quantitative certificates. Do not conceal the invariant behind a purported unconditional loop rewrite. |
-| `MixedHeadProtocol.v` | Paper / relational-coinductive | Retain mixed return/visible-head invariant, finite coupling analysis and quantitative observation endpoint. |
-| `RandomWalk.v` | Paper / analysis + structural control flow | Retain height-translation stopping invariant, successive-passages normalization and harmonic/limit analysis. No unproved probability-to-bisimulation converse. |
+| `InteractiveVonNeumann/InteractiveVonNeumannService.v` | Paper case study | Retain the explicit request/reply simulation and its support/quantitative certificates. Do not conceal the invariant behind a purported unconditional loop rewrite. |
+| `MixedHeadProtocol.v` | Paper case study | Retain mixed return/visible-head invariant, finite coupling analysis and quantitative observation endpoint. |
+| `RandomWalk.v` | Paper case study | Retain height-translation stopping invariant, successive-passages normalization and harmonic/limit analysis. No unproved probability-to-bisimulation converse. |
 | `MathCompPrograms.v` | Supporting syntax | Retain safe retry/nested-retry definitions; actual direct-frontier clients stay in existing Gate M regressions. |
 
 ## File organization decisions
@@ -115,3 +119,14 @@ Completed locally on 2026-09-26:
 No program, extraction root, probability model, routing or Gate M policy was
 changed. No new audit script or historical-replay mechanism was added.
 Remote CI was neither queried nor claimed as passing.
+
+### Presentation-policy correction
+
+After `166c92c`, the mandatory proof-method field and its classification table
+were removed from the standard, this inventory and all 20 Examples headers.
+File roles, concrete-distribution analysis boundaries and stable-endpoint
+contracts remain. Each source change is exactly the deletion of one comment
+line; definitions, proofs and imports are unchanged. The 11 factory tests and
+source soundness check passed. No full build or kernel check was repeated for
+this comment/documentation-only correction; the results above belong to the
+preceding implementation refactor.

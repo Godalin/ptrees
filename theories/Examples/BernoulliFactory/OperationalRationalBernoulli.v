@@ -1,5 +1,4 @@
 (** Case role: shared analysis.
-    Proof mode: analysis-dominated.
     Reading entry: peutt_binary_rational_coin_direct.
     Scope: EnumQ / FreeOmega; semantic endpoint consumed by program algebra.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

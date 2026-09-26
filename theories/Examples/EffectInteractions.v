@@ -1,5 +1,4 @@
 (** Case role: supporting example.
-    Proof mode: algebraic rewriting.
     Reading entry: lower_then_count; count_sample_transformer_agreement.
     Scope: SubEnumQ; no totality assumption on the sampled distribution.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

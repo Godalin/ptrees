@@ -1,5 +1,4 @@
 (** Case role: execution demo / shared supporting program.
-    Proof mode: execution/validation.
     Reading entry: tick_state_equation; counter_replay_contract.
     Scope: SubEnumQ; exact replay is not a randomness theorem for the host source.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

@@ -1,5 +1,4 @@
 (** Case role: supporting example.
-    Proof mode: algebraic rewriting.
     Reading entry: two_coins_elaborates; retry_elaborates.
     Scope: SubEnumQ / observable FreeOmega; iteration preservation does not assert AST.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

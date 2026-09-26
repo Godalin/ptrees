@@ -1,5 +1,4 @@
 (** Case role: shared analysis.
-    Proof mode: analysis-dominated.
     Reading entry: peutt_von_neumann_raw_direct; peutt_von_neumann_compiled_direct.
     Scope: EnumQ / FreeOmega; connects finite convergence certificates to PTree behavior.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

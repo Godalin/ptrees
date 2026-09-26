@@ -1,5 +1,4 @@
 (** Case role: paper case study.
-    Proof mode: algebraic rewriting; execution/validation.
     Reading entry: source_program_rewrite; rewrite_then_handle.
     Scope: SubEnumQ / observable FreeOmega; equal behavior is not equal fuel or trace.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

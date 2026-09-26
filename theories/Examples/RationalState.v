@@ -1,5 +1,4 @@
 (** Case role: execution demo / shared supporting program.
-    Proof mode: execution/validation.
     Reading entry: rational_counter; rational_missing_mass_stops.
     Scope: SubEnumQ; missing mass, fuel exhaustion and invalid entropy are distinct.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

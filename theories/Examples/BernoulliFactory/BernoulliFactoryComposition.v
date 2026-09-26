@@ -1,5 +1,4 @@
 (** Case role: paper case study / shared algebra.
-    Proof mode: algebraic rewriting.
     Reading entry: peutt_factory_vn_direct.
     Scope: EnumQ / observable FreeOmega; two unbounded analyses are consumed as behavior equations.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

@@ -1,5 +1,4 @@
 (** Case role: shared analysis.
-    Proof mode: analysis-dominated (native validity).
     Reading entry: probabilistic_biased_to_rational_coin.
     Scope: Raw EnumQ validity is independent of termination; normalization is explicit.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

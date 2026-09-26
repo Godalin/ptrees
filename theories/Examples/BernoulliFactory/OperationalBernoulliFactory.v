@@ -1,5 +1,4 @@
 (** Case role: shared analysis.
-    Proof mode: analysis-dominated.
     Reading entry: peutt_factory_vn_fair; peutt_factory_standard_direct.
     Scope: EnumQ / FreeOmega; genuine support/hitting/limit proofs, not presentation wrappers.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)

@@ -1,5 +1,4 @@
 (** Case role: shared analysis.
-    Proof mode: analysis-dominated.
     Reading entry: mathcomp_binary_oracle_lub; mathcomp_binary_oracle_is_ast.
     Scope: Universe-checked native MathComp analysis; not a recursive PTree frontier assembly.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
