@@ -39,6 +39,42 @@ effects/handlers、主结论与适用范围。
   跨例复用才考虑 export。不为减少主证明行数添加新公理或新 class。
 - 标准 effects 优先复用已有定义；自定义协议事件留在本例。
 
+### 2.1 后端只在边界确定，正文消费抽象代数
+
+**选择具体 backend，不意味着主证明应使用具体 backend 的实现接口。**
+确定 profile 后，程序组合和代数变换优先通过现有抽象接口完成；本例的
+小代数引理也遵循同一规则。
+
+- `EnumQ`、`SubEnumQ`、`SubEnumR`、MathComp 等具体 carrier 名、instance
+  和 native/frontier 配置集中在 Setup；需要时使用透明局部记号表达
+  tree、distribution 和 relation。仍须明确区分 native 与 frontier，
+  不能因为隐藏长参数而选错 `SemanticMeasure` 或关系解释。
+- 程序正文使用 `Ret` / `bind` / `Prob` / `Vis` / `iter` 等程序接口；
+  分布代数使用已选定 native interpretation 的 `sem_ret`、`sem_bind`、
+  `sem_eq`、`sem_lift` 及其现有 laws，避免反复出现 `bind_EnumQ`、
+  `ret_EnumQ`、raw-list projection、record constructor 和内部证明字段。
+- 将实际分布命名为 `fair`、`bernoulli q` 等有数学含义的对象；其具体
+  构造、非负性和质量证书放在定义/分析区。命名不替代证明其概率性质，
+  也不引入额外的抽象 sampler 公理。
+- 主证明只消费这些对象的代数性质和已证明的概率等式。有限分布展开、
+  indexed coupling、票据布局、实数积分等确实依赖表示的工作留在
+  分析/实现区，并提供可供高层重写的端点。
+- 优先使用适当的抽象 equality/lifting，而非依赖具体 record 的 Coq
+  equality。已有精确 equality 可以保留为底层计算事实；将其用于抽象
+  层时应通过已经证明的接口连接，不能假定任意 lifting 都可反射成
+  Coq equality 或 `sem_eq`。
+- 这不是只把 `bind_EnumQ` 改一个短名字：若证明仍展开 EnumQ 的列表
+  表示，它仍是具体分析。真正的代数 consumer 不应检查这些实现细节。
+- 数学上 backend-independent 的引理放在 generic owner，要求实际
+  使用的 laws；本例有理权重分析可以保留 `rat` 等自然限定。不要求
+  强行将整个 case 参数化到任意 backend，也不因此新增大 capability。
+- 某一步确需具体接口时，集中呈现并解释原因；不以隐藏真实后端依赖
+  换取“看起来完全抽象”的论文证明。
+
+目标阅读效果是“用一个已验证的概率代数变换程序”，而不是“不断操作
+EnumQ 的内部表示”。具体 backend 的身份在文件开头可查，但不成为
+主重写链中反复出现的噪声。
+
 ## 3. 单个 case 的阅读结构
 
 原则上一个 case 一个主要 `.v` 文件，以 Section 或必要的 Module 分区：
@@ -168,6 +204,9 @@ Regression 不自动纳入论文 case 迁移，也不删其负向测试。
 - 主程序变换链能读出来；每一步对应明确的代数定律或分析证书。
 - 辅助引理职责清楚，无“主定理藏入 helper”、重复 generic proof 或
   为压行数增加推断魔法；单文件例外有真实复用/信任边界理由。
+- 后端配置集中，主证明和小代数引理消费抽象接口；逐项说明仍需具体
+  backend 操作的理由，而不是按 `EnumQ` 字样出现次数机械判定合格。
+  检查实际选中的 interpretation 和 theorem signature，不只审短记号。
 - 数学 statement/假设不静默改变。既有 compiled contracts 先比较；
   路径迁移只作明确重定位，不能刷新 snapshot 吞掉差异。
 - 不增加 axiom、`Admitted`、theorem-level capability 或 checker bypass。
