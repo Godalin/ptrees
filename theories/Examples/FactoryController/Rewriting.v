@@ -5,7 +5,6 @@
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import FunctionalExtensionality.
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
 From ITree.Events Require Import State Exception.
 From PTree Require Import PTreeFacts.
@@ -65,12 +64,12 @@ Proof.
   unfold factory_with_sampler, factory_sampler_step, factory_direct_fair.
   setoid_rewrite (peutt_sample_bind vn_fair).
   setoid_rewrite (peutt_sample_map vn_fair).
-  assert (Hround :
-    (fun x => (Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
-      (fun a => Ret a) : ptree factoryE EnumQ (rat + bool))) = factory_standard_step).
-  { apply functional_extensionality. intro x. unfold factory_standard_step.
+  assert (Hround : forall x,
+    Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
+      (fun a => Ret a) ≈ₚ factory_standard_step x).
+  { intro x. unfold factory_standard_step.
     rewrite fair_binary_round_measure. reflexivity. }
-  rewrite Hround.
+  setoid_rewrite Hround.
 
   (* 3. The residual program is the standard binary loop, still INSIDE
         the controller, both State handlers, device interp and exception. *)

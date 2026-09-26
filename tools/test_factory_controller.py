@@ -94,6 +94,10 @@ class FactoryControllerTests(unittest.TestCase):
         self.assertNotRegex(source, r'Local Lemma sample_(?:bind|map)\b')
         for theorem in ['peutt_sample_bind', 'peutt_sample_map']:
             self.assertIn('setoid_rewrite (' + theorem + ' vn_fair).', source)
+        self.assertNotIn('functional_extensionality', source)
+        self.assertNotIn('FunctionalExtensionality', source)
+        self.assertIn('Hround : forall x,', source)
+        self.assertIn('setoid_rewrite Hround.', source)
 
     def test_impl_really_uses_nested_factory_draws(self):
         impl = self.cli('impl', 'script', 42).stdout

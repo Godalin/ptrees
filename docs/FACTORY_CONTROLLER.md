@@ -84,6 +84,12 @@ Only the explicit sampling argument is retained to select the intended fair
 coin occurrences inside the full program; unrestricted rewriting with bare
 theorem names also matches other sampling nodes and disrupts this calculation.
 
+The finite-round step is related pointwise by `peutt`, not by equality of
+functions. `setoid_rewrite Hround` uses the existing pointwise iteration Proper
+instance under the enclosing controller and handlers. The calculation neither
+imports nor directly applies functional extensionality; inherited logical
+dependencies of the underlying library theorems remain separately audited.
+
 `scripted_controller_program_rewrite` specializes this full calculation to the
 actual implementation/specification extracted to OCaml. The extraction proof
 pin now points to this theorem. Both arbitrary initial state/script and the
