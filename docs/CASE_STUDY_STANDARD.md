@@ -1,7 +1,8 @@
-# Case-study 展示与重写标准（待核验草案）
+# Case-study 展示与重写标准
 
-状态：**PROPOSED，尚未批准批量迁移**。
-草案基线：`e2c8a57`。本轮只制定标准，不改程序、定理或实例。
+状态：**APPROVED with four clarifications**。
+草案基线：`e2c8a57`；四项澄清以 `e969912` 为迁移前基线。
+已获准按下述分类持续重构，进度记录于 `CASE_STUDY_REFACTOR.md`。
 
 ## 1. 目标与非目标
 
@@ -19,6 +20,17 @@ MathComp 的信任边界，也不要求所有例子覆盖所有框架功能。
 
 每个 case 文件开头明确四件事：native/frontier profile、使用的关系、
 effects/handlers、主结论与适用范围。
+
+另外声明文件角色和 proof mode，不把所有例子强制归为同一种证明：
+
+| Proof mode | 主贡献及验收重点 |
+| --- | --- |
+| algebraic rewriting | 完整程序的代数变换链 |
+| relational/coinductive | 明确的 relation/invariant；局部程序变换优先代数化 |
+| analysis-dominated | 概率定理；提供干净的程序端分析消费接口 |
+| execution/validation | 实际执行入口及其已证明保证，区分实验与概率证明 |
+
+混合案例可标主次 mode，但不能用分类掩盖本可复用代数的重复证明。
 
 - 程序定义使用 `PTree`；等式推理使用 `Eq` / `PTreeFacts` 或明确的
   theorem owner。具体 backend 显式导入，不能依赖偶然的传递导入或
@@ -44,6 +56,11 @@ effects/handlers、主结论与适用范围。
 **选择具体 backend，不意味着主证明应使用具体 backend 的实现接口。**
 确定 profile 后，程序组合和代数变换优先通过现有抽象接口完成；本例的
 小代数引理也遵循同一规则。
+
+具体构造器允许用于分布定义和 backend-specific analysis，例如
+`fair : EnumQ bool` 或 `bernoulli q : SubEnumQ bool`。限制针对高层
+程序变换：性质一旦证明，主 calculation 消费该性质而不重开表示。
+不要为了外观抽象再造一层无价值 wrapper。
 
 - `EnumQ`、`SubEnumQ`、`SubEnumR`、MathComp 等具体 carrier 名、instance
   和 native/frontier 配置集中在 Setup；需要时使用透明局部记号表达
@@ -78,6 +95,10 @@ EnumQ 的内部表示”。具体 backend 的身份在文件开头可查，但�
 ## 3. 单个 case 的阅读结构
 
 原则上一个 case 一个主要 `.v` 文件，以 Section 或必要的 Module 分区：
+
+完整模板适用于 **paper case study**。其余文件明确标为 supporting
+example、shared analysis、execution demo 或 regression-like example，
+只承担相应职责并说明不采用完整模板的原因。
 
 1. **Setup**：接口、profile、记号、自然的参数条件。
 2. **Programs**：源程序、规格程序、handlers、必要的命名中间程序。
@@ -176,7 +197,8 @@ backend 与假设、明确未声称的性质、可选的运行入口。
 ## 7. 当前覆盖范围与候选顺序
 
 以下来自当前 `theories/Examples` 文件盘点，不是逐证明完成度验收。
-所有现有 Examples 都要获得“按标准改写 / 已符合 / 分析例外”的明确结论；
+所有现有 Examples 都要获得文件角色、proof mode 和
+“按标准改写 / 已符合 / 分析例外”的明确结论；并非都升级为论文主案例。
 Regression 不自动纳入论文 case 迁移，也不删其负向测试。
 
 | 批次 / case family | 当前文件 | 审查重点 |
@@ -199,6 +221,14 @@ Regression 不自动纳入论文 case 迁移，也不删其负向测试。
 开始前列出程序、主端点、消费者、当前类型/假设以及保留的分析证书。
 完成后给出 before/after 主证明与一张小的 theorem/interface 变更表。
 
+契约分为两类：
+
+- **Stable endpoint**：主论文 theorem、被外部消费的 theorem、extraction
+  root、公开概率结果；保持其 statement/strength、运行含义及假设边界。
+- **Internal helper**：允许删并、改 statement、移动 owner，但记录职责由
+  哪里接替并迁移真实客户端。已登记的 helper snapshot 也应显式处理，
+  不能悄悄刷新；不以永久冻结所有 helper 形状阻碍合理清理。
+
 验收要求：
 
 - 主程序变换链能读出来；每一步对应明确的代数定律或分析证书。
@@ -207,7 +237,7 @@ Regression 不自动纳入论文 case 迁移，也不删其负向测试。
 - 后端配置集中，主证明和小代数引理消费抽象接口；逐项说明仍需具体
   backend 操作的理由，而不是按 `EnumQ` 字样出现次数机械判定合格。
   检查实际选中的 interpretation 和 theorem signature，不只审短记号。
-- 数学 statement/假设不静默改变。既有 compiled contracts 先比较；
+- Stable endpoint 的数学 statement/假设不静默改变。既有 compiled contracts 先比较；
   路径迁移只作明确重定位，不能刷新 snapshot 吞掉差异。
 - 不增加 axiom、`Admitted`、theorem-level capability 或 checker bypass。
   若确需加强数学前提或扩张信任边界，停止该项并另报审查。
@@ -218,5 +248,5 @@ Regression 不自动纳入论文 case 迁移，也不删其负向测试。
   硬编码 tactic 拼写/行数的审计来约束未来合理证明。
 - 按职责清晰的批次提交并推送；保留用户其他工作；默认不查询 CI。
 
-**当前停点：请先核验本标准。批准后先做 FactoryController 试点，再将
-相同原则推广到全部 case families；本轮不启动批量改写。**
+**推进顺序：先完成 FactoryController 试点，将具体 round 计算移出主链；
+再按 proof mode 审查全部 case families。分析和执行支持文件不做无谓美化。**
