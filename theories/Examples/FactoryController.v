@@ -202,7 +202,6 @@ Proof.
     (* 1. Factory(VN(p),q) -> Factory(Fair,q).
           First and only VN probability-analysis lemma. *)
     setoid_rewrite (peutt_factory_vn_fair pf0 pt0 pnorm (mulr_gt0 pfpos ptpos)).
-    change (factory_with_sampler factory_direct_fair q ≈ₚ factory_direct_q q0 q1).
 
     (* 2. Open the outer factory loop; distribute bind through sampling,
           eliminate Ret, and combine the finite sampling/return step. *)
@@ -217,7 +216,6 @@ Proof.
     setoid_rewrite Hround.
 
     (* 3. The residual sampler is the standard binary loop. *)
-    change (factory_standard q ≈ₚ factory_direct_q q0 q1).
     (* Second probability-analysis lemma: the unbounded binary loop's law. *)
     setoid_rewrite (peutt_factory_standard_direct q0 q1).
     reflexivity.
