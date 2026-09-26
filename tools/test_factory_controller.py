@@ -72,6 +72,13 @@ class FactoryControllerTests(unittest.TestCase):
                          'peutt_factory_fair_standard', 'controller_refinement',
                          'device_handler_refinement', 'scripted_controller_refinement']:
             self.assertNotIn(shortcut, proof)
+        for helper in ['embed_preserves', 'embed_Proper', 'attempt_Proper',
+                       'controller_step_congr', 'controller_congr', 'controller_Proper']:
+            self.assertNotIn(helper, proof)
+        for generic in ['free_omega_exception_Proper', 'free_omega_state_Proper',
+                        'free_omega_interp_Proper', 'free_omega_iter_Proper', 'peutt_bind']:
+            self.assertIn(generic, proof)
+        self.assertNotIn('Facts', source)
 
     def test_calculation_reuses_generic_algebra(self):
         source = case_module('Rewriting')
@@ -112,7 +119,7 @@ class FactoryControllerTests(unittest.TestCase):
     def test_single_file_case_study(self):
         self.assertEqual(list((CASE_STUDY.parent/'FactoryController').glob('*.v')), [])
         source = without_comments(CASE_STUDY.read_text())
-        modules = ['Controller', 'Scripted', 'Facts', 'Rewriting', 'Probability', 'Observation']
+        modules = ['Controller', 'Scripted', 'Rewriting', 'Facts', 'Probability', 'Observation']
         offsets = [source.index('Module ' + name + '.') for name in modules]
         self.assertEqual(offsets, sorted(offsets))
         self.assertIn('Export ' + ' '.join(modules) + '.', source)

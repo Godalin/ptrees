@@ -16,7 +16,7 @@ From PTree.Examples Require Import FactoryController.
 ```
 
 The file has six internal modules, in reading order: `Controller`, `Scripted`,
-`Facts`, `Rewriting`, `Probability`, `Observation`. They isolate local notation
+`Rewriting`, `Facts`, `Probability`, `Observation`. They isolate local notation
 and instances, while preserving existing fully qualified declaration names.
 There are no old-path forwarding files. Generic algebra, sampler analysis,
 regression tests and the OCaml host keep their separate owners.
@@ -61,7 +61,15 @@ Its corollary aligns the boolean nonnegativity proofs using the constructive
 `bool_irrelevance` theorem, without adding a proof-irrelevance axiom. The older
 analysis/refinement helpers keep their existing interfaces.
 
-Under this unchanged context the proof explicitly performs:
+The proof first opens this context using library congruences, explicitly
+inside the same `Proof` block: Exception, scripted State, device interpretation,
+controller State, pointwise controller iteration, the per-attempt bind, and
+the empty-signature embedding. The AwaitOrder case is reflexive; Manufacturing
+reduces to the sampler calculation below. No controller/embedding congruence
+from this example's `Facts` module is imported or used; `Rewriting` is placed
+before `Facts`, so those helpers are not even available to its proof.
+
+The remaining sampler calculation explicitly performs:
 
 ```
 Factory(VN(p), q)
@@ -74,8 +82,8 @@ Factory(VN(p), q)
   -> Prob Bernoulli(q) Ret                binary-loop analysis
 ```
 
-These are `setoid_rewrite` / equality rewrites in the complete closed program,
-not applications of `controller_refinement` or
+These are `setoid_rewrite` / equality steps after the context-congruence steps
+of the complete closed-program proof, not applications of `controller_refinement` or
 `scripted_controller_refinement`. The only two unbounded probability-analysis
 endpoints used are `peutt_factory_vn_fair` and
 `peutt_factory_standard_direct`. The finite identity
@@ -95,9 +103,10 @@ Import FreeOmegaRewriting.
 The complete calculation declares **no instances, instance registrations or
 hints**. Its `≈ₚ` is a local notation for raw `PEutt.peutt` with the observable
 EnumQ/FreeOmega profile explicitly fixed; it does not use `canonical_peutt`.
-The three application congruences (embedding, factory, controller) are exported
-by their respective facts modules. No generic proof or probability certificate
-is repeated here. See [generic algebra](GENERIC_ALGEBRA.md) for the distinct
+The external factory sampler congruence remains supplied by the sampler library.
+Embedding/controller helpers are retained in `Facts` for its other clients,
+but the main calculation does not depend on them. No generic proof or probability
+certificate is repeated here. See [generic algebra](GENERIC_ALGEBRA.md) for the distinct
 probability premises and the opt-in registration boundary.
 
 The sampling rewrites infer the effect signature and measure instances:
@@ -106,12 +115,12 @@ setoid_rewrite (peutt_sample_bind vn_fair).
 setoid_rewrite (peutt_sample_map vn_fair).
 ```
 Only the explicit sampling argument is retained to select the intended fair
-coin occurrences inside the full program; unrestricted rewriting with bare
+coin occurrences in the sampler calculation; unrestricted rewriting with bare
 theorem names also matches other sampling nodes and disrupts this calculation.
 
 The finite-round step is related pointwise by `peutt`, not by equality of
 functions. `setoid_rewrite Hround` uses the existing pointwise iteration Proper
-instance under the enclosing controller and handlers. The calculation does not
+instance for the sampler's binary loop. The calculation does not
 directly apply functional extensionality; inherited logical
 dependencies of the underlying library theorems remain separately audited.
 
@@ -321,3 +330,17 @@ consolidated example and its regression passed. The kernel check covers two
 safe module bodies and trusts their dependencies, not the entire library
 recursively. Script/replay/interactive regressions still pass; seed 42 uses
 34 factory draws versus 4 specification draws. CI was not queried.
+
+### Self-contained proof follow-up
+
+Relative to `18e219b`, the complete calculation explicitly discharges its
+handler/controller/embedding context using generic library congruences before
+the existing sampler rewrite chain. It is placed before `Facts`, with no
+import or use of application-specific congruence helpers and no new local
+instances. The other five internal modules retain their exact contents.
+
+All 22 compiled types and assumption lists are unchanged; no snapshot update
+was needed. Local full build, 11 factory-controller tests, architecture,
+source/public-surface checks and `coqchk -norec` for the case-study module
+passed (one safe body, compiled dependencies trusted). Programs, sampler
+analyses and execution code are unchanged. CI was not queried.

@@ -3,8 +3,8 @@
     Reading order:
     1. Controller: the infinite effectful program and its two samplers.
     2. Scripted: State/Exception/device interpretation and executable roots.
-    3. Facts: application congruences and short refinement corollaries.
-    4. Rewriting: the complete user-facing algebraic calculation.
+    3. Rewriting: the self-contained, full-program algebraic calculation.
+    4. Facts: reusable congruences and short refinement corollaries.
     5. Probability: native sampling validity.
     6. Observation: exact next-action distribution and probabilities.
 
@@ -151,6 +151,106 @@ Definition demo_spec := scripted_spec initial_counters demo_script.
 Definition chronological_log s := rev (reverse_log s).
 End Scripted.
 
+Module Rewriting.
+(** Self-contained full-program calculation. The handler/controller context
+    is discharged explicitly with generic library congruences, then the
+    sampler is rewritten algebraically. Only the two unbounded analyses are
+    opaque: VN -> fair, and the standard binary loop -> Bernoulli(q).
+    No application-specific congruence lemma from [Facts] is used. *)
+
+Import FreeOmegaRewriting.
+
+Import Controller Scripted.
+Import EnumQ GRing.Theory Num.Theory Order.Theory.
+Local Open Scope ring_scope.
+
+(** Select the observable interpretation explicitly. This is notation for
+    the raw generic relation, not a second relation or a canonical wrapper. *)
+Local Notation W :=
+  (PEutt.peutt (MN := EnumQ) (MF := FreeOmega EnumQ)
+    (FI := @FreeOmegaObservableSemanticMeasure EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)
+    (FC := @FreeOmegaObservableSemanticMeasureCoreLaws EnumQ EnumQ_SemanticMeasure EnumQ_SemanticMeasureCoreLaws EnumQ_SemanticOmega)
+    (MX := @StructuralMeasure.FreeOmegaMixedMeasure EnumQ)
+    (FO := @FreeOmegaObservableSemanticOmega EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)).
+Local Notation "t ≈ₚ u" := (W eq t u)
+  (at level 70, no associativity) : type_scope.
+
+Section FullProgram.
+Variables pfalse ptrue q : rat.
+Variables (pfpos : 0 < pfalse) (ptpos : 0 < ptrue) (q0 : 0 <= q) (q1 : q <= 1).
+Hypothesis pnorm : pfalse + ptrue = 1.
+Let pf0 : 0 <= pfalse := ltW pfpos.
+Let pt0 : 0 <= ptrue := ltW ptpos.
+Variables (pc : phase) (counts : counters) (script : script_state).
+
+(** A notation, not a new interpreter or an opaque refinement wrapper.
+    The conclusion compares the SAME controller and complete handler stack. *)
+Local Notation "'Run' sampler" :=
+  (run_exception
+    (run_state
+      (PTree.interp device_handler
+        (run_state (controller (embed sampler) pc) counts)) script))
+  (at level 10, sampler at next level).
+
+Theorem factory_controller_program_rewrite :
+  Run (biased_to_rational_coin pf0 pt0 q) ≈ₚ Run (factory_direct_q q0 q1).
+Proof.
+  (* Open the complete program context using only library congruences. *)
+  apply free_omega_exception_Proper.
+  apply free_omega_state_Proper; [|reflexivity].
+  apply free_omega_interp_Proper.
+  apply free_omega_state_Proper; [|reflexivity].
+  unfold controller.
+  apply free_omega_iter_Proper; [|reflexivity].
+  intros [|job]; cbn [controller_step]; [reflexivity|].
+  unfold attempt.
+  eapply peutt_bind with (RR := eq).
+  2: { intros b c ->. reflexivity. }
+  unfold embed. apply free_omega_interp_Proper.
+  unfold biased_to_rational_coin.
+  (* 1. Factory(VN(p),q) -> Factory(Fair,q).
+        First and only VN probability-analysis lemma. *)
+  setoid_rewrite (peutt_factory_vn_fair pf0 pt0 pnorm (mulr_gt0 pfpos ptpos)).
+  change (factory_with_sampler factory_direct_fair q ≈ₚ factory_direct_q q0 q1).
+
+  (* 2. Open the outer factory loop; distribute bind through sampling,
+        eliminate Ret, and combine the finite sampling/return step. *)
+  unfold factory_with_sampler, factory_sampler_step, factory_direct_fair.
+  setoid_rewrite (peutt_sample_bind vn_fair).
+  setoid_rewrite (peutt_sample_map vn_fair).
+  assert (Hround : forall x,
+    Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
+      (fun a => Ret a) ≈ₚ factory_standard_step x).
+  { intro x. unfold factory_standard_step.
+    rewrite fair_binary_round_measure. reflexivity. }
+  setoid_rewrite Hround.
+
+  (* 3. The residual sampler is the standard binary loop. *)
+  change (factory_standard q ≈ₚ factory_direct_q q0 q1).
+  (* Second probability-analysis lemma: the unbounded binary loop's law. *)
+  setoid_rewrite (peutt_factory_standard_direct q0 q1).
+  reflexivity.
+Qed.
+End FullProgram.
+
+(** This is the actual pair of closed programs used by OCaml extraction. *)
+Corollary scripted_controller_program_rewrite counts script :
+  scripted_impl counts script ≈ₚ scripted_spec counts script.
+Proof.
+  unfold scripted_impl, scripted_spec, close_controller,
+    device_controller_impl, device_controller_spec, controller_impl, controller_spec,
+    implementation_sampler, specification_sampler, third_to_two_fifths, direct_two_fifths.
+  have pfpos : 0 < vn_one_third by vm_compute; reflexivity.
+  have ptpos : 0 < vn_two_thirds by vm_compute; reflexivity.
+  (* The extracted program keeps its original nonnegativity certificates.
+     Boolean proof uniqueness aligns these with the derived certificates. *)
+  replace third_false_nonnegative with (ltW pfpos) by apply bool_irrelevance.
+  replace third_true_nonnegative with (ltW ptpos) by apply bool_irrelevance.
+  apply factory_controller_program_rewrite.
+  exact third_bias_normalized.
+Qed.
+End Rewriting.
+
 Module Facts.
 (** User-facing algebra: probability is proved once in the existing factory,
     then transported through bind, eventful iteration and State. *)
@@ -240,96 +340,6 @@ Proof.
 Qed.
 End RationalParameters.
 End Facts.
-
-Module Rewriting.
-(** Full-program calculation. Only the two unbounded sampler analyses are
-    opaque: VN -> fair, and the standard binary loop -> Bernoulli(q).
-    Everything between them is a visible program-algebra rewrite, inside
-    the SAME infinite controller and the SAME stack of effect handlers. *)
-
-Import FreeOmegaRewriting.
-
-Import Controller Scripted Facts.
-Import EnumQ GRing.Theory Num.Theory Order.Theory.
-Local Open Scope ring_scope.
-
-(** Select the observable interpretation explicitly. This is notation for
-    the raw generic relation, not a second relation or a canonical wrapper. *)
-Local Notation W :=
-  (PEutt.peutt (MN := EnumQ) (MF := FreeOmega EnumQ)
-    (FI := @FreeOmegaObservableSemanticMeasure EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)
-    (FC := @FreeOmegaObservableSemanticMeasureCoreLaws EnumQ EnumQ_SemanticMeasure EnumQ_SemanticMeasureCoreLaws EnumQ_SemanticOmega)
-    (MX := @StructuralMeasure.FreeOmegaMixedMeasure EnumQ)
-    (FO := @FreeOmegaObservableSemanticOmega EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)).
-Local Notation "t ≈ₚ u" := (W eq t u)
-  (at level 70, no associativity) : type_scope.
-
-Section FullProgram.
-Variables pfalse ptrue q : rat.
-Variables (pfpos : 0 < pfalse) (ptpos : 0 < ptrue) (q0 : 0 <= q) (q1 : q <= 1).
-Hypothesis pnorm : pfalse + ptrue = 1.
-Let pf0 : 0 <= pfalse := ltW pfpos.
-Let pt0 : 0 <= ptrue := ltW ptpos.
-Variables (pc : phase) (counts : counters) (script : script_state).
-
-(** A notation, not a new interpreter or an opaque refinement wrapper.
-    Every rewrite below acts under ALL these unchanged program contexts. *)
-Local Notation "'Run' sampler" :=
-  (run_exception
-    (run_state
-      (PTree.interp device_handler
-        (run_state (controller (embed sampler) pc) counts)) script))
-  (at level 10, sampler at next level).
-
-Theorem factory_controller_program_rewrite :
-  Run (biased_to_rational_coin pf0 pt0 q) ≈ₚ Run (factory_direct_q q0 q1).
-Proof.
-  unfold biased_to_rational_coin.
-  (* 1. Run[Controller[Factory(VN(p),q)]]
-        -> Run[Controller[Factory(Fair,q)]].
-        First and only VN probability-analysis lemma. *)
-  setoid_rewrite (peutt_factory_vn_fair pf0 pt0 pnorm (mulr_gt0 pfpos ptpos)).
-  change (Run (factory_with_sampler factory_direct_fair q) ≈ₚ
-    Run (factory_direct_q q0 q1)).
-
-  (* 2. Open the outer factory loop; distribute bind through sampling,
-        eliminate Ret, and combine the finite sampling/return step. *)
-  unfold factory_with_sampler, factory_sampler_step, factory_direct_fair.
-  setoid_rewrite (peutt_sample_bind vn_fair).
-  setoid_rewrite (peutt_sample_map vn_fair).
-  assert (Hround : forall x,
-    Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
-      (fun a => Ret a) ≈ₚ factory_standard_step x).
-  { intro x. unfold factory_standard_step.
-    rewrite fair_binary_round_measure. reflexivity. }
-  setoid_rewrite Hround.
-
-  (* 3. The residual program is the standard binary loop, still INSIDE
-        the controller, both State handlers, device interp and exception. *)
-  change (Run (factory_standard q) ≈ₚ Run (factory_direct_q q0 q1)).
-  (* Second probability-analysis lemma: the unbounded binary loop's law. *)
-  setoid_rewrite (peutt_factory_standard_direct q0 q1).
-  reflexivity.
-Qed.
-End FullProgram.
-
-(** This is the actual pair of closed programs used by OCaml extraction. *)
-Corollary scripted_controller_program_rewrite counts script :
-  scripted_impl counts script ≈ₚ scripted_spec counts script.
-Proof.
-  unfold scripted_impl, scripted_spec, close_controller,
-    device_controller_impl, device_controller_spec, controller_impl, controller_spec,
-    implementation_sampler, specification_sampler, third_to_two_fifths, direct_two_fifths.
-  have pfpos : 0 < vn_one_third by vm_compute; reflexivity.
-  have ptpos : 0 < vn_two_thirds by vm_compute; reflexivity.
-  (* The extracted program keeps its original nonnegativity certificates.
-     Boolean proof uniqueness aligns these with the derived certificates. *)
-  replace third_false_nonnegative with (ltW pfpos) by apply bool_irrelevance.
-  replace third_true_nonnegative with (ltW ptpos) by apply bool_irrelevance.
-  apply factory_controller_program_rewrite.
-  exact third_bias_normalized.
-Qed.
-End Rewriting.
 
 Module Probability.
 (** The retained legacy factory uses raw EnumQ. Its use here is a genuine
@@ -616,4 +626,4 @@ Proof.
 Qed.
 End Observation.
 
-Export Controller Scripted Facts Rewriting Probability Observation.
+Export Controller Scripted Rewriting Facts Probability Observation.

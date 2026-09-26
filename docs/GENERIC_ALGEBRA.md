@@ -25,7 +25,10 @@ The `Rewriting` module of `Examples/FactoryController.v` invokes the generic sam
 and contains no `Instance`, `Existing Instance` or hints. Its relation is a
 local notation for explicitly selected raw `PEutt.peutt`, not `canonical_peutt`.
 Embedding, factory and controller congruences are exported by their example
-owners because they mention application programs.
+owners because they mention application programs. The complete calculation
+now opens its own controller/handler context explicitly using the library
+congruences; it is defined before `Facts` and cannot depend on that example's
+embedding/controller helpers.
 
 ### Opt-in completion registrations
 
