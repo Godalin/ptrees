@@ -152,9 +152,10 @@ Definition chronological_log s := rev (reverse_log s).
 End Scripted.
 
 Module Rewriting.
-(** Self-contained full-program calculation. The handler/controller context
-    is discharged explicitly with generic library congruences, then the
-    sampler is rewritten algebraically. Only the two unbounded analyses are
+(** Self-contained full-program calculation. Rewrite the sampler, its
+    embedding, then the pointwise controller step under the handler stack.
+    Library congruences are used automatically by setoid rewriting.
+    Only the two unbounded analyses are
     opaque: VN -> fair, and the standard binary loop -> Bernoulli(q).
     No application-specific congruence lemma from [Facts] is used. *)
 
@@ -195,40 +196,43 @@ Local Notation "'Run' sampler" :=
 Theorem factory_controller_program_rewrite :
   Run (biased_to_rational_coin pf0 pt0 q) ≈ₚ Run (factory_direct_q q0 q1).
 Proof.
-  (* Open the complete program context using only library congruences. *)
-  apply free_omega_exception_Proper.
-  apply free_omega_state_Proper; [|reflexivity].
-  apply free_omega_interp_Proper.
-  apply free_omega_state_Proper; [|reflexivity].
+  assert (Hsampler : biased_to_rational_coin pf0 pt0 q ≈ₚ factory_direct_q q0 q1).
+  {
+    unfold biased_to_rational_coin.
+    (* 1. Factory(VN(p),q) -> Factory(Fair,q).
+          First and only VN probability-analysis lemma. *)
+    setoid_rewrite (peutt_factory_vn_fair pf0 pt0 pnorm (mulr_gt0 pfpos ptpos)).
+    change (factory_with_sampler factory_direct_fair q ≈ₚ factory_direct_q q0 q1).
+
+    (* 2. Open the outer factory loop; distribute bind through sampling,
+          eliminate Ret, and combine the finite sampling/return step. *)
+    unfold factory_with_sampler, factory_sampler_step, factory_direct_fair.
+    setoid_rewrite (peutt_sample_bind vn_fair).
+    setoid_rewrite (peutt_sample_map vn_fair).
+    assert (Hround : forall x,
+      Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
+        (fun a => Ret a) ≈ₚ factory_standard_step x).
+    { intro x. unfold factory_standard_step.
+      rewrite fair_binary_round_measure. reflexivity. }
+    setoid_rewrite Hround.
+
+    (* 3. The residual sampler is the standard binary loop. *)
+    change (factory_standard q ≈ₚ factory_direct_q q0 q1).
+    (* Second probability-analysis lemma: the unbounded binary loop's law. *)
+    setoid_rewrite (peutt_factory_standard_direct q0 q1).
+    reflexivity.
+  }
+  assert (Hembedded :
+    @embed controllerE bool (biased_to_rational_coin pf0 pt0 q) ≈ₚ
+    embed (factory_direct_q q0 q1)).
+  { unfold embed. setoid_rewrite Hsampler. reflexivity. }
+  assert (Hstep : pointwise_relation phase (W eq)
+    (controller_step (embed (biased_to_rational_coin pf0 pt0 q)))
+    (controller_step (embed (factory_direct_q q0 q1)))).
+  { intros [|job]; cbn [controller_step]; [reflexivity|].
+    unfold attempt. setoid_rewrite Hembedded. reflexivity. }
   unfold controller.
-  apply free_omega_iter_Proper; [|reflexivity].
-  intros [|job]; cbn [controller_step]; [reflexivity|].
-  unfold attempt.
-  eapply peutt_bind with (RR := eq).
-  2: { intros b c ->. reflexivity. }
-  unfold embed. apply free_omega_interp_Proper.
-  unfold biased_to_rational_coin.
-  (* 1. Factory(VN(p),q) -> Factory(Fair,q).
-        First and only VN probability-analysis lemma. *)
-  setoid_rewrite (peutt_factory_vn_fair pf0 pt0 pnorm (mulr_gt0 pfpos ptpos)).
-  change (factory_with_sampler factory_direct_fair q ≈ₚ factory_direct_q q0 q1).
-
-  (* 2. Open the outer factory loop; distribute bind through sampling,
-        eliminate Ret, and combine the finite sampling/return step. *)
-  unfold factory_with_sampler, factory_sampler_step, factory_direct_fair.
-  setoid_rewrite (peutt_sample_bind vn_fair).
-  setoid_rewrite (peutt_sample_map vn_fair).
-  assert (Hround : forall x,
-    Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
-      (fun a => Ret a) ≈ₚ factory_standard_step x).
-  { intro x. unfold factory_standard_step.
-    rewrite fair_binary_round_measure. reflexivity. }
-  setoid_rewrite Hround.
-
-  (* 3. The residual sampler is the standard binary loop. *)
-  change (factory_standard q ≈ₚ factory_direct_q q0 q1).
-  (* Second probability-analysis lemma: the unbounded binary loop's law. *)
-  setoid_rewrite (peutt_factory_standard_direct q0 q1).
+  setoid_rewrite Hstep.
   reflexivity.
 Qed.
 End FullProgram.

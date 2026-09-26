@@ -75,9 +75,11 @@ class FactoryControllerTests(unittest.TestCase):
         for helper in ['embed_preserves', 'embed_Proper', 'attempt_Proper',
                        'controller_step_congr', 'controller_congr', 'controller_Proper']:
             self.assertNotIn(helper, proof)
-        for generic in ['free_omega_exception_Proper', 'free_omega_state_Proper',
-                        'free_omega_interp_Proper', 'free_omega_iter_Proper', 'peutt_bind']:
-            self.assertIn(generic, proof)
+        self.assertNotIn('_Proper', proof)
+        self.assertNotRegex(proof, r'\b(?:apply|eapply|f_equiv)\b')
+        for local in ['Hsampler', 'Hembedded', 'Hstep']:
+            self.assertIn('setoid_rewrite ' + local + '.', proof)
+        self.assertIn('Hstep : pointwise_relation phase (W eq)', proof)
         self.assertNotIn('Facts', source)
 
     def test_calculation_reuses_generic_algebra(self):
@@ -90,7 +92,8 @@ class FactoryControllerTests(unittest.TestCase):
         support = without_comments((ROOT /
             'theories/Interp/FreeOmega/Rewriting.v').read_text())
         for theorem in ['run_state_peutt_eq_Proper', 'peutt_interp_Proper',
-                        'run_exception_peutt_eq_Proper', 'peutt_iter_Proper']:
+                        'run_exception_peutt_eq_Proper', 'peutt_iter_Proper',
+                        'peutt_bind_Proper']:
             self.assertIn(theorem, support)
         self.assertNotIn('Proof.', support)
         self.assertNotIn('#[global]', support)

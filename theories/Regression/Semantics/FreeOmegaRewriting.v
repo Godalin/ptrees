@@ -34,6 +34,20 @@ Fail Definition no_implicit_iter_registration {E I A} :
 
 Import FreeOmegaRewriting.
 
+Example imported_bind_proper {E A B} :
+  Proper (W eq ==> pointwise_relation A (W eq) ==> W eq) (@PTree.bind E MN A B).
+Proof. typeclasses eauto. Qed.
+
+Example imported_bind_rewrite {E A B} (t u : ptree E MN A)
+    (k : A -> ptree E MN B) (H : W eq t u) :
+  W eq (PTree.bind t k) (PTree.bind u k).
+Proof. setoid_rewrite H. apply peutt_refl. Qed.
+
+Example imported_bind_continuation_rewrite {E A B} (t : ptree E MN A)
+    (k h : A -> ptree E MN B) (H : pointwise_relation A (W eq) k h) :
+  W eq (PTree.bind t k) (PTree.bind t h).
+Proof. setoid_rewrite H. apply peutt_refl. Qed.
+
 Example imported_state_proper {S E A} :
   Proper (W eq ==> eq ==> W eq) (@run_state S E MN A).
 Proof. typeclasses eauto. Qed.

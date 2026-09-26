@@ -26,14 +26,15 @@ and contains no `Instance`, `Existing Instance` or hints. Its relation is a
 local notation for explicitly selected raw `PEutt.peutt`, not `canonical_peutt`.
 Embedding, factory and controller congruences are exported by their example
 owners because they mention application programs. The complete calculation
-now opens its own controller/handler context explicitly using the library
-congruences; it is defined before `Facts` and cannot depend on that example's
+now rewrites local sampler, embedding and pointwise step equalities, using
+library congruences automatically rather than applying Proper manually;
+it is defined before `Facts` and cannot depend on that example's
 embedding/controller helpers.
 
 ### Opt-in completion registrations
 
-`Interp/FreeOmega/Rewriting.v` contains just four registrations of the generic
-State/interp/exception/iter `Proper` proofs. They are native-parametric, not
+`Interp/FreeOmega/Rewriting.v` contains five registrations of the generic
+bind/State/interp/exception/iter `Proper` proofs. They are native-parametric, not
 copies for EnumQ, SubEnumQ and SubEnumR. Activate them with:
 
 ```coq
@@ -49,9 +50,15 @@ does not automatically opt in. The support module has no dependency on
 observable FreeOmega interpretation and supplies existing probability
 certificates, without reproving congruence or making certificates new classes.
 
+The bind registration fixes the observable frontier before typeclass search
+resolves its laws. Without it, bind rewriting can repeatedly try completion
+instances for an unconstrained frontier. Its proof is the existing generic
+`Eq.Algebra.peutt_bind_Proper`, with the interpretation explicitly supplied;
+it introduces neither a backend-specific mathematical proof nor a new law.
+
 `Regression/Semantics/FreeOmegaRewriting.v` checks both negative import
-boundaries, all four inferred `Proper` goals for arbitrary native `MN`, actual
-loop rewriting, and SubEnumR/SubEnumQ clients without local instances. The
+boundaries, all five inferred `Proper` goals for arbitrary native `MN`, actual
+bind/source/continuation and loop rewriting, and SubEnumR/SubEnumQ clients without local instances. The
 factory is the EnumQ client, exercising the complete handler/loop stack.
 Direct MathComp is intentionally not part of this completion module; its
 generic theorems and explicit mathematical premises are unchanged.
@@ -70,6 +77,14 @@ Joint `coqchk -norec` passed for the support module, its regression, and the
 three changed example modules. This checks five safe module bodies, trusting
 dependencies and excluding Gate M, not the entire library recursively.
 Extracted controller OCaml hashes are unchanged; remote CI was not queried.
+
+The bind-rewriting follow-up adds one registration and three native-parametric
+clients (inferred Proper, source rewriting and pointwise continuation rewriting),
+bringing the safe algebra snapshot to 57 entries. Existing endpoint assumptions
+remain exact. The only prior snapshot text change is qualified printing of
+`FactoryController.Facts.embed_Proper` and `FactoryController.Controller.embed`,
+checked to differ only in qualification and whitespace. No axiom whitelist
+extension is needed. All 22 factory contracts remain byte-for-byte unchanged.
 
 The existing audit tooling now resolves nested declarations to their actual
 source library, and distinguishes explicitly local notation from public glyph

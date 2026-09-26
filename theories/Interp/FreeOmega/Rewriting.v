@@ -9,7 +9,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure BindOrder RelationalLimit.
-From PTree.Eq Require Import PEutt.
+From PTree.Eq Require Import PEutt Algebra.
 From PTree.Interp Require Import State StatePreservation Exception ExceptionFacts
   Unrestricted IterationUniform.
 Set Implicit Arguments.
@@ -26,6 +26,14 @@ Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation W := (peutt (FI := FI) (MX := FreeOmegaMixedMeasure)
   (FO := FreeOmegaObservableSemanticOmega)).
+
+(** Fix the frontier before resolving laws. Generic bind rewriting otherwise
+    may search for laws of an unconstrained frontier during morphism inference. *)
+#[export] Instance free_omega_bind_Proper {E A B} :
+  Proper (W eq ==> pointwise_relation A (W eq) ==> W eq)
+    (@PTree.bind E MN A B) | 1 :=
+  peutt_bind_Proper (FI := FI) (MX := FreeOmegaMixedMeasure)
+    (FO := FreeOmegaObservableSemanticOmega).
 
 #[export] Instance free_omega_state_Proper {S E A} :
   Proper (W eq ==> eq ==> W eq) (@run_state S E MN A) :=

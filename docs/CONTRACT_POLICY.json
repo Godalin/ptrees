@@ -1468,6 +1468,9 @@
       "initial_offered_order"
     ],
     "theories/Regression/Semantics/FreeOmegaRewriting.v": [
+      "imported_bind_proper",
+      "imported_bind_rewrite",
+      "imported_bind_continuation_rewrite",
       "imported_state_proper",
       "imported_interp_proper",
       "imported_exception_proper",

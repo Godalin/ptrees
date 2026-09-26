@@ -61,11 +61,12 @@ Its corollary aligns the boolean nonnegativity proofs using the constructive
 `bool_irrelevance` theorem, without adding a proof-irrelevance axiom. The older
 analysis/refinement helpers keep their existing interfaces.
 
-The proof first opens this context using library congruences, explicitly
-inside the same `Proof` block: Exception, scripted State, device interpretation,
-controller State, pointwise controller iteration, the per-attempt bind, and
-the empty-signature embedding. The AwaitOrder case is reflexive; Manufacturing
-reduces to the sampler calculation below. No controller/embedding congruence
+The proof first derives the sampler equality (`Hsampler`), then rewrites it
+under the empty-signature embedding (`Hembedded`) and per-attempt bind to obtain
+the pointwise controller-step equality (`Hstep`). Finally `setoid_rewrite Hstep`
+rewrites the infinite controller under the entire unchanged handler stack.
+The AwaitOrder case is reflexive. These local facts all live inside the same
+`Proof` block; there are no manual `apply Proper` steps. No controller/embedding congruence
 from this example's `Facts` module is imported or used; `Rewriting` is placed
 before `Facts`, so those helpers are not even available to its proof.
 
@@ -82,15 +83,15 @@ Factory(VN(p), q)
   -> Prob Bernoulli(q) Ret                binary-loop analysis
 ```
 
-These are `setoid_rewrite` / equality steps after the context-congruence steps
-of the complete closed-program proof, not applications of `controller_refinement` or
+These are `setoid_rewrite` / equality steps inside the complete closed-program
+proof, not applications of `controller_refinement` or
 `scripted_controller_refinement`. The only two unbounded probability-analysis
 endpoints used are `peutt_factory_vn_fair` and
 `peutt_factory_standard_direct`. The finite identity
 `fair_binary_round_measure` is just the exact two-outcome round calculation.
 The `peutt_sample_bind` and `peutt_sample_map` equations belong to generic
 `Eq/Algebra.v`: neither selects EnumQ nor FreeOmega. The unchanged program
-contexts use generic `run_state_peutt_eq_Proper`, `peutt_interp_Proper`,
+contexts automatically use generic `peutt_bind_Proper`, `run_state_peutt_eq_Proper`, `peutt_interp_Proper`,
 `run_exception_peutt_eq_Proper` and `peutt_iter_Proper`. Their FreeOmega
 registrations are now provided once, for arbitrary native `MN`, by an opt-in
 library module:
@@ -344,3 +345,18 @@ was needed. Local full build, 11 factory-controller tests, architecture,
 source/public-surface checks and `coqchk -norec` for the case-study module
 passed (one safe body, compiled dependencies trusted). Programs, sampler
 analyses and execution code are unchanged. CI was not queried.
+
+### Rewrite-only calculation follow-up
+
+Relative to `b8cacf0`, the complete calculation contains no `apply`, `eapply`,
+`f_equiv` or explicit Proper application. Its local `Hsampler`, `Hembedded`
+and pointwise `Hstep` facts are composed by `setoid_rewrite`, including the
+final rewrite under the full handler stack. No local instance or function
+extensionality step is added. The optional library registration for bind
+fixes the observable frontier before solving the generic theorem's laws.
+
+Full build, 141 tool tests, the 22 unchanged factory contracts, architecture,
+source/public-surface checks and targeted joint `coqchk -norec` passed. The
+kernel check covers the rewriting library, its regression and this example
+(three safe module bodies, trusting dependencies). Program definitions,
+probability analyses and runtime code are unchanged. CI was not queried.
