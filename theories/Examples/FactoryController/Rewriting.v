@@ -14,8 +14,7 @@ From PTree.Prob.Backend.EnumQ Require Import Representation Measure Bind.
 From PTree.Prob.Interface Require Import Measure Mixed.
 From PTree.Prob.FreeOmega Require Import RelationalLimit StructuralMeasure.
 Require Import PTree.Prob.FreeOmega.Measure.
-From PTree.Interp Require Import IterationUniform ExceptionFacts.
-From PTree.Interp.FreeOmega Require Import Unrestricted State.
+From PTree.Interp Require Import IterationUniform ExceptionFacts Unrestricted StatePreservation.
 From PTree.Examples.BernoulliFactory Require Import
   BernoulliFactory BernoulliFactoryComposition OperationalBernoulliFactory
   VonNeumannUnbounded RationalBernoulli.
@@ -26,78 +25,31 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Set Default Timeout 20.
 
-(** Local syntax-directed rewrite congruences. These only register existing
-    bind/iteration/handler laws; none knows the factory refinement theorem. *)
-#[local] Instance embed_rewrite {E A} :
-  Proper (canonical_peutt eq ==> canonical_peutt eq) (@embed E A).
-Proof. intros t u H. apply embed_preserves. exact H. Qed.
-
-#[local] Instance factory_rewrite :
-  Proper (canonical_peutt eq ==> eq ==> canonical_peutt eq)
-    (@factory_with_sampler factoryE).
-Proof. intros t u H q q' ->. apply peutt_factory_sampler_congr. exact H. Qed.
-
-#[local] Instance controller_rewrite :
-  Proper (canonical_peutt eq ==> eq ==> canonical_peutt eq) controller.
-Proof. intros t u H pc pc' ->. apply controller_congr. exact H. Qed.
+(** Only local registration: the generic library owns these congruences.
+    The three program-specific contexts belong to their example owners. *)
+#[local] Existing Instance embed_Proper.
+#[local] Existing Instance factory_with_sampler_Proper.
+#[local] Existing Instance controller_Proper.
 
 #[local] Instance state_rewrite {S E A} :
   Proper (canonical_peutt eq ==> eq ==> canonical_peutt eq)
-    (@run_state S E EnumQ A).
-Proof. intros t u H s s' ->. apply run_state_peutt_eq. exact H. Qed.
+    (@run_state S E EnumQ A) :=
+  run_state_peutt_eq_Proper free_omega_relational_bind
+    free_omega_relational_zero free_omega_relational_lub.
 
 #[local] Instance interp_rewrite {E F A} (h : forall X, E X -> ptree F EnumQ X) :
   Proper (canonical_peutt eq ==> canonical_peutt eq)
-    (PTree.interp h : ptree E EnumQ A -> ptree F EnumQ A).
-Proof. intros t u H. apply peutt_interp. exact H. Qed.
+    (PTree.interp h : ptree E EnumQ A -> ptree F EnumQ A) :=
+  peutt_interp_Proper free_omega_relational_zero free_omega_relational_lub h.
 
 #[local] Instance exception_rewrite {Err E A} :
-  Proper (canonical_peutt eq ==> canonical_peutt eq) (@run_exception Err E EnumQ A).
-Proof.
-  intros t u H. eapply peutt_rel_mono with (RR := exception_result_rel eq).
-  - intros [x|x] [y|y] Hxy; cbn in Hxy; try contradiction; now subst.
-  - apply (run_exception_peutt free_omega_relational_bind). exact H.
-Qed.
+  Proper (canonical_peutt eq ==> canonical_peutt eq) (@run_exception Err E EnumQ A) :=
+  run_exception_peutt_eq_Proper free_omega_relational_bind.
 
 #[local] Instance iter_rewrite {E I A} :
   Proper (pointwise_relation I (canonical_peutt eq) ==> eq ==> canonical_peutt eq)
-    (@PTree.iter E EnumQ A I).
-Proof.
-  intros f g H i j ->.
-  eapply (peutt_iter_direct_rel free_omega_relational_zero free_omega_relational_lub)
-    with (SI := eq).
-  - intros x y ->. eapply peutt_rel_mono.
-    + intros v w ->. destruct w; constructor; reflexivity.
-    + apply H.
-  - reflexivity.
-Qed.
-
-(** Elementary probability algebra, not whole-factory correctness. *)
-Local Lemma sample_bind {E X A} (mu : EnumQ X) (k : X -> ptree E EnumQ A) :
-  PTree.bind (Prob mu (fun x => Ret x)) k ≈ₚ Prob mu k.
-Proof.
-  transitivity (Prob mu (fun x => PTree.bind (Ret x) k)).
-  - apply PTree.Eq.Algebra.peutt_observe_eq. reflexivity.
-  - eapply peutt_prob with (XR := eq).
-    + apply sem_lift_refl. intro x. reflexivity.
-    + intros x y ->. exact (PTree.Eq.Algebra.peutt_bind_ret_l y k).
-Qed.
-
-Local Lemma sample_map {E X A} (mu : EnumQ X) (f : X -> A) :
-  (Prob mu (fun x => Ret (f x)) : ptree E EnumQ A) ≈ₚ
-  Prob (bind_EnumQ mu (fun x => ret_EnumQ (f x))) (fun a => Ret a).
-Proof.
-  transitivity (Prob mu (fun x => Prob (ret_EnumQ (f x)) (fun a => Ret a))
-    : ptree E EnumQ A).
-  - eapply peutt_prob with (XR := eq).
-    + apply sem_lift_refl. intro x. reflexivity.
-    + intros x y ->. apply peutt_sym.
-      exact (peutt_prob_ret (NI := EnumQ_SemanticMeasure)
-        (FI := FreeOmegaObservableSemanticMeasure) (MX := FreeOmegaMixedMeasure)
-        (f y) (fun a => (Ret a : ptree E EnumQ A))).
-  - apply (peutt_prob_flatten (NI := EnumQ_SemanticMeasure)
-      (FI := FreeOmegaObservableSemanticMeasure) (MX := FreeOmegaMixedMeasure)).
-Qed.
+    (@PTree.iter E EnumQ A I) :=
+  peutt_iter_Proper free_omega_relational_zero free_omega_relational_lub.
 
 Section FullProgram.
 Variables pfalse ptrue q : rat.
@@ -128,8 +80,10 @@ Proof.
   (* 2. Open the outer factory loop; distribute bind through sampling,
         eliminate Ret, and combine the finite sampling/return step. *)
   unfold factory_with_sampler, factory_sampler_step, factory_direct_fair.
-  setoid_rewrite (sample_bind (E := factoryE) vn_fair).
-  setoid_rewrite (sample_map (E := factoryE) vn_fair).
+  setoid_rewrite (peutt_sample_bind (E := factoryE)
+    (NI := EnumQ_SemanticMeasure) (FI := FreeOmegaObservableSemanticMeasure) vn_fair).
+  setoid_rewrite (peutt_sample_map (E := factoryE)
+    (NI := EnumQ_SemanticMeasure) (FI := FreeOmegaObservableSemanticMeasure) vn_fair).
   assert (Hround :
     (fun x => (Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
       (fun a => Ret a) : ptree factoryE EnumQ (rat + bool))) = factory_standard_step).

@@ -1,4 +1,70 @@
-# Generic consumer convergence — Stage 1
+# Generic algebra and rewriting
+
+## Current rewriting library
+
+The generic library owns the mathematical proofs. Concrete clients select a
+frontier interpretation and register proof-backed `Proper` specializations
+locally; they do not reproduce the proofs or introduce congruence axioms.
+
+| Owner / laws | Actual requirements beyond the interpretation operations |
+| --- | --- |
+| `Eq/Algebra`: `peutt_bind_{ret_l,tau,vis,prob}`, `peutt_fmap_{ret,tau,vis,prob}` | Frontier CoreLaws only; shallow observation equality |
+| `Eq/Algebra`: `peutt_sample_bind` | Native/frontier CoreLaws, frontier BindLaws, mixed laws, order/omega/cofinality and mixed omega laws |
+| `Eq/Algebra`: `peutt_prob_map`, `peutt_sample_map` | Same sampling profile plus mixed unit and node-bind compatibility |
+| `Interp/ExceptionFacts`: `run_exception_peutt_eq_Proper` | Existing exception preservation profile: CoreLaws, order/omega, bind/mixed order, directed cofinality, explicit relational bind |
+| `Interp/IterationUniform`: `peutt_iter_Proper` | Existing direct-iteration profile: Core/Bind, order/omega/cofinality/diagonal/Fubini, bind/mixed order, directed selection, explicit relational zero and relational lub |
+| `Interp/StatePreservation`: `run_state_peutt_eq_Proper` | Existing generic State preservation theorem (unchanged) |
+| `Interp/Unrestricted`: `peutt_interp_Proper` | Existing generic interpretation theorem (unchanged) |
+
+The sampling laws do not require total mass, commutativity, relational-lub
+closure, a specific native representation, or a completion type. In particular,
+`peutt_prob_map` accepts an arbitrary continuation, not only `Ret`. Their compiled
+signatures and assumptions are recorded in `GENERIC_ALGEBRA_CONTRACTS.json`.
+
+The factory-controller calculation now invokes the generic sampling laws
+directly. Its four handler/iter `Proper` declarations are only local
+specializations. Embedding, factory and controller congruences remain in their
+example owners because they mention application programs.
+
+`Regression/Semantics/GenericAlgebra.v` checks the minimal shallow profile,
+generic ownership/import isolation, arbitrary-native FreeOmega sampling and
+finite-real sampling/loop rewriting. `Regression/Backend/MathCompDirect.v`
+checks the same sampling theorems at `MN = MF`, and iteration `Proper` with an
+explicit `relational_lub` premise. This does not discharge MathComp's remaining
+relational-limit obligation. Its existing gluing premise and two-file Gate M
+boundary are unchanged. No new global instances, classes or hints are added.
+
+The seven new shallow equations and the generic exception/iteration additions
+are closed under the global context. The three sampling laws inherit
+`eq_rect_eq`, `RelationalChoice.relational_choice` and
+`ClassicalUniqueChoice.dependent_unique_choice` from the existing probability
+rewriting facts. These dependencies are recorded per endpoint; the global
+logical-axiom whitelist is not enlarged. Concrete specializations also inherit
+their backend's existing logical dependencies.
+
+Local validation of this extension from `fd2f72c`:
+
+- Full `dune build`, including safe AllImports and the separately labelled
+  Gate M modules, passed; this is not a whole-library universe-safety claim.
+- 136 tool tests passed. Contract metadata tests were rerun after registering
+  the new entries (12 passed).
+- All 465 mainline and 22 factory contracts were unchanged. The 18 old generic
+  algebra contracts were checked before appending 24 new entries; all 42 safe
+  contracts and three new, separately queried Gate M clients passed.
+- Architecture, source/capability safety, and public-surface checks passed.
+- Joint `coqchk -norec` passed for seven changed safe module bodies. Dependencies
+  were trusted; Gate M was excluded. This is not a recursive whole-library audit.
+- Extracted `controller.ml` and `controller.mli` hashes are unchanged. No program,
+  handler, sampler, extraction implementation or canonical route was changed.
+- Remote CI was not queried.
+
+Current reproducible checks use `audit_contracts.py --group generic_algebra`,
+`--group generic_algebra_gate_m`, `--group factory_controller`, plus the
+normal build, architecture/source checks and tool tests. The scripts and counts
+in the historical report below describe that older checkpoint, not today's
+audit infrastructure.
+
+## Historical Stage 1 report
 
 This is a historical stage report. For current backend certificates and the
 subsequent shallow left-unit premise reduction, see

@@ -55,10 +55,15 @@ not applications of `controller_refinement` or
 endpoints used are `peutt_factory_vn_fair` and
 `peutt_factory_standard_direct`. The finite identity
 `fair_binary_round_measure` is just the exact two-outcome round calculation.
-The local `sample_bind` and `sample_map` lemmas are elementary bind/Prob/Ret
-equations; local Proper instances discharge unchanged program contexts with
-the existing iteration and handler congruences. No new global instance is
-registered.
+The `peutt_sample_bind` and `peutt_sample_map` equations belong to generic
+`Eq/Algebra.v`: neither selects EnumQ nor FreeOmega. The unchanged program
+contexts use generic `run_state_peutt_eq_Proper`, `peutt_interp_Proper`,
+`run_exception_peutt_eq_Proper` and `peutt_iter_Proper`. This example only
+registers their FreeOmega specializations locally; it contains no copies of
+these proofs. The three program-specific congruences (embedding, factory,
+controller) remain with their respective example owners. No new global
+instance is registered. See [generic algebra](GENERIC_ALGEBRA.md) for the
+different probability premises of these equations and congruences.
 
 `scripted_controller_program_rewrite` specializes this full calculation to the
 actual implementation/specification extracted to OCaml. The extraction proof

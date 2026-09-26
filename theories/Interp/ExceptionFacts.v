@@ -127,3 +127,33 @@ Proof.
   - exists t,u. repeat split; try reflexivity. exact Htu.
 Qed.
 End Approximation.
+
+(** Equality specialization for algebraic rewriting. The heterogeneous
+    theorem remains the source of truth; no completion model is selected. *)
+Section Rewriting.
+Context {Err : Type} {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
+  `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
+  `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}
+  `{Omega : @SemanticOmegaLaws MF FI FO}
+  `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}
+  `{FC : @SemanticMeasureCoreLaws MF FI}.
+Variable Hbind : relational_bind FI.
+
+Theorem run_exception_peutt_eq {A} (t u : ptree (exceptE Err +' E) MN A) :
+  peutt (MF := MF) eq t u ->
+  peutt (MF := MF) eq (run_exception t) (run_exception u).
+Proof.
+  intro H. eapply peutt_rel_mono with (RR := exception_result_rel eq).
+  - intros [x|x] [y|y] Hxy; cbn in Hxy; try contradiction; now subst.
+  - apply (run_exception_peutt Hbind). exact H.
+Qed.
+
+Lemma run_exception_peutt_eq_Proper {A} :
+  Proper
+    (@peutt (exceptE Err +' E) MN MF FI FC MX FO A A eq ==>
+     @peutt E MN MF FI FC MX FO (Err+A) (Err+A) eq)
+    (@run_exception Err E MN A).
+Proof. intros t u H. exact (run_exception_peutt_eq H). Qed.
+End Rewriting.

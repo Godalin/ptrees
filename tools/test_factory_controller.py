@@ -59,7 +59,7 @@ class FactoryControllerTests(unittest.TestCase):
         source = without_comments((ROOT /
             'theories/Examples/FactoryController/Rewriting.v').read_text())
         proof = source.split('Theorem factory_controller_program_rewrite :', 1)[1].split('Qed.', 1)[0]
-        for step in ['peutt_factory_vn_fair', 'sample_bind', 'sample_map',
+        for step in ['peutt_factory_vn_fair', 'peutt_sample_bind', 'peutt_sample_map',
                      'fair_binary_round_measure', 'peutt_factory_standard_direct']:
             self.assertIn(step, proof)
         for shortcut in ['implementation_sampler_correct', 'peutt_factory_vn_direct',
@@ -67,6 +67,18 @@ class FactoryControllerTests(unittest.TestCase):
                          'peutt_factory_fair_standard', 'controller_refinement',
                          'device_handler_refinement', 'scripted_controller_refinement']:
             self.assertNotIn(shortcut, proof)
+
+    def test_calculation_reuses_generic_algebra(self):
+        source = without_comments((ROOT /
+            'theories/Examples/FactoryController/Rewriting.v').read_text())
+        registration = source.split('Section FullProgram.', 1)[0]
+        self.assertNotIn('Proof.', registration)
+        for theorem in ['run_state_peutt_eq_Proper', 'peutt_interp_Proper',
+                        'run_exception_peutt_eq_Proper', 'peutt_iter_Proper']:
+            self.assertIn(theorem, registration)
+        for theorem in ['embed_Proper', 'factory_with_sampler_Proper', 'controller_Proper']:
+            self.assertIn('Existing Instance ' + theorem, registration)
+        self.assertNotRegex(source, r'Local Lemma sample_(?:bind|map)\b')
 
     def test_impl_really_uses_nested_factory_draws(self):
         impl = self.cli('impl', 'script', 42).stdout

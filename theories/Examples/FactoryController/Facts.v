@@ -22,6 +22,10 @@ Lemma embed_preserves {E A} (t u : ptree factoryE EnumQ A) :
   t ≈ₚ u -> @embed E A t ≈ₚ embed u.
 Proof. apply peutt_interp. Qed.
 
+Lemma embed_Proper {E A} :
+  Proper (canonical_peutt eq ==> canonical_peutt eq) (@embed E A).
+Proof. intros t u H. apply embed_preserves. exact H. Qed.
+
 Theorem implementation_sampler_correct : implementation_sampler ≈ₚ specification_sampler.
 Proof. apply embed_preserves. exact peutt_third_to_two_fifths_compositional. Qed.
 

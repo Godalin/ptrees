@@ -29,7 +29,86 @@ Qed.
 Theorem peutt_bind_ret_l {A B} (a : A) (k : A -> ptree E MN B) :
   @peutt E MN MF FI FC MX FO B B eq (PTree.bind (Ret a) k) (k a).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
+
+(** Constructor distribution is shallow: no native laws, termination or
+    relational-limit closure is needed. *)
+Theorem peutt_bind_tau {A B} (t : ptree E MN A) (k : A -> ptree E MN B) :
+  peutt (MF := MF) eq (PTree.bind (Tau t) k) (Tau (PTree.bind t k)).
+Proof. apply peutt_observe_eq. reflexivity. Qed.
+
+Theorem peutt_bind_vis {A B X} (e : E X)
+    (h : X -> ptree E MN A) (k : A -> ptree E MN B) :
+  peutt (MF := MF) eq (PTree.bind (Vis e h) k)
+    (Vis e (fun x => PTree.bind (h x) k)).
+Proof. apply peutt_observe_eq. reflexivity. Qed.
+
+Theorem peutt_bind_prob {A B X} (mu : MN X)
+    (h : X -> ptree E MN A) (k : A -> ptree E MN B) :
+  peutt (MF := MF) eq (PTree.bind (Prob mu h) k)
+    (Prob mu (fun x => PTree.bind (h x) k)).
+Proof. apply peutt_observe_eq. reflexivity. Qed.
+
+Theorem peutt_fmap_ret {A B} (f : A -> B) (a : A) :
+  peutt (E := E) (MF := MF) eq (PTree.fmap f (Ret a)) (Ret (f a)).
+Proof. apply peutt_observe_eq. reflexivity. Qed.
+
+Theorem peutt_fmap_tau {A B} (f : A -> B) (t : ptree E MN A) :
+  peutt (MF := MF) eq (PTree.fmap f (Tau t)) (Tau (PTree.fmap f t)).
+Proof. apply peutt_observe_eq. reflexivity. Qed.
+
+Theorem peutt_fmap_vis {A B X} (f : A -> B) (e : E X) (h : X -> ptree E MN A) :
+  peutt (MF := MF) eq (PTree.fmap f (Vis e h))
+    (Vis e (fun x => PTree.fmap f (h x))).
+Proof. apply peutt_observe_eq. reflexivity. Qed.
+
+Theorem peutt_fmap_prob {A B X} (f : A -> B) (mu : MN X) (h : X -> ptree E MN A) :
+  peutt (MF := MF) eq (PTree.fmap f (Prob mu h))
+    (Prob mu (fun x => PTree.fmap f (h x))).
+Proof. apply peutt_observe_eq. reflexivity. Qed.
 End ShallowAlgebra.
+
+(** Native sampling algebra. The frontier and native carriers are arbitrary;
+    mapping additionally needs mixed unit and node-bind compatibility, not
+    commutativity or a particular completion representation. *)
+Section SamplingAlgebra.
+Context {E MN MF : Type -> Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
+  `{Omega : @SemanticOmegaLaws MF FI FO}
+  `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{MO : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
+
+Theorem peutt_sample_bind {X A} (mu : MN X) (k : X -> ptree E MN A) :
+  peutt (MF := MF) eq (PTree.bind (Prob mu (fun x => Ret x)) k) (Prob mu k).
+Proof.
+  eapply peutt_trans; [apply peutt_bind_prob|].
+  eapply peutt_prob with (XR := eq).
+  - apply sem_lift_refl. intro x. reflexivity.
+  - intros x y ->. apply peutt_bind_ret_l.
+Qed.
+
+Context `{MU : @MixedMeasureUnitLaws MN MF NI FI MX}
+  `{NB : @MixedMeasureNodeBindLaws MN MF NI FI MX}.
+
+Theorem peutt_prob_map {X Y A} (mu : MN X) (f : X -> Y) (k : Y -> ptree E MN A) :
+  peutt (MF := MF) eq (Prob mu (fun x => k (f x)))
+    (Prob (sem_bind mu (fun x => sem_ret (f x))) k).
+Proof.
+  transitivity (Prob mu (fun x => Prob (sem_ret (f x)) k)).
+  - eapply peutt_prob with (XR := eq).
+    + apply sem_lift_refl. intro x. reflexivity.
+    + intros x y ->. apply peutt_sym, peutt_prob_ret.
+  - apply peutt_prob_flatten.
+Qed.
+
+Theorem peutt_sample_map {X A} (mu : MN X) (f : X -> A) :
+  peutt (E := E) (MF := MF) eq (Prob mu (fun x => Ret (f x)))
+    (Prob (sem_bind mu (fun x => sem_ret (f x))) (fun a => Ret a)).
+Proof. exact (peutt_prob_map mu f (fun a => Ret a)). Qed.
+End SamplingAlgebra.
 
 Section Algebra.
 Context {E MN MF : Type -> Type}

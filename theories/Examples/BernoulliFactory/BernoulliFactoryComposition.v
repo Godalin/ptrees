@@ -4,7 +4,7 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From Coq Require Import FunctionalExtensionality.
+From Coq Require Import FunctionalExtensionality Morphisms.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
@@ -48,6 +48,11 @@ Proof.
       * intros a b ->. apply peutt_refl.
   - reflexivity.
 Qed.
+
+(** This context is specific to the factory, not to generic iteration. *)
+Lemma factory_with_sampler_Proper :
+  Proper (peutt eq ==> eq ==> peutt eq) (@factory_with_sampler factoryE).
+Proof. intros t u H q q' ->. apply peutt_factory_sampler_congr. exact H. Qed.
 
 Lemma factory_fair_step_standard x :
   peutt eq (factory_sampler_step factory_direct_fair x) (factory_standard_step x).

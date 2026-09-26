@@ -1032,7 +1032,10 @@
       "direct_mdp_step_iff",
       "direct_mdp_head_bisim_iff",
       "direct_mdp_peutt_iff",
-      "direct_mdp_tree_trans_bisim_iff"
+      "direct_mdp_tree_trans_bisim_iff",
+      "direct_sample_bind",
+      "direct_sample_map",
+      "direct_iter_Proper_of_relational_lub"
     ],
     "theories/Regression/Backend/MathCompOmega.v": [
       "increasing_has_actual_lub",
@@ -1220,12 +1223,19 @@
     ],
     "theories/Regression/Semantics/GenericAlgebra.v": [
       "generic_left_unit_minimal",
+      "generic_prob_bind_minimal",
+      "generic_vis_map_minimal",
       "free_omega_bind_Proper",
       "free_omega_fmap_Proper",
       "free_omega_frontier_ae_lift",
       "free_omega_frontier_dirac_ae",
+      "free_omega_sample_bind",
+      "free_omega_sample_map",
       "real_bind_proper",
-      "real_fmap_proper"
+      "real_fmap_proper",
+      "real_sample_bind",
+      "real_sample_map",
+      "real_iter_setoid"
     ],
     "theories/Regression/Probability/RelationalLimit.v": [
       "arbitrary_nat_relational_limit",

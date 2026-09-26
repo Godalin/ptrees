@@ -2,6 +2,7 @@
     state nor its result is placed in an auxiliary effect signature. *)
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
+From Coq Require Import Morphisms.
 From PTree.Core Require Import PTreeDefinition IterationLaws.
 From ITree.Basics Require Import Basics Monad.
 From PTree.Prob.Interface Require Import Measure Omega Mixed BindOrder RelationalClosure.
@@ -74,6 +75,39 @@ Proof.
   apply peutt_iter_active_rel. apply Hstep. exact Hij.
 Qed.
 End Relational.
+
+(** Ordinary setoid rewriting is a corollary of heterogeneous iteration.
+    Register locally after supplying the frontier's relational certificates;
+    do not ask global typeclass search to invent them. *)
+Section Rewriting.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI} `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
+  `{Omega : @SemanticOmegaLaws MF FI FO}
+  `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{Diagonal : @SemanticMeasureDiagonalLaws MF FI FO}
+  `{Fubini : @SemanticOmegaFubiniLaws MF FI FO}
+  `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
+  `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}
+  `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}
+  `{Select : @SemanticOmegaSelection MF FI FO}.
+Variables (Hzero : relational_zero FO) (Hlimit : relational_lub FO).
+
+Lemma peutt_iter_Proper {I A} :
+  Proper
+    (pointwise_relation I (@peutt E MN MF FI FC MX FO (I+A) (I+A) eq) ==>
+     eq ==> @peutt E MN MF FI FC MX FO A A eq)
+    (@PTree.iter E MN A I).
+Proof.
+  intros f g H i j ->.
+  eapply (peutt_iter_direct_rel Hzero Hlimit) with (SI := eq).
+  - intros x y ->. eapply peutt_rel_mono.
+    + intros v w ->. destruct w; constructor; reflexivity.
+    + apply H.
+  - reflexivity.
+Qed.
+End Rewriting.
 
 Section Uniform.
 Context {E MN MF : Type -> Type}

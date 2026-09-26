@@ -225,6 +225,29 @@ Proof.
 Qed.
 End GenericRewriting.
 
+(** The exact same sampling equations work with MN = MF, without a
+    FreeOmega completion or a relational-lub certificate. *)
+Section GenericSampling.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Context {E : Type -> Type} {A B : Type}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Local Notation W := (@peutt E M M NI NC MX NO).
+
+Example direct_sample_bind (mu : M A) (k : A -> ptree E M B) :
+  W eq (PTree.bind (Prob mu (fun x => Ret x)) k) (Prob mu k).
+Proof. apply (peutt_sample_bind (NI := NI)). Qed.
+
+Example direct_sample_map (mu : M A) (f : A -> B) :
+  W eq (Prob mu (fun x => Ret (f x)))
+    (Prob (sem_bind mu (fun x => sem_ret (f x))) (fun a => Ret a)).
+Proof. apply (peutt_sample_map (NI := NI)). Qed.
+End GenericSampling.
+
 (** The eventful closure rule is independent of completion. The caller must
     still establish generator closure; this does not assert unrestricted
     behavioral iteration congruence. *)
@@ -422,6 +445,13 @@ Proof.
   exact (ptree_peutt_iteration_uniform (@mathcomp_relational_mixed_bind R)
     (@mathcomp_relational_zero R) Hlimit).
 Qed.
+
+Example direct_iter_Proper_of_relational_lub {I A} :
+  Proper
+    (pointwise_relation I (peutt (FI := NI) eq) ==>
+     eq ==> peutt (E := E) (FI := NI) eq)
+    (@PTree.iter E M A I).
+Proof. exact (peutt_iter_Proper (@mathcomp_relational_zero R) Hlimit). Qed.
 End FullIterationUniformity.
 
 (** The SAME generic MDP/atomic theorems at MN = MF. These clients add no

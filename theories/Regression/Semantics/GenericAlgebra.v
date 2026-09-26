@@ -3,6 +3,7 @@ Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import PEutt Algebra.
+From PTree.Interp Require Import IterationUniform ExceptionFacts StatePreservation Unrestricted.
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega Mixed.
 
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
@@ -11,6 +12,8 @@ Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 
 Definition generic_bind_proper := @peutt_bind_Proper.
 Definition generic_fmap_proper := @peutt_fmap_Proper.
+Definition generic_iter_proper := @peutt_iter_Proper.
+Definition generic_exception_proper := @run_exception_peutt_eq_Proper.
 Definition derived_ae_lift := @coupling_ae_implies_ae_lift.
 
 (** No native measure instance, bind/order/omega laws, or relational-lub
@@ -22,10 +25,23 @@ Context {E MN MF : Type -> Type}
 Example generic_left_unit_minimal {A B} (a : A) (k : A -> ptree E MN B) :
   @peutt E MN MF FI FC MX FO B B eq (PTree.bind (Ret a) k) (k a).
 Proof. apply peutt_bind_ret_l. Qed.
+
+Example generic_prob_bind_minimal {X A B} (mu : MN X)
+    (h : X -> ptree E MN A) (k : A -> ptree E MN B) :
+  peutt (MF := MF) eq (PTree.bind (Prob mu h) k)
+    (Prob mu (fun x => PTree.bind (h x) k)).
+Proof. apply peutt_bind_prob. Qed.
+
+Example generic_vis_map_minimal {X A B} (e : E X)
+    (h : X -> ptree E MN A) (f : A -> B) :
+  peutt (MF := MF) eq (PTree.fmap f (Vis e h))
+    (Vis e (fun x => PTree.fmap f (h x))).
+Proof. apply peutt_fmap_vis. Qed.
 End ShallowClient.
 
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure
-  PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.BindOrder.
+  PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.BindOrder
+  PTree.Prob.FreeOmega.RelationalLimit.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -57,6 +73,17 @@ Proof. apply coupling_ae_implies_ae_lift. Qed.
 
 Example free_omega_frontier_dirac_ae : @SemanticMeasureDiracAELaws MF FI.
 Proof. apply free_omega_observable_dirac_ae_laws. Qed.
+
+Example free_omega_sample_bind {X A} (mu : MN X) (k : X -> ptree E MN A) :
+  W eq (PTree.bind (Prob mu (fun x => Ret x)) k) (Prob mu k).
+Proof. apply peutt_sample_bind. Qed.
+
+Example free_omega_sample_map `{NDirac : @SemanticMeasureDiracAELaws MN NI}
+    `{NBindAE : @SemanticMeasureBindAEExactLaws MN NI}
+    {X A} (mu : MN X) (f : X -> A) :
+  W eq (Prob mu (fun x => Ret (f x)))
+    (Prob (sem_bind mu (fun x => sem_ret (f x))) (fun a => Ret a)).
+Proof. apply (peutt_sample_map (NI := NI)). Qed.
 End FreeOmegaClient.
 
 (** A second concrete native backend discharges the same generic profile. *)
@@ -80,4 +107,35 @@ Proof. apply peutt_bind_Proper. Qed.
 Example real_fmap_proper (f : A -> B) :
   Proper (W eq ==> W eq) (@PTree.fmap E MN A B f).
 Proof. apply peutt_fmap_Proper. Qed.
+
+Example real_sample_bind (mu : MN A) (k : A -> ptree E MN B) :
+  W eq (PTree.bind (Prob mu (fun x => Ret x)) k) (Prob mu k).
+Proof. apply peutt_sample_bind. Qed.
+
+Example real_sample_map (mu : MN A) (f : A -> B) :
+  W eq (Prob mu (fun x => Ret (f x)))
+    (Prob (sem_bind mu (fun x => sem_ret (f x))) (fun a => Ret a)).
+Proof. apply (peutt_sample_map (NI := NI)). Qed.
 End RealClient.
+
+(** Register generic iteration locally, then actually rewrite under a loop.
+    The native real backend supplies no duplicate iteration theorem. *)
+Section RealIteration.
+Variable R : realType.
+Context {E : Type -> Type} {I A : Type}.
+Local Notation MN := (SubEnumR R).
+Local Notation FI := (FreeOmegaObservableSemanticMeasure
+  (NI := SubEnumR_SemanticMeasure R) (NO := SubEnumR_SemanticOmega R)).
+Local Notation W := (peutt (E := E) (FI := FI)).
+#[local] Instance real_iter_rewrite :
+  Proper (pointwise_relation I (W eq) ==> eq ==> W eq) (@PTree.iter E MN A I) :=
+  peutt_iter_Proper free_omega_relational_zero free_omega_relational_lub.
+
+Example real_iter_setoid (f g : I -> ptree E MN (I+A))
+    (H : forall i, W eq (f i) (g i)) i :
+  W eq (PTree.iter f i) (PTree.iter g i).
+Proof.
+  assert (Hpoint : pointwise_relation I (W eq) f g) by exact H.
+  setoid_rewrite Hpoint. apply peutt_refl.
+Qed.
+End RealIteration.

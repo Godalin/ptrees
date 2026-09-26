@@ -55,6 +55,12 @@
       "context": "owners"
     },
     {
+      "id": "generic_algebra_gate_m",
+      "snapshot": "docs/GENERIC_ALGEBRA_CONTRACTS.json",
+      "field": "direct",
+      "context": "gate-m"
+    },
+    {
       "id": "generic_consumer",
       "snapshot": "docs/GENERIC_CONSUMER_CONTRACTS.json",
       "context": "owners"
@@ -490,6 +496,46 @@
       "RelationalChoice.relational_choice"
     ],
     "PTree.Examples.FactoryController.Rewriting.scripted_controller_program_rewrite": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.Algebra.peutt_sample_bind": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.Algebra.peutt_prob_map": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.Algebra.peutt_sample_map": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.GenericAlgebra.free_omega_sample_bind": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.GenericAlgebra.free_omega_sample_map": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.GenericAlgebra.real_sample_bind": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.GenericAlgebra.real_sample_map": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.BernoulliFactory.BernoulliFactoryComposition.factory_with_sampler_Proper": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Backend.MathCompDirect.direct_sample_bind": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Backend.MathCompDirect.direct_sample_map": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ]
