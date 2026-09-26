@@ -1,6 +1,11 @@
 (* Trusted host boundary: IO, Random.State and a tail-recursive scheduler.
    No control algorithm or sampling algorithm is reimplemented here. *)
-module C = Controller
+module Extracted = Controller
+module C = struct
+  include Extracted
+  include Extracted.Controller
+  include Extracted.Scripted
+end
 exception Runtime_error of string
 let fail s = raise (Runtime_error s)
 let limit = 100_000

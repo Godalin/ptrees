@@ -81,12 +81,7 @@ Require PTree.Examples.BernoulliFactory.RealBernoulliMathComp.
 Require PTree.Examples.BernoulliFactory.RealBernoulliOracle.
 Require PTree.Examples.BernoulliFactory.VonNeumannUnbounded.
 Require PTree.Examples.EffectInteractions.
-Require PTree.Examples.FactoryController.Controller.
-Require PTree.Examples.FactoryController.Facts.
-Require PTree.Examples.FactoryController.Observation.
-Require PTree.Examples.FactoryController.Probability.
-Require PTree.Examples.FactoryController.Rewriting.
-Require PTree.Examples.FactoryController.Scripted.
+Require PTree.Examples.FactoryController.
 Require PTree.Examples.ITreeSampling.
 Require PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService.
 Require PTree.Examples.MathCompPrograms.

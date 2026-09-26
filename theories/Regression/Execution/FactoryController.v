@@ -10,7 +10,7 @@ From PTree Require Import PTreeFacts.
 From PTree.Eq.Backend Require Import EnumQ ProbabilisticTraceEnumQ.
 From PTree.Interp Require Import State.
 From PTree.Examples.BernoulliFactory Require Import BernoulliFactory.
-From PTree.Examples.FactoryController Require Import Controller Facts Observation Probability Scripted Rewriting.
+From PTree.Examples Require Import FactoryController.
 Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Set Default Timeout 20.

@@ -95,7 +95,7 @@ class BehaviorRoutingTests(unittest.TestCase):
                     prefix + 'Notation "t ≈ₚ u" := (peutt eq t u) (at level 70).'})
 
     def test_factory_notation_must_remain_local(self):
-        path = 'theories/Examples/FactoryController/Rewriting.v'
+        path = 'theories/Examples/FactoryController.v'
         with self.assertRaises(AssertionError):
             current_surface({**self.sources, path: self.sources[path].replace(
                 'Local Notation "t ≈ₚ u"', 'Notation "t ≈ₚ u"')})

@@ -10,6 +10,12 @@ from pathlib import Path
 from audit_assumptions import ROOT, without_comments
 
 EXE = ROOT / '_build/default/extraction/factory-controller/main.exe'
+CASE_STUDY = ROOT / 'theories/Examples/FactoryController.v'
+
+
+def case_module(name):
+    source = without_comments(CASE_STUDY.read_text())
+    return source.split('Module ' + name + '.', 1)[1].split('End ' + name + '.', 1)[0]
 
 
 class FactoryControllerTests(unittest.TestCase):
@@ -56,8 +62,7 @@ class FactoryControllerTests(unittest.TestCase):
                 self.assertNotIn('Lost', out)
 
     def test_complete_calculation_is_not_a_refinement_shortcut(self):
-        source = without_comments((ROOT /
-            'theories/Examples/FactoryController/Rewriting.v').read_text())
+        source = case_module('Rewriting')
         proof = source.split('Theorem factory_controller_program_rewrite :', 1)[1].split('Qed.', 1)[0]
         for step in ['peutt_factory_vn_fair', 'peutt_sample_bind', 'peutt_sample_map',
                      'fair_binary_round_measure', 'peutt_factory_standard_direct']:
@@ -69,8 +74,7 @@ class FactoryControllerTests(unittest.TestCase):
             self.assertNotIn(shortcut, proof)
 
     def test_calculation_reuses_generic_algebra(self):
-        source = without_comments((ROOT /
-            'theories/Examples/FactoryController/Rewriting.v').read_text())
+        source = case_module('Rewriting')
         preamble = source.split('Section FullProgram.', 1)[0]
         self.assertNotIn('Proof.', preamble)
         self.assertNotRegex(source, r'\b(?:Instance|Hint|canonical_peutt)\b')
@@ -86,7 +90,7 @@ class FactoryControllerTests(unittest.TestCase):
         for concrete in ['EnumQ', 'SubEnumQ', 'SubEnumR', 'MathComp', 'CanonicalBehavior']:
             self.assertNotIn(concrete, support)
         for path, names in [
-            ('FactoryController/Facts.v', ['embed_Proper', 'controller_Proper']),
+            ('FactoryController.v', ['embed_Proper', 'controller_Proper']),
             ('BernoulliFactory/BernoulliFactoryComposition.v', ['factory_with_sampler_Proper'])]:
             owner = without_comments((ROOT/'theories/Examples'/path).read_text())
             for name in names:
@@ -104,6 +108,15 @@ class FactoryControllerTests(unittest.TestCase):
         self.assertIn('Let pf0 : 0 <= pfalse := ltW pfpos.', parameters)
         self.assertIn('Let pt0 : 0 <= ptrue := ltW ptpos.', parameters)
         self.assertNotIn('pnontrivial', parameters)
+
+    def test_single_file_case_study(self):
+        self.assertEqual(list((CASE_STUDY.parent/'FactoryController').glob('*.v')), [])
+        source = without_comments(CASE_STUDY.read_text())
+        modules = ['Controller', 'Scripted', 'Facts', 'Rewriting', 'Probability', 'Observation']
+        offsets = [source.index('Module ' + name + '.') for name in modules]
+        self.assertEqual(offsets, sorted(offsets))
+        self.assertIn('Export ' + ' '.join(modules) + '.', source)
+        self.assertNotIn('From PTree.Examples.FactoryController Require', source)
 
     def test_impl_really_uses_nested_factory_draws(self):
         impl = self.cli('impl', 'script', 42).stdout

@@ -8,7 +8,20 @@ there is no second sampling algorithm or whole-controller coupling proof.
 
 ## Program and main result
 
-`Examples/FactoryController/Controller.v` contains a small two-phase machine:
+The complete case study lives in **`Examples/FactoryController.v`**. One import
+provides the program and its proofs:
+
+```coq
+From PTree.Examples Require Import FactoryController.
+```
+
+The file has six internal modules, in reading order: `Controller`, `Scripted`,
+`Facts`, `Rewriting`, `Probability`, `Observation`. They isolate local notation
+and instances, while preserving existing fully qualified declaration names.
+There are no old-path forwarding files. Generic algebra, sampler analysis,
+regression tests and the OCaml host keep their separate owners.
+
+`Controller` defines a small two-phase machine:
 
 ```
 AwaitOrder --ReceiveOrder(j)--> Manufacturing(j)
@@ -25,8 +38,8 @@ both VN and the outer binary factory can retry arbitrarily often. An
 environment may request Rework or Jam forever. No environment fairness or
 service termination assumption is used in the refinement theorem.
 
-Start with **`Rewriting.v:factory_controller_program_rewrite`** for the full
-program calculation, not the condensed corollaries in `Facts.v`. Its `Run`
+Start with **`Rewriting.factory_controller_program_rewrite`** for the full
+program calculation, not the condensed corollaries in `Facts`. Its `Run`
 notation expands to the actual complete execution context:
 
 ```coq
@@ -98,8 +111,8 @@ theorem names also matches other sampling nodes and disrupts this calculation.
 
 The finite-round step is related pointwise by `peutt`, not by equality of
 functions. `setoid_rewrite Hround` uses the existing pointwise iteration Proper
-instance under the enclosing controller and handlers. The calculation neither
-imports nor directly applies functional extensionality; inherited logical
+instance under the enclosing controller and handlers. The calculation does not
+directly apply functional extensionality; inherited logical
 dependencies of the underlying library theorems remain separately audited.
 
 `scripted_controller_program_rewrite` specializes this full calculation to the
@@ -107,7 +120,7 @@ actual implementation/specification extracted to OCaml. The extraction proof
 pin now points to this theorem. Both arbitrary initial state/script and the
 rational source/target parameters are retained in the general theorem.
 
-`Facts.v` retains the earlier convenient condensed proof:
+`Facts` retains the earlier convenient condensed proof:
 
 ```coq
 Theorem controller_refinement : controller_impl ≈ₚ controller_spec.
@@ -284,3 +297,27 @@ endpoints are compiled regressions. Joint `coqchk -norec` passed for Rewriting
 and its execution regression (two safe bodies, dependencies trusted).
 Extracted `controller.ml` and `controller.mli` are byte-for-byte unchanged.
 No CI check was requested.
+
+### Single-file organization follow-up
+
+Relative to `ce51931`, the six application files are consolidated into
+`Examples/FactoryController.v`; their declaration/proof bodies were compared
+byte-for-byte before/after consolidation. Internal module names preserve all
+fully qualified constants. All 22 compiled contracts were compared with only
+the added printed `FactoryController.` qualification and whitespace ignored;
+logical-assumption strings remained exact. The snapshot records the new
+printer output, not a changed theorem interface.
+
+Clients now import `PTree.Examples.FactoryController`. Old files are removed,
+not retained as forwarding modules. AllImports, extraction, tool tests and the
+architecture inventory use the single owner (430 total theory modules, down
+from 435, with the same two Gate M files). The OCaml generator now retains the
+internal `Controller` and `Scripted` modules; the host changes only module
+aliases/includes, not execution or sampling code.
+
+Local full build, all 141 tool tests, the 22-endpoint contract audit,
+architecture/source/public-surface checks and joint `coqchk -norec` for the
+consolidated example and its regression passed. The kernel check covers two
+safe module bodies and trusts their dependencies, not the entire library
+recursively. Script/replay/interactive regressions still pass; seed 42 uses
+34 factory draws versus 4 specification draws. CI was not queried.

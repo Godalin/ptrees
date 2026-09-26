@@ -21,7 +21,7 @@ closure, a specific native representation, or a completion type. In particular,
 `peutt_prob_map` accepts an arbitrary continuation, not only `Ret`. Their compiled
 signatures and assumptions are recorded in `GENERIC_ALGEBRA_CONTRACTS.json`.
 
-The factory-controller calculation invokes the generic sampling laws directly
+The `Rewriting` module of `Examples/FactoryController.v` invokes the generic sampling laws directly
 and contains no `Instance`, `Existing Instance` or hints. Its relation is a
 local notation for explicitly selected raw `PEutt.peutt`, not `canonical_peutt`.
 Embedding, factory and controller congruences are exported by their example
