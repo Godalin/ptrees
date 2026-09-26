@@ -26,8 +26,9 @@ and contains no `Instance`, `Existing Instance` or hints. Its relation is a
 local notation for explicitly selected raw `PEutt.peutt`, not `canonical_peutt`.
 Embedding, factory and controller congruences are exported by their example
 owners because they mention application programs. The complete calculation
-now rewrites local sampler, embedding and pointwise step equalities, using
-library congruences automatically rather than applying Proper manually;
+now rewrites directly inside the manufacturing step, then rewrites that
+pointwise step equality under the handler stack, using library congruences
+automatically rather than applying Proper manually;
 it is defined before `Facts` and cannot depend on that example's
 embedding/controller helpers.
 

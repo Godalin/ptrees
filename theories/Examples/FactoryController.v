@@ -152,8 +152,8 @@ Definition chronological_log s := rev (reverse_log s).
 End Scripted.
 
 Module Rewriting.
-(** Self-contained full-program calculation. Rewrite the sampler, its
-    embedding, then the pointwise controller step under the handler stack.
+(** Self-contained full-program calculation. Rewrite the sampler directly
+    inside the manufacturing step, then the step under the handler stack.
     Library congruences are used automatically by setoid rewriting.
     Only the two unbounded analyses are
     opaque: VN -> fair, and the standard binary loop -> Bernoulli(q).
@@ -196,8 +196,11 @@ Local Notation "'Run' sampler" :=
 Theorem factory_controller_program_rewrite :
   Run (biased_to_rational_coin pf0 pt0 q) ≈ₚ Run (factory_direct_q q0 q1).
 Proof.
-  assert (Hsampler : biased_to_rational_coin pf0 pt0 q ≈ₚ factory_direct_q q0 q1).
-  {
+  assert (Hstep : pointwise_relation phase (W eq)
+    (controller_step (embed (biased_to_rational_coin pf0 pt0 q)))
+    (controller_step (embed (factory_direct_q q0 q1)))).
+  { intros [|job]; cbn [controller_step]; [reflexivity|].
+    unfold attempt, embed.
     unfold biased_to_rational_coin.
     (* 1. Factory(VN(p),q) -> Factory(Fair,q).
           First and only VN probability-analysis lemma. *)
@@ -220,15 +223,6 @@ Proof.
     setoid_rewrite (peutt_factory_standard_direct q0 q1).
     reflexivity.
   }
-  assert (Hembedded :
-    @embed controllerE bool (biased_to_rational_coin pf0 pt0 q) ≈ₚ
-    embed (factory_direct_q q0 q1)).
-  { unfold embed. setoid_rewrite Hsampler. reflexivity. }
-  assert (Hstep : pointwise_relation phase (W eq)
-    (controller_step (embed (biased_to_rational_coin pf0 pt0 q)))
-    (controller_step (embed (factory_direct_q q0 q1)))).
-  { intros [|job]; cbn [controller_step]; [reflexivity|].
-    unfold attempt. setoid_rewrite Hembedded. reflexivity. }
   unfold controller.
   setoid_rewrite Hstep.
   reflexivity.

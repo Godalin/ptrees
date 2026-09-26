@@ -77,8 +77,11 @@ class FactoryControllerTests(unittest.TestCase):
             self.assertNotIn(helper, proof)
         self.assertNotIn('_Proper', proof)
         self.assertNotRegex(proof, r'\b(?:apply|eapply|f_equiv)\b')
-        for local in ['Hsampler', 'Hembedded', 'Hstep']:
+        for local in ['Hround', 'Hstep']:
             self.assertIn('setoid_rewrite ' + local + '.', proof)
+        for redundant in ['Hsampler', 'Hembedded']:
+            self.assertNotIn(redundant, proof)
+        self.assertIn('unfold attempt, embed.', proof)
         self.assertIn('Hstep : pointwise_relation phase (W eq)', proof)
         self.assertNotIn('Facts', source)
 

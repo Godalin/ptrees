@@ -61,9 +61,10 @@ Its corollary aligns the boolean nonnegativity proofs using the constructive
 `bool_irrelevance` theorem, without adding a proof-irrelevance axiom. The older
 analysis/refinement helpers keep their existing interfaces.
 
-The proof first derives the sampler equality (`Hsampler`), then rewrites it
-under the empty-signature embedding (`Hembedded`) and per-attempt bind to obtain
-the pointwise controller-step equality (`Hstep`). Finally `setoid_rewrite Hstep`
+The proof establishes the pointwise controller-step equality (`Hstep`) by
+rewriting the sampler directly inside the Manufacturing branch, under its
+empty-signature embedding and per-attempt bind. There are no separate sampler
+or embedding assertions. Finally `setoid_rewrite Hstep`
 rewrites the infinite controller under the entire unchanged handler stack.
 The AwaitOrder case is reflexive. These local facts all live inside the same
 `Proof` block; there are no manual `apply Proper` steps. No controller/embedding congruence
@@ -360,3 +361,15 @@ source/public-surface checks and targeted joint `coqchk -norec` passed. The
 kernel check covers the rewriting library, its regression and this example
 (three safe module bodies, trusting dependencies). Program definitions,
 probability analyses and runtime code are unchanged. CI was not queried.
+
+### Direct in-context calculation
+
+After `9b24533`, the redundant `Hsampler` and `Hembedded` assertions are also
+removed. The sampler calculation now runs directly under bind and embedding
+inside the Manufacturing branch. Only `Hstep` (controller branches) and
+`Hround` (the finite round under a loop) remain as pointwise facts; there is
+no function-equality conversion, local instance or explicit Proper application.
+
+Full build, all 11 case-study tests, the 22 exact type/assumption contracts,
+and source/public-surface checks passed. No contract snapshot or program
+definition changed. Remote CI was not queried.
