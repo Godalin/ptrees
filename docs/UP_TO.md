@@ -72,6 +72,21 @@ checks actual recursive branches. Existing divergence and missing-mass
 regressions remain in place. Algebraic factory/controller proofs are not
 converted to coinduction.
 
+### Reading notation
+
+Both clients follow FactoryController's presentation: setup fixes the
+observable profile once, and a **local** `≈ₚ` expands directly to that raw
+`peutt`. Thus the public conclusions read
+`von_neumann_service ≈ₚ direct_fair_service` and
+`masked_impl m ≈ₚ mixed_spec`, without a canonical wrapper or new instances.
+The service's bind expressions use the standard `b <- sampler ;; ...`
+notation. Local `tree`, `state`, `progress` and up-to abbreviations hide
+repeated type parameters, not proof obligations: complete-hitting progress
+and the root/reply invariants remain visible in the proofs. Concrete
+probability analysis retains its explicit measure interfaces where needed.
+The notation follow-up preserves all 69 compiled types/assumption contracts
+without updating the snapshot. No generic theorem or backend is changed.
+
 The six new public/client endpoints are recorded in the existing
 `GENERIC_ALGEBRA_CONTRACTS.json` suite; its earlier entries are preserved.
 There is no new stage-replay audit or global typeclass hint.

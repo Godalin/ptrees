@@ -126,9 +126,34 @@ Qed.
 
 Set Universe Polymorphism.
 
+Local Notation tree := (ptree mixedE SubEnumQ).
+Local Notation state := (ptree' mixedE SubEnumQ bool).
+Local Notation MF := (FreeOmega SubEnumQ).
+Local Notation mixed_head := (stable_head mixedE SubEnumQ bool).
+Local Notation FI := (FreeOmegaObservableSemanticMeasure
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+Local Notation MX := (@FreeOmegaMixedMeasure SubEnumQ).
+Local Notation FO := (FreeOmegaObservableSemanticOmega
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+Local Notation kernel := (@ptree_primitive_kernel mixedE SubEnumQ MF FI FreeOmegaMixedMeasure bool).
+Local Notation hitting := (@stable_hitting MF FI FreeOmegaObservableSemanticOmega
+  (ptree' mixedE SubEnumQ bool) mixed_head kernel).
+(** Fix the observable interpretation once, exactly as in FactoryController;
+    this is notation for raw peutt, not an additional relation. *)
+Local Notation W := (PEutt.peutt (E := mixedE) (MN := SubEnumQ)
+  (MF := MF) (FI := FI) (FC := FC) (MX := MX) (FO := FO)).
+Local Notation "t ≈ₚ u" := (W eq t u)
+  (at level 70, no associativity) : type_scope.
+Local Notation upto := (prob_upto_closure (NI := SubEnumQ_SemanticMeasure)
+  (FI := FI) (FC := FC) (MX := MX) (FO := FO) eq).
+Local Notation progress := (stable_hitting_match (FI := FI) (FO := FO)
+  kernel kernel (@ptree_stable_head_rel mixedE SubEnumQ bool bool eq)).
+
 Definition masked_update (rsh : bool * bool * bool) ack :=
   let '(r,s,h) := rsh in if ack then h else r.
-CoFixpoint masked_impl (m : bool) : ptree mixedE SubEnumQ bool :=
+CoFixpoint masked_impl (m : bool) : tree bool :=
   Vis Challenge (fun answer =>
     let c := response_value answer in
     Prob biased_triple (fun rsh =>
@@ -136,19 +161,19 @@ CoFixpoint masked_impl (m : bool) : ptree mixedE SubEnumQ bool :=
       | Stop b => Ret b
       | Continue b => Vis (Reply b) (fun ack => masked_impl (masked_update rsh (response_value ack)))
       end)).
-CoFixpoint mixed_spec : ptree mixedE SubEnumQ bool :=
+CoFixpoint mixed_spec : tree bool :=
   Vis Challenge (fun answer =>
     Prob (mixed_outcomes (response_value answer)) (fun o =>
       match o with
       | Stop b => Ret b
       | Continue b => Vis (Reply b) (fun _ => mixed_spec)
       end)).
-Definition masked_branch m c rsh : ptree mixedE SubEnumQ bool :=
+Definition masked_branch m c rsh : tree bool :=
   match mixed_encode m c rsh with
   | Stop b => Ret b
   | Continue b => Vis (Reply b) (fun ack => masked_impl (masked_update rsh (response_value ack)))
   end.
-Definition spec_branch o : ptree mixedE SubEnumQ bool :=
+Definition spec_branch o : tree bool :=
   match o with
   | Stop b => Ret b
   | Continue b => Vis (Reply b) (fun _ => mixed_spec)
@@ -164,17 +189,6 @@ Example masked_impl_probabilistic m : probabilistic_ptree (masked_impl m).
 Proof. apply probabilistic_ptree_intrinsic. Qed.
 Example mixed_spec_probabilistic : probabilistic_ptree mixed_spec.
 Proof. apply probabilistic_ptree_intrinsic. Qed.
-
-Local Notation MF := (FreeOmega SubEnumQ).
-Local Notation mixed_head := (stable_head mixedE SubEnumQ bool).
-Local Notation FI := (FreeOmegaObservableSemanticMeasure
-  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-Local Notation kernel := (@ptree_primitive_kernel mixedE SubEnumQ MF FI FreeOmegaMixedMeasure bool).
-Local Notation hitting := (@stable_hitting MF FI FreeOmegaObservableSemanticOmega
-  (ptree' mixedE SubEnumQ bool) mixed_head kernel).
-Local Notation peutt := (@peutt mixedE SubEnumQ MF FI
-  FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
-  FreeOmegaObservableSemanticOmega).
 
 Definition masked_head m c rsh : mixed_head :=
   match mixed_encode m c rsh with
@@ -226,7 +240,7 @@ Qed.
 (** Only roots and replies belong to the invariant.  The
     after-challenge sampling context is discharged by up-to-Prob; its
     explicit hitting witnesses above remain available for analysis. *)
-Definition mixed_protocol_sim (s1 s2 : ptree' mixedE SubEnumQ bool) : Prop :=
+Definition mixed_protocol_sim (s1 s2 : state) : Prop :=
   (exists m, s1 = observe (masked_impl m) /\ s2 = observe mixed_spec) \/
   (exists rsh b,
     s1 = observe (Vis (Reply b) (fun ack =>
@@ -236,11 +250,7 @@ Lemma MPSRoot m : mixed_protocol_sim (observe (masked_impl m)) (observe mixed_sp
 Proof. left. exists m. split; reflexivity. Qed.
 
 Lemma mixed_protocol_sim_postfixed : forall s1 s2, mixed_protocol_sim s1 s2 ->
-  @stable_hitting_match MF FI FreeOmegaObservableSemanticOmega
-    (ptree' mixedE SubEnumQ bool) (ptree' mixedE SubEnumQ bool)
-    mixed_head mixed_head kernel kernel
-    (@ptree_stable_head_rel mixedE SubEnumQ bool bool eq)
-    (prob_upto_closure (FI := FI) eq mixed_protocol_sim) s1 s2.
+  progress (upto mixed_protocol_sim) s1 s2.
 Proof.
   intros s1 s2 [[m [-> ->]]|[rsh [b [-> ->]]]].
   - rewrite masked_impl_unfold mixed_spec_unfold.
@@ -255,11 +265,9 @@ Proof.
     apply prob_upto_closure_includes. apply MPSRoot.
 Qed.
 
-Theorem masked_protocol_equivalent m : peutt eq (masked_impl m) mixed_spec.
+Theorem masked_protocol_equivalent m : masked_impl m ≈ₚ mixed_spec.
 Proof.
-  eapply (peutt_coinduction_upto_prob (NI := SubEnumQ_SemanticMeasure)
-    (FI := FI) (FO := FreeOmegaObservableSemanticOmega)
-    (MX := FreeOmegaMixedMeasure))
+  eapply peutt_coinduction_upto_prob
     with (sim := mixed_protocol_sim); try typeclasses eauto.
   - exact mixed_protocol_sim_postfixed.
   - apply MPSRoot.
