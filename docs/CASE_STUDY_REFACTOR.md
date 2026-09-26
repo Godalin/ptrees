@@ -12,7 +12,9 @@ model. Program definitions, externally consumed theorem statements, public
 probability results and extraction roots remain stable. Internal helpers may
 change with an explicit replacement; compiled snapshots are not silently reset.
 
-The 20 source files below are the entire current Examples inventory. A retained
+The 20 source files below are the Examples inventory at the refactor checkpoint.
+The subsequently added [adaptive controller](ADAPTIVE_FACTORY_CONTROLLER.md)
+is a separate, in-progress case, not part of that completed refactor. A retained
 analysis file is an intentional outcome, not an unfinished attempt to turn
 convergence or invariant arguments into rewrite scripts. Headers now identify
 each file's role, reading entry and claim boundary. Algebraic transformations

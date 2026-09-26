@@ -550,6 +550,18 @@
     "PTree.Regression.Semantics.FreeOmegaRewriting.OptIn.imported_prob_rewrite": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.AdaptiveFactoryController.Adaptive.lower_attempt": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.AdaptiveFactoryController.Adaptive.lower_attempt_kernel": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.AdaptiveFactoryController.Adaptive.lower_adaptive_normalized": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
     ]
   }
 }

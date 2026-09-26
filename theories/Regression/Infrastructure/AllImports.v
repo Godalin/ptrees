@@ -70,6 +70,7 @@ Require PTree.Eq.StableHittingComputation.
 Require PTree.Eq.StableHittingRelation.
 Require PTree.Eq.UnifiedFrontier.
 Require PTree.Eq.WellFormedness.
+Require PTree.Examples.AdaptiveFactoryController.
 Require PTree.Examples.BernoulliFactory.BernoulliFactory.
 Require PTree.Examples.BernoulliFactory.BernoulliFactoryComposition.
 Require PTree.Examples.BernoulliFactory.BernoulliFactoryProbability.
