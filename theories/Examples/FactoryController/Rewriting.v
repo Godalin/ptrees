@@ -63,10 +63,8 @@ Proof.
   (* 2. Open the outer factory loop; distribute bind through sampling,
         eliminate Ret, and combine the finite sampling/return step. *)
   unfold factory_with_sampler, factory_sampler_step, factory_direct_fair.
-  setoid_rewrite (peutt_sample_bind (E := factoryE)
-    (NI := EnumQ_SemanticMeasure) (FI := FreeOmegaObservableSemanticMeasure) vn_fair).
-  setoid_rewrite (peutt_sample_map (E := factoryE)
-    (NI := EnumQ_SemanticMeasure) (FI := FreeOmegaObservableSemanticMeasure) vn_fair).
+  setoid_rewrite (peutt_sample_bind vn_fair).
+  setoid_rewrite (peutt_sample_map vn_fair).
   assert (Hround :
     (fun x => (Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
       (fun a => Ret a) : ptree factoryE EnumQ (rat + bool))) = factory_standard_step).

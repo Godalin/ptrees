@@ -92,6 +92,8 @@ class FactoryControllerTests(unittest.TestCase):
             for name in names:
                 self.assertIn('#[export] Instance ' + name, owner)
         self.assertNotRegex(source, r'Local Lemma sample_(?:bind|map)\b')
+        for theorem in ['peutt_sample_bind', 'peutt_sample_map']:
+            self.assertIn('setoid_rewrite (' + theorem + ' vn_fair).', source)
 
     def test_impl_really_uses_nested_factory_draws(self):
         impl = self.cli('impl', 'script', 42).stdout

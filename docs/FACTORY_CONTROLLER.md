@@ -75,6 +75,15 @@ by their respective facts modules. No generic proof or probability certificate
 is repeated here. See [generic algebra](GENERIC_ALGEBRA.md) for the distinct
 probability premises and the opt-in registration boundary.
 
+The sampling rewrites infer the effect signature and measure instances:
+```coq
+setoid_rewrite (peutt_sample_bind vn_fair).
+setoid_rewrite (peutt_sample_map vn_fair).
+```
+Only the explicit sampling argument is retained to select the intended fair
+coin occurrences inside the full program; unrestricted rewriting with bare
+theorem names also matches other sampling nodes and disrupts this calculation.
+
 `scripted_controller_program_rewrite` specializes this full calculation to the
 actual implementation/specification extracted to OCaml. The extraction proof
 pin now points to this theorem. Both arbitrary initial state/script and the
