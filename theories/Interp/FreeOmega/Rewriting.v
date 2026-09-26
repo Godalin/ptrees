@@ -35,6 +35,13 @@ Local Notation W := (peutt (FI := FI) (MX := FreeOmegaMixedMeasure)
   peutt_bind_Proper (FI := FI) (MX := FreeOmegaMixedMeasure)
     (FO := FreeOmegaObservableSemanticOmega).
 
+(** Fix the frontier for the decomposed [go (ProbF ...)] rewrite path. *)
+#[export] Instance free_omega_probF_Proper {E A X} (mu : MN X) :
+  Proper (pointwise_relation X (W eq) ==> Shallow.going (W eq))
+    (@ProbF E MN A (ptree E MN A) X mu) | 1 :=
+  peutt_probF_Proper (FI := FI) (MX := FreeOmegaMixedMeasure)
+    (FO := FreeOmegaObservableSemanticOmega) mu.
+
 #[export] Instance free_omega_state_Proper {S E A} :
   Proper (W eq ==> eq ==> W eq) (@run_state S E MN A) :=
   run_state_peutt_eq_Proper free_omega_relational_bind

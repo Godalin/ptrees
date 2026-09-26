@@ -1,4 +1,8 @@
-(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
+(** Case role: shared analysis.
+    Proof mode: analysis-dominated (native validity).
+    Reading entry: probabilistic_biased_to_rational_coin.
+    Scope: Raw EnumQ validity is independent of termination; normalization is explicit.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 (** The executable raw-EnumQ implementation inhabits the probabilistic
     fragment.  Normalization is needed for the source measure; termination
     and nondegeneracy are not needed for this syntax-level contract. *)

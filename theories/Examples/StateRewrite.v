@@ -1,3 +1,8 @@
+(** Case role: paper case study.
+    Proof mode: algebraic rewriting; execution/validation.
+    Reading entry: source_program_rewrite; rewrite_then_handle.
+    Scope: SubEnumQ / observable FreeOmega; equal behavior is not equal fuel or trace.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 (** Rewrite -> eliminate State -> extract. Two consecutive native draws are
     fused by the generic probability algebra, before interpreting State.
     The continuation is the genuinely unbounded rational State loop. *)
@@ -12,6 +17,8 @@ From PTree Require Import PTree PTreeFacts.
 From PTree.Eq.Backend Require Import SubEnumQ.
 From PTree.Interp Require Import State.
 Require PTree.Interp.FreeOmega.State.
+From PTree.Interp.FreeOmega Require Import Rewriting.
+Import FreeOmegaRewriting.
 From PTree.Examples Require Import StateCounter RationalState.
 From PTree.Execution Require Import Runner.
 From PTree.Execution.Backend Require Import RationalTickets.
@@ -43,14 +50,13 @@ Qed.
 Theorem source_program_rewrite : original_state_program ≈ₚ rewritten_state_program.
 Proof.
   unfold original_state_program, rewritten_state_program.
-  apply peutt_vis. intro s. apply preparation_sampling_fusion.
+  setoid_rewrite preparation_sampling_fusion. reflexivity.
 Qed.
 
 Theorem rewrite_then_handle s :
   run_state original_state_program s ≈ₚ run_state rewritten_state_program s.
 Proof.
-  apply PTree.Interp.FreeOmega.State.run_state_peutt_eq.
-  apply source_program_rewrite.
+  setoid_rewrite source_program_rewrite. reflexivity.
 Qed.
 
 Definition execute_state_program {Seed}

@@ -1,4 +1,8 @@
-(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
+(** Case role: paper case study.
+    Proof mode: relational/coinductive.
+    Reading entry: interactive_von_neumann_service_equivalent; von_neumann_request_true_reply_trace_probability.
+    Scope: EnumQ / observable FreeOmega; internal structural analysis is explicitly scoped.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.

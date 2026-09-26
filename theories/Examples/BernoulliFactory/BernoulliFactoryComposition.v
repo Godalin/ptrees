@@ -1,4 +1,8 @@
-(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
+(** Case role: paper case study / shared algebra.
+    Proof mode: algebraic rewriting.
+    Reading entry: peutt_factory_vn_direct.
+    Scope: EnumQ / observable FreeOmega; two unbounded analyses are consumed as behavior equations.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 (** Algebraic composition of independently verified Factory components. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
@@ -18,6 +22,7 @@ Require Import PTree.Prob.Backend.EnumQ.Map.
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
+From PTree.Interp.FreeOmega Require Import Rewriting.
 From PTree.Eq Require Import PEutt PStruct PStrong.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded RationalBernoulli BernoulliFactory OperationalBernoulliFactory.
 Set Implicit Arguments.
@@ -25,6 +30,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Import EnumQ PTree.Prob.Backend.EnumQ.Map GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
+Import FreeOmegaRewriting.
 Local Notation MF := (FreeOmega EnumQ).
 Local Notation peutt := (@peutt factoryE EnumQ MF
   (FreeOmegaObservableSemanticMeasure (NI := EnumQ_SemanticMeasure)
@@ -37,16 +43,8 @@ Theorem peutt_factory_sampler_congr
   peutt eq s1 s2 ->
   peutt eq (factory_with_sampler s1 q) (factory_with_sampler s2 q).
 Proof.
-  intro Hsampler. unfold factory_with_sampler.
-  eapply peutt_iter_behavioral_rel with (SI := eq).
-  - exact factoryE_no_event.
-  - intros x y ->. unfold factory_sampler_step.
-    eapply peutt_rel_mono with (RR := eq).
-    + intros u v ->. destruct v; reflexivity.
-    + eapply PTree.Eq.Bind.peutt_bind with (RR := eq).
-      * exact Hsampler.
-      * intros a b ->. apply peutt_refl.
-  - reflexivity.
+  intro Hsampler. unfold factory_with_sampler, factory_sampler_step.
+  setoid_rewrite Hsampler. reflexivity.
 Qed.
 
 (** This context is specific to the factory, not to generic iteration. *)
@@ -57,36 +55,23 @@ Proof. intros t u H q q' ->. apply peutt_factory_sampler_congr. exact H. Qed.
 Lemma factory_fair_step_standard x :
   peutt eq (factory_sampler_step factory_direct_fair x) (factory_standard_step x).
 Proof.
-  unfold factory_sampler_step, factory_direct_fair, factory_standard_step.
-  transitivity (Prob vn_fair (fun b => Ret (binary_round_result x b))
-    : ptree factoryE EnumQ (rat + bool)).
-  - apply peutt_of_pstruct.
-    apply pstruct_fold. rewrite observe_bind. cbn.
-    constructor. intro b. apply observe_eq_pstruct. reflexivity.
-  - rewrite <- (fair_binary_round_measure x).
-    transitivity (Prob vn_fair (fun b =>
-        Prob (ret_EnumQ (binary_round_result x b)) (fun next => Ret next))
-      : ptree factoryE EnumQ (rat + bool)).
-    + eapply peutt_prob with (XR := eq).
-      * apply sem_lift_refl. intro b. reflexivity.
-      * intros a b ->. apply peutt_sym.
-        exact (peutt_prob_ret (NI := EnumQ_SemanticMeasure)
-          (FI := FreeOmegaObservableSemanticMeasure) (MX := FreeOmegaMixedMeasure)
-          (binary_round_result x b) (fun next => (Ret next : ptree factoryE EnumQ (rat + bool)))).
-    + apply (peutt_prob_flatten (NI := EnumQ_SemanticMeasure)
-        (FI := FreeOmegaObservableSemanticMeasure) (MX := FreeOmegaMixedMeasure)).
+  unfold factory_sampler_step, factory_direct_fair.
+  setoid_rewrite (peutt_sample_bind (MF := MF) vn_fair).
+  setoid_rewrite (peutt_sample_map (MF := MF) vn_fair).
+  (* The representation-specific calculation is confined to this local
+     analysis endpoint; clients rewrite the program equation above. *)
+  change (peutt eq
+    (Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
+      (fun a => Ret a)) (factory_standard_step x)).
+  unfold factory_standard_step. rewrite fair_binary_round_measure. reflexivity.
 Qed.
 
 Lemma peutt_factory_fair_standard q :
   peutt eq (factory_with_sampler factory_direct_fair q) (factory_standard q).
 Proof.
   unfold factory_with_sampler, factory_standard.
-  eapply peutt_iter_behavioral_rel with (SI := eq).
-  - exact factoryE_no_event.
-  - intros x y ->. eapply peutt_rel_mono with (RR := eq).
-    + intros u v ->. destruct v; reflexivity.
-    + apply factory_fair_step_standard.
-  - reflexivity.
+  setoid_rewrite (factory_fair_step_standard : pointwise_relation _ (peutt eq) _ _).
+  reflexivity.
 Qed.
 
 Section RationalTarget.
@@ -96,9 +81,8 @@ Hypotheses (q0 : 0 <= q) (q1 : q <= 1).
 Theorem peutt_factory_fair_direct :
   peutt eq (factory_with_sampler factory_direct_fair q) (factory_direct_q q0 q1).
 Proof.
-  eapply peutt_trans.
-  - exact (peutt_factory_fair_standard q).
-  - exact (peutt_factory_standard_direct q0 q1).
+  setoid_rewrite peutt_factory_fair_standard.
+  setoid_rewrite (peutt_factory_standard_direct q0 q1). reflexivity.
 Qed.
 
 (** Any equivalent closed sampler can be installed without redoing the
@@ -108,9 +92,7 @@ Theorem peutt_factory_correct
     (Hsampler : peutt eq sampler factory_direct_fair) :
   peutt eq (factory_with_sampler sampler q) (factory_direct_q q0 q1).
 Proof.
-  eapply peutt_trans.
-  - exact (peutt_factory_sampler_congr q Hsampler).
-  - exact peutt_factory_fair_direct.
+  setoid_rewrite Hsampler. exact peutt_factory_fair_direct.
 Qed.
 
 (** Parametric source bias followed by an arbitrary rational target.
@@ -122,13 +104,10 @@ Theorem peutt_factory_vn_direct
     (pnontrivial : 0 < pfalse * ptrue) :
   peutt eq (biased_to_rational_coin pfalse0 ptrue0 q) (factory_direct_q q0 q1).
 Proof.
-  change (peutt eq
-    (factory_with_sampler (factory_fair_coin pfalse0 ptrue0) q)
-    (factory_direct_q q0 q1)).
-  eapply peutt_trans.
-  - apply peutt_factory_sampler_congr.
-    exact (peutt_factory_vn_fair pfalse0 ptrue0 pnormalized pnontrivial).
-  - exact peutt_factory_fair_direct.
+  unfold biased_to_rational_coin.
+  setoid_rewrite (peutt_factory_vn_fair pfalse0 ptrue0 pnormalized pnontrivial).
+  setoid_rewrite peutt_factory_fair_standard.
+  setoid_rewrite (peutt_factory_standard_direct q0 q1). reflexivity.
 Qed.
 End RationalTarget.
 

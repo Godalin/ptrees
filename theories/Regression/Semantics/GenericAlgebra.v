@@ -39,6 +39,31 @@ Example generic_vis_map_minimal {X A B} (e : E X)
 Proof. apply peutt_fmap_vis. Qed.
 End ShallowClient.
 
+(** Exercise actual rewriting through constructor notations, not merely
+    inference of their whole-node Proper declarations. No backend is loaded. *)
+Section ConstructorClient.
+Context {E MN MF : Type -> Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
+  `{Omega : @SemanticOmegaLaws MF FI FO}
+  `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{MO : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
+Local Notation W := (peutt (MF := MF) eq).
+
+Example generic_vis_context_rewrite {A X} (e : E X)
+    (k h : X -> ptree E MN A) (H : pointwise_relation X W k h) :
+  W (Vis e k) (Vis e h).
+Proof. setoid_rewrite H. reflexivity. Qed.
+
+Example generic_prob_context_rewrite {A X} (mu : MN X)
+    (k h : X -> ptree E MN A) (H : pointwise_relation X W k h) :
+  W (Prob mu k) (Prob mu h).
+Proof. setoid_rewrite H. reflexivity. Qed.
+End ConstructorClient.
+
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure
   PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.BindOrder
   PTree.Prob.FreeOmega.RelationalLimit.

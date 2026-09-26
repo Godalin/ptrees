@@ -121,10 +121,15 @@ coin occurrences in the sampler calculation; unrestricted rewriting with bare
 theorem names also matches other sampling nodes and disrupts this calculation.
 
 The finite-round step is related pointwise by `peutt`, not by equality of
-functions. `setoid_rewrite Hround` uses the existing pointwise iteration Proper
+functions. `setoid_rewrite fair_binary_round_step` uses the existing pointwise iteration Proper
 instance for the sampler's binary loop. The calculation does not
 directly apply functional extensionality; inherited logical
 dependencies of the underlying library theorems remain separately audited.
+
+`fair_binary_round_step` is the local analysis boundary before the full-program
+calculation. Its statement uses `sem_bind` and `sem_ret`; its proof alone
+opens the concrete finite-round identity. The main proof contains neither
+`bind_EnumQ`/`ret_EnumQ` nor a local representation calculation.
 
 `scripted_controller_program_rewrite` specializes this full calculation to the
 actual implementation/specification extracted to OCaml. The extraction proof
@@ -373,3 +378,13 @@ no function-equality conversion, local instance or explicit Proper application.
 Full build, all 11 case-study tests, the 22 exact type/assumption contracts,
 and source/public-surface checks passed. No contract snapshot or program
 definition changed. Remote CI was not queried.
+
+### Case-study standard follow-up
+
+The current main calculation replaces the local `Hround` assertion with
+`Rewriting.fair_binary_round_step`, a local analysis endpoint stated with
+`sem_bind` and `sem_ret`. Only that endpoint's proof opens the concrete
+finite-round identity. `Hstep` remains the visible controller case split;
+the rest of the main program transformation is contextual rewriting.
+See [the refactor record](CASE_STUDY_REFACTOR.md) for the Examples inventory,
+assumption comparison and local verification scope.

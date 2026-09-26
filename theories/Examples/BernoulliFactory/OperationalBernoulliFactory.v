@@ -1,4 +1,8 @@
-(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
+(** Case role: shared analysis.
+    Proof mode: analysis-dominated.
+    Reading entry: peutt_factory_vn_fair; peutt_factory_standard_direct.
+    Scope: EnumQ / FreeOmega; genuine support/hitting/limit proofs, not presentation wrappers.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.

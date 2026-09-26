@@ -1,4 +1,8 @@
-(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
+(** Case role: shared analysis.
+    Proof mode: analysis-dominated.
+    Reading entry: peutt_binary_rational_coin_direct.
+    Scope: EnumQ / FreeOmega; semantic endpoint consumed by program algebra.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.

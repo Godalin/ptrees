@@ -1,3 +1,8 @@
+(** Case role: supporting example.
+    Proof mode: algebraic rewriting.
+    Reading entry: two_coins_elaborates; retry_elaborates.
+    Scope: SubEnumQ / observable FreeOmega; iteration preservation does not assert AST.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 (** ITree sampling-as-an-effect elaborated to primitive PTree probability.
     The source really is an [itree], not a PTree reusing an event signature. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
@@ -10,10 +15,12 @@ From ITree.Indexed Require Import Sum.
 From PTree Require Import PTree PTreeFacts.
 From PTree.Core Require Import ITreeBridge.
 From PTree.Interp.FreeOmega Require Import ITreeCompletion.
+From PTree.Interp.FreeOmega Require Import Rewriting.
 From PTree.Eq.Backend Require Import SubEnumQ.
 From PTree.Prob.Backend.Common Require Import FiniteEnum.
 Import GRing.Theory Num.Theory Order.Theory ListNotations.
 Local Open Scope ring_scope.
+Import FreeOmegaRewriting.
 
 Definition fair_entries : list (rat * bool) := [(2^-1,true); (2^-1,false)].
 Lemma fair_nonnegative : finite_nonnegative fair_entries.
@@ -35,13 +42,12 @@ Definition native_two_coins : ptree void1 SubEnumQ bool :=
 Theorem two_coins_elaborates : elaborate_closed two_coins ≈ₚ native_two_coins.
 Proof.
   unfold two_coins, native_two_coins, elaborate_closed.
-  eapply peutt_trans; [apply free_omega_elab_bind|].
-  eapply peutt_bind with (RR := eq).
-  - apply free_omega_elab_sample_trigger.
-  - intros x x' ->. eapply peutt_trans; [apply free_omega_elab_bind|].
-    eapply peutt_bind with (RR := eq).
-    + apply free_omega_elab_sample_trigger.
-    + intros y y' ->. apply free_omega_elab_ret.
+  setoid_rewrite free_omega_elab_bind.
+  setoid_rewrite free_omega_elab_sample_trigger.
+  setoid_rewrite free_omega_elab_bind.
+  setoid_rewrite free_omega_elab_sample_trigger.
+  setoid_rewrite free_omega_elab_ret.
+  reflexivity.
 Qed.
 
 (** No fuel is added by elaboration: this source can retry indefinitely.

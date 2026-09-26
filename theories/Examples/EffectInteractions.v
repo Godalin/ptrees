@@ -1,3 +1,8 @@
+(** Case role: supporting example.
+    Proof mode: algebraic rewriting.
+    Reading entry: lower_then_count; count_sample_transformer_agreement.
+    Scope: SubEnumQ; no totality assumption on the sampled distribution.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 (** One actual ITree source, lowered probability, and interpreted State.
     Probability coefficients need not be total or fair. *)
 Set Universe Polymorphism.
@@ -10,6 +15,8 @@ From PTree.Core Require Import ITreeBridge.
 From PTree.Eq.Backend Require Import SubEnumQ.
 From PTree.Interp.Algebra Require Import Computation State.
 From PTree.Interp.FreeOmega Require Import ITreeCompletion State.
+From PTree.Interp.FreeOmega Require Import Rewriting.
+Import FreeOmegaRewriting.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -20,22 +27,29 @@ Definition count_sample (mu : SubEnumQ bool) :
   ITreeDefinition.Vis (inr1 (inl1 (Put nat (S n)))) (fun _ =>
   ITreeDefinition.Ret b))).
 
+(** Local State calculation, independent of the distribution that supplied b. *)
+Lemma lower_count_tail (b : bool) n :
+  run_state (elaborate
+    (ITreeDefinition.Vis (inr1 (inl1 (Get nat))) (fun s =>
+     ITreeDefinition.Vis (inr1 (inl1 (Put nat (S s)))) (fun _ =>
+     ITreeDefinition.Ret b)))) n ≈ₚ
+  (Ret (S n,b) : ptree void1 SubEnumQ (nat * bool)).
+Proof.
+  setoid_rewrite free_omega_elab_vis.
+  setoid_rewrite state_get_step.
+  setoid_rewrite free_omega_elab_vis.
+  setoid_rewrite state_put_step.
+  apply peutt_observe_eq. reflexivity.
+Qed.
+
 Theorem lower_then_count (mu : SubEnumQ bool) n :
   run_state (elaborate (count_sample mu)) n ≈ₚ
   Prob mu (fun b => Ret (S n,b)).
 Proof.
   unfold count_sample.
-  eapply peutt_trans.
-  - apply PTree.Interp.FreeOmega.State.run_state_peutt_eq. apply free_omega_elab_sample.
-  - eapply peutt_trans; [apply PTree.Interp.Algebra.State.run_state_prob|].
-    apply peutt_prob_Proper. intro b.
-    eapply peutt_trans.
-    + apply PTree.Interp.FreeOmega.State.run_state_peutt_eq. apply free_omega_elab_vis.
-    + eapply peutt_trans; [apply state_get_step|].
-      eapply peutt_trans.
-      * apply PTree.Interp.FreeOmega.State.run_state_peutt_eq. apply free_omega_elab_vis.
-      * eapply peutt_trans; [apply state_put_step|].
-        apply peutt_observe_eq. reflexivity.
+  setoid_rewrite free_omega_elab_sample.
+  setoid_rewrite PTree.Interp.Algebra.State.run_state_prob.
+  setoid_rewrite lower_count_tail. reflexivity.
 Qed.
 
 (** The already-proved StateT square applies to this same lowered program,

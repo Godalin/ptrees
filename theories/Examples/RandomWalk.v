@@ -1,4 +1,8 @@
-(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
+(** Case role: paper case study.
+    Proof mode: analysis-dominated; relational/control-flow normalization.
+    Reading entry: random_walk_as_successive_passages; random_walk_closed_form.
+    Scope: Generic structural control flow, then SubEnumQ probability analysis; no distribution-to-bisimulation converse.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.

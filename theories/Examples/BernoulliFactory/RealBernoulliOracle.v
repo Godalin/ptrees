@@ -1,4 +1,8 @@
-(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
+(** Case role: shared analysis / supporting program.
+    Proof mode: analysis-dominated.
+    Reading entry: oracle_missing_mass_vanishes.
+    Scope: Rational fair draws with a binary oracle; oracle representation is a separate obligation.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.

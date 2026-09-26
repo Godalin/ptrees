@@ -1,3 +1,8 @@
+(** Case role: paper case study.
+    Proof mode: algebraic rewriting.
+    Reading entry: Rewriting.factory_controller_program_rewrite.
+    Scope: EnumQ / observable FreeOmega; native validity and quantitative results are separate.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 (** Interactive Bernoulli factory: a single, end-to-end case study.
 
     Reading order:
@@ -176,6 +181,19 @@ Local Notation W :=
 Local Notation "t ≈ₚ u" := (W eq t u)
   (at level 70, no associativity) : type_scope.
 
+(** Local analysis endpoint: the native finite-round calculation is isolated
+    here; the program calculation consumes only its behavioral equation. *)
+Lemma fair_binary_round_step x :
+  Prob (sem_bind vn_fair (fun b => sem_ret (binary_round_result x b)))
+    (fun a => Ret a) ≈ₚ factory_standard_step x.
+Proof.
+  change (Prob (bind_EnumQ vn_fair
+    (fun b => ret_EnumQ (binary_round_result x b))) (fun a => Ret a)
+    ≈ₚ factory_standard_step x).
+  unfold factory_standard_step.
+  rewrite fair_binary_round_measure. reflexivity.
+Qed.
+
 Section FullProgram.
 Variables pfalse ptrue q : rat.
 Variables (pfpos : 0 < pfalse) (ptpos : 0 < ptrue) (q0 : 0 <= q) (q1 : q <= 1).
@@ -211,12 +229,7 @@ Proof.
     unfold factory_with_sampler, factory_sampler_step, factory_direct_fair.
     setoid_rewrite (peutt_sample_bind vn_fair).
     setoid_rewrite (peutt_sample_map vn_fair).
-    assert (Hround : forall x,
-      Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
-        (fun a => Ret a) ≈ₚ factory_standard_step x).
-    { intro x. unfold factory_standard_step.
-      rewrite fair_binary_round_measure. reflexivity. }
-    setoid_rewrite Hround.
+    setoid_rewrite fair_binary_round_step.
 
     (* 3. The residual sampler is the standard binary loop. *)
     (* Second probability-analysis lemma: the unbounded binary loop's law. *)

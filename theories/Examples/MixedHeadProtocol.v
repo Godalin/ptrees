@@ -1,4 +1,8 @@
-(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
+(** Case role: paper case study.
+    Proof mode: relational/coinductive.
+    Reading entry: masked_protocol_equivalent; masked_challenge_true_reply_probability.
+    Scope: SubEnumQ / observable FreeOmega; mixed return/visible frontiers require the displayed invariant.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 (** A canonical probabilistic-LTS example: one coupling matches both Ret
     and Vis heads; visible pairs generate response-dependent recursive
     obligations. All native probability nodes use the bounded SubEnumQ carrier. *)

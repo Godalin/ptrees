@@ -527,15 +527,27 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Examples.BernoulliFactory.BernoulliFactoryComposition.factory_with_sampler_Proper": [
-      "ClassicalUniqueChoice.dependent_unique_choice",
-      "RelationalChoice.relational_choice"
-    ],
     "PTree.Regression.Backend.MathCompDirect.direct_sample_bind": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
     "PTree.Regression.Backend.MathCompDirect.direct_sample_map": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Eq.Algebra.peutt_probF_Proper": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Interp.FreeOmega.Rewriting.FreeOmegaRewriting.free_omega_probF_Proper": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.GenericAlgebra.generic_prob_context_rewrite": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.FreeOmegaRewriting.OptIn.imported_prob_rewrite": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ]

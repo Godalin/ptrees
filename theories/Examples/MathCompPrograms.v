@@ -1,3 +1,8 @@
+(** Case role: supporting example.
+    Proof mode: execution/validation (program definitions only).
+    Reading entry: mathcomp_retry; mathcomp_nested_retry.
+    Scope: Safe native syntax; direct frontier validation lives in the existing Gate M client.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 (** Safe syntax for direct MathComp acceptance. No recursive frontier is
     instantiated here; only its client in Gate M relaxes universe checking. *)
 From mathcomp Require Import reals.

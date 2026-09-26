@@ -1,4 +1,8 @@
-(** Role: Application case study. Uses maintained theory; does not define a competing public semantics. *)
+(** Case role: shared analysis.
+    Proof mode: analysis-dominated.
+    Reading entry: param_iteration_converges_of_normalized_bias; param_von_neumann_almost_surely_terminates.
+    Scope: Finite rational approximants and convergence, reused by multiple cases.
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.

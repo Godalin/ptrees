@@ -65,7 +65,7 @@ class FactoryControllerTests(unittest.TestCase):
         source = case_module('Rewriting')
         proof = source.split('Theorem factory_controller_program_rewrite :', 1)[1].split('Qed.', 1)[0]
         for step in ['peutt_factory_vn_fair', 'peutt_sample_bind', 'peutt_sample_map',
-                     'fair_binary_round_measure', 'peutt_factory_standard_direct']:
+                     'fair_binary_round_step', 'peutt_factory_standard_direct']:
             self.assertIn(step, proof)
         for shortcut in ['implementation_sampler_correct', 'peutt_factory_vn_direct',
                          'peutt_factory_correct', 'peutt_factory_fair_direct',
@@ -77,8 +77,9 @@ class FactoryControllerTests(unittest.TestCase):
             self.assertNotIn(helper, proof)
         self.assertNotIn('_Proper', proof)
         self.assertNotRegex(proof, r'\b(?:apply|eapply|f_equiv)\b')
-        for local in ['Hround', 'Hstep']:
-            self.assertIn('setoid_rewrite ' + local + '.', proof)
+        self.assertIn('setoid_rewrite Hstep.', proof)
+        for representation in ['bind_EnumQ', 'ret_EnumQ', 'fair_binary_round_measure']:
+            self.assertNotIn(representation, proof)
         for redundant in ['Hsampler', 'Hembedded']:
             self.assertNotIn(redundant, proof)
         self.assertIn('unfold attempt, embed.', proof)
@@ -88,7 +89,7 @@ class FactoryControllerTests(unittest.TestCase):
     def test_calculation_reuses_generic_algebra(self):
         source = case_module('Rewriting')
         preamble = source.split('Section FullProgram.', 1)[0]
-        self.assertNotIn('Proof.', preamble)
+        self.assertIn('Lemma fair_binary_round_step', preamble)
         self.assertNotRegex(source, r'\b(?:Instance|Hint|canonical_peutt)\b')
         self.assertIn('Import FreeOmegaRewriting.', preamble)
         self.assertIn('PEutt.peutt', preamble)
@@ -113,8 +114,8 @@ class FactoryControllerTests(unittest.TestCase):
             self.assertIn('setoid_rewrite (' + theorem + ' vn_fair).', source)
         self.assertNotIn('functional_extensionality', source)
         self.assertNotIn('FunctionalExtensionality', source)
-        self.assertIn('Hround : forall x,', source)
-        self.assertIn('setoid_rewrite Hround.', source)
+        self.assertIn('Lemma fair_binary_round_step x :', preamble)
+        self.assertIn('setoid_rewrite fair_binary_round_step.', source)
         parameters = source.split('Section FullProgram.', 1)[1].split('Theorem ', 1)[0]
         self.assertIn('(pfpos : 0 < pfalse) (ptpos : 0 < ptrue)', parameters)
         self.assertIn('(q0 : 0 <= q) (q1 : q <= 1)', parameters)

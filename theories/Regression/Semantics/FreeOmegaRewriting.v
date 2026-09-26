@@ -48,6 +48,11 @@ Example imported_bind_continuation_rewrite {E A B} (t : ptree E MN A)
   W eq (PTree.bind t k) (PTree.bind t h).
 Proof. setoid_rewrite H. apply peutt_refl. Qed.
 
+Example imported_prob_rewrite {E A X} (mu : MN X)
+    (k h : X -> ptree E MN A) (H : forall x, W eq (k x) (h x)) :
+  W eq (Prob mu (fun x => k x)) (Prob mu (fun x => h x)).
+Proof. setoid_rewrite H. reflexivity. Qed.
+
 Example imported_state_proper {S E A} :
   Proper (W eq ==> eq ==> W eq) (@run_state S E MN A).
 Proof. typeclasses eauto. Qed.

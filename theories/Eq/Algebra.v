@@ -67,6 +67,24 @@ Theorem peutt_fmap_prob {A B X} (f : A -> B) (mu : MN X) (h : X -> ptree E MN A)
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 End ShallowAlgebra.
 
+(** Constructor notations expand to [go (VisF ...)] / [go (ProbF ...)].
+    Register their one-layer morphisms as well, so rewriting can traverse
+    that expansion using the existing [going_go], without function equality. *)
+Section VisibleRewriting.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
+  `{Omega : @SemanticOmegaLaws MF FI FO}
+  `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}.
+
+#[global] Instance peutt_visF_Proper {A X} (e : E X) :
+  Proper (pointwise_relation X (peutt (MF := MF) eq) ==>
+    going (peutt (MF := MF) eq))
+    (@VisF E MN A (ptree E MN A) X e).
+Proof. intros k h H. constructor. apply peutt_vis. exact H. Qed.
+End VisibleRewriting.
+
 (** Native sampling algebra. The frontier and native carriers are arbitrary;
     mapping additionally needs mixed unit and node-bind compatibility, not
     commutativity or a particular completion representation. *)
@@ -80,6 +98,12 @@ Context {E MN MF : Type -> Type}
   `{Omega : @SemanticOmegaLaws MF FI FO}
   `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}
   `{MO : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
+
+#[global] Instance peutt_probF_Proper {A X} (mu : MN X) :
+  Proper (pointwise_relation X (peutt (MF := MF) eq) ==>
+    going (peutt (MF := MF) eq))
+    (@ProbF E MN A (ptree E MN A) X mu).
+Proof. intros k h H. constructor. apply peutt_prob_Proper. exact H. Qed.
 
 Theorem peutt_sample_bind {X A} (mu : MN X) (k : X -> ptree E MN A) :
   peutt (MF := MF) eq (PTree.bind (Prob mu (fun x => Ret x)) k) (Prob mu k).

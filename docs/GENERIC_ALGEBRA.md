@@ -34,8 +34,8 @@ embedding/controller helpers.
 
 ### Opt-in completion registrations
 
-`Interp/FreeOmega/Rewriting.v` contains five registrations of the generic
-bind/State/interp/exception/iter `Proper` proofs. They are native-parametric, not
+`Interp/FreeOmega/Rewriting.v` contains six registrations of the generic
+bind/ProbF/State/interp/exception/iter `Proper` proofs. They are native-parametric, not
 copies for EnumQ, SubEnumQ and SubEnumR. Activate them with:
 
 ```coq
@@ -58,8 +58,8 @@ instances for an unconstrained frontier. Its proof is the existing generic
 it introduces neither a backend-specific mathematical proof nor a new law.
 
 `Regression/Semantics/FreeOmegaRewriting.v` checks both negative import
-boundaries, all five inferred `Proper` goals for arbitrary native `MN`, actual
-bind/source/continuation and loop rewriting, and SubEnumR/SubEnumQ clients without local instances. The
+boundaries, inferred `Proper` goals for arbitrary native `MN`, actual
+bind/source/continuation, sampling and loop rewriting, and SubEnumR/SubEnumQ clients without local instances. The
 factory is the EnumQ client, exercising the complete handler/loop stack.
 Direct MathComp is intentionally not part of this completion module; its
 generic theorems and explicit mathematical premises are unchanged.
@@ -86,6 +86,26 @@ remain exact. The only prior snapshot text change is qualified printing of
 `FactoryController.Facts.embed_Proper` and `FactoryController.Controller.embed`,
 checked to differ only in qualification and whitespace. No axiom whitelist
 extension is needed. All 22 factory contracts remain byte-for-byte unchanged.
+
+### Constructor-context rewriting
+
+`Vis` and `Prob` expand to `go (VisF ...)` and `go (ProbF ...)`. The generic
+`Eq/Algebra` instances `peutt_visF_Proper` and `peutt_probF_Proper` connect
+pointwise continuation relations to the existing `Shallow.going` relation;
+`going_go` then closes the outer context. They reuse existing congruences,
+without functional equality of continuations or new probability assumptions.
+The optional `free_omega_probF_Proper` fixes the observable interpretation for
+this decomposed sampling path, avoiding unconstrained frontier search. It is
+an application of the generic theorem, not a separate completion proof.
+Generic regressions run before any concrete backend import; the opt-in
+regression separately checks actual rewriting under `Prob`.
+
+The current safe algebra snapshot has 63 entries (six new constructor-context
+wrappers/clients). Its old entries are unchanged except that
+`factory_with_sampler_Proper` drops two choice axioms, with no type change.
+The new sampling wrappers inherit the existing generic probability congruence's
+choice dependencies; their per-endpoint records make this explicit rather
+than expanding the global whitelist. See `CASE_STUDY_REFACTOR.md`.
 
 The existing audit tooling now resolves nested declarations to their actual
 source library, and distinguishes explicitly local notation from public glyph
