@@ -9,6 +9,7 @@ From ITree.Indexed Require Import Sum.
 From PTree Require Import PTreeFacts.
 From PTree.Eq.Backend Require Import EnumQ ProbabilisticTraceEnumQ.
 From PTree.Interp Require Import State.
+From PTree.Examples.BernoulliFactory Require Import BernoulliFactory.
 From PTree.Examples.FactoryController Require Import Controller Facts Observation Probability Scripted Rewriting.
 Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
@@ -29,6 +30,32 @@ Proof. apply scripted_controller_refinement. Qed.
 Example full_program_calculation counts script :
   scripted_impl counts script ≈ₚ scripted_spec counts script.
 Proof. apply scripted_controller_program_rewrite. Qed.
+
+(** Positive source weights do not exclude deterministic target probabilities.
+    No separate source nonnegativity or product-positivity premise is needed. *)
+Section TargetEndpoints.
+Variables pfalse ptrue : rat.
+Variables (pfpos : 0 < pfalse) (ptpos : 0 < ptrue).
+Hypothesis pnorm : pfalse + ptrue = 1.
+Variables (pc : phase) (counts : counters) (script : script_state).
+Local Notation "'Run' sampler" :=
+  (run_exception
+    (run_state
+      (PTree.interp device_handler
+        (run_state (controller (embed sampler) pc) counts)) script))
+  (at level 10, sampler at next level).
+
+Example full_program_target_zero :
+  Run (biased_to_rational_coin (ltW pfpos) (ltW ptpos) 0) ≈ₚ
+  Run (factory_direct_q (lexx (0 : rat)) (ler01 : (0 : rat) <= 1)).
+Proof. apply factory_controller_program_rewrite. exact pnorm. Qed.
+
+Example full_program_target_one :
+  Run (biased_to_rational_coin (ltW pfpos) (ltW ptpos) 1) ≈ₚ
+  Run (factory_direct_q (ler01 : (0 : rat) <= 1) (lexx (1 : rat))).
+Proof. apply factory_controller_program_rewrite. exact pnorm. Qed.
+End TargetEndpoints.
+
 Example raw_factory_nodes_are_probabilities : probabilistic_ptree controller_impl.
 Proof. apply implementation_probability. Qed.
 

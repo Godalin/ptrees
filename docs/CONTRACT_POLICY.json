@@ -1457,6 +1457,8 @@
       "infinite_source_refinement",
       "interpreted_refinement",
       "full_program_calculation",
+      "full_program_target_zero",
+      "full_program_target_one",
       "raw_factory_nodes_are_probabilities",
       "next_fast_after_state",
       "next_safe_after_state",

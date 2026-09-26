@@ -36,6 +36,18 @@ run_exception
       (run_state (controller (embed sampler) pc) counts)) script)
 ```
 
+The public calculation requires a normalized, nondegenerate source:
+`0 < pfalse`, `0 < ptrue`, `pfalse + ptrue = 1`; the target only requires
+`0 <= q <= 1`. Source nonnegativity certificates are derived with `ltW`, not
+additional caller arguments. The product-positivity condition needed by the
+VN convergence analysis is derived internally with `mulr_gt0`. Both target
+endpoints `q = 0` and `q = 1` have full-program regression clients.
+
+The concrete extracted program retains its original certificates and code.
+Its corollary aligns the boolean nonnegativity proofs using the constructive
+`bool_irrelevance` theorem, without adding a proof-irrelevance axiom. The older
+analysis/refinement helpers keep their existing interfaces.
+
 Under this unchanged context the proof explicitly performs:
 
 ```
@@ -257,3 +269,18 @@ same logical-axiom set as the old closed-program refinement. The group now has
 22 contracts. Architecture/source/public-surface checks passed (433 modules,
 unchanged two-file Gate M allowlist). Joint `coqchk -norec` passed for Rewriting
 and its regression, with dependencies trusted. No CI check was requested.
+
+### Positive-source interface follow-up
+
+Relative to `0b3c7f7`, only the main calculation's compiled type changes:
+two strict-positive source premises replace separate nonnegativity certificates
+and the product-positivity premise. All 22 recorded logical-assumption lists
+and the other 21 endpoint types are unchanged. The complete rewrite chain and
+the underlying probability-analysis interfaces are preserved.
+
+Local full build, 10 factory-controller tests, the 22-endpoint contract audit,
+architecture and soundness source checks passed. Both deterministic target
+endpoints are compiled regressions. Joint `coqchk -norec` passed for Rewriting
+and its execution regression (two safe bodies, dependencies trusted).
+Extracted `controller.ml` and `controller.mli` are byte-for-byte unchanged.
+No CI check was requested.

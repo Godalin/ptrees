@@ -5,7 +5,7 @@
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
-From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
+From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat.
 From ITree.Events Require Import State Exception.
 From PTree Require Import PTreeFacts.
 From PTree.Prob.Backend.EnumQ Require Import Representation Measure Bind.
@@ -35,8 +35,10 @@ Local Notation "t ≈ₚ u" := (W eq t u)
 
 Section FullProgram.
 Variables pfalse ptrue q : rat.
-Variables (pf0 : 0 <= pfalse) (pt0 : 0 <= ptrue) (q0 : 0 <= q) (q1 : q <= 1).
-Hypotheses (pnorm : pfalse + ptrue = 1) (pnontrivial : 0 < pfalse * ptrue).
+Variables (pfpos : 0 < pfalse) (ptpos : 0 < ptrue) (q0 : 0 <= q) (q1 : q <= 1).
+Hypothesis pnorm : pfalse + ptrue = 1.
+Let pf0 : 0 <= pfalse := ltW pfpos.
+Let pt0 : 0 <= ptrue := ltW ptpos.
 Variables (pc : phase) (counts : counters) (script : script_state).
 
 (** A notation, not a new interpreter or an opaque refinement wrapper.
@@ -55,7 +57,7 @@ Proof.
   (* 1. Run[Controller[Factory(VN(p),q)]]
         -> Run[Controller[Factory(Fair,q)]].
         First and only VN probability-analysis lemma. *)
-  setoid_rewrite (peutt_factory_vn_fair pf0 pt0 pnorm pnontrivial).
+  setoid_rewrite (peutt_factory_vn_fair pf0 pt0 pnorm (mulr_gt0 pfpos ptpos)).
   change (Run (factory_with_sampler factory_direct_fair q) ≈ₚ
     Run (factory_direct_q q0 q1)).
 
@@ -87,7 +89,12 @@ Proof.
   unfold scripted_impl, scripted_spec, close_controller,
     device_controller_impl, device_controller_spec, controller_impl, controller_spec,
     implementation_sampler, specification_sampler, third_to_two_fifths, direct_two_fifths.
+  have pfpos : 0 < vn_one_third by vm_compute; reflexivity.
+  have ptpos : 0 < vn_two_thirds by vm_compute; reflexivity.
+  (* The extracted program keeps its original nonnegativity certificates.
+     Boolean proof uniqueness aligns these with the derived certificates. *)
+  replace third_false_nonnegative with (ltW pfpos) by apply bool_irrelevance.
+  replace third_true_nonnegative with (ltW ptpos) by apply bool_irrelevance.
   apply factory_controller_program_rewrite.
-  - exact third_bias_normalized.
-  - exact third_bias_nontrivial.
+  exact third_bias_normalized.
 Qed.

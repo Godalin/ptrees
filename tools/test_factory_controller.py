@@ -98,6 +98,12 @@ class FactoryControllerTests(unittest.TestCase):
         self.assertNotIn('FunctionalExtensionality', source)
         self.assertIn('Hround : forall x,', source)
         self.assertIn('setoid_rewrite Hround.', source)
+        parameters = source.split('Section FullProgram.', 1)[1].split('Theorem ', 1)[0]
+        self.assertIn('(pfpos : 0 < pfalse) (ptpos : 0 < ptrue)', parameters)
+        self.assertIn('(q0 : 0 <= q) (q1 : q <= 1)', parameters)
+        self.assertIn('Let pf0 : 0 <= pfalse := ltW pfpos.', parameters)
+        self.assertIn('Let pt0 : 0 <= ptrue := ltW ptpos.', parameters)
+        self.assertNotIn('pnontrivial', parameters)
 
     def test_impl_really_uses_nested_factory_draws(self):
         impl = self.cli('impl', 'script', 42).stdout
