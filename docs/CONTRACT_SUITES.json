@@ -562,6 +562,26 @@
     "PTree.Examples.AdaptiveFactoryController.Adaptive.lower_adaptive_normalized": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.AdaptiveFactoryController.Adaptive.adaptive_vn_fair": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.AdaptiveFactoryController.Adaptive.adaptive_factory_direct": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.AdaptiveFactoryController.Adaptive.service_refinement": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.AdaptiveFactoryController.Adaptive.controller_refinement": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.AdaptiveFactoryController.Adaptive.controller_program_rewrite": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
     ]
   }
 }
