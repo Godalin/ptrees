@@ -3,6 +3,11 @@
 Baseline: `a39cf99`. This is a bounded extension of the accepted native-round
 summary, not a replacement or an arbitrary eventful-frontier fixed-point theory.
 
+This document records the staged profile accepted at `5431810`. The later
+[generic complete-frontier bridge](FRONTIER_ITERATION.md) also supports
+arbitrary MF-valued step frontiers and arbitrary frontier backends. Its
+FreeOmega instance, `complete_iteration_hitting`, is in the same module.
+
 ## Interface and mathematical boundary
 
 `Interp/FreeOmega/AbsorbingIteration.v` takes:
@@ -95,7 +100,7 @@ on the already used dependent functional extensionality and `eq_rect_eq`.
 The reference observation/probability lemmas are closed under the global
 context. No choice dependency is introduced.
 
-Still out of scope: arbitrary MF-valued retry kernels, an independent
+Out of scope **at that checkpoint**: arbitrary MF-valued retry kernels, an independent
 Ret/Vis frontier iteration operator for arbitrary step trees, full generic-MF
 abstraction, and forced migration of RandomWalk. This stage validates the
 **absorbing-exit profile** using existing iteration and bind algebra.

@@ -1,7 +1,9 @@
 (** First-observation summaries: silent retries select an exit descriptor,
     whose interpretation may return or offer a visible event. Descriptors,
     not recursive stable heads, are sampled by MN. The complete frontier
-    stays in FreeOmega MN. No new iteration/cofinality capability is assumed. *)
+    stays in FreeOmega MN. The complete-step profile at the end also supports
+    arbitrary MF step frontiers via the generic adequacy theorem.
+    No new iteration/cofinality capability is assumed. *)
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
@@ -11,6 +13,8 @@ From PTree.Prob.FreeOmega Require Import StructuralMeasure Measure SupportLift Q
 From PTree.Eq Require Import PStruct PEutt UnifiedFrontier PTreeKernel.
 From PTree.Eq.FreeOmega Require Import Base Bind Hitting Iter.
 From PTree.Interp.FreeOmega Require Import IterationSummary.
+From PTree.Interp Require Import FrontierIteration.
+From PTree.Prob.FreeOmega Require Import BindOrder.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -80,3 +84,33 @@ Proof.
   eapply absorbing_iteration_heads; eassumption.
 Qed.
 End Absorption.
+
+(** General profile: complete steps themselves may have arbitrary MF-valued
+    mixed frontiers. All adequacy mathematics is in the generic theorem. *)
+Section CompleteSteps.
+Context {E MN : Type -> Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NO : @SemanticOmega MN NI}
+  `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+  `{NCount : @SemanticMeasureCountableAELaws MN NI}.
+Local Notation MF := (FreeOmega MN).
+Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
+Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
+Context {I A : Type} (step : I -> ptree E MN (I+A)).
+Variable front : I -> MF (stable_head E MN (I+A)).
+
+Definition complete_iteration_frontier i :=
+  FOLub (fun n => iteration_summary_round (FI := FI) (FO := FO) step front n i).
+
+Theorem complete_iteration_hitting
+    (Hfront : forall i, ptree_stable_hitting (FI := FI) (FO := FO)
+      (observe (step i)) (front i)) i :
+  ptree_stable_hitting (FI := FI) (FO := FO)
+    (observe (PTree.iter step i)) (complete_iteration_frontier i).
+Proof.
+  eapply (iteration_summary_hitting (FI := FI) (FO := FO)
+    (MX := FreeOmegaMixedMeasure) (front := front)); try typeclasses eauto.
+  - exact Hfront.
+  - apply free_omega_qlift_refl. intros h. reflexivity.
+Qed.
+End CompleteSteps.

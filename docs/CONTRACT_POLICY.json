@@ -164,7 +164,8 @@
       "real_behavioral_iter",
       "real_crossed_sample_peutt",
       "real_infinite_service_tau",
-      "real_crossed_infinite_service"
+      "real_crossed_infinite_service",
+      "real_complete_step_summary"
     ],
     "theories/Regression/Backend/SubEnumRRelational.v": [
       "flipped_twice_composition",
@@ -1054,7 +1055,8 @@
       "direct_mdp_tree_trans_bisim_iff",
       "direct_sample_bind",
       "direct_sample_map",
-      "direct_iter_Proper_of_relational_lub"
+      "direct_iter_Proper_of_relational_lub",
+      "direct_complete_step_summary"
     ],
     "theories/Regression/Backend/MathCompOmega.v": [
       "increasing_has_actual_lub",
@@ -1500,6 +1502,15 @@
       "imported_iter_rewrite",
       "imported_real_iter_rewrite",
       "imported_rational_iter_rewrite"
+    ],
+    "theories/Regression/Semantics/FrontierIteration.v": [
+      "search_front_hitting",
+      "unbounded_mixed_summary",
+      "retry_is_internal",
+      "return_is_absorbing",
+      "visible_continuation_is_recursive",
+      "empty_response_is_absorbing",
+      "zero_coin_allowed"
     ]
   }
 }

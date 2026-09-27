@@ -52,6 +52,31 @@ Example direct_eventful_reflexivity {F A} (t : ptree F M A) :
 Proof. apply mathcomp_direct_peutt_refl. Qed.
 End Probes.
 
+(** The same generic complete-step theorem works with MN = MF. No gluing
+    assumption, relational-limit premise, or native-step shape is needed. *)
+From PTree.Interp Require Import FrontierIteration.
+From PTree.Prob.Backend.MathComp Require Import BindOrder.
+Section CompleteStepSummary.
+Variable R : realType.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Context {E : Type -> Type} {I A : Type}.
+Variable step : I -> ptree E M (I+A).
+Variable front : I -> M (stable_head E M (I+A)).
+Example direct_complete_step_summary
+    (Hfront : forall i, ptree_stable_hitting (FI := NI) (FO := NO)
+      (MX := MX) (observe (step i)) (front i)) i :
+  exists out, iteration_summary (FI := NI) (FO := NO) step front i out /\
+    ptree_stable_hitting (FI := NI) (FO := NO) (MX := MX)
+      (observe (PTree.iter step i)) out.
+Proof.
+  apply (iteration_summary_exists (FI := NI) (FO := NO) (MX := MX));
+    try typeclasses eauto. exact Hfront.
+Qed.
+End CompleteStepSummary.
+
 Section Programs.
 Variable R : realType.
 Context `{G : MathCompCouplingGluing R}.

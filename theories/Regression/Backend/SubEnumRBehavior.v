@@ -11,6 +11,7 @@ From PTree.Prob.FreeOmega Require Import StructuralMeasure.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import PStruct PStrong PEutt UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Eq.FreeOmega Require Import Relation Bind Algebra Iter Hitting.
+From PTree.Interp.FreeOmega Require Import AbsorbingIteration.
 
 Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 Fail Check PTree.Prob.Backend.MathComp.Kernel.MathCompKernelMeasure.
@@ -53,6 +54,14 @@ Definition real_completion_mixed_omega : @MixedMeasureOmegaLaws MN MF NI FI real
 Section GenericTrees.
 Context {E : Type -> Type}.
 Local Notation W A B RR := (@peutt E MN MF FI real_completion_core FreeOmegaMixedMeasure FO A B RR).
+
+Example real_complete_step_summary {I A} (step : I -> ptree E MN (I+A))
+    (front : I -> MF (stable_head E MN (I+A)))
+    (Hfront : forall i, ptree_stable_hitting (FI := FI) (FO := FO)
+      (observe (step i)) (front i)) i :
+  ptree_stable_hitting (FI := FI) (FO := FO) (observe (PTree.iter step i))
+    (complete_iteration_frontier step front i).
+Proof. apply complete_iteration_hitting. exact Hfront. Qed.
 
 Example real_pstruct_peutt {A B} (RR : A -> B -> Prop) (t : ptree E MN A) (u : ptree E MN B) :
   pstruct RR t u -> W A B RR t u.

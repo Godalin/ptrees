@@ -340,6 +340,10 @@ clients, not additional paper-facing case studies. In particular, the
 The supporting [AbsorbingFrontier](theories/Examples/AbsorbingFrontier.v)
 example reuses VN to reach a mixed return/visible first frontier after
 unbounded internal retries; see [the absorption interface](docs/ABSORBING_ITERATION.md).
+The [generic complete-frontier bridge](docs/FRONTIER_ITERATION.md) also
+handles arbitrary MF-valued Ret/retry/Vis step frontiers. FreeOmega and
+MathComp direct instantiate one adequacy proof; clients need no fuel schedule
+or empty event signature.
 Its [two-round interpretation experiment](docs/INTERP_COMPOSITIONALITY.md)
 also proves that response-wise transition bisimulation is not preserved by
 arbitrary effectful interpretation.

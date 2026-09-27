@@ -59,6 +59,10 @@ new universal `meas_iter` interface or a promise to hide their analysis.
 
 ## Assumptions and ownership
 
+For arbitrary complete MF-valued steps and a backend-independent adequacy
+theorem, see [generic frontier iteration](FRONTIER_ITERATION.md). The native
+observation conveniences described here remain a separate specialized API.
+
 The new summary is native-parametric but **FreeOmega-qualified**, not an
 arbitrary-MF theorem. It uses native Core/AELift, CouplingAE and CountableAE
 capabilities and a native Omega structure, via existing completion laws.
