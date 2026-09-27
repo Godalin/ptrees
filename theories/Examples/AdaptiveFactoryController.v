@@ -19,7 +19,7 @@ From PTree Require Import PTreeFacts.
 From PTree.Eq.Backend Require Import EnumQ.
 From PTree.Eq.FreeOmega Require Import Relation Hitting.
 From PTree.Eq Require Import PTreeKernel UnifiedFrontier Shallow.
-From PTree.Prob.Interface Require Import Measure Omega Mixed.
+From PTree.Prob.Interface Require Import Measure AE Omega Mixed.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Observation Approximation StructuralMeasure
   SupportLift Quotient Measure RelationalLimit.
@@ -28,7 +28,7 @@ From PTree.Prob.Backend.Common Require Import FiniteEnum RatGeometric FiniteReco
 From PTree.Interp Require Import State StateIter.
 From PTree.Interp Require Import Iteration IterationUniform.
 From PTree.Interp.Algebra Require Import State Computation.
-From PTree.Interp.FreeOmega Require Import Base Rewriting Unrestricted.
+From PTree.Interp.FreeOmega Require Import Base Rewriting Unrestricted IterationSummary.
 From PTree.Examples.BernoulliFactory Require Import
   VonNeumannUnbounded RationalBernoulli BernoulliFactory BernoulliFactoryComposition.
 Import GRing.Theory Num.Theory Order.Theory FreeOmegaRewriting.
@@ -442,49 +442,23 @@ Definition bit_observer {A} (value : A -> bool)
     (h : stable_head publicE EnumQ A) : option bool :=
   match h with FHRet a => Some (value a) | FHVis _ _ _ => None end.
 Definition raw_loop s := PTree.iter normalized_step (s,tt).
-Definition loop_after (next : (machine_state * unit) + (machine_state * bool)) :=
-  match next with inl si => Tau (PTree.iter normalized_step si)
-  | inr sb => Ret sb end.
-Definition loop_second s a :=
-  PTree.bind (Prob (source_coin (health s)) (fun b =>
-    Ret (state_iter_result (state_attempt_result s a b)))) loop_after.
-Lemma raw_loop_observe s :
-  observe (raw_loop s) = ProbF (source_coin (health s)) (loop_second s).
+(** One-round kernel compilation uses finite hitting laws. The library handles all
+    iteration scheduling, even though publicE is inhabited. *)
+Definition loop_kernel (si : machine_state * unit) :=
+  sem_bind (source_coin (health (fst si))) (fun a =>
+  sem_bind (source_coin (health (fst si))) (fun b =>
+    sem_ret (state_iter_result (state_attempt_result (fst si) a b)))).
+Definition loop_heads s := iteration_frontier (E := publicE) loop_kernel (s,tt).
+Lemma loop_hits s : ptree_stable_hitting (MF := FreeOmega EnumQ)
+  (observe (raw_loop s)) (loop_heads s).
 Proof.
-  unfold raw_loop. rewrite (observing_observe (unfold_aloop_ normalized_step (s,tt))).
-  rewrite observe_bind. reflexivity.
+  eapply iteration_frontier_summary_hitting; try typeclasses eauto.
+  intros [s' []]. unfold normalized_step, loop_kernel; cbn [fst].
+  eapply stable_hitting_native_sample; try typeclasses eauto. intro a.
+  eapply stable_hitting_native_sample; try typeclasses eauto. intro b.
+  apply stable_hitting_native_ret.
 Qed.
-Definition loop_hitting n s := ptree_hitting_approx
-  (MF := FreeOmega EnumQ) n (observe (raw_loop s)).
-Lemma loop_second_observe s a : observe (loop_second s a) =
-  ProbF (source_coin (health s)) (fun b =>
-    PTree.bind (Ret (state_iter_result (state_attempt_result s a b))) loop_after).
-Proof. unfold loop_second. rewrite observe_bind. reflexivity. Qed.
-Lemma loop_hitting_three n s :
-  loop_hitting (S (S (S n))) s =
-  FOSample (source_coin (health s)) (fun a =>
-  FOSample (source_coin (health s)) (fun b =>
-    if a == b then loop_hitting n (retry_update (after_sensor s a))
-    else FORet (FHRet (after_sensor s a,a)))).
-Proof.
-  unfold loop_hitting. rewrite raw_loop_observe.
-  cbn [ptree_hitting_approx ptree_primitive_kernel ptree_stable_target_approx
-    stable_hitting_approx stable_target_approx sem_bind sem_ret mixed_bind
-    free_omega_bind FreeOmegaMixedMeasure FreeOmegaObservableSemanticMeasure].
-  f_equal. apply functional_extensionality=> a.
-  rewrite loop_second_observe.
-  cbn [ptree_primitive_kernel ptree_stable_target_approx stable_target_approx
-    sem_bind sem_ret mixed_bind free_omega_bind FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticMeasure].
-  f_equal. apply functional_extensionality=> b. rewrite observe_bind.
-  destruct a, b; reflexivity.
-Qed.
-Fixpoint round_schedule n :=
-  match n with O => O | S k => S (S (S (round_schedule k))) end.
-Lemma round_schedule_ge n : (n <= round_schedule n)%coq_nat.
-Proof. induction n; cbn; [constructor|apply le_n_S; apply le_S, le_S; assumption]. Qed.
-Lemma round_schedule_mono n : (round_schedule n <= round_schedule (S n))%coq_nat.
-Proof. cbn. repeat apply le_S. constructor. Qed.
+
 Fixpoint output_row n s : EnumQ (option bool) :=
   match n with
   | O => enumQ_zero
@@ -493,30 +467,33 @@ Fixpoint output_row n s : EnumQ (option bool) :=
         if a == b then output_row k (retry_update (after_sensor s a))
         else sem_ret (Some a)))
   end.
-Lemma loop_hitting_observes n s :
-  free_omega_observes (bit_observer (@snd machine_state bool))
-    (loop_hitting (round_schedule n) s) (output_row n s).
+(** The only bridge calculation left in the case is finite native
+    associativity: the compiled round has the same bit observation. *)
+Lemma loop_round_observation n s :
+  iteration_observation_round loop_kernel (fun sb => Some (snd sb)) n (s,tt) =
+  output_row n s.
 Proof.
-  revert s. induction n as [|n IH]; intro s.
-  - unfold loop_hitting. rewrite raw_loop_observe.
-    change (free_omega_observes (bit_observer (@snd machine_state bool))
-      (FOSample (source_coin (health s)) (fun _ => FOZero)) enumQ_zero).
-    replace (@enumQ_zero (option bool)) with
-      (bind_EnumQ (source_coin (health s)) (fun _ => @enumQ_zero (option bool)))
-      by apply finite_enum_bind_zero_eq.
-    constructor. intro a. constructor.
-  - cbn [round_schedule output_row]. rewrite loop_hitting_three.
-    constructor. intro a. constructor. intro b.
-    destruct a,b.
-    + exact (IH (retry_update (after_sensor s true))).
-    + constructor.
-    + constructor.
-    + exact (IH (retry_update (after_sensor s false))).
+  revert s. induction n as [|n IH]; intro s; [reflexivity|].
+  cbn [iteration_observation_round output_row].
+  unfold loop_kernel.
+  change (bind_EnumQ
+    (bind_EnumQ (source_coin (health s)) (fun a =>
+      bind_EnumQ (source_coin (health s)) (fun b =>
+        ret_EnumQ (state_iter_result (state_attempt_result s a b)))))
+    (fun next => match next with
+      | inl si => iteration_observation_round loop_kernel (fun sb => Some (snd sb)) n si
+      | inr sb => ret_EnumQ (Some (snd sb)) end) =
+    bind_EnumQ (source_coin (health s)) (fun a =>
+      bind_EnumQ (source_coin (health s)) (fun b =>
+        if a == b then output_row n (retry_update (after_sensor s a))
+        else ret_EnumQ (Some a)))).
+  unfold bind_EnumQ, ret_EnumQ.
+  rewrite finite_enum_bind_assoc_eq.
+  apply finite_enum_bind_ext_eq=> a. rewrite finite_enum_bind_assoc_eq.
+  apply finite_enum_bind_ext_eq=> b. rewrite finite_enum_bind_ret_eq.
+  destruct a,b; cbn [state_iter_result state_attempt_result attempt_result decode_attempt];
+    try reflexivity; apply IH.
 Qed.
-Definition loop_heads s := FOLub (fun n => loop_hitting (round_schedule n) s).
-Lemma loop_hits s : ptree_stable_hitting (MF := FreeOmega EnumQ)
-    (observe (raw_loop s)) (loop_heads s).
-Proof. exact (stable_hitting_subsequence (raw_loop s) round_schedule_mono round_schedule_ge). Qed.
 
 Lemma output_row_expect n s f : enumQ_expect f (output_row n s) =
   enumQ_expect (fun z => match z with inl _ => 0 | inr sb => f (Some (snd sb)) end)
@@ -573,12 +550,13 @@ Qed.
 Lemma loop_heads_observes s :
   free_omega_observes (bit_observer (@snd machine_state bool)) (loop_heads s) fair_options.
 Proof.
-  eapply FOOObserveLub.
-  - intro n. exact (loop_hitting_observes n s).
-  - exact (output_row_converges s).
-  - intro n. unfold loop_hitting.
-    apply (ptree_hitting_mono (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)). apply round_schedule_mono.
+  apply iteration_frontier_observes with (value := fun sb => Some (snd sb));
+    [reflexivity|].
+  change (enumQ_converges
+    (fun n => iteration_observation_round loop_kernel (fun sb => Some (snd sb)) n (s,tt))
+    fair_options).
+  intros P eps Heps. destruct (output_row_converges s P Heps) as [N HN].
+  exists N. intros n Hn. rewrite loop_round_observation. exact (HN n Hn).
 Qed.
 
 Lemma source_ae_inv src P : sem_ae (source_coin src) P -> forall b, P b.
@@ -618,32 +596,21 @@ Lemma fair_heads_observes :
 Proof. constructor. intro b. constructor. Qed.
 Lemma loop_heads_returns s : free_omega_ae
     (fun h => exists sb, h = FHRet sb) (loop_heads s).
-Proof.
-  constructor. intro n. revert s. induction n as [|n IH]; intro s.
-  - unfold loop_hitting. rewrite raw_loop_observe.
-    change (free_omega_ae (fun h : stable_head publicE EnumQ (machine_state * bool) =>
-      exists sb, h = FHRet sb) (FOSample (source_coin (health s)) (fun _ => FOZero))).
-    eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
-    intros b _. constructor.
-  - cbn [round_schedule]. rewrite loop_hitting_three.
-    eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
-    intros a _. eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
-    intros b _. destruct a,b.
-    + exact (IH _).
-    + constructor. eexists. reflexivity.
-    + constructor. eexists. reflexivity.
-    + exact (IH _).
-Qed.
+Proof. apply iteration_frontier_returns. Qed.
 Lemma loop_heads_success s P : free_omega_ae P (loop_heads s) ->
   forall b, P (FHRet (after_sensor s b,b)).
 Proof.
-  intro HP. unfold loop_heads in HP. dependent destruction HP.
-  specialize (H 1%nat). cbn [round_schedule] in H.
-  rewrite loop_hitting_three in H.
-  pose proof (source_ae_inv (free_omega_ae_sample_inv H)) as Hfirst.
-  intro b. specialize (Hfirst b).
-  pose proof (source_ae_inv (free_omega_ae_sample_inv Hfirst) (negb b)) as Hsecond.
-  destruct b; cbn in Hsecond; dependent destruction Hsecond; assumption.
+  intro HP. unfold loop_heads, iteration_frontier in HP. dependent destruction HP.
+  specialize (H 1%nat).
+  pose proof (free_omega_ae_sample_inv H) as Hfirst.
+  unfold loop_kernel in Hfirst.
+  apply (proj1 (sem_ae_bind_iff _ _ _)) in Hfirst.
+  pose proof (source_ae_inv Hfirst) as Ha.
+  intro b. specialize (Ha b).
+  apply (proj1 (sem_ae_bind_iff _ _ _)) in Ha.
+  pose proof (source_ae_inv Ha (negb b)) as Hb.
+  apply (proj1 (sem_ae_ret_iff _ _)) in Hb.
+  destruct b; cbn in Hb; dependent destruction Hb; assumption.
 Qed.
 Definition output_related (sb : machine_state * bool) (b : bool) := snd sb = b.
 Lemma loop_heads_fair_support s sim :

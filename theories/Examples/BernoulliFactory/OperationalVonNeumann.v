@@ -23,8 +23,10 @@ Require Import PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.Bind.
 Require Import PTree.Prob.Backend.EnumQ.Iteration.
 From PTree.Eq Require Import Shallow PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
-From PTree.Interp.FreeOmega Require Import Base Guarded.
-From PTree.Eq Require Import UnifiedFrontier PEutt.
+From PTree.Interp.FreeOmega Require Import Base Guarded IterationSummary.
+From PTree.Interp Require Import Structural.
+From PTree.Interp.FreeOmega Require Import Translate.
+From PTree.Eq Require Import UnifiedFrontier PEutt PStruct.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded.
 
 Set Implicit Arguments.
@@ -158,80 +160,6 @@ Proof.
   constructor. intro next. constructor.
 Qed.
 
-Definition ptree_vn_raw_after (next : unit + bool) : ptree vnE EnumQ bool :=
-  match next with
-  | inl u => Tau (PTree.iter vn_step u)
-  | inr b => Ret b
-  end.
-
-Definition ptree_vn_raw_second (b1 : bool) : ptree vnE EnumQ bool :=
-  PTree.bind
-    (Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2)))
-    ptree_vn_raw_after.
-
-Lemma ptree_vn_raw_observe :
-  observe von_neumann_third =
-  ProbF vn_biased_coin ptree_vn_raw_second.
-Proof.
-  unfold von_neumann_third.
-  pose proof (unfold_aloop_ vn_step tt) as Hunfold.
-  rewrite (observing_observe Hunfold). rewrite observe_bind.
-  assert (Hstep : observe (vn_step tt) =
-    ProbF vn_biased_coin (fun b1 =>
-      Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2))))
-    by reflexivity.
-  rewrite Hstep. reflexivity.
-Qed.
-
-Lemma ptree_vn_raw_second_observe b1 :
-  observe (ptree_vn_raw_second b1) =
-  ProbF vn_biased_coin (fun b2 =>
-    PTree.bind (Ret (vn_round_result b1 b2)) ptree_vn_raw_after).
-Proof.
-  unfold ptree_vn_raw_second. rewrite observe_bind. reflexivity.
-Qed.
-
-Definition ptree_vn_raw_hitting (fuel : nat) : MF vn_head :=
-  ptree_hitting_approx (MF := MF) fuel
-    (observe von_neumann_third).
-
-Lemma ptree_vn_raw_hitting_three fuel :
-  ptree_vn_raw_hitting (Datatypes.S (Datatypes.S (Datatypes.S fuel))) =
-  FOSample vn_biased_coin (fun b1 =>
-    FOSample vn_biased_coin (fun b2 =>
-      match vn_round_result b1 b2 with
-      | inl _ => ptree_vn_raw_hitting fuel
-      | inr b => FORet (FHRet b)
-      end)).
-Proof.
-  unfold ptree_vn_raw_hitting. rewrite ptree_vn_raw_observe.
-  cbn [ptree_hitting_approx ptree_primitive_kernel ptree_stable_target_approx
-    stable_hitting_approx stable_target_approx ptree_primitive_kernel
-    sem_bind sem_ret mixed_bind free_omega_bind FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticMeasure
-    FreeOmegaSemanticMeasure].
-  f_equal. apply functional_extensionality. intro b1.
-  rewrite ptree_vn_raw_second_observe.
-  cbn [ptree_primitive_kernel ptree_stable_target_approx stable_target_approx
-    ptree_primitive_kernel sem_bind sem_ret
-    mixed_bind free_omega_bind FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticMeasure FreeOmegaSemanticMeasure].
-  f_equal. apply functional_extensionality. intro b2.
-  rewrite observe_bind.
-  destruct (vn_round_result b1 b2) as [u|b]; [destruct u|]; reflexivity.
-Qed.
-
-Lemma ptree_vn_raw_hitting_zero_observes :
-  free_omega_observes ptree_vn_head_value
-    (ptree_vn_raw_hitting 0) (sem_zero : EnumQ bool).
-Proof.
-  unfold ptree_vn_raw_hitting. rewrite ptree_vn_raw_observe.
-  change (free_omega_observes ptree_vn_head_value
-    (FOSample vn_biased_coin (fun _ => FOZero)) (enumQ_zero : EnumQ bool)).
-  rewrite <- (vn_bind_nil_eq (A := bool) bool vn_biased_coin).
-  constructor. intro b. constructor.
-Qed.
-
 Fixpoint ptree_vn_raw_schedule (rounds : nat) : nat :=
   match rounds with
   | O => O
@@ -240,134 +168,12 @@ Fixpoint ptree_vn_raw_schedule (rounds : nat) : nat :=
         (ptree_vn_raw_schedule rounds')))
   end.
 
-Lemma ptree_vn_raw_hitting_rounds_observes rounds :
-  free_omega_observes ptree_vn_head_value
-    (ptree_vn_raw_hitting (ptree_vn_raw_schedule rounds))
-    (meas_iter_approx rounds (fun _ : unit => vn_transition) tt).
-Proof.
-  induction rounds as [|rounds IH].
-  - exact ptree_vn_raw_hitting_zero_observes.
-  - cbn [ptree_vn_raw_schedule].
-    rewrite ptree_vn_raw_hitting_three.
-    assert (Hout :
-      meas_iter_approx (Datatypes.S rounds)
-        (fun _ : unit => vn_transition) tt =
-      bind_EnumQ vn_biased_coin (fun b1 =>
-        bind_EnumQ vn_biased_coin (fun b2 =>
-          match vn_round_result b1 b2 with
-          | inl _ => meas_iter_approx rounds
-              (fun _ : unit => vn_transition) tt
-          | inr b => ret_EnumQ b
-          end))).
-    { cbn [meas_iter_approx].
-      change (bind_EnumQ vn_transition (fun next =>
-        match next with
-        | inl i' => meas_iter_approx rounds
-            (fun _ : unit => vn_transition) i'
-        | inr b => ret_EnumQ b
-        end) =
-        bind_EnumQ vn_biased_coin (fun b1 =>
-          bind_EnumQ vn_biased_coin (fun b2 =>
-            match vn_round_result b1 b2 with
-            | inl _ => meas_iter_approx rounds
-                (fun _ : unit => vn_transition) tt
-            | inr b => ret_EnumQ b
-            end))).
-      rewrite <- vn_round_record_eq. unfold vn_round_measure.
-      rewrite vn_bind_assoc_eq.
-      apply vn_bind_ext_eq=> b1. rewrite vn_bind_assoc_eq.
-      apply vn_bind_ext_eq=> b2.
-      rewrite ptree_vn_bind_ret_eq.
-      destruct (vn_round_result b1 b2) as [u|b]; [destruct u|]; reflexivity. }
-    rewrite Hout.
-    constructor. intro b1.
-    constructor. intro b2.
-    destruct (vn_round_result b1 b2) as [u|b].
-    + destruct u. exact IH.
-    + constructor.
-Qed.
-
 Lemma ptree_vn_raw_schedule_ge rounds :
   Peano.le rounds (ptree_vn_raw_schedule rounds).
 Proof.
   induction rounds as [|rounds IH]; [apply le_n|].
   cbn [ptree_vn_raw_schedule]. apply le_n_S.
   apply le_S, le_S. exact IH.
-Qed.
-
-Lemma ptree_vn_raw_chains_cofinal :
-  free_omega_chains_cofinal eq ptree_vn_raw_hitting
-    (fun rounds => ptree_vn_raw_hitting
-      (ptree_vn_raw_schedule rounds)).
-Proof.
-  split.
-  - intro fuel. exists fuel. apply ptree_hitting_mono.
-    exact (ptree_vn_raw_schedule_ge fuel).
-  - intro rounds. exists (ptree_vn_raw_schedule rounds).
-    apply free_omega_approx_refl. intro h. reflexivity.
-Qed.
-
-Definition ptree_vn_raw_limit : MF vn_head :=
-  FOLub (fun rounds => ptree_vn_raw_hitting
-    (ptree_vn_raw_schedule rounds)).
-
-Lemma ptree_vn_raw_limit_observes :
-  free_omega_observes ptree_vn_head_value
-    ptree_vn_raw_limit vn_fair.
-Proof.
-  unfold ptree_vn_raw_limit. eapply FOOObserveLub.
-  - exact ptree_vn_raw_hitting_rounds_observes.
-  - exact vn_iteration_converges.
-  - intro n. apply ptree_hitting_mono.
-    cbn [ptree_vn_raw_schedule]. repeat apply le_S. apply le_n.
-Qed.
-
-Definition ptree_vn_raw_heads : MF vn_head :=
-  ptree_vn_raw_limit.
-
-Lemma ptree_vn_raw_weak :
-  @ptree_stable_hitting vnE EnumQ MF
-    (FreeOmegaObservableSemanticMeasure
-      (NI := EnumQ_SemanticMeasure)
-      (NO := EnumQ_SemanticOmega))
-    FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega bool
-    (observe von_neumann_third) ptree_vn_raw_heads.
-Proof.
-  change (free_omega_qlift eq
-    (FOLub (fun n => ptree_vn_raw_hitting (ptree_vn_raw_schedule n)))
-    (FOLub ptree_vn_raw_hitting)).
-  apply FOQLSym. eapply FOQLMono.
-  - apply FOQLCofinal.
-    + intro n. apply ptree_hitting_mono. apply le_S, le_n.
-    + intro n. apply ptree_hitting_mono.
-      cbn [ptree_vn_raw_schedule]. repeat apply le_S. apply le_n.
-    + exact ptree_vn_raw_chains_cofinal.
-  - intros x y ->. reflexivity.
-Qed.
-
-Lemma ptree_vn_raw_heads_total :
-  @sem_total MF
-    (FreeOmegaObservableSemanticMeasure
-      (NI := EnumQ_SemanticMeasure)
-      (NO := EnumQ_SemanticOmega))
-    FreeOmegaObservableSemanticOmega _ ptree_vn_raw_heads.
-Proof.
-  apply free_omega_observable_total_intro.
-  exists bool, ptree_vn_head_value, vn_fair.
-  split; [exact ptree_vn_raw_limit_observes|exact vn_fair_total].
-Qed.
-
-Theorem ptree_von_neumann_raw_ast :
-  @ptree_stable_hitting_ast vnE EnumQ MF
-    (FreeOmegaObservableSemanticMeasure
-      (NI := EnumQ_SemanticMeasure)
-      (NO := EnumQ_SemanticOmega))
-    FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega bool
-    (observe von_neumann_third) ptree_vn_raw_heads.
-Proof.
-  split; [exact ptree_vn_raw_weak|exact ptree_vn_raw_heads_total].
 Qed.
 
 Definition ptree_vn_compiled : ptree vnE EnumQ bool :=
@@ -589,6 +395,44 @@ Proof.
   - exact ptree_vn_mixed_iter.
   - exact ptree_vn_heads_total.
 Qed.
+
+(** The raw two-draw implementation uses the same round analysis as
+    the compiled kernel. No second primitive-fuel schedule proof is needed. *)
+Definition ptree_vn_raw_heads := ptree_vn_heads.
+
+Lemma ptree_vn_raw_weak :
+  ptree_stable_hitting (FI := FreeOmegaObservableSemanticMeasure)
+    (FO := FreeOmegaObservableSemanticOmega)
+    (observe von_neumann_third) ptree_vn_raw_heads.
+Proof.
+  eapply stable_hitting_output_transport.
+  - unfold von_neumann_third.
+    eapply iteration_frontier_summary_hitting
+      with (transition := fun _ : unit => vn_transition); try typeclasses eauto.
+    intros []. rewrite <- vn_round_record_eq.
+    unfold vn_step, vn_round_measure.
+    eapply (stable_hitting_native_sample (NI := EnumQ_SemanticMeasure)); try typeclasses eauto. intro b1.
+    eapply (stable_hitting_native_sample (NI := EnumQ_SemanticMeasure)); try typeclasses eauto. intro b2.
+    apply (stable_hitting_native_ret (NI := EnumQ_SemanticMeasure)).
+  - apply (sem_eq_sym (SI := FreeOmegaObservableSemanticMeasure
+      (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))).
+    change (@sem_lub MF
+      (FreeOmegaObservableSemanticMeasure (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
+      FreeOmegaObservableSemanticOmega _
+      (fun n => @sem_bind MF
+        (FreeOmegaObservableSemanticMeasure (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
+        _ _ (ptree_vn_iter_approx n) (fun b => FORet (FHRet b)))
+      ptree_vn_heads).
+    apply sem_bind_lub.
+    + exact ptree_vn_round_increasing.
+    + exact ptree_vn_mixed_iter.
+Qed.
+
+Theorem ptree_von_neumann_raw_ast :
+  ptree_stable_hitting_ast (FI := FreeOmegaObservableSemanticMeasure)
+    (FO := FreeOmegaObservableSemanticOmega)
+    (observe von_neumann_third) ptree_vn_raw_heads.
+Proof. split; [exact ptree_vn_raw_weak|exact ptree_vn_heads_total]. Qed.
 
 Corollary ptree_vn_compiled_primitive_ast :
   @stable_hitting_ast MF
@@ -886,90 +730,7 @@ Lemma ptree_vn_raw_heads_lift
       (NO := EnumQ_SemanticOmega)) _ _
     (stable_head_rel eq sim)
     ptree_vn_raw_heads ptree_vn_direct_heads.
-Proof.
-  eapply FOQLObserve with
-    (obsA := ptree_vn_head_value)
-    (obsB := ptree_vn_head_value)
-    (outA := vn_fair)
-    (outB := ptree_vn_direct_observation)
-    (S := eq).
-  - exact ptree_vn_raw_limit_observes.
-  - exact ptree_vn_direct_heads_observes.
-  - rewrite ptree_vn_direct_observation_eq.
-    apply sem_lift_refl. intro b. reflexivity.
-  - intros h1 h2 Hvalue.
-    destruct h1 as [b1|X e1 k1];
-      destruct h2 as [b2|Y e2 k2];
-      try destruct e1; try destruct e2.
-    cbn in Hvalue. subst b2. constructor. reflexivity.
-  - unfold free_omega_support_lift. split.
-    + intros P HP. unfold ptree_vn_raw_heads,
-        ptree_vn_raw_limit in HP.
-      dependent destruction HP. specialize (H 1%nat).
-      cbn [ptree_vn_raw_schedule] in H.
-      rewrite ptree_vn_raw_hitting_three in H.
-      pose proof (free_omega_ae_sample_inv H) as Hfirst.
-      assert (Hfirst_false : free_omega_ae P
-          (FOSample vn_biased_coin (fun b2 =>
-            match vn_round_result false b2 with
-            | inl _ => ptree_vn_raw_hitting 0
-            | inr b => FORet (FHRet b)
-            end))).
-      { apply Hfirst with (p := vn_one_third).
-        - cbn. auto.
-        - cbn. discriminate. }
-      assert (Hfirst_true : free_omega_ae P
-          (FOSample vn_biased_coin (fun b2 =>
-            match vn_round_result true b2 with
-            | inl _ => ptree_vn_raw_hitting 0
-            | inr b => FORet (FHRet b)
-            end))).
-      { apply Hfirst with (p := vn_two_thirds).
-        - cbn. auto.
-        - cbn. discriminate. }
-      pose proof (free_omega_ae_sample_inv Hfirst_false) as Hsecond_false.
-      pose proof (free_omega_ae_sample_inv Hfirst_true) as Hsecond_true.
-      assert (HPfalse : P (FHRet false)).
-      { specialize (Hsecond_false vn_two_thirds true). cbn in Hsecond_false.
-        pose proof (Hsecond_false (or_intror (or_introl Logic.eq_refl))
-          ltac:(cbn; discriminate)) as Hr.
-        dependent destruction Hr. exact H0. }
-      assert (HPtrue : P (FHRet true)).
-      { specialize (Hsecond_true vn_one_third false). cbn in Hsecond_true.
-        pose proof (Hsecond_true (or_introl Logic.eq_refl)
-          ltac:(cbn; discriminate)) as Hr.
-        dependent destruction Hr. exact H0. }
-      unfold ptree_vn_direct_heads.
-      eapply FOAESample with (Good := fun _ => True).
-      * apply sem_ae_true.
-      * intros b _. constructor. exists (FHRet b). split.
-        -- constructor. reflexivity.
-        -- destruct b; assumption.
-    + intros Q HQ. unfold ptree_vn_direct_heads in HQ.
-      pose proof (free_omega_ae_sample_inv HQ) as Hfair.
-      assert (HQfalse : Q (FHRet false)).
-      { specialize (Hfair one_div_two false). cbn in Hfair.
-        pose proof (Hfair (or_introl Logic.eq_refl)
-          ltac:(cbn; discriminate)) as Hr.
-        dependent destruction Hr. exact H. }
-      assert (HQtrue : Q (FHRet true)).
-      { specialize (Hfair one_div_two true). cbn in Hfair.
-        pose proof (Hfair (or_intror (or_introl Logic.eq_refl))
-          ltac:(cbn; discriminate)) as Hr.
-        dependent destruction Hr. exact H. }
-      apply free_omega_ae_mono with (P := fun _ => True).
-      * intros h _. destruct h as [b|X e k]; [|destruct e].
-        exists (FHRet b). split; [constructor; reflexivity|].
-        destruct b; assumption.
-      * generalize ptree_vn_raw_heads. intro mu. induction mu.
-        -- constructor. exact I.
-        -- constructor.
-        -- eapply FOAESample with (Good := fun _ => True).
-           ++ apply (@sem_ae_true EnumQ EnumQ_SemanticMeasure
-                EnumQ_SemanticMeasureCoreLaws).
-           ++ intros x _. exact (H x).
-        -- constructor. exact H.
-Qed.
+Proof. exact (ptree_vn_heads_lift sim). Qed.
 
 (** Canonical endpoint: the unbounded retrying implementation and the
     one-step fair coin are compared only at their subprobabilistic
@@ -1005,6 +766,54 @@ Proof.
   - exact (proj1 ptree_vn_direct_ast).
   - exact (ptree_vn_heads_lift _).
 Qed.
+
+(** Reuse the closed analysis in any ambient event signature.  Renaming
+    the empty source signature changes no sampling node; the two structural
+    certificates below connect that embedding to the actual polymorphic AST.
+    No second hitting schedule or limit calculation is needed. *)
+Section AmbientSignature.
+Context {E : Type -> Type}.
+Local Definition vn_rename X (e : vnE X) : E X := match e with end.
+
+Lemma von_neumann_third_in_translate :
+  pstruct eq (PTree.translate vn_rename von_neumann_third)
+    (@von_neumann_third_in E).
+Proof.
+  unfold PTree.translate, von_neumann_third, von_neumann_third_in.
+  eapply pstruct_trans; [apply pstruct_interp_iter|].
+  apply pstruct_iter. intros [].
+  apply pstruct_fold. rewrite observe_interp. cbn.
+  constructor. intro b1.
+  apply pstruct_fold. rewrite observe_interp. cbn.
+  constructor. intro b2.
+  apply pstruct_fold. rewrite observe_interp. cbn.
+  constructor. reflexivity.
+Qed.
+
+Lemma direct_fair_in_translate :
+  pstruct eq (PTree.translate vn_rename direct_fair) (@direct_fair_in E).
+Proof.
+  apply pstruct_fold. unfold PTree.translate. rewrite observe_interp. cbn.
+  constructor. intro b. apply pstruct_fold. rewrite observe_interp. cbn.
+  constructor. reflexivity.
+Qed.
+
+Theorem von_neumann_third_in_equivalent_to_fair :
+  @peutt E EnumQ MF
+    (FreeOmegaObservableSemanticMeasure
+      (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
+    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
+    FreeOmegaObservableSemanticOmega bool bool eq
+    von_neumann_third_in direct_fair_in.
+Proof.
+  eapply peutt_trans.
+  - apply peutt_sym. apply peutt_of_pstruct.
+    exact von_neumann_third_in_translate.
+  - eapply peutt_trans.
+    + apply peutt_translate. exact peutt_von_neumann_raw_direct.
+    + apply peutt_of_pstruct. exact direct_fair_in_translate.
+Qed.
+End AmbientSignature.
 
 Lemma ptree_vn_direct_frontier :
   @frontier_certificate vnE EnumQ MF EnumQ_SemanticMeasure

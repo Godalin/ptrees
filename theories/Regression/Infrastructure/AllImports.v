@@ -120,6 +120,7 @@ Require PTree.Interp.FreeOmega.ITreeCompletion.
 Require PTree.Interp.FreeOmega.ITreePreservation.
 Require PTree.Interp.FreeOmega.Iteration.
 Require PTree.Interp.FreeOmega.IterationAlgebra.
+Require PTree.Interp.FreeOmega.IterationSummary.
 Require PTree.Interp.FreeOmega.IterationUniform.
 Require PTree.Interp.FreeOmega.MDP.
 Require PTree.Interp.FreeOmega.Rewriting.
@@ -395,6 +396,7 @@ Require PTree.Regression.Semantics.HeadTransition.
 Require PTree.Regression.Semantics.ITreeBridge.
 Require PTree.Regression.Semantics.ITreePreservation.
 Require PTree.Regression.Semantics.InterpExposure.
+Require PTree.Regression.Semantics.IterationSummary.
 Require PTree.Regression.Semantics.LabelledMDP.
 Require PTree.Regression.Semantics.MDPCoincidence.
 Require PTree.Regression.Semantics.MDPEmbedding.

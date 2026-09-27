@@ -104,11 +104,18 @@ The analysis proves:
 - Pending mass is at most `(5/8)^n`, uniformly in the initial state.
 - Each returned-bit mass equals half of one minus pending mass and tends to 1/2.
 
-`loop_hitting_three` identifies one attempt with two sampling steps and the
-retry Tau. `round_schedule` counts these three-step blocks and is cofinal.
-`loop_hitting_observes` links those **actual PTree hitting approximants** to
-the finite output rows. `output_row_factor` relates the rows to the already
-proved finite experiment, for arbitrary rational observables.
+`loop_kernel` compiles the two native draws in one attempt. `loop_hits`
+uses `iteration_frontier_summary_hitting`: the local certificate is proved
+by two finite sampling laws and a return law, while the library supplies
+iteration congruence and primitive-loop cofinality. No case-specific
+primitive-fuel schedule remains. `loop_round_observation` identifies the
+library's observation rounds with `output_row`; `output_row_factor` relates
+these rows to the finite experiment, for arbitrary rational observables.
+
+The complete `loop_heads` frontier remains in `FreeOmega`, retaining the
+successful state/bit correlation. Only its bit projection has a finite
+native limit. See [the summary interface](ITERATION_SUMMARY.md) for the
+precise scope and recorded helper-level assumption changes.
 
 `loop_hits` establishes the complete hitting witness. `loop_heads_observes`
 proves its fair output observation, and `raw_loop_ast` proves its total mass.

@@ -55,9 +55,13 @@ it does not claim arbitrary nested-context or combined bind/Prob closure.
 `InteractiveVonNeumannService` now keeps only the service root and
 `publish b` pairs in its candidate. After `CoinRequest`, up-to-bind consumes
 the proved sampler equivalence; after `CoinReply`, the proof returns to the
-root. Explicit after-request hitting/frontier lemmas remain available for
-the `Request; Reply true` probability theorem. The after-request equivalence
-is a corollary of the service theorem and ordinary bind congruence.
+root. The sampler equivalence now reuses the closed VN component transported
+to the service signature. The service's original complete AST witness is
+retained; its totality follows by return-frontier transport. Only the direct
+after-request frontier is needed for the `Request; Reply true` probability
+theorem; the redundant VN-side construction has been removed. The
+after-request equivalence is a corollary of the service theorem and ordinary
+bind congruence. See [iteration summaries](ITERATION_SUMMARY.md).
 
 `MixedHeadProtocol` now keeps roots and reply states. After
 `Challenge`, up-to-Prob consumes the existing non-diagonal eight-to-four

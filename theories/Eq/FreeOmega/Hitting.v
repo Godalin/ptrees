@@ -101,6 +101,59 @@ Proof.
     exact Heq.
 Qed.
 
+(** On a return-only frontier, whole-head behavioral matching reduces to
+    equality of heads.  This transfers the exact witness, not just totality,
+    without requiring the ambient event signature to be empty. *)
+Theorem peutt_hitting_ret_only {R} (t u : ptree E MN R) out :
+  peutt (FI := FI) (FO := FO) eq t u ->
+  hits u out ->
+  free_omega_ae (fun h => exists r, h = FHRet r) out ->
+  hits t out.
+Proof.
+  intros Heq Hu Hret.
+  destruct (stable_hitting_exists (FI := FI) (FO := FO) (K R) (observe t))
+    as [front Hfront].
+  eapply stable_hitting_output_transport; [exact Hfront|].
+  change (@sem_lift MF FI _ _ eq front out).
+  eapply FOQLAERestrict.
+  - exact (peutt_hitting_lift Heq Hfront Hu).
+  - apply (sem_ae_true (SI := FI)).
+  - exact Hret.
+  - intros h h' [Hrel [_ Hreturns]].
+    destruct Hrel.
+    + subst. reflexivity.
+    + destruct Hreturns as [r Hbad]. discriminate.
+Qed.
+
+(** Finite native kernel compilation with supplied branch witnesses. These
+    rules need no choice of complete frontiers and are useful when a case
+    already gives an explicit finite probabilistic round. *)
+Theorem stable_hitting_native_ret
+    `{ND : @SemanticMeasureDiracAELaws MN NI} {R} (r : R) :
+  hits (Ret r) (FOSample (sem_ret r) (fun x => FORet (FHRet x))).
+Proof.
+  eapply stable_hitting_output_transport; [apply stable_hitting_ret|].
+  apply FOQLSym. eapply FOQLSampleRetL.
+  - apply sem_ae_ret_iff.
+  - apply free_omega_qlift_refl. intro h. reflexivity.
+Qed.
+
+Theorem stable_hitting_native_sample
+    `{NB : @SemanticMeasureBindAEExactLaws MN NI} {X R}
+    (mu : MN X) (k : X -> ptree E MN R) (front : X -> MN R) :
+  (forall x, hits (k x) (FOSample (front x) (fun r => FORet (FHRet r)))) ->
+  hits (Prob mu k)
+    (FOSample (sem_bind mu front) (fun r => FORet (FHRet r))).
+Proof.
+  intro Hk. eapply stable_hitting_output_transport.
+  - eapply stable_hitting_prob with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros x _. exact (Hk x).
+  - apply FOQLSampleBind.
+    + apply sem_ae_bind_iff.
+    + intro r. apply free_omega_qlift_refl. intro h. reflexivity.
+Qed.
+
 Theorem stable_hitting_prob_iff {R X}
     (mu : MN X) (k : X -> ptree E MN R) out :
   hits (Prob mu k) out <->
