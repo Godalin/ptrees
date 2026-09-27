@@ -582,6 +582,10 @@
     "PTree.Examples.AdaptiveFactoryController.Adaptive.controller_program_rewrite": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.BernoulliFactory.BoundedFactory.BoundedFactory.fair_factory_direct": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
     ]
   }
 }

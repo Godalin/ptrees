@@ -52,7 +52,7 @@ Qed.
 
 (** This context is specific to the factory, not to generic iteration. *)
 #[export] Instance factory_with_sampler_Proper :
-  Proper (peutt eq ==> eq ==> peutt eq) (@factory_with_sampler factoryE).
+  Proper (peutt eq ==> eq ==> peutt eq) (@factory_with_sampler factoryE EnumQ).
 Proof. intros t u H q q' ->. apply peutt_factory_sampler_congr. exact H. Qed.
 
 Lemma factory_fair_step_standard x :

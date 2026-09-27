@@ -49,8 +49,13 @@ effects/handlers、主结论与适用范围。
 确定 profile 后，程序组合和代数变换优先通过现有抽象接口完成；本例的
 小代数引理也遵循同一规则。
 
+新建或迁移的实际概率程序优先选择带质量界的 native carrier，例如
+`SubEnumQ` / `SubEnumR`；`EnumQ` 只是有限非负权重，不保证质量 ≤ 1。
+既有 EnumQ 案例不能仅靠改别名宣称已迁移，需要真实切换程序、frontier
+和关系实例，并保留原分布与正确性证明。
+
 具体构造器允许用于分布定义和 backend-specific analysis，例如
-`fair : EnumQ bool` 或 `bernoulli q : SubEnumQ bool`。限制针对高层
+`fair : SubEnumQ bool` 或用于有限计算的 `raw : EnumQ A`。限制针对高层
 程序变换：性质一旦证明，主 calculation 消费该性质而不重开表示。
 不要为了外观抽象再造一层无价值 wrapper。
 

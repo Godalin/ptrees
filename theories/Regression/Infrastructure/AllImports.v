@@ -76,6 +76,7 @@ Require PTree.Examples.AdaptiveFactoryController.
 Require PTree.Examples.BernoulliFactory.BernoulliFactory.
 Require PTree.Examples.BernoulliFactory.BernoulliFactoryComposition.
 Require PTree.Examples.BernoulliFactory.BernoulliFactoryProbability.
+Require PTree.Examples.BernoulliFactory.BoundedFactory.
 Require PTree.Examples.BernoulliFactory.OperationalBernoulliFactory.
 Require PTree.Examples.BernoulliFactory.OperationalRationalBernoulli.
 Require PTree.Examples.BernoulliFactory.OperationalVonNeumann.

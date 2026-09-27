@@ -41,6 +41,11 @@ semantic algebra rather than repeatedly opening its finite-list representation.
 | [RandomWalk](../theories/Examples/RandomWalk.v) | `random_walk_as_successive_passages`, `random_walk_closed_form` | Passage normalization, AST and infinite-support output analysis. Not a finite native distribution node. |
 | [AdaptiveFactoryController](../theories/Examples/AdaptiveFactoryController.v) | `Adaptive.controller_program_rewrite` | `loop_hits`, `raw_loop_fair`, `adaptive_factory_direct`, `controller_refinement`. Preserve correlated state; no new simulator/PRNG claim. |
 
+Adaptive's programs and canonical behavior use `SubEnumQ -> FreeOmega SubEnumQ`.
+Its reusable [bounded factory](../theories/Examples/BernoulliFactory/BoundedFactory.v)
+connects the existing finite rational analysis to that bounded backend; raw
+`EnumQ` is an analysis representation, not Adaptive's execution carrier.
+
 For effect-specific and executable supporting examples, also see
 [ITreeSampling](../theories/Examples/ITreeSampling.v),
 [EffectInteractions](../theories/Examples/EffectInteractions.v),

@@ -146,9 +146,22 @@ sources; it is not an AST assumption.
 
 ## Backend and trust boundaries
 
-The backend is EnumQ with observable FreeOmega. Concrete finite expectations
-and support calculations belong to the analysis section; upper program proofs
-consume semantic relations and existing algebra.
+The native backend is **SubEnumQ**, with observable **FreeOmega SubEnumQ** as
+frontier. Every native distribution carries its mass bound; this includes
+the state-dependent sources, finite iteration rows and the direct Bernoulli
+specification. The two sources are additionally proved total.
+
+`EnumQ` is used only at the finite-analysis boundary. `source_coin_raw` and
+`BoundedFactory.fair_coin_raw` / `bernoulli_raw` show that adding the bound
+certificate preserves the exact finite weighting (including order and zero
+entries). There is no runtime backend conversion or normalization. The
+bounded factory component reuses the old binary algorithm's scalar convergence
+certificate through `rows_raw`, then proves its own `SubEnumQ` hitting and
+behavioral endpoint. It does not import the old EnumQ factory equivalence.
+
+Upper program proofs consume semantic relations and existing algebra. The
+sampler-parametric factory control flow is backend-independent; only its
+probability analysis selects a representation.
 
 No new probability axioms, capability classes, admitted proofs or checker
 relaxations are introduced. The original seven finite-analysis contracts are
@@ -157,24 +170,35 @@ library's extensionality, dependent-equality and choice dependencies; compiled
 signatures and per-endpoint assumptions are recorded in the factory contract
 suite without extending the global logical-axiom whitelist.
 
-The original 32 factory contracts remain frozen. Only the new stable
-refinement/adequacy endpoints are added; internal helper shapes are not frozen.
-CI is not queried.
+The factory contract suite records the explicit Adaptive carrier migration
+from EnumQ to SubEnumQ. Unrelated controller contracts stay unchanged; internal
+helper shapes are not frozen. CI is not queried.
 
-## Local verification of the completed case
+## Local verification of the bounded-backend migration
 
 - Full `opam exec -- dune build`, including AllImports: passed. Existing
   extraction opacity/output-directory warnings remain; the full build still
   includes the two pre-existing Gate M modules, not used by this case.
-- 141 Python tool tests: passed.
+- 142 Python tool tests: passed, including a bounded-native-carrier boundary
+  check and the unchanged extracted-controller tests.
 - Architecture, public-surface and soundness source audits: passed.
 - All 465 mainline compiled contracts: unchanged.
-- Factory suite: 41 checked signatures/assumptions, including the 32 previous
-  entries preserved exactly and nine new semantic/refinement endpoints.
-- `coqchk -norec PTree.Examples.AdaptiveFactoryController`: passed. This checks
-  the case module's proof bodies and trusts compiled dependencies; it is not
-  a whole-library recursive kernel audit.
+- Factory suite: 47 checked signatures/assumptions. The 19 Adaptive entries
+  explicitly change carrier; their logical-axiom sets are unchanged. The
+  other 22 old entries are unchanged. Six new entries protect the exact raw
+  projections, source totality and bounded factory endpoint.
+- Generic algebra suite: 131 checked endpoints. Only the sampler-factory
+  Proper signature changes printing to include the newly explicit native
+  parameter; its assumptions are unchanged.
+- Joint `coqchk -norec` for `FiniteRecordExtensionality`, `BernoulliFactory`,
+  `BoundedFactory`, and `AdaptiveFactoryController`: passed. This checks those
+  module bodies while trusting compiled dependencies; it is not a recursive
+  whole-library kernel audit.
 
-Only this example's formal source is extended. Generic theory, probability
-interfaces, backend definitions, the old controller and extraction roots are
-unchanged. No new audit script or proof-mode classification is introduced.
+The only shared changes are backend-parameterizing the two sampler-only
+factory definitions and adding bounded-distribution versions of three exact
+finite bind equations to the existing opt-in record-extensionality module.
+Generic PTree semantics, probability interfaces, backend definitions, old
+controller/extraction roots and Gate M are unchanged. No new audit script or
+proof-mode classification is introduced. Other historical EnumQ program cases
+have not been migrated by this change.

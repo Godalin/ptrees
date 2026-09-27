@@ -84,3 +84,27 @@ Proof.
   by elim: (finite_enum_raw mu)=> [|[p x] tl IH] //=.
 Qed.
 End ExactAlgebra.
+
+(** Exact witness equations for bounded finite distributions. These are
+    inherited from the same raw-list algebra; the mass certificate does
+    not affect bind. Keep record extensionality opt-in. *)
+Section ExactSubdistAlgebra.
+Context {R : numDomainType}.
+Lemma finite_subdist_bind_assoc_eq {A B C} (mu : FiniteSubdist R A)
+    (k : A -> FiniteSubdist R B) (h : B -> FiniteSubdist R C) :
+  finite_subdist_bind (finite_subdist_bind mu k) h =
+  finite_subdist_bind mu (fun x => finite_subdist_bind (k x) h).
+Proof. apply finite_subdist_raw_eq; exact: finite_bind_assoc. Qed.
+Lemma finite_subdist_bind_ext_eq {A B} (mu : FiniteSubdist R A)
+    (k h : A -> FiniteSubdist R B) :
+  (forall x, k x = h x) -> finite_subdist_bind mu k = finite_subdist_bind mu h.
+Proof. move=> H; apply finite_subdist_raw_eq, finite_bind_ext=> x; by rewrite H. Qed.
+Lemma finite_subdist_bind_ret_eq {A B} (x : A) (k : A -> FiniteSubdist R B) :
+  finite_subdist_bind (finite_subdist_ret R x) k = k x.
+Proof.
+  apply finite_subdist_raw_eq.
+  change (finite_enum_raw (finite_enum_bind (finite_enum_ret R x)
+    (fun a => finite_subdist_enum (k a))) = finite_enum_raw (finite_subdist_enum (k x))).
+  by rewrite finite_enum_bind_ret_eq.
+Qed.
+End ExactSubdistAlgebra.

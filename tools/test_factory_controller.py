@@ -19,6 +19,26 @@ def case_module(name):
 
 
 class FactoryControllerTests(unittest.TestCase):
+    def test_adaptive_uses_bounded_native_carrier(self):
+        source = without_comments((ROOT /
+            'theories/Examples/AdaptiveFactoryController.v').read_text())
+        self.assertIn('From PTree.Eq.Backend Require Import SubEnumQ.', source)
+        self.assertIn('ptree implE SubEnumQ', source)
+        self.assertIn('FreeOmega SubEnumQ', source)
+        self.assertNotIn('FreeOmega EnumQ', source)
+        self.assertNotRegex(source, r'ptree\s+\w+\s+EnumQ\b')
+        self.assertIn('BoundedFactory.fair_factory_direct', source)
+        self.assertIn('Lemma source_coin_raw', source)
+        self.assertIn('Lemma source_coin_total', source)
+        bridge = without_comments((ROOT /
+            'theories/Examples/BernoulliFactory/BoundedFactory.v').read_text())
+        self.assertIn('rational_binary_iteration_converges', bridge)
+        self.assertIn('Lemma rows_raw', bridge)
+        self.assertIn('iteration_frontier_summary_hitting', bridge)
+        self.assertNotIn('BernoulliFactoryComposition', bridge)
+        self.assertNotIn('OperationalBernoulliFactory', bridge)
+        self.assertNotRegex(bridge, r'\b(?:Axiom|Admitted|Parameter)\b|Unset .*Checking')
+
     def cli(self, *args, input=None, success=True):
         p = subprocess.run([str(EXE), *map(str, args)], input=input,
                            text=True, capture_output=True, timeout=40)

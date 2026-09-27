@@ -76,12 +76,12 @@ Proof.
 Qed.
 
 (** The algorithm only depends on the behavior of its Boolean sampler. *)
-Definition factory_sampler_step {E : Type -> Type}
-    (sampler : ptree E EnumQ bool) (x : rat) : ptree E EnumQ (rat + bool) :=
+Definition factory_sampler_step {E MN : Type -> Type}
+    (sampler : ptree E MN bool) (x : rat) : ptree E MN (rat + bool) :=
   PTree.bind sampler (fun b => Ret (binary_round_result x b)).
 
-Definition factory_with_sampler {E : Type -> Type}
-    (sampler : ptree E EnumQ bool) (target : rat) : ptree E EnumQ bool :=
+Definition factory_with_sampler {E MN : Type -> Type}
+    (sampler : ptree E MN bool) (target : rat) : ptree E MN bool :=
   PTree.iter (factory_sampler_step sampler) target.
 
 Definition factory_direct_fair : ptree factoryE EnumQ bool :=
