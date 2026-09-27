@@ -337,6 +337,9 @@ form four groups:
 theorem regressions, negative examples, capability checks and proof-tool
 clients, not additional paper-facing case studies. In particular, the
 2×2 strictness witness belongs to the semantic comparison regressions.
+The supporting [AbsorbingFrontier](theories/Examples/AbsorbingFrontier.v)
+example reuses VN to reach a mixed return/visible first frontier after
+unbounded internal retries; see [the absorption interface](docs/ABSORBING_ITERATION.md).
 Its [two-round interpretation experiment](docs/INTERP_COMPOSITIONALITY.md)
 also proves that response-wise transition bisimulation is not preserved by
 arbitrary effectful interpretation.

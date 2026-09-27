@@ -71,6 +71,7 @@ Require PTree.Eq.StableHittingRelation.
 Require PTree.Eq.UnifiedFrontier.
 Require PTree.Eq.UpToProb.
 Require PTree.Eq.WellFormedness.
+Require PTree.Examples.AbsorbingFrontier.
 Require PTree.Examples.AdaptiveFactoryController.
 Require PTree.Examples.BernoulliFactory.BernoulliFactory.
 Require PTree.Examples.BernoulliFactory.BernoulliFactoryComposition.
@@ -111,6 +112,7 @@ Require PTree.Interp.ExceptionFacts.
 Require PTree.Interp.ExceptionFold.
 Require PTree.Interp.ExceptionFoldFacts.
 Require PTree.Interp.FoldITree.
+Require PTree.Interp.FreeOmega.AbsorbingIteration.
 Require PTree.Interp.FreeOmega.Atomic.
 Require PTree.Interp.FreeOmega.Base.
 Require PTree.Interp.FreeOmega.Cofinality.
@@ -381,6 +383,7 @@ Require PTree.Regression.Probability.RelationalLimit.
 Require PTree.Regression.Probability.StableHittingDomain.
 Require PTree.Regression.Probability.SubEnumRJointRealization.
 Require PTree.Regression.Probability.SubEnumRNativeReflection.
+Require PTree.Regression.Semantics.AbsorbingIteration.
 Require PTree.Regression.Semantics.AtomicInterp.
 Require PTree.Regression.Semantics.CanonicalPartialDivergence.
 Require PTree.Regression.Semantics.EffectAlgebra.

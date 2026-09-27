@@ -2,6 +2,10 @@
 
 Implementation baseline: `ecedda8`.
 
+The accepted interface below is unchanged. Its subsequent
+[absorbing-exit extension](ABSORBING_ITERATION.md) permits mixed Ret/Vis
+frontiers without changing the native per-round requirement.
+
 The interface is `Interp/FreeOmega/IterationSummary.v`. It combines existing
 generic behavioral iteration congruence with `primitive_iter_cofinal`; it
 does not postulate a new cofinality or iteration capability.
