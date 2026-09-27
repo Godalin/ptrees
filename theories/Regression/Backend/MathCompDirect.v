@@ -77,6 +77,34 @@ Proof.
 Qed.
 End CompleteStepSummary.
 
+(** Classical while semantics is native, universe-checked mathematics;
+    only its recursive PTree client belongs to this existing Gate M. *)
+From PTree.Prob.Backend.MathComp Require Import Iteration.
+From PTree.Interp Require Import ReturnIteration.
+Section ReturnOnlyLFP.
+Variable R : realType.
+Context `{G : MathCompCouplingGluing R}.
+Local Notation M := (MathCompKernelMeasure R).
+Local Notation NI := (MathCompNodeSemanticMeasure R).
+Local Notation NO := (MathCompNodeSemanticOmega R).
+Local Notation MX := (MathCompNativeMixedMeasure R).
+Context {E : Type -> Type} {I A : Type}.
+Variable step : I -> ptree E M (I+A).
+Variable K : I -> M (I+A).
+Example direct_return_only_lfp
+    (Hstep : forall i, ptree_stable_hitting (FI := NI) (FO := NO) (MX := MX)
+      (observe (step i)) (iteration_return_front K i)) i :
+  exists hs, ptree_stable_hitting (FI := NI) (FO := NO) (MX := MX)
+      (observe (PTree.iter step i)) hs /\
+    sem_eq hs (iteration_return_map (mathcomp_iteration K i)).
+Proof.
+  eapply (ptree_iter_return_only (FI := NI) (FO := NO) (MX := MX));
+    try typeclasses eauto.
+  - exact Hstep.
+  - apply mathcomp_iteration_spec.
+Qed.
+End ReturnOnlyLFP.
+
 Section Programs.
 Variable R : realType.
 Context `{G : MathCompCouplingGluing R}.

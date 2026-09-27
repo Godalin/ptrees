@@ -153,6 +153,7 @@ Require PTree.Interp.Reader.
 Require PTree.Interp.ReaderFold.
 Require PTree.Interp.ReaderFoldITree.
 Require PTree.Interp.RelationalPreservation.
+Require PTree.Interp.ReturnIteration.
 Require PTree.Interp.Scheduling.
 Require PTree.Interp.StandardFacts.
 Require PTree.Interp.State.
@@ -219,6 +220,7 @@ Require PTree.Prob.Backend.EnumQ.Support.
 Require PTree.Prob.Backend.MathComp.BindLaws.
 Require PTree.Prob.Backend.MathComp.BindOrder.
 Require PTree.Prob.Backend.MathComp.Coupling.
+Require PTree.Prob.Backend.MathComp.Iteration.
 Require PTree.Prob.Backend.MathComp.Kernel.
 Require PTree.Prob.Backend.MathComp.Measure.
 Require PTree.Prob.Backend.MathComp.NativeLaws.
@@ -268,6 +270,7 @@ Require PTree.Prob.Domain.Countable.
 Require PTree.Prob.Domain.CountableTransport.
 Require PTree.Prob.Domain.Coupling.
 Require PTree.Prob.Domain.Expectation.
+Require PTree.Prob.Domain.Iteration.
 Require PTree.Prob.Domain.Matrix.
 Require PTree.Prob.Domain.MeasureModel.
 Require PTree.Prob.Domain.RelationalLimit.
@@ -289,6 +292,7 @@ Require PTree.Prob.FreeOmega.Support.
 Require PTree.Prob.FreeOmega.SupportLift.
 Require PTree.Prob.FreeOmega.Validation.Continuity.
 Require PTree.Prob.FreeOmega.Validation.Expectation.
+Require PTree.Prob.FreeOmega.Validation.Iteration.
 Require PTree.Prob.FreeOmega.Validation.Observation.
 Require PTree.Prob.FreeOmega.Validation.Quotient.
 Require PTree.Prob.FreeOmega.Validation.Relational.
@@ -297,6 +301,7 @@ Require PTree.Prob.Interface.BindOrder.
 Require PTree.Prob.Interface.Coupling.
 Require PTree.Prob.Interface.FrontierLift.
 Require PTree.Prob.Interface.Iteration.
+Require PTree.Prob.Interface.KleisliIteration.
 Require PTree.Prob.Interface.Measure.
 Require PTree.Prob.Interface.Mixed.
 Require PTree.Prob.Interface.Omega.
@@ -377,6 +382,7 @@ Require PTree.Regression.Probability.FreeOmegaSoundness.
 Require PTree.Regression.Probability.GenericFreeOmegaValidation.
 Require PTree.Regression.Probability.GenericQuotientValidation.
 Require PTree.Regression.Probability.IrrationalHitting.
+Require PTree.Regression.Probability.KleisliIteration.
 Require PTree.Regression.Probability.OmegaVal.
 Require PTree.Regression.Probability.OmegaValMeasure.
 Require PTree.Regression.Probability.RealTransport.
@@ -415,6 +421,7 @@ Require PTree.Regression.Semantics.ProbabilisticRelationHierarchy.
 Require PTree.Regression.Semantics.PublicSemanticFacade.
 Require PTree.Regression.Semantics.ReaderWriterFold.
 Require PTree.Regression.Semantics.RelationalConsumers.
+Require PTree.Regression.Semantics.ReturnIteration.
 Require PTree.Regression.Semantics.StableHittingComputation.
 Require PTree.Regression.Semantics.StandardEffects.
 Require PTree.Regression.Semantics.StateFold.

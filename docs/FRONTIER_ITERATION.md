@@ -117,6 +117,10 @@ analysis, and a new proof of iteration congruence are not part of this change.
 
 ## Verification
 
+Return-only specialization and its precise relationship to classical
+least-fixed-point iteration are developed in
+[RETURN_ITERATION.md](RETURN_ITERATION.md).
+
 Compiled signatures and logical assumptions are recorded in the existing
 generic-algebra contract suite, with the MathComp client recorded separately
 as Gate M. The five recorded generic endpoints are all `Closed under the

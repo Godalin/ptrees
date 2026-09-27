@@ -344,6 +344,10 @@ The [generic complete-frontier bridge](docs/FRONTIER_ITERATION.md) also
 handles arbitrary MF-valued Ret/retry/Vis step frontiers. FreeOmega and
 MathComp direct instantiate one adequacy proof; clients need no fuel schedule
 or empty event signature.
+For return-only step frontiers, [classical iteration compatibility](docs/RETURN_ITERATION.md)
+identifies the summary with Kleisli iteration (with a one-round finite index
+shift), and connects its limit to genuine least fixed points in MathComp
+and the independent expectation domain.
 Its [two-round interpretation experiment](docs/INTERP_COMPOSITIONALITY.md)
 also proves that response-wise transition bisimulation is not preserved by
 arbitrary effectful interpretation.

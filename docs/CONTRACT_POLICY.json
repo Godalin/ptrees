@@ -1056,7 +1056,8 @@
       "direct_sample_bind",
       "direct_sample_map",
       "direct_iter_Proper_of_relational_lub",
-      "direct_complete_step_summary"
+      "direct_complete_step_summary",
+      "direct_return_only_lfp"
     ],
     "theories/Regression/Backend/MathCompOmega.v": [
       "increasing_has_actual_lub",
@@ -1511,6 +1512,27 @@
       "visible_continuation_is_recursive",
       "empty_response_is_absorbing",
       "zero_coin_allowed"
+    ],
+    "theories/Regression/Semantics/ReturnIteration.v": [
+      "shifted_round",
+      "return_only_program",
+      "native_compatibility",
+      "classical_round_zero_is_bottom",
+      "frontier_round_zero_already_returns",
+      "retry_approx_zero",
+      "endless_retry_is_zero",
+      "endless_retry_has_other_fixed_point",
+      "lost_approx_zero",
+      "lost_kernel_is_zero"
+    ],
+    "theories/Regression/Probability/KleisliIteration.v": [
+      "domain_fixed_point",
+      "domain_least_prefixed",
+      "domain_retry_least_is_bottom",
+      "checked_lfp_exists",
+      "checked_lfp_least",
+      "rational_loop_denotes_lfp",
+      "rational_loop_modelable"
     ]
   }
 }
