@@ -4,6 +4,10 @@
     Internal effects are interpreted into State, then State is threaded out.
     State is NOT reset between attempts, factory iterations or requests.
     See docs/ADAPTIVE_FACTORY_CONTROLLER.md for the proved contract, mathematical boundaries and validation. *)
+(** Learn: handler algebra, complete-round analysis, then relational protocol refinement.
+    Reusable endpoints: Adaptive.loop_hits, raw_loop_fair, adaptive_factory_direct, controller_refinement.
+    Boundary: successful state and bit remain correlated; no new execution claim.
+    User navigation: docs/CASE_STUDIES.md. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.

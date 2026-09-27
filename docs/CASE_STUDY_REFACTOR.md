@@ -5,6 +5,49 @@ approved, retaining the file-role, concrete-analysis and stable-endpoint
 clarifications without a proof-method classification. Local validation only;
 CI is not queried.
 
+## User-gallery follow-up (baseline `833d65b`)
+
+The [learning guide](CASE_STUDIES.md) is a navigation layer, not another API
+facade or a fixed paper selection. This follow-up leaves the foundational
+theory and all existing program definitions unchanged:
+
+- `IterationBasics.v` is a single-file SubEnumQ tutorial. Its main frontier
+  proof applies the existing complete-step theorem; its classical comparison
+  reuses ReturnIteration. Finite expectation rewriting and the existing
+  rational geometric bound establish returned mass 1 or 1/2; unconditional
+  retry has the exact zero frontier. The numerical analysis is not disguised
+  as a program rewrite, nor does the file import external validation.
+- `AbsorbingFrontier.v` retains its full existing program calculation and
+  adds an exact actual-round certificate consumed directly by generic
+  `iteration_summary_hitting`. A separate whole-head lifting theorem joins
+  that witness to the fair mixed-head reference. Actual Vis continuations
+  keep their bind syntax; behavioral equality is not used as tree equality.
+- Adaptive's stale proof diagram no longer mentions a case-specific cofinal
+  schedule. Its existing native observation convenience remains unchanged;
+  documentation distinguishes conceptual specialization from proof reuse.
+- Seven existing case files, including Adaptive, receive only reading comments. No invariant,
+  convergence proof, extraction root or endpoint strength is changed.
+
+The gallery points to behavioral/frontier/quantitative/execution endpoints
+where they exist; it does not require each case to manufacture all four.
+
+Local verification for this follow-up:
+
+- Full `opam exec -- dune build -j 2`, including AllImports and extraction.
+- 141 tool tests; architecture, API surface and source-soundness checks.
+- 465 main contracts and 41 factory contracts unchanged. All 120 previous
+  safe generic-algebra contracts were compared before appending 11 new case
+  endpoints; the resulting 131-entry suite was then rechecked.
+- New recorded semantic endpoints inherit only existing functional
+  extensionality and/or `eq_rect_eq`; the continuation-shape check is closed
+  under the global context. No axiom whitelist or exception is extended.
+- All 12 previous AbsorbingFrontier proof declarations are preserved; seven
+  other case files have unchanged code/proof tokens after removing comments.
+- Joint `coqchk -norec` passes for IterationBasics and AbsorbingFrontier.
+  Dependencies are trusted: this is not a recursive whole-library audit.
+- The inventory is 448 modules, with the same two isolated Gate M files.
+  Neither Gate M nor external-validation permissions change. CI is not checked.
+
 ## Scope and stable contracts
 
 This is a presentation/consumer refactor, not a new semantics or probability

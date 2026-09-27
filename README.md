@@ -333,6 +333,11 @@ form four groups:
   sampler correctness, replacement and composition, including the shared
   rational/real Bernoulli and ordinary Von Neumann proofs.
 
+The [case-study learning guide](docs/CASE_STUDIES.md) organizes examples by
+the task: local rewriting, unbounded-loop summaries, or persistent-interaction
+coinduction. Begin loop analysis with `Examples/IterationBasics.v`; the guide
+links exact reusable endpoints and states their backend/termination boundaries.
+
 `Regression/{Semantics,Probability,Backend,Infrastructure}/` contains
 theorem regressions, negative examples, capability checks and proof-tool
 clients, not additional paper-facing case studies. In particular, the

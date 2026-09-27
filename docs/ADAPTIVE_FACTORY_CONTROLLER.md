@@ -66,7 +66,7 @@ actual interleaved Prob / Vis / State attempt
 exact stateful attempt kernel
     | lower_adaptive_normalized
 actual stateful retry loop
-    | finite observations + cofinal hitting schedule + support transport
+    | complete-round summary + finite observations + support transport
 adaptive_vn_fair : state/bit result related to a fair bit
     | existing heterogeneous bind + relational iteration
 adaptive_factory_fair
@@ -116,6 +116,17 @@ The complete `loop_heads` frontier remains in `FreeOmega`, retaining the
 successful state/bit correlation. Only its bit projection has a finite
 native limit. See [the summary interface](ITERATION_SUMMARY.md) for the
 precise scope and recorded helper-level assumption changes.
+
+Conceptually this is the return-only/native-kernel case of
+[general frontier iteration](FRONTIER_ITERATION.md), with the
+[classical iteration connection](RETURN_ITERATION.md). The existing convenience
+theorem is not implemented by calling that new generic theorem: it still uses
+behavioral iteration plus primitive-loop cofinality. We keep it because its
+observation API fits the bit-only analysis. No full finite joint distribution
+of successful state and bit is requested, and no independence is asserted.
+
+For the short entry example and the relationship between program algebra,
+frontier analysis and protocol coinduction, see [the case gallery](CASE_STUDIES.md).
 
 `loop_hits` establishes the complete hitting witness. `loop_heads_observes`
 proves its fair output observation, and `raw_loop_ast` proves its total mass.

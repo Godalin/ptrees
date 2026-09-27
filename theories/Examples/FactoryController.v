@@ -2,6 +2,10 @@
     Reading entry: Rewriting.factory_controller_program_rewrite.
     Scope: EnumQ / observable FreeOmega; native validity and quantitative results are separate.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+(** Learn: a complete rewrite calculation through sampler and handler contexts.
+    Reusable endpoints: Rewriting.factory_controller_program_rewrite; Observation.factory_next_action_probability.
+    Boundary: probability/AST analysis and extracted experiments are separate.
+    User navigation: docs/CASE_STUDIES.md. *)
 (** Interactive Bernoulli factory: a single, end-to-end case study.
 
     Reading order:

@@ -2,6 +2,10 @@
     Reading entry: masked_protocol_equivalent; masked_challenge_true_reply_probability.
     Scope: SubEnumQ / observable FreeOmega; mixed return/visible frontiers require the displayed invariant.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+(** Learn: up-to-Prob with non-diagonal coupling and a recursive invariant.
+    Reusable endpoints: masked_protocol_equivalent, masked_after_stable_hitting, masked_challenge_true_reply_probability.
+    Boundary: this is not a pure rewrite proof or an execution demo.
+    User navigation: docs/CASE_STUDIES.md. *)
 (** A canonical probabilistic-LTS example: one coupling matches both Ret
     and Vis heads; visible pairs generate response-dependent recursive
     obligations. All native probability nodes use the bounded SubEnumQ carrier. *)

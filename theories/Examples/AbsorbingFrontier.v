@@ -1,6 +1,10 @@
 (** Supporting example: unbounded biased-coin retries stop at a mixed
     return/visible frontier. Reading entry: absorbing_program_rewrite.
     The event's continuation is retained whole, not response-wise projected. *)
+(** Learn: compare program rewriting with actual mixed Ret/retry/Vis summaries.
+    Reusable endpoints: absorbing_program_rewrite, absorbing_generic_frontier, absorbing_generic_frontier_reference, offer_probability.
+    Boundary: exact visible continuations are not replaced by equivalent trees.
+    User navigation: docs/CASE_STUDIES.md. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -16,6 +20,7 @@ From PTree.Prob.Backend.Common Require Import FiniteRecordExtensionality.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Measure StructuralMeasure Observation.
 From PTree.Interp.FreeOmega Require Import Rewriting IterationSummary AbsorbingIteration.
+From PTree.Interp Require Import FrontierIteration IterationMachine.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded OperationalVonNeumann.
 Set Implicit Arguments.
 Import EnumQ FreeOmegaRewriting GRing.Theory.
@@ -74,6 +79,53 @@ Proof.
     apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure))].
 Qed.
 
+(** Semantic reading of the ACTUAL eventful loop, independent of the staged
+    rewrite above. Keep the actual bind in the visible continuation;
+    even a return/bind simplification is behavioral, not tree equality. *)
+Definition exit_round_front (v : unit+bool) : MF (stable_head queryE EnumQ (unit+bool)) :=
+  FORet (match v with
+    | inl j => FHRet (inl j)
+    | inr false => FHRet (inr false)
+    | inr true => FHVis Query (fun answer => PTree.bind (Ret answer) (fun b => Ret (inr b)))
+    end).
+Definition actual_round_front (_ : unit) := FOSample vn_transition exit_round_front.
+
+Lemma actual_round_complete i : hits (absorbing_step i) (actual_round_front i).
+Proof.
+  unfold absorbing_step, pstruct_iter_natural_step.
+  change (hits (PTree.bind (round i) (pstruct_iter_natural_step_handler reveal))
+    (free_omega_bind (FOSample vn_transition (fun v => FORet (FHRet v)))
+      (stable_head_ret_bind_front exit_round_front))).
+  apply stable_hitting_bind_ret_only.
+  - eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+    intros v _. constructor. constructor.
+  - apply round_hitting.
+  - intros [[]|[]]; cbn [pstruct_iter_natural_step_handler reveal exit_round_front];
+      [apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure))| |].
+    + apply (stable_hitting_vis (FI := FI) (FO := FO)).
+    + apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
+Qed.
+
+Definition actual_iteration_front :=
+  complete_iteration_frontier absorbing_step actual_round_front tt.
+
+(** Direct generic API consumption: the finite certificate is the only
+    case-specific premise. Missing mass would also be permitted. *)
+Theorem absorbing_generic_frontier : hits absorbing_program actual_iteration_front.
+Proof.
+  eapply (iteration_summary_hitting (FI := FI) (FO := FO)
+    (front := actual_round_front)); try typeclasses eauto.
+  - exact actual_round_complete.
+  - apply sem_eq_refl.
+Qed.
+
+Example actual_visible_continuation :
+  iteration_summary_target absorbing_step
+    (FHVis Query (fun answer => PTree.bind (Ret answer) (fun b => Ret (inr b)))) =
+  SHStable (FHVis Query (fun answer =>
+    iter_active absorbing_step (PTree.bind (Ret answer) (fun b => Ret (inr b))))).
+Proof. reflexivity. Qed.
+
 Theorem staged_frontier_exact : hits staged_program round_frontier.
 Proof. eapply absorbing_iteration_summary; [exact round_hitting|exact reveal_hitting]. Qed.
 
@@ -109,6 +161,12 @@ Proof.
   destruct (ptree_stable_hitting_exists (FI := FI) (FO := FO) (observe absorbing_program)) as [out Hout].
   exists out. split; [exact Hout|exact (absorbing_first_frontier Hout)].
 Qed.
+
+(** The two reading paths meet under whole-continuation lifting, not
+    literal equality of the visibly different continuation syntax. *)
+Theorem absorbing_generic_frontier_reference :
+  @sem_lift MF FI _ _ (stable_head_rel eq W) actual_iteration_front first_frontier.
+Proof. apply absorbing_first_frontier. exact absorbing_generic_frontier. Qed.
 
 Definition offered (h : stable_head queryE EnumQ bool) : bool :=
   match h with FHRet _ => false | FHVis _ _ _ => true end.

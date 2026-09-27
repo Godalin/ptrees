@@ -2,6 +2,10 @@
     Reading entry: random_walk_as_successive_passages; random_walk_closed_form.
     Scope: Generic structural control flow, then SubEnumQ probability analysis; no distribution-to-bisimulation converse.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+(** Learn: passage algebra followed by genuinely infinite-state harmonic analysis.
+    Reusable endpoints: random_walk_as_successive_passages, random_walk_ast, random_walk_output_dist, random_walk_closed_form.
+    Boundary: infinite-support output is not a finite native Prob node.
+    User navigation: docs/CASE_STUDIES.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.

@@ -2,6 +2,10 @@
     Reading entry: source_program_rewrite; rewrite_then_handle.
     Scope: SubEnumQ / observable FreeOmega; equal behavior is not equal fuel or trace.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+(** Learn: sampling fusion under State interpretation, then execution.
+    Reusable endpoints: source_program_rewrite, rewrite_then_handle.
+    Boundary: no same-fuel or same-entropy-trace equivalence.
+    User navigation: docs/CASE_STUDIES.md. *)
 (** Rewrite -> eliminate State -> extract. Two consecutive native draws are
     fused by the generic probability algebra, before interpreting State.
     The continuation is the genuinely unbounded rational State loop. *)

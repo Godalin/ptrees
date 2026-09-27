@@ -2,6 +2,10 @@
     Reading entry: interactive_von_neumann_service_equivalent; von_neumann_request_true_reply_trace_probability.
     Scope: EnumQ / observable FreeOmega; internal structural analysis is explicitly scoped.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+(** Learn: reuse a verified unbounded sampler inside up-to-bind coinduction.
+    Reusable endpoints: service_sampler_equivalent, interactive_von_neumann_service_equivalent, von_neumann_request_true_reply_trace_probability.
+    Boundary: quantitative witnesses remain; the service does not redo VN convergence.
+    User navigation: docs/CASE_STUDIES.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.

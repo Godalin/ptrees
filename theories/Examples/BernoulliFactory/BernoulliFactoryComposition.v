@@ -2,6 +2,10 @@
     Reading entry: peutt_factory_vn_direct.
     Scope: EnumQ / observable FreeOmega; two unbounded analyses are consumed as behavior equations.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+(** Learn: compose existing sampler equivalences under bind and iteration.
+    Reusable endpoints: peutt_factory_correct, peutt_factory_vn_direct, peutt_third_to_two_fifths_compositional.
+    Boundary: shared arithmetic is imported, not reproved by congruence.
+    User navigation: docs/CASE_STUDIES.md. *)
 (** Algebraic composition of independently verified Factory components. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".

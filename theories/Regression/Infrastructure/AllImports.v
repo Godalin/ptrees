@@ -87,6 +87,7 @@ Require PTree.Examples.EffectInteractions.
 Require PTree.Examples.FactoryController.
 Require PTree.Examples.ITreeSampling.
 Require PTree.Examples.InteractiveVonNeumann.InteractiveVonNeumannService.
+Require PTree.Examples.IterationBasics.
 Require PTree.Examples.MathCompPrograms.
 Require PTree.Examples.MixedHeadProtocol.
 Require PTree.Examples.RandomWalk.
