@@ -227,8 +227,8 @@ Qed.
 
 Lemma atomic_normalizes_trans target source label mu nu :
   atomic_normalizes target source ->
-  @tree_trans E MN MF FI MX FO R source label mu ->
-  @tree_trans E MN MF FI MX FO R target (atomic_label label) nu ->
+  @trans E MN MF FI MX FO R source label mu ->
+  @trans E MN MF FI MX FO R target (atomic_label label) nu ->
   @sem_lift MF FI _ _ atomic_head_graph mu nu.
 Proof.
   intros Hnorm [fs [ks [Hs [Haes Hos]]]] [ft [kt [Ht [Haet Hot]]]].
@@ -305,13 +305,13 @@ Proof.
 Qed.
 
 Variable RR : R -> R -> Prop.
-Local Notation TB := (@tree_trans_bisim E MN MF FI FC MX FO R R RR).
+Local Notation TB := (@trans_bisim E MN MF FI FC MX FO R R RR).
 
 Definition atomic_candidate (t u : tree) : Prop :=
   exists s v, atomic_normalizes t s /\ atomic_normalizes u v /\ TB s v.
 
 Lemma atomic_candidate_postfixed t u : atomic_candidate t u ->
-  @tree_trans_bisimF E MN MF FI MX FO R R RR atomic_candidate t u.
+  @trans_bisimF E MN MF FI MX FO R R RR atomic_candidate t u.
 Proof.
   intros [s [v [Hts [Huv Hsv]]]]. split.
   - eapply atomic_match.
@@ -324,7 +324,7 @@ Proof.
         (return_projection (FI := FI)) v) as [nu Hnu].
       eapply (atomic_couple (f := fun r : R => r) (AR := RR)).
       * exact (atomic_normalizes_returns Hts Hmu H1).
-      * exact (tree_trans_bisim_return_observations Hsv Hmu Hnu).
+      * exact (trans_bisim_return_observations Hsv Hmu Hnu).
       * exact (atomic_normalizes_returns Huv Hnu H2).
       * intros a b Hab. exact Hab.
   - split.
@@ -338,19 +338,19 @@ Proof.
           (offered_event_projection (FI := FI)) v) as [nu Hnu].
         eapply (atomic_couple (f := atomic_offer) (AR := eq)).
         -- exact (atomic_normalizes_offers Hts Hmu H1).
-        -- exact (tree_trans_bisim_offered_observations Hsv Hmu Hnu).
+        -- exact (trans_bisim_offered_observations Hsv Hmu Hnu).
         -- exact (atomic_normalizes_offers Huv Hnu H2).
         -- intros a b ->. reflexivity.
     + intro label. eapply atomic_match.
-      * apply tree_trans_exists.
-      * apply tree_trans_exists.
+      * apply trans_exists.
+      * apply trans_exists.
       * intros out1 out2 H1 H2.
-        destruct (tree_trans_exists (FI := FI) (FO := FO) s (atomic_unlabel label)) as [mu Hmu].
-        destruct (tree_trans_exists (FI := FI) (FO := FO) v (atomic_unlabel label)) as [nu Hnu].
-        eapply (atomic_couple (f := atomic_head) (AR := tree_trans_head_rel TB)).
+        destruct (trans_exists (FI := FI) (FO := FO) s (atomic_unlabel label)) as [mu Hmu].
+        destruct (trans_exists (FI := FI) (FO := FO) v (atomic_unlabel label)) as [nu Hnu].
+        eapply (atomic_couple (f := atomic_head) (AR := trans_head_rel TB)).
         -- eapply atomic_normalizes_trans; [exact Hts|exact Hmu|].
            rewrite atomic_label_unlabel. exact H1.
-        -- exact (tree_trans_bisim_transitions Hsv Hmu Hnu).
+        -- exact (trans_bisim_transitions Hsv Hmu Hnu).
         -- eapply atomic_normalizes_trans; [exact Huv|exact Hnu|].
            rewrite atomic_label_unlabel. exact H2.
         -- intros h k Hhk. exists (stable_head_tree h), (stable_head_tree k).
@@ -358,10 +358,10 @@ Proof.
            split; [apply atomic_normalizes_head|exact Hhk].
 Qed.
 
-Theorem tree_trans_bisim_interp_atomic (t u : tree) :
+Theorem trans_bisim_interp_atomic (t u : tree) :
   TB t u -> TB (PTree.interp handler t) (PTree.interp handler u).
 Proof.
-  intro Htu. eapply tree_trans_bisim_coinduction with (sim := atomic_candidate).
+  intro Htu. eapply trans_bisim_coinduction with (sim := atomic_candidate).
   - exact atomic_candidate_postfixed.
   - exists t, u. split; [apply atomic_normalizes_interp|].
     split; [apply atomic_normalizes_interp|exact Htu].

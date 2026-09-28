@@ -2,10 +2,10 @@
 From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment.
 Notation head_step := HeadTransition.head_step.
 Notation head_bisim := HeadTransition.head_bisim.
-Notation tree_trans := TreeTransition.tree_trans.
+Notation trans := TreeTransition.trans.
 Notation tree_return_observation := TreeTransition.tree_return_observation.
 Notation tree_offered_event_observation := TreeTransition.tree_offered_event_observation.
-Notation tree_trans_bisim := TreeTransitionBisim.tree_trans_bisim.
-Notation tree_trans_bisim_coinduction := TreeTransitionBisim.tree_trans_bisim_coinduction.
+Notation trans_bisim := TreeTransitionBisim.trans_bisim.
+Notation trans_bisim_coinduction := TreeTransitionBisim.trans_bisim_coinduction.
 Notation mdp_head := MDPFragment.mdp_head.
 Notation mdp_state := MDPFragment.mdp_state.

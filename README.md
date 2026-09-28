@@ -61,6 +61,14 @@ stable-hitting behaviors of the two trees and recursively relating visible
 continuations.  Its definition has no Tau, Prob, Bind, Iter, or certificate
 constructor; the corresponding equations are derived laws.
 
+The separate comparison-semantics API uses CTree-style labelled transitions:
+`head_step` / `head_bisim` operate on stable heads, while `trans` /
+`trans_bisim` operate on arbitrary PTree sources. `trans` sums successor
+measures over the whole stable frontier, without conditioning or normalization.
+Its induced bisimulation also compares current return and offered-event
+observations; it is not the canonical `peutt` relation. These definitions remain
+in `Semantics/TreeTransition*.v`; the observation APIs retain their `tree_` prefix.
+
 Proofs may use the following strength hierarchy before promoting their result
 to the canonical behavioral endpoint:
 
@@ -364,7 +372,7 @@ preserves peutt even though it does not preserve transition bisimulation.
 For transition bisimulation, [atomic interpretation](theories/Interp/FreeOmega/Atomic.v)
 now provides a stronger sufficient contract: a response-preserving event
 permutation, with complete Dirac hitting at one visible head and then at
-the returned response. `tree_trans_bisim_interp_atomic` allows internal
+the returned response. `trans_bisim_interp_atomic` allows internal
 computation but does not claim preservation for event merging or general
 multi-interaction handlers.
 For the MDP fragment, [MDPInterp](theories/Interp/FreeOmega/MDP.v) derives

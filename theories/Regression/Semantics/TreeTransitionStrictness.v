@@ -32,11 +32,10 @@ Local Notation FO := (@FreeOmegaObservableSemanticOmega
 Local Notation tree := (ptree correlationE SubEnumQ bool).
 Local Notation head := (stable_head correlationE SubEnumQ bool).
 Local Notation W := (@peutt correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
-Local Notation TB := (@tree_trans_bisim correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
+Local Notation TB := (@trans_bisim correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
 Local Notation HR := (stable_head_rel eq W).
 Local Notation hits t out := (@ptree_stable_hitting correlationE SubEnumQ MF FI
   FreeOmegaMixedMeasure FO bool (observe t) out).
-Local Notation trans := (@tree_trans correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
 Local Notation returns := (@tree_return_observation correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
 Local Notation offers := (@tree_offered_event_observation correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
 
@@ -81,7 +80,7 @@ Definition respond x (h : head) : MF head :=
   end.
 
 Lemma correlation_transition anti x :
-  trans (correlation_program anti) (Obs Query x) (response_front anti x).
+  trans (FI := FI) (FO := FO) (correlation_program anti) (Obs Query x) (response_front anti x).
 Proof.
   exists (correlation_front anti), (respond x).
   split; [apply correlation_hitting|]. split; [|apply sem_eq_refl].
@@ -123,7 +122,7 @@ Qed.
 Definition correlation_candidate (t u : tree) := t = u \/ (t = P /\ u = Q).
 
 Lemma correlation_postfixed t u : correlation_candidate t u ->
-  @tree_trans_bisimF correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool bool eq
+  @trans_bisimF correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool bool eq
     correlation_candidate t u.
 Proof.
   intros [->|[-> ->]].
@@ -151,17 +150,17 @@ Proof.
         -- apply sem_lift_refl. intro e. reflexivity.
       * intros [X e x]. destruct e.
         eapply tree_measure_match_of_witnesses.
-        -- intros. eapply tree_trans_unique; eassumption.
-        -- intros. eapply tree_trans_unique; eassumption.
+        -- intros. eapply trans_unique; eassumption.
+        -- intros. eapply trans_unique; eassumption.
         -- exact (correlation_transition false x).
         -- exact (correlation_transition true x).
         -- eapply sem_lift_mono; [|exact (response_marginals_equal x)].
            intros h k ->. left. reflexivity.
 Qed.
 
-Theorem correlated_response_tree_trans_bisim : TB P Q.
+Theorem correlated_response_trans_bisim : TB P Q.
 Proof.
-  eapply tree_trans_bisim_coinduction with (sim := correlation_candidate).
+  eapply trans_bisim_coinduction with (sim := correlation_candidate).
   - exact correlation_postfixed.
   - right. split; reflexivity.
 Qed.
@@ -207,10 +206,10 @@ Qed.
 
 (** Concrete proper inclusion: universal forward implication plus one
     independently proved transition-equivalent, peutt-distinct pair. *)
-Theorem peutt_strictly_contained_in_tree_trans_bisim :
+Theorem peutt_strictly_contained_in_trans_bisim :
   (forall t u, W t u -> TB t u) /\ (TB P Q /\ ~ W P Q).
 Proof.
   split.
-  - intros t u H. exact (peutt_tree_trans_bisim (FI := FI) (FC := FC) (FO := FO) H).
-  - split; [exact correlated_response_tree_trans_bisim|exact correlated_response_not_peutt].
+  - intros t u H. exact (peutt_trans_bisim (FI := FI) (FC := FC) (FO := FO) H).
+  - split; [exact correlated_response_trans_bisim|exact correlated_response_not_peutt].
 Qed.

@@ -535,20 +535,20 @@ Example direct_mdp_guarded_transition
     (t u : ptree E M A) :
   @mdp_state E M M NI NC MX NO A t ->
   @mdp_state E M M NI NC MX NO A u ->
-  @tree_trans_bisim E M M NI NC MX NO A A eq t u ->
-  @tree_trans_bisim F M M NI NC MX NO A A eq (PTree.interp h t) (PTree.interp h u).
+  @trans_bisim E M M NI NC MX NO A A eq t u ->
+  @trans_bisim F M M NI NC MX NO A A eq (PTree.interp h t) (PTree.interp h u).
 Proof.
-  exact (MDP.mdp_guarded_interp_tree_trans (FI := NI) (FO := NO) (MX := MX)
+  exact (MDP.mdp_guarded_interp_trans (FI := NI) (FO := NO) (MX := MX)
     Hh Hg (t := t) (u := u)).
 Qed.
 
 Variable a : forall X, E X -> ptree E M X.
 Variable atom : Atomic.atomic_handler (FI := NI) (MX := MX) (FO := NO) a.
 Example direct_atomic_transition (RR : A -> A -> Prop) (t u : ptree E M A) :
-  @tree_trans_bisim E M M NI NC MX NO A A RR t u ->
-  @tree_trans_bisim E M M NI NC MX NO A A RR (PTree.interp a t) (PTree.interp a u).
+  @trans_bisim E M M NI NC MX NO A A RR t u ->
+  @trans_bisim E M M NI NC MX NO A A RR (PTree.interp a t) (PTree.interp a u).
 Proof.
-  exact (Atomic.tree_trans_bisim_interp_atomic (FI := NI) (FO := NO) (MX := MX)
+  exact (Atomic.trans_bisim_interp_atomic (FI := NI) (FO := NO) (MX := MX)
     (@mathcomp_kernel_bind_ret_r R) (@mathcomp_kernel_lub_limit_proper R)
     atom (RR := RR) (t := t) (u := u)).
 Qed.
@@ -648,11 +648,11 @@ Proof.
     (@mathcomp_kernel_map_reflect R G)).
 Qed.
 
-Example direct_mdp_tree_trans_bisim_iff s t :
+Example direct_mdp_trans_bisim_iff s t :
   mdp_bisim (D := D) s t <->
-  @tree_trans_bisim E M M NI NC MX NO unit unit eq (encode s) (encode t).
+  @trans_bisim E M M NI NC MX NO unit unit eq (encode s) (encode t).
 Proof.
-  apply (mdp_tree_trans_bisim_iff (NI := NI) (NO := NO) (FI := NI) (FO := NO) (MX := MX)
+  apply (mdp_trans_bisim_iff (NI := NI) (NO := NO) (FI := NI) (FO := NO) (MX := MX)
     (FOAE := MathCompNativeOmegaAELaws R)
     (@mathcomp_kernel_map_reflect R G));
     [apply direct_mdp_successors_total|apply direct_mdp_successors_support].

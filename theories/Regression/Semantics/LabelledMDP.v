@@ -64,7 +64,7 @@ Local Notation hb := (@head_bisim (mdpE outcome_label unit) SubEnumQ MF FI FC
   FreeOmegaMixedMeasure FO unit unit eq).
 Local Notation pb := (@peutt (mdpE outcome_label unit) SubEnumQ MF FI FC
   FreeOmegaMixedMeasure FO unit unit eq).
-Local Notation tb := (@tree_trans_bisim (mdpE outcome_label unit) SubEnumQ MF FI FC
+Local Notation tb := (@trans_bisim (mdpE outcome_label unit) SubEnumQ MF FI FC
   FreeOmegaMixedMeasure FO unit unit eq).
 
 Example labelled_encoding_in_fragment s :
@@ -177,18 +177,18 @@ Proof. split; [apply subenumQ_mdp_head_bisim_iff|apply subenumQ_mdp_peutt_iff]. 
     has the same current label but different next-label probabilities. *)
 Example labelled_transition_full_abstraction s t :
   source_bisim s t <-> tb (encode s) (encode t).
-Proof. apply subenumQ_mdp_tree_trans_bisim_iff. Qed.
+Proof. apply subenumQ_mdp_trans_bisim_iff. Qed.
 
-Example distinct_states_encoded_tree_trans_bisimilar :
+Example distinct_states_encoded_trans_bisimilar :
   tb (encode StartHalf) (encode StartClone).
 Proof.
-  apply (proj1 (subenumQ_mdp_tree_trans_bisim_iff (D := labelled_mdp) StartHalf StartClone)).
+  apply (proj1 (subenumQ_mdp_trans_bisim_iff (D := labelled_mdp) StartHalf StartClone)).
   apply distinct_states_same_class_probabilities.
 Qed.
 
-Example different_successor_probabilities_not_tree_trans_bisimilar :
+Example different_successor_probabilities_not_trans_bisimilar :
   ~ tb (encode StartHalf) (encode StartBiased).
 Proof.
   intro H. apply different_successor_probabilities_not_bisimilar.
-  exact (proj2 (subenumQ_mdp_tree_trans_bisim_iff (D := labelled_mdp) StartHalf StartBiased) H).
+  exact (proj2 (subenumQ_mdp_trans_bisim_iff (D := labelled_mdp) StartHalf StartBiased) H).
 Qed.

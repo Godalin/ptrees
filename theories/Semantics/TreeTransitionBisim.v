@@ -20,7 +20,7 @@ Unset Printing Implicit Defensive.
 Definition stable_head_tree {E MN R} (h : stable_head E MN R) : ptree E MN R :=
   match h with FHRet r => Ret r | @FHVis _ _ _ _ e k => Vis e k end.
 
-Definition tree_trans_head_rel {E MN R1 R2}
+Definition trans_head_rel {E MN R1 R2}
     (sim : ptree E MN R1 -> ptree E MN R2 -> Prop)
     (h1 : stable_head E MN R1) (h2 : stable_head E MN R2) : Prop :=
   sim (stable_head_tree h1) (stable_head_tree h2).
@@ -91,17 +91,17 @@ Local Notation tree2 := (ptree E MN R2).
     divergent continuations from an event not offered at all. Current
     observations retain their original mass, just like the transitions.
     For homogeneous behavioral comparison, instantiate RR with equality. *)
-Definition tree_trans_bisimF (sim : tree1 -> tree2 -> Prop) (t : tree1) (u : tree2) : Prop :=
+Definition trans_bisimF (sim : tree1 -> tree2 -> Prop) (t : tree1) (u : tree2) : Prop :=
   tree_measure_match RR (tree_return_observation (MF := MF) t)
     (tree_return_observation (MF := MF) u) /\
   tree_measure_match eq (tree_offered_event_observation (MF := MF) t)
     (tree_offered_event_observation (MF := MF) u) /\
-  forall label, tree_measure_match (tree_trans_head_rel sim)
-    (tree_trans (MF := MF) t label) (tree_trans (MF := MF) u label).
+  forall label, tree_measure_match (trans_head_rel sim)
+    (trans (MF := MF) t label) (trans (MF := MF) u label).
 
-Lemma tree_trans_bisimF_mono sim1 sim2 :
+Lemma trans_bisimF_mono sim1 sim2 :
   (forall t u, sim1 t u -> sim2 t u) ->
-  forall t u, tree_trans_bisimF sim1 t u -> tree_trans_bisimF sim2 t u.
+  forall t u, trans_bisimF sim1 t u -> trans_bisimF sim2 t u.
 Proof.
   intros Hsub t u [Hret [Hevent Htrans]]. split; [exact Hret|].
   split; [exact Hevent|]. intro label.
@@ -109,54 +109,54 @@ Proof.
   intros h k H. exact (Hsub _ _ H).
 Qed.
 
-Program Definition ftree_trans_bisim : mon (tree1 -> tree2 -> Prop) :=
-  {| body := tree_trans_bisimF |}.
+Program Definition ftrans_bisim : mon (tree1 -> tree2 -> Prop) :=
+  {| body := trans_bisimF |}.
 Next Obligation.
-  intros sim1 sim2 Hsub t u H. eapply tree_trans_bisimF_mono; eauto.
+  intros sim1 sim2 Hsub t u H. eapply trans_bisimF_mono; eauto.
 Qed.
 
-Definition tree_trans_bisim : tree1 -> tree2 -> Prop := gfp ftree_trans_bisim.
-Lemma tree_trans_bisim_unfold t u :
-  tree_trans_bisim t u -> tree_trans_bisimF tree_trans_bisim t u.
-Proof. intro H. apply (gfp_pfp ftree_trans_bisim) in H. exact H. Qed.
-Lemma tree_trans_bisim_fold t u :
-  tree_trans_bisimF tree_trans_bisim t u -> tree_trans_bisim t u.
-Proof. intro H. unfold tree_trans_bisim. apply (gfp_fp ftree_trans_bisim). exact H. Qed.
-Theorem tree_trans_bisim_coinduction (sim : tree1 -> tree2 -> Prop)
-    (Hpost : forall t u, sim t u -> tree_trans_bisimF sim t u) :
-  forall t u, sim t u -> tree_trans_bisim t u.
+Definition trans_bisim : tree1 -> tree2 -> Prop := gfp ftrans_bisim.
+Lemma trans_bisim_unfold t u :
+  trans_bisim t u -> trans_bisimF trans_bisim t u.
+Proof. intro H. apply (gfp_pfp ftrans_bisim) in H. exact H. Qed.
+Lemma trans_bisim_fold t u :
+  trans_bisimF trans_bisim t u -> trans_bisim t u.
+Proof. intro H. unfold trans_bisim. apply (gfp_fp ftrans_bisim). exact H. Qed.
+Theorem trans_bisim_coinduction (sim : tree1 -> tree2 -> Prop)
+    (Hpost : forall t u, sim t u -> trans_bisimF sim t u) :
+  forall t u, sim t u -> trans_bisim t u.
 Proof.
-  intros t u Hsim. unfold tree_trans_bisim.
-  eapply (@leq_gfp _ _ ftree_trans_bisim sim); eauto.
+  intros t u Hsim. unfold trans_bisim.
+  eapply (@leq_gfp _ _ ftrans_bisim sim); eauto.
 Qed.
 
 Section Witnesses.
 Context `{FB : @SemanticMeasureBindLaws MF FI}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
-Lemma tree_trans_bisim_return_observations t u mu nu :
-  tree_trans_bisim t u -> tree_return_observation t mu ->
+Lemma trans_bisim_return_observations t u mu nu :
+  trans_bisim t u -> tree_return_observation t mu ->
   tree_return_observation u nu -> sem_lift RR mu nu.
 Proof.
-  intros Hb Hmu Hnu. apply tree_trans_bisim_unfold in Hb.
+  intros Hb Hmu Hnu. apply trans_bisim_unfold in Hb.
   eapply tree_measure_match_witnesses; [|exact (proj1 Hb)|exact Hmu|exact Hnu].
   intros. eapply tree_head_observation_unique; eassumption.
 Qed.
-Lemma tree_trans_bisim_offered_observations t u mu nu :
-  tree_trans_bisim t u -> tree_offered_event_observation t mu ->
+Lemma trans_bisim_offered_observations t u mu nu :
+  trans_bisim t u -> tree_offered_event_observation t mu ->
   tree_offered_event_observation u nu -> sem_lift eq mu nu.
 Proof.
-  intros Hb Hmu Hnu. apply tree_trans_bisim_unfold in Hb.
+  intros Hb Hmu Hnu. apply trans_bisim_unfold in Hb.
   eapply tree_measure_match_witnesses; [|exact (proj1 (proj2 Hb))|exact Hmu|exact Hnu].
   intros. eapply tree_head_observation_unique; eassumption.
 Qed.
-Lemma tree_trans_bisim_transitions
+Lemma trans_bisim_transitions
     `{FCAE : @SemanticMeasureCouplingAELaws MF FI} t u label mu nu :
-  tree_trans_bisim t u -> tree_trans t label mu -> tree_trans u label nu ->
-  sem_lift (tree_trans_head_rel tree_trans_bisim) mu nu.
+  trans_bisim t u -> trans t label mu -> trans u label nu ->
+  sem_lift (trans_head_rel trans_bisim) mu nu.
 Proof.
-  intros Hb Hmu Hnu. apply tree_trans_bisim_unfold in Hb.
+  intros Hb Hmu Hnu. apply trans_bisim_unfold in Hb.
   eapply tree_measure_match_witnesses; [|exact (proj2 (proj2 Hb) label)|exact Hmu|exact Hnu].
-  intros. eapply tree_trans_unique; eassumption.
+  intros. eapply trans_unique; eassumption.
 Qed.
 End Witnesses.
 End Bisimulation.
@@ -167,10 +167,10 @@ Context {E MN MF : Type -> Type}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
 Context {R : Type}.
 
-Theorem tree_trans_bisim_refl :
-  Reflexive (@tree_trans_bisim E MN MF FI FC MX FO R R eq).
+Theorem trans_bisim_refl :
+  Reflexive (@trans_bisim E MN MF FI FC MX FO R R eq).
 Proof.
-  intro t. eapply tree_trans_bisim_coinduction with (sim := eq); [|reflexivity].
+  intro t. eapply trans_bisim_coinduction with (sim := eq); [|reflexivity].
   intros t1 t2 ->. split.
   - split; intros out Hout; exists out; split; try exact Hout;
       apply sem_lift_refl; intro x; reflexivity.

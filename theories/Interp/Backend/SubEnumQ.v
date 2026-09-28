@@ -31,7 +31,7 @@ Local Notation FO := (@FreeOmegaObservableSemanticOmega
   SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Local Notation state := (@mdp_state E SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R).
 Local Notation W := (@peutt E SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq).
-Local Notation TB := (@tree_trans_bisim E SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq).
+Local Notation TB := (@trans_bisim E SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq).
 
 (** No unproved total-map side condition remains on this canonical
     backend. In particular successor measures need not be finite or Dirac. *)
@@ -46,10 +46,10 @@ Qed.
 Theorem subenumQ_mdp_state_interp_atomic t : state t -> state (PTree.interp handler t).
 Proof. apply mdp_state_interp. exact subenumQ_atomic_handler_mdp. Qed.
 
-Theorem subenumQ_mdp_interp_peutt_tree_trans_iff t u : state t -> state u ->
+Theorem subenumQ_mdp_interp_peutt_trans_iff t u : state t -> state u ->
   (W (PTree.interp handler t) (PTree.interp handler u) <->
    TB (PTree.interp handler t) (PTree.interp handler u)).
-Proof. apply mdp_interp_peutt_tree_trans_iff. exact subenumQ_atomic_handler_mdp. Qed.
+Proof. apply mdp_interp_peutt_trans_iff. exact subenumQ_atomic_handler_mdp. Qed.
 
 (** The two compositionality routes meet in the preserved fragment.
     This is preservation, NOT reflection back to the source programs. *)
@@ -58,8 +58,8 @@ Theorem subenumQ_mdp_interp_transition_to_peutt t u :
   W (PTree.interp handler t) (PTree.interp handler u).
 Proof.
   intros Ht Hu Htu.
-  apply (proj2 (subenumQ_mdp_interp_peutt_tree_trans_iff Ht Hu)).
-  exact (tree_trans_bisim_interp_atomic atom Htu).
+  apply (proj2 (subenumQ_mdp_interp_peutt_trans_iff Ht Hu)).
+  exact (trans_bisim_interp_atomic atom Htu).
 Qed.
 
 End SubEnumQMDPInterp.

@@ -68,26 +68,26 @@ Context `{FCAE : @SemanticMeasureCouplingAELaws MF FI}
   `{FOAE : @SemanticOmegaAELaws MF FI FO}
   `{FD : @SemanticMeasureDiracAELaws MF FI}.
 
-Theorem mdp_interp_peutt_tree_trans_iff (Hhandler : mdp_handler) t u :
+Theorem mdp_interp_peutt_trans_iff (Hhandler : mdp_handler) t u :
   sstate t -> sstate u ->
   (@peutt F MN MF FI FC MX FO R R eq (PTree.interp handler t) (PTree.interp handler u) <->
-   @tree_trans_bisim F MN MF FI FC MX FO R R eq
+   @trans_bisim F MN MF FI FC MX FO R R eq
      (PTree.interp handler t) (PTree.interp handler u)).
 Proof.
-  intros Ht Hu. apply mdp_state_peutt_tree_trans_iff;
+  intros Ht Hu. apply mdp_state_peutt_trans_iff;
     apply mdp_state_interp; assumption.
 Qed.
 
-Theorem mdp_guarded_interp_tree_trans (Hhandler : mdp_handler)
+Theorem mdp_guarded_interp_trans (Hhandler : mdp_handler)
     (Hguard : guarded_handler (MF := MF) handler) t u :
   sstate t -> sstate u ->
-  @tree_trans_bisim E MN MF FI FC MX FO R R eq t u ->
-  @tree_trans_bisim F MN MF FI FC MX FO R R eq
+  @trans_bisim E MN MF FI FC MX FO R R eq t u ->
+  @trans_bisim F MN MF FI FC MX FO R R eq
     (PTree.interp handler t) (PTree.interp handler u).
 Proof.
   intros Ht Hu Htu.
-  apply (proj1 (mdp_interp_peutt_tree_trans_iff Hhandler Ht Hu)).
+  apply (proj1 (mdp_interp_peutt_trans_iff Hhandler Ht Hu)).
   apply (Guarded.peutt_interp_guarded (MF := MF) Hguard).
-  exact (mdp_state_tree_trans_bisim_peutt Ht Hu Htu).
+  exact (mdp_state_trans_bisim_peutt Ht Hu Htu).
 Qed.
 End MDPInterp.

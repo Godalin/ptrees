@@ -7,10 +7,10 @@ The validation below records the original concrete-endpoint addition.
 `Semantics/Backend/MDPEmbeddingSubEnumQ.v` now provides:
 
 ```coq
-subenumQ_mdp_tree_trans_bisim_iff :
+subenumQ_mdp_trans_bisim_iff :
   forall (D : MDP SubEnumQ) s t,
     mdp_bisim (D := D) s t <->
-    tree_trans_bisim eq (mdp_encode s) (mdp_encode t).
+    trans_bisim eq (mdp_encode s) (mdp_encode t).
 ```
 
 The abbreviated statement above uses the explicitly selected observable
@@ -25,7 +25,7 @@ The proof is only composition:
 
 1. `subenumQ_mdp_peutt_iff` identifies source bisimulation with encoded `peutt`.
 2. `subenumQ_encode_mdp_state` supplies **both** fragment premises.
-3. `free_mdp_state_peutt_tree_trans_iff` converts the encoded `peutt` iff to
+3. `free_mdp_state_peutt_trans_iff` converts the encoded `peutt` iff to
    the raw-tree transition relation.
 
 There is no new coinduction, coupling construction, class, inference hint or
@@ -45,9 +45,9 @@ From PTree.Semantics.Backend Require Import MDPEmbeddingSubEnumQ.
 
 - `LabelledMDP.labelled_transition_full_abstraction`: the complete iff on a
   labelled MDP.
-- `distinct_states_encoded_tree_trans_bisimilar`: different source states and
+- `distinct_states_encoded_trans_bisimilar`: different source states and
   different successor kernels still match by observation classes.
-- `different_successor_probabilities_not_tree_trans_bisimilar`: identical
+- `different_successor_probabilities_not_trans_bisimilar`: identical
   current labels but next-label probabilities `1/2` versus `3/4` are separated.
 - `MDPEmbedding.counter_transition_full_abstraction`: source states are `nat`,
   with random transitions and two actions. This deliberately constant-label

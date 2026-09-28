@@ -57,26 +57,26 @@ Qed.
 
 (** Coincidence is reused, not reproved or built into the handler contract.
     No source bisimulation premise is needed for this target-fragment iff. *)
-Theorem mdp_interp_peutt_tree_trans_iff (Hhandler : mdp_handler) t u :
+Theorem mdp_interp_peutt_trans_iff (Hhandler : mdp_handler) t u :
   sstate t -> sstate u ->
   (@peutt F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
       (PTree.interp handler t) (PTree.interp handler u) <->
-   @tree_trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
+   @trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
       (PTree.interp handler t) (PTree.interp handler u)).
 Proof.
-  exact (PTree.Interp.MDP.mdp_interp_peutt_tree_trans_iff
+  exact (PTree.Interp.MDP.mdp_interp_peutt_trans_iff
     (FI := FI) (FC := FC) (MX := FreeOmegaMixedMeasure) (FO := FO)
     (FD := free_omega_observable_dirac_ae_laws) Hhandler (t := t) (u := u)).
 Qed.
 
-Theorem mdp_guarded_interp_tree_trans (Hhandler : mdp_handler)
+Theorem mdp_guarded_interp_trans (Hhandler : mdp_handler)
     (Hguard : guarded_handler (NI := NI) (NO := NO) handler) t u :
   sstate t -> sstate u ->
-  @tree_trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO R R eq t u ->
-  @tree_trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
+  @trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO R R eq t u ->
+  @trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
     (PTree.interp handler t) (PTree.interp handler u).
 Proof.
-  exact (PTree.Interp.MDP.mdp_guarded_interp_tree_trans
+  exact (PTree.Interp.MDP.mdp_guarded_interp_trans
     (FI := FI) (FC := FC) (MX := FreeOmegaMixedMeasure) (FO := FO)
     (FD := free_omega_observable_dirac_ae_laws) Hhandler Hguard (t := t) (u := u)).
 Qed.

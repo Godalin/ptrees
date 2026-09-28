@@ -101,17 +101,17 @@ PTree syntax
        -> peutt / ≈ₚ                         whole-continuation coupling
        -> finite interaction observations    quantitative cylinders
        -> raw-tree observations/transitions
-            -> tree_trans_bisim              response-wise coupling
+            -> trans_bisim              response-wise coupling
 
-peutt ⊆ tree_trans_bisim                      generic capability-qualified
-peutt ⊊ tree_trans_bisim                      SubEnumQ/FreeOmega counterexample
-peutt = tree_trans_bisim on mdp_state         fragment coincidence
+peutt ⊆ trans_bisim                      generic capability-qualified
+peutt ⊊ trans_bisim                      SubEnumQ/FreeOmega counterexample
+peutt = trans_bisim on mdp_state         fragment coincidence
 
 labelled traditional MDP --encode--> mdp_state PTrees
 ```
 
 `peutt` remains the canonical program equivalence; the independent
-`tree_trans_bisim` is a comparison semantics, not its replacement.
+`trans_bisim` is a comparison semantics, not its replacement.
 `head_bisim` compares already-selected stable heads. These have different
 domains or observation power and must not be interchanged by definition.
 `PTree.v` exports pure syntax and handler combinators; `Eq.v` exports relation
@@ -209,7 +209,7 @@ Raw-tree observations integrate projections over the entire current hitting
 measure: Ret contributes its return value; Vis contributes its dependent
 offered event. For a label `(e,x)`, `head_action_result` assigns a matching
 head its real successor hitting measure, and an unmatched head zero.
-`tree_trans` binds these contributions against the original frontier.
+`trans` binds these contributions against the original frontier.
 
 Thus transitions are unnormalized, mass-weighted aggregates, not selection
 of a supported head and not conditional normalization. They are zero-totalized:
@@ -217,7 +217,7 @@ even Ret has a zero transition witness. Existence of a transition is not
 enabledness. Separate return and offered-event observations are essential,
 including for events with empty response types.
 
-`tree_trans_bisimF RR sim` matches all three:
+`trans_bisimF RR sim` matches all three:
 returns under `RR`, offered events under equality, and every label's
 successors under
 `fun h k => sim (stable_head_tree h) (stable_head_tree k)`.
@@ -379,7 +379,7 @@ See [handler calculus](docs/HANDLER_CALCULUS.md) for precise signatures,
 public clients and retained limits (notably arbitrary-target fold laws).
 
 The first [interpretation-compositionality stage](docs/INTERP_COMPOSITIONALITY.md)
-now proves that `tree_trans_bisim` is **not** an arbitrary-interpreter
+now proves that `trans_bisim` is **not** an arbitrary-interpreter
 congruence. `Regression/Semantics/InterpExposure.v` reuses the 2x2 source pair
 and replaces one Query by two, ignoring the first answer. The first target
 action exposes a distribution of second-round states for which no single
@@ -401,7 +401,7 @@ Stage 3 supplies `Interp/FreeOmega/Atomic.v`: an explicit `atomic_handler`
 certificate for response-preserving event permutations. Its two semantic
 clauses require complete Dirac hitting at one renamed Vis head, and at
 `Ret x` after response `x`, without a finite-fuel or syntactic restriction.
-`tree_trans_bisim_interp_atomic` is proved by a direct transition-GFP
+`trans_bisim_interp_atomic` is proved by a direct transition-GFP
 postfixed argument, for arbitrary `RR` on a common return carrier.
 The proof transports return/event projections and mass-weighted action
 successors; it does not assume peutt of the source trees. This is a sufficient
@@ -441,17 +441,17 @@ are complete; see [current effects status](docs/EFFECTS_EXECUTION.md).
 | --- | --- |
 | `head_bisim` fold/unfold, coinduction, Equivalence | selected-head per-action coupling, not raw-tree bisimulation |
 | `mdp_head_coinduction`, `mdp_head_successor_closed` | unary invariant; closure for any complete successor witness |
-| `tree_trans_unique` and observation uniqueness | equality coupling, not assumed semantic-equality reflection |
-| `tree_trans_bisim_coinduction` | independent three-observation GFP |
-| `peutt_preserves_tree_trans` | arbitrary transition witnesses; relational bind and AE-restricted whole-head coupling |
-| `peutt_tree_trans_postfixed`, `peutt_tree_trans_bisim` | direct general inclusion; common return carrier with arbitrary `RR` |
-| `peutt_strictly_contained_in_tree_trans_bisim` | concrete SubEnumQ/FreeOmega proper inclusion, not every abstract lifting |
-| `mdp_state_tree_trans_bisim_peutt` | generic reverse; existing behavior-level `SemanticMeasureDiracAELaws` |
-| `mdp_state_peutt_tree_trans_iff` | unchanged MDP fragment on both sides; combines reverse and inclusion |
-| `free_mdp_state_peutt_tree_trans_iff` | FreeOmega supplies exact Dirac AE structurally, no new global instance |
+| `trans_unique` and observation uniqueness | equality coupling, not assumed semantic-equality reflection |
+| `trans_bisim_coinduction` | independent three-observation GFP |
+| `peutt_preserves_trans` | arbitrary transition witnesses; relational bind and AE-restricted whole-head coupling |
+| `peutt_trans_postfixed`, `peutt_trans_bisim` | direct general inclusion; common return carrier with arbitrary `RR` |
+| `peutt_strictly_contained_in_trans_bisim` | concrete SubEnumQ/FreeOmega proper inclusion, not every abstract lifting |
+| `mdp_state_trans_bisim_peutt` | generic reverse; existing behavior-level `SemanticMeasureDiracAELaws` |
+| `mdp_state_peutt_trans_iff` | unchanged MDP fragment on both sides; combines reverse and inclusion |
+| `free_mdp_state_peutt_trans_iff` | FreeOmega supplies exact Dirac AE structurally, no new global instance |
 | `subenumQ_encode_mdp_state` | labelled total MDP encodes into the fragment |
 | `subenumQ_mdp_head_bisim_iff`, `subenumQ_mdp_peutt_iff` | full correspondence on encoded MDPs, using proved native coupling reflection |
-| `subenumQ_mdp_tree_trans_bisim_iff` | final composed iff on encoded labelled SubEnumQ MDPs; both fragment premises discharged by encoding |
+| `subenumQ_mdp_trans_bisim_iff` | final composed iff on encoded labelled SubEnumQ MDPs; both fragment premises discharged by encoding |
 
 The FreeOmega coincidence endpoints use native Core, AELift, CouplingAE,
 CountableAE and Omega capabilities, not a native relational bind law.
@@ -461,8 +461,8 @@ The reverse generic proof needs neither order/existence laws nor classical
 witness choice; the full iff inherits them from general inclusion.
 
 The final composed statement is now packaged as
-`subenumQ_mdp_tree_trans_bisim_iff`:
-`mdp_bisim s t <-> tree_trans_bisim eq (encode s) (encode t)`
+`subenumQ_mdp_trans_bisim_iff`:
+`mdp_bisim s t <-> trans_bisim eq (encode s) (encode t)`
 on `SubEnumQ` with the canonical observable FreeOmega frontier. It simply
 combines the existing encoding iff, fragment membership and coincidence.
 No finite-state, encoding-injectivity or new semantic premise is added.
@@ -521,7 +521,7 @@ global dependencies are:
 | --- | --- |
 | generic hitting Ret/iff API, basic GFP coinduction | closed for the audited endpoints |
 | `pstruct_iter_split_at`, RandomWalk `run_split` and harmonic bound | closed |
-| fixed-witness `peutt_preserves_tree_trans` | inherited `eq_rect_eq` |
+| fixed-witness `peutt_preserves_trans` | inherited `eq_rect_eq` |
 | general inclusion / full coincidence iff | additionally classical witness-choice principles from transition existence |
 | 2×2 positive and negative witnesses | functional extensionality and `eq_rect_eq`; no classical witness choice |
 | two-round interpretation exposure counterexample | functional extensionality and `eq_rect_eq`; no classical witness choice |

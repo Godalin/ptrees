@@ -28,7 +28,7 @@ not the native probability representation.
 Both result carriers and their relation may differ. There is no structural
 equality, guarding, totality, termination, or target-preservation premise on
 the handlers. They may return internally or execute unbounded internal work.
-This is about whole-continuation `peutt`, not `tree_trans_bisim`.
+This is about whole-continuation `peutt`, not `trans_bisim`.
 
 The original fixed-handler `Unrestricted.peutt_interp` now specializes this
 theorem. Its compiled signature and logical assumptions are unchanged.

@@ -31,7 +31,7 @@ Local Notation guard_from_hitting := (guarded_handler_of_hitting
   (NO := SubEnumQ_SemanticOmega) (NCAE := SubEnumQ_SemanticMeasureCouplingAELaws)
   (NCount := SubEnumQ_SemanticMeasureCountableAELaws)).
 Local Notation W := (@peutt correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
-Local Notation TB := (@TreeTransitionBisim.tree_trans_bisim correlationE SubEnumQ MF FI FC
+Local Notation TB := (@TreeTransitionBisim.trans_bisim correlationE SubEnumQ MF FI FC
   FreeOmegaMixedMeasure FO bool bool eq).
 Local Notation hits t out := (@ptree_stable_hitting correlationE SubEnumQ MF FI
   FreeOmegaMixedMeasure FO bool (observe t) out).
@@ -43,7 +43,7 @@ Proof.
   split; [exact two_query_handler_first_hitting|constructor; exact I].
 Qed.
 
-(** The SAME handler preserves peutt but not tree_trans_bisim. The source
+(** The SAME handler preserves peutt but not trans_bisim. The source
     transition counterexample is not incorrectly assumed to be peutt. *)
 Theorem two_query_peutt_preservation t u : W t u ->
   W (PTree.interp two_query_handler t) (PTree.interp two_query_handler u).
@@ -55,7 +55,7 @@ Theorem two_query_compositionality_contrast :
   (TB P Q /\ ~ TB (PTree.interp two_query_handler P) (PTree.interp two_query_handler Q)).
 Proof.
   split; [exact two_query_handler_guarded|].
-  split; [exact two_query_peutt_preservation|exact tree_trans_bisim_interp_counterexample].
+  split; [exact two_query_peutt_preservation|exact trans_bisim_interp_counterexample].
 Qed.
 
 #[local] Instance two_query_interp_Proper :

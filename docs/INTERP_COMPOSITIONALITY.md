@@ -7,7 +7,7 @@ See [current effects/execution status](EFFECTS_EXECUTION.md) for the active boun
 
 | Stage | Deliverable | Status |
 | --- | --- | --- |
-| 1. InterpExposure | Decide whether arbitrary interpretation preserves `tree_trans_bisim` | Accepted baseline `4703035` |
+| 1. InterpExposure | Decide whether arbitrary interpretation preserves `trans_bisim` | Accepted baseline `4703035` |
 | 2. GuardedInterp | Semantic visible guarding, then `interp_vis_fusion` and peutt preservation | Accepted baseline `268a223` |
 | 3. AtomicInterp | A sufficient atomic-handler contract for transition preservation | Accepted baseline `8e09561` |
 | 4. MDPInterp | An explicit handler contract preserving `mdp_state` | Accepted baseline `ec96b90` |
@@ -30,7 +30,7 @@ P = sample b ~ fair; Query x; return b
 Q = sample b ~ fair; Query x; return (if x then not b else b)
 ```
 
-The accepted source theorem is `tree_trans_bisim P Q`. For a false response
+The accepted source theorem is `trans_bisim P Q`. For a false response
 its coupling matches the same hidden bits; for a true response it matches
 opposite bits. The couplings may depend on the response.
 
@@ -81,16 +81,16 @@ the diagonal coupling. No peutt-negative theorem is used for this direction.
 The checked regression endpoints are:
 
 ```coq
-tree_trans_bisim_interp_counterexample :
+trans_bisim_interp_counterexample :
   TB P Q /\ ~ TB (PTree.interp two_query_handler P)
                    (PTree.interp two_query_handler Q).
 
-tree_trans_bisim_not_interp_congruent :
+trans_bisim_not_interp_congruent :
   ~ (forall handler t u, TB t u ->
        TB (PTree.interp handler t) (PTree.interp handler u)).
 ```
 
-Here `TB` is the existing canonical-backend `tree_trans_bisim eq`, not a
+Here `TB` is the existing canonical-backend `trans_bisim eq`, not a
 new relation.
 
 ## What this does and does not establish
@@ -315,15 +315,15 @@ The resulting endpoints are:
 ```coq
 atomic_handler_guarded
 atomic_candidate_postfixed
-tree_trans_bisim_interp_atomic
+trans_bisim_interp_atomic
 ```
 
 The last theorem states, for an explicit certificate `atom` and any relation
 `RR : R -> R -> Prop` on a **common** return carrier:
 
 ```text
-tree_trans_bisim RR t u
-  -> tree_trans_bisim RR (interp h t) (interp h u).
+trans_bisim RR t u
+  -> trans_bisim RR (interp h t) (interp h u).
 ```
 
 It invokes the existing transition GFP coinduction theorem directly, not
@@ -460,13 +460,13 @@ certificate, with no extra totality obligation for clients:
 ```coq
 subenumQ_atomic_handler_mdp
 subenumQ_mdp_state_interp_atomic
-subenumQ_mdp_interp_peutt_tree_trans_iff
+subenumQ_mdp_interp_peutt_trans_iff
 subenumQ_mdp_interp_transition_to_peutt
 ```
 
 ### Rejoining the compositionality results
 
-`mdp_interp_peutt_tree_trans_iff` applies the **existing** fragment
+`mdp_interp_peutt_trans_iff` applies the **existing** fragment
 coincidence theorem to the two preserved target states, with both relations
 on signature `F`. It is an iff
 between the two target relations, not a reflection theorem asserting that
@@ -476,8 +476,8 @@ There are now two reusable routes:
 
 - For a semantic `mdp_handler` that is also guarded, source coincidence
   gives `peutt_E`, stage 2 transports it through `E -> F`, and target
-  coincidence recovers `tree_trans_bisim_F`
-  (`mdp_guarded_interp_tree_trans`).
+  coincidence recovers `trans_bisim_F`
+  (`mdp_guarded_interp_trans`).
 - For an atomic SubEnumQ handler, stage 3 preserves transition bisimulation
   directly, stage 4 preserves the fragment, and target coincidence recovers
   peutt (`subenumQ_mdp_interp_transition_to_peutt`).
@@ -511,8 +511,8 @@ the distinct target family, not merely re-elaborated at the old signature.
 by direct transition-GFP coinduction, matching return observations,
 offered-event observations, and action successors using their Tau laws.
 The infinite-service regression therefore starts from independent
-`tree_trans_bisim_E` evidence; it no longer constructs that evidence via
-`peutt_E` or `peutt_tree_trans_bisim`. The helper remains local to the
+`trans_bisim_E` evidence; it no longer constructs that evidence via
+`peutt_E` or `peutt_trans_bisim`. The helper remains local to the
 regression module, with no new public theorem or directory reorganization.
 
 This stage does not start StateInterp or broaden the atomic profile.

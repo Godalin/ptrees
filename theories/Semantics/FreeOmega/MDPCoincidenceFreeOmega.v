@@ -28,21 +28,21 @@ Local Notation state := (@mdp_state E MN (FreeOmega MN) FI FC FreeOmegaMixedMeas
 
 (** No hidden separation premise remains at this endpoint. Both canonical
     native backends can supply these existing node capabilities. *)
-Theorem free_mdp_state_tree_trans_bisim_peutt (t u : ptree E MN R) :
+Theorem free_mdp_state_trans_bisim_peutt (t u : ptree E MN R) :
   state t -> state u ->
-  @tree_trans_bisim E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u ->
+  @trans_bisim E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u ->
   @peutt E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u.
 Proof.
-  apply (mdp_state_tree_trans_bisim_peutt (FI := FI) (FC := FC) (FO := FO)
+  apply (mdp_state_trans_bisim_peutt (FI := FI) (FC := FC) (FO := FO)
     (FD := free_omega_observable_dirac_ae_laws)).
 Qed.
 
-Theorem free_mdp_state_peutt_tree_trans_iff (t u : ptree E MN R) :
+Theorem free_mdp_state_peutt_trans_iff (t u : ptree E MN R) :
   state t -> state u ->
   (@peutt E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u <->
-   @tree_trans_bisim E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u).
+   @trans_bisim E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u).
 Proof.
-  apply (mdp_state_peutt_tree_trans_iff (FI := FI) (FC := FC) (FO := FO)
+  apply (mdp_state_peutt_trans_iff (FI := FI) (FC := FC) (FO := FO)
     (FD := free_omega_observable_dirac_ae_laws)).
 Qed.
 End FreeOmegaCoincidence.

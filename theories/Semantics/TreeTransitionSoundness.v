@@ -44,9 +44,9 @@ Proof.
 Qed.
 
 Lemma peutt_stable_heads_as_trees h k : HR h k ->
-  tree_trans_head_rel W h k.
+  trans_head_rel W h k.
 Proof.
-  intro H. destruct H; unfold tree_trans_head_rel; cbn.
+  intro H. destruct H; unfold trans_head_rel; cbn.
   - apply peutt_ret. assumption.
   - apply peutt_vis. assumption.
 Qed.
@@ -64,7 +64,7 @@ Qed.
 
 Lemma peutt_head_action_results label h k out1 out2 :
   HR h k -> head_action_result label h out1 -> head_action_result label k out2 ->
-  sem_lift (tree_trans_head_rel W) out1 out2.
+  sem_lift (trans_head_rel W) out1 out2.
 Proof.
   intros Hrel Hleft Hright.
   destruct Hleft as [Hstep1|Hno1 Hz1]; destruct Hright as [Hstep2|Hno2 Hz2].
@@ -118,9 +118,9 @@ Qed.
 (** AE restriction is essential: the contribution functions need only be
     correct almost everywhere, not at null heads. Integrating a coupling
     restricted to BOTH such predicates preserves the original masses. *)
-Theorem peutt_preserves_tree_trans (t u : tree) label out1 out2 :
-  W t u -> tree_trans t label out1 -> tree_trans u label out2 ->
-  sem_lift (tree_trans_head_rel W) out1 out2.
+Theorem peutt_preserves_trans (t u : tree) label out1 out2 :
+  W t u -> trans t label out1 -> trans u label out2 ->
+  sem_lift (trans_head_rel W) out1 out2.
 Proof.
   intros Hrel [front1 [next1 [Hhit1 [Hae1 Ho1]]]]
     [front2 [next2 [Hhit2 [Hae2 Ho2]]]].
@@ -136,8 +136,8 @@ Context `{FOrd : @SemanticMeasureOrderLaws MF FI FO}.
 
 (** The candidate is peutt itself: this is a direct post-fixed-point
     theorem, not a transport through selected-head bisimulation. *)
-Theorem peutt_tree_trans_postfixed (t u : tree) :
-  W t u -> tree_trans_bisimF RR W t u.
+Theorem peutt_trans_postfixed (t u : tree) :
+  W t u -> trans_bisimF RR W t u.
 Proof.
   intro Hrel. split.
   - split; intros out Hout.
@@ -156,15 +156,15 @@ Proof.
         exists other. split; [exact Hother|].
         eapply peutt_preserves_tree_offered_event_observation; eassumption.
     + intro label. split; intros out Hout.
-      * destruct (tree_trans_exists u label) as [other Hother].
-        exists other. split; [exact Hother|]. eapply peutt_preserves_tree_trans; eassumption.
-      * destruct (tree_trans_exists t label) as [other Hother].
-        exists other. split; [exact Hother|]. eapply peutt_preserves_tree_trans; eassumption.
+      * destruct (trans_exists u label) as [other Hother].
+        exists other. split; [exact Hother|]. eapply peutt_preserves_trans; eassumption.
+      * destruct (trans_exists t label) as [other Hother].
+        exists other. split; [exact Hother|]. eapply peutt_preserves_trans; eassumption.
 Qed.
 
-Theorem peutt_tree_trans_bisim (t u : tree) :
-  W t u -> tree_trans_bisim RR t u.
+Theorem peutt_trans_bisim (t u : tree) :
+  W t u -> trans_bisim RR t u.
 Proof.
-  eapply tree_trans_bisim_coinduction. exact peutt_tree_trans_postfixed.
+  eapply trans_bisim_coinduction. exact peutt_trans_postfixed.
 Qed.
 End Soundness.

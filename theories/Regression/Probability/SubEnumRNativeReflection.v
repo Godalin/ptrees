@@ -114,13 +114,13 @@ Proof.
     + intros u _; constructor; exists u; reflexivity.
 Qed.
 
-Example validated_mdp_tree_trans_bisim_iff s t :
+Example validated_mdp_trans_bisim_iff s t :
   mdp_bisim (D := D) s t <->
-  @tree_trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO unit unit eq
+  @trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO unit unit eq
     (mdp_encode s) (mdp_encode t).
 Proof.
   rewrite validated_mdp_peutt_iff.
-  apply (free_mdp_state_peutt_tree_trans_iff (NI := NI) (NO := NO));
+  apply (free_mdp_state_peutt_trans_iff (NI := NI) (NO := NO));
     apply validated_encode_mdp_state.
 Qed.
 End Contracts.

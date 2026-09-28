@@ -22,8 +22,14 @@ Fail Definition no_default_backend {E MN R} (t : ptree E MN R) : Prop := t â‰ˆâ‚
 From PTree Require Semantics.
 Module ComparisonBoundary.
 Import Semantics.
-Check @tree_trans.
-Check @tree_trans_bisim.
+Check @trans.
+Check @trans_bisim.
+Check @tree_return_observation.
+Check @tree_offered_event_observation.
+Check @head_step.
+Check @head_bisim.
+Fail Check PTree.Semantics.TreeTransition.tree_trans.
+Fail Check PTree.Semantics.TreeTransitionBisim.tree_trans_bisim.
 Check @mdp_state.
 Fail Check PTree.Interp.FreeOmega.Atomic.atomic_handler.
 End ComparisonBoundary.
@@ -33,7 +39,7 @@ Check @peutt_bind.
 Check @peutt_bind_assoc.
 Check @peutt_iter_rel.
 Check @peutt_interp_guarded.
-Check @mdp_guarded_interp_tree_trans.
+Check @mdp_guarded_interp_trans.
 Check @ptree_bind_cofinal_all.
 Check @peutt_interp_handler_rel.
 Check @free_omega_peutt_interp_handler_rel.

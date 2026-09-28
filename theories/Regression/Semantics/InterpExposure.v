@@ -35,10 +35,9 @@ Local Notation FO := (@FreeOmegaObservableSemanticOmega
   SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Local Notation tree := (ptree correlationE SubEnumQ bool).
 Local Notation head := (stable_head correlationE SubEnumQ bool).
-Local Notation TB := (@tree_trans_bisim correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
+Local Notation TB := (@trans_bisim correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
 Local Notation hits t out := (@ptree_stable_hitting correlationE SubEnumQ MF FI
   FreeOmegaMixedMeasure FO bool (observe t) out).
-Local Notation trans := (@tree_trans correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
 
 (** Even semantic visible guarding alone will not suffice for transition
     congruence: the handler's complete first behavior is this Dirac Vis. *)
@@ -123,7 +122,7 @@ Definition exposure_action x (h : head) : MF head :=
   end.
 
 Lemma exposure_first_transition anti x :
-  trans (exposure anti) (Obs Query x) (exposure_successors anti).
+  trans (FI := FI) (FO := FO) (exposure anti) (Obs Query x) (exposure_successors anti).
 Proof.
   exists (exposure_front anti), (exposure_action x).
   split; [apply exposure_hitting|]. split; [|apply sem_eq_refl].
@@ -133,17 +132,17 @@ Proof.
 Qed.
 
 Lemma exposure_second_transition anti b x :
-  trans (stable_head_tree (exposure_second_head anti b)) (Obs Query x)
+  trans (FI := FI) (FO := FO) (stable_head_tree (exposure_second_head anti b)) (Obs Query x)
     (FORet (FHRet (answer anti b x))).
 Proof.
-  apply (tree_trans_vis (FI := FI) (FO := FO)).
+  apply (trans_vis (FI := FI) (FO := FO)).
   exact (exposure_last_hitting anti b x).
 Qed.
 
 Lemma exposure_return_injective b c : TB (Ret b) (Ret c) -> b = c.
 Proof.
   intro Hrel.
-  pose proof (tree_trans_bisim_return_observations Hrel
+  pose proof (trans_bisim_return_observations Hrel
     (tree_return_ret (FI := FI) (FO := FO) b)
     (tree_return_ret (FI := FI) (FO := FO) c)) as Hlift.
   assert (Hb : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
@@ -162,7 +161,7 @@ Proof.
   intro Hrel.
   assert (Hanswer : forall x, answer false b x = answer true c x).
   { intro x.
-    pose proof (tree_trans_bisim_transitions Hrel
+    pose proof (trans_bisim_transitions Hrel
       (exposure_second_transition false b x)
       (exposure_second_transition true c x)) as Hlift.
     assert (Hb : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
@@ -177,10 +176,10 @@ Proof.
   destruct b, c; discriminate.
 Qed.
 
-Theorem two_query_interp_not_tree_trans_bisim : ~ TB (exposure false) (exposure true).
+Theorem two_query_interp_not_trans_bisim : ~ TB (exposure false) (exposure true).
 Proof.
   intro Hrel.
-  pose proof (tree_trans_bisim_transitions Hrel
+  pose proof (trans_bisim_transitions Hrel
     (exposure_first_transition false false)
     (exposure_first_transition true false)) as Hlift.
   assert (Hleft : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
@@ -196,18 +195,18 @@ Qed.
 
 (** Direct failure of arbitrary interpretation congruence. No use of
     [~ peutt P Q] to infer a negative transition-bisimulation statement. *)
-Theorem tree_trans_bisim_interp_counterexample :
+Theorem trans_bisim_interp_counterexample :
   TB P Q /\
   ~ TB (PTree.interp two_query_handler P) (PTree.interp two_query_handler Q).
 Proof.
-  split; [exact correlated_response_tree_trans_bisim|].
-  exact two_query_interp_not_tree_trans_bisim.
+  split; [exact correlated_response_trans_bisim|].
+  exact two_query_interp_not_trans_bisim.
 Qed.
 
-Corollary tree_trans_bisim_not_interp_congruent :
+Corollary trans_bisim_not_interp_congruent :
   ~ (forall (handler : forall X, correlationE X -> ptree correlationE SubEnumQ X)
       (t u : tree), TB t u -> TB (PTree.interp handler t) (PTree.interp handler u)).
 Proof.
-  intro Hpreserve. apply two_query_interp_not_tree_trans_bisim.
-  exact (Hpreserve two_query_handler P Q correlated_response_tree_trans_bisim).
+  intro Hpreserve. apply two_query_interp_not_trans_bisim.
+  exact (Hpreserve two_query_handler P Q correlated_response_trans_bisim).
 Qed.

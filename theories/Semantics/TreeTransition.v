@@ -1,4 +1,8 @@
 (** Role: Comparison semantics. Depends on canonical theory; not the canonical peutt relation or interpreter theory. *)
+(** CTree-style labelled transition semantics on arbitrary PTree sources.
+    In the probabilistic setting, [trans] integrates the whole stable
+    frontier into an unnormalized action subkernel; it does not select one
+    stable head. Return and offered-event observations remain separate. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -66,7 +70,7 @@ Inductive head_action_result (label : obs_label E) (h : head) (out : MF head) : 
     The target consists of stable heads, as in head_step, but the SOURCE
     here is an arbitrary raw PTree. There is no mdp_state or totality premise,
     and no bisimulation is defined in this module. *)
-Definition tree_trans (t : ptree E MN R) (label : obs_label E) (out : MF head) : Prop :=
+Definition trans (t : ptree E MN R) (label : obs_label E) (out : MF head) : Prop :=
   exists front next,
     hits t front /\
     sem_ae front (fun h => head_action_result label h (next h)) /\
@@ -79,14 +83,14 @@ Proof. intro H. destruct H. constructor. Qed.
 Section Core.
 Context `{FC : @SemanticMeasureCoreLaws MF FI}.
 
-Lemma tree_trans_from_hitting t label front next :
+Lemma trans_from_hitting t label front next :
   hits t front ->
   sem_ae front (fun h => head_action_result label h (next h)) ->
-  tree_trans t label (sem_bind front next).
+  trans t label (sem_bind front next).
 Proof. intros Hhit Hae. exists front, next. split; [exact Hhit|]. split; [exact Hae|apply sem_eq_refl]. Qed.
 
-Lemma tree_trans_output_proper t label out out' :
-  sem_eq out out' -> tree_trans t label out -> tree_trans t label out'.
+Lemma trans_output_proper t label out out' :
+  sem_eq out out' -> trans t label out -> trans t label out'.
 Proof.
   intros Heq [front [next [Hhit [Hae Hout]]]]. exists front, next.
   split; [exact Hhit|]. split; [exact Hae|]. eapply sem_eq_trans; eassumption.
@@ -136,8 +140,8 @@ Context `{FCAE : @SemanticMeasureCouplingAELaws MF FI}.
 (** The interface need not reflect equality couplings to sem_eq. This is
     the same representation-independent uniqueness boundary as finite
     interaction observations, with no extra reflection axiom. *)
-Theorem tree_trans_unique t label out1 out2 :
-  tree_trans t label out1 -> tree_trans t label out2 -> sem_lift eq out1 out2.
+Theorem trans_unique t label out1 out2 :
+  trans t label out1 -> trans t label out2 -> sem_lift eq out1 out2.
 Proof.
   intros [front1 [next1 [H1 [Hae1 Ho1]]]] [front2 [next2 [H2 [Hae2 Ho2]]]].
   assert (Hfront : sem_lift eq front1 front2).
@@ -179,12 +183,12 @@ Qed.
 
 (** Classical choice selects complete-hitting witnesses, not one supported
     state. There is still only one transition measure up to coupling. *)
-Theorem tree_trans_exists t label : exists out, tree_trans t label out.
+Theorem trans_exists t label : exists out, trans t label out.
 Proof.
   destruct (choice _ (head_action_result_exists label)) as [next Hnext].
   destruct (stable_hitting_exists (@ptree_primitive_kernel E MN MF FI MX R) (observe t))
     as [front Hhit]. exists (sem_bind front next).
-  apply tree_trans_from_hitting; [exact Hhit|].
+  apply trans_from_hitting; [exact Hhit|].
   eapply sem_ae_mono; [|apply sem_ae_true]. intros h _. apply Hnext.
 Qed.
 End Existence.
@@ -224,7 +228,7 @@ Proof.
   - exact (proj2 (ptree_stable_hitting_tau_iff t front) Hhit).
 Qed.
 
-Lemma tree_trans_tau_iff t label out : tree_trans (Tau t) label out <-> tree_trans t label out.
+Lemma trans_tau_iff t label out : trans (Tau t) label out <-> trans t label out.
 Proof.
   split; intros [front [next [Hhit Hrest]]]; exists front, next; split; try exact Hrest.
   - exact (proj1 (ptree_stable_hitting_tau_iff t front) Hhit).
@@ -233,7 +237,7 @@ Qed.
 
 Context `{FAE : @SemanticMeasureAEKleisliLaws MF FI}.
 
-Lemma tree_trans_ret r label : tree_trans (Ret r) label sem_zero.
+Lemma trans_ret r label : trans (Ret r) label sem_zero.
 Proof.
   exists (sem_ret (FHRet r)), (fun _ : head => (sem_zero : MF head)).
   split; [apply ptree_stable_hitting_ret|]. split.
@@ -243,8 +247,8 @@ Qed.
 
 (** The raw API includes zero outputs for absent labels, whereas head_step
     itself has no step from Ret or a nonmatching event. *)
-Lemma tree_trans_vis {X} (e : E X) k x out :
-  hits (k x) out -> tree_trans (Vis e k) (Obs e x) out.
+Lemma trans_vis {X} (e : E X) k x out :
+  hits (k x) out -> trans (Vis e k) (Obs e x) out.
 Proof.
   intro Hhit. exists (sem_ret (FHVis e k)), (fun _ : head => out).
   split; [apply ptree_stable_hitting_vis|]. split.
@@ -252,8 +256,8 @@ Proof.
   apply sem_ae_ret. apply HARMatch. constructor. exact Hhit.
 Qed.
 
-Lemma tree_trans_vis_miss {X} (e : E X) k label :
-  ~ head_enabled (FHVis e k) label -> tree_trans (Vis e k) label sem_zero.
+Lemma trans_vis_miss {X} (e : E X) k label :
+  ~ head_enabled (FHVis e k) label -> trans (Vis e k) label sem_zero.
 Proof.
   intro Hno. exists (sem_ret (FHVis e k)), (fun _ : head => (sem_zero : MF head)).
   split; [apply ptree_stable_hitting_vis|]. split.

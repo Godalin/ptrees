@@ -33,7 +33,7 @@ No no-event, termination, almost-sure termination, visible guarding,
 finite-state, supplied hitting witness, or generator-closure premise is
 required of the steps. A step can interact forever without returning to
 the loop, retry silently forever, lose probability mass, or return.
-The theorem is about whole-continuation peutt, not tree_trans_bisim.
+The theorem is about whole-continuation peutt, not trans_bisim.
 
 For canonical completion clients use:
 

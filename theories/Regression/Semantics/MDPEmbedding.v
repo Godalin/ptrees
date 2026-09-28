@@ -72,9 +72,9 @@ Proof. exact (subenumQ_mdp_peutt_iff (D := counter_mdp) n m). Qed.
 (** The new correspondence is not limited to finite state carriers. *)
 Example counter_transition_full_abstraction n m :
   mdp_bisim (D := counter_mdp) n m <->
-  @tree_trans_bisim (mdpE unit bool) SubEnumQ MF FI FC
+  @trans_bisim (mdpE unit bool) SubEnumQ MF FI FC
     FreeOmegaMixedMeasure FO unit unit eq (encode n) (encode m).
-Proof. exact (subenumQ_mdp_tree_trans_bisim_iff (D := counter_mdp) n m). Qed.
+Proof. exact (subenumQ_mdp_trans_bisim_iff (D := counter_mdp) n m). Qed.
 
 (** Intentional observability audit: source states are unlabelled, all
     actions are always enabled, and execution never terminates. Thus this

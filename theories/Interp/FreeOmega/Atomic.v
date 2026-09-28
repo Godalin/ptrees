@@ -221,8 +221,8 @@ Qed.
 
 Lemma atomic_normalizes_trans target source label mu nu :
   atomic_normalizes target source ->
-  @tree_trans E MN MF FI FreeOmegaMixedMeasure FO R source label mu ->
-  @tree_trans E MN MF FI FreeOmegaMixedMeasure FO R target (atomic_label label) nu ->
+  @trans E MN MF FI FreeOmegaMixedMeasure FO R source label mu ->
+  @trans E MN MF FI FreeOmegaMixedMeasure FO R target (atomic_label label) nu ->
   @sem_lift MF FI _ _ atomic_head_graph mu nu.
 Proof.
   exact (PTree.Interp.Atomic.atomic_normalizes_trans
@@ -280,23 +280,23 @@ Proof.
 Qed.
 
 Variable RR : R -> R -> Prop.
-Local Notation TB := (@tree_trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO R R RR).
+Local Notation TB := (@trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO R R RR).
 
 Definition atomic_candidate (t u : tree) : Prop :=
   exists s v, atomic_normalizes t s /\ atomic_normalizes u v /\ TB s v.
 
 Lemma atomic_candidate_postfixed t u : atomic_candidate t u ->
-  @tree_trans_bisimF E MN MF FI FreeOmegaMixedMeasure FO R R RR atomic_candidate t u.
+  @trans_bisimF E MN MF FI FreeOmegaMixedMeasure FO R R RR atomic_candidate t u.
 Proof.
   exact (PTree.Interp.Atomic.atomic_candidate_postfixed
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
     atomic_bind_ret atomic_limit_proper (atom := atomic_generic atom) (RR := RR) (t := t) (u := u)).
 Qed.
 
-Theorem tree_trans_bisim_interp_atomic (t u : tree) :
+Theorem trans_bisim_interp_atomic (t u : tree) :
   TB t u -> TB (PTree.interp handler t) (PTree.interp handler u).
 Proof.
-  exact (PTree.Interp.Atomic.tree_trans_bisim_interp_atomic
+  exact (PTree.Interp.Atomic.trans_bisim_interp_atomic
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
     atomic_bind_ret atomic_limit_proper (atomic_generic atom) (RR := RR) (t := t) (u := u)).
 Qed.

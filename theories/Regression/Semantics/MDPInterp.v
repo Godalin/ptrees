@@ -31,7 +31,7 @@ Local Notation FO := (@FreeOmegaObservableSemanticOmega
   SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Local Notation state := (@mdp_state decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit).
 Local Notation W := (@peutt decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq).
-Local Notation TB := (@tree_trans_bisim decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq).
+Local Notation TB := (@trans_bisim decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq).
 
 (** Rename observable replies, retain the request event, and insert the
     same internal Prob/Tau response plumbing tested in stage 3. *)
@@ -96,7 +96,7 @@ Example interpreted_fragment_coincidence b :
    TB (PTree.interp mdp_test_handler (Tau (service b)))
       (PTree.interp mdp_test_handler (service b))).
 Proof.
-  apply (subenumQ_mdp_interp_peutt_tree_trans_iff mdp_test_atomic).
+  apply (subenumQ_mdp_interp_peutt_trans_iff mdp_test_atomic).
   - apply (proj2 (mdp_state_tau_iff (FI := FI) (FO := FO) _)).
     apply infinite_service_mdp.
   - apply infinite_service_mdp.
@@ -121,7 +121,7 @@ Example guarded_route_preserves_transition b :
   TB (PTree.interp mdp_test_handler (Tau (service b)))
      (PTree.interp mdp_test_handler (service b)).
 Proof.
-  apply (mdp_guarded_interp_tree_trans
+  apply (mdp_guarded_interp_trans
     (subenumQ_atomic_handler_mdp mdp_test_atomic)
     (atomic_handler_guarded mdp_test_atomic)).
   - apply (proj2 (mdp_state_tau_iff (FI := FI) (FO := FO) _)).
@@ -243,27 +243,27 @@ Theorem heterogeneous_mdp_preservation t : SS t -> TS (PTree.interp hetero_handl
 Proof. apply mdp_state_interp. exact hetero_handler_mdp. Qed.
 
 Theorem heterogeneous_guarded_transition_preservation t u : SS t -> SS u ->
-  @tree_trans_bisim sourceE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq t u ->
-  @tree_trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
+  @trans_bisim sourceE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq t u ->
+  @trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
     (PTree.interp hetero_handler t) (PTree.interp hetero_handler u).
 Proof.
   intros Ht Hu Htu.
-  exact (mdp_guarded_interp_tree_trans hetero_handler_mdp hetero_handler_guarded Ht Hu Htu).
+  exact (mdp_guarded_interp_trans hetero_handler_mdp hetero_handler_guarded Ht Hu Htu).
 Qed.
 
 Theorem heterogeneous_target_coincidence t u : SS t -> SS u ->
   (@peutt targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
       (PTree.interp hetero_handler t) (PTree.interp hetero_handler u) <->
-   @tree_trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
+   @trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
       (PTree.interp hetero_handler t) (PTree.interp hetero_handler u)).
-Proof. apply mdp_interp_peutt_tree_trans_iff. exact hetero_handler_mdp. Qed.
+Proof. apply mdp_interp_peutt_trans_iff. exact hetero_handler_mdp. Qed.
 
 (** Independent source transition evidence. This local regression helper
     deliberately uses neither peutt nor its transition-soundness theorem. *)
 Lemma hetero_delay_transition_bisim (t : ptree sourceE SubEnumQ R) :
-  @tree_trans_bisim sourceE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq (Tau t) t.
+  @trans_bisim sourceE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq (Tau t) t.
 Proof.
-  eapply tree_trans_bisim_coinduction with
+  eapply trans_bisim_coinduction with
     (sim := fun a b => a = b \/ a = Tau b); [|right; reflexivity].
   intros a b [Heq | Heq]; subst a.
   - split.
@@ -287,9 +287,9 @@ Proof.
         -- exact (proj2 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
         -- apply sem_lift_refl. intro e. reflexivity.
       * intro label. split; intros out Hout; exists out; split.
-        -- exact (proj1 (tree_trans_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
+        -- exact (proj1 (trans_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
         -- apply sem_lift_refl. intro h. left; reflexivity.
-        -- exact (proj2 (tree_trans_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
+        -- exact (proj2 (trans_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
         -- apply sem_lift_refl. intro h. left; reflexivity.
 Qed.
 
@@ -336,7 +336,7 @@ Example heterogeneous_infinite_service_state :
 Proof. exact (heterogeneous_mdp_preservation hetero_service_mdp). Qed.
 
 Example heterogeneous_infinite_service_transition :
-  @tree_trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq
+  @trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq
     (PTree.interp hetero_handler (Tau hetero_service))
     (PTree.interp hetero_handler hetero_service).
 Proof.

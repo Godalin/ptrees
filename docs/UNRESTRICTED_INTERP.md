@@ -28,7 +28,7 @@ peutt_E RR t u
 There is no visible-guarding, totality, termination, bounded-internal-work,
 or target-preservation premise. Direct returns, unbounded internal work,
 probabilistic mixtures, and divergence are allowed. The statement is about
-whole-continuation `peutt`, **not** response-wise `tree_trans_bisim`.
+whole-continuation `peutt`, **not** response-wise `trans_bisim`.
 The earlier two-query counterexample for the latter is unaffected.
 
 The theorem consumes existing probability capabilities:

@@ -7,7 +7,7 @@ does **not** mean that every backend automatically satisfies every premise.
 | --- | --- | --- |
 | `Semantics/MDPReflection` | Native MDP bisimulation iff encoded head bisimulation / `peutt` | Mapped frontier lifting reflects to native lifting |
 | `Semantics/MDPReflection` | Literal encoded transition iff, for any output witness | Output extensionality of `sem_lub` |
-| `Semantics/MDPReflection` | Native MDP bisimulation iff encoded `tree_trans_bisim` | Also totality and encoded-head support of successor frontiers, plus fragment laws |
+| `Semantics/MDPReflection` | Native MDP bisimulation iff encoded `trans_bisim` | Also totality and encoded-head support of successor frontiers, plus fragment laws |
 | `Interp/MDP` | MDP-state preservation, target coincidence, guarded transition preservation | Existing generic hitting/interp laws; selected-head handler contract |
 | `Interp/Atomic` | Atomic transition-bisimulation preservation | Bind right unit; output extensionality of `sem_lub` |
 | `Interp/MDPAtomic` | Atomic MDP invariant and state preservation | Output extensionality; totality under the atomic head map |
@@ -208,7 +208,7 @@ to obtain an automatic backend instance.
 
 Validation regressions consume the same generic correspondence proofs with
 this explicit certificate: `mdp_bisim <-> peutt`, `mdp_bisim <-> head_bisim`,
-and (using proved fragment membership) `mdp_bisim <-> tree_trans_bisim`.
+and (using proved fragment membership) `mdp_bisim <-> trans_bisim`.
 There is no copied MDP coinduction. A negative inference check confirms that
 importing the validation theorem does not install an automatic instance.
 Further checks retain duplicate/zero-weight partial native marginals under
@@ -230,7 +230,7 @@ SubEnumR follow-up local validation:
   classical/extensional mathematical axioms. The transition-correspondence
   client also inherits `relational_choice` and `dependent_unique_choice` from
   generic coincidence; its exact endpoint receives the same two exceptions as
-  `MDPReflection.mdp_tree_trans_bisim_iff`. The global whitelist is unchanged.
+  `MDPReflection.mdp_trans_bisim_iff`. The global whitelist is unchanged.
 - Architecture/source-safety audits and all 125 tool tests passed. The source
   inventory is 425 modules, with the unchanged two-file Gate M boundary.
 - Joint `coqchk -norec` passed for all three new safe modules. Dependencies
@@ -273,7 +273,7 @@ direct_encode_mdp_state
 direct_mdp_step_iff
 direct_mdp_head_bisim_iff
 direct_mdp_peutt_iff
-direct_mdp_tree_trans_bisim_iff
+direct_mdp_trans_bisim_iff
 ```
 
 These apply to an arbitrary labelled `MDP (MathCompKernelMeasure R)`, not a

@@ -33,7 +33,6 @@ Local Notation FO := (@FreeOmegaObservableSemanticOmega
   SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Local Notation head := (stable_head rawE SubEnumQ bool).
 Local Notation tree := (ptree rawE SubEnumQ bool).
-Local Notation trans := (@tree_trans rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
 Local Notation returns := (@tree_return_observation rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
 Local Notation offers := (@tree_offered_event_observation rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool).
 Local Notation hits t out := (@ptree_stable_hitting rawE SubEnumQ MF FI
@@ -44,8 +43,8 @@ Proof. apply (tree_return_ret (FI := FI) (FO := FO)). Qed.
 Example return_offers_nothing : offers (Ret true) FOZero.
 Proof. apply (tree_offered_ret (FI := FI) (FO := FO)). Qed.
 (** Zero in a totalized action subkernel does not assert an enabled action. *)
-Example return_action_zero label : trans (Ret true) label FOZero.
-Proof. apply (tree_trans_ret (FI := FI) (FO := FO)). Qed.
+Example return_action_zero label : trans (FI := FI) (FO := FO) (Ret true : tree) label FOZero.
+Proof. apply (trans_ret (FI := FI) (FO := FO)). Qed.
 
 Definition deadA : tree := Vis EmptyA (fun x : Empty_set => match x with end).
 Definition deadB : tree := Vis EmptyB (fun x : Empty_set => match x with end).
@@ -75,14 +74,14 @@ Proof.
   intros a b [c [-> ->]]. reflexivity.
 Qed.
 
-Example empty_a_action_zero label : trans deadA label FOZero.
+Example empty_a_action_zero label : trans (FI := FI) (FO := FO) deadA label FOZero.
 Proof.
-  apply (tree_trans_vis_miss (FI := FI) (FO := FO)).
+  apply (trans_vis_miss (FI := FI) (FO := FO)).
   intro H. dependent destruction H. destruct x.
 Qed.
-Example empty_b_action_zero label : trans deadB label FOZero.
+Example empty_b_action_zero label : trans (FI := FI) (FO := FO) deadB label FOZero.
 Proof.
-  apply (tree_trans_vis_miss (FI := FI) (FO := FO)).
+  apply (trans_vis_miss (FI := FI) (FO := FO)).
   intro H. dependent destruction H. destruct x.
 Qed.
 
@@ -126,7 +125,7 @@ Definition follow_ask (h : head) : MF head :=
        end) k
   end.
 
-Theorem mixture_action_weighted_sum : trans mixture (Obs Ask tt) mixed_out.
+Theorem mixture_action_weighted_sum : trans (FI := FI) (FO := FO) mixture (Obs Ask tt) mixed_out.
 Proof.
   assert (Hae : @sem_ae MF FI head mixed_front
     (fun h => @head_action_result rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool
@@ -142,12 +141,12 @@ Proof.
   assert (Heq : free_omega_bind mixed_front follow_ask = mixed_out).
   { unfold mixed_front, mixed_out. cbn. f_equal.
     extensionality b. destruct b; reflexivity. }
-  rewrite <- Heq. exact (tree_trans_from_hitting mixture_hitting Hae).
+  rewrite <- Heq. exact (trans_from_hitting mixture_hitting Hae).
 Qed.
 
-Example delayed_mixture_same_transition : trans (Tau mixture) (Obs Ask tt) mixed_out.
+Example delayed_mixture_same_transition : trans (FI := FI) (FO := FO) (Tau mixture) (Obs Ask tt) mixed_out.
 Proof.
-  apply (proj2 (tree_trans_tau_iff (FI := FI) (FO := FO) _ _ _)).
+  apply (proj2 (trans_tau_iff (FI := FI) (FO := FO) _ _ _)).
   exact mixture_action_weighted_sum.
 Qed.
 

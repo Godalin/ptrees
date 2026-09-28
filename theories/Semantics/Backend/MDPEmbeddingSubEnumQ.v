@@ -150,13 +150,13 @@ Qed.
     gives the first iff; fragment membership discharges BOTH premises of
     the second. No finite-state or injective-encoding premise is required.
     This does not identify the two tree relations outside the MDP fragment. *)
-Theorem subenumQ_mdp_tree_trans_bisim_iff s t :
+Theorem subenumQ_mdp_trans_bisim_iff s t :
   mdp_bisim (D := D) s t <->
-  @tree_trans_bisim (mdpE (mdp_observations D) (mdp_actions D))
+  @trans_bisim (mdpE (mdp_observations D) (mdp_actions D))
     SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq (encode s) (encode t).
 Proof.
   rewrite subenumQ_mdp_peutt_iff.
-  apply (free_mdp_state_peutt_tree_trans_iff (NI := SubEnumQ_SemanticMeasure)
+  apply (free_mdp_state_peutt_trans_iff (NI := SubEnumQ_SemanticMeasure)
     (NO := SubEnumQ_SemanticOmega)); apply subenumQ_encode_mdp_state.
 Qed.
 

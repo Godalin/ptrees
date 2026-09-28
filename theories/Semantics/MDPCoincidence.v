@@ -30,7 +30,7 @@ Local Notation tree := (ptree E MN R).
 Local Notation head := (stable_head E MN R).
 Local Notation K := (@ptree_primitive_kernel E MN MF FI MX R).
 Local Notation hits t out := (stable_hitting K (observe t) out).
-Local Notation TB := (@tree_trans_bisim E MN MF FI FC MX FO R R eq).
+Local Notation TB := (@trans_bisim E MN MF FI FC MX FO R R eq).
 Local Notation good := (@mdp_head E MN MF FI FC MX FO R).
 Local Notation state := (@mdp_state E MN MF FI FC MX FO R).
 
@@ -90,11 +90,11 @@ Qed.
 
 Lemma mdp_dirac_transition t front h label out :
   hits t front -> sem_eq front (sem_ret h) -> head_action_result label h out ->
-  tree_trans t label (sem_bind front (fun _ : head => out)) /\
+  trans t label (sem_bind front (fun _ : head => out)) /\
   sem_lift eq (sem_bind front (fun _ : head => out)) out.
 Proof.
   intros Hhit Heq Haction. split.
-  - apply tree_trans_from_hitting; [exact Hhit|].
+  - apply trans_from_hitting; [exact Hhit|].
     assert (Hlift : sem_lift eq (sem_ret h) front).
     { eapply sem_lift_proper_r; [apply sem_eq_sym; exact Heq|].
       apply sem_lift_refl. intro x. reflexivity. }
@@ -113,7 +113,7 @@ Proof.
   destruct (mdp_dirac_observations return_projection Hf Hh) as [Hobs1 Hlift1].
   destruct (mdp_dirac_observations return_projection Hg Hk) as [Hobs2 Hlift2].
   eapply mdp_lift_transport; [exact Hlift1|exact Hlift2|].
-  exact (tree_trans_bisim_return_observations Htb Hobs1 Hobs2).
+  exact (trans_bisim_return_observations Htb Hobs1 Hobs2).
 Qed.
 
 Lemma mdp_dirac_event_match t u f g h k :
@@ -124,19 +124,19 @@ Proof.
   destruct (mdp_dirac_observations offered_event_projection Hf Hh) as [Hobs1 Hlift1].
   destruct (mdp_dirac_observations offered_event_projection Hg Hk) as [Hobs2 Hlift2].
   eapply mdp_lift_transport; [exact Hlift1|exact Hlift2|].
-  exact (tree_trans_bisim_offered_observations Htb Hobs1 Hobs2).
+  exact (trans_bisim_offered_observations Htb Hobs1 Hobs2).
 Qed.
 
 Lemma mdp_dirac_successor_match t u f g h k label out1 out2 :
   TB t u -> hits t f -> sem_eq f (sem_ret h) -> hits u g -> sem_eq g (sem_ret k) ->
   head_step h label out1 -> head_step k label out2 ->
-  sem_lift (tree_trans_head_rel TB) out1 out2.
+  sem_lift (trans_head_rel TB) out1 out2.
 Proof.
   intros Htb Hf Hh Hg Hk Hstep1 Hstep2.
   destruct (mdp_dirac_transition Hf Hh (HARMatch Hstep1)) as [Ht1 Hl1].
   destruct (mdp_dirac_transition Hg Hk (HARMatch Hstep2)) as [Ht2 Hl2].
   eapply mdp_lift_transport; [exact Hl1|exact Hl2|].
-  exact (tree_trans_bisim_transitions Htb Ht1 Ht2).
+  exact (trans_bisim_transitions Htb Ht1 Ht2).
 Qed.
 
 Lemma stable_head_tree_hitting h : hits (stable_head_tree h) (sem_ret h).
@@ -157,7 +157,7 @@ Local Definition fragment_distribution_pair (s1 s2 : ptree' E MN R) : Prop :=
     sem_lift fragment_head_pair f g.
 
 Local Lemma fragment_head_pair_of_stable h k :
-  good h -> good k -> tree_trans_head_rel TB h k -> fragment_head_pair h k.
+  good h -> good k -> trans_head_rel TB h k -> fragment_head_pair h k.
 Proof.
   intros Hh Hk Htb. econstructor; [exact Hh|exact Hk| | | | |exact Htb].
   - apply stable_head_tree_hitting.
@@ -199,7 +199,7 @@ Proof.
   eapply sem_lift_mono; [apply fragment_head_pair_progress|exact Hlift].
 Qed.
 
-Theorem mdp_state_tree_trans_bisim_peutt (t u : tree) :
+Theorem mdp_state_trans_bisim_peutt (t u : tree) :
   state t -> state u -> TB t u -> peutt eq t u.
 Proof.
   intros [h [f [Hf [Hh Hgood1]]]] [k [g [Hg [Hk Hgood2]]]] Htb.
@@ -211,13 +211,13 @@ Proof.
     eassumption.
 Qed.
 
-Theorem mdp_state_peutt_tree_trans_iff
+Theorem mdp_state_peutt_trans_iff
     `{FOrd : @SemanticMeasureOrderLaws MF FI FO} (t u : tree) :
   state t -> state u -> (peutt eq t u <-> TB t u).
 Proof.
   intros Ht Hu. split.
-  - intro H. exact (peutt_tree_trans_bisim (FI := FI) (FC := FC) (FO := FO)
+  - intro H. exact (peutt_trans_bisim (FI := FI) (FC := FC) (FO := FO)
       (FOrd := FOrd) H).
-  - exact (mdp_state_tree_trans_bisim_peutt Ht Hu).
+  - exact (mdp_state_trans_bisim_peutt Ht Hu).
 Qed.
 End Coincidence.

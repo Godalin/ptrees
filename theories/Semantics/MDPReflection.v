@@ -111,12 +111,12 @@ Hypothesis Htotal : forall s a, sem_total (mdp_successors (D := D) (mdp_transiti
 Hypothesis Hsupport : forall s a,
   sem_ae (mdp_successors (D := D) (mdp_transition D s a)) (fun h => exists t, h = ehead t).
 
-Theorem mdp_tree_trans_bisim_iff s t :
+Theorem mdp_trans_bisim_iff s t :
   mdp_bisim (D := D) s t <->
-  @tree_trans_bisim E MN MF FI FC MX FO unit unit eq (encode s) (encode t).
+  @trans_bisim E MN MF FI FC MX FO unit unit eq (encode s) (encode t).
 Proof.
   rewrite mdp_peutt_iff.
-  apply mdp_state_peutt_tree_trans_iff;
+  apply mdp_state_peutt_trans_iff;
     apply mdp_encode_mdp_state; assumption.
 Qed.
 End Reflection.

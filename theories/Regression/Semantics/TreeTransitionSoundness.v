@@ -28,53 +28,53 @@ Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
   SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Local Notation W := (@peutt rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
-Local Notation TB := (@tree_trans_bisim rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
+Local Notation TB := (@trans_bisim rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool eq).
 
 (** Exercise the comparison at a probability mixture, not just Ret/Vis. *)
 Lemma delayed_mixture_peutt : W (Tau mixture) mixture.
 Proof. apply peutt_tau_l. Qed.
 
 Example delayed_mixture_transition_bisim : TB (Tau mixture) mixture.
-Proof. exact (peutt_tree_trans_bisim (FI := FI) (FC := FC) (FO := FO) (RR := eq) delayed_mixture_peutt). Qed.
+Proof. exact (peutt_trans_bisim (FI := FI) (FC := FC) (FO := FO) (RR := eq) delayed_mixture_peutt). Qed.
 
 Example delayed_mixture_postfixed :
-  @tree_trans_bisimF rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool bool eq
+  @trans_bisimF rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool bool eq
     W (Tau mixture) mixture.
-Proof. exact (peutt_tree_trans_postfixed (FI := FI) (FC := FC) (FO := FO) (RR := eq) delayed_mixture_peutt). Qed.
+Proof. exact (peutt_trans_postfixed (FI := FI) (FC := FC) (FO := FO) (RR := eq) delayed_mixture_peutt). Qed.
 
 (** The extracted action coupling keeps the previously checked half-mass
     result. Neither the endpoint nor inclusion normalizes the output. *)
 Example delayed_mixture_action_coupling :
-  @sem_lift MF FI _ _ (tree_trans_head_rel W) mixed_out mixed_out.
+  @sem_lift MF FI _ _ (trans_head_rel W) mixed_out mixed_out.
 Proof.
-  exact (peutt_preserves_tree_trans (FI := FI) (FC := FC) (FO := FO) (RR := eq) delayed_mixture_peutt
+  exact (peutt_preserves_trans (FI := FI) (FC := FC) (FO := FO) (RR := eq) delayed_mixture_peutt
     delayed_mixture_same_transition mixture_action_weighted_sum).
 Qed.
 
 (** Arbitrary relations on the common return type are supported, rather
     than silently baking equality into the comparison theorem. *)
 Example related_returns_transition_bisim :
-  @tree_trans_bisim rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool
+  @trans_bisim rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool
     (fun x y => x = negb y) (Ret true) (Ret false).
 Proof.
   assert (Hret : @peutt rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool
     (fun x y => x = negb y) (Ret true) (Ret false)).
   { apply peutt_ret. reflexivity. }
-  exact (peutt_tree_trans_bisim (FI := FI) (FC := FC) (FO := FO) Hret).
+  exact (peutt_trans_bisim (FI := FI) (FC := FC) (FO := FO) Hret).
 Qed.
 
 (** Reuse the existing infinite interaction / unbounded internal-retry
     theorem as a client. No MDP coincidence or converse is invoked. The
     existing service uses EnumQ/FreeOmega; the tests above use SubEnumQ. *)
 Theorem interactive_von_neumann_service_transition_bisim :
-  @tree_trans_bisim coin_serviceE EnumQ.EnumQ (FreeOmega EnumQ.EnumQ)
+  @trans_bisim coin_serviceE EnumQ.EnumQ (FreeOmega EnumQ.EnumQ)
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool bool eq
     von_neumann_service direct_fair_service.
 Proof.
-  exact (peutt_tree_trans_bisim
+  exact (peutt_trans_bisim
     (FI := FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
     (FO := @FreeOmegaObservableSemanticOmega EnumQ.EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)
