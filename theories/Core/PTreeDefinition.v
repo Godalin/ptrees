@@ -161,6 +161,13 @@ Definition trigger {E M} : E ~> ptree E M :=
   fun _ e => Vis e (fun x => Ret x).
 Arguments trigger {E M T} _.
 
+(** Atomic native sampling, parallel to [trigger] for visible events.
+    This is a syntax combinator: it needs no probability laws or backend
+    instance. Sequence it with [bind] to consume the sampled value. *)
+Definition sample {E M} : M ~> ptree E M :=
+  fun _ mu => Prob mu (fun x => Ret x).
+Arguments sample {E M T} _.
+
 (** Interpret visible events with a PTree handler.  The administrative
     [Tau] on the visible branch makes the corecursion syntactically guarded;
     it is intentionally invisible to the canonical weak equivalence. *)

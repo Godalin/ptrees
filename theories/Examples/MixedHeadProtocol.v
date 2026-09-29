@@ -24,6 +24,7 @@ Local Unset Universe Minimization ToSet.
 From PTree.Eq Require Import StableHittingRelation.
 From Coq.Program Require Import Equality.
 From Coq Require Import FunctionalExtensionality.
+From ITree.Basics Require Import Monad.
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
 From PTree.Core Require Import PTreeDefinition.
@@ -51,6 +52,8 @@ Import EnumQ PTree.Prob.Backend.EnumQ.Map IndexedCoupling
 
 Local Open Scope ring_scope.
 Local Open Scope subenumQ_probability_scope.
+Import PTree MonadNotation.
+Local Open Scope monad_scope.
 
 (** * 1. Preparation *)
 
@@ -221,32 +224,30 @@ Local Notation "t ≈ₚ[ RR ] u" := (W RR t u)
     Boolean draws. The specification samples the complete outcome at once.
     Both expose Challenge, then either return or offer Reply and recurse. *)
 
+(** [trigger]/[sample] are the public atomic combinators. The explicit
+    Reply [Vis] guards the recursive call; replacing every event by bind
+    of [trigger] would hide that guard from Rocq. No extra Tau is added. *)
 CoFixpoint masked_impl (m : hidden3) : tree impl_return :=
-  Vis Challenge (fun c =>
-    PTree.bind
-      (Prob coin_three_quarters (fun mask =>
-        Prob uniform2 (fun continue =>
-          PTree.bind
-            (Prob coin_third (fun first =>
-              if first then Ret L0
-              else Prob uniform2 (fun second => Ret (if second then L1 else L2))))
-            (fun payload =>
-              let bit := xorb c mask in
-              Ret (if continue then inr (bit, payload) else inl (bit, payload))))))
-      (fun x => match x with
-        | inl result => Ret result
-        | inr (b,h) => Vis (Reply b) (fun ack =>
-            masked_impl (if ack then h else m))
-        end)).
+  c <- trigger Challenge;;
+  x <- (mask <- sample coin_three_quarters;;
+        continue <- sample uniform2;;
+        payload <- (first <- sample coin_third;;
+                    if first then Ret L0
+                    else second <- sample uniform2;; Ret (if second then L1 else L2));;
+        let bit := xorb c mask in
+        Ret (if continue then inr (bit, payload) else inl (bit, payload)));;
+  match x with
+  | inl result => Ret result
+  | inr (b,h) => Vis (Reply b) (fun ack => masked_impl (if ack then h else m))
+  end.
 
 CoFixpoint mixed_spec (z : bool) : tree spec_return :=
-  Vis Challenge (fun c =>
-    PTree.bind (Prob (mixed_samples uniform2 c) (fun x => Ret x))
-      (fun x => match x with
-        | inl result => Ret result
-        | inr (b,j) => Vis (Reply b) (fun ack =>
-            mixed_spec (if ack then j else z))
-        end)).
+  c <- trigger Challenge;;
+  x <- sample (mixed_samples uniform2 c);;
+  match x with
+  | inl result => Ret result
+  | inr (b,j) => Vis (Reply b) (fun ack => mixed_spec (if ack then j else z))
+  end.
 
 (** Initialization only; not a deterministic transport of uniform3. *)
 Definition abstract_state m := match m with L2 => true | _ => false end.
@@ -506,8 +507,9 @@ Proof.
   - intros. apply ptree_bind_cofinal_all.
   - intros s1 s2 [(old & z & Hold & -> & ->) |
       (old & z & h & j & b & Hold & Hfresh & -> & ->)].
-    + cbn [masked_impl mixed_spec observe].
+    + cbn [masked_impl mixed_spec trigger observe].
       apply stable_hitting_match_vis. intro answer.
+      rewrite !(observe_bind (Ret answer)). cbn [observe].
       eapply bind_upto_closure_bind with (RR := mixed_sample_rel).
       * (* Analyze this finite prefix here, not via a pre-proved program relation. *)
         eapply peutt_of_hitting_lift with
@@ -568,23 +570,22 @@ Theorem masked_after_stable_hitting m c :
       (mixed_head impl_return) mixed_outcome stable_outcome out (mixed_outcomes c).
 Proof.
   exists (fun c =>
-    PTree.bind
-      (Prob coin_three_quarters (fun mask =>
-        Prob uniform2 (fun continue =>
-          PTree.bind
-            (Prob coin_third (fun first =>
-              if first then Ret L0
-              else Prob uniform2 (fun second => Ret (if second then L1 else L2))))
-            (fun payload =>
-              let bit := xorb c mask in
-              Ret (if continue then inr (bit, payload) else inl (bit, payload))))))
-      (fun x => match x with
-        | inl result => Ret result
-        | inr (b,h) => Vis (Reply b) (fun ack =>
-            masked_impl (if ack then h else m))
-        end)), (masked_after_heads m c).
+    PTree.bind (Ret c) (fun c =>
+      x <- (mask <- sample coin_three_quarters;;
+            continue <- sample uniform2;;
+            payload <- (first <- sample coin_third;;
+                        if first then Ret L0
+                        else second <- sample uniform2;;
+                             Ret (if second then L1 else L2));;
+            let bit := xorb c mask in
+            Ret (if continue then inr (bit, payload) else inl (bit, payload)));;
+      match x with
+      | inl result => Ret result
+      | inr (b,h) => Vis (Reply b) (fun ack => masked_impl (if ack then h else m))
+      end)), (masked_after_heads m c).
   split; [reflexivity|]. split.
   - unfold masked_after_heads.
+    rewrite (observe_bind (Ret c)). cbn [observe].
     eapply stable_hitting_bind_ret_only with
       (hs := FOSample (mixed_samples uniform3 c) (fun x => FORet (FHRet x)))
       (front := fun x => FORet (masked_head m x)).
@@ -624,18 +625,20 @@ Proof.
     change (@finite_interaction_query mixedE SubEnumQ MF FI MX FO spec_return
       (cons (@select_challenge c) (cons (@select_true_reply) nil))
       (Vis Challenge (fun answer =>
-        PTree.bind (Prob (mixed_samples uniform2 answer) (fun x => Ret x))
-          (fun x => match x with
-            | inl result => Ret result
-            | inr (b,j) => Vis (Reply b) (fun ack =>
-                mixed_spec (if ack then j else abstract_state m))
-            end)))
+        PTree.bind (Ret answer) (fun answer =>
+          PTree.bind (sample (mixed_samples uniform2 answer))
+            (fun x => match x with
+              | inl result => Ret result
+              | inr (b,j) => Vis (Reply b) (fun ack =>
+                  mixed_spec (if ack then j else abstract_state m))
+              end))))
       (spec_true_reply_query (abstract_state m) c)).
     eapply finite_interaction_query_vis_match; [reflexivity|].
     apply (proj2 (finite_interaction_query_singleton_iff_next_event_query _ _ _)).
     rewrite true_reply_selector_accepts.
     exists (spec_after_heads (abstract_state m) c). split; [|apply sem_eq_refl].
     unfold spec_after_heads.
+    rewrite (observe_bind (Ret c)). cbn [observe].
     eapply stable_hitting_bind_ret_only with
       (hs := FOSample (mixed_samples uniform2 c) (fun x => FORet (FHRet x)))
       (front := fun x => FORet (spec_head (abstract_state m) x)).

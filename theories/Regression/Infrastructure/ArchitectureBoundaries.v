@@ -3,8 +3,21 @@
 From PTree Require Import PTree.
 Check @ptree.
 Check @bind.
+Check @trigger.
+Check @sample.
 Check @Handler.cat.
 Check (Ret tt : ptree (fun _ => Empty_set) (fun A => A) unit).
+
+(** Atomic constructors are available from the syntax entry point alone,
+    with arbitrary effects and native carriers, and no semantic instances. *)
+Example public_sample_definition {E M X} (mu : M X) :
+  @sample E M X mu = Prob mu (fun x => Ret x).
+Proof. reflexivity. Qed.
+
+Example public_trigger_definition {E M X} (e : E X) :
+  @trigger E M X e = Vis e (fun x => Ret x).
+Proof. reflexivity. Qed.
+
 Fail Check PTree.Prob.Interface.Measure.SemanticMeasure.
 Fail Check PTree.Eq.PEutt.peutt.
 Fail Check PTree.Eq.Canonical.CanonicalBehavior.

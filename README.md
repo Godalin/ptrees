@@ -55,6 +55,14 @@ PTree syntax (intensional representation)
 notation modules, and `PTreeFacts.v` aggregates the actual reasoning modules.
 There is no alias-based `API/` layer. Canonical behavioral profiles live in
 `Eq/Canonical` and explicit `Eq/Backend` adapters.
+
+The syntax entry point also exposes two atomic combinators, following ITree's
+`trigger` convention: `trigger e := Vis e Ret` and `sample mu := Prob mu Ret`.
+Both are backend-independent syntax, with no probability-law requirements.
+Programs can use `x <- sample mu;; ...` and `x <- trigger e;; ...`; the existing
+`peutt_sample_bind` law relates `bind (sample mu) k` to `Prob mu k`.
+Explicit constructors remain useful for guarding `CoFixpoint` recursion.
+
 PTree has one public behavioral equivalence: `peutt`, written
 `t ≈ₚ u` (or `t ≈ₚ[RR] u`).  It is the greatest fixed point obtained by coupling the
 stable-hitting behaviors of the two trees and recursively relating visible

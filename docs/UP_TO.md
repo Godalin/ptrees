@@ -71,6 +71,10 @@ followed, only on failure, by a fair coin. Thus each round uses three or four
 native Boolean `Prob` nodes. The specification uses **one** `Prob` over the
 existing `mixed_samples uniform2 c` distribution; its native `sem_bind`
 definition does not introduce extra PTree nodes.
+The programs use the generic `sample` combinator and monadic sequencing for
+these draws, and `trigger Challenge` for the initial interaction. The Reply
+constructor stays explicit to guard recursion. These combinators add no Tau
+steps; the proof removes their administrative return-binds by `observe_bind`.
 
 Both Stop and Continue carry a payload, preserving the heterogeneous-return
 extension. There are no named sampler subprograms or pre-proved sampler
