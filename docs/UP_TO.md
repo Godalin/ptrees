@@ -126,6 +126,15 @@ notation. Local `tree`, `state`, `progress` and up-to abbreviations hide
 repeated type parameters, not proof obligations: complete-hitting progress
 and the root/reply invariants remain visible in the proofs. Concrete
 probability analysis retains its explicit measure interfaces where needed.
+MixedHead's source follows a program-first reading order: protocol and return
+abstraction (§1), concrete coin definitions (§2), both programs (§3), finite
+sampler certificates (§4), the root/reply coinduction (§5), and quantitative
+consequences (§6). On a first pass, read §3 and §5 and treat
+`impl_draw_related` as the proved finite-analysis boundary. The main proof
+labels the Challenge, Stop, Continue and Reply obligations; it does not
+disguise coinduction as an algebraic rewrite. Named branch views stay beside
+that proof, rather than interrupting the program listing. No new module
+wrapper changes the existing theorem names.
 The original notation-only follow-up preserved its 69 compiled contracts.
 The subsequent three-to-two case changes its programs and state types, but
 does not change any generic theorem or backend.
@@ -293,3 +302,12 @@ Validation of this follow-up: full build including AllImports, all 136
 existing safe generic-algebra type/assumption contracts (no snapshot edits),
 architecture/source-soundness checks, and the case's `coqchk -norec` passed.
 The latter trusts compiled dependencies. No CI query or tool changes.
+
+The subsequent program-first presentation preserves all 93 declarations
+and all 136 contracts without refreshing a snapshot. The original three
+sampler bodies and two protocol unfoldings were checked by `reflexivity`;
+only bound-variable names and a reducible `let` change in the programs.
+Full build/AllImports, architecture/API/source checks and the case's
+`coqchk -norec` passed. Two unused handler imports were removed; the generic
+theory and proof assumptions are unchanged. Tool tests were not rerun for
+this source/documentation-only presentation change; CI was not queried.
