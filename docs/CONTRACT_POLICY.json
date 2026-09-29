@@ -81,21 +81,36 @@
     "theories/Eq/Backend/SubEnumR.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From mathcomp Require Import reals. From PTree.Prob.Backend.SubEnumR Require Export Representation. From PTree.Prob.Backend.SubEnumR Require Import Measure Coupling Omega. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. #[global] Instance SubEnumR_CanonicalBehavior (R : realType) : CanonicalBehavior (SubEnumR R) := @observable_free_omega_behavior (SubEnumR R) (SubEnumR_SemanticMeasure R) (SubEnumR_SemanticOmega R)."
   },
   "regressions": {
-    "theories/Regression/Semantics/AbsorbingIteration.v": [
+    "theories/Regression/Semantics/IterationFrontiers.v": [
       "round_hits",
       "dead_exit_hits",
       "empty_response_frontier",
       "actual_eventful_loop_exists",
       "zero_kernel_allowed",
       "dead_event_is_visible",
-      "distinct_dead_heads"
-    ],
-    "theories/Regression/Semantics/IterationSummary.v": [
+      "distinct_dead_heads",
       "delayed_kernel_summary",
       "projected_limit",
       "observer_rejects_visible",
       "zero_mass_summary",
-      "endless_retry_summary"
+      "endless_retry_summary",
+      "search_front_hitting",
+      "unbounded_mixed_summary",
+      "retry_is_internal",
+      "return_is_absorbing",
+      "visible_continuation_is_recursive",
+      "empty_response_is_absorbing",
+      "zero_coin_allowed",
+      "shifted_round",
+      "return_only_program",
+      "native_compatibility",
+      "classical_round_zero_is_bottom",
+      "frontier_round_zero_already_returns",
+      "retry_approx_zero",
+      "endless_retry_is_zero",
+      "endless_retry_has_other_fixed_point",
+      "lost_approx_zero",
+      "lost_kernel_is_zero"
     ],
     "theories/Regression/Semantics/UpToProb.v": [
       "heterogeneous_known_sampling_context"
@@ -263,7 +278,7 @@
       "weight_two_preserves_monotone_limit",
       "zero_weight_needs_no_monotonicity"
     ],
-    "theories/Regression/Backend/FreeOmegaEscapingMass.v": [
+    "theories/Regression/Probability/FreeOmegaEscapingMass.v": [
       "qsym",
       "big_observes",
       "small_observes",
@@ -291,7 +306,7 @@
       "escaped_row_not_observable",
       "unrestricted_observation_rule_rejected"
     ],
-    "theories/Regression/Backend/FreeOmegaLimitSafety.v": [
+    "theories/Regression/Probability/FreeOmegaLimitSafety.v": [
       "source_is_subprobability",
       "different_masses",
       "big_mass_one",
@@ -306,7 +321,7 @@
       "support_and_limits_alone_do_not_diagonalize",
       "pointwise_limits_alone_do_not_integrate"
     ],
-    "theories/Regression/Backend/FreeOmegaUpperContracts.v": [
+    "theories/Regression/Probability/FreeOmegaUpperContracts.v": [
       "upper_big_mass",
       "upper_small_mass",
       "upper_escaped_row_mass",
@@ -381,7 +396,7 @@
       "interp_cofinal_without_ae",
       "mdp_interp_without_aelift"
     ],
-    "theories/Regression/Infrastructure/CorrelatedInternalRounds.v": [
+    "theories/Regression/Internal/CorrelatedInternalRounds.v": [
       "correlated_kernel_left_structural",
       "correlated_kernel_right_structural",
       "correlated_kernel_spec",
@@ -407,7 +422,7 @@
       "retry_round_complete_coupling",
       "retry_left_hitting_upper"
     ],
-    "theories/Regression/Infrastructure/CostedRounds.v": [
+    "theories/Regression/Internal/CostedRounds.v": [
       "alternating_native_marginal",
       "alternating_rounds_complete_hitting",
       "alternating_round_is_not_unary",
@@ -417,7 +432,7 @@
       "padding_right_marginal",
       "padding_via_costed_coinduction"
     ],
-    "theories/Regression/Infrastructure/CouplingReferences.v": [
+    "theories/Regression/Internal/CouplingReferences.v": [
       "fair_discard_node",
       "fair_discard_same_mass",
       "reference_coin_quotient_discard",
@@ -432,11 +447,11 @@
       "discarded_coin_cuts_have_no_references",
       "discarded_coin_rounds_have_no_reference_kernels"
     ],
-    "theories/Regression/Infrastructure/FiniteInternalNative.v": [
+    "theories/Regression/Internal/FiniteInternalNative.v": [
       "dependent_compression_round_native",
       "subenumQ_compression_measure_bounded"
     ],
-    "theories/Regression/Infrastructure/FiniteInternalPlan.v": [
+    "theories/Regression/Internal/FiniteInternalPlan.v": [
       "delay_path_steps",
       "delay_path_residual",
       "nonuniform_plan_unbounded",
@@ -450,7 +465,7 @@
       "killed_plan_is_valid",
       "completed_paths_do_not_preserve_prefix_mass"
     ],
-    "theories/Regression/Infrastructure/FiniteInternalRound.v": [
+    "theories/Regression/Internal/FiniteInternalRound.v": [
       "return_round_cost",
       "visible_round_cost",
       "visible_round_target",
@@ -463,7 +478,7 @@
       "zero_guard_measure_raw",
       "nonuniform_round_cost"
     ],
-    "theories/Regression/Infrastructure/HiddenRandomState.v": [
+    "theories/Regression/Internal/HiddenRandomState.v": [
       "random_state_target_marginal",
       "random_state_kernel_marginal",
       "random_state_complete_hitting",
@@ -472,20 +487,16 @@
       "hidden_step_has_no_structural_reference",
       "zero_hidden_sample_rejected"
     ],
-    "theories/Regression/Infrastructure/KernelCompletion.v": [
+    "theories/Regression/Internal/Kernel.v": [
       "spin_returning_completion_step",
       "spinning_approx_zero",
       "two_stage_completion_step",
       "completed_rounds_need_not_be_raw_increasing",
       "spin_limit_not_returning_tail",
-      "spin_limit_has_returning_upper"
-    ],
-    "theories/Regression/Infrastructure/KernelCongruence.v": [
+      "spin_limit_has_returning_upper",
       "sample_exchange_kernel_equal",
       "first_sample_kernel_closed",
-      "sample_exchange_preserves_complete_hitting"
-    ],
-    "theories/Regression/Infrastructure/KernelContinuity.v": [
+      "sample_exchange_preserves_complete_hitting",
       "ranked_kernel_increasing",
       "ranked_kernel_limit",
       "state_truncation_recovers_complete_hitting",
@@ -494,7 +505,7 @@
     "theories/Regression/Infrastructure/MathCompUniverse.v": [
       "self_nested_sampling"
     ],
-    "theories/Regression/Infrastructure/NativeRecovery.v": [
+    "theories/Regression/Internal/NativeRecovery.v": [
       "fair_paths_normalized",
       "split_coin_native_joint_round",
       "direct_path_normalized",
@@ -511,7 +522,7 @@
       "null_noninjective_recovery_reconstructs",
       "discarded_coin_general_pullback"
     ],
-    "theories/Regression/Infrastructure/PairedFiniteCompression.v": [
+    "theories/Regression/Internal/PairedFiniteCompression.v": [
       "joint_spec",
       "left_cut_valid",
       "right_cut_valid",
@@ -526,7 +537,7 @@
       "correlated_left_cut_has_no_unary_realization",
       "paired_compression_preserves_left_hitting"
     ],
-    "theories/Regression/Infrastructure/ResidualFinite.v": [
+    "theories/Regression/Internal/ResidualFinite.v": [
       "residual_retry_cut1_valid",
       "residual_retry_cut2_valid",
       "residual_retry_cuts_structural",
@@ -534,7 +545,7 @@
       "residual_retries_peutt",
       "residual_services_peutt"
     ],
-    "theories/Regression/Infrastructure/ResidualJointCoinduction.v": [
+    "theories/Regression/Internal/ResidualJointCoinduction.v": [
       "retry_prefix_cut",
       "retry_roots_guard",
       "retry_noise_cut_not_structural",
@@ -544,7 +555,7 @@
       "eventful_retry_discarded_bits",
       "always_failing_retry_discarded_bits"
     ],
-    "theories/Regression/Infrastructure/ResidualTransport.v": [
+    "theories/Regression/Internal/ResidualTransport.v": [
       "retry_pairs_not_reflexive",
       "retry_pairs_peutt_without_equivalence"
     ],
@@ -835,7 +846,7 @@
       "two_query_interp_not_trans_bisim",
       "trans_bisim_interp_counterexample"
     ],
-    "theories/Regression/Semantics/LabelledMDP.v": [
+    "theories/Regression/Semantics/MDPEncoding.v": [
       "labelled_step_total",
       "labelled_encoding_in_fragment",
       "good_probability_half",
@@ -850,7 +861,13 @@
       "positive_kernels_are_different",
       "distinct_states_encoded_head_bisimilar",
       "distinct_states_encoded_peutt",
-      "labelled_full_abstraction"
+      "labelled_full_abstraction",
+      "counter_step_total",
+      "counter_encoding_is_mdp",
+      "counter_kernel_exact",
+      "counter_full_abstraction",
+      "unlabelled_counter_states_bisimilar",
+      "unlabelled_counter_encodings_equivalent"
     ],
     "theories/Regression/Semantics/MDPCoincidence.v": [
       "delay_transition_bisim",
@@ -859,14 +876,6 @@
       "infinite_service_peutt_from_transitions",
       "terminal_fragment_coincidence",
       "strictness_pair_outside_joint_fragment"
-    ],
-    "theories/Regression/Semantics/MDPEmbedding.v": [
-      "counter_step_total",
-      "counter_encoding_is_mdp",
-      "counter_kernel_exact",
-      "counter_full_abstraction",
-      "unlabelled_counter_states_bisimilar",
-      "unlabelled_counter_encodings_equivalent"
     ],
     "theories/Regression/Semantics/MDPFragment.v": [
       "dirac_head_total",
@@ -908,7 +917,7 @@
       "heterogeneous_infinite_service_transition",
       "heterogeneous_reply_label"
     ],
-    "theories/Regression/Semantics/OperationalPTSExamples.v": [
+    "theories/Regression/Semantics/HittingPrograms.v": [
       "ptree_reg_ret_weak",
       "ptree_reg_nested_weak",
       "ptree_reg_merged_weak",
@@ -1081,47 +1090,11 @@
       "generic_source_bind_order",
       "supplied_lub_is_least"
     ],
-    "theories/Regression/Backend/RationalRepresentationMigration.v": [
-      "rational_raw_nonnegative",
-      "rational_raw_restore",
-      "rational_restore_raw",
-      "rational_old_roundtrip",
-      "rational_shared_roundtrip",
-      "rational_raw_app",
-      "rational_raw_scale",
-      "rational_shared_ret",
-      "rational_shared_zero",
-      "rational_shared_scale",
-      "rational_raw_bind",
-      "rational_shared_bind",
-      "rational_shared_map",
-      "rational_shared_index",
-      "rational_shared_ae",
-      "rational_shared_expect",
-      "rational_unshare_expect",
-      "rational_shared_mass",
-      "rational_shared_subprob",
-      "rational_sub_old_roundtrip",
-      "rational_sub_shared_roundtrip",
-      "rational_subshared_ret",
-      "rational_subshared_zero",
-      "rational_subshared_bind",
-      "rational_subshared_expect",
-      "rational_duplicates_and_zero",
-      "rational_overweight_allowed",
-      "rational_partial_mass_preserved",
-      "rational_null_branch_ignored",
-      "rational_empty_carrier",
-      "rational_high_carrier"
-    ],
-    "theories/Regression/Backend/RationalPositions.v": [
+    "theories/Regression/Backend/FiniteLists.v": [
       "native_index_exact",
       "native_value_index_exact",
       "native_index_uses_shared",
       "native_value_index_uses_shared",
-      "rational_scalar_index_commutes",
-      "rational_scalar_joint_commutes",
-      "rational_checked_index_commutes",
       "positions_retain_zero_and_duplicates",
       "empty_positions",
       "out_of_range_has_no_slot",
@@ -1131,13 +1104,10 @@
       "joint_left_marginal",
       "joint_right_marginal",
       "large_carrier_index",
-      "large_carrier_joint"
-    ],
-    "theories/Regression/Backend/RationalPruning.v": [
+      "large_carrier_joint",
       "native_prune_exact",
       "native_prune_uses_shared",
       "native_equality_unchanged",
-      "rational_scalar_prune_commutes",
       "zero_pruning_preserves_order_and_duplicates",
       "pruning_does_not_renormalize",
       "all_zero_prunes_to_empty",
@@ -1147,9 +1117,7 @@
       "checked_prune_mass",
       "checked_prune_bound",
       "general_discard_can_lose_mass",
-      "large_carrier_prune"
-    ],
-    "theories/Regression/Backend/RationalPresentation.v": [
+      "large_carrier_prune",
       "native_position_exact",
       "native_entry_exact",
       "native_positions_exact",
@@ -1166,30 +1134,14 @@
       "shared_subdistribution_bound",
       "shared_subdistribution_decode",
       "shared_function_carrier",
-      "large_carrier_presentation"
-    ],
-    "theories/Regression/Backend/RationalFiniteAlgebra.v": [
+      "large_carrier_presentation",
       "native_scale_exact",
       "native_bind_exact",
-      "ordinary_scalar_scale",
-      "ordinary_scalar_bind",
       "bind_keeps_zero_blocks_and_duplicates",
       "duplicate_atom_mass",
       "atom_observations_agree",
       "ordinary_q_to_r_mass",
-      "ordinary_q_to_r_bind"
-    ],
-    "theories/Regression/Backend/FiniteSupport.v": [
-      "ordinary_rat_zero_atom",
-      "real_positive_atom",
-      "function_values_have_indicator_support",
-      "duplicate_zero_entries",
-      "negative_cancellation_has_zero_atom",
-      "negative_cancellation_not_nonnegative",
-      "zero_atom_without_nonnegative_cannot_kill_entries",
-      "high_carrier_indicator_support"
-    ],
-    "theories/Regression/Backend/FiniteBackendConsolidation.v": [
+      "ordinary_q_to_r_bind",
       "rational_weighting_is_shared",
       "rational_subdistribution_is_shared",
       "real_subdistribution_is_shared",
@@ -1202,21 +1154,31 @@
       "high_carrier_native",
       "high_carrier_bridge"
     ],
-    "theories/Regression/Infrastructure/CanonicalBehavior.v": [
+    "theories/Regression/Backend/FiniteSupport.v": [
+      "ordinary_rat_zero_atom",
+      "real_positive_atom",
+      "function_values_have_indicator_support",
+      "duplicate_zero_entries",
+      "negative_cancellation_has_zero_atom",
+      "negative_cancellation_not_nonnegative",
+      "zero_atom_without_nonnegative_cannot_kill_entries",
+      "high_carrier_indicator_support"
+    ],
+    "theories/Regression/ImportOrder/CanonicalBehavior.v": [
       "rational_weighted_route",
       "rational_subprob_route",
       "real_subprob_route",
       "weighted_bind_route",
       "real_bind_route"
     ],
-    "theories/Regression/Infrastructure/CanonicalBehaviorStructuralFirst.v": [
+    "theories/Regression/ImportOrder/CanonicalBehaviorStructuralFirst.v": [
       "rational_weighted_route",
       "rational_subprob_route",
       "real_subprob_route",
       "weighted_bind_route",
       "real_bind_route"
     ],
-    "theories/Regression/Infrastructure/CanonicalBehaviorNativeFirst.v": [
+    "theories/Regression/ImportOrder/CanonicalBehaviorNativeFirst.v": [
       "rational_weighted_route",
       "rational_subprob_route",
       "real_subprob_route",
@@ -1241,32 +1203,13 @@
       "public_continuation_setoid",
       "public_fmap_setoid"
     ],
-    "theories/Regression/Semantics/GenericBind.v": [
+    "theories/Regression/Probability/FreeOmegaOrder.v": [
       "constant_lub_quotient_equal",
       "constant_lub_not_approx_forward",
       "constant_lub_not_approx_backward",
       "observable_equality_does_not_imply_order",
       "sampled_zero_quotient_equal",
-      "sampled_zero_not_approx_bottom",
-      "free_omega_heterogeneous_bind"
-    ],
-    "theories/Regression/Semantics/GenericAlgebra.v": [
-      "generic_left_unit_minimal",
-      "generic_prob_bind_minimal",
-      "generic_vis_map_minimal",
-      "generic_vis_context_rewrite",
-      "generic_prob_context_rewrite",
-      "free_omega_bind_Proper",
-      "free_omega_fmap_Proper",
-      "free_omega_frontier_ae_lift",
-      "free_omega_frontier_dirac_ae",
-      "free_omega_sample_bind",
-      "free_omega_sample_map",
-      "real_bind_proper",
-      "real_fmap_proper",
-      "real_sample_bind",
-      "real_sample_map",
-      "real_iter_setoid"
+      "sampled_zero_not_approx_bottom"
     ],
     "theories/Regression/Probability/RelationalLimit.v": [
       "arbitrary_nat_relational_limit",
@@ -1281,17 +1224,7 @@
       "noncoherent_chain_has_limit_joint",
       "mathcomp_coherent_joint_limit"
     ],
-    "theories/Regression/Semantics/GenericConsumers.v": [
-      "free_omega_eventful_iter",
-      "real_guarded_interp"
-    ],
-    "theories/Regression/Semantics/RelationalConsumers.v": [
-      "completion_strong",
-      "completion_assoc",
-      "rational_eventful_assoc",
-      "real_eventful_assoc"
-    ],
-    "theories/Regression/Infrastructure/Execution.v": [
+    "theories/Regression/Execution/Runner.v": [
       "returned_needs_no_fuel",
       "sampling_consumes_one_token",
       "missing_mass_is_not_retry",
@@ -1306,9 +1239,18 @@
       "state_bind_uses_updated_state",
       "standard_subevent_get",
       "standard_subevent_put",
-      "state_forwards_unhandled_event"
+      "state_forwards_unhandled_event",
+      "returned_is_semantic",
+      "loss_is_semantic",
+      "zero_fuel_is_resource_failure",
+      "no_entropy_is_resource_failure",
+      "native_missing_is_completed",
+      "typed_loss_path",
+      "entropy_failure_has_no_completed_path",
+      "timeout_has_no_completed_path",
+      "typed_result_agrees_with_existing_runner"
     ],
-    "theories/Regression/Backend/RationalReplay.v": [
+    "theories/Regression/Execution/RationalSampling.v": [
       "zero_entry_never_selected",
       "upper_endpoint_belongs_to_next_interval",
       "partial_mass_not_normalized",
@@ -1316,9 +1258,18 @@
       "half_nonnegative",
       "half_bounded",
       "half_mass_execution_is_lost",
-      "empty_replay_not_lost"
+      "empty_replay_not_lost",
+      "nonfair_success_mass",
+      "nonfair_retry_mass",
+      "partial_loss_is_exact",
+      "arbitrary_signed_observable",
+      "zero_duplicates_keep_mass",
+      "zero_mass_has_one_missing_ticket",
+      "no_entropy_is_not_loss",
+      "last_valid_ticket_is_loss",
+      "bound_is_checked"
     ],
-    "theories/Regression/Infrastructure/StateIteration.v": [
+    "theories/Regression/Execution/StateIteration.v": [
       "eliminate_state_before_or_after_iter",
       "iter_replay_threads_updated_state",
       "transformed_iter_has_same_replay",
@@ -1364,17 +1315,6 @@
       "state_get_fold",
       "unbounded_counter_fold_agrees",
       "bare_iterator_is_not_uniform"
-    ],
-    "theories/Regression/Execution/RationalTickets.v": [
-      "nonfair_success_mass",
-      "nonfair_retry_mass",
-      "partial_loss_is_exact",
-      "arbitrary_signed_observable",
-      "zero_duplicates_keep_mass",
-      "zero_mass_has_one_missing_ticket",
-      "no_entropy_is_not_loss",
-      "last_valid_ticket_is_loss",
-      "bound_is_checked"
     ],
     "theories/Regression/Infrastructure/PublicHandlers.v": [
       "replacement_not_structural",
@@ -1442,22 +1382,11 @@
       "target_handler_postcomposition",
       "high_embedding"
     ],
-    "theories/Regression/Semantics/HandlerCalculus.v": [
+    "theories/Examples/RealSamplingHandler.v": [
       "real_sampling_handler_rel",
       "real_infinite_sampling",
       "real_handler_bind_client",
       "real_right_identity"
-    ],
-    "theories/Regression/Execution/Outcome.v": [
-      "returned_is_semantic",
-      "loss_is_semantic",
-      "zero_fuel_is_resource_failure",
-      "no_entropy_is_resource_failure",
-      "native_missing_is_completed",
-      "typed_loss_path",
-      "entropy_failure_has_no_completed_path",
-      "timeout_has_no_completed_path",
-      "typed_result_agrees_with_existing_runner"
     ],
     "theories/Regression/Execution/FiniteDistribution.v": [
       "first_attempt_outcomes",
@@ -1511,27 +1440,6 @@
       "imported_real_iter_rewrite",
       "imported_rational_iter_rewrite"
     ],
-    "theories/Regression/Semantics/FrontierIteration.v": [
-      "search_front_hitting",
-      "unbounded_mixed_summary",
-      "retry_is_internal",
-      "return_is_absorbing",
-      "visible_continuation_is_recursive",
-      "empty_response_is_absorbing",
-      "zero_coin_allowed"
-    ],
-    "theories/Regression/Semantics/ReturnIteration.v": [
-      "shifted_round",
-      "return_only_program",
-      "native_compatibility",
-      "classical_round_zero_is_bottom",
-      "frontier_round_zero_already_returns",
-      "retry_approx_zero",
-      "endless_retry_is_zero",
-      "endless_retry_has_other_fixed_point",
-      "lost_approx_zero",
-      "lost_kernel_is_zero"
-    ],
     "theories/Regression/Probability/KleisliIteration.v": [
       "domain_fixed_point",
       "domain_least_prefixed",
@@ -1540,6 +1448,34 @@
       "checked_lfp_least",
       "rational_loop_denotes_lfp",
       "rational_loop_modelable"
+    ],
+    "theories/Regression/Semantics/GenericAlgebra.v": [
+      "generic_left_unit_minimal",
+      "generic_prob_bind_minimal",
+      "generic_vis_map_minimal",
+      "generic_vis_context_rewrite",
+      "generic_prob_context_rewrite",
+      "free_omega_bind_Proper",
+      "free_omega_fmap_Proper",
+      "free_omega_frontier_ae_lift",
+      "free_omega_frontier_dirac_ae",
+      "free_omega_sample_bind",
+      "free_omega_sample_map",
+      "real_bind_proper",
+      "real_fmap_proper",
+      "real_sample_bind",
+      "real_sample_map",
+      "real_iter_setoid"
+    ],
+    "theories/Regression/Semantics/GenericConsumers.v": [
+      "free_omega_eventful_iter",
+      "real_guarded_interp"
+    ],
+    "theories/Regression/Semantics/RelationalConsumers.v": [
+      "completion_strong",
+      "completion_assoc",
+      "rational_eventful_assoc",
+      "real_eventful_assoc"
     ]
   }
 }

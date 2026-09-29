@@ -10,11 +10,6 @@ Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Prob.Backend.MathComp.Kernel.MathCompKernelMeasure.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 
-Definition generic_bind_proper := @peutt_bind_Proper.
-Definition generic_fmap_proper := @peutt_fmap_Proper.
-Definition generic_iter_proper := @peutt_iter_Proper.
-Definition generic_exception_proper := @run_exception_peutt_eq_Proper.
-Definition derived_ae_lift := @coupling_ae_implies_ae_lift.
 
 (** No native measure instance, bind/order/omega laws, or relational-lub
     certificate is in scope. This is an explicit minimal client signature. *)

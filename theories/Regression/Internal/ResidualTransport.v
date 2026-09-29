@@ -8,7 +8,7 @@ Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 From PTree.Eq.Internal Require Import FiniteInternal.
 From PTree.Eq Require Import PStrong PEutt.
-From PTree.Regression.Infrastructure Require Import ResidualFinite.
+From PTree.Regression.Internal Require Import ResidualFinite.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

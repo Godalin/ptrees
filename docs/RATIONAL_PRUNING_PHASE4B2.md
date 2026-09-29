@@ -40,7 +40,7 @@ operation introduced in Phase 4b.1, which deliberately retains zero slots.
 
 ## Regression and preservation gate
 
-`Regression/Backend/RationalPruning.v` checks:
+`Regression/Backend/FiniteLists.v` checks:
 
 - old recursive operation and new delegation agree by reflexivity;
 - the native equality still means indexed equality coupling of the same
@@ -84,7 +84,7 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Prob.Backend.EnumQ.Measure \
   -norec PTree.Prob.Backend.EnumQ.FinitePresentation \
   -norec PTree.Prob.Backend.SubEnumQ.FreeOmega.JointSoundness \
-  -norec PTree.Regression.Backend.RationalPruning \
+  -norec PTree.Regression.Backend.FiniteLists \
   -norec PTree.Regression.Infrastructure.AllImports
 ```
 

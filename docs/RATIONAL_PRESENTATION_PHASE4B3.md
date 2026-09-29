@@ -96,7 +96,7 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Prob.Backend.EnumQ.FreeOmega.NativeTransport \
   -norec PTree.Prob.Backend.SubEnumQ.FreeOmega.NativeTransport \
   -norec PTree.Prob.Backend.SubEnumQ.FreeOmega.JointSoundness \
-  -norec PTree.Regression.Backend.RationalPresentation \
+  -norec PTree.Regression.Backend.FiniteLists \
   -norec PTree.Regression.Infrastructure.AllImports
 ```
 

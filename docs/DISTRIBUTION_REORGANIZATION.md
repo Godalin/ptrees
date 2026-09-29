@@ -187,7 +187,7 @@ is **not** sufficient evidence for a self-model: importing its compiled
 module into AllImports failed with a universe inconsistency.
 
 Dependency reduction found that one existing module,
-`Regression/Backend/FreeOmegaUpperContracts`, suffices to reproduce the
+`Regression/Probability/FreeOmegaUpperContracts`, suffices to reproduce the
 conflict. With that module loaded first, a native PTree and its stable head
 still typecheck, but applying the sealed MathComp carrier to that head is
 rejected: the required strict inequality conflicts with

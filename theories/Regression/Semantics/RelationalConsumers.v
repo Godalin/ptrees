@@ -10,10 +10,6 @@ Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
-Definition generic_structural_bridge := @Relation.peutt_of_pstruct.
-Definition generic_strong_bridge := @Relation.peutt_of_pstrong.
-Definition generic_structural_iter := @Iter.peutt_iter_rel.
-Definition generic_codiagonal := @Iter.peutt_iter_codiagonal.
 
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure
   PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.RelationalLimit.

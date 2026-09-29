@@ -9,7 +9,8 @@ Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability 
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperCoupling.
-From PTree.Regression.Backend Require Import SubEnumQRegression FreeOmegaEscapingMass.
+From PTree.Regression.Backend Require Import SubEnumQRegression.
+From PTree.Regression.Probability Require Import FreeOmegaEscapingMass.
 Import EnumQ.
 Module ExpectationTests.
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
@@ -182,7 +183,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat re
 Require Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperContinuity.
-From PTree.Regression.Backend Require Import FreeOmegaEscapingMass.
+From PTree.Regression.Probability Require Import FreeOmegaEscapingMass.
 Module ContinuityTests.
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
@@ -274,7 +275,7 @@ Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperObservation.
 From PTree.Examples Require Import RandomWalk.
-From PTree.Regression.Backend Require Import FreeOmegaEscapingMass.
+From PTree.Regression.Probability Require Import FreeOmegaEscapingMass.
 Module ObservationTests.
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
@@ -340,7 +341,8 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat re
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperRelational PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperQuotient.
-From PTree.Regression.Backend Require Import SubEnumQRegression FreeOmegaEscapingMass.
+From PTree.Regression.Backend Require Import SubEnumQRegression.
+From PTree.Regression.Probability Require Import FreeOmegaEscapingMass.
 From PTree.Examples Require Import RandomWalk.
 Module QuotientTests.
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)

@@ -144,7 +144,9 @@ nothing asks global search to invent handler equivalence.
 - units, associativity, case injection and bimap congruence;
 - a signature carrying types strictly above Set.
 
-`HandlerCalculus.v` uses arbitrary `SubEnumR R bool` weights, target visible
+The supporting example
+[`RealSamplingHandler.v`](../theories/Examples/RealSamplingHandler.v)
+uses arbitrary `SubEnumR R bool` weights, target visible
 events and a coinductive source service. It obtains handler replacement and
 a subsequent bind equation through the same completion/generic theorems.
 This is not a new irrationality or termination theorem.

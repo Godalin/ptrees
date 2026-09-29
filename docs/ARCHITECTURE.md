@@ -205,6 +205,10 @@ tests; it cannot depend on the other Regression families. Domain-only tests
 remain independent from FreeOmega tests. `OmegaValMeasure`, invalid raw Lub,
 cofinality/diagonal misuse, raw observation mass escape, countable matrix mass
 escape, partial mass and large-universe tests are distinct contracts.
+Internal proof clients live in `Regression/Internal`, and independent canonical
+routing probes in `Regression/ImportOrder`; see the
+[retention inventory](REGRESSION_ORGANIZATION.md). Positive rewriting and
+inference tests are not replaceable by declaration snapshots.
 `AllImports` covers every other module exactly once, in sorted order.
 The alternate universe representation is only a regression, not another
 maintained syntax. No top-level `Events` namespace is introduced; standard

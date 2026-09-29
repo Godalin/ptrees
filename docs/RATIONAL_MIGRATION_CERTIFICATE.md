@@ -1,5 +1,10 @@
 # Rational shared representation: Phase 4a certificate
 
+Historical checkpoint report, not the current backend specification. The
+certificate was retired by the [Regression cleanup](REGRESSION_ORGANIZATION.md);
+its source remains in Git at `119ed4e`. Commands and phase status below describe
+that earlier checkpoint, not current validation instructions.
+
 Baseline: accepted Phase 3, `683d3c7`.
 
 **Phase 4 remains open.** This increment proves the representation-preservation

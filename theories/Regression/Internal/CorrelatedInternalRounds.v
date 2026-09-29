@@ -11,7 +11,8 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 Require Import PTree.Prob.Backend.EnumQ.FreeOmega.Coupling.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PStrong PTreeKernel PEutt.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalJoint FiniteInternalJointHitting FiniteInternalJointCoverage FiniteInternalJointAcceleration FiniteInternalJointCoinduction.
-From PTree.Regression.Infrastructure Require Import PairedFiniteCompression ResidualFinite.
+From PTree.Regression.Internal Require Import PairedFiniteCompression.
+From PTree.Regression.Internal Require Import ResidualFinite.
 Import EnumQ.
 Set Implicit Arguments.
 

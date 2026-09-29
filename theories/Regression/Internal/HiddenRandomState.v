@@ -14,7 +14,7 @@ From PTree.Eq.Internal Require Import FiniteInternal.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel.
 From PTree.Eq.Internal.FreeOmega Require Import KernelCompletion KernelProjection FiniteInternalAcceleration FiniteInternalProjectedPolicy.
 From PTree.Regression.Backend Require Import EnumQMeasureRegression SubEnumQRegression.
-From PTree.Regression.Infrastructure Require Import CouplingReferences.
+From PTree.Regression.Internal Require Import CouplingReferences.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

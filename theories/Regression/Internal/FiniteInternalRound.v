@@ -10,7 +10,7 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 From PTree.Eq.Internal Require Import FiniteInternalPlan.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalNative FiniteInternalRound.
-From PTree.Regression.Infrastructure Require Import FiniteInternalPlan.
+From PTree.Regression.Internal Require Import FiniteInternalPlan.
 
 Set Implicit Arguments.
 

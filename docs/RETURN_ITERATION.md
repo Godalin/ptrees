@@ -79,7 +79,7 @@ No complete Elgot-monad axiom suite is claimed here.
 
 ## Regression and trust boundary
 
-`Regression/Semantics/ReturnIteration.v` checks an inhabited event
+`Regression/Semantics/IterationFrontiers.v` checks an inhabited event
 signature, arbitrary MF kernels, native compatibility, the finite index
 shift, zero/missing mass, and endless retry with a nonleast fixed point.
 `Regression/Probability/KleisliIteration.v` checks the independent domain,

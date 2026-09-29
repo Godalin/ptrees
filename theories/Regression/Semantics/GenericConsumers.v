@@ -13,10 +13,6 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Definition generic_eventful_iter := @peutt_iter_eventful_of_generator_closed.
-Definition generic_guarded_contract := @guarded_handler.
-Definition generic_guarded_interp := @peutt_interp_guarded.
-Definition generic_interp_schedule := @ptree_interp_cofinal_all.
 
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure
   PTree.Prob.FreeOmega.StructuralMeasure.

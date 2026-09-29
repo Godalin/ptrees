@@ -19,6 +19,9 @@ REGISTRY = {'theories/Eq/Backend/' + n + '.v': n + '_CanonicalBehavior'
             for n in ['EnumQ', 'SubEnumQ', 'SubEnumR']}
 REGISTRY['theories/Eq/Backend/MathComp.v'] = 'MathComp_CanonicalBehavior'
 KERNEL_MODULES = [
+    # Check the template-polymorphic native sampler client in the full safe
+    # context, not just alone (which misses an over-specialized carrier).
+    'PTree.Regression.Execution.Runner',
     'PTree.Regression.Infrastructure.AllImports',
     'PTree.Regression.Infrastructure.ArchitectureBoundaries',
     'PTree.Regression.Infrastructure.UniverseSeparatedPTree',
@@ -26,7 +29,7 @@ KERNEL_MODULES = [
     'PTree.Regression.Semantics.CanonicalPartialDivergence',
     'PTree.Regression.Semantics.PEuttAlgebra',
     'PTree.Regression.Semantics.PublicSemanticFacade',
-    'PTree.Regression.Backend.FreeOmegaUpperContracts',
+    'PTree.Regression.Probability.FreeOmegaUpperContracts',
     'PTree.Regression.Probability.FreeOmegaDomain',
     'PTree.Regression.Probability.FreeOmegaSoundness',
     'PTree.Regression.Probability.CountableCoupling',
@@ -36,8 +39,8 @@ KERNEL_MODULES = [
     'PTree.Regression.Probability.OmegaValMeasure',
     'PTree.Regression.Probability.RealTransport',
     'PTree.Regression.Infrastructure.PublicBehavior',
-    'PTree.Regression.Infrastructure.CanonicalBehaviorStructuralFirst',
-    'PTree.Regression.Infrastructure.CanonicalBehaviorNativeFirst',
+    'PTree.Regression.ImportOrder.CanonicalBehaviorStructuralFirst',
+    'PTree.Regression.ImportOrder.CanonicalBehaviorNativeFirst',
     'PTree.Interp.IterationMachine',
     'PTree.Interp.IterationUniform',
     'PTree.Interp.FreeOmega.IterationUniform',

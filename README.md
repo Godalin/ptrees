@@ -362,10 +362,15 @@ the task: local rewriting, unbounded-loop summaries, or persistent-interaction
 coinduction. Begin loop analysis with `Examples/IterationBasics.v`; the guide
 links exact reusable endpoints and states their backend/termination boundaries.
 
-`Regression/{Semantics,Probability,Backend,Infrastructure}/` contains
-theorem regressions, negative examples, capability checks and proof-tool
-clients, not additional paper-facing case studies. In particular, the
+`Regression/` contains executable contracts, negative examples, capability
+checks and proof-tool clients, not additional paper-facing case studies.
+Its [organization and retention inventory](docs/REGRESSION_ORGANIZATION.md)
+separates internal-proof clients, independent import-order probes, execution
+tests and semantic/model contracts. In particular, the
 2×2 strictness witness belongs to the semantic comparison regressions.
+The supporting [RealSamplingHandler](theories/Examples/RealSamplingHandler.v)
+example demonstrates handler replacement in an infinite real-weight sampling
+service using public equations.
 The supporting [AbsorbingFrontier](theories/Examples/AbsorbingFrontier.v)
 example reuses VN to reach a mixed return/visible first frontier after
 unbounded internal retries; see [the absorption interface](docs/ABSORBING_ITERATION.md).

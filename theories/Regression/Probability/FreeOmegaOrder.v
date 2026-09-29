@@ -1,12 +1,10 @@
-(** Bind extraction contracts: approximation is not quotient equality;
-    one generic congruence serves arbitrary return carriers and relations. *)
+(** Observable quotient equality does not entail raw approximation order.
+    These counterexamples guard the probability-level bind abstraction. *)
 Set Universe Polymorphism.
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega Mixed BindOrder.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation
   PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure
   PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.BindOrder.
-From PTree.Core Require Import PTreeDefinition.
-From PTree.Eq Require Import PEutt Bind BindScheduling.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -44,29 +42,3 @@ Example sampled_zero_not_approx_bottom {A B} (mu : MN A) :
   ~ free_omega_approx (@eq B) (FOSample mu (fun _ => FOZero)) FOZero.
 Proof. intro H; inversion H. Qed.
 End NegativeOrderBoundary.
-
-(** Audit the actual generic theorem: no FreeOmega, MathComp, native measure
-    laws, Fubini, mixed omega continuity, or global choice in its signature. *)
-Definition generic_bind_endpoint := @PTree.Eq.Bind.peutt_bind.
-Definition generic_scheduling_endpoint := @BindScheduling.ptree_bind_cofinal_all.
-
-Section FreeOmegaClient.
-Context {E MN : Type -> Type} `{NI : SemanticMeasure MN}
-  `{NC : @SemanticMeasureCoreLaws MN NI}
-  `{NAE : @SemanticMeasureAELiftLaws MN NI} `{NO : @SemanticOmega MN NI}
-  `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
-  `{NCount : @SemanticMeasureCountableAELaws MN NI}.
-Local Notation MF := (FreeOmega MN).
-Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
-Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO)).
-Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
-Local Notation W := (@peutt E MN MF FI FC FreeOmegaMixedMeasure FO).
-
-Example free_omega_heterogeneous_bind {A B X Y}
-    (RR : X -> Y -> Prop) (RS : A -> B -> Prop)
-    (t : ptree E MN X) (u : ptree E MN Y)
-    (k : X -> ptree E MN A) (h : Y -> ptree E MN B) :
-  W RR t u -> (forall x y, RR x y -> W RS (k x) (h y)) ->
-  W RS (PTree.bind t k) (PTree.bind u h).
-Proof. intros Ht Hk; eapply peutt_bind; eassumption. Qed.
-End FreeOmegaClient.

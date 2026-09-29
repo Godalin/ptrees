@@ -1,3 +1,7 @@
+(** Supporting example: a real-weight sampling handler for an infinite service.
+    Reading entry: real_infinite_sampling; real_handler_bind_client.
+    Backend selection is SubEnumR; all program reasoning uses public equations.
+    See docs/CASE_STUDY_STANDARD.md. *)
 (** Real-weight sampling plus persistent visible interaction is a client of
     the same generic two-handler proof, not a backend-specific induction. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".

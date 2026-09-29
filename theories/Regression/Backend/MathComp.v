@@ -3,7 +3,7 @@
     The checked negative counterparts remain in MathCompUniverse.v. *)
 Set Warnings "-ambiguous-paths".
 Local Unset Universe Checking.
-Require PTree.Regression.Backend.FreeOmegaUpperContracts.
+Require PTree.Regression.Probability.FreeOmegaUpperContracts.
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order reals boolp
   classical_sets measure ereal.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.

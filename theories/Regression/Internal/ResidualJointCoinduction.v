@@ -11,7 +11,8 @@ From PTree.Eq.Internal Require Import FiniteInternal.
 From PTree.Eq Require Import PStrong PEutt.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalAcceleration.
 From PTree.Regression.Backend Require Import SubEnumQRegression.
-From PTree.Regression.Infrastructure Require Import HiddenRandomState CouplingReferences.
+From PTree.Regression.Internal Require Import HiddenRandomState.
+From PTree.Regression.Internal Require Import CouplingReferences.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

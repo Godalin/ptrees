@@ -9,7 +9,7 @@ From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 (** One existing maintained client suffices to expose the incompatible
     global universe constraints; a standalone file misses this boundary. *)
-Require PTree.Regression.Backend.FreeOmegaUpperContracts.
+Require PTree.Regression.Probability.FreeOmegaUpperContracts.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel PEutt.
 

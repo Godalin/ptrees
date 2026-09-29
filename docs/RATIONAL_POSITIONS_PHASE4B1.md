@@ -56,7 +56,7 @@ baseline using those exact replacements; it does not ignore arbitrary proof
 changes or normalize away theorem statements.
 
 The historical implementation is additionally tested by two `reflexivity`
-endpoints in `Regression/Backend/RationalPositions.v`. Shared indexing retains
+endpoints in `Regression/Backend/FiniteLists.v`. Shared indexing retains
 duplicate and zero-weight entries in their original slots. **It does not
 perform native zero pruning.** The relation still receives exactly the same
 indexed distributions as before this extraction.
@@ -106,7 +106,7 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Prob.Backend.EnumQ.FrontierLift \
   -norec PTree.Prob.Backend.EnumQ.FinitePresentation \
   -norec PTree.Prob.Backend.SubEnumQ.FreeOmega.JointSoundness \
-  -norec PTree.Regression.Backend.RationalPositions \
+  -norec PTree.Regression.Backend.FiniteLists \
   -norec PTree.Regression.Infrastructure.AllImports
 ```
 

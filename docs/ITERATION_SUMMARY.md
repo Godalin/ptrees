@@ -82,7 +82,7 @@ axiom sets. The contract changes are explicit, not a blanket snapshot refresh.
 
 ## Checks
 
-`Regression/Semantics/IterationSummary.v` exercises an inhabited signature,
+`Regression/Semantics/IterationFrontiers.v` exercises an inhabited signature,
 unbounded nat state/result carriers, a bit-only observation limit, a zero-mass
 kernel and endless retry. VN and Adaptive supply the nontrivial probability
 analysis clients. Neither a zero summary nor endless retry asserts AST.

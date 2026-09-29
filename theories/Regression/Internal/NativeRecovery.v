@@ -9,9 +9,10 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.Recovery.
 Require Import PTree.Prob.Backend.EnumQ.SemanticCoupling.
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.EquivalenceJoint PTree.Prob.Backend.SubEnumQ.FreeOmega.NativeCoupling.
-From PTree.Regression.Infrastructure Require Import FiniteInternalPlan.
+From PTree.Regression.Internal Require Import FiniteInternalPlan.
 From PTree.Regression.Backend Require Import SubEnumQRegression.
-From PTree.Regression.Infrastructure Require Import HiddenRandomState CouplingReferences.
+From PTree.Regression.Internal Require Import HiddenRandomState.
+From PTree.Regression.Internal Require Import CouplingReferences.
 From PTree.Eq Require Import PStrong.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalPlan.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalNative FiniteInternalRoundCoupling FiniteInternalNativeJoint FiniteInternalJointRows.

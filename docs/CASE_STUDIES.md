@@ -49,6 +49,7 @@ connects the existing finite rational analysis to that bounded backend; raw
 For effect-specific and executable supporting examples, also see
 [ITreeSampling](../theories/Examples/ITreeSampling.v),
 [EffectInteractions](../theories/Examples/EffectInteractions.v),
+[RealSamplingHandler](../theories/Examples/RealSamplingHandler.v),
 [StateCounter](../theories/Examples/StateCounter.v) and
 [RationalState](../theories/Examples/RationalState.v).
 Shared VN/rational proofs are dependencies to reuse, not material to copy into
