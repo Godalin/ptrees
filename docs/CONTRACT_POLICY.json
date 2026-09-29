@@ -71,7 +71,7 @@
   },
   "facades": {
     "theories/PTree.v": "From PTree.Core Require Export PTreeDefinition Handler. Export PTreeDefinition.PTree PTreeNotations.",
-    "theories/Semantics.v": "From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment. Notation head_step := HeadTransition.head_step. Notation head_bisim := HeadTransition.head_bisim. Notation trans := TreeTransition.trans. Notation tree_return_observation := TreeTransition.tree_return_observation. Notation tree_offered_event_observation := TreeTransition.tree_offered_event_observation. Notation trans_bisim := TreeTransitionBisim.trans_bisim. Notation trans_bisim_coinduction := TreeTransitionBisim.trans_bisim_coinduction. Notation mdp_head := MDPFragment.mdp_head. Notation mdp_state := MDPFragment.mdp_state.",
+    "theories/Semantics.v": "From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment. From PTree.Semantics Require Import TreeTransitionSoundness MDPCoincidence MDPReflection. Notation head_step := HeadTransition.head_step. Notation head_bisim := HeadTransition.head_bisim. Notation trans := TreeTransition.trans. Notation tree_return_observation := TreeTransition.tree_return_observation. Notation tree_offered_event_observation := TreeTransition.tree_offered_event_observation. Notation trans_bisim := TreeTransitionBisim.trans_bisim. Notation trans_bisim_coinduction := TreeTransitionBisim.trans_bisim_coinduction. Notation trans_bisim_refl := TreeTransitionBisim.trans_bisim_refl. Notation trans_bisim_sym := TreeTransitionBisim.trans_bisim_sym. Notation trans_bisim_trans := TreeTransitionBisim.trans_bisim_trans. Notation trans_bisim_equivalence := TreeTransitionBisim.trans_bisim_equivalence. Notation mdp_head := MDPFragment.mdp_head. Notation mdp_state := MDPFragment.mdp_state. Notation peutt_trans_bisim := TreeTransitionSoundness.peutt_trans_bisim. Notation mdp_state_peutt_trans_iff := MDPCoincidence.mdp_state_peutt_trans_iff. Notation mdp_trans_bisim_iff := MDPReflection.mdp_trans_bisim_iff.",
     "theories/Eq.v": "From PTree.Eq Require Export PStruct PStrong PEutt Canonical UpToProb. Export PStructNotations PStrongNotations PEuttNotations.",
     "theories/PTreeFacts.v": "From PTree Require Export PTree Eq. From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting WellFormedness StableHittingComputation ProbabilisticTrace Bind Algebra Iter. From PTree.Eq.FreeOmega Require Export Bind Algebra Iter. From PTree.Interp Require Export Guarded Unrestricted HandlerRelation HandlerFacts State Reader Writer Exception StateFacts StatePreservation StandardFacts ExceptionFacts. From PTree.Interp.FreeOmega Require Export Atomic MDP HandlerCompletion.",
     "theories/Eq/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Core Require Import PTreeDefinition. From PTree.Prob.Interface Require Import Measure Mixed Omega. From PTree.Eq Require Import PEutt. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Class CanonicalBehavior (MN : Type -> Type) := { behavior_frontier : Type -> Type; behavior_measure : SemanticMeasure behavior_frontier; behavior_mixed : MixedMeasure MN behavior_frontier; behavior_omega : @SemanticOmega behavior_frontier behavior_measure }. Definition canonical_peutt {E MN} `{CB : CanonicalBehavior MN} `{FC : @SemanticMeasureCoreLaws behavior_frontier behavior_measure} {A B} (RR : A -> B -> Prop) (t : ptree E MN A) (u : ptree E MN B) : Prop := @PEutt.peutt E MN behavior_frontier behavior_measure FC behavior_mixed behavior_omega A B RR t u. Module PEuttNotations. Notation \"t ≈ₚ[ RR ] u\" := (canonical_peutt RR t u) (at level 70, RR at next level, no associativity) : type_scope. Notation \"t ≈ₚ u\" := (canonical_peutt eq t u) (at level 70, no associativity) : type_scope. End PEuttNotations.",
@@ -1003,7 +1003,12 @@
       "distinct_returns_not_trans_bisim",
       "boolean_returns_trans_bisim_iff",
       "empty_events_action_only_match",
-      "empty_events_not_trans_bisim"
+      "empty_events_not_trans_bisim",
+      "generic_transition_equivalence",
+      "generic_transition_symmetry",
+      "generic_transition_transitivity",
+      "generic_transition_rewrite",
+      "concrete_transition_equivalence"
     ],
     "theories/Regression/Semantics/TreeTransitionSoundness.v": [
       "delayed_mixture_peutt",
@@ -1025,7 +1030,9 @@
       "return_peutt_injective",
       "no_correlated_head_pair",
       "correlated_response_not_peutt",
-      "peutt_strictly_contained_in_trans_bisim"
+      "peutt_strictly_contained_in_trans_bisim",
+      "correlated_response_trans_bisim_reverse",
+      "correlated_response_trans_bisim_roundtrip"
     ],
     "theories/Regression/Backend/MathCompDirect.v": [
       "direct_ret_reflexivity",

@@ -24,6 +24,13 @@ Module ComparisonBoundary.
 Import Semantics.
 Check @trans.
 Check @trans_bisim.
+Check @trans_bisim_refl.
+Check @trans_bisim_sym.
+Check @trans_bisim_trans.
+Check @trans_bisim_equivalence.
+Check @peutt_trans_bisim.
+Check @mdp_state_peutt_trans_iff.
+Check @mdp_trans_bisim_iff.
 Check @tree_return_observation.
 Check @tree_offered_event_observation.
 Check @head_step.
@@ -32,6 +39,8 @@ Fail Check PTree.Semantics.TreeTransition.tree_trans.
 Fail Check PTree.Semantics.TreeTransitionBisim.tree_trans_bisim.
 Check @mdp_state.
 Fail Check PTree.Interp.FreeOmega.Atomic.atomic_handler.
+Fail Check PTree.Prob.Backend.SubEnumQ.Representation.SubEnumQ.
+Fail Check PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior.
 End ComparisonBoundary.
 
 From PTree Require Import PTreeFacts.

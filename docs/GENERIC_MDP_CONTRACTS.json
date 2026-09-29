@@ -245,6 +245,21 @@
       "name": "PTree.Regression.Backend.MathCompOmega.empty_map_reflection",
       "type": "MathCompOmega.empty_map_reflection\n     : forall R : reals.Real.type,\n       Kernel.MathCompCouplingGluing R ->\n       forall mu : Kernel.MathCompKernelMeasure R Empty_set,\n       @Kernel.mathcomp_kernel_lift R Empty_set Empty_set (fun _ _ : Empty_set => False) mu mu",
       "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
+    },
+    {
+      "name": "PTree.Semantics.TreeTransitionBisim.trans_bisim_sym",
+      "type": "@TreeTransitionBisim.trans_bisim_sym\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Symmetric (PTreeDefinition.ptree E MN R)\n         (@TreeTransitionBisim.trans_bisim E MN MF FI FC MX FO R R (@eq R))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Semantics.TreeTransitionBisim.trans_bisim_trans",
+      "type": "@TreeTransitionBisim.trans_bisim_trans\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Transitive (PTreeDefinition.ptree E MN R)\n         (@TreeTransitionBisim.trans_bisim E MN MF FI FC MX FO R R (@eq R))",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Semantics.TreeTransitionBisim.trans_bisim_equivalence",
+      "type": "@TreeTransitionBisim.trans_bisim_equivalence\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R : Type),\n       @RelationClasses.Equivalence (PTreeDefinition.ptree E MN R)\n         (@TreeTransitionBisim.trans_bisim E MN MF FI FC MX FO R R (@eq R))",
+      "assumptions": "Closed under the global context"
     }
   ],
   "direct": [

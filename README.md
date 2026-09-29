@@ -68,6 +68,11 @@ measures over the whole stable frontier, without conditioning or normalization.
 Its induced bisimulation also compares current return and offered-event
 observations; it is not the canonical `peutt` relation. These definitions remain
 in `Semantics/TreeTransition*.v`; the observation APIs retain their `tree_` prefix.
+For `RR := eq`, `trans_bisim` has a generic `Equivalence` instance supporting
+symmetry, transitivity and setoid rewriting. `From PTree Require Import
+Semantics.` exposes that API and the existing chain from `peutt` inclusion
+through MDP-fragment coincidence to encoded MDP correspondence. The precise
+premises and Gate S dependency audit are in [Transition API](docs/TRANSITION_API.md).
 
 Proofs may use the following strength hierarchy before promoting their result
 to the canonical behavioral endpoint:

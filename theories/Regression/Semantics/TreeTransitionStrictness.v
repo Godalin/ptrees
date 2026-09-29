@@ -165,6 +165,17 @@ Proof.
   - right. split; reflexivity.
 Qed.
 
+(** Exercise the equivalence API on a pair outside peutt, not merely on
+    reflexivity or evidence manufactured by peutt soundness. *)
+Example correlated_response_trans_bisim_reverse : TB Q P.
+Proof. apply trans_bisim_sym. exact correlated_response_trans_bisim. Qed.
+Example correlated_response_trans_bisim_roundtrip : TB P P.
+Proof.
+  transitivity Q.
+  - exact correlated_response_trans_bisim.
+  - exact correlated_response_trans_bisim_reverse.
+Qed.
+
 (** Inversion uses the concrete backend's support transport, not a new
     generic Dirac-injectivity law. *)
 Lemma return_peutt_injective b c : W (Ret b) (Ret c) -> b = c.

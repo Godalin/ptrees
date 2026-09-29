@@ -77,6 +77,38 @@ Proof.
 Qed.
 End MeasureMatch.
 
+(** Match actual intermediate witnesses in both directions. Composition
+    needs neither witness uniqueness nor a global choice of representatives. *)
+Section MeasureMatchComposition.
+Context {MF : Type -> Type} `{FI : SemanticMeasure MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}.
+
+Lemma tree_measure_match_flip {A B} (rel : A -> B -> Prop) left right :
+  tree_measure_match rel left right ->
+  tree_measure_match (fun b a => rel a b) right left.
+Proof.
+  intros [Hf Hb]. split.
+  - intros nu Hnu. destruct (Hb nu Hnu) as [mu [Hmu Hlift]].
+    exists mu. split; [exact Hmu|apply sem_lift_sym; exact Hlift].
+  - intros mu Hmu. destruct (Hf mu Hmu) as [nu [Hnu Hlift]].
+    exists nu. split; [exact Hnu|apply sem_lift_sym; exact Hlift].
+Qed.
+
+Lemma tree_measure_match_comp {A B C}
+    (rel1 : A -> B -> Prop) (rel2 : B -> C -> Prop) left middle right :
+  tree_measure_match rel1 left middle -> tree_measure_match rel2 middle right ->
+  tree_measure_match (fun a c => exists b, rel1 a b /\ rel2 b c) left right.
+Proof.
+  intros [Hf1 Hb1] [Hf2 Hb2]. split.
+  - intros mu Hmu. destruct (Hf1 mu Hmu) as [nu [Hnu H1]].
+    destruct (Hf2 nu Hnu) as [xi [Hxi H2]].
+    exists xi. split; [exact Hxi|eapply sem_lift_comp; eassumption].
+  - intros xi Hxi. destruct (Hb2 xi Hxi) as [nu [Hnu H2]].
+    destruct (Hb1 nu Hnu) as [mu [Hmu H1]].
+    exists mu. split; [exact Hmu|eapply sem_lift_comp; eassumption].
+Qed.
+End MeasureMatchComposition.
+
 Section Bisimulation.
 Context {E MN MF : Type -> Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -181,3 +213,51 @@ Proof.
         apply sem_lift_refl; intro h; reflexivity.
 Qed.
 End Reflexivity.
+
+(** Homogeneous equivalence of the independent transition GFP. In
+    particular, this does not factor through peutt or MDP coincidence. *)
+Section Equivalence.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
+Context {R : Type}.
+Local Notation TB := (@trans_bisim E MN MF FI FC MX FO R R eq).
+
+Theorem trans_bisim_sym : Symmetric TB.
+Proof.
+  intros t u H. eapply trans_bisim_coinduction
+    with (sim := fun t u => TB u t); [|exact H].
+  intros x y Hxy. destruct (trans_bisim_unfold Hxy) as [Hr [He Ht]].
+  split.
+  - eapply tree_measure_match_mono; [|exact (tree_measure_match_flip Hr)].
+    intros a b Hab. symmetry. exact Hab.
+  - split.
+    + eapply tree_measure_match_mono; [|exact (tree_measure_match_flip He)].
+      intros a b Hab. symmetry. exact Hab.
+    + intro label. exact (tree_measure_match_flip (Ht label)).
+Qed.
+
+Theorem trans_bisim_trans : Transitive TB.
+Proof.
+  intros t u v Htu Huv. eapply trans_bisim_coinduction
+    with (sim := fun t v => exists u, TB t u /\ TB u v).
+  - intros x z [y [Hxy Hyz]].
+    destruct (trans_bisim_unfold Hxy) as [Hr1 [He1 Ht1]].
+    destruct (trans_bisim_unfold Hyz) as [Hr2 [He2 Ht2]].
+    split.
+    + eapply tree_measure_match_mono;
+        [|exact (tree_measure_match_comp Hr1 Hr2)].
+      intros a c [b [-> ->]]. reflexivity.
+    + split.
+      * eapply tree_measure_match_mono;
+          [|exact (tree_measure_match_comp He1 He2)].
+        intros a c [b [-> ->]]. reflexivity.
+      * intro label. eapply tree_measure_match_mono;
+          [|exact (tree_measure_match_comp (Ht1 label) (Ht2 label))].
+        intros h k [j [Hhj Hjk]]. exists (stable_head_tree j). auto.
+  - exists u. auto.
+Qed.
+
+#[global] Instance trans_bisim_equivalence : Equivalence TB.
+Proof. split; [apply trans_bisim_refl|apply trans_bisim_sym|apply trans_bisim_trans]. Qed.
+End Equivalence.

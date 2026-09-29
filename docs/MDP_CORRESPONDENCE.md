@@ -3,6 +3,8 @@
 For the subsequent extraction of generic MDP/atomic proofs and their explicit
 probability-level premises, see [Generic MDP consumers](GENERIC_MDP.md).
 The validation below records the original concrete-endpoint addition.
+For the current curated comparison entry and the complete generic theorem
+chain, see [Transition API](TRANSITION_API.md).
 
 `Semantics/Backend/MDPEmbeddingSubEnumQ.v` now provides:
 

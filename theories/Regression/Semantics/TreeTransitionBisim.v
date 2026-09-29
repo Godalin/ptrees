@@ -4,6 +4,7 @@ Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Program Require Import Equality.
+From Coq Require Import RelationClasses Morphisms Setoid.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
@@ -13,6 +14,24 @@ From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransition
 
 (** No behavioral-equality module is loaded by the new GFP. *)
 Fail Check PTree.Eq.PEutt.peutt.
+
+(** Even an abstract native carrier suffices: no native laws, hitting
+    existence, BindLaws or OmegaLaws are needed for the equivalence API. *)
+Section GenericEquivalence.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI} {R : Type}.
+Local Notation TB := (@trans_bisim E MN MF FI FC MX FO R R eq).
+Example generic_transition_equivalence : Equivalence TB.
+Proof. typeclasses eauto. Qed.
+Example generic_transition_symmetry t u : TB t u -> TB u t.
+Proof. intro H. symmetry. exact H. Qed.
+Example generic_transition_transitivity t u v : TB t u -> TB u v -> TB t v.
+Proof. intros Htu Huv. transitivity u; assumption. Qed.
+Example generic_transition_rewrite t u v (H : TB t u) : TB t v <-> TB u v.
+Proof. setoid_rewrite H. reflexivity. Qed.
+End GenericEquivalence.
+
 From PTree.Regression.Semantics Require Import TreeTransition.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -39,6 +58,8 @@ Example empty_event_reflexive : bisim deadA deadA.
 Proof. apply trans_bisim_refl. Qed.
 Example fold_unfold_regression t u : bisim t u <-> generator bisim t u.
 Proof. split; [apply trans_bisim_unfold|apply trans_bisim_fold]. Qed.
+Example concrete_transition_equivalence : Equivalence bisim.
+Proof. typeclasses eauto. Qed.
 
 (** Ret is observed now, not only after a future action. No generic Dirac
     injectivity is postulated: this negative result uses SubEnumQ/FreeOmega. *)
