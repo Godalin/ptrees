@@ -42,6 +42,24 @@ Definition oval_enumerated {A} (e : nat -> option A) x := exists n, e n = Some x
 Definition oval_countably_supported {A} (L : OmegaVal R A) : Prop :=
   exists e : nat -> option A, oval_ae L (oval_enumerated e).
 
+Lemma oval_ret_countably_supported {A} (x : A) :
+  oval_countably_supported (oval_ret R x).
+Proof.
+  exists (fun _ => Some x); intros f g Hf Hg Hfg; apply Hfg; exists O; reflexivity.
+Qed.
+
+Lemma oval_bottom_countably_supported {A} :
+  oval_countably_supported (@oval_bottom R A).
+Proof. exists (fun _ => None); intros f g Hf Hg Hfg; reflexivity. Qed.
+
+(** No restriction on the support or mass of a distribution on nat. *)
+Lemma oval_nat_countably_supported (L : OmegaVal R nat) :
+  oval_countably_supported L.
+Proof.
+  exists (@Some nat); intros f g Hf Hg Hfg.
+  apply oval_eval_ext=> n; apply Hfg; exists n; reflexivity.
+Qed.
+
 Definition oval_code {A} (e : nat -> option A) (x : A) : nat :=
   match pselect (oval_enumerated e x) with
   | left H => proj1_sig (cid H)

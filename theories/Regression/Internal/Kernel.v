@@ -1,3 +1,4 @@
+From PTree.Prob.Backend.EnumQ.FreeOmega Require Import Coupling.
 (** Maintained internal kernel contracts: leastness, raw-order boundaries,
     continuity and congruence. Not a public equivalence or application. *)
 
@@ -218,7 +219,6 @@ Require PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure.
 Require PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require PTree.Eq.PrimitiveStableHitting.
 Require PTree.Eq.Internal.FreeOmega.KernelCompletion PTree.Eq.Internal.FreeOmega.KernelCongruence.
-Require PTree.Regression.Semantics.PEuttAlgebra.
 Module KernelCongruence.
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
@@ -231,7 +231,6 @@ Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.SubEnumQ.Measure.
 Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Import PTree.Eq.PrimitiveStableHitting.
 Import PTree.Eq.Internal.FreeOmega.KernelCompletion PTree.Eq.Internal.FreeOmega.KernelCongruence.
-Import PTree.Regression.Semantics.PEuttAlgebra.
 
 Set Implicit Arguments.
 

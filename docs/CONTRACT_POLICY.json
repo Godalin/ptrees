@@ -658,8 +658,6 @@
       "unbounded_retry_denotes_lub"
     ],
     "theories/Regression/Probability/FreeOmegaSoundness.v": [
-      "dirac_countable",
-      "bottom_countable",
       "empty_carrier_joint",
       "type_carrier_joint",
       "constant_to_invalid",
@@ -935,7 +933,6 @@
       "canonical_prob_ret_regression",
       "canonical_prob_flatten_regression",
       "canonical_prob_measure_setoid_rewrite",
-      "enumQ_semantic_product_swap",
       "canonical_prob_interchange_regression",
       "canonical_iter_unfold_regression",
       "canonical_iter_structural_regression",
@@ -1001,6 +998,7 @@
       "mixture_false_mass"
     ],
     "theories/Regression/Semantics/TreeTransitionBisim.v": [
+      "generic_heterogeneous_return_reflection",
       "successor_relation_is_raw_tree_candidate",
       "return_reflexive",
       "empty_event_reflexive",
@@ -1464,6 +1462,7 @@
       "real_iter_setoid"
     ],
     "theories/Regression/Semantics/GenericConsumers.v": [
+      "generic_heterogeneous_ret_iff",
       "free_omega_eventful_iter",
       "real_guarded_interp"
     ],

@@ -8,6 +8,7 @@ From mathcomp Require Import eqtype.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Prob.Interface Require Import FrontierLift.
+From PTree.Prob.Backend.EnumQ.FreeOmega Require Import Coupling.
 Require Import PTree.Prob.Backend.EnumQ.FrontierLift.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.EnumQ.Measure.
@@ -195,25 +196,6 @@ Proof.
   { intros mu1 mu2 Hmu. unfold sample.
     apply peutt_prob_measure. exact Hmu. }
   setoid_rewrite reg_split_mass_lift_eq. reflexivity.
-Qed.
-
-Lemma enumQ_semantic_product_swap {X Y : eqType}
-    (mu : EnumQ X) (nu : EnumQ Y) :
-  @sem_lift EnumQ EnumQ_SemanticMeasure _ _
-    semantic_pair_swap_rel
-    (semantic_product mu nu) (semantic_product nu mu).
-Proof.
-  change (@meas_lift EnumQ EnumQ_MeasureInterface _ _
-    semantic_pair_swap_rel
-    (bind_EnumQ mu (fun x => bind_EnumQ nu
-      (fun y => ret_EnumQ (x, y))))
-    (bind_EnumQ nu (fun y => bind_EnumQ mu
-      (fun x => ret_EnumQ (y, x))))).
-  refine (@meas_lift_bind_ret_exchange EnumQ EnumQ_MeasureInterface
-    EnumQ_MeasureCommutativeLaws X Y (X * Y)%type (Y * X)%type
-    (@semantic_pair_swap_rel X Y) mu nu
-    (fun x y => (x, y)) (fun y x => (y, x)) _).
-  intros x y. split; reflexivity.
 Qed.
 
 Lemma canonical_prob_interchange_regression {X Y : eqType} {R}

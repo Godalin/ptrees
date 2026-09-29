@@ -529,6 +529,7 @@
     "PTree.Prob.Backend.Common.CountableRealTransport",
     "PTree.Prob.Backend.Common.DomainTransport",
     "PTree.Prob.Backend.Common.RealTransport",
+    "PTree.Prob.Backend.EnumQ.FreeOmega.Coupling",
     "PTree.Prob.Backend.SubEnumQ.Domain",
     "PTree.Prob.Backend.SubEnumQ.Expectation",
     "PTree.Prob.Backend.SubEnumQ.FreeOmega.Admissibility",
@@ -2974,6 +2975,46 @@
       "name": "PTree.Prob.Domain.Expectation.oval_bottom_not_ret",
       "type": "Expectation.oval_bottom_not_ret\n     : forall (R : reals.Real.type) (A : Type) (x : A),\n       ~ @Expectation.oval_eq R A (@Expectation.oval_bottom R A) (@Expectation.oval_ret R A x)",
       "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
+    },
+    {
+      "name": "PTree.Prob.Interface.Coupling.sem_lift_ret_inv",
+      "type": "@Coupling.sem_lift_ret_inv\n     : forall (S : Type -> Type) (SI : Measure.SemanticMeasure S),\n       @Coupling.SemanticMeasureCouplingAELaws S SI ->\n       @AE.SemanticMeasureDiracAELaws S SI ->\n       forall (A B : Type) (rel : A -> B -> Prop) (a : A) (b : B),\n       @Measure.sem_lift S SI A B rel (@Measure.sem_ret S SI A a) (@Measure.sem_ret S SI B b) ->\n       rel a b",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PEutt.peutt_ret_inv",
+      "type": "@PEutt.peutt_ret_inv\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Coupling.SemanticMeasureCouplingAELaws MF FI ->\n       @AE.SemanticMeasureDiracAELaws MF FI ->\n       forall (R1 R2 : Type) (RR : R1 -> R2 -> Prop) (r1 : R1) (r2 : R2),\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN R1 (PTreeDefinition.ptree E MN R1) r1\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN R2 (PTreeDefinition.ptree E MN R2) r2\n         |} -> RR r1 r2",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Eq.PEutt.peutt_ret_iff",
+      "type": "@PEutt.peutt_ret_iff\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       forall (MX : Mixed.MixedMeasure MN MF) (FO : @Omega.SemanticOmega MF FI),\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Coupling.SemanticMeasureCouplingAELaws MF FI ->\n       @AE.SemanticMeasureDiracAELaws MF FI ->\n       forall (R1 R2 : Type) (RR : R1 -> R2 -> Prop) (r1 : R1) (r2 : R2),\n       @PEutt.peutt E MN MF FI FC MX FO R1 R2 RR\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN R1 (PTreeDefinition.ptree E MN R1) r1\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN R2 (PTreeDefinition.ptree E MN R2) r2\n         |} <-> RR r1 r2",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Semantics.TreeTransitionBisim.trans_bisim_ret_inv",
+      "type": "@TreeTransitionBisim.trans_bisim_ret_inv\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R1 R2 : Type) (RR : R1 -> R2 -> Prop),\n       @Measure.SemanticMeasureBindLaws MF FI ->\n       @Omega.SemanticOmegaLaws MF FI FO ->\n       @Omega.SemanticOmegaCofinalityLaws MF FI FO ->\n       @Coupling.SemanticMeasureCouplingAELaws MF FI ->\n       @AE.SemanticMeasureDiracAELaws MF FI ->\n       forall (r1 : R1) (r2 : R2),\n       @TreeTransitionBisim.trans_bisim E MN MF FI FC MX FO R1 R2 RR\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN R1 (PTreeDefinition.ptree E MN R1) r1\n         |}\n         {|\n           PTreeDefinition._observe :=\n             @PTreeDefinition.RetF E MN R2 (PTreeDefinition.ptree E MN R2) r2\n         |} -> RR r1 r2",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Domain.Countable.oval_ret_countably_supported",
+      "type": "Countable.oval_ret_countably_supported\n     : forall (R : reals.Real.type) (A : Type) (x : A),\n       @Countable.oval_countably_supported R A (@Expectation.oval_ret R A x)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
+    },
+    {
+      "name": "PTree.Prob.Domain.Countable.oval_bottom_countably_supported",
+      "type": "Countable.oval_bottom_countably_supported\n     : forall (R : reals.Real.type) (A : Type),\n       @Countable.oval_countably_supported R A (@Expectation.oval_bottom R A)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
+    },
+    {
+      "name": "PTree.Prob.Domain.Countable.oval_nat_countably_supported",
+      "type": "Countable.oval_nat_countably_supported\n     : forall (R : reals.Real.type) (L : Expectation.OmegaVal R nat),\n       @Countable.oval_countably_supported R nat L",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
+    },
+    {
+      "name": "PTree.Prob.Backend.EnumQ.FreeOmega.Coupling.enumQ_semantic_product_swap",
+      "type": "@Coupling.enumQ_semantic_product_swap\n     : forall (X Y : eqtype.Equality.type)\n         (mu : Representation.EnumQ.EnumQ (eqtype.Equality.sort X))\n         (nu : Representation.EnumQ.EnumQ (eqtype.Equality.sort Y)),\n       @Measure.sem_lift Representation.EnumQ.EnumQ Measure.EnumQ_SemanticMeasure\n         (eqtype.Equality.sort X * eqtype.Equality.sort Y)\n         (eqtype.Equality.sort Y * eqtype.Equality.sort X)\n         (@SupportLift.semantic_pair_swap_rel (eqtype.Equality.sort X) (eqtype.Equality.sort Y))\n         (@SupportLift.semantic_product Representation.EnumQ.EnumQ Measure.EnumQ_SemanticMeasure\n            (eqtype.Equality.sort X) (eqtype.Equality.sort Y) mu nu)\n         (@SupportLift.semantic_product Representation.EnumQ.EnumQ Measure.EnumQ_SemanticMeasure\n            (eqtype.Equality.sort Y) (eqtype.Equality.sort X) nu mu)",
+      "assumptions": "Closed under the global context"
     }
   ]
 }

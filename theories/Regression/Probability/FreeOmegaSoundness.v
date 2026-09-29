@@ -16,18 +16,10 @@ Unset Printing Implicit Defensive.
 Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
-Lemma dirac_countable (R : realType) {A} (x : A) : oval_countably_supported (oval_ret R x).
-Proof.
-  exists (fun _ => Some x); intros f g Hf Hg Hfg; apply Hfg; exists O; reflexivity.
-Qed.
-
-Lemma bottom_countable (R : realType) A : oval_countably_supported (@oval_bottom R A).
-Proof. exists (fun _ => None); intros f g Hf Hg Hfg; reflexivity. Qed.
-
 Example empty_carrier_joint (R : realType) :
   oval_coupled (fun (_ : Empty_set) (_ : bool) => False) (oval_bottom R) (oval_bottom R).
 Proof.
-  apply oval_bidual_coupled; [exact: bottom_countable|exact: bottom_countable|].
+  apply oval_bidual_coupled; [exact: oval_bottom_countably_supported|exact: oval_bottom_countably_supported|].
   split; intros f g Hf Hg Hfg; exact: lexx.
 Qed.
 
@@ -38,7 +30,7 @@ Variable R : realType.
 Example type_carrier_joint (A : Type@{u}) (B : Type@{v}) :
   oval_coupled (fun (_ : Type@{u}) (_ : Type@{v}) => True) (oval_ret R A) (oval_ret R B).
 Proof.
-  apply oval_bidual_coupled; [exact: dirac_countable|exact: dirac_countable|].
+  apply oval_bidual_coupled; [exact: oval_ret_countably_supported|exact: oval_ret_countably_supported|].
   split; intros f g Hf Hg Hfg; apply Hfg; exact I.
 Qed.
 End LargeCarriers.

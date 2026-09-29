@@ -960,6 +960,28 @@ Proof.
       * apply sem_lift_ret. constructor. exact Hrr.
 Qed.
 
+(** Return reflection needs explicit Dirac separation. Unlike congruence,
+    it does not follow from the bare lifting algebra alone. *)
+Lemma peutt_ret_inv
+    `{CA : @SemanticMeasureCouplingAELaws MF FI}
+    `{D : @SemanticMeasureDiracAELaws MF FI}
+    {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
+  @peutt E MN MF FI FC MX FO R1 R2 RR (Ret r1) (Ret r2) -> RR r1 r2.
+Proof.
+  intro H.
+  pose proof (peutt_hitting_lift H (stable_hitting_ret r1)
+    (stable_hitting_ret r2)) as Hlift.
+  apply sem_lift_ret_inv in Hlift.
+  inversion Hlift. assumption.
+Qed.
+
+Lemma peutt_ret_iff
+    `{CA : @SemanticMeasureCouplingAELaws MF FI}
+    `{D : @SemanticMeasureDiracAELaws MF FI}
+    {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
+  @peutt E MN MF FI FC MX FO R1 R2 RR (Ret r1) (Ret r2) <-> RR r1 r2.
+Proof. split; [apply peutt_ret_inv|apply peutt_ret]. Qed.
+
 Lemma peutt_vis {R1 R2 X} (RR : R1 -> R2 -> Prop)
     (e : E X) (k1 : X -> ptree E MN R1) (k2 : X -> ptree E MN R2) :
   (forall x, @peutt E MN MF FI FC MX FO R1 R2 RR

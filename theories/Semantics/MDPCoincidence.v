@@ -34,17 +34,6 @@ Local Notation TB := (@trans_bisim E MN MF FI FC MX FO R R eq).
 Local Notation good := (@mdp_head E MN MF FI FC MX FO R).
 Local Notation state := (@mdp_state E MN MF FI FC MX FO R).
 
-Lemma mdp_lift_dirac_inv {A B} (rel : A -> B -> Prop) a b :
-  sem_lift rel (sem_ret a) (sem_ret b) -> rel a b.
-Proof.
-  intro Hlift.
-  assert (Ha : sem_ae (sem_ret a) (fun x => x = a)).
-  { apply (proj2 (sem_ae_ret_iff _ _)). reflexivity. }
-  pose proof (sem_lift_ae_transport_r Hlift Ha) as Hb.
-  apply (proj1 (sem_ae_ret_iff _ _)) in Hb.
-  destruct Hb as [x [Hrel ->]]. exact Hrel.
-Qed.
-
 Lemma mdp_ret_zero_separate {A} (a : A) :
   ~ sem_lift eq (sem_ret a) sem_zero.
 Proof.
@@ -173,11 +162,11 @@ Proof.
   pose proof (mdp_dirac_return_match Htb Hf Hh Hg Hk) as Hret.
   pose proof (mdp_dirac_event_match Htb Hf Hh Hg Hk) as Hevent.
   destruct h as [r|X e cont1], k as [s|Y event cont2]; cbn in Hret, Hevent.
-  - constructor. exact (mdp_lift_dirac_inv Hret).
+  - constructor. exact (sem_lift_ret_inv Hret).
   - exfalso. exact (mdp_ret_zero_separate Hret).
   - exfalso. apply (mdp_ret_zero_separate (a := s)).
     eapply sem_lift_mono; [|apply sem_lift_sym; exact Hret]. intros a b ->. reflexivity.
-  - apply mdp_lift_dirac_inv in Hevent. dependent destruction Hevent.
+  - apply sem_lift_ret_inv in Hevent. dependent destruction Hevent.
     constructor. intro x.
     destruct (proj1 (mdp_head_vis_iff event cont1) Hgood1 x) as [out1 [Hhit1 [Ht1 Ha1]]].
     destruct (proj1 (mdp_head_vis_iff event cont2) Hgood2 x) as [out2 [Hhit2 [Ht2 Ha2]]].

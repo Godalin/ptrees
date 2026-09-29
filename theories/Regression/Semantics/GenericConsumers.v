@@ -1,7 +1,7 @@
 (** Generic ownership and completion specialization, without inference magic. *)
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import Measure Omega Mixed.
+From PTree.Prob.Interface Require Import Measure AE Coupling Omega Mixed.
 From PTree.Eq Require Import Iter PEutt.
 From PTree.Interp Require Import Scheduling Preservation Guarded.
 
@@ -12,6 +12,25 @@ Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
+
+(** Return reflection is heterogeneous and independent of completion syntax.
+    The extra separation requirements are explicit probability-level laws. *)
+Section ReturnReflection.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{CA : @SemanticMeasureCouplingAELaws MF FI}
+  `{D : @SemanticMeasureDiracAELaws MF FI}.
+Example generic_heterogeneous_ret_iff {A B} (RR : A -> B -> Prop) a b :
+  @peutt E MN MF FI FC MX FO A B RR (Ret a) (Ret b) <-> RR a b.
+Proof. apply peutt_ret_iff. Qed.
+End ReturnReflection.
+
+Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
+Fail Check PTree.Semantics.MDPCoincidence.mdp_state_peutt_trans_iff.
 
 
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure

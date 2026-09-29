@@ -19,12 +19,6 @@ Fail Check PTree.Core.PTreeDefinition.ptree.
 Section CountableTests.
 Variable R : realType.
 
-Lemma nat_countable (L : OmegaVal R nat) : oval_countably_supported L.
-Proof.
-  exists (@Some nat); intros f g Hf Hg Hfg.
-  apply oval_eval_ext=> n; apply Hfg; exists n; reflexivity.
-Qed.
-
 (** Truly arbitrary nat distributions, not only finite approximants. Both
     limiting marginals may have infinite support and deficient total mass. *)
 Example arbitrary_nat_relational_limit (T : nat -> nat -> Prop)
@@ -32,13 +26,13 @@ Example arbitrary_nat_relational_limit (T : nat -> nat -> Prop)
     (Hc : oval_increasing c) (Hd : oval_increasing d) :
   (forall n, oval_coupled T (c n) (d n)) ->
   exists J, oval_joint T (oval_lub Hc) (oval_lub Hd) J.
-Proof. apply oval_coupled_lub; intro n; apply nat_countable. Qed.
+Proof. apply oval_coupled_lub; intro n; apply oval_nat_countably_supported. Qed.
 
 Example successor_limit (c : nat -> OmegaVal R nat) (Hc : oval_increasing c) :
   oval_coupled (fun x y => y = S x) (oval_lub Hc)
     (oval_lub (oval_bind_chain_l Hc (fun x => oval_ret R (S x)))).
 Proof.
-  apply oval_coupled_lub; try (intro n; apply nat_countable).
+  apply oval_coupled_lub; try (intro n; apply oval_nat_countably_supported).
   intro n; exists (oval_bind (c n) (fun x => oval_ret R (x,S x))).
   split; first by intros.
   split; first by intros.
@@ -63,8 +57,8 @@ Example empty_relation_zero_limit :
     (oval_lub (fun n => @oval_le_refl R bool (oval_bottom R))).
 Proof.
   apply oval_coupled_lub.
-  - intro n; exists (fun _ => None); intros f g Hf Hg Hfg; reflexivity.
-  - intro n; exists (fun _ => None); intros f g Hf Hg Hfg; reflexivity.
+  - intro n; apply oval_bottom_countably_supported.
+  - intro n; apply oval_bottom_countably_supported.
   - intro n; exists (@oval_bottom R (Empty_set * bool)).
     split; first by intros. split; first by intros.
     intros f g Hf Hg Hfg; reflexivity.

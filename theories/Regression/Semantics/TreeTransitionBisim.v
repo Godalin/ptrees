@@ -32,6 +32,24 @@ Example generic_transition_rewrite t u v (H : TB t u) : TB t v <-> TB u v.
 Proof. setoid_rewrite H. reflexivity. Qed.
 End GenericEquivalence.
 
+Section GenericReturnReflection.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{CA : @SemanticMeasureCouplingAELaws MF FI}
+  `{D : @SemanticMeasureDiracAELaws MF FI}.
+Example generic_heterogeneous_return_reflection {A B} (RR : A -> B -> Prop) a b :
+  @trans_bisim E MN MF FI FC MX FO A B RR (Ret a) (Ret b) -> RR a b.
+Proof.
+  exact (@trans_bisim_ret_inv E MN MF FI FC MX FO A B RR FB FOL FCO CA D a b).
+Qed.
+End GenericReturnReflection.
+
+Fail Check PTree.Eq.PEutt.peutt.
+
 From PTree.Regression.Semantics Require Import TreeTransition.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -61,35 +79,20 @@ Proof. split; [apply trans_bisim_unfold|apply trans_bisim_fold]. Qed.
 Example concrete_transition_equivalence : Equivalence bisim.
 Proof. typeclasses eauto. Qed.
 
-(** Ret is observed now, not only after a future action. No generic Dirac
-    injectivity is postulated: this negative result uses SubEnumQ/FreeOmega. *)
+(** Ret is observed now, not only after a future action. Generic reflection
+    uses this SubEnumQ/FreeOmega profile's proved Dirac AE/support laws. *)
 Theorem distinct_returns_not_trans_bisim : ~ bisim (Ret true) (Ret false).
 Proof.
   intro H.
-  assert (Hobs : @sem_lift MF FI bool bool eq (FORet true) (FORet false)).
-  { refine (trans_bisim_return_observations H _ _);
-      apply (tree_return_ret (FI := FI) (FO := FO)). }
-  assert (Htrue : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
-    (fun b => b = true) (FORet true)).
-  { constructor. reflexivity. }
-  pose proof (proj1 (free_omega_qlift_support Hobs) _ Htrue) as Hfalse.
-  dependent destruction Hfalse. destruct H0 as [b [-> Hbad]]. discriminate.
+  apply (trans_bisim_ret_inv (D := free_omega_observable_dirac_ae_laws)) in H.
+  discriminate.
 Qed.
 
 Theorem boolean_returns_trans_bisim_iff b c : bisim (Ret b) (Ret c) <-> b = c.
 Proof.
-  split; [|intros ->; apply return_reflexive].
-  destruct b, c; try reflexivity.
-  - intro H. exfalso. exact (distinct_returns_not_trans_bisim H).
-  - intro H.
-    assert (Hobs : @sem_lift MF FI bool bool eq (FORet false) (FORet true)).
-    { refine (trans_bisim_return_observations H _ _);
-        apply (tree_return_ret (FI := FI) (FO := FO)). }
-    assert (Hfalse : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
-      (fun b => b = false) (FORet false)).
-    { constructor. reflexivity. }
-    pose proof (proj1 (free_omega_qlift_support Hobs) _ Hfalse) as Htrue.
-    dependent destruction Htrue. destruct H0 as [b [-> Hbad]]. discriminate.
+  split.
+  - apply (trans_bisim_ret_inv (D := free_omega_observable_dirac_ae_laws)).
+  - intros ->; apply return_reflexive.
 Qed.
 
 (** Even the FULL bidirectional action-only test identifies these trees,

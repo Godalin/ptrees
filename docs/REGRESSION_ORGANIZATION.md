@@ -180,6 +180,84 @@ Validation for this follow-up:
   and assumption blocks passed comparison in the recorded import context.
   The other 33 query groups were not rerun in this pass. CI is not queried.
 
+## Follow-up: reusable probability facts and heterogeneous return reflection
+
+Starting from `4178df6`, the promotion audit identifies a lemma's mathematical
+responsibility, not its file length or the presence of parameters. This pass
+implements three reviewed families; finite matching and the irrational-schedule
+case are deliberately left for a separate decision.
+
+| Previous location | Maintained owner / client disposition |
+|---|---|
+| `MDPCoincidence.mdp_lift_dirac_inv` | `Prob/Interface/Coupling.sem_lift_ret_inv`; MDP comparison/reflection consume it directly |
+| `FreeOmegaSoundness.dirac_countable`, `bottom_countable` | `Prob/Domain/Countable.oval_ret_countably_supported`, `oval_bottom_countably_supported` |
+| `RelationalLimit.nat_countable` | `Prob/Domain/Countable.oval_nat_countably_supported` |
+| `PEuttAlgebra.enumQ_semantic_product_swap` | `Prob/Backend/EnumQ/FreeOmega/Coupling`; all three clients import the production owner |
+| Strictness/exposure/concrete Boolean return inversions | Instantiate generic `peutt_ret_inv` or `trans_bisim_ret_inv` |
+
+The two relocated Dirac/product proof bodies are unchanged. The former MDP
+helper's elaborated signature only needs measure operations, Coupling AE and
+exact Dirac AE; its name and owner now reflect that fact. No compatibility alias
+or theorem-as-capability class is introduced.
+
+`Eq/PEutt` adds `peutt_ret_inv` and `peutt_ret_iff`; the transition owner adds
+`trans_bisim_ret_inv`. All support **heterogeneous** return carriers and arbitrary
+return relations. Besides the existing hitting/observation requirements
+(Core, Bind, omega and constant-lub laws), reflection explicitly requires
+Coupling AE and Dirac AE. It is not claimed for every abstract lifting.
+The three tree theorems and `sem_lift_ret_inv` are closed under the global
+context. Eq does not import Semantics, and transition reflection does not
+import peutt. Generic clients check these boundaries before concrete profiles
+are loaded where appropriate.
+
+The countability laws are independent OmegaVal mathematics, preserving the
+existing classical/extensional dependencies. Empty and high-universe carrier
+joint tests and infinite-support limit tests still run; they now reuse the
+production facts. No countability typeclass or ambient-carrier restriction is
+added.
+
+Product exchange remains an optional concrete law with its original `eqType`
+inputs, not a new universal commutativity assumption. The existing product/swap
+notation lives in FreeOmega support theory, so its derived EnumQ law belongs
+in the existing **bridge** owner, not in a native module with a reverse import.
+`CorrelatedSampleAlgebra` and `Internal/Kernel` no longer import `PEuttAlgebra`
+to obtain this general theorem. The product theorem is closed under the global
+context.
+
+Retained regressions include heterogeneous generic return clients, Boolean
+separation, strictness, interpreter exposure, actual algebra rewriting and
+the raw-invalid/partial-mass/universe boundaries. Source-policy helper entries
+are retired only when their declarations move; their substantive clients
+remain required. All 436 theory modules and 105 regression modules remain.
+The work does not change semantic definitions, backend representations,
+canonical routing, the logical-axiom whitelist or the Gate M allowlist.
+
+The existing central snapshot's 483 entries are preserved exactly; eight
+production endpoints are appended. The recorded query context adds the product
+law's production owner, after verifying that all old entries still print
+identically in that expanded context. All 491 central contracts and the 52
+generic-MDP contracts pass exact type/assumption comparison. The other 32 query
+groups are not claimed as rerun. No historical replay audit or new script is
+installed. Concrete return-reflection clients pass the existing
+`free_omega_observable_dirac_ae_laws` explicitly, preserving its non-global
+registration policy.
+
+Local validation for this pass:
+
+- Full `opam exec -- dune build -j 2` passed, including safe AllImports and
+  extraction, after making the generic profile and concrete Dirac-AE witness
+  explicit in the return-reflection regressions.
+- All 143 tool tests passed, as did architecture/report consistency, public
+  surface, source-safety and contract-registry checks. No timeout, toolchain,
+  checker policy or logical-axiom whitelist was changed.
+- The five new/moved non-Domain endpoints are closed under the global context;
+  the three countability facts retain their existing classical/extensional
+  dependencies. No semantic assumption was added. CI was not queried.
+- Joint `coqchk -norec` passed for 16 safe module bodies: the seven production
+  modules changed in this pass and the nine changed regression modules.
+  Compiled dependencies are trusted; this is not a recursive whole-library
+  kernel audit, and it does not include Gate M.
+
 ## Changes and deliberate non-deletions
 
 - Remove the historical `RationalRepresentationMigration` certificate. It had

@@ -79,7 +79,7 @@ Proof.
   pose proof (peutt_hitting_lift H
     (mdp_encode_hitting (FI := FI) (FO := FO) (MX := MX) (D := D) s)
     (mdp_encode_hitting (FI := FI) (FO := FO) (MX := MX) (D := D) t)) as Hheads.
-  apply mdp_lift_dirac_inv in Hheads.
+  apply sem_lift_ret_inv in Hheads.
   apply mdp_choose_head_rel_iff in Hheads. exact Hheads.
 Qed.
 

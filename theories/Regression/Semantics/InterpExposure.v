@@ -141,15 +141,7 @@ Qed.
 
 Lemma exposure_return_injective b c : TB (Ret b) (Ret c) -> b = c.
 Proof.
-  intro Hrel.
-  pose proof (trans_bisim_return_observations Hrel
-    (tree_return_ret (FI := FI) (FO := FO) b)
-    (tree_return_ret (FI := FI) (FO := FO) c)) as Hlift.
-  assert (Hb : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
-    (fun x : bool => x = b) (FORet b)).
-  { constructor. reflexivity. }
-  pose proof (proj1 (free_omega_qlift_support Hlift) _ Hb) as Hc.
-  dependent destruction Hc. destruct H as [x [-> ->]]. reflexivity.
+  apply (trans_bisim_ret_inv (D := free_omega_observable_dirac_ae_laws)).
 Qed.
 
 (** Once the first target interaction has occurred, each matched pair

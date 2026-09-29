@@ -176,19 +176,11 @@ Proof.
   - exact correlated_response_trans_bisim_reverse.
 Qed.
 
-(** Inversion uses the concrete backend's support transport, not a new
-    generic Dirac-injectivity law. *)
+(** The generic return-reflection theorem consumes this backend's proved
+    Dirac AE/support laws; no injectivity axiom is added. *)
 Lemma return_peutt_injective b c : W (Ret b) (Ret c) -> b = c.
 Proof.
-  intro Hrel.
-  assert (Hlift : @sem_lift MF FI head head HR (FORet (FHRet b)) (FORet (FHRet c))).
-  { eapply peutt_couples_complete_heads; [exact Hrel| |];
-      apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)). }
-  assert (Hb : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
-    (fun h : head => h = FHRet b) (FORet (FHRet b))).
-  { constructor. reflexivity. }
-  pose proof (proj1 (free_omega_qlift_support Hlift) _ Hb) as Hc.
-  dependent destruction Hc. destruct H as [h [Hhr ->]]. inversion Hhr. assumption.
+  apply (peutt_ret_inv (D := free_omega_observable_dirac_ae_laws)).
 Qed.
 
 Lemma no_correlated_head_pair b c : ~ HR (correlation_head false b) (correlation_head true c).

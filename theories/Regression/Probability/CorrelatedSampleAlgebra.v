@@ -1,3 +1,4 @@
+From PTree.Prob.Backend.EnumQ.FreeOmega Require Import Coupling.
 (** Role: Contract regression. Tests maintained boundaries; not a public theory endpoint or paper case study. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
@@ -12,7 +13,6 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 From PTree.Eq.Internal Require Import FiniteInternal.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PEutt PStrong.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalJoint FiniteInternalJointReference.
-From PTree.Regression.Semantics Require Import PEuttAlgebra.
 From PTree.Regression.Backend Require Import EnumQMeasureRegression SubEnumQRegression.
 
 Set Implicit Arguments.

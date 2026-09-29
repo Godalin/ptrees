@@ -191,6 +191,21 @@ Proof.
   intros. eapply trans_unique; eassumption.
 Qed.
 End Witnesses.
+
+(** Return observations reflect an arbitrary heterogeneous return relation
+    whenever the frontier has exact Dirac support. No peutt dependency. *)
+Lemma trans_bisim_ret_inv
+    `{FB : @SemanticMeasureBindLaws MF FI}
+    `{FOL : @SemanticOmegaLaws MF FI FO}
+    `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
+    `{CA : @SemanticMeasureCouplingAELaws MF FI}
+    `{D : @SemanticMeasureDiracAELaws MF FI}
+    (r1 : R1) (r2 : R2) :
+  trans_bisim (Ret r1) (Ret r2) -> RR r1 r2.
+Proof.
+  intro H. eapply sem_lift_ret_inv.
+  exact (trans_bisim_return_observations H (tree_return_ret r1) (tree_return_ret r2)).
+Qed.
 End Bisimulation.
 
 Section Reflexivity.

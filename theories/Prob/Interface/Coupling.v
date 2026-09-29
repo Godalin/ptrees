@@ -102,3 +102,20 @@ Proof.
     + exact HP.
     + exact HP.
 Qed.
+
+(** Dirac separation follows from exact Dirac AE and support transport.
+    It is a probability-level fact, not an MDP or PTree assumption. *)
+Lemma sem_lift_ret_inv {S : Type -> Type}
+    `{SI : SemanticMeasure S}
+    `{CA : @SemanticMeasureCouplingAELaws S SI}
+    `{D : @SemanticMeasureDiracAELaws S SI}
+    {A B} (rel : A -> B -> Prop) a b :
+  sem_lift rel (sem_ret a) (sem_ret b) -> rel a b.
+Proof.
+  intro Hlift.
+  assert (Ha : sem_ae (sem_ret a) (fun x => x = a)).
+  { apply (proj2 (sem_ae_ret_iff _ _)). reflexivity. }
+  pose proof (sem_lift_ae_transport_r Hlift Ha) as Hb.
+  apply (proj1 (sem_ae_ret_iff _ _)) in Hb.
+  destruct Hb as [x [Hrel ->]]. exact Hrel.
+Qed.
