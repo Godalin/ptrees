@@ -277,3 +277,19 @@ passed. Existing extraction warnings remain. The other 32 compiled query
 groups were not rerun for this case-only change. `coqchk -norec` passed for
 MixedHeadProtocol's module body, trusting its compiled dependencies rather
 than recursively rechecking the library. No CI status is claimed.
+
+### Case-local universe simplification
+
+The five explicit `Polymorphic` declarations in MixedHead are unnecessary
+for this concrete client: its response wrapper, response projection, event
+family and two finite lifting certificates can use fixed inferred universes.
+They are not a reusable universe-polymorphic effect API. The Boolean response
+wrapper and ordinary universe checking remain; the program/proof section's
+existing `Set Universe Polymorphism` is unchanged. No generic library setting
+or Gate M permission is modified. This deliberately removes case-local
+universe generality, not a premise or a probabilistic law.
+
+Validation of this follow-up: full build including AllImports, all 136
+existing safe generic-algebra type/assumption contracts (no snapshot edits),
+architecture/source-soundness checks, and the case's `coqchk -norec` passed.
+The latter trusts compiled dependencies. No CI query or tool changes.

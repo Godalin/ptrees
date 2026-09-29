@@ -40,13 +40,15 @@ Local Open Scope ring_scope.
 Local Open Scope subenumQ_probability_scope.
 
 (** The event universe is invariant in PTree. This two-response wrapper
-    lifts an ordinary Boolean to that universe without changing its choices. *)
-Polymorphic Variant mixed_response@{u} : Type@{u} := Response (response_bit : bool).
-Polymorphic Definition response_value@{u} (r : mixed_response@{u}) : bool :=
+    lifts an ordinary Boolean to that universe without changing its choices.
+    This concrete case needs only one event universe: leave it inferred,
+    rather than making the event family and each finite lemma polymorphic. *)
+Variant mixed_response : Type := Response (response_bit : bool).
+Definition response_value (r : mixed_response) : bool :=
   match r with Response b => b end.
-Polymorphic Variant mixedE@{u v} : Type@{u} -> Type@{u} :=
-| Challenge : mixedE mixed_response@{v}
-| Reply (b : bool) : mixedE mixed_response@{v}.
+Variant mixedE : Type -> Type :=
+| Challenge : mixedE mixed_response
+| Reply (b : bool) : mixedE mixed_response.
 
 Variant mixed_outcome := Stop (b : bool) | Continue (b : bool).
 Scheme Equality for mixed_outcome.
@@ -123,7 +125,7 @@ Proof.
     try (intros _; exact I); vm_compute; discriminate.
 Qed.
 
-Polymorphic Lemma coupling32_lift :
+Lemma coupling32_lift :
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ bridge uniform3 uniform2.
 Proof.
   change (indexed_coupling bridge (enumQ_prune uniform3_raw) (enumQ_prune uniform2_raw)).
@@ -178,8 +180,8 @@ Example return_abstraction_boundary b :
 Proof. destruct b; unfold return_rel, bridge; simpl; intuition discriminate. Qed.
 
 (** Program-facing kernel: both Stop and Continue sample the same payload.
-    Native bind flattens the finite draws, so the main coinduction needs
-    just one up-to-Prob context. No list expansion in the program proof. *)
+    Native bind describes the flattened finite law; the main up-to-bind
+    proof consumes the sampler relation, without expanding lists. *)
 Definition mixed_samples {H} (hidden : SubEnumQ H) c : SubEnumQ (bool * H + bool * H) :=
   sem_bind (mixed_outcomes c) (fun o =>
     sem_bind hidden (fun h => sem_ret
@@ -190,7 +192,7 @@ Definition mixed_sample_rel (x : impl_return + impl_return)
   | inl r, inl u | inr r, inr u => return_rel r u
   | _, _ => False
   end.
-Polymorphic Lemma mixed_samples_lift c :
+Lemma mixed_samples_lift c :
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ mixed_sample_rel
     (mixed_samples uniform3 c) (mixed_samples uniform2 c).
 Proof.
