@@ -237,6 +237,9 @@
     "PTree.Eq.ProbabilisticTrace.peutt_preserves_finite_interaction_sem": [
       "ClassicalEpsilon.constructive_indefinite_description"
     ],
+    "PTree.Examples.MixedHeadProtocol.masked_challenge_true_reply_probability": [
+      "ClassicalEpsilon.constructive_indefinite_description"
+    ],
     "PTree.Eq.StableHittingComputation.stable_hitting_prob_decompose": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"

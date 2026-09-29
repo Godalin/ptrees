@@ -187,24 +187,35 @@ endpoint, **not** a claim of `peutt` equivalence to a countably supported
 distribution node or a geometric sampler.
 
 `Examples/MixedHeadProtocol.v` is the canonical mixed-head bisimulation
-example. A hidden-state implementation receives a Boolean challenge, samples
-independent bits r (fair), s (P(true)=3/4), and h (fair). It either returns
-c xor s or publishes it in a Reply, whose Boolean acknowledgement selects
-the next hidden state: h on true, r on false. The fresh bit h affects only
-the continuation. The specification
-chooses among `Stop(false)`, `Stop(true)`, `Continue(false)`, and
+example. A three-state implementation and a two-state specification receive
+a Boolean challenge. Both choose among `Stop(false)`, `Stop(true)`, `Continue(false)`, and
 `Continue(true)` with weights `(1/8,3/8,1/8,3/8)` for challenge false
-and `(3/8,1/8,3/8,1/8)` for challenge true. It forgets the hidden state
-but retains the public challenge. An explicit nonuniform eight-to-four coupling
-forgets h and adds its two preimage masses for each abstract outcome.
-The eight sampled atoms yield six concrete stable head forms: two returns
-(h is discarded) and four Reply heads (two continuations per label).
-The coupling merges each pair of Reply heads into one specification head.
-A root/reply relation closes all response-dependent continuations using
+and `(3/8,1/8,3/8,1/8)` for challenge true: a fair stop decision and a
+`3/4`-biased bit flipped by the challenge. On Continue, the implementation
+draws a fresh uniform three-state value and the specification a fair Boolean.
+Reply acknowledgement true selects that fresh state; false keeps the old one.
+Their joint is genuinely non-functional:
+
+| Hidden state | false | true |
+| --- | ---: | ---: |
+| L0 | 1/3 | 0 |
+| L1 | 1/6 | 1/6 |
+| L2 | 0 | 1/3 |
+
+No deterministic map from the uniform three atoms has the fair two-atom
+marginal (`uniform3_no_deterministic_fair`). Each Reply block uses this
+matrix scaled by its outcome weight; Ret blocks use identity. There are
+eight implementation head forms (two Ret and six Reply) and six specification
+head forms (two Ret and four Reply). A root/reply relation closes all
+response-dependent continuations using
 `peutt_coinduction_upto_prob`: the finite native coupling discharges the
-after-challenge sampling context. Explicit hitting witnesses are retained
+after-challenge sampling context. `bridge_next` uses the joint support for
+true acknowledgement and the old invariant for false acknowledgement.
+Explicit hitting witnesses are retained
 for quantitative analysis, not needed in the coinductive proof. The theorem
-`masked_protocol_equivalent` holds for either initial hidden bit.
+`mixed_head_bridge` proves equivalence for related initial states;
+`masked_protocol_equivalent` then relates every implementation state to
+`canonical_spec := mixed_spec false`, using L1 as the common bridge.
 The bounded backend is `SubEnumQ`, with intrinsic `probabilistic_ptree`
 certificates. `masked_challenge_true_reply_probability` proves that the
 pattern `[Challenge(c); Reply(true)]` has probability `3/8` when c=false
