@@ -115,7 +115,7 @@ script, historical replay or logical-axiom exception was added.
 
 `Regression/Semantics/GenericAlgebra.v` checks the minimal shallow profile,
 generic ownership/import isolation, arbitrary-native FreeOmega sampling and
-finite-real sampling/loop rewriting. `Regression/Backend/MathCompDirect.v`
+finite-real sampling/loop rewriting. `Regression/Backend/MathComp.v`
 checks the same sampling theorems at `MN = MF`, and iteration `Proper` with an
 explicit `relational_lub` premise. This does not discharge MathComp's remaining
 relational-limit obligation. Its existing gluing premise and two-file Gate M
@@ -195,14 +195,14 @@ assumptions do not grow.
 
 Two additional safe SubEnumR probes instantiate both generic Proper theorems
 with `FreeOmega (SubEnumR R)`. Thus the concrete finite-rational, finite-real,
-and direct MathComp routes are all exercised, not only an abstract MN section.
+and MathComp routes are all exercised, not only an abstract MN section.
 
 `Eq.FreeOmega.Algebra` exports the actual generic owner, with no alias or second
 declaration. `PTreeFacts` also exports the generic owner explicitly.
 
 ## Rewriting and profile selection
 
-Both FreeOmega and direct MathComp regressions perform actual `setoid_rewrite`
+Both FreeOmega and MathComp regressions perform actual `setoid_rewrite`
 under bind's source, bind's continuation, and fmap. The old EnumQ tests retain
 their theorem statements and proof bodies, with two local instance
 specializations supplied before the tests.
@@ -312,7 +312,7 @@ python3 tools/audit_architecture.py --check
 python3 tools/audit_api.py --surface-only
 python3 tools/audit_soundness.py --check
 python3 tools/audit_generic_algebra.py --compiled --kernel
-python3 tools/audit_mathcomp_direct.py --gate M
+python3 tools/audit_mathcomp.py --gate M
 ```
 
 CI is intentionally outside this task. Stage 1 is ready for review; no Stage 2

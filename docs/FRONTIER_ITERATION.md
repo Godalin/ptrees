@@ -101,7 +101,7 @@ Neither is silently converted to the other for arbitrary frontier measures.
   owner does not load FreeOmega or MathComp.
 - `SubEnumRBehavior.real_complete_step_summary` consumes the same
   FreeOmega corollary with finite-real native sampling.
-- `MathCompDirect.direct_complete_step_summary` instantiates the same
+- `MathComp.complete_step_summary` instantiates the same
   generic theorem with `MN = MF = MathCompKernelMeasure R`. There is no
   MathCompCouplingGluing assumption. This client remains in the existing
   Gate M file; no new checker relaxation is introduced.

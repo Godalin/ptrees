@@ -15,7 +15,7 @@ From PTree.Interp Require Import ITreeEutt ITreeSourceInterp ITreePreservation.
 
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
-Fail Check PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt.
+Fail Check PTree.Eq.Backend.MathComp.mathcomp_peutt.
 
 From PTree Require Import PTreeFacts.
 From PTree.Eq.Backend Require Import SubEnumQ SubEnumR.

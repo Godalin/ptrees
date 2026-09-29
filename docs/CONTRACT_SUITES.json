@@ -97,8 +97,8 @@
       "context": "owners"
     },
     {
-      "id": "mathcomp_direct",
-      "snapshot": "docs/MATHCOMP_DIRECT_CONTRACTS.json",
+      "id": "mathcomp",
+      "snapshot": "docs/MATHCOMP_CONTRACTS.json",
       "context": "gate-m-joint"
     },
     {
@@ -122,8 +122,8 @@
       "context": "owners"
     },
     {
-      "id": "relational_consumer_direct",
-      "snapshot": "docs/RELATIONAL_CONSUMER_DIRECT_CONTRACTS.json",
+      "id": "relational_consumer_mathcomp",
+      "snapshot": "docs/RELATIONAL_CONSUMER_MATHCOMP_CONTRACTS.json",
       "context": "gate-m-joint"
     },
     {
@@ -434,11 +434,11 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Backend.MathCompDirect.direct_mdp_guarded_transition": [
+    "PTree.Regression.Backend.MathComp.mdp_guarded_transition": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Backend.MathCompDirect.direct_atomic_transition": [
+    "PTree.Regression.Backend.MathComp.atomic_transition": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
@@ -446,7 +446,7 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Backend.MathCompDirect.direct_mdp_trans_bisim_iff": [
+    "PTree.Regression.Backend.MathComp.mdp_trans_bisim_iff": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
@@ -530,11 +530,11 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Backend.MathCompDirect.direct_sample_bind": [
+    "PTree.Regression.Backend.MathComp.sample_bind": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Backend.MathCompDirect.direct_sample_map": [
+    "PTree.Regression.Backend.MathComp.sample_map": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],

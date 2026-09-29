@@ -99,7 +99,7 @@ proofs. Other changes are the facade regression, one new public-only client,
 AllImports, reviewed facade/test policy, documentation and audit tooling.
 
 Both `CONTRACTS.json` (505 contracts) and
-`MATHCOMP_DIRECT_CONTRACTS.json` remain byte-for-byte unchanged. The new gate
+`MATHCOMP_CONTRACTS.json` remain byte-for-byte unchanged. The new gate
 checks public endpoint assumptions against the existing backend logical-axiom
 whitelist plus the exact frozen FreeOmega bind assumptions. That existing
 behavioral theorem already depends on `RelationalChoice.relational_choice`
@@ -117,7 +117,7 @@ python3 tools/audit_assumptions.py --check
 python3 tools/audit_api.py --surface-only
 python3 tools/audit_soundness.py --check
 python3 tools/audit_architecture.py --check
-python3 tools/audit_mathcomp_direct.py --gate M
+python3 tools/audit_mathcomp.py --gate M
 python3 -m unittest discover -s tools -p 'test_*.py'
 ```
 

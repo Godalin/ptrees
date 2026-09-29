@@ -3,13 +3,20 @@ import unittest
 import tempfile
 from pathlib import Path
 from types import SimpleNamespace
-from mathcomp_direct_policy import DIRECT, GATE_M, ALLOWLIST, universe_source_check, check_gate_boundary, safe_targets, check_build_flags
-from audit_mathcomp_direct import parse_direct
+from mathcomp_policy import ASSEMBLY, GATE_M, ALLOWLIST, universe_source_check, check_gate_boundary, safe_targets, check_build_flags
+from audit_mathcomp import parse_gate_m
 
 
-class MathCompDirectTests(unittest.TestCase):
+class MathCompTests(unittest.TestCase):
     def test_reviewed_allowlist(self):
-        self.assertEqual(GATE_M, {'Eq/Backend/MathComp/Direct', 'Regression/Backend/MathCompDirect'})
+        self.assertEqual(GATE_M, {'Eq/Backend/MathComp', 'Regression/Backend/MathComp'})
+
+    def test_retired_paths_have_no_bypass_permission(self):
+        # Renaming an assembly moves the exact permission; it does not add one.
+        for path in ['theories/Eq/Backend/MathComp/Direct.v',
+                     'theories/Regression/Backend/MathCompDirect.v']:
+            with self.subTest(path=path), self.assertRaises(AssertionError):
+                universe_source_check(path, 'Local Unset Universe Checking.')
 
     def test_exact_local_exception_only(self):
         for path in ALLOWLIST:
@@ -33,18 +40,18 @@ class MathCompDirectTests(unittest.TestCase):
                 universe_source_check(path, 'Local Unset Universe Checking.')
 
     def test_safe_aggregate_and_indirect_import(self):
-        client = 'Regression/Backend/MathCompDirect'
-        graph = {DIRECT: set(), client: {DIRECT}, 'Regression/Infrastructure/AllImports': set()}
+        client = 'Regression/Backend/MathComp'
+        graph = {ASSEMBLY: set(), client: {ASSEMBLY}, 'Regression/Infrastructure/AllImports': set()}
         check_gate_boundary(graph)
         graph['Regression/Infrastructure/AllImports'] = {client}
         with self.assertRaises(AssertionError):
             check_gate_boundary(graph)
         graph['Regression/Infrastructure/AllImports'] = {'Prob/Backend/MathComp/Helper'}
-        graph['Prob/Backend/MathComp/Helper'] = {DIRECT}
+        graph['Prob/Backend/MathComp/Helper'] = {ASSEMBLY}
         with self.assertRaises(AssertionError):
             check_gate_boundary(graph)
 
-    def test_client_must_use_direct(self):
+    def test_client_must_use_assembly(self):
         with self.assertRaises(AssertionError):
             check_gate_boundary({m: set() for m in GATE_M})
 
@@ -67,30 +74,30 @@ class MathCompDirectTests(unittest.TestCase):
         def result(body):
             return SimpleNamespace(returncode=0, stderr='', stdout=
                 'AUDIT_TYPE_0\nprobe : True\nAUDIT_AXIOMS_0\n' + body + 'AUDIT_END_0\n')
-        entry = parse_direct(result(block), ['probe'])[0]
+        entry = parse_gate_m(result(block), ['probe'])[0]
         self.assertTrue(entry['session_collapsed_universes'])
         self.assertEqual(entry['unsafe_hierarchy'], ['probe'])
-        safe = parse_direct(result(block.replace('probe relies on an unsafe hierarchy.\n', '')), ['probe'])[0]
+        safe = parse_gate_m(result(block.replace('probe relies on an unsafe hierarchy.\n', '')), ['probe'])[0]
         self.assertEqual(safe['unsafe_hierarchy'], [])
         self.assertTrue(safe['session_collapsed_universes'])
         for bad in [block.replace('Theory:', 'UnknownTheory:'),
                     block.replace('Theory:\nType hierarchy is collapsed (logic is inconsistent)\n', ''),
                     block + 'new_transport_axiom : False\n', block + 'Error: failed\n']:
             with self.subTest(bad=bad), self.assertRaises(AssertionError):
-                parse_direct(result(bad), ['probe'])
+                parse_gate_m(result(bad), ['probe'])
 
         inherited = block + 'RelationalChoice.relational_choice : True\n'
         exceptions = {'probe': ['RelationalChoice.relational_choice']}
         with self.assertRaises(AssertionError):
-            parse_direct(result(inherited), ['probe'])
-        entry = parse_direct(result(inherited), ['probe'], exceptions)[0]
+            parse_gate_m(result(inherited), ['probe'])
+        entry = parse_gate_m(result(inherited), ['probe'], exceptions)[0]
         self.assertTrue(entry['unsafe_hierarchy'])
         # Exceptions are endpoint-specific and do not suppress new axioms or
         # the separate unsafe-hierarchy report.
         with self.assertRaises(AssertionError):
-            parse_direct(result(inherited), ['probe'], {'other': exceptions['probe']})
+            parse_gate_m(result(inherited), ['probe'], {'other': exceptions['probe']})
         with self.assertRaises(AssertionError):
-            parse_direct(result(inherited + 'new_axiom : False\n'), ['probe'], exceptions)
+            parse_gate_m(result(inherited + 'new_axiom : False\n'), ['probe'], exceptions)
 
 
 if __name__ == '__main__':

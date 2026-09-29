@@ -6,7 +6,7 @@ Local Unset Universe Minimization ToSet.
 From PTree.Interp Require Import IterationAlgebra.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
-Fail Check PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt.
+Fail Check PTree.Eq.Backend.MathComp.mathcomp_peutt.
 
 From Coq Require Import Morphisms List.
 From ExtLib.Structures Require Import Monad Monoid.

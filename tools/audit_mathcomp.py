@@ -12,29 +12,29 @@ from types import SimpleNamespace
 from audit_assumptions import ROOT, parse, SOUNDNESS_AXIOMS, logical_axioms
 from audit_architecture import graph
 from audit_soundness import source_check
-from mathcomp_direct_policy import DIRECT, GATE_M, safe_targets
+from mathcomp_policy import ASSEMBLY, GATE_M, safe_targets
 
-SNAPSHOT = ROOT / 'docs/MATHCOMP_DIRECT_CONTRACTS.json'
-ENDPOINTS = ['PTree.' + DIRECT.replace('/', '.') + '.' + n for n in [
-    'mathcomp_direct_mixed', 'mathcomp_direct_tree', 'mathcomp_direct_head',
-    'mathcomp_direct_frontier', 'mathcomp_direct_kernel', 'mathcomp_direct_hitting',
-    'mathcomp_direct_peutt', 'mathcomp_direct_peutt_refl',
-    'mathcomp_direct_hitting_exists',
-    'mathcomp_direct_bind_cofinal', 'mathcomp_direct_peutt_bind']]
-ENDPOINTS += ['PTree.Regression.Backend.MathCompDirect.' + n for n in [
-    'direct_ret', 'direct_frontier', 'direct_kernel', 'direct_hitting',
-    'direct_ret_reflexivity', 'direct_eventful_reflexivity',
+SNAPSHOT = ROOT / 'docs/MATHCOMP_CONTRACTS.json'
+ENDPOINTS = ['PTree.' + ASSEMBLY.replace('/', '.') + '.' + n for n in [
+    'mathcomp_mixed', 'mathcomp_tree', 'mathcomp_head',
+    'mathcomp_frontier', 'mathcomp_kernel', 'mathcomp_hitting',
+    'mathcomp_peutt', 'mathcomp_peutt_refl',
+    'mathcomp_hitting_exists',
+    'mathcomp_bind_cofinal', 'mathcomp_peutt_bind']]
+ENDPOINTS += ['PTree.Regression.Backend.MathComp.' + n for n in [
+    'ret', 'frontier', 'kernel', 'hitting',
+    'ret_reflexivity', 'eventful_reflexivity',
     'available_native_order', 'available_native_omega', 'available_general_hitting_exists',
-    'direct_retry_hitting', 'direct_unbounded_retry', 'direct_retry_before_vis',
-    'direct_eventful_bind_rewrite', 'direct_nested_unbounded_retry',
-    'direct_nested_retry_diagonal', 'direct_retry_vis_interaction',
-    'direct_heterogeneous_bind', 'direct_bind_setoid',
-    'direct_continuation_setoid', 'direct_fmap_setoid',
-    'direct_eventful_iter', 'direct_handler_guarded',
-    'direct_guarded_interp', 'direct_guarded_tau']]
+    'retry_hitting', 'unbounded_retry', 'retry_before_vis',
+    'eventful_bind_rewrite', 'nested_unbounded_retry',
+    'nested_retry_diagonal', 'retry_vis_interaction',
+    'heterogeneous_bind', 'bind_setoid',
+    'continuation_setoid', 'fmap_setoid',
+    'eventful_iter', 'handler_guarded',
+    'guarded_interp', 'guarded_tau']]
 ENDPOINTS += [
-    'PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior',
-    'PTree.Regression.Backend.MathCompDirect.direct_canonical_profile']
+    'PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior',
+    'PTree.Regression.Backend.MathComp.canonical_profile']
 # Importing the unchecked modules must not retrospectively taint safe facts.
 SAFE_CONTROLS = [
     'PTree.Prob.Backend.MathComp.NativeLaws.mathcomp_native_bind_le_k',
@@ -45,7 +45,7 @@ SAFE_CONTROLS = [
     'PTree.Prob.Backend.MathComp.Retry.mathcomp_retry_fixed_point']
 
 
-def parse_direct(result, endpoints, axiom_exceptions=None):
+def parse_gate_m(result, endpoints, axiom_exceptions=None):
     assert result.returncode == 0 and not re.search(r'\bError:', result.stdout + result.stderr), \
         result.stdout + result.stderr
     unsafe = {}
@@ -76,12 +76,12 @@ def parse_direct(result, endpoints, axiom_exceptions=None):
     return entries
 
 
-def query_direct(endpoints=None, joint=True, axiom_exceptions=None):
+def query_gate_m(endpoints=None, joint=True, axiom_exceptions=None):
     endpoints = ENDPOINTS + SAFE_CONTROLS if endpoints is None else endpoints
     assert len(endpoints) == len(set(endpoints)), 'Duplicate Gate M endpoint'
     commands = ['Require PTree.Regression.Infrastructure.AllImports.'] if joint else []
     # Loading Gate M itself merges otherwise inconsistent universe constraints.
-    # This dedicated audit session is a direct-backend client, never Gate S.
+    # This dedicated audit session is a MathComp backend client, never Gate S.
     commands += ['Local Unset Universe Checking.']
     commands += ['Require PTree.' + m.replace('/', '.') + '.' for m in sorted(GATE_M)]
     commands += ['Set Printing Width 100.', 'Set Printing Depth 1000.', 'Set Printing Implicit.']
@@ -94,14 +94,14 @@ def query_direct(endpoints=None, joint=True, axiom_exceptions=None):
     result = subprocess.run(['opam', 'exec', '--', 'coqtop', '-quiet', '-R',
                              '_build/default/theories', 'PTree'], cwd=ROOT,
                             input='\n'.join(commands) + '\n', text=True, capture_output=True)
-    return parse_direct(result, endpoints, axiom_exceptions)
+    return parse_gate_m(result, endpoints, axiom_exceptions)
 
 
 def check():
     expected = json.loads(SNAPSHOT.read_text())
     assert expected['gate_m_modules'] == sorted(GATE_M), 'Reviewed allowlist changed'
-    assert expected['endpoints'] == query_direct(), 'Direct compiled type/assumption/unsafe-flag drift'
-    print(f'Gate M: {len(ENDPOINTS)} direct endpoints + {len(SAFE_CONTROLS)} safe controls; '
+    assert expected['endpoints'] == query_gate_m(), 'MathComp compiled type/assumption/unsafe-flag drift'
+    print(f'Gate M: {len(ENDPOINTS)} backend endpoints + {len(SAFE_CONTROLS)} safe controls; '
           'types, logical axioms and unsafe-hierarchy reports match. NOT universe-checked.')
 
 

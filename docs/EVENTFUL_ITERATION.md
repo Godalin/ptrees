@@ -137,7 +137,7 @@ native sampling with a weak Tau change; zero mass; a probability-algebra
 rewrite eliminating a Dirac draw after each visible response; endless silent
 retry; a coinductive step that never returns; both finite backends; and
 carriers strictly above Set. The generic-only import boundary rejects
-FreeOmega, external validation and direct MathComp names.
+FreeOmega, external validation and MathComp names.
 
 The Dirac-draw test supplies its finite hitting witnesses explicitly. It
 does not pull in the older generic `peutt_prob_ret` proof's extra choice
@@ -152,7 +152,7 @@ audit consumes this adapter, so older preservation gates remain intact.
 ## Remaining scope
 
 This closes the eventful behavioral-step congruence question under the
-stated profile. It does not resolve the direct MathComp relational-lub
+stated profile. It does not resolve the MathComp relational-lub
 obligation, prove the converse `peutt -> ITree.eutt`, add general iteration
 axiom packaging, or change arbitrary-target Reader/Writer commuting laws.
 Those are separate tasks, not hidden premises of this result. CI is outside
@@ -168,7 +168,7 @@ this increment's scope.
 - All 465 retained compiled contracts and 266 public owner/helper contracts
   unchanged; the previous 52 source-ITree contracts rechecked unchanged.
 - The new 19 safe contracts and logical assumptions checked, plus the
-  conditional direct MathComp endpoint and a generic safe control queried
+  conditional MathComp endpoint and a generic safe control queried
   separately in the explicit Gate M session.
 - Existing Gate M snapshot unchanged: 37 direct endpoints and 6 safe controls.
 - Joint `coqchk -norec` for the three new safe module bodies. Dependencies

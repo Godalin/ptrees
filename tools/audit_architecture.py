@@ -4,7 +4,7 @@ import argparse
 import re
 from pathlib import Path
 from audit_assumptions import without_comments
-from mathcomp_direct_policy import GATE_M, check_gate_boundary
+from mathcomp_policy import GATE_M, check_gate_boundary
 
 ROOT = Path(__file__).resolve().parents[1]
 THEORIES = ROOT / "theories"
@@ -47,7 +47,7 @@ def external_validation(path):
 
 def ownership(path):
     if path in GATE_M:
-        return path.rsplit('/', 1)[0], 'universe-unchecked Gate M', 'direct MathComp assembly/probes; excluded from safe aggregate'
+        return path.rsplit('/', 1)[0], 'universe-unchecked Gate M', 'MathComp assembly/probes; excluded from safe aggregate'
     if path.startswith(("CaseStudies/", "Events/", "API/")):
         raise AssertionError("Unsupported top-level namespace: " + path)
     if path in {"PTree", "Eq", "PTreeFacts", "Semantics"}:

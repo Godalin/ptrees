@@ -80,9 +80,9 @@ build. `tools/audit_architecture.py --aggregate-only` fails if that inventory om
 contains extras, duplicates or is unsorted; CI runs this inventory check
 before building. `Require` rather than `Require Import` avoids exporting
 all short names while still merging the universe constraints.
-The two explicitly universe-unchecked MathComp direct modules are excluded
+The two explicitly universe-unchecked MathComp modules are excluded
 from this safe aggregate and checked in a separate Gate M session; see
-[the direct-backend trust boundary](MATHCOMP_DIRECT.md). This does not repair
+[the direct-backend trust boundary](MATHCOMP.md). This does not repair
 their universe inconsistency or weaken Gate S's checked negative probes.
 After building, CI also rechecks the two repaired regressions and
 `PEuttAlgebra` together with `AllImports` in a single `coqchk` process.

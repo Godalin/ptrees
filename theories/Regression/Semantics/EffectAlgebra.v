@@ -10,7 +10,7 @@ From ITree.Indexed Require Import Sum.
 From PTree Require Import PTree PTreeFacts.
 From PTree.Interp.Algebra Require Import Computation Reader State Writer Exception.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
-Fail Check PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior.
+Fail Check PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior.
 From PTree.Eq.Backend Require Import SubEnumQ.
 Import ListNotations.
 Set Implicit Arguments.

@@ -54,7 +54,7 @@ class ContractSuiteTests(unittest.TestCase):
                 audit.check_group({'id': 'test', 'context': context}, {'modules': ['M']}, [e])
                 query.assert_called_once_with(['M.x'], modules)
         for context, joint in [('gate-m', False), ('gate-m-joint', True)]:
-            with patch.object(audit, 'query_direct', return_value=[e]) as query:
+            with patch.object(audit, 'query_gate_m', return_value=[e]) as query:
                 audit.check_group({'id': 'test', 'context': context}, {}, [e])
                 query.assert_called_once_with(['M.x'], joint=joint)
         with patch.object(audit, 'query', return_value=[dict(e, type='x : NewLaw -> True')]):

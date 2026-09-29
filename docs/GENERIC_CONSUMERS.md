@@ -18,10 +18,10 @@ Three separate questions must be kept distinct:
 The following is a selected endpoint audit, not a theorem-by-theorem minimality
 or logical-independence result. `G` means the existing explicit
 `MathCompCouplingGluing R`; `L` means the still-supplied unrestricted
-`relational_lub` certificate. All direct MathComp PTree clients remain in the
+`relational_lub` certificate. All MathComp PTree clients remain in the
 same two-file Gate M boundary. Native probability mathematics remains checked.
 
-| Generic owner / endpoints | Probability requirements beyond chosen operations | FreeOmega over SubEnumQ / SubEnumR | MathComp direct |
+| Generic owner / endpoints | Probability requirements beyond chosen operations | FreeOmega over SubEnumQ / SubEnumR | MathComp |
 | --- | --- | --- | --- |
 | `Eq.Algebra.peutt_observe_eq`, `peutt_bind_ret_l` | Frontier CoreLaws only; omega **operations**, not OmegaLaws | Existing observable CoreLaws | Available with G; no L |
 | `Eq.Bind.peutt_bind`, generic bind/fmap Proper | Core/Bind, Order/Omega/Cofinality/Diagonal, bind and mixed-bind order, directed cofinality, omega selection | Discharged by the generic completion profile | Available with G; no L |
@@ -47,7 +47,7 @@ The theorem now retains its name and equation but requires only frontier
 Measure/Core, mixed operations and omega operations. `peutt_observe_eq` records
 the reusable reason: equal observations may use `peutt` reflexivity directly.
 Both proofs are closed under the global context. A generic regression declares
-exactly this small profile; the direct MathComp client has no L parameter.
+exactly this small profile; the MathComp client has no L parameter.
 The established FreeOmega wrapper keeps its original statement.
 
 Explicit applications passing the former four proof arguments must now simply
@@ -91,7 +91,7 @@ future tasks, not hidden obligations completed by this cleanup.
 - 125 tool tests, architecture `--check`, soundness source audit and the
   32-group contract registry metadata check: passed. No audit script or query
   group was added; module count remains 425, with the same two Gate M files.
-- The 465 main contracts and 43 established MathComp direct/control contracts
+- The 465 main contracts and 43 established MathComp/control contracts
   passed unchanged; their snapshot files were not refreshed.
 - Selected compiled groups passed: generic algebra (18), relational consumers
   (54), relational direct clients (10), and iteration algebra (24).
@@ -182,7 +182,7 @@ The proof is unchanged. The existing closure condition stays explicit and is
 not promoted to a class or presented as arbitrary eventful step congruence.
 
 `GenericConsumers.free_omega_eventful_iter` recovers the old specialization.
-The already allowlisted MathComp direct regression instantiates the same
+The already allowlisted MathComp regression instantiates the same
 theorem. Both are conditional closure clients, not proofs that arbitrary
 handlers/loop steps satisfy the condition. Generic-only imports also exclude
 FreeOmega, MathComp and external validation.
@@ -236,7 +236,7 @@ generic guarded owner directly instead of relying on export-order shadowing.
 Atomic and MDP interpretation are not generalized or redesigned in this task.
 
 Clients cover the existing SubEnumQ guarded suite, a SubEnumR completion
-specialization, and direct MathComp. The latter constructs an actual guarded
+specialization, and MathComp. The latter constructs an actual guarded
 heterogeneous handler `E -> F`, with `Tau; Vis; Ret`, and uses the same generic
 preservation theorem on arbitrary related input trees. Its Tau rewriting
 example is a consumer, not a MathComp copy of the proof. It remains in the

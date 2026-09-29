@@ -72,14 +72,14 @@ class BehaviorRoutingTests(unittest.TestCase):
             current_surface({**self.sources, path: self.sources[path].replace(':= (canonical_peutt ', ':= (peutt ')})
 
     def test_selector_needs_no_gate_m_reverse_exception(self):
-        self.assertTrue(architecture.permitted('Eq/Backend/MathComp/Direct', 'Eq/Canonical'))
+        self.assertTrue(architecture.permitted('Eq/Backend/MathComp', 'Eq/Canonical'))
         self.assertTrue(architecture.permitted('Eq/PEutt', 'Eq/Canonical'))
         for source, target in [
             ('Eq/PEutt', 'API/Behavior'),
-            ('Eq/Backend/MathComp/Direct', 'API/SubEnumQ'),
+            ('Eq/Backend/MathComp', 'API/SubEnumQ'),
             ('Eq/Backend/MathComp/Other', 'API/Behavior'),
-            ('API/Behavior', 'Eq/Backend/MathComp/Direct'),
-            ('API/FreeOmega', 'Eq/Backend/MathComp/Direct'),
+            ('API/Behavior', 'Eq/Backend/MathComp'),
+            ('API/FreeOmega', 'Eq/Backend/MathComp'),
         ]:
             with self.subTest(source=source, target=target):
                 self.assertFalse(architecture.permitted(source, target))

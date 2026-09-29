@@ -86,7 +86,7 @@ global context.
 completion certificates. SubEnumQ and SubEnumR clients both compile, using
 their existing native capabilities; logical assumptions are inherited from
 those instances and remain within the existing whitelist. MathComp's Gate M
-allowlist is unchanged, and no unconditional direct MathComp relational-lub
+allowlist is unchanged, and no unconditional MathComp relational-lub
 claim is added.
 
 ## Regressions and earlier algebra

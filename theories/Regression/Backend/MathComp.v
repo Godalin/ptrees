@@ -1,5 +1,5 @@
 (** Gate M only. Never imported by the safe AllImports aggregate.
-    Direct capability and program acceptance; not a universe-consistency claim.
+    Backend capability and program acceptance; not a universe-consistency claim.
     The checked negative counterparts remain in MathCompUniverse.v. *)
 Set Warnings "-ambiguous-paths".
 Local Unset Universe Checking.
@@ -10,7 +10,7 @@ From PTree.Prob.Interface Require Import Measure Omega Mixed.
 From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws OrderLaws OmegaLaws BindLaws Retry.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel PEutt.
-From PTree.Eq.Backend.MathComp Require Import Direct.
+From PTree.Eq.Backend Require Import MathComp.
 From PTree.Examples Require Import MathCompPrograms.
 From PTree.Eq Require Import Canonical.
 Set Implicit Arguments.
@@ -24,10 +24,10 @@ Local Notation NO := (MathCompNodeSemanticOmega R).
 Local Notation MX := (MathCompNativeMixedMeasure R).
 Local Notation E := (fun _ : Type => Empty_set).
 
-Definition direct_ret : ptree E M bool := Ret true.
-Definition direct_frontier : Type := @mathcomp_direct_frontier R E bool.
-Definition direct_kernel := @mathcomp_direct_kernel R E bool.
-Definition direct_hitting := @mathcomp_direct_hitting R E bool.
+Definition ret : ptree E M bool := Ret true.
+Definition frontier : Type := @mathcomp_frontier R E bool.
+Definition kernel := @mathcomp_kernel R E bool.
+Definition hitting := @mathcomp_hitting R E bool.
 
 (** Positive assembly probes consume the checked native instances. *)
 Definition available_native_order : @SemanticMeasureOrderLaws M NI NO := _.
@@ -36,20 +36,20 @@ Definition available_general_hitting_exists :=
   @ptree_stable_hitting_exists E M M NI MX NO _ _ bool.
 
 Context `{G : MathCompCouplingGluing R}.
-Example direct_canonical_profile {F A B} (RR : A -> B -> Prop)
+Example canonical_profile {F A B} (RR : A -> B -> Prop)
     (t : ptree F M A) (u : ptree F M B) :
   canonical_peutt RR t u =
   @peutt F M M NI (@MathCompNodeSemanticMeasureCoreLaws R G)
     MX NO A B RR t u.
 Proof. reflexivity. Qed.
 
-Example direct_ret_reflexivity :
-  @mathcomp_direct_peutt R G E bool direct_ret direct_ret.
-Proof. apply mathcomp_direct_peutt_refl. Qed.
+Example ret_reflexivity :
+  @mathcomp_peutt R G E bool ret ret.
+Proof. apply mathcomp_peutt_refl. Qed.
 
-Example direct_eventful_reflexivity {F A} (t : ptree F M A) :
-  @mathcomp_direct_peutt R G F A t t.
-Proof. apply mathcomp_direct_peutt_refl. Qed.
+Example eventful_reflexivity {F A} (t : ptree F M A) :
+  @mathcomp_peutt R G F A t t.
+Proof. apply mathcomp_peutt_refl. Qed.
 End Probes.
 
 (** The same generic complete-step theorem works with MN = MF. No gluing
@@ -65,7 +65,7 @@ Local Notation MX := (MathCompNativeMixedMeasure R).
 Context {E : Type -> Type} {I A : Type}.
 Variable step : I -> ptree E M (I+A).
 Variable front : I -> M (stable_head E M (I+A)).
-Example direct_complete_step_summary
+Example complete_step_summary
     (Hfront : forall i, ptree_stable_hitting (FI := NI) (FO := NO)
       (MX := MX) (observe (step i)) (front i)) i :
   exists out, iteration_summary (FI := NI) (FO := NO) step front i out /\
@@ -91,7 +91,7 @@ Local Notation MX := (MathCompNativeMixedMeasure R).
 Context {E : Type -> Type} {I A : Type}.
 Variable step : I -> ptree E M (I+A).
 Variable K : I -> M (I+A).
-Example direct_return_only_lfp
+Example return_only_lfp
     (Hstep : forall i, ptree_stable_hitting (FI := NI) (FO := NO) (MX := MX)
       (observe (step i)) (iteration_return_front K i)) i :
   exists hs, ptree_stable_hitting (FI := NI) (FO := NO) (MX := MX)
@@ -117,12 +117,12 @@ Variable q : R.
 Hypothesis Hq : (0 < q <= 1)%R.
 Variable value : A.
 Local Notation retry := (@mathcomp_retry E A R (mathcomp_bernoulli q) value).
-Local Notation hits := (@mathcomp_direct_hitting R E A).
-Local Notation W := (@mathcomp_direct_peutt R G E A).
+Local Notation hits := (@mathcomp_hitting R E A).
+Local Notation W := (@mathcomp_peutt R G E A).
 
-Lemma direct_retry_hitting : hits (observe retry) (sem_ret (FHRet value)).
+Lemma retry_hitting : hits (observe retry) (sem_ret (FHRet value)).
 Proof.
-  destruct (mathcomp_direct_hitting_exists R retry) as [out Hout].
+  destruct (mathcomp_hitting_exists R retry) as [out Hout].
   assert (Htau : hits (observe (Tau retry)) out).
   { apply (proj2 (ptree_stable_hitting_tau_iff _ _)); exact Hout. }
   assert (Hprob : hits (observe retry)
@@ -138,15 +138,15 @@ Proof.
   exact (mathcomp_kernel_lub_limit_proper He Hout).
 Qed.
 
-Example direct_unbounded_retry : W retry (Ret value).
+Example unbounded_retry : W retry (Ret value).
 Proof.
   eapply peutt_of_hitting_lift.
-  - exact direct_retry_hitting.
+  - exact retry_hitting.
   - apply stable_hitting_ret.
   - apply mathcomp_kernel_lift_ret. constructor; reflexivity.
 Qed.
 
-Example direct_retry_before_vis {X} (e : E X)
+Example retry_before_vis {X} (e : E X)
     (k : X -> ptree E M A) :
   W (Vis e (fun x => Tau (k x))) (Vis e k).
 Proof. apply peutt_vis; intros x; apply peutt_tau_l. Qed.
@@ -166,28 +166,28 @@ Hypotheses (Hq : (0 < q <= 1)%R) (Hp : (0 < p <= 1)%R).
 Variable value : A.
 Local Notation outer := (@mathcomp_retry E unit R (mathcomp_bernoulli q) tt).
 Local Notation inner := (@mathcomp_retry E A R (mathcomp_bernoulli p) value).
-Local Notation W := (@mathcomp_direct_peutt R G E A).
+Local Notation W := (@mathcomp_peutt R G E A).
 
-Example direct_eventful_bind_rewrite (k : unit -> ptree E M A) :
+Example eventful_bind_rewrite (k : unit -> ptree E M A) :
   W (PTree.bind outer k) (k tt).
 Proof.
   change (W (PTree.bind outer k) (PTree.bind (Ret tt) k)).
-  eapply mathcomp_direct_peutt_bind with (RR := eq).
-  - apply direct_unbounded_retry; exact Hq.
-  - intros x y ->; apply mathcomp_direct_peutt_refl.
+  eapply mathcomp_peutt_bind with (RR := eq).
+  - apply unbounded_retry; exact Hq.
+  - intros x y ->; apply mathcomp_peutt_refl.
 Qed.
 
-Example direct_nested_unbounded_retry :
+Example nested_unbounded_retry :
   W (PTree.bind outer (fun _ => inner)) (Ret value).
 Proof.
   eapply peutt_trans.
-  - apply direct_eventful_bind_rewrite.
-  - apply direct_unbounded_retry; exact Hp.
+  - apply eventful_bind_rewrite.
+  - apply unbounded_retry; exact Hp.
 Qed.
 
 (** Both approximation indices describe genuinely unbounded retries. This
     is the diagonal/Fubini route, not a finite maximum of inner stopping times. *)
-Example direct_nested_retry_diagonal :
+Example nested_retry_diagonal :
   @sem_lub M NI NO _
     (fun n => @ptree_bind_diagonal_approx E M M NI MX NO unit A n
       outer (fun _ => inner)) (sem_ret (FHRet value)).
@@ -202,15 +202,15 @@ Proof.
     apply (sem_bind_diagonal_lub (S := M) (SI := NI) (SO := NO)).
     + apply ptree_hitting_increasing.
     + intro head; apply ptree_head_bind_approx_increasing.
-    + exact (@direct_retry_hitting R G E unit q Hq tt).
+    + exact (@retry_hitting R G E unit q Hq tt).
     + intro head; apply ptree_head_bind_approx_lub.
-      intro x; exact (@direct_retry_hitting R G E A p Hp value).
+      intro x; exact (@retry_hitting R G E A p Hp value).
 Qed.
 
-Example direct_retry_vis_interaction {X} (e : E X)
+Example retry_vis_interaction {X} (e : E X)
     (k : X -> ptree E M A) :
   W (PTree.bind outer (fun _ => Vis e k)) (Vis e k).
-Proof. apply direct_eventful_bind_rewrite. Qed.
+Proof. apply eventful_bind_rewrite. Qed.
 End Composition.
 
 (** Both relations and both result carriers are independent; this endpoint
@@ -226,15 +226,15 @@ Local Notation MX := (MathCompNativeMixedMeasure R).
 Local Notation NO := (MathCompNodeSemanticOmega R).
 Local Notation W := (@peutt E M M NI NC MX NO).
 
-Example direct_heterogeneous_bind (RR : X -> Y -> Prop) (RS : A -> B -> Prop)
+Example heterogeneous_bind (RR : X -> Y -> Prop) (RS : A -> B -> Prop)
     (t : ptree E M X) (u : ptree E M Y)
     (k : X -> ptree E M A) (h : Y -> ptree E M B) :
   W RR t u -> (forall x y, RR x y -> W RS (k x) (h y)) ->
   W RS (PTree.bind t k) (PTree.bind u h).
-Proof. apply mathcomp_direct_peutt_bind. Qed.
+Proof. apply mathcomp_peutt_bind. Qed.
 End HeterogeneousBind.
 
-(** Direct assembly is still confined to this existing Gate M file. These
+(** Backend assembly is still confined to this existing Gate M file. These
     clients consume generic Proper proofs, not MathComp copies. *)
 From PTree.Eq Require Import Algebra.
 From Coq Require Import Morphisms.
@@ -250,7 +250,7 @@ Local Notation MX := (MathCompNativeMixedMeasure R).
 Local Notation NO := (MathCompNodeSemanticOmega R).
 Local Notation W := (@peutt E M M NI NC MX NO).
 
-Example direct_bind_setoid (t u : ptree E M A)
+Example bind_setoid (t u : ptree E M A)
     (k : A -> ptree E M B) (H : W eq t u) :
   W eq (PTree.bind t k) (PTree.bind u k).
 Proof.
@@ -259,7 +259,7 @@ Proof.
   Timeout 10 setoid_rewrite H. apply peutt_refl.
 Qed.
 
-Example direct_continuation_setoid (t : ptree E M A)
+Example continuation_setoid (t : ptree E M A)
     (k h : A -> ptree E M B) (H : forall x, W eq (k x) (h x)) :
   W eq (PTree.bind t k) (PTree.bind t h).
 Proof.
@@ -269,7 +269,7 @@ Proof.
   Timeout 10 setoid_rewrite Hpoint. apply peutt_refl.
 Qed.
 
-Example direct_fmap_setoid (f : A -> B) (t u : ptree E M A)
+Example fmap_setoid (f : A -> B) (t u : ptree E M A)
     (H : W eq t u) :
   W eq (PTree.fmap f t) (PTree.fmap f u).
 Proof.
@@ -291,11 +291,11 @@ Local Notation MX := (MathCompNativeMixedMeasure R).
 Local Notation NO := (MathCompNodeSemanticOmega R).
 Local Notation W := (@peutt E M M NI NC MX NO).
 
-Example direct_sample_bind (mu : M A) (k : A -> ptree E M B) :
+Example sample_bind (mu : M A) (k : A -> ptree E M B) :
   W eq (PTree.bind (Prob mu (fun x => Ret x)) k) (Prob mu k).
 Proof. apply (peutt_sample_bind (NI := NI)). Qed.
 
-Example direct_sample_map (mu : M A) (f : A -> B) :
+Example sample_map (mu : M A) (f : A -> B) :
   W eq (Prob mu (fun x => Ret (f x)))
     (Prob (sem_bind mu (fun x => sem_ret (f x))) (fun a => Ret a)).
 Proof. apply (peutt_sample_map (NI := NI)). Qed.
@@ -319,7 +319,7 @@ Variable step2 : I2 -> ptree E M (I2 + B).
 Variable SI : I1 -> I2 -> Prop.
 Variable RR : A -> B -> Prop.
 
-Example direct_eventful_iter
+Example eventful_iter
     (H : @iter_eventful_generator_closed E M M NI MX NO I1 I2 A B
       step1 step2 SI RR) i j :
   SI i j -> @peutt E M M NI NC MX NO A B RR
@@ -342,11 +342,11 @@ Local Notation MX := (MathCompNativeMixedMeasure R).
 Local Notation NO := (MathCompNodeSemanticOmega R).
 Variable rename : forall X, E X -> F X.
 
-Definition direct_guarded_handler X (e : E X) : ptree F M X :=
+Definition event_handler X (e : E X) : ptree F M X :=
   Tau (Vis (rename e) (fun x => Ret x)).
 
-Lemma direct_handler_guarded :
-  @guarded_handler E F M M NI MX NO direct_guarded_handler.
+Lemma handler_guarded :
+  @guarded_handler E F M M NI MX NO event_handler.
 Proof.
   apply PTree.Interp.Guarded.guarded_handler_of_hitting.
   intros X e. exists (sem_ret (FHVis (rename e) (fun x => Ret x))). split.
@@ -355,19 +355,19 @@ Proof.
   - apply sem_ae_ret. exact I.
 Qed.
 
-Example direct_guarded_interp {A B} (RR : A -> B -> Prop)
+Example guarded_interp {A B} (RR : A -> B -> Prop)
     (t : ptree E M A) (u : ptree E M B) :
   @peutt E M M NI NC MX NO A B RR t u ->
   @peutt F M M NI NC MX NO A B RR
-    (PTree.interp direct_guarded_handler t)
-    (PTree.interp direct_guarded_handler u).
-Proof. apply PTree.Interp.Guarded.peutt_interp_guarded. exact direct_handler_guarded. Qed.
+    (PTree.interp event_handler t)
+    (PTree.interp event_handler u).
+Proof. apply PTree.Interp.Guarded.peutt_interp_guarded. exact handler_guarded. Qed.
 
-Example direct_guarded_tau {A} (t : ptree E M A) :
+Example guarded_tau {A} (t : ptree E M A) :
   @peutt F M M NI NC MX NO A A eq
-    (PTree.interp direct_guarded_handler (Tau t))
-    (PTree.interp direct_guarded_handler t).
-Proof. apply direct_guarded_interp. apply peutt_tau_l. Qed.
+    (PTree.interp event_handler (Tau t))
+    (PTree.interp event_handler t).
+Proof. apply guarded_interp. apply peutt_tau_l. Qed.
 End GenericInterpretation.
 
 (** Same generic structural consumers. The native relational-limit theorem
@@ -386,7 +386,7 @@ Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
 Local Notation MX := (MathCompNativeMixedMeasure R).
 Local Notation NO := (MathCompNodeSemanticOmega R).
 
-Example direct_finite_strong {A B} (RR : A -> B -> Prop)
+Example finite_strong {A B} (RR : A -> B -> Prop)
     (t : ptree E M A) (u : ptree E M B) n :
   @pstrong E M NI NC A B RR t u ->
   @sem_lift M NI _ _ (stable_head_rel RR (@pstrong E M NI NC A B RR))
@@ -399,7 +399,7 @@ Qed.
 
 Variable Hlimit : relational_lub NO.
 
-Example direct_structural_bridge_of_relational_lub {A B} (RR : A -> B -> Prop)
+Example structural_bridge_of_relational_lub {A B} (RR : A -> B -> Prop)
     (t : ptree E M A) (u : ptree E M B) :
   pstruct RR t u -> @peutt E M M NI NC MX NO A B RR t u.
 Proof.
@@ -407,7 +407,7 @@ Proof.
     (@mathcomp_relational_mixed_bind R) (@mathcomp_relational_zero R) Hlimit).
 Qed.
 
-Example direct_codiagonal_of_relational_lub {I A}
+Example codiagonal_of_relational_lub {I A}
     (step : I -> ptree E M (I + (I + A))) i :
   @peutt E M M NI NC MX NO A A eq
     (PTree.iter (fun j => PTree.iter step j) i)
@@ -419,7 +419,7 @@ Qed.
 End RelationalConsumers.
 
 (** Eventful behavioral congruence, not the entry-only closure rule above.
-    Only direct assembly is unchecked. Gluing and relational-lub remain
+    Only backend assembly is unchecked. Gluing and relational-lub remain
     explicit mathematical premises; no claim that they are discharged. *)
 From PTree.Interp Require Import Iteration.
 Section BehavioralIteration.
@@ -433,7 +433,7 @@ Local Notation MX := (MathCompNativeMixedMeasure R).
 Local Notation NO := (MathCompNodeSemanticOmega R).
 Variable Hlimit : relational_lub NO.
 
-Example direct_behavioral_iter_of_relational_lub
+Example behavioral_iter_of_relational_lub
     (step1 : I -> ptree E M (I+A)) (step2 : J -> ptree E M (J+B))
     (SI : I -> J -> Prop) (RR : A -> B -> Prop) :
   (forall i j, SI i j -> @peutt E M M NI NC MX NO (I+A) (J+B)
@@ -447,7 +447,7 @@ Qed.
 End BehavioralIteration.
 
 (** Explicit monad laws and pure-map uniformity, still conditional on native
-    relational-lub closure and confined to this existing direct client. *)
+    relational-lub closure and confined to this existing MathComp client. *)
 From ITree.Basics Require Import Basics Monad.
 From PTree.Core Require Import IterationLaws.
 From PTree.Interp Require Import IterationAlgebra.
@@ -461,14 +461,14 @@ Local Notation NO := (MathCompNodeSemanticOmega R).
 Local Notation Q := (ptree_peutt_eq1 (E := E) (FI := NI)).
 Variable Hlimit : relational_lub NO.
 
-Example direct_monad_laws_of_relational_lub :
+Example monad_laws_of_relational_lub :
   @MonadLawsE (ptree E M) Q Monad_ptree.
 Proof.
   exact (ptree_peutt_monad_laws (@mathcomp_relational_mixed_bind R)
     (@mathcomp_relational_zero R) Hlimit).
 Qed.
 
-Example direct_uniformity_of_relational_lub {I J A}
+Example uniformity_of_relational_lub {I J A}
     (f : I -> ptree E M (I+A)) (g : J -> ptree E M (J+A)) (h : I -> J) :
   (forall i, @eq1 _ Q _
     (PTree.bind (f i) (fun v => Ret (iteration_map h v))) (g (h i))) ->
@@ -491,7 +491,7 @@ Local Notation NI := (MathCompNodeSemanticMeasure R).
 Local Notation NO := (MathCompNodeSemanticOmega R).
 Variable Hlimit : relational_lub NO.
 
-Example direct_full_uniformity_of_relational_lub :
+Example full_uniformity_of_relational_lub :
   @iteration_uniform (ptree E M) Monad_ptree MonadIter_ptree
     (ptree_peutt_eq1 (FI := NI)).
 Proof.
@@ -499,7 +499,7 @@ Proof.
     (@mathcomp_relational_zero R) Hlimit).
 Qed.
 
-Example direct_iter_Proper_of_relational_lub {I A} :
+Example iter_Proper_of_relational_lub {I A} :
   Proper
     (pointwise_relation I (peutt (FI := NI) eq) ==>
      eq ==> peutt (E := E) (FI := NI) eq)
@@ -523,13 +523,13 @@ Local Notation NO := (MathCompNodeSemanticOmega R).
 Local Notation MX := (MathCompNativeMixedMeasure R).
 Variable h : forall X, E X -> ptree F M X.
 
-Example direct_mdp_interp (Hh : MDP.mdp_handler (FI := NI) (MX := MX) (FO := NO) (R := A) h)
+Example mdp_interp (Hh : MDP.mdp_handler (FI := NI) (MX := MX) (FO := NO) (R := A) h)
     (t : ptree E M A) :
   @mdp_state E M M NI NC MX NO A t ->
   @mdp_state F M M NI NC MX NO A (PTree.interp h t).
 Proof. exact (MDP.mdp_state_interp (FI := NI) (FO := NO) (MX := MX) Hh (t := t)). Qed.
 
-Example direct_mdp_guarded_transition
+Example mdp_guarded_transition
     (Hh : MDP.mdp_handler (FI := NI) (MX := MX) (FO := NO) (R := A) h)
     (Hg : PTree.Interp.Guarded.guarded_handler (FI := NI) (MX := MX) (FO := NO) h)
     (t u : ptree E M A) :
@@ -544,7 +544,7 @@ Qed.
 
 Variable a : forall X, E X -> ptree E M X.
 Variable atom : Atomic.atomic_handler (FI := NI) (MX := MX) (FO := NO) a.
-Example direct_atomic_transition (RR : A -> A -> Prop) (t u : ptree E M A) :
+Example atomic_transition (RR : A -> A -> Prop) (t u : ptree E M A) :
   @trans_bisim E M M NI NC MX NO A A RR t u ->
   @trans_bisim E M M NI NC MX NO A A RR (PTree.interp a t) (PTree.interp a u).
 Proof.
@@ -553,7 +553,7 @@ Proof.
     atom (RR := RR) (t := t) (u := u)).
 Qed.
 
-Example direct_atomic_mdp
+Example atomic_mdp
     (t : ptree E M A) :
   @mdp_state E M M NI NC MX NO A t ->
   @mdp_state E M M NI NC MX NO A (PTree.interp a t).
@@ -566,15 +566,15 @@ End GenericMDPClients.
 
 (** Left unit is shallow: unlike structural bridge/iteration clients above,
     this theorem needs no unresolved relational-limit certificate. *)
-Section ShallowDirectClient.
+Section ShallowClient.
 Variable R : realType.
 Context `{G : MathCompCouplingGluing R}.
 Context {E : Type -> Type} {A B : Type}.
-Example direct_left_unit_without_relational_lub (a : A)
+Example left_unit_without_relational_lub (a : A)
     (k : A -> ptree E (MathCompKernelMeasure R) B) :
-  @mathcomp_direct_peutt R G E B (PTree.bind (Ret a) k) (k a).
+  @mathcomp_peutt R G E B (PTree.bind (Ret a) k) (k a).
 Proof. apply PTree.Eq.Algebra.peutt_bind_ret_l. Qed.
-End ShallowDirectClient.
+End ShallowClient.
 
 (** Classical MDP correspondence uses the existing generic proof in both
     directions. No relational-lub premise, external validation model, or
@@ -582,7 +582,7 @@ End ShallowDirectClient.
     proved in Gate S. Gluing and the Gate M universe boundary remain explicit. *)
 From PTree.Semantics Require Import MDPEmbedding MDPReflection HeadTransition.
 From PTree.Prob.Interface Require Import AE.
-Section DirectMDPCorrespondence.
+Section MDPCorrespondence.
 Variable R : realType.
 Context `{G : MathCompCouplingGluing R}.
 Local Notation M := (MathCompKernelMeasure R).
@@ -595,7 +595,7 @@ Local Notation E := (mdpE (mdp_observations D) (mdp_actions D)).
 Local Notation encode := (mdp_encode (D := D)).
 Local Notation ehead := (mdp_encode_head (D := D)).
 
-Lemma direct_mdp_successors_total s a :
+Lemma mdp_successors_total s a :
   @sem_total M NI NO _
     (mdp_successors (FI := NI) (MX := MX) (D := D) (mdp_transition D s a)).
 Proof.
@@ -603,7 +603,7 @@ Proof.
   exact (@mdp_transition_total M NI NO D s a).
 Qed.
 
-Lemma direct_mdp_successors_support s a :
+Lemma mdp_successors_support s a :
   @sem_ae M NI _
     (mdp_successors (FI := NI) (MX := MX) (D := D) (mdp_transition D s a))
     (fun h => exists t, h = ehead t).
@@ -615,14 +615,14 @@ Proof.
   intros t _. apply sem_ae_ret. exists t. reflexivity.
 Qed.
 
-Example direct_encode_mdp_state s :
+Example encode_mdp_state s :
   @mdp_state E M M NI NC MX NO unit (encode s).
 Proof.
   apply (mdp_encode_mdp_state (FI := NI) (FO := NO));
-    [apply direct_mdp_successors_total|apply direct_mdp_successors_support].
+    [apply mdp_successors_total|apply mdp_successors_support].
 Qed.
 
-Example direct_mdp_step_iff s a out :
+Example mdp_step_iff s a out :
   @head_step E M M NI MX NO unit (ehead s)
     (Obs (Choose (mdp_observe D s)) a) out <->
   @sem_eq M NI _ out
@@ -632,7 +632,7 @@ Proof.
     (@mathcomp_kernel_lub_limit_proper R)).
 Qed.
 
-Example direct_mdp_head_bisim_iff s t :
+Example mdp_head_bisim_iff s t :
   mdp_bisim (D := D) s t <->
   @head_bisim E M M NI NC MX NO unit unit eq (ehead s) (ehead t).
 Proof.
@@ -640,7 +640,7 @@ Proof.
     (@mathcomp_kernel_map_reflect R G)).
 Qed.
 
-Example direct_mdp_peutt_iff s t :
+Example mdp_peutt_iff s t :
   mdp_bisim (D := D) s t <->
   @peutt E M M NI NC MX NO unit unit eq (encode s) (encode t).
 Proof.
@@ -648,13 +648,13 @@ Proof.
     (@mathcomp_kernel_map_reflect R G)).
 Qed.
 
-Example direct_mdp_trans_bisim_iff s t :
+Example mdp_trans_bisim_iff s t :
   mdp_bisim (D := D) s t <->
   @trans_bisim E M M NI NC MX NO unit unit eq (encode s) (encode t).
 Proof.
   apply (mdp_trans_bisim_iff (NI := NI) (NO := NO) (FI := NI) (FO := NO) (MX := MX)
     (FOAE := MathCompNativeOmegaAELaws R)
     (@mathcomp_kernel_map_reflect R G));
-    [apply direct_mdp_successors_total|apply direct_mdp_successors_support].
+    [apply mdp_successors_total|apply mdp_successors_support].
 Qed.
-End DirectMDPCorrespondence.
+End MDPCorrespondence.

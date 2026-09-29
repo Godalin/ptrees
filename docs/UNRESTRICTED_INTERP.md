@@ -54,7 +54,7 @@ dependencies; it does not claim those instances are axiom-free.
 `Interp/FreeOmega/Unrestricted.v` is one application of the generic theorem.
 Its native premises are SemanticMeasure, CoreLaws, AELift, CouplingAE,
 CountableAE, and SemanticOmega operations, **not native omega completeness**.
-Both SubEnumQ and SubEnumR clients compile. MathComp direct is not claimed
+Both SubEnumQ and SubEnumR clients compile. MathComp is not claimed
 to acquire unconditional arbitrary-handler preservation: its required
 relational-lub certificate remains a separate mathematical obligation.
 

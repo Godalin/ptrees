@@ -2,7 +2,7 @@
 From mathcomp Require Import reals.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
 From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws OrderLaws OmegaLaws BindLaws.
-Fail Check PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_frontier.
+Fail Check PTree.Eq.Backend.MathComp.mathcomp_frontier.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Set Implicit Arguments.
 Section Checked.

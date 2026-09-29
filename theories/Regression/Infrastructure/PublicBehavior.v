@@ -47,7 +47,7 @@ Fail Check free_omega_qlift.
 (** Direct theorem exports intentionally expose their owning module's
     helpers. The old alias facade's short-name hiding is no longer policy. *)
 Check ptree_bind_cofinal_all.
-Fail Check PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior.
+Fail Check PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior.
 
 (** Importing the raw owner last must not shadow the unconditional theorem. *)
 From PTree.Eq Require Import PEutt.

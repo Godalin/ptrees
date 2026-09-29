@@ -69,4 +69,4 @@ Proof.
   intro j. apply stable_hitting_native_ret.
 Qed.
 
-Fail Check PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt.
+Fail Check PTree.Eq.Backend.MathComp.mathcomp_peutt.

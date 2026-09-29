@@ -20,7 +20,7 @@ list. Nonnegativity belongs to the container; the subdistribution record adds
 the mass bound. Order, duplicate entries and zero-weight positions are retained.
 
 The maintained configurations remain SubEnumQ/FreeOmega SubEnumQ,
-SubEnumR/FreeOmega SubEnumR, and direct MathComp with MN = MF. The finite
+SubEnumR/FreeOmega SubEnumR, and MathComp with MN = MF. The finite
 records have not been made omega-complete.
 
 ## Implementation and client changes
@@ -97,7 +97,7 @@ python3 tools/audit_architecture.py --check
 python3 tools/audit_api.py --check
 python3 tools/audit_assumptions.py --check
 python3 tools/audit_soundness.py --check
-python3 tools/audit_mathcomp_direct.py --gate M
+python3 tools/audit_mathcomp.py --gate M
 python3 -m unittest discover -s tools -p 'test_*.py'
 git diff --check
 ```

@@ -150,11 +150,11 @@
   ],
   "direct": [
     {
-      "name": "PTree.Regression.Backend.MathCompDirect.direct_full_uniformity_of_relational_lub",
-      "type": "MathCompDirect.direct_full_uniformity_of_relational_lub\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R) (E : Type -> Type),\n       @RelationalClosure.relational_lub (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (Measure.MathCompNodeSemanticOmega R) ->\n       @IterationLaws.iteration_uniform (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R))\n         (@PTreeDefinition.Monad_ptree E (Kernel.MathCompKernelMeasure R))\n         (@PTreeDefinition.MonadIter_ptree E (Kernel.MathCompKernelMeasure R))\n         (@IterationAlgebra.ptree_peutt_eq1 E (Kernel.MathCompKernelMeasure R)\n            (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n            (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n            (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R))",
+      "name": "PTree.Regression.Backend.MathComp.full_uniformity_of_relational_lub",
+      "type": "MathComp.full_uniformity_of_relational_lub\n     : forall (R : reals.Real.type) (G : Kernel.MathCompCouplingGluing R) (E : Type -> Type),\n       @RelationalClosure.relational_lub (Kernel.MathCompKernelMeasure R)\n         (Measure.MathCompNodeSemanticMeasure R) (Measure.MathCompNodeSemanticOmega R) ->\n       @IterationLaws.iteration_uniform (PTreeDefinition.ptree E (Kernel.MathCompKernelMeasure R))\n         (@PTreeDefinition.Monad_ptree E (Kernel.MathCompKernelMeasure R))\n         (@PTreeDefinition.MonadIter_ptree E (Kernel.MathCompKernelMeasure R))\n         (@IterationAlgebra.ptree_peutt_eq1 E (Kernel.MathCompKernelMeasure R)\n            (Kernel.MathCompKernelMeasure R) (Measure.MathCompNodeSemanticMeasure R)\n            (@Measure.MathCompNodeSemanticMeasureCoreLaws R G)\n            (NativeLaws.MathCompNativeMixedMeasure R) (Measure.MathCompNodeSemanticOmega R))",
       "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}",
       "unsafe_hierarchy": [
-        "MathCompDirect.direct_full_uniformity_of_relational_lub"
+        "MathComp.full_uniformity_of_relational_lub"
       ],
       "session_collapsed_universes": true
     },

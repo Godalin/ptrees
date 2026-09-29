@@ -1,8 +1,8 @@
 # MathComp: native mathematics, not a completion backend
 
 Historical removal record: roles, counts and validation results below describe
-that checkpoint, not the current backend. The [accepted direct MathComp
-backend](MATHCOMP_DIRECT.md) at `5dac49a` supersedes the native-only future-work
+that checkpoint, not the current backend. The [accepted MathComp
+backend](MATHCOMP.md) at `5dac49a` supersedes the native-only future-work
 decision, but preserves removal of MathComp + FreeOmega and all checked native
 mathematics. Direct use remains isolated in Gate M, with explicit gluing.
 

@@ -121,7 +121,7 @@ premises**, not unconditional support by every backend. In particular:
 
 - Direct relational iteration additionally needs relational limit closure;
   generic frontier adequacy does not have the same premise list.
-- MathComp direct retains its explicit mathematical conditions and isolated
+- MathComp retains its explicit mathematical conditions and isolated
   Gate M universe relaxation. None of this gallery work expands Gate M.
 - AST and quantitative closed forms require actual probability analysis;
   neither follows from summary existence alone.

@@ -66,7 +66,7 @@ The final target is ordinary scalar lists with two container-level invariants:
 mass at most one. `EnumQ`, `SubEnumQ` and `SubEnumR R` will specialize those
 records at rational/real scalars. No generic nonnegative scalar subtype,
 new semantic class or new axiom is planned. Finite carriers remain separate
-from their FreeOmega completion; direct MathComp stays a different model.
+from their FreeOmega completion; MathComp stays a different model.
 
 The migration is deliberately split into separate commits:
 
@@ -129,7 +129,7 @@ python3 tools/audit_architecture.py --check
 python3 tools/audit_api.py --check --surface-only
 python3 tools/audit_assumptions.py --check
 python3 tools/audit_soundness.py --check
-python3 tools/audit_mathcomp_direct.py --gate M
+python3 tools/audit_mathcomp.py --gate M
 python3 -m unittest discover -s tools -p 'test_*.py'
 opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Prob.Backend.EnumQ.Representation \

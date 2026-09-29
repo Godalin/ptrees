@@ -2,8 +2,8 @@
 import re
 from audit_assumptions import without_comments
 
-DIRECT = 'Eq/Backend/MathComp/Direct'
-GATE_M = frozenset({DIRECT, 'Regression/Backend/MathCompDirect'})
+ASSEMBLY = 'Eq/Backend/MathComp'
+GATE_M = frozenset({ASSEMBLY, 'Regression/Backend/MathComp'})
 ALLOWLIST = frozenset('theories/' + m + '.v' for m in GATE_M)
 
 
@@ -15,7 +15,7 @@ def universe_source_check(path, text):
         assert len(occurrences) == 1, 'Gate M requires exactly one explicit local bypass: ' + path
         code = re.sub(approved, '', code, flags=re.M)
         assert not re.search(r'\b(?:Class|Inductive|CoInductive|Fixpoint|CoFixpoint)\b', code), \
-            'No new representation/capability in direct assembly/probes: ' + path
+            'No new representation/capability in MathComp assembly/probes: ' + path
     assert not re.search(r'\b(?:Unset\s+(?:Universe|Guard|Positivity)\s+Checking|'
                          r'Universe\s+Checking|bypass_check|TypeInType)\b', code), \
         'Unapproved unsafe typing setting: ' + path
@@ -31,14 +31,14 @@ def check_gate_boundary(edges):
     for module, deps in edges.items():
         assert module in GATE_M or not (deps & GATE_M), \
             'Gate S imports universe-unchecked module: ' + module
-    for module in GATE_M - {DIRECT}:
+    for module in GATE_M - {ASSEMBLY}:
         seen, todo = set(), [module]
         while todo:
             node = todo.pop()
             if node not in seen:
                 seen.add(node)
                 todo.extend(edges[node])
-        assert DIRECT in seen, 'Gate M client does not use direct backend: ' + module
+        assert ASSEMBLY in seen, 'Gate M client does not use MathComp backend: ' + module
 
 
 def safe_targets(root):

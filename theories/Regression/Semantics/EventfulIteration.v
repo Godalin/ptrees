@@ -7,7 +7,7 @@ From PTree.Interp Require Import Iteration.
 
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
-Fail Check PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt.
+Fail Check PTree.Eq.Backend.MathComp.mathcomp_peutt.
 
 From mathcomp Require Import reals.
 From PTree.Prob.Interface Require Import Measure Mixed.

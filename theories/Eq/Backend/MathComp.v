@@ -1,7 +1,7 @@
-(** Universe-unchecked direct MathComp assembly, NOT a safe backend theorem.
+(** Universe-unchecked MathComp assembly, NOT a safe backend theorem.
     MN = MF = the existing native kernel. No formal completion is used.
     Native probability mathematics remains in Prob/Backend/MathComp with
-    universe checking enabled. See docs/MATHCOMP_DIRECT.md and Gate M.
+    universe checking enabled. See docs/MATHCOMP.md and Gate M.
     Native order, omega, diagonal/Fubini and relational bind are checked in
     Gate S. Only their recursive-frontier instantiation belongs to Gate M. *)
 Local Unset Universe Checking.
@@ -14,7 +14,7 @@ From PTree.Eq Require Import Shallow UnifiedFrontier PTreeKernel PEutt
   PrimitiveStableHitting StableHittingRelation Bind BindScheduling.
 From PTree.Eq Require Import Canonical.
 
-(** Only this existing unchecked assembly registers the direct route. No
+(** Only this existing unchecked assembly registers the MathComp route. No
     safe facade imports it; probability mathematics remains in Gate S. *)
 #[global] Instance MathComp_CanonicalBehavior (R : realType) :
     CanonicalBehavior (MathCompKernelMeasure R) := {|
@@ -24,37 +24,37 @@ From PTree.Eq Require Import Canonical.
   behavior_omega := MathCompNodeSemanticOmega R
 |}.
 
-Section Direct.
+Section MathCompBackend.
 Variable R : realType.
 Local Notation M := (MathCompKernelMeasure R).
 Local Notation NI := (MathCompNodeSemanticMeasure R).
 Local Notation NO := (MathCompNodeSemanticOmega R).
 Local Notation MX := (MathCompNativeMixedMeasure R).
 
-Definition mathcomp_direct_mixed : MixedMeasure M M := MX.
-Definition mathcomp_direct_tree {E A} := ptree E M A.
-Definition mathcomp_direct_head {E A} := stable_head E M A.
-Definition mathcomp_direct_frontier {E A} := M (@mathcomp_direct_head E A).
-Definition mathcomp_direct_kernel {E A} := @ptree_primitive_kernel E M M NI MX A.
-Definition mathcomp_direct_hitting {E A} := @ptree_stable_hitting E M M NI MX NO A.
+Definition mathcomp_mixed : MixedMeasure M M := MX.
+Definition mathcomp_tree {E A} := ptree E M A.
+Definition mathcomp_head {E A} := stable_head E M A.
+Definition mathcomp_frontier {E A} := M (@mathcomp_head E A).
+Definition mathcomp_kernel {E A} := @ptree_primitive_kernel E M M NI MX A.
+Definition mathcomp_hitting {E A} := @ptree_stable_hitting E M M NI MX NO A.
 
-Lemma mathcomp_direct_hitting_exists {E A} (t : @mathcomp_direct_tree E A) :
-  exists out, mathcomp_direct_hitting (observe t) out.
+Lemma mathcomp_hitting_exists {E A} (t : @mathcomp_tree E A) :
+  exists out, mathcomp_hitting (observe t) out.
 Proof. apply ptree_stable_hitting_exists. Qed.
 
 (** Gluing is a mathematical premise, independent of the universe bypass. *)
 Context `{G : MathCompCouplingGluing R}.
 Local Notation NC := (@MathCompNodeSemanticMeasureCoreLaws R G).
-Definition mathcomp_direct_peutt {E A} := @peutt E M M NI NC MX NO A A eq.
-Lemma mathcomp_direct_peutt_refl {E A} (t : @mathcomp_direct_tree E A) :
-  mathcomp_direct_peutt t t.
+Definition mathcomp_peutt {E A} := @peutt E M M NI NC MX NO A A eq.
+Lemma mathcomp_peutt_refl {E A} (t : @mathcomp_tree E A) :
+  mathcomp_peutt t t.
 Proof. exact (@peutt_refl E M M NI NC MX NO A t). Qed.
 
 Section Bind.
 Context {E : Type -> Type}.
 (** All probability obligations are checked native instances. Only this
     recursive-frontier instantiation needs the existing Gate M relaxation. *)
-Theorem mathcomp_direct_bind_cofinal {A B}
+Theorem mathcomp_bind_cofinal {A B}
     (t : ptree E M A) (k : A -> ptree E M B) :
   @ptree_bind_cofinal E M M NI MX NO A B t k.
 Proof.
@@ -68,7 +68,7 @@ Qed.
 
 (** Fully heterogeneous eventful bind: exactly the generic theorem, not a
     second native coinduction or a separate witness-choice proof. *)
-Theorem mathcomp_direct_peutt_bind {A B C D}
+Theorem mathcomp_peutt_bind {A B C D}
     (RR : A -> B -> Prop) (RS : C -> D -> Prop)
     (t : ptree E M A) (u : ptree E M B)
     (k : A -> ptree E M C) (h : B -> ptree E M D) :
@@ -77,4 +77,4 @@ Theorem mathcomp_direct_peutt_bind {A B C D}
   @peutt E M M NI NC MX NO C D RS (PTree.bind t k) (PTree.bind u h).
 Proof. apply peutt_bind. Qed.
 End Bind.
-End Direct.
+End MathCompBackend.

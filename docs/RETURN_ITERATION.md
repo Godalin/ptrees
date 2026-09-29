@@ -61,7 +61,7 @@ Two concrete mathematical interpretations close this distinction:
    proves its least-fixed-point property using existing native measure lub
    upper/least theorems. This mathematics is normally universe-checked and
    requires no coupling-gluing assumption. The actual recursive PTree
-   client remains in the already authorized `MathCompDirect` Gate M file;
+   client remains in the already authorized `MathComp` Gate M file;
    that client explicitly retains gluing for the generic CoreLaws algebra.
 2. `Prob/Domain/Iteration.v` independently constructs `oval_iter` in the
    expectation domain and proves `oval_iter_fixed_point` and
@@ -84,7 +84,7 @@ signature, arbitrary MF kernels, native compatibility, the finite index
 shift, zero/missing mass, and endless retry with a nonleast fixed point.
 `Regression/Probability/KleisliIteration.v` checks the independent domain,
 safe MathComp leastness and a SubEnumQ loop's denotation/modelability.
-`MathCompDirect.direct_return_only_lfp` connects actual PTree iteration to
+`MathComp.return_only_lfp` connects actual PTree iteration to
 the safe native lfp theorem using the same generic program theorem.
 
 There are no changes to existing probability classes, FreeOmega relations,
@@ -99,7 +99,7 @@ contract suite; no new audit subsystem is introduced.
 - All 465 main contracts, 103 previous safe generic-algebra contracts and
   four previous generic Gate M contracts are unchanged. Seventeen new safe
   endpoints bring the generic suite to 120; one new direct endpoint brings
-  its separate Gate M suite to five. The original 43 MathComp direct
+  its separate Gate M suite to five. The original 43 MathComp
   contracts also remain unchanged.
 - All eight new recorded generic interface/program endpoints are closed
   under the global context. The model endpoints inherit only existing

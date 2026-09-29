@@ -54,7 +54,7 @@ their ten instance registrations are local. Internal proof clients opt in
 locally. `FreeOmegaMixedMeasure` remains a shared global operation because
 it selects neither structural nor quotient equality.
 
-The existing Gate M direct MathComp assembly selects the native self-frontier.
+The existing Gate M MathComp assembly selects the native self-frontier.
 It imports `Eq/Canonical` through the ordinary Eq dependency direction;
 the former Eq-to-API exception has been deleted. Safe modules still cannot
 depend on Gate M, directly or transitively; no unchecked file has been added.
@@ -114,13 +114,13 @@ behavioral clients have been removed, without changing generic `MN`/`MF`.
 `MathComp/NativeLaws.v` retains same-carrier kernel algebra, while
 `Regression/Infrastructure/MathCompUniverse.v` records the recursive-frontier
 failure with universe checking enabled. The separate, exact-allowlisted
-`Eq/Backend/MathComp/Direct.v` and `Regression/Backend/MathCompDirect.v` use
+`Eq/Backend/MathComp.v` and `Regression/Backend/MathComp.v` use
 `Local Unset Universe Checking.` for direct assembly/probes only (Gate M).
 Every other module belongs to Gate S and must not import Gate M, even through
 regressions or helpers. Safe `AllImports` excludes both Gate M modules; its
 old all-module coverage rule is deliberately narrowed to all safe modules.
 Gate M is not part of the public facades or normally checked theory.
-See [direct scope and verification](MATHCOMP_DIRECT.md) and the historical
+See [direct scope and verification](MATHCOMP.md) and the historical
 [completion-removal record](MATHCOMP_NATIVE_SCOPE.md).
 
 Do not introduce an `ExternalJointRealization` capability merely to package

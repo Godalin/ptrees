@@ -77,4 +77,4 @@ Proof.
   - intro n. rewrite lost_approx_zero. apply sem_eq_refl.
   - apply sem_lub_constant.
 Qed.
-Fail Check PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt.
+Fail Check PTree.Eq.Backend.MathComp.mathcomp_peutt.

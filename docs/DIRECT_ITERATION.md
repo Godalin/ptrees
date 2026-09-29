@@ -112,12 +112,12 @@ inherits functional extensionality; SubEnumR retains its existing classical
 native foundations. No logical-axiom whitelist is enlarged. Complete compiled
 types and assumptions are in `DIRECT_ITERATION_CONTRACTS.json`.
 
-The same generic theorem is instantiated in the existing MathCompDirect
+The same generic theorem is instantiated in the existing MathComp
 regression, still conditional on `MathCompCouplingGluing` and unrestricted
 `relational_lub`. Only the pre-authorized Gate M file uses relaxed checking;
 its unsafe-hierarchy flag is recorded separately, with the safe generic
 theorem checked as an untainted control in that session. This does not prove
-normally checked direct MathComp assembly or eliminate either premise.
+normally checked MathComp assembly or eliminate either premise.
 
 ## Preservation and remaining scope
 

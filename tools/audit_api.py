@@ -17,7 +17,7 @@ STRUCTURAL_INSTANCES = {
 }
 REGISTRY = {'theories/Eq/Backend/' + n + '.v': n + '_CanonicalBehavior'
             for n in ['EnumQ', 'SubEnumQ', 'SubEnumR']}
-REGISTRY['theories/Eq/Backend/MathComp/Direct.v'] = 'MathComp_CanonicalBehavior'
+REGISTRY['theories/Eq/Backend/MathComp.v'] = 'MathComp_CanonicalBehavior'
 KERNEL_MODULES = [
     'PTree.Regression.Infrastructure.AllImports',
     'PTree.Regression.Infrastructure.ArchitectureBoundaries',

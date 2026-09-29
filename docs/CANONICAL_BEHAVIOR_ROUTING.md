@@ -74,7 +74,7 @@ It separately requests CoreLaws for the selected measure. The builder in
 | `API/EnumQ` | `FreeOmega EnumQ` | Observable |
 | `API/SubEnumQ` | `FreeOmega SubEnumQ` | Observable |
 | `API/SubEnumR` | `FreeOmega (SubEnumR R)` | Observable |
-| Existing Gate M `Eq/Backend/MathComp/Direct` | `MathCompKernelMeasure R` | Native self-frontier |
+| Existing Gate M `Eq/Backend/MathComp` | `MathCompKernelMeasure R` | Native self-frontier |
 
 EnumQ has an intentional route because weighted programs remain maintained
 clients (including the Bernoulli factory). This does not make arbitrary
@@ -97,7 +97,7 @@ blanket selector and checks that Gate M has not been loaded.
 instances, verifies shared mixed inference, and verifies that deliberate local
 registration works without leaking from its section.
 
-The existing MathComp direct regression separately checks its full native
+The existing MathComp regression separately checks its full native
 expansion. The two Gate M files and checker-relaxation policy are unchanged.
 Only their exact dependency on `API/Behavior` is newly allowed; safe theory
 does not import the direct adapter. The Gate M assumption audit records the two
@@ -130,7 +130,7 @@ python3 tools/audit_assumptions.py --check
 python3 tools/audit_api.py --surface-only
 python3 tools/audit_soundness.py --check
 python3 tools/audit_architecture.py --check
-python3 tools/audit_mathcomp_direct.py --gate M
+python3 tools/audit_mathcomp.py --gate M
 python3 -m unittest discover -s tools -p 'test_*.py'
 ```
 

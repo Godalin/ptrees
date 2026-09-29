@@ -46,7 +46,7 @@ Example checked_lfp_least Y :
 Proof. exact (proj2 (mathcomp_iteration_least_fixed_point K) Y). Qed.
 End CheckedMathComp.
 Fail Check PTree.Core.PTreeDefinition.ptree.
-Fail Check PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt.
+Fail Check PTree.Eq.Backend.MathComp.mathcomp_peutt.
 
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Measure.

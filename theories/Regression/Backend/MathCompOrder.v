@@ -8,7 +8,7 @@ From PTree.Prob.Interface Require Import Measure Omega.
 From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws OrderLaws.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Eq.PEutt.peutt.
-Fail Check PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_frontier.
+Fail Check PTree.Eq.Backend.MathComp.mathcomp_frontier.
 Set Implicit Arguments.
 Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope classical_set_scope.

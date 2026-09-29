@@ -39,7 +39,7 @@ Native order, omega continuity, diagonal/Fubini and relational bind are proved
 with normal universe checking. The isolated direct layer proves general hitting
 existence and eventful bind congruence, with unbounded/nested retry regressions.
 It is **not** a third fully universe-checked backend. There is no MathComp-plus-
-completion workaround. See [direct MathComp trust boundary](docs/MATHCOMP_DIRECT.md).
+completion workaround. See [MathComp trust boundary](docs/MATHCOMP.md).
 
 The public conceptual architecture has four layers and two semantic clients:
 
@@ -337,7 +337,7 @@ machinery. `Semantics/` owns independent comparison semantics. `Interp/`
 owns interpretation preservation, with FreeOmega-qualified theory distinct
 from concrete endpoints. Relation modules own `≡ₚ / ≃ₚ / ≈ₚ`, including their
 heterogeneous forms. `Eq/Bind` owns the backend-independent heterogeneous
-`peutt_bind`; FreeOmega and direct MathComp supply the same probability-level
+`peutt_bind`; FreeOmega and MathComp supply the same probability-level
 order/selection laws. `peutt_bind_cofinal` is the lower-level explicit-scheduling
 endpoint. `Eq/Algebra` provides the same generic bind/fmap `Proper` proofs to
 both completion and direct-frontier clients; see the
@@ -371,7 +371,7 @@ example reuses VN to reach a mixed return/visible first frontier after
 unbounded internal retries; see [the absorption interface](docs/ABSORBING_ITERATION.md).
 The [generic complete-frontier bridge](docs/FRONTIER_ITERATION.md) also
 handles arbitrary MF-valued Ret/retry/Vis step frontiers. FreeOmega and
-MathComp direct instantiate one adequacy proof; clients need no fuel schedule
+MathComp instantiate one adequacy proof; clients need no fuel schedule
 or empty event signature.
 For return-only step frontiers, [classical iteration compatibility](docs/RETURN_ITERATION.md)
 identifies the summary with Kleisli iteration (with a one-round finite index

@@ -10,8 +10,8 @@ require old Git objects when introducing another theorem.
 | Responsibility | Tools | What is checked |
 | --- | --- | --- |
 | Architecture | `audit_architecture.py` | actual dependency edges, ownership, aggregate coverage, external-model and Gate M isolation |
-| Safety/public surface | `audit_soundness.py`, `audit_api.py`, `mathcomp_direct_policy.py` | unfinished proofs/assumptions, reviewed class declarations, exact bypass allowlist, routing registrations and notation owners |
-| Compiled contracts | `audit_contracts.py`, `audit_assumptions.py`, `audit_mathcomp_direct.py` | types, per-endpoint assumptions, safe/unchecked loading contexts and unsafe-hierarchy reports |
+| Safety/public surface | `audit_soundness.py`, `audit_api.py`, `mathcomp_policy.py` | unfinished proofs/assumptions, reviewed class declarations, exact bypass allowlist, routing registrations and notation owners |
+| Compiled contracts | `audit_contracts.py`, `audit_assumptions.py`, `audit_mathcomp.py` | types, per-endpoint assumptions, safe/unchecked loading contexts and unsafe-hierarchy reports |
 | Regression/kernel | Rocq modules, `test_*.py`, `audit_api.py --kernel` | real positive/negative clients, tool failure modes, extracted program behavior, selected joint kernel checks |
 
 ## Commands

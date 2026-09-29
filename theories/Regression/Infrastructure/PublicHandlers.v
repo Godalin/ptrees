@@ -96,4 +96,4 @@ Check (Handler.bimap high_handler high_handler).
 End HighUniverse.
 
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
-Fail Check PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior.
+Fail Check PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior.

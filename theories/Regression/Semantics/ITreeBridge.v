@@ -68,4 +68,4 @@ Proof. apply from_itree_ret. Qed.
 End LargeCarrier.
 
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
-Fail Check PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior.
+Fail Check PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior.

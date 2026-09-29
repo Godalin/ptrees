@@ -51,5 +51,5 @@ Proof. apply free_omega_handler_cat_id_r. Qed.
 End RealClient.
 
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
-Fail Check PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior.
+Fail Check PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior.
 

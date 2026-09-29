@@ -96,7 +96,7 @@ current root-closure check gives the following sizes (including the root):
 | `Execution/Validation/UniformReplay` | 14 | 0 |
 | `Semantics` | 22 | 0 |
 
-Only `Eq/Backend/MathComp/Direct` and `Regression/Backend/MathCompDirect`
+Only `Eq/Backend/MathComp` and `Regression/Backend/MathComp`
 remain in Gate M, outside safe AllImports. Source and build-flag checks
 reject other checker bypasses. Gate S is **not** a claim of axiom-freedom:
 existing classical/extensional assumptions and model premises remain

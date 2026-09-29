@@ -87,4 +87,4 @@ Fail Definition generic_route : CanonicalBehavior MN := _.
 Fail Definition generic_notation {E A} (t : ptree E MN A) := (t ≈ₚ t).
 End NoBlanket.
 
-Fail Check PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior.
+Fail Check PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior.

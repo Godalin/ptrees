@@ -166,7 +166,7 @@ python3 tools/audit_generic_bind.py --compiled --kernel
 python3 tools/audit_api.py --surface-only
 python3 tools/audit_architecture.py --check
 python3 tools/audit_soundness.py --check
-python3 tools/audit_mathcomp_direct.py --gate M
+python3 tools/audit_mathcomp.py --gate M
 python3 -m unittest discover -s tools -p 'test_*.py'
 ```
 

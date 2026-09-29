@@ -76,4 +76,4 @@ Example zero_coin_allowed n :
       (search_front subenumQ_zero) n).
 Proof. apply unbounded_mixed_summary. Qed.
 
-Fail Check PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt.
+Fail Check PTree.Eq.Backend.MathComp.mathcomp_peutt.

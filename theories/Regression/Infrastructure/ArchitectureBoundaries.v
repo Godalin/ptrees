@@ -40,7 +40,7 @@ Fail Check PTree.Semantics.TreeTransitionBisim.tree_trans_bisim.
 Check @mdp_state.
 Fail Check PTree.Interp.FreeOmega.Atomic.atomic_handler.
 Fail Check PTree.Prob.Backend.SubEnumQ.Representation.SubEnumQ.
-Fail Check PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior.
+Fail Check PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior.
 End ComparisonBoundary.
 
 From PTree Require Import PTreeFacts.
@@ -60,4 +60,4 @@ Check @run_exception_peutt.
 Fail Check PTree.Eq.Internal.FiniteInternal.finite_internal.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Fail Check PTree.Prob.Backend.SubEnumQ.Representation.SubEnumQ.
-Fail Check PTree.Eq.Backend.MathComp.Direct.MathComp_CanonicalBehavior.
+Fail Check PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior.

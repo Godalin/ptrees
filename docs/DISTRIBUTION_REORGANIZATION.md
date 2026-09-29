@@ -9,7 +9,7 @@ Native order, omega, continuity, diagonal/Fubini and relational bind are
 proved with normal checking; only direct recursive-frontier assembly and its
 regression use the two-file universe bypass. The checked negative universe
 regression remains. MathComp + FreeOmega stays deleted; see
-[MathComp direct status](MATHCOMP_DIRECT.md).
+[MathComp status](MATHCOMP.md).
 
 Follow-up: [SubEnumR behavioral backend](SUBENUMR_BEHAVIORAL_BACKEND.md)
 completes the native relational laws and checks generic FreeOmega/PTree
@@ -250,7 +250,7 @@ validity record were the new representation; the only formal completion is FreeO
 | `5dac49a` (accepted follow-up) | Checked native omega/relational bind and complete Gate M direct behavioral backend, with explicit gluing premise |
 
 The validation record below is for the original checkpoint, not `5dac49a`.
-Current verification scope and results are recorded in [MathComp direct status](MATHCOMP_DIRECT.md).
+Current verification scope and results are recorded in [MathComp status](MATHCOMP.md).
 
 All old formal theory/proof files were compared byte-for-byte with `28ae229`.
 Only two old `.v` files changed: the capability regression gained generic

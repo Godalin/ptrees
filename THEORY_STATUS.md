@@ -55,7 +55,7 @@ retry, Vis composition and nested unbounded diagonal-limit regressions pass.
 Coupling composition still requires the explicit `MathCompCouplingGluing`.
 The two exact
 Gate M modules are absent from safe AllImports and public facades. See
-[MathComp direct status](docs/MATHCOMP_DIRECT.md). Native mathematics remains
+[MathComp status](docs/MATHCOMP.md). Native mathematics remains
 in Gate S; no MathComp + FreeOmega combination is restored.
 
 Interpretation Stages 1–4 are accepted through `ec96b90`. DS1–DS5a are

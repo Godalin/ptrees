@@ -43,7 +43,7 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 | `Eq/Algebra` | `Eq` | generic | canonical equivalence, validity and hitting algebra | 8 |
 | `Eq/Backend/EnumQ` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 6 |
 | `Eq/Backend/EnumQCofinality` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 0 |
-| `Eq/Backend/MathComp/Direct` | `Eq/Backend/MathComp` | universe-unchecked Gate M | direct MathComp assembly/probes; excluded from safe aggregate | 1 |
+| `Eq/Backend/MathComp` | `Eq/Backend` | universe-unchecked Gate M | MathComp assembly/probes; excluded from safe aggregate | 1 |
 | `Eq/Backend/ProbabilisticTraceEnumQ` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 3 |
 | `Eq/Backend/ProbabilisticTraceSubEnumQ` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 1 |
 | `Eq/Backend/StableHittingDomainSubEnumQ` | `Eq/Backend` | concrete | tree equations/quantitative endpoints for concrete carriers | 4 |
@@ -357,7 +357,7 @@ This is an import-graph check, not declaration-use liveness, capability minimali
 | `Regression/Backend/FreeOmegaEscapingMass` | `Regression/Backend` | contract test | retained; not public theory | 1 |
 | `Regression/Backend/FreeOmegaLimitSafety` | `Regression/Backend` | contract test | retained; not public theory | 0 |
 | `Regression/Backend/FreeOmegaUpperContracts` | `Regression/Backend` | contract test | retained; not public theory | 2 |
-| `Regression/Backend/MathCompDirect` | `Regression/Backend` | universe-unchecked Gate M | direct MathComp assembly/probes; excluded from safe aggregate | 0 |
+| `Regression/Backend/MathComp` | `Regression/Backend` | universe-unchecked Gate M | MathComp assembly/probes; excluded from safe aggregate | 0 |
 | `Regression/Backend/MathCompOmega` | `Regression/Backend` | contract test | retained; not public theory | 0 |
 | `Regression/Backend/MathCompOrder` | `Regression/Backend` | contract test | retained; not public theory | 0 |
 | `Regression/Backend/NativeReflection` | `Regression/Backend` | contract test | retained; not public theory | 0 |

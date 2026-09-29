@@ -7,8 +7,8 @@ not executable migration scripts. Every registered group runs in CI.
 import argparse
 import json
 from audit_assumptions import ROOT, query, compare, logical_axioms, SOUNDNESS_AXIOMS
-from audit_mathcomp_direct import query_direct
-from mathcomp_direct_policy import GATE_M
+from audit_mathcomp import query_gate_m
+from mathcomp_policy import GATE_M
 
 MANIFEST = ROOT / 'docs/CONTRACT_SUITES.json'
 ALLIMPORTS = 'PTree.Regression.Infrastructure.AllImports'
@@ -77,7 +77,7 @@ def check_group(group, snapshot, entries):
         registered = json.loads(MANIFEST.read_text())['axiom_exceptions']
         exceptions = {n: registered[n] for n in names if n in registered}
         kwargs = {'axiom_exceptions': exceptions} if exceptions else {}
-        actual = query_direct(names, joint=context == 'gate-m-joint', **kwargs)
+        actual = query_gate_m(names, joint=context == 'gate-m-joint', **kwargs)
     else:
         modules = [ALLIMPORTS] if context == 'safe-joint' else (
             snapshot['modules'] if context == 'recorded' else None)

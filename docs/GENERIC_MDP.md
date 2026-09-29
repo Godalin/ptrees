@@ -36,7 +36,7 @@ The established SubEnumQ endpoints keep their statements, but their reflection
 coinductions now call the generic proof. Its unconditional concrete full iff
 remains available. SubEnumR now has the explicit validation-side native
 reflection construction described below, not an automatically registered
-mainline instance. For direct MathComp, native reflection now follows from
+mainline instance. For MathComp, native reflection now follows from
 generic same-carrier map reflection (see below), conditional on the existing
 gluing premise. External OmegaVal realization alone is not an internal
 native-reflection instance for a distinct native/frontier bridge.
@@ -106,7 +106,7 @@ endpoint. This report supersedes its statement that generic theory was unchanged
   choice from existing transition existence/coincidence. They are not claimed
   axiom-free. FreeOmega specializations retain their established dependencies.
 - The 465 central contracts, 8 concrete MDP correspondence contracts and 43
-  direct MathComp contracts remain **exactly unchanged**, including their
+  MathComp contracts remain **exactly unchanged**, including their
   existing snapshot files. The two potential functional-extensionality
   increases discovered during development were eliminated, not accepted into
   refreshed snapshots.
@@ -145,7 +145,7 @@ contributes one. It requires neither gluing, totality, finite/countable support,
 nor a PTree-level assumption. `mathcomp_kernel_map_total` derives totality as an
 iff, so a pure map cannot normalize a partial distribution either.
 
-The existing Gate M `direct_atomic_mdp` now supplies this safe native fact to
+The existing Gate M `atomic_mdp` now supplies this safe native fact to
 the unchanged generic theorem `MDPAtomic.mdp_state_interp_atomic`. Its explicit
 `Htotal` premise is removed. The gluing premise and the two-file unchecked
 assembly boundary are unchanged; all new probability mathematics is Gate S.
@@ -153,13 +153,13 @@ assembly boundary are unchanged; all new probability mathematics is Gate S.
 Safe regressions cover a partial Bernoulli followed by a constant map (mass
 remains exactly `q`), a noninjective total map, and an empty source at zero mass.
 The existing generic-MDP contract snapshot records the two native theorems and
-these checks. Of its previous entries, only `direct_atomic_mdp` may change type;
+these checks. Of its previous entries, only `atomic_mdp` may change type;
 its logical assumptions must remain unchanged. No new audit runner is added.
 
 Follow-up local validation:
 
 - Full `dune build -j 4` passed, including AllImports and the direct client.
-- 465 central contracts and the 43 existing MathComp direct/control contracts
+- 465 central contracts and the 43 existing MathComp/control contracts
   remained exact. The generic-MDP suite passed with 30 safe and 4 direct
   contracts; only the intended direct atomic MDP type changed among old entries.
 - `Print Assumptions` for the new native facts contains the existing MathComp
@@ -239,7 +239,7 @@ SubEnumR follow-up local validation:
   the only old theory source changed is the aggregate import list. CI was not
   consulted.
 
-## Follow-up: same-carrier reflection and direct MathComp correspondence
+## Follow-up: same-carrier reflection and MathComp correspondence
 
 `Prob/Interface/Coupling.sem_lift_map_reflect` derives
 
@@ -269,11 +269,11 @@ introduced, and no gluing existence theorem is claimed.
 The existing Gate M regression instantiates the unchanged generic MDP proofs:
 
 ```text
-direct_encode_mdp_state
-direct_mdp_step_iff
-direct_mdp_head_bisim_iff
-direct_mdp_peutt_iff
-direct_mdp_trans_bisim_iff
+encode_mdp_state
+mdp_step_iff
+mdp_head_bisim_iff
+mdp_peutt_iff
+mdp_trans_bisim_iff
 ```
 
 These apply to an arbitrary labelled `MDP (MathCompKernelMeasure R)`, not a
@@ -299,7 +299,7 @@ Local validation for this follow-up:
 
 - Full `dune build -j 4` passed, including AllImports and the existing Gate M
   clients. This is not a claim that Gate M is universe-checked.
-- All 465 central contracts and 43 existing MathComp direct/control contracts
+- All 465 central contracts and 43 existing MathComp/control contracts
   remain exact; their snapshot files were not changed. The extended generic-MDP
   groups pass with 49 safe and 11 direct contracts.
 - All 125 tool tests, architecture checking, source-safety checking and the

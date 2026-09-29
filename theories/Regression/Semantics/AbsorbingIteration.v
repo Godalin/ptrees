@@ -64,4 +64,4 @@ Example distinct_dead_heads :
   FHVis DeadB (fun x : Empty_set => match x with end).
 Proof. discriminate. Qed.
 
-Fail Check PTree.Eq.Backend.MathComp.Direct.mathcomp_direct_peutt.
+Fail Check PTree.Eq.Backend.MathComp.mathcomp_peutt.

@@ -139,7 +139,7 @@ FreeOmega specialization additionally inherits existing functional
 extensionality; finite-real clients retain their native classical foundation.
 The logical-axiom whitelist is unchanged.
 
-The same generic proofs are instantiated in the existing MathCompDirect
+The same generic proofs are instantiated in the existing MathComp
 regression only. Gluing and relational-lub closure remain explicit premises.
 Its unsafe-hierarchy/session flags are recorded separately with an untainted
 generic control. This says nothing new about normally checked MathComp

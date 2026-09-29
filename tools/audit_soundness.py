@@ -5,7 +5,7 @@ import json
 import re
 from audit_assumptions import ROOT, MANIFEST, check, without_comments, query, logical_axioms, SOUNDNESS_AXIOMS
 from audit_architecture import graph
-from mathcomp_direct_policy import universe_source_check, check_build_flags, GATE_M
+from mathcomp_policy import universe_source_check, check_build_flags, GATE_M
 
 POLICY = ROOT / 'docs/CONTRACT_POLICY.json'
 
