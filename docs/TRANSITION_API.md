@@ -72,7 +72,9 @@ rows `(1/3,0)`, `(1/6,1/6)`, `(0,1/3)`, proves that no deterministic
 pushforward has the same uniform marginals, and consumes its support in
 `bridge_next` after `Reply`. The canonical endpoint and `3/8`, `1/8` queries
 were preserved at that checkpoint. The later heterogeneous-return follow-up
-reuses this joint in both the Ret and Vis blocks; see
+reuses this joint in both the Ret and Vis blocks. The current implementation
+has a branching finite sampler versus a one-shot specification, with the
+same joint consumed through up-to-bind; see
 [the up-to proof](UP_TO.md).
 
 ## Gate S audit

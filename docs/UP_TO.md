@@ -17,7 +17,7 @@ carriers and arbitrary return relations.
 
 ## Soundness and scope
 
-The new sampling closure contains the candidate, established `peutt`, and
+The sampling closure contains the candidate, established `peutt`, and
 one pair of `Prob` contexts. Its sampling constructor requires
 `sem_lift XR mu nu` and, for every related sampled pair, either the candidate
 or established `peutt` on the continuations. It does not select individual
@@ -47,8 +47,9 @@ proofs do not add a choice or excluded-middle dependency.
 **Internal sampling is not a guard.** The premise is complete
 stable-hitting progress, not a syntax-level step. Simply encountering
 `Prob` never licenses a recursive call. In the protocol client, `Challenge`
-and `Reply` supply the visible progress. This API is a one-context closure;
-it does not claim arbitrary nested-context or combined bind/Prob closure.
+and `Reply` supply the visible progress. The sampling closure admits one
+native node; up-to-bind can instead consume a proved relation between
+multi-node sampler programs, as in MixedHead below.
 
 ## Two clients, different uses
 
@@ -63,10 +64,21 @@ theorem; the redundant VN-side construction has been removed. The
 after-request equivalence is a corollary of the service theorem and ordinary
 bind congruence. See [iteration summaries](ITERATION_SUMMARY.md).
 
-`MixedHeadProtocol` now keeps roots and reply states. After
-`Challenge`, up-to-Prob consumes a native coupling built by relational bind:
-the shared Stop/Continue outcome is coupled diagonally, and **both** blocks
-use the same non-functional three-to-two joint
+`MixedHeadProtocol` keeps roots and reply states. Its programs now have
+different internal shapes. The implementation draws a `3/4`-biased Boolean,
+a fair branch selector, and a ternary payload implemented by a `1/3` coin
+followed, only on failure, by a fair coin. Thus each round uses three or four
+native Boolean `Prob` nodes. The specification uses **one** `Prob` over the
+existing `mixed_samples uniform2 c` distribution; its native `sem_bind`
+definition does not introduce extra PTree nodes.
+
+Both Stop and Continue carry a payload, preserving the heterogeneous-return
+extension. `tri_sample_uniform` exposes the ternary sampler as a reusable
+program equation. Supplied finite-hitting witnesses and finite distribution
+equalities prove `impl_draw_related`; no recursive frontier is selected to
+prove this sampler fact. After `Challenge`, **up-to-bind** consumes that
+heterogeneous sampler relation. The shared Stop/Continue outcome is coupled
+diagonally, and **both** blocks use the same non-functional three-to-two joint
 `[(1/3,(L0,false)); (1/6,(L1,false)); (1/6,(L1,true)); (1/3,(L2,true))]`.
 `Stop` returns `(b,h) : bool * hidden3` on the left and
 `(b,j) : bool * bool` on the right. The return relation preserves `b` and
@@ -77,6 +89,11 @@ with both the current-state bridge and the sampled-state bridge. After
 the old bridge on false. Thus the coupling support actually closes the
 recursive obligation. The three-state implementation and two-state
 specification retain the original `3/8` and `1/8` quantitative queries.
+
+The main proof does not flatten probability lists or add intermediate
+sampling states to its invariant: Ret closes by the heterogeneous return
+law, and Continue re-enters the reply candidate. The finite-prefix bind in
+the corecursive definitions passes ordinary guard checking.
 
 The core theorem is `mixed_head_bridge`. `uniform3_no_deterministic_fair`
 rules out *any* deterministic pushforward from the uniform three atoms to
@@ -113,11 +130,16 @@ The original notation-only follow-up preserved its 69 compiled contracts.
 The subsequent three-to-two case changes its programs and state types, but
 does not change any generic theorem or backend.
 
-The six new public/client endpoints are recorded in the existing
-`GENERIC_ALGEBRA_CONTRACTS.json` suite; its earlier entries are preserved.
-There is no new stage-replay audit or global typeclass hint.
+The client endpoints are recorded in the existing
+`GENERIC_ALGEBRA_CONTRACTS.json` suite. There is no new stage-replay audit,
+generic theorem, capability, or global typeclass hint in this case update.
 
-## Original up-to implementation validation
+## Historical checkpoints
+
+The following records describe earlier accepted versions, not the current
+program shape. The asymmetric-program update is recorded at the end.
+
+### Original up-to implementation validation
 
 - Full `opam exec -- dune build -j 2`, including AllImports, passed.
   The initial high-concurrency rebuild hit the existing 20-second limits in
@@ -136,7 +158,7 @@ There is no new stage-replay audit or global typeclass hint.
 - Gate M is unchanged and excluded from that targeted kernel check. No CI
   status is claimed.
 
-## Three-to-two MixedHead follow-up
+### Three-to-two MixedHead follow-up
 
 All case-specific mathematics and programs stay in `Examples/MixedHeadProtocol.v`.
 `mixed_samples` composes the shared outcome kernel with the payload
@@ -164,7 +186,7 @@ safe generic-algebra contract suite passed. Joint `coqchk -norec` passed for Mix
 dependencies are trusted, not recursively rechecked. Gate M and CI are
 outside this check.
 
-## Heterogeneous return-payload follow-up
+### Heterogeneous return-payload follow-up
 
 Baseline: `dd3b447`. This changes only the case and its documentation/contracts;
 the generic up-to, bind, observation and probability infrastructure is reused.
@@ -218,3 +240,40 @@ architecture/API/source checks, the 133-entry generic-algebra suite and all
 rerun for this case-only change.
 `coqchk -norec` passed for the changed case's module body; its compiled
 dependencies are trusted, not recursively rechecked. CI was not queried.
+
+## Asymmetric MixedHead programs
+
+Baseline: `65b210a`. Only this example, documentation and its contract
+registration change; the generic theory, backend and Gate M are untouched.
+
+The finite sampler executes `Prob` nodes in PTree, not just native list binds.
+`tri_sample` returns `L0` immediately after a successful `1/3` draw and otherwise
+uses a fair draw to return `L1` or `L2`. `impl_draw` first draws the `3/4` mask
+and fair Stop/Continue selector, then samples the payload for **both** branches.
+`spec_draw` directly samples the existing eight-outcome abstract distribution.
+No new event or unbounded internal loop is introduced.
+
+The proof has three visible layers:
+
+1. Finite rational analysis verifies the compiled sampler distributions.
+2. Explicit finite-hitting witnesses give `tri_sample_uniform` and
+   `impl_draw_related`, preserving the same heterogeneous return relation
+   and 3-to-2 joint. They do not select unknown recursive frontiers.
+3. `mixed_head_bridge` uses the existing up-to-bind rule. Its candidate
+   still contains only roots and replies; `bridge_next` handles the
+   environment's keep/refresh response.
+
+The complete frontier witness and both quantitative query values are retained.
+All eight previously registered MixedHead endpoint types and assumptions are
+unchanged, as are the other 125 safe generic-algebra entries. Three contracts
+are added: `tri_sample_uniform`, `impl_draw_related`, and
+`masked_after_stable_hitting` (136 safe entries in total). These inherit only
+the existing functional extensionality and `eq_rect_eq`; no whitelist changes.
+
+Local validation: full `opam exec -- dune build -j 2` (including AllImports
+and extraction), 143 tool tests, architecture/API/source-soundness checks,
+all 136 safe generic-algebra contracts and 491 unchanged central contracts
+passed. Existing extraction warnings remain. The other 32 compiled query
+groups were not rerun for this case-only change. `coqchk -norec` passed for
+MixedHeadProtocol's module body, trusting its compiled dependencies rather
+than recursively rechecking the library. No CI status is claimed.
