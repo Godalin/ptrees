@@ -73,11 +73,12 @@ existing `mixed_samples uniform2 c` distribution; its native `sem_bind`
 definition does not introduce extra PTree nodes.
 
 Both Stop and Continue carry a payload, preserving the heterogeneous-return
-extension. `tri_sample_uniform` exposes the ternary sampler as a reusable
-program equation. Supplied finite-hitting witnesses and finite distribution
-equalities prove `impl_draw_related`; no recursive frontier is selected to
-prove this sampler fact. After `Challenge`, **up-to-bind** consumes that
-heterogeneous sampler relation. The shared Stop/Continue outcome is coupled
+extension. There are no named sampler subprograms or pre-proved sampler
+equivalence wrappers. After `Challenge`, **up-to-bind** exposes two obligations:
+relate the finite prefixes, then relate their continuations. The main proof
+constructs explicit hitting witnesses in the prefix subgoal and consumes the
+native distribution calculation and joint there; no recursive frontier is
+selected. The shared Stop/Continue outcome is coupled
 diagonally, and **both** blocks use the same non-functional three-to-two joint
 `[(1/3,(L0,false)); (1/6,(L1,false)); (1/6,(L1,true)); (1/3,(L2,true))]`.
 `Stop` returns `(b,h) : bool * hidden3` on the left and
@@ -95,10 +96,11 @@ sampling states to its invariant: Ret closes by the heterogeneous return
 law, and Continue re-enters the reply candidate. The finite-prefix bind in
 the corecursive definitions passes ordinary guard checking.
 
-The core theorem is `mixed_head_bridge`. `uniform3_no_deterministic_fair`
+The core theorem is `masked_protocol_equivalent`. `uniform3_no_deterministic_fair`
 rules out *any* deterministic pushforward from the uniform three atoms to
 the fair Boolean marginal. `masked_protocol_equivalent m` starts the
-specification at `abstract_state m`, which is related to `m`; this deterministic
+specification at `abstract_state m`, with no caller-supplied bridge premise;
+the proof establishes the initial relation internally. This deterministic
 initialization is not a pushforward of the uniform sampling law. No symmetry
 or transitivity of the heterogeneous return relation is assumed.
 `masked_public_protocol_equivalent` erases the payload with generic relational
@@ -127,17 +129,15 @@ repeated type parameters, not proof obligations: complete-hitting progress
 and the root/reply invariants remain visible in the proofs. Concrete
 probability analysis retains its explicit measure interfaces where needed.
 MixedHead's source has four layers: preparation (§1: protocol types, native
-coins, observable backend profile), program construction (§2: finite samplers
-and shared recursive control flow), lemma preparation (§3: finite analysis,
-frontiers, queries, and the root/reply invariant), and final theorems (§4).
-On a first pass, read §2 and §4 and treat
-`impl_draw_related` as the proved finite-analysis boundary. The main proof
-labels the Challenge, Stop, Continue and Reply obligations; it does not
-disguise coinduction as an algebraic rewrite. Both protocols instantiate
-one `protocol draw old` loop, while their different sampler implementations
-remain explicit. Named branch views conclude the program part. Documentation
-headings organize the analysis and results; no parameterless Coq `Section`
-wrappers are needed.
+coins, observable backend profile), complete programs (§2), mathematical
+preparation (§3: distribution calculations, observable measures, and the
+root/reply relation), and final theorems (§4). On a first pass, read §2 and
+`masked_protocol_equivalent` in §4. The proof itself unfolds the protocols,
+constructs the finite prefix evidence, and composes Stop/Continue/Reply
+obligations. It does not hide these steps in `impl_draw_related` or a
+postfixedness wrapper, nor disguise heterogeneous coupling as equality
+rewriting. Quantitative program-query facts are also established locally.
+Documentation headings suffice; no parameterless Coq `Section` is needed.
 The original notation-only follow-up preserved its 69 compiled contracts.
 The subsequent three-to-two case changes its programs and state types, but
 does not change any generic theorem or backend.
@@ -146,10 +146,22 @@ The client endpoints are recorded in the existing
 `GENERIC_ALGEBRA_CONTRACTS.json` suite. There is no new stage-replay audit,
 generic theorem, capability, or global typeclass hint in this case update.
 
+The in-place proof update removes the obsolete `mixed_head_bridge`,
+`tri_sample_uniform`, and `impl_draw_related` contracts along with their
+case-local wrappers. The main `masked_protocol_equivalent` statement has
+not changed. `masked_after_stable_hitting` now exhibits the actual Challenge
+continuation of `masked_impl` and its frontier, instead of mentioning a named
+after-Challenge subprogram. Its logical axioms are unchanged. All other 132
+entries match their previous compiled types and assumptions exactly; the
+suite now has 133 entries. No axiom whitelist or central snapshot changes.
+Local full build/AllImports, architecture/API/source checks, and the case's
+`coqchk -norec` passed (dependencies trusted). No CI query.
+
 ## Historical checkpoints
 
 The following records describe earlier accepted versions, not the current
-program shape. The asymmetric-program update is recorded at the end.
+program shape or endpoint inventory. In particular, the named sampler
+programs and wrapper theorems mentioned below have since been removed.
 
 ### Original up-to implementation validation
 
@@ -253,7 +265,7 @@ rerun for this case-only change.
 `coqchk -norec` passed for the changed case's module body; its compiled
 dependencies are trusted, not recursively rechecked. CI was not queried.
 
-## Asymmetric MixedHead programs
+### Asymmetric MixedHead programs (historical)
 
 Baseline: `65b210a`. Only this example, documentation and its contract
 registration change; the generic theory, backend and Gate M are untouched.
