@@ -84,9 +84,10 @@ pstruct  ⊆  pstrong  ⊆  peutt
 `pstruct` matches the tree representation exactly; `pstrong` retains
 lockstep control flow but permits coupled sampling measures.  Internal
 `Tau`/`Prob` computation is handled by stable-hitting calculation laws,
-not by another equivalence relation.  The FreeOmega realization supplies
-the inclusions into `peutt`; it does not require native coupling recovery
-for these structural inclusions.
+not by another equivalence relation. Generic inclusions into `peutt` consume
+explicit relational-limit closure laws. FreeOmega supplies those laws without
+native coupling recovery; MathComp's relational-limit closure remains an
+explicit additional premise, not a consequence of scalar continuity alone.
 
 `Eq/StableHittingComputation.v` provides constructor characterizations,
 Prob decomposition, distribution-level Dirac/flatten laws, and
@@ -408,8 +409,9 @@ new interpretation semantics is introduced.
 [THEORY_STATUS.md](THEORY_STATUS.md) is the current theorem/capability map,
 including raw-tree transition comparison and MDP-fragment coincidence.
 The [architecture inventory](docs/ARCHITECTURE_AUDIT.md) records maintained
-modules and clients; [Cleanup B validation](docs/CLEANUP_B_VALIDATION.md)
-records the consolidation and its check scope.
+modules and clients; [Regression organization](docs/REGRESSION_ORGANIZATION.md)
+records test roles and theorem promotion. [Maintained verification](docs/AUDITING.md)
+lists current commands and their check scope.
 [Joint universe consistency](docs/UNIVERSE_CONSISTENCY.md) explains the
 two-level regression repair and full-library import guard.
 Finite-internal/kernel infrastructure is grouped under `Eq/Internal/`;

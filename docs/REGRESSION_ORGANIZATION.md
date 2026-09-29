@@ -120,6 +120,66 @@ Local validation of this promotion pass:
   approximant lemmas and an unused coinduction candidate are removed; their
   old code remains available at `1f3c03c`. All 105 regression files remain.
 
+## Follow-up: independent-domain laws and stale documentation
+
+Starting from `1e925b2`, this bounded pass continues promotion without merging
+unrelated tests or adding another audit script:
+
+- `Prob/Domain/Expectation` now owns `oval_empty_eq_bottom`, `oval_empty_mass`
+  and `oval_bottom_not_ret`. The empty-carrier results accept any type with an
+  emptiness proof, not just `Empty_set`. They use the existing evaluator laws;
+  no FreeOmega, PTree, semantic capability or new axiom enters the Domain layer.
+- The two corresponding `OmegaVal` regressions only instantiate these laws.
+  Distinct Dirac values, increasing/non-increasing chains, bounded versus
+  unbounded tests, large universes and minimal-import boundaries remain tested.
+- `HittingPrograms.ptree_reg_nested_merged_lift` composes existing mixed-bind
+  associativity, native distribution equality and relational bind. The manual
+  atom-by-atom support reconstruction disappears; its statement and the other
+  observation/hitting/totality clients remain. This is an integration client,
+  not a new public fixture-specific law. `FOQLObserve` boundary clients remain
+  elsewhere, including `FreeOmegaEscapingMass` and `Internal/CouplingReferences`.
+
+Regression source shrinks by 85 lines across two files; all 105 regression
+modules and all 436 theory modules remain. Production gains three derived
+endpoints rather than another probability interface.
+
+Thirteen superseded Markdown reports are removed: nine finite-representation
+preparation/migration reports, `PUBLIC_BEHAVIOR`, `PEUTT_RELATIONAL_BIND`,
+`AUDIT_CLEANUP` and `CLEANUP_B_VALIDATION`. Their still-relevant content is
+consolidated into [finite backends](FINITE_BACKEND_CONSOLIDATION.md),
+[public modules](PUBLIC_MODULES.md), [canonical routing](CANONICAL_BEHAVIOR_ROUTING.md)
+and [maintained verification](AUDITING.md). The `docs/` Markdown count falls
+from 67 to 54. Historical validation records remain recoverable from Git at
+`1e925b2`; this is not a claim to rerun those historical gates.
+
+README and THEORY_STATUS now refer to current owners, generic structural
+inclusions and the actual contract registry. The universe note distinguishes
+safe aggregate coverage from selected kernel-body checks. No contract snapshot
+is deleted as a side effect of documentation cleanup. Other thematic design
+documents are outside this pass; this is not a claim that every historical
+sentence throughout the repository has been audited.
+
+Validation for this follow-up:
+
+- Full local `opam exec -- dune build -j 2` passed, including safe AllImports
+  and extraction. No environment or timeout setting was changed.
+- All 143 tool tests passed; the contract-tool tests were rerun after adding
+  the three entries. Architecture, source safety, public surface, registry and
+  local Markdown-link checks passed. Removed report links have no remaining
+  references.
+- The three Domain laws use only the existing classical/extensional whitelist.
+  A temporary compilation of the old `HittingPrograms` source confirmed the
+  simplified lifting theorem retains its signature (modulo the temporary
+  module name) and exactly the same `eq_rect_eq` dependency. No historical
+  replay script is installed as a permanent check.
+- Three-module joint `coqchk -norec` passed for `Expectation`, `OmegaVal` and
+  `HittingPrograms`; dependencies are trusted, and Gate M is not included.
+- The 480 pre-existing central contract entries and all their category/context
+  fields are unchanged; three production endpoints are appended. This does not
+  refresh or remove any old snapshot. All **483** central compiled signatures
+  and assumption blocks passed comparison in the recorded import context.
+  The other 33 query groups were not rerun in this pass. CI is not queried.
+
 ## Changes and deliberate non-deletions
 
 - Remove the historical `RationalRepresentationMigration` certificate. It had

@@ -28,12 +28,7 @@ Proof.
 Qed.
 
 Example bottom_is_not_dirac : ~ oval_eq (@oval_bottom R bool) (oval_ret R true).
-Proof.
-  intro H; have H01 := H (fun _ => 1) (oval_test_one R).
-  change (0 = (1 : R)) in H01.
-  have Hneq : (1 : R) != 0 by apply oner_neq0.
-  by rewrite -H01 eqxx in Hneq.
-Qed.
+Proof. exact: oval_bottom_not_ret. Qed.
 
 (** A genuinely increasing, nonconstant chain; its supremum is a Dirac. *)
 Definition delayed_dirac (n : nat) : OmegaVal R bool :=
@@ -69,11 +64,7 @@ Proof. apply oval_bind_double_diagonal. Qed.
 
 Example empty_carrier_has_zero_mass (L : OmegaVal R Empty_set) :
   oval_mass L = 0.
-Proof.
-  unfold oval_mass.
-  rewrite (oval_eval_ext L (f := fun _ => 1) (g := fun _ => 0));
-    [exact (oval_zero (oval_laws L))|intros []].
-Qed.
+Proof. apply oval_empty_mass. intros []. Qed.
 
 (** Antisymmetry identifies bounded-test behavior, not record proof fields. *)
 Example mutual_order_is_observational_equality {A} (L M : OmegaVal R A) :

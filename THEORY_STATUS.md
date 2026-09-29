@@ -68,18 +68,20 @@ limitations. MathComp-native external soundness remains separate. State,
 Reader, Writer and Exception interpretation now have maintained preservation
 theorems. Mainline reasoning does not depend on external validation.
 
-[Architecture](docs/ARCHITECTURE.md) specifies ownership, curated facades,
+[Architecture](docs/ARCHITECTURE.md) specifies ownership, public entry points,
 generic/canonical/concrete specialization, retained auxiliary infrastructure
 and five kinds of premise. The [generated inventory](docs/ARCHITECTURE_AUDIT.md)
 checks actual edges and transitive isolation. The
-[compiled contracts](docs/CONTRACTS.json) retain 306 public/helper and 199
-soundness endpoints, with full types and logical assumptions. This is neither
+[compiled contracts](docs/CONTRACTS.json) retain public/helper and soundness
+endpoints, with full types and logical assumptions; the complete set of
+thematic snapshots is registered in `docs/CONTRACT_SUITES.json`. This is neither
 an exhaustive theorem audit nor a mathematical minimality claim.
 
-Cleanup B consolidates regressions, tools and phase documents without changing
-the accepted theory. Its baseline is `5c1a0df`; phase histories remain in git.
-See [validation](docs/CLEANUP_B_VALIDATION.md) for source conservation, counts
-and the explicitly targeted joint kernel-check scope. Gate D is still separate.
+[Regression organization](docs/REGRESSION_ORGANIZATION.md) distinguishes
+reusable production laws from integration and boundary tests.
+[Maintained verification](docs/AUDITING.md) checks the current tree rather than
+replaying completed migrations; phase history remains in Git. Targeted kernel
+checks do not replace the separate whole-library Gate D audit.
 
 | Component | Role / import surface |
 | --- | --- |
@@ -88,8 +90,8 @@ and the explicitly targeted joint kernel-check scope. Gate D is still separate.
 | `Prob/Backend`, `Prob/Legacy` | concrete carriers and explicitly legacy adapters |
 | `Eq`, `Eq/Internal` | stable hitting / equality; internal certificates and schedules |
 | `Semantics` | transitions, MDP fragment and comparison; no Interp dependency |
-| `Interp/FreeOmega`, `Interp/Backend` | canonical-model compositionality and concrete endpoints |
-| `API`, top-level `PTree` / `Semantics` | curated imports; implementation modules remain explicit expert imports |
+| `Interp`, `Interp/FreeOmega`, `Interp/Backend` | generic interpretation, completion-specific theory and concrete endpoints |
+| Top-level `PTree` / `Eq` / `PTreeFacts` / `Semantics` | actual definition/theorem-owner exports; `Eq/Canonical` selects behavioral operations; no `API/` layer |
 | `Examples` / `Regression` | application proofs / contract tests; Examples never depends on Regression |
 
 ## 1. Public semantic architecture

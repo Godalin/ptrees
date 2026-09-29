@@ -401,4 +401,25 @@ Proof.
     exact (oval_sup_ge n (fun i => oval_sup_le (Hb i))).
 Qed.
 
+(** An empty result carrier admits only missing mass.  State the law for
+    any empty type, without fixing a particular empty datatype. *)
+Lemma oval_empty_eq_bottom {A} (empty : A -> False) (L : OmegaVal A) :
+  oval_eq L oval_bottom.
+Proof.
+  intros f Hf. change (oval_eval L f = 0).
+  rewrite (oval_eval_ext L (f := f) (g := fun _ => 0));
+    [exact (oval_zero (oval_laws L))|intro x; destruct (empty x)].
+Qed.
+
+Corollary oval_empty_mass {A} (empty : A -> False) (L : OmegaVal A) :
+  oval_mass L = 0.
+Proof. exact (oval_empty_eq_bottom empty L (oval_test_one)). Qed.
+
+Lemma oval_bottom_not_ret {A} (x : A) : ~ oval_eq oval_bottom (oval_ret x).
+Proof.
+  intro H; have H01 := H (fun _ => 1) (@oval_test_one A).
+  change (0 = (1 : R)) in H01.
+  have Hneq : (1 : R) != 0 by apply oner_neq0.
+  by rewrite -H01 eqxx in Hneq.
+Qed.
 End Expectation.

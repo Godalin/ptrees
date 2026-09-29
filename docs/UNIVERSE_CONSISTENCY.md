@@ -90,7 +90,7 @@ After building, CI also rechecks the two repaired regressions and
 The historical whole-library proof audit was interrupted after roughly
 40 minutes and is not claimed to pass. The maintained targeted check is
 documented in [architecture](ARCHITECTURE.md) and
-[Cleanup B validation](CLEANUP_B_VALIDATION.md):
+[maintained verification](AUDITING.md):
 
 ```sh
 python3 tools/audit_architecture.py --aggregate-only
@@ -109,9 +109,11 @@ The checker uses its default ordinary conversion, which can be slow on
 maintained command does not enable this optimization or disable any universe
 checks.
 
-No module is excluded from that check. The dependency report excludes only
-the import-only harness from *substantive client counts*, after checking its
-coverage; otherwise that test would misleadingly make every leaf look used.
+Every Gate S module is included in the aggregate's universe-consistency check;
+only selected module bodies receive the targeted kernel recheck. Gate M is
+excluded from both safe checks. The dependency report excludes the import-only
+harness from *substantive client counts*, after checking its coverage;
+otherwise that test would misleadingly make every leaf look used.
 
 The historical layout proof-text audit remains frozen to
 `92e0841 -> 6194bdf`. It does not claim that this subsequent repair is

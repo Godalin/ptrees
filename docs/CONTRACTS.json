@@ -2959,6 +2959,21 @@
       "name": "PTree.Semantics.trans_bisim_coinduction",
       "type": "@TreeTransitionBisim.trans_bisim_coinduction\n     : forall (E MN MF : Type -> Type) (FI : Measure.SemanticMeasure MF)\n         (FC : @Measure.SemanticMeasureCoreLaws MF FI) (MX : Mixed.MixedMeasure MN MF)\n         (FO : @Omega.SemanticOmega MF FI) (R1 R2 : Type) (RR : R1 -> R2 -> Prop)\n         (sim : PTreeDefinition.ptree E MN R1 -> PTreeDefinition.ptree E MN R2 -> Prop),\n       (forall (t : PTreeDefinition.ptree E MN R1) (u : PTreeDefinition.ptree E MN R2),\n        sim t u -> @TreeTransitionBisim.trans_bisimF E MN MF FI MX FO R1 R2 RR sim t u) ->\n       forall (t : PTreeDefinition.ptree E MN R1) (u : PTreeDefinition.ptree E MN R2),\n       sim t u -> @TreeTransitionBisim.trans_bisim E MN MF FI FC MX FO R1 R2 RR t u",
       "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Prob.Domain.Expectation.oval_empty_eq_bottom",
+      "type": "Expectation.oval_empty_eq_bottom\n     : forall (R : reals.Real.type) (A : Type),\n       (A -> False) ->\n       forall L : Expectation.OmegaVal R A,\n       @Expectation.oval_eq R A L (@Expectation.oval_bottom R A)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
+    },
+    {
+      "name": "PTree.Prob.Domain.Expectation.oval_empty_mass",
+      "type": "Expectation.oval_empty_mass\n     : forall (R : reals.Real.type) (A : Type),\n       (A -> False) ->\n       forall L : Expectation.OmegaVal R A,\n       @Expectation.oval_mass R A L =\n       @ssralg.GRing.zero (reals.Real.Exports.reals_Real__to__GRing_Nmodule R)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
+    },
+    {
+      "name": "PTree.Prob.Domain.Expectation.oval_bottom_not_ret",
+      "type": "Expectation.oval_bottom_not_ret\n     : forall (R : reals.Real.type) (A : Type) (x : A),\n       ~ @Expectation.oval_eq R A (@Expectation.oval_bottom R A) (@Expectation.oval_ret R A x)",
+      "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
     }
   ]
 }

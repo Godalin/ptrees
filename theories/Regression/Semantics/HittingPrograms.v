@@ -3,8 +3,6 @@ Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
 
-From Coq.Program Require Import Equality.
-
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Prob.Interface Require Import FrontierLift.
@@ -218,100 +216,26 @@ Lemma ptree_reg_nested_merged_lift
     (stable_head_rel eq sim)
     ptree_reg_nested_heads ptree_reg_merged_heads.
 Proof.
-  eapply FOQLObserve with
-    (obsA := reg_head_value) (obsB := reg_head_value)
-    (outA := ptree_reg_nested_observation)
-    (outB := ptree_reg_merged_observation)
-    (S := eq).
-  - exact ptree_reg_nested_observes.
-  - exact ptree_reg_merged_observes.
-  - eapply sem_lift_proper_l with
-      (mu := ptree_reg_merged_observation).
-    + apply sem_eq_sym. unfold ptree_reg_nested_observation,
-        ptree_reg_merged_observation.
-      change (sem_eq
-        (sem_bind reg_fair
-          (fun side => sem_bind (reg_inner side) (fun x => sem_ret x)))
-        (sem_bind reg_merged_three (fun x => sem_ret x))).
-      eapply sem_eq_trans.
-      * apply sem_eq_sym. apply sem_bind_assoc.
-      * change (@meas_eq EnumQ EnumQ_MeasureInterface nat
-          (meas_bind (bind_EnumQ reg_fair reg_inner) meas_ret)
-          (meas_bind reg_merged_three meas_ret)).
-        apply meas_bind_proper.
-        -- exact (enumQ_meas_eq_of_eqenum reg_nested_outcomes_eqenum).
-        -- intros x. apply meas_eq_refl.
-    + apply sem_lift_refl. intros x. reflexivity.
-  - intros h1 h2 Hvalue. destruct h1 as [n1|X e1 c1];
-      destruct h2 as [n2|Y e2 c2]; try destruct e1; try destruct e2.
-    cbn in Hvalue. subst n2. constructor. reflexivity.
-  - unfold free_omega_support_lift, ptree_reg_nested_heads,
-      ptree_reg_merged_heads. split.
-    + intros P HP.
-      pose proof (free_omega_ae_sample_inv HP) as Houter.
-      assert (Hfalse : free_omega_ae P
-          (FOSample (reg_inner false)
-            (fun outcome => FORet (FHRet outcome)))).
-      { apply Houter with (p := reg_half).
-        - cbn. auto.
-        - cbn. discriminate. }
-      assert (Htrue : free_omega_ae P
-          (FOSample (reg_inner true)
-            (fun outcome => FORet (FHRet outcome)))).
-      { apply Houter with (p := reg_half).
-        - cbn. auto.
-        - cbn. discriminate. }
-      pose proof (free_omega_ae_sample_inv Hfalse) as Hfin.
-      pose proof (free_omega_ae_sample_inv Htrue) as Htin.
-      assert (HP0 : P (FHRet 0)).
-      { specialize (Hfin reg_half 0). cbn in Hfin.
-        pose proof (Hfin (or_introl eq_refl) ltac:(cbn; discriminate)) as Hr.
-        dependent destruction Hr. assumption. }
-      assert (HP1 : P (FHRet 1)).
-      { specialize (Hfin reg_half 1). cbn in Hfin.
-        pose proof (Hfin (or_intror (or_introl eq_refl))
-          ltac:(cbn; discriminate)) as Hr.
-        dependent destruction Hr. assumption. }
-      assert (HP2 : P (FHRet 2)).
-      { specialize (Htin reg_half 2). cbn in Htin.
-        pose proof (Htin (or_intror (or_introl eq_refl))
-          ltac:(cbn; discriminate)) as Hr.
-        dependent destruction Hr. assumption. }
-      eapply FOAESample with (Good := fun n => P (FHRet n)).
-      * intros p n Hin Hnz. cbn in Hin.
-        destruct Hin as [Hin|[Hin|[Hin|[]]]]; inversion Hin; subst;
-          assumption.
-      * intros n Hn. constructor. exists (FHRet n). split.
-        -- constructor. reflexivity.
-        -- exact Hn.
-    + intros Q HQ.
-      pose proof (free_omega_ae_sample_inv HQ) as Hmerged.
-      assert (HQ0 : Q (FHRet 0)).
-      { specialize (Hmerged reg_half 0). cbn in Hmerged.
-        pose proof (Hmerged (or_introl eq_refl)
-          ltac:(cbn; discriminate)) as Hr.
-        dependent destruction Hr. assumption. }
-      assert (HQ1 : Q (FHRet 1)).
-      { specialize (Hmerged reg_quarter 1). cbn in Hmerged.
-        pose proof (Hmerged (or_intror (or_introl eq_refl))
-          ltac:(cbn; discriminate)) as Hr.
-        dependent destruction Hr. assumption. }
-      assert (HQ2 : Q (FHRet 2)).
-      { specialize (Hmerged reg_quarter 2). cbn in Hmerged.
-        pose proof (Hmerged (or_intror (or_intror (or_introl eq_refl)))
-          ltac:(cbn; discriminate)) as Hr.
-        dependent destruction Hr. assumption. }
-      eapply FOAESample with (Good := fun _ => True).
-      * apply sem_ae_true.
-      * intros side _. eapply FOAESample with (Good := fun n =>
-          match n with 0 => True | 1 => side = false | 2 => side = true
-          | _ => False end).
-        -- intros p n Hin Hnz. destruct side; cbn in Hin |- *;
-             destruct Hin as [Hin|[Hin|[]]]; inversion Hin; subst; auto.
-        -- intros n Hn. constructor. exists (FHRet n). split.
-           ++ constructor. reflexivity.
-           ++ destruct side, n as [|[|[|n]]]; cbn in Hn |- *;
-                try contradiction; assumption.
+  (** Flatten using the existing two-level algebra, then use the native
+      equality of the concrete finite distributions. No atom-by-atom support
+      reconstruction and no equality-lifting reflection assumption is needed. *)
+  eapply sem_lift_mono with
+    (R := fun h1 h2 => exists mid, h1 = mid /\ stable_head_rel eq sim mid h2).
+  - intros h1 h2 [mid [Heq Hrel]]. subst mid. exact Hrel.
+  - eapply sem_lift_comp.
+    + apply (mixed_bind_node_assoc (NI := EnumQ_SemanticMeasure)
+        (FI := FreeOmegaObservableSemanticMeasure)
+        (MX := FreeOmegaMixedMeasure) reg_fair reg_inner
+        (fun n => FORet (FHRet n))).
+    + eapply (mixed_lift_bind (NI := EnumQ_SemanticMeasure)
+        (FI := FreeOmegaObservableSemanticMeasure)
+        (MX := FreeOmegaMixedMeasure)) with (R := eq).
+      * eapply sem_lift_proper_l with (mu := reg_merged_three).
+        -- apply sem_eq_sym. exact (enumQ_meas_eq_of_eqenum reg_nested_outcomes_eqenum).
+        -- apply sem_lift_refl. intro n. reflexivity.
+      * intros x y ->.
+        apply (sem_lift_ret (SI := FreeOmegaObservableSemanticMeasure)).
+        constructor. reflexivity.
 Qed.
 
 Theorem peutt_reg_nested_merged :

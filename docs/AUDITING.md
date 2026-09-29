@@ -83,7 +83,7 @@ full-interface and fold clients are positive contracts in the safe joint
 context. Minimal-import and import-order tests remain actual Rocq modules.
 
 `audit_assumptions.py` and `audit_api.py` still support their focused legacy
-commands, but checking only the central 465 entries is **not** a full run of
+commands, but checking only the central manifest is **not** a full run of
 the extended contract inventory.
 
 ## What is deliberately retired
@@ -92,12 +92,11 @@ Accepted rename/representation/owner-migration audits, byte-for-byte freezes
 of entire earlier libraries, inverse namespace replays, and their Python
 mutation tests are no longer daily invariants. They remain recoverable from
 Git at their accepted checkpoints (the complete pre-cleanup tools are at
-`de66a85`). Old stage reports describe those historical verifications; their
-tool commands are not current instructions.
+`de66a85`). Superseded stage reports are consolidated into current guides;
+their historical text and validation records remain recoverable from Git.
 
 This does not delete mathematical regressions or permit new probability
-axioms. All Rocq files and executable implementations are unchanged by this
-cleanup. Runtime tests for replay, lost mass, timeout, errors, State rewriting,
+axioms. Runtime tests for replay, lost mass, timeout, errors, State rewriting,
 unbounded retry and Bernoulli factory execution remain active.
 
 Proof tactics and helper names are not generally frozen. Valid refactoring
