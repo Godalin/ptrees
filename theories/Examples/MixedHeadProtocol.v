@@ -64,8 +64,15 @@ Lemma hidden3_eqP : Equality.axiom hidden3_beq.
 Proof. intros [] []; constructor; congruence. Qed.
 HB.instance Definition _ := hasDecEq.Build hidden3 hidden3_eqP.
 
+(** Allowed pairs in the 3-to-2 abstraction: L0 ~ false, L1 ~ false/true,
+    L2 ~ true. This is a relation, not a deterministic map or a coupling:
+    [coupling32] below supplies the joint weights supported on these pairs. *)
 Definition bridge m z : Prop :=
   match m with L0 => z = false | L1 => True | L2 => z = true end.
+
+(** A shared Reply acknowledgement preserves the abstraction: false keeps
+    the related old states (m,z); true installs the related fresh states
+    (h,j). This closes the recursive continuation after either response. *)
 Lemma bridge_next m z h j (a : bool) :
   bridge m z -> bridge h j ->
   bridge (if a then h else m) (if a then j else z).
