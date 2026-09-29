@@ -67,6 +67,7 @@ Require PTree.Eq.Shallow.
 Require PTree.Eq.StableHittingComputation.
 Require PTree.Eq.StableHittingRelation.
 Require PTree.Eq.UnifiedFrontier.
+Require PTree.Eq.UpToBind.
 Require PTree.Eq.UpToProb.
 Require PTree.Eq.WellFormedness.
 Require PTree.Examples.AbsorbingFrontier.

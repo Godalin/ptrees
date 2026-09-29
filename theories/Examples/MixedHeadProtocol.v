@@ -22,6 +22,7 @@ Unset Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 
 From PTree.Eq Require Import StableHittingRelation.
+From PTree.Eq Require Import UpToBind.
 From Coq.Program Require Import Equality.
 From Coq Require Import FunctionalExtensionality.
 From ITree.Basics Require Import Monad.
@@ -196,7 +197,6 @@ Definition mixed_sample_rel (x : impl_return + impl_return)
 Set Universe Polymorphism.
 
 Local Notation tree := (ptree mixedE SubEnumQ).
-Local Notation state A := (ptree' mixedE SubEnumQ A).
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation mixed_head A := (stable_head mixedE SubEnumQ A).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
@@ -252,12 +252,10 @@ CoFixpoint mixed_spec (z : bool) : tree spec_return :=
 (** Initialization only; not a deterministic transport of uniform3. *)
 Definition abstract_state m := match m with L2 => true | _ => false end.
 
-Definition canonical_spec m := mixed_spec (abstract_state m).
-
 (** * 3. Lemma preparation
 
-    Only distribution calculations, observable measures and the recursive
-    relation are prepared here. Program-level facts are proved at their use. *)
+    Only distribution calculations and observable measures are prepared
+    here. Program-level facts are proved at their use. *)
 
 (** ** Finite distributions and the 3-to-2 joint
 
@@ -472,79 +470,61 @@ Lemma spec_true_reply_mass c :
     (if c then 1 / 8 else 3 / 8).
 Proof. destruct c; vm_compute; reflexivity. Qed.
 
-(** ** Recursive invariant: roots and replies
-
-    The main proof composes the finite sampler relation without adding
-    states for internal draws. Reply pairs carry both the old
-    bridge and the fresh bridge supplied by the joint. *)
-
-(** Only roots and replies belong to the invariant. The reply obligation
-    carries BOTH the old bridge and the new bridge supplied by the joint. *)
-Definition mixed_protocol_sim (s1 : state impl_return) (s2 : state spec_return) : Prop :=
-  (exists m z, bridge m z /\
-    s1 = observe (masked_impl m) /\ s2 = observe (mixed_spec z)) \/
-  (exists m z h j b, bridge m z /\ bridge h j /\
-    s1 = observe (Vis (Reply b) (fun ack =>
-      masked_impl (if ack then h else m))) /\
-    s2 = observe (Vis (Reply b) (fun ack =>
-      mixed_spec (if ack then j else z)))).
-
 (** * 4. Final theorems
 
     Main behavioral claim, public-result corollary, and quantitative endpoints.
     The complete program proof is below: unfold, compose prefixes with bind,
     discharge returns, then close the recursive visible continuations. *)
 
-(** No caller-supplied bridge proof: [abstract_state] chooses a related
-    initial specification state. The invariant below still records both
-    the old and newly sampled state relations during recursive reasoning. *)
-Theorem masked_protocol_equivalent m : masked_impl m ≈ₚ[return_rel] canonical_spec m.
+(** No caller-supplied bridge proof or specification wrapper: [abstract_state]
+    chooses a related initial state. The local invariant contains only loop
+    entries; the Reply context is composed below, not enumerated as a state. *)
+Theorem masked_protocol_equivalent m :
+  masked_impl m ≈ₚ[return_rel] mixed_spec (abstract_state m).
 Proof.
   (* Expose one round, then compose its prefix and continuation proofs. *)
-  unfold canonical_spec.
-  eapply peutt_coinduction_upto_bind
-    with (sim := mixed_protocol_sim); try typeclasses eauto.
+  eapply peutt_coinduction_upto_bind_vis with
+    (sim := fun s1 s2 => exists old z, bridge old z /\
+      s1 = observe (masked_impl old) /\ s2 = observe (mixed_spec z));
+    try typeclasses eauto.
   - intros. apply ptree_bind_cofinal_all.
-  - intros s1 s2 [(old & z & Hold & -> & ->) |
-      (old & z & h & j & b & Hold & Hfresh & -> & ->)].
-    + cbn [masked_impl mixed_spec trigger observe].
-      apply stable_hitting_match_vis. intro answer.
-      rewrite !(observe_bind (Ret answer)). cbn [observe].
-      eapply bind_upto_closure_bind with (RR := mixed_sample_rel).
-      * (* Analyze this finite prefix here, not via a pre-proved program relation. *)
-        eapply peutt_of_hitting_lift with
-          (out1 := FOSample (draw_distribution answer) (fun x => FORet (FHRet x)))
-          (out2 := FOSample (mixed_samples uniform2 answer) (fun x => FORet (FHRet x))).
-        -- unfold draw_distribution.
-           apply stable_hitting_native_sample. intro mask.
-           apply stable_hitting_native_sample. intro continue.
-           rewrite observe_bind. cbn [observe].
-           apply stable_hitting_native_sample. intros [].
-           ++ apply stable_hitting_native_ret.
-           ++ rewrite observe_bind. cbn [observe].
-              apply stable_hitting_native_sample. intro second.
-              apply stable_hitting_native_ret.
-        -- eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := MX))
-             with (Good := fun _ => True).
-           ++ apply sem_ae_true.
-           ++ intros x _. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
-        -- eapply FOQLSample with (T := mixed_sample_rel).
-           ++ eapply sem_lift_proper_l; [apply sem_eq_sym, draw_distribution_mixed|].
-              exact (mixed_samples_lift answer).
-           ++ intros x y H. apply FOQLStructural. constructor. constructor. exact H.
-      * intros [r|[b h]] [u|[b' j]] H; simpl in H; try contradiction.
-        -- (* Stop: abstract the returned payload, preserving the public bit. *)
-           right. apply peutt_ret. exact H.
-        -- (* Continue: compose the fresh coupling with the Reply context. *)
-           destruct H as [Hbit Hfresh]. simpl in Hbit, Hfresh. subst b'.
-           left. right. exists old, z, h, j, b. auto.
-    + (* After Reply, keep or refresh both states and re-enter the loop. *)
-      apply stable_hitting_match_vis. intro ack.
-      apply bind_upto_closure_includes. left.
-      eexists _, _. split; [exact (bridge_next ack Hold Hfresh)|].
-      split; reflexivity.
+  - intros s1 s2 (old & z & Hold & -> & ->).
+    cbn [masked_impl mixed_spec trigger observe].
+    apply stable_hitting_match_vis. intro answer.
+    rewrite !(observe_bind (Ret answer)). cbn [observe].
+    eapply bind_upto_closure_bind with (RR := mixed_sample_rel).
+    + (* Analyze this finite prefix here, not via a pre-proved program relation. *)
+      eapply peutt_of_hitting_lift with
+        (out1 := FOSample (draw_distribution answer) (fun x => FORet (FHRet x)))
+        (out2 := FOSample (mixed_samples uniform2 answer) (fun x => FORet (FHRet x))).
+      * unfold draw_distribution.
+        apply stable_hitting_native_sample. intro mask.
+        apply stable_hitting_native_sample. intro continue.
+        rewrite observe_bind. cbn [observe].
+        apply stable_hitting_native_sample. intros [].
+        -- apply stable_hitting_native_ret.
+        -- rewrite observe_bind. cbn [observe].
+           apply stable_hitting_native_sample. intro second.
+           apply stable_hitting_native_ret.
+      * eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := MX))
+          with (Good := fun _ => True).
+        -- apply sem_ae_true.
+        -- intros x _. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
+      * eapply FOQLSample with (T := mixed_sample_rel).
+        -- eapply sem_lift_proper_l; [apply sem_eq_sym, draw_distribution_mixed|].
+           exact (mixed_samples_lift answer).
+        -- intros x y H. apply FOQLStructural. constructor. constructor. exact H.
+    + intros [r|[b h]] [u|[b' j]] H; simpl in H; try contradiction.
+      * (* Stop: abstract the returned payload, preserving the public bit. *)
+        right. apply peutt_ret. exact H.
+      * (* Continue: compose the fresh coupling with the Reply context. *)
+        destruct H as [Hbit Hfresh]. simpl in Hbit, Hfresh. subst b'.
+        left. apply vis_upto_closure_vis. intro ack.
+        (* Compose Reply, then keep or refresh the related loop states. *)
+        eexists _, _. split; [exact (bridge_next ack Hold Hfresh)|].
+        split; reflexivity.
   - (* Initialization discharges the invariant internally. *)
-    left. exists m, (abstract_state m). split.
+    exists m, (abstract_state m). split.
     + destruct m; simpl; auto.
     + split; reflexivity.
 Qed.
@@ -553,7 +533,7 @@ Qed.
     using the library's heterogeneous bind law, not a second coinduction. *)
 Theorem masked_public_protocol_equivalent m :
   PTree.bind (masked_impl m) (fun r => Ret (fst r)) ≈ₚ
-  PTree.bind (canonical_spec m) (fun u => Ret (fst u)).
+  PTree.bind (mixed_spec (abstract_state m)) (fun u => Ret (fst u)).
 Proof.
   eapply peutt_bind with (RR := return_rel).
   - apply masked_protocol_equivalent.
@@ -618,10 +598,10 @@ Theorem masked_challenge_true_reply_probability m c :
 Proof.
   assert (Hspec :
     @finite_interaction_query mixedE SubEnumQ MF FI MX FO spec_return
-      (challenge_true_reply_trace c) (canonical_spec m)
+      (challenge_true_reply_trace c) (mixed_spec (abstract_state m))
       (spec_true_reply_query (abstract_state m) c)).
   {
-    unfold canonical_spec, challenge_true_reply_trace.
+    unfold challenge_true_reply_trace.
     change (@finite_interaction_query mixedE SubEnumQ MF FI MX FO spec_return
       (cons (@select_challenge c) (cons (@select_true_reply) nil))
       (Vis Challenge (fun answer =>

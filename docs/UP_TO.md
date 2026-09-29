@@ -2,20 +2,32 @@
 
 The behavioral generator and `peutt` are unchanged. These are proof rules
 for reducing the candidate relation, not additional equivalences or axioms.
-Import `PTree.Eq` for the public rules, or their explicit owners below.
+Import `PTree.Eq` for the basic rules, and `From PTree.Eq Require Import
+UpToBind.` for the bind/visible-context composition rule.
 
 | Rule | What the closure may discharge | Owner |
 | --- | --- | --- |
 | `peutt_coinduction_upto` | an already established `peutt` pair | `Eq/PEutt` |
 | `peutt_coinduction_upto_bind` | related prefixes, with candidate/known return continuations | `Eq/PEutt` |
+| `peutt_coinduction_upto_bind_vis` | related prefixes, with a common visible context before candidate re-entry | `Eq/UpToBind` |
 | `peutt_coinduction_upto_prob` | a native relational lifting, with candidate/known sampled continuations | `Eq/UpToProb` |
 
 `bind_upto_closure_bind` and `prob_upto_closure_sample` are introduction
 rules: clients provide the mathematical certificates, not the existential
-encoding of the closures. All three rules allow heterogeneous return
+encoding of the closures. `vis_upto_closure_vis` composes a visible context
+from pointwise candidate obligations on its responses. All rules allow heterogeneous return
 carriers and arbitrary return relations.
 
 ## Soundness and scope
+
+The bind/visible rule is a small derived rule: apply existing up-to-bind to
+the candidate extended by one common `Vis` context. Candidate roots use the
+client's progress proof; visible contexts progress by `stable_hitting_match_vis`
+and re-enter the original candidate. Thus clients need not enumerate reply
+states themselves. This is one layer of visible context inside bind closure,
+not an unrestricted recursively nested context closure. It retains the existing
+bind-cofinality premise and frontier Core/Bind/Order/Omega/Cofinality/Diagonal/
+Selection laws; no new capability, native law, or logical axiom is introduced.
 
 The sampling closure contains the candidate, established `peutt`, and
 one pair of `Prob` contexts. Its sampling constructor requires
@@ -64,7 +76,7 @@ theorem; the redundant VN-side construction has been removed. The
 after-request equivalence is a corollary of the service theorem and ordinary
 bind congruence. See [iteration summaries](ITERATION_SUMMARY.md).
 
-`MixedHeadProtocol` keeps roots and reply states. Its programs now have
+`MixedHeadProtocol` keeps only loop entries in its local candidate. Its programs have
 different internal shapes. The implementation draws a `3/4`-biased Boolean,
 a fair branch selector, and a ternary payload implemented by a `1/3` coin
 followed, only on failure, by a fair coin. Thus each round uses three or four
@@ -78,7 +90,7 @@ steps; the proof removes their administrative return-binds by `observe_bind`.
 
 Both Stop and Continue carry a payload, preserving the heterogeneous-return
 extension. There are no named sampler subprograms or pre-proved sampler
-equivalence wrappers. After `Challenge`, **up-to-bind** exposes two obligations:
+equivalence wrappers. After `Challenge`, **up-to-bind/Vis** exposes two obligations:
 relate the finite prefixes, then relate their continuations. The main proof
 constructs explicit hitting witnesses in the prefix subgoal and consumes the
 native distribution calculation and joint there; no recursive frontier is
@@ -88,8 +100,8 @@ diagonally, and **both** blocks use the same non-functional three-to-two joint
 `Stop` returns `(b,h) : bool * hidden3` on the left and
 `(b,j) : bool * bool` on the right. The return relation preserves `b` and
 requires `bridge h j`; the known heterogeneous return law closes this branch.
-`Continue` enters the reply candidate
-with both the current-state bridge and the sampled-state bridge. After
+`Continue` composes the Reply context directly in the main proof, using both
+the current-state bridge and the freshly sampled bridge. After
 `Reply`, `bridge_next` chooses the new bridge on acknowledgement true and
 the old bridge on false. Thus the coupling support actually closes the
 recursive obligation. The three-state implementation and two-state
@@ -97,7 +109,7 @@ specification retain the original `3/8` and `1/8` quantitative queries.
 
 The main proof does not flatten probability lists or add intermediate
 sampling states to its invariant: Ret closes by the heterogeneous return
-law, and Continue re-enters the reply candidate. The finite-prefix bind in
+law, and Continue handles Reply before re-entering the loop candidate. The finite-prefix bind in
 the corecursive definitions passes ordinary guard checking.
 
 The core theorem is `masked_protocol_equivalent`. `uniform3_no_deterministic_fair`
@@ -126,16 +138,17 @@ Both clients follow FactoryController's presentation: setup fixes the
 observable profile once, and **local** `≈ₚ` / `≈ₚ[RR]` expand directly to that raw
 `peutt`. Thus the public conclusions read
 `von_neumann_service ≈ₚ direct_fair_service` and
-`masked_impl m ≈ₚ[return_rel] canonical_spec m`, without a canonical-relation wrapper or new instances.
+`masked_impl m ≈ₚ[return_rel] mixed_spec (abstract_state m)`, without a
+specification wrapper, canonical-relation wrapper or new instances.
 The service's bind expressions use the standard `b <- sampler ;; ...`
 notation. Local `tree`, `state`, `progress` and up-to abbreviations hide
 repeated type parameters, not proof obligations: complete-hitting progress
-and the root/reply invariants remain visible in the proofs. Concrete
+and recursive state invariants remain visible in the proofs. Concrete
 probability analysis retains its explicit measure interfaces where needed.
 MixedHead's source has four layers: preparation (§1: protocol types, native
 coins, observable backend profile), complete programs (§2), mathematical
-preparation (§3: distribution calculations, observable measures, and the
-root/reply relation), and final theorems (§4). On a first pass, read §2 and
+preparation (§3: distribution calculations and observable measures), and
+final theorems (§4, including the local loop-entry invariant). On a first pass, read §2 and
 `masked_protocol_equivalent` in §4. The proof itself unfolds the protocols,
 constructs the finite prefix evidence, and composes Stop/Continue/Reply
 obligations. It does not hide these steps in `impl_draw_related` or a
@@ -146,9 +159,27 @@ The original notation-only follow-up preserved its 69 compiled contracts.
 The subsequent three-to-two case changes its programs and state types, but
 does not change any generic theorem or backend.
 
-The client endpoints are recorded in the existing
-`GENERIC_ALGEBRA_CONTRACTS.json` suite. There is no new stage-replay audit,
-generic theorem, capability, or global typeclass hint in this case update.
+The client endpoints and the new generic visible-context rule are recorded in
+the existing `GENERIC_ALGEBRA_CONTRACTS.json` suite. No new stage-replay audit,
+capability or global typeclass hint is needed. Removing `canonical_spec` only
+unfolds that wrapper in the two public behavioral statements; their logical
+assumptions are unchanged. The case has no global `mixed_protocol_sim` and no
+Reply-state enumeration. The pure state relation `bridge` remains essential:
+the update removes administrative program contexts, not the recursive invariant.
+The suite now records 135 endpoints: 131 previous signatures/assumption sets
+are unchanged, two only expand the removed specification wrapper, and two
+record the generic visible-context introduction/coinduction rules. Both new
+rules are closed under the global context. The 491 central contracts are
+unchanged; neither the axiom whitelist nor Gate M is extended.
+
+## Historical checkpoints
+
+The following records describe earlier accepted versions, not the current
+program shape or endpoint inventory. In particular, the named sampler
+programs, specification wrapper and root/reply candidate mentioned below
+have since been removed.
+
+### In-place proof update
 
 The in-place proof update removes the obsolete `mixed_head_bridge`,
 `tri_sample_uniform`, and `impl_draw_related` contracts along with their
@@ -160,12 +191,6 @@ entries match their previous compiled types and assumptions exactly; the
 suite now has 133 entries. No axiom whitelist or central snapshot changes.
 Local full build/AllImports, architecture/API/source checks, and the case's
 `coqchk -norec` passed (dependencies trusted). No CI query.
-
-## Historical checkpoints
-
-The following records describe earlier accepted versions, not the current
-program shape or endpoint inventory. In particular, the named sampler
-programs and wrapper theorems mentioned below have since been removed.
 
 ### Original up-to implementation validation
 

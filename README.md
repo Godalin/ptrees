@@ -228,11 +228,13 @@ forms (six Ret and six Reply) and eight specification head forms (four Ret
 and four Reply); this does not assert behaviorally distinguishable hidden
 states. The main proof unfolds the complete programs, constructs their finite
 prefix relation in place, then composes the continuation obligations through
-`peutt_coinduction_upto_bind`. `bridge_next` uses the joint support for
+`peutt_coinduction_upto_bind_vis`. Its local candidate contains only loop
+entries: Reply is composed by the generic visible-context rule, not added
+as a separate candidate state. `bridge_next` uses the joint support for
 true acknowledgement and the old invariant for false acknowledgement.
 `masked_protocol_equivalent m` has no bridge premise: it chooses
-`canonical_spec m := mixed_spec
-(abstract_state m)`, without assuming symmetry of the heterogeneous relation.
+`mixed_spec (abstract_state m)` directly, without a specification wrapper
+or a symmetry assumption on the heterogeneous relation.
 Erasing both payloads gives ordinary Boolean equivalence through
 `masked_public_protocol_equivalent`.
 The bounded backend is `SubEnumQ`. `masked_challenge_true_reply_probability` proves that the
