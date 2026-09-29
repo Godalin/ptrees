@@ -71,7 +71,8 @@ empty-response events and strictness regressions remain intact.
 rows `(1/3,0)`, `(1/6,1/6)`, `(0,1/3)`, proves that no deterministic
 pushforward has the same uniform marginals, and consumes its support in
 `bridge_next` after `Reply`. The canonical endpoint and `3/8`, `1/8` queries
-are preserved. No further MixedHead change is needed here; see
+were preserved at that checkpoint. The later heterogeneous-return follow-up
+reuses this joint in both the Ret and Vis blocks; see
 [the up-to proof](UP_TO.md).
 
 ## Gate S audit

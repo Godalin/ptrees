@@ -2,7 +2,8 @@
     Reading entry: mixed_head_bridge; masked_protocol_equivalent; masked_challenge_true_reply_probability.
     Scope: SubEnumQ / observable FreeOmega; mixed return/visible frontiers require the displayed invariant.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
-(** Learn: up-to-Prob with a non-functional 3-to-2 coupling and a recursive invariant.
+(** Learn: heterogeneous up-to-Prob; the same non-functional 3-to-2 coupling
+    abstracts both return payloads and recursive hidden continuations.
     Reusable endpoints: masked_protocol_equivalent, masked_after_stable_hitting, masked_challenge_true_reply_probability.
     Boundary: this is not a pure rewrite proof or an execution demo.
     User navigation: docs/CASE_STUDIES.md. *)
@@ -27,7 +28,7 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 From PTree.Eq Require Import Shallow UnifiedFrontier PrimitiveStableHitting PTreeKernel ProbabilisticTrace.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind Algebra Iter.
 From PTree.Interp.FreeOmega Require Import Base Guarded.
-From PTree.Eq Require Import PEutt UpToProb.
+From PTree.Eq Require Import PEutt UpToProb Bind.
 From PTree.Prob.FreeOmega Require Import BindOrder.
 From PTree.Eq.Backend Require Import ProbabilisticTraceSubEnumQ.
 Set Implicit Arguments.
@@ -144,19 +145,30 @@ Lemma mixed_outcomes_bound c : enumQ_subprob (mixed_outcomes_raw c).
 Proof. destruct c; by vm_compute. Qed.
 Definition mixed_outcomes c := enumQ_as_subprob (mixed_outcomes_bound c).
 
-(** Program-facing kernel: sample a new hidden state only on Continue.
+(** The same abstraction relates return payloads and recursive hidden states.
+    The public bit is preserved; the payload relation is deliberately not a
+    function (L1 relates to both abstract values). *)
+Definition impl_return := (bool * hidden3)%type.
+Definition spec_return := (bool * bool)%type.
+Definition return_rel (x : impl_return) (y : spec_return) : Prop :=
+  fst x = fst y /\ bridge (snd x) (snd y).
+
+Example return_abstraction_boundary b :
+  return_rel (b,L1) (b,false) /\ return_rel (b,L1) (b,true) /\
+  ~ return_rel (b,L0) (b,true) /\ ~ return_rel (b,L1) (negb b,false).
+Proof. destruct b; unfold return_rel, bridge; simpl; intuition discriminate. Qed.
+
+(** Program-facing kernel: both Stop and Continue sample the same payload.
     Native bind flattens the finite draws, so the main coinduction needs
     just one up-to-Prob context. No list expansion in the program proof. *)
-Definition mixed_samples {H} (hidden : SubEnumQ H) c : SubEnumQ (bool + bool * H) :=
+Definition mixed_samples {H} (hidden : SubEnumQ H) c : SubEnumQ (bool * H + bool * H) :=
   sem_bind (mixed_outcomes c) (fun o =>
-    match o with
-    | Stop b => sem_ret (inl b)
-    | Continue b => sem_bind hidden (fun h => sem_ret (inr (b,h)))
-    end).
-Definition mixed_sample_rel (x : bool + bool * hidden3) (y : bool + bool * bool) : Prop :=
+    sem_bind hidden (fun h => sem_ret
+      (match o with Stop b => inl (b,h) | Continue b => inr (b,h) end))).
+Definition mixed_sample_rel (x : impl_return + impl_return)
+    (y : spec_return + spec_return) : Prop :=
   match x, y with
-  | inl b, inl b' => b = b'
-  | inr (b,h), inr (b',j) => b = b' /\ bridge h j
+  | inl r, inl u | inr r, inr u => return_rel r u
   | _, _ => False
   end.
 Polymorphic Lemma mixed_samples_lift c :
@@ -165,18 +177,17 @@ Polymorphic Lemma mixed_samples_lift c :
 Proof.
   unfold mixed_samples. eapply sem_lift_bind with (R := eq).
   - apply sem_lift_refl. congruence.
-  - intros [b|b] o <-.
-    + apply sem_lift_ret. reflexivity.
-    + eapply sem_lift_bind; [exact coupling32_lift|].
-      intros h j Hhj. apply sem_lift_ret. split; [reflexivity|exact Hhj].
+  - intros o o' <-. eapply sem_lift_bind; [exact coupling32_lift|].
+    intros h j Hhj. apply sem_lift_ret.
+    destruct o; split; [reflexivity|exact Hhj|reflexivity|exact Hhj].
 Qed.
 
 Set Universe Polymorphism.
 
 Local Notation tree := (ptree mixedE SubEnumQ).
-Local Notation state := (ptree' mixedE SubEnumQ bool).
+Local Notation state A := (ptree' mixedE SubEnumQ A).
 Local Notation MF := (FreeOmega SubEnumQ).
-Local Notation mixed_head := (stable_head mixedE SubEnumQ bool).
+Local Notation mixed_head A := (stable_head mixedE SubEnumQ A).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
@@ -184,23 +195,25 @@ Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
 Local Notation MX := (@FreeOmegaMixedMeasure SubEnumQ).
 Local Notation FO := (FreeOmegaObservableSemanticOmega
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-Local Notation kernel := (@ptree_primitive_kernel mixedE SubEnumQ MF FI FreeOmegaMixedMeasure bool).
-Local Notation hitting := (@stable_hitting MF FI FreeOmegaObservableSemanticOmega
-  (ptree' mixedE SubEnumQ bool) mixed_head kernel).
+Local Notation kernel A := (@ptree_primitive_kernel mixedE SubEnumQ MF FI MX A).
+Local Notation hitting A := (@ptree_stable_hitting mixedE SubEnumQ MF FI MX FO A).
 (** Fix the observable interpretation once, exactly as in FactoryController;
     this is notation for raw peutt, not an additional relation. *)
 Local Notation W := (PEutt.peutt (E := mixedE) (MN := SubEnumQ)
   (MF := MF) (FI := FI) (FC := FC) (MX := MX) (FO := FO)).
 Local Notation "t ≈ₚ u" := (W eq t u)
   (at level 70, no associativity) : type_scope.
+Local Notation "t ≈ₚ[ RR ] u" := (W RR t u)
+  (at level 70, RR at next level, no associativity) : type_scope.
 Local Notation upto := (prob_upto_closure (NI := SubEnumQ_SemanticMeasure)
-  (FI := FI) (FC := FC) (MX := MX) (FO := FO) eq).
+  (FI := FI) (FC := FC) (MX := MX) (FO := FO) return_rel).
 Local Notation progress := (stable_hitting_match (FI := FI) (FO := FO)
-  kernel kernel (@ptree_stable_head_rel mixedE SubEnumQ bool bool eq)).
+  (kernel impl_return) (kernel spec_return)
+  (@ptree_stable_head_rel mixedE SubEnumQ impl_return spec_return return_rel)).
 
 (** Programs: Challenge is observable; native sampling exposes either a
     return or a Reply whose continuation keeps or refreshes hidden state. *)
-CoFixpoint masked_impl (m : hidden3) : tree bool :=
+CoFixpoint masked_impl (m : hidden3) : tree impl_return :=
   Vis Challenge (fun answer =>
     Prob (mixed_samples uniform3 (response_value answer)) (fun x =>
       match x with
@@ -208,7 +221,7 @@ CoFixpoint masked_impl (m : hidden3) : tree bool :=
       | inr (b,h) => Vis (Reply b) (fun ack =>
           masked_impl (if response_value ack then h else m))
       end)).
-CoFixpoint mixed_spec (z : bool) : tree bool :=
+CoFixpoint mixed_spec (z : bool) : tree spec_return :=
   Vis Challenge (fun answer =>
     Prob (mixed_samples uniform2 (response_value answer)) (fun x =>
       match x with
@@ -216,14 +229,17 @@ CoFixpoint mixed_spec (z : bool) : tree bool :=
       | inr (b,j) => Vis (Reply b) (fun ack =>
           mixed_spec (if response_value ack then j else z))
       end)).
-Definition canonical_spec := mixed_spec false.
-Definition masked_branch m (x : bool + bool * hidden3) : tree bool :=
+(** Only initialization chooses a related state; this is not a deterministic
+    transport of the uniform3 sampling distribution (which is impossible). *)
+Definition abstract_state m := match m with L2 => true | _ => false end.
+Definition canonical_spec m := mixed_spec (abstract_state m).
+Definition masked_branch m (x : impl_return + impl_return) : tree impl_return :=
   match x with
   | inl b => Ret b
   | inr (b,h) => Vis (Reply b) (fun ack =>
       masked_impl (if response_value ack then h else m))
   end.
-Definition spec_branch z (x : bool + bool * bool) : tree bool :=
+Definition spec_branch z (x : spec_return + spec_return) : tree spec_return :=
   match x with
   | inl b => Ret b
   | inr (b,j) => Vis (Reply b) (fun ack =>
@@ -241,24 +257,24 @@ Proof. apply probabilistic_ptree_intrinsic. Qed.
 Example mixed_spec_probabilistic z : probabilistic_ptree (mixed_spec z).
 Proof. apply probabilistic_ptree_intrinsic. Qed.
 
-Definition masked_head m (x : bool + bool * hidden3) : mixed_head :=
+Definition masked_head m (x : impl_return + impl_return) : mixed_head impl_return :=
   match x with
   | inl b => FHRet b
   | inr (b,h) => FHVis (Reply b) (fun ack =>
       masked_impl (if response_value ack then h else m))
   end.
-Definition spec_head z (x : bool + bool * bool) : mixed_head :=
+Definition spec_head z (x : spec_return + spec_return) : mixed_head spec_return :=
   match x with
   | inl b => FHRet b
   | inr (b,j) => FHVis (Reply b) (fun ack =>
       mixed_spec (if response_value ack then j else z))
   end.
-Definition masked_after_heads m c : MF mixed_head :=
+Definition masked_after_heads m c : MF (mixed_head impl_return) :=
   FOSample (mixed_samples uniform3 c) (fun x => FORet (masked_head m x)).
-Definition spec_after_heads z c : MF mixed_head :=
+Definition spec_after_heads z c : MF (mixed_head spec_return) :=
   FOSample (mixed_samples uniform2 c) (fun x => FORet (spec_head z x)).
 
-Lemma masked_after_hitting m c : hitting (observe (masked_after m c)) (masked_after_heads m c).
+Lemma masked_after_hitting m c : hitting impl_return (observe (masked_after m c)) (masked_after_heads m c).
 Proof.
   unfold masked_after, masked_after_heads.
   eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := MX))
@@ -268,7 +284,7 @@ Proof.
     + apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
     + apply (stable_hitting_vis (FI := FI) (FO := FO) (MX := MX)).
 Qed.
-Lemma spec_after_hitting z c : hitting (observe (mixed_after z c)) (spec_after_heads z c).
+Lemma spec_after_hitting z c : hitting spec_return (observe (mixed_after z c)) (spec_after_heads z c).
 Proof.
   unfold mixed_after, spec_after_heads.
   eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := MX))
@@ -281,7 +297,7 @@ Qed.
 
 (** Only roots and replies belong to the invariant. The reply obligation
     carries BOTH the old bridge and the new bridge supplied by the joint. *)
-Definition mixed_protocol_sim (s1 s2 : state) : Prop :=
+Definition mixed_protocol_sim (s1 : state impl_return) (s2 : state spec_return) : Prop :=
   (exists m z, bridge m z /\
     s1 = observe (masked_impl m) /\ s2 = observe (mixed_spec z)) \/
   (exists m z h j b, bridge m z /\ bridge h j /\
@@ -301,9 +317,9 @@ Proof.
     apply stable_hitting_match_vis. intro answer.
     eapply prob_upto_closure_sample.
     + exact (mixed_samples_lift (response_value answer)).
-    + intros [b|[b h]] [b'|[b' j]] H; simpl in H; try contradiction.
-      * subst b'. right. apply peutt_ret. reflexivity.
-      * destruct H as [<- Hhj]. left. right.
+    + intros [r|[b h]] [u|[b' j]] H; simpl in H; try contradiction.
+      * right. apply peutt_ret. exact H.
+      * destruct H as [Hbit Hhj]. simpl in Hbit, Hhj. subst b'. left. right.
         exists m, z, h, j, b. auto.
   - apply stable_hitting_match_vis. intro ack.
     apply prob_upto_closure_includes, MPSRoot.
@@ -311,7 +327,7 @@ Proof.
 Qed.
 
 Theorem mixed_head_bridge m z :
-  bridge m z -> masked_impl m ≈ₚ mixed_spec z.
+  bridge m z -> masked_impl m ≈ₚ[return_rel] mixed_spec z.
 Proof.
   intro H. eapply peutt_coinduction_upto_prob
     with (sim := mixed_protocol_sim); try typeclasses eauto.
@@ -319,39 +335,43 @@ Proof.
   - exact (MPSRoot H).
 Qed.
 
-(** L1 relates to both abstract states; no second coinduction is needed. *)
-Lemma mixed_spec_states_equivalent z z' : mixed_spec z ≈ₚ mixed_spec z'.
+(** A related initialization suffices; no invalid symmetry/transitivity
+    step treats the heterogeneous return relation as equality. *)
+Theorem masked_protocol_equivalent m : masked_impl m ≈ₚ[return_rel] canonical_spec m.
 Proof.
-  transitivity (masked_impl L1).
-  - symmetry. apply mixed_head_bridge. exact I.
-  - apply mixed_head_bridge. exact I.
+  apply mixed_head_bridge. destruct m; simpl; auto.
 Qed.
-Theorem masked_protocol_equivalent m : masked_impl m ≈ₚ canonical_spec.
+
+(** Erasing the abstracted payload recovers ordinary Boolean equivalence,
+    using the library's heterogeneous bind law, not a second coinduction. *)
+Theorem masked_public_protocol_equivalent m :
+  PTree.bind (masked_impl m) (fun r => Ret (fst r)) ≈ₚ
+  PTree.bind (canonical_spec m) (fun u => Ret (fst u)).
 Proof.
-  transitivity (mixed_spec (match m with L2 => true | _ => false end)).
-  - apply mixed_head_bridge. destruct m; simpl; auto.
-  - apply mixed_spec_states_equivalent.
+  eapply peutt_bind with (RR := return_rel).
+  - apply masked_protocol_equivalent.
+  - intros r u [Hbit _]. apply peutt_ret. exact Hbit.
 Qed.
 
 (** The Challenge case is a totality default: after-challenge witnesses
     contain only returns and Reply events, as the following proof shows. *)
-Definition stable_outcome (h : mixed_head) : mixed_outcome :=
+Definition stable_outcome {H} (h : mixed_head (bool * H)) : mixed_outcome :=
   match h with
-  | FHRet b => Stop b
+  | FHRet r => Stop (fst r)
   | @FHVis _ _ _ X e _ =>
       match e with Challenge => Stop false | Reply b => Continue b end
   end.
-Definition sample_outcome {H} (x : bool + bool * H) : mixed_outcome :=
-  match x with inl b => Stop b | inr (b,_) => Continue b end.
+Definition sample_outcome {H} (x : bool * H + bool * H) : mixed_outcome :=
+  match x with inl (b,_) => Stop b | inr (b,_) => Continue b end.
 Lemma masked_head_outcome m x : stable_outcome (masked_head m x) = sample_outcome x.
-Proof. destruct x as [b|[b h]]; reflexivity. Qed.
+Proof. destruct x as [[b h]|[b h]]; reflexivity. Qed.
 Definition masked_outcome_observation c : SubEnumQ mixed_outcome :=
   subenumQ_bind (mixed_samples uniform3 c) (fun x => subenumQ_ret (sample_outcome x)).
 
 (** Analysis boundary: erase hidden state, recovering the same four masses. *)
 Lemma masked_after_heads_denote_four m c :
   @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    mixed_head mixed_outcome stable_outcome (masked_after_heads m c) (mixed_outcomes c).
+    (mixed_head impl_return) mixed_outcome stable_outcome (masked_after_heads m c) (mixed_outcomes c).
 Proof.
   exists (masked_outcome_observation c). split.
   - unfold masked_after_heads, masked_outcome_observation.
@@ -365,10 +385,10 @@ Qed.
 (** Connect the observable distribution to an actual complete-hitting
     witness of the implementation, not merely a standalone measure. *)
 Theorem masked_after_stable_hitting m c :
-  exists out : MF mixed_head,
-    hitting (observe (masked_after m c)) out /\
+  exists out : MF (mixed_head impl_return),
+    hitting impl_return (observe (masked_after m c)) out /\
     @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-      mixed_head mixed_outcome stable_outcome out (mixed_outcomes c).
+      (mixed_head impl_return) mixed_outcome stable_outcome out (mixed_outcomes c).
 Proof.
   exists (masked_after_heads m c). split.
   - exact (masked_after_hitting m c).
@@ -389,18 +409,18 @@ Definition challenge_true_reply_trace c : @finite_interaction_pattern mixedE :=
   cons (@select_challenge c) (cons (@select_true_reply) nil).
 Definition accepts_true_reply {X} (e : mixedE X) : bool :=
   match e with Challenge => false | Reply b => b end.
-Definition spec_true_reply_query c : MF bool :=
-  @sem_bind MF FI mixed_head bool (spec_after_heads false c) (fun h =>
+Definition spec_true_reply_query z c : MF bool :=
+  @sem_bind MF FI (mixed_head spec_return) bool (spec_after_heads z c) (fun h =>
     @sem_ret MF FI bool (observe_stable_head (fun _ => false) (@accepts_true_reply) h)).
 Definition spec_true_reply_observation c : SubEnumQ bool :=
   subenumQ_bind (mixed_outcomes c) (fun o =>
     subenumQ_ret (match o with Stop _ => false | Continue b => b end)).
 
-Lemma spec_after_true_reply_query c :
+Lemma spec_after_true_reply_query z c :
   @next_event_query mixedE SubEnumQ MF FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega bool (@accepts_true_reply) (mixed_after false c) (spec_true_reply_query c).
+    FreeOmegaObservableSemanticOmega spec_return (@accepts_true_reply) (mixed_after z c) (spec_true_reply_query z c).
 Proof.
-  exists (spec_after_heads false c). split; [exact (spec_after_hitting false c)|apply sem_eq_refl].
+  exists (spec_after_heads z c). split; [exact (spec_after_hitting z c)|apply sem_eq_refl].
 Qed.
 Lemma true_reply_selector_accepts :
   @selector_accept mixedE (@select_true_reply) = @accepts_true_reply.
@@ -409,32 +429,33 @@ Proof.
   apply functional_extensionality. intro e. destruct e; [reflexivity|].
   destruct b; reflexivity.
 Qed.
-Lemma spec_challenge_true_reply_query c :
+Lemma spec_challenge_true_reply_query m c :
   @finite_interaction_query mixedE SubEnumQ MF FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega bool (challenge_true_reply_trace c)
-    canonical_spec (spec_true_reply_query c).
+    FreeOmegaObservableSemanticOmega spec_return (challenge_true_reply_trace c)
+    (canonical_spec m) (spec_true_reply_query (abstract_state m) c).
 Proof.
   unfold challenge_true_reply_trace.
   change (@finite_interaction_query mixedE SubEnumQ MF FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega bool
+    FreeOmegaObservableSemanticOmega spec_return
     (cons (@select_challenge c) (cons (@select_true_reply) nil))
-    (Vis Challenge (fun answer => mixed_after false (response_value answer))) (spec_true_reply_query c)).
+    (Vis Challenge (fun answer => mixed_after (abstract_state m) (response_value answer)))
+    (spec_true_reply_query (abstract_state m) c)).
   eapply finite_interaction_query_vis_match.
   - reflexivity.
   - apply (proj2 (finite_interaction_query_singleton_iff_next_event_query
-      (@select_true_reply) (mixed_after false c) (spec_true_reply_query c))).
-    rewrite true_reply_selector_accepts. exact (spec_after_true_reply_query c).
+      (@select_true_reply) (mixed_after (abstract_state m) c) (spec_true_reply_query (abstract_state m) c))).
+    rewrite true_reply_selector_accepts. exact (spec_after_true_reply_query (abstract_state m) c).
 Qed.
-Lemma spec_true_reply_query_denotes c :
+Lemma spec_true_reply_query_denotes z c :
   @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    bool bool id (spec_true_reply_query c) (spec_true_reply_observation c).
+    bool bool id (spec_true_reply_query z c) (spec_true_reply_observation c).
 Proof.
   exists (subenumQ_bind (mixed_samples uniform2 c) (fun x =>
     subenumQ_ret (match sample_outcome x with Stop _ => false | Continue b => b end))).
   split.
   - unfold spec_true_reply_query, spec_after_heads.
     cbn [free_omega_bind]. apply (FOOObserveSample (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-    intros [b|[b j]]; constructor.
+    intros [[b j]|[b j]]; constructor.
   - change (enumQ_meas_eq
       (subenumQ_raw (subenumQ_bind (mixed_samples uniform2 c) (fun x =>
         subenumQ_ret (match sample_outcome x with Stop _ => false | Continue b => b end))))
@@ -453,14 +474,16 @@ Proof. destruct c; vm_compute; reflexivity. Qed.
 Theorem masked_challenge_true_reply_probability m c :
   Prₛ[ masked_impl m | challenge_true_reply_trace c ] = (if c then 1 / 8 else 3 / 8 : rat).
 Proof.
-  destruct (peutt_preserves_finite_interaction_query
-    (peutt_sym (masked_protocol_equivalent m))
-    (spec_challenge_true_reply_query c)) as [query [Hquery Hlift]].
+  destruct (finite_interaction_query_exists (FI := FI) (FO := FO) (MX := MX)
+    (challenge_true_reply_trace c) (masked_impl m)) as [query Hquery].
   eapply subenumQ_finite_interaction_probability_intro
-    with (query := query) (representative := spec_true_reply_query c)
+    with (query := query) (representative := spec_true_reply_query (abstract_state m) c)
       (out := spec_true_reply_observation c).
   - exact Hquery.
-  - exact Hlift.
-  - exact (spec_true_reply_query_denotes c).
+  - eapply sem_lift_mono; [|apply sem_lift_sym;
+      exact (finite_interaction_query_related (masked_protocol_equivalent m)
+        Hquery (spec_challenge_true_reply_query m c))].
+    intros x y ->. reflexivity.
+  - exact (spec_true_reply_query_denotes (abstract_state m) c).
   - exact (spec_true_reply_mass c).
 Qed.

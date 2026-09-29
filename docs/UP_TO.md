@@ -65,10 +65,13 @@ bind congruence. See [iteration summaries](ITERATION_SUMMARY.md).
 
 `MixedHeadProtocol` now keeps roots and reply states. After
 `Challenge`, up-to-Prob consumes a native coupling built by relational bind:
-the shared Stop/Continue outcome is coupled diagonally, and each Continue
-block uses the non-functional three-to-two joint
+the shared Stop/Continue outcome is coupled diagonally, and **both** blocks
+use the same non-functional three-to-two joint
 `[(1/3,(L0,false)); (1/6,(L1,false)); (1/6,(L1,true)); (1/3,(L2,true))]`.
-`Stop` closes by the known return law. `Continue` enters the reply candidate
+`Stop` returns `(b,h) : bool * hidden3` on the left and
+`(b,j) : bool * bool` on the right. The return relation preserves `b` and
+requires `bridge h j`; the known heterogeneous return law closes this branch.
+`Continue` enters the reply candidate
 with both the current-state bridge and the sampled-state bridge. After
 `Reply`, `bridge_next` chooses the new bridge on acknowledgement true and
 the old bridge on false. Thus the coupling support actually closes the
@@ -77,9 +80,13 @@ specification retain the original `3/8` and `1/8` quantitative queries.
 
 The core theorem is `mixed_head_bridge`. `uniform3_no_deterministic_fair`
 rules out *any* deterministic pushforward from the uniform three atoms to
-the fair Boolean marginal. Since `L1` relates to either Boolean, symmetry
-and transitivity yield the canonical endpoint `masked_protocol_equivalent`
-without another coinduction. This does not claim three behaviorally
+the fair Boolean marginal. `masked_protocol_equivalent m` starts the
+specification at `abstract_state m`, which is related to `m`; this deterministic
+initialization is not a pushforward of the uniform sampling law. No symmetry
+or transitivity of the heterogeneous return relation is assumed.
+`masked_public_protocol_equivalent` erases the payload with generic relational
+bind and recovers ordinary Boolean `peutt eq`, without another coinduction.
+This does not claim three behaviorally
 distinguishable implementation states: the hidden states are unobservable;
 the non-functional requirement is about the native marginals and the
 displayed recursive proof, not uniqueness of a behavioral bisimulation.
@@ -93,10 +100,10 @@ converted to coinduction.
 ### Reading notation
 
 Both clients follow FactoryController's presentation: setup fixes the
-observable profile once, and a **local** `≈ₚ` expands directly to that raw
+observable profile once, and **local** `≈ₚ` / `≈ₚ[RR]` expand directly to that raw
 `peutt`. Thus the public conclusions read
 `von_neumann_service ≈ₚ direct_fair_service` and
-`masked_impl m ≈ₚ canonical_spec`, without a canonical-relation wrapper or new instances.
+`masked_impl m ≈ₚ[return_rel] canonical_spec m`, without a canonical-relation wrapper or new instances.
 The service's bind expressions use the standard `b <- sampler ;; ...`
 notation. Local `tree`, `state`, `progress` and up-to abbreviations hide
 repeated type parameters, not proof obligations: complete-hitting progress
@@ -132,8 +139,8 @@ There is no new stage-replay audit or global typeclass hint.
 ## Three-to-two MixedHead follow-up
 
 All case-specific mathematics and programs stay in `Examples/MixedHeadProtocol.v`.
-`mixed_samples` composes the shared outcome kernel with the hidden-state
-distribution only on Continue. This finite native bind is the concise
+`mixed_samples` composes the shared outcome kernel with the payload
+distribution on both Stop and Continue. This finite native bind is the concise
 implementation of the proposed sequential draws, not another interpreter
 or a change to `peutt`/stable-head semantics.
 
@@ -156,3 +163,58 @@ audits, 142 Python tests, 465 unchanged mainline contracts, and the 135-entry
 safe generic-algebra contract suite passed. Joint `coqchk -norec` passed for MixedHeadProtocol and UpToProb;
 dependencies are trusted, not recursively rechecked. Gate M and CI are
 outside this check.
+
+## Heterogeneous return-payload follow-up
+
+Baseline: `dd3b447`. This changes only the case and its documentation/contracts;
+the generic up-to, bind, observation and probability infrastructure is reused.
+
+| Endpoint | Current meaning |
+|---|---|
+| `mixed_head_bridge m z` | `bridge m z` implies `peutt return_rel (masked_impl m) (mixed_spec z)` |
+| `masked_protocol_equivalent m` | The same heterogeneous relation against `canonical_spec m` |
+| `masked_public_protocol_equivalent m` | Erasing both payloads recovers Boolean behavioral equivalence |
+| `masked_after_stable_hitting m c` | The full implementation frontier still projects to the same four Stop/Continue masses |
+| `masked_challenge_true_reply_probability m c` | The selected Challenge/Reply prefix still has probability `3/8` or `1/8` |
+
+The former program return types were both `bool`; now they are `bool * hidden3`
+and `bool * bool`. `return_rel (b,h) (b',j)` means `b = b' /\ bridge h j`.
+It neither equates the payloads nor erases their relation: the middle payload
+relates to both abstract values, while `(L0,true)` and differing public bits
+are rejected (`return_abstraction_boundary`). Both native blocks consume
+`coupling32_lift`; there is no second transport construction.
+For each shared outcome, its existing mass multiplies the same joint matrix;
+the blocks are not conditioned or renormalized.
+
+The former `mixed_spec_states_equivalent` helper used homogeneous equality
+symmetry/transitivity through the implementation. That argument does not apply
+to the new relation and is removed, not silently generalized. The canonical
+specification is now indexed by the implementation's initialization. The main
+bridge still allows every related pair, including both images of `L1`, and
+`bridge_next` still supplies the response-dependent recursive invariant.
+
+Quantitative transport uses `finite_interaction_query_related` on the actual
+heterogeneous theorem. Only the resulting Boolean **measure** coupling is
+reversed; the program relation is not treated as symmetric. Concrete rational
+calculation stays in the finite-analysis helpers. There is no claim that the
+return relation is equality, that the state map transports uniform measures,
+or that this case has an extraction endpoint.
+
+Contract migration is explicit: of the 130 safe generic-algebra entries at
+this baseline, 127 are unchanged; the two behavioral statements now use
+heterogeneous return carriers, and the quantitative statement now concerns
+the implementation's paired return carrier. Three new entries record
+`mixed_samples_lift`, `return_abstraction_boundary` and
+`masked_public_protocol_equivalent` (133 in total). No Gate M contract changes.
+The two behavioral endpoints retain exactly their former extensionality and
+`eq_rect_eq` dependencies. The Boolean-erasure corollary has the same two
+dependencies. The quantitative endpoint retains classical indefinite choice
+but no longer depends on `Classical_Prop.classic`; no whitelist was expanded.
+
+Local validation: full `dune build -j 2` including safe AllImports/extraction,
+143 tool tests (plus a post-snapshot rerun of the 12 contract-tool tests),
+architecture/API/source checks, the 133-entry generic-algebra suite and all
+491 unchanged central contracts passed. The other 32 query groups were not
+rerun for this case-only change.
+`coqchk -norec` passed for the changed case's module body; its compiled
+dependencies are trusted, not recursively rechecked. CI was not queried.

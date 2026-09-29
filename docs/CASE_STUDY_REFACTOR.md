@@ -86,7 +86,7 @@ arguments need not be disguised as rewrites.
 | `BernoulliFactory/RealBernoulliOracle.v` | Shared analysis/program | Retain binary-oracle representation conditions and missing-mass convergence. |
 | `BernoulliFactory/RealBernoulliMathComp.v` | Shared native MathComp analysis | Retain normally universe-checked measure/lub proof and its representation premise. No direct recursive frontier is introduced. |
 | `InteractiveVonNeumann/InteractiveVonNeumannService.v` | Paper case study | Root/reply invariant with up-to-bind for the sampler context; retain explicit hitting and quantitative certificates. See `UP_TO.md`. |
-| `MixedHeadProtocol.v` | Paper case study | Root/reply invariant with up-to-Prob for the finite native coupling; retain mixed-head analysis and quantitative observations. See `UP_TO.md`. |
+| `MixedHeadProtocol.v` | Paper case study | Heterogeneous return abstraction and root/reply invariant use the same 3-to-2 joint through up-to-Prob; generic bind recovers public Boolean equivalence. Mixed-head analysis and quantitative observations are retained. See `UP_TO.md`. |
 | `RandomWalk.v` | Paper case study | Retain height-translation stopping invariant, successive-passages normalization and harmonic/limit analysis. No unproved probability-to-bisimulation converse. |
 | `MathCompPrograms.v` | Supporting syntax | Retain safe retry/nested-retry definitions; actual direct-frontier clients stay in existing Gate M regressions. |
 
