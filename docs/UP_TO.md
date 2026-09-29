@@ -126,15 +126,18 @@ notation. Local `tree`, `state`, `progress` and up-to abbreviations hide
 repeated type parameters, not proof obligations: complete-hitting progress
 and the root/reply invariants remain visible in the proofs. Concrete
 probability analysis retains its explicit measure interfaces where needed.
-MixedHead's source follows a program-first reading order: protocol and return
-abstraction (§1), concrete coin definitions (§2), both programs (§3), finite
-sampler certificates (§4), the root/reply coinduction (§5), and quantitative
-consequences (§6). On a first pass, read §3 and §5 and treat
+MixedHead's source has four layers: preparation (§1: protocol types, native
+coins, observable backend profile), program construction (§2: finite samplers
+and shared recursive control flow), lemma preparation (§3: finite analysis,
+frontiers, queries, and the root/reply invariant), and final theorems (§4).
+On a first pass, read §2 and §4 and treat
 `impl_draw_related` as the proved finite-analysis boundary. The main proof
 labels the Challenge, Stop, Continue and Reply obligations; it does not
-disguise coinduction as an algebraic rewrite. Named branch views stay beside
-that proof, rather than interrupting the program listing. No new module
-wrapper changes the existing theorem names.
+disguise coinduction as an algebraic rewrite. Both protocols instantiate
+one `protocol draw old` loop, while their different sampler implementations
+remain explicit. Named branch views conclude the program section. Coq
+`Section` blocks organize the analysis and results without changing existing
+qualified theorem names or adding parameters or assumptions.
 The original notation-only follow-up preserved its 69 compiled contracts.
 The subsequent three-to-two case changes its programs and state types, but
 does not change any generic theorem or backend.
@@ -327,3 +330,14 @@ source-soundness checks and the case's `coqchk -norec` passed. The kernel check
 trusts compiled dependencies. The contract query was rerun after the build
 completed (an overlapping first attempt could not load the rebuilding module).
 No contract snapshot edits, tool changes, or CI queries.
+
+The four-layer presentation factors the duplicate recursive bodies into
+`protocol draw old`, instantiated by `masked_impl` and `mixed_spec`. The
+three finite sampler definitions are unchanged, and both existing one-step
+protocol equations still prove by `reflexivity`. All 42 existing lemma,
+theorem and example statements/proofs are unchanged modulo comments and
+whitespace; their declaration order is reorganized. Section blocks do not
+add assumptions or change qualified names. Full build/AllImports, the 136
+unchanged safe generic-algebra contracts, architecture/API/source checks,
+and the case's `coqchk -norec` passed (compiled dependencies trusted).
+No snapshot refresh, generic theory changes, tool changes, or CI queries.
