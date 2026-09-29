@@ -135,9 +135,9 @@ On a first pass, read §2 and §4 and treat
 labels the Challenge, Stop, Continue and Reply obligations; it does not
 disguise coinduction as an algebraic rewrite. Both protocols instantiate
 one `protocol draw old` loop, while their different sampler implementations
-remain explicit. Named branch views conclude the program section. Coq
-`Section` blocks organize the analysis and results without changing existing
-qualified theorem names or adding parameters or assumptions.
+remain explicit. Named branch views conclude the program part. Documentation
+headings organize the analysis and results; no parameterless Coq `Section`
+wrappers are needed.
 The original notation-only follow-up preserved its 69 compiled contracts.
 The subsequent three-to-two case changes its programs and state types, but
 does not change any generic theorem or backend.
@@ -336,8 +336,9 @@ The four-layer presentation factors the duplicate recursive bodies into
 three finite sampler definitions are unchanged, and both existing one-step
 protocol equations still prove by `reflexivity`. All 42 existing lemma,
 theorem and example statements/proofs are unchanged modulo comments and
-whitespace; their declaration order is reorganized. Section blocks do not
-add assumptions or change qualified names. Full build/AllImports, the 136
+whitespace; their declaration order is reorganized. The initial parameterless
+Section blocks were subsequently removed in a formatting-only follow-up.
+Full build/AllImports, the 136
 unchanged safe generic-algebra contracts, architecture/API/source checks,
 and the case's `coqchk -norec` passed (compiled dependencies trusted).
 No snapshot refresh, generic theory changes, tool changes, or CI queries.
