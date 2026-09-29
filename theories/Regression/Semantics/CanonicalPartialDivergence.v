@@ -54,29 +54,10 @@ Definition half_return_half_diverge : ptree regE EnumQ bool :=
 Definition half_return_heads : MF (stable_head regE EnumQ bool) :=
   FOSample reg_fair (fun b => if b then FORet (FHRet true) else FOZero).
 
-Lemma canonical_spin_target_approx_zero fuel :
-  @stable_target_approx MF FI FO _ _ K fuel
-    (SHInternal (observe canonical_spin)) = FOZero.
-Proof.
-  induction fuel as [|fuel IH]; [reflexivity|].
-  change (@stable_target_approx MF FI FO _ _ K fuel
-    (SHInternal (observe canonical_spin)) = FOZero).
-  exact IH.
-Qed.
-
-Lemma canonical_spin_hitting_approx_zero fuel :
-  @stable_hitting_approx MF FI FO _ _ K fuel
-    (observe canonical_spin) = FOZero.
-Proof. exact (canonical_spin_target_approx_zero fuel). Qed.
-
 Lemma canonical_spin_stable_hitting_zero : hits canonical_spin FOZero.
 Proof.
-  unfold stable_hitting.
-  eapply (sem_lub_chain_proper (SI := FI) (SO := FO))
-    with (chain := fun _ => FOZero).
-  - intro n. rewrite canonical_spin_hitting_approx_zero.
-    apply sem_eq_refl.
-  - apply sem_lub_constant.
+  apply (ptree_stable_hitting_spin_zero (FI := FI) (FO := FO)
+    (MX := FreeOmegaMixedMeasure)). reflexivity.
 Qed.
 
 Definition impossible_trace_step {X} (e : regE X) : option X :=
@@ -183,8 +164,6 @@ Local Notation tree := (ptree closure_event SubEnumQ bool).
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-Local Notation hit := (@ptree_hitting_approx closure_event SubEnumQ MF FI
-  FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool).
 Local Notation PE := (@peutt closure_event SubEnumQ MF FI
   FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
   FreeOmegaObservableSemanticOmega bool bool eq).
@@ -193,20 +172,16 @@ CoFixpoint closure_spin : tree := Tau closure_spin.
 Definition closure_return : tree := Ret true.
 Definition closure_delayed : tree := Tau closure_return.
 
-Lemma closure_spin_approx_zero n : hit n (observe closure_spin) = FOZero.
-Proof.
-  induction n as [|n IH]; [reflexivity|].
-  change (hit n (observe closure_spin) = FOZero). exact IH.
-Qed.
-
 Lemma closure_spin_not_peutt_return : ~ PE closure_spin closure_return.
 Proof.
   intro Hpeutt.
-  pose (out := FOLub (fun n => hit n (observe closure_spin))).
+  pose (out := @FOZero SubEnumQ (stable_head closure_event SubEnumQ bool)).
   assert (Hspin : @ptree_stable_hitting closure_event SubEnumQ MF FI
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
     (observe closure_spin) out).
-  { apply free_omega_qlift_refl. intro h. reflexivity. }
+  { apply (ptree_stable_hitting_spin_zero (FI := FI)
+      (FO := FreeOmegaObservableSemanticOmega)
+      (MX := FreeOmegaMixedMeasure)). reflexivity. }
   assert (Hret : @ptree_stable_hitting closure_event SubEnumQ MF FI
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
     (observe closure_return) (FORet (FHRet true))).
@@ -217,7 +192,7 @@ Proof.
   pose proof (peutt_hitting_lift Hpeutt Hspin Hret) as Hlift.
   pose proof (proj1 (free_omega_qlift_support Hlift)) as Hsupport.
   assert (Hempty : free_omega_ae (fun _ => False) out).
-  { apply FOAELub. intro n. rewrite closure_spin_approx_zero. apply FOAEZero. }
+  { apply FOAEZero. }
   specialize (Hsupport _ Hempty). dependent destruction Hsupport.
   destruct H as [x [_ Hfalse]]. exact Hfalse.
 Qed.

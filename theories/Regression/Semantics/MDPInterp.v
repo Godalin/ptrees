@@ -258,40 +258,11 @@ Theorem heterogeneous_target_coincidence t u : SS t -> SS u ->
       (PTree.interp hetero_handler t) (PTree.interp hetero_handler u)).
 Proof. apply mdp_interp_peutt_trans_iff. exact hetero_handler_mdp. Qed.
 
-(** Independent source transition evidence. This local regression helper
-    deliberately uses neither peutt nor its transition-soundness theorem. *)
+(** Instantiate the generic transition-only Tau law at a different source
+    signature; no peutt soundness is used to manufacture the input evidence. *)
 Lemma hetero_delay_transition_bisim (t : ptree sourceE SubEnumQ R) :
   @trans_bisim sourceE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq (Tau t) t.
-Proof.
-  eapply trans_bisim_coinduction with
-    (sim := fun a b => a = b \/ a = Tau b); [|right; reflexivity].
-  intros a b [Heq | Heq]; subst a.
-  - split.
-    + split; intros out Hout; exists out; split; try exact Hout;
-        apply sem_lift_refl; intro x; reflexivity.
-    + split.
-      * split; intros out Hout; exists out; split; try exact Hout;
-          apply sem_lift_refl; intro e; reflexivity.
-      * intro label. split; intros out Hout; exists out; split; try exact Hout;
-          apply sem_lift_refl; intro h; left; reflexivity.
-  - split.
-    + split; intros out Hout; exists out; split.
-      * exact (proj1 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-      * apply sem_lift_refl. intro r. reflexivity.
-      * exact (proj2 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-      * apply sem_lift_refl. intro r. reflexivity.
-    + split.
-      * split; intros out Hout; exists out; split.
-        -- exact (proj1 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-        -- apply sem_lift_refl. intro e. reflexivity.
-        -- exact (proj2 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-        -- apply sem_lift_refl. intro e. reflexivity.
-      * intro label. split; intros out Hout; exists out; split.
-        -- exact (proj1 (trans_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-        -- apply sem_lift_refl. intro h. left; reflexivity.
-        -- exact (proj2 (trans_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-        -- apply sem_lift_refl. intro h. left; reflexivity.
-Qed.
+Proof. apply trans_bisim_tau_l. Qed.
 
 End ReturnCarrier.
 

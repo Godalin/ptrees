@@ -70,19 +70,8 @@ Proof. setoid_rewrite H. reflexivity. Qed.
 CoFixpoint handler_spin : ptree correlationE SubEnumQ bool := Tau handler_spin.
 Lemma handler_spin_hitting_zero : hits handler_spin FOZero.
 Proof.
-  assert (Hzero : forall n,
-    @ptree_hitting_approx correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool
-      n (observe handler_spin) = FOZero).
-  { intro n. induction n as [|n IH]; [reflexivity|].
-    change (@ptree_hitting_approx correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool
-      n (observe handler_spin) = FOZero). exact IH. }
-  unfold ptree_stable_hitting, stable_hitting.
-  eapply (sem_lub_chain_proper (SI := FI) (SO := FO)) with (chain := fun _ => FOZero).
-  - intro n. change (@sem_eq MF FI _ FOZero
-      (@ptree_hitting_approx correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool
-        n (observe handler_spin))).
-    rewrite Hzero. apply sem_eq_refl.
-  - apply sem_lub_constant.
+  apply (ptree_stable_hitting_spin_zero (FI := FI) (FO := FO)
+    (MX := FreeOmegaMixedMeasure)). reflexivity.
 Qed.
 
 Definition sample_or_diverge_handler X (e : correlationE X) : ptree correlationE SubEnumQ X :=

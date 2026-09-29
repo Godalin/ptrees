@@ -213,4 +213,67 @@ Corollary stable_hitting_mass_lub s out (H : hits s out) :
   oval_mass (free_omega_domain (stable_hitting_admissible H)) =
   oval_sup (fun n => oval_mass (ptree_domain_approx n s)).
 Proof. exact (stable_hitting_denotational_adequacy H (oval_test_one R)). Qed.
+
+(** Reuse a convenient complete witness; no second induction on the
+    mathematical approximants is needed for elementary program laws. *)
+Theorem ptree_domain_hitting_of_denotes s out (L : OmegaVal R head) :
+  hits s out -> free_omega_domain_denotes out L ->
+  oval_eq (ptree_domain_hitting s) L.
+Proof.
+  intros Hhit Hden f Hf.
+  rewrite <- (stable_hitting_denotational_adequacy Hhit Hf).
+  exact (Hden f Hf).
+Qed.
+
+Corollary ptree_domain_hitting_zero s :
+  hits s FOZero -> oval_eq (ptree_domain_hitting s) (oval_bottom R).
+Proof.
+  intro H. eapply ptree_domain_hitting_of_denotes; [exact H|].
+  exact: free_omega_denote_zero.
+Qed.
+
+Theorem ptree_domain_hitting_ret a :
+  oval_eq (ptree_domain_hitting (RetF a)) (oval_ret R (FHRet a)).
+Proof.
+  eapply ptree_domain_hitting_of_denotes.
+  - apply ptree_stable_hitting_ret.
+  - exact: free_omega_denote_ret.
+Qed.
+
+Theorem ptree_domain_hitting_vis {X} (e : E X) k :
+  oval_eq (ptree_domain_hitting (VisF e k)) (oval_ret R (FHVis e k)).
+Proof.
+  eapply ptree_domain_hitting_of_denotes.
+  - apply ptree_stable_hitting_vis.
+  - exact: free_omega_denote_ret.
+Qed.
+
+Corollary ptree_domain_hitting_vis_mass {X} (e : E X) k :
+  oval_mass (ptree_domain_hitting (VisF e k)) = 1.
+Proof. exact (ptree_domain_hitting_vis e k (oval_test_one R)). Qed.
+
+Theorem ptree_domain_hitting_spin (t : ptree E SubEnumQ A) :
+  observe t = TauF t ->
+  oval_eq (ptree_domain_hitting (observe t)) (oval_bottom R).
+Proof.
+  intro H. apply ptree_domain_hitting_zero.
+  apply (ptree_stable_hitting_spin_zero (FI := FI) (FO := FO)
+    (MX := FreeOmegaMixedMeasure)). exact H.
+Qed.
+
+Theorem ptree_domain_hitting_prob_empty {X} (mu : SubEnumQ X) k :
+  sem_ae mu (fun _ => False) ->
+  oval_eq (ptree_domain_hitting (ProbF mu k)) (oval_bottom R).
+Proof.
+  intro H. apply ptree_domain_hitting_zero.
+  apply (ptree_stable_hitting_prob_empty (NI := SubEnumQ_SemanticMeasure)
+    (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)). exact H.
+Qed.
+
+Corollary ptree_domain_hitting_prob_zero {X} (k : X -> ptree E SubEnumQ A) :
+  oval_eq (ptree_domain_hitting (ProbF (@subenumQ_zero X) k)) (oval_bottom R).
+Proof.
+  apply ptree_domain_hitting_prob_empty.
+  intros p x Hin. contradiction.
+Qed.
 End PTreeDomain.

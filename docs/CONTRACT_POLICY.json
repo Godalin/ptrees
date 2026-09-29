@@ -776,9 +776,8 @@
       "arbitrary_witness_valid",
       "arbitrary_witness_denotes",
       "return_is_dirac",
-      "silent_approx_zero",
       "silent_hitting_bottom",
-      "native_loss_approx_zero",
+      "changing_silent_state_bottom",
       "native_loss_hitting_bottom",
       "infinite_visible_service_mass_one",
       "ret_noncanonical_witness_valid",
@@ -793,8 +792,6 @@
     ],
     "theories/Regression/Semantics/CanonicalPartialDivergence.v": [
       "observe_canonical_spin",
-      "canonical_spin_target_approx_zero",
-      "canonical_spin_hitting_approx_zero",
       "canonical_spin_stable_hitting_zero",
       "canonical_spin_nonempty_trace_query_zero",
       "divergent_trace_query_mass_zero",
@@ -803,7 +800,6 @@
       "half_return_half_diverge_stable_hitting",
       "half_return_heads_not_same_mass_ret",
       "half_return_half_diverge_not_peutt_ret",
-      "closure_spin_approx_zero",
       "closure_spin_not_peutt_return"
     ],
     "theories/Regression/Semantics/GuardedInterp.v": [

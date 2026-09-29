@@ -261,3 +261,51 @@ Qed.
 #[global] Instance trans_bisim_equivalence : Equivalence TB.
 Proof. split; [apply trans_bisim_refl|apply trans_bisim_sym|apply trans_bisim_trans]. Qed.
 End Equivalence.
+
+(** Tau transparency is a law of the transition GFP itself, independent
+    of peutt soundness and the MDP coincidence theorem. *)
+Section Tau.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}.
+
+Theorem trans_bisim_tau_l {R} (t : ptree E MN R) :
+  trans_bisim (MF := MF) eq (Tau t) t.
+Proof.
+  eapply trans_bisim_coinduction with
+    (sim := fun a b => a = b \/ a = Tau b); [|right; reflexivity].
+  intros a b [Heq | Heq]; subst a.
+  - split.
+    + split; intros out Hout; exists out; split; try exact Hout;
+        apply sem_lift_refl; intro x; reflexivity.
+    + split.
+      * split; intros out Hout; exists out; split; try exact Hout;
+          apply sem_lift_refl; intro e; reflexivity.
+      * intro label. split; intros out Hout; exists out; split; try exact Hout;
+          apply sem_lift_refl; intro h; left; reflexivity.
+  - split.
+    + split; intros out Hout; exists out; split.
+      * exact (proj1 (tree_head_observation_tau_iff _ _ _) Hout).
+      * apply sem_lift_refl. intro r. reflexivity.
+      * exact (proj2 (tree_head_observation_tau_iff _ _ _) Hout).
+      * apply sem_lift_refl. intro r. reflexivity.
+    + split.
+      * split; intros out Hout; exists out; split.
+        -- exact (proj1 (tree_head_observation_tau_iff _ _ _) Hout).
+        -- apply sem_lift_refl. intro e. reflexivity.
+        -- exact (proj2 (tree_head_observation_tau_iff _ _ _) Hout).
+        -- apply sem_lift_refl. intro e. reflexivity.
+      * intro label. split; intros out Hout; exists out; split.
+        -- exact (proj1 (trans_tau_iff _ _ _) Hout).
+        -- apply sem_lift_refl. intro h. left; reflexivity.
+        -- exact (proj2 (trans_tau_iff _ _ _) Hout).
+        -- apply sem_lift_refl. intro h. left; reflexivity.
+Qed.
+
+Corollary trans_bisim_tau_r {R} (t : ptree E MN R) :
+  trans_bisim (MF := MF) eq t (Tau t).
+Proof. apply trans_bisim_sym. apply trans_bisim_tau_l. Qed.
+End Tau.

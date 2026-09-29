@@ -255,6 +255,86 @@ Qed.
 
 End PTreeKernelLaws.
 
+Section KernelSilentDivergence.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI}.
+
+(** A Tau-closed invariant excludes every stable head.  This covers silent
+    cycles and changing internal states, not only a chosen [spin] syntax. *)
+Lemma ptree_hitting_tau_closed_zero {R} (P : ptree E MN R -> Prop)
+    (Hclosed : forall t, P t -> exists u, observe t = TauF u /\ P u)
+    n t : P t ->
+  sem_eq (ptree_hitting_approx (MF := MF) n (observe t)) sem_zero.
+Proof.
+  revert t. induction n as [|n IH]; intros t Ht;
+    destruct (Hclosed t Ht) as [u [Hu HP]]; rewrite Hu.
+  - apply ptree_hitting_tau_zero.
+  - eapply sem_eq_trans; [apply ptree_hitting_tau_succ|exact (IH u HP)].
+Qed.
+
+Context `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}.
+
+Theorem ptree_stable_hitting_of_zero_approximants {R} (ot : ptree' E MN R) :
+  (forall n, sem_eq (ptree_hitting_approx (MF := MF) n ot) sem_zero) ->
+  ptree_stable_hitting ot sem_zero.
+Proof.
+  intro Hz. unfold ptree_stable_hitting.
+  eapply sem_lub_chain_proper with (chain := fun _ => sem_zero).
+  - intro n. apply sem_eq_sym. apply Hz.
+  - apply sem_lub_constant.
+Qed.
+
+Theorem ptree_stable_hitting_tau_closed_zero {R} (P : ptree E MN R -> Prop)
+    (Hclosed : forall t, P t -> exists u, observe t = TauF u /\ P u)
+    t : P t -> ptree_stable_hitting (MF := MF) (observe t) sem_zero.
+Proof.
+  intro Ht. apply ptree_stable_hitting_of_zero_approximants.
+  intro n. exact (ptree_hitting_tau_closed_zero Hclosed n Ht).
+Qed.
+
+Corollary ptree_stable_hitting_spin_zero {R} (t : ptree E MN R) :
+  observe t = TauF t ->
+  ptree_stable_hitting (MF := MF) (observe t) sem_zero.
+Proof.
+  intro Ht. eapply ptree_stable_hitting_tau_closed_zero
+    with (P := fun u => u = t); [|reflexivity].
+  intros u ->. exists t. split; [exact Ht|reflexivity].
+Qed.
+End KernelSilentDivergence.
+
+Section KernelEmptySample.
+Context {E MN MF : Type -> Type}
+  `{NI : SemanticMeasure MN} `{FI : SemanticMeasure MF}
+  `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasure MN MF}
+  `{ML : @MixedMeasureLaws MN MF NI FI MX}
+  `{FO : @SemanticOmega MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
+
+(** Empty native support loses all mass regardless of the continuation.
+    No native omega structure or normalization is required. *)
+Theorem ptree_stable_hitting_prob_empty {R X} (mu : MN X)
+    (k : X -> ptree E MN R) :
+  sem_ae mu (fun _ => False) ->
+  ptree_stable_hitting (MF := MF) (ProbF mu k) sem_zero.
+Proof.
+  intro Hempty. apply ptree_stable_hitting_of_zero_approximants. intro n.
+  eapply sem_eq_trans; [apply ptree_hitting_prob|].
+  eapply sem_eq_trans; [|apply (mixed_bind_zero mu)].
+  apply mixed_bind_ae_proper.
+  eapply sem_ae_mono; [|exact Hempty]. intros x Hfalse. contradiction.
+Qed.
+End KernelEmptySample.
+
 Section GenericKernelAdequacy.
 Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FI : SemanticMeasure MF}

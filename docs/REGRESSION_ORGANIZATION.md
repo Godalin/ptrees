@@ -1,6 +1,6 @@
 # Regression organization and retention
 
-This cleanup starts from `119ed4e`. It removes development-history artifacts,
+The directory cleanup started from `119ed4e`. It removed development-history artifacts,
 groups related current contracts and corrects source ownership; it does not
 change probability interfaces, PTree semantics or the MathComp trust boundary.
 
@@ -26,7 +26,99 @@ these properties; regression is not synonymous with negative example.
 `Examples` is for readable program proofs. The small public-equation client
 formerly named `HandlerCalculus` now lives in `Examples/RealSamplingHandler.v`.
 `HittingPrograms` remains a low-level integration test, not a paper case.
-No test-local theorem has been promoted to a new production capability.
+That directory pass introduced no production capability. The subsequent
+theorem-promotion pass below adds derived laws, not new capability assumptions.
+
+## Theorem promotion: silent behavior and transition laws
+
+Starting from `1f3c03c`, review the mathematical responsibility of a proof,
+not its filename or number of lines. A reusable semantic law belongs in its
+production owner. A readable concrete program argument may belong in Examples.
+Negative boundaries and positive integration/inference clients remain tests.
+Having parameters alone does not turn a fixture theorem into public theory.
+
+This is a targeted first promotion pass, **not an exhaustive semantic audit of
+every lemma in all 105 regression modules**. No modules are removed or merged.
+
+| Reviewed proof family | Disposition |
+|---|---|
+| `GuardedInterp.handler_spin_hitting_zero` | Instantiate generic `ptree_stable_hitting_spin_zero` |
+| `CanonicalPartialDivergence` spin approximants/hitting | Remove duplicate approximant lemmas; use generic zero hitting; keep partial-mass and separation tests |
+| `HeadTransition.divergent_response_has_empty_support` | Derive from generic zero hitting and existing quotient support transport; keep the actual transition witness |
+| `StableHittingDomain` silent bottom/native loss/Ret/Vis | Model laws now live in `Eq/Backend/StableHittingDomainSubEnumQ`; tests only instantiate them |
+| `MDPCoincidence.delay_transition_bisim`, `MDPInterp.hetero_delay_transition_bisim` | Instantiate `Semantics/TreeTransitionBisim.trans_bisim_tau_l`; its proof is independent transition coinduction |
+| `ProbabilisticRelationHierarchy` divergence/Tau and stopping clients | Keep: negative hierarchy boundaries and eventful/unreached stopping applications |
+| `UnrestrictedInterp.partial_mixed_handler` | Keep: positive integration of returning, divergent and visible handler behavior, not another divergence theorem |
+| `Execution/FiniteDistribution` spin | Keep: fuel timeout versus semantic loss is a runner contract, not redundant zero-hitting analysis |
+| `HittingPrograms`, `FreeOmegaUpperContracts` | Keep concrete integration/numerical counterexamples; do not promote fixture-specific distributions as generic laws |
+| `Internal/FiniteInternalPlan` spin | Keep: stopped-path planning fixture, not the canonical hitting theorem |
+| `OmegaValMeasure`, `FreeOmegaOrder`, `ImportOrder/*`, MathComp universe probes | Keep independent-model, order, elaboration and trust boundaries |
+
+### Production endpoints and assumptions
+
+`Eq/PTreeKernel` owns five new derived laws:
+
+- `ptree_hitting_tau_closed_zero`: a Tau-closed invariant implies zero finite
+  approximants. It needs frontier Core/Bind laws and operations, but **no native
+  SemanticMeasure, native omega, countability, totality or FreeOmega**.
+- `ptree_stable_hitting_of_zero_approximants`: transports the constant zero lub
+  along semantic equality. Its compiled type does not need Bind laws.
+- `ptree_stable_hitting_tau_closed_zero` and `ptree_stable_hitting_spin_zero`:
+  complete zero frontier, using existing Omega laws (chain properness) and
+  Cofinality laws (constant lub). No new `spin` syntax is necessary: the latter
+  consumes `observe t = TauF t`, so existing cofixpoints work unchanged.
+- `ptree_stable_hitting_prob_empty`: empty native AE support implies zero
+  hitting for **arbitrary continuations**. It uses Mixed laws and
+  `mixed_bind_zero`, not a native omega or normalization assumption.
+
+The Cofinality capability here is the existing owner of `sem_lub_constant`;
+this pass neither splits that class nor hides its actual requirement.
+
+The external model owner adds `ptree_domain_hitting_of_denotes`, then zero,
+Ret, Vis, Vis-mass, spin, empty-native and native-zero corollaries. Every one
+follows through existing stable-hitting denotational adequacy. There is no
+second induction over the mathematical approximants and no reverse import
+from generic Eq into the external model. The model proof deliberately inherits
+adequacy's audited classical/extensional dependencies; no axiom is introduced.
+
+`trans_bisim_tau_l` / `trans_bisim_tau_r` are generic homogeneous transition
+laws. The left law uses the candidate `a = b \/ a = Tau b`; the right law uses
+symmetry. Neither imports nor calls `peutt`. The MDP regressions still start
+from independent transition evidence, including distinct source/target effects.
+
+Retained tests exercise actual specializations. An additional changing-state
+silent counter tests Tau-closed invariants beyond the single self-loop equation.
+The stable-head Vis law concerns the **next observation**, not termination of
+an infinite interactive service. Native loss and infinite internal divergence
+both have zero stable mass, but runner `Lost` and `Timeout` remain distinct.
+
+The existing compiled-contract runner records the new production signatures
+and assumptions; no new audit executable, historical replay, checker bypass,
+semantic class, or global inference hint is added. All prior contract entries
+are retained verbatim. CI remains out of scope.
+
+Local validation of this promotion pass:
+
+- Full `opam exec -- dune build -j 2` passed, including AllImports and
+  extraction. The initial higher-concurrency build timed out at the existing
+  `FactoryController` Qed; neither that proof nor its timeout/environment was
+  modified. The failed attempt is not counted as a pass.
+- All 143 Python tests, architecture, public-surface, source-soundness and
+  contract-registration checks passed.
+- Central compiled contracts: **465 unchanged + 15 new = 480**, all checked.
+  The 52-entry generic MDP group also passed. An earlier MDP query during
+  rebuilding encountered a missing `.vo`; the successful rerun supersedes it.
+  Other compiled groups were not rerun in this pass.
+- The seven new generic endpoints are closed under the global context; the
+  eight external-model endpoints use only the existing logical-axiom whitelist.
+- Joint `coqchk -norec` passed for the three production owners and six changed
+  regression modules. Dependencies were trusted; this is neither an exhaustive
+  recursive audit nor a Gate M kernel check.
+- One-off source comparison confirmed that the three production files retain
+  all pre-existing source exactly; only new sections/theorems were inserted.
+- Regression source is reduced by 117 lines across six files. Five duplicate
+  approximant lemmas and an unused coinduction candidate are removed; their
+  old code remains available at `1f3c03c`. All 105 regression files remain.
 
 ## Changes and deliberate non-deletions
 

@@ -141,11 +141,10 @@ Qed.
 Example divergent_response_has_empty_support :
   free_omega_ae (fun _ => False) silent_successors.
 Proof.
-  apply FOAELub. intro n.
-  assert (Hzero : ptree_hitting_approx (FI := FI) (FO := FO) n
-    (observe silent_response) = FOZero).
-  { induction n as [|n IH]; [reflexivity|].
-    change (ptree_hitting_approx (FI := FI) (FO := FO) n
-      (observe silent_response) = FOZero). exact IH. }
-  rewrite Hzero. apply FOAEZero.
+  pose proof (ptree_stable_hitting_spin_zero (FI := FI) (FO := FO)
+    (MX := FreeOmegaMixedMeasure) (t := silent_response) eq_refl) as Hzero.
+  pose proof (proj1 (free_omega_qlift_support Hzero)
+    (fun _ => False) (FOAEZero _)) as Hempty.
+  eapply free_omega_ae_mono; [|exact Hempty].
+  intros h [z [_ Hfalse]]. contradiction.
 Qed.

@@ -31,37 +31,8 @@ Local Notation TB := (@trans_bisim decisionE SubEnumQ MF FI FC FreeOmegaMixedMea
 
 (** Build transition evidence independently, NOT by peutt soundness, so
     the reverse coincidence endpoint is genuinely exercised below. *)
-Definition delayed_pair (t u : tree) := t = u \/ t = Tau u.
 Lemma delay_transition_bisim (t : tree) : TB (Tau t) t.
-Proof.
-  eapply trans_bisim_coinduction with (sim := delayed_pair); [|right; reflexivity].
-  intros a b [Heq | Heq]; subst a.
-  - split.
-    + split; intros out Hout; exists out; split; try exact Hout;
-        apply sem_lift_refl; intro x; reflexivity.
-    + split.
-      * split; intros out Hout; exists out; split; try exact Hout;
-          apply sem_lift_refl; intro e; reflexivity.
-      * intro label. split; intros out Hout; exists out; split; try exact Hout;
-          apply sem_lift_refl; intro h; left; reflexivity.
-  - split.
-    + split; intros out Hout; exists out; split.
-      * exact (proj1 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-      * apply sem_lift_refl. intro r. reflexivity.
-      * exact (proj2 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-      * apply sem_lift_refl. intro r. reflexivity.
-    + split.
-      * split; intros out Hout; exists out; split.
-        -- exact (proj1 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-        -- apply sem_lift_refl. intro e. reflexivity.
-        -- exact (proj2 (tree_head_observation_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-        -- apply sem_lift_refl. intro e. reflexivity.
-      * intro label. split; intros out Hout; exists out; split.
-        -- exact (proj1 (trans_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-        -- apply sem_lift_refl. intro h. left. reflexivity.
-        -- exact (proj2 (trans_tau_iff (FI := FI) (FO := FO) _ _ _) Hout).
-        -- apply sem_lift_refl. intro h. left. reflexivity.
-Qed.
+Proof. apply trans_bisim_tau_l. Qed.
 
 Theorem delayed_decision_peutt_from_transitions : W (Tau decision) decision.
 Proof.
