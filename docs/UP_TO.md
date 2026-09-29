@@ -289,11 +289,11 @@ than recursively rechecking the library. No CI status is claimed.
 
 ### Case-local universe simplification
 
-The five explicit `Polymorphic` declarations in MixedHead are unnecessary
+The five explicit `Polymorphic` declarations originally in MixedHead were unnecessary
 for this concrete client: its response wrapper, response projection, event
 family and two finite lifting certificates can use fixed inferred universes.
-They are not a reusable universe-polymorphic effect API. The Boolean response
-wrapper and ordinary universe checking remain; the program/proof section's
+They are not a reusable universe-polymorphic effect API. That first change kept
+the Boolean response wrapper and ordinary universe checking; the program/proof section's
 existing `Set Universe Polymorphism` is unchanged. No generic library setting
 or Gate M permission is modified. This deliberately removes case-local
 universe generality, not a premise or a probabilistic law.
@@ -311,3 +311,19 @@ Full build/AllImports, architecture/API/source checks and the case's
 `coqchk -norec` passed. Two unused handler imports were removed; the generic
 theory and proof assumptions are unchanged. Tool tests were not rerun for
 this source/documentation-only presentation change; CI was not queried.
+
+With the concrete event family now monomorphic, a further simplification
+removes `mixed_response`, `Response`, and `response_value`: both `Challenge`
+and `Reply b` return ordinary `bool`. Program continuations and interaction
+selectors use these Booleans directly. This changes the event response carrier
+from a one-constructor wrapper to `bool`, not the finite probability kernels,
+3-to-2 joint, or up-to-bind argument. It is not a claim of definitional equality
+with the old event signature. Ordinary universe checking remains enabled;
+no generic library setting or Gate M permission changes.
+
+Validation of the direct-Boolean change: full build/AllImports, all 136
+unchanged safe generic-algebra type/assumption contracts, architecture/API/
+source-soundness checks and the case's `coqchk -norec` passed. The kernel check
+trusts compiled dependencies. The contract query was rerun after the build
+completed (an overlapping first attempt could not load the rebuilding module).
+No contract snapshot edits, tool changes, or CI queries.

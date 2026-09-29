@@ -47,16 +47,10 @@ Local Open Scope subenumQ_probability_scope.
 
 (** * 1. Protocol and abstraction *)
 
-(** The event universe is invariant in PTree. This two-response wrapper
-    lifts an ordinary Boolean to that universe without changing its choices.
-    This concrete case needs only one event universe: leave it inferred,
-    rather than making the event family and each finite lemma polymorphic. *)
-Variant mixed_response : Type := Response (response_bit : bool).
-Definition response_value (r : mixed_response) : bool :=
-  match r with Response b => b end.
+(** The environment supplies an ordinary Boolean challenge and acknowledgement. *)
 Variant mixedE : Type -> Type :=
-| Challenge : mixedE mixed_response
-| Reply (b : bool) : mixedE mixed_response.
+| Challenge : mixedE bool
+| Reply (b : bool) : mixedE bool.
 
 Variant mixed_outcome := Stop (b : bool) | Continue (b : bool).
 Scheme Equality for mixed_outcome.
@@ -206,19 +200,19 @@ Definition spec_draw c : tree (spec_return + spec_return) :=
     by the implementation's three/four internal draws. *)
 CoFixpoint masked_impl (m : hidden3) : tree impl_return :=
   Vis Challenge (fun answer =>
-    PTree.bind (impl_draw (response_value answer)) (fun x =>
+    PTree.bind (impl_draw answer) (fun x =>
       match x with
       | inl result => Ret result
       | inr (b,h) => Vis (Reply b) (fun ack =>
-          masked_impl (if response_value ack then h else m))
+          masked_impl (if ack then h else m))
       end)).
 CoFixpoint mixed_spec (z : bool) : tree spec_return :=
   Vis Challenge (fun answer =>
-    PTree.bind (spec_draw (response_value answer)) (fun x =>
+    PTree.bind (spec_draw answer) (fun x =>
       match x with
       | inl result => Ret result
       | inr (b,j) => Vis (Reply b) (fun ack =>
-          mixed_spec (if response_value ack then j else z))
+          mixed_spec (if ack then j else z))
       end)).
 (** Only initialization chooses a related state; this is not a deterministic
     transport of the uniform3 sampling distribution (which is impossible). *)
@@ -395,23 +389,23 @@ Definition masked_branch m (x : impl_return + impl_return) : tree impl_return :=
   match x with
   | inl b => Ret b
   | inr (b,h) => Vis (Reply b) (fun ack =>
-      masked_impl (if response_value ack then h else m))
+      masked_impl (if ack then h else m))
   end.
 Definition spec_branch z (x : spec_return + spec_return) : tree spec_return :=
   match x with
   | inl b => Ret b
   | inr (b,j) => Vis (Reply b) (fun ack =>
-      mixed_spec (if response_value ack then j else z))
+      mixed_spec (if ack then j else z))
   end.
 Definition masked_after m c := PTree.bind (impl_draw c) (masked_branch m).
 Definition mixed_after z c := PTree.bind (spec_draw c) (spec_branch z).
 Lemma masked_impl_unfold m :
   observe (masked_impl m) =
-  VisF Challenge (fun answer => masked_after m (response_value answer)).
+  VisF Challenge (fun answer => masked_after m answer).
 Proof. reflexivity. Qed.
 Lemma mixed_spec_unfold z :
   observe (mixed_spec z) =
-  VisF Challenge (fun answer => mixed_after z (response_value answer)).
+  VisF Challenge (fun answer => mixed_after z answer).
 Proof. reflexivity. Qed.
 
 Local Notation upto := (bind_upto_closure
@@ -427,9 +421,9 @@ Definition mixed_protocol_sim (s1 : state impl_return) (s2 : state spec_return) 
     s1 = observe (masked_impl m) /\ s2 = observe (mixed_spec z)) \/
   (exists m z h j b, bridge m z /\ bridge h j /\
     s1 = observe (Vis (Reply b) (fun ack =>
-      masked_impl (if response_value ack then h else m))) /\
+      masked_impl (if ack then h else m))) /\
     s2 = observe (Vis (Reply b) (fun ack =>
-      mixed_spec (if response_value ack then j else z)))).
+      mixed_spec (if ack then j else z)))).
 Lemma MPSRoot m z : bridge m z ->
   mixed_protocol_sim (observe (masked_impl m)) (observe (mixed_spec z)).
 Proof. intro H. left. exists m, z. auto. Qed.
@@ -443,7 +437,7 @@ Proof.
     rewrite masked_impl_unfold mixed_spec_unfold.
     apply stable_hitting_match_vis. intro answer.
     eapply bind_upto_closure_bind.
-    + exact (impl_draw_related (response_value answer)).
+    + exact (impl_draw_related answer).
     + intros [r|[b h]] [u|[b' j]] H; simpl in H; try contradiction.
       * (* Stop: the heterogeneous payload relation closes this branch. *)
         right. apply peutt_ret. exact H.
@@ -453,7 +447,7 @@ Proof.
   - (* Reply: either keep the old states or refresh both from the joint. *)
     apply stable_hitting_match_vis. intro ack.
     apply bind_upto_closure_includes, MPSRoot.
-    exact (bridge_next (response_value ack) Hmz Hhj).
+    exact (bridge_next ack Hmz Hhj).
 Qed.
 
 Theorem mixed_head_bridge m z :
@@ -494,13 +488,13 @@ Definition masked_head m (x : impl_return + impl_return) : mixed_head impl_retur
   match x with
   | inl b => FHRet b
   | inr (b,h) => FHVis (Reply b) (fun ack =>
-      masked_impl (if response_value ack then h else m))
+      masked_impl (if ack then h else m))
   end.
 Definition spec_head z (x : spec_return + spec_return) : mixed_head spec_return :=
   match x with
   | inl b => FHRet b
   | inr (b,j) => FHVis (Reply b) (fun ack =>
-      mixed_spec (if response_value ack then j else z))
+      mixed_spec (if ack then j else z))
   end.
 Definition masked_after_heads m c : MF (mixed_head impl_return) :=
   FOSample (mixed_samples uniform3 c) (fun x => FORet (masked_head m x)).
@@ -578,13 +572,13 @@ Qed.
 
 Definition select_challenge (c : bool) {X} (e : mixedE X) : option X :=
   match e in mixedE X0 return option X0 with
-  | Challenge => Some (Response c)
+  | Challenge => Some c
   | Reply _ => None
   end.
 Definition select_true_reply {X} (e : mixedE X) : option X :=
   match e in mixedE X0 return option X0 with
   | Challenge => None
-  | Reply b => if b then Some (Response true) else None
+  | Reply b => if b then Some true else None
   end.
 Definition challenge_true_reply_trace c : @finite_interaction_pattern mixedE :=
   cons (@select_challenge c) (cons (@select_true_reply) nil).
@@ -619,7 +613,7 @@ Proof.
   change (@finite_interaction_query mixedE SubEnumQ MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega spec_return
     (cons (@select_challenge c) (cons (@select_true_reply) nil))
-    (Vis Challenge (fun answer => mixed_after (abstract_state m) (response_value answer)))
+    (Vis Challenge (fun answer => mixed_after (abstract_state m) answer))
     (spec_true_reply_query (abstract_state m) c)).
   eapply finite_interaction_query_vis_match.
   - reflexivity.
