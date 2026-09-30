@@ -97,6 +97,8 @@ native distribution calculation and joint there; no recursive frontier is
 selected. The shared Stop/Continue outcome is coupled
 diagonally, and **both** blocks use the same non-functional three-to-two joint
 `[(1/3,(L0,false)); (1/6,(L1,false)); (1/6,(L1,true)); (1/3,(L2,true))]`.
+Its left/right marginal and support obligations are discharged directly
+inside `coupling32_lift`, without separately named preparatory lemmas.
 `Stop` returns `(b,h) : bool * hidden3` on the left and
 `(b,j) : bool * bool` on the right. The return relation preserves `b` and
 requires `bridge h j`; the known heterogeneous return law closes this branch.

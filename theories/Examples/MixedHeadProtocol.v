@@ -274,19 +274,6 @@ Proof.
   intros p x [He|[He|[He|[He|[]]]]]; inversion He; subst; by vm_compute.
 Defined.
 
-Lemma coupling32_left : emap fst coupling32_raw ==EnumQ uniform3_raw.
-Proof. intros []; vm_compute; reflexivity. Qed.
-
-Lemma coupling32_right : emap snd coupling32_raw ==EnumQ uniform2_raw.
-Proof. intros []; vm_compute; reflexivity. Qed.
-
-Lemma coupling32_support m z :
-  acc_mass (m,z) coupling32_raw != 0 -> bridge m z.
-Proof.
-  unfold bridge. destruct m,z; try (intros _; reflexivity);
-    try (intros _; exact I); vm_compute; discriminate.
-Qed.
-
 Lemma coupling32_lift :
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ bridge uniform3 uniform2.
 Proof.
@@ -294,9 +281,13 @@ Proof.
   eapply indexed_coupling_raw with (mu := uniform3_raw) (nu := uniform2_raw);
     [reflexivity|reflexivity|].
   apply indexed_coupling_of_coupling. exists coupling32_raw.
-  - exact coupling32_left.
-  - exact coupling32_right.
-  - exact coupling32_support.
+  - (* Left marginal: uniform on the three hidden states. *)
+    intros []; vm_compute; reflexivity.
+  - (* Right marginal: the fair Boolean distribution. *)
+    intros []; vm_compute; reflexivity.
+  - (* Every supported pair satisfies the state relation. *)
+    intros m z. unfold bridge. destruct m,z; try (intros _; reflexivity);
+      try (intros _; exact I); vm_compute; discriminate.
 Qed.
 
 (** Stronger than merely displaying a split joint: no deterministic map
