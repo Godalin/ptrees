@@ -70,7 +70,7 @@ proof has no new logical or semantic axioms.
 
 ## Concrete checks
 
-`Regression/Semantics/StandardEffects.v` checks generic import isolation and
+`Examples/Effects/StandardEffects.v` checks generic import isolation and
 heterogeneous preservation for all three clients. It also actually executes:
 
 * Reader lookup followed by a native rational coin;

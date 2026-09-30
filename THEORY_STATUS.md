@@ -92,7 +92,7 @@ checks do not replace the separate whole-library Gate D audit.
 | `Semantics` | transitions, MDP fragment and comparison; no Interp dependency |
 | `Interp`, `Interp/FreeOmega`, `Interp/Backend` | generic interpretation, completion-specific theory and concrete endpoints |
 | Top-level `PTree` / `Eq` / `PTreeFacts` / `Semantics` | actual definition/theorem-owner exports; `Eq/Canonical` selects behavioral operations; no `API/` layer |
-| `Examples` / `Regression` | application proofs / contract tests; Examples never depends on Regression |
+| `Examples` / root `tests/` | mathematical/program examples and counterexamples / isolated compilation clients; Examples never depends on tests |
 
 ## 1. Public semantic architecture
 
@@ -290,7 +290,7 @@ The removed MathComp + FreeOmega combination remains absent.
 | Mixed unit / node-bind / omega | pair-level | pair-level | proved, same-carrier | maintained profile |
 | Mixed commutativity | optional | optional | optional | not a required capability |
 
-`Regression/Backend/BackendCapabilities.v` checks the finite-native profiles;
+`tests/Capabilities/BackendCapabilities.v` checks the finite-native profiles;
 `MathCompOmega.v` checks the new native omega/bind profile without gluing.
 Foundational MathComp AE laws are checked without
 `MathCompCouplingGluing`; only its relational core needs that hypothesis.
@@ -382,7 +382,7 @@ public clients and retained limits (notably arbitrary-target fold laws).
 
 The first [interpretation-compositionality stage](docs/INTERP_COMPOSITIONALITY.md)
 now proves that `trans_bisim` is **not** an arbitrary-interpreter
-congruence. `Regression/Semantics/InterpExposure.v` reuses the 2x2 source pair
+congruence. `Examples/Counterexamples/InterpExposure.v` reuses the 2x2 source pair
 and replaces one Query by two, ignoring the first answer. The first target
 action exposes a distribution of second-round states for which no single
 coupling can match both possible second answers. Current return and event
@@ -550,14 +550,14 @@ behavioral equivalences. They now live under `Eq/Internal/`.
 FiniteInternal is auxiliary proof infrastructure for well-founded internal
 compression and related adequacy arguments. It is not part of the canonical
 PTree semantics or public equivalence theory. The formal peutt/Interp/facade
-dependency closure does not include it; some Stage 1–4 regression files
-indirectly load it through shared fixtures. Completed external soundness does
+dependency closure does not include it; supporting examples and counterexamples
+can load it through shared constructions. Completed external soundness does
 not depend on it, but its independent contracts remain maintained; cleanup
 does not delete FiniteInternal/Recovery/residual infrastructure. The
 [current inventory](docs/ARCHITECTURE_AUDIT.md) records clients. Zero clients
 alone never imply dead code. Historical move/extraction manifests remain in git.
 
-`Regression/Infrastructure/AllImports.v` checks that all maintained modules
+`tests/AllImports.v` checks that all maintained Gate S modules
 coexist in one universe context; CI checks its inventory is complete.
 The older frontier/partial-divergence EnumQ regressions now use FreeOmega EnumQ
 for behavior, avoiding incompatible constraints from using the same native

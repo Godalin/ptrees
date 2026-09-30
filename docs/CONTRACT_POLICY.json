@@ -6,9 +6,9 @@
     "theories/Eq/UnifiedFrontier.v:UnifiedFrontierCoherence": "Class UnifiedFrontierCoherence := { unified_frontier_unique : forall {R} (ot : ptree' E MN R) hs1 hs2, frontier_certificate ot hs1 -> frontier_certificate ot hs2 -> sem_eq hs1 hs2; unified_frontier_tau_inv : forall {R} (t : ptree E MN R) hs, frontier_certificate (TauF t) hs -> frontier_certificate (observe t) hs }.",
     "theories/Examples/BernoulliFactory/OperationalBernoulliFactory.v:OperationalFactoryStepSupportLaws": "Class OperationalFactoryStepSupportLaws := { ptree_factory_binary_step_support : forall (pnormalized : pfalse + ptrue = 1) (pnontrivial : (0 < pfalse * ptrue)%Q) x, free_omega_support_lift eq (ptree_factory_binary_step_heads x) (ptree_factory_standard_step_heads x) }.",
     "theories/Prob/Backend/Common/RealSubTypes.v:RealSub": "Class RealSub (T : Type) := { inject : T -> R; }.",
-    "theories/Prob/Legacy/RationalDiscrete.v:Discrete": "Class Discrete (m : Type → Type) := { disc_ret : forall {A}, A → m A; disc_bind : forall {A B}, m A → (A → m B) → m B; disc_flip : () → m bool; disc_score : nnQ → m ()%type; }.",
-    "theories/Prob/Legacy/RationalDiscrete.v:DiscreteInterface": "Class DiscreteInterface (M : Type → Type) : Type := { disc_rep :: Discrete M ; disc_eq : ∀ {R : eqType}, M R → M R → Prop ; disc_eq_equiv :: ∀ R : eqType, Equivalence (@disc_eq R) ; disc_RT : ∀ {R1 R2 : eqType}, (R1 → R2 → Prop) → M R1 → M R2 → Prop ; disc_RTeq : ∀ (R : eqType) (μ1 μ2 : M R), disc_eq μ1 μ2 ↔ disc_RT eq μ1 μ2 ; disc_mass {R : eqType} : R → M R → nnQ ; disc_mass_proper {R : eqType} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) ; disc_supp {R : eqType} : M R → seq R }.",
-    "theories/Prob/Legacy/RationalDiscrete.v:DiscreteLaws": "Class DiscreteLaws (m : Type → Type) `{Discrete m} (R : forall {a}, m a → m a → Prop) := { disc_ret_bind : forall A B (x : A) (f : A → m B), R (disc_bind (disc_ret x) f) (f x) ; disc_bind_ret : forall A (u : m A), R (disc_bind u disc_ret) u ; disc_bind_assoc : forall A B C (u : m A) (f : A → m B) (g : B → m C), R (disc_bind u (λ x, disc_bind (f x) g)) (disc_bind (disc_bind u f) g) ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A → B → m C), R (disc_bind u (λ x, disc_bind v (λ y, f x y))) (disc_bind v (λ y, disc_bind u (λ x, f x y))) }.",
+    "theories/Prob/Legacy/RationalDiscrete.v:Discrete": "Class Discrete (m : Type \u2192 Type) := { disc_ret : forall {A}, A \u2192 m A; disc_bind : forall {A B}, m A \u2192 (A \u2192 m B) \u2192 m B; disc_flip : () \u2192 m bool; disc_score : nnQ \u2192 m ()%type; }.",
+    "theories/Prob/Legacy/RationalDiscrete.v:DiscreteInterface": "Class DiscreteInterface (M : Type \u2192 Type) : Type := { disc_rep :: Discrete M ; disc_eq : \u2200 {R : eqType}, M R \u2192 M R \u2192 Prop ; disc_eq_equiv :: \u2200 R : eqType, Equivalence (@disc_eq R) ; disc_RT : \u2200 {R1 R2 : eqType}, (R1 \u2192 R2 \u2192 Prop) \u2192 M R1 \u2192 M R2 \u2192 Prop ; disc_RTeq : \u2200 (R : eqType) (\u03bc1 \u03bc2 : M R), disc_eq \u03bc1 \u03bc2 \u2194 disc_RT eq \u03bc1 \u03bc2 ; disc_mass {R : eqType} : R \u2192 M R \u2192 nnQ ; disc_mass_proper {R : eqType} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) ; disc_supp {R : eqType} : M R \u2192 seq R }.",
+    "theories/Prob/Legacy/RationalDiscrete.v:DiscreteLaws": "Class DiscreteLaws (m : Type \u2192 Type) `{Discrete m} (R : forall {a}, m a \u2192 m a \u2192 Prop) := { disc_ret_bind : forall A B (x : A) (f : A \u2192 m B), R (disc_bind (disc_ret x) f) (f x) ; disc_bind_ret : forall A (u : m A), R (disc_bind u disc_ret) u ; disc_bind_assoc : forall A B C (u : m A) (f : A \u2192 m B) (g : B \u2192 m C), R (disc_bind u (\u03bb x, disc_bind (f x) g)) (disc_bind (disc_bind u f) g) ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A \u2192 B \u2192 m C), R (disc_bind u (\u03bb x, disc_bind v (\u03bb y, f x y))) (disc_bind v (\u03bb y, disc_bind u (\u03bb x, f x y))) }.",
     "theories/Prob/Backend/MathComp/Kernel.v:MathCompCouplingGluing": "Class MathCompCouplingGluing := { mathcomp_kernel_lift_comp : forall {A B C} (rel : A -> B -> Prop) (rel' : B -> C -> Prop) (mu : MathCompKernelMeasure A) (nu : MathCompKernelMeasure B) (xi : MathCompKernelMeasure C), mathcomp_kernel_lift rel mu nu -> mathcomp_kernel_lift rel' nu xi -> mathcomp_kernel_lift (fun x z => exists y, rel x y /\\ rel' y z) mu xi }.",
     "theories/Prob/FreeOmega/NativeCoupling.v:FreeOmegaNativeCouplingLaws": "Class FreeOmegaNativeCouplingLaws {MN : Type -> Type} (NI : SemanticMeasure MN) (NO : @SemanticOmega MN NI) := { free_omega_native_coupling : forall {A B} (p : free_omega_native_presentation MN A) (q : free_omega_native_presentation MN B) (R : A -> B -> Prop), @free_omega_qlift MN NI NO A B R (free_omega_native p) (free_omega_native q) -> exists joint : MN (native_sample_type p * native_sample_type q)%type, @semantic_coupling MN NI _ _ (fun x y => R (native_sample_value p x) (native_sample_value q y)) (native_sample_measure p) (native_sample_measure q) joint }.",
     "theories/Prob/FreeOmega/Observation.v:FreeOmegaDenotationBindLaws": "Class FreeOmegaDenotationBindLaws {MN} `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI} := { free_omega_denotes_bind : forall {A B OA OB} (obsA : A -> OA) (obsB : B -> OB) (mu : FreeOmega MN A) (out : MN OA) (k : A -> FreeOmega MN B) (front : OA -> MN OB), free_omega_denotes obsA mu out -> (forall x, free_omega_denotes obsB (k x) (front (obsA x))) -> free_omega_denotes obsB (free_omega_bind mu k) (sem_bind out front) }.",
@@ -54,15 +54,15 @@
     "theories/Prob/Interface/Subprobability.v:SemanticSubprobability": "Class SemanticSubprobability@{carrier representation} (S : Type@{carrier} -> Type@{representation}) `{SI : SemanticMeasure S} := { sem_subprob : forall {A : Type@{carrier}}, S A -> Prop }.",
     "theories/Prob/Interface/Subprobability.v:SemanticSubprobabilityCarrierLaws": "Class SemanticSubprobabilityCarrierLaws@{carrier representation} (S : Type@{carrier} -> Type@{representation}) `{SI : SemanticMeasure S} `{SP : @SemanticSubprobability S SI} := { sem_subprob_all : forall {A : Type@{carrier}} (mu : S A), sem_subprob mu }.",
     "theories/Prob/Interface/Subprobability.v:SemanticSubprobabilityLaws": "Class SemanticSubprobabilityLaws@{carrier representation} (S : Type@{carrier} -> Type@{representation}) `{SI : SemanticMeasure S} `{SP : @SemanticSubprobability S SI} := { sem_subprob_ret : forall {A : Type@{carrier}} (x : A), sem_subprob (sem_ret x); sem_subprob_bind : forall {A B : Type@{carrier}} (mu : S A) (k : A -> S B), sem_subprob mu -> (forall x, sem_subprob (k x)) -> sem_subprob (sem_bind mu k); sem_subprob_proper : forall {A : Type@{carrier}} (mu nu : S A), sem_eq mu nu -> (sem_subprob mu <-> sem_subprob nu) }.",
-    "theories/Prob/Legacy/Discrete.v:Discrete": "Class Discrete (m : Type → Type) := { disc_ret : forall {A}, A → m A; disc_bind : forall {A B}, m A → (A → m B) → m B; disc_flip : unit → m bool; disc_score : ℝ₊ → m unit; }.",
-    "theories/Prob/Legacy/Discrete.v:DiscreteInterface": "Class DiscreteInterface (M : Type → Type) : Type := { disc_rep :: Discrete M ; disc_eq : ∀ R `{EqDec R eq}, M R → M R → Prop ; disc_eq_equiv :: ∀ R `{EqDec R eq}, Equivalence (@disc_eq R _ _) ; disc_RT : ∀ R1 R2 `{EqDec R1 eq} `{EqDec R2 eq}, (R1 → R2 → Prop) → M R1 → M R2 → Prop ; disc_RTeq : ∀ R `{EqDec R eq} (μ1 μ2 : M R), disc_eq μ1 μ2 ↔ disc_RT eq μ1 μ2 ; disc_mass {R} `{EqDec R eq} : R → M R → ℝ₊ ; disc_mass_proper {R} `{EqDec R eq} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) }.",
-    "theories/Prob/Legacy/Discrete.v:DiscreteLaws": "Class DiscreteLaws (m : Type → Type) `{Discrete m} (R : forall {a}, m a → m a → Prop) := { disc_ret_bind : forall A B (x : A) (f : A → m B), R (disc_bind (disc_ret x) f) (f x) ; disc_bind_ret : forall A (u : m A), R (disc_bind u disc_ret) u ; disc_bind_assoc : forall A B C (u : m A) (f : A → m B) (g : B → m C), R (disc_bind u (λ x, disc_bind (f x) g)) (disc_bind (disc_bind u f) g) ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A → B → m C), R (disc_bind u (λ x, disc_bind v (λ y, f x y))) (disc_bind v (λ y, disc_bind u (λ x, f x y))) }.",
-    "theories/Prob/Legacy/Monad.v:MonadDistribution": "Class MonadDistribution (m : Type → Type) `{Monad m} : Type := random : m 𝕀.",
-    "theories/Prob/Legacy/Monad.v:MonadFactor": "Class MonadFactor (m : Type → Type) `{Monad m} : Type := score : R → m unit.",
-    "theories/Prob/Legacy/Monad.v:MonadMeasure": "Class MonadMeasure (m : Type → Type) `{Monad m} := { MeasureDistribution :: MonadDistribution m; MeasureFactor :: MonadFactor m; }.",
+    "theories/Prob/Legacy/Discrete.v:Discrete": "Class Discrete (m : Type \u2192 Type) := { disc_ret : forall {A}, A \u2192 m A; disc_bind : forall {A B}, m A \u2192 (A \u2192 m B) \u2192 m B; disc_flip : unit \u2192 m bool; disc_score : \u211d\u208a \u2192 m unit; }.",
+    "theories/Prob/Legacy/Discrete.v:DiscreteInterface": "Class DiscreteInterface (M : Type \u2192 Type) : Type := { disc_rep :: Discrete M ; disc_eq : \u2200 R `{EqDec R eq}, M R \u2192 M R \u2192 Prop ; disc_eq_equiv :: \u2200 R `{EqDec R eq}, Equivalence (@disc_eq R _ _) ; disc_RT : \u2200 R1 R2 `{EqDec R1 eq} `{EqDec R2 eq}, (R1 \u2192 R2 \u2192 Prop) \u2192 M R1 \u2192 M R2 \u2192 Prop ; disc_RTeq : \u2200 R `{EqDec R eq} (\u03bc1 \u03bc2 : M R), disc_eq \u03bc1 \u03bc2 \u2194 disc_RT eq \u03bc1 \u03bc2 ; disc_mass {R} `{EqDec R eq} : R \u2192 M R \u2192 \u211d\u208a ; disc_mass_proper {R} `{EqDec R eq} {x : R} :: Proper (disc_RT eq ==> eq) (disc_mass x) }.",
+    "theories/Prob/Legacy/Discrete.v:DiscreteLaws": "Class DiscreteLaws (m : Type \u2192 Type) `{Discrete m} (R : forall {a}, m a \u2192 m a \u2192 Prop) := { disc_ret_bind : forall A B (x : A) (f : A \u2192 m B), R (disc_bind (disc_ret x) f) (f x) ; disc_bind_ret : forall A (u : m A), R (disc_bind u disc_ret) u ; disc_bind_assoc : forall A B C (u : m A) (f : A \u2192 m B) (g : B \u2192 m C), R (disc_bind u (\u03bb x, disc_bind (f x) g)) (disc_bind (disc_bind u f) g) ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A \u2192 B \u2192 m C), R (disc_bind u (\u03bb x, disc_bind v (\u03bb y, f x y))) (disc_bind v (\u03bb y, disc_bind u (\u03bb x, f x y))) }.",
+    "theories/Prob/Legacy/Monad.v:MonadDistribution": "Class MonadDistribution (m : Type \u2192 Type) `{Monad m} : Type := random : m \ud835\udd40.",
+    "theories/Prob/Legacy/Monad.v:MonadFactor": "Class MonadFactor (m : Type \u2192 Type) `{Monad m} : Type := score : R \u2192 m unit.",
+    "theories/Prob/Legacy/Monad.v:MonadMeasure": "Class MonadMeasure (m : Type \u2192 Type) `{Monad m} := { MeasureDistribution :: MonadDistribution m; MeasureFactor :: MonadFactor m; }.",
     "theories/Prob/Legacy/RelLift.v:ComposableProbRelLift": "Class ComposableProbRelLift (M : Type -> Type) (DI : DiscreteInterface M) (PL : @ProbRelLift M DI) := { prob_lift_comp : forall {A B C : eqType} (R : A -> B -> Prop) (S : B -> C -> Prop) (mu : M A) (nu : M B) (xi : M C), prob_lift R mu nu -> prob_lift S nu xi -> prob_lift (fun a c => exists b, R a b /\\ S b c) mu xi }.",
     "theories/Prob/Legacy/RelLift.v:ProbRelLift": "Class ProbRelLift (M : Type -> Type) `{DiscreteInterface M} := { prob_lift : forall {A B : eqType}, (A -> B -> Prop) -> M A -> M B -> Prop; prob_lift_mono : forall {A B : eqType} (R S : A -> B -> Prop) (mu : M A) (nu : M B), (forall a b, R a b -> S a b) -> prob_lift R mu nu -> prob_lift S mu nu; prob_lift_proper_l : forall {A B : eqType} (R : A -> B -> Prop) (mu mu' : M A) (nu : M B), disc_eq mu mu' -> prob_lift R mu nu -> prob_lift R mu' nu; prob_lift_proper_r : forall {A B : eqType} (R : A -> B -> Prop) (mu : M A) (nu nu' : M B), disc_eq nu nu' -> prob_lift R mu nu -> prob_lift R mu nu'; prob_lift_refl : forall {A : eqType} (mu : M A), prob_lift eq mu mu; prob_lift_of_eq : forall {A : eqType} (mu nu : M A), disc_eq mu nu -> prob_lift eq mu nu; prob_lift_sym : forall {A B : eqType} (R : A -> B -> Prop) (mu : M A) (nu : M B), prob_lift R mu nu -> prob_lift (fun b a => R a b) nu mu }.",
-    "theories/Regression/Infrastructure/UniverseSeparatedPTree.v:TwoLevelMeasureInterface": "Class TwoLevelMeasureInterface@{sample node_measure frontier_sample frontier_measure} (MN : Type@{sample} -> Type@{node_measure}) (MF : Type@{frontier_sample} -> Type@{frontier_measure}) := { frontier_ret : forall {A : Type@{frontier_sample}}, A -> MF A; frontier_bind_node : forall {A : Type@{sample}} {B : Type@{frontier_sample}}, MN A -> (A -> MF B) -> MF B }.",
+    "tests/Imports/UniverseSeparatedPTree.v:TwoLevelMeasureInterface": "Class TwoLevelMeasureInterface@{sample node_measure frontier_sample frontier_measure} (MN : Type@{sample} -> Type@{node_measure}) (MF : Type@{frontier_sample} -> Type@{frontier_measure}) := { frontier_ret : forall {A : Type@{frontier_sample}}, A -> MF A; frontier_bind_node : forall {A : Type@{sample}} {B : Type@{frontier_sample}}, MN A -> (A -> MF B) -> MF B }.",
     "theories/Eq/Canonical.v:CanonicalBehavior": "Class CanonicalBehavior (MN : Type -> Type) := { behavior_frontier : Type -> Type; behavior_measure : SemanticMeasure behavior_frontier; behavior_mixed : MixedMeasure MN behavior_frontier; behavior_omega : @SemanticOmega behavior_frontier behavior_measure }.",
     "theories/Prob/Interface/BindOrder.v:SemanticMeasureBindOrderLaws": "Class SemanticMeasureBindOrderLaws (MF : Type -> Type) `{FI : SemanticMeasure MF} `{FO : @SemanticOmega MF FI} := { sem_bind_ret_order : forall A B (x : A) (k : A -> MF B), sem_le (sem_bind (sem_ret x) k) (k x) /\\ sem_le (k x) (sem_bind (sem_ret x) k); sem_bind_zero_order : forall A B (k : A -> MF B), sem_le (sem_bind sem_zero k) sem_zero }.",
     "theories/Prob/Interface/BindOrder.v:MixedMeasureBindOrderLaws": "Class MixedMeasureBindOrderLaws (MN MF : Type -> Type) `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI} := { mixed_bind_assoc_order : forall A B C (mu : MN A) (k : A -> MF B) (h : B -> MF C), sem_le (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)) /\\ sem_le (mixed_bind mu (fun x => sem_bind (k x) h)) (sem_bind (mixed_bind mu k) h); mixed_bind_le_k : forall A B (mu : MN A) (k h : A -> MF B), (forall x, sem_le (k x) (h x)) -> sem_le (mixed_bind mu k) (mixed_bind mu h) }.",
@@ -74,18 +74,18 @@
     "theories/Semantics.v": "From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment. From PTree.Semantics Require Import TreeTransitionSoundness MDPCoincidence MDPReflection. Notation head_step := HeadTransition.head_step. Notation head_bisim := HeadTransition.head_bisim. Notation trans := TreeTransition.trans. Notation tree_return_observation := TreeTransition.tree_return_observation. Notation tree_offered_event_observation := TreeTransition.tree_offered_event_observation. Notation trans_bisim := TreeTransitionBisim.trans_bisim. Notation trans_bisim_coinduction := TreeTransitionBisim.trans_bisim_coinduction. Notation trans_bisim_refl := TreeTransitionBisim.trans_bisim_refl. Notation trans_bisim_sym := TreeTransitionBisim.trans_bisim_sym. Notation trans_bisim_trans := TreeTransitionBisim.trans_bisim_trans. Notation trans_bisim_equivalence := TreeTransitionBisim.trans_bisim_equivalence. Notation mdp_head := MDPFragment.mdp_head. Notation mdp_state := MDPFragment.mdp_state. Notation peutt_trans_bisim := TreeTransitionSoundness.peutt_trans_bisim. Notation mdp_state_peutt_trans_iff := MDPCoincidence.mdp_state_peutt_trans_iff. Notation mdp_trans_bisim_iff := MDPReflection.mdp_trans_bisim_iff.",
     "theories/Eq.v": "From PTree.Eq Require Export PStruct PStrong PEutt Canonical UpToProb. Export PStructNotations PStrongNotations PEuttNotations.",
     "theories/PTreeFacts.v": "From PTree Require Export PTree Eq. From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting WellFormedness StableHittingComputation ProbabilisticTrace Bind Algebra Iter. From PTree.Eq.FreeOmega Require Export Bind Algebra Iter. From PTree.Interp Require Export Guarded Unrestricted HandlerRelation HandlerFacts State Reader Writer Exception StateFacts StatePreservation StandardFacts ExceptionFacts. From PTree.Interp.FreeOmega Require Export Atomic MDP HandlerCompletion.",
-    "theories/Eq/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Core Require Import PTreeDefinition. From PTree.Prob.Interface Require Import Measure Mixed Omega. From PTree.Eq Require Import PEutt. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Class CanonicalBehavior (MN : Type -> Type) := { behavior_frontier : Type -> Type; behavior_measure : SemanticMeasure behavior_frontier; behavior_mixed : MixedMeasure MN behavior_frontier; behavior_omega : @SemanticOmega behavior_frontier behavior_measure }. Definition canonical_peutt {E MN} `{CB : CanonicalBehavior MN} `{FC : @SemanticMeasureCoreLaws behavior_frontier behavior_measure} {A B} (RR : A -> B -> Prop) (t : ptree E MN A) (u : ptree E MN B) : Prop := @PEutt.peutt E MN behavior_frontier behavior_measure FC behavior_mixed behavior_omega A B RR t u. Module PEuttNotations. Notation \"t ≈ₚ[ RR ] u\" := (canonical_peutt RR t u) (at level 70, RR at next level, no associativity) : type_scope. Notation \"t ≈ₚ u\" := (canonical_peutt eq t u) (at level 70, no associativity) : type_scope. End PEuttNotations.",
+    "theories/Eq/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Core Require Import PTreeDefinition. From PTree.Prob.Interface Require Import Measure Mixed Omega. From PTree.Eq Require Import PEutt. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Class CanonicalBehavior (MN : Type -> Type) := { behavior_frontier : Type -> Type; behavior_measure : SemanticMeasure behavior_frontier; behavior_mixed : MixedMeasure MN behavior_frontier; behavior_omega : @SemanticOmega behavior_frontier behavior_measure }. Definition canonical_peutt {E MN} `{CB : CanonicalBehavior MN} `{FC : @SemanticMeasureCoreLaws behavior_frontier behavior_measure} {A B} (RR : A -> B -> Prop) (t : ptree E MN A) (u : ptree E MN B) : Prop := @PEutt.peutt E MN behavior_frontier behavior_measure FC behavior_mixed behavior_omega A B RR t u. Module PEuttNotations. Notation \"t \u2248\u209a[ RR ] u\" := (canonical_peutt RR t u) (at level 70, RR at next level, no associativity) : type_scope. Notation \"t \u2248\u209a u\" := (canonical_peutt eq t u) (at level 70, no associativity) : type_scope. End PEuttNotations.",
     "theories/Eq/FreeOmega/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Prob.Interface Require Import Measure Omega. Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.Measure. From PTree.Eq Require Import Canonical. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Definition observable_free_omega_behavior {MN} (NI : SemanticMeasure MN) (NO : @SemanticOmega MN NI) : CanonicalBehavior MN := {| behavior_frontier := FreeOmega MN; behavior_measure := @FreeOmegaObservableSemanticMeasure MN NI NO; behavior_mixed := @FreeOmegaMixedMeasure MN; behavior_omega := @FreeOmegaObservableSemanticOmega MN NI NO |}.",
     "theories/Eq/Backend/EnumQ.v": "From PTree.Prob.Backend.EnumQ Require Import Measure. Require Export PTree.Prob.Backend.EnumQ.Representation. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. Export EnumQ. #[global] Polymorphic Instance EnumQ_CanonicalBehavior : CanonicalBehavior EnumQ := @observable_free_omega_behavior EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega.",
     "theories/Eq/Backend/SubEnumQ.v": "From PTree.Prob.Backend.SubEnumQ Require Import Measure. From PTree.Prob.Backend.SubEnumQ Require Export Representation. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. #[global] Polymorphic Instance SubEnumQ_CanonicalBehavior : CanonicalBehavior SubEnumQ := @observable_free_omega_behavior SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega.",
     "theories/Eq/Backend/SubEnumR.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From mathcomp Require Import reals. From PTree.Prob.Backend.SubEnumR Require Export Representation. From PTree.Prob.Backend.SubEnumR Require Import Measure Coupling Omega. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. #[global] Instance SubEnumR_CanonicalBehavior (R : realType) : CanonicalBehavior (SubEnumR R) := @observable_free_omega_behavior (SubEnumR R) (SubEnumR_SemanticMeasure R) (SubEnumR_SemanticOmega R)."
   },
-  "regressions": {
-    "theories/Regression/Infrastructure/ArchitectureBoundaries.v": [
+  "clients": {
+    "tests/Imports/ArchitectureBoundaries.v": [
       "public_sample_definition",
       "public_trigger_definition"
     ],
-    "theories/Regression/Semantics/IterationFrontiers.v": [
+    "theories/Examples/Effects/IterationFrontiers.v": [
       "round_hits",
       "dead_exit_hits",
       "empty_response_frontier",
@@ -116,10 +116,10 @@
       "lost_approx_zero",
       "lost_kernel_is_zero"
     ],
-    "theories/Regression/Semantics/UpToProb.v": [
+    "tests/Rewriting/UpToProb.v": [
       "heterogeneous_known_sampling_context"
     ],
-    "theories/Regression/Semantics/PTreeUniformity.v": [
+    "tests/Capabilities/PTreeUniformity.v": [
       "full_uniformity",
       "state_fold_into_ptree",
       "exception_fold_into_ptree",
@@ -130,7 +130,7 @@
       "tree_state_uniformity",
       "high_full_uniformity"
     ],
-    "theories/Regression/Semantics/PTreeIterationAlgebra.v": [
+    "tests/Capabilities/PTreeIterationAlgebra.v": [
       "eq1_is_canonical",
       "actual_monad_rewriting",
       "actual_uniformity",
@@ -144,7 +144,7 @@
       "real_lawful_monad",
       "high_uniformity"
     ],
-    "theories/Regression/Semantics/EventfulIteration.v": [
+    "theories/Examples/Effects/EventfulIteration.v": [
       "heterogeneous_steps",
       "heterogeneous_eventful_iteration",
       "sampled_eventful_iteration",
@@ -157,7 +157,7 @@
       "real_heterogeneous_iteration",
       "high_eventful_iteration"
     ],
-    "theories/Regression/Semantics/ITreePreservation.v": [
+    "theories/Examples/Effects/ITreePreservation.v": [
       "service_source_eutt",
       "embedded_infinite_service",
       "embedded_heterogeneous_return",
@@ -175,13 +175,13 @@
       "real_lowering_eutt",
       "high_source_eutt"
     ],
-    "theories/Regression/Backend/SubEnumRBehavior.v": [
+    "theories/Examples/Probability/SubEnumRBehavior.v": [
       "real_hitting_exists",
       "real_crossed_sample_peutt",
       "real_crossed_infinite_service",
       "real_complete_step_summary"
     ],
-    "theories/Regression/Backend/SubEnumRRelational.v": [
+    "theories/Examples/Probability/SubEnumRRelational.v": [
       "flipped_twice_composition",
       "relational_bind_heterogeneous",
       "zero_empty_coupling",
@@ -192,7 +192,7 @@
       "shared_raw_projection",
       "high_shared_native_bind"
     ],
-    "theories/Regression/Backend/SubEnumR.v": [
+    "theories/Examples/Validation/SubEnumR.v": [
       "real_sqrt_coin_probability",
       "real_sqrt_coin_total",
       "real_bind_valid",
@@ -201,7 +201,7 @@
       "real_delayed_dirac_valid",
       "real_unbounded_retry_valid"
     ],
-    "theories/Regression/Probability/GenericQuotientValidation.v": [
+    "theories/Examples/Validation/GenericQuotientValidation.v": [
       "real_heterogeneous_invalid_middle",
       "generic_real_middle_is_invalid",
       "generic_real_raw_constraints_through_invalid",
@@ -215,10 +215,9 @@
       "real_null_sample_lub_qlift",
       "generic_real_null_nonmonotone_chain",
       "generic_real_retry_equality_transports_validity",
-      "generic_real_large_carriers",
-      "generic_rational_tests_agree_with_DS5"
+      "generic_real_large_carriers"
     ],
-    "theories/Regression/Probability/GenericFreeOmegaValidation.v": [
+    "theories/Examples/Validation/GenericFreeOmegaValidation.v": [
       "generic_q_joint_without_legacy",
       "option_sample_denotes",
       "generic_null_bad_sample",
@@ -229,10 +228,10 @@
       "generic_validity_proof_independent",
       "generic_high_result"
     ],
-    "theories/Regression/Backend/BackendCapabilities.v": [
+    "tests/Capabilities/BackendCapabilities.v": [
       "mathcomp_profile_empty_carrier_joint"
     ],
-    "theories/Regression/Backend/CouplingRealization.v": [
+    "theories/Examples/Probability/CouplingRealization.v": [
       "subenumQ_function_coupling_realizes",
       "subenumQ_structural_lub_realizes",
       "subenumQ_relational_constant_limits_realize",
@@ -248,7 +247,7 @@
       "embedded_node_quotient_gluing",
       "independent_copies_fail_fiber"
     ],
-    "theories/Regression/Backend/EnumQMeasureRegression.v": [
+    "theories/Examples/Probability/EnumQMeasureRegression.v": [
       "reg_fair_reordered_eqenum",
       "reg_fair_split_eqenum",
       "reg_reordering_not_repr_eq",
@@ -257,7 +256,7 @@
       "reg_split_mass_meas_eq",
       "reg_split_mass_lift_eq"
     ],
-    "theories/Regression/Backend/ExtendedEnumQ.v": [
+    "theories/Examples/Probability/ExtendedEnumQ.v": [
       "extended_enumQ_keeps_weight_two",
       "extended_enumQ_zero_times_infinity",
       "growing_weight_increasing",
@@ -267,7 +266,7 @@
       "weight_two_preserves_monotone_limit",
       "zero_weight_needs_no_monotonicity"
     ],
-    "theories/Regression/Probability/FreeOmegaEscapingMass.v": [
+    "theories/Examples/Counterexamples/Validation/FreeOmegaEscapingMass.v": [
       "qsym",
       "big_observes",
       "small_observes",
@@ -295,7 +294,7 @@
       "escaped_row_not_observable",
       "unrestricted_observation_rule_rejected"
     ],
-    "theories/Regression/Probability/FreeOmegaLimitSafety.v": [
+    "theories/Examples/Counterexamples/Validation/FreeOmegaLimitSafety.v": [
       "source_is_subprobability",
       "different_masses",
       "big_mass_one",
@@ -310,7 +309,7 @@
       "support_and_limits_alone_do_not_diagonalize",
       "pointwise_limits_alone_do_not_integrate"
     ],
-    "theories/Regression/Probability/FreeOmegaUpperContracts.v": [
+    "theories/Examples/Validation/FreeOmegaUpperContracts.v": [
       "upper_big_mass",
       "upper_small_mass",
       "upper_escaped_row_mass",
@@ -334,8 +333,7 @@
       "quotient_raw_choice_not_fair",
       "rewritten_random_walk_upper_mass"
     ],
-    "theories/Regression/Backend/NativeReflection.v": [
-      "native_reflection_requires_left_unit",
+    "theories/Examples/Counterexamples/NativeReflection.v": [
       "native_joints",
       "quotient_forgets_extra_attenuation",
       "native_coupling_keeps_mass",
@@ -352,11 +350,9 @@
       "round_path_relation_all",
       "attenuated_round_quotient_marginal",
       "attenuated_round_not_native",
-      "attenuated_round_complete_hitting",
-      "subenumQ_native_relational_left_unit",
-      "mathcomp_native_relational_left_unit"
+      "attenuated_round_complete_hitting"
     ],
-    "theories/Regression/Backend/SubEnumQRegression.v": [
+    "theories/Examples/Probability/SubEnumQRegression.v": [
       "reg_fair_subprob",
       "reg_fair_split_subprob",
       "subenumQ_fair_split_lift",
@@ -367,17 +363,17 @@
       "subenumQ_direct_coin_probabilistic",
       "subenumQ_two_coins_bounded"
     ],
-    "theories/Regression/Backend/UnifiedFrontierEnumQ.v": [
+    "tests/Universe/UnifiedFrontierEnumQ.v": [
       "reg_split_program_unified_frontier",
       "unified_reg_split_extensional"
     ],
-    "theories/Regression/Fixtures/FreeOmegaSamples.v": [
+    "theories/Examples/Validation/FreeOmegaSamples.v": [
       "geometric_prefix_increasing",
       "geometric_prefix_enumerates",
       "geometric_enumerates_all",
       "geometric_valid"
     ],
-    "theories/Regression/Infrastructure/CapabilityBoundaries.v": [
+    "tests/Imports/CapabilityBoundaries.v": [
       "complete_bridge_without_laws",
       "structural_interp_without_ae",
       "structural_translate_without_ae",
@@ -385,7 +381,7 @@
       "interp_cofinal_without_ae",
       "mdp_interp_without_aelift"
     ],
-    "theories/Regression/Internal/CorrelatedInternalRounds.v": [
+    "theories/Examples/Internal/CorrelatedInternalRounds.v": [
       "correlated_kernel_left_structural",
       "correlated_kernel_right_structural",
       "correlated_kernel_spec",
@@ -411,7 +407,7 @@
       "retry_round_complete_coupling",
       "retry_left_hitting_upper"
     ],
-    "theories/Regression/Internal/CostedRounds.v": [
+    "theories/Examples/Internal/CostedRounds.v": [
       "alternating_native_marginal",
       "alternating_rounds_complete_hitting",
       "alternating_round_is_not_unary",
@@ -421,7 +417,7 @@
       "padding_right_marginal",
       "padding_via_costed_coinduction"
     ],
-    "theories/Regression/Internal/CouplingReferences.v": [
+    "theories/Examples/Internal/CouplingReferences.v": [
       "fair_discard_node",
       "fair_discard_same_mass",
       "reference_coin_quotient_discard",
@@ -436,11 +432,11 @@
       "discarded_coin_cuts_have_no_references",
       "discarded_coin_rounds_have_no_reference_kernels"
     ],
-    "theories/Regression/Internal/FiniteInternalNative.v": [
+    "theories/Examples/Internal/FiniteInternalNative.v": [
       "dependent_compression_round_native",
       "subenumQ_compression_measure_bounded"
     ],
-    "theories/Regression/Internal/FiniteInternalPlan.v": [
+    "theories/Examples/Internal/FiniteInternalPlan.v": [
       "delay_path_steps",
       "delay_path_residual",
       "nonuniform_plan_unbounded",
@@ -454,7 +450,7 @@
       "killed_plan_is_valid",
       "completed_paths_do_not_preserve_prefix_mass"
     ],
-    "theories/Regression/Internal/FiniteInternalRound.v": [
+    "theories/Examples/Internal/FiniteInternalRound.v": [
       "return_round_cost",
       "visible_round_cost",
       "visible_round_target",
@@ -467,7 +463,7 @@
       "zero_guard_measure_raw",
       "nonuniform_round_cost"
     ],
-    "theories/Regression/Internal/HiddenRandomState.v": [
+    "theories/Examples/Internal/HiddenRandomState.v": [
       "random_state_target_marginal",
       "random_state_kernel_marginal",
       "random_state_complete_hitting",
@@ -476,7 +472,7 @@
       "hidden_step_has_no_structural_reference",
       "zero_hidden_sample_rejected"
     ],
-    "theories/Regression/Internal/Kernel.v": [
+    "theories/Examples/Internal/Kernel.v": [
       "spin_returning_completion_step",
       "spinning_approx_zero",
       "two_stage_completion_step",
@@ -491,10 +487,10 @@
       "state_truncation_recovers_complete_hitting",
       "no_uniform_state_cutoff"
     ],
-    "theories/Regression/Infrastructure/MathCompUniverse.v": [
+    "tests/Imports/MathCompUniverse.v": [
       "self_nested_sampling"
     ],
-    "theories/Regression/Internal/NativeRecovery.v": [
+    "theories/Examples/Internal/NativeRecovery.v": [
       "fair_paths_normalized",
       "split_coin_native_joint_round",
       "direct_path_normalized",
@@ -511,7 +507,7 @@
       "null_noninjective_recovery_reconstructs",
       "discarded_coin_general_pullback"
     ],
-    "theories/Regression/Internal/PairedFiniteCompression.v": [
+    "theories/Examples/Internal/PairedFiniteCompression.v": [
       "joint_spec",
       "left_cut_valid",
       "right_cut_valid",
@@ -526,7 +522,7 @@
       "correlated_left_cut_has_no_unary_realization",
       "paired_compression_preserves_left_hitting"
     ],
-    "theories/Regression/Internal/ResidualFinite.v": [
+    "theories/Examples/Internal/ResidualFinite.v": [
       "residual_retry_cut1_valid",
       "residual_retry_cut2_valid",
       "residual_retry_cuts_structural",
@@ -536,7 +532,7 @@
       "retry_pairs_not_reflexive",
       "retry_pairs_peutt_without_equivalence"
     ],
-    "theories/Regression/Internal/ResidualJointCoinduction.v": [
+    "theories/Examples/Internal/ResidualJointCoinduction.v": [
       "retry_prefix_cut",
       "retry_roots_guard",
       "retry_noise_cut_not_structural",
@@ -546,14 +542,14 @@
       "eventful_retry_discarded_bits",
       "always_failing_retry_discarded_bits"
     ],
-    "theories/Regression/Probability/ConditionalResampling.v": [
+    "theories/Examples/Probability/ConditionalResampling.v": [
       "split_coin_conditionals",
       "paired_tree_state_resampling",
       "tree_continuation_resampling",
       "retry_conditional_reconstruct",
       "unbounded_retry_resampling"
     ],
-    "theories/Regression/Probability/CorrelatedSampleAlgebra.v": [
+    "theories/Examples/Probability/CorrelatedSampleAlgebra.v": [
       "exchange_left_cut_valid",
       "exchange_right_cut_valid",
       "exchange_residual_references",
@@ -563,7 +559,7 @@
       "exchange_fair_retry_equivalent",
       "exchange_fair_residuals_not_structural"
     ],
-    "theories/Regression/Probability/CountableCoupling.v": [
+    "theories/Examples/Validation/CountableCoupling.v": [
       "successor_plan",
       "subprobability_tail_is_actual_mass",
       "duplicate_decode_joint",
@@ -585,14 +581,14 @@
       "geometric_successor_plan",
       "geometric_successor_joint_exists"
     ],
-    "theories/Regression/Probability/EnumQDisintegration.v": [
+    "theories/Examples/Probability/EnumQDisintegration.v": [
       "conditional_latent_coin",
       "absent_fiber_zero_mass",
       "latent_coin_reconstruction",
       "zero_joint_reconstruction",
       "function_state_disintegration"
     ],
-    "theories/Regression/Probability/FiniteRepresentation.v": [
+    "theories/Examples/Probability/FiniteRepresentation.v": [
       "duplicate_raw_preserved",
       "weighting_mass_two",
       "overweight_not_subdistribution",
@@ -612,7 +608,7 @@
       "real_weight_without_rational_encoding",
       "high_finite_bind"
     ],
-    "theories/Regression/Probability/FiniteTransport.v": [
+    "theories/Examples/Probability/FiniteTransport.v": [
       "neighbors_true",
       "neighbors_false",
       "split_capacity_hall",
@@ -623,7 +619,7 @@
       "identity_edges_fail_hall",
       "zero_transport_empty_source"
     ],
-    "theories/Regression/Probability/FreeOmegaDomain.v": [
+    "theories/Examples/Validation/FreeOmegaDomain.v": [
       "alternating_upper_test",
       "alternating_bool_not_admissible",
       "alternating_has_no_domain_model",
@@ -644,7 +640,7 @@
       "unbounded_retry_admissible",
       "unbounded_retry_denotes_lub"
     ],
-    "theories/Regression/Probability/FreeOmegaSoundness.v": [
+    "theories/Examples/Validation/FreeOmegaSoundness.v": [
       "empty_carrier_joint",
       "type_carrier_joint",
       "constant_to_invalid",
@@ -676,7 +672,7 @@
       "qlift_alone_still_not_admissible",
       "type_valued_qlift_joint"
     ],
-    "theories/Regression/Probability/IrrationalHitting.v": [
+    "theories/Examples/Validation/IrrationalHitting.v": [
       "continue_weight_nonnegative",
       "continue_weight_le_one",
       "stop_weight_nonnegative",
@@ -700,7 +696,7 @@
       "pi_canonical_hitting_mass",
       "pi_canonical_hitting_irrational"
     ],
-    "theories/Regression/Probability/OmegaVal.v": [
+    "theories/Examples/Validation/OmegaVal.v": [
       "bool_indicator_test",
       "distinct_diracs",
       "bottom_is_not_dirac",
@@ -715,7 +711,7 @@
       "evaluators_still_differ",
       "high_right_unit"
     ],
-    "theories/Regression/Probability/OmegaValMeasure.v": [
+    "theories/Examples/Validation/OmegaValMeasure.v": [
       "bottom_is_standard_probability",
       "bottom_mass_one",
       "dirac_missing_mass_zero",
@@ -726,7 +722,7 @@
       "arbitrary_standard_probability_recovered",
       "empty_carrier_probability_is_bottom"
     ],
-    "theories/Regression/Probability/RealTransport.v": [
+    "theories/Examples/Validation/RealTransport.v": [
       "diagonal_neighbors",
       "diagonal_real_mass",
       "sqrt_weight_transport",
@@ -736,7 +732,7 @@
       "zero_demand_empty_target",
       "positive_demand_empty_target_impossible"
     ],
-    "theories/Regression/Probability/SubEnumRJointRealization.v": [
+    "theories/Examples/Validation/SubEnumRJointRealization.v": [
       "retry_left_modelable",
       "retry_right_modelable",
       "retry_complement_qlift",
@@ -747,7 +743,7 @@
       "real_partial_joint_not_normalized",
       "real_joint_large_heterogeneous"
     ],
-    "theories/Regression/Infrastructure/FreeOmegaNotation.v": [
+    "tests/Notation/FreeOmegaNotation.v": [
       "delimited_return",
       "return_expansion",
       "zero_expansion",
@@ -764,7 +760,7 @@
       "program_bind_unchanged",
       "program_as_value"
     ],
-    "theories/Regression/Probability/StableHittingDomain.v": [
+    "theories/Examples/Validation/StableHittingDomain.v": [
       "silent_hitting_bottom",
       "changing_silent_state_bottom",
       "native_loss_hitting_bottom",
@@ -775,14 +771,14 @@
       "real_native_loss_auto",
       "real_noncanonical_witness_auto"
     ],
-    "theories/Regression/Semantics/AtomicInterp.v": [
+    "theories/Examples/Effects/AtomicInterp.v": [
       "delayed_response_hitting",
       "atomic_preserves_correlated_pair",
       "swap_event_involution",
       "swapping_preserves",
       "two_query_handler_not_atomic"
     ],
-    "theories/Regression/Semantics/CanonicalPartialDivergence.v": [
+    "theories/Examples/Effects/CanonicalPartialDivergence.v": [
       "observe_canonical_spin",
       "canonical_spin_stable_hitting_zero",
       "canonical_spin_nonempty_trace_query_zero",
@@ -794,7 +790,7 @@
       "half_return_half_diverge_not_peutt_ret",
       "closure_spin_not_peutt_return"
     ],
-    "theories/Regression/Semantics/GuardedInterp.v": [
+    "theories/Examples/Effects/GuardedInterp.v": [
       "two_query_handler_guarded",
       "two_query_peutt_preservation",
       "two_query_compositionality_contrast",
@@ -806,7 +802,7 @@
       "returning_handler_not_guarded",
       "guarded_interp_heterogeneous"
     ],
-    "theories/Regression/Semantics/HeadTransition.v": [
+    "theories/Examples/Transitions/HeadTransition.v": [
       "sampled_successor_step",
       "terminal_has_no_step",
       "action_event_is_not_erased",
@@ -820,7 +816,7 @@
       "divergent_response_step",
       "divergent_response_has_empty_support"
     ],
-    "theories/Regression/Semantics/InterpExposure.v": [
+    "theories/Examples/Counterexamples/InterpExposure.v": [
       "two_query_handler_first_hitting",
       "exposure_last_hitting",
       "exposure_second_hitting",
@@ -834,7 +830,7 @@
       "two_query_interp_not_trans_bisim",
       "trans_bisim_interp_counterexample"
     ],
-    "theories/Regression/Semantics/MDPEncoding.v": [
+    "theories/Examples/Transitions/MDPEncoding.v": [
       "raw_labelled_bisim_iff",
       "represented_positive_pair",
       "represented_probability_separation",
@@ -855,7 +851,7 @@
       "unlabelled_counter_states_bisimilar",
       "unlabelled_counter_encodings_equivalent"
     ],
-    "theories/Regression/Semantics/MDPCoincidence.v": [
+    "theories/Examples/Transitions/MDPCoincidence.v": [
       "delay_transition_bisim",
       "delayed_decision_peutt_from_transitions",
       "distribution_successor_coincidence",
@@ -863,7 +859,7 @@
       "terminal_fragment_coincidence",
       "strictness_pair_outside_joint_fragment"
     ],
-    "theories/Regression/Semantics/MDPFragment.v": [
+    "theories/Examples/Transitions/MDPFragment.v": [
       "dirac_head_total",
       "fair_heads_total",
       "leaf_head_mdp",
@@ -877,7 +873,7 @@
       "service_head_mdp",
       "infinite_service_mdp"
     ],
-    "theories/Regression/Semantics/MDPInterp.v": [
+    "theories/Examples/Transitions/MDPInterp.v": [
       "flip_reply_involution",
       "request_sample_reply_stays_mdp",
       "infinite_service_stays_mdp",
@@ -903,7 +899,7 @@
       "heterogeneous_infinite_service_transition",
       "heterogeneous_reply_label"
     ],
-    "theories/Regression/Semantics/PEuttAlgebra.v": [
+    "tests/Rewriting/PEuttAlgebra.v": [
       "canonical_bind_setoid_rewrite",
       "eventful_heterogeneous_bind",
       "canonical_fmap_setoid_rewrite",
@@ -912,7 +908,7 @@
       "canonical_iter_codiagonal_regression",
       "canonical_translate_setoid_rewrite"
     ],
-    "theories/Regression/Semantics/ProbabilisticRelationHierarchy.v": [
+    "theories/Examples/Effects/ProbabilisticRelationHierarchy.v": [
       "behavioral_equivalence_regression",
       "tau_before_divergence",
       "tau_ret_not_pstrong",
@@ -925,17 +921,17 @@
       "tau_bind_context_rewrite",
       "tau_fmap_context_rewrite"
     ],
-    "theories/Regression/Semantics/PublicSemanticFacade.v": [
+    "tests/Imports/PublicSemanticFacade.v": [
       "public_peutt_notation",
       "peutt_notation_homogeneous",
       "peutt_notation_heterogeneous"
     ],
-    "theories/Regression/Semantics/StableHittingComputation.v": [
+    "theories/Examples/Effects/StableHittingComputation.v": [
       "dirac_tau_compute",
       "nonuniform_tau_depth_compute",
       "sampled_visible_head_compute"
     ],
-    "theories/Regression/Semantics/TreeTransition.v": [
+    "theories/Examples/Transitions/TreeTransition.v": [
       "return_observation",
       "return_offers_nothing",
       "return_action_zero",
@@ -953,7 +949,7 @@
       "mixture_true_mass",
       "mixture_false_mass"
     ],
-    "theories/Regression/Semantics/TreeTransitionBisim.v": [
+    "theories/Examples/Transitions/TreeTransitionBisim.v": [
       "generic_heterogeneous_return_reflection",
       "successor_relation_is_raw_tree_candidate",
       "return_reflexive",
@@ -969,13 +965,13 @@
       "generic_transition_rewrite",
       "concrete_transition_equivalence"
     ],
-    "theories/Regression/Semantics/TreeTransitionSoundness.v": [
+    "theories/Examples/Transitions/TreeTransitionSoundness.v": [
       "delayed_mixture_peutt",
       "delayed_mixture_transition_bisim",
       "delayed_mixture_action_coupling",
       "related_returns_transition_bisim"
     ],
-    "theories/Regression/Semantics/TreeTransitionStrictness.v": [
+    "theories/Examples/Counterexamples/TreeTransitionStrictness.v": [
       "correlation_hitting",
       "correlation_returns",
       "correlation_offers",
@@ -991,7 +987,7 @@
       "correlated_response_trans_bisim_reverse",
       "correlated_response_trans_bisim_roundtrip"
     ],
-    "theories/Regression/Backend/MathComp.v": [
+    "tests/MathComp.v": [
       "ret_reflexivity",
       "eventful_reflexivity",
       "retry_hitting",
@@ -1023,18 +1019,18 @@
       "complete_step_summary",
       "return_only_lfp"
     ],
-    "theories/Regression/Backend/MathCompOmega.v": [
+    "theories/Examples/Probability/MathCompOmega.v": [
       "null_branches_need_no_continuity",
       "relation_survives_kernel_bind",
       "noninjective_map_reflection",
       "empty_map_reflection"
     ],
-    "theories/Regression/Backend/MathCompOrder.v": [
+    "theories/Examples/Probability/MathCompOrder.v": [
       "cemetery_mass_not_monotone",
       "partial_sampling_returned_mass",
       "partial_sampling_bind_monotone"
     ],
-    "theories/Regression/Backend/FiniteLists.v": [
+    "theories/Examples/Probability/FiniteLists.v": [
       "native_index_uses_shared",
       "native_value_index_uses_shared",
       "positions_retain_zero_and_duplicates",
@@ -1078,7 +1074,7 @@
       "high_carrier_native",
       "high_carrier_bridge"
     ],
-    "theories/Regression/Backend/FiniteSupport.v": [
+    "theories/Examples/Probability/FiniteSupport.v": [
       "function_values_have_indicator_support",
       "duplicate_zero_entries",
       "negative_cancellation_has_zero_atom",
@@ -1086,33 +1082,33 @@
       "zero_atom_without_nonnegative_cannot_kill_entries",
       "high_carrier_indicator_support"
     ],
-    "theories/Regression/ImportOrder/CanonicalBehavior.v": [
+    "tests/ImportOrder/CanonicalBehavior.v": [
       "rational_weighted_route",
       "rational_subprob_route",
       "real_subprob_route",
       "weighted_bind_route",
       "real_bind_route"
     ],
-    "theories/Regression/ImportOrder/CanonicalBehaviorStructuralFirst.v": [
+    "tests/ImportOrder/CanonicalBehaviorStructuralFirst.v": [
       "rational_weighted_route",
       "rational_subprob_route",
       "real_subprob_route",
       "weighted_bind_route",
       "real_bind_route"
     ],
-    "theories/Regression/ImportOrder/CanonicalBehaviorNativeFirst.v": [
+    "tests/ImportOrder/CanonicalBehaviorNativeFirst.v": [
       "rational_weighted_route",
       "rational_subprob_route",
       "real_subprob_route",
       "weighted_bind_route",
       "real_bind_route"
     ],
-    "theories/Regression/Infrastructure/StructuralRegistry.v": [
+    "tests/Imports/StructuralRegistry.v": [
       "shared_mixed_still_global",
       "internal_core_available",
       "internal_omega_available"
     ],
-    "theories/Regression/Infrastructure/PublicBehavior.v": [
+    "tests/Imports/PublicBehavior.v": [
       "public_heterogeneous_bind",
       "public_heterogeneous_bind_explicit",
       "public_reflexivity",
@@ -1125,7 +1121,7 @@
       "public_continuation_setoid",
       "public_fmap_setoid"
     ],
-    "theories/Regression/Probability/FreeOmegaOrder.v": [
+    "theories/Examples/Probability/FreeOmegaOrder.v": [
       "constant_lub_quotient_equal",
       "constant_lub_not_approx_forward",
       "constant_lub_not_approx_backward",
@@ -1133,7 +1129,7 @@
       "sampled_zero_quotient_equal",
       "sampled_zero_not_approx_bottom"
     ],
-    "theories/Regression/Probability/RelationalLimit.v": [
+    "theories/Examples/Counterexamples/Validation/RelationalLimit.v": [
       "arbitrary_nat_relational_limit",
       "successor_limit",
       "empty_relation_zero_limit",
@@ -1144,7 +1140,7 @@
       "noncoherent_chain_has_limit_joint",
       "mathcomp_coherent_joint_limit"
     ],
-    "theories/Regression/Execution/Runner.v": [
+    "theories/Examples/Execution/Runner.v": [
       "returned_needs_no_fuel",
       "sampling_consumes_one_token",
       "missing_mass_is_not_retry",
@@ -1170,7 +1166,7 @@
       "timeout_has_no_completed_path",
       "typed_result_agrees_with_existing_runner"
     ],
-    "theories/Regression/Execution/RationalSampling.v": [
+    "theories/Examples/Execution/RationalSampling.v": [
       "zero_entry_never_selected",
       "upper_endpoint_belongs_to_next_interval",
       "partial_mass_not_normalized",
@@ -1189,13 +1185,13 @@
       "last_valid_ticket_is_loss",
       "bound_is_checked"
     ],
-    "theories/Regression/Execution/StateIteration.v": [
+    "theories/Examples/Execution/StateIteration.v": [
       "eliminate_state_before_or_after_iter",
       "iter_replay_threads_updated_state",
       "transformed_iter_has_same_replay",
       "eventful_probabilistic_iter_commutes"
     ],
-    "theories/Regression/Semantics/UnrestrictedInterp.v": [
+    "theories/Examples/Effects/UnrestrictedInterp.v": [
       "handler_return_is_internal",
       "heterogeneous_elimination",
       "infinitely_many_eliminated_events",
@@ -1203,7 +1199,7 @@
       "partial_mixed_handler",
       "real_arbitrary_handler"
     ],
-    "theories/Regression/Semantics/StatePreservation.v": [
+    "theories/Examples/Effects/StatePreservation.v": [
       "weak_source_preserved",
       "actual_state_setoid_rewrite",
       "heterogeneous_state_result",
@@ -1215,7 +1211,7 @@
       "state_update_is_not_reordered",
       "real_state_preservation"
     ],
-    "theories/Regression/Semantics/StandardEffects.v": [
+    "theories/Examples/Effects/StandardEffects.v": [
       "reader_heterogeneous",
       "writer_heterogeneous",
       "exception_heterogeneous",
@@ -1229,14 +1225,14 @@
       "writer_forwards_event",
       "infinite_exception_weak_rewrite"
     ],
-    "theories/Regression/Semantics/StateFold.v": [
+    "theories/Examples/Effects/StateFold.v": [
       "state_fold_commutes",
       "sample_keeps_separate_algebra",
       "state_get_fold",
       "unbounded_counter_fold_agrees",
       "bare_iterator_is_not_uniform"
     ],
-    "theories/Regression/Infrastructure/PublicHandlers.v": [
+    "tests/Imports/PublicHandlers.v": [
       "replacement_not_structural",
       "public_handler_replacement",
       "returning_handlers_on_infinite_source",
@@ -1248,7 +1244,7 @@
       "public_case_beta",
       "public_bimap_replacement"
     ],
-    "theories/Regression/Semantics/ReaderWriterFold.v": [
+    "theories/Examples/Effects/ReaderWriterFold.v": [
       "reader_target_monad",
       "reader_target_uniform",
       "writer_target_monad",
@@ -1263,7 +1259,7 @@
       "writer_high_square",
       "reader_high_square"
     ],
-    "theories/Regression/Semantics/ExceptionFold.v": [
+    "theories/Examples/Effects/ExceptionFold.v": [
       "exception_target_monad",
       "exception_target_uniform",
       "exception_fold_commutes",
@@ -1273,7 +1269,7 @@
       "recursive_exception_square",
       "high_exception_square"
     ],
-    "theories/Regression/Semantics/EffectAlgebra.v": [
+    "theories/Examples/Effects/EffectAlgebra.v": [
       "reader_repeated",
       "state_restore",
       "state_overwrite",
@@ -1291,7 +1287,7 @@
       "real_state_draw_swap",
       "high_reader"
     ],
-    "theories/Regression/Semantics/ITreeBridge.v": [
+    "theories/Examples/Effects/ITreeBridge.v": [
       "sample_is_native",
       "native_observation",
       "source_tau",
@@ -1308,7 +1304,7 @@
       "real_handler_bind_client",
       "real_right_identity"
     ],
-    "theories/Regression/Execution/FiniteDistribution.v": [
+    "theories/Examples/Validation/FiniteDistribution.v": [
       "first_attempt_outcomes",
       "two_attempt_outcomes",
       "actual_runner_two_attempts",
@@ -1323,7 +1319,7 @@
       "arbitrary_fuel_hitting",
       "unbounded_retry_limit"
     ],
-    "theories/Regression/Probability/SubEnumRNativeReflection.v": [
+    "theories/Examples/Validation/SubEnumRNativeReflection.v": [
       "mapped_native_reflection",
       "duplicate_partial_decoded_joint",
       "empty_native_joint",
@@ -1333,13 +1329,9 @@
       "validated_mdp_trans_bisim_iff",
       "type_valued_native_joint"
     ],
-    "theories/Regression/Execution/FactoryController.v": [
-      "infinite_source_refinement",
-      "interpreted_refinement",
-      "full_program_calculation",
+    "theories/Examples/Execution/FactoryController.v": [
       "full_program_target_zero",
       "full_program_target_one",
-      "raw_factory_nodes_are_probabilities",
       "next_fast_after_state",
       "next_safe_after_state",
       "pass_increments_and_ships",
@@ -1347,7 +1339,7 @@
       "jam_requires_alarm_and_reset",
       "initial_offered_order"
     ],
-    "theories/Regression/Semantics/FreeOmegaRewriting.v": [
+    "tests/Rewriting/FreeOmegaRewriting.v": [
       "imported_bind_proper",
       "imported_bind_rewrite",
       "imported_bind_continuation_rewrite",
@@ -1360,20 +1352,18 @@
       "imported_real_iter_rewrite",
       "imported_rational_iter_rewrite"
     ],
-    "theories/Regression/Probability/KleisliIteration.v": [
+    "theories/Examples/Validation/KleisliIteration.v": [
       "domain_retry_least_is_bottom",
       "rational_loop_denotes_lfp",
       "rational_loop_modelable"
     ],
-    "theories/Regression/Semantics/GenericAlgebra.v": [
+    "tests/Rewriting/GenericAlgebra.v": [
       "generic_left_unit_minimal",
       "generic_prob_bind_minimal",
       "generic_vis_map_minimal",
       "generic_heterogeneous_endpoint_rewrite",
       "generic_vis_context_rewrite",
       "generic_prob_context_rewrite",
-      "free_omega_bind_Proper",
-      "free_omega_fmap_Proper",
       "free_omega_frontier_ae_lift",
       "free_omega_frontier_dirac_ae",
       "free_omega_sample_bind",
@@ -1381,10 +1371,13 @@
       "generic_heterogeneous_ret_iff",
       "real_guarded_interp"
     ],
-    "theories/Regression/Semantics/RelationalConsumers.v": [
+    "tests/Capabilities/RelationalConsumers.v": [
       "free_omega_eventful_iter",
       "completion_strong",
       "completion_assoc"
+    ],
+    "theories/Prob/FreeOmega/NativeCoupling.v": [
+      "native_reflection_requires_left_unit"
     ]
   }
 }

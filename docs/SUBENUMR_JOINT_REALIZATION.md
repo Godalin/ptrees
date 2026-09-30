@@ -61,7 +61,7 @@ Two corollaries expose the result:
 
 ## Checked examples and architecture
 
-`Regression/Probability/SubEnumRJointRealization.v` uses the existing retry
+`Examples/Validation/SubEnumRJointRealization.v` uses the existing retry
 prefixes driven by `sqrt(1/2)`-weighted native coins. Their increasing Lub and
 its Boolean-complement output are modelable and qlift-related; the final
 theorem produces a relational external joint for this unbounded computation.
@@ -88,7 +88,7 @@ python3 -m unittest discover -s tools -p 'test_*.py'
 opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Prob.Backend.SubEnumR.FreeOmega.CountableSupport \
   -norec PTree.Prob.Backend.SubEnumR.FreeOmega.JointRealization \
-  -norec PTree.Regression.Probability.SubEnumRJointRealization
+  -norec PTree.Examples.Validation.SubEnumRJointRealization
 ```
 
 The compiled realization audit checks 18 new endpoints against the existing

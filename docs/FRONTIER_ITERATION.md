@@ -91,7 +91,7 @@ Neither is silently converted to the other for arbitrary frontier measures.
 - `Interp/FreeOmega/AbsorbingIteration.complete_iteration_hitting` applies
   the generic theorem, with `FOLub` of complete rounds as the explicit
   frontier. It is native-parametric, not SubEnumQ-specific.
-- `Regression/Semantics/IterationFrontiers` constructs a coinductive step
+- `Examples/Effects/IterationFrontiers` constructs a coinductive step
   that may search through arbitrarily many natural indices before exposing
   retry, completion or Vis. Its supplied step frontier is itself a `FOLub`
   of primitive approximants, not a native return distribution. The coin is

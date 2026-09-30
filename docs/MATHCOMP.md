@@ -3,7 +3,7 @@
 ## Names and entry points
 
 The PTree assembly is `Eq/Backend/MathComp.v`; its program regressions are in
-`Regression/Backend/MathComp.v`. Import the assembly explicitly with
+`tests/MathComp.v`. Import the assembly explicitly with
 `From PTree.Eq.Backend Require Import MathComp.` Neither file belongs to the
 safe aggregate. Both retain the existing, exact Gate M exception.
 
@@ -101,7 +101,7 @@ valid. This is a checked mathematical result, not an unchecked PTree argument.
 
 `Examples/MathCompPrograms.v` defines guarded retry and nested-retry syntax
 with normal checking; it does not instantiate a recursive measure of heads.
-Its client `Regression/Backend/MathComp.v` performs that instantiation:
+Its client `tests/MathComp.v` performs that instantiation:
 
 - `retry_hitting`: any positive success probability yields the Dirac
   returned head; existence comes from the proved native omega laws.
@@ -141,7 +141,7 @@ load the later omega module.
 Only these two exact files may contain one `Local Unset Universe Checking.`:
 
 - `Eq/Backend/MathComp.v`
-- `Regression/Backend/MathComp.v`
+- `tests/MathComp.v`
 
 The allowlist is unchanged. No native mathematics, safe example, Domain,
 generic theory or public facade may use the bypass or depend transitively on
@@ -171,9 +171,9 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Prob.Backend.MathComp.OmegaLaws \
   -norec PTree.Prob.Backend.MathComp.BindLaws \
   -norec PTree.Prob.Backend.MathComp.Retry \
-  -norec PTree.Regression.Backend.MathCompOmega \
+  -norec PTree.Examples.Probability.MathCompOmega \
   -norec PTree.Examples.MathCompPrograms \
-  -norec PTree.Regression.Infrastructure.AllImports
+  -norec PTree.Tests.AllImports
 ```
 
 The frozen 505 safe compiled contracts and logical-axiom whitelist are not

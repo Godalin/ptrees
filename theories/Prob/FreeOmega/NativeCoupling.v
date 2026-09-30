@@ -66,3 +66,21 @@ Proof.
     as [joint Hjoint].
   exact (semantic_coupling_sound Hjoint).
 Qed.
+
+Section NecessaryLaw.
+Context {MN : Type -> Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NO : @SemanticOmega MN NI}
+  `{ND : @SemanticMeasureDiracAELaws MN NI}
+  `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}.
+
+(** Even IDENTITY decoders force a native relational left-unit law.
+    This is a necessary condition, not a sufficient reflection package. *)
+Theorem native_reflection_requires_left_unit {A B}
+    (reflect : forall mu nu : MN B,
+      free_omega_qlift eq (FOSample mu (fun y => FORet y))
+        (FOSample nu (fun y => FORet y)) -> sem_lift eq mu nu)
+    (x : A) (k : A -> MN B) :
+  sem_lift eq (sem_bind (sem_ret x) k) (k x).
+Proof. apply reflect, free_omega_sample_bind_ret_l. Qed.
+End NecessaryLaw.

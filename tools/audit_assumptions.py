@@ -5,6 +5,7 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from rocq_paths import source_path, LOADPATH
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "docs/CONTRACTS.json"
@@ -77,7 +78,7 @@ def declaration_module(endpoint):
     parts = endpoint.split('.')
     if parts[0] == 'PTree':
         for end in range(len(parts) - 1, 1, -1):
-            source = ROOT.joinpath('theories', *parts[1:end]).with_suffix('.v')
+            source = source_path('/'.join(parts[1:end]), ROOT)
             if source.is_file():
                 return '.'.join(parts[:end])
     # Unknown/foreign references still reach Rocq's checked error protocol.
@@ -94,7 +95,7 @@ def query(endpoints, modules=None):
             commands.append(f'Goal True. idtac "AUDIT_{kind}_{i}". Abort.')
             if command:
                 commands.append(command + ".")
-    result = subprocess.run(["opam", "exec", "--", "coqtop", "-quiet", "-R", "_build/default/theories", "PTree"],
+    result = subprocess.run(["opam", "exec", "--", "coqtop", "-quiet", *LOADPATH],
                             input='\n'.join(commands)+'\n', text=True, capture_output=True, cwd=ROOT)
     return parse(result, endpoints)
 

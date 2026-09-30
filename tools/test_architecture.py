@@ -1,9 +1,20 @@
 """Ownership and transitive architecture boundary contracts."""
 import unittest
 import audit_architecture as architecture
+from rocq_paths import ROOT, module_key, source_path, source_files
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_source_roots_and_test_boundary(self):
+        for name in ['Eq/PEutt', 'Tests/Imports/PublicBehavior', 'Tests/AllImports']:
+            self.assertEqual(module_key(source_path(name)), name)
+            self.assertIn(source_path(name), source_files())
+        self.assertEqual(source_path('Tests/MathComp'), ROOT / 'tests/MathComp.v')
+        for owner in ['Eq/PEutt', 'Examples/Probability/FiniteLists',
+                      'Examples/Validation/FreeOmegaSamples']:
+            self.assertFalse(architecture.permitted(owner, 'Tests/Rewriting/GenericAlgebra'))
+        self.assertTrue(architecture.permitted('Tests/Rewriting/GenericAlgebra', 'Eq/Algebra'))
+
     def test_stable_hitting_validation_is_one_way_and_generic(self):
         bridge = "Prob/FreeOmega/Validation/StableHitting"
         pure = "Prob/FreeOmega/Validation/Model"
@@ -193,7 +204,7 @@ class ArchitectureTests(unittest.TestCase):
                            "Eq/Backend/StableHittingDomainSubEnumQ"]:
                 self.assertFalse(architecture.permitted(source, target))
         self.assertTrue(architecture.permitted("Prob/Backend/SubEnumQ/Domain", "Prob/Domain/Expectation"))
-        self.assertTrue(architecture.permitted("Regression/Probability/OmegaVal", "Prob/Domain/Expectation"))
+        self.assertTrue(architecture.permitted("Examples/Validation/OmegaVal", "Prob/Domain/Expectation"))
 
     def test_external_boundary_checks_transitive_closure(self):
         graph = {"Examples/RandomWalk": {"Prob/Backend/SubEnumQ/Measure"},
@@ -207,13 +218,13 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_examples_owns_applications_not_regressions(self):
         self.assertEqual(architecture.ownership("Examples/RandomWalk")[:2],
-                         ("Examples", "application"))
-        self.assertTrue(architecture.permitted("Regression/Semantics/TreeTransitionSoundness",
+                         ("Examples", "mathematical example"))
+        self.assertTrue(architecture.permitted("Examples/Transitions/TreeTransitionSoundness",
                                              "Examples/RandomWalk"))
         self.assertFalse(architecture.permitted("Eq/PEutt", "Examples/RandomWalk"))
 
     def test_no_old_application_or_local_events_namespace(self):
-        for name in ["CaseStudies/RandomWalk", "Events/State"]:
+        for name in ["CaseStudies/RandomWalk", "Events/State", "Regression/NewTest"]:
             with self.assertRaises(AssertionError):
                 architecture.ownership(name)
 
@@ -252,8 +263,8 @@ class ArchitectureTests(unittest.TestCase):
             ("Semantics/MDPFragment", "Semantics/FreeOmega/MDPCoincidenceFreeOmega"),
             ("Semantics/MDPFragment", "Interp/FreeOmega/MDP"),
             ("Interp/FreeOmega/MDP", "Interp/Backend/SubEnumQ"),
-            ("Eq/PEutt", "Regression/Semantics/PEuttAlgebra"),
-            ("Examples/RandomWalk", "Regression/Backend/SubEnumQRegression"),
+            ("Eq/PEutt", "Tests/Rewriting/PEuttAlgebra"),
+            ("Examples/RandomWalk", "Tests/Capabilities/BackendCapabilities"),
         ]:
             with self.subTest(source=source, target=target):
                 self.assertFalse(architecture.permitted(source, target))
@@ -304,11 +315,14 @@ class AggregateAndFixtureTests(unittest.TestCase):
             with self.subTest(actual=actual), self.assertRaises(AssertionError):
                 architecture.aggregate_check(actual,['PTree.A','PTree.B'])
 
-    def test_fixture_has_no_final_regression_dependency(self):
-        source='Regression/Fixtures/FreeOmegaSamples'
-        self.assertFalse(architecture.permitted(source,'Regression/Probability/FreeOmegaSoundness'))
+    def test_model_examples_are_one_way_and_do_not_depend_on_tests(self):
+        source='Examples/Validation/FreeOmegaSamples'
+        self.assertFalse(architecture.permitted(source,'Tests/Imports/PublicBehavior'))
+        self.assertFalse(architecture.permitted('Eq/PEutt',source))
+        self.assertFalse(architecture.permitted('Examples/RandomWalk',source))
+        self.assertTrue(architecture.permitted('Tests/Imports/ArchitectureBoundaries',source))
         self.assertTrue(architecture.permitted(source,'Prob/Backend/SubEnumQ/FreeOmega/Compatibility'))
-        self.assertTrue(architecture.permitted('Regression/Probability/CountableCoupling',source))
+        self.assertTrue(architecture.permitted('Examples/Validation/CountableCoupling',source))
 
     def test_native_validation_has_no_completion_dependency(self):
         edges={'Prob/Backend/SubEnumQ/Domain': {'Prob/Backend/SubEnumQ/Expectation'},

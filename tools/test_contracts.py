@@ -104,9 +104,9 @@ class ContractSuiteTests(unittest.TestCase):
         # fixtures: no installed toolchain or build needed for these fast checks.
         with tempfile.TemporaryDirectory(prefix='ptree-audit-archive-') as tmp:
             root = Path(tmp)
-            for name in ['tools', 'docs', 'theories']:
+            for name in ['tools', 'docs', 'theories', 'tests']:
                 shutil.copytree(ROOT / name, root / name, ignore=shutil.ignore_patterns('__pycache__'))
-            for name in ['dune-project', 'dune']:
+            for name in ['dune-project', 'dune', '_CoqProject']:
                 if (ROOT / name).exists():
                     shutil.copy2(ROOT / name, root / name)
             self.assertFalse((root / '.git').exists())

@@ -1,0 +1,9 @@
+(include_subdirs qualified)
+
+;; These are compilation clients, not an installed part of PTree's theory.
+;; The root `dune build` includes them, including checked negative probes.
+(coq.theory
+ (name PTree.Tests)
+ (theories PTree ExtLib ITree Paco Coinduction mathcomp HB
+           mathcomp.analysis mathcomp.reals_stdlib elpi elpi_elpi)
+ (flags -w -notation-incompatible-prefix -w -notation-overridden))

@@ -109,7 +109,7 @@ the unchanged external-soundness whitelist. All 58 compiled types and
 
 ## Tests and a real source program
 
-`Regression/Semantics/EffectAlgebra.v` checks rational and finite-real clients,
+`Examples/Effects/EffectAlgebra.v` checks rational and finite-real clients,
 a large result carrier, list-valued noncommutative logs, and exact ordered
 output `[1;2]`. Writer unit/fusion work for that noncommutative monoid.
 

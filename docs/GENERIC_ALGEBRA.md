@@ -57,7 +57,7 @@ instances for an unconstrained frontier. Its proof is the existing generic
 `Eq.Algebra.peutt_bind_Proper`, with the interpretation explicitly supplied;
 it introduces neither a backend-specific mathematical proof nor a new law.
 
-`Regression/Semantics/FreeOmegaRewriting.v` checks both negative import
+`tests/Rewriting/FreeOmegaRewriting.v` checks both negative import
 boundaries, inferred `Proper` goals for arbitrary native `MN`, actual
 bind/source/continuation, sampling and loop rewriting, and SubEnumR/SubEnumQ clients without local instances. The
 factory is the EnumQ client, exercising the complete handler/loop stack.
@@ -113,9 +113,9 @@ ownership. Mutation tests continue to reject duplicate nonlocal glyphs;
 unknown declarations still reach the checked Rocq error protocol. No new audit
 script, historical replay or logical-axiom exception was added.
 
-`Regression/Semantics/GenericAlgebra.v` checks the minimal shallow profile,
+`tests/Rewriting/GenericAlgebra.v` checks the minimal shallow profile,
 generic ownership/import isolation, arbitrary-native FreeOmega sampling and
-finite-real sampling/loop rewriting. `Regression/Backend/MathComp.v`
+finite-real sampling/loop rewriting. `tests/MathComp.v`
 checks the same sampling theorems at `MN = MF`, and iteration `Proper` with an
 explicit `relational_lub` premise. This does not discharge MathComp's remaining
 relational-limit obligation. Its existing gluing premise and two-file Gate M

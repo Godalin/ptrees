@@ -30,7 +30,7 @@ No injectivity, termination, no-event or generator-closure premise is added.
 The underlying `peutt_iter_direct_rel` supports heterogeneous state and return
 relations, including arbitrary visible interaction.
 
-`Regression/Semantics/PTreeUniformity.v` exercises the full package with:
+`tests/Capabilities/PTreeUniformity.v` exercises the full package with:
 
 - the unchanged `fold_run_state` and `fold_run_exception`, using an actual
   PTree target, arbitrary source sampling carrier, handler and sampler;

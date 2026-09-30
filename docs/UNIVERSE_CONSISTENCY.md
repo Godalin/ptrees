@@ -11,11 +11,11 @@ at that historical snapshot its prefix was `PTree.CaseStudies`.
 
 ```coq
 From PTree.Examples.BernoulliFactory Require Import BernoulliFactoryComposition.
-From PTree.Regression.Semantics Require Import CanonicalPartialDivergence.
+Require Import PTree.Examples.Effects.CanonicalPartialDivergence.
 ```
 
 Replacing the second import by
-`PTree.Regression.Backend.UnifiedFrontierEnumQ` reproduced another instance.
+`PTree.Tests.Universe.UnifiedFrontierEnumQ` reproduced another instance.
 Coq reported a strict inequality between shared PTree sampling universes
 that the other client had already equated (for example,
 `PTreeDefinition.61 < PTreeDefinition.51` versus their equality).
@@ -74,7 +74,7 @@ calculation, not a new axiom or a new premise asserting the desired result.
 
 ## Permanent prevention
 
-`Regression/Infrastructure/AllImports.v` requires every other Gate S (normally checked)
+`tests/AllImports.v` (`PTree.Tests.AllImports`) requires every other Gate S (normally checked)
 Coq module in one universe context. Dune compiles it as part of the normal
 build. `tools/audit_architecture.py --aggregate-only` fails if that inventory omits a new module,
 contains extras, duplicates or is unsorted; CI runs this inventory check

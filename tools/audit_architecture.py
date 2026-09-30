@@ -5,11 +5,11 @@ import re
 from pathlib import Path
 from audit_assumptions import without_comments
 from mathcomp_policy import GATE_M, check_gate_boundary
+from rocq_paths import source_files, module_key, source_path, SOURCE_ROOTS
 
 ROOT = Path(__file__).resolve().parents[1]
-THEORIES = ROOT / "theories"
 REPORT = ROOT / "docs/ARCHITECTURE_AUDIT.md"
-AGGREGATE = "Regression/Infrastructure/AllImports"
+AGGREGATE = "Tests/AllImports"
 INTERNAL_REASON = (
     "maintained execution/scheduling contract; private, not another equality"
 )
@@ -21,7 +21,8 @@ def external_validation(path):
     Classify adapters before they exist so a future soundness file cannot
     silently enter the mainline through an otherwise ordinary Backend edge.
     """
-    return path.startswith(("Prob/Domain/", "Prob/FreeOmega/Validation/",
+    return path.startswith(("Examples/Validation/", "Examples/Counterexamples/Validation/",
+                            "Prob/Domain/", "Prob/FreeOmega/Validation/",
                             "Execution/Validation/")) or path in {
         "Prob/Backend/Common/DomainTransport",
         "Prob/Backend/Common/CountableCoupling",
@@ -44,20 +45,20 @@ def external_validation(path):
 def ownership(path):
     if path in GATE_M:
         return path.rsplit('/', 1)[0], 'universe-unchecked Gate M', 'MathComp assembly/probes; excluded from safe aggregate'
-    if path.startswith(("CaseStudies/", "Events/", "API/")):
+    if path.startswith(("CaseStudies/", "Events/", "API/", "Regression/")):
         raise AssertionError("Unsupported top-level namespace: " + path)
     if path in {"PTree", "Eq", "PTreeFacts", "Semantics"}:
         return "EntryPoint", "aggregate", "explicit syntax/relation/facts/comparison entry point"
     if path.startswith("Experimental/"):
         raise AssertionError("Unreviewed experiment: " + path)
     if path == AGGREGATE:
-        return "Regression/Infrastructure", "integration", "exclude from substantive clients"
-    if path.startswith("Regression/Fixtures/"):
-        return "Regression/Fixtures", "private test fixture", "shared samples only; no final regression dependency"
-    if path.startswith("Regression/"):
-        return path.rsplit("/", 1)[0], "contract test", "retained; not public theory"
+        return "Tests", "integration", "root build compiles every Gate S module; not installed theory"
+    if path.startswith("Tests/"):
+        return path.rsplit("/", 1)[0], "technical contract", "isolated compilation client; not mathematical theory"
+    if path.startswith("Examples/") and external_validation(path):
+        return path.rsplit("/", 1)[0], "external model example", "one-way mathematical validation; never a reasoning dependency"
     if path.startswith("Examples/"):
-        return "Examples", "application", "retained; no regression dependency"
+        return path.rsplit("/", 1)[0], "mathematical example", "program, supporting mathematics or counterexample; no tests dependency"
     if path.startswith("Prob/FreeOmega/Validation/"):
         return "Prob/FreeOmega/Validation", "external validation", "native-parametric bridge to independent mathematical models"
     if path in {"Eq/Backend/StableHittingDomainSubEnumQ", "Eq/Backend/StableHittingDomainSubEnumR"}:
@@ -110,14 +111,18 @@ def ownership(path):
 
 
 def permitted(module, dependency):
-    if module.startswith('API/') or dependency.startswith('API/'):
+    if module.startswith(('API/', 'Regression/')) or dependency.startswith(('API/', 'Regression/')):
         return False
     if dependency in GATE_M and module not in GATE_M:
         return False
     def under(*prefixes):
         return any(dependency.startswith(p + "/") for p in prefixes)
     if external_validation(dependency) and not (
-            external_validation(module) or module.startswith("Regression/")):
+            external_validation(module) or module.startswith("Tests/")):
+        return False
+    if dependency.startswith('Tests/') and not module.startswith('Tests/'):
+        return False
+    if dependency.startswith('Examples/') and not module.startswith(('Examples/', 'Tests/')):
         return False
     if module.startswith("Prob/Domain/"):
         return under("Prob/Domain")
@@ -197,10 +202,8 @@ def permitted(module, dependency):
             ok = ok and not under("Prob/Backend", "Prob/Legacy", "Eq/Backend", "Eq/Internal/Backend", "Semantics/Backend", "Interp/Backend")
         return ok
     if module.startswith("Examples/"):
-        return not under("Regression", "Experimental")
-    if module.startswith("Regression/"):
-        if module.startswith("Regression/Fixtures/") and dependency.startswith("Regression/"):
-            return dependency.startswith("Regression/Fixtures/")
+        return not under("Tests", "Experimental")
+    if module.startswith("Tests/"):
         return True
     return False
 
@@ -274,13 +277,12 @@ def check_generic_validation_boundary(edges):
 
 def aggregate_check(actual=None, expected=None):
     if expected is None:
-        expected = sorted('PTree.' + p.relative_to(THEORIES).with_suffix('').as_posix().replace('/', '.')
-                          for p in THEORIES.rglob('*.v')
-                          if p != THEORIES / (AGGREGATE + '.v')
-                          and p.relative_to(THEORIES).with_suffix('').as_posix() not in GATE_M)
+        expected = sorted('PTree.' + module_key(p).replace('/', '.')
+                          for p in source_files()
+                          if module_key(p) not in GATE_M | {AGGREGATE})
     if actual is None:
         actual = re.findall(r'^Require (PTree\.[\w.]+)\.$',
-                            (THEORIES / (AGGREGATE + '.v')).read_text(), re.M)
+                            source_path(AGGREGATE).read_text(), re.M)
     assert actual == sorted(set(expected)), 'AllImports must contain every other Gate S module exactly once, sorted'
 
 
@@ -322,24 +324,32 @@ def check_mathcomp_native_boundary(edges):
 
 def graph():
     aggregate_check()
-    check_mathcomp_native_sources({p.relative_to(THEORIES).with_suffix('').as_posix(): p.read_text()
-                                  for p in THEORIES.rglob('*.v')})
-    paths = {p.relative_to(THEORIES).with_suffix("").as_posix() for p in THEORIES.rglob("*.v")}
+    check_mathcomp_native_sources({module_key(p): p.read_text() for p in source_files()})
+    paths = {module_key(p) for p in source_files()}
     edges = {p: set() for p in paths}
     seen = set()
-    for line in (ROOT / "_build/default/theories/.PTree.theory.d").read_text().splitlines():
-        lhs, rhs = line.split(": ", 1)
-        target = lhs.split()[0]
-        if not target.endswith(".vo"):
-            continue
-        module = target.removesuffix(".vo")
-        assert module in edges, "Stale coqdep target: " + module
-        seen.add(module)
-        for dep in rhs.split():
-            if dep.endswith(".vo") and not dep.startswith("/"):
-                name = dep.removesuffix(".vo")
-                assert name in edges, "Missing dependency: " + name
-                edges[module].add(name)
+    built = ROOT / '_build/default'
+    local_objects = {(built / p.relative_to(ROOT)).with_suffix('.vo').resolve(): module_key(p)
+                     for p in source_files()}
+    for directory, prefix in SOURCE_ROOTS:
+        folder = built / directory
+        depfile = folder / '.PTree.theory.d'
+        for line in depfile.read_text().splitlines():
+            lhs, rhs = line.split(": ", 1)
+            target = lhs.split()[0]
+            if not target.endswith('.vo'):
+                continue
+            module = local_objects.get((folder / target).resolve())
+            assert module in edges, 'Stale coqdep target: ' + target
+            seen.add(module)
+            for dep in rhs.split():
+                if not dep.endswith('.vo'):
+                    continue
+                resolved = (folder / dep).resolve()
+                if resolved in local_objects:
+                    edges[module].add(local_objects[resolved])
+                elif resolved.is_relative_to(built):
+                    raise AssertionError('Missing local dependency: ' + dep)
     assert seen == paths, "Run a full build: incomplete coqdep graph"
     assert edges[AGGREGATE] == paths - {AGGREGATE} - GATE_M, "Incomplete safe AllImports"
     check_gate_boundary(edges)
@@ -368,7 +378,7 @@ def report():
         "See [architecture policy](ARCHITECTURE.md); migration-stage inventories live in git history.", "",
         f"- {len(edges)} modules; {sum(map(len, edges.values()))} direct local Require edges.",
         f"- Safe AllImports covers {len(ordinary - GATE_M)} other Gate S modules; {len(GATE_M)} exact-allowlisted Gate M modules are excluded.",
-        "- No Gate S module (including regressions/aggregates) imports Gate M, directly or transitively.",
+        "- No Gate S module (including examples, tests and aggregates) imports Gate M, directly or transitively.",
         "- Every edge is checked against the ownership policy, not merely displayed as debt.",
         "- Core has no local probability dependency. Prob has no tree-theory dependency except the one-way Validation/StableHitting bridge and its Soundness entry point.",
         "- Generic interfaces and FreeOmega measure infrastructure import no concrete backend.",
@@ -380,11 +390,11 @@ def report():
         "- Eq imports no Interp/Semantics; Semantics imports no Interp. Canonical routing is owned by Eq; there is no API namespace or Gate M reverse-dependency exception.",
         "- PTree exports only Core; Eq exports relation owners/notations; PTreeFacts aggregates selected reasoning modules without concrete backends.",
         "- Generic/canonical-model Eq, Semantics and Interp modules import no concrete backend endpoint.",
-        "- No maintained library imports Regression, Examples or Experimental.",
-        "- Cases do not depend on tests. Experimental has no remaining source module.", "",
+        "- No maintained library imports Examples or Tests. Retired Regression/Experimental namespaces have no source module.",
+        "- Examples do not depend on Tests. The root build includes both source roots.", "",
         "- The peutt/Interp/public-facade dependency closure contains no Eq/Internal module.", "",
         "- Prob/Domain depends only on mathematical libraries and itself, never the existing probability interfaces or FreeOmega.",
-        "- The Core/Eq/Semantics/Interp/Examples and public entry-point closures exclude external validation; explicit validation adapters are not reasoning roots.", "",
+        "- Core/Eq/Semantics/Interp, ordinary examples and public entry-point closures exclude external validation; explicit validation adapters/examples are not reasoning roots.", "",
         "This is an import-graph check, not declaration-use liveness, capability minimality, "
         "FreeOmega adequacy, or the final whole-library kernel audit.", "",
         "## Complete module ownership", "",
@@ -398,20 +408,20 @@ def report():
              "FiniteInternal is auxiliary proof infrastructure for well-founded internal compression "
              "and related adequacy arguments. It is not part of the canonical PTree semantics or "
              "public equivalence theory. Members remain maintained independent infrastructure; completed "
-             "SubEnumQ domain soundness does not use this branch. Regression-only leaves "
-             "are retained as checked execution, coupling, schedule or recovery contracts; none "
+             "SubEnumQ domain soundness does not use this branch. Supporting examples "
+             "demonstrate execution, coupling, scheduling and recovery mathematics; none "
              "is re-exported as a public equality. No theorem deletion is inferred from client counts.", ""]
     rows += ["The formal peutt/Interp/facade mainline has no transitive Eq/Internal dependency. "
-             "Some Stage 1-4 regressions do load it via Regression/Probability/CorrelatedSampleAlgebra; "
-             "this is a fixture import, not evidence that the formal preservation theorems need it. "
+             "Some counterexamples load it via Examples/Probability/CorrelatedSampleAlgebra; "
+             "this is an example dependency, not evidence that the formal preservation theorems need it. "
              "Cleanup does not redesign or delete this auxiliary API merely because the final "
              "soundness proof does not depend on it.", ""]
     for module in sorted(ordinary):
         if module.startswith("Eq/Internal/"):
-            tests = {c for c in clients[module] if c.startswith("Regression/")}
-            rows.append(f"- {q(module)}: ordinary theory/application clients {names(clients[module] - tests)}; regression clients {names(tests)}.")
+            tests = {c for c in clients[module] if c.startswith("Tests/")}
+            rows.append(f"- {q(module)}: theory/example clients {names(clients[module] - tests)}; technical test clients {names(tests)}.")
     rows += ["", "## Experimental disposition", "",
-             "UniverseSeparatedPTree is now a Regression/Infrastructure contract test. "
+             "UniverseSeparatedPTree is an isolated tests/Imports compilation client. "
              "Its positive probes and checked Fail commands are retained; historical comments "
              "no longer describe the canonical FreeOmega representation as awaiting migration. "
              "No alternative representation is exported as maintained theory.", ""]

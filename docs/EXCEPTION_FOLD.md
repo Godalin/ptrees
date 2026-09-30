@@ -64,7 +64,7 @@ correct, or that every fold preserves peutt.
 
 ## Checked clients and boundaries
 
-`Regression/Semantics/ExceptionFold.v` instantiates both transformer laws and
+`Examples/Effects/ExceptionFold.v` instantiates both transformer laws and
 the square with actual ITree execution, using the previously proved
 `itree_iteration_uniform`. It checks:
 

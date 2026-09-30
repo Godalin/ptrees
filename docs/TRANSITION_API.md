@@ -97,7 +97,7 @@ Adaptive/MixedHead, runner validation and `Semantics`. All exclude Gate M.
 The generated [architecture inventory](ARCHITECTURE_AUDIT.md) is authoritative
 for the current dependency graph; historical closure sizes are not contracts.
 
-Only `Eq/Backend/MathComp` and `Regression/Backend/MathComp`
+Only `Eq/Backend/MathComp` and `Tests/MathComp`
 remain in Gate M, outside safe AllImports. Source and build-flag checks
 reject other checker bypasses. Gate S is **not** a claim of axiom-freedom:
 existing classical/extensional assumptions and model premises remain

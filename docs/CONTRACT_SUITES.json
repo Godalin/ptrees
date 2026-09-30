@@ -354,15 +354,15 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.EffectAlgebra.state_draw_swap": [
+    "PTree.Examples.Effects.EffectAlgebra.state_draw_swap": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.EffectAlgebra.writer_draw_swap": [
+    "PTree.Examples.Effects.EffectAlgebra.writer_draw_swap": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.EffectAlgebra.real_state_draw_swap": [
+    "PTree.Examples.Effects.EffectAlgebra.real_state_draw_swap": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
@@ -386,7 +386,7 @@
       "IndefiniteDescription.constructive_indefinite_description",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.MDPEncoding.LabelledMDP.distinct_states_encoded_trans_bisimilar": [
+    "PTree.Examples.Transitions.MDPEncoding.LabelledMDP.distinct_states_encoded_trans_bisimilar": [
       "ClassicalDedekindReals.sig_forall_dec",
       "ClassicalDedekindReals.sig_not_dec",
       "ClassicalUniqueChoice.dependent_unique_choice",
@@ -394,7 +394,7 @@
       "IndefiniteDescription.constructive_indefinite_description",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.MDPEncoding.LabelledMDP.different_successor_probabilities_not_trans_bisimilar": [
+    "PTree.Examples.Transitions.MDPEncoding.LabelledMDP.different_successor_probabilities_not_trans_bisimilar": [
       "ClassicalDedekindReals.sig_forall_dec",
       "ClassicalDedekindReals.sig_not_dec",
       "ClassicalUniqueChoice.dependent_unique_choice",
@@ -418,19 +418,19 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Backend.MathComp.mdp_guarded_transition": [
+    "PTree.Tests.MathComp.mdp_guarded_transition": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Backend.MathComp.atomic_transition": [
+    "PTree.Tests.MathComp.atomic_transition": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Probability.SubEnumRNativeReflection.validated_mdp_trans_bisim_iff": [
+    "PTree.Examples.Validation.SubEnumRNativeReflection.validated_mdp_trans_bisim_iff": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Backend.MathComp.mdp_trans_bisim_iff": [
+    "PTree.Tests.MathComp.mdp_trans_bisim_iff": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
@@ -498,19 +498,19 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.GenericAlgebra.free_omega_sample_bind": [
+    "PTree.Tests.Rewriting.GenericAlgebra.free_omega_sample_bind": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.GenericAlgebra.free_omega_sample_map": [
+    "PTree.Tests.Rewriting.GenericAlgebra.free_omega_sample_map": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Backend.MathComp.sample_bind": [
+    "PTree.Tests.MathComp.sample_bind": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Backend.MathComp.sample_map": [
+    "PTree.Tests.MathComp.sample_map": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
@@ -522,11 +522,11 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.GenericAlgebra.generic_prob_context_rewrite": [
+    "PTree.Tests.Rewriting.GenericAlgebra.generic_prob_context_rewrite": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.FreeOmegaRewriting.OptIn.imported_prob_rewrite": [
+    "PTree.Tests.Rewriting.FreeOmegaRewriting.OptIn.imported_prob_rewrite": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
@@ -588,7 +588,7 @@
       "IndefiniteDescription.constructive_indefinite_description",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.MDPEncoding.LabelledMDP.represented_positive_pair": [
+    "PTree.Examples.Transitions.MDPEncoding.LabelledMDP.represented_positive_pair": [
       "ClassicalDedekindReals.sig_forall_dec",
       "ClassicalDedekindReals.sig_not_dec",
       "ClassicalUniqueChoice.dependent_unique_choice",
@@ -596,7 +596,7 @@
       "IndefiniteDescription.constructive_indefinite_description",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.MDPEncoding.LabelledMDP.represented_probability_separation": [
+    "PTree.Examples.Transitions.MDPEncoding.LabelledMDP.represented_probability_separation": [
       "ClassicalDedekindReals.sig_forall_dec",
       "ClassicalDedekindReals.sig_not_dec",
       "ClassicalUniqueChoice.dependent_unique_choice",

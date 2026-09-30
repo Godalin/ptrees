@@ -5,7 +5,7 @@ that produced it. They work with a depth-one checkout. Source-only checks also
 work in an archive with no `.git`. Do not add a new `previous_sources` chain or
 require old Git objects when introducing another theorem.
 
-See [Regression organization](REGRESSION_ORGANIZATION.md) for current test
+See [Examples and tests](REGRESSION_ORGANIZATION.md) for current content
 roles and retention/deduplication criteria. Snapshots complement actual
 clients; they do not replace inference, rewriting or import-order tests.
 
@@ -16,7 +16,7 @@ clients; they do not replace inference, rewriting or import-order tests.
 | Architecture | `audit_architecture.py` | actual dependency edges, ownership, aggregate coverage, external-model and Gate M isolation |
 | Safety/public surface | `audit_soundness.py`, `audit_api.py`, `mathcomp_policy.py` | unfinished proofs/assumptions, reviewed class declarations, exact bypass allowlist, routing registrations and notation owners |
 | Compiled contracts | `audit_contracts.py`, `audit_assumptions.py`, `audit_mathcomp.py` | types, per-endpoint assumptions, safe/unchecked loading contexts and unsafe-hierarchy reports |
-| Regression/kernel | Rocq modules, `test_*.py`, `audit_api.py --kernel` | real positive/negative clients, tool failure modes, extracted program behavior, selected joint kernel checks |
+| Examples/tests/kernel | Rocq examples and root `tests/`, `test_*.py`, `audit_api.py --kernel` | mathematical examples/counterexamples, isolated compilation clients, tool failure modes, extracted program behavior, selected joint kernel checks |
 
 ## Commands
 
@@ -39,6 +39,11 @@ python3 -u tools/audit_contracts.py --gate S
 python3 -u tools/audit_contracts.py --gate M
 python3 tools/audit_api.py --surface-only --kernel
 ```
+
+The root build includes `theories/` (`PTree`) and `tests/` (`PTree.Tests`).
+It compiles `Fail` probes in their own import contexts as well as safe AllImports.
+`tools/rocq_paths.py` centralizes both roots and their load paths for audits;
+there is no additional test-only Rocq build step.
 
 Do not run the CI bootstrap in a working local switch. Compiler, opam and
 dependency pins are unchanged. The environment checker remains CI-specific.
@@ -68,7 +73,8 @@ deduplicated into one global session: doing so could erase a universe/import
 boundary or contaminate safe validation with unchecked MathComp imports.
 Gate M results never count as universe-checked evidence. Its declaration flags
 and session warnings remain separate from logical axioms; safe controls must
-remain untainted. The allowed set of Gate M **theory files** is still exactly two.
+remain untainted. The allowed set of Gate M source files is still exactly two:
+`theories/Eq/Backend/MathComp.v` and `tests/MathComp.v`.
 
 Every expected type and assumptions block is compared exactly in its original
 context. The existing soundness whitelist is unchanged. Older mainline
@@ -95,7 +101,7 @@ Git at their accepted checkpoints (the complete pre-cleanup tools are at
 `de66a85`). Superseded stage reports are consolidated into current guides;
 their historical text and validation records remain recoverable from Git.
 
-This does not delete mathematical regressions or permit new probability
+This does not delete mathematical examples or permit new probability
 axioms. Runtime tests for replay, lost mass, timeout, errors, State rewriting,
 unbounded retry and Bernoulli factory execution remain active.
 

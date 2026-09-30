@@ -60,7 +60,7 @@ indefinite description occur, with no new semantic assumption.
 
 ## Generic completion and PTree client
 
-`Regression/Backend/SubEnumRBehavior.v` instantiates the existing generic
+`Examples/Probability/SubEnumRBehavior.v` instantiates the existing generic
 FreeOmega capabilities: Core, Bind, AE Kleisli/countable/coupling, Order,
 Omega, total properness, cofinality, OmegaAE, diagonal, Fubini and the mixed
 bind/unit/node-bind/omega laws. These are typeclass assembly, not new proofs

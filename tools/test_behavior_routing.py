@@ -1,4 +1,5 @@
 """Mutation tests for canonical routing and structural registration boundaries."""
+from rocq_paths import source_files
 import unittest
 from audit_assumptions import ROOT
 from audit_api import STRUCTURAL, STRUCTURAL_INSTANCES, REGISTRY, current_surface
@@ -9,7 +10,7 @@ class BehaviorRoutingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sources = {p.relative_to(ROOT).as_posix(): p.read_text()
-                       for p in (ROOT/'theories').rglob('*.v')}
+                       for p in source_files()}
         cls.internal = STRUCTURAL_INSTANCES
 
     def test_whole_suite_not_single_instance(self):
@@ -63,7 +64,7 @@ class BehaviorRoutingTests(unittest.TestCase):
         for path, addition in [
             ('theories/Eq/PEutt.v', 'Notation "t ≈ₚ u" := (peutt eq t u) (at level 70).'),
             ('theories/PTreeFacts.v', 'Notation peutt_bind := Bind.peutt_bind.'),
-            ('theories/Regression/Infrastructure/PublicBehavior.v', 'From PTree.Interp Require Import IterationUniform.'),
+            ('tests/Imports/PublicBehavior.v', 'From PTree.Interp Require Import IterationUniform.'),
         ]:
             with self.subTest(path=path), self.assertRaises(AssertionError):
                 current_surface({**self.sources, path: self.sources[path]+'\n'+addition})

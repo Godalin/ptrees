@@ -4,6 +4,7 @@
 Gate M is NOT a universe-consistency or ordinary kernel-check claim. Its
 compiled snapshot records unsafe-hierarchy reports separately from axioms.
 """
+from rocq_paths import source_path, LOADPATH
 import argparse
 import json
 import re
@@ -21,7 +22,7 @@ ENDPOINTS = ['PTree.' + ASSEMBLY.replace('/', '.') + '.' + n for n in [
     'mathcomp_peutt', 'mathcomp_peutt_refl',
     'mathcomp_hitting_exists',
     'mathcomp_bind_cofinal', 'mathcomp_peutt_bind']]
-ENDPOINTS += ['PTree.Regression.Backend.MathComp.' + n for n in [
+ENDPOINTS += ['PTree.Tests.MathComp.' + n for n in [
     'ret', 'frontier', 'kernel', 'hitting',
     'ret_reflexivity', 'eventful_reflexivity',
     'available_native_order', 'available_native_omega', 'available_general_hitting_exists',
@@ -34,7 +35,7 @@ ENDPOINTS += ['PTree.Regression.Backend.MathComp.' + n for n in [
     'guarded_interp', 'guarded_tau']]
 ENDPOINTS += [
     'PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior',
-    'PTree.Regression.Backend.MathComp.canonical_profile']
+    'PTree.Tests.MathComp.canonical_profile']
 # Importing the unchecked modules must not retrospectively taint safe facts.
 SAFE_CONTROLS = [
     'PTree.Prob.Backend.MathComp.NativeLaws.mathcomp_native_bind_le_k',
@@ -79,7 +80,7 @@ def parse_gate_m(result, endpoints, axiom_exceptions=None):
 def query_gate_m(endpoints=None, joint=True, axiom_exceptions=None):
     endpoints = ENDPOINTS + SAFE_CONTROLS if endpoints is None else endpoints
     assert len(endpoints) == len(set(endpoints)), 'Duplicate Gate M endpoint'
-    commands = ['Require PTree.Regression.Infrastructure.AllImports.'] if joint else []
+    commands = ['Require PTree.Tests.AllImports.'] if joint else []
     # Loading Gate M itself merges otherwise inconsistent universe constraints.
     # This dedicated audit session is a MathComp backend client, never Gate S.
     commands += ['Local Unset Universe Checking.']
@@ -91,8 +92,8 @@ def query_gate_m(endpoints=None, joint=True, axiom_exceptions=None):
             commands.append(f'Goal True. idtac "AUDIT_{kind}_{i}". Abort.')
             if command:
                 commands.append(command + '.')
-    result = subprocess.run(['opam', 'exec', '--', 'coqtop', '-quiet', '-R',
-                             '_build/default/theories', 'PTree'], cwd=ROOT,
+    result = subprocess.run(['opam', 'exec', '--', 'coqtop', '-quiet',
+                             *LOADPATH], cwd=ROOT,
                             input='\n'.join(commands) + '\n', text=True, capture_output=True)
     return parse_gate_m(result, endpoints, axiom_exceptions)
 
@@ -113,7 +114,7 @@ if __name__ == '__main__':
     source_check()
     if args.build:
         targets = safe_targets(ROOT) if args.gate == 'S' else [
-            'theories/' + m + '.vo' for m in sorted(GATE_M)]
+            str(source_path(m).relative_to(ROOT).with_suffix('.vo')) for m in sorted(GATE_M)]
         subprocess.run(['opam', 'exec', '--', 'dune', 'build', *targets], cwd=ROOT, check=True)
     graph()
     if args.gate == 'M':

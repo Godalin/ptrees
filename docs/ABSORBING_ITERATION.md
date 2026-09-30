@@ -85,7 +85,7 @@ The accepted VN, Adaptive, FactoryController and RandomWalk files are unchanged.
 
 ## Regression and assumptions
 
-`Regression/Semantics/IterationFrontiers.v` checks that an offered event with
+`Examples/Effects/IterationFrontiers.v` checks that an offered event with
 an empty response type still appears as a visible head, distinguishes two
 such events, permits zero-mass kernels, and obtains a real hitting witness
 for the pushed-in eventful loop on an unbounded nat state space.

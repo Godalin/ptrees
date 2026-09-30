@@ -234,12 +234,12 @@
       "assumptions": "Axioms:\nboolp.propositional_extensionality : forall P Q : Prop, P <-> Q -> P = Q\nboolp.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nboolp.constructive_indefinite_description :\n  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}"
     },
     {
-      "name": "PTree.Regression.Semantics.RelationalConsumers.completion_strong",
+      "name": "PTree.Tests.Capabilities.RelationalConsumers.completion_strong",
       "type": "@RelationalConsumers.completion_strong\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B : Type) (RR : A -> B -> Prop) (t : PTreeDefinition.ptree E MN A)\n         (u : PTreeDefinition.ptree E MN B),\n       @PStrong.pstrong E MN NI NC A B RR t u ->\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR t u",
       "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
     },
     {
-      "name": "PTree.Regression.Semantics.RelationalConsumers.completion_assoc",
+      "name": "PTree.Tests.Capabilities.RelationalConsumers.completion_assoc",
       "type": "@RelationalConsumers.completion_assoc\n     : forall (E MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI) (NO : @Omega.SemanticOmega MN NI)\n         (A B C : Type) (t : PTreeDefinition.ptree E MN A) (k : A -> PTreeDefinition.ptree E MN B)\n         (h : B -> PTreeDefinition.ptree E MN C),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) C C (@eq C)\n         (@PTreeDefinition.PTree.bind E MN B C (@PTreeDefinition.PTree.bind E MN A B t k) h)\n         (@PTreeDefinition.PTree.bind E MN A C t\n            (fun a : A => @PTreeDefinition.PTree.bind E MN B C (k a) h))",
       "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
     },

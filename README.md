@@ -296,10 +296,10 @@ The underlying raw `EnumQ` `meas_eq` is extensional: two enumerations are equal 
 every outcome has the same accumulated mass.  Raw list equality is exposed
 separately as `enumQ_repr_eq`.  In particular, reordering entries, duplicating
 an outcome, or splitting its mass does not change the measure.  The regression
-file `Regression/Backend/EnumQMeasureRegression.v` checks these cases together with
+file `Examples/Probability/EnumQMeasureRegression.v` checks these cases together with
 Dirac elimination and nested-probability flattening.  `SubEnumQ` reuses this
 extensional theory while carrying the missing total-weight bound;
-`Regression/Backend/SubEnumQRegression.v` checks bind closure and rejects the legacy
+`Examples/Probability/SubEnumQRegression.v` checks bind closure and rejects the legacy
 weight-two flip.
 
 The MathComp Analysis backend now supplies the same foundational AE profile
@@ -307,7 +307,7 @@ as EnumQ: AE Kleisli extension, exact Dirac AE, countable AE, coupling AE, and
 exact bind support decomposition, plus checked omega, diagonal/Fubini and
 relational kernel-bind laws. Coupling composition remains the explicit
 `MathCompCouplingGluing` capability.  The compile-time matrix lives in
-`Regression/Backend/BackendCapabilities.v`. The direct real binary-oracle
+`tests/Capabilities/BackendCapabilities.v`. The direct real binary-oracle
 analysis in `Examples/BernoulliFactory/RealBernoulliMathComp.v` is retained;
 its MathComp--FreeOmega `peutt` frontend has been removed.
 
@@ -385,12 +385,14 @@ the task: local rewriting, unbounded-loop summaries, or persistent-interaction
 coinduction. Begin loop analysis with `Examples/IterationBasics.v`; the guide
 links exact reusable endpoints and states their backend/termination boundaries.
 
-`Regression/` contains executable contracts, negative examples, capability
-checks and proof-tool clients, not additional paper-facing case studies.
-Its [retention policy](docs/REGRESSION_ORGANIZATION.md)
-separates internal-proof clients, independent import-order probes, execution
-tests and semantic/model contracts. In particular, the
-2×2 strictness witness belongs to the semantic comparison regressions.
+Supporting mathematics and program proofs live in topical `Examples/`
+directories; substantive negative results live in `Examples/Counterexamples/`.
+Independent model examples are separated under `Examples/Validation/`.
+Only isolated import, inference, rewriting and universe clients live in root
+`tests/`. The ordinary root `dune build` compiles all of them; there is no
+separate Regression theory. The [organization policy and move record](docs/REGRESSION_ORGANIZATION.md)
+explain the boundary. In particular, the 2×2 strictness witness belongs to
+`Examples/Counterexamples/TreeTransitionStrictness.v`.
 The supporting [RealSamplingHandler](theories/Examples/RealSamplingHandler.v)
 example demonstrates handler replacement in an infinite real-weight sampling
 service using public equations.
@@ -431,14 +433,14 @@ new interpretation semantics is introduced.
 [THEORY_STATUS.md](THEORY_STATUS.md) is the current theorem/capability map,
 including raw-tree transition comparison and MDP-fragment coincidence.
 The [architecture inventory](docs/ARCHITECTURE_AUDIT.md) records maintained
-modules and clients; [Regression organization](docs/REGRESSION_ORGANIZATION.md)
+modules and clients; [Examples and tests](docs/REGRESSION_ORGANIZATION.md)
 records test roles and deduplication criteria. [Maintained verification](docs/AUDITING.md)
 lists current commands and their check scope.
 [Joint universe consistency](docs/UNIVERSE_CONSISTENCY.md) explains the
 two-level regression repair and full-library import guard.
 Finite-internal/kernel infrastructure is grouped under `Eq/Internal/`;
 it is not another behavioral relation. The universe representation probes
-now live in `Regression/Infrastructure`, not an active Experimental layer.
+now live in `tests/Imports`, not an active Experimental layer.
 
 ## Artifact claims
 

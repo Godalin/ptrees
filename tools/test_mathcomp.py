@@ -9,11 +9,12 @@ from audit_mathcomp import parse_gate_m
 
 class MathCompTests(unittest.TestCase):
     def test_reviewed_allowlist(self):
-        self.assertEqual(GATE_M, {'Eq/Backend/MathComp', 'Regression/Backend/MathComp'})
+        self.assertEqual(GATE_M, {'Eq/Backend/MathComp', 'Tests/MathComp'})
 
     def test_retired_paths_have_no_bypass_permission(self):
         # Renaming an assembly moves the exact permission; it does not add one.
         for path in ['theories/Eq/Backend/MathComp/Direct.v',
+                     'theories/Regression/Backend/MathComp.v',
                      'theories/Regression/Backend/MathCompDirect.v']:
             with self.subTest(path=path), self.assertRaises(AssertionError):
                 universe_source_check(path, 'Local Unset Universe Checking.')
@@ -35,18 +36,19 @@ class MathCompTests(unittest.TestCase):
         for path in ['theories/Prob/Backend/MathComp/NativeLaws.v',
                      'theories/Eq/Backend/MathComp/Unreviewed.v',
                      'theories/Regression/Backend/NewMathComp.v',
+                     'tests/NewMathComp.v', 'tests/MathComp/Extra.v',
                      'theories/Examples/MathComp.v', 'theories/Prob/Domain/Expectation.v']:
             with self.subTest(path=path), self.assertRaises(AssertionError):
                 universe_source_check(path, 'Local Unset Universe Checking.')
 
     def test_safe_aggregate_and_indirect_import(self):
-        client = 'Regression/Backend/MathComp'
-        graph = {ASSEMBLY: set(), client: {ASSEMBLY}, 'Regression/Infrastructure/AllImports': set()}
+        client = 'Tests/MathComp'
+        graph = {ASSEMBLY: set(), client: {ASSEMBLY}, 'Tests/AllImports': set()}
         check_gate_boundary(graph)
-        graph['Regression/Infrastructure/AllImports'] = {client}
+        graph['Tests/AllImports'] = {client}
         with self.assertRaises(AssertionError):
             check_gate_boundary(graph)
-        graph['Regression/Infrastructure/AllImports'] = {'Prob/Backend/MathComp/Helper'}
+        graph['Tests/AllImports'] = {'Prob/Backend/MathComp/Helper'}
         graph['Prob/Backend/MathComp/Helper'] = {ASSEMBLY}
         with self.assertRaises(AssertionError):
             check_gate_boundary(graph)
@@ -59,7 +61,7 @@ class MathCompTests(unittest.TestCase):
         from audit_assumptions import ROOT
         targets = safe_targets(ROOT)
         self.assertTrue(all(p[:-3] + '.v' not in ALLOWLIST for p in targets))
-        self.assertIn('theories/Regression/Infrastructure/AllImports.vo', targets)
+        self.assertIn('tests/AllImports.vo', targets)
 
     def test_project_wide_bypass_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

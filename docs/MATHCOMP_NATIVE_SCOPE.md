@@ -66,7 +66,7 @@ role comment, proof text is unchanged under that explicit renaming and the
 section name change. This is not a promised PTree self-model.
 
 `Regression/Backend/MathCompSelfModel.v` moves to
-`Regression/Infrastructure/MathCompUniverse.v`. It checks that importing the
+`tests/Imports/MathCompUniverse.v`. It checks that importing the
 native modules alone does not load the formal completion, then retains the
 known joint-import context, positive tree/head controls and the checked
 negative same-carrier frontier/kernel/peutt definitions. The sealed-carrier
@@ -104,8 +104,8 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Prob.Backend.MathComp.NativeLaws \
   -norec PTree.Prob.Backend.MathComp.Coupling \
   -norec PTree.Examples.BernoulliFactory.RealBernoulliMathComp \
-  -norec PTree.Regression.Infrastructure.MathCompUniverse \
-  -norec PTree.Regression.Backend.BackendCapabilities
+  -norec PTree.Tests.Imports.MathCompUniverse \
+  -norec PTree.Tests.Capabilities.BackendCapabilities
 ```
 
 The kernel command checks six module bodies jointly, trusting compiled

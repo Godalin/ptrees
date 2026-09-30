@@ -38,7 +38,7 @@ upper bound and a least upper bound. These are NOT lub-existence results.
 
 ## Checked regressions
 
-`Regression/Backend/MathCompOrder.v` imports only the native/interface layer.
+`Examples/Probability/MathCompOrder.v` imports only the native/interface layer.
 It checks that FreeOmega, peutt and the direct assembly have not been loaded.
 It instantiates order without a `MathCompCouplingGluing` context and retains
 a negative native omega inference probe.

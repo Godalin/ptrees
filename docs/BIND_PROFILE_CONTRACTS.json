@@ -67,32 +67,32 @@
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Probability.FreeOmegaOrder.constant_lub_quotient_equal",
+      "name": "PTree.Examples.Probability.FreeOmegaOrder.constant_lub_quotient_equal",
       "type": "@FreeOmegaOrder.constant_lub_quotient_equal\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NO : @Omega.SemanticOmega MN NI),\n       @Quotient.free_omega_qlift MN NI NO unit unit (@eq unit) (@Definition.FORet MN unit tt)\n         (@Definition.FOLub MN unit (fun _ : nat => @Definition.FORet MN unit tt))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Probability.FreeOmegaOrder.constant_lub_not_approx_forward",
+      "name": "PTree.Examples.Probability.FreeOmegaOrder.constant_lub_not_approx_forward",
       "type": "@FreeOmegaOrder.constant_lub_not_approx_forward\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       ~\n       @Approximation.free_omega_approx MN NI unit unit (@eq unit) (@Definition.FORet MN unit tt)\n         (@Definition.FOLub MN unit (fun _ : nat => @Definition.FORet MN unit tt))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Probability.FreeOmegaOrder.constant_lub_not_approx_backward",
+      "name": "PTree.Examples.Probability.FreeOmegaOrder.constant_lub_not_approx_backward",
       "type": "@FreeOmegaOrder.constant_lub_not_approx_backward\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN),\n       ~\n       @Approximation.free_omega_approx MN NI unit unit (@eq unit)\n         (@Definition.FOLub MN unit (fun _ : nat => @Definition.FORet MN unit tt))\n         (@Definition.FORet MN unit tt)",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Probability.FreeOmegaOrder.observable_equality_does_not_imply_order",
+      "name": "PTree.Examples.Probability.FreeOmegaOrder.observable_equality_does_not_imply_order",
       "type": "@FreeOmegaOrder.observable_equality_does_not_imply_order\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NO : @Omega.SemanticOmega MN NI),\n       ~\n       (forall mu nu : Definition.FreeOmega MN unit,\n        @Measure.sem_eq (Definition.FreeOmega MN)\n          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO) unit mu nu ->\n        @Omega.sem_le (Definition.FreeOmega MN)\n          (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n          (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) unit mu nu)",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Probability.FreeOmegaOrder.sampled_zero_quotient_equal",
+      "name": "PTree.Examples.Probability.FreeOmegaOrder.sampled_zero_quotient_equal",
       "type": "@FreeOmegaOrder.sampled_zero_quotient_equal\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NO : @Omega.SemanticOmega MN NI) (A B : Type) (mu : MN A),\n       @Quotient.free_omega_qlift MN NI NO B B (@eq B)\n         (@Definition.FOSample MN B A mu (fun _ : A => @Definition.FOZero MN B))\n         (@Definition.FOZero MN B)",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Probability.FreeOmegaOrder.sampled_zero_not_approx_bottom",
+      "name": "PTree.Examples.Probability.FreeOmegaOrder.sampled_zero_not_approx_bottom",
       "type": "@FreeOmegaOrder.sampled_zero_not_approx_bottom\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN) (A B : Type) (mu : MN A),\n       ~\n       @Approximation.free_omega_approx MN NI B B (@eq B)\n         (@Definition.FOSample MN B A mu (fun _ : A => @Definition.FOZero MN B))\n         (@Definition.FOZero MN B)",
       "assumptions": "Closed under the global context"
     }

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Long-term source and compiled probability-soundness safety contracts."""
+from rocq_paths import source_files
 import argparse
 import json
 import re
@@ -49,7 +50,7 @@ def independent_math(sources):
 def source_check(sources=None, policy=None):
     if sources is None:
         check_build_flags(ROOT)
-        sources = {p.relative_to(ROOT).as_posix(): p.read_text() for p in (ROOT/'theories').rglob('*.v')}
+        sources = {p.relative_to(ROOT).as_posix(): p.read_text() for p in source_files()}
     policy = policy or json.loads(POLICY.read_text())
     found_classes = {}
     for path, text in sources.items():
@@ -67,14 +68,16 @@ def source_check(sources=None, policy=None):
         if path.startswith(('theories/Prob/Backend/EnumQ/', 'theories/Prob/Backend/SubEnumQ/',
                             'theories/Prob/Backend/SubEnumR/', 'theories/Examples/')):
             code = code_only(source)
+            # A checked negative probe is evidence of absence, not a dependency.
+            code = re.sub(r'\bFail\s+Check\s+[^\n]+\.', '', code)
             assert not re.search(r'\b(?:nnQ\w*|Build_nnQ\w*|Qval|rational_shared|rational_unshare)\b', code), path
             assert 'Prob.Legacy' not in code, 'Legacy native dependency: ' + path
-    for path, names in policy['regressions'].items():
-        assert path in sources, 'Missing regression module: ' + path
+    for path, names in policy['clients'].items():
+        assert path in sources, 'Missing audited client module: ' + path
         code = code_only(sources[path])
         for name in names:
             assert re.search(r'\b(?:Example|Lemma|Theorem)\s+'+re.escape(name)+r'\b',code), \
-                'Missing regression: ' + name
+                'Missing audited client: ' + name
     joint = code_only(sources['theories/Prob/Backend/SubEnumQ/FreeOmega/JointRealization.v'])
     for endpoint in ['subenumQ_free_omega_model_countable', 'subenumQ_generic_qlift_bidual',
                      'oval_bidual_coupled', 'subenumQ_qlift_sound']:
@@ -130,7 +133,7 @@ def mathcomp_native_check():
             'mathcomp_native_bind_le_mu', 'mathcomp_native_le_antisym',
             'mathcomp_native_lub_upper', 'mathcomp_native_lub_least',
             'MathCompNativeOrderLaws'],
-        'PTree.Regression.Backend.MathCompOrder': [
+        'PTree.Examples.Probability.MathCompOrder': [
             'checked_native_order',
             'cemetery_mass_not_monotone', 'partial_sampling_returned_mass',
             'partial_sampling_bind_monotone'],
@@ -154,14 +157,14 @@ def mathcomp_native_check():
             'MathCompNativeBindLaws', 'MathCompNativeMixedLaws'],
         'PTree.Prob.Backend.MathComp.Retry': [
             'mathcomp_root_finite', 'mathcomp_retry_fixed_point'],
-        'PTree.Regression.Backend.MathCompOmega': [
+        'PTree.Examples.Probability.MathCompOmega': [
             'checked_omega', 'checked_mixed_omega', 'checked_diagonal',
             'checked_fubini', 'checked_bind', 'checked_mixed', 'checked_omega_ae',
             'null_branches_need_no_continuity',
             'relation_survives_kernel_bind'],
         'PTree.Examples.BernoulliFactory.RealBernoulliMathComp': [
             'mathcomp_binary_oracle_lub', 'mathcomp_binary_oracle_is_ast'],
-        'PTree.Regression.Infrastructure.MathCompUniverse': ['self_nested_sampling'],
+        'PTree.Tests.Imports.MathCompUniverse': ['self_nested_sampling'],
     }
     entries = query([module+'.'+name for module, names in groups.items() for name in names])
     for e in entries:
@@ -194,8 +197,8 @@ def real_joint_check():
             'subenumR_qlift_eq_sound_via_joint'],
     }
     policy = json.loads(POLICY.read_text())
-    groups['PTree.Regression.Probability.SubEnumRJointRealization'] = policy['regressions'][
-        'theories/Regression/Probability/SubEnumRJointRealization.v']
+    groups['PTree.Examples.Validation.SubEnumRJointRealization'] = policy['clients'][
+        'theories/Examples/Validation/SubEnumRJointRealization.v']
     entries = query([module+'.'+name for module, names in groups.items() for name in names])
     for e in entries:
         assert logical_axioms(e['assumptions']) <= SOUNDNESS_AXIOMS, e['name']
@@ -231,13 +234,13 @@ def generic_quotient_check():
         'PTree.Prob.Backend.SubEnumQ.FreeOmega.JointRealization': [
             'subenumQ_qlift_sound', 'subenumQ_qlift_eq_sound_via_joint',
             'subenumQ_qlift_joint_mass_support'],
-        'PTree.Regression.Probability.GenericFreeOmegaValidation': [
+        'PTree.Examples.Validation.GenericFreeOmegaValidation': [
             'generic_q_joint_without_legacy'],
         'PTree.Prob.Backend.SubEnumQ.FreeOmega.Compatibility': ['subenumQ_generic_qlift_tests'],
     }
     policy = json.loads(POLICY.read_text())
-    path = 'theories/Regression/Probability/GenericQuotientValidation.v'
-    groups['PTree.Regression.Probability.GenericQuotientValidation'] = policy['regressions'][path]
+    path = 'theories/Examples/Validation/GenericQuotientValidation.v'
+    groups['PTree.Examples.Validation.GenericQuotientValidation'] = policy['clients'][path]
     entries = query([module+'.'+name for module, names in groups.items() for name in names])
     for e in entries:
         assert logical_axioms(e['assumptions']) <= SOUNDNESS_AXIOMS, e['name']
@@ -266,15 +269,15 @@ def stable_hitting_validation_check():
         'PTree.Prob.Backend.SubEnumQ.FreeOmega.JointRealization': ['subenumQ_qlift_sound'],
     }
     policy = json.loads(POLICY.read_text())
-    groups['PTree.Regression.Probability.StableHittingDomain'] = policy['regressions'][
-        'theories/Regression/Probability/StableHittingDomain.v']
+    groups['PTree.Examples.Validation.StableHittingDomain'] = policy['clients'][
+        'theories/Examples/Validation/StableHittingDomain.v']
     entries = query([module+'.'+name for module, names in groups.items() for name in names])
     for e in entries:
         assert logical_axioms(e['assumptions']) <= SOUNDNESS_AXIOMS, e['name']
         if '.Validation.StableHitting.' in e['name']:
             assert not re.search(r'\b(?:SubEnumQ\w*|SubEnumR\w*|MathComp\w*)\b', e['type']), e['name']
             assert not re.search(r'\b(?:SemanticOmegaLaws|SemanticMeasureBindLaws)\b', e['type']), e['name']
-        if '.Eq.Backend.' in e['name'] or '.Regression.' in e['name']:
+        if '.Eq.Backend.' in e['name'] or '.Examples.' in e['name'] or '.Tests.' in e['name']:
             assert not re.search(r'\b(?:Semantic\w*Laws|native_ae|native_lub|no_event)\b', e['type']), e['name']
         if e['name'].endswith(('.subenumQ_stable_hitting_modelable', '.subenumR_stable_hitting_modelable')):
             assert e['type'].count('free_omega_modelable') == 1, 'Validity must be a conclusion, not a premise'

@@ -17,7 +17,7 @@ See [current effects/execution status](EFFECTS_EXECUTION.md) for the active boun
 ## Stage 1: a two-round handler exposes the hidden correlation
 
 The checked experiment is
-`Regression/Semantics/InterpExposure.v`. It imports the existing strictness
+`Examples/Counterexamples/InterpExposure.v`. It imports the existing strictness
 witness rather than duplicating its programs or its source-bisimulation proof.
 It belongs with the comparison regressions; no library or paper-facing case
 study acquires a dependency on regression fixtures.
@@ -124,8 +124,8 @@ and rechecks the new module and the import harness together:
 python3 tools/audit_architecture.py --aggregate-only
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
-  -norec PTree.Regression.Infrastructure.AllImports \
-  -norec PTree.Regression.Semantics.InterpExposure
+  -norec PTree.Tests.AllImports \
+  -norec PTree.Examples.Counterexamples.InterpExposure
 ```
 
 This is a targeted joint kernel audit, not a claim that every existing
@@ -196,7 +196,7 @@ proof for an arbitrary handler. The regression uses actual `setoid_rewrite`.
 
 ### Checked boundaries
 
-`Regression/Semantics/GuardedInterp.v` checks:
+`Examples/Effects/GuardedInterp.v` checks:
 
 - The very same `two_query_handler` from stage 1 satisfies the condition
   and preserves peutt. `two_query_compositionality_contrast` packages this
@@ -234,9 +234,9 @@ all passed locally. The stage-2 validation commands are:
 python3 tools/audit_architecture.py --aggregate-only
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
-  -norec PTree.Regression.Infrastructure.AllImports \
+  -norec PTree.Tests.AllImports \
   -norec PTree.Interp.FreeOmega.Guarded \
-  -norec PTree.Regression.Semantics.GuardedInterp
+  -norec PTree.Examples.Effects.GuardedInterp
 ```
 
 The stage-2 inventory contained 194 modules (193 imports plus `AllImports`).
@@ -335,7 +335,7 @@ capabilities as stage 2.
 
 ### Checked boundaries and assumptions
 
-`Regression/Semantics/AtomicInterp.v` checks:
+`Examples/Effects/AtomicInterp.v` checks:
 
 - A handler with Tau before its interaction and a Dirac Prob/Tau response
   segment satisfies the semantic certificate, despite not being a bare
@@ -369,9 +369,9 @@ imports plus `AllImports`). The targeted joint kernel check also passed:
 python3 tools/audit_architecture.py --aggregate-only
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
-  -norec PTree.Regression.Infrastructure.AllImports \
+  -norec PTree.Tests.AllImports \
   -norec PTree.Interp.FreeOmega.Atomic \
-  -norec PTree.Regression.Semantics.AtomicInterp
+  -norec PTree.Examples.Effects.AtomicInterp
 ```
 
 This loads the full-library universe context and rechecks the listed
@@ -488,7 +488,7 @@ two proof routes meet.
 
 ### Regression coverage
 
-`Regression/Semantics/MDPInterp.v` uses a non-identity handler that flips
+`Examples/Transitions/MDPInterp.v` uses a non-identity handler that flips
 the `Reply` label, retains `Ask`, and includes the stage-3 internal Tau/Prob
 response implementation. It checks a request followed by a genuinely
 non-Dirac probabilistic successor, an infinite interacting service, delayed
@@ -556,11 +556,11 @@ The full build, 200-module aggregate inventory (199 imports plus
 python3 tools/audit_architecture.py --aggregate-only
 opam exec -- dune build
 opam exec -- coqchk -silent -R _build/default/theories PTree \
-  -norec PTree.Regression.Infrastructure.AllImports \
+  -norec PTree.Tests.AllImports \
   -norec PTree.Prob.Backend.FreeOmega.FreeOmegaTotalSubEnumQ \
   -norec PTree.Interp.FreeOmega.MDP \
   -norec PTree.Interp.Backend.SubEnumQ \
-  -norec PTree.Regression.Semantics.MDPInterp
+  -norec PTree.Examples.Transitions.MDPInterp
 ```
 
 This rechecks the four Stage 4 modules and the aggregate harness in the

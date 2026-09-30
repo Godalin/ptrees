@@ -58,27 +58,27 @@
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.StateFold.state_fold_commutes",
+      "name": "PTree.Examples.Effects.StateFold.state_fold_commutes",
       "type": "@StateFold.state_fold_commutes\n     : forall (S : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s : S),\n       @Eqit.eutt F (S * A) (S * A) (@eq (S * A))\n         (@StateFold.fold_state S E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A t s)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample (S * A)\n            (@State.run_state S E MN A t s))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.StateFold.sample_keeps_separate_algebra",
+      "name": "PTree.Examples.Effects.StateFold.sample_keeps_separate_algebra",
       "type": "@StateFold.sample_keeps_separate_algebra\n     : forall (E MN F : Type -> Type) (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A X : Type) (mu : MN X) (k : X -> PTreeDefinition.ptree E MN A),\n       @Eqit.eutt F A A (@eq A)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF E MN A (PTreeDefinition.ptree E MN A) X mu k\n            |})\n         (@ITreeDefinition.ITree.bind F X A (sample X mu)\n            (fun x : X =>\n             @Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n               (@ITreeDefinition.MonadIter_itree F) handle sample A (k x)))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.StateFold.state_get_fold",
+      "name": "PTree.Examples.Effects.StateFold.state_get_fold",
       "type": "@StateFold.state_get_fold\n     : forall (S : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (k : S -> PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A)\n         (s : S),\n       @Eqit.eutt F (S * A) (S * A) (@eq (S * A))\n         (@StateFold.fold_state S E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.VisF (Sum.sum1 (State.stateE S) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (State.stateE S) E) MN A) S\n                  (@Sum.inl1 (State.stateE S) E S (State.Get S)) k\n            |} s)\n         (@StateFold.fold_state S E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample A (k s) s)",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.StateFold.unbounded_counter_fold_agrees",
+      "name": "PTree.Examples.Effects.StateFold.unbounded_counter_fold_agrees",
       "type": "@StateFold.unbounded_counter_fold_agrees\n     : forall (F : Type -> Type)\n         (sample : forall X : Type, Representation.SubEnumQ X -> ITreeDefinition.itree F X)\n         (s : nat),\n       @Eqit.eutt F (nat * unit) (nat * unit) (@eq (nat * unit))\n         (@StateFold.fold_state nat Sum.void1 Representation.SubEnumQ (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F)\n            (@StateFold.no_visible_event F) sample unit StateCounter.count_until_success s)\n         (@Fold.fold Sum.void1 Representation.SubEnumQ (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F)\n            (@StateFold.no_visible_event F) sample (nat * unit)\n            (@State.run_state nat Sum.void1 Representation.SubEnumQ unit\n               StateCounter.count_until_success s))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.StateFold.bare_iterator_is_not_uniform",
+      "name": "PTree.Examples.Effects.StateFold.bare_iterator_is_not_uniform",
       "type": "StateFold.bare_iterator_is_not_uniform\n     : ~\n       @IterationLaws.iteration_uniform option StateFold.option_ops StateFold.nonuniform_iter\n         StateFold.option_observation",
       "assumptions": "Axioms:\nDescription.constructive_definite_description :\n  forall (A : Type) (P : A -> Prop), (exists ! x : A, P x) -> {x : A | P x}\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P"
     }

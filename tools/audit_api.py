@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Public module/capability contracts and explicitly scoped kernel checks."""
+from rocq_paths import source_files, LOADPATH
 import argparse
 import json
 import re
@@ -21,30 +22,30 @@ REGISTRY['theories/Eq/Backend/MathComp.v'] = 'MathComp_CanonicalBehavior'
 KERNEL_MODULES = [
     # Check the template-polymorphic native sampler client in the full safe
     # context, not just alone (which misses an over-specialized carrier).
-    'PTree.Regression.Execution.Runner',
-    'PTree.Regression.Infrastructure.AllImports',
-    'PTree.Regression.Infrastructure.ArchitectureBoundaries',
-    'PTree.Regression.Infrastructure.UniverseSeparatedPTree',
-    'PTree.Regression.Backend.UnifiedFrontierEnumQ',
-    'PTree.Regression.Semantics.CanonicalPartialDivergence',
-    'PTree.Regression.Semantics.PEuttAlgebra',
-    'PTree.Regression.Semantics.PublicSemanticFacade',
-    'PTree.Regression.Probability.FreeOmegaUpperContracts',
-    'PTree.Regression.Probability.FreeOmegaDomain',
-    'PTree.Regression.Probability.FreeOmegaSoundness',
-    'PTree.Regression.Probability.CountableCoupling',
-    'PTree.Regression.Probability.StableHittingDomain',
-    'PTree.Regression.Probability.IrrationalHitting',
-    'PTree.Regression.Probability.OmegaVal',
-    'PTree.Regression.Probability.OmegaValMeasure',
-    'PTree.Regression.Probability.RealTransport',
-    'PTree.Regression.Infrastructure.PublicBehavior',
-    'PTree.Regression.ImportOrder.CanonicalBehaviorStructuralFirst',
-    'PTree.Regression.ImportOrder.CanonicalBehaviorNativeFirst',
+    'PTree.Examples.Execution.Runner',
+    'PTree.Tests.AllImports',
+    'PTree.Tests.Imports.ArchitectureBoundaries',
+    'PTree.Tests.Imports.UniverseSeparatedPTree',
+    'PTree.Tests.Universe.UnifiedFrontierEnumQ',
+    'PTree.Examples.Effects.CanonicalPartialDivergence',
+    'PTree.Tests.Rewriting.PEuttAlgebra',
+    'PTree.Tests.Imports.PublicSemanticFacade',
+    'PTree.Examples.Validation.FreeOmegaUpperContracts',
+    'PTree.Examples.Validation.FreeOmegaDomain',
+    'PTree.Examples.Validation.FreeOmegaSoundness',
+    'PTree.Examples.Validation.CountableCoupling',
+    'PTree.Examples.Validation.StableHittingDomain',
+    'PTree.Examples.Validation.IrrationalHitting',
+    'PTree.Examples.Validation.OmegaVal',
+    'PTree.Examples.Validation.OmegaValMeasure',
+    'PTree.Examples.Validation.RealTransport',
+    'PTree.Tests.Imports.PublicBehavior',
+    'PTree.Tests.ImportOrder.CanonicalBehaviorStructuralFirst',
+    'PTree.Tests.ImportOrder.CanonicalBehaviorNativeFirst',
     'PTree.Interp.IterationMachine',
     'PTree.Interp.IterationUniform',
     'PTree.Interp.FreeOmega.IterationUniform',
-    'PTree.Regression.Semantics.PTreeUniformity',
+    'PTree.Tests.Capabilities.PTreeUniformity',
 ]
 
 
@@ -95,7 +96,7 @@ def current_surface(sources):
     bind_owners = {p for p, s in sources.items()
                    if re.search(r'\b(?:Theorem|Lemma|Corollary|Definition|Notation) peutt_bind\b', s)}
     assert bind_owners == {'theories/Eq/Bind.v'}, ('Bind ownership/shadowing', bind_owners)
-    client = sources['theories/Regression/Infrastructure/PublicBehavior.v']
+    client = sources['tests/Imports/PublicBehavior.v']
     assert re.findall(r'^From .*?\.$', client, re.M) == [
         'From PTree Require Import PTree PTreeFacts.',
         'From PTree.Eq.Backend Require Import SubEnumQ.',
@@ -110,7 +111,7 @@ def facade_surface(text):
 
 def surface_check():
     current_surface({p.relative_to(ROOT).as_posix(): p.read_text()
-                     for p in (ROOT / 'theories').rglob('*.v')})
+                     for p in source_files()})
     data = json.loads(POLICY.read_text())
     for path, expected in data['facades'].items():
         assert facade_surface((ROOT / path).read_text()) == expected, 'Public surface changed: ' + path
@@ -126,8 +127,8 @@ def kernel_check():
     # Check these module bodies together, in the full-library universe context.
     # -norec trusts compiled dependencies; do not call this recursive or exhaustive.
     selected = [arg for module in KERNEL_MODULES for arg in ('-norec', module)]
-    subprocess.run(['opam', 'exec', '--', 'coqchk', '-silent', '-R',
-                    '_build/default/theories', 'PTree', *selected], cwd=ROOT, check=True)
+    subprocess.run(['opam', 'exec', '--', 'coqchk', '-silent',
+                    *LOADPATH, *selected], cwd=ROOT, check=True)
     print(f'Targeted joint kernel check passed ({len(KERNEL_MODULES)} module bodies; dependencies not rechecked).')
 
 

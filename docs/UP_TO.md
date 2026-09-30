@@ -163,7 +163,7 @@ distinguishable implementation states: the hidden states are unobservable;
 the non-functional requirement is about the native marginals and the
 displayed recursive proof, not uniqueness of a behavioral bisimulation.
 
-`Regression/Semantics/UpToProb` checks the known-equivalence branch with
+`tests/Rewriting/UpToProb.v` checks the known-equivalence branch with
 arbitrary sampled/return carriers and no backend import. The mixed protocol
 checks actual recursive branches. Existing divergence and missing-mass
 regressions remain in place. Algebraic factory/controller proofs are not

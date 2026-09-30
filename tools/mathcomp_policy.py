@@ -1,10 +1,11 @@
 """Exact Gate M exception. No prefix-based universe-checking permission."""
 import re
 from audit_assumptions import without_comments
+from rocq_paths import source_files
 
 ASSEMBLY = 'Eq/Backend/MathComp'
-GATE_M = frozenset({ASSEMBLY, 'Regression/Backend/MathComp'})
-ALLOWLIST = frozenset('theories/' + m + '.v' for m in GATE_M)
+GATE_M = frozenset({ASSEMBLY, 'Tests/MathComp'})
+ALLOWLIST = frozenset({'theories/Eq/Backend/MathComp.v', 'tests/MathComp.v'})
 
 
 def universe_source_check(path, text):
@@ -43,7 +44,7 @@ def check_gate_boundary(edges):
 
 def safe_targets(root):
     return sorted(str(p.relative_to(root).with_suffix('.vo'))
-                  for p in (root / 'theories').rglob('*.v')
+                  for p in source_files(root)
                   if p.relative_to(root).as_posix() not in ALLOWLIST)
 
 
@@ -51,6 +52,7 @@ def check_build_flags(root):
     # No project-wide CLI bypass may evade the source-file exception.
     paths = [root / 'dune-project', root / '_CoqProject', root / '.coqrc']
     paths += list((root / 'theories').rglob('dune'))
+    paths += list((root / 'tests').rglob('dune'))
     for path in paths:
         if path.exists():
             assert not re.search(r'-type-in-type|bypass_check|Unset\s+(?:Universe|Guard|Positivity)\s+Checking',

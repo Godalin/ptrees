@@ -4,6 +4,7 @@
 No history access and no snapshot-update mode. Accepted snapshots are data,
 not executable migration scripts. Every registered group runs in CI.
 """
+from rocq_paths import LOADPATH
 import argparse
 import json
 from audit_assumptions import ROOT, query, compare, logical_axioms, SOUNDNESS_AXIOMS
@@ -11,7 +12,7 @@ from audit_mathcomp import query_gate_m
 from mathcomp_policy import GATE_M
 
 MANIFEST = ROOT / 'docs/CONTRACT_SUITES.json'
-ALLIMPORTS = 'PTree.Regression.Infrastructure.AllImports'
+ALLIMPORTS = 'PTree.Tests.AllImports'
 
 
 def load_suites():
@@ -63,8 +64,8 @@ def load_suites():
         'PTree.Prob.Backend.SubEnumQ.FreeOmega.Compatibility.free_omega_qlift_sound',
         'PTree.Eq.Backend.StableHittingDomainSubEnumQ.stable_hitting_denotational_adequacy',
         'PTree.Interp.IterationUniform.ptree_peutt_iteration_uniform',
-        'PTree.Regression.Semantics.PTreeUniformity.state_fold_into_ptree',
-        'PTree.Regression.Semantics.PTreeUniformity.exception_fold_into_ptree',
+        'PTree.Tests.Capabilities.PTreeUniformity.state_fold_into_ptree',
+        'PTree.Tests.Capabilities.PTreeUniformity.exception_fold_into_ptree',
     ]:
         assert name in names, 'Missing maintained endpoint: ' + name
     return result
@@ -90,7 +91,7 @@ def check_protocol_boundary():
     """Retain the cause-sensitive negative test, separate from positive uniformity."""
     import subprocess
     script = '''
-From PTree.Regression.Infrastructure Require Import AllImports.
+Require Import PTree.Tests.AllImports.
 From PTree.Core Require Import PTreeDefinition IterationLaws.
 From ITree.Basics Require Import Basics Monad.
 From PTree.Eq.Backend Require Import SubEnumQ.
@@ -102,8 +103,8 @@ Definition unpackageable {F : Type -> Type} :
  fun I J A f g h => @free_omega_peutt_iter_uniform SubEnumQ _ _ _ _ _ _ F I J A f g h.
 Goal True. idtac "UNIFORM_BOUNDARY_END". Abort.
 '''
-    result = subprocess.run(['opam', 'exec', '--', 'coqtop', '-quiet', '-R',
-        '_build/default/theories', 'PTree'], cwd=ROOT, input=script,
+    result = subprocess.run(['opam', 'exec', '--', 'coqtop', '-quiet',
+        *LOADPATH], cwd=ROOT, input=script,
         text=True, capture_output=True)
     assert result.returncode == 0, result.stderr
     assert result.stdout.count('UNIFORM_BOUNDARY_START') == 1

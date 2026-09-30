@@ -78,47 +78,47 @@
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.ExceptionFold.exception_target_monad",
+      "name": "PTree.Examples.Effects.ExceptionFold.exception_target_monad",
       "type": "@ExceptionFold.exception_target_monad\n     : forall (Err : Type) (F : Type -> Type),\n       @Monad.MonadLawsE (EitherMonad.eitherT Err (ITreeDefinition.itree F))\n         (@ExceptT.exceptT_eq1 Err (ITreeDefinition.itree F) (@ITreeMonad.Eq1_ITree F))\n         (@EitherMonad.Monad_eitherT Err (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.ExceptionFold.exception_target_uniform",
+      "name": "PTree.Examples.Effects.ExceptionFold.exception_target_uniform",
       "type": "@ExceptionFold.exception_target_uniform\n     : forall (Err : Type) (F : Type -> Type),\n       @IterationLaws.iteration_uniform (EitherMonad.eitherT Err (ITreeDefinition.itree F))\n         (@EitherMonad.Monad_eitherT Err (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F))\n         (@Basics.MonadIter_eitherT (ITreeDefinition.itree F) Err (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F))\n         (@ExceptT.exceptT_eq1 Err (ITreeDefinition.itree F) (@ITreeMonad.Eq1_ITree F))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.ExceptionFold.exception_fold_commutes",
+      "name": "PTree.Examples.Effects.ExceptionFold.exception_fold_commutes",
       "type": "@ExceptionFold.exception_fold_commutes\n     : forall (Err : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (t : PTreeDefinition.ptree (Sum.sum1 (Exception.exceptE Err) E) MN A),\n       @Eqit.eutt F (Err + A) (Err + A) (@eq (Err + A))\n         (@ExceptionFold.fold_exception Err E MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A t)\n         (@Fold.fold E MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) handle sample (Err + A)\n            (@Exception.run_exception Err E MN A t))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.ExceptionFold.exception_throw_fold",
+      "name": "PTree.Examples.Effects.ExceptionFold.exception_throw_fold",
       "type": "@ExceptionFold.exception_throw_fold\n     : forall (Err : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A : Type) (err : Err),\n       @Eqit.eutt F (Err + A) (Err + A) (@eq (Err + A))\n         (@ExceptionFold.fold_exception Err E MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.VisF (Sum.sum1 (Exception.exceptE Err) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (Exception.exceptE Err) E) MN A) Empty_set\n                  (@Sum.inl1 (Exception.exceptE Err) E Empty_set (@Exception.Throw Err err))\n                  (fun v : Empty_set =>\n                   match\n                     v return (PTreeDefinition.ptree (Sum.sum1 (Exception.exceptE Err) E) MN A)\n                   with\n                   end)\n            |})\n         {|\n           ITreeDefinition._observe :=\n             @ITreeDefinition.RetF F (Err + A) (ITreeDefinition.itree F (Err + A)) (@inl Err A err)\n         |}",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.ExceptionFold.exception_probability_fold",
+      "name": "PTree.Examples.Effects.ExceptionFold.exception_probability_fold",
       "type": "@ExceptionFold.exception_probability_fold\n     : forall (Err : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (A X : Type) (mu : MN X)\n         (k : X -> PTreeDefinition.ptree (Sum.sum1 (Exception.exceptE Err) E) MN A),\n       @Eqit.eutt F (Err + A) (Err + A) (@eq (Err + A))\n         (@ExceptionFold.fold_exception Err E MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF (Sum.sum1 (Exception.exceptE Err) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (Exception.exceptE Err) E) MN A) X mu k\n            |})\n         (@ITreeDefinition.ITree.bind F X (Err + A) (sample X mu)\n            (fun x : X =>\n             @ExceptionFold.fold_exception Err E MN (ITreeDefinition.itree F)\n               (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n               A (k x)))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.ExceptionFold.sample_then_exception",
+      "name": "PTree.Examples.Effects.ExceptionFold.sample_then_exception",
       "type": "@ExceptionFold.sample_then_exception\n     : forall (Err : Type) (E MN F : Type -> Type)\n         (handle : forall X : Type, E X -> ITreeDefinition.itree F X)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (X A : Type) (mu : MN X) (err : Err),\n       @Eqit.eutt F (Err + A) (Err + A) (@eq (Err + A))\n         (@ExceptionFold.fold_exception Err E MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample A\n            {|\n              PTreeDefinition._observe :=\n                @PTreeDefinition.ProbF (Sum.sum1 (Exception.exceptE Err) E) MN A\n                  (PTreeDefinition.ptree (Sum.sum1 (Exception.exceptE Err) E) MN A) X mu\n                  (fun _ : X =>\n                   {|\n                     PTreeDefinition._observe :=\n                       @PTreeDefinition.VisF (Sum.sum1 (Exception.exceptE Err) E) MN A\n                         (PTreeDefinition.ptree (Sum.sum1 (Exception.exceptE Err) E) MN A)\n                         Empty_set\n                         (@Sum.inl1 (Exception.exceptE Err) E Empty_set (@Exception.Throw Err err))\n                         (fun v : Empty_set =>\n                          match\n                            v\n                            return\n                              (PTreeDefinition.ptree (Sum.sum1 (Exception.exceptE Err) E) MN A)\n                          with\n                          end)\n                   |})\n            |})\n         (@ITreeDefinition.ITree.bind F X (Err + A) (sample X mu)\n            (fun _ : X =>\n             {|\n               ITreeDefinition._observe :=\n                 @ITreeDefinition.RetF F (Err + A) (ITreeDefinition.itree F (Err + A))\n                   (@inl Err A err)\n             |}))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.ExceptionFold.recursive_exception_square",
+      "name": "PTree.Examples.Effects.ExceptionFold.recursive_exception_square",
       "type": "@ExceptionFold.recursive_exception_square\n     : forall (MN F : Type -> Type) (mu : MN bool)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (handle : forall X : Type, ExceptionFold.requestE X -> ITreeDefinition.itree F X),\n       @Eqit.eutt F (nat + bool) (nat + bool) (@eq (nat + bool))\n         (@ExceptionFold.fold_exception nat ExceptionFold.requestE MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n            bool (@ExceptionFold.retry_or_throw MN mu))\n         (@Fold.fold ExceptionFold.requestE MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F) handle sample\n            (nat + bool)\n            (@Exception.run_exception nat ExceptionFold.requestE MN bool\n               (@ExceptionFold.retry_or_throw MN mu)))",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.ExceptionFold.no_event",
+      "name": "PTree.Examples.Effects.ExceptionFold.no_event",
       "type": "@ExceptionFold.no_event\n     : forall (F : Type -> Type) (X : Type), Sum.void1 X -> ITreeDefinition.itree F X",
       "assumptions": "Closed under the global context"
     },
     {
-      "name": "PTree.Regression.Semantics.ExceptionFold.high_exception_square",
+      "name": "PTree.Examples.Effects.ExceptionFold.high_exception_square",
       "type": "@ExceptionFold.high_exception_square\n     : forall (A : Type) (MN F : Type -> Type)\n         (sample : forall X : Type, MN X -> ITreeDefinition.itree F X)\n         (t : PTreeDefinition.ptree (Sum.sum1 (Exception.exceptE nat) Sum.void1) MN A),\n       @Eqit.eutt F (nat + A) (nat + A) (@eq (nat + A))\n         (@ExceptionFold.fold_exception nat Sum.void1 MN (ITreeDefinition.itree F)\n            (@ITreeDefinition.Monad_itree F) (@ITreeDefinition.MonadIter_itree F)\n            (@ExceptionFold.no_event F) sample A t)\n         (@Fold.fold Sum.void1 MN (ITreeDefinition.itree F) (@ITreeDefinition.Monad_itree F)\n            (@ITreeDefinition.MonadIter_itree F) (@ExceptionFold.no_event F) sample\n            (nat + A) (@Exception.run_exception nat Sum.void1 MN A t))",
       "assumptions": "Closed under the global context"
     }

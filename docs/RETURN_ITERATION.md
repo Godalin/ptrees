@@ -79,10 +79,10 @@ No complete Elgot-monad axiom suite is claimed here.
 
 ## Regression and trust boundary
 
-`Regression/Semantics/IterationFrontiers.v` checks an inhabited event
+`Examples/Effects/IterationFrontiers.v` checks an inhabited event
 signature, arbitrary MF kernels, native compatibility, the finite index
 shift, zero/missing mass, and endless retry with a nonleast fixed point.
-`Regression/Probability/KleisliIteration.v` checks the independent domain,
+`Examples/Validation/KleisliIteration.v` checks the independent domain,
 safe MathComp leastness and a SubEnumQ loop's denotation/modelability.
 `MathComp.return_only_lfp` connects actual PTree iteration to
 the safe native lfp theorem using the same generic program theorem.

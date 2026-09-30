@@ -311,7 +311,7 @@ Local validation for this follow-up:
 - All 125 tool tests, architecture checking, source-safety checking and the
   32-group contract registry metadata check passed. No audit runner was added.
 - Joint `coqchk -norec` passed for `Prob/Interface/Coupling`, MathComp
-  `BindLaws`, and `Regression/Backend/MathCompOmega`. It checks these safe
+  `BindLaws`, and `Examples/Probability/MathCompOmega`. It checks these safe
   module bodies while trusting compiled dependencies, not the whole library
   recursively; Gate M is excluded.
 - No `Admitted`, new axiom/class, global hint, external-model dependency, or

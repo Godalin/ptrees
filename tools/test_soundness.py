@@ -1,4 +1,5 @@
 """Long-term regression coverage, source safety and frozen API checks."""
+from rocq_paths import source_files
 import copy
 import json
 import unittest
@@ -12,7 +13,7 @@ class SoundnessTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sources={p.relative_to(soundness.ROOT).as_posix():p.read_text()
-                     for p in (soundness.ROOT/'theories').rglob('*.v')}
+                     for p in source_files()}
         cls.policy=json.loads(soundness.POLICY.read_text())
 
     def test_current_source_contract(self):
@@ -93,17 +94,17 @@ class SoundnessTests(unittest.TestCase):
         self.assertNotIn('Admitted',soundness.code_only('(* Admitted. *) Check "Axiom Admitted".'))
 
     def test_lost_regression_is_rejected(self):
-        path,names=next(iter(self.policy['regressions'].items()))
+        path,names=next(iter(self.policy['clients'].items()))
         missing=self.sources.copy(); missing.pop(path)
         with self.assertRaises(AssertionError): soundness.source_check(missing,self.policy)
         changed=self.sources.copy(); changed[path]=changed[path].replace(names[0],'renamed_test')
         with self.assertRaises(AssertionError): soundness.source_check(changed,self.policy)
 
-    def test_source_scope_covers_every_regression_with_theorems(self):
-        import re
-        for path,text in self.sources.items():
-            if path.startswith('theories/Regression/') and re.search(r'^(?:Example|Lemma|Theorem) ',text,re.M):
-                self.assertIn(path,self.policy['regressions'])
+    def test_named_clients_have_real_sources(self):
+        # Freeze selected contracts, not every helper added to an example.
+        for path, names in self.policy['clients'].items():
+            self.assertIn(path, self.sources)
+            self.assertEqual(len(names), len(set(names)))
 
     def test_current_api(self):
         api.surface_check()

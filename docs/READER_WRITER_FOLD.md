@@ -94,7 +94,7 @@ probabilistically correct or that arbitrary fold preserves peutt.
 
 ## Regression and assumptions
 
-`Regression/Semantics/ReaderWriterFold.v` checks inherited monad/uniformity
+`Examples/Effects/ReaderWriterFold.v` checks inherited monad/uniformity
 laws with ITree, actual Reader/Writer commuting, and append-form bind.
 The Writer uses noncommutative list logs and computes `[1]` then `[2]` as
 `[1;2]`. Recursive clients contain residual Tick, native Prob, unbounded Tau

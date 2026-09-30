@@ -229,25 +229,25 @@ External bidual/joint equivalence is established for countably supported
 OmegaVal margins. It is **not** completeness of syntactic qlift. The final
 FreeOmega bridge composes these results without inspecting FOQLComp.
 
-## Regression and verification map
+## Mathematical examples and verification map
 
-| Contract | Maintained regression |
+| Content | Maintained example (under `theories/Examples`) |
 | --- | --- |
-| Independent domain, increasing Lub, bounded equality, universe | `Probability/OmegaVal` |
-| Countable measure, integrals, missing mass, roundtrips | `Probability/OmegaValMeasure` |
-| Raw nonadditivity, native AE, upper/observation/quotient laws | `Probability/FreeOmegaUpperContracts` |
-| Invalid raw terms and admissible construction | `Probability/FreeOmegaDomain` |
-| Countable coding, explicit plans, actual existence, no escape | `Probability/CountableCoupling` |
-| FOQLComp through invalid middle, equality, general joint, high universe | `Probability/FreeOmegaSoundness` |
-| Finite real irrational weights / Hall | `Probability/RealTransport` |
-| Generic model/quotient validation and Q/R adapters | `Probability/GenericFreeOmegaValidation`, `Probability/GenericQuotientValidation` |
-| Arbitrary Q/R hitting witnesses, partial mass, infinite service | `Probability/StableHittingDomain` |
-| Rational coins / irrational limiting mass | `Probability/IrrationalHitting` |
+| Independent domain, increasing Lub, bounded equality, universe | `Validation/OmegaVal` |
+| Countable measure, integrals, missing mass, roundtrips | `Validation/OmegaValMeasure` |
+| Raw nonadditivity, native AE, upper/observation/quotient laws | `Validation/FreeOmegaUpperContracts` |
+| Invalid raw terms and admissible construction | `Validation/FreeOmegaDomain` |
+| Countable coding, explicit plans, actual existence, no escape | `Validation/CountableCoupling` |
+| FOQLComp through invalid middle, equality, general joint, high universe | `Validation/FreeOmegaSoundness` |
+| Finite real irrational weights / Hall | `Validation/RealTransport` |
+| Generic model/quotient validation and Q/R adapters | `Validation/GenericFreeOmegaValidation`, `Validation/GenericQuotientValidation` |
+| Arbitrary Q/R hitting witnesses, partial mass, infinite service | `Validation/StableHittingDomain` |
+| Rational coins / irrational limiting mass | `Validation/IrrationalHitting` |
 
-Paths are under `theories/Regression`. The private shared sample fixture is
-not a new public API. Raw observation escaping mass and countable matrix mass
-escape remain different negative tests. `FreeOmegaLimitSafety` retains the
-negative continuity/diagonal/Fubini tests; formal FiniteInternal/Recovery
+`Validation/FreeOmegaSamples` supplies shared mathematical examples, not a
+new public API. Raw observation escaping mass and countable matrix mass
+escape remain different counterexamples. `Counterexamples/Validation/FreeOmegaLimitSafety`
+retains the negative continuity/diagonal/Fubini results; formal FiniteInternal/Recovery
 infrastructure is not deleted by this validation result.
 
 Existing compiled types are mechanically namespace-relocated, not reset.

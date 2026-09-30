@@ -22,7 +22,7 @@ only the two existing Gate M files perform unchecked recursive assembly.
 ## Why not sem_eq -> sem_le?
 
 The observable FreeOmega model has quotient equality but structural order.
-The new `Regression/Probability/FreeOmegaOrder.v` proves:
+The new `Examples/Probability/FreeOmegaOrder.v` proves:
 
 ```text
 FORet tt  qlift(eq)  FOLub (fun _ => FORet tt)

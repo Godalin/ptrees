@@ -77,7 +77,7 @@ dual constraints only. No joint/completeness claim is made.
 
 ## Regression contracts
 
-`Regression/Probability/GenericQuotientValidation.v` checks:
+`Examples/Validation/GenericQuotientValidation.v` checks:
 
 - no concrete backend or PTree is loaded by the generic bridge;
 - an explicit heterogeneous `FOQLComp` through the already-proved invalid

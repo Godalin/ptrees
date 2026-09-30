@@ -25,7 +25,7 @@ third project-wide distribution parameter or another free probability syntax.
 
 ## Existing completion capabilities
 
-`Regression/Backend/BackendCapabilities.v` now checks the following with an
+`tests/Capabilities/BackendCapabilities.v` now checks the following with an
 arbitrary native carrier, in separately scoped capability contexts. These
 are existing implementations, not newly assumed mathematical laws.
 
@@ -187,14 +187,14 @@ is **not** sufficient evidence for a self-model: importing its compiled
 module into AllImports failed with a universe inconsistency.
 
 Dependency reduction found that one existing module,
-`Regression/Probability/FreeOmegaUpperContracts`, suffices to reproduce the
+`Examples/Validation/FreeOmegaUpperContracts`, suffices to reproduce the
 conflict. With that module loaded first, a native PTree and its stable head
 still typecheck, but applying the sealed MathComp carrier to that head is
 rejected: the required strict inequality conflicts with
 `MathCompKernelMeasure.u0 = PTree.Core.PTreeDefinition.61`.
 The primitive kernel and `peutt` instantiations fail as well.
 
-`Regression/Infrastructure/MathCompUniverse.v` preserves these as checked `Fail`
+`tests/Imports/MathCompUniverse.v` preserves these as checked `Fail`
 commands with positive tree/head controls and actual safe capability tests.
 The failure was independently inspected without `Fail`: it is a universe
 inconsistency, not a missing identifier or incorrectly supplied argument.

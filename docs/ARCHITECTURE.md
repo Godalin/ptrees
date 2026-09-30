@@ -22,8 +22,9 @@ theorems are described in [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md).
 | `Execution/Backend` | Concrete samplers and finite outcome calculations | No dependency on execution validation |
 | `Execution/Validation` | Conditional replay probability laws and hitting correspondence | One-way consumer, never a runtime or ordinary reasoning dependency |
 | Top-level `PTree / Eq / PTreeFacts` | Program / relation / reasoning aggregates | Direct owner exports; no concrete backend or validating model |
-| `Examples` | Applications and program proofs | No Regression dependency |
-| `Regression` | Positive, negative, integration and capability tests | Not formal library dependencies |
+| `Examples` | Program proofs, supporting mathematics and counterexamples | No tests dependency; not formal library dependencies |
+| `Examples/Validation`, `Examples/Counterexamples/Validation` | External-model mathematical examples | One-way validation, not reasoning dependencies |
+| Root `tests/` (`PTree.Tests`) | Isolated imports, inference, rewrite and universe clients | Root build checks them; not installed library theory |
 
 In Eq, Semantics and Interp, the `FreeOmega/` namespace fixes only
 `MF := FreeOmega MN`; `Backend/` additionally fixes a native model. These
@@ -123,9 +124,9 @@ kernel/measure mathematics remains checked normally. Its probability-backend dep
 excludes `Prob/FreeOmega`; the former combination alias and specialized
 behavioral clients have been removed, without changing generic `MN`/`MF`.
 `MathComp/NativeLaws.v` retains same-carrier kernel algebra, while
-`Regression/Infrastructure/MathCompUniverse.v` records the recursive-frontier
+`tests/Imports/MathCompUniverse.v` records the recursive-frontier
 failure with universe checking enabled. The separate, exact-allowlisted
-`Eq/Backend/MathComp.v` and `Regression/Backend/MathComp.v` use
+`Eq/Backend/MathComp.v` and `tests/MathComp.v` use
 `Local Unset Universe Checking.` for direct assembly/probes only (Gate M).
 Every other module belongs to Gate S and must not import Gate M, even through
 regressions or helpers. Safe `AllImports` excludes both Gate M modules; its
@@ -211,17 +212,17 @@ need it either. Nevertheless its independent execution/scheduling/coupling
 contracts, Recovery and residual infrastructure remain maintained. This cleanup
 does not delete them on the basis of zero clients or absence from one proof.
 
-`Regression/Fixtures` contains private shared samples, not final endpoint
-tests; it cannot depend on the other Regression families. Domain-only tests
-remain independent from FreeOmega tests. `OmegaValMeasure`, invalid raw Lub,
+Shared mathematical samples now live with their examples. Domain-only model
+examples remain independent from FreeOmega examples. `OmegaValMeasure`, invalid raw Lub,
 cofinality/diagonal misuse, raw observation mass escape, countable matrix mass
 escape, partial mass and large-universe tests are distinct contracts.
-Internal proof clients live in `Regression/Internal`, and independent canonical
-routing probes in `Regression/ImportOrder`; see the
+Internal proof examples live in `Examples/Internal`, and independent canonical
+routing probes in `tests/ImportOrder`; see the
 [retention inventory](REGRESSION_ORGANIZATION.md). Positive rewriting and
 inference tests are not replaceable by declaration snapshots.
-`AllImports` covers every other module exactly once, in sorted order.
-The alternate universe representation is only a regression, not another
+`tests/AllImports` covers every other Gate S module exactly once, in sorted order.
+Both `theories/` and `tests/` are included in the root `dune build`.
+The alternate universe representation is only a compilation probe, not another
 maintained syntax. No top-level `Events` namespace is introduced; standard
 effects should reuse ITree definitions.
 
@@ -242,7 +243,7 @@ python3 tools/audit_api.py --surface-only --kernel
 for 266 distinct owner/helper endpoints (including the original 25 capability probes)
 and 199 soundness endpoints. It is not a list of class counts or a claim of
 mathematical minimality. `CONTRACT_POLICY.json` fixes existing class bodies,
-curated facade text and named regression coverage. The audits are read-only;
+curated facade text and selected named client coverage. The audits are read-only;
 changing a contract requires explicit review, not automatic regeneration.
 
 The [printed-contract CI profile](../.github/ci/README.md) fixes OCaml 5.2.1,

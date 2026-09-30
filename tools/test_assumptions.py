@@ -55,8 +55,8 @@ class ParserTests(unittest.TestCase):
             'PTree.Interp.FreeOmega.Rewriting.FreeOmegaRewriting.free_omega_iter_Proper'),
             'PTree.Interp.FreeOmega.Rewriting')
         self.assertEqual(audit.declaration_module(
-            'PTree.Regression.Semantics.FreeOmegaRewriting.OptIn.imported_iter_proper'),
-            'PTree.Regression.Semantics.FreeOmegaRewriting')
+            'PTree.Tests.Rewriting.FreeOmegaRewriting.OptIn.imported_iter_proper'),
+            'PTree.Tests.Rewriting.FreeOmegaRewriting')
         self.assertEqual(audit.declaration_module('PTree.Eq.Algebra.peutt_bind_ret_l'),
                          'PTree.Eq.Algebra')
 
