@@ -82,6 +82,14 @@ Semantics.` exposes that API and the existing chain from `peutt` inclusion
 through MDP-fragment coincidence to encoded MDP correspondence. The precise
 premises and Gate S dependency audit are in [Transition API](docs/TRANSITION_API.md).
 
+The encoded-MDP correspondence is backend-parametric: given the generic
+native/frontier reflection and fragment laws, a faithful representation of
+total source kernels preserves and reflects MDP bisimilarity. The verified
+finite-rational instance embeds total EnumQ rows into SubEnumQ without changing
+their lifting, and uses `FreeOmega SubEnumQ` as frontier. See
+[MDP correspondence](docs/MDP_CORRESPONDENCE.md) for the exact obligations and
+the distinction between source representation and frontier reflection.
+
 Proofs may use the following strength hierarchy before promoting their result
 to the canonical behavioral endpoint:
 

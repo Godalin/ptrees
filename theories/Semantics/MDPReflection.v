@@ -35,6 +35,7 @@ Hypothesis Hreflect : forall {X Y A B} (mu : MN X) (nu : MN Y)
     (mixed_bind nu (fun y => sem_ret (g y))) ->
   sem_lift (fun x y => rel (f x) (g y)) mu nu.
 
+Section EncodedMDP.
 Variable D : MDP MN.
 Local Notation encode := (mdp_encode (D := D)).
 Local Notation ehead := (mdp_encode_head (D := D)).
@@ -107,6 +108,18 @@ Theorem mdp_peutt_iff s t : mdp_bisim (D := D) s t <-> pb (encode s) (encode t).
 Proof. split; [apply (mdp_bisim_peutt_sound (FI := FI) (FO := FO))|apply mdp_peutt_reflect]. Qed.
 
 Context `{FOAE : @SemanticOmegaAELaws MF FI FO}.
+
+(** The fragment-based correspondence is the public abstract boundary.
+    Concrete backends may prove membership by any existing probability laws. *)
+Theorem mdp_trans_bisim_iff_of_fragment
+    (Hfragment : forall s, mdp_state (MF := MF) (encode s)) s t :
+  mdp_bisim (D := D) s t <->
+  @trans_bisim E MN MF FI FC MX FO unit unit eq (encode s) (encode t).
+Proof.
+  rewrite mdp_peutt_iff.
+  apply mdp_state_peutt_trans_iff; apply Hfragment.
+Qed.
+
 Hypothesis Htotal : forall s a, sem_total (mdp_successors (D := D) (mdp_transition D s a)).
 Hypothesis Hsupport : forall s a,
   sem_ae (mdp_successors (D := D) (mdp_transition D s a)) (fun h => exists t, h = ehead t).
@@ -115,8 +128,43 @@ Theorem mdp_trans_bisim_iff s t :
   mdp_bisim (D := D) s t <->
   @trans_bisim E MN MF FI FC MX FO unit unit eq (encode s) (encode t).
 Proof.
-  rewrite mdp_peutt_iff.
-  apply mdp_state_peutt_trans_iff;
-    apply mdp_encode_mdp_state; assumption.
+  apply mdp_trans_bisim_iff_of_fragment.
+  apply mdp_encode_mdp_state; assumption.
 Qed.
+
+End EncodedMDP.
+
+(** Separate source representation from the native/frontier reflection
+    above. The source can be non-omega-complete: only its total kernel rows
+    and faithful lifting into MN are needed. *)
+Section RepresentedSource.
+Context {MS : Type -> Type}
+  `{SI : SemanticMeasure MS} `{SC : @SemanticMeasureCoreLaws MS SI}
+  `{SO : @SemanticOmega MS SI}.
+Variable source : MDP MS.
+Variable kernel : mdp_states source -> mdp_actions source -> MN (mdp_states source).
+Hypothesis kernel_total : forall s a, sem_total (kernel s a).
+Hypothesis kernel_lift : forall (rel : mdp_states source -> mdp_states source -> Prop) s t a,
+  sem_lift rel (mdp_transition source s a) (mdp_transition source t a) <->
+  sem_lift rel (kernel s a) (kernel t a).
+Let represented := mdp_represent (D := source) kernel_total.
+Local Notation encoded s := (mdp_encode (D := represented) s).
+
+Theorem mdp_represent_peutt_iff s t :
+  mdp_bisim (D := source) s t <-> peutt (MF := MF) eq (encoded s) (encoded t).
+Proof.
+  rewrite (mdp_represent_bisim_iff kernel_total kernel_lift).
+  apply (mdp_peutt_iff (D := represented)).
+Qed.
+
+Context `{FOAE : @SemanticOmegaAELaws MF FI FO}.
+Theorem mdp_represent_trans_bisim_iff
+    (Hfragment : forall s, mdp_state (MF := MF) (encoded s)) s t :
+  mdp_bisim (D := source) s t <->
+  trans_bisim (MF := MF) eq (encoded s) (encoded t).
+Proof.
+  rewrite mdp_represent_peutt_iff.
+  apply mdp_state_peutt_trans_iff; apply Hfragment.
+Qed.
+End RepresentedSource.
 End Reflection.

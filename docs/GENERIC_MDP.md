@@ -8,11 +8,13 @@ does **not** mean that every backend automatically satisfies every premise.
 | `Semantics/MDPReflection` | Native MDP bisimulation iff encoded head bisimulation / `peutt` | Mapped frontier lifting reflects to native lifting |
 | `Semantics/MDPReflection` | Literal encoded transition iff, for any output witness | Output extensionality of `sem_lub` |
 | `Semantics/MDPReflection` | Native MDP bisimulation iff encoded `trans_bisim` | Also totality and encoded-head support of successor frontiers, plus fragment laws |
+| `Semantics/MDPEmbedding` | Source/native bisimulation invariant under `mdp_represent` | Total native rows; source/native lifting iff on those rows |
+| `Semantics/MDPReflection` | Represented source bisimulation iff encoded `peutt` / `trans_bisim` | The same native/frontier reflection; fragment membership for transition coincidence |
 | `Interp/MDP` | MDP-state preservation, target coincidence, guarded transition preservation | Existing generic hitting/interp laws; selected-head handler contract |
 | `Interp/Atomic` | Atomic transition-bisimulation preservation | Bind right unit; output extensionality of `sem_lub` |
 | `Interp/MDPAtomic` | Atomic MDP invariant and state preservation | Output extensionality; totality under the atomic head map |
 
-All five proofs are independent of FreeOmega and MathComp representations.
+These generic proofs are independent of FreeOmega and MathComp representations.
 No new class, global inference hint, `qlift` rule or universe bypass is added.
 Ordinary generic declarations retain only the Section hypotheses actually used
 by their proofs; the compiled contracts record those signatures.
@@ -93,8 +95,12 @@ and guarded interpretation still support genuinely heterogeneous `E -> F`.
   the already allowlisted regression, outside safe `AllImports` and safe kernel
   validation. Compilation of these clients is not a universe-safety claim.
 
-The previous concrete correspondence report is retained as the record of that
-endpoint. This report supersedes its statement that generic theory was unchanged.
+The current [MDP correspondence](MDP_CORRESPONDENCE.md) report separates source
+kernel representation, native/frontier reflection, and fragment coincidence.
+The concrete SubEnumQ endpoints now delegate directly to generic iffs; total
+EnumQ source rows additionally instantiate the small `mdp_represent` adapter
+by supplying bound certificates, with definitionally unchanged lifting.
+No new source omega-completeness or coupling capability is introduced.
 
 ## Assumptions and validation
 

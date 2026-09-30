@@ -209,3 +209,48 @@ Proof.
 Qed.
 End Behavior.
 End Source.
+
+(** A source kernel may use a different probability representation. Only
+    its actual rows need a native representation; no conversion of arbitrary
+    (possibly unbounded) source measures, injective state encoding, or new
+    probability class is required. Observations and actions are unchanged. *)
+Section KernelRepresentation.
+Context {MS MN : Type -> Type}
+  `{SI : SemanticMeasure MS} `{SO : @SemanticOmega MS SI}
+  `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI}.
+Variable D : MDP MS.
+Variable kernel : mdp_states D -> mdp_actions D -> MN (mdp_states D).
+Hypothesis kernel_total : forall s a, sem_total (kernel s a).
+
+Definition mdp_represent : MDP MN :=
+  {| mdp_states := mdp_states D;
+     mdp_actions := mdp_actions D;
+     mdp_observations := mdp_observations D;
+     mdp_observe := mdp_observe D;
+     mdp_transition := kernel;
+     mdp_transition_total := kernel_total |}.
+
+Context `{SC : @SemanticMeasureCoreLaws MS SI}
+  `{NC : @SemanticMeasureCoreLaws MN NI}.
+
+(** Faithfulness is an iff for distribution lifting on the represented
+    rows, for every candidate relation. It is NOT a bisimulation theorem
+    assumed as a capability. *)
+Hypothesis kernel_lift : forall (rel : mdp_states D -> mdp_states D -> Prop) s t a,
+  sem_lift rel (mdp_transition D s a) (mdp_transition D t a) <->
+  sem_lift rel (kernel s a) (kernel t a).
+
+Theorem mdp_represent_bisim_iff s t :
+  mdp_bisim (D := D) s t <-> mdp_bisim (D := mdp_represent) s t.
+Proof.
+  split; intro H.
+  - eapply (mdp_bisim_coinduction (D := mdp_represent))
+      with (sim := mdp_bisim (D := D)); [|exact H].
+    intros x y Hxy. destruct (mdp_bisim_unfold Hxy) as [Hobs Hstep].
+    split; [exact Hobs|]. intro a. apply (proj1 (kernel_lift _ x y a)). exact (Hstep a).
+  - eapply (mdp_bisim_coinduction (D := D))
+      with (sim := mdp_bisim (D := mdp_represent)); [|exact H].
+    intros x y Hxy. destruct (mdp_bisim_unfold Hxy) as [Hobs Hstep].
+    split; [exact Hobs|]. intro a. apply (proj2 (kernel_lift _ x y a)). exact (Hstep a).
+Qed.
+End KernelRepresentation.

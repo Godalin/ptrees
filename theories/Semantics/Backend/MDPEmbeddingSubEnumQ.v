@@ -16,7 +16,6 @@ Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.NativeCoupling.
 From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel PEutt.
 From PTree.Semantics Require Import HeadTransition MDPFragment MDPEmbedding.
 From PTree.Semantics Require Import TreeTransitionBisim MDPReflection.
-From PTree.Semantics.FreeOmega Require Import MDPCoincidenceFreeOmega.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -121,7 +120,8 @@ Qed.
 
 Theorem subenumQ_mdp_head_bisim_iff s t : mdp_bisim (D := D) s t <-> hb (ehead s) (ehead t).
 Proof.
-  split; [apply (mdp_bisim_head_sound (FI := FI) (FO := FO))|apply subenumQ_head_bisim_reflect].
+  exact (mdp_head_bisim_iff (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    (@subenumQ_sampled_heads_reflect) (D := D) s t).
 Qed.
 
 Lemma subenumQ_encoded_vis_inversion s t : pb (encode s) (encode t) ->
@@ -143,7 +143,9 @@ Qed.
 
 Theorem subenumQ_mdp_peutt_iff s t : mdp_bisim (D := D) s t <-> pb (encode s) (encode t).
 Proof.
-  split; [apply (mdp_bisim_peutt_sound (FI := FI) (FO := FO))|apply subenumQ_peutt_mdp_reflect].
+  exact (mdp_peutt_iff (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    (FD := free_omega_observable_dirac_ae_laws)
+    (@subenumQ_sampled_heads_reflect) (D := D) s t).
 Qed.
 
 (** Classical correspondence on encoded labelled MDPs. Native reflection
@@ -155,9 +157,9 @@ Theorem subenumQ_mdp_trans_bisim_iff s t :
   @trans_bisim (mdpE (mdp_observations D) (mdp_actions D))
     SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq (encode s) (encode t).
 Proof.
-  rewrite subenumQ_mdp_peutt_iff.
-  apply (free_mdp_state_peutt_trans_iff (NI := SubEnumQ_SemanticMeasure)
-    (NO := SubEnumQ_SemanticOmega)); apply subenumQ_encode_mdp_state.
+  exact (mdp_trans_bisim_iff_of_fragment (FI := FI) (FO := FO)
+    (MX := FreeOmegaMixedMeasure) (FD := free_omega_observable_dirac_ae_laws)
+    (@subenumQ_sampled_heads_reflect) (D := D) subenumQ_encode_mdp_state s t).
 Qed.
 
 Corollary subenumQ_encoded_head_peutt_iff s t :
@@ -181,3 +183,54 @@ Proof.
   - exact I.
 Qed.
 End Embedding.
+
+(** An independently presented source may use finite rational measures
+    without a bound certificate. Total rows already have mass <= 1, so their
+    SubEnumQ representation adds only that certificate: no normalization,
+    reordering, or change of the source coupling relation. *)
+Section RationalSource.
+Variable D : MDP EnumQ.
+
+Lemma enumQ_mdp_kernel_bound s a : enumQ_subprob (mdp_transition D s a).
+Proof.
+  have H := mdp_transition_total D s a.
+  change (enumQ_mass (mdp_transition D s a) = 1) in H.
+  by rewrite /enumQ_subprob H.
+Qed.
+
+Definition enumQ_mdp_kernel s a : SubEnumQ (mdp_states D) :=
+  enumQ_as_subprob (enumQ_mdp_kernel_bound s a).
+
+Lemma enumQ_mdp_kernel_total s a : sem_total (enumQ_mdp_kernel s a).
+Proof. exact (mdp_transition_total D s a). Qed.
+
+Lemma enumQ_mdp_kernel_lift (rel : mdp_states D -> mdp_states D -> Prop) s t a :
+  sem_lift rel (mdp_transition D s a) (mdp_transition D t a) <->
+  sem_lift rel (enumQ_mdp_kernel s a) (enumQ_mdp_kernel t a).
+Proof. reflexivity. Qed.
+
+Definition enumQ_mdp_bounded : MDP SubEnumQ := mdp_represent (D := D) enumQ_mdp_kernel_total.
+
+Theorem enumQ_mdp_peutt_iff s t :
+  mdp_bisim (D := D) s t <->
+  @peutt (mdpE (mdp_observations D) (mdp_actions D))
+    SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq
+    (mdp_encode (D := enumQ_mdp_bounded) s) (mdp_encode (D := enumQ_mdp_bounded) t).
+Proof.
+  exact (mdp_represent_peutt_iff (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    (FD := free_omega_observable_dirac_ae_laws) (@subenumQ_sampled_heads_reflect)
+    enumQ_mdp_kernel_total enumQ_mdp_kernel_lift s t).
+Qed.
+
+Theorem enumQ_mdp_trans_bisim_iff s t :
+  mdp_bisim (D := D) s t <->
+  @trans_bisim (mdpE (mdp_observations D) (mdp_actions D))
+    SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq
+    (mdp_encode (D := enumQ_mdp_bounded) s) (mdp_encode (D := enumQ_mdp_bounded) t).
+Proof.
+  exact (mdp_represent_trans_bisim_iff (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
+    (FD := free_omega_observable_dirac_ae_laws) (@subenumQ_sampled_heads_reflect)
+    (kernel_total := enumQ_mdp_kernel_total) enumQ_mdp_kernel_lift
+    (subenumQ_encode_mdp_state (D := enumQ_mdp_bounded)) s t).
+Qed.
+End RationalSource.

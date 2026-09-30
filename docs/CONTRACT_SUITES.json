@@ -565,6 +565,44 @@
     "PTree.Examples.BernoulliFactory.BoundedFactory.BoundedFactory.fair_factory_direct": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
+    ],
+    "PTree.Semantics.MDPReflection.mdp_trans_bisim_iff_of_fragment": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Semantics.MDPReflection.mdp_represent_trans_bisim_iff": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Semantics.Backend.MDPEmbeddingSubEnumQ.enumQ_mdp_peutt_iff": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description"
+    ],
+    "PTree.Semantics.Backend.MDPEmbeddingSubEnumQ.enumQ_mdp_trans_bisim_iff": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.MDPEncoding.LabelledMDP.represented_positive_pair": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Regression.Semantics.MDPEncoding.LabelledMDP.represented_probability_separation": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "Epsilon.epsilon_statement",
+      "IndefiniteDescription.constructive_indefinite_description",
+      "RelationalChoice.relational_choice"
     ]
   }
 }

@@ -835,6 +835,9 @@
       "trans_bisim_interp_counterexample"
     ],
     "theories/Regression/Semantics/MDPEncoding.v": [
+      "raw_labelled_bisim_iff",
+      "represented_positive_pair",
+      "represented_probability_separation",
       "labelled_step_total",
       "labelled_encoding_in_fragment",
       "good_probability_half",

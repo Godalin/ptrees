@@ -39,6 +39,15 @@ successor totality and encoded-head support explicit. See
 remains `subenumQ_mdp_trans_bisim_iff` in
 `Semantics/Backend/MDPEmbeddingSubEnumQ`.
 
+For separately represented source kernels, `Semantics/MDPEmbedding` provides
+`mdp_represent` and `mdp_represent_bisim_iff`. The companion generic endpoints
+`MDPReflection.mdp_represent_peutt_iff` and
+`MDPReflection.mdp_represent_trans_bisim_iff` compose that faithful kernel
+representation with the same chain above. Source/native lifting faithfulness
+and native/frontier reflection remain distinct obligations. The verified
+EnumQ-to-SubEnumQ instance and paper-facing scope are documented in
+[MDP correspondence](MDP_CORRESPONDENCE.md).
+
 ## Equivalence proof and limits
 
 The new symmetry and transitivity proofs use only the operations needed

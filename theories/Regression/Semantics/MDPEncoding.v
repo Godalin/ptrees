@@ -270,4 +270,40 @@ Proof.
   exact (proj2 (subenumQ_mdp_trans_bisim_iff (D := labelled_mdp) StartHalf StartBiased) H).
 Qed.
 
+(** The source now uses a DIFFERENT carrier: unbounded finite rational
+    measures. The production adapter adds bound certificates to its total
+    rows, and the generic representation theorem transports source bisim.
+    Both probability-sensitive tests must survive this boundary. *)
+Definition raw_labelled_mdp : MDP EnumQ :=
+  {| mdp_states := labelled_state; mdp_actions := unit;
+     mdp_observations := outcome_label; mdp_observe := state_label;
+     mdp_transition := fun s a => subenumQ_raw (labelled_step s a);
+     mdp_transition_total := labelled_step_total |}.
+
+Local Lemma raw_labelled_bisim_iff s t :
+  mdp_bisim (D := raw_labelled_mdp) s t <-> source_bisim s t.
+Proof.
+  exact (mdp_represent_bisim_iff (D := raw_labelled_mdp) labelled_step_total
+    (fun rel s t a => iff_refl _) s t).
+Qed.
+
+Local Notation represented_encode :=
+  (mdp_encode (D := enumQ_mdp_bounded raw_labelled_mdp)).
+
+Example represented_positive_pair :
+  tb (represented_encode StartHalf) (represented_encode StartClone).
+Proof.
+  apply (proj1 (enumQ_mdp_trans_bisim_iff (D := raw_labelled_mdp) _ _)).
+  apply (proj2 (raw_labelled_bisim_iff _ _)).
+  apply distinct_states_same_class_probabilities.
+Qed.
+
+Example represented_probability_separation :
+  ~ tb (represented_encode StartHalf) (represented_encode StartBiased).
+Proof.
+  intro H. apply different_successor_probabilities_not_bisimilar.
+  apply (proj1 (raw_labelled_bisim_iff _ _)).
+  exact (proj2 (enumQ_mdp_trans_bisim_iff (D := raw_labelled_mdp) _ _) H).
+Qed.
+
 End LabelledMDP.
