@@ -184,7 +184,6 @@ Set Universe Polymorphism.
 
 Local Notation tree := (ptree mixedE SubEnumQ).
 Local Notation MF := (FreeOmega SubEnumQ).
-Local Notation mixed_head A := (stable_head mixedE SubEnumQ A).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
@@ -192,7 +191,6 @@ Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
 Local Notation MX := (@FreeOmegaMixedMeasure SubEnumQ).
 Local Notation FO := (FreeOmegaObservableSemanticOmega
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-Local Notation hitting A := (@ptree_stable_hitting mixedE SubEnumQ MF FI MX FO A).
 
 (** Fix the observable interpretation once, exactly as in FactoryController;
     this is notation for raw peutt, not an additional relation. *)
@@ -326,15 +324,6 @@ Set Universe Polymorphism.
     prepared here. The final proofs construct their complete frontiers and
     query witnesses locally, as they analyze the actual programs. *)
 
-(** The Challenge case is a totality default: after-challenge witnesses
-    contain only returns and Reply events, as the following proof shows. *)
-Definition stable_outcome {H} (h : mixed_head (bool * H)) : mixed_outcome :=
-  match h with
-  | FHRet r => Stop (fst r)
-  | @FHVis _ _ _ X e _ =>
-      match e with Challenge => Stop false | Reply b => Continue b end
-  end.
-
 Definition sample_outcome {H} (x : bool * H + bool * H) : mixed_outcome :=
   match x with inl (b,_) => Stop b | inr (b,_) => Continue b end.
 
@@ -425,57 +414,6 @@ Proof.
   eapply peutt_bind with (RR := return_rel).
   - apply masked_protocol_equivalent.
   - intros r u [Hbit _]. apply peutt_ret. exact Hbit.
-Qed.
-
-(** After Challenge receives [c], the actual continuation [k c] has a
-    complete frontier [out]. Projecting Ret/Reply heads to Stop/Continue
-    gives [mixed_outcomes c], independently of the initial hidden state.
-    This describes the next stable observation, not eventual termination
-    of the recursive service. *)
-Theorem masked_after_stable_hitting m c :
-  exists (k : bool -> tree impl_return) (out : MF (mixed_head impl_return)),
-    observe (masked_impl m) = VisF Challenge k /\
-    hitting impl_return (observe (k c)) out /\
-    free_omega_denotes (A := mixed_head impl_return)
-      stable_outcome out (mixed_outcomes c).
-Proof.
-  (* The first equality determines the actual Challenge continuation. *)
-  eexists _, _.
-  split; [cbn; reflexivity|]. split.
-  - (* Assemble this frontier from the prefix and the two branch heads. *)
-    rewrite (observe_bind (Ret c)). cbn [observe].
-    eapply stable_hitting_bind_ret_only with
-      (hs := FOSample (mixed_samples uniform3 c) (fun x => FORet (FHRet x)))
-      (front := fun x => FORet (match x with
-        | inl result => FHRet result
-        | inr (b,h) => FHVis (Reply b) (fun ack =>
-            masked_impl (if ack then h else m))
-        end)).
-    + eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
-      intros x _. constructor. exact I.
-    + eapply stable_hitting_output_transport with
-        (out := FOSample (draw_distribution c) (fun x => FORet (FHRet x))).
-      * unfold draw_distribution.
-        apply stable_hitting_native_sample. intro mask.
-        apply stable_hitting_native_sample. intro continue.
-        rewrite observe_bind. cbn [observe].
-        apply stable_hitting_native_sample. intros [].
-        -- apply stable_hitting_native_ret.
-        -- rewrite observe_bind. cbn [observe].
-           apply stable_hitting_native_sample. intro second.
-           apply stable_hitting_native_ret.
-      * eapply FOQLSample; [exact (draw_distribution_mixed c)|].
-        intros x y ->. apply free_omega_qlift_refl. intro a. reflexivity.
-    + intros [result|[b h]].
-      * apply (stable_hitting_ret (FO := FO) (MX := MX)).
-      * apply (stable_hitting_vis (FO := FO) (MX := MX)).
-  - (* Project the constructed frontier, erasing only its hidden payload. *)
-    exists (subenumQ_bind (mixed_samples uniform3 c) (fun x =>
-      subenumQ_ret (sample_outcome x))). split.
-    + apply (FOOObserveSample (NO := SubEnumQ_SemanticOmega)).
-      intros [[b h]|[b h]]; constructor.
-    + apply enumQ_meas_eq_of_eqenum. intros [b|b]; destruct c,b;
-        apply val_inj; vm_compute; reflexivity.
 Qed.
 
 (** Ret mass rejects the nonempty remaining prefix; only Continue(true)

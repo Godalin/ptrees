@@ -123,9 +123,7 @@ first simplifies its mass hypothesis with `cbn`, exposing the three Boolean
 images for case analysis.
 
 Native `sem_lift` statements and `free_omega_denotes` infer their backend
-arguments from the distributions. The public hitting endpoint retains its
-named carrier annotation so its compiled signature keeps `impl_return`
-rather than unfolding that alias. Hitting/query calls retain only
+arguments from the distributions. Hitting/query calls retain only
 the explicit omega and mixed structures needed for inference; their measure
 instance follows from the omega structure. The backend profile remains fixed
 at the top of the file, without new instances or search hints.
@@ -177,13 +175,13 @@ constructs the finite prefix evidence, and composes Stop/Continue/Reply
 obligations. It does not hide these steps in `impl_draw_related` or a
 postfixedness wrapper, nor disguise heterogeneous coupling as equality
 rewriting. Quantitative program-query facts are also established locally.
-There are no global named frontier or query witnesses: `masked_after_stable_hitting`
-constructs its frontier by composing the prefix with the Ret/Reply heads, then
-proves the four-outcome projection in the same proof. Its Challenge
-continuation is inferred by unfolding the first observation equality, rather
-than copying the program body into an existential witness. The probability theorem
+There are no global named frontier or query witnesses. The probability theorem
 constructs the specification query and its denotation together in a local
 existential, then transports that query through `masked_protocol_equivalent`.
+The unused standalone implementation-frontier projection theorem has been
+removed, along with its observation function and two local type abbreviations.
+The three program endpoints are the heterogeneous bisimulation, its
+public-Boolean corollary, and the selected-trace probability theorem.
 Only native probability calculations and observation functions are prepared
 before these theorems; their complete-hitting witnesses are not.
 Documentation headings suffice; no parameterless Coq `Section` is needed.
@@ -198,13 +196,12 @@ unfolds that wrapper in the two public behavioral statements; their logical
 assumptions are unchanged. The case has no global `mixed_protocol_sim` and no
 Reply-state enumeration. The pure state relation `bridge` remains essential:
 the update removes administrative program contexts, not the recursive invariant.
-The suite now records 135 endpoints: 131 previous signatures/assumption sets
-are unchanged, two only expand the removed specification wrapper, and two
-record the generic visible-context introduction/coinduction rules. Both new
-rules are closed under the global context. The 491 central contracts are
-unchanged; neither the axiom whitelist nor Gate M is extended.
-The subsequent removal of the nine case-local frontier/query helpers changes
-none of these 135 compiled endpoint signatures or logical assumption sets.
+The suite now records 134 endpoints: only the unused standalone hitting
+endpoint was removed from the preceding 135-entry snapshot; every remaining
+compiled signature and logical assumption set is unchanged. The two generic
+visible-context introduction/coinduction rules are closed under the global
+context. The 491 central contracts are unchanged; neither the axiom whitelist
+nor Gate M is extended.
 
 ## Historical checkpoints
 
@@ -218,9 +215,10 @@ have since been removed.
 The in-place proof update removes the obsolete `mixed_head_bridge`,
 `tri_sample_uniform`, and `impl_draw_related` contracts along with their
 case-local wrappers. The main `masked_protocol_equivalent` statement has
-not changed. `masked_after_stable_hitting` now exhibits the actual Challenge
-continuation of `masked_impl` and its frontier, instead of mentioning a named
-after-Challenge subprogram. Its logical axioms are unchanged. All other 132
+not changed. The then-retained standalone hitting endpoint exhibited the
+actual Challenge continuation and frontier instead of a named after-Challenge
+subprogram; that unused endpoint has since been removed. Its logical axioms
+were unchanged at this checkpoint. All other 132
 entries match their previous compiled types and assumptions exactly; the
 suite now has 133 entries. No axiom whitelist or central snapshot changes.
 Local full build/AllImports, architecture/API/source checks, and the case's
@@ -283,7 +281,6 @@ the generic up-to, bind, observation and probability infrastructure is reused.
 | `mixed_head_bridge m z` | `bridge m z` implies `peutt return_rel (masked_impl m) (mixed_spec z)` |
 | `masked_protocol_equivalent m` | The same heterogeneous relation against `canonical_spec m` |
 | `masked_public_protocol_equivalent m` | Erasing both payloads recovers Boolean behavioral equivalence |
-| `masked_after_stable_hitting m c` | The full implementation frontier still projects to the same four Stop/Continue masses |
 | `masked_challenge_true_reply_probability m c` | The selected Challenge/Reply prefix still has probability `3/8` or `1/8` |
 
 The former program return types were both `bool`; now they are `bool * hidden3`
@@ -353,8 +350,9 @@ The proof has three visible layers:
 The complete frontier witness and both quantitative query values are retained.
 All eight previously registered MixedHead endpoint types and assumptions are
 unchanged, as are the other 125 safe generic-algebra entries. Three contracts
-are added: `tri_sample_uniform`, `impl_draw_related`, and
-`masked_after_stable_hitting` (136 safe entries in total). These inherit only
+were added: `tri_sample_uniform`, `impl_draw_related`, and a standalone
+implementation-frontier endpoint (136 safe entries in total, subsequently
+pruned as described above). These inherit only
 the existing functional extensionality and `eq_rect_eq`; no whitelist changes.
 
 Local validation: full `opam exec -- dune build -j 2` (including AllImports
