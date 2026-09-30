@@ -25,6 +25,24 @@ Polymorphic Class SemanticMeasure@{carrier representation}
       (A -> B -> Prop) -> S A -> S B -> Prop
 }.
 
+(** Opt-in semantic algebra, shared by native [MN] and frontier [MF].
+    The subscript identifies the interface, not a particular carrier or
+    instance. Import [SemanticMeasureNotations], then open the scope (or use
+    [%sm]); this does not select a backend or change typeclass search. *)
+Declare Scope semantic_measure_scope.
+Delimit Scope semantic_measure_scope with sm.
+
+Module SemanticMeasureNotations.
+Notation "'ηₘ' x" := (sem_ret x)
+  (at level 10, x at next level) : semantic_measure_scope.
+Notation "mu '>>=ₘ' k" := (sem_bind mu k)
+  (at level 50, left associativity) : semantic_measure_scope.
+Notation "mu '≈ₘ' nu" := (sem_eq mu nu)
+  (at level 70, no associativity) : semantic_measure_scope.
+Notation "mu '≈[' R ']ₘ' nu" := (sem_lift R mu nu)
+  (at level 70, R at next level, no associativity) : semantic_measure_scope.
+End SemanticMeasureNotations.
+
 (** Core extensional and relational laws shared by node and frontier
     measures.  More expensive Kleisli, gluing and omega assumptions remain
     separate capabilities. *)

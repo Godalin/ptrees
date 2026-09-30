@@ -25,6 +25,8 @@ From PTree.Interp.FreeOmega Require Import IterationSummary AbsorbingIteration.
 Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope freeomega_scope.
+Import SemanticMeasureNotations SemanticOmegaNotations.
+Local Open Scope semantic_measure_scope.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -88,16 +90,15 @@ Qed.
 Theorem loop_frontier_exact partial : hits (loop partial) (loop_front partial).
 Proof. apply complete_iteration_hitting. exact (round_complete partial). Qed.
 Theorem loop_classical partial :
-  @sem_eq MF FI _ (loop_front partial) (iteration_return_map (classical_result partial)).
+  loop_front partial ≈ₘ iteration_return_map (classical_result partial).
 Proof.
   eapply (iteration_summary_mixed_iter (step := step partial) (NI := NI)); try typeclasses eauto.
   - apply sem_eq_refl.
   - apply sem_eq_refl.
 Qed.
 Theorem loop_round_is_classical partial n :
-  @sem_eq MF FI _
-    (iteration_summary_round (FI := FI) (FO := FO) (step partial) (round_front partial) n tt)
-    (iteration_return_map (mixed_iter_approx (FI := FI) (FO := FO) (S n) (kernel partial) tt)).
+  iteration_summary_round (FI := FI) (FO := FO) (step partial) (round_front partial) n tt
+    ≈ₘ iteration_return_map (mixed_iter_approx (FI := FI) (FO := FO) (S n) (kernel partial) tt).
 Proof.
   exact (iteration_summary_round_mixed_iter (FI := FI) (FO := FO)
     (step partial) (NI := NI) (kernel partial) n tt).
@@ -126,8 +127,8 @@ Lemma rows_expect partial n f :
 Proof.
   induction n as [|n IH].
   - change (0 = (1 - (1/2)^+0) * expect (result partial) f). by rewrite expr0 subrr mul0r.
-  - change (expect (sem_bind (kernel partial tt) (fun v => match v with
-      | inl _ => rows partial n | inr b => sem_ret b end)) f =
+  - change (expect (kernel partial tt >>=ₘ (fun v => match v with
+      | inl _ => rows partial n | inr b => ηₘ b end)) f =
       (1 - (1/2)^+(S n)) * expect (result partial) f).
     rewrite finite_subdist_expect_bind kernel_expect finite_subdist_expect_ret IH result_expect exprS.
     rewrite success_factor -[(1 - 1/2) * return_mass partial * f true]mulrA.
@@ -138,7 +139,7 @@ Lemma result_indicator_bound partial (P : bool -> bool) :
 Proof. rewrite result_expect; destruct partial, (P true); by vm_compute. Qed.
 Local Lemma decay_difference (x z : rat) : (1-x)*z-z = -(x*z).
 Proof. rewrite mulrBl mul1r. apply: (addrI z). by rewrite addrC subrK. Qed.
-Lemma rows_limit partial : @sem_lub MN NI NO _ (rows partial) (result partial).
+Lemma rows_limit partial : rows partial ⇑ₘ result partial.
 Proof.
   intros P eps Heps.
   have Hhalf0 : (0 : rat) <= 1/2 by vm_compute.
@@ -165,7 +166,7 @@ Proof.
   eapply iteration_frontier_summary_hitting; try typeclasses eauto.
   exact (round_complete partial).
 Qed.
-Theorem two_frontiers_agree partial : @sem_eq MF FI _ (loop_front partial) (observed_front partial).
+Theorem two_frontiers_agree partial : loop_front partial ≈ₘ observed_front partial.
 Proof. eapply ptree_stable_hitting_unique; [apply loop_frontier_exact|apply observed_front_exact]. Qed.
 Theorem loop_observation partial : free_omega_observes return_value (observed_front partial) (result partial).
 Proof.
@@ -210,6 +211,6 @@ Proof.
 Qed.
 Corollary endless_observation_zero :
   free_omega_observes return_value (⊥ : MF (stable_head eventE MN bool))
-    (sem_zero : MN bool).
+    (⊥ₘ : MN bool).
 Proof. constructor. Qed.
 End IterationBasics.

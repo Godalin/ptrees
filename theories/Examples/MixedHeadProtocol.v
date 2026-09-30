@@ -54,6 +54,8 @@ Local Open Scope ring_scope.
 Local Open Scope subenumQ_probability_scope.
 Import PTree MonadNotation.
 Local Open Scope monad_scope.
+Import SemanticMeasureNotations.
+Local Open Scope semantic_measure_scope.
 
 (** * 1. Preparation *)
 
@@ -99,7 +101,7 @@ Definition return_rel (x : impl_return) (y : spec_return) : Prop :=
 (** ** Native coins and the specification kernel
 
     This is the SubEnumQ construction boundary. The programs below consume
-    only the named coins and the abstract [sem_ret]/[sem_bind] interface. *)
+    only the named coins and the abstract [ηₘ]/[>>=ₘ] measure algebra. *)
 
 Definition uniform3_raw : EnumQ hidden3.
 Proof.
@@ -166,9 +168,9 @@ Defined.
     Native bind describes the flattened finite law; the main up-to-bind
     proof consumes the sampler relation, without expanding lists. *)
 Definition mixed_samples {H} (hidden : SubEnumQ H) c : SubEnumQ (bool * H + bool * H) :=
-  sem_bind (mixed_outcomes c) (fun o =>
-    sem_bind hidden (fun h => sem_ret
-      (match o with Stop b => inl (b,h) | Continue b => inr (b,h) end))).
+  mixed_outcomes c >>=ₘ (fun o =>
+    hidden >>=ₘ (fun h =>
+      ηₘ (match o with Stop b => inl (b,h) | Continue b => inr (b,h) end))).
 
 Definition mixed_sample_rel (x : impl_return + impl_return)
     (y : spec_return + spec_return) : Prop :=
@@ -259,7 +261,7 @@ Proof.
 Defined.
 
 Lemma coupling32_lift :
-  sem_lift bridge uniform3 uniform2.
+  uniform3 ≈[bridge]ₘ uniform2.
 Proof.
   eapply indexed_coupling_raw with (mu := uniform3_raw) (nu := uniform2_raw);
     [reflexivity|reflexivity|].
@@ -288,8 +290,7 @@ Example return_abstraction_boundary b :
 Proof. destruct b; unfold return_rel, bridge; simpl; intuition discriminate. Qed.
 
 Lemma mixed_samples_lift c :
-  sem_lift mixed_sample_rel
-    (mixed_samples uniform3 c) (mixed_samples uniform2 c).
+  mixed_samples uniform3 c ≈[mixed_sample_rel]ₘ mixed_samples uniform2 c.
 Proof.
   unfold mixed_samples. eapply sem_lift_bind with (R := eq).
   - apply sem_lift_refl. congruence.
@@ -299,15 +300,15 @@ Proof.
 Qed.
 
 Definition draw_distribution c : SubEnumQ (impl_return + impl_return) :=
-  sem_bind coin_three_quarters (fun s =>
-    sem_bind uniform2 (fun q =>
-      sem_bind coin_third (fun x =>
-        if x then sem_ret (if q then inr (xorb c s,L0) else inl (xorb c s,L0))
-        else sem_bind uniform2 (fun y =>
-          sem_ret (if q then inr (xorb c s,if y then L1 else L2)
+  coin_three_quarters >>=ₘ (fun s =>
+    uniform2 >>=ₘ (fun q =>
+      coin_third >>=ₘ (fun x =>
+        if x then ηₘ (if q then inr (xorb c s,L0) else inl (xorb c s,L0))
+        else uniform2 >>=ₘ (fun y =>
+          ηₘ (if q then inr (xorb c s,if y then L1 else L2)
                         else inl (xorb c s,if y then L1 else L2)))))).
 
-Lemma draw_distribution_mixed c : sem_eq (draw_distribution c) (mixed_samples uniform3 c).
+Lemma draw_distribution_mixed c : draw_distribution c ≈ₘ mixed_samples uniform3 c.
 Proof.
   apply (@enumQ_meas_eq_of_eqenum
     (@Equality.Pack (impl_return + impl_return)%type

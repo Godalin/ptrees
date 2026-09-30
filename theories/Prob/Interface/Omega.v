@@ -24,6 +24,17 @@ Polymorphic Class SemanticOmega@{carrier representation}
   sem_total : forall {A : Type@{carrier}}, S A -> Prop
 }.
 
+(** Optional omega operations in the same semantic algebra scope.
+    [chain ⇑ₘ out] is the existing lub RELATION, not a supremum constructor
+    and not evidence that an arbitrary sequence has a limit. *)
+Module SemanticOmegaNotations.
+Notation "'⊥ₘ'" := sem_zero : semantic_measure_scope.
+Notation "mu '≤ₘ' nu" := (sem_le mu nu)
+  (at level 70, no associativity) : semantic_measure_scope.
+Notation "chain '⇑ₘ' out" := (sem_lub chain out)
+  (at level 70, no associativity) : semantic_measure_scope.
+End SemanticOmegaNotations.
+
 Definition sem_increasing {SM} `{SI : SemanticMeasure SM}
     `{SO : @SemanticOmega SM SI} {A}
     (chain : nat -> SM A) : Prop :=

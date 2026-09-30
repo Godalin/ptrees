@@ -53,8 +53,8 @@ For effect-specific and executable supporting examples, also see
 [StateCounter](../theories/Examples/StateCounter.v) and
 [RationalState](../theories/Examples/RationalState.v).
 Shared VN/rational proofs are dependencies to reuse, not material to copy into
-each service. Regression modules are contract/negative tests, not required
-imports for examples.
+each service. Technical compilation clients live in the non-installed
+`tests/` target; examples do not import them.
 
 ## Reading FreeOmega expressions
 
@@ -99,6 +99,66 @@ proof obligations. In particular, notation does not identify a raw `FOLub`
 with an independent domain's lub. The implementation/theory files retain
 their constructor names; this first client migration is limited to
 IterationBasics and AbsorbingFrontier.
+
+## Reading semantic measure algebra
+
+Native `MN` and frontier `MF` share an opt-in interface notation. It lives
+beside the operations, not in a backend or a new facade:
+
+```coq
+From PTree.Prob.Interface Require Import Measure Omega.
+Import SemanticMeasureNotations SemanticOmegaNotations.
+Local Open Scope semantic_measure_scope.
+```
+
+| Notation | Exact expansion |
+|---|---|
+| `ηₘ x` | `sem_ret x` |
+| `mu >>=ₘ k` | `sem_bind mu k` |
+| `mu ≈ₘ nu` | `sem_eq mu nu` |
+| `mu ≈[RR]ₘ nu` | `sem_lift RR mu nu`, including heterogeneous return types |
+| `⊥ₘ` | `sem_zero` |
+| `mu ≤ₘ nu` | `sem_le mu nu` |
+| `chain ⇑ₘ out` | `sem_lub chain out` |
+
+After importing the notation modules, `(expression)%sm` also works without
+opening the scope. `Measure` alone supplies the first four symbols;
+`Omega` supplies the last three. Bind associates to the left and binds more
+tightly than the relations, so the left-unit law reads:
+
+```coq
+ηₘ x >>=ₘ k ≈ₘ k x
+```
+
+The subscript marks **SemanticMeasure**, not specifically MN: the same
+notation works for native and frontier carriers. It does not choose a
+`SemanticMeasure` instance, register hints, or invoke canonical routing.
+Where the interpretation is ambiguous, retain an explicit instance/profile;
+shorter notation is not a reason to weaken that distinction. Raw FreeOmega
+`η / >>=ω / ωsup` and program `Ret / bind / ≈ₚ` keep their existing meanings.
+`≈ₘ` and `≈[eq]ₘ` remain distinct interface projections; the notation adds no
+law identifying them.
+In particular `chain ⇑ₘ out` asserts a **relation**, not a constructor or
+an automatic proof that an arbitrary chain has a supremum.
+
+MixedHead uses this algebra for finite kernels and the heterogeneous
+3-to-2 lifting. IterationBasics uses it for frontier equality and native
+limits; AbsorbingFrontier uses it for whole-head relational lifting. Explicit
+backend configuration and probability-analysis proofs remain in place.
+
+For this notation-only migration from `e78a1bc`, 18 affected definitions and
+theorems (including the MixedHead public results and the two tutorials'
+frontier relations) were compared before/after using compiled types and
+`Print Assumptions`: all were identical. The existing 491-entry main and
+129-entry generic algebra contract groups are also unchanged. No snapshot, instance registration,
+capability declaration or trust policy was modified. Scope separation,
+heterogeneous lifting, bind precedence and high-universe carriers are checked
+by the non-installed `tests/Notation/SemanticMeasureNotation.v` client.
+Local validation passed: full root `dune build -j 2` (including AllImports
+and extraction), 140 Python tests, and 39 execution/safety tests rerun after
+re-extraction. Architecture, API, source-safety and contract-registry checks
+passed. The two-file Gate M boundary is unchanged; full build is not a claim
+that Gate M is universe-checked. No remote CI or new kernel audit was run.
 
 ## IterationBasics: what the three versions establish
 

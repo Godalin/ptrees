@@ -26,6 +26,8 @@ Set Implicit Arguments.
 Import EnumQ FreeOmegaRewriting GRing.Theory.
 Local Open Scope ring_scope.
 Local Open Scope freeomega_scope.
+Import SemanticMeasureNotations.
+Local Open Scope semantic_measure_scope.
 
 Variant queryE : Type -> Type := Query : queryE bool.
 Local Notation tree := (ptree queryE EnumQ).
@@ -131,7 +133,7 @@ Theorem staged_frontier_exact : hits staged_program round_frontier.
 Proof. eapply absorbing_iteration_summary; [exact round_hitting|exact reveal_hitting]. Qed.
 
 Theorem absorbing_round_frontier out : hits absorbing_program out ->
-  @sem_lift MF FI _ _ (stable_head_rel eq W) out round_frontier.
+  out ≈[stable_head_rel eq W]ₘ round_frontier.
 Proof. eapply absorbing_iteration_heads; [exact round_hitting|exact reveal_hitting]. Qed.
 
 Lemma direct_frontier_exact : hits direct_program first_frontier.
@@ -147,7 +149,7 @@ Qed.
 (** An actual complete witness exists, and ANY witness has one coupling
     with the mixed Ret/Vis reference. No response-wise marginal shortcut. *)
 Theorem absorbing_first_frontier out : hits absorbing_program out ->
-  @sem_lift MF FI _ _ (stable_head_rel eq W) out first_frontier.
+  out ≈[stable_head_rel eq W]ₘ first_frontier.
 Proof.
   intro Hout. eapply peutt_hitting_lift.
   - exact absorbing_program_rewrite.
@@ -157,7 +159,7 @@ Qed.
 
 Theorem absorbing_first_frontier_exists : exists out,
   hits absorbing_program out /\
-  @sem_lift MF FI _ _ (stable_head_rel eq W) out first_frontier.
+  out ≈[stable_head_rel eq W]ₘ first_frontier.
 Proof.
   destruct (ptree_stable_hitting_exists (FI := FI) (FO := FO) (observe absorbing_program)) as [out Hout].
   exists out. split; [exact Hout|exact (absorbing_first_frontier Hout)].
@@ -166,12 +168,12 @@ Qed.
 (** The two reading paths meet under whole-continuation lifting, not
     literal equality of the visibly different continuation syntax. *)
 Theorem absorbing_generic_frontier_reference :
-  @sem_lift MF FI _ _ (stable_head_rel eq W) actual_iteration_front first_frontier.
+  actual_iteration_front ≈[stable_head_rel eq W]ₘ first_frontier.
 Proof. apply absorbing_first_frontier. exact absorbing_generic_frontier. Qed.
 
 Definition offered (h : stable_head queryE EnumQ bool) : bool :=
   match h with FHRet _ => false | FHVis _ _ _ => true end.
-Definition offer_law := sem_bind vn_fair (fun b => sem_ret b : EnumQ bool).
+Definition offer_law := vn_fair >>=ₘ (fun b => ηₘ b : EnumQ bool).
 Theorem first_frontier_offers : free_omega_observes offered first_frontier offer_law.
 Proof. constructor. intros []; constructor. Qed.
 Theorem offer_probability : enumQ_expect (fun b => if b then 1 else 0) offer_law = 1/2.
