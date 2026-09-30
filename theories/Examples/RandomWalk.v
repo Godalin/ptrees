@@ -35,6 +35,8 @@ Unset Printing Implicit Defensive.
 Import MonadNotation SemanticMeasureNotations SemanticOmegaNotations.
 Local Open Scope monad_scope.
 Local Open Scope semantic_measure_scope.
+Import HittingNotations.
+Local Open Scope hitting_scope.
 Local Open Scope freeomega_scope.
 
 (** An infinite-state random walk with a closed-form joint output law.
@@ -625,8 +627,7 @@ Fixpoint walk_schedule (rounds : nat) : nat :=
   match rounds with O => O | S n => S (S (walk_schedule n)) end.
 
 Definition walk_hitting fuel x y : FreeOmega SubEnumQ walk_head :=
-  ptree_hitting_approx (FI := rwFI) (FO := rwFO) fuel
-    (observe (@run_until_zero rwE SubEnumQ rw_coin x y)).
+  hit[fuel] (@run_until_zero rwE SubEnumQ rw_coin x y).
 
 Lemma walk_hitting_two fuel x y :
   walk_hitting (S (S fuel)) (S x) y =
@@ -698,8 +699,7 @@ Lemma walk_schedule_ge rounds : (rounds <= walk_schedule rounds)%coq_nat.
 Proof. induction rounds; cbn [walk_schedule]; lia. Qed.
 
 Lemma walk_limit_hitting x y :
-  ptree_stable_hitting (FI := rwFI) (FO := rwFO)
-    (observe (@run_until_zero rwE SubEnumQ rw_coin x y)) (walk_limit x y).
+  @run_until_zero rwE SubEnumQ rw_coin x y ⇓ₕ walk_limit x y.
 Proof.
   apply stable_hitting_subsequence.
   - intro n. cbn [walk_schedule]. lia.
@@ -718,8 +718,7 @@ Proof.
 Qed.
 
 Theorem walk_ast x y :
-  ptree_stable_hitting_ast (FI := rwFI) (FO := rwFO)
-    (observe (@run_until_zero rwE SubEnumQ rw_coin x y)) (walk_limit x y).
+  @run_until_zero rwE SubEnumQ rw_coin x y ⇓ₕ¹ walk_limit x y.
 Proof.
   split; first apply walk_limit_hitting.
   apply free_omega_observable_total_intro.
@@ -734,8 +733,7 @@ Qed.
     This connects the quantitative two-level passage to the actual bind in
     the renewal equation, rather than introducing an unrelated sampler. *)
 Theorem continuation_stable_hitting_ast :
-  ptree_stable_hitting_ast (FI := rwFI) (FO := rwFO)
-    (observe rw_continuation) (walk_limit 2 0).
+  rw_continuation ⇓ₕ¹ walk_limit 2 0.
 Proof.
   destruct (walk_ast 2 0) as [Hhit Htotal]. split; last exact Htotal.
   apply (proj1 (ptree_stable_hitting_pstruct_no_event
@@ -757,8 +755,7 @@ Definition joint_head_value (h : joint_head) : rw_state :=
   end.
 
 Definition joint_hitting fuel x y : FreeOmega SubEnumQ joint_head :=
-  ptree_hitting_approx (FI := rwFI) (FO := rwFO) fuel
-    (observe (PTree.iter (rw_body rw_coin) (x,y))).
+  hit[fuel] (PTree.iter (rw_body rw_coin) (x,y)).
 
 Lemma joint_hitting_observes {A} (obs : rw_state -> A) rounds x y :
   free_omega_observes (fun h => obs (joint_head_value h))
@@ -779,8 +776,7 @@ Definition random_walk_heads :=
   ωsup rounds, joint_hitting (walk_schedule rounds) 1 0.
 
 Theorem random_walk_ast :
-  ptree_stable_hitting_ast (FI := rwFI) (FO := rwFO)
-    (observe random_walk) random_walk_heads.
+  random_walk ⇓ₕ¹ random_walk_heads.
 Proof.
   eapply stable_hitting_ast_of_observations with
     (obs := fun _ : joint_head => tt)
@@ -911,8 +907,7 @@ Qed.
     exact finite observations and their normalized closed-form limit.
     It does not assert an unproved distribution-to-bisimulation converse. *)
 Theorem random_walk_closed_form :
-  ptree_stable_hitting_ast (FI := rwFI) (FO := rwFO)
-    (observe random_walk) random_walk_heads /\
+  random_walk ⇓ₕ¹ random_walk_heads /\
   (forall rounds, free_omega_observes joint_head_value
     (joint_hitting (walk_schedule rounds) 1 0) (random_walk_outputs rounds)) /\
   (forall s, rational_limit (fun rounds => enumQ_expect (state_indicator s)

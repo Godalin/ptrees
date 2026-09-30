@@ -226,7 +226,7 @@ Example nested_retry_diagonal :
 Proof.
   pose front (_ : unit) : M (stable_head E M A) :=
     @sem_ret M NI _ (FHRet value).
-  pose next := @stable_head_bind_front E M M NI unit A (fun _ => inner) front.
+  pose next := @bind_frontier E M M NI unit A (fun _ => inner) front.
   apply (@mathcomp_kernel_lub_limit_proper R _ _
     (mathcomp_kernel_bind (sem_ret (FHRet tt)) next)).
   - apply mathcomp_kernel_bind_ret_l.

@@ -47,6 +47,8 @@ Import MonadNotation SemanticMeasureNotations SemanticOmegaNotations.
 Local Open Scope monad_scope.
 Local Open Scope freeomega_scope.
 Local Open Scope semantic_measure_scope.
+Import HittingNotations.
+Local Open Scope hitting_scope.
 
 Module Adaptive.
 Import BoundedFactory.
@@ -501,8 +503,7 @@ Definition loop_kernel (si : machine_state * unit) :=
   source_coin (health (fst si)) >>=ₘ fun b =>
   ηₘ (state_iter_result (state_attempt_result (fst si) a b)).
 Definition loop_heads s := iteration_frontier (E := publicE) loop_kernel (s,tt).
-Lemma loop_hits s : ptree_stable_hitting (MF := FreeOmega SubEnumQ)
-  (observe (raw_loop s)) (loop_heads s).
+Lemma loop_hits s : raw_loop s ⇓ₕ loop_heads s.
 Proof.
   eapply iteration_frontier_summary_hitting; try typeclasses eauto.
   intros [s' []]. unfold normalized_step, loop_kernel; cbn [fst].
@@ -689,8 +690,7 @@ Theorem adaptive_vn_fair s : lower adaptive_vn s ≈ₚ[output_related] fair_tre
 Proof.
   setoid_rewrite lower_adaptive_normalized. apply raw_loop_fair.
 Qed.
-Theorem raw_loop_ast s : ptree_stable_hitting_ast (MF := FreeOmega SubEnumQ)
-  (observe (raw_loop s)) (loop_heads s).
+Theorem raw_loop_ast s : raw_loop s ⇓ₕ¹ loop_heads s.
 Proof.
   split; [apply loop_hits|]. apply free_omega_observable_total_intro.
   exists (option bool), (bit_observer (@snd machine_state bool)), fair_options.

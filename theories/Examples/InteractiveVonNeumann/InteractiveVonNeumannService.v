@@ -421,7 +421,7 @@ Proof.
   -
   unfold direct_true_reply_query, direct_after_request_heads,
     service_direct_heads, direct_reply_front,
-    stable_head_ret_bind_front, stable_head_bind_front.
+    stable_head_ret_bind_front, bind_frontier.
   cbn [free_omega_bind mixed_bind sem_bind sem_ret
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticMeasure

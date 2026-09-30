@@ -447,7 +447,7 @@ Theorem stable_hitting_bind_ret_only
 Proof.
   intros Hret Hsource Hfront.
   pose (full :=
-    free_omega_bind hs (stable_head_bind_front k front)).
+    free_omega_bind hs (bind_frontier k front)).
   assert (Hfull :
       @ptree_stable_hitting E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -480,7 +480,7 @@ Proof.
   { unfold full. eapply FOQLBind; [exact Hrestricted|].
     intros h1 h2 [-> Hret1].
     destruct h2 as [a|X e c]; [|contradiction].
-    cbn [stable_head_bind_front stable_head_ret_bind_front].
+    cbn [bind_frontier stable_head_ret_bind_front].
     apply free_omega_qlift_refl. intro h. reflexivity. }
   unfold ptree_stable_hitting, stable_hitting in Hfull |- *.
   eapply FOQLComp with (T := eq) (U := eq) (mid := full).

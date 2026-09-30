@@ -193,7 +193,7 @@ Proof.
     change (thits (PTree.bind (hetero_handler e)
       (fun x => PTree.interp hetero_handler (k x)))
       (sem_bind (FORet (FHVis (hetero_event e) (fun x => Ret x)))
-        (stable_head_bind_front (FI := FI)
+        (bind_frontier (FI := FI)
           (fun x => PTree.interp hetero_handler (k x)) front))).
     eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO)).
     + apply ptree_bind_cofinal_all.

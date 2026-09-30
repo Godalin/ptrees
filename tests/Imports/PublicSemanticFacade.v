@@ -15,7 +15,7 @@ Unset Printing Implicit Defensive.
     list of aliases. Unselected implementation modules remain qualified. *)
 Check @frontier_certificate.
 Fail Check @ptree_stable_hitting.
-Check @stable_head_bind_front.
+Check @bind_frontier.
 Fail Check pfinite.
 Fail Check pfinite_rel.
 

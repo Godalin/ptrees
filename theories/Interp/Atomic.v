@@ -114,7 +114,7 @@ Proof.
     apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
     eapply hits_proper.
     + apply (sem_bind_ret_l (FHVis (atomic_rename atom e) (atomic_cont atom e))
-        (stable_head_bind_front (FI := FI) (fun x => PTree.interp handler (k x)) front)).
+        (bind_frontier (FI := FI) (fun x => PTree.interp handler (k x)) front)).
     + eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO));
         [apply Preservation.bind_cofinal_all|apply atomic_start|exact Hfront].
 Qed.
@@ -138,7 +138,7 @@ Proof.
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO) k) as [front Hfront].
   eapply hits_proper.
   - eapply sem_eq_trans; [apply (Hret_l _ _ (FHRet x)
-      (stable_head_bind_front (FI := FI) k front))|].
+      (bind_frontier (FI := FI) k front))|].
     eapply stable_hitting_unique; [apply Hfront|exact Hhit].
   - eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO));
       [apply Preservation.bind_cofinal_all|apply atomic_finish|exact Hfront].

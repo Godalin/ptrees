@@ -51,6 +51,8 @@ Import MonadNotation SemanticMeasureNotations.
 Local Open Scope monad_scope.
 Local Open Scope semantic_measure_scope.
 Local Open Scope freeomega_scope.
+Import HittingNotations.
+Local Open Scope hitting_scope.
 
 Module Controller.
 (** Interactive factory: the existing nested sampler, not a new algorithm.
@@ -512,15 +514,11 @@ Definition device_front sampler job s :=
     (fun reply => run_state (machine_cont sampler job reply) s)).
 
 Lemma next_device_hitting sampler job s :
-  ptree_stable_hitting (MF := FreeOmega EnumQ)
-    (FI := FreeOmegaObservableSemanticMeasure) (FO := FreeOmegaObservableSemanticOmega)
-    (observe (next_device sampler job s)) (device_front sampler job s).
+  next_device sampler job s ⇓ₕ device_front sampler job s.
 Proof.
-  change (ptree_stable_hitting (MF := FreeOmega EnumQ)
-    (FI := FreeOmegaObservableSemanticMeasure) (FO := FreeOmegaObservableSemanticOmega)
-    (observe (Prob coin (fun fast =>
-      Vis (RunMachine job fast) (fun reply => run_state (machine_cont sampler job reply) s))))
-    (device_front sampler job s)).
+  change (Prob coin (fun fast =>
+    Vis (RunMachine job fast) (fun reply => run_state (machine_cont sampler job reply) s))
+    ⇓ₕ device_front sampler job s).
   unfold device_front.
   apply (stable_hitting_prob (FI := FreeOmegaObservableSemanticMeasure)
     (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)
@@ -536,9 +534,7 @@ Qed.
     frontier, relating whole reply continuations, not just event labels. *)
 Theorem next_device_frontier sampler job s out :
   sampler ≈ₚ native_sampler ->
-  ptree_stable_hitting (MF := FreeOmega EnumQ)
-    (FI := FreeOmegaObservableSemanticMeasure) (FO := FreeOmegaObservableSemanticOmega)
-    (observe (run_state (controller sampler (Manufacturing job)) s)) out ->
+  run_state (controller sampler (Manufacturing job)) s ⇓ₕ out ->
   out ≈[stable_head_rel eq (fun t u => t ≈ₚ u)]ₘ device_front sampler job s.
 Proof.
   intros H Hhit. eapply peutt_hitting_lift.

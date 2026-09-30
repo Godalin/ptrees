@@ -576,7 +576,7 @@ Definition ptree_vn_compiled_body_heads : MF vn_head :=
       (NI := EnumQ_SemanticMeasure)
       (NO := EnumQ_SemanticOmega)) _ _
     ptree_vn_compiled_round
-    (stable_head_bind_front
+    (bind_frontier
       (FI := FreeOmegaObservableSemanticMeasure)
       ptree_vn_compiled_after
       ptree_vn_compiled_after_heads).

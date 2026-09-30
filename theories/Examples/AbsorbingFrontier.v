@@ -29,6 +29,8 @@ Local Open Scope ring_scope.
 Local Open Scope freeomega_scope.
 Import SemanticMeasureNotations.
 Local Open Scope semantic_measure_scope.
+Import HittingNotations.
+Local Open Scope hitting_scope.
 Import MonadNotation.
 Local Open Scope monad_scope.
 
@@ -39,7 +41,6 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := EnumQ_SemanticMe
 Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega)).
 Local Notation W := (PEutt.peutt (E := queryE) (FI := FI) (FO := FO) eq).
 Local Notation "t ≈ₚ u" := (W t u) (at level 70, no associativity) : type_scope.
-Local Notation hits t out := (ptree_stable_hitting (FI := FI) (FO := FO) (observe t) out).
 
 (** Only a Boolean exit descriptor is sampled. Recursive heads themselves
     are not put into the native carrier, avoiding a recursive-universe demand. *)
@@ -68,7 +69,7 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma round_hitting i : hits (round i)
+Lemma round_hitting i : round i ⇓ₕ
   (next <~ vn_transition ;; ηω (FHRet next)).
 Proof.
   assert (Heq : vn_round_measure = vn_transition).
@@ -79,7 +80,7 @@ Proof.
   apply (stable_hitting_native_ret (NI := EnumQ_SemanticMeasure)).
 Qed.
 
-Lemma reveal_hitting b : hits (reveal b) (reveal_front b).
+Lemma reveal_hitting b : reveal b ⇓ₕ reveal_front b.
 Proof.
   destruct b; [apply (stable_hitting_vis (FI := FI) (FO := FO))|
     apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure))].
@@ -96,10 +97,10 @@ Definition exit_round_front (v : unit+bool) : MF (stable_head queryE EnumQ (unit
     end).
 Definition actual_round_front (_ : unit) := v <~ vn_transition ;; exit_round_front v.
 
-Lemma actual_round_complete i : hits (absorbing_step i) (actual_round_front i).
+Lemma actual_round_complete i : absorbing_step i ⇓ₕ actual_round_front i.
 Proof.
   unfold absorbing_step, pstruct_iter_natural_step.
-  change (hits (PTree.bind (round i) (pstruct_iter_natural_step_handler reveal))
+  change (PTree.bind (round i) (pstruct_iter_natural_step_handler reveal) ⇓ₕ
     ((v <~ vn_transition ;; ηω (FHRet v)) >>=ₘ
       stable_head_ret_bind_front exit_round_front)).
   apply stable_hitting_bind_ret_only.
@@ -117,7 +118,7 @@ Definition actual_iteration_front :=
 
 (** Direct generic API consumption: the finite certificate is the only
     case-specific premise. Missing mass would also be permitted. *)
-Theorem absorbing_generic_frontier : hits absorbing_program actual_iteration_front.
+Theorem absorbing_generic_frontier : absorbing_program ⇓ₕ actual_iteration_front.
 Proof.
   eapply (iteration_summary_hitting (FI := FI) (FO := FO)
     (front := actual_round_front)); try typeclasses eauto.
@@ -132,17 +133,17 @@ Example actual_visible_continuation :
     iter_active absorbing_step (PTree.bind (Ret answer) (fun b => Ret (inr b))))).
 Proof. reflexivity. Qed.
 
-Theorem staged_frontier_exact : hits staged_program round_frontier.
+Theorem staged_frontier_exact : staged_program ⇓ₕ round_frontier.
 Proof. eapply absorbing_iteration_summary; [exact round_hitting|exact reveal_hitting]. Qed.
 
-Theorem absorbing_round_frontier out : hits absorbing_program out ->
+Theorem absorbing_round_frontier out : absorbing_program ⇓ₕ out ->
   out ≈[stable_head_rel eq W]ₘ round_frontier.
 Proof. eapply absorbing_iteration_heads; [exact round_hitting|exact reveal_hitting]. Qed.
 
-Lemma direct_frontier_exact : hits direct_program first_frontier.
+Lemma direct_frontier_exact : direct_program ⇓ₕ first_frontier.
 Proof.
   unfold direct_program, direct_fair_in. rewrite observe_bind.
-  change (hits (Prob vn_fair (fun b => reveal b)) first_frontier).
+  change (Prob vn_fair (fun b => reveal b) ⇓ₕ first_frontier).
   eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure))
     with (Good := fun _ => True).
   - apply sem_ae_true.
@@ -151,7 +152,7 @@ Qed.
 
 (** An actual complete witness exists, and ANY witness has one coupling
     with the mixed Ret/Vis reference. No response-wise marginal shortcut. *)
-Theorem absorbing_first_frontier out : hits absorbing_program out ->
+Theorem absorbing_first_frontier out : absorbing_program ⇓ₕ out ->
   out ≈[stable_head_rel eq W]ₘ first_frontier.
 Proof.
   intro Hout. eapply peutt_hitting_lift.
@@ -161,7 +162,7 @@ Proof.
 Qed.
 
 Theorem absorbing_first_frontier_exists : exists out,
-  hits absorbing_program out /\
+  absorbing_program ⇓ₕ out /\
   out ≈[stable_head_rel eq W]ₘ first_frontier.
 Proof.
   destruct (ptree_stable_hitting_exists (FI := FI) (FO := FO) (observe absorbing_program)) as [out Hout].

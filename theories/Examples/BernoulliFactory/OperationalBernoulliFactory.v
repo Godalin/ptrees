@@ -443,7 +443,7 @@ Definition ptree_factory_binary_step_heads (x : rat) :
       (NI := EnumQ_SemanticMeasure)
       (NO := EnumQ_SemanticOmega)) _ _
     ptree_factory_raw_heads
-    (stable_head_bind_front
+    (bind_frontier
       (fun b => Ret (binary_round_result x b) : ptree factoryE EnumQ _)
       (fun b => FORet (FHRet (binary_round_result x b)))).
 
@@ -495,7 +495,7 @@ Lemma ptree_factory_binary_step_heads_observes
 Proof.
   unfold ptree_factory_binary_step_heads.
   assert (Hfront :
-    stable_head_bind_front
+    bind_frontier
       (fun b => Ret (binary_round_result x b) : ptree factoryE EnumQ _)
       (fun b => FORet (FHRet (binary_round_result x b))) =
     (fun h => FORet (FHRet (binary_round_result x

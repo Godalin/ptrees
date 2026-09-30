@@ -49,7 +49,7 @@ Qed.
 
 End StableHeadRelation.
 
-Definition stable_head_bind_front {E MN MF}
+Definition bind_frontier {E MN MF}
     `{FI : SemanticMeasure MF} {A B}
     (k : A -> ptree E MN B)
     (front : A -> MF (stable_head E MN B))
@@ -132,7 +132,7 @@ Inductive frontier_certificate {R} :
       frontier_certificate (observe t) hs ->
       (forall a, frontier_certificate (observe (k a)) (front a)) ->
       frontier_certificate (observe (PTree.bind t k))
-        (sem_bind hs (stable_head_bind_front k front)).
+        (sem_bind hs (bind_frontier k front)).
 
 (** Coherence is the exact semantic condition needed to treat a certificate as
     an observation rather than a chosen derivation.  Omega-limit uniqueness
@@ -166,3 +166,13 @@ Lemma certificate_iter_intro {R I}
 Proof. intros Hstep Hiter Htotal. eapply UFIter; eassumption. Qed.
 
 End UnifiedFrontier.
+
+(** Client judgments are opt-in. A certificate is a derivation in the
+    syntax-directed proof system, not the semantic hitting judgment. *)
+Declare Scope hitting_scope.
+Delimit Scope hitting_scope with hit.
+
+Module FrontierCertificateNotations.
+Notation "t '⊢F' front" := (frontier_certificate (observe t) front)
+  (at level 70, no associativity) : hitting_scope.
+End FrontierCertificateNotations.

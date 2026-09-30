@@ -178,7 +178,104 @@ This does not introduce a probability-interface instance or import FreeOmega.
 `oval_eq`, `oval_lub Hi`, `oval_eval`, `oval_mass` and `oval_coupled` retain their
 names. In particular, the lub still requires its increasingness certificate;
 bidual constraints are not presented as actual coupling existence. Modelability,
-denotation, qlift and stable hitting also retain their explicit names.
+denotation and qlift retain their explicit names. Stable hitting has the
+separate tree-facing judgment syntax described below.
+
+## Reading stable frontiers
+
+The existing definition owners provide opt-in client judgments; no new
+semantics, wrapper definition, backend selection or typeclass is introduced:
+
+```coq
+From PTree.Eq Require Import UnifiedFrontier PTreeKernel.
+Import HittingNotations FrontierCertificateNotations.
+Local Open Scope hitting_scope.
+```
+
+| Client notation | Exact expansion |
+| --- | --- |
+| `t ⇓ₕ front` | `ptree_stable_hitting (observe t) front` |
+| `t ⇓ₕ¹ front` | `ptree_stable_hitting_ast (observe t) front` |
+| `hit[n] t` | `ptree_hitting_approx n (observe t)` |
+| `t ⊢F front` | `frontier_certificate (observe t) front` |
+
+The delimiter is `%hit`. `HittingNotations` belongs to `PTreeKernel`;
+`FrontierCertificateNotations` belongs to `UnifiedFrontier`. The latter
+does not import the semantic kernel merely to declare certificate syntax.
+The caller still chooses `MF`, `FI`, `MX` and `FO`, exactly as for the raw
+judgments. In particular, these symbols do not select structural FreeOmega
+equality instead of the observable profile.
+
+`hit[n]` counts internal fuel: Ret and Vis are already stable at zero fuel;
+Tau and Prob spend fuel. `⇓ₕ` specifies a complete distribution of stable
+heads, permitting missing mass. `⇓ₕ¹` additionally asserts `sem_total`;
+for a subprobability backend that is stable mass one, **not necessarily
+termination at a return**: an offered Vis head is also stable. `⊢F` is a
+syntax-directed certificate and is not interchangeable with either semantic
+judgment. Its soundness uses the existing certificate soundness theorem and
+its premises.
+
+The same finite/complete distinction reads directly as:
+
+```coq
+(* With the same explicit semantic profile throughout: *)
+hit[n] t ≤ₘ hit[S n] t
+(fun n => hit[n] t) ⇑ₘ front
+t ⇓ₕ front
+```
+
+The last two propositions are definitionally equal. The first is a theorem
+under the existing order/omega laws, not something notation assumes.
+`ωsup n, ...` remains raw FreeOmega syntax; this notation change does not
+turn arbitrary sequences into increasing chains.
+
+Actual case-study statements now read:
+
+```coq
+Lemma round_complete partial i : step partial i ⇓ₕ round_front partial i.
+Theorem loop_frontier_exact partial : loop partial ⇓ₕ loop_front partial.
+Theorem endless_frontier_zero : endless ⇓ₕ ⊥ω.
+
+Lemma loop_hits s : raw_loop s ⇓ₕ loop_heads s.       (* Adaptive *)
+Theorem raw_loop_ast s : raw_loop s ⇓ₕ¹ loop_heads s.
+
+Theorem random_walk_ast : random_walk ⇓ₕ¹ random_walk_heads.
+```
+
+RandomWalk's `walk_hitting` and `joint_hitting` definitions use `hit[fuel]`;
+FactoryController and AbsorbingFrontier use `⇓ₕ` for their mixed Ret/Vis
+frontiers. The analysis, coinduction and algebraic proof chains are unchanged.
+
+The frontier-composition helper is now `bind_frontier`, so bind results can
+be read as `front >>=ₘ bind_frontier k fronts`. Its old name
+`stable_head_bind_front` is removed, without a compatibility alias.
+
+We deliberately do **not** mechanically strip every `ptree_` prefix:
+`PrimitiveStableHitting.stable_hitting` is the arbitrary-kernel definition,
+and `PEutt.stable_hitting_ret/prob` already name related laws at a different
+layer. The explicit low-level names disambiguate these owners; the client
+judgments remove that noise without adding competing short-name aliases.
+`SHInternal`, fuel indices, theorem hypotheses and module paths are unchanged.
+
+Technical checks live in the non-installed
+`tests/Notation/HittingNotation.v`: exact expansions, scope separation,
+finite/complete judgments, certificate distinction, measure-notation
+precedence and observable-profile inference.
+
+Validation against `f25991b`: 17 affected declarations retain their compiled
+types and `Print Assumptions` (modulo the single helper rename and printer
+whitespace). The changed non-example theory/check files preserve their exact
+source apart from that rename and the appended notation blocks. The existing
+491 main contracts, 129 generic-algebra contracts and 47 FactoryController
+contracts pass; the main snapshot changes only the two literal occurrences
+of the renamed helper, with no assumption or other signature refresh.
+Full local `dune build -j 2` (including AllImports and extraction), 140 tool
+tests, 39 post-extraction execution/safety tests, architecture, API-surface
+and soundness-source checks passed. A joint `coqchk -norec` checked the two
+definition owners, notation client and five migrated cases; dependencies were
+not rechecked. The final notation client was checked again after adding its
+negative probes. Gate M remains the same two files, outside the safe kernel
+check; full build does not claim Gate M is universe-checked. No CI was queried.
 
 ## Case-study presentation policy
 

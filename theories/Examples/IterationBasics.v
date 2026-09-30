@@ -27,6 +27,8 @@ Local Open Scope ring_scope.
 Local Open Scope freeomega_scope.
 Import SemanticMeasureNotations SemanticOmegaNotations.
 Local Open Scope semantic_measure_scope.
+Import HittingNotations.
+Local Open Scope hitting_scope.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -39,7 +41,6 @@ Local Notation NO := SubEnumQ_SemanticOmega.
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
 Local Notation tree := (ptree eventE MN).
-Local Notation hits t out := (ptree_stable_hitting (FI := FI) (FO := FO) (observe t) out).
 Local Notation expect := finite_subdist_expect.
 
 (** Setup: false = geometric retry; true = an additional missing quarter.
@@ -79,7 +80,7 @@ Definition classical_result partial :=
   ωsup n, mixed_iter_approx (FI := FI) (FO := FO) n (kernel partial) tt.
 
 (** Main frontier calculation: one local certificate, then one library law. *)
-Lemma round_complete partial i : hits (step partial i) (round_front partial i).
+Lemma round_complete partial i : step partial i ⇓ₕ round_front partial i.
 Proof.
   apply stable_hitting_tau.
   eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure))
@@ -87,7 +88,7 @@ Proof.
   - apply sem_ae_true.
   - intros v _. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
 Qed.
-Theorem loop_frontier_exact partial : hits (loop partial) (loop_front partial).
+Theorem loop_frontier_exact partial : loop partial ⇓ₕ loop_front partial.
 Proof. apply complete_iteration_hitting. exact (round_complete partial). Qed.
 Theorem loop_classical partial :
   loop_front partial ≈ₘ iteration_return_map (classical_result partial).
@@ -161,7 +162,7 @@ Qed.
 Definition return_value (h : stable_head eventE MN bool) :=
   match h with FHRet b => b | FHVis _ _ _ => false end.
 Definition observed_front partial := iteration_frontier (E := eventE) (kernel partial) tt.
-Theorem observed_front_exact partial : hits (loop partial) (observed_front partial).
+Theorem observed_front_exact partial : loop partial ⇓ₕ observed_front partial.
 Proof.
   eapply iteration_frontier_summary_hitting; try typeclasses eauto.
   exact (round_complete partial).
@@ -177,7 +178,7 @@ Theorem loop_returns_only partial :
   free_omega_ae (fun h => exists b, h = FHRet b) (observed_front partial).
 Proof. apply iteration_frontier_returns. Qed.
 Theorem loop_probability partial :
-  hits (loop partial) (observed_front partial) /\
+  loop partial ⇓ₕ observed_front partial /\
   free_omega_observes return_value (observed_front partial) (result partial) /\
   expect (result partial) (fun _ => 1) = return_mass partial.
 Proof. split; [apply observed_front_exact|]. split; [apply loop_observation|]. by rewrite result_expect mulr1. Qed.
@@ -185,8 +186,7 @@ Corollary geometric_returns_mass_one : expect (result false) (fun _ => 1) = 1.
 Proof. exact (proj2 (proj2 (loop_probability false))). Qed.
 Corollary partial_returns_mass_half : expect (result true) (fun _ => 1) = 1/2.
 Proof. exact (proj2 (proj2 (loop_probability true))). Qed.
-Corollary geometric_ast : ptree_stable_hitting_ast (FI := FI) (FO := FO)
-  (observe (loop false)) (observed_front false).
+Corollary geometric_ast : loop false ⇓ₕ¹ observed_front false.
 Proof.
   split; [apply observed_front_exact|].
   apply free_omega_observable_total_intro.
@@ -201,7 +201,7 @@ Definition endless_front (_ : unit) : MF (stable_head eventE MN (unit+bool)) := 
 Lemma endless_round_zero n :
   iteration_summary_round (FI := FI) (FO := FO) endless_step endless_front n tt = ⊥ω.
 Proof. induction n; [reflexivity|exact IHn]. Qed.
-Theorem endless_frontier_zero : hits endless ⊥ω.
+Theorem endless_frontier_zero : endless ⇓ₕ ⊥ω.
 Proof.
   eapply (iteration_summary_hitting (FI := FI) (FO := FO) (front := endless_front)); try typeclasses eauto.
   - intro i. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).

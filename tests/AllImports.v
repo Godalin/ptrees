@@ -425,6 +425,7 @@ Require PTree.Tests.Imports.PublicSemanticFacade.
 Require PTree.Tests.Imports.StructuralRegistry.
 Require PTree.Tests.Imports.UniverseSeparatedPTree.
 Require PTree.Tests.Notation.FreeOmegaNotation.
+Require PTree.Tests.Notation.HittingNotation.
 Require PTree.Tests.Notation.SemanticMeasureNotation.
 Require PTree.Tests.Rewriting.FreeOmegaRewriting.
 Require PTree.Tests.Rewriting.GenericAlgebra.

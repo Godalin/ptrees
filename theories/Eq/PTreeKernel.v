@@ -688,10 +688,10 @@ Lemma ptree_head_bind_approx_lub {A R}
       ptree_stable_hitting (MF := MF) (observe (k a)) (front a)) h :
   sem_lub (fun fuel => ptree_head_bind_approx
       (MF := MF) fuel k h)
-    (stable_head_bind_front k front h).
+    (bind_frontier k front h).
 Proof.
   destruct h as [a|X e c]; cbn [ptree_head_bind_approx
-    stable_head_bind_front].
+    bind_frontier].
   - exact (Hfront a).
   - apply sem_lub_constant.
 Qed.
@@ -703,7 +703,7 @@ Theorem ptree_stable_hitting_bind {A R}
   ptree_stable_hitting (MF := MF) (observe t) hs ->
   (forall a, ptree_stable_hitting (MF := MF) (observe (k a)) (front a)) ->
   ptree_stable_hitting (MF := MF) (observe (PTree.bind t k))
-    (sem_bind hs (stable_head_bind_front k front)).
+    (sem_bind hs (bind_frontier k front)).
 Proof.
   intros Hcofinal Hsource Hfront. unfold ptree_stable_hitting in *.
   apply (proj2 (Hcofinal _)).
@@ -722,9 +722,9 @@ Corollary ptree_stable_hitting_ast_bind {A R}
   ptree_stable_hitting_ast (MF := MF) (observe t) hs ->
   (forall a, ptree_stable_hitting_ast (MF := MF)
     (observe (k a)) (front a)) ->
-  sem_total (sem_bind hs (stable_head_bind_front k front)) ->
+  sem_total (sem_bind hs (bind_frontier k front)) ->
   ptree_stable_hitting_ast (MF := MF) (observe (PTree.bind t k))
-    (sem_bind hs (stable_head_bind_front k front)).
+    (sem_bind hs (bind_frontier k front)).
 Proof.
   intros Hcofinal Hsource Hfront Htotal. split; [|exact Htotal].
   eapply ptree_stable_hitting_bind; [exact Hcofinal|exact (proj1 Hsource)|].
@@ -880,3 +880,16 @@ Proof.
 Qed.
 
 End FrontierKernelSoundness.
+
+(** Tree-facing syntax for the existing observed-state semantics. These
+    notations do not select a frontier backend or a measure interpretation.
+    [hit[n]] counts internal fuel; [⇓ₕ] is the complete frontier, not a
+    termination assertion. [⇓ₕ¹] additionally asserts [sem_total]. *)
+Module HittingNotations.
+Notation "t '⇓ₕ' front" := (ptree_stable_hitting (observe t) front)
+  (at level 70, no associativity) : hitting_scope.
+Notation "t '⇓ₕ¹' front" := (ptree_stable_hitting_ast (observe t) front)
+  (at level 70, no associativity) : hitting_scope.
+Notation "'hit[' n ']' t" := (ptree_hitting_approx n (observe t))
+  (at level 10, n at level 99, t at next level) : hitting_scope.
+End HittingNotations.

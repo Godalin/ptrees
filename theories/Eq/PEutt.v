@@ -765,7 +765,7 @@ Theorem stable_hitting_bind {A R}
   stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
     (observe (PTree.bind t k))
-    (sem_bind hs (stable_head_bind_front k front)).
+    (sem_bind hs (bind_frontier k front)).
 Proof.
   intros Hcofinal Hsource Hfront.
   eapply ptree_stable_hitting_bind.
@@ -1397,16 +1397,16 @@ Proof.
       assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
-        (sem_bind source1 (stable_head_bind_front k1 front1))).
+        (sem_bind source1 (bind_frontier k1 front1))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
       assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX B)
         (observe (PTree.bind t2 k2))
-        (sem_bind source2 (stable_head_bind_front k2 front2))).
+        (sem_bind source2 (bind_frontier k2 front2))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-      exists (sem_bind source2 (stable_head_bind_front k2 front2)). split.
+      exists (sem_bind source2 (bind_frontier k2 front2)). split.
       * exact Hbound2.
       * eapply sem_lift_proper_l.
         -- eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
@@ -1438,16 +1438,16 @@ Proof.
       assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
-        (sem_bind source1 (stable_head_bind_front k1 front1))).
+        (sem_bind source1 (bind_frontier k1 front1))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
       assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX B)
         (observe (PTree.bind t2 k2))
-        (sem_bind source2 (stable_head_bind_front k2 front2))).
+        (sem_bind source2 (bind_frontier k2 front2))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-      exists (sem_bind source1 (stable_head_bind_front k1 front1)). split.
+      exists (sem_bind source1 (bind_frontier k1 front1)). split.
       * exact Hbound1.
       * eapply sem_lift_proper_r.
         -- eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
@@ -1548,16 +1548,16 @@ Proof.
       assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
-        (sem_bind source1 (stable_head_bind_front k1 front1))).
+        (sem_bind source1 (bind_frontier k1 front1))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
       assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t2 k2))
-        (sem_bind source2 (stable_head_bind_front k2 front2))).
+        (sem_bind source2 (bind_frontier k2 front2))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-      exists (sem_bind source2 (stable_head_bind_front k2 front2)). split.
+      exists (sem_bind source2 (bind_frontier k2 front2)). split.
       * exact Hbound2.
       * eapply sem_lift_proper_l.
         -- eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
@@ -1585,16 +1585,16 @@ Proof.
       assert (Hbound1 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t1 k1))
-        (sem_bind source1 (stable_head_bind_front k1 front1))).
+        (sem_bind source1 (bind_frontier k1 front1))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
       assert (Hbound2 : stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX A)
         (observe (PTree.bind t2 k2))
-        (sem_bind source2 (stable_head_bind_front k2 front2))).
+        (sem_bind source2 (bind_frontier k2 front2))).
       { eapply stable_hitting_bind;
           [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-      exists (sem_bind source1 (stable_head_bind_front k1 front1)). split.
+      exists (sem_bind source1 (bind_frontier k1 front1)). split.
       * exact Hbound1.
       * eapply sem_lift_proper_r.
         -- eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].
@@ -1677,16 +1677,16 @@ Proof.
     assert (Hbound1 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t1 k1))
-      (sem_bind source1 (stable_head_bind_front k1 front1))).
+      (sem_bind source1 (bind_frontier k1 front1))).
     { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
     assert (Hbound2 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t2 k2))
-      (sem_bind source2 (stable_head_bind_front k2 front2))).
+      (sem_bind source2 (bind_frontier k2 front2))).
     { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-    exists (sem_bind source2 (stable_head_bind_front k2 front2)). split.
+    exists (sem_bind source2 (bind_frontier k2 front2)). split.
     + exact Hbound2.
     + eapply sem_lift_proper_l.
       * eapply stable_hitting_unique; [exact Hbound1|exact Hhit1].
@@ -1711,16 +1711,16 @@ Proof.
     assert (Hbound1 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t1 k1))
-      (sem_bind source1 (stable_head_bind_front k1 front1))).
+      (sem_bind source1 (bind_frontier k1 front1))).
     { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource1|exact Hfront1]. }
     assert (Hbound2 : stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX A)
       (observe (PTree.bind t2 k2))
-      (sem_bind source2 (stable_head_bind_front k2 front2))).
+      (sem_bind source2 (bind_frontier k2 front2))).
     { eapply stable_hitting_bind;
         [apply bind_cofinality|exact Hsource2|exact Hfront2]. }
-    exists (sem_bind source1 (stable_head_bind_front k1 front1)). split.
+    exists (sem_bind source1 (bind_frontier k1 front1)). split.
     + exact Hbound1.
     + eapply sem_lift_proper_r.
       * eapply stable_hitting_unique; [exact Hbound2|exact Hhit2].

@@ -71,9 +71,9 @@ Proof.
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
     (fun x => PTree.interp handler (k2 x))) as [front2 Hfront2].
   eapply stable_hitting_match_of_hitting_lift
-    with (out1 := sem_bind mu (stable_head_bind_front
+    with (out1 := sem_bind mu (bind_frontier
       (fun x => PTree.interp handler (k1 x)) front1))
-         (out2 := sem_bind mu (stable_head_bind_front
+         (out2 := sem_bind mu (bind_frontier
       (fun x => PTree.interp handler (k2 x)) front2)).
   - apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
     eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO)
