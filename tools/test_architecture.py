@@ -29,6 +29,19 @@ class ArchitectureTests(unittest.TestCase):
                 architecture.check_generic_validation_boundary(graph)
         architecture.check_generic_validation_boundary({root: {helper}, helper: set()})
 
+    def test_canonical_realization_excludes_legacy_transitively(self):
+        for backend in ["SubEnumQ", "SubEnumR"]:
+            base = "Prob/Backend/" + backend + "/FreeOmega/"
+            root, helper = base + "JointRealization", base + "CountableSupport"
+            for target in ["Prob/Backend/SubEnumQ/FreeOmega/Compatibility",
+                           "Prob/Backend/SubEnumQ/FreeOmega/UpperQuotient",
+                           "Eq/PTreeKernel"]:
+                with self.subTest(backend=backend, target=target), self.assertRaises(AssertionError):
+                    architecture.check_generic_validation_boundary(
+                        {root: {helper}, helper: {target}, target: set()})
+            architecture.check_generic_validation_boundary(
+                {root: {helper}, helper: {base + "Validation"}, base + "Validation": set()})
+
     def test_real_native_reflection_keeps_validation_boundary(self):
         bridge = "Prob/Backend/SubEnumR/FreeOmega/NativeReflection"
         native = "Prob/Backend/SubEnumR/FiniteTransport"
@@ -174,10 +187,9 @@ class ArchitectureTests(unittest.TestCase):
                        "Interp/FreeOmega/Guarded", "Prob/Backend/SubEnumQ/Measure",
                        "Prob/Legacy/Discrete", "Semantics/MDPFragment"]:
             for target in ["Prob/Domain/Expectation",
-                           "Prob/Backend/SubEnumQ/FreeOmega/DomainSoundness",
-                           "Prob/Backend/SubEnumQ/FreeOmega/QuotientSoundness",
+                           "Prob/Backend/SubEnumQ/FreeOmega/Compatibility",
                            "Prob/Backend/SubEnumQ/FreeOmega/CountableSupport",
-                           "Prob/Backend/SubEnumQ/FreeOmega/CouplingSoundness",
+                           "Prob/Backend/SubEnumQ/FreeOmega/JointRealization",
                            "Eq/Backend/StableHittingDomainSubEnumQ"]:
                 self.assertFalse(architecture.permitted(source, target))
         self.assertTrue(architecture.permitted("Prob/Backend/SubEnumQ/Domain", "Prob/Domain/Expectation"))
@@ -295,7 +307,7 @@ class AggregateAndFixtureTests(unittest.TestCase):
     def test_fixture_has_no_final_regression_dependency(self):
         source='Regression/Fixtures/FreeOmegaSamples'
         self.assertFalse(architecture.permitted(source,'Regression/Probability/FreeOmegaSoundness'))
-        self.assertTrue(architecture.permitted(source,'Prob/Backend/SubEnumQ/FreeOmega/DomainSoundness'))
+        self.assertTrue(architecture.permitted(source,'Prob/Backend/SubEnumQ/FreeOmega/Compatibility'))
         self.assertTrue(architecture.permitted('Regression/Probability/CountableCoupling',source))
 
     def test_native_validation_has_no_completion_dependency(self):

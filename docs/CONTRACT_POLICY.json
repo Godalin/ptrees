@@ -219,6 +219,7 @@
       "generic_rational_tests_agree_with_DS5"
     ],
     "theories/Regression/Probability/GenericFreeOmegaValidation.v": [
+      "generic_q_joint_without_legacy",
       "option_sample_denotes",
       "generic_null_bad_sample",
       "generic_null_bad_bind",

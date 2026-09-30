@@ -9,7 +9,7 @@ From PTree.Prob.Domain Require Import Expectation.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Measure StructuralMeasure.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Compatibility.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel.
 From PTree.Eq.Backend Require Import StableHittingDomainSubEnumQ.
 Fail Check PTree.Eq.PEutt.peutt.

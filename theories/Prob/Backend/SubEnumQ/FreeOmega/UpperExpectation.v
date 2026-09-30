@@ -1,6 +1,7 @@
-(** Compatibility-only rational validation. New developments use
-    Prob/FreeOmega/Validation/Model and SubEnumQ/FreeOmega/Validation.
-    Retained for existing clients; no new specialized validation theory. *)
+(** Scalar rational expectation infrastructure for native transport and internal
+    realization. This non-validation layer must not depend on OmegaVal.
+    External model clients use Validation/Model and SubEnumQ/FreeOmega/Validation;
+    only the legacy external vocabulary is collected in Compatibility. *)
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".

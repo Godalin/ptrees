@@ -10,8 +10,7 @@ From PTree.Prob.Backend.Common Require Import FiniteEnum.
 From PTree.Prob.Backend.EnumQ Require Import Representation.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
-  UpperExpectation Admissibility DomainSoundness.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import UpperExpectation Compatibility.
 
 
 Set Implicit Arguments.

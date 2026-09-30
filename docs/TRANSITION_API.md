@@ -82,22 +82,11 @@ same joint consumed through up-to-bind; see
 The existing architecture checker reconstructs the actual compiled
 dependency graph and rejects **every** edge from Gate S to Gate M. This
 implies transitive isolation, not just absence of a direct import. Its
-current root-closure check gives the following sizes (including the root):
-
-| Root module | Closure size | Gate M modules |
-| --- | ---: | ---: |
-| `Eq/PEutt` | 13 | 0 |
-| `Eq/PTreeKernel` | 11 | 0 |
-| `Prob/FreeOmega/Validation/Quotient` | 19 | 0 |
-| `Prob/Backend/SubEnumQ/FreeOmega/DomainSoundness` | 43 | 0 |
-| `Prob/Backend/SubEnumQ/FreeOmega/JointRealization` | 63 | 0 |
-| `Prob/Backend/SubEnumR/FreeOmega/JointRealization` | 43 | 0 |
-| `Eq/Backend/StableHittingDomainSubEnumQ` | 55 | 0 |
-| `Examples/AdaptiveFactoryController` | 131 | 0 |
-| `Examples/MixedHeadProtocol` | 75 | 0 |
-| `Execution/Validation/SubEnumQ` | 60 | 0 |
-| `Execution/Validation/UniformReplay` | 14 | 0 |
-| `Semantics` | 22 | 0 |
+root-closure check includes `Eq/PEutt`, `Eq/PTreeKernel`, generic FreeOmega
+validation, both Q/R joint realizations and stable-hitting adapters,
+Adaptive/MixedHead, runner validation and `Semantics`. All exclude Gate M.
+The generated [architecture inventory](ARCHITECTURE_AUDIT.md) is authoritative
+for the current dependency graph; historical closure sizes are not contracts.
 
 Only `Eq/Backend/MathComp` and `Regression/Backend/MathComp`
 remain in Gate M, outside safe AllImports. Source and build-flag checks

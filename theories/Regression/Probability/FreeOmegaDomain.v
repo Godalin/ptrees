@@ -12,8 +12,7 @@ From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Backend.EnumQ Require Import Representation.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
-  UpperExpectation Admissibility DomainSoundness.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import UpperExpectation Compatibility.
 
 Fail Check PTree.Prob.Domain.MeasureModel.oval_probability.
 Fail Check PTree.Core.PTreeDefinition.ptree.

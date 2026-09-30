@@ -51,8 +51,7 @@ From PTree.Prob.Interface Require Import Measure.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Quotient Measure.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
-  Admissibility QuotientSoundness.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Compatibility.
 
 Fail Check PTree.Prob.Domain.MeasureModel.oval_probability.
 Fail Check PTree.Core.PTreeDefinition.ptree.
@@ -153,8 +152,7 @@ Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.FreeOmega Require Import Approximation Quotient.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
-  Admissibility CountableSupport CouplingSoundness.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Compatibility CountableSupport.
 Fail Check PTree.Prob.Domain.MeasureModel.oval_probability.
 Fail Check PTree.Eq.PEutt.peutt.
 From PTree.Regression.Probability Require Import FreeOmegaDomain.
@@ -234,8 +232,7 @@ Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.FreeOmega Require Import Quotient Measure.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
-  Admissibility JointRealization.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Compatibility JointRealization.
 Fail Check PTree.Prob.Domain.MeasureModel.oval_probability.
 Fail Check PTree.Core.PTreeDefinition.ptree.
 Fail Check PTree.Eq.PEutt.peutt.

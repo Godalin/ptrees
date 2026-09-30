@@ -73,4 +73,27 @@ Theorem subenumQ_generic_qlift_bidual {A B} (T : A -> B -> Prop) t u
   free_omega_qlift T t u -> oval_bidual T (free_omega_model Ht) (free_omega_model Hu).
 Proof. exact: subenumQ_qlift_bidual_raw. Qed.
 
+
+Theorem subenumQ_qlift_eq_upper {A} (t u : FreeOmega SubEnumQ A) f :
+  free_omega_qlift eq t u -> oval_test f ->
+  free_omega_model_upper native t f = free_omega_model_upper native u f.
+Proof.
+  intros H Hf; destruct (subenumQ_qlift_bidual_raw H) as [Hl Hr].
+  apply/eqP; rewrite eq_le; apply/andP; split;
+    [apply Hl|apply Hr]; try exact Hf; intros x y ->; exact: lexx.
+Qed.
+
+Theorem subenumQ_qlift_eq_modelable {A} (t u : FreeOmega SubEnumQ A) :
+  free_omega_qlift eq t u ->
+  (free_omega_modelable native t <-> free_omega_modelable native u).
+Proof.
+  intro H; split; intro Hv; eapply modelable_ext; [exact Hv| |exact Hv|];
+    intros f Hf; [exact (subenumQ_qlift_eq_upper H Hf)|symmetry; exact (subenumQ_qlift_eq_upper H Hf)].
+Qed.
+
+Theorem subenumQ_qlift_eq_sound {A} (t u : FreeOmega SubEnumQ A)
+    (Ht : free_omega_modelable native t) (Hu : free_omega_modelable native u) :
+  free_omega_qlift eq t u -> oval_eq (free_omega_model Ht) (free_omega_model Hu).
+Proof. intros H f Hf; exact (subenumQ_qlift_eq_upper H Hf). Qed.
+
 End RationalValidation.

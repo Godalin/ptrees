@@ -143,12 +143,32 @@ module. The canonical adapter does not depend on the specialized upper chain.
 Existing `stable_hitting_admissible` / `ptree_domain_hitting` clients are retained;
 their core commutation and validity proofs now delegate to the generic theorem.
 
-**Compatibility migration, phase 1:** `UpperExpectation.v`, `Admissibility.v`,
-`DomainSoundness.v`, and `QuotientSoundness.v` remain compatibility-only, with no
-new specialized validation theory. `Compatibility.v` relates their vocabulary to
-`Model.v`; new generic validation does not import it. Phase 2 (migrate remaining
-legacy clients and delete duplicate implementations) is still pending. This
-change does not pretend that all old specialized proof code has been deleted.
+**Legacy external API:** `Compatibility.v` now owns the old
+`free_omega_admissible`, `free_omega_domain`, equality and joint-soundness names.
+Their validation proofs delegate to generic Model/quotient validation and the
+canonical Q realization. `Admissibility.v`, `DomainSoundness.v`,
+`QuotientSoundness.v` and `CouplingSoundness.v` have been removed; remaining
+legacy clients import `Compatibility` explicitly. This preserves their theorem
+statements, not their former module paths. New code should use `free_omega_model`
+and the `subenumQ_*` endpoints. Both Q/R canonical countable-support and joint
+paths transitively exclude this compatibility API and the old scalar upper
+chain; an import-boundary regression checks the Q client directly.
+
+The compiled migration preserves all 491 recorded theorem types (modulo the
+explicit owner relocation). Nineteen legacy compatibility endpoints lose the
+`Eqdep.Eq_rect_eq.eq_rect_eq` dependency when delegated to generic proofs;
+the runner's `runner_stable_hitting_adequacy` also loses that dependency.
+Their snapshots record exactly these removals, not an expanded axiom whitelist.
+Ret/zero closure uses the domain laws directly, without importing assumptions
+from an unused native interpretation. This is not an axiom-freedom claim.
+
+**Scalar native mathematics is different:** `UpperExpectation`, `UpperCoupling`,
+`UpperContinuity`, `UpperRelational`, `UpperQuotient` and related files still
+support native transport/reflection and internal joint witnesses (including
+`NativeTransport` and EnumQ upper observation). They are not merely obsolete
+external validation. Replacing these proofs with OmegaVal imports would make
+maintained reasoning depend on its external model. They remain on the safe,
+non-validation side of that boundary; this cleanup does not redesign them.
 
 ## 6. SubEnumR specialization
 
@@ -257,22 +277,24 @@ completeness, arbitrary-backend joint existence, MathComp-native external
 soundness, infinite path measures, or a whole-library kernel audit. Local
 verification does not assert remote CI success.
 
-### Reorganization checkpoint: local verification
+### Compatibility cleanup: local verification
 
 - Complete `dune build`, including AllImports and extraction targets: passed.
-  The inventory is 441 modules, including the unchanged two Gate M modules;
+  The inventory is 434 modules (four retired in this cleanup), including the unchanged two Gate M modules;
   the new validation code is entirely Gate S.
 - Architecture, API surface and source-soundness audits: passed.
-- 146 Python tool tests: passed (including the previously omitted notation
-  regression registration, now covered by the existing policy).
-- Exact compiled contract suites: `contracts` 491, `subenumr_migration` 161,
-  `generic_algebra` 134 entries passed after the documented relocations and
-  six assumption reductions. These are suite-entry counts, not distinct theorems.
-- Compiled soundness audits: 32 hitting/Q/R/realization endpoints and 36 generic
+- 148 Python tool tests: passed, including transitive canonical-realization
+  isolation and rejection of a duplicated model construction in Compatibility.
+- Exact compiled contract suites: `contracts` 491 and `runner_distribution` 28
+  entries passed after the explicit owner relocations and the nineteen-plus-one
+  `eq_rect_eq` dependency removals documented above. Types and all other
+  assumptions are unchanged; snapshots were not broadly regenerated.
+- Compiled soundness audits: 32 hitting/Q/R/realization endpoints and 45 generic
   quotient/adapter/regression endpoints passed the unchanged axiom whitelist.
-- Joint `coqchk -norec`: 11 module bodies passed—generic Model/StableHitting/
-  Soundness, Q NativeLimit/Validation/Compatibility/JointRealization, R Validation,
-  Q/R hitting specializations, and StableHittingDomain regression. Compiled
+- Joint `coqchk -norec`: six module bodies passed—Q Validation/CountableSupport/
+  JointRealization/Compatibility, the Q hitting specialization, and the
+  GenericFreeOmegaValidation regression. Compiled
   dependencies were trusted; this is not a recursive whole-library audit.
-- No CI or environment change was performed. The compatibility-deletion phase
-  described above remains separate work.
+- No CI or environment change was performed. Scalar native Upper infrastructure
+  and the combined Soundness entry point remain intentionally unchanged, apart
+  from correcting the former's role comment.

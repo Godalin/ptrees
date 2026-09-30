@@ -16,7 +16,7 @@ From PTree.Eq.Backend Require Import StableHittingDomainSubEnumQ.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure Measure.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Compatibility.
 From PTree.Execution Require Import Runner.
 From PTree.Execution.Backend Require Import FiniteDistribution.
 From PTree.Execution.Validation Require Import UniformReplay.

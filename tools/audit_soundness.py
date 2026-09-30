@@ -76,8 +76,13 @@ def source_check(sources=None, policy=None):
             assert re.search(r'\b(?:Example|Lemma|Theorem)\s+'+re.escape(name)+r'\b',code), \
                 'Missing regression: ' + name
     joint = code_only(sources['theories/Prob/Backend/SubEnumQ/FreeOmega/JointRealization.v'])
-    assert 'free_omega_qlift_countable_constraints' in joint and 'oval_bidual_coupled' in joint
+    for endpoint in ['subenumQ_free_omega_model_countable', 'subenumQ_generic_qlift_bidual',
+                     'oval_bidual_coupled', 'subenumQ_qlift_sound']:
+        assert endpoint in joint, 'Missing rational realization ingredient: ' + endpoint
     assert not re.search(r'\b(?:induction|elim|FOQLComp)\b', joint), 'Final bridge must not require intermediate validity'
+    compatibility = code_only(sources['theories/Prob/Backend/SubEnumQ/FreeOmega/Compatibility.v'])
+    assert not re.search(r'\b(?:induction|elim|Fixpoint|CoFixpoint|Inductive|CoInductive)\b', compatibility), \
+        'Compatibility must delegate, not duplicate the model construction'
     real_joint = code_only(sources['theories/Prob/Backend/SubEnumR/FreeOmega/JointRealization.v'])
     for endpoint in ['subenumR_free_omega_model_countable', 'subenumR_qlift_bidual',
                      'oval_bidual_coupled', 'subenumR_qlift_sound']:
@@ -97,8 +102,8 @@ def manifest_check():
     names = set(data['soundness'])
     assert len(names) == 199 and names <= {e['name'] for e in data['endpoints']}
     for endpoint in [
-        'PTree.Prob.Backend.SubEnumQ.FreeOmega.JointRealization.free_omega_qlift_sound',
-        'PTree.Prob.Backend.SubEnumQ.FreeOmega.QuotientSoundness.free_omega_qlift_eq_sound',
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.Compatibility.free_omega_qlift_sound',
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.Compatibility.free_omega_qlift_eq_sound',
         'PTree.Eq.Backend.StableHittingDomainSubEnumQ.stable_hitting_denotational_adequacy',
         'PTree.Prob.Backend.Common.DomainTransport.oval_bidual_coupled_nat',
     ]:
@@ -220,7 +225,15 @@ def generic_quotient_check():
             'subenumR_qlift_bidual', 'subenumR_qlift_eq_modelable'],
         'PTree.Prob.Backend.SubEnumQ.FreeOmega.Validation': [
             'subenumQ_native_model_lub', 'subenumQ_qlift_bidual_raw',
-            'subenumQ_generic_qlift_bidual'],
+            'subenumQ_generic_qlift_bidual', 'subenumQ_qlift_eq_upper',
+            'subenumQ_qlift_eq_modelable', 'subenumQ_qlift_eq_sound'],
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.CountableSupport': [
+            'subenumQ_free_omega_model_enumerated', 'subenumQ_free_omega_model_countable'],
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.JointRealization': [
+            'subenumQ_qlift_sound', 'subenumQ_qlift_eq_sound_via_joint',
+            'subenumQ_qlift_joint_mass_support'],
+        'PTree.Regression.Probability.GenericFreeOmegaValidation': [
+            'generic_q_joint_without_legacy'],
         'PTree.Prob.Backend.SubEnumQ.FreeOmega.Compatibility': ['subenumQ_generic_qlift_tests'],
     }
     policy = json.loads(POLICY.read_text())

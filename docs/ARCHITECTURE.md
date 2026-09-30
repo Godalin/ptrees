@@ -101,8 +101,12 @@ entry point. Both Q/R adapters discharge the same native obligations without
 depending on specialized completion validation or PTree; their Eq/Backend
 stable-hitting corollaries give automatic modelability of arbitrary witnesses.
 
-SubEnumQ's old specialized validation remains compatibility-only (its remaining
-clients have not yet all migrated); new work uses generic `Model.v`. SubEnumR
+SubEnumQ's legacy external names are consolidated in `Compatibility.v`, whose
+validation proofs delegate to the generic model. The four former external
+validation modules have been removed. Q/R canonical countable-support and joint
+clients transitively exclude Compatibility and scalar Upper modules. The latter
+still serve native transport/internal realization and must not acquire external
+model dependencies; they are not obsolete compatibility modules. SubEnumR
 instantiates generic validation and
 proves countable support and external joint realization in
 `Prob/Backend/SubEnumR/FreeOmega/JointRealization.v`, alongside `Validation.v`

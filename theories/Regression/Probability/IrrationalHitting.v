@@ -12,7 +12,7 @@ From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Domain Require Import Expectation.
 From PTree.Prob.Backend.EnumQ Require Import Representation.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Expectation.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Compatibility.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.Eq.Backend Require Import StableHittingDomainSubEnumQ.
 Set Implicit Arguments.

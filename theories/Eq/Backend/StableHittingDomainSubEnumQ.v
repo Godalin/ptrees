@@ -13,8 +13,7 @@ From PTree.Prob.Interface Require Import Measure Omega.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure Measure.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain Expectation.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
-  Admissibility DomainSoundness Validation.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Compatibility Validation.
 From PTree.Prob.FreeOmega.Validation Require Import Model StableHitting.
 From PTree.Eq Require Import PrimitiveStableHitting UnifiedFrontier PTreeKernel.
 Set Implicit Arguments.

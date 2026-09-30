@@ -32,11 +32,7 @@ def external_validation(path):
         "Prob/Backend/SubEnumR/FreeOmega/NativeReflection",
         "Prob/Backend/SubEnumR/FreeOmega/CountableSupport",
         "Prob/Backend/SubEnumR/FreeOmega/JointRealization",
-        "Prob/Backend/SubEnumQ/FreeOmega/Admissibility",
-        "Prob/Backend/SubEnumQ/FreeOmega/DomainSoundness",
-        "Prob/Backend/SubEnumQ/FreeOmega/QuotientSoundness",
         "Prob/Backend/SubEnumQ/FreeOmega/CountableSupport",
-        "Prob/Backend/SubEnumQ/FreeOmega/CouplingSoundness",
         "Prob/Backend/SubEnumQ/FreeOmega/JointRealization",
         "Prob/Backend/SubEnumQ/FreeOmega/Compatibility",
         "Prob/Backend/SubEnumQ/FreeOmega/Validation",
@@ -264,6 +260,16 @@ def check_generic_validation_boundary(edges):
            (m.startswith("Prob/Backend/") and "/FreeOmega/" in m and m not in allowed)
            or m.startswith(("Core/", "Eq/", "Interp/", "Semantics/"))}
     assert not bad, "Native validation adapter depends on specialized completion/tree theory: " + str(sorted(bad))
+    # Canonical countable support and external joint realization likewise
+    # bypass the legacy scalar/compatibility route, for both finite backends.
+    clients = {"Prob/Backend/" + backend + "/FreeOmega/" + name
+               for backend in ["SubEnumQ", "SubEnumR"]
+               for name in ["CountableSupport", "JointRealization"]}
+    bad = {m for m in closure(edges, clients & edges.keys()) if
+           (m.startswith("Prob/Backend/") and "/FreeOmega/" in m
+            and m not in allowed | clients)
+           or m.startswith(("Core/", "Eq/", "Interp/", "Semantics/"))}
+    assert not bad, "Canonical realization depends on legacy validation/tree theory: " + str(sorted(bad))
 
 
 def aggregate_check(actual=None, expected=None):
@@ -368,7 +374,7 @@ def report():
         "- Generic interfaces and FreeOmega measure infrastructure import no concrete backend.",
         "- Concrete probability modules name Common/EnumQ/SubEnumQ/SubEnumR/MathComp ownership; Common cannot import a native carrier.",
         "- Native SubEnumQ expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.",
-        "- Q/R native validation adapters transitively exclude specialized completion validation and PTree; the old Q chain is compatibility-only.",
+        "- Q/R canonical native/realization adapters transitively exclude legacy external validation and tree theory; scalar Upper infrastructure remains separate from the external Model.",
         "- MathComp and EnumQ/SubEnumQ do not depend on each other; EnumQ/SubEnumQ realization adapters may reuse each other.",
         "- MathComp native sources and their transitive dependencies exclude formal completion; no MathComp behavioral alias or concrete FreeOmega instantiation is maintained.",
         "- Eq imports no Interp/Semantics; Semantics imports no Interp. Canonical routing is owned by Eq; there is no API namespace or Gate M reverse-dependency exception.",

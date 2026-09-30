@@ -11,8 +11,7 @@ Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Quotient.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
 From PTree.Prob.FreeOmega.Validation Require Import Model.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
-  Admissibility CouplingSoundness CountableSupport Validation.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import CountableSupport Validation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -23,8 +22,8 @@ Variable R : realType.
 Local Notation qlift := (@free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 
 (** Preferred endpoint: generic modelability, backend enumerable support,
-    and the shared countable transport theorem. Old DS names below remain
-    compatibility endpoints; new clients need no specialized evaluator. *)
+    and the shared countable transport theorem. Legacy DS names live only in Compatibility;
+    this module does not load the specialized evaluator. *)
 Theorem subenumQ_qlift_sound {A B} (T : A -> B -> Prop)
     (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)
     (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t)
@@ -36,37 +35,28 @@ Proof.
     (subenumQ_free_omega_model_countable Hu) (subenumQ_generic_qlift_bidual Ht Hu H)).
 Qed.
 
-Theorem free_omega_qlift_sound {A B} (T : A -> B -> Prop)
-    (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)
-    (Ht : free_omega_admissible R t) (Hu : free_omega_admissible R u) :
-  qlift T t u -> oval_coupled T (free_omega_domain Ht) (free_omega_domain Hu).
-Proof.
-  intro H; destruct (free_omega_qlift_countable_constraints Ht Hu H) as [HL [HM HD]].
-  exact (oval_bidual_coupled HL HM HD).
-Qed.
-
 (** Recover DS3 bounded equality through general joint realization. No claim
     identifies the existential joint with the separately constructed diagonal. *)
-Theorem free_omega_qlift_eq_sound_via_joint {A} (t u : FreeOmega SubEnumQ A)
-    (Ht : free_omega_admissible R t) (Hu : free_omega_admissible R u) :
-  qlift eq t u -> oval_eq (free_omega_domain Ht) (free_omega_domain Hu).
+Theorem subenumQ_qlift_eq_sound_via_joint {A} (t u : FreeOmega SubEnumQ A)
+    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t) (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
+  qlift eq t u -> oval_eq (free_omega_model Ht) (free_omega_model Hu).
 Proof.
   intro H; apply (proj1 (oval_eq_coupled_iff _ _)).
-  exact (free_omega_qlift_sound Ht Hu H).
+  exact (subenumQ_qlift_sound Ht Hu H).
 Qed.
 
 (** The realized joint has exactly the original subprobability mass;
     its complement-of-relation observable has expectation zero. *)
-Theorem free_omega_qlift_joint_mass_support {A B} (T : A -> B -> Prop)
+Theorem subenumQ_qlift_joint_mass_support {A B} (T : A -> B -> Prop)
     (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)
-    (Ht : free_omega_admissible R t) (Hu : free_omega_admissible R u) :
+    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t) (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
   qlift T t u -> exists J : OmegaVal R (A * B),
-    oval_joint T (free_omega_domain Ht) (free_omega_domain Hu) J /\
-    oval_mass J = oval_mass (free_omega_domain Ht) /\
-    oval_mass J = oval_mass (free_omega_domain Hu) /\
+    oval_joint T (free_omega_model Ht) (free_omega_model Hu) J /\
+    oval_mass J = oval_mass (free_omega_model Ht) /\
+    oval_mass J = oval_mass (free_omega_model Hu) /\
     oval_eval J (oval_indicator R (fun z => ~ T (fst z) (snd z))) = 0.
 Proof.
-  intro H; destruct (free_omega_qlift_sound Ht Hu H) as [J HJ].
+  intro H; destruct (subenumQ_qlift_sound Ht Hu H) as [J HJ].
   exists J; split; first exact HJ.
   split; first exact (proj1 HJ (fun _ => 1) (@oval_test_one R A)).
   split; first exact (proj1 (proj2 HJ) (fun _ => 1) (@oval_test_one R B)).

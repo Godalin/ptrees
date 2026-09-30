@@ -30,7 +30,24 @@ Proof. intros f Hf; reflexivity. Qed.
 
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility Compatibility Validation.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Validation CountableSupport JointRealization.
+From PTree.Prob.FreeOmega Require Import Quotient.
+From PTree.Prob.Domain Require Import Coupling.
+
+(** The actual-joint endpoint is available without the old evaluator or
+    admissibility API. The compatibility tests below load those explicitly. *)
+Fail Check PTree.Prob.Backend.SubEnumQ.FreeOmega.Compatibility.free_omega_admissible.
+Fail Check PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation.free_omega_upper.
+
+Example generic_q_joint_without_legacy (R : realType) {A B}
+    (T : A -> B -> Prop) t u
+    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t)
+    (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
+  free_omega_qlift T t u ->
+  oval_coupled T (free_omega_model Ht) (free_omega_model Hu).
+Proof. exact: subenumQ_qlift_sound. Qed.
+
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Compatibility.
 From PTree.Regression.Fixtures Require Import FreeOmegaSamples.
 From PTree.Regression.Probability Require Import FreeOmegaDomain.
 

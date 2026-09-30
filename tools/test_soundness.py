@@ -43,6 +43,13 @@ class SoundnessTests(unittest.TestCase):
         with self.assertRaises(AssertionError):
             soundness.source_check({**self.sources,path:self.sources[path]+'\nCheck free_omega_qlift.'},self.policy)
 
+    def test_compatibility_cannot_rebuild_the_model(self):
+        path='theories/Prob/Backend/SubEnumQ/FreeOmega/Compatibility.v'
+        for bad in ['induction t.', 'elim t.', 'Fixpoint duplicate := 0.',
+                    'Inductive duplicate := Duplicate.']:
+            with self.subTest(bad=bad), self.assertRaises(AssertionError):
+                soundness.source_check({**self.sources,path:self.sources[path]+'\n'+bad},self.policy)
+
     def test_no_unsafe_universe_escape_in_maintained_theory(self):
         path='theories/Prob/Backend/MathComp/NativeLaws.v'
         with self.assertRaises(AssertionError):

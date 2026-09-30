@@ -12,7 +12,7 @@ From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Domain.
 From PTree.Prob.Backend.SubEnumR.FreeOmega Require Import Validation.
 
 Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
-Fail Check PTree.Prob.Backend.SubEnumQ.FreeOmega.Admissibility.free_omega_admissible.
+Fail Check PTree.Prob.Backend.SubEnumQ.FreeOmega.Compatibility.free_omega_admissible.
 Fail Check PTree.Prob.Backend.MathComp.Kernel.MathCompKernelMeasure.
 
 Set Implicit Arguments.
