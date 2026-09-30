@@ -181,7 +181,7 @@ omega operations; neither native capabilities nor omega laws are necessary.
 The proof is unchanged. The existing closure condition stays explicit and is
 not promoted to a class or presented as arbitrary eventful step congruence.
 
-`GenericConsumers.free_omega_eventful_iter` recovers the old specialization.
+`RelationalConsumers.free_omega_eventful_iter` checks the weak completion specialization.
 The already allowlisted MathComp regression instantiates the same
 theorem. Both are conditional closure clients, not proofs that arbitrary
 handlers/loop steps satisfy the condition. Generic-only imports also exclude
@@ -286,7 +286,8 @@ Final local validation:
 - Joint `coqchk -norec` of 11 safe module bodies: passed. Targets are
   `RelationalLimit`, `Eq.FreeOmega.Relation`, `Eq.Iter`, `Eq.FreeOmega.Iter`,
   `Interp.Scheduling`, `Interp.Preservation`, `Interp.Guarded`, their three
-  FreeOmega consumers, and `GenericConsumers`. Dependencies are trusted by
+  FreeOmega consumers, and the then-separate `GenericConsumers` (now consolidated
+  into `GenericAlgebra` / `RelationalConsumers`). Dependencies are trusted by
   `-norec`; this is not a whole-library recursive kernel audit. Gate M is
   excluded.
 

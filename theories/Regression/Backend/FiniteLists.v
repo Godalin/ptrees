@@ -23,7 +23,6 @@ Import List.
 Import ssreflect ssrbool eqtype ssralg ssrnum order rat.
 Import PTree.Prob.Backend.Common.FiniteEnum PTree.Prob.Backend.Common.FiniteSubdist PTree.Prob.Backend.Common.FinitePositions.
 
-
 Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.IndexedCoupling.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -32,27 +31,12 @@ Import EnumQ IndexedCoupling ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Notation Q := rat_rat__canonical__Num_NumDomain.
 
-(** Exact copies of the two accepted native recursions; not a backend adapter. *)
-Fixpoint reference_index {A} (n : nat) (mu : list (rat*A)) : list (rat*nat) :=
-  match mu with [] => [] | (p,_)::tl => (p,n)::reference_index (S n) tl end.
-Fixpoint reference_value_index {A} (n : nat) (mu : list (rat*A)) : list (rat*(A*nat)) :=
-  match mu with [] => [] | (p,x)::tl => (p,(x,n))::reference_value_index (S n) tl end.
-
-Example native_index_exact {A} n (mu : EnumQ A) : enumQ_raw (index_from n mu) = reference_index n (enumQ_raw mu).
-Proof. reflexivity. Qed.
-Example native_value_index_exact {A} n (mu : EnumQ A) :
-  enumQ_raw (value_index_joint_from n mu) = reference_value_index n (enumQ_raw mu).
-Proof. reflexivity. Qed.
-
 Example native_index_uses_shared {A} n (mu : EnumQ A) :
   enumQ_raw (index_from n mu) = finite_index_from n (enumQ_raw mu).
 Proof. reflexivity. Qed.
 Example native_value_index_uses_shared {A} n (mu : EnumQ A) :
   enumQ_raw (value_index_joint_from n mu) = finite_value_index_from n (enumQ_raw mu).
 Proof. reflexivity. Qed.
-
-
-
 
 (** Positions are never merged or pruned: duplicates and zero weights still
     occupy their exact slots. The existing native zero-pruning operation is
@@ -66,30 +50,6 @@ Proof. reflexivity. Qed.
 Example out_of_range_has_no_slot {W A} n (mu : list (W * A)) i :
   nth_error mu i = None -> nth_error (finite_index_from n mu) i = None.
 Proof. intro H; by rewrite finite_index_nth H. Qed.
-
-Section GenericShared.
-Variable R : numDomainType.
-Example indexed_subdistribution_mass {A} n (mu : FiniteSubdist R A) :
-  finite_mass (finite_subdist_enum (finite_subdist_index_from n mu)) =
-  finite_mass (finite_subdist_enum mu).
-Proof. exact: finite_enum_index_mass. Qed.
-Example indexed_subdistribution_bound {A} n (mu : FiniteSubdist R A) :
-  finite_mass (finite_subdist_enum (finite_subdist_index_from n mu)) <= 1.
-Proof. exact: finite_subdist_mass_bound. Qed.
-Example joint_subdistribution_mass {A} n (mu : FiniteSubdist R A) :
-  finite_mass (finite_subdist_enum (finite_subdist_value_index_from n mu)) =
-  finite_mass (finite_subdist_enum mu).
-Proof. exact: finite_enum_value_index_mass. Qed.
-Example joint_left_marginal {A} n (mu : FiniteSubdist R A) (f : A -> R) :
-  finite_subdist_expect (finite_subdist_value_index_from n mu) (fun xi => f (fst xi)) =
-  finite_subdist_expect mu f.
-Proof. exact: finite_value_index_expect. Qed.
-Example joint_right_marginal {A} n (mu : FiniteSubdist R A) :
-  List.map (fun pxi => (fst pxi, snd (snd pxi)))
-    (finite_enum_raw (finite_subdist_enum (finite_subdist_value_index_from n mu))) =
-  finite_enum_raw (finite_subdist_enum (finite_subdist_index_from n mu)).
-Proof. exact: finite_value_index_snd. Qed.
-End GenericShared.
 
 Section LargeCarrier.
 Universe u.
@@ -118,7 +78,6 @@ Import List.
 Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype tuple ssralg ssrnum order rat.
 Import PTree.Prob.Backend.Common.FiniteEnum PTree.Prob.Backend.Common.FiniteSubdist PTree.Prob.Backend.Common.FinitePresentation.
 
-
 Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Map PTree.Prob.Backend.EnumQ.FiniteTransport PTree.Prob.Backend.EnumQ.FinitePresentation.
 Import PTree.Prob.Backend.SubEnumQ.Measure.
 Set Implicit Arguments.
@@ -127,25 +86,7 @@ Unset Printing Implicit Defensive.
 Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
-Definition reference_position {A} (mu : EnumQ A) := 'I_(size (enumQ_raw mu)).
-Definition reference_entry {A} (mu : EnumQ A) (i : reference_position mu) := tnth (in_tuple (enumQ_raw mu)) i.
-Arguments reference_entry {A} mu i.
-Definition reference_positions {A} (mu : EnumQ A) : list (rat * reference_position mu) :=
-  [seq ((reference_entry mu i).1, i) | i <- enum (reference_position mu)].
-
-Example native_position_exact {A} (mu : EnumQ A) : enumQ_position mu = reference_position mu.
-Proof. reflexivity. Qed.
-Example native_entry_exact {A} (mu : EnumQ A) i : enumQ_position_entry mu i = reference_entry mu i.
-Proof. reflexivity. Qed.
-Example native_positions_exact {A} (mu : EnumQ A) : enumQ_raw (enumQ_positions mu) = reference_positions mu.
-Proof. reflexivity. Qed.
 Example native_positions_use_shared {A} (mu : EnumQ A) : enumQ_raw (enumQ_positions mu) = finite_positions (enumQ_raw mu).
-Proof. reflexivity. Qed.
-Example native_decode_exact {A} (mu : EnumQ A) :
-  enumQ_raw (emap (fun i => (reference_entry mu i).2) (enumQ_positions mu)) = enumQ_raw mu.
-Proof. exact: enumQ_positions_decode. Qed.
-Example native_subdistribution_raw_exact {A} (mu : SubEnumQ A) :
-  enumQ_raw (subenumQ_raw (subenumQ_positions mu)) = reference_positions (subenumQ_raw mu).
 Proof. reflexivity. Qed.
 
 (** Raw and checked positions decode to the same list, without a scalar
@@ -176,17 +117,6 @@ Proof. exact: finite_positions_expect. Qed.
 
 Section SharedRecords.
 Variable R : numDomainType.
-Example shared_subdistribution_mass {A} (mu : FiniteSubdist R A) :
-  finite_subdist_expect (finite_subdist_positions mu) (fun _ => 1) = finite_subdist_expect mu (fun _ => 1).
-Proof. exact: finite_subdist_positions_expect. Qed.
-Example shared_subdistribution_bound {A} (mu : FiniteSubdist R A) :
-  finite_mass (finite_subdist_enum (finite_subdist_positions mu)) <= 1.
-Proof. exact: finite_subdist_mass_bound. Qed.
-Example shared_subdistribution_decode {A} (mu : FiniteSubdist R A) :
-  finite_enum_raw (finite_subdist_enum
-    (finite_subdist_map (finite_position_value (finite_enum_raw (finite_subdist_enum mu)))
-      (finite_subdist_positions mu))) = finite_enum_raw (finite_subdist_enum mu).
-Proof. exact: finite_subdist_positions_decode. Qed.
 Example shared_function_carrier (f : nat -> nat) :
   finite_enum_raw (finite_enum_map (finite_position_value (finite_enum_raw (finite_enum_ret R f)))
     (finite_enum_positions (finite_enum_ret R f))) = [:: (1,f)].
@@ -218,24 +148,12 @@ Import List.
 Import ssreflect ssrbool eqtype ssralg ssrnum order rat.
 Import PTree.Prob.Backend.Common.FiniteEnum PTree.Prob.Backend.Common.FiniteSubdist PTree.Prob.Backend.Common.FinitePruning.
 
-
 Import PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.FrontierLift PTree.Prob.Backend.EnumQ.IndexedCoupling.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Import EnumQ IndexedCoupling ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
-
-(** The accepted recursion, kept only in this test, not as a runtime adapter. *)
-Fixpoint reference_prune {A} (mu : list (rat*A)) : list (rat*A) :=
-  match mu with
-  | [] => []
-  | (p,x)::tl => if p == 0 then reference_prune tl
-                 else (p,x)::reference_prune tl
-  end.
-
-Example native_prune_exact {A} (mu : EnumQ A) : enumQ_raw (enumQ_prune mu) = reference_prune (enumQ_raw mu).
-Proof. reflexivity. Qed.
 
 Example native_prune_uses_shared {A} (mu : EnumQ A) :
   enumQ_raw (enumQ_prune mu) = finite_prune (fun p => p == 0) (enumQ_raw mu).
@@ -245,7 +163,6 @@ Example native_equality_unchanged {A} (mu nu : EnumQ A) :
   enumQ_meas_eq mu nu <-> indexed_coupling eq
     (finite_enum_prune (fun p => p == 0) mu) (finite_enum_prune (fun p => p == 0) nu).
 Proof. reflexivity. Qed.
-
 
 Example zero_pruning_preserves_order_and_duplicates :
   finite_prune (fun p : rat => p == 0)
@@ -281,13 +198,6 @@ Qed.
 
 Section SharedRecords.
 Variable R : numDomainType.
-Example checked_prune_mass {A} (mu : FiniteSubdist R A) :
-  finite_subdist_expect (finite_subdist_prune (fun p => p == 0) mu) (fun _ => 1) =
-  finite_subdist_expect mu (fun _ => 1).
-Proof. exact: finite_subdist_prune_zero_expect. Qed.
-Example checked_prune_bound {A} d (mu : FiniteSubdist R A) :
-  finite_mass (finite_subdist_enum (finite_subdist_prune d mu)) <= 1.
-Proof. exact: finite_subdist_mass_bound. Qed.
 Example general_discard_can_lose_mass {A} (mu : FiniteEnum R A) :
   finite_mass (finite_enum_prune (fun _ => true) mu) = 0.
 Proof.
@@ -311,8 +221,7 @@ From mathcomp Require ssreflect ssrbool ssrfun eqtype seq fintype bigop ssralg s
 Require PTree.Prob.Backend.Common.FiniteEnum PTree.Prob.Backend.Common.FiniteSubdist PTree.Prob.Backend.Common.FiniteListAlgebra PTree.Prob.Backend.Common.FiniteAtoms PTree.Prob.Backend.Common.FiniteScalarMap.
 Require PTree.Prob.Backend.EnumQ.Representation PTree.Prob.Backend.EnumQ.Bind PTree.Prob.Backend.EnumQ.Iteration PTree.Prob.Backend.EnumQ.FinitePresentation.
 Module RationalFiniteAlgebra.
-(** Completion work: common scaling/bind, atoms and scalar transport.
-    Historical recursions check exact native data, not only observations. *)
+(** Concrete list algebra and scalar transport; no historical recursion copies. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -326,29 +235,6 @@ Unset Printing Implicit Defensive.
 Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
-Fixpoint reference_scale {W A} (mul : W -> W -> W) (r : W) (mu : list (W*A)) : list (W*A) :=
-  match mu with [::] => [::] | (s,x)::tl => (mul r s,x)::reference_scale mul r tl end.
-Definition reference_bind {W A B} (mul : W -> W -> W) (mu : list(W*A)) (k : A -> list(W*B)) :=
-  foldr (fun '(p,x) tl => reference_scale mul p (k x) ++ tl) [::] mu.
-Lemma reference_scale_shared {W A} mul p (mu : list(W*A)) :
-  reference_scale mul p mu = finite_scale_with mul p mu.
-Proof. by elim: mu=> [|[q x] tl IH] //=; rewrite IH. Qed.
-Lemma reference_bind_shared {W A B} mul (mu : list(W*A)) (k : A -> list(W*B)) :
-  reference_bind mul mu k = finite_bind_with mul mu k.
-Proof. by elim: mu=> [|[p x] tl IH] //=; rewrite reference_scale_shared IH. Qed.
-Example native_scale_exact {A} p (Hp : 0 <= p) (mu : EnumQ A) :
-  enumQ_raw (scale_EnumQ Hp mu) = reference_scale (fun p q : rat => p*q) p (enumQ_raw mu).
-Proof.
-  change (finite_weight_map p (enumQ_raw mu) = reference_scale (fun p q : rat => p*q) p (enumQ_raw mu)).
-  by elim: (enumQ_raw mu)=> [|[q x] tl IH] //=; rewrite IH.
-Qed.
-Example native_bind_exact {A B} (mu : EnumQ A) (k : A -> EnumQ B) :
-  enumQ_raw (bind_EnumQ mu k) = reference_bind (fun p q : rat => p*q) (enumQ_raw mu) (fun x => enumQ_raw (k x)).
-Proof.
-  change (finite_bind (enumQ_raw mu) (fun x => enumQ_raw(k x)) =
-    reference_bind (fun p q : rat => p*q) (enumQ_raw mu) (fun x => enumQ_raw(k x))).
-  by rewrite -finite_bind_with_numeric reference_bind_shared.
-Qed.
 Example bind_keeps_zero_blocks_and_duplicates :
   finite_bind_with (fun p q : rat => p*q) [:: (0,false); (1,true); (1,true)]
     (fun b => [:: (2,b); (0,b)]) =

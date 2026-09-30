@@ -63,7 +63,8 @@ End Countable.
 End Fubini.
 End GenericCompletionProfile.
 
-(** Compile-time audit of the maintained two-level backend profiles.
+(** Compile-time audit of native backend profiles. Generic completion laws
+    are checked once above; actual Q/R PTree clients test their assembly.
 
     Structure and elementary AE facts belong to the node measure [MN].
     Order, omega continuity, diagonal continuity, and Fubini belong to the
@@ -98,52 +99,6 @@ Definition enumQ_profile_bind_ae_exact :
 
 End EnumQNodeProfile.
 
-Section EnumQFreeOmegaProfile.
-
-Let NI := EnumQ_SemanticMeasure.
-Let NO := EnumQ_SemanticOmega.
-Let MF := FreeOmega EnumQ.
-Let FI := FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO).
-Let FO := FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO).
-
-Definition enumQ_profile_behavior_core :
-    @SemanticMeasureCoreLaws MF FI := _.
-Definition enumQ_profile_behavior_bind :
-    @SemanticMeasureBindLaws MF FI := _.
-Definition enumQ_profile_behavior_ae_kleisli :
-    @SemanticMeasureAEKleisliLaws MF FI := _.
-Definition enumQ_profile_behavior_countable_ae :
-    @SemanticMeasureCountableAELaws MF FI := _.
-Definition enumQ_profile_behavior_coupling_ae :
-    @SemanticMeasureCouplingAELaws MF FI := _.
-Definition enumQ_profile_behavior_omega :
-    @SemanticOmega MF FI := FO.
-Definition enumQ_profile_behavior_order :
-    @SemanticMeasureOrderLaws MF FI FO := _.
-Definition enumQ_profile_behavior_omega_laws :
-    @SemanticOmegaLaws MF FI FO := _.
-Definition enumQ_profile_behavior_total_proper :
-    @SemanticTotalProperLaws MF FI FO := _.
-Definition enumQ_profile_behavior_cofinality :
-    @SemanticOmegaCofinalityLaws MF FI FO := _.
-Definition enumQ_profile_behavior_omega_ae :
-    @SemanticOmegaAELaws MF FI FO := _.
-Definition enumQ_profile_behavior_diagonal :
-    @SemanticMeasureDiagonalLaws MF FI FO := _.
-Definition enumQ_profile_behavior_fubini :
-    @SemanticOmegaFubiniLaws MF FI FO := _.
-Definition enumQ_profile_mixed : @MixedMeasure EnumQ MF := _.
-Definition enumQ_profile_mixed_laws :
-    @MixedMeasureLaws EnumQ MF NI FI FreeOmegaMixedMeasure := _.
-Definition enumQ_profile_mixed_unit :
-    @MixedMeasureUnitLaws EnumQ MF NI FI FreeOmegaMixedMeasure := _.
-Definition enumQ_profile_mixed_node_bind :
-    @MixedMeasureNodeBindLaws EnumQ MF NI FI FreeOmegaMixedMeasure := _.
-Definition enumQ_profile_mixed_omega :
-    @MixedMeasureOmegaLaws EnumQ MF NI FI FreeOmegaMixedMeasure FO := _.
-
-End EnumQFreeOmegaProfile.
-
 (** The canonical finite probability backend.  Unlike raw [EnumQ], every
     inhabitant of [SubEnumQ] carries a proof that its total weight is at most
     one.  The FreeOmega behavior profile is otherwise the same. *)
@@ -176,51 +131,6 @@ Definition subenumQ_profile_bind_ae_exact :
     @SemanticMeasureBindAEExactLaws SubEnumQ SubEnumQ_SemanticMeasure := _.
 
 End SubEnumQNodeProfile.
-
-Section SubEnumQFreeOmegaProfile.
-
-Let NI := SubEnumQ_SemanticMeasure.
-Let NO := SubEnumQ_SemanticOmega.
-Let MF := FreeOmega SubEnumQ.
-Let FI := FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO).
-Let FO := FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO).
-
-Definition subenumQ_profile_behavior_core :
-    @SemanticMeasureCoreLaws MF FI := _.
-Definition subenumQ_profile_behavior_bind :
-    @SemanticMeasureBindLaws MF FI := _.
-Definition subenumQ_profile_behavior_ae_kleisli :
-    @SemanticMeasureAEKleisliLaws MF FI := _.
-Definition subenumQ_profile_behavior_countable_ae :
-    @SemanticMeasureCountableAELaws MF FI := _.
-Definition subenumQ_profile_behavior_coupling_ae :
-    @SemanticMeasureCouplingAELaws MF FI := _.
-Definition subenumQ_profile_behavior_omega : @SemanticOmega MF FI := FO.
-Definition subenumQ_profile_behavior_order :
-    @SemanticMeasureOrderLaws MF FI FO := _.
-Definition subenumQ_profile_behavior_omega_laws :
-    @SemanticOmegaLaws MF FI FO := _.
-Definition subenumQ_profile_behavior_total_proper :
-    @SemanticTotalProperLaws MF FI FO := _.
-Definition subenumQ_profile_behavior_cofinality :
-    @SemanticOmegaCofinalityLaws MF FI FO := _.
-Definition subenumQ_profile_behavior_omega_ae :
-    @SemanticOmegaAELaws MF FI FO := _.
-Definition subenumQ_profile_behavior_diagonal :
-    @SemanticMeasureDiagonalLaws MF FI FO := _.
-Definition subenumQ_profile_behavior_fubini :
-    @SemanticOmegaFubiniLaws MF FI FO := _.
-Definition subenumQ_profile_mixed : @MixedMeasure SubEnumQ MF := _.
-Definition subenumQ_profile_mixed_laws :
-    @MixedMeasureLaws SubEnumQ MF NI FI FreeOmegaMixedMeasure := _.
-Definition subenumQ_profile_mixed_unit :
-    @MixedMeasureUnitLaws SubEnumQ MF NI FI FreeOmegaMixedMeasure := _.
-Definition subenumQ_profile_mixed_node_bind :
-    @MixedMeasureNodeBindLaws SubEnumQ MF NI FI FreeOmegaMixedMeasure := _.
-Definition subenumQ_profile_mixed_omega :
-    @MixedMeasureOmegaLaws SubEnumQ MF NI FI FreeOmegaMixedMeasure FO := _.
-
-End SubEnumQFreeOmegaProfile.
 
 (** Optional proof-relation capability.  Unlike the shared behavioral
     profile, native quotient-joint realization is currently established

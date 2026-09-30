@@ -34,23 +34,6 @@ Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
 Fail Definition real_native_omega_complete : @SemanticOmegaLaws MN NI NO := _.
 
 Definition real_completion_core : @SemanticMeasureCoreLaws MF FI := _.
-Definition real_completion_bind : @SemanticMeasureBindLaws MF FI := _.
-Definition real_completion_kleisli : @SemanticMeasureAEKleisliLaws MF FI := _.
-Definition real_completion_countable : @SemanticMeasureCountableAELaws MF FI := _.
-Definition real_completion_coupling : @SemanticMeasureCouplingAELaws MF FI := _.
-Definition real_completion_order : @SemanticMeasureOrderLaws MF FI FO := _.
-Definition real_completion_omega : @SemanticOmegaLaws MF FI FO := _.
-Definition real_completion_total : @SemanticTotalProperLaws MF FI FO := _.
-Definition real_completion_cofinal : @SemanticOmegaCofinalityLaws MF FI FO := _.
-Definition real_completion_omega_ae : @SemanticOmegaAELaws MF FI FO := _.
-Definition real_completion_diagonal : @SemanticMeasureDiagonalLaws MF FI FO := _.
-Definition real_completion_fubini : @SemanticOmegaFubiniLaws MF FI FO := _.
-Definition real_completion_mixed : @MixedMeasure MN MF := FreeOmegaMixedMeasure.
-Definition real_completion_mixed_bind : @MixedMeasureLaws MN MF NI FI real_completion_mixed := _.
-Definition real_completion_mixed_unit : @MixedMeasureUnitLaws MN MF NI FI real_completion_mixed := _.
-Definition real_completion_mixed_node_bind : @MixedMeasureNodeBindLaws MN MF NI FI real_completion_mixed := _.
-Definition real_completion_mixed_omega : @MixedMeasureOmegaLaws MN MF NI FI real_completion_mixed FO := _.
-
 Section GenericTrees.
 Context {E : Type -> Type}.
 Local Notation W A B RR := (@peutt E MN MF FI real_completion_core FreeOmegaMixedMeasure FO A B RR).
@@ -63,33 +46,10 @@ Example real_complete_step_summary {I A} (step : I -> ptree E MN (I+A))
     (complete_iteration_frontier step front i).
 Proof. apply complete_iteration_hitting. exact Hfront. Qed.
 
-Example real_pstruct_peutt {A B} (RR : A -> B -> Prop) (t : ptree E MN A) (u : ptree E MN B) :
-  pstruct RR t u -> W A B RR t u.
-Proof. exact: peutt_of_pstruct. Qed.
-Example real_pstrong_peutt {A B} (RR : A -> B -> Prop) (t : ptree E MN A) (u : ptree E MN B) :
-  pstrong RR t u -> W A B RR t u.
-Proof. exact: peutt_of_pstrong. Qed.
-
 Example real_hitting_exists {A} (t : ptree E MN A) :
   exists out, @stable_hitting MF FI FO _ _
     (@ptree_primitive_kernel E MN MF FI FreeOmegaMixedMeasure A) (observe t) out.
 Proof. apply stable_hitting_exists. Qed.
-
-Example real_behavioral_bind {A B C} (RR : A -> B -> Prop)
-    (t : ptree E MN A) (u : ptree E MN B)
-    (k : A -> ptree E MN C) (h : B -> ptree E MN C) :
-  W A B RR t u -> (forall x y, RR x y -> W C C eq (k x) (h y)) ->
-  W C C eq (PTree.bind t k) (PTree.bind u h).
-Proof.
-  intros Ht Hk.
-  eapply (PTree.Eq.Bind.peutt_bind (MF := MF) (FI := FI) (FO := FO)); eassumption.
-Qed.
-
-Example real_behavioral_iter {I A} (step : I -> ptree E MN (I+A)) i :
-  W A A eq (PTree.iter step i)
-    (PTree.bind (step i) (fun r => match r with
-      | inl j => Tau (PTree.iter step j) | inr a => Ret a end)).
-Proof. exact: peutt_iter_unfold. Qed.
 
 (** Native non-diagonal coupling is consumed by PStrong, then promoted
     through the existing generic theorem to canonical peutt. *)
@@ -105,7 +65,7 @@ Qed.
 Example real_crossed_sample_peutt (mu : MN bool) :
   W bool bool eq (Prob mu (fun b => Ret b))
     (Prob (subenumR_map negb mu) (fun b => Ret (negb b))).
-Proof. apply real_pstrong_peutt; exact: real_crossed_sample_strong. Qed.
+Proof. apply peutt_of_pstrong; exact: real_crossed_sample_strong. Qed.
 End GenericTrees.
 
 Variant real_serviceE : Type -> Type := RealReply : bool -> real_serviceE unit.
@@ -120,22 +80,12 @@ Definition sqrt_coin := subenumR_coin (proj1 sqrt_weight_valid) (proj2 sqrt_weig
 CoFixpoint real_service (b : bool) : ptree real_serviceE MN unit :=
   Vis (RealReply b) (fun _ => Prob sqrt_coin (fun c => Tau (real_service c))).
 
-Example real_infinite_service_tau b :
-  @peutt real_serviceE MN MF FI real_completion_core FreeOmegaMixedMeasure FO unit unit eq
-    (Tau (real_service b)) (real_service b).
-Proof. apply peutt_tau_l. Qed.
-Example real_infinite_service_hitting b :
-  exists out, @stable_hitting MF FI FO _ _
-    (@ptree_primitive_kernel real_serviceE MN MF FI FreeOmegaMixedMeasure unit)
-    (observe (real_service b)) out.
-Proof. apply stable_hitting_exists. Qed.
-
 Example real_crossed_infinite_service :
   @peutt real_serviceE MN MF FI real_completion_core FreeOmegaMixedMeasure FO unit unit eq
     (PTree.bind (Prob sqrt_coin (fun b => Ret b)) real_service)
     (PTree.bind (Prob (subenumR_map negb sqrt_coin) (fun b => Ret (negb b))) real_service).
 Proof.
-  eapply real_behavioral_bind with (RR := eq).
+  eapply (PTree.Eq.Bind.peutt_bind (MF := MF) (FI := FI) (FO := FO)) with (RR := eq).
   - apply real_crossed_sample_peutt.
   - intros x y ->; apply peutt_refl; intro z; reflexivity.
 Qed.

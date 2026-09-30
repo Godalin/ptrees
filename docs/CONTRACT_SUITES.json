@@ -522,14 +522,6 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.GenericAlgebra.real_sample_bind": [
-      "ClassicalUniqueChoice.dependent_unique_choice",
-      "RelationalChoice.relational_choice"
-    ],
-    "PTree.Regression.Semantics.GenericAlgebra.real_sample_map": [
-      "ClassicalUniqueChoice.dependent_unique_choice",
-      "RelationalChoice.relational_choice"
-    ],
     "PTree.Regression.Backend.MathComp.sample_bind": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"

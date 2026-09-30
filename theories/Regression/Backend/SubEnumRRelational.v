@@ -6,7 +6,11 @@ Local Unset Universe Minimization ToSet.
 From Coq Require Import List.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals.
 From PTree.Prob.Interface Require Import Measure AE Coupling.
+From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling.
+Fail Check PTree.Prob.Backend.SubEnumR.Representation.Build_SubEnumR.
+Fail Check PTree.Prob.Backend.SubEnumR.Representation.SubEnumR_rect.
+Fail Check PTree.Prob.Legacy.RatSubTypes.nnQ.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
@@ -23,6 +27,19 @@ Definition real_native_core : @SemanticMeasureCoreLaws M NI := _.
 Definition real_native_bind : @SemanticMeasureBindLaws M NI := _.
 Definition real_native_ae_lift : @SemanticMeasureAELiftLaws M NI := _.
 Definition real_native_coupling_ae : @SemanticMeasureCouplingAELaws M NI := _.
+
+(** Shared finite containers are the native carrier, not a conversion layer. *)
+Example shared_carrier {A} : SubEnumR R A = FiniteSubdist R A.
+Proof. reflexivity. Qed.
+Example shared_bind {A B} (mu : SubEnumR R A) (k : A -> FiniteSubdist R B) :
+  subenumR_bind mu k = finite_subdist_bind mu k.
+Proof. reflexivity. Qed.
+Example shared_expectation {A} (mu : SubEnumR R A) f :
+  subenumR_expect mu f = finite_subdist_expect mu f.
+Proof. reflexivity. Qed.
+Example shared_raw_projection {A} (mu : SubEnumR R A) :
+  subenumR_raw mu = finite_enum_raw (finite_subdist_enum mu).
+Proof. reflexivity. Qed.
 
 (** Splitting into duplicate entries must not require a normalized or
     duplicate-free representation, nor an inhabited carrier. *)
@@ -80,3 +97,16 @@ Proof.
   exact duplicate_partial_coupling.
 Qed.
 End NativeContracts.
+
+Section HighCarrier.
+Universe u.
+Variable R : realType.
+Definition high_shared_native (A : Type@{u}) : SubEnumR R Type@{u} := finite_subdist_ret R A.
+Example high_shared_native_bind (A : Type@{u}) (f : Type@{u} -> R) :
+  subenumR_expect (subenumR_bind (high_shared_native A) (fun X => finite_subdist_ret R X)) f = f A.
+Proof.
+  change (finite_subdist_expect
+    (finite_subdist_bind (finite_subdist_ret R A) (fun X => finite_subdist_ret R X)) f = f A).
+  by rewrite finite_subdist_bind_ret_r finite_subdist_expect_ret.
+Qed.
+End HighCarrier.

@@ -3,13 +3,12 @@ Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import PEutt Algebra.
-From PTree.Interp Require Import IterationUniform ExceptionFacts StatePreservation Unrestricted.
+From PTree.Interp Require Import IterationUniform ExceptionFacts StatePreservation Unrestricted Guarded.
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega Mixed.
 
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Prob.Backend.MathComp.Kernel.MathCompKernelMeasure.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
-
 
 (** No native measure instance, bind/order/omega laws, or relational-lub
     certificate is in scope. This is an explicit minimal client signature. *)
@@ -59,6 +58,29 @@ Example generic_prob_context_rewrite {A X} (mu : MN X)
 Proof. setoid_rewrite H. reflexivity. Qed.
 End ConstructorClient.
 
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
+
+(** Return reflection is heterogeneous and independent of completion syntax.
+    The extra separation requirements are explicit probability-level laws. *)
+Section ReturnReflection.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
+  `{FOL : @SemanticOmegaLaws MF FI FO}
+  `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{CA : @SemanticMeasureCouplingAELaws MF FI}
+  `{D : @SemanticMeasureDiracAELaws MF FI}.
+Example generic_heterogeneous_ret_iff {A B} (RR : A -> B -> Prop) a b :
+  @peutt E MN MF FI FC MX FO A B RR (Ret a) (Ret b) <-> RR a b.
+Proof. apply peutt_ret_iff. Qed.
+End ReturnReflection.
+
+Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
+Fail Check PTree.Semantics.MDPCoincidence.mdp_state_peutt_trans_iff.
+
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure
   PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.BindOrder
   PTree.Prob.FreeOmega.RelationalLimit.
@@ -106,56 +128,29 @@ Example free_omega_sample_map `{NDirac : @SemanticMeasureDiracAELaws MN NI}
 Proof. apply (peutt_sample_map (NI := NI)). Qed.
 End FreeOmegaClient.
 
-(** A second concrete native backend discharges the same generic profile. *)
+(** The real-weight native model assembles the same interpretation theorem,
+    without a second completion or interpreter proof. *)
 From mathcomp Require Import reals.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega.
-Section RealClient.
+Require Import PTree.Prob.FreeOmega.BindOrder.
+Section RealInterpretation.
 Variable R : realType.
-Context {E : Type -> Type} {A B : Type}.
-Local Notation MN := (SubEnumR R).
-Local Notation NI := (SubEnumR_SemanticMeasure R).
-Local Notation NO := (SubEnumR_SemanticOmega R).
-Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
-Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO)).
-Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
-Local Notation W := (@peutt E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO).
-
-Example real_bind_proper :
-  Proper (W eq ==> pointwise_relation A (W eq) ==> W eq) (@PTree.bind E MN A B).
-Proof. apply peutt_bind_Proper. Qed.
-
-Example real_fmap_proper (f : A -> B) :
-  Proper (W eq ==> W eq) (@PTree.fmap E MN A B f).
-Proof. apply peutt_fmap_Proper. Qed.
-
-Example real_sample_bind (mu : MN A) (k : A -> ptree E MN B) :
-  W eq (PTree.bind (Prob mu (fun x => Ret x)) k) (Prob mu k).
-Proof. apply peutt_sample_bind. Qed.
-
-Example real_sample_map (mu : MN A) (f : A -> B) :
-  W eq (Prob mu (fun x => Ret (f x)))
-    (Prob (sem_bind mu (fun x => sem_ret (f x))) (fun a => Ret a)).
-Proof. apply (peutt_sample_map (NI := NI)). Qed.
-End RealClient.
-
-(** Register generic iteration locally, then actually rewrite under a loop.
-    The native real backend supplies no duplicate iteration theorem. *)
-Section RealIteration.
-Variable R : realType.
-Context {E : Type -> Type} {I A : Type}.
+Context {E F : Type -> Type} {A B : Type}.
 Local Notation MN := (SubEnumR R).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumR_SemanticMeasure R) (NO := SubEnumR_SemanticOmega R)).
-Local Notation W := (peutt (E := E) (FI := FI)).
-#[local] Instance real_iter_rewrite :
-  Proper (pointwise_relation I (W eq) ==> eq ==> W eq) (@PTree.iter E MN A I) :=
-  peutt_iter_Proper free_omega_relational_zero free_omega_relational_lub.
+Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
+  (NI := SubEnumR_SemanticMeasure R) (NO := SubEnumR_SemanticOmega R)).
+Local Notation FO := (FreeOmegaObservableSemanticOmega
+  (NI := SubEnumR_SemanticMeasure R) (NO := SubEnumR_SemanticOmega R)).
+Variable handler : forall X, E X -> ptree F MN X.
+Variable RR : A -> B -> Prop.
 
-Example real_iter_setoid (f g : I -> ptree E MN (I+A))
-    (H : forall i, W eq (f i) (g i)) i :
-  W eq (PTree.iter f i) (PTree.iter g i).
-Proof.
-  assert (Hpoint : pointwise_relation I (W eq) f g) by exact H.
-  setoid_rewrite Hpoint. apply peutt_refl.
-Qed.
-End RealIteration.
+Example real_guarded_interp
+    (Hg : @Guarded.guarded_handler E F MN (FreeOmega MN) FI FreeOmegaMixedMeasure FO handler)
+    (t : ptree E MN A) (u : ptree E MN B) :
+  @peutt E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO A B RR t u ->
+  @peutt F MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO A B RR
+    (PTree.interp handler t) (PTree.interp handler u).
+Proof. apply Guarded.peutt_interp_guarded. exact Hg. Qed.
+End RealInterpretation.

@@ -103,26 +103,10 @@ Proof. apply FOQLLubConstantR, free_omega_qlift_refl; intros x; reflexivity. Qed
 Section Tests.
 Variable R : realType.
 
-Example invalid_middle_really_invalid : ~ free_omega_admissible R alternating_bool.
-Proof. exact: alternating_bool_not_admissible. Qed.
-
 Lemma constant_valid_by_quotient : free_omega_admissible R constant_unit.
 Proof.
   apply (proj2 (free_omega_qlift_eq_admissible R equality_through_invalid_middle)).
   exact: admissible_ret.
-Qed.
-
-Example invalid_middle_does_not_block_soundness :
-  oval_eq (free_omega_domain constant_valid_by_quotient)
-    (free_omega_domain (@admissible_ret R unit tt)).
-Proof. apply free_omega_qlift_eq_sound; exact equality_through_invalid_middle. Qed.
-
-Example equality_alone_is_not_validity :
-  free_omega_qlift eq alternating_bool alternating_bool /\
-  ~ free_omega_admissible R alternating_bool.
-Proof.
-  split; [apply free_omega_qlift_refl; intros x; reflexivity|].
-  exact: alternating_bool_not_admissible.
 Qed.
 
 Example invalid_not_equal_to_valid (t : FreeOmega SubEnumQ bool) :
@@ -144,13 +128,6 @@ Example unbounded_retry_quotient_sound :
     (free_omega_domain retry_valid_by_quotient).
 Proof. apply free_omega_sem_eq_sound; exact retry_quotient. Qed.
 
-Example soundness_ignores_validity_proofs
-    (H1 H2 : free_omega_admissible R constant_unit)
-    (H3 : free_omega_admissible R (FORet tt)) :
-  oval_eq (free_omega_domain H1) (free_omega_domain H3) /\
-  oval_eq (free_omega_domain H2) (free_omega_domain H3).
-Proof. split; apply free_omega_sem_eq_sound; exact equality_through_invalid_middle. Qed.
-
 Example quotient_cannot_erase_missing_mass :
   ~ @sem_eq _ observable_measure _ (@FOZero SubEnumQ unit) (FORet tt).
 Proof.
@@ -163,8 +140,9 @@ Proof.
 Qed.
 End Tests.
 
-(** Countable representation and all-raw dual contracts; the final block below
-    additionally checks general joint realization. *)
+(** Countable coding and joint realization. Generic validation already tests
+    the all-raw bidual bridge; here we test actual joints, including a raw
+    invalid composition middle and partial mass. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -213,9 +191,6 @@ Variable R : realType.
 
 Local Notation geometric_valid := (FreeOmegaSamples.geometric_valid R).
 
-Example geometric_countable : oval_countably_supported (free_omega_domain geometric_valid).
-Proof. exact: free_omega_domain_countable. Qed.
-
 Example geometric_on_naturals :
   exists N : OmegaVal R nat,
     oval_mass N = oval_mass (free_omega_domain geometric_valid) /\
@@ -223,14 +198,6 @@ Example geometric_on_naturals :
     oval_eq (free_omega_domain geometric_valid)
       (oval_bind N (oval_decode R (free_omega_enumerate geometric))).
 Proof. exact: free_omega_domain_countable_representation. Qed.
-
-Example countable_cover_is_not_validity : ~ free_omega_admissible R alternating_bool.
-Proof. exact: alternating_bool_not_admissible. Qed.
-
-Example heterogeneous_dual_through_invalid :
-  oval_bidual returns_true (free_omega_domain (constant_valid_by_quotient R))
-    (free_omega_domain (@admissible_ret R bool true)).
-Proof. apply free_omega_qlift_domain_bidual; exact heterogeneous_invalid_middle. Qed.
 
 Example equality_joint_through_invalid :
   oval_joint eq (free_omega_domain (constant_valid_by_quotient R))
@@ -295,9 +262,6 @@ Example heterogeneous_joint_through_invalid :
   oval_coupled returns_true (free_omega_domain (constant_valid_by_quotient R))
     (free_omega_domain (@admissible_ret R bool true)).
 Proof. apply free_omega_qlift_sound; exact heterogeneous_invalid_middle. Qed.
-
-Example invalid_middle_stays_invalid : ~ free_omega_admissible R alternating_bool.
-Proof. exact: alternating_bool_not_admissible. Qed.
 
 Example equality_joint_recovers_ds3 :
   oval_eq (free_omega_domain (constant_valid_by_quotient R))

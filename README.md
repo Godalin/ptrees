@@ -379,7 +379,7 @@ links exact reusable endpoints and states their backend/termination boundaries.
 
 `Regression/` contains executable contracts, negative examples, capability
 checks and proof-tool clients, not additional paper-facing case studies.
-Its [organization and retention inventory](docs/REGRESSION_ORGANIZATION.md)
+Its [retention policy](docs/REGRESSION_ORGANIZATION.md)
 separates internal-proof clients, independent import-order probes, execution
 tests and semantic/model contracts. In particular, the
 2×2 strictness witness belongs to the semantic comparison regressions.
@@ -424,7 +424,7 @@ new interpretation semantics is introduced.
 including raw-tree transition comparison and MDP-fragment coincidence.
 The [architecture inventory](docs/ARCHITECTURE_AUDIT.md) records maintained
 modules and clients; [Regression organization](docs/REGRESSION_ORGANIZATION.md)
-records test roles and theorem promotion. [Maintained verification](docs/AUDITING.md)
+records test roles and deduplication criteria. [Maintained verification](docs/AUDITING.md)
 lists current commands and their check scope.
 [Joint universe consistency](docs/UNIVERSE_CONSISTENCY.md) explains the
 two-level regression repair and full-library import guard.

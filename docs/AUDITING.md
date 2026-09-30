@@ -6,7 +6,7 @@ work in an archive with no `.git`. Do not add a new `previous_sources` chain or
 require old Git objects when introducing another theorem.
 
 See [Regression organization](REGRESSION_ORGANIZATION.md) for current test
-roles and the reviewed retention/merge inventory. Snapshots complement actual
+roles and retention/deduplication criteria. Snapshots complement actual
 clients; they do not replace inference, rewriting or import-order tests.
 
 ## Four responsibilities

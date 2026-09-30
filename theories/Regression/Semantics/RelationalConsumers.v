@@ -1,5 +1,5 @@
-(** Generic consumers, unchanged weak completion profile, and real/rational
-    clients. No backend-specific upper proof or global inference hints. *)
+(** Weak native profile for relational closure and eventful iteration.
+    Concrete backend integration is tested separately, not replayed per law. *)
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure Omega Mixed RelationalClosure.
@@ -38,20 +38,16 @@ Proof.
   apply (Algebra.peutt_bind_assoc free_omega_relational_bind
     free_omega_relational_mixed_bind free_omega_relational_zero free_omega_relational_lub).
 Qed.
+Context {I1 I2 A B : Type}.
+Variable step1 : I1 -> ptree E MN (I1 + A).
+Variable step2 : I2 -> ptree E MN (I2 + B).
+Variable SI : I1 -> I2 -> Prop.
+Variable RR : A -> B -> Prop.
+
+Lemma free_omega_eventful_iter
+    (H : @iter_eventful_generator_closed E MN (FreeOmega MN) FI
+      FreeOmegaMixedMeasure FO I1 I2 A B step1 step2 SI RR) i j :
+  SI i j -> @peutt E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO A B RR
+    (PTree.iter step1 i) (PTree.iter step2 j).
+Proof. intro Hij. exact (peutt_iter_eventful_of_generator_closed H Hij). Qed.
 End Completion.
-
-From mathcomp Require Import reals.
-From PTree.Prob.Backend.SubEnumQ Require Import Measure.
-From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega.
-
-Example rational_eventful_assoc {E A B C} (t : ptree E SubEnumQ A)
-    (k : A -> ptree E SubEnumQ B) (h : B -> ptree E SubEnumQ C) :
-  peutt (MF := FreeOmega SubEnumQ) eq (PTree.bind (PTree.bind t k) h)
-    (PTree.bind t (fun a => PTree.bind (k a) h)).
-Proof. apply completion_assoc. Qed.
-
-Example real_eventful_assoc (R : realType) {E A B C} (t : ptree E (SubEnumR R) A)
-    (k : A -> ptree E (SubEnumR R) B) (h : B -> ptree E (SubEnumR R) C) :
-  peutt (MF := FreeOmega (SubEnumR R)) eq (PTree.bind (PTree.bind t k) h)
-    (PTree.bind t (fun a => PTree.bind (k a) h)).
-Proof. apply completion_assoc. Qed.

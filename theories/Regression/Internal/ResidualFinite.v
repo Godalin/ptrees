@@ -158,3 +158,35 @@ Proof.
       * apply FOQLStructural. apply FOLRet. split; reflexivity.
   - split; reflexivity.
 Qed.
+
+Set Universe Polymorphism.
+Local Unset Universe Minimization ToSet.
+
+(** The three-pair relation is not an equivalence relation on trees.
+    It is not exposed as another equivalence on programs. *)
+Lemma retry_pairs_not_reflexive : ~ Reflexive residual_retry_pairs.
+Proof.
+  intro H. specialize (H (Ret false)). inversion H.
+  all: match goal with
+    | Heq : Ret false = _ |- _ =>
+        apply (f_equal (@observe residualE SubEnumQ bool)) in Heq; discriminate Heq
+    | Heq : _ = Ret false |- _ =>
+        apply (f_equal (@observe residualE SubEnumQ bool)) in Heq; discriminate Heq
+    end.
+Qed.
+
+(** The candidate is only a local classification of program pairs.
+    Its behavioral conclusion follows from the already proved complete
+    hitting comparison and Tau transparency; no auxiliary GFP is used. *)
+Theorem retry_pairs_peutt_without_equivalence t u :
+  residual_retry_pairs t u ->
+  @peutt residualE SubEnumQ (FreeOmega SubEnumQ) SFI FreeOmegaObservableSemanticMeasureCoreLaws
+    FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool bool eq t u.
+Proof.
+  intro H. destruct H.
+  - apply peutt_refl.
+  - apply residual_retries_peutt.
+  - eapply peutt_trans; [apply peutt_tau_l|].
+    eapply peutt_trans; [apply residual_retries_peutt|].
+    apply peutt_sym. eapply peutt_trans; apply peutt_tau_l.
+Qed.

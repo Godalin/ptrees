@@ -333,7 +333,6 @@ Require PTree.Regression.Backend.SubEnumQRegression.
 Require PTree.Regression.Backend.SubEnumR.
 Require PTree.Regression.Backend.SubEnumRBehavior.
 Require PTree.Regression.Backend.SubEnumRRelational.
-Require PTree.Regression.Backend.SubEnumRShared.
 Require PTree.Regression.Backend.UnifiedFrontierEnumQ.
 Require PTree.Regression.Execution.FactoryController.
 Require PTree.Regression.Execution.FiniteDistribution.
@@ -364,7 +363,6 @@ Require PTree.Regression.Internal.NativeRecovery.
 Require PTree.Regression.Internal.PairedFiniteCompression.
 Require PTree.Regression.Internal.ResidualFinite.
 Require PTree.Regression.Internal.ResidualJointCoinduction.
-Require PTree.Regression.Internal.ResidualTransport.
 Require PTree.Regression.Probability.ConditionalResampling.
 Require PTree.Regression.Probability.CorrelatedSampleAlgebra.
 Require PTree.Regression.Probability.CountableCoupling.
@@ -395,7 +393,6 @@ Require PTree.Regression.Semantics.EventfulIteration.
 Require PTree.Regression.Semantics.ExceptionFold.
 Require PTree.Regression.Semantics.FreeOmegaRewriting.
 Require PTree.Regression.Semantics.GenericAlgebra.
-Require PTree.Regression.Semantics.GenericConsumers.
 Require PTree.Regression.Semantics.GuardedInterp.
 Require PTree.Regression.Semantics.HeadTransition.
 Require PTree.Regression.Semantics.HittingPrograms.
