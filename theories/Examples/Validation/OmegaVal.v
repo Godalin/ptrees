@@ -8,6 +8,8 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals.
 From PTree.Prob.Domain Require Import Expectation.
 Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
+Import OmegaValNotations.
+Local Open Scope omegaval_scope.
 
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Prob.Interface.Measure.SemanticMeasure.
@@ -69,7 +71,7 @@ Proof. apply oval_empty_mass. intros []. Qed.
 
 (** Antisymmetry identifies bounded-test behavior, not record proof fields. *)
 Example mutual_order_is_observational_equality {A} (L M : OmegaVal R A) :
-  oval_le L M -> oval_le M L -> oval_eq L M.
+  L ≤ᵥ M -> M ≤ᵥ L -> oval_eq L M.
 Proof. apply oval_le_antisym. Qed.
 
 (** Two lawful evaluators can disagree off the contracted test space. *)

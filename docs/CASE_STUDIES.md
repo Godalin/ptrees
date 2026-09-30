@@ -58,7 +58,7 @@ each service. Technical compilation clients live in the non-installed
 
 ## Reading FreeOmega expressions
 
-The two iteration tutorials opt into a small syntax layer:
+The tutorials and frontier calculations opt into a small syntax layer:
 
 ```coq
 Require Import PTree.Prob.FreeOmega.Definition.
@@ -67,28 +67,30 @@ Local Open Scope freeomega_scope.
 
 | Client notation | Exact expansion / meaning |
 |---|---|
-| `η x` | `FORet x`: return a value in the formal measure |
-| `⊥` | `FOZero`: the zero expression |
+| `ηω x` | `FORet x`: return a value in the formal measure |
+| `⊥ω` | `FOZero`: the zero expression |
 | `x <~ mu ;; t` | `FOSample mu (fun x => t)`: native sampling |
 | `ωsup n, t` | `FOLub (fun n => t)`: formal countable completion |
-| `m >>=ω k` | `free_omega_bind m k`: bind a FreeOmega expression |
 | `↑ω mu` | `free_omega_sample mu`, definitionally `FOSample mu FORet` |
 
 The definition module opens no scope for clients; `(expression)%fo` also works without
-opening the scope. Native sampling `<~` and completion bind `>>=ω` are
-deliberately distinct from program sequencing `<-`. No typeclass selects a
-measure interpretation here, and no equality/lifting relation is redefined.
+opening the scope. Native sampling `<~` is deliberately distinct from program
+sequencing `<-`. No typeclass selects a measure interpretation here, and no
+equality/lifting relation is redefined. Semantic clients use `>>=ₘ` for bind
+on their selected FreeOmega measure instance. Syntax-only proofs retain
+`free_omega_bind`: notation must not add native capabilities or require an
+observable instance just to manipulate the datatype.
 
 For example, the complete silent-round frontier in IterationBasics reads:
 
 ```coq
 v <~ kernel partial tt ;;
-η (FHRet v)
+ηω (FHRet v)
 ```
 
 Read this as: sample the native round outcome `v`, then return the stable
 head `FHRet v` as a value of the formal measure. These are three different
-levels: program `Ret v`, stable head `FHRet v`, and measure return `η x`.
+levels: program `Ret v`, stable head `FHRet v`, and measure return `ηω x`.
 In AbsorbingFrontier, `b <~ vn_fair ;; reveal_front b` instead selects a
 frontier which may contain a visible head and its entire continuation.
 
@@ -97,8 +99,8 @@ constructor still accepts arbitrary sequences, including invalid ones.
 Increasingness, modelability and semantic lub statements remain separate
 proof obligations. In particular, notation does not identify a raw `FOLub`
 with an independent domain's lub. The implementation/theory files retain
-their constructor names; this first client migration is limited to
-IterationBasics and AbsorbingFrontier.
+their constructor names. The tutorial and case-study clients use this notation
+where it makes the program/frontier/measure distinction easier to read.
 
 ## Reading semantic measure algebra
 
@@ -135,7 +137,7 @@ notation works for native and frontier carriers. It does not choose a
 `SemanticMeasure` instance, register hints, or invoke canonical routing.
 Where the interpretation is ambiguous, retain an explicit instance/profile;
 shorter notation is not a reason to weaken that distinction. Raw FreeOmega
-`η / >>=ω / ωsup` and program `Ret / bind / ≈ₚ` keep their existing meanings.
+`ηω / ⊥ω / ωsup` describe raw syntax; program `Ret / bind / ≈ₚ` describes trees.
 `≈ₘ` and `≈[eq]ₘ` remain distinct interface projections; the notation adds no
 law identifying them.
 In particular `chain ⇑ₘ out` asserts a **relation**, not a constructor or
@@ -146,7 +148,7 @@ MixedHead uses this algebra for finite kernels and the heterogeneous
 limits; AbsorbingFrontier uses it for whole-head relational lifting. Explicit
 backend configuration and probability-analysis proofs remain in place.
 
-For this notation-only migration from `e78a1bc`, 18 affected definitions and
+For the initial notation-only migration from `e78a1bc`, 18 affected definitions and
 theorems (including the MixedHead public results and the two tutorials'
 frontier relations) were compared before/after using compiled types and
 `Print Assumptions`: all were identical. The existing 491-entry main and
@@ -159,6 +161,68 @@ and extraction), 140 Python tests, and 39 execution/safety tests rerun after
 re-extraction. Architecture, API, source-safety and contract-registry checks
 passed. The two-file Gate M boundary is unchanged; full build is not a claim
 that Gate M is universe-checked. No remote CI or new kernel audit was run.
+
+## Reading the external model
+
+External validation examples may additionally opt into bounded-expectation
+order, defined alongside `OmegaVal` in `Prob/Domain/Expectation.v`:
+
+```coq
+From PTree.Prob.Domain Require Import Expectation.
+Import OmegaValNotations.
+Local Open Scope omegaval_scope.
+(* L ≤ᵥ M is oval_le L M; (L ≤ᵥ M)%ov also works. *)
+```
+
+This does not introduce a probability-interface instance or import FreeOmega.
+`oval_eq`, `oval_lub Hi`, `oval_eval`, `oval_mass` and `oval_coupled` retain their
+names. In particular, the lub still requires its increasingness certificate;
+bidual constraints are not presented as actual coupling existence. Modelability,
+denotation, qlift and stable hitting also retain their explicit names.
+
+## Case-study presentation policy
+
+Program code uses `sample`, `trigger` and `x <- t ;; k x` where these express
+the intended atomic operation or sequencing. Native and frontier algebra use
+the selected `ₘ` interface; raw frontier expressions use `ηω / ⊥ω / <~ / ωsup`.
+Do not insert a new program bind merely to conceal a constructor when a proof
+needs that exact visible continuation or finite-step observation.
+
+- **FactoryController:** sequential state/device actions and scripted handlers;
+  the complete five-step sampler rewrite remains in the main proof. The
+  next-device frontier and its query use the measure notation.
+- **AdaptiveFactoryController:** sequential interleaving of samples and events;
+  finite distribution algebra and fair frontiers stay visually separate.
+- **MixedHeadProtocol:** the explicit 3-to-2 joint and up-to proof remain visible;
+  the two sampled frontiers now use the same syntax as the tutorials.
+- **IterationBasics / AbsorbingFrontier:** atomic samples, program composition
+  and formal limits; exact visible continuations are retained in head values.
+- **RandomWalk:** passage sequencing, native finite-observation algebra and
+  formal limits. Raw `Prob` remains where the proof counts exact sample/Tau
+  steps; harmonic and infinite-support arguments are not disguised as rewrites.
+- **InteractiveVonNeumann:** the formal frontier limit uses `ωsup`; explicit
+  request/reply `Vis` guards remain in the coinductive service.
+
+Neither backend choices nor probabilities, state updates, iteration schedules,
+relation definitions or proof-method boundaries are changed by this policy.
+
+The continuation from `46cd2f4` renames raw return/zero to `ηω / ⊥ω`, removes
+the redundant `>>=ω`, and adds opt-in `≤ᵥ` in the existing definition owners.
+No new notation file, class, hint, semantic law or checker relaxation is added.
+The seven primary examples listed above and two external-validation examples
+are migrated; supporting mathematical developments are not mechanically
+symbolized. Five controller/handler definitions were additionally compared
+with their old bodies by `reflexivity`, confirming definitional equality.
+
+Local validation: full root `dune build -j 2`, including AllImports and
+extraction; 140 tool tests; 39 execution/safety tests rerun after extraction;
+architecture, API and soundness-source checks. The 491 main, 129 generic-algebra,
+47 FactoryController and 266 API owner/helper compiled type/assumption
+contracts are unchanged, without refreshing their snapshots. Only the two
+source-policy entries for the retired raw-bind notation tests are removed;
+semantic bind precedence and observable-instance selection remain tested.
+Gate M is unchanged and is not claimed to be universe-checked. No remote CI
+or additional kernel audit was run.
 
 ## IterationBasics: what the three versions establish
 

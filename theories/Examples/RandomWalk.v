@@ -12,6 +12,7 @@ Unset Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 
 From Coq.Program Require Import Equality.
+From ITree.Basics Require Import Monad.
 Require Import FunctionalExtensionality.
 From Coq.Arith Require Import PeanoNat.
 Require Import Lia Ring Field.
@@ -31,6 +32,10 @@ From PTree.Eq Require Import UnifiedFrontier PrimitiveStableHitting PTreeKernel.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
+Import MonadNotation SemanticMeasureNotations SemanticOmegaNotations.
+Local Open Scope monad_scope.
+Local Open Scope semantic_measure_scope.
+Local Open Scope freeomega_scope.
 
 (** An infinite-state random walk with a closed-form joint output law.
     With probability 2/3, decrement the height and increment the streak;
@@ -81,7 +86,7 @@ Definition run_until_zero (x y : nat) : ptree E M nat :=
 
 Definition passage (y : nat) := run_until_zero 1 y.
 Definition D0 := passage 0.
-Definition passage_tail := PTree.bind D0 passage.
+Definition passage_tail := n <- D0;; passage n.
 Definition random_walk_prog : ptree E M rw_state :=
   PTree.iter rw_body (1,0).
 
@@ -89,12 +94,11 @@ Lemma run_zero_observe y : observe (run_until_zero 0 y) = RetF y.
 Proof. reflexivity. Qed.
 
 Definition run_branch x y down : ptree E M nat :=
-  PTree.bind (Ret (inl (rw_next x y down)))
-    (fun next : rw_state + nat =>
-      match next with
-      | inl s => Tau (PTree.iter passage_body s)
-      | inr r => Ret r
-      end).
+  next <- Ret (inl (rw_next x y down) : rw_state + nat);;
+  match next with
+  | inl s => Tau (PTree.iter passage_body s)
+  | inr r => Ret r
+  end.
 
 Lemma run_succ_observe x y :
   observe (run_until_zero (S x) y) =
@@ -111,7 +115,7 @@ Proof. destruct down; reflexivity. Qed.
     relative height zero returns the state at the intermediate barrier. *)
 Theorem run_split a b y :
   pstruct eq (run_until_zero (a+b) y)
-    (PTree.bind (run_until_zero a y) (run_until_zero b)).
+    (z <- run_until_zero a y;; run_until_zero b z).
 Proof.
   unfold run_until_zero.
   eapply pstruct_iter_split_at with
@@ -136,7 +140,7 @@ Proof. exact (run_split 1 1 0). Qed.
 Fixpoint successive_passages (height y : nat) : ptree E M nat :=
   match height with
   | O => Ret y
-  | S h => PTree.bind (passage y) (successive_passages h)
+  | S h => z <- passage y;; successive_passages h z
   end.
 
 Theorem run_as_successive_passages height y :
@@ -209,8 +213,8 @@ Qed.
     top level.  The client continuation may perform arbitrary interactions
     or further unbounded computation. *)
 Theorem random_walk_bind {A} (k : rw_state -> ptree E M A) :
-  pstruct eq (PTree.bind random_walk_prog k)
-    (PTree.bind D0 (fun n => k (0,n))).
+  pstruct eq (s <- random_walk_prog;; k s)
+    (n <- D0;; k (0,n)).
 Proof.
   eapply pstruct_bind with (RA := fun s n => s = (0,n)).
   - intros s n ->. apply pstruct_refl.
@@ -255,7 +259,7 @@ Local Notation rwpeutt :=
 Definition random_walk : ptree rwE SubEnumQ rw_state := random_walk_prog rw_coin.
 Definition rw_passage : nat -> ptree rwE SubEnumQ nat := passage rw_coin.
 Definition rw_D0 := rw_passage 0.
-Definition rw_continuation := PTree.bind rw_D0 rw_passage.
+Definition rw_continuation := n <- rw_D0;; rw_passage n.
 
 Lemma random_walk_probabilistic : probabilistic_ptree random_walk.
 Proof. apply probabilistic_ptree_intrinsic. Qed.
@@ -268,8 +272,8 @@ Proof.
 Qed.
 
 Theorem random_walk_bind_normal_form {A} (k : rw_state -> ptree rwE SubEnumQ A) :
-  rwpeutt eq (PTree.bind random_walk k)
-    (PTree.bind rw_D0 (fun n => k (0%nat,n))).
+  rwpeutt eq (s <- random_walk;; k s)
+    (n <- rw_D0;; k (0%nat,n)).
 Proof. apply peutt_of_pstruct. apply random_walk_bind. Qed.
 
 (** Structural normalization exposes one administrative Tau per branch.
@@ -432,14 +436,14 @@ Qed.
     the walk's state space.  The absorbing state is observed immediately. *)
 Fixpoint walk_observation {A} (obs : nat -> A) (rounds x y : nat) : SubEnumQ A :=
   match x with
-  | O => subenumQ_ret (obs y)
+  | O => ηₘ (obs y)
   | S h =>
-      subenumQ_bind rw_coin (fun down =>
+      rw_coin >>=ₘ fun down =>
         match rounds with
-        | O => subenumQ_zero
+        | O => ⊥ₘ
         | S fuel => if down then walk_observation obs fuel h (S y)
                     else walk_observation obs fuel (S (S h)) 0
-        end)
+        end
   end.
 
 (** The identity observation is a specialization, not a second execution
@@ -626,7 +630,7 @@ Definition walk_hitting fuel x y : FreeOmega SubEnumQ walk_head :=
 
 Lemma walk_hitting_two fuel x y :
   walk_hitting (S (S fuel)) (S x) y =
-  FOSample rw_coin (fun down =>
+  (down <~ rw_coin ;;
     if down then walk_hitting fuel x (S y)
             else walk_hitting fuel (S (S x)) 0).
 Proof.
@@ -644,25 +648,25 @@ Lemma walk_hitting_observes {A} (obs : nat -> A) rounds x y :
 Proof.
   revert x y. induction rounds as [|rounds IH]; intros [|x] y.
   - change (free_omega_observes (fun h => obs (walk_head_value h))
-      (FORet (FHRet y)) (subenumQ_ret (obs y))).
+      (ηω (FHRet y)) (ηₘ (obs y))).
     constructor.
   - change (free_omega_observes (fun h => obs (walk_head_value h))
-      (FOSample rw_coin (fun _ => FOZero))
-      (subenumQ_bind rw_coin (fun _ => subenumQ_zero))).
+      (_ <~ rw_coin ;; ⊥ω)
+      (rw_coin >>=ₘ fun _ => ⊥ₘ)).
     eapply (@FOOObserveSample SubEnumQ SubEnumQ_SemanticMeasure
       SubEnumQ_SemanticOmega) with (front := fun _ => @subenumQ_zero A).
     intros b. constructor.
   - change (free_omega_observes (fun h => obs (walk_head_value h))
-      (FORet (FHRet y)) (subenumQ_ret (obs y))).
+      (ηω (FHRet y)) (ηₘ (obs y))).
     constructor.
   - cbn [walk_schedule]. rewrite walk_hitting_two.
     change (free_omega_observes (fun h => obs (walk_head_value h))
-      (FOSample rw_coin (fun down =>
+      (down <~ rw_coin ;;
         if down then walk_hitting (walk_schedule rounds) x (S y)
-                else walk_hitting (walk_schedule rounds) (S (S x)) 0))
-      (subenumQ_bind rw_coin (fun down =>
+                else walk_hitting (walk_schedule rounds) (S (S x)) 0)
+      (rw_coin >>=ₘ fun down =>
         if down then walk_observation obs rounds x (S y)
-                else walk_observation obs rounds (S (S x)) 0))).
+                else walk_observation obs rounds (S (S x)) 0)).
     eapply (@FOOObserveSample SubEnumQ SubEnumQ_SemanticMeasure
       SubEnumQ_SemanticOmega) with (front := fun down =>
       if down then walk_observation obs rounds x (S y)
@@ -671,8 +675,7 @@ Proof.
 Qed.
 
 Lemma walk_unit_converges x y :
-  subenumQ_sem_lub (fun rounds => walk_observation (fun _ => tt) rounds x y)
-    (subenumQ_ret tt).
+  (fun rounds => walk_observation (fun _ => tt) rounds x y) ⇑ₘ ηₘ tt.
 Proof.
   intros P eps Heps.
   have Hlimit : rational_limit
@@ -689,7 +692,7 @@ Proof.
 Qed.
 
 Definition walk_limit x y :=
-  FOLub (fun rounds => walk_hitting (walk_schedule rounds) x y).
+  ωsup rounds, walk_hitting (walk_schedule rounds) x y.
 
 Lemma walk_schedule_ge rounds : (rounds <= walk_schedule rounds)%coq_nat.
 Proof. induction rounds; cbn [walk_schedule]; lia. Qed.
@@ -773,7 +776,7 @@ Proof.
 Qed.
 
 Definition random_walk_heads :=
-  FOLub (fun rounds => joint_hitting (walk_schedule rounds) 1 0).
+  ωsup rounds, joint_hitting (walk_schedule rounds) 1 0.
 
 Theorem random_walk_ast :
   ptree_stable_hitting_ast (FI := rwFI) (FO := rwFO)

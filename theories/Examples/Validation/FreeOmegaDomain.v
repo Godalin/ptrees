@@ -23,6 +23,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Import GRing.Theory Num.Theory Order.Theory ListNotations.
+Import OmegaValNotations.
 Local Open Scope ring_scope.
 
 Require Import PTree.Examples.Validation.FreeOmegaSamples.
@@ -136,8 +137,8 @@ Example increasing_lub_denotes :
 Proof. apply free_omega_denote_lub=> n; exact: free_omega_domain_spec. Qed.
 
 Example approximation_denotes_order :
-  oval_le (free_omega_domain (delayed_valid 0%nat))
-    (free_omega_domain (delayed_valid 1%nat)).
+  (free_omega_domain (delayed_valid 0%nat) ≤ᵥ
+    free_omega_domain (delayed_valid 1%nat))%ov.
 Proof.
   eapply free_omega_denote_approx; try exact: free_omega_domain_spec.
   exact: delayed_approx.

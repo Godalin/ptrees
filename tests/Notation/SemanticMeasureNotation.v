@@ -75,7 +75,7 @@ Local Open Scope semantic_measure_scope.
 
 (** The semantic notation has no hardwired FreeOmega or PTree instance. *)
 Example native_and_raw {MN A} {NI : SemanticMeasure MN} (a : A) :
-  (x <~ (ηₘ a : MN A) ;; η x) = FOSample (sem_ret a) (fun x => FORet x).
+  (x <~ (ηₘ a : MN A) ;; ηω x) = FOSample (sem_ret a) (fun x => FORet x).
 Proof. reflexivity. Qed.
 Example program_bind_unchanged {E MN A} (mu : MN A) :
   (x <- sample mu ;; Ret x) =
@@ -84,5 +84,32 @@ Proof. reflexivity. Qed.
 
 Local Close Scope semantic_measure_scope.
 Fail Check (ηₘ tt).
-Example raw_scope_still_open {MN A} (a : A) : η a = @FORet MN A a.
+Example raw_scope_still_open {MN A} (a : A) : ηω a = @FORet MN A a.
 Proof. reflexivity. Qed.
+
+(** Semantic completion bind explicitly selects the observable profile;
+    the syntax-only client above needs neither of its native capabilities. *)
+Require Import PTree.Prob.FreeOmega.Measure.
+Example observable_bind_expansion {MN A B}
+    {NI : SemanticMeasure MN} {NO : @SemanticOmega MN NI}
+    (m : FreeOmega MN A) (k : A -> FreeOmega MN B) :
+  (m >>=ₘ k)%sm = @sem_bind (FreeOmega MN)
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) A B m k.
+Proof. reflexivity. Qed.
+
+(** External-model order has a separate opt-in scope. *)
+From mathcomp Require Import reals.
+From PTree.Prob.Domain Require Import Expectation.
+Import OmegaValNotations.
+Section ExternalOrder.
+Variable R : realType.
+Variables L M : OmegaVal R bool.
+Fail Check (L ≤ᵥ M).
+Example delimited_external_order : (L ≤ᵥ M)%ov = oval_le L M.
+Proof. reflexivity. Qed.
+Local Open Scope omegaval_scope.
+Example external_order_expansion : (L ≤ᵥ M) = oval_le L M.
+Proof. reflexivity. Qed.
+Example external_order_reflexive : L ≤ᵥ L.
+Proof. apply oval_le_refl. Qed.
+End ExternalOrder.

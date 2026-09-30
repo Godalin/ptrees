@@ -56,6 +56,7 @@ Import PTree MonadNotation.
 Local Open Scope monad_scope.
 Import SemanticMeasureNotations.
 Local Open Scope semantic_measure_scope.
+Local Open Scope freeomega_scope.
 
 (** * 1. Preparation *)
 
@@ -367,8 +368,8 @@ Proof.
     eapply bind_upto_closure_bind with (RR := mixed_sample_rel).
     + (* Analyze this finite prefix here, not via a pre-proved program relation. *)
       eapply peutt_of_hitting_lift with
-        (out1 := FOSample (draw_distribution answer) (fun x => FORet (FHRet x)))
-        (out2 := FOSample (mixed_samples uniform2 answer) (fun x => FORet (FHRet x))).
+        (out1 := x <~ draw_distribution answer ;; ηω (FHRet x))
+        (out2 := x <~ mixed_samples uniform2 answer ;; ηω (FHRet x)).
       * unfold draw_distribution.
         apply stable_hitting_native_sample. intro mask.
         apply stable_hitting_native_sample. intro continue.

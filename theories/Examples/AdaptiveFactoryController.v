@@ -621,7 +621,7 @@ Proof.
 Qed.
 Definition fair_tree : ptree publicE SubEnumQ bool := sample fair_coin.
 Definition fair_heads : FreeOmega SubEnumQ (stable_head publicE SubEnumQ bool) :=
-  b <~ fair_coin ;; η (FHRet b).
+  b <~ fair_coin ;; ηω (FHRet b).
 Lemma loop_heads_success s P : free_omega_ae P (loop_heads s) ->
   forall b, P (FHRet (after_sensor s b,b)).
 Proof.
@@ -647,7 +647,7 @@ Proof.
     + constructor. reflexivity.
     + exact (loop_heads_success HP b).
   - intros Q HQ.
-    have HQb : forall b, free_omega_ae Q (η (FHRet b)).
+    have HQb : forall b, free_omega_ae Q (ηω (FHRet b)).
     { intro b. apply (free_omega_ae_sample_inv HQ) with (p := one_div_two).
       - destruct b; cbn; auto.
       - vm_compute; discriminate. }

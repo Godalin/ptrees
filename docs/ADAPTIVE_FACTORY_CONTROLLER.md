@@ -37,7 +37,7 @@ The source uses three distinct notation layers:
   for events. `internal` and `public` only inject events into the sum signature.
 - Native distributions: `mu >>=ₘ k`, `ηₘ x`, `⊥ₘ`, and the limit relation
   `chain ⇑ₘ out`. These use the abstract measure interfaces, not raw lists.
-- FreeOmega frontiers: `b <~ fair_coin ;; η (FHRet b)`. Native sampling into
+- FreeOmega frontiers: `b <~ fair_coin ;; ηω (FHRet b)`. Native sampling into
   a frontier is distinct from both program sequencing and measure bind.
 
 For example, the specification is now written directly as:

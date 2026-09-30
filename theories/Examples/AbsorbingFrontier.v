@@ -9,6 +9,7 @@ Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms.
+From ITree.Basics Require Import Monad.
 From mathcomp Require Import ssreflect ssralg rat.
 From PTree Require Import PTreeFacts.
 From PTree.Core Require Import PTreeDefinition.
@@ -28,6 +29,8 @@ Local Open Scope ring_scope.
 Local Open Scope freeomega_scope.
 Import SemanticMeasureNotations.
 Local Open Scope semantic_measure_scope.
+Import MonadNotation.
+Local Open Scope monad_scope.
 
 Variant queryE : Type -> Type := Query : queryE bool.
 Local Notation tree := (ptree queryE EnumQ).
@@ -41,15 +44,15 @@ Local Notation hits t out := (ptree_stable_hitting (FI := FI) (FO := FO) (observ
 (** Only a Boolean exit descriptor is sampled. Recursive heads themselves
     are not put into the native carrier, avoiding a recursive-universe demand. *)
 Definition reveal (b : bool) : tree bool :=
-  if b then Vis Query (fun answer => Ret answer) else Ret false.
+  if b then PTree.trigger Query else Ret false.
 Definition reveal_head b : stable_head queryE EnumQ bool :=
   if b then FHVis Query (fun answer => Ret answer) else FHRet false.
-Definition reveal_front b := η (reveal_head b) : MF (stable_head queryE EnumQ bool).
+Definition reveal_front b := ηω (reveal_head b) : MF (stable_head queryE EnumQ bool).
 Definition round := @vn_step_in queryE.
 Definition absorbing_step := pstruct_iter_natural_step round reveal.
 Definition absorbing_program : tree bool := PTree.iter absorbing_step tt.
-Definition staged_program : tree bool := PTree.bind (PTree.iter round tt) reveal.
-Definition direct_program : tree bool := PTree.bind direct_fair_in reveal.
+Definition staged_program : tree bool := b <- PTree.iter round tt;; reveal b.
+Definition direct_program : tree bool := b <- direct_fair_in;; reveal b.
 Definition first_frontier := b <~ vn_fair ;; reveal_front b.
 Definition round_frontier := absorbing_frontier (fun _ : unit => vn_transition) reveal_front tt.
 
@@ -59,14 +62,14 @@ Theorem absorbing_program_rewrite : absorbing_program ≈ₚ direct_program.
 Proof.
   unfold absorbing_program, absorbing_step, direct_program.
   rewrite <- peutt_iter_natural.
-  change (PTree.bind (@von_neumann_third_in queryE) reveal ≈ₚ
-    PTree.bind (@direct_fair_in queryE) reveal).
+  change ((b <- @von_neumann_third_in queryE;; reveal b) ≈ₚ
+    (b <- @direct_fair_in queryE;; reveal b)).
   setoid_rewrite von_neumann_third_in_equivalent_to_fair.
   reflexivity.
 Qed.
 
 Lemma round_hitting i : hits (round i)
-  (next <~ vn_transition ;; η (FHRet next)).
+  (next <~ vn_transition ;; ηω (FHRet next)).
 Proof.
   assert (Heq : vn_round_measure = vn_transition).
   { apply finite_enum_raw_eq. exact vn_round_measure_eq. }
@@ -86,7 +89,7 @@ Qed.
     rewrite above. Keep the actual bind in the visible continuation;
     even a return/bind simplification is behavioral, not tree equality. *)
 Definition exit_round_front (v : unit+bool) : MF (stable_head queryE EnumQ (unit+bool)) :=
-  η (match v with
+  ηω (match v with
     | inl j => FHRet (inl j)
     | inr false => FHRet (inr false)
     | inr true => FHVis Query (fun answer => PTree.bind (Ret answer) (fun b => Ret (inr b)))
@@ -97,7 +100,7 @@ Lemma actual_round_complete i : hits (absorbing_step i) (actual_round_front i).
 Proof.
   unfold absorbing_step, pstruct_iter_natural_step.
   change (hits (PTree.bind (round i) (pstruct_iter_natural_step_handler reveal))
-    ((v <~ vn_transition ;; η (FHRet v)) >>=ω
+    ((v <~ vn_transition ;; ηω (FHRet v)) >>=ₘ
       stable_head_ret_bind_front exit_round_front)).
   apply stable_hitting_bind_ret_only.
   - eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].

@@ -423,3 +423,12 @@ Proof.
   by rewrite -H01 eqxx in Hneq.
 Qed.
 End Expectation.
+
+(** Opt-in external-model order. It compares bounded expectations, not
+    syntax or record fields. No semantic-interface instance is selected. *)
+Declare Scope omegaval_scope.
+Delimit Scope omegaval_scope with ov.
+Module OmegaValNotations.
+Notation "L '≤ᵥ' M" := (oval_le L M)
+  (at level 70, no associativity) : omegaval_scope.
+End OmegaValNotations.

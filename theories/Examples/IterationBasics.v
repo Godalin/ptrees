@@ -66,12 +66,12 @@ Definition result (partial : bool) : MN bool :=
 (** Programs. The ambient signature is inhabited, but these rounds are
     silent. Tau deliberately separates program syntax from its summary. *)
 Definition step partial (_ : unit) : tree (unit+bool) :=
-  Tau (Prob (kernel partial tt) (fun v => Ret v)).
+  Tau (sample (kernel partial tt)).
 Definition loop partial : tree bool := PTree.iter (step partial) tt.
 (** Sample a native round outcome, then return its stable head as a measure
-    value. [η] is measure return; [FHRet] is the head, not another program. *)
+    value. [ηω] is measure return; [FHRet] is the head, not another program. *)
 Definition round_front partial (_ : unit) :=
-  (v <~ kernel partial tt ;; η (FHRet v)) : MF (stable_head eventE MN (unit+bool)).
+  (v <~ kernel partial tt ;; ηω (FHRet v)) : MF (stable_head eventE MN (unit+bool)).
 Definition loop_front partial := complete_iteration_frontier (step partial) (round_front partial) tt.
 (** [ωsup] builds the formal limit expression; [loop_classical] below relates
     it to the complete frontier using the iteration laws. *)
@@ -197,20 +197,20 @@ Qed.
 (** Third version: every round finishes, but only with retry. *)
 Definition endless_step (_ : unit) : tree (unit+bool) := Ret (inl tt).
 Definition endless : tree bool := PTree.iter endless_step tt.
-Definition endless_front (_ : unit) : MF (stable_head eventE MN (unit+bool)) := η (FHRet (inl tt)).
+Definition endless_front (_ : unit) : MF (stable_head eventE MN (unit+bool)) := ηω (FHRet (inl tt)).
 Lemma endless_round_zero n :
-  iteration_summary_round (FI := FI) (FO := FO) endless_step endless_front n tt = ⊥.
+  iteration_summary_round (FI := FI) (FO := FO) endless_step endless_front n tt = ⊥ω.
 Proof. induction n; [reflexivity|exact IHn]. Qed.
-Theorem endless_frontier_zero : hits endless ⊥.
+Theorem endless_frontier_zero : hits endless ⊥ω.
 Proof.
   eapply (iteration_summary_hitting (FI := FI) (FO := FO) (front := endless_front)); try typeclasses eauto.
   - intro i. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
-  - eapply sem_lub_chain_proper with (chain := fun _ => ⊥).
+  - eapply sem_lub_chain_proper with (chain := fun _ => ⊥ω).
     + intro n. rewrite endless_round_zero. apply sem_eq_refl.
     + apply sem_lub_constant.
 Qed.
 Corollary endless_observation_zero :
-  free_omega_observes return_value (⊥ : MF (stable_head eventE MN bool))
+  free_omega_observes return_value (⊥ω : MF (stable_head eventE MN bool))
     (⊥ₘ : MN bool).
 Proof. constructor. Qed.
 End IterationBasics.
