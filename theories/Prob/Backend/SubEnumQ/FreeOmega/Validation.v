@@ -1,17 +1,15 @@
-(** Role: Rational instance of the same generic raw-qlift validation used
-    by SubEnumR. Frozen DS5 proofs remain unchanged. Only the native scalar
-    convergence lemma is reused; no old qlift soundness theorem is assumed. *)
+(** Role: Native rational interpretation adapter for generic FreeOmega validation.
+    Only native AE/return/zero/bind/lift/lub obligations are discharged here.
+    No legacy evaluator or backend-specific quotient induction is used. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat reals.
 From PTree.Prob.Interface Require Import Measure Omega.
-From PTree.Prob.Domain Require Import Expectation Coupling.
+From PTree.Prob.Domain Require Import Expectation Countable Coupling.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Quotient.
-From PTree.Prob.FreeOmega.Validation Require Import Expectation Quotient.
-From PTree.Prob.Backend.SubEnumQ Require Import Measure Expectation Domain.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
-  GenericValidation UpperExpectation UpperObservation.
+From PTree.Prob.FreeOmega.Validation Require Import Model Quotient.
+From PTree.Prob.Backend.SubEnumQ Require Import Measure Expectation Domain NativeLimit.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -21,6 +19,22 @@ Local Open Scope ring_scope.
 Section RationalValidation.
 Variable R : realType.
 Local Notation native := (fun X => @subenumQ_domain R X).
+
+Theorem subenumQ_native_model_ae {X} (mu : SubEnumQ X) P :
+  sem_ae mu P -> oval_ae (subenumQ_domain R mu) P.
+Proof.
+  intros Ha f g Hf Hg He; apply/eqP; rewrite eq_le; apply/andP; split;
+    apply enumQ_real_expect_ae_mono; intros p x Hin Hnz.
+  - rewrite (He x (Ha p x Hin Hnz)); exact: lexx.
+  - rewrite (He x (Ha p x Hin Hnz)); exact: lexx.
+Qed.
+
+Theorem subenumQ_native_model_lift {X Y} (S : X -> Y -> Prop)
+    (mu : SubEnumQ X) (nu : SubEnumQ Y) f g :
+  sem_lift S mu nu -> oval_test f -> oval_test g ->
+  (forall x y, S x y -> f x <= g y) ->
+  oval_eval (subenumQ_domain R mu) f <= oval_eval (subenumQ_domain R nu) g.
+Proof. intros H _ _ Hfg; exact (subenumQ_sem_lift_test_sound H Hfg). Qed.
 
 Lemma subenumQ_native_model_lub {A} (c : nat -> SubEnumQ A) out :
   (forall n f, oval_test f -> oval_eval (subenumQ_domain R (c n)) f <=
@@ -46,11 +60,11 @@ Theorem subenumQ_qlift_bidual_raw {A B} (T : A -> B -> Prop)
   free_omega_qlift T t u -> model_upper_birel native T t u.
 Proof.
   eapply model_qlift_bidual_raw.
-  - exact (@subenumQ_native_model_ae R).
+  - exact (@subenumQ_native_model_ae).
   - exact (@subenumQ_domain_ret R).
   - exact (@subenumQ_domain_zero R).
   - exact (@subenumQ_domain_bind R).
-  - exact (@subenumQ_native_model_lift R).
+  - exact (@subenumQ_native_model_lift).
   - exact (@subenumQ_native_model_lub).
 Qed.
 
@@ -59,11 +73,4 @@ Theorem subenumQ_generic_qlift_bidual {A B} (T : A -> B -> Prop) t u
   free_omega_qlift T t u -> oval_bidual T (free_omega_model Ht) (free_omega_model Hu).
 Proof. exact: subenumQ_qlift_bidual_raw. Qed.
 
-(** The conclusion agrees with DS5 at the evaluator level, without
-    replacing or depending on the frozen DS5 quotient induction. *)
-Theorem subenumQ_generic_qlift_tests {A B} (T : A -> B -> Prop) t u (f : A -> R) (g : B -> R) :
-  free_omega_qlift T t u -> oval_test f -> oval_test g ->
-  (forall x y, T x y -> f x <= g y) ->
-  free_omega_upper t f <= free_omega_upper u g.
-Proof. intro H; exact (proj1 (subenumQ_qlift_bidual_raw H) f g). Qed.
 End RationalValidation.

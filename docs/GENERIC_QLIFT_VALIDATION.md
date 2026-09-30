@@ -1,7 +1,6 @@
 # Native-parametric bounded-test validation
 
-Baseline: accepted `c223393` (finite-real native coupling and the generic
-FreeOmega behavioral profile). This follow-up extracts the next layer only:
+This layer validates relational lifting independently of the native representation:
 
 ```text
 raw free_omega_qlift T t u
@@ -11,9 +10,9 @@ bounded-test inequalities in BOTH directions
 oval_bidual T (model t) (model u)
 ```
 
-This is **not** a generic actual-joint realization theorem. The existing
-SubEnumQ DS1–DS5 results, definitions, proofs and public APIs are unchanged.
-No MathComp self-model work, new completion, or new capability class is added.
+This is **not** a generic actual-joint realization theorem. The rational
+specialized vocabulary remains compatibility-only; preferred clients use
+`Validation/Model.v`. No new completion or capability class is introduced.
 
 This is the middle layer of the fixed
 [architecture policy](ARCHITECTURE.md#three-layers-of-probability-reasoning):
@@ -43,12 +42,12 @@ The six links are ordinary explicit theorem arguments. Both concrete
 adapters discharge every one of them, without leaving a model capability
 for callers to assume.
 
-`SubEnumQ/FreeOmega/RelationalValidation.v` uses its existing finite expectation
-theory and scalar monotone-convergence lemma. The latter is still owned by
-the frozen `UpperObservation` module; no native `Domain -> FreeOmega` edge is
-introduced. It does not use old quotient soundness to prove the new bridge.
+`SubEnumQ/FreeOmega/Validation.v` uses its existing finite expectation
+theory and scalar monotone-convergence lemmas from `SubEnumQ/NativeLimit.v`.
+It does not import the old specialized upper/quotient chain; no native
+`Domain -> FreeOmega` edge is introduced.
 
-`SubEnumR/FreeOmega/RelationalValidation.v` uses the finite-real interpretation
+`SubEnumR/FreeOmega/Validation.v` uses the finite-real interpretation
 laws and its existing native pointwise least-upper-bound predicate. Neither
 adapter repeats the FreeOmega quotient induction.
 
@@ -115,7 +114,10 @@ law in generic endpoint signatures. The 505 frozen contracts are not
 regenerated. New files remain in the one-way validation layer: the maintained
 PTree reasoning infrastructure cannot depend on these external models.
 
-## Verification result
+## Historical verification
+
+The original generic-quotient increment recorded the following checks. These
+counts are historical, not a claim about the current repository:
 
 - Full local `dune build`, including AllImports: passed, 267 modules.
 - Architecture, public API and source-safety contracts: passed.
@@ -127,7 +129,6 @@ PTree reasoning infrastructure cannot depend on these external models.
   concrete adapters and the new regression: passed. This is a **targeted**
   seven-module kernel check, not a recursive whole-library audit.
 
-Among pre-existing `.v` files, only AllImports changes (seven additional
-imports). Existing DS1–DS5, native laws, FreeOmega definitions and maintained
-PTree proofs are untouched. No `Admitted`, new axiom/class, unsafe universe
-setting, environment update or CI change was introduced.
+The current organization and stable-hitting extension are documented in
+[FreeOmega soundness](FREEOMEGA_SOUNDNESS.md). No `Admitted`, new axiom/class,
+unsafe universe setting, or environment change is required by that extension.

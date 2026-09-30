@@ -6,7 +6,7 @@ Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals.
 From PTree.Prob.Domain Require Import Expectation.
 Require Import PTree.Prob.FreeOmega.Definition.
-From PTree.Prob.FreeOmega.Validation Require Import Expectation.
+From PTree.Prob.FreeOmega.Validation Require Import Model.
 
 Fail Check PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ.
 Fail Check PTree.Prob.Backend.MathComp.Kernel.MathCompKernelMeasure.
@@ -30,7 +30,7 @@ Proof. intros f Hf; reflexivity. Qed.
 
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility GenericValidation.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility Compatibility Validation.
 From PTree.Regression.Fixtures Require Import FreeOmegaSamples.
 From PTree.Regression.Probability Require Import FreeOmegaDomain.
 

@@ -7,7 +7,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals.
 From PTree.Prob.Interface Require Import Measure Subprobability AE.
 From PTree.Prob.Domain Require Import Expectation.
 Require Import PTree.Prob.FreeOmega.Definition.
-From PTree.Prob.FreeOmega.Validation Require Import Expectation.
+From PTree.Prob.FreeOmega.Validation Require Import Model.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Domain.
 From PTree.Prob.Backend.SubEnumR.FreeOmega Require Import Validation.
 

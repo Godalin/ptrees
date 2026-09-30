@@ -1,3 +1,6 @@
+(** Compatibility-only rational validation. New developments use
+    Prob/FreeOmega/Validation/Model and SubEnumQ/FreeOmega/Validation.
+    Retained for existing clients; no new specialized validation theory. *)
 (** Role: External validity boundary for the existing raw upper evaluator.
     No new syntax, recursive interpretation, or mainline premise is added.
     Admissibility is scalar-model qualified; arbitrary raw FOLub is NOT

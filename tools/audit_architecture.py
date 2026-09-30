@@ -29,7 +29,6 @@ def external_validation(path):
         "Prob/Backend/SubEnumQ/Domain", "Prob/Backend/MathComp/Domain",
         "Prob/Backend/SubEnumR/Domain",
         "Prob/Backend/SubEnumR/FreeOmega/Validation",
-        "Prob/Backend/SubEnumR/FreeOmega/RelationalValidation",
         "Prob/Backend/SubEnumR/FreeOmega/NativeReflection",
         "Prob/Backend/SubEnumR/FreeOmega/CountableSupport",
         "Prob/Backend/SubEnumR/FreeOmega/JointRealization",
@@ -38,10 +37,11 @@ def external_validation(path):
         "Prob/Backend/SubEnumQ/FreeOmega/QuotientSoundness",
         "Prob/Backend/SubEnumQ/FreeOmega/CountableSupport",
         "Prob/Backend/SubEnumQ/FreeOmega/CouplingSoundness",
-        "Prob/Backend/SubEnumQ/FreeOmega/JointSoundness",
-        "Prob/Backend/SubEnumQ/FreeOmega/GenericValidation",
-        "Prob/Backend/SubEnumQ/FreeOmega/RelationalValidation",
+        "Prob/Backend/SubEnumQ/FreeOmega/JointRealization",
+        "Prob/Backend/SubEnumQ/FreeOmega/Compatibility",
+        "Prob/Backend/SubEnumQ/FreeOmega/Validation",
         "Eq/Backend/StableHittingDomainSubEnumQ",
+        "Eq/Backend/StableHittingDomainSubEnumR",
     }
 
 
@@ -64,6 +64,8 @@ def ownership(path):
         return "Examples", "application", "retained; no regression dependency"
     if path.startswith("Prob/FreeOmega/Validation/"):
         return "Prob/FreeOmega/Validation", "external validation", "native-parametric bridge to independent mathematical models"
+    if path in {"Eq/Backend/StableHittingDomainSubEnumQ", "Eq/Backend/StableHittingDomainSubEnumR"}:
+        return "Eq/Backend", "external validation", "specializes generic hitting validity/adequacy; never a reasoning premise"
     if path.startswith("Core/"):
         return "Core", "syntax", "primitive syntax/combinators only"
     if path == "Execution/Validation/SubEnumQ":
@@ -124,6 +126,13 @@ def permitted(module, dependency):
     if module.startswith("Prob/Domain/"):
         return under("Prob/Domain")
     if module.startswith("Prob/FreeOmega/Validation/"):
+        if module == "Prob/FreeOmega/Validation/StableHitting":
+            return under("Prob/Domain", "Prob/Interface", "Prob/FreeOmega") or dependency in {
+                "Core/PTreeDefinition", "Eq/PrimitiveStableHitting",
+                "Eq/UnifiedFrontier", "Eq/PTreeKernel"}
+        if module != "Prob/FreeOmega/Validation/Soundness" and dependency in {
+                "Prob/FreeOmega/Validation/Soundness", "Prob/FreeOmega/Validation/StableHitting"}:
+            return False
         return under("Prob/Domain", "Prob/Interface", "Prob/FreeOmega")
     if module in {"Prob/Backend/Common/DomainTransport", "Prob/Backend/Common/CountableCoupling", "Prob/Backend/Common/CountableRelationalLimit"}:
         return under("Prob/Domain", "Prob/Backend/Common")
@@ -233,6 +242,7 @@ def check_native_expectation_boundary(edges):
     # indirect finite-helper imports. Upper evaluators may use finite facts,
     # but finite facts must never depend on external validation in return.
     roots = {m for m in ("Prob/Backend/SubEnumQ/Expectation",
+                         "Prob/Backend/SubEnumQ/NativeLimit",
                          "Prob/Backend/SubEnumQ/Domain", "Prob/Backend/SubEnumR/Domain",
                          "Prob/Backend/SubEnumR/Representation", "Prob/Backend/SubEnumR/Measure") if m in edges}
     leaked = {m for m in closure(edges, roots) if "/FreeOmega/" in m}
@@ -241,6 +251,19 @@ def check_native_expectation_boundary(edges):
     if finite in edges:
         leaked = {m for m in closure(edges, {finite}) if external_validation(m)}
         assert not leaked, "Finite expectation depends on validation: " + str(sorted(leaked))
+
+
+def check_generic_validation_boundary(edges):
+    # Canonical adapters must not quietly route through old rational validation,
+    # joint existence, or the PTree-facing validation entry point.
+    roots = {m for m in ("Prob/Backend/SubEnumQ/FreeOmega/Validation",
+                         "Prob/Backend/SubEnumR/FreeOmega/Validation") if m in edges}
+    allowed = {"Prob/Backend/SubEnumQ/FreeOmega/Validation",
+               "Prob/Backend/SubEnumR/FreeOmega/Validation"}
+    bad = {m for m in closure(edges, roots) if
+           (m.startswith("Prob/Backend/") and "/FreeOmega/" in m and m not in allowed)
+           or m.startswith(("Core/", "Eq/", "Interp/", "Semantics/"))}
+    assert not bad, "Native validation adapter depends on specialized completion/tree theory: " + str(sorted(bad))
 
 
 def aggregate_check(actual=None, expected=None):
@@ -321,6 +344,7 @@ def graph():
             assert permitted(module, dep), "Forbidden ownership edge: " + module + " -> " + dep
     check_auxiliary_boundary(edges)
     check_external_validation_boundary(edges)
+    check_generic_validation_boundary(edges)
     check_native_expectation_boundary(edges)
     check_mathcomp_native_boundary(edges)
     return edges
@@ -340,10 +364,11 @@ def report():
         f"- Safe AllImports covers {len(ordinary - GATE_M)} other Gate S modules; {len(GATE_M)} exact-allowlisted Gate M modules are excluded.",
         "- No Gate S module (including regressions/aggregates) imports Gate M, directly or transitively.",
         "- Every edge is checked against the ownership policy, not merely displayed as debt.",
-        "- Core has no local probability dependency; Prob has no tree-theory dependency.",
+        "- Core has no local probability dependency. Prob has no tree-theory dependency except the one-way Validation/StableHitting bridge and its Soundness entry point.",
         "- Generic interfaces and FreeOmega measure infrastructure import no concrete backend.",
         "- Concrete probability modules name Common/EnumQ/SubEnumQ/SubEnumR/MathComp ownership; Common cannot import a native carrier.",
         "- Native SubEnumQ expectation/domain closures exclude FreeOmega; finite expectation also excludes external validation.",
+        "- Q/R native validation adapters transitively exclude specialized completion validation and PTree; the old Q chain is compatibility-only.",
         "- MathComp and EnumQ/SubEnumQ do not depend on each other; EnumQ/SubEnumQ realization adapters may reuse each other.",
         "- MathComp native sources and their transitive dependencies exclude formal completion; no MathComp behavioral alias or concrete FreeOmega instantiation is maintained.",
         "- Eq imports no Interp/Semantics; Semantics imports no Interp. Canonical routing is owned by Eq; there is no API namespace or Gate M reverse-dependency exception.",

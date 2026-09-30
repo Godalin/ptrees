@@ -12,7 +12,7 @@ theorems are described in [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md).
 | `Core` | PTree syntax and combinators | Core only |
 | `Prob/Interface` | Operations and explicit law capabilities | No tree or concrete-backend dependency |
 | `Prob/FreeOmega` | Formal completion syntax, approximation, observation and quotient | Generic native carrier; no concrete backend |
-| `Prob/FreeOmega/Validation` | Native-parametric external bounded-test validation | May consume Domain and generic FreeOmega; no concrete backend |
+| `Prob/FreeOmega/Validation` | Native-parametric external model and soundness | No concrete backend; only `StableHitting` may directly read generic PTree hitting, reexported by `Soundness` |
 | `Prob/Backend/{Common,EnumQ,SubEnumQ,SubEnumR,MathComp}` | Arithmetic, native models and their specialized endpoints | Common has no native-carrier dependency; MathComp is independent of EnumQ/SubEnumQ |
 | `Prob/Domain` | Independent continuous expectations and standard measure correspondence | Domain and mathematical libraries only |
 | `Eq` | Stable hitting, `pstruct`, `pstrong`, canonical `peutt` and profile selection | No Semantics/Interp dependency |
@@ -89,17 +89,24 @@ recovering an external joint from suitable external constraints, with the
 model's required support hypotheses. It does **not** mean completeness of the
 syntactic `free_omega_qlift` relation.
 
-`Prob/FreeOmega/Validation/{Expectation,Continuity,Observation,Relational,Quotient}`
+`Prob/FreeOmega/Validation/{Model,Continuity,Observation,Relational,Quotient}`
 owns the second layer; see [generic validation](GENERIC_QLIFT_VALIDATION.md).
 The independent Domain and Common transport theorems can be shared by concrete
 realizations; their application must not become a premise of behavioral theory.
 
-SubEnumQ's frozen DS1–DS4 account supplies denotational validation, and DS5
-supplies backend-specific external joint realization. Keep those existing
-owners and theorem names. SubEnumR instantiates generic validation and now
+`Validation/StableHitting.v` is the explicitly one-way PTree bridge: it may
+read generic hitting definitions, but neither behavioral theory nor pure
+model validation may depend on it. `Validation/Soundness.v` is the validation
+entry point. Both Q/R adapters discharge the same native obligations without
+depending on specialized completion validation or PTree; their Eq/Backend
+stable-hitting corollaries give automatic modelability of arbitrary witnesses.
+
+SubEnumQ's old specialized validation remains compatibility-only (its remaining
+clients have not yet all migrated); new work uses generic `Model.v`. SubEnumR
+instantiates generic validation and
 proves countable support and external joint realization in
 `Prob/Backend/SubEnumR/FreeOmega/JointRealization.v`, alongside `Validation.v`
-and `RelationalValidation.v`, not in generic `Validation/Quotient.v`; see the
+not in generic `Validation/Quotient.v`; see the
 [finite-real realization account](SUBENUMR_JOINT_REALIZATION.md).
 The two finite native backends therefore share the external countable transport
 theorem without strengthening generic validation beyond bidual constraints.

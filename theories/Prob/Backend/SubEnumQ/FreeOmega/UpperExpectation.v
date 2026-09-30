@@ -1,3 +1,6 @@
+(** Compatibility-only rational validation. New developments use
+    Prob/FreeOmega/Validation/Model and SubEnumQ/FreeOmega/Validation.
+    Retained for existing clients; no new specialized validation theory. *)
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".

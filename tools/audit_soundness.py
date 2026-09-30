@@ -37,9 +37,9 @@ def independent_math(sources):
         assert not re.search(forbidden, code), 'Transport mathematics imports program semantics: ' + name
         if name in ['RealTransport', 'CountableRealTransport']:
             assert not re.search(r'\bOmegaVal\b', code), 'Scalar transport depends on the domain'
-    hitting = code_only(sources['theories/Eq/Backend/StableHittingDomainSubEnumQ.v'])
+    hitting = code_only(sources['theories/Prob/FreeOmega/Validation/StableHitting.v'])
     for start, end in [('Section DomainKernel.', 'End DomainKernel.'),
-                       ('Definition ptree_domain_kernel', 'Definition ptree_domain_approx')]:
+                       ('Definition ptree_model_kernel', 'Definition ptree_model_approx')]:
         assert start in hitting and end in hitting, 'Missing independent kernel block'
         block = hitting.split(start, 1)[1].split(end, 1)[0]
         assert not re.search(r'\b(?:FreeOmega|free_omega_\w+|stable_hitting_approx|ptree_hitting_approx|sem_\w+)\b', block), \
@@ -75,7 +75,7 @@ def source_check(sources=None, policy=None):
         for name in names:
             assert re.search(r'\b(?:Example|Lemma|Theorem)\s+'+re.escape(name)+r'\b',code), \
                 'Missing regression: ' + name
-    joint = code_only(sources['theories/Prob/Backend/SubEnumQ/FreeOmega/JointSoundness.v'])
+    joint = code_only(sources['theories/Prob/Backend/SubEnumQ/FreeOmega/JointRealization.v'])
     assert 'free_omega_qlift_countable_constraints' in joint and 'oval_bidual_coupled' in joint
     assert not re.search(r'\b(?:induction|elim|FOQLComp)\b', joint), 'Final bridge must not require intermediate validity'
     real_joint = code_only(sources['theories/Prob/Backend/SubEnumR/FreeOmega/JointRealization.v'])
@@ -97,7 +97,7 @@ def manifest_check():
     names = set(data['soundness'])
     assert len(names) == 199 and names <= {e['name'] for e in data['endpoints']}
     for endpoint in [
-        'PTree.Prob.Backend.SubEnumQ.FreeOmega.JointSoundness.free_omega_qlift_sound',
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.JointRealization.free_omega_qlift_sound',
         'PTree.Prob.Backend.SubEnumQ.FreeOmega.QuotientSoundness.free_omega_qlift_eq_sound',
         'PTree.Eq.Backend.StableHittingDomainSubEnumQ.stable_hitting_denotational_adequacy',
         'PTree.Prob.Backend.Common.DomainTransport.oval_bidual_coupled_nat',
@@ -215,12 +215,13 @@ def generic_quotient_check():
             'model_qlift_bidual_raw', 'model_qlift_bidual', 'model_qlift_upper',
             'model_qlift_upper_mass', 'model_qlift_eq_upper',
             'model_qlift_eq_modelable', 'model_qlift_eq_sound'],
-        'PTree.Prob.Backend.SubEnumR.FreeOmega.RelationalValidation': [
+        'PTree.Prob.Backend.SubEnumR.FreeOmega.Validation': [
             'subenumR_native_model_lub', 'subenumR_qlift_bidual_raw',
             'subenumR_qlift_bidual', 'subenumR_qlift_eq_modelable'],
-        'PTree.Prob.Backend.SubEnumQ.FreeOmega.RelationalValidation': [
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.Validation': [
             'subenumQ_native_model_lub', 'subenumQ_qlift_bidual_raw',
-            'subenumQ_generic_qlift_bidual', 'subenumQ_generic_qlift_tests'],
+            'subenumQ_generic_qlift_bidual'],
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.Compatibility': ['subenumQ_generic_qlift_tests'],
     }
     policy = json.loads(POLICY.read_text())
     path = 'theories/Regression/Probability/GenericQuotientValidation.v'
@@ -235,6 +236,40 @@ def generic_quotient_check():
     print(f'{len(entries)} generic quotient/adapter/regression endpoints checked; unchanged logical whitelist.')
 
 
+def stable_hitting_validation_check():
+    """One generic validity proof, fully discharged Q/R specializations."""
+    groups = {
+        'PTree.Prob.FreeOmega.Validation.StableHitting': [
+            'ptree_hitting_model_commutation', 'ptree_hitting_approx_modelable',
+            'ptree_hitting_approx_model_increasing', 'ptree_canonical_hitting_spec',
+            'ptree_canonical_hitting_modelable', 'ptree_canonical_hitting_denotes',
+            'stable_hitting_modelable', 'stable_hitting_denotational_adequacy',
+            'stable_hitting_model_eq', 'stable_hitting_model_mass_lub'],
+        'PTree.Eq.Backend.StableHittingDomainSubEnumQ': [
+            'subenumQ_stable_hitting_modelable', 'subenumQ_stable_hitting_denotational_adequacy'],
+        'PTree.Eq.Backend.StableHittingDomainSubEnumR': [
+            'subenumR_stable_hitting_modelable', 'subenumR_stable_hitting_denotational_adequacy',
+            'subenumR_stable_hitting_domain_eq', 'subenumR_stable_hitting_mass_lub'],
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.CountableSupport': ['subenumQ_free_omega_model_countable'],
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.JointRealization': ['subenumQ_qlift_sound'],
+    }
+    policy = json.loads(POLICY.read_text())
+    groups['PTree.Regression.Probability.StableHittingDomain'] = policy['regressions'][
+        'theories/Regression/Probability/StableHittingDomain.v']
+    entries = query([module+'.'+name for module, names in groups.items() for name in names])
+    for e in entries:
+        assert logical_axioms(e['assumptions']) <= SOUNDNESS_AXIOMS, e['name']
+        if '.Validation.StableHitting.' in e['name']:
+            assert not re.search(r'\b(?:SubEnumQ\w*|SubEnumR\w*|MathComp\w*)\b', e['type']), e['name']
+            assert not re.search(r'\b(?:SemanticOmegaLaws|SemanticMeasureBindLaws)\b', e['type']), e['name']
+        if '.Eq.Backend.' in e['name'] or '.Regression.' in e['name']:
+            assert not re.search(r'\b(?:Semantic\w*Laws|native_ae|native_lub|no_event)\b', e['type']), e['name']
+        if e['name'].endswith(('.subenumQ_stable_hitting_modelable', '.subenumR_stable_hitting_modelable',
+                               '.real_arbitrary_witness_valid')):
+            assert e['type'].count('free_omega_modelable') == 1, 'Validity must be a conclusion, not a premise'
+    print(f'{len(entries)} generic hitting/Q/R/realization endpoints checked; unchanged logical whitelist.')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
@@ -242,8 +277,9 @@ if __name__ == '__main__':
     parser.add_argument('--generic-quotient-only', action='store_true')
     parser.add_argument('--real-joint-only', action='store_true')
     parser.add_argument('--mathcomp-native-only', action='store_true')
+    parser.add_argument('--stable-hitting-only', action='store_true')
     args = parser.parse_args()
-    only = [args.generic_quotient_only, args.real_joint_only, args.mathcomp_native_only]
+    only = [args.generic_quotient_only, args.real_joint_only, args.mathcomp_native_only, args.stable_hitting_only]
     if sum(only) > 1:
         parser.error('Select at most one compiled audit scope')
     source_check(); manifest_check()
@@ -257,3 +293,5 @@ if __name__ == '__main__':
             real_joint_check()
         if not any(only) or args.mathcomp_native_only:
             mathcomp_native_check()
+        if not any(only) or args.stable_hitting_only:
+            stable_hitting_validation_check()

@@ -60,7 +60,7 @@ def load_suites():
     assert set(data['axiom_exceptions']) <= names
     for name in [
         'PTree.Eq.Bind.peutt_bind',
-        'PTree.Prob.Backend.SubEnumQ.FreeOmega.JointSoundness.free_omega_qlift_sound',
+        'PTree.Prob.Backend.SubEnumQ.FreeOmega.JointRealization.free_omega_qlift_sound',
         'PTree.Eq.Backend.StableHittingDomainSubEnumQ.stable_hitting_denotational_adequacy',
         'PTree.Interp.IterationUniform.ptree_peutt_iteration_uniform',
         'PTree.Regression.Semantics.PTreeUniformity.state_fold_into_ptree',

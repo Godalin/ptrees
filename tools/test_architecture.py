@@ -4,6 +4,31 @@ import audit_architecture as architecture
 
 
 class ArchitectureTests(unittest.TestCase):
+    def test_stable_hitting_validation_is_one_way_and_generic(self):
+        bridge = "Prob/FreeOmega/Validation/StableHitting"
+        pure = "Prob/FreeOmega/Validation/Model"
+        for dep in ["Core/PTreeDefinition", "Eq/PTreeKernel"]:
+            self.assertTrue(architecture.permitted(bridge, dep))
+            self.assertFalse(architecture.permitted(pure, dep))
+            self.assertFalse(architecture.permitted(dep, bridge))
+        self.assertFalse(architecture.permitted(pure, bridge))
+        self.assertFalse(architecture.permitted(bridge, "Prob/Backend/SubEnumQ/Domain"))
+        self.assertTrue(architecture.permitted("Prob/FreeOmega/Validation/Soundness", bridge))
+        for backend in ["SubEnumQ", "SubEnumR"]:
+            target = "Eq/Backend/StableHittingDomain" + backend
+            self.assertTrue(architecture.external_validation(target))
+            self.assertFalse(architecture.permitted("Eq/PEutt", target))
+
+    def test_native_validation_does_not_hide_legacy_or_tree_dependency(self):
+        root = "Prob/Backend/SubEnumQ/FreeOmega/Validation"
+        helper = "Prob/Backend/SubEnumQ/NativeLimit"
+        for target in ["Prob/Backend/SubEnumQ/FreeOmega/UpperObservation",
+                       "Prob/Backend/SubEnumQ/FreeOmega/Compatibility", "Eq/PTreeKernel"]:
+            graph = {root: {helper}, helper: {target}, target: set()}
+            with self.assertRaises(AssertionError):
+                architecture.check_generic_validation_boundary(graph)
+        architecture.check_generic_validation_boundary({root: {helper}, helper: set()})
+
     def test_real_native_reflection_keeps_validation_boundary(self):
         bridge = "Prob/Backend/SubEnumR/FreeOmega/NativeReflection"
         native = "Prob/Backend/SubEnumR/FiniteTransport"
@@ -11,7 +36,7 @@ class ArchitectureTests(unittest.TestCase):
         self.assertFalse(architecture.external_validation(native))
         self.assertTrue(architecture.permitted(bridge, native))
         self.assertTrue(architecture.permitted(bridge,
-            "Prob/Backend/SubEnumR/FreeOmega/RelationalValidation"))
+            "Prob/Backend/SubEnumR/FreeOmega/Validation"))
         for owner in [native, "Eq/Backend/SubEnumR", "Semantics/FreeOmega/MDPReflection"]:
             self.assertFalse(architecture.permitted(owner, bridge))
         graph = {"Eq/Backend/SubEnumR": {native}, native: {bridge}, bridge: set()}
@@ -116,7 +141,7 @@ class ArchitectureTests(unittest.TestCase):
 
     def test_relational_validation_adapters_are_one_way(self):
         for family in ["SubEnumQ", "SubEnumR"]:
-            bridge = f"Prob/Backend/{family}/FreeOmega/RelationalValidation"
+            bridge = f"Prob/Backend/{family}/FreeOmega/Validation"
             self.assertTrue(architecture.external_validation(bridge))
             self.assertTrue(architecture.permitted(bridge, "Prob/FreeOmega/Validation/Quotient"))
             for source in [f"Prob/Backend/{family}/Measure", "API/FreeOmega",
@@ -124,7 +149,7 @@ class ArchitectureTests(unittest.TestCase):
                 self.assertFalse(architecture.permitted(source, bridge))
 
     def test_generic_completion_validation_is_one_way(self):
-        bridge = "Prob/FreeOmega/Validation/Expectation"
+        bridge = "Prob/FreeOmega/Validation/Model"
         self.assertTrue(architecture.external_validation(bridge))
         self.assertTrue(architecture.permitted(bridge, "Prob/Domain/Expectation"))
         self.assertTrue(architecture.permitted(bridge, "Prob/FreeOmega/Definition"))
@@ -284,7 +309,7 @@ class AggregateAndFixtureTests(unittest.TestCase):
 
     def test_final_joint_adapter_stays_external(self):
         for target in ['Prob/Backend/Common/CountableCoupling',
-                       'Prob/Backend/SubEnumQ/FreeOmega/JointSoundness']:
+                       'Prob/Backend/SubEnumQ/FreeOmega/JointRealization']:
             self.assertTrue(architecture.external_validation(target))
             for source in ['API/FreeOmega','Eq/PEutt','Examples/RandomWalk',
                            'Prob/Backend/SubEnumQ/Measure']:

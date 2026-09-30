@@ -8,7 +8,7 @@ From PTree.Prob.Interface Require Import Measure Omega KleisliIteration.
 From PTree.Prob.Domain Require Import Expectation Iteration.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Measure.
-From PTree.Prob.FreeOmega.Validation Require Import Expectation.
+From PTree.Prob.FreeOmega.Validation Require Import Model.
 Set Implicit Arguments.
 Unset Strict Implicit.
 

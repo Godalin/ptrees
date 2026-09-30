@@ -9,7 +9,9 @@ From mathcomp Require Import ssreflect ssrbool eqtype choice ssrnat ssralg ssrnu
 From PTree.Prob.Interface Require Import Measure.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure.
-From PTree.Prob.Backend.SubEnumQ Require Import Measure.
+From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
+From PTree.Prob.FreeOmega.Validation Require Import Model.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Validation.
 From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility UpperCoupling.
 From PTree.Prob.Domain Require Import Expectation Countable.
 Set Implicit Arguments.
@@ -55,6 +57,19 @@ Qed.
 
 Section Interpretation.
 Variable R : realType.
+
+(** Canonical API: the enumerable-cover proof is representation-specific;
+    concentration of the model is obtained from generic AE interpretation. *)
+Theorem subenumQ_free_omega_model_countable {A} (t : FreeOmega SubEnumQ A)
+    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t) :
+  oval_countably_supported (free_omega_model Ht).
+Proof.
+  exists (free_omega_enumerate t).
+  intros f g Hf Hg Hfg.
+  apply (model_upper_ae_ext (@subenumQ_native_model_ae R)); [exact Hf|exact Hg|].
+  eapply free_omega_ae_mono; [|exact (free_omega_enumerate_covers t)].
+  exact Hfg.
+Qed.
 
 Theorem free_omega_domain_enumerated {A} (t : FreeOmega SubEnumQ A)
     (H : free_omega_admissible R t) :

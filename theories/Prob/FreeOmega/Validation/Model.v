@@ -1,5 +1,5 @@
-(** Role: One-way, native-parametric external validation. The mathematical
-    target is the independent OmegaVal domain, NOT another free syntax.
+(** Role: Native-parametric external model, validity and denotation for FreeOmega.
+    The target is the independent OmegaVal domain, NOT another free syntax.
     Arbitrary raw lubs have an upper evaluator, not automatically a measure.
     No native backend, PTree theory, or internal observation relation is used. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".

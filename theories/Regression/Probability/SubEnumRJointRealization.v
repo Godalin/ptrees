@@ -9,7 +9,7 @@ From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Domain Require Import Expectation Countable Coupling.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.StructuralMeasure
   PTree.Prob.FreeOmega.Quotient.
-From PTree.Prob.FreeOmega.Validation Require Import Expectation.
+From PTree.Prob.FreeOmega.Validation Require Import Model.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega Domain.
 From PTree.Prob.Backend.SubEnumR.FreeOmega Require Import CountableSupport JointRealization.
 From PTree.Regression.Backend Require Import SubEnumR SubEnumRRelational.

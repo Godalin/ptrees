@@ -8,9 +8,9 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals.
 From PTree.Prob.Domain Require Import Expectation Countable Coupling.
 From PTree.Prob.Backend.Common Require Import CountableCoupling.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Quotient.
-From PTree.Prob.FreeOmega.Validation Require Import Expectation.
+From PTree.Prob.FreeOmega.Validation Require Import Model.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega Domain.
-From PTree.Prob.Backend.SubEnumR.FreeOmega Require Import CountableSupport RelationalValidation.
+From PTree.Prob.Backend.SubEnumR.FreeOmega Require Import CountableSupport Validation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

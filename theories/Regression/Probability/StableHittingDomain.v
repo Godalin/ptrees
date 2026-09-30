@@ -88,3 +88,69 @@ Proof.
   apply (ptree_stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
 Qed.
 End Tests.
+
+(** The real backend uses the SAME generic proof, not a rational conversion.
+    Neither the arbitrary-witness client nor the recursive client supplies
+    admissibility, almost-sure termination, or an event-free signature. *)
+From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega Domain.
+From PTree.Prob.FreeOmega.Validation Require Import Model StableHitting.
+From PTree.Eq.Backend Require Import StableHittingDomainSubEnumR.
+
+Section RealTests.
+Variable R : realType.
+Local Notation MN := (SubEnumR R).
+Local Notation native := (fun X => @subenumR_domain R X).
+Local Notation FI := (FreeOmegaObservableSemanticMeasure
+  (NI := SubEnumR_SemanticMeasure R) (NO := SubEnumR_SemanticOmega R)).
+Local Notation FO := (FreeOmegaObservableSemanticOmega
+  (NI := SubEnumR_SemanticMeasure R) (NO := SubEnumR_SemanticOmega R)).
+Local Notation hits := (@ptree_stable_hitting _ MN (FreeOmega MN)
+  FI FreeOmegaMixedMeasure FO _).
+
+Example real_arbitrary_witness_valid {E A} (t : ptree E MN A) out :
+  hits (observe t) out -> free_omega_modelable native out.
+Proof. exact: subenumR_stable_hitting_modelable. Qed.
+
+Example real_arbitrary_witness_denotes {E A} (t : ptree E MN A) out :
+  hits (observe t) out ->
+  free_omega_model_denotes native out (subenumR_ptree_domain_hitting (observe t)).
+Proof. exact: subenumR_stable_hitting_denotational_adequacy. Qed.
+
+Variable p : R.
+Hypotheses (Hp : 0 <= p) (Hp1 : p <= 1).
+
+(** p = 0 is allowed: infinite retry is still a valid subprobability.
+    On success this program exposes an actual visible head. *)
+CoFixpoint real_retry : ptree domainE MN unit :=
+  Prob (subenumR_coin Hp Hp1) (fun b =>
+    if b then Vis Tick (fun _ => Ret tt) else Tau real_retry).
+
+Example real_recursive_frontier_auto :
+  exists out, hits (observe real_retry) out /\
+    free_omega_modelable native out /\
+    free_omega_model_denotes native out
+      (subenumR_ptree_domain_hitting (observe real_retry)).
+Proof.
+  exists (ptree_canonical_hitting (observe real_retry)).
+  have H : hits (observe real_retry) (ptree_canonical_hitting (observe real_retry))
+    by apply ptree_canonical_hitting_spec.
+  split; [exact H|]. split.
+  - exact: subenumR_stable_hitting_modelable H.
+  - exact: subenumR_stable_hitting_denotational_adequacy H.
+Qed.
+
+(** Native mass loss is not an invalid raw term either. *)
+Example real_native_loss_auto :
+  free_omega_modelable native
+    (ptree_canonical_hitting (ProbF (@subenumR_zero R unit)
+      (fun _ => (Ret tt : ptree domainE MN unit)))).
+Proof. apply ptree_canonical_hitting_modelable. Qed.
+
+Example real_noncanonical_witness_auto :
+  free_omega_modelable native
+    (@FORet MN (stable_head domainE MN unit) (FHRet tt)).
+Proof.
+  apply (@subenumR_stable_hitting_modelable R domainE unit (RetF tt)).
+  apply (ptree_stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
+Qed.
+End RealTests.

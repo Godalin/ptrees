@@ -1,4 +1,4 @@
-(** Final DS5a external joint realization for FreeOmega SubEnumQ.
+(** Backend-specific external joint realization for FreeOmega SubEnumQ.
     Only endpoints require admissibility. The all-raw bidual bridge handles
     derivations through invalid intermediates; this file never unfolds qlift. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
@@ -9,8 +9,10 @@ From PTree.Prob.Domain Require Import Expectation Countable Coupling.
 From PTree.Prob.Backend.Common Require Import CountableCoupling.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Quotient.
-From PTree.Prob.Backend.SubEnumQ Require Import Measure.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Admissibility CouplingSoundness.
+From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
+From PTree.Prob.FreeOmega.Validation Require Import Model.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import
+  Admissibility CouplingSoundness CountableSupport Validation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -19,6 +21,20 @@ Local Open Scope ring_scope.
 Section Soundness.
 Variable R : realType.
 Local Notation qlift := (@free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
+
+(** Preferred endpoint: generic modelability, backend enumerable support,
+    and the shared countable transport theorem. Old DS names below remain
+    compatibility endpoints; new clients need no specialized evaluator. *)
+Theorem subenumQ_qlift_sound {A B} (T : A -> B -> Prop)
+    (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)
+    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t)
+    (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
+  qlift T t u -> oval_coupled T (free_omega_model Ht) (free_omega_model Hu).
+Proof.
+  intro H.
+  exact (oval_bidual_coupled (subenumQ_free_omega_model_countable Ht)
+    (subenumQ_free_omega_model_countable Hu) (subenumQ_generic_qlift_bidual Ht Hu H)).
+Qed.
 
 Theorem free_omega_qlift_sound {A B} (T : A -> B -> Prop)
     (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)

@@ -1,6 +1,5 @@
-(** Role: SubEnumQ specialization of native-parametric external validation.
-    Existing DS definitions/proofs remain unchanged. Native Domain remains
-    below FreeOmega: only this adapter imports both validation developments. *)
+(** Role: Compatibility between the legacy rational evaluator/admissibility
+    names and the canonical generic Model API. New clients use Validation. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -9,9 +8,10 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals.
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Domain Require Import Expectation Countable.
 Require Import PTree.Prob.FreeOmega.Definition.
-From PTree.Prob.FreeOmega.Validation Require Import Expectation.
+From PTree.Prob.FreeOmega Require Import Quotient.
+From PTree.Prob.FreeOmega.Validation Require Import Model.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Expectation Domain.
-From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import UpperExpectation Admissibility.
+From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import UpperExpectation Admissibility Validation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -48,19 +48,15 @@ Theorem subenumQ_generic_domain_agrees {A} (t : FreeOmega SubEnumQ A)
   oval_eq (free_omega_model H) (free_omega_domain Hds).
 Proof. intros f Hf; exact: subenumQ_model_upper. Qed.
 
-Theorem subenumQ_native_model_ae {X} (mu : SubEnumQ X) P :
-  sem_ae mu P -> oval_ae (subenumQ_domain R mu) P.
-Proof.
-  intros Ha f g Hf Hg He; apply/eqP; rewrite eq_le; apply/andP; split;
-    apply enumQ_real_expect_ae_mono; intros p x Hin Hnz.
-  - rewrite (He x (Ha p x Hin Hnz)); exact: lexx.
-  - rewrite (He x (Ha p x Hin Hnz)); exact: lexx.
-Qed.
-
-Theorem subenumQ_native_model_lift {X Y} (S : X -> Y -> Prop)
-    (mu : SubEnumQ X) (nu : SubEnumQ Y) f g :
-  sem_lift S mu nu -> oval_test f -> oval_test g ->
-  (forall x y, S x y -> f x <= g y) ->
-  oval_eval (subenumQ_domain R mu) f <= oval_eval (subenumQ_domain R nu) g.
-Proof. intros H _ _ Hfg; exact (subenumQ_sem_lift_test_sound H Hfg). Qed.
 End SubEnumQValidation.
+
+Section LegacyTests.
+Variable R : realType.
+(** The conclusion agrees with DS5 at the evaluator level, without
+    replacing or depending on the frozen DS5 quotient induction. *)
+Theorem subenumQ_generic_qlift_tests {A B} (T : A -> B -> Prop) t u (f : A -> R) (g : B -> R) :
+  free_omega_qlift T t u -> oval_test f -> oval_test g ->
+  (forall x y, T x y -> f x <= g y) ->
+  free_omega_upper t f <= free_omega_upper u g.
+Proof. intro H; exact (proj1 (subenumQ_qlift_bidual_raw R H) f g). Qed.
+End LegacyTests.

@@ -774,6 +774,23 @@
       "real_partial_joint_not_normalized",
       "real_joint_large_heterogeneous"
     ],
+    "theories/Regression/Infrastructure/FreeOmegaNotation.v": [
+      "delimited_return",
+      "return_expansion",
+      "zero_expansion",
+      "sample_expansion",
+      "sup_expansion",
+      "bind_expansion",
+      "embedding_expansion",
+      "nested_samples",
+      "bind_associates_left",
+      "sup_typed_binder",
+      "arbitrary_sequence",
+      "high_result",
+      "high_embedding",
+      "program_bind_unchanged",
+      "program_as_value"
+    ],
     "theories/Regression/Probability/StableHittingDomain.v": [
       "arbitrary_witness_valid",
       "arbitrary_witness_denotes",
@@ -783,7 +800,12 @@
       "native_loss_hitting_bottom",
       "infinite_visible_service_mass_one",
       "ret_noncanonical_witness_valid",
-      "ret_noncanonical_witness_sound"
+      "ret_noncanonical_witness_sound",
+      "real_arbitrary_witness_valid",
+      "real_arbitrary_witness_denotes",
+      "real_recursive_frontier_auto",
+      "real_native_loss_auto",
+      "real_noncanonical_witness_auto"
     ],
     "theories/Regression/Semantics/AtomicInterp.v": [
       "delayed_response_hitting",

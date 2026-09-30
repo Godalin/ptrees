@@ -50,7 +50,7 @@ Fail Check PTree.Eq.Backend.MathComp.mathcomp_peutt.
 
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Measure.
-From PTree.Prob.FreeOmega.Validation Require Import Expectation Iteration.
+From PTree.Prob.FreeOmega.Validation Require Import Model Iteration.
 From PTree.Prob.Backend.SubEnumQ Require Import Representation Measure Domain.
 Section RationalInterpretation.
 Variable R : realType.

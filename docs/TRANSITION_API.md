@@ -90,7 +90,7 @@ current root-closure check gives the following sizes (including the root):
 | `Eq/PTreeKernel` | 11 | 0 |
 | `Prob/FreeOmega/Validation/Quotient` | 19 | 0 |
 | `Prob/Backend/SubEnumQ/FreeOmega/DomainSoundness` | 43 | 0 |
-| `Prob/Backend/SubEnumQ/FreeOmega/JointSoundness` | 63 | 0 |
+| `Prob/Backend/SubEnumQ/FreeOmega/JointRealization` | 63 | 0 |
 | `Prob/Backend/SubEnumR/FreeOmega/JointRealization` | 43 | 0 |
 | `Eq/Backend/StableHittingDomainSubEnumQ` | 55 | 0 |
 | `Examples/AdaptiveFactoryController` | 131 | 0 |

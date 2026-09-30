@@ -1,22 +1,33 @@
-# FreeOmega: external probability semantics and joint realization
+# FreeOmega: generic external soundness
 
-The completed soundness results validate **admissible `FreeOmega SubEnumQ`**
-in an independent standard subprobability model. They do not interpret every
-raw term as a probability, prove syntactic completeness, or supply a
-MathComp-native FreeOmega adapter. Program reasoning does not depend on this
-validation layer; see [architecture](ARCHITECTURE.md).
+FreeOmega has a **native-parametric external validation into OmegaVal**.
+A backend supplies `native : forall X, MN X -> OmegaVal R X` and proves
+compatibility with its native operations. Modelable FreeOmega terms then have
+genuine subprobability semantics. Moreover, **every complete PTree stable-hitting
+witness is automatically modelable**, for both SubEnumQ and SubEnumR.
 
-This is the frozen SubEnumQ account: DS1–DS4 establish denotational validation;
-DS5 establishes backend-specific external joint realization. The later
-[native-parametric validation](GENERIC_QLIFT_VALIDATION.md) factors out
-bounded-test/bidual soundness, now instantiated by SubEnumQ and SubEnumR.
-It does not generalize the actual-joint existence claim below to every native
-backend. See the [three-layer policy and terminology](ARCHITECTURE.md#three-layers-of-probability-reasoning).
-SubEnumR now has its own [external joint realization](SUBENUMR_JOINT_REALIZATION.md),
-composing generic bidual validation with the same independent countable
-transport theorem. The frozen SubEnumQ proofs below remain unchanged.
+The entry point is `Prob/FreeOmega/Validation/Soundness.v`. It reexports existing
+results; it does not add a second free syntax, probability interface, or an
+actual-joint-existence assumption. Maintained PTree reasoning never imports
+external validation. See [architecture](ARCHITECTURE.md).
 
-## Independent mathematical domain
+## 1. Generic external model
+
+`Prob/FreeOmega/Validation/Model.v` owns the canonical validation vocabulary:
+
+```coq
+free_omega_model_upper native t
+free_omega_modelable native t
+free_omega_model Ht
+free_omega_model_denotes native t L
+```
+
+The model packages the existing evaluator with its probability-functional laws;
+there is no second recursive interpretation. `Model.v` imports neither concrete
+native backends nor PTree. `Soundness.v` additionally exposes the separate
+PTree-facing `StableHitting.v` bridge.
+
+### Independent mathematical domain
 
 `Prob/Domain/Expectation.v` defines `OmegaVal R A`: an evaluator
 `(A -> R) -> R` satisfying zero, monotonicity, bounded scaling/additivity,
@@ -47,59 +58,132 @@ directions of correspondence. This is not a representation theorem on arbitrary
 measurable spaces; the HB adapter has its ordinary carrier-universe scope.
 OmegaVal itself and the later coupling bridge support larger carriers.
 
-## Native sampling and admissible completion
+## 2. Modelability and denotation
 
-`SubEnumQ` consists of finite rational subdistributions. Native expectation
-facts live in `Prob/Backend/SubEnumQ/Expectation.v`; `SubEnumQ/Domain.v`
-interprets this carrier directly into OmegaVal, independently of FreeOmega.
+FreeOmega remains permissive syntax: FORet, FOZero, FOSample and raw FOLub.
+A Lub alternating between distinct Dirac values is generally nonadditive.
+Therefore **raw syntax alone, or reflexive qlift, is not a validity certificate**.
 
-`FreeOmega` remains the sole formal completion syntax: FORet, FOZero,
-FOSample and raw FOLub. Its existing `free_omega_upper` is a bounded upper
-evaluator on every raw term. A Lub alternating between two distinct Dirac
-measures is generally nonadditive, so raw syntax alone is not validity.
+`modelable_iff_denotes` characterizes modelability by existence of an OmegaVal
+interpretation. Ret/zero, valid sampling/bind, and increasing modelable Lubs are
+closed. The AE variants `modelable_sample_ae` and `modelable_bind_ae` permit
+invalid terms on null branches; they do not require everywhere validity.
+`model_denotes_bind` and `model_denotes_lub` give the algebraic interpretation.
+`Iteration.v` connects FreeOmega Kleisli iteration to the mathematical omega-limit
+and least-fixed-point construction.
 
-`SubEnumQ/FreeOmega/Admissibility.v` defines `free_omega_admissible` by the
-probability-functional laws of that evaluator. `DomainSoundness.v` packages
-the evaluator, rather than inventing a second recursive denotation.
-Ret/zero, AE-valid sampling/bind, and increasing admissible Lubs are closed;
-null native branches may contain invalid terms. The AE/pselect proof does not
-strengthen this into everywhere validity. Approximation is sound for bounded
-evaluation order, and denotation commutes with bind and increasing Lubs.
+## 3. Quotient and relational soundness
 
-## Equality and general relational soundness
+The generic chain is `Continuity → Observation → Relational → Quotient`.
+The backend discharges six explicit obligations: AE concentration and preservation
+of ret, zero, bind, relational bounded-test inequalities, and **existing native
+lub witnesses**. It is not required to be native omega-complete.
+See [the exact obligations](GENERIC_QLIFT_VALIDATION.md).
 
-`QuotientSoundness.v` uses the all-raw `free_omega_qlift_eq_upper` bridge.
-Equal upper evaluators transport admissibility; admissible endpoint equality
-is `oval_eq`. The four endpoints are
+`model_qlift_bidual_raw` gives bounded-test constraints for all raw qlift
+derivations. `model_qlift_bidual` interprets modelable endpoints. Equality gives
+`model_qlift_eq_modelable` and `model_qlift_eq_sound` (observational `oval_eq`).
+FOQLComp may pass through an inadmissible middle term: the proof of the raw
+constraints never requires a probability model for it. No later hitting or
+joint bridge re-inducts on qlift. Generic bidual soundness is **not** a generic
+actual-joint existence theorem.
+
+## 4. Generic stable-hitting modelability
+
+`Prob/FreeOmega/Validation/StableHitting.v` defines an independent mathematical
+primitive kernel. Ret/Vis give stable Dirac heads, Tau an internal Dirac state,
+and Prob a bind of the native interpretation with internal successors.
+`ptree_model_approx` iterates this mathematical kernel, and
+`ptree_model_hitting` is its increasing OmegaVal lub.
+
+The proof has two distinct dependency levels:
+
+1. `ptree_hitting_model_commutation` identifies finite formal approximants with
+   these mathematical values. They are modelable and increasing, hence
+   `ptree_canonical_hitting_modelable` proves validity of their formal FOLub.
+   This part only needs the native interpretation, not the six compatibility
+   obligations.
+2. An arbitrary complete witness is quotient-equal to the canonical frontier.
+   The six obligations above let existing generic qlift equality soundness
+   transport validity and denotation to that witness.
 
 ```text
-free_omega_qlift_eq_admissible   free_omega_qlift_eq_sound
-free_omega_sem_eq_admissible    free_omega_sem_eq_sound
+stable_hitting_modelable:
+  ptree_stable_hitting s out -> free_omega_modelable native out
+
+stable_hitting_denotational_adequacy:
+  ptree_stable_hitting s out ->
+  free_omega_model_denotes native out (ptree_model_hitting native s)
+
+stable_hitting_model_mass_lub:
+  mass(denote out) = sup_n mass(ptree_model_approx native n s)
 ```
 
-No induction over qlift that assumes valid intermediates is used. In particular
-FOQLComp can pass through an inadmissible alternating Lub. Reflexive qlift
-does not itself imply admissibility, and zero is not quotient-equal to Dirac.
+These are schematic statements with the canonical observable FreeOmega profile
+understood. Validity is a conclusion, never a caller-supplied premise. There is
+no AST, no-event, finite-support-of-the-limit, or total-native-mass requirement.
+The fuel convention sees a current Ret/Vis at zero; Tau/Prob consumes fuel.
 
-The general endpoint in `SubEnumQ/FreeOmega/JointSoundness.v` is, with canonical
-SubEnumQ interfaces understood:
+Missing mass includes native subprobability loss **and** failure to reach the
+next stable head. It is not unconditionally divergence probability. Infinite
+visible interaction may have next-head mass one without terminating. Visible
+heads preserve their whole continuation; this is not an infinite-path measure.
 
-```coq
-free_omega_qlift_sound
-  (R : realType) {A B} (T : A -> B -> Prop)
-  (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)
-  (Ht : free_omega_admissible R t) (Hu : free_omega_admissible R u) :
-  free_omega_qlift T t u ->
-  oval_coupled T (free_omega_domain Ht) (free_omega_domain Hu).
+## 5. SubEnumQ specialization and compatibility boundary
+
+`SubEnumQ/Domain.v` interprets finite rational subdistributions independently of
+FreeOmega. `SubEnumQ/FreeOmega/Validation.v` supplies the native compatibility
+proofs and instantiates generic quotient validation. Pure scalar native-limit
+lemmas live in `SubEnumQ/NativeLimit.v`, not in a formal FreeOmega observation
+module. The canonical adapter does not depend on the specialized upper chain.
+
+`Eq/Backend/StableHittingDomainSubEnumQ.v` specializes the generic hitting proof:
+`subenumQ_stable_hitting_modelable` and
+`subenumQ_stable_hitting_denotational_adequacy` are the preferred endpoints.
+Existing `stable_hitting_admissible` / `ptree_domain_hitting` clients are retained;
+their core commutation and validity proofs now delegate to the generic theorem.
+
+**Compatibility migration, phase 1:** `UpperExpectation.v`, `Admissibility.v`,
+`DomainSoundness.v`, and `QuotientSoundness.v` remain compatibility-only, with no
+new specialized validation theory. `Compatibility.v` relates their vocabulary to
+`Model.v`; new generic validation does not import it. Phase 2 (migrate remaining
+legacy clients and delete duplicate implementations) is still pending. This
+change does not pretend that all old specialized proof code has been deleted.
+
+## 6. SubEnumR specialization
+
+`SubEnumR/Domain.v` interprets finite real subdistributions.
+`SubEnumR/FreeOmega/Validation.v` collects its compatibility proofs and quotient
+specializations; it neither converts through rationals nor copies FreeOmega
+proofs. `Eq/Backend/StableHittingDomainSubEnumR.v` now provides:
+
+```text
+subenumR_stable_hitting_modelable
+subenumR_stable_hitting_denotational_adequacy
+subenumR_stable_hitting_domain_eq
+subenumR_stable_hitting_mass_lub
 ```
 
-This constructs an actual `J : OmegaVal R (A * B)` with both marginals equal
-on all bounded tests and concentration on T. Its mass is the common marginal
-mass; nothing is conditionally normalized. The support theorem gives zero
-expectation to the complement of T. Equality specializes consistently to
-the previous equality soundness theorem.
+For **any event signature, return type, tree and complete witness**, these
+endpoints discharge all native obligations. Regression covers arbitrary
+witnesses, recursive real-weight sampling followed by visible interaction,
+zero native mass, and a noncanonical Dirac witness. The recursive test permits
+success probability zero: validity is not a termination assertion.
 
-The proof chain is independent countable transport, not a new capability:
+## 7. Optional backend-specific actual joint realization
+
+`SubEnumQ/FreeOmega/JointRealization.v` and
+`SubEnumR/FreeOmega/JointRealization.v` keep the stronger results outside generic
+validation. The preferred `subenumQ_qlift_sound` / `subenumR_qlift_sound` accept
+modelable endpoints and conclude `oval_coupled` for their generic models.
+The old rational `free_omega_qlift_sound` remains as a compatibility endpoint.
+
+Both proofs compose endpoint countable support, generic bidual soundness, and
+`Common/CountableCoupling.v`'s actual transport existence theorem. The resulting
+joint has exact bounded-test marginals and relation concentration; its mass is
+the common marginal mass, without normalization.
+
+The independent transport proof is:
 
 1. Every raw FreeOmega term has an enumerable cover, possibly with duplicates
    and invalid codes. Admissibility gives concentration of its OmegaVal value.
@@ -125,58 +209,19 @@ External bidual/joint equivalence is established for countably supported
 OmegaVal margins. It is **not** completeness of syntactic qlift. The final
 FreeOmega bridge composes these results without inspecting FOQLComp.
 
-## Stable-hitting adequacy
-
-`Eq/Backend/StableHittingDomainSubEnumQ.v` defines a separate mathematical
-primitive kernel: Ret/Vis give stable Dirac heads, Tau an internal Dirac state,
-and Prob a bind of native subprobability with internal successors. Independent
-finite hitting iterates are increasing; their OmegaVal Lub is the behavior.
-Finite-fuel commutation connects the existing formal iterates to these values.
-
-With canonical SubEnumQ/FreeOmega instances understood:
-
-```text
-stable_hitting_admissible:
-  ptree_stable_hitting s out -> free_omega_admissible R out
-
-stable_hitting_denotational_adequacy:
-  ptree_stable_hitting s out ->
-  free_omega_domain_denotes out (ptree_domain_hitting R s)
-
-stable_hitting_mass_lub:
-  mass(denote out) = sup_n mass(finite mathematical hitting approximant n s)
-```
-
-Validity is automatic for every complete witness, not a supplied premise.
-There is no AST/eventlessness condition. Complete-hitting uniqueness and
-quotient soundness transport the result away from the canonical Lub witness.
-The fuel convention sees a current Ret/Vis at zero; Tau/Prob consumes fuel.
-
-Missing mass can mean native subprobability loss **or** failure to reach the
-next stable head. It is not unconditionally pure divergence probability.
-Infinite visible interaction can have next-head mass one without terminating.
-This semantics stops at the next stable head and preserves its whole visible
-continuation; it does not construct an infinite interaction-path measure.
-
-`Regression/Probability/IrrationalHitting.v` checks an actual guarded retry
-PTree with total rational coins and a rational increasing hitting schedule.
-The specialization has limiting hitting mass pi/4, hence irrational. The
-construction uses classical choice of rational lower bounds; it is not an
-effective algorithm for an arbitrary real parameter and not the RandomWalk
-case study in Examples.
-
 ## Regression and verification map
 
 | Contract | Maintained regression |
 | --- | --- |
 | Independent domain, increasing Lub, bounded equality, universe | `Probability/OmegaVal` |
 | Countable measure, integrals, missing mass, roundtrips | `Probability/OmegaValMeasure` |
-| Raw nonadditivity, native AE, upper/observation/quotient laws | `Backend/FreeOmegaUpperContracts` |
+| Raw nonadditivity, native AE, upper/observation/quotient laws | `Probability/FreeOmegaUpperContracts` |
 | Invalid raw terms and admissible construction | `Probability/FreeOmegaDomain` |
 | Countable coding, explicit plans, actual existence, no escape | `Probability/CountableCoupling` |
 | FOQLComp through invalid middle, equality, general joint, high universe | `Probability/FreeOmegaSoundness` |
 | Finite real irrational weights / Hall | `Probability/RealTransport` |
-| Arbitrary hitting witnesses, partial mass, infinite service | `Probability/StableHittingDomain` |
+| Generic model/quotient validation and Q/R adapters | `Probability/GenericFreeOmegaValidation`, `Probability/GenericQuotientValidation` |
+| Arbitrary Q/R hitting witnesses, partial mass, infinite service | `Probability/StableHittingDomain` |
 | Rational coins / irrational limiting mass | `Probability/IrrationalHitting` |
 
 Paths are under `theories/Regression`. The private shared sample fixture is
@@ -185,13 +230,49 @@ escape remain different negative tests. `FreeOmegaLimitSafety` retains the
 negative continuity/diagonal/Fubini tests; formal FiniteInternal/Recovery
 infrastructure is not deleted by this validation result.
 
-The consolidated compiled contracts retain all 199 non-regression endpoints
-from DS1–DS5a audits, alongside the 306 mainline endpoints. Logical dependencies
-remain the previously explicit classical choice/extensionality and eq_rect_eq
-whitelist; no probability/transport-existence axiom is added. See
-[architecture](ARCHITECTURE.md) for reproducible commands and exact kernel-check
-scope. Phase reports and exact incremental conservation checks are in git.
+Existing compiled types are mechanically namespace-relocated, not reset.
+Six old Q hitting contracts (`ptree_domain_hitting_of_denotes`,
+`ptree_domain_hitting_zero`, `stable_hitting_admissible`,
+`stable_hitting_denotational_adequacy`, `stable_hitting_domain_eq`, and
+`stable_hitting_mass_lub`) keep exactly their types but lose the old
+`eq_rect_eq` dependency through generic proof reuse. Only that confirmed
+assumption reduction is recorded; no axiom is added or whitelist widened.
+`audit_soundness.py --stable-hitting-only` additionally checks generic
+hitting, Q/R specialization and regression endpoints against the existing
+logical-axiom whitelist. Architecture checks enforce one-way validation and
+reject legacy completion/tree dependencies in the native adapters.
+
+```sh
+opam exec -- dune build
+python3 tools/audit_architecture.py --check
+python3 tools/audit_soundness.py --source-only
+python3 tools/audit_soundness.py --stable-hitting-only
+python3 tools/audit_soundness.py --generic-quotient-only
+python3 tools/audit_contracts.py
+python3 -m unittest discover -s tools -p 'test_*.py'
+```
 
 Not established: arbitrary invalid-term denotation, syntactic coupling
-completeness, MathComp-native external soundness, infinite path measures,
-general conditioning, or a completed whole-library Gate D kernel audit.
+completeness, arbitrary-backend joint existence, MathComp-native external
+soundness, infinite path measures, or a whole-library kernel audit. Local
+verification does not assert remote CI success.
+
+### Reorganization checkpoint: local verification
+
+- Complete `dune build`, including AllImports and extraction targets: passed.
+  The inventory is 441 modules, including the unchanged two Gate M modules;
+  the new validation code is entirely Gate S.
+- Architecture, API surface and source-soundness audits: passed.
+- 146 Python tool tests: passed (including the previously omitted notation
+  regression registration, now covered by the existing policy).
+- Exact compiled contract suites: `contracts` 491, `subenumr_migration` 161,
+  `generic_algebra` 134 entries passed after the documented relocations and
+  six assumption reductions. These are suite-entry counts, not distinct theorems.
+- Compiled soundness audits: 32 hitting/Q/R/realization endpoints and 36 generic
+  quotient/adapter/regression endpoints passed the unchanged axiom whitelist.
+- Joint `coqchk -norec`: 11 module bodies passed—generic Model/StableHitting/
+  Soundness, Q NativeLimit/Validation/Compatibility/JointRealization, R Validation,
+  Q/R hitting specializations, and StableHittingDomain regression. Compiled
+  dependencies were trusted; this is not a recursive whole-library audit.
+- No CI or environment change was performed. The compatibility-deletion phase
+  described above remains separate work.

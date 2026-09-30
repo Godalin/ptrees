@@ -9,7 +9,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals.
 From PTree.Prob.Interface Require Import SemanticCoupling.
 From PTree.Prob.FreeOmega Require Import Quotient Native NativeCoupling.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling FiniteTransport Domain Omega.
-From PTree.Prob.Backend.SubEnumR.FreeOmega Require Import RelationalValidation.
+From PTree.Prob.Backend.SubEnumR.FreeOmega Require Import Validation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

@@ -73,7 +73,7 @@ a new recursive whole-library kernel audit. No CI claim is made.
 
 ## Native-parametric external validation
 
-`Prob/FreeOmega/Validation/Expectation.v` parameterizes the raw upper evaluator
+`Prob/FreeOmega/Validation/Model.v` parameterizes the raw upper evaluator
 by `native : forall X, MN X -> OmegaVal R X`. The external mathematical domain
 is deliberately **OmegaVal-qualified**, not an arbitrary abstract `MF` and not
 a newly added project-wide `Model` parameter. The ordinary generic PTree
@@ -98,7 +98,7 @@ Outside the AE support, kernels are totalized by a valid zero using explicit
 classical selection. Invalid raw terms themselves do not thereby gain a model.
 Double-lub interchange is not a claim that arbitrary native sampling commutes.
 
-`SubEnumQ/FreeOmega/GenericValidation.v` proves the new specialized evaluator
+`SubEnumQ/FreeOmega/Compatibility.v` proves the new specialized evaluator
 is definitionally the old `free_omega_upper`; modelability is equivalent to
 DS admissibility and both denotations agree. It supplies the AE/test bridges
 from finite expectation facts. No frozen DS theorem or old proof is changed.

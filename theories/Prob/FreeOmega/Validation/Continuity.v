@@ -9,7 +9,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals 
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Domain Require Import Expectation Countable.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation.
-From PTree.Prob.FreeOmega.Validation Require Import Expectation.
+From PTree.Prob.FreeOmega.Validation Require Import Model.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

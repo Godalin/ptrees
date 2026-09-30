@@ -20,7 +20,7 @@ class SoundnessTests(unittest.TestCase):
         soundness.manifest_check()
 
     def test_reject_assumptions_and_unfinished_proof(self):
-        path='theories/Prob/Backend/SubEnumQ/FreeOmega/JointSoundness.v'
+        path='theories/Prob/Backend/SubEnumQ/FreeOmega/JointRealization.v'
         for bad in ['Axiom shortcut : False.','Parameter shortcut : False.',
                     'Lemma bad : False. Proof. admit. Admitted.',
                     'Class TransportExists := {}.', 'Check FOQLComp.', 'induction H.', 'elim H.']:
@@ -60,11 +60,27 @@ class SoundnessTests(unittest.TestCase):
                 soundness.independent_math({**self.sources,path:self.sources[path]+'\n'+addition})
 
     def test_independent_kernel_cannot_be_formal_denotation(self):
-        path='theories/Eq/Backend/StableHittingDomainSubEnumQ.v'
-        for marker in ['Section DomainKernel.', 'Definition ptree_domain_kernel']:
+        path='theories/Prob/FreeOmega/Validation/StableHitting.v'
+        for marker in ['Section DomainKernel.', 'Definition ptree_model_kernel']:
             changed=self.sources[path].replace(marker,marker+' Check ptree_hitting_approx.')
             with self.assertRaises(AssertionError):
                 soundness.independent_math({**self.sources,path:changed})
+
+    def test_hitting_validation_rejects_backend_or_validity_premises(self):
+        for name, typ in [
+            ('PTree.Prob.FreeOmega.Validation.StableHitting.stable_hitting_modelable',
+             'SubEnumR -> free_omega_modelable'),
+            ('PTree.Prob.FreeOmega.Validation.StableHitting.stable_hitting_modelable',
+             'SemanticOmegaLaws -> free_omega_modelable'),
+            ('PTree.Eq.Backend.StableHittingDomainSubEnumR.subenumR_stable_hitting_modelable',
+             'free_omega_modelable -> free_omega_modelable'),
+            ('PTree.Eq.Backend.StableHittingDomainSubEnumR.subenumR_stable_hitting_modelable',
+             'native_lub -> free_omega_modelable'),
+        ]:
+            with self.subTest(typ=typ), patch.object(soundness, 'query', return_value=[{
+                    'name': name, 'type': typ, 'assumptions': 'Closed under the global context'}]), \
+                    self.assertRaises(AssertionError):
+                soundness.stable_hitting_validation_check()
 
     def test_strings_and_comments_not_commands(self):
         self.assertNotIn('Admitted',soundness.code_only('(* Admitted. *) Check "Axiom Admitted".'))

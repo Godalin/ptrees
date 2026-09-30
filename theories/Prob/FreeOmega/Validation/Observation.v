@@ -11,7 +11,7 @@ From PTree.Prob.Interface Require Import Measure Omega.
 From PTree.Prob.Domain Require Import Expectation.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation
   PTree.Prob.FreeOmega.Observation.
-From PTree.Prob.FreeOmega.Validation Require Import Expectation Continuity.
+From PTree.Prob.FreeOmega.Validation Require Import Model Continuity.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.

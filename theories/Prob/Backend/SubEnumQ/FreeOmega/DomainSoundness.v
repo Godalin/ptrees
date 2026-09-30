@@ -1,3 +1,6 @@
+(** Compatibility-only rational validation. New developments use
+    Prob/FreeOmega/Validation/Model and SubEnumQ/FreeOmega/Validation.
+    Retained for existing clients; no new specialized validation theory. *)
 (** Role: External, SubEnumQ-qualified sound interpretation of admissible
     FreeOmega terms. Denotation packages the existing upper evaluator;
     this file defines no second evaluator and no new free construction.

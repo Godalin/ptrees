@@ -1,3 +1,6 @@
+(** Compatibility-only rational validation. New developments use
+    Prob/FreeOmega/Validation/Model and SubEnumQ/FreeOmega/Validation.
+    Retained for existing clients; no new specialized validation theory. *)
 (** Role: External, SubEnumQ-qualified soundness of quotient equality.
     Reuse bounded-test equality for ALL raw terms, then transport validity.
     No induction on qlift and no validity premise for intermediate terms.
