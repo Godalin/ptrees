@@ -20,6 +20,7 @@ Unset Strict Implicit.
 Set Default Timeout 20.
 From Coq Require Import List Morphisms.
 From Coq.Program Require Import Equality.
+From ITree.Basics Require Import Monad.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype ssralg ssrnum order rat.
 From ITree.Events Require Import State.
 From ITree.Indexed Require Import Sum.
@@ -42,6 +43,10 @@ From PTree.Examples.BernoulliFactory Require Import
   VonNeumannUnbounded RationalBernoulli BernoulliFactory BoundedFactory.
 Import EnumQ GRing.Theory Num.Theory Order.Theory FreeOmegaRewriting.
 Local Open Scope ring_scope.
+Import MonadNotation SemanticMeasureNotations SemanticOmegaNotations.
+Local Open Scope monad_scope.
+Local Open Scope freeomega_scope.
+Local Open Scope semantic_measure_scope.
 
 Module Adaptive.
 Import BoundedFactory.
@@ -97,13 +102,17 @@ Local Notation tree := (ptree implE SubEnumQ).
 
 (** 2. Programs: private interpretation, adaptive sampler, public controller. *)
 
+(** Program sequencing uses [sample] / [trigger] and [<- ;;]. Later,
+    [>>=ₘ] composes native distributions, while [<~ ;;] builds a FreeOmega
+    frontier. These are distinct layers, not competing program notations. *)
+
 Definition internal {X} (e : internalE X) : tree X :=
   PTree.trigger (inr1 (inl1 e)).
 Definition public {X} (e : publicE X) : tree X :=
   PTree.trigger (inr1 (inr1 e)).
 Definition update (f : machine_state -> machine_state) : tree unit :=
-  PTree.bind (Vis (inl1 (Get machine_state)) (fun s => Ret s))
-    (fun s => Vis (inl1 (Put machine_state (f s))) (fun _ => Ret tt)).
+  s <- PTree.trigger (inl1 (Get machine_state));;
+  PTree.trigger (inl1 (Put machine_state (f s))).
 
 Definition internal_handler X (e : implE X) : ptree targetE SubEnumQ X :=
   match e with
@@ -111,14 +120,19 @@ Definition internal_handler X (e : implE X) : ptree targetE SubEnumQ X :=
   | inr1 (inr1 pe) => PTree.trigger (inr1 pe)
   | inr1 (inl1 ie) =>
     match ie with
-    | ChooseSource => Vis (inl1 (Get machine_state)) (fun s => Ret (health s))
+    | ChooseSource =>
+        s <- PTree.trigger (inl1 (Get machine_state));;
+        Ret (health s)
     | CheckSensor a => Ret a
-    | Maintenance => Vis (inl1 (Get machine_state)) (fun s =>
-        Vis (inl1 (Put machine_state (repair_update s))) (fun _ => Ret tt))
-    | Retry => Vis (inl1 (Get machine_state)) (fun s =>
-        Vis (inl1 (Put machine_state (retry_update s))) (fun _ => Ret tt))
-    | Round => Vis (inl1 (Get machine_state)) (fun s =>
-        Vis (inl1 (Put machine_state (round_update s))) (fun _ => Ret tt))
+    | Maintenance =>
+        s <- PTree.trigger (inl1 (Get machine_state));;
+        PTree.trigger (inl1 (Put machine_state (repair_update s)))
+    | Retry =>
+        s <- PTree.trigger (inl1 (Get machine_state));;
+        PTree.trigger (inl1 (Put machine_state (retry_update s)))
+    | Round =>
+        s <- PTree.trigger (inl1 (Get machine_state));;
+        PTree.trigger (inl1 (Put machine_state (round_update s)))
     end
   end.
 Definition lower {A} (t : tree A) s := run_state (PTree.interp internal_handler t) s.
@@ -126,32 +140,35 @@ Definition lower {A} (t : tree A) s := run_state (PTree.interp internal_handler 
 (** [src] is bound before either sample; changing health between them cannot
     change this attempt's second sampling distribution. *)
 Definition vn_attempt (_ : unit) : tree (unit + bool) :=
-  PTree.bind (internal ChooseSource) (fun src =>
-  Prob (source_coin src) (fun a =>
-  PTree.bind (internal (CheckSensor a)) (fun report =>
-  PTree.bind (update (fun s => report_update s report)) (fun _ =>
-  PTree.bind (if report then internal Maintenance else Ret tt) (fun _ =>
-  Prob (source_coin src) (fun b =>
-    if a == b then PTree.bind (internal Retry) (fun _ => Ret (inl tt))
-    else Ret (inr a))))))).
+  src <- internal ChooseSource;;
+  a <- sample (source_coin src);;
+  report <- internal (CheckSensor a);;
+  update (fun s => report_update s report);;
+  (if report then internal Maintenance else Ret tt);;
+  b <- sample (source_coin src);;
+  if a == b then internal Retry;; Ret (inl tt)
+  else Ret (inr a).
 Definition adaptive_vn : tree bool := PTree.iter vn_attempt tt.
 
 Definition factory_step (x : rat) : tree (rat + bool) :=
-  PTree.bind adaptive_vn (fun b =>
-  PTree.bind (internal Round) (fun _ => Ret (binary_round_result x b))).
+  b <- adaptive_vn;;
+  internal Round;;
+  Ret (binary_round_result x b).
 Definition eventful_factory q : tree bool := PTree.iter factory_step q.
 Definition serve_request q : tree unit :=
-  PTree.bind (public Request) (fun _ =>
-  PTree.bind (eventful_factory q) (fun b => public (Emit b))).
+  public Request;;
+  b <- eventful_factory q;;
+  public (Emit b).
 Definition controller q : tree Empty_set :=
-  PTree.iter (fun _ : unit => PTree.bind (serve_request q) (fun _ => Ret (inl tt))) tt.
+  PTree.iter (fun _ : unit => serve_request q;; Ret (inl tt)) tt.
 
 Definition serve_spec q (q0 : 0 <= q) (q1 : q <= 1) : ptree publicE SubEnumQ unit :=
-  Vis Request (fun _ => Prob (bernoulli q0 q1)
-    (fun b => Vis (Emit b) (fun _ => Ret tt))).
+  PTree.trigger Request;;
+  b <- sample (bernoulli q0 q1);;
+  PTree.trigger (Emit b).
 Definition controller_spec q (q0 : 0 <= q) (q1 : q <= 1) :
     ptree publicE SubEnumQ Empty_set :=
-  PTree.iter (fun _ : unit => PTree.bind (serve_spec q0 q1) (fun _ => Ret (inl tt))) tt.
+  PTree.iter (fun _ : unit => serve_spec q0 q1;; Ret (inl tt)) tt.
 
 (** 3. Analysis and local equations.
 
@@ -161,8 +178,8 @@ Lemma lower_ret {A} (a : A) s : lower (Ret a) s ≈ₚ Ret (s,a).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
 Lemma lower_bind {A B} (t : tree A) (k : A -> tree B) s :
-  lower (PTree.bind t k) s ≈ₚ
-  PTree.bind (lower t s) (fun sa => lower (k (snd sa)) (fst sa)).
+  lower (x <- t;; k x) s ≈ₚ
+  (sa <- lower t s;; lower (k (snd sa)) (fst sa)).
 Proof.
   unfold lower. setoid_rewrite peutt_interp_bind.
   apply peutt_of_pstruct.
@@ -200,7 +217,8 @@ Proof.
 Qed.
 
 Definition lowered_step {I A} (step : I -> tree (I+A)) (si : machine_state * I) :=
-  PTree.bind (lower (step (snd si)) (fst si)) (fun sa => Ret (state_iter_result sa)).
+  sa <- lower (step (snd si)) (fst si);;
+  Ret (state_iter_result sa).
 Lemma lower_iter {I A} (step : I -> tree (I+A)) i s :
   lower (PTree.iter step i) s ≈ₚ PTree.iter (lowered_step step) (s,i).
 Proof.
@@ -227,10 +245,13 @@ Theorem lower_attempt s :
   Prob (source_coin (health s)) (fun a =>
     Prob (source_coin (health s)) (fun b => Ret (state_attempt_result s a b))).
 Proof.
-  unfold vn_attempt.
+  unfold vn_attempt, sample.
   setoid_rewrite lower_bind. setoid_rewrite lower_internal.
   setoid_rewrite peutt_bind_ret_l.
+  setoid_rewrite lower_bind.
   setoid_rewrite lower_prob.
+  setoid_rewrite peutt_bind_prob.
+  setoid_rewrite lower_ret. setoid_rewrite peutt_bind_ret_l.
   apply peutt_prob_Proper. intros a.
   setoid_rewrite lower_bind. setoid_rewrite lower_internal.
   setoid_rewrite peutt_bind_ret_l.
@@ -241,7 +262,10 @@ Proof.
   all: try setoid_rewrite lower_internal.
   all: try setoid_rewrite lower_ret.
   all: try setoid_rewrite peutt_bind_ret_l.
+  all: setoid_rewrite lower_bind.
   all: setoid_rewrite lower_prob.
+  all: setoid_rewrite peutt_bind_prob.
+  all: setoid_rewrite lower_ret; setoid_rewrite peutt_bind_ret_l.
   all: apply peutt_prob_Proper; intros b; destruct b; cbn [fst snd].
   all: try setoid_rewrite lower_bind.
   all: try setoid_rewrite lower_internal.
@@ -256,12 +280,13 @@ Definition decode_attempt (sa : machine_state * (unit + bool)) :
   match snd sa with inl _ => inl (fst sa) | inr b => inr (fst sa,b) end.
 Definition attempt_result s a b := decode_attempt (state_attempt_result s a b).
 Definition attempt_kernel s : SubEnumQ (machine_state + (machine_state * bool)) :=
-  sem_bind (source_coin (health s)) (fun a =>
-    sem_bind (source_coin (health s)) (fun b => sem_ret (attempt_result s a b))).
+  source_coin (health s) >>=ₘ fun a =>
+  source_coin (health s) >>=ₘ fun b =>
+  ηₘ (attempt_result s a b).
 
 Theorem lower_attempt_kernel s :
-  PTree.bind (lower (vn_attempt tt) s) (fun sa => Ret (decode_attempt sa)) ≈ₚ
-  Prob (attempt_kernel s) (fun result => Ret result).
+  (sa <- lower (vn_attempt tt) s;; Ret (decode_attempt sa)) ≈ₚ
+  sample (attempt_kernel s).
 Proof.
   setoid_rewrite lower_attempt.
   setoid_rewrite peutt_bind_prob.
@@ -326,9 +351,9 @@ Qed.
     success with its actual state. This is not internal-node fuel. *)
 Fixpoint attempts (n : nat) s : SubEnumQ (machine_state + (machine_state * bool)) :=
   match n with
-  | O => sem_ret (inl s)
-  | S k => sem_bind (attempt_kernel s) (fun result =>
-      match result with inl s' => attempts k s' | inr sb => sem_ret (inr sb) end)
+  | O => ηₘ (inl s)
+  | S k => attempt_kernel s >>=ₘ fun result =>
+      match result with inl s' => attempts k s' | inr sb => ηₘ (inr sb) end
   end.
 Definition pending (x : machine_state + (machine_state * bool)) : rat :=
   match x with inl _ => 1 | inr _ => 0 end.
@@ -472,9 +497,9 @@ Definition raw_loop s := PTree.iter normalized_step (s,tt).
 (** One-round kernel compilation uses finite hitting laws. The library handles all
     iteration scheduling, even though publicE is inhabited. *)
 Definition loop_kernel (si : machine_state * unit) :=
-  sem_bind (source_coin (health (fst si))) (fun a =>
-  sem_bind (source_coin (health (fst si))) (fun b =>
-    sem_ret (state_iter_result (state_attempt_result (fst si) a b)))).
+  source_coin (health (fst si)) >>=ₘ fun a =>
+  source_coin (health (fst si)) >>=ₘ fun b =>
+  ηₘ (state_iter_result (state_attempt_result (fst si) a b)).
 Definition loop_heads s := iteration_frontier (E := publicE) loop_kernel (s,tt).
 Lemma loop_hits s : ptree_stable_hitting (MF := FreeOmega SubEnumQ)
   (observe (raw_loop s)) (loop_heads s).
@@ -488,11 +513,11 @@ Qed.
 
 Fixpoint output_row n s : SubEnumQ (option bool) :=
   match n with
-  | O => subenumQ_zero
-  | S k => sem_bind (source_coin (health s)) (fun a =>
-      sem_bind (source_coin (health s)) (fun b =>
-        if a == b then output_row k (retry_update (after_sensor s a))
-        else sem_ret (Some a)))
+  | O => ⊥ₘ
+  | S k => source_coin (health s) >>=ₘ fun a =>
+      source_coin (health s) >>=ₘ fun b =>
+      if a == b then output_row k (retry_update (after_sensor s a))
+      else ηₘ (Some a)
   end.
 (** The only bridge calculation left in the case is finite native
     associativity: the compiled round has the same bit observation. *)
@@ -503,17 +528,17 @@ Proof.
   revert s. induction n as [|n IH]; intro s; [reflexivity|].
   cbn [iteration_observation_round output_row].
   unfold loop_kernel.
-  change (subenumQ_bind
-    (subenumQ_bind (source_coin (health s)) (fun a =>
-      subenumQ_bind (source_coin (health s)) (fun b =>
-        subenumQ_ret (state_iter_result (state_attempt_result s a b)))))
-    (fun next => match next with
+  change (((source_coin (health s) >>=ₘ fun a =>
+      source_coin (health s) >>=ₘ fun b =>
+      ηₘ (state_iter_result (state_attempt_result s a b))) >>=ₘ
+    fun next => match next with
       | inl si => iteration_observation_round loop_kernel (fun sb => Some (snd sb)) n si
-      | inr sb => subenumQ_ret (Some (snd sb)) end) =
-    subenumQ_bind (source_coin (health s)) (fun a =>
-      subenumQ_bind (source_coin (health s)) (fun b =>
-        if a == b then output_row n (retry_update (after_sensor s a))
-        else subenumQ_ret (Some a)))).
+      | inr sb => ηₘ (Some (snd sb)) end) =
+    (source_coin (health s) >>=ₘ fun a =>
+     source_coin (health s) >>=ₘ fun b =>
+     if a == b then output_row n (retry_update (after_sensor s a))
+     else ηₘ (Some a))).
+  cbn [sem_bind sem_ret SubEnumQ_SemanticMeasure].
   unfold subenumQ_bind, subenumQ_ret.
   rewrite finite_subdist_bind_assoc_eq.
   apply finite_subdist_bind_ext_eq=> a. rewrite finite_subdist_bind_assoc_eq.
@@ -534,7 +559,7 @@ Proof.
     rewrite ?finite_subdist_expect_ret !IH. reflexivity.
 Qed.
 Definition fair_options : SubEnumQ (option bool) :=
-  sem_bind fair_coin (fun b => sem_ret (Some b)).
+  fair_coin >>=ₘ fun b => ηₘ (Some b).
 Lemma fair_options_expect f : expect f fair_options =
   (1/2 : rat) * (f (Some false) + f (Some true)).
 Proof.
@@ -559,7 +584,7 @@ Proof.
     by rewrite -mulrDl mulrC -mulrA.
 Qed.
 Lemma output_row_converges s :
-  sem_lub (fun n => output_row n s) fair_options.
+  (fun n => output_row n s) ⇑ₘ fair_options.
 Proof.
   intros P eps Heps. destruct (adaptive_pending_vanishes s Heps) as [N HN].
   exists N. intros n Hn.
@@ -594,9 +619,9 @@ Proof.
     + cbn. auto.
     + destruct src; vm_compute; discriminate.
 Qed.
-Definition fair_tree : ptree publicE SubEnumQ bool := Prob fair_coin (fun b => Ret b).
+Definition fair_tree : ptree publicE SubEnumQ bool := sample fair_coin.
 Definition fair_heads : FreeOmega SubEnumQ (stable_head publicE SubEnumQ bool) :=
-  FOSample fair_coin (fun b => FORet (FHRet b)).
+  b <~ fair_coin ;; η (FHRet b).
 Lemma loop_heads_success s P : free_omega_ae P (loop_heads s) ->
   forall b, P (FHRet (after_sensor s b,b)).
 Proof.
@@ -622,7 +647,7 @@ Proof.
     + constructor. reflexivity.
     + exact (loop_heads_success HP b).
   - intros Q HQ.
-    have HQb : forall b, free_omega_ae Q (FORet (FHRet b)).
+    have HQb : forall b, free_omega_ae Q (η (FHRet b)).
     { intro b. apply (free_omega_ae_sample_inv HQ) with (p := one_div_two).
       - destruct b; cbn; auto.
       - vm_compute; discriminate. }
@@ -684,12 +709,12 @@ Definition embed_closed {A} (t : ptree factoryE SubEnumQ A) : ptree publicE SubE
   PTree.interp (fun X (e : factoryE X) => match e with end) t.
 Lemma fair_factory_direct q (q0 : 0 <= q) (q1 : q <= 1) :
   factory_with_sampler fair_tree q ≈ₚ
-    Prob (bernoulli q0 q1) (fun b => Ret b).
+    sample (bernoulli q0 q1).
 Proof.
-  have H : embed_closed (factory_with_sampler (Prob fair_coin (fun b => Ret b)) q) ≈ₚ
-      embed_closed ((Prob (bernoulli q0 q1) (fun b => Ret b))).
+  have H : embed_closed (factory_with_sampler (sample fair_coin) q) ≈ₚ
+      embed_closed (sample (bernoulli q0 q1)).
   { apply peutt_interp. exact (BoundedFactory.fair_factory_direct q0 q1). }
-  unfold embed_closed, factory_with_sampler, factory_sampler_step in H.
+  unfold embed_closed, factory_with_sampler, factory_sampler_step, sample in H.
   setoid_rewrite peutt_interp_iter in H.
   setoid_rewrite peutt_interp_bind in H.
   setoid_rewrite peutt_interp_prob in H.
@@ -699,7 +724,7 @@ Qed.
 
 Theorem adaptive_factory_direct s q (q0 : 0 <= q) (q1 : q <= 1) :
   lower (eventful_factory q) s ≈ₚ[output_related]
-    Prob (bernoulli q0 q1) (fun b => Ret b).
+    sample (bernoulli q0 q1).
 Proof.
   (* Stateful iteration -> fair-bit iteration -> direct Bernoulli. *)
   setoid_rewrite <- (fair_factory_direct q0 q1).
@@ -728,12 +753,12 @@ Qed.
 Definition state_result {A} (sa : machine_state * A) (a : A) := snd sa = a.
 
 Theorem controller_program_rewrite s q (q0 : 0 <= q) (q1 : q <= 1) :
-  PTree.bind (run_state (PTree.interp internal_handler (controller q)) s)
-    (fun sa => Ret (snd sa)) ≈ₚ controller_spec q0 q1.
+  (sa <- run_state (PTree.interp internal_handler (controller q)) s;;
+   Ret (snd sa)) ≈ₚ controller_spec q0 q1.
 Proof.
   fold (lower (controller q) s).
   unfold controller. setoid_rewrite lower_iter.
-  transitivity (PTree.bind (controller_spec q0 q1) (fun a => Ret a)).
+  transitivity (a <- controller_spec q0 q1;; Ret a).
   - eapply peutt_bind with (RR := state_result).
     + unfold controller_spec.
       eapply (peutt_iter_direct_rel free_omega_relational_zero free_omega_relational_lub)
@@ -741,6 +766,7 @@ Proof.
       intros [s' []] [] _.
       (* One request, including its return to the outer loop. *)
       unfold lowered_step, serve_request, serve_spec; cbn [fst snd].
+      unfold PTree.trigger.
       repeat setoid_rewrite lower_bind.
       setoid_rewrite lower_public. setoid_rewrite lower_ret.
       repeat setoid_rewrite peutt_bind_assoc.
@@ -765,10 +791,10 @@ Theorem service_refinement s q (q0 : 0 <= q) (q1 : q <= 1) :
   lower (serve_request q) s ≈ₚ[state_result] serve_spec q0 q1.
 Proof.
   unfold serve_request, serve_spec.
+  unfold PTree.trigger.
   repeat setoid_rewrite lower_bind. setoid_rewrite lower_public.
   setoid_rewrite peutt_bind_vis. setoid_rewrite peutt_bind_ret_l.
   apply peutt_vis. intros [].
-  setoid_rewrite <- (peutt_sample_bind (bernoulli q0 q1)).
   eapply peutt_bind with (RR := output_related); [apply adaptive_factory_direct|].
   intros [s' b] c <-.
   apply peutt_vis. intros []. apply peutt_ret. reflexivity.

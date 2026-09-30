@@ -11,10 +11,8 @@ Reading entry: `Adaptive.controller_program_rewrite`.
 For every initial machine state `s` and rational target `0 <= q <= 1`:
 
 ```coq
-PTree.bind
-  (run_state (PTree.interp internal_handler (controller q)) s)
-  (fun sa => Ret (snd sa))
-≈ₚ controller_spec q0 q1.
+(sa <- run_state (PTree.interp internal_handler (controller q)) s;;
+ Ret (snd sa)) ≈ₚ controller_spec q0 q1.
 ```
 
 The specification repeatedly performs:
@@ -32,6 +30,28 @@ This is a behavioral theorem about infinite programs, not equality of finite
 empirical frequencies. It is not a new extraction or host-PRNG correctness claim.
 
 ## Actual program
+
+The source uses three distinct notation layers:
+
+- Programs: `x <- sample mu;; ...` for native draws and `PTree.trigger e`
+  for events. `internal` and `public` only inject events into the sum signature.
+- Native distributions: `mu >>=ₘ k`, `ηₘ x`, `⊥ₘ`, and the limit relation
+  `chain ⇑ₘ out`. These use the abstract measure interfaces, not raw lists.
+- FreeOmega frontiers: `b <~ fair_coin ;; η (FHRet b)`. Native sampling into
+  a frontier is distinct from both program sequencing and measure bind.
+
+For example, the specification is now written directly as:
+
+```coq
+PTree.trigger Request;;
+b <- sample (bernoulli q0 q1);;
+PTree.trigger (Emit b).
+```
+
+Raw `Prob` remains in the internal normal form used by finite hitting laws;
+the program-facing sampler and direct Bernoulli endpoints use `sample`.
+The normalization proof explicitly uses existing bind/sampling laws: this
+presentation does not assume that corecursive bind is Coq equality with a node.
 
 The implementation is an effectful PTree:
 
@@ -196,7 +216,35 @@ The factory contract suite records the explicit Adaptive carrier migration
 from EnumQ to SubEnumQ. Unrelated controller contracts stay unchanged; internal
 helper shapes are not frozen. CI is not queried.
 
-## Local verification of the program-calculation refactor
+## Local verification of the notation and sampling presentation
+
+Baseline: `a127635`. Only this case's source, this document and three printed
+types in the factory snapshot change. Program-facing definitions now use
+`sample`, `trigger` and sequential notation; existing handler/bind laws prove
+their normalization to the same stateful attempt kernel. Native distribution
+definitions use the opt-in measure notation, and the fair frontier uses the
+FreeOmega notation. No new helper, instance, capability or test module is added.
+
+- Full `opam exec -- dune build -j 2`, including AllImports and extraction:
+  passed, with the existing extraction warnings.
+- All 140 Python tool tests: passed.
+- Architecture, API surface and soundness source checks: passed.
+- All 491 mainline contracts: unchanged.
+- All 47 factory contracts: checked; their assumptions are unchanged. The
+  three updated printed types are `lower_attempt_kernel`,
+  `adaptive_factory_direct` and `controller_program_rewrite`. Rocq separately
+  checked each new theorem against its frozen old type: `sample` expands to
+  `Prob … Ret`, and monadic sequencing selects `PTree.bind` definitionally.
+- Eleven selected Adaptive analysis/normalization/main endpoints also retain
+  their exact `Print Assumptions` output relative to the baseline.
+
+This is a presentation and algebraic-normalization change, not a claim of
+syntactic equality between all old and new program definitions. The sampling
+weights, persistent-state updates, quantitative analysis and behavioral
+contract remain the same. Gate M is unchanged. No new kernel audit or remote
+CI run is claimed.
+
+## Historical verification of the program-calculation refactor
 
 Baseline: `62338b6`. The program definitions, distributions, handlers and return
 relations are unchanged. Nineteen internal declarations were consolidated into
