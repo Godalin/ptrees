@@ -5,10 +5,10 @@
     specification samples one complete outcome. One 3-to-2 joint relates
     BOTH heterogeneous return payloads and recursive visible continuations.
 
-    Reading path (four layers in this one file):
+    Reading path in this one file:
     - Preparation: protocol types, native coins, observable backend profile.
     - Programs: the complete [masked_impl] and [mixed_spec].
-    - Lemma preparation: finite couplings, frontier/query analysis, invariant.
+    - Lemma preparation: finite distribution analysis and observations.
     - Main theorem: [masked_protocol_equivalent], with the composition proof in place.
     - Consequences: [masked_public_protocol_equivalent] and
       [masked_challenge_true_reply_probability].
@@ -24,7 +24,6 @@ Local Unset Universe Minimization ToSet.
 From PTree.Eq Require Import StableHittingRelation.
 From PTree.Eq Require Import UpToBind.
 From Coq.Program Require Import Equality.
-From Coq Require Import FunctionalExtensionality.
 From ITree.Basics Require Import Monad.
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order rat.
@@ -83,17 +82,9 @@ HB.instance Definition _ := hasDecEq.Build hidden3 hidden3_eqP.
 
 (** Allowed pairs in the 3-to-2 abstraction: L0 ~ false, L1 ~ false/true,
     L2 ~ true. This is a relation, not a deterministic map or a coupling:
-    [coupling32] below supplies the joint weights supported on these pairs. *)
+    [coupling32_lift] below supplies a joint supported on these pairs. *)
 Definition bridge m z : Prop :=
   match m with L0 => z = false | L1 => True | L2 => z = true end.
-
-(** A shared Reply acknowledgement preserves the abstraction: false keeps
-    the related old states (m,z); true installs the related fresh states
-    (h,j). This closes the recursive continuation after either response. *)
-Lemma bridge_next m z h j (a : bool) :
-  bridge m z -> bridge h j ->
-  bridge (if a then h else m) (if a then j else z).
-Proof. destruct a; auto. Qed.
 
 (** The same abstraction relates return payloads and recursive hidden states.
     The public bit is preserved; the payload relation is deliberately not a
@@ -122,15 +113,11 @@ Proof.
   intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
 Defined.
 
-Lemma uniform3_bound : enumQ_subprob uniform3_raw.
-Proof. by vm_compute. Qed.
+Definition uniform3 : SubEnumQ hidden3.
+Proof. refine (enumQ_as_subprob (mu := uniform3_raw) _). by vm_compute. Defined.
 
-Lemma uniform2_bound : enumQ_subprob uniform2_raw.
-Proof. by vm_compute. Qed.
-
-Definition uniform3 := enumQ_as_subprob uniform3_bound.
-
-Definition uniform2 := enumQ_as_subprob uniform2_bound.
+Definition uniform2 : SubEnumQ bool.
+Proof. refine (enumQ_as_subprob (mu := uniform2_raw) _). by vm_compute. Defined.
 
 (** The implementation uses Boolean coins, not a primitive ternary draw. *)
 Definition coin_third_raw : EnumQ bool.
@@ -139,10 +126,8 @@ Proof.
   intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
 Defined.
 
-Lemma coin_third_bound : enumQ_subprob coin_third_raw.
-Proof. by vm_compute. Qed.
-
-Definition coin_third := enumQ_as_subprob coin_third_bound.
+Definition coin_third : SubEnumQ bool.
+Proof. refine (enumQ_as_subprob (mu := coin_third_raw) _). by vm_compute. Defined.
 
 Definition coin_three_quarters_raw : EnumQ bool.
 Proof.
@@ -150,10 +135,10 @@ Proof.
   intros p x [He|[He|[]]]; inversion He; subst; by vm_compute.
 Defined.
 
-Lemma coin_three_quarters_bound : enumQ_subprob coin_three_quarters_raw.
-Proof. by vm_compute. Qed.
-
-Definition coin_three_quarters := enumQ_as_subprob coin_three_quarters_bound.
+Definition coin_three_quarters : SubEnumQ bool.
+Proof.
+  refine (enumQ_as_subprob (mu := coin_three_quarters_raw) _). by vm_compute.
+Defined.
 
 (** Public b = c xor s, with s biased 3/4; Stop/Continue is fair.
     Combine these independent draws into their four-outcome kernel. *)
@@ -171,10 +156,11 @@ Proof.
   intros p x [He|[He|[He|[He|[]]]]]; inversion He; subst; destruct c; by vm_compute.
 Defined.
 
-Lemma mixed_outcomes_bound c : enumQ_subprob (mixed_outcomes_raw c).
-Proof. destruct c; by vm_compute. Qed.
-
-Definition mixed_outcomes c := enumQ_as_subprob (mixed_outcomes_bound c).
+Definition mixed_outcomes (c : bool) : SubEnumQ mixed_outcome.
+Proof.
+  refine (enumQ_as_subprob (mu := mixed_outcomes_raw c) _).
+  destruct c; by vm_compute.
+Defined.
 
 (** Program-facing kernel: both Stop and Continue sample the same payload.
     Native bind describes the flattened finite law; the main up-to-bind
@@ -374,25 +360,9 @@ Definition select_true_reply {X} (e : mixedE X) : option X :=
 Definition challenge_true_reply_trace c : @finite_interaction_pattern mixedE :=
   cons (@select_challenge c) (cons (@select_true_reply) nil).
 
-Definition accepts_true_reply {X} (e : mixedE X) : bool :=
-  match e with Challenge => false | Reply b => b end.
-
 Definition spec_true_reply_observation c : SubEnumQ bool :=
   subenumQ_bind (mixed_outcomes c) (fun o =>
     subenumQ_ret (match o with Stop _ => false | Continue b => b end)).
-
-Lemma true_reply_selector_accepts :
-  @selector_accept mixedE (@select_true_reply) = @accepts_true_reply.
-Proof.
-  apply functional_extensionality_dep. intro X.
-  apply functional_extensionality. intro e. destruct e; [reflexivity|].
-  destruct b; reflexivity.
-Qed.
-
-Lemma spec_true_reply_mass c :
-  enumQ_expect subenumQ_bool_indicator (subenumQ_raw (spec_true_reply_observation c)) =
-    (if c then 1 / 8 else 3 / 8).
-Proof. destruct c; vm_compute; reflexivity. Qed.
 
 (** * 4. Final theorems
 
@@ -444,8 +414,9 @@ Proof.
       * (* Continue: compose the fresh coupling with the Reply context. *)
         destruct H as [Hbit Hfresh]. simpl in Hbit, Hfresh. subst b'.
         left. apply vis_upto_closure_vis. intro ack.
-        (* Compose Reply, then keep or refresh the related loop states. *)
-        eexists _, _. split; [exact (bridge_next ack Hold Hfresh)|].
+        (* True installs the freshly related states; false keeps the old pair. *)
+        exists (if ack then h else old), (if ack then j else z).
+        split; [destruct ack; assumption|].
         split; reflexivity.
   - (* Initialization discharges the invariant internally. *)
     exists m, (abstract_state m). split.
@@ -545,7 +516,6 @@ Proof.
     - unfold challenge_true_reply_trace.
       eapply finite_interaction_query_vis_match; [reflexivity|].
       apply (proj2 (finite_interaction_query_singleton_iff_next_event_query _ _ _)).
-      rewrite true_reply_selector_accepts.
       eexists. split.
       + rewrite (observe_bind (Ret c)). cbn [observe].
         eapply stable_hitting_bind_ret_only with
@@ -571,7 +541,7 @@ Proof.
       + cbn [free_omega_bind].
         apply (FOOObserveSample
           (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-        intros [[b j]|[b j]]; constructor.
+        intros [[b j]|[b j]]; destruct b; constructor.
       + change (enumQ_meas_eq
           (subenumQ_raw (subenumQ_bind (mixed_samples uniform2 c) (fun x =>
             subenumQ_ret (match sample_outcome x with Stop _ => false | Continue b => b end))))
@@ -591,5 +561,5 @@ Proof.
         Hquery Hspec)].
     intros x y ->. reflexivity.
   - exact Hdenotes.
-  - exact (spec_true_reply_mass c).
+  - destruct c; vm_compute; reflexivity.
 Qed.

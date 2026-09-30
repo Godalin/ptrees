@@ -104,10 +104,18 @@ inside `coupling32_lift`, without separately named preparatory lemmas.
 requires `bridge h j`; the known heterogeneous return law closes this branch.
 `Continue` composes the Reply context directly in the main proof, using both
 the current-state bridge and the freshly sampled bridge. After
-`Reply`, `bridge_next` chooses the new bridge on acknowledgement true and
-the old bridge on false. Thus the coupling support actually closes the
+`Reply`, an inline case split chooses the new bridge on acknowledgement true
+and the old bridge on false. Thus the coupling support actually closes the
 recursive obligation. The three-state implementation and two-state
 specification retain the original `3/8` and `1/8` quantitative queries.
+
+One-use bookkeeping stays at its use site: the five native mass bounds are
+proved inside the coin/kernel constructors, and the final query probability
+is computed at the end of its proof. The query uses its selector directly,
+without a separate function-equality lemma or a local appeal to functional
+extensionality. This does not remove extensionality inherited from library
+theorems. The substantive finite distribution and joint analyses remain
+separate from the compositional program proof.
 
 The main proof does not flatten probability lists or add intermediate
 sampling states to its invariant: Ret closes by the heterogeneous return

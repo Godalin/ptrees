@@ -230,8 +230,8 @@ states. The main proof unfolds the complete programs, constructs their finite
 prefix relation in place, then composes the continuation obligations through
 `peutt_coinduction_upto_bind_vis`. Its local candidate contains only loop
 entries: Reply is composed by the generic visible-context rule, not added
-as a separate candidate state. `bridge_next` uses the joint support for
-true acknowledgement and the old invariant for false acknowledgement.
+as a separate candidate state. The proof splits on the acknowledgement
+in place: true uses the fresh joint support, false keeps the old invariant.
 `masked_protocol_equivalent m` has no bridge premise: it chooses
 `mixed_spec (abstract_state m)` directly, without a specification wrapper
 or a symmetry assumption on the heterogeneous relation.
