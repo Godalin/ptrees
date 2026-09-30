@@ -42,15 +42,6 @@ Proof.
   apply (Hfg (x,S x)); reflexivity.
 Qed.
 
-Example equality_limit (c d : nat -> OmegaVal R nat)
-    (Hc : oval_increasing c) (Hd : oval_increasing d) :
-  (forall n, oval_coupled eq (c n) (d n)) ->
-  oval_eq (oval_lub Hc) (oval_lub Hd).
-Proof.
-  intro H; apply (proj1 (oval_eq_coupled_iff _ _)).
-  exact (arbitrary_nat_relational_limit Hc Hd H).
-Qed.
-
 Example empty_relation_zero_limit :
   oval_coupled (fun (_ : Empty_set) (_ : bool) => False)
     (oval_lub (fun n => @oval_le_refl R Empty_set (oval_bottom R)))
@@ -156,17 +147,8 @@ Proof.
   apply (addIr (2^-1 : R)). by rewrite add0r -He.
 Qed.
 
-Theorem initial_joint_has_no_increasing_extension :
-  ~ exists J, oval_joint allowed fair fair J /\ oval_le (half_point (true,true)) J.
-Proof.
-  intros [J [HJ Hle]]. have Hbad := Hle both both_test.
-  rewrite half_eval (final_joint_no_diagonal HJ) /both /= mulr1 in Hbad.
-  have Hpos : (0 : R) < 2^-1 by rewrite invr_gt0 ltr0n.
-  by move: Hpos; rewrite ltNge Hbad.
-Qed.
-
-(** This is not just a badly chosen first witness: every first joint has
-    the same positive diagonal mass, so NO coherent joint chain exists. *)
+(** Every first joint has the same positive diagonal mass, so NO coherent
+    joint chain exists—not merely no extension of one badly chosen witness. *)
 Lemma any_initial_joint_diagonal (J : OmegaVal R (bool * bool)) :
   oval_joint allowed (half_point true) (half_point true) J ->
   oval_eval J both = 2^-1.

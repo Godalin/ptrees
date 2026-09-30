@@ -391,7 +391,6 @@ Require PTree.Regression.Semantics.FreeOmegaRewriting.
 Require PTree.Regression.Semantics.GenericAlgebra.
 Require PTree.Regression.Semantics.GuardedInterp.
 Require PTree.Regression.Semantics.HeadTransition.
-Require PTree.Regression.Semantics.HittingPrograms.
 Require PTree.Regression.Semantics.ITreeBridge.
 Require PTree.Regression.Semantics.ITreePreservation.
 Require PTree.Regression.Semantics.InterpExposure.

@@ -386,14 +386,6 @@
       "IndefiniteDescription.constructive_indefinite_description",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Regression.Semantics.MDPEncoding.LabelledMDP.labelled_transition_full_abstraction": [
-      "ClassicalDedekindReals.sig_forall_dec",
-      "ClassicalDedekindReals.sig_not_dec",
-      "ClassicalUniqueChoice.dependent_unique_choice",
-      "Epsilon.epsilon_statement",
-      "IndefiniteDescription.constructive_indefinite_description",
-      "RelationalChoice.relational_choice"
-    ],
     "PTree.Regression.Semantics.MDPEncoding.LabelledMDP.distinct_states_encoded_trans_bisimilar": [
       "ClassicalDedekindReals.sig_forall_dec",
       "ClassicalDedekindReals.sig_not_dec",
@@ -403,14 +395,6 @@
       "RelationalChoice.relational_choice"
     ],
     "PTree.Regression.Semantics.MDPEncoding.LabelledMDP.different_successor_probabilities_not_trans_bisimilar": [
-      "ClassicalDedekindReals.sig_forall_dec",
-      "ClassicalDedekindReals.sig_not_dec",
-      "ClassicalUniqueChoice.dependent_unique_choice",
-      "Epsilon.epsilon_statement",
-      "IndefiniteDescription.constructive_indefinite_description",
-      "RelationalChoice.relational_choice"
-    ],
-    "PTree.Regression.Semantics.MDPEncoding.MDPEmbedding.counter_transition_full_abstraction": [
       "ClassicalDedekindReals.sig_forall_dec",
       "ClassicalDedekindReals.sig_not_dec",
       "ClassicalUniqueChoice.dependent_unique_choice",

@@ -131,10 +131,9 @@ def mathcomp_native_check():
             'mathcomp_native_lub_upper', 'mathcomp_native_lub_least',
             'MathCompNativeOrderLaws'],
         'PTree.Regression.Backend.MathCompOrder': [
-            'checked_native_order', 'bottom_below_return',
+            'checked_native_order',
             'cemetery_mass_not_monotone', 'partial_sampling_returned_mass',
-            'partial_sampling_bind_monotone', 'generic_source_bind_order',
-            'supplied_lub_is_least'],
+            'partial_sampling_bind_monotone'],
         'PTree.Prob.Backend.MathComp.OmegaLaws': [
             'mathcomp_native_lub', 'mathcomp_native_lub_spec',
             'mathcomp_native_sintegral_cvg', 'mathcomp_native_integral_lub',
@@ -158,7 +157,7 @@ def mathcomp_native_check():
         'PTree.Regression.Backend.MathCompOmega': [
             'checked_omega', 'checked_mixed_omega', 'checked_diagonal',
             'checked_fubini', 'checked_bind', 'checked_mixed', 'checked_omega_ae',
-            'increasing_has_actual_lub', 'null_branches_need_no_continuity',
+            'null_branches_need_no_continuity',
             'relation_survives_kernel_bind'],
         'PTree.Examples.BernoulliFactory.RealBernoulliMathComp': [
             'mathcomp_binary_oracle_lub', 'mathcomp_binary_oracle_is_ast'],
@@ -277,8 +276,7 @@ def stable_hitting_validation_check():
             assert not re.search(r'\b(?:SemanticOmegaLaws|SemanticMeasureBindLaws)\b', e['type']), e['name']
         if '.Eq.Backend.' in e['name'] or '.Regression.' in e['name']:
             assert not re.search(r'\b(?:Semantic\w*Laws|native_ae|native_lub|no_event)\b', e['type']), e['name']
-        if e['name'].endswith(('.subenumQ_stable_hitting_modelable', '.subenumR_stable_hitting_modelable',
-                               '.real_arbitrary_witness_valid')):
+        if e['name'].endswith(('.subenumQ_stable_hitting_modelable', '.subenumR_stable_hitting_modelable')):
             assert e['type'].count('free_omega_modelable') == 1, 'Validity must be a conclusion, not a premise'
     print(f'{len(entries)} generic hitting/Q/R/realization endpoints checked; unchanged logical whitelist.')
 

@@ -1,5 +1,5 @@
-(** Container nonnegativity is essential once coefficients are ordinary rat.
-    Positive/zero support facts work for both rat and arbitrary realType. *)
+(** Nonnegativity prevents cancellation from erasing support; function and
+    large-universe carriers require neither equality nor countability. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -13,18 +13,6 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
-
-Example ordinary_rat_zero_atom {A : eqType}
-    (mu : FiniteEnum rat_rat__canonical__Num_NumDomain A) x :
-  finite_atom x (finite_enum_raw mu) = 0 <->
-    forall p, List.In (p,x) (finite_enum_raw mu) -> p = 0.
-Proof. exact (finite_atom_zero_iff x (finite_enum_nonnegative mu)). Qed.
-
-Example real_positive_atom (R : realType) {A : eqType}
-    (mu : FiniteEnum R A) x :
-  0 < finite_atom x (finite_enum_raw mu) <->
-    exists p, List.In (p,x) (finite_enum_raw mu) /\ p <> 0.
-Proof. exact (finite_atom_positive_iff x (finite_enum_nonnegative mu)). Qed.
 
 Example function_values_have_indicator_support
     (mu : FiniteEnum rat_rat__canonical__Num_NumDomain (nat -> nat)) P :

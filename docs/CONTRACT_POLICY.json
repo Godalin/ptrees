@@ -249,16 +249,13 @@
       "independent_copies_fail_fiber"
     ],
     "theories/Regression/Backend/EnumQMeasureRegression.v": [
-      "reg_half_val",
-      "reg_quarter_val",
       "reg_fair_reordered_eqenum",
       "reg_fair_split_eqenum",
       "reg_reordering_not_repr_eq",
       "reg_reordering_meas_eq",
       "reg_split_mass_not_repr_eq",
       "reg_split_mass_meas_eq",
-      "reg_split_mass_lift_eq",
-      "reg_nested_outcomes_eqenum"
+      "reg_split_mass_lift_eq"
     ],
     "theories/Regression/Backend/ExtendedEnumQ.v": [
       "extended_enumQ_keeps_weight_two",
@@ -743,9 +740,7 @@
       "retry_left_modelable",
       "retry_right_modelable",
       "retry_complement_qlift",
-      "real_retry_external_joint",
       "real_retry_joint_exact_mass_support",
-      "real_retry_equality_via_joint",
       "invalid_real_lub_still_enumerable",
       "partial_term_modelable",
       "partial_term_mass",
@@ -770,17 +765,12 @@
       "program_as_value"
     ],
     "theories/Regression/Probability/StableHittingDomain.v": [
-      "arbitrary_witness_valid",
-      "arbitrary_witness_denotes",
-      "return_is_dirac",
       "silent_hitting_bottom",
       "changing_silent_state_bottom",
       "native_loss_hitting_bottom",
       "infinite_visible_service_mass_one",
       "ret_noncanonical_witness_valid",
       "ret_noncanonical_witness_sound",
-      "real_arbitrary_witness_valid",
-      "real_arbitrary_witness_denotes",
       "real_recursive_frontier_auto",
       "real_native_loss_auto",
       "real_noncanonical_witness_auto"
@@ -852,18 +842,13 @@
       "good_probability_clone",
       "different_successor_probabilities_not_bisimilar",
       "same_current_label_but_not_bisimilar",
-      "different_successor_probabilities_not_head_bisimilar",
       "different_successor_probabilities_not_peutt",
       "distinct_states_same_class_probabilities",
       "positive_pair_is_not_state_equality",
       "positive_kernels_are_different",
-      "distinct_states_encoded_head_bisimilar",
       "distinct_states_encoded_peutt",
-      "labelled_full_abstraction",
       "counter_step_total",
       "counter_encoding_is_mdp",
-      "counter_kernel_exact",
-      "counter_full_abstraction",
       "unlabelled_counter_states_bisimilar",
       "unlabelled_counter_encodings_equivalent"
     ],
@@ -915,18 +900,6 @@
       "heterogeneous_infinite_service_transition",
       "heterogeneous_reply_label"
     ],
-    "theories/Regression/Semantics/HittingPrograms.v": [
-      "ptree_reg_ret_weak",
-      "ptree_reg_nested_weak",
-      "ptree_reg_merged_weak",
-      "ptree_reg_nested_observes",
-      "ptree_reg_merged_observes",
-      "ptree_reg_nested_total",
-      "ptree_reg_merged_total",
-      "ptree_reg_nested_ast",
-      "ptree_reg_nested_merged_lift",
-      "peutt_reg_nested_merged"
-    ],
     "theories/Regression/Semantics/PEuttAlgebra.v": [
       "canonical_bind_setoid_rewrite",
       "eventful_heterogeneous_bind",
@@ -955,11 +928,8 @@
       "peutt_notation_heterogeneous"
     ],
     "theories/Regression/Semantics/StableHittingComputation.v": [
-      "two_tau_compute",
       "dirac_tau_compute",
       "nonuniform_tau_depth_compute",
-      "nested_joint_compute",
-      "nested_flatten_compute",
       "sampled_visible_head_compute"
     ],
     "theories/Regression/Semantics/TreeTransition.v": [
@@ -999,10 +969,8 @@
     "theories/Regression/Semantics/TreeTransitionSoundness.v": [
       "delayed_mixture_peutt",
       "delayed_mixture_transition_bisim",
-      "delayed_mixture_postfixed",
       "delayed_mixture_action_coupling",
-      "related_returns_transition_bisim",
-      "interactive_von_neumann_service_transition_bisim"
+      "related_returns_transition_bisim"
     ],
     "theories/Regression/Semantics/TreeTransitionStrictness.v": [
       "correlation_hitting",
@@ -1053,19 +1021,15 @@
       "return_only_lfp"
     ],
     "theories/Regression/Backend/MathCompOmega.v": [
-      "increasing_has_actual_lub",
       "null_branches_need_no_continuity",
       "relation_survives_kernel_bind",
       "noninjective_map_reflection",
       "empty_map_reflection"
     ],
     "theories/Regression/Backend/MathCompOrder.v": [
-      "bottom_below_return",
       "cemetery_mass_not_monotone",
       "partial_sampling_returned_mass",
-      "partial_sampling_bind_monotone",
-      "generic_source_bind_order",
-      "supplied_lub_is_least"
+      "partial_sampling_bind_monotone"
     ],
     "theories/Regression/Backend/FiniteLists.v": [
       "native_index_uses_shared",
@@ -1112,8 +1076,6 @@
       "high_carrier_bridge"
     ],
     "theories/Regression/Backend/FiniteSupport.v": [
-      "ordinary_rat_zero_atom",
-      "real_positive_atom",
       "function_values_have_indicator_support",
       "duplicate_zero_entries",
       "negative_cancellation_has_zero_atom",
@@ -1171,12 +1133,10 @@
     "theories/Regression/Probability/RelationalLimit.v": [
       "arbitrary_nat_relational_limit",
       "successor_limit",
-      "equality_limit",
       "empty_relation_zero_limit",
       "half_le_fair",
       "initial_joint",
       "final_joint",
-      "initial_joint_has_no_increasing_extension",
       "no_increasing_joint_selection",
       "noncoherent_chain_has_limit_joint",
       "mathcomp_coherent_joint_limit"
@@ -1398,11 +1358,7 @@
       "imported_rational_iter_rewrite"
     ],
     "theories/Regression/Probability/KleisliIteration.v": [
-      "domain_fixed_point",
-      "domain_least_prefixed",
       "domain_retry_least_is_bottom",
-      "checked_lfp_exists",
-      "checked_lfp_least",
       "rational_loop_denotes_lfp",
       "rational_loop_modelable"
     ],

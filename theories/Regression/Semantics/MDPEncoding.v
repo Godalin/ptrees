@@ -65,30 +65,12 @@ Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
   SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Local Notation encode := (mdp_encode (D := counter_mdp)).
-Local Notation ehead := (mdp_encode_head (D := counter_mdp)).
 Local Notation pb := (@peutt (mdpE unit bool) SubEnumQ MF FI FC
   FreeOmegaMixedMeasure FO unit unit eq).
 
 Example counter_encoding_is_mdp n :
   @mdp_state (mdpE unit bool) SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit (encode n).
 Proof. exact (subenumQ_encode_mdp_state (D := counter_mdp) n). Qed.
-
-Example counter_kernel_exact n a out :
-  @head_step (mdpE unit bool) SubEnumQ MF FI FreeOmegaMixedMeasure FO unit
-    (ehead n) (Obs (Choose tt) a) out <->
-  @sem_eq MF FI _ out (FOSample (counter_step n a) (fun m => FORet (ehead m))).
-Proof. exact (subenumQ_encode_step_iff (D := counter_mdp) n a out). Qed.
-
-Example counter_full_abstraction n m :
-  mdp_bisim (D := counter_mdp) n m <-> pb (encode n) (encode m).
-Proof. exact (subenumQ_mdp_peutt_iff (D := counter_mdp) n m). Qed.
-
-(** The new correspondence is not limited to finite state carriers. *)
-Example counter_transition_full_abstraction n m :
-  mdp_bisim (D := counter_mdp) n m <->
-  @trans_bisim (mdpE unit bool) SubEnumQ MF FI FC
-    FreeOmegaMixedMeasure FO unit unit eq (encode n) (encode m).
-Proof. exact (subenumQ_mdp_trans_bisim_iff (D := counter_mdp) n m). Qed.
 
 (** Intentional observability audit: source states are unlabelled, all
     actions are always enabled, and execution never terminates. Thus this
@@ -179,9 +161,6 @@ Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws
 Local Notation FO := (@FreeOmegaObservableSemanticOmega
   SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Local Notation encode := (mdp_encode (D := labelled_mdp)).
-Local Notation ehead := (mdp_encode_head (D := labelled_mdp)).
-Local Notation hb := (@head_bisim (mdpE outcome_label unit) SubEnumQ MF FI FC
-  FreeOmegaMixedMeasure FO unit unit eq).
 Local Notation pb := (@peutt (mdpE outcome_label unit) SubEnumQ MF FI FC
   FreeOmegaMixedMeasure FO unit unit eq).
 Local Notation tb := (@trans_bisim (mdpE outcome_label unit) SubEnumQ MF FI FC
@@ -231,13 +210,6 @@ Example same_current_label_but_not_bisimilar :
   ~ source_bisim StartHalf StartBiased.
 Proof. split; [reflexivity|apply different_successor_probabilities_not_bisimilar]. Qed.
 
-Theorem different_successor_probabilities_not_head_bisimilar :
-  ~ hb (ehead StartHalf) (ehead StartBiased).
-Proof.
-  intro H. apply different_successor_probabilities_not_bisimilar.
-  exact (proj2 (subenumQ_mdp_head_bisim_iff (D := labelled_mdp) StartHalf StartBiased) H).
-Qed.
-
 Theorem different_successor_probabilities_not_peutt :
   ~ pb (encode StartHalf) (encode StartBiased).
 Proof.
@@ -275,30 +247,15 @@ Example positive_kernels_are_different :
   labelled_step StartHalf tt <> labelled_step StartClone tt.
 Proof. intro H. pose proof (f_equal subenumQ_raw H) as Hraw. discriminate Hraw. Qed.
 
-Theorem distinct_states_encoded_head_bisimilar : hb (ehead StartHalf) (ehead StartClone).
-Proof.
-  apply (proj1 (subenumQ_mdp_head_bisim_iff (D := labelled_mdp) StartHalf StartClone)).
-  apply distinct_states_same_class_probabilities.
-Qed.
-
 Theorem distinct_states_encoded_peutt : pb (encode StartHalf) (encode StartClone).
 Proof.
   apply (proj1 (subenumQ_mdp_peutt_iff (D := labelled_mdp) StartHalf StartClone)).
   apply distinct_states_same_class_probabilities.
 Qed.
 
-Example labelled_full_abstraction s t :
-  (source_bisim s t <-> hb (ehead s) (ehead t)) /\
-  (source_bisim s t <-> pb (encode s) (encode t)).
-Proof. split; [apply subenumQ_mdp_head_bisim_iff|apply subenumQ_mdp_peutt_iff]. Qed.
-
 (** The composed endpoint preserves actual labelled successor probabilities:
     the positive pair has different states/kernels, while the negative pair
     has the same current label but different next-label probabilities. *)
-Example labelled_transition_full_abstraction s t :
-  source_bisim s t <-> tb (encode s) (encode t).
-Proof. apply subenumQ_mdp_trans_bisim_iff. Qed.
-
 Example distinct_states_encoded_trans_bisimilar :
   tb (encode StartHalf) (encode StartClone).
 Proof.

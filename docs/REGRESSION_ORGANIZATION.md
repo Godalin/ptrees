@@ -57,21 +57,27 @@ under several stage-local names adds no coverage.
 
 ## Current consolidation
 
-This pass starts from `813da9c`; it changes no production Rocq source.
+The current pass starts from `ebce8e0`; it changes no production Rocq source.
+It removes redundant proofs rather than merging independent test contexts.
 
 | Area | Retained responsibility / removed duplication |
 |---|---|
-| PEuttAlgebra | Keep actual bind/fmap/measure/translate rewriting, heterogeneous eventful bind, eventful naturality and codiagonal; retire ordinary-law and old handler wrappers |
-| GenericAlgebra / RelationalConsumers | Absorb GenericConsumers' weak return/iteration and real guarded-interp clients; remove duplicate real algebra specializations |
-| SubEnumRBehavior | Keep native incompleteness, hitting/round assembly, crossed native sampling and infinite-service composition; use production bind/strong bridges directly |
-| SubEnumRRelational | Absorb shared-carrier and high-universe checks; delete SubEnumRShared's identity conversions and repeated completion probes |
-| BackendCapabilities | Keep generic completion and native profiles; remove repeated EnumQ/SubEnumQ completion grids |
-| FiniteLists | Keep current raw operations and concrete corner cases; remove old recursion copies and repeated generic mass/bound wrappers |
-| FreeOmegaSoundness | Keep actual-joint, invalid-middle, countable-coding and mass boundaries; retire repeated invalidity/bidual/equality wrappers |
-| ResidualFinite | Absorb ResidualTransport's non-equivalence and behavioral-client checks beside their fixture |
+| Finite sampling | Retire HittingPrograms and its private nested/flattened fixtures; retain native split/reorder coupling, UnifiedFrontierEnumQ's universe client, PEuttAlgebra rewriting and nonuniform Tau/visible-head hitting computations |
+| StableHittingDomain | Audit arbitrary-witness modelability/adequacy at the generic and Q/R production owners; retain changing silent loops, visible-service mass, native loss, noncanonical witnesses and real-weight recursive clients |
+| KleisliIteration | Retain endless-retry leastness and native-loop interpretation; remove redeclarations of fixed-point, existence and leastness laws already audited at production owners |
+| MDPEncoding | Remove generic iff wrappers; retain infinite counter encodings and concrete positive/negative labelled-probability pairs for both peutt and trans_bisim |
+| RelationalLimit | Retain the stronger no-coherent-joint-selection counterexample and actual limit existence; remove its weaker fixed-initial-joint variant and a direct equality-law wrapper |
+| SubEnumRJointRealization | Retain real retry with exact marginal/mass/support evidence, partial mass, invalid raw enumerable terms and heterogeneous large carriers; remove weaker existence and self-equality wrappers |
+| MathCompOrder / MathCompOmega | Retain capability inference, isolated-import boundaries, cemetery/partial-mass cases, null branches and relational bind; remove repeated generic law applications |
+| FiniteSupport / TreeTransitionSoundness | Retain cancellation/function/high-universe boundaries and actual action/heterogeneous clients; remove elementary atom facts and wrappers around existing examples |
 
 Nothing is relocated into Examples or production to obtain these reductions.
-The three removed files are recoverable from Git.
+The removed file and declarations remain recoverable from Git. This is a review
+of these clients, not a claim that every remaining regression is irreducible.
+
+Regression sources decrease from 103 files / 16,762 lines to 102 files / 16,269
+lines. The whole theory has 433 modules, including the unchanged two Gate M
+modules. File count is a consequence, not the acceptance criterion.
 
 ## Contract snapshots and validation
 
@@ -80,12 +86,29 @@ signature when its capability or universe shape is the contract, not every
 helper distribution, proof step or phase-local wrapper. Building an actual
 rewrite test is still necessary: a stored Proper signature cannot replace it.
 
-This pass removes only retired regression entries and stage-local real-backend
-fixture snapshots, and relocates retained regression signatures explicitly.
-Production entries, axiom whitelists and Gate M snapshots stay unchanged.
+This pass removes only retired regression snapshot/policy entries and their
+now-unreferenced per-endpoint axiom registrations. Production entries, surviving
+axiom whitelists and Gate M snapshots stay unchanged.
 No snapshot is regenerated from current output to hide a mismatch.
 
 Use the existing verification tools in [AUDITING.md](AUDITING.md). No additional
 historical-replay checker or per-cleanup audit framework is introduced. Validate
 changed clients and AllImports, source/architecture/API policies, tool tests,
 affected compiled contract groups and a clearly scoped kernel check.
+
+Local checks for this pass passed:
+
+- Full `dune build`, including AllImports and extraction targets; 148 Python tests.
+- Architecture, API surface, source soundness and contract-metadata checks.
+- Exact compiled suites: `relational_limit` 20, `subenumr_migration` 122 and
+  `mdp_correspondence` 6 entries.
+- Soundness queries: 76 MathComp native, 27 hitting/Q/R and 16 finite-real
+  joint endpoints, with the existing logical-axiom whitelist.
+- Snapshot comparison against `ebce8e0`: only six retired regression entries
+  removed; every other entry and every surviving axiom registration unchanged.
+- Joint `coqchk -norec` for MDPEncoding, RelationalLimit,
+  StableHittingComputation, StableHittingDomain, MathCompOmega and
+  SubEnumRJointRealization. Dependencies were trusted; this is not a recursive
+  whole-library audit. Native conversion fell back to VM conversion.
+
+CI was not queried. No new audit framework or environment changes were needed.

@@ -23,12 +23,6 @@ Import EnumQ GRing.Theory.
 Definition reg_half : rat := 1/2.
 Definition reg_quarter : rat := 1/4.
 
-Lemma reg_half_val : reg_half = (1 / 2 : rat).
-Proof. reflexivity. Qed.
-
-Lemma reg_quarter_val : reg_quarter = (1 / 4 : rat).
-Proof. reflexivity. Qed.
-
 Definition reg_fair : EnumQ bool :=
   unif2 false true.
 
@@ -80,34 +74,3 @@ Variant regE : Type -> Type := .
 
 Definition reg_split_program : ptree regE EnumQ bool :=
   Prob reg_fair_split (fun b => Ret b).
-
-(** Dirac sampling is observationally silent, without requiring an [eqType]
-    instance for the sampled carrier.  Its behavioral regression now belongs
-    to the canonical stable-hitting examples, not to this measure fixture. *)
-Definition reg_dirac_program : ptree regE EnumQ bool :=
-  Prob (ret_EnumQ true) (fun b => Ret b).
-
-(** The non-trivial flattening example from the roadmap:
-
-       1/2 (1/2 A + 1/2 B) + 1/2 (1/2 A + 1/2 C)
-
-    is weakly equivalent to [1/2 A + 1/4 B + 1/4 C]. *)
-Definition reg_inner (side : bool) : EnumQ nat :=
-  if side then unif2 0 2 else unif2 0 1.
-
-Definition reg_nested_program : ptree regE EnumQ nat :=
-  Prob reg_fair (fun side =>
-    Prob (reg_inner side) (fun outcome => Ret outcome)).
-
-Definition reg_merged_three : EnumQ nat.
-Proof.
-  refine (enumQ_of_list (mu := [:: (reg_half, 0); (reg_quarter, 1); (reg_quarter, 2)]) _).
-  intros p x [He|[He|[He|[]]]]; inversion He; subst; by vm_compute.
-Defined.
-
-Definition reg_merged_program : ptree regE EnumQ nat :=
-  Prob reg_merged_three (fun outcome => Ret outcome).
-
-Lemma reg_nested_outcomes_eqenum :
-  bind_EnumQ reg_fair reg_inner ==EnumQ reg_merged_three.
-Proof. intros [|[|[|n]]]; by vm_compute. Qed.

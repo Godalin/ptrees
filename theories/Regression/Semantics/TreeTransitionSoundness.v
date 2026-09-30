@@ -7,7 +7,6 @@ From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
-Require Import PTree.Prob.Backend.EnumQ.Measure PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Eq Require Import UnifiedFrontier.
 From PTree.Semantics Require Import TreeTransition TreeTransitionBisim.
 Fail Check PTree.Eq.PEutt.peutt.
@@ -15,7 +14,6 @@ Fail Check PTree.Eq.PEutt.peutt.
 From PTree.Eq Require Import PEutt.
 From PTree.Semantics Require Import TreeTransitionSoundness.
 From PTree.Regression.Semantics Require Import TreeTransition.
-From PTree.Examples.InteractiveVonNeumann Require Import InteractiveVonNeumannService.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -37,11 +35,6 @@ Proof. apply peutt_tau_l. Qed.
 Example delayed_mixture_transition_bisim : TB (Tau mixture) mixture.
 Proof. exact (peutt_trans_bisim (FI := FI) (FC := FC) (FO := FO) (RR := eq) delayed_mixture_peutt). Qed.
 
-Example delayed_mixture_postfixed :
-  @trans_bisimF rawE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool bool eq
-    W (Tau mixture) mixture.
-Proof. exact (peutt_trans_postfixed (FI := FI) (FC := FC) (FO := FO) (RR := eq) delayed_mixture_peutt). Qed.
-
 (** The extracted action coupling keeps the previously checked half-mass
     result. Neither the endpoint nor inclusion normalizes the output. *)
 Example delayed_mixture_action_coupling :
@@ -61,22 +54,4 @@ Proof.
     (fun x y => x = negb y) (Ret true) (Ret false)).
   { apply peutt_ret. reflexivity. }
   exact (peutt_trans_bisim (FI := FI) (FC := FC) (FO := FO) Hret).
-Qed.
-
-(** Reuse the existing infinite interaction / unbounded internal-retry
-    theorem as a client. No MDP coincidence or converse is invoked. The
-    existing service uses EnumQ/FreeOmega; the tests above use SubEnumQ. *)
-Theorem interactive_von_neumann_service_transition_bisim :
-  @trans_bisim coin_serviceE EnumQ.EnumQ (FreeOmega EnumQ.EnumQ)
-    (FreeOmegaObservableSemanticMeasure
-      (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
-    FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega bool bool eq
-    von_neumann_service direct_fair_service.
-Proof.
-  exact (peutt_trans_bisim
-    (FI := FreeOmegaObservableSemanticMeasure
-      (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega))
-    (FO := @FreeOmegaObservableSemanticOmega EnumQ.EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega)
-    (RR := eq) interactive_von_neumann_service_equivalent).
 Qed.

@@ -37,17 +37,6 @@ Local Notation FO := (@FreeOmegaObservableSemanticOmega SubEnumQ
 Local Notation hits := (@ptree_stable_hitting domainE SubEnumQ (FreeOmega SubEnumQ)
   FI FreeOmegaMixedMeasure FO unit).
 
-Example arbitrary_witness_valid t out :
-  hits (observe t) out -> free_omega_admissible R out.
-Proof. exact: stable_hitting_admissible. Qed.
-
-Example arbitrary_witness_denotes t out :
-  hits (observe t) out -> free_omega_domain_denotes out (D (observe t)).
-Proof. exact: stable_hitting_denotational_adequacy. Qed.
-
-Example return_is_dirac : oval_eq (D (RetF tt)) (oval_ret R (FHRet tt)).
-Proof. exact: ptree_domain_hitting_ret. Qed.
-
 Example silent_hitting_bottom : oval_eq (D (observe silent_forever)) (oval_bottom R).
 Proof. apply ptree_domain_hitting_spin. reflexivity. Qed.
 
@@ -89,9 +78,9 @@ Proof.
 Qed.
 End Tests.
 
-(** The real backend uses the SAME generic proof, not a rational conversion.
-    Neither the arbitrary-witness client nor the recursive client supplies
-    admissibility, almost-sure termination, or an event-free signature. *)
+(** The real recursive client supplies neither admissibility nor almost-sure
+    termination nor an event-free signature. Arbitrary-witness theorem signatures
+    are checked directly at their production owners. *)
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega Domain.
 From PTree.Prob.FreeOmega.Validation Require Import Model StableHitting.
 From PTree.Eq.Backend Require Import StableHittingDomainSubEnumR.
@@ -106,15 +95,6 @@ Local Notation FO := (FreeOmegaObservableSemanticOmega
   (NI := SubEnumR_SemanticMeasure R) (NO := SubEnumR_SemanticOmega R)).
 Local Notation hits := (@ptree_stable_hitting _ MN (FreeOmega MN)
   FI FreeOmegaMixedMeasure FO _).
-
-Example real_arbitrary_witness_valid {E A} (t : ptree E MN A) out :
-  hits (observe t) out -> free_omega_modelable native out.
-Proof. exact: subenumR_stable_hitting_modelable. Qed.
-
-Example real_arbitrary_witness_denotes {E A} (t : ptree E MN A) out :
-  hits (observe t) out ->
-  free_omega_model_denotes native out (subenumR_ptree_domain_hitting (observe t)).
-Proof. exact: subenumR_stable_hitting_denotational_adequacy. Qed.
 
 Variable p : R.
 Hypotheses (Hp : 0 <= p) (Hp1 : p <= 1).

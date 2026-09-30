@@ -45,15 +45,16 @@ From PTree.Semantics.Backend Require Import MDPEmbeddingSubEnumQ.
 
 ## Checked clients
 
-- `LabelledMDP.labelled_transition_full_abstraction`: the complete iff on a
-  labelled MDP.
 - `distinct_states_encoded_trans_bisimilar`: different source states and
   different successor kernels still match by observation classes.
 - `different_successor_probabilities_not_trans_bisimilar`: identical
   current labels but next-label probabilities `1/2` versus `3/4` are separated.
-- `MDPEmbedding.counter_transition_full_abstraction`: source states are `nat`,
-  with random transitions and two actions. This deliberately constant-label
+- `MDPEmbedding.unlabelled_counter_encodings_equivalent`: source states are
+  `nat`, with random transitions and two actions. This deliberately constant-label
   example tests infinite state carriers, not observable separation of counters.
+
+The full-abstraction iff itself is audited at its production owner; regressions
+use it on concrete positive and negative pairs instead of redeclaring the iff.
 
 ## Logical dependencies
 
@@ -71,9 +72,10 @@ encoding/reflection and fragment-coincidence dependencies:
 In particular, composing with coincidence inherits its relational/unique-choice
 dependencies; saying merely "same assumptions as the encoding iff" would be
 inaccurate. Comparing against the **union of components** adds no logical axiom.
-The five new theorem/regression endpoints were checked against this union.
+The production endpoint and retained transition clients are checked against
+their recorded dependency sets; retired wrappers add no separate contract.
 
-Eight compiled records (three existing components and five new endpoints) are
+Six compiled records (four production endpoints and two concrete clients) are
 registered as `mdp_correspondence` in the current contract runner. Exact
 signatures and assumptions are recorded in `MDP_CORRESPONDENCE_CONTRACTS.json`.
 Per-endpoint exceptions only record the existing dependencies above; the global
@@ -84,7 +86,11 @@ historical source replay is introduced.
 python3 tools/audit_contracts.py --group mdp_correspondence
 ```
 
-## Local validation
+## Original theorem-addition validation
+
+The following records that addition, before redundant regression wrappers were
+retired. Current pruning and validation are recorded in
+[the regression policy](REGRESSION_ORGANIZATION.md).
 
 - Full `dune build`, including safe AllImports and the existing extraction
   targets, passed.

@@ -43,11 +43,6 @@ Proof.
     intros x y ->; destruct y; [apply FOLRet; reflexivity|exact IH].
 Qed.
 
-Example real_retry_external_joint :
-  oval_coupled complement (free_omega_model retry_left_modelable)
-    (free_omega_model retry_right_modelable).
-Proof. apply subenumR_qlift_sound; exact retry_complement_qlift. Qed.
-
 Example real_retry_joint_exact_mass_support : exists J : OmegaVal R (bool * bool),
   oval_joint complement (free_omega_model retry_left_modelable)
     (free_omega_model retry_right_modelable) J /\
@@ -55,13 +50,6 @@ Example real_retry_joint_exact_mass_support : exists J : OmegaVal R (bool * bool
   oval_mass J = oval_mass (free_omega_model retry_right_modelable) /\
   oval_eval J (oval_indicator R (fun z => ~ complement (fst z) (snd z))) = 0.
 Proof. apply subenumR_qlift_joint_mass_support; exact retry_complement_qlift. Qed.
-
-Example real_retry_equality_via_joint :
-  oval_eq (free_omega_model retry_left_modelable) (free_omega_model retry_left_modelable).
-Proof.
-  apply subenumR_qlift_eq_sound_via_joint.
-  apply FOQLStructural, free_omega_lift_refl; intros x; reflexivity.
-Qed.
 
 (** A cover does not certify probability validity. *)
 Example invalid_real_lub_still_enumerable :

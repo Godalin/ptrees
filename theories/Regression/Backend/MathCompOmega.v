@@ -19,10 +19,6 @@ Definition checked_bind : @SemanticMeasureBindLaws M NI := _.
 Definition checked_mixed : @MixedMeasureLaws M M NI NI MX := _.
 Definition checked_omega_ae : @SemanticOmegaAELaws M NI NO := _.
 
-Example increasing_has_actual_lub {A} (c : nat -> M A) :
-  sem_increasing c -> exists out, sem_lub c out.
-Proof. apply sem_lub_exists. Qed.
-
 Example null_branches_need_no_continuity {A B}
     (c : A -> nat -> M B) (out : A -> M B) :
   sem_lub (fun n => sem_bind (@sem_zero M NI NO A) (fun x => c x n))

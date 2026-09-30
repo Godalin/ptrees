@@ -23,10 +23,6 @@ Local Notation NO := (MathCompNodeSemanticOmega R).
 Definition checked_native_order : @SemanticMeasureOrderLaws M NI NO := _.
 Fail Definition still_missing_native_omega : @SemanticOmegaLaws M NI NO := _.
 
-Example bottom_below_return :
-  mathcomp_node_le (@mathcomp_kernel_zero R bool) (mathcomp_kernel_ret R true).
-Proof. exact: mathcomp_native_zero_le. Qed.
-
 (** The order does not compare cemetery events. At bottom the inequality
     actually goes the other way: this is why the integral lemma needs f(bottom)=0. *)
 Example cemetery_mass_not_monotone :
@@ -73,15 +69,6 @@ Proof.
   - exact: mathcomp_native_zero_le.
 Qed.
 
-Example generic_source_bind_order {A B} (mu nu : M A) (k : A -> M B) :
-  @sem_le M NI NO A mu nu ->
-  @sem_le M NI NO B (sem_bind mu k) (sem_bind nu k).
-Proof. exact: sem_bind_le_mu. Qed.
-
-Example supplied_lub_is_least {A} (c : nat -> M A) out bound :
-  mathcomp_kernel_lub c out ->
-  (forall n, mathcomp_node_le (c n) bound) -> mathcomp_node_le out bound.
-Proof. exact: mathcomp_native_lub_least. Qed.
 End NativeOrder.
 
 (** Pure maps preserve actual returned mass, not just total distributions.

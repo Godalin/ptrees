@@ -277,7 +277,11 @@ completeness, arbitrary-backend joint existence, MathComp-native external
 soundness, infinite path measures, or a whole-library kernel audit. Local
 verification does not assert remote CI success.
 
-### Compatibility cleanup: local verification
+### Compatibility cleanup (`ebce8e0`): local verification
+
+These counts record that checkpoint, not the current regression inventory.
+Subsequent regression pruning is recorded in
+[the regression policy](REGRESSION_ORGANIZATION.md).
 
 - Complete `dune build`, including AllImports and extraction targets: passed.
   The inventory is 434 modules (four retired in this cleanup), including the unchanged two Gate M modules;

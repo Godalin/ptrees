@@ -29,13 +29,6 @@ Local Notation K R := (@ptree_primitive_kernel E MN MF FI FreeOmegaMixedMeasure 
 Local Notation hits t out :=
   (@stable_hitting MF FI FO _ _ (K _) (observe t) out).
 
-Example two_tau_compute {R} (t : ptree E MN R) out :
-  hits (Tau (Tau t)) out <-> hits t out.
-Proof.
-  rewrite !(stable_hitting_tau (FI := FI) (FO := FO)
-    (MX := FreeOmegaMixedMeasure)). reflexivity.
-Qed.
-
 Example dirac_tau_compute {R X} (x : X) (k : X -> ptree E MN R) out :
   hits (Prob (sem_ret x) (fun y => Tau (k y))) out <-> hits (k x) out.
 Proof.
@@ -59,25 +52,6 @@ Proof.
   - apply sem_ae_true.
   - intros x _. apply (proj2 (stable_hitting_tau_iter _ _ _)). apply Hfront.
 Qed.
-
-Example nested_joint_compute {X Y} (mu : MN X) (nu : X -> MN Y) :
-  hits (Prob mu (fun x => Prob (nu x) (fun y => Ret (x,y))))
-    (FOSample mu (fun x => FOSample (nu x) (fun y => FORet (FHRet (x,y))))).
-Proof.
-  eapply (stable_hitting_prob (FI := FI) (FO := FO)
-    (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
-  - apply sem_ae_true.
-  - intros x _. eapply (stable_hitting_prob (FI := FI) (FO := FO)
-      (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
-    + apply sem_ae_true.
-    + intros y _. apply (stable_hitting_ret (FI := FI) (FO := FO)).
-Qed.
-
-Example nested_flatten_compute {R X Y}
-    (mu : MN X) (nu : X -> MN Y) (k : Y -> ptree E MN R) out :
-  hits (Prob mu (fun x => Prob (nu x) (fun y => Tau (k y)))) out <->
-  hits (Prob (sem_bind mu nu) (fun y => Tau (k y))) out.
-Proof. apply stable_hitting_prob_flatten_iff. Qed.
 
 (** Sampling stops at Vis: its continuation is retained, not executed. *)
 Example sampled_visible_head_compute {R X Y}
