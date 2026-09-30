@@ -56,6 +56,50 @@ Shared VN/rational proofs are dependencies to reuse, not material to copy into
 each service. Regression modules are contract/negative tests, not required
 imports for examples.
 
+## Reading FreeOmega expressions
+
+The two iteration tutorials opt into a small syntax layer:
+
+```coq
+Require Import PTree.Prob.FreeOmega.Definition.
+Local Open Scope freeomega_scope.
+```
+
+| Client notation | Exact expansion / meaning |
+|---|---|
+| `η x` | `FORet x`: return a value in the formal measure |
+| `⊥` | `FOZero`: the zero expression |
+| `x <~ mu ;; t` | `FOSample mu (fun x => t)`: native sampling |
+| `ωsup n, t` | `FOLub (fun n => t)`: formal countable completion |
+| `m >>=ω k` | `free_omega_bind m k`: bind a FreeOmega expression |
+| `↑ω mu` | `free_omega_sample mu`, definitionally `FOSample mu FORet` |
+
+The definition module opens no scope for clients; `(expression)%fo` also works without
+opening the scope. Native sampling `<~` and completion bind `>>=ω` are
+deliberately distinct from program sequencing `<-`. No typeclass selects a
+measure interpretation here, and no equality/lifting relation is redefined.
+
+For example, the complete silent-round frontier in IterationBasics reads:
+
+```coq
+v <~ kernel partial tt ;;
+η (FHRet v)
+```
+
+Read this as: sample the native round outcome `v`, then return the stable
+head `FHRet v` as a value of the formal measure. These are three different
+levels: program `Ret v`, stable head `FHRet v`, and measure return `η x`.
+In AbsorbingFrontier, `b <~ vn_fair ;; reveal_front b` instead selects a
+frontier which may contain a visible head and its entire continuation.
+
+`ωsup` is **syntax, not a certificate of a mathematical supremum**. The
+constructor still accepts arbitrary sequences, including invalid ones.
+Increasingness, modelability and semantic lub statements remain separate
+proof obligations. In particular, notation does not identify a raw `FOLub`
+with an independent domain's lub. The implementation/theory files retain
+their constructor names; this first client migration is limited to
+IterationBasics and AbsorbingFrontier.
+
 ## IterationBasics: what the three versions establish
 
 The tutorial selects `SubEnumQ -> FreeOmega SubEnumQ`. Its inhabited effect

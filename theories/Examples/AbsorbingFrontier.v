@@ -25,6 +25,7 @@ From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded Operatio
 Set Implicit Arguments.
 Import EnumQ FreeOmegaRewriting GRing.Theory.
 Local Open Scope ring_scope.
+Local Open Scope freeomega_scope.
 
 Variant queryE : Type -> Type := Query : queryE bool.
 Local Notation tree := (ptree queryE EnumQ).
@@ -41,13 +42,13 @@ Definition reveal (b : bool) : tree bool :=
   if b then Vis Query (fun answer => Ret answer) else Ret false.
 Definition reveal_head b : stable_head queryE EnumQ bool :=
   if b then FHVis Query (fun answer => Ret answer) else FHRet false.
-Definition reveal_front b := FORet (reveal_head b) : MF (stable_head queryE EnumQ bool).
+Definition reveal_front b := η (reveal_head b) : MF (stable_head queryE EnumQ bool).
 Definition round := @vn_step_in queryE.
 Definition absorbing_step := pstruct_iter_natural_step round reveal.
 Definition absorbing_program : tree bool := PTree.iter absorbing_step tt.
 Definition staged_program : tree bool := PTree.bind (PTree.iter round tt) reveal.
 Definition direct_program : tree bool := PTree.bind direct_fair_in reveal.
-Definition first_frontier := FOSample vn_fair reveal_front.
+Definition first_frontier := b <~ vn_fair ;; reveal_front b.
 Definition round_frontier := absorbing_frontier (fun _ : unit => vn_transition) reveal_front tt.
 
 (** The whole program calculation is a rewrite chain; no new probability
@@ -63,7 +64,7 @@ Proof.
 Qed.
 
 Lemma round_hitting i : hits (round i)
-  (FOSample vn_transition (fun next => FORet (FHRet next))).
+  (next <~ vn_transition ;; η (FHRet next)).
 Proof.
   assert (Heq : vn_round_measure = vn_transition).
   { apply finite_enum_raw_eq. exact vn_round_measure_eq. }
@@ -83,19 +84,19 @@ Qed.
     rewrite above. Keep the actual bind in the visible continuation;
     even a return/bind simplification is behavioral, not tree equality. *)
 Definition exit_round_front (v : unit+bool) : MF (stable_head queryE EnumQ (unit+bool)) :=
-  FORet (match v with
+  η (match v with
     | inl j => FHRet (inl j)
     | inr false => FHRet (inr false)
     | inr true => FHVis Query (fun answer => PTree.bind (Ret answer) (fun b => Ret (inr b)))
     end).
-Definition actual_round_front (_ : unit) := FOSample vn_transition exit_round_front.
+Definition actual_round_front (_ : unit) := v <~ vn_transition ;; exit_round_front v.
 
 Lemma actual_round_complete i : hits (absorbing_step i) (actual_round_front i).
 Proof.
   unfold absorbing_step, pstruct_iter_natural_step.
   change (hits (PTree.bind (round i) (pstruct_iter_natural_step_handler reveal))
-    (free_omega_bind (FOSample vn_transition (fun v => FORet (FHRet v)))
-      (stable_head_ret_bind_front exit_round_front))).
+    ((v <~ vn_transition ;; η (FHRet v)) >>=ω
+      stable_head_ret_bind_front exit_round_front)).
   apply stable_hitting_bind_ret_only.
   - eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
     intros v _. constructor. constructor.

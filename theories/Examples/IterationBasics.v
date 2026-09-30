@@ -24,6 +24,7 @@ From PTree.Interp Require Import FrontierIteration ReturnIteration.
 From PTree.Interp.FreeOmega Require Import IterationSummary AbsorbingIteration.
 Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
+Local Open Scope freeomega_scope.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -65,11 +66,15 @@ Definition result (partial : bool) : MN bool :=
 Definition step partial (_ : unit) : tree (unit+bool) :=
   Tau (Prob (kernel partial tt) (fun v => Ret v)).
 Definition loop partial : tree bool := PTree.iter (step partial) tt.
+(** Sample a native round outcome, then return its stable head as a measure
+    value. [η] is measure return; [FHRet] is the head, not another program. *)
 Definition round_front partial (_ : unit) :=
-  FOSample (kernel partial tt) (fun v => FORet (FHRet v)) : MF (stable_head eventE MN (unit+bool)).
+  (v <~ kernel partial tt ;; η (FHRet v)) : MF (stable_head eventE MN (unit+bool)).
 Definition loop_front partial := complete_iteration_frontier (step partial) (round_front partial) tt.
+(** [ωsup] builds the formal limit expression; [loop_classical] below relates
+    it to the complete frontier using the iteration laws. *)
 Definition classical_result partial :=
-  FOLub (fun n => mixed_iter_approx (FI := FI) (FO := FO) n (kernel partial) tt).
+  ωsup n, mixed_iter_approx (FI := FI) (FO := FO) n (kernel partial) tt.
 
 (** Main frontier calculation: one local certificate, then one library law. *)
 Lemma round_complete partial i : hits (step partial i) (round_front partial i).
@@ -191,20 +196,20 @@ Qed.
 (** Third version: every round finishes, but only with retry. *)
 Definition endless_step (_ : unit) : tree (unit+bool) := Ret (inl tt).
 Definition endless : tree bool := PTree.iter endless_step tt.
-Definition endless_front (_ : unit) : MF (stable_head eventE MN (unit+bool)) := FORet (FHRet (inl tt)).
+Definition endless_front (_ : unit) : MF (stable_head eventE MN (unit+bool)) := η (FHRet (inl tt)).
 Lemma endless_round_zero n :
-  iteration_summary_round (FI := FI) (FO := FO) endless_step endless_front n tt = FOZero.
+  iteration_summary_round (FI := FI) (FO := FO) endless_step endless_front n tt = ⊥.
 Proof. induction n; [reflexivity|exact IHn]. Qed.
-Theorem endless_frontier_zero : hits endless FOZero.
+Theorem endless_frontier_zero : hits endless ⊥.
 Proof.
   eapply (iteration_summary_hitting (FI := FI) (FO := FO) (front := endless_front)); try typeclasses eauto.
   - intro i. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
-  - eapply sem_lub_chain_proper with (chain := fun _ => FOZero).
+  - eapply sem_lub_chain_proper with (chain := fun _ => ⊥).
     + intro n. rewrite endless_round_zero. apply sem_eq_refl.
     + apply sem_lub_constant.
 Qed.
 Corollary endless_observation_zero :
-  free_omega_observes return_value (FOZero : MF (stable_head eventE MN bool))
+  free_omega_observes return_value (⊥ : MF (stable_head eventE MN bool))
     (sem_zero : MN bool).
 Proof. constructor. Qed.
 End IterationBasics.

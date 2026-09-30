@@ -343,6 +343,7 @@ Require PTree.Regression.ImportOrder.CanonicalBehaviorNativeFirst.
 Require PTree.Regression.ImportOrder.CanonicalBehaviorStructuralFirst.
 Require PTree.Regression.Infrastructure.ArchitectureBoundaries.
 Require PTree.Regression.Infrastructure.CapabilityBoundaries.
+Require PTree.Regression.Infrastructure.FreeOmegaNotation.
 Require PTree.Regression.Infrastructure.MathCompUniverse.
 Require PTree.Regression.Infrastructure.PublicBehavior.
 Require PTree.Regression.Infrastructure.PublicHandlers.

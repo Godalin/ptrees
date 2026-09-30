@@ -74,3 +74,32 @@ Polymorphic Inductive free_omega_lift {MN}
   | FOLLub c d :
       (forall n, free_omega_lift R (c n) (d n)) ->
       free_omega_lift R (FOLub c) (FOLub d).
+
+(** Identity-decoder embedding of a native sample. No normalization and no
+    new semantics: this is definitionally [FOSample mu (fun x => FORet x)]. *)
+Polymorphic Definition free_omega_sample@{node node_rep frontier}
+    {MN : Type@{node} -> Type@{node_rep}} {A : Type@{node}} (mu : MN A) :
+    @FreeOmega@{node node_rep frontier} MN A :=
+  FOSample mu (fun x => FORet x).
+
+(** Opt-in client notation; no scope is opened here.
+    [ωsup] denotes raw FOLub syntax, not a certified supremum: increasingness
+    or modelability must still be established by the relevant semantic laws.
+    [η] returns a value in FreeOmega, not a PTree program or a stable head. *)
+Declare Scope freeomega_scope.
+Delimit Scope freeomega_scope with fo.
+
+Notation "'η' x" := (FORet x)
+  (at level 10, x at next level) : freeomega_scope.
+Notation "'⊥'" := FOZero : freeomega_scope.
+(** Match ExtLib's sequencing precedence so its [;;] cannot be consumed
+    as part of the native distribution when both scopes are in use. *)
+Notation "x '<~' mu ';;' t" := (FOSample mu (fun x => t))
+  (at level 61, mu at next level, right associativity)
+  : freeomega_scope.
+Notation "'ωsup' n ',' t" := (FOLub (fun n => t))
+  (at level 100, n binder, right associativity) : freeomega_scope.
+Notation "m '>>=ω' k" := (free_omega_bind m k)
+  (at level 50, left associativity) : freeomega_scope.
+Notation "'↑ω' mu" := (free_omega_sample mu)
+  (at level 10, mu at next level) : freeomega_scope.
