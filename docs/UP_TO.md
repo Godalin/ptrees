@@ -122,6 +122,14 @@ lemmas apply by conversion. Only the no-deterministic-map counterexample
 first simplifies its mass hypothesis with `cbn`, exposing the three Boolean
 images for case analysis.
 
+Native `sem_lift` statements and `free_omega_denotes` infer their backend
+arguments from the distributions. The public hitting endpoint retains its
+named carrier annotation so its compiled signature keeps `impl_return`
+rather than unfolding that alias. Hitting/query calls retain only
+the explicit omega and mixed structures needed for inference; their measure
+instance follows from the omega structure. The backend profile remains fixed
+at the top of the file, without new instances or search hints.
+
 The main proof does not flatten probability lists or add intermediate
 sampling states to its invariant: Ret closes by the heterogeneous return
 law, and Continue handles Reply before re-entering the loop candidate. The finite-prefix bind in

@@ -261,7 +261,7 @@ Proof.
 Defined.
 
 Lemma coupling32_lift :
-  @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ bridge uniform3 uniform2.
+  sem_lift bridge uniform3 uniform2.
 Proof.
   eapply indexed_coupling_raw with (mu := uniform3_raw) (nu := uniform2_raw);
     [reflexivity|reflexivity|].
@@ -290,7 +290,7 @@ Example return_abstraction_boundary b :
 Proof. destruct b; unfold return_rel, bridge; simpl; intuition discriminate. Qed.
 
 Lemma mixed_samples_lift c :
-  @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ mixed_sample_rel
+  sem_lift mixed_sample_rel
     (mixed_samples uniform3 c) (mixed_samples uniform2 c).
 Proof.
   unfold mixed_samples. eapply sem_lift_bind with (R := eq).
@@ -393,10 +393,9 @@ Proof.
         -- rewrite observe_bind. cbn [observe].
            apply stable_hitting_native_sample. intro second.
            apply stable_hitting_native_ret.
-      * eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := MX))
-          with (Good := fun _ => True).
+      * eapply (stable_hitting_prob (FO := FO) (MX := MX)) with (Good := fun _ => True).
         -- apply sem_ae_true.
-        -- intros x _. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
+        -- intros x _. apply (stable_hitting_ret (FO := FO) (MX := MX)).
       * eapply FOQLSample with (T := mixed_sample_rel).
         -- eapply sem_lift_proper_l; [apply sem_eq_sym, draw_distribution_mixed|].
            exact (mixed_samples_lift answer).
@@ -434,8 +433,8 @@ Theorem masked_after_stable_hitting m c :
   exists (k : bool -> tree impl_return) (out : MF (mixed_head impl_return)),
     observe (masked_impl m) = VisF Challenge k /\
     hitting impl_return (observe (k c)) out /\
-    @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-      (mixed_head impl_return) mixed_outcome stable_outcome out (mixed_outcomes c).
+    free_omega_denotes (A := mixed_head impl_return)
+      stable_outcome out (mixed_outcomes c).
 Proof.
   eexists (fun c =>
     PTree.bind (Ret c) (fun c =>
@@ -477,13 +476,12 @@ Proof.
       * eapply FOQLSample; [exact (draw_distribution_mixed c)|].
         intros x y ->. apply free_omega_qlift_refl. intro a. reflexivity.
     + intros [result|[b h]].
-      * apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
-      * apply (stable_hitting_vis (FI := FI) (FO := FO) (MX := MX)).
+      * apply (stable_hitting_ret (FO := FO) (MX := MX)).
+      * apply (stable_hitting_vis (FO := FO) (MX := MX)).
   - (* Project the constructed frontier, erasing only its hidden payload. *)
     exists (subenumQ_bind (mixed_samples uniform3 c) (fun x =>
       subenumQ_ret (sample_outcome x))). split.
-    + apply (FOOObserveSample
-        (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+    + apply (FOOObserveSample (NO := SubEnumQ_SemanticOmega)).
       intros [[b h]|[b h]]; constructor.
     + apply enumQ_meas_eq_of_eqenum. intros [b|b]; destruct c,b;
         apply val_inj; vm_compute; reflexivity.
@@ -497,10 +495,9 @@ Theorem masked_challenge_true_reply_probability m c :
 Proof.
   (* Construct the specification's query and its projection together. *)
   assert (Hspec : exists query : MF bool,
-    @finite_interaction_query mixedE SubEnumQ MF FI MX FO spec_return
+    finite_interaction_query (MX := MX) (FO := FO)
       (challenge_true_reply_trace c) (mixed_spec (abstract_state m)) query /\
-    @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-      bool bool id query (spec_true_reply_observation c)).
+    free_omega_denotes id query (spec_true_reply_observation c)).
   {
     eexists. split.
     - unfold challenge_true_reply_trace.
@@ -517,26 +514,24 @@ Proof.
             end)).
         * eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
           intros x _. constructor. exact I.
-        * eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := MX))
-            with (Good := fun _ => True).
+        * eapply (stable_hitting_prob (FO := FO) (MX := MX)) with (Good := fun _ => True).
           -- apply sem_ae_true.
-          -- intros x _. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
+          -- intros x _. apply (stable_hitting_ret (FO := FO) (MX := MX)).
         * intros [result|[b j]].
-          -- apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
-          -- apply (stable_hitting_vis (FI := FI) (FO := FO) (MX := MX)).
+          -- apply (stable_hitting_ret (FO := FO) (MX := MX)).
+          -- apply (stable_hitting_vis (FO := FO) (MX := MX)).
       + apply sem_eq_refl.
     - exists (subenumQ_bind (mixed_samples uniform2 c) (fun x =>
         subenumQ_ret (match sample_outcome x with Stop _ => false | Continue b => b end))).
       split.
       + cbn [free_omega_bind].
-        apply (FOOObserveSample
-          (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+        apply (FOOObserveSample (NO := SubEnumQ_SemanticOmega)).
         intros [[b j]|[b j]]; destruct b; constructor.
       + apply enumQ_meas_eq_of_eqenum. intros []; destruct c;
           apply val_inj; vm_compute; reflexivity.
   }
   destruct Hspec as [spec_query [Hspec Hdenotes]].
-  destruct (finite_interaction_query_exists (FI := FI) (FO := FO) (MX := MX)
+  destruct (finite_interaction_query_exists (FO := FO) (MX := MX)
     (challenge_true_reply_trace c) (masked_impl m)) as [query Hquery].
   eapply subenumQ_finite_interaction_probability_intro
     with (query := query) (representative := spec_query)
