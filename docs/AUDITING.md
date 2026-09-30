@@ -109,6 +109,70 @@ Proof tactics and helper names are not generally frozen. Valid refactoring
 should be checked by compilation, declared boundaries, compiled signatures,
 assumptions and real clients rather than an old textual proof recipe.
 
+## Python cleanup (after `9c807e0`)
+
+Python checks trust boundaries and executable behavior, not how a mathematical
+proof is written. Technical tests remain outside the installed theory. The root
+`dune build` checks the actual Rocq import, notation, inference and rewriting
+clients in `tests/`; Python does not reimplement those elaboration checks.
+
+The following is a review ledger, not another executable migration audit:
+
+| Previous check | Disposition and remaining evidence |
+| --- | --- |
+| Factory proof must use five named lemmas, exact `unfold`/`setoid_rewrite`, and no `apply`/`eapply` | Removed. Compilation and existing endpoint contracts check the theorem; presentation quality is reviewed, not parsed. |
+| Factory helper names, module order, local hypothesis spelling, exact Proper registrations | Removed. Public rewriting clients compile in `tests/Rewriting`; ordinary helper refactoring is allowed. |
+| Adaptive/BoundedFactory source substrings | Removed. Backend choice and proof reuse are source-review concerns; this cleanup does not modify either example. |
+| Q/R joint bridges must call particular helpers and must not use `induction`/`elim`; compatibility must not contain recursion | Removed. Existing compiled types/assumptions, the inadmissible-intermediate example, and external-validation dependency boundaries remain. No tactic is a soundness criterion. |
+| Countable-support file must not mention qlift constructors; backend hitting file must contain particular names | Removed. Mathematical endpoint contracts and compiled clients remain; helper vocabulary is not frozen. |
+| Historical reconciliation ledger checked on every test run | Removed. `AUDIT_CONTRACT_RECONCILIATION.json` remains a review record, not a current-tree invariant. |
+| Five extracted-program test files | Consolidated into `test_execution.py`, sharing one subprocess driver. All 38 actual runtime tests remain. |
+| Three source-text extraction-wiring checks | Replaced by one safety check over all four extraction targets: no custom constant/inductive overrides, integer remapping, checker bypass, unrealized extracted axioms or `Obj.magic` in handwritten drivers. The Rocq glue compiles; exact root/helper spellings and OCaml formatting are not frozen. |
+
+Retained Python responsibilities:
+
+- architecture and one-way dependency boundaries;
+- unfinished proofs, reviewed capability declarations, logical-axiom policies
+  and the exact two-file Gate M allowlist;
+- canonical routing/registration and exported notation ownership;
+- compiled contracts, their distinct safe/unchecked loading contexts, and
+  parser failure-mode tests;
+- actual OCaml execution: replay, fuel, entropy errors, lost mass, nested retry,
+  interactivity and interruptible divergence;
+- CI environment checks, unchanged (no remote CI run is implied).
+
+Minimal public-client import/registration restrictions remain intentional:
+they prevent an inference test from silently acquiring extra instances or
+implementation imports. Likewise, independence checks on the external model
+remain mathematical trust boundaries, not proof-style requirements.
+
+No Rocq source, contract snapshot, class policy, axiom whitelist or toolchain
+configuration changes in this cleanup. In particular the snapshot inventory
+has **not** been pruned or refreshed to make checks pass. Selecting a smaller
+set of frozen helper contracts is separate work requiring endpoint-by-endpoint
+review, not part of removing proof-text tests.
+
+The five old runtime test files are removed from the working tree; their full
+contents remain recoverable at `9c807e0`. Focused execution checks now use:
+
+```sh
+python3 -m unittest discover -s tools -p test_execution.py -v
+```
+
+Size changes: 21 → 17 Python files, 2993 → 2800 lines, 149 → 140 tests.
+The runtime inventory was compared against `9c807e0`: all 38 runtime test
+identities remain; 37 bodies are AST-identical modulo shared-driver names,
+and the remaining invalid-input test delegates the same exit-code assertion
+to the shared driver. The new extraction-safety test is additional.
+
+Local validation: root `opam exec -- dune build`, all 140 Python tests,
+architecture/report agreement, API surface, source safety and all 34 contract
+groups' metadata passed. Focused compiled checks passed for
+`runner_distribution` (28 entries) and `factory_controller` (47 entries).
+The runtime suite was rerun after extending the driver safety check (39 tests
+passed). No full compiled-inventory rerun, new kernel audit or remote CI check
+is claimed for this Python/documentation-only change.
+
 ## Scope of kernel checking
 
 `--kernel` checks selected safe module bodies together, including AllImports,

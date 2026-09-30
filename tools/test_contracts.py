@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 import audit_contracts as audit
-from audit_assumptions import ROOT, logical_axioms
+from audit_assumptions import ROOT
 
 
 class ContractSuiteTests(unittest.TestCase):
@@ -72,18 +72,6 @@ class ContractSuiteTests(unittest.TestCase):
             return text
         with patch.object(Path, 'read_text', corrupt), self.assertRaises(AssertionError):
             audit.load_suites()
-
-    def test_reconciliation_only_relocates_owners_and_reduces_axioms(self):
-        data = json.loads((ROOT / 'docs/AUDIT_CONTRACT_RECONCILIATION.json').read_text())
-        # Check this ledger's claim, not a second freeze of today's snapshot.
-        # Future reviewed contract changes belong in the single registry.
-        for change in data['changes']:
-            old, new = change['expected'], change['actual']
-            self.assertEqual(old['name'], new['name'])
-            self.assertEqual(' '.join(old['type'].replace('Measure.SubEnumQ', 'Representation.SubEnumQ')
-                .replace('Measure.subenumQ_', 'Representation.subenumQ_').split()),
-                ' '.join(new['type'].split()))
-            self.assertLessEqual(logical_axioms(new['assumptions']), logical_axioms(old['assumptions']))
 
     def test_no_runtime_migration_replay(self):
         for path in (ROOT / 'tools').glob('*.py'):

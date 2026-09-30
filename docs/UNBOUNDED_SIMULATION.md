@@ -187,45 +187,36 @@ disable universe/guard checking. The defensible claim is:
 ## Local checks
 
 ```sh
-opam exec -- python3 -m unittest discover -s tools -p test_unbounded_execution.py -v
-opam exec -- python3 tools/audit_runner_distribution.py
+opam exec -- dune build
+opam exec -- python3 -m unittest discover -s tools -p test_execution.py -v
+opam exec -- python3 tools/audit_contracts.py --group runner_distribution
 opam exec -- python3 tools/audit_architecture.py --check
 ```
 
-Local full `dune build`, the 13 new runtime/source tests, the 5 existing
-finite-runner-bridge tests, architecture checking, finite-bridge conservation,
-soundness source checking and `git diff --check` passed. The mainline remains
-369 modules: 367 Gate S and the same 2 isolated Gate M modules. No new
-maintained theory module or contract snapshot was needed for the host demo.
-
-The original 13 focused tests exercise both fair outcomes, retry followed by return,
+The shared execution suite exercises both fair outcomes, retry followed by return,
 2,000 consecutive retries, unused entropy, streamed replay, error rejection,
 explicit and partial missing mass, seed reproducibility, random mode,
-and interruption of pure Tau divergence. They also check the actual extracted
-root names, lazy representation, absence of extraction overrides/unrealized
-axioms, and byte conservation of the old theory, extraction targets, and
-contract snapshots. `partial` has true mass 1/2 and lost mass 1/2 and is used
+and interruption of pure Tau divergence. It also checks absence of extraction
+overrides and unrealized axioms. Exact source spellings and historical byte
+conservation are not daily checks; the Rocq extraction glue is compiled by
+the root build. See [AUDITING.md](AUDITING.md) for the cleanup record.
+`partial` has true mass 1/2 and lost mass 1/2 and is used
 to catch accidental conditional normalization. `lost`, `spin`, `ret`, and
 `overweight` are likewise runtime boundary fixtures, not additional results
 of the Von Neumann equivalence theorem.
 
-The factory follow-up expands that suite to 18 tests. The five additions
-check the compositional theorem/extraction roots, both target outcomes and
+Factory execution checks cover both target outcomes and
 the exact direct ticket boundary, 1,000 inner retries followed by 200 full
 outer binary cycles, replay exhaustion without fake loss, the 2/5 statistical
 target, source-only native draws, streamed replay, and live random mode.
-The full local build and 18-test suite pass; architecture and soundness
-source audits still report the unchanged 369-module theory. The compiled
-factory theorem type and assumptions were queried independently.
-
-The existing theorem's compiled signature was rechecked: it relates exactly
+The theorem relates exactly
 `von_neumann_third` and `direct_fair`, with Boolean equality, using the
 observable FreeOmega instances over EnumQ. `Print Assumptions` reports the
 existing dependent functional extensionality and `eq_rect_eq` assumptions;
-this increment neither removes nor adds to them.
+the host demonstration does not change these dependencies.
 
-No new whole-library kernel audit, PRNG certification, remote CI claim,
-or historical full regression rerun is made for this executable-only step.
+Runtime tests do not constitute a whole-library kernel audit, PRNG
+certification, or proof of the fuel-free OCaml scheduler.
 
 ## Next work, not required for this demonstration
 
