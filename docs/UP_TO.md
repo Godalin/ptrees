@@ -147,13 +147,20 @@ and recursive state invariants remain visible in the proofs. Concrete
 probability analysis retains its explicit measure interfaces where needed.
 MixedHead's source has four layers: preparation (§1: protocol types, native
 coins, observable backend profile), complete programs (§2), mathematical
-preparation (§3: distribution calculations and observable measures), and
+preparation (§3: native distribution calculations and observation functions), and
 final theorems (§4, including the local loop-entry invariant). On a first pass, read §2 and
 `masked_protocol_equivalent` in §4. The proof itself unfolds the protocols,
 constructs the finite prefix evidence, and composes Stop/Continue/Reply
 obligations. It does not hide these steps in `impl_draw_related` or a
 postfixedness wrapper, nor disguise heterogeneous coupling as equality
 rewriting. Quantitative program-query facts are also established locally.
+There are no global named frontier or query witnesses: `masked_after_stable_hitting`
+constructs its frontier by composing the prefix with the Ret/Reply heads, then
+proves the four-outcome projection in the same proof. The probability theorem
+constructs the specification query and its denotation together in a local
+existential, then transports that query through `masked_protocol_equivalent`.
+Only native probability calculations and observation functions are prepared
+before these theorems; their complete-hitting witnesses are not.
 Documentation headings suffice; no parameterless Coq `Section` is needed.
 The original notation-only follow-up preserved its 69 compiled contracts.
 The subsequent three-to-two case changes its programs and state types, but
@@ -171,6 +178,8 @@ are unchanged, two only expand the removed specification wrapper, and two
 record the generic visible-context introduction/coinduction rules. Both new
 rules are closed under the global context. The 491 central contracts are
 unchanged; neither the axiom whitelist nor Gate M is extended.
+The subsequent removal of the nine case-local frontier/query helpers changes
+none of these 135 compiled endpoint signatures or logical assumption sets.
 
 ## Historical checkpoints
 

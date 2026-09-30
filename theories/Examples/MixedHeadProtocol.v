@@ -350,31 +350,11 @@ Qed.
 
 Set Universe Polymorphism.
 
-(** ** Complete frontiers and finite observations
+(** ** Finite observations
 
-    First retain an explicit complete frontier for each after-Challenge
-    program. Then compute the two-event query on the simpler specification
-    (the final theorem will transport this query to the implementation). *)
-
-Definition masked_head m (x : impl_return + impl_return) : mixed_head impl_return :=
-  match x with
-  | inl b => FHRet b
-  | inr (b,h) => FHVis (Reply b) (fun ack =>
-      masked_impl (if ack then h else m))
-  end.
-
-Definition spec_head z (x : spec_return + spec_return) : mixed_head spec_return :=
-  match x with
-  | inl b => FHRet b
-  | inr (b,j) => FHVis (Reply b) (fun ack =>
-      mixed_spec (if ack then j else z))
-  end.
-
-Definition masked_after_heads m c : MF (mixed_head impl_return) :=
-  FOSample (mixed_samples uniform3 c) (fun x => FORet (masked_head m x)).
-
-Definition spec_after_heads z c : MF (mixed_head spec_return) :=
-  FOSample (mixed_samples uniform2 c) (fun x => FORet (spec_head z x)).
+    Only the observation functions and finite probability calculations are
+    prepared here. The final proofs construct their complete frontiers and
+    query witnesses locally, as they analyze the actual programs. *)
 
 (** The Challenge case is a totality default: after-challenge witnesses
     contain only returns and Reply events, as the following proof shows. *)
@@ -387,29 +367,6 @@ Definition stable_outcome {H} (h : mixed_head (bool * H)) : mixed_outcome :=
 
 Definition sample_outcome {H} (x : bool * H + bool * H) : mixed_outcome :=
   match x with inl (b,_) => Stop b | inr (b,_) => Continue b end.
-
-Lemma masked_head_outcome m x : stable_outcome (masked_head m x) = sample_outcome x.
-Proof. destruct x as [[b h]|[b h]]; reflexivity. Qed.
-
-Definition masked_outcome_observation c : SubEnumQ mixed_outcome :=
-  subenumQ_bind (mixed_samples uniform3 c) (fun x => subenumQ_ret (sample_outcome x)).
-
-(** Analysis boundary: erase hidden state, recovering the same four masses. *)
-Lemma masked_after_heads_denote_four m c :
-  @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    (mixed_head impl_return) mixed_outcome stable_outcome
-    (masked_after_heads m c) (mixed_outcomes c).
-Proof.
-  exists (masked_outcome_observation c). split.
-  - unfold masked_after_heads, masked_outcome_observation.
-    apply (FOOObserveSample
-      (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-    intro x.
-    rewrite <- (masked_head_outcome m x). constructor.
-  - change (enumQ_meas_eq (subenumQ_raw (masked_outcome_observation c)) (mixed_outcomes_raw c)).
-    apply enumQ_meas_eq_of_eqenum. intros [b|b]; destruct c,b;
-      apply val_inj; vm_compute; reflexivity.
-Qed.
 
 Definition select_challenge (c : bool) {X} (e : mixedE X) : option X :=
   match e in mixedE X0 return option X0 with
@@ -429,10 +386,6 @@ Definition challenge_true_reply_trace c : @finite_interaction_pattern mixedE :=
 Definition accepts_true_reply {X} (e : mixedE X) : bool :=
   match e with Challenge => false | Reply b => b end.
 
-Definition spec_true_reply_query z c : MF bool :=
-  @sem_bind MF FI (mixed_head spec_return) bool (spec_after_heads z c) (fun h =>
-    @sem_ret MF FI bool (observe_stable_head (fun _ => false) (@accepts_true_reply) h)).
-
 Definition spec_true_reply_observation c : SubEnumQ bool :=
   subenumQ_bind (mixed_outcomes c) (fun o =>
     subenumQ_ret (match o with Stop _ => false | Continue b => b end)).
@@ -443,26 +396,6 @@ Proof.
   apply functional_extensionality_dep. intro X.
   apply functional_extensionality. intro e. destruct e; [reflexivity|].
   destruct b; reflexivity.
-Qed.
-
-Lemma spec_true_reply_query_denotes z c :
-  @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    bool bool id (spec_true_reply_query z c) (spec_true_reply_observation c).
-Proof.
-  exists (subenumQ_bind (mixed_samples uniform2 c) (fun x =>
-    subenumQ_ret (match sample_outcome x with Stop _ => false | Continue b => b end))).
-  split.
-  - unfold spec_true_reply_query, spec_after_heads.
-    cbn [free_omega_bind].
-    apply (FOOObserveSample
-      (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-    intros [[b j]|[b j]]; constructor.
-  - change (enumQ_meas_eq
-      (subenumQ_raw (subenumQ_bind (mixed_samples uniform2 c) (fun x =>
-        subenumQ_ret (match sample_outcome x with Stop _ => false | Continue b => b end))))
-      (subenumQ_raw (spec_true_reply_observation c))).
-    apply enumQ_meas_eq_of_eqenum. intros []; destruct c;
-      apply val_inj; vm_compute; reflexivity.
 Qed.
 
 Lemma spec_true_reply_mass c :
@@ -549,7 +482,7 @@ Theorem masked_after_stable_hitting m c :
     @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
       (mixed_head impl_return) mixed_outcome stable_outcome out (mixed_outcomes c).
 Proof.
-  exists (fun c =>
+  eexists (fun c =>
     PTree.bind (Ret c) (fun c =>
       x <- (mask <- sample coin_three_quarters;;
             continue <- sample uniform2;;
@@ -562,13 +495,17 @@ Proof.
       match x with
       | inl result => Ret result
       | inr (b,h) => Vis (Reply b) (fun ack => masked_impl (if ack then h else m))
-      end)), (masked_after_heads m c).
+      end)), _.
   split; [reflexivity|]. split.
-  - unfold masked_after_heads.
+  - (* Assemble this frontier from the prefix and the two branch heads. *)
     rewrite (observe_bind (Ret c)). cbn [observe].
     eapply stable_hitting_bind_ret_only with
       (hs := FOSample (mixed_samples uniform3 c) (fun x => FORet (FHRet x)))
-      (front := fun x => FORet (masked_head m x)).
+      (front := fun x => FORet (match x with
+        | inl result => FHRet result
+        | inr (b,h) => FHVis (Reply b) (fun ack =>
+            masked_impl (if ack then h else m))
+        end)).
     + eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
       intros x _. constructor. exact I.
     + eapply stable_hitting_output_transport with
@@ -587,7 +524,17 @@ Proof.
     + intros [result|[b h]].
       * apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
       * apply (stable_hitting_vis (FI := FI) (FO := FO) (MX := MX)).
-  - exact (masked_after_heads_denote_four m c).
+  - (* Project the constructed frontier, erasing only its hidden payload. *)
+    exists (subenumQ_bind (mixed_samples uniform3 c) (fun x =>
+      subenumQ_ret (sample_outcome x))). split.
+    + apply (FOOObserveSample
+        (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+      intros [[b h]|[b h]]; constructor.
+    + change (enumQ_meas_eq
+        (subenumQ_raw (subenumQ_bind (mixed_samples uniform3 c) (fun x =>
+          subenumQ_ret (sample_outcome x)))) (mixed_outcomes_raw c)).
+      apply enumQ_meas_eq_of_eqenum. intros [b|b]; destruct c,b;
+        apply val_inj; vm_compute; reflexivity.
 Qed.
 
 (** Ret mass rejects the nonempty remaining prefix; only Continue(true)
@@ -596,52 +543,62 @@ Qed.
 Theorem masked_challenge_true_reply_probability m c :
   Prₛ[ masked_impl m | challenge_true_reply_trace c ] = (if c then 1 / 8 else 3 / 8 : rat).
 Proof.
-  assert (Hspec :
+  (* Construct the specification's query and its projection together. *)
+  assert (Hspec : exists query : MF bool,
     @finite_interaction_query mixedE SubEnumQ MF FI MX FO spec_return
-      (challenge_true_reply_trace c) (mixed_spec (abstract_state m))
-      (spec_true_reply_query (abstract_state m) c)).
+      (challenge_true_reply_trace c) (mixed_spec (abstract_state m)) query /\
+    @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
+      bool bool id query (spec_true_reply_observation c)).
   {
-    unfold challenge_true_reply_trace.
-    change (@finite_interaction_query mixedE SubEnumQ MF FI MX FO spec_return
-      (cons (@select_challenge c) (cons (@select_true_reply) nil))
-      (Vis Challenge (fun answer =>
-        PTree.bind (Ret answer) (fun answer =>
-          PTree.bind (sample (mixed_samples uniform2 answer))
-            (fun x => match x with
-              | inl result => Ret result
-              | inr (b,j) => Vis (Reply b) (fun ack =>
-                  mixed_spec (if ack then j else abstract_state m))
-              end))))
-      (spec_true_reply_query (abstract_state m) c)).
-    eapply finite_interaction_query_vis_match; [reflexivity|].
-    apply (proj2 (finite_interaction_query_singleton_iff_next_event_query _ _ _)).
-    rewrite true_reply_selector_accepts.
-    exists (spec_after_heads (abstract_state m) c). split; [|apply sem_eq_refl].
-    unfold spec_after_heads.
-    rewrite (observe_bind (Ret c)). cbn [observe].
-    eapply stable_hitting_bind_ret_only with
-      (hs := FOSample (mixed_samples uniform2 c) (fun x => FORet (FHRet x)))
-      (front := fun x => FORet (spec_head (abstract_state m) x)).
-    - eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
-      intros x _. constructor. exact I.
-    - eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := MX))
-        with (Good := fun _ => True).
-      + apply sem_ae_true.
-      + intros x _. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
-    - intros [result|[b j]].
-      + apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
-      + apply (stable_hitting_vis (FI := FI) (FO := FO) (MX := MX)).
+    eexists. split.
+    - unfold challenge_true_reply_trace.
+      eapply finite_interaction_query_vis_match; [reflexivity|].
+      apply (proj2 (finite_interaction_query_singleton_iff_next_event_query _ _ _)).
+      rewrite true_reply_selector_accepts.
+      eexists. split.
+      + rewrite (observe_bind (Ret c)). cbn [observe].
+        eapply stable_hitting_bind_ret_only with
+          (hs := FOSample (mixed_samples uniform2 c) (fun x => FORet (FHRet x)))
+          (front := fun x => FORet (match x with
+            | inl result => FHRet result
+            | inr (b,j) => FHVis (Reply b) (fun ack =>
+                mixed_spec (if ack then j else abstract_state m))
+            end)).
+        * eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+          intros x _. constructor. exact I.
+        * eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := MX))
+            with (Good := fun _ => True).
+          -- apply sem_ae_true.
+          -- intros x _. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
+        * intros [result|[b j]].
+          -- apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := MX)).
+          -- apply (stable_hitting_vis (FI := FI) (FO := FO) (MX := MX)).
+      + apply sem_eq_refl.
+    - exists (subenumQ_bind (mixed_samples uniform2 c) (fun x =>
+        subenumQ_ret (match sample_outcome x with Stop _ => false | Continue b => b end))).
+      split.
+      + cbn [free_omega_bind].
+        apply (FOOObserveSample
+          (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+        intros [[b j]|[b j]]; constructor.
+      + change (enumQ_meas_eq
+          (subenumQ_raw (subenumQ_bind (mixed_samples uniform2 c) (fun x =>
+            subenumQ_ret (match sample_outcome x with Stop _ => false | Continue b => b end))))
+          (subenumQ_raw (spec_true_reply_observation c))).
+        apply enumQ_meas_eq_of_eqenum. intros []; destruct c;
+          apply val_inj; vm_compute; reflexivity.
   }
+  destruct Hspec as [spec_query [Hspec Hdenotes]].
   destruct (finite_interaction_query_exists (FI := FI) (FO := FO) (MX := MX)
     (challenge_true_reply_trace c) (masked_impl m)) as [query Hquery].
   eapply subenumQ_finite_interaction_probability_intro
-    with (query := query) (representative := spec_true_reply_query (abstract_state m) c)
+    with (query := query) (representative := spec_query)
       (out := spec_true_reply_observation c).
   - exact Hquery.
   - eapply sem_lift_mono; [|apply sem_lift_sym;
       exact (finite_interaction_query_related (masked_protocol_equivalent m)
         Hquery Hspec)].
     intros x y ->. reflexivity.
-  - exact (spec_true_reply_query_denotes (abstract_state m) c).
+  - exact Hdenotes.
   - exact (spec_true_reply_mass c).
 Qed.
