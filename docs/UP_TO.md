@@ -130,7 +130,11 @@ theorems. The substantive finite distribution and joint analyses remain
 separate from the compositional program proof.
 
 The case also needs no hand-written `change` of backend goals: the native
-lemmas apply by conversion. Only the no-deterministic-map counterexample
+lemmas apply by conversion. Neither the main coinduction nor the final
+probability query needs explicit `cbn`: `observe_bind` exposes the sequencing,
+and rule application handles the remaining definitional reduction. This
+removes eight administrative simplification steps without hiding them in a
+custom tactic or a helper lemma. Only the no-deterministic-map counterexample
 first simplifies its mass hypothesis with `cbn`, exposing the three Boolean
 images for case analysis.
 

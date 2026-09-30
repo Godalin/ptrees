@@ -361,9 +361,8 @@ Proof.
       s1 = observe (masked_impl old) /\ s2 = observe (mixed_spec z));
     try typeclasses eauto.
   - intros s1 s2 (old & z & Hold & -> & ->).
-    cbn [masked_impl mixed_spec trigger observe].
     apply stable_hitting_match_vis. intro answer.
-    rewrite !(observe_bind (Ret answer)). cbn [observe].
+    rewrite !(observe_bind (Ret answer)).
     eapply bind_upto_closure_bind with (RR := mixed_sample_rel).
     + (* Analyze this finite prefix here, not via a pre-proved program relation. *)
       eapply peutt_of_hitting_lift with
@@ -372,10 +371,10 @@ Proof.
       * unfold draw_distribution.
         apply stable_hitting_native_sample. intro mask.
         apply stable_hitting_native_sample. intro continue.
-        rewrite observe_bind. cbn [observe].
+        rewrite observe_bind.
         apply stable_hitting_native_sample. intros [].
         -- apply stable_hitting_native_ret.
-        -- rewrite observe_bind. cbn [observe].
+        -- rewrite observe_bind.
            apply stable_hitting_native_sample. intro second.
            apply stable_hitting_native_ret.
       * eapply (stable_hitting_prob (FO := FO) (MX := MX)) with (Good := fun _ => True).
@@ -429,21 +428,20 @@ Proof.
       eapply finite_interaction_query_vis_match; [reflexivity|].
       apply (proj2 (finite_interaction_query_singleton_iff_next_event_query _ _ _)).
       eexists. split.
-      + rewrite (observe_bind (Ret c)). cbn [observe].
-        rewrite observe_bind. cbn [sample observe].
+      + rewrite (observe_bind (Ret c)).
+        rewrite observe_bind.
         (* Infer each head, including Reply's continuation, from its branch. *)
         eapply (stable_hitting_prob (FO := FO) (MX := MX)) with
           (Good := fun _ => True)
           (front := fun x => match x with inl result => _ | inr (b,j) => _ end).
         * apply sem_ae_true.
-        * intros [result|[b j]] _; rewrite observe_bind; cbn [observe].
+        * intros [result|[b j]] _; rewrite observe_bind.
           -- apply (stable_hitting_ret (FO := FO) (MX := MX)).
           -- apply (stable_hitting_vis (FO := FO) (MX := MX)).
       + apply sem_eq_refl.
     - (* Infer the native Boolean outcomes from those observed heads. *)
       eexists. split.
-      + cbn [free_omega_bind].
-        eapply FOOObserveSample with
+      + eapply FOOObserveSample with
           (front := fun x => match x with inl result => _ | inr (b,j) => _ end).
         intros [[b j]|[b j]]; constructor.
       + apply enumQ_meas_eq_of_eqenum. intros []; destruct c;
