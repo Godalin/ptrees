@@ -179,7 +179,9 @@ postfixedness wrapper, nor disguise heterogeneous coupling as equality
 rewriting. Quantitative program-query facts are also established locally.
 There are no global named frontier or query witnesses: `masked_after_stable_hitting`
 constructs its frontier by composing the prefix with the Ret/Reply heads, then
-proves the four-outcome projection in the same proof. The probability theorem
+proves the four-outcome projection in the same proof. Its Challenge
+continuation is inferred by unfolding the first observation equality, rather
+than copying the program body into an existential witness. The probability theorem
 constructs the specification query and its denotation together in a local
 existential, then transports that query through `masked_protocol_equivalent`.
 Only native probability calculations and observation functions are prepared

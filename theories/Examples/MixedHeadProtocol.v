@@ -427,8 +427,11 @@ Proof.
   - intros r u [Hbit _]. apply peutt_ret. exact Hbit.
 Qed.
 
-(** Connect the observable distribution to an actual complete-hitting
-    witness of the implementation, not merely a standalone measure. *)
+(** After Challenge receives [c], the actual continuation [k c] has a
+    complete frontier [out]. Projecting Ret/Reply heads to Stop/Continue
+    gives [mixed_outcomes c], independently of the initial hidden state.
+    This describes the next stable observation, not eventual termination
+    of the recursive service. *)
 Theorem masked_after_stable_hitting m c :
   exists (k : bool -> tree impl_return) (out : MF (mixed_head impl_return)),
     observe (masked_impl m) = VisF Challenge k /\
@@ -436,21 +439,9 @@ Theorem masked_after_stable_hitting m c :
     free_omega_denotes (A := mixed_head impl_return)
       stable_outcome out (mixed_outcomes c).
 Proof.
-  eexists (fun c =>
-    PTree.bind (Ret c) (fun c =>
-      x <- (mask <- sample coin_three_quarters;;
-            continue <- sample uniform2;;
-            payload <- (first <- sample coin_third;;
-                        if first then Ret L0
-                        else second <- sample uniform2;;
-                             Ret (if second then L1 else L2));;
-            let bit := xorb c mask in
-            Ret (if continue then inr (bit, payload) else inl (bit, payload)));;
-      match x with
-      | inl result => Ret result
-      | inr (b,h) => Vis (Reply b) (fun ack => masked_impl (if ack then h else m))
-      end)), _.
-  split; [reflexivity|]. split.
+  (* The first equality determines the actual Challenge continuation. *)
+  eexists _, _.
+  split; [cbn; reflexivity|]. split.
   - (* Assemble this frontier from the prefix and the two branch heads. *)
     rewrite (observe_bind (Ret c)). cbn [observe].
     eapply stable_hitting_bind_ret_only with
