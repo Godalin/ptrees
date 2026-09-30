@@ -4,8 +4,8 @@
     up-to-bind theorem; it changes neither peutt nor its generator. *)
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import Measure Omega Mixed.
-From PTree.Eq Require Import PTreeKernel StableHittingRelation PEutt.
+From PTree.Prob.Interface Require Import Measure Omega Mixed BindOrder.
+From PTree.Eq Require Import PTreeKernel StableHittingRelation PEutt BindScheduling.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -46,16 +46,17 @@ Context {E MN MF : Type -> Type}
   `{Omega : @SemanticOmegaLaws MF FI FO}
   `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}
   `{Diagonal : @SemanticMeasureDiagonalLaws MF FI FO}
+  `{BindOrd : @SemanticMeasureBindOrderLaws MF FI FO}
+  `{MixedOrd : @MixedMeasureBindOrderLaws MN MF FI MX FO}
+  `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}
   `{Select : @SemanticOmegaSelection MF FI FO}.
-
-Variable bind_cofinality : forall A B
-  (t : ptree E MN A) (k : A -> ptree E MN B),
-  ptree_bind_cofinal (MF := MF) t k.
 
 (** The bind continuation may re-enter [sim], put a common visible event
     before re-entry, or close by an already proved peutt. Each root still
     progresses through complete stable hitting. In particular this rule
-    does not treat internal sampling or Tau as a visible guard. *)
+    does not treat internal sampling or Tau as a visible guard.
+    As for generic [peutt_bind], finite scheduling is derived from the
+    probability-level order laws, not supplied by the client. *)
 Theorem peutt_coinduction_upto_bind_vis {A B} (RR : A -> B -> Prop)
     (sim : ptree' E MN A -> ptree' E MN B -> Prop)
     (Hprogress : forall s1 s2, sim s1 s2 ->
@@ -69,7 +70,12 @@ Proof.
   intros t u Hsim.
   eapply peutt_coinduction_upto_bind with (sim := vis_upto_closure sim);
     try typeclasses eauto.
-  - exact bind_cofinality.
+  - intros X Y t0 k. apply BindScheduling.ptree_bind_cofinal_all.
+    + exact (@sem_bind_ret_order MF FI FO BindOrd).
+    + exact (@sem_bind_zero_order MF FI FO BindOrd).
+    + exact (@mixed_bind_assoc_order MN MF FI MX FO MixedOrd).
+    + exact (@mixed_bind_le_k MN MF FI MX FO MixedOrd).
+    + exact (@sem_lub_cofinal MF FI FO Directed).
   - intros s1 s2 [Hroot | (X & e & k1 & k2 & -> & -> & Hk)].
     + exact (Hprogress _ _ Hroot).
     + apply stable_hitting_match_vis. intro x.

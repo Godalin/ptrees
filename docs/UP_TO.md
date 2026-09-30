@@ -25,9 +25,21 @@ the candidate extended by one common `Vis` context. Candidate roots use the
 client's progress proof; visible contexts progress by `stable_hitting_match_vis`
 and re-enter the original candidate. Thus clients need not enumerate reply
 states themselves. This is one layer of visible context inside bind closure,
-not an unrestricted recursively nested context closure. It retains the existing
-bind-cofinality premise and frontier Core/Bind/Order/Omega/Cofinality/Diagonal/
-Selection laws; no new capability, native law, or logical axiom is introduced.
+not an unrestricted recursively nested context closure. Like generic
+`peutt_bind`, it derives bind cofinality internally from the existing
+`SemanticMeasureBindOrderLaws`, `MixedMeasureBindOrderLaws` and
+`SemanticOmegaDirectedCofinalityLaws`, in addition to the frontier
+Core/Bind/Order/Omega/Cofinality/Diagonal/Selection laws. The finite scheduling
+proof is `BindScheduling.ptree_bind_cofinal_all`; no new class or logical
+axiom is introduced. The lower-level `PEutt.peutt_coinduction_upto_bind`
+still accepts explicit cofinality for models using that weaker interface.
+
+MixedHead uses the derived rule without a cofinality subgoal. The existing
+Gate M regression `MathComp.upto_bind_vis` instantiates exactly the same
+generic rule with `MN = MF = MathCompKernelMeasure R`, arbitrary event and
+return types, and an arbitrary return relation. Only progress and candidate
+membership are supplied; the existing `MathCompCouplingGluing R` premise and
+the two-file universe-checking boundary remain unchanged.
 
 The sampling closure contains the candidate, established `peutt`, and
 one pair of `Prob` contexts. Its sampling constructor requires
@@ -202,12 +214,21 @@ unfolds that wrapper in the two public behavioral statements; their logical
 assumptions are unchanged. The case has no global `mixed_protocol_sim` and no
 Reply-state enumeration. The pure state relation `bridge` remains essential:
 the update removes administrative program contexts, not the recursive invariant.
-The suite now records 134 endpoints: only the unused standalone hitting
-endpoint was removed from the preceding 135-entry snapshot; every remaining
-compiled signature and logical assumption set is unchanged. The two generic
-visible-context introduction/coinduction rules are closed under the global
-context. The 491 central contracts are unchanged; neither the axiom whitelist
-nor Gate M is extended.
+The suite records 134 safe endpoints. After removing the unused standalone
+hitting endpoint, the only signature updated here is the bind/visible rule:
+the explicit cofinality premise is replaced by the three existing
+probability-level capabilities above. Its assumptions remain closed under
+the global context; all other 133 safe entries are unchanged. One MathComp
+instantiation is added to the separate Gate M group, without modifying its
+previous entries. The 491 central contracts are unchanged; neither the axiom
+whitelist nor Gate M is extended.
+
+Local validation for this interface change: full `dune build -j 2`, the
+134 safe and 6 Gate M contracts in this suite, architecture/API/source checks,
+and 43 contract/architecture tool tests passed. Targeted kernel checking used
+`coqchk -norec PTree.Eq.UpToBind -norec PTree.Examples.MixedHeadProtocol`:
+both safe module bodies were checked, with dependencies trusted. Gate M is
+not part of that kernel check; CI was not queried.
 
 ## Historical checkpoints
 

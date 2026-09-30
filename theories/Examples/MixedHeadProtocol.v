@@ -360,7 +360,6 @@ Proof.
     (sim := fun s1 s2 => exists old z, bridge old z /\
       s1 = observe (masked_impl old) /\ s2 = observe (mixed_spec z));
     try typeclasses eauto.
-  - intros. apply ptree_bind_cofinal_all.
   - intros s1 s2 (old & z & Hold & -> & ->).
     cbn [masked_impl mixed_spec trigger observe].
     apply stable_hitting_match_vis. intro answer.

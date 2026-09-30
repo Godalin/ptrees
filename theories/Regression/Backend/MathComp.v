@@ -9,7 +9,7 @@ From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order reals boolp
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
 From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws OrderLaws OmegaLaws BindLaws Retry.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Eq Require Import UnifiedFrontier PTreeKernel PEutt.
+From PTree.Eq Require Import UnifiedFrontier PTreeKernel PEutt StableHittingRelation UpToBind.
 From PTree.Eq.Backend Require Import MathComp.
 From PTree.Examples Require Import MathCompPrograms.
 From PTree.Eq Require Import Canonical.
@@ -50,6 +50,25 @@ Proof. apply mathcomp_peutt_refl. Qed.
 Example eventful_reflexivity {F A} (t : ptree F M A) :
   @mathcomp_peutt R G F A t t.
 Proof. apply mathcomp_peutt_refl. Qed.
+
+(** The same generic rule discharges bind scheduling internally for MN = MF.
+    The client supplies only progress and membership, including heterogeneous
+    return carriers and an arbitrary event signature. *)
+Example upto_bind_vis {F A B} (RR : A -> B -> Prop)
+    (sim : ptree' F M A -> ptree' F M B -> Prop)
+    (Hprogress : forall s1 s2, sim s1 s2 ->
+      stable_hitting_match
+        (@ptree_primitive_kernel F M M NI MX A)
+        (@ptree_primitive_kernel F M M NI MX B)
+        (@ptree_stable_head_rel F M A B RR)
+        (bind_upto_closure RR (vis_upto_closure sim)) s1 s2)
+    (t : ptree F M A) (u : ptree F M B)
+    (Hsim : sim (observe t) (observe u)) :
+  @peutt F M M NI (@MathCompNodeSemanticMeasureCoreLaws R G)
+    MX NO A B RR t u.
+Proof.
+  eapply peutt_coinduction_upto_bind_vis; [exact Hprogress|exact Hsim].
+Qed.
 End Probes.
 
 (** The same generic complete-step theorem works with MN = MF. No gluing
