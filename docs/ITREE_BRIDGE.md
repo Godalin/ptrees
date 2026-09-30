@@ -115,6 +115,13 @@ genuine source square and heterogeneous source `eutt -> peutt`, by separate
 weak-simulation and scheduling arguments. The original structural proofs
 remain unchanged and do not assume those later results.
 
+The probability-free embedding additionally has the generic
+`from_itree_eutt_iff`: on `from_itree` images, `eutt RR` and `peutt RR`
+coincide under the existing Dirac/zero separation laws. FreeOmega discharges
+these laws for both SubEnumQ and SubEnumR. This does not assert reflection
+for an arbitrary handler or for sampling-event elaboration, nor does it
+construct a subtype or inverse for all probability-free PTrees.
+
 A commuting square for a source of type `itree (probE MN +' E) A`
 must restrict the source transformation to preserve sampling. Arbitrary
 source handlers may replace `Sample mu`; after elaboration an ordinary
@@ -125,31 +132,16 @@ internally returning and divergent handlers.
 
 ## Verification
 
-`audit_itree_bridge.py` freezes all 376 pre-existing theory files byte for
-byte, except insertion of the six new sorted AllImports entries. It checks
-the actual source datatype/native Prob definitions, generic ownership,
-thin specializations, and absence of new assumptions or global search.
-The previous handler audit consumes this additive-stage adapter without
-weakening its own frozen baseline.
+The current `itree_bridge` contract group retains 61 compiled
+definitions/theorems/examples and their logical assumptions. Check it with
+`python3 tools/audit_contracts.py --group itree_bridge`; the probability-free
+iff is additionally registered in `itree_preservation`. The root build checks
+all bridge clients, while architecture and source-safety audits maintain the
+generic/backend separation and the explicit Gate M boundary.
 
-The new compiled snapshot covers 61 definitions/theorems/examples and
-checks the existing logical-axiom whitelist. Existing snapshot files are
-not regenerated.
-
-Local verification completed:
-
-- Full `opam exec -- dune build`, including safe AllImports and the existing
-  extraction targets.
-- All 284 Python tool tests; architecture and public-surface audits.
-- 465 old compiled contracts unchanged; the original 60 handler-calculus,
-  27 machine and 11 fusion/guarded contracts also unchanged.
-- All 61 new compiled bridge contracts and assumptions checked.
-- Soundness source audit: 382 modules, 380 Gate S and the same two Gate M.
-- Joint `coqchk -norec` of the six new safe module bodies.
-- `git diff --check`.
-
-The kernel check trusts compiled dependencies; it is not a whole-library
-recursive kernel audit. It does not check or endorse Gate M. No CI was
-queried or counted. The full build retained the pre-existing extraction
-opacity/output-directory warnings; kernel checking reported its normal
-native-to-VM conversion fallback.
+Historical additive-source audits and their module/test counts belong to the
+original migration history, not the current checking workflow. Current
+conservativity scope and verification are recorded in
+[ITREE_PRESERVATION.md](ITREE_PRESERVATION.md). A targeted `coqchk -norec`
+checks the selected safe module bodies while trusting dependencies; it is
+neither a whole-library recursive audit nor an endorsement of Gate M.

@@ -12,7 +12,7 @@ From ITree.Eq Require Import Eqit UpToTaus Paco2.
 From ITree.Interp Require Import Interp.
 From ITree.Indexed Require Import Sum.
 From PTree.Core Require Import PTreeDefinition ITreeBridge.
-From PTree.Interp Require Import ITreeEutt ITreeSourceInterp ITreePreservation.
+From PTree.Interp Require Import ITreeEutt ITreeReflection ITreeSourceInterp ITreePreservation.
 
 Fail Check PTree.Prob.FreeOmega.Definition.FreeOmega.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
@@ -65,6 +65,45 @@ Proof. induction n; cbn; auto. Qed.
 Example source_divergence_not_return :
   ~ eutt eq (@ITree.spin questionE bool) (ITreeDefinition.Ret true).
 Proof. intro H. exact (eutt_spin_Ret_abs _ H). Qed.
+
+(** Exact correspondence on the image, not on arbitrary probability lowering.
+    Neither a finite Tau budget nor termination is an assumption. *)
+Example embedded_eutt_iff {E A B} (RR : A -> B -> Prop)
+    (t : itree E A) (u : itree E B) :
+  eutt RR t u <-> @from_itree E SubEnumQ A t ≈ₚ[RR] from_itree u.
+Proof. apply free_omega_from_itree_eutt_iff. Qed.
+
+Example reflected_infinite_service : eutt eq source_service delayed_service.
+Proof.
+  apply (free_omega_from_itree_eutt_reflect (MN := SubEnumQ)).
+  exact embedded_infinite_service.
+Qed.
+
+Example embedded_divergence_not_return :
+  ~ (@from_itree questionE SubEnumQ bool ITree.spin ≈ₚ
+      from_itree (ITreeDefinition.Ret true)).
+Proof.
+  intro H. apply source_divergence_not_return.
+  exact (free_omega_from_itree_eutt_reflect H).
+Qed.
+
+Example embedded_distinct_returns :
+  ~ (@from_itree questionE SubEnumQ bool (ITreeDefinition.Ret true) ≈ₚ
+      from_itree (ITreeDefinition.Ret false)).
+Proof.
+  intro H. apply free_omega_from_itree_eutt_reflect in H.
+  apply eqit_inv_Ret in H. discriminate.
+Qed.
+
+(** An offered event remains observable even with no possible response. *)
+Variant deadE : Type -> Type := Block : deadE Empty_set.
+Example embedded_block_not_divergence :
+  ~ (@from_itree deadE SubEnumQ bool (ITreeDefinition.Vis Block
+        (fun x : Empty_set => match x with end)) ≈ₚ from_itree ITree.spin).
+Proof.
+  intro H. apply free_omega_from_itree_eutt_reflect in H.
+  exact (eutt_Vis_spin_abs _ _ H).
+Qed.
 
 Definition returning_source_handler X (e : questionE X) : itree questionE X :=
   match e with Question => ITreeDefinition.Ret true end.
@@ -124,6 +163,11 @@ End LocalRewriting.
 
 Section RealBackend.
 Variable R : realType.
+Example real_embedded_eutt_iff {E A B} (RR : A -> B -> Prop)
+    (t : itree E A) (u : itree E B) :
+  eutt RR t u <-> @from_itree E (SubEnumR R) A t ≈ₚ[RR] from_itree u.
+Proof. apply free_omega_from_itree_eutt_iff. Qed.
+
 Example real_embedded_service :
   @from_itree questionE (SubEnumR R) unit source_service ≈ₚ from_itree delayed_service.
 Proof. apply free_omega_from_itree_eutt. exact service_source_eutt. Qed.
@@ -136,6 +180,11 @@ End RealBackend.
 Section LargeCarrier.
 Universe high.
 Constraint Set < high.
+Example high_source_eutt_iff (A B : Type@{high}) (RR : A -> B -> Prop)
+    (t : itree questionE A) (u : itree questionE B) :
+  eutt RR t u <-> @from_itree questionE SubEnumQ A t ≈ₚ[RR] from_itree u.
+Proof. apply free_omega_from_itree_eutt_iff. Qed.
+
 Example high_source_eutt (A B : Type@{high}) (RR : A -> B -> Prop)
     (t : itree questionE A) (u : itree questionE B) :
   eutt RR t u -> @from_itree questionE SubEnumQ A t ≈ₚ[RR] from_itree u.

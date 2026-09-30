@@ -48,6 +48,13 @@ The base embedding uses an explicit classical convergence/divergence split;
 its compiled probability requirements are weaker than unrestricted interp's.
 These are no longer open source-bridge obligations.
 
+For the probability-free embedding, `from_itree_eutt_reflect` and
+`from_itree_eutt_iff` now establish the reverse direction as well, with
+explicit existing Dirac/zero separation laws. The proof is generic;
+SubEnumQ/SubEnumR instantiate it through FreeOmega and MathComp has a client
+in its existing Gate M. General handlers and probability lowering still
+claim preservation only, not reflection.
+
 ## Full PTree target now available
 
 `Interp/IterationUniform.ptree_peutt_iteration_uniform` proves the complete

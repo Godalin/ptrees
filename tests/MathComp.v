@@ -8,11 +8,15 @@ From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order reals boolp
   classical_sets measure ereal.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
 From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws OrderLaws OmegaLaws BindLaws Retry.
-From PTree.Core Require Import PTreeDefinition.
+From ITree.Core Require Import ITreeDefinition.
+From ITree.Eq Require Import Eqit.
+From PTree.Core Require Import PTreeDefinition ITreeBridge.
 From PTree.Eq Require Import UnifiedFrontier PTreeKernel PEutt StableHittingRelation UpToBind.
 From PTree.Eq.Backend Require Import MathComp.
 From PTree.Examples Require Import MathCompPrograms.
 From PTree.Eq Require Import Canonical.
+From PTree.Interp Require Import ITreeReflection.
+From PTree.Prob.Backend.MathComp Require Import RelationalClosure.
 Set Implicit Arguments.
 Import GRing.Theory Num.Theory Order.Theory.
 
@@ -36,6 +40,15 @@ Definition available_general_hitting_exists :=
   @ptree_stable_hitting_exists E M M NI MX NO _ _ bool.
 
 Context `{G : MathCompCouplingGluing R}.
+(** No completion and no relational-limit premise: only the native Dirac,
+    AE and zero laws instantiate the same checked embedding theorem. *)
+Example embedded_itree_eutt_iff {F A B} (RR : A -> B -> Prop)
+    (t : itree F A) (u : itree F B) :
+  eutt RR t u <->
+  @peutt F M M NI (@MathCompNodeSemanticMeasureCoreLaws R G) MX NO A B RR
+    (from_itree t) (from_itree u).
+Proof. apply (from_itree_eutt_iff RR t u (mathcomp_relational_zero R)). Qed.
+
 Example canonical_profile {F A B} (RR : A -> B -> Prop)
     (t : ptree F M A) (u : ptree F M B) :
   canonical_peutt RR t u =

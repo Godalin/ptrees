@@ -11,7 +11,7 @@ From PTree.Prob.Interface Require Import Measure AE Coupling Omega.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure BindOrder RelationalLimit.
 From PTree.Eq Require Import PEutt.
-From PTree.Interp Require Import ITreeEutt ITreePreservation.
+From PTree.Interp Require Import ITreeEutt ITreeReflection ITreePreservation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -28,6 +28,18 @@ Theorem free_omega_from_itree_eutt {E A B} (RR : A -> B -> Prop)
     (t : itree E A) (u : itree E B) :
   eutt RR t u -> peutt (FI := FI) RR (@from_itree E MN A t) (from_itree u).
 Proof. apply (from_itree_eutt free_omega_relational_zero). Qed.
+
+Theorem free_omega_from_itree_eutt_reflect {E A B} (RR : A -> B -> Prop)
+    (t : itree E A) (u : itree E B) :
+  peutt (FI := FI) RR (@from_itree E MN A t) (from_itree u) -> eutt RR t u.
+Proof.
+  apply (from_itree_eutt_reflect (DA := free_omega_observable_dirac_ae_laws)).
+Qed.
+
+Theorem free_omega_from_itree_eutt_iff {E A B} (RR : A -> B -> Prop)
+    (t : itree E A) (u : itree E B) :
+  eutt RR t u <-> peutt (FI := FI) RR (@from_itree E MN A t) (from_itree u).
+Proof. split; [apply free_omega_from_itree_eutt|apply free_omega_from_itree_eutt_reflect]. Qed.
 
 Theorem free_omega_interp_itree_eutt {E F A B} (h : Handler MN E F)
     (RR : A -> B -> Prop) (t : itree E A) (u : itree E B) :
