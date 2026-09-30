@@ -117,6 +117,11 @@ extensionality. This does not remove extensionality inherited from library
 theorems. The substantive finite distribution and joint analyses remain
 separate from the compositional program proof.
 
+The case also needs no hand-written `change` of backend goals: the native
+lemmas apply by conversion. Only the no-deterministic-map counterexample
+first simplifies its mass hypothesis with `cbn`, exposing the three Boolean
+images for case analysis.
+
 The main proof does not flatten probability lists or add intermediate
 sampling states to its invariant: Ret closes by the heterogeneous return
 law, and Continue handles Reply before re-entering the loop candidate. The finite-prefix bind in

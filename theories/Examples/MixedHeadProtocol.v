@@ -263,7 +263,6 @@ Defined.
 Lemma coupling32_lift :
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ bridge uniform3 uniform2.
 Proof.
-  change (indexed_coupling bridge (enumQ_prune uniform3_raw) (enumQ_prune uniform2_raw)).
   eapply indexed_coupling_raw with (mu := uniform3_raw) (nu := uniform2_raw);
     [reflexivity|reflexivity|].
   apply indexed_coupling_of_coupling. exists coupling32_raw.
@@ -281,11 +280,7 @@ Qed.
 Lemma uniform3_no_deterministic_fair (f : hidden3 -> bool) :
   ~ (emap f uniform3_raw ==EnumQ uniform2_raw).
 Proof.
-  intro H. specialize (H true).
-  change (acc_mass true (emap f uniform3_raw) = acc_mass true uniform2_raw) in H.
-  change (FiniteAtoms.finite_atom true
-    [:: (1/3 : rat, f L0); (1/3 : rat, f L1); (1/3 : rat, f L2)] =
-    acc_mass true uniform2_raw) in H.
+  intro H. specialize (H true). cbn in H.
   destruct (f L0), (f L1), (f L2); vm_compute in H; discriminate.
 Qed.
 
@@ -316,8 +311,6 @@ Definition draw_distribution c : SubEnumQ (impl_return + impl_return) :=
 
 Lemma draw_distribution_mixed c : sem_eq (draw_distribution c) (mixed_samples uniform3 c).
 Proof.
-  change (enumQ_meas_eq (subenumQ_raw (draw_distribution c))
-    (subenumQ_raw (mixed_samples uniform3 c))).
   apply (@enumQ_meas_eq_of_eqenum
     (@Equality.Pack (impl_return + impl_return)%type
       (Equality.on (impl_return + impl_return)%type))).
@@ -492,10 +485,7 @@ Proof.
     + apply (FOOObserveSample
         (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
       intros [[b h]|[b h]]; constructor.
-    + change (enumQ_meas_eq
-        (subenumQ_raw (subenumQ_bind (mixed_samples uniform3 c) (fun x =>
-          subenumQ_ret (sample_outcome x)))) (mixed_outcomes_raw c)).
-      apply enumQ_meas_eq_of_eqenum. intros [b|b]; destruct c,b;
+    + apply enumQ_meas_eq_of_eqenum. intros [b|b]; destruct c,b;
         apply val_inj; vm_compute; reflexivity.
 Qed.
 
@@ -542,11 +532,7 @@ Proof.
         apply (FOOObserveSample
           (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
         intros [[b j]|[b j]]; destruct b; constructor.
-      + change (enumQ_meas_eq
-          (subenumQ_raw (subenumQ_bind (mixed_samples uniform2 c) (fun x =>
-            subenumQ_ret (match sample_outcome x with Stop _ => false | Continue b => b end))))
-          (subenumQ_raw (spec_true_reply_observation c))).
-        apply enumQ_meas_eq_of_eqenum. intros []; destruct c;
+      + apply enumQ_meas_eq_of_eqenum. intros []; destruct c;
           apply val_inj; vm_compute; reflexivity.
   }
   destruct Hspec as [spec_query [Hspec Hdenotes]].
