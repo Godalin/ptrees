@@ -178,6 +178,12 @@ rewriting. Quantitative program-query facts are also established locally.
 There are no global named frontier or query witnesses. The probability theorem
 constructs the specification query and its denotation together in a local
 existential, then transports that query through `masked_protocol_equivalent`.
+Its one-shot specification is analyzed directly with the native-probability
+hitting rule, without an intermediate return-only bind frontier. Two branch
+placeholders let the Ret/Vis proofs infer the actual heads and recursive
+continuation; the observation proof likewise infers the native Boolean
+distribution. Neither witness repeats a program fragment. The final
+probability introduction infers its witnesses from the supplied evidence.
 The unused standalone implementation-frontier projection theorem has been
 removed, along with its observation function and two local type abbreviations.
 The three program endpoints are the heterogeneous bisimulation, its

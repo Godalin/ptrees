@@ -324,9 +324,6 @@ Set Universe Polymorphism.
     prepared here. The final proofs construct their complete frontiers and
     query witnesses locally, as they analyze the actual programs. *)
 
-Definition sample_outcome {H} (x : bool * H + bool * H) : mixed_outcome :=
-  match x with inl (b,_) => Stop b | inr (b,_) => Continue b end.
-
 Definition select_challenge (c : bool) {X} (e : mixedE X) : option X :=
   match e in mixedE X0 return option X0 with
   | Challenge => Some c
@@ -434,37 +431,29 @@ Proof.
       apply (proj2 (finite_interaction_query_singleton_iff_next_event_query _ _ _)).
       eexists. split.
       + rewrite (observe_bind (Ret c)). cbn [observe].
-        eapply stable_hitting_bind_ret_only with
-          (hs := FOSample (mixed_samples uniform2 c) (fun x => FORet (FHRet x)))
-          (front := fun x => FORet (match x with
-            | inl result => FHRet result
-            | inr (b,j) => FHVis (Reply b) (fun ack =>
-                mixed_spec (if ack then j else abstract_state m))
-            end)).
-        * eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
-          intros x _. constructor. exact I.
-        * eapply (stable_hitting_prob (FO := FO) (MX := MX)) with (Good := fun _ => True).
-          -- apply sem_ae_true.
-          -- intros x _. apply (stable_hitting_ret (FO := FO) (MX := MX)).
-        * intros [result|[b j]].
+        rewrite observe_bind. cbn [sample observe].
+        (* Infer each head, including Reply's continuation, from its branch. *)
+        eapply (stable_hitting_prob (FO := FO) (MX := MX)) with
+          (Good := fun _ => True)
+          (front := fun x => match x with inl result => _ | inr (b,j) => _ end).
+        * apply sem_ae_true.
+        * intros [result|[b j]] _; rewrite observe_bind; cbn [observe].
           -- apply (stable_hitting_ret (FO := FO) (MX := MX)).
           -- apply (stable_hitting_vis (FO := FO) (MX := MX)).
       + apply sem_eq_refl.
-    - exists (subenumQ_bind (mixed_samples uniform2 c) (fun x =>
-        subenumQ_ret (match sample_outcome x with Stop _ => false | Continue b => b end))).
-      split.
+    - (* Infer the native Boolean outcomes from those observed heads. *)
+      eexists. split.
       + cbn [free_omega_bind].
-        apply (FOOObserveSample (NO := SubEnumQ_SemanticOmega)).
-        intros [[b j]|[b j]]; destruct b; constructor.
+        eapply FOOObserveSample with
+          (front := fun x => match x with inl result => _ | inr (b,j) => _ end).
+        intros [[b j]|[b j]]; constructor.
       + apply enumQ_meas_eq_of_eqenum. intros []; destruct c;
           apply val_inj; vm_compute; reflexivity.
   }
   destruct Hspec as [spec_query [Hspec Hdenotes]].
   destruct (finite_interaction_query_exists (FO := FO) (MX := MX)
     (challenge_true_reply_trace c) (masked_impl m)) as [query Hquery].
-  eapply subenumQ_finite_interaction_probability_intro
-    with (query := query) (representative := spec_query)
-      (out := spec_true_reply_observation c).
+  eapply subenumQ_finite_interaction_probability_intro.
   - exact Hquery.
   - eapply sem_lift_mono; [|apply sem_lift_sym;
       exact (finite_interaction_query_related (masked_protocol_equivalent m)
