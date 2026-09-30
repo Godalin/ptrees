@@ -31,6 +31,15 @@ Example generic_vis_map_minimal {X A B} (e : E X)
   peutt (MF := MF) eq (PTree.fmap f (Vis e h))
     (Vis e (fun x => PTree.fmap f (h x))).
 Proof. apply peutt_fmap_vis. Qed.
+
+(** Equality rewrites both endpoints of a genuinely heterogeneous judgment,
+    in a context with no bind/order/omega laws or backend registration. *)
+Example generic_heterogeneous_endpoint_rewrite
+    (t t' : ptree E MN bool) (u u' : ptree E MN nat)
+    (Ht : peutt (MF := MF) eq t t') (Hu : peutt (MF := MF) eq u u')
+    (H : peutt (MF := MF) (fun (b : bool) (n : nat) => n = if b then 1%nat else 0%nat) t' u') :
+  peutt (MF := MF) (fun (b : bool) (n : nat) => n = if b then 1%nat else 0%nat) t u.
+Proof. setoid_rewrite Ht. setoid_rewrite Hu. exact H. Qed.
 End ShallowClient.
 
 (** Exercise actual rewriting through constructor notations, not merely

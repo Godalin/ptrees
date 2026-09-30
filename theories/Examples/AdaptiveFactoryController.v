@@ -8,13 +8,17 @@
     Reusable endpoints: Adaptive.loop_hits, raw_loop_fair, adaptive_factory_direct, controller_refinement.
     Boundary: successful state and bit remain correlated; no new execution claim.
     User navigation: docs/CASE_STUDIES.md. *)
+(** Reading order: 1. Setup; 2. Programs; 3. Analysis and component equations;
+    4. Full-program calculation; 5. Reusable consequences.
+    For the algebraic story, read [adaptive_factory_direct] and then
+    [controller_program_rewrite]. The finite/limit analysis stays in §3. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Set Default Timeout 20.
-From Coq Require Import List Morphisms FunctionalExtensionality.
+From Coq Require Import List Morphisms.
 From Coq.Program Require Import Equality.
 From mathcomp Require Import ssreflect ssrbool ssrnat eqtype ssralg ssrnum order rat.
 From ITree.Events Require Import State.
@@ -42,6 +46,9 @@ Local Open Scope ring_scope.
 Module Adaptive.
 Import BoundedFactory.
 Local Notation expect f mu := (finite_subdist_expect mu f).
+
+(** 1. Setup: bounded sources, persistent state and the event signatures.
+    [≈ₚ] uses the registered observable FreeOmega interpretation of SubEnumQ. *)
 
 (** Source identity is a Boolean, not the outcome of either sample. *)
 Definition low_weight (src : bool) : rat := if src then 1/4 else 1/3.
@@ -87,6 +94,8 @@ Variant internalE : Type -> Type :=
 Definition implE := stateE machine_state +' (internalE +' publicE).
 Definition targetE := stateE machine_state +' publicE.
 Local Notation tree := (ptree implE SubEnumQ).
+
+(** 2. Programs: private interpretation, adaptive sampler, public controller. *)
 
 Definition internal {X} (e : internalE X) : tree X :=
   PTree.trigger (inr1 (inl1 e)).
@@ -144,7 +153,10 @@ Definition controller_spec q (q0 : 0 <= q) (q1 : q <= 1) :
     ptree publicE SubEnumQ Empty_set :=
   PTree.iter (fun _ : unit => PTree.bind (serve_spec q0 q1) (fun _ => Ret (inl tt))) tt.
 
-(** Local interpretation equations; State is threaded, never erased. *)
+(** 3. Analysis and local equations.
+
+    3.1. Normalize one attempt using handler/State/bind equations.
+    These equations thread state; none resets or abstracts it. *)
 Lemma lower_ret {A} (a : A) s : lower (Ret a) s ≈ₚ Ret (s,a).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
@@ -165,32 +177,47 @@ Proof.
   apply run_state_prob.
 Qed.
 
-Lemma lower_choose s : lower (internal ChooseSource) s ≈ₚ Ret (s,health s).
+(** One equation for all private events. It exposes deterministic state
+    updates; it does not erase state or postulate a handler law. *)
+Lemma lower_internal {X} (e : internalE X) s :
+  lower (internal e) s ≈ₚ Ret
+    (match e in internalE Y return machine_state * Y with
+     | ChooseSource => (s, health s)
+     | CheckSensor a => (s, a)
+     | Maintenance => (repair_update s, tt)
+     | Retry => (retry_update s, tt)
+     | Round => (round_update s, tt)
+     end).
 Proof.
-  repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
-  apply peutt_observe_eq. reflexivity.
+  destruct e; repeat (eapply peutt_tau_step; [cbn; reflexivity|]);
+    apply peutt_observe_eq; reflexivity.
 Qed.
-Lemma lower_sensor a s : lower (internal (CheckSensor a)) s ≈ₚ Ret (s,a).
-Proof.
-  repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
-  apply peutt_observe_eq. reflexivity.
-Qed.
+
 Lemma lower_update f s : lower (update f) s ≈ₚ Ret (f s,tt).
 Proof.
   repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
   apply peutt_observe_eq. reflexivity.
 Qed.
-Lemma lower_maintenance s : lower (internal Maintenance) s ≈ₚ Ret (repair_update s,tt).
-Proof.
-  repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
-  apply peutt_observe_eq. reflexivity.
-Qed.
-Lemma lower_retry s : lower (internal Retry) s ≈ₚ Ret (retry_update s,tt).
-Proof.
-  repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
-  apply peutt_observe_eq. reflexivity.
-Qed.
 
+Definition lowered_step {I A} (step : I -> tree (I+A)) (si : machine_state * I) :=
+  PTree.bind (lower (step (snd si)) (fst si)) (fun sa => Ret (state_iter_result sa)).
+Lemma lower_iter {I A} (step : I -> tree (I+A)) i s :
+  lower (PTree.iter step i) s ≈ₚ PTree.iter (lowered_step step) (s,i).
+Proof.
+  unfold lower. setoid_rewrite peutt_interp_iter.
+  apply peutt_of_pstruct.
+  exact (@run_state_iter machine_state I A publicE SubEnumQ
+    (fun i => PTree.interp internal_handler (step i)) i s).
+Qed.
+Lemma lower_public {X} (e : publicE X) s :
+  lower (public e) s ≈ₚ Vis e (fun x => Ret (s,x)).
+Proof.
+  repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
+  transitivity (Vis e (fun x => run_state
+    (PTree.bind (Ret x) (fun y => PTree.interp internal_handler (Ret y))) s)).
+  - apply peutt_observe_eq. reflexivity.
+  - apply peutt_vis. intro x. apply peutt_observe_eq. reflexivity.
+Qed.
 Definition state_attempt_result s a b : machine_state * (unit + bool) :=
   if a == b then (retry_update (after_sensor s a), inl tt)
   else (after_sensor s a, inr a).
@@ -201,23 +228,23 @@ Theorem lower_attempt s :
     Prob (source_coin (health s)) (fun b => Ret (state_attempt_result s a b))).
 Proof.
   unfold vn_attempt.
-  setoid_rewrite lower_bind. setoid_rewrite lower_choose.
+  setoid_rewrite lower_bind. setoid_rewrite lower_internal.
   setoid_rewrite peutt_bind_ret_l.
   setoid_rewrite lower_prob.
   apply peutt_prob_Proper. intros a.
-  setoid_rewrite lower_bind. setoid_rewrite lower_sensor.
+  setoid_rewrite lower_bind. setoid_rewrite lower_internal.
   setoid_rewrite peutt_bind_ret_l.
   setoid_rewrite lower_bind.
   setoid_rewrite lower_update. setoid_rewrite peutt_bind_ret_l.
   destruct a; cbn [fst snd].
   all: setoid_rewrite lower_bind.
-  all: try setoid_rewrite lower_maintenance.
+  all: try setoid_rewrite lower_internal.
   all: try setoid_rewrite lower_ret.
   all: try setoid_rewrite peutt_bind_ret_l.
   all: setoid_rewrite lower_prob.
   all: apply peutt_prob_Proper; intros b; destruct b; cbn [fst snd].
   all: try setoid_rewrite lower_bind.
-  all: try setoid_rewrite lower_retry.
+  all: try setoid_rewrite lower_internal.
   all: try setoid_rewrite peutt_bind_ret_l.
   all: setoid_rewrite lower_ret; reflexivity.
 Qed.
@@ -253,30 +280,22 @@ Definition normalized_step (si : machine_state * unit) :
   Prob (source_coin (health (fst si))) (fun b =>
     Ret (state_iter_result (state_attempt_result (fst si) a b)))).
 
-Lemma normalized_step_correct si :
-  state_iter_step (fun i => PTree.interp internal_handler (vn_attempt i)) si ≈ₚ
-  normalized_step si.
-Proof.
-  destruct si as [s []].
-  change (PTree.bind (lower (vn_attempt tt) s)
-    (fun sa => Ret (state_iter_result sa)) ≈ₚ normalized_step (s,tt)).
-  setoid_rewrite lower_attempt.
-  setoid_rewrite peutt_bind_prob. setoid_rewrite peutt_bind_prob.
-  setoid_rewrite peutt_bind_ret_l. reflexivity.
-Qed.
-
 Theorem lower_adaptive_normalized s :
   lower adaptive_vn s ≈ₚ PTree.iter normalized_step (s,tt).
 Proof.
-  unfold lower, adaptive_vn. setoid_rewrite peutt_interp_iter.
-  transitivity (PTree.iter
-    (state_iter_step (fun i => PTree.interp internal_handler (vn_attempt i))) (s,tt)).
-  - apply peutt_of_pstruct.
-    exact (@run_state_iter machine_state unit bool publicE SubEnumQ
-      (fun i => PTree.interp internal_handler (vn_attempt i)) tt s).
-  - setoid_rewrite (normalized_step_correct : pointwise_relation _
-      (fun t u => t ≈ₚ u) _ _). reflexivity.
+  unfold adaptive_vn. setoid_rewrite lower_iter.
+  have Hstep : pointwise_relation _ (fun t u => t ≈ₚ u)
+      (lowered_step vn_attempt) normalized_step.
+  { intros [s' []]. unfold lowered_step, normalized_step; cbn [fst snd].
+    setoid_rewrite lower_attempt.
+    setoid_rewrite peutt_bind_prob.
+    setoid_rewrite peutt_bind_prob.
+    setoid_rewrite peutt_bind_ret_l. reflexivity. }
+  setoid_rewrite Hstep. reflexivity.
 Qed.
+
+(** 3.2. Finite probability analysis. Retain the full state/bit experiment,
+    prove symmetry and a uniform geometric tail; do not assume independence. *)
 
 Lemma source_expect src (f : bool -> rat) :
   expect f (source_coin src) =
@@ -329,15 +348,6 @@ Proof.
   rewrite finite_subdist_expect_bind attempt_expect /= !finite_subdist_expect_ret. reflexivity.
 Qed.
 
-Lemma attempts_pending_S n s :
-  expect pending (attempts (S n) s) =
-    low_weight (health s) ^+ 2 * expect pending (attempts n (retry_update (after_sensor s false))) +
-    high_weight (health s) ^+ 2 * expect pending (attempts n (retry_update (after_sensor s true))).
-Proof.
-  rewrite attempts_expect_S /pending !mulr0 addr0 add0r !mulrA.
-  by rewrite !expr2.
-Qed.
-
 Lemma retry_bound src : low_weight src ^+ 2 + high_weight src ^+ 2 <= (5/8 : rat).
 Proof. destruct src; by vm_compute. Qed.
 
@@ -367,7 +377,8 @@ Theorem adaptive_pending_bound n s :
 Proof.
   elim: n s => [|n IH] s.
   - change ((1 : rat) <= 1). exact: lexx.
-  - rewrite attempts_pending_S (exprS (5/8 : rat) n).
+  - rewrite attempts_expect_S /pending !mulr0 addr0 add0r !mulrA -!expr2
+      (exprS (5/8 : rat) n).
     have Hl := ler_wpM2l (exprn_ge0 2 (low_nonnegative (health s)))
       (IH (retry_update (after_sensor s false))).
     have Hr := ler_wpM2l (exprn_ge0 2 (high_nonnegative (health s)))
@@ -452,7 +463,7 @@ Example different_retry_rates :
   low_weight true ^+ 2 + high_weight true ^+ 2.
 Proof. by vm_compute. Qed.
 
-(** Count complete attempts, rather than primitive internal steps. The
+(** 3.3. Connect complete attempts to actual stable hitting. The
     observer rejects visible heads; None is never part of the limit law. *)
 Definition bit_observer {A} (value : A -> bool)
     (h : stable_head publicE SubEnumQ A) : option bool :=
@@ -583,34 +594,9 @@ Proof.
     + cbn. auto.
     + destruct src; vm_compute; discriminate.
 Qed.
-Lemma fair_ae_inv P : sem_ae fair_coin P -> forall b, P b.
-Proof.
-  intros H b. apply H with (p := one_div_two).
-  - destruct b; cbn; auto.
-  - vm_compute; discriminate.
-Qed.
 Definition fair_tree : ptree publicE SubEnumQ bool := Prob fair_coin (fun b => Ret b).
 Definition fair_heads : FreeOmega SubEnumQ (stable_head publicE SubEnumQ bool) :=
   FOSample fair_coin (fun b => FORet (FHRet b)).
-Lemma fair_hits : ptree_stable_hitting (MF := FreeOmega SubEnumQ)
-  (observe fair_tree) fair_heads.
-Proof.
-  unfold fair_tree, fair_heads.
-  change (ptree_stable_hitting (E := publicE) (MN := SubEnumQ) (MF := FreeOmega SubEnumQ)
-    (ProbF fair_coin (fun b => Ret b))
-    (mixed_bind fair_coin (fun b => FORet (FHRet b)))).
-  eapply (ptree_stable_hitting_prob (FI := FreeOmegaObservableSemanticMeasure)
-    (FO := FreeOmegaObservableSemanticOmega)) with (Good := fun _ => True).
-  - apply sem_ae_true.
-  - intros b _. apply (ptree_stable_hitting_ret (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)).
-Qed.
-Lemma fair_heads_observes :
-  free_omega_observes (bit_observer (fun b => b)) fair_heads fair_options.
-Proof. constructor. intro b. constructor. Qed.
-Lemma loop_heads_returns s : free_omega_ae
-    (fun h => exists sb, h = FHRet sb) (loop_heads s).
-Proof. apply iteration_frontier_returns. Qed.
 Lemma loop_heads_success s P : free_omega_ae P (loop_heads s) ->
   forall b, P (FHRet (after_sensor s b,b)).
 Proof.
@@ -635,8 +621,12 @@ Proof.
     intros b _. constructor. exists (FHRet (after_sensor s b,b)). split.
     + constructor. reflexivity.
     + exact (loop_heads_success HP b).
-  - intros Q HQ. pose proof (fair_ae_inv (free_omega_ae_sample_inv HQ)) as HQb.
-    eapply free_omega_ae_mono; [|exact (loop_heads_returns s)].
+  - intros Q HQ.
+    have HQb : forall b, free_omega_ae Q (FORet (FHRet b)).
+    { intro b. apply (free_omega_ae_sample_inv HQ) with (p := one_div_two).
+      - destruct b; cbn; auto.
+      - vm_compute; discriminate. }
+    eapply free_omega_ae_mono; [|apply iteration_frontier_returns].
     intros h [sb ->]. exists (FHRet (snd sb)). split; [constructor; reflexivity|].
     specialize (HQb (snd sb)). inversion HQb; subst; assumption.
 Qed.
@@ -649,7 +639,7 @@ Proof.
     (outA := fair_options) (outB := fair_options)
     (S := fun x y => exists b, x = Some b /\ y = Some b).
   - exact (loop_heads_observes s).
-  - exact fair_heads_observes.
+  - constructor. intro b. constructor.
   - eapply sem_lift_bind with (R := eq).
     + apply sem_lift_refl. intro b. reflexivity.
     + intros b c ->. apply sem_lift_ret. exists c. auto.
@@ -662,16 +652,17 @@ Theorem raw_loop_fair s : raw_loop s ≈ₚ[output_related] fair_tree.
 Proof.
   eapply peutt_of_hitting_lift.
   - exact (loop_hits s).
-  - exact fair_hits.
+  - unfold fair_tree, fair_heads.
+    eapply (ptree_stable_hitting_prob (FI := FreeOmegaObservableSemanticMeasure)
+      (FO := FreeOmegaObservableSemanticOmega)) with (Good := fun _ => True).
+    + apply sem_ae_true.
+    + intros b _. apply ptree_stable_hitting_ret.
   - exact (loop_heads_fair_lift s _).
 Qed.
 
 Theorem adaptive_vn_fair s : lower adaptive_vn s ≈ₚ[output_related] fair_tree.
 Proof.
-  eapply Iteration.iteration_peutt_compose with (R12 := eq) (R23 := output_related).
-  - intros x y b -> H. exact H.
-  - exact (lower_adaptive_normalized s).
-  - exact (raw_loop_fair s).
+  setoid_rewrite lower_adaptive_normalized. apply raw_loop_fair.
 Qed.
 Theorem raw_loop_ast s : ptree_stable_hitting_ast (MF := FreeOmega SubEnumQ)
   (observe (raw_loop s)) (loop_heads s).
@@ -683,61 +674,12 @@ Proof.
   rewrite fair_options_expect. by vm_compute.
 Qed.
 
-(** From here on, the analytic certificate is consumed through program
-    relations; no finite list or rational-limit calculation is repeated. *)
-Definition lowered_step {I A} (step : I -> tree (I+A)) (si : machine_state * I) :=
-  PTree.bind (lower (step (snd si)) (fst si)) (fun sa => Ret (state_iter_result sa)).
-Lemma lower_iter {I A} (step : I -> tree (I+A)) i s :
-  lower (PTree.iter step i) s ≈ₚ PTree.iter (lowered_step step) (s,i).
-Proof.
-  unfold lower. setoid_rewrite peutt_interp_iter.
-  apply peutt_of_pstruct.
-  exact (@run_state_iter machine_state I A publicE SubEnumQ
-    (fun i => PTree.interp internal_handler (step i)) i s).
-Qed.
-Lemma lower_round s : lower (internal Round) s ≈ₚ Ret (round_update s,tt).
-Proof.
-  repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
-  apply peutt_observe_eq. reflexivity.
-Qed.
-Lemma lower_factory_step s q : lowered_step factory_step (s,q) ≈ₚ
-  PTree.bind (lower adaptive_vn s) (fun sb =>
-    Ret (state_iter_result (round_update (fst sb), binary_round_result q (snd sb)))).
-Proof.
-  unfold lowered_step, factory_step. cbn [fst snd].
-  setoid_rewrite lower_bind. setoid_rewrite lower_bind.
-  setoid_rewrite lower_round. setoid_rewrite peutt_bind_ret_l.
-  setoid_rewrite lower_ret. setoid_rewrite peutt_bind_assoc.
-  setoid_rewrite peutt_bind_ret_l. reflexivity.
-Qed.
+(** 3.4. Component calculation. Consume the two unbounded analyses:
+    the adaptive VN result above and the existing binary-factory law below.
+    From here on, no finite list or rational-limit calculation is repeated. *)
+(** The factory invariant keeps the rational residual target, but permits
+    any machine state. One fair bit is enough; state/bit independence is not. *)
 Definition factory_states (si : machine_state * rat) q := snd si = q.
-Lemma factory_step_related si q : factory_states si q ->
-  lowered_step factory_step si ≈ₚ[pstruct_iter_sum_rel factory_states output_related]
-    factory_sampler_step fair_tree q.
-Proof.
-  destruct si as [s x]. intros <-.
-  eapply Iteration.iteration_peutt_compose with (R12 := eq)
-    (R23 := pstruct_iter_sum_rel factory_states output_related).
-  - intros r r' z -> H. exact H.
-  - apply lower_factory_step.
-  - unfold factory_sampler_step. eapply peutt_bind with (RR := output_related).
-    + apply adaptive_vn_fair.
-    + intros [s' b] c Hbc. unfold output_related in Hbc. cbn in Hbc. subst c.
-      apply peutt_ret. cbn [fst snd].
-      destruct (binary_round_result x b); constructor; reflexivity.
-Qed.
-Theorem adaptive_factory_fair s q : lower (eventful_factory q) s ≈ₚ[output_related]
-    factory_with_sampler fair_tree q.
-Proof.
-  eapply Iteration.iteration_peutt_compose with (R12 := eq) (R23 := output_related).
-  - intros x y b -> H. exact H.
-  - apply lower_iter.
-  - eapply (peutt_iter_direct_rel free_omega_relational_zero free_omega_relational_lub)
-      with (SI := factory_states).
-    + exact factory_step_related.
-    + reflexivity.
-Qed.
-
 Definition embed_closed {A} (t : ptree factoryE SubEnumQ A) : ptree publicE SubEnumQ A :=
   PTree.interp (fun X (e : factoryE X) => match e with end) t.
 Lemma fair_factory_direct q (q0 : 0 <= q) (q1 : q <= 1) :
@@ -754,104 +696,93 @@ Proof.
   setoid_rewrite peutt_interp_ret in H.
   exact H.
 Qed.
+
 Theorem adaptive_factory_direct s q (q0 : 0 <= q) (q1 : q <= 1) :
   lower (eventful_factory q) s ≈ₚ[output_related]
     Prob (bernoulli q0 q1) (fun b => Ret b).
 Proof.
-  eapply Iteration.iteration_peutt_compose with (R12 := output_related) (R23 := eq).
-  - intros sb b c H ->. exact H.
-  - apply adaptive_factory_fair.
-  - apply fair_factory_direct.
-Qed.
-Lemma lower_public {X} (e : publicE X) s :
-  lower (public e) s ≈ₚ Vis e (fun x => Ret (s,x)).
-Proof.
-  repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
-  transitivity (Vis e (fun x => run_state
-    (PTree.bind (Ret x) (fun y => PTree.interp internal_handler (Ret y))) s)).
-  - apply peutt_observe_eq. reflexivity.
-  - apply peutt_vis. intro x. apply peutt_observe_eq. reflexivity.
-Qed.
-Lemma lower_service s q : lower (serve_request q) s ≈ₚ
-  Vis Request (fun _ =>
-    PTree.bind (lower (eventful_factory q) s) (fun sb =>
-      Vis (Emit (snd sb)) (fun ack => Ret (fst sb,ack)))).
-Proof.
-  unfold serve_request. setoid_rewrite lower_bind.
-  setoid_rewrite lower_public. setoid_rewrite peutt_bind_vis.
+  (* Stateful iteration -> fair-bit iteration -> direct Bernoulli. *)
+  setoid_rewrite <- (fair_factory_direct q0 q1).
+  unfold eventful_factory, factory_with_sampler. setoid_rewrite lower_iter.
+  eapply (peutt_iter_direct_rel free_omega_relational_zero free_omega_relational_lub)
+    with (SI := factory_states); [|reflexivity].
+  intros [s' x] y <-.
+  unfold lowered_step, factory_step, factory_sampler_step; cbn [fst snd].
+  repeat setoid_rewrite lower_bind.
+  setoid_rewrite lower_internal. setoid_rewrite peutt_bind_ret_l.
+  setoid_rewrite lower_ret. setoid_rewrite peutt_bind_assoc.
   setoid_rewrite peutt_bind_ret_l.
-  setoid_rewrite lower_bind. setoid_rewrite lower_public. reflexivity.
+  (* Relational bind retains the actual state on the implementation side. *)
+  eapply peutt_bind with (RR := output_related); [apply adaptive_vn_fair|].
+  intros [s'' b] c <-.
+  apply peutt_ret. cbn [fst snd].
+  destruct (binary_round_result x b); constructor; reflexivity.
 Qed.
+
+(** 4. Full-program calculation.
+
+    Read this proof as: expose the State/interpreter loop; rewrite one whole
+    request; replace the adaptive factory by its Bernoulli law; close the
+    reactive iteration; remove the final identity bind. The two relational
+    steps are explicit because successful state and bit are correlated. *)
 Definition state_result {A} (sa : machine_state * A) (a : A) := snd sa = a.
-Theorem service_refinement s q (q0 : 0 <= q) (q1 : q <= 1) :
-  lower (serve_request q) s ≈ₚ[state_result] serve_spec q0 q1.
-Proof.
-  eapply Iteration.iteration_peutt_compose with (R12 := eq) (R23 := state_result).
-  - intros x y z -> H. exact H.
-  - apply lower_service.
-  - apply peutt_vis. intros [].
-    eapply Iteration.iteration_peutt_compose with (R12 := state_result) (R23 := eq).
-    + intros x y z H ->. exact H.
-    + eapply peutt_bind with (RR := output_related)
-        (k2 := fun b => Vis (Emit b) (fun _ => Ret tt)).
-      * exact (adaptive_factory_direct s q0 q1).
-      * intros [s' b] c H. unfold output_related in H. cbn in H. subst c.
-        cbn [fst snd]. apply peutt_vis. intros []. apply peutt_ret. reflexivity.
-    + setoid_rewrite peutt_bind_prob. setoid_rewrite peutt_bind_ret_l. reflexivity.
-Qed.
-Definition service_iteration q (_ : unit) : tree (unit + Empty_set) :=
-  PTree.bind (serve_request q) (fun _ => Ret (inl tt)).
-Definition spec_iteration q (q0 : 0 <= q) (q1 : q <= 1) (_ : unit) :
-    ptree publicE SubEnumQ (unit + Empty_set) :=
-  PTree.bind (serve_spec q0 q1) (fun _ => Ret (inl tt)).
-Lemma lower_service_iteration s q : lowered_step (service_iteration q) (s,tt) ≈ₚ
-  PTree.bind (lower (serve_request q) s) (fun su => Ret (inl (fst su,tt))).
-Proof.
-  unfold lowered_step, service_iteration. cbn [fst snd].
-  setoid_rewrite (lower_bind (serve_request q)
-    (fun _ => Ret (inl tt : unit + Empty_set)) s).
-  setoid_rewrite lower_ret.
-  setoid_rewrite peutt_bind_assoc. setoid_rewrite peutt_bind_ret_l. reflexivity.
-Qed.
-Lemma service_iteration_related q (q0 : 0 <= q) (q1 : q <= 1) si u :
-  lowered_step (service_iteration q) si ≈ₚ[
-    pstruct_iter_sum_rel (fun _ _ => True) state_result] spec_iteration q0 q1 u.
-Proof.
-  destruct si as [s []], u.
-  eapply Iteration.iteration_peutt_compose with (R12 := eq)
-    (R23 := pstruct_iter_sum_rel (fun _ _ => True) state_result).
-  - intros x y z -> H. exact H.
-  - apply lower_service_iteration.
-  - unfold spec_iteration. eapply peutt_bind with (RR := state_result).
-    + exact (service_refinement s q0 q1).
-    + intros [s' []] [] _. apply peutt_ret. constructor. exact I.
-Qed.
-Theorem controller_refinement s q (q0 : 0 <= q) (q1 : q <= 1) :
-  lower (controller q) s ≈ₚ[state_result] controller_spec q0 q1.
-Proof.
-  eapply Iteration.iteration_peutt_compose with (R12 := eq) (R23 := state_result).
-  - intros x y z -> H. exact H.
-  - apply lower_iter.
-  - eapply (peutt_iter_direct_rel free_omega_relational_zero free_omega_relational_lub)
-      with (SI := fun _ _ => True).
-    + intros si u _. exact (service_iteration_related q0 q1 si u).
-    + exact I.
-Qed.
+
 Theorem controller_program_rewrite s q (q0 : 0 <= q) (q1 : q <= 1) :
   PTree.bind (run_state (PTree.interp internal_handler (controller q)) s)
     (fun sa => Ret (snd sa)) ≈ₚ controller_spec q0 q1.
 Proof.
-  change (PTree.bind (lower (controller q) s) (fun sa => Ret (snd sa)) ≈ₚ
-    controller_spec q0 q1).
+  fold (lower (controller q) s).
   unfold controller. setoid_rewrite lower_iter.
   transitivity (PTree.bind (controller_spec q0 q1) (fun a => Ret a)).
   - eapply peutt_bind with (RR := state_result).
-    + eapply (peutt_iter_direct_rel free_omega_relational_zero free_omega_relational_lub)
-        with (SI := fun _ _ => True).
-      * intros si u _. exact (service_iteration_related q0 q1 si u).
-      * exact I.
+    + unfold controller_spec.
+      eapply (peutt_iter_direct_rel free_omega_relational_zero free_omega_relational_lub)
+        with (SI := fun _ _ => True); [|exact I].
+      intros [s' []] [] _.
+      (* One request, including its return to the outer loop. *)
+      unfold lowered_step, serve_request, serve_spec; cbn [fst snd].
+      repeat setoid_rewrite lower_bind.
+      setoid_rewrite lower_public. setoid_rewrite lower_ret.
+      repeat setoid_rewrite peutt_bind_assoc.
+      (* Distribute sequencing through events/sampling, then discharge Ret. *)
+      repeat first [setoid_rewrite peutt_bind_vis
+                   |setoid_rewrite peutt_bind_prob
+                   |setoid_rewrite peutt_bind_ret_l].
+      apply peutt_vis. intros [].
+      (* Replace only the bit law; carry the sampled state to the next request. *)
+      setoid_rewrite <- (peutt_sample_bind (bernoulli q0 q1)).
+      eapply peutt_bind with (RR := output_related).
+      * apply adaptive_factory_direct.
+      * intros [s'' b] c <-.
+        apply peutt_vis. intros []. apply peutt_ret. constructor. exact I.
     + intros sa a H. apply peutt_ret. exact H.
   - setoid_rewrite peutt_bind_ret_r. reflexivity.
+Qed.
+
+(** 5. Reusable consequences. The state-returning interfaces remain available;
+    they are not used as shortcuts in the calculation above. *)
+Theorem service_refinement s q (q0 : 0 <= q) (q1 : q <= 1) :
+  lower (serve_request q) s ≈ₚ[state_result] serve_spec q0 q1.
+Proof.
+  unfold serve_request, serve_spec.
+  repeat setoid_rewrite lower_bind. setoid_rewrite lower_public.
+  setoid_rewrite peutt_bind_vis. setoid_rewrite peutt_bind_ret_l.
+  apply peutt_vis. intros [].
+  setoid_rewrite <- (peutt_sample_bind (bernoulli q0 q1)).
+  eapply peutt_bind with (RR := output_related); [apply adaptive_factory_direct|].
+  intros [s' b] c <-.
+  apply peutt_vis. intros []. apply peutt_ret. reflexivity.
+Qed.
+
+Theorem controller_refinement s q (q0 : 0 <= q) (q1 : q <= 1) :
+  lower (controller q) s ≈ₚ[state_result] controller_spec q0 q1.
+Proof.
+  eapply peutt_rel_compose with (R12 := state_result) (R23 := eq).
+  - intros x y z H ->. exact H.
+  - rewrite <- (peutt_bind_ret_r (lower (controller q) s)) at 1.
+    eapply peutt_bind with (RR := eq); [reflexivity|].
+    intros sa sa' ->. apply peutt_ret. reflexivity.
+  - apply controller_program_rewrite.
 Qed.
 
 End Adaptive.

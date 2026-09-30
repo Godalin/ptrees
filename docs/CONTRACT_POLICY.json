@@ -1366,6 +1366,7 @@
       "generic_left_unit_minimal",
       "generic_prob_bind_minimal",
       "generic_vis_map_minimal",
+      "generic_heterogeneous_endpoint_rewrite",
       "generic_vis_context_rewrite",
       "generic_prob_context_rewrite",
       "free_omega_bind_Proper",

@@ -5,6 +5,38 @@ approved, retaining the file-role, concrete-analysis and stable-endpoint
 clarifications without a proof-method classification. Local validation only;
 CI is not queried.
 
+## Adaptive full-program calculation (baseline `62338b6`)
+
+The [Adaptive case](ADAPTIVE_FACTORY_CONTROLLER.md) now follows the same
+reading structure as FactoryController: setup, actual programs, analysis and
+component equations, full-program calculation, then reusable consequences.
+Everything stays in its existing file and `Adaptive` namespace.
+
+- `controller_program_rewrite` opens the complete service round inside the
+  relational iteration proof. Handler/State/bind/Vis equations form the
+  calculation; it no longer calls a preproved service-iteration relation.
+- `adaptive_factory_direct` shows the component calculation itself: the
+  existing binary-factory equation, State/interpreter iteration, per-round
+  algebra, and the adaptive VN fairness certificate. It no longer delegates
+  its proof to a ladder of factory-step wrappers.
+- Five deterministic private-event equations become one `lower_internal`.
+  One-use finite recurrences, normalized-step and elementary frontier facts
+  are proved at their use sites. The actual convergence and correlation
+  arguments remain explicit; they are not disguised as rewriting.
+- `service_refinement` and `controller_refinement` retain their interfaces
+  as consequences, not prerequisites of the final calculation. Program
+  definitions, quantitative results and recorded case endpoint types are
+  preserved; no state reset or independence premise is introduced.
+- A real generic rewriting gap is filled at `Eq/PEutt`: heterogeneous
+  composition and equality-based rewriting of both endpoints of `peutt RR`.
+  The old interpreter-local composition proof delegates to that owner.
+  A minimal-context bool/nat client checks actual rewriting; no new backend
+  class, case-local Proper instance or axiom is introduced.
+
+The older checkpoint validation records below are historical, not current
+module/test counts. Current validation for this follow-up is recorded in the
+Adaptive case document.
+
 ## User-gallery follow-up (baseline `833d65b`)
 
 The [learning guide](CASE_STUDIES.md) is a navigation layer, not another API

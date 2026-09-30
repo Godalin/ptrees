@@ -188,12 +188,7 @@ Local Lemma iteration_peutt_compose {A B C}
     (t : ptree E MN A) (u : ptree E MN B) (v : ptree E MN C) :
   peutt (MF := MF) R12 t u -> peutt (MF := MF) R23 u v -> peutt (MF := MF) R13 t v.
 Proof.
-  intros H12 H23. unfold peutt, peutt_state in H12, H23 |- *.
-  eapply stable_hitting_bisim_compose; [|exact H12|exact H23].
-  intros sim12 sim23 sim13 Hsim a1 a3 [a2 [Ha12 Ha23]].
-  dependent destruction Ha12; dependent destruction Ha23.
-  - constructor. eapply Hret; eassumption.
-  - constructor. intro x. apply Hsim. eauto.
+  intros H12 H23. exact (peutt_rel_compose Hret H12 H23).
 Qed.
 End Compose.
 

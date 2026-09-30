@@ -860,6 +860,51 @@ Global Instance peutt_equivalence :
 
 End PEuttEquivalence.
 
+(** Heterogeneous composition and endpoint rewriting. An equality-based
+    program calculation may rewrite either side of [peutt RR] without
+    replacing RR by equality or forgetting the other carrier. *)
+Section PEuttRelationalRewriting.
+Context {E MN MF : Type -> Type}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
+
+Lemma peutt_rel_compose {A B C}
+    (R12 : A -> B -> Prop) (R23 : B -> C -> Prop) (R13 : A -> C -> Prop)
+    (Hret : forall a b c, R12 a b -> R23 b c -> R13 a c)
+    (t : ptree E MN A) (u : ptree E MN B) (v : ptree E MN C) :
+  peutt (MF := MF) R12 t u -> peutt (MF := MF) R23 u v -> peutt (MF := MF) R13 t v.
+Proof.
+  intros H12 H23. unfold peutt, peutt_state in H12, H23 |- *.
+  eapply stable_hitting_bisim_compose; [|exact H12|exact H23].
+  intros sim12 sim23 sim13 Hsim a1 a3 [a2 [Ha12 Ha23]].
+  dependent destruction Ha12; dependent destruction Ha23.
+  - constructor. eapply Hret; eassumption.
+  - constructor. intro x. apply Hsim. eauto.
+Qed.
+
+#[global] Instance peutt_rel_endpoint_Proper {A B} (RR : A -> B -> Prop) :
+  Proper (@peutt E MN MF FI FC MX FO A A eq ==>
+    @peutt E MN MF FI FC MX FO B B eq ==> iff)
+    (@peutt E MN MF FI FC MX FO A B RR).
+Proof.
+  intros t t' Ht u u' Hu. split; intro H.
+  - eapply peutt_rel_compose with (R12 := eq) (R23 := RR).
+    + intros a b c -> Hbc. exact Hbc.
+    + apply peutt_sym. exact Ht.
+    + eapply peutt_rel_compose with (R12 := RR) (R23 := eq).
+      * intros a b c Hab ->. exact Hab.
+      * exact H.
+      * exact Hu.
+  - eapply peutt_rel_compose with (R12 := eq) (R23 := RR).
+    + intros a b c -> Hbc. exact Hbc.
+    + exact Ht.
+    + eapply peutt_rel_compose with (R12 := RR) (R23 := eq).
+      * intros a b c Hab ->. exact Hab.
+      * exact H.
+      * apply peutt_sym. exact Hu.
+Qed.
+End PEuttRelationalRewriting.
+
 (** Generic endpoint rewriting.  Any proof relation registered as a
     [subrelation] of [peutt] can rewrite either endpoint. *)
 Section PEuttSubrelations.

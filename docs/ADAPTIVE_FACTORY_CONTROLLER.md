@@ -68,28 +68,50 @@ exact stateful attempt kernel
 actual stateful retry loop
     | complete-round summary + finite observations + support transport
 adaptive_vn_fair : state/bit result related to a fair bit
-    | existing heterogeneous bind + relational iteration
-adaptive_factory_fair
+    | rewrite State/handler equations; relational bind + iteration
     | existing rational factory correctness under interpretation
 adaptive_factory_direct
-    | public-event equations
-service_refinement
-    | existing eventful relational iteration, arbitrary internal state
-controller_refinement / controller_program_rewrite
+    | inline the complete Request / factory / Emit / retry calculation
+    | eventful relational iteration, arbitrary internal state
+controller_program_rewrite
+    | retain the state-returning interface as a consequence
+controller_refinement
 ```
 
 Program normalization uses the existing interpreter, State, bind, sampling and
 iteration equations. There is no case-specific Proper instance, new capability,
-or second proof of the rational factory's arithmetic. The existing generic
-heterogeneous composition helper is used explicitly for relational endpoint
-transport.
+or second proof of the rational factory's arithmetic. Generic heterogeneous
+composition now belongs to `Eq/PEutt` as `peutt_rel_compose`; its derived
+`peutt_rel_endpoint_Proper` lets ordinary equality equations rewrite both
+endpoints of `peutt RR`. It needs only the existing frontier CoreLaws, not
+native laws, bind/omega laws or a completion-specific instance.
 
-The final calculation exposes `lower_iter`, applies the generic relational
-iteration theorem with an invariant permitting every internal state, and
-removes the final identity bind. Ordinary equality-based rewriting cannot
-discard correlated state; the one relational loop argument is explicit rather
-than disguised as a rewrite. Local Boolean case splits and probability analysis
-are confined to the supporting lemmas in the same file.
+The two reading points are:
+
+- `adaptive_factory_direct`: rewrite the specification to the existing fair
+  binary factory, expose State/interpreter iteration, then rewrite the actual
+  factory body. Heterogeneous bind consumes `adaptive_vn_fair`; the invariant
+  preserves the rational residual target while allowing any machine state.
+- `controller_program_rewrite`: expose `lower_iter`, open one complete public
+  request **inside the proof**, and rewrite handler, bind and visible-event
+  equations. Relational bind consumes the factory certificate; relational
+  iteration carries the actual resulting state to the next request. Finally
+  the identity bind on the specification disappears by rewriting.
+
+Neither `service_refinement` nor `controller_refinement` is a prerequisite of
+the displayed calculation. The former remains a reusable single-request
+corollary; the latter is recovered from the final theorem. The old
+`lower_service`, `lower_service_iteration`, `service_iteration_related` and
+step-wrapper ladder have been removed, not renamed into opaque helpers.
+
+One `lower_internal` equation covers the five deterministic private events.
+The one-use normalized-step proof is local to `lower_adaptive_normalized`;
+elementary fair-frontier facts are proved at their analysis use sites. Genuine
+finite convergence and support arguments remain named and separate.
+
+Ordinary equality rewriting cannot discard correlated state. The relational
+bind/iteration steps therefore remain explicit rather than being disguised as
+rewrites. No proof that final state and bit are independent is used or claimed.
 
 ## Finite analysis and the actual hitting bridge
 
@@ -174,7 +196,36 @@ The factory contract suite records the explicit Adaptive carrier migration
 from EnumQ to SubEnumQ. Unrelated controller contracts stay unchanged; internal
 helper shapes are not frozen. CI is not queried.
 
-## Local verification of the bounded-backend migration
+## Local verification of the program-calculation refactor
+
+Baseline: `62338b6`. The program definitions, distributions, handlers and return
+relations are unchanged. Nineteen internal declarations were consolidated into
+their use sites or the single `lower_internal` equation; the genuine finite
+convergence and frontier analysis remains explicit.
+
+- Full `opam exec -- dune build -j 2`, including AllImports and extraction:
+  passed. Existing extraction warnings remain. This is not a claim that the
+  two pre-existing Gate M modules are universe-checked.
+- All 148 Python tool tests: passed.
+- Architecture, API surface, soundness source and contract metadata audits:
+  passed. Module count and Gate M allowlist are unchanged.
+- Factory suite: all 47 compiled type/assumption contracts unchanged,
+  including all 21 Adaptive endpoints.
+- Mainline suite: all 491 compiled type/assumption contracts unchanged.
+  Generic algebra suite: 131 contracts passed; its 129 existing entries are
+  unchanged and only the two generic endpoints below were appended.
+- The new generic heterogeneous composition and endpoint Proper have only
+  the existing `Eqdep.Eq_rect_eq.eq_rect_eq` logical dependency. No capability
+  or logical-axiom whitelist was added; the minimal heterogeneous regression
+  actually rewrites both endpoints without native/bind/order/omega laws.
+- Joint `coqchk -norec` for `Eq.PEutt`, `Interp.Iteration`,
+  `Examples.AdaptiveFactoryController` and `Regression.Semantics.GenericAlgebra`:
+  passed. This checks these module bodies while trusting dependencies, not
+  a recursive whole-library kernel audit.
+
+CI was not queried.
+
+## Historical verification: bounded-backend migration
 
 - Full `opam exec -- dune build`, including AllImports: passed. Existing
   extraction opacity/output-directory warnings remain; the full build still
