@@ -2,7 +2,7 @@
 
 Baseline: `9431e4b`. This additive increment completes the canonical ExceptT
 fold/commuting slice of the interpretation-algebra proposal. It does not
-complete ReaderT, WriterT, or the source-ITree weak-equivalence bridge.
+cover ReaderT, WriterT, or the source-ITree weak-equivalence bridge.
 The subsequent [ReaderT/WriterT checkpoint](READER_WRITER_FOLD.md) supplies
 their operations/laws and actual-ITree fold agreements; see the current
 [scope table](INTERPRETATION_ALGEBRA.md).
@@ -81,32 +81,23 @@ the square with actual ITree execution, using the previously proved
 The generic files are opt-in; no public facade export or theorem owner is
 changed. Reader/Writer administrative-Tau agreement has since been proved
 for the actual ITree target, but not arbitrary iteration targets. Source
-`ITree.eutt` preservation and the source-interp square remain separate.
+`ITree.eutt` preservation, the source-interp square, and probability-free
+embedding reflection are proved in separate modules; see
+[ITree conservativity](ITREE_PRESERVATION.md). They are not premises of this
+transformer fold theorem.
 
-## Verification and conservation
+## Current verification
 
-`audit_exception_fold.py` reconstructs all 389 baseline theory modules
-byte-for-byte, except for four precisely identified sorted AllImports
-additions. Earlier source audits consume the reconstruction adapter, without
-relaxing their frozen snapshots. The new audit forbids new axioms/classes,
-checker bypasses, global instances/hints, and probability-model dependencies.
+The compiled endpoint contracts retain their axiom-free assumption reports.
+They are focused checks of the current compiled types and logical assumptions:
 
-The 24-entry compiled snapshot records types and `Print Assumptions`.
-Every new endpoint is closed under the global context: **no logical axioms**.
-The audit rejects even the previously whitelisted classical axioms here.
+```sh
+python3 tools/audit_contracts.py --group exception_fold
+```
 
-Local validation completed:
-
-- Full `opam exec -- dune build`, including safe AllImports and the existing
-  extraction targets (only pre-existing extraction warnings).
-- All 300 Python tool tests.
-- Architecture, public-surface and soundness source audits: 393 modules,
-  391 Gate S and the unchanged two Gate M.
-- All 465 mainline compiled contracts and all 58 prior effect-algebra
-  contracts unchanged; 24 new compiled contracts checked.
-- Joint `coqchk -norec` on the four new safe modules. Dependencies are trusted;
-  this is not a recursive whole-library kernel audit and excludes Gate M.
-- `git diff --check`.
-
-CI was deliberately not inspected; the environment and MathComp Gate M are
-unchanged. Existing contract snapshots were not regenerated.
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

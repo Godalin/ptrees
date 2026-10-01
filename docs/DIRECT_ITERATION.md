@@ -121,12 +121,8 @@ normally checked MathComp assembly or eliminate either premise.
 
 ## Preservation and remaining scope
 
-`audit_direct_iteration.py` freezes all 413 prior Rocq modules byte-for-byte,
-except four exact aggregate imports and one exact Gate M regression append.
-The four new safe modules are the machine, generic law, thin completion
-specialization and consumer regression. Old fold/protocol/theory proofs and
-contract snapshots are unchanged; historical audit adapters reconstruct
-their exact previous source view.
+Compiled contracts check the current direct-machine theorem and its actual
+clients; completed source-conservation gates are historical, not replayed.
 
 The underlying monomorphic syntax/interfaces have not been made universally
 universe-polymorphic. This resolves the concrete uniformity/fold obstruction,
@@ -134,24 +130,18 @@ not every conceivable universe instantiation. Arbitrary-target Reader/Writer
 commuting squares and all Conway/Elgot laws are still not claimed: inherited
 uniformity alone is not those additional theorems.
 
-## Local validation
+## Current verification
 
-Results are recorded after execution; remote CI is excluded by request.
+These are focused checks of the current compiled types and logical assumptions:
 
-- Full `opam exec -- dune build`, including safe AllImports and extraction.
-- 347 Python tests passed.
-- Architecture/source-soundness checks: 417 modules, 415 Gate S and the same
-  two explicitly unchecked Gate M modules.
-- 465 retained compiled contracts and 266 public owner/helper contracts
-  unchanged; previous 19 eventful-iteration and 24 iteration-algebra safe
-  contracts rechecked. The old protocol-only negative probe still fails
-  specifically by universe inconsistency.
-- 29 new safe compiled contracts checked jointly after AllImports; full
-  uniformity and actual fold consumers are positive endpoints there.
-- New Gate M full-uniformity endpoint and safe control checked separately;
-  only the former has an unsafe-hierarchy declaration flag.
-- Existing Gate M snapshot unchanged: 37 direct endpoints and six safe
-  controls, with logical assumptions and unsafe-hierarchy reports checked.
-- Joint `coqchk -norec` passed for all four new safe module bodies.
-  Dependencies are trusted: this is not a recursive whole-library kernel
-  audit, nor a claim of checked Gate M universes.
+```sh
+python3 tools/audit_contracts.py --group direct_iteration
+python3 tools/audit_contracts.py --group direct_iteration_gate_m
+```
+
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

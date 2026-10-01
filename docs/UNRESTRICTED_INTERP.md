@@ -144,20 +144,17 @@ the ideal conditional probability bridge, not PRNG correctness. See the
 [current status and follow-up queue](EFFECTS_EXECUTION.md#current-status);
 the verification below records this stage, not a later rerun.
 
-## Verification boundary
+## Current verification
 
-`audit_handler_machine.py` freezes all 340 existing theory modules byte for
-byte, allowing only the six sorted aggregate imports. Existing mainline,
-MathComp, and 44-endpoint effects/execution snapshots remain unchanged. The
-new 27-endpoint snapshot records elaborated types and logical assumptions,
-with the existing whitelist and stronger axiom-free checks for generic proofs.
-Mutation tests cover missing adequacy, missing finite bounds, invented
-capabilities, source changes, backend leakage, and checker bypass.
+These are focused checks of the current compiled types and logical assumptions:
 
-Local verification completed: full `dune build` including AllImports and the
-extracted executable, 202 Python tests, architecture/source audits, the
-27-endpoint compiled audit, all 465 unchanged mainline contracts, all 44
-unchanged operational contracts, and a joint six-module `coqchk -norec` all passed.
-CI is intentionally not used. Targeted `coqchk -norec` checks the selected new safe module bodies, trusting
-dependencies; it is not a whole-library recursive kernel audit and does not
-include either Gate M module.
+```sh
+python3 tools/audit_contracts.py --group handler_machine
+```
+
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

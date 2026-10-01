@@ -159,27 +159,17 @@ the direct State eliminator cannot simply be copied for these implementations.
 The requisite target iteration laws must be proved/identified before stating
 a generic transformer agreement theorem.
 
-## Preservation gate
+## Current verification
 
-`audit_effect_algebra.py` reconstructs the frozen 382-module baseline exactly.
-All old theory files are byte-for-byte unchanged except the seven sorted
-AllImports additions. It rejects new capabilities, axioms, bypasses, global
-hints/instances and concrete-backend imports in the generic owners. The prior
-ITree/handler source audits consume an additive adapter, not relaxed baselines.
-The existing contract snapshots are retained unchanged. CI is excluded.
+These are focused checks of the current compiled types and logical assumptions:
 
-Local verification completed:
+```sh
+python3 tools/audit_contracts.py --group effect_algebra
+```
 
-- Full `opam exec -- dune build`, including safe AllImports and existing
-  extraction targets (only the pre-existing extraction warnings).
-- All 292 Python tool tests.
-- Architecture, public surface and soundness source audits: 389 modules,
-  387 Gate S and the same two Gate M.
-- All 465 old compiled contracts unchanged; all 61 prior ITree bridge
-  contracts unchanged; 58 new compiled types/assumptions checked.
-- Joint `coqchk -norec` of all seven new safe module bodies, with the usual
-  native-to-VM conversion fallback. Dependencies are trusted; this is not
-  a recursive whole-library kernel audit and does not include Gate M.
-- `git diff --check`.
-
-No CI run was inspected or used as evidence; no environment was changed.
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

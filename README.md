@@ -467,10 +467,13 @@ Arbitrary-handler preservation and heterogeneous eventful behavioral iter
 congruence are now proved under the existing probability-level relational-limit
 profile, without a caller-supplied fusion/generator-closure premise. See
 [`EVENTFUL_ITERATION.md`](docs/EVENTFUL_ITERATION.md) for the iter theorem,
-its explicit backend requirements and logical assumptions. The source ITree
-bridge preserves `eutt`; the reverse no-`Prob` conservativity direction remains
-separate. The generic measure interface is not strengthened with
-representation-specific separation axioms to claim that converse.
+its explicit backend requirements and logical assumptions. The probability-free
+`from_itree` embedding preserves and reflects heterogeneous `eutt`:
+`from_itree_eutt_iff` proves coincidence with `peutt` on embedded ITrees under
+explicit existing Dirac/zero separation laws. FreeOmega supplies these for
+SubEnumQ and SubEnumR. This does not construct an inverse for every Prob-free
+PTree or assert reflection for arbitrary handlers or sampling elaboration.
+See [the precise conservativity result](docs/ITREE_PRESERVATION.md).
 
 ## Meta
 

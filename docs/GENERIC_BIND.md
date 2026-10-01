@@ -137,55 +137,19 @@ up to local binder names and printer whitespace. Its old assumption report had
 existing functional extensionality and `eq_rect_eq` dependencies. This is not
 a claim that the concrete FreeOmega proof is axiom-free.
 
-`tools/audit_generic_bind.py` freezes unrelated old sources, protects the
-relation definitions and registry, and accounts for all 465 baseline
-contracts. `GENERIC_BIND_CONTRACT_CHANGES.json` records complete before/after
-entries for every changed signature or assumption report. Only the generic
-bind owner and selector-bearing raw bind helpers may change mathematical
-signatures; per-endpoint logical-axiom growth is rejected.
+## Current verification
 
-The comparison records 16 changed entries: four intentional type changes
-(the generic owner and three selector-bearing raw helpers), plus downstream
-assumption reductions. No other baseline type changes. The 465-entry manifest
-keeps the same API/soundness/capability membership modulo the bind-owner rename.
-`GENERIC_BIND_MATHCOMP_CHANGES.json` independently records the three removed
-finite-scheduling helpers, the weakened cofinality signature (no gluing premise),
-the fully heterogeneous direct bind, the new direct regression and reduced
-dependency reports. Remaining direct types are unchanged; existing unsafe
-declaration sets only shrink and the two-file Gate M boundary stays fixed.
-
-The old public-module gate remains frozen at its accepted checkpoint; its
-mutation tests use that checkpoint rather than weakening its preservation
-rules to permit this later theorem extraction.
-
-Validation commands:
+These are focused checks of the current compiled types and logical assumptions:
 
 ```sh
-opam exec -- dune build
-python3 tools/audit_generic_bind.py --compiled --kernel
-python3 tools/audit_api.py --surface-only
-python3 tools/audit_architecture.py --check
-python3 tools/audit_soundness.py --check
-python3 tools/audit_mathcomp.py --gate M
-python3 -m unittest discover -s tools -p 'test_*.py'
+python3 tools/audit_contracts.py --group bind_profile
+python3 tools/audit_contracts.py --group contracts
+python3 tools/audit_contracts.py --group mathcomp
 ```
 
-The targeted joint kernel check covers 12 safe module bodies with `-norec`;
-dependencies are trusted and Gate M is excluded. It is not a whole-library
-recursive kernel check or a universe-safe claim about MathComp assembly.
-CI is intentionally out of scope.
-
-Completed local validation:
-
-- Full build and AllImports: 311 modules, including 309 Gate S and 2 Gate M.
-- All 145 Python tool tests passed; architecture and public-surface checks passed.
-- All 465 compiled contracts match the reviewed migration manifest; 16
-  before/after changes are recorded with no per-endpoint axiom growth.
-- All 22 new generic/native/negative endpoints passed; the five audited generic
-  scheduling/bind endpoints are closed under the global context.
-- Existing soundness checks passed: 199 frozen contracts, 36 generic validation,
-  18 finite-real realization and 80 native MathComp endpoints.
-- The 12-module safe joint `coqchk -norec` completed successfully.
-- Separate Gate M audit passed: 30 direct endpoints and 6 safe controls,
-  including explicit unsafe-hierarchy reporting (not a universe-safe result).
-- `git diff --check` passed. No CI or environment changes.
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

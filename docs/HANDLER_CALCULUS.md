@@ -157,17 +157,9 @@ bind/omega mathematics alone is not asserted to supply it.
 
 ## Preservation and checks
 
-`audit_handler_calculus.py` starts from all 369 old theory modules. It permits
-only seven new modules, exact proof delegation in two old owners, specified
-public exports/boundary checks, and sorted AllImports additions. Every other
-old theory source remains byte-for-byte unchanged, including canonical
-routing, probability classes, qlift, execution and MathComp Gate M.
-
-Before historical audits run, a checked adapter reconstructs the exact old
-snapshot; it rejects unauthorized changes rather than broadening old gates.
-Existing compiled snapshots are not regenerated. The new snapshot contains
-60 elaborated types and per-endpoint logical assumptions. The old 27-endpoint
-machine audit and 11 original fusion/guarded contracts also run unchanged.
+The maintained `handler_calculus` group checks compiled signatures and
+per-endpoint assumptions. It does not freeze the original proof text or
+replay previous repository versions.
 
 The two-handler fusion/machine/preservation proofs are closed under their
 explicit context. Handler equivalence and some elementary equations inherit
@@ -175,10 +167,6 @@ the existing `eq_rect_eq` dependency from behavioral transitivity/structural
 reasoning. FreeOmega specializations inherit the existing functional
 extensionality and `eq_rect_eq`. These are recorded per endpoint, not hidden
 as probability capabilities; the logical-axiom whitelist is unchanged.
-
-The public surface policy is updated explicitly. The source-contract registry
-also registers the existing finite-runner regression, which already had its
-dedicated stage audit but was absent from the all-regression registry.
 
 ## Remaining boundary
 
@@ -191,24 +179,18 @@ This increment does not introduce arbitrary-backend realization, alter
 transition bisimulation, extend MathComp's checker bypass, change extraction,
 or revisit CI.
 
-## Local verification
+## Current verification
 
-Completed for this increment:
+These are focused checks of the current compiled types and logical assumptions:
 
-- Full `opam exec -- dune build`, including safe AllImports and existing
-  extraction targets.
-- All 277 Python tool tests.
-- Architecture, aggregate coverage/order, public surface and soundness source
-  audits: 376 modules, of which 374 are Gate S and the same two are Gate M.
-- All 465 old mainline compiled contracts unchanged; all 27 original machine,
-  11 fusion/guarded, 31 standard-effect and 28 State contracts unchanged.
-- All 60 new compiled contracts checked, with per-endpoint assumptions.
-- Joint `coqchk -norec` of nine safe module bodies: Core.Handler,
-  Interp.RelationalPreservation, HandlerRelation, HandlerFacts, Preservation,
-  Unrestricted, FreeOmega.HandlerCompletion, and the two new regressions.
-- `git diff --check`.
+```sh
+python3 tools/audit_contracts.py --group handler_calculus
+python3 tools/audit_contracts.py --group handler_machine
+```
 
-The kernel check trusts compiled dependencies; it is neither a recursive
-whole-library audit nor a universe-safe claim about Gate M. No CI run was
-queried, requested or used as evidence. The build emitted only the existing
-extraction opacity/output-directory warnings, not an extraction change.
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

@@ -107,27 +107,18 @@ the Writer endpoints retain their explicit `MonoidLaws` premise. Actual
 commuting signatures explicitly contain `itree F`, rather than concealing
 a target-specific proof behind a generic statement.
 
-## Conservation and validation
+## Current verification
 
-All 393 baseline theory modules are byte-for-byte frozen except nine exact,
-sorted AllImports insertions. `audit_reader_writer_fold.py` checks this and
-the new compiled types/assumptions. Older audits reconstruct their baseline
-through an additive adapter; their snapshots are not regenerated. No public
-facade, backend, semantic relation, extraction code, or Gate M file changes.
+The transformer/fold endpoint contracts retain their axiom-free reports.
+They are focused checks of the current compiled types and logical assumptions:
 
-Local validation completed:
+```sh
+python3 tools/audit_contracts.py --group reader_writer_fold
+```
 
-- Full `opam exec -- dune build`, including safe AllImports and existing
-  extraction targets (only the pre-existing extraction warnings).
-- All 308 Python tool tests.
-- All 465 retained main contracts and 24 prior ExceptT contracts unchanged;
-  59 new compiled types and axiom-free assumptions checked.
-- Public-surface audit: all 266 owner/helper and 25 capability contracts
-  remain covered, with retained compiled contracts unchanged.
-- Architecture and soundness source audits: 402 modules, 400 normally
-  checked Gate S modules and the same two Gate M modules.
-- Joint `coqchk -norec` on all nine new modules. Dependencies are trusted;
-  this is not a recursive whole-library audit and excludes Gate M.
-- `git diff --check`.
-
-CI was not inspected and the environment is unchanged.
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

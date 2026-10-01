@@ -28,9 +28,12 @@ It needs no no-event, termination, guarding or generator-closure premise.
 It reuses handler-machine adequacy under the existing relational-limit
 probability profile; FreeOmega discharges that profile, while direct
 MathComp still retains gluing and relational-lub premises. See
-[eventful iteration](docs/EVENTFUL_ITERATION.md). Source ITree `eutt`
-preservation and source-interpreter compatibility are also established;
-the converse no-Prob conservativity direction remains separate.
+[eventful iteration](docs/EVENTFUL_ITERATION.md). The probability-free
+`from_itree` embedding preserves **and reflects** heterogeneous ITree `eutt`:
+`from_itree_eutt_iff` establishes coincidence on its image under the explicit
+separating probability laws. Source-interpreter compatibility is also proved;
+arbitrary handlers retain preservation, not reflection. See
+[ITree conservativity and its scope](docs/ITREE_PRESERVATION.md).
 
 Relational omega limits now have a proved external countable-support theorem
 for arbitrary relations, and a generic sufficient theorem for increasing
@@ -58,11 +61,13 @@ Gate M modules are absent from safe AllImports and public facades. See
 [MathComp status](docs/MATHCOMP.md). Native mathematics remains
 in Gate S; no MathComp + FreeOmega combination is restored.
 
-Interpretation Stages 1–4 are accepted through `ec96b90`. DS1–DS5a are
-accepted through `2dbba82`: the independent expectation domain has a standard
-measure correspondence; admissible FreeOmega SubEnumQ has algebra/equality and
-general joint-coupling soundness; every complete SubEnumQ stable-hitting witness
-is automatically admissible and denotes the independent finite-iterate Lub.
+FreeOmega external validation is native-parametric: a compatible native
+interpretation into the independent OmegaVal domain yields algebra/equality
+soundness and bounded-test relational soundness. Every complete PTree
+stable-hitting witness is automatically modelable and denotes the independent
+finite-iterate lub. SubEnumQ and SubEnumR instantiate this generic bridge and
+add countable-support external joint realization. OmegaVal itself has the
+standard discrete lifted-carrier measure correspondence.
 The [soundness account](docs/FREEOMEGA_SOUNDNESS.md) gives exact claims and
 limitations. MathComp-native external soundness remains separate. State,
 Reader, Writer and Exception interpretation now have maintained preservation
@@ -139,12 +144,19 @@ outcomes reached within increasing internal fuel. `stable_hitting K s out`
 is a **predicate** certifying a complete omega-limit witness `out`, not an
 executable function selecting one measure. `stable_hitting_ast` adds
 `sem_total out`. Finite and unbounded AST computations use the same
-approximant/limit semantics; missing mass records internal divergence.
+approximant/limit semantics; missing mass can record internal divergence or
+native subprobability loss.
 
 `Eq/PTreeKernel.v` instantiates this construction with PTree residuals and
 stable heads `FHRet r` or `FHVis e k`. A visible head retains its **entire**
 continuation. The kernel absorbs Tau and Prob, but does not consume an
 external response until an observation/transition asks for one.
+
+Clients may use `t ⇓ₕ front`, `t ⇓ₕ¹ front`, and `hit[n] t`; the separate
+certificate judgment is `t ⊢F front`. These are opt-in notations in the
+existing owners, not new semantics or backend selection. Total stable mass
+does not require a return: a Vis head is also stable. See
+[the hitting notation guide](docs/CASE_STUDIES.md#reading-stable-frontiers).
 
 Existence follows from the order/omega capabilities; uniqueness follows
 from the limit laws at the backend's equality-coupling level.
@@ -179,7 +191,7 @@ existing program congruences; it does not introduce another equivalence.
 
 ### Raw-tree transitions and the MDP fragment
 
-The nine `Semantics/` modules keep definition and comparison layers separate:
+The following `Semantics/` owners keep definition and comparison layers separate:
 
 | Module | Responsibility |
 | --- | --- |
@@ -189,9 +201,11 @@ The nine `Semantics/` modules keep definition and comparison layers separate:
 | `TreeTransitionBisim` | independent response-wise raw-tree GFP |
 | `TreeTransitionSoundness` | direct canonical-to-transition inclusion |
 | `MDPCoincidence` | generic fragment reverse implication and iff |
-| `MDPCoincidenceFreeOmega` | proved FreeOmega separation endpoint |
+| `FreeOmega/MDPCoincidenceFreeOmega` | proved FreeOmega separation endpoint |
 | `MDPEmbedding` | labelled total MDP encoding and generic soundness |
-| `MDPEmbeddingSubEnumQ` | concrete native reflection and encoding iff |
+| `MDPReflection` | generic encoding reflection and backend-parametric correspondence |
+| `FreeOmega/MDPReflection` | completion specialization of the generic correspondence |
+| `Backend/MDPEmbeddingSubEnumQ` | verified finite-rational instance and source-kernel representation |
 
 `head_step (FHVis e k) (Obs e x) out` means that `k x` completely
 stable-hits `out`; Ret has no head step. No totality is required here.
@@ -225,7 +239,9 @@ successors under
 `fun h k => sim (stable_head_tree h) (stable_head_tree k)`.
 It does **not** use `stable_head_rel sim` for those successor pairs, nor
 mention `peutt` or `head_bisim` in its definition. Fold/unfold, coinduction,
-reflexivity and arbitrary-witness endpoints are available.
+reflexivity and arbitrary-witness endpoints are available. For homogeneous
+return equality, symmetry, transitivity and `trans_bisim_equivalence` are
+also proved; see [the transition API](docs/TRANSITION_API.md).
 
 On SubEnumQ/FreeOmega the inclusion is strict: fair mixtures of continuation
 rows `(false,false)/(true,true)` and `(false,true)/(true,false)` agree
@@ -344,8 +360,8 @@ still quantify over measure-law records.
 | `peutt_coinduction`, `peutt_coinduction_upto` | postfixed-point and already-proved-equivalence closure |
 | `peutt_coinduction_upto_bind` | proved heterogeneous bind-compatible closure, not an axiom |
 | `peutt_preserves_hitting_mass`, `peutt_not_of_mass_mismatch` | preserved mass and divergence-sensitive separation |
-| `FreeOmega.Bind.peutt_bind` | arbitrary eventful bind congruence; generic diagonal scheduling discharged by `ptree_bind_approx_cofinal_all` |
-| `FreeOmega.Algebra` | Monad/Functor laws; Proper instances for constructor, measure, bind, fmap and renaming rewriting |
+| `Eq/Bind.peutt_bind` | generic heterogeneous eventful bind congruence under the explicit order/continuity/selection profile; no caller-supplied scheduling premise |
+| `Eq/Algebra` | generic elementary equations and constructor/bind/fmap Proper instances; stronger laws retain their relational-closure requirements |
 | `pstruct_iter_split_at` | generic stopping/barrier decomposition, no probability or eventual-hitting premise |
 | `pstruct_iter_natural`, `pstruct_iter_codiagonal` | structural iteration identities with canonical peutt endpoints |
 | `peutt_iter_rel` | heterogeneous fusion under structural step relations |
@@ -363,6 +379,35 @@ empty handlers. `Interp/HandlerFacts.v` proves unit/associativity and sum
 combination laws modulo pointwise `peutt`, accounting for administrative Tau.
 `ptree_interp_approx_cofinal_all` and `ptree_stable_hitting_interp`
 establish the general scheduling/complete-limit composition theorem.
+
+### ITree embedding and interpretation
+
+`Core/ITreeBridge.from_itree` embeds Ret/Tau/Vis without adding Prob nodes.
+For arbitrary source return carriers and relation `RR`, the generic
+`Interp/ITreeReflection.from_itree_eutt_iff` proves:
+
+```text
+eutt RR t u <-> peutt RR (from_itree t) (from_itree u)
+```
+
+The forward proof is `Interp/ITreeEutt.from_itree_eutt`; the reverse is
+`Interp/ITreeReflection.from_itree_eutt_reflect`. In addition to the existing
+Core/Bind and omega/cofinality profile, reflection uses coupling-AE, exact
+Dirac-AE and omega-AE separation. The iff also consumes preservation's
+relational-zero certificate. These are explicit probability laws, not a
+new conservativity axiom. FreeOmega supplies them for SubEnumQ and SubEnumR;
+the same generic iff has an isolated MathComp Gate M client retaining gluing.
+
+This is conservativity **on the image of `from_itree`**, including finite Tau
+stuttering, silent divergence and dependent visible continuations. It is not
+a reconstruction theorem for all syntactically Prob-free PTrees. Nor does it
+give reflection for arbitrary `interp_itree` handlers or probability-effect
+`elaborate`, which can identify different source behaviors. Those operations
+have preservation and source-interpreter compatibility theorems instead.
+Exact signatures, assumptions and clients are recorded in
+[ITREE_PRESERVATION.md](docs/ITREE_PRESERVATION.md).
+
+### Handler preservation
 
 Arbitrary-handler preservation is proved in `Interp/Unrestricted.v` under
 the explicit probability-level relational-zero/relational-lub profile.
@@ -522,6 +567,8 @@ global dependencies are:
 | Result | Global logical dependencies beyond capability parameters |
 | --- | --- |
 | generic hitting Ret/iff API, basic GFP coinduction | closed for the audited endpoints |
+| generic `from_itree_eutt` | excluded middle (`Classical_Prop.classic`) |
+| generic `from_itree_eutt_reflect`, `from_itree_eutt_iff` | excluded middle and `eq_rect_eq` |
 | `pstruct_iter_split_at`, RandomWalk `run_split` and harmonic bound | closed |
 | fixed-witness `peutt_preserves_trans` | inherited `eq_rect_eq` |
 | general inclusion / full coincidence iff | additionally classical witness-choice principles from transition existence |
@@ -544,9 +591,10 @@ A generic positive coupling interface need not separate observations.
 Neither Dirac inversion nor arbitrary coupling-to-semantic-equality reflection
 may be silently inferred from that interface.
 
-`frontier_certificate`, finite-internal execution plans, kernel completion,
-joint rounds and costed schedules are proof infrastructure, not additional
-behavioral equivalences. They now live under `Eq/Internal/`.
+`frontier_certificate` in `Eq/UnifiedFrontier.v` is a proof judgment, not an
+additional behavioral equivalence. Finite-internal execution plans, kernel
+completion, joint rounds and costed schedules are auxiliary infrastructure
+under `Eq/Internal/`.
 FiniteInternal is auxiliary proof infrastructure for well-founded internal
 compression and related adequacy arguments. It is not part of the canonical
 PTree semantics or public equivalence theory. The formal peutt/Interp/facade
@@ -572,7 +620,10 @@ The maintained artifact does **not** claim:
   general WP calculus, temporal logic or probabilistic metrics;
 - arbitrary-handler or eventful behavioral iter preservation for a backend
   that has not supplied the stated probability-level relational-limit laws;
-- exact no-Prob `peutt <-> ITree.eutt` from the generic positive interface;
+- ITree conservativity from the positive interface alone, without the
+  separating laws required by `from_itree_eutt_iff`;
+- an inverse embedding or reconstruction of every syntactically Prob-free
+  PTree, or reflection for arbitrary probability-lowering handlers;
 - quotient-to-native coupling reflection for every backend;
 - an additive interpretation of arbitrary non-increasing FreeOmega Lub terms;
 - that raw EnumQ enforces native probability, or that AST follows from
@@ -580,13 +631,8 @@ The maintained artifact does **not** claim:
 - strictness of transition inclusion for every abstract backend;
 - reconstruction of every `mdp_state` as an encoded textbook MDP.
 
-For no-Prob conservativity, concrete FreeOmega support and mass separation
-already rule out the generic universal-lifting countermodel, but a maintained
-ITree embedding and the forward `eutt -> peutt` direction now exist, including
-pure-tree zero/Dirac hitting classification and spin. The reverse direction
-and dependent visible-head inversion into source eutt remain separate work.
-
-Core semantic definitions remain unchanged by the layout cleanup and the
-subsequent universe repair of two legacy regression backends. Internal
-namespace migration, the final encoding corollary and a README theory-overview
-rewrite remain separate reviewed milestones; no further case study is added.
+The embedded-ITree reverse theorem and dependent visible-head inversion are
+proved, not pending work. The remaining limits above concern stronger claims
+than that theorem. Completed namespace migrations and stage-specific source
+freezes are historical records; current checks and their scope are described
+in [AUDITING.md](docs/AUDITING.md).

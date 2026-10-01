@@ -109,6 +109,29 @@ Proof tactics and helper names are not generally frozen. Valid refactoring
 should be checked by compilation, declared boundaries, compiled signatures,
 assumptions and real clients rather than an old textual proof recipe.
 
+### Documentation reconciliation
+
+The documentation cleanup after `57c944b` reconciles the root theory status
+and README with the proved `from_itree_eutt_reflect` / `from_itree_eutt_iff`
+endpoints. Conservativity holds on embedded ITrees under explicit separation
+laws; arbitrary-handler reflection and reconstruction of every Prob-free
+PTree remain outside that claim. The focused account is
+[ITree preservation and reflection](ITREE_PRESERVATION.md).
+
+Topic guides now point to their registered `audit_contracts.py --group ...`
+checks instead of deleted stage-specific Python scripts. Obsolete source-replay
+instructions, pending-stage statements and old validation-count summaries
+are removed from the affected verification sections; the original records
+remain recoverable from Git. This is documentation maintenance, not a new
+theory result or a rerun of every historical validation campaign. No Rocq
+source, snapshot, audit implementation, toolchain or trust policy changes.
+
+For this documentation-only reconciliation, the 56-entry `itree_preservation`
+compiled type/assumption group was rerun successfully. Relative documentation
+links, referenced audit scripts and contract-group names in the changed guides
+were checked against the current files/registry, and `git diff --check` passed.
+No full build, new kernel audit or remote CI run is claimed for this change.
+
 ## Python cleanup (after `9c807e0`)
 
 Python checks trust boundaries and executable behavior, not how a mathematical

@@ -134,25 +134,17 @@ either a native realization argument at the intended scope, or a separate
 operational joint construction sufficient for the structural bridges. This
 increment does not disguise that obligation as a new capability assumption.
 
-## 5. Validation
+## 5. Current verification
 
-- Full local `opam exec -- dune build`, including safe AllImports: passed.
-- 465 old compiled contracts and logical assumptions: unchanged.
-- 319 baseline theory modules: byte-for-byte unchanged, apart from four
-  exact AllImports additions. Four modules are added; no theorem is moved.
-- 22 new endpoint types and assumptions are frozen in
-  `RELATIONAL_LIMIT_CONTRACTS.json`; logical dependencies use only the existing
-  whitelist. No axiom/class or checker bypass is added.
-- All 168 Python tool tests: passed, including new scope/boundary mutation tests.
-- Architecture: 323 modules, 321 Gate S and the unchanged two Gate M modules.
-  The new countable realization adapter is explicitly classified as external
-  validation and rejected as a dependency of mainline/native theory.
-- Four-module joint `coqchk -norec`: targeted safe bodies checked; dependencies
-  trusted. Not a whole-library recursive kernel audit; no Gate M included.
-- CI and environment changes excluded, as requested.
+These are focused checks of the current compiled types and logical assumptions:
 
-Reproducible checks: `audit_relational_limits.py --compiled`,
-`audit_assumptions.py --check`, `audit_architecture.py --check`,
-`audit_soundness.py --source-only`, and the Python tool tests. The previous
-consumer-migration audit remains intact through an exact projection which
-removes only these four new modules and aggregate lines.
+```sh
+python3 tools/audit_contracts.py --group relational_limit
+```
+
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

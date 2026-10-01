@@ -99,48 +99,20 @@ the completion module; extracting that requires its own mathematical work.
 Atomic/MDP interpretation specializations have not been migrated in this
 increment. No theorem-level shortcut is introduced to call them generic.
 
-## Preservation and verification
+## Current verification
 
-`audit_relational_consumers.py` compares all baseline source modules. For the
-eleven extracted algebra/iter proofs it reconstructs the generic source from
-the frozen old proof text, allowing only the explicit profile and bridge
-specialization. Old wrapper statements, syntax-specific proofs and existing
-generic proofs are unchanged. Other baseline files remain byte-frozen,
-except exact aggregate insertions and approved appended certificates/clients.
+These are focused checks of the current compiled types and logical assumptions:
 
-`RELATIONAL_CONSUMER_CONTRACTS.json` includes the thirteen original compiled
-wrapper contracts from the frozen main snapshot, plus compiled new endpoints.
-Wrapper types must match exactly and logical assumptions must not grow.
-The old 465-entry main snapshot and the old Gate M snapshot are not refreshed.
-New Gate M observations have a separate snapshot, including unsafe-hierarchy
-flags and safe controls; they are never reported as universe-checked.
-
-Validation commands:
-
-```
-opam exec -- dune build
-python3 tools/audit_relational_consumers.py --compiled --direct
-python3 tools/audit_relational_limits.py --compiled
-python3 tools/audit_generic_consumers.py --compiled
-python3 tools/audit_architecture.py --check
-python3 tools/audit_soundness.py --source-only
-python3 -m unittest discover -s tools -p 'test_*.py'
+```sh
+python3 tools/audit_contracts.py --group relational_consumer
+python3 tools/audit_contracts.py --group relational_consumer_mathcomp
+python3 tools/audit_contracts.py --group relational_limit
+python3 tools/audit_contracts.py --group generic_consumer
 ```
 
-CI and environment changes remain outside scope. Targeted `coqchk -norec`
-checks safe module bodies with dependencies trusted, not a whole-library
-recursive kernel audit; Gate M is excluded.
-
-Local results: full build (including safe AllImports and the separately
-classified Gate M clients), 178 Python tests, architecture/source checks,
-465 unchanged main contracts, 22 previous relational-limit contracts,
-54 new generic/backend/specialization contracts, and the three new Gate M
-clients with six safe controls all pass. There are 328 modules: 326 Gate S
-and the unchanged two Gate M modules. Neither old main nor old Gate M
-compiled snapshot was modified.
-
-The eleven-module joint `coqchk -norec` run also passed: the three generic
-Eq owners, relational hitting and its probability interface, four FreeOmega
-certificate/specialization modules, native MathComp relational certificates,
-and the safe generic regression. Dependencies were trusted and Gate M was
-excluded; this is not a full recursive kernel audit.
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

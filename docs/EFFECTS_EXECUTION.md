@@ -107,6 +107,7 @@ explicitly requested; no environment changes are planned.
 | Pointwise behavioral handler replacement | Proved | Two handlers, heterogeneous results; the same generic relational-limit profile. |
 | Handler composition and sum calculus | Proved | Pure combinators; units/associativity, case and bimap congruence modulo pointwise peutt. |
 | ITree sampling-effect elaboration | Proved laws and source preservation | Actual ITree source to native Prob; Ret/Tau/Vis/bind/iter, heterogeneous source eutt preservation, and genuine source-interp commuting. |
+| Probability-free ITree embedding | Proved preservation and reflection | `from_itree_eutt_iff` on embedded ITrees under explicit separation laws; not an inverse for all Prob-free PTrees or arbitrary-handler reflection. |
 | Interpreted effect algebra and probability interaction | Proved finite equations and scoped transformer squares | Four State laws, Reader contraction, ordered Writer unit/fusion, Exception left-zero; no unconditional sample-before-throw erasure. Generic StateT/ExceptT squares and actual-ITree ReaderT/WriterT squares are proved. |
 | State peutt preservation | Proved | Same initial state; equal final states and related results. |
 | Reader / Writer / Exception | Implemented and proved | Basic clients and preservation, not a complete effect algebra. |
@@ -131,6 +132,9 @@ iteration law. This is distinct from the existing PTree-to-ITree execution
 fold. The later [source-preservation increment](ITREE_PRESERVATION.md) adds
 heterogeneous source-ITree `eutt` preservation and the actual source-interp
 commuting square; those are separate from the original structural bridge.
+The probability-free `from_itree` embedding additionally reflects `peutt`
+back to source `eutt` under the stated separation laws. This image-level iff
+does not extend to arbitrary probability-event lowering.
 
 The [effect-algebra increment](EFFECT_ALGEBRA.md) adds generic interpreted
 equations and a half-mass exception counterexample, without changing the
@@ -353,54 +357,25 @@ The rational ticket law does not verify OCaml PRNG fairness. Extraction,
 the OCaml toolchain/runtime and the handwritten entropy provider remain
 explicit execution trust boundaries.
 
-## Isolation and historical validation
-
-The counts and commands below describe the initial operational checkpoints,
-not a new validation run or current whole-repository counts. Later validation
-is recorded in the linked stage reports; the latest implementation report is
-[Runner distribution](RUNNER_DISTRIBUTION.md).
+## Isolation
 
 Generic `Execution` depends only on itself and Core. Its concrete rational
 adapter can consume finite representation mathematics, but not FreeOmega,
 external OmegaVal validation, or the PTree equality theory. Core/Eq/Interp
 cannot depend back on execution. Existing Gate M remains exactly two files.
 
-`audit_effect_execution.py` freezes all 328 baseline theory files byte for
-byte except the twelve exact sorted aggregate additions. Its State/iter
-follow-up also freezes the first ten new operational files at `b23c852`.
-The previous migration
-gates consume a checked additive projection, not relaxed source comparisons.
-The new snapshot checks 44 compiled endpoints (the first forty unchanged
-from `b23c852`). Of those, only the two
-structural relation-preservation proofs inherit existing `eq_rect_eq`;
-the other 42 are closed under the global context.
+## Current verification
 
-Validation commands (build once before tool/executable tests):
+These are focused checks of the current compiled types and logical assumptions:
 
-```
-opam exec -- dune build
+```sh
 python3 tools/audit_contracts.py --group effect_execution
 python3 tools/audit_contracts.py --group runner_distribution
-python3 tools/audit_architecture.py --check
-python3 tools/audit_soundness.py --source-only
-python3 tools/audit_assumptions.py
-python3 -m unittest discover -s tools -p 'test_*.py'
 ```
 
-Targeted joint `coqchk -norec` checks the new safe module bodies with their
-dependencies trusted. It is not a full recursive whole-library kernel audit
-and never includes Gate M.
-
-Local `b23c852` checkpoint results: full build (including AllImports and the extracted
-executable), 191 tool/executable tests, architecture/source checks, all 465
-unchanged main contracts, the 40 new compiled contracts, and the ten-module
-joint `coqchk -norec` passed. There are 338 theory modules: 336 Gate S and the
-unchanged two Gate M modules. The targeted checker used VM conversion for
-native-compute proof bodies; this is not an unchecked proof bypass.
-
-State/iter follow-up: full build and AllImports, 44 compiled contracts,
-14 focused audit/executable tests, architecture/source conservation, and
-the two-new-module joint `coqchk -norec` passed. There are now 340 modules
-(338 Gate S, the same two Gate M). The full 191-test and 465-main-contract
-checks were run at `b23c852`; the follow-up keeps those operational sources
-and main snapshots frozen and does not report a second full-suite run.
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

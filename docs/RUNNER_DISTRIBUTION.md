@@ -110,12 +110,9 @@ FreeOmega or peutt before the explicit validation import.
 
 ## Audit and remaining boundary
 
-`audit_runner_distribution.py` freezes all 365 pre-existing theory sources,
-with only four sorted AllImports additions, all prior contract snapshots and
-the extraction sources. Its compiled checks require axiom-free finite
-operational endpoints and retain the existing logical-axiom whitelist for
-the external model adapter. Architecture tests enforce the one-way bridge.
-Historical conservation gates consume an explicit additive projection.
+The maintained `runner_distribution` group checks finite operational and
+external-model endpoints in their declared trust context. Architecture checks
+enforce the one-way validation bridge.
 
 The 28-endpoint compiled snapshot distinguishes assumptions: finite execution
 and trace-law proofs are closed under the global context. The external-model
@@ -127,24 +124,20 @@ a new probability axiom or an implicit claim of constructive PRNG semantics.
 This closes the ideal, conditional finite-distribution and returned-limit
 bridge. It does **not** prove PRNG fairness, compiler/runtime correctness,
 same-seed or same-fuel peutt congruence, fold/runner correspondence, or an
-efficient sampler. Ticket materialization and invalid-versus-exhausted
-entropy remain the next execution work; see the [current queue](EFFECTS_EXECUTION.md).
+efficient sampler. See the [execution guide](EFFECTS_EXECUTION.md) for the
+current implementation, failure terminology and follow-up scope.
 
-## Local verification
+## Current verification
 
-- New modules and the safe `AllImports` aggregate built successfully.
-- All 28 new compiled types/assumption contracts passed; old snapshots were
-  preserved byte for byte, not regenerated.
-- 41 focused tool tests passed: runner distribution (5), architecture (29),
-  and the existing extracted State rewrite (7).
-- Architecture, source soundness, additive source conservation and diff/link
-  checks passed. There are 369 modules, including the unchanged two Gate M files.
-- Joint `coqchk -norec` passed for all four new modules, with normal conversion
-  and dependencies trusted. This is not a recursive whole-library audit.
+These are focused checks of the current compiled types and logical assumptions:
 
-An initial checker attempt using native-compute regression casts and VM
-fallback hit a Rocq `vmbytegen.ml` assertion; that attempt was not counted as
-passing. The new numerical regressions were rewritten using direct definitional
-proofs, rebuilt and checked successfully **without** enabling VM conversion.
-No environment or checker-policy change was made. The full historical tool
-suite and CI were not rerun.
+```sh
+python3 tools/audit_contracts.py --group runner_distribution
+```
+
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.

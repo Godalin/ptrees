@@ -115,20 +115,17 @@ This closes State behavioral preservation. Subsequent increments complete
 probability bridge. The [current roadmap](EFFECTS_EXECUTION.md#current-status)
 owns the follow-up queue; the audit below records this stage's checks.
 
-## Audit
+## Current verification
 
-`audit_state_preservation.py` checks exact old-source and four old-snapshot
-conservation, rejects new axioms/classes/checker bypass or target-preservation
-premises, and records 28 elaborated endpoints with `Print Assumptions`.
-Generic endpoints additionally must be axiom-free and backend-independent.
-Its mutation tests protect the weak premise and the required adequacy bridge.
+These are focused checks of the current compiled types and logical assumptions:
 
-Local verification completed: full `dune build` including AllImports and
-extraction, 31 focused effects/handler/State Python tests, architecture and
-source-conservation audits, all 28 new contracts, unchanged 465 mainline,
-27 handler and 44 operational contracts, and a joint five-module `coqchk -norec` passed. The
-earlier arbitrary-handler commit ran the then-complete 202-test suite; the
-State follow-up does not misreport its focused run as another full suite.
-Targeted `coqchk -norec` checks selected new safe module bodies while trusting
-dependencies; it is not a whole-library recursive check. CI remains
-intentionally out of scope.
+```sh
+python3 tools/audit_contracts.py --group state_preservation
+```
+
+Build first with `opam exec -- dune build`. For architecture, source safety,
+all registered groups, runtime tests and the separately scoped kernel check,
+use [Maintained verification](AUDITING.md). Gate M checks are isolated and do
+not constitute universe-checked evidence. Local checks do not assert CI passed.
+The retired stage-specific source-replay scripts and their historical
+module/test counts remain in Git; they are not current-tree invariants.
