@@ -15,7 +15,7 @@ clients; they do not replace inference, rewriting or import-order tests.
 | --- | --- | --- |
 | Architecture | `audit_architecture.py` | actual dependency edges, ownership, aggregate coverage, external-model and Gate M isolation |
 | Safety/public surface | `audit_soundness.py`, `audit_api.py`, `mathcomp_policy.py` | unfinished proofs/assumptions, reviewed class declarations, exact bypass allowlist, routing registrations and notation owners |
-| Compiled contracts | `audit_contracts.py`, `audit_assumptions.py`, `audit_mathcomp.py` | types, per-endpoint assumptions, safe/unchecked loading contexts and unsafe-hierarchy reports |
+| Compiled contracts | `audit_contracts.py` (query helpers: `audit_assumptions.py`, `audit_mathcomp.py`) | types, per-endpoint assumptions, safe/unchecked loading contexts and unsafe-hierarchy reports |
 | Examples/tests/kernel | Rocq examples and root `tests/`, `test_*.py`, `audit_api.py --kernel` | mathematical examples/counterexamples, isolated compilation clients, tool failure modes, extracted program behavior, selected joint kernel checks |
 
 ## Commands
@@ -24,8 +24,8 @@ Before building (no installed Rocq or Git history needed):
 
 ```sh
 python3 tools/audit_architecture.py --aggregate-only
-python3 tools/audit_api.py --surface-only
-python3 tools/audit_soundness.py --source-only
+python3 tools/audit_api.py
+python3 tools/audit_soundness.py
 python3 tools/audit_contracts.py --metadata-only
 ```
 
@@ -33,11 +33,11 @@ Full local validation with the existing toolchain:
 
 ```sh
 opam exec -- dune build
-python3 tools/audit_architecture.py --check
+python3 tools/audit_architecture.py
 python3 -m unittest discover -s tools -p 'test_*.py'
 python3 -u tools/audit_contracts.py --gate S
 python3 -u tools/audit_contracts.py --gate M
-python3 tools/audit_api.py --surface-only --kernel
+python3 tools/audit_api.py --kernel
 ```
 
 The root build includes `theories/` (`PTree`) and `tests/` (`PTree.Tests`).
@@ -82,15 +82,22 @@ choice dependencies outside that narrower whitelist are listed per endpoint
 in the registry, not made generally available to new proofs. Unknown axioms,
 malformed output, missing markers and Coq errors with exit status zero fail.
 
-The runner also executes the existing native MathComp, real-joint and generic
-quotient mathematical checks. The protocol-only uniformity negative test still
+The runner also executes native MathComp, real-joint, generic quotient and
+stable-hitting mathematical checks in safe sessions. The protocol-only uniformity negative test still
 requires an actual universe-inconsistency diagnostic; the direct-machine
 full-interface and fold clients are positive contracts in the safe joint
 context. Minimal-import and import-order tests remain actual Rocq modules.
 
-`audit_assumptions.py` and `audit_api.py` still support their focused legacy
-commands, but checking only the central manifest is **not** a full run of
-the extended contract inventory.
+There is only one compiled-contract command: `audit_contracts.py`.
+Its query/parser helpers are not standalone audits. Focused mathematical checks
+use `--group mathcomp-native`, `--group real-joint`,
+`--group generic-quotient` or `--group stable-hitting`; they check additional
+signature restrictions, not stored type equality. The complete Gate S run
+includes all four, including automatic Q/R stable-hitting modelability.
+
+Optional `--build --gate S` builds only safe targets before checking;
+`--build --gate M` builds the isolated unchecked targets. This does not change
+the meaning of Gate M or replace the source/dependency checks above.
 
 ## Trust and kernel checks
 
@@ -116,9 +123,28 @@ Historical proposals, intermediate limitations, acceptance counts and migration
 ledgers remain in Git. For the pre-consolidation documents use
 `git show 2ba1855:docs/<filename>`.
 
-The consolidation from `2ba1855` reduces 50 narrative/generated Markdown files
-to 12 maintained guides. All 31 JSON data files and the generated architecture
-inventory move to `tools/data/`. Snapshot/policy/inventory bytes are preserved;
-only registry snapshot paths and tool locations change. Existing safe/unchecked
-query contexts, per-endpoint axiom exceptions and test coverage remain intact.
-Source-file edits are documentation references only, not theorem changes.
+## Tool simplification (baseline a0afe7c)
+
+The cleanup changes verification tooling, not Rocq theory or accepted compiled
+snapshots. All snapshot types, assumptions, loading contexts, axiom exceptions
+and the exact Gate M allowlist remain unchanged.
+
+- Remove the overlapping legacy compiled commands. Source checks do not query
+  Rocq; the unified contract runner owns both snapshots and the four explicit
+  mathematical checks. The latter stay ordinary code, not a new policy language.
+- Replace historical endpoint counts with uniqueness, scope membership and
+  required endpoint checks. All registered snapshots still run.
+- Pure facade checks compare imports, ordered exports and alias targets, not
+  whole source text. Minimal-client imports may be regrouped or reordered.
+  Canonical routing remains protected by source ownership checks and actual
+  definitional-equality/import-order clients; no full canonical-module source
+  copy is frozen in the policy.
+- Remove the checked-in generated architecture report and its prose-equality
+  gate. `python3 tools/audit_architecture.py --inventory` produces the current
+  ownership/client table on demand; every actual dependency rule still runs.
+- Retain executable-runtime tests and negative/mutation tests. Reject malformed
+  audit output, new assumptions, unsafe flags on safe controls and omitted
+  mathematical checks. No CI toolchain or Rocq trust boundary changes.
+
+The removed report and legacy commands are recoverable from Git at `a0afe7c`.
+Do not restore per-stage audit entry points or generated prose as proof gates.

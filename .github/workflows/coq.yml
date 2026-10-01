@@ -26,8 +26,8 @@ jobs:
       - name: Audit current source boundaries and contract inventory
         run: |
           python3 tools/audit_architecture.py --aggregate-only
-          python3 tools/audit_api.py --surface-only
-          python3 tools/audit_soundness.py --source-only
+          python3 tools/audit_api.py
+          python3 tools/audit_soundness.py
           python3 tools/audit_contracts.py --metadata-only
 
       - name: Install Linux build prerequisites
@@ -55,7 +55,7 @@ jobs:
         run: opam exec -- dune build
 
       - name: Audit compiled dependency graph
-        run: python3 tools/audit_architecture.py --check
+        run: python3 tools/audit_architecture.py
 
       - name: Test audit tools and extracted programs
         run: python3 -m unittest discover -s tools -p 'test_*.py'
@@ -67,4 +67,4 @@ jobs:
         run: python3 -u tools/audit_contracts.py --gate M
 
       - name: Recheck universe regression in the full-library context
-        run: python3 tools/audit_api.py --surface-only --kernel
+        run: python3 tools/audit_api.py --kernel

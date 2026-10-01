@@ -70,15 +70,94 @@
     "theories/Prob/Interface/Omega.v:SemanticOmegaSelection": "Class SemanticOmegaSelection (S : Type -> Type) `{SI : SemanticMeasure S} `{SO : @SemanticOmega S SI} := { sem_lub_choose : forall A (chain : nat -> S A), sem_increasing chain -> {out : S A | sem_lub chain out} }."
   },
   "facades": {
-    "theories/PTree.v": "From PTree.Core Require Export PTreeDefinition Handler. Export PTreeDefinition.PTree PTreeNotations.",
-    "theories/Semantics.v": "From PTree.Semantics Require Import HeadTransition TreeTransition TreeTransitionBisim MDPFragment. From PTree.Semantics Require Import TreeTransitionSoundness MDPCoincidence MDPReflection. Notation head_step := HeadTransition.head_step. Notation head_bisim := HeadTransition.head_bisim. Notation trans := TreeTransition.trans. Notation tree_return_observation := TreeTransition.tree_return_observation. Notation tree_offered_event_observation := TreeTransition.tree_offered_event_observation. Notation trans_bisim := TreeTransitionBisim.trans_bisim. Notation trans_bisim_coinduction := TreeTransitionBisim.trans_bisim_coinduction. Notation trans_bisim_refl := TreeTransitionBisim.trans_bisim_refl. Notation trans_bisim_sym := TreeTransitionBisim.trans_bisim_sym. Notation trans_bisim_trans := TreeTransitionBisim.trans_bisim_trans. Notation trans_bisim_equivalence := TreeTransitionBisim.trans_bisim_equivalence. Notation mdp_head := MDPFragment.mdp_head. Notation mdp_state := MDPFragment.mdp_state. Notation peutt_trans_bisim := TreeTransitionSoundness.peutt_trans_bisim. Notation mdp_state_peutt_trans_iff := MDPCoincidence.mdp_state_peutt_trans_iff. Notation mdp_trans_bisim_iff := MDPReflection.mdp_trans_bisim_iff.",
-    "theories/Eq.v": "From PTree.Eq Require Export PStruct PStrong PEutt Canonical UpToProb. Export PStructNotations PStrongNotations PEuttNotations.",
-    "theories/PTreeFacts.v": "From PTree Require Export PTree Eq. From PTree.Eq Require Export UnifiedFrontier PrimitiveStableHitting WellFormedness StableHittingComputation ProbabilisticTrace Bind Algebra Iter. From PTree.Eq.FreeOmega Require Export Bind Algebra Iter. From PTree.Interp Require Export Guarded Unrestricted HandlerRelation HandlerFacts State Reader Writer Exception StateFacts StatePreservation StandardFacts ExceptionFacts. From PTree.Interp.FreeOmega Require Export Atomic MDP HandlerCompletion.",
-    "theories/Eq/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Core Require Import PTreeDefinition. From PTree.Prob.Interface Require Import Measure Mixed Omega. From PTree.Eq Require Import PEutt. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Class CanonicalBehavior (MN : Type -> Type) := { behavior_frontier : Type -> Type; behavior_measure : SemanticMeasure behavior_frontier; behavior_mixed : MixedMeasure MN behavior_frontier; behavior_omega : @SemanticOmega behavior_frontier behavior_measure }. Definition canonical_peutt {E MN} `{CB : CanonicalBehavior MN} `{FC : @SemanticMeasureCoreLaws behavior_frontier behavior_measure} {A B} (RR : A -> B -> Prop) (t : ptree E MN A) (u : ptree E MN B) : Prop := @PEutt.peutt E MN behavior_frontier behavior_measure FC behavior_mixed behavior_omega A B RR t u. Module PEuttNotations. Notation \"t \u2248\u209a[ RR ] u\" := (canonical_peutt RR t u) (at level 70, RR at next level, no associativity) : type_scope. Notation \"t \u2248\u209a u\" := (canonical_peutt eq t u) (at level 70, no associativity) : type_scope. End PEuttNotations.",
-    "theories/Eq/FreeOmega/Canonical.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From PTree.Prob.Interface Require Import Measure Omega. Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.Measure. From PTree.Eq Require Import Canonical. Set Implicit Arguments. Unset Strict Implicit. Unset Printing Implicit Defensive. Definition observable_free_omega_behavior {MN} (NI : SemanticMeasure MN) (NO : @SemanticOmega MN NI) : CanonicalBehavior MN := {| behavior_frontier := FreeOmega MN; behavior_measure := @FreeOmegaObservableSemanticMeasure MN NI NO; behavior_mixed := @FreeOmegaMixedMeasure MN; behavior_omega := @FreeOmegaObservableSemanticOmega MN NI NO |}.",
-    "theories/Eq/Backend/EnumQ.v": "From PTree.Prob.Backend.EnumQ Require Import Measure. Require Export PTree.Prob.Backend.EnumQ.Representation. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. Export EnumQ. #[global] Polymorphic Instance EnumQ_CanonicalBehavior : CanonicalBehavior EnumQ := @observable_free_omega_behavior EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega.",
-    "theories/Eq/Backend/SubEnumQ.v": "From PTree.Prob.Backend.SubEnumQ Require Import Measure. From PTree.Prob.Backend.SubEnumQ Require Export Representation. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. #[global] Polymorphic Instance SubEnumQ_CanonicalBehavior : CanonicalBehavior SubEnumQ := @observable_free_omega_behavior SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega.",
-    "theories/Eq/Backend/SubEnumR.v": "Set Universe Polymorphism. Local Unset Universe Minimization ToSet. From mathcomp Require Import reals. From PTree.Prob.Backend.SubEnumR Require Export Representation. From PTree.Prob.Backend.SubEnumR Require Import Measure Coupling Omega. From PTree.Eq Require Import Canonical. From PTree.Eq.FreeOmega Require Import Canonical. #[global] Instance SubEnumR_CanonicalBehavior (R : realType) : CanonicalBehavior (SubEnumR R) := @observable_free_omega_behavior (SubEnumR R) (SubEnumR_SemanticMeasure R) (SubEnumR_SemanticOmega R)."
+    "theories/PTree.v": {
+      "imports": [],
+      "exports": [
+        "PTree.Core.PTreeDefinition",
+        "PTree.Core.Handler",
+        "PTreeDefinition.PTree",
+        "PTreeNotations"
+      ],
+      "aliases": {}
+    },
+    "theories/Eq.v": {
+      "imports": [],
+      "exports": [
+        "PTree.Eq.PStruct",
+        "PTree.Eq.PStrong",
+        "PTree.Eq.PEutt",
+        "PTree.Eq.Canonical",
+        "PTree.Eq.UpToProb",
+        "PStructNotations",
+        "PStrongNotations",
+        "PEuttNotations"
+      ],
+      "aliases": {}
+    },
+    "theories/PTreeFacts.v": {
+      "imports": [],
+      "exports": [
+        "PTree.PTree",
+        "PTree.Eq",
+        "PTree.Eq.UnifiedFrontier",
+        "PTree.Eq.PrimitiveStableHitting",
+        "PTree.Eq.WellFormedness",
+        "PTree.Eq.StableHittingComputation",
+        "PTree.Eq.ProbabilisticTrace",
+        "PTree.Eq.Bind",
+        "PTree.Eq.Algebra",
+        "PTree.Eq.Iter",
+        "PTree.Eq.FreeOmega.Bind",
+        "PTree.Eq.FreeOmega.Algebra",
+        "PTree.Eq.FreeOmega.Iter",
+        "PTree.Interp.Guarded",
+        "PTree.Interp.Unrestricted",
+        "PTree.Interp.HandlerRelation",
+        "PTree.Interp.HandlerFacts",
+        "PTree.Interp.State",
+        "PTree.Interp.Reader",
+        "PTree.Interp.Writer",
+        "PTree.Interp.Exception",
+        "PTree.Interp.StateFacts",
+        "PTree.Interp.StatePreservation",
+        "PTree.Interp.StandardFacts",
+        "PTree.Interp.ExceptionFacts",
+        "PTree.Interp.FreeOmega.Atomic",
+        "PTree.Interp.FreeOmega.MDP",
+        "PTree.Interp.FreeOmega.HandlerCompletion"
+      ],
+      "aliases": {}
+    },
+    "theories/Semantics.v": {
+      "imports": [
+        "PTree.Semantics.HeadTransition",
+        "PTree.Semantics.MDPCoincidence",
+        "PTree.Semantics.MDPFragment",
+        "PTree.Semantics.MDPReflection",
+        "PTree.Semantics.TreeTransition",
+        "PTree.Semantics.TreeTransitionBisim",
+        "PTree.Semantics.TreeTransitionSoundness"
+      ],
+      "exports": [],
+      "aliases": {
+        "head_step": "HeadTransition.head_step",
+        "head_bisim": "HeadTransition.head_bisim",
+        "trans": "TreeTransition.trans",
+        "tree_return_observation": "TreeTransition.tree_return_observation",
+        "tree_offered_event_observation": "TreeTransition.tree_offered_event_observation",
+        "trans_bisim": "TreeTransitionBisim.trans_bisim",
+        "trans_bisim_coinduction": "TreeTransitionBisim.trans_bisim_coinduction",
+        "trans_bisim_refl": "TreeTransitionBisim.trans_bisim_refl",
+        "trans_bisim_sym": "TreeTransitionBisim.trans_bisim_sym",
+        "trans_bisim_trans": "TreeTransitionBisim.trans_bisim_trans",
+        "trans_bisim_equivalence": "TreeTransitionBisim.trans_bisim_equivalence",
+        "mdp_head": "MDPFragment.mdp_head",
+        "mdp_state": "MDPFragment.mdp_state",
+        "peutt_trans_bisim": "TreeTransitionSoundness.peutt_trans_bisim",
+        "mdp_state_peutt_trans_iff": "MDPCoincidence.mdp_state_peutt_trans_iff",
+        "mdp_trans_bisim_iff": "MDPReflection.mdp_trans_bisim_iff"
+      }
+    }
   },
   "clients": {
     "tests/Imports/ArchitectureBoundaries.v": [

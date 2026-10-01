@@ -6,6 +6,7 @@ from unittest.mock import patch
 import audit_soundness as soundness
 import audit_api as api
 import audit_assumptions as assumptions
+import audit_contracts as contracts
 
 
 class SoundnessTests(unittest.TestCase):
@@ -17,7 +18,6 @@ class SoundnessTests(unittest.TestCase):
 
     def test_current_source_contract(self):
         soundness.source_check(self.sources,self.policy)
-        soundness.manifest_check()
 
     def test_reject_assumptions_and_unfinished_proof(self):
         path='theories/Prob/Backend/SubEnumQ/FreeOmega/JointRealization.v'
@@ -84,10 +84,10 @@ Proof. elim b; reflexivity. Qed.
             ('PTree.Eq.Backend.StableHittingDomainSubEnumR.subenumR_stable_hitting_modelable',
              'native_lub -> free_omega_modelable'),
         ]:
-            with self.subTest(typ=typ), patch.object(soundness, 'query', return_value=[{
+            with self.subTest(typ=typ), patch.object(contracts, 'query', return_value=[{
                     'name': name, 'type': typ, 'assumptions': 'Closed under the global context'}]), \
                     self.assertRaises(AssertionError):
-                soundness.stable_hitting_validation_check()
+                contracts.stable_hitting_validation_check()
 
     def test_strings_and_comments_not_commands(self):
         self.assertNotIn('Admitted',soundness.code_only('(* Admitted. *) Check "Axiom Admitted".'))
@@ -108,17 +108,19 @@ Proof. elim b; reflexivity. Qed.
     def test_current_api(self):
         api.surface_check()
 
-    def test_public_alias_drift(self):
-        path=next(iter(self.policy['facades']))
-        expected=self.policy['facades'][path]
-        self.assertNotEqual(api.facade_surface(expected+' Notation hidden := private.'),expected)
-
-    def test_new_axiom_rejected_even_if_snapshot_is_corrupted(self):
-        entry={'name':'M.x','type':'x : True','assumptions':'Axioms:\nshortcut : False'}
-        data={'endpoints':[entry],'modules':['M'],'soundness':['M.x']}
-        with patch.object(assumptions.json,'loads',return_value=data), \
-             patch.object(assumptions,'query',return_value=[entry]), self.assertRaises(AssertionError):
-            assumptions.check()
+    def test_facade_contract_tracks_exports_and_aliases_not_format(self):
+        text = 'From PTree Require Import A B. Export X Y. Notation public := Owner.fact.'
+        same = 'Require Import PTree.B. Require Import PTree.A. Export X. Export Y. Notation public := Owner.fact.'
+        expected = api.facade_surface(text)
+        self.assertEqual(api.facade_surface(same), expected)
+        for change in [text.replace('Owner.fact', 'Owner.other'),
+                       text.replace('Export X Y', 'Export Y X'),
+                       text + ' Notation hidden := private.']:
+            self.assertNotEqual(api.facade_surface(change), expected)
+        for change in [text + ' Definition hidden := True.',
+                       text + ' Notation public := Other.fact.']:
+            with self.assertRaises(AssertionError):
+                api.facade_surface(change)
 
     def test_model_and_completeness_endpoints_retained(self):
         manifest=json.loads(assumptions.MANIFEST.read_text())
@@ -138,10 +140,10 @@ Proof. elim b; reflexivity. Qed.
             ('x : True', 'Axioms:\ntransport_exists : False'),
         ]:
             with self.subTest(typ=typ, axioms=axioms), \
-                 patch.object(soundness, 'query', return_value=[{
+                 patch.object(contracts, 'query', return_value=[{
                      'name': name, 'type': typ, 'assumptions': axioms}]), \
                  self.assertRaises(AssertionError):
-                soundness.generic_quotient_check()
+                contracts.generic_quotient_check()
 
     def test_native_order_audit_rejects_circular_or_gluing_assumptions(self):
         name = 'PTree.Prob.Backend.MathComp.OrderLaws.mathcomp_native_bind_le_mu'
@@ -151,9 +153,9 @@ Proof. elim b; reflexivity. Qed.
             ('x : SemanticOmegaLaws M -> True', 'Closed under the global context'),
             ('x : True', 'Axioms:\nnew_integral_axiom : False'),
         ]:
-            with self.subTest(typ=typ), patch.object(soundness, 'query', return_value=[{
+            with self.subTest(typ=typ), patch.object(contracts, 'query', return_value=[{
                     'name': name, 'type': typ, 'assumptions': axioms}]), self.assertRaises(AssertionError):
-                soundness.mathcomp_native_check()
+                contracts.mathcomp_native_check()
 
     def test_native_completion_and_bind_are_not_assumed(self):
         for module, name in [('OmegaLaws', 'mathcomp_native_bind_diagonal'),
@@ -162,10 +164,10 @@ Proof. elim b; reflexivity. Qed.
             for typ in ['x : SemanticOmegaLaws M -> True',
                         'x : SemanticMeasureBindLaws M -> True',
                         'x : MathCompCouplingGluing R -> True']:
-                with self.subTest(module=module, typ=typ), patch.object(soundness, 'query', return_value=[{
+                with self.subTest(module=module, typ=typ), patch.object(contracts, 'query', return_value=[{
                     'name': 'PTree.Prob.Backend.MathComp.' + module + '.' + name,
                     'type': typ, 'assumptions': 'Closed under the global context'}]), self.assertRaises(AssertionError):
-                    soundness.mathcomp_native_check()
+                    contracts.mathcomp_native_check()
 
 
 if __name__=='__main__': unittest.main()

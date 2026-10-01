@@ -1,49 +1,15 @@
 #!/usr/bin/env python3
-"""Separate Gate S build from explicitly universe-unchecked Gate M validation.
+"""Isolated Gate M query/parser helpers, called only by audit_contracts.py.
 
 Gate M is NOT a universe-consistency or ordinary kernel-check claim. Its
 compiled snapshot records unsafe-hierarchy reports separately from axioms.
 """
-from rocq_paths import source_path, LOADPATH
-import argparse
-import json
+from rocq_paths import LOADPATH
 import re
 import subprocess
 from types import SimpleNamespace
 from audit_assumptions import ROOT, parse, SOUNDNESS_AXIOMS, logical_axioms
-from audit_architecture import graph
-from audit_soundness import source_check
-from mathcomp_policy import ASSEMBLY, GATE_M, safe_targets
-
-SNAPSHOT = ROOT / 'tools/data/MATHCOMP_CONTRACTS.json'
-ENDPOINTS = ['PTree.' + ASSEMBLY.replace('/', '.') + '.' + n for n in [
-    'mathcomp_mixed', 'mathcomp_tree', 'mathcomp_head',
-    'mathcomp_frontier', 'mathcomp_kernel', 'mathcomp_hitting',
-    'mathcomp_peutt', 'mathcomp_peutt_refl',
-    'mathcomp_hitting_exists',
-    'mathcomp_bind_cofinal', 'mathcomp_peutt_bind']]
-ENDPOINTS += ['PTree.Tests.MathComp.' + n for n in [
-    'ret', 'frontier', 'kernel', 'hitting',
-    'ret_reflexivity', 'eventful_reflexivity',
-    'available_native_order', 'available_native_omega', 'available_general_hitting_exists',
-    'retry_hitting', 'unbounded_retry', 'retry_before_vis',
-    'eventful_bind_rewrite', 'nested_unbounded_retry',
-    'nested_retry_diagonal', 'retry_vis_interaction',
-    'heterogeneous_bind', 'bind_setoid',
-    'continuation_setoid', 'fmap_setoid',
-    'eventful_iter', 'handler_guarded',
-    'guarded_interp', 'guarded_tau']]
-ENDPOINTS += [
-    'PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior',
-    'PTree.Tests.MathComp.canonical_profile']
-# Importing the unchecked modules must not retrospectively taint safe facts.
-SAFE_CONTROLS = [
-    'PTree.Prob.Backend.MathComp.NativeLaws.mathcomp_native_bind_le_k',
-    'PTree.Prob.Backend.MathComp.NativeLaws.MathCompNativeMixedMeasure',
-    'PTree.Prob.Backend.MathComp.OmegaLaws.MathCompNativeOmegaLaws',
-    'PTree.Prob.Backend.MathComp.OmegaLaws.MathCompNativeFubiniLaws',
-    'PTree.Prob.Backend.MathComp.BindLaws.MathCompNativeBindLaws',
-    'PTree.Prob.Backend.MathComp.Retry.mathcomp_retry_fixed_point']
+from mathcomp_policy import GATE_M
 
 
 def parse_gate_m(result, endpoints, axiom_exceptions=None):
@@ -72,13 +38,10 @@ def parse_gate_m(result, endpoints, axiom_exceptions=None):
         allowed = SOUNDNESS_AXIOMS | set((axiom_exceptions or {}).get(entry['name'], []))
         assert logical_axioms(entry['assumptions']) <= allowed, entry['name']
         entry.update(unsafe[entry['name']])
-        if entry['name'] in SAFE_CONTROLS:
-            assert not entry['unsafe_hierarchy'], 'Safe native theorem is tainted'
     return entries
 
 
-def query_gate_m(endpoints=None, joint=True, axiom_exceptions=None):
-    endpoints = ENDPOINTS + SAFE_CONTROLS if endpoints is None else endpoints
+def query_gate_m(endpoints, joint=True, axiom_exceptions=None):
     assert len(endpoints) == len(set(endpoints)), 'Duplicate Gate M endpoint'
     commands = ['Require PTree.Tests.AllImports.'] if joint else []
     # Loading Gate M itself merges otherwise inconsistent universe constraints.
@@ -98,27 +61,5 @@ def query_gate_m(endpoints=None, joint=True, axiom_exceptions=None):
     return parse_gate_m(result, endpoints, axiom_exceptions)
 
 
-def check():
-    expected = json.loads(SNAPSHOT.read_text())
-    assert expected['gate_m_modules'] == sorted(GATE_M), 'Reviewed allowlist changed'
-    assert expected['endpoints'] == query_gate_m(), 'MathComp compiled type/assumption/unsafe-flag drift'
-    print(f'Gate M: {len(ENDPOINTS)} backend endpoints + {len(SAFE_CONTROLS)} safe controls; '
-          'types, logical axioms and unsafe-hierarchy reports match. NOT universe-checked.')
-
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--gate', choices=['S', 'M'], default='M')
-    parser.add_argument('--build', action='store_true')
-    args = parser.parse_args()
-    source_check()
-    if args.build:
-        targets = safe_targets(ROOT) if args.gate == 'S' else [
-            str(source_path(m).relative_to(ROOT).with_suffix('.vo')) for m in sorted(GATE_M)]
-        subprocess.run(['opam', 'exec', '--', 'dune', 'build', *targets], cwd=ROOT, check=True)
-    graph()
-    if args.gate == 'M':
-        check()
-    else:
-        print('Gate S: safe-only target selection and dependency separation passed; '
-              'run the normal compiled-assumption and targeted kernel audits separately.')
+    raise SystemExit('Helper module: run tools/audit_contracts.py --gate M (optionally --build).')

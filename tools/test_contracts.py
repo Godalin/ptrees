@@ -73,6 +73,69 @@ class ContractSuiteTests(unittest.TestCase):
         with patch.object(Path, 'read_text', corrupt), self.assertRaises(AssertionError):
             audit.load_suites()
 
+    def test_scope_coverage_has_no_magic_count(self):
+        data = json.loads((ROOT / 'tools/data/CONTRACTS.json').read_text())
+        data['endpoints'].append({'name': 'M.new'})
+        data['api'].append('M.new')
+        data['capability'].append('M.new')
+        audit.check_manifest(data)
+        for scope in ['api', 'capability', 'soundness']:
+            with self.subTest(scope=scope):
+                changed = {**data, scope: data[scope] + [data[scope][0]]}
+                with self.assertRaises(AssertionError):
+                    audit.check_manifest(changed)
+        with self.assertRaises(AssertionError):
+            audit.check_manifest({**data, 'api': data['api'] + ['M.absent']})
+
+    def test_soundness_scope_keeps_its_strict_axiom_whitelist(self):
+        data = json.loads((ROOT / 'tools/data/CONTRACTS.json').read_text())
+        entry = next(e for e in data['endpoints'] if e['name'] in data['soundness'])
+        entry['assumptions'] = 'Axioms:\ntransport_exists : False'
+        with self.assertRaises(AssertionError):
+            audit.check_manifest(data)
+
+    def test_all_semantic_checks_run_once_and_stay_out_of_gate_m(self):
+        from unittest.mock import Mock
+        checks = {name: Mock() for name in audit.SEMANTIC_CHECKS}
+        self.assertEqual(set(checks), {'mathcomp-native', 'real-joint',
+                                      'generic-quotient', 'stable-hitting'})
+        with patch.object(audit, 'SEMANTIC_CHECKS', checks), \
+             patch.object(audit, 'check_protocol_boundary') as boundary:
+            audit.run_checks([], 'S')
+            boundary.assert_called_once()
+            for check in checks.values():
+                check.assert_called_once()
+                check.reset_mock()
+            boundary.reset_mock()
+            audit.run_checks([], 'M')
+            boundary.assert_not_called()
+            for check in checks.values():
+                check.assert_not_called()
+            audit.run_checks([], 'S', 'stable-hitting')
+            checks['stable-hitting'].assert_called_once()
+            for name, check in checks.items():
+                if name != 'stable-hitting':
+                    check.assert_not_called()
+            boundary.assert_not_called()
+            for gate, group in [('M', 'stable-hitting'), ('S', 'missing')]:
+                with self.assertRaises(AssertionError):
+                    audit.run_checks([], gate, group)
+
+    def test_safe_control_cannot_acquire_unsafe_flag(self):
+        entry = {'name': 'PTree.Prob.Backend.MathComp.NativeLaws.mathcomp_native_bind_le_k',
+                 'type': 'control : True', 'assumptions': 'Closed under the global context',
+                 'unsafe_hierarchy': [], 'session_collapsed_universes': True}
+        with patch.object(audit, 'query_gate_m', return_value=[
+                {**entry, 'unsafe_hierarchy': ['control']}]), self.assertRaises(AssertionError):
+            audit.check_group({'id': 'control', 'context': 'gate-m'}, {}, [entry])
+
+    def test_helpers_cannot_silently_succeed_as_old_audit_commands(self):
+        for script in ['audit_assumptions.py', 'audit_mathcomp.py']:
+            result = subprocess.run([sys.executable, 'tools/' + script],
+                                    cwd=ROOT, text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('audit_contracts.py', result.stderr)
+
     def test_no_runtime_migration_replay(self):
         for path in (ROOT / 'tools').glob('*.py'):
             if path.name == Path(__file__).name:
@@ -99,10 +162,10 @@ class ContractSuiteTests(unittest.TestCase):
                     shutil.copy2(ROOT / name, root / name)
             self.assertFalse((root / '.git').exists())
             for script, flag in [('audit_architecture.py', '--aggregate-only'),
-                                 ('audit_api.py', '--surface-only'),
-                                 ('audit_soundness.py', '--source-only'),
+                                 ('audit_api.py', None),
+                                 ('audit_soundness.py', None),
                                  ('audit_contracts.py', '--metadata-only')]:
-                result = subprocess.run([sys.executable, 'tools/' + script, flag], cwd=root,
+                result = subprocess.run([sys.executable, 'tools/' + script, *([flag] if flag else [])], cwd=root,
                                         text=True, capture_output=True, timeout=60)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 

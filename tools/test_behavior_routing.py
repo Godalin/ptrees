@@ -25,6 +25,14 @@ class BehaviorRoutingTests(unittest.TestCase):
         current_surface({**self.sources, STRUCTURAL: self.sources[STRUCTURAL] +
                          '\nLemma extra : True. Proof. exact I. Qed.\n'})
 
+    def test_minimal_client_import_grouping_and_order_are_not_frozen(self):
+        path = 'tests/Imports/PublicBehavior.v'
+        changed = self.sources[path].replace(
+            'From PTree Require Import PTree PTreeFacts.',
+            'Require Import PTree.PTreeFacts.\nRequire Import PTree.PTree.')
+        # Qualified Require and From are the same import surface.
+        current_surface({**self.sources, path: changed})
+
     def test_shared_operation_stays_global(self):
         with self.assertRaises(AssertionError):
             current_surface({**self.sources, STRUCTURAL: self.sources[STRUCTURAL].replace(

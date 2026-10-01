@@ -1,7 +1,7 @@
 # Repository architecture and maintained contracts
 
 The repository separates program reasoning from its external mathematical
-validation. The generated [inventory](../tools/data/ARCHITECTURE_AUDIT.md) checks every
+validation. The [architecture checker](../tools/audit_architecture.py) checks every
 local dependency, not just a selection of entry points. The domain-soundness
 theorems are described in [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md).
 
@@ -248,5 +248,6 @@ machinery into another public equality. Standard effects reuse ITree definitions
 there is no parallel top-level Events namespace.
 
 The completed reclassification and its move ledger remain in Git at `2ba1855`.
-Current verification commands belong only in [AUDITING](AUDITING.md); generated
-ownership/dependencies live in [the machine inventory](../tools/data/ARCHITECTURE_AUDIT.md).
+Current verification commands belong only in [AUDITING](AUDITING.md).
+Run `python3 tools/audit_architecture.py --inventory` after building to inspect
+current ownership and direct-client counts; no generated report is committed.

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Public module/capability contracts and explicitly scoped kernel checks."""
+"""Source-level public boundaries and explicitly scoped kernel checks."""
 from rocq_paths import source_files, LOADPATH
 import argparse
 import json
 import re
 import subprocess
-from audit_assumptions import ROOT, MANIFEST, check, without_comments
+from audit_assumptions import ROOT, without_comments
 
 POLICY = ROOT / 'tools/data/CONTRACT_POLICY.json'
 STRUCTURAL = 'theories/Prob/FreeOmega/StructuralMeasure.v'
@@ -97,16 +97,45 @@ def current_surface(sources):
                    if re.search(r'\b(?:Theorem|Lemma|Corollary|Definition|Notation) peutt_bind\b', s)}
     assert bind_owners == {'theories/Eq/Bind.v'}, ('Bind ownership/shadowing', bind_owners)
     client = sources['tests/Imports/PublicBehavior.v']
-    assert re.findall(r'^From .*?\.$', client, re.M) == [
-        'From PTree Require Import PTree PTreeFacts.',
-        'From PTree.Eq.Backend Require Import SubEnumQ.',
-        'From Coq Require Import Morphisms.',
-        'From PTree.Eq Require Import PEutt.']
-    assert not re.search(r'^\s*Require\b|\b(?:Instance|Hint|Coercion|Arguments)\b', client, re.M)
+    imports = facade_surface(client, imports_only=True)
+    assert not imports['exports'], 'Public client must not re-export modules'
+    assert imports['imports'] == sorted([
+        'PTree.PTree', 'PTree.PTreeFacts', 'PTree.Eq.Backend.SubEnumQ',
+        'Coq.Morphisms', 'PTree.Eq.PEutt'])
+    assert not re.search(r'\b(?:Instance|Hint|Coercion|Arguments)\b', client)
 
 
-def facade_surface(text):
-    return ' '.join(without_comments(text).split())
+def facade_surface(text, imports_only=False):
+    """Small facade grammar: imports/exports and short aliases, not whole proofs.
+
+    Import grouping and whitespace do not matter. Export order remains relevant
+    to name precedence; no unreviewed command may hide in a pure facade.
+    """
+    surface = {'imports': [], 'exports': [], 'aliases': {}}
+    commands = re.split(r'\.(?=\s|$)', without_comments(text))
+    for command in commands:
+        command = ' '.join(command.split())
+        if not command:
+            continue
+        match = re.fullmatch(r'(?:From ([\w.]+) )?Require (Import|Export) ([\w. ]+)', command)
+        if match:
+            prefix, kind, modules = match.groups()
+            names = [(prefix + '.' if prefix else '') + m for m in modules.split()]
+            surface['imports' if kind == 'Import' else 'exports'].extend(names)
+        elif not imports_only:
+            match = re.fullmatch(r'Export ([\w. ]+)', command)
+            alias = re.fullmatch(r'Notation (\w+) := ([\w.]+)', command)
+            if match:
+                surface['exports'].extend(match[1].split())
+            elif alias:
+                assert alias[1] not in surface['aliases'], 'Duplicate public alias'
+                surface['aliases'][alias[1]] = alias[2]
+            else:
+                raise AssertionError('Unexpected facade command: ' + command)
+        else:
+            assert not re.match(r'(?:From|Require|Export|Import)\b', command), command
+    surface['imports'].sort()
+    return surface
 
 
 def surface_check():
@@ -115,12 +144,7 @@ def surface_check():
     data = json.loads(POLICY.read_text())
     for path, expected in data['facades'].items():
         assert facade_surface((ROOT / path).read_text()) == expected, 'Public surface changed: ' + path
-    manifest = json.loads(MANIFEST.read_text())
-    assert len(manifest['api']) == len(set(manifest['api'])) == 266
-    assert len(manifest['capability']) == len(set(manifest['capability'])) == 25
-    assert set(manifest['capability']) <= set(manifest['api'])
-    assert set(manifest['api']) <= {e['name'] for e in manifest['endpoints']}
-    print('Public modules and all 266 owner/helper + 25 capability contracts covered.')
+    print('Public imports/exports, aliases, routing and notation ownership checked.')
 
 
 def kernel_check():
@@ -134,12 +158,8 @@ def kernel_check():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--check', action='store_true')
-    parser.add_argument('--surface-only', action='store_true')
-    parser.add_argument('--kernel', action='store_true')
+    parser.add_argument('--kernel', action='store_true', help='Also run targeted joint coqchk')
     args = parser.parse_args()
     surface_check()
-    if not args.surface_only:
-        check('api')
     if args.kernel:
         kernel_check()

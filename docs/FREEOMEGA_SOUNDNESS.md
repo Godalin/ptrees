@@ -250,14 +250,14 @@ escape remain different counterexamples. `Counterexamples/Validation/FreeOmegaLi
 retains the negative continuity/diagonal/Fubini results; formal FiniteInternal/Recovery
 infrastructure is not deleted by this validation result.
 
-`audit_soundness.py --stable-hitting-only` additionally checks generic
+`audit_contracts.py --group stable-hitting` additionally checks generic
 hitting, Q/R specialization and regression endpoints against the existing
 logical-axiom whitelist. Architecture checks enforce one-way validation and
 reject legacy completion/tree dependencies in the native adapters.
 
 Use [Maintained verification](AUDITING.md) for current commands, registered
-contracts and trust contexts. Focused soundness checks support
-`--stable-hitting-only` and `--generic-quotient-only`.
+contracts and trust contexts. Focused mathematical checks also support
+`--group generic-quotient`; the complete Gate S run includes both.
 
 
 Not established: arbitrary invalid-term denotation, syntactic coupling

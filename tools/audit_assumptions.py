@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""Stable compiled contracts and logical assumptions. Read-only; no baseline regeneration."""
-import argparse
-import json
+"""Shared Rocq query/parser helpers; run audit_contracts.py for compiled checks."""
 import re
 import subprocess
 from pathlib import Path
@@ -107,22 +105,5 @@ def compare(expected, actual):
         e['name'] for e, a in zip(expected, actual) if e != a])
 
 
-def check(scope=None):
-    data = json.loads(MANIFEST.read_text())
-    entries = data['endpoints']
-    if scope:
-        entries = [e for e in entries if e['name'] in data[scope]]
-    actual = query([e['name'] for e in entries], data['modules'])
-    compare(entries, actual)
-    for e in actual:
-        if e['name'] in data['soundness']:
-            assert logical_axioms(e['assumptions']) <= SOUNDNESS_AXIOMS, e['name']
-    print(f"{len(actual)} exact compiled contracts and per-endpoint assumptions unchanged.")
-
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--check', action='store_true', help='check (also the default)')
-    parser.add_argument('--scope', choices=['api', 'soundness'])
-    args = parser.parse_args()
-    check(args.scope)
+    raise SystemExit('Helper module: run tools/audit_contracts.py instead.')

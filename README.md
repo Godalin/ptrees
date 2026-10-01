@@ -318,7 +318,8 @@ Start with the [documentation index](docs/README.md); one current guide owns eac
 The accepted interpretation theory and probability-domain soundness are frozen.
 See [repository architecture](docs/ARCHITECTURE.md) for ownership and the
 generic / FreeOmega / concrete-backend boundaries, and the
-[current inventory](tools/data/ARCHITECTURE_AUDIT.md) for machine-checked dependencies.
+[architecture checker](tools/audit_architecture.py) for machine-checked dependencies
+(and its `--inventory` option for an on-demand ownership table).
 The [external soundness account](docs/FREEOMEGA_SOUNDNESS.md) explains admissible
 FreeOmega SubEnumQ, standard measures, general joint coupling and stable-hitting
 adequacy. These validation modules are not imported by program reasoning.
@@ -434,7 +435,7 @@ new interpretation semantics is introduced.
 
 [THEORY_STATUS.md](THEORY_STATUS.md) is the current theorem/capability map,
 including raw-tree transition comparison and MDP-fragment coincidence.
-The [architecture inventory](tools/data/ARCHITECTURE_AUDIT.md) records maintained
+The [architecture checker](tools/audit_architecture.py) computes maintained
 modules and clients; [Examples and tests](docs/ARCHITECTURE.md#examples-and-tests)
 records test roles and deduplication criteria. [Maintained verification](docs/AUDITING.md)
 lists current commands and their check scope.
