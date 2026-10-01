@@ -1,7 +1,7 @@
 (** Case role: execution demo / shared supporting program.
     Reading entry: rational_counter; rational_missing_mass_stops.
     Scope: SubEnumQ; missing mass, fuel exhaustion and invalid entropy are distinct.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 (** A genuinely non-fair, partial rational sampler inside an unbounded State
     loop. Each attempt succeeds with 1/3, retries with 1/2, or is lost with
     1/6. This example consumes the general verified uniform-ticket compiler. *)

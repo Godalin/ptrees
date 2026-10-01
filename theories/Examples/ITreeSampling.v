@@ -1,7 +1,7 @@
 (** Case role: supporting example.
     Reading entry: two_coins_elaborates; retry_elaborates.
     Scope: SubEnumQ / observable FreeOmega; iteration preservation does not assert AST.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 (** ITree sampling-as-an-effect elaborated to primitive PTree probability.
     The source really is an [itree], not a PTree reusing an event signature. *)
 Set Warnings "-notation-overridden,-ambiguous-paths".

@@ -1,7 +1,7 @@
 (** Case role: paper case study / shared algebra.
     Reading entry: peutt_factory_vn_direct.
     Scope: EnumQ / observable FreeOmega; two unbounded analyses are consumed as behavior equations.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 (** Learn: compose existing sampler equivalences under bind and iteration.
     Reusable endpoints: peutt_factory_correct, peutt_factory_vn_direct, peutt_third_to_two_fifths_compositional.
     Boundary: shared arithmetic is imported, not reproved by congruence.

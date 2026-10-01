@@ -1,7 +1,7 @@
 (** Case role: supporting example.
     Reading entry: lower_then_count; count_sample_transformer_agreement.
     Scope: SubEnumQ; no totality assumption on the sampled distribution.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 (** One actual ITree source, lowered probability, and interpreted State.
     Probability coefficients need not be total or fair. *)
 Set Universe Polymorphism.

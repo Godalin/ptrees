@@ -51,10 +51,11 @@ inherits a bypass from its directory.
 
 ## Recorded reclassification from e9b5680
 
-The machine-readable [move ledger](REGRESSION_RECLASSIFICATION.json) records
-every old path, new path and disposition, plus the intentional declaration
-deletions and promotion. It is review evidence, **not** a historical replay
-gate that freezes future example edits. Git retains the original sources.
+The completed reclassification and its move ledger are retained in Git.
+For example, `git show 891932f:docs/REGRESSION_RECLASSIFICATION.json` retrieves
+every old/new path, disposition, and intentional deletion/promotion. This is
+review evidence, not a historical replay gate that freezes future edits.
+The following counts describe that checkpoint, not the current inventory.
 
 - 102 former Regression modules: 79 mathematical examples/counterexamples,
   23 compilation clients (including AllImports).
@@ -71,7 +72,7 @@ gate that freezes future example edits. Git retains the original sources.
   Proper wrappers lose compiled snapshot entries; their production counterparts
   remain audited. Logical-axiom whitelists are not broadened.
 
-The whole project still has 433 Rocq modules, of which 431 are Gate S and two
+At that checkpoint the project had 433 Rocq modules, of which 431 are Gate S and two
 are the explicitly unchecked Gate M. This is a responsibility change and a
 small content diet, not a claim of having deleted 102 modules of mathematics.
 
@@ -89,24 +90,6 @@ helper makes all current-tree checks inspect both roots. Architecture policy
 rejects a new Regression namespace and enforces the example/test/model edges.
 No new per-migration audit framework, environment change or CI query is needed.
 
-Local validation for this reclassification:
-
-- Full root `opam exec -- dune build -j 2`, then ordinary `dune build`: passed,
-  including every example, compilation client, safe AllImports and extraction
-  target. The first higher-concurrency run hit the existing 20-second timeout
-  in a FactoryController supporting proof; the unchanged proof passed at `-j 2`.
-- 149 Python tests passed, including a source archive with no `.git`. Its copy
-  fixture now includes `tests/` and `_CoqProject` as well as `theories/`.
-- Architecture: 433 modules / 5843 local dependency edges; API, source-safety,
-  exact Gate M allowlist and contract-registry checks passed.
-- Four focused compiled groups passed: main contracts 491, generic algebra 129,
-  MDP correspondence 12, MathComp 43 (separate Gate M joint context). This is
-  675 checked entries, not a claim to rerun all 34 registered groups.
-- The promoted theorem's compiled signature was checked; `Print Assumptions`
-  reports `Closed under the global context`.
-- One-time exact source comparison against `e9b5680` covered all 433 modules,
-  applying only the transformations listed in the ledger. The 30 existing
-  snapshot/registry files match mechanical relocation, except the two explicitly
-  retired Proper-wrapper entries. No whitelist expansion or snapshot reset.
-
-CI was not queried; the existing local toolchain and environment were unchanged.
+The original local validation and exact-source comparison are retained with
+the migration in Git. Current module counts come from
+[the generated inventory](ARCHITECTURE_AUDIT.md), not the historical table above.

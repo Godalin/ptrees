@@ -1,7 +1,7 @@
 (** Case role: shared analysis / supporting program.
     Reading entry: oracle_missing_mass_vanishes.
     Scope: Rational fair draws with a binary oracle; oracle representation is a separate obligation.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.

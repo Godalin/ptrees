@@ -386,5 +386,6 @@ The current main calculation replaces the local `Hround` assertion with
 `sem_bind` and `sem_ret`. Only that endpoint's proof opens the concrete
 finite-round identity. `Hstep` remains the visible controller case split;
 the rest of the main program transformation is contextual rewriting.
-See [the refactor record](CASE_STUDY_REFACTOR.md) for the Examples inventory,
-assumption comparison and local verification scope.
+See [the case-study guide](CASE_STUDIES.md) for current reading entries and
+[the presentation standard](CASE_STUDY_STANDARD.md) for proof organization.
+Historical refactor and assumption-comparison records remain in Git.

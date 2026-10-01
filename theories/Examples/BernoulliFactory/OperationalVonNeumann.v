@@ -1,7 +1,7 @@
 (** Case role: shared analysis.
     Reading entry: peutt_von_neumann_raw_direct; peutt_von_neumann_compiled_direct.
     Scope: EnumQ / FreeOmega; connects finite convergence certificates to PTree behavior.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.

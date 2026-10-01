@@ -64,29 +64,6 @@ factory is the EnumQ client, exercising the complete handler/loop stack.
 Direct MathComp is intentionally not part of this completion module; its
 generic theorems and explicit mathematical premises are unchanged.
 
-The opt-in follow-up is based on `1ca9643`. Its full build and 140 tool tests
-passed, including positive/negative registration probes. Architecture, source
-safety and public-surface checks passed. All 465 mainline contracts and the 42
-previous generic-algebra entries remain exact; 11 new registrations/clients
-bring the latter to 53. The factory's 22 contracts pass: only its two complete
-rewrite endpoints have a different printed type because the local notation
-expands to raw `peutt`. Before recording those two types, Rocq checked each new
-proof term against the old canonical type by conversion; their assumptions are
-unchanged. The other 20 entries remain exact.
-
-Joint `coqchk -norec` passed for the support module, its regression, and the
-three changed example modules. This checks five safe module bodies, trusting
-dependencies and excluding Gate M, not the entire library recursively.
-Extracted controller OCaml hashes are unchanged; remote CI was not queried.
-
-The bind-rewriting follow-up adds one registration and three native-parametric
-clients (inferred Proper, source rewriting and pointwise continuation rewriting),
-bringing the safe algebra snapshot to 57 entries. Existing endpoint assumptions
-remain exact. The only prior snapshot text change is qualified printing of
-`FactoryController.Facts.embed_Proper` and `FactoryController.Controller.embed`,
-checked to differ only in qualification and whitespace. No axiom whitelist
-extension is needed. All 22 factory contracts remain byte-for-byte unchanged.
-
 ### Constructor-context rewriting
 
 `Vis` and `Prob` expand to `go (VisF ...)` and `go (ProbF ...)`. The generic
@@ -100,18 +77,10 @@ an application of the generic theorem, not a separate completion proof.
 Generic regressions run before any concrete backend import; the opt-in
 regression separately checks actual rewriting under `Prob`.
 
-The current safe algebra snapshot has 63 entries (six new constructor-context
-wrappers/clients). Its old entries are unchanged except that
-`factory_with_sampler_Proper` drops two choice axioms, with no type change.
-The new sampling wrappers inherit the existing generic probability congruence's
-choice dependencies; their per-endpoint records make this explicit rather
-than expanding the global whitelist. See `CASE_STUDY_REFACTOR.md`.
-
-The existing audit tooling now resolves nested declarations to their actual
-source library, and distinguishes explicitly local notation from public glyph
-ownership. Mutation tests continue to reject duplicate nonlocal glyphs;
-unknown declarations still reach the checked Rocq error protocol. No new audit
-script, historical replay or logical-axiom exception was added.
+Sampling wrappers inherit the probability congruence's logical dependencies;
+these are recorded per endpoint in `GENERIC_ALGEBRA_CONTRACTS.json`, rather
+than hidden by broadening a global whitelist. Historical migration counts
+and before/after assumption ledgers remain in Git.
 
 `tests/Rewriting/GenericAlgebra.v` checks the minimal shallow profile,
 generic ownership/import isolation, arbitrary-native FreeOmega sampling and

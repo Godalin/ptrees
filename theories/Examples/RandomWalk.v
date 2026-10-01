@@ -1,7 +1,7 @@
 (** Case role: paper case study.
     Reading entry: random_walk_as_successive_passages; random_walk_closed_form.
     Scope: Generic structural control flow, then SubEnumQ probability analysis; no distribution-to-bisimulation converse.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 (** Learn: passage algebra followed by genuinely infinite-state harmonic analysis.
     Reusable endpoints: random_walk_as_successive_passages, random_walk_ast, random_walk_output_dist, random_walk_closed_form.
     Boundary: infinite-support output is not a finite native Prob node.

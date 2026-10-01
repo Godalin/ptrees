@@ -1,7 +1,7 @@
 (** Case role: paper case study.
     Reading entry: source_program_rewrite; rewrite_then_handle.
     Scope: SubEnumQ / observable FreeOmega; equal behavior is not equal fuel or trace.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 (** Learn: sampling fusion under State interpretation, then execution.
     Reusable endpoints: source_program_rewrite, rewrite_then_handle.
     Boundary: no same-fuel or same-entropy-trace equivalence.

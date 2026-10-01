@@ -64,8 +64,8 @@ Finite native carriers are not required to be omega-complete. Generic
 probability-level obligations of generic PTree theory. MathComp is a separate
 native self-frontier model, not another specialization of these records.
 
-Current representation, support, inference and behavioral clients live in
-Regression; external soundness is summarized in
+Representation, support and behavioral examples live in `Examples/Probability`;
+inference/import clients live in non-installed `tests/`. External soundness is summarized in
 [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md). Compiled signatures, logical
 assumptions and ownership are checked by the maintained commands in
 [AUDITING](AUDITING.md).

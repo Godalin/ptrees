@@ -70,8 +70,9 @@ provide these laws without duplicating PTree coinduction. The lower-level
 [generic bind extraction](GENERIC_BIND.md) and [public modules](PUBLIC_MODULES.md).
 `Eq/Algebra` owns generic bind/fmap `Proper` proofs. Probability-level derived
 AE facts live in `Prob`, not comparison semantics; see
-[consumer convergence Stage 1](GENERIC_ALGEBRA.md) for the capability surface,
-local rewriting profiles, and the remaining structural bridge boundary.
+[generic algebra](GENERIC_ALGEBRA.md) for the capability surface and local
+rewriting profiles, and [relational consumers](GENERIC_RELATIONAL_CONSUMERS.md)
+for the proved structural bridges and their relational-limit premises.
 
 ## Three layers of probability reasoning
 
@@ -132,8 +133,8 @@ Every other module belongs to Gate S and must not import Gate M, even through
 regressions or helpers. Safe `AllImports` excludes both Gate M modules; its
 old all-module coverage rule is deliberately narrowed to all safe modules.
 Gate M is not part of the public facades or normally checked theory.
-See [direct scope and verification](MATHCOMP.md) and the historical
-[completion-removal record](MATHCOMP_NATIVE_SCOPE.md).
+See [MathComp scope and verification](MATHCOMP.md). The earlier completion
+removal and native-only checkpoints are retained in Git, not current guidance.
 
 Do not introduce an `ExternalJointRealization` capability merely to package
 these strengthening theorems. Reconsider only if an actual generic consumer

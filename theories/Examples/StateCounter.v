@@ -1,7 +1,7 @@
 (** Case role: execution demo / shared supporting program.
     Reading entry: tick_state_equation; counter_replay_contract.
     Scope: SubEnumQ; exact replay is not a randomness theorem for the host source.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 (** State + native probability, with exact rational replay. This example
     does not assert that an arbitrary supplied replay stream is random.
     Prob stays a native node throughout state elimination and execution. *)

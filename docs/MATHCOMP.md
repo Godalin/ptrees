@@ -19,33 +19,18 @@ premises, canonical routing, or the universe trust boundary.
 "direct" describes the one-draw specification program, contrasted with the
 oracle algorithm, not a backend variant.
 
-Naming cleanup validation (baseline `01c610d`): all 449 theory sources were
-compared modulo the explicit identifier/import/section renames and comments;
-no mathematical definition or proof changed. Full local `dune build`, 143
-tool tests, architecture/surface/source checks, and all 34 compiled contract
-groups passed (1,603 Gate S entries, 76 Gate M entries). Renamed snapshots
-preserve type tokens, logical assumptions, and unsafe-flag sets; only printed
-line wrapping and flag sorting were adjusted. A three-module Gate S joint
-`coqchk -norec` checked AllImports, ArchitectureBoundaries, and CanonicalBehavior;
-dependencies were not rechecked. Gate M remains explicitly unchecked; no
-remote CI result is claimed.
-
 ## Model and status
 
 Backend pair: `MN = MF = MathCompKernelMeasure R`. There is no MathComp +
-FreeOmega backend. The universe policy accepted at `c9a1a6f` is unchanged;
-the native order baseline is `561dc9a`. This increment completes the requested
-native omega/relational-bind mathematics and program acceptance.
-Accepted theory-completion baseline: `5dac49a`. This round is closed;
-coupling composition retains its explicit gluing premise and Gate M retains
-its isolated universe relaxation.
-No CI work or environment changes are included.
+FreeOmega backend. Native order, omega/continuity and relational bind are
+proved with normal universe checking. Recursive-frontier assembly remains
+isolated in Gate M; coupling composition retains the explicit
+`MathCompCouplingGluing R` premise.
 
-The subsequent [generic bind extraction](GENERIC_BIND.md), based on `6e35c19`,
-replaces the backend bind proof with the common `Eq/Bind` theorem. It preserves
-this trust split and all native mathematics; current bind ownership is described
-below. The final verification counts in this document record the earlier
-theory-completion increment.
+[Generic bind](GENERIC_BIND.md) supplies the shared upper-layer proof.
+Completed removal, naming and native-order stage reports remain in Git;
+they are not current mathematical gaps. See [generic consumers](GENERIC_CONSUMERS.md)
+for remaining model-specific premises, including unrestricted relational-lub.
 
 ## Capabilities
 
@@ -69,6 +54,12 @@ probability axiom or representation has been introduced. The generic extraction
 adds only probability-level law/selection capabilities, proved by both backends.
 
 ## Checked mathematics (Gate S)
+
+Native order compares returned-value events, not arbitrary root events containing
+`MCBottom`: cemetery mass may decrease as returned mass increases. `OrderLaws.v`
+proves source-bind monotonicity via nonnegative integrands that vanish at bottom,
+first for simple functions and then by their supremum. This avoids incorrectly
+using a global order on the completed probability measures.
 
 `OmegaLaws.v` constructs an actual MathComp subprobability for each increasing
 native chain. On a set `U` it takes `sup_n mu_n(U ∩ returned)`. The construction
@@ -176,26 +167,9 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Tests.AllImports
 ```
 
-The frozen 505 safe compiled contracts and logical-axiom whitelist are not
-regenerated. New native endpoints are checked independently for absence of
-gluing or circular semantic-law premises. Gate M's expanded snapshot is
-separate. Targeted safe `coqchk -norec` is not a whole-library recursive Gate D
-audit and makes no normal kernel-consistency claim about Gate M.
-
-`-norec` is repeated for every target: it is a per-module option, not a
-global switch. An initial command with only one `-norec` accidentally started
-a larger recursive dependency check; that run was stopped and is not counted
-as passing validation.
-
-Completed locally for this increment:
-
-- Full `dune build`: 276 modules (274 Gate S, 2 Gate M); safe-only build also passed.
-- AllImports, architecture and curated API checks passed.
-- All 505 frozen compiled contracts and their assumptions unchanged.
-- Soundness audit: 199 frozen contracts unchanged, plus 36 generic, 18
-  finite-real and 80 native MathComp endpoints passed the existing axiom whitelist.
-- All 69 Python tool tests passed.
-- Gate M: 30 backend endpoints and 6 safe controls passed; every previously
-  recorded endpoint retained its exact type, assumptions and unsafe flags.
-- The six-module joint targeted kernel check shown above completed successfully.
-- No CI run was checked or claimed successful; no environment was changed.
+Use [Maintained verification](AUDITING.md) for current snapshot groups and
+source-safety checks. Gate M snapshots record unsafe flags separately and
+are not evidence of universe consistency. The targeted safe `coqchk -norec`
+command above trusts dependencies and is not a recursive whole-library audit.
+Repeat `-norec` for each target: it is a per-module option, not a global switch.
+Historical build/test counts remain in Git; no remote CI result is implied.

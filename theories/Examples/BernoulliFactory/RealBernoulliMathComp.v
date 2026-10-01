@@ -1,7 +1,7 @@
 (** Case role: shared analysis.
     Reading entry: mathcomp_binary_oracle_lub; mathcomp_binary_oracle_is_ast.
     Scope: Universe-checked native MathComp analysis; not a recursive PTree frontier assembly.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 

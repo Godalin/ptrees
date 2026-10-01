@@ -148,7 +148,7 @@ The following is a review ledger, not another executable migration audit:
 | Adaptive/BoundedFactory source substrings | Removed. Backend choice and proof reuse are source-review concerns; this cleanup does not modify either example. |
 | Q/R joint bridges must call particular helpers and must not use `induction`/`elim`; compatibility must not contain recursion | Removed. Existing compiled types/assumptions, the inadmissible-intermediate example, and external-validation dependency boundaries remain. No tactic is a soundness criterion. |
 | Countable-support file must not mention qlift constructors; backend hitting file must contain particular names | Removed. Mathematical endpoint contracts and compiled clients remain; helper vocabulary is not frozen. |
-| Historical reconciliation ledger checked on every test run | Removed. `AUDIT_CONTRACT_RECONCILIATION.json` remains a review record, not a current-tree invariant. |
+| Historical reconciliation ledger checked on every test run | Removed. The old reconciliation ledger is retained in Git, not as a current-tree invariant. |
 | Five extracted-program test files | Consolidated into `test_execution.py`, sharing one subprocess driver. All 38 actual runtime tests remain. |
 | Three source-text extraction-wiring checks | Replaced by one safety check over all four extraction targets: no custom constant/inductive overrides, integer remapping, checker bypass, unrealized extracted axioms or `Obj.magic` in handwritten drivers. The Rocq glue compiles; exact root/helper spellings and OCaml formatting are not frozen. |
 
@@ -202,3 +202,34 @@ is claimed for this Python/documentation-only change.
 public/import-order regressions and the new direct iteration modules. It uses
 `coqchk -norec`: dependencies are trusted. This is neither the deferred recursive
 whole-library audit nor a kernel certification of Gate M's collapsed universes.
+
+## Retired documentation and historical ledgers
+
+Documentation cleanup from `891932f` removes four superseded stage reports:
+
+| Retired report | Maintained account |
+| --- | --- |
+| Distribution reorganization checkpoints | [Finite backends](FINITE_BACKEND_CONSOLIDATION.md), [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md) |
+| MathComp native-only scope / native-order increment | [MathComp](MATHCOMP.md) |
+| Case-study refactor log | [Case-study standard](CASE_STUDY_STANDARD.md), [case guide](CASE_STUDIES.md) |
+
+Eight historical JSON files (reconciliation, relocation, before-snapshots and
+contract-change ledgers) are also retired. None is a registered contract suite
+or read by a maintained tool. All registered `*CONTRACTS.json` snapshots,
+`CONTRACT_SUITES.json`, `CONTRACT_POLICY.json` and the generated architecture
+inventory are retained unchanged. Stage tails in maintained topic guides are
+removed where they describe completed work as pending or repeat old counts.
+
+All removed files can be recovered with `git show 891932f:docs/<filename>`.
+The reclassification policy and its original checkpoint summary remain in
+[Examples and compilation tests](REGRESSION_ORGANIZATION.md); the detailed
+move ledger stays in Git. Source-file changes only redirect example-header
+documentation links to the maintained case guide. No theorem, definition,
+assumption policy, tool implementation or environment changes.
+
+Local checks for this cleanup: all relative Markdown links in `docs/` resolve;
+named audit scripts exist; the 34-group registry metadata check, architecture,
+API-surface and source-soundness checks pass, as do 11 contract-tool tests.
+Every Rocq edit was compared against the baseline and is exactly a header-link
+replacement. `git diff --check` passes. No full build, compiled-theorem audit,
+kernel check or remote CI run is claimed for this documentation-only change.

@@ -1,7 +1,7 @@
 (** Case role: shared supporting program.
     Reading entry: biased_to_rational_coin; fair_binary_round_measure.
     Scope: EnumQ concrete distributions are intentional; composition is in BernoulliFactoryComposition.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.

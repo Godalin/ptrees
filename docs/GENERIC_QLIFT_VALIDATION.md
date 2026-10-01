@@ -107,28 +107,10 @@ python3 -m unittest discover -s tools -p 'test_*.py'
 ```
 
 The generic-quotient audit queries compiled types and `Print Assumptions`
-for the new generic endpoints, both adapters and the regression contracts.
-It retains the existing logical-axiom whitelist and separately rejects a
-concrete native carrier, native omega-completeness or native relational-bind
-law in generic endpoint signatures. The 505 frozen contracts are not
-regenerated. New files remain in the one-way validation layer: the maintained
-PTree reasoning infrastructure cannot depend on these external models.
-
-## Historical verification
-
-The original generic-quotient increment recorded the following checks. These
-counts are historical, not a claim about the current repository:
-
-- Full local `dune build`, including AllImports: passed, 267 modules.
-- Architecture, public API and source-safety contracts: passed.
-- All 52 tool tests: passed.
-- All 505 frozen compiled signatures and per-endpoint assumptions: unchanged.
-- All 36 new generic/adapter/regression endpoints: checked with the existing
-  logical-axiom whitelist, without widening it.
-- Joint `coqchk -silent -norec` of the four new generic modules, the two
-  concrete adapters and the new regression: passed. This is a **targeted**
-  seven-module kernel check, not a recursive whole-library audit.
+for generic endpoints, adapters and example contracts against the logical-axiom
+policy. The validation layer remains a one-way consumer: maintained PTree
+reasoning cannot depend on these external models. See [Maintained verification](AUDITING.md).
 
 The current organization and stable-hitting extension are documented in
-[FreeOmega soundness](FREEOMEGA_SOUNDNESS.md). No `Admitted`, new axiom/class,
-unsafe universe setting, or environment change is required by that extension.
+[FreeOmega soundness](FREEOMEGA_SOUNDNESS.md). Historical stage-validation
+counts and checkpoint logs remain in Git, not as current inventory claims.

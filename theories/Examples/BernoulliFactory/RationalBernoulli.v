@@ -1,7 +1,7 @@
 (** Case role: shared analysis.
     Reading entry: rational_binary_iteration_converges; rational_binary_coin_almost_surely_terminates.
     Scope: Arbitrary bounded rational target, including endpoints; finite distribution definitions are intentional.
-    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDY_REFACTOR.md. *)
+    See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.

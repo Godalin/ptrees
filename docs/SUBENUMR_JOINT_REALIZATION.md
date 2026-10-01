@@ -1,10 +1,9 @@
 # Finite-real completion: external joint realization
 
-Baseline: `784d02a`. This closes backend-specific joint realization for
-`FreeOmega (SubEnumR R)` and stops the coupling-soundness workstream. Generic
-validation remains bounded-test/bidual soundness; no arbitrary-native joint
-existence capability, new probability class, or heterogeneous-backend relation
-is introduced. MathComp is a separate next stage, not part of this change.
+`FreeOmega (SubEnumR R)` has backend-specific external joint realization.
+Generic validation remains bounded-test/bidual soundness: no arbitrary-native
+joint-existence capability or new probability class is required. MathComp's
+separate model and trust boundary are described in [MathComp status](MATHCOMP.md).
 
 ## Countable support, before relational reasoning
 
@@ -72,9 +71,7 @@ Other contracts cover equality agreement, an invalid-but-enumerable raw Lub,
 an actual joint with mass exactly `1/2`, and independently quantified large
 universe heterogeneous return carriers. Negative import checks exclude the
 rational native backend and PTree reasoning from this regression's imports.
-Only the three new modules and AllImports additions affect `.v` sources.
-Old DS proofs, generic behavioral/validation theory, and public facades stay
-unchanged. The new adapters are external validation, never mainline premises.
+These adapters are external validation, never mainline premises.
 
 ## Reproducible local checks
 
@@ -91,22 +88,8 @@ opam exec -- coqchk -silent -R _build/default/theories PTree \
   -norec PTree.Examples.Validation.SubEnumRJointRealization
 ```
 
-The compiled realization audit checks 18 new endpoints against the existing
-logical-axiom whitelist; the 505 frozen signature/assumption snapshots are not
-regenerated. Source audits forbid qlift constructor analysis in the final
-bridge and quotient dependencies in the countable-cover proof. The kernel
-command checks the three new module bodies jointly, trusting compiled
-dependencies; it is not the whole-library Gate D audit. CI and environment
-changes remain out of scope.
-
-## Verification result
-
-- Full local build, including AllImports: passed (270 modules).
-- Architecture inventory, API surface and soundness source contracts: passed.
-- All 57 tool tests: passed.
-- All 18 new compiled endpoint/assumption checks: passed under the unchanged
-  logical-axiom whitelist.
-- All 505 frozen compiled signatures and assumptions: unchanged.
-- Joint targeted `coqchk -silent -norec` of the three new modules: passed.
-- No new axiom, probability class, unfinished proof, unsafe universe setting,
-  environment change, or CI check. MathComp work has not started in this stage.
+The realization audit checks current compiled endpoints against the logical-axiom
+policy. The kernel command checks module bodies while trusting dependencies;
+it is not a recursive whole-library audit. No proof-tactic spelling or particular
+helper call is a soundness criterion. Historical endpoint counts and checkpoint
+logs remain in Git; see [Maintained verification](AUDITING.md) for current checks.
