@@ -148,20 +148,6 @@ MixedHead uses this algebra for finite kernels and the heterogeneous
 limits; AbsorbingFrontier uses it for whole-head relational lifting. Explicit
 backend configuration and probability-analysis proofs remain in place.
 
-For the initial notation-only migration from `e78a1bc`, 18 affected definitions and
-theorems (including the MixedHead public results and the two tutorials'
-frontier relations) were compared before/after using compiled types and
-`Print Assumptions`: all were identical. The existing 491-entry main and
-129-entry generic algebra contract groups are also unchanged. No snapshot, instance registration,
-capability declaration or trust policy was modified. Scope separation,
-heterogeneous lifting, bind precedence and high-universe carriers are checked
-by the non-installed `tests/Notation/SemanticMeasureNotation.v` client.
-Local validation passed: full root `dune build -j 2` (including AllImports
-and extraction), 140 Python tests, and 39 execution/safety tests rerun after
-re-extraction. Architecture, API, source-safety and contract-registry checks
-passed. The two-file Gate M boundary is unchanged; full build is not a claim
-that Gate M is universe-checked. No remote CI or new kernel audit was run.
-
 ## Reading the external model
 
 External validation examples may additionally opt into bounded-expectation
@@ -262,21 +248,6 @@ Technical checks live in the non-installed
 finite/complete judgments, certificate distinction, measure-notation
 precedence and observable-profile inference.
 
-Validation against `f25991b`: 17 affected declarations retain their compiled
-types and `Print Assumptions` (modulo the single helper rename and printer
-whitespace). The changed non-example theory/check files preserve their exact
-source apart from that rename and the appended notation blocks. The existing
-491 main contracts, 129 generic-algebra contracts and 47 FactoryController
-contracts pass; the main snapshot changes only the two literal occurrences
-of the renamed helper, with no assumption or other signature refresh.
-Full local `dune build -j 2` (including AllImports and extraction), 140 tool
-tests, 39 post-extraction execution/safety tests, architecture, API-surface
-and soundness-source checks passed. A joint `coqchk -norec` checked the two
-definition owners, notation client and five migrated cases; dependencies were
-not rechecked. The final notation client was checked again after adding its
-negative probes. Gate M remains the same two files, outside the safe kernel
-check; full build does not claim Gate M is universe-checked. No CI was queried.
-
 ## Case-study presentation policy
 
 Program code uses `sample`, `trigger` and `x <- t ;; k x` where these express
@@ -302,24 +273,6 @@ needs that exact visible continuation or finite-step observation.
 
 Neither backend choices nor probabilities, state updates, iteration schedules,
 relation definitions or proof-method boundaries are changed by this policy.
-
-The continuation from `46cd2f4` renames raw return/zero to `ηω / ⊥ω`, removes
-the redundant `>>=ω`, and adds opt-in `≤ᵥ` in the existing definition owners.
-No new notation file, class, hint, semantic law or checker relaxation is added.
-The seven primary examples listed above and two external-validation examples
-are migrated; supporting mathematical developments are not mechanically
-symbolized. Five controller/handler definitions were additionally compared
-with their old bodies by `reflexivity`, confirming definitional equality.
-
-Local validation: full root `dune build -j 2`, including AllImports and
-extraction; 140 tool tests; 39 execution/safety tests rerun after extraction;
-architecture, API and soundness-source checks. The 491 main, 129 generic-algebra,
-47 FactoryController and 266 API owner/helper compiled type/assumption
-contracts are unchanged, without refreshing their snapshots. Only the two
-source-policy entries for the retired raw-bind notation tests are removed;
-semantic bind precedence and observable-instance selection remain tested.
-Gate M is unchanged and is not claimed to be universe-checked. No remote CI
-or additional kernel audit was run.
 
 ## IterationBasics: what the three versions establish
 
@@ -356,7 +309,7 @@ representative are explicitly compared by `two_frontiers_agree`; different
 formal syntax is not a different loop semantics. Finite frontier rounds are
 one ahead of bottom-starting Kleisli approximants; the limit removes this shift.
 
-For genuine order-theoretic leastness, see [ReturnIteration](RETURN_ITERATION.md):
+For genuine order-theoretic leastness, see [ReturnIteration](ITERATION.md#return-only-frontiers-and-classical-iteration):
 MathComp native iteration and the independent OmegaVal model prove it. The
 FreeOmega validation theorem interprets its canonical approximants into that
 lfp. Examples do **not** import external validation, and raw FreeOmega's
@@ -403,3 +356,36 @@ premises**, not unconditional support by every backend. In particular:
 No new context closure, probability class, facade or operator is needed for
 this learning path. A concrete blocked client, not backend symmetry or proof
 line count, should motivate the next foundational extension.
+
+## Factory controllers
+
+[FactoryController](../theories/Examples/FactoryController.v) is the first
+whole-program rewrite case. Read its actual controller programs, then
+`Rewriting.factory_controller_program_rewrite`: sampler refinement, handler
+and State equations compose inside the infinite device service. The private
+sampling analysis is reused, not re-proved as part of the rewrite chain.
+`Observation.factory_next_action_probability` is a separate quantitative result;
+scripted and live extraction execute the named programs rather than reimplementing
+the algorithm. See [Execution](EXECUTION.md) for runtime trust limits.
+
+[AdaptiveFactoryController](../theories/Examples/AdaptiveFactoryController.v)
+adds persistent state changes between failed attempts. In namespace `Adaptive`,
+read `controller_program_rewrite`, with `adaptive_factory_direct` and
+`raw_loop_fair` as component endpoints. The selected backend is SubEnumQ;
+raw EnumQ belongs only to finite analysis. Bit observations and relational
+support suffice: there is no artificial requirement to solve for an explicit
+finite joint limit of state and bit. State is not reset between retries, and
+no independence assumption may replace the correlated-state proof.
+
+For MixedHead, read `masked_protocol_equivalent` in the single case file.
+The implementation's multi-draw Boolean sampler and specification's one-shot
+sample have different internal shapes. The proof builds the finite sampler
+coupling where needed, then uses up-to-bind/Vis at loop entries. The same
+nonfunctional 3-to-2 joint relates both heterogeneous return payloads and
+recursive hidden states. `masked_public_protocol_equivalent` forgets private
+payloads; the separate Reply query retains original mass without normalization.
+
+Auxiliary lemmas should expose reusable analysis or real structure, not hide
+the whole program transformation. The [standard](CASE_STUDY_STANDARD.md)
+requires readable composition, not a fixed tactic sequence. Program sources
+are the authoritative detailed proofs; this guide does not duplicate them.

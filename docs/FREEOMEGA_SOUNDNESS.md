@@ -78,7 +78,7 @@ The generic chain is `Continuity → Observation → Relational → Quotient`.
 The backend discharges six explicit obligations: AE concentration and preservation
 of ret, zero, bind, relational bounded-test inequalities, and **existing native
 lub witnesses**. It is not required to be native omega-complete.
-See [the exact obligations](GENERIC_QLIFT_VALIDATION.md).
+See [the exact obligations](FREEOMEGA_SOUNDNESS.md#3-quotient-and-relational-soundness).
 
 `model_qlift_bidual_raw` gives bounded-test constraints for all raw qlift
 derivations. `model_qlift_bidual` interprets modelable endpoints. Equality gives
@@ -250,55 +250,17 @@ escape remain different counterexamples. `Counterexamples/Validation/FreeOmegaLi
 retains the negative continuity/diagonal/Fubini results; formal FiniteInternal/Recovery
 infrastructure is not deleted by this validation result.
 
-Existing compiled types are mechanically namespace-relocated, not reset.
-Six old Q hitting contracts (`ptree_domain_hitting_of_denotes`,
-`ptree_domain_hitting_zero`, `stable_hitting_admissible`,
-`stable_hitting_denotational_adequacy`, `stable_hitting_domain_eq`, and
-`stable_hitting_mass_lub`) keep exactly their types but lose the old
-`eq_rect_eq` dependency through generic proof reuse. Only that confirmed
-assumption reduction is recorded; no axiom is added or whitelist widened.
 `audit_soundness.py --stable-hitting-only` additionally checks generic
 hitting, Q/R specialization and regression endpoints against the existing
 logical-axiom whitelist. Architecture checks enforce one-way validation and
 reject legacy completion/tree dependencies in the native adapters.
 
-```sh
-opam exec -- dune build
-python3 tools/audit_architecture.py --check
-python3 tools/audit_soundness.py --source-only
-python3 tools/audit_soundness.py --stable-hitting-only
-python3 tools/audit_soundness.py --generic-quotient-only
-python3 tools/audit_contracts.py
-python3 -m unittest discover -s tools -p 'test_*.py'
-```
+Use [Maintained verification](AUDITING.md) for current commands, registered
+contracts and trust contexts. Focused soundness checks support
+`--stable-hitting-only` and `--generic-quotient-only`.
+
 
 Not established: arbitrary invalid-term denotation, syntactic coupling
 completeness, arbitrary-backend joint existence, MathComp-native external
 soundness, infinite path measures, or a whole-library kernel audit. Local
 verification does not assert remote CI success.
-
-### Compatibility cleanup (`ebce8e0`): local verification
-
-These counts record that checkpoint, not the current regression inventory.
-Subsequent regression pruning is recorded in
-[the regression policy](REGRESSION_ORGANIZATION.md).
-
-- Complete `dune build`, including AllImports and extraction targets: passed.
-  The inventory is 434 modules (four retired in this cleanup), including the unchanged two Gate M modules;
-  the new validation code is entirely Gate S.
-- Architecture, API surface and source-soundness audits: passed.
-- 148 Python tool tests: passed, including transitive canonical-realization
-  isolation and rejection of a duplicated model construction in Compatibility.
-- Exact compiled contract suites: `contracts` 491 and `runner_distribution` 28
-  entries passed after the explicit owner relocations and the nineteen-plus-one
-  `eq_rect_eq` dependency removals documented above. Types and all other
-  assumptions are unchanged; snapshots were not broadly regenerated.
-- Compiled soundness audits: 32 hitting/Q/R/realization endpoints and 45 generic
-  quotient/adapter/regression endpoints passed the unchanged axiom whitelist.
-- Joint `coqchk -norec`: six module bodies passed—Q Validation/CountableSupport/
-  JointRealization/Compatibility, the Q hitting specialization, and the
-  GenericFreeOmegaValidation regression. Compiled
-  dependencies were trusted; this is not a recursive whole-library audit.
-- No CI or environment change was performed. Scalar native Upper infrastructure
-  and the combined Soundness entry point remain intentionally unchanged, apart
-  from correcting the former's role comment.

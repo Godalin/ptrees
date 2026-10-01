@@ -3,7 +3,7 @@
     Native/frontier: SubEnumQ / observable FreeOmega; all primitive draws total.
     Internal effects are interpreted into State, then State is threaded out.
     State is NOT reset between attempts, factory iterations or requests.
-    See docs/ADAPTIVE_FACTORY_CONTROLLER.md for the proved contract, mathematical boundaries and validation. *)
+    See docs/CASE_STUDIES.md#factory-controllers for the proved contract and boundaries. *)
 (** Learn: handler algebra, complete-round analysis, then relational protocol refinement.
     Reusable endpoints: Adaptive.loop_hits, raw_loop_fair, adaptive_factory_direct, controller_refinement.
     Boundary: successful state and bit remain correlated; no new execution claim.

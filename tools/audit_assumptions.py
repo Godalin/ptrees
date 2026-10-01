@@ -8,7 +8,7 @@ from pathlib import Path
 from rocq_paths import source_path, LOADPATH
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = ROOT / "docs/CONTRACTS.json"
+MANIFEST = ROOT / "tools/data/CONTRACTS.json"
 SOUNDNESS_AXIOMS = {
     "boolp.propositional_extensionality", "boolp.functional_extensionality_dep",
     "FunctionalExtensionality.functional_extensionality_dep",

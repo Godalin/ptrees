@@ -4,177 +4,177 @@
   "groups": [
     {
       "id": "bind_profile",
-      "snapshot": "docs/BIND_PROFILE_CONTRACTS.json",
+      "snapshot": "tools/data/BIND_PROFILE_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "contracts",
-      "snapshot": "docs/CONTRACTS.json",
+      "snapshot": "tools/data/CONTRACTS.json",
       "context": "recorded"
     },
     {
       "id": "direct_iteration",
-      "snapshot": "docs/DIRECT_ITERATION_CONTRACTS.json",
+      "snapshot": "tools/data/DIRECT_ITERATION_CONTRACTS.json",
       "context": "safe-joint"
     },
     {
       "id": "direct_iteration_gate_m",
-      "snapshot": "docs/DIRECT_ITERATION_CONTRACTS.json",
+      "snapshot": "tools/data/DIRECT_ITERATION_CONTRACTS.json",
       "field": "direct",
       "context": "gate-m"
     },
     {
       "id": "effect_algebra",
-      "snapshot": "docs/EFFECT_ALGEBRA_CONTRACTS.json",
+      "snapshot": "tools/data/EFFECT_ALGEBRA_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "effect_execution",
-      "snapshot": "docs/EFFECT_EXECUTION_CONTRACTS.json",
+      "snapshot": "tools/data/EFFECT_EXECUTION_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "eventful_iteration",
-      "snapshot": "docs/EVENTFUL_ITERATION_CONTRACTS.json",
+      "snapshot": "tools/data/EVENTFUL_ITERATION_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "eventful_iteration_gate_m",
-      "snapshot": "docs/EVENTFUL_ITERATION_CONTRACTS.json",
+      "snapshot": "tools/data/EVENTFUL_ITERATION_CONTRACTS.json",
       "field": "direct",
       "context": "gate-m"
     },
     {
       "id": "exception_fold",
-      "snapshot": "docs/EXCEPTION_FOLD_CONTRACTS.json",
+      "snapshot": "tools/data/EXCEPTION_FOLD_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "generic_algebra",
-      "snapshot": "docs/GENERIC_ALGEBRA_CONTRACTS.json",
+      "snapshot": "tools/data/GENERIC_ALGEBRA_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "generic_algebra_gate_m",
-      "snapshot": "docs/GENERIC_ALGEBRA_CONTRACTS.json",
+      "snapshot": "tools/data/GENERIC_ALGEBRA_CONTRACTS.json",
       "field": "direct",
       "context": "gate-m"
     },
     {
       "id": "generic_consumer",
-      "snapshot": "docs/GENERIC_CONSUMER_CONTRACTS.json",
+      "snapshot": "tools/data/GENERIC_CONSUMER_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "handler_calculus",
-      "snapshot": "docs/HANDLER_CALCULUS_CONTRACTS.json",
+      "snapshot": "tools/data/HANDLER_CALCULUS_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "handler_machine",
-      "snapshot": "docs/HANDLER_MACHINE_CONTRACTS.json",
+      "snapshot": "tools/data/HANDLER_MACHINE_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "iteration_algebra",
-      "snapshot": "docs/ITERATION_ALGEBRA_CONTRACTS.json",
+      "snapshot": "tools/data/ITERATION_ALGEBRA_CONTRACTS.json",
       "context": "safe-joint"
     },
     {
       "id": "iteration_algebra_gate_m",
-      "snapshot": "docs/ITERATION_ALGEBRA_CONTRACTS.json",
+      "snapshot": "tools/data/ITERATION_ALGEBRA_CONTRACTS.json",
       "field": "direct",
       "context": "gate-m"
     },
     {
       "id": "itree_bridge",
-      "snapshot": "docs/ITREE_BRIDGE_CONTRACTS.json",
+      "snapshot": "tools/data/ITREE_BRIDGE_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "itree_preservation",
-      "snapshot": "docs/ITREE_PRESERVATION_CONTRACTS.json",
+      "snapshot": "tools/data/ITREE_PRESERVATION_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "mathcomp",
-      "snapshot": "docs/MATHCOMP_CONTRACTS.json",
+      "snapshot": "tools/data/MATHCOMP_CONTRACTS.json",
       "context": "gate-m-joint"
     },
     {
       "id": "mdp_correspondence",
-      "snapshot": "docs/MDP_CORRESPONDENCE_CONTRACTS.json",
+      "snapshot": "tools/data/MDP_CORRESPONDENCE_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "rational_tickets",
-      "snapshot": "docs/RATIONAL_TICKETS_CONTRACTS.json",
+      "snapshot": "tools/data/RATIONAL_TICKETS_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "reader_writer_fold",
-      "snapshot": "docs/READER_WRITER_FOLD_CONTRACTS.json",
+      "snapshot": "tools/data/READER_WRITER_FOLD_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "relational_consumer",
-      "snapshot": "docs/RELATIONAL_CONSUMER_CONTRACTS.json",
+      "snapshot": "tools/data/RELATIONAL_CONSUMER_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "relational_consumer_mathcomp",
-      "snapshot": "docs/RELATIONAL_CONSUMER_MATHCOMP_CONTRACTS.json",
+      "snapshot": "tools/data/RELATIONAL_CONSUMER_MATHCOMP_CONTRACTS.json",
       "context": "gate-m-joint"
     },
     {
       "id": "relational_limit",
-      "snapshot": "docs/RELATIONAL_LIMIT_CONTRACTS.json",
+      "snapshot": "tools/data/RELATIONAL_LIMIT_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "runner_distribution",
-      "snapshot": "docs/RUNNER_DISTRIBUTION_CONTRACTS.json",
+      "snapshot": "tools/data/RUNNER_DISTRIBUTION_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "standard_effects",
-      "snapshot": "docs/STANDARD_EFFECTS_CONTRACTS.json",
+      "snapshot": "tools/data/STANDARD_EFFECTS_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "state_fold",
-      "snapshot": "docs/STATE_FOLD_CONTRACTS.json",
+      "snapshot": "tools/data/STATE_FOLD_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "state_preservation",
-      "snapshot": "docs/STATE_PRESERVATION_CONTRACTS.json",
+      "snapshot": "tools/data/STATE_PRESERVATION_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "state_rewrite",
-      "snapshot": "docs/STATE_REWRITE_CONTRACTS.json",
+      "snapshot": "tools/data/STATE_REWRITE_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "subenumr_migration",
-      "snapshot": "docs/SUBENUMR_MIGRATION_CONTRACTS.json",
+      "snapshot": "tools/data/SUBENUMR_MIGRATION_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "generic_mdp",
-      "snapshot": "docs/GENERIC_MDP_CONTRACTS.json",
+      "snapshot": "tools/data/GENERIC_MDP_CONTRACTS.json",
       "context": "owners"
     },
     {
       "id": "generic_mdp_gate_m",
-      "snapshot": "docs/GENERIC_MDP_CONTRACTS.json",
+      "snapshot": "tools/data/GENERIC_MDP_CONTRACTS.json",
       "field": "direct",
       "context": "gate-m"
     },
     {
       "id": "factory_controller",
-      "snapshot": "docs/FACTORY_CONTROLLER_CONTRACTS.json",
+      "snapshot": "tools/data/FACTORY_CONTROLLER_CONTRACTS.json",
       "context": "owners"
     }
   ],

@@ -3,7 +3,7 @@
 ## Introduction
 
 For an end-to-end example, see the [Interactive Bernoulli Factory
-Controller](docs/FACTORY_CONTROLLER.md): a nested unbounded sampler, an infinite
+Controller](docs/CASE_STUDIES.md#factory-controllers): a nested unbounded sampler, an infinite
 response-dependent device service, algebraic refinement, State interpretation,
 exact next-event probabilities, and execution of the same extracted program.
 
@@ -24,7 +24,7 @@ weights separate from probabilistic choice.
 Nonnegativity and the mass bound belong to the containers, not scalar
 subtypes. The old `nnQ` representation is isolated in `Prob/Legacy`; Q-to-R
 transport uses the shared scalar-map construction. See the
-[finite-backend consolidation](docs/FINITE_BACKEND_CONSOLIDATION.md).
+[finite-backend consolidation](docs/BACKENDS.md#shared-finite-representation).
 The generic boundary is recorded by `SemanticSubprobability`: raw EnumQ
 supports its per-measure predicate and closure laws, whereas SubEnumQ, SubEnumR
 and the native MathComp kernel provide `SemanticSubprobabilityCarrierLaws`, certifying
@@ -39,7 +39,7 @@ Native order, omega continuity, diagonal/Fubini and relational bind are proved
 with normal universe checking. The isolated direct layer proves general hitting
 existence and eventful bind congruence, with unbounded/nested retry regressions.
 It is **not** a third fully universe-checked backend. There is no MathComp-plus-
-completion workaround. See [MathComp trust boundary](docs/MATHCOMP.md).
+completion workaround. See [MathComp trust boundary](docs/BACKENDS.md#mathcomp-mathematics-and-assumptions).
 
 The public conceptual architecture has four layers and two semantic clients:
 
@@ -80,14 +80,14 @@ For `RR := eq`, `trans_bisim` has a generic `Equivalence` instance supporting
 symmetry, transitivity and setoid rewriting. `From PTree Require Import
 Semantics.` exposes that API and the existing chain from `peutt` inclusion
 through MDP-fragment coincidence to encoded MDP correspondence. The precise
-premises and Gate S dependency audit are in [Transition API](docs/TRANSITION_API.md).
+premises and Gate S dependency audit are in [Transition API](docs/MDP.md).
 
 The encoded-MDP correspondence is backend-parametric: given the generic
 native/frontier reflection and fragment laws, a faithful representation of
 total source kernels preserves and reflects MDP bisimilarity. The verified
 finite-rational instance embeds total EnumQ rows into SubEnumQ without changing
 their lifting, and uses `FreeOmega SubEnumQ` as frontier. See
-[MDP correspondence](docs/MDP_CORRESPONDENCE.md) for the exact obligations and
+[MDP correspondence](docs/MDP.md) for the exact obligations and
 the distinction between source representation and frontier reflection.
 
 Proofs may use the following strength hierarchy before promoting their result
@@ -313,26 +313,28 @@ its MathComp--FreeOmega `peutt` frontend has been removed.
 
 ## Repository guide
 
+Start with the [documentation index](docs/README.md); one current guide owns each topic.
+
 The accepted interpretation theory and probability-domain soundness are frozen.
 See [repository architecture](docs/ARCHITECTURE.md) for ownership and the
 generic / FreeOmega / concrete-backend boundaries, and the
-[current inventory](docs/ARCHITECTURE_AUDIT.md) for machine-checked dependencies.
+[current inventory](tools/data/ARCHITECTURE_AUDIT.md) for machine-checked dependencies.
 The [external soundness account](docs/FREEOMEGA_SOUNDNESS.md) explains admissible
 FreeOmega SubEnumQ, standard measures, general joint coupling and stable-hitting
 adequacy. These validation modules are not imported by program reasoning.
-The [generic validation layer](docs/GENERIC_QLIFT_VALIDATION.md) proves
+The [generic validation layer](docs/FREEOMEGA_SOUNDNESS.md#3-quotient-and-relational-soundness) proves
 native-parametric bounded-test/bidual soundness, instantiated by SubEnumQ and
 SubEnumR. Actual external joint existence is a separate, model-specific
 strengthening, not a behavioral backend requirement. The
-[SubEnumR realization](docs/SUBENUMR_JOINT_REALIZATION.md) now closes that
+[SubEnumR realization](docs/FREEOMEGA_SOUNDNESS.md#7-optional-backend-specific-actual-joint-realization) now closes that
 strengthening for the finite-real completion as well as SubEnumQ. The
 [three-layer policy](docs/ARCHITECTURE.md#three-layers-of-probability-reasoning)
 distinguishes relational lifting, semantic joint witnesses and external joint
 realization.
-The [compiled contracts](docs/CONTRACTS.json) preserve 266 distinct owner/helper
+The [compiled contracts](tools/data/CONTRACTS.json) preserve 266 distinct owner/helper
 and 199 soundness endpoints, including the original 25 capability probes.
-The [module migration ledger](docs/PUBLIC_MODULES.md) accounts for every old
-alias and the ten removed convenience contracts.
+The [public entry points](docs/ARCHITECTURE.md#program-facing-versus-expert-imports)
+describe current imports and relation ownership.
 Stage-specific migration narratives and snapshots remain in git history.
 The final whole-library kernel audit (Gate D) remains separate.
 
@@ -364,9 +366,9 @@ heterogeneous forms. `Eq/Bind` owns the backend-independent heterogeneous
 order/selection laws. `peutt_bind_cofinal` is the lower-level explicit-scheduling
 endpoint. `Eq/Algebra` provides the same generic bind/fmap `Proper` proofs to
 both completion and direct-frontier clients; see the
-[consumer extraction and local rewriting profiles](docs/GENERIC_ALGEBRA.md).
-See [generic bind extraction](docs/GENERIC_BIND.md) and
-[public module migration](docs/PUBLIC_MODULES.md).
+[consumer extraction and local rewriting profiles](docs/THEORY.md#bind-and-rewriting).
+See [generic bind extraction](docs/THEORY.md#bind-and-rewriting) and
+[public module migration](docs/ARCHITECTURE.md#program-facing-versus-expert-imports).
 Experts may import owners directly. Paper-facing programs
 form four groups:
 
@@ -390,7 +392,7 @@ directories; substantive negative results live in `Examples/Counterexamples/`.
 Independent model examples are separated under `Examples/Validation/`.
 Only isolated import, inference, rewriting and universe clients live in root
 `tests/`. The ordinary root `dune build` compiles all of them; there is no
-separate Regression theory. The [organization policy and move record](docs/REGRESSION_ORGANIZATION.md)
+separate Regression theory. The [organization policy and move record](docs/ARCHITECTURE.md#examples-and-tests)
 explain the boundary. In particular, the 2×2 strictness witness belongs to
 `Examples/Counterexamples/TreeTransitionStrictness.v`.
 The supporting [RealSamplingHandler](theories/Examples/RealSamplingHandler.v)
@@ -398,16 +400,16 @@ example demonstrates handler replacement in an infinite real-weight sampling
 service using public equations.
 The supporting [AbsorbingFrontier](theories/Examples/AbsorbingFrontier.v)
 example reuses VN to reach a mixed return/visible first frontier after
-unbounded internal retries; see [the absorption interface](docs/ABSORBING_ITERATION.md).
-The [generic complete-frontier bridge](docs/FRONTIER_ITERATION.md) also
+unbounded internal retries; see [the absorption interface](docs/ITERATION.md#complete-frontier-iteration).
+The [generic complete-frontier bridge](docs/ITERATION.md#complete-frontier-iteration) also
 handles arbitrary MF-valued Ret/retry/Vis step frontiers. FreeOmega and
 MathComp instantiate one adequacy proof; clients need no fuel schedule
 or empty event signature.
-For return-only step frontiers, [classical iteration compatibility](docs/RETURN_ITERATION.md)
+For return-only step frontiers, [classical iteration compatibility](docs/ITERATION.md#return-only-frontiers-and-classical-iteration)
 identifies the summary with Kleisli iteration (with a one-round finite index
 shift), and connects its limit to genuine least fixed points in MathComp
 and the independent expectation domain.
-Its [two-round interpretation experiment](docs/INTERP_COMPOSITIONALITY.md)
+Its [two-round interpretation experiment](docs/INTERPRETERS.md#handler-calculus)
 also proves that response-wise transition bisimulation is not preserved by
 arbitrary effectful interpretation.
 For peutt, [semantic visible guarding](theories/Interp/FreeOmega/Guarded.v)
@@ -432,11 +434,11 @@ new interpretation semantics is introduced.
 
 [THEORY_STATUS.md](THEORY_STATUS.md) is the current theorem/capability map,
 including raw-tree transition comparison and MDP-fragment coincidence.
-The [architecture inventory](docs/ARCHITECTURE_AUDIT.md) records maintained
-modules and clients; [Examples and tests](docs/REGRESSION_ORGANIZATION.md)
+The [architecture inventory](tools/data/ARCHITECTURE_AUDIT.md) records maintained
+modules and clients; [Examples and tests](docs/ARCHITECTURE.md#examples-and-tests)
 records test roles and deduplication criteria. [Maintained verification](docs/AUDITING.md)
 lists current commands and their check scope.
-[Joint universe consistency](docs/UNIVERSE_CONSISTENCY.md) explains the
+[Joint universe consistency](docs/AUDITING.md#trust-and-kernel-checks) explains the
 two-level regression repair and full-library import guard.
 Finite-internal/kernel infrastructure is grouped under `Eq/Internal/`;
 it is not another behavioral relation. The universe representation probes
@@ -454,7 +456,7 @@ The maintained artifact establishes:
   symmetry, transitivity, Tau weakening, probability congruence, and bind
   congruence;
 - sound heterogeneous coinduction up to bind and coupled native sampling,
-  with concrete protocol clients ([up-to guide](docs/UP_TO.md));
+  with concrete protocol clients ([up-to guide](docs/THEORY.md#coinduction-up-to-contexts));
 - one semantics for bounded and genuinely unbounded AST computation;
 - eventful iteration, interpretation/translation laws, and quantitative
   next-event observations;
@@ -466,14 +468,14 @@ The maintained artifact establishes:
 Arbitrary-handler preservation and heterogeneous eventful behavioral iter
 congruence are now proved under the existing probability-level relational-limit
 profile, without a caller-supplied fusion/generator-closure premise. See
-[`EVENTFUL_ITERATION.md`](docs/EVENTFUL_ITERATION.md) for the iter theorem,
+[`ITERATION.md#behavioral-iteration-and-full-uniformity`](docs/ITERATION.md#behavioral-iteration-and-full-uniformity) for the iter theorem,
 its explicit backend requirements and logical assumptions. The probability-free
 `from_itree` embedding preserves and reflects heterogeneous `eutt`:
 `from_itree_eutt_iff` proves coincidence with `peutt` on embedded ITrees under
 explicit existing Dirac/zero separation laws. FreeOmega supplies these for
 SubEnumQ and SubEnumR. This does not construct an inverse for every Prob-free
 PTree or assert reflection for arbitrary handlers or sampling elaboration.
-See [the precise conservativity result](docs/ITREE_PRESERVATION.md).
+See [the precise conservativity result](docs/INTERPRETERS.md#itree-embedding-and-sampling-elaboration).
 
 ## Meta
 
@@ -526,7 +528,7 @@ The concrete runner accepts only closed trees after effect elimination.
 Its API separates completed results (`Returned`/`Lost`) from execution
 artifacts (`Timeout`/`EntropyExhausted`); ideal replay probability proofs live
 in `Execution.Validation`, not in the runtime. See the
-[execution role map](docs/EFFECTS_EXECUTION.md#execution-roles-and-public-terminology)
+[execution role map](docs/EXECUTION.md)
 for the precise theorem and trust boundaries.
 
 For **unbounded execution of an already proved sampler**, run:
@@ -541,7 +543,7 @@ sampler that it is proved `peutt`-equivalent to. Neither execution uses fuel.
 The nested Bernoulli factory is also executable: use `factory` and
 `factory-direct` in place of `vn` and `direct` to compare the proved
 biased-coin-to-2/5 construction with direct Bernoulli(2/5) sampling.
-See [unbounded simulation](docs/UNBOUNDED_SIMULATION.md) for single-run,
+See [unbounded simulation](docs/EXECUTION.md#fuel-free-ocaml-simulation) for single-run,
 streamed replay, nontermination and trust boundaries. Simulation statistics
 are not a PRNG or end-to-end OCaml correctness proof.
 
@@ -554,12 +556,12 @@ opam exec -- dune exec extraction/state-counter/main.exe -- seed 40 0 42 10
 
 The program, state handler, rational interval selector and bounded runner are
 extracted from Rocq. The first command returns counter value 2 with one unused
-bit. See [effects and execution](docs/EFFECTS_EXECUTION.md) for the proved
+bit. See [effects and execution](docs/EXECUTION.md) for the proved
 operational contracts, completed handler and single-draw sampling proofs,
-and the [finite runner probability correspondence](docs/RUNNER_DISTRIBUTION.md)
+and the [finite runner probability correspondence](docs/EXECUTION.md#actual-bounded-runner-to-complete-hitting)
 under an explicit history-conditional uniform entropy contract. This does not
 verify PRNG fairness. The
-[State rewrite example](docs/STATE_REWRITE.md) also extracts both sides of a
+[State rewrite example](docs/CASE_STUDIES.md#reading-entries-and-reusable-results) also extracts both sides of a
 proved probability rewrite with general rational ticket sampling.
 
 ### Dependencies

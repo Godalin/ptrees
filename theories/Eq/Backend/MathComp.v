@@ -1,7 +1,7 @@
 (** Universe-unchecked MathComp assembly, NOT a safe backend theorem.
     MN = MF = the existing native kernel. No formal completion is used.
     Native probability mathematics remains in Prob/Backend/MathComp with
-    universe checking enabled. See docs/MATHCOMP.md and Gate M.
+    universe checking enabled. See docs/BACKENDS.md#mathcomp-mathematics-and-assumptions and Gate M.
     Native order, omega, diagonal/Fubini and relational bind are checked in
     Gate S. Only their recursive-frontier instantiation belongs to Gate M. *)
 Local Unset Universe Checking.

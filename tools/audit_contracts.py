@@ -11,7 +11,7 @@ from audit_assumptions import ROOT, query, compare, logical_axioms, SOUNDNESS_AX
 from audit_mathcomp import query_gate_m
 from mathcomp_policy import GATE_M
 
-MANIFEST = ROOT / 'docs/CONTRACT_SUITES.json'
+MANIFEST = ROOT / 'tools/data/CONTRACT_SUITES.json'
 ALLIMPORTS = 'PTree.Tests.AllImports'
 
 
@@ -26,7 +26,7 @@ def load_suites():
     for group in groups:
         assert group['context'] in {'owners', 'recorded', 'safe-joint', 'gate-m-joint', 'gate-m'}
         path = group['snapshot']
-        assert path.startswith('docs/') and '..' not in path and path.endswith('CONTRACTS.json')
+        assert path.startswith('tools/data/') and '..' not in path and path.endswith('CONTRACTS.json')
         referenced.add(path)
         field = group.get('field', 'endpoints')
         assert field in {'endpoints', 'direct'}
@@ -49,7 +49,7 @@ def load_suites():
                 assert module not in GATE_M, 'Unchecked endpoint in safe group: ' + e['name']
         result.append((group, snapshot, entries))
     # A newly added snapshot cannot silently be omitted from the runner.
-    on_disk = {p.relative_to(ROOT).as_posix() for p in (ROOT / 'docs').glob('*CONTRACTS.json')}
+    on_disk = {p.relative_to(ROOT).as_posix() for p in (ROOT / 'tools/data').glob('*CONTRACTS.json')}
     assert referenced == on_disk, ('Unregistered/missing snapshot', referenced ^ on_disk)
     for path in referenced:
         snapshot = json.loads((ROOT / path).read_text())

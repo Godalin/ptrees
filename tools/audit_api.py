@@ -7,7 +7,7 @@ import re
 import subprocess
 from audit_assumptions import ROOT, MANIFEST, check, without_comments
 
-POLICY = ROOT / 'docs/CONTRACT_POLICY.json'
+POLICY = ROOT / 'tools/data/CONTRACT_POLICY.json'
 STRUCTURAL = 'theories/Prob/FreeOmega/StructuralMeasure.v'
 STRUCTURAL_INSTANCES = {
     'FreeOmegaSemanticMeasure', 'FreeOmegaSemanticMeasureCoreLaws',

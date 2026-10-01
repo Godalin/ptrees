@@ -15,7 +15,7 @@ from audit_architecture import graph
 from audit_soundness import source_check
 from mathcomp_policy import ASSEMBLY, GATE_M, safe_targets
 
-SNAPSHOT = ROOT / 'docs/MATHCOMP_CONTRACTS.json'
+SNAPSHOT = ROOT / 'tools/data/MATHCOMP_CONTRACTS.json'
 ENDPOINTS = ['PTree.' + ASSEMBLY.replace('/', '.') + '.' + n for n in [
     'mathcomp_mixed', 'mathcomp_tree', 'mathcomp_head',
     'mathcomp_frontier', 'mathcomp_kernel', 'mathcomp_hitting',

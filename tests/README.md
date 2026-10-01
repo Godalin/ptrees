@@ -13,4 +13,4 @@ Neither production theory nor examples may import these clients.
 Gate M pair. `MathComp.v` is the existing locally unchecked assembly client,
 not permission to disable universe checking elsewhere in `tests/`.
 
-See the [policy and recorded reclassification](../docs/REGRESSION_ORGANIZATION.md).
+See the [policy and recorded reclassification](../docs/ARCHITECTURE.md#examples-and-tests).

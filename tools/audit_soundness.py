@@ -8,7 +8,7 @@ from audit_assumptions import ROOT, MANIFEST, check, without_comments, query, lo
 from audit_architecture import graph
 from mathcomp_policy import universe_source_check, check_build_flags, GATE_M
 
-POLICY = ROOT / 'docs/CONTRACT_POLICY.json'
+POLICY = ROOT / 'tools/data/CONTRACT_POLICY.json'
 
 
 def code_only(text):

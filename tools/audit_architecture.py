@@ -8,7 +8,7 @@ from mathcomp_policy import GATE_M, check_gate_boundary
 from rocq_paths import source_files, module_key, source_path, SOURCE_ROOTS
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORT = ROOT / "docs/ARCHITECTURE_AUDIT.md"
+REPORT = ROOT / "tools/data/ARCHITECTURE_AUDIT.md"
 AGGREGATE = "Tests/AllImports"
 INTERNAL_REASON = (
     "maintained execution/scheduling contract; private, not another equality"

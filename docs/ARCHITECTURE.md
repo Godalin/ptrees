@@ -1,7 +1,7 @@
 # Repository architecture and maintained contracts
 
 The repository separates program reasoning from its external mathematical
-validation. The generated [inventory](ARCHITECTURE_AUDIT.md) checks every
+validation. The generated [inventory](../tools/data/ARCHITECTURE_AUDIT.md) checks every
 local dependency, not just a selection of entry points. The domain-soundness
 theorems are described in [FreeOmega soundness](FREEOMEGA_SOUNDNESS.md).
 
@@ -67,12 +67,16 @@ heterogeneous `peutt_bind`, using probability-level bind/order compatibility,
 directed cofinality and increasing-chain selection. FreeOmega and MathComp
 provide these laws without duplicating PTree coinduction. The lower-level
 `peutt_bind_cofinal` accepts explicit scheduling. See
-[generic bind extraction](GENERIC_BIND.md) and [public modules](PUBLIC_MODULES.md).
+[generic bind extraction](THEORY.md#bind-and-rewriting) and [public modules](ARCHITECTURE.md#program-facing-versus-expert-imports).
 `Eq/Algebra` owns generic bind/fmap `Proper` proofs. Probability-level derived
 AE facts live in `Prob`, not comparison semantics; see
-[generic algebra](GENERIC_ALGEBRA.md) for the capability surface and local
-rewriting profiles, and [relational consumers](GENERIC_RELATIONAL_CONSUMERS.md)
+[generic algebra](THEORY.md#bind-and-rewriting) for the capability surface and local
+rewriting profiles, and [relational consumers](THEORY.md#structural-bridges-and-relational-limits)
 for the proved structural bridges and their relational-limit premises.
+
+Route uniqueness is project policy, not a theorem about uniqueness of arbitrary
+typeclass instances. Selecting the right carrier alone is insufficient: structural
+`free_omega_lift` and observable `free_omega_qlift` interpret equality differently.
 
 ## Three layers of probability reasoning
 
@@ -92,7 +96,7 @@ model's required support hypotheses. It does **not** mean completeness of the
 syntactic `free_omega_qlift` relation.
 
 `Prob/FreeOmega/Validation/{Model,Continuity,Observation,Relational,Quotient}`
-owns the second layer; see [generic validation](GENERIC_QLIFT_VALIDATION.md).
+owns the second layer; see [generic validation](FREEOMEGA_SOUNDNESS.md#3-quotient-and-relational-soundness).
 The independent Domain and Common transport theorems can be shared by concrete
 realizations; their application must not become a premise of behavioral theory.
 
@@ -113,7 +117,7 @@ instantiates generic validation and
 proves countable support and external joint realization in
 `Prob/Backend/SubEnumR/FreeOmega/JointRealization.v`, alongside `Validation.v`
 not in generic `Validation/Quotient.v`; see the
-[finite-real realization account](SUBENUMR_JOINT_REALIZATION.md).
+[finite-real realization account](FREEOMEGA_SOUNDNESS.md#7-optional-backend-specific-actual-joint-realization).
 The two finite native backends therefore share the external countable transport
 theorem without strengthening generic validation beyond bidual constraints.
 MathComp's native joint witness theorem remains separate; no MathComp
@@ -133,7 +137,7 @@ Every other module belongs to Gate S and must not import Gate M, even through
 regressions or helpers. Safe `AllImports` excludes both Gate M modules; its
 old all-module coverage rule is deliberately narrowed to all safe modules.
 Gate M is not part of the public facades or normally checked theory.
-See [MathComp scope and verification](MATHCOMP.md). The earlier completion
+See [MathComp scope and verification](BACKENDS.md#mathcomp-mathematics-and-assumptions). The earlier completion
 removal and native-only checkpoints are retained in Git, not current guidance.
 
 Do not introduce an `ExternalJointRealization` capability merely to package
@@ -192,7 +196,7 @@ not reasoning roots, despite their physical namespace.
 The model validates reasoning infrastructure;
 reasoning infrastructure does not assume its own validating model.
 Interpretation's generic endpoints consume explicit model laws; see the
-[current capability map](GENERIC_CONSUMERS.md) for model-specific obligations.
+[current capability map](THEORY.md#model-obligations-at-a-glance) for model-specific obligations.
 
 The same one-way boundary applies to `Execution/Validation/*`.
 `UniformReplay` validates the existing rational ticket runner under a
@@ -201,7 +205,7 @@ Neither is part of the executable sampler or a required backend capability.
 The generic `Core.fold` owns the separate Vis-handler/Prob-sampler abstraction;
 Runner is a concrete closed-tree execution backend, not a second probability
 semantics. No fold/runner correspondence is asserted. See
-[execution roles](EFFECTS_EXECUTION.md#execution-roles-and-public-terminology).
+[execution roles](EXECUTION.md).
 
 ## Internal proof facilities and tests
 
@@ -219,7 +223,7 @@ cofinality/diagonal misuse, raw observation mass escape, countable matrix mass
 escape, partial mass and large-universe tests are distinct contracts.
 Internal proof examples live in `Examples/Internal`, and independent canonical
 routing probes in `tests/ImportOrder`; see the
-[retention inventory](REGRESSION_ORGANIZATION.md). Positive rewriting and
+[content policy](ARCHITECTURE.md#examples-and-tests). Positive rewriting and
 inference tests are not replaceable by declaration snapshots.
 `tests/AllImports` covers every other Gate S module exactly once, in sorted order.
 Both `theories/` and `tests/` are included in the root `dune build`.
@@ -227,49 +231,22 @@ The alternate universe representation is only a compilation probe, not another
 maintained syntax. No top-level `Events` namespace is introduced; standard
 effects should reuse ITree definitions.
 
-## Stable audit commands
+## Examples and tests
 
-```sh
-python3 tools/audit_architecture.py --aggregate-only
-opam exec -- dune build
-python3 tools/audit_architecture.py --check
-python3 tools/audit_api.py --surface-only
-python3 tools/audit_soundness.py --source-only
-python3 tools/audit_assumptions.py --check
-python3 -m unittest discover -s tools -p 'test_*.py'
-python3 tools/audit_api.py --surface-only --kernel
-```
+There is no maintained `theories/Regression/` namespace. Reusable semantic laws
+belong in their production owner; mathematical programs/counterexamples belong
+in `Examples/`; import order, negative inference, universe and rewrite-syntax
+probes belong in non-installed `tests/`. Delete wrappers that merely repeat an
+existing endpoint without exercising a distinct boundary. Examples may not
+import tests, and production theory may not import either.
 
-`CONTRACTS.json` stores full compiled types and per-endpoint `Print Assumptions`
-for 266 distinct owner/helper endpoints (including the original 25 capability probes)
-and 199 soundness endpoints. It is not a list of class counts or a claim of
-mathematical minimality. `CONTRACT_POLICY.json` fixes existing class bodies,
-curated facade text and selected named client coverage. The audits are read-only;
-changing a contract requires explicit review, not automatic regeneration.
+The root `dune build` checks all those actual compilation contexts. One aggregate
+cannot replace isolated negative imports or inference clients. `tests/AllImports`
+loads every other Gate S module exactly once and merges their universe constraints;
+it excludes Gate M. Internal examples do not promote auxiliary certificate
+machinery into another public equality. Standard effects reuse ITree definitions;
+there is no parallel top-level Events namespace.
 
-The [printed-contract CI profile](../.github/ci/README.md) fixes OCaml 5.2.1,
-Dune 3.17.2 and all 67 recorded dependency versions, including
-Coq 8.20.1, HB 1.8.1, Coq-Elpi 2.4.0,
-ExtLib 0.13.0, ITree 5.2.1, coinduction 1.20, MathComp algebra 2.3.0 and
-analysis/reals-stdlib 1.13.0, matching the captured local contracts. In
-particular, HB-generated names are part of elaborated types. These CI pins
-do not tighten the library's package compatibility ranges or claim that newer
-versions fail to compile; they keep the exact snapshot comparison reproducible.
-
-Premises remain distinguished: representation parameters, semantic capability
-classes, local program/handler contracts, theorem-specific mathematical
-conditions, and global logical axioms. Fewer visible parameters is not a reason
-to hide an assumption. Exact type checks prevent silently adding a transport
-existence premise. Source checks reject new/changed classes, Axiom/Parameter
-and incomplete proofs. A separate fixed logical-axiom whitelist protects
-soundness even if a per-endpoint snapshot is accidentally updated.
-
-The targeted kernel command checks 16 selected module bodies together with
-`-norec`, in the AllImports universe context. Compiled dependencies are loaded
-but not recursively rechecked. It is neither a whole-library proof audit nor
-evidence of remote CI success. The separate final Gate D remains open.
-
-Migration scripts, before/after snapshots and phase narratives are archived
-in git, including accepted baselines `ec96b90`, `2258907`, `20e6ff2`,
-`2af47aa`, `05a2431`, `3120df0`, `2dbba82` and Cleanup B baseline `5c1a0df`.
-They are not repeatedly replayed as permanent runtime dependencies of audits.
+The completed reclassification and its move ledger remain in Git at `2ba1855`.
+Current verification commands belong only in [AUDITING](AUDITING.md); generated
+ownership/dependencies live in [the machine inventory](../tools/data/ARCHITECTURE_AUDIT.md).
