@@ -101,7 +101,7 @@ Lemma actual_round_complete i : absorbing_step i ⇓ₕ actual_round_front i.
 Proof.
   unfold absorbing_step, pstruct_iter_natural_step.
   change (PTree.bind (round i) (pstruct_iter_natural_step_handler reveal) ⇓ₕ
-    ((v <~ vn_transition ;; ηω (FHRet v)) >>=ₘ
+    ((v <~ vn_transition ;; ηω (FHRet v)) >>=ω
       stable_head_ret_bind_front exit_round_front)).
   apply stable_hitting_bind_ret_only.
   - eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].

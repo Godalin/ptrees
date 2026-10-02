@@ -12,6 +12,14 @@ Example delimited_return {MN A} (a : A) :
   (ηω a)%fo = @FORet MN A a.
 Proof. reflexivity. Qed.
 
+Example delimited_bind {MN A B} (m : FreeOmega MN A) (k : A -> FreeOmega MN B) :
+  (m >>=ω k)%fo = free_omega_bind m k.
+Proof. reflexivity. Qed.
+
+Example delimited_sup {MN A} (c : nat -> FreeOmega MN A) :
+  (supω n, c n)%fo = FOLub c.
+Proof. reflexivity. Qed.
+
 Local Open Scope freeomega_scope.
 
 Example return_expansion {MN A} (a : A) : ηω a = @FORet MN A a.
@@ -22,10 +30,25 @@ Example sample_expansion {MN A B} (mu : MN A) (k : A -> FreeOmega MN B) :
   (x <~ mu ;; k x) = FOSample mu k.
 Proof. reflexivity. Qed.
 Example sup_expansion {MN A} (c : nat -> FreeOmega MN A) :
-  (ωsup n, c n) = FOLub c.
+  (supω n, c n) = FOLub c.
 Proof. reflexivity. Qed.
 Example embedding_expansion {MN A} (mu : MN A) :
   ↑ω mu = FOSample mu (fun x => FORet x).
+Proof. reflexivity. Qed.
+
+(** Raw bind requires no native measure operations or laws. *)
+Example bind_expansion {MN A B} (m : FreeOmega MN A) (k : A -> FreeOmega MN B) :
+  m >>=ω k = free_omega_bind m k.
+Proof. reflexivity. Qed.
+Example bind_association {MN A B C}
+    (m : FreeOmega MN A) (k : A -> FreeOmega MN B) (h : B -> FreeOmega MN C) :
+  m >>=ω k >>=ω h = free_omega_bind (free_omega_bind m k) h.
+Proof. reflexivity. Qed.
+Example bind_lambda {MN A B} (m : FreeOmega MN A) (k : A -> FreeOmega MN B) :
+  (m >>=ω fun x => k x) = free_omega_bind m k.
+Proof. reflexivity. Qed.
+Example sup_bind {MN A B} (c : nat -> FreeOmega MN A) (k : A -> FreeOmega MN B) :
+  (supω n, c n >>=ω k) = FOLub (fun n => free_omega_bind (c n) k).
 Proof. reflexivity. Qed.
 
 Example nested_samples {MN A B} (mu : MN A) (k : A -> MN B) :
@@ -33,14 +56,14 @@ Example nested_samples {MN A B} (mu : MN A) (k : A -> MN B) :
   FOSample mu (fun x => FOSample (k x) (fun y => FORet (x,y))).
 Proof. reflexivity. Qed.
 Example sup_typed_binder {MN A} (mu : MN A) (k : nat -> A -> FreeOmega MN A) :
-  (ωsup (n : nat), x <~ mu ;; k n x) =
+  (supω (n : nat), x <~ mu ;; k n x) =
   FOLub (fun n => FOSample mu (fun x => k n x)).
 Proof. reflexivity. Qed.
 
 (** Raw syntax still accepts arbitrary sequences; no chain certificate is
     manufactured by the notation. This is not a semantic lub assertion. *)
 Example arbitrary_sequence {MN} :
-  (ωsup n, ηω (Nat.even n)) = @FOLub MN bool (fun n => FORet (Nat.even n)).
+  (supω n, ηω (Nat.even n)) = @FOLub MN bool (fun n => FORet (Nat.even n)).
 Proof. reflexivity. Qed.
 
 Section HighResult.
@@ -55,6 +78,12 @@ Proof. reflexivity. Qed.
 Example high_embedding
     (MN : Type@{node} -> Type@{rep}) (mu : MN bool) (A : Type@{high}) :
   (↑ω mu : FreeOmegaAt MN A bool) = FOSample mu (fun x => FORet x).
+Proof. reflexivity. Qed.
+
+Example high_bind
+    (MN : Type@{node} -> Type@{rep}) (mu : MN bool)
+    (A : Type@{high}) (a : A) :
+  (↑ω mu >>=ω fun _ => ηω a) = FOSample mu (fun _ => FORet a).
 Proof. reflexivity. Qed.
 
 End HighResult.
@@ -76,3 +105,5 @@ Proof. reflexivity. Qed.
 
 Local Close Scope freeomega_scope.
 Fail Check (ηω tt).
+Fail Check (FORet tt >>=ω (fun x => FORet x)).
+Fail Check (supω n, FORet n).

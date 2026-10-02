@@ -83,9 +83,10 @@ Polymorphic Definition free_omega_sample@{node node_rep frontier}
   FOSample mu (fun x => FORet x).
 
 (** Opt-in client notation; no scope is opened here.
-    [ωsup] denotes raw FOLub syntax, not a certified supremum: increasingness
+    [supω] denotes raw FOLub syntax, not a certified supremum: increasingness
     or modelability must still be established by the relevant semantic laws.
-    [ηω] returns a value in FreeOmega, not a PTree program or a stable head. *)
+    [ηω] returns a value in FreeOmega, not a PTree program or a stable head.
+    [>>=ω] is syntax-level bind, independent of any SemanticMeasure instance. *)
 Declare Scope freeomega_scope.
 Delimit Scope freeomega_scope with fo.
 
@@ -97,7 +98,9 @@ Notation "'⊥ω'" := FOZero : freeomega_scope.
 Notation "x '<~' mu ';;' t" := (FOSample mu (fun x => t))
   (at level 61, mu at next level, right associativity)
   : freeomega_scope.
-Notation "'ωsup' n ',' t" := (FOLub (fun n => t))
+Notation "mu '>>=ω' k" := (free_omega_bind mu k)
+  (at level 50, left associativity) : freeomega_scope.
+Notation "'supω' n ',' t" := (FOLub (fun n => t))
   (at level 100, n binder, right associativity) : freeomega_scope.
 Notation "'↑ω' mu" := (free_omega_sample mu)
   (at level 10, mu at next level) : freeomega_scope.

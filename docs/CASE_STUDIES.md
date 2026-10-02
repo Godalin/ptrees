@@ -70,15 +70,18 @@ Local Open Scope freeomega_scope.
 | `ηω x` | `FORet x`: return a value in the formal measure |
 | `⊥ω` | `FOZero`: the zero expression |
 | `x <~ mu ;; t` | `FOSample mu (fun x => t)`: native sampling |
-| `ωsup n, t` | `FOLub (fun n => t)`: formal countable completion |
+| `m >>=ω k` | `free_omega_bind m k`: bind of raw FreeOmega expressions |
+| `supω n, t` | `FOLub (fun n => t)`: formal countable completion |
 | `↑ω mu` | `free_omega_sample mu`, definitionally `FOSample mu FORet` |
+
+Return, zero, bind, formal supremum and native embedding share the `ω` suffix.
 
 The definition module opens no scope for clients; `(expression)%fo` also works without
 opening the scope. Native sampling `<~` is deliberately distinct from program
 sequencing `<-`. No typeclass selects a measure interpretation here, and no
 equality/lifting relation is redefined. Semantic clients use `>>=ₘ` for bind
-on their selected FreeOmega measure instance. Syntax-only proofs retain
-`free_omega_bind`: notation must not add native capabilities or require an
+on their selected FreeOmega measure instance. Syntax-only proofs use
+`>>=ω`: notation does not add native capabilities or require an
 observable instance just to manipulate the datatype.
 
 For example, the complete silent-round frontier in IterationBasics reads:
@@ -94,7 +97,7 @@ levels: program `Ret v`, stable head `FHRet v`, and measure return `ηω x`.
 In AbsorbingFrontier, `b <~ vn_fair ;; reveal_front b` instead selects a
 frontier which may contain a visible head and its entire continuation.
 
-`ωsup` is **syntax, not a certificate of a mathematical supremum**. The
+`supω` is **syntax, not a certificate of a mathematical supremum**. The
 constructor still accepts arbitrary sequences, including invalid ones.
 Increasingness, modelability and semantic lub statements remain separate
 proof obligations. In particular, notation does not identify a raw `FOLub`
@@ -137,7 +140,7 @@ notation works for native and frontier carriers. It does not choose a
 `SemanticMeasure` instance, register hints, or invoke canonical routing.
 Where the interpretation is ambiguous, retain an explicit instance/profile;
 shorter notation is not a reason to weaken that distinction. Raw FreeOmega
-`ηω / ⊥ω / ωsup` describe raw syntax; program `Ret / bind / ≈ₚ` describes trees.
+`ηω / ⊥ω / supω` describe raw syntax; program `Ret / bind / ≈ₚ` describes trees.
 `≈ₘ` and `≈[eq]ₘ` remain distinct interface projections; the notation adds no
 law identifying them.
 In particular `chain ⇑ₘ out` asserts a **relation**, not a constructor or
@@ -212,7 +215,7 @@ t ⇓ₕ front
 
 The last two propositions are definitionally equal. The first is a theorem
 under the existing order/omega laws, not something notation assumes.
-`ωsup n, ...` remains raw FreeOmega syntax; this notation change does not
+`supω n, ...` remains raw FreeOmega syntax; this notation change does not
 turn arbitrary sequences into increasing chains.
 
 Actual case-study statements now read:
@@ -252,7 +255,7 @@ precedence and observable-profile inference.
 
 Program code uses `sample`, `trigger` and `x <- t ;; k x` where these express
 the intended atomic operation or sequencing. Native and frontier algebra use
-the selected `ₘ` interface; raw frontier expressions use `ηω / ⊥ω / <~ / ωsup`.
+the selected `ₘ` interface; raw frontier expressions use `ηω / ⊥ω / <~ / >>=ω / supω`.
 Do not insert a new program bind merely to conceal a constructor when a proof
 needs that exact visible continuation or finite-step observation.
 
@@ -268,7 +271,7 @@ needs that exact visible continuation or finite-step observation.
 - **RandomWalk:** passage sequencing, native finite-observation algebra and
   formal limits. Raw `Prob` remains where the proof counts exact sample/Tau
   steps; harmonic and infinite-support arguments are not disguised as rewrites.
-- **InteractiveVonNeumann:** the formal frontier limit uses `ωsup`; explicit
+- **InteractiveVonNeumann:** the formal frontier limit uses `supω`; explicit
   request/reply `Vis` guards remain in the coinductive service.
 
 Neither backend choices nor probabilities, state updates, iteration schedules,

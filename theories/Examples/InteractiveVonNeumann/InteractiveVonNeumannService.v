@@ -127,7 +127,7 @@ Definition service_vn_hitting (fuel : nat) : MF service_head :=
   ptree_hitting_approx (MF := MF) fuel
     (observe (@von_neumann_third_in coin_serviceE)).
 Definition service_vn_heads : MF service_head :=
-  ωsup rounds, service_vn_hitting (ptree_vn_raw_schedule rounds).
+  supω rounds, service_vn_hitting (ptree_vn_raw_schedule rounds).
 
 Lemma service_vn_weak :
   ptree_stable_hitting (FI := FI) (FO := FO)

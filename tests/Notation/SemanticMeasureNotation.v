@@ -97,6 +97,15 @@ Example observable_bind_expansion {MN A B}
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) A B m k.
 Proof. reflexivity. Qed.
 
+(** The selected observable bind has the same operation as raw syntax bind. *)
+Example observable_bind_agrees_with_raw {MN A B}
+    {NI : SemanticMeasure MN} {NO : @SemanticOmega MN NI}
+    (m : FreeOmega MN A) (k : A -> FreeOmega MN B) :
+  @sem_bind (FreeOmega MN)
+    (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) A B m k =
+  (m >>=ω k)%fo.
+Proof. reflexivity. Qed.
+
 (** External-model order has a separate opt-in scope. *)
 From mathcomp Require Import reals.
 From PTree.Prob.Domain Require Import Expectation.

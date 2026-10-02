@@ -693,7 +693,7 @@ Proof.
 Qed.
 
 Definition walk_limit x y :=
-  ωsup rounds, walk_hitting (walk_schedule rounds) x y.
+  supω rounds, walk_hitting (walk_schedule rounds) x y.
 
 Lemma walk_schedule_ge rounds : (rounds <= walk_schedule rounds)%coq_nat.
 Proof. induction rounds; cbn [walk_schedule]; lia. Qed.
@@ -773,7 +773,7 @@ Proof.
 Qed.
 
 Definition random_walk_heads :=
-  ωsup rounds, joint_hitting (walk_schedule rounds) 1 0.
+  supω rounds, joint_hitting (walk_schedule rounds) 1 0.
 
 Theorem random_walk_ast :
   random_walk ⇓ₕ¹ random_walk_heads.

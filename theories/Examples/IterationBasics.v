@@ -74,10 +74,10 @@ Definition loop partial : tree bool := PTree.iter (step partial) tt.
 Definition round_front partial (_ : unit) :=
   (v <~ kernel partial tt ;; ηω (FHRet v)) : MF (stable_head eventE MN (unit+bool)).
 Definition loop_front partial := complete_iteration_frontier (step partial) (round_front partial) tt.
-(** [ωsup] builds the formal limit expression; [loop_classical] below relates
+(** [supω] builds the formal limit expression; [loop_classical] below relates
     it to the complete frontier using the iteration laws. *)
 Definition classical_result partial :=
-  ωsup n, mixed_iter_approx (FI := FI) (FO := FO) n (kernel partial) tt.
+  supω n, mixed_iter_approx (FI := FI) (FO := FO) n (kernel partial) tt.
 
 (** Main frontier calculation: one local certificate, then one library law. *)
 Lemma round_complete partial i : step partial i ⇓ₕ round_front partial i.
