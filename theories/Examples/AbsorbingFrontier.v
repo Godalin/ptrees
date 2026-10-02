@@ -54,7 +54,7 @@ Definition absorbing_step := pstruct_iter_natural_step round reveal.
 Definition absorbing_program : tree bool := PTree.iter absorbing_step tt.
 Definition staged_program : tree bool := b <- PTree.iter round tt;; reveal b.
 Definition direct_program : tree bool := b <- direct_fair_in;; reveal b.
-Definition first_frontier := b <~ vn_fair ;; reveal_front b.
+Definition first_frontier := b ←ω vn_fair ;; reveal_front b.
 Definition round_frontier := absorbing_frontier (fun _ : unit => vn_transition) reveal_front tt.
 
 (** The whole program calculation is a rewrite chain; no new probability
@@ -70,7 +70,7 @@ Proof.
 Qed.
 
 Lemma round_hitting i : round i ⇓ₕ
-  (next <~ vn_transition ;; ηω (FHRet next)).
+  (next ←ω vn_transition ;; ηω (FHRet next)).
 Proof.
   assert (Heq : vn_round_measure = vn_transition).
   { apply finite_enum_raw_eq. exact vn_round_measure_eq. }
@@ -95,13 +95,13 @@ Definition exit_round_front (v : unit+bool) : MF (stable_head queryE EnumQ (unit
     | inr false => FHRet (inr false)
     | inr true => FHVis Query (fun answer => PTree.bind (Ret answer) (fun b => Ret (inr b)))
     end).
-Definition actual_round_front (_ : unit) := v <~ vn_transition ;; exit_round_front v.
+Definition actual_round_front (_ : unit) := v ←ω vn_transition ;; exit_round_front v.
 
 Lemma actual_round_complete i : absorbing_step i ⇓ₕ actual_round_front i.
 Proof.
   unfold absorbing_step, pstruct_iter_natural_step.
   change (PTree.bind (round i) (pstruct_iter_natural_step_handler reveal) ⇓ₕ
-    ((v <~ vn_transition ;; ηω (FHRet v)) >>=ω
+    ((v ←ω vn_transition ;; ηω (FHRet v)) >>=ω
       stable_head_ret_bind_front exit_round_front)).
   apply stable_hitting_bind_ret_only.
   - eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].

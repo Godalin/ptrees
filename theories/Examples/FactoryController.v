@@ -509,7 +509,7 @@ Qed.
 
 Definition next_device sampler job s := run_state (next_normal sampler job) s.
 Definition device_front sampler job s :=
-  fast <~ coin ;;
+  fast ←ω coin ;;
   ηω (FHVis (RunMachine job fast)
     (fun reply => run_state (machine_cont sampler job reply) s)).
 

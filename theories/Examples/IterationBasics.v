@@ -72,7 +72,7 @@ Definition loop partial : tree bool := PTree.iter (step partial) tt.
 (** Sample a native round outcome, then return its stable head as a measure
     value. [ηω] is measure return; [FHRet] is the head, not another program. *)
 Definition round_front partial (_ : unit) :=
-  (v <~ kernel partial tt ;; ηω (FHRet v)) : MF (stable_head eventE MN (unit+bool)).
+  (v ←ω kernel partial tt ;; ηω (FHRet v)) : MF (stable_head eventE MN (unit+bool)).
 Definition loop_front partial := complete_iteration_frontier (step partial) (round_front partial) tt.
 (** [supω] builds the formal limit expression; [loop_classical] below relates
     it to the complete frontier using the iteration laws. *)

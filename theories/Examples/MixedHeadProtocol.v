@@ -368,8 +368,8 @@ Proof.
     eapply bind_upto_closure_bind with (RR := mixed_sample_rel).
     + (* Analyze this finite prefix here, not via a pre-proved program relation. *)
       eapply peutt_of_hitting_lift with
-        (out1 := x <~ draw_distribution answer ;; ηω (FHRet x))
-        (out2 := x <~ mixed_samples uniform2 answer ;; ηω (FHRet x)).
+        (out1 := x ←ω draw_distribution answer ;; ηω (FHRet x))
+        (out2 := x ←ω mixed_samples uniform2 answer ;; ηω (FHRet x)).
       * unfold draw_distribution.
         apply stable_hitting_native_sample. intro mask.
         apply stable_hitting_native_sample. intro continue.

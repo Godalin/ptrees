@@ -75,7 +75,7 @@ Local Open Scope semantic_measure_scope.
 
 (** The semantic notation has no hardwired FreeOmega or PTree instance. *)
 Example native_and_raw {MN A} {NI : SemanticMeasure MN} (a : A) :
-  (x <~ (ηₘ a : MN A) ;; ηω x) = FOSample (sem_ret a) (fun x => FORet x).
+  (x ←ω (ηₘ a : MN A) ;; ηω x) = FOSample (sem_ret a) (fun x => FORet x).
 Proof. reflexivity. Qed.
 Example program_bind_unchanged {E MN A} (mu : MN A) :
   (x <- sample mu ;; Ret x) =

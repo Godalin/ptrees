@@ -95,7 +95,8 @@ Notation "'ηω' x" := (FORet x)
 Notation "'⊥ω'" := FOZero : freeomega_scope.
 (** Match ExtLib's sequencing precedence so its [;;] cannot be consumed
     as part of the native distribution when both scopes are in use. *)
-Notation "x '<~' mu ';;' t" := (FOSample mu (fun x => t))
+(** This samples [MN], unlike [>>=ω], which binds a FreeOmega expression. *)
+Notation "x '←ω' mu ';;' t" := (FOSample mu (fun x => t))
   (at level 61, mu at next level, right associativity)
   : freeomega_scope.
 Notation "mu '>>=ω' k" := (free_omega_bind mu k)

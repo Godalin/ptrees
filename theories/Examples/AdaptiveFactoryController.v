@@ -105,7 +105,7 @@ Local Notation tree := (ptree implE SubEnumQ).
 (** 2. Programs: private interpretation, adaptive sampler, public controller. *)
 
 (** Program sequencing uses [sample] / [trigger] and [<- ;;]. Later,
-    [>>=ₘ] composes native distributions, while [<~ ;;] builds a FreeOmega
+    [>>=ₘ] composes native distributions, while [←ω ;;] builds a FreeOmega
     frontier. These are distinct layers, not competing program notations. *)
 
 Definition internal {X} (e : internalE X) : tree X :=
@@ -622,7 +622,7 @@ Proof.
 Qed.
 Definition fair_tree : ptree publicE SubEnumQ bool := sample fair_coin.
 Definition fair_heads : FreeOmega SubEnumQ (stable_head publicE SubEnumQ bool) :=
-  b <~ fair_coin ;; ηω (FHRet b).
+  b ←ω fair_coin ;; ηω (FHRet b).
 Lemma loop_heads_success s P : free_omega_ae P (loop_heads s) ->
   forall b, P (FHRet (after_sensor s b,b)).
 Proof.

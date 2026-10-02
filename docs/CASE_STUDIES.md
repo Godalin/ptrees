@@ -69,15 +69,16 @@ Local Open Scope freeomega_scope.
 |---|---|
 | `ηω x` | `FORet x`: return a value in the formal measure |
 | `⊥ω` | `FOZero`: the zero expression |
-| `x <~ mu ;; t` | `FOSample mu (fun x => t)`: native sampling |
+| `x ←ω mu ;; t` | `FOSample mu (fun x => t)`: native sampling |
 | `m >>=ω k` | `free_omega_bind m k`: bind of raw FreeOmega expressions |
 | `supω n, t` | `FOLub (fun n => t)`: formal countable completion |
 | `↑ω mu` | `free_omega_sample mu`, definitionally `FOSample mu FORet` |
 
-Return, zero, bind, formal supremum and native embedding share the `ω` suffix.
+Return, zero, native sampling, bind, formal supremum and native embedding share
+the `ω` suffix.
 
 The definition module opens no scope for clients; `(expression)%fo` also works without
-opening the scope. Native sampling `<~` is deliberately distinct from program
+opening the scope. Native sampling `←ω` is deliberately distinct from program
 sequencing `<-`. No typeclass selects a measure interpretation here, and no
 equality/lifting relation is redefined. Semantic clients use `>>=ₘ` for bind
 on their selected FreeOmega measure instance. Syntax-only proofs use
@@ -87,14 +88,14 @@ observable instance just to manipulate the datatype.
 For example, the complete silent-round frontier in IterationBasics reads:
 
 ```coq
-v <~ kernel partial tt ;;
+v ←ω kernel partial tt ;;
 ηω (FHRet v)
 ```
 
 Read this as: sample the native round outcome `v`, then return the stable
 head `FHRet v` as a value of the formal measure. These are three different
 levels: program `Ret v`, stable head `FHRet v`, and measure return `ηω x`.
-In AbsorbingFrontier, `b <~ vn_fair ;; reveal_front b` instead selects a
+In AbsorbingFrontier, `b ←ω vn_fair ;; reveal_front b` instead selects a
 frontier which may contain a visible head and its entire continuation.
 
 `supω` is **syntax, not a certificate of a mathematical supremum**. The
@@ -255,7 +256,7 @@ precedence and observable-profile inference.
 
 Program code uses `sample`, `trigger` and `x <- t ;; k x` where these express
 the intended atomic operation or sequencing. Native and frontier algebra use
-the selected `ₘ` interface; raw frontier expressions use `ηω / ⊥ω / <~ / >>=ω / supω`.
+the selected `ₘ` interface; raw frontier expressions use `ηω / ⊥ω / ←ω / >>=ω / supω`.
 Do not insert a new program bind merely to conceal a constructor when a proof
 needs that exact visible continuation or finite-step observation.
 

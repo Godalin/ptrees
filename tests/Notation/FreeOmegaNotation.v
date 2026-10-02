@@ -12,6 +12,10 @@ Example delimited_return {MN A} (a : A) :
   (ηω a)%fo = @FORet MN A a.
 Proof. reflexivity. Qed.
 
+Example delimited_sample {MN A B} (mu : MN A) (k : A -> FreeOmega MN B) :
+  (x ←ω mu ;; k x)%fo = FOSample mu k.
+Proof. reflexivity. Qed.
+
 Example delimited_bind {MN A B} (m : FreeOmega MN A) (k : A -> FreeOmega MN B) :
   (m >>=ω k)%fo = free_omega_bind m k.
 Proof. reflexivity. Qed.
@@ -27,7 +31,7 @@ Proof. reflexivity. Qed.
 Example zero_expansion {MN A} : (⊥ω : FreeOmega MN A) = FOZero.
 Proof. reflexivity. Qed.
 Example sample_expansion {MN A B} (mu : MN A) (k : A -> FreeOmega MN B) :
-  (x <~ mu ;; k x) = FOSample mu k.
+  (x ←ω mu ;; k x) = FOSample mu k.
 Proof. reflexivity. Qed.
 Example sup_expansion {MN A} (c : nat -> FreeOmega MN A) :
   (supω n, c n) = FOLub c.
@@ -52,11 +56,11 @@ Example sup_bind {MN A B} (c : nat -> FreeOmega MN A) (k : A -> FreeOmega MN B) 
 Proof. reflexivity. Qed.
 
 Example nested_samples {MN A B} (mu : MN A) (k : A -> MN B) :
-  (x <~ mu ;; y <~ k x ;; ηω (x,y)) =
+  (x ←ω mu ;; y ←ω k x ;; ηω (x,y)) =
   FOSample mu (fun x => FOSample (k x) (fun y => FORet (x,y))).
 Proof. reflexivity. Qed.
 Example sup_typed_binder {MN A} (mu : MN A) (k : nat -> A -> FreeOmega MN A) :
-  (supω (n : nat), x <~ mu ;; k n x) =
+  (supω (n : nat), x ←ω mu ;; k n x) =
   FOLub (fun n => FOSample mu (fun x => k n x)).
 Proof. reflexivity. Qed.
 
@@ -72,7 +76,7 @@ Constraint node < high.
 Example high_result
     (MN : Type@{node} -> Type@{rep}) (mu : MN bool)
     (A : Type@{high}) (a : A) :
-  (x <~ mu ;; ηω a) = FOSample mu (fun _ => FORet a).
+  (x ←ω mu ;; ηω a) = FOSample mu (fun _ => FORet a).
 Proof. reflexivity. Qed.
 
 Example high_embedding
@@ -99,7 +103,7 @@ Example program_bind_unchanged {E MN A} (mu : MN A) :
   @PTree.bind E MN A A (sample mu) (fun x => Ret x).
 Proof. reflexivity. Qed.
 Example program_as_value {E MN A} (mu : MN A) :
-  (x <~ mu ;; ηω (Ret x : ptree E MN A)) =
+  (x ←ω mu ;; ηω (Ret x : ptree E MN A)) =
   FOSample mu (fun x => FORet (Ret x : ptree E MN A)).
 Proof. reflexivity. Qed.
 
@@ -107,3 +111,4 @@ Local Close Scope freeomega_scope.
 Fail Check (ηω tt).
 Fail Check (FORet tt >>=ω (fun x => FORet x)).
 Fail Check (supω n, FORet n).
+Fail Check (x ←ω @None bool ;; FORet x).

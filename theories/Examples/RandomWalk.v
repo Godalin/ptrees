@@ -631,7 +631,7 @@ Definition walk_hitting fuel x y : FreeOmega SubEnumQ walk_head :=
 
 Lemma walk_hitting_two fuel x y :
   walk_hitting (S (S fuel)) (S x) y =
-  (down <~ rw_coin ;;
+  (down ←ω rw_coin ;;
     if down then walk_hitting fuel x (S y)
             else walk_hitting fuel (S (S x)) 0).
 Proof.
@@ -652,7 +652,7 @@ Proof.
       (ηω (FHRet y)) (ηₘ (obs y))).
     constructor.
   - change (free_omega_observes (fun h => obs (walk_head_value h))
-      (_ <~ rw_coin ;; ⊥ω)
+      (_ ←ω rw_coin ;; ⊥ω)
       (rw_coin >>=ₘ fun _ => ⊥ₘ)).
     eapply (@FOOObserveSample SubEnumQ SubEnumQ_SemanticMeasure
       SubEnumQ_SemanticOmega) with (front := fun _ => @subenumQ_zero A).
@@ -662,7 +662,7 @@ Proof.
     constructor.
   - cbn [walk_schedule]. rewrite walk_hitting_two.
     change (free_omega_observes (fun h => obs (walk_head_value h))
-      (down <~ rw_coin ;;
+      (down ←ω rw_coin ;;
         if down then walk_hitting (walk_schedule rounds) x (S y)
                 else walk_hitting (walk_schedule rounds) (S (S x)) 0)
       (rw_coin >>=ₘ fun down =>
