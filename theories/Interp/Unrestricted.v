@@ -2,6 +2,8 @@
     when the frontier model supplies relational increasing-limit closure.
     Internally returning handlers are handled by the two-phase machine;
     target bisimulation is never assumed before a target visible guard. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From PTree.Core Require Import PTreeDefinition.
@@ -15,7 +17,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section UnrestrictedInterp.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -30,9 +32,9 @@ Context {E F MN MF : Type -> Type}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 Variable Hzero : relational_zero FO.
 Variable Hlimit : relational_lub FO.
-Variable handler : forall X, E X -> ptree F MN X.
+Variable handler : ∀ X, E X → ptree F MN X.
 
-Theorem handler_vis_fusion {A B} (RR : A -> B -> Prop) :
+Theorem handler_vis_fusion {A B} (RR : A → B → Prop) :
   interp_vis_fusion (MF := MF) RR handler.
 Proof.
   intros X e k1 k2 Hk.
@@ -56,9 +58,9 @@ Qed.
 (** No syntactic guard, totality, termination, or handler-specific target
     preservation premise is required. The extra limit obligation belongs to
     the probability model, not to this theorem's conclusion. *)
-Theorem peutt_interp {A B} (RR : A -> B -> Prop)
+Theorem peutt_interp {A B} (RR : A → B → Prop)
     (t : ptree E MN A) (u : ptree E MN B) :
-  @peutt E MN MF FI FC MX FO A B RR t u ->
+  @peutt E MN MF FI FC MX FO A B RR t u →
   @peutt F MN MF FI FC MX FO A B RR
     (PTree.interp handler t) (PTree.interp handler u).
 Proof.

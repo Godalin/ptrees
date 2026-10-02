@@ -1,5 +1,7 @@
 (** Backend-independent finite scheduling. The hypotheses below concern only
     measure operations and approximation, never observable equality. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms RelationClasses Lia.
 From PTree.Core Require Import PTreeDefinition.
@@ -10,27 +12,27 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section BindScheduling.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}
   `{Ord : @SemanticMeasureOrderLaws MF FI FO}.
 
-Hypothesis bind_ret_order : forall A B (x : A) (k : A -> MF B),
-  sem_le (sem_bind (sem_ret x) k) (k x) /\
+Hypothesis bind_ret_order : ∀ A B (x : A) (k : A → MF B),
+  sem_le (sem_bind (sem_ret x) k) (k x) ∧
   sem_le (k x) (sem_bind (sem_ret x) k).
-Hypothesis bind_zero_order : forall A B (k : A -> MF B),
+Hypothesis bind_zero_order : ∀ A B (k : A → MF B),
   sem_le (sem_bind sem_zero k) sem_zero.
-Hypothesis mixed_assoc_order : forall A B C (mu : MN A)
-    (k : A -> MF B) (h : B -> MF C),
+Hypothesis mixed_assoc_order : ∀ A B C (mu : MN A)
+    (k : A → MF B) (h : B → MF C),
   sem_le (sem_bind (mixed_bind mu k) h)
-    (mixed_bind mu (fun x => sem_bind (k x) h)) /\
+    (mixed_bind mu (fun x => sem_bind (k x) h)) ∧
   sem_le (mixed_bind mu (fun x => sem_bind (k x) h))
     (sem_bind (mixed_bind mu k) h).
-Hypothesis mixed_bind_mono : forall A B (mu : MN A) (k h : A -> MF B),
-  (forall x, sem_le (k x) (h x)) ->
+Hypothesis mixed_bind_mono : ∀ A B (mu : MN A) (k h : A → MF B),
+  (∀ x, sem_le (k x) (h x)) →
   sem_le (mixed_bind mu k) (mixed_bind mu h).
 
-Local Definition equiv {A} (x y : MF A) := sem_le x y /\ sem_le y x.
+Local Definition equiv {A} (x y : MF A) := sem_le x y ∧ sem_le y x.
 Local Instance equiv_equivalence A : Equivalence (@equiv A).
 Proof.
   split.
@@ -62,11 +64,11 @@ Proof.
     [exact (proj1 (H x))|exact (proj2 (H x))].
 Qed.
 
-Local Lemma ret_equiv A B (x : A) (k : A -> MF B) :
+Local Lemma ret_equiv A B (x : A) (k : A → MF B) :
   equiv (sem_bind (sem_ret x) k) (k x).
 Proof. apply bind_ret_order. Qed.
 Local Lemma mixed_assoc_equiv A B C (mu : MN A)
-    (k : A -> MF B) (h : B -> MF C) :
+    (k : A → MF B) (h : B → MF C) :
   equiv (sem_bind (mixed_bind mu k) h)
     (mixed_bind mu (fun x => sem_bind (k x) h)).
 Proof. apply mixed_assoc_order. Qed.
@@ -98,12 +100,12 @@ Proof.
 Qed.
 
 Definition ptree_bind_split_approx {A B} n m
-    (t : ptree E MN A) (k : A -> ptree E MN B) :=
+    (t : ptree E MN A) (k : A → ptree E MN B) :=
   sem_bind (ptree_hitting_approx (MF := MF) n (observe t))
     (ptree_head_bind_approx m k).
 
 Theorem ptree_bind_global_le_diagonal {A B} n
-    (t : ptree E MN A) (k : A -> ptree E MN B) :
+    (t : ptree E MN A) (k : A → ptree E MN B) :
   sem_le (ptree_hitting_approx (MF := MF) n (observe (PTree.bind t k)))
     (ptree_bind_split_approx n n t k).
 Proof.
@@ -130,7 +132,7 @@ Proof.
 Qed.
 
 Theorem ptree_bind_split_le_global {A B} n m
-    (t : ptree E MN A) (k : A -> ptree E MN B) :
+    (t : ptree E MN A) (k : A → ptree E MN B) :
   sem_le (ptree_bind_split_approx n m t k)
     (ptree_hitting_approx (MF := MF) (n + m) (observe (PTree.bind t k))).
 Proof.
@@ -152,14 +154,14 @@ Proof.
   - setoid_rewrite mixed_assoc_equiv. apply mixed_bind_mono. intro x; apply IH.
 Qed.
 
-Hypothesis lub_cofinal : forall A (c d : nat -> MF A) out,
-  sem_increasing c -> sem_increasing d ->
-  (forall n, exists m, sem_le (c n) (d m)) ->
-  (forall n, exists m, sem_le (d n) (c m)) ->
-  (sem_lub c out <-> sem_lub d out).
+Hypothesis lub_cofinal : ∀ A (c d : nat → MF A) out,
+  sem_increasing c → sem_increasing d →
+  (∀ n, ∃ m, sem_le (c n) (d m)) →
+  (∀ n, ∃ m, sem_le (d n) (c m)) →
+  (sem_lub c out ↔ sem_lub d out).
 
 Theorem ptree_bind_cofinal_all {A B}
-    (t : ptree E MN A) (k : A -> ptree E MN B) :
+    (t : ptree E MN A) (k : A → ptree E MN B) :
   ptree_bind_cofinal (MF := MF) t k.
 Proof.
   intro out. apply lub_cofinal.

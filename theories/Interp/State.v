@@ -2,6 +2,8 @@
     along each execution branch; native probability nodes are preserved.
     Every eliminated event leaves one administrative Tau. No semantic or
     sampling law is needed for this productive tree transformation. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From ITree.Events Require Import State.
 From ITree.Indexed Require Import Sum.
@@ -37,8 +39,8 @@ CoFixpoint run_state {S E MN A}
       end
   end.
 
-Definition state_result_rel {S A B} (RR : A -> B -> Prop)
-    (x : S * A) (y : S * B) : Prop := fst x = fst y /\ RR (snd x) (snd y).
+Definition state_result_rel {S A B} (RR : A → B → Prop)
+    (x : S * A) (y : S * B) : Prop := fst x = fst y ∧ RR (snd x) (snd y).
 
 (** The step equation keeps the coinductive tree abstract; clients rewrite
     observations rather than asserting intensional equality of cofixpoints. *)

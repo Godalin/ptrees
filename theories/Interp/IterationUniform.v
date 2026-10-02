@@ -1,5 +1,7 @@
 (** Eventful iteration through a direct restart machine. Neither the loop
     state nor its result is placed in an auxiliary effect signature. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms.
@@ -13,7 +15,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Relational.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
@@ -27,17 +29,17 @@ Context {E MN MF : Type -> Type}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 Variables (Hzero : relational_zero FO) (Hlimit : relational_lub FO).
 Context {I J A B : Type}.
-Variables (f : I -> ptree E MN (I+A)) (g : J -> ptree E MN (J+B))
-  (SI : I -> J -> Prop) (RR : A -> B -> Prop).
+Variables (f : I → ptree E MN (I+A)) (g : J → ptree E MN (J+B))
+  (SI : I → J → Prop) (RR : A → B → Prop).
 Local Notation SR := (pstruct_iter_sum_rel SI RR).
-Hypothesis Hstep : forall i j, SI i j -> peutt (MF := MF) SR (f i) (g j).
+Hypothesis Hstep : ∀ i j, SI i j → peutt (MF := MF) SR (f i) (g j).
 Local Notation W := (peutt (MF := MF) SR).
 
 Definition iter_direct_states (s : ptree' E MN A) (v : ptree' E MN B) :=
-  exists t u, s = observe (iter_active f t) /\ v = observe (iter_active g u) /\ W t u.
+  ∃ t u, s = observe (iter_active f t) ∧ v = observe (iter_active g u) ∧ W t u.
 Local Notation HR := (@ptree_stable_head_rel E MN A B RR iter_direct_states).
 
-Lemma iter_direct_kernel_related t u : W t u ->
+Lemma iter_direct_kernel_related t u : W t u →
   sem_lift (stable_target_rel W HR)
     (iter_machine_kernel f t) (iter_machine_kernel g u).
 Proof.
@@ -53,7 +55,7 @@ Proof.
       exists (k1 x), (k2 x). split; [reflexivity|split; [reflexivity|apply H0]].
 Qed.
 
-Theorem peutt_iter_active_rel t u : W t u ->
+Theorem peutt_iter_active_rel t u : W t u →
   peutt (MF := MF) RR (iter_active f t) (iter_active g u).
 Proof.
   intro H. eapply peutt_coinduction with (sim := iter_direct_states).
@@ -68,7 +70,7 @@ Proof.
   - exists t,u. split; [reflexivity|split; [reflexivity|exact H]].
 Qed.
 
-Theorem peutt_iter_direct_rel i j : SI i j ->
+Theorem peutt_iter_direct_rel i j : SI i j →
   peutt (MF := MF) RR (PTree.iter f i) (PTree.iter g j).
 Proof.
   intro Hij. change (peutt (MF := MF) RR (iter_active f (f i)) (iter_active g (g j))).
@@ -80,7 +82,7 @@ End Relational.
     Register locally after supplying the frontier's relational certificates;
     do not ask global typeclass search to invent them. *)
 Section Rewriting.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
@@ -110,7 +112,7 @@ Qed.
 End Rewriting.
 
 Section Uniform.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI} `{MX : MixedMeasure MN MF}

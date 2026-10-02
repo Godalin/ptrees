@@ -1,5 +1,7 @@
 (** Canonical log-first WriterT fold, separate from the existing State-based
     PTree eliminator. Probability contributes no log and is not normalized. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From ExtLib.Structures Require Import Monad Monoid.
 From ITree.Basics Require Import Basics.
@@ -11,10 +13,10 @@ Unset Strict Implicit.
 Local Open Scope type_scope.
 
 Section WriterFold.
-Context {W : Type} {E MN T : Type -> Type} (op : Monoid W).
+Context {W : Type} {E MN T : Type → Type} (op : Monoid W).
 Context `{MT : Monad T} `{IT : MonadIter T}.
-Variable handle : forall X, E X -> T X.
-Variable sample : forall X, MN X -> T X.
+Variable handle : ∀ X, E X → T X.
+Variable sample : ∀ X, MN X → T X.
 
 Definition writer_effect {X} (e : (writerE W +' E) X) : Monads.writerT W T X :=
   match e with

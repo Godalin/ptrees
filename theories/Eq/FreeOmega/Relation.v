@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Eq Require Import Relation.
 From PTree.Eq Require Import StableHittingRelation.
 From PTree.Prob.FreeOmega Require Import RelationalLimit.
@@ -20,15 +22,15 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section FreeOmegaRelation.
-Context {E : Type -> Type} {MN : Type -> Type}
+Context {E : Type → Type} {MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 
 Lemma ptree_hitting_pstruct {A B}
-    (RR : A -> B -> Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  pstruct RR t1 t2 ->
+    (RR : A → B → Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstruct RR t1 t2 →
   free_omega_lift (stable_head_rel RR (pstruct RR))
     (ptree_hitting_approx (MF := MF) fuel (observe t1))
     (ptree_hitting_approx (MF := MF) fuel (observe t2)).
@@ -71,15 +73,15 @@ Qed.
     quantitative client analyse a simpler return type and transport its
     finite calculations through a structural program equation. *)
 Theorem ptree_hitting_observes_pstruct {A B O}
-    (RR : A -> B -> Prop)
-    (obs1 : stable_head E MN A -> O)
-    (obs2 : stable_head E MN B -> O)
-    (Hobs : forall h1 h2, stable_head_rel RR (pstruct RR) h1 h2 ->
+    (RR : A → B → Prop)
+    (obs1 : stable_head E MN A → O)
+    (obs2 : stable_head E MN B → O)
+    (Hobs : ∀ h1 h2, stable_head_rel RR (pstruct RR) h1 h2 →
       obs1 h1 = obs2 h2)
     fuel (t1 : ptree E MN A) (t2 : ptree E MN B) out :
-  pstruct RR t1 t2 ->
+  pstruct RR t1 t2 →
   free_omega_observes obs1
-    (ptree_hitting_approx (MF := MF) fuel (observe t1)) out ->
+    (ptree_hitting_approx (MF := MF) fuel (observe t1)) out →
   free_omega_observes obs2
     (ptree_hitting_approx (MF := MF) fuel (observe t2)) out.
 Proof.
@@ -106,18 +108,18 @@ Qed.
 
 (** State-level closure used to interpret syntax-sensitive structural
     equivalence inside the canonical stable-hitting coinduction principle. *)
-Definition pstruct_state {A B} (RR : A -> B -> Prop)
+Definition pstruct_state {A B} (RR : A → B → Prop)
     (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
-  exists (t1 : ptree E MN A) (t2 : ptree E MN B),
-    s1 = observe t1 /\ s2 = observe t2 /\ pstruct RR t1 t2.
+  ∃ (t1 : ptree E MN A) (t2 : ptree E MN B),
+    s1 = observe t1 ∧ s2 = observe t2 ∧ pstruct RR t1 t2.
 
 (** Structural probabilistic bisimulation is sound for the canonical weak
     equivalence.  Pointwise structural couplings of all finite hitting
     approximants are closed by the FreeOmega limit constructor; visible
     continuations re-enter the coinduction candidate. *)
 Theorem peutt_of_pstruct {A B}
-    (RR : A -> B -> Prop) (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  pstruct RR t1 t2 ->
+    (RR : A → B → Prop) (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstruct RR t1 t2 →
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
@@ -134,8 +136,8 @@ Qed.
     their coupling is threaded through every finite hitting approximant and
     then closed by the FreeOmega limit. *)
 Lemma ptree_hitting_pstrong {A B}
-    (RR : A -> B -> Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  pstrong RR t1 t2 ->
+    (RR : A → B → Prop) fuel (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstrong RR t1 t2 →
   free_omega_lift (stable_head_rel RR (pstrong RR))
     (ptree_hitting_approx (MF := MF) fuel (observe t1))
     (ptree_hitting_approx (MF := MF) fuel (observe t2)).
@@ -174,14 +176,14 @@ Proof.
     + intros a b Hab. exact (IH _ _ Hab).
 Qed.
 
-Definition pstrong_state {A B} (RR : A -> B -> Prop)
+Definition pstrong_state {A B} (RR : A → B → Prop)
     (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
-  exists (t1 : ptree E MN A) (t2 : ptree E MN B),
-    s1 = observe t1 /\ s2 = observe t2 /\ pstrong RR t1 t2.
+  ∃ (t1 : ptree E MN A) (t2 : ptree E MN B),
+    s1 = observe t1 ∧ s2 = observe t2 ∧ pstrong RR t1 t2.
 
 Theorem peutt_of_pstrong {A B}
-    (RR : A -> B -> Prop) (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  pstrong RR t1 t2 ->
+    (RR : A → B → Prop) (t1 : ptree E MN A) (t2 : ptree E MN B) :
+  pstrong RR t1 t2 →
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws

@@ -1,5 +1,7 @@
 (** Role: concrete execution and resource-outcome example. *)
 (** State/iter preserves the updated state across retry boundaries. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import List.
 From ITree.Events Require Import State.
@@ -34,7 +36,7 @@ Example transformed_iter_has_same_replay :
 Proof. native_compute. reflexivity. Qed.
 
 Section Eventful.
-Context {E MN : Type -> Type} (e : E unit) (mu : MN bool).
+Context {E MN : Type → Type} (e : E unit) (mu : MN bool).
 Definition eventful_step (_ : unit) : ptree (stateE nat +' E) MN (unit + nat) :=
   Vis (inl1 (Get nat)) (fun s =>
     Vis (inl1 (Put nat (S s))) (fun _ =>

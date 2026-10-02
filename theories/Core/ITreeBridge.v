@@ -1,6 +1,8 @@
 (** A genuine datatype bridge. Sampling is an ITree visible event at the
     source and a native PTree node after elaboration. No probability model
     or preservation law is assumed by these definitions. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From ITree.Core Require Import ITreeDefinition.
@@ -9,8 +11,8 @@ From PTree.Core Require Import PTreeDefinition Handler.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
-Variant probE (MN : Type -> Type) : Type -> Type :=
-| Sample {X} : MN X -> probE MN X.
+Variant probE (MN : Type → Type) : Type → Type :=
+| Sample {X} : MN X → probE MN X.
 Arguments Sample {MN X} _.
 
 CoFixpoint from_itree {E MN A} (t : itree E A) : ptree E MN A :=

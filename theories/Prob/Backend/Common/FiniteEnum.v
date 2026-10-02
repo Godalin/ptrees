@@ -2,6 +2,8 @@
     The sign invariant belongs to the container, not to a scalar subtype.
     There is deliberately no probability-mass bound or semantic interface here.
     Duplicate values and zero-weight entries are retained by the operations. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -16,21 +18,21 @@ Local Open Scope ring_scope.
 Section FiniteWeighting.
 Variable R : numDomainType.
 
-Fixpoint finite_expect {A : Type} (f : A -> R) (mu : list (R * A)) : R :=
+Fixpoint finite_expect {A : Type} (f : A → R) (mu : list (R * A)) : R :=
   match mu with [] => 0 | (p,x)::tl => p * f x + finite_expect f tl end.
 
 Definition finite_nonnegative {A : Type} (mu : list (R * A)) : Prop :=
-  forall p x, List.In (p,x) mu -> 0 <= p.
+  ∀ p x, List.In (p,x) mu → 0 <= p.
 
 Definition finite_weight_map {A : Type} (p : R) (mu : list (R * A)) :=
   List.map (fun qx => (p * fst qx, snd qx)) mu.
 
 Definition finite_bind {A B : Type}
-    (mu : list (R * A)) (k : A -> list (R * B)) :=
+    (mu : list (R * A)) (k : A → list (R * B)) :=
   List.flat_map (fun px => finite_weight_map (fst px) (k (snd px))) mu.
 
 Lemma finite_expect_ext {A} (mu : list (R * A)) f g :
-  (forall x, f x = g x) -> finite_expect f mu = finite_expect g mu.
+  (∀ x, f x = g x) → finite_expect f mu = finite_expect g mu.
 Proof. intro H; induction mu as [|[p x] tl IH]; cbn; [reflexivity|by rewrite H IH]. Qed.
 
 Lemma finite_expect_zero {A} (mu : list (R * A)) :
@@ -62,12 +64,12 @@ Proof.
   by rewrite IH mulrDr mulrA.
 Qed.
 
-Lemma finite_expect_map {A B} (mu : list (R * A)) (h : A -> B) f :
+Lemma finite_expect_map {A B} (mu : list (R * A)) (h : A → B) f :
   finite_expect f (List.map (fun px => (fst px, h (snd px))) mu) =
   finite_expect (fun x => f (h x)) mu.
 Proof. induction mu as [|[p x] tl IH]; cbn; [reflexivity|by rewrite IH]. Qed.
 
-Lemma finite_expect_bind {A B} (mu : list (R * A)) (k : A -> list (R * B)) f :
+Lemma finite_expect_bind {A B} (mu : list (R * A)) (k : A → list (R * B)) f :
   finite_expect f (finite_bind mu k) = finite_expect (fun x => finite_expect f (k x)) mu.
 Proof.
   induction mu as [|[p x] tl IH]; cbn [finite_bind List.flat_map]; first reflexivity.
@@ -75,8 +77,8 @@ Proof.
 Qed.
 
 Lemma finite_expect_ae_mono {A} (mu : list (R * A)) f g :
-  finite_nonnegative mu ->
-  (forall p x, List.In (p,x) mu -> p <> 0 -> f x <= g x) ->
+  finite_nonnegative mu →
+  (∀ p x, List.In (p,x) mu → p ≠ 0 → f x <= g x) →
   finite_expect f mu <= finite_expect g mu.
 Proof.
   induction mu as [|[p x] tl IH]; intros Hnn H; cbn; first exact: lexx.
@@ -91,17 +93,17 @@ Proof.
 Qed.
 
 Lemma finite_expect_mono {A} (mu : list (R * A)) f g :
-  finite_nonnegative mu -> (forall x, f x <= g x) ->
+  finite_nonnegative mu → (∀ x, f x <= g x) →
   finite_expect f mu <= finite_expect g mu.
 Proof. intros H Hfg; apply finite_expect_ae_mono; [exact H|intros; apply Hfg]. Qed.
 
 Lemma finite_expect_nonnegative {A} (mu : list (R * A)) f :
-  finite_nonnegative mu -> (forall x, 0 <= f x) -> 0 <= finite_expect f mu.
+  finite_nonnegative mu → (∀ x, 0 <= f x) → 0 <= finite_expect f mu.
 Proof. intros H Hf; rewrite -(finite_expect_zero mu); exact: finite_expect_mono. Qed.
 
 Lemma finite_expect_ae_ext {A} (mu : list (R * A)) f g :
-  finite_nonnegative mu ->
-  (forall p x, List.In (p,x) mu -> p <> 0 -> f x = g x) ->
+  finite_nonnegative mu →
+  (∀ p x, List.In (p,x) mu → p ≠ 0 → f x = g x) →
   finite_expect f mu = finite_expect g mu.
 Proof.
   intros Hnn H; apply/eqP; rewrite eq_le; apply/andP; split;
@@ -140,7 +142,7 @@ Proof.
   apply mulr_ge0; [exact Hp|exact (finite_enum_nonnegative mu r y Hr)].
 Defined.
 
-Definition finite_enum_map {A B} (h : A -> B) (mu : FiniteEnum A) : FiniteEnum B.
+Definition finite_enum_map {A B} (h : A → B) (mu : FiniteEnum A) : FiniteEnum B.
 Proof.
   refine (@finite_enum_of_list B (List.map (fun px => (fst px, h (snd px))) (finite_enum_raw mu)) _).
   intros p y Hin; apply List.in_map_iff in Hin.
@@ -148,7 +150,7 @@ Proof.
   exact (finite_enum_nonnegative mu p x Hq).
 Defined.
 
-Definition finite_enum_bind {A B} (mu : FiniteEnum A) (k : A -> FiniteEnum B) : FiniteEnum B.
+Definition finite_enum_bind {A B} (mu : FiniteEnum A) (k : A → FiniteEnum B) : FiniteEnum B.
 Proof.
   refine (@finite_enum_of_list B (finite_bind (finite_enum_raw mu) (fun x => finite_enum_raw (k x))) _).
   intros p y Hin; apply List.in_flat_map in Hin.
@@ -164,10 +166,10 @@ Proof. reflexivity. Qed.
 Lemma finite_enum_expect_scale {A} p (Hp : 0 <= p) (mu : FiniteEnum A) f :
   finite_enum_expect (finite_enum_scale Hp mu) f = p * finite_enum_expect mu f.
 Proof. exact: finite_expect_weight_map. Qed.
-Lemma finite_enum_expect_map {A B} (h : A -> B) (mu : FiniteEnum A) f :
+Lemma finite_enum_expect_map {A B} (h : A → B) (mu : FiniteEnum A) f :
   finite_enum_expect (finite_enum_map h mu) f = finite_enum_expect mu (fun x => f (h x)).
 Proof. exact: finite_expect_map. Qed.
-Lemma finite_enum_expect_bind {A B} (mu : FiniteEnum A) (k : A -> FiniteEnum B) f :
+Lemma finite_enum_expect_bind {A B} (mu : FiniteEnum A) (k : A → FiniteEnum B) f :
   finite_enum_expect (finite_enum_bind mu k) f = finite_enum_expect mu (fun x => finite_enum_expect (k x) f).
 Proof. exact: finite_expect_bind. Qed.
 
@@ -178,10 +180,10 @@ Proof. reflexivity. Qed.
 Lemma finite_mass_scale {A} p (Hp : 0 <= p) (mu : FiniteEnum A) :
   finite_mass (finite_enum_scale Hp mu) = p * finite_mass mu.
 Proof. exact: finite_enum_expect_scale. Qed.
-Lemma finite_mass_map {A B} (h : A -> B) (mu : FiniteEnum A) :
+Lemma finite_mass_map {A B} (h : A → B) (mu : FiniteEnum A) :
   finite_mass (finite_enum_map h mu) = finite_mass mu.
 Proof. exact: finite_enum_expect_map. Qed.
-Lemma finite_mass_bind {A B} (mu : FiniteEnum A) (k : A -> FiniteEnum B) :
+Lemma finite_mass_bind {A B} (mu : FiniteEnum A) (k : A → FiniteEnum B) :
   finite_mass (finite_enum_bind mu k) = finite_enum_expect mu (fun x => finite_mass (k x)).
 Proof. exact: finite_enum_expect_bind. Qed.
 Lemma finite_mass_nonnegative {A} (mu : FiniteEnum A) : 0 <= finite_mass mu.

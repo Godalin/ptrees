@@ -1,6 +1,8 @@
 (** Laws for the existing ExtLib exception transformer and ITree iteration.
     Equality observes [unEitherT]; no new transformer or global instance is
     introduced. Clients opt into the explicit law constructors below. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms RelationClasses.
 From ExtLib.Structures Require Import Monad.
@@ -11,7 +13,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section ExceptT.
-Context {Err : Type} {T : Type -> Type}.
+Context {Err : Type} {T : Type → Type}.
 Context `{MT : Monad T} `{QT : Eq1 T}.
 
 Definition exceptT_eq1 : Eq1 (eitherT Err T) :=
@@ -44,7 +46,7 @@ Proof.
     intros [e|a]; [reflexivity|apply Hfg].
 Defined.
 
-Definition exceptT_step {I A} (f : I -> eitherT Err T (I+A)) (i : I) :
+Definition exceptT_step {I A} (f : I → eitherT Err T (I+A)) (i : I) :
     T (I + (Err+A)) :=
   bind (unEitherT (f i)) (fun v => ret
     (match v with

@@ -22,8 +22,17 @@ def classes(text):
         end = re.search(r'\.(?=\s|$)', code[match.start():])
         assert end, 'Unrecognized class declaration: ' + match.group(1)
         assert match.group(1) not in result, 'Duplicate class name'
-        result[match.group(1)] = ' '.join(code[match.start():match.start()+end.end()].split())
+        result[match.group(1)] = logic_spelling(
+            ' '.join(code[match.start():match.start()+end.end()].split()))
     return result
+
+
+def logic_spelling(text):
+    """Standard Coq Utf8 spellings only; do not erase logical structure."""
+    return text.translate(str.maketrans({
+        '∀': 'forall', '∃': 'exists', '→': '->', '↔': '<->',
+        '∧': '/\\', '∨': '\\/', '¬': '~', '≠': '<>',
+    }))
 
 
 def independent_math(sources):
@@ -61,7 +70,8 @@ def source_check(sources=None, policy=None):
         universe_source_check(path, text)
         for name, decl in classes(text).items():
             found_classes[path + ':' + name] = decl
-    assert found_classes == policy['classes'], 'Capability declaration drift (new or changed Class)'
+    assert found_classes == {k: logic_spelling(v) for k, v in policy['classes'].items()}, \
+        'Capability declaration drift (new or changed Class)'
     independent_math(sources)
     for path, source in sources.items():
         if path.startswith(('theories/Prob/Backend/EnumQ/', 'theories/Prob/Backend/SubEnumQ/',

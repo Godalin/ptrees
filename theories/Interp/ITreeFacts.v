@@ -1,5 +1,7 @@
 (** Backend-independent behavioral laws for ITree elaboration. These are
     homomorphism laws, not an inverse or a source-eutt preservation theorem. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From ITree.Core Require Import ITreeDefinition.
@@ -12,7 +14,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Laws.
-Context {MN MF : Type -> Type}
+Context {MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
@@ -34,7 +36,7 @@ Proof.
   eapply peutt_trans; [apply structural; apply interp_itree_tau|apply peutt_tau_l].
 Qed.
 
-Theorem elab_event {E F A X} (h : Handler MN E F) (e : E X) (k : X -> itree E A) :
+Theorem elab_event {E F A X} (h : Handler MN E F) (e : E X) (k : X → itree E A) :
   peutt (MF := MF) eq (interp_itree h (ITreeDefinition.Vis e k))
     (PTree.bind (h X e) (fun x => interp_itree h (k x))).
 Proof.
@@ -47,14 +49,14 @@ Proof.
   eapply peutt_trans; [apply structural; apply interp_itree_trigger_structural|apply peutt_tau_l].
 Qed.
 
-Theorem elab_sample {E A X} (mu : MN X) (k : X -> itree (probE MN +' E) A) :
+Theorem elab_sample {E A X} (mu : MN X) (k : X → itree (probE MN +' E) A) :
   peutt (MF := MF) eq (elaborate (ITreeDefinition.Vis (inl1 (Sample mu)) k))
     (Prob mu (fun x => elaborate (k x))).
 Proof.
   eapply peutt_trans; [apply structural; apply elaborate_sample_structural|apply peutt_tau_l].
 Qed.
 
-Theorem elab_vis {E A X} (e : E X) (k : X -> itree (probE MN +' E) A) :
+Theorem elab_vis {E A X} (e : E X) (k : X → itree (probE MN +' E) A) :
   peutt (MF := MF) eq (elaborate (ITreeDefinition.Vis (inr1 e) k))
     (Vis e (fun x => elaborate (k x))).
 Proof.
@@ -62,13 +64,13 @@ Proof.
 Qed.
 
 Theorem elab_bind {E F A B} (h : Handler MN E F)
-    (t : itree E A) (k : A -> itree E B) :
+    (t : itree E A) (k : A → itree E B) :
   peutt (MF := MF) eq (interp_itree h (ITree.bind t k))
     (PTree.bind (interp_itree h t) (fun x => interp_itree h (k x))).
 Proof. apply structural. apply interp_itree_bind. Qed.
 
 Theorem elab_iter {E F I A} (h : Handler MN E F)
-    (step : I -> itree E (I+A)) i :
+    (step : I → itree E (I+A)) i :
   peutt (MF := MF) eq (interp_itree h (ITree.iter step i))
     (PTree.iter (fun j => interp_itree h (step j)) i).
 Proof. apply structural. apply interp_itree_iter. Qed.

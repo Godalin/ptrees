@@ -3,6 +3,8 @@
     External model clients use Validation/Model and SubEnumQ/FreeOmega/Validation;
     only the legacy external vocabulary is collected in Compatibility. *)
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -32,7 +34,7 @@ Section UpperExpectation.
 Variable R : realType.
 Local Notation countable_upper_ge := (@Expectation.countable_upper_ge R).
 
-Fixpoint free_omega_upper {A} (mu : FreeOmega SubEnumQ A) (f : A -> R) : R :=
+Fixpoint free_omega_upper {A} (mu : FreeOmega SubEnumQ A) (f : A → R) : R :=
   match mu with
   | FORet x => f x
   | FOZero => 0
@@ -41,9 +43,9 @@ Fixpoint free_omega_upper {A} (mu : FreeOmega SubEnumQ A) (f : A -> R) : R :=
   | FOLub chain => countable_upper (fun n => free_omega_upper (chain n) f)
   end.
 
-Lemma free_omega_upper_bounds {A} (mu : FreeOmega SubEnumQ A) (f : A -> R) :
-  (forall x, 0 <= f x /\ f x <= 1) ->
-  0 <= free_omega_upper mu f /\ free_omega_upper mu f <= 1.
+Lemma free_omega_upper_bounds {A} (mu : FreeOmega SubEnumQ A) (f : A → R) :
+  (∀ x, 0 <= f x ∧ f x <= 1) →
+  0 <= free_omega_upper mu f ∧ free_omega_upper mu f <= 1.
 Proof.
   move=> Hf. induction mu as [x| |X node k IH|chain IH]; cbn [free_omega_upper].
   - exact (Hf x).
@@ -58,9 +60,9 @@ Proof.
     + apply countable_upper_le. intro n. exact (proj2 (IH n)).
 Qed.
 
-Lemma free_omega_upper_mono {A} (mu : FreeOmega SubEnumQ A) (f g : A -> R) :
-  (forall x, 0 <= g x /\ g x <= 1) ->
-  (forall x, f x <= g x) -> free_omega_upper mu f <= free_omega_upper mu g.
+Lemma free_omega_upper_mono {A} (mu : FreeOmega SubEnumQ A) (f g : A → R) :
+  (∀ x, 0 <= g x ∧ g x <= 1) →
+  (∀ x, f x <= g x) → free_omega_upper mu f <= free_omega_upper mu g.
 Proof.
   move=> Hg Hfg. induction mu as [x| |X node k IH|chain IH]; cbn [free_omega_upper].
   - exact (Hfg x).
@@ -74,7 +76,7 @@ Qed.
 (** This identity is structural, including for arbitrary formal Lub nodes.
     It does not depend on linearity or an assumed continuity law. *)
 Lemma free_omega_upper_bind {A B} (mu : FreeOmega SubEnumQ A)
-    (k : A -> FreeOmega SubEnumQ B) (f : B -> R) :
+    (k : A → FreeOmega SubEnumQ B) (f : B → R) :
   free_omega_upper (free_omega_bind mu k) f =
   free_omega_upper mu (fun x => free_omega_upper (k x) f).
 Proof.
@@ -99,7 +101,7 @@ Qed.
 
 (** On native presentations this interpretation is the actual weighted
     finite expectation, not a support-only test. *)
-Lemma free_omega_upper_native_rat {A} (mu : SubEnumQ A) (f : A -> rat) :
+Lemma free_omega_upper_native_rat {A} (mu : SubEnumQ A) (f : A → rat) :
   free_omega_upper (FOSample mu (fun x => FORet x)) (fun x => ratr (f x)) =
   ratr (enumQ_expect f (subenumQ_raw mu)).
 Proof. exact: enumQ_real_expect_rat. Qed.

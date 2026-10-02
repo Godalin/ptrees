@@ -1,5 +1,7 @@
 (** Explicit behavioral Monad/Eq1 and pure-map iteration proofs for PTree.
     No global Eq1 selection and no new algebraic capability are registered. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms RelationClasses Program.Equality.
@@ -15,17 +17,17 @@ Unset Strict Implicit.
 Local Notation "` R" := (elem R) (at level 10).
 
 Section ReturnMap.
-Context {E MN : Type -> Type} {A B : Type}.
-Variable f : A -> B.
-Variable RR : A -> B -> Prop.
-Hypothesis Hf : forall a, RR a (f a).
+Context {E MN : Type → Type} {A B : Type}.
+Variable f : A → B.
+Variable RR : A → B → Prop.
+Hypothesis Hf : ∀ a, RR a (f a).
 Local Definition map_candidate (t : ptree E MN A) (u : ptree E MN B) :=
   u = PTree.fmap f t.
 
 Lemma pstruct_return_map (input : ptree E MN A) :
   pstruct RR input (PTree.fmap f input).
 Proof.
-  assert (H : forall t u, map_candidate t u -> pstruct RR t u).
+  assert (H : ∀ t u, map_candidate t u -> pstruct RR t u).
   { unfold pstruct. coinduction CH CIH. intros t u ->.
     change (pstructF RR (` CH) (observe t) (observe (PTree.fmap f t))).
     unfold PTree.fmap. rewrite observe_bind.
@@ -38,7 +40,7 @@ Qed.
 End ReturnMap.
 
 Section Laws.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
@@ -80,9 +82,9 @@ Defined.
 
 (** Right endpoint transport for an arbitrary heterogeneous relation.
     This is an application of existing hitting-bisimulation composition. *)
-Local Lemma peutt_relation_right {A B} (RR : A -> B -> Prop)
+Local Lemma peutt_relation_right {A B} (RR : A → B → Prop)
     (t : ptree E MN A) (u v : ptree E MN B) :
-  W A B RR t u -> W B B eq u v -> W A B RR t v.
+  W A B RR t u → W B B eq u v → W A B RR t v.
 Proof.
   intros Htu Huv. unfold peutt, peutt_state in Htu, Huv |- *.
   eapply stable_hitting_bisim_compose; [|exact Htu|exact Huv].
@@ -96,10 +98,10 @@ Qed.
     Eq1-wide [iteration_uniform]: the protocol proof uses I+A as a visible
     response type. See the independently checked client-universe boundary. *)
 Theorem peutt_iter_uniform {I J A}
-    (f : I -> ptree E MN (I+A)) (g : J -> ptree E MN (J+A)) (h : I -> J) :
-  (forall i, W (J+A) (J+A) eq
-    (PTree.bind (f i) (fun v => Ret (iteration_map h v))) (g (h i))) ->
-  forall i, W A A eq (PTree.iter f i) (PTree.iter g (h i)).
+    (f : I → ptree E MN (I+A)) (g : J → ptree E MN (J+A)) (h : I → J) :
+  (∀ i, W (J+A) (J+A) eq
+    (PTree.bind (f i) (fun v => Ret (iteration_map h v))) (g (h i))) →
+  ∀ i, W A A eq (PTree.iter f i) (PTree.iter g (h i)).
 Proof.
   intros Hsquare i.
   eapply (peutt_iter_eventful_rel Hmixed Hzero Hlimit)
@@ -110,7 +112,7 @@ Proof.
 Qed.
 
 (** Fixed point with the administrative retry Tau removed behaviorally. *)
-Theorem ptree_peutt_iter_unfold {I A} (step : I -> ptree E MN (I+A)) i :
+Theorem ptree_peutt_iter_unfold {I A} (step : I → ptree E MN (I+A)) i :
   W A A eq (PTree.iter step i)
     (PTree.bind (step i) (fun v => match v with
       | inl j => PTree.iter step j | inr a => Ret a end)).
@@ -122,7 +124,7 @@ Proof.
     + intros x y ->. destruct y; [apply peutt_tau_l|apply peutt_refl].
 Qed.
 
-Theorem ptree_peutt_iter_tau_step {I A} (step : I -> ptree E MN (I+A)) i :
+Theorem ptree_peutt_iter_tau_step {I A} (step : I → ptree E MN (I+A)) i :
   W A A eq (PTree.iter (fun j => Tau (step j)) i) (PTree.iter step i).
 Proof.
   apply (peutt_iter_eventful Hmixed Hzero Hlimit). intro j. apply peutt_tau_l.
@@ -131,7 +133,7 @@ Qed.
 (** The finite number of inserted Taus may depend on the state and need
     not have a uniform bound across an infinite run. *)
 Theorem ptree_peutt_iter_finite_stutter {I A}
-    (step : I -> ptree E MN (I+A)) (delay : I -> nat) i :
+    (step : I → ptree E MN (I+A)) (delay : I → nat) i :
   W A A eq
     (PTree.iter (fun j => Nat.iter (delay j) (fun t => Tau t) (step j)) i)
     (PTree.iter step i).

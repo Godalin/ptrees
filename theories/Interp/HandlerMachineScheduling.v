@@ -1,5 +1,7 @@
 (** Primitive handler machine / actual interpreter scheduling. No relation
     assumption or interpreter-preservation premise occurs in this bridge. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms RelationClasses Lia.
 From PTree.Core Require Import PTreeDefinition.
@@ -10,12 +12,12 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section PrimitiveScheduling.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
   `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
   `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}.
-Variable handler : forall X, E X -> ptree F MN X.
+Variable handler : ∀ X, E X → ptree F MN X.
 Local Notation equiv := (@BindScheduling.equiv MF FI FO).
 #[local] Existing Instance BindScheduling.equiv_equivalence.
 #[local] Existing Instance BindScheduling.le_equiv_Proper.
@@ -28,7 +30,7 @@ Local Notation unfold_target := (@BindScheduling.hitting_unfold F MN MF FI MX FO
   (@sem_bind_ret_order MF FI FO BO) (@mixed_bind_assoc_order MN MF FI MX FO MO)
   (@mixed_bind_le_k MN MF FI MX FO MO)).
 
-Local Lemma ret_equiv A B (x : A) (k : A -> MF B) :
+Local Lemma ret_equiv A B (x : A) (k : A → MF B) :
   equiv (sem_bind (sem_ret x) k) (k x).
 Proof. apply sem_bind_ret_order. Qed.
 
@@ -59,7 +61,7 @@ Proof.
 Qed.
 
 Lemma handler_primitive_active_unfold {A X} n (active : ptree F MN X)
-    (k : X -> ptree E MN A) :
+    (k : X → ptree E MN A) :
   equiv (handler_primitive_approx n (HandlerConfig active k))
     (match observe active with
      | RetF x => handler_residual_approx n (SourceConfig (k x))
@@ -79,7 +81,7 @@ Proof.
 Qed.
 
 Lemma handler_primitive_mono {A} n m (c : @handler_config E F MN A) :
-  n <= m -> sem_le (handler_primitive_approx n c) (handler_primitive_approx m c).
+  n <= m → sem_le (handler_primitive_approx n c) (handler_primitive_approx m c).
 Proof. apply stable_hitting_mono. Qed.
 
 Theorem handler_primitive_le_tree {A} n (c : @handler_config E F MN A) :
@@ -114,15 +116,15 @@ Proof.
 Qed.
 
 Lemma handler_tree_le_primitive_phases {A} n :
-  (forall t : ptree E MN A,
+  (∀ t : ptree E MN A,
     sem_le (handler_tree_approx n (SourceConfig t))
-      (handler_primitive_approx (2*n+1) (SourceConfig t))) /\
-  (forall X (active : ptree F MN X) (k : X -> ptree E MN A),
+      (handler_primitive_approx (2*n+1) (SourceConfig t))) ∧
+  (∀ X (active : ptree F MN X) (k : X → ptree E MN A),
     sem_le (handler_tree_approx n (HandlerConfig active k))
       (handler_primitive_approx (2*n+2) (HandlerConfig active k))).
 Proof.
   induction n as [|n [IHsource IHhandler]].
-  - assert (Hs : forall t : ptree E MN A,
+  - assert (Hs : ∀ t : ptree E MN A,
       sem_le (handler_tree_approx 0 (SourceConfig t))
         (handler_primitive_approx 1 (SourceConfig t))).
     { intro t. unfold handler_tree_approx. cbn [handler_config_tree].
@@ -140,7 +142,7 @@ Proof.
     + setoid_rewrite unfold_target. apply sem_zero_le.
     + setoid_rewrite unfold_target. apply sem_le_refl.
     + setoid_rewrite unfold_target. apply mixed_bind_le_k. intro x. apply sem_zero_le.
-  - assert (Hs : forall t : ptree E MN A,
+  - assert (Hs : ∀ t : ptree E MN A,
       sem_le (handler_tree_approx (S n) (SourceConfig t))
         (handler_primitive_approx (2*S n+1) (SourceConfig t))).
     { intro t. replace (2*S n+1) with (S (2*n+2)) by lia.
@@ -179,7 +181,7 @@ Context `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}.
 (** Same complete limits, not a conclusion obtained from observable
     equality implying approximation order (which is false in FreeOmega). *)
 Theorem handler_primitive_hitting_iff {A} (c : @handler_config E F MN A) out :
-  stable_hitting (handler_primitive_kernel handler) c out <->
+  stable_hitting (handler_primitive_kernel handler) c out ↔
   ptree_stable_hitting (MF := MF) (observe (handler_config_tree handler c)) out.
 Proof.
   unfold stable_hitting, ptree_stable_hitting, stable_hitting.

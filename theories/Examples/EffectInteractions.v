@@ -4,6 +4,8 @@
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 (** One actual ITree source, lowered probability, and interpreted State.
     Probability coefficients need not be total or fair. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From ITree.Core Require Import ITreeDefinition.
@@ -57,11 +59,11 @@ From ITree.Basics Require Import Basics Monad.
 From PTree.Core Require Import Fold IterationLaws.
 From PTree.Interp Require Import StateFold StateFoldFacts.
 
-Theorem count_sample_transformer_agreement {T : Type -> Type}
+Theorem count_sample_transformer_agreement {T : Type → Type}
     `{MT : Monad T} `{IT : MonadIter T} `{QT : Eq1 T}
     `{QE : @Eq1Equivalence T MT QT} `{ML : @MonadLawsE T QT MT}
     (Hunif : @iteration_uniform T MT IT QT)
-    (handle : forall X, void1 X -> T X) (sample : forall X, SubEnumQ X -> T X) mu n :
+    (handle : ∀ X, void1 X → T X) (sample : ∀ X, SubEnumQ X → T X) mu n :
   eq1 (fold_state handle sample (elaborate (count_sample mu)) n)
     (fold handle sample (run_state (elaborate (count_sample mu)) n)).
 Proof. apply fold_run_state. exact Hunif. Qed.

@@ -1,6 +1,8 @@
 (** Agreement with the existing interp-based Reader eliminator in an actual
     lawful ITree target. Administrative Tau is proved harmless, not removed
     from the PTree implementation. This is not a bare-MonadIter theorem. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import RelationClasses Morphisms.
 From Paco Require Import paco.
@@ -17,9 +19,9 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section ReaderFoldITree.
-Context {Env : Type} {E MN F : Type -> Type}.
-Variable handle : forall X, E X -> itree F X.
-Variable sample : forall X, MN X -> itree F X.
+Context {Env : Type} {E MN F : Type → Type}.
+Variable handle : ∀ X, E X → itree F X.
+Variable sample : ∀ X, MN X → itree F X.
 
 Lemma itree_reader_fold_observe {A} (t : ptree (readerE Env +' E) MN A) env :
   eq_itree eq (fold_reader handle sample t env)
@@ -27,7 +29,7 @@ Lemma itree_reader_fold_observe {A} (t : ptree (readerE Env +' E) MN A) env :
      | RetF a => ITreeDefinition.Ret a
      | TauF u => ITreeDefinition.Tau (fold_reader handle sample u env)
      | @VisF _ _ _ _ X e k => match e with
-         | inl1 re => match re in readerE _ X return (X -> _) -> _ with
+         | inl1 re => match re in readerE _ X return (X → _) → _ with
              | Ask => fun k => ITreeDefinition.Tau (fold_reader handle sample (k env) env)
              end k
          | inr1 fe => ITree.bind (@handle X fe)
@@ -78,7 +80,7 @@ Proof.
 Qed.
 
 Theorem itree_reader_fold_bind {A B} (t : ptree (readerE Env +' E) MN A)
-    (k : A -> ptree (readerE Env +' E) MN B) env :
+    (k : A → ptree (readerE Env +' E) MN B) env :
   eq_itree eq (fold_reader handle sample (PTree.bind t k) env)
     (ITree.bind (fold_reader handle sample t env) (fun a => fold_reader handle sample (k a) env)).
 Proof.

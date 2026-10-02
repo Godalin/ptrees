@@ -4,6 +4,8 @@
     See docs/CASE_STUDY_STANDARD.md. *)
 (** Real-weight sampling plus persistent visible interaction is a client of
     the same generic two-handler proof, not a backend-specific induction. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -12,8 +14,8 @@ From PTree Require Import PTree PTreeFacts.
 From PTree.Eq.Backend Require Import SubEnumR.
 Set Implicit Arguments.
 
-Variant sourceE : Type -> Type := Sample : sourceE bool.
-Variant targetE : Type -> Type := Emit : bool -> targetE unit.
+Variant sourceE : Type → Type := Sample : sourceE bool.
+Variant targetE : Type → Type := Emit : bool → targetE unit.
 
 Section RealClient.
 Variable R : realType.

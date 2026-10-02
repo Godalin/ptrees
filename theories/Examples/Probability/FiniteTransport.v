@@ -1,4 +1,6 @@
 (** Role: finite probability/coupling/backend example. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -48,12 +50,12 @@ Qed.
 (** The left true node MUST split its mass between two targets.  A
     deterministic map on the original two labels cannot implement this
     transport; the numbered-copy construction is genuinely used. *)
-Theorem forced_split_integer_joint : exists w : bool -> bool -> nat,
-  (forall x, \sum_y w x y = source x) /\
-  (forall y, \sum_x w x y = target y) /\
-  (forall x y, 0 < w x y -> edge x y) /\
-  w true true = 1 /\ w true false = 1 /\
-  w false true = 0 /\ w false false = 1.
+Theorem forced_split_integer_joint : ∃ w : bool → bool → nat,
+  (∀ x, \sum_y w x y = source x) ∧
+  (∀ y, \sum_x w x y = target y) ∧
+  (∀ x y, 0 < w x y → edge x y) ∧
+  w true true = 1 ∧ w true false = 1 ∧
+  w false true = 0 ∧ w false false = 1.
 Proof.
   have Htotal : \sum_x source x = \sum_y target y by rewrite !big_bool.
   destruct (finite_capacity_transport split_capacity_hall Htotal)
@@ -79,11 +81,11 @@ Proof.
   case: (true \in S); case: (false \in S); vm_compute; reflexivity.
 Qed.
 
-Theorem split_rational_joint : exists w : bool -> bool -> rat,
-  (forall x y, 0 <= w x y) /\
-  (forall x, \sum_y w x y = source_probability x) /\
-  (forall y, \sum_x w x y = target_probability y) /\
-  (forall x y, 0 < w x y -> edge x y).
+Theorem split_rational_joint : ∃ w : bool → bool → rat,
+  (∀ x y, 0 <= w x y) ∧
+  (∀ x, \sum_y w x y = source_probability x) ∧
+  (∀ y, \sum_x w x y = target_probability y) ∧
+  (∀ x y, 0 < w x y → edge x y).
 Proof.
   apply finite_rational_transport.
   - intros []; vm_compute; reflexivity.
@@ -115,7 +117,7 @@ Defined.
 
 (** The same forced-splitting problem now yields an actual native joint,
     not only an external matrix certificate. *)
-Theorem split_subenumQ_joint : exists joint : SubEnumQ (bool * bool),
+Theorem split_subenumQ_joint : ∃ joint : SubEnumQ (bool * bool),
   @semantic_coupling SubEnumQ SubEnumQ_SemanticMeasure bool bool
     (fun x y => edge x y) source_measure target_measure joint.
 Proof.
@@ -128,7 +130,7 @@ Qed.
 
 (** Having the same nonempty support on both sides is not a sufficient
     substitute for the quantitative Hall inequalities. *)
-Theorem identity_edges_fail_hall : ~ rational_hall source_probability target_probability eq_op.
+Theorem identity_edges_fail_hall : ¬ rational_hall source_probability target_probability eq_op.
 Proof.
   intro Hall. have H := Hall [set true].
   have Hneighbors : matching_neighbors (fun x y : bool => x == y) setT [set true] = [set true].
@@ -141,11 +143,11 @@ Qed.
 
 (** No inhabitedness of either copy space is smuggled into the
     construction: an empty source and zero target mass are allowed. *)
-Theorem zero_transport_empty_source : exists w : 'I_0 -> bool -> rat,
-  (forall x y, 0 <= w x y) /\
-  (forall x, \sum_y w x y = 0) /\
-  (forall y, \sum_x w x y = 0) /\
-  (forall x y, 0 < w x y -> false).
+Theorem zero_transport_empty_source : ∃ w : 'I_0 → bool → rat,
+  (∀ x y, 0 <= w x y) ∧
+  (∀ x, \sum_y w x y = 0) ∧
+  (∀ y, \sum_x w x y = 0) ∧
+  (∀ x y, 0 < w x y → false).
 Proof.
   apply (@finite_rational_transport
     (@Finite.Pack 'I_0 (Finite.on 'I_0))

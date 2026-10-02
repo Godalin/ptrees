@@ -1,5 +1,7 @@
 (** Checked native order theory. No recursive PTree frontier and no universe
     bypass: order compares returned-value events, not cemetery mass. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals
   boolp classical_sets functions fsbigop.
@@ -20,7 +22,7 @@ Local Notation M := (MathCompKernelMeasure R).
 
 Lemma mathcomp_native_sintegral_le {A} (mu nu : M A)
     (f : {nnsfun mc_carrier A >-> R}) :
-  mathcomp_node_le mu nu -> f MCBottom = 0%R ->
+  mathcomp_node_le mu nu → f MCBottom = 0%R →
   sintegral (mathcomp_kernel_root mu) f <=
   sintegral (mathcomp_kernel_root nu) f.
 Proof.
@@ -32,9 +34,9 @@ Proof.
 Qed.
 
 Lemma mathcomp_native_integral_le {A} (mu nu : M A)
-    (f : mc_carrier A -> \bar R) :
-  mathcomp_node_le mu nu ->
-  (forall x, 0 <= f x) -> f MCBottom = 0 ->
+    (f : mc_carrier A → \bar R) :
+  mathcomp_node_le mu nu →
+  (∀ x, 0 <= f x) → f MCBottom = 0 →
   \int[mathcomp_kernel_root mu]_x f x <=
   \int[mathcomp_kernel_root nu]_x f x.
 Proof.
@@ -48,8 +50,8 @@ Proof.
   by rewrite /patch mem_set // Hzero lee_fin.
 Qed.
 
-Lemma mathcomp_native_bind_le_mu {A B} (mu nu : M A) (k : A -> M B) :
-  mathcomp_node_le mu nu ->
+Lemma mathcomp_native_bind_le_mu {A B} (mu nu : M A) (k : A → M B) :
+  mathcomp_node_le mu nu →
   mathcomp_node_le (mathcomp_kernel_bind mu k) (mathcomp_kernel_bind nu k).
 Proof.
   move=> Hle U mU Hbot; rewrite !mathcomp_kernel_root_bind.
@@ -61,7 +63,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_native_le_antisym {A} (mu nu : M A) :
-  mathcomp_node_le mu nu -> mathcomp_node_le nu mu -> mathcomp_kernel_eq mu nu.
+  mathcomp_node_le mu nu → mathcomp_node_le nu mu → mathcomp_kernel_eq mu nu.
 Proof.
   move=> Hmn Hnm U mU Hb; apply/eqP.
   by rewrite eq_le (Hmn U mU Hb) (Hnm U mU Hb).
@@ -69,17 +71,17 @@ Qed.
 
 (** These characterize any supplied lub as an order-theoretic supremum.
     They do not supply a lub witness, even for an increasing chain. *)
-Lemma mathcomp_native_lub_upper {A} (chain : nat -> M A) out n :
-  mathcomp_kernel_lub chain out -> mathcomp_node_le (chain n) out.
+Lemma mathcomp_native_lub_upper {A} (chain : nat → M A) out n :
+  mathcomp_kernel_lub chain out → mathcomp_node_le (chain n) out.
 Proof.
   move=> H U mU Hb; rewrite (H U mU Hb).
   apply: ereal_sup_ge; exists (mathcomp_kernel_root (chain n) U); last exact: lexx.
   by exists n.
 Qed.
 
-Lemma mathcomp_native_lub_least {A} (chain : nat -> M A) out bound :
-  mathcomp_kernel_lub chain out ->
-  (forall n, mathcomp_node_le (chain n) bound) -> mathcomp_node_le out bound.
+Lemma mathcomp_native_lub_least {A} (chain : nat → M A) out bound :
+  mathcomp_kernel_lub chain out →
+  (∀ n, mathcomp_node_le (chain n) bound) → mathcomp_node_le out bound.
 Proof.
   move=> Hlim Hbound U mU Hb; rewrite (Hlim U mU Hb).
   apply: ub_ereal_sup => _ [n _ <-]; exact (Hbound n U mU Hb).

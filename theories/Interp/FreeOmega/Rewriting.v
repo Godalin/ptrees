@@ -2,6 +2,8 @@
     These are registrations of generic congruence proofs, not new proofs or
     native-backend copies. Import [FreeOmegaRewriting] to enable them.
     Merely loading this file does not register the instances globally. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms.
@@ -17,7 +19,7 @@ Unset Strict Implicit.
 
 Module FreeOmegaRewriting.
 Section Completion.
-Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
+Context {MN : Type → Type} `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -48,7 +50,7 @@ Local Notation W := (peutt (FI := FI) (MX := FreeOmegaMixedMeasure)
     free_omega_relational_zero free_omega_relational_lub.
 
 #[export] Instance free_omega_interp_Proper {E F A}
-    (h : forall X, E X -> ptree F MN X) :
+    (h : ∀ X, E X → ptree F MN X) :
   Proper (W eq ==> W eq) (@PTree.interp E F MN h A) :=
   peutt_interp_Proper free_omega_relational_zero free_omega_relational_lub h.
 

@@ -1,4 +1,6 @@
 (** Explicit native Q-to-R bridge. No FreeOmega or external model is needed. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -24,11 +26,11 @@ Lemma real_of_enumQ_expect {A} (mu : EnumQ A) f :
 Proof. reflexivity. Qed.
 
 Lemma rational_scalar_monotone (x y : rat) :
-  x <= y -> (ratr x : R) <= ratr y.
+  x <= y → (ratr x : R) <= ratr y.
 Proof. by rewrite ler_rat. Qed.
 Definition subenumQ_to_R {A} (mu : SubEnumQ A) : SubEnumR R A :=
   finite_subdist_map_weights rational_scalar_monotone mu.
-Theorem subenumQ_to_R_expect {A} (mu : SubEnumQ A) (f : A -> R) :
+Theorem subenumQ_to_R_expect {A} (mu : SubEnumQ A) (f : A → R) :
   subenumR_expect (subenumQ_to_R mu) f = enumQ_real_expect f (subenumQ_raw mu).
 Proof. exact: real_of_enumQ_expect. Qed.
 Theorem subenumQ_to_R_ret {A} (x : A) :
@@ -42,7 +44,7 @@ Qed.
 Theorem subenumQ_to_R_zero {A} :
   subenumR_eq (subenumQ_to_R (@subenumQ_zero A)) (subenumR_zero R).
 Proof. intro f; reflexivity. Qed.
-Theorem subenumQ_to_R_bind {A B} (mu : SubEnumQ A) (k : A -> SubEnumQ B) :
+Theorem subenumQ_to_R_bind {A B} (mu : SubEnumQ A) (k : A → SubEnumQ B) :
   subenumR_eq (subenumQ_to_R (subenumQ_bind mu k))
     (subenumR_bind (subenumQ_to_R mu) (fun x => subenumQ_to_R (k x))).
 Proof.

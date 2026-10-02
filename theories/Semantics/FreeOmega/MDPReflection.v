@@ -1,6 +1,8 @@
 (** Canonical completion specialization of generic MDP reflection. The
     optional native joint-realization law, NOT the choice of SubEnumQ,
     discharges the mapped-lifting reflection obligation. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
@@ -14,7 +16,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section Reflection.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI} `{NO : @SemanticOmega MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -28,7 +30,7 @@ Variable D : MDP MN.
 Local Notation E := (mdpE (mdp_observations D) (mdp_actions D)).
 
 Theorem free_mdp_peutt_iff s t :
-  mdp_bisim (D := D) s t <->
+  mdp_bisim (D := D) s t ↔
   @peutt E MN MF FI FC FreeOmegaMixedMeasure FO unit unit eq
     (mdp_encode s) (mdp_encode t).
 Proof.
@@ -38,7 +40,7 @@ Proof.
 Qed.
 
 Theorem free_mdp_head_bisim_iff s t :
-  mdp_bisim (D := D) s t <->
+  mdp_bisim (D := D) s t ↔
   @head_bisim E MN MF FI FC FreeOmegaMixedMeasure FO unit unit eq
     (mdp_encode_head s) (mdp_encode_head t).
 Proof.

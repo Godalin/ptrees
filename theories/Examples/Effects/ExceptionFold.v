@@ -1,6 +1,8 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
 (** Actual ITree target, inherited transformer laws, and recursive interaction.
     Nothing here assumes a total sampler or a probability interpretation. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From ExtLib.Data.Monads Require Import EitherMonad.
@@ -19,9 +21,9 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section ITreeTarget.
-Context {Err : Type} {E MN F : Type -> Type}.
-Variable handle : forall X, E X -> itree F X.
-Variable sample : forall X, MN X -> itree F X.
+Context {Err : Type} {E MN F : Type → Type}.
+Variable handle : ∀ X, E X → itree F X.
+Variable sample : ∀ X, MN X → itree F X.
 
 Example exception_target_monad :
   @MonadLawsE (eitherT Err (itree F)) (@exceptT_eq1 Err (itree F) Eq1_ITree)
@@ -50,7 +52,7 @@ Proof.
 Qed.
 
 Example exception_probability_fold {A X} (mu : MN X)
-    (k : X -> ptree (exceptE Err +' E) MN A) :
+    (k : X → ptree (exceptE Err +' E) MN A) :
   eutt eq (fold_exception handle sample (Prob mu k))
     (ITree.bind (@sample X mu) (fun x => fold_exception handle sample (k x))).
 Proof.
@@ -74,13 +76,13 @@ Proof.
 Qed.
 End ITreeTarget.
 
-Variant requestE : Type -> Type := Request : requestE bool.
+Variant requestE : Type → Type := Request : requestE bool.
 
 Section InfiniteInteraction.
-Context {MN F : Type -> Type}.
+Context {MN F : Type → Type}.
 Variable mu : MN bool.
-Variable sample : forall X, MN X -> itree F X.
-Variable handle : forall X, requestE X -> itree F X.
+Variable sample : ∀ X, MN X → itree F X.
+Variable handle : ∀ X, requestE X → itree F X.
 
 CoFixpoint retry_or_throw : ptree (exceptE nat +' requestE) MN bool :=
   Vis (inr1 Request) (fun continue : bool =>
@@ -97,8 +99,8 @@ End InfiniteInteraction.
 Section HighCarrier.
 Universe high.
 Constraint Set < high.
-Context {A : Type@{high}} {MN F : Type -> Type}.
-Variable sample : forall X, MN X -> itree F X.
+Context {A : Type@{high}} {MN F : Type → Type}.
+Variable sample : ∀ X, MN X → itree F X.
 Definition no_event X (e : void1 X) : itree F X := match e with end.
 Example high_exception_square (t : ptree (exceptE nat +' void1) MN A) :
   eutt eq (fold_exception (@no_event) sample t)

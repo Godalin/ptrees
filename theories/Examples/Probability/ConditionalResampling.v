@@ -1,4 +1,6 @@
 (** Role: finite probability/coupling/backend example. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -27,10 +29,10 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure
 (** A split-weight representation is a legitimate input marginal, not
     necessarily the literal list produced by mapping the witness joint. *)
 Example split_coin_conditionals :
-  exists joint conditional,
-    semantic_coupling eq subenumQ_fair_split subenumQ_fair joint /\
-    sem_eq (subenumQ_bind subenumQ_fair_split conditional) joint /\
-    (forall a, sem_ae (conditional a) (fun p => fst p = a /\ a = snd p)) /\
+  ∃ joint conditional,
+    semantic_coupling eq subenumQ_fair_split subenumQ_fair joint ∧
+    sem_eq (subenumQ_bind subenumQ_fair_split conditional) joint ∧
+    (∀ a, sem_ae (conditional a) (fun p => fst p = a ∧ a = snd p)) ∧
     sem_ae subenumQ_fair_split (fun a => subenumQ_total (conditional a)).
 Proof.
   apply subenumQ_coupling_disintegration.
@@ -42,17 +44,17 @@ Qed.
     paired states/heads needed by residual-compression proofs.  Native
     samples remain bool pairs; they never have to contain a PTree. *)
 Section PairedTreeState.
-Context {E : Type -> Type} {A B : Type}.
+Context {E : Type → Type} {A B : Type}.
 Local Notation Pair := (ptree E SubEnumQ A * ptree E SubEnumQ B)%type.
 Local Notation Heads := (stable_head E SubEnumQ A * stable_head E SubEnumQ B)%type.
-Variable joint : Pair -> SubEnumQ (bool * bool).
-Variable marginal : Pair -> SubEnumQ bool.
-Variable next : Pair -> bool * bool -> MF (stable_target Pair Heads).
-Hypothesis Hgraph : forall s, sem_lift (fun p x => fst p = x) (joint s) (marginal s).
+Variable joint : Pair → SubEnumQ (bool * bool).
+Variable marginal : Pair → SubEnumQ bool.
+Variable next : Pair → bool * bool → MF (stable_target Pair Heads).
+Hypothesis Hgraph : ∀ s, sem_lift (fun p x => fst p = x) (joint s) (marginal s).
 
 Example paired_tree_state_resampling :
-  exists conditional : Pair -> bool -> SubEnumQ (bool * bool),
-    forall s, free_omega_qlift eq
+  ∃ conditional : Pair → bool → SubEnumQ (bool * bool),
+    ∀ s, free_omega_qlift eq
       (FOSample (marginal s) (fun a => FOSample (conditional s a) (next s)))
       (FOSample (joint s) (next s)).
 Proof.
@@ -65,8 +67,8 @@ End PairedTreeState.
 
 (** The continuation can return a higher-universe PTree.  Accidentally
     forcing semantic states into the native carrier would reject this. *)
-Example tree_continuation_resampling {E : Type -> Type} {R : Type}
-    (k : bool * bool -> MF (ptree E SubEnumQ R)) :
+Example tree_continuation_resampling {E : Type → Type} {R : Type}
+    (k : bool * bool → MF (ptree E SubEnumQ R)) :
   free_omega_qlift eq
     (FOSample (subenumQ_first_marginal latent_coin)
       (fun a => FOSample (subenumQ_fiber_kernel latent_coin a) k))
@@ -105,9 +107,9 @@ Qed.
 
 Example unbounded_retry_resampling n out1 out2 :
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega nat bool
-    retry_direct_kernel n out1 ->
+    retry_direct_kernel n out1 →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega nat bool
-    retry_conditional_kernel n out2 ->
+    retry_conditional_kernel n out2 →
   free_omega_qlift eq out1 out2.
 Proof.
   intros Hleft Hright.

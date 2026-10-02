@@ -1,4 +1,6 @@
 (** Role: Interpreter compositionality. Depends on equational theory (and comparison semantics for Atomic/MDP); not primitive syntax. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -18,14 +20,14 @@ Unset Printing Implicit Defensive.
 (** Canonical completion specializations of the generic guarded theory.
     These keep the established native capability contract; no proof is copied. *)
 Section GuardedInterp.
-Context {E F MN : Type -> Type}
+Context {E F MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI} `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NC := NC) (NO := NO)).
 Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
-Variable handler : forall X, E X -> ptree F MN X.
+Variable handler : ∀ X, E X → ptree F MN X.
 
 Definition guarded_handler : Prop :=
   @Guarded.guarded_handler E F MN MF FI FreeOmegaMixedMeasure FO handler.
@@ -36,20 +38,20 @@ Context `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
 (** A convenient complete witness suffices; the public contract holds for
     every representative, by uniqueness and coupling support transport. *)
 Lemma guarded_handler_of_hitting
-    (H : forall X (e : E X), exists out,
+    (H : ∀ X (e : E X), ∃ out,
       @ptree_stable_hitting F MN MF FI FreeOmegaMixedMeasure FO X
-        (observe (handler e)) out /\
+        (observe (handler e)) out ∧
       @sem_ae MF FI _ out stable_head_is_visible) : guarded_handler.
 Proof. apply Guarded.guarded_handler_of_hitting. exact H. Qed.
 
-Theorem guarded_handler_vis_fusion {A B} (RR : A -> B -> Prop)
+Theorem guarded_handler_vis_fusion {A B} (RR : A → B → Prop)
     (Hguard : guarded_handler) :
   interp_vis_fusion (NI := NI) (NO := NO) RR handler.
 Proof. apply Guarded.guarded_handler_vis_fusion. exact Hguard. Qed.
 
-Theorem peutt_interp_guarded {A B} (RR : A -> B -> Prop)
+Theorem peutt_interp_guarded {A B} (RR : A → B → Prop)
     (Hguard : guarded_handler) (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  @peutt E MN MF FI FC FreeOmegaMixedMeasure FO A B RR t1 t2 ->
+  @peutt E MN MF FI FC FreeOmegaMixedMeasure FO A B RR t1 t2 →
   @peutt F MN MF FI FC FreeOmegaMixedMeasure FO A B RR
     (PTree.interp handler t1) (PTree.interp handler t2).
 Proof. apply Guarded.peutt_interp_guarded. exact Hguard. Qed.

@@ -1,5 +1,7 @@
 (** State updates do not commute past events. They are carried in machine
     configurations, while only finite internal Tau/Prob segments accelerate. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms RelationClasses Lia.
 From ITree.Events Require Import State.
@@ -12,7 +14,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Scheduling.
-Context {St : Type} {E MN MF : Type -> Type}
+Context {St : Type} {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
   `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
@@ -28,11 +30,11 @@ Proof. apply BindScheduling.mixed_equiv_Proper. exact (@mixed_bind_le_k MN MF FI
 Local Notation hit_unfold := (fun G => @BindScheduling.hitting_unfold G MN MF FI MX FO Ord
   (@sem_bind_ret_order MF FI FO BO) (@mixed_bind_assoc_order MN MF FI MX FO MO)
   (@mixed_bind_le_k MN MF FI MX FO MO)).
-Local Lemma ret_equiv A B (x : A) (k : A -> MF B) : equiv (sem_bind (sem_ret x) k) (k x).
+Local Lemma ret_equiv A B (x : A) (k : A → MF B) : equiv (sem_bind (sem_ret x) k) (k x).
 Proof. apply sem_bind_ret_order. Qed.
-Local Lemma zero_equiv A B (k : A -> MF B) : equiv (sem_bind sem_zero k) sem_zero.
+Local Lemma zero_equiv A B (k : A → MF B) : equiv (sem_bind sem_zero k) sem_zero.
 Proof. split; [apply sem_bind_zero_order|apply sem_zero_le]. Qed.
-Local Lemma mixed_assoc A B C (mu : MN A) (k : A -> MF B) (h : B -> MF C) :
+Local Lemma mixed_assoc A B C (mu : MN A) (k : A → MF B) (h : B → MF C) :
   equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
@@ -101,8 +103,8 @@ Proof.
 Qed.
 
 Lemma state_phase_split_le_primitive {A} j n m bound
-    (Hpost : forall c : cfg A, sem_le (state_phase_after n m c) (state_primitive_approx bound c)) :
-  forall c : cfg A, sem_le (state_phase_split j n m c) (state_primitive_approx (j+bound+1) c).
+    (Hpost : ∀ c : cfg A, sem_le (state_phase_after n m c) (state_primitive_approx bound c)) :
+  ∀ c : cfg A, sem_le (state_phase_split j n m c) (state_primitive_approx (j+bound+1) c).
 Proof.
   induction j as [|j IH]; intros [s t];
     replace (0+bound+1) with (S bound) by lia;
@@ -138,7 +140,7 @@ Proof.
     apply state_phase_split_le_primitive. exact IH.
 Qed.
 
-Lemma state_primitive_le_phase_split {A} n m : n <= m -> forall c : cfg A,
+Lemma state_primitive_le_phase_split {A} n m : n <= m → ∀ c : cfg A,
   sem_le (state_primitive_approx n c) (state_phase_split n n m c).
 Proof.
   induction n as [|n IH]; intro Hnm; intros [s t];
@@ -205,7 +207,7 @@ Proof.
 Qed.
 
 Theorem state_machine_hitting_sound {A} (c : cfg A) out :
-  stable_hitting state_machine_kernel c out ->
+  stable_hitting state_machine_kernel c out →
   ptree_stable_hitting (MF := MF) (observe (run_state (snd c) (fst c))) out.
 Proof.
   intro H. assert (Hdiag : sem_lub (fun n => state_phase_grid n n c) out).
@@ -217,7 +219,7 @@ Proof.
     - intro n. apply state_phase_grid_row_lub.
     - exact H. }
   assert (Hphysical : stable_hitting state_primitive_kernel c out).
-  { assert (HC : sem_lub (fun n => state_phase_grid n n c) out <->
+  { assert (HC : sem_lub (fun n => state_phase_grid n n c) out ↔
         stable_hitting state_primitive_kernel c out).
     { unfold stable_hitting. apply sem_lub_cofinal.
       - apply state_phase_diagonal_increasing.
@@ -227,7 +229,7 @@ Proof.
         apply state_primitive_le_phase_split. lia. }
     exact (proj1 HC Hdiag). }
   unfold ptree_stable_hitting, stable_hitting in *.
-  assert (HC : sem_lub (fun n => state_primitive_approx n c) out <->
+  assert (HC : sem_lub (fun n => state_primitive_approx n c) out ↔
       sem_lub (fun n => ptree_hitting_approx (MF := MF) n
         (observe (run_state (snd c) (fst c)))) out).
   { apply sem_lub_cofinal.

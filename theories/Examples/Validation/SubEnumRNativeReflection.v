@@ -2,6 +2,8 @@
 (** Explicit validation clients, not a new mainline backend instance.
     Native reflection retains the entire original sampling distribution;
     the generic MDP proof is consumed, never copied. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -37,9 +39,9 @@ Fail Definition no_automatic_validation_instance :
   @FreeOmegaNativeCouplingLaws MN NI NO := _.
 
 Example mapped_native_reflection {X Y A B} (mu : MN X) (nu : MN Y)
-    (f : X -> A) (g : Y -> B) (T : A -> B -> Prop) :
+    (f : X → A) (g : Y → B) (T : A → B → Prop) :
   free_omega_qlift T (FOSample mu (fun x => FORet (f x)))
-    (FOSample nu (fun y => FORet (g y))) ->
+    (FOSample nu (fun y => FORet (g y))) →
   sem_lift (fun x y => T (f x) (g y)) mu nu.
 Proof.
   exact (@free_omega_sampled_heads_reflect MN NI
@@ -50,7 +52,7 @@ Qed.
 (** A noninjective decoder erases both hidden bits, but the returned joint
     must retain the original partial/duplicate native marginals. *)
 Example duplicate_partial_decoded_joint :
-  exists joint : MN (bool * bool),
+  ∃ joint : MN (bool * bool),
     @semantic_coupling MN NI bool bool (fun _ _ => tt = tt)
       (duplicated_half R) (subenumR_map negb (duplicated_half R)) joint.
 Proof.
@@ -66,7 +68,7 @@ Proof.
   intros x y _; apply FOQLStructural, FOLRet; reflexivity.
 Qed.
 
-Example empty_native_joint : exists joint : MN (Empty_set * bool),
+Example empty_native_joint : ∃ joint : MN (Empty_set * bool),
   @semantic_coupling MN NI Empty_set bool (fun _ _ => False)
     (subenumR_zero R) (subenumR_zero R) joint.
 Proof.
@@ -83,12 +85,12 @@ Variable D : MDP MN.
 Local Notation E := (mdpE (mdp_observations D) (mdp_actions D)).
 
 Example validated_mdp_peutt_iff s t :
-  mdp_bisim (D := D) s t <->
+  mdp_bisim (D := D) s t ↔
   @peutt E MN MF FI FC FreeOmegaMixedMeasure FO unit unit eq (mdp_encode s) (mdp_encode t).
 Proof. exact (free_mdp_peutt_iff (NJ := subenumR_validated_native_coupling R) (D := D) s t). Qed.
 
 Example validated_mdp_head_bisim_iff s t :
-  mdp_bisim (D := D) s t <->
+  mdp_bisim (D := D) s t ↔
   @head_bisim E MN MF FI FC FreeOmegaMixedMeasure FO unit unit eq
     (mdp_encode_head s) (mdp_encode_head t).
 Proof. exact (free_mdp_head_bisim_iff (NJ := subenumR_validated_native_coupling R) (D := D) s t). Qed.
@@ -116,7 +118,7 @@ Proof.
 Qed.
 
 Example validated_mdp_trans_bisim_iff s t :
-  mdp_bisim (D := D) s t <->
+  mdp_bisim (D := D) s t ↔
   @trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO unit unit eq
     (mdp_encode s) (mdp_encode t).
 Proof.
@@ -130,7 +132,7 @@ Section LargeDecodedValues.
 Universe u v.
 Variable R : realType.
 Example type_valued_native_joint (A : Type@{u}) (B : Type@{v}) :
-  exists joint : SubEnumR R (unit * unit),
+  ∃ joint : SubEnumR R (unit * unit),
     @semantic_coupling (SubEnumR R) (SubEnumR_SemanticMeasure R) unit unit
       (fun _ _ => True) (subenumR_ret R tt) (subenumR_ret R tt) joint.
 Proof.

@@ -1,4 +1,6 @@
 (** Role: Interpreter compositionality. Depends on equational theory (and comparison semantics for Atomic/MDP); not primitive syntax. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -16,7 +18,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section AtomicInterp.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{FK : @SemanticMeasureAEKleisliLaws MF FI}
@@ -33,14 +35,14 @@ Context {E MN MF : Type -> Type}
   `{FOAE : @SemanticOmegaAELaws MF FI FO}.
 (** Ordinary probability laws, explicit local premises rather than new
     classes. Neither premise mentions trees or interpretation. *)
-Hypothesis Hret : forall A (mu : MF A), sem_eq (sem_bind mu sem_ret) mu.
-Hypothesis Hlimit : forall A (c : nat -> MF A) mu nu,
-  sem_eq mu nu -> sem_lub c mu -> sem_lub c nu.
+Hypothesis Hret : ∀ A (mu : MF A), sem_eq (sem_bind mu sem_ret) mu.
+Hypothesis Hlimit : ∀ A (c : nat → MF A) mu nu,
+  sem_eq mu nu → sem_lub c mu → sem_lub c nu.
 Local Notation hits t out := (@ptree_stable_hitting E MN MF FI MX FO _ (observe t) out).
 Local Lemma hits_proper {A} (t : ptree E MN A) mu nu :
-  sem_eq mu nu -> hits t mu -> hits t nu.
+  sem_eq mu nu → hits t mu → hits t nu.
 Proof. apply Hlimit. Qed.
-Variable handler : forall X, E X -> ptree E MN X.
+Variable handler : ∀ X, E X → ptree E MN X.
 
 (** An explicit semantic certificate, not a typeclass or a necessary
     characterization. This first profile preserves response values and
@@ -48,14 +50,14 @@ Variable handler : forall X, E X -> ptree E MN X.
     have complete Dirac behavior; no finite-fuel or syntactic constraint
     is imposed. In particular a second visible interaction is excluded. *)
 Record atomic_handler := {
-  atomic_rename : forall X, E X -> E X;
-  atomic_unrename : forall X, E X -> E X;
-  atomic_unrename_rename : forall X (e : E X), atomic_unrename (atomic_rename e) = e;
-  atomic_rename_unrename : forall X (e : E X), atomic_rename (atomic_unrename e) = e;
-  atomic_cont : forall X, E X -> X -> ptree E MN X;
-  atomic_start : forall X (e : E X),
+  atomic_rename : ∀ X, E X → E X;
+  atomic_unrename : ∀ X, E X → E X;
+  atomic_unrename_rename : ∀ X (e : E X), atomic_unrename (atomic_rename e) = e;
+  atomic_rename_unrename : ∀ X (e : E X), atomic_rename (atomic_unrename e) = e;
+  atomic_cont : ∀ X, E X → X → ptree E MN X;
+  atomic_start : ∀ X (e : E X),
     hits (handler e) (sem_ret (FHVis (atomic_rename e) (atomic_cont e)));
-  atomic_finish : forall X (e : E X) x,
+  atomic_finish : ∀ X (e : E X) x,
     hits (atomic_cont e x) (sem_ret (FHRet x))
 }.
 
@@ -120,7 +122,7 @@ Proof.
 Qed.
 
 Lemma atomic_interp_hitting (t : tree) mu :
-  hits t mu -> hits (PTree.interp handler t) (atomic_map mu).
+  hits t mu → hits (PTree.interp handler t) (atomic_map mu).
 Proof.
   intro Hhit. eapply (ptree_stable_hitting_interp (FI := FI) (FO := FO)).
   - apply Scheduling.ptree_interp_cofinal_all.
@@ -129,10 +131,10 @@ Proof.
 Qed.
 
 Lemma atomic_finish_bind_of_ret_l
-    (Hret_l : forall A B (x : A) (k : A -> MF B),
+    (Hret_l : ∀ A B (x : A) (k : A → MF B),
       sem_eq (sem_bind (sem_ret x) k) (k x))
-    {X} (e : E X) x (k : X -> tree) mu :
-  hits (k x) mu -> hits (PTree.bind (atomic_cont atom e x) k) mu.
+    {X} (e : E X) x (k : X → tree) mu :
+  hits (k x) mu → hits (PTree.bind (atomic_cont atom e x) k) mu.
 Proof.
   intro Hhit.
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO) k) as [front Hfront].
@@ -144,14 +146,14 @@ Proof.
       [apply Preservation.bind_cofinal_all|apply atomic_finish|exact Hfront].
 Qed.
 
-Lemma atomic_finish_bind {X} (e : E X) x (k : X -> tree) mu :
-  hits (k x) mu -> hits (PTree.bind (atomic_cont atom e x) k) mu.
+Lemma atomic_finish_bind {X} (e : E X) x (k : X → tree) mu :
+  hits (k x) mu → hits (PTree.bind (atomic_cont atom e x) k) mu.
 Proof. exact (atomic_finish_bind_of_ret_l (@sem_bind_ret_l MF FI FB) e (x := x) (k := k) (mu := mu)). Qed.
 
 (** This normalization relation mentions complete hitting only, never a
     preservation theorem. It also covers the selected successor heads. *)
 Definition atomic_normalizes (target source : tree) : Prop :=
-  exists mu, hits source mu /\ hits target (atomic_map mu).
+  ∃ mu, hits source mu ∧ hits target (atomic_map mu).
 
 Lemma atomic_normalizes_interp t : atomic_normalizes (PTree.interp handler t) t.
 Proof.
@@ -172,7 +174,7 @@ Proof.
 Qed.
 
 Lemma atomic_normalizes_heads target source mu nu :
-  atomic_normalizes target source -> hits source mu -> hits target nu ->
+  atomic_normalizes target source → hits source mu → hits target nu →
   @sem_lift MF FI _ _ atomic_head_graph mu nu.
 Proof.
   intros [front [Hs Ht]] Hmu Hnu.
@@ -187,12 +189,12 @@ Definition atomic_unhead (h : head) : head :=
   match h with FHRet r => FHRet r |
     @FHVis _ _ _ X e k => FHVis (atomic_unrename atom e) k end.
 
-Lemma atomic_unhead_enabled h label : head_enabled h label ->
+Lemma atomic_unhead_enabled h label : head_enabled h label →
   head_enabled (atomic_unhead h) (atomic_unlabel label).
 Proof. intro H. destruct H. constructor. Qed.
 
 Lemma atomic_enabled h label :
-  head_enabled (atomic_head h) (atomic_label label) -> head_enabled h label.
+  head_enabled (atomic_head h) (atomic_label label) → head_enabled h label.
 Proof.
   intro H. pose proof (atomic_unhead_enabled H) as Hb.
   rewrite atomic_unlabel_label in Hb.
@@ -202,7 +204,7 @@ Proof.
 Qed.
 
 Lemma atomic_action_result h label out :
-  @head_action_result E MN MF FI MX FO R label h out ->
+  @head_action_result E MN MF FI MX FO R label h out →
   @head_action_result E MN MF FI MX FO R
     (atomic_label label) (atomic_head h) (atomic_map out).
 Proof.
@@ -216,9 +218,9 @@ Proof.
 Qed.
 
 Lemma atomic_action_lift h label mu nu :
-  @head_action_result E MN MF FI MX FO R label h mu ->
+  @head_action_result E MN MF FI MX FO R label h mu →
   @head_action_result E MN MF FI MX FO R
-    (atomic_label label) (atomic_head h) nu ->
+    (atomic_label label) (atomic_head h) nu →
   @sem_lift MF FI _ _ atomic_head_graph mu nu.
 Proof.
   intros Hmu Hnu. eapply (sem_lift_proper_r (SI := FI)); [|apply atomic_map_lift].
@@ -226,9 +228,9 @@ Proof.
 Qed.
 
 Lemma atomic_normalizes_trans target source label mu nu :
-  atomic_normalizes target source ->
-  @trans E MN MF FI MX FO R source label mu ->
-  @trans E MN MF FI MX FO R target (atomic_label label) nu ->
+  atomic_normalizes target source →
+  @trans E MN MF FI MX FO R source label mu →
+  @trans E MN MF FI MX FO R target (atomic_label label) nu →
   @sem_lift MF FI _ _ atomic_head_graph mu nu.
 Proof.
   intros Hnorm [fs [ks [Hs [Haes Hos]]]] [ft [kt [Ht [Haet Hot]]]].
@@ -240,13 +242,13 @@ Proof.
   intros h k [-> [Hleft Hright]]. eapply atomic_action_lift; eassumption.
 Qed.
 
-Lemma atomic_normalizes_projects {O1 O2} (OR : O1 -> O2 -> Prop)
-    (p1 : head -> MF O1) (p2 : head -> MF O2)
-    (Hp : forall h, @sem_lift MF FI _ _ OR (p1 h) (p2 (atomic_head h)))
+Lemma atomic_normalizes_projects {O1 O2} (OR : O1 → O2 → Prop)
+    (p1 : head → MF O1) (p2 : head → MF O2)
+    (Hp : ∀ h, @sem_lift MF FI _ _ OR (p1 h) (p2 (atomic_head h)))
     target source mu nu :
-  atomic_normalizes target source ->
-  @tree_head_observation E MN MF FI MX FO R _ p1 source mu ->
-  @tree_head_observation E MN MF FI MX FO R _ p2 target nu ->
+  atomic_normalizes target source →
+  @tree_head_observation E MN MF FI MX FO R _ p1 source mu →
+  @tree_head_observation E MN MF FI MX FO R _ p2 target nu →
   @sem_lift MF FI _ _ OR mu nu.
 Proof.
   intros Hnorm [fs [Hs Hos]] [ft [Ht Hot]].
@@ -257,9 +259,9 @@ Proof.
 Qed.
 
 Lemma atomic_normalizes_returns target source mu nu :
-  atomic_normalizes target source ->
-  @tree_return_observation E MN MF FI MX FO R source mu ->
-  @tree_return_observation E MN MF FI MX FO R target nu ->
+  atomic_normalizes target source →
+  @tree_return_observation E MN MF FI MX FO R source mu →
+  @tree_return_observation E MN MF FI MX FO R target nu →
   @sem_lift MF FI _ _ (fun r s => s = r) mu nu.
 Proof.
   eapply atomic_normalizes_projects. intros [r|X e k].
@@ -268,9 +270,9 @@ Proof.
 Qed.
 
 Lemma atomic_normalizes_offers target source mu nu :
-  atomic_normalizes target source ->
-  @tree_offered_event_observation E MN MF FI MX FO R source mu ->
-  @tree_offered_event_observation E MN MF FI MX FO R target nu ->
+  atomic_normalizes target source →
+  @tree_offered_event_observation E MN MF FI MX FO R source mu →
+  @tree_offered_event_observation E MN MF FI MX FO R target nu →
   @sem_lift MF FI _ _ (fun e f => f = atomic_offer e) mu nu.
 Proof.
   eapply atomic_normalizes_projects. intros [r|X e k].
@@ -280,12 +282,12 @@ Qed.
 
 (** Push a source coupling across two graph couplings. This is ordinary
     coupling composition, not a whole-continuation comparison. *)
-Lemma atomic_couple {A B} (f : A -> B) (AR : A -> A -> Prop) (BR : B -> B -> Prop)
+Lemma atomic_couple {A B} (f : A → B) (AR : A → A → Prop) (BR : B → B → Prop)
     s1 s2 t1 t2 :
-  @sem_lift MF FI _ _ (fun a b => b = f a) s1 t1 ->
-  @sem_lift MF FI _ _ AR s1 s2 ->
-  @sem_lift MF FI _ _ (fun a b => b = f a) s2 t2 ->
-  (forall a b, AR a b -> BR (f a) (f b)) -> @sem_lift MF FI _ _ BR t1 t2.
+  @sem_lift MF FI _ _ (fun a b => b = f a) s1 t1 →
+  @sem_lift MF FI _ _ AR s1 s2 →
+  @sem_lift MF FI _ _ (fun a b => b = f a) s2 t2 →
+  (∀ a b, AR a b → BR (f a) (f b)) → @sem_lift MF FI _ _ BR t1 t2.
 Proof.
   intros H1 Hmid H2 Hrel.
   pose proof (sem_lift_comp Hmid H2) as Hright.
@@ -294,9 +296,9 @@ Proof.
   intros a b [x [-> [y [Hxy ->]]]]. apply Hrel. exact Hxy.
 Qed.
 
-Local Lemma atomic_match {A} (AR : A -> A -> Prop) (L U : MF A -> Prop) :
-  (exists mu, L mu) -> (exists nu, U nu) ->
-  (forall mu nu, L mu -> U nu -> @sem_lift MF FI _ _ AR mu nu) ->
+Local Lemma atomic_match {A} (AR : A → A → Prop) (L U : MF A → Prop) :
+  (∃ mu, L mu) → (∃ nu, U nu) →
+  (∀ mu nu, L mu → U nu → @sem_lift MF FI _ _ AR mu nu) →
   @tree_measure_match MF FI A A AR L U.
 Proof.
   intros [mu Hmu] [nu Hnu] Hlift. split.
@@ -304,13 +306,13 @@ Proof.
   - intros q Hq. exists mu. split; [exact Hmu|apply Hlift; assumption].
 Qed.
 
-Variable RR : R -> R -> Prop.
+Variable RR : R → R → Prop.
 Local Notation TB := (@trans_bisim E MN MF FI FC MX FO R R RR).
 
 Definition atomic_candidate (t u : tree) : Prop :=
-  exists s v, atomic_normalizes t s /\ atomic_normalizes u v /\ TB s v.
+  ∃ s v, atomic_normalizes t s ∧ atomic_normalizes u v ∧ TB s v.
 
-Lemma atomic_candidate_postfixed t u : atomic_candidate t u ->
+Lemma atomic_candidate_postfixed t u : atomic_candidate t u →
   @trans_bisimF E MN MF FI MX FO R R RR atomic_candidate t u.
 Proof.
   intros [s [v [Hts [Huv Hsv]]]]. split.
@@ -359,7 +361,7 @@ Proof.
 Qed.
 
 Theorem trans_bisim_interp_atomic (t u : tree) :
-  TB t u -> TB (PTree.interp handler t) (PTree.interp handler u).
+  TB t u → TB (PTree.interp handler t) (PTree.interp handler u).
 Proof.
   intro Htu. eapply trans_bisim_coinduction with (sim := atomic_candidate).
   - exact atomic_candidate_postfixed.

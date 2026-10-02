@@ -2,6 +2,8 @@
     The compiler uses numerators/denominators directly, not classical choice.
     Missing mass occupies its own tickets; it is never resampled. This first
     correctness-oriented implementation materializes tickets. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -23,7 +25,7 @@ Definition ticket_num (p : rat) : nat := `|numq p|%N.
 Lemma ticket_den_positive p : (0 < ticket_den p)%N.
 Proof. by rewrite /ticket_den absz_gt0 denq_neq0. Qed.
 
-Lemma ticket_coefficient p : 0 <= p ->
+Lemma ticket_coefficient p : 0 <= p →
   p * (ticket_den p)%:R = (ticket_num p)%:R.
 Proof.
   rewrite /ticket_den /ticket_num.
@@ -35,10 +37,10 @@ Proof.
     have Hbad := lt_le_trans Hneg Hnn. by rewrite ltxx in Hbad.
 Qed.
 
-Fixpoint ticket_sum {A} (f : A -> rat) (xs : list A) : rat :=
+Fixpoint ticket_sum {A} (f : A → rat) (xs : list A) : rat :=
   match xs with [] => 0 | x :: rest => f x + ticket_sum f rest end.
 
-Lemma ticket_sum_app {A} (f : A -> rat) xs ys :
+Lemma ticket_sum_app {A} (f : A → rat) xs ys :
   ticket_sum f (xs ++ ys) = ticket_sum f xs + ticket_sum f ys.
 Proof.
   induction xs as [|x xs IH]; cbn [List.app cat ticket_sum].
@@ -46,14 +48,14 @@ Proof.
   - by rewrite IH addrA.
 Qed.
 
-Lemma ticket_sum_repeat {A} (f : A -> rat) x n :
+Lemma ticket_sum_repeat {A} (f : A → rat) x n :
   ticket_sum f (List.repeat x n) = n%:R * f x.
 Proof.
   induction n as [|n IH]; cbn [List.repeat ticket_sum]; [by rewrite mul0r|].
   by rewrite IH -addn1 natrD mulrDl mul1r addrC.
 Qed.
 
-Lemma ticket_sum_expand {A} (f : A -> rat) xs n :
+Lemma ticket_sum_expand {A} (f : A → rat) xs n :
   ticket_sum f (List.flat_map (fun x => List.repeat x n) xs) =
     n%:R * ticket_sum f xs.
 Proof.
@@ -61,7 +63,7 @@ Proof.
   by rewrite ticket_sum_app ticket_sum_repeat IH mulrDr.
 Qed.
 
-Lemma ticket_sum_map {A B} (f : B -> rat) (g : A -> B) xs :
+Lemma ticket_sum_map {A B} (f : B → rat) (g : A → B) xs :
   ticket_sum f (List.map g xs) = ticket_sum (fun x => f (g x)) xs.
 Proof. induction xs; cbn; congruence. Qed.
 
@@ -93,8 +95,8 @@ Proof.
   cbn [fst snd] in IH |- *. by rewrite muln_gt0 ticket_den_positive IH.
 Qed.
 
-Theorem compile_tickets_expectation {A} (mu : list (rat * A)) (f : A -> rat) :
-  finite_nonnegative mu ->
+Theorem compile_tickets_expectation {A} (mu : list (rat * A)) (f : A → rat) :
+  finite_nonnegative mu →
   ticket_sum f (compile_tickets mu).2 =
     (compile_tickets mu).1%:R * finite_expect f mu.
 Proof.
@@ -158,13 +160,13 @@ Proof.
   by rewrite map_nth_iota0 // take_size.
 Qed.
 
-Definition ticket_expectation {A} (mu : SubEnumQ A) (f : option A -> rat) : rat :=
+Definition ticket_expectation {A} (mu : SubEnumQ A) (f : option A → rat) : rat :=
   (ticket_count mu)%:R^-1 *
   ticket_sum f (map (draw_ticket mu) (iota 0 (ticket_count mu))).
 
 (** Exact law for a uniform index in [0,ticket_count). It includes the lost
     outcome explicitly, for arbitrary signed tests and arbitrary carriers. *)
-Theorem uniform_ticket_expectation {A} (mu : SubEnumQ A) (f : option A -> rat) :
+Theorem uniform_ticket_expectation {A} (mu : SubEnumQ A) (f : option A → rat) :
   ticket_expectation mu f =
     finite_expect (fun x => f (Some x)) (subenumQ_data mu) +
     (1 - enumQ_mass (subenumQ_raw mu)) * f None.
@@ -185,7 +187,7 @@ Proof.
   congr (_ + _). by rewrite mulrA mulrBr !mulrA !mulVf // mul1r.
 Qed.
 
-Theorem uniform_ticket_returns {A} (mu : SubEnumQ A) (f : A -> rat) :
+Theorem uniform_ticket_returns {A} (mu : SubEnumQ A) (f : A → rat) :
   ticket_expectation mu (fun v => match v with Some x => f x | None => 0 end) =
     finite_expect f (subenumQ_data mu).
 Proof. by rewrite uniform_ticket_expectation mulr0 addr0. Qed.
@@ -199,7 +201,7 @@ Proof. by rewrite uniform_ticket_expectation finite_expect_zero mulr1 add0r. Qed
     cannot silently become missing probability mass. No statistical claim
     about a provider/PRNG is built into this executable interface. *)
 Definition ticket_sample {Seed A}
-    (next : nat -> Seed -> option nat * Seed) (mu : SubEnumQ A) (seed : Seed) :
+    (next : nat → Seed → option nat * Seed) (mu : SubEnumQ A) (seed : Seed) :
     draw_result A * Seed :=
   let '(oi, rest) := next (ticket_count mu) seed in
   match oi with
@@ -216,12 +218,12 @@ Definition ticket_replay {A} (mu : SubEnumQ A) (xs : list nat) :=
   ticket_sample ticket_replay_source mu xs.
 
 Lemma ticket_sample_valid {Seed A} next (mu : SubEnumQ A) (s s' : Seed) i :
-  next (ticket_count mu) s = (Some i, s') -> (i < ticket_count mu)%N ->
+  next (ticket_count mu) s = (Some i, s') → (i < ticket_count mu)%N →
   ticket_sample next mu s =
     (match draw_ticket mu i with Some x => Drawn x | None => Missing end, s').
 Proof. by move=> Hnext Hi; rewrite /ticket_sample Hnext Hi. Qed.
 
 Lemma ticket_sample_invalid {Seed A} next (mu : SubEnumQ A) (s s' : Seed) i :
-  next (ticket_count mu) s = (Some i, s') -> (ticket_count mu <= i)%N ->
+  next (ticket_count mu) s = (Some i, s') → (ticket_count mu <= i)%N →
   ticket_sample next mu s = (NoEntropy, s').
 Proof. move=> Hnext Hi. by rewrite /ticket_sample Hnext ltnNge Hi. Qed.

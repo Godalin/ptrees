@@ -2,6 +2,8 @@
     Reading entry: peutt_binary_rational_coin_direct.
     Scope: EnumQ / FreeOmega; semantic endpoint consumed by program algebra.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
@@ -100,7 +102,7 @@ Proof.
   apply free_omega_qlift_refl. intros b. reflexivity.
 Qed.
 
-Lemma ptree_rational_approx_observes fuel : forall x,
+Lemma ptree_rational_approx_observes fuel : ∀ x,
   free_omega_observes (fun b : bool => b)
     (@mixed_iter_approx EnumQ MF
       (FreeOmegaObservableSemanticMeasure
@@ -233,7 +235,7 @@ Qed.
 (** In particular, the first implementation prefix is a strict
     subdistribution, while the direct specification is already total. *)
 Lemma ptree_rational_first_round_not_direct :
-  meas_iter_approx 1 binary_coin_transition q <>
+  meas_iter_approx 1 binary_coin_transition q ≠
     rational_bernoulli_measure q0 q1.
 Proof.
   intro Heq.
@@ -404,8 +406,8 @@ Lemma ptree_rational_heads_lift
     (Hsupport : free_omega_support_lift eq ptree_rational_limit
       (FOSample (rational_bernoulli_measure q0 q1)
         (fun b => FORet b)))
-    (sim : ptree rational_coinE EnumQ bool ->
-      ptree rational_coinE EnumQ bool -> Prop) :
+    (sim : ptree rational_coinE EnumQ bool →
+      ptree rational_coinE EnumQ bool → Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)
@@ -447,7 +449,7 @@ Qed.
 
 Theorem peutt_binary_rational_coin_direct :
   free_omega_support_lift eq ptree_rational_limit
-    (FOSample (rational_bernoulli_measure q0 q1) (fun b => FORet b)) ->
+    (FOSample (rational_bernoulli_measure q0 q1) (fun b => FORet b)) →
   @peutt rational_coinE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)

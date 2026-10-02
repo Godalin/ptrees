@@ -1,6 +1,8 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** DS4 contracts: arbitrary hitting witnesses become valid automatically;
     visible interaction, divergence and native mass loss stay distinct. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -21,7 +23,7 @@ Unset Printing Implicit Defensive.
 Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
-Variant domainE : Type -> Type := Tick : domainE unit.
+Variant domainE : Type → Type := Tick : domainE unit.
 Local Notation tree := (ptree domainE SubEnumQ unit).
 CoFixpoint silent_forever : tree := Tau silent_forever.
 CoFixpoint silent_counter (n : nat) : tree := Tau (silent_counter (S n)).
@@ -107,8 +109,8 @@ CoFixpoint real_retry : ptree domainE MN unit :=
     if b then Vis Tick (fun _ => Ret tt) else Tau real_retry).
 
 Example real_recursive_frontier_auto :
-  exists out, hits (observe real_retry) out /\
-    free_omega_modelable native out /\
+  ∃ out, hits (observe real_retry) out ∧
+    free_omega_modelable native out ∧
     free_omega_model_denotes native out
       (subenumR_ptree_domain_hitting (observe real_retry)).
 Proof.

@@ -1,4 +1,6 @@
 (** Role: substantive mathematical counterexample and its construction. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Lia.
@@ -28,7 +30,7 @@ Unset Printing Implicit Defensive.
 Module AttenuatedDirac.
 Definition M (A : Type) := option (nat * A).
 Definition ret {A} (x : A) : M A := Some (0,x).
-Definition bind {A B} (mu : M A) (k : A -> M B) : M B :=
+Definition bind {A B} (mu : M A) (k : A → M B) : M B :=
   match mu with
   | None => None
   | Some (n,x) => match k x with
@@ -36,12 +38,12 @@ Definition bind {A B} (mu : M A) (k : A -> M B) : M B :=
     | Some (m,y) => Some (S (n+m),y)
     end
   end.
-Definition ae {A} (mu : M A) (P : A -> Prop) :=
+Definition ae {A} (mu : M A) (P : A → Prop) :=
   match mu with None => True | Some (_,x) => P x end.
-Definition lift {A B} (R : A -> B -> Prop) (mu : M A) (nu : M B) :=
+Definition lift {A B} (R : A → B → Prop) (mu : M A) (nu : M B) :=
   match mu, nu with
   | None, None => True
-  | Some (n,x), Some (m,y) => n = m /\ R x y
+  | Some (n,x), Some (m,y) => n = m ∧ R x y
   | _, _ => False
   end.
 
@@ -115,17 +117,17 @@ Proof. constructor; intros; cbn; tauto. Qed.
     @SemanticSubprobabilityCarrierLaws M Measure Subprobability.
 Proof. constructor; intros; cbn; tauto. Qed.
 
-Definition le {A} (mu nu : M A) := mu = None \/ mu = nu.
+Definition le {A} (mu nu : M A) := mu = None ∨ mu = nu.
 #[local] Instance Omega : @SemanticOmega M Measure := {
   sem_zero := fun _ => None;
   sem_le := @le;
-  sem_lub := fun A c out => (forall n, le (c n) out) /\
-    (forall upper, (forall n, le (c n) upper) -> le out upper);
-  sem_total := fun A mu => exists x : A, mu = Some (0,x)
+  sem_lub := fun A c out => (∀ n, le (c n) out) ∧
+    (∀ upper, (∀ n, le (c n) upper) → le out upper);
+  sem_total := fun A mu => ∃ x : A, mu = Some (0,x)
 }.
 
-Lemma native_joints {A B} (R : A -> B -> Prop) (mu : M A) (nu : M B) :
-  sem_lift R mu nu -> exists joint, semantic_coupling R mu nu joint.
+Lemma native_joints {A B} (R : A → B → Prop) (mu : M A) (nu : M B) :
+  sem_lift R mu nu → ∃ joint, semantic_coupling R mu nu joint.
 Proof.
   destruct mu as [[n x]|], nu as [[m y]|]; cbn; intro H; try contradiction.
   - destruct H as [<- H]. exists (Some (n,(x,y))). repeat split; cbn; auto.
@@ -141,19 +143,19 @@ Proof.
     unit unit unit tt (@ret unit) (fun x => FORet x)).
 Qed.
 
-Lemma native_coupling_keeps_mass : ~ sem_lift eq (bind (ret tt) ret) (ret tt).
+Lemma native_coupling_keeps_mass : ¬ sem_lift eq (bind (ret tt) ret) (ret tt).
 Proof. cbn. intros [H _]. discriminate. Qed.
 
 Theorem quotient_native_reflection_fails :
-  ~ (forall mu nu : M unit,
-    free_omega_qlift eq (sample mu) (sample nu) -> sem_lift eq mu nu).
+  ¬ (∀ mu nu : M unit,
+    free_omega_qlift eq (sample mu) (sample nu) → sem_lift eq mu nu).
 Proof.
   intro Hreflect. apply native_coupling_keeps_mass.
   apply Hreflect, quotient_forgets_extra_attenuation.
 Qed.
 
 Lemma attenuated_bind_has_no_left_unit :
-  ~ @SemanticMeasureBindLaws M Measure.
+  ¬ @SemanticMeasureBindLaws M Measure.
 Proof.
   intro Hbind.
   pose proof (@sem_bind_ret_l M Measure Hbind unit unit tt (@ret unit)) as Hunit.
@@ -190,18 +192,18 @@ Proof.
 Qed.
 
 Theorem actual_plans_have_no_native_coupling :
-  ~ sem_lift (fun _ _ => True)
+  ¬ sem_lift (fun _ _ => True)
     (internal_plan_measure sampled_plan) (internal_plan_measure direct_plan).
 Proof. cbn. intros [H _]. discriminate. Qed.
 
 Theorem actual_plans_have_no_native_joint :
-  ~ exists joint,
+  ¬ ∃ joint,
     semantic_coupling (fun _ _ => True)
       (internal_plan_measure sampled_plan) (internal_plan_measure direct_plan) joint.
 Proof.
   intros [joint [Hleft [Hright _]]].
   apply actual_plans_have_no_native_coupling.
-  eapply sem_lift_mono with (R := fun x z => exists y, fst y = x /\ snd y = z).
+  eapply sem_lift_mono with (R := fun x z => exists y, fst y = x ∧ snd y = z).
   - intros x z _. exact I.
   - eapply sem_lift_comp; [apply sem_lift_sym; exact Hleft|exact Hright].
 Qed.
@@ -273,8 +275,8 @@ Qed.
 (** The new assembly really accepts quotient-only compression marginals.
     The source below CANNOT be a native joint of these plans (their tags
     differ), but it is an actual native sample with quotient graph laws. *)
-Lemma tagged_sample_graph {X Y} n m (x : X) (y : Y) (f : X -> Y) :
-  f x = y ->
+Lemma tagged_sample_graph {X Y} n m (x : X) (y : Y) (f : X → Y) :
+  f x = y →
   free_omega_qlift (fun a b => f a = b)
     (FOSample (Some (n,x)) (fun a => FORet a))
     (FOSample (Some (m,y)) (fun b => FORet b)).
@@ -291,15 +293,15 @@ Proof.
 Qed.
 
 Theorem actual_plans_native_round_with_quotient_marginals :
-  exists (W : Type) (round : M W)
-    (left : W -> native_sample_type (internal_plan_round_native sampled_plan))
-    (right : W -> native_sample_type (internal_plan_round_native direct_plan)),
+  ∃ (W : Type) (round : M W)
+    (left : W → native_sample_type (internal_plan_round_native sampled_plan))
+    (right : W → native_sample_type (internal_plan_round_native direct_plan)),
     free_omega_qlift (fun w x => left w = x)
       (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native sampled_plan)) (fun x => FORet x)) /\
+      (FOSample (native_sample_measure (internal_plan_round_native sampled_plan)) (fun x => FORet x)) ∧
     free_omega_qlift (fun w y => right w = y)
       (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native direct_plan)) (fun y => FORet y)) /\
+      (FOSample (native_sample_measure (internal_plan_round_native direct_plan)) (fun y => FORet y)) ∧
     sem_ae round (fun w => internal_round_path_rel eq (fun _ _ => False)
       sampled_plan direct_plan (left w) (right w)).
 Proof.
@@ -343,7 +345,7 @@ Proof.
 Qed.
 
 Lemma attenuated_round_not_native :
-  ~ sem_lift round_path_relation (ret tt)
+  ¬ sem_lift round_path_relation (ret tt)
     (native_sample_measure (internal_plan_round_native sampled_plan)).
 Proof. cbn. intros [H _]. discriminate. Qed.
 
@@ -351,9 +353,9 @@ Proof. cbn. intros [H _]. discriminate. Qed.
     node-lifting marginal premise is provably impossible. *)
 Theorem attenuated_round_complete_hitting out joint_out :
   @ptree_stable_hitting Event M (FreeOmega M) FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega bool (observe (round_tree tt)) out ->
+    FreeOmegaObservableSemanticOmega bool (observe (round_tree tt)) out →
   @stable_hitting (FreeOmega M) FI FreeOmegaObservableSemanticOmega unit bool
-    (costed_kernel (fun _ : unit => ret tt) round_target) tt joint_out ->
+    (costed_kernel (fun _ : unit => ret tt) round_target) tt joint_out →
   free_omega_qlift eq out
     (free_omega_bind joint_out (fun b => FORet (@FHRet Event M bool b))).
 Proof.

@@ -1,6 +1,8 @@
 (** Generic heterogeneous bind congruence. Finite scheduling follows from
     probability-level approximation algebra; no backend-specific PTree
     cofinality premise or classical choice is supplied by the caller. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure Omega Mixed BindOrder.
@@ -10,7 +12,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section Bind.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -23,11 +25,11 @@ Context {E MN MF : Type -> Type}
   `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 
-Theorem peutt_bind {A B R1 R2} (RR : R1 -> R2 -> Prop) (RS : A -> B -> Prop)
+Theorem peutt_bind {A B R1 R2} (RR : R1 → R2 → Prop) (RS : A → B → Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
-    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN B) :
-  peutt (MF := MF) RR t1 t2 ->
-  (forall r1 r2, RR r1 r2 -> peutt (MF := MF) RS (k1 r1) (k2 r2)) ->
+    (k1 : R1 → ptree E MN A) (k2 : R2 → ptree E MN B) :
+  peutt (MF := MF) RR t1 t2 →
+  (∀ r1 r2, RR r1 r2 → peutt (MF := MF) RS (k1 r1) (k2 r2)) →
   peutt (MF := MF) RS (PTree.bind t1 k1) (PTree.bind t2 k2).
 Proof.
   intros Ht Hk.

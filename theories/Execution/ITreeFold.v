@@ -1,6 +1,8 @@
 (** An actual lawful target for the generic execution fold. Sampling remains
     a separate supplied algebra into ITree; no claim of random correctness or
     peutt preservation follows merely from being such an algebra. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From ITree.Basics Require Import Basics Monad.
@@ -11,7 +13,7 @@ From PTree.Core Require Import PTreeDefinition Fold IterationLaws.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
-Theorem itree_iteration_uniform {E : Type -> Type} :
+Theorem itree_iteration_uniform {E : Type → Type} :
   @iteration_uniform (itree E) _ _ Eq1_ITree.
 Proof.
   intros I J A f g h Hsquare i.
@@ -28,9 +30,9 @@ Proof.
 Qed.
 
 Section FoldEquations.
-Context {E MN F : Type -> Type}.
-Variable handle : forall X, E X -> itree F X.
-Variable sample : forall X, MN X -> itree F X.
+Context {E MN F : Type → Type}.
+Variable handle : ∀ X, E X → itree F X.
+Variable sample : ∀ X, MN X → itree F X.
 
 Lemma itree_fold_unfold {A} (t : ptree E MN A) :
   eutt eq (fold handle sample t)
@@ -60,7 +62,7 @@ Proof.
   cbn [Monad.ret Monad_itree]. rewrite bind_ret_l. reflexivity.
 Qed.
 
-Lemma itree_fold_vis {A X} (e : E X) (k : X -> ptree E MN A) :
+Lemma itree_fold_vis {A X} (e : E X) (k : X → ptree E MN A) :
   eutt eq (fold handle sample (Vis e k))
     (ITree.bind (@handle X e) (fun x => fold handle sample (k x))).
 Proof.
@@ -69,7 +71,7 @@ Proof.
   rewrite bind_ret_l. reflexivity.
 Qed.
 
-Lemma itree_fold_prob {A X} (mu : MN X) (k : X -> ptree E MN A) :
+Lemma itree_fold_prob {A X} (mu : MN X) (k : X → ptree E MN A) :
   eutt eq (fold handle sample (Prob mu k))
     (ITree.bind (@sample X mu) (fun x => fold handle sample (k x))).
 Proof.

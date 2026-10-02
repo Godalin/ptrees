@@ -6,6 +6,8 @@
     Reusable endpoints: random_walk_as_successive_passages, random_walk_ast, random_walk_output_dist, random_walk_closed_form.
     Boundary: infinite-support output is not a finite native Prob node.
     User navigation: docs/CASE_STUDIES.md. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
@@ -61,7 +63,7 @@ Local Open Scope freeomega_scope.
     bridge, the pointwise law, and normalization.  This output-distribution
     endpoint does not assume a converse from equal PMFs to [peutt]. *)
 Section PassageControlFlow.
-Context {E M : Type -> Type}.
+Context {E M : Type → Type}.
 Variable coin : M bool.
 
 Definition rw_state := (nat * nat)%type.
@@ -214,7 +216,7 @@ Qed.
 (** The normalization is usable inside a larger program, not only at the
     top level.  The client continuation may perform arbitrary interactions
     or further unbounded computation. *)
-Theorem random_walk_bind {A} (k : rw_state -> ptree E M A) :
+Theorem random_walk_bind {A} (k : rw_state → ptree E M A) :
   pstruct eq (s <- random_walk_prog;; k s)
     (n <- D0;; k (0,n)).
 Proof.
@@ -246,7 +248,7 @@ Definition rw_coin : SubEnumQ bool :=
   @enumQ_as_subprob bool rw_coin_raw rw_coin_subprob.
 
 Unset Automatic Proposition Inductives.
-Variant rwE : Type -> Type := .
+Variant rwE : Type → Type := .
 Local Notation rwFI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation rwFO := (@FreeOmegaObservableSemanticOmega
@@ -259,7 +261,7 @@ Local Notation rwpeutt :=
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega).
 
 Definition random_walk : ptree rwE SubEnumQ rw_state := random_walk_prog rw_coin.
-Definition rw_passage : nat -> ptree rwE SubEnumQ nat := passage rw_coin.
+Definition rw_passage : nat → ptree rwE SubEnumQ nat := passage rw_coin.
 Definition rw_D0 := rw_passage 0.
 Definition rw_continuation := n <- rw_D0;; rw_passage n.
 
@@ -273,7 +275,7 @@ Proof.
   apply random_walk_as_passage.
 Qed.
 
-Theorem random_walk_bind_normal_form {A} (k : rw_state -> ptree rwE SubEnumQ A) :
+Theorem random_walk_bind_normal_form {A} (k : rw_state → ptree rwE SubEnumQ A) :
   rwpeutt eq (s <- random_walk;; k s)
     (n <- rw_D0;; k (0%nat,n)).
 Proof. apply peutt_of_pstruct. apply random_walk_bind. Qed.
@@ -406,7 +408,7 @@ Proof.
 Qed.
 
 Lemma reset_mass_bound x n :
-  0 <= reset_mass x n /\ reset_mass x n <= 1 - p ^+ x.
+  0 <= reset_mass x n ∧ reset_mass x n <= 1 - p ^+ x.
 Proof.
   induction x as [|x [H0 H1]]; first by rewrite /= expr0 subrr.
   cbn [reset_mass].
@@ -436,7 +438,7 @@ Qed.
 
 (** [rounds] counts complete sample/Tau pairs, not an artificial bound on
     the walk's state space.  The absorbing state is observed immediately. *)
-Fixpoint walk_observation {A} (obs : nat -> A) (rounds x y : nat) : SubEnumQ A :=
+Fixpoint walk_observation {A} (obs : nat → A) (rounds x y : nat) : SubEnumQ A :=
   match x with
   | O => ηₘ (obs y)
   | S h =>
@@ -454,7 +456,7 @@ Fixpoint walk_observation {A} (obs : nat -> A) (rounds x y : nat) : SubEnumQ A :
 Definition walk_approx (rounds x y : nat) : SubEnumQ nat :=
   walk_observation (fun n => n) rounds x y.
 
-Fixpoint walk_eval (rounds : nat) (f : nat -> rat) (x y : nat) : rat :=
+Fixpoint walk_eval (rounds : nat) (f : nat → rat) (x y : nat) : rat :=
   match x with
   | O => f y
   | S h =>
@@ -473,14 +475,14 @@ Proof.
   by rewrite !IH !mulr0 addr0.
 Qed.
 
-Lemma rw_coin_expect (f : bool -> rat) :
+Lemma rw_coin_expect (f : bool → rat) :
   enumQ_expect f (subenumQ_raw rw_coin) = p * f true + q * f false.
 Proof.
   change (p * f true + (q * f false + 0) = p * f true + q * f false).
   by rewrite addr0.
 Qed.
 
-Lemma walk_observation_expect {A} (obs : nat -> A) f rounds x y :
+Lemma walk_observation_expect {A} (obs : nat → A) f rounds x y :
   enumQ_expect f (subenumQ_raw (walk_observation obs rounds x y)) =
     walk_eval rounds (fun n => f (obs n)) x y.
 Proof.
@@ -521,10 +523,10 @@ Proof. rewrite !exprS. rw_rat. field; vm_compute; intuition discriminate. Qed.
 (** A bounded harmonic candidate is uniquely determined by its boundary:
     every finite execution approximation converges to it.  This argument
     rules out spurious fixed points of the renewal equation. *)
-Theorem walk_harmonic_error (f : nat -> rat) (H : nat -> nat -> rat)
-    (Hbound : forall x y, 0 <= H x y <= 1)
-    (Hzero : forall y, H 0 y = f y)
-    (Hstep : forall x y, H (S x) y = p * H x (S y) + q * H (S (S x)) 0)
+Theorem walk_harmonic_error (f : nat → rat) (H : nat → nat → rat)
+    (Hbound : ∀ x y, 0 <= H x y <= 1)
+    (Hzero : ∀ y, H 0 y = f y)
+    (Hstep : ∀ x y, H (S x) y = p * H x (S y) + q * H (S (S x)) 0)
     rounds x y :
   `|walk_eval rounds f x y - H x y| <= radius ^+ x * contraction ^+ rounds.
 Proof.
@@ -555,14 +557,14 @@ Proof.
     + exact (ler_wpM2l rw_q_nonnegative (IH (S (S x)) 0)).
 Qed.
 
-Definition rational_limit (chain : nat -> rat) (value : rat) : Prop :=
-  forall eps : rat, 0 < eps ->
-  exists N, forall rounds, (N <= rounds)%coq_nat ->
+Definition rational_limit (chain : nat → rat) (value : rat) : Prop :=
+  ∀ eps : rat, 0 < eps →
+  ∃ N, ∀ rounds, (N <= rounds)%coq_nat →
     `|chain rounds - value| < eps.
 
 Lemma walk_error_vanishes x :
-  forall eps : rat, 0 < eps -> exists N, forall rounds,
-    (N <= rounds)%coq_nat -> radius ^+ x * contraction ^+ rounds < eps.
+  ∀ eps : rat, 0 < eps → ∃ N, ∀ rounds,
+    (N <= rounds)%coq_nat → radius ^+ x * contraction ^+ rounds < eps.
 Proof.
   intros eps Heps.
   have Hr : 0 < radius ^+ x := exprn_gt0 x rw_radius_positive.
@@ -574,10 +576,10 @@ Proof.
   move: H. by rewrite ltr_pdivlMr // mulrC.
 Qed.
 
-Theorem walk_harmonic_limit (f : nat -> rat) (H : nat -> nat -> rat)
-    (Hbound : forall x y, 0 <= H x y <= 1)
-    (Hzero : forall y, H 0 y = f y)
-    (Hstep : forall x y, H (S x) y = p * H x (S y) + q * H (S (S x)) 0)
+Theorem walk_harmonic_limit (f : nat → rat) (H : nat → nat → rat)
+    (Hbound : ∀ x y, 0 <= H x y <= 1)
+    (Hzero : ∀ y, H 0 y = f y)
+    (Hstep : ∀ x y, H (S x) y = p * H x (S y) + q * H (S (S x)) 0)
     x y : rational_limit (fun rounds => walk_eval rounds f x y) (H x y).
 Proof.
   intros eps Heps. destruct (walk_error_vanishes x Heps) as [N HN].
@@ -642,7 +644,7 @@ Proof.
   f_equal. apply functional_extensionality. intros []; reflexivity.
 Qed.
 
-Lemma walk_hitting_observes {A} (obs : nat -> A) rounds x y :
+Lemma walk_hitting_observes {A} (obs : nat → A) rounds x y :
   free_omega_observes (fun h => obs (walk_head_value h))
     (walk_hitting (walk_schedule rounds) x y)
     (walk_observation obs rounds x y).
@@ -757,7 +759,7 @@ Definition joint_head_value (h : joint_head) : rw_state :=
 Definition joint_hitting fuel x y : FreeOmega SubEnumQ joint_head :=
   hit[fuel] (PTree.iter (rw_body rw_coin) (x,y)).
 
-Lemma joint_hitting_observes {A} (obs : rw_state -> A) rounds x y :
+Lemma joint_hitting_observes {A} (obs : rw_state → A) rounds x y :
   free_omega_observes (fun h => obs (joint_head_value h))
     (joint_hitting (walk_schedule rounds) x y)
     (walk_observation (fun n => obs (0%nat,n)) rounds x y).
@@ -800,7 +802,7 @@ Proof. apply (joint_hitting_observes (fun s => s)). Qed.
 
 (** Quantitative composition is pushforward along [n |-> (0,n)].  Every
     finite joint test reduces to a passage test, before any limit is taken. *)
-Lemma random_walk_outputs_expect rounds (f : rw_state -> rat) :
+Lemma random_walk_outputs_expect rounds (f : rw_state → rat) :
   enumQ_expect f (subenumQ_raw (random_walk_outputs rounds)) =
   enumQ_expect (fun n => f (0%nat,n))
     (subenumQ_raw (walk_approx rounds 1 0)).
@@ -847,7 +849,7 @@ Corollary random_walk_joint_probability n :
 Proof. rewrite -joint_pmf_power. apply random_walk_output_dist. Qed.
 
 Lemma joint_pmf_x_nonzero x y :
-  x <> 0%nat -> joint_pmf (x,y) = 0.
+  x ≠ 0%nat → joint_pmf (x,y) = 0.
 Proof. destruct x; [contradiction|reflexivity]. Qed.
 
 Lemma joint_pmf_y_zero : joint_pmf (0%nat,0%nat) = 0.
@@ -907,11 +909,11 @@ Qed.
     exact finite observations and their normalized closed-form limit.
     It does not assert an unproved distribution-to-bisimulation converse. *)
 Theorem random_walk_closed_form :
-  random_walk ⇓ₕ¹ random_walk_heads /\
-  (forall rounds, free_omega_observes joint_head_value
-    (joint_hitting (walk_schedule rounds) 1 0) (random_walk_outputs rounds)) /\
-  (forall s, rational_limit (fun rounds => enumQ_expect (state_indicator s)
-    (subenumQ_raw (random_walk_outputs rounds))) (joint_pmf s)) /\
+  random_walk ⇓ₕ¹ random_walk_heads ∧
+  (∀ rounds, free_omega_observes joint_head_value
+    (joint_hitting (walk_schedule rounds) 1 0) (random_walk_outputs rounds)) ∧
+  (∀ s, rational_limit (fun rounds => enumQ_expect (state_indicator s)
+    (subenumQ_raw (random_walk_outputs rounds))) (joint_pmf s)) ∧
   rational_limit geometric_partial_mass 1.
 Proof.
   split; first exact random_walk_ast.

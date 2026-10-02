@@ -1,6 +1,8 @@
 (** Structural relations imply behavioral equivalence whenever the frontier
     lifting preserves increasing limits. The proof is backend independent;
     the relational-limit premise is probability mathematics, not a PTree law. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Universe Polymorphism.
 From Coq.Program Require Import Equality.
@@ -13,7 +15,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section Relation.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
@@ -21,12 +23,12 @@ Variable Hbind : relational_bind FI.
 Variable Hmixed : relational_mixed_bind NI FI MX.
 Variable Hzero : relational_zero FO.
 
-Definition pstrong_state {A B} (RR : A -> B -> Prop)
+Definition pstrong_state {A B} (RR : A → B → Prop)
     (s : ptree' E MN A) (t : ptree' E MN B) : Prop :=
-  exists u v, s = observe u /\ t = observe v /\ pstrong RR u v.
+  ∃ u v, s = observe u ∧ t = observe v ∧ pstrong RR u v.
 
-Lemma pstrong_kernel {A B} (RR : A -> B -> Prop) s t :
-  pstrong_state RR s t ->
+Lemma pstrong_kernel {A B} (RR : A → B → Prop) s t :
+  pstrong_state RR s t →
   sem_lift
     (stable_target_rel (pstrong_state RR) (stable_head_rel RR (pstrong RR)))
     (ptree_primitive_kernel (MF := MF) s)
@@ -43,9 +45,9 @@ Proof.
     exists (k1 a), (k2 b). repeat split; auto.
 Qed.
 
-Theorem ptree_hitting_pstrong {A B} (RR : A -> B -> Prop)
+Theorem ptree_hitting_pstrong {A B} (RR : A → B → Prop)
     fuel (t : ptree E MN A) (u : ptree E MN B) :
-  pstrong RR t u ->
+  pstrong RR t u →
   sem_lift (stable_head_rel RR (pstrong RR))
     (ptree_hitting_approx (MF := MF) fuel (observe t))
     (ptree_hitting_approx (MF := MF) fuel (observe u)).
@@ -61,9 +63,9 @@ Context `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 Variable Hlimit : relational_lub FO.
 
-Theorem peutt_of_pstrong {A B} (RR : A -> B -> Prop)
+Theorem peutt_of_pstrong {A B} (RR : A → B → Prop)
     (t : ptree E MN A) (u : ptree E MN B) :
-  pstrong RR t u -> peutt (MF := MF) RR t u.
+  pstrong RR t u → peutt (MF := MF) RR t u.
 Proof.
   intro Hstrong. eapply peutt_coinduction with (sim := pstrong_state RR).
   - intros s1 s2 [v1 [v2 [-> [-> Hs]]]].
@@ -89,9 +91,9 @@ Proof.
   - exists t, u. repeat split; try reflexivity. exact Hstrong.
 Qed.
 
-Theorem peutt_of_pstruct {A B} (RR : A -> B -> Prop)
+Theorem peutt_of_pstruct {A B} (RR : A → B → Prop)
     (t : ptree E MN A) (u : ptree E MN B) :
-  pstruct RR t u -> peutt (MF := MF) RR t u.
+  pstruct RR t u → peutt (MF := MF) RR t u.
 Proof.
   intro H. apply peutt_of_pstrong. apply pstruct_pstrong. exact H.
 Qed.

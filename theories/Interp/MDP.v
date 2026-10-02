@@ -1,5 +1,7 @@
 (** MDP-fragment preservation under interpretation, for arbitrary native and
     frontier models. Probability laws are explicit; no FreeOmega syntax. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
@@ -12,10 +14,10 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section MDPInterp.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
-Variable handler : forall X, E X -> ptree F MN X.
+Variable handler : ∀ X, E X → ptree F MN X.
 Context {R : Type}.
 Local Notation shead := (stable_head E MN R).
 Local Notation sgood := (@mdp_head E MN MF FI FC MX FO R).
@@ -24,7 +26,7 @@ Local Notation tstate := (@mdp_state F MN MF FI FC MX FO R).
 
 (** A selected-head invariant, not the desired raw-tree preservation result. *)
 Definition mdp_handler : Prop :=
-  forall h : shead, sgood h -> tstate (ptree_interp_head_tree handler h).
+  ∀ h : shead, sgood h → tstate (ptree_interp_head_tree handler h).
 
 Context `{FB : @SemanticMeasureBindLaws MF FI}
   `{Ord : @SemanticMeasureOrderLaws MF FI FO}
@@ -37,10 +39,10 @@ Context `{FB : @SemanticMeasureBindLaws MF FI}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 
 Theorem mdp_state_interp_of_ret_l
-    (Hret_l : forall A B (x : A) (k : A -> MF B),
+    (Hret_l : ∀ A B (x : A) (k : A → MF B),
       sem_eq (sem_bind (sem_ret x) k) (k x))
     (Hhandler : mdp_handler) (t : ptree E MN R) :
-  sstate t -> tstate (PTree.interp handler t).
+  sstate t → tstate (PTree.interp handler t).
 Proof.
   intros [h [mu [Hhit [Heq Hgood]]]].
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
@@ -59,7 +61,7 @@ Qed.
 (** Class-based convenience wrapper. The primitive proof above consumes
     only the left-unit field, not unrelated laws in the bind record. *)
 Theorem mdp_state_interp (Hhandler : mdp_handler) (t : ptree E MN R) :
-  sstate t -> tstate (PTree.interp handler t).
+  sstate t → tstate (PTree.interp handler t).
 Proof.
   exact (mdp_state_interp_of_ret_l (@sem_bind_ret_l MF FI FB) Hhandler (t := t)).
 Qed.
@@ -69,8 +71,8 @@ Context `{FCAE : @SemanticMeasureCouplingAELaws MF FI}
   `{FD : @SemanticMeasureDiracAELaws MF FI}.
 
 Theorem mdp_interp_peutt_trans_iff (Hhandler : mdp_handler) t u :
-  sstate t -> sstate u ->
-  (@peutt F MN MF FI FC MX FO R R eq (PTree.interp handler t) (PTree.interp handler u) <->
+  sstate t → sstate u →
+  (@peutt F MN MF FI FC MX FO R R eq (PTree.interp handler t) (PTree.interp handler u) ↔
    @trans_bisim F MN MF FI FC MX FO R R eq
      (PTree.interp handler t) (PTree.interp handler u)).
 Proof.
@@ -80,8 +82,8 @@ Qed.
 
 Theorem mdp_guarded_interp_trans (Hhandler : mdp_handler)
     (Hguard : guarded_handler (MF := MF) handler) t u :
-  sstate t -> sstate u ->
-  @trans_bisim E MN MF FI FC MX FO R R eq t u ->
+  sstate t → sstate u →
+  @trans_bisim E MN MF FI FC MX FO R R eq t u →
   @trans_bisim F MN MF FI FC MX FO R R eq
     (PTree.interp handler t) (PTree.interp handler u).
 Proof.

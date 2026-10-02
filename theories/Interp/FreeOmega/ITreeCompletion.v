@@ -1,4 +1,6 @@
 (** Thin completion specializations of the generic ITree bridge laws. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms.
@@ -14,7 +16,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Completion.
-Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
+Context {MN : Type → Type} `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -38,7 +40,7 @@ Proof.
     free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
-Theorem free_omega_elab_event {E F A X} (h : Handler MN E F) (e : E X) (k : X -> itree E A) :
+Theorem free_omega_elab_event {E F A X} (h : Handler MN E F) (e : E X) (k : X → itree E A) :
   peutt (FI := FI) eq (interp_itree h (ITreeDefinition.Vis e k))
     (PTree.bind (h X e) (fun x => interp_itree h (k x))).
 Proof.
@@ -53,7 +55,7 @@ Proof.
     free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
-Theorem free_omega_elab_sample {E A X} (mu : MN X) (k : X -> itree (probE MN +' E) A) :
+Theorem free_omega_elab_sample {E A X} (mu : MN X) (k : X → itree (probE MN +' E) A) :
   peutt (FI := FI) eq (elaborate (ITreeDefinition.Vis (inl1 (Sample mu)) k))
     (Prob mu (fun x => elaborate (k x))).
 Proof.
@@ -61,7 +63,7 @@ Proof.
     free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
-Theorem free_omega_elab_vis {E A X} (e : E X) (k : X -> itree (probE MN +' E) A) :
+Theorem free_omega_elab_vis {E A X} (e : E X) (k : X → itree (probE MN +' E) A) :
   peutt (FI := FI) eq (elaborate (ITreeDefinition.Vis (inr1 e) k))
     (Vis e (fun x => elaborate (k x))).
 Proof.
@@ -70,7 +72,7 @@ Proof.
 Qed.
 
 Theorem free_omega_elab_bind {E F A B} (h : Handler MN E F)
-    (t : itree E A) (k : A -> itree E B) :
+    (t : itree E A) (k : A → itree E B) :
   peutt (FI := FI) eq (interp_itree h (ITree.bind t k))
     (PTree.bind (interp_itree h t) (fun x => interp_itree h (k x))).
 Proof.
@@ -79,7 +81,7 @@ Proof.
 Qed.
 
 Theorem free_omega_elab_iter {E F I A} (h : Handler MN E F)
-    (step : I -> itree E (I+A)) i :
+    (step : I → itree E (I+A)) i :
   peutt (FI := FI) eq (interp_itree h (ITree.iter step i))
     (PTree.iter (fun j => interp_itree h (step j)) i).
 Proof.

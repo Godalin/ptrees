@@ -1,4 +1,6 @@
 (** Role: supporting compression/scheduling/recovery example; not public theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -52,7 +54,7 @@ Proof.
     - apply sem_lift_refl. intro b. reflexivity.
     - intros x y _. apply (@sem_lift_ret SubEnumQ SubEnumQ_SemanticMeasure
         SubEnumQ_SemanticMeasureCoreLaws). exact I. }
-  eapply sem_lift_mono with (R := fun x z => exists y, True /\ y = z).
+  eapply sem_lift_mono with (R := fun x z => exists y, True ∧ y = z).
   - intros x z _. exact I.
   - eapply sem_lift_comp; [|exact fair_discard_node].
     eapply sem_lift_proper_l; [exact Hret|exact Hbind].
@@ -85,7 +87,7 @@ Qed.
     quotient coupling.  This refutes the proposed general reference-
     extraction shortcut, not behavioral equivalence. *)
 Example reference_coin_discard_has_no_references :
-  ~ exists left right, free_omega_coupling_references (fun _ _ : bool => True)
+  ¬ ∃ left right, free_omega_coupling_references (fun _ _ : bool => True)
     reference_coin (FORet false) left right.
 Proof.
   intros [left [right H]].
@@ -147,7 +149,7 @@ Definition discarded_coin_cut : MF tree :=
 
 Definition discarded_left_observation (t : tree) : bool :=
   if excluded_middle_informative
-    (t = discarded_coin_delay true \/ t = discarded_coin_delay false)
+    (t = discarded_coin_delay true ∨ t = discarded_coin_delay false)
   then false else true.
 Definition discarded_right_observation (t : tree) : bool :=
   if excluded_middle_informative (t = discarded_coin_delay false) then false else true.
@@ -180,7 +182,7 @@ Proof.
   eapply FOQLObserve with
     (obsA := discarded_left_observation) (obsB := discarded_right_observation)
     (outA := subenumQ_bind subenumQ_fair (fun _ => subenumQ_ret false))
-    (outB := subenumQ_ret false) (S := fun x y => x = y /\ y = false).
+    (outB := subenumQ_ret false) (S := fun x y => x = y ∧ y = false).
   - apply (FOOObserveSample (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
     intro b. rewrite <- (discarded_left_observationE b).
     apply (FOOObserveRet (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
@@ -188,7 +190,7 @@ Proof.
       (subenumQ_ret (discarded_right_observation (discarded_coin_delay false)))
       by (rewrite discarded_right_observationE; reflexivity).
     apply (FOOObserveRet (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-  - eapply sem_lift_mono with (R := fun x y => x = y /\ True /\ y = false).
+  - eapply sem_lift_mono with (R := fun x y => x = y ∧ True ∧ y = false).
     + intros x y [Heq [_ Hy]]. split; assumption.
     + eapply sem_lift_ae_restrict; [exact fair_discard_node|apply sem_ae_true|].
       apply (proj2 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
@@ -197,7 +199,7 @@ Proof.
   - intros t u [Heq Hu].
     unfold discarded_left_observation, discarded_right_observation in *.
     destruct (excluded_middle_informative
-      (t = discarded_coin_delay true \/ t = discarded_coin_delay false)) as [Ht|Ht];
+      (t = discarded_coin_delay true ∨ t = discarded_coin_delay false)) as [Ht|Ht];
       destruct (excluded_middle_informative (u = discarded_coin_delay false)) as [Hu'|Hu'];
       try discriminate.
     destruct Ht as [Ht|Ht]; subst t; subst u; apply discarded_coin_guard.
@@ -245,7 +247,7 @@ Proof.
 Qed.
 
 Example discarded_coin_cuts_have_no_references :
-  ~ exists left right, free_omega_coupling_references (fun t u => pstrongF eq residual (observe t) (observe u))
+  ¬ ∃ left right, free_omega_coupling_references (fun t u => pstrongF eq residual (observe t) (observe u))
     discarded_coin_cut (FORet (discarded_coin_delay false)) left right.
 Proof.
   intros [left [right H]].
@@ -260,12 +262,12 @@ Qed.
     earlier execution-kernel reference premise is not universally
     extractable for these legitimate cuts. *)
 Example discarded_coin_rounds_have_no_reference_kernels :
-  ~ exists left right : MF (PrimitiveStableHitting.stable_target
+  ¬ ∃ left right : MF (PrimitiveStableHitting.stable_target
       (tree * tree) (UnifiedFrontier.stable_head exchangeE SubEnumQ bool *
                     UnifiedFrontier.stable_head exchangeE SubEnumQ bool)),
-    free_omega_qlift eq left right /\
+    free_omega_qlift eq left right ∧
     free_omega_lift (fun z target => finite_internal_pair_left z = target)
-      left (free_omega_bind discarded_coin_cut finite_internal_guard_transition) /\
+      left (free_omega_bind discarded_coin_cut finite_internal_guard_transition) ∧
     free_omega_lift (fun z target => finite_internal_pair_right z = target)
       right (finite_internal_guard_transition (discarded_coin_delay false)).
 Proof.

@@ -32,6 +32,15 @@ class SoundnessTests(unittest.TestCase):
                             soundness.classes('Class C := { p : False }.'))
         self.assertEqual(soundness.classes('Class C := p : True.'),{'C':'Class C := p : True.'})
 
+    def test_class_utf8_is_only_a_spelling_change(self):
+        ascii_decl = 'Class C := { p : forall x : nat, exists y, x <> y /\\ (~ x = y \\/ x = y) <-> True -> False }.'
+        utf8_decl = 'Class C := { p : ∀ x : nat, ∃ y, x ≠ y ∧ (¬ x = y ∨ x = y) ↔ True → False }.'
+        self.assertEqual(soundness.classes(ascii_decl), soundness.classes(utf8_decl))
+        for before, after in [('∀', '∃'), ('∧', '∨'), ('↔', '→')]:
+            with self.subTest(before=before):
+                self.assertNotEqual(soundness.classes(ascii_decl),
+                                    soundness.classes(utf8_decl.replace(before, after)))
+
     def test_ordinary_proof_refactoring_is_not_a_safety_violation(self):
         # These are valid Rocq proofs; compilation, not this source scanner,
         # checks them. In particular induction/elimination is not forbidden.

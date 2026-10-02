@@ -1,6 +1,8 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** DS5a.2 preparation: atomic series and code/decode transport.
     No regression claims general Hall/dual-to-joint existence. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -55,7 +57,7 @@ Proof.
 Qed.
 
 Example subprobability_tail_is_actual_mass (L : OmegaVal R nat) eps :
-  0 < eps -> exists n,
+  0 < eps → ∃ n,
     oval_eval L (fun i => if (n <= i)%N then 1 else 0) < eps.
 Proof.
   intro H; destruct (oval_atomic_tight L H) as [n Hn].
@@ -81,11 +83,11 @@ Proof.
 Qed.
 
 Example invalid_code_not_supported j :
-  ~ oval_code_relation repeated_unit repeated_bool (fun _ _ => True) O j.
+  ¬ oval_code_relation repeated_unit repeated_bool (fun _ _ => True) O j.
 Proof. intros [x [y [H _]]]; discriminate H. Qed.
 
 Example duplicate_codes_not_injective :
-  repeated_unit 2%N = repeated_unit 3%N /\ 2%N <> 3%N.
+  repeated_unit 2%N = repeated_unit 3%N ∧ 2%N ≠ 3%N.
 Proof. split; [reflexivity|discriminate]. Qed.
 
 (** A joint with any subprobability mass survives decoding unchanged. *)
@@ -135,7 +137,7 @@ Example zero_decoded_joint :
 Proof. split; first by intros. split; first by intros. intros f g Hf Hg Hfg; reflexivity. Qed.
 
 Example atoms_determine_measure (L M : OmegaVal R nat) :
-  (forall i, oval_atom L i = oval_atom M i) -> oval_eq L M.
+  (∀ i, oval_atom L i = oval_atom M i) → oval_eq L M.
 Proof. exact: oval_atomic_ext. Qed.
 End IndependentTests.
 
@@ -158,8 +160,8 @@ Example successor_joint_exists (L : OmegaVal R nat) :
 Proof. apply oval_bidual_coupled_nat; exact: successor_dual. Qed.
 
 Example joint_keeps_actual_mass (L : OmegaVal R nat) :
-  exists J, oval_joint (fun i j => j = i.+1) L
-    (oval_bind L (fun i => oval_ret R i.+1)) J /\ oval_mass J = oval_mass L.
+  ∃ J, oval_joint (fun i j => j = i.+1) L
+    (oval_bind L (fun i => oval_ret R i.+1)) J ∧ oval_mass J = oval_mass L.
 Proof.
   destruct (successor_joint_exists L) as [J HJ]; exists J; split; first exact HJ.
   exact (proj1 HJ (fun _ => 1) (@oval_test_one R nat)).
@@ -172,7 +174,7 @@ Proof.
 Qed.
 
 Example unequal_mass_rejected :
-  ~ oval_bidual (fun (_ _ : nat) => True) (oval_ret R O) (oval_bottom R).
+  ¬ oval_bidual (fun (_ _ : nat) => True) (oval_ret R O) (oval_bottom R).
 Proof.
   intro H; have HE := oval_bidual_mass H.
   change ((1 : R) = 0) in HE.
@@ -183,7 +185,7 @@ Definition escaping_matrix (n i j : nat) : R := if (i == O) && (j == n) then 1 e
 
 (** Pointwise convergence alone would allow mass to escape. *)
 Example escaping_pointwise_zero i j :
-  exists N, forall n, (N <= n)%N -> escaping_matrix n i j = 0.
+  ∃ N, ∀ n, (N <= n)%N → escaping_matrix n i j = 0.
 Proof.
   exists j.+1; intros n Hn.
   have Hne : j != n.
@@ -206,19 +208,19 @@ Qed.
 (** Fixed target tightness disallows that sequence: its second matrix already
     violates the required lower bound on the first column prefix. *)
 Example escaping_fails_no_escape_bound :
-  ~ ((1 : R) - transport_tail (fun j => if j == O then 1 else 0) 1 1 <=
+  ¬ ((1 : R) - transport_tail (fun j => if j == O then 1 else 0) 1 1 <=
       transport_prefix (escaping_matrix 1 O) 1).
 Proof.
   rewrite /transport_tail /transport_prefix !big_ord1 /escaping_matrix /= subrr subr0.
   by rewrite ler10.
 Qed.
 
-Example scalar_matrix_from_dual (T : nat -> nat -> Prop) (L M : OmegaVal R nat) :
-  oval_bidual T L M -> exists w,
-    (forall i j, 0 <= w i j) /\
-    (forall i j, ~ T i j -> w i j = 0) /\
-    (forall i, transport_series (w i) = oval_atom L i) /\
-    (forall j, transport_series (fun i => w i j) = oval_atom M j).
+Example scalar_matrix_from_dual (T : nat → nat → Prop) (L M : OmegaVal R nat) :
+  oval_bidual T L M → ∃ w,
+    (∀ i j, 0 <= w i j) ∧
+    (∀ i j, ¬ T i j → w i j = 0) ∧
+    (∀ i, transport_series (w i) = oval_atom L i) ∧
+    (∀ j, transport_series (fun i => w i j) = oval_atom M j).
 Proof.
   intro H; destruct (oval_bidual_transport_matrix H) as [w [Hw [Hs [Hr [Hc _]]]]].
   by exists w.

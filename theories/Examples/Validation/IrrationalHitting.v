@@ -3,6 +3,8 @@
     rational coins, while its complete stable-hitting mass can be irrational.
     The real-indexed rational schedule is a classical representation witness,
     not a claim that an arbitrary real input has a computable sampler. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -23,9 +25,9 @@ Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Section RationalSchedule.
-Variable q : nat -> rat.
-Hypothesis q_bound : forall n, 0 <= q n /\ q n < 1.
-Hypothesis q_increasing : forall n, q n <= q (S n).
+Variable q : nat → rat.
+Hypothesis q_bound : ∀ n, 0 <= q n ∧ q n < 1.
+Hypothesis q_increasing : ∀ n, q n <= q (S n).
 
 Definition continue_weight n := (1 - q (S n)) / (1 - q n).
 Lemma continue_weight_nonnegative n : 0 <= continue_weight n.
@@ -54,7 +56,7 @@ Proof.
   by rewrite !mulr1 addr0 subrK.
 Qed.
 
-Context {E : Type -> Type}.
+Context {E : Type → Type}.
 CoFixpoint scheduled_retry n : ptree E SubEnumQ unit :=
   Prob (schedule_coin n) (fun again => if again then scheduled_retry (S n) else Ret tt).
 
@@ -89,14 +91,14 @@ Proof.
     by rewrite Nat.add_succ_r Nat.add_succ_l.
 Qed.
 
-Lemma scheduled_retry_from_zero_mass fuel : q O = 0 ->
+Lemma scheduled_retry_from_zero_mass fuel : q O = 0 →
   oval_mass (Hn fuel (observe (scheduled_retry O))) = ratr (q fuel).
 Proof.
   intro H0; rewrite scheduled_retry_finite_mass H0 subr0 divr1.
   by rewrite opprB addrCA subrr addr0.
 Qed.
 
-Theorem scheduled_retry_hitting_mass : q O = 0 ->
+Theorem scheduled_retry_hitting_mass : q O = 0 →
   oval_mass (ptree_domain_hitting R (observe (scheduled_retry O))) =
   oval_sup (fun n => ratr (q n) : R).
 Proof.
@@ -144,14 +146,14 @@ Proof.
   change (ratr (Num.max (rational_chain n) (rational_candidate n)) < alpha).
   by rewrite maxr_rat gt_max IH rational_candidate_below.
 Qed.
-Lemma rational_chain_bound n : 0 <= rational_chain n /\ rational_chain n < 1.
+Lemma rational_chain_bound n : 0 <= rational_chain n ∧ rational_chain n < 1.
 Proof.
   split; first exact: rational_chain_nonnegative.
   have H := lt_trans (rational_chain_below n) alpha_lt_one.
   by move: H; rewrite -(rmorph1 (ratr : {rmorphism rat -> R})) ltr_rat.
 Qed.
 
-Lemma rational_chain_covers r : 0 <= r -> (ratr r : R) < alpha ->
+Lemma rational_chain_covers r : 0 <= r → (ratr r : R) < alpha →
   r <= rational_chain (S (pickle r)).
 Proof.
   intros H0 Hr; change (r <= Num.max (rational_chain (pickle r)) (rational_candidate (pickle r))).
@@ -177,10 +179,10 @@ Proof.
   have Hbad := lt_le_trans Hlo Hsup; by rewrite ltxx in Hbad.
 Qed.
 
-Definition real_schedule_tree {E : Type -> Type} : ptree E SubEnumQ unit :=
+Definition real_schedule_tree {E : Type → Type} : ptree E SubEnumQ unit :=
   @scheduled_retry rational_chain rational_chain_bound rational_chain_increasing E O.
 
-Theorem real_schedule_hitting_mass {E : Type -> Type} :
+Theorem real_schedule_hitting_mass {E : Type → Type} :
   oval_mass (ptree_domain_hitting R (observe (@real_schedule_tree E))) = alpha.
 Proof.
   rewrite scheduled_retry_hitting_mass; [exact rational_chain_sup|reflexivity].
@@ -194,7 +196,7 @@ Lemma pi_quarter_pos : 0 < pi_quarter.
 Proof. apply divr_gt0; [apply divr_gt0; [exact: pi_gt0|by []]|by []]. Qed.
 Lemma pi_quarter_lt_one : pi_quarter < 1.
 Proof. rewrite /pi_quarter ltr_pdivrMr // mul1r; exact: pihalf_lt2. Qed.
-Lemma pi_quarter_irrational : ~ rational pi_quarter.
+Lemma pi_quarter_irrational : ¬ rational pi_quarter.
 Proof.
   intros [q _ Hq]; apply (@pi_irrationnal R).
   exists (q * 2 * 2); first exact I.
@@ -204,14 +206,14 @@ Proof.
   by rewrite !divfK ?pnatr_eq0.
 Qed.
 
-Definition pi_schedule_tree {E : Type -> Type} : ptree E SubEnumQ unit :=
+Definition pi_schedule_tree {E : Type → Type} : ptree E SubEnumQ unit :=
   @real_schedule_tree R pi_quarter pi_quarter_pos pi_quarter_lt_one E.
 
-Theorem pi_schedule_mass {E : Type -> Type} :
+Theorem pi_schedule_mass {E : Type → Type} :
   oval_mass (ptree_domain_hitting R (observe (@pi_schedule_tree E))) = pi_quarter.
 Proof. exact: real_schedule_hitting_mass. Qed.
 
-Theorem pi_canonical_hitting_mass {E : Type -> Type} :
+Theorem pi_canonical_hitting_mass {E : Type → Type} :
   oval_mass (free_omega_domain
     (ptree_canonical_hitting_admissible R (observe (@pi_schedule_tree E)))) = pi_quarter.
 Proof.
@@ -221,8 +223,8 @@ Proof.
   - exact: pi_schedule_mass.
 Qed.
 
-Theorem pi_canonical_hitting_irrational {E : Type -> Type} :
-  ~ rational (oval_mass (free_omega_domain
+Theorem pi_canonical_hitting_irrational {E : Type → Type} :
+  ¬ rational (oval_mass (free_omega_domain
     (ptree_canonical_hitting_admissible R (observe (@pi_schedule_tree E))))).
 Proof. rewrite pi_canonical_hitting_mass; exact: pi_quarter_irrational. Qed.
 End IrrationalInstance.

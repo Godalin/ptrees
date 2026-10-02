@@ -1,4 +1,6 @@
 (** Role: Canonical FreeOmega measure infrastructure. Depends on generic measures; not a concrete native backend or program equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed PTree.Prob.Interface.SemanticCoupling.
@@ -14,7 +16,7 @@ Unset Printing Implicit Defensive.
     it is not an extraction theorem for arbitrary quotient couplings. *)
 Section Extension.
 Universes node node_rep frontier.
-Context {MN : Type@{node} -> Type@{node_rep}}
+Context {MN : Type@{node} → Type@{node_rep}}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
@@ -25,8 +27,8 @@ Local Notation qlift := (@free_omega_qlift@{
   node node node node node_rep node node node node node node node node
   node node node node node node node node node node} MN NI NO _ _).
 
-Lemma native_sigma_identity {X : Type@{node}} {Y : X -> Type@{node}}
-    (mu : MN X) (k : forall x, MN (Y x)) :
+Lemma native_sigma_identity {X : Type@{node}} {Y : X → Type@{node}}
+    (mu : MN X) (k : ∀ x, MN (Y x)) :
   qlift eq
     (FOSample mu (fun x => FOSample (k x) (fun y => FORet (existT Y x y))) :
       FreeOmegaAt MN Anchor {x : X & Y x})
@@ -44,15 +46,15 @@ Context {X Y Z : Type@{node}}.
 Variable mu : MN X.
 Variable nu : MN Y.
 Variable joint : MN Z.
-Variable left : Z -> X.
-Variable right : Z -> Y.
-Variable Good : Z -> Prop.
-Variable U : X -> Type@{node}.
-Variable V : Y -> Type@{node}.
-Variable left_kernel : forall x, MN (U x).
-Variable right_kernel : forall y, MN (V y).
-Variable conditional : forall z, MN (U (left z) * V (right z)).
-Variable related : forall z, U (left z) -> V (right z) -> Prop.
+Variable left : Z → X.
+Variable right : Z → Y.
+Variable Good : Z → Prop.
+Variable U : X → Type@{node}.
+Variable V : Y → Type@{node}.
+Variable left_kernel : ∀ x, MN (U x).
+Variable right_kernel : ∀ y, MN (V y).
+Variable conditional : ∀ z, MN (U (left z) * V (right z)).
+Variable related : ∀ z, U (left z) → V (right z) → Prop.
 Arguments related z _ _ : clear implicits.
 
 Hypothesis joint_left : qlift (fun z x => left z = x)
@@ -60,7 +62,7 @@ Hypothesis joint_left : qlift (fun z x => left z = x)
 Hypothesis joint_right : qlift (fun z y => right z = y)
   (FOSample joint (fun z => FORet z)) (FOSample nu (fun y => FORet y)).
 Hypothesis joint_good : sem_ae joint Good.
-Hypothesis conditional_joint : forall z, Good z ->
+Hypothesis conditional_joint : ∀ z, Good z →
   semantic_coupling (related z) (left_kernel (left z)) (right_kernel (right z))
     (conditional z).
 
@@ -86,7 +88,7 @@ Let right_nested : FreeOmegaAt MN Anchor {y : Y & V y} :=
   FOSample nu (fun y => FOSample (right_kernel y) (fun v => FORet (existT V y v))).
 
 Lemma extended_joint_support : sem_ae extended_joint_measure (fun w =>
-  Good (projT1 w) /\ related (projT1 w) (fst (projT2 w)) (snd (projT2 w))).
+  Good (projT1 w) ∧ related (projT1 w) (fst (projT2 w)) (snd (projT2 w))).
 Proof.
   apply sem_ae_bind_iff. eapply sem_ae_mono; [|exact joint_good].
   intros z Hz. apply sem_ae_bind_iff.
@@ -102,7 +104,7 @@ Proof.
       (fun z => FOSample (conditional z) (fun uv => FORet (existT _ z uv))))
     (free_omega_bind (FOSample mu (fun x => FORet x))
       (fun x => FOSample (left_kernel x) (fun u => FORet (existT U x u))))).
-  eapply FOQLBind with (T := fun z x => left z = x /\ Good z).
+  eapply FOQLBind with (T := fun z x => left z = x ∧ Good z).
   - eapply FOQLAERestrict with (T := fun z x => left z = x)
       (P := Good) (Q := fun _ => True).
     + exact joint_left.
@@ -125,7 +127,7 @@ Proof.
       (fun z => FOSample (conditional z) (fun uv => FORet (existT _ z uv))))
     (free_omega_bind (FOSample nu (fun y => FORet y))
       (fun y => FOSample (right_kernel y) (fun v => FORet (existT V y v))))).
-  eapply FOQLBind with (T := fun z y => right z = y /\ Good z).
+  eapply FOQLBind with (T := fun z y => right z = y ∧ Good z).
   - eapply FOQLAERestrict with (T := fun z y => right z = y)
       (P := Good) (Q := fun _ => True).
     + exact joint_right.

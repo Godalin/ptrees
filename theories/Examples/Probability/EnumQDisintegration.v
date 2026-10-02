@@ -1,4 +1,6 @@
 (** Role: finite probability/coupling/backend example. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -46,9 +48,9 @@ Proof. apply subenumQ_disintegration_reconstruct. Qed.
 (** Public existential API also accepts function-valued states, without
     a client eqType or an extensional equality decision procedure. *)
 Example function_state_disintegration
-    (joint : SubEnumQ ((nat -> bool) * (nat -> nat))) :
-  exists conditional,
-    sem_eq (subenumQ_bind (subenumQ_first_marginal joint) conditional) joint /\
+    (joint : SubEnumQ ((nat → bool) * (nat → nat))) :
+  ∃ conditional,
+    sem_eq (subenumQ_bind (subenumQ_first_marginal joint) conditional) joint ∧
     sem_ae (subenumQ_first_marginal joint)
       (fun a => subenumQ_total (conditional a)).
 Proof.

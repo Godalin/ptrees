@@ -1,6 +1,8 @@
 (** Role: finite probability/coupling/backend example. *)
 (** Finite-real relational contracts: no rational transport, external domain,
     or FreeOmega is needed to build native couplings. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -32,7 +34,7 @@ Definition real_native_coupling_ae : @SemanticMeasureCouplingAELaws M NI := _.
 (** Shared finite containers are the native carrier, not a conversion layer. *)
 Example shared_carrier {A} : SubEnumR R A = FiniteSubdist R A.
 Proof. reflexivity. Qed.
-Example shared_bind {A B} (mu : SubEnumR R A) (k : A -> FiniteSubdist R B) :
+Example shared_bind {A B} (mu : SubEnumR R A) (k : A → FiniteSubdist R B) :
   subenumR_bind mu k = finite_subdist_bind mu k.
 Proof. reflexivity. Qed.
 Example shared_expectation {A} (mu : SubEnumR R A) f :
@@ -69,9 +71,9 @@ Proof.
   intros x z [y [Hxy Hyz]]; subst y z; by rewrite negbK.
 Qed.
 
-Example relational_bind_heterogeneous {A B C D} (S : A -> B -> Prop) (T : C -> D -> Prop)
-  (mu : M A) (nu : M B) (k : A -> M C) (h : B -> M D) :
-  sem_lift S mu nu -> (forall x y, S x y -> sem_lift T (k x) (h y)) ->
+Example relational_bind_heterogeneous {A B C D} (S : A → B → Prop) (T : C → D → Prop)
+  (mu : M A) (nu : M B) (k : A → M C) (h : B → M D) :
+  sem_lift S mu nu → (∀ x y, S x y → sem_lift T (k x) (h y)) →
   sem_lift T (sem_bind mu k) (sem_bind nu h).
 Proof. exact: sem_lift_bind. Qed.
 
@@ -90,9 +92,9 @@ Proof.
   exfalso; exact (Hnz (Logic.eq_refl _)).
 Qed.
 Example duplicate_zero_branch_restrict :
-  subenumR_lift (fun x y => x = y /\ x = true /\ y = true) duplicated_half duplicated_half.
+  subenumR_lift (fun x y => x = y ∧ x = true ∧ y = true) duplicated_half duplicated_half.
 Proof.
-  change (@sem_lift M NI bool bool (fun x y => x = y /\ x = true /\ y = true)
+  change (@sem_lift M NI bool bool (fun x y => x = y ∧ x = true ∧ y = true)
     duplicated_half duplicated_half).
   apply sem_lift_ae_restrict; try exact duplicate_zero_branch_ae.
   exact duplicate_partial_coupling.
@@ -103,7 +105,7 @@ Section HighCarrier.
 Universe u.
 Variable R : realType.
 Definition high_shared_native (A : Type@{u}) : SubEnumR R Type@{u} := finite_subdist_ret R A.
-Example high_shared_native_bind (A : Type@{u}) (f : Type@{u} -> R) :
+Example high_shared_native_bind (A : Type@{u}) (f : Type@{u} → R) :
   subenumR_expect (subenumR_bind (high_shared_native A) (fun X => finite_subdist_ret R X)) f = f A.
 Proof.
   change (finite_subdist_expect

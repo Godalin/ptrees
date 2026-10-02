@@ -1,6 +1,8 @@
 (** Source weak bisimulation is preserved by the genuine datatype embedding.
     Finite silent prefixes are eliminated inductively; infinite silent
     behavior has the zero hitting witness, never a coinductive Tau guard. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Classical_Prop.
@@ -15,7 +17,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Heads.
-Context {E MN : Type -> Type}.
+Context {E MN : Type → Type}.
 
 Fixpoint itree_head_at {A} (n : nat) (ot : itree' E A) :
     option (stable_head E MN A) :=
@@ -28,19 +30,19 @@ Fixpoint itree_head_at {A} (n : nat) (ot : itree' E A) :
   end.
 
 Lemma itree_head_at_succ {A} n (ot : itree' E A) h :
-  itree_head_at n ot = Some h -> itree_head_at (S n) ot = Some h.
+  itree_head_at n ot = Some h → itree_head_at (S n) ot = Some h.
 Proof.
   revert ot. induction n; intros [a|t|X e k] H; cbn in *; auto; discriminate.
 Qed.
 
-Definition embedded_eutt {A B} (RR : A -> B -> Prop)
+Definition embedded_eutt {A B} (RR : A → B → Prop)
     (t : ptree E MN A) (u : ptree E MN B) : Prop :=
-  exists s v, t = from_itree s /\ u = from_itree v /\ eutt RR s v.
+  ∃ s v, t = from_itree s ∧ u = from_itree v ∧ eutt RR s v.
 
-Lemma eutt_head_at {A B} (RR : A -> B -> Prop) n
+Lemma eutt_head_at {A B} (RR : A → B → Prop) n
     (t : itree E A) (u : itree E B) h :
-  eutt RR t u -> itree_head_at n (ITreeDefinition.observe t) = Some h ->
-  exists m j, itree_head_at m (ITreeDefinition.observe u) = Some j /\
+  eutt RR t u → itree_head_at n (ITreeDefinition.observe t) = Some h →
+  ∃ m j, itree_head_at m (ITreeDefinition.observe u) = Some j ∧
     stable_head_rel RR (embedded_eutt RR) h j.
 Proof.
   revert t u h. induction n as [|n IH]; intros t u h Htu;
@@ -67,7 +69,7 @@ Qed.
 End Heads.
 
 Section Hitting.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -75,7 +77,7 @@ Context {E MN MF : Type -> Type}
   `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}.
 
 Lemma from_itree_head_hitting {A} n (t : itree E A) h :
-  itree_head_at n (ITreeDefinition.observe t) = Some h ->
+  itree_head_at n (ITreeDefinition.observe t) = Some h →
   ptree_stable_hitting (MF := MF) (observe (@from_itree E MN A t)) (sem_ret h).
 Proof.
   revert t h. induction n as [|n IH]; intros t h H;
@@ -87,7 +89,7 @@ Proof.
 Qed.
 
 Lemma from_itree_no_head_approx {A} n (t : itree E A) :
-  (forall m, @itree_head_at E MN A m (ITreeDefinition.observe t) = None) ->
+  (∀ m, @itree_head_at E MN A m (ITreeDefinition.observe t) = None) →
   sem_eq (ptree_hitting_approx (MF := MF) n (observe (from_itree t))) sem_zero.
 Proof.
   revert t. induction n as [|n IH]; intros t H;
@@ -103,7 +105,7 @@ Proof.
 Qed.
 
 Lemma from_itree_no_head_hitting {A} (t : itree E A) :
-  (forall m, @itree_head_at E MN A m (ITreeDefinition.observe t) = None) ->
+  (∀ m, @itree_head_at E MN A m (ITreeDefinition.observe t) = None) →
   ptree_stable_hitting (MF := MF) (observe (from_itree t)) sem_zero.
 Proof.
   intro H. unfold ptree_stable_hitting, stable_hitting.
@@ -112,16 +114,16 @@ Proof.
   - apply sem_lub_constant.
 Qed.
 
-Definition embedded_eutt_state {A B} (RR : A -> B -> Prop)
+Definition embedded_eutt_state {A B} (RR : A → B → Prop)
     (s : ptree' E MN A) (v : ptree' E MN B) : Prop :=
-  exists t u, s = observe (from_itree t) /\ v = observe (from_itree u) /\ eutt RR t u.
+  ∃ t u, s = observe (from_itree t) ∧ v = observe (from_itree u) ∧ eutt RR t u.
 
 (** No native probability laws, relational-lub law, or termination premise
     are needed for the probability-free embedding. Classical case analysis
     separates finite head convergence from pure silent divergence. *)
-Theorem from_itree_eutt {A B} (RR : A -> B -> Prop)
+Theorem from_itree_eutt {A B} (RR : A → B → Prop)
     (t : itree E A) (u : itree E B) (Hzero : relational_zero FO) :
-  eutt RR t u -> peutt (MF := MF) RR (from_itree t) (from_itree u).
+  eutt RR t u → peutt (MF := MF) RR (from_itree t) (from_itree u).
 Proof.
   intro Htu. eapply peutt_coinduction with (sim := embedded_eutt_state RR).
   - intros s v [t' [u' [-> [-> H]]]].
@@ -134,11 +136,11 @@ Proof.
       * apply sem_lift_ret. eapply stable_head_rel_mono; [|exact Hrel].
         intros a b [x [y [-> [-> Hxy]]]].
         exists x, y. split; [reflexivity|split; [reflexivity|exact Hxy]].
-    + assert (Ht : forall n, @itree_head_at E MN A n
+    + assert (Ht : ∀ n, @itree_head_at E MN A n
         (ITreeDefinition.observe t') = None).
       { intro n. destruct (itree_head_at n (ITreeDefinition.observe t')) eqn:Hn;
           [exfalso; apply Hnone; eauto|reflexivity]. }
-      assert (Hu : forall n, @itree_head_at E MN B n
+      assert (Hu : ∀ n, @itree_head_at E MN B n
         (ITreeDefinition.observe u') = None).
       { intro n. destruct (itree_head_at n (ITreeDefinition.observe u')) eqn:Hn;
           [|reflexivity]. exfalso.

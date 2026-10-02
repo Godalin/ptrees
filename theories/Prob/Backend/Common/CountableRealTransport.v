@@ -1,5 +1,7 @@
 (** Countable transport by compact finite cuts with explicit tail capacity.
     Independent real analysis: no probability syntax or measure capability. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import all_ssreflect all_algebra finmap all_classical reals.
 From mathcomp Require Import topology normedtype function_spaces.
@@ -14,11 +16,11 @@ Local Open Scope ring_scope.
 
 Section Cuts.
 Variable R : realType.
-Definition transport_prefix (p : nat -> R) n := \sum_(i < n) p i.
-Definition transport_tail (p : nat -> R) mass n := mass - transport_prefix p n.
-Definition transport_cut (p : nat -> R) mass n (i : nat) :=
+Definition transport_prefix (p : nat → R) n := \sum_(i < n) p i.
+Definition transport_tail (p : nat → R) mass n := mass - transport_prefix p n.
+Definition transport_cut (p : nat → R) mass n (i : nat) :=
   if (i < n)%N then p i else transport_tail p mass n.
-Definition transport_cut_edge (T : nat -> nat -> Prop) n (i j : nat) :=
+Definition transport_cut_edge (T : nat → nat → Prop) n (i j : nat) :=
   (n <= i)%N || (n <= j)%N || asbool (T i j).
 
 Lemma transport_cut_total p mass n :
@@ -31,14 +33,14 @@ Proof.
 Qed.
 
 Lemma transport_cut_nonnegative p mass n :
-  (forall i, 0 <= p i) -> transport_prefix p n <= mass ->
-  forall i, 0 <= transport_cut p mass n i.
+  (∀ i, 0 <= p i) → transport_prefix p n <= mass →
+  ∀ i, 0 <= transport_cut p mass n i.
 Proof.
   intros Hp Hmass i; rewrite /transport_cut; case: (i < n)%N; first exact: Hp.
   by rewrite /transport_tail subr_ge0.
 Qed.
 
-Lemma transport_cut_prefix p mass n m : (m <= n)%N ->
+Lemma transport_cut_prefix p mass n m : (m <= n)%N →
   \sum_(i < n.+1 | (i < m)%N) transport_cut p mass n i = transport_prefix p m.
 Proof.
   intro Hmn; rewrite -(big_ord_widen n.+1) //; last exact: leq_trans Hmn (leqnSn n).
@@ -49,13 +51,13 @@ Qed.
 
 (** A finite matrix's missing row prefix is bounded by the TOTAL capacity
     outside that prefix. This is the no-escape estimate, before taking limits. *)
-Lemma finite_transport_row_tail {X Y : finType} (p : X -> R) (q : Y -> R)
-    (c : X -> Y -> R) (keep : pred Y) :
-  (forall x y, 0 <= c x y) ->
-  (forall x, \sum_y c x y = p x) ->
-  (forall y, \sum_x c x y = q y) ->
-  forall x,
-    p x - (\sum_y q y - \sum_(y | keep y) q y) <= \sum_(y | keep y) c x y /\
+Lemma finite_transport_row_tail {X Y : finType} (p : X → R) (q : Y → R)
+    (c : X → Y → R) (keep : pred Y) :
+  (∀ x y, 0 <= c x y) →
+  (∀ x, \sum_y c x y = p x) →
+  (∀ y, \sum_x c x y = q y) →
+  ∀ x,
+    p x - (\sum_y q y - \sum_(y | keep y) q y) <= \sum_(y | keep y) c x y ∧
     \sum_(y | keep y) c x y <= p x.
 Proof.
   intros Hc Hr Hcol x.
@@ -72,10 +74,10 @@ Proof.
   - rewrite -(Hr x) Hpart lerDl; apply sumr_ge0=> y _; exact: Hc.
 Qed.
 
-Definition transport_extend n (c : 'I_n.+1 -> 'I_n.+1 -> R) i j :=
+Definition transport_extend n (c : 'I_n.+1 → 'I_n.+1 → R) i j :=
   if (i < n)%N && (j < n)%N then c (inord i) (inord j) else 0.
 
-Lemma transport_extend_prefix n c i m : (i < n)%N -> (m <= n)%N ->
+Lemma transport_extend_prefix n c i m : (i < n)%N → (m <= n)%N →
   \sum_(j < m) transport_extend c i j =
   \sum_(j < n.+1 | (j < m)%N) c (inord i) j.
 Proof.
@@ -91,21 +93,21 @@ Lemma transport_extend_transpose n c i j :
   transport_extend (fun x y : 'I_n.+1 => c y x) i j = transport_extend c j i.
 Proof. by rewrite /transport_extend andbC. Qed.
 
-Theorem finite_cut_transport (p q : nat -> R) mass (T : nat -> nat -> Prop) n :
-  (forall i, 0 <= p i) -> (forall j, 0 <= q j) ->
-  transport_prefix p n <= mass -> transport_prefix q n <= mass ->
+Theorem finite_cut_transport (p q : nat → R) mass (T : nat → nat → Prop) n :
+  (∀ i, 0 <= p i) → (∀ j, 0 <= q j) →
+  transport_prefix p n <= mass → transport_prefix q n <= mass →
   real_transport_hall
     (fun i : 'I_n.+1 => transport_cut p mass n i)
     (fun j : 'I_n.+1 => transport_cut q mass n j)
-    (fun i j : 'I_n.+1 => transport_cut_edge T n i j) ->
-  exists w : nat -> nat -> R,
-    (forall i j, 0 <= w i j /\ w i j <= mass) /\
-    (forall i j, ~ T i j -> w i j = 0) /\
-    (forall i m, (i < n)%N -> (m <= n)%N ->
-      p i - transport_tail q mass m <= transport_prefix (w i) m /\
-      transport_prefix (w i) m <= p i) /\
-    (forall j m, (j < n)%N -> (m <= n)%N ->
-      q j - transport_tail p mass m <= transport_prefix (fun i => w i j) m /\
+    (fun i j : 'I_n.+1 => transport_cut_edge T n i j) →
+  ∃ w : nat → nat → R,
+    (∀ i j, 0 <= w i j ∧ w i j <= mass) ∧
+    (∀ i j, ¬ T i j → w i j = 0) ∧
+    (∀ i m, (i < n)%N → (m <= n)%N →
+      p i - transport_tail q mass m <= transport_prefix (w i) m ∧
+      transport_prefix (w i) m <= p i) ∧
+    (∀ j m, (j < n)%N → (m <= n)%N →
+      q j - transport_tail p mass m <= transport_prefix (fun i => w i j) m ∧
       transport_prefix (fun i => w i j) m <= q j).
 Proof.
   intros Hp Hq Hpm Hqm Hall.
@@ -168,16 +170,16 @@ End Cuts.
 Local Open Scope classical_set_scope.
 Section CountableLimit.
 Variable R : realType.
-Variables (p q : nat -> R) (mass : R) (T : nat -> nat -> Prop).
+Variables (p q : nat → R) (mass : R) (T : nat → nat → Prop).
 Local Notation W := ((nat * nat)%type -> R).
 Let row (w : W) i m := transport_prefix (fun j => w (i,j)) m.
 Let col (w : W) j m := transport_prefix (fun i => w (i,j)) m.
 Let cuts n (w : W) :=
-  (forall i m, (i < n)%N -> (m <= n)%N ->
-    p i - transport_tail q mass m <= row w i m /\ row w i m <= p i) /\
-  (forall j m, (j < n)%N -> (m <= n)%N ->
-    q j - transport_tail p mass m <= col w j m /\ col w j m <= q j) /\
-  (forall i j, ~ T i j -> w (i,j) = 0).
+  (∀ i m, (i < n)%N → (m <= n)%N →
+    p i - transport_tail q mass m <= row w i m ∧ row w i m <= p i) ∧
+  (∀ j m, (j < n)%N → (m <= n)%N →
+    q j - transport_tail p mass m <= col w j m ∧ col w j m <= q j) ∧
+  (∀ i j, ¬ T i j → w (i,j) = 0).
 
 Lemma countable_row_continuous i m : continuous (fun w : W => row w i m).
 Proof. apply transport_continuous_sum=> j; exact: proj_continuous. Qed.
@@ -213,34 +215,34 @@ Qed.
 (** The input is numerical Hall inequalities on finite tail-lumped cuts,
     not a supplied family of plans and not a transport-existence principle. *)
 Theorem countable_transport_no_escape :
-  (forall i, 0 <= p i) -> (forall j, 0 <= q j) ->
-  (forall n, transport_prefix p n <= mass) ->
-  (forall n, transport_prefix q n <= mass) ->
-  (forall n, real_transport_hall
+  (∀ i, 0 <= p i) → (∀ j, 0 <= q j) →
+  (∀ n, transport_prefix p n <= mass) →
+  (∀ n, transport_prefix q n <= mass) →
+  (∀ n, real_transport_hall
     (fun i : 'I_n.+1 => transport_cut p mass n i)
     (fun j : 'I_n.+1 => transport_cut q mass n j)
-    (fun i j : 'I_n.+1 => transport_cut_edge T n i j)) ->
-  exists w : nat -> nat -> R,
-    (forall i j, 0 <= w i j /\ w i j <= mass) /\
-    (forall i j, ~ T i j -> w i j = 0) /\
-    (forall i m, p i - transport_tail q mass m <= transport_prefix (w i) m /\
-      transport_prefix (w i) m <= p i) /\
-    (forall j m, q j - transport_tail p mass m <= transport_prefix (fun i => w i j) m /\
+    (fun i j : 'I_n.+1 => transport_cut_edge T n i j)) →
+  ∃ w : nat → nat → R,
+    (∀ i j, 0 <= w i j ∧ w i j <= mass) ∧
+    (∀ i j, ¬ T i j → w i j = 0) ∧
+    (∀ i m, p i - transport_tail q mass m <= transport_prefix (w i) m ∧
+      transport_prefix (w i) m <= p i) ∧
+    (∀ j m, q j - transport_tail p mass m <= transport_prefix (fun i => w i j) m ∧
       transport_prefix (fun i => w i j) m <= q j).
 Proof.
   intros Hp Hq Hpm Hqm Hall.
-  pose box : set W := fun w => forall z, `[0,mass] (w z).
+  pose box : set W := fun w => ∀ z, `[0,mass] (w z).
   have HK : compact box.
   { exact (@tychonoff _ (fun _ : (nat * nat)%type => _) _
       (fun _ : (nat * nat)%type => @segment_compact R 0 mass)). }
-  have Hnon : forall n, (box `&` cuts n) !=set0.
+  have Hnon : ∀ n, (box `&` cuts n) !=set0.
   { intro n; destruct (finite_cut_transport Hp Hq (Hpm n) (Hqm n) (Hall n))
       as [w [Hw [Hs [Hr Hc]]]].
     exists (fun z => w (fst z) (snd z)); split.
     - intros [i j]; change (is_true (0 <= w i j <= mass)); apply/andP; exact: Hw.
     - split; first exact Hr.
       split; [exact Hc|exact Hs]. }
-  have Hnest : forall n m, (n <= m)%N -> cuts m `<=` cuts n.
+  have Hnest : ∀ n m, (n <= m)%N -> cuts m `<=` cuts n.
   { intros n m Hnm w [Hr [Hc Hs]]; split.
     - intros i k Hi Hk; exact (Hr i k (leq_trans Hi Hnm) (leq_trans Hk Hnm)).
     - split; last exact Hs.
@@ -257,11 +259,11 @@ End CountableLimit.
 
 Section ExactMarginals.
 Variable R : realType.
-Definition transport_series (p : nat -> R) := sup (range (transport_prefix p)).
+Definition transport_series (p : nat → R) := sup (range (transport_prefix p)).
 
-Lemma transport_prefix_tight_exact (w : nat -> R) p (tail : nat -> R) :
-  (forall n, p - tail n <= transport_prefix w n /\ transport_prefix w n <= p) ->
-  (forall eps, 0 < eps -> exists n, tail n < eps) ->
+Lemma transport_prefix_tight_exact (w : nat → R) p (tail : nat → R) :
+  (∀ n, p - tail n <= transport_prefix w n ∧ transport_prefix w n <= p) →
+  (∀ eps, 0 < eps → ∃ n, tail n < eps) →
   transport_series w = p.
 Proof.
   intros Hbounds Htight.
@@ -280,23 +282,23 @@ Proof.
   apply: le_trans Hlo _; apply lerD; [exact: Hterm|exact: ltW].
 Qed.
 
-Theorem countable_real_transport (p q : nat -> R) mass (T : nat -> nat -> Prop) :
-  (forall i, 0 <= p i) -> (forall j, 0 <= q j) ->
-  (forall n, transport_prefix p n <= mass) ->
-  (forall n, transport_prefix q n <= mass) ->
-  (forall eps, 0 < eps -> exists n, transport_tail p mass n < eps) ->
-  (forall eps, 0 < eps -> exists n, transport_tail q mass n < eps) ->
-  (forall n, real_transport_hall
+Theorem countable_real_transport (p q : nat → R) mass (T : nat → nat → Prop) :
+  (∀ i, 0 <= p i) → (∀ j, 0 <= q j) →
+  (∀ n, transport_prefix p n <= mass) →
+  (∀ n, transport_prefix q n <= mass) →
+  (∀ eps, 0 < eps → ∃ n, transport_tail p mass n < eps) →
+  (∀ eps, 0 < eps → ∃ n, transport_tail q mass n < eps) →
+  (∀ n, real_transport_hall
     (fun i : 'I_n.+1 => transport_cut p mass n i)
     (fun j : 'I_n.+1 => transport_cut q mass n j)
-    (fun i j : 'I_n.+1 => transport_cut_edge T n i j)) ->
-  exists w : nat -> nat -> R,
-    (forall i j, 0 <= w i j) /\
-    (forall i j, ~ T i j -> w i j = 0) /\
-    (forall i, transport_series (w i) = p i) /\
-    (forall j, transport_series (fun i => w i j) = q j) /\
-    (forall i m, transport_prefix (w i) m <= p i) /\
-    (forall j m, transport_prefix (fun i => w i j) m <= q j).
+    (fun i j : 'I_n.+1 => transport_cut_edge T n i j)) →
+  ∃ w : nat → nat → R,
+    (∀ i j, 0 <= w i j) ∧
+    (∀ i j, ¬ T i j → w i j = 0) ∧
+    (∀ i, transport_series (w i) = p i) ∧
+    (∀ j, transport_series (fun i => w i j) = q j) ∧
+    (∀ i m, transport_prefix (w i) m <= p i) ∧
+    (∀ j m, transport_prefix (fun i => w i j) m <= q j).
 Proof.
   intros Hp Hq Hpm Hqm Hpt Hqt Hall.
   destruct (countable_transport_no_escape Hp Hq Hpm Hqm Hall) as [w [Hw [Hs [Hr Hc]]]].

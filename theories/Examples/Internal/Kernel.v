@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Prob.Backend.EnumQ.FreeOmega Require Import Coupling.
 (** Maintained internal kernel contracts: leastness, raw-order boundaries,
     continuity and congruence. Not a public equivalence or application. *)
@@ -64,7 +66,7 @@ Proof.
 Qed.
 
 Example completed_rounds_need_not_be_raw_increasing :
-  ~ free_omega_approx eq
+  ¬ free_omega_approx eq
     (kernel_completion two_stage_kernel (fun _ => true) two_stage_tail 1 false)
     (kernel_completion two_stage_kernel (fun _ => true) two_stage_tail 2 false).
 Proof. intro H. inversion H. Qed.
@@ -74,7 +76,7 @@ Definition spinning_limit : MF unit :=
     unit unit spinning_kernel n tt).
 
 Example spin_limit_not_returning_tail :
-  ~ free_omega_qlift eq
+  ¬ free_omega_qlift eq
     (free_omega_bind spinning_limit (fun _ => FORet true)) (returning_tail tt).
 Proof.
   intro Hlift. pose proof (proj1 (free_omega_qlift_support Hlift)) as Hsupport.
@@ -89,9 +91,9 @@ Qed.
 (** An explicit upper bound exists, despite the false equality ruled out
     above.  Upper bounds of this form must not be promoted to equality. *)
 Example spin_limit_has_returning_upper :
-  exists upper,
+  ∃ upper,
     free_omega_approx eq
-      (free_omega_bind spinning_limit (fun _ => FORet true)) upper /\
+      (free_omega_bind spinning_limit (fun _ => FORet true)) upper ∧
     free_omega_qlift eq upper (returning_tail tt).
 Proof.
   exists (FOLub (fun _ => returning_tail tt)). split.
@@ -132,8 +134,8 @@ Context {S O : Type}.
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-Variable kernel : S -> MF (stable_target S O).
-Variable rank : S -> nat.
+Variable kernel : S → MF (stable_target S O).
+Variable rank : S → nat.
 
 Definition ranked_kernel n s : MF (stable_target S O) :=
   if Nat.leb (rank s) n then kernel s else FOZero.
@@ -169,7 +171,7 @@ Proof.
 Qed.
 
 Example state_truncation_recovers_complete_hitting s out :
-  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out ->
+  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out →
   free_omega_qlift eq out
     (FOLub (fun n => @stable_hitting_approx MF FI
       FreeOmegaObservableSemanticOmega S O (ranked_kernel n) n s)).
@@ -192,7 +194,7 @@ Definition return_index_kernel (s : nat) : MF (stable_target nat nat) :=
   FORet (SHStable s).
 
 Example no_uniform_state_cutoff n :
-  ~ free_omega_qlift eq
+  ¬ free_omega_qlift eq
     (FOLub (fun fuel => @stable_hitting_approx MF FI
       FreeOmegaObservableSemanticOmega nat nat
       (ranked_kernel return_index_kernel (fun s => s) n) fuel (Datatypes.S n)))
@@ -240,7 +242,7 @@ Set Implicit Arguments.
 Section ExchangeInEveryRound.
 Context {S O : Type}.
 Variables mu nu : SubEnumQ bool.
-Variable next : S -> bool -> bool -> stable_target S O.
+Variable next : S → bool → bool → stable_target S O.
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
@@ -269,9 +271,9 @@ Qed.
 
 Example sample_exchange_preserves_complete_hitting s out1 out2 :
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega
-    S O first_sample_kernel s out1 ->
+    S O first_sample_kernel s out1 →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega
-    S O swapped_sample_kernel s out2 ->
+    S O swapped_sample_kernel s out2 →
   free_omega_qlift eq out1 out2.
 Proof.
   intros Hleft Hright.

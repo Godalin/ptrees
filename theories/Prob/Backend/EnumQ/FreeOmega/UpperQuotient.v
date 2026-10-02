@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -28,30 +30,30 @@ Local Notation upper := (free_omega_extended_upper (R := F)).
 Local Notation test := (nonnegative_test (R := F)).
 Local Notation directed := (free_omega_extended_upper_rel F).
 
-Definition free_omega_extended_upper_birel {A B} (T : A -> B -> Prop) mu nu :=
-  directed T mu nu /\ directed (fun y x => T x y) nu mu.
+Definition free_omega_extended_upper_birel {A B} (T : A → B → Prop) mu nu :=
+  directed T mu nu ∧ directed (fun y x => T x y) nu mu.
 Local Notation related := free_omega_extended_upper_birel.
 
-Lemma extended_upper_birel_mono {A B} (T U : A -> B -> Prop) mu nu :
-  related T mu nu -> (forall x y, T x y -> U x y) -> related U mu nu.
+Lemma extended_upper_birel_mono {A B} (T U : A → B → Prop) mu nu :
+  related T mu nu → (∀ x y, T x y → U x y) → related U mu nu.
 Proof.
   intros [Hl Hr] HT. split; eapply free_omega_extended_upper_rel_mono; eauto.
 Qed.
 
-Lemma extended_upper_birel_ext {A B} (T : A -> B -> Prop) mu nu mu' nu' :
-  (forall f, test f -> upper mu f = upper mu' f) ->
-  (forall g, test g -> upper nu g = upper nu' g) ->
-  related T mu' nu' -> related T mu nu.
+Lemma extended_upper_birel_ext {A B} (T : A → B → Prop) mu nu mu' nu' :
+  (∀ f, test f → upper mu f = upper mu' f) →
+  (∀ g, test g → upper nu g = upper nu' g) →
+  related T mu' nu' → related T mu nu.
 Proof.
   intros Hmu Hnu [Hl Hr]. split; intros f g Hf Hg Hfg.
   - rewrite (Hmu f Hf) (Hnu g Hg). exact (Hl f g Hf Hg Hfg).
   - rewrite (Hnu f Hf) (Hmu g Hg). exact (Hr f g Hf Hg Hfg).
 Qed.
 
-Lemma extended_upper_birel_comp {A B C} (T : A -> B -> Prop) (U : B -> C -> Prop)
-    (V : A -> C -> Prop) mu mid nu :
-  related T mu mid -> related U mid nu ->
-  (forall x z, (exists y, T x y /\ U y z) -> V x z) -> related V mu nu.
+Lemma extended_upper_birel_comp {A B C} (T : A → B → Prop) (U : B → C → Prop)
+    (V : A → C → Prop) mu mid nu :
+  related T mu mid → related U mid nu →
+  (∀ x z, (∃ y, T x y ∧ U y z) → V x z) → related V mu nu.
 Proof.
   intros [Hl1 Hr1] [Hl2 Hr2] HV. split.
   - eapply free_omega_extended_upper_rel_mono; [eapply free_omega_extended_upper_rel_comp; eassumption|exact HV].
@@ -59,9 +61,9 @@ Proof.
     intros z x [y [Hy Hx]]. apply HV. exists y. by split.
 Qed.
 
-Lemma extended_upper_birel_bind {A B C D} (T : A -> B -> Prop) (U : C -> D -> Prop)
-    mu nu (k : A -> FreeOmega EnumQ C) (h : B -> FreeOmega EnumQ D) :
-  related T mu nu -> (forall x y, T x y -> related U (k x) (h y)) ->
+Lemma extended_upper_birel_bind {A B C D} (T : A → B → Prop) (U : C → D → Prop)
+    mu nu (k : A → FreeOmega EnumQ C) (h : B → FreeOmega EnumQ D) :
+  related T mu nu → (∀ x y, T x y → related U (k x) (h y)) →
   related U (free_omega_bind mu k) (free_omega_bind nu h).
 Proof.
   intros [Hl Hr] Hk. split.
@@ -69,9 +71,9 @@ Proof.
   - eapply free_omega_extended_upper_rel_bind; [exact Hr|]. intros y x Hxy. exact (proj2 (Hk x y Hxy)).
 Qed.
 
-Lemma extended_upper_birel_sample {A B C D} (T : A -> B -> Prop) (U : C -> D -> Prop)
-    mu nu (k : A -> FreeOmega EnumQ C) (h : B -> FreeOmega EnumQ D) :
-  sem_lift T mu nu -> (forall x y, T x y -> related U (k x) (h y)) ->
+Lemma extended_upper_birel_sample {A B C D} (T : A → B → Prop) (U : C → D → Prop)
+    mu nu (k : A → FreeOmega EnumQ C) (h : B → FreeOmega EnumQ D) :
+  sem_lift T mu nu → (∀ x y, T x y → related U (k x) (h y)) →
   related U (FOSample mu k) (FOSample nu h).
 Proof.
   intros Hmu Hk. split.
@@ -80,16 +82,16 @@ Proof.
     intros y x Hxy. exact (proj2 (Hk x y Hxy)).
 Qed.
 
-Lemma extended_upper_birel_lub {A B} (T : A -> B -> Prop) c d :
-  (forall n, related T (c n) (d n)) -> related T (FOLub c) (FOLub d).
+Lemma extended_upper_birel_lub {A B} (T : A → B → Prop) c d :
+  (∀ n, related T (c n) (d n)) → related T (FOLub c) (FOLub d).
 Proof.
   intro H. split; apply free_omega_extended_upper_rel_lub; intro n;
     [exact (proj1 (H n))|exact (proj2 (H n))].
 Qed.
 
-Lemma extended_upper_birel_sample_ae {A B C} (T : A -> B -> Prop) (mu : EnumQ C)
-    (Good : C -> Prop) (k : C -> FreeOmega EnumQ A) (h : C -> FreeOmega EnumQ B) :
-  sem_ae mu Good -> (forall x, Good x -> related T (k x) (h x)) ->
+Lemma extended_upper_birel_sample_ae {A B C} (T : A → B → Prop) (mu : EnumQ C)
+    (Good : C → Prop) (k : C → FreeOmega EnumQ A) (h : C → FreeOmega EnumQ B) :
+  sem_ae mu Good → (∀ x, Good x → related T (k x) (h x)) →
   related T (FOSample mu k) (FOSample mu h).
 Proof.
   intros HGood Hk. split; intros f g Hf Hg Hfg; cbn [free_omega_extended_upper];
@@ -101,8 +103,8 @@ Proof.
 Qed.
 
 Lemma extended_upper_sample_product {A X Y} (mu : EnumQ X) (nu : EnumQ Y)
-    (k : X -> Y -> FreeOmega EnumQ A) f :
-  test f ->
+    (k : X → Y → FreeOmega EnumQ A) f :
+  test f →
   upper (FOSample (semantic_product mu nu) (fun p => k (fst p) (snd p))) f =
   upper (FOSample mu (fun x => FOSample nu (k x))) f.
 Proof.
@@ -121,8 +123,8 @@ Proof.
   by rewrite rmorph1 mul1e adde0.
 Qed.
 
-Lemma extended_upper_zero_prefix {A} (c : nat -> FreeOmega EnumQ A) f :
-  test f ->
+Lemma extended_upper_zero_prefix {A} (c : nat → FreeOmega EnumQ A) f :
+  test f →
   upper (FOLub (fun n => match n with O => FOZero | S n => c n end)) f =
   upper (FOLub c) f.
 Proof.
@@ -135,9 +137,9 @@ Proof.
       (fun i => upper (match i with O => FOZero | S j => c j end) f) (S n)).
 Qed.
 
-Theorem free_omega_qlift_extended_upper_birel {A B} (T : A -> B -> Prop) mu nu :
+Theorem free_omega_qlift_extended_upper_birel {A B} (T : A → B → Prop) mu nu :
   @free_omega_qlift EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
-    A B T mu nu -> related T mu nu.
+    A B T mu nu → related T mu nu.
 Proof.
   intro Hq. induction Hq.
   - split; intros f g Hf Hg Hfg.
@@ -186,7 +188,7 @@ Proof.
         (nu' := FOSample mu (fun x => FOLub (chain x))).
     + reflexivity.
     + intros g Hg. symmetry. apply free_omega_sample_lub_extended_upper; [|exact Hg].
-      change (sem_ae mu (fun x => forall n, free_omega_approx eq (chain x n) (chain x (S n)))).
+      change (sem_ae mu (fun x => ∀ n, free_omega_approx eq (chain x n) (chain x (S n)))).
       eapply sem_ae_mono; [|exact H]. exact H0.
     + eapply extended_upper_birel_sample_ae; eassumption.
   - split; intros f g Hf Hg Hfg; cbn [free_omega_extended_upper];
@@ -211,17 +213,17 @@ Proof.
       eapply free_omega_cofinal_extended_upper_le; eassumption.
 Qed.
 
-Corollary free_omega_qlift_extended_upper {A B} (T : A -> B -> Prop) mu nu
-    (f : A -> \bar F) (g : B -> \bar F) :
+Corollary free_omega_qlift_extended_upper {A B} (T : A → B → Prop) mu nu
+    (f : A → \bar F) (g : B → \bar F) :
   @free_omega_qlift EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
-    A B T mu nu ->
-  test f -> test g -> (forall x y, T x y -> f x <= g y) ->
+    A B T mu nu →
+  test f → test g → (∀ x y, T x y → f x <= g y) →
   upper mu f <= upper nu g.
 Proof. intro H. exact (proj1 (free_omega_qlift_extended_upper_birel H) f g). Qed.
 
 Corollary free_omega_qlift_eq_extended_upper {A} (mu nu : FreeOmega EnumQ A) f :
   @free_omega_qlift EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
-    A A eq mu nu -> test f -> upper mu f = upper nu f.
+    A A eq mu nu → test f → upper mu f = upper nu f.
 Proof.
   intros H Hf. destruct (free_omega_qlift_extended_upper_birel H) as [Hl Hr].
   apply/eqP. rewrite eq_le. apply/andP. split.
@@ -231,12 +233,12 @@ Qed.
 
 (** Even unrelated carriers and a completely permissive relation cannot
     change mass.  This covers arbitrary combinations of quotient rules. *)
-Corollary free_omega_qlift_extended_upper_mass {A B} (T : A -> B -> Prop) mu nu :
+Corollary free_omega_qlift_extended_upper_mass {A B} (T : A → B → Prop) mu nu :
   @free_omega_qlift EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
-    A B T mu nu -> upper mu (fun _ => 1) = upper nu (fun _ => 1).
+    A B T mu nu → upper mu (fun _ => 1) = upper nu (fun _ => 1).
 Proof.
   intro H. destruct (free_omega_qlift_extended_upper_birel H) as [Hl Hr].
-  have Hone : forall X : Type, test (fun _ : X => (1 : \bar F)).
+  have Hone : ∀ X : Type, test (fun _ : X => (1 : \bar F)).
   { intros X x. exact: lee01. }
   apply/eqP. rewrite eq_le. apply/andP. split.
   - apply Hl; [apply Hone|apply Hone|]. intros x y _. exact: lexx.

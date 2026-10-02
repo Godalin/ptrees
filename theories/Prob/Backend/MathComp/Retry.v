@@ -1,5 +1,7 @@
 (** A native semantic sanity check: a positive-probability retry equation
     has exactly the specified returned-value behavior. All checking enabled. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import all_ssreflect all_algebra reals boolp classical_sets.
 From mathcomp Require Import measure ereal numfun.
@@ -21,9 +23,9 @@ Proof.
 Qed.
 
 Lemma mathcomp_retry_fixed_point {A} (q : R) (mu target : MathCompKernelMeasure R A) :
-  (0 < q <= 1)%R ->
+  (0 < q <= 1)%R →
   mathcomp_kernel_eq mu
-    (mathcomp_kernel_bind (mathcomp_bernoulli q) (fun b => if b then target else mu)) ->
+    (mathcomp_kernel_bind (mathcomp_bernoulli q) (fun b => if b then target else mu)) →
   mathcomp_kernel_eq mu target.
 Proof.
   move=> /andP[Hq Hq1] He U mU Hb.

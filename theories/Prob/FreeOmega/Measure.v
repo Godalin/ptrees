@@ -1,4 +1,6 @@
 (** Role: Canonical observable measure, mixed and omega instances and laws. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -48,13 +50,13 @@ Proof.
 Qed.
 
 Section FreeOmegaObservableLaws.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
 
-Lemma free_omega_qlift_refl {A} (R : A -> A -> Prop) mu :
-  Reflexive R -> free_omega_qlift R mu mu.
+Lemma free_omega_qlift_refl {A} (R : A → A → Prop) mu :
+  Reflexive R → free_omega_qlift R mu mu.
 Proof. intro HR. apply FOQLStructural, free_omega_lift_refl, HR. Qed.
 
 #[global] Instance FreeOmegaObservableSemanticMeasureCoreLaws :
@@ -94,7 +96,7 @@ Proof.
     intros x z [y [Hxy ->]]. exact Hxy.
   - intros A B R mu nu H. apply FOQLSym. exact H.
   - intros A B C R T mu nu xi Hmn Hnx.
-    refine (FOQLComp (R := fun x z => exists y, R x y /\ T y z)
+    refine (FOQLComp (R := fun x z => exists y, R x y ∧ T y z)
       Hmn Hnx _).
     intros x z Hxz. exact Hxz.
 Qed.
@@ -136,14 +138,14 @@ Qed.
 
 Lemma free_omega_qlift_bind_ae
     `{NAE : @SemanticMeasureAELiftLaws MN NI}
-    {A B} (mu : FreeOmega MN A) (k h : A -> FreeOmega MN B) :
-  free_omega_ae (fun x => free_omega_qlift eq (k x) (h x)) mu ->
+    {A B} (mu : FreeOmega MN A) (k h : A → FreeOmega MN B) :
+  free_omega_ae (fun x => free_omega_qlift eq (k x) (h x)) mu →
   free_omega_qlift eq (free_omega_bind mu k) (free_omega_bind mu h).
 Proof.
   intro Hae. induction Hae; cbn.
   - exact H.
   - apply FOQLStructural. constructor.
-  - eapply FOQLSample with (T := fun x y => x = y /\ Good x).
+  - eapply FOQLSample with (T := fun x y => x = y ∧ Good x).
     + exact (sem_lift_refl_ae H).
     + intros x y [-> Hy]. exact (H1 y Hy).
   - apply FOQLLub. exact H0.
@@ -175,7 +177,7 @@ Qed.
 Proof.
   constructor.
   - intros A B mu k h Hae.
-    eapply FOQLSample with (T := fun x y => x = y /\
+    eapply FOQLSample with (T := fun x y => x = y ∧
       free_omega_qlift eq (k x) (h x)).
     + exact (sem_lift_refl_ae Hae).
     + intros x y [-> Hxy]. exact Hxy.
@@ -221,7 +223,7 @@ Lemma free_omega_mixed_exchange_of_product
     `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
     {X Y} (mu : MN X) (nu : MN Y) :
   sem_lift semantic_pair_swap_rel
-    (semantic_product mu nu) (semantic_product nu mu) ->
+    (semantic_product mu nu) (semantic_product nu mu) →
   @mixed_measure_exchange MN (FreeOmega MN) NI
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure X Y mu nu.
@@ -246,15 +248,15 @@ Qed.
     @sem_eq (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) A
       out (FOLub chain);
-  sem_total := fun A mu => exists representative : FreeOmega MN A,
-    free_omega_qlift eq mu representative /\
-    exists (O : Type) (obs : A -> O) (out : MN O),
-      free_omega_observes obs representative out /\ sem_total out
+  sem_total := fun A mu => ∃ representative : FreeOmega MN A,
+    free_omega_qlift eq mu representative ∧
+    ∃ (O : Type) (obs : A → O) (out : MN O),
+      free_omega_observes obs representative out ∧ sem_total out
 }.
 
 Lemma free_omega_observable_total_intro {A} (mu : FreeOmega MN A) :
-  (exists (O : Type) (obs : A -> O) (out : MN O),
-    free_omega_observes obs mu out /\ sem_total out) ->
+  (∃ (O : Type) (obs : A → O) (out : MN O),
+    free_omega_observes obs mu out ∧ sem_total out) →
   @sem_total (FreeOmega MN)
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega A mu.
@@ -283,13 +285,13 @@ Proof.
 Qed.
 
 Lemma free_omega_cofinal_lub_iff {A}
-    (left right : nat -> FreeOmega MN A) out :
-  (forall n, free_omega_approx eq (left n) (left (S n))) ->
-  (forall n, free_omega_approx eq (right n) (right (S n))) ->
-  free_omega_chains_cofinal eq left right ->
+    (left right : nat → FreeOmega MN A) out :
+  (∀ n, free_omega_approx eq (left n) (left (S n))) →
+  (∀ n, free_omega_approx eq (right n) (right (S n))) →
+  free_omega_chains_cofinal eq left right →
   @sem_lub (FreeOmega MN)
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticOmega A left out <->
+    FreeOmegaObservableSemanticOmega A left out ↔
   @sem_lub (FreeOmega MN)
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega A right out.
@@ -447,7 +449,7 @@ Proof.
   - intros A mu. apply free_omega_approx_refl. intros x. reflexivity.
   - intros A mu nu xi Hmn Hnx.
     eapply free_omega_approx_mono with
-      (R := fun x z => exists mid, x = mid /\ mid = z).
+      (R := fun x z => exists mid, x = mid ∧ mid = z).
     + intros x z [mid [-> ->]]. reflexivity.
     + exact (free_omega_approx_comp (R := eq) (T := eq) Hmn Hnx).
   - intros A mu. constructor.
@@ -469,9 +471,9 @@ End FreeOmegaObservableLaws.
 Lemma free_omega_observable_lub_limit_proper {MN}
     `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NO : @SemanticOmega MN NI} {A}
-    (c : nat -> FreeOmega MN A) mu nu :
-  free_omega_qlift eq mu nu ->
-  free_omega_qlift eq mu (FOLub c) ->
+    (c : nat → FreeOmega MN A) mu nu :
+  free_omega_qlift eq mu nu →
+  free_omega_qlift eq mu (FOLub c) →
   free_omega_qlift eq nu (FOLub c).
 Proof.
   intros He Hlim.

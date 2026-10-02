@@ -1,6 +1,8 @@
 (** One-way interpretation of the classical formal iteration into the
     independent least-fixed-point domain. No raw-syntax order completeness
     or new evaluator is postulated. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From mathcomp Require Import reals.
@@ -13,14 +15,14 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Validation.
-Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
+Context {MN : Type → Type} `{NI : SemanticMeasure MN}
   `{NO : @SemanticOmega MN NI}.
 Variable R : realType.
-Variable native : forall X, MN X -> OmegaVal R X.
+Variable native : ∀ X, MN X → OmegaVal R X.
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
-Context {I A : Type} (K : I -> FreeOmega MN (I+A)) (V : I -> OmegaVal R (I+A)).
-Hypothesis HK : forall i, free_omega_model_denotes native (K i) (V i).
+Context {I A : Type} (K : I → FreeOmega MN (I+A)) (V : I → OmegaVal R (I+A)).
+Hypothesis HK : ∀ i, free_omega_model_denotes native (K i) (V i).
 
 Theorem free_omega_iter_approx_denotes n i :
   free_omega_model_denotes native

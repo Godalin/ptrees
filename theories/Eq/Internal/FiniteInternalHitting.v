@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Eq Require Import StableHittingRelation.
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
 Set Warnings "-notation-overridden".
@@ -17,7 +19,7 @@ Unset Printing Implicit Defensive.
 
 (** The semantic bridge is separate from the operational judgment. *)
 Section FiniteInternalHitting.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -34,10 +36,10 @@ Context {R : Type}.
 Local Notation K := (@ptree_primitive_kernel E MN MF FI MX R).
 
 Theorem finite_internal_hitting_lift t out
-    (front : ptree E MN R -> MF (stable_head E MN R)) target :
-  finite_internal t out ->
-  (forall u, stable_hitting K (observe u) (front u)) ->
-  stable_hitting K (observe t) target ->
+    (front : ptree E MN R → MF (stable_head E MN R)) target :
+  finite_internal t out →
+  (∀ u, stable_hitting K (observe u) (front u)) →
+  stable_hitting K (observe t) target →
   sem_lift eq target (sem_bind out front).
 Proof.
   intros Hexec Hfront. revert target. induction Hexec; intros target Htarget.
@@ -66,28 +68,28 @@ End OneReturnType.
 
 (** Finite compression preserves generator-level matching, for an arbitrary
     continuation candidate.  No folding into [peutt] is used here. *)
-Theorem finite_internal_match {A B} (RR : A -> B -> Prop)
-    (sim : ptree' E MN A -> ptree' E MN B -> Prop)
-    (S : ptree E MN A -> ptree E MN B -> Prop)
+Theorem finite_internal_match {A B} (RR : A → B → Prop)
+    (sim : ptree' E MN A → ptree' E MN B → Prop)
+    (S : ptree E MN A → ptree E MN B → Prop)
     (t1 : ptree E MN A) (t2 : ptree E MN B) out1 out2 :
-  finite_internal t1 out1 -> finite_internal t2 out2 ->
-  sem_lift S out1 out2 ->
-  (forall u v, S u v ->
+  finite_internal t1 out1 → finite_internal t2 out2 →
+  sem_lift S out1 out2 →
+  (∀ u v, S u v →
     stable_hitting_match
       (@ptree_primitive_kernel E MN MF FI MX A)
       (@ptree_primitive_kernel E MN MF FI MX B)
-      (ptree_stable_head_rel RR) sim (observe u) (observe v)) ->
+      (ptree_stable_head_rel RR) sim (observe u) (observe v)) →
   stable_hitting_match
     (@ptree_primitive_kernel E MN MF FI MX A)
     (@ptree_primitive_kernel E MN MF FI MX B)
     (ptree_stable_head_rel RR) sim (observe t1) (observe t2).
 Proof.
   intros Hexec1 Hexec2 Hres Hmatch.
-  assert (Hex1 : forall u : ptree E MN A, exists out,
+  assert (Hex1 : ∀ u : ptree E MN A, exists out,
       stable_hitting (@ptree_primitive_kernel E MN MF FI MX A)
         (observe u) out).
   { intro u. apply stable_hitting_exists. }
-  assert (Hex2 : forall u : ptree E MN B, exists out,
+  assert (Hex2 : ∀ u : ptree E MN B, exists out,
       stable_hitting (@ptree_primitive_kernel E MN MF FI MX B)
         (observe u) out).
   { intro u. apply stable_hitting_exists. }
@@ -95,13 +97,13 @@ Proof.
   destruct (choice _ Hex2) as [front2 Hfront2].
   eapply stable_hitting_match_of_hitting_lift; [apply Hfront1|apply Hfront2|].
   eapply sem_lift_mono with
-    (R := fun x z => exists y, x = y /\ ptree_stable_head_rel RR sim y z).
+    (R := fun x z => exists y, x = y ∧ ptree_stable_head_rel RR sim y z).
   - intros x z [y [-> Hyz]]. exact Hyz.
   - eapply sem_lift_comp.
     + eapply finite_internal_hitting_lift;
         [exact Hexec1|exact Hfront1|apply Hfront1].
     + eapply sem_lift_mono with
-        (R := fun x z => exists y, ptree_stable_head_rel RR sim x y /\ z = y).
+        (R := fun x z => exists y, ptree_stable_head_rel RR sim x y ∧ z = y).
       * intros x z [y [Hxy Heq]]. subst y. exact Hxy.
       * eapply sem_lift_comp.
         -- eapply sem_lift_bind; [exact Hres|].
@@ -113,10 +115,10 @@ Qed.
 
 (** Sound inductive compression around an already established behavioral
     relation. *)
-Theorem peutt_of_finite_internal {A B} (RR : A -> B -> Prop)
+Theorem peutt_of_finite_internal {A B} (RR : A → B → Prop)
     (t1 : ptree E MN A) (t2 : ptree E MN B) out1 out2 :
-  finite_internal t1 out1 -> finite_internal t2 out2 ->
-  sem_lift (@peutt E MN MF FI FC MX FO A B RR) out1 out2 ->
+  finite_internal t1 out1 → finite_internal t2 out2 →
+  sem_lift (@peutt E MN MF FI FC MX FO A B RR) out1 out2 →
   peutt RR t1 t2.
 Proof.
   intros H1 H2 Hlift. apply peutt_fold.
@@ -125,17 +127,17 @@ Proof.
 Qed.
 
 Section FiniteInternalCoinduction.
-Context {A B : Type} (RR : A -> B -> Prop).
+Context {A B : Type} (RR : A → B → Prop).
 
 Definition finite_internal_closure
-    (sim : ptree' E MN A -> ptree' E MN B -> Prop) s1 s2 : Prop :=
-  exists t1 t2 out1 out2,
-    s1 = observe t1 /\ s2 = observe t2 /\
-    finite_internal t1 out1 /\ finite_internal t2 out2 /\
+    (sim : ptree' E MN A → ptree' E MN B → Prop) s1 s2 : Prop :=
+  ∃ t1 t2 out1 out2,
+    s1 = observe t1 ∧ s2 = observe t2 ∧
+    finite_internal t1 out1 ∧ finite_internal t2 out2 ∧
     sem_lift (fun u v => sim (observe u) (observe v)) out1 out2.
 
 Lemma finite_internal_closure_includes sim s1 s2 :
-  sim s1 s2 -> finite_internal_closure sim s1 s2.
+  sim s1 s2 → finite_internal_closure sim s1 s2.
 Proof.
   intro H. exists (go s1), (go s2), (sem_ret (go s1)), (sem_ret (go s2)).
   split; [reflexivity|]. split; [reflexivity|].
@@ -144,12 +146,12 @@ Proof.
 Qed.
 
 Lemma finite_internal_closure_compatible sim
-    (Hprogress : forall s1 s2, sim s1 s2 ->
+    (Hprogress : ∀ s1 s2, sim s1 s2 →
       stable_hitting_match
         (@ptree_primitive_kernel E MN MF FI MX A)
         (@ptree_primitive_kernel E MN MF FI MX B)
         (ptree_stable_head_rel RR) (finite_internal_closure sim) s1 s2) :
-  forall s1 s2, finite_internal_closure sim s1 s2 ->
+  ∀ s1 s2, finite_internal_closure sim s1 s2 →
     stable_hitting_match
       (@ptree_primitive_kernel E MN MF FI MX A)
       (@ptree_primitive_kernel E MN MF FI MX B)
@@ -164,12 +166,12 @@ Qed.
     The caller still owes a complete hitting match per candidate round;
     this must not be confused with an arbitrary internal [pstrongF] guard. *)
 Theorem peutt_coinduction_upto_finite_internal sim
-    (Hprogress : forall s1 s2, sim s1 s2 ->
+    (Hprogress : ∀ s1 s2, sim s1 s2 →
       stable_hitting_match
         (@ptree_primitive_kernel E MN MF FI MX A)
         (@ptree_primitive_kernel E MN MF FI MX B)
         (ptree_stable_head_rel RR) (finite_internal_closure sim) s1 s2) :
-  forall t1 t2, sim (observe t1) (observe t2) -> peutt RR t1 t2.
+  ∀ t1 t2, sim (observe t1) (observe t2) → peutt RR t1 t2.
 Proof.
   eapply peutt_coinduction_upto_closure.
   - exact finite_internal_closure_includes.

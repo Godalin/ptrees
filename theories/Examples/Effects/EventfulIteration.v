@@ -1,5 +1,7 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
 (** Actual behavioral-step clients, not supplied generator-closure proofs. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -17,7 +19,7 @@ From PTree.Eq.Backend Require Import SubEnumQ SubEnumR.
 From PTree.Interp.FreeOmega Require Import Iteration.
 Set Implicit Arguments.
 
-Variant questionE : Type -> Type := Question : questionE bool.
+Variant questionE : Type → Type := Question : questionE bool.
 
 (** Distinct state AND return carriers. Repeated false responses cause
     indefinitely many interactions; there is no termination assumption. *)
@@ -28,7 +30,7 @@ Definition right_step (_ : nat) : ptree questionE SubEnumQ (nat+nat) :=
 Definition state_rel (_ : unit) (n : nat) := n = 0.
 Definition return_rel (b : bool) (n : nat) := n = if b then 1 else 0.
 
-Lemma heterogeneous_steps i j : state_rel i j ->
+Lemma heterogeneous_steps i j : state_rel i j →
   left_step i ≈ₚ[pstruct_iter_sum_rel state_rel return_rel] right_step j.
 Proof.
   intro H. apply peutt_vis. intros []; apply peutt_ret; constructor; reflexivity.
@@ -44,7 +46,7 @@ Qed.
 
 (** Sampling and interaction can both occur inside a single step. The
     right step inserts a Tau: the premise is weak, not lockstep structural. *)
-Definition sampling_step {MN : Type -> Type} (mu : MN bool) (_ : unit) :
+Definition sampling_step {MN : Type → Type} (mu : MN bool) (_ : unit) :
     ptree questionE MN (unit+bool) :=
   Vis Question (fun _ => Prob mu
     (fun b : bool => Ret (if b then inr true else inl tt))).
@@ -106,7 +108,7 @@ Proof. apply free_omega_peutt_iter_eventful. intro i. apply peutt_tau_r. Qed.
 Definition exiting_step (_ : unit) : ptree questionE SubEnumQ (unit+bool) :=
   Vis Question (fun b => Ret (inr b)).
 Example entry_candidate_excludes_residual b :
-  ~ iter_eventful_bisim_candidate exiting_step exiting_step eq
+  ¬ iter_eventful_bisim_candidate exiting_step exiting_step eq
       (observe (Ret b)) (observe (Ret b)).
 Proof. intros [i [j [_ [H _]]]]. discriminate H. Qed.
 
@@ -118,11 +120,11 @@ Example real_sampled_eventful_iteration (mu : SubEnumR R bool) :
 Proof. apply free_omega_peutt_iter_eventful. intro i. apply peutt_tau_r. Qed.
 
 Example real_heterogeneous_iteration {I J A B}
-    (step1 : I -> ptree questionE (SubEnumR R) (I+A))
-    (step2 : J -> ptree questionE (SubEnumR R) (J+B))
-    (SI : I -> J -> Prop) (RR : A -> B -> Prop) :
-  (forall i j, SI i j -> step1 i ≈ₚ[pstruct_iter_sum_rel SI RR] step2 j) ->
-  forall i j, SI i j -> PTree.iter step1 i ≈ₚ[RR] PTree.iter step2 j.
+    (step1 : I → ptree questionE (SubEnumR R) (I+A))
+    (step2 : J → ptree questionE (SubEnumR R) (J+B))
+    (SI : I → J → Prop) (RR : A → B → Prop) :
+  (∀ i j, SI i j → step1 i ≈ₚ[pstruct_iter_sum_rel SI RR] step2 j) →
+  ∀ i j, SI i j → PTree.iter step1 i ≈ₚ[RR] PTree.iter step2 j.
 Proof. apply free_omega_peutt_iter_eventful_rel. Qed.
 End RealBackend.
 
@@ -130,10 +132,10 @@ Section LargeCarrier.
 Universe high.
 Constraint Set < high.
 Example high_eventful_iteration (I J A B : Type@{high})
-    (step1 : I -> ptree questionE SubEnumQ (I+A))
-    (step2 : J -> ptree questionE SubEnumQ (J+B))
-    (SI : I -> J -> Prop) (RR : A -> B -> Prop) :
-  (forall i j, SI i j -> step1 i ≈ₚ[pstruct_iter_sum_rel SI RR] step2 j) ->
-  forall i j, SI i j -> PTree.iter step1 i ≈ₚ[RR] PTree.iter step2 j.
+    (step1 : I → ptree questionE SubEnumQ (I+A))
+    (step2 : J → ptree questionE SubEnumQ (J+B))
+    (SI : I → J → Prop) (RR : A → B → Prop) :
+  (∀ i j, SI i j → step1 i ≈ₚ[pstruct_iter_sum_rel SI RR] step2 j) →
+  ∀ i j, SI i j → PTree.iter step1 i ≈ₚ[RR] PTree.iter step2 j.
 Proof. apply free_omega_peutt_iter_eventful_rel. Qed.
 End LargeCarrier.

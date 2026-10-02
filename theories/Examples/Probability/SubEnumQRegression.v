@@ -1,4 +1,6 @@
 (** Role: finite probability/coupling/backend example. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -28,7 +30,7 @@ Import GRing.Theory Num.Theory Order.Theory.
 #[local] Open Scope order_scope.
 
 Unset Automatic Proposition Inductives.
-Variant subenumQE : Type -> Type := .
+Variant subenumQE : Type → Type := .
 
 Lemma reg_fair_subprob : enumQ_subprob reg_fair.
 Proof.
@@ -90,7 +92,7 @@ Lemma enumQ_overweight_flip_mass : enumQ_mass enumQ_overweight_flip = 2.
 Proof. reflexivity. Qed.
 
 Lemma enumQ_overweight_flip_not_subprob :
-  ~ enumQ_subprob enumQ_overweight_flip.
+  ¬ enumQ_subprob enumQ_overweight_flip.
 Proof.
   rewrite /enumQ_subprob enumQ_overweight_flip_mass.
   native_compute.
@@ -101,7 +103,7 @@ Definition enumQ_overweight_program : ptree subenumQE EnumQ bool :=
   Prob enumQ_overweight_flip (fun b : bool => Ret b).
 
 Lemma enumQ_overweight_program_not_probabilistic :
-  ~ @probabilistic_ptree subenumQE EnumQ EnumQ_SemanticMeasure
+  ¬ @probabilistic_ptree subenumQE EnumQ EnumQ_SemanticMeasure
       EnumQ_SemanticSubprobability bool enumQ_overweight_program.
 Proof.
   intro Hwf. unfold probabilistic_ptree in Hwf. cbn in Hwf.

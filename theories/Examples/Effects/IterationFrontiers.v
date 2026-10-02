@@ -1,6 +1,8 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
 (** Complete, return-only and absorbing frontier iteration contracts.
     Preserve partial mass, inhabited signatures, empty responses and the S shift. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Interp Require Import FrontierIteration ReturnIteration.
@@ -32,7 +34,7 @@ Import PTree.Prob.Backend.SubEnumQ.Representation PTree.Prob.Backend.SubEnumQ.Me
 Import PTree.Interp.FreeOmega.AbsorbingIteration.
 Set Implicit Arguments.
 
-Variant probeE : Type -> Type := At : nat -> probeE bool | Dead : probeE Empty_set.
+Variant probeE : Type → Type := At : nat → probeE bool | Dead : probeE Empty_set.
 Local Notation tree := (ptree probeE SubEnumQ).
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
@@ -117,7 +119,7 @@ Import PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.Measure PTree
 Import PTree.Prob.Backend.SubEnumQ.Representation PTree.Prob.Backend.SubEnumQ.Measure.
 Set Implicit Arguments.
 
-Variant eventE : Type -> Type := Ask : eventE bool.
+Variant eventE : Type → Type := Ask : eventE bool.
 Local Notation MN := SubEnumQ.
 Local Notation MF := (FreeOmega MN).
 Local Notation NI := SubEnumQ_SemanticMeasure.
@@ -126,8 +128,8 @@ Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := SubEnum
 Local Notation hits t out := (ptree_stable_hitting (FI := FI) (FO := FO) (observe t) out).
 
 Section GeneralKernel.
-Variable step : nat -> ptree eventE MN (nat+bool).
-Variable K : nat -> MF (nat+bool).
+Variable step : nat → ptree eventE MN (nat+bool).
+Variable K : nat → MF (nat+bool).
 Example shifted_round n i :
   @sem_eq MF FI _
     (iteration_summary_round (FI := FI) (FO := FO) step (iteration_return_front K) n i)
@@ -135,16 +137,16 @@ Example shifted_round n i :
 Proof. apply iteration_summary_round_return_only; typeclasses eauto. Qed.
 
 Example return_only_program i out
-    (Hstep : forall j, hits (step j) (iteration_return_front K j))
+    (Hstep : ∀ j, hits (step j) (iteration_return_front K j))
     (Hiter : sem_iter (MI := FI) (MO := FO) K i out) :
-  exists hs, hits (PTree.iter step i) hs /\
+  ∃ hs, hits (PTree.iter step i) hs ∧
     @sem_eq MF FI _ hs (iteration_return_map out).
 Proof. eapply ptree_iter_return_only; try typeclasses eauto; eassumption. Qed.
 
-Variable native : nat -> MN (nat+bool).
+Variable native : nat → MN (nat+bool).
 Example native_compatibility i hs out :
-  iteration_summary (FI := FI) (FO := FO) step (iteration_native_front native) i hs ->
-  mixed_iter (FI := FI) (FO := FO) native i out ->
+  iteration_summary (FI := FI) (FO := FO) step (iteration_native_front native) i hs →
+  mixed_iter (FI := FI) (FO := FO) native i out →
   @sem_eq MF FI _ hs (iteration_return_map out).
 Proof. apply (iteration_summary_mixed_iter (NI := NI)); typeclasses eauto. Qed.
 End GeneralKernel.
@@ -214,7 +216,7 @@ Import PTree.Eq.FreeOmega.Hitting.
 Import PTree.Interp.FreeOmega.IterationSummary.
 Set Implicit Arguments.
 
-Variant questionE : Type -> Type := Question : questionE bool.
+Variant questionE : Type → Type := Question : questionE bool.
 Local Notation NI := SubEnumQ_SemanticMeasure.
 Local Notation NO := SubEnumQ_SemanticOmega.
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
@@ -222,7 +224,7 @@ Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
 Local Notation hits t out := (ptree_stable_hitting (FI := FI) (FO := FO) (observe t) out).
 
 Section ArbitraryKernel.
-Variable kernel : nat -> SubEnumQ (nat + (nat * bool)).
+Variable kernel : nat → SubEnumQ (nat + (nat * bool)).
 Definition delayed_round i : ptree questionE SubEnumQ (nat + (nat * bool)) :=
   Tau (Prob (kernel i) (fun x => Ret x)).
 
@@ -244,7 +246,7 @@ Definition only_bit (h : stable_head questionE SubEnumQ (nat * bool)) :=
     joint distribution. The state and returned nat remain unbounded. *)
 Example projected_limit i (out : SubEnumQ (option bool)) :
   sem_lub (fun n => iteration_observation_round kernel
-    (fun sb => Some (snd sb)) n i) out ->
+    (fun sb => Some (snd sb)) n i) out →
   free_omega_observes only_bit (iteration_frontier kernel i) out.
 Proof. apply iteration_frontier_observes. reflexivity. Qed.
 
@@ -294,7 +296,7 @@ Import PTree.Eq.FreeOmega.Base PTree.Eq.FreeOmega.Hitting PTree.Eq.FreeOmega.Bin
 Import PTree.Interp.FreeOmega.AbsorbingIteration.
 Set Implicit Arguments.
 
-Variant deadE : Type -> Type := DeadA : deadE Empty_set | DeadB : deadE Empty_set.
+Variant deadE : Type → Type := DeadA : deadE Empty_set | DeadB : deadE Empty_set.
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FO := (FreeOmegaObservableSemanticOmega
@@ -309,7 +311,7 @@ Definition dead_front (_ : unit) :=
 
 Section Kernels.
 (** No totality premise: includes zero-mass and partial native kernels. *)
-Variable kernel : nat -> SubEnumQ (nat + unit).
+Variable kernel : nat → SubEnumQ (nat + unit).
 Definition round i : ptree deadE SubEnumQ (nat + unit) := Prob (kernel i) (fun v => Ret v).
 Lemma round_hits i : hits (round i) (FOSample (kernel i) (fun v => FORet (FHRet v))).
 Proof.
@@ -326,8 +328,8 @@ Example empty_response_frontier i :
     (absorbing_frontier kernel dead_front i).
 Proof. eapply absorbing_iteration_summary; [exact round_hits|exact dead_exit_hits]. Qed.
 
-Example actual_eventful_loop_exists i : exists out,
-  hits (PTree.iter (pstruct_iter_natural_step round dead_exit) i) out /\
+Example actual_eventful_loop_exists i : ∃ out,
+  hits (PTree.iter (pstruct_iter_natural_step round dead_exit) i) out ∧
   @sem_lift (FreeOmega SubEnumQ) FI _ _
     (stable_head_rel eq (peutt (FI := FI) (FO := FO) eq))
     out (absorbing_frontier kernel dead_front i).
@@ -343,7 +345,7 @@ Proof. apply empty_response_frontier. Qed.
 Example dead_event_is_visible : dead_front tt = FORet (FHVis DeadA (fun x : Empty_set => match x with end)).
 Proof. reflexivity. Qed.
 Example distinct_dead_heads :
-  (FHVis DeadA (fun x : Empty_set => match x with end) : stable_head deadE SubEnumQ bool) <>
+  (FHVis DeadA (fun x : Empty_set => match x with end) : stable_head deadE SubEnumQ bool) ≠
   FHVis DeadB (fun x : Empty_set => match x with end).
 Proof. discriminate. Qed.
 

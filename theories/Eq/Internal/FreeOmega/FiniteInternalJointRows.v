@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Logic Require Import ClassicalDescription IndefiniteDescription.
@@ -19,15 +21,15 @@ Unset Printing Implicit Defensive.
     supported partners are never selected in place of random samples. *)
 Section JointCoinduction.
 Universes node node_rep frontier.
-Context {E : Type -> Type} {MN : Type@{node} -> Type@{node_rep}}
+Context {E : Type → Type} {MN : Type@{node} → Type@{node_rep}}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
   `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
   `{NCountAE : @SemanticMeasureCountableAELaws MN NI} {A B : Type}.
-Variable RR : A -> B -> Prop.
-Variable sim : ptree E MN A -> ptree E MN B -> Prop.
+Variable RR : A → B → Prop.
+Variable sim : ptree E MN A → ptree E MN B → Prop.
 Let treeA : Type@{frontier} := ptree E MN A.
 Let treeB : Type@{frontier} := ptree E MN B.
 Local Notation qlift := (@free_omega_qlift@{
@@ -40,9 +42,9 @@ Record finite_internal_joint_row (t : treeA) (u : treeB) := {
   joint_row_right_plan : finite_internal_plan u;
   joint_row_sample : Type@{node};
   joint_row_measure : MN joint_row_sample;
-  joint_row_left : joint_row_sample ->
+  joint_row_left : joint_row_sample →
     native_sample_type (internal_plan_round_native joint_row_left_plan);
-  joint_row_right : joint_row_sample ->
+  joint_row_right : joint_row_sample →
     native_sample_type (internal_plan_round_native joint_row_right_plan);
   joint_row_left_marginal : qlift (fun z x => joint_row_left z = x)
     (FOSample joint_row_measure (fun z => FORet z))
@@ -57,7 +59,7 @@ Record finite_internal_joint_row (t : treeA) (u : treeB) := {
       (joint_row_left z) (joint_row_right z))
 }.
 
-Hypothesis rows_exist : forall t u, sim t u -> inhabited (finite_internal_joint_row t u).
+Hypothesis rows_exist : ∀ t u, sim t u → inhabited (finite_internal_joint_row t u).
 
 Definition joint_state := { pair : treeA * treeB | sim (fst pair) (snd pair) }.
 Definition joint_left_tree (s : joint_state) := fst (proj1_sig s).
@@ -95,8 +97,8 @@ Definition paired_target (fallback : joint_state)
   | _, _ => SHInternal fallback
   end.
 
-Lemma paired_target_projections s x y : internal_round_target_rel RR sim x y ->
-  costed_round_projection joint_left_tree (@fst _ _) (paired_target s x y) = x /\
+Lemma paired_target_projections s x y : internal_round_target_rel RR sim x y →
+  costed_round_projection joint_left_tree (@fst _ _) (paired_target s x y) = x ∧
   costed_round_projection joint_right_tree (@snd _ _) (paired_target s x y) = y.
 Proof.
   destruct x as [h|t], y as [k|u]; cbn [internal_round_target_rel paired_target]; try contradiction.
@@ -105,7 +107,7 @@ Proof.
       [split; reflexivity|contradiction].
 Qed.
 
-Lemma paired_target_closed s x y : internal_round_target_rel RR sim x y ->
+Lemma paired_target_closed s x y : internal_round_target_rel RR sim x y →
   match paired_target s x y with
   | SHStable heads => stable_head_rel RR sim (fst heads) (snd heads)
   | SHInternal _ => True
@@ -162,7 +164,7 @@ Proof.
     exact (proj2 (paired_target_projections s Hz)).
 Qed.
 
-Theorem peutt_coinduction_joint_rows t u : sim t u ->
+Theorem peutt_coinduction_joint_rows t u : sim t u →
   @peutt E MN (FreeOmega MN)
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure

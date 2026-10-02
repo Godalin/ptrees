@@ -1,5 +1,7 @@
 (** Explicit laws for ExtLib ReaderT and ITree's pointwise iterator.
     No competing transformer or global instance is introduced. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms RelationClasses.
 From ExtLib.Structures Require Import Monad.
@@ -10,11 +12,11 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section ReaderT.
-Context {Env : Type} {T : Type -> Type}.
+Context {Env : Type} {T : Type → Type}.
 Context `{MT : Monad T} `{QT : Eq1 T}.
 
 Definition readerT_eq1 : Eq1 (readerT Env T) :=
-  fun A x y => forall env, eq1 (runReaderT x env) (runReaderT y env).
+  fun A x y => ∀ env, eq1 (runReaderT x env) (runReaderT y env).
 
 Definition readerT_eq_equivalence (QE : @Eq1Equivalence T MT QT) :
     @Eq1Equivalence (readerT Env T) (@Monad_readerT Env T MT) readerT_eq1.

@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq.Logic Require Import ClassicalChoice ChoiceFacts FunctionalExtensionality.
 From PTree.Core Require Import PTreeDefinition.
@@ -15,14 +17,14 @@ Unset Printing Implicit Defensive.
     Tau/Prob steps, and stopping never executes Ret or Vis. *)
 Section Plans.
 Universe node node_rep.
-Context {E : Type -> Type} {MN : Type@{node} -> Type@{node_rep}} {R : Type}.
+Context {E : Type → Type} {MN : Type@{node} → Type@{node_rep}} {R : Type}.
 Local Notation tree := (ptree E MN R).
 
-Inductive finite_internal_plan : tree -> Type :=
+Inductive finite_internal_plan : tree → Type :=
   | FIPStop t : finite_internal_plan t
-  | FIPTau t : finite_internal_plan t -> finite_internal_plan (Tau t)
-  | FIPProb {X : Type@{node}} (mu : MN X) (k : X -> tree) :
-      (forall x, finite_internal_plan (k x)) -> finite_internal_plan (Prob mu k).
+  | FIPTau t : finite_internal_plan t → finite_internal_plan (Tau t)
+  | FIPProb {X : Type@{node}} (mu : MN X) (k : X → tree) :
+      (∀ x, finite_internal_plan (k x)) → finite_internal_plan (Prob mu k).
 
 Arguments FIPTau {t} _.
 Arguments FIPProb {X} mu {k} _.
@@ -35,8 +37,8 @@ Fixpoint internal_plan_path {t} (p : finite_internal_plan t) : Type@{node} :=
   end.
 
 Fixpoint internal_plan_residual {t} (p : finite_internal_plan t) :
-    internal_plan_path p -> tree :=
-  match p as q return internal_plan_path q -> tree with
+    internal_plan_path p → tree :=
+  match p as q return internal_plan_path q → tree with
   | FIPStop t => fun _ => t
   | @FIPTau _ next => @internal_plan_residual _ next
   | @FIPProb X mu k next => fun z => @internal_plan_residual _ (next (projT1 z)) (projT2 z)
@@ -44,8 +46,8 @@ Fixpoint internal_plan_residual {t} (p : finite_internal_plan t) :
 Arguments internal_plan_residual {t} p _.
 
 Fixpoint internal_plan_steps {t} (p : finite_internal_plan t) :
-    internal_plan_path p -> nat :=
-  match p as q return internal_plan_path q -> nat with
+    internal_plan_path p → nat :=
+  match p as q return internal_plan_path q → nat with
   | FIPStop _ => fun _ => 0
   | @FIPTau _ next => fun z => S (@internal_plan_steps _ next z)
   | @FIPProb X mu k next => fun z => S (@internal_plan_steps _ (next (projT1 z)) (projT2 z))
@@ -53,8 +55,8 @@ Fixpoint internal_plan_steps {t} (p : finite_internal_plan t) :
 Arguments internal_plan_steps {t} p _.
 
 Fixpoint internal_plan_at {t} (p : finite_internal_plan t) :
-    nat -> internal_plan_path p -> tree :=
-  match p as q in finite_internal_plan s return nat -> internal_plan_path q -> tree with
+    nat → internal_plan_path p → tree :=
+  match p as q in finite_internal_plan s return nat → internal_plan_path q → tree with
   | FIPStop t => fun _ _ => t
   | @FIPTau t next => fun n z =>
       match n with 0 => Tau t | S m => @internal_plan_at _ next m z end
@@ -81,12 +83,12 @@ Qed.
     Their distribution is supplied separately by [internal_plan_measure].
     In particular no assertion about the positive mass of an individual
     sample value is made for continuous native backends. *)
-Inductive finite_internal_path : tree -> nat -> tree -> Prop :=
+Inductive finite_internal_path : tree → nat → tree → Prop :=
   | FIPathStop t : finite_internal_path t 0 t
-  | FIPathTau t n u : finite_internal_path t n u ->
+  | FIPathTau t n u : finite_internal_path t n u →
       finite_internal_path (Tau t) (S n) u
-  | FIPathProb {X} (mu : MN X) (k : X -> tree) x n u :
-      finite_internal_path (k x) n u -> finite_internal_path (Prob mu k) (S n) u.
+  | FIPathProb {X} (mu : MN X) (k : X → tree) x n u :
+      finite_internal_path (k x) n u → finite_internal_path (Prob mu k) (S n) u.
 
 Theorem internal_plan_path_valid t (p : finite_internal_plan t) z :
   finite_internal_path t (internal_plan_steps p z) (internal_plan_residual p z).
@@ -136,7 +138,7 @@ Fixpoint internal_plan_measure {t} (p : finite_internal_plan t) : MN (internal_p
   end.
 Arguments internal_plan_measure {t} p.
 
-Context {MF : Type -> Type} `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}.
+Context {MF : Type → Type} `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}.
 
 Fixpoint internal_plan_frontier {t} (p : finite_internal_plan t) : MF tree :=
   match p with
@@ -154,8 +156,8 @@ Qed.
 (** Reification uses dependent choice to pick WHOLE typed branch plans.
     It does not pick arbitrary residual values from an AE support fact. *)
 Theorem finite_internal_plan_exists t out :
-  finite_internal t out ->
-  exists p : finite_internal_plan t, internal_plan_frontier p = out.
+  finite_internal t out →
+  ∃ p : finite_internal_plan t, internal_plan_frontier p = out.
 Proof.
   intro Hcut. induction Hcut as [t|t out Hcut IH|X mu k out Hcut IH].
   - exists (FIPStop t). reflexivity.

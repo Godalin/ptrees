@@ -1,6 +1,8 @@
 (** Complete-frontier phases are an acceleration of the physical handler
     machine. Finite schedules are compared in approximation order; no
     observable-equality-to-order reflection is used. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms RelationClasses Lia.
 From PTree.Core Require Import PTreeDefinition.
@@ -11,12 +13,12 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Acceleration.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
   `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
   `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}.
-Variable handler : forall X, E X -> ptree F MN X.
+Variable handler : ∀ X, E X → ptree F MN X.
 Local Notation equiv := (@BindScheduling.equiv MF FI FO).
 #[local] Existing Instance BindScheduling.equiv_equivalence.
 #[local] Existing Instance BindScheduling.le_equiv_Proper.
@@ -29,20 +31,20 @@ Local Notation hit_unfold := (fun G => @BindScheduling.hitting_unfold G MN MF FI
   (@sem_bind_ret_order MF FI FO BO) (@mixed_bind_assoc_order MN MF FI MX FO MO)
   (@mixed_bind_le_k MN MF FI MX FO MO)).
 
-Local Lemma ret_equiv A B (x : A) (k : A -> MF B) :
+Local Lemma ret_equiv A B (x : A) (k : A → MF B) :
   equiv (sem_bind (sem_ret x) k) (k x).
 Proof. apply sem_bind_ret_order. Qed.
-Local Lemma zero_equiv A B (k : A -> MF B) :
+Local Lemma zero_equiv A B (k : A → MF B) :
   equiv (sem_bind sem_zero k) sem_zero.
 Proof. split; [apply sem_bind_zero_order|apply sem_zero_le]. Qed.
-Local Lemma mixed_assoc_equiv A B C (mu : MN A) (k : A -> MF B) (h : B -> MF C) :
+Local Lemma mixed_assoc_equiv A B C (mu : MN A) (k : A → MF B) (h : B → MF C) :
   equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
 (** Only finite native-generated frontiers need order-level associativity.
     It is derived, not added as an arbitrary-MF capability. *)
 Lemma finite_head_bind_assoc {G A B C} n (t : ptree' G MN A)
-    (k : stable_head G MN A -> MF B) (h : B -> MF C) :
+    (k : stable_head G MN A → MF B) (h : B → MF C) :
   equiv (sem_bind (sem_bind (ptree_hitting_approx (MF := MF) n t) k) h)
     (sem_bind (ptree_hitting_approx (MF := MF) n t) (fun x => sem_bind (k x) h)).
 Proof.
@@ -92,7 +94,7 @@ Proof.
 Qed.
 
 Lemma handler_phase_split_inner_mono {A} j j' n m (c : @handler_config E F MN A) :
-  j <= j' -> sem_le (handler_phase_split j n m c) (handler_phase_split j' n m c).
+  j <= j' → sem_le (handler_phase_split j n m c) (handler_phase_split j' n m c).
 Proof.
   intro H. destruct c; unfold handler_phase_split;
     apply sem_bind_le_mu; apply ptree_hitting_mono; exact H.
@@ -114,9 +116,9 @@ Local Lemma phase_internalE {A} n m (c : @handler_config E F MN A) :
 Proof. destruct n; reflexivity. Qed.
 
 Lemma handler_phase_split_le_primitive {A} j n m bound
-    (Hpost : forall c : @handler_config E F MN A,
+    (Hpost : ∀ c : @handler_config E F MN A,
       sem_le (handler_phase_after n m c) (handler_primitive_approx handler bound c)) :
-  forall c : @handler_config E F MN A,
+  ∀ c : @handler_config E F MN A,
   sem_le (handler_phase_split j n m c) (handler_primitive_approx handler (j+bound+1) c).
 Proof.
   induction j as [|j IH]; intros [t|X active k];
@@ -168,8 +170,8 @@ Proof.
 Qed.
 
 Lemma handler_primitive_le_phase_split {A} n m :
-  n <= m ->
-  forall c : @handler_config E F MN A,
+  n <= m →
+  ∀ c : @handler_config E F MN A,
   sem_le (handler_primitive_approx handler n c) (handler_phase_split n n m c).
 Proof.
   induction n as [|n IH]; intro Hnm; intros [t|X active k].
@@ -217,8 +219,8 @@ Lemma handler_primitive_le_phase_grid {A} n (c : @handler_config E F MN A) :
 Proof. setoid_rewrite handler_phase_grid_split. apply handler_primitive_le_phase_split. lia. Qed.
 
 Local Lemma target_kernel_mono {S A}
-    (k l : S -> MF (stable_target S A))
-    (Hkl : forall s, sem_le (k s) (l s)) n target :
+    (k l : S → MF (stable_target S A))
+    (Hkl : ∀ s, sem_le (k s) (l s)) n target :
   sem_le (stable_target_approx k n target) (stable_target_approx l n target).
 Proof.
   revert target. induction n as [|n IH]; intros [a|s]; cbn [stable_target_approx];
@@ -257,7 +259,7 @@ Qed.
 Context `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}.
 
 Theorem handler_phase_diagonal_hitting_iff {A} (c : @handler_config E F MN A) out :
-  sem_lub (fun n => handler_phase_grid n n c) out <->
+  sem_lub (fun n => handler_phase_grid n n c) out ↔
   stable_hitting (handler_primitive_kernel handler) c out.
 Proof.
   unfold stable_hitting. apply sem_lub_cofinal.
@@ -281,9 +283,9 @@ Proof.
 Qed.
 
 Local Lemma target_kernel_lub {S A}
-    (ks : nat -> S -> MF (stable_target S A)) (k : S -> MF (stable_target S A))
-    (Hi : forall s, sem_increasing (fun m => ks m s))
-    (Hl : forall s, sem_lub (fun m => ks m s) (k s)) n target :
+    (ks : nat → S → MF (stable_target S A)) (k : S → MF (stable_target S A))
+    (Hi : ∀ s, sem_increasing (fun m => ks m s))
+    (Hl : ∀ s, sem_lub (fun m => ks m s) (k s)) n target :
   sem_lub (fun m => stable_target_approx (ks m) n target) (stable_target_approx k n target).
 Proof.
   revert target. induction n as [|n IH]; intros [a|s]; cbn [stable_target_approx];
@@ -311,7 +313,7 @@ Qed.
     Both schedules are compared through finite approximants and cofinality;
     no semantic-equality reflection or handler-preservation premise is used. *)
 Theorem handler_machine_hitting_sound {A} (c : @handler_config E F MN A) out :
-  stable_hitting (handler_machine_kernel handler) c out ->
+  stable_hitting (handler_machine_kernel handler) c out →
   ptree_stable_hitting (MF := MF) (observe (handler_config_tree handler c)) out.
 Proof.
   intro H. apply (proj1 (handler_primitive_hitting_iff (Directed := Directed) handler c out)).

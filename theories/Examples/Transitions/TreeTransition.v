@@ -1,4 +1,6 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -23,7 +25,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Variant rawE : Type -> Type :=
+Variant rawE : Type → Type :=
   | Ask : rawE unit | Other : rawE unit
   | EmptyA : rawE Empty_set | EmptyB : rawE Empty_set.
 Local Notation MF := (FreeOmega SubEnumQ).
@@ -54,7 +56,7 @@ Example empty_b_observation : offers deadB (FORet (Offered EmptyB)).
 Proof. apply (tree_offered_vis (FI := FI) (FO := FO)). Qed.
 
 Lemma empty_offers_distinct :
-  ~ @sem_lift MF FI _ _ eq (FORet (Offered EmptyA)) (FORet (Offered EmptyB)).
+  ¬ @sem_lift MF FI _ _ eq (FORet (Offered EmptyA)) (FORet (Offered EmptyB)).
 Proof.
   intro H.
   assert (Ha : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
@@ -65,7 +67,7 @@ Proof.
 Qed.
 
 Theorem empty_events_have_no_common_observation out :
-  offers deadA out -> offers deadB out -> False.
+  offers deadA out → offers deadB out → False.
 Proof.
   intros Ha Hb. apply empty_offers_distinct.
   pose proof (tree_head_observation_unique empty_a_observation Ha) as Hleft.
@@ -116,7 +118,7 @@ Definition follow_ask (h : head) : MF head :=
   match h with
   | FHRet _ => FOZero
   | @FHVis _ _ _ X e k =>
-      (match e in rawE X return (X -> tree) -> MF head with
+      (match e in rawE X return (X → tree) → MF head with
        | Ask => fun k => match observe (k tt) with
            | RetF r => FORet (FHRet r) | _ => FOZero end
        | Other => fun _ => FOZero

@@ -77,7 +77,7 @@ Proof. reflexivity. Qed.
 
 Definition nnQ_0 := mknnQ 0 (Order.POrderTheory.lexx (0:rat)).
 
-Lemma lt_0_nnQ_iff_ne_0 {p: nnQ}: p != nnQ_0 <-> nnQ_0 < p.
+Lemma lt_0_nnQ_iff_ne_0 {p: nnQ}: p != nnQ_0 ↔ nnQ_0 < p.
 Proof.
   split.
   - move => ne. rewrite /nnQ_0 //=.
@@ -86,7 +86,7 @@ Proof.
   - move => lt. rewrite Order.POrderTheory.lt_def in lt. move: (andP lt) => [r _]. exact r.
 Qed.
 
-Lemma le_nnQ_0_iff_eq_0 {p: nnQ}: p <= nnQ_0 <-> p == nnQ_0 .
+Lemma le_nnQ_0_iff_eq_0 {p: nnQ}: p <= nnQ_0 ↔ p == nnQ_0 .
 Proof.
   have le0 := le_nnQ0 p.
   split.
@@ -98,7 +98,7 @@ Proof.
   - move => /eqP e. rewrite e //=.
 Qed.
 
-Lemma nnQ_lerD {p q m n: nnQ}: p <= q -> m <= n -> p + m <= q + n.
+Lemma nnQ_lerD {p q m n: nnQ}: p <= q → m <= n → p + m <= q + n.
 Proof.
   move => h1 h2.
   apply le_nnQ_of_le_Q. apply ssrnum.Num.Theory.lerD.

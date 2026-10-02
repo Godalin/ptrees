@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From HB Require Import structures.
@@ -19,7 +21,7 @@ Local Open Scope ereal_scope.
 Section SubprobabilityPushforward.
 Context {d e} {T : measurableType d} {U : measurableType e} {R : realType}.
 Variable mu : subprobability T R.
-Variable f : T -> U.
+Variable f : T → U.
 Hypothesis mf : measurable_fun setT f.
 
 Definition coupling_pushforward_fun := pushforward mu f.
@@ -72,11 +74,11 @@ Variable R : realType.
 
 (** This theorem needs neither coupling gluing nor quotient reflection.
     It only repackages the witness already present in native [sem_lift]. *)
-Theorem mathcomp_coupling_realization {A B} (rel : A -> B -> Prop)
+Theorem mathcomp_coupling_realization {A B} (rel : A → B → Prop)
     (mu : MathCompKernelMeasure R A) (nu : MathCompKernelMeasure R B) :
   @sem_lift (MathCompKernelMeasure R) (MathCompNodeSemanticMeasure R)
-    A B rel mu nu ->
-  exists joint, @semantic_coupling (MathCompKernelMeasure R)
+    A B rel mu nu →
+  ∃ joint, @semantic_coupling (MathCompKernelMeasure R)
     (MathCompNodeSemanticMeasure R) A B rel mu nu joint.
 Proof.
   move=> [j [Hl [Hr Hrel]]].

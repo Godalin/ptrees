@@ -1,6 +1,8 @@
 (** Role: FreeOmega specialization of primitive hitting monotonicity.
     Translation approximants and preservation live in Interp/FreeOmega/Translate;
     no concrete native backend is selected here. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -19,7 +21,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section FreeOmegaBase.
-Context {E : Type -> Type} {MN : Type -> Type}
+Context {E : Type → Type} {MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
@@ -27,7 +29,7 @@ Context {E : Type -> Type} {MN : Type -> Type}
 Local Notation MF := (FreeOmega MN).
 
 Lemma ptree_hitting_mono {R} (ot : ptree' E MN R) n m :
-  Peano.le n m ->
+  Peano.le n m →
   free_omega_approx eq
     (ptree_hitting_approx (MF := MF) n ot)
     (ptree_hitting_approx (MF := MF) m ot).

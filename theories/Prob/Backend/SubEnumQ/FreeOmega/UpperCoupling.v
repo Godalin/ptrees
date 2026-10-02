@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -30,17 +32,17 @@ Variable F : realType.
 Local Notation upper := (free_omega_upper (R := F)).
 
 Theorem free_omega_sample_bind_upper {A X Y} (mu : SubEnumQ X)
-    (k : X -> SubEnumQ Y) (h : Y -> FreeOmega SubEnumQ A) (f : A -> F) :
+    (k : X → SubEnumQ Y) (h : Y → FreeOmega SubEnumQ A) (f : A → F) :
   upper (FOSample mu (fun x => FOSample (k x) h)) f =
   upper (FOSample (subenumQ_bind mu k) h) f.
 Proof. cbn [free_omega_upper subenumQ_bind subenumQ_raw]. symmetry. apply enumQ_real_expect_bind. Qed.
 
-Theorem free_omega_approx_upper {A B} (T : A -> B -> Prop)
+Theorem free_omega_approx_upper {A B} (T : A → B → Prop)
     (mu : FreeOmega SubEnumQ A) (nu : FreeOmega SubEnumQ B)
-    (f : A -> F) (g : B -> F) :
-  free_omega_approx T mu nu ->
-  (forall y, 0 <= g y /\ g y <= 1) ->
-  (forall x y, T x y -> f x <= g y) -> upper mu f <= upper nu g.
+    (f : A → F) (g : B → F) :
+  free_omega_approx T mu nu →
+  (∀ y, 0 <= g y ∧ g y <= 1) →
+  (∀ x y, T x y → f x <= g y) → upper mu f <= upper nu g.
 Proof.
   intros Happrox Hg Hfg. induction Happrox; cbn [free_omega_upper].
   - exact (proj1 (free_omega_upper_bounds nu Hg)).
@@ -51,18 +53,18 @@ Proof.
       (fun i => proj2 (free_omega_upper_bounds (d i) Hg))).
 Qed.
 
-Theorem free_omega_structural_upper {A B} (T : A -> B -> Prop)
+Theorem free_omega_structural_upper {A B} (T : A → B → Prop)
     (mu : FreeOmega SubEnumQ A) (nu : FreeOmega SubEnumQ B)
-    (f : A -> F) (g : B -> F) :
-  free_omega_lift T mu nu ->
-  (forall y, 0 <= g y /\ g y <= 1) ->
-  (forall x y, T x y -> f x <= g y) -> upper mu f <= upper nu g.
+    (f : A → F) (g : B → F) :
+  free_omega_lift T mu nu →
+  (∀ y, 0 <= g y ∧ g y <= 1) →
+  (∀ x y, T x y → f x <= g y) → upper mu f <= upper nu g.
 Proof. intro H. apply free_omega_approx_upper. exact (free_omega_lift_to_approx H). Qed.
 
 Theorem free_omega_upper_ae_mono {A} (mu : FreeOmega SubEnumQ A)
-    (f g : A -> F) :
-  (forall y, 0 <= g y /\ g y <= 1) ->
-  free_omega_ae (fun x => f x <= g x) mu -> upper mu f <= upper mu g.
+    (f g : A → F) :
+  (∀ y, 0 <= g y ∧ g y <= 1) →
+  free_omega_ae (fun x => f x <= g x) mu → upper mu f <= upper mu g.
 Proof.
   intro Hg. induction mu as [x| |X node k IH|chain IH]; intro Hae;
     cbn [free_omega_upper].
@@ -80,10 +82,10 @@ Proof.
 Qed.
 
 Theorem free_omega_upper_ae_ext {A} (mu : FreeOmega SubEnumQ A)
-    (f g : A -> F) :
-  (forall x, 0 <= f x /\ f x <= 1) ->
-  (forall y, 0 <= g y /\ g y <= 1) ->
-  free_omega_ae (fun x => f x = g x) mu -> upper mu f = upper mu g.
+    (f g : A → F) :
+  (∀ x, 0 <= f x ∧ f x <= 1) →
+  (∀ y, 0 <= g y ∧ g y <= 1) →
+  free_omega_ae (fun x => f x = g x) mu → upper mu f = upper mu g.
 Proof.
   intros Hf Hg Hae. apply/eqP. rewrite eq_le. apply/andP. split.
   - apply free_omega_upper_ae_mono; [exact Hg|].
@@ -94,9 +96,9 @@ Proof.
     intros x Hx. rewrite Hx. exact: lexx.
 Qed.
 
-Lemma free_omega_upper_approx_mono {A} (mu nu : FreeOmega SubEnumQ A) (f : A -> F) :
-  free_omega_approx eq mu nu ->
-  (forall x, 0 <= f x /\ f x <= 1) -> upper mu f <= upper nu f.
+Lemma free_omega_upper_approx_mono {A} (mu nu : FreeOmega SubEnumQ A) (f : A → F) :
+  free_omega_approx eq mu nu →
+  (∀ x, 0 <= f x ∧ f x <= 1) → upper mu f <= upper nu f.
 Proof.
   intros H Hf. eapply free_omega_approx_upper; [exact H|exact Hf|].
   intros x y ->. exact: lexx.
@@ -105,12 +107,12 @@ Qed.
 (** One-sided cofinal domination already suffices for the corresponding
     numeric inequality; mutual domination gives equality below.  No
     quotient conclusion is used in either proof. *)
-Theorem free_omega_cofinal_upper_le {A B} (T : A -> B -> Prop)
-    (left : nat -> FreeOmega SubEnumQ A) (right : nat -> FreeOmega SubEnumQ B)
-    (f : A -> F) (g : B -> F) :
-  (forall n, exists m, free_omega_approx T (left n) (right m)) ->
-  (forall y, 0 <= g y /\ g y <= 1) ->
-  (forall x y, T x y -> f x <= g y) ->
+Theorem free_omega_cofinal_upper_le {A B} (T : A → B → Prop)
+    (left : nat → FreeOmega SubEnumQ A) (right : nat → FreeOmega SubEnumQ B)
+    (f : A → F) (g : B → F) :
+  (∀ n, ∃ m, free_omega_approx T (left n) (right m)) →
+  (∀ y, 0 <= g y ∧ g y <= 1) →
+  (∀ x y, T x y → f x <= g y) →
   upper (FOLub left) f <= upper (FOLub right) g.
 Proof.
   intros Hcover Hg Hfg. cbn [free_omega_upper]. apply countable_upper_le. intro n.
@@ -121,9 +123,9 @@ Proof.
 Qed.
 
 Theorem free_omega_cofinal_upper_eq {A}
-    (left right : nat -> FreeOmega SubEnumQ A) (f : A -> F) :
-  free_omega_chains_cofinal eq left right ->
-  (forall x, 0 <= f x /\ f x <= 1) ->
+    (left right : nat → FreeOmega SubEnumQ A) (f : A → F) :
+  free_omega_chains_cofinal eq left right →
+  (∀ x, 0 <= f x ∧ f x <= 1) →
   upper (FOLub left) f = upper (FOLub right) f.
 Proof.
   intros [Hl Hr] Hf. apply/eqP. rewrite eq_le. apply/andP. split.
@@ -138,17 +140,17 @@ Qed.
     grid cell is dominated by a later diagonal cell, not because arbitrary
     convergent double sequences may be exchanged. *)
 Theorem free_omega_diagonal_upper {A}
-    (grid : nat -> nat -> FreeOmega SubEnumQ A) (f : A -> F) :
-  (forall i j, free_omega_approx eq (grid i j) (grid i (S j))) ->
-  (forall i j, free_omega_approx eq (grid i j) (grid (S i) j)) ->
-  (forall x, 0 <= f x /\ f x <= 1) ->
+    (grid : nat → nat → FreeOmega SubEnumQ A) (f : A → F) :
+  (∀ i j, free_omega_approx eq (grid i j) (grid i (S j))) →
+  (∀ i j, free_omega_approx eq (grid i j) (grid (S i) j)) →
+  (∀ x, 0 <= f x ∧ f x <= 1) →
   upper (FOLub (fun i => FOLub (grid i))) f =
   upper (FOLub (fun n => grid n n)) f.
 Proof.
   intros Hrow Hcol Hf.
-  have Hbound : forall i j, upper (grid i j) f <= 1 :=
+  have Hbound : ∀ i j, upper (grid i j) f <= 1 :=
     fun i j => proj2 (free_omega_upper_bounds (grid i j) Hf).
-  have Hcover : forall i j, free_omega_approx eq (grid i j)
+  have Hcover : ∀ i j, free_omega_approx eq (grid i j)
       (grid (Nat.add i j) (Nat.add i j)).
   { intros i j. eapply free_omega_approx_trans with (nu := grid i (Nat.add i j)).
     - pose proof (free_omega_approx_steps (Hrow i) j i) as Hr.

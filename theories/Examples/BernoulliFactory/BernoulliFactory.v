@@ -30,7 +30,7 @@ Import GRing.Theory Num.Theory Order.Theory.
 #[local] Open Scope order_scope.
 
 Unset Automatic Proposition Inductives.
-Variant factoryE : Type -> Type := .
+Variant factoryE : Type → Type := .
 
 Section Factory.
 Variables pfalse ptrue : rat.
@@ -76,11 +76,11 @@ Proof.
 Qed.
 
 (** The algorithm only depends on the behavior of its Boolean sampler. *)
-Definition factory_sampler_step {E MN : Type -> Type}
+Definition factory_sampler_step {E MN : Type → Type}
     (sampler : ptree E MN bool) (x : rat) : ptree E MN (rat + bool) :=
   PTree.bind sampler (fun b => Ret (binary_round_result x b)).
 
-Definition factory_with_sampler {E MN : Type -> Type}
+Definition factory_with_sampler {E MN : Type → Type}
     (sampler : ptree E MN bool) (target : rat) : ptree E MN bool :=
   PTree.iter (factory_sampler_step sampler) target.
 

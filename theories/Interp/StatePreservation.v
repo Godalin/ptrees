@@ -2,6 +2,8 @@
     Final states are compared by equality, results by the supplied relation.
     The state machine reuses generic relational hitting and acceleration
     mathematics; no state-preservation capability is postulated. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From ITree.Events Require Import State.
@@ -15,7 +17,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section StatePreservation.
-Context {S : Type} {E MN MF : Type -> Type}
+Context {S : Type} {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
   `{Ord : @SemanticMeasureOrderLaws MF FI FO}
@@ -31,9 +33,9 @@ Variable Hbind : relational_bind FI.
 Variable Hzero : relational_zero FO.
 Variable Hlimit : relational_lub FO.
 
-Theorem run_state_peutt {A B} (RR : A -> B -> Prop)
+Theorem run_state_peutt {A B} (RR : A → B → Prop)
     (t : ptree (stateE S +' E) MN A) (u : ptree (stateE S +' E) MN B) s :
-  @peutt (stateE S +' E) MN MF FI FC MX FO A B RR t u ->
+  @peutt (stateE S +' E) MN MF FI FC MX FO A B RR t u →
   @peutt E MN MF FI FC MX FO (S*A) (S*B) (state_result_rel RR)
     (run_state t s) (run_state u s).
 Proof.
@@ -62,7 +64,7 @@ Proof. intros t u Htu. exact (run_state_peutt s Htu). Qed.
     clients need no setoid instance for the conjunction-shaped relation. *)
 Theorem run_state_peutt_eq {A}
     (t u : ptree (stateE S +' E) MN A) s :
-  @peutt (stateE S +' E) MN MF FI FC MX FO A A eq t u ->
+  @peutt (stateE S +' E) MN MF FI FC MX FO A A eq t u →
   @peutt E MN MF FI FC MX FO (S*A) (S*A) eq (run_state t s) (run_state u s).
 Proof.
   intro H. eapply peutt_rel_mono; [|exact (run_state_peutt s H)].

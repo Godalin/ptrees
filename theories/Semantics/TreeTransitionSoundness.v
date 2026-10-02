@@ -1,4 +1,6 @@
 (** Role: Comparison semantics. Depends on canonical theory; not the canonical peutt relation or interpreter theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -17,7 +19,7 @@ Unset Printing Implicit Defensive.
     Return relations below may be arbitrary, on a common return carrier.
     In particular RR = eq gives the behavioral inclusion of interest. *)
 Section Soundness.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -25,7 +27,7 @@ Context {E MN MF : Type -> Type}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
   `{FCAE : @SemanticMeasureCouplingAELaws MF FI}
   `{FOAE : @SemanticOmegaAELaws MF FI FO}.
-Context {R : Type} (RR : R -> R -> Prop).
+Context {R : Type} (RR : R → R → Prop).
 Local Notation tree := (ptree E MN R).
 Local Notation head := (stable_head E MN R).
 Local Notation W := (@peutt E MN MF FI FC MX FO R R RR).
@@ -33,7 +35,7 @@ Local Notation HR := (stable_head_rel RR W).
 
 (** There is no need for a new zero-coupling axiom on a common carrier.
     Restrict the reflexive coupling to the empty AE support. *)
-Lemma tree_transition_zero_lift {A} (rel : A -> A -> Prop) :
+Lemma tree_transition_zero_lift {A} (rel : A → A → Prop) :
   sem_lift rel sem_zero sem_zero.
 Proof.
   assert (Hself : sem_lift (@eq A) sem_zero sem_zero).
@@ -43,7 +45,7 @@ Proof.
   eapply sem_lift_mono; [|exact Hempty]. intros x y [_ [Hfalse _]]. contradiction.
 Qed.
 
-Lemma peutt_stable_heads_as_trees h k : HR h k ->
+Lemma peutt_stable_heads_as_trees h k : HR h k →
   trans_head_rel W h k.
 Proof.
   intro H. destruct H; unfold trans_head_rel; cbn.
@@ -52,18 +54,18 @@ Proof.
 Qed.
 
 Lemma peutt_couples_complete_heads (t u : tree) front1 front2 :
-  W t u -> ptree_stable_hitting (MF := MF) (observe t) front1 ->
-  ptree_stable_hitting (MF := MF) (observe u) front2 -> sem_lift HR front1 front2.
+  W t u → ptree_stable_hitting (MF := MF) (observe t) front1 →
+  ptree_stable_hitting (MF := MF) (observe u) front2 → sem_lift HR front1 front2.
 Proof. intros. eapply peutt_hitting_lift; eassumption. Qed.
 
-Lemma related_heads_enable_same_label h k label : HR h k ->
-  (head_enabled h label <-> head_enabled k label).
+Lemma related_heads_enable_same_label h k label : HR h k →
+  (head_enabled h label ↔ head_enabled k label).
 Proof.
   intro H. destruct H; split; intro Hen; dependent destruction Hen; constructor.
 Qed.
 
 Lemma peutt_head_action_results label h k out1 out2 :
-  HR h k -> head_action_result label h out1 -> head_action_result label k out2 ->
+  HR h k → head_action_result label h out1 → head_action_result label k out2 →
   sem_lift (trans_head_rel W) out1 out2.
 Proof.
   intros Hrel Hleft Hright.
@@ -84,12 +86,12 @@ Qed.
 
 (** A reusable projection argument: keep the original whole-head coupling,
     then apply the relational bind law to the chosen observation kernels. *)
-Lemma peutt_projects_heads {O1 O2} (OR : O1 -> O2 -> Prop)
-    (project1 : head -> MF O1) (project2 : head -> MF O2)
-    (Hproject : forall h k, HR h k -> sem_lift OR (project1 h) (project2 k))
+Lemma peutt_projects_heads {O1 O2} (OR : O1 → O2 → Prop)
+    (project1 : head → MF O1) (project2 : head → MF O2)
+    (Hproject : ∀ h k, HR h k → sem_lift OR (project1 h) (project2 k))
     (t u : tree) out1 out2 :
-  W t u -> tree_head_observation project1 t out1 ->
-  tree_head_observation project2 u out2 -> sem_lift OR out1 out2.
+  W t u → tree_head_observation project1 t out1 →
+  tree_head_observation project2 u out2 → sem_lift OR out1 out2.
 Proof.
   intros Hrel [front1 [Hhit1 Ho1]] [front2 [Hhit2 Ho2]].
   eapply sem_lift_proper_l; [exact Ho1|].
@@ -98,7 +100,7 @@ Proof.
 Qed.
 
 Theorem peutt_preserves_tree_return_observation (t u : tree) out1 out2 :
-  W t u -> tree_return_observation t out1 -> tree_return_observation u out2 ->
+  W t u → tree_return_observation t out1 → tree_return_observation u out2 →
   sem_lift RR out1 out2.
 Proof.
   eapply peutt_projects_heads. intros h k Hrel. destruct Hrel; cbn.
@@ -107,7 +109,7 @@ Proof.
 Qed.
 
 Theorem peutt_preserves_tree_offered_event_observation (t u : tree) out1 out2 :
-  W t u -> tree_offered_event_observation t out1 -> tree_offered_event_observation u out2 ->
+  W t u → tree_offered_event_observation t out1 → tree_offered_event_observation u out2 →
   sem_lift eq out1 out2.
 Proof.
   eapply peutt_projects_heads. intros h k Hrel. destruct Hrel; cbn.
@@ -119,7 +121,7 @@ Qed.
     correct almost everywhere, not at null heads. Integrating a coupling
     restricted to BOTH such predicates preserves the original masses. *)
 Theorem peutt_preserves_trans (t u : tree) label out1 out2 :
-  W t u -> trans t label out1 -> trans u label out2 ->
+  W t u → trans t label out1 → trans u label out2 →
   sem_lift (trans_head_rel W) out1 out2.
 Proof.
   intros Hrel [front1 [next1 [Hhit1 [Hae1 Ho1]]]]
@@ -137,7 +139,7 @@ Context `{FOrd : @SemanticMeasureOrderLaws MF FI FO}.
 (** The candidate is peutt itself: this is a direct post-fixed-point
     theorem, not a transport through selected-head bisimulation. *)
 Theorem peutt_trans_postfixed (t u : tree) :
-  W t u -> trans_bisimF RR W t u.
+  W t u → trans_bisimF RR W t u.
 Proof.
   intro Hrel. split.
   - split; intros out Hout.
@@ -163,7 +165,7 @@ Proof.
 Qed.
 
 Theorem peutt_trans_bisim (t u : tree) :
-  W t u -> trans_bisim RR t u.
+  W t u → trans_bisim RR t u.
 Proof.
   eapply trans_bisim_coinduction. exact peutt_trans_postfixed.
 Qed.

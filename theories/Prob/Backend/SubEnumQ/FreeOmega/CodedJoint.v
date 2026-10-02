@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
@@ -21,8 +23,8 @@ Universe frontier.
 Context {Anchor : Type@{frontier}} {X Y C : Type}.
 Variable mu : SubEnumQ X.
 Variable nu : SubEnumQ Y.
-Variable left_code : X -> C.
-Variable right_code : Y -> C.
+Variable left_code : X → C.
+Variable right_code : Y → C.
 Local Notation qlift := (@free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure
   SubEnumQ_SemanticOmega _ _).
 Local Notation sample := (fun T (m : SubEnumQ T) =>
@@ -42,10 +44,10 @@ Proof.
 Qed.
 
 Theorem subenumQ_coded_quotient_joint :
-  qlift (fun x y => left_code x = right_code y) (sample X mu) (sample Y nu) ->
-  exists joint : SubEnumQ {x : X & (C * Y)%type},
-    qlift (fun w x => projT1 w = x) (sample _ joint) (sample X mu) /\
-    qlift (fun w y => snd (projT2 w) = y) (sample _ joint) (sample Y nu) /\
+  qlift (fun x y => left_code x = right_code y) (sample X mu) (sample Y nu) →
+  ∃ joint : SubEnumQ {x : X & (C * Y)%type},
+    qlift (fun w x => projT1 w = x) (sample _ joint) (sample X mu) ∧
+    qlift (fun w y => snd (projT2 w) = y) (sample _ joint) (sample Y nu) ∧
     sem_ae joint (fun w => left_code (projT1 w) = right_code (snd (projT2 w))).
 Proof.
   intro Hcodes.
@@ -71,7 +73,7 @@ Proof.
     pose proof (proj2 (free_omega_qlift_support Hcodes) _ Hae) as Htransport.
     apply free_omega_ae_sample_inv in Htransport.
     eapply sem_ae_mono; [|exact Htransport]. intros x Hx.
-    assert (Himage : exists y, left_code x = right_code y /\
+    assert (Himage : exists y, left_code x = right_code y ∧
       subenumQ_total (conditional (right_code y))) by (inversion Hx; assumption).
     destruct Himage as [y [Hxy Hy]]. rewrite Hxy. exact Hy. }
   pose (joint := subenumQ_bind mu (fun x => subenumQ_bind (conditional (left_code x))
@@ -86,7 +88,7 @@ Proof.
       SubEnumQ_SemanticMeasureDiracAELaws SubEnumQ_SemanticMeasureBindAEExactLaws
       Anchor X (fun _ => (C * Y)%type) mu (fun x => conditional (left_code x))). }
   assert (Hleft : qlift (fun w x => projT1 w = x) nested (sample X mu)).
-  { eapply FOQLSample with (T := fun x y => x = y /\ subenumQ_total (conditional (left_code x))).
+  { eapply FOQLSample with (T := fun x y => x = y ∧ subenumQ_total (conditional (left_code x))).
     - apply sem_lift_refl_ae. exact Hmu_total.
     - intros x y [<- Hx]. eapply free_omega_sample_to_constant with (point := tt).
       + intro P. apply sem_ae_ret_iff.
@@ -147,7 +149,7 @@ Proof.
       apply (@sem_ae_bind_iff SubEnumQ SubEnumQ_SemanticMeasure
         SubEnumQ_SemanticMeasureBindAEExactLaws).
       eapply sem_ae_mono with (P := fun pair =>
-        fst pair = left_code x /\ fst pair = right_code (snd pair)).
+        fst pair = left_code x ∧ fst pair = right_code (snd pair)).
       * intros pair [Hleftcode Hrightcode].
         apply (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
           SubEnumQ_SemanticMeasureDiracAELaws). cbn. congruence.

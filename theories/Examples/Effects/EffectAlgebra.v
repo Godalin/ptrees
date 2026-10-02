@@ -1,5 +1,7 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
 (** Interpreted effect equations, noncommutative logs, and missing mass. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -17,7 +19,7 @@ Import ListNotations.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
-Example reader_repeated {E A} (k : nat -> nat -> ptree (readerE nat +' E) SubEnumQ A) env :
+Example reader_repeated {E A} (k : nat → nat → ptree (readerE nat +' E) SubEnumQ A) env :
   run_reader (Vis (inl1 Ask) (fun x => Vis (inl1 Ask) (k x))) env ≈ₚ
   run_reader (Vis (inl1 Ask) (fun x => k x x)) env.
 Proof. apply run_reader_ask_ask. Qed.
@@ -33,7 +35,7 @@ Example state_overwrite {E A} (k : ptree (stateE nat +' E) SubEnumQ A) s a b :
 Proof. apply run_state_put_put. Qed.
 
 Example state_draw_swap {E A X} (mu : SubEnumQ X)
-    (k : nat -> X -> ptree (stateE nat +' E) SubEnumQ A) s :
+    (k : nat → X → ptree (stateE nat +' E) SubEnumQ A) s :
   run_state (Vis (inl1 (Get nat)) (fun v => Prob mu (k v))) s ≈ₚ
   run_state (Prob mu (fun x => Vis (inl1 (Get nat)) (fun v => k v x))) s.
 Proof. apply run_state_get_prob. Qed.
@@ -56,7 +58,7 @@ Example writer_unit {E A} (k : ptree (writerE (list nat) +' E) SubEnumQ A) :
   run_writer log_op (Vis (inl1 (Tell [])) (fun _ => k)) ≈ₚ run_writer log_op k.
 Proof. apply run_writer_tell_unit. exact log_laws. Qed.
 
-Example log_monoid_not_commutative : monoid_plus log_op [1] [2] <> monoid_plus log_op [2] [1].
+Example log_monoid_not_commutative : monoid_plus log_op [1] [2] ≠ monoid_plus log_op [2] [1].
 Proof. discriminate. Qed.
 
 Example writer_log_order :
@@ -73,12 +75,12 @@ Proof.
 Qed.
 
 Example writer_draw_swap {E A X} (mu : SubEnumQ X) w
-    (k : X -> ptree (writerE (list nat) +' E) SubEnumQ A) :
+    (k : X → ptree (writerE (list nat) +' E) SubEnumQ A) :
   run_writer log_op (Vis (inl1 (Tell w)) (fun _ => Prob mu k)) ≈ₚ
   run_writer log_op (Prob mu (fun x => Vis (inl1 (Tell w)) (fun _ => k x))).
 Proof. apply run_writer_tell_prob; typeclasses eauto. Qed.
 
-Example exception_left_zero {E A B} err (k : A -> ptree (exceptE nat +' E) SubEnumQ B) :
+Example exception_left_zero {E A B} err (k : A → ptree (exceptE nat +' E) SubEnumQ B) :
   run_exception (PTree.bind (Vis (inl1 (Throw err)) (fun v : void => match v with end)) k) ≈ₚ
   Ret (inl err).
 Proof. apply run_exception_throw_bind. Qed.
@@ -130,7 +132,7 @@ Proof.
 Qed.
 
 Theorem sampling_before_throw_not_erasable (R : realType) :
-  ~ (run_exception sample_then_raise ≈ₚ run_exception raises).
+  ¬ (run_exception sample_then_raise ≈ₚ run_exception raises).
 Proof.
   intro H.
   pose proof (peutt_hitting_lift H partial_error_hitting
@@ -147,7 +149,7 @@ Qed.
 From PTree.Eq.Backend Require Import SubEnumR.
 
 Example real_state_draw_swap (R : realType) {E A X} (mu : SubEnumR R X)
-    (k : nat -> X -> ptree (stateE nat +' E) (SubEnumR R) A) s :
+    (k : nat → X → ptree (stateE nat +' E) (SubEnumR R) A) s :
   run_state (Vis (inl1 (Get nat)) (fun v => Prob mu (k v))) s ≈ₚ
   run_state (Prob mu (fun x => Vis (inl1 (Get nat)) (fun v => k v x))) s.
 Proof. apply run_state_get_prob. Qed.
@@ -155,7 +157,7 @@ Proof. apply run_state_get_prob. Qed.
 Section HighCarrier.
 Universe hi.
 Constraint Set < hi.
-Example high_reader (A : Type@{hi}) (k : nat -> nat -> ptree (readerE nat +' void1) SubEnumQ A) env :
+Example high_reader (A : Type@{hi}) (k : nat → nat → ptree (readerE nat +' void1) SubEnumQ A) env :
   run_reader (Vis (inl1 Ask) (fun x => Vis (inl1 Ask) (k x))) env ≈ₚ
   run_reader (Vis (inl1 Ask) (fun x => k x x)) env.
 Proof. apply run_reader_ask_ask. Qed.

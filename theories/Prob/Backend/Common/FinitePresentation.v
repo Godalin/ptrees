@@ -2,6 +2,8 @@
     Every raw list entry gets its own ordinal, including zero weights and
     repeated values. Decoding restores the exact list. This module defines
     no semantic equality, lifting or coupling. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -70,7 +72,7 @@ Arguments finite_position_entry_in {W A} mu i.
 Section CheckedPresentation.
 Variable R : numDomainType.
 
-Lemma finite_positions_expect {A} (mu : list (R * A)) (f : A -> R) :
+Lemma finite_positions_expect {A} (mu : list (R * A)) (f : A → R) :
   finite_expect (fun i => f (finite_position_value mu i)) (finite_positions mu) =
   finite_expect f mu.
 Proof.
@@ -80,7 +82,7 @@ Proof.
 Qed.
 
 Lemma finite_positions_nonnegative {A} (mu : list (R * A)) :
-  finite_nonnegative mu -> finite_nonnegative (finite_positions mu).
+  finite_nonnegative mu → finite_nonnegative (finite_positions mu).
 Proof.
   move=> H p i Hin. apply List.in_map_iff in Hin.
   destruct Hin as [j [He Hj]]; inversion He; subst p i.
@@ -100,7 +102,7 @@ Lemma finite_enum_positions_decode {A} (mu : FiniteEnum R A) :
   finite_enum_raw mu.
 Proof. exact: finite_positions_decode. Qed.
 
-Lemma finite_enum_positions_expect {A} (mu : FiniteEnum R A) (f : A -> R) :
+Lemma finite_enum_positions_expect {A} (mu : FiniteEnum R A) (f : A → R) :
   finite_enum_expect (finite_enum_positions mu)
     (fun i => f (finite_position_value (finite_enum_raw mu) i)) = finite_enum_expect mu f.
 Proof. exact: finite_positions_expect. Qed.
@@ -116,7 +118,7 @@ Proof.
   rewrite finite_enum_positions_mass; exact: finite_subdist_mass_bound.
 Defined.
 
-Lemma finite_subdist_positions_expect {A} (mu : FiniteSubdist R A) (f : A -> R) :
+Lemma finite_subdist_positions_expect {A} (mu : FiniteSubdist R A) (f : A → R) :
   finite_subdist_expect (finite_subdist_positions mu)
     (fun i => f (finite_position_value (finite_enum_raw (finite_subdist_enum mu)) i)) =
   finite_subdist_expect mu f.

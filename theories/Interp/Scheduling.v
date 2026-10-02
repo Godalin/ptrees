@@ -1,5 +1,7 @@
 (** Generic finite interpreter scheduling. Reuses the preorder algebra of
     bind scheduling; no observable-equality-to-order reflection is assumed. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms RelationClasses Lia.
 From PTree.Core Require Import PTreeDefinition.
@@ -12,14 +14,14 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section Scheduling.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}
   `{Ord : @SemanticMeasureOrderLaws MF FI FO}
   `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
   `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}
   `{DC : @SemanticOmegaDirectedCofinalityLaws MF FI FO}.
-Variable handler : forall X, E X -> ptree F MN X.
+Variable handler : ∀ X, E X → ptree F MN X.
 
 (** These are explicit local specializations of existing generic algebra,
     not new global instances or a second backend proof. *)
@@ -32,11 +34,11 @@ Local Notation equiv := (@BindScheduling.equiv MF FI FO).
     (@mixed_bind MN MF MX A B mu).
 Proof. apply BindScheduling.mixed_equiv_Proper. exact (@mixed_bind_le_k MN MF FI MX FO MO). Qed.
 
-Local Lemma ret_equiv A B (x : A) (k : A -> MF B) :
+Local Lemma ret_equiv A B (x : A) (k : A → MF B) :
   equiv (sem_bind (sem_ret x) k) (k x).
 Proof. apply sem_bind_ret_order. Qed.
 Local Lemma mixed_assoc_equiv A B C (mu : MN A)
-    (k : A -> MF B) (h : B -> MF C) :
+    (k : A → MF B) (h : B → MF C) :
   equiv (sem_bind (mixed_bind mu k) h)
     (mixed_bind mu (fun x => sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.

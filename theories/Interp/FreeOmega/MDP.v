@@ -1,4 +1,6 @@
 (** Role: Interpreter compositionality. Depends on equational theory (and comparison semantics for Atomic/MDP); not primitive syntax. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -21,7 +23,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section GenericMDPInterp.
-Context {E F MN : Type -> Type}
+Context {E F MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI} `{NO : @SemanticOmega MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -30,7 +32,7 @@ Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega MN NI NO).
-Variable handler : forall X, E X -> ptree F MN X.
+Variable handler : ∀ X, E X → ptree F MN X.
 Context {R : Type}.
 Local Notation shead := (stable_head E MN R).
 Local Notation tree := (ptree E MN R).
@@ -44,12 +46,12 @@ Local Notation tstate := (@mdp_state F MN MF FI FC FreeOmegaMixedMeasure FO R).
 Definition mdp_handler : Prop :=
   @PTree.Interp.MDP.mdp_handler E F MN MF FI FC FreeOmegaMixedMeasure FO handler R.
 
-Local Lemma interp_bind_ret_l A B (x : A) (k : A -> MF B) :
+Local Lemma interp_bind_ret_l A B (x : A) (k : A → MF B) :
   @sem_eq MF FI _ (sem_bind (sem_ret x) k) (k x).
 Proof. apply (sem_eq_refl (SI := FI)). Qed.
 
 Theorem mdp_state_interp (Hhandler : mdp_handler) (t : tree) :
-  sstate t -> tstate (PTree.interp handler t).
+  sstate t → tstate (PTree.interp handler t).
 Proof.
   exact (PTree.Interp.MDP.mdp_state_interp_of_ret_l (FI := FI) (FC := FC)
     (MX := FreeOmegaMixedMeasure) (FO := FO) interp_bind_ret_l Hhandler (t := t)).
@@ -58,9 +60,9 @@ Qed.
 (** Coincidence is reused, not reproved or built into the handler contract.
     No source bisimulation premise is needed for this target-fragment iff. *)
 Theorem mdp_interp_peutt_trans_iff (Hhandler : mdp_handler) t u :
-  sstate t -> sstate u ->
+  sstate t → sstate u →
   (@peutt F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
-      (PTree.interp handler t) (PTree.interp handler u) <->
+      (PTree.interp handler t) (PTree.interp handler u) ↔
    @trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
       (PTree.interp handler t) (PTree.interp handler u)).
 Proof.
@@ -71,8 +73,8 @@ Qed.
 
 Theorem mdp_guarded_interp_trans (Hhandler : mdp_handler)
     (Hguard : guarded_handler (NI := NI) (NO := NO) handler) t u :
-  sstate t -> sstate u ->
-  @trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO R R eq t u ->
+  sstate t → sstate u →
+  @trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO R R eq t u →
   @trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
     (PTree.interp handler t) (PTree.interp handler u).
 Proof.
@@ -86,7 +88,7 @@ End GenericMDPInterp.
 (** The accepted permutation profile stays homogeneous. No inverse-label
     machinery or atomic-handler statement is generalized here. *)
 Section AtomicMDPInterp.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI} `{NO : @SemanticOmega MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -95,7 +97,7 @@ Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega MN NI NO).
-Variable handler : forall X, E X -> ptree E MN X.
+Variable handler : ∀ X, E X → ptree E MN X.
 Context {R : Type}.
 Local Notation head := (stable_head E MN R).
 Local Notation good := (@mdp_head E MN MF FI FC FreeOmegaMixedMeasure FO R).
@@ -105,15 +107,15 @@ Variable atom : atomic_handler (NI := NI) (NO := NO) handler.
 (** This is a measure-side mapping obligation, not a preservation premise.
     [sem_total_proper] alone does not imply it. The SubEnumQ specialization
     proves it for all maps, not merely this handler's head map. *)
-Hypothesis Htotal_map : forall mu : MF head,
-  @sem_total MF FI FO _ mu ->
+Hypothesis Htotal_map : ∀ mu : MF head,
+  @sem_total MF FI FO _ mu →
   @sem_total MF FI FO _ (atomic_map atom mu).
 
 Definition mdp_atomic_candidate (h : head) : Prop :=
-  exists source, good source /\ h = atomic_head atom source.
+  ∃ source, good source ∧ h = atomic_head atom source.
 
 Lemma mdp_atomic_candidate_postfixed h :
-  mdp_atomic_candidate h ->
+  mdp_atomic_candidate h →
   @mdp_headF E MN MF FI FreeOmegaMixedMeasure FO R mdp_atomic_candidate h.
 Proof.
   exact (PTree.Interp.MDPAtomic.mdp_atomic_candidate_postfixed
@@ -122,7 +124,7 @@ Proof.
     (atom := atomic_generic atom) Htotal_map (h := h)).
 Qed.
 
-Theorem mdp_head_atomic h : good h -> good (atomic_head atom h).
+Theorem mdp_head_atomic h : good h → good (atomic_head atom h).
 Proof.
   exact (PTree.Interp.MDPAtomic.mdp_head_atomic
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
@@ -138,7 +140,7 @@ Proof.
     (atom := atomic_generic atom) Htotal_map ).
 Qed.
 
-Theorem mdp_state_interp_atomic t : state t -> state (PTree.interp handler t).
+Theorem mdp_state_interp_atomic t : state t → state (PTree.interp handler t).
 Proof.
   exact (PTree.Interp.MDPAtomic.mdp_state_interp_atomic
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)

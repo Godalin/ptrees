@@ -1,4 +1,6 @@
 (** Role: supporting compression/scheduling/recovery example; not public theory. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
@@ -20,7 +22,7 @@ Unset Printing Implicit Defensive.
     Consequently the round's projected kernel does not factor through
     that tree, unlike a unary-policy projection proof. *)
 Section AlternatingRounds.
-Context {E MN : Type -> Type} `{NI : SemanticMeasure MN} {R : Type} (r : R).
+Context {E MN : Type → Type} `{NI : SemanticMeasure MN} {R : Type} (r : R).
 Local Notation tree := (ptree E MN R).
 Local Notation head := (stable_head E MN R).
 Local Notation State := (nat * bool)%type.
@@ -69,9 +71,9 @@ Qed.
 
 Theorem alternating_rounds_complete_hitting n b out rounds_out :
   @ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega R (observe (countdown n)) out ->
+    FreeOmegaObservableSemanticOmega R (observe (countdown n)) out →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega State head
-    (costed_kernel alternating_measure alternating_target) (n,b) rounds_out ->
+    (costed_kernel alternating_measure alternating_target) (n,b) rounds_out →
   free_omega_qlift eq out (free_omega_bind rounds_out (fun h => FORet h)).
 Proof.
   apply costed_round_stable_hitting with
@@ -87,7 +89,7 @@ Example alternating_round_is_not_unary :
   costed_round_projection (fun s => @countdown planE SubEnumQ bool true (fst s))
     (fun h : stable_head planE SubEnumQ bool => h)
     (@alternating_target planE SubEnumQ SubEnumQ_SemanticMeasure bool true
-      (1, false) (existT _ tt tt)) <>
+      (1, false) (existT _ tt tt)) ≠
   costed_round_projection (fun s => @countdown planE SubEnumQ bool true (fst s))
     (fun h : stable_head planE SubEnumQ bool => h)
     (@alternating_target planE SubEnumQ SubEnumQ_SemanticMeasure bool true
@@ -95,7 +97,7 @@ Example alternating_round_is_not_unary :
 Proof. discriminate. Qed.
 
 Section UnboundedCosts.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -121,7 +123,7 @@ End UnboundedCosts.
     differ.  After an internal successor the correlated state drops that
     initial padding; visible continuations re-enter the same candidate. *)
 Section PaddingCoinduction.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
@@ -152,7 +154,7 @@ Definition padding_target s (x : padding_paths s) : stable_target State head :=
 Definition padding_left_cost s (x : padding_paths s) := internal_round_steps (padding_left_plan s) x.
 Definition padding_right_cost s (x : padding_paths s) :=
   if snd s then 2 + padding_left_cost x else padding_left_cost x.
-Definition padding_rel (t u : tree) := exists s : State, fst s = t /\ padded_tree s = u.
+Definition padding_rel (t u : tree) := ∃ s : State, fst s = t ∧ padded_tree s = u.
 
 Lemma padding_project_target (z : stable_target tree head) :
   (match (match z with SHStable h => SHStable h | SHInternal t => SHInternal (t, false) end)

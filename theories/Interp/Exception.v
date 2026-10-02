@@ -1,6 +1,8 @@
 (** Standard ITree exception vocabulary. Early exit changes the return type
     to [Err + A]; it cannot be expressed as a returning void-valued handler.
     In particular a Throw is not missing probability mass or divergence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From ITree.Events Require Import Exception.
 From ITree.Basics Require Import Basics.
@@ -26,7 +28,7 @@ CoFixpoint run_exception {Err E MN A} (t : ptree (exceptE Err +' E) MN A) : ptre
   | @ProbF _ _ _ _ X mu k => Prob mu (fun x => run_exception (k x))
   end.
 
-Definition exception_result_rel {Err A B} (RR : A -> B -> Prop) (x : Err+A) (y : Err+B) : Prop :=
+Definition exception_result_rel {Err A B} (RR : A → B → Prop) (x : Err+A) (y : Err+B) : Prop :=
   match x,y with
   | inl e, inl f => e = f
   | inr a, inr b => RR a b

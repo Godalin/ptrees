@@ -1,5 +1,7 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
 (** Datatype, administrative Tau, native sampling, and effect boundaries. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From ITree.Core Require Import ITreeDefinition.
@@ -15,7 +17,7 @@ From PTree.Interp Require Import ITreeStructural.
 From PTree.Interp.FreeOmega Require Import ITreeCompletion.
 Set Implicit Arguments.
 
-Variant interactionE : Type -> Type := Ask : interactionE bool.
+Variant interactionE : Type → Type := Ask : interactionE bool.
 
 Example sample_is_native {A} (mu : SubEnumQ A) :
   elaborate_closed (ITree.trigger (Sample mu)) ≈ₚ Prob mu (fun x => Ret x).
@@ -39,7 +41,7 @@ Example ordinary_event_retained :
 Proof. apply free_omega_elab_vis. Qed.
 
 Example open_sampling {X A} (mu : SubEnumQ X)
-    (k : X -> itree (probE SubEnumQ +' interactionE) A) :
+    (k : X → itree (probE SubEnumQ +' interactionE) A) :
   elaborate (ITreeDefinition.Vis (inl1 (Sample mu)) k) ≈ₚ
   Prob mu (fun x => elaborate (k x)).
 Proof. apply free_omega_elab_sample. Qed.
@@ -49,7 +51,7 @@ Example partial_sampling_not_normalized {A} :
   Prob subenumQ_zero (fun x => Ret x).
 Proof. apply free_omega_elab_sample_trigger. Qed.
 
-Example embedding_bind {E MN A B} (t : itree E A) (k : A -> itree E B) :
+Example embedding_bind {E MN A B} (t : itree E A) (k : A → itree E B) :
   pstruct eq (@from_itree E MN B (ITree.bind t k))
     (PTree.bind (from_itree t) (fun x => from_itree (k x))).
 Proof. apply from_itree_bind. Qed.

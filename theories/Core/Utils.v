@@ -1,4 +1,6 @@
 (** Role: Primitive tree syntax/combinators and utilities. No local probability-model or behavioral-theory dependency. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-warn-library-file-stdlib-vector".
 From Coq Require Import Fin.
 
@@ -6,11 +8,11 @@ From Coq Require Import Fin.
 
 Notation fin := Fin.t.
 
-Polymorphic Class MonadTrigger (E : Type -> Type) (M : Type -> Type) : Type :=
-  mtrigger : forall X, E X -> M X.
+Polymorphic Class MonadTrigger (E : Type → Type) (M : Type → Type) : Type :=
+  mtrigger : ∀ X, E X → M X.
 
-Polymorphic Class MonadBr (M : Type -> Type) : Type :=
-  mbr : forall (b : bool) (n: nat), M (Fin.t n).
+Polymorphic Class MonadBr (M : Type → Type) : Type :=
+  mbr : ∀ (b : bool) (n: nat), M (Fin.t n).
 
 Notation rel X Y := (X -> Y -> Prop).
 

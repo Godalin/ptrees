@@ -1,4 +1,6 @@
 (** Role: substantive mathematical counterexample and its construction. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -21,7 +23,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Variant correlationE : Type -> Type := Query : correlationE bool.
+Variant correlationE : Type → Type := Query : correlationE bool.
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
@@ -73,7 +75,7 @@ Definition respond x (h : head) : MF head :=
   match h with
   | FHRet _ => FOZero
   | @FHVis _ _ _ X e k =>
-    (match e in correlationE X return (X -> tree) -> MF head with
+    (match e in correlationE X return (X → tree) → MF head with
      | Query => fun k => match observe (k x) with
          | RetF r => FORet (FHRet r) | _ => FOZero end
      end) k
@@ -119,9 +121,9 @@ Proof.
 Qed.
 
 (** Equality closes all later states, since successors are already Ret. *)
-Definition correlation_candidate (t u : tree) := t = u \/ (t = P /\ u = Q).
+Definition correlation_candidate (t u : tree) := t = u ∨ (t = P ∧ u = Q).
 
-Lemma correlation_postfixed t u : correlation_candidate t u ->
+Lemma correlation_postfixed t u : correlation_candidate t u →
   @trans_bisimF correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool bool eq
     correlation_candidate t u.
 Proof.
@@ -178,12 +180,12 @@ Qed.
 
 (** The generic return-reflection theorem consumes this backend's proved
     Dirac AE/support laws; no injectivity axiom is added. *)
-Lemma return_peutt_injective b c : W (Ret b) (Ret c) -> b = c.
+Lemma return_peutt_injective b c : W (Ret b) (Ret c) → b = c.
 Proof.
   apply (peutt_ret_inv (D := free_omega_observable_dirac_ae_laws)).
 Qed.
 
-Lemma no_correlated_head_pair b c : ~ HR (correlation_head false b) (correlation_head true c).
+Lemma no_correlated_head_pair b c : ¬ HR (correlation_head false b) (correlation_head true c).
 Proof.
   intro Hrel. dependent destruction Hrel.
   pose proof (return_peutt_injective (H false)) as Hfalse.
@@ -191,7 +193,7 @@ Proof.
   destruct b, c; discriminate.
 Qed.
 
-Theorem correlated_response_not_peutt : ~ W P Q.
+Theorem correlated_response_not_peutt : ¬ W P Q.
 Proof.
   intro Hrel.
   pose proof (peutt_couples_complete_heads Hrel (correlation_hitting false)
@@ -210,7 +212,7 @@ Qed.
 (** Concrete proper inclusion: universal forward implication plus one
     independently proved transition-equivalent, peutt-distinct pair. *)
 Theorem peutt_strictly_contained_in_trans_bisim :
-  (forall t u, W t u -> TB t u) /\ (TB P Q /\ ~ W P Q).
+  (∀ t u, W t u → TB t u) ∧ (TB P Q ∧ ¬ W P Q).
 Proof.
   split.
   - intros t u H. exact (peutt_trans_bisim (FI := FI) (FC := FC) (FO := FO) H).

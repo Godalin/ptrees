@@ -2,6 +2,8 @@
 (** Equality, countable support and arbitrary-carrier joint soundness contracts.
     The first block deliberately tests the independent external layer before
     importing FreeOmega. Shared samples live in Regression/Fixtures. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -110,7 +112,7 @@ Proof.
 Qed.
 
 Example invalid_not_equal_to_valid (t : FreeOmega SubEnumQ bool) :
-  free_omega_admissible R t -> ~ @sem_eq _ observable_measure _ alternating_bool t.
+  free_omega_admissible R t → ¬ @sem_eq _ observable_measure _ alternating_bool t.
 Proof.
   intros Hv H; apply (@alternating_bool_not_admissible R).
   exact (proj2 (free_omega_sem_eq_admissible R H) Hv).
@@ -129,7 +131,7 @@ Example unbounded_retry_quotient_sound :
 Proof. apply free_omega_sem_eq_sound; exact retry_quotient. Qed.
 
 Example quotient_cannot_erase_missing_mass :
-  ~ @sem_eq _ observable_measure _ (@FOZero SubEnumQ unit) (FORet tt).
+  ¬ @sem_eq _ observable_measure _ (@FOZero SubEnumQ unit) (FORet tt).
 Proof.
   intro H.
   have Heq := free_omega_sem_eq_sound (@admissible_zero R unit) (@admissible_ret R unit tt) H.
@@ -191,9 +193,9 @@ Variable R : realType.
 Local Notation geometric_valid := (FreeOmegaSamples.geometric_valid R).
 
 Example geometric_on_naturals :
-  exists N : OmegaVal R nat,
-    oval_mass N = oval_mass (free_omega_domain geometric_valid) /\
-    oval_ae N (fun n => exists x, free_omega_enumerate geometric n = Some x) /\
+  ∃ N : OmegaVal R nat,
+    oval_mass N = oval_mass (free_omega_domain geometric_valid) ∧
+    oval_ae N (fun n => ∃ x, free_omega_enumerate geometric n = Some x) ∧
     oval_eq (free_omega_domain geometric_valid)
       (oval_bind N (oval_decode R (free_omega_enumerate geometric))).
 Proof. exact: free_omega_domain_countable_representation. Qed.
@@ -211,7 +213,7 @@ Example zero_joint_empty_relation :
 Proof. split; [by intros|split; by intros]. Qed.
 
 Example nonzero_joint_empty_relation_impossible :
-  ~ oval_coupled (fun (_ : bool) (_ : nat) => False) (oval_ret R true) (oval_ret R O).
+  ¬ oval_coupled (fun (_ : bool) (_ : nat) => False) (oval_ret R true) (oval_ret R O).
 Proof.
   intros [J HJ]; have H := proj1 (oval_joint_dual HJ).
   have Hbad := H (fun _ => 1) (fun _ => 0) (oval_test_one R) (oval_test_zero R)
@@ -220,7 +222,7 @@ Proof.
 Qed.
 
 Example unequal_mass_no_joint :
-  ~ oval_coupled (fun (_ : unit) (_ : unit) => True) (oval_bottom R) (oval_ret R tt).
+  ¬ oval_coupled (fun (_ : unit) (_ : unit) => True) (oval_bottom R) (oval_ret R tt).
 Proof.
   intros [J HJ]; have H := oval_bidual_mass (oval_joint_dual HJ).
   change (0 = (1 : R)) in H.
@@ -281,7 +283,7 @@ Proof. apply admissible_sample; intros []; [apply admissible_ret|apply admissibl
 Lemma partial_nat_valid : free_omega_admissible R partial_nat.
 Proof. apply admissible_sample; intros []; [apply admissible_ret|apply admissible_zero]. Qed.
 Lemma partial_heterogeneous_qlift :
-  free_omega_qlift (fun b n => b = true /\ n = 7%N) partial_bool partial_nat.
+  free_omega_qlift (fun b n => b = true ∧ n = 7%N) partial_bool partial_nat.
 Proof.
   apply FOQLStructural, FOLSample with (S := eq).
   - exact (@sem_lift_refl SubEnumQ SubEnumQ_SemanticMeasure
@@ -290,11 +292,11 @@ Proof.
 Qed.
 
 Example partial_joint_keeps_mass_and_support :
-  exists J, oval_joint (fun b n => b = true /\ n = 7%N)
-    (free_omega_domain partial_bool_valid) (free_omega_domain partial_nat_valid) J /\
-    oval_mass J = oval_mass (free_omega_domain partial_bool_valid) /\
-    oval_mass J = oval_mass (free_omega_domain partial_nat_valid) /\
-    oval_eval J (oval_indicator R (fun z => ~ (fst z = true /\ snd z = 7%N))) = 0.
+  ∃ J, oval_joint (fun b n => b = true ∧ n = 7%N)
+    (free_omega_domain partial_bool_valid) (free_omega_domain partial_nat_valid) J ∧
+    oval_mass J = oval_mass (free_omega_domain partial_bool_valid) ∧
+    oval_mass J = oval_mass (free_omega_domain partial_nat_valid) ∧
+    oval_eval J (oval_indicator R (fun z => ¬ (fst z = true ∧ snd z = 7%N))) = 0.
 Proof. apply free_omega_qlift_joint_mass_support; exact partial_heterogeneous_qlift. Qed.
 
 Example geometric_quotient_joint :
@@ -304,8 +306,8 @@ Proof. apply free_omega_qlift_sound, free_omega_qlift_refl; intro n; reflexivity
 
 (** Soundness does not turn a raw qlift derivation into endpoint validity. *)
 Example qlift_alone_still_not_admissible :
-  free_omega_qlift eq alternating_bool alternating_bool /\
-  ~ free_omega_admissible R alternating_bool.
+  free_omega_qlift eq alternating_bool alternating_bool ∧
+  ¬ free_omega_admissible R alternating_bool.
 Proof.
   split; [apply free_omega_qlift_refl; intro b; reflexivity|exact: alternating_bool_not_admissible].
 Qed.

@@ -3,6 +3,8 @@
     Visible continuations retain the actual recursive program. No event-free
     signature, totality, native representability, or global frontier choice
     operation is needed. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms RelationClasses.
@@ -14,10 +16,10 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Summary.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
-Context {I A : Type} (step : I -> ptree E MN (I+A)).
+Context {I A : Type} (step : I → ptree E MN (I+A)).
 
 Definition iteration_summary_target (h : stable_head E MN (I+A)) :
     stable_target I (stable_head E MN A) :=
@@ -29,7 +31,7 @@ Definition iteration_summary_target (h : stable_head E MN (I+A)) :
   end.
 
 Definition iteration_summary_kernel
-    (front : I -> MF (stable_head E MN (I+A))) i :=
+    (front : I → MF (stable_head E MN (I+A))) i :=
   sem_bind (front i) (fun h => sem_ret (iteration_summary_target h)).
 
 Definition iteration_summary_round front n i :=
@@ -119,10 +121,10 @@ Qed.
 Context `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}.
 
 Lemma iteration_summary_grid_hitting i out :
-  sem_lub (fun n => iteration_summary_grid n n i) out <->
+  sem_lub (fun n => iteration_summary_grid n n i) out ↔
   ptree_stable_hitting (MF := MF) (observe (PTree.iter step i)) out.
 Proof.
-  change (sem_lub (fun n => iteration_summary_grid n n i) out <-> ptree_stable_hitting (MF := MF)
+  change (sem_lub (fun n => iteration_summary_grid n n i) out ↔ ptree_stable_hitting (MF := MF)
     (observe (iter_active step (step i))) out).
   rewrite <- (iter_phase_diagonal_tree step (step i) out).
   apply sem_lub_cofinal.
@@ -136,8 +138,8 @@ Context `{Omega : @SemanticOmegaLaws MF FI FO}
   `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}
   `{Diagonal : @SemanticMeasureDiagonalLaws MF FI FO}
   `{Fubini : @SemanticOmegaFubiniLaws MF FI FO}.
-Variable front : I -> MF (stable_head E MN (I+A)).
-Hypothesis Hfront : forall i,
+Variable front : I → MF (stable_head E MN (I+A)).
+Hypothesis Hfront : ∀ i,
   ptree_stable_hitting (MF := MF) (observe (step i)) (front i).
 
 Lemma iteration_summary_kernel_lub i :
@@ -164,7 +166,7 @@ Qed.
 (** Exact witness, not merely a coupling: front describes the actual step,
     including its actual visible continuations. The limit lives in MF. *)
 Theorem iteration_summary_hitting i out :
-  iteration_summary front i out ->
+  iteration_summary front i out →
   ptree_stable_hitting (MF := MF) (observe (PTree.iter step i)) out.
 Proof.
   intro H. apply (proj1 (iteration_summary_grid_hitting i out)).
@@ -178,7 +180,7 @@ Proof.
 Qed.
 
 Theorem iteration_summary_exists i :
-  exists out, iteration_summary front i out /\
+  ∃ out, iteration_summary front i out ∧
     ptree_stable_hitting (MF := MF) (observe (PTree.iter step i)) out.
 Proof.
   destruct (sem_lub_exists (iteration_summary_round_increasing front i))
@@ -189,8 +191,8 @@ Qed.
 (** An independently obtained complete witness has the same semantic
     measure as the summary; this is not Coq equality of frontier syntax. *)
 Theorem iteration_summary_hitting_eq i out actual :
-  iteration_summary front i out ->
-  ptree_stable_hitting (MF := MF) (observe (PTree.iter step i)) actual ->
+  iteration_summary front i out →
+  ptree_stable_hitting (MF := MF) (observe (PTree.iter step i)) actual →
   sem_eq actual out.
 Proof.
   intros Hout Hactual. eapply ptree_stable_hitting_unique;

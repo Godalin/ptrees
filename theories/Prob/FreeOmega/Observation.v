@@ -1,4 +1,6 @@
 (** Role: Low-universe observation and quotient-closed denotation; not chosen representatives. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -27,22 +29,22 @@ Universes node node_rep frontier.
 (** Observations land in the native node universe; the observed carrier
     may live higher.  Keep this boundary explicit even for Boolean
     observations, whose universe must not be minimized independently. *)
-Context {MN : Type@{node} -> Type@{node_rep}}
+Context {MN : Type@{node} → Type@{node_rep}}
     `{NI : SemanticMeasure MN}
     `{NO : @SemanticOmega MN NI}
     {A : Type@{frontier}} {O : Type@{node}}.
-Polymorphic Inductive free_omega_observes (obs : A -> O) : FreeOmega MN A -> MN O -> Prop :=
+Polymorphic Inductive free_omega_observes (obs : A → O) : FreeOmega MN A → MN O → Prop :=
   | FOOObserveRet x :
       free_omega_observes obs (FORet x) (sem_ret (obs x))
   | FOOObserveZero :
       free_omega_observes obs FOZero sem_zero
-  | FOOObserveSample {X} (mu : MN X) k (front : X -> MN O) :
-      (forall x, free_omega_observes obs (k x) (front x)) ->
+  | FOOObserveSample {X} (mu : MN X) k (front : X → MN O) :
+      (∀ x, free_omega_observes obs (k x) (front x)) →
       free_omega_observes obs (FOSample mu k) (sem_bind mu front)
   | FOOObserveLub chain outs out :
-      (forall n, free_omega_observes obs (chain n) (outs n)) ->
-      sem_lub outs out ->
-      (forall n, free_omega_approx eq (chain n) (chain (S n))) ->
+      (∀ n, free_omega_observes obs (chain n) (outs n)) →
+      sem_lub outs out →
+      (∀ n, free_omega_approx eq (chain n) (chain (S n))) →
       free_omega_observes obs (FOLub chain) out.
 End FreeOmegaObservationDefinition.
 
@@ -53,26 +55,26 @@ End FreeOmegaObservationDefinition.
 Definition free_omega_denotes {MN}
     `{NI : SemanticMeasure MN}
     `{NO : @SemanticOmega MN NI} {A O}
-    (obs : A -> O) (mu : FreeOmega MN A) (out : MN O) : Prop :=
-  exists represented,
-    free_omega_observes obs mu represented /\ sem_eq represented out.
+    (obs : A → O) (mu : FreeOmega MN A) (out : MN O) : Prop :=
+  ∃ represented,
+    free_omega_observes obs mu represented ∧ sem_eq represented out.
 
 Section FreeOmegaDenotationBasics.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
 
-Lemma free_omega_observes_denotes {A O} (obs : A -> O)
+Lemma free_omega_observes_denotes {A O} (obs : A → O)
     (mu : FreeOmega MN A) out :
-  free_omega_observes obs mu out -> free_omega_denotes obs mu out.
+  free_omega_observes obs mu out → free_omega_denotes obs mu out.
 Proof.
   intro Hobs. exists out. split; [exact Hobs|apply sem_eq_refl].
 Qed.
 
-Lemma free_omega_denotes_proper {A O} (obs : A -> O)
+Lemma free_omega_denotes_proper {A O} (obs : A → O)
     (mu : FreeOmega MN A) out1 out2 :
-  free_omega_denotes obs mu out1 -> sem_eq out1 out2 ->
+  free_omega_denotes obs mu out1 → sem_eq out1 out2 →
   free_omega_denotes obs mu out2.
 Proof.
   intros [represented [Hobs Heq1]] Heq2.
@@ -91,12 +93,12 @@ End FreeOmegaDenotationBasics.
 Polymorphic Class FreeOmegaDenotationBindLaws {MN}
     `{NI : SemanticMeasure MN}
     `{NO : @SemanticOmega MN NI} := {
-  free_omega_denotes_bind : forall {A B OA OB}
-      (obsA : A -> OA) (obsB : B -> OB)
+  free_omega_denotes_bind : ∀ {A B OA OB}
+      (obsA : A → OA) (obsB : B → OB)
       (mu : FreeOmega MN A) (out : MN OA)
-      (k : A -> FreeOmega MN B) (front : OA -> MN OB),
-    free_omega_denotes obsA mu out ->
-    (forall x, free_omega_denotes obsB (k x) (front (obsA x))) ->
+      (k : A → FreeOmega MN B) (front : OA → MN OB),
+    free_omega_denotes obsA mu out →
+    (∀ x, free_omega_denotes obsB (k x) (front (obsA x))) →
     free_omega_denotes obsB (free_omega_bind mu k)
       (sem_bind out front)
 }.
@@ -104,21 +106,21 @@ Polymorphic Class FreeOmegaDenotationBindLaws {MN}
 Polymorphic Class FreeOmegaDenotationOmegaLaws {MN}
     `{NI : SemanticMeasure MN}
     `{NO : @SemanticOmega MN NI} := {
-  free_omega_denotes_lub : forall {A O} (obs : A -> O)
-      (chain : nat -> FreeOmega MN A) (outs : nat -> MN O) out,
-    (forall n, free_omega_denotes obs (chain n) (outs n)) ->
-    sem_lub outs out ->
-    (forall n, free_omega_approx eq (chain n) (chain (S n))) ->
+  free_omega_denotes_lub : ∀ {A O} (obs : A → O)
+      (chain : nat → FreeOmega MN A) (outs : nat → MN O) out,
+    (∀ n, free_omega_denotes obs (chain n) (outs n)) →
+    sem_lub outs out →
+    (∀ n, free_omega_approx eq (chain n) (chain (S n))) →
     free_omega_denotes obs (FOLub chain) out
 }.
 
 Lemma free_omega_observes_bind_ret {MN}
     `{NI : SemanticMeasure MN}
     `{NO : @SemanticOmega MN NI}
-    {A B O} (obsA : A -> O) (obsB : B -> O) (f : A -> B)
+    {A B O} (obsA : A → O) (obsB : B → O) (f : A → B)
     (mu : FreeOmega MN A) (out : MN O) :
-  free_omega_observes obsA mu out ->
-  (forall x, obsB (f x) = obsA x) ->
+  free_omega_observes obsA mu out →
+  (∀ x, obsB (f x) = obsA x) →
   free_omega_observes obsB
     (free_omega_bind mu (fun x => FORet (f x))) out.
 Proof.
@@ -132,7 +134,7 @@ Proof.
 Qed.
 
 Section FreeOmegaObservationLaws.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NB : @SemanticMeasureBindLaws MN NI}
@@ -143,10 +145,10 @@ Context {MN : Type -> Type}
     concrete representative.  Once the node backend supplies extensional lub
     uniqueness, the denoted low-universe distribution is deterministic up to
     [sem_eq]. *)
-Lemma free_omega_observes_unique {A O} (obs : A -> O)
+Lemma free_omega_observes_unique {A O} (obs : A → O)
     (mu : FreeOmega MN A) out1 out2 :
-  free_omega_observes obs mu out1 ->
-  free_omega_observes obs mu out2 ->
+  free_omega_observes obs mu out1 →
+  free_omega_observes obs mu out2 →
   sem_eq out1 out2.
 Proof.
   intros H1. revert out2. induction H1; intros out2 Hother;

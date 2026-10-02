@@ -2,6 +2,8 @@
     A discard predicate removes entries without reordering or merging them.
     Zero pruning preserves every expectation, even for signed observables;
     arbitrary pruning only decreases nonnegative observations. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -15,7 +17,7 @@ Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Section RawPruning.
-Context {W : Type} (discard : W -> bool).
+Context {W : Type} (discard : W → bool).
 
 Fixpoint finite_prune {A : Type} (mu : list (W * A)) : list (W * A) :=
   match mu with
@@ -31,7 +33,7 @@ Proof.
   by case: (discard p); cbn; rewrite IH.
 Qed.
 
-Lemma finite_prune_map {A B} (f : A -> B) (mu : list (W * A)) :
+Lemma finite_prune_map {A B} (f : A → B) (mu : list (W * A)) :
   finite_prune (List.map (fun px => (fst px, f (snd px))) mu) =
   List.map (fun px => (fst px, f (snd px))) (finite_prune mu).
 Proof.
@@ -40,8 +42,8 @@ Proof.
 Qed.
 
 Lemma finite_prune_in {A} (mu : list (W * A)) p (x : A) :
-  List.In (p,x) (finite_prune mu) <->
-  List.In (p,x) mu /\ discard p = false.
+  List.In (p,x) (finite_prune mu) ↔
+  List.In (p,x) mu ∧ discard p = false.
 Proof.
   induction mu as [|[q y] tl IH]; cbn; first tauto.
   case Hq: (discard q); cbn; rewrite IH.
@@ -63,8 +65,8 @@ Qed.
 End RawPruning.
 
 Lemma finite_prune_map_weights {W V A : Type}
-    (d : W -> bool) (e : V -> bool) (f : W -> V) (mu : list (W * A)) :
-  (forall p, e (f p) = d p) ->
+    (d : W → bool) (e : V → bool) (f : W → V) (mu : list (W * A)) :
+  (∀ p, e (f p) = d p) →
   finite_prune e (List.map (fun px => (f (fst px), snd px)) mu) =
   List.map (fun px => (f (fst px), snd px)) (finite_prune d mu).
 Proof.
@@ -76,13 +78,13 @@ Section CheckedPruning.
 Variable R : numDomainType.
 
 Lemma finite_prune_nonnegative {A} d (mu : list (R * A)) :
-  finite_nonnegative mu -> finite_nonnegative (finite_prune d mu).
+  finite_nonnegative mu → finite_nonnegative (finite_prune d mu).
 Proof.
   intros H p x Hin; apply finite_prune_in in Hin; exact (H p x (proj1 Hin)).
 Qed.
 
 Lemma finite_expect_prune_le {A} d (mu : list (R * A)) f :
-  finite_nonnegative mu -> (forall x, 0 <= f x) ->
+  finite_nonnegative mu → (∀ x, 0 <= f x) →
   finite_expect f (finite_prune d mu) <= finite_expect f mu.
 Proof.
   induction mu as [|[p x] tl IH]; intros Hnn Hf; cbn; first exact: lexx.
@@ -116,7 +118,7 @@ Proof.
     rewrite mulf_eq0 Hp /=; case: (q == 0)=> /=; by rewrite IH.
 Qed.
 
-Lemma finite_prune_zero_bind {A B} (mu : list (R*A)) (k : A -> list (R*B)) :
+Lemma finite_prune_zero_bind {A B} (mu : list (R*A)) (k : A → list (R*B)) :
   finite_prune (fun p => p == 0) (finite_bind mu k) =
   finite_bind (finite_prune (fun p => p == 0) mu)
     (fun x => finite_prune (fun p => p == 0) (k x)).
@@ -126,19 +128,19 @@ Proof.
   by case: (p == 0).
 Qed.
 
-Lemma finite_prune_zero_bind_ae {A B} (mu : list (R*A)) (k h : A -> list (R*B)) :
-  (forall p x, List.In (p,x) mu -> p <> 0 ->
-    finite_prune (fun q => q == 0) (k x) = finite_prune (fun q => q == 0) (h x)) ->
+Lemma finite_prune_zero_bind_ae {A B} (mu : list (R*A)) (k h : A → list (R*B)) :
+  (∀ p x, List.In (p,x) mu → p ≠ 0 →
+    finite_prune (fun q => q == 0) (k x) = finite_prune (fun q => q == 0) (h x)) →
   finite_prune (fun p => p == 0) (finite_bind mu k) =
   finite_prune (fun p => p == 0) (finite_bind mu h).
 Proof.
   elim: mu=> [|[p x] tl IH] H //=.
   rewrite !finite_prune_app !finite_prune_zero_scale.
-  have Htl : forall q y, List.In (q,y) tl -> q <> 0 ->
+  have Htl : ∀ q y, List.In (q,y) tl -> q ≠ 0 ->
     finite_prune (fun r => r == 0) (k y) = finite_prune (fun r => r == 0) (h y).
   { move=> q y Hy Hq; exact (H q y (or_intror Hy) Hq). }
   rewrite (IH Htl); case Hp: (p == 0)=> //=.
-  have Hnz : p <> 0 by apply/eqP; rewrite Hp.
+  have Hnz : p ≠ 0 by apply/eqP; rewrite Hp.
   by rewrite (H p x (or_introl (Logic.eq_refl _)) Hnz).
 Qed.
 
@@ -150,7 +152,7 @@ Lemma finite_enum_prune_zero_expect {A} (mu : FiniteEnum R A) f :
   finite_enum_expect (finite_enum_prune (fun p => p == 0) mu) f = finite_enum_expect mu f.
 Proof. exact: finite_expect_prune_zero. Qed.
 
-Definition finite_subdist_prune {A} (d : R -> bool) (mu : FiniteSubdist R A) : FiniteSubdist R A.
+Definition finite_subdist_prune {A} (d : R → bool) (mu : FiniteSubdist R A) : FiniteSubdist R A.
 Proof.
   refine (@Build_FiniteSubdist R A (finite_enum_prune d (finite_subdist_enum mu)) _).
   exact: le_trans (finite_enum_prune_mass_le d _) (finite_subdist_mass_bound mu).

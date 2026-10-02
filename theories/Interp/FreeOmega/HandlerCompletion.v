@@ -1,5 +1,7 @@
 (** Canonical completion clients of the generic handler calculus.
     These names do not shadow the generic theorem owners. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms.
@@ -13,7 +15,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Completion.
-Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
+Context {MN : Type → Type} `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -27,9 +29,9 @@ Local Notation W E A B RR := (@peutt E MN MF FI FC FreeOmegaMixedMeasure FO A B 
 Local Notation HE E F := (@peutt_handler E F MN MF FI FC FreeOmegaMixedMeasure FO).
 
 Theorem free_omega_peutt_interp_handler_rel {E F A B}
-    (RR : A -> B -> Prop) (h g : Handler MN E F)
+    (RR : A → B → Prop) (h g : Handler MN E F)
     (t : ptree E MN A) (u : ptree E MN B) :
-  HE E F h g -> W E A B RR t u ->
+  HE E F h g → W E A B RR t u →
   W F A B RR (PTree.interp h t) (PTree.interp g u).
 Proof.
   intros H Htu.
@@ -45,7 +47,7 @@ Qed.
 
 Theorem free_omega_handler_cat_congr {E F G}
     (h1 h2 : Handler MN E F) (g1 g2 : Handler MN F G) :
-  HE E F h1 h2 -> HE F G g1 g2 ->
+  HE E F h1 h2 → HE F G g1 g2 →
   HE E G (Handler.cat h1 g1) (Handler.cat h2 g2).
 Proof. apply (handler_cat_congr free_omega_relational_zero free_omega_relational_lub). Qed.
 
@@ -86,7 +88,7 @@ Qed.
 
 Theorem free_omega_handler_bimap_congr {E1 E2 F1 F2}
     (h1 h2 : Handler MN E1 F1) (g1 g2 : Handler MN E2 F2) :
-  HE E1 F1 h1 h2 -> HE E2 F2 g1 g2 ->
+  HE E1 F1 h1 h2 → HE E2 F2 g1 g2 →
   peutt_handler (FI := FI)
     (Handler.bimap h1 g1) (Handler.bimap h2 g2).
 Proof. apply (handler_bimap_congr free_omega_relational_zero free_omega_relational_lub). Qed.

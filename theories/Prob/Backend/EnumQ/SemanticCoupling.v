@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -42,8 +44,8 @@ Import EnumQCouplingClassical.
     available; callers over arbitrary types use local classical equality,
     without adding an eqType requirement to the public statement. *)
 Lemma indexed_coupling_to_coupling {A B : eqType}
-    (R : A -> B -> Prop) (mu : EnumQ A) (nu : EnumQ B) :
-  indexed_coupling R mu nu -> coupling R mu nu.
+    (R : A → B → Prop) (mu : EnumQ A) (nu : EnumQ B) :
+  indexed_coupling R mu nu → coupling R mu nu.
 Proof.
   intro Hidx.
   pose proof (coupling_comp (coupling_value_index mu) Hidx) as Hleft.
@@ -56,8 +58,8 @@ Proof.
 Qed.
 
 Lemma enumQ_sem_lift_to_coupling {A B : eqType}
-    (R : A -> B -> Prop) (mu : EnumQ A) (nu : EnumQ B) :
-  @sem_lift EnumQ EnumQ_SemanticMeasure A B R mu nu -> coupling R mu nu.
+    (R : A → B → Prop) (mu : EnumQ A) (nu : EnumQ B) :
+  @sem_lift EnumQ EnumQ_SemanticMeasure A B R mu nu → coupling R mu nu.
 Proof.
   intro Hlift. apply indexed_coupling_to_coupling in Hlift.
   eapply coupling_proper_l; [apply enumQ_prune_eqenum|].
@@ -65,8 +67,8 @@ Proof.
 Qed.
 
 Lemma enumQ_sem_lift_of_coupling {A B : eqType}
-    (R : A -> B -> Prop) (mu : EnumQ A) (nu : EnumQ B) :
-  coupling R mu nu -> @sem_lift EnumQ EnumQ_SemanticMeasure A B R mu nu.
+    (R : A → B → Prop) (mu : EnumQ A) (nu : EnumQ B) :
+  coupling R mu nu → @sem_lift EnumQ EnumQ_SemanticMeasure A B R mu nu.
 Proof.
   intro Hlift. apply indexed_coupling_of_coupling.
   eapply coupling_proper_l with (mu := mu).
@@ -77,16 +79,16 @@ Proof.
 Qed.
 
 Lemma enumQ_entry_mass_nonzero {A : eqType} (mu : EnumQ A) p x :
-  List.In (p,x) (enumQ_raw mu) -> p <> 0 -> acc_mass x mu != 0.
+  List.In (p,x) (enumQ_raw mu) → p ≠ 0 → acc_mass x mu != 0.
 Proof.
   move=> Hin Hnz; apply entry_nonzero_acc_mass with p; last exact/eqP.
   exact (proj2 (enumQ_raw_mem p x mu) Hin).
 Qed.
 
 Lemma enumQ_coupling_realization_eqtype {A B : eqType}
-    (R : A -> B -> Prop) (mu : EnumQ A) (nu : EnumQ B) :
-  @sem_lift EnumQ EnumQ_SemanticMeasure A B R mu nu ->
-  exists joint, @semantic_coupling EnumQ EnumQ_SemanticMeasure A B R mu nu joint.
+    (R : A → B → Prop) (mu : EnumQ A) (nu : EnumQ B) :
+  @sem_lift EnumQ EnumQ_SemanticMeasure A B R mu nu →
+  ∃ joint, @semantic_coupling EnumQ EnumQ_SemanticMeasure A B R mu nu joint.
 Proof.
   intro Hlift. destruct (enumQ_sem_lift_to_coupling Hlift) as [j Hl Hr Hsupport].
   exists j. split.
@@ -110,9 +112,9 @@ Qed.
 (** No decidable-equality hypothesis on return values (which may include
     functions or trees).  Classical equality is confined to this proof. *)
 Theorem enumQ_coupling_realization {A B : Type}
-    (R : A -> B -> Prop) (mu : EnumQ A) (nu : EnumQ B) :
-  @sem_lift EnumQ EnumQ_SemanticMeasure A B R mu nu ->
-  exists joint, @semantic_coupling EnumQ EnumQ_SemanticMeasure A B R mu nu joint.
+    (R : A → B → Prop) (mu : EnumQ A) (nu : EnumQ B) :
+  @sem_lift EnumQ EnumQ_SemanticMeasure A B R mu nu →
+  ∃ joint, @semantic_coupling EnumQ EnumQ_SemanticMeasure A B R mu nu joint.
 Proof.
   exact (@enumQ_coupling_realization_eqtype
     (@Equality.Pack (EnumQCouplingClassical.carrier A)
@@ -124,9 +126,9 @@ Qed.
 (** Native subprobability witnesses remain within the SubEnumQ carrier:
     the joint has the mass of its first marginal, hence at most one. *)
 Theorem subenumQ_coupling_realization {A B : Type}
-    (R : A -> B -> Prop) (mu : SubEnumQ A) (nu : SubEnumQ B) :
-  @sem_lift SubEnumQ SubEnumQ_SemanticMeasure A B R mu nu ->
-  exists joint, @semantic_coupling SubEnumQ SubEnumQ_SemanticMeasure A B R mu nu joint.
+    (R : A → B → Prop) (mu : SubEnumQ A) (nu : SubEnumQ B) :
+  @sem_lift SubEnumQ SubEnumQ_SemanticMeasure A B R mu nu →
+  ∃ joint, @semantic_coupling SubEnumQ SubEnumQ_SemanticMeasure A B R mu nu joint.
 Proof.
   intro Hlift. destruct (enumQ_coupling_realization Hlift) as [j Hj].
   assert (Hmass : enumQ_mass j = enumQ_mass (subenumQ_raw mu)).

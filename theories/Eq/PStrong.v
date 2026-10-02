@@ -27,38 +27,38 @@ Notation "` R" := (elem R) (at level 10).
 
 Section PStrong.
 
-Context {E : Type -> Type}.
-Context {M : Type -> Type}.
+Context {E : Type → Type}.
+Context {M : Type → Type}.
 Context `{MI : SemanticMeasure M}.
 Context `{MC : @SemanticMeasureCoreLaws M MI}.
 Context {R1 R2 : Type}.
-Variable RR : R1 -> R2 -> Prop.
+Variable RR : R1 → R2 → Prop.
 
 Variant pstrongF
-    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
-    : ptree' E M R1 -> ptree' E M R2 -> Prop :=
+    (sim : ptree E M R1 → ptree E M R2 → Prop)
+    : ptree' E M R1 → ptree' E M R2 → Prop :=
   | PSRet r1 r2 :
-      RR r1 r2 ->
+      RR r1 r2 →
       pstrongF sim (RetF r1) (RetF r2)
   | PSTau t1 t2 :
-      sim t1 t2 ->
+      sim t1 t2 →
       pstrongF sim (TauF t1) (TauF t2)
   | PSVis {X} (e : E X) k1 k2 :
-      (forall x, sim (k1 x) (k2 x)) ->
+      (∀ x, sim (k1 x) (k2 x)) →
       pstrongF sim (VisF e k1) (VisF e k2)
   | PSProb {X Y : Type} (mu : M X) (nu : M Y) k1 k2 :
-      sem_lift (fun x y => sim (k1 x) (k2 y)) mu nu ->
+      sem_lift (fun x y => sim (k1 x) (k2 y)) mu nu →
       pstrongF sim (ProbF mu k1) (ProbF nu k2).
 
 Definition pstrong_body
-    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
+    (sim : ptree E M R1 → ptree E M R2 → Prop)
     (t1 : ptree E M R1) (t2 : ptree E M R2) : Prop :=
   pstrongF sim (observe t1) (observe t2).
 
 Lemma pstrongF_monotone
-    (sim1 sim2 : ptree E M R1 -> ptree E M R2 -> Prop) :
-  (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
-  forall ot1 ot2, pstrongF sim1 ot1 ot2 -> pstrongF sim2 ot1 ot2.
+    (sim1 sim2 : ptree E M R1 → ptree E M R2 → Prop) :
+  (∀ t1 t2, sim1 t1 t2 → sim2 t1 t2) →
+  ∀ ot1 ot2, pstrongF sim1 ot1 ot2 → pstrongF sim2 ot1 ot2.
 Proof.
   move=> Hmono t1 t2 Hs.
   inversion Hs as
@@ -72,7 +72,7 @@ Proof.
 Qed.
 
 Program Definition fpstrong :
-    mon (ptree E M R1 -> ptree E M R2 -> Prop) :=
+    mon (ptree E M R1 → ptree E M R2 → Prop) :=
   {| body := pstrong_body |}.
 Next Obligation.
   move=> sim1 sim2 Hsub t1 t2 Hs.
@@ -81,11 +81,11 @@ Next Obligation.
   - exact Hs.
 Qed.
 
-Definition pstrong : ptree E M R1 -> ptree E M R2 -> Prop :=
+Definition pstrong : ptree E M R1 → ptree E M R2 → Prop :=
   gfp fpstrong.
 
 Lemma pstrong_unfold t1 t2 :
-  pstrong t1 t2 -> pstrongF pstrong (observe t1) (observe t2).
+  pstrong t1 t2 → pstrongF pstrong (observe t1) (observe t2).
 Proof.
   move=> Hrel.
   apply (gfp_pfp fpstrong) in Hrel.
@@ -93,7 +93,7 @@ Proof.
 Qed.
 
 Lemma pstrong_fold t1 t2 :
-  pstrongF pstrong (observe t1) (observe t2) -> pstrong t1 t2.
+  pstrongF pstrong (observe t1) (observe t2) → pstrong t1 t2.
 Proof.
   move=> Hrel.
   unfold pstrong.
@@ -104,14 +104,14 @@ Qed.
 End PStrong.
 
 Section PStrongFacts.
-Context {E : Type -> Type}.
-Context {M : Type -> Type}.
+Context {E : Type → Type}.
+Context {M : Type → Type}.
 Context `{MI : SemanticMeasure M}.
 Context `{MC : @SemanticMeasureCoreLaws M MI}.
 
-Theorem pstruct_pstrong {R1 R2} (RR : R1 -> R2 -> Prop) :
-  forall (t1 : ptree E M R1) (t2 : ptree E M R2),
-    pstruct RR t1 t2 -> pstrong RR t1 t2.
+Theorem pstruct_pstrong {R1 R2} (RR : R1 → R2 → Prop) :
+  ∀ (t1 : ptree E M R1) (t2 : ptree E M R2),
+    pstruct RR t1 t2 → pstrong RR t1 t2.
 Proof.
   unfold pstrong. coinduction CH CIH. move=> t1 t2 Hrel.
   move: (pstruct_unfold Hrel)=> Hstep.
@@ -155,12 +155,12 @@ Qed.
     hierarchy; the former coinductive [equ] development is legacy code and
     is not used by the probabilistic theory. *)
 Lemma eq_pstrong {R : Type} (t1 t2 : ptree E M R) :
-  t1 = t2 -> pstrong eq t1 t2.
+  t1 = t2 → pstrong eq t1 t2.
 Proof. move=> ->. exact: pstrong_refl. Qed.
 
-Lemma pstrong_sym {R1 R2 : Type} (RR : R1 -> R2 -> Prop)
+Lemma pstrong_sym {R1 R2 : Type} (RR : R1 → R2 → Prop)
     (t1 : ptree E M R1) (t2 : ptree E M R2) :
-  pstrong RR t1 t2 ->
+  pstrong RR t1 t2 →
   pstrong (fun y x => RR x y) t2 t1.
 Proof.
   revert t1 t2.
@@ -183,25 +183,25 @@ Proof.
     + apply sem_lift_sym. exact Hc.
 Qed.
 
-Lemma pstrong_ret_intro {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
-  RR r1 r2 ->
+Lemma pstrong_ret_intro {R1 R2} (RR : R1 → R2 → Prop) r1 r2 :
+  RR r1 r2 →
   @pstrong E M MI MC R1 R2 RR (Ret r1) (Ret r2).
 Proof. move=> Hrel. apply pstrong_fold. constructor. exact Hrel. Qed.
 
-Lemma pstrong_ret_inv {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
-  @pstrong E M MI MC R1 R2 RR (Ret r1) (Ret r2) -> RR r1 r2.
+Lemma pstrong_ret_inv {R1 R2} (RR : R1 → R2 → Prop) r1 r2 :
+  @pstrong E M MI MC R1 R2 RR (Ret r1) (Ret r2) → RR r1 r2.
 Proof. move/pstrong_unfold. by inversion 1. Qed.
 
 Lemma pstrong_vis_intro {R X} (e : E X)
-    (k1 k2 : X -> ptree E M R) :
-  (forall x, pstrong eq (k1 x) (k2 x)) ->
+    (k1 k2 : X → ptree E M R) :
+  (∀ x, pstrong eq (k1 x) (k2 x)) →
   pstrong eq (Vis e k1) (Vis e k2).
 Proof. move=> Hrel. apply pstrong_fold. constructor. exact Hrel. Qed.
 
 Lemma pstrong_vis_inv {R X} (e : E X)
-    (k1 k2 : X -> ptree E M R) :
-  pstrong eq (Vis e k1) (Vis e k2) ->
-  forall x, pstrong eq (k1 x) (k2 x).
+    (k1 k2 : X → ptree E M R) :
+  pstrong eq (Vis e k1) (Vis e k2) →
+  ∀ x, pstrong eq (k1 x) (k2 x).
 Proof.
   move=> Hrel.
   move: (pstrong_unfold Hrel) => Hs.
@@ -211,15 +211,15 @@ Qed.
 
 Lemma pstrong_prob_intro {R} {X Y : Type}
     (mu : M X) (nu : M Y)
-    (k1 : X -> ptree E M R) (k2 : Y -> ptree E M R) :
-  sem_lift (fun x y => pstrong eq (k1 x) (k2 y)) mu nu ->
+    (k1 : X → ptree E M R) (k2 : Y → ptree E M R) :
+  sem_lift (fun x y => pstrong eq (k1 x) (k2 y)) mu nu →
   pstrong eq (Prob mu k1) (Prob nu k2).
 Proof. move=> Hrel. apply pstrong_fold. constructor. exact Hrel. Qed.
 
 Lemma pstrong_prob_inv {R} {X Y : Type}
     (mu : M X) (nu : M Y)
-    (k1 : X -> ptree E M R) (k2 : Y -> ptree E M R) :
-  pstrong eq (Prob mu k1) (Prob nu k2) ->
+    (k1 : X → ptree E M R) (k2 : Y → ptree E M R) :
+  pstrong eq (Prob mu k1) (Prob nu k2) →
   sem_lift (fun x y => pstrong eq (k1 x) (k2 y)) mu nu.
 Proof.
   move=> Hrel.
@@ -229,10 +229,10 @@ Proof.
 Qed.
 
 Inductive pstrong_trans_clo {R : Type} :
-    ptree E M R -> ptree E M R -> Prop :=
+    ptree E M R → ptree E M R → Prop :=
   | PSTC t1 t2 t3 :
-      pstrong eq t1 t2 ->
-      pstrong eq t2 t3 ->
+      pstrong eq t1 t2 →
+      pstrong eq t2 t3 →
       pstrong_trans_clo t1 t3.
 
 Lemma pstrong_trans {R : Type} :
@@ -279,10 +279,10 @@ Proof.
 Qed.
 
 Lemma pstrong_rel_mono {R1 R2 : Type}
-    (RR SS : R1 -> R2 -> Prop)
-    (HRS : forall x y, RR x y -> SS x y) :
-  forall (t1 : ptree E M R1) (t2 : ptree E M R2),
-    pstrong RR t1 t2 -> pstrong SS t1 t2.
+    (RR SS : R1 → R2 → Prop)
+    (HRS : ∀ x y, RR x y → SS x y) :
+  ∀ (t1 : ptree E M R1) (t2 : ptree E M R2),
+    pstrong RR t1 t2 → pstrong SS t1 t2.
 Proof.
   unfold pstrong at 2.
   coinduction CH CIH.
@@ -339,27 +339,27 @@ Proof. intros t1 t2. apply pstruct_pstrong. Qed.
 End PStrongFacts.
 
 Section PStrongBind.
-Context {E : Type -> Type} {M : Type -> Type}
+Context {E : Type → Type} {M : Type → Type}
   `{MI : SemanticMeasure M}
   `{MC : @SemanticMeasureCoreLaws M MI}.
 Context {A1 A2 B1 B2 : Type}.
-Variables (RA : A1 -> A2 -> Prop) (RB : B1 -> B2 -> Prop).
-Variables (k1 : A1 -> ptree E M B1) (k2 : A2 -> ptree E M B2).
-Hypothesis Hcont : forall a1 a2, RA a1 a2 ->
+Variables (RA : A1 → A2 → Prop) (RB : B1 → B2 → Prop).
+Variables (k1 : A1 → ptree E M B1) (k2 : A2 → ptree E M B2).
+Hypothesis Hcont : ∀ a1 a2, RA a1 a2 →
   pstrong RB (k1 a1) (k2 a2).
 
 Definition pstrong_bind_clo
     (u1 : ptree E M B1) (u2 : ptree E M B2) : Prop :=
-  (exists t1 t2, u1 = PTree.bind t1 k1 /\
-    u2 = PTree.bind t2 k2 /\ pstrong RA t1 t2) \/
+  (∃ t1 t2, u1 = PTree.bind t1 k1 ∧
+    u2 = PTree.bind t2 k2 ∧ pstrong RA t1 t2) ∨
   pstrong RB u1 u2.
 
 Theorem pstrong_bind t1 t2 :
-  pstrong RA t1 t2 ->
+  pstrong RA t1 t2 →
   pstrong RB (PTree.bind t1 k1) (PTree.bind t2 k2).
 Proof.
   intro Hsource.
-  assert (Hbind : forall u1 u2, pstrong_bind_clo u1 u2 ->
+  assert (Hbind : ∀ u1 u2, pstrong_bind_clo u1 u2 ->
       pstrong RB u1 u2).
   { unfold pstrong. coinduction CH CIH.
     intros u1 u2 Hclo.

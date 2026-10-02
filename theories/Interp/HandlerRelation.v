@@ -1,6 +1,8 @@
 (** Behavioral replacement of arbitrary handlers. Relate two complete-frontier
     machines; handler returns remain internal transitions. Adequacy is applied
     independently to each machine, never assumed as a new capability. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms RelationClasses.
 From PTree.Core Require Import PTreeDefinition Handler.
@@ -14,12 +16,12 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section HandlerEquivalence.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
 
 Definition peutt_handler (h1 h2 : Handler MN E F) : Prop :=
-  forall X (e : E X), @peutt F MN MF FI FC MX FO X X eq (h1 X e) (h2 X e).
+  ∀ X (e : E X), @peutt F MN MF FI FC MX FO X X eq (h1 X e) (h2 X e).
 
 (** Explicit constructor; do not add a global handler/route search instance. *)
 Lemma peutt_handler_equivalence : Equivalence peutt_handler.
@@ -32,7 +34,7 @@ Qed.
 End HandlerEquivalence.
 
 Section HandlerReplacement.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -48,7 +50,7 @@ Context {E F MN MF : Type -> Type}
 Variables (Hzero : relational_zero FO) (Hlimit : relational_lub FO).
 Variables h1 h2 : Handler MN E F.
 Hypothesis Hhandlers : peutt_handler (MF := MF) h1 h2.
-Context {A B : Type} (RR : A -> B -> Prop).
+Context {A B : Type} (RR : A → B → Prop).
 
 Local Notation source_rel := (@peutt E MN MF FI FC MX FO A B RR).
 Local Notation candidate := (interp_rel_candidate (MF := MF) RR h1 h2).
@@ -56,20 +58,20 @@ Local Notation heads_rel := (@ptree_stable_head_rel F MN A B RR
   (@bind_upto_closure F MN MF FI FC MX FO A B RR candidate)).
 
 Inductive handler_pair_rel :
-    @handler_config E F MN A -> @handler_config E F MN B -> Prop :=
-| RelatedSources t u : source_rel t u ->
+    @handler_config E F MN A → @handler_config E F MN B → Prop :=
+| RelatedSources t u : source_rel t u →
     handler_pair_rel (SourceConfig t) (SourceConfig u)
 | RelatedHandlers {X} (active1 active2 : ptree F MN X)
-    (k1 : X -> ptree E MN A) (k2 : X -> ptree E MN B) :
-    @peutt F MN MF FI FC MX FO X X eq active1 active2 ->
-    (forall x, source_rel (k1 x) (k2 x)) ->
+    (k1 : X → ptree E MN A) (k2 : X → ptree E MN B) :
+    @peutt F MN MF FI FC MX FO X X eq active1 active2 →
+    (∀ x, source_rel (k1 x) (k2 x)) →
     handler_pair_rel (HandlerConfig active1 k1) (HandlerConfig active2 k2).
 
-Lemma handler_pair_front {X} (k1 : X -> ptree E MN A)
-    (k2 : X -> ptree E MN B)
-    (Hk : forall x, source_rel (k1 x) (k2 x)) a b :
+Lemma handler_pair_front {X} (k1 : X → ptree E MN A)
+    (k2 : X → ptree E MN B)
+    (Hk : ∀ x, source_rel (k1 x) (k2 x)) a b :
   @ptree_stable_head_rel F MN X X eq
-    (@peutt_state F MN MF FI FC MX FO X X eq) a b ->
+    (@peutt_state F MN MF FI FC MX FO X X eq) a b →
   stable_target_rel handler_pair_rel heads_rel
     (handler_front_result h1 k1 a) (handler_front_result h2 k2 b).
 Proof.
@@ -86,7 +88,7 @@ Proof.
 Qed.
 
 Theorem handler_pair_kernel c d :
-  handler_pair_rel c d ->
+  handler_pair_rel c d →
   sem_lift (stable_target_rel handler_pair_rel heads_rel)
     (handler_machine_kernel h1 c) (handler_machine_kernel h2 d).
 Proof.
@@ -107,9 +109,9 @@ Proof.
 Qed.
 
 Theorem handler_pair_complete c d mu nu :
-  handler_pair_rel c d ->
-  stable_hitting (handler_machine_kernel h1) c mu ->
-  stable_hitting (handler_machine_kernel h2) d nu ->
+  handler_pair_rel c d →
+  stable_hitting (handler_machine_kernel h1) c mu →
+  stable_hitting (handler_machine_kernel h2) d nu →
   sem_lift heads_rel mu nu.
 Proof.
   apply (stable_hitting_rel (relational_bind_of_laws FB) Hzero handler_pair_kernel Hlimit).
@@ -136,7 +138,7 @@ Qed.
 
 Theorem peutt_interp_handler_rel
     (t : ptree E MN A) (u : ptree E MN B) :
-  source_rel t u ->
+  source_rel t u →
   @peutt F MN MF FI FC MX FO A B RR
     (PTree.interp h1 t) (PTree.interp h2 u).
 Proof.
@@ -148,7 +150,7 @@ End HandlerReplacement.
 
 (** Clients may register this locally for setoid rewriting. *)
 Section HandlerProper.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}

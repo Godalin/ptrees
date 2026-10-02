@@ -5,6 +5,8 @@
     Reusable endpoints: absorbing_program_rewrite, absorbing_generic_frontier, absorbing_generic_frontier_reference, offer_probability.
     Boundary: exact visible continuations are not replaced by equivalent trees.
     User navigation: docs/CASE_STUDIES.md. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -34,7 +36,7 @@ Local Open Scope hitting_scope.
 Import MonadNotation.
 Local Open Scope monad_scope.
 
-Variant queryE : Type -> Type := Query : queryE bool.
+Variant queryE : Type → Type := Query : queryE bool.
 Local Notation tree := (ptree queryE EnumQ).
 Local Notation MF := (FreeOmega EnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega)).
@@ -136,7 +138,7 @@ Proof. reflexivity. Qed.
 Theorem staged_frontier_exact : staged_program ⇓ₕ round_frontier.
 Proof. eapply absorbing_iteration_summary; [exact round_hitting|exact reveal_hitting]. Qed.
 
-Theorem absorbing_round_frontier out : absorbing_program ⇓ₕ out ->
+Theorem absorbing_round_frontier out : absorbing_program ⇓ₕ out →
   out ≈[stable_head_rel eq W]ₘ round_frontier.
 Proof. eapply absorbing_iteration_heads; [exact round_hitting|exact reveal_hitting]. Qed.
 
@@ -152,7 +154,7 @@ Qed.
 
 (** An actual complete witness exists, and ANY witness has one coupling
     with the mixed Ret/Vis reference. No response-wise marginal shortcut. *)
-Theorem absorbing_first_frontier out : absorbing_program ⇓ₕ out ->
+Theorem absorbing_first_frontier out : absorbing_program ⇓ₕ out →
   out ≈[stable_head_rel eq W]ₘ first_frontier.
 Proof.
   intro Hout. eapply peutt_hitting_lift.
@@ -161,8 +163,8 @@ Proof.
   - exact direct_frontier_exact.
 Qed.
 
-Theorem absorbing_first_frontier_exists : exists out,
-  absorbing_program ⇓ₕ out /\
+Theorem absorbing_first_frontier_exists : ∃ out,
+  absorbing_program ⇓ₕ out ∧
   out ≈[stable_head_rel eq W]ₘ first_frontier.
 Proof.
   destruct (ptree_stable_hitting_exists (FI := FI) (FO := FO) (observe absorbing_program)) as [out Hout].

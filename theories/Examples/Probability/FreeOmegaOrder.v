@@ -1,6 +1,8 @@
 (** Role: finite probability/coupling/backend example. *)
 (** Observable quotient equality does not entail raw approximation order.
     These counterexamples guard the probability-level bind abstraction. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega Mixed BindOrder.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation
@@ -11,23 +13,23 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section NegativeOrderBoundary.
-Context {MN : Type -> Type} `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI}.
+Context {MN : Type → Type} `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI}.
 
 Example constant_lub_quotient_equal :
   free_omega_qlift eq (@FORet MN unit tt) (FOLub (fun _ => FORet tt)).
 Proof. apply FOQLLubConstantR, FOQLStructural; constructor; reflexivity. Qed.
 
 Example constant_lub_not_approx_forward :
-  ~ free_omega_approx eq (@FORet MN unit tt) (FOLub (fun _ => FORet tt)).
+  ¬ free_omega_approx eq (@FORet MN unit tt) (FOLub (fun _ => FORet tt)).
 Proof. intro H; inversion H. Qed.
 
 Example constant_lub_not_approx_backward :
-  ~ free_omega_approx eq (FOLub (fun _ => @FORet MN unit tt)) (FORet tt).
+  ¬ free_omega_approx eq (FOLub (fun _ => @FORet MN unit tt)) (FORet tt).
 Proof. intro H; inversion H. Qed.
 
 Example observable_equality_does_not_imply_order :
-  ~ (forall (mu nu : FreeOmega MN unit),
-    @sem_eq (FreeOmega MN) (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) _ mu nu ->
+  ¬ (∀ (mu nu : FreeOmega MN unit),
+    @sem_eq (FreeOmega MN) (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) _ mu nu →
     @sem_le (FreeOmega MN) (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticOmega _ mu nu).
 Proof.
@@ -40,6 +42,6 @@ Example sampled_zero_quotient_equal {A B} (mu : MN A) :
 Proof. apply FOQLSampleZero. Qed.
 
 Example sampled_zero_not_approx_bottom {A B} (mu : MN A) :
-  ~ free_omega_approx (@eq B) (FOSample mu (fun _ => FOZero)) FOZero.
+  ¬ free_omega_approx (@eq B) (FOSample mu (fun _ => FOZero)) FOZero.
 Proof. intro H; inversion H. Qed.
 End NegativeOrderBoundary.

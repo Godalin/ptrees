@@ -1,5 +1,7 @@
 (** ReaderT fold: the environment is fixed and native sampling is lifted
     independently of it. Uses ExtLib's existing record transformer. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From ExtLib.Structures Require Import Monad.
 From ExtLib.Data.Monads Require Import ReaderMonad.
@@ -11,9 +13,9 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section ReaderFold.
-Context {Env : Type} {E MN T : Type -> Type} `{MT : Monad T} `{IT : MonadIter T}.
-Variable handle : forall X, E X -> T X.
-Variable sample : forall X, MN X -> T X.
+Context {Env : Type} {E MN T : Type → Type} `{MT : Monad T} `{IT : MonadIter T}.
+Variable handle : ∀ X, E X → T X.
+Variable sample : ∀ X, MN X → T X.
 
 Definition reader_effect {X} (e : (readerE Env +' E) X) : readerT Env T X :=
   mkReaderT (fun env => match e with

@@ -1,6 +1,8 @@
 (** Positive support of finite ordinary-scalar weightings. Nonnegativity is
     an explicit container invariant, never a property of arbitrary scalars.
     No equality on values is required for indicator/support transport. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -17,19 +19,19 @@ Section Support.
 Variable R : numDomainType.
 
 Lemma finite_nonnegative_tail {A} (p : R) (x : A) mu :
-  finite_nonnegative ((p,x)::mu) -> finite_nonnegative mu.
+  finite_nonnegative ((p,x)::mu) → finite_nonnegative mu.
 Proof. move=> H q y Hy; exact (H q y (or_intror Hy)). Qed.
 
-Lemma finite_indicator_nonnegative {A} (mu : list (R*A)) (P : A -> bool) :
-  finite_nonnegative mu -> 0 <= finite_expect (fun x => if P x then 1 else 0) mu.
+Lemma finite_indicator_nonnegative {A} (mu : list (R*A)) (P : A → bool) :
+  finite_nonnegative mu → 0 <= finite_expect (fun x => if P x then 1 else 0) mu.
 Proof.
   move=> H; apply finite_expect_nonnegative; first exact H.
   move=> x; by case: (P x).
 Qed.
 
-Lemma finite_indicator_positive_member {A} (mu : list (R*A)) (P : A -> bool) :
-  0 < finite_expect (fun x => if P x then 1 else 0) mu ->
-  exists p x, List.In (p,x) mu /\ p <> 0 /\ P x.
+Lemma finite_indicator_positive_member {A} (mu : list (R*A)) (P : A → bool) :
+  0 < finite_expect (fun x => if P x then 1 else 0) mu →
+  ∃ p x, List.In (p,x) mu ∧ p ≠ 0 ∧ P x.
 Proof.
   elim: mu=> [|[p x] mu IH]; first by rewrite /= ltxx.
   move=> H; case Hp: (p == 0).
@@ -47,8 +49,8 @@ Proof.
       by split.
 Qed.
 
-Lemma finite_indicator_member_positive {A} (mu : list (R*A)) (P : A -> bool) p x :
-  finite_nonnegative mu -> List.In (p,x) mu -> p <> 0 -> P x ->
+Lemma finite_indicator_member_positive {A} (mu : list (R*A)) (P : A → bool) p x :
+  finite_nonnegative mu → List.In (p,x) mu → p ≠ 0 → P x →
   0 < finite_expect (fun x => if P x then 1 else 0) mu.
 Proof.
   elim: mu=> [|[q y] mu IH]; first by move=> _ [].
@@ -68,8 +70,8 @@ Proof.
 Qed.
 
 Lemma finite_atom_positive_iff {A : eqType} (mu : list (R*A)) x :
-  finite_nonnegative mu ->
-  (0 < finite_atom x mu <-> exists p, List.In (p,x) mu /\ p <> 0).
+  finite_nonnegative mu →
+  (0 < finite_atom x mu ↔ ∃ p, List.In (p,x) mu ∧ p ≠ 0).
 Proof.
   move=> H; split.
   - move/finite_indicator_positive_member=> [p [y [Hin [Hp /eqP He]]]].
@@ -79,12 +81,12 @@ Proof.
 Qed.
 
 Lemma finite_atom_zero_iff {A : eqType} (mu : list (R*A)) x :
-  finite_nonnegative mu ->
-  (finite_atom x mu = 0 <-> forall p, List.In (p,x) mu -> p = 0).
+  finite_nonnegative mu →
+  (finite_atom x mu = 0 ↔ ∀ p, List.In (p,x) mu → p = 0).
 Proof.
   move=> H; split.
   - move=> Hz p Hin; case Hp: (p == 0); first exact (eqP Hp).
-    have Hnz : p <> 0 by apply/eqP; rewrite Hp.
+    have Hnz : p ≠ 0 by apply/eqP; rewrite Hp.
     have Hpos := finite_indicator_member_positive (P := fun y => y == x) H Hin Hnz (eqxx x).
     change (is_true (0 < finite_atom x mu)) in Hpos; by rewrite Hz ltxx in Hpos.
   - move=> Hz; case Hp: (finite_atom x mu == 0); first exact (eqP Hp).
@@ -95,7 +97,7 @@ Proof.
 Qed.
 
 Lemma finite_expect_entry_le {A} (mu : list (R*A)) f p x :
-  finite_nonnegative mu -> (forall x, 0 <= f x) -> List.In (p,x) mu ->
+  finite_nonnegative mu → (∀ x, 0 <= f x) → List.In (p,x) mu →
   p * f x <= finite_expect f mu.
 Proof.
   elim: mu=> [|[q y] mu IH]; first by move=> _ _ [].

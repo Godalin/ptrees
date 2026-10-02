@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -23,12 +25,12 @@ Local Notation FO := (@FreeOmegaObservableSemanticOmega
 
 (** Forgetting an observation's value preserves its mass. This is a
     concrete backend fact, not an axiom about abstract [sem_total]. *)
-Lemma subenumQ_observes_unit {A O} (obs : A -> O) mu out :
+Lemma subenumQ_observes_unit {A O} (obs : A → O) mu out :
   @free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    A O obs mu out ->
-  exists unit_out,
+    A O obs mu out →
+  ∃ unit_out,
     @free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-      A unit (fun _ => tt) mu unit_out /\
+      A unit (fun _ => tt) mu unit_out ∧
     enumQ_mass (subenumQ_raw unit_out) = enumQ_mass (subenumQ_raw out).
 Proof.
   intro Hobs. induction Hobs.
@@ -68,7 +70,7 @@ Proof.
         -- change (`|enumQ_mass (subenumQ_raw (outs' n)) -
              enumQ_mass (subenumQ_raw out)| < eps).
            rewrite (proj2 (Houts n)). exact HN.
-        -- have Hz : forall (T : Type) (mu : EnumQ T), enumQ_expect (fun _ => 0) mu = 0.
+        -- have Hz : ∀ (T : Type) (mu : EnumQ T), enumQ_expect (fun _ => 0) mu = 0.
            { intros T m. exact: finite_expect_zero. }
            rewrite !Hz subrr normr0. exact Heps.
       * exact H2.
@@ -81,8 +83,8 @@ Qed.
 (** Observable totality is functorial on this backend. The proof changes
     the totality witness to the constant unit observation BEFORE mapping;
     no inverse of [f], separation, or injectivity is needed. *)
-Theorem subenumQ_free_omega_total_map {A B} (f : A -> B) mu :
-  @sem_total (FreeOmega SubEnumQ) FI FO A mu ->
+Theorem subenumQ_free_omega_total_map {A B} (f : A → B) mu :
+  @sem_total (FreeOmega SubEnumQ) FI FO A mu →
   @sem_total (FreeOmega SubEnumQ) FI FO B
     (free_omega_bind mu (fun x => FORet (f x))).
 Proof.

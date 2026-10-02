@@ -1,6 +1,8 @@
 (** Role: One-way external validation of finite rational subdistributions.
     This adapter constructs OmegaVal laws from finite weighted expectation;
     the mainline probability/equational theory must not import it. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -21,17 +23,17 @@ Local Open Scope ring_scope.
 Section NativeDomain.
 Variable R : realType.
 
-Lemma enumQ_real_expect_test_scale {A} (mu : EnumQ A) (f : A -> R) p :
+Lemma enumQ_real_expect_test_scale {A} (mu : EnumQ A) (f : A → R) p :
   enumQ_real_expect (fun x => p * f x) mu = p * enumQ_real_expect f mu.
 Proof. exact: finite_expect_scale. Qed.
 
-Lemma enumQ_real_expect_test_add {A} (mu : EnumQ A) (f g : A -> R) :
+Lemma enumQ_real_expect_test_add {A} (mu : EnumQ A) (f g : A → R) :
   enumQ_real_expect (fun x => f x + g x) mu =
     enumQ_real_expect f mu + enumQ_real_expect g mu.
 Proof. exact: finite_expect_add. Qed.
 
 Definition subenumQ_domain_laws {A} (mu : SubEnumQ A) :
-  OmegaValLaws (fun f : A -> R => enumQ_real_expect f (subenumQ_raw mu)).
+  OmegaValLaws (fun f : A → R => enumQ_real_expect f (subenumQ_raw mu)).
 Proof.
   constructor.
   - exact: enumQ_real_expect_zero.
@@ -52,21 +54,21 @@ Proof. intros f Hf; exact: enumQ_real_expect_ret. Qed.
 Theorem subenumQ_domain_zero {A} :
   oval_eq (subenumQ_domain (@subenumQ_zero A)) (oval_bottom R).
 Proof. intros f Hf; reflexivity. Qed.
-Theorem subenumQ_domain_bind {A B} (mu : SubEnumQ A) (k : A -> SubEnumQ B) :
+Theorem subenumQ_domain_bind {A B} (mu : SubEnumQ A) (k : A → SubEnumQ B) :
   oval_eq (subenumQ_domain (subenumQ_bind mu k))
     (oval_bind (subenumQ_domain mu) (fun x => subenumQ_domain (k x))).
 Proof. intros f Hf; exact: enumQ_real_expect_bind. Qed.
 
 (** This is test-inequality soundness, NOT an asserted joint-coupling
     realization theorem in the external measure model. *)
-Theorem subenumQ_sem_lift_test_sound {A B} (S : A -> B -> Prop)
-    (mu : SubEnumQ A) (nu : SubEnumQ B) (f : A -> R) (g : B -> R) :
-  sem_lift S mu nu -> (forall x y, S x y -> f x <= g y) ->
+Theorem subenumQ_sem_lift_test_sound {A B} (S : A → B → Prop)
+    (mu : SubEnumQ A) (nu : SubEnumQ B) (f : A → R) (g : B → R) :
+  sem_lift S mu nu → (∀ x y, S x y → f x <= g y) →
   oval_eval (subenumQ_domain mu) f <= oval_eval (subenumQ_domain nu) g.
 Proof. exact: subenumQ_lift_real_expect. Qed.
 
 Theorem subenumQ_sem_eq_sound {A} (mu nu : SubEnumQ A) :
-  sem_eq mu nu -> oval_eq (subenumQ_domain mu) (subenumQ_domain nu).
+  sem_eq mu nu → oval_eq (subenumQ_domain mu) (subenumQ_domain nu).
 Proof.
   intros H f Hf; apply/eqP; rewrite eq_le; apply/andP; split.
   - eapply subenumQ_sem_lift_test_sound; [exact H|]. intros x y ->; exact: lexx.

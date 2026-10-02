@@ -2,6 +2,8 @@
     finite native joint. This consumes scalar validation, NOT an external
     joint, and must not be imported by maintained behavioral theory.
     The existing capability is returned explicitly, never registered globally. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -21,9 +23,9 @@ Variable R : realType.
 
 Theorem subenumR_native_quotient_coupling {A B}
     (p : free_omega_native_presentation (SubEnumR R) A)
-    (q : free_omega_native_presentation (SubEnumR R) B) (T : A -> B -> Prop) :
-  free_omega_qlift T (free_omega_native p) (free_omega_native q) ->
-  exists joint : SubEnumR R (native_sample_type p * native_sample_type q),
+    (q : free_omega_native_presentation (SubEnumR R) B) (T : A → B → Prop) :
+  free_omega_qlift T (free_omega_native p) (free_omega_native q) →
+  ∃ joint : SubEnumR R (native_sample_type p * native_sample_type q),
     @semantic_coupling (SubEnumR R) (SubEnumR_SemanticMeasure R) _ _
       (fun x y => T (native_sample_value p x) (native_sample_value q y))
       (native_sample_measure p) (native_sample_measure q) joint.

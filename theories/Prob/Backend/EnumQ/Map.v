@@ -1,5 +1,7 @@
 (** Value maps of checked rational weightings. The result preserves raw
     list order and multiplicity; no proof-field equality is assumed. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 From Coq Require Import List Morphisms.
@@ -14,14 +16,14 @@ Module EnumQMap.
 Import EnumQ GRing.Theory.
 Local Open Scope ring_scope.
 
-Definition emap {A B} (f : A -> B) (mu : EnumQ A) : EnumQ B := enumQ_map f mu.
+Definition emap {A B} (f : A → B) (mu : EnumQ A) : EnumQ B := enumQ_map f mu.
 
 Lemma emap_id {A} (mu : EnumQ A) : enumQ_raw (emap id mu) = enumQ_raw mu.
 Proof.
   change (List.map (fun px => (px.1,px.2)) (enumQ_raw mu) = enumQ_raw mu).
   by elim: (enumQ_raw mu)=> [|[p x] tl IH] //=; rewrite IH.
 Qed.
-Lemma emap_comp {A B C} (f : A -> B) (g : B -> C) (mu : EnumQ A) :
+Lemma emap_comp {A B C} (f : A → B) (g : B → C) (mu : EnumQ A) :
   enumQ_raw (emap g (emap f mu)) = enumQ_raw (emap (fun x => g (f x)) mu).
 Proof.
   change (List.map (fun px => (px.1,g px.2))
@@ -29,7 +31,7 @@ Proof.
     List.map (fun px => (px.1,g (f px.2))) (enumQ_raw mu)).
   rewrite List.map_map; apply List.map_ext=> [[p x]]; reflexivity.
 Qed.
-Lemma emap_scale {A B} (f : A -> B) p (Hp : 0 <= p) (mu : EnumQ A) :
+Lemma emap_scale {A B} (f : A → B) p (Hp : 0 <= p) (mu : EnumQ A) :
   enumQ_raw (emap f (scale_EnumQ Hp mu)) = enumQ_raw (scale_EnumQ Hp (emap f mu)).
 Proof.
   change (List.map (fun px => (px.1,f px.2))
@@ -37,10 +39,10 @@ Proof.
     finite_weight_map p (List.map (fun px => (px.1,f px.2)) (enumQ_raw mu))).
   rewrite /finite_weight_map !List.map_map; apply List.map_ext=> [[q x]]; reflexivity.
 Qed.
-Lemma emap_app {A B} (f : A -> B) (mu nu : EnumQ A) :
+Lemma emap_app {A B} (f : A → B) (mu nu : EnumQ A) :
   enumQ_raw (emap f (enumQ_app mu nu)) = enumQ_raw (enumQ_app (emap f mu) (emap f nu)).
 Proof. exact: List.map_app. Qed.
-Lemma emap_bind {A B C} (f : B -> C) (mu : EnumQ A) (k : A -> EnumQ B) :
+Lemma emap_bind {A B C} (f : B → C) (mu : EnumQ A) (k : A → EnumQ B) :
   enumQ_raw (emap f (bind_EnumQ mu k)) =
   enumQ_raw (bind_EnumQ mu (fun x => emap f (k x))).
 Proof.
@@ -52,7 +54,7 @@ Proof.
   rewrite List.map_app IH; congr (_ ++ _).
   rewrite /finite_weight_map !List.map_map; apply List.map_ext=> [[q y]]; reflexivity.
 Qed.
-Lemma bind_ret_emap {A B} (f : A -> B) (mu : EnumQ A) :
+Lemma bind_ret_emap {A B} (f : A → B) (mu : EnumQ A) :
   enumQ_raw (bind_EnumQ mu (fun x => ret_EnumQ (f x))) = enumQ_raw (emap f mu).
 Proof.
   change (finite_bind (enumQ_raw mu) (fun x => [:: (1,f x)]) =
@@ -60,7 +62,7 @@ Proof.
   by elim: (enumQ_raw mu)=> [|[p x] tl IH] //=; rewrite mulr1 IH.
 Qed.
 
-Lemma acc_mass_emap {A B : eqType} (f : A -> B) (mu : EnumQ A) b :
+Lemma acc_mass_emap {A B : eqType} (f : A → B) (mu : EnumQ A) b :
   acc_mass b (emap f mu) =
   sumq [seq px.1 | px <- enumQ_raw mu & f px.2 == b].
 Proof.
@@ -88,7 +90,7 @@ Qed.
 Lemma enumQ_filter_proper {A : eqType} (P : pred A) :
   Proper (EqEnumQ ==> EqEnumQ) (enumQ_filter (fun px => P px.2)).
 Proof. move=> mu nu H a; rewrite !acc_mass_filter; by case: (P a); rewrite ?H. Qed.
-Lemma emap_proper {A B : eqType} (f : A -> B) :
+Lemma emap_proper {A B : eqType} (f : A → B) :
   Proper (EqEnumQ ==> EqEnumQ) (emap f).
 Proof.
   move=> mu nu H b; change

@@ -1,5 +1,7 @@
 (** The completion discharges probability-level limit obligations; the
     arbitrary-handler proof belongs entirely to the generic interpreter. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega.
@@ -11,7 +13,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Completion.
-Context {E F MN : Type -> Type} `{NI : SemanticMeasure MN}
+Context {E F MN : Type → Type} `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -22,10 +24,10 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO)).
 Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
 
-Theorem peutt_interp {A B} (RR : A -> B -> Prop)
-    (handler : forall X, E X -> ptree F MN X)
+Theorem peutt_interp {A B} (RR : A → B → Prop)
+    (handler : ∀ X, E X → ptree F MN X)
     (t : ptree E MN A) (u : ptree E MN B) :
-  @peutt E MN MF FI FC FreeOmegaMixedMeasure FO A B RR t u ->
+  @peutt E MN MF FI FC FreeOmegaMixedMeasure FO A B RR t u →
   @peutt F MN MF FI FC FreeOmegaMixedMeasure FO A B RR
     (PTree.interp handler t) (PTree.interp handler u).
 Proof.

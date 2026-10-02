@@ -1,5 +1,7 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** Finite-real native and generic completion validation contracts. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -41,13 +43,13 @@ Proof. by rewrite /= /subenumR_expect /= mulr1 mulr0 !addr0. Qed.
 Example real_sqrt_coin_total : oval_mass (subenumR_domain real_sqrt_coin) = 1.
 Proof. by rewrite /oval_mass /= /subenumR_expect /= !mulr1 addr0 addrC subrK. Qed.
 
-Example real_bind_valid {A B} (mu : SubEnumR R A) (k : A -> SubEnumR R B) :
+Example real_bind_valid {A B} (mu : SubEnumR R A) (k : A → SubEnumR R B) :
   sem_subprob (sem_bind mu k).
 Proof. apply sem_subprob_all. Qed.
 
 Definition real_alternating : FreeOmega (SubEnumR R) bool :=
   FOLub (fun n => FORet (if Nat.even n then false else true)).
-Lemma real_alternating_test f b : oval_test f -> f b = 1 ->
+Lemma real_alternating_test f b : oval_test f → f b = 1 →
   free_omega_model_upper native real_alternating f = 1.
 Proof.
   intros Hf Hb; apply/eqP; rewrite eq_le; apply/andP; split.
@@ -57,13 +59,13 @@ Proof.
     + exact (@oval_sup_ge R (fun n => f (if Nat.even n then false else true)) 1 1%nat (fun n => proj2 (Hf _))).
     + exact (@oval_sup_ge R (fun n => f (if Nat.even n then false else true)) 1 0%nat (fun n => proj2 (Hf _))).
 Qed.
-Example real_alternating_invalid : ~ free_omega_modelable native real_alternating.
+Example real_alternating_invalid : ¬ free_omega_modelable native real_alternating.
 Proof.
   intro H; pose f := fun b : bool => if b then (1 : R) else 0.
   pose g := fun b : bool => if b then (0 : R) else 1.
   have Hf : oval_test f by intros []; split; try exact: lexx; exact: ler01.
   have Hg : oval_test g by intros []; split; try exact: lexx; exact: ler01.
-  have Hfg : forall b, f b + g b <= 1 by intros []; rewrite /f /g ?addr0 ?add0r.
+  have Hfg : ∀ b, f b + g b <= 1 by intros []; rewrite /f /g ?addr0 ?add0r.
   have Hsum := oval_test_add Hf Hg Hfg.
   have Hbad := oval_add H Hf Hg Hfg.
   rewrite (@real_alternating_test f true Hf (Logic.eq_refl _))

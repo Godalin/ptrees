@@ -1,4 +1,6 @@
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -21,11 +23,11 @@ Arguments SHStable {S O} _.
 Arguments SHInternal {S O} _.
 
 Section PrimitiveStableHitting.
-Context {MF : Type -> Type}
+Context {MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FO : @SemanticOmega MF FI}.
 Context {S A : Type}.
-Variable kernel : S -> MF (stable_target S A).
+Variable kernel : S → MF (stable_target S A).
 
 (** Resolve at most [fuel] residual primitive states.  Stable semantic weight
     is retained immediately; unresolved residual weight is sent to the
@@ -50,7 +52,7 @@ Definition stable_hitting (state : S) (out : MF A) : Prop :=
   sem_lub (fun fuel => stable_hitting_approx fuel state) out.
 
 Definition stable_hitting_ast (state : S) (out : MF A) : Prop :=
-  stable_hitting state out /\ sem_total out.
+  stable_hitting state out ∧ sem_total out.
 
 Lemma stable_target_stableE fuel out :
   stable_target_approx fuel (SHStable out) = sem_ret out.
@@ -68,12 +70,12 @@ Proof. reflexivity. Qed.
 End PrimitiveStableHitting.
 
 Section PrimitiveStableHittingOrder.
-Context {MF : Type -> Type}
+Context {MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}.
 Context {S A : Type}.
-Variable kernel : S -> MF (stable_target S A).
+Variable kernel : S → MF (stable_target S A).
 
 Lemma stable_target_approx_increasing fuel
     (target : stable_target S A) :
@@ -96,7 +98,7 @@ Proof.
 Qed.
 
 Theorem stable_hitting_mono state n m :
-  Peano.le n m ->
+  Peano.le n m →
   sem_le (stable_hitting_approx kernel n state)
     (stable_hitting_approx kernel m state).
 Proof.
@@ -109,24 +111,24 @@ Qed.
 End PrimitiveStableHittingOrder.
 
 Section PrimitiveStableHittingLimits.
-Context {MF : Type -> Type}
+Context {MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 Context {S A : Type}.
-Variable kernel : S -> MF (stable_target S A).
+Variable kernel : S → MF (stable_target S A).
 
 Theorem stable_hitting_exists state :
-  exists out, stable_hitting kernel state out.
+  ∃ out, stable_hitting kernel state out.
 Proof.
   unfold stable_hitting. apply sem_lub_exists.
   exact (stable_hitting_increasing kernel state).
 Qed.
 
 Theorem stable_hitting_unique state out1 out2 :
-  stable_hitting kernel state out1 ->
-  stable_hitting kernel state out2 ->
+  stable_hitting kernel state out1 →
+  stable_hitting kernel state out2 →
   sem_eq out1 out2.
 Proof.
   unfold stable_hitting. intros H1 H2.
@@ -136,15 +138,15 @@ Qed.
 End PrimitiveStableHittingLimits.
 
 Section PrimitiveStableHittingAE.
-Context {MF : Type -> Type}
+Context {MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FO : @SemanticOmega MF FI}
   `{FAE : @SemanticMeasureAEKleisliLaws MF FI}
   `{FOAE : @SemanticOmegaAELaws MF FI FO}.
 Context {S A : Type}.
-Variable kernel : S -> MF (stable_target S A).
-Variable D : S -> Prop.
-Variable P : A -> Prop.
+Variable kernel : S → MF (stable_target S A).
+Variable D : S → Prop.
+Variable P : A → Prop.
 
 Definition stable_target_invariant (target : stable_target S A) : Prop :=
   match target with
@@ -152,11 +154,11 @@ Definition stable_target_invariant (target : stable_target S A) : Prop :=
   | SHInternal state => D state
   end.
 
-Hypothesis kernel_ae_closed : forall state, D state ->
+Hypothesis kernel_ae_closed : ∀ state, D state →
   sem_ae (kernel state) stable_target_invariant.
 
 Lemma stable_target_approx_ae fuel target :
-  stable_target_invariant target ->
+  stable_target_invariant target →
   sem_ae (stable_target_approx kernel fuel target) P.
 Proof.
   revert target. induction fuel as [|fuel IH]; intros [out|state] Hgood.
@@ -169,7 +171,7 @@ Proof.
 Qed.
 
 Lemma stable_hitting_approx_ae fuel state :
-  D state -> sem_ae (stable_hitting_approx kernel fuel state) P.
+  D state → sem_ae (stable_hitting_approx kernel fuel state) P.
 Proof.
   intro HD. unfold stable_hitting_approx. eapply sem_ae_bind.
   - exact (kernel_ae_closed HD).
@@ -181,14 +183,14 @@ Qed.
     is enough to establish closure of its entire omega stable-hitting limit.
     Totality is not needed for this support property. *)
 Theorem stable_hitting_ae state out :
-  D state -> stable_hitting kernel state out -> sem_ae out P.
+  D state → stable_hitting kernel state out → sem_ae out P.
 Proof.
   intros HD Hlimit. eapply sem_ae_lub; [exact Hlimit|].
   intro fuel. exact (stable_hitting_approx_ae fuel HD).
 Qed.
 
 Corollary stable_hitting_ast_ae state out :
-  D state -> stable_hitting_ast kernel state out -> sem_ae out P.
+  D state → stable_hitting_ast kernel state out → sem_ae out P.
 Proof.
   intros HD [Hstable _]. exact (stable_hitting_ae HD Hstable).
 Qed.

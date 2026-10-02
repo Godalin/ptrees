@@ -1,6 +1,8 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** Leastness rejects an endless retry; a native rational loop interprets
     into that independent domain. Production LFP laws are audited at their owners. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -30,7 +32,7 @@ From PTree.Prob.FreeOmega.Validation Require Import Model Iteration.
 From PTree.Prob.Backend.SubEnumQ Require Import Representation Measure Domain.
 Section RationalInterpretation.
 Variable R : realType.
-Variable kernel : nat -> SubEnumQ (nat+bool).
+Variable kernel : nat → SubEnumQ (nat+bool).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation FO := (FreeOmegaObservableSemanticOmega

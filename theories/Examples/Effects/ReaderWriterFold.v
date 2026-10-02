@@ -1,6 +1,8 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
 (** Explicit transformer laws and actual ITree commuting clients. Logs are
     deliberately noncommutative; both services may run without a bound. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import List.
@@ -31,7 +33,7 @@ Proof.
 Defined.
 
 Section Laws.
-Context {F : Type -> Type}.
+Context {F : Type → Type}.
 Example reader_target_monad :
   @MonadLawsE (readerT bool (itree F)) (@readerT_eq1 bool (itree F) Eq1_ITree)
     (@Monad_readerT bool (itree F) _).
@@ -62,16 +64,16 @@ Example writer_bind_keeps_order :
 Proof.
   cbn [Monad.bind writerT_monad ITreeDefinition.Monad_itree]. rewrite !bind_ret_l. reflexivity.
 Qed.
-Example logs_not_commutative : monoid_plus logs [1] [2] <> monoid_plus logs [2] [1].
+Example logs_not_commutative : monoid_plus logs [1] [2] ≠ monoid_plus logs [2] [1].
 Proof. discriminate. Qed.
 End Laws.
 
-Variant tickE : Type -> Type := Tick : tickE unit.
+Variant tickE : Type → Type := Tick : tickE unit.
 Section Services.
-Context {MN F : Type -> Type}.
+Context {MN F : Type → Type}.
 Variable mu : MN bool.
-Variable sample : forall X, MN X -> itree F X.
-Variable handle : forall X, tickE X -> itree F X.
+Variable sample : ∀ X, MN X → itree F X.
+Variable handle : ∀ X, tickE X → itree F X.
 
 CoFixpoint reader_service : ptree (readerE bool +' tickE) MN bool :=
   Vis (inl1 Ask) (fun enabled : bool =>
@@ -94,12 +96,12 @@ Example writer_recursive_square :
 Proof. apply itree_fold_run_writer. exact logs_laws. Qed.
 
 Example reader_bind_square {A B} (t : ptree (readerE bool +' tickE) MN A)
-    (k : A -> ptree (readerE bool +' tickE) MN B) env :
+    (k : A → ptree (readerE bool +' tickE) MN B) env :
   eq_itree eq (fold_reader handle sample (PTree.bind t k) env)
     (ITree.bind (fold_reader handle sample t env) (fun a => fold_reader handle sample (k a) env)).
 Proof. apply itree_reader_fold_bind. Qed.
 Example writer_bind_square {A B} (t : ptree (writerE (list nat) +' tickE) MN A)
-    (k : A -> ptree (writerE (list nat) +' tickE) MN B) :
+    (k : A → ptree (writerE (list nat) +' tickE) MN B) :
   eq_itree eq (fold_writer logs handle sample (PTree.bind t k))
     (@bind (Monads.writerT (list nat) (itree F)) (writerT_monad logs) A B
       (fold_writer logs handle sample t) (fun a => fold_writer logs handle sample (k a))).
@@ -114,9 +116,9 @@ End Services.
 Section HigherCarrier.
 Universe high.
 Constraint Set < high.
-Context {A : Type@{high}} {MN F : Type -> Type}.
-Variable handle : forall X, tickE X -> itree F X.
-Variable sample : forall X, MN X -> itree F X.
+Context {A : Type@{high}} {MN F : Type → Type}.
+Variable handle : ∀ X, tickE X → itree F X.
+Variable sample : ∀ X, MN X → itree F X.
 Example writer_high_square (t : ptree (writerE (list nat) +' tickE) MN A) :
   eutt eq (fold_writer logs handle sample t) (fold handle sample (run_writer logs t)).
 Proof. apply itree_fold_run_writer. exact logs_laws. Qed.

@@ -1,5 +1,7 @@
 (** Conditional resampling of an actual rational joint. The complete pair
     is retained, positive fibers are normalized, and null fibers stay zero. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -155,8 +157,8 @@ Proof.
 Qed.
 
 Lemma enumQ_fiber_row_ae {A B : eqType}
-    (marginal : EnumQ A) (joint : EnumQ (A * B)) a (P : A * B -> Prop) :
-  enumQ_ae joint P -> enumQ_ae (enumQ_fiber_row marginal joint a) P.
+    (marginal : EnumQ A) (joint : EnumQ (A * B)) a (P : A * B → Prop) :
+  enumQ_ae joint P → enumQ_ae (enumQ_fiber_row marginal joint a) P.
 Proof.
   intros HP w ab Hin Hnz. unfold enumQ_fiber_row in Hin.
   apply List.in_map_iff in Hin. destruct Hin as [[p xy] [Heq Hin]].
@@ -173,9 +175,9 @@ Theorem subenumQ_disintegration_fiber {A B : eqType}
 Proof. apply enumQ_fiber_row_fiber. Qed.
 
 Theorem subenumQ_disintegration_support {A B : eqType}
-    (joint : SubEnumQ (A * B)) (P : A * B -> Prop) :
-  @sem_ae SubEnumQ SubEnumQ_SemanticMeasure (A * B) joint P ->
-  forall a, @sem_ae SubEnumQ SubEnumQ_SemanticMeasure (A * B)
+    (joint : SubEnumQ (A * B)) (P : A * B → Prop) :
+  @sem_ae SubEnumQ SubEnumQ_SemanticMeasure (A * B) joint P →
+  ∀ a, @sem_ae SubEnumQ SubEnumQ_SemanticMeasure (A * B)
     (subenumQ_fiber_kernel joint a) P.
 Proof. intros H a. apply enumQ_fiber_row_ae. exact H. Qed.
 
@@ -196,11 +198,11 @@ Qed.
     used only to construct the conditional kernel.  The statement preserves
     the full joint distribution, including its possibly missing mass. *)
 Theorem subenumQ_disintegration {A B : Type} (joint : SubEnumQ (A * B)) :
-  exists conditional : A -> SubEnumQ (A * B),
-    sem_eq (subenumQ_bind (subenumQ_first_marginal joint) conditional) joint /\
-    (forall a, sem_ae (conditional a) (fun ab => fst ab = a)) /\
-    (forall P : A * B -> Prop, sem_ae joint P ->
-      forall a, sem_ae (conditional a) P) /\
+  ∃ conditional : A → SubEnumQ (A * B),
+    sem_eq (subenumQ_bind (subenumQ_first_marginal joint) conditional) joint ∧
+    (∀ a, sem_ae (conditional a) (fun ab => fst ab = a)) ∧
+    (∀ P : A * B → Prop, sem_ae joint P →
+      ∀ a, sem_ae (conditional a) P) ∧
     sem_ae (subenumQ_first_marginal joint)
       (fun a => subenumQ_total (conditional a)).
 Proof.
@@ -226,7 +228,7 @@ Qed.
 (** Numeric totality supplies an actual mass-preserving coupling to a
     Dirac measure.  AE support alone would not justify this step. *)
 Lemma subenumQ_total_same_mass {A} (mu : SubEnumQ A) :
-  subenumQ_total mu -> sem_same_mass mu (subenumQ_ret tt).
+  subenumQ_total mu → sem_same_mass mu (subenumQ_ret tt).
 Proof.
   intro Htotal.
   assert (Hunit : sem_eq (subenumQ_bind mu (fun _ => subenumQ_ret tt))
@@ -252,9 +254,9 @@ Qed.
 
 (** A graph coupling identifies the actual marginal, even when the caller's
     measure has a different list representation (split/reordered weights). *)
-Lemma subenumQ_graph_marginal {A B} (f : A -> B)
+Lemma subenumQ_graph_marginal {A B} (f : A → B)
     (joint : SubEnumQ A) (mu : SubEnumQ B) :
-  sem_lift (fun x y => f x = y) joint mu ->
+  sem_lift (fun x y => f x = y) joint mu →
   sem_eq (subenumQ_bind joint (fun x => subenumQ_ret (f x))) mu.
 Proof.
   intro Hgraph.
@@ -273,12 +275,12 @@ Qed.
     normalization; support-only partner selection would not suffice. *)
 Theorem subenumQ_disintegration_over {A B : Type}
     (joint : SubEnumQ (A * B)) (mu : SubEnumQ A) :
-  sem_lift (fun p x => fst p = x) joint mu ->
-  exists conditional : A -> SubEnumQ (A * B),
-    sem_eq (subenumQ_bind mu conditional) joint /\
-    (forall a, sem_ae (conditional a) (fun ab => fst ab = a)) /\
-    (forall P : A * B -> Prop, sem_ae joint P ->
-      forall a, sem_ae (conditional a) P) /\
+  sem_lift (fun p x => fst p = x) joint mu →
+  ∃ conditional : A → SubEnumQ (A * B),
+    sem_eq (subenumQ_bind mu conditional) joint ∧
+    (∀ a, sem_ae (conditional a) (fun ab => fst ab = a)) ∧
+    (∀ P : A * B → Prop, sem_ae joint P →
+      ∀ a, sem_ae (conditional a) P) ∧
     sem_ae mu (fun a => subenumQ_total (conditional a)).
 Proof.
   intro Hgraph.
@@ -301,12 +303,12 @@ Qed.
 (** Turn a native coupling into conditional RANDOM resampling on its left
     marginal.  The original joint and both marginals are retained. *)
 Theorem subenumQ_coupling_disintegration {A B : Type}
-    (R : A -> B -> Prop) (mu : SubEnumQ A) (nu : SubEnumQ B) :
-  sem_lift R mu nu ->
-  exists joint conditional,
-    semantic_coupling R mu nu joint /\
-    sem_eq (subenumQ_bind mu conditional) joint /\
-    (forall a, sem_ae (conditional a) (fun p => fst p = a /\ R a (snd p))) /\
+    (R : A → B → Prop) (mu : SubEnumQ A) (nu : SubEnumQ B) :
+  sem_lift R mu nu →
+  ∃ joint conditional,
+    semantic_coupling R mu nu joint ∧
+    sem_eq (subenumQ_bind mu conditional) joint ∧
+    (∀ a, sem_ae (conditional a) (fun p => fst p = a ∧ R a (snd p))) ∧
     sem_ae mu (fun a => subenumQ_total (conditional a)).
 Proof.
   intro Hlift. destruct (subenumQ_coupling_realization Hlift) as [j Hj].
@@ -314,7 +316,7 @@ Proof.
     as [k [Hreconstruct [Hfiber [Hsupport Htotal]]]].
   exists j, k. split; [exact Hj|]. split; [exact Hreconstruct|].
   split; [|exact Htotal]. intro a.
-  eapply sem_ae_mono with (P := fun p => fst p = a /\ R (fst p) (snd p)).
+  eapply sem_ae_mono with (P := fun p => fst p = a ∧ R (fst p) (snd p)).
   - intros p [Hp HR]. split; [exact Hp|]. rewrite <- Hp. exact HR.
   - apply sem_ae_conj; [apply Hfiber|].
     apply Hsupport. exact (proj2 (proj2 Hj)).

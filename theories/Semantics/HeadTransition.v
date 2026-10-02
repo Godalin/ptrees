@@ -1,4 +1,6 @@
 (** Role: Comparison semantics. Depends on canonical theory; not the canonical peutt relation or interpreter theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -16,12 +18,12 @@ Unset Printing Implicit Defensive.
 
 (** A visible action includes both the dependent event and its response.
     It is not a marginal observation of a distribution of current heads. *)
-Inductive obs_label (E : Type -> Type) : Type :=
+Inductive obs_label (E : Type → Type) : Type :=
   | Obs {X : Type} (e : E X) (x : X).
 Arguments Obs {E X} _ _.
 
 Section HeadTransition.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
@@ -31,13 +33,13 @@ Context {E MN MF : Type -> Type}
     distribution. Ret has no action. On probability backends targets are
     subdistributions; totality is deliberately not required here. *)
 Inductive head_step {R} :
-    stable_head E MN R -> obs_label E -> MF (stable_head E MN R) -> Prop :=
+    stable_head E MN R → obs_label E → MF (stable_head E MN R) → Prop :=
   | HeadStepVis {X} (e : E X) k x out :
-      ptree_stable_hitting (MF := MF) (observe (k x)) out ->
+      ptree_stable_hitting (MF := MF) (observe (k x)) out →
       head_step (FHVis e k) (Obs e x) out.
 
-Lemma head_step_vis_iff {R X} (e : E X) (k : X -> ptree E MN R) x out :
-  head_step (FHVis e k) (Obs e x) out <->
+Lemma head_step_vis_iff {R X} (e : E X) (k : X → ptree E MN R) x out :
+  head_step (FHVis e k) (Obs e x) out ↔
   ptree_stable_hitting (MF := MF) (observe (k x)) out.
 Proof.
   split; intro H.
@@ -46,18 +48,18 @@ Proof.
 Qed.
 
 Lemma head_step_ret {R} (r : R) label out :
-  ~ head_step (FHRet r) label out.
+  ¬ head_step (FHRet r) label out.
 Proof. intro H. inversion H. Qed.
 
-Lemma head_step_vis_label {R X} (e : E X) (k : X -> ptree E MN R) label out :
-  head_step (FHVis e k) label out ->
-  exists x, label = Obs e x /\
+Lemma head_step_vis_label {R X} (e : E X) (k : X → ptree E MN R) label out :
+  head_step (FHVis e k) label out →
+  ∃ x, label = Obs e x ∧
     ptree_stable_hitting (MF := MF) (observe (k x)) out.
 Proof. intro H. dependent destruction H. eauto. Qed.
 
 Lemma head_step_unique `{FOL : @SemanticOmegaLaws MF FI FO}
     {R} (h : stable_head E MN R) label out1 out2 :
-  head_step h label out1 -> head_step h label out2 -> sem_eq out1 out2.
+  head_step h label out1 → head_step h label out2 → sem_eq out1 out2.
 Proof.
   intros H1 H2. destruct H1. apply head_step_vis_iff in H2.
   eapply stable_hitting_unique; eassumption.
@@ -66,8 +68,8 @@ Qed.
 Lemma head_step_exists
     `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
     `{FOL : @SemanticOmegaLaws MF FI FO}
-    {R X} (e : E X) (k : X -> ptree E MN R) x :
-  exists out, head_step (FHVis e k) (Obs e x) out.
+    {R X} (e : E X) (k : X → ptree E MN R) x :
+  ∃ out, head_step (FHVis e k) (Obs e x) out.
 Proof.
   destruct (stable_hitting_exists
     (@ptree_primitive_kernel E MN MF FI MX R) (observe (k x)))
@@ -77,13 +79,13 @@ Qed.
 End HeadTransition.
 
 Section HeadBisimulation.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
 Context {R1 R2 : Type}.
-Variable RR : R1 -> R2 -> Prop.
+Variable RR : R1 → R2 → Prop.
 Local Notation head1 := (stable_head E MN R1).
 Local Notation head2 := (stable_head E MN R2).
 Local Notation K R := (@ptree_primitive_kernel E MN MF FI MX R).
@@ -92,14 +94,14 @@ Local Notation K R := (@ptree_primitive_kernel E MN MF FI MX R).
     relates successor HEADS, not the intermediate continuation trees. The
     dummy state relation is unused by the constant head lifting. This is
     witness-independent without choosing a canonical measure representative. *)
-Definition head_successor_match (sim : head1 -> head2 -> Prop)
+Definition head_successor_match (sim : head1 → head2 → Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) : Prop :=
   stable_hitting_match (K R1) (K R2) (fun _ => sim)
     (fun _ _ => False) (observe t1) (observe t2).
 
 Lemma head_successor_match_mono sim1 sim2 :
-  (forall h1 h2, sim1 h1 h2 -> sim2 h1 h2) ->
-  forall t1 t2, head_successor_match sim1 t1 t2 ->
+  (∀ h1 h2, sim1 h1 h2 → sim2 h1 h2) →
+  ∀ t1 t2, head_successor_match sim1 t1 t2 →
     head_successor_match sim2 t1 t2.
 Proof.
   intros Hsub t1 t2 [Hf Hb]. split.
@@ -112,43 +114,43 @@ Qed.
 (** Return values are compared by RR. Visible heads must expose the same
     event; for each response their successor distributions are coupled
     using the recursive candidate. There are no Tau/Prob/AST constructors. *)
-Definition head_bisimF (sim : head1 -> head2 -> Prop) : head1 -> head2 -> Prop :=
+Definition head_bisimF (sim : head1 → head2 → Prop) : head1 → head2 → Prop :=
   stable_head_rel RR (head_successor_match sim).
 
 Lemma head_bisimF_mono sim1 sim2 :
-  (forall h1 h2, sim1 h1 h2 -> sim2 h1 h2) ->
-  forall h1 h2, head_bisimF sim1 h1 h2 -> head_bisimF sim2 h1 h2.
+  (∀ h1 h2, sim1 h1 h2 → sim2 h1 h2) →
+  ∀ h1 h2, head_bisimF sim1 h1 h2 → head_bisimF sim2 h1 h2.
 Proof.
   intro Hsub. apply stable_head_rel_mono.
   exact (head_successor_match_mono Hsub).
 Qed.
 
-Program Definition fhead_bisim : mon (head1 -> head2 -> Prop) :=
+Program Definition fhead_bisim : mon (head1 → head2 → Prop) :=
   {| body := head_bisimF |}.
 Next Obligation.
   intros sim1 sim2 Hsub h1 h2 Hrel. eapply head_bisimF_mono; eauto.
 Qed.
 
-Definition head_bisim : head1 -> head2 -> Prop := gfp fhead_bisim.
+Definition head_bisim : head1 → head2 → Prop := gfp fhead_bisim.
 
 Lemma head_bisim_unfold h1 h2 :
-  head_bisim h1 h2 -> head_bisimF head_bisim h1 h2.
+  head_bisim h1 h2 → head_bisimF head_bisim h1 h2.
 Proof. intro H. apply (gfp_pfp fhead_bisim) in H. exact H. Qed.
 
 Lemma head_bisim_fold h1 h2 :
-  head_bisimF head_bisim h1 h2 -> head_bisim h1 h2.
+  head_bisimF head_bisim h1 h2 → head_bisim h1 h2.
 Proof. intro H. unfold head_bisim. apply (gfp_fp fhead_bisim). exact H. Qed.
 
-Theorem head_bisim_coinduction (sim : head1 -> head2 -> Prop)
-    (Hpost : forall h1 h2, sim h1 h2 -> head_bisimF sim h1 h2) :
-  forall h1 h2, sim h1 h2 -> head_bisim h1 h2.
+Theorem head_bisim_coinduction (sim : head1 → head2 → Prop)
+    (Hpost : ∀ h1 h2, sim h1 h2 → head_bisimF sim h1 h2) :
+  ∀ h1 h2, sim h1 h2 → head_bisim h1 h2.
 Proof.
   intros h1 h2 Hsim. unfold head_bisim.
   eapply (@leq_gfp _ _ fhead_bisim sim); eauto.
 Qed.
 
 Lemma head_bisim_ret_iff r1 r2 :
-  head_bisim (FHRet r1) (FHRet r2) <-> RR r1 r2.
+  head_bisim (FHRet r1) (FHRet r2) ↔ RR r1 r2.
 Proof.
   split; intro H.
   - apply head_bisim_unfold in H. inversion H. assumption.
@@ -156,9 +158,9 @@ Proof.
 Qed.
 
 Lemma head_bisim_vis_iff {X} (e : E X)
-    (k1 : X -> ptree E MN R1) (k2 : X -> ptree E MN R2) :
-  head_bisim (FHVis e k1) (FHVis e k2) <->
-  forall x, head_successor_match head_bisim (k1 x) (k2 x).
+    (k1 : X → ptree E MN R1) (k2 : X → ptree E MN R2) :
+  head_bisim (FHVis e k1) (FHVis e k2) ↔
+  ∀ x, head_successor_match head_bisim (k1 x) (k2 x).
 Proof.
   split; intro H.
   - apply head_bisim_unfold in H. dependent destruction H. exact H.
@@ -166,18 +168,18 @@ Proof.
 Qed.
 
 Lemma head_bisim_ret_vis {X} r (e : E X) k :
-  ~ head_bisim (FHRet r) (FHVis e k).
+  ¬ head_bisim (FHRet r) (FHVis e k).
 Proof. intro H. apply head_bisim_unfold in H. inversion H. Qed.
 
 Lemma head_bisim_vis_ret {X} (e : E X) k r :
-  ~ head_bisim (FHVis e k) (FHRet r).
+  ¬ head_bisim (FHVis e k) (FHRet r).
 Proof. intro H. apply head_bisim_unfold in H. inversion H. Qed.
 
 (** Bisimilar states match the same dependent action, before coupling its
     successors. This does not average together distinct current states. *)
 Theorem head_bisim_step_match h1 h2 label out1 :
-  head_bisim h1 h2 -> head_step h1 label out1 ->
-  exists out2, head_step h2 label out2 /\ sem_lift head_bisim out1 out2.
+  head_bisim h1 h2 → head_step h1 label out1 →
+  ∃ out2, head_step h2 label out2 ∧ sem_lift head_bisim out1 out2.
 Proof.
   intros Hrel Hstep. apply head_bisim_unfold in Hrel.
   dependent destruction Hrel.
@@ -192,12 +194,12 @@ Qed.
     and coupling properness are used; no node-to-frontier reflection law. *)
 Theorem head_bisim_vis_hitting_iff
     `{FOL : @SemanticOmegaLaws MF FI FO}
-    {X} (e : E X) (k1 : X -> ptree E MN R1) (k2 : X -> ptree E MN R2)
-    (front1 : X -> MF head1) (front2 : X -> MF head2)
-    (H1 : forall x, ptree_stable_hitting (MF := MF) (observe (k1 x)) (front1 x))
-    (H2 : forall x, ptree_stable_hitting (MF := MF) (observe (k2 x)) (front2 x)) :
-  head_bisim (FHVis e k1) (FHVis e k2) <->
-  forall x, sem_lift head_bisim (front1 x) (front2 x).
+    {X} (e : E X) (k1 : X → ptree E MN R1) (k2 : X → ptree E MN R2)
+    (front1 : X → MF head1) (front2 : X → MF head2)
+    (H1 : ∀ x, ptree_stable_hitting (MF := MF) (observe (k1 x)) (front1 x))
+    (H2 : ∀ x, ptree_stable_hitting (MF := MF) (observe (k2 x)) (front2 x)) :
+  head_bisim (FHVis e k1) (FHVis e k2) ↔
+  ∀ x, sem_lift head_bisim (front1 x) (front2 x).
 Proof.
   rewrite head_bisim_vis_iff. split; intros H x.
   - exact (stable_hitting_match_hitting_lift (H x) (H1 x) (H2 x)).
@@ -209,11 +211,11 @@ Qed.
 Theorem head_bisim_vis_exists_iff
     `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
     `{FOL : @SemanticOmegaLaws MF FI FO}
-    {X} (e : E X) (k1 : X -> ptree E MN R1) (k2 : X -> ptree E MN R2) :
-  head_bisim (FHVis e k1) (FHVis e k2) <->
-  forall x, exists out1 out2,
-    ptree_stable_hitting (MF := MF) (observe (k1 x)) out1 /\
-    ptree_stable_hitting (MF := MF) (observe (k2 x)) out2 /\
+    {X} (e : E X) (k1 : X → ptree E MN R1) (k2 : X → ptree E MN R2) :
+  head_bisim (FHVis e k1) (FHVis e k2) ↔
+  ∀ x, ∃ out1 out2,
+    ptree_stable_hitting (MF := MF) (observe (k1 x)) out1 ∧
+    ptree_stable_hitting (MF := MF) (observe (k2 x)) out2 ∧
     sem_lift head_bisim out1 out2.
 Proof.
   rewrite head_bisim_vis_iff. split; intros H x.
@@ -230,7 +232,7 @@ End HeadBisimulation.
     composition. Equivalence requires no additional gluing axiom, bind
     law, totality, finite support, or limit-existence assumption. *)
 Section HeadBisimulationEquivalence.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF}
@@ -265,7 +267,7 @@ Theorem head_bisim_trans : Transitive hb.
 Proof.
   intros h1 h2 h3 H12 H23.
   eapply head_bisim_coinduction with
-    (sim := fun a c => exists b, hb a b /\ hb b c); [|eauto].
+    (sim := fun a c => exists b, hb a b ∧ hb b c); [|eauto].
   intros a c [b [Hab Hbc]]. apply head_bisim_unfold in Hab, Hbc.
   dependent destruction Hab; dependent destruction Hbc; constructor.
   - congruence.

@@ -1,5 +1,7 @@
 (** Semantic guarding and interpreter preservation over arbitrary frontier
     models. Backend modules only instantiate these probability capabilities. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From PTree.Core Require Import PTreeDefinition.
@@ -18,7 +20,7 @@ Definition stable_head_is_visible {E MN R} (h : stable_head E MN R) : Prop :=
   match h with FHRet _ => False | @FHVis _ _ _ _ _ _ => True end.
 
 Section GuardedInterp.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -31,20 +33,20 @@ Context {E F MN MF : Type -> Type}
   `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}
   `{Select : @SemanticOmegaSelection MF FI FO}
   `{FCAE : @SemanticMeasureCouplingAELaws MF FI}.
-Variable handler : forall X, E X -> ptree F MN X.
+Variable handler : ∀ X, E X → ptree F MN X.
 
 Definition guarded_handler : Prop :=
-  forall X (e : E X) out,
+  ∀ X (e : E X) out,
     @ptree_stable_hitting F MN MF FI MX FO X
-      (observe (handler e)) out ->
+      (observe (handler e)) out →
     @sem_ae MF FI _ out stable_head_is_visible.
 
 (** A convenient complete witness suffices; the public contract holds for
     every representative, by uniqueness and coupling support transport. *)
 Lemma guarded_handler_of_hitting
-    (H : forall X (e : E X), exists out,
+    (H : ∀ X (e : E X), ∃ out,
       @ptree_stable_hitting F MN MF FI MX FO X
-        (observe (handler e)) out /\
+        (observe (handler e)) out ∧
       @sem_ae MF FI _ out stable_head_is_visible) : guarded_handler.
 Proof.
   intros X e out Hout. destruct (H X e) as [mu [Hmu Hae]].
@@ -58,7 +60,7 @@ Proof.
   intros h [h' [-> Hvisible]]. exact Hvisible.
 Qed.
 
-Theorem guarded_handler_vis_fusion {A B} (RR : A -> B -> Prop)
+Theorem guarded_handler_vis_fusion {A B} (RR : A → B → Prop)
     (Hguard : guarded_handler) :
   interp_vis_fusion (MF := MF) RR handler.
 Proof.
@@ -98,9 +100,9 @@ Proof.
     split; [reflexivity|]. split; [reflexivity|]. apply Hk.
 Qed.
 
-Theorem peutt_interp_guarded {A B} (RR : A -> B -> Prop)
+Theorem peutt_interp_guarded {A B} (RR : A → B → Prop)
     (Hguard : guarded_handler) (t1 : ptree E MN A) (t2 : ptree E MN B) :
-  @peutt E MN MF FI FC MX FO A B RR t1 t2 ->
+  @peutt E MN MF FI FC MX FO A B RR t1 t2 →
   @peutt F MN MF FI FC MX FO A B RR
     (PTree.interp handler t1) (PTree.interp handler t2).
 Proof.

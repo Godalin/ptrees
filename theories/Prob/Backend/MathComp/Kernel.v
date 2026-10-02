@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
@@ -102,7 +104,7 @@ Definition mathcomp_bottom_measure {A} :
     propagated as a Dirac mass at bottom; ordinary values use the supplied
     subprobability continuation. *)
 Definition mathcomp_extend {A B}
-    (k : A -> subprobability (mc_carrier B) R)
+    (k : A → subprobability (mc_carrier B) R)
     (x : mc_carrier A) : subprobability (mc_carrier B) R :=
   match x with
   | MCBottom => mathcomp_bottom_measure
@@ -110,13 +112,13 @@ Definition mathcomp_extend {A B}
   end.
 
 Definition mathcomp_extend_measure {A B}
-    (k : A -> subprobability (mc_carrier B) R)
+    (k : A → subprobability (mc_carrier B) R)
     (x : mc_carrier A) : measure (mc_carrier B) R :=
   mathcomp_extend k x.
 
 Lemma measurable_mathcomp_extend {A B}
-    (k : A -> subprobability (mc_carrier B) R) U :
-  measurable U -> measurable_fun [set: mc_carrier A]
+    (k : A → subprobability (mc_carrier B) R) U :
+  measurable U → measurable_fun [set: mc_carrier A]
     (fun x => mathcomp_extend_measure k x U).
 Proof.
   move=> mtop Y mY.
@@ -129,7 +131,7 @@ HB.instance Definition mathcomp_extend_is_kernel {A B}
     (mathcomp_extend_measure k) (measurable_mathcomp_extend k).
 
 Lemma mathcomp_extend_subprobability {A B}
-    (k : A -> subprobability (mc_carrier B) R) :
+    (k : A → subprobability (mc_carrier B) R) :
   ereal_sup [set mathcomp_extend_measure k x [set: mc_carrier B]
     | x in [set: mc_carrier A]] <= 1.
 Proof.
@@ -143,7 +145,7 @@ HB.instance Definition mathcomp_extend_is_subprobability_kernel {A B}
     (mathcomp_extend_measure k) (mathcomp_extend_subprobability k).
 
 Definition mathcomp_extend_kernel {A B}
-    (k : A -> subprobability (mc_carrier B) R) :
+    (k : A → subprobability (mc_carrier B) R) :
     R.-spker (mc_carrier A) ~> (mc_carrier B) :=
   [the R.-spker (mc_carrier A) ~> (mc_carrier B) of
     mathcomp_extend_measure k].
@@ -154,7 +156,7 @@ Definition mathcomp_source_measure {A}
 
 Lemma measurable_mathcomp_source {A}
     (mu : subprobability (mc_carrier A) R) U :
-  measurable U -> measurable_fun [set: mc_carrier unit]
+  measurable U → measurable_fun [set: mc_carrier unit]
     (fun x => mathcomp_source_measure mu x U).
 Proof. move=> mU mtop Y mY. by []. Qed.
 
@@ -186,22 +188,22 @@ Definition mathcomp_source_kernel {A}
 (** Extensional equality on measurable sets. *)
 Definition mathcomp_measure_eq {A}
     (mu nu : measure (mc_carrier A) R) : Prop :=
-  forall U : set (mc_carrier A), measurable U -> mu U = nu U.
+  ∀ U : set (mc_carrier A), measurable U → mu U = nu U.
 
 (** A predicate on returned values is lifted to the carrier by declaring
     the bookkeeping bottom point valid.  Consequently missing mass never
     falsifies an almost-everywhere assertion about returned values. *)
-Definition mc_predicate {A} (P : A -> Prop) : set (mc_carrier A) :=
+Definition mc_predicate {A} (P : A → Prop) : set (mc_carrier A) :=
   [set x | match x with MCBottom => True | MCValue a => P a end].
 
 Definition mathcomp_measure_ae {A}
-    (mu : measure (mc_carrier A) R) (P : A -> Prop) : Prop :=
+    (mu : measure (mc_carrier A) R) (P : A → Prop) : Prop :=
   almost_everywhere mu (mc_predicate P).
 
 (** Relations used by couplings also relate the two bottom points.  A
     one-sided bottom point is deliberately unrelated: it would represent a
     mismatch in lost mass. *)
-Definition mc_relation {A B} (rel : A -> B -> Prop) :
+Definition mc_relation {A B} (rel : A → B → Prop) :
     set (mc_joint A B) :=
   [set xy | match xy with
    | MCJoint MCBottom MCBottom => True
@@ -209,27 +211,27 @@ Definition mc_relation {A B} (rel : A -> B -> Prop) :
    | _ => False
    end].
 
-Definition mc_joint_left_predicate {A B} (P : A -> Prop) :
+Definition mc_joint_left_predicate {A B} (P : A → Prop) :
     set (mc_joint A B) :=
   [set xy | mc_predicate P (mc_joint_fst xy)].
 
-Definition mc_joint_right_predicate {A B} (Q : B -> Prop) :
+Definition mc_joint_right_predicate {A B} (Q : B → Prop) :
     set (mc_joint A B) :=
   [set xy | mc_predicate Q (mc_joint_snd xy)].
 
-Definition mathcomp_coupling {A B} (rel : A -> B -> Prop)
+Definition mathcomp_coupling {A B} (rel : A → B → Prop)
     (mu : measure (mc_carrier A) R)
     (nu : measure (mc_carrier B) R) : Prop :=
-  exists joint : subprobability (mc_joint A B) R,
-    (forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
-      joint (mc_joint_fst @^-1` U) = mu U) /\
-    (forall V : set (mc_carrier B), measurable V -> ~ V MCBottom ->
-      joint (mc_joint_snd @^-1` V) = nu V) /\
+  ∃ joint : subprobability (mc_joint A B) R,
+    (∀ U : set (mc_carrier A), measurable U → ¬ U MCBottom →
+      joint (mc_joint_fst @^-1` U) = mu U) ∧
+    (∀ V : set (mc_carrier B), measurable V → ¬ V MCBottom →
+      joint (mc_joint_snd @^-1` V) = nu V) ∧
     almost_everywhere joint (mc_relation rel).
 
 (** The intended [MeasureInterface] lifting is existence of a subprobability
     coupling concentrated almost everywhere on the lifted relation. *)
-Definition mathcomp_measure_lift {A B} (rel : A -> B -> Prop)
+Definition mathcomp_measure_lift {A B} (rel : A → B → Prop)
     (mu : measure (mc_carrier A) R)
     (nu : measure (mc_carrier B) R) : Prop :=
   mathcomp_coupling rel mu nu.
@@ -470,7 +472,7 @@ Proof.
 Qed.
 
 Definition mathcomp_kernel_extend_measure {A B}
-    (k : A -> MathCompKernelMeasure B)
+    (k : A → MathCompKernelMeasure B)
     (x : mc_carrier A) : measure (mc_carrier B) R :=
   match x with
   | MCBottom => mathcomp_bottom_measure
@@ -478,8 +480,8 @@ Definition mathcomp_kernel_extend_measure {A B}
   end.
 
 Lemma measurable_mathcomp_kernel_extend {A B}
-    (k : A -> MathCompKernelMeasure B) U :
-  measurable U -> measurable_fun [set: mc_carrier A]
+    (k : A → MathCompKernelMeasure B) U :
+  measurable U → measurable_fun [set: mc_carrier A]
     (fun x => mathcomp_kernel_extend_measure k x U).
 Proof. move=> mU mtop Y mY. by []. Qed.
 
@@ -490,7 +492,7 @@ HB.instance Definition mathcomp_kernel_extend_is_kernel {A B}
     (measurable_mathcomp_kernel_extend k).
 
 Lemma mathcomp_kernel_extend_subprobability {A B}
-    (k : A -> MathCompKernelMeasure B) :
+    (k : A → MathCompKernelMeasure B) :
   ereal_sup [set mathcomp_kernel_extend_measure k x [set: mc_carrier B]
     | x in [set: mc_carrier A]] <= 1.
 Proof.
@@ -507,20 +509,20 @@ HB.instance Definition mathcomp_kernel_extend_is_subprobability_kernel {A B}
     (mathcomp_kernel_extend_subprobability k).
 
 Definition mathcomp_kernel_extend {A B}
-    (k : A -> MathCompKernelMeasure B) :
+    (k : A → MathCompKernelMeasure B) :
     R.-spker (mc_carrier A) ~> (mc_carrier B) :=
   [the R.-spker (mc_carrier A) ~> (mc_carrier B) of
     mathcomp_kernel_extend_measure k].
 
 Definition mathcomp_kernel_extend_snd_measure {X A B}
-    (k : A -> MathCompKernelMeasure B)
+    (k : A → MathCompKernelMeasure B)
     (xy : (mc_carrier X * mc_carrier A)%type) :
     measure (mc_carrier B) R :=
   mathcomp_kernel_extend_measure k xy.2.
 
 Lemma measurable_mathcomp_kernel_extend_snd {X A B}
-    (k : A -> MathCompKernelMeasure B) U :
-  measurable U -> measurable_fun
+    (k : A → MathCompKernelMeasure B) U :
+  measurable U → measurable_fun
     [set: (mc_carrier X * mc_carrier A)%type]
     (fun xy => mathcomp_kernel_extend_snd_measure k xy U).
 Proof.
@@ -536,7 +538,7 @@ HB.instance Definition mathcomp_kernel_extend_snd_is_kernel {X A B}
     (measurable_mathcomp_kernel_extend_snd k).
 
 Lemma mathcomp_kernel_extend_snd_subprobability {X A B}
-    (k : A -> MathCompKernelMeasure B) :
+    (k : A → MathCompKernelMeasure B) :
   ereal_sup [set mathcomp_kernel_extend_snd_measure k xy
       [set: mc_carrier B] |
       xy in [set: (mc_carrier X * mc_carrier A)%type]] <= 1.
@@ -554,21 +556,21 @@ HB.instance Definition mathcomp_kernel_extend_snd_is_subprobability {X A B}
     (@mathcomp_kernel_extend_snd_subprobability X A B k).
 
 Definition mathcomp_kernel_extend_snd {X A B}
-    (k : A -> MathCompKernelMeasure B) :
+    (k : A → MathCompKernelMeasure B) :
     R.-spker (mc_carrier X * mc_carrier A)%type ~> (mc_carrier B) :=
   [the R.-spker (mc_carrier X * mc_carrier A)%type ~> (mc_carrier B) of
     mathcomp_kernel_extend_snd_measure k].
 
 Definition mathcomp_kernel_bind {A B}
     (mu : MathCompKernelMeasure A)
-    (k : A -> MathCompKernelMeasure B) :
+    (k : A → MathCompKernelMeasure B) :
     MathCompKernelMeasure B :=
   [the R.-spker (mc_carrier unit) ~> (mc_carrier B) of
     mkcomp_noparam mu (mathcomp_kernel_extend k)].
 
 Definition mathcomp_kernel_eq {A}
     (mu nu : MathCompKernelMeasure A) : Prop :=
-  forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
+  ∀ U : set (mc_carrier A), measurable U → ¬ U MCBottom →
     mathcomp_kernel_root mu U = mathcomp_kernel_root nu U.
 
 Lemma mathcomp_kernel_root_ret {A} (x : A)
@@ -584,7 +586,7 @@ Qed.
 
 Lemma mathcomp_kernel_root_bind {A B}
     (mu : MathCompKernelMeasure A)
-    (k : A -> MathCompKernelMeasure B)
+    (k : A → MathCompKernelMeasure B)
     (U : set (mc_carrier B)) :
   mathcomp_kernel_root (mathcomp_kernel_bind mu k) U =
     \int[mathcomp_kernel_root mu]_x
@@ -596,7 +598,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_kernel_bind_ret_l {A B} (x : A)
-    (k : A -> MathCompKernelMeasure B) :
+    (k : A → MathCompKernelMeasure B) :
   mathcomp_kernel_eq
     (mathcomp_kernel_bind (mathcomp_kernel_ret x) k) (k x).
 Proof.
@@ -628,8 +630,8 @@ Qed.
 
 Lemma mathcomp_kernel_bind_assoc {A B C}
     (mu : MathCompKernelMeasure A)
-    (k : A -> MathCompKernelMeasure B)
-    (h : B -> MathCompKernelMeasure C) :
+    (k : A → MathCompKernelMeasure B)
+    (h : B → MathCompKernelMeasure C) :
   mathcomp_kernel_eq
     (mathcomp_kernel_bind (mathcomp_kernel_bind mu k) h)
     (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_bind (k x) h)).
@@ -658,8 +660,8 @@ Qed.
 
 Lemma mathcomp_kernel_bind_proper_k {A B}
     (mu : MathCompKernelMeasure A)
-    (k h : A -> MathCompKernelMeasure B) :
-  (forall x, mathcomp_kernel_eq (k x) (h x)) ->
+    (k h : A → MathCompKernelMeasure B) :
+  (∀ x, mathcomp_kernel_eq (k x) (h x)) →
   mathcomp_kernel_eq (mathcomp_kernel_bind mu k)
     (mathcomp_kernel_bind mu h).
 Proof.
@@ -671,8 +673,8 @@ Qed.
 
 Lemma mathcomp_kernel_bind_bernoulli {B} (q : R)
     (q01 : (0 <= q <= 1)%R)
-    (k : bool -> MathCompKernelMeasure B)
-    (U : set (mc_carrier B)) : measurable U ->
+    (k : bool → MathCompKernelMeasure B)
+    (U : set (mc_carrier B)) : measurable U →
   mathcomp_kernel_root (mathcomp_kernel_bind (mathcomp_bernoulli q) k) U =
     q%:E * mathcomp_kernel_root (k true) U +
     (1 - q)%:E * mathcomp_kernel_root (k false) U.
@@ -695,10 +697,10 @@ Proof.
 Qed.
 
 Definition mathcomp_kernel_ae {A}
-    (mu : MathCompKernelMeasure A) (P : A -> Prop) : Prop :=
+    (mu : MathCompKernelMeasure A) (P : A → Prop) : Prop :=
   mathcomp_measure_ae (mathcomp_kernel_root mu) P.
 
-Definition mathcomp_kernel_lift {A B} (rel : A -> B -> Prop)
+Definition mathcomp_kernel_lift {A B} (rel : A → B → Prop)
     (mu : MathCompKernelMeasure A)
     (nu : MathCompKernelMeasure B) : Prop :=
   mathcomp_measure_lift rel
@@ -726,9 +728,9 @@ Proof.
   congr (mathcomp_kernel_root mu _).
 Qed.
 
-Lemma mathcomp_diagonal_related {A} (rel : A -> A -> Prop)
+Lemma mathcomp_diagonal_related {A} (rel : A → A → Prop)
     (mu : MathCompKernelMeasure A) :
-  Reflexive rel ->
+  Reflexive rel →
   almost_everywhere (mathcomp_diagonal_joint mu) (mc_relation rel).
 Proof.
   move=> Hrel. rewrite /almost_everywhere.
@@ -743,9 +745,9 @@ Proof.
   exact: measure0.
 Qed.
 
-Lemma mathcomp_kernel_lift_refl {A} (rel : A -> A -> Prop)
+Lemma mathcomp_kernel_lift_refl {A} (rel : A → A → Prop)
     (mu : MathCompKernelMeasure A) :
-  Reflexive rel -> mathcomp_kernel_lift rel mu mu.
+  Reflexive rel → mathcomp_kernel_lift rel mu mu.
 Proof.
   move=> Hrel. exists (mathcomp_diagonal_joint mu).
   split.
@@ -760,8 +762,8 @@ Definition mathcomp_ret_joint {A B} (x : A) (y : B) :
   [the subprobability (mc_joint A B) R of
     dirac (MCJoint (MCValue x) (MCValue y))].
 
-Lemma mathcomp_kernel_lift_ret {A B} (rel : A -> B -> Prop) x y :
-  rel x y ->
+Lemma mathcomp_kernel_lift_ret {A B} (rel : A → B → Prop) x y :
+  rel x y →
   mathcomp_kernel_lift rel (mathcomp_kernel_ret x) (mathcomp_kernel_ret y).
 Proof.
   move=> Hxy. exists (mathcomp_ret_joint x y).
@@ -857,9 +859,9 @@ Lemma mathcomp_kernel_ae_true {A} (mu : MathCompKernelMeasure A) :
 Proof. apply: aeW=> [[|a]]; exact I. Qed.
 
 Lemma mathcomp_kernel_ae_conj {A} (mu : MathCompKernelMeasure A)
-    (P Q : A -> Prop) :
-  mathcomp_kernel_ae mu P -> mathcomp_kernel_ae mu Q ->
-  mathcomp_kernel_ae mu (fun x => P x /\ Q x).
+    (P Q : A → Prop) :
+  mathcomp_kernel_ae mu P → mathcomp_kernel_ae mu Q →
+  mathcomp_kernel_ae mu (fun x => P x ∧ Q x).
 Proof.
   rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
   move=> HP HQ.
@@ -870,8 +872,8 @@ Proof.
   - by left.
 Qed.
 
-Lemma mathcomp_kernel_ae_ret_iff {A} (x : A) (P : A -> Prop) :
-  mathcomp_kernel_ae (mathcomp_kernel_ret x) P <-> P x.
+Lemma mathcomp_kernel_ae_ret_iff {A} (x : A) (P : A → Prop) :
+  mathcomp_kernel_ae (mathcomp_kernel_ret x) P ↔ P x.
 Proof.
   split.
   - rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere
@@ -893,9 +895,9 @@ Proof.
 Qed.
 
 Lemma mathcomp_kernel_ae_countable {A} (mu : MathCompKernelMeasure A)
-    (P : nat -> A -> Prop) :
-  (forall n, mathcomp_kernel_ae mu (P n)) ->
-  mathcomp_kernel_ae mu (fun x => forall n, P n x).
+    (P : nat → A → Prop) :
+  (∀ n, mathcomp_kernel_ae mu (P n)) →
+  mathcomp_kernel_ae mu (fun x => ∀ n, P n x).
 Proof.
   rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
   move=> HP.
@@ -908,9 +910,9 @@ Proof.
 Qed.
 
 Lemma mathcomp_kernel_ae_bind {A B} (mu : MathCompKernelMeasure A)
-    (k : A -> MathCompKernelMeasure B) (P : A -> Prop) (Q : B -> Prop) :
-  mathcomp_kernel_ae mu P ->
-  (forall x, P x -> mathcomp_kernel_ae (k x) Q) ->
+    (k : A → MathCompKernelMeasure B) (P : A → Prop) (Q : B → Prop) :
+  mathcomp_kernel_ae mu P →
+  (∀ x, P x → mathcomp_kernel_ae (k x) Q) →
   mathcomp_kernel_ae (mathcomp_kernel_bind mu k) Q.
 Proof.
   rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
@@ -937,8 +939,8 @@ Proof.
 Qed.
 
 Lemma mathcomp_kernel_ae_bind_iff {A B} (mu : MathCompKernelMeasure A)
-    (k : A -> MathCompKernelMeasure B) (Q : B -> Prop) :
-  mathcomp_kernel_ae (mathcomp_kernel_bind mu k) Q <->
+    (k : A → MathCompKernelMeasure B) (Q : B → Prop) :
+  mathcomp_kernel_ae (mathcomp_kernel_bind mu k) Q ↔
   mathcomp_kernel_ae mu (fun x => mathcomp_kernel_ae (k x) Q).
 Proof.
   split; last first.
@@ -970,10 +972,10 @@ Qed.
 
 Lemma mathcomp_joint_ae_left {A B}
     (joint : subprobability (mc_joint A B) R)
-    (mu : MathCompKernelMeasure A) (P : A -> Prop) :
-  (forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
-    joint (mc_joint_fst @^-1` U) = mathcomp_kernel_root mu U) ->
-  mathcomp_kernel_ae mu P ->
+    (mu : MathCompKernelMeasure A) (P : A → Prop) :
+  (∀ U : set (mc_carrier A), measurable U → ¬ U MCBottom →
+    joint (mc_joint_fst @^-1` U) = mathcomp_kernel_root mu U) →
+  mathcomp_kernel_ae mu P →
   almost_everywhere joint (mc_joint_left_predicate P).
 Proof.
   move=> Hleft.
@@ -988,10 +990,10 @@ Qed.
 
 Lemma mathcomp_joint_ae_right {A B}
     (joint : subprobability (mc_joint A B) R)
-    (nu : MathCompKernelMeasure B) (Q : B -> Prop) :
-  (forall V : set (mc_carrier B), measurable V -> ~ V MCBottom ->
-    joint (mc_joint_snd @^-1` V) = mathcomp_kernel_root nu V) ->
-  mathcomp_kernel_ae nu Q ->
+    (nu : MathCompKernelMeasure B) (Q : B → Prop) :
+  (∀ V : set (mc_carrier B), measurable V → ¬ V MCBottom →
+    joint (mc_joint_snd @^-1` V) = mathcomp_kernel_root nu V) →
+  mathcomp_kernel_ae nu Q →
   almost_everywhere joint (mc_joint_right_predicate Q).
 Proof.
   move=> Hright.
@@ -1005,22 +1007,22 @@ Proof.
 Qed.
 
 Lemma mathcomp_kernel_lift_ae_transport_r {A B}
-    (rel : A -> B -> Prop) (mu : MathCompKernelMeasure A)
-    (nu : MathCompKernelMeasure B) (P : A -> Prop) :
-  mathcomp_kernel_lift rel mu nu -> mathcomp_kernel_ae mu P ->
-  mathcomp_kernel_ae nu (fun y => exists x, rel x y /\ P x).
+    (rel : A → B → Prop) (mu : MathCompKernelMeasure A)
+    (nu : MathCompKernelMeasure B) (P : A → Prop) :
+  mathcomp_kernel_lift rel mu nu → mathcomp_kernel_ae mu P →
+  mathcomp_kernel_ae nu (fun y => ∃ x, rel x y ∧ P x).
 Proof.
   move=> [joint [Hleft [Hright Hrel]]] HP.
   have HjointP := mathcomp_joint_ae_left Hleft HP.
   rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
   apply/negligibleP; first by [].
   have Hm : measurable
-      (~` mc_predicate (fun y => exists x, rel x y /\ P x)) by [].
+      (~` mc_predicate (fun y => exists x, rel x y ∧ P x)) by [].
   have Hnb : ~
-      (~` mc_predicate (fun y => exists x, rel x y /\ P x)) MCBottom.
+      (~` mc_predicate (fun y => exists x, rel x y ∧ P x)) MCBottom.
   { move=> Hbad. exact: Hbad. }
   transitivity (joint (mc_joint_snd @^-1`
-    (~` mc_predicate (fun y => exists x, rel x y /\ P x)))).
+    (~` mc_predicate (fun y => exists x, rel x y ∧ P x)))).
   - symmetry. exact: Hright Hm Hnb.
   - apply/negligibleP; first by [].
   rewrite /almost_everywhere in Hrel HjointP.
@@ -1033,11 +1035,11 @@ Proof.
 Qed.
 
 Lemma mathcomp_kernel_lift_ae_restrict {A B}
-    (rel : A -> B -> Prop) (mu : MathCompKernelMeasure A)
-    (nu : MathCompKernelMeasure B) (P : A -> Prop) (Q : B -> Prop) :
-  mathcomp_kernel_lift rel mu nu ->
-  mathcomp_kernel_ae mu P -> mathcomp_kernel_ae nu Q ->
-  mathcomp_kernel_lift (fun x y => rel x y /\ P x /\ Q y) mu nu.
+    (rel : A → B → Prop) (mu : MathCompKernelMeasure A)
+    (nu : MathCompKernelMeasure B) (P : A → Prop) (Q : B → Prop) :
+  mathcomp_kernel_lift rel mu nu →
+  mathcomp_kernel_ae mu P → mathcomp_kernel_ae nu Q →
+  mathcomp_kernel_lift (fun x y => rel x y ∧ P x ∧ Q y) mu nu.
 Proof.
   move=> [joint [Hleft [Hright Hrel]]] HP HQ.
   exists joint. repeat split=> //.
@@ -1055,10 +1057,10 @@ Proof.
     exfalso. apply: Hbad. repeat split; assumption.
 Qed.
 
-Lemma mathcomp_kernel_lift_proper_l {A B} (rel : A -> B -> Prop)
+Lemma mathcomp_kernel_lift_proper_l {A B} (rel : A → B → Prop)
     (mu mu' : MathCompKernelMeasure A) (nu : MathCompKernelMeasure B) :
-  mathcomp_kernel_eq mu mu' ->
-  mathcomp_kernel_lift rel mu nu ->
+  mathcomp_kernel_eq mu mu' →
+  mathcomp_kernel_lift rel mu nu →
   mathcomp_kernel_lift rel mu' nu.
 Proof.
   move=> Hmm [joint [Hleft [Hright Hrel]]].
@@ -1067,10 +1069,10 @@ Proof.
   exact: Hleft.
 Qed.
 
-Lemma mathcomp_kernel_lift_proper_r {A B} (rel : A -> B -> Prop)
+Lemma mathcomp_kernel_lift_proper_r {A B} (rel : A → B → Prop)
     (mu : MathCompKernelMeasure A) (nu nu' : MathCompKernelMeasure B) :
-  mathcomp_kernel_eq nu nu' ->
-  mathcomp_kernel_lift rel mu nu ->
+  mathcomp_kernel_eq nu nu' →
+  mathcomp_kernel_lift rel mu nu →
   mathcomp_kernel_lift rel mu nu'.
 Proof.
   move=> Hnn [joint [Hleft [Hright Hrel]]].
@@ -1079,9 +1081,9 @@ Proof.
   exact: Hright.
 Qed.
 
-Lemma mathcomp_kernel_lift_sym {A B} (rel : A -> B -> Prop)
+Lemma mathcomp_kernel_lift_sym {A B} (rel : A → B → Prop)
     (mu : MathCompKernelMeasure A) (nu : MathCompKernelMeasure B) :
-  mathcomp_kernel_lift rel mu nu ->
+  mathcomp_kernel_lift rel mu nu →
   mathcomp_kernel_lift (fun y x => rel x y) nu mu.
 Proof.
   move=> [joint [Hleft [Hright Hae]]].
@@ -1121,15 +1123,15 @@ Qed.
     mathematical assumption (and can fail in models with non-atomic measures
     on a full powerset).  Isolating it here keeps that assumption visible. *)
 Class MathCompCouplingGluing := {
-  mathcomp_kernel_lift_comp : forall {A B C}
-      (rel : A -> B -> Prop) (rel' : B -> C -> Prop)
+  mathcomp_kernel_lift_comp : ∀ {A B C}
+      (rel : A → B → Prop) (rel' : B → C → Prop)
       (mu : MathCompKernelMeasure A)
       (nu : MathCompKernelMeasure B)
       (xi : MathCompKernelMeasure C),
-    mathcomp_kernel_lift rel mu nu ->
-    mathcomp_kernel_lift rel' nu xi ->
+    mathcomp_kernel_lift rel mu nu →
+    mathcomp_kernel_lift rel' nu xi →
     mathcomp_kernel_lift
-      (fun x z => exists y, rel x y /\ rel' y z) mu xi
+      (fun x z => ∃ y, rel x y ∧ rel' y z) mu xi
 }.
 
 (** Consequently the whole abstract law package is available as soon as the
@@ -1169,9 +1171,9 @@ Definition mathcomp_kernel_zero {A} : MathCompKernelMeasure A :=
   mathcomp_source_kernel mathcomp_bottom_measure.
 
 Definition mathcomp_kernel_lub {A}
-    (chain : nat -> MathCompKernelMeasure A)
+    (chain : nat → MathCompKernelMeasure A)
     (mu : MathCompKernelMeasure A) : Prop :=
-  forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
+  ∀ U : set (mc_carrier A), measurable U → ¬ U MCBottom →
     mathcomp_kernel_root mu U =
       ereal_sup [set mathcomp_kernel_root (chain n) U | n in [set: nat]].
 
@@ -1185,7 +1187,7 @@ Definition mathcomp_kernel_total {A}
 (** Pure value maps preserve returned mass, even for partial measures and
     noninjective maps. No coupling/gluing hypothesis is needed. *)
 Lemma mathcomp_kernel_map_mass {A B}
-    (mu : MathCompKernelMeasure A) (f : A -> B) :
+    (mu : MathCompKernelMeasure A) (f : A → B) :
   mathcomp_kernel_root
     (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret (f x)))
     (@mc_returned B) =
@@ -1203,9 +1205,9 @@ Proof.
 Qed.
 
 Lemma mathcomp_kernel_map_total {A B}
-    (mu : MathCompKernelMeasure A) (f : A -> B) :
+    (mu : MathCompKernelMeasure A) (f : A → B) :
   mathcomp_kernel_total
-    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret (f x))) <->
+    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret (f x))) ↔
   mathcomp_kernel_total mu.
 Proof. by rewrite /mathcomp_kernel_total mathcomp_kernel_map_mass. Qed.
 
@@ -1230,18 +1232,18 @@ Qed.
 }.
 
 Lemma mathcomp_kernel_lub_unique {A}
-    (chain : nat -> MathCompKernelMeasure A) mu nu :
-  mathcomp_kernel_lub chain mu ->
-  mathcomp_kernel_lub chain nu ->
+    (chain : nat → MathCompKernelMeasure A) mu nu :
+  mathcomp_kernel_lub chain mu →
+  mathcomp_kernel_lub chain nu →
   mathcomp_kernel_eq mu nu.
 Proof.
   move=> Hmu Hnu U mU nbot. rewrite Hmu // Hnu //.
 Qed.
 
 Lemma mathcomp_kernel_lub_proper {A}
-    (c1 c2 : nat -> MathCompKernelMeasure A) mu :
-  (forall n, mathcomp_kernel_eq (c1 n) (c2 n)) ->
-  mathcomp_kernel_lub c1 mu ->
+    (c1 c2 : nat → MathCompKernelMeasure A) mu :
+  (∀ n, mathcomp_kernel_eq (c1 n) (c2 n)) →
+  mathcomp_kernel_lub c1 mu →
   mathcomp_kernel_lub c2 mu.
 Proof.
   move=> Hc Hlim U mU nbot. rewrite Hlim //.
@@ -1255,9 +1257,9 @@ Proof.
 Qed.
 
 Lemma mathcomp_kernel_lub_limit_proper {A}
-    (chain : nat -> MathCompKernelMeasure A) mu nu :
-  mathcomp_kernel_eq mu nu ->
-  mathcomp_kernel_lub chain mu -> mathcomp_kernel_lub chain nu.
+    (chain : nat → MathCompKernelMeasure A) mu nu :
+  mathcomp_kernel_eq mu nu →
+  mathcomp_kernel_lub chain mu → mathcomp_kernel_lub chain nu.
 Proof.
   move=> Hmn Hlim U mU nbot.
   rewrite -(Hmn U mU nbot). exact: Hlim.
@@ -1265,8 +1267,8 @@ Qed.
 
 Lemma mathcomp_kernel_total_proper {A}
     (mu nu : MathCompKernelMeasure A) :
-  mathcomp_kernel_eq mu nu ->
-  (mathcomp_kernel_total mu <-> mathcomp_kernel_total nu).
+  mathcomp_kernel_eq mu nu →
+  (mathcomp_kernel_total mu ↔ mathcomp_kernel_total nu).
 Proof.
   move=> Hmn. rewrite /mathcomp_kernel_total.
   have mret : measurable (@mc_returned A) by [].

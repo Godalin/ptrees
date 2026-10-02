@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -13,7 +15,7 @@ Unset Printing Implicit Defensive.
     All monotonicity premises are RAW approximation statements: no order
     properness under quotient equality is assumed. *)
 Section KernelContinuity.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI} {S O : Type}.
 Local Notation MF := (FreeOmega MN).
@@ -23,9 +25,9 @@ Local Notation target_approx :=
 Local Notation hit :=
   (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O).
 
-Lemma kernel_target_approx_mono (left right : S -> MF (stable_target S O)) :
-  (forall s, free_omega_approx eq (left s) (right s)) ->
-  forall n target, free_omega_approx eq
+Lemma kernel_target_approx_mono (left right : S → MF (stable_target S O)) :
+  (∀ s, free_omega_approx eq (left s) (right s)) →
+  ∀ n target, free_omega_approx eq
     (target_approx left n target) (target_approx right n target).
 Proof.
   intro Hkernel. intro n. induction n as [|n IH]; intros [o|s].
@@ -36,19 +38,19 @@ Proof.
     intros x y ->. apply IH.
 Qed.
 
-Theorem kernel_hitting_approx_mono (left right : S -> MF (stable_target S O)) :
-  (forall s, free_omega_approx eq (left s) (right s)) ->
-  forall n s, free_omega_approx eq (hit left n s) (hit right n s).
+Theorem kernel_hitting_approx_mono (left right : S → MF (stable_target S O)) :
+  (∀ s, free_omega_approx eq (left s) (right s)) →
+  ∀ n s, free_omega_approx eq (hit left n s) (hit right n s).
 Proof.
   intros Hkernel n s. eapply free_omega_approx_bind; [apply Hkernel|].
   intros x y ->. apply kernel_target_approx_mono. exact Hkernel.
 Qed.
 
-Variable kernel : S -> MF (stable_target S O).
-Variable chain : nat -> S -> MF (stable_target S O).
-Hypothesis chain_increasing : forall n s,
+Variable kernel : S → MF (stable_target S O).
+Variable chain : nat → S → MF (stable_target S O).
+Hypothesis chain_increasing : ∀ n s,
   free_omega_approx eq (chain n s) (chain (Datatypes.S n) s).
-Hypothesis kernel_limit : forall s,
+Hypothesis kernel_limit : ∀ s,
   free_omega_qlift eq (kernel s) (FOLub (fun n => chain n s)).
 
 Lemma kernel_hitting_grid_rows n m s :
@@ -128,7 +130,7 @@ Qed.
 
 (** Client-facing endpoint for any complete hitting representative. *)
 Theorem kernel_stable_hitting_diagonal s out :
-  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out ->
+  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out →
   free_omega_qlift eq out (FOLub (fun n => hit (chain n) n s)).
 Proof.
   intro Hhit. eapply FOQLComp with (T := eq) (U := eq).
@@ -151,15 +153,15 @@ Qed.
     They are stronger than a completion equation or upper bounds modulo
     equality, and cannot be inferred from either of those alone. *)
 Theorem kernel_stable_hitting_diagonal_adequate {S' O'}
-    (reference : S' -> MF (stable_target S' O')) (project : O -> O')
+    (reference : S' → MF (stable_target S' O')) (project : O → O')
     s r out reference_out :
-  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out ->
+  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega S' O'
-    reference r reference_out ->
+    reference r reference_out →
   free_omega_chains_cofinal eq
     (fun n => free_omega_bind (hit (chain n) n s) (fun o => FORet (project o)))
     (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
-      S' O' reference n r) ->
+      S' O' reference n r) →
   free_omega_qlift eq (free_omega_bind out (fun o => FORet (project o))) reference_out.
 Proof.
   intros Hhit Hreference Hcofinal.

@@ -1,4 +1,6 @@
 (** Role: Canonical FreeOmega measure infrastructure. Depends on generic measures; not a concrete native backend or program equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed PTree.Prob.Interface.SemanticCoupling.
@@ -14,13 +16,13 @@ Unset Printing Implicit Defensive.
     mentions neither trees, stable hitting, nor behavioral equivalence.
     It is proved for SubEnumQ rather than assumed there.  In particular it
     must not be registered for arbitrary backends from core laws alone. *)
-Class FreeOmegaNativeCouplingLaws {MN : Type -> Type}
+Class FreeOmegaNativeCouplingLaws {MN : Type → Type}
     (NI : SemanticMeasure MN) (NO : @SemanticOmega MN NI) := {
-  free_omega_native_coupling : forall {A B}
+  free_omega_native_coupling : ∀ {A B}
     (p : free_omega_native_presentation MN A)
-    (q : free_omega_native_presentation MN B) (R : A -> B -> Prop),
-    @free_omega_qlift MN NI NO A B R (free_omega_native p) (free_omega_native q) ->
-    exists joint : MN (native_sample_type p * native_sample_type q)%type,
+    (q : free_omega_native_presentation MN B) (R : A → B → Prop),
+    @free_omega_qlift MN NI NO A B R (free_omega_native p) (free_omega_native q) →
+    ∃ joint : MN (native_sample_type p * native_sample_type q)%type,
       @semantic_coupling MN NI _ _
         (fun x y => R (native_sample_value p x) (native_sample_value q y))
         (native_sample_measure p) (native_sample_measure q) joint
@@ -29,11 +31,11 @@ Class FreeOmegaNativeCouplingLaws {MN : Type -> Type}
 (** The same capability subsumes native lifting realization.  The proof
     embeds one primitive coupling in the quotient, then uses the identity
     decoders; there is no independent choice/gluing assumption here. *)
-Lemma free_omega_native_node_coupling {MN : Type -> Type}
+Lemma free_omega_native_node_coupling {MN : Type → Type}
     `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI}
     `{NJ : @FreeOmegaNativeCouplingLaws MN NI NO}
-    {X Y} (R : X -> Y -> Prop) (mu : MN X) (nu : MN Y) :
-  sem_lift R mu nu -> exists joint, semantic_coupling R mu nu joint.
+    {X Y} (R : X → Y → Prop) (mu : MN X) (nu : MN Y) :
+  sem_lift R mu nu → ∃ joint, semantic_coupling R mu nu joint.
 Proof.
   intro Hlift.
   pose (p := {| native_sample_type := X; native_sample_measure := mu;
@@ -47,14 +49,14 @@ Qed.
 
 (** Reflection through arbitrary value maps, derived from the existing
     native joint realization capability. No injectivity is required. *)
-Lemma free_omega_sampled_heads_reflect {MN : Type -> Type}
+Lemma free_omega_sampled_heads_reflect {MN : Type → Type}
     `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NO : @SemanticOmega MN NI} `{NJ : @FreeOmegaNativeCouplingLaws MN NI NO}
-    {X Y A B} (mu : MN X) (nu : MN Y) (f : X -> A) (g : Y -> B)
-    (R : A -> B -> Prop) :
+    {X Y A B} (mu : MN X) (nu : MN Y) (f : X → A) (g : Y → B)
+    (R : A → B → Prop) :
   free_omega_qlift R (FOSample mu (fun x => FORet (f x)))
-    (FOSample nu (fun y => FORet (g y))) ->
+    (FOSample nu (fun y => FORet (g y))) →
   sem_lift (fun x y => R (f x) (g y)) mu nu.
 Proof.
   intro H.
@@ -68,7 +70,7 @@ Proof.
 Qed.
 
 Section NecessaryLaw.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
@@ -77,10 +79,10 @@ Context {MN : Type -> Type}
 (** Even IDENTITY decoders force a native relational left-unit law.
     This is a necessary condition, not a sufficient reflection package. *)
 Theorem native_reflection_requires_left_unit {A B}
-    (reflect : forall mu nu : MN B,
+    (reflect : ∀ mu nu : MN B,
       free_omega_qlift eq (FOSample mu (fun y => FORet y))
-        (FOSample nu (fun y => FORet y)) -> sem_lift eq mu nu)
-    (x : A) (k : A -> MN B) :
+        (FOSample nu (fun y => FORet y)) → sem_lift eq mu nu)
+    (x : A) (k : A → MN B) :
   sem_lift eq (sem_bind (sem_ret x) k) (k x).
 Proof. apply reflect, free_omega_sample_bind_ret_l. Qed.
 End NecessaryLaw.

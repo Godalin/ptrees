@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 From Coq Require Import Reals.
 From Coq Require Import List.
 Import ListNotations.
@@ -33,13 +35,13 @@ Arguments runFinSupp {A} _.
 
 Section finSuppMonad.
 
-Definition finSupp_fmap {A B} (f : A -> B) (x : finSupp A) : finSupp B :=
+Definition finSupp_fmap {A B} (f : A → B) (x : finSupp A) : finSupp B :=
   mkFinSupp (map (fun '(a, p) => (f a, p)) (runFinSupp x)).
 
 Definition finSupp_ret {A} (a : A) : finSupp A :=
   mkFinSupp [(a, 1)].
 
-Definition finSupp_bind {A B} (x : finSupp A) (f : A -> finSupp B) : finSupp B :=
+Definition finSupp_bind {A B} (x : finSupp A) (f : A → finSupp B) : finSupp B :=
   mkFinSupp (flat_map (fun '(a, p) => map (fun '(b, q) => (b, p * q)) (runFinSupp (f a))) (runFinSupp x)).
 
 Global Instance Functor_finSupp : Functor finSupp :=
@@ -57,7 +59,7 @@ End finSuppMonad.
 
 Section finSuppT.
 
-Context (m : Type -> Type).
+Context (m : Type → Type).
 
 Record finSuppT (A : Type) : Type :=
   mkFinSuppT { runFinSuppT : m (list (A * R)) }.
@@ -69,7 +71,7 @@ Arguments runFinSuppT {m A} _.
 
 
 
-Definition sequence {m : Type -> Type} `{M : Monad m}
+Definition sequence {m : Type → Type} `{M : Monad m}
   {A : Type} (l : list (m A))
   : m (list A) :=
   fold_right (fun x acc => bind x (fun a => fmap (fun l => a :: l) acc)) (ret []) l.
@@ -78,11 +80,11 @@ Definition sequence {m : Type -> Type} `{M : Monad m}
 
 Section finSuppTMonad.
 
-Context (m : Type -> Type).
+Context (m : Type → Type).
 Context (M : Monad m).
 Context (A B : Type).
 
-Definition finSuppT_fmap (f : A -> B) (x : finSuppT m A)
+Definition finSuppT_fmap (f : A → B) (x : finSuppT m A)
   : finSuppT m B
   := mkFinSuppT (fmap (fun l => map (fun '(a, p) => (f a, p)) l) (runFinSuppT x)).
 
@@ -114,7 +116,7 @@ End finSuppTMonad.
 
 
 
-Definition integrate {A} (f : A -> R) (μ : finSupp A) : R :=
+Definition integrate {A} (f : A → R) (μ : finSupp A) : R :=
   fold_left (fun acc '(a, p) => acc + p * f a) (runFinSupp μ) 0.
 
 Definition uniform {A} (l : list A) : finSupp A :=
@@ -127,7 +129,7 @@ Definition pEmpty {A : Type} : finSupp A := mkFinSupp [].
 
 
 
-Fixpoint addF {A} (x : A) (eq : A -> A -> bool) (r : R) (μ : list (A * R)) : list (A * R) :=
+Fixpoint addF {A} (x : A) (eq : A → A → bool) (r : R) (μ : list (A * R)) : list (A * R) :=
   match μ with
   | [] => [(x, r)]
   | (y, p) :: μ' => if eq x y then (y, p + r) :: μ' else (y, p) :: addF x eq r μ'

@@ -1,6 +1,8 @@
 (** Role: finite probability/coupling/backend example. *)
 (** The finite-real native backend is a small client of the existing generic
     completion and PTree theory. No FreeOmega proof is reimplemented here. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -36,19 +38,19 @@ Fail Definition real_native_omega_complete : @SemanticOmegaLaws MN NI NO := _.
 
 Definition real_completion_core : @SemanticMeasureCoreLaws MF FI := _.
 Section GenericTrees.
-Context {E : Type -> Type}.
+Context {E : Type → Type}.
 Local Notation W A B RR := (@peutt E MN MF FI real_completion_core FreeOmegaMixedMeasure FO A B RR).
 
-Example real_complete_step_summary {I A} (step : I -> ptree E MN (I+A))
-    (front : I -> MF (stable_head E MN (I+A)))
-    (Hfront : forall i, ptree_stable_hitting (FI := FI) (FO := FO)
+Example real_complete_step_summary {I A} (step : I → ptree E MN (I+A))
+    (front : I → MF (stable_head E MN (I+A)))
+    (Hfront : ∀ i, ptree_stable_hitting (FI := FI) (FO := FO)
       (observe (step i)) (front i)) i :
   ptree_stable_hitting (FI := FI) (FO := FO) (observe (PTree.iter step i))
     (complete_iteration_frontier step front i).
 Proof. apply complete_iteration_hitting. exact Hfront. Qed.
 
 Example real_hitting_exists {A} (t : ptree E MN A) :
-  exists out, @stable_hitting MF FI FO _ _
+  ∃ out, @stable_hitting MF FI FO _ _
     (@ptree_primitive_kernel E MN MF FI FreeOmegaMixedMeasure A) (observe t) out.
 Proof. apply stable_hitting_exists. Qed.
 
@@ -69,9 +71,9 @@ Example real_crossed_sample_peutt (mu : MN bool) :
 Proof. apply peutt_of_pstrong; exact: real_crossed_sample_strong. Qed.
 End GenericTrees.
 
-Variant real_serviceE : Type -> Type := RealReply : bool -> real_serviceE unit.
+Variant real_serviceE : Type → Type := RealReply : bool → real_serviceE unit.
 Definition sqrt_weight : R := Num.sqrt (1 / 2).
-Lemma sqrt_weight_valid : 0 <= sqrt_weight /\ sqrt_weight <= 1.
+Lemma sqrt_weight_valid : 0 <= sqrt_weight ∧ sqrt_weight <= 1.
 Proof.
   split; first exact: sqrtr_ge0.
   have Hhalf : (1 : R) / 2 <= 1 by rewrite ler_pdivrMr ?ltr0n // mul1r ler1n.

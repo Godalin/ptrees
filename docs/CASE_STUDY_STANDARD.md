@@ -21,6 +21,14 @@ MathComp 的信任边界，也不要求所有例子覆盖所有框架功能。
 每个 case 文件开头明确四件事：native/frontier profile、使用的关系、
 effects/handlers、主结论与适用范围。
 
+逻辑公式统一优先使用 Coq 标准 `Utf8`：显式 `From Coq Require Import Utf8.`，
+用 `∀ / ∃ / → / ↔ / ∧ / ∨ / ¬ / ≠` 缩短签名和命题。它们只是标准语法，
+不改变关系、假设或证明。保留 `fun ... =>` 和 tactic 的 `exists`、
+`rewrite ->`、`intros ->`；MathComp 的 `[forall ...]` 等布尔记号也不替换。
+`{rmorphism R -> S}` 等专用语法仍保留其规定的 ASCII token。
+不要把 MathComp 的数值比较机械改成 Utf8 专用于 `nat` 的 `≤ / ≥`。
+`≈ₚ`、`≈ₘ`、`←ω` 等分层语义记号仍按各自 owner/scope 使用。
+
 另外说明文件职责（见 §3），不要求给证明方法分类。
 
 - 程序定义使用 `PTree`；等式推理使用 `Eq` / `PTreeFacts` 或明确的

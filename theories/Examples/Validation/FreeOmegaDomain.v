@@ -1,4 +1,6 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
+From Coq Require Import Utf8.
+
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
 (** Role: DS2 admissibility/soundness boundary tests. In particular, a raw
     alternating FOLub is rejected, while null-probability bad branches are
@@ -31,8 +33,8 @@ Require Import PTree.Examples.Validation.FreeOmegaSamples.
 Section DomainTests.
 Variable R : realType.
 
-Lemma alternating_upper_test (f : bool -> R) witness :
-  oval_test f -> f witness = 1 -> free_omega_upper alternating_bool f = 1.
+Lemma alternating_upper_test (f : bool → R) witness :
+  oval_test f → f witness = 1 → free_omega_upper alternating_bool f = 1.
 Proof.
   intros Hf Hw; apply/eqP; rewrite eq_le; apply/andP; split.
   - exact (proj2 (free_omega_upper_bounds alternating_bool Hf)).
@@ -46,14 +48,14 @@ Proof.
         (fun n => proj2 (Hf _))).
 Qed.
 
-Theorem alternating_bool_not_admissible : ~ free_omega_admissible R alternating_bool.
+Theorem alternating_bool_not_admissible : ¬ free_omega_admissible R alternating_bool.
 Proof.
   intro H.
   pose f := fun b : bool => if b then (1 : R) else 0.
   pose g := fun b : bool => if b then (0 : R) else 1.
   have Hf : oval_test f by intros []; split; try exact: lexx; exact: ler01.
   have Hg : oval_test g by intros []; split; try exact: lexx; exact: ler01.
-  have Hfg : forall b, f b + g b <= 1 by intros []; rewrite /f /g ?addr0 ?add0r.
+  have Hfg : ∀ b, f b + g b <= 1 by intros []; rewrite /f /g ?addr0 ?add0r.
   have Hsum : oval_test (fun b => f b + g b) := oval_test_add Hf Hg Hfg.
   have Hbad := oval_add H Hf Hg Hfg.
   rewrite (@alternating_upper_test f true Hf (Logic.eq_refl _))
@@ -64,7 +66,7 @@ Proof.
 Qed.
 
 Example alternating_has_no_domain_model :
-  ~ exists L : OmegaVal R bool, free_omega_domain_denotes alternating_bool L.
+  ¬ ∃ L : OmegaVal R bool, free_omega_domain_denotes alternating_bool L.
 Proof.
   intro H; apply alternating_bool_not_admissible.
   exact (proj2 (free_omega_admissible_iff_denotes R alternating_bool) H).
@@ -73,8 +75,8 @@ Qed.
 Lemma nullable_kernel_ae :
   sem_ae null_weight_node (fun b => free_omega_admissible R (nullable_kernel b)).
 Proof.
-  change (forall p b, List.In (p,b) [((1 : rat),true); (0,false)] ->
-    p <> 0 -> free_omega_admissible R (nullable_kernel b)).
+  change (∀ p b, List.In (p,b) [((1 : rat),true); (0,false)] ->
+    p ≠ 0 -> free_omega_admissible R (nullable_kernel b)).
   intros p b [H|[H|[]]] Hnz; inversion H; subst.
   - exact: admissible_ret.
   - exfalso; apply Hnz; reflexivity.
@@ -95,7 +97,7 @@ Proof.
 Qed.
 
 Example null_weight_branch_really_invalid :
-  ~ free_omega_admissible R (nullable_kernel false).
+  ¬ free_omega_admissible R (nullable_kernel false).
 Proof. exact alternating_bool_not_admissible. Qed.
 
 Example null_weight_sample_denotes :
@@ -103,15 +105,15 @@ Example null_weight_sample_denotes :
     (oval_bind (subenumQ_domain R null_weight_node) (fun _ => oval_ret R true)).
 Proof.
   apply free_omega_denote_sample_ae.
-  change (forall p b, List.In (p,b) [((1 : rat),true); (0,false)] ->
-    p <> 0 -> free_omega_domain_denotes (nullable_kernel b) (oval_ret R true)).
+  change (∀ p b, List.In (p,b) [((1 : rat),true); (0,false)] ->
+    p ≠ 0 -> free_omega_domain_denotes (nullable_kernel b) (oval_ret R true)).
   intros p b [H|[H|[]]] Hnz; inversion H; subst.
   - exact: free_omega_denote_ret.
   - exfalso; apply Hnz; reflexivity.
 Qed.
 
 Example positive_bad_branch_not_admissible :
-  ~ free_omega_admissible R (FOSample (subenumQ_ret false) nullable_kernel).
+  ¬ free_omega_admissible R (FOSample (subenumQ_ret false) nullable_kernel).
 Proof.
   intro H; apply alternating_bool_not_admissible.
   eapply free_omega_admissible_ext; [exact H|].
@@ -144,7 +146,7 @@ Proof.
   exact: delayed_approx.
 Qed.
 
-Example native_bind_denotes {A B} (mu : SubEnumQ A) (k : A -> SubEnumQ B) :
+Example native_bind_denotes {A B} (mu : SubEnumQ A) (k : A → SubEnumQ B) :
   free_omega_domain_denotes
     (free_omega_bind (FOSample mu (fun x => FORet x))
       (fun x => FOSample (k x) (fun y => FORet y)))

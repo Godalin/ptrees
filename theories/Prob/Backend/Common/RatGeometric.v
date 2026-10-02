@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
@@ -15,7 +17,7 @@ Import GRing.Theory Num.Theory Order.Theory.
 #[local] Open Scope order_scope.
 
 Lemma rat_div_mul_div (x y a b : rat) :
-  a != 0 -> b != 0 ->
+  a != 0 → b != 0 →
   (x / a) * (y / b) = (x * y) / (a * b).
 Proof.
   move=> a0 b0.
@@ -25,7 +27,7 @@ Proof.
 Qed.
 
 Lemma rat_contract_bound_step (K n : nat) :
-  (0 < K)%coq_nat ->
+  (0 < K)%coq_nat →
   ((K%:R : rat) / (K + n)%:R) *
       ((K%:R : rat) / K.+1%:R) <=
     (K%:R : rat) / (K + n.+1)%:R.
@@ -60,8 +62,8 @@ Proof.
 Qed.
 
 Lemma rat_contract_power_bound (r : rat) (K n : nat) :
-  (0 < K)%coq_nat -> 0 <= r ->
-  r <= (K%:R : rat) / K.+1%:R ->
+  (0 < K)%coq_nat → 0 <= r →
+  r <= (K%:R : rat) / K.+1%:R →
   r ^+ n <= (K%:R : rat) / (K + n)%:R.
 Proof.
   move=> Kpos r0 Hr.
@@ -79,10 +81,10 @@ Proof.
 Qed.
 
 Lemma rat_contract_vanishes (r : rat) (K : nat) :
-  (0 < K)%coq_nat -> 0 <= r ->
-  r <= (K%:R : rat) / K.+1%:R ->
-  forall eps, 0 < eps ->
-    exists N, forall n, Peano.le N n -> r ^+ n < eps.
+  (0 < K)%coq_nat → 0 <= r →
+  r <= (K%:R : rat) / K.+1%:R →
+  ∀ eps, 0 < eps →
+    ∃ N, ∀ n, Peano.le N n → r ^+ n < eps.
 Proof.
   move=> Kpos r0 Hr eps eps0.
   have Kbool : (0 < K)%N by apply/ssrnat.ltP.
@@ -110,8 +112,8 @@ Qed.
 (** Every nonnegative rational strictly below one admits the elementary
     [K / (K + 1)] contraction certificate used above. *)
 Lemma rat_contract_certificate (r : rat) :
-  0 <= r -> r < 1 ->
-  exists K : nat, (0 < K)%coq_nat /\
+  0 <= r → r < 1 →
+  ∃ K : nat, (0 < K)%coq_nat ∧
     r <= (K%:R : rat) / K.+1%:R.
 Proof.
   move=> r0 r1.

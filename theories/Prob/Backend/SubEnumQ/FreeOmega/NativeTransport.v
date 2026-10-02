@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -29,12 +31,12 @@ Local Notation sample := (fun X (mu : SubEnumQ X) =>
 
 (** Scalar soundness of the FULL quotient, specialized to native finite
     measures.  No equivalence assumption on the relation is used. *)
-Lemma subenumQ_quotient_rational_tests {A B} (T : A -> B -> Prop)
+Lemma subenumQ_quotient_rational_tests {A B} (T : A → B → Prop)
     (mu : SubEnumQ A) (nu : SubEnumQ B) f g :
-  free_omega_qlift T (sample A mu) (sample B nu) ->
-  (forall x, 0 <= f x /\ f x <= 1) ->
-  (forall y, 0 <= g y /\ g y <= 1) ->
-  (forall x y, T x y -> f x <= g y) ->
+  free_omega_qlift T (sample A mu) (sample B nu) →
+  (∀ x, 0 <= f x ∧ f x <= 1) →
+  (∀ y, 0 <= g y ∧ g y <= 1) →
+  (∀ x y, T x y → f x <= g y) →
   enumQ_expect f (subenumQ_raw mu) <= enumQ_expect g (subenumQ_raw nu).
 Proof.
   intros Hq Hf Hg Hfg.
@@ -46,7 +48,7 @@ Proof.
   { intro y. split.
     - rewrite ler0q. exact (proj1 (Hg y)).
     - rewrite -(rmorph1 (ratr : {rmorphism rat -> F})) ler_rat. exact (proj2 (Hg y)). }
-  have Hfg' : forall x y, T x y -> (ratr (f x) : F) <= ratr (g y).
+  have Hfg' : ∀ x y, T x y -> (ratr (f x) : F) <= ratr (g y).
   { intros x y Hxy. rewrite ler_rat. exact (Hfg x y Hxy). }
   have H := free_omega_qlift_upper Hq Hf' Hg' Hfg'.
   change (is_true (enumQ_real_expect (fun x => (ratr (f x) : F)) (subenumQ_raw mu) <=
@@ -54,9 +56,9 @@ Proof.
   by rewrite !enumQ_real_expect_rat ler_rat in H.
 Qed.
 
-Lemma subenumQ_quotient_equal_mass {A B} (T : A -> B -> Prop)
+Lemma subenumQ_quotient_equal_mass {A B} (T : A → B → Prop)
     (mu : SubEnumQ A) (nu : SubEnumQ B) :
-  free_omega_qlift T (sample A mu) (sample B nu) ->
+  free_omega_qlift T (sample A mu) (sample B nu) →
   enumQ_mass (subenumQ_raw mu) = enumQ_mass (subenumQ_raw nu).
 Proof.
   intro Hq. have H := free_omega_qlift_upper_mass F Hq.
@@ -68,23 +70,23 @@ Qed.
 
 (** Hall inequalities follow from indicator tests.  Together with equal
     mass they construct a joint; they are NOT an extra backend axiom. *)
-Theorem subenumQ_finite_quotient_joint {X Y : finType} (edge : X -> Y -> bool)
+Theorem subenumQ_finite_quotient_joint {X Y : finType} (edge : X → Y → bool)
     (mu : SubEnumQ X) (nu : SubEnumQ Y) :
   free_omega_qlift (fun x y => edge x y)
-    (sample X mu) (sample Y nu) ->
-  exists joint : SubEnumQ (X * Y),
+    (sample X mu) (sample Y nu) →
+  ∃ joint : SubEnumQ (X * Y),
     @semantic_coupling SubEnumQ SubEnumQ_SemanticMeasure X Y
       (fun x y => edge x y) mu nu joint.
 Proof.
   intro Hq. apply subenumQ_finite_transport_joint.
   - intro S.
-    have Hf : forall x : X, 0 <= (if x \in S then 1 else 0 : rat) /\
+    have Hf : ∀ x : X, 0 <= (if x \in S then 1 else 0 : rat) ∧
       (if x \in S then 1 else 0 : rat) <= 1.
     { intro x. case: (x \in S); split; try exact: ler01; exact: lexx. }
-    have Hg : forall y : Y, 0 <= (if y \in matching_neighbors edge setT S then 1 else 0 : rat) /\
+    have Hg : ∀ y : Y, 0 <= (if y \in matching_neighbors edge setT S then 1 else 0 : rat) ∧
       (if y \in matching_neighbors edge setT S then 1 else 0 : rat) <= 1.
     { intro y. case: (y \in matching_neighbors edge setT S); split; try exact: ler01; exact: lexx. }
-    have Hfg : forall x y, edge x y ->
+    have Hfg : ∀ x y, edge x y ->
       (if x \in S then 1 else 0 : rat) <=
       (if y \in matching_neighbors edge setT S then 1 else 0 : rat).
     { intros x y Hxy. case Hx: (x \in S).
@@ -94,14 +96,14 @@ Proof.
       - case: (y \in matching_neighbors edge setT S); [exact: ler01|exact: lexx]. }
     have H := subenumQ_quotient_rational_tests Hq Hf Hg Hfg.
     rewrite !finite_enumQ_expect in H.
-    have Hind : forall (I : finType) (weights : I -> rat) (P : pred I),
+    have Hind : ∀ (I : finType) (weights : I -> rat) (P : pred I),
       (\sum_i weights i * (if P i then 1 else 0)) = \sum_(i | P i) weights i.
     { intros I weights P. rewrite [RHS]big_mkcond. apply eq_bigr=> i _.
       by case: (P i); rewrite ?mulr0 ?mulr1. }
     by rewrite !Hind in H.
   - have H := subenumQ_quotient_equal_mass Hq.
     unfold enumQ_mass in H. rewrite !finite_enumQ_expect in H.
-    have Hone : forall (I : finType) (w : I -> rat), (\sum_i w i * 1) = \sum_i w i.
+    have Hone : ∀ (I : finType) (w : I -> rat), (\sum_i w i * 1) = \sum_i w i.
     { intros I w. apply eq_bigr=> i _. exact: mulr1. }
     by rewrite !Hone in H.
 Qed.
@@ -129,9 +131,9 @@ Qed.
     couples the ORIGINAL native sample measures. *)
 Theorem subenumQ_native_quotient_coupling {A B}
     (p : free_omega_native_presentation SubEnumQ A)
-    (q : free_omega_native_presentation SubEnumQ B) (T : A -> B -> Prop) :
-  free_omega_qlift T (free_omega_native p) (free_omega_native q) ->
-  exists joint : SubEnumQ (native_sample_type p * native_sample_type q),
+    (q : free_omega_native_presentation SubEnumQ B) (T : A → B → Prop) :
+  free_omega_qlift T (free_omega_native p) (free_omega_native q) →
+  ∃ joint : SubEnumQ (native_sample_type p * native_sample_type q),
     @semantic_coupling SubEnumQ SubEnumQ_SemanticMeasure _ _
       (fun x y => T (native_sample_value p x) (native_sample_value q y))
       (native_sample_measure p) (native_sample_measure q) joint.
@@ -150,7 +152,7 @@ Proof.
   have Hpull := subenumQ_native_coupling_pullback Hfinite.
   pose (edge := fun i j => if excluded_middle_informative
     (T (native_sample_value fp i) (native_sample_value fq j)) then true else false).
-  have Hedge : forall i j, edge i j <-> T (native_sample_value fp i) (native_sample_value fq j).
+  have Hedge : ∀ i j, edge i j ↔ T (native_sample_value fp i) (native_sample_value fq j).
   { intros i j. unfold edge. destruct (excluded_middle_informative
       (T (native_sample_value fp i) (native_sample_value fq j))) as [Hyes|Hno].
     - split; [intros _; exact Hyes|intros _; reflexivity].
@@ -164,8 +166,8 @@ Proof.
     SubEnumQ_SemanticMeasureCoreLaws SubEnumQ_SemanticMeasureCouplingAELaws _ _ _ _ _ _ Hjoint.
   apply subenumQ_coupling_realization.
   eapply sem_lift_mono with (R := fun x y => exists i,
-    enumQ_position_value (subenumQ_raw (native_sample_measure p)) i = x /\
-    exists j, edge i j /\ enumQ_position_value (subenumQ_raw (native_sample_measure q)) j = y).
+    enumQ_position_value (subenumQ_raw (native_sample_measure p)) i = x ∧
+    exists j, edge i j ∧ enumQ_position_value (subenumQ_raw (native_sample_measure q)) j = y).
   - intros x y [i [<- [j [Hij <-]]]]. exact (proj1 (Hedge i j) Hij).
   - eapply sem_lift_comp.
     + apply sem_lift_sym. apply subenumQ_positions_decode.

@@ -1,5 +1,7 @@
 (** Role: finite probability/coupling/backend example. *)
 (** Gate S: native order without gluing, a completion or recursive frontiers. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals
   boolp classical_sets.
@@ -27,7 +29,7 @@ Fail Definition still_missing_native_omega : @SemanticOmegaLaws M NI NO := _.
 (** The order does not compare cemetery events. At bottom the inequality
     actually goes the other way: this is why the integral lemma needs f(bottom)=0. *)
 Example cemetery_mass_not_monotone :
-  mathcomp_kernel_root (@mathcomp_kernel_zero R bool) [set MCBottom] = 1 /\
+  mathcomp_kernel_root (@mathcomp_kernel_zero R bool) [set MCBottom] = 1 ∧
   mathcomp_kernel_root (mathcomp_kernel_ret R true) [set MCBottom] = 0.
 Proof.
   split.
@@ -59,7 +61,7 @@ Qed.
 
 (** Nonzero partial sampling followed by an arbitrary further kernel.
     The second bind consumes source monotonicity, not just pointwise order. *)
-Example partial_sampling_bind_monotone {A} (q : R) (k : bool -> M A) :
+Example partial_sampling_bind_monotone {A} (q : R) (k : bool → M A) :
   mathcomp_node_le
     (mathcomp_kernel_bind (mathcomp_kernel_bind (mathcomp_bernoulli q) discard_false) k)
     (mathcomp_kernel_bind (mathcomp_kernel_bind (mathcomp_bernoulli q) keep_both) k).
@@ -94,7 +96,7 @@ Example noninjective_map_total (q : R) :
       (fun _ => mathcomp_kernel_ret R tt)).
 Proof. apply/mathcomp_kernel_map_total. exact: mathcomp_bernoulli_total. Qed.
 
-Example empty_source_map_mass {B} (f : Empty_set -> B) :
+Example empty_source_map_mass {B} (f : Empty_set → B) :
   mathcomp_kernel_root
     (mathcomp_kernel_bind (@mathcomp_kernel_zero R Empty_set)
       (fun x => mathcomp_kernel_ret R (f x))) mc_returned = 0.

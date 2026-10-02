@@ -2,6 +2,8 @@
     The same-carrier mixed operation records ordinary kernel composition;
     it is not a PTree frontier instantiation or a planned self-model.
     No relational-bind or omega-existence axiom is introduced. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order reals boolp classical_sets.
 From mathcomp.analysis Require Import measure ereal.
@@ -47,7 +49,7 @@ Qed.
 Proof. constructor; exact (@mathcomp_kernel_total_proper R). Qed.
 
 Lemma mathcomp_native_zero_returned {A} (U : set (mc_carrier A)) :
-  ~ U MCBottom -> mathcomp_kernel_root (@mathcomp_kernel_zero R A) U = 0.
+  ¬ U MCBottom → mathcomp_kernel_root (@mathcomp_kernel_zero R A) U = 0.
 Proof.
   intro H; rewrite /mathcomp_kernel_zero /mathcomp_kernel_root
     /mathcomp_source_kernel /mathcomp_source_measure /mathcomp_bottom_measure /dirac.
@@ -59,7 +61,7 @@ Qed.
 Lemma mathcomp_native_le_refl {A} (mu : M A) : mathcomp_node_le mu mu.
 Proof. intros U mU Hbot; exact: lexx. Qed.
 Lemma mathcomp_native_le_trans {A} (mu nu xi : M A) :
-  mathcomp_node_le mu nu -> mathcomp_node_le nu xi -> mathcomp_node_le mu xi.
+  mathcomp_node_le mu nu → mathcomp_node_le nu xi → mathcomp_node_le mu xi.
 Proof. intros H1 H2 U mU Hb; exact: le_trans (H1 U mU Hb) (H2 U mU Hb). Qed.
 Lemma mathcomp_native_zero_le {A} (mu : M A) : mathcomp_node_le (mathcomp_kernel_zero R) mu.
 Proof. intros U mU Hbot; rewrite (mathcomp_native_zero_returned Hbot); exact: measure_ge0. Qed.
@@ -74,8 +76,8 @@ Proof.
   rewrite He; exact: ereal_sup1.
 Qed.
 
-Lemma mathcomp_native_prefix_sup {A} (c : nat -> M A) (U : set (mc_carrier A)) :
-  ~ U MCBottom ->
+Lemma mathcomp_native_prefix_sup {A} (c : nat → M A) (U : set (mc_carrier A)) :
+  ¬ U MCBottom →
   ereal_sup [set mathcomp_kernel_root (c n) U | n in [set: nat]] =
   ereal_sup [set mathcomp_kernel_root ((@sem_zero_prefix M NI NO A c) n) U | n in [set: nat]].
 Proof.
@@ -104,8 +106,8 @@ Qed.
 
 (** Bind in the continuation direction is monotone by ordinary integration.
     The source direction needs comparison of measures, not this lemma. *)
-Lemma mathcomp_native_bind_le_k {A B} (mu : M A) (k h : A -> M B) :
-  (forall x, mathcomp_node_le (k x) (h x)) ->
+Lemma mathcomp_native_bind_le_k {A B} (mu : M A) (k h : A → M B) :
+  (∀ x, mathcomp_node_le (k x) (h x)) →
   mathcomp_node_le (mathcomp_kernel_bind mu k) (mathcomp_kernel_bind mu h).
 Proof.
   intros H U mU Hbot; rewrite !mathcomp_kernel_root_bind.

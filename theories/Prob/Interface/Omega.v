@@ -1,4 +1,6 @@
 (** Role: Order, totality and countable-limit capabilities on one semantic carrier. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -16,12 +18,12 @@ Require Import PTree.Prob.Interface.Measure.
     explicit so a unified frontier can state that finite approximants form an
     increasing chain instead of treating every arbitrary sequence as a lub. *)
 Polymorphic Class SemanticOmega@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S} := {
-  sem_zero : forall {A : Type@{carrier}}, S A;
-  sem_le : forall {A : Type@{carrier}}, S A -> S A -> Prop;
-  sem_lub : forall {A : Type@{carrier}}, (nat -> S A) -> S A -> Prop;
-  sem_total : forall {A : Type@{carrier}}, S A -> Prop
+  sem_zero : ∀ {A : Type@{carrier}}, S A;
+  sem_le : ∀ {A : Type@{carrier}}, S A → S A → Prop;
+  sem_lub : ∀ {A : Type@{carrier}}, (nat → S A) → S A → Prop;
+  sem_total : ∀ {A : Type@{carrier}}, S A → Prop
 }.
 
 (** Optional omega operations in the same semantic algebra scope.
@@ -37,31 +39,31 @@ End SemanticOmegaNotations.
 
 Definition sem_increasing {SM} `{SI : SemanticMeasure SM}
     `{SO : @SemanticOmega SM SI} {A}
-    (chain : nat -> SM A) : Prop :=
-  forall n, sem_le (chain n) (chain (Datatypes.S n)).
+    (chain : nat → SM A) : Prop :=
+  ∀ n, sem_le (chain n) (chain (Datatypes.S n)).
 
 Definition sem_zero_prefix {SM} `{SI : SemanticMeasure SM}
     `{SO : @SemanticOmega SM SI} {A}
-    (chain : nat -> SM A) : nat -> SM A :=
+    (chain : nat → SM A) : nat → SM A :=
   fun n => match n with O => sem_zero | Datatypes.S n' => chain n' end.
 
 (** Minimal order theory needed to show that primitive stable-hitting
     approximants form an increasing chain.  It is independent of omega-limit
     existence and can therefore be supplied by partial backends. *)
 Polymorphic Class SemanticMeasureOrderLaws@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S}
     `{SO : @SemanticOmega S SI} := {
-  sem_le_refl : forall {A : Type@{carrier}} (mu : S A), sem_le mu mu;
-  sem_le_trans : forall {A : Type@{carrier}} (mu nu xi : S A),
-      sem_le mu nu -> sem_le nu xi -> sem_le mu xi;
-  sem_zero_le : forall {A : Type@{carrier}} (mu : S A), sem_le sem_zero mu;
-  sem_bind_le_mu : forall {A B : Type@{carrier}} (mu nu : S A)
-      (k : A -> S B),
-      sem_le mu nu -> sem_le (sem_bind mu k) (sem_bind nu k);
-  sem_bind_le_k : forall {A B : Type@{carrier}} (mu : S A)
-      (k h : A -> S B),
-      (forall x, sem_le (k x) (h x)) ->
+  sem_le_refl : ∀ {A : Type@{carrier}} (mu : S A), sem_le mu mu;
+  sem_le_trans : ∀ {A : Type@{carrier}} (mu nu xi : S A),
+      sem_le mu nu → sem_le nu xi → sem_le mu xi;
+  sem_zero_le : ∀ {A : Type@{carrier}} (mu : S A), sem_le sem_zero mu;
+  sem_bind_le_mu : ∀ {A B : Type@{carrier}} (mu nu : S A)
+      (k : A → S B),
+      sem_le mu nu → sem_le (sem_bind mu k) (sem_bind nu k);
+  sem_bind_le_k : ∀ {A B : Type@{carrier}} (mu : S A)
+      (k h : A → S B),
+      (∀ x, sem_le (k x) (h x)) →
       sem_le (sem_bind mu k) (sem_bind mu h)
 }.
 
@@ -69,24 +71,24 @@ Polymorphic Class SemanticMeasureOrderLaws@{carrier representation}
     restricted to increasing chains; uniqueness and bind-continuity are
     extensional. *)
 Polymorphic Class SemanticOmegaLaws@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S}
     `{SO : @SemanticOmega S SI} := {
-  sem_lub_exists : forall {A : Type@{carrier}} (chain : nat -> S A),
-      sem_increasing chain -> exists out, sem_lub chain out;
-  sem_lub_unique : forall {A : Type@{carrier}} (chain : nat -> S A) mu nu,
-      sem_lub chain mu -> sem_lub chain nu -> sem_eq mu nu;
-  sem_lub_proper : forall {A : Type@{carrier}}
-      (chain chain' : nat -> S A) mu nu,
-      (forall n, sem_eq (chain n) (chain' n)) ->
-      sem_lub chain mu -> sem_lub chain' nu -> sem_eq mu nu;
-  sem_lub_chain_proper : forall {A : Type@{carrier}}
-      (chain chain' : nat -> S A) mu,
-      (forall n, sem_eq (chain n) (chain' n)) ->
-      sem_lub chain mu -> sem_lub chain' mu;
-  sem_bind_lub : forall {A B : Type@{carrier}} (chain : nat -> S A) mu
-      (k : A -> S B),
-      sem_increasing chain -> sem_lub chain mu ->
+  sem_lub_exists : ∀ {A : Type@{carrier}} (chain : nat → S A),
+      sem_increasing chain → ∃ out, sem_lub chain out;
+  sem_lub_unique : ∀ {A : Type@{carrier}} (chain : nat → S A) mu nu,
+      sem_lub chain mu → sem_lub chain nu → sem_eq mu nu;
+  sem_lub_proper : ∀ {A : Type@{carrier}}
+      (chain chain' : nat → S A) mu nu,
+      (∀ n, sem_eq (chain n) (chain' n)) →
+      sem_lub chain mu → sem_lub chain' nu → sem_eq mu nu;
+  sem_lub_chain_proper : ∀ {A : Type@{carrier}}
+      (chain chain' : nat → S A) mu,
+      (∀ n, sem_eq (chain n) (chain' n)) →
+      sem_lub chain mu → sem_lub chain' mu;
+  sem_bind_lub : ∀ {A B : Type@{carrier}} (chain : nat → S A) mu
+      (k : A → S B),
+      sem_increasing chain → sem_lub chain mu →
       sem_lub (fun n => sem_bind (chain n) k) (sem_bind mu k)
 }.
 
@@ -94,15 +96,15 @@ Polymorphic Class SemanticOmegaLaws@{carrier representation}
     Together with [SemanticMeasureAEKleisliLaws], this turns one-step AE
     kernel invariants into invariants of unbounded stable hitting. *)
 Polymorphic Class SemanticOmegaAELaws@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S}
     `{SO : @SemanticOmega S SI} := {
-  sem_ae_zero : forall {A : Type@{carrier}} (P : A -> Prop),
+  sem_ae_zero : ∀ {A : Type@{carrier}} (P : A → Prop),
       sem_ae (@sem_zero S SI SO A) P;
-  sem_ae_lub : forall {A : Type@{carrier}}
-      (chain : nat -> S A) out (P : A -> Prop),
-      sem_lub chain out ->
-      (forall n, sem_ae (chain n) P) ->
+  sem_ae_lub : ∀ {A : Type@{carrier}}
+      (chain : nat → S A) out (P : A → Prop),
+      sem_lub chain out →
+      (∀ n, sem_ae (chain n) P) →
       sem_ae out P
 }.
 
@@ -112,24 +114,24 @@ Polymorphic Class SemanticOmegaAELaws@{carrier representation}
     law.  Operational AST transfer across denotational equality requires it
     explicitly. *)
 Polymorphic Class SemanticTotalProperLaws@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S}
     `{SO : @SemanticOmega S SI} := {
-  sem_total_proper : forall {A : Type@{carrier}} (mu nu : S A),
-      sem_eq mu nu -> (sem_total mu <-> sem_total nu)
+  sem_total_proper : ∀ {A : Type@{carrier}} (mu nu : S A),
+      sem_eq mu nu → (sem_total mu ↔ sem_total nu)
 }.
 
 (** Cofinality needed for silent operational steps.  It is deliberately
     separate from ordinary omega completeness: a backend may provide formal
     lub syntax without quotienting away finite prefixes. *)
 Polymorphic Class SemanticOmegaCofinalityLaws@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S}
     `{SO : @SemanticOmega S SI} := {
-  sem_lub_zero_prefix : forall {A : Type@{carrier}}
-      (chain : nat -> S A) out,
-      sem_lub chain out <-> sem_lub (sem_zero_prefix chain) out;
-  sem_lub_constant : forall {A : Type@{carrier}} (mu : S A),
+  sem_lub_zero_prefix : ∀ {A : Type@{carrier}}
+      (chain : nat → S A) out,
+      sem_lub chain out ↔ sem_lub (sem_zero_prefix chain) out;
+  sem_lub_constant : ∀ {A : Type@{carrier}} (mu : S A),
       sem_lub (fun _ => mu) mu
 }.
 
@@ -138,16 +140,16 @@ Polymorphic Class SemanticOmegaCofinalityLaws@{carrier representation}
     kernels.  This is stronger than [sem_bind_lub], whose kernel is fixed,
     and is exactly the measure-level half of operational Bind soundness. *)
 Polymorphic Class SemanticMeasureDiagonalLaws@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S}
     `{SO : @SemanticOmega S SI} := {
-  sem_bind_diagonal_lub : forall {A B : Type@{carrier}}
-      (source : nat -> S A) (source_out : S A)
-      (kernels : A -> nat -> S B) (kernel_out : A -> S B),
-      sem_increasing source ->
-      (forall x, sem_increasing (kernels x)) ->
-      sem_lub source source_out ->
-      (forall x, sem_lub (kernels x) (kernel_out x)) ->
+  sem_bind_diagonal_lub : ∀ {A B : Type@{carrier}}
+      (source : nat → S A) (source_out : S A)
+      (kernels : A → nat → S B) (kernel_out : A → S B),
+      sem_increasing source →
+      (∀ x, sem_increasing (kernels x)) →
+      sem_lub source source_out →
+      (∀ x, sem_lub (kernels x) (kernel_out x)) →
       sem_lub
         (fun n => sem_bind (source n) (fun x => kernels x n))
         (sem_bind source_out kernel_out)
@@ -164,16 +166,16 @@ Polymorphic Class SemanticMeasureDiagonalLaws@{carrier representation}
     discharge this with monotone convergence; formal completions may instead
     provide it through their observation quotient. *)
 Polymorphic Class SemanticOmegaFubiniLaws@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S}
     `{SO : @SemanticOmega S SI} := {
-  sem_lub_double_diagonal : forall {A : Type@{carrier}}
-      (grid : nat -> nat -> S A)
-      (row_out : nat -> S A) (out : S A),
-      (forall outer, sem_increasing (grid outer)) ->
-      (forall inner, sem_increasing (fun outer => grid outer inner)) ->
-      (forall outer, sem_lub (grid outer) (row_out outer)) ->
-      sem_lub row_out out ->
+  sem_lub_double_diagonal : ∀ {A : Type@{carrier}}
+      (grid : nat → nat → S A)
+      (row_out : nat → S A) (out : S A),
+      (∀ outer, sem_increasing (grid outer)) →
+      (∀ inner, sem_increasing (fun outer => grid outer inner)) →
+      (∀ outer, sem_lub (grid outer) (row_out outer)) →
+      sem_lub row_out out →
       sem_lub (fun fuel => grid fuel fuel) out
 }.
 
@@ -181,23 +183,23 @@ Polymorphic Class SemanticOmegaFubiniLaws@{carrier representation}
     zero-prefix transformations. No compatibility of sem_eq with sem_le is
     asserted, and no upper-bound axiom for arbitrary formal lubs is added. *)
 Polymorphic Class SemanticOmegaDirectedCofinalityLaws
-    (S : Type -> Type) `{SI : SemanticMeasure S}
+    (S : Type → Type) `{SI : SemanticMeasure S}
     `{SO : @SemanticOmega S SI} := {
-  sem_lub_cofinal : forall A (c d : nat -> S A) out,
-    sem_increasing c -> sem_increasing d ->
-    (forall n, exists m, sem_le (c n) (d m)) ->
-    (forall n, exists m, sem_le (d n) (c m)) ->
-    (sem_lub c out <-> sem_lub d out)
+  sem_lub_cofinal : ∀ A (c d : nat → S A) out,
+    sem_increasing c → sem_increasing d →
+    (∀ n, ∃ m, sem_le (c n) (d m)) →
+    (∀ n, ∃ m, sem_le (d n) (c m)) →
+    (sem_lub c out ↔ sem_lub d out)
 }.
 
 (** A chosen limit only on the mathematical domain of increasing chains.
     This is operation-bearing data, not a global classical-choice instance.
     Backends construct it; generic clients need no Prop-to-Type choice. *)
 Polymorphic Class SemanticOmegaSelection
-    (S : Type -> Type) `{SI : SemanticMeasure S}
+    (S : Type → Type) `{SI : SemanticMeasure S}
     `{SO : @SemanticOmega S SI} := {
-  sem_lub_choose : forall A (chain : nat -> S A),
-    sem_increasing chain -> {out : S A | sem_lub chain out}
+  sem_lub_choose : ∀ A (chain : nat → S A),
+    sem_increasing chain → {out : S A | sem_lub chain out}
 }.
 
 (** Source congruence of bind follows from constant limits and continuity.
@@ -208,8 +210,8 @@ Lemma sem_bind_eq_l {M} `{MI : SemanticMeasure M}
     `{Ord : @SemanticMeasureOrderLaws M MI MO}
     `{Omega : @SemanticOmegaLaws M MI MO}
     `{Cofinal : @SemanticOmegaCofinalityLaws M MI MO}
-    {A B} (mu nu : M A) (k : A -> M B) :
-  sem_eq mu nu -> sem_eq (sem_bind mu k) (sem_bind nu k).
+    {A B} (mu nu : M A) (k : A → M B) :
+  sem_eq mu nu → sem_eq (sem_bind mu k) (sem_bind nu k).
 Proof.
   intro H.
   assert (Hlimit : sem_lub (fun _ : nat => nu) mu).
@@ -231,7 +233,7 @@ Lemma sem_eq_of_le_equiv {M} `{MI : SemanticMeasure M}
     `{Cofinal : @SemanticOmegaCofinalityLaws M MI MO}
     `{Directed : @SemanticOmegaDirectedCofinalityLaws M MI MO}
     {A} (mu nu : M A) :
-  sem_le mu nu -> sem_le nu mu -> sem_eq mu nu.
+  sem_le mu nu → sem_le nu mu → sem_eq mu nu.
 Proof.
   intros Hmn Hnm.
   assert (H : sem_lub (fun _ : nat => nu) mu).

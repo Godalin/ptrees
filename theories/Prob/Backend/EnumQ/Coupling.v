@@ -1,5 +1,7 @@
 (** Finite rational joints over the shared nonnegative container.  Coupling
     still means exact atom marginals and support in the given relation. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -16,28 +18,28 @@ Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Record coupling {A B : eqType}
-    (R : A -> B -> Prop) (mu : EnumQ A) (nu : EnumQ B) : Prop := {
+    (R : A → B → Prop) (mu : EnumQ A) (nu : EnumQ B) : Prop := {
   joint : EnumQ (A * B);
   coupling_left : emap fst joint ==EnumQ mu;
   coupling_right : emap snd joint ==EnumQ nu;
-  coupling_related : forall a b, acc_mass (a,b) joint != 0 -> R a b
+  coupling_related : ∀ a b, acc_mass (a,b) joint != 0 → R a b
 }.
 
-Lemma coupling_mono {A B : eqType} (R S : A -> B -> Prop)
+Lemma coupling_mono {A B : eqType} (R S : A → B → Prop)
     (mu : EnumQ A) (nu : EnumQ B) :
-  (forall a b, R a b -> S a b) -> coupling R mu nu -> coupling S mu nu.
+  (∀ a b, R a b → S a b) → coupling R mu nu → coupling S mu nu.
 Proof. move=> H [j HL HR Hrel]; exists j=> // a b Hab; exact: H (Hrel a b Hab). Qed.
-Lemma coupling_proper_l {A B : eqType} (R : A -> B -> Prop)
+Lemma coupling_proper_l {A B : eqType} (R : A → B → Prop)
     (mu mu' : EnumQ A) (nu : EnumQ B) :
-  mu ==EnumQ mu' -> coupling R mu nu -> coupling R mu' nu.
+  mu ==EnumQ mu' → coupling R mu nu → coupling R mu' nu.
 Proof. move=> H [j HL HR Hrel]; exists j=> //; exact: enumQ_eq_trans HL H. Qed.
-Lemma coupling_proper_r {A B : eqType} (R : A -> B -> Prop)
+Lemma coupling_proper_r {A B : eqType} (R : A → B → Prop)
     (mu : EnumQ A) (nu nu' : EnumQ B) :
-  nu ==EnumQ nu' -> coupling R mu nu -> coupling R mu nu'.
+  nu ==EnumQ nu' → coupling R mu nu → coupling R mu nu'.
 Proof. move=> H [j HL HR Hrel]; exists j=> //; exact: enumQ_eq_trans HR H. Qed.
 
 Lemma entry_nonzero_acc_mass {A : eqType} (p : rat) (x : A) (mu : EnumQ A) :
-  (p,x) \in enumQ_raw mu -> p != 0 -> acc_mass x mu != 0.
+  (p,x) \in enumQ_raw mu → p != 0 → acc_mass x mu != 0.
 Proof.
   move=> Hin Hp; apply/eqP=> Hz.
   have Hzero := proj1 (enumQ_atom_zero mu x) Hz p
@@ -45,9 +47,9 @@ Proof.
   by rewrite Hzero eqxx in Hp.
 Qed.
 
-Lemma emap_nonzero_preimage {A B : eqType} (f : A -> B)
+Lemma emap_nonzero_preimage {A B : eqType} (f : A → B)
     (mu : EnumQ A) (b : B) :
-  acc_mass b (emap f mu) != 0 -> exists a, acc_mass a mu != 0 /\ f a = b.
+  acc_mass b (emap f mu) != 0 → ∃ a, acc_mass a mu != 0 ∧ f a = b.
 Proof.
   move=> Hb.
   have Hsupp := proj2 (in_supp_iff_acc_mass_ne_0 b (emap f mu)) Hb.
@@ -76,7 +78,7 @@ Proof.
     have [x [_ Hx]] := emap_nonzero_preimage Hab; by inversion Hx.
 Qed.
 Lemma coupling_of_enumQ_eq {A : eqType} (mu nu : EnumQ A) :
-  mu ==EnumQ nu -> coupling eq mu nu.
+  mu ==EnumQ nu → coupling eq mu nu.
 Proof. move=> H; apply (coupling_proper_r H); exact: coupling_refl. Qed.
 
 Definition swap {A B} (p : A * B) : B * A := (snd p,fst p).
@@ -86,9 +88,9 @@ Proof. rewrite emap_comp; reflexivity. Qed.
 Lemma emap_snd_swap {A B : eqType} (mu : EnumQ (A*B)) :
   enumQ_raw (emap snd (emap swap mu)) = enumQ_raw (emap fst mu).
 Proof. rewrite emap_comp; reflexivity. Qed.
-Lemma coupling_sym {A B : eqType} (R : A -> B -> Prop)
+Lemma coupling_sym {A B : eqType} (R : A → B → Prop)
     (mu : EnumQ A) (nu : EnumQ B) :
-  coupling R mu nu -> coupling (fun b a => R a b) nu mu.
+  coupling R mu nu → coupling (fun b a => R a b) nu mu.
 Proof.
   move=> [j HL HR Hrel]; exists (emap swap j).
   - eapply enumQ_eq_trans; last exact HR.
@@ -100,10 +102,10 @@ Proof.
     inversion Heq; subst; exact: Hrel Hab.
 Qed.
 Lemma coupling_emap {A B C D : eqType}
-    (R : A -> B -> Prop) (S : C -> D -> Prop)
-    (f : A -> C) (g : B -> D) (mu : EnumQ A) (nu : EnumQ B) :
-  (forall a b, R a b -> S (f a) (g b)) ->
-  coupling R mu nu -> coupling S (emap f mu) (emap g nu).
+    (R : A → B → Prop) (S : C → D → Prop)
+    (f : A → C) (g : B → D) (mu : EnumQ A) (nu : EnumQ B) :
+  (∀ a b, R a b → S (f a) (g b)) →
+  coupling R mu nu → coupling S (emap f mu) (emap g nu).
 Proof.
   move=> H [j HL HR Hrel].
   exists (emap (fun xy => (f xy.1,g xy.2)) j).
@@ -116,9 +118,9 @@ Proof.
     inversion Heq; subst; exact: H (Hrel a b Hab).
 Qed.
 
-Lemma coupling_scale {A B : eqType} (R : A -> B -> Prop)
+Lemma coupling_scale {A B : eqType} (R : A → B → Prop)
     p (Hp : 0 <= p) (mu : EnumQ A) (nu : EnumQ B) :
-  coupling R mu nu -> coupling R (scale_EnumQ Hp mu) (scale_EnumQ Hp nu).
+  coupling R mu nu → coupling R (scale_EnumQ Hp mu) (scale_EnumQ Hp nu).
 Proof.
   move=> [j HL HR Hrel]; exists (scale_EnumQ Hp j).
   - eapply enumQ_eq_trans; last exact (scale_EnumQ_proper Hp HL).
@@ -128,7 +130,7 @@ Proof.
   - move=> a b Hab; apply Hrel; apply: contra Hab=> /eqP Hz.
     by rewrite acc_mass_scale Hz mulr0 eqxx.
 Qed.
-Lemma coupling_zero {A B : eqType} (R : A -> B -> Prop) :
+Lemma coupling_zero {A B : eqType} (R : A → B → Prop) :
   coupling R enumQ_zero enumQ_zero.
 Proof.
   exists enumQ_zero.
@@ -136,7 +138,7 @@ Proof.
   - exact: enumQ_eq_refl.
   - move=> a b; by rewrite acc_mass_nil eqxx.
 Qed.
-Lemma coupling_zero_scale {A B : eqType} (R : A -> B -> Prop)
+Lemma coupling_zero_scale {A B : eqType} (R : A → B → Prop)
     (mu : EnumQ A) (nu : EnumQ B) :
   coupling R (scale_EnumQ (lexx 0) mu) (scale_EnumQ (lexx 0) nu).
 Proof.
@@ -147,9 +149,9 @@ Proof.
     by rewrite acc_mass_scale mul0r.
   - move=> a b; by rewrite acc_mass_nil eqxx.
 Qed.
-Lemma coupling_app {A B : eqType} (R : A -> B -> Prop)
+Lemma coupling_app {A B : eqType} (R : A → B → Prop)
     (mu1 mu2 : EnumQ A) (nu1 nu2 : EnumQ B) :
-  coupling R mu1 nu1 -> coupling R mu2 nu2 ->
+  coupling R mu1 nu1 → coupling R mu2 nu2 →
   coupling R (enumQ_app mu1 mu2) (enumQ_app nu1 nu2).
 Proof.
   move=> [j1 HL1 HR1 Hrel1] [j2 HL2 HR2 Hrel2]; exists (enumQ_app j1 j2).
@@ -164,10 +166,10 @@ Proof.
     + apply Hrel1; by rewrite H1.
 Qed.
 
-Lemma coupling_raw {A B : eqType} (R : A -> B -> Prop)
+Lemma coupling_raw {A B : eqType} (R : A → B → Prop)
     (mu mu' : EnumQ A) (nu nu' : EnumQ B) :
-  enumQ_raw mu = enumQ_raw mu' -> enumQ_raw nu = enumQ_raw nu' ->
-  coupling R mu nu -> coupling R mu' nu'.
+  enumQ_raw mu = enumQ_raw mu' → enumQ_raw nu = enumQ_raw nu' →
+  coupling R mu nu → coupling R mu' nu'.
 Proof.
   move=> H K HC; apply (coupling_proper_r (enumQ_eq_eq K)).
   exact (coupling_proper_l (enumQ_eq_eq H) HC).
@@ -175,7 +177,7 @@ Qed.
 
 Lemma enumQ_cons_atom_nonzero {A : eqType} p (Hp : 0 <= p) y
     (mu : EnumQ A) x :
-  acc_mass x mu != 0 -> acc_mass x (enumQ_cons Hp y mu) != 0.
+  acc_mass x mu != 0 → acc_mass x (enumQ_cons Hp y mu) != 0.
 Proof.
   move=> H; rewrite acc_mass_cons paddr_eq0.
   - by rewrite (negbTE H).
@@ -186,13 +188,13 @@ Qed.
 (** Constructive finite Kleisli extension: choose one supplied joint per
     positive entry by list induction, not by an infinite choice principle. *)
 Lemma coupling_bind_joint_on_nonzero {A B C D : eqType}
-    (R : C -> D -> Prop) (outer : EnumQ (A*B))
-    (k : A -> EnumQ C) (h : B -> EnumQ D) :
-  (forall a b, acc_mass (a,b) outer != 0 -> coupling R (k a) (h b)) ->
+    (R : C → D → Prop) (outer : EnumQ (A*B))
+    (k : A → EnumQ C) (h : B → EnumQ D) :
+  (∀ a b, acc_mass (a,b) outer != 0 → coupling R (k a) (h b)) →
   coupling R (bind_EnumQ (emap fst outer) k) (bind_EnumQ (emap snd outer) h).
 Proof.
   apply (enumQ_ind_raw (P := fun outer =>
-    (forall a b, acc_mass (a,b) outer != 0 -> coupling R (k a) (h b)) ->
+    (∀ a b, acc_mass (a,b) outer != 0 -> coupling R (k a) (h b)) ->
     coupling R (bind_EnumQ (emap fst outer) k) (bind_EnumQ (emap snd outer) h))).
   - move=> _; apply (coupling_raw (mu := enumQ_zero) (nu := enumQ_zero));
       try reflexivity; exact: coupling_zero.
@@ -223,24 +225,24 @@ Proof.
       by rewrite /acc_mass -He.
 Qed.
 
-Lemma coupling_bind {A B C D : eqType} (R : C -> D -> Prop)
-    (outer : EnumQ (A*B)) (k : A -> EnumQ C) (h : B -> EnumQ D) :
-  (forall a b, coupling R (k a) (h b)) ->
+Lemma coupling_bind {A B C D : eqType} (R : C → D → Prop)
+    (outer : EnumQ (A*B)) (k : A → EnumQ C) (h : B → EnumQ D) :
+  (∀ a b, coupling R (k a) (h b)) →
   coupling R (bind_EnumQ (emap fst outer) k) (bind_EnumQ (emap snd outer) h).
 Proof. move=> H; apply coupling_bind_joint_on_nonzero=> a b _; exact: H. Qed.
 
 Lemma coupling_bind_joint_on {A B C D : eqType}
-    (S : A -> B -> Prop) (R : C -> D -> Prop) (outer : EnumQ (A*B))
-    (k : A -> EnumQ C) (h : B -> EnumQ D) :
-  (forall a b, acc_mass (a,b) outer != 0 -> S a b) ->
-  (forall a b, S a b -> coupling R (k a) (h b)) ->
+    (S : A → B → Prop) (R : C → D → Prop) (outer : EnumQ (A*B))
+    (k : A → EnumQ C) (h : B → EnumQ D) :
+  (∀ a b, acc_mass (a,b) outer != 0 → S a b) →
+  (∀ a b, S a b → coupling R (k a) (h b)) →
   coupling R (bind_EnumQ (emap fst outer) k) (bind_EnumQ (emap snd outer) h).
 Proof.
   move=> H K; apply coupling_bind_joint_on_nonzero=> a b Hab; exact: K (H a b Hab).
 Qed.
 
 Lemma equality_joint_marginals {A : eqType} (j : EnumQ (A*A)) :
-  (forall x y, acc_mass (x,y) j != 0 -> x = y) -> emap fst j ==EnumQ emap snd j.
+  (∀ x y, acc_mass (x,y) j != 0 → x = y) → emap fst j ==EnumQ emap snd j.
 Proof.
   move=> H a.
   change (enumQ_expect (fun x => if x == a then 1 else 0) (enumQ_map fst j) =
@@ -257,7 +259,7 @@ Proof.
   by rewrite Hxy.
 Qed.
 Lemma coupling_eq_enumQ_eq {A : eqType} (mu nu : EnumQ A) :
-  coupling eq mu nu -> mu ==EnumQ nu.
+  coupling eq mu nu → mu ==EnumQ nu.
 Proof.
   move=> [j HL HR Hrel].
   eapply enumQ_eq_trans; first exact (enumQ_eq_sym HL).
@@ -319,7 +321,7 @@ Proof.
 Qed.
 
 Lemma glue_middle_nonzero_l {A B : eqType} (j : EnumQ (A*B)) (nu : EnumQ B) p a b :
-  emap snd j ==EnumQ nu -> List.In (p,(a,b)) (enumQ_raw j) -> p <> 0 ->
+  emap snd j ==EnumQ nu → List.In (p,(a,b)) (enumQ_raw j) → p ≠ 0 →
   acc_mass b nu != 0.
 Proof.
   move=> H Hin Hp; rewrite -H; apply entry_nonzero_acc_mass with p; last exact/eqP.
@@ -327,7 +329,7 @@ Proof.
   apply List.in_map_iff; exists (p,(a,b)); by split.
 Qed.
 Lemma glue_middle_nonzero_r {B C : eqType} (j : EnumQ (B*C)) (nu : EnumQ B) q b c :
-  emap fst j ==EnumQ nu -> List.In (q,(b,c)) (enumQ_raw j) -> q <> 0 ->
+  emap fst j ==EnumQ nu → List.In (q,(b,c)) (enumQ_raw j) → q ≠ 0 →
   acc_mass b nu != 0.
 Proof.
   move=> H Hin Hp; rewrite -H; apply entry_nonzero_acc_mass with q; last exact/eqP.
@@ -337,7 +339,7 @@ Qed.
 
 Lemma glue_left_expect {A B C : eqType} (nu : EnumQ B)
     (jab : EnumQ (A*B)) (jbc : EnumQ (B*C)) f :
-  emap snd jab ==EnumQ nu -> emap fst jbc ==EnumQ nu ->
+  emap snd jab ==EnumQ nu → emap fst jbc ==EnumQ nu →
   enumQ_expect (fun ac => f ac.1) (glue nu jab jbc) =
   enumQ_expect (fun ab => f ab.1) jab.
 Proof.
@@ -354,7 +356,7 @@ Qed.
 
 Lemma glue_right_expect {A B C : eqType} (nu : EnumQ B)
     (jab : EnumQ (A*B)) (jbc : EnumQ (B*C)) g :
-  emap snd jab ==EnumQ nu -> emap fst jbc ==EnumQ nu ->
+  emap snd jab ==EnumQ nu → emap fst jbc ==EnumQ nu →
   enumQ_expect (fun ac => g ac.2) (glue nu jab jbc) =
   enumQ_expect (fun bc => g bc.2) jbc.
 Proof.
@@ -374,7 +376,7 @@ Qed.
 
 Lemma glue_left_marginal {A B C : eqType} (nu : EnumQ B)
     (jab : EnumQ (A*B)) (jbc : EnumQ (B*C)) :
-  emap snd jab ==EnumQ nu -> emap fst jbc ==EnumQ nu ->
+  emap snd jab ==EnumQ nu → emap fst jbc ==EnumQ nu →
   emap fst (glue nu jab jbc) ==EnumQ emap fst jab.
 Proof.
   move=> H K a; change
@@ -384,7 +386,7 @@ Proof.
 Qed.
 Lemma glue_right_marginal {A B C : eqType} (nu : EnumQ B)
     (jab : EnumQ (A*B)) (jbc : EnumQ (B*C)) :
-  emap snd jab ==EnumQ nu -> emap fst jbc ==EnumQ nu ->
+  emap snd jab ==EnumQ nu → emap fst jbc ==EnumQ nu →
   emap snd (glue nu jab jbc) ==EnumQ emap snd jbc.
 Proof.
   move=> H K c; change
@@ -395,9 +397,9 @@ Qed.
 
 Lemma glue_entry_preimage {A B C : eqType} (nu : EnumQ B)
     (jab : EnumQ (A*B)) (jbc : EnumQ (B*C)) w a c :
-  (w,(a,c)) \in enumQ_raw (glue nu jab jbc) ->
-  exists p b q, (p,(a,b)) \in enumQ_raw jab /\
-    (q,(b,c)) \in enumQ_raw jbc /\ w = p*q / acc_mass b nu.
+  (w,(a,c)) \in enumQ_raw (glue nu jab jbc) →
+  ∃ p b q, (p,(a,b)) \in enumQ_raw jab ∧
+    (q,(b,c)) \in enumQ_raw jbc ∧ w = p*q / acc_mass b nu.
 Proof.
   move=> H; have Hin := proj1 (enumQ_raw_mem w (a,c) (glue nu jab jbc)) H.
   move/List.in_flat_map: Hin=> [[p [a' b]] [Hp Hin]].
@@ -407,11 +409,11 @@ Proof.
   - exact (proj2 (enumQ_raw_mem p (a,b) jab) Hp).
   - split; last reflexivity; exact (proj2 (enumQ_raw_mem q (b,c) jbc) Hq).
 Qed.
-Lemma glue_related {A B C : eqType} (R : A -> B -> Prop) (S : B -> C -> Prop)
+Lemma glue_related {A B C : eqType} (R : A → B → Prop) (S : B → C → Prop)
     (nu : EnumQ B) (jab : EnumQ (A*B)) (jbc : EnumQ (B*C)) :
-  (forall a b, acc_mass (a,b) jab != 0 -> R a b) ->
-  (forall b c, acc_mass (b,c) jbc != 0 -> S b c) ->
-  forall a c, acc_mass (a,c) (glue nu jab jbc) != 0 -> exists b, R a b /\ S b c.
+  (∀ a b, acc_mass (a,b) jab != 0 → R a b) →
+  (∀ b c, acc_mass (b,c) jbc != 0 → S b c) →
+  ∀ a c, acc_mass (a,c) (glue nu jab jbc) != 0 → ∃ b, R a b ∧ S b c.
 Proof.
   move=> HR HS a c Hac.
   have Hpos : 0 < acc_mass (a,c) (glue nu jab jbc).
@@ -427,10 +429,10 @@ Proof.
   - apply HR; exact: entry_nonzero_acc_mass Hp Hp0.
   - apply HS; exact: entry_nonzero_acc_mass Hq Hq0.
 Qed.
-Lemma coupling_comp {A B C : eqType} (R : A -> B -> Prop) (S : B -> C -> Prop)
+Lemma coupling_comp {A B C : eqType} (R : A → B → Prop) (S : B → C → Prop)
     (mu : EnumQ A) (nu : EnumQ B) (xi : EnumQ C) :
-  coupling R mu nu -> coupling S nu xi ->
-  coupling (fun a c => exists b, R a b /\ S b c) mu xi.
+  coupling R mu nu → coupling S nu xi →
+  coupling (fun a c => ∃ b, R a b ∧ S b c) mu xi.
 Proof.
   move=> [jab HL HM HR] [jbc HN HK HS]; exists (glue nu jab jbc).
   - eapply enumQ_eq_trans; [exact: glue_left_marginal HM HN|exact HL].
@@ -439,8 +441,8 @@ Proof.
 Qed.
 
 Lemma joint_nonzero_marginals {A B : eqType} (j : EnumQ (A*B)) a b :
-  acc_mass (a,b) j != 0 ->
-  acc_mass a (emap fst j) != 0 /\ acc_mass b (emap snd j) != 0.
+  acc_mass (a,b) j != 0 →
+  acc_mass a (emap fst j) != 0 ∧ acc_mass b (emap snd j) != 0.
 Proof.
   move=> H; have Hpos : 0 < acc_mass (a,b) j.
   { rewrite lt0r H /=; exact: acc_mass_nonnegative. }

@@ -1,4 +1,6 @@
 (** Role: substantive mathematical counterexample and its construction. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -112,7 +114,7 @@ Definition exposure_action x (h : head) : MF head :=
   match h with
   | FHRet _ => FOZero
   | @FHVis _ _ _ X e k =>
-    (match e in correlationE X return (X -> tree) -> MF head with
+    (match e in correlationE X return (X → tree) → MF head with
      | Query => fun k => match observe (k x) with
        | @VisF _ _ _ _ Y e' k' => FORet (FHVis e' k')
        | RetF r => FORet (FHRet r)
@@ -139,7 +141,7 @@ Proof.
   exact (exposure_last_hitting anti b x).
 Qed.
 
-Lemma exposure_return_injective b c : TB (Ret b) (Ret c) -> b = c.
+Lemma exposure_return_injective b c : TB (Ret b) (Ret c) → b = c.
 Proof.
   apply (trans_bisim_ret_inv (D := free_omega_observable_dirac_ae_laws)).
 Qed.
@@ -147,11 +149,11 @@ Qed.
 (** Once the first target interaction has occurred, each matched pair
     must face BOTH possible second answers with the SAME hidden-bit pair. *)
 Lemma exposure_second_pair_impossible b c :
-  ~ TB (stable_head_tree (exposure_second_head false b))
+  ¬ TB (stable_head_tree (exposure_second_head false b))
        (stable_head_tree (exposure_second_head true c)).
 Proof.
   intro Hrel.
-  assert (Hanswer : forall x, answer false b x = answer true c x).
+  assert (Hanswer : ∀ x, answer false b x = answer true c x).
   { intro x.
     pose proof (trans_bisim_transitions Hrel
       (exposure_second_transition false b x)
@@ -168,7 +170,7 @@ Proof.
   destruct b, c; discriminate.
 Qed.
 
-Theorem two_query_interp_not_trans_bisim : ~ TB (exposure false) (exposure true).
+Theorem two_query_interp_not_trans_bisim : ¬ TB (exposure false) (exposure true).
 Proof.
   intro Hrel.
   pose proof (trans_bisim_transitions Hrel
@@ -188,16 +190,16 @@ Qed.
 (** Direct failure of arbitrary interpretation congruence. No use of
     [~ peutt P Q] to infer a negative transition-bisimulation statement. *)
 Theorem trans_bisim_interp_counterexample :
-  TB P Q /\
-  ~ TB (PTree.interp two_query_handler P) (PTree.interp two_query_handler Q).
+  TB P Q ∧
+  ¬ TB (PTree.interp two_query_handler P) (PTree.interp two_query_handler Q).
 Proof.
   split; [exact correlated_response_trans_bisim|].
   exact two_query_interp_not_trans_bisim.
 Qed.
 
 Corollary trans_bisim_not_interp_congruent :
-  ~ (forall (handler : forall X, correlationE X -> ptree correlationE SubEnumQ X)
-      (t u : tree), TB t u -> TB (PTree.interp handler t) (PTree.interp handler u)).
+  ¬ (∀ (handler : ∀ X, correlationE X → ptree correlationE SubEnumQ X)
+      (t u : tree), TB t u → TB (PTree.interp handler t) (PTree.interp handler u)).
 Proof.
   intro Hpreserve. apply two_query_interp_not_trans_bisim.
   exact (Hpreserve two_query_handler P Q correlated_response_trans_bisim).

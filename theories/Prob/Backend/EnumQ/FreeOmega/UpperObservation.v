@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Prob.Backend.SubEnumQ Require Import NativeLimit.
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
 Set Warnings "-notation-overridden".
@@ -31,7 +33,7 @@ Local Open Scope classical_set_scope.
 Section ExtendedObservation.
 Variable R : realType.
 
-Lemma enumQ_extended_expect_real {A} (f : A -> R) mu :
+Lemma enumQ_extended_expect_real {A} (f : A → R) mu :
   enumQ_extended_expect (fun x => (f x)%:E) mu = (enumQ_real_expect f mu)%:E.
 Proof.
   rewrite /enumQ_extended_expect /enumQ_real_expect.
@@ -39,8 +41,8 @@ Proof.
   by rewrite /finite_map_weights /= IH EFinD EFinM.
 Qed.
 
-Lemma extended_upper_real (c : nat -> R) b :
-  (forall n, (c n <= b)%R) ->
+Lemma extended_upper_real (c : nat → R) b :
+  (∀ n, (c n <= b)%R) →
   extended_upper (fun n => (c n)%:E) = (countable_upper c)%:E.
 Proof.
   move=> Hb. rewrite /extended_upper /countable_upper.
@@ -52,10 +54,10 @@ Proof.
 Qed.
 
 Lemma enumQ_monotone_real_expect_bound_eqtype {A : eqType}
-    (chain : nat -> EnumQ A) out (f : A -> R) :
-  enumQ_chain_increasing chain -> enumQ_converges chain out ->
-  (forall x, (0 <= f x)%R) ->
-  forall n, (enumQ_real_expect f (chain n) <= enumQ_real_expect f out)%R.
+    (chain : nat → EnumQ A) out (f : A → R) :
+  enumQ_chain_increasing chain → enumQ_converges chain out →
+  (∀ x, (0 <= f x)%R) →
+  ∀ n, (enumQ_real_expect f (chain n) <= enumQ_real_expect f out)%R.
 Proof.
   move=> Hinc Hlim Hf n. apply enumQ_real_expect_atom_le; [exact Hf|].
   intro x. rewrite ler_rat.
@@ -68,21 +70,21 @@ Proof.
 Qed.
 
 Lemma enumQ_monotone_real_expect_bound {A : Type}
-    (chain : nat -> EnumQ A) out (f : A -> R) :
-  enumQ_chain_increasing chain -> enumQ_converges chain out ->
-  (forall x, (0 <= f x)%R) ->
-  forall n, (enumQ_real_expect f (chain n) <= enumQ_real_expect f out)%R.
+    (chain : nat → EnumQ A) out (f : A → R) :
+  enumQ_chain_increasing chain → enumQ_converges chain out →
+  (∀ x, (0 <= f x)%R) →
+  ∀ n, (enumQ_real_expect f (chain n) <= enumQ_real_expect f out)%R.
 Proof.
   exact (@enumQ_monotone_real_expect_bound_eqtype
     (@Equality.Pack (EnumQCouplingClassical.carrier A)
       (Equality.on (EnumQCouplingClassical.carrier A))) chain out f).
 Qed.
 
-Theorem free_omega_observes_extended_real {A O} (obs : A -> O)
+Theorem free_omega_observes_extended_real {A O} (obs : A → O)
     (mu : FreeOmega EnumQ A) (out : EnumQ O) :
   @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
-    A O obs mu out ->
-  forall f : O -> R, (forall y, (0 <= f y)%R) ->
+    A O obs mu out →
+  ∀ f : O → R, (∀ y, (0 <= f y)%R) →
     free_omega_extended_upper mu (fun x => (f (obs x))%:E) =
       (enumQ_real_expect f out)%:E.
 Proof.
@@ -102,9 +104,9 @@ Proof.
     { apply functional_extensionality=> n. exact (IH n f Hf). }
     have Hmono : enumQ_chain_increasing outs.
     { intros P n m Hnm.
-      have HP : forall y, (0 <= (if P y then (1 : R) else 0))%R.
+      have HP : ∀ y, (0 <= (if P y then (1 : R) else 0))%R.
       { intro y. destruct (P y); [exact: ler01|exact: lexx]. }
-      have Hstep : forall i,
+      have Hstep : ∀ i,
         (@enumQ_real_expect R O (fun y => if P y then 1 else 0) (outs i) <=
          @enumQ_real_expect R O (fun y => if P y then 1 else 0) (outs (S i)))%R.
       { intro i. rewrite -lee_fin -(IH i _ HP) -(IH (S i) _ HP).
@@ -125,7 +127,7 @@ Definition extended_real_stage (n : nat) (x : \bar R) : R :=
   match x with EFin r => r | EPInf => n%:R | ENInf => 0%R end.
 
 Lemma extended_real_stage_nonnegative n x :
-  0 <= x -> (0 <= extended_real_stage n x)%R.
+  0 <= x → (0 <= extended_real_stage n x)%R.
 Proof. destruct x; cbn; intro H; [exact H|exact: ler0n|exact: lexx]. Qed.
 
 Lemma extended_real_stage_increasing x :
@@ -135,7 +137,7 @@ Proof.
   by rewrite ler_nat.
 Qed.
 
-Lemma extended_real_stage_sup x : 0 <= x ->
+Lemma extended_real_stage_sup x : 0 <= x →
   extended_upper (fun n => (extended_real_stage n x)%:E) = x.
 Proof.
   destruct x; cbn; intro H.
@@ -144,18 +146,18 @@ Proof.
   - discriminate H.
 Qed.
 
-Theorem free_omega_observes_extended_upper {A O} (obs : A -> O)
-    (mu : FreeOmega EnumQ A) (out : EnumQ O) (f : O -> \bar R) :
+Theorem free_omega_observes_extended_upper {A O} (obs : A → O)
+    (mu : FreeOmega EnumQ A) (out : EnumQ O) (f : O → \bar R) :
   @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
-    A O obs mu out ->
-  (forall y, 0 <= f y) ->
+    A O obs mu out →
+  (∀ y, 0 <= f y) →
   free_omega_extended_upper mu (fun x => f (obs x)) = enumQ_extended_expect f out.
 Proof.
   intros Hobs Hf.
   pose tests n y := (extended_real_stage n (f y))%:E.
-  have Htests : forall n y, 0 <= tests n y.
+  have Htests : ∀ n y, 0 <= tests n y.
   { intros n y. rewrite /tests lee_fin. exact: extended_real_stage_nonnegative. }
-  have Hinc : forall y, nondecreasing_seq (fun n => tests n y).
+  have Hinc : ∀ y, nondecreasing_seq (fun n => tests n y).
   { intro y. exact: extended_real_stage_increasing. }
   have Ef : (fun y => extended_upper (fun n => tests n y)) = f.
   { apply functional_extensionality=> y. exact: extended_real_stage_sup. }

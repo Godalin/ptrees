@@ -1,5 +1,7 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** Whole finite execution laws, not just one-step sampling smoke tests. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -28,14 +30,14 @@ Definition is_lost {A} (r : outcome A) : rat := match r with Lost => 1 | _ => 0 
 Definition is_timeout {A} (r : outcome A) : rat := match r with Timeout => 1 | _ => 0 end.
 
 Example first_attempt_outcomes :
-  outcome_expectation 1 retry is_return = 3^-1 /\
-  outcome_expectation 1 retry is_lost = 6^-1 /\
+  outcome_expectation 1 retry is_return = 3^-1 ∧
+  outcome_expectation 1 retry is_lost = 6^-1 ∧
   outcome_expectation 1 retry is_timeout = 2^-1.
 Proof. repeat split; reflexivity. Qed.
 
 Example two_attempt_outcomes :
-  outcome_expectation 3 retry is_return = 2^-1 /\
-  outcome_expectation 3 retry is_lost = 4^-1 /\
+  outcome_expectation 3 retry is_return = 2^-1 ∧
+  outcome_expectation 3 retry is_lost = 4^-1 ∧
   outcome_expectation 3 retry is_timeout = 4^-1.
 Proof. repeat split; reflexivity. Qed.
 
@@ -55,8 +57,8 @@ Proof.
 Qed.
 
 Example divergence_is_timeout_not_loss :
-  outcome_expectation 4 spin is_return = 0 /\
-  outcome_expectation 4 spin is_lost = 0 /\
+  outcome_expectation 4 spin is_return = 0 ∧
+  outcome_expectation 4 spin is_lost = 0 ∧
   outcome_expectation 4 spin is_timeout = 1.
 Proof. repeat split; reflexivity. Qed.
 
@@ -74,7 +76,7 @@ Example zero_fuel_draw_requests_no_entropy :
 Proof. reflexivity. Qed.
 
 Definition unfair_source (_ : list nat) (_ : nat) : list (rat * nat) := [(1,0%nat)].
-Example biased_entropy_rejected : ~ uniform_entropy unfair_source.
+Example biased_entropy_rejected : ¬ uniform_entropy unfair_source.
 Proof.
   intro H. have Hlaw := proj2 (H [] 2%nat (Logic.eq_refl true)) (fun i => if i == 0%nat then 1 else 0).
   have Hbad : ((1 : rat) == 2^-1) = false by reflexivity.
@@ -88,7 +90,7 @@ Qed.
     the second draw repeats the first ticket. *)
 Definition correlated_source (h : list nat) d : list (rat * nat) :=
   match h with [] => uniform_indices d | i :: _ => [(1,i)] end.
-Example correlated_history_rejected : ~ uniform_entropy correlated_source.
+Example correlated_history_rejected : ¬ uniform_entropy correlated_source.
 Proof.
   intro H. have Hlaw := proj2 (H [0%nat] 2%nat (Logic.eq_refl true)) (fun i => if i == 0%nat then 1 else 0).
   have Hbad : ((1 : rat) == 2^-1) = false by reflexivity.
@@ -101,7 +103,7 @@ Qed.
 Section LargeCarrier.
 Universe u.
 Example higher_universe_execution (t : ptree void1 SubEnumQ Type@{u}) n
-    (f : outcome Type@{u} -> rat) :
+    (f : outcome Type@{u} → rat) :
   replay_expectation (fun _ d => uniform_indices d) n t [] f =
   outcome_expectation n t f.
 Proof. apply finite_runner_distribution. exact fresh_uniform_entropy. Qed.

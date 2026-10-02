@@ -28,7 +28,7 @@ Import GRing.Theory Num.Theory Order.Theory.
 #[local] Open Scope order_scope.
 
 Unset Automatic Proposition Inductives.
-Variant rational_coinE : Type -> Type := .
+Variant rational_coinE : Type → Type := .
 
 (** Binary interval algorithm for Bernoulli(q).  At an interior state [x],
     one fair bit either terminates or moves to the fractional part of [2*x].
@@ -205,7 +205,7 @@ Qed.
 Definition absorbed_indicator (next : rat + bool) : rat :=
   match next with inl _ => 0 | inr _ => 1 end.
 
-Lemma enumQ_expect_add {A} (f g : A -> rat) (mu : EnumQ A) :
+Lemma enumQ_expect_add {A} (f g : A → rat) (mu : EnumQ A) :
   enumQ_expect (fun x => f x + g x) mu =
   enumQ_expect f mu + enumQ_expect g mu.
 Proof. exact: finite_expect_add. Qed.
@@ -257,12 +257,12 @@ Qed.
 (** The state transformation never leaves the unit interval. *)
 Definition unit_state (next : rat + bool) : Prop :=
   match next with
-  | inl x => 0 <= x /\ x <= 1
+  | inl x => 0 <= x ∧ x <= 1
   | inr _ => True
   end.
 
 Lemma binary_coin_transition_unit x :
-  0 <= x -> x <= 1 ->
+  0 <= x → x <= 1 →
   Forall (fun px => unit_state (snd px)) (enumQ_raw (binary_coin_transition x)).
 Proof.
   move=> x0 x1.
@@ -294,8 +294,8 @@ Definition residual_potential (next : rat + bool) : rat :=
   match next with inl x => x | inr _ => 0 end.
 
 Lemma binary_coin_run_residual_bound n x :
-  0 <= x -> x <= 1 ->
-  0 <= enumQ_expect residual_potential (binary_coin_run n x) /\
+  0 <= x → x <= 1 →
+  0 <= enumQ_expect residual_potential (binary_coin_run n x) ∧
   enumQ_expect residual_potential (binary_coin_run n x) <=
     (1 / 2 : rat) ^+ n.
 Proof.
@@ -432,7 +432,7 @@ Proof.
   exact: subrK q 1.
 Qed.
 
-Lemma rational_bernoulli_indicator (P : bool -> bool) :
+Lemma rational_bernoulli_indicator (P : bool → bool) :
   enumQ_expect (fun b => if P b then 1 else 0)
     rational_bernoulli_measure =
   (if P false then 1 - q else 0) + (if P true then q else 0).
@@ -442,7 +442,7 @@ Proof.
     rewrite /= ?mulr0 ?mulr1 ?addr0 ?add0r.
 Qed.
 
-Lemma rational_iter_indicator_error n (P : bool -> bool) :
+Lemma rational_iter_indicator_error n (P : bool → bool) :
   `|enumQ_expect (fun b => if P b then 1 else 0)
        (meas_iter_approx n binary_coin_transition q) -
      enumQ_expect (fun b => if P b then 1 else 0)
@@ -457,7 +457,7 @@ Proof.
     enumQ_expect (fun b : bool => if b then 1 else 0) mu.
   have half0 : (0 : rat) <= 1 / 2 by [].
   have u0 : 0 <= u by exact: half_power_nonnegative.
-  have [r0 ru] : 0 <= r /\ r <= u.
+  have [r0 ru] : 0 <= r ∧ r <= u.
   { exact: binary_coin_run_residual_bound q0 q1. }
   have Htrue : t + r = q.
   { exact: iter_approx_true. }
@@ -509,8 +509,8 @@ Proof.
     fold u. exact u0.
 Qed.
 
-Lemma half_power_vanishes eps : 0 < eps ->
-  exists N, forall n, Peano.le N n -> (1 / 2 : rat) ^+ n < eps.
+Lemma half_power_vanishes eps : 0 < eps →
+  ∃ N, ∀ n, Peano.le N n → (1 / 2 : rat) ^+ n < eps.
 Proof.
   move=> eps0.
   eapply rat_contract_vanishes with (K := 1%nat).

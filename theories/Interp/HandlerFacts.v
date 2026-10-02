@@ -1,5 +1,7 @@
 (** Handler algebra modulo whole-continuation behavioral equality.
     Probability assumptions stay explicit; no handler-law capability is added. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms.
@@ -14,7 +16,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section FiniteIdentity.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
   `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
@@ -30,13 +32,13 @@ Proof. apply BindScheduling.mixed_equiv_Proper. exact (@mixed_bind_le_k MN MF FI
 Local Notation hit_unfold := (@BindScheduling.hitting_unfold E MN MF FI MX FO Ord
   (@sem_bind_ret_order MF FI FO BO) (@mixed_bind_assoc_order MN MF FI MX FO MO)
   (@mixed_bind_le_k MN MF FI MX FO MO)).
-Local Lemma ret_equiv A B (x : A) (k : A -> MF B) :
+Local Lemma ret_equiv A B (x : A) (k : A → MF B) :
   equiv (sem_bind (sem_ret x) k) (k x).
 Proof. apply sem_bind_ret_order. Qed.
-Local Lemma zero_equiv A B (k : A -> MF B) :
+Local Lemma zero_equiv A B (k : A → MF B) :
   equiv (sem_bind sem_zero k) sem_zero.
 Proof. split; [apply sem_bind_zero_order|apply sem_zero_le]. Qed.
-Local Lemma mixed_assoc_equiv A B C (mu : MN A) (k : A -> MF B) (h : B -> MF C) :
+Local Lemma mixed_assoc_equiv A B C (mu : MN A) (k : A → MF B) (h : B → MF C) :
   equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
@@ -62,12 +64,12 @@ Context `{FC : @SemanticMeasureCoreLaws MF FI}
   `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}.
 
 Lemma handler_complete_front_ret {A} (t : ptree' E MN A) mu :
-  ptree_stable_hitting (MF := MF) t mu ->
+  ptree_stable_hitting (MF := MF) t mu →
   sem_eq (sem_bind mu sem_ret) mu.
 Proof.
   intro H. eapply sem_lub_unique.
   - apply sem_bind_lub; [apply ptree_hitting_increasing|exact H].
-  - assert (Hiff : sem_lub (fun n => ptree_hitting_approx (MF := MF) n t) mu <->
+  - assert (Hiff : sem_lub (fun n => ptree_hitting_approx (MF := MF) n t) mu ↔
         sem_lub (fun n => sem_bind (ptree_hitting_approx (MF := MF) n t) sem_ret) mu).
     { apply sem_lub_cofinal.
       - apply ptree_hitting_increasing.
@@ -79,7 +81,7 @@ Qed.
 End FiniteIdentity.
 
 Section Identity.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -113,7 +115,7 @@ Theorem peutt_interp_identity {A} (t : ptree E MN A) :
   peutt (MF := MF) eq (PTree.interp Handler.id_ t) t.
 Proof.
   eapply peutt_coinduction with (sim := fun s u =>
-    exists v, s = observe (PTree.interp Handler.id_ v) /\ u = observe v).
+    exists v, s = observe (PTree.interp Handler.id_ v) ∧ u = observe v).
   - intros s u [v [-> ->]].
     destruct (ptree_stable_hitting_exists (MF := MF) (observe v)) as [mu Hmu].
     eapply stable_hitting_match_of_hitting_lift with
@@ -136,13 +138,13 @@ Qed.
 End Identity.
 
 Section Combinations.
-Context {MN MF : Type -> Type}
+Context {MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
 
 Lemma handler_case_congr {E F G}
     (h1 h2 : Handler MN E G) (g1 g2 : Handler MN F G) :
-  peutt_handler (MF := MF) h1 h2 -> peutt_handler (MF := MF) g1 g2 ->
+  peutt_handler (MF := MF) h1 h2 → peutt_handler (MF := MF) g1 g2 →
   peutt_handler (MF := MF) (Handler.case_ h1 g1) (Handler.case_ h2 g2).
 Proof. intros H G' X [e|e]; [apply H|apply G']. Qed.
 
@@ -163,7 +165,7 @@ Proof. intros X [e|e]; apply peutt_refl. Qed.
 End Combinations.
 
 Section Category.
-Context {MN MF : Type -> Type}
+Context {MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
@@ -199,7 +201,7 @@ Qed.
 
 Theorem handler_cat_congr {E F G}
     (h1 h2 : Handler MN E F) (g1 g2 : Handler MN F G) :
-  peutt_handler (MF := MF) h1 h2 -> peutt_handler (MF := MF) g1 g2 ->
+  peutt_handler (MF := MF) h1 h2 → peutt_handler (MF := MF) g1 g2 →
   peutt_handler (MF := MF) (Handler.cat h1 g1) (Handler.cat h2 g2).
 Proof.
   intros H G' X e. unfold Handler.cat.
@@ -232,7 +234,7 @@ Proof. intros X e. exact (peutt_interp_trigger_event (Handler.case_ h g) (inr1 e
 
 Theorem handler_bimap_congr {E1 E2 F1 F2}
     (h1 h2 : Handler MN E1 F1) (g1 g2 : Handler MN E2 F2) :
-  peutt_handler (MF := MF) h1 h2 -> peutt_handler (MF := MF) g1 g2 ->
+  peutt_handler (MF := MF) h1 h2 → peutt_handler (MF := MF) g1 g2 →
   peutt_handler (MF := MF) (Handler.bimap h1 g1) (Handler.bimap h2 g2).
 Proof.
   intros H G. apply handler_case_congr;

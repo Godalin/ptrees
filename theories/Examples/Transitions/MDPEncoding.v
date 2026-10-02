@@ -1,6 +1,8 @@
 (** Concrete labelled/unlabelled MDP encoding integration tests.
     Formal correspondence theorems remain in Semantics, not in this client. *)
 
+From Coq Require Import Utf8.
+
 From mathcomp Require ssreflect ssrbool ssralg ssrnum rat.
 Require PTree.Core.PTreeDefinition.
 Require PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
@@ -188,7 +190,7 @@ Proof. native_compute. reflexivity. Qed.
     Good test, reflect its equality coupling to equality of finite masses,
     and compute the contradictory 1/2 = 3/4 equation. *)
 Theorem different_successor_probabilities_not_bisimilar :
-  ~ source_bisim StartHalf StartBiased.
+  ¬ source_bisim StartHalf StartBiased.
 Proof.
   intro H.
   pose proof (mdp_bisim_step H tt) as Hstep.
@@ -206,12 +208,12 @@ Proof.
 Qed.
 
 Example same_current_label_but_not_bisimilar :
-  state_label StartHalf = state_label StartBiased /\
-  ~ source_bisim StartHalf StartBiased.
+  state_label StartHalf = state_label StartBiased ∧
+  ¬ source_bisim StartHalf StartBiased.
 Proof. split; [reflexivity|apply different_successor_probabilities_not_bisimilar]. Qed.
 
 Theorem different_successor_probabilities_not_peutt :
-  ~ pb (encode StartHalf) (encode StartBiased).
+  ¬ pb (encode StartHalf) (encode StartBiased).
 Proof.
   intro H. apply different_successor_probabilities_not_bisimilar.
   exact (proj2 (subenumQ_mdp_peutt_iff (D := labelled_mdp) StartHalf StartBiased) H).
@@ -220,7 +222,7 @@ Qed.
 (** The positive example matches different successor STATES, not just
     differently named sources with identical kernels. Each matched pair
     has the same observation and continues within the candidate. *)
-Inductive lump_pair : labelled_state -> labelled_state -> Prop :=
+Inductive lump_pair : labelled_state → labelled_state → Prop :=
   | LumpStart : lump_pair StartHalf StartClone
   | LumpGood : lump_pair Good0 Good1
   | LumpBad : lump_pair Bad0 Bad1.
@@ -241,10 +243,10 @@ Proof.
   - constructor.
 Qed.
 
-Example positive_pair_is_not_state_equality : StartHalf <> StartClone.
+Example positive_pair_is_not_state_equality : StartHalf ≠ StartClone.
 Proof. discriminate. Qed.
 Example positive_kernels_are_different :
-  labelled_step StartHalf tt <> labelled_step StartClone tt.
+  labelled_step StartHalf tt ≠ labelled_step StartClone tt.
 Proof. intro H. pose proof (f_equal subenumQ_raw H) as Hraw. discriminate Hraw. Qed.
 
 Theorem distinct_states_encoded_peutt : pb (encode StartHalf) (encode StartClone).
@@ -264,7 +266,7 @@ Proof.
 Qed.
 
 Example different_successor_probabilities_not_trans_bisimilar :
-  ~ tb (encode StartHalf) (encode StartBiased).
+  ¬ tb (encode StartHalf) (encode StartBiased).
 Proof.
   intro H. apply different_successor_probabilities_not_bisimilar.
   exact (proj2 (subenumQ_mdp_trans_bisim_iff (D := labelled_mdp) StartHalf StartBiased) H).
@@ -281,7 +283,7 @@ Definition raw_labelled_mdp : MDP EnumQ :=
      mdp_transition_total := labelled_step_total |}.
 
 Local Lemma raw_labelled_bisim_iff s t :
-  mdp_bisim (D := raw_labelled_mdp) s t <-> source_bisim s t.
+  mdp_bisim (D := raw_labelled_mdp) s t ↔ source_bisim s t.
 Proof.
   exact (mdp_represent_bisim_iff (D := raw_labelled_mdp) labelled_step_total
     (fun rel s t a => iff_refl _) s t).
@@ -299,7 +301,7 @@ Proof.
 Qed.
 
 Example represented_probability_separation :
-  ~ tb (represented_encode StartHalf) (represented_encode StartBiased).
+  ¬ tb (represented_encode StartHalf) (represented_encode StartBiased).
 Proof.
   intro H. apply different_successor_probabilities_not_bisimilar.
   apply (proj1 (raw_labelled_bisim_iff _ _)).

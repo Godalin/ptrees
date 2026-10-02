@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
@@ -15,7 +17,7 @@ Unset Printing Implicit Defensive.
     distribution, not merely its support.  A joint online scheduler and
     its adequacy still require additional proof. *)
 Section NativeCompression.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
@@ -57,9 +59,9 @@ Proof.
 Qed.
 
 Theorem finite_internal_native_plan t out :
-  @finite_internal E MN MF FI FreeOmegaMixedMeasure R t out ->
-  exists p : @finite_internal_plan E MN R t,
-    @internal_plan_frontier E MN R MF FI FreeOmegaMixedMeasure t p = out /\
+  @finite_internal E MN MF FI FreeOmegaMixedMeasure R t out →
+  ∃ p : @finite_internal_plan E MN R t,
+    @internal_plan_frontier E MN R MF FI FreeOmegaMixedMeasure t p = out ∧
     free_omega_qlift eq out (free_omega_native (internal_plan_native p)).
 Proof.
   intro Hcut. destruct (finite_internal_plan_exists Hcut) as [p Hp].
@@ -67,8 +69,8 @@ Proof.
 Qed.
 
 Theorem finite_internal_native_presentation t out :
-  @finite_internal E MN MF FI FreeOmegaMixedMeasure R t out ->
-  exists p : free_omega_native_presentation MN tree,
+  @finite_internal E MN MF FI FreeOmegaMixedMeasure R t out →
+  ∃ p : free_omega_native_presentation MN tree,
     free_omega_qlift eq out (free_omega_native p).
 Proof.
   intro Hcut. destruct (finite_internal_native_plan Hcut) as [p [_ Hp]].
@@ -103,7 +105,7 @@ Proof.
 Qed.
 
 Lemma finite_internal_guard_native_presentation t :
-  exists p, free_omega_qlift eq
+  ∃ p, free_omega_qlift eq
     (@finite_internal_guard_transition E MN R t) (free_omega_native p).
 Proof. exists (internal_guard_native t). apply internal_guard_native_eq. Qed.
 
@@ -126,8 +128,8 @@ Qed.
 (** The full compression-plus-guard round is native-presentable as well.
     This includes guard sampling and high-universe Ret/Vis stable heads. *)
 Theorem finite_internal_round_native_presentation t out :
-  @finite_internal E MN MF FI FreeOmegaMixedMeasure R t out ->
-  exists p, free_omega_qlift eq
+  @finite_internal E MN MF FI FreeOmegaMixedMeasure R t out →
+  ∃ p, free_omega_qlift eq
     (free_omega_bind out finite_internal_guard_transition) (free_omega_native p).
 Proof.
   intro Hcut. destruct (finite_internal_plan_exists Hcut) as [p Hp].

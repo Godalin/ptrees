@@ -1,6 +1,8 @@
 (** Computational algebra of the actual ITree fold. Iteration-generated Tau
     is retained in strong equations and supplies guards in the bind proof.
     Sampling is still an arbitrary, separate supplied algebra. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import RelationClasses Morphisms.
 From Paco Require Import paco.
@@ -28,9 +30,9 @@ Proof.
 Defined.
 
 Section ITreeAlgebra.
-Context {E MN F : Type -> Type}.
-Variable handle : forall X, E X -> itree F X.
-Variable sample : forall X, MN X -> itree F X.
+Context {E MN F : Type → Type}.
+Variable handle : ∀ X, E X → itree F X.
+Variable sample : ∀ X, MN X → itree F X.
 
 Lemma itree_fold_observe {A} (t : ptree E MN A) :
   eq_itree eq (fold handle sample t)
@@ -51,10 +53,10 @@ Proof.
 Qed.
 
 Lemma itree_fold_observe_eq {A} (t u : ptree E MN A) :
-  observe t = observe u -> eq_itree eq (fold handle sample t) (fold handle sample u).
+  observe t = observe u → eq_itree eq (fold handle sample t) (fold handle sample u).
 Proof. intro H. rewrite (itree_fold_observe t), (itree_fold_observe u), H. reflexivity. Qed.
 
-Lemma itree_fold_bind {A B} (t : ptree E MN A) (k : A -> ptree E MN B) :
+Lemma itree_fold_bind {A B} (t : ptree E MN A) (k : A → ptree E MN B) :
   eq_itree eq (fold handle sample (PTree.bind t k))
     (ITree.bind (fold handle sample t) (fun a => fold handle sample (k a))).
 Proof.

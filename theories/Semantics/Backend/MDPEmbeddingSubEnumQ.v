@@ -1,4 +1,6 @@
 (** Role: Comparison semantics. Depends on canonical theory; not the canonical peutt relation or interpreter theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -35,18 +37,18 @@ Local Notation FO := (@FreeOmegaObservableSemanticOmega
     encodings. Native carriers need NOT be finite types: SubEnumQ measures
     have finite support, including on infinite source state spaces. *)
 Lemma subenumQ_sampled_heads_reflect {X Y A B}
-    (mu : SubEnumQ X) (nu : SubEnumQ Y) (f : X -> A) (g : Y -> B)
-    (R : A -> B -> Prop) :
+    (mu : SubEnumQ X) (nu : SubEnumQ Y) (f : X → A) (g : Y → B)
+    (R : A → B → Prop) :
   free_omega_qlift R (FOSample mu (fun x => FORet (f x)))
-    (FOSample nu (fun y => FORet (g y))) ->
+    (FOSample nu (fun y => FORet (g y))) →
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ (fun x y => R (f x) (g y)) mu nu.
 Proof.
   exact: free_omega_sampled_heads_reflect.
 Qed.
 
-Lemma subenumQ_dirac_heads_reflect {A B} (R : A -> B -> Prop) x y :
+Lemma subenumQ_dirac_heads_reflect {A B} (R : A → B → Prop) x y :
   @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    A B R (FORet x) (FORet y) -> R x y.
+    A B R (FORet x) (FORet y) → R x y.
 Proof.
   intro H.
   assert (Hx : free_omega_ae (fun a => a = x) (FORet x)).
@@ -56,7 +58,7 @@ Proof.
 Qed.
 
 Lemma subenumQ_total_forget {X} (mu : SubEnumQ X) :
-  @sem_total SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega _ mu ->
+  @sem_total SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega _ mu →
   @sem_total SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega _
     (subenumQ_bind mu (fun _ => subenumQ_ret tt)).
 Proof.
@@ -103,7 +105,7 @@ Qed.
     equality of outputs, giving the literal iff for arbitrary targets. *)
 Theorem subenumQ_encode_step_iff s a out :
   @head_step (mdpE (mdp_observations D) (mdp_actions D)) SubEnumQ MF FI FreeOmegaMixedMeasure FO unit
-    (ehead s) (Obs (Choose (mdp_observe D s)) a) out <->
+    (ehead s) (Obs (Choose (mdp_observe D s)) a) out ↔
   @sem_eq MF FI _ out (successors (mdp_transition D s a)).
 Proof.
   exact (mdp_encode_step_iff (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
@@ -112,21 +114,21 @@ Proof.
     s a out).
 Qed.
 
-Theorem subenumQ_head_bisim_reflect s t : hb (ehead s) (ehead t) -> mdp_bisim (D := D) s t.
+Theorem subenumQ_head_bisim_reflect s t : hb (ehead s) (ehead t) → mdp_bisim (D := D) s t.
 Proof.
   exact (mdp_head_bisim_reflect (FI := FI) (FO := FO)
     (MX := FreeOmegaMixedMeasure) (@subenumQ_sampled_heads_reflect) (D := D) (s := s) (t := t)).
 Qed.
 
-Theorem subenumQ_mdp_head_bisim_iff s t : mdp_bisim (D := D) s t <-> hb (ehead s) (ehead t).
+Theorem subenumQ_mdp_head_bisim_iff s t : mdp_bisim (D := D) s t ↔ hb (ehead s) (ehead t).
 Proof.
   exact (mdp_head_bisim_iff (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
     (@subenumQ_sampled_heads_reflect) (D := D) s t).
 Qed.
 
-Lemma subenumQ_encoded_vis_inversion s t : pb (encode s) (encode t) ->
-  mdp_observe D s = mdp_observe D t /\
-  forall a, pb (Prob (mdp_transition D s a) encode)
+Lemma subenumQ_encoded_vis_inversion s t : pb (encode s) (encode t) →
+  mdp_observe D s = mdp_observe D t ∧
+  ∀ a, pb (Prob (mdp_transition D s a) encode)
     (Prob (mdp_transition D t a) encode).
 Proof.
   exact (mdp_encoded_vis_inversion (FI := FI) (FO := FO)
@@ -134,14 +136,14 @@ Proof.
     (D := D) (s := s) (t := t)).
 Qed.
 
-Theorem subenumQ_peutt_mdp_reflect s t : pb (encode s) (encode t) -> mdp_bisim (D := D) s t.
+Theorem subenumQ_peutt_mdp_reflect s t : pb (encode s) (encode t) → mdp_bisim (D := D) s t.
 Proof.
   exact (mdp_peutt_reflect (FI := FI) (FO := FO)
     (MX := FreeOmegaMixedMeasure) (FD := free_omega_observable_dirac_ae_laws)
     (@subenumQ_sampled_heads_reflect) (D := D) (s := s) (t := t)).
 Qed.
 
-Theorem subenumQ_mdp_peutt_iff s t : mdp_bisim (D := D) s t <-> pb (encode s) (encode t).
+Theorem subenumQ_mdp_peutt_iff s t : mdp_bisim (D := D) s t ↔ pb (encode s) (encode t).
 Proof.
   exact (mdp_peutt_iff (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
     (FD := free_omega_observable_dirac_ae_laws)
@@ -153,7 +155,7 @@ Qed.
     the second. No finite-state or injective-encoding premise is required.
     This does not identify the two tree relations outside the MDP fragment. *)
 Theorem subenumQ_mdp_trans_bisim_iff s t :
-  mdp_bisim (D := D) s t <->
+  mdp_bisim (D := D) s t ↔
   @trans_bisim (mdpE (mdp_observations D) (mdp_actions D))
     SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq (encode s) (encode t).
 Proof.
@@ -163,19 +165,19 @@ Proof.
 Qed.
 
 Corollary subenumQ_encoded_head_peutt_iff s t :
-  hb (ehead s) (ehead t) <-> pb (encode s) (encode t).
+  hb (ehead s) (ehead t) ↔ pb (encode s) (encode t).
 Proof. rewrite <- subenumQ_mdp_head_bisim_iff, <- subenumQ_mdp_peutt_iff. reflexivity. Qed.
 
 (** The old unlabelled baseline is recovered by CONSTANT observations.
     This is not true for arbitrary labelled MDPs. *)
 Theorem subenumQ_unlabelled_mdp_universal
-    (Hconstant : forall s t, mdp_observe D s = mdp_observe D t)
+    (Hconstant : ∀ s t, mdp_observe D s = mdp_observe D t)
     s t : mdp_bisim (D := D) s t.
 Proof.
   eapply mdp_bisim_coinduction with (sim := fun _ _ => True).
   - intros u v _. split; [apply Hconstant|]. intro a.
     eapply sem_lift_mono with
-      (R := fun _ _ => exists z : unit, True /\ True).
+      (R := fun _ _ => exists z : unit, True ∧ True).
     + intros x y _. exact I.
     + eapply sem_lift_comp with (nu := subenumQ_ret tt).
       * apply subenumQ_total_same_mass. exact (mdp_transition_total D u a).
@@ -204,15 +206,15 @@ Definition enumQ_mdp_kernel s a : SubEnumQ (mdp_states D) :=
 Lemma enumQ_mdp_kernel_total s a : sem_total (enumQ_mdp_kernel s a).
 Proof. exact (mdp_transition_total D s a). Qed.
 
-Lemma enumQ_mdp_kernel_lift (rel : mdp_states D -> mdp_states D -> Prop) s t a :
-  sem_lift rel (mdp_transition D s a) (mdp_transition D t a) <->
+Lemma enumQ_mdp_kernel_lift (rel : mdp_states D → mdp_states D → Prop) s t a :
+  sem_lift rel (mdp_transition D s a) (mdp_transition D t a) ↔
   sem_lift rel (enumQ_mdp_kernel s a) (enumQ_mdp_kernel t a).
 Proof. reflexivity. Qed.
 
 Definition enumQ_mdp_bounded : MDP SubEnumQ := mdp_represent (D := D) enumQ_mdp_kernel_total.
 
 Theorem enumQ_mdp_peutt_iff s t :
-  mdp_bisim (D := D) s t <->
+  mdp_bisim (D := D) s t ↔
   @peutt (mdpE (mdp_observations D) (mdp_actions D))
     SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq
     (mdp_encode (D := enumQ_mdp_bounded) s) (mdp_encode (D := enumQ_mdp_bounded) t).
@@ -223,7 +225,7 @@ Proof.
 Qed.
 
 Theorem enumQ_mdp_trans_bisim_iff s t :
-  mdp_bisim (D := D) s t <->
+  mdp_bisim (D := D) s t ↔
   @trans_bisim (mdpE (mdp_observations D) (mdp_actions D))
     SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq
     (mdp_encode (D := enumQ_mdp_bounded) s) (mdp_encode (D := enumQ_mdp_bounded) t).

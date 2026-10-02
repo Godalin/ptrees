@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq.Arith Require Import PeanoNat.
 From Coq Require Import Lia.
@@ -19,7 +21,7 @@ Unset Printing Implicit Defensive.
     continuing from the residual.  Fuel here is a semantic observation
     budget, not a bound on plans or a program-equivalence index. *)
 Section PlanHitting.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
@@ -85,7 +87,7 @@ Qed.
 (** A raw increasing chain on the SAME native sample space.  This does
     not transport raw order through the quotient equality proved above. *)
 Lemma internal_plan_budget_mono t (p : @finite_internal_plan E MN R t) n m :
-  n <= m -> free_omega_approx eq (internal_plan_budget p n) (internal_plan_budget p m).
+  n <= m → free_omega_approx eq (internal_plan_budget p n) (internal_plan_budget p m).
 Proof.
   intro Hnm. unfold internal_plan_budget.
   eapply FOApproxSample with (S := eq).
@@ -103,7 +105,7 @@ Qed.
 
 Theorem internal_plan_stable_hitting t (p : @finite_internal_plan E MN R t) out :
   @ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega R (observe t) out ->
+    FreeOmegaObservableSemanticOmega R (observe t) out →
   free_omega_qlift eq out (FOLub (fun n => internal_plan_budget p n)).
 Proof.
   intro Hhit. eapply FOQLComp with (T := eq) (U := eq); [exact Hhit| |].

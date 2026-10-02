@@ -1,5 +1,7 @@
 (** Early exit is a stable-head projection, not a void-valued returning
     handler. Its behavioral proof therefore needs no collapsed-event loop. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms RelationClasses.
 From ITree.Events Require Import Exception.
@@ -29,12 +31,12 @@ Lemma run_exception_throw {Err E MN A} (e : Err) :
   pstruct eq (@run_exception Err E MN A (Vis (inl1 (Throw e)) (fun v : void => match v with end)))
     (Ret (inl e)).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
-Lemma run_exception_prob {Err E MN A X} (mu : MN X) (k : X -> ptree (exceptE Err +' E) MN A) :
+Lemma run_exception_prob {Err E MN A X} (mu : MN X) (k : X → ptree (exceptE Err +' E) MN A) :
   pstruct eq (run_exception (Prob mu k)) (Prob mu (fun x => run_exception (k x))).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Section Approximation.
-Context {Err : Type} {E MN MF : Type -> Type}
+Context {Err : Type} {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
   `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
@@ -49,11 +51,11 @@ Proof. apply BindScheduling.mixed_equiv_Proper. exact (@mixed_bind_le_k MN MF FI
 Local Notation hit_unfold := (fun G => @BindScheduling.hitting_unfold G MN MF FI MX FO Ord
   (@sem_bind_ret_order MF FI FO BO) (@mixed_bind_assoc_order MN MF FI MX FO MO)
   (@mixed_bind_le_k MN MF FI MX FO MO)).
-Local Lemma ret_equiv A B (x : A) (k : A -> MF B) : equiv (sem_bind (sem_ret x) k) (k x).
+Local Lemma ret_equiv A B (x : A) (k : A → MF B) : equiv (sem_bind (sem_ret x) k) (k x).
 Proof. apply sem_bind_ret_order. Qed.
-Local Lemma zero_equiv A B (k : A -> MF B) : equiv (sem_bind sem_zero k) sem_zero.
+Local Lemma zero_equiv A B (k : A → MF B) : equiv (sem_bind sem_zero k) sem_zero.
 Proof. split; [apply sem_bind_zero_order|apply sem_zero_le]. Qed.
-Local Lemma mixed_assoc A B C (mu : MN A) (k : A -> MF B) (h : B -> MF C) :
+Local Lemma mixed_assoc A B C (mu : MN A) (k : A → MF B) (h : B → MF C) :
   equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
@@ -78,7 +80,7 @@ Qed.
 Context `{Omega : @SemanticOmegaLaws MF FI FO}
   `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}.
 Theorem exception_hitting {A} (t : ptree (exceptE Err +' E) MN A) front :
-  ptree_stable_hitting (MF := MF) (observe t) front ->
+  ptree_stable_hitting (MF := MF) (observe t) front →
   ptree_stable_hitting (MF := MF) (observe (run_exception t))
     (sem_bind front (fun h => sem_ret (exception_head h))).
 Proof.
@@ -88,7 +90,7 @@ Proof.
   { apply sem_bind_lub; [apply ptree_hitting_increasing|exact H]. }
   assert (HC : sem_lub
     (fun n => sem_bind (ptree_hitting_approx (MF := MF) n (observe t)) (fun h => sem_ret (exception_head h)))
-    (sem_bind front (fun h => sem_ret (exception_head h))) <->
+    (sem_bind front (fun h => sem_ret (exception_head h))) ↔
     ptree_stable_hitting (MF := MF) (observe (run_exception t))
       (sem_bind front (fun h => sem_ret (exception_head h)))).
   { unfold ptree_stable_hitting, stable_hitting. apply sem_lub_cofinal.
@@ -101,13 +103,13 @@ Qed.
 
 Context `{FC : @SemanticMeasureCoreLaws MF FI}.
 Variable Hbind : relational_bind FI.
-Context {A B : Type} (RR : A -> B -> Prop).
+Context {A B : Type} (RR : A → B → Prop).
 Local Notation source_rel := (@peutt (exceptE Err +' E) MN MF FI FC MX FO A B RR).
 Definition exception_candidate (v : ptree' E MN (Err+A)) (w : ptree' E MN (Err+B)) : Prop :=
-  exists t u, v = observe (run_exception t) /\ w = observe (run_exception u) /\ source_rel t u.
+  ∃ t u, v = observe (run_exception t) ∧ w = observe (run_exception u) ∧ source_rel t u.
 
 Theorem run_exception_peutt (t : ptree (exceptE Err +' E) MN A) (u : ptree (exceptE Err +' E) MN B) :
-  source_rel t u ->
+  source_rel t u →
   @peutt E MN MF FI FC MX FO (Err+A) (Err+B) (exception_result_rel RR) (run_exception t) (run_exception u).
 Proof.
   intro Htu. eapply peutt_coinduction with (sim := exception_candidate).
@@ -131,7 +133,7 @@ End Approximation.
 (** Equality specialization for algebraic rewriting. The heterogeneous
     theorem remains the source of truth; no completion model is selected. *)
 Section Rewriting.
-Context {Err : Type} {E MN MF : Type -> Type}
+Context {Err : Type} {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
   `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
@@ -142,7 +144,7 @@ Context {Err : Type} {E MN MF : Type -> Type}
 Variable Hbind : relational_bind FI.
 
 Theorem run_exception_peutt_eq {A} (t u : ptree (exceptE Err +' E) MN A) :
-  peutt (MF := MF) eq t u ->
+  peutt (MF := MF) eq t u →
   peutt (MF := MF) eq (run_exception t) (run_exception u).
 Proof.
   intro H. eapply peutt_rel_mono with (RR := exception_result_rel eq).

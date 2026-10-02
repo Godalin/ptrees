@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Prob.Backend.SubEnumQ Require Import NativeLimit.
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
 From PTree.Prob.Backend.Common Require Import FiniteEnum.
@@ -37,11 +39,11 @@ Variable R : realType.
 Local Notation expect := (enumQ_real_expect (R := R)).
 Local Notation upper := (free_omega_upper (R := R)).
 
-Theorem free_omega_observes_upper {A O} (obs : A -> O)
+Theorem free_omega_observes_upper {A O} (obs : A → O)
     (mu : FreeOmega SubEnumQ A) (out : SubEnumQ O) :
   @free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    A O obs mu out ->
-  forall f : O -> R, (forall y, 0 <= f y /\ f y <= 1) ->
+    A O obs mu out →
+  ∀ f : O → R, (∀ y, 0 <= f y ∧ f y <= 1) →
     upper mu (fun x => f (obs x)) = expect f (subenumQ_raw out).
 Proof.
   intro Hobs. induction Hobs as [x| |X node k front Hobs IH|chain outs out Hobs IH Hlim Hinc];
@@ -59,10 +61,10 @@ Proof.
     { apply functional_extensionality=> n. exact (IH n f Hf). }
     rewrite Hrows. apply enumQ_monotone_converges_upper; [|exact Hlim|].
     + intros P n m Hnm.
-      have HP : forall y, 0 <= (if P y then (1 : R) else 0) /\
+      have HP : ∀ y, 0 <= (if P y then (1 : R) else 0) ∧
           (if P y then (1 : R) else 0) <= 1.
       { intro y. destruct (P y); split; try exact: ler01; exact: lexx. }
-      have Hstep : forall i,
+      have Hstep : ∀ i,
           expect (fun y => if P y then 1 else 0) (subenumQ_raw (outs i)) <=
           expect (fun y => if P y then 1 else 0) (subenumQ_raw (outs (S i))).
       { intro i. rewrite -(IH i _ HP) -(IH (S i) _ HP).
@@ -73,11 +75,11 @@ Proof.
     + intro y. exact (proj1 (Hf y)).
 Qed.
 
-Theorem free_omega_denotes_upper {A O} (obs : A -> O)
-    (mu : FreeOmega SubEnumQ A) (out : SubEnumQ O) (f : O -> R) :
+Theorem free_omega_denotes_upper {A O} (obs : A → O)
+    (mu : FreeOmega SubEnumQ A) (out : SubEnumQ O) (f : O → R) :
   @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    A O obs mu out ->
-  (forall y, 0 <= f y /\ f y <= 1) ->
+    A O obs mu out →
+  (∀ y, 0 <= f y ∧ f y <= 1) →
   upper mu (fun x => f (obs x)) = expect f (subenumQ_raw out).
 Proof.
   intros [represented [Hobs Heq]] Hf.

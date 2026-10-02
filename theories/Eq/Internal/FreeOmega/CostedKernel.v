@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Arith Require Import PeanoNat Wf_nat.
@@ -17,13 +19,13 @@ Unset Printing Implicit Defensive.
     totality, AST, or restriction to a unary compression policy is imposed.
     Both indices below are observation budgets, not program-equivalence indices. *)
 Section CostedKernel.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI} {State Out : Type}.
-Variable X : State -> Type.
-Variable measure : forall s, MN (X s).
-Variable target : forall s, X s -> stable_target State Out.
-Variable cost : forall s, X s -> nat.
+Variable X : State → Type.
+Variable measure : ∀ s, MN (X s).
+Variable target : ∀ s, X s → stable_target State Out.
+Variable cost : ∀ s, X s → nat.
 Arguments target s _ : clear implicits.
 Arguments cost s _ : clear implicits.
 Local Notation MF := (FreeOmega MN).
@@ -52,7 +54,7 @@ Fixpoint costed_hitting_approx rounds fuel s : MF Out :=
     else FOZero).
 
 Lemma costed_hitting_mono rounds rounds' fuel fuel' s :
-  rounds <= rounds' -> fuel <= fuel' ->
+  rounds <= rounds' → fuel <= fuel' →
   free_omega_approx eq (costed_hitting_approx rounds fuel s)
     (costed_hitting_approx rounds' fuel' s).
 Proof.
@@ -70,7 +72,7 @@ Proof.
 Qed.
 
 Lemma costed_kernel_cut_mono n m s :
-  n <= m -> free_omega_approx eq (costed_kernel_cut n s) (costed_kernel_cut m s).
+  n <= m → free_omega_approx eq (costed_kernel_cut n s) (costed_kernel_cut m s).
 Proof.
   intro Hnm. unfold costed_kernel_cut. eapply FOApproxSample with (S := eq).
   - apply sem_lift_refl. intro x. reflexivity.
@@ -83,7 +85,7 @@ Qed.
 (** If the total budget is below a per-round cutoff, every admitted
     weighted path is also admitted by that cutoff kernel. *)
 Lemma costed_hitting_below_cut rounds fuel cap s :
-  fuel <= cap -> free_omega_approx eq
+  fuel <= cap → free_omega_approx eq
     (costed_hitting_approx rounds fuel s) (hit (costed_kernel_cut cap) rounds s).
 Proof.
   induction rounds as [|rounds IH] in fuel, s |- *; intro Hfc;
@@ -103,7 +105,7 @@ Qed.
 (** Conversely, r+1 rounds of per-round cost at most cap spend at most
     (r+1)*cap in total.  No uniform bound on the original kernel is used. *)
 Lemma cut_hitting_below_costed rounds fuel cap s :
-  (S rounds) * cap <= fuel -> free_omega_approx eq
+  (S rounds) * cap <= fuel → free_omega_approx eq
     (hit (costed_kernel_cut cap) rounds s) (costed_hitting_approx rounds fuel s).
 Proof.
   induction rounds as [|rounds IH] in fuel, s |- *; intro Hbudget;
@@ -210,7 +212,7 @@ Proof.
 Qed.
 
 Theorem costed_stable_hitting s out :
-  @stable_hitting MF FI FreeOmegaObservableSemanticOmega State Out costed_kernel s out ->
+  @stable_hitting MF FI FreeOmegaObservableSemanticOmega State Out costed_kernel s out →
   free_omega_qlift eq out (FOLub (fun n => costed_hitting_approx n n s)).
 Proof.
   intro Hhit. eapply FOQLComp with (T := eq) (U := eq).
@@ -221,18 +223,18 @@ Qed.
 
 Section ReferenceAdequacy.
 Context {RefOut : Type}.
-Variable project : Out -> RefOut.
-Variable reference : nat -> State -> MF RefOut.
+Variable project : Out → RefOut.
+Variable reference : nat → State → MF RefOut.
 
 (** These are finite, local premises.  [reference_round] describes the
     original observation budget through ONE sampled round; it neither
     assumes equality of complete limits nor of repeated execution. *)
 Definition costed_internal_progress s x :=
-  forall u, target s x = SHInternal u -> 0 < cost s x.
+  ∀ u, target s x = SHInternal u → 0 < cost s x.
 Arguments costed_internal_progress s x : clear implicits.
-Hypothesis internal_progress : forall s,
+Hypothesis internal_progress : ∀ s,
   sem_ae (measure s) (costed_internal_progress s).
-Hypothesis reference_round : forall fuel s,
+Hypothesis reference_round : ∀ fuel s,
   free_omega_qlift eq (reference fuel s)
     (FOSample (measure s) (fun x =>
       if Nat.leb (cost s x) fuel then
@@ -243,11 +245,11 @@ Hypothesis reference_round : forall fuel s,
       else FOZero)).
 
 Lemma costed_progress_coupling s :
-  sem_lift (fun x y => x = y /\ costed_internal_progress s x)
+  sem_lift (fun x y => x = y ∧ costed_internal_progress s x)
     (measure s) (measure s).
 Proof.
   eapply sem_lift_mono with
-    (R := fun x y => x = y /\ costed_internal_progress s x /\ True).
+    (R := fun x y => x = y ∧ costed_internal_progress s x ∧ True).
   - intros x y [Hxy [Hx _]]. split; assumption.
   - apply sem_lift_ae_restrict.
     + apply sem_lift_refl. intro x. reflexivity.
@@ -255,8 +257,8 @@ Proof.
     + apply sem_ae_true.
 Qed.
 
-Theorem costed_hitting_reference fuel : forall rounds s,
-  fuel <= rounds -> free_omega_qlift eq (reference fuel s)
+Theorem costed_hitting_reference fuel : ∀ rounds s,
+  fuel <= rounds → free_omega_qlift eq (reference fuel s)
     (free_omega_bind (costed_hitting_approx rounds fuel s)
       (fun o => FORet (project o))).
 Proof.
@@ -264,7 +266,7 @@ Proof.
   intros rounds s Hrounds.
   eapply FOQLComp with (T := eq) (U := eq); [apply reference_round| |].
   - destruct rounds as [|rounds]; cbn [costed_hitting_approx free_omega_bind];
-      eapply FOQLSample with (T := fun x y => x = y /\ costed_internal_progress s x);
+      eapply FOQLSample with (T := fun x y => x = y ∧ costed_internal_progress s x);
       try solve [apply costed_progress_coupling]; intros x y [-> Hprogress];
       destruct (Nat.leb (cost s y) fuel) eqn:Hcost;
       try solve [apply FOQLStructural, FOLZero];

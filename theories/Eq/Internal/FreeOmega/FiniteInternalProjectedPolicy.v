@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -19,7 +21,7 @@ Unset Printing Implicit Defensive.
     The execution state may still contain a correlated partner/history.
     The other marginal is not required to have such a policy. *)
 Section ProjectedPolicy.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
   `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
@@ -28,24 +30,24 @@ Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation tree := (ptree E MN A).
 Local Notation head := (stable_head E MN A).
-Variable kernel : S -> MF (stable_target S O).
-Variable project_state : S -> tree.
-Variable project_output : O -> head.
-Variable D : S -> Prop.
-Variable policy : tree -> MF tree.
-Hypothesis policy_valid : forall t,
+Variable kernel : S → MF (stable_target S O).
+Variable project_state : S → tree.
+Variable project_output : O → head.
+Variable D : S → Prop.
+Variable policy : tree → MF tree.
+Hypothesis policy_valid : ∀ t,
   @finite_internal E MN MF FI FreeOmegaMixedMeasure A t (policy t).
-Hypothesis kernel_closed : forall s, D s ->
+Hypothesis kernel_closed : ∀ s, D s →
   free_omega_ae (kernel_completion_invariant D) (kernel s).
-Hypothesis kernel_marginal : forall s, D s ->
+Hypothesis kernel_marginal : ∀ s, D s →
   free_omega_qlift
     (fun z target => kernel_target_projection project_state project_output z = target)
     (kernel s) (free_omega_bind (policy (project_state s)) finite_internal_guard_transition).
 
-Theorem finite_internal_projected_policy_adequate s out original : D s ->
-  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out ->
+Theorem finite_internal_projected_policy_adequate s out original : D s →
+  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out →
   @ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega A (observe (project_state s)) original ->
+    FreeOmegaObservableSemanticOmega A (observe (project_state s)) original →
   free_omega_qlift eq (free_omega_bind out (fun o => FORet (project_output o))) original.
 Proof.
   intros HD Hout Horiginal.

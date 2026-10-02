@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -25,10 +27,10 @@ Definition subenumQ_eq {A} (mu nu : SubEnumQ A) : Prop :=
   @sem_eq EnumQ EnumQ_SemanticMeasure A
     (subenumQ_raw mu) (subenumQ_raw nu).
 
-Definition subenumQ_ae {A} (mu : SubEnumQ A) (P : A -> Prop) : Prop :=
+Definition subenumQ_ae {A} (mu : SubEnumQ A) (P : A → Prop) : Prop :=
   @sem_ae EnumQ EnumQ_SemanticMeasure A (subenumQ_raw mu) P.
 
-Definition subenumQ_lift {A B} (R : A -> B -> Prop)
+Definition subenumQ_lift {A B} (R : A → B → Prop)
     (mu : SubEnumQ A) (nu : SubEnumQ B) : Prop :=
   @sem_lift EnumQ EnumQ_SemanticMeasure A B R
     (subenumQ_raw mu) (subenumQ_raw nu).
@@ -209,7 +211,7 @@ Definition subenumQ_sem_le {A} (mu nu : SubEnumQ A) : Prop :=
   enumQ_sem_le (subenumQ_raw mu) (subenumQ_raw nu).
 
 Definition subenumQ_sem_lub {A}
-    (chain : nat -> SubEnumQ A) (mu : SubEnumQ A) : Prop :=
+    (chain : nat → SubEnumQ A) (mu : SubEnumQ A) : Prop :=
   enumQ_converges (fun n => subenumQ_raw (chain n)) (subenumQ_raw mu).
 
 Definition subenumQ_total {A} (mu : SubEnumQ A) : Prop :=

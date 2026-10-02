@@ -1,5 +1,7 @@
 (** Role: finite probability/coupling/backend example. *)
 (** Gate S: all new native capabilities are inferred, not supplied. *)
+From Coq Require Import Utf8.
+
 From mathcomp Require Import reals.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
 From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws OrderLaws OmegaLaws BindLaws.
@@ -21,7 +23,7 @@ Definition checked_mixed : @MixedMeasureLaws M M NI NI MX := _.
 Definition checked_omega_ae : @SemanticOmegaAELaws M NI NO := _.
 
 Example null_branches_need_no_continuity {A B}
-    (c : A -> nat -> M B) (out : A -> M B) :
+    (c : A → nat → M B) (out : A → M B) :
   sem_lub (fun n => sem_bind (@sem_zero M NI NO A) (fun x => c x n))
     (sem_bind sem_zero out).
 Proof.
@@ -52,7 +54,7 @@ Local Notation M := (MathCompKernelMeasure R).
 Example noninjective_map_reflection (mu : M bool) (nu : M nat) :
   mathcomp_kernel_lift eq
     (mathcomp_kernel_bind mu (fun _ => mathcomp_kernel_ret R tt))
-    (mathcomp_kernel_bind nu (fun _ => mathcomp_kernel_ret R tt)) ->
+    (mathcomp_kernel_bind nu (fun _ => mathcomp_kernel_ret R tt)) →
   mathcomp_kernel_lift (fun _ _ => True) mu nu.
 Proof.
   intro H.

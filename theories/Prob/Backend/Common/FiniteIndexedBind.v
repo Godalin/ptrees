@@ -1,5 +1,7 @@
 (** Positions of flattened finite binds. This is raw list algebra: values
     need no equality, and weights need no order or probability structure. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -12,9 +14,9 @@ Unset Printing Implicit Defensive.
 
 Section Positions.
 Context {W : Type}.
-Variable mul : W -> W -> W.
+Variable mul : W → W → W.
 
-Lemma finite_index_map_values {A B} (f : A -> B) n (mu : list (W*A)) :
+Lemma finite_index_map_values {A B} (f : A → B) n (mu : list (W*A)) :
   finite_index_from n (List.map (fun px => (px.1,f px.2)) mu) = finite_index_from n mu.
 Proof. by elim: mu n=> [|[p x] tl IH] n //=; rewrite IH. Qed.
 
@@ -38,7 +40,7 @@ Proof.
   - by rewrite IH Nat.add_succ_r.
 Qed.
 Lemma finite_index_in_ge {A} n (mu : list (W*A)) p i :
-  List.In (p,i) (finite_index_from n mu) -> (n <= i)%coq_nat.
+  List.In (p,i) (finite_index_from n mu) → (n <= i)%coq_nat.
 Proof.
   elim: mu n=> [|[q x] tl IH] n //=.
   move=> [He|Hin]; first by inversion He; subst; apply Nat.le_refl.
@@ -46,13 +48,13 @@ Proof.
 Qed.
 
 Fixpoint finite_indexed_bind_blocks {A B} (mu : list (W*A))
-    (k : A -> list (W*B)) (offset : nat) : list (W*nat) :=
+    (k : A → list (W*B)) (offset : nat) : list (W*nat) :=
   match mu with
   | nil => nil
   | (p,a)::tl => finite_scale_with mul p (finite_index_from offset (k a)) ++
       finite_indexed_bind_blocks tl k (Nat.add offset (size (k a)))
   end.
-Lemma finite_index_bind {A B} offset (mu : list (W*A)) (k : A -> list (W*B)) :
+Lemma finite_index_bind {A B} offset (mu : list (W*A)) (k : A → list (W*B)) :
   finite_index_from offset (finite_bind_with mul mu k) = finite_indexed_bind_blocks mu k offset.
 Proof.
   elim: mu offset=> [|[p a] tl IH] offset //=.
@@ -63,15 +65,15 @@ Proof.
 Qed.
 
 Fixpoint finite_indexed_bind_block_from {A B} (mu : list (W*A))
-    (k : A -> list (W*B)) (start offset i : nat) : list (W*nat) :=
+    (k : A → list (W*B)) (start offset i : nat) : list (W*nat) :=
   match mu with
   | nil => nil
   | (_,a)::tl => if Nat.eqb i start then finite_index_from offset (k a)
       else finite_indexed_bind_block_from tl k start.+1 (Nat.add offset (size (k a))) i
   end.
 
-Lemma finite_bind_with_ext_in {A B} (mu : list (W*A)) (k h : A -> list (W*B)) :
-  (forall p x, List.In (p,x) mu -> k x = h x) ->
+Lemma finite_bind_with_ext_in {A B} (mu : list (W*A)) (k h : A → list (W*B)) :
+  (∀ p x, List.In (p,x) mu → k x = h x) →
   finite_bind_with mul mu k = finite_bind_with mul mu h.
 Proof.
   elim: mu=> [|[p x] tl IH] H //=.
@@ -80,7 +82,7 @@ Proof.
 Qed.
 
 Lemma finite_index_bind_as_position_bind {A B} (mu : list (W*A))
-    (k : A -> list (W*B)) start offset :
+    (k : A → list (W*B)) start offset :
   finite_index_from offset (finite_bind_with mul mu k) =
   finite_bind_with mul (finite_index_from start mu)
     (finite_indexed_bind_block_from mu k start offset).
@@ -99,8 +101,8 @@ Proof.
 Qed.
 
 Lemma finite_indexed_bind_block_from_nth {A B} (mu : list (W*A))
-    (k : A -> list (W*B)) start offset i p a :
-  nth_error mu i = Some (p,a) ->
+    (k : A → list (W*B)) start offset i p a :
+  nth_error mu i = Some (p,a) →
   finite_indexed_bind_block_from mu k start offset (Nat.add start i) =
   finite_index_from (Nat.add offset (finite_bind_offset mu k i)) (k a).
 Proof.

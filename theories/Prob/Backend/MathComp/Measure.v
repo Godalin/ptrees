@@ -1,5 +1,7 @@
 (** Native discrete MathComp adapter. This is not a recursive PTree frontier
     backend; no formal completion is part of this adapter. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -68,7 +70,7 @@ Lemma mathcomp_node_sem_retE {A} (x : A) :
 Proof. reflexivity. Qed.
 
 Lemma mathcomp_node_sem_bindE {A B} (mu : MathCompKernelMeasure R A)
-    (k : A -> MathCompKernelMeasure R B) :
+    (k : A → MathCompKernelMeasure R B) :
   @sem_bind (MathCompKernelMeasure R)
     MathCompNodeSemanticMeasure A B mu k =
   @mathcomp_kernel_bind R A B mu k.
@@ -83,7 +85,7 @@ Proof. reflexivity. Qed.
 
 Lemma mathcomp_legacy_bind_semE {A B}
     (mu : MathCompKernelMeasure R A)
-    (k : A -> MathCompKernelMeasure R B) :
+    (k : A → MathCompKernelMeasure R B) :
   @meas_bind (MathCompKernelMeasure R)
     (MathCompKernelMeasureInterface R) A B mu k =
   @sem_bind (MathCompKernelMeasure R)
@@ -116,9 +118,9 @@ Proof.
 Qed.
 
 Lemma mathcomp_kernel_lift_refl_ae {A}
-    (mu : MathCompKernelMeasure R A) (P : A -> Prop) :
-  mathcomp_kernel_ae mu P ->
-  mathcomp_kernel_lift (fun x y => x = y /\ P x) mu mu.
+    (mu : MathCompKernelMeasure R A) (P : A → Prop) :
+  mathcomp_kernel_ae mu P →
+  mathcomp_kernel_lift (fun x y => x = y ∧ P x) mu mu.
 Proof.
   move=> Hae.
   rewrite /mathcomp_kernel_ae /mathcomp_measure_ae in Hae.
@@ -130,10 +132,10 @@ Proof.
       apply/negligibleP; first by [].
       change (mathcomp_kernel_root mu
         ((mc_joint_diagonal A) @^-1`
-          (~` mc_relation (fun x y => x = y /\ P x))) = 0).
+          (~` mc_relation (fun x y => x = y ∧ P x))) = 0).
       have Eset :
           (mc_joint_diagonal A) @^-1`
-            (~` mc_relation (fun x y => x = y /\ P x)) =
+            (~` mc_relation (fun x y => x = y ∧ P x)) =
           (~` mc_predicate P).
       { apply/seteqP; split.
         - move=> [|a] /= Hx.
@@ -201,7 +203,7 @@ Qed.
     unfinished mass decreases while returned mass increases. *)
 Definition mathcomp_node_le {A}
     (mu nu : MathCompKernelMeasure R A) : Prop :=
-  forall U : set (mc_carrier A), measurable U -> ~ U MCBottom ->
+  ∀ U : set (mc_carrier A), measurable U → ¬ U MCBottom →
     mathcomp_kernel_root mu U <= mathcomp_kernel_root nu U = true.
 
 #[global] Instance MathCompNodeSemanticOmega :
@@ -220,17 +222,17 @@ Lemma mathcomp_node_sem_zeroE {A} :
 Proof. reflexivity. Qed.
 
 Lemma mathcomp_node_sem_lubE {A}
-    (chain : nat -> MathCompKernelMeasure R A) out :
+    (chain : nat → MathCompKernelMeasure R A) out :
   @sem_lub (MathCompKernelMeasure R)
     MathCompNodeSemanticMeasure
-    MathCompNodeSemanticOmega A chain out <->
+    MathCompNodeSemanticOmega A chain out ↔
   @mathcomp_kernel_lub R A chain out.
 Proof. reflexivity. Qed.
 
 Lemma mathcomp_node_sem_totalE {A} (mu : MathCompKernelMeasure R A) :
   @sem_total (MathCompKernelMeasure R)
     MathCompNodeSemanticMeasure
-    MathCompNodeSemanticOmega A mu <->
+    MathCompNodeSemanticOmega A mu ↔
   @mathcomp_kernel_total R A mu.
 Proof. reflexivity. Qed.
 

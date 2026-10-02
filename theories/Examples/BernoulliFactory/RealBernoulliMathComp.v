@@ -27,7 +27,7 @@ Import numFieldNormedType.Exports.
 #[local] Open Scope classical_set_scope.
 
 Unset Automatic Proposition Inductives.
-Variant real_mathcomp_coinE : Type -> Type := .
+Variant real_mathcomp_coinE : Type → Type := .
 
 Section RealOracleBackend.
 Context (R : realType).
@@ -104,7 +104,7 @@ Fixpoint mathcomp_oracle_unfolded_approx
 Local Open Scope ereal_scope.
 
 Lemma mathcomp_oracle_unfolded_mass qbit fuel n
-    (U : set (mc_carrier bool)) : measurable U ->
+    (U : set (mc_carrier bool)) : measurable U →
   mathcomp_kernel_root
       (mathcomp_oracle_unfolded_approx qbit fuel.+1 n) U =
     if qbit n then
@@ -324,7 +324,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_oracle_prefix_sup qbit q :
-  mathcomp_oracle_represents qbit q ->
+  mathcomp_oracle_represents qbit q →
   ereal_sup (range (fun fuel =>
     (mathcomp_oracle_prefix_from qbit 0 fuel)%:E)) = q%:E.
 Proof.
@@ -459,7 +459,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_oracle_false_prefix_sup qbit q :
-  mathcomp_oracle_represents qbit q ->
+  mathcomp_oracle_represents qbit q →
   ereal_sup (range (fun fuel =>
     (mathcomp_oracle_false_prefix_from qbit 0 fuel)%:E)) =
   (1 - q)%:E.
@@ -566,7 +566,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_oracle_result_true_sup qbit q :
-  mathcomp_oracle_represents qbit q ->
+  mathcomp_oracle_represents qbit q →
   ereal_sup (range (fun fuel => mathcomp_kernel_root
     (mathcomp_oracle_result_approx qbit fuel 0) [set MCValue true])) = q%:E.
 Proof.
@@ -583,7 +583,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_oracle_result_false_sup qbit q :
-  mathcomp_oracle_represents qbit q ->
+  mathcomp_oracle_represents qbit q →
   ereal_sup (range (fun fuel => mathcomp_kernel_root
     (mathcomp_oracle_result_approx qbit fuel 0) [set MCValue false])) =
     (1 - q)%:E.
@@ -619,7 +619,7 @@ Qed.
     facts opaque prevents the omega-limit proof below from carrying four
     copies of a large set-extensionality term. *)
 Lemma mc_bool_set_both U :
-  ~ U MCBottom -> U (MCValue true) -> U (MCValue false) ->
+  ¬ U MCBottom → U (MCValue true) → U (MCValue false) →
   U = (@mc_returned bool).
 Proof.
   move=> nbot Ht Hf. apply/seteqP; split=> x Hx.
@@ -629,7 +629,7 @@ Proof.
 Qed.
 
 Lemma mc_bool_set_true U :
-  ~ U MCBottom -> U (MCValue true) -> ~ U (MCValue false) ->
+  ¬ U MCBottom → U (MCValue true) → ¬ U (MCValue false) →
   U = [set MCValue true].
 Proof.
   move=> nbot Ht Hnf. apply/seteqP; split=> x Hx.
@@ -640,7 +640,7 @@ Proof.
 Qed.
 
 Lemma mc_bool_set_false U :
-  ~ U MCBottom -> ~ U (MCValue true) -> U (MCValue false) ->
+  ¬ U MCBottom → ¬ U (MCValue true) → U (MCValue false) →
   U = [set MCValue false].
 Proof.
   move=> nbot Hnt Hf. apply/seteqP; split=> x Hx.
@@ -651,7 +651,7 @@ Proof.
 Qed.
 
 Lemma mc_bool_set_neither U :
-  ~ U MCBottom -> ~ U (MCValue true) -> ~ U (MCValue false) ->
+  ¬ U MCBottom → ¬ U (MCValue true) → ¬ U (MCValue false) →
   U = set0.
 Proof.
   move=> nbot Hnt Hnf. apply/seteqP; split=> x Hx.
@@ -663,7 +663,7 @@ Qed.
 
 Lemma mathcomp_binary_oracle_lub qbit q
     (q01 : (0 <= q <= 1)%R) :
-  mathcomp_oracle_represents qbit q ->
+  mathcomp_oracle_represents qbit q →
   mathcomp_binary_oracle_denotes qbit (mathcomp_bernoulli q).
 Proof.
   move=> Hrep.
@@ -713,7 +713,7 @@ Qed.
 
 Theorem mathcomp_binary_oracle_is_ast qbit q
     (q01 : (0 <= q <= 1)%R) :
-  mathcomp_oracle_represents qbit q ->
+  mathcomp_oracle_represents qbit q →
   mathcomp_binary_oracle_ast qbit.
 Proof.
   move=> Hrep. exists (mathcomp_bernoulli q). split.

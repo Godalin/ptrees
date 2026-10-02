@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Eq Require Import StableHittingRelation.
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
 Set Warnings "-notation-overridden".
@@ -26,7 +28,7 @@ Unset Printing Implicit Defensive.
     then a primitive guard.  All indices below belong to the adequacy proof;
     the operational cut and its execution certificate remain unindexed. *)
 Section Acceleration.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI} {R : Type}.
 Local Notation MF := (FreeOmega MN).
@@ -50,9 +52,9 @@ Proof.
 Qed.
 
 Lemma finite_internal_rounds_cut_mono
-    (cut1 cut2 : ptree E MN R -> MF (ptree E MN R)) :
-  (forall t, free_omega_approx eq (cut1 t) (cut2 t)) ->
-  forall n t, free_omega_approx eq
+    (cut1 cut2 : ptree E MN R → MF (ptree E MN R)) :
+  (∀ t, free_omega_approx eq (cut1 t) (cut2 t)) →
+  ∀ n t, free_omega_approx eq
     (finite_internal_rounds cut1 n t) (finite_internal_rounds cut2 n t).
 Proof.
   intro Hcut. intro n. induction n as [|n IH]; intro t;
@@ -64,7 +66,7 @@ Proof.
 Qed.
 
 Definition finite_internal_round_kernel
-    (selected : ptree E MN R -> MF (ptree E MN R)) t :=
+    (selected : ptree E MN R → MF (ptree E MN R)) t :=
   free_omega_bind (selected t) finite_internal_guard_transition.
 
 Lemma finite_internal_rounds_kernelE selected n t :
@@ -88,9 +90,9 @@ Proof.
   - f_equal. apply functional_extensionality. intro x. apply IH.
 Qed.
 
-Variable cut : ptree E MN R -> MF (ptree E MN R).
-Variable trunc : ptree E MN R -> nat -> MF (ptree E MN R).
-Hypothesis trunc_spec : forall t, finite_internal_approximates t (cut t) (trunc t).
+Variable cut : ptree E MN R → MF (ptree E MN R).
+Variable trunc : ptree E MN R → nat → MF (ptree E MN R).
+Hypothesis trunc_spec : ∀ t, finite_internal_approximates t (cut t) (trunc t).
 
 Definition finite_internal_grid n m t :=
   finite_internal_rounds (fun u => trunc u m) n t.
@@ -139,7 +141,7 @@ Proof.
           FreeOmegaObservableSemanticMeasureOrderLaws R). lia.
 Qed.
 
-Lemma finite_internal_trunc_mono t n m : n <= m ->
+Lemma finite_internal_trunc_mono t n m : n <= m →
   free_omega_approx eq (trunc t n) (trunc t m).
 Proof.
   intro Hle. induction Hle.
@@ -148,7 +150,7 @@ Proof.
     exact (proj1 (trunc_spec t) m).
 Qed.
 
-Lemma finite_internal_grid_covers n m t : n <= m ->
+Lemma finite_internal_grid_covers n m t : n <= m →
   free_omega_approx eq (hit n (observe t)) (finite_internal_grid n m t).
 Proof.
   induction n as [|n IH] in t |- *; intro Hnm;
@@ -264,24 +266,24 @@ End Acceleration.
     from the well-founded cut derivations themselves.  This establishes
     complete hitting adequacy for any single selected compression policy. *)
 Theorem finite_internal_acceleration
-    {E MN : Type -> Type}
+    {E MN : Type → Type}
     `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NO : @SemanticOmega MN NI}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
     {R : Type}
-    (cut : ptree E MN R -> FreeOmega MN (ptree E MN R)) :
-  (forall t, @finite_internal E MN (FreeOmega MN)
+    (cut : ptree E MN R → FreeOmega MN (ptree E MN R)) :
+  (∀ t, @finite_internal E MN (FreeOmega MN)
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-    FreeOmegaMixedMeasure R t (cut t)) ->
-  forall t, free_omega_qlift eq
+    FreeOmegaMixedMeasure R t (cut t)) →
+  ∀ t, free_omega_qlift eq
     (FOLub (fun n => finite_internal_rounds cut n t))
     (FOLub (fun n => @ptree_hitting_approx E MN (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R n (observe t))).
 Proof.
   intro Hcut.
-  assert (Hex : forall t, exists chain, finite_internal_approximates t (cut t) chain).
+  assert (Hex : ∀ t, exists chain, finite_internal_approximates t (cut t) chain).
   { intro t. apply finite_internal_approximation_exists. apply Hcut. }
   destruct (choice _ Hex) as [trunc Htrunc]. intro t.
   exact (finite_internal_acceleration_limit Htrunc t).
@@ -291,17 +293,17 @@ Qed.
     Unlike structural realization, this corollary accepts the quotient
     equality proved above, including its diagonal/cofinal limit steps. *)
 Corollary finite_internal_acceleration_joint
-    {E MN : Type -> Type}
+    {E MN : Type → Type}
     `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
     `{NO : @SemanticOmega MN NI}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
     {R : Type}
-    (cut : ptree E MN R -> FreeOmega MN (ptree E MN R))
-    (Hcut : forall t, @finite_internal E MN (FreeOmega MN)
+    (cut : ptree E MN R → FreeOmega MN (ptree E MN R))
+    (Hcut : ∀ t, @finite_internal E MN (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure R t (cut t)) t :
-  exists joint, @semantic_coupling (FreeOmega MN)
+  ∃ joint, @semantic_coupling (FreeOmega MN)
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     (stable_head E MN R) (stable_head E MN R) eq
     (FOLub (fun n => finite_internal_rounds cut n t))
@@ -314,22 +316,22 @@ Proof.
 Qed.
 
 Section PolicyCoinduction.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
   `{NCountAE : @SemanticMeasureCountableAELaws MN NI}.
-Context {A B : Type} (RR : A -> B -> Prop).
+Context {A B : Type} (RR : A → B → Prop).
 Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
-Variable sim : ptree E MN A -> ptree E MN B -> Prop.
-Variable cut1 : ptree E MN A -> MF (ptree E MN A).
-Variable cut2 : ptree E MN B -> MF (ptree E MN B).
-Hypothesis cut1_valid : forall t,
+Variable sim : ptree E MN A → ptree E MN B → Prop.
+Variable cut1 : ptree E MN A → MF (ptree E MN A).
+Variable cut2 : ptree E MN B → MF (ptree E MN B).
+Hypothesis cut1_valid : ∀ t,
   @finite_internal E MN MF FI FreeOmegaMixedMeasure A t (cut1 t).
-Hypothesis cut2_valid : forall t,
+Hypothesis cut2_valid : ∀ t,
   @finite_internal E MN MF FI FreeOmegaMixedMeasure B t (cut2 t).
-Hypothesis cuts_coupled : forall t1 t2, sim t1 t2 ->
+Hypothesis cuts_coupled : ∀ t1 t2, sim t1 t2 →
   free_omega_qlift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 t1) (cut2 t2).
 
 (** A sound guarded coinduction rule allowing internal progress forever,
@@ -337,14 +339,14 @@ Hypothesis cuts_coupled : forall t1 t2, sim t1 t2 ->
     this does not silently assert that arbitrary pair-dependent witnesses
     can be uniformized into unary policies. *)
 Theorem peutt_coinduction_finite_internal_policies t1 t2 :
-  sim t1 t2 ->
+  sim t1 t2 →
   @peutt E MN MF FI FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A B RR t1 t2.
 Proof.
   intro Hsim.
   eapply peutt_coinduction with
     (sim := fun s1 s2 => exists u v,
-      s1 = observe u /\ s2 = observe v /\ sim u v).
+      s1 = observe u ∧ s2 = observe v ∧ sim u v).
   - intros s1 s2 [u [v [-> [-> Huv]]]].
     eapply stable_hitting_match_of_hitting_lift with
       (out1 := FOLub (fun n => @ptree_hitting_approx E MN MF FI

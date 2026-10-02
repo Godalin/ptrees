@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure PTree.Prob.FreeOmega.Coupling.
@@ -14,16 +16,16 @@ Unset Printing Implicit Defensive.
     Iterating such a kernel still commutes with projection whenever its
     projected transition depends only on the projected state. *)
 Section Projection.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI} {S T O P : Type}.
 Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
-Variable source : S -> MF (stable_target S O).
-Variable target : T -> MF (stable_target T P).
-Variable state_projection : S -> T.
-Variable output_projection : O -> P.
-Variable D : S -> Prop.
+Variable source : S → MF (stable_target S O).
+Variable target : T → MF (stable_target T P).
+Variable state_projection : S → T.
+Variable output_projection : O → P.
+Variable D : S → Prop.
 
 Definition kernel_target_projection (z : stable_target S O) : stable_target T P :=
   match z with
@@ -31,14 +33,14 @@ Definition kernel_target_projection (z : stable_target S O) : stable_target T P 
   | SHInternal s => SHInternal (state_projection s)
   end.
 
-Hypothesis source_closed : forall s, D s ->
+Hypothesis source_closed : ∀ s, D s →
   free_omega_ae (kernel_completion_invariant D) (source s).
-Hypothesis kernel_marginal : forall s, D s ->
+Hypothesis kernel_marginal : ∀ s, D s →
   free_omega_qlift (fun z w => kernel_target_projection z = w)
     (source s) (target (state_projection s)).
 
-Lemma kernel_projection_supported s : D s ->
-  free_omega_qlift (fun z w => kernel_target_projection z = w /\
+Lemma kernel_projection_supported s : D s →
+  free_omega_qlift (fun z w => kernel_target_projection z = w ∧
     kernel_completion_invariant D z) (source s) (target (state_projection s)).
 Proof.
   intro HD. eapply FOQLAERestrict with
@@ -50,7 +52,7 @@ Proof.
   - intros z w [Heq [Hgood _]]. split; assumption.
 Qed.
 
-Lemma kernel_target_approx_projection n z : kernel_completion_invariant D z ->
+Lemma kernel_target_approx_projection n z : kernel_completion_invariant D z →
   free_omega_qlift (fun o p => output_projection o = p)
     (@stable_target_approx MF FI FreeOmegaObservableSemanticOmega S O source n z)
     (@stable_target_approx MF FI FreeOmegaObservableSemanticOmega T P target n
@@ -64,7 +66,7 @@ Proof.
     intros x y [<- Hx]. apply IH. exact Hx.
 Qed.
 
-Theorem kernel_hitting_approx_projection n s : D s ->
+Theorem kernel_hitting_approx_projection n s : D s →
   free_omega_qlift (fun o p => output_projection o = p)
     (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O source n s)
     (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega T P target n
@@ -74,7 +76,7 @@ Proof.
   intros z w [<- Hz]. apply kernel_target_approx_projection. exact Hz.
 Qed.
 
-Theorem kernel_hitting_limit_projection s : D s ->
+Theorem kernel_hitting_limit_projection s : D s →
   free_omega_qlift (fun o p => output_projection o = p)
     (FOLub (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
       S O source n s))
@@ -84,10 +86,10 @@ Proof.
   intro HD. apply FOQLLub. intro n. apply kernel_hitting_approx_projection. exact HD.
 Qed.
 
-Theorem kernel_stable_hitting_projection s out1 out2 : D s ->
-  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O source s out1 ->
+Theorem kernel_stable_hitting_projection s out1 out2 : D s →
+  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O source s out1 →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega T P target
-    (state_projection s) out2 ->
+    (state_projection s) out2 →
   free_omega_qlift eq
     (free_omega_bind out1 (fun o => FORet (output_projection o))) out2.
 Proof.

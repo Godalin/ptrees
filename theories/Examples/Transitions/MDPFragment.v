@@ -1,4 +1,6 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -26,9 +28,9 @@ Unset Printing Implicit Defensive.
 Import EnumQ.
 #[local] Open Scope ring_scope.
 
-Variant decisionE : Type -> Type :=
+Variant decisionE : Type → Type :=
   | Ask : decisionE unit
-  | Reply : bool -> decisionE unit.
+  | Reply : bool → decisionE unit.
 
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
@@ -50,7 +52,7 @@ Proof.
   native_compute. reflexivity.
 Qed.
 
-Lemma fair_heads_total (f : bool -> stable_head decisionE SubEnumQ unit) :
+Lemma fair_heads_total (f : bool → stable_head decisionE SubEnumQ unit) :
   @sem_total MF FI FO _ (FOSample subenumQ_fair (fun b => FORet (f b))).
 Proof.
   apply free_omega_observable_total_intro.
@@ -104,14 +106,14 @@ Example delayed_decision_is_mdp : state (Tau (Tau decision)).
 Proof. rewrite !mdp_state_tau_iff. apply visible_sample_visible_is_mdp. Qed.
 
 Example leaf_heads_inequivalent :
-  ~ @head_bisim decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq
+  ¬ @head_bisim decisionE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq
       (leaf_head true) (leaf_head false).
 Proof. intro H. apply head_bisim_unfold in H. dependent destruction H. Qed.
 
 (** A genuine negation, not a failed tactic: support transport would force
     both distinct visible heads to equal the same Dirac head. The argument
     is backend-qualified; no generic Dirac separation axiom is assumed. *)
-Theorem hidden_choice_not_mdp_state : ~ state hidden_choice.
+Theorem hidden_choice_not_mdp_state : ¬ state hidden_choice.
 Proof.
   intro H. apply (proj1 (mdp_state_hitting_iff hidden_choice_hitting)) in H.
   destruct H as [h [Heq Hgood]].
@@ -129,7 +131,7 @@ Proof.
 Qed.
 
 Example successor_need_not_be_a_state :
-  state decision /\ ~ state hidden_choice.
+  state decision ∧ ¬ state hidden_choice.
 Proof. split; [apply visible_sample_visible_is_mdp|apply hidden_choice_not_mdp_state]. Qed.
 
 (** Infinite interaction with a fresh random visible state after every

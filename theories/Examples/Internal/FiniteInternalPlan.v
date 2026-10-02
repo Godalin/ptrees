@@ -1,4 +1,6 @@
 (** Role: supporting compression/scheduling/recovery example; not public theory. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq.Arith Require Import PeanoNat.
 From PTree.Core Require Import PTreeDefinition.
@@ -12,7 +14,7 @@ From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalNative FiniteInter
 Set Implicit Arguments.
 
 Section NonuniformPlan.
-Context {E MN : Type -> Type} {R : Type}.
+Context {E MN : Type → Type} {R : Type}.
 Local Notation tree := (ptree E MN R).
 
 Fixpoint delay_plan (n : nat) (t : tree) : finite_internal_plan (tau_prefix n t) :=
@@ -31,14 +33,14 @@ Lemma delay_path_residual n t :
   internal_plan_residual (delay_plan n t) (delay_path n t) = t.
 Proof. induction n; cbn; congruence. Qed.
 
-Definition nonuniform_plan (mu : MN nat) (k : nat -> tree) :
+Definition nonuniform_plan (mu : MN nat) (k : nat → tree) :
     finite_internal_plan (Prob mu (fun n => tau_prefix n (k n))) :=
   FIPProb mu (fun n => delay_plan n (k n)).
 
 (** Every path is finite, while path lengths over the syntax have no common
     bound.  This is not a claim that every n has positive sampling mass. *)
-Example nonuniform_plan_unbounded (mu : MN nat) (k : nat -> tree) bound :
-  exists z : internal_plan_path (nonuniform_plan mu k),
+Example nonuniform_plan_unbounded (mu : MN nat) (k : nat → tree) bound :
+  ∃ z : internal_plan_path (nonuniform_plan mu k),
     bound < internal_plan_steps (nonuniform_plan mu k) z.
 Proof.
   exists (existT (fun n => internal_plan_path (delay_plan n (k n)))
@@ -47,13 +49,13 @@ Proof.
   rewrite delay_path_steps. apply Nat.lt_succ_diag_r.
 Qed.
 
-Example nonuniform_prefix_two (mu : MN nat) (k : nat -> tree) :
+Example nonuniform_prefix_two (mu : MN nat) (k : nat → tree) :
   internal_plan_at (nonuniform_plan mu k) 2
     (existT (fun n => internal_plan_path (delay_plan n (k n)))
       3 (delay_path 3 (k 3))) = Tau (Tau (k 3)).
 Proof. reflexivity. Qed.
 
-Example nonuniform_residual (mu : MN nat) (k : nat -> tree) n :
+Example nonuniform_residual (mu : MN nat) (k : nat → tree) n :
   internal_plan_residual (nonuniform_plan mu k)
     (existT (fun n => internal_plan_path (delay_plan n (k n)))
       n (delay_path n (k n))) = k n.
@@ -64,14 +66,14 @@ Qed.
 End NonuniformPlan.
 
 Section NonuniformHitting.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
   `{NBAE : @SemanticMeasureBindAEExactLaws MN NI} {R : Type}.
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 
-Example nonuniform_hitting_exact (mu : MN nat) (k : nat -> ptree E MN R) fuel :
+Example nonuniform_hitting_exact (mu : MN nat) (k : nat → ptree E MN R) fuel :
   free_omega_qlift eq
     (@ptree_hitting_approx E MN (FreeOmega MN) FI FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega R fuel
@@ -81,14 +83,14 @@ Proof. apply internal_plan_hitting_approx. Qed.
 End NonuniformHitting.
 
 Unset Automatic Proposition Inductives.
-Variant planE : Type -> Type := PlanAsk : planE bool.
+Variant planE : Type → Type := PlanAsk : planE bool.
 
 CoFixpoint plan_spin : ptree planE SubEnumQ bool := Tau plan_spin.
 
 Definition spin_prefix_plan : finite_internal_plan (Tau plan_spin) := FIPTau (FIPStop plan_spin).
 
 Example spin_prefix_stops_before_divergence :
-  internal_plan_steps spin_prefix_plan tt = 1 /\
+  internal_plan_steps spin_prefix_plan tt = 1 ∧
   internal_plan_residual spin_prefix_plan tt = plan_spin.
 Proof. split; reflexivity. Qed.
 
@@ -97,7 +99,7 @@ Definition visible_plan : finite_internal_plan
   FIPTau (FIPStop (Vis PlanAsk (fun b => Ret b))).
 
 Example visible_boundary_not_executed :
-  internal_plan_steps visible_plan tt = 1 /\
+  internal_plan_steps visible_plan tt = 1 ∧
   internal_plan_residual visible_plan tt = Vis PlanAsk (fun b => Ret b).
 Proof. split; reflexivity. Qed.
 
@@ -132,7 +134,7 @@ Example killed_plan_is_valid :
 Proof. exact (internal_plan_frontier_valid killed_plan). Qed.
 
 Example completed_paths_do_not_preserve_prefix_mass :
-  ~ sem_same_mass
+  ¬ sem_same_mass
       (subenumQ_bind (internal_plan_measure killed_plan) (fun _ => subenumQ_ret true))
       (subenumQ_ret true).
 Proof.
@@ -144,6 +146,6 @@ Proof.
   pose proof (sem_lift_ae_transport_r Hmass Hzero) as Hret.
   apply (proj1 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
     SubEnumQ_SemanticMeasureDiracAELaws bool true
-    (fun y => exists x : bool, True /\ False))) in Hret.
+    (fun y => exists x : bool, True ∧ False))) in Hret.
   destruct Hret as [x [_ Hfalse]]. exact Hfalse.
 Qed.

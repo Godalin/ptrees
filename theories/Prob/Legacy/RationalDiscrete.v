@@ -36,8 +36,8 @@ Import NonnegQNotations.
 
 
 Class Discrete (m : Type → Type) := {
-  disc_ret : forall {A}, A → m A;
-  disc_bind : forall {A B}, m A → (A → m B) → m B;
+  disc_ret : ∀ {A}, A → m A;
+  disc_bind : ∀ {A B}, m A → (A → m B) → m B;
   disc_flip : () → m bool;
   disc_score : nnQ → m ()%type;
 }.
@@ -50,19 +50,19 @@ Class Discrete (m : Type → Type) := {
   *)
 
 Class DiscreteLaws (m : Type → Type) `{Discrete m}
-  (R : forall {a}, m a → m a → Prop) :=
+  (R : ∀ {a}, m a → m a → Prop) :=
 
-  { disc_ret_bind : forall A B (x : A) (f : A → m B),
+  { disc_ret_bind : ∀ A B (x : A) (f : A → m B),
     R (disc_bind (disc_ret x) f) (f x)
 
-  ; disc_bind_ret : forall A (u : m A),
+  ; disc_bind_ret : ∀ A (u : m A),
     R (disc_bind u disc_ret) u
 
-  ; disc_bind_assoc : forall A B C (u : m A) (f : A → m B) (g : B → m C),
+  ; disc_bind_assoc : ∀ A B C (u : m A) (f : A → m B) (g : B → m C),
     R (disc_bind u (λ x, disc_bind (f x) g))
       (disc_bind (disc_bind u f) g)
 
-  ; disc_comm_law : forall A B C (u : m A) (v : m B) (f : A → B → m C),
+  ; disc_comm_law : ∀ A B C (u : m A) (v : m B) (f : A → B → m C),
     R (disc_bind u (λ x, disc_bind v (λ y, f x y)))
       (disc_bind v (λ y, disc_bind u (λ x, f x y)))
   }.

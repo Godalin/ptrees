@@ -1,5 +1,7 @@
 (** Direct iteration machine: loop states are ordinary semantic states,
     never responses of an auxiliary visible event. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms RelationClasses Lia.
@@ -11,10 +13,10 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Machine.
-Context {E MN MF : Type -> Type} `{FI : SemanticMeasure MF}
+Context {E MN MF : Type → Type} `{FI : SemanticMeasure MF}
   `{MX : MixedMeasure MN MF}.
 Context {I A : Type}.
-Variable step : I -> ptree E MN (I+A).
+Variable step : I → ptree E MN (I+A).
 
 Definition iter_finish (v : I+A) : ptree E MN A :=
   match v with inl i => Tau (PTree.iter step i) | inr a => Ret a end.
@@ -39,12 +41,12 @@ Definition iter_primitive_kernel (t : ptree E MN (I+A)) :
 End Machine.
 
 Section Scheduling.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
   `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
   `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}.
-Context {I A : Type} (step : I -> ptree E MN (I+A)).
+Context {I A : Type} (step : I → ptree E MN (I+A)).
 Local Notation equiv := (@BindScheduling.equiv MF FI FO).
 #[local] Existing Instance BindScheduling.equiv_equivalence.
 #[local] Existing Instance BindScheduling.le_equiv_Proper.
@@ -57,13 +59,13 @@ Local Notation hit_unfold := (@BindScheduling.hitting_unfold E MN MF FI MX FO Or
   (@sem_bind_ret_order MF FI FO BO) (@mixed_bind_assoc_order MN MF FI MX FO MO)
   (@mixed_bind_le_k MN MF FI MX FO MO)).
 
-Local Lemma ret_equiv X Y (x : X) (k : X -> MF Y) :
+Local Lemma ret_equiv X Y (x : X) (k : X → MF Y) :
   equiv (sem_bind (sem_ret x) k) (k x).
 Proof. apply sem_bind_ret_order. Qed.
-Local Lemma zero_equiv X Y (k : X -> MF Y) :
+Local Lemma zero_equiv X Y (k : X → MF Y) :
   equiv (sem_bind sem_zero k) sem_zero.
 Proof. split; [apply sem_bind_zero_order|apply sem_zero_le]. Qed.
-Local Lemma mixed_assoc_equiv X Y Z (mu : MN X) (k : X -> MF Y) (h : Y -> MF Z) :
+Local Lemma mixed_assoc_equiv X Y Z (mu : MN X) (k : X → MF Y) (h : Y → MF Z) :
   equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
@@ -106,12 +108,12 @@ Qed.
 End Scheduling.
 
 Section Acceleration.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
   `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
   `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}.
-Context {I A : Type} (step : I -> ptree E MN (I+A)).
+Context {I A : Type} (step : I → ptree E MN (I+A)).
 Local Notation equiv := (@BindScheduling.equiv MF FI FO).
 #[local] Existing Instance BindScheduling.equiv_equivalence.
 #[local] Existing Instance BindScheduling.le_equiv_Proper.
@@ -140,7 +142,7 @@ Proof.
 Qed.
 
 Lemma iter_phase_split_inner_mono j j' n m t :
-  j <= j' -> sem_le (iter_phase_split j n m t) (iter_phase_split j' n m t).
+  j <= j' → sem_le (iter_phase_split j n m t) (iter_phase_split j' n m t).
 Proof. intro H. apply sem_bind_le_mu. apply ptree_hitting_mono. exact H. Qed.
 Lemma iter_phase_split_outer_step j n m t :
   sem_le (iter_phase_split j n m t) (iter_phase_split j (S n) m t).
@@ -150,8 +152,8 @@ Local Lemma phase_internalE n m t :
 Proof. destruct n; reflexivity. Qed.
 
 Lemma iter_phase_split_le_primitive j n m bound
-    (Hpost : forall t, sem_le (iter_phase_after n m t) (iter_primitive_approx step bound t)) :
-  forall t, sem_le (iter_phase_split j n m t) (iter_primitive_approx step (j+bound+1) t).
+    (Hpost : ∀ t, sem_le (iter_phase_after n m t) (iter_primitive_approx step bound t)) :
+  ∀ t, sem_le (iter_phase_split j n m t) (iter_primitive_approx step (j+bound+1) t).
 Proof.
   induction j as [|j IH]; intro t;
     replace (0+bound+1) with (S bound) by lia;
@@ -185,7 +187,7 @@ Proof.
 Qed.
 
 Lemma iter_primitive_le_phase_split n m :
-  n <= m -> forall t, sem_le (iter_primitive_approx step n t) (iter_phase_split n n m t).
+  n <= m → ∀ t, sem_le (iter_primitive_approx step n t) (iter_phase_split n n m t).
 Proof.
   induction n as [|n IH]; intro Hnm; intro t.
   all: setoid_rewrite iter_primitive_unfold; unfold iter_phase_split; setoid_rewrite hit_unfold.
@@ -230,7 +232,7 @@ Qed.
 
 Context `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}.
 Lemma iter_phase_diagonal_tree t out :
-  sem_lub (fun n => iter_phase_grid n n t) out <->
+  sem_lub (fun n => iter_phase_grid n n t) out ↔
   ptree_stable_hitting (MF := MF) (observe (iter_active step t)) out.
 Proof.
   unfold ptree_stable_hitting, stable_hitting. apply sem_lub_cofinal.
@@ -271,7 +273,7 @@ Proof.
 Qed.
 
 Theorem iter_machine_hitting_sound t out :
-  stable_hitting iter_machine_kernel t out ->
+  stable_hitting iter_machine_kernel t out →
   ptree_stable_hitting (MF := MF) (observe (iter_active step t)) out.
 Proof.
   intro H. apply (proj1 (iter_phase_diagonal_tree t out)).

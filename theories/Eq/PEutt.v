@@ -1,4 +1,6 @@
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -27,37 +29,37 @@ Unset Printing Implicit Defensive.
     It has no syntax-specific, AST, bounded-execution, or one-sided silent
     case. *)
 Section StableHittingBisimulation.
-Context {MF : Type -> Type}
+Context {MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FO : @SemanticOmega MF FI}.
 Context {S1 S2 A1 A2 : Type}.
-Variable kernel1 : S1 -> MF (stable_target S1 A1).
-Variable kernel2 : S2 -> MF (stable_target S2 A2).
-Variable AR : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
-Hypothesis AR_mono : forall sim1 sim2,
-  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
-  forall a1 a2, AR sim1 a1 a2 -> AR sim2 a1 a2.
+Variable kernel1 : S1 → MF (stable_target S1 A1).
+Variable kernel2 : S2 → MF (stable_target S2 A2).
+Variable AR : (S1 → S2 → Prop) → A1 → A2 → Prop.
+Hypothesis AR_mono : ∀ sim1 sim2,
+  (∀ s1 s2, sim1 s1 s2 → sim2 s1 s2) →
+  ∀ a1 a2, AR sim1 a1 a2 → AR sim2 a1 a2.
 
-Program Definition fstable_hitting_bisim : mon (S1 -> S2 -> Prop) :=
+Program Definition fstable_hitting_bisim : mon (S1 → S2 → Prop) :=
   {| body := (stable_hitting_match kernel1 kernel2 AR) |}.
 Next Obligation.
   intros sim1 sim2 Hsub s1 s2 Hmatch.
   eapply stable_hitting_match_mono; eauto.
 Qed.
 
-Definition stable_hitting_bisim : S1 -> S2 -> Prop :=
+Definition stable_hitting_bisim : S1 → S2 → Prop :=
   gfp fstable_hitting_bisim.
 
 Lemma stable_hitting_bisim_unfold s1 s2 :
-  stable_hitting_bisim s1 s2 ->
+  stable_hitting_bisim s1 s2 →
   (stable_hitting_match kernel1 kernel2 AR) stable_hitting_bisim s1 s2.
 Proof.
   intro H. apply (gfp_pfp fstable_hitting_bisim) in H. exact H.
 Qed.
 
 Lemma stable_hitting_bisim_fold s1 s2 :
-  (stable_hitting_match kernel1 kernel2 AR) stable_hitting_bisim s1 s2 ->
+  (stable_hitting_match kernel1 kernel2 AR) stable_hitting_bisim s1 s2 →
   stable_hitting_bisim s1 s2.
 Proof.
   intro H. unfold stable_hitting_bisim.
@@ -70,10 +72,10 @@ Qed.
     certificate used to establish [Hpost]), never in the canonical
     behavioral generator. *)
 Theorem stable_hitting_bisim_coinduction
-    (sim : S1 -> S2 -> Prop)
-    (Hpost : forall s1 s2, sim s1 s2 ->
+    (sim : S1 → S2 → Prop)
+    (Hpost : ∀ s1 s2, sim s1 s2 →
       (stable_hitting_match kernel1 kernel2 AR) sim s1 s2) :
-  forall s1 s2, sim s1 s2 -> stable_hitting_bisim s1 s2.
+  ∀ s1 s2, sim s1 s2 → stable_hitting_bisim s1 s2.
 Proof.
   intros s1 s2 Hsim. unfold stable_hitting_bisim.
   eapply (@leq_gfp _ _ fstable_hitting_bisim sim); eauto.
@@ -86,17 +88,17 @@ Qed.
     development must prove [Hcompatible]; merely invoking the final bind
     congruence inside [Hprogress] would be circular. *)
 Theorem stable_hitting_bisim_coinduction_upto_closure
-    (clo : (S1 -> S2 -> Prop) -> S1 -> S2 -> Prop)
-    (Hinclude : forall sim s1 s2, sim s1 s2 -> clo sim s1 s2)
-    (Hcompatible : forall sim,
-      (forall s1 s2, sim s1 s2 ->
-        (stable_hitting_match kernel1 kernel2 AR) (clo sim) s1 s2) ->
-      forall s1 s2, clo sim s1 s2 ->
+    (clo : (S1 → S2 → Prop) → S1 → S2 → Prop)
+    (Hinclude : ∀ sim s1 s2, sim s1 s2 → clo sim s1 s2)
+    (Hcompatible : ∀ sim,
+      (∀ s1 s2, sim s1 s2 →
+        (stable_hitting_match kernel1 kernel2 AR) (clo sim) s1 s2) →
+      ∀ s1 s2, clo sim s1 s2 →
         (stable_hitting_match kernel1 kernel2 AR) (clo sim) s1 s2)
-    (sim : S1 -> S2 -> Prop)
-    (Hprogress : forall s1 s2, sim s1 s2 ->
+    (sim : S1 → S2 → Prop)
+    (Hprogress : ∀ s1 s2, sim s1 s2 →
       (stable_hitting_match kernel1 kernel2 AR) (clo sim) s1 s2) :
-  forall s1 s2, sim s1 s2 -> stable_hitting_bisim s1 s2.
+  ∀ s1 s2, sim s1 s2 → stable_hitting_bisim s1 s2.
 Proof.
   intros s1 s2 Hsim. unfold stable_hitting_bisim.
   eapply (@leq_gfp _ _ fstable_hitting_bisim (clo sim)).
@@ -107,17 +109,17 @@ Qed.
 End StableHittingBisimulation.
 
 Section StableHittingBisimulationReflexivity.
-Context {MF : Type -> Type}
+Context {MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FO : @SemanticOmega MF FI}.
 Context {S A : Type}.
-Variable kernel : S -> MF (stable_target S A).
-Variable AR : (S -> S -> Prop) -> A -> A -> Prop.
-Hypothesis AR_mono : forall sim1 sim2,
-  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
-  forall a1 a2, AR sim1 a1 a2 -> AR sim2 a1 a2.
-Hypothesis AR_refl : forall sim, Reflexive sim -> Reflexive (AR sim).
+Variable kernel : S → MF (stable_target S A).
+Variable AR : (S → S → Prop) → A → A → Prop.
+Hypothesis AR_mono : ∀ sim1 sim2,
+  (∀ s1 s2, sim1 s1 s2 → sim2 s1 s2) →
+  ∀ a1 a2, AR sim1 a1 a2 → AR sim2 a1 a2.
+Hypothesis AR_refl : ∀ sim, Reflexive sim → Reflexive (AR sim).
 
 Theorem stable_hitting_bisim_refl :
   Reflexive (@stable_hitting_bisim MF FI FC FO S S A A
@@ -135,28 +137,28 @@ Qed.
 End StableHittingBisimulationReflexivity.
 
 Section StableHittingBisimulationConverse.
-Context {MF : Type -> Type}
+Context {MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FO : @SemanticOmega MF FI}.
 Context {S1 S2 A1 A2 : Type}.
-Variable kernel1 : S1 -> MF (stable_target S1 A1).
-Variable kernel2 : S2 -> MF (stable_target S2 A2).
-Variable AR12 : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
-Variable AR21 : (S2 -> S1 -> Prop) -> A2 -> A1 -> Prop.
-Hypothesis AR12_mono : forall sim1 sim2,
-  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
-  forall a1 a2, AR12 sim1 a1 a2 -> AR12 sim2 a1 a2.
-Hypothesis AR21_mono : forall sim1 sim2,
-  (forall s2 s1, sim1 s2 s1 -> sim2 s2 s1) ->
-  forall a2 a1, AR21 sim1 a2 a1 -> AR21 sim2 a2 a1.
-Hypothesis AR_converse : forall sim a1 a2,
-  AR12 sim a1 a2 ->
+Variable kernel1 : S1 → MF (stable_target S1 A1).
+Variable kernel2 : S2 → MF (stable_target S2 A2).
+Variable AR12 : (S1 → S2 → Prop) → A1 → A2 → Prop.
+Variable AR21 : (S2 → S1 → Prop) → A2 → A1 → Prop.
+Hypothesis AR12_mono : ∀ sim1 sim2,
+  (∀ s1 s2, sim1 s1 s2 → sim2 s1 s2) →
+  ∀ a1 a2, AR12 sim1 a1 a2 → AR12 sim2 a1 a2.
+Hypothesis AR21_mono : ∀ sim1 sim2,
+  (∀ s2 s1, sim1 s2 s1 → sim2 s2 s1) →
+  ∀ a2 a1, AR21 sim1 a2 a1 → AR21 sim2 a2 a1.
+Hypothesis AR_converse : ∀ sim a1 a2,
+  AR12 sim a1 a2 →
   AR21 (fun s2 s1 => sim s1 s2) a2 a1.
 
-Theorem stable_hitting_bisim_converse : forall s1 s2,
+Theorem stable_hitting_bisim_converse : ∀ s1 s2,
   @stable_hitting_bisim MF FI FC FO S1 S2 A1 A2
-    kernel1 kernel2 AR12 AR12_mono s1 s2 ->
+    kernel1 kernel2 AR12 AR12_mono s1 s2 →
   @stable_hitting_bisim MF FI FC FO S2 S1 A2 A1
     kernel2 kernel1 AR21 AR21_mono s2 s1.
 Proof.
@@ -183,26 +185,26 @@ Qed.
 End StableHittingBisimulationConverse.
 
 Section StableHittingBisimulationComposition.
-Context {MF : Type -> Type}
+Context {MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FO : @SemanticOmega MF FI}.
 Context {S1 S2 S3 A1 A2 A3 : Type}.
-Variable kernel1 : S1 -> MF (stable_target S1 A1).
-Variable kernel2 : S2 -> MF (stable_target S2 A2).
-Variable kernel3 : S3 -> MF (stable_target S3 A3).
-Variable AR12 : (S1 -> S2 -> Prop) -> A1 -> A2 -> Prop.
-Variable AR23 : (S2 -> S3 -> Prop) -> A2 -> A3 -> Prop.
-Variable AR13 : (S1 -> S3 -> Prop) -> A1 -> A3 -> Prop.
-Hypothesis AR12_mono : forall sim1 sim2,
-  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
-  forall a1 a2, AR12 sim1 a1 a2 -> AR12 sim2 a1 a2.
-Hypothesis AR23_mono : forall sim1 sim2,
-  (forall s2 s3, sim1 s2 s3 -> sim2 s2 s3) ->
-  forall a2 a3, AR23 sim1 a2 a3 -> AR23 sim2 a2 a3.
-Hypothesis AR13_mono : forall sim1 sim2,
-  (forall s1 s3, sim1 s1 s3 -> sim2 s1 s3) ->
-  forall a1 a3, AR13 sim1 a1 a3 -> AR13 sim2 a1 a3.
+Variable kernel1 : S1 → MF (stable_target S1 A1).
+Variable kernel2 : S2 → MF (stable_target S2 A2).
+Variable kernel3 : S3 → MF (stable_target S3 A3).
+Variable AR12 : (S1 → S2 → Prop) → A1 → A2 → Prop.
+Variable AR23 : (S2 → S3 → Prop) → A2 → A3 → Prop.
+Variable AR13 : (S1 → S3 → Prop) → A1 → A3 → Prop.
+Hypothesis AR12_mono : ∀ sim1 sim2,
+  (∀ s1 s2, sim1 s1 s2 → sim2 s1 s2) →
+  ∀ a1 a2, AR12 sim1 a1 a2 → AR12 sim2 a1 a2.
+Hypothesis AR23_mono : ∀ sim1 sim2,
+  (∀ s2 s3, sim1 s2 s3 → sim2 s2 s3) →
+  ∀ a2 a3, AR23 sim1 a2 a3 → AR23 sim2 a2 a3.
+Hypothesis AR13_mono : ∀ sim1 sim2,
+  (∀ s1 s3, sim1 s1 s3 → sim2 s1 s3) →
+  ∀ a1 a3, AR13 sim1 a1 a3 → AR13 sim2 a1 a3.
 
 Local Definition HB12 := @stable_hitting_bisim MF FI FC FO
   S1 S2 A1 A2 kernel1 kernel2 AR12 AR12_mono.
@@ -211,14 +213,14 @@ Local Definition HB23 := @stable_hitting_bisim MF FI FC FO
 Local Definition HB13 := @stable_hitting_bisim MF FI FC FO
   S1 S3 A1 A3 kernel1 kernel3 AR13 AR13_mono.
 
-Hypothesis AR_comp : forall sim12 sim23 sim13,
-  (forall s1 s3, (exists s2, sim12 s1 s2 /\ sim23 s2 s3) ->
-    sim13 s1 s3) ->
-  forall a1 a3, (exists a2, AR12 sim12 a1 a2 /\ AR23 sim23 a2 a3) ->
+Hypothesis AR_comp : ∀ sim12 sim23 sim13,
+  (∀ s1 s3, (∃ s2, sim12 s1 s2 ∧ sim23 s2 s3) →
+    sim13 s1 s3) →
+  ∀ a1 a3, (∃ a2, AR12 sim12 a1 a2 ∧ AR23 sim23 a2 a3) →
     AR13 sim13 a1 a3.
 
-Theorem stable_hitting_bisim_compose_rel : forall s1 s3,
-  (exists s2, HB12 s1 s2 /\ HB23 s2 s3) -> HB13 s1 s3.
+Theorem stable_hitting_bisim_compose_rel : ∀ s1 s3,
+  (∃ s2, HB12 s1 s2 ∧ HB23 s2 s3) → HB13 s1 s3.
 Proof.
   unfold HB13. unfold stable_hitting_bisim at 1. coinduction CH CIH.
   intros s1 s3 [s2 [H12 H23]].
@@ -250,8 +252,8 @@ Proof.
     + eauto.
 Qed.
 
-Corollary stable_hitting_bisim_compose : forall s1 s2 s3,
-  HB12 s1 s2 -> HB23 s2 s3 -> HB13 s1 s3.
+Corollary stable_hitting_bisim_compose : ∀ s1 s2 s3,
+  HB12 s1 s2 → HB23 s2 s3 → HB13 s1 s3.
 Proof. intros s1 s2 s3 H12 H23. apply stable_hitting_bisim_compose_rel. eauto. Qed.
 
 End StableHittingBisimulationComposition.
@@ -259,23 +261,23 @@ End StableHittingBisimulationComposition.
 (** PTree instantiation.  PTree syntax occurs only in the primitive kernel
     and in the relation on stable Ret/Vis heads. *)
 Section PEutt.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
 Context {R1 R2 : Type}.
-Variable RR : R1 -> R2 -> Prop.
+Variable RR : R1 → R2 → Prop.
 
 Definition ptree_stable_head_rel
-    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop) :
-    stable_head E MN R1 -> stable_head E MN R2 -> Prop :=
+    (sim : ptree' E MN R1 → ptree' E MN R2 → Prop) :
+    stable_head E MN R1 → stable_head E MN R2 → Prop :=
   stable_head_rel RR
     (fun t1 t2 => sim (observe t1) (observe t2)).
 
 Lemma ptree_stable_head_rel_mono sim1 sim2 :
-  (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
-  forall h1 h2, ptree_stable_head_rel sim1 h1 h2 ->
+  (∀ t1 t2, sim1 t1 t2 → sim2 t1 t2) →
+  ∀ h1 h2, ptree_stable_head_rel sim1 h1 h2 →
     ptree_stable_head_rel sim2 h1 h2.
 Proof.
   intro Hsim. apply stable_head_rel_mono.
@@ -283,7 +285,7 @@ Proof.
 Qed.
 
 Definition peutt_state :
-    ptree' E MN R1 -> ptree' E MN R2 -> Prop :=
+    ptree' E MN R1 → ptree' E MN R2 → Prop :=
   @stable_hitting_bisim MF FI FC FO
     (ptree' E MN R1) (ptree' E MN R2)
     (stable_head E MN R1) (stable_head E MN R2)
@@ -297,14 +299,14 @@ Definition peutt
 
 (** PTree-facing specialization of the generic corecursive rule. *)
 Theorem peutt_coinduction
-    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
-    (Hpost : forall s1 s2, sim s1 s2 ->
+    (sim : ptree' E MN R1 → ptree' E MN R2 → Prop)
+    (Hpost : ∀ s1 s2, sim s1 s2 →
       stable_hitting_match
         (@ptree_primitive_kernel E MN MF FI MX R1)
         (@ptree_primitive_kernel E MN MF FI MX R2)
         ptree_stable_head_rel
         sim s1 s2) :
-  forall t1 t2, sim (observe t1) (observe t2) ->
+  ∀ t1 t2, sim (observe t1) (observe t2) →
     peutt t1 t2.
 Proof.
   intros t1 t2 Hsim.
@@ -315,27 +317,27 @@ Qed.
     proof device only; the definition and generator of [peutt]
     remain unchanged. *)
 Theorem peutt_coinduction_upto_closure
-    (clo : (ptree' E MN R1 -> ptree' E MN R2 -> Prop) ->
-      ptree' E MN R1 -> ptree' E MN R2 -> Prop)
-    (Hinclude : forall sim s1 s2, sim s1 s2 -> clo sim s1 s2)
-    (Hcompatible : forall sim,
-      (forall s1 s2, sim s1 s2 ->
+    (clo : (ptree' E MN R1 → ptree' E MN R2 → Prop) →
+      ptree' E MN R1 → ptree' E MN R2 → Prop)
+    (Hinclude : ∀ sim s1 s2, sim s1 s2 → clo sim s1 s2)
+    (Hcompatible : ∀ sim,
+      (∀ s1 s2, sim s1 s2 →
         stable_hitting_match
           (@ptree_primitive_kernel E MN MF FI MX R1)
           (@ptree_primitive_kernel E MN MF FI MX R2)
-          ptree_stable_head_rel (clo sim) s1 s2) ->
-      forall s1 s2, clo sim s1 s2 ->
+          ptree_stable_head_rel (clo sim) s1 s2) →
+      ∀ s1 s2, clo sim s1 s2 →
         stable_hitting_match
           (@ptree_primitive_kernel E MN MF FI MX R1)
           (@ptree_primitive_kernel E MN MF FI MX R2)
           ptree_stable_head_rel (clo sim) s1 s2)
-    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
-    (Hprogress : forall s1 s2, sim s1 s2 ->
+    (sim : ptree' E MN R1 → ptree' E MN R2 → Prop)
+    (Hprogress : ∀ s1 s2, sim s1 s2 →
       stable_hitting_match
         (@ptree_primitive_kernel E MN MF FI MX R1)
         (@ptree_primitive_kernel E MN MF FI MX R2)
         ptree_stable_head_rel (clo sim) s1 s2) :
-  forall t1 t2, sim (observe t1) (observe t2) ->
+  ∀ t1 t2, sim (observe t1) (observe t2) →
     peutt t1 t2.
 Proof.
   intros t1 t2 Hsim.
@@ -347,20 +349,20 @@ Qed.
     already been established.  This is the basic sound guarded-context API;
     it changes only the proof principle, never the behavioral generator. *)
 Theorem peutt_coinduction_upto
-    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
-    (Hpost : forall s1 s2, sim s1 s2 ->
+    (sim : ptree' E MN R1 → ptree' E MN R2 → Prop)
+    (Hpost : ∀ s1 s2, sim s1 s2 →
       stable_hitting_match
         (@ptree_primitive_kernel E MN MF FI MX R1)
         (@ptree_primitive_kernel E MN MF FI MX R2)
         ptree_stable_head_rel
-        (fun x1 x2 => sim x1 x2 \/ peutt_state x1 x2)
+        (fun x1 x2 => sim x1 x2 ∨ peutt_state x1 x2)
         s1 s2) :
-  forall t1 t2, sim (observe t1) (observe t2) ->
+  ∀ t1 t2, sim (observe t1) (observe t2) →
     peutt t1 t2.
 Proof.
   intros t1 t2 Hsim.
   eapply peutt_coinduction with
-    (sim := fun x1 x2 => sim x1 x2 \/ peutt_state x1 x2).
+    (sim := fun x1 x2 => sim x1 x2 ∨ peutt_state x1 x2).
   - intros s1 s2 [Hcandidate|Hknown].
     + exact (Hpost _ _ Hcandidate).
     + apply stable_hitting_bisim_unfold in Hknown.
@@ -376,23 +378,23 @@ Qed.
 End PEutt.
 
 Section PEuttRelationMonotonicity.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
 Context {R1 R2 : Type}.
-Variable RR : R1 -> R2 -> Prop.
+Variable RR : R1 → R2 → Prop.
 
 (** Weakening of the return relation.  This is relational covariance of the
     canonical endpoint; recursive visible continuations stay in the
     coinduction candidate while return heads use [Hsub]. *)
 Theorem peutt_rel_mono
-    (RR' : R1 -> R2 -> Prop)
-    (Hsub : forall r1 r2, RR r1 r2 -> RR' r1 r2) :
-  forall t1 t2,
-    @peutt E MN MF FI FC MX FO R1 R2 RR t1 t2 ->
+    (RR' : R1 → R2 → Prop)
+    (Hsub : ∀ r1 r2, RR r1 r2 → RR' r1 r2) :
+  ∀ t1 t2,
+    @peutt E MN MF FI FC MX FO R1 R2 RR t1 t2 →
     @peutt E MN MF FI FC MX FO R1 R2 RR' t1 t2.
 Proof.
   intros t1 t2 Hsource.
@@ -423,17 +425,17 @@ Qed.
 End PEuttRelationMonotonicity.
 
 Section PEuttContinuation.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
 Context {R1 R2 : Type}.
-Variable RR : R1 -> R2 -> Prop.
+Variable RR : R1 → R2 → Prop.
 
 Lemma peutt_unfold t1 t2 :
-  peutt RR t1 t2 ->
+  peutt RR t1 t2 →
   stable_hitting_match
     (@ptree_primitive_kernel E MN MF FI MX R1)
     (@ptree_primitive_kernel E MN MF FI MX R2)
@@ -451,7 +453,7 @@ Lemma peutt_fold t1 t2 :
     (@ptree_primitive_kernel E MN MF FI MX R2)
     (@ptree_stable_head_rel E MN R1 R2 RR)
     (@peutt_state E MN MF FI FC MX FO R1 R2 RR)
-    (observe t1) (observe t2) ->
+    (observe t1) (observe t2) →
   peutt RR t1 t2.
 Proof.
   exact (stable_hitting_bisim_fold (s1 := observe t1)
@@ -465,7 +467,7 @@ End PEuttContinuation.
     complete canonical operation profile, not just the frontier carrier. *)
 
 Section PEuttEndpoint.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -473,7 +475,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FO : @SemanticOmega MF FI}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 Context {R1 R2 : Type}.
-Variable RR : R1 -> R2 -> Prop.
+Variable RR : R1 → R2 → Prop.
 
 (** Extensional proof rule: implementations may have unrelated finite
     schedules (including bounded versus unbounded ones); only their complete
@@ -481,11 +483,11 @@ Variable RR : R1 -> R2 -> Prop.
 Lemma peutt_of_hitting_lift
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
+    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 →
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
+    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 →
   sem_lift (ptree_stable_head_rel RR
-    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->
+    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 →
   peutt RR t1 t2.
 Proof.
   intros Hhit1 Hhit2 Hlift. apply peutt_fold.
@@ -494,11 +496,11 @@ Qed.
 
 Lemma peutt_preserves_hitting_mass
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
-  peutt RR t1 t2 ->
+  peutt RR t1 t2 →
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
+    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 →
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
+    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 →
   sem_same_mass out1 out2.
 Proof.
   intros Hrel Hhit1 Hhit2.
@@ -513,11 +515,11 @@ Qed.
 
 Lemma peutt_hitting_lift
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
-  peutt RR t1 t2 ->
+  peutt RR t1 t2 →
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
+    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 →
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
+    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 →
   sem_lift (ptree_stable_head_rel RR
     (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2.
 Proof.
@@ -531,11 +533,11 @@ Qed.
 Corollary peutt_not_of_mass_mismatch
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 ->
+    (@ptree_primitive_kernel E MN MF FI MX R1) (observe t1) out1 →
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 ->
-  ~ sem_same_mass out1 out2 ->
-  ~ peutt RR t1 t2.
+    (@ptree_primitive_kernel E MN MF FI MX R2) (observe t2) out2 →
+  ¬ sem_same_mass out1 out2 →
+  ¬ peutt RR t1 t2.
 Proof.
   intros Hhit1 Hhit2 Hmass Hrel. apply Hmass.
   eapply peutt_preserves_hitting_mass; eassumption.
@@ -544,7 +546,7 @@ Qed.
 End PEuttEndpoint.
 
 Section PEuttProbCongruence.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -559,12 +561,12 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
 
 Lemma stable_hitting_prob {R X}
-    (mu : MN X) (k : X -> ptree E MN R)
-    (front : X -> MF (stable_head E MN R)) (Good : X -> Prop) :
-  sem_ae mu Good ->
-  (forall x, Good x -> stable_hitting
+    (mu : MN X) (k : X → ptree E MN R)
+    (front : X → MF (stable_head E MN R)) (Good : X → Prop) :
+  sem_ae mu Good →
+  (∀ x, Good x → stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (k x)) (front x)) ->
+    (observe (k x)) (front x)) →
   stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
     (observe (Prob mu k)) (mixed_bind mu front).
@@ -575,20 +577,20 @@ Proof.
 Qed.
 
 Theorem peutt_prob {R1 R2 X1 X2}
-    (RR : R1 -> R2 -> Prop)
-    (XR : X1 -> X2 -> Prop) (mu1 : MN X1) (mu2 : MN X2)
-    (k1 : X1 -> ptree E MN R1) (k2 : X2 -> ptree E MN R2) :
-  sem_lift XR mu1 mu2 ->
-  (forall x1 x2, XR x1 x2 -> peutt RR (k1 x1) (k2 x2)) ->
+    (RR : R1 → R2 → Prop)
+    (XR : X1 → X2 → Prop) (mu1 : MN X1) (mu2 : MN X2)
+    (k1 : X1 → ptree E MN R1) (k2 : X2 → ptree E MN R2) :
+  sem_lift XR mu1 mu2 →
+  (∀ x1 x2, XR x1 x2 → peutt RR (k1 x1) (k2 x2)) →
   peutt RR (Prob mu1 k1) (Prob mu2 k2).
 Proof.
   intros Hmu Hk.
-  assert (Hexists1 : forall x1, exists out,
+  assert (Hexists1 : ∀ x1, exists out,
       stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R1)
         (observe (k1 x1)) out).
   { intro x1. apply stable_hitting_exists. }
-  assert (Hexists2 : forall x2, exists out,
+  assert (Hexists2 : ∀ x2, exists out,
       stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R2)
         (observe (k2 x2)) out).
@@ -615,10 +617,10 @@ Qed.
 Lemma peutt_prob_rewrite {R X Y}
     (S : relation (ptree E MN R))
     `{Hsub : subrelation _ S (@peutt E MN MF FI FC MX FO R R eq)}
-    (XR : X -> Y -> Prop) (mu : MN X) (nu : MN Y)
-    (k1 : X -> ptree E MN R) (k2 : Y -> ptree E MN R) :
-  sem_lift XR mu nu ->
-  (forall x y, XR x y -> S (k1 x) (k2 y)) ->
+    (XR : X → Y → Prop) (mu : MN X) (nu : MN Y)
+    (k1 : X → ptree E MN R) (k2 : Y → ptree E MN R) :
+  sem_lift XR mu nu →
+  (∀ x y, XR x y → S (k1 x) (k2 y)) →
   peutt eq (Prob mu k1) (Prob nu k2).
 Proof.
   intros Hmu Hk. eapply peutt_prob; [exact Hmu|].
@@ -628,7 +630,7 @@ Qed.
 End PEuttProbCongruence.
 
 Section PTreeStableHittingEquations.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -653,7 +655,7 @@ Proof.
 Qed.
 
 Lemma stable_hitting_vis {R X} (e : E X)
-    (k : X -> ptree E MN R) :
+    (k : X → ptree E MN R) :
   stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R) (VisF e k)
     (sem_ret (FHVis e k)).
@@ -671,11 +673,11 @@ Qed.
     continuation obligation, this rule hides the complete-hitting witnesses,
     their uniqueness transport, and the Dirac coupling at the visible head. *)
 Lemma stable_hitting_match_vis {R1 R2}
-    (RR : R1 -> R2 -> Prop)
-    (sim : ptree' E MN R1 -> ptree' E MN R2 -> Prop)
+    (RR : R1 → R2 → Prop)
+    (sim : ptree' E MN R1 → ptree' E MN R2 → Prop)
     {X : Type} (e : E X)
-    (k1 : X -> ptree E MN R1) (k2 : X -> ptree E MN R2) :
-  (forall x, sim (observe (k1 x)) (observe (k2 x))) ->
+    (k1 : X → ptree E MN R1) (k2 : X → ptree E MN R2) :
+  (∀ x, sim (observe (k1 x)) (observe (k2 x))) →
   stable_hitting_match
     (@ptree_primitive_kernel E MN MF FI MX R1)
     (@ptree_primitive_kernel E MN MF FI MX R2)
@@ -713,7 +715,7 @@ Qed.
 
 Theorem stable_hitting_tau_iff {R} (t : ptree E MN R) out :
   stable_hitting
-      (@ptree_primitive_kernel E MN MF FI MX R) (TauF t) out <->
+      (@ptree_primitive_kernel E MN MF FI MX R) (TauF t) out ↔
   stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out.
 Proof.
@@ -736,7 +738,7 @@ Qed.
 End PTreeStableHittingEquations.
 
 Section PTreeStableHittingBind.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -754,14 +756,14 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
     cofinality obligation.  This theorem mentions neither behavioral
     relation nor structured frontier-certificate derivations. *)
 Theorem stable_hitting_bind {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R)
-    hs (front : A -> MF (stable_head E MN R)) :
-  ptree_bind_cofinal (MF := MF) t k ->
+    (t : ptree E MN A) (k : A → ptree E MN R)
+    hs (front : A → MF (stable_head E MN R)) :
+  ptree_bind_cofinal (MF := MF) t k →
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX A) (observe t) hs ->
-  (forall a, stable_hitting
+    (@ptree_primitive_kernel E MN MF FI MX A) (observe t) hs →
+  (∀ a, stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (k a)) (front a)) ->
+    (observe (k a)) (front a)) →
   stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R)
     (observe (PTree.bind t k))
@@ -777,7 +779,7 @@ Qed.
 End PTreeStableHittingBind.
 
 Section PEuttEquivalence.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -786,8 +788,8 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
 Context {R : Type}.
 
 Lemma ptree_stable_head_rel_refl
-    (sim : ptree' E MN R -> ptree' E MN R -> Prop) :
-  Reflexive sim -> Reflexive (@ptree_stable_head_rel E MN R R eq sim).
+    (sim : ptree' E MN R → ptree' E MN R → Prop) :
+  Reflexive sim → Reflexive (@ptree_stable_head_rel E MN R R eq sim).
 Proof.
   intros Hsim [r|X e k].
   - constructor. reflexivity.
@@ -795,8 +797,8 @@ Proof.
 Qed.
 
 Lemma ptree_stable_head_rel_converse
-    (sim : ptree' E MN R -> ptree' E MN R -> Prop) :
-  forall h1 h2, ptree_stable_head_rel eq sim h1 h2 ->
+    (sim : ptree' E MN R → ptree' E MN R → Prop) :
+  ∀ h1 h2, ptree_stable_head_rel eq sim h1 h2 →
     ptree_stable_head_rel eq (fun s2 s1 => sim s1 s2) h2 h1.
 Proof.
   intros h1 h2 Hrel. dependent destruction Hrel.
@@ -805,12 +807,12 @@ Proof.
 Qed.
 
 Lemma ptree_stable_head_rel_compose
-    (sim12 sim23 sim13 : ptree' E MN R -> ptree' E MN R -> Prop)
-    (Hsim : forall s1 s3, (exists s2, sim12 s1 s2 /\ sim23 s2 s3) ->
+    (sim12 sim23 sim13 : ptree' E MN R → ptree' E MN R → Prop)
+    (Hsim : ∀ s1 s3, (∃ s2, sim12 s1 s2 ∧ sim23 s2 s3) →
       sim13 s1 s3) :
-  forall h1 h3,
-    (exists h2, ptree_stable_head_rel eq sim12 h1 h2 /\
-      ptree_stable_head_rel eq sim23 h2 h3) ->
+  ∀ h1 h3,
+    (∃ h2, ptree_stable_head_rel eq sim12 h1 h2 ∧
+      ptree_stable_head_rel eq sim23 h2 h3) →
     ptree_stable_head_rel eq sim13 h1 h3.
 Proof.
   intros h1 h3 [h2 [H12 H23]].
@@ -864,15 +866,15 @@ End PEuttEquivalence.
     program calculation may rewrite either side of [peutt RR] without
     replacing RR by equality or forgetting the other carrier. *)
 Section PEuttRelationalRewriting.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
 
 Lemma peutt_rel_compose {A B C}
-    (R12 : A -> B -> Prop) (R23 : B -> C -> Prop) (R13 : A -> C -> Prop)
-    (Hret : forall a b c, R12 a b -> R23 b c -> R13 a c)
+    (R12 : A → B → Prop) (R23 : B → C → Prop) (R13 : A → C → Prop)
+    (Hret : ∀ a b c, R12 a b → R23 b c → R13 a c)
     (t : ptree E MN A) (u : ptree E MN B) (v : ptree E MN C) :
-  peutt (MF := MF) R12 t u -> peutt (MF := MF) R23 u v -> peutt (MF := MF) R13 t v.
+  peutt (MF := MF) R12 t u → peutt (MF := MF) R23 u v → peutt (MF := MF) R13 t v.
 Proof.
   intros H12 H23. unfold peutt, peutt_state in H12, H23 |- *.
   eapply stable_hitting_bisim_compose; [|exact H12|exact H23].
@@ -882,7 +884,7 @@ Proof.
   - constructor. intro x. apply Hsim. eauto.
 Qed.
 
-#[global] Instance peutt_rel_endpoint_Proper {A B} (RR : A -> B -> Prop) :
+#[global] Instance peutt_rel_endpoint_Proper {A B} (RR : A → B → Prop) :
   Proper (@peutt E MN MF FI FC MX FO A A eq ==>
     @peutt E MN MF FI FC MX FO B B eq ==> iff)
     (@peutt E MN MF FI FC MX FO A B RR).
@@ -908,7 +910,7 @@ End PEuttRelationalRewriting.
 (** Generic endpoint rewriting.  Any proof relation registered as a
     [subrelation] of [peutt] can rewrite either endpoint. *)
 Section PEuttSubrelations.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -921,21 +923,21 @@ Let W : relation (ptree E MN A) :=
 
 Lemma peutt_rewrite_l (R : relation (ptree E MN A))
     `{Hsub : subrelation _ R W} x x' y :
-  R x x' -> W x' y -> W x y.
+  R x x' → W x' y → W x y.
 Proof.
   intros Hxx' Hx'y. eapply peutt_trans; [exact (Hsub _ _ Hxx')|exact Hx'y].
 Qed.
 
 Lemma peutt_rewrite_r (R : relation (ptree E MN A))
     `{Hsub : subrelation _ R W} x y' y :
-  W x y' -> R y' y -> W x y.
+  W x y' → R y' y → W x y.
 Proof.
   intros Hxy' Hy'y. eapply peutt_trans; [exact Hxy'|exact (Hsub _ _ Hy'y)].
 Qed.
 
 Lemma peutt_rewrite (R : relation (ptree E MN A))
     `{Hsub : subrelation _ R W} x x' y' y :
-  R x x' -> W x' y' -> R y' y -> W x y.
+  R x x' → W x' y' → R y' y → W x y.
 Proof.
   intros Hxx' Hx'y' Hy'y.
   eapply peutt_trans; [exact (Hsub _ _ Hxx')|].
@@ -955,7 +957,7 @@ Qed.
 End PEuttSubrelations.
 
 Section PEuttStructuralLaws.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -985,8 +987,8 @@ Proof.
   apply peutt_sym. apply peutt_tau_l.
 Qed.
 
-Lemma peutt_ret {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
-  RR r1 r2 ->
+Lemma peutt_ret {R1 R2} (RR : R1 → R2 → Prop) r1 r2 :
+  RR r1 r2 →
   @peutt E MN MF FI FC MX FO R1 R2 RR (Ret r1) (Ret r2).
 Proof.
   intro Hrr. apply peutt_fold.
@@ -1010,8 +1012,8 @@ Qed.
 Lemma peutt_ret_inv
     `{CA : @SemanticMeasureCouplingAELaws MF FI}
     `{D : @SemanticMeasureDiracAELaws MF FI}
-    {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
-  @peutt E MN MF FI FC MX FO R1 R2 RR (Ret r1) (Ret r2) -> RR r1 r2.
+    {R1 R2} (RR : R1 → R2 → Prop) r1 r2 :
+  @peutt E MN MF FI FC MX FO R1 R2 RR (Ret r1) (Ret r2) → RR r1 r2.
 Proof.
   intro H.
   pose proof (peutt_hitting_lift H (stable_hitting_ret r1)
@@ -1023,14 +1025,14 @@ Qed.
 Lemma peutt_ret_iff
     `{CA : @SemanticMeasureCouplingAELaws MF FI}
     `{D : @SemanticMeasureDiracAELaws MF FI}
-    {R1 R2} (RR : R1 -> R2 -> Prop) r1 r2 :
-  @peutt E MN MF FI FC MX FO R1 R2 RR (Ret r1) (Ret r2) <-> RR r1 r2.
+    {R1 R2} (RR : R1 → R2 → Prop) r1 r2 :
+  @peutt E MN MF FI FC MX FO R1 R2 RR (Ret r1) (Ret r2) ↔ RR r1 r2.
 Proof. split; [apply peutt_ret_inv|apply peutt_ret]. Qed.
 
-Lemma peutt_vis {R1 R2 X} (RR : R1 -> R2 -> Prop)
-    (e : E X) (k1 : X -> ptree E MN R1) (k2 : X -> ptree E MN R2) :
-  (forall x, @peutt E MN MF FI FC MX FO R1 R2 RR
-      (k1 x) (k2 x)) ->
+Lemma peutt_vis {R1 R2 X} (RR : R1 → R2 → Prop)
+    (e : E X) (k1 : X → ptree E MN R1) (k2 : X → ptree E MN R2) :
+  (∀ x, @peutt E MN MF FI FC MX FO R1 R2 RR
+      (k1 x) (k2 x)) →
   @peutt E MN MF FI FC MX FO R1 R2 RR
     (Vis e k1) (Vis e k2).
 Proof.
@@ -1051,7 +1053,7 @@ Qed.
 #[global] Instance peutt_vis_Proper {R X} (e : E X) :
   Proper (pointwise_relation X (peutt eq) ==>
     peutt eq)
-    (fun k : X -> ptree E MN R => Vis e k).
+    (fun k : X → ptree E MN R => Vis e k).
 Proof.
   intros k1 k2 Hk. apply peutt_vis. exact Hk.
 Qed.
@@ -1059,7 +1061,7 @@ Qed.
 End PEuttStructuralLaws.
 
 Section PEuttProbRewriting.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -1077,8 +1079,8 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
     measures.  This is the canonical measure-equivalence rewriting rule;
     list or representation equality is neither required nor exposed. *)
 Corollary peutt_prob_measure {R X}
-    (mu1 mu2 : MN X) (k : X -> ptree E MN R) :
-  sem_lift eq mu1 mu2 ->
+    (mu1 mu2 : MN X) (k : X → ptree E MN R) :
+  sem_lift eq mu1 mu2 →
   peutt eq (Prob mu1 k) (Prob mu2 k).
 Proof.
   intro Hmu. eapply peutt_prob with (XR := eq).
@@ -1090,10 +1092,10 @@ Qed.
     semantic quotient declares node return to be a mixed-bind left unit. *)
 Theorem peutt_prob_ret {R X}
     `{MU : @MixedMeasureUnitLaws MN MF NI FI MX}
-    (x : X) (k : X -> ptree E MN R) :
+    (x : X) (k : X → ptree E MN R) :
   peutt eq (Prob (sem_ret x) k) (k x).
 Proof.
-  assert (Hexists : forall y, exists out,
+  assert (Hexists : ∀ y, exists out,
       stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R)
         (observe (k y)) out).
@@ -1115,12 +1117,12 @@ Qed.
     composition is compatible with mixed binding into behavioral measures. *)
 Theorem peutt_prob_flatten {R X Y}
     `{NB : @MixedMeasureNodeBindLaws MN MF NI FI MX}
-    (mu : MN X) (h : X -> MN Y) (k : Y -> ptree E MN R) :
+    (mu : MN X) (h : X → MN Y) (k : Y → ptree E MN R) :
   peutt eq
     (Prob mu (fun x => Prob (h x) k))
     (Prob (sem_bind mu h) k).
 Proof.
-  assert (Hexists : forall y, exists out,
+  assert (Hexists : ∀ y, exists out,
       stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R)
         (observe (k y)) out).
@@ -1148,12 +1150,12 @@ Qed.
 Theorem peutt_prob_interchange_of {R X Y}
     (mu : MN X) (nu : MN Y)
     (Hexchange : mixed_measure_exchange mu nu)
-    (k : X -> Y -> ptree E MN R) :
+    (k : X → Y → ptree E MN R) :
   peutt eq
     (Prob mu (fun x => Prob nu (fun y => k x y)))
     (Prob nu (fun y => Prob mu (fun x => k x y))).
 Proof.
-  assert (Hexists : forall p : X * Y, exists out,
+  assert (Hexists : ∀ p : X * Y, exists out,
       stable_hitting
         (@ptree_primitive_kernel E MN MF FI MX R)
         (observe (k (fst p) (snd p))) out).
@@ -1181,7 +1183,7 @@ Qed.
 Corollary peutt_prob_interchange {R X Y}
     `{MC : @MixedMeasureCommutativeLaws MN MF NI FI MX}
     (mu : MN X) (nu : MN Y)
-    (k : X -> Y -> ptree E MN R) :
+    (k : X → Y → ptree E MN R) :
   peutt eq
     (Prob mu (fun x => Prob nu (fun y => k x y)))
     (Prob nu (fun y => Prob mu (fun x => k x y))).
@@ -1192,7 +1194,7 @@ Qed.
 
 #[global] Instance peutt_prob_Proper {R X} (mu : MN X) :
   Proper (pointwise_relation X (peutt eq) ==>
-    peutt eq) (fun k : X -> ptree E MN R => Prob mu k).
+    peutt eq) (fun k : X → ptree E MN R => Prob mu k).
 Proof.
   intros k1 k2 Hk. eapply peutt_prob with (XR := eq).
   - apply sem_lift_refl. intro x. reflexivity.
@@ -1208,7 +1210,7 @@ Proof.
     eapply sem_lift_mono; [|exact H]. intros x y Hxy. symmetry. exact Hxy.
   - intros mu nu xi Hmn Hnx.
     eapply sem_lift_mono with
-      (R := fun x z => exists y, x = y /\ y = z).
+      (R := fun x z => exists y, x = y ∧ y = z).
     + intros x z [y [-> ->]]. reflexivity.
     + eapply sem_lift_comp; eassumption.
 Qed.
@@ -1218,7 +1220,7 @@ Qed.
     (@sem_lift MN NI X X eq ==>
       pointwise_relation X (peutt eq) ==>
       peutt eq)
-    (fun (mu : MN X) (k : X -> ptree E MN R) => Prob mu k).
+    (fun (mu : MN X) (k : X → ptree E MN R) => Prob mu k).
 Proof.
   intros mu1 mu2 Hmu k1 k2 Hk.
   eapply peutt_prob with (XR := eq).
@@ -1229,7 +1231,7 @@ Qed.
 End PEuttProbRewriting.
 
 Section PEuttBindCongruence.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -1243,15 +1245,15 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}
   `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}.
 
-Variable bind_cofinality : forall A R
-    (t : ptree E MN A) (k : A -> ptree E MN R),
+Variable bind_cofinality : ∀ A R
+    (t : ptree E MN A) (k : A → ptree E MN R),
     ptree_bind_cofinal (MF := MF) t k.
 
 Context `{FSelect : @SemanticOmegaSelection MF FI FO}.
 
-Lemma stable_hitting_front_choice {A R} (k : A -> ptree E MN R) :
-  exists front : A -> MF (stable_head E MN R),
-    forall a, stable_hitting
+Lemma stable_hitting_front_choice {A R} (k : A → ptree E MN R) :
+  ∃ front : A → MF (stable_head E MN R),
+    ∀ a, stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R)
       (observe (k a)) (front a).
 Proof.
@@ -1264,13 +1266,13 @@ Proof.
 Qed.
 
 Lemma peutt_state_hitting_lift {R1 R2}
-    (RR : R1 -> R2 -> Prop)
+    (RR : R1 → R2 → Prop)
     (s1 : ptree' E MN R1) (s2 : ptree' E MN R2) out1 out2 :
-  peutt_state RR s1 s2 ->
+  peutt_state RR s1 s2 →
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R1) s1 out1 ->
+    (@ptree_primitive_kernel E MN MF FI MX R1) s1 out1 →
   stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R2) s2 out2 ->
+    (@ptree_primitive_kernel E MN MF FI MX R2) s2 out2 →
   sem_lift (ptree_stable_head_rel RR
     (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2.
 Proof.
@@ -1290,23 +1292,23 @@ Qed.
     Keeping the recursive alternative at the state level is essential:
     this is exactly the shape produced when interpreting the continuation of
     a visible source head with an effectful handler. *)
-Definition bind_upto_closure (A B : Type) (RR0 : A -> B -> Prop)
-    (sim : ptree' E MN A -> ptree' E MN B -> Prop)
+Definition bind_upto_closure (A B : Type) (RR0 : A → B → Prop)
+    (sim : ptree' E MN A → ptree' E MN B → Prop)
     (s1 : ptree' E MN A) (s2 : ptree' E MN B) : Prop :=
-  sim s1 s2 \/
-  peutt_state RR0 s1 s2 \/
-  exists (R1 R2 : Type) (RR : R1 -> R2 -> Prop)
+  sim s1 s2 ∨
+  peutt_state RR0 s1 s2 ∨
+  ∃ (R1 R2 : Type) (RR : R1 → R2 → Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
-    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN B),
-    s1 = observe (PTree.bind t1 k1) /\
-    s2 = observe (PTree.bind t2 k2) /\
-    peutt RR t1 t2 /\
-    (forall r1 r2, RR r1 r2 ->
-      sim (observe (k1 r1)) (observe (k2 r2)) \/
+    (k1 : R1 → ptree E MN A) (k2 : R2 → ptree E MN B),
+    s1 = observe (PTree.bind t1 k1) ∧
+    s2 = observe (PTree.bind t2 k2) ∧
+    peutt RR t1 t2 ∧
+    (∀ r1 r2, RR r1 r2 →
+      sim (observe (k1 r1)) (observe (k2 r2)) ∨
       peutt RR0 (k1 r1) (k2 r2)).
 
-Lemma bind_upto_closure_includes A B (RR0 : A -> B -> Prop) sim :
-  forall s1 s2, sim s1 s2 ->
+Lemma bind_upto_closure_includes A B (RR0 : A → B → Prop) sim :
+  ∀ s1 s2, sim s1 s2 →
     bind_upto_closure RR0 sim s1 s2.
 Proof.
   intros s1 s2 Hsim. left. exact Hsim.
@@ -1315,13 +1317,13 @@ Qed.
 (** Client introduction rule: expose the related prefix and branch
     obligations without unpacking the closure's existential encoding. *)
 Lemma bind_upto_closure_bind {A B R1 R2}
-    (RR0 : A -> B -> Prop) (RR : R1 -> R2 -> Prop) sim
+    (RR0 : A → B → Prop) (RR : R1 → R2 → Prop) sim
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
-    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN B) :
-  peutt RR t1 t2 ->
-  (forall r1 r2, RR r1 r2 ->
-    sim (observe (k1 r1)) (observe (k2 r2)) \/
-    peutt RR0 (k1 r1) (k2 r2)) ->
+    (k1 : R1 → ptree E MN A) (k2 : R2 → ptree E MN B) :
+  peutt RR t1 t2 →
+  (∀ r1 r2, RR r1 r2 →
+    sim (observe (k1 r1)) (observe (k2 r2)) ∨
+    peutt RR0 (k1 r1) (k2 r2)) →
   bind_upto_closure RR0 sim
     (observe (PTree.bind t1 k1)) (observe (PTree.bind t2 k2)).
 Proof.
@@ -1330,9 +1332,9 @@ Proof.
   repeat split; assumption || reflexivity.
 Qed.
 
-Lemma bind_upto_closure_mono A B (RR0 : A -> B -> Prop) sim1 sim2 :
-  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
-  forall s1 s2, bind_upto_closure RR0 sim1 s1 s2 ->
+Lemma bind_upto_closure_mono A B (RR0 : A → B → Prop) sim1 sim2 :
+  (∀ s1 s2, sim1 s1 s2 → sim2 s1 s2) →
+  ∀ s1 s2, bind_upto_closure RR0 sim1 s1 s2 →
     bind_upto_closure RR0 sim2 s1 s2.
 Proof.
   intros Hsub s1 s2 [Hsim|[Hknown|Hbind]].
@@ -1352,14 +1354,14 @@ Qed.
     The recursive continuation case consumes [Hprogress] directly at chosen
     hitting witnesses; the known case unfolds the final greatest fixed
     point.  Thus this proof does not depend on [peutt_bind_cofinal]. *)
-Lemma bind_upto_closure_compatible A B (RR0 : A -> B -> Prop) sim
-    (Hprogress : forall s1 s2, sim s1 s2 ->
+Lemma bind_upto_closure_compatible A B (RR0 : A → B → Prop) sim
+    (Hprogress : ∀ s1 s2, sim s1 s2 →
       stable_hitting_match
         (@ptree_primitive_kernel E MN MF FI MX A)
         (@ptree_primitive_kernel E MN MF FI MX B)
         (@ptree_stable_head_rel E MN A B RR0)
         (bind_upto_closure RR0 sim) s1 s2) :
-  forall s1 s2, bind_upto_closure RR0 sim s1 s2 ->
+  ∀ s1 s2, bind_upto_closure RR0 sim s1 s2 →
     stable_hitting_match
       (@ptree_primitive_kernel E MN MF FI MX A)
       (@ptree_primitive_kernel E MN MF FI MX B)
@@ -1472,15 +1474,15 @@ Qed.
 
 (** Sound coinduction up to monadic bind. *)
 Theorem peutt_coinduction_upto_bind A B
-    (RR0 : A -> B -> Prop)
-    (sim : ptree' E MN A -> ptree' E MN B -> Prop)
-    (Hprogress : forall s1 s2, sim s1 s2 ->
+    (RR0 : A → B → Prop)
+    (sim : ptree' E MN A → ptree' E MN B → Prop)
+    (Hprogress : ∀ s1 s2, sim s1 s2 →
       stable_hitting_match
         (@ptree_primitive_kernel E MN MF FI MX A)
         (@ptree_primitive_kernel E MN MF FI MX B)
         (@ptree_stable_head_rel E MN A B RR0)
         (bind_upto_closure RR0 sim) s1 s2) :
-  forall t1 t2, sim (observe t1) (observe t2) ->
+  ∀ t1 t2, sim (observe t1) (observe t2) →
     peutt RR0 t1 t2.
 Proof.
   intros t1 t2 Hsim.
@@ -1501,17 +1503,17 @@ Qed.
     arbitrary related continuation. *)
 Definition bind_bisim_candidate (A : Type)
     (s1 s2 : ptree' E MN A) : Prop :=
-  peutt_state eq s1 s2 \/
-  exists (R1 R2 : Type) (RR : R1 -> R2 -> Prop)
+  peutt_state eq s1 s2 ∨
+  ∃ (R1 R2 : Type) (RR : R1 → R2 → Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
-    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A),
-    s1 = observe (PTree.bind t1 k1) /\
-    s2 = observe (PTree.bind t2 k2) /\
-    peutt RR t1 t2 /\
-    (forall r1 r2, RR r1 r2 -> peutt eq (k1 r1) (k2 r2)).
+    (k1 : R1 → ptree E MN A) (k2 : R2 → ptree E MN A),
+    s1 = observe (PTree.bind t1 k1) ∧
+    s2 = observe (PTree.bind t2 k2) ∧
+    peutt RR t1 t2 ∧
+    (∀ r1 r2, RR r1 r2 → peutt eq (k1 r1) (k2 r2)).
 
 Lemma bind_bisim_candidate_postfixed A :
-  forall s1 s2, bind_bisim_candidate (A := A) s1 s2 ->
+  ∀ s1 s2, bind_bisim_candidate (A := A) s1 s2 →
     stable_hitting_match
       (@ptree_primitive_kernel E MN MF FI MX A)
       (@ptree_primitive_kernel E MN MF FI MX A)
@@ -1621,13 +1623,13 @@ Qed.
     global form of the global/diagonal fuel cofinality theorem; it is used as
     a proof-side scheduling fact by [stable_hitting_bind], never by the
     definition of [peutt]. *)
-Theorem peutt_bind_cofinal : forall A B R1 R2
-    (RR : R1 -> R2 -> Prop)
-    (RS : A -> B -> Prop)
+Theorem peutt_bind_cofinal : ∀ A B R1 R2
+    (RR : R1 → R2 → Prop)
+    (RS : A → B → Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
-    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN B),
-  peutt RR t1 t2 ->
-  (forall r1 r2, RR r1 r2 -> peutt RS (k1 r1) (k2 r2)) ->
+    (k1 : R1 → ptree E MN A) (k2 : R2 → ptree E MN B),
+  peutt RR t1 t2 →
+  (∀ r1 r2, RR r1 r2 → peutt RS (k1 r1) (k2 r2)) →
   peutt RS (PTree.bind t1 k1) (PTree.bind t2 k2).
 Proof.
   intros A B R1 R2 RR RS t1 t2 k1 k2 Hsource Hk.
@@ -1650,12 +1652,12 @@ Qed.
     complete stable-hitting match directly, which is useful when a larger
     coinductive context must compose with a completed bind proof. *)
 Lemma peutt_bind_match {A R1 R2}
-    (RR : R1 -> R2 -> Prop)
+    (RR : R1 → R2 → Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2)
-    (k1 : R1 -> ptree E MN A) (k2 : R2 -> ptree E MN A) :
-  peutt RR t1 t2 ->
-  (forall r1 r2, RR r1 r2 ->
-    peutt eq (k1 r1) (k2 r2)) ->
+    (k1 : R1 → ptree E MN A) (k2 : R2 → ptree E MN A) :
+  peutt RR t1 t2 →
+  (∀ r1 r2, RR r1 r2 →
+    peutt eq (k1 r1) (k2 r2)) →
   stable_hitting_match
     (@ptree_primitive_kernel E MN MF FI MX A)
     (@ptree_primitive_kernel E MN MF FI MX A)
@@ -1739,7 +1741,7 @@ Qed.
 End PEuttBindCongruence.
 
 Section PEuttFrontierRule.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -1754,28 +1756,28 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}
   `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}.
 
-Variable bind_cofinality : forall A R
-    (t : ptree E MN A) (k : A -> ptree E MN R),
+Variable bind_cofinality : ∀ A R
+    (t : ptree E MN A) (k : A → ptree E MN R),
     ptree_bind_cofinal (MF := MF) t k.
 
-Variable iter_productivity : forall I R
-    (step : I -> ptree E MN (I + R))
-    (transition : I -> MN (I + R)) (i : I),
-    (forall j, ptree_stable_hitting (MF := MF) (observe (step j))
+Variable iter_productivity : ∀ I R
+    (step : I → ptree E MN (I + R))
+    (transition : I → MN (I + R)) (i : I),
+    (∀ j, ptree_stable_hitting (MF := MF) (observe (step j))
       (mixed_bind (transition j)
-        (fun next => sem_ret (FHRet next)))) ->
-    sem_increasing (fun fuel => mixed_iter_approx fuel transition i) /\
+        (fun next => sem_ret (FHRet next)))) →
+    sem_increasing (fun fuel => mixed_iter_approx fuel transition i) ∧
     ptree_iter_cofinal (MF := MF) step transition i.
 
 (** Structured frontiers are proof certificates for the canonical
     stable-hitting semantics, not a second behavioral relation. *)
 Lemma peutt_of_frontiers {R1 R2}
-    (RR : R1 -> R2 -> Prop)
+    (RR : R1 → R2 → Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) out1 out2 :
-  frontier_certificate (observe t1) out1 ->
-  frontier_certificate (observe t2) out2 ->
+  frontier_certificate (observe t1) out1 →
+  frontier_certificate (observe t2) out2 →
   sem_lift (ptree_stable_head_rel RR
-    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 ->
+    (@peutt_state E MN MF FI FC MX FO R1 R2 RR)) out1 out2 →
   peutt RR t1 t2.
 Proof.
   intros Hfront1 Hfront2 Hlift.
@@ -1792,28 +1794,28 @@ Qed.
     coupling of their completed result measures; it is not a constructor of
     [peutt]. *)
 Lemma peutt_of_iter_certificates
-    {I1 I2 R1 R2} (RR : R1 -> R2 -> Prop)
-    (step1 : I1 -> ptree E MN (I1 + R1))
-    (step2 : I2 -> ptree E MN (I2 + R2))
-    (transition1 : I1 -> MN (I1 + R1))
-    (transition2 : I2 -> MN (I2 + R2))
+    {I1 I2 R1 R2} (RR : R1 → R2 → Prop)
+    (step1 : I1 → ptree E MN (I1 + R1))
+    (step2 : I2 → ptree E MN (I2 + R2))
+    (transition1 : I1 → MN (I1 + R1))
+    (transition2 : I2 → MN (I2 + R2))
     (i1 : I1) (i2 : I2) out1 out2 :
-  (forall j,
+  (∀ j,
     frontier_certificate (observe (step1 j))
       (mixed_bind (transition1 j)
-        (fun next => sem_ret (FHRet next)))) ->
-  mixed_iter transition1 i1 out1 ->
-  sem_total out1 ->
-  (forall j,
+        (fun next => sem_ret (FHRet next)))) →
+  mixed_iter transition1 i1 out1 →
+  sem_total out1 →
+  (∀ j,
     frontier_certificate (observe (step2 j))
       (mixed_bind (transition2 j)
-        (fun next => sem_ret (FHRet next)))) ->
-  mixed_iter transition2 i2 out2 ->
-  sem_total out2 ->
+        (fun next => sem_ret (FHRet next)))) →
+  mixed_iter transition2 i2 out2 →
+  sem_total out2 →
   sem_lift (ptree_stable_head_rel RR
     (@peutt_state E MN MF FI FC MX FO R1 R2 RR))
     (sem_bind out1 (fun r => sem_ret (FHRet r)))
-    (sem_bind out2 (fun r => sem_ret (FHRet r))) ->
+    (sem_bind out2 (fun r => sem_ret (FHRet r))) →
   peutt RR (PTree.iter step1 i1) (PTree.iter step2 i2).
 Proof.
   intros Hstep1 Hiter1 Htotal1 Hstep2 Hiter2 Htotal2 Hlift.

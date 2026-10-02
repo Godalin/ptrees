@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -40,8 +42,8 @@ Proof.
   - exists (0%R : R). by exists 0%nat.
 Qed.
 
-Lemma extended_upper_scale (f : nat -> \bar R) (p : R) :
-  (0 <= p)%R -> upper (fun n => p%:E * f n) = p%:E * upper f.
+Lemma extended_upper_scale (f : nat → \bar R) (p : R) :
+  (0 <= p)%R → upper (fun n => p%:E * f n) = p%:E * upper f.
 Proof.
   move=> Hp. rewrite /extended_upper -ereal_supZl //.
   - congr (ereal_sup _). rewrite -image_comp. reflexivity.
@@ -49,9 +51,9 @@ Proof.
     by rewrite E in H.
 Qed.
 
-Lemma extended_upper_add (f g : nat -> \bar R) :
-  (forall n, 0 <= f n) -> (forall n, 0 <= g n) ->
-  nondecreasing_seq f -> nondecreasing_seq g ->
+Lemma extended_upper_add (f g : nat → \bar R) :
+  (∀ n, 0 <= f n) → (∀ n, 0 <= g n) →
+  nondecreasing_seq f → nondecreasing_seq g →
   upper (fun n => f n + g n) = upper f + upper g.
 Proof.
   move=> Hf Hg Hfi Hgi.
@@ -70,9 +72,9 @@ Qed.
 (** Zero-weight entries impose no continuity obligation, even when their
     tests take infinite values.  This is the form needed by SampleLub. *)
 Lemma enumQ_extended_expect_countable_ae {A} (mu : EnumQ A)
-    (tests : nat -> A -> \bar R) :
-  (forall n x, 0 <= tests n x) ->
-  enumQ_ae mu (fun x => nondecreasing_seq (fun n => tests n x)) ->
+    (tests : nat → A → \bar R) :
+  (∀ n x, 0 <= tests n x) →
+  enumQ_ae mu (fun x => nondecreasing_seq (fun n => tests n x)) →
   expect (fun x => upper (fun n => tests n x)) mu =
     upper (fun n => expect (tests n) mu).
 Proof.
@@ -105,9 +107,9 @@ Proof.
 Qed.
 
 Lemma enumQ_extended_expect_countable {A} (mu : EnumQ A)
-    (tests : nat -> A -> \bar R) :
-  (forall n x, 0 <= tests n x) ->
-  (forall x, nondecreasing_seq (fun n => tests n x)) ->
+    (tests : nat → A → \bar R) :
+  (∀ n x, 0 <= tests n x) →
+  (∀ x, nondecreasing_seq (fun n => tests n x)) →
   expect (fun x => upper (fun n => tests n x)) mu =
     upper (fun n => expect (tests n) mu).
 Proof.
@@ -116,9 +118,9 @@ Proof.
 Qed.
 
 Theorem free_omega_extended_upper_continuous {A} (mu : FreeOmega EnumQ A)
-    (tests : nat -> A -> \bar R) :
-  (forall n x, 0 <= tests n x) ->
-  (forall x, nondecreasing_seq (fun n => tests n x)) ->
+    (tests : nat → A → \bar R) :
+  (∀ n x, 0 <= tests n x) →
+  (∀ x, nondecreasing_seq (fun n => tests n x)) →
   free_omega_extended_upper mu (fun x => upper (fun n => tests n x)) =
     upper (fun n => free_omega_extended_upper mu (tests n)).
 Proof.
@@ -141,10 +143,10 @@ Proof.
 Qed.
 
 Theorem free_omega_sample_lub_extended_upper {A X} (mu : EnumQ X)
-    (chain : X -> nat -> FreeOmega EnumQ A) (f : A -> \bar R) :
-  enumQ_ae mu (fun x => forall n,
-    free_omega_approx eq (chain x n) (chain x (S n))) ->
-  (forall x, 0 <= f x) ->
+    (chain : X → nat → FreeOmega EnumQ A) (f : A → \bar R) :
+  enumQ_ae mu (fun x => ∀ n,
+    free_omega_approx eq (chain x n) (chain x (S n))) →
+  (∀ x, 0 <= f x) →
   free_omega_extended_upper (FOSample mu (fun x => FOLub (chain x))) f =
     free_omega_extended_upper (FOLub (fun n => FOSample mu (fun x => chain x n))) f.
 Proof.
@@ -156,8 +158,8 @@ Proof.
     intros a b ->. exact: lexx.
 Qed.
 Theorem free_omega_sample_bind_extended_upper {A X Y} (mu : EnumQ X)
-    (k : X -> EnumQ Y) (h : Y -> FreeOmega EnumQ A) (f : A -> \bar R) :
-  (forall x, 0 <= f x) ->
+    (k : X → EnumQ Y) (h : Y → FreeOmega EnumQ A) (f : A → \bar R) :
+  (∀ x, 0 <= f x) →
   free_omega_extended_upper (FOSample mu (fun x => FOSample (k x) h)) f =
     free_omega_extended_upper (FOSample (bind_EnumQ mu k) h) f.
 Proof.
@@ -166,16 +168,16 @@ Proof.
 Qed.
 
 Theorem free_omega_bind_lub_extended_upper {A X}
-    (source : nat -> FreeOmega EnumQ X)
-    (kernels : X -> nat -> FreeOmega EnumQ A) (f : A -> \bar R) :
-  (forall n, free_omega_approx eq (source n) (source (S n))) ->
-  (forall x n, free_omega_approx eq (kernels x n) (kernels x (S n))) ->
-  (forall x, 0 <= f x) ->
+    (source : nat → FreeOmega EnumQ X)
+    (kernels : X → nat → FreeOmega EnumQ A) (f : A → \bar R) :
+  (∀ n, free_omega_approx eq (source n) (source (S n))) →
+  (∀ x n, free_omega_approx eq (kernels x n) (kernels x (S n))) →
+  (∀ x, 0 <= f x) →
   free_omega_extended_upper (free_omega_bind (FOLub source) (fun x => FOLub (kernels x))) f =
   free_omega_extended_upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f.
 Proof.
   intros Hsource Hkernels Hf.
-  have Hrow : forall i,
+  have Hrow : ∀ i,
     free_omega_extended_upper (free_omega_bind (source i) (fun x => FOLub (kernels x))) f =
     free_omega_extended_upper (FOLub (fun n => free_omega_bind (source i) (fun x => kernels x n))) f.
   { intro i. rewrite free_omega_extended_upper_bind. cbn [free_omega_extended_upper].

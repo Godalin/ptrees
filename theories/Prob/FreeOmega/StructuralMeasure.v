@@ -1,4 +1,6 @@
 (** Role: Auxiliary structural measure instances and laws; not the observable canonical quotient. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -38,12 +40,12 @@ Lemma free_omega_sem_retE {MN} `{NI : SemanticMeasure MN}
 Proof. reflexivity. Qed.
 
 Section FreeOmegaLaws.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}.
 
-Lemma free_omega_ae_mono {A} (P Q : A -> Prop) mu :
-  (forall x, P x -> Q x) -> free_omega_ae P mu -> free_omega_ae Q mu.
+Lemma free_omega_ae_mono {A} (P Q : A → Prop) mu :
+  (∀ x, P x → Q x) → free_omega_ae P mu → free_omega_ae Q mu.
 Proof.
   intros HPQ Hae. induction Hae.
   - constructor. exact (HPQ _ H).
@@ -52,23 +54,23 @@ Proof.
   - constructor. exact H0.
 Qed.
 
-Lemma free_omega_ae_conj {A} (P Q : A -> Prop) mu :
-  free_omega_ae P mu -> free_omega_ae Q mu ->
-  free_omega_ae (fun x => P x /\ Q x) mu.
+Lemma free_omega_ae_conj {A} (P Q : A → Prop) mu :
+  free_omega_ae P mu → free_omega_ae Q mu →
+  free_omega_ae (fun x => P x ∧ Q x) mu.
 Proof.
   intros HP. revert Q. induction HP; intros Q HQ; dependent destruction HQ.
   - constructor. split; assumption.
   - constructor.
-  - eapply FOAESample with (Good := fun x => Good x /\ Good0 x).
+  - eapply FOAESample with (Good := fun x => Good x ∧ Good0 x).
     + eapply sem_ae_conj; eassumption.
     + intros x [Hx Hx0]. eapply H1; eauto.
   - constructor. intro n. eapply H0. exact (H1 n).
 Qed.
 
 Lemma free_omega_ae_bind {A B} (mu : FreeOmega MN A)
-    (k : A -> FreeOmega MN B) (P : A -> Prop) (Q : B -> Prop) :
-  free_omega_ae P mu ->
-  (forall x, P x -> free_omega_ae Q (k x)) ->
+    (k : A → FreeOmega MN B) (P : A → Prop) (Q : B → Prop) :
+  free_omega_ae P mu →
+  (∀ x, P x → free_omega_ae Q (k x)) →
   free_omega_ae Q (free_omega_bind mu k).
 Proof.
   intros Hae Hk. induction Hae; cbn.
@@ -80,8 +82,8 @@ Proof.
 Qed.
 
 Lemma free_omega_ae_bind_inv {A B} (mu : FreeOmega MN A)
-    (k : A -> FreeOmega MN B) (P : B -> Prop) :
-  free_omega_ae P (free_omega_bind mu k) ->
+    (k : A → FreeOmega MN B) (P : B → Prop) :
+  free_omega_ae P (free_omega_bind mu k) →
   free_omega_ae (fun x => free_omega_ae P (k x)) mu.
 Proof.
   induction mu; cbn; intro Hae.
@@ -93,9 +95,9 @@ Proof.
     exact (H n (H0 n)).
 Qed.
 
-Lemma free_omega_lift_mono {A B} (R T : A -> B -> Prop) mu nu :
-  (forall x y, R x y -> T x y) ->
-  free_omega_lift R mu nu -> free_omega_lift T mu nu.
+Lemma free_omega_lift_mono {A B} (R T : A → B → Prop) mu nu :
+  (∀ x y, R x y → T x y) →
+  free_omega_lift R mu nu → free_omega_lift T mu nu.
 Proof.
   intros HRT Hl. induction Hl.
   - apply FOLRet. exact (HRT _ _ H).
@@ -104,8 +106,8 @@ Proof.
   - apply FOLLub. exact H0.
 Qed.
 
-Lemma free_omega_lift_refl {A} (R : A -> A -> Prop) mu :
-  Reflexive R -> free_omega_lift R mu mu.
+Lemma free_omega_lift_refl {A} (R : A → A → Prop) mu :
+  Reflexive R → free_omega_lift R mu mu.
 Proof.
   intros HR. induction mu.
   - constructor. apply HR.
@@ -116,8 +118,8 @@ Proof.
   - constructor. exact H.
 Qed.
 
-Lemma free_omega_approx_refl {A} (R : A -> A -> Prop) mu :
-  Reflexive R -> free_omega_approx R mu mu.
+Lemma free_omega_approx_refl {A} (R : A → A → Prop) mu :
+  Reflexive R → free_omega_approx R mu mu.
 Proof.
   intros HR. induction mu.
   - constructor. apply HR.
@@ -128,9 +130,9 @@ Proof.
   - constructor. exact H.
 Qed.
 
-Lemma free_omega_approx_mono {A B} (R T : A -> B -> Prop) mu nu :
-  (forall x y, R x y -> T x y) ->
-  free_omega_approx R mu nu -> free_omega_approx T mu nu.
+Lemma free_omega_approx_mono {A B} (R T : A → B → Prop) mu nu :
+  (∀ x y, R x y → T x y) →
+  free_omega_approx R mu nu → free_omega_approx T mu nu.
 Proof.
   intros HRT Happrox. induction Happrox.
   - constructor.
@@ -140,9 +142,9 @@ Proof.
 Qed.
 
 Lemma free_omega_approx_comp {A B C}
-    (R : A -> B -> Prop) (T : B -> C -> Prop) mu nu xi :
-  free_omega_approx R mu nu -> free_omega_approx T nu xi ->
-  free_omega_approx (fun x z => exists y, R x y /\ T y z) mu xi.
+    (R : A → B → Prop) (T : B → C → Prop) mu nu xi :
+  free_omega_approx R mu nu → free_omega_approx T nu xi →
+  free_omega_approx (fun x z => ∃ y, R x y ∧ T y z) mu xi.
 Proof.
   intros H12. revert C T xi.
   induction H12; intros C T xi H23.
@@ -150,7 +152,7 @@ Proof.
   - dependent destruction H23. constructor. eexists. split; eassumption.
   - dependent destruction H23.
     eapply FOApproxSample with
-      (S := fun x z => exists y, S x y /\ S0 y z).
+      (S := fun x z => exists y, S x y ∧ S0 y z).
     + eapply sem_lift_comp; eassumption.
     + intros x z [y [Hxy Hyz]]. eapply H1; eauto.
   - dependent destruction H23. constructor. intro n.
@@ -159,18 +161,18 @@ Qed.
 
 Lemma free_omega_approx_trans {A}
     (mu nu xi : FreeOmega MN A) :
-  free_omega_approx eq mu nu -> free_omega_approx eq nu xi ->
+  free_omega_approx eq mu nu → free_omega_approx eq nu xi →
   free_omega_approx eq mu xi.
 Proof.
   intros Hmn Hnx. eapply free_omega_approx_mono with
-    (R := fun x z => exists mid, x = mid /\ mid = z).
+    (R := fun x z => exists mid, x = mid ∧ mid = z).
   - intros x z [mid [-> ->]]. reflexivity.
   - exact (free_omega_approx_comp (R := eq) (T := eq) Hmn Hnx).
 Qed.
 
-Lemma free_omega_approx_steps {A} (c : nat -> FreeOmega MN A) :
-  (forall n, free_omega_approx eq (c n) (c (S n))) ->
-  forall n k, free_omega_approx eq (c n) (c (n + k)).
+Lemma free_omega_approx_steps {A} (c : nat → FreeOmega MN A) :
+  (∀ n, free_omega_approx eq (c n) (c (S n))) →
+  ∀ n k, free_omega_approx eq (c n) (c (n + k)).
 Proof.
   intros Hinc n k. induction k.
   - replace (n + 0) with n by exact (plus_n_O n).
@@ -180,8 +182,8 @@ Proof.
     eapply free_omega_approx_trans; eauto.
 Qed.
 
-Lemma free_omega_lift_sym {A B} (R : A -> B -> Prop) mu nu :
-  free_omega_lift R mu nu ->
+Lemma free_omega_lift_sym {A B} (R : A → B → Prop) mu nu :
+  free_omega_lift R mu nu →
   free_omega_lift (fun y x => R x y) nu mu.
 Proof.
   intros Hl. induction Hl.
@@ -194,16 +196,16 @@ Proof.
 Qed.
 
 Lemma free_omega_lift_comp {A B C}
-    (R : A -> B -> Prop) (T : B -> C -> Prop) mu nu xi :
-  free_omega_lift R mu nu -> free_omega_lift T nu xi ->
-  free_omega_lift (fun x z => exists y, R x y /\ T y z) mu xi.
+    (R : A → B → Prop) (T : B → C → Prop) mu nu xi :
+  free_omega_lift R mu nu → free_omega_lift T nu xi →
+  free_omega_lift (fun x z => ∃ y, R x y ∧ T y z) mu xi.
 Proof.
   intros H12. revert C T xi.
   induction H12; intros C T xi H23; dependent destruction H23.
   - constructor. eexists. split; eassumption.
   - constructor.
   - eapply FOLSample with
-      (S := fun x z => exists y, S x y /\ S0 y z).
+      (S := fun x z => exists y, S x y ∧ S0 y z).
     + eapply sem_lift_comp; eassumption.
     + intros x z [y [Hxy Hyz]]. eapply H1; eauto.
   - constructor. intro n. eapply H0. exact (H1 n).
@@ -261,16 +263,16 @@ Qed.
 
 Lemma free_omega_ae_countable
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
-    {A} (mu : FreeOmega MN A) (P : nat -> A -> Prop) :
-  (forall n, free_omega_ae (P n) mu) ->
-  free_omega_ae (fun x => forall n, P n x) mu.
+    {A} (mu : FreeOmega MN A) (P : nat → A → Prop) :
+  (∀ n, free_omega_ae (P n) mu) →
+  free_omega_ae (fun x => ∀ n, P n x) mu.
 Proof.
   revert P. induction mu as [x| |X node k IH|chain IH]; intros P HP.
   - constructor. intro n. specialize (HP n). dependent destruction HP.
     assumption.
   - constructor.
   - eapply FOAESample with
-      (Good := fun x => forall n, free_omega_ae (P n) (k x)).
+      (Good := fun x => ∀ n, free_omega_ae (P n) (k x)).
     + apply sem_ae_countable. intro n.
       specialize (HP n). dependent destruction HP.
       eapply sem_ae_mono; [|eassumption]. intros y Hy. eauto.
@@ -289,18 +291,18 @@ Qed.
 
 Lemma free_omega_lift_ae_restrict
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
-    {A B} (R : A -> B -> Prop) (mu : FreeOmega MN A)
-    (nu : FreeOmega MN B) (P : A -> Prop) (Q : B -> Prop) :
-  free_omega_lift R mu nu ->
-  free_omega_ae P mu -> free_omega_ae Q nu ->
-  free_omega_lift (fun x y => R x y /\ P x /\ Q y) mu nu.
+    {A B} (R : A → B → Prop) (mu : FreeOmega MN A)
+    (nu : FreeOmega MN B) (P : A → Prop) (Q : B → Prop) :
+  free_omega_lift R mu nu →
+  free_omega_ae P mu → free_omega_ae Q nu →
+  free_omega_lift (fun x y => R x y ∧ P x ∧ Q y) mu nu.
 Proof.
   intros Hlift. induction Hlift; intros HP HQ;
     dependent destruction HP; dependent destruction HQ.
   - constructor. repeat split; assumption.
   - constructor.
   - eapply FOLSample with
-      (S := fun x y => S x y /\ Good x /\ Good0 y).
+      (S := fun x y => S x y ∧ Good x ∧ Good0 y).
     + eapply sem_lift_ae_restrict; eassumption.
     + intros x y [Hxy [Hx Hy]]. eapply H1; eauto.
   - constructor. intro n. eapply H0; eauto.
@@ -308,16 +310,16 @@ Qed.
 
 Lemma free_omega_lift_ae_transport_r
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
-    {A B} (R : A -> B -> Prop) (mu : FreeOmega MN A)
-    (nu : FreeOmega MN B) (P : A -> Prop) :
-  free_omega_lift R mu nu -> free_omega_ae P mu ->
-  free_omega_ae (fun y => exists x, R x y /\ P x) nu.
+    {A B} (R : A → B → Prop) (mu : FreeOmega MN A)
+    (nu : FreeOmega MN B) (P : A → Prop) :
+  free_omega_lift R mu nu → free_omega_ae P mu →
+  free_omega_ae (fun y => ∃ x, R x y ∧ P x) nu.
 Proof.
   intros Hlift HP. induction Hlift; dependent destruction HP.
   - constructor. exists x. split; assumption.
   - constructor.
   - eapply FOAESample with
-      (Good := fun y => exists x, S x y /\ Good x).
+      (Good := fun y => exists x, S x y ∧ Good x).
     + eapply sem_lift_ae_transport_r; eassumption.
     + intros y [x [Hxy Hx]]. eapply H1; eauto.
   - constructor. intro n. exact (H0 n (H1 n)).
@@ -338,7 +340,7 @@ Proof.
 Qed.
 
 Lemma free_omega_bind_assoc {A B C} (mu : FreeOmega MN A)
-    (k : A -> FreeOmega MN B) (h : B -> FreeOmega MN C) :
+    (k : A → FreeOmega MN B) (h : B → FreeOmega MN C) :
   free_omega_bind (free_omega_bind mu k) h =
   free_omega_bind mu (fun x => free_omega_bind (k x) h).
 Proof.
@@ -348,11 +350,11 @@ Proof.
 Qed.
 
 Lemma free_omega_lift_bind {A B C D}
-    (R : A -> B -> Prop) (T : C -> D -> Prop)
+    (R : A → B → Prop) (T : C → D → Prop)
     (mu : FreeOmega MN A) (nu : FreeOmega MN B)
-    (k : A -> FreeOmega MN C) (h : B -> FreeOmega MN D) :
-  free_omega_lift R mu nu ->
-  (forall x y, R x y -> free_omega_lift T (k x) (h y)) ->
+    (k : A → FreeOmega MN C) (h : B → FreeOmega MN D) :
+  free_omega_lift R mu nu →
+  (∀ x y, R x y → free_omega_lift T (k x) (h y)) →
   free_omega_lift T (free_omega_bind mu k) (free_omega_bind nu h).
 Proof.
   intros Hl Hkh. induction Hl; cbn.
@@ -364,14 +366,14 @@ Qed.
 
 Lemma free_omega_bind_ae_proper
     `{NAE : @SemanticMeasureAELiftLaws MN NI}
-    {A B} (mu : FreeOmega MN A) (k h : A -> FreeOmega MN B) :
-  free_omega_ae (fun x => free_omega_lift eq (k x) (h x)) mu ->
+    {A B} (mu : FreeOmega MN A) (k h : A → FreeOmega MN B) :
+  free_omega_ae (fun x => free_omega_lift eq (k x) (h x)) mu →
   free_omega_lift eq (free_omega_bind mu k) (free_omega_bind mu h).
 Proof.
   intros Hae. induction Hae; cbn.
   - exact H.
   - constructor.
-  - eapply FOLSample with (S := fun x y => x = y /\ Good x).
+  - eapply FOLSample with (S := fun x y => x = y ∧ Good x).
     + exact (sem_lift_refl_ae H).
     + intros x y [-> Hy]. exact (H1 y Hy).
   - constructor. exact H0.
@@ -400,7 +402,7 @@ Qed.
 }.
 
 Lemma free_omega_mixed_bindE {A B} (mu : MN A)
-    (k : A -> FreeOmega MN B) :
+    (k : A → FreeOmega MN B) :
   @mixed_bind MN (FreeOmega MN) FreeOmegaMixedMeasure
     A B mu k = FOSample mu k.
 Proof. reflexivity. Qed.
@@ -413,7 +415,7 @@ Proof. reflexivity. Qed.
 Proof.
   constructor.
   - intros A B mu k h Hae.
-    eapply FOLSample with (S := fun x y => x = y /\
+    eapply FOLSample with (S := fun x y => x = y ∧
       free_omega_lift eq (k x) (h x)).
     + exact (sem_lift_refl_ae Hae).
     + intros x y [-> Hxy]. exact Hxy.
@@ -427,7 +429,7 @@ Qed.
     explicit and conservative: totality certificates for analytic limits
     belong to an observable interpretation, not to the syntax alone. *)
 #[local] Polymorphic Instance FreeOmegaSemanticOmega :
-    forall `{NO : @SemanticOmega MN NI},
+    ∀ `{NO : @SemanticOmega MN NI},
     @SemanticOmega (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI)).
 Proof.
@@ -438,7 +440,7 @@ Proof.
         (FreeOmegaSemanticMeasure (NI := NI)) A
         out (FOLub chain);
     sem_total := fun A mu => exists (O : Type) (obs : A -> O) (out : MN O),
-      free_omega_observes obs mu out /\ sem_total out |}.
+      free_omega_observes obs mu out ∧ sem_total out |}.
 Defined.
 
 (** The old syntactic-total design would accept only [FORet].  Observable
@@ -446,7 +448,7 @@ Defined.
     total low-universe node distribution. *)
 
 #[local] Polymorphic Instance FreeOmegaSemanticOmegaLaws :
-    forall `{NO : @SemanticOmega MN NI},
+    ∀ `{NO : @SemanticOmega MN NI},
     @SemanticOmegaLaws (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI))
       (FreeOmegaSemanticOmega (NO := NO)).
@@ -476,7 +478,7 @@ Proof.
 Qed.
 
 #[local] Polymorphic Instance FreeOmegaSemanticMeasureOrderLaws :
-    forall `{NO : @SemanticOmega MN NI},
+    ∀ `{NO : @SemanticOmega MN NI},
     @SemanticMeasureOrderLaws (FreeOmega MN)
       (FreeOmegaSemanticMeasure (NI := NI))
       (FreeOmegaSemanticOmega (NO := NO)).
@@ -485,7 +487,7 @@ Proof.
   - intros A mu. apply free_omega_approx_refl. intros x. reflexivity.
   - intros A mu nu xi Hmn Hnx.
     eapply free_omega_approx_mono with
-      (R := fun x z => exists mid, x = mid /\ mid = z).
+      (R := fun x z => exists mid, x = mid ∧ mid = z).
     + intros x z [mid [-> ->]]. reflexivity.
     + exact (free_omega_approx_comp (R := eq) (T := eq) Hmn Hnx).
   - intros A mu. constructor.

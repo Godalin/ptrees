@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import List.
@@ -16,12 +18,12 @@ Unset Printing Implicit Defensive.
 (** A finite Boolean signature codes equivalence classes on the relevant
     support.  The probes may be higher-universe trees; the label list bool
     stays small.  No quotient type or measurable structure on trees is used. *)
-Definition finite_equivalence_code {A} (R : A -> A -> Prop) (probes : list A) a :=
+Definition finite_equivalence_code {A} (R : A → A → Prop) (probes : list A) a :=
   List.map (fun probe => if excluded_middle_informative (R probe a) then true else false) probes.
 
-Lemma finite_equivalence_code_respects {A} (R : A -> A -> Prop)
+Lemma finite_equivalence_code_respects {A} (R : A → A → Prop)
     (ER : Equivalence R) probes a b :
-  R a b -> finite_equivalence_code R probes a = finite_equivalence_code R probes b.
+  R a b → finite_equivalence_code R probes a = finite_equivalence_code R probes b.
 Proof.
   destruct ER as [Hrefl Hsym Htrans]. intro Hab.
   induction probes as [|probe probes IH]; [reflexivity|].
@@ -32,10 +34,10 @@ Proof.
   - exfalso. apply Ha. exact (Htrans _ _ _ Hb (Hsym _ _ Hab)).
 Qed.
 
-Lemma finite_equivalence_code_separates {A} (R : A -> A -> Prop)
+Lemma finite_equivalence_code_separates {A} (R : A → A → Prop)
     (Hrefl : Reflexive R) probes a b :
-  List.In a probes ->
-  finite_equivalence_code R probes a = finite_equivalence_code R probes b -> R a b.
+  List.In a probes →
+  finite_equivalence_code R probes a = finite_equivalence_code R probes b → R a b.
 Proof.
   induction probes as [|probe probes IH]; [contradiction|].
   intros [<-|Hin] Hcode.
@@ -47,7 +49,7 @@ Proof.
 Qed.
 
 Section EquivalenceJoint.
-Context {A : Type} (R : A -> A -> Prop) (ER : Equivalence R).
+Context {A : Type} (R : A → A → Prop) (ER : Equivalence R).
 Variable p q : free_omega_native_presentation SubEnumQ A.
 Let X := native_sample_type p.
 Let Y := native_sample_type q.
@@ -68,15 +70,15 @@ Qed.
     EQUIVALENCE hypothesis.  This does not assert realization for arbitrary
     relations; equivalence remains an explicit hypothesis of this lemma. *)
 Theorem subenumQ_equivalence_quotient_joint :
-  free_omega_qlift R (free_omega_native p) (free_omega_native q) ->
-  exists (Z : Type) (joint : SubEnumQ Z)
-    (left : Z -> X) (right : Z -> Y),
+  free_omega_qlift R (free_omega_native p) (free_omega_native q) →
+  ∃ (Z : Type) (joint : SubEnumQ Z)
+    (left : Z → X) (right : Z → Y),
     free_omega_qlift (fun z x => left z = x)
       (FOSample joint (fun z => FORet z) : FreeOmegaAt SubEnumQ A Z)
-      (FOSample mu (fun x => FORet x)) /\
+      (FOSample mu (fun x => FORet x)) ∧
     free_omega_qlift (fun z y => right z = y)
       (FOSample joint (fun z => FORet z) : FreeOmegaAt SubEnumQ A Z)
-      (FOSample nu (fun y => FORet y)) /\
+      (FOSample nu (fun y => FORet y)) ∧
     sem_ae joint (fun z => R (native_sample_value p (left z)) (native_sample_value q (right z))).
 Proof.
   intro Hdecoded.
@@ -99,11 +101,11 @@ Proof.
     pose proof (proj2 (free_omega_qlift_support Hl) _ Hae) as Htransport.
     apply free_omega_ae_sample_inv in Htransport.
     eapply sem_ae_mono; [|exact Htransport]. intros z Hz.
-    assert (Himage : exists x, projT1 z = x /\ List.In (native_sample_value p x) probes)
+    assert (Himage : exists x, projT1 z = x ∧ List.In (native_sample_value p x) probes)
       by (inversion Hz; assumption).
     destruct Himage as [x [<- Hx]]. exact Hx. }
   eapply sem_ae_mono with (P := fun z =>
-    List.In (native_sample_value p (projT1 z)) probes /\ lc (projT1 z) = rc (snd (projT2 z))).
+    List.In (native_sample_value p (projT1 z)) probes ∧ lc (projT1 z) = rc (snd (projT2 z))).
   - intros z [Hz Hlabels]. eapply finite_equivalence_code_separates.
     + exact (@Equivalence_Reflexive A R ER).
     + exact Hz.

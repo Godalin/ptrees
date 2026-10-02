@@ -1,6 +1,8 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** Native-parametric external validation contracts. Mainline reasoning must
     not acquire a dependence on this external model. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -41,10 +43,10 @@ Fail Check PTree.Prob.Backend.SubEnumQ.FreeOmega.Compatibility.free_omega_admiss
 Fail Check PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation.free_omega_upper.
 
 Example generic_q_joint_without_legacy (R : realType) {A B}
-    (T : A -> B -> Prop) t u
+    (T : A → B → Prop) t u
     (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t)
     (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
-  free_omega_qlift T t u ->
+  free_omega_qlift T t u →
   oval_coupled T (free_omega_model Ht) (free_omega_model Hu).
 Proof. exact: subenumQ_qlift_sound. Qed.
 
@@ -74,7 +76,7 @@ Proof.
     intros b Hb; apply FOAERet; exact (proj2 (subenumQ_modelable_iff_admissible R _) Hb).
 Qed.
 
-Example generic_rejects_raw_alternation : ~ free_omega_modelable native alternating_bool.
+Example generic_rejects_raw_alternation : ¬ free_omega_modelable native alternating_bool.
 Proof. intro H; apply (@alternating_bool_not_admissible R); exact (proj1 (subenumQ_modelable_iff_admissible R _) H). Qed.
 
 Example generic_geometric_modelable : free_omega_modelable native geometric.

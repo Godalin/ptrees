@@ -1,4 +1,6 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 (** Keep the zero query in the behavior carrier's universe, rather than
@@ -78,14 +80,14 @@ Proof.
 Qed.
 
 Lemma divergent_trace_query_mass_zero :
-  exists out : EnumQ bool,
+  ∃ out : EnumQ bool,
     @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
-      bool bool (fun b => b) divergent_trace_query out /\
+      bool bool (fun b => b) divergent_trace_query out ∧
     enumQ_expect (fun _ : bool => (1 : rat)) out = 0.
 Proof. exists enumQ_zero. split; [constructor|reflexivity]. Qed.
 
 Lemma divergent_trace_query_not_rejection_mass :
-  ~ @sem_same_mass MF FI bool bool divergent_trace_query (FORet false).
+  ¬ @sem_same_mass MF FI bool bool divergent_trace_query (FORet false).
 Proof.
   intro Hmass.
   pose proof ((proj1 (free_omega_qlift_support Hmass)) (fun _ => False)
@@ -111,7 +113,7 @@ Qed.
     mass 1. This is the proved backend model, not a new mass/reflection axiom.
     The standard-real instance is the same one used by native recovery. *)
 Lemma half_return_heads_not_same_mass_ret :
-  ~ @sem_same_mass MF FI
+  ¬ @sem_same_mass MF FI
       (stable_head regE EnumQ bool) (stable_head regE EnumQ bool)
       half_return_heads (FORet (FHRet true)).
 Proof.
@@ -129,7 +131,7 @@ Proof.
 Qed.
 
 Theorem half_return_half_diverge_not_peutt_ret :
-  ~ W half_return_half_diverge (Ret true).
+  ¬ W half_return_half_diverge (Ret true).
 Proof.
   intro Hrel.
   have Hlift := peutt_hitting_lift (FI := FI) (FC := FC) (FO := FO)
@@ -159,7 +161,7 @@ Unset Printing Implicit Defensive.
 
 (** Complete stable hitting distinguishes silent divergence from return.
     This sanity check is independent of any finite-compression relation. *)
-Variant closure_event : Type -> Type := .
+Variant closure_event : Type → Type := .
 Local Notation tree := (ptree closure_event SubEnumQ bool).
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
@@ -172,7 +174,7 @@ CoFixpoint closure_spin : tree := Tau closure_spin.
 Definition closure_return : tree := Ret true.
 Definition closure_delayed : tree := Tau closure_return.
 
-Lemma closure_spin_not_peutt_return : ~ PE closure_spin closure_return.
+Lemma closure_spin_not_peutt_return : ¬ PE closure_spin closure_return.
 Proof.
   intro Hpeutt.
   pose (out := @FOZero SubEnumQ (stable_head closure_event SubEnumQ bool)).

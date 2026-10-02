@@ -1,4 +1,6 @@
 (** Role: supporting compression/scheduling/recovery example; not public theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -24,7 +26,7 @@ Unset Printing Implicit Defensive.
     of an arbitrary kernel.  Projection removes it even across unbounded
     execution; this is not a finite-prefix or AST-only statement. *)
 Section Instrumentation.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI} {X Y S O : Type}.
 Local Notation MF := (FreeOmega MN).
@@ -32,8 +34,8 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Variable hidden : MN X.
 Variable point : Y.
 Hypothesis hidden_mass : sem_same_mass hidden (sem_ret point).
-Hypothesis point_ae : forall P, sem_ae (sem_ret point) P <-> P point.
-Variable base : S -> MF (stable_target S O).
+Hypothesis point_ae : ∀ P, sem_ae (sem_ret point) P ↔ P point.
+Variable base : S → MF (stable_target S O).
 
 Definition add_random_state (z : stable_target S O) : MF (stable_target (S * X) O) :=
   match z with
@@ -72,8 +74,8 @@ Qed.
 
 Theorem random_state_complete_hitting s x out1 out2 :
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega
-    (S * X) O random_state_kernel (s,x) out1 ->
-  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O base s out2 ->
+    (S * X) O random_state_kernel (s,x) out1 →
+  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O base s out2 →
   free_omega_qlift eq out1 out2.
 Proof.
   intros Hleft Hright.
@@ -105,16 +107,16 @@ Import EnumQ GRing.Theory.
 (** A concrete nondegenerate sample discharges the TOTAL-MASS premise.
     Support alone would not justify forgetting a subprobability sample. *)
 Example fair_hidden_state_preserves_hitting {S O}
-    (base : S -> FreeOmega SubEnumQ (stable_target S O)) s b out1 out2 :
+    (base : S → FreeOmega SubEnumQ (stable_target S O)) s b out1 out2 :
   @stable_hitting (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
     FreeOmegaObservableSemanticOmega (S * bool) O
-    (random_state_kernel subenumQ_fair base) (s,b) out1 ->
+    (random_state_kernel subenumQ_fair base) (s,b) out1 →
   @stable_hitting (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
-    FreeOmegaObservableSemanticOmega S O base s out2 ->
+    FreeOmegaObservableSemanticOmega S O base s out2 →
   free_omega_qlift eq out1 out2.
 Proof.
   apply random_state_complete_hitting with (point := false).
@@ -124,14 +126,14 @@ Proof.
 Qed.
 
 Section CompressedPrograms.
-Context {E : Type -> Type} {A : Type}.
+Context {E : Type → Type} {A : Type}.
 Local Notation tree := (ptree E SubEnumQ A).
 Local Notation head := (stable_head E SubEnumQ A).
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-Variable policy : tree -> MF tree.
-Hypothesis policy_valid : forall t,
+Variable policy : tree → MF tree.
+Hypothesis policy_valid : ∀ t,
   @finite_internal E SubEnumQ MF FI FreeOmegaMixedMeasure A t (policy t).
 
 (** Fresh hidden coins are added after arbitrary well-founded cuts, in
@@ -140,9 +142,9 @@ Hypothesis policy_valid : forall t,
     reference, joint extraction assumption, AST, or uniform cut bound. *)
 Example fair_hidden_compressed_hitting t b out original :
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega (tree * bool) head
-    (random_state_kernel subenumQ_fair (finite_internal_round_kernel policy)) (t,b) out ->
+    (random_state_kernel subenumQ_fair (finite_internal_round_kernel policy)) (t,b) out →
   @ptree_stable_hitting E SubEnumQ MF FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega A (observe t) original ->
+    FreeOmegaObservableSemanticOmega A (observe t) original →
   free_omega_qlift eq (free_omega_bind out (fun h => FORet h)) original.
 Proof.
   intros Hout Horiginal.
@@ -174,9 +176,9 @@ Definition delayed_return_kernel (state : bool) : FreeOmega SubEnumQ (stable_tar
   if state then FORet (SHInternal false) else FORet (SHStable false).
 
 Example hidden_step_has_no_structural_reference :
-  ~ exists reference : FreeOmega SubEnumQ (stable_target (bool * bool) bool),
+  ¬ ∃ reference : FreeOmega SubEnumQ (stable_target (bool * bool) bool),
     free_omega_qlift eq
-      (random_state_kernel subenumQ_fair delayed_return_kernel (true,false)) reference /\
+      (random_state_kernel subenumQ_fair delayed_return_kernel (true,false)) reference ∧
     free_omega_lift
       (fun z target => kernel_target_projection (@fst bool bool) (fun b : bool => b) z = target)
       reference (delayed_return_kernel true).
@@ -198,7 +200,7 @@ Qed.
 (** A missing-mass sample cannot be silently treated as unobservable
     total noise.  The mass premise of the projection example rejects it. *)
 Example zero_hidden_sample_rejected :
-  ~ @sem_same_mass SubEnumQ SubEnumQ_SemanticMeasure bool bool
+  ¬ @sem_same_mass SubEnumQ SubEnumQ_SemanticMeasure bool bool
       subenumQ_zero (subenumQ_ret false).
 Proof.
   intro Hmass.
@@ -208,6 +210,6 @@ Proof.
   pose proof (sem_lift_ae_transport_r Hmass Hzero) as Hret.
   apply (proj1 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
     SubEnumQ_SemanticMeasureDiracAELaws bool false
-    (fun y => exists x : bool, True /\ False))) in Hret.
+    (fun y => exists x : bool, True ∧ False))) in Hret.
   destruct Hret as [x [_ Hfalse]]. exact Hfalse.
 Qed.

@@ -1,4 +1,6 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -78,7 +80,7 @@ Qed.
     non-Dirac hidden_choice. The fragment does not require that subtree
     itself to be a state. *)
 Example distribution_not_state_boundary :
-  ~ state hidden_choice /\ state (PTree.interp mdp_test_handler decision).
+  ¬ state hidden_choice ∧ state (PTree.interp mdp_test_handler decision).
 Proof. split; [exact hidden_choice_not_mdp_state|exact request_sample_reply_stays_mdp]. Qed.
 
 (** A many-to-one VALUE map, independently of the event permutation.
@@ -92,7 +94,7 @@ Qed.
 
 Example interpreted_fragment_coincidence b :
   (W (PTree.interp mdp_test_handler (Tau (service b)))
-     (PTree.interp mdp_test_handler (service b)) <->
+     (PTree.interp mdp_test_handler (service b)) ↔
    TB (PTree.interp mdp_test_handler (Tau (service b)))
       (PTree.interp mdp_test_handler (service b))).
 Proof.
@@ -134,10 +136,10 @@ Section HeterogeneousEffects.
 
 (** Genuinely different inductive families, not aliases or permutations
     of one signature. AtomicInterp's E -> E certificate is not used. *)
-Variant sourceE : Type -> Type :=
-| AskS : sourceE bool | ReplyS : bool -> sourceE unit.
-Variant targetE : Type -> Type :=
-| AskT : targetE bool | ReplyT : bool -> targetE unit.
+Variant sourceE : Type → Type :=
+| AskS : sourceE bool | ReplyS : bool → sourceE unit.
+Variant targetE : Type → Type :=
+| AskT : targetE bool | ReplyT : bool → targetE unit.
 
 Definition hetero_event X (e : sourceE X) : targetE X :=
   match e in sourceE X return targetE X with
@@ -203,7 +205,7 @@ Proof.
 Qed.
 
 Lemma hetero_interp_hitting t mu :
-  shits t mu -> thits (PTree.interp hetero_handler t) (hetero_map mu).
+  shits t mu → thits (PTree.interp hetero_handler t) (hetero_map mu).
 Proof.
   intro Hhit. eapply (ptree_stable_hitting_interp (FI := FI) (FO := FO));
     [apply ptree_interp_cofinal_all|exact Hhit|apply hetero_head_hitting].
@@ -211,10 +213,10 @@ Qed.
 
 (** Independently discharge the heterogeneous contract for ALL qualifying
     source heads, including heads with non-Dirac probabilistic successors. *)
-Lemma hetero_head_mdp h : SG h -> TG (hetero_head h).
+Lemma hetero_head_mdp h : SG h → TG (hetero_head h).
 Proof.
   intro Hh. eapply mdp_head_coinduction with
-    (P := fun target => exists source, SG source /\ target = hetero_head source).
+    (P := fun target => exists source, SG source ∧ target = hetero_head source).
   - intros target [source [Hgood ->]]. destruct source as [r|X e k]; [exact I|].
     intro x. destruct (proj1 (mdp_head_vis_iff e k) Hgood x)
       as [mu [Hhit [Htotal Hae]]].
@@ -239,11 +241,11 @@ Proof.
   - apply hetero_head_mdp. exact Hh.
 Qed.
 
-Theorem heterogeneous_mdp_preservation t : SS t -> TS (PTree.interp hetero_handler t).
+Theorem heterogeneous_mdp_preservation t : SS t → TS (PTree.interp hetero_handler t).
 Proof. apply mdp_state_interp. exact hetero_handler_mdp. Qed.
 
-Theorem heterogeneous_guarded_transition_preservation t u : SS t -> SS u ->
-  @trans_bisim sourceE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq t u ->
+Theorem heterogeneous_guarded_transition_preservation t u : SS t → SS u →
+  @trans_bisim sourceE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq t u →
   @trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
     (PTree.interp hetero_handler t) (PTree.interp hetero_handler u).
 Proof.
@@ -251,9 +253,9 @@ Proof.
   exact (mdp_guarded_interp_trans hetero_handler_mdp hetero_handler_guarded Ht Hu Htu).
 Qed.
 
-Theorem heterogeneous_target_coincidence t u : SS t -> SS u ->
+Theorem heterogeneous_target_coincidence t u : SS t → SS u →
   (@peutt targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
-      (PTree.interp hetero_handler t) (PTree.interp hetero_handler u) <->
+      (PTree.interp hetero_handler t) (PTree.interp hetero_handler u) ↔
    @trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
       (PTree.interp hetero_handler t) (PTree.interp hetero_handler u)).
 Proof. apply mdp_interp_peutt_trans_iff. exact hetero_handler_mdp. Qed.
@@ -291,7 +293,7 @@ Proof.
   - apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
   - apply (sem_eq_refl (SI := FI)).
   - eapply mdp_head_coinduction with
-      (P := fun h => h = hetero_service_head \/ exists b, h = hetero_reply_head b).
+      (P := fun h => h = hetero_service_head ∨ exists b, h = hetero_reply_head b).
     + intros h [-> | [b ->]].
       * intro x. exists (FORet (hetero_reply_head x)). split.
         -- constructor. apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).

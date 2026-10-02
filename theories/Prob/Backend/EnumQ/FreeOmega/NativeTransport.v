@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -27,12 +29,12 @@ Variable F : realType.
 (** These tests apply to the DECODED values, possibly in a higher universe.
     Neither injectivity of the decoders nor a conditional kernel is needed. *)
 Lemma enumQ_decoded_quotient_rational_tests {A B X Y}
-    (T : A -> B -> Prop) (mu : EnumQ X) (nu : EnumQ Y)
-    (decode : X -> A) (decode' : Y -> B) f g :
+    (T : A → B → Prop) (mu : EnumQ X) (nu : EnumQ Y)
+    (decode : X → A) (decode' : Y → B) f g :
   free_omega_qlift T (FOSample mu (fun x => FORet (decode x)))
-    (FOSample nu (fun y => FORet (decode' y))) ->
-  (forall x, 0 <= f x) -> (forall y, 0 <= g y) ->
-  (forall x y, T x y -> f x <= g y) ->
+    (FOSample nu (fun y => FORet (decode' y))) →
+  (∀ x, 0 <= f x) → (∀ y, 0 <= g y) →
+  (∀ x y, T x y → f x <= g y) →
   enumQ_expect (fun x => f (decode x)) mu <= enumQ_expect (fun y => g (decode' y)) nu.
 Proof.
   intros Hq Hf Hg Hfg.
@@ -40,7 +42,7 @@ Proof.
   { intro x. rewrite lee_fin ler0q. exact (Hf x). }
   have Hg' : nonnegative_test (fun y => (ratr (g y) : F)%:E).
   { intro y. rewrite lee_fin ler0q. exact (Hg y). }
-  have Hfg' : forall x y, T x y -> ((ratr (f x) : F)%:E <= (ratr (g y))%:E)%E.
+  have Hfg' : ∀ x y, T x y -> ((ratr (f x) : F)%:E <= (ratr (g y))%:E)%E.
   { intros x y Hxy. rewrite lee_fin ler_rat. exact (Hfg x y Hxy). }
   have H := free_omega_qlift_extended_upper Hq Hf' Hg' Hfg'.
   change (is_true (enumQ_extended_expect (fun x => (ratr (f (decode x)) : F)%:E) mu <=
@@ -51,10 +53,10 @@ Proof.
 Qed.
 
 Lemma enumQ_decoded_quotient_equal_mass {A B X Y}
-    (T : A -> B -> Prop) (mu : EnumQ X) (nu : EnumQ Y)
-    (decode : X -> A) (decode' : Y -> B) :
+    (T : A → B → Prop) (mu : EnumQ X) (nu : EnumQ Y)
+    (decode : X → A) (decode' : Y → B) :
   free_omega_qlift T (FOSample mu (fun x => FORet (decode x)))
-    (FOSample nu (fun y => FORet (decode' y))) ->
+    (FOSample nu (fun y => FORet (decode' y))) →
   enumQ_expect (fun _ => 1) mu = enumQ_expect (fun _ => 1) nu.
 Proof.
   intro Hq. have H := free_omega_qlift_extended_upper_mass F Hq.
@@ -69,28 +71,28 @@ Qed.
     its related target test is EXACTLY the neighbor-set indicator.  This
     avoids requiring an inverse or a disintegration of either decoder. *)
 Theorem enumQ_finite_decoded_quotient_coupling {A B} {X Y : finType}
-    (T : A -> B -> Prop) (mu : EnumQ X) (nu : EnumQ Y)
-    (decode : X -> A) (decode' : Y -> B) (edge : X -> Y -> bool)
-    (Hedge : forall x y, edge x y <-> T (decode x) (decode' y)) :
+    (T : A → B → Prop) (mu : EnumQ X) (nu : EnumQ Y)
+    (decode : X → A) (decode' : Y → B) (edge : X → Y → bool)
+    (Hedge : ∀ x y, edge x y ↔ T (decode x) (decode' y)) :
   free_omega_qlift T (FOSample mu (fun x => FORet (decode x)))
-    (FOSample nu (fun y => FORet (decode' y))) ->
+    (FOSample nu (fun y => FORet (decode' y))) →
   coupling (fun x y => edge x y) mu nu.
 Proof.
   intro Hq. apply finite_enumQ_transport.
   - intro S.
     pose f (a : A) : rat := if excluded_middle_informative
-      (exists x : X, x \in S /\ decode x = a) then 1 else 0.
+      (exists x : X, x \in S ∧ decode x = a) then 1 else 0.
     pose g (b : B) : rat := if excluded_middle_informative
-      (exists x : X, x \in S /\ T (decode x) b) then 1 else 0.
-    have Hf : forall a, 0 <= f a.
+      (exists x : X, x \in S ∧ T (decode x) b) then 1 else 0.
+    have Hf : ∀ a, 0 <= f a.
     { intro a. unfold f. destruct (excluded_middle_informative _); [exact: ler01|exact: lexx]. }
-    have Hg : forall b, 0 <= g b.
+    have Hg : ∀ b, 0 <= g b.
     { intro b. unfold g. destruct (excluded_middle_informative _); [exact: ler01|exact: lexx]. }
-    have Hfg : forall a b, T a b -> f a <= g b.
+    have Hfg : ∀ a b, T a b -> f a <= g b.
     { intros a b Hab. unfold f, g.
-      destruct (excluded_middle_informative (exists x : X, x \in S /\ decode x = a))
+      destruct (excluded_middle_informative (exists x : X, x \in S ∧ decode x = a))
         as [[x [Hx Hxa]]|Hnone].
-      - destruct (excluded_middle_informative (exists x : X, x \in S /\ T (decode x) b))
+      - destruct (excluded_middle_informative (exists x : X, x \in S ∧ T (decode x) b))
           as [Hyes|Hno]; [exact: lexx|].
         exfalso. apply Hno. exists x. split; [exact Hx|by rewrite Hxa].
       - destruct (excluded_middle_informative _); [exact: ler01|exact: lexx]. }
@@ -112,14 +114,14 @@ Proof.
         exists x. split; [exact Hx|exact (proj1 (Hedge x y) Hxy)]. }
     have Hcompare := enumQ_decoded_quotient_rational_tests Hq Hf Hg Hfg.
     have H := le_trans Hleft Hcompare. rewrite Hright !finite_enumQ_expect in H.
-    have Hind : forall (I : finType) (w : I -> rat) (P : pred I),
+    have Hind : ∀ (I : finType) (w : I -> rat) (P : pred I),
       (\sum_i w i * (if P i then 1 else 0)) = \sum_(i | P i) w i.
     { intros I w P. rewrite [RHS]big_mkcond. apply eq_bigr=> i _.
       by case: (P i); rewrite ?mulr0 ?mulr1. }
     by rewrite !Hind in H.
   - have H := enumQ_decoded_quotient_equal_mass Hq.
     rewrite !finite_enumQ_expect in H.
-    have Hone : forall (I : finType) (w : I -> rat), (\sum_i w i * 1) = \sum_i w i.
+    have Hone : ∀ (I : finType) (w : I -> rat), (\sum_i w i * 1) = \sum_i w i.
     { intros I w. apply eq_bigr=> i _. exact: mulr1. }
     by rewrite !Hone in H.
 Qed.
@@ -148,9 +150,9 @@ Qed.
 
 Theorem enumQ_native_quotient_coupling {A B}
     (p : free_omega_native_presentation EnumQ A)
-    (q : free_omega_native_presentation EnumQ B) (T : A -> B -> Prop) :
-  free_omega_qlift T (free_omega_native p) (free_omega_native q) ->
-  exists joint : EnumQ (native_sample_type p * native_sample_type q),
+    (q : free_omega_native_presentation EnumQ B) (T : A → B → Prop) :
+  free_omega_qlift T (free_omega_native p) (free_omega_native q) →
+  ∃ joint : EnumQ (native_sample_type p * native_sample_type q),
     @semantic_coupling EnumQ EnumQ_SemanticMeasure _ _
       (fun x y => T (native_sample_value p x) (native_sample_value q y))
       (native_sample_measure p) (native_sample_measure q) joint.
@@ -166,7 +168,7 @@ Proof.
     - intros x z [y [-> Hyz]]. exact Hyz. }
   pose edge i j := if excluded_middle_informative
     (T (native_sample_value fp i) (native_sample_value fq j)) then true else false.
-  have Hedge : forall i j, edge i j <-> T (native_sample_value fp i) (native_sample_value fq j).
+  have Hedge : ∀ i j, edge i j ↔ T (native_sample_value fp i) (native_sample_value fq j).
   { intros i j. unfold edge. destruct (excluded_middle_informative _) as [Hyes|Hno].
     - split; [intros _; exact Hyes|intros _; reflexivity].
     - split; [intro Hfalse; discriminate Hfalse|intro Hbad; contradiction]. }
@@ -174,8 +176,8 @@ Proof.
   have Hlift := enumQ_sem_lift_of_coupling Hjoint.
   apply enumQ_coupling_realization.
   eapply sem_lift_mono with (R := fun x y => exists i,
-    enumQ_position_value (native_sample_measure p) i = x /\
-    exists j, edge i j /\ enumQ_position_value (native_sample_measure q) j = y).
+    enumQ_position_value (native_sample_measure p) i = x ∧
+    exists j, edge i j ∧ enumQ_position_value (native_sample_measure q) j = y).
   - intros x y [i [<- [j [Hij <-]]]]. exact (proj1 (Hedge i j) Hij).
   - eapply sem_lift_comp.
     + apply sem_lift_sym. apply enumQ_positions_lift_decode.

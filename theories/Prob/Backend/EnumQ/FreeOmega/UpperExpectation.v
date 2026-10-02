@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -26,21 +28,21 @@ Local Open Scope ereal_scope.
 Section ExtendedUpper.
 Variable R : realType.
 
-Fixpoint enumQ_extended_raw {A} (f : A -> \bar R) (mu : list (rat*A)) : \bar R :=
+Fixpoint enumQ_extended_raw {A} (f : A → \bar R) (mu : list (rat*A)) : \bar R :=
   match mu with
   | nil => 0
   | (p,x)::tail => (ratr p)%:E * f x + enumQ_extended_raw f tail
   end.
-Definition enumQ_extended_expect {A} (f : A -> \bar R) (mu : EnumQ A) :=
+Definition enumQ_extended_expect {A} (f : A → \bar R) (mu : EnumQ A) :=
   enumQ_extended_raw f (enumQ_raw mu).
 
-Lemma enumQ_extended_expect_cons {A} (f : A -> \bar R) p (Hp : (0 <= p)%R) x mu :
+Lemma enumQ_extended_expect_cons {A} (f : A → \bar R) p (Hp : (0 <= p)%R) x mu :
   enumQ_extended_expect f (enumQ_cons Hp x mu) =
   (ratr p)%:E * f x + enumQ_extended_expect f mu.
 Proof. reflexivity. Qed.
 
-Lemma enumQ_extended_expect_nonnegative {A} (f : A -> \bar R) mu :
-  (forall x, 0 <= f x) -> 0 <= enumQ_extended_expect f mu.
+Lemma enumQ_extended_expect_nonnegative {A} (f : A → \bar R) mu :
+  (∀ x, 0 <= f x) → 0 <= enumQ_extended_expect f mu.
 Proof.
   move=> Hf; apply (enumQ_ind_raw (P := fun mu => 0 <= enumQ_extended_expect f mu)).
   - exact: lexx.
@@ -49,8 +51,8 @@ Proof.
     by rewrite lee_fin ler0q.
   - move=> a b He IH; by rewrite /enumQ_extended_expect -He.
 Qed.
-Lemma enumQ_extended_expect_mono {A} (f g : A -> \bar R) mu :
-  (forall x, f x <= g x) -> enumQ_extended_expect f mu <= enumQ_extended_expect g mu.
+Lemma enumQ_extended_expect_mono {A} (f g : A → \bar R) mu :
+  (∀ x, f x <= g x) → enumQ_extended_expect f mu <= enumQ_extended_expect g mu.
 Proof.
   move=> Hfg; apply (enumQ_ind_raw (P := fun mu =>
     enumQ_extended_expect f mu <= enumQ_extended_expect g mu)).
@@ -68,16 +70,16 @@ Proof.
   rewrite /enumQ_extended_expect; elim: (enumQ_raw mu)=> [|[p x] tail IH] //=.
   by rewrite mule0 IH adde0.
 Qed.
-Lemma enumQ_extended_raw_app {A} (f : A -> \bar R) mu nu :
+Lemma enumQ_extended_raw_app {A} (f : A → \bar R) mu nu :
   enumQ_extended_raw f (mu++nu) = enumQ_extended_raw f mu + enumQ_extended_raw f nu.
 Proof. by elim: mu=> [|[p x] tail IH] /=; rewrite ?add0e ?IH ?addeA. Qed.
-Lemma enumQ_extended_expect_app {A} (f : A -> \bar R) mu nu :
+Lemma enumQ_extended_expect_app {A} (f : A → \bar R) mu nu :
   enumQ_extended_expect f (enumQ_app mu nu) =
   enumQ_extended_expect f mu + enumQ_extended_expect f nu.
 Proof. exact: enumQ_extended_raw_app. Qed.
 
-Lemma enumQ_extended_expect_scale {A} (f : A -> \bar R) p (Hp : (0 <= p)%R) mu :
-  (forall x, 0 <= f x) ->
+Lemma enumQ_extended_expect_scale {A} (f : A → \bar R) p (Hp : (0 <= p)%R) mu :
+  (∀ x, 0 <= f x) →
   enumQ_extended_expect f (scale_EnumQ Hp mu) = (ratr p)%:E * enumQ_extended_expect f mu.
 Proof.
   move=> Hf; apply (enumQ_ind_raw (P := fun mu =>
@@ -98,9 +100,9 @@ Proof.
       (ratr p)%:E*enumQ_extended_raw f (enumQ_raw b)).
     by rewrite He.
 Qed.
-Lemma enumQ_extended_expect_bind {A B} (f : B -> \bar R)
-    (mu : EnumQ A) (k : A -> EnumQ B) :
-  (forall x, 0 <= f x) ->
+Lemma enumQ_extended_expect_bind {A B} (f : B → \bar R)
+    (mu : EnumQ A) (k : A → EnumQ B) :
+  (∀ x, 0 <= f x) →
   enumQ_extended_expect f (bind_EnumQ mu k) =
     enumQ_extended_expect (fun x => enumQ_extended_expect f (k x)) mu.
 Proof.
@@ -120,7 +122,7 @@ Proof.
       enumQ_extended_raw (fun x => enumQ_extended_expect f (k x)) (enumQ_raw b)).
     by rewrite He.
 Qed.
-Lemma enumQ_extended_expect_rat {A} (f : A -> rat) mu :
+Lemma enumQ_extended_expect_rat {A} (f : A → rat) mu :
   enumQ_extended_expect (fun x => (ratr (f x))%:E) mu = (ratr (enumQ_expect f mu))%:E.
 Proof.
   change (enumQ_extended_raw (fun x => (ratr (f x))%:E) (enumQ_raw mu) =
@@ -137,10 +139,10 @@ Proof.
   exact: enumQ_extended_expect_rat.
 Qed.
 
-Definition extended_upper (c : nat -> \bar R) := ereal_sup (range c).
+Definition extended_upper (c : nat → \bar R) := ereal_sup (range c).
 
 Lemma extended_upper_le c b :
-  (forall n, c n <= b) -> extended_upper c <= b.
+  (∀ n, c n <= b) → extended_upper c <= b.
 Proof. move=> Hb. apply ub_ereal_sup=> x [n _ <-]. exact: Hb. Qed.
 
 Lemma extended_upper_ge c n : c n <= extended_upper c.
@@ -154,13 +156,13 @@ Proof.
 Qed.
 
 Lemma extended_upper_mono c d :
-  (forall n, c n <= d n) -> extended_upper c <= extended_upper d.
+  (∀ n, c n <= d n) → extended_upper c <= extended_upper d.
 Proof.
   move=> H. apply extended_upper_le=> n.
   exact: le_trans (H n) (extended_upper_ge d n).
 Qed.
 
-Lemma extended_upper_swap (grid : nat -> nat -> \bar R) :
+Lemma extended_upper_swap (grid : nat → nat → \bar R) :
   extended_upper (fun i => extended_upper (grid i)) =
   extended_upper (fun j => extended_upper (fun i => grid i j)).
 Proof.
@@ -173,7 +175,7 @@ Proof.
 Qed.
 
 Fixpoint free_omega_extended_upper {A} (mu : FreeOmega EnumQ A)
-    (f : A -> \bar R) : \bar R :=
+    (f : A → \bar R) : \bar R :=
   match mu with
   | FORet x => f x
   | FOZero => 0
@@ -183,8 +185,8 @@ Fixpoint free_omega_extended_upper {A} (mu : FreeOmega EnumQ A)
   end.
 
 Lemma free_omega_extended_upper_nonnegative {A} (mu : FreeOmega EnumQ A)
-    (f : A -> \bar R) :
-  (forall x, 0 <= f x) -> 0 <= free_omega_extended_upper mu f.
+    (f : A → \bar R) :
+  (∀ x, 0 <= f x) → 0 <= free_omega_extended_upper mu f.
 Proof.
   move=> Hf. induction mu as [x| |X node k IH|c IH]; cbn [free_omega_extended_upper].
   - exact: Hf.
@@ -194,8 +196,8 @@ Proof.
 Qed.
 
 Lemma free_omega_extended_upper_mono {A} (mu : FreeOmega EnumQ A)
-    (f g : A -> \bar R) :
-  (forall x, f x <= g x) ->
+    (f g : A → \bar R) :
+  (∀ x, f x <= g x) →
   free_omega_extended_upper mu f <= free_omega_extended_upper mu g.
 Proof.
   move=> Hfg. induction mu as [x| |X node k IH|c IH]; cbn [free_omega_extended_upper].
@@ -206,7 +208,7 @@ Proof.
 Qed.
 
 Lemma free_omega_extended_upper_bind {A B} (mu : FreeOmega EnumQ A)
-    (k : A -> FreeOmega EnumQ B) (f : B -> \bar R) :
+    (k : A → FreeOmega EnumQ B) (f : B → \bar R) :
   free_omega_extended_upper (free_omega_bind mu k) f =
   free_omega_extended_upper mu (fun x => free_omega_extended_upper (k x) f).
 Proof.

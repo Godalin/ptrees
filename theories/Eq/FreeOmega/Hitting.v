@@ -1,4 +1,6 @@
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -19,7 +21,7 @@ Unset Printing Implicit Defensive.
     by equality coupling and its limit predicate is saturated under that
     equality.  No native joint-realization capability is needed. *)
 Section FreeOmegaHitting.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
@@ -35,9 +37,9 @@ Local Notation hits t out :=
     steps.  An increasing schedule dominating the identity has the same
     complete hitting limit. *)
 Theorem stable_hitting_subsequence {R} (t : ptree E MN R)
-    (schedule : nat -> nat)
-    (Hmono : forall n, Peano.le (schedule n) (schedule (S n)))
-    (Hge : forall n, Peano.le n (schedule n)) :
+    (schedule : nat → nat)
+    (Hmono : ∀ n, Peano.le (schedule n) (schedule (S n)))
+    (Hge : ∀ n, Peano.le n (schedule n)) :
   hits t (FOLub (fun n =>
     ptree_hitting_approx (FI := FI) (FO := FO) (schedule n) (observe t))).
 Proof.
@@ -58,14 +60,14 @@ Qed.
     of every FreeOmega expression, nor PMF-to-bisimulation converse, is
     assumed.  Both finite observation and limit obligations stay explicit. *)
 Theorem stable_hitting_ast_of_observations {R O} (t : ptree E MN R)
-    (schedule : nat -> nat)
-    (Hmono : forall n, Peano.le (schedule n) (schedule (S n)))
-    (Hge : forall n, Peano.le n (schedule n))
-    (obs : stable_head E MN R -> O) (outs : nat -> MN O) out :
-  (forall n, free_omega_observes obs
+    (schedule : nat → nat)
+    (Hmono : ∀ n, Peano.le (schedule n) (schedule (S n)))
+    (Hge : ∀ n, Peano.le n (schedule n))
+    (obs : stable_head E MN R → O) (outs : nat → MN O) out :
+  (∀ n, free_omega_observes obs
     (ptree_hitting_approx (FI := FI) (FO := FO) (schedule n) (observe t))
-    (outs n)) ->
-  sem_lub outs out -> sem_total out ->
+    (outs n)) →
+  sem_lub outs out → sem_total out →
   ptree_stable_hitting_ast (FI := FI) (FO := FO) (observe t)
     (FOLub (fun n =>
       ptree_hitting_approx (FI := FI) (FO := FO) (schedule n) (observe t))).
@@ -79,7 +81,7 @@ Proof.
 Qed.
 
 Lemma stable_hitting_output_transport {R} (t : ptree E MN R) out out' :
-  hits t out -> free_omega_qlift eq out out' -> hits t out'.
+  hits t out → free_omega_qlift eq out out' → hits t out'.
 Proof.
   intros Hhit Heq. unfold stable_hitting in *.
   change (free_omega_qlift eq out'
@@ -91,8 +93,8 @@ Proof.
 Qed.
 
 Lemma stable_hitting_output_iff {R} (t : ptree E MN R) witness out :
-  hits t witness ->
-  (hits t out <-> free_omega_qlift eq out witness).
+  hits t witness →
+  (hits t out ↔ free_omega_qlift eq out witness).
 Proof.
   intro Hwit. split.
   - intro Hout. exact (stable_hitting_unique Hout Hwit).
@@ -105,9 +107,9 @@ Qed.
     equality of heads.  This transfers the exact witness, not just totality,
     without requiring the ambient event signature to be empty. *)
 Theorem peutt_hitting_ret_only {R} (t u : ptree E MN R) out :
-  peutt (FI := FI) (FO := FO) eq t u ->
-  hits u out ->
-  free_omega_ae (fun h => exists r, h = FHRet r) out ->
+  peutt (FI := FI) (FO := FO) eq t u →
+  hits u out →
+  free_omega_ae (fun h => ∃ r, h = FHRet r) out →
   hits t out.
 Proof.
   intros Heq Hu Hret.
@@ -140,8 +142,8 @@ Qed.
 
 Theorem stable_hitting_native_sample
     `{NB : @SemanticMeasureBindAEExactLaws MN NI} {X R}
-    (mu : MN X) (k : X -> ptree E MN R) (front : X -> MN R) :
-  (forall x, hits (k x) (FOSample (front x) (fun r => FORet (FHRet r)))) ->
+    (mu : MN X) (k : X → ptree E MN R) (front : X → MN R) :
+  (∀ x, hits (k x) (FOSample (front x) (fun r => FORet (FHRet r)))) →
   hits (Prob mu k)
     (FOSample (sem_bind mu front) (fun r => FORet (FHRet r))).
 Proof.
@@ -155,10 +157,10 @@ Proof.
 Qed.
 
 Theorem stable_hitting_prob_iff {R X}
-    (mu : MN X) (k : X -> ptree E MN R) out :
-  hits (Prob mu k) out <->
-  exists front : X -> MF (stable_head E MN R),
-    (forall x, hits (k x) (front x)) /\
+    (mu : MN X) (k : X → ptree E MN R) out :
+  hits (Prob mu k) out ↔
+  ∃ front : X → MF (stable_head E MN R),
+    (∀ x, hits (k x) (front x)) ∧
     free_omega_qlift eq out (FOSample mu front).
 Proof.
   split.
@@ -176,8 +178,8 @@ Qed.
 
 Theorem stable_hitting_prob_dirac_iff {R X}
     `{ND : @SemanticMeasureDiracAELaws MN NI}
-    (x : X) (k : X -> ptree E MN R) out :
-  hits (Prob (sem_ret x) k) out <-> hits (k x) out.
+    (x : X) (k : X → ptree E MN R) out :
+  hits (Prob (sem_ret x) k) out ↔ hits (k x) out.
 Proof.
   split; intro Hhit.
   - destruct (stable_hitting_exists (FI := FI) (FO := FO)
@@ -195,8 +197,8 @@ Qed.
 
 Theorem stable_hitting_prob_flatten_iff {R X Y}
     `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
-    (mu : MN X) (h : X -> MN Y) (k : Y -> ptree E MN R) out :
-  hits (Prob mu (fun x => Prob (h x) k)) out <->
+    (mu : MN X) (h : X → MN Y) (k : Y → ptree E MN R) out :
+  hits (Prob mu (fun x => Prob (h x) k)) out ↔
   hits (Prob (sem_bind mu h) k) out.
 Proof.
   split; intro Hhit.

@@ -37,15 +37,15 @@ Set Primitive Projections.
 
 Section ptree.
 
-Context {E : Type -> Type}.
-Context {M : Type -> Type}.
+Context {E : Type → Type}.
+Context {M : Type → Type}.
 Context {R : Type}.
 
 Variant ptreeF {ptree : Type} : Type :=
 | RetF (r : R)
 | TauF (e : ptree)
-| VisF {X} (e : E X) (k : X -> ptree)
-| ProbF {X : Type} (μ : M X) (k : X -> ptree).
+| VisF {X} (e : E X) (k : X → ptree)
+| ProbF {X : Type} (μ : M X) (k : X → ptree).
 
 CoInductive ptree : Type :=
   go { _observe : @ptreeF ptree }.
@@ -81,13 +81,13 @@ Notation Vis e k := (go (VisF e k)).
 Notation Tau e   := (go (TauF e)).
 Notation Prob μ k := (go (ProbF μ k)).
 
-Definition ProbF0 {E : Type -> Type} {M : Type -> Type} {R : Type}
-    (μ : M void) (k : void -> ptree E M R)
+Definition ProbF0 {E : Type → Type} {M : Type → Type} {R : Type}
+    (μ : M void) (k : void → ptree E M R)
   : ptree' E M R :=
     ProbF μ k.
 
-Definition Prob0 {E : Type -> Type} {M : Type -> Type} {R : Type}
-    (μ : M void) (k : void -> ptree E M R)
+Definition Prob0 {E : Type → Type} {M : Type → Type} {R : Type}
+    (μ : M void) (k : void → ptree E M R)
   : ptree E M R :=
     Prob μ k.
 
@@ -100,7 +100,7 @@ end.
 
 Theorem IsProbF_ex_ProbF {E M R} {p: ptree' E M R}
     (is_prob : IsProbF p = true) :
-  exists (X : Type) (mu : M X) (k : X -> ptree E M R),
+  ∃ (X : Type) (mu : M X) (k : X → ptree E M R),
     p = ProbF mu k.
   destruct p; rewrite //= in is_prob.
   exists X, μ, k. reflexivity.
@@ -115,8 +115,8 @@ Import MonadNotation.
 Definition ret {E M R} (r : R) : ptree E M R
   := Ret r.
 
-Definition subst {E M T U} (k : T -> ptree E M U)
-     : ptree E M T -> ptree E M U :=
+Definition subst {E M T U} (k : T → ptree E M U)
+     : ptree E M T → ptree E M U :=
   cofix _subst (u : ptree E M T) :=
     match observe u with
     | RetF r => k r
@@ -125,11 +125,11 @@ Definition subst {E M T U} (k : T -> ptree E M U)
     | ProbF _ μ h => Prob μ (fun x => _subst (h x))
     end.
 
-Definition bind {E M T U} (u : ptree E M T) (k : T -> ptree E M U)
+Definition bind {E M T U} (u : ptree E M T) (k : T → ptree E M U)
   : ptree E M U := subst k u.
 
-Definition cat {E M T U V} (k : T -> ptree E M U) (h : U -> ptree E M V)
-  : (T -> ptree E M V)
+Definition cat {E M T U V} (k : T → ptree E M U) (h : U → ptree E M V)
+  : (T → ptree E M V)
   := fun x => bind (k x) h.
 
 
@@ -142,8 +142,8 @@ Notation on_left lr l t :=
   | inr r => Ret r
   end) (only parsing).
 
-Definition iter {E M R I} (step : I -> ptree E M (I + R))
-  : I -> ptree E M R
+Definition iter {E M R I} (step : I → ptree E M (I + R))
+  : I → ptree E M R
   := cofix iter_ i := bind (step i) (fun lr =>
     on_left lr l (Tau (iter_ l))).
 
@@ -151,7 +151,7 @@ Definition iter {E M R I} (step : I -> ptree E M (I + R))
 
 (** Functorial Mapping *)
 
-Definition fmap {E M T U} (f : T -> U) : ptree E M T -> ptree E M U
+Definition fmap {E M T U} (f : T → U) : ptree E M T → ptree E M U
   := fun u => bind u (fun x => ret (f x)).
 
 

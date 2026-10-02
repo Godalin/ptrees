@@ -1,4 +1,6 @@
 (** Completion supplies only the existing probability certificates. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From ITree.Basics Require Import Basics Monad.
@@ -12,7 +14,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Completion.
-Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
+Context {MN : Type → Type} `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}

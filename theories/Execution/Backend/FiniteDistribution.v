@@ -1,6 +1,8 @@
 (** Finite, exact outcome laws for closed rational PTree execution.
     Lost and Timeout are explicit outcomes, not discarded probability.
     This specification is independent of entropy implementations and hitting. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -51,7 +53,7 @@ Proof.
 Qed.
 
 Lemma outcome_expectation_prob {A X} n (mu : SubEnumQ X)
-    (k : X -> ptree void1 SubEnumQ A) f :
+    (k : X → ptree void1 SubEnumQ A) f :
   outcome_expectation (S n) (Prob mu k) f =
     finite_expect (fun x => outcome_expectation n (k x) f) (subenumQ_data mu) +
     (1 - enumQ_mass (subenumQ_raw mu)) * f Lost.
@@ -88,5 +90,5 @@ Proof.
     rewrite (finite_expect_ext _ (fun x => IH (k x))). exact: finite_expect_zero.
 Qed.
 
-Definition returned_test {A} (f : A -> rat) (r : outcome A) :=
+Definition returned_test {A} (f : A → rat) (r : outcome A) :=
   match r with Returned a => f a | _ => 0 end.

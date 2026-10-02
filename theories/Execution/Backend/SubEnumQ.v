@@ -2,6 +2,8 @@
     a checked quantile in [0,1), NOT a claim that arbitrary rational replay
     tokens are uniformly distributed. A seeded generator and its discrete
     ticket-distribution correctness remain separate obligations. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -34,8 +36,8 @@ Fixpoint pick_interval {A} (mu : list (rat * A)) (q : rat) : option A :=
   end.
 
 Lemma pick_interval_support {A} (mu : list (rat * A)) q x :
-  0 <= q -> pick_interval mu q = Some x ->
-  exists p, In (p,x) mu /\ 0 < p.
+  0 <= q → pick_interval mu q = Some x →
+  ∃ p, In (p,x) mu ∧ 0 < p.
 Proof.
   revert q. induction mu as [|[p y] rest IH]; intros q Hq Hpick.
   - discriminate.
@@ -50,12 +52,12 @@ Proof.
 Qed.
 
 Lemma pick_interval_missing {A} (mu : list (rat * A)) q :
-  finite_nonnegative mu -> 0 <= q ->
-  (pick_interval mu q = None <-> finite_expect (fun _ => 1) mu <= q).
+  finite_nonnegative mu → 0 <= q →
+  (pick_interval mu q = None ↔ finite_expect (fun _ => 1) mu <= q).
 Proof.
   revert q. induction mu as [|[p x] rest IH]; intros q Hnn Hq.
   - cbn. split; auto.
-  - change ((if q < p then Some x else pick_interval rest (q-p)) = None <->
+  - change ((if q < p then Some x else pick_interval rest (q-p)) = None ↔
       p * 1 + finite_expect (fun _ => 1) rest <= q).
     rewrite mulr1.
     have Htail : finite_nonnegative rest.
@@ -84,8 +86,8 @@ Definition replay_sample {A} (mu : SubEnumQ A) (entropy : list quantile) :
   end.
 
 Theorem replay_sample_support {A} (mu : SubEnumQ A) q rest x :
-  replay_sample mu (q :: rest) = (Drawn x, rest) ->
-  exists p, In (p,x) (subenumQ_data mu) /\ 0 < p.
+  replay_sample mu (q :: rest) = (Drawn x, rest) →
+  ∃ p, In (p,x) (subenumQ_data mu) ∧ 0 < p.
 Proof.
   cbn [replay_sample]. case Hpick: (pick_interval _ _) => [y|];
     intro H; inversion H; subst.
@@ -93,11 +95,11 @@ Proof.
 Qed.
 
 Theorem replay_sample_missing {A} (mu : SubEnumQ A) q rest :
-  replay_sample mu (q :: rest) = (Missing, rest) <->
+  replay_sample mu (q :: rest) = (Missing, rest) ↔
   enumQ_mass (subenumQ_raw mu) <= quantile_value q.
 Proof.
   change ((match pick_interval (subenumQ_data mu) (quantile_value q) with
-      Some x => Drawn x | None => Missing end, rest) = (Missing, rest) <->
+      Some x => Drawn x | None => Missing end, rest) = (Missing, rest) ↔
     finite_expect (fun _ => 1) (subenumQ_data mu) <= quantile_value q).
   rewrite <- (pick_interval_missing
     (enumQ_nonnegative (subenumQ_raw mu)) (quantile_nonnegative q)).

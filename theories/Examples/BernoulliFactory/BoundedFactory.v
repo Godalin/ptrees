@@ -2,6 +2,8 @@
     only in the finite-analysis bridge to the existing binary convergence
     certificate. The raw projection preserves list positions and weights;
     no sampling conversion or normalization takes place during execution. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -82,7 +84,7 @@ Proof. apply iteration_frontier_observes with (value := fun b => b);
   [reflexivity|apply rows_limit]. Qed.
 Lemma row_support n q P :
   free_omega_ae (fun h => P (value h)) (iteration_frontier_round (E := factoryE) kernel n q)
-  <-> sem_ae (rows n q) P.
+  ↔ sem_ae (rows n q) P.
 Proof.
   revert q; induction n as [|n IH]; intro q.
   - split; intro H; [intros w b Hin; contradiction|constructor].
@@ -98,9 +100,9 @@ Proof.
       * constructor. exact ((proj1 (sem_ae_ret_iff _ _)) Hb).
 Qed.
 Lemma heads_support q (q0 : 0 <= q) (q1 : q <= 1) P :
-  free_omega_ae (fun h => P (value h)) (heads q) <-> sem_ae (bernoulli q0 q1) P.
+  free_omega_ae (fun h => P (value h)) (heads q) ↔ sem_ae (bernoulli q0 q1) P.
 Proof.
-  change (free_omega_ae (fun h => P (value h)) (FOLub (fun n => iteration_frontier_round kernel n q)) <->
+  change (free_omega_ae (fun h => P (value h)) (FOLub (fun n => iteration_frontier_round kernel n q)) ↔
     enumQ_ae (rational_bernoulli_measure q0 q1) P).
   rewrite (enumQ_converges_ae_iff (enumQ_iter_approx_increasing binary_coin_transition q)
     (rational_binary_iteration_converges q0 q1)).
@@ -113,7 +115,7 @@ Qed.
 Definition direct_heads q (q0 : 0 <= q) (q1 : q <= 1) : MF head :=
   FOSample (bernoulli q0 q1) (fun b => FORet (FHRet b)).
 Lemma direct_support q (q0 : 0 <= q) (q1 : q <= 1) P :
-  free_omega_ae (fun h => P (value h)) (direct_heads q0 q1) <-> sem_ae (bernoulli q0 q1) P.
+  free_omega_ae (fun h => P (value h)) (direct_heads q0 q1) ↔ sem_ae (bernoulli q0 q1) P.
 Proof.
   split; intro H.
   - apply free_omega_ae_sample_inv in H. eapply sem_ae_mono; [|exact H].

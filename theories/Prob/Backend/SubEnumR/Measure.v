@@ -1,6 +1,8 @@
 (** Finite-real native operations and foundational AE capabilities.
     Lifting means an actual finite joint, not a support-only or universal
     relation. Relational gluing/bind are not assumed to fill a profile. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -34,8 +36,8 @@ Proof.
   split; intros; apply sem_subprob_all.
 Qed.
 
-Lemma subenumR_ae_ret_iff {A} (x : A) (P : A -> Prop) :
-  subenumR_ae (subenumR_ret R x) P <-> P x.
+Lemma subenumR_ae_ret_iff {A} (x : A) (P : A → Prop) :
+  subenumR_ae (subenumR_ret R x) P ↔ P x.
 Proof.
   split.
   - intro H; apply (H 1 x (or_introl (Logic.eq_refl _))).
@@ -43,8 +45,8 @@ Proof.
   - intros H p y [He|[]] Hnz; inversion He; subst; exact H.
 Qed.
 
-Lemma subenumR_ae_bind_iff {A B} (mu : SubEnumR R A) (k : A -> SubEnumR R B) P :
-  subenumR_ae (subenumR_bind mu k) P <-> subenumR_ae mu (fun x => subenumR_ae (k x) P).
+Lemma subenumR_ae_bind_iff {A B} (mu : SubEnumR R A) (k : A → SubEnumR R B) P :
+  subenumR_ae (subenumR_bind mu k) P ↔ subenumR_ae mu (fun x => subenumR_ae (k x) P).
 Proof.
   split.
   - intros H p x Hp Hpn q y Hq Hqn.

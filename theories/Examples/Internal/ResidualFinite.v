@@ -1,4 +1,6 @@
 (** Role: supporting compression/scheduling/recovery example; not public theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Automatic Proposition Inductives.
@@ -22,7 +24,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 Import EnumQ.
 
-Variant residualE : Type -> Type := .
+Variant residualE : Type → Type := .
 (** Purely internal, potentially unbounded retry: there is no Vis guard
     between retries.  Each failed toss has one administrative Tau on the
     left and two on the right. *)
@@ -72,14 +74,14 @@ Proof.
 Qed.
 
 Inductive residual_retry_pairs :
-    ptree residualE SubEnumQ bool -> ptree residualE SubEnumQ bool -> Prop :=
+    ptree residualE SubEnumQ bool → ptree residualE SubEnumQ bool → Prop :=
 | ResidualRetryReturn : residual_retry_pairs (Ret true) (Ret true)
 | ResidualRetryLoop : residual_retry_pairs residual_retry_left residual_retry_right
 | ResidualRetryDelay : residual_retry_pairs
     (Tau residual_retry_left) (Tau (Tau residual_retry_right)).
 
 Lemma residual_retry_cuts_structural t1 t2 :
-  residual_retry_pairs t1 t2 ->
+  residual_retry_pairs t1 t2 →
   free_omega_lift (fun t u => pstrongF eq residual_retry_pairs (observe t) (observe u))
     (residual_retry_cut1 t1) (residual_retry_cut2 t2).
 Proof.
@@ -97,7 +99,7 @@ Proof.
 Qed.
 
 Lemma residual_retry_cuts_coupled t1 t2 :
-  residual_retry_pairs t1 t2 ->
+  residual_retry_pairs t1 t2 →
   free_omega_qlift (fun t u => pstrongF eq residual_retry_pairs (observe t) (observe u))
     (residual_retry_cut1 t1) (residual_retry_cut2 t2).
 Proof. intro Hpair. apply FOQLStructural, residual_retry_cuts_structural, Hpair. Qed.
@@ -120,7 +122,7 @@ Qed.
 (** Infinitely many visible rounds, each with a finite administrative delay.
     This exercises the native hitting up-to rule: the coinductive guard
     is the visible head, not an administrative internal step. *)
-Variant residual_tickE : Type -> Type := ResidualTick : residual_tickE unit.
+Variant residual_tickE : Type → Type := ResidualTick : residual_tickE unit.
 
 CoFixpoint residual_service_left : ptree residual_tickE SubEnumQ bool :=
   Vis ResidualTick (fun _ => Tau residual_service_left).
@@ -138,7 +140,7 @@ Lemma residual_services_peutt :
 Proof.
   eapply peutt_coinduction_upto_finite_internal with
     (sim := fun s1 s2 =>
-      s1 = observe residual_service_left /\ s2 = observe residual_service_right).
+      s1 = observe residual_service_left ∧ s2 = observe residual_service_right).
   - intros s1 s2 [-> ->].
     apply stable_hitting_match_vis. intros [].
     exists (Tau residual_service_left), (Tau (Tau residual_service_right)),
@@ -164,7 +166,7 @@ Local Unset Universe Minimization ToSet.
 
 (** The three-pair relation is not an equivalence relation on trees.
     It is not exposed as another equivalence on programs. *)
-Lemma retry_pairs_not_reflexive : ~ Reflexive residual_retry_pairs.
+Lemma retry_pairs_not_reflexive : ¬ Reflexive residual_retry_pairs.
 Proof.
   intro H. specialize (H (Ret false)). inversion H.
   all: match goal with
@@ -179,7 +181,7 @@ Qed.
     Its behavioral conclusion follows from the already proved complete
     hitting comparison and Tau transparency; no auxiliary GFP is used. *)
 Theorem retry_pairs_peutt_without_equivalence t u :
-  residual_retry_pairs t u ->
+  residual_retry_pairs t u →
   @peutt residualE SubEnumQ (FreeOmega SubEnumQ) SFI FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool bool eq t u.
 Proof.

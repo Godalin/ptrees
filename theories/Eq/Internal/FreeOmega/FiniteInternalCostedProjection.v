@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Lia.
@@ -21,7 +23,7 @@ Unset Printing Implicit Defensive.
     stronger requirement).  Lifting a coupling of decoded residuals to
     these actual paths remains a separate obligation. *)
 Section CostedProjection.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
@@ -35,13 +37,13 @@ Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation hit := (@ptree_hitting_approx E MN MF FI FreeOmegaMixedMeasure
   FreeOmegaObservableSemanticOmega R).
-Variable state_tree : State -> tree.
-Variable output_head : Out -> head.
-Variable plan : forall s, finite_internal_plan (state_tree s).
-Variable X : State -> Type.
-Variable measure : forall s, MN (X s).
-Variable target : forall s, X s -> stable_target State Out.
-Variable cost : forall s, X s -> nat.
+Variable state_tree : State → tree.
+Variable output_head : Out → head.
+Variable plan : ∀ s, finite_internal_plan (state_tree s).
+Variable X : State → Type.
+Variable measure : ∀ s, MN (X s).
+Variable target : ∀ s, X s → stable_target State Out.
+Variable cost : ∀ s, X s → nat.
 Arguments target s _ : clear implicits.
 Arguments cost s _ : clear implicits.
 
@@ -52,27 +54,27 @@ Definition costed_round_projection (z : stable_target State Out) : stable_target
   end.
 
 Definition costed_round_path_rel s x y : Prop :=
-  cost s x = internal_round_steps (plan s) y /\
+  cost s x = internal_round_steps (plan s) y ∧
   costed_round_projection (target s x) =
     native_sample_value (internal_plan_round_native (plan s)) y.
 Arguments costed_round_path_rel s x y : clear implicits.
 
-Hypothesis round_marginal : forall s,
+Hypothesis round_marginal : ∀ s,
   free_omega_qlift (costed_round_path_rel s)
     (FOSample (measure s) (fun x => FORet x))
     (FOSample (native_sample_measure (internal_plan_round_native (plan s)))
       (fun y => FORet y)).
 
 Lemma costed_round_progress_ae s :
-  sem_ae (measure s) (fun x => forall u,
-    target s x = SHInternal u -> 0 < cost s x).
+  sem_ae (measure s) (fun x => ∀ u,
+    target s x = SHInternal u → 0 < cost s x).
 Proof.
   assert (Hae : sem_ae (measure s)
-    (fun x => exists y, costed_round_path_rel s x y /\ True)).
+    (fun x => exists y, costed_round_path_rel s x y ∧ True)).
   { apply (proj1 (@free_omega_native_ae_iff MN NI NC (X s)
       {| native_sample_type := X s; native_sample_measure := measure s;
          native_sample_value := fun x => x |}
-      (fun x => exists y, costed_round_path_rel s x y /\ True))).
+      (fun x => exists y, costed_round_path_rel s x y ∧ True))).
     apply (proj2 (free_omega_qlift_support (round_marginal s)) (fun _ => True)).
     apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
     intros x _. apply FOAERet. exact I. }
@@ -137,9 +139,9 @@ Qed.
 
 Theorem costed_round_stable_hitting s out joint_out :
   @ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega R (observe (state_tree s)) out ->
+    FreeOmegaObservableSemanticOmega R (observe (state_tree s)) out →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega State Out
-    (costed_kernel measure target) s joint_out ->
+    (costed_kernel measure target) s joint_out →
   free_omega_qlift eq out
     (free_omega_bind joint_out (fun o => FORet (output_head o))).
 Proof.

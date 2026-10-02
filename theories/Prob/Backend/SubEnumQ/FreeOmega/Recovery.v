@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Logic Require Import ClassicalDescription IndefiniteDescription.
@@ -15,16 +17,16 @@ Unset Printing Implicit Defensive.
 (** Classical choice is used ONLY to label a fiber in the small carrier.
     It is NOT used to choose a replacement sample.  The latter is drawn
     from the conditional distribution, retaining all latent randomness. *)
-Definition small_fiber_code {X A} (decode : X -> A) (a : A) : option X :=
-  match excluded_middle_informative (exists x, decode x = a) with
+Definition small_fiber_code {X A} (decode : X → A) (a : A) : option X :=
+  match excluded_middle_informative (∃ x, decode x = a) with
   | left H => Some (proj1_sig (constructive_indefinite_description _ H))
   | right _ => None
   end.
 
-Lemma small_fiber_code_spec {X A} (decode : X -> A) a :
+Lemma small_fiber_code_spec {X A} (decode : X → A) a :
   match small_fiber_code decode a with
   | Some x => decode x = a
-  | None => forall x, decode x <> a
+  | None => ∀ x, decode x ≠ a
   end.
 Proof.
   unfold small_fiber_code. destruct (excluded_middle_informative _) as [H|H].
@@ -32,8 +34,8 @@ Proof.
   - intros x Hx. apply H. exists x. exact Hx.
 Qed.
 
-Lemma small_fiber_code_sound {X A} (decode : X -> A) x a :
-  small_fiber_code decode (decode x) = small_fiber_code decode a ->
+Lemma small_fiber_code_sound {X A} (decode : X → A) x a :
+  small_fiber_code decode (decode x) = small_fiber_code decode a →
   decode x = a.
 Proof.
   intro Heq.
@@ -96,7 +98,7 @@ Proof.
     intros x Hx. exact (proj1 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
       SubEnumQ_SemanticMeasureDiracAELaws _ (label x) _) Hx).
   - intros a _. apply FOAESample with
-      (Good := fun pair => fst pair = code a /\ fst pair = label (snd pair)).
+      (Good := fun pair => fst pair = code a ∧ fst pair = label (snd pair)).
     + apply sem_ae_conj; [apply Hfiber|]. apply Hsupport, coded_joint_support.
     + intros [c x] [Hc Hx]. apply FOAERet.
       apply small_fiber_code_sound. change (label x = code a).
@@ -134,8 +136,8 @@ End Recovery.
     The conclusion remains a QUOTIENT coupling, not native reflection. *)
 Theorem subenumQ_native_coupling_pullback {A B}
     (p : free_omega_native_presentation SubEnumQ A)
-    (q : free_omega_native_presentation SubEnumQ B) (R : A -> B -> Prop) :
-  free_omega_qlift R (free_omega_native p) (free_omega_native q) ->
+    (q : free_omega_native_presentation SubEnumQ B) (R : A → B → Prop) :
+  free_omega_qlift R (free_omega_native p) (free_omega_native q) →
   free_omega_qlift
     (fun x y => R (native_sample_value p x) (native_sample_value q y))
     (FOSample (native_sample_measure p) (fun x => FORet x) :

@@ -5,6 +5,8 @@
     unnormalised weighting effects.  [probabilistic_ptree] is the precise
     contract that every native [Prob] node contains a subprobability measure.
     Intrinsically bounded carriers discharge this contract for every tree. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 
@@ -17,7 +19,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section ProbabilityWellFormedness.
-Context {E : Type -> Type} {M : Type -> Type}
+Context {E : Type → Type} {M : Type → Type}
   `{SI : SemanticMeasure M}
   `{SP : @SemanticSubprobability M SI}.
 Context {R : Type}.
@@ -29,17 +31,17 @@ Context {R : Type}.
     phrased over observations so its intrinsic-carrier proof needs only
     ordinary dependent elimination of [ptreeF], never elimination of the
     coinductive [ptree] itself. *)
-CoInductive probabilistic_observation : ptree' E M R -> Prop :=
+CoInductive probabilistic_observation : ptree' E M R → Prop :=
 | ProbabilisticRet r : probabilistic_observation (RetF r)
 | ProbabilisticTau t :
-    probabilistic_observation (observe t) ->
+    probabilistic_observation (observe t) →
     probabilistic_observation (TauF t)
 | ProbabilisticVis X (e : E X) k :
-    (forall x, probabilistic_observation (observe (k x))) ->
+    (∀ x, probabilistic_observation (observe (k x))) →
     probabilistic_observation (VisF e k)
 | ProbabilisticProb X (mu : M X) k :
-    sem_subprob mu ->
-    (forall x, probabilistic_observation (observe (k x))) ->
+    sem_subprob mu →
+    (∀ x, probabilistic_observation (observe (k x))) →
     probabilistic_observation (ProbF mu k).
 
 Definition probabilistic_ptree (t : ptree E M R) : Prop :=
@@ -58,15 +60,15 @@ Definition probabilistic_ptree_tau (t : ptree E M R)
   ProbabilisticTau Ht.
 
 Definition probabilistic_ptree_vis {X} (e : E X)
-    (k : X -> ptree E M R)
-    (Hk : forall x, probabilistic_ptree (k x)) :
+    (k : X → ptree E M R)
+    (Hk : ∀ x, probabilistic_ptree (k x)) :
     probabilistic_ptree (Vis e k) :=
   ProbabilisticVis e Hk.
 
 Definition probabilistic_ptree_prob {X} (mu : M X)
-    (k : X -> ptree E M R)
+    (k : X → ptree E M R)
     (Hmu : sem_subprob mu)
-    (Hk : forall x, probabilistic_ptree (k x)) :
+    (Hk : ∀ x, probabilistic_ptree (k x)) :
     probabilistic_ptree (Prob mu k) :=
   ProbabilisticProb Hmu Hk.
 
@@ -96,12 +98,12 @@ Definition probabilistic_ptree_intrinsic
 End ProbabilityWellFormedness.
 
 Section ProbabilityWellFormednessCombinators.
-Context {E : Type -> Type} {M : Type -> Type}
+Context {E : Type → Type} {M : Type → Type}
   `{SI : SemanticMeasure M}
   `{SP : @SemanticSubprobability M SI}.
 
 Local Lemma observe_bind_probability {T U}
-    (t : ptree E M T) (k : T -> ptree E M U) :
+    (t : ptree E M T) (k : T → ptree E M U) :
   observe (PTree.bind t k) =
   observe (match observe t with
     | RetF r => k r
@@ -115,9 +117,9 @@ Proof. reflexivity. Qed.
     its continuation.  Consequently this closure theorem needs no
     [SemanticSubprobabilityLaws] assumption about measure-level bind. *)
 CoFixpoint probabilistic_ptree_bind {T U}
-    (t : ptree E M T) (k : T -> ptree E M U)
+    (t : ptree E M T) (k : T → ptree E M U)
     (Ht : probabilistic_ptree t)
-    (Hk : forall x, probabilistic_ptree (k x)) :
+    (Hk : ∀ x, probabilistic_ptree (k x)) :
     probabilistic_ptree (PTree.bind t k).
 Proof.
   unfold probabilistic_ptree in *.
@@ -137,8 +139,8 @@ Qed.
     result performs the administrative [Tau] and starts the next round; a
     right result terminates. *)
 Local CoFixpoint probabilistic_ptree_iter_from {I R}
-    (step : I -> ptree E M (I + R))
-    (Hstep : forall i, probabilistic_ptree (step i))
+    (step : I → ptree E M (I + R))
+    (Hstep : ∀ i, probabilistic_ptree (step i))
     (t : ptree E M (I + R))
     (Ht : probabilistic_ptree t) :
     probabilistic_ptree
@@ -168,8 +170,8 @@ Qed.
 (** Iteration preserves well-formedness when every unfolded step is a
     probability tree. *)
 Definition probabilistic_ptree_iter {I R}
-    (step : I -> ptree E M (I + R))
-    (Hstep : forall i, probabilistic_ptree (step i))
+    (step : I → ptree E M (I + R))
+    (Hstep : ∀ i, probabilistic_ptree (step i))
     (i : I) : probabilistic_ptree (PTree.iter step i) :=
   @probabilistic_ptree_iter_from I R step Hstep (step i) (Hstep i).
 

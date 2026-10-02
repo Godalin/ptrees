@@ -1,5 +1,7 @@
 (** Actual finite rational transport over ordinary scalar weights.
     Nonnegativity is supplied once to the shared container constructor. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -15,41 +17,41 @@ Unset Printing Implicit Defensive.
 Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
-Definition finite_weighted_enumQ {I : finType} {A} (weights : I -> rat)
-    (Hnn : forall i, 0 <= weights i) (decode : I -> A) : EnumQ A.
+Definition finite_weighted_enumQ {I : finType} {A} (weights : I → rat)
+    (Hnn : ∀ i, 0 <= weights i) (decode : I → A) : EnumQ A.
 Proof.
   refine (enumQ_of_list (mu := [seq (weights i,decode i) | i <- enum I]) _).
   move=> p x /List.in_map_iff [i [He _]]; inversion He; subst; exact: Hnn.
 Defined.
-Lemma weighted_seq_atom {I} {A : eqType} (weights : I -> rat) (decode : I -> A) indices a :
+Lemma weighted_seq_atom {I} {A : eqType} (weights : I → rat) (decode : I → A) indices a :
   finite_atom a [seq (weights i,decode i) | i <- indices] =
   \sum_(i <- indices) (if decode i == a then weights i else 0).
 Proof.
   elim: indices=> [|i tl IH]; first by rewrite big_nil.
   rewrite big_cons /= finite_atom_cons IH; reflexivity.
 Qed.
-Lemma finite_weighted_enumQ_atom {I : finType} {A : eqType} (weights : I -> rat)
-    (Hnn : forall i, 0 <= weights i) (decode : I -> A) a :
+Lemma finite_weighted_enumQ_atom {I : finType} {A : eqType} (weights : I → rat)
+    (Hnn : ∀ i, 0 <= weights i) (decode : I → A) a :
   acc_mass a (finite_weighted_enumQ Hnn decode) =
   \sum_i (if decode i == a then weights i else 0).
 Proof. by rewrite /acc_mass /finite_weighted_enumQ /= weighted_seq_atom big_enum. Qed.
-Lemma finite_weighted_enumQ_map {I : finType} {A B} (weights : I -> rat)
-    (Hnn : forall i, 0 <= weights i) (decode : I -> A) (f : A -> B) :
+Lemma finite_weighted_enumQ_map {I : finType} {A B} (weights : I → rat)
+    (Hnn : ∀ i, 0 <= weights i) (decode : I → A) (f : A → B) :
   enumQ_raw (emap f (finite_weighted_enumQ Hnn decode)) =
   enumQ_raw (finite_weighted_enumQ Hnn (fun i => f (decode i))).
 Proof. exact: List.map_map. Qed.
-Lemma finite_weighted_enumQ_identity_atom {I : finType} (weights : I -> rat)
-    (Hnn : forall i, 0 <= weights i) i :
+Lemma finite_weighted_enumQ_identity_atom {I : finType} (weights : I → rat)
+    (Hnn : ∀ i, 0 <= weights i) i :
   acc_mass i (finite_weighted_enumQ Hnn id) = weights i.
 Proof. by rewrite finite_weighted_enumQ_atom -big_mkcond big_pred1_eq. Qed.
-Lemma finite_weighted_enumQ_sum {I : finType} (weights : I -> rat)
-    (Hnn : forall i, 0 <= weights i) (P : pred I) :
+Lemma finite_weighted_enumQ_sum {I : finType} (weights : I → rat)
+    (Hnn : ∀ i, 0 <= weights i) (P : pred I) :
   \sum_(i | P i) acc_mass i (finite_weighted_enumQ Hnn id) =
   \sum_(i | P i) weights i.
 Proof. apply eq_bigr=> i _; exact: finite_weighted_enumQ_identity_atom. Qed.
 
 Section MatrixEnumQ.
-Context {X Y : finType} (w : X -> Y -> rat) (Hnn : forall x y, 0 <= w x y).
+Context {X Y : finType} (w : X → Y → rat) (Hnn : ∀ x y, 0 <= w x y).
 Let joint := finite_weighted_enumQ (fun xy : X*Y => Hnn xy.1 xy.2) id.
 Lemma finite_matrix_left_atom x :
   acc_mass x (emap fst joint) = \sum_y w x y.
@@ -77,10 +79,10 @@ Proof.
 Qed.
 End MatrixEnumQ.
 
-Theorem finite_enumQ_transport {X Y : finType} (edge : X -> Y -> bool)
+Theorem finite_enumQ_transport {X Y : finType} (edge : X → Y → bool)
     (mu : EnumQ X) (nu : EnumQ Y) :
-  rational_hall (fun x => acc_mass x mu) (fun y => acc_mass y nu) edge ->
-  \sum_x acc_mass x mu = \sum_y acc_mass y nu ->
+  rational_hall (fun x => acc_mass x mu) (fun y => acc_mass y nu) edge →
+  \sum_x acc_mass x mu = \sum_y acc_mass y nu →
   coupling (fun x y => edge x y) mu nu.
 Proof.
   move=> Hall Htotal.
@@ -94,12 +96,12 @@ Proof.
     by rewrite lt0r Hxy Hpos.
 Qed.
 
-Theorem subenumQ_finite_transport_joint {X Y : finType} (edge : X -> Y -> bool)
+Theorem subenumQ_finite_transport_joint {X Y : finType} (edge : X → Y → bool)
     (mu : SubEnumQ X) (nu : SubEnumQ Y) :
   rational_hall (fun x => acc_mass x (subenumQ_raw mu))
-    (fun y => acc_mass y (subenumQ_raw nu)) edge ->
-  \sum_x acc_mass x (subenumQ_raw mu) = \sum_y acc_mass y (subenumQ_raw nu) ->
-  exists joint : SubEnumQ (X*Y), @semantic_coupling SubEnumQ SubEnumQ_SemanticMeasure X Y
+    (fun y => acc_mass y (subenumQ_raw nu)) edge →
+  \sum_x acc_mass x (subenumQ_raw mu) = \sum_y acc_mass y (subenumQ_raw nu) →
+  ∃ joint : SubEnumQ (X*Y), @semantic_coupling SubEnumQ SubEnumQ_SemanticMeasure X Y
     (fun x y => edge x y) mu nu joint.
 Proof.
   move=> Hall Htotal; apply subenumQ_coupling_realization.

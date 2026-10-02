@@ -1,6 +1,8 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
 (** Stateful weak rewrites, heterogeneous results and infinite probabilistic
     interaction. Source peutt is not restricted to lockstep trees. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -35,10 +37,10 @@ Local Notation FO := (FreeOmegaObservableSemanticOmega
 Local Notation W E A B RR := (@peutt E SubEnumQ MF FI FC FreeOmegaMixedMeasure FO A B RR).
 
 Section GenericClient.
-Context {S : Type} {E : Type -> Type}.
-Example weak_source_preserved {A B} (RR : A -> B -> Prop) s
+Context {S : Type} {E : Type → Type}.
+Example weak_source_preserved {A B} (RR : A → B → Prop) s
     (t : ptree (stateE S +' E) SubEnumQ A) (u : ptree (stateE S +' E) SubEnumQ B) :
-  W _ _ _ RR t u -> W _ _ _ (state_result_rel RR) (run_state t s) (run_state u s).
+  W _ _ _ RR t u → W _ _ _ (state_result_rel RR) (run_state t s) (run_state u s).
 Proof. apply PTree.Interp.FreeOmega.State.run_state_peutt. Qed.
 
 #[local] Instance state_interp_Proper A :
@@ -52,25 +54,25 @@ Example actual_state_setoid_rewrite s (t u : ptree (stateE S +' E) SubEnumQ nat)
     (H : W _ _ _ eq t u) : W _ _ _ eq (run_state t s) (run_state u s).
 Proof. setoid_rewrite H. apply peutt_refl. Qed.
 
-Example get_is_eliminated {A} (k : S -> ptree (stateE S +' E) SubEnumQ A) s :
+Example get_is_eliminated {A} (k : S → ptree (stateE S +' E) SubEnumQ A) s :
   W _ _ _ eq (run_state (Vis (inl1 (Get S)) k) s) (run_state (k s) s).
 Proof.
   eapply peutt_trans; [apply peutt_of_pstruct; apply run_state_get|apply peutt_tau_l].
 Qed.
 
-Example put_is_eliminated {A} (k : unit -> ptree (stateE S +' E) SubEnumQ A) s s' :
+Example put_is_eliminated {A} (k : unit → ptree (stateE S +' E) SubEnumQ A) s s' :
   W _ _ _ eq (run_state (Vis (inl1 (Put S s')) k) s) (run_state (k tt) s').
 Proof.
   eapply peutt_trans; [apply peutt_of_pstruct; apply run_state_put|apply peutt_tau_l].
 Qed.
 
 Example state_bind_algebra {A B} (t : ptree (stateE S +' E) SubEnumQ A)
-    (k : A -> ptree (stateE S +' E) SubEnumQ B) s :
+    (k : A → ptree (stateE S +' E) SubEnumQ B) s :
   W _ _ _ eq (run_state (PTree.bind t k) s)
     (PTree.bind (run_state t s) (fun sa => run_state (k (snd sa)) (fst sa))).
 Proof. apply peutt_of_pstruct. apply run_state_bind. Qed.
 
-Example state_iter_algebra {I A} (step : I -> ptree (stateE S +' E) SubEnumQ (I+A)) i s :
+Example state_iter_algebra {I A} (step : I → ptree (stateE S +' E) SubEnumQ (I+A)) i s :
   W _ _ _ eq (run_state (PTree.iter step i) s) (PTree.iter (state_iter_step step) (s,i)).
 Proof. apply peutt_of_pstruct. apply run_state_iter. Qed.
 End GenericClient.
@@ -99,8 +101,8 @@ Proof. native_compute. reflexivity. Qed.
 
 From mathcomp Require Import reals.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega.
-Example real_state_preservation (R : realType) {S E A B} (RR : A -> B -> Prop) s
+Example real_state_preservation (R : realType) {S E A B} (RR : A → B → Prop) s
     (t : ptree (stateE S +' E) (SubEnumR R) A) (u : ptree (stateE S +' E) (SubEnumR R) B) :
-  peutt (MF := FreeOmega (SubEnumR R)) RR t u ->
+  peutt (MF := FreeOmega (SubEnumR R)) RR t u →
   peutt (MF := FreeOmega (SubEnumR R)) (state_result_rel RR) (run_state t s) (run_state u s).
 Proof. apply PTree.Interp.FreeOmega.State.run_state_peutt. Qed.

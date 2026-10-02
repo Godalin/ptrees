@@ -3,6 +3,8 @@
     formal counterparts commute with interpretation. Complete witnesses
     inherit validity by quotient equality, with no validity premise on the
     witness or on raw intermediate terms. Mainline theory never imports this. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -23,7 +25,7 @@ Local Open Scope ring_scope.
 Section DomainKernel.
 Variable R : realType.
 Context {S H : Type}.
-Variable K : S -> OmegaVal R (stable_target S H).
+Variable K : S → OmegaVal R (stable_target S H).
 
 Fixpoint domain_target_approx (n : nat) (z : stable_target S H) : OmegaVal R H :=
   match z with
@@ -57,19 +59,19 @@ Definition domain_hitting s : OmegaVal R H := oval_lub (domain_hitting_approx_in
 End DomainKernel.
 
 Section Validation.
-Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
+Context {MN : Type → Type} `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI} `{NO : @SemanticOmega MN NI}.
 Variable R : realType.
-Variable native : forall X, MN X -> OmegaVal R X.
+Variable native : ∀ X, MN X → OmegaVal R X.
 Arguments native X _ : clear implicits.
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
 
 Section FiniteCommutation.
 Context {S H : Type}.
-Variable K : S -> FreeOmega MN (stable_target S H).
-Variable D : S -> OmegaVal R (stable_target S H).
-Hypothesis HK : forall s, free_omega_model_denotes native (K s) (D s).
+Variable K : S → FreeOmega MN (stable_target S H).
+Variable D : S → OmegaVal R (stable_target S H).
+Hypothesis HK : ∀ s, free_omega_model_denotes native (K s) (D s).
 
 Theorem stable_target_denotational_commutation n z :
   free_omega_model_denotes native
@@ -93,7 +95,7 @@ Qed.
 End FiniteCommutation.
 
 Section PTreeModel.
-Context {E : Type -> Type} {A : Type}.
+Context {E : Type → Type} {A : Type}.
 Local Notation state := (ptree' E MN A).
 Local Notation head := (stable_head E MN A).
 Local Notation K := (@ptree_primitive_kernel E MN (FreeOmega MN)
@@ -157,23 +159,23 @@ Proof. apply model_denotes_lub=> n; exact: ptree_hitting_model_commutation. Qed.
 
 (** Only transport to an arbitrary quotient-equal witness needs the native
     interpretation obligations. Canonical validity above needs none of them. *)
-Hypothesis native_ae : forall X (mu : MN X) P,
-  sem_ae mu P -> oval_ae (native X mu) P.
-Hypothesis native_ret : forall X (x : X),
+Hypothesis native_ae : ∀ X (mu : MN X) P,
+  sem_ae mu P → oval_ae (native X mu) P.
+Hypothesis native_ret : ∀ X (x : X),
   oval_eq (native X (sem_ret x)) (oval_ret R x).
-Hypothesis native_zero : forall X,
+Hypothesis native_zero : ∀ X,
   oval_eq (native X (@sem_zero MN NI NO X)) (@oval_bottom R X).
-Hypothesis native_bind : forall X Y (mu : MN X) (k : X -> MN Y),
+Hypothesis native_bind : ∀ X Y (mu : MN X) (k : X → MN Y),
   oval_eq (native Y (sem_bind mu k)) (oval_bind (native X mu) (fun x => native Y (k x))).
-Hypothesis native_lift : forall X Y (T : X -> Y -> Prop) (mu : MN X) (nu : MN Y) f g,
-  sem_lift T mu nu -> oval_test f -> oval_test g ->
-  (forall x y, T x y -> f x <= g y) -> oval_eval (native X mu) f <= oval_eval (native Y nu) g.
-Hypothesis native_lub : forall X (c : nat -> MN X) out,
-  (forall n f, oval_test f -> oval_eval (native X (c n)) f <= oval_eval (native X (c (S n))) f) ->
-  sem_lub c out -> forall f, oval_test f ->
+Hypothesis native_lift : ∀ X Y (T : X → Y → Prop) (mu : MN X) (nu : MN Y) f g,
+  sem_lift T mu nu → oval_test f → oval_test g →
+  (∀ x y, T x y → f x <= g y) → oval_eval (native X mu) f <= oval_eval (native Y nu) g.
+Hypothesis native_lub : ∀ X (c : nat → MN X) out,
+  (∀ n f, oval_test f → oval_eval (native X (c n)) f <= oval_eval (native X (c (S n))) f) →
+  sem_lub c out → ∀ f, oval_test f →
   oval_sup (fun n => oval_eval (native X (c n)) f) = oval_eval (native X out) f.
 
-Theorem stable_hitting_modelable s out : hits s out -> free_omega_modelable native out.
+Theorem stable_hitting_modelable s out : hits s out → free_omega_modelable native out.
 Proof.
   intro H.
   apply (proj2 (model_qlift_eq_modelable native_ae native_ret native_zero
@@ -182,7 +184,7 @@ Proof.
 Qed.
 
 Theorem stable_hitting_denotational_adequacy s out :
-  hits s out -> free_omega_model_denotes native out (ptree_model_hitting s).
+  hits s out → free_omega_model_denotes native out (ptree_model_hitting s).
 Proof.
   intros H f Hf.
   rewrite (model_qlift_eq_upper native_ae native_ret native_zero
@@ -191,7 +193,7 @@ Proof.
 Qed.
 
 Corollary stable_hitting_model_eq s out (Hv : free_omega_modelable native out) :
-  hits s out -> oval_eq (free_omega_model Hv) (ptree_model_hitting s).
+  hits s out → oval_eq (free_omega_model Hv) (ptree_model_hitting s).
 Proof. intros H f Hf; exact (stable_hitting_denotational_adequacy H Hf). Qed.
 
 Corollary stable_hitting_model_mass_lub s out (H : hits s out) :

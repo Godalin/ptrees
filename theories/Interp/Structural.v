@@ -19,32 +19,32 @@ Notation "` R" := (elem R) (at level 10).
 
 From PTree.Eq Require Import PStruct.
 Section PStructInterp.
-Context {E F : Type -> Type} {M : Type -> Type}.
+Context {E F : Type → Type} {M : Type → Type}.
 Context {R1 R2 : Type}.
-Variable RR : R1 -> R2 -> Prop.
-Variable handler : forall X, E X -> ptree F M X.
+Variable RR : R1 → R2 → Prop.
+Variable handler : ∀ X, E X → ptree F M X.
 
 Inductive pstruct_interp_clo :
-    ptree F M R1 -> ptree F M R2 -> Prop :=
+    ptree F M R1 → ptree F M R2 → Prop :=
   | PStInterpMain t1 t2 :
-      pstruct RR t1 t2 ->
+      pstruct RR t1 t2 →
       pstruct_interp_clo
         (PTree.interp handler t1) (PTree.interp handler t2)
   | PStInterpBind {X} (source : ptree F M X)
-      (k1 : X -> ptree E M R1) (k2 : X -> ptree E M R2) :
-      (forall x, pstruct RR (k1 x) (k2 x)) ->
+      (k1 : X → ptree E M R1) (k2 : X → ptree E M R2) :
+      (∀ x, pstruct RR (k1 x) (k2 x)) →
       pstruct_interp_clo
         (PTree.bind source (fun x => PTree.interp handler (k1 x)))
         (PTree.bind source (fun x => PTree.interp handler (k2 x)))
   | PStInterpDone u1 u2 :
-      pstruct RR u1 u2 -> pstruct_interp_clo u1 u2.
+      pstruct RR u1 u2 → pstruct_interp_clo u1 u2.
 
 Theorem pstruct_interp (t1 : ptree E M R1) (t2 : ptree E M R2) :
-  pstruct RR t1 t2 ->
+  pstruct RR t1 t2 →
   pstruct RR (PTree.interp handler t1) (PTree.interp handler t2).
 Proof.
   intro Hsource.
-  assert (Hinterp : forall u1 u2, pstruct_interp_clo u1 u2 ->
+  assert (Hinterp : ∀ u1 u2, pstruct_interp_clo u1 u2 ->
       pstruct RR u1 u2).
   { unfold pstruct. coinduction CH CIH.
     intros u1 u2 Hclo. inversion Hclo; subst.
@@ -94,19 +94,19 @@ Qed.
 End PStructInterp.
 
 Section PStructInterpBind.
-Context {E F : Type -> Type} {M : Type -> Type}.
+Context {E F : Type → Type} {M : Type → Type}.
 Context {A B : Type}.
-Variable handler : forall X, E X -> ptree F M X.
+Variable handler : ∀ X, E X → ptree F M X.
 
 Inductive pstruct_interp_bind_clo :
-    ptree F M B -> ptree F M B -> Prop :=
-  | PStInterpBindMain (t : ptree E M A) (k : A -> ptree E M B) :
+    ptree F M B → ptree F M B → Prop :=
+  | PStInterpBindMain (t : ptree E M A) (k : A → ptree E M B) :
       pstruct_interp_bind_clo
         (PTree.interp handler (PTree.bind t k))
         (PTree.bind (PTree.interp handler t)
           (fun x => PTree.interp handler (k x)))
   | PStInterpBindHandler {X} (source : ptree F M X)
-      (c : X -> ptree E M A) (k : A -> ptree E M B) :
+      (c : X → ptree E M A) (k : A → ptree E M B) :
       pstruct_interp_bind_clo
         (PTree.bind source
           (fun x => PTree.interp handler (PTree.bind (c x) k)))
@@ -114,16 +114,16 @@ Inductive pstruct_interp_bind_clo :
           (PTree.bind source (fun x => PTree.interp handler (c x)))
           (fun y => PTree.interp handler (k y)))
   | PStInterpBindDone (u v : ptree F M B) :
-      pstruct eq u v -> pstruct_interp_bind_clo u v.
+      pstruct eq u v → pstruct_interp_bind_clo u v.
 
 Theorem pstruct_interp_bind (t : ptree E M A)
-    (k : A -> ptree E M B) :
+    (k : A → ptree E M B) :
   pstruct eq
     (PTree.interp handler (PTree.bind t k))
     (PTree.bind (PTree.interp handler t)
       (fun x => PTree.interp handler (k x))).
 Proof.
-  assert (Hstrong : forall u v, pstruct_interp_bind_clo u v ->
+  assert (Hstrong : ∀ u v, pstruct_interp_bind_clo u v ->
       pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hclo. inversion Hclo; subst.
@@ -177,10 +177,10 @@ Qed.
 End PStructInterpBind.
 
 Section PStructInterpIter.
-Context {E F : Type -> Type} {M : Type -> Type}.
+Context {E F : Type → Type} {M : Type → Type}.
 Context {I R : Type}.
-Variable handler : forall X, E X -> ptree F M X.
-Variable step : I -> ptree E M (I + R).
+Variable handler : ∀ X, E X → ptree F M X.
+Variable step : I → ptree E M (I + R).
 
 Definition pstruct_interp_iter_source_cont
     (lr : I + R) : ptree E M R :=
@@ -201,7 +201,7 @@ Definition pstruct_interp_iter_target_cont
   end.
 
 Inductive pstruct_interp_iter_clo :
-    ptree F M R -> ptree F M R -> Prop :=
+    ptree F M R → ptree F M R → Prop :=
   | PStInterpIterMain i :
       pstruct_interp_iter_clo
         (PTree.interp handler (PTree.iter step i))
@@ -213,7 +213,7 @@ Inductive pstruct_interp_iter_clo :
         (PTree.bind (PTree.interp handler t)
           pstruct_interp_iter_target_cont)
   | PStInterpIterHandler {X} (source : ptree F M X)
-      (c : X -> ptree E M (I + R)) :
+      (c : X → ptree E M (I + R)) :
       pstruct_interp_iter_clo
         (PTree.bind source (fun x => PTree.interp handler
           (PTree.bind (c x) pstruct_interp_iter_source_cont)))
@@ -221,7 +221,7 @@ Inductive pstruct_interp_iter_clo :
           (PTree.bind source (fun x => PTree.interp handler (c x)))
           pstruct_interp_iter_target_cont)
   | PStInterpIterDone (u v : ptree F M R) :
-      pstruct eq u v -> pstruct_interp_iter_clo u v.
+      pstruct eq u v → pstruct_interp_iter_clo u v.
 
 (** Interpretation commutes with guarded iteration.  The proof is purely
     structural: the joint invariant records the source loop, the bind
@@ -232,7 +232,7 @@ Theorem pstruct_interp_iter i :
     (PTree.interp handler (PTree.iter step i))
     (PTree.iter pstruct_interp_iter_target_step i).
 Proof.
-  assert (Hstrong : forall u v, pstruct_interp_iter_clo u v ->
+  assert (Hstrong : ∀ u v, pstruct_interp_iter_clo u v ->
       pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hclo. inversion Hclo; subst.
@@ -304,30 +304,30 @@ Qed.
 End PStructInterpIter.
 
 Section PStructInterpCompose.
-Context {E F G : Type -> Type} {M : Type -> Type}.
+Context {E F G : Type → Type} {M : Type → Type}.
 Context {R : Type}.
-Variable handler1 : forall X, E X -> ptree F M X.
-Variable handler2 : forall X, F X -> ptree G M X.
+Variable handler1 : ∀ X, E X → ptree F M X.
+Variable handler2 : ∀ X, F X → ptree G M X.
 
 Definition pstruct_interp_compose_handler
     (X : Type) (e : E X) : ptree G M X :=
   PTree.interp handler2 (handler1 e).
 
 Inductive pstruct_interp_compose_clo :
-    ptree G M R -> ptree G M R -> Prop :=
+    ptree G M R → ptree G M R → Prop :=
   | PStInterpComposeMain (t : ptree E M R) :
       pstruct_interp_compose_clo
         (PTree.interp handler2 (PTree.interp handler1 t))
         (PTree.interp pstruct_interp_compose_handler t)
   | PStInterpComposeBind {X} (source : ptree F M X)
-      (k : X -> ptree E M R) :
+      (k : X → ptree E M R) :
       pstruct_interp_compose_clo
         (PTree.interp handler2
           (PTree.bind source (fun x => PTree.interp handler1 (k x))))
         (PTree.bind (PTree.interp handler2 source)
           (fun x => PTree.interp pstruct_interp_compose_handler (k x)))
   | PStInterpComposeHandler {X} (source : ptree G M X)
-      {Y} (c : X -> ptree F M Y) (k : Y -> ptree E M R) :
+      {Y} (c : X → ptree F M Y) (k : Y → ptree E M R) :
       pstruct_interp_compose_clo
         (PTree.bind source (fun x => PTree.interp handler2
           (PTree.bind (c x) (fun y => PTree.interp handler1 (k y)))))
@@ -335,7 +335,7 @@ Inductive pstruct_interp_compose_clo :
           (PTree.bind source (fun x => PTree.interp handler2 (c x)))
           (fun y => PTree.interp pstruct_interp_compose_handler (k y)))
   | PStInterpComposeDone (u v : ptree G M R) :
-      pstruct eq u v -> pstruct_interp_compose_clo u v.
+      pstruct eq u v → pstruct_interp_compose_clo u v.
 
 (** Sequential effect handlers compose.  Both handlers are arbitrary
     PTrees; in particular their execution may contain Tau, Vis, and Prob. *)
@@ -344,7 +344,7 @@ Theorem pstruct_interp_compose (t : ptree E M R) :
     (PTree.interp handler2 (PTree.interp handler1 t))
     (PTree.interp pstruct_interp_compose_handler t).
 Proof.
-  assert (Hstrong : forall u v, pstruct_interp_compose_clo u v ->
+  assert (Hstrong : ∀ u v, pstruct_interp_compose_clo u v ->
       pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hclo. inversion Hclo; subst.
@@ -414,25 +414,25 @@ Qed.
 End PStructInterpCompose.
 
 Section PStructInterpHandlerCongruence.
-Context {E F : Type -> Type} {M : Type -> Type}.
+Context {E F : Type → Type} {M : Type → Type}.
 Context {R : Type}.
-Variable handler1 handler2 : forall X, E X -> ptree F M X.
-Hypothesis handlers_related : forall X (e : E X),
+Variable handler1 handler2 : ∀ X, E X → ptree F M X.
+Hypothesis handlers_related : ∀ X (e : E X),
   pstruct eq (@handler1 X e) (@handler2 X e).
 
 Inductive pstruct_interp_handler_clo :
-    ptree F M R -> ptree F M R -> Prop :=
+    ptree F M R → ptree F M R → Prop :=
   | PStInterpHandlerMain (t : ptree E M R) :
       pstruct_interp_handler_clo
         (PTree.interp handler1 t) (PTree.interp handler2 t)
   | PStInterpHandlerBind {X}
-      (source1 source2 : ptree F M X) (k : X -> ptree E M R) :
-      pstruct eq source1 source2 ->
+      (source1 source2 : ptree F M X) (k : X → ptree E M R) :
+      pstruct eq source1 source2 →
       pstruct_interp_handler_clo
         (PTree.bind source1 (fun x => PTree.interp handler1 (k x)))
         (PTree.bind source2 (fun x => PTree.interp handler2 (k x)))
   | PStInterpHandlerDone (u v : ptree F M R) :
-      pstruct eq u v -> pstruct_interp_handler_clo u v.
+      pstruct eq u v → pstruct_interp_handler_clo u v.
 
 (** Pointwise structurally equivalent effect handlers induce structurally
     equivalent interpretations.  Handler computations may themselves use
@@ -440,7 +440,7 @@ Inductive pstruct_interp_handler_clo :
 Theorem pstruct_interp_handler (t : ptree E M R) :
   pstruct eq (PTree.interp handler1 t) (PTree.interp handler2 t).
 Proof.
-  assert (Hstrong : forall u v, pstruct_interp_handler_clo u v ->
+  assert (Hstrong : ∀ u v, pstruct_interp_handler_clo u v ->
       pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hclo. inversion Hclo; subst.

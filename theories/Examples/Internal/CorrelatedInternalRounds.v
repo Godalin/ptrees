@@ -1,4 +1,6 @@
 (** Role: supporting compression/scheduling/recovery example; not public theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From Coq.Program Require Import Equality.
@@ -25,12 +27,12 @@ Local Notation MF := (FreeOmega EnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega)).
 
-Definition round_spec (kernel : Pair -> MF (stable_target Pair Heads)) :=
-  forall t u, candidate t u ->
+Definition round_spec (kernel : Pair → MF (stable_target Pair Heads)) :=
+  ∀ t u, candidate t u →
     free_omega_qlift (fun z x => finite_internal_pair_left z = x)
-      (kernel (t,u)) (free_omega_bind (left_cut (t,u)) finite_internal_guard_transition) /\
+      (kernel (t,u)) (free_omega_bind (left_cut (t,u)) finite_internal_guard_transition) ∧
     free_omega_qlift (fun z y => finite_internal_pair_right z = y)
-      (kernel (t,u)) (free_omega_bind (right_cut (t,u)) finite_internal_guard_transition) /\
+      (kernel (t,u)) (free_omega_bind (right_cut (t,u)) finite_internal_guard_transition) ∧
     free_omega_ae (finite_internal_pair_invariant eq candidate) (kernel (t,u)).
 
 (** An explicit realization of the existing partner-dependent strategy.
@@ -86,7 +88,7 @@ Qed.
 
 (** The actual partner-dependent strategy is now a sound native proof,
     without replacing its cuts by independent marginal policies. *)
-Example correlated_cuts_prove_peutt t u : candidate t u ->
+Example correlated_cuts_prove_peutt t u : candidate t u →
   @peutt event EnumQ MF FI FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool bool eq t u.
 Proof.
@@ -114,7 +116,7 @@ Proof.
 Qed.
 
 Example quotient_round_raw_coverage_fails :
-  ~ free_omega_approx eq
+  ¬ free_omega_approx eq
     (@ptree_hitting_approx event EnumQ MF FI FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool 0 (observe done))
     (free_omega_bind
@@ -125,11 +127,11 @@ Proof. intro H. inversion H. Qed.
 (** Despite that raw failure, COMPLETE hitting is now proved equal to
     the original marginal, using a structurally realized reference kernel. *)
 Example quotient_round_complete_hitting_exact t u joint_out original_out :
-  candidate t u ->
+  candidate t u →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega
-    Pair Heads quotient_round_kernel (t,u) joint_out ->
+    Pair Heads quotient_round_kernel (t,u) joint_out →
   @ptree_stable_hitting event EnumQ MF FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega bool (observe t) original_out ->
+    FreeOmegaObservableSemanticOmega bool (observe t) original_out →
   free_omega_qlift eq
     (free_omega_bind joint_out (fun h => FORet (fst h))) original_out.
 Proof.
@@ -152,11 +154,11 @@ Qed.
 
 (** The failed raw statement is repaired by retaining an equality-related
     representative, not by strengthening raw order with an unproved law. *)
-Example quotient_round_coverage_modulo_eq n t u : candidate t u ->
-  exists covered,
+Example quotient_round_coverage_modulo_eq n t u : candidate t u →
+  ∃ covered,
     free_omega_approx eq
       (@ptree_hitting_approx event EnumQ MF FI FreeOmegaMixedMeasure
-        FreeOmegaObservableSemanticOmega bool n (observe t)) covered /\
+        FreeOmegaObservableSemanticOmega bool n (observe t)) covered ∧
     free_omega_qlift eq covered
       (free_omega_bind
         (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
@@ -177,11 +179,11 @@ Proof.
   - exact Htu.
 Qed.
 
-Example quotient_round_complete_coverage_modulo_eq t u : candidate t u ->
-  exists covered,
+Example quotient_round_complete_coverage_modulo_eq t u : candidate t u →
+  ∃ covered,
     free_omega_approx eq
       (FOLub (fun n => @ptree_hitting_approx event EnumQ MF FI FreeOmegaMixedMeasure
-        FreeOmegaObservableSemanticOmega bool n (observe t))) covered /\
+        FreeOmegaObservableSemanticOmega bool n (observe t))) covered ∧
     free_omega_qlift eq covered
       (free_omega_bind
         (FOLub (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
@@ -202,7 +204,7 @@ Proof.
   - exact Htu.
 Qed.
 
-Example correlated_primitive_steps_covered n t u : candidate t u ->
+Example correlated_primitive_steps_covered n t u : candidate t u →
   free_omega_approx eq
     (@ptree_hitting_approx event EnumQ MF FI FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool n (observe t))
@@ -224,7 +226,7 @@ Proof.
   - exact Htu.
 Qed.
 
-Example correlated_complete_hitting_covered t u : candidate t u ->
+Example correlated_complete_hitting_covered t u : candidate t u →
   free_omega_approx eq
     (FOLub (fun n => @ptree_hitting_approx event EnumQ MF FI FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool n (observe t)))
@@ -235,7 +237,7 @@ Proof. intro Htu. apply FOApproxLub. intro n. apply correlated_primitive_steps_c
 
 (** This is the actual partner-dependent cut from PairedFiniteCompression,
     whose correlated marginal cannot be represented by any unary cut. *)
-Example correlated_round_kernel_exists : exists kernel, round_spec kernel.
+Example correlated_round_kernel_exists : ∃ kernel, round_spec kernel.
 Proof.
   unfold round_spec. eapply finite_internal_paired_kernel_exists.
   - exact (@enumQ_coupling_realization).
@@ -249,7 +251,7 @@ Qed.
 (** Support closure alone would accept an always-zero kernel.  The actual
     round certificate must also preserve the marginal transition, so it
     cannot erase an already-returning pair in that way. *)
-Example zero_kernel_not_a_correlated_round : ~ round_spec (fun _ => FOZero).
+Example zero_kernel_not_a_correlated_round : ¬ round_spec (fun _ => FOZero).
 Proof.
   intro Hkernel. destruct (Hkernel done done candidate_done) as [Hleft _].
   pose proof (proj1 (free_omega_qlift_support Hleft)) as Hsupport.
@@ -263,10 +265,10 @@ Qed.
 (** Completing the true correlated round preserves the full ORIGINAL
     marginal distribution, not just the relation on paired outputs. *)
 Example correlated_round_left_completed kernel (Hkernel : round_spec kernel)
-    (front : tree -> MF (stable_head event EnumQ bool))
-    (Hfront : forall t, @ptree_stable_hitting event EnumQ MF FI
+    (front : tree → MF (stable_head event EnumQ bool))
+    (Hfront : ∀ t, @ptree_stable_hitting event EnumQ MF FI
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
-      (observe t) (front t)) t u : candidate t u ->
+      (observe t) (front t)) t u : candidate t u →
   free_omega_qlift eq
     (free_omega_bind (kernel (t,u))
       (fun z => finite_internal_guard_complete front (finite_internal_pair_left z)))
@@ -280,10 +282,10 @@ Proof.
 Qed.
 
 Example correlated_round_right_completed kernel (Hkernel : round_spec kernel)
-    (front : tree -> MF (stable_head event EnumQ bool))
-    (Hfront : forall t, @ptree_stable_hitting event EnumQ MF FI
+    (front : tree → MF (stable_head event EnumQ bool))
+    (Hfront : ∀ t, @ptree_stable_hitting event EnumQ MF FI
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
-      (observe t) (front t)) t u : candidate t u ->
+      (observe t) (front t)) t u : candidate t u →
   free_omega_qlift eq
     (free_omega_bind (kernel (t,u))
       (fun z => finite_internal_guard_complete front (finite_internal_pair_right z)))
@@ -299,16 +301,16 @@ Qed.
 (** The COMPLETE correlated execution is below a representative of the
     original left hitting.  This is not yet equality of their limits. *)
 Example correlated_left_hitting_upper kernel (Hkernel : round_spec kernel)
-    (front : tree -> MF (stable_head event EnumQ bool))
-    (Hfront : forall t, @ptree_stable_hitting event EnumQ MF FI
+    (front : tree → MF (stable_head event EnumQ bool))
+    (Hfront : ∀ t, @ptree_stable_hitting event EnumQ MF FI
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
-      (observe t) (front t)) t u : candidate t u ->
-  exists upper,
+      (observe t) (front t)) t u : candidate t u →
+  ∃ upper,
     free_omega_approx eq
       (free_omega_bind
         (FOLub (fun n => @stable_hitting_approx MF FI
           FreeOmegaObservableSemanticOmega Pair Heads kernel n (t,u)))
-        (fun h => FORet (fst h))) upper /\
+        (fun h => FORet (fst h))) upper ∧
     free_omega_qlift eq upper (front t).
 Proof.
   intro Htu. eapply finite_internal_execution_hitting_upper with
@@ -324,9 +326,9 @@ Proof.
 Qed.
 
 Example correlated_round_complete_coupling kernel
-    (Hkernel : round_spec kernel) t u : candidate t u ->
-  exists out, @stable_hitting MF FI FreeOmegaObservableSemanticOmega
-    Pair Heads kernel (t,u) out /\
+    (Hkernel : round_spec kernel) t u : candidate t u →
+  ∃ out, @stable_hitting MF FI FreeOmegaObservableSemanticOmega
+    Pair Heads kernel (t,u) out ∧
     free_omega_qlift (stable_head_rel eq candidate)
       (free_omega_bind out (fun p => FORet (fst p)))
       (free_omega_bind out (fun p => FORet (snd p))).
@@ -352,27 +354,27 @@ Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 
-Definition round_spec (kernel : Pair -> MF (stable_target Pair Heads)) :=
-  forall t u, residual_retry_pairs t u ->
+Definition round_spec (kernel : Pair → MF (stable_target Pair Heads)) :=
+  ∀ t u, residual_retry_pairs t u →
     free_omega_qlift (fun z x => finite_internal_pair_left z = x)
       (kernel (t,u))
-      (free_omega_bind (residual_retry_cut1 t) finite_internal_guard_transition) /\
+      (free_omega_bind (residual_retry_cut1 t) finite_internal_guard_transition) ∧
     free_omega_qlift (fun z y => finite_internal_pair_right z = y)
       (kernel (t,u))
-      (free_omega_bind (residual_retry_cut2 u) finite_internal_guard_transition) /\
+      (free_omega_bind (residual_retry_cut2 u) finite_internal_guard_transition) ∧
     free_omega_ae (finite_internal_pair_invariant eq residual_retry_pairs) (kernel (t,u)).
 
-Definition structural_round_spec (kernel : Pair -> MF (stable_target Pair Heads)) :=
-  forall t u, residual_retry_pairs t u ->
+Definition structural_round_spec (kernel : Pair → MF (stable_target Pair Heads)) :=
+  ∀ t u, residual_retry_pairs t u →
     free_omega_lift (fun z x => finite_internal_pair_left z = x)
       (kernel (t,u))
-      (free_omega_bind (residual_retry_cut1 t) finite_internal_guard_transition) /\
+      (free_omega_bind (residual_retry_cut1 t) finite_internal_guard_transition) ∧
     free_omega_lift (fun z y => finite_internal_pair_right z = y)
       (kernel (t,u))
-      (free_omega_bind (residual_retry_cut2 u) finite_internal_guard_transition) /\
+      (free_omega_bind (residual_retry_cut2 u) finite_internal_guard_transition) ∧
     free_omega_ae (finite_internal_pair_invariant eq residual_retry_pairs) (kernel (t,u)).
 
-Example retry_structural_round_kernel_exists : exists kernel, structural_round_spec kernel.
+Example retry_structural_round_kernel_exists : ∃ kernel, structural_round_spec kernel.
 Proof.
   unfold structural_round_spec. eapply finite_internal_structural_paired_kernel_exists with
     (cut1 := fun p => residual_retry_cut1 (fst p))
@@ -383,7 +385,7 @@ Qed.
 
 (** The guard is Prob, not Vis.  Arbitrarily many failed tosses pass through
     the selected joint kernel again, with no external observation between. *)
-Example retry_round_kernel_exists : exists kernel, round_spec kernel.
+Example retry_round_kernel_exists : ∃ kernel, round_spec kernel.
 Proof.
   destruct retry_structural_round_kernel_exists as [kernel Hkernel].
   exists kernel. intros t u Htu. destruct (Hkernel t u Htu) as [Hl [Hr Hae]].
@@ -411,7 +413,7 @@ Proof.
 Qed.
 
 Example retry_primitive_steps_covered kernel (Hkernel : structural_round_spec kernel)
-    n t u : residual_retry_pairs t u ->
+    n t u : residual_retry_pairs t u →
   free_omega_approx eq
     (@ptree_hitting_approx residualE SubEnumQ MF FI FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool n (observe t))
@@ -449,8 +451,8 @@ Proof.
 Qed.
 
 Example retry_round_complete_coupling kernel (Hkernel : round_spec kernel) :
-  exists out, @stable_hitting MF FI FreeOmegaObservableSemanticOmega
-    Pair Heads kernel (residual_retry_left, residual_retry_right) out /\
+  ∃ out, @stable_hitting MF FI FreeOmegaObservableSemanticOmega
+    Pair Heads kernel (residual_retry_left, residual_retry_right) out ∧
     free_omega_qlift (stable_head_rel eq residual_retry_pairs)
       (free_omega_bind out (fun p => FORet (fst p)))
       (free_omega_bind out (fun p => FORet (snd p))).
@@ -471,17 +473,17 @@ Qed.
 (** The upper bound also covers the purely internal retry loop; it does
     not require reaching a visible observation after each round. *)
 Example retry_left_hitting_upper kernel (Hkernel : round_spec kernel)
-    (front : tree -> MF (stable_head residualE SubEnumQ bool))
-    (Hfront : forall t, @ptree_stable_hitting residualE SubEnumQ MF FI
+    (front : tree → MF (stable_head residualE SubEnumQ bool))
+    (Hfront : ∀ t, @ptree_stable_hitting residualE SubEnumQ MF FI
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
       (observe t) (front t)) :
-  exists upper,
+  ∃ upper,
     free_omega_approx eq
       (free_omega_bind
         (FOLub (fun n => @stable_hitting_approx MF FI
           FreeOmegaObservableSemanticOmega Pair Heads kernel n
           (residual_retry_left, residual_retry_right)))
-        (fun h => FORet (fst h))) upper /\
+        (fun h => FORet (fst h))) upper ∧
     free_omega_qlift eq upper (front residual_retry_left).
 Proof.
   eapply finite_internal_execution_hitting_upper with

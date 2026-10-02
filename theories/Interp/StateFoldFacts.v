@@ -2,6 +2,8 @@
     monad with uniform iteration. No probability law is needed: handle and
     sample are arbitrary algebras. Uniformity is stated independently of
     PTree and is proved for an actual target in Execution/ITreeFold. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From ExtLib.Structures Require Import Monad.
@@ -15,11 +17,11 @@ Unset Strict Implicit.
 Local Open Scope type_scope.
 
 Section StateFoldFacts.
-Context {S : Type} {E MN T : Type -> Type}.
+Context {S : Type} {E MN T : Type → Type}.
 Context `{MT : Monad T} `{IT : MonadIter T} `{QT : Eq1 T}.
 Context `{QE : @Eq1Equivalence T MT QT} `{ML : @MonadLawsE T QT MT}.
-Variable handle : forall X, E X -> T X.
-Variable sample : forall X, MN X -> T X.
+Variable handle : ∀ X, E X → T X.
+Variable sample : ∀ X, MN X → T X.
 
 Definition state_fold_step {A} (st : S * ptree (stateE S +' E) MN A) :
     T ((S * ptree (stateE S +' E) MN A) + (S * A)) :=

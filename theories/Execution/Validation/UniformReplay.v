@@ -2,6 +2,8 @@
     History-dependent ideal entropy laws, and their actual replay execution.
     No claim is made that a deterministic PRNG satisfies conditional uniformity.
     Histories are reversed lists of previously supplied ticket indices. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -29,17 +31,17 @@ Proof.
     [by rewrite mulr0|by rewrite IH mulrDr].
 Qed.
 
-Lemma ticket_sum_ext_in {A} (xs : list A) (f g : A -> rat) :
-  (forall x, List.In x xs -> f x = g x) -> ticket_sum f xs = ticket_sum g xs.
+Lemma ticket_sum_ext_in {A} (xs : list A) (f g : A → rat) :
+  (∀ x, List.In x xs → f x = g x) → ticket_sum f xs = ticket_sum g xs.
 Proof.
   intro H; induction xs as [|x xs IH]; cbn; first reflexivity.
   rewrite H; last by left.
   congr (_ + _). apply IH=> y Hy. apply H. by right.
 Qed.
 
-Lemma in_iota_bound i d : List.In i (iota 0 d) -> (i < d)%N.
+Lemma in_iota_bound i d : List.In i (iota 0 d) → (i < d)%N.
 Proof.
-  have H : forall n k, List.In i (iota n k) -> (n <= i < n+k)%N.
+  have H : ∀ n k, List.In i (iota n k) -> (n <= i < n+k)%N.
   { move=> n k; elim: k n=> [|k IH] n /=; first by move=> [].
     move=> [<-|Hin]; first by rewrite leqnn /= addnS ltnS leq_addr.
     have /andP [Hlo Hhi] := IH _ Hin.
@@ -50,10 +52,10 @@ Qed.
 
 (** An explicit probability contract, not a global instance or an existence
     axiom: at every supplied history the next index has the uniform law. *)
-Definition uniform_entropy (source : list nat -> nat -> list (rat * nat)) :=
-  forall h d, (0 < d)%N ->
-    finite_nonnegative (source h d) /\
-    forall f, finite_expect f (source h d) = finite_expect f (uniform_indices d).
+Definition uniform_entropy (source : list nat → nat → list (rat * nat)) :=
+  ∀ h d, (0 < d)%N →
+    finite_nonnegative (source h d) ∧
+    ∀ f, finite_expect f (source h d) = finite_expect f (uniform_indices d).
 
 Lemma fresh_uniform_entropy : uniform_entropy (fun _ d => uniform_indices d).
 Proof.
@@ -64,7 +66,7 @@ Proof.
 Qed.
 
 Section EntropyTraces.
-Variable source : list nat -> nat -> list (rat * nat).
+Variable source : list nat → nat → list (rat * nat).
 
 (** Generate only the entropy actually requested by the finite execution.
     Each node has its own bound and history. Loss stops, without conditioning
@@ -94,7 +96,7 @@ Definition replay_expectation {A} n (t : ptree void1 SubEnumQ A) history f :=
     (trace_distribution n t history).
 
 Lemma replay_prob_cons {A X} n (mu : SubEnumQ X)
-    (k : X -> ptree void1 SubEnumQ A) i tail :
+    (k : X → ptree void1 SubEnumQ A) i tail :
   run (@ticket_replay) (S n) (Prob mu k) (i :: tail) =
     if (i < ticket_count mu)%N then
       match draw_ticket mu i with
@@ -161,7 +163,7 @@ Proof.
     cbn [trace_distribution]; rewrite Ht; try (destruct e).
   all: try (intros p x [H|[]]; inversion H; subst; exact: ler01).
   - exact: IH.
-  - have Hbranch : forall i, finite_nonnegative
+  - have Hbranch : ∀ i, finite_nonnegative
         (if (i < ticket_count mu)%N then
           match draw_ticket mu i with
           | Some x => List.map (fun ws => (fst ws, i :: snd ws))

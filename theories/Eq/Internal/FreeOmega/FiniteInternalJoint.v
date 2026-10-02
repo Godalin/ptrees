@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -19,7 +21,7 @@ Unset Printing Implicit Defensive.
     can depend on the entire pair.  This is an execution certificate, not
     a replacement for the canonical primitive kernel or for peutt. *)
 Definition finite_internal_guard_transition
-    {E MN : Type -> Type} {A} (t : ptree E MN A) :
+    {E MN : Type → Type} {A} (t : ptree E MN A) :
     FreeOmega MN (stable_target (ptree E MN A) (stable_head E MN A)) :=
   match observe t with
   | RetF r => FORet (SHStable (FHRet r))
@@ -29,7 +31,7 @@ Definition finite_internal_guard_transition
   end.
 
 Section PairedTargets.
-Context {E MN : Type -> Type} {A B : Type}.
+Context {E MN : Type → Type} {A B : Type}.
 Local Notation Pair := (ptree E MN A * ptree E MN B)%type.
 Local Notation Heads := (stable_head E MN A * stable_head E MN B)%type.
 
@@ -45,8 +47,8 @@ Definition finite_internal_pair_right (target : stable_target Pair Heads) :=
   | SHInternal trees => SHInternal (snd trees)
   end.
 
-Definition finite_internal_pair_invariant (RR : A -> B -> Prop)
-    (sim : ptree E MN A -> ptree E MN B -> Prop)
+Definition finite_internal_pair_invariant (RR : A → B → Prop)
+    (sim : ptree E MN A → ptree E MN B → Prop)
     (target : stable_target Pair Heads) : Prop :=
   match target with
   | SHStable heads => stable_head_rel RR sim (fst heads) (snd heads)
@@ -55,30 +57,30 @@ Definition finite_internal_pair_invariant (RR : A -> B -> Prop)
 End PairedTargets.
 
 Section JointGuard.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
   `{NO : @SemanticOmega MN NI}.
-Context {A B : Type} (RR : A -> B -> Prop).
-Variable sim : ptree E MN A -> ptree E MN B -> Prop.
+Context {A B : Type} (RR : A → B → Prop).
+Variable sim : ptree E MN A → ptree E MN B → Prop.
 Local Notation Pair := (ptree E MN A * ptree E MN B)%type.
 Local Notation Heads := (stable_head E MN A * stable_head E MN B)%type.
 Local Notation MF := (FreeOmega MN).
 
-Hypothesis node_realizes : forall {X Y} (S : X -> Y -> Prop)
-    (mu : MN X) (nu : MN Y), sem_lift S mu nu ->
-    exists joint, semantic_coupling S mu nu joint.
+Hypothesis node_realizes : ∀ {X Y} (S : X → Y → Prop)
+    (mu : MN X) (nu : MN Y), sem_lift S mu nu →
+    ∃ joint, semantic_coupling S mu nu joint.
 
 (** Only a node-coupling realizer is required for the guard itself.
     Realization of arbitrary residual quotient couplings is a separate
     obligation; it is not hidden in this statement. *)
 Theorem finite_internal_guard_structural_joint_exists t u :
-  (fun t u => pstrongF RR sim (observe t) (observe u)) t u ->
-  exists joint : MF (stable_target Pair Heads),
+  (fun t u => pstrongF RR sim (observe t) (observe u)) t u →
+  ∃ joint : MF (stable_target Pair Heads),
     free_omega_lift (fun z x => finite_internal_pair_left z = x)
-      joint (finite_internal_guard_transition t) /\
+      joint (finite_internal_guard_transition t) ∧
     free_omega_lift (fun z y => finite_internal_pair_right z = y)
-      joint (finite_internal_guard_transition u) /\
+      joint (finite_internal_guard_transition u) ∧
     free_omega_ae (finite_internal_pair_invariant RR sim) joint.
 Proof.
   intro Hguard. unfold finite_internal_guard_transition in *.
@@ -110,12 +112,12 @@ Proof.
 Qed.
 
 Corollary finite_internal_guard_joint_exists t u :
-  (fun t u => pstrongF RR sim (observe t) (observe u)) t u ->
-  exists joint : MF (stable_target Pair Heads),
+  (fun t u => pstrongF RR sim (observe t) (observe u)) t u →
+  ∃ joint : MF (stable_target Pair Heads),
     free_omega_qlift (fun z x => finite_internal_pair_left z = x)
-      joint (finite_internal_guard_transition t) /\
+      joint (finite_internal_guard_transition t) ∧
     free_omega_qlift (fun z y => finite_internal_pair_right z = y)
-      joint (finite_internal_guard_transition u) /\
+      joint (finite_internal_guard_transition u) ∧
     free_omega_ae (finite_internal_pair_invariant RR sim) joint.
 Proof.
   intro Hguard. destruct (finite_internal_guard_structural_joint_exists Hguard)
@@ -127,21 +129,21 @@ Qed.
 End JointGuard.
 
 Section StructuralJointRounds.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}.
-Context {A B : Type} (RR : A -> B -> Prop).
-Variable sim : ptree E MN A -> ptree E MN B -> Prop.
+Context {A B : Type} (RR : A → B → Prop).
+Variable sim : ptree E MN A → ptree E MN B → Prop.
 Local Notation Pair := (ptree E MN A * ptree E MN B)%type.
 Local Notation Heads := (stable_head E MN A * stable_head E MN B)%type.
 Local Notation MF := (FreeOmega MN).
 Local Notation SI := (FreeOmegaSemanticMeasure (NI := NI)).
-Hypothesis node_realizes : forall {X Y} (S : X -> Y -> Prop)
-    (mu : MN X) (nu : MN Y), sem_lift S mu nu ->
-    exists joint, semantic_coupling S mu nu joint.
-Variable cut1 : Pair -> MF (ptree E MN A).
-Variable cut2 : Pair -> MF (ptree E MN B).
-Hypothesis cuts_structural : forall t u, sim t u ->
+Hypothesis node_realizes : ∀ {X Y} (S : X → Y → Prop)
+    (mu : MN X) (nu : MN Y), sem_lift S mu nu →
+    ∃ joint, semantic_coupling S mu nu joint.
+Variable cut1 : Pair → MF (ptree E MN A).
+Variable cut2 : Pair → MF (ptree E MN B).
+Hypothesis cuts_structural : ∀ t u, sim t u →
   free_omega_lift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 (t,u)) (cut2 (t,u)).
 
 (** A proved source of STRUCTURAL graph marginals for the coverage theorem.
@@ -149,17 +151,17 @@ Hypothesis cuts_structural : forall t u, sim t u ->
     realization premise: its stronger cut coupling supplies that witness.
     It does not claim that every quotient cut is structurally coupled. *)
 Theorem finite_internal_structural_paired_kernel_exists :
-  exists kernel : Pair -> MF (stable_target Pair Heads),
-    forall t u, sim t u ->
+  ∃ kernel : Pair → MF (stable_target Pair Heads),
+    ∀ t u, sim t u →
       free_omega_lift (fun z x => finite_internal_pair_left z = x)
         (kernel (t,u))
-        (free_omega_bind (cut1 (t,u)) finite_internal_guard_transition) /\
+        (free_omega_bind (cut1 (t,u)) finite_internal_guard_transition) ∧
       free_omega_lift (fun z y => finite_internal_pair_right z = y)
         (kernel (t,u))
-        (free_omega_bind (cut2 (t,u)) finite_internal_guard_transition) /\
+        (free_omega_bind (cut2 (t,u)) finite_internal_guard_transition) ∧
       free_omega_ae (finite_internal_pair_invariant RR sim) (kernel (t,u)).
 Proof.
-  assert (Hcuts : forall p : Pair, exists joint : MF Pair,
+  assert (Hcuts : ∀ p : Pair, exists joint : MF Pair,
     sim (fst p) (snd p) ->
       @semantic_coupling MF SI _ _ (fun t u => pstrongF RR sim (observe t) (observe u))
         (cut1 p) (cut2 p) joint).
@@ -169,12 +171,12 @@ Proof.
       exists joint. intros _. exact Hjoint.
     - exists FOZero. intro Hsim. contradiction. }
   destruct (choice _ Hcuts) as [cut_joint Hcut_joint].
-  assert (Hex : forall p : Pair, exists step : MF (stable_target Pair Heads),
+  assert (Hex : ∀ p : Pair, exists step : MF (stable_target Pair Heads),
     (fun t u => pstrongF RR sim (observe t) (observe u)) (fst p) (snd p) ->
       free_omega_lift (fun z x => finite_internal_pair_left z = x)
-        step (finite_internal_guard_transition (fst p)) /\
+        step (finite_internal_guard_transition (fst p)) ∧
       free_omega_lift (fun z y => finite_internal_pair_right z = y)
-        step (finite_internal_guard_transition (snd p)) /\
+        step (finite_internal_guard_transition (snd p)) ∧
       free_omega_ae (finite_internal_pair_invariant RR sim) step).
   { intros [t u]. destruct (classic ((fun t u => pstrongF RR sim (observe t) (observe u)) t u)) as [Hguard|Hnot].
     - destruct (finite_internal_guard_structural_joint_exists (@node_realizes) Hguard)
@@ -195,26 +197,26 @@ Qed.
 End StructuralJointRounds.
 
 Section JointRounds.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
   `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
   `{NO : @SemanticOmega MN NI}.
-Context {A B : Type} (RR : A -> B -> Prop).
-Variable sim : ptree E MN A -> ptree E MN B -> Prop.
+Context {A B : Type} (RR : A → B → Prop).
+Variable sim : ptree E MN A → ptree E MN B → Prop.
 Local Notation Pair := (ptree E MN A * ptree E MN B)%type.
 Local Notation Heads := (stable_head E MN A * stable_head E MN B)%type.
 Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 
-Hypothesis node_realizes : forall {X Y} (S : X -> Y -> Prop)
-    (mu : MN X) (nu : MN Y), sem_lift S mu nu ->
-    exists joint, semantic_coupling S mu nu joint.
+Hypothesis node_realizes : ∀ {X Y} (S : X → Y → Prop)
+    (mu : MN X) (nu : MN Y), sem_lift S mu nu →
+    ∃ joint, semantic_coupling S mu nu joint.
 
-Variable cut1 : Pair -> MF (ptree E MN A).
-Variable cut2 : Pair -> MF (ptree E MN B).
-Hypothesis cuts_realized : forall t u, sim t u ->
-  exists joint, @semantic_coupling MF FI _ _ (fun t u => pstrongF RR sim (observe t) (observe u))
+Variable cut1 : Pair → MF (ptree E MN A).
+Variable cut2 : Pair → MF (ptree E MN B).
+Hypothesis cuts_realized : ∀ t u, sim t u →
+  ∃ joint, @semantic_coupling MF FI _ _ (fun t u => pstrongF RR sim (observe t) (observe u))
     (cut1 (t,u)) (cut2 (t,u)) joint.
 
 (** The two cut functions and their coupling depend on the PAIR.  No
@@ -223,17 +225,17 @@ Hypothesis cuts_realized : forall t u, sim t u ->
     In particular this theorem does not claim that arbitrary residual
     quotient couplings have the supplied [cuts_realized] witnesses. *)
 Theorem finite_internal_paired_kernel_exists :
-  exists kernel : Pair -> MF (stable_target Pair Heads),
-    forall t u, sim t u ->
+  ∃ kernel : Pair → MF (stable_target Pair Heads),
+    ∀ t u, sim t u →
       free_omega_qlift (fun z x => finite_internal_pair_left z = x)
         (kernel (t,u))
-        (free_omega_bind (cut1 (t,u)) finite_internal_guard_transition) /\
+        (free_omega_bind (cut1 (t,u)) finite_internal_guard_transition) ∧
       free_omega_qlift (fun z y => finite_internal_pair_right z = y)
         (kernel (t,u))
-        (free_omega_bind (cut2 (t,u)) finite_internal_guard_transition) /\
+        (free_omega_bind (cut2 (t,u)) finite_internal_guard_transition) ∧
       free_omega_ae (finite_internal_pair_invariant RR sim) (kernel (t,u)).
 Proof.
-  assert (Hcuts : forall p : Pair, exists joint : MF Pair,
+  assert (Hcuts : ∀ p : Pair, exists joint : MF Pair,
     sim (fst p) (snd p) ->
       @semantic_coupling MF FI _ _ (fun t u => pstrongF RR sim (observe t) (observe u))
         (cut1 p) (cut2 p) joint).
@@ -242,12 +244,12 @@ Proof.
       exists joint. intros _. exact Hjoint.
     - exists FOZero. intro Hsim. contradiction. }
   destruct (choice _ Hcuts) as [cut_joint Hcut_joint].
-  assert (Hex : forall p : Pair, exists step : MF (stable_target Pair Heads),
+  assert (Hex : ∀ p : Pair, exists step : MF (stable_target Pair Heads),
     (fun t u => pstrongF RR sim (observe t) (observe u)) (fst p) (snd p) ->
       free_omega_qlift (fun z x => finite_internal_pair_left z = x)
-        step (finite_internal_guard_transition (fst p)) /\
+        step (finite_internal_guard_transition (fst p)) ∧
       free_omega_qlift (fun z y => finite_internal_pair_right z = y)
-        step (finite_internal_guard_transition (snd p)) /\
+        step (finite_internal_guard_transition (snd p)) ∧
       free_omega_ae (finite_internal_pair_invariant RR sim) step).
   { intros [t u]. destruct (classic ((fun t u => pstrongF RR sim (observe t) (observe u)) t u)) as [Hguard|Hnot].
     - destruct (finite_internal_guard_joint_exists (@node_realizes) Hguard)
@@ -268,12 +270,12 @@ Qed.
 (** Once a joint round kernel is fixed, its increasing approximants come
     from recursive execution of THAT kernel.  We never select fresh
     couplings independently at each fuel and assume they are increasing. *)
-Variable kernel : Pair -> MF (stable_target Pair Heads).
-Hypothesis kernel_closed : forall t u, sim t u ->
+Variable kernel : Pair → MF (stable_target Pair Heads).
+Hypothesis kernel_closed : ∀ t u, sim t u →
   free_omega_ae (finite_internal_pair_invariant RR sim) (kernel (t,u)).
 
 Theorem finite_internal_paired_rounds_increasing p :
-  forall n, free_omega_approx eq
+  ∀ n, free_omega_approx eq
     (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
       Pair Heads kernel n p)
     (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
@@ -289,10 +291,10 @@ Qed.
     ORIGINAL trees' complete hitting still requires correlated acceleration
     adequacy; that conclusion is deliberately absent here. *)
 Theorem finite_internal_paired_hitting_coupled t u out :
-  sim t u ->
+  sim t u →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega
-    Pair Heads kernel (t,u) out ->
-  free_omega_ae (fun p => stable_head_rel RR sim (fst p) (snd p)) out /\
+    Pair Heads kernel (t,u) out →
+  free_omega_ae (fun p => stable_head_rel RR sim (fst p) (snd p)) out ∧
   free_omega_qlift (stable_head_rel RR sim)
     (free_omega_bind out (fun p => FORet (fst p)))
     (free_omega_bind out (fun p => FORet (snd p))).
@@ -311,7 +313,7 @@ Proof.
     - exact Hhit. }
   split; [exact Hae|].
   eapply FOQLBind with
-    (T := fun p q => p = q /\ stable_head_rel RR sim (fst p) (snd p)).
+    (T := fun p q => p = q ∧ stable_head_rel RR sim (fst p) (snd p)).
   - eapply FOQLAERestrict with (T := eq)
       (P := fun p => stable_head_rel RR sim (fst p) (snd p))
       (Q := fun _ => True).

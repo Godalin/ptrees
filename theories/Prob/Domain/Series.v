@@ -1,5 +1,7 @@
 (** Role: Direct realization of nonnegative, summable real weights as an
     expectation functional. This is a mathematical series, not free syntax. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -14,15 +16,15 @@ Local Open Scope ring_scope.
 
 Section Series.
 Variable R : realType.
-Variable w : nat -> R.
-Hypothesis w0 : forall i, 0 <= w i.
-Hypothesis w1 : forall n, \sum_(i < n) w i <= 1.
+Variable w : nat → R.
+Hypothesis w0 : ∀ i, 0 <= w i.
+Hypothesis w1 : ∀ n, \sum_(i < n) w i <= 1.
 
-Definition oval_weighted_prefix (f : nat -> R) n := \sum_(i < n) w i * f i.
-Definition oval_series_eval (f : nat -> R) := oval_sup (oval_weighted_prefix f).
+Definition oval_weighted_prefix (f : nat → R) n := \sum_(i < n) w i * f i.
+Definition oval_series_eval (f : nat → R) := oval_sup (oval_weighted_prefix f).
 
-Lemma oval_weighted_prefix_bounds f n : oval_test f ->
-  0 <= oval_weighted_prefix f n /\ oval_weighted_prefix f n <= 1.
+Lemma oval_weighted_prefix_bounds f n : oval_test f →
+  0 <= oval_weighted_prefix f n ∧ oval_weighted_prefix f n <= 1.
 Proof.
   intro Hf; split.
   - apply sumr_ge0=> i _; exact (mulr_ge0 (w0 i) (proj1 (Hf i))).
@@ -30,17 +32,17 @@ Proof.
     rewrite -[X in _ <= X]mulr1; exact (ler_wpM2l (w0 i) (proj2 (Hf i))).
 Qed.
 
-Lemma oval_weighted_prefix_increasing f : oval_test f ->
-  forall n, oval_weighted_prefix f n <= oval_weighted_prefix f n.+1.
+Lemma oval_weighted_prefix_increasing f : oval_test f →
+  ∀ n, oval_weighted_prefix f n <= oval_weighted_prefix f n.+1.
 Proof.
   intros Hf n; rewrite /oval_weighted_prefix big_ord_recr /= lerDl.
   exact (mulr_ge0 (w0 n) (proj1 (Hf n))).
 Qed.
 
-Lemma oval_weighted_prefix_continuous (f : nat -> nat -> R) :
-  (forall n, oval_test (f n)) ->
-  (forall n i, f n i <= f n.+1 i) ->
-  forall m, oval_weighted_prefix (oval_pointwise_sup f) m =
+Lemma oval_weighted_prefix_continuous (f : nat → nat → R) :
+  (∀ n, oval_test (f n)) →
+  (∀ n i, f n i <= f n.+1 i) →
+  ∀ m, oval_weighted_prefix (oval_pointwise_sup f) m =
     oval_sup (fun n => oval_weighted_prefix (f n) m).
 Proof.
   intros Hf Hi m; induction m as [|m IH].
@@ -103,9 +105,9 @@ Theorem oval_series_roundtrip (L : OmegaVal R nat) :
   oval_eq (oval_series (fun i => proj1 (oval_atom_bounds L i)) (oval_atoms_summable L)) L.
 Proof. intros f Hf; symmetry; exact: oval_atomic_representation. Qed.
 
-Lemma oval_series_concentrated (w : nat -> R) (w0 : forall i, 0 <= w i)
-    (w1 : forall n, \sum_(i < n) w i <= 1) P :
-  (forall i, w i != 0 -> P i) -> oval_ae (oval_series w0 w1) P.
+Lemma oval_series_concentrated (w : nat → R) (w0 : ∀ i, 0 <= w i)
+    (w1 : ∀ n, \sum_(i < n) w i <= 1) P :
+  (∀ i, w i != 0 → P i) → oval_ae (oval_series w0 w1) P.
 Proof.
   intros HP f g Hf Hg Hfg; apply oval_sup_ext=> n; apply eq_bigr=> i _.
   destruct (eqVneq (w i) 0) as [Hw|Hw].
@@ -116,12 +118,12 @@ Qed.
 (** An enumerated matrix may list an edge more than once: the series sums
     its weights. All weights are real, not necessarily rational. The scalar
     row/column equations suffice to recover full bounded-test marginals. *)
-Theorem oval_transport_plan_joint (T : nat -> nat -> Prop)
-    (L M : OmegaVal R nat) (edge : nat -> nat * nat) (w : nat -> R)
-    (w0 : forall i, 0 <= w i) (w1 : forall n, \sum_(i < n) w i <= 1) :
-  (forall x, oval_series_eval w (fun i => if (fst (edge i)) == x then 1 else 0) = oval_atom L x) ->
-  (forall y, oval_series_eval w (fun i => if (snd (edge i)) == y then 1 else 0) = oval_atom M y) ->
-  (forall i, w i != 0 -> T (fst (edge i)) (snd (edge i))) ->
+Theorem oval_transport_plan_joint (T : nat → nat → Prop)
+    (L M : OmegaVal R nat) (edge : nat → nat * nat) (w : nat → R)
+    (w0 : ∀ i, 0 <= w i) (w1 : ∀ n, \sum_(i < n) w i <= 1) :
+  (∀ x, oval_series_eval w (fun i => if (fst (edge i)) == x then 1 else 0) = oval_atom L x) →
+  (∀ y, oval_series_eval w (fun i => if (snd (edge i)) == y then 1 else 0) = oval_atom M y) →
+  (∀ i, w i != 0 → T (fst (edge i)) (snd (edge i))) →
   oval_joint T L M (oval_bind (oval_series w0 w1) (fun i => oval_ret R (edge i))).
 Proof.
   intros Hrow Hcol HT; split.

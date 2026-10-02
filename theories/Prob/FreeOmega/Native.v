@@ -1,4 +1,6 @@
 (** Role: Canonical FreeOmega measure infrastructure. Depends on generic measures; not a concrete native backend or program equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq.Logic Require Import ClassicalChoice.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
@@ -13,10 +15,10 @@ Unset Printing Implicit Defensive.
     asked to carry trees.  This record is presentation data, not a new
     measure structure or behavioral relation. *)
 Polymorphic Record free_omega_native_presentation@{node node_rep frontier}
-    (MN : Type@{node} -> Type@{node_rep}) (A : Type@{frontier}) := {
+    (MN : Type@{node} → Type@{node_rep}) (A : Type@{frontier}) := {
   native_sample_type : Type@{node};
   native_sample_measure : MN native_sample_type;
-  native_sample_value : native_sample_type -> A
+  native_sample_value : native_sample_type → A
 }.
 
 Arguments native_sample_type {MN A} _.
@@ -30,8 +32,8 @@ Definition free_omega_native {MN A} (p : free_omega_native_presentation MN A) :=
     though reflection of quotient COUPLING to node lifting need not be. *)
 Lemma free_omega_native_ae_iff {MN}
     `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
-    {A} (p : free_omega_native_presentation MN A) (P : A -> Prop) :
-  free_omega_ae P (free_omega_native p) <->
+    {A} (p : free_omega_native_presentation MN A) (P : A → Prop) :
+  free_omega_ae P (free_omega_native p) ↔
   sem_ae (native_sample_measure p) (fun x => P (native_sample_value p x)).
 Proof.
   split.
@@ -44,14 +46,14 @@ Proof.
 Qed.
 
 Section DependentSampling.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
   `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}.
 
 Lemma free_omega_ret_native_presentation {A} (x : A) :
-  exists p : free_omega_native_presentation MN A,
+  ∃ p : free_omega_native_presentation MN A,
     free_omega_qlift eq (FORet x) (free_omega_native p).
 Proof.
   exists {| native_sample_type := unit; native_sample_measure := sem_ret tt;
@@ -67,8 +69,8 @@ Qed.
     exposes only exact AE laws for bind, not native monad equalities.
     Consequently native normalization is not automatically a reflection
     theorem for the node lifting. *)
-Lemma free_omega_sample_bind_ret_l {X Y A} (x : X) (k : X -> MN Y)
-    (decode : Y -> FreeOmega MN A) :
+Lemma free_omega_sample_bind_ret_l {X Y A} (x : X) (k : X → MN Y)
+    (decode : Y → FreeOmega MN A) :
   free_omega_qlift eq (FOSample (sem_bind (sem_ret x) k) decode)
     (FOSample (k x) decode).
 Proof.
@@ -87,8 +89,8 @@ Qed.
 
 (** Push a SMALL deterministic map through native sampling; the result
     continuation may still return values in a larger universe. *)
-Lemma free_omega_sample_map {X Y A} (mu : MN X) (f : X -> Y)
-    (k : Y -> FreeOmega MN A) :
+Lemma free_omega_sample_map {X Y A} (mu : MN X) (f : X → Y)
+    (k : Y → FreeOmega MN A) :
   free_omega_qlift eq
     (FOSample (sem_bind mu (fun x => sem_ret (f x))) k)
     (FOSample mu (fun x => k (f x))).
@@ -111,9 +113,9 @@ Qed.
 (** Flatten DEPENDENT nested sampling by retaining the entire tagged path.
     Sampling spaces may differ between branches; no fixed-depth or finite
     branching assumption is used. *)
-Theorem free_omega_sample_sigma {X} {Y : X -> Type} {A}
-    (mu : MN X) (nu : forall x, MN (Y x))
-    (k : forall x, Y x -> FreeOmega MN A) :
+Theorem free_omega_sample_sigma {X} {Y : X → Type} {A}
+    (mu : MN X) (nu : ∀ x, MN (Y x))
+    (k : ∀ x, Y x → FreeOmega MN A) :
   free_omega_qlift eq (FOSample mu (fun x => FOSample (nu x) (k x)))
     (FOSample
       (sem_bind mu (fun x => sem_bind (nu x) (fun y => sem_ret (existT Y x y))))
@@ -148,7 +150,7 @@ Qed.
 
 Definition free_omega_native_bind {A B}
     (p : free_omega_native_presentation MN A)
-    (f : A -> free_omega_native_presentation MN B) :
+    (f : A → free_omega_native_presentation MN B) :
     free_omega_native_presentation MN B :=
   {| native_sample_type := {x : native_sample_type p &
         native_sample_type (f (native_sample_value p x))};
@@ -161,7 +163,7 @@ Definition free_omega_native_bind {A B}
 
 Lemma free_omega_native_bind_eq {A B}
     (p : free_omega_native_presentation MN A)
-    (f : A -> free_omega_native_presentation MN B) :
+    (f : A → free_omega_native_presentation MN B) :
   free_omega_qlift eq
     (free_omega_bind (free_omega_native p) (fun x => free_omega_native (f x)))
     (free_omega_native (free_omega_native_bind p f)).
@@ -177,12 +179,12 @@ Qed.
 (** Closure is at the level of full distribution equality, not just
     support.  Choices select proved presentations, never supported values. *)
 Theorem free_omega_native_bind_presentation {A B}
-    (mu : FreeOmega MN A) (k : A -> FreeOmega MN B)
+    (mu : FreeOmega MN A) (k : A → FreeOmega MN B)
     (p : free_omega_native_presentation MN A) :
-  free_omega_qlift eq mu (free_omega_native p) ->
-  (forall x, exists q : free_omega_native_presentation MN B,
-    free_omega_qlift eq (k x) (free_omega_native q)) ->
-  exists q : free_omega_native_presentation MN B,
+  free_omega_qlift eq mu (free_omega_native p) →
+  (∀ x, ∃ q : free_omega_native_presentation MN B,
+    free_omega_qlift eq (k x) (free_omega_native q)) →
+  ∃ q : free_omega_native_presentation MN B,
     free_omega_qlift eq (free_omega_bind mu k) (free_omega_native q).
 Proof.
   intros Hmu Hk. destruct (choice _ Hk) as [f Hf].

@@ -1,6 +1,8 @@
 (** Backend-specific external joint realization for FreeOmega SubEnumQ.
     Only endpoints require admissibility. The all-raw bidual bridge handles
     derivations through invalid intermediates; this file never unfolds qlift. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -24,11 +26,11 @@ Local Notation qlift := (@free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure Sub
 (** Preferred endpoint: generic modelability, backend enumerable support,
     and the shared countable transport theorem. Legacy DS names live only in Compatibility;
     this module does not load the specialized evaluator. *)
-Theorem subenumQ_qlift_sound {A B} (T : A -> B -> Prop)
+Theorem subenumQ_qlift_sound {A B} (T : A → B → Prop)
     (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)
     (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t)
     (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
-  qlift T t u -> oval_coupled T (free_omega_model Ht) (free_omega_model Hu).
+  qlift T t u → oval_coupled T (free_omega_model Ht) (free_omega_model Hu).
 Proof.
   intro H.
   exact (oval_bidual_coupled (subenumQ_free_omega_model_countable Ht)
@@ -39,7 +41,7 @@ Qed.
     identifies the existential joint with the separately constructed diagonal. *)
 Theorem subenumQ_qlift_eq_sound_via_joint {A} (t u : FreeOmega SubEnumQ A)
     (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t) (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
-  qlift eq t u -> oval_eq (free_omega_model Ht) (free_omega_model Hu).
+  qlift eq t u → oval_eq (free_omega_model Ht) (free_omega_model Hu).
 Proof.
   intro H; apply (proj1 (oval_eq_coupled_iff _ _)).
   exact (subenumQ_qlift_sound Ht Hu H).
@@ -47,14 +49,14 @@ Qed.
 
 (** The realized joint has exactly the original subprobability mass;
     its complement-of-relation observable has expectation zero. *)
-Theorem subenumQ_qlift_joint_mass_support {A B} (T : A -> B -> Prop)
+Theorem subenumQ_qlift_joint_mass_support {A B} (T : A → B → Prop)
     (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)
     (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t) (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
-  qlift T t u -> exists J : OmegaVal R (A * B),
-    oval_joint T (free_omega_model Ht) (free_omega_model Hu) J /\
-    oval_mass J = oval_mass (free_omega_model Ht) /\
-    oval_mass J = oval_mass (free_omega_model Hu) /\
-    oval_eval J (oval_indicator R (fun z => ~ T (fst z) (snd z))) = 0.
+  qlift T t u → ∃ J : OmegaVal R (A * B),
+    oval_joint T (free_omega_model Ht) (free_omega_model Hu) J ∧
+    oval_mass J = oval_mass (free_omega_model Ht) ∧
+    oval_mass J = oval_mass (free_omega_model Hu) ∧
+    oval_eval J (oval_indicator R (fun z => ¬ T (fst z) (snd z))) = 0.
 Proof.
   intro H; destruct (subenumQ_qlift_sound Ht Hu H) as [J HJ].
   exists J; split; first exact HJ.

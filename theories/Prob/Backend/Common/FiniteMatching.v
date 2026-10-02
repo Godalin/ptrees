@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 From Coq Require Import Lia.
 From mathcomp Require Import ssreflect ssrbool ssrfun eqtype ssrnat seq fintype finset.
@@ -11,20 +13,20 @@ Unset Printing Implicit Defensive.
     couplings.  The matching is an actual partial function, not an
     assumed transport or measure capability. *)
 Section FiniteMatching.
-Context {A B : finType} (edge : A -> B -> bool).
+Context {A B : finType} (edge : A → B → bool).
 
 Definition matching_neighbors (V : {set B}) (S : {set A}) : {set B} :=
   [set y in V | [exists x in S, edge x y]].
 
-Definition finite_matching (L : {set A}) (V : {set B}) (f : A -> option B) : Prop :=
-  (forall x, x \in L -> exists y, f x = Some y /\ y \in V /\ edge x y) /\
+Definition finite_matching (L : {set A}) (V : {set B}) (f : A → option B) : Prop :=
+  (∀ x, x \in L → ∃ y, f x = Some y ∧ y \in V ∧ edge x y) ∧
   {in L &, injective f}.
 
 Definition finite_hall (L : {set A}) (V : {set B}) : Prop :=
-  forall S : {set A}, S \subset L -> #|S| <= #|matching_neighbors V S|.
+  ∀ S : {set A}, S \subset L → #|S| <= #|matching_neighbors V S|.
 
 Lemma matching_neighborsP (V : {set B}) (S : {set A}) (y : B) :
-  reflect (y \in V /\ exists x, x \in S /\ edge x y) (y \in matching_neighbors V S).
+  reflect (y \in V ∧ ∃ x, x \in S ∧ edge x y) (y \in matching_neighbors V S).
 Proof.
   rewrite /matching_neighbors inE. apply: (iffP andP).
   - move=> [Hy /existsP [x /andP [Hx Hxy]]]. split=> //. by exists x.
@@ -35,7 +37,7 @@ Lemma matching_neighbors_subset V S : matching_neighbors V S \subset V.
 Proof. apply/subsetP=> y /matching_neighborsP [Hy _]. exact Hy. Qed.
 
 Lemma matching_neighbors_mono V (S T : {set A}) :
-  S \subset T -> matching_neighbors V S \subset matching_neighbors V T.
+  S \subset T → matching_neighbors V S \subset matching_neighbors V T.
 Proof.
   move=> /subsetP HST. apply/subsetP=> y /matching_neighborsP [Hy [x [Hx Hxy]]].
   apply/matching_neighborsP. split=> //. exists x. split=> //; exact (HST x Hx).
@@ -67,7 +69,7 @@ Proof.
 Qed.
 
 Lemma matching_neighbors_restrict V (S T : {set A}) :
-  T \subset S -> matching_neighbors (matching_neighbors V S) T = matching_neighbors V T.
+  T \subset S → matching_neighbors (matching_neighbors V S) T = matching_neighbors V T.
 Proof.
   intro HTS. apply/setP=> y. apply/idP/idP.
   - move/matching_neighborsP=> [/matching_neighborsP [Hy _] Hxy].
@@ -79,7 +81,7 @@ Qed.
 Lemma finite_matching_empty V : finite_matching set0 V (fun _ => None).
 Proof. split; [intros x; by rewrite inE|intros x y; by rewrite inE]. Qed.
 
-Lemma finite_matching_singleton x y : edge x y ->
+Lemma finite_matching_singleton x y : edge x y →
   finite_matching [set x] [set y] (fun _ => Some y).
 Proof.
   intro Hxy. split.
@@ -88,8 +90,8 @@ Proof.
 Qed.
 
 Lemma finite_matching_union L1 L2 V1 V2 f1 f2 :
-  finite_matching L1 V1 f1 -> finite_matching L2 V2 f2 ->
-  [disjoint V1 & V2] ->
+  finite_matching L1 V1 f1 → finite_matching L2 V2 f2 →
+  [disjoint V1 & V2] →
   finite_matching (L1 :|: L2) (V1 :|: V2)
     (fun x => if x \in L1 then f1 x else f2 x).
 Proof.
@@ -119,14 +121,14 @@ Proof.
 Qed.
 
 Lemma finite_hall_tight_left L V (S : {set A}) :
-  finite_hall L V -> S \subset L -> finite_hall S (matching_neighbors V S).
+  finite_hall L V → S \subset L → finite_hall S (matching_neighbors V S).
 Proof.
   intros Hall HSL T HTS. rewrite (matching_neighbors_restrict V HTS).
   apply Hall. exact (subset_trans HTS HSL).
 Qed.
 
 Lemma finite_hall_tight_right L V (S : {set A}) :
-  finite_hall L V -> S \subset L -> #|matching_neighbors V S| = #|S| ->
+  finite_hall L V → S \subset L → #|matching_neighbors V S| = #|S| →
   finite_hall (L :\: S) (V :\: matching_neighbors V S).
 Proof.
   intros Hall HSL Htight T HT.
@@ -150,9 +152,9 @@ Qed.
     Induction splits at a tight subset; if no proper nonempty subset is
     tight, any edge can be removed while preserving the Hall inequalities. *)
 Theorem finite_hall_matching L V :
-  finite_hall L V -> exists f, finite_matching L V f.
+  finite_hall L V → ∃ f, finite_matching L V f.
 Proof.
-  have bounded : forall n (L : {set A}) (V : {set B}), #|L| < n ->
+  have bounded : ∀ n (L : {set A}) (V : {set B}), #|L| < n ->
       finite_hall L V -> exists f, finite_matching L V f.
   { elim=> [|n IH] L0 V0 Hsize Hall; [by rewrite ltn0 in Hsize|].
     case EL: (L0 == set0).

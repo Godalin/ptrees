@@ -5,6 +5,8 @@
 (** State + native probability, with exact rational replay. This example
     does not assert that an arbitrary supplied replay stream is random.
     Prob stays a native node throughout state elimination and execution. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -103,7 +105,7 @@ Lemma coin_selects_bit b :
   pick_interval (subenumQ_data coin) (quantile_value (bit_quantile b)) = Some b.
 Proof. destruct b; native_compute; reflexivity. Qed.
 
-Theorem coin_bit_expectation (f : bool -> rat) :
+Theorem coin_bit_expectation (f : bool → rat) :
   finite_expect (fun b =>
     match pick_interval (subenumQ_data coin) (quantile_value (bit_quantile b)) with
     | Some x => f x | None => 0 end) coin_entries =

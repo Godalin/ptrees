@@ -6,6 +6,8 @@
     Reusable endpoints: service_sampler_equivalent, interactive_von_neumann_service_equivalent, von_neumann_request_true_reply_trace_probability.
     Boundary: quantitative witnesses remain; the service does not redo VN convergence.
     User navigation: docs/CASE_STUDIES.md. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -56,7 +58,7 @@ Polymorphic Variant service_unit@{u} : Type@{u} := ServiceTT.
 (** A client requests a fresh bit; the server then publishes its answer.
     Both events have one response, so the only observable choice is the
     reply bit. *)
-Polymorphic Variant coin_serviceE@{u} : Type@{u} -> Type@{u} :=
+Polymorphic Variant coin_serviceE@{u} : Type@{u} → Type@{u} :=
   | CoinRequest : coin_serviceE service_unit@{u}
   | CoinReply (b : bool) : coin_serviceE service_unit@{u}.
 
@@ -263,7 +265,7 @@ Proof.
 Qed.
 
 Local Definition service_kernel {R} :
-    ptree' coin_serviceE EnumQ R ->
+    ptree' coin_serviceE EnumQ R →
     MF (stable_target (ptree' coin_serviceE EnumQ R)
       (stable_head coin_serviceE EnumQ R)) :=
   @ptree_primitive_kernel coin_serviceE EnumQ MF
@@ -271,9 +273,9 @@ Local Definition service_kernel {R} :
     FreeOmegaMixedMeasure R.
 
 Local Definition service_stable_rel {R1 R2}
-    (RR : R1 -> R2 -> Prop)
-    (sim : ptree' coin_serviceE EnumQ R1 ->
-      ptree' coin_serviceE EnumQ R2 -> Prop) :=
+    (RR : R1 → R2 → Prop)
+    (sim : ptree' coin_serviceE EnumQ R1 →
+      ptree' coin_serviceE EnumQ R2 → Prop) :=
   @ptree_stable_head_rel coin_serviceE EnumQ R1 R2 RR sim.
 
 Local Notation service_hitting :=
@@ -283,7 +285,7 @@ Local Notation service_hitting :=
     FreeOmegaObservableSemanticOmega
     bool).
 
-Local Definition service_lift {A B} (R : A -> B -> Prop)
+Local Definition service_lift {A B} (R : A → B → Prop)
     (mu : MF A) (nu : MF B) : Prop :=
   @sem_lift MF
     FI
@@ -326,7 +328,7 @@ Qed.
     the request, the implementation's first primitive sample is the biased
     [1/3,2/3] coin, whereas the specification samples [1/2,1/2]. *)
 Lemma service_first_sampling_measure_not_direct :
-  vn_biased_coin <> vn_fair.
+  vn_biased_coin ≠ vn_fair.
 Proof.
   intro Heq.
   have Hmass := f_equal
@@ -338,9 +340,9 @@ Qed.
 
 Definition interactive_service_sim
     (s1 s2 : state) : Prop :=
-  (s1 = observe von_neumann_service /\
-    s2 = observe direct_fair_service) \/
-  (exists b, s1 = observe (publish b von_neumann_service) /\
+  (s1 = observe von_neumann_service ∧
+    s2 = observe direct_fair_service) ∨
+  (∃ b, s1 = observe (publish b von_neumann_service) ∧
     s2 = observe (publish b direct_fair_service)).
 
 Definition interactive_service_upto
@@ -363,7 +365,7 @@ Lemma ISSPublish b : interactive_service_sim
 Proof. right. exists b. split; reflexivity. Qed.
 
 Lemma interactive_service_sim_postfixed :
-  forall s1 s2, interactive_service_sim s1 s2 ->
+  ∀ s1 s2, interactive_service_sim s1 s2 →
     progress interactive_service_upto s1 s2.
 Proof.
   intros s1 s2 [[-> ->]|[b [-> ->]]].
@@ -450,12 +452,12 @@ Qed.
     implementation side is coupled to the explicit fair query above, so a
     concrete observation backend reads probability [1/2] from it. *)
 Theorem von_neumann_true_reply_probability_half :
-  exists query,
+  ∃ query,
     @next_event_query coin_serviceE EnumQ MF
       FI
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega bool
-      (@accepts_true_reply) vn_after_request query /\
+      (@accepts_true_reply) vn_after_request query ∧
     @sem_lift MF
       FI bool bool eq
       direct_true_reply_query query.
@@ -551,13 +553,13 @@ Qed.
     [Request; CoinReply true] cylinder.  Its witness is coupled to the same
     explicit fair measure whose true mass is [1/2]. *)
 Theorem von_neumann_request_true_reply_probability_half :
-  exists query,
+  ∃ query,
     @finite_interaction_query coin_serviceE EnumQ MF
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega
       bool
-      request_true_reply_trace von_neumann_service query /\
+      request_true_reply_trace von_neumann_service query ∧
     @sem_lift MF
       FreeOmegaObservableSemanticMeasure bool bool eq
       direct_true_reply_query query.

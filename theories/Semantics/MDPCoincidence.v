@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Eq Require Import StableHittingRelation.
 (** Role: Comparison semantics. Depends on canonical theory; not the canonical peutt relation or interpreter theory. *)
 Set Warnings "-notation-overridden".
@@ -16,7 +18,7 @@ Unset Printing Implicit Defensive.
 (** Separation is explicit and uses an EXISTING capability: exact AE at
     Dirac measures. No equality-coupling reflection is assumed. *)
 Section Coincidence.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -35,7 +37,7 @@ Local Notation good := (@mdp_head E MN MF FI FC MX FO R).
 Local Notation state := (@mdp_state E MN MF FI FC MX FO R).
 
 Lemma mdp_ret_zero_separate {A} (a : A) :
-  ~ sem_lift eq (sem_ret a) sem_zero.
+  ¬ sem_lift eq (sem_ret a) sem_zero.
 Proof.
   intro H. pose proof (sem_lift_sym H) as Hback.
   pose proof (sem_lift_ae_transport_r Hback (sem_ae_zero (fun _ : A => False))) as Ha.
@@ -44,8 +46,8 @@ Proof.
 Qed.
 
 (** Transport across equality couplings, NOT sem_eq reflection. *)
-Lemma mdp_lift_transport {A B} (rel : A -> B -> Prop) a a' b b' :
-  sem_lift eq a a' -> sem_lift eq b b' -> sem_lift rel a b -> sem_lift rel a' b'.
+Lemma mdp_lift_transport {A B} (rel : A → B → Prop) a a' b b' :
+  sem_lift eq a a' → sem_lift eq b b' → sem_lift rel a b → sem_lift rel a' b'.
 Proof.
   intros Ha Hb Hab.
   assert (Ha' : sem_lift eq a' a).
@@ -57,8 +59,8 @@ Proof.
   intros x y [z [Hx ->]]. exact Hx.
 Qed.
 
-Lemma mdp_dirac_bind_lift {A B} (front : MF A) h (project : A -> MF B) :
-  sem_eq front (sem_ret h) -> sem_lift eq (sem_bind front project) (project h).
+Lemma mdp_dirac_bind_lift {A B} (front : MF A) h (project : A → MF B) :
+  sem_eq front (sem_ret h) → sem_lift eq (sem_bind front project) (project h).
 Proof.
   intro Heq.
   eapply sem_lift_proper_r; [exact (sem_bind_ret_l h project)|].
@@ -67,9 +69,9 @@ Proof.
   - intros x y ->. apply sem_lift_refl. intro z. reflexivity.
 Qed.
 
-Lemma mdp_dirac_observations {O} (project : head -> MF O) t front h :
-  hits t front -> sem_eq front (sem_ret h) ->
-  tree_head_observation project t (sem_bind front project) /\
+Lemma mdp_dirac_observations {O} (project : head → MF O) t front h :
+  hits t front → sem_eq front (sem_ret h) →
+  tree_head_observation project t (sem_bind front project) ∧
   sem_lift eq (sem_bind front project) (project h).
 Proof.
   intros Hhit Heq. split.
@@ -78,8 +80,8 @@ Proof.
 Qed.
 
 Lemma mdp_dirac_transition t front h label out :
-  hits t front -> sem_eq front (sem_ret h) -> head_action_result label h out ->
-  trans t label (sem_bind front (fun _ : head => out)) /\
+  hits t front → sem_eq front (sem_ret h) → head_action_result label h out →
+  trans t label (sem_bind front (fun _ : head => out)) ∧
   sem_lift eq (sem_bind front (fun _ : head => out)) out.
 Proof.
   intros Hhit Heq Haction. split.
@@ -95,7 +97,7 @@ Proof.
 Qed.
 
 Lemma mdp_dirac_return_match t u f g h k :
-  TB t u -> hits t f -> sem_eq f (sem_ret h) -> hits u g -> sem_eq g (sem_ret k) ->
+  TB t u → hits t f → sem_eq f (sem_ret h) → hits u g → sem_eq g (sem_ret k) →
   sem_lift eq (return_projection (MF := MF) h) (return_projection (MF := MF) k).
 Proof.
   intros Htb Hf Hh Hg Hk.
@@ -106,7 +108,7 @@ Proof.
 Qed.
 
 Lemma mdp_dirac_event_match t u f g h k :
-  TB t u -> hits t f -> sem_eq f (sem_ret h) -> hits u g -> sem_eq g (sem_ret k) ->
+  TB t u → hits t f → sem_eq f (sem_ret h) → hits u g → sem_eq g (sem_ret k) →
   sem_lift eq (offered_event_projection (MF := MF) h) (offered_event_projection (MF := MF) k).
 Proof.
   intros Htb Hf Hh Hg Hk.
@@ -117,8 +119,8 @@ Proof.
 Qed.
 
 Lemma mdp_dirac_successor_match t u f g h k label out1 out2 :
-  TB t u -> hits t f -> sem_eq f (sem_ret h) -> hits u g -> sem_eq g (sem_ret k) ->
-  head_step h label out1 -> head_step k label out2 ->
+  TB t u → hits t f → sem_eq f (sem_ret h) → hits u g → sem_eq g (sem_ret k) →
+  head_step h label out1 → head_step k label out2 →
   sem_lift (trans_head_rel TB) out1 out2.
 Proof.
   intros Htb Hf Hh Hg Hk Hstep1 Hstep2.
@@ -138,15 +140,15 @@ Qed.
     witnesses, or that sem_lift eq reflects sem_eq. *)
 Inductive fragment_head_pair (h k : head) : Prop :=
   | FragmentHeads (t u : tree) f g :
-      good h -> good k -> hits t f -> sem_eq f (sem_ret h) ->
-      hits u g -> sem_eq g (sem_ret k) -> TB t u -> fragment_head_pair h k.
+      good h → good k → hits t f → sem_eq f (sem_ret h) →
+      hits u g → sem_eq g (sem_ret k) → TB t u → fragment_head_pair h k.
 
 Local Definition fragment_distribution_pair (s1 s2 : ptree' E MN R) : Prop :=
-  exists f g, stable_hitting K s1 f /\ stable_hitting K s2 g /\
+  ∃ f g, stable_hitting K s1 f ∧ stable_hitting K s2 g ∧
     sem_lift fragment_head_pair f g.
 
 Local Lemma fragment_head_pair_of_stable h k :
-  good h -> good k -> trans_head_rel TB h k -> fragment_head_pair h k.
+  good h → good k → trans_head_rel TB h k → fragment_head_pair h k.
 Proof.
   intros Hh Hk Htb. econstructor; [exact Hh|exact Hk| | | | |exact Htb].
   - apply stable_head_tree_hitting.
@@ -155,7 +157,7 @@ Proof.
   - apply sem_eq_refl.
 Qed.
 
-Local Lemma fragment_head_pair_progress h k : fragment_head_pair h k ->
+Local Lemma fragment_head_pair_progress h k : fragment_head_pair h k →
   ptree_stable_head_rel eq fragment_distribution_pair h k.
 Proof.
   intros [t u f g Hgood1 Hgood2 Hf Hh Hg Hk Htb].
@@ -180,7 +182,7 @@ Proof.
 Qed.
 
 Local Lemma fragment_distribution_pair_peutt t u :
-  fragment_distribution_pair (observe t) (observe u) -> peutt eq t u.
+  fragment_distribution_pair (observe t) (observe u) → peutt eq t u.
 Proof.
   apply peutt_coinduction with (sim := fragment_distribution_pair).
   intros s1 s2 [f [g [Hf [Hg Hlift]]]].
@@ -189,7 +191,7 @@ Proof.
 Qed.
 
 Theorem mdp_state_trans_bisim_peutt (t u : tree) :
-  state t -> state u -> TB t u -> peutt eq t u.
+  state t → state u → TB t u → peutt eq t u.
 Proof.
   intros [h [f [Hf [Hh Hgood1]]]] [k [g [Hg [Hk Hgood2]]]] Htb.
   apply fragment_distribution_pair_peutt.
@@ -202,7 +204,7 @@ Qed.
 
 Theorem mdp_state_peutt_trans_iff
     `{FOrd : @SemanticMeasureOrderLaws MF FI FO} (t u : tree) :
-  state t -> state u -> (peutt eq t u <-> TB t u).
+  state t → state u → (peutt eq t u ↔ TB t u).
 Proof.
   intros Ht Hu. split.
   - intro H. exact (peutt_trans_bisim (FI := FI) (FC := FC) (FO := FO)

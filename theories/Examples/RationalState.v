@@ -5,6 +5,8 @@
 (** A genuinely non-fair, partial rational sampler inside an unbounded State
     loop. Each attempt succeeds with 1/3, retries with 1/2, or is lost with
     1/6. This example consumes the general verified uniform-ticket compiler. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -34,7 +36,7 @@ CoFixpoint rational_attempts : ptree (stateE nat +' void1) SubEnumQ unit :=
       Prob attempt_coin (fun b => if b then Ret tt else Tau rational_attempts))).
 
 Definition rational_counter {Seed}
-    (next : nat -> Seed -> option nat * Seed) fuel initial seed : outcome nat * Seed :=
+    (next : nat → Seed → option nat * Seed) fuel initial seed : outcome nat * Seed :=
   let '(result, rest) := run (fun A => @ticket_sample Seed A next) fuel
     (run_state rational_attempts initial) seed in
   (match result with
@@ -43,7 +45,7 @@ Definition rational_counter {Seed}
    end, rest).
 
 Example rational_ticket_layout :
-  ticket_count attempt_coin = 6%nat /\
+  ticket_count attempt_coin = 6%nat ∧
   ticket_outcomes attempt_coin = [Some true;Some true;Some false;Some false;Some false;None].
 Proof. split; native_compute; reflexivity. Qed.
 

@@ -1,5 +1,7 @@
 (** Classical least-fixed-point iteration in the independent expectation
     domain. This module imports neither a probability interface nor trees. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From mathcomp Require Import reals.
@@ -9,16 +11,16 @@ Unset Strict Implicit.
 
 Section Iteration.
 Variable R : realType.
-Context {I A : Type} (K : I -> OmegaVal R (I+A)).
+Context {I A : Type} (K : I → OmegaVal R (I+A)).
 
-Definition oval_iter_step (X : I -> OmegaVal R A) i :=
+Definition oval_iter_step (X : I → OmegaVal R A) i :=
   oval_bind (K i) (fun v => match v with inl j => X j | inr a => oval_ret R a end).
 Fixpoint oval_iter_approx n i : OmegaVal R A :=
   match n with O => @oval_bottom R A | S m => oval_iter_step (oval_iter_approx m) i end.
 
 Lemma oval_iter_step_mono X Y :
-  (forall i, oval_le (X i) (Y i)) ->
-  forall i, oval_le (oval_iter_step X i) (oval_iter_step Y i).
+  (∀ i, oval_le (X i) (Y i)) →
+  ∀ i, oval_le (oval_iter_step X i) (oval_iter_step Y i).
 Proof.
   intros H i. apply oval_bind_mono; [apply oval_le_refl|].
   intros [j|a]; [apply H|apply oval_le_refl].
@@ -33,12 +35,12 @@ Definition oval_iter i := oval_lub (oval_iter_increasing i).
 Lemma oval_iter_upper i n : oval_le (oval_iter_approx n i) (oval_iter i).
 Proof. exact (oval_lub_upper (oval_iter_increasing i) n). Qed.
 Lemma oval_iter_least i L :
-  (forall n, oval_le (oval_iter_approx n i) L) -> oval_le (oval_iter i) L.
+  (∀ n, oval_le (oval_iter_approx n i) L) → oval_le (oval_iter i) L.
 Proof. intro H. exact (oval_lub_least (oval_iter_increasing i) H). Qed.
 
 Theorem oval_iter_least_prefixed Y :
-  (forall i, oval_le (oval_iter_step Y i) (Y i)) ->
-  forall i, oval_le (oval_iter i) (Y i).
+  (∀ i, oval_le (oval_iter_step Y i) (Y i)) →
+  ∀ i, oval_le (oval_iter i) (Y i).
 Proof.
   intros HY i. apply oval_iter_least. intro n; revert i.
   induction n as [|n IH]; intro i; [apply oval_bottom_le|].
@@ -68,7 +70,7 @@ Proof.
   - apply oval_iter_least. intros [|n]; [apply oval_bottom_le|].
     apply oval_iter_step_mono. intro j. apply oval_iter_upper.
   - intros f Hf. rewrite (oval_iter_step_limit i Hf).
-    assert (Hb : forall n, oval_le (oval_bind (K i) (next n)) (oval_iter i)).
+    assert (Hb : ∀ n, oval_le (oval_bind (K i) (next n)) (oval_iter i)).
     { intro n. exact (oval_iter_upper i (S n)). }
     exact (oval_lub_least (oval_bind_chain_r (K i) next_increasing) Hb Hf).
 Qed.

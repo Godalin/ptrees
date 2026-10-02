@@ -1,6 +1,8 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** Contracts for native-independent raw quotient validation. In particular,
     an invalid composition middle must never become a validity obligation. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -56,7 +58,7 @@ Proof.
   - intros x b [y [_ Hb]]; exact Hb.
 Qed.
 
-Example generic_real_middle_is_invalid : ~ free_omega_modelable native (real_alternating R).
+Example generic_real_middle_is_invalid : ¬ free_omega_modelable native (real_alternating R).
 Proof. exact: real_alternating_invalid. Qed.
 Example generic_real_raw_constraints_through_invalid :
   model_upper_birel native real_returns_true real_constant_unit (FORet true).
@@ -69,12 +71,12 @@ Example generic_real_endpoint_dual_through_invalid :
 Proof. apply subenumR_qlift_bidual; exact real_heterogeneous_invalid_middle. Qed.
 
 Example generic_real_equality_is_not_validity :
-  free_omega_qlift eq (real_alternating R) (real_alternating R) /\
-  ~ free_omega_modelable native (real_alternating R).
+  free_omega_qlift eq (real_alternating R) (real_alternating R) ∧
+  ¬ free_omega_modelable native (real_alternating R).
 Proof. split; [apply FOQLStructural, free_omega_lift_refl; intros x; reflexivity|exact: real_alternating_invalid]. Qed.
 
 Example generic_real_missing_mass_preserved :
-  ~ free_omega_qlift eq (@FOZero M unit) (FORet tt).
+  ¬ free_omega_qlift eq (@FOZero M unit) (FORet tt).
 Proof.
   intro H; have Hr := proj2 (subenumR_qlift_bidual_raw H).
   have Hbad := Hr _ _ (oval_test_one R) (oval_test_one R) (fun x y _ => lexx (1 : R)).
@@ -89,7 +91,7 @@ Proof.
   apply FOQLStructural; eapply FOLSample; [exact (subenumR_lift_map negb mu)|].
   intros x y Hxy; constructor; rewrite -Hxy negbK; reflexivity.
 Qed.
-Example generic_real_crossed_sqrt_tests f : oval_test f ->
+Example generic_real_crossed_sqrt_tests f : oval_test f →
   free_omega_model_upper native (FOSample (real_sqrt_coin R) (fun b => FORet b)) f =
   free_omega_model_upper native
     (FOSample (subenumR_map negb (real_sqrt_coin R)) (fun b => FORet (negb b))) f.
@@ -118,7 +120,7 @@ Proof.
     + intros b Hb; exact (Hb 1%nat).
   - intros [|n]; [apply FOApproxZero|apply FOApproxRet; reflexivity].
 Qed.
-Example generic_real_lub_observation_tests f : oval_test f ->
+Example generic_real_lub_observation_tests f : oval_test f →
   free_omega_model_upper native (real_delayed_dirac R) f = f true.
 Proof.
   intro Hf; transitivity (oval_eval (subenumR_domain (subenumR_ret R true)) f).
@@ -143,7 +145,7 @@ Proof.
     apply FOQLLubConstantR, FOQLStructural, FOLRet; reflexivity.
 Qed.
 Example generic_real_null_nonmonotone_chain :
-  ~ free_omega_modelable native (FOLub (real_nullable_chain false)) /\
+  ¬ free_omega_modelable native (FOLub (real_nullable_chain false)) ∧
   free_omega_modelable native
     (FOLub (fun n => FOSample (real_certain_coin R) (fun b => real_nullable_chain b n))).
 Proof.

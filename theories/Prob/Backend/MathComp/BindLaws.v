@@ -1,6 +1,8 @@
 (** Checked relational kernel bind on the fully discrete joint carrier.
     Selection uses classical choice; measurability is proved from the discrete
     sigma-algebra. No coupling-existence capability is introduced. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths,-redundant-canonical-projection".
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra boolp classical_sets
@@ -23,7 +25,7 @@ Context {A B C D : Type}.
 
 Definition mathcomp_joint_source (j : subprobability (mc_joint A B) R)
     (_ : mc_carrier unit) : measure (mc_joint A B) R := j.
-Lemma mathcomp_joint_source_measurable j U : measurable U ->
+Lemma mathcomp_joint_source_measurable j U : measurable U →
   measurable_fun setT (fun x => mathcomp_joint_source j x U).
 Proof. by move=> mU mtop V mV. Qed.
 HB.instance Definition _ j := @isKernel.Build _ _ _ _ R
@@ -35,9 +37,9 @@ HB.instance Definition _ j := Kernel_isSubProbability.Build _ _ _ _ R
   (mathcomp_joint_source j) (mathcomp_joint_source_bound j).
 
 Definition mathcomp_joint_kernel
-    (k : mc_joint A B -> subprobability (mc_joint C D) R)
+    (k : mc_joint A B → subprobability (mc_joint C D) R)
     (x : mc_joint A B) : measure (mc_joint C D) R := k x.
-Lemma mathcomp_joint_kernel_measurable k U : measurable U ->
+Lemma mathcomp_joint_kernel_measurable k U : measurable U →
   measurable_fun setT (fun x => mathcomp_joint_kernel k x U).
 Proof. by move=> mU mtop V mV. Qed.
 HB.instance Definition _ k := @isKernel.Build _ _ _ _ R
@@ -78,7 +80,7 @@ Section Projection.
 Variable R : realType.
 Context {A B C : Type}.
 Variable j : subprobability (mc_joint A B) R.
-Variable p : mc_joint A B -> mc_carrier C.
+Variable p : mc_joint A B → mc_carrier C.
 Lemma mathcomp_joint_projection_measurable : measurable_fun setT p.
 Proof. by move=> mtop U mU. Qed.
 HB.instance Definition _ := isMeasurableFun.Build _ _ _ _ p mathcomp_joint_projection_measurable.
@@ -98,9 +100,9 @@ HB.instance Definition _ := @Measure_isSubProbability.Build _ _ R
 Definition mathcomp_projected_native := mathcomp_source_kernel
   [the subprobability (mc_carrier C) R of mathcomp_projected].
 Lemma mathcomp_joint_integral_projection (mu : MathCompKernelMeasure R C)
-    (f : mc_carrier C -> \bar R) :
-  (forall U, measurable U -> ~ U MCBottom -> j (p @^-1` U) = mathcomp_kernel_root mu U) ->
-  (forall x, 0 <= f x) -> f MCBottom = 0 ->
+    (f : mc_carrier C → \bar R) :
+  (∀ U, measurable U → ¬ U MCBottom → j (p @^-1` U) = mathcomp_kernel_root mu U) →
+  (∀ x, 0 <= f x) → f MCBottom = 0 →
   \int[j]_x f (p x) = \int[mathcomp_kernel_root mu]_x f x.
 Proof.
   move=> Hm Hp Hz.
@@ -121,7 +123,7 @@ Section RelationalBind.
 Variable R : realType.
 Local Notation M := (MathCompKernelMeasure R).
 
-Lemma mathcomp_native_bind_zero_left {A B} (k : A -> M B) :
+Lemma mathcomp_native_bind_zero_left {A B} (k : A → M B) :
   mathcomp_kernel_eq (mathcomp_kernel_bind (mathcomp_kernel_zero R) k)
     (mathcomp_kernel_zero R).
 Proof.
@@ -132,15 +134,15 @@ Proof.
 Qed.
 
 Lemma mathcomp_native_eq_le {A} (mu nu : M A) :
-  mathcomp_kernel_eq mu nu -> mathcomp_node_le mu nu.
+  mathcomp_kernel_eq mu nu → mathcomp_node_le mu nu.
 Proof. move=> He U mU Hb; rewrite (He U mU Hb); exact: lexx. Qed.
 
 Lemma mathcomp_native_le_eq_r {A} (mu nu xi : M A) :
-  mathcomp_kernel_eq nu xi -> mathcomp_node_le mu xi -> mathcomp_node_le mu nu.
+  mathcomp_kernel_eq nu xi → mathcomp_node_le mu xi → mathcomp_node_le mu nu.
 Proof. intros He Hl U mU Hb; rewrite (He U mU Hb); exact: Hl. Qed.
 
 Lemma mathcomp_native_le_eq_l {A} (mu nu xi : M A) :
-  mathcomp_kernel_eq mu xi -> mathcomp_node_le xi nu -> mathcomp_node_le mu nu.
+  mathcomp_kernel_eq mu xi → mathcomp_node_le xi nu → mathcomp_node_le mu nu.
 Proof. intros He Hl U mU Hb; rewrite (He U mU Hb); exact: Hl. Qed.
 
 #[global] Instance mathcomp_native_eq_Equivalence {A : Type} :
@@ -176,18 +178,18 @@ Proof.
 Qed.
 
 Lemma mathcomp_native_lift_bind {A B C D}
-    (S : A -> B -> Prop) (T : C -> D -> Prop)
-    (mu : M A) (nu : M B) (k : A -> M C) (h : B -> M D) :
-  mathcomp_kernel_lift S mu nu ->
-  (forall x y, S x y -> mathcomp_kernel_lift T (k x) (h y)) ->
+    (S : A → B → Prop) (T : C → D → Prop)
+    (mu : M A) (nu : M B) (k : A → M C) (h : B → M D) :
+  mathcomp_kernel_lift S mu nu →
+  (∀ x y, S x y → mathcomp_kernel_lift T (k x) (h y)) →
   mathcomp_kernel_lift T (mathcomp_kernel_bind mu k) (mathcomp_kernel_bind nu h).
 Proof.
   move=> [j [Hleft [Hright Hrel]]] Hkh.
   pose good (xy : mc_joint A B) (v : subprobability (mc_joint C D) R) :=
-    (forall U, measurable U -> ~ U MCBottom ->
-      v (mc_joint_fst @^-1` U) = mathcomp_kernel_extend_measure k (mc_joint_fst xy) U) /\
-    (forall V, measurable V -> ~ V MCBottom ->
-      v (mc_joint_snd @^-1` V) = mathcomp_kernel_extend_measure h (mc_joint_snd xy) V) /\
+    (∀ U, measurable U -> ~ U MCBottom ->
+      v (mc_joint_fst @^-1` U) = mathcomp_kernel_extend_measure k (mc_joint_fst xy) U) ∧
+    (∀ V, measurable V -> ~ V MCBottom ->
+      v (mc_joint_snd @^-1` V) = mathcomp_kernel_extend_measure h (mc_joint_snd xy) V) ∧
     almost_everywhere v (mc_relation T).
   pose bot := [the subprobability (mc_joint C D) R of
     dirac (MCJoint MCBottom MCBottom)].
@@ -265,10 +267,10 @@ End RelationalBind.
 Theorem mathcomp_kernel_map_reflect (R : realType)
     `{G : MathCompCouplingGluing R} {X Y A B : Type}
     (mu : MathCompKernelMeasure R X) (nu : MathCompKernelMeasure R Y)
-    (f : X -> A) (g : Y -> B) (T : A -> B -> Prop) :
+    (f : X → A) (g : Y → B) (T : A → B → Prop) :
   mathcomp_kernel_lift T
     (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret R (f x)))
-    (mathcomp_kernel_bind nu (fun y => mathcomp_kernel_ret R (g y))) ->
+    (mathcomp_kernel_bind nu (fun y => mathcomp_kernel_ret R (g y))) →
   mathcomp_kernel_lift (fun x y => T (f x) (g y)) mu nu.
 Proof.
   exact (@sem_lift_map_reflect _ (MathCompNodeSemanticMeasure R)

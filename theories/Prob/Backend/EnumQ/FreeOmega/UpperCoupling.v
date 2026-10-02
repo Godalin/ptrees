@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -26,7 +28,7 @@ Section NativeExtendedCoupling.
 Variable F : realType.
 Local Notation expect := (@enumQ_extended_expect F).
 
-Lemma enumQ_extended_expect_filter_split {A : eqType} (f : A -> \bar F) mu a :
+Lemma enumQ_extended_expect_filter_split {A : eqType} (f : A → \bar F) mu a :
   expect f mu = (ratr (acc_mass a mu))%:E * f a +
     expect f (enumQ_filter (fun h => snd h != a) mu).
 Proof.
@@ -50,11 +52,11 @@ Proof.
     by rewrite /enumQ_extended_expect /acc_mass /enumQ_filter /enumQ_raw /= He.
 Qed.
 
-Lemma enumQ_extended_expect_mass_zero {A : eqType} (f : A -> \bar F) mu :
-  (forall a, acc_mass a mu = 0%R) -> expect f mu = 0.
+Lemma enumQ_extended_expect_mass_zero {A : eqType} (f : A → \bar F) mu :
+  (∀ a, acc_mass a mu = 0%R) → expect f mu = 0.
 Proof.
   apply (enumQ_ind_raw (P := fun mu =>
-    (forall a, acc_mass a mu = 0%R) -> expect f mu = 0)).
+    (∀ a, acc_mass a mu = 0%R) -> expect f mu = 0)).
   - reflexivity.
   - move=> p Hp x tail IH Hzero.
     have Hx := Hzero x; rewrite acc_mass_cons eq_refl in Hx.
@@ -69,10 +71,10 @@ Proof.
   - move=> b c He IH; move: IH; by rewrite /enumQ_extended_expect /acc_mass He.
 Qed.
 
-Lemma enumQ_extended_expect_eqenum {A : eqType} (f : A -> \bar F) mu nu :
-  mu ==EnumQ nu -> expect f mu = expect f nu.
+Lemma enumQ_extended_expect_eqenum {A : eqType} (f : A → \bar F) mu nu :
+  mu ==EnumQ nu → expect f mu = expect f nu.
 Proof.
-  move: mu nu; refine (enumQ_size_induction (P := fun mu => forall nu,
+  move: mu nu; refine (enumQ_size_induction (P := fun mu => ∀ nu,
     mu ==EnumQ nu -> expect f mu = expect f nu) _).
   move=> mu IH nu Hmn; case Hraw: (enumQ_raw mu)=> [|[p a] tail].
   - have Hz : expect f mu = 0 by rewrite /enumQ_extended_expect Hraw.
@@ -86,7 +88,7 @@ Proof.
     + exact: (enumQ_filter_proper (fun x : A => x != a) Hmn).
 Qed.
 
-Lemma enumQ_extended_expect_emap {A B} (k : A -> B) (f : B -> \bar F) mu :
+Lemma enumQ_extended_expect_emap {A B} (k : A → B) (f : B → \bar F) mu :
   expect f (emap k mu) = expect (fun x => f (k x)) mu.
 Proof.
   change (enumQ_extended_raw f (List.map (fun px => (fst px,k(snd px))) (enumQ_raw mu)) =
@@ -94,8 +96,8 @@ Proof.
   by elim: (enumQ_raw mu)=> [|[p x] tail IH] //=; rewrite IH.
 Qed.
 
-Lemma enumQ_extended_expect_ae_mono {A} (f g : A -> \bar F) mu :
-  enumQ_ae mu (fun x => f x <= g x) -> expect f mu <= expect g mu.
+Lemma enumQ_extended_expect_ae_mono {A} (f g : A → \bar F) mu :
+  enumQ_ae mu (fun x => f x <= g x) → expect f mu <= expect g mu.
 Proof.
   apply (enumQ_ind_raw (P := fun mu =>
     enumQ_ae mu (fun x => f x <= g x) -> expect f mu <= expect g mu)).
@@ -113,9 +115,9 @@ Proof.
   - move=> b c He IH; move: IH; by rewrite /enumQ_ae /enumQ_extended_expect He.
 Qed.
 
-Lemma enumQ_coupling_extended_expect {A B : eqType} (T : A -> B -> Prop)
-    (mu : EnumQ A) (nu : EnumQ B) (f : A -> \bar F) (g : B -> \bar F) :
-  coupling T mu nu -> (forall x y, T x y -> f x <= g y) ->
+Lemma enumQ_coupling_extended_expect {A B : eqType} (T : A → B → Prop)
+    (mu : EnumQ A) (nu : EnumQ B) (f : A → \bar F) (g : B → \bar F) :
+  coupling T mu nu → (∀ x y, T x y → f x <= g y) →
   expect f mu <= expect g nu.
 Proof.
   intros [joint Hl Hr Hrel] Hfg.
@@ -125,15 +127,15 @@ Proof.
   exact (enumQ_entry_mass_nonzero Hin Hnz).
 Qed.
 
-Lemma enumQ_lift_extended_expect_eqtype {A B : eqType} (T : A -> B -> Prop)
-    (mu : EnumQ A) (nu : EnumQ B) (f : A -> \bar F) (g : B -> \bar F) :
-  sem_lift T mu nu -> (forall x y, T x y -> f x <= g y) ->
+Lemma enumQ_lift_extended_expect_eqtype {A B : eqType} (T : A → B → Prop)
+    (mu : EnumQ A) (nu : EnumQ B) (f : A → \bar F) (g : B → \bar F) :
+  sem_lift T mu nu → (∀ x y, T x y → f x <= g y) →
   expect f mu <= expect g nu.
 Proof. intro H. apply enumQ_coupling_extended_expect. exact (enumQ_sem_lift_to_coupling H). Qed.
 
-Theorem enumQ_lift_extended_expect {A B : Type} (T : A -> B -> Prop)
-    (mu : EnumQ A) (nu : EnumQ B) (f : A -> \bar F) (g : B -> \bar F) :
-  sem_lift T mu nu -> (forall x y, T x y -> f x <= g y) ->
+Theorem enumQ_lift_extended_expect {A B : Type} (T : A → B → Prop)
+    (mu : EnumQ A) (nu : EnumQ B) (f : A → \bar F) (g : B → \bar F) :
+  sem_lift T mu nu → (∀ x y, T x y → f x <= g y) →
   expect f mu <= expect g nu.
 Proof.
   exact (@enumQ_lift_extended_expect_eqtype
@@ -148,11 +150,11 @@ Section RawExtendedCoupling.
 Variable F : realType.
 Local Notation upper := (@free_omega_extended_upper F).
 
-Theorem free_omega_approx_extended_upper {A B} (T : A -> B -> Prop)
+Theorem free_omega_approx_extended_upper {A B} (T : A → B → Prop)
     (mu : FreeOmega EnumQ A) (nu : FreeOmega EnumQ B)
-    (f : A -> \bar F) (g : B -> \bar F) :
-  free_omega_approx T mu nu -> (forall y, 0 <= g y) ->
-  (forall x y, T x y -> f x <= g y) -> upper mu f <= upper nu g.
+    (f : A → \bar F) (g : B → \bar F) :
+  free_omega_approx T mu nu → (∀ y, 0 <= g y) →
+  (∀ x y, T x y → f x <= g y) → upper mu f <= upper nu g.
 Proof.
   intros Happrox Hg Hfg. induction Happrox; cbn [free_omega_extended_upper].
   - exact: free_omega_extended_upper_nonnegative.
@@ -162,8 +164,8 @@ Proof.
 Qed.
 
 Theorem free_omega_extended_upper_ae_mono {A} (mu : FreeOmega EnumQ A)
-    (f g : A -> \bar F) :
-  free_omega_ae (fun x => f x <= g x) mu -> upper mu f <= upper mu g.
+    (f g : A → \bar F) :
+  free_omega_ae (fun x => f x <= g x) mu → upper mu f <= upper mu g.
 Proof.
   induction mu as [x| |X node k IH|c IH]; intro Hae; cbn [free_omega_extended_upper].
   - dependent destruction Hae. assumption.
@@ -177,8 +179,8 @@ Proof.
 Qed.
 
 Theorem free_omega_extended_upper_ae_ext {A} (mu : FreeOmega EnumQ A)
-    (f g : A -> \bar F) :
-  free_omega_ae (fun x => f x = g x) mu -> upper mu f = upper mu g.
+    (f g : A → \bar F) :
+  free_omega_ae (fun x => f x = g x) mu → upper mu f = upper mu g.
 Proof.
   intro Hae. apply/eqP. rewrite eq_le. apply/andP; split;
     apply free_omega_extended_upper_ae_mono;
@@ -186,28 +188,28 @@ Proof.
     intros x Hx; rewrite Hx; exact: lexx.
 Qed.
 Lemma free_omega_extended_upper_approx_mono {A}
-    (mu nu : FreeOmega EnumQ A) (f : A -> \bar F) :
-  free_omega_approx eq mu nu -> (forall x, 0 <= f x) -> upper mu f <= upper nu f.
+    (mu nu : FreeOmega EnumQ A) (f : A → \bar F) :
+  free_omega_approx eq mu nu → (∀ x, 0 <= f x) → upper mu f <= upper nu f.
 Proof.
   intros H Hf. eapply free_omega_approx_extended_upper; [exact H|exact Hf|].
   intros x y ->. exact: lexx.
 Qed.
 
-Theorem free_omega_structural_extended_upper {A B} (T : A -> B -> Prop)
+Theorem free_omega_structural_extended_upper {A B} (T : A → B → Prop)
     (mu : FreeOmega EnumQ A) (nu : FreeOmega EnumQ B)
-    (f : A -> \bar F) (g : B -> \bar F) :
-  free_omega_lift T mu nu -> (forall y, 0 <= g y) ->
-  (forall x y, T x y -> f x <= g y) -> upper mu f <= upper nu g.
+    (f : A → \bar F) (g : B → \bar F) :
+  free_omega_lift T mu nu → (∀ y, 0 <= g y) →
+  (∀ x y, T x y → f x <= g y) → upper mu f <= upper nu g.
 Proof.
   intro H. apply free_omega_approx_extended_upper.
   exact (free_omega_lift_to_approx H).
 Qed.
 
-Theorem free_omega_cofinal_extended_upper_le {A B} (T : A -> B -> Prop)
-    (left : nat -> FreeOmega EnumQ A) (right : nat -> FreeOmega EnumQ B)
-    (f : A -> \bar F) (g : B -> \bar F) :
-  (forall n, exists m, free_omega_approx T (left n) (right m)) ->
-  (forall y, 0 <= g y) -> (forall x y, T x y -> f x <= g y) ->
+Theorem free_omega_cofinal_extended_upper_le {A B} (T : A → B → Prop)
+    (left : nat → FreeOmega EnumQ A) (right : nat → FreeOmega EnumQ B)
+    (f : A → \bar F) (g : B → \bar F) :
+  (∀ n, ∃ m, free_omega_approx T (left n) (right m)) →
+  (∀ y, 0 <= g y) → (∀ x y, T x y → f x <= g y) →
   upper (FOLub left) f <= upper (FOLub right) g.
 Proof.
   intros Hcover Hg Hfg. cbn [free_omega_extended_upper]. apply extended_upper_le=> n.
@@ -217,14 +219,14 @@ Proof.
 Qed.
 
 Theorem free_omega_diagonal_extended_upper {A}
-    (grid : nat -> nat -> FreeOmega EnumQ A) (f : A -> \bar F) :
-  (forall i j, free_omega_approx eq (grid i j) (grid i (S j))) ->
-  (forall i j, free_omega_approx eq (grid i j) (grid (S i) j)) ->
-  (forall x, 0 <= f x) ->
+    (grid : nat → nat → FreeOmega EnumQ A) (f : A → \bar F) :
+  (∀ i j, free_omega_approx eq (grid i j) (grid i (S j))) →
+  (∀ i j, free_omega_approx eq (grid i j) (grid (S i) j)) →
+  (∀ x, 0 <= f x) →
   upper (FOLub (fun i => FOLub (grid i))) f = upper (FOLub (fun n => grid n n)) f.
 Proof.
   intros Hrow Hcol Hf.
-  have Hcover : forall i j, free_omega_approx eq (grid i j)
+  have Hcover : ∀ i j, free_omega_approx eq (grid i j)
       (grid (Nat.add i j) (Nat.add i j)).
   { intros i j. eapply free_omega_approx_trans with (nu := grid i (Nat.add i j)).
     - pose proof (free_omega_approx_steps (Hrow i) j i) as Hr.

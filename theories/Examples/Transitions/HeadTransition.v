@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Eq Require Import StableHittingRelation.
 (** Role: supporting program/semantic example, not a flagship claim. *)
 Set Warnings "-notation-overridden".
@@ -24,7 +26,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Variant head_testE : Type -> Type :=
+Variant head_testE : Type → Type :=
   | Ask : head_testE bool
   | Tell : head_testE unit.
 
@@ -56,15 +58,15 @@ Proof.
     apply (stable_hitting_ret (FI := FI) (FO := FO)).
 Qed.
 
-Example terminal_has_no_step label out : ~ step (FHRet true) label out.
+Example terminal_has_no_step label out : ¬ step (FHRet true) label out.
 Proof. apply head_step_ret. Qed.
 
 Example action_event_is_not_erased k out :
-  ~ step (FHVis Ask k) (Obs Tell tt) (out : MF (stable_head head_testE SubEnumQ bool)).
+  ¬ step (FHVis Ask k) (Obs Tell tt) (out : MF (stable_head head_testE SubEnumQ bool)).
 Proof. intro H. dependent destruction H. Qed.
 
 Example distinct_returns_not_head_bisim :
-  ~ bisim (FHRet true) (FHRet false).
+  ¬ bisim (FHRet true) (FHRet false).
 Proof. rewrite head_bisim_ret_iff. discriminate. Qed.
 
 Example heterogeneous_return_relation :
@@ -104,7 +106,7 @@ Qed.
 Theorem service_heads_bisimilar : bisim immediate_head delayed_head.
 Proof.
   eapply head_bisim_coinduction with
-    (sim := fun h1 h2 => h1 = immediate_head /\ h2 = delayed_head).
+    (sim := fun h1 h2 => h1 = immediate_head ∧ h2 = delayed_head).
   - intros h1 h2 [-> ->]. constructor. intro answer.
     eapply stable_hitting_match_of_hitting_lift with
       (out1 := FORet immediate_head) (out2 := FORet delayed_head).

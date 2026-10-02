@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -15,16 +17,16 @@ Unset Printing Implicit Defensive.
     an infinitely branching sampling node need not have a uniform finite
     depth bound.  This judgment contains neither fuel nor stable hitting. *)
 Section FiniteInternal.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}.
 Context {R : Type}.
 
-Inductive finite_internal : ptree E MN R -> MF (ptree E MN R) -> Prop :=
+Inductive finite_internal : ptree E MN R → MF (ptree E MN R) → Prop :=
   | FIStop t : finite_internal t (sem_ret t)
-  | FITau t out : finite_internal t out -> finite_internal (Tau t) out
-  | FIProb {X} (mu : MN X) (k : X -> ptree E MN R)
-      (out : X -> MF (ptree E MN R)) :
-      (forall x, finite_internal (k x) (out x)) ->
+  | FITau t out : finite_internal t out → finite_internal (Tau t) out
+  | FIProb {X} (mu : MN X) (k : X → ptree E MN R)
+      (out : X → MF (ptree E MN R)) :
+      (∀ x, finite_internal (k x) (out x)) →
       finite_internal (Prob mu k) (mixed_bind mu out).
 
 Fixpoint tau_prefix (n : nat) (t : ptree E MN R) : ptree E MN R :=
@@ -35,19 +37,19 @@ Lemma finite_internal_tau_prefix n t :
 Proof. induction n; [apply FIStop|apply FITau; exact IHn]. Qed.
 
 Lemma finite_internal_prob_tau_prefix {X} (mu : MN X)
-    (depth : X -> nat) (k : X -> ptree E MN R) :
+    (depth : X → nat) (k : X → ptree E MN R) :
   finite_internal (Prob mu (fun x => tau_prefix (depth x) (k x)))
     (mixed_bind mu (fun x => sem_ret (k x))).
 Proof. apply FIProb. intro x. apply finite_internal_tau_prefix. Qed.
 
 Lemma finite_internal_ret_inv r out :
-  finite_internal (Ret r) out -> out = sem_ret (Ret r).
+  finite_internal (Ret r) out → out = sem_ret (Ret r).
 Proof. intro H. inversion H; reflexivity. Qed.
 
 (** A deterministic silent self-loop cannot be compressed away: every
     well-founded derivation leaves precisely that loop as its residual. *)
 Lemma finite_internal_self_loop_inv t out :
-  finite_internal t out -> observe t = TauF t -> out = sem_ret t.
+  finite_internal t out → observe t = TauF t → out = sem_ret t.
 Proof.
   intro H. induction H; intro Hloop.
   - reflexivity.

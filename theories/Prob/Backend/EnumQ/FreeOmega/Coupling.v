@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From mathcomp Require Import eqtype.
 From PTree.Prob.Interface Require Import FrontierLift.
@@ -17,9 +19,9 @@ Set Implicit Arguments.
 (** These are concrete theorems, not new backend assumptions.  Their
     structural-lifting premise is intentionally visible in the API. *)
 Theorem free_enumQ_structural_coupling_realization {A B : Type}
-    (R : A -> B -> Prop) (mu : FreeOmega EnumQ A) (nu : FreeOmega EnumQ B) :
-  free_omega_lift R mu nu ->
-  exists joint, @semantic_coupling (FreeOmega EnumQ)
+    (R : A → B → Prop) (mu : FreeOmega EnumQ A) (nu : FreeOmega EnumQ B) :
+  free_omega_lift R mu nu →
+  ∃ joint, @semantic_coupling (FreeOmega EnumQ)
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega)) A B R mu nu joint.
 Proof.
@@ -29,9 +31,9 @@ Proof.
 Qed.
 
 Theorem free_subenumQ_structural_coupling_realization {A B : Type}
-    (R : A -> B -> Prop) (mu : FreeOmega SubEnumQ A) (nu : FreeOmega SubEnumQ B) :
-  free_omega_lift R mu nu ->
-  exists joint, @semantic_coupling (FreeOmega SubEnumQ)
+    (R : A → B → Prop) (mu : FreeOmega SubEnumQ A) (nu : FreeOmega SubEnumQ B) :
+  free_omega_lift R mu nu →
+  ∃ joint, @semantic_coupling (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)) A B R mu nu joint.
 Proof.

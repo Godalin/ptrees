@@ -1,6 +1,8 @@
 (** Role: substantive mathematical counterexample and its construction. *)
 (** Relational-limit contracts: no normalization, finite-support restriction,
     or coherent-joint premise in the countable transport route. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -22,14 +24,14 @@ Variable R : realType.
 
 (** Truly arbitrary nat distributions, not only finite approximants. Both
     limiting marginals may have infinite support and deficient total mass. *)
-Example arbitrary_nat_relational_limit (T : nat -> nat -> Prop)
-    (c d : nat -> OmegaVal R nat)
+Example arbitrary_nat_relational_limit (T : nat → nat → Prop)
+    (c d : nat → OmegaVal R nat)
     (Hc : oval_increasing c) (Hd : oval_increasing d) :
-  (forall n, oval_coupled T (c n) (d n)) ->
-  exists J, oval_joint T (oval_lub Hc) (oval_lub Hd) J.
+  (∀ n, oval_coupled T (c n) (d n)) →
+  ∃ J, oval_joint T (oval_lub Hc) (oval_lub Hd) J.
 Proof. apply oval_coupled_lub; intro n; apply oval_nat_countably_supported. Qed.
 
-Example successor_limit (c : nat -> OmegaVal R nat) (Hc : oval_increasing c) :
+Example successor_limit (c : nat → OmegaVal R nat) (Hc : oval_increasing c) :
   oval_coupled (fun x y => y = S x) (oval_lub Hc)
     (oval_lub (oval_bind_chain_l Hc (fun x => oval_ret R (S x)))).
 Proof.
@@ -90,7 +92,7 @@ Proof.
   by rewrite addr0 mulr1.
 Qed.
 
-Definition allowed (x y : bool) : Prop := x = true \/ y = true.
+Definition allowed (x y : bool) : Prop := x = true ∨ y = true.
 Definition bit (b : bool) : R := if b then 1 else 0.
 Definition both (p : bool * bool) : R := if (fst p && snd p) then 1 else 0.
 Lemma bit_test : oval_test bit.
@@ -127,17 +129,17 @@ Proof.
 Qed.
 
 Lemma final_joint_no_diagonal (J : OmegaVal R (bool * bool)) :
-  oval_joint allowed fair fair J -> oval_eval J both = 0.
+  oval_joint allowed fair fair J → oval_eval J both = 0.
 Proof.
   intros [Hl [Hr Hae]].
   pose left_false (p : bool * bool) := bit (negb (fst p)).
   have Hlf : oval_test left_false by intros [x y]; exact (bit_test (negb x)).
-  have Hsum : forall p, both p + left_false p <= 1.
+  have Hsum : ∀ p, both p + left_false p <= 1.
   { intros [[] []]; rewrite /both /left_false /bit /= ?addr0 ?add0r;
       try exact: lexx; exact: ler01. }
   have He := Hae (fun p => bit (snd p)) (fun p => both p + left_false p)
     (fun p => bit_test (snd p)) (oval_test_add both_test Hlf Hsum).
-  have Hpoint : forall p, allowed (fst p) (snd p) ->
+  have Hpoint : ∀ p, allowed (fst p) (snd p) ->
       bit (snd p) = both p + left_false p.
   { intros [[] []]; rewrite /allowed /both /left_false /bit /= ?addr0 ?add0r;
       intros H; try reflexivity; destruct H; discriminate. }
@@ -151,7 +153,7 @@ Qed.
 (** Every first joint has the same positive diagonal mass, so NO coherent
     joint chain exists—not merely no extension of one badly chosen witness. *)
 Lemma any_initial_joint_diagonal (J : OmegaVal R (bool * bool)) :
-  oval_joint allowed (half_point true) (half_point true) J ->
+  oval_joint allowed (half_point true) (half_point true) J →
   oval_eval J both = 2^-1.
 Proof.
   intros [Hl [Hr Hae]].
@@ -166,7 +168,7 @@ Proof.
   have Hbadzero : oval_eval J bad = 0.
   { apply/eqP; rewrite eq_le; apply/andP; split; first exact Hbadle.
     exact (proj1 (oval_eval_bounds J Hb)). }
-  have Hsum : forall p, both p + bad p <= 1.
+  have Hsum : ∀ p, both p + bad p <= 1.
   { intros [[] []]; rewrite /both /bad /= ?addr0 ?add0r;
       try exact: lexx; exact: ler01. }
   have He : oval_eval J (fun p => bit (fst p)) = oval_eval J (fun p => both p + bad p).
@@ -189,9 +191,9 @@ Proof.
 Qed.
 
 Theorem no_increasing_joint_selection :
-  ~ exists j : nat -> OmegaVal R (bool * bool),
-    oval_increasing j /\
-    forall n, oval_joint allowed (growing_marginals n) (growing_marginals n) (j n).
+  ¬ ∃ j : nat → OmegaVal R (bool * bool),
+    oval_increasing j ∧
+    ∀ n, oval_joint allowed (growing_marginals n) (growing_marginals n) (j n).
 Proof.
   intros [j [Hi Hj]]. have Hbad := Hi O both both_test.
   rewrite (any_initial_joint_diagonal (Hj O))
@@ -205,7 +207,7 @@ Example noncoherent_chain_has_limit_joint :
   oval_coupled allowed (oval_lub growing_marginals_increasing)
     (oval_lub growing_marginals_increasing).
 Proof.
-  have Hcount : forall L : OmegaVal R bool, oval_countably_supported L.
+  have Hcount : ∀ L : OmegaVal R bool, oval_countably_supported L.
   { intro L; exists (fun i => Some (Nat.even i)); intros f g Hf Hg Hfg.
     apply oval_eval_ext; intros []; apply Hfg;
       [exists O|exists (S O)]; reflexivity. }
@@ -228,13 +230,13 @@ Local Notation M := (MathCompKernelMeasure R).
 Local Notation MI := (MathCompNodeSemanticMeasure R).
 Local Notation MO := (MathCompNodeSemanticOmega R).
 
-Example mathcomp_coherent_joint_limit {A B} (T : A -> B -> Prop)
-    (c : nat -> M A) (d : nat -> M B) (j : nat -> M (A * B)) mu nu :
-  @sem_increasing M MI MO _ j ->
-  sem_lub c mu -> sem_lub d nu ->
-  (forall n, sem_eq (sem_bind (j n) (fun p => sem_ret (fst p))) (c n)) ->
-  (forall n, sem_eq (sem_bind (j n) (fun p => sem_ret (snd p))) (d n)) ->
-  (forall n, sem_ae (j n) (fun p => T (fst p) (snd p))) ->
+Example mathcomp_coherent_joint_limit {A B} (T : A → B → Prop)
+    (c : nat → M A) (d : nat → M B) (j : nat → M (A * B)) mu nu :
+  @sem_increasing M MI MO _ j →
+  sem_lub c mu → sem_lub d nu →
+  (∀ n, sem_eq (sem_bind (j n) (fun p => sem_ret (fst p))) (c n)) →
+  (∀ n, sem_eq (sem_bind (j n) (fun p => sem_ret (snd p))) (d n)) →
+  (∀ n, sem_ae (j n) (fun p => T (fst p) (snd p))) →
   sem_lift T mu nu.
 Proof.
   exact (sem_lift_lub_of_joint_chain (R := T) (left := c) (right := d)

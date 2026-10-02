@@ -1,4 +1,6 @@
 (** Role: Comparison semantics. Depends on canonical theory; not the canonical peutt relation or interpreter theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -14,13 +16,13 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section FreeOmegaCoincidence.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
   `{NCountAE : @SemanticMeasureCountableAELaws MN NI}.
-Context {E : Type -> Type} {R : Type}.
+Context {E : Type → Type} {R : Type}.
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FC := (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO)).
 Local Notation FO := (@FreeOmegaObservableSemanticOmega MN NI NO).
@@ -29,8 +31,8 @@ Local Notation state := (@mdp_state E MN (FreeOmega MN) FI FC FreeOmegaMixedMeas
 (** No hidden separation premise remains at this endpoint. Both canonical
     native backends can supply these existing node capabilities. *)
 Theorem free_mdp_state_trans_bisim_peutt (t u : ptree E MN R) :
-  state t -> state u ->
-  @trans_bisim E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u ->
+  state t → state u →
+  @trans_bisim E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u →
   @peutt E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u.
 Proof.
   apply (mdp_state_trans_bisim_peutt (FI := FI) (FC := FC) (FO := FO)
@@ -38,8 +40,8 @@ Proof.
 Qed.
 
 Theorem free_mdp_state_peutt_trans_iff (t u : ptree E MN R) :
-  state t -> state u ->
-  (@peutt E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u <->
+  state t → state u →
+  (@peutt E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u ↔
    @trans_bisim E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO R R eq t u).
 Proof.
   apply (mdp_state_peutt_trans_iff (FI := FI) (FC := FC) (FO := FO)

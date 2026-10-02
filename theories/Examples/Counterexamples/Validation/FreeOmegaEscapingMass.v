@@ -1,4 +1,6 @@
 (** Role: substantive mathematical counterexample and its construction. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -23,7 +25,7 @@ Module EscapingMass.
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation observe_unit := (@free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure
   SubEnumQ_SemanticOmega unit unit (fun x => x)).
-Lemma qsym (mu nu : MF unit) : free_omega_qlift eq mu nu -> free_omega_qlift eq nu mu.
+Lemma qsym (mu nu : MF unit) : free_omega_qlift eq mu nu → free_omega_qlift eq nu mu.
 Proof.
   intro H. eapply FOQLMono; [apply FOQLSym; exact H|].
   intros x y Hyx. symmetry. exact Hyx.
@@ -46,21 +48,21 @@ Proof.
   - apply (@FOOObserveRet SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
   - apply (@FOOObserveZero SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
 Qed.
-Lemma big_small_masses_differ : enumQ_mass (subenumQ_raw big_out) <> enumQ_mass (subenumQ_raw small_out).
+Lemma big_small_masses_differ : enumQ_mass (subenumQ_raw big_out) ≠ enumQ_mass (subenumQ_raw small_out).
 Proof. vm_compute. discriminate. Qed.
 Lemma big_mass_one : enumQ_mass (subenumQ_raw big_out) = 1.
 Proof. vm_compute. reflexivity. Qed.
 Lemma small_mass_half : enumQ_mass (subenumQ_raw small_out) = 1 / 2.
 Proof. vm_compute. reflexivity. Qed.
 
-Lemma fair_true_ae P : sem_ae subenumQ_fair P -> P true.
+Lemma fair_true_ae P : sem_ae subenumQ_fair P → P true.
 Proof.
   intro H. apply (H reg_half true).
   - right. left. reflexivity.
   - intro Hz. vm_compute in Hz. discriminate.
 Qed.
 
-Lemma big_ae P : free_omega_ae P big <-> P tt.
+Lemma big_ae P : free_omega_ae P big ↔ P tt.
 Proof.
   split.
   - intro H. apply free_omega_ae_sample_inv in H.
@@ -68,7 +70,7 @@ Proof.
   - intro H. apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
     intros b _. apply FOAERet. exact H.
 Qed.
-Lemma small_ae P : free_omega_ae P small <-> P tt.
+Lemma small_ae P : free_omega_ae P small ↔ P tt.
 Proof.
   split.
   - intro H. apply free_omega_ae_sample_inv in H.
@@ -77,16 +79,16 @@ Proof.
     intros [] _; [apply FOAERet; exact H|apply FOAEZero].
 Qed.
 Lemma unit_support (mu nu : MF unit)
-    (Hmu : forall P, free_omega_ae P mu <-> P tt)
-    (Hnu : forall P, free_omega_ae P nu <-> P tt) : free_omega_support_lift eq mu nu.
+    (Hmu : ∀ P, free_omega_ae P mu ↔ P tt)
+    (Hnu : ∀ P, free_omega_ae P nu ↔ P tt) : free_omega_support_lift eq mu nu.
 Proof.
   split; intros P HP.
   - apply Hnu. exists tt. split; [reflexivity|apply Hmu; exact HP].
   - apply Hmu. exists tt. split; [reflexivity|apply Hnu; exact HP].
 Qed.
-Lemma lub_unit_ae (chain : nat -> MF unit)
-    (Hchain : forall n P, free_omega_ae P (chain n) <-> P tt) P :
-    free_omega_ae P (FOLub chain) <-> P tt.
+Lemma lub_unit_ae (chain : nat → MF unit)
+    (Hchain : ∀ n P, free_omega_ae P (chain n) ↔ P tt) P :
+    free_omega_ae P (FOLub chain) ↔ P tt.
 Proof.
   split.
   - intro H. dependent destruction H. apply (Hchain O P), H.
@@ -97,14 +99,14 @@ Qed.
     an axiom of the repaired backend.  The conditional theorem below
     demonstrates the consequence of reintroducing that rule. *)
 Section FormerObservationRule.
-Hypothesis unrestricted_observe_lub : forall (chain : nat -> MF unit) outs out,
-  (forall n, observe_unit (chain n) (outs n)) ->
-  subenumQ_sem_lub outs out -> observe_unit (FOLub chain) out.
+Hypothesis unrestricted_observe_lub : ∀ (chain : nat → MF unit) outs out,
+  (∀ n, observe_unit (chain n) (outs n)) →
+  subenumQ_sem_lub outs out → observe_unit (FOLub chain) out.
 
-Lemma eventually_observed_constant (chain : nat -> MF unit) outs mu out N
-    (Hrows : forall n, observe_unit (chain n) (outs n))
+Lemma eventually_observed_constant (chain : nat → MF unit) outs mu out N
+    (Hrows : ∀ n, observe_unit (chain n) (outs n))
     (Hmu : observe_unit mu out)
-    (Heventual : forall n, (N <= n)%nat -> outs n = out)
+    (Heventual : ∀ n, (N <= n)%nat → outs n = out)
     (Hsupport : free_omega_support_lift eq (FOLub chain) mu) :
   free_omega_qlift eq (FOLub chain) mu.
 Proof.
@@ -123,7 +125,7 @@ Definition kernel (x n : nat) : MF unit := if Nat.leb x n then big else small.
 Definition kernel_out (x n : nat) := if Nat.leb x n then big_out else small_out.
 Lemma kernel_observes x n : observe_unit (kernel x n) (kernel_out x n).
 Proof. unfold kernel, kernel_out. destruct (Nat.leb x n); [apply big_observes|apply small_observes]. Qed.
-Lemma kernel_ae x n P : free_omega_ae P (kernel x n) <-> P tt.
+Lemma kernel_ae x n P : free_omega_ae P (kernel x n) ↔ P tt.
 Proof. unfold kernel. destruct (Nat.leb x n); [apply big_ae|apply small_ae]. Qed.
 Lemma small_below_big : free_omega_approx eq small big.
 Proof.
@@ -205,14 +207,14 @@ Proof.
   - apply kernel_increasing.
 Qed.
 
-Lemma fair_false_ae P : sem_ae subenumQ_fair P -> P false.
+Lemma fair_false_ae P : sem_ae subenumQ_fair P → P false.
 Proof.
   intro H. apply (H reg_half false).
   - left. reflexivity.
   - intro Hz. vm_compute in Hz. discriminate.
 Qed.
 
-Lemma big_not_below_small : ~ free_omega_approx eq big small.
+Lemma big_not_below_small : ¬ free_omega_approx eq big small.
 Proof.
   intro H. unfold big, small in H. dependent destruction H.
   pose proof (sem_lift_ae_transport_r H (sem_ae_true subenumQ_fair)) as Hsupport.
@@ -221,7 +223,7 @@ Proof.
 Qed.
 
 Lemma escaped_rows_not_increasing n :
-  ~ (forall i, free_omega_approx eq (kernel i n) (kernel (S i) n)).
+  ¬ (∀ i, free_omega_approx eq (kernel i n) (kernel (S i) n)).
 Proof.
   intro H. specialize (H n). unfold kernel in H.
   rewrite Nat.leb_refl in H.
@@ -232,15 +234,15 @@ Qed.
 (** After the repair, no observation of the offending row can be
     constructed, even though its native observable sequence converges. *)
 Theorem escaped_row_not_observable n out :
-  ~ observe_unit (FOLub (fun x => kernel x n)) out.
+  ¬ observe_unit (FOLub (fun x => kernel x n)) out.
 Proof.
   intro H. dependent destruction H. exact (escaped_rows_not_increasing H1).
 Qed.
 
 Theorem unrestricted_observation_rule_rejected :
-  ~ (forall (chain : nat -> MF unit) outs out,
-    (forall n, observe_unit (chain n) (outs n)) ->
-    subenumQ_sem_lub outs out -> observe_unit (FOLub chain) out).
+  ¬ (∀ (chain : nat → MF unit) outs out,
+    (∀ n, observe_unit (chain n) (outs n)) →
+    subenumQ_sem_lub outs out → observe_unit (FOLub chain) out).
 Proof.
   intro Hrule. apply (@escaped_row_not_observable O small_out).
   eapply Hrule with (outs := fun x => kernel_out x O).

@@ -1,5 +1,7 @@
 (** Pure handler combinators. No probability interpretation, equivalence,
     or backend is selected here. Composition reads left-to-right. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From ITree.Indexed Require Import Sum.
@@ -7,7 +9,7 @@ From PTree.Core Require Import PTreeDefinition.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
-Definition Handler (MN E F : Type -> Type) := forall X, E X -> ptree F MN X.
+Definition Handler (MN E F : Type → Type) := ∀ X, E X → ptree F MN X.
 
 Definition id_ {MN E} : Handler MN E E := fun X e => PTree.trigger e.
 

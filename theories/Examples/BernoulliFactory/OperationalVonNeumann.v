@@ -2,6 +2,8 @@
     Reading entry: peutt_von_neumann_raw_direct; peutt_von_neumann_compiled_direct.
     Scope: EnumQ / FreeOmega; connects finite convergence certificates to PTree behavior.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -41,10 +43,10 @@ Import GRing.Theory.
 Local Open Scope ring_scope.
 
 Local Lemma vn_raw_eq {A} (mu nu : EnumQ A) :
-  enumQ_raw mu = enumQ_raw nu -> mu = nu.
+  enumQ_raw mu = enumQ_raw nu → mu = nu.
 Proof. exact: finite_enum_raw_eq. Qed.
 
-Lemma ptree_vn_bind_ret_eq {A B} (x : A) (k : A -> EnumQ B) :
+Lemma ptree_vn_bind_ret_eq {A B} (x : A) (k : A → EnumQ B) :
   bind_EnumQ (ret_EnumQ x) k = k x.
 Proof.
   apply finite_enum_raw_eq.
@@ -62,11 +64,11 @@ Proof.
   change (finite_bind (enumQ_raw mu) (fun _ => @nil (rat*B)) = nil).
   by elim: (enumQ_raw mu)=> [|[p x] tl IH] //=.
 Qed.
-Local Lemma vn_bind_assoc_eq {A B C} (mu : EnumQ A) (k : A -> EnumQ B) (h : B -> EnumQ C) :
+Local Lemma vn_bind_assoc_eq {A B C} (mu : EnumQ A) (k : A → EnumQ B) (h : B → EnumQ C) :
   bind_EnumQ (bind_EnumQ mu k) h = bind_EnumQ mu (fun x => bind_EnumQ (k x) h).
 Proof. apply finite_enum_raw_eq; exact: bind_EnumQ_assoc. Qed.
-Local Lemma vn_bind_ext_eq {A B} (mu : EnumQ A) (k h : A -> EnumQ B) :
-  (forall x, k x = h x) -> bind_EnumQ mu k = bind_EnumQ mu h.
+Local Lemma vn_bind_ext_eq {A B} (mu : EnumQ A) (k h : A → EnumQ B) :
+  (∀ x, k x = h x) → bind_EnumQ mu k = bind_EnumQ mu h.
 Proof. move=> H; apply finite_enum_raw_eq, bind_EnumQ_ext=> x; by rewrite H. Qed.
 
 Local Notation MF := (FreeOmega EnumQ).
@@ -648,7 +650,7 @@ Proof.
 Qed.
 
 Lemma ptree_vn_heads_lift
-    (sim : ptree vnE EnumQ bool -> ptree vnE EnumQ bool -> Prop) :
+    (sim : ptree vnE EnumQ bool → ptree vnE EnumQ bool → Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)
@@ -723,7 +725,7 @@ Proof.
 Qed.
 
 Lemma ptree_vn_raw_heads_lift
-    (sim : ptree vnE EnumQ bool -> ptree vnE EnumQ bool -> Prop) :
+    (sim : ptree vnE EnumQ bool → ptree vnE EnumQ bool → Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)
@@ -772,7 +774,7 @@ Qed.
     certificates below connect that embedding to the actual polymorphic AST.
     No second hitting schedule or limit calculation is needed. *)
 Section AmbientSignature.
-Context {E : Type -> Type}.
+Context {E : Type → Type}.
 Local Definition vn_rename X (e : vnE X) : E X := match e with end.
 
 Lemma von_neumann_third_in_translate :

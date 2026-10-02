@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -13,17 +15,17 @@ Unset Printing Implicit Defensive.
     solution.  The theorems below establish only the upper-bound direction,
     retaining an explicit representative where the raw order applies. *)
 Section KernelCompletion.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
 Context {S O A : Type}.
 Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
-Variable kernel : S -> MF (stable_target S O).
-Variable output : O -> A.
-Variable tail : S -> MF A.
+Variable kernel : S → MF (stable_target S O).
+Variable output : O → A.
+Variable tail : S → MF A.
 
-Definition kernel_completion_resolve (next : S -> MF A)
+Definition kernel_completion_resolve (next : S → MF A)
     (target : stable_target S O) : MF A :=
   match target with
   | SHStable o => FORet (output o)
@@ -37,24 +39,24 @@ Fixpoint kernel_completion (n : nat) (s : S) : MF A :=
       (kernel_completion_resolve (kernel_completion m))
   end.
 
-Variable D : S -> Prop.
+Variable D : S → Prop.
 Definition kernel_completion_invariant (target : stable_target S O) : Prop :=
   match target with SHStable _ => True | SHInternal s => D s end.
-Hypothesis kernel_closed : forall s, D s ->
+Hypothesis kernel_closed : ∀ s, D s →
   free_omega_ae kernel_completion_invariant (kernel s).
-Hypothesis completion_step : forall s, D s ->
+Hypothesis completion_step : ∀ s, D s →
   free_omega_qlift eq (kernel_completion 1 s) (tail s).
 
 (** All finite completed prefixes have exactly the proposed full behavior.
     States may encode both programs and their correlated choices. *)
-Theorem kernel_completion_eq n s : D s ->
+Theorem kernel_completion_eq n s : D s →
   free_omega_qlift eq (kernel_completion n s) (tail s).
 Proof.
   induction n as [|n IH] in s |- *; intro HD.
   - apply free_omega_qlift_refl. intro x. reflexivity.
   - eapply FOQLComp with (T := eq) (U := eq) (mid := kernel_completion 1 s).
     + cbn [kernel_completion]. eapply FOQLBind with
-        (T := fun p q => p = q /\ kernel_completion_invariant p).
+        (T := fun p q => p = q ∧ kernel_completion_invariant p).
       * eapply FOQLAERestrict with (T := eq)
           (P := kernel_completion_invariant) (Q := kernel_completion_invariant).
         -- apply free_omega_qlift_refl. intro p. reflexivity.
@@ -117,13 +119,13 @@ Qed.
     hitting.  We do not claim raw order against [tail s], nor equality of
     the two limits.  The completion chain need not be raw-increasing: its
     quotient equality below uses pointwise equality, not cofinality. *)
-Theorem kernel_hitting_limit_upper s : D s ->
-  exists upper,
+Theorem kernel_hitting_limit_upper s : D s →
+  ∃ upper,
     free_omega_approx eq
       (free_omega_bind
         (FOLub (fun n => @stable_hitting_approx MF FI
           FreeOmegaObservableSemanticOmega S O kernel n s))
-        (fun o => FORet (output o))) upper /\
+        (fun o => FORet (output o))) upper ∧
     free_omega_qlift eq upper (tail s).
 Proof.
   intro HD. exists (FOLub (fun n => kernel_completion (Datatypes.S n) s)). split.

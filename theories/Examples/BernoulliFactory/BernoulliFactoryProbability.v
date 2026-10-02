@@ -5,6 +5,8 @@
 (** The executable raw-EnumQ implementation inhabits the probabilistic
     fragment.  Normalization is needed for the source measure; termination
     and nondegeneracy are not needed for this syntax-level contract. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool ssralg ssrnum order rat.
@@ -17,9 +19,9 @@ Unset Strict Implicit.
 Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
-Lemma probabilistic_factory_sampler_step {E : Type -> Type}
+Lemma probabilistic_factory_sampler_step {E : Type → Type}
     (sampler : ptree E EnumQ bool) x :
-  probabilistic_ptree sampler ->
+  probabilistic_ptree sampler →
   probabilistic_ptree (factory_sampler_step sampler x).
 Proof.
   intro Hsampler. unfold factory_sampler_step.
@@ -27,9 +29,9 @@ Proof.
   intro b. apply probabilistic_ptree_ret.
 Qed.
 
-Theorem probabilistic_factory_with_sampler {E : Type -> Type}
+Theorem probabilistic_factory_with_sampler {E : Type → Type}
     (sampler : ptree E EnumQ bool) q :
-  probabilistic_ptree sampler ->
+  probabilistic_ptree sampler →
   probabilistic_ptree (factory_with_sampler sampler q).
 Proof.
   intro Hsampler. unfold factory_with_sampler.
@@ -39,7 +41,7 @@ Qed.
 
 Lemma factory_biased_coin_subprob pfalse ptrue
     (pfalse0 : 0 <= pfalse) (ptrue0 : 0 <= ptrue) :
-  pfalse + ptrue = 1 ->
+  pfalse + ptrue = 1 →
   enumQ_subprob (factory_biased_coin pfalse0 ptrue0).
 Proof.
   intro Hsum. unfold enumQ_subprob, enumQ_mass, factory_biased_coin.
@@ -49,7 +51,7 @@ Qed.
 
 Theorem probabilistic_factory_fair_coin pfalse ptrue
     (pfalse0 : 0 <= pfalse) (ptrue0 : 0 <= ptrue) :
-  pfalse + ptrue = 1 ->
+  pfalse + ptrue = 1 →
   probabilistic_ptree (factory_fair_coin pfalse0 ptrue0).
 Proof.
   intro Hsum. unfold factory_fair_coin.
@@ -62,7 +64,7 @@ Qed.
 
 Theorem probabilistic_biased_to_rational_coin pfalse ptrue
     (pfalse0 : 0 <= pfalse) (ptrue0 : 0 <= ptrue) q :
-  pfalse + ptrue = 1 ->
+  pfalse + ptrue = 1 →
   probabilistic_ptree (biased_to_rational_coin pfalse0 ptrue0 q).
 Proof.
   intro Hsum. unfold biased_to_rational_coin.

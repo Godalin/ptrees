@@ -5,6 +5,8 @@
     endless_frontier_zero. Native/frontier: SubEnumQ / observable FreeOmega.
     Probability arithmetic stays in Analysis; no external validation import.
     The genuine model-lfp interpretation is linked in docs/CASE_STUDIES.md. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -33,7 +35,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Module IterationBasics.
-Variant eventE : Type -> Type := Ask : eventE bool.
+Variant eventE : Type → Type := Ask : eventE bool.
 Local Notation MN := SubEnumQ.
 Local Notation MF := (FreeOmega MN).
 Local Notation NI := SubEnumQ_SemanticMeasure.
@@ -135,7 +137,7 @@ Proof.
     rewrite success_factor -[(1 - 1/2) * return_mass partial * f true]mulrA.
     apply geometric_update.
 Qed.
-Lemma result_indicator_bound partial (P : bool -> bool) :
+Lemma result_indicator_bound partial (P : bool → bool) :
   `|expect (result partial) (fun b => if P b then 1 else 0)| <= 1.
 Proof. rewrite result_expect; destruct partial, (P true); by vm_compute. Qed.
 Local Lemma decay_difference (x z : rat) : (1-x)*z-z = -(x*z).
@@ -175,11 +177,11 @@ Proof.
     [reflexivity|apply rows_limit].
 Qed.
 Theorem loop_returns_only partial :
-  free_omega_ae (fun h => exists b, h = FHRet b) (observed_front partial).
+  free_omega_ae (fun h => ∃ b, h = FHRet b) (observed_front partial).
 Proof. apply iteration_frontier_returns. Qed.
 Theorem loop_probability partial :
-  loop partial ⇓ₕ observed_front partial /\
-  free_omega_observes return_value (observed_front partial) (result partial) /\
+  loop partial ⇓ₕ observed_front partial ∧
+  free_omega_observes return_value (observed_front partial) (result partial) ∧
   expect (result partial) (fun _ => 1) = return_mass partial.
 Proof. split; [apply observed_front_exact|]. split; [apply loop_observation|]. by rewrite result_expect mulr1. Qed.
 Corollary geometric_returns_mass_one : expect (result false) (fun _ => 1) = 1.

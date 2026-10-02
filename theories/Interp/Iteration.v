@@ -3,6 +3,8 @@
     Its configurations retain active-step continuations as well as entries
     and exits. No termination, no-event or candidate-closure premise is used.
     This owner depends on Interp adequacy; Eq must not import it backwards. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Program Require Import Equality.
@@ -17,30 +19,30 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Local Notation "` R" := (elem R) (at level 10).
 
-Variant iterationE (I A : Type) : Type -> Type :=
-| IterateStep : I -> iterationE I A (I+A).
+Variant iterationE (I A : Type) : Type → Type :=
+| IterateStep : I → iterationE I A (I+A).
 Arguments IterateStep {I A} _.
 
 CoFixpoint iteration_protocol {I A MN} (i : I) : ptree (iterationE I A) MN A :=
   Vis (IterateStep i) (fun r => match r with
     | inl j => iteration_protocol j | inr a => Ret a end).
 
-Definition iteration_handler {I A E MN} (step : I -> ptree E MN (I+A))
+Definition iteration_handler {I A E MN} (step : I → ptree E MN (I+A))
     X (e : iterationE I A X) : ptree E MN X :=
   match e with IterateStep i => step i end.
 
 Section Structural.
-Context {E MN : Type -> Type} {I A : Type} (step : I -> ptree E MN (I+A)).
+Context {E MN : Type → Type} {I A : Type} (step : I → ptree E MN (I+A)).
 Definition iteration_left (r : I+A) :=
   PTree.interp (iteration_handler step)
     (match r with inl j => iteration_protocol j | inr a => Ret a end).
 Definition iteration_right (r : I+A) :=
   match r with inl j => Tau (PTree.iter step j) | inr a => Ret a end.
 Definition iteration_structural_candidate (t u : ptree E MN A) : Prop :=
-  (exists i, observe t = observe (PTree.interp (iteration_handler step) (iteration_protocol i)) /\
-    observe u = observe (Tau (PTree.iter step i))) \/
-  (exists active : ptree E MN (I+A),
-    observe t = observe (PTree.bind active iteration_left) /\
+  (∃ i, observe t = observe (PTree.interp (iteration_handler step) (iteration_protocol i)) ∧
+    observe u = observe (Tau (PTree.iter step i))) ∨
+  (∃ active : ptree E MN (I+A),
+    observe t = observe (PTree.bind active iteration_left) ∧
     observe u = observe (PTree.bind active iteration_right)).
 
 (** Interp guards before a step; iter guards after a retry. A single
@@ -48,7 +50,7 @@ Definition iteration_structural_candidate (t u : ptree E MN A) : Prop :=
 Theorem iteration_protocol_iter i :
   pstruct eq (PTree.interp (iteration_handler step) (iteration_protocol i)) (Tau (PTree.iter step i)).
 Proof.
-  assert (H : forall t u, iteration_structural_candidate t u -> pstruct eq t u).
+  assert (H : ∀ t u, iteration_structural_candidate t u -> pstruct eq t u).
   { unfold pstruct. coinduction CH CIH. intros t u Htu. unfold pstruct_body.
     change (pstructF eq (` CH) (observe t) (observe u)).
     destruct Htu as [[j [Ht Hu]]|[active [Ht Hu]]]; rewrite Ht, Hu.
@@ -70,7 +72,7 @@ Qed.
 End Structural.
 
 Section HeterogeneousMachine.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -85,10 +87,10 @@ Context {E MN MF : Type -> Type}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 Variables (Hzero : relational_zero FO) (Hlimit : relational_lub FO).
 Context {I1 I2 A B : Type}.
-Variables (step1 : I1 -> ptree E MN (I1+A)) (step2 : I2 -> ptree E MN (I2+B)).
-Variables (SI : I1 -> I2 -> Prop) (RR : A -> B -> Prop).
+Variables (step1 : I1 → ptree E MN (I1+A)) (step2 : I2 → ptree E MN (I2+B)).
+Variables (SI : I1 → I2 → Prop) (RR : A → B → Prop).
 Local Notation SR := (pstruct_iter_sum_rel SI RR).
-Hypothesis Hstep : forall i j, SI i j -> peutt (MF := MF) SR (step1 i) (step2 j).
+Hypothesis Hstep : ∀ i j, SI i j → peutt (MF := MF) SR (step1 i) (step2 j).
 Local Notation h1 := (iteration_handler step1).
 Local Notation h2 := (iteration_handler step2).
 Local Notation C1 := (@handler_config (iterationE I1 A) E MN A).
@@ -101,21 +103,21 @@ Local Definition next2 (r : I2+B) : ptree (iterationE I2 B) MN B :=
 (** Unlike the entry-only candidate, active configurations retain arbitrary
     related residual steps after visible interaction. Return to an entry is
     an internal transition, never an unguarded coinductive hypothesis. *)
-Inductive iteration_configs : C1 -> C2 -> Prop :=
-| IterationEntry i j : SI i j -> iteration_configs (SourceConfig (iteration_protocol i)) (SourceConfig (iteration_protocol j))
-| IterationExit a b : RR a b -> iteration_configs (SourceConfig (Ret a)) (SourceConfig (Ret b))
-| IterationActive t u : peutt (MF := MF) SR t u ->
+Inductive iteration_configs : C1 → C2 → Prop :=
+| IterationEntry i j : SI i j → iteration_configs (SourceConfig (iteration_protocol i)) (SourceConfig (iteration_protocol j))
+| IterationExit a b : RR a b → iteration_configs (SourceConfig (Ret a)) (SourceConfig (Ret b))
+| IterationActive t u : peutt (MF := MF) SR t u →
     iteration_configs (HandlerConfig t next1) (HandlerConfig u next2).
 
 Definition iteration_states (s : ptree' E MN A) (v : ptree' E MN B) : Prop :=
-  exists c d, s = observe (handler_config_tree h1 c) /\
-    v = observe (handler_config_tree h2 d) /\ iteration_configs c d.
+  ∃ c d, s = observe (handler_config_tree h1 c) ∧
+    v = observe (handler_config_tree h2 d) ∧ iteration_configs c d.
 Local Notation HR := (@ptree_stable_head_rel E MN A B RR iteration_states).
 
 Local Lemma chosen_head_lift {G1 G2 X Y} (t : ptree G1 MN X) (u : ptree G2 MN Y)
-    a b (R : stable_head G1 MN X -> stable_head G2 MN Y -> Prop) :
-  ptree_stable_hitting (MF := MF) (observe t) (sem_ret a) ->
-  ptree_stable_hitting (MF := MF) (observe u) (sem_ret b) -> R a b ->
+    a b (R : stable_head G1 MN X → stable_head G2 MN Y → Prop) :
+  ptree_stable_hitting (MF := MF) (observe t) (sem_ret a) →
+  ptree_stable_hitting (MF := MF) (observe u) (sem_ret b) → R a b →
   sem_lift R (handler_complete_front t) (handler_complete_front u).
 Proof.
   intros Ht Hu Hab.
@@ -126,13 +128,13 @@ Proof.
     + apply sem_lift_ret. exact Hab.
 Qed.
 
-Lemma iteration_kernel_related c d : iteration_configs c d ->
+Lemma iteration_kernel_related c d : iteration_configs c d →
   sem_lift (stable_target_rel iteration_configs HR)
     (handler_machine_kernel h1 c) (handler_machine_kernel h2 d).
 Proof.
   intro H. destruct H as [i j Hij|a b Hab|t u Htu]; unfold handler_machine_kernel.
   - eapply sem_lift_bind with (R := fun a b =>
-      a = FHVis (IterateStep i) next1 /\ b = FHVis (IterateStep j) next2).
+      a = FHVis (IterateStep i) next1 ∧ b = FHVis (IterateStep j) next2).
     + eapply chosen_head_lift.
       * apply stable_hitting_vis.
       * apply stable_hitting_vis.
@@ -140,7 +142,7 @@ Proof.
     + intros a b [-> ->]. apply sem_lift_ret.
       change (iteration_configs (HandlerConfig (step1 i) next1) (HandlerConfig (step2 j) next2)).
       constructor. apply Hstep. exact Hij.
-  - eapply sem_lift_bind with (R := fun h j => h = FHRet a /\ j = FHRet b).
+  - eapply sem_lift_bind with (R := fun h j => h = FHRet a ∧ j = FHRet b).
     + eapply chosen_head_lift; [apply stable_hitting_ret|apply stable_hitting_ret|split; reflexivity].
     + intros h j [-> ->]. apply sem_lift_ret. constructor. exact Hab.
   - eapply sem_lift_bind.
@@ -157,7 +159,7 @@ Qed.
 
 (** Couple complete machine executions, then reuse adequacy independently
     for the two different protocol effect signatures. *)
-Theorem iteration_machine_related c d : iteration_configs c d ->
+Theorem iteration_machine_related c d : iteration_configs c d →
   peutt (MF := MF) RR (handler_config_tree h1 c) (handler_config_tree h2 d).
 Proof.
   intro H. eapply peutt_coinduction with (sim := iteration_states).
@@ -172,28 +174,28 @@ Proof.
   - exists c, d. split; [reflexivity|split; [reflexivity|exact H]].
 Qed.
 
-Corollary iteration_protocol_related i j : SI i j ->
+Corollary iteration_protocol_related i j : SI i j →
   peutt (MF := MF) RR (PTree.interp h1 (iteration_protocol i)) (PTree.interp h2 (iteration_protocol j)).
 Proof. intro Hij. apply (iteration_machine_related (c := SourceConfig _) (d := SourceConfig _)).
   constructor. exact Hij. Qed.
 End HeterogeneousMachine.
 
 Section Compose.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}.
 Local Lemma iteration_peutt_compose {A B C}
-    (R12 : A -> B -> Prop) (R23 : B -> C -> Prop) (R13 : A -> C -> Prop)
-    (Hret : forall a b c, R12 a b -> R23 b c -> R13 a c)
+    (R12 : A → B → Prop) (R23 : B → C → Prop) (R13 : A → C → Prop)
+    (Hret : ∀ a b c, R12 a b → R23 b c → R13 a c)
     (t : ptree E MN A) (u : ptree E MN B) (v : ptree E MN C) :
-  peutt (MF := MF) R12 t u -> peutt (MF := MF) R23 u v -> peutt (MF := MF) R13 t v.
+  peutt (MF := MF) R12 t u → peutt (MF := MF) R23 u v → peutt (MF := MF) R13 t v.
 Proof.
   intros H12 H23. exact (peutt_rel_compose Hret H12 H23).
 Qed.
 End Compose.
 
 Section Final.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
@@ -215,11 +217,11 @@ Local Notation structural :=
 (** Public relational congruence. The state relation and return relation
     are arbitrary and may have different carriers on the two sides. *)
 Theorem peutt_iter_eventful_rel {I1 I2 A B}
-    (step1 : I1 -> ptree E MN (I1+A)) (step2 : I2 -> ptree E MN (I2+B))
-    (SI : I1 -> I2 -> Prop) (RR : A -> B -> Prop)
-    (Hstep : forall i j, SI i j ->
+    (step1 : I1 → ptree E MN (I1+A)) (step2 : I2 → ptree E MN (I2+B))
+    (SI : I1 → I2 → Prop) (RR : A → B → Prop)
+    (Hstep : ∀ i j, SI i j →
       peutt (MF := MF) (pstruct_iter_sum_rel SI RR) (step1 i) (step2 j)) i j :
-  SI i j -> peutt (MF := MF) RR (PTree.iter step1 i) (PTree.iter step2 j).
+  SI i j → peutt (MF := MF) RR (PTree.iter step1 i) (PTree.iter step2 j).
 Proof.
   intro Hij.
   assert (HL : peutt (MF := MF) eq (PTree.iter step1 i)
@@ -240,8 +242,8 @@ Qed.
 (** Homogeneous client; relation inference remains explicit in the relational
     theorem. No global rewriting instance is registered. *)
 Corollary peutt_iter_eventful {I A}
-    (step1 step2 : I -> ptree E MN (I+A))
-    (Hstep : forall i, peutt (MF := MF) eq (step1 i) (step2 i)) i :
+    (step1 step2 : I → ptree E MN (I+A))
+    (Hstep : ∀ i, peutt (MF := MF) eq (step1 i) (step2 i)) i :
   peutt (MF := MF) eq (PTree.iter step1 i) (PTree.iter step2 i).
 Proof.
   eapply peutt_iter_eventful_rel with (SI := eq); [|reflexivity].

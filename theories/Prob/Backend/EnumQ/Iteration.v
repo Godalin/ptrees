@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -24,9 +26,9 @@ Import GRing.Theory.
 (** Weak convergence tested by all rational-valued observables.  This is a
     relational limit: a chain may converge mathematically while its limit is
     not representable by a finite rational [EnumQ]. *)
-Definition enumQ_converges {A} (chain : nat -> EnumQ A) (mu : EnumQ A) : Prop :=
-  forall P : A -> bool, forall eps : rat, 0 < eps ->
-    exists N, forall n, (N <= n)%nat ->
+Definition enumQ_converges {A} (chain : nat → EnumQ A) (mu : EnumQ A) : Prop :=
+  ∀ P : A → bool, ∀ eps : rat, 0 < eps →
+    ∃ N, ∀ n, (N <= n)%nat →
       `|enumQ_expect (fun x => if P x then 1 else 0) (chain n) -
         enumQ_expect (fun x => if P x then 1 else 0) mu| < eps.
 

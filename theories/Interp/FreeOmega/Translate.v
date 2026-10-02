@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Eq Require Import StableHittingRelation.
 (** Role: Interpreter compositionality. Depends on equational theory (and comparison semantics for Atomic/MDP); not primitive syntax. *)
 Set Warnings "-notation-overridden".
@@ -20,7 +22,7 @@ Unset Printing Implicit Defensive.
 
 From PTree.Eq.FreeOmega Require Import Base.
 Section FreeOmegaTranslate.
-Context {E : Type -> Type} {MN : Type -> Type}
+Context {E : Type → Type} {MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
@@ -28,17 +30,17 @@ Context {E : Type -> Type} {MN : Type -> Type}
 Local Notation MF := (FreeOmega MN).
 
 Section TranslateApproximants.
-Context {F : Type -> Type}.
-Variable rename : forall X, E X -> F X.
+Context {F : Type → Type}.
+Variable rename : ∀ X, E X → F X.
 
 Definition translate_cont {R X}
-    (k : X -> ptree E MN R) (x : X) : ptree F MN R :=
+    (k : X → ptree E MN R) (x : X) : ptree F MN R :=
   PTree.bind (Ret x) (fun y => PTree.translate rename (k y)).
 
 Inductive translate_head_rel {R} :
-    stable_head E MN R -> stable_head F MN R -> Prop :=
+    stable_head E MN R → stable_head F MN R → Prop :=
   | FTHRet r : translate_head_rel (FHRet r) (FHRet r)
-  | FTHVis {X} (e : E X) (k : X -> ptree E MN R) :
+  | FTHVis {X} (e : E X) (k : X → ptree E MN R) :
       translate_head_rel (FHVis e k)
         (FHVis (@rename X e) (translate_cont k)).
 
@@ -130,7 +132,7 @@ Lemma translate_hitting_lift {R} (t : ptree E MN R) out out' :
     (ptree' E MN R) (stable_head E MN R)
     (@ptree_primitive_kernel E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      FreeOmegaMixedMeasure R) (observe t) out ->
+      FreeOmegaMixedMeasure R) (observe t) out →
   @stable_hitting MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega
@@ -138,7 +140,7 @@ Lemma translate_hitting_lift {R} (t : ptree E MN R) out out' :
     (@ptree_primitive_kernel F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure R)
-    (observe (PTree.translate rename t)) out' ->
+    (observe (PTree.translate rename t)) out' →
   free_omega_qlift translate_head_rel out out'.
 Proof.
   intros Hout Hout'.
@@ -239,36 +241,36 @@ Qed.
 End TranslateApproximants.
 
 Section TranslatePreservation.
-Context {F : Type -> Type}.
-Variable rename : forall X, E X -> F X.
+Context {F : Type → Type}.
+Variable rename : ∀ X, E X → F X.
 Context {R1 R2 : Type}.
-Variable RR : R1 -> R2 -> Prop.
+Variable RR : R1 → R2 → Prop.
 
 Inductive translate_bisim_state :
-    ptree' F MN R1 -> ptree' F MN R2 -> Prop :=
+    ptree' F MN R1 → ptree' F MN R2 → Prop :=
   | FTBSMain (t1 : ptree E MN R1) (t2 : ptree E MN R2) :
       @peutt E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaObservableSemanticMeasureCoreLaws
         FreeOmegaMixedMeasure
-        FreeOmegaObservableSemanticOmega R1 R2 RR t1 t2 ->
+        FreeOmegaObservableSemanticOmega R1 R2 RR t1 t2 →
       translate_bisim_state
         (observe (PTree.translate rename t1))
         (observe (PTree.translate rename t2)).
 
 Lemma translate_head_comp
     (hT1 : stable_head F MN R1) (hT2 : stable_head F MN R2) :
-  (exists hS2,
-    (exists hS1,
-      translate_head_rel (F := F) rename hS1 hT1 /\
+  (∃ hS2,
+    (∃ hS1,
+      translate_head_rel (F := F) rename hS1 hT1 ∧
       @ptree_stable_head_rel E MN R1 R2 RR
         (@peutt_state E MN MF
           (FreeOmegaObservableSemanticMeasure
             (NI := NI) (NO := NO))
           FreeOmegaObservableSemanticMeasureCoreLaws
           FreeOmegaMixedMeasure
-          FreeOmegaObservableSemanticOmega R1 R2 RR) hS1 hS2) /\
-    translate_head_rel (F := F) rename hS2 hT2) ->
+          FreeOmegaObservableSemanticOmega R1 R2 RR) hS1 hS2) ∧
+    translate_head_rel (F := F) rename hS2 hT2) →
   @ptree_stable_head_rel F MN R1 R2 RR translate_bisim_state hT1 hT2.
 Proof.
   intros [hS2 [[hS1 [Hmap1 Hsource]] Hmap2]].
@@ -287,7 +289,7 @@ Theorem peutt_translate {t1 : ptree E MN R1}
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega R1 R2 RR t1 t2 ->
+    FreeOmegaObservableSemanticOmega R1 R2 RR t1 t2 →
   @peutt F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws
@@ -337,7 +339,7 @@ Proof.
               (NI := NI) (NO := NO))
             FreeOmegaObservableSemanticMeasureCoreLaws
             FreeOmegaMixedMeasure
-            FreeOmegaObservableSemanticOmega R1 R2 RR) hS1 hS2 /\
+            FreeOmegaObservableSemanticOmega R1 R2 RR) hS1 hS2 ∧
         translate_head_rel rename hS2 hT2)
       (mid := outS1).
     + apply FOQLSym. exact Hmap1.

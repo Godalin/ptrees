@@ -1,4 +1,6 @@
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -14,7 +16,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section PTreeKernel.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{MX : MixedMeasure MN MF}.
 
@@ -62,7 +64,7 @@ Definition ptree_stable_hitting {R} (ot : ptree' E MN R)
     this means stable mass one. *)
 Definition ptree_stable_hitting_ast {R} (ot : ptree' E MN R)
     (out : MF (stable_head E MN R)) : Prop :=
-  ptree_stable_hitting ot out /\ sem_total out.
+  ptree_stable_hitting ot out ∧ sem_total out.
 
 (** A syntax-independent bridge for genuinely nested unbounded execution.
     [grid outer inner] may allocate separate fuel to an outer protocol and
@@ -72,9 +74,9 @@ Definition ptree_stable_hitting_ast {R} (ot : ptree' E MN R)
     limit; no [Bind], [Iter], or [NestedIter] semantic constructor is used. *)
 Definition ptree_hitting_diagonal_cofinal {R}
     (ot : ptree' E MN R)
-    (grid : nat -> nat -> MF (stable_head E MN R)) : Prop :=
-  forall out,
-    sem_lub (fun fuel => ptree_hitting_approx fuel ot) out <->
+    (grid : nat → nat → MF (stable_head E MN R)) : Prop :=
+  ∀ out,
+    sem_lub (fun fuel => ptree_hitting_approx fuel ot) out ↔
     sem_lub (fun fuel => grid fuel fuel) out.
 
 Section KernelNestedGrid.
@@ -82,13 +84,13 @@ Context `{FFubini : @SemanticOmegaFubiniLaws MF FI FO}.
 
 Theorem ptree_stable_hitting_of_nested_grid {R}
     (ot : ptree' E MN R)
-    (grid : nat -> nat -> MF (stable_head E MN R))
-    (row_out : nat -> MF (stable_head E MN R)) out :
-  ptree_hitting_diagonal_cofinal ot grid ->
-  (forall outer, sem_increasing (grid outer)) ->
-  (forall inner, sem_increasing (fun outer => grid outer inner)) ->
-  (forall outer, sem_lub (grid outer) (row_out outer)) ->
-  sem_lub row_out out ->
+    (grid : nat → nat → MF (stable_head E MN R))
+    (row_out : nat → MF (stable_head E MN R)) out :
+  ptree_hitting_diagonal_cofinal ot grid →
+  (∀ outer, sem_increasing (grid outer)) →
+  (∀ inner, sem_increasing (fun outer => grid outer inner)) →
+  (∀ outer, sem_lub (grid outer) (row_out outer)) →
+  sem_lub row_out out →
   ptree_stable_hitting ot out.
 Proof.
   intros Hcofinal Hinner Houter Hrows Hout.
@@ -99,14 +101,14 @@ Qed.
 
 Corollary ptree_stable_hitting_ast_of_nested_grid {R}
     (ot : ptree' E MN R)
-    (grid : nat -> nat -> MF (stable_head E MN R))
-    (row_out : nat -> MF (stable_head E MN R)) out :
-  ptree_hitting_diagonal_cofinal ot grid ->
-  (forall outer, sem_increasing (grid outer)) ->
-  (forall inner, sem_increasing (fun outer => grid outer inner)) ->
-  (forall outer, sem_lub (grid outer) (row_out outer)) ->
-  sem_lub row_out out ->
-  sem_total out ->
+    (grid : nat → nat → MF (stable_head E MN R))
+    (row_out : nat → MF (stable_head E MN R)) out :
+  ptree_hitting_diagonal_cofinal ot grid →
+  (∀ outer, sem_increasing (grid outer)) →
+  (∀ inner, sem_increasing (fun outer => grid outer inner)) →
+  (∀ outer, sem_lub (grid outer) (row_out outer)) →
+  sem_lub row_out out →
+  sem_total out →
   ptree_stable_hitting_ast ot out.
 Proof.
   intros Hcofinal Hinner Houter Hrows Hout Htotal.
@@ -122,7 +124,7 @@ Lemma ptree_kernel_retE {R} (r : R) :
 Proof. reflexivity. Qed.
 
 Lemma ptree_kernel_visE {R X} (e : E X)
-    (k : X -> ptree E MN R) :
+    (k : X → ptree E MN R) :
   ptree_primitive_kernel (VisF e k) =
   sem_ret (SHStable (FHVis e k)).
 Proof. reflexivity. Qed.
@@ -132,7 +134,7 @@ Lemma ptree_kernel_tauE {R} (t : ptree E MN R) :
 Proof. reflexivity. Qed.
 
 Lemma ptree_kernel_probE {R X} (mu : MN X)
-    (k : X -> ptree E MN R) :
+    (k : X → ptree E MN R) :
   ptree_primitive_kernel (ProbF mu k) =
   mixed_bind mu (fun x => sem_ret (SHInternal (observe (k x)))).
 Proof. reflexivity. Qed.
@@ -157,7 +159,7 @@ Proof. reflexivity. Qed.
 End PTreeKernel.
 
 Section PTreeKernelLaws.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -181,7 +183,7 @@ Proof.
 Qed.
 
 Lemma ptree_hitting_vis {R X} fuel (e : E X)
-    (k : X -> ptree E MN R) :
+    (k : X → ptree E MN R) :
   sem_eq (ptree_hitting_approx (MF := MF) fuel (VisF e k))
     (sem_ret (FHVis e k : stable_head E MN R)).
 Proof.
@@ -215,7 +217,7 @@ Proof.
 Qed.
 
 Lemma ptree_hitting_prob {R X} fuel (mu : MN X)
-    (k : X -> ptree E MN R) :
+    (k : X → ptree E MN R) :
   sem_eq (ptree_hitting_approx (MF := MF) fuel (ProbF mu k))
     (mixed_bind mu (fun x =>
       ptree_stable_target_approx fuel (SHInternal (observe (k x))))).
@@ -230,7 +232,7 @@ Proof.
 Qed.
 
 Lemma ptree_hitting_prob_zero {R X} (mu : MN X)
-    (k : X -> ptree E MN R) :
+    (k : X → ptree E MN R) :
   sem_eq (ptree_hitting_approx (MF := MF) O (ProbF mu k))
     (mixed_bind mu (fun _ => sem_zero)).
 Proof.
@@ -241,7 +243,7 @@ Proof.
 Qed.
 
 Lemma ptree_hitting_prob_succ {R X} fuel (mu : MN X)
-    (k : X -> ptree E MN R) :
+    (k : X → ptree E MN R) :
   sem_eq
     (ptree_hitting_approx (MF := MF) (Datatypes.S fuel) (ProbF mu k))
     (mixed_bind mu (fun x =>
@@ -256,7 +258,7 @@ Qed.
 End PTreeKernelLaws.
 
 Section KernelSilentDivergence.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
@@ -265,9 +267,9 @@ Context {E MN MF : Type -> Type}
 
 (** A Tau-closed invariant excludes every stable head.  This covers silent
     cycles and changing internal states, not only a chosen [spin] syntax. *)
-Lemma ptree_hitting_tau_closed_zero {R} (P : ptree E MN R -> Prop)
-    (Hclosed : forall t, P t -> exists u, observe t = TauF u /\ P u)
-    n t : P t ->
+Lemma ptree_hitting_tau_closed_zero {R} (P : ptree E MN R → Prop)
+    (Hclosed : ∀ t, P t → ∃ u, observe t = TauF u ∧ P u)
+    n t : P t →
   sem_eq (ptree_hitting_approx (MF := MF) n (observe t)) sem_zero.
 Proof.
   revert t. induction n as [|n IH]; intros t Ht;
@@ -280,7 +282,7 @@ Context `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FOC : @SemanticOmegaCofinalityLaws MF FI FO}.
 
 Theorem ptree_stable_hitting_of_zero_approximants {R} (ot : ptree' E MN R) :
-  (forall n, sem_eq (ptree_hitting_approx (MF := MF) n ot) sem_zero) ->
+  (∀ n, sem_eq (ptree_hitting_approx (MF := MF) n ot) sem_zero) →
   ptree_stable_hitting ot sem_zero.
 Proof.
   intro Hz. unfold ptree_stable_hitting.
@@ -289,16 +291,16 @@ Proof.
   - apply sem_lub_constant.
 Qed.
 
-Theorem ptree_stable_hitting_tau_closed_zero {R} (P : ptree E MN R -> Prop)
-    (Hclosed : forall t, P t -> exists u, observe t = TauF u /\ P u)
-    t : P t -> ptree_stable_hitting (MF := MF) (observe t) sem_zero.
+Theorem ptree_stable_hitting_tau_closed_zero {R} (P : ptree E MN R → Prop)
+    (Hclosed : ∀ t, P t → ∃ u, observe t = TauF u ∧ P u)
+    t : P t → ptree_stable_hitting (MF := MF) (observe t) sem_zero.
 Proof.
   intro Ht. apply ptree_stable_hitting_of_zero_approximants.
   intro n. exact (ptree_hitting_tau_closed_zero Hclosed n Ht).
 Qed.
 
 Corollary ptree_stable_hitting_spin_zero {R} (t : ptree E MN R) :
-  observe t = TauF t ->
+  observe t = TauF t →
   ptree_stable_hitting (MF := MF) (observe t) sem_zero.
 Proof.
   intro Ht. eapply ptree_stable_hitting_tau_closed_zero
@@ -308,7 +310,7 @@ Qed.
 End KernelSilentDivergence.
 
 Section KernelEmptySample.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -323,8 +325,8 @@ Context {E MN MF : Type -> Type}
 (** Empty native support loses all mass regardless of the continuation.
     No native omega structure or normalization is required. *)
 Theorem ptree_stable_hitting_prob_empty {R X} (mu : MN X)
-    (k : X -> ptree E MN R) :
-  sem_ae mu (fun _ => False) ->
+    (k : X → ptree E MN R) :
+  sem_ae mu (fun _ => False) →
   ptree_stable_hitting (MF := MF) (ProbF mu k) sem_zero.
 Proof.
   intro Hempty. apply ptree_stable_hitting_of_zero_approximants. intro n.
@@ -336,7 +338,7 @@ Qed.
 End KernelEmptySample.
 
 Section GenericKernelAdequacy.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF}
@@ -358,14 +360,14 @@ Proof. apply sem_eq_refl. Qed.
 Theorem ptree_primitive_stable_hitting_adequate {R}
     (ot : ptree' E MN R) out :
   stable_hitting
-      (@ptree_primitive_kernel E MN MF FI MX R) ot out <->
+      (@ptree_primitive_kernel E MN MF FI MX R) ot out ↔
   ptree_stable_hitting (MF := MF) ot out.
 Proof. reflexivity. Qed.
 
 Theorem ptree_primitive_ast_adequate {R}
     (ot : ptree' E MN R) out :
   stable_hitting_ast
-      (@ptree_primitive_kernel E MN MF FI MX R) ot out <->
+      (@ptree_primitive_kernel E MN MF FI MX R) ot out ↔
   ptree_stable_hitting_ast (MF := MF) ot out.
 Proof. reflexivity. Qed.
 
@@ -373,7 +375,7 @@ End GenericKernelAdequacy.
 
 
 Section KernelHittingOrder.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{MX : MixedMeasure MN MF}
@@ -403,7 +405,7 @@ Proof.
 Qed.
 
 Theorem ptree_hitting_mono {R} (ot : ptree' E MN R) n m :
-  Peano.le n m ->
+  Peano.le n m →
   sem_le (ptree_hitting_approx (MF := MF) n ot)
     (ptree_hitting_approx (MF := MF) m ot).
 Proof.
@@ -416,7 +418,7 @@ Qed.
 End KernelHittingOrder.
 
 Section KernelHittingExistence.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{MX : MixedMeasure MN MF}
@@ -425,15 +427,15 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 
 Theorem ptree_stable_hitting_exists {R} (ot : ptree' E MN R) :
-  exists out, ptree_stable_hitting (MF := MF) ot out.
+  ∃ out, ptree_stable_hitting (MF := MF) ot out.
 Proof.
   unfold ptree_stable_hitting. apply sem_lub_exists.
   exact (ptree_hitting_increasing ot).
 Qed.
 
 Theorem ptree_stable_hitting_unique {R} (ot : ptree' E MN R) out1 out2 :
-  ptree_stable_hitting (MF := MF) ot out1 ->
-  ptree_stable_hitting (MF := MF) ot out2 ->
+  ptree_stable_hitting (MF := MF) ot out1 →
+  ptree_stable_hitting (MF := MF) ot out2 →
   sem_eq out1 out2.
 Proof.
   unfold ptree_stable_hitting. intros H1 H2.
@@ -443,7 +445,7 @@ Qed.
 End KernelHittingExistence.
 
 Section KernelStableSoundness.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -465,7 +467,7 @@ Proof.
 Qed.
 
 Theorem ptree_stable_hitting_vis {R X} (e : E X)
-    (k : X -> ptree E MN R) :
+    (k : X → ptree E MN R) :
   ptree_stable_hitting (MF := MF) (VisF e k)
     (sem_ret (FHVis e k : stable_head E MN R)).
 Proof.
@@ -477,7 +479,7 @@ Qed.
 End KernelStableSoundness.
 
 Section KernelTauSoundness.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -506,7 +508,7 @@ Qed.
     chain.  Cofinality, rather than a Tau-specific constructor, is what
     makes its unbounded behavior invariant. *)
 Theorem ptree_stable_hitting_tau_iff {R} (t : ptree E MN R) out :
-  ptree_stable_hitting (MF := MF) (TauF t) out <->
+  ptree_stable_hitting (MF := MF) (TauF t) out ↔
   ptree_stable_hitting (MF := MF) (observe t) out.
 Proof.
   unfold ptree_stable_hitting. split; intro Hlim.
@@ -523,7 +525,7 @@ Proof.
 Qed.
 
 Corollary ptree_stable_hitting_ast_tau_iff {R} (t : ptree E MN R) out :
-  ptree_stable_hitting_ast (MF := MF) (TauF t) out <->
+  ptree_stable_hitting_ast (MF := MF) (TauF t) out ↔
   ptree_stable_hitting_ast (MF := MF) (observe t) out.
 Proof.
   unfold ptree_stable_hitting_ast. rewrite ptree_stable_hitting_tau_iff.
@@ -533,7 +535,7 @@ Qed.
 End KernelTauSoundness.
 
 Section KernelProbSoundness.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -548,7 +550,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
 
 Lemma ptree_hitting_prob_zero_prefix {R X}
-    (mu : MN X) (k : X -> ptree E MN R) fuel :
+    (mu : MN X) (k : X → ptree E MN R) fuel :
   sem_eq
     (ptree_hitting_approx (MF := MF) fuel (ProbF mu k))
     (sem_zero_prefix
@@ -566,10 +568,10 @@ Qed.
 (** Primitive probabilistic sampling commutes with unbounded stable hitting
     exactly under the mixed monotone-convergence capability. *)
 Theorem ptree_stable_hitting_prob {R X}
-    (mu : MN X) (k : X -> ptree E MN R)
-    (front : X -> MF (stable_head E MN R)) (Good : X -> Prop) :
-  sem_ae mu Good ->
-  (forall x, Good x -> ptree_stable_hitting (MF := MF) (observe (k x)) (front x)) ->
+    (mu : MN X) (k : X → ptree E MN R)
+    (front : X → MF (stable_head E MN R)) (Good : X → Prop) :
+  sem_ae mu Good →
+  (∀ x, Good x → ptree_stable_hitting (MF := MF) (observe (k x)) (front x)) →
   ptree_stable_hitting (MF := MF) (ProbF mu k) (mixed_bind mu front).
 Proof.
   intros Hae Hbranch. unfold ptree_stable_hitting in Hbranch |- *.
@@ -585,12 +587,12 @@ Proof.
 Qed.
 
 Corollary ptree_stable_hitting_ast_prob {R X}
-    (mu : MN X) (k : X -> ptree E MN R)
-    (front : X -> MF (stable_head E MN R)) (Good : X -> Prop) :
-  sem_ae mu Good ->
-  (forall x, Good x ->
-    ptree_stable_hitting_ast (MF := MF) (observe (k x)) (front x)) ->
-  sem_total (mixed_bind mu front) ->
+    (mu : MN X) (k : X → ptree E MN R)
+    (front : X → MF (stable_head E MN R)) (Good : X → Prop) :
+  sem_ae mu Good →
+  (∀ x, Good x →
+    ptree_stable_hitting_ast (MF := MF) (observe (k x)) (front x)) →
+  sem_total (mixed_bind mu front) →
   ptree_stable_hitting_ast (MF := MF) (ProbF mu k) (mixed_bind mu front).
 Proof.
   intros Hae Hbranch Htotal. split; [|exact Htotal].
@@ -601,14 +603,14 @@ Qed.
 End KernelProbSoundness.
 
 Section KernelBindDiagonal.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
 
 Definition ptree_head_bind_approx {A R} (fuel : nat)
-    (k : A -> ptree E MN R) (h : stable_head E MN A) :
+    (k : A → ptree E MN R) (h : stable_head E MN A) :
     MF (stable_head E MN R) :=
   match h with
   | FHRet a => ptree_hitting_approx (MF := MF) fuel (observe (k a))
@@ -617,7 +619,7 @@ Definition ptree_head_bind_approx {A R} (fuel : nat)
   end.
 
 Definition ptree_bind_diagonal_approx {A R} (fuel : nat)
-    (t : ptree E MN A) (k : A -> ptree E MN R) :
+    (t : ptree E MN A) (k : A → ptree E MN R) :
     MF (stable_head E MN R) :=
   sem_bind (ptree_hitting_approx (MF := MF) fuel (observe t))
     (ptree_head_bind_approx fuel k).
@@ -627,16 +629,16 @@ Definition ptree_bind_diagonal_approx {A R} (fuel : nat)
     must be cofinal.  This statement contains no frontier-certificate derivation and is
     kept separate from measure-level diagonal continuity. *)
 Definition ptree_bind_cofinal {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) : Prop :=
-  forall out,
+    (t : ptree E MN A) (k : A → ptree E MN R) : Prop :=
+  ∀ out,
     sem_lub (fun fuel => ptree_hitting_approx (MF := MF) fuel
-      (observe (PTree.bind t k))) out <->
+      (observe (PTree.bind t k))) out ↔
     sem_lub (fun fuel => ptree_bind_diagonal_approx fuel t k) out.
 
 End KernelBindDiagonal.
 
 Section KernelBindSoundness.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -648,7 +650,7 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}.
 
 Lemma ptree_head_bind_approx_increasing {A R}
-    (k : A -> ptree E MN R) h :
+    (k : A → ptree E MN R) h :
   sem_increasing (fun fuel => ptree_head_bind_approx
     (MF := MF) fuel k h).
 Proof.
@@ -658,8 +660,8 @@ Proof.
 Qed.
 
 Lemma ptree_head_bind_approx_mono {A R}
-    (k : A -> ptree E MN R) h n m :
-  Peano.le n m ->
+    (k : A → ptree E MN R) h n m :
+  Peano.le n m →
   sem_le (ptree_head_bind_approx (MF := MF) n k h)
     (ptree_head_bind_approx (MF := MF) m k h).
 Proof.
@@ -669,8 +671,8 @@ Proof.
 Qed.
 
 Lemma ptree_bind_diagonal_mono {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) n m :
-  Peano.le n m ->
+    (t : ptree E MN A) (k : A → ptree E MN R) n m :
+  Peano.le n m →
   sem_le (ptree_bind_diagonal_approx (MF := MF) n t k)
     (ptree_bind_diagonal_approx (MF := MF) m t k).
 Proof.
@@ -682,9 +684,9 @@ Proof.
 Qed.
 
 Lemma ptree_head_bind_approx_lub {A R}
-    (k : A -> ptree E MN R)
-    (front : A -> MF (stable_head E MN R))
-    (Hfront : forall a,
+    (k : A → ptree E MN R)
+    (front : A → MF (stable_head E MN R))
+    (Hfront : ∀ a,
       ptree_stable_hitting (MF := MF) (observe (k a)) (front a)) h :
   sem_lub (fun fuel => ptree_head_bind_approx
       (MF := MF) fuel k h)
@@ -697,11 +699,11 @@ Proof.
 Qed.
 
 Theorem ptree_stable_hitting_bind {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R)
-    hs (front : A -> MF (stable_head E MN R)) :
-  ptree_bind_cofinal (MF := MF) t k ->
-  ptree_stable_hitting (MF := MF) (observe t) hs ->
-  (forall a, ptree_stable_hitting (MF := MF) (observe (k a)) (front a)) ->
+    (t : ptree E MN A) (k : A → ptree E MN R)
+    hs (front : A → MF (stable_head E MN R)) :
+  ptree_bind_cofinal (MF := MF) t k →
+  ptree_stable_hitting (MF := MF) (observe t) hs →
+  (∀ a, ptree_stable_hitting (MF := MF) (observe (k a)) (front a)) →
   ptree_stable_hitting (MF := MF) (observe (PTree.bind t k))
     (sem_bind hs (bind_frontier k front)).
 Proof.
@@ -716,13 +718,13 @@ Proof.
 Qed.
 
 Corollary ptree_stable_hitting_ast_bind {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R)
-    hs (front : A -> MF (stable_head E MN R)) :
-  ptree_bind_cofinal (MF := MF) t k ->
-  ptree_stable_hitting_ast (MF := MF) (observe t) hs ->
-  (forall a, ptree_stable_hitting_ast (MF := MF)
-    (observe (k a)) (front a)) ->
-  sem_total (sem_bind hs (bind_frontier k front)) ->
+    (t : ptree E MN A) (k : A → ptree E MN R)
+    hs (front : A → MF (stable_head E MN R)) :
+  ptree_bind_cofinal (MF := MF) t k →
+  ptree_stable_hitting_ast (MF := MF) (observe t) hs →
+  (∀ a, ptree_stable_hitting_ast (MF := MF)
+    (observe (k a)) (front a)) →
+  sem_total (sem_bind hs (bind_frontier k front)) →
   ptree_stable_hitting_ast (MF := MF) (observe (PTree.bind t k))
     (sem_bind hs (bind_frontier k front)).
 Proof.
@@ -736,31 +738,31 @@ End KernelBindSoundness.
 
 
 Section KernelIterationCofinality.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
 
 Definition ptree_iter_round_approx {I R} (fuel : nat)
-    (transition : I -> MN (I + R)) (i : I) :
+    (transition : I → MN (I + R)) (i : I) :
     MF (stable_head E MN R) :=
   sem_bind (mixed_iter_approx fuel transition i)
     (fun r => sem_ret (FHRet r)).
 
 Definition ptree_iter_cofinal {I R}
-    (step : I -> ptree E MN (I + R))
-    (transition : I -> MN (I + R)) (i : I) : Prop :=
-  forall out,
+    (step : I → ptree E MN (I + R))
+    (transition : I → MN (I + R)) (i : I) : Prop :=
+  ∀ out,
     sem_lub (fun fuel => ptree_hitting_approx (MF := MF) fuel
-      (observe (PTree.iter step i))) out <->
+      (observe (PTree.iter step i))) out ↔
     sem_lub (fun fuel => ptree_iter_round_approx
       fuel transition i) out.
 
 End KernelIterationCofinality.
 
 Section KernelIterationSoundness.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{FB : @SemanticMeasureBindLaws MF FI}
@@ -769,11 +771,11 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 
 Theorem ptree_stable_hitting_iter {I R}
-    (step : I -> ptree E MN (I + R))
-    (transition : I -> MN (I + R)) (i : I) out :
-  sem_increasing (fun fuel => mixed_iter_approx fuel transition i) ->
-  ptree_iter_cofinal (MF := MF) step transition i ->
-  mixed_iter transition i out ->
+    (step : I → ptree E MN (I + R))
+    (transition : I → MN (I + R)) (i : I) out :
+  sem_increasing (fun fuel => mixed_iter_approx fuel transition i) →
+  ptree_iter_cofinal (MF := MF) step transition i →
+  mixed_iter transition i out →
   ptree_stable_hitting (MF := MF) (observe (PTree.iter step i))
     (sem_bind out (fun r => sem_ret
       (FHRet r : stable_head E MN R))).
@@ -784,13 +786,13 @@ Proof.
 Qed.
 
 Corollary ptree_stable_hitting_ast_iter {I R}
-    (step : I -> ptree E MN (I + R))
-    (transition : I -> MN (I + R)) (i : I) out :
-  sem_increasing (fun fuel => mixed_iter_approx fuel transition i) ->
-  ptree_iter_cofinal (MF := MF) step transition i ->
-  mixed_iter transition i out ->
+    (step : I → ptree E MN (I + R))
+    (transition : I → MN (I + R)) (i : I) out :
+  sem_increasing (fun fuel => mixed_iter_approx fuel transition i) →
+  ptree_iter_cofinal (MF := MF) step transition i →
+  mixed_iter transition i out →
   sem_total (sem_bind out (fun r => sem_ret
-    (FHRet r : stable_head E MN R))) ->
+    (FHRet r : stable_head E MN R))) →
   ptree_stable_hitting_ast (MF := MF) (observe (PTree.iter step i))
     (sem_bind out (fun r => sem_ret
       (FHRet r : stable_head E MN R))).
@@ -802,7 +804,7 @@ Qed.
 End KernelIterationSoundness.
 
 Section FrontierKernelSoundness.
-Context {E : Type -> Type} {MN MF : Type -> Type}
+Context {E : Type → Type} {MN MF : Type → Type}
   `{NI : SemanticMeasure MN}
   `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -817,17 +819,17 @@ Context {E : Type -> Type} {MN MF : Type -> Type}
   `{MOL : @MixedMeasureOmegaLaws MN MF NI FI MX FO}
   `{FDL : @SemanticMeasureDiagonalLaws MF FI FO}.
 
-Variable bind_cofinality : forall A R
-    (t : ptree E MN A) (k : A -> ptree E MN R),
+Variable bind_cofinality : ∀ A R
+    (t : ptree E MN A) (k : A → ptree E MN R),
     ptree_bind_cofinal (MF := MF) t k.
 
-Variable iter_productivity : forall I R
-    (step : I -> ptree E MN (I + R))
-    (transition : I -> MN (I + R)) (i : I),
-    (forall j, ptree_stable_hitting (MF := MF) (observe (step j))
+Variable iter_productivity : ∀ I R
+    (step : I → ptree E MN (I + R))
+    (transition : I → MN (I + R)) (i : I),
+    (∀ j, ptree_stable_hitting (MF := MF) (observe (step j))
       (mixed_bind (transition j)
-        (fun next => sem_ret (FHRet next)))) ->
-    sem_increasing (fun fuel => mixed_iter_approx fuel transition i) /\
+        (fun next => sem_ret (FHRet next)))) →
+    sem_increasing (fun fuel => mixed_iter_approx fuel transition i) ∧
     ptree_iter_cofinal (MF := MF) step transition i.
 
 (** Conditional end-to-end soundness of the structured certificate.  The
@@ -836,7 +838,7 @@ Variable iter_productivity : forall I R
     productive iteration rounds. *)
 Theorem certificate_to_ptree_stable_hitting {R}
     (ot : ptree' E MN R) out :
-  frontier_certificate ot out -> ptree_stable_hitting (MF := MF) ot out.
+  frontier_certificate ot out → ptree_stable_hitting (MF := MF) ot out.
 Proof.
   intro Hfront. induction Hfront.
   - apply ptree_stable_hitting_ret.
@@ -859,7 +861,7 @@ Qed.
     premise side. *)
 Theorem certificate_to_stable_hitting {R}
     (ot : ptree' E MN R) out :
-  frontier_certificate ot out ->
+  frontier_certificate ot out →
   stable_hitting
     (@ptree_primitive_kernel E MN MF FI MX R) ot out.
 Proof.
@@ -870,7 +872,7 @@ Qed.
 
 Corollary certificate_to_stable_hitting_ast {R}
     (ot : ptree' E MN R) out :
-  frontier_certificate ot out -> sem_total out ->
+  frontier_certificate ot out → sem_total out →
   stable_hitting_ast
     (@ptree_primitive_kernel E MN MF FI MX R) ot out.
 Proof.

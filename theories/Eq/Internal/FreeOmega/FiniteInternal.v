@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -17,7 +19,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section FreeOmegaFiniteInternal.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NO : @SemanticOmega MN NI} {R : Type}.
@@ -33,7 +35,7 @@ Local Notation hit := (@ptree_hitting_approx E MN MF FI
     steps start only after the well-founded compression.  The index is used
     for the soundness proof, not as a bound on [finite_internal]. *)
 Theorem finite_internal_hitting_covered t out :
-  execute t out -> forall n,
+  execute t out → ∀ n,
   free_omega_approx eq (hit n (observe t))
     (free_omega_bind out (fun u => hit n (observe u))).
 Proof.
@@ -72,17 +74,17 @@ Qed.
     Both inequalities are raw approximation statements, so later cofinality
     arguments do not need an unjustified order/properness law for qlift. *)
 Definition finite_internal_approximates t out
-    (chain : nat -> MF (ptree E MN R)) : Prop :=
-  (forall n, free_omega_approx eq (chain n) (chain (S n))) /\
-  free_omega_qlift eq out (FOLub chain) /\
-  (forall n m, free_omega_approx eq
+    (chain : nat → MF (ptree E MN R)) : Prop :=
+  (∀ n, free_omega_approx eq (chain n) (chain (S n))) ∧
+  free_omega_qlift eq out (FOLub chain) ∧
+  (∀ n m, free_omega_approx eq
     (free_omega_bind (chain n) (fun u => hit m (observe u)))
-    (hit (n + m) (observe t))) /\
-  (forall n, free_omega_approx eq (hit n (observe t))
+    (hit (n + m) (observe t))) ∧
+  (∀ n, free_omega_approx eq (hit n (observe t))
     (free_omega_bind (chain n) (fun u => hit n (observe u)))).
 
-Lemma finite_internal_prefix_limit {A} (out : MF A) (chain : nat -> MF A) :
-  free_omega_qlift eq out (FOLub chain) ->
+Lemma finite_internal_prefix_limit {A} (out : MF A) (chain : nat → MF A) :
+  free_omega_qlift eq out (FOLub chain) →
   free_omega_qlift eq out
     (FOLub (fun n => match n with O => FOZero | S m => chain m end)).
 Proof.
@@ -94,7 +96,7 @@ Proof.
 Qed.
 
 Theorem finite_internal_approximation_exists t out :
-  execute t out -> exists chain, finite_internal_approximates t out chain.
+  execute t out → ∃ chain, finite_internal_approximates t out chain.
 Proof.
   intro Hexec. induction Hexec.
   - exists (fun _ => FORet t). repeat split.
@@ -169,11 +171,11 @@ Qed.
     The policy may vary with the whole residual tree and its derivations
     need not admit a uniform depth bound.  This is proof machinery for
     acceleration, not a new definition of the finite relation. *)
-Variable cut : ptree E MN R -> MF (ptree E MN R).
-Hypothesis cut_valid : forall t, execute t (cut t).
+Variable cut : ptree E MN R → MF (ptree E MN R).
+Hypothesis cut_valid : ∀ t, execute t (cut t).
 
 Definition finite_internal_advance
-    (next : ptree E MN R -> MF (stable_head E MN R))
+    (next : ptree E MN R → MF (stable_head E MN R))
     (t : ptree E MN R) : MF (stable_head E MN R) :=
   match observe t with
   | RetF r => FORet (FHRet r)
@@ -192,8 +194,8 @@ Fixpoint finite_internal_rounds (n : nat) (t : ptree E MN R) :
        end)).
 
 Lemma finite_internal_advance_mono next1 next2 :
-  (forall t, free_omega_approx eq (next1 t) (next2 t)) ->
-  forall t, free_omega_approx eq
+  (∀ t, free_omega_approx eq (next1 t) (next2 t)) →
+  ∀ t, free_omega_approx eq
     (finite_internal_advance next1 t) (finite_internal_advance next2 t).
 Proof.
   intros Hnext t. unfold finite_internal_advance. destruct (observe t).
@@ -258,23 +260,23 @@ Qed.
 End FreeOmegaFiniteInternal.
 
 Section CoupledInternalRounds.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI}.
-Context {A B : Type} (RR : A -> B -> Prop).
-Variable sim : ptree E MN A -> ptree E MN B -> Prop.
-Variable cut1 : ptree E MN A -> FreeOmega MN (ptree E MN A).
-Variable cut2 : ptree E MN B -> FreeOmega MN (ptree E MN B).
+Context {A B : Type} (RR : A → B → Prop).
+Variable sim : ptree E MN A → ptree E MN B → Prop.
+Variable cut1 : ptree E MN A → FreeOmega MN (ptree E MN A).
+Variable cut2 : ptree E MN B → FreeOmega MN (ptree E MN B).
 
 (** Here the cuts are independently chosen functions of each marginal
     state.  This hypothesis must not be inferred just by choosing witnesses
     for arbitrary paired certificates: those witnesses may depend on the pair. *)
-Hypothesis cuts_coupled : forall t1 t2, sim t1 t2 ->
+Hypothesis cuts_coupled : ∀ t1 t2, sim t1 t2 →
   free_omega_qlift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 t1) (cut2 t2).
 
 Lemma finite_internal_advance_coupled next1 next2 :
-  (forall t1 t2, sim t1 t2 ->
-    free_omega_qlift (stable_head_rel RR sim) (next1 t1) (next2 t2)) ->
-  forall t1 t2, (fun t u => pstrongF RR sim (observe t) (observe u)) t1 t2 ->
+  (∀ t1 t2, sim t1 t2 →
+    free_omega_qlift (stable_head_rel RR sim) (next1 t1) (next2 t2)) →
+  ∀ t1 t2, (fun t u => pstrongF RR sim (observe t) (observe u)) t1 t2 →
     free_omega_qlift (stable_head_rel RR sim)
       (finite_internal_advance next1 t1)
       (finite_internal_advance next2 t2).
@@ -295,7 +297,7 @@ Qed.
     implication F(peutt) <= peutt.  It does not yet identify either chain
     with its original primitive hitting limit. *)
 Theorem finite_internal_rounds_coupled n t1 t2 :
-  sim t1 t2 -> free_omega_qlift (stable_head_rel RR sim)
+  sim t1 t2 → free_omega_qlift (stable_head_rel RR sim)
     (finite_internal_rounds cut1 n t1)
     (finite_internal_rounds cut2 n t2).
 Proof.
@@ -309,7 +311,7 @@ Proof.
 Qed.
 
 Corollary finite_internal_round_limits_coupled t1 t2 :
-  sim t1 t2 -> free_omega_qlift (stable_head_rel RR sim)
+  sim t1 t2 → free_omega_qlift (stable_head_rel RR sim)
     (FOLub (fun n => finite_internal_rounds cut1 n t1))
     (FOLub (fun n => finite_internal_rounds cut2 n t2)).
 Proof.

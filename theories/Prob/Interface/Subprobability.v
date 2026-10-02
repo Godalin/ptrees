@@ -1,4 +1,6 @@
 (** Role: Individual validity, closure laws and intrinsic carrier validity; distinct capabilities. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -17,9 +19,9 @@ Require Import PTree.Prob.Interface.Measure.
     a native [Prob] node.  Concrete backends give [sem_subprob] their actual
     mass-bounded meaning. *)
 Polymorphic Class SemanticSubprobability@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S} := {
-  sem_subprob : forall {A : Type@{carrier}}, S A -> Prop
+  sem_subprob : ∀ {A : Type@{carrier}}, S A → Prop
 }.
 
 (** Closure facts for individually validated measures.  Pointwise bind
@@ -27,26 +29,26 @@ Polymorphic Class SemanticSubprobability@{carrier representation}
     added later without making the basic probability boundary depend on a
     particular representation of null branches. *)
 Polymorphic Class SemanticSubprobabilityLaws@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S}
     `{SP : @SemanticSubprobability S SI} := {
-  sem_subprob_ret : forall {A : Type@{carrier}} (x : A),
+  sem_subprob_ret : ∀ {A : Type@{carrier}} (x : A),
       sem_subprob (sem_ret x);
-  sem_subprob_bind : forall {A B : Type@{carrier}}
-      (mu : S A) (k : A -> S B),
-      sem_subprob mu ->
-      (forall x, sem_subprob (k x)) ->
+  sem_subprob_bind : ∀ {A B : Type@{carrier}}
+      (mu : S A) (k : A → S B),
+      sem_subprob mu →
+      (∀ x, sem_subprob (k x)) →
       sem_subprob (sem_bind mu k);
-  sem_subprob_proper : forall {A : Type@{carrier}} (mu nu : S A),
-      sem_eq mu nu -> (sem_subprob mu <-> sem_subprob nu)
+  sem_subprob_proper : ∀ {A : Type@{carrier}} (mu nu : S A),
+      sem_eq mu nu → (sem_subprob mu ↔ sem_subprob nu)
 }.
 
 (** Intrinsically bounded carriers validate every inhabitant.  [SubEnumQ] and
     MathComp's subprobability kernels implement this package; raw [EnumQ]
     implements only the predicate and closure laws above. *)
 Polymorphic Class SemanticSubprobabilityCarrierLaws@{carrier representation}
-    (S : Type@{carrier} -> Type@{representation})
+    (S : Type@{carrier} → Type@{representation})
     `{SI : SemanticMeasure S}
     `{SP : @SemanticSubprobability S SI} := {
-  sem_subprob_all : forall {A : Type@{carrier}} (mu : S A), sem_subprob mu
+  sem_subprob_all : ∀ {A : Type@{carrier}} (mu : S A), sem_subprob mu
 }.

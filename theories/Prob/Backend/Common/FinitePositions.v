@@ -2,6 +2,8 @@
     Raw indexing is independent of scalar algebra. Its checked specializations
     preserve the original nonnegative/mass invariants, order and zero entries.
     No coupling, support quotient or native backend is defined here. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -71,12 +73,12 @@ Proof.
 Qed.
 End RawPositions.
 
-Lemma finite_index_map_weights {W V A : Type} (f : W -> V) n (mu : list (W * A)) :
+Lemma finite_index_map_weights {W V A : Type} (f : W → V) n (mu : list (W * A)) :
   finite_index_from n (List.map (fun px => (f (fst px), snd px)) mu) =
   List.map (fun pi => (f (fst pi), snd pi)) (finite_index_from n mu).
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
 
-Lemma finite_value_index_map_weights {W V A : Type} (f : W -> V) n (mu : list (W * A)) :
+Lemma finite_value_index_map_weights {W V A : Type} (f : W → V) n (mu : list (W * A)) :
   finite_value_index_from n (List.map (fun px => (f (fst px), snd px)) mu) =
   List.map (fun pxi => (f (fst pxi), snd pxi)) (finite_value_index_from n mu).
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
@@ -85,7 +87,7 @@ Section CheckedPositions.
 Variable R : numDomainType.
 
 Lemma finite_index_nonnegative {A} n (mu : list (R * A)) :
-  finite_nonnegative mu -> finite_nonnegative (finite_index_from n mu).
+  finite_nonnegative mu → finite_nonnegative (finite_index_from n mu).
 Proof.
   induction mu as [|[p x] tl IH] in n |- *; intros H q i Hin; cbn in Hin.
   - contradiction.
@@ -95,7 +97,7 @@ Proof.
 Qed.
 
 Lemma finite_value_index_nonnegative {A} n (mu : list (R * A)) :
-  finite_nonnegative mu -> finite_nonnegative (finite_value_index_from n mu).
+  finite_nonnegative mu → finite_nonnegative (finite_value_index_from n mu).
 Proof.
   induction mu as [|[p x] tl IH] in n |- *; intros H q yi Hin; cbn in Hin.
   - contradiction.
@@ -108,7 +110,7 @@ Lemma finite_index_mass {A} n (mu : list (R * A)) :
   finite_expect (fun _ => 1) (finite_index_from n mu) = finite_expect (fun _ => 1) mu.
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
 
-Lemma finite_value_index_expect {A} n (mu : list (R * A)) (f : A -> R) :
+Lemma finite_value_index_expect {A} n (mu : list (R * A)) (f : A → R) :
   finite_expect (fun xi => f (fst xi)) (finite_value_index_from n mu) = finite_expect f mu.
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
 

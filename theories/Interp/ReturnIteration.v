@@ -1,6 +1,8 @@
 (** Frontier iteration conservatively extends ordinary absorbing Kleisli
     iteration. Return-only is a local step certificate, not an empty effect
     signature. Finite frontiers start one round ahead of bottom iteration. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
@@ -11,7 +13,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section ReturnIteration.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -20,14 +22,14 @@ Context {E MN MF : Type -> Type}
   `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}
   `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}
   `{BO : @SemanticMeasureBindOrderLaws MF FI FO}.
-Context {I A : Type} (step : I -> ptree E MN (I+A)).
+Context {I A : Type} (step : I → ptree E MN (I+A)).
 
 Definition iteration_return_map (out : MF A) : MF (stable_head E MN A) :=
   sem_bind out (fun a => sem_ret (FHRet a)).
-Definition iteration_return_front (K : I -> MF (I+A)) i :=
+Definition iteration_return_front (K : I → MF (I+A)) i :=
   sem_bind (K i) (fun v => sem_ret (FHRet v : stable_head E MN (I+A))).
 
-Theorem iteration_summary_round_return_only (K : I -> MF (I+A)) n i :
+Theorem iteration_summary_round_return_only (K : I → MF (I+A)) n i :
   sem_eq (iteration_summary_round step (iteration_return_front K) n i)
     (iteration_return_map (sem_iter_approx K (S n) i)).
 Proof.
@@ -46,9 +48,9 @@ Proof.
   - apply sem_eq_sym. exact (sem_bind_ret_l a (fun a => sem_ret (FHRet a : stable_head E MN A))).
 Qed.
 
-Theorem iteration_summary_return_only (K : I -> MF (I+A)) i summary_out out :
-  iteration_summary step (iteration_return_front K) i summary_out ->
-  sem_iter K i out ->
+Theorem iteration_summary_return_only (K : I → MF (I+A)) i summary_out out :
+  iteration_summary step (iteration_return_front K) i summary_out →
+  sem_iter K i out →
   sem_eq summary_out (iteration_return_map out).
 Proof.
   intros Hsummary Hiter.
@@ -66,11 +68,11 @@ Theorem ptree_iter_return_only
     `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}
     `{Diagonal : @SemanticMeasureDiagonalLaws MF FI FO}
     `{Fubini : @SemanticOmegaFubiniLaws MF FI FO}
-    (K : I -> MF (I+A))
-    (Hstep : forall i, ptree_stable_hitting (MF := MF)
+    (K : I → MF (I+A))
+    (Hstep : ∀ i, ptree_stable_hitting (MF := MF)
       (observe (step i)) (iteration_return_front K i)) i out :
-  sem_iter K i out -> exists summary_out,
-    ptree_stable_hitting (MF := MF) (observe (PTree.iter step i)) summary_out /\
+  sem_iter K i out → ∃ summary_out,
+    ptree_stable_hitting (MF := MF) (observe (PTree.iter step i)) summary_out ∧
     sem_eq summary_out (iteration_return_map out).
 Proof.
   intro Hiter.
@@ -83,7 +85,7 @@ Section Native.
 Context `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{ML : @MixedMeasureLaws MN MF NI FI MX}
   `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}.
-Variable transition : I -> MN (I+A).
+Variable transition : I → MN (I+A).
 Definition iteration_native_front i :=
   mixed_bind (transition i) (fun v => sem_ret (FHRet v : stable_head E MN (I+A))).
 
@@ -114,8 +116,8 @@ Proof.
 Qed.
 
 Theorem iteration_summary_mixed_iter i summary_out out :
-  iteration_summary step iteration_native_front i summary_out ->
-  mixed_iter (MF := MF) transition i out ->
+  iteration_summary step iteration_native_front i summary_out →
+  mixed_iter (MF := MF) transition i out →
   sem_eq summary_out (iteration_return_map out).
 Proof.
   intros Hsummary Hiter.
@@ -132,10 +134,10 @@ Qed.
 Theorem ptree_iter_mixed_iter
     `{Diagonal : @SemanticMeasureDiagonalLaws MF FI FO}
     `{Fubini : @SemanticOmegaFubiniLaws MF FI FO}
-    (Hstep : forall i, ptree_stable_hitting (MF := MF)
+    (Hstep : ∀ i, ptree_stable_hitting (MF := MF)
       (observe (step i)) (iteration_native_front i)) i out :
-  mixed_iter (MF := MF) transition i out -> exists summary_out,
-    ptree_stable_hitting (MF := MF) (observe (PTree.iter step i)) summary_out /\
+  mixed_iter (MF := MF) transition i out → ∃ summary_out,
+    ptree_stable_hitting (MF := MF) (observe (PTree.iter step i)) summary_out ∧
     sem_eq summary_out (iteration_return_map out).
 Proof.
   intro Hiter.

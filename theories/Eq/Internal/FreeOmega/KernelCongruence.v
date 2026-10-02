@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
@@ -13,20 +15,20 @@ Unset Printing Implicit Defensive.
     change its hitting semantics.  This theorem uses quotient coupling,
     not transport of raw approximation order across quotient equality. *)
 Section KernelCongruence.
-Context {MN : Type -> Type}
+Context {MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI} {S O : Type}.
 Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
-Variable left right : S -> MF (stable_target S O).
-Variable D : S -> Prop.
-Hypothesis left_closed : forall s, D s ->
+Variable left right : S → MF (stable_target S O).
+Variable D : S → Prop.
+Hypothesis left_closed : ∀ s, D s →
   free_omega_ae (kernel_completion_invariant D) (left s).
-Hypothesis kernels_equal : forall s, D s -> free_omega_qlift eq (left s) (right s).
+Hypothesis kernels_equal : ∀ s, D s → free_omega_qlift eq (left s) (right s).
 
-Lemma kernel_equality_supported s : D s ->
+Lemma kernel_equality_supported s : D s →
   free_omega_qlift
-    (fun p q => p = q /\ kernel_completion_invariant D p) (left s) (right s).
+    (fun p q => p = q ∧ kernel_completion_invariant D p) (left s) (right s).
 Proof.
   intro HD. eapply FOQLAERestrict with (T := eq)
     (P := kernel_completion_invariant D) (Q := fun _ => True).
@@ -36,7 +38,7 @@ Proof.
   - intros p q [Hp [Hgood _]]. split; assumption.
 Qed.
 
-Lemma kernel_target_approx_eq n target : kernel_completion_invariant D target ->
+Lemma kernel_target_approx_eq n target : kernel_completion_invariant D target →
   free_omega_qlift eq
     (@stable_target_approx MF FI FreeOmegaObservableSemanticOmega S O left n target)
     (@stable_target_approx MF FI FreeOmegaObservableSemanticOmega S O right n target).
@@ -49,7 +51,7 @@ Proof.
     intros p q [<- Hgood]. apply IH. exact Hgood.
 Qed.
 
-Theorem kernel_hitting_approx_eq n s : D s ->
+Theorem kernel_hitting_approx_eq n s : D s →
   free_omega_qlift eq
     (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O left n s)
     (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O right n s).
@@ -58,7 +60,7 @@ Proof.
   intros p q [<- Hgood]. apply kernel_target_approx_eq. exact Hgood.
 Qed.
 
-Theorem kernel_hitting_limit_eq s : D s ->
+Theorem kernel_hitting_limit_eq s : D s →
   free_omega_qlift eq
     (FOLub (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
       S O left n s))
@@ -70,9 +72,9 @@ Qed.
 
 (** The result applies to any complete hitting representatives, not only
     the canonical formal Lub used in the finite approximation proof. *)
-Theorem kernel_stable_hitting_eq s out1 out2 : D s ->
-  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O left s out1 ->
-  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O right s out2 ->
+Theorem kernel_stable_hitting_eq s out1 out2 : D s →
+  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O left s out1 →
+  @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O right s out2 →
   free_omega_qlift eq out1 out2.
 Proof.
   intros HD Hleft Hright.

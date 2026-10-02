@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -15,7 +17,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section CorrelatedCoverage.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -48,22 +50,22 @@ Proof.
   apply functional_extensionality. intro t. apply finite_internal_guard_approxE.
 Qed.
 
-Variable kernel : S -> MF (stable_target S O).
-Variable project_state : S -> tree.
-Variable project_output : O -> head.
-Variable D : S -> Prop.
-Variable cut : S -> MF tree.
+Variable kernel : S → MF (stable_target S O).
+Variable project_state : S → tree.
+Variable project_output : O → head.
+Variable D : S → Prop.
+Variable cut : S → MF tree.
 Local Notation projection := (finite_internal_execution_projection project_state project_output).
-Hypothesis execution_closed : forall s, D s ->
+Hypothesis execution_closed : ∀ s, D s →
   free_omega_ae (kernel_completion_invariant D) (kernel s).
-Hypothesis cut_valid : forall s, D s ->
+Hypothesis cut_valid : ∀ s, D s →
   @finite_internal E MN MF FI FreeOmegaMixedMeasure A (project_state s) (cut s).
 
 (** This stronger realization premise is intentional and VISIBLE.  A
     quotient graph coupling alone cannot be transported through the raw
     approximation order. This realization premise is supplied separately;
     it does not alter the canonical behavioral relation. *)
-Hypothesis execution_marginal_structural : forall s, D s ->
+Hypothesis execution_marginal_structural : ∀ s, D s →
   free_omega_lift (fun z target => projection z = target)
     (kernel s) (free_omega_bind (cut s) finite_internal_guard_transition).
 
@@ -76,14 +78,14 @@ Lemma finite_internal_joint_hitting_projectionE n s :
     (fun o => FORet (project_output o))).
 Proof. apply free_omega_bind_assoc. Qed.
 
-Lemma finite_internal_marginal_structural_supported s : D s ->
+Lemma finite_internal_marginal_structural_supported s : D s →
   free_omega_lift
-    (fun target z => projection z = target /\ kernel_completion_invariant D z)
+    (fun target z => projection z = target ∧ kernel_completion_invariant D z)
     (free_omega_bind (cut s) finite_internal_guard_transition) (kernel s).
 Proof.
   intro HD. eapply free_omega_lift_mono with
-    (R := fun target z => projection z = target /\
-      kernel_completion_invariant D z /\ True).
+    (R := fun target z => projection z = target ∧
+      kernel_completion_invariant D z ∧ True).
   - intros target z [Hproj [HD' _]]. split; assumption.
   - apply free_omega_lift_sym. eapply free_omega_lift_ae_restrict.
     + apply execution_marginal_structural. exact HD.
@@ -96,7 +98,7 @@ Qed.
     index suffices for coverage: both approximants execute their first
     kernel step and allow n further residual transitions.  Cuts and future
     states may depend on both programs or on extra history. *)
-Theorem finite_internal_execution_covers_hitting n s : D s ->
+Theorem finite_internal_execution_covers_hitting n s : D s →
   free_omega_approx eq (hit n (observe (project_state s)))
     (free_omega_bind
       (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O kernel n s)
@@ -117,7 +119,7 @@ Proof.
     + apply IH. exact Hgood.
 Qed.
 
-Corollary finite_internal_execution_limit_covers s : D s ->
+Corollary finite_internal_execution_limit_covers s : D s →
   free_omega_approx eq
     (FOLub (fun n => hit n (observe (project_state s))))
     (free_omega_bind
@@ -129,8 +131,8 @@ Proof.
   apply finite_internal_execution_covers_hitting. exact HD.
 Qed.
 
-Variable represented_kernel : S -> MF (stable_target S O).
-Hypothesis kernels_equal : forall s, D s ->
+Variable represented_kernel : S → MF (stable_target S O).
+Hypothesis kernels_equal : ∀ s, D s →
   free_omega_qlift eq (kernel s) (represented_kernel s).
 
 (** Representation-independent coverage for an equivalent presentation of
@@ -138,9 +140,9 @@ Hypothesis kernels_equal : forall s, D s ->
     representative; the second conjunct relates it to the requested one.
     An arbitrary quotient kernel is NOT assumed to have such a structural
     presentation. *)
-Theorem finite_internal_execution_covers_modulo_eq n s : D s ->
-  exists covered,
-    free_omega_approx eq (hit n (observe (project_state s))) covered /\
+Theorem finite_internal_execution_covers_modulo_eq n s : D s →
+  ∃ covered,
+    free_omega_approx eq (hit n (observe (project_state s))) covered ∧
     free_omega_qlift eq covered
       (free_omega_bind
         (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
@@ -160,10 +162,10 @@ Qed.
 
 (** The complete witness comes from one fixed reference kernel, not from
     an unproved monotone selection of the finite existential witnesses. *)
-Theorem finite_internal_execution_limit_covers_modulo_eq s : D s ->
-  exists covered,
+Theorem finite_internal_execution_limit_covers_modulo_eq s : D s →
+  ∃ covered,
     free_omega_approx eq
-      (FOLub (fun n => hit n (observe (project_state s)))) covered /\
+      (FOLub (fun n => hit n (observe (project_state s)))) covered ∧
     free_omega_qlift eq covered
       (free_omega_bind
         (FOLub (fun n => @stable_hitting_approx MF FI

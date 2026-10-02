@@ -1,6 +1,8 @@
 (** Role: concrete execution and resource-outcome example. *)
 (** Executable runner behavior and semantic-result/resource-failure boundaries.
     These deterministic tests make no entropy-uniformity claim. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 (** [option] is template-polymorphic. Eta-expand the native functor instead
     of fixing its universe by passing the bare template as a higher-kinded
@@ -70,10 +72,10 @@ Example successful_path_has_operational_evidence :
   executes replay_one closed_choice [tt;tt] (Returned true) [tt].
 Proof. eapply run_sound with (fuel := 1); [reflexivity|exact I]. Qed.
 Example successful_path_has_stable_replay fuel :
-  1 <= fuel -> test_run fuel closed_choice [tt;tt] = (Returned true, [tt]).
+  1 <= fuel → test_run fuel closed_choice [tt;tt] = (Returned true, [tt]).
 Proof. intro H. eapply run_finished_more_fuel with (n := 1); eauto; reflexivity. Qed.
 Example timeout_is_not_a_terminal_path :
-  ~ executes replay_one closed_choice [tt] Timeout [tt].
+  ¬ executes replay_one closed_choice [tt] Timeout [tt].
 Proof. intro H. exact (executes_finished H). Qed.
 
 Definition state_program : ptree (stateE nat +' void1) Replay nat :=
@@ -91,7 +93,7 @@ Proof. reflexivity. Qed.
 
 Example state_bind_uses_updated_state {A B}
     (t : ptree (stateE nat +' void1) Replay A)
-    (k : A -> ptree (stateE nat +' void1) Replay B) s :
+    (k : A → ptree (stateE nat +' void1) Replay B) s :
   pstruct eq (run_state (PTree.bind t k) s)
     (PTree.bind (run_state t s) (fun sa => run_state (k (snd sa)) (fst sa))).
 Proof. apply run_state_bind. Qed.
@@ -106,8 +108,8 @@ Example standard_subevent_put s :
 Proof. reflexivity. Qed.
 
 Section Forwarding.
-Context {E : Type -> Type} {X : Type} (e : E X).
-Example state_forwards_unhandled_event (k : X -> ptree (stateE nat +' E) Replay bool) s :
+Context {E : Type → Type} {X : Type} (e : E X).
+Example state_forwards_unhandled_event (k : X → ptree (stateE nat +' E) Replay bool) s :
   pstruct eq (run_state (Vis (inr1 e) k) s)
     (Vis e (fun x => run_state (k x) s)).
 Proof. apply run_state_forward. Qed.
@@ -151,18 +153,18 @@ Example typed_loss_path : executes_result (@missing_sampler) request tt ResultLo
 Proof. apply run_result_iff. exists 1. reflexivity. Qed.
 
 Example entropy_failure_has_no_completed_path :
-  ~ executes (@empty_sampler) request tt EntropyExhausted tt.
+  ¬ executes (@empty_sampler) request tt EntropyExhausted tt.
 Proof. intro H. pose proof (executes_finished H) as Hdone. exact Hdone. Qed.
 Example timeout_has_no_completed_path :
-  ~ executes (@missing_sampler) request tt Timeout tt.
+  ¬ executes (@missing_sampler) request tt Timeout tt.
 Proof. intro H. pose proof (executes_finished H) as Hdone. exact Hdone. Qed.
 
 Example typed_result_agrees_with_existing_runner
-    {MN : Type -> Type} {Seed A : Type}
-    (sample : forall X, MN X -> Seed -> draw_result X * Seed)
+    {MN : Type → Type} {Seed A : Type}
+    (sample : ∀ X, MN X → Seed → draw_result X * Seed)
     (t : ptree void1 MN A) seed result seed' :
-  executes_result sample t seed result seed' <->
-  exists n, run sample n t seed = (outcome_of_view (inl result), seed').
+  executes_result sample t seed result seed' ↔
+  ∃ n, run sample n t seed = (outcome_of_view (inl result), seed').
 Proof. apply run_result_iff. Qed.
 
 End Outcome.

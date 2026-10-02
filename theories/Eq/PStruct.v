@@ -24,32 +24,32 @@ Notation "` R" := (elem R) (at level 10).
     maintained coinductive structural baseline. *)
 Section PStruct.
 
-Context {E : Type -> Type} {M : Type -> Type}.
+Context {E : Type → Type} {M : Type → Type}.
 Context {R1 R2 : Type}.
-Variable RR : R1 -> R2 -> Prop.
+Variable RR : R1 → R2 → Prop.
 
 Variant pstructF
-    (sim : ptree E M R1 -> ptree E M R2 -> Prop) :
-    ptree' E M R1 -> ptree' E M R2 -> Prop :=
-  | PStRet r1 r2 : RR r1 r2 ->
+    (sim : ptree E M R1 → ptree E M R2 → Prop) :
+    ptree' E M R1 → ptree' E M R2 → Prop :=
+  | PStRet r1 r2 : RR r1 r2 →
       pstructF sim (RetF r1) (RetF r2)
-  | PStTau t1 t2 : sim t1 t2 ->
+  | PStTau t1 t2 : sim t1 t2 →
       pstructF sim (TauF t1) (TauF t2)
   | PStVis {X} (e : E X) k1 k2 :
-      (forall x, sim (k1 x) (k2 x)) ->
+      (∀ x, sim (k1 x) (k2 x)) →
       pstructF sim (VisF e k1) (VisF e k2)
   | PStProb {X : Type} (mu : M X) k1 k2 :
-      (forall x, sim (k1 x) (k2 x)) ->
+      (∀ x, sim (k1 x) (k2 x)) →
       pstructF sim (ProbF mu k1) (ProbF mu k2).
 
 Definition pstruct_body
-    (sim : ptree E M R1 -> ptree E M R2 -> Prop)
+    (sim : ptree E M R1 → ptree E M R2 → Prop)
     (t1 : ptree E M R1) (t2 : ptree E M R2) : Prop :=
   pstructF sim (observe t1) (observe t2).
 
 Lemma pstructF_monotone sim1 sim2 :
-  (forall t1 t2, sim1 t1 t2 -> sim2 t1 t2) ->
-  forall ot1 ot2, pstructF sim1 ot1 ot2 ->
+  (∀ t1 t2, sim1 t1 t2 → sim2 t1 t2) →
+  ∀ ot1 ot2, pstructF sim1 ot1 ot2 →
     pstructF sim2 ot1 ot2.
 Proof.
   move=> Hmono ot1 ot2 Hs. inversion Hs; subst.
@@ -60,7 +60,7 @@ Proof.
 Qed.
 
 Program Definition fpstruct :
-    mon (ptree E M R1 -> ptree E M R2 -> Prop) :=
+    mon (ptree E M R1 → ptree E M R2 → Prop) :=
   {| body := pstruct_body |}.
 Next Obligation.
   move=> sim1 sim2 Hsub t1 t2 Hs.
@@ -69,23 +69,23 @@ Next Obligation.
   - exact Hs.
 Qed.
 
-Definition pstruct : ptree E M R1 -> ptree E M R2 -> Prop :=
+Definition pstruct : ptree E M R1 → ptree E M R2 → Prop :=
   gfp fpstruct.
 
 Lemma pstruct_unfold t1 t2 :
-  pstruct t1 t2 ->
+  pstruct t1 t2 →
   pstructF pstruct (observe t1) (observe t2).
 Proof. move=> H. apply (gfp_pfp fpstruct) in H. exact H. Qed.
 
 Lemma pstruct_fold t1 t2 :
-  pstructF pstruct (observe t1) (observe t2) ->
+  pstructF pstruct (observe t1) (observe t2) →
   pstruct t1 t2.
 Proof. move=> H. unfold pstruct. apply (gfp_fp fpstruct). exact H. Qed.
 
 End PStruct.
 
 Section PStructFacts.
-Context {E : Type -> Type} {M : Type -> Type}.
+Context {E : Type → Type} {M : Type → Type}.
 
 Lemma pstruct_refl {R : Type} :
   Reflexive (@pstruct E M R R eq).
@@ -102,14 +102,14 @@ Proof.
 Qed.
 
 Lemma eq_pstruct {R : Type} (t1 t2 : ptree E M R) :
-  t1 = t2 -> pstruct eq t1 t2.
+  t1 = t2 → pstruct eq t1 t2.
 Proof. move=> ->. exact: pstruct_refl. Qed.
 
 (** Structural equality only inspects one observation at a time.  Hence an
     exact equality of observations is enough even when the coinductive tree
     values themselves are not judgmentally equal. *)
 Lemma observe_eq_pstruct {R : Type} (t1 t2 : ptree E M R) :
-  observe t1 = observe t2 -> pstruct eq t1 t2.
+  observe t1 = observe t2 → pstruct eq t1 t2.
 Proof.
   intro Hobs. apply pstruct_fold. rewrite Hobs.
   apply pstruct_unfold. apply pstruct_refl.
@@ -117,9 +117,9 @@ Qed.
 
 (** Heterogeneous converse, useful when transporting observations from a
     simpler return type back to the original program. *)
-Lemma pstruct_converse {A B} (RR : A -> B -> Prop)
+Lemma pstruct_converse {A B} (RR : A → B → Prop)
     (t1 : ptree E M A) (t2 : ptree E M B) :
-  pstruct RR t1 t2 -> pstruct (fun b a => RR a b) t2 t1.
+  pstruct RR t1 t2 → pstruct (fun b a => RR a b) t2 t1.
 Proof.
   revert t1 t2. unfold pstruct at 2. coinduction CH CIH.
   move=> t1 t2 Hrel. move: (pstruct_unfold Hrel)=> Hstep.
@@ -154,10 +154,10 @@ Proof.
 Qed.
 
 Inductive pstruct_trans_clo {R : Type} :
-    ptree E M R -> ptree E M R -> Prop :=
+    ptree E M R → ptree E M R → Prop :=
   | PStTC t1 t2 t3 :
-      pstruct eq t1 t2 ->
-      pstruct eq t2 t3 ->
+      pstruct eq t1 t2 →
+      pstruct eq t2 t3 →
       pstruct_trans_clo t1 t3.
 
 Lemma pstruct_trans {R : Type} :
@@ -199,25 +199,25 @@ Qed.
 End PStructFacts.
 
 Section PStructBind.
-Context {E : Type -> Type} {M : Type -> Type}.
+Context {E : Type → Type} {M : Type → Type}.
 Context {A1 A2 B1 B2 : Type}.
-Variables (RA : A1 -> A2 -> Prop) (RB : B1 -> B2 -> Prop).
-Variables (k1 : A1 -> ptree E M B1) (k2 : A2 -> ptree E M B2).
-Hypothesis Hcont : forall a1 a2, RA a1 a2 ->
+Variables (RA : A1 → A2 → Prop) (RB : B1 → B2 → Prop).
+Variables (k1 : A1 → ptree E M B1) (k2 : A2 → ptree E M B2).
+Hypothesis Hcont : ∀ a1 a2, RA a1 a2 →
   pstruct RB (k1 a1) (k2 a2).
 
 Definition pstruct_bind_clo
     (u1 : ptree E M B1) (u2 : ptree E M B2) : Prop :=
-  (exists t1 t2, u1 = PTree.bind t1 k1 /\
-    u2 = PTree.bind t2 k2 /\ pstruct RA t1 t2) \/
+  (∃ t1 t2, u1 = PTree.bind t1 k1 ∧
+    u2 = PTree.bind t2 k2 ∧ pstruct RA t1 t2) ∨
   pstruct RB u1 u2.
 
 Theorem pstruct_bind t1 t2 :
-  pstruct RA t1 t2 ->
+  pstruct RA t1 t2 →
   pstruct RB (PTree.bind t1 k1) (PTree.bind t2 k2).
 Proof.
   intro Hsource.
-  assert (Hstrong : forall u1 u2, pstruct_bind_clo u1 u2 ->
+  assert (Hstrong : ∀ u1 u2, pstruct_bind_clo u1 u2 ->
       pstruct RB u1 u2).
   { unfold pstruct. coinduction CH CIH.
     intros u1 u2 Hclo.
@@ -248,14 +248,14 @@ Qed.
 End PStructBind.
 
 Section PStructBindAssoc.
-Context {E : Type -> Type} {M : Type -> Type}.
+Context {E : Type → Type} {M : Type → Type}.
 Context {A B C : Type}.
-Variables (k : A -> ptree E M B) (h : B -> ptree E M C).
+Variables (k : A → ptree E M B) (h : B → ptree E M C).
 
 Definition pstruct_bind_assoc_clo
     (u v : ptree E M C) : Prop :=
-  (exists t, u = PTree.bind (PTree.bind t k) h /\
-    v = PTree.bind t (fun a => PTree.bind (k a) h)) \/
+  (∃ t, u = PTree.bind (PTree.bind t k) h ∧
+    v = PTree.bind t (fun a => PTree.bind (k a) h)) ∨
   pstruct eq u v.
 
 Theorem pstruct_bind_assoc (t : ptree E M A) :
@@ -263,7 +263,7 @@ Theorem pstruct_bind_assoc (t : ptree E M A) :
     (PTree.bind (PTree.bind t k) h)
     (PTree.bind t (fun a => PTree.bind (k a) h)).
 Proof.
-  assert (Hstrong : forall u v, pstruct_bind_assoc_clo u v ->
+  assert (Hstrong : ∀ u v, pstruct_bind_assoc_clo u v ->
       pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hclo.
@@ -293,17 +293,17 @@ Qed.
 End PStructBindAssoc.
 
 Section PStructBindRetR.
-Context {E : Type -> Type} {M : Type -> Type} {A : Type}.
+Context {E : Type → Type} {M : Type → Type} {A : Type}.
 
 Definition pstruct_bind_ret_r_clo
     (u v : ptree E M A) : Prop :=
-  (exists t, u = PTree.bind t (fun x => Ret x) /\ v = t) \/
+  (∃ t, u = PTree.bind t (fun x => Ret x) ∧ v = t) ∨
   pstruct eq u v.
 
 Theorem pstruct_bind_ret_r (t : ptree E M A) :
   pstruct eq (PTree.bind t (fun x => Ret x)) t.
 Proof.
-  assert (Hstrong : forall u v, pstruct_bind_ret_r_clo u v ->
+  assert (Hstrong : ∀ u v, pstruct_bind_ret_r_clo u v ->
       pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hclo. destruct Hclo as [[s [-> ->]]|Hdone].
@@ -329,10 +329,10 @@ End PStructBindRetR.
 
 
 Section PStructIter.
-Context {E : Type -> Type} {M : Type -> Type}.
+Context {E : Type → Type} {M : Type → Type}.
 Context {I R : Type}.
-Variables (f g : I -> ptree E M (I + R)).
-Hypothesis Hstep : forall i, pstruct eq (f i) (g i).
+Variables (f g : I → ptree E M (I + R)).
+Hypothesis Hstep : ∀ i, pstruct eq (f i) (g i).
 
 Definition pstruct_iter_handler_f (lr : I + R) : ptree E M R :=
   match lr with
@@ -346,20 +346,20 @@ Definition pstruct_iter_handler_g (lr : I + R) : ptree E M R :=
   | inr r => Ret r
   end.
 
-Inductive pstruct_iter_clo : ptree E M R -> ptree E M R -> Prop :=
+Inductive pstruct_iter_clo : ptree E M R → ptree E M R → Prop :=
   | PStIterC i : pstruct_iter_clo (PTree.iter f i) (PTree.iter g i)
   | PStIterBindC t1 t2 :
-      pstruct eq t1 t2 ->
+      pstruct eq t1 t2 →
       pstruct_iter_clo
         (PTree.bind t1 pstruct_iter_handler_f)
         (PTree.bind t2 pstruct_iter_handler_g)
   | PStIterDoneC t1 t2 :
-      pstruct eq t1 t2 -> pstruct_iter_clo t1 t2.
+      pstruct eq t1 t2 → pstruct_iter_clo t1 t2.
 
 Theorem pstruct_iter i :
   pstruct eq (PTree.iter f i) (PTree.iter g i).
 Proof.
-  assert (Hstrong : forall u v, pstruct_iter_clo u v ->
+  assert (Hstrong : ∀ u v, pstruct_iter_clo u v ->
       pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hclo.
@@ -410,20 +410,20 @@ End PStructIter.
     result types; one related step either produces related successor states
     or related final results. *)
 Section PStructIterRel.
-Context {E : Type -> Type} {M : Type -> Type}.
+Context {E : Type → Type} {M : Type → Type}.
 Context {I1 I2 R1 R2 : Type}.
-Variable SI : I1 -> I2 -> Prop.
-Variable RR : R1 -> R2 -> Prop.
-Variables (f : I1 -> ptree E M (I1 + R1))
-  (g : I2 -> ptree E M (I2 + R2)).
+Variable SI : I1 → I2 → Prop.
+Variable RR : R1 → R2 → Prop.
+Variables (f : I1 → ptree E M (I1 + R1))
+  (g : I2 → ptree E M (I2 + R2)).
 
-Inductive pstruct_iter_sum_rel : I1 + R1 -> I2 + R2 -> Prop :=
-  | PStIterSumL i1 i2 : SI i1 i2 ->
+Inductive pstruct_iter_sum_rel : I1 + R1 → I2 + R2 → Prop :=
+  | PStIterSumL i1 i2 : SI i1 i2 →
       pstruct_iter_sum_rel (inl i1) (inl i2)
-  | PStIterSumR r1 r2 : RR r1 r2 ->
+  | PStIterSumR r1 r2 : RR r1 r2 →
       pstruct_iter_sum_rel (inr r1) (inr r2).
 
-Hypothesis Hstep : forall i1 i2, SI i1 i2 ->
+Hypothesis Hstep : ∀ i1 i2, SI i1 i2 →
   pstruct pstruct_iter_sum_rel (f i1) (g i2).
 
 Definition pstruct_iter_rel_handler_f
@@ -441,22 +441,22 @@ Definition pstruct_iter_rel_handler_g
   end.
 
 Inductive pstruct_iter_rel_clo :
-    ptree E M R1 -> ptree E M R2 -> Prop :=
-  | PStIterRelC i1 i2 : SI i1 i2 ->
+    ptree E M R1 → ptree E M R2 → Prop :=
+  | PStIterRelC i1 i2 : SI i1 i2 →
       pstruct_iter_rel_clo (PTree.iter f i1) (PTree.iter g i2)
   | PStIterRelBindC t1 t2 :
-      pstruct pstruct_iter_sum_rel t1 t2 ->
+      pstruct pstruct_iter_sum_rel t1 t2 →
       pstruct_iter_rel_clo
         (PTree.bind t1 pstruct_iter_rel_handler_f)
         (PTree.bind t2 pstruct_iter_rel_handler_g)
   | PStIterRelDoneC t1 t2 :
-      pstruct RR t1 t2 -> pstruct_iter_rel_clo t1 t2.
+      pstruct RR t1 t2 → pstruct_iter_rel_clo t1 t2.
 
 Theorem pstruct_iter_rel i1 i2 :
-  SI i1 i2 ->
+  SI i1 i2 →
   pstruct RR (PTree.iter f i1) (PTree.iter g i2).
 Proof.
-  assert (Hstrong : forall u v, pstruct_iter_rel_clo u v ->
+  assert (Hstrong : ∀ u v, pstruct_iter_rel_clo u v ->
       pstruct RR u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hclo.
@@ -507,10 +507,10 @@ End PStructIterRel.
 
 (** Naturality (parameter identity) for guarded iteration. *)
 Section PStructIterNatural.
-Context {E : Type -> Type} {M : Type -> Type}.
+Context {E : Type → Type} {M : Type → Type}.
 Context {I A B : Type}.
-Variable step : I -> ptree E M (I + A).
-Variable k : A -> ptree E M B.
+Variable step : I → ptree E M (I + A).
+Variable k : A → ptree E M B.
 
 Definition pstruct_iter_natural_source_handler
     (ia : I + A) : ptree E M A :=
@@ -537,7 +537,7 @@ Definition pstruct_iter_natural_target_handler
   end.
 
 Inductive pstruct_iter_natural_clo :
-    ptree E M B -> ptree E M B -> Prop :=
+    ptree E M B → ptree E M B → Prop :=
   | PStIterNaturalMain i :
       pstruct_iter_natural_clo
         (PTree.bind (PTree.iter step i) k)
@@ -550,7 +550,7 @@ Inductive pstruct_iter_natural_clo :
           (PTree.bind t pstruct_iter_natural_step_handler)
           pstruct_iter_natural_target_handler)
   | PStIterNaturalDone t1 t2 :
-      pstruct eq t1 t2 -> pstruct_iter_natural_clo t1 t2.
+      pstruct eq t1 t2 → pstruct_iter_natural_clo t1 t2.
 
 Lemma pstruct_iter_natural_return (a : A) :
   pstruct eq (k a)
@@ -575,7 +575,7 @@ Theorem pstruct_iter_natural i :
     (PTree.bind (PTree.iter step i) k)
     (PTree.iter pstruct_iter_natural_step i).
 Proof.
-  assert (Hstrong : forall u v, pstruct_iter_natural_clo u v ->
+  assert (Hstrong : ∀ u v, pstruct_iter_natural_clo u v ->
       pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hclo.
@@ -631,9 +631,9 @@ End PStructIterNatural.
 (** Codiagonal / double-dagger identity: two nested loops over the same
     state space flatten to one loop whose first two sum branches both retry. *)
 Section PStructIterCodiagonal.
-Context {E : Type -> Type} {M : Type -> Type}.
+Context {E : Type → Type} {M : Type → Type}.
 Context {I R : Type}.
-Variable step : I -> ptree E M (I + (I + R)).
+Variable step : I → ptree E M (I + (I + R)).
 
 Definition pstruct_iter_codiagonal_nested (i : I) : ptree E M R :=
   PTree.iter (fun j => PTree.iter step j) i.
@@ -673,7 +673,7 @@ Definition pstruct_iter_codiagonal_flat_handler
   end.
 
 Inductive pstruct_iter_codiagonal_clo :
-    ptree E M R -> ptree E M R -> Prop :=
+    ptree E M R → ptree E M R → Prop :=
   | PStIterCodiagonalMain i :
       pstruct_iter_codiagonal_clo
         (pstruct_iter_codiagonal_nested i)
@@ -693,14 +693,14 @@ Inductive pstruct_iter_codiagonal_clo :
             (fun x => Ret (pstruct_iter_codiagonal_flatten x)))
           pstruct_iter_codiagonal_flat_handler)
   | PStIterCodiagonalDone t1 t2 :
-      pstruct eq t1 t2 -> pstruct_iter_codiagonal_clo t1 t2.
+      pstruct eq t1 t2 → pstruct_iter_codiagonal_clo t1 t2.
 
 Theorem pstruct_iter_codiagonal i :
   pstruct eq
     (pstruct_iter_codiagonal_nested i)
     (PTree.iter pstruct_iter_codiagonal_flat_step i).
 Proof.
-  assert (Hstrong : forall u v, pstruct_iter_codiagonal_clo u v ->
+  assert (Hstrong : ∀ u v, pstruct_iter_codiagonal_clo u v ->
       pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hclo.
@@ -783,10 +783,10 @@ End PStructIterCodiagonal.
     and nested iterations, but do not directly discharge this asymmetric
     boundary case.  This law packages that extra invariant argument. *)
 Section PStructIterSplitAt.
-Context {E M : Type -> Type} {I J B R : Type}.
-Variables (step : I -> ptree E M (I + R))
-  (prefix : J -> ptree E M (J + B)) (resume : B -> I).
-Variable SI : I -> J -> Prop.
+Context {E M : Type → Type} {I J B R : Type}.
+Variables (step : I → ptree E M (I + R))
+  (prefix : J → ptree E M (J + B)) (resume : B → I).
+Variable SI : I → J → Prop.
 
 Let next_rel := pstruct_iter_sum_rel SI (fun (_ : R) (_ : B) => False).
 Let source_cont (v : I + R) :=
@@ -795,25 +795,25 @@ Let prefix_cont (v : J + B) :=
   match v with inl j => Tau (PTree.iter prefix j) | inr b => Ret b end.
 Let rest b := PTree.iter step (resume b).
 
-Hypothesis split_step : forall i j, SI i j ->
-  (exists b, observe (prefix j) = RetF (inr b) /\ i = resume b) \/
+Hypothesis split_step : ∀ i j, SI i j →
+  (∃ b, observe (prefix j) = RetF (inr b) ∧ i = resume b) ∨
   pstruct next_rel (step i) (prefix j).
 
-Inductive pstruct_iter_split_clo : ptree E M R -> ptree E M R -> Prop :=
-  | PStIterSplitMain i j : SI i j -> pstruct_iter_split_clo
+Inductive pstruct_iter_split_clo : ptree E M R → ptree E M R → Prop :=
+  | PStIterSplitMain i j : SI i j → pstruct_iter_split_clo
       (PTree.iter step i) (PTree.bind (PTree.iter prefix j) rest)
-  | PStIterSplitBind t1 t2 : pstruct next_rel t1 t2 -> pstruct_iter_split_clo
+  | PStIterSplitBind t1 t2 : pstruct next_rel t1 t2 → pstruct_iter_split_clo
       (PTree.bind t1 source_cont)
       (PTree.bind (PTree.bind t2 prefix_cont) rest)
-  | PStIterSplitDone t1 t2 : pstruct eq t1 t2 -> pstruct_iter_split_clo t1 t2.
+  | PStIterSplitDone t1 t2 : pstruct eq t1 t2 → pstruct_iter_split_clo t1 t2.
 
 Local Lemma iter_split_bind_step sim
-    (Hmain : forall i j, SI i j ->
+    (Hmain : ∀ i j, SI i j →
       sim (PTree.iter step i) (PTree.bind (PTree.iter prefix j) rest))
-    (Hbind : forall t1 t2, pstruct next_rel t1 t2 ->
+    (Hbind : ∀ t1 t2, pstruct next_rel t1 t2 →
       sim (PTree.bind t1 source_cont)
         (PTree.bind (PTree.bind t2 prefix_cont) rest)) t1 t2 :
-  pstruct next_rel t1 t2 ->
+  pstruct next_rel t1 t2 →
   pstructF eq sim (observe (PTree.bind t1 source_cont))
     (observe (PTree.bind (PTree.bind t2 prefix_cont) rest)).
 Proof.
@@ -830,11 +830,11 @@ Proof.
 Qed.
 
 Theorem pstruct_iter_split_at i j :
-  SI i j -> pstruct eq (PTree.iter step i)
+  SI i j → pstruct eq (PTree.iter step i)
     (PTree.bind (PTree.iter prefix j) (fun b => PTree.iter step (resume b))).
 Proof.
   intro Hij.
-  assert (Hsound : forall t1 t2, pstruct_iter_split_clo t1 t2 -> pstruct eq t1 t2).
+  assert (Hsound : ∀ t1 t2, pstruct_iter_split_clo t1 t2 -> pstruct eq t1 t2).
   { unfold pstruct. coinduction CH CIH.
     intros t1 t2 Hclo. destruct Hclo as [i' j' Hstate|u1 u2 Hbody|u1 u2 Hdone].
     - change (pstructF eq (` CH) (observe (PTree.iter step i'))

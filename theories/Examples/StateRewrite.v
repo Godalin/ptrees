@@ -9,6 +9,8 @@
 (** Rewrite -> eliminate State -> extract. Two consecutive native draws are
     fused by the generic probability algebra, before interpreting State.
     The continuation is the genuinely unbounded rational State loop. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -64,7 +66,7 @@ Qed.
 
 Definition execute_state_program {Seed}
     (program : ptree (stateE nat +' void1) SubEnumQ unit)
-    (next : nat -> Seed -> option nat * Seed) fuel initial seed : outcome nat * Seed :=
+    (next : nat → Seed → option nat * Seed) fuel initial seed : outcome nat * Seed :=
   let '(result, rest) := run (fun A => @ticket_sample Seed A next) fuel
     (run_state program initial) seed in
   (match result with

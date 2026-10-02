@@ -1,6 +1,8 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** Finite real Hall existence: tests include unused capacity, empty source
     and target, real (not assumed rational) masses, and forbidden edges. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import all_ssreflect all_algebra reals.
 From PTree.Prob.Backend.Common Require Import FiniteMatching RealTransport.
@@ -26,24 +28,24 @@ Proof.
     exists y; by split.
 Qed.
 
-Example diagonal_real_mass {X : finType} (p : X -> R) :
-  (forall x, 0 <= p x) ->
-  exists w : X -> X -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = p x) /\
-    (forall y, \sum_x w x y = p y) /\
-    (forall x y, x != y -> w x y = 0).
+Example diagonal_real_mass {X : finType} (p : X → R) :
+  (∀ x, 0 <= p x) →
+  ∃ w : X → X → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = p x) ∧
+    (∀ y, \sum_x w x y = p y) ∧
+    (∀ x y, x != y → w x y = 0).
 Proof.
   intro Hp; apply finite_real_transport; auto.
   intro S; rewrite diagonal_neighbors; exact: lexx.
 Qed.
 
 Example sqrt_weight_transport :
-  exists w : bool -> bool -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = if x then Num.sqrt 2 else 1) /\
-    (forall y, \sum_x w x y = if y then Num.sqrt 2 else 1) /\
-    (forall x y, x != y -> w x y = 0).
+  ∃ w : bool → bool → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = if x then Num.sqrt 2 else 1) ∧
+    (∀ y, \sum_x w x y = if y then Num.sqrt 2 else 1) ∧
+    (∀ x y, x != y → w x y = 0).
 Proof.
   apply (@diagonal_real_mass _
     (fun x : bool => if x then Num.sqrt 2 else 1)).
@@ -52,12 +54,12 @@ Proof.
 Qed.
 
 (** Positive demand and slack target capacity, with no equality of totals. *)
-Example unused_target_capacity (a b : R) : 0 <= a -> a <= b ->
-  exists w : unit -> unit -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = a) /\
-    (forall y, \sum_x w x y <= b) /\
-    (forall x y, ~~ true -> w x y = 0).
+Example unused_target_capacity (a b : R) : 0 <= a → a <= b →
+  ∃ w : unit → unit → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = a) ∧
+    (∀ y, \sum_x w x y <= b) ∧
+    (∀ x y, ~~ true → w x y = 0).
 Proof.
   intros Ha Hab; apply (@finite_real_subtransport R _ _ (fun _ : unit => a)
     (fun _ : unit => b) (fun _ _ => true)).
@@ -77,12 +79,12 @@ Proof.
 Qed.
 
 (** A row really splits across two differently weighted columns. *)
-Example split_real_mass (a b : R) : 0 <= a -> 0 <= b ->
-  exists w : unit -> bool -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = a + b) /\
-    (forall y, \sum_x w x y = if y then a else b) /\
-    (forall x y, ~~ true -> w x y = 0).
+Example split_real_mass (a b : R) : 0 <= a → 0 <= b →
+  ∃ w : unit → bool → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = a + b) ∧
+    (∀ y, \sum_x w x y = if y then a else b) ∧
+    (∀ x y, ~~ true → w x y = 0).
 Proof.
   intros Ha Hb; apply (@finite_real_transport R _ _ (fun _ : unit => a + b)
     (fun y : bool => if y then a else b) (fun _ _ => true)).
@@ -103,12 +105,12 @@ Proof.
   - by rewrite big_const /= card_unit /= addr0 big_bool /=.
 Qed.
 
-Example empty_source (q : bool -> R) : (forall y, 0 <= q y) ->
-  exists w : 'I_0 -> bool -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = 0) /\
-    (forall y, \sum_x w x y <= q y) /\
-    (forall x y, ~~ false -> w x y = 0).
+Example empty_source (q : bool → R) : (∀ y, 0 <= q y) →
+  ∃ w : 'I_0 → bool → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = 0) ∧
+    (∀ y, \sum_x w x y <= q y) ∧
+    (∀ x y, ~~ false → w x y = 0).
 Proof.
   intro Hq; apply (@finite_real_subtransport R _ _ (fun _ : 'I_0 => 0) q (fun _ _ => false)).
   - intros; exact: lexx.
@@ -118,11 +120,11 @@ Proof.
 Qed.
 
 Example zero_demand_empty_target :
-  exists w : bool -> 'I_0 -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = 0) /\
-    (forall y, \sum_x w x y <= 0) /\
-    (forall x y, ~~ false -> w x y = 0).
+  ∃ w : bool → 'I_0 → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = 0) ∧
+    (∀ y, \sum_x w x y <= 0) ∧
+    (∀ x y, ~~ false → w x y = 0).
 Proof.
   apply (@finite_real_subtransport R _ _ (fun _ : bool => 0) (fun _ : 'I_0 => 0) (fun _ _ => false)).
   - intros; exact: lexx.
@@ -131,7 +133,7 @@ Proof.
 Qed.
 
 Example positive_demand_empty_target_impossible :
-  ~ exists w : unit -> 'I_0 -> R, forall x, \sum_y w x y = 1.
+  ¬ ∃ w : unit → 'I_0 → R, ∀ x, \sum_y w x y = 1.
 Proof.
   intros [w Hw]; have H := Hw tt; rewrite big_ord0 in H.
   have Hneq : (0 : R) != 1 by rewrite eq_sym oner_eq0.

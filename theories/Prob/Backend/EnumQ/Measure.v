@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -113,10 +115,10 @@ Proof.
 Qed.
 
 Lemma enumQ_scale_entry_image {A} p (Hp : 0 <= p) q (x : A) (mu : EnumQ A) :
-  List.In (q,x) (enumQ_raw mu) -> List.In (p*q,x) (enumQ_raw (scale_EnumQ Hp mu)).
+  List.In (q,x) (enumQ_raw mu) → List.In (p*q,x) (enumQ_raw (scale_EnumQ Hp mu)).
 Proof. move=> H; apply List.in_map_iff; exists (q,x); by split. Qed.
-Lemma enumQ_bind_entry_image {A B} (mu : EnumQ A) (k : A -> EnumQ B) p (x : A) q (y : B) :
-  List.In (p,x) (enumQ_raw mu) -> List.In (q,y) (enumQ_raw (k x)) ->
+Lemma enumQ_bind_entry_image {A B} (mu : EnumQ A) (k : A → EnumQ B) p (x : A) q (y : B) :
+  List.In (p,x) (enumQ_raw mu) → List.In (q,y) (enumQ_raw (k x)) →
   List.In (p*q,y) (enumQ_raw (bind_EnumQ mu k)).
 Proof.
   move=> H K; apply List.in_flat_map; exists (p,x); split; first exact H.
@@ -180,7 +182,7 @@ Qed.
     omega-complete, so this adapter intentionally provides the omega
     operations but no unconditional [SemanticOmegaLaws] instance. *)
 Definition enumQ_sem_le {A} (mu nu : EnumQ A) : Prop :=
-  forall P : A -> bool,
+  ∀ P : A → bool,
     enumQ_expect (fun x => if P x then 1 else 0) mu <=
     enumQ_expect (fun x => if P x then 1 else 0) nu.
 
@@ -252,7 +254,7 @@ Qed.
 (** Indexed couplings preserve the total finite weight even when the value
     carriers have no decidable equality.  This is the concrete numeric
     reflection of the abstract [sem_same_mass] predicate. *)
-Lemma enumQ_expect_one_emap {A B} (f : A -> B) (mu : EnumQ A) :
+Lemma enumQ_expect_one_emap {A B} (f : A → B) (mu : EnumQ A) :
   enumQ_expect (fun _ : B => 1) (emap f mu) =
   enumQ_expect (fun _ : A => 1) mu.
 Proof. exact: enumQ_expect_map. Qed.
@@ -268,12 +270,12 @@ Lemma enumQ_expect_one_prune {A} (mu : EnumQ A) :
 Proof. exact: finite_expect_prune_zero. Qed.
 
 Lemma enumQ_expect_one_eqenum {A : eqType} (mu nu : EnumQ A) :
-  mu ==EnumQ nu ->
+  mu ==EnumQ nu →
   enumQ_expect (fun _ : A => 1) mu = enumQ_expect (fun _ : A => 1) nu.
 Proof. exact: enumQ_weightQ_proper. Qed.
 
 Lemma enumQ_sem_same_mass_expect_one {A B} (mu : EnumQ A) (nu : EnumQ B) :
-  @sem_same_mass EnumQ EnumQ_SemanticMeasure A B mu nu ->
+  @sem_same_mass EnumQ EnumQ_SemanticMeasure A B mu nu →
   enumQ_expect (fun _ : A => 1) mu = enumQ_expect (fun _ : B => 1) nu.
 Proof.
   unfold sem_same_mass. cbn. unfold indexed_coupling.
@@ -292,7 +294,7 @@ Qed.
     be coupled with a point mass, even under the total relation. *)
 Local Open Scope bool_scope.
 Lemma enumQ_sem_same_mass_zero_ret_bool :
-  ~ @sem_same_mass EnumQ EnumQ_SemanticMeasure bool bool
+  ¬ @sem_same_mass EnumQ EnumQ_SemanticMeasure bool bool
       (@enumQ_zero bool) (sem_ret true).
 Proof.
   move=> H; have He := enumQ_sem_same_mass_expect_one H.

@@ -19,6 +19,8 @@
     The internal modules isolate local notation/instances and retain the
     existing qualified declaration names. Tests and the OCaml host remain
     separate; this file does not duplicate the sampler analysis library. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -62,7 +64,7 @@ Module Controller.
 Import EnumQ.
 
 Inductive machine_reply := Pass | Rework | Jam.
-Variant deviceE : Type -> Type :=
+Variant deviceE : Type → Type :=
 | ReceiveOrder : deviceE nat
 | RunMachine (job : nat) (fast : bool) : deviceE machine_reply
 | Ship (job : nat) : deviceE unit
@@ -79,7 +81,7 @@ Definition tree := ptree controllerE EnumQ.
 Inductive phase := AwaitOrder | Manufacturing (job : nat).
 
 Definition emit {X} (e : deviceE X) : tree X := PTree.trigger (inr1 e).
-Definition update (f : counters -> counters) : tree unit :=
+Definition update (f : counters → counters) : tree unit :=
   s <- State.get;; State.put (f s).
 
 Definition respond (job : nat) (reply : machine_reply) : tree (phase + Empty_set) :=
@@ -285,7 +287,7 @@ Import Controller.
 Import Scripted.
 
 Lemma embed_preserves {E A} (t u : ptree factoryE EnumQ A) :
-  t ≈ₚ u -> @embed E A t ≈ₚ embed u.
+  t ≈ₚ u → @embed E A t ≈ₚ embed u.
 Proof. apply peutt_interp. Qed.
 
 #[export] Instance embed_Proper {E A} :
@@ -302,11 +304,11 @@ Proof.
   intros x y ->. reflexivity.
 Qed.
 
-Lemma controller_step_congr s t : s ≈ₚ t -> forall pc,
+Lemma controller_step_congr s t : s ≈ₚ t → ∀ pc,
   controller_step s pc ≈ₚ controller_step t pc.
 Proof. intros H [|job]; cbn [controller_step]; [reflexivity|]. now apply attempt_Proper. Qed.
 
-Theorem controller_congr s t : s ≈ₚ t -> forall pc,
+Theorem controller_congr s t : s ≈ₚ t → ∀ pc,
   controller s pc ≈ₚ controller t pc.
 Proof.
   intros H pc. unfold controller.
@@ -334,7 +336,7 @@ Proof. apply run_state_peutt_eq. exact controller_refinement. Qed.
 
 (** Any device interpretation, not only the scripted demo, preserves the
     source refinement. No liveness assumption about device responses. *)
-Theorem device_handler_refinement {F} (h : forall X, deviceE X -> ptree F EnumQ X) s :
+Theorem device_handler_refinement {F} (h : ∀ X, deviceE X → ptree F EnumQ X) s :
   PTree.interp h (device_controller_impl s) ≈ₚ
   PTree.interp h (device_controller_spec s).
 Proof. apply peutt_interp. apply state_controller_refinement. Qed.
@@ -376,7 +378,7 @@ Import Controller.
 Import EnumQ.
 
 Lemma embed_probability {E A} (t : ptree factoryE EnumQ A) :
-  probabilistic_ptree t -> probabilistic_ptree (@embed E A t).
+  probabilistic_ptree t → probabilistic_ptree (@embed E A t).
 Proof.
   revert t. cofix CIH. intros t H.
   unfold probabilistic_ptree, embed in *.
@@ -411,7 +413,7 @@ Proof.
 Qed.
 
 Theorem controller_probability sampler pc :
-  probabilistic_ptree sampler -> probabilistic_ptree (controller sampler pc).
+  probabilistic_ptree sampler → probabilistic_ptree (controller sampler pc).
 Proof.
   intro H. apply probabilistic_ptree_iter. intros [|j].
   - apply probabilistic_ptree_vis. intro x. apply probabilistic_ptree_ret.
@@ -491,7 +493,7 @@ Qed.
 Definition next_normal sampler job : tree Empty_set :=
   Prob coin (fun fast => Vis (inr1 (RunMachine job fast)) (machine_cont sampler job)).
 
-Lemma next_normal_form sampler job : sampler ≈ₚ native_sampler ->
+Lemma next_normal_form sampler job : sampler ≈ₚ native_sampler →
   after_receive sampler job ≈ₚ next_normal sampler job.
 Proof.
   intro H. unfold after_receive.
@@ -533,8 +535,8 @@ Qed.
 (** Every complete implementation frontier couples with the explicit normal
     frontier, relating whole reply continuations, not just event labels. *)
 Theorem next_device_frontier sampler job s out :
-  sampler ≈ₚ native_sampler ->
-  run_state (controller sampler (Manufacturing job)) s ⇓ₕ out ->
+  sampler ≈ₚ native_sampler →
+  run_state (controller sampler (Manufacturing job)) s ⇓ₕ out →
   out ≈[stable_head_rel eq (fun t u => t ≈ₚ u)]ₘ device_front sampler job s.
 Proof.
   intros H Hhit. eapply peutt_hitting_lift.
@@ -588,11 +590,11 @@ Proof.
 Qed.
 
 Theorem next_action_distribution sampler job s fast :
-  sampler ≈ₚ native_sampler ->
-  exists query,
+  sampler ≈ₚ native_sampler →
+  ∃ query,
     next_event_query (MF := FreeOmega EnumQ)
       (FI := FreeOmegaObservableSemanticMeasure) (FO := FreeOmegaObservableSemanticOmega)
-      (@accepts_mode fast) (run_state (controller sampler (Manufacturing job)) s) query /\
+      (@accepts_mode fast) (run_state (controller sampler (Manufacturing job)) s) query ∧
     mode_query sampler job s fast ≈[eq]ₘ query.
 Proof.
   intro H. eapply peutt_preserves_next_event_query.
@@ -620,7 +622,7 @@ Qed.
 (** Numeric, paper-facing endpoint. The one-event selector merely supplies
     an arbitrary reply; for a singleton query the continuation is not run. *)
 Theorem next_action_probability sampler job s fast :
-  sampler ≈ₚ native_sampler ->
+  sampler ≈ₚ native_sampler →
   Prₜ[ run_state (controller sampler (Manufacturing job)) s |
        [@select_mode fast] ] = (if fast then q else 1-q).
 Proof.

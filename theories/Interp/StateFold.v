@@ -2,6 +2,8 @@
     is ITree's state-first [Monads.stateT], not a newly defined transformer.
     These are definitional interfaces, not a claim that MonadIter operations
     alone imply handler/fold commutation or behavioral congruence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From ExtLib.Structures Require Import Monad.
 From ITree.Basics Require Import Basics.
@@ -12,9 +14,9 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section StateFold.
-Context {S : Type} {E MN T : Type -> Type} `{MT : Monad T} `{IT : MonadIter T}.
-Variable handle : forall X, E X -> T X.
-Variable sample : forall X, MN X -> T X.
+Context {S : Type} {E MN T : Type → Type} `{MT : Monad T} `{IT : MonadIter T}.
+Variable handle : ∀ X, E X → T X.
+Variable sample : ∀ X, MN X → T X.
 
 Definition state_effect {X} (e : (stateE S +' E) X) : Monads.stateT S T X :=
   match e with
@@ -29,7 +31,7 @@ Definition state_effect {X} (e : (stateE S +' E) X) : Monads.stateT S T X :=
 Definition state_sample {X} (mu : MN X) : Monads.stateT S T X :=
   fun s => bind (@sample X mu) (fun x => ret (s, x)).
 
-Definition fold_state {A} (t : ptree (stateE S +' E) MN A) : S -> T (S * A) :=
+Definition fold_state {A} (t : ptree (stateE S +' E) MN A) : S → T (S * A) :=
   fold (@state_effect) (@state_sample) t.
 
 Lemma state_effect_get s : state_effect (inl1 (Get S)) s = ret (s, s).

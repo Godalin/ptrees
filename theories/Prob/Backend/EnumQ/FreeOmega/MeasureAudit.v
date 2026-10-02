@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
@@ -48,7 +50,7 @@ Proof.
 Qed.
 
 Lemma transient_bad_limit_not_observable out :
-  ~ @free_omega_observes EnumQ EnumQ_SemanticMeasure
+  ¬ @free_omega_observes EnumQ EnumQ_SemanticMeasure
     EnumQ_SemanticOmega bool bool id transient_bad_limit out.
 Proof.
   intro H. dependent destruction H.
@@ -77,12 +79,12 @@ Proof.
     [reflexivity|reflexivity|apply coupling_zero].
 Qed.
 
-Lemma zero_chain_ae_true : forall n,
+Lemma zero_chain_ae_true : ∀ n,
   free_omega_ae (fun b => b = true) (zero_free_chain n).
 Proof. intro n. constructor. Qed.
 
 Lemma transient_bad_limit_not_ae_true :
-  ~ free_omega_ae (fun b => b = true) transient_bad_limit.
+  ¬ free_omega_ae (fun b => b = true) transient_bad_limit.
 Proof.
   intro Hae. dependent destruction Hae.
   specialize (H O). dependent destruction H.
@@ -93,7 +95,7 @@ Qed.
     missing support certificate is an independent obstruction to the
     quotient observation rule and remains a useful AE regression. *)
 Theorem transient_bad_support_zero_impossible :
-  ~ @free_omega_support_lift EnumQ EnumQ_SemanticMeasure bool bool eq
+  ¬ @free_omega_support_lift EnumQ EnumQ_SemanticMeasure bool bool eq
       transient_bad_limit zero_free_limit.
 Proof.
   intro Hsupport.
@@ -109,7 +111,7 @@ Check FreeOmegaObservableSemanticOmegaAELaws.
 
 (** The AE-continuity theorem deliberately excludes this disappearing atom. *)
 Example transient_observation_not_increasing :
-  ~ enumQ_chain_increasing transient_observation.
+  ¬ enumQ_chain_increasing transient_observation.
 Proof.
   intro H. specialize (H (fun _ => true) O (S O) (Peano.le_0_n _)).
   vm_compute in H. discriminate.

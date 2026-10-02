@@ -1,4 +1,6 @@
 (** Role: supporting compression/scheduling/recovery example; not public theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Automatic Proposition Inductives.
@@ -22,7 +24,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Module PairedCompression.
-Variant event : Type -> Type := .
+Variant event : Type → Type := .
 Local Notation tree := (ptree event EnumQ bool).
 Local Notation MF := (FreeOmega EnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
@@ -34,7 +36,7 @@ Definition delayed : tree := Tau done.
 Definition source : tree := Tau delayed.
 Definition partner (b : bool) : tree := if b then done else delayed.
 
-Inductive candidate : tree -> tree -> Prop :=
+Inductive candidate : tree → tree → Prop :=
 | candidate_source b : candidate source (partner b)
 | candidate_done : candidate done done.
 
@@ -64,7 +66,7 @@ Qed.
 Definition left_cut (p : tree * tree) : MF tree := FORet (snd p).
 Definition right_cut (p : tree * tree) : MF tree := FORet (snd p).
 
-Lemma left_cut_valid t u : candidate t u -> execute t (left_cut (t,u)).
+Lemma left_cut_valid t u : candidate t u → execute t (left_cut (t,u)).
 Proof.
   intro H. destruct H as [b|].
   - destruct b.
@@ -75,10 +77,10 @@ Proof.
   - exact (@FIStop event EnumQ MF FI FreeOmegaMixedMeasure bool done).
 Qed.
 
-Lemma right_cut_valid t u : candidate t u -> execute u (right_cut (t,u)).
+Lemma right_cut_valid t u : candidate t u → execute u (right_cut (t,u)).
 Proof. intros _. exact (@FIStop event EnumQ MF FI FreeOmegaMixedMeasure bool u). Qed.
 
-Lemma partner_guarded t u : candidate t u -> (fun t u => pstrongF eq candidate (observe t) (observe u)) u u.
+Lemma partner_guarded t u : candidate t u → (fun t u => pstrongF eq candidate (observe t) (observe u)) u u.
 Proof.
   intro H. cbn beta. destruct H as [b|].
   - destruct b.
@@ -87,7 +89,7 @@ Proof.
   - apply PSRet. reflexivity.
 Qed.
 
-Lemma cuts_guarded t u : candidate t u ->
+Lemma cuts_guarded t u : candidate t u →
   free_omega_qlift (fun t u => pstrongF eq candidate (observe t) (observe u))
     (left_cut (t,u)) (right_cut (t,u)).
 Proof.
@@ -121,7 +123,7 @@ Qed.
 (** In the structural case, the joint needed by correlated execution is
     now extracted from the coupling proof, rather than supplied by hand. *)
 Theorem paired_residual_joint_exists :
-  exists out, @semantic_coupling MF FI _ _ (fun t u => pstrongF eq candidate (observe t) (observe u))
+  ∃ out, @semantic_coupling MF FI _ _ (fun t u => pstrongF eq candidate (observe t) (observe u))
     (free_omega_bind joint left_cut) (free_omega_bind joint right_cut) out.
 Proof.
   apply free_enumQ_structural_coupling_realization.
@@ -132,7 +134,7 @@ Proof.
 Qed.
 
 Lemma deterministic_prefix_cannot_sample n (r : bool) out :
-  execute (tau_prefix n (Ret r)) out -> exists t, out = FORet t.
+  execute (tau_prefix n (Ret r)) out → ∃ t, out = FORet t.
 Proof.
   induction n as [|n IH] in out |- *; intro H.
   - exists (Ret r).
@@ -143,7 +145,7 @@ Proof.
 Qed.
 
 Theorem correlated_left_cut_is_not_unary :
-  ~ execute source (free_omega_bind joint left_cut).
+  ¬ execute source (free_omega_bind joint left_cut).
 Proof.
   intro H.
   change (execute (tau_prefix 2 (Ret true))
@@ -151,8 +153,8 @@ Proof.
   destruct (deterministic_prefix_cannot_sample H) as [t Ht]. discriminate Ht.
 Qed.
 
-Lemma correlated_left_support (P : tree -> Prop) :
-  free_omega_ae P (free_omega_bind joint left_cut) -> P done /\ P delayed.
+Lemma correlated_left_support (P : tree → Prop) :
+  free_omega_ae P (free_omega_bind joint left_cut) → P done ∧ P delayed.
 Proof.
   intro Hae. dependent destruction Hae.
   assert (Htrue : Good true).
@@ -174,7 +176,7 @@ Qed.
     coupling cannot turn the two-residual marginal into a unary cut.  This
     does not claim that the same program pair has no other sound policy. *)
 Theorem correlated_left_cut_has_no_unary_realization :
-  ~ exists out, execute source out /\
+  ¬ ∃ out, execute source out ∧
     free_omega_qlift eq (free_omega_bind joint left_cut) out.
 Proof.
   intros [out [Hcut Hlift]].
@@ -192,8 +194,8 @@ Proof.
 Qed.
 
 Theorem paired_compression_preserves_left_hitting
-    (front : tree -> MF (stable_head event EnumQ bool))
-    (Hfront : forall t, @ptree_stable_hitting event EnumQ MF FI
+    (front : tree → MF (stable_head event EnumQ bool))
+    (Hfront : ∀ t, @ptree_stable_hitting event EnumQ MF FI
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega bool
       (observe t) (front t)) :
   free_omega_qlift eq

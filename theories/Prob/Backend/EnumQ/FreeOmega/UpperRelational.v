@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -25,60 +27,60 @@ Section RelationalExtendedUpper.
 Variable R : realType.
 Local Notation upper := (@free_omega_extended_upper R).
 
-Definition nonnegative_test {A} (f : A -> \bar R) := forall x, 0 <= f x.
+Definition nonnegative_test {A} (f : A → \bar R) := ∀ x, 0 <= f x.
 
-Definition extended_fiber_upper {A} (P : A -> Prop) (f : A -> \bar R) :=
-  ereal_sup (fun r => r = 0 \/ exists x, P x /\ r = f x).
+Definition extended_fiber_upper {A} (P : A → Prop) (f : A → \bar R) :=
+  ereal_sup (fun r => r = 0 ∨ ∃ x, P x ∧ r = f x).
 
-Definition extended_fiber_lower {A} (P : A -> Prop) (f : A -> \bar R) :=
-  ereal_inf (fun r => exists x, P x /\ r = f x).
+Definition extended_fiber_lower {A} (P : A → Prop) (f : A → \bar R) :=
+  ereal_inf (fun r => ∃ x, P x ∧ r = f x).
 
-Lemma extended_fiber_upper_le {A} (P : A -> Prop) (f : A -> \bar R) b :
-  0 <= b -> (forall x, P x -> f x <= b) -> extended_fiber_upper P f <= b.
+Lemma extended_fiber_upper_le {A} (P : A → Prop) (f : A → \bar R) b :
+  0 <= b → (∀ x, P x → f x <= b) → extended_fiber_upper P f <= b.
 Proof.
   intros Hb Hf. apply ub_ereal_sup=> r [->|[x [HP ->]]]; [exact Hb|exact (Hf x HP)].
 Qed.
 
-Lemma extended_fiber_upper_nonnegative {A} (P : A -> Prop) (f : A -> \bar R) :
+Lemma extended_fiber_upper_nonnegative {A} (P : A → Prop) (f : A → \bar R) :
   0 <= extended_fiber_upper P f.
 Proof. apply ereal_sup_ubound. by left. Qed.
 
-Lemma extended_fiber_upper_ge {A} (P : A -> Prop) (f : A -> \bar R) x :
-  P x -> f x <= extended_fiber_upper P f.
+Lemma extended_fiber_upper_ge {A} (P : A → Prop) (f : A → \bar R) x :
+  P x → f x <= extended_fiber_upper P f.
 Proof. intro Hx. apply ereal_sup_ubound. right. exists x. by split. Qed.
 
-Lemma extended_fiber_lower_nonnegative {A} (P : A -> Prop) (f : A -> \bar R) :
-  nonnegative_test f -> 0 <= extended_fiber_lower P f.
+Lemma extended_fiber_lower_nonnegative {A} (P : A → Prop) (f : A → \bar R) :
+  nonnegative_test f → 0 <= extended_fiber_lower P f.
 Proof. intro Hf. apply lb_ereal_inf=> r [x [_ ->]]. exact (Hf x). Qed.
 
-Lemma extended_fiber_lower_le {A} (P : A -> Prop) (f : A -> \bar R) x :
-  P x -> extended_fiber_lower P f <= f x.
+Lemma extended_fiber_lower_le {A} (P : A → Prop) (f : A → \bar R) x :
+  P x → extended_fiber_lower P f <= f x.
 Proof. intro Hx. apply ereal_inf_lbound. exists x. by split. Qed.
 
-Lemma extended_fiber_upper_lower {A B} (P : A -> Prop) (Q : B -> Prop)
-    (f : A -> \bar R) (g : B -> \bar R) :
-  nonnegative_test g -> (forall x y, P x -> Q y -> f x <= g y) ->
+Lemma extended_fiber_upper_lower {A B} (P : A → Prop) (Q : B → Prop)
+    (f : A → \bar R) (g : B → \bar R) :
+  nonnegative_test g → (∀ x y, P x → Q y → f x <= g y) →
   extended_fiber_upper P f <= extended_fiber_lower Q g.
 Proof.
   intros Hg Hfg. apply lb_ereal_inf=> r [y [Hy ->]].
   apply extended_fiber_upper_le; [exact (Hg y)|]. intros x Hx. exact (Hfg x y Hx Hy).
 Qed.
 
-Definition free_omega_extended_upper_rel {A B} (T : A -> B -> Prop)
+Definition free_omega_extended_upper_rel {A B} (T : A → B → Prop)
     (mu : FreeOmega EnumQ A) (nu : FreeOmega EnumQ B) : Prop :=
-  forall (f : A -> \bar R) (g : B -> \bar R),
-    nonnegative_test f -> nonnegative_test g ->
-    (forall x y, T x y -> f x <= g y) -> upper mu f <= upper nu g.
+  ∀ (f : A → \bar R) (g : B → \bar R),
+    nonnegative_test f → nonnegative_test g →
+    (∀ x y, T x y → f x <= g y) → upper mu f <= upper nu g.
 
-Lemma free_omega_extended_upper_rel_mono {A B} (T U : A -> B -> Prop) mu nu :
-  free_omega_extended_upper_rel T mu nu ->
-  (forall x y, T x y -> U x y) -> free_omega_extended_upper_rel U mu nu.
+Lemma free_omega_extended_upper_rel_mono {A B} (T U : A → B → Prop) mu nu :
+  free_omega_extended_upper_rel T mu nu →
+  (∀ x y, T x y → U x y) → free_omega_extended_upper_rel U mu nu.
 Proof. intros H HT f g Hf Hg Hfg. apply H; auto. Qed.
 
-Lemma free_omega_extended_upper_rel_comp {A B C} (T : A -> B -> Prop)
-    (U : B -> C -> Prop) mu mid nu :
-  free_omega_extended_upper_rel T mu mid -> free_omega_extended_upper_rel U mid nu ->
-  free_omega_extended_upper_rel (fun x z => exists y, T x y /\ U y z) mu nu.
+Lemma free_omega_extended_upper_rel_comp {A B C} (T : A → B → Prop)
+    (U : B → C → Prop) mu mid nu :
+  free_omega_extended_upper_rel T mu mid → free_omega_extended_upper_rel U mid nu →
+  free_omega_extended_upper_rel (fun x z => ∃ y, T x y ∧ U y z) mu nu.
 Proof.
   intros Hl Hr f g Hf Hg Hfg.
   pose h y := extended_fiber_upper (fun x => T x y) f.
@@ -91,11 +93,11 @@ Proof.
 Qed.
 
 Theorem free_omega_observes_extended_upper_rel {A B OA OB}
-    (T : A -> B -> Prop) (S : OA -> OB -> Prop)
-    (obsA : A -> OA) (obsB : B -> OB) mu nu outA outB :
-  @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega A OA obsA mu outA ->
-  @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega B OB obsB nu outB ->
-  sem_lift S outA outB -> (forall x y, S (obsA x) (obsB y) -> T x y) ->
+    (T : A → B → Prop) (S : OA → OB → Prop)
+    (obsA : A → OA) (obsB : B → OB) mu nu outA outB :
+  @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega A OA obsA mu outA →
+  @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega B OB obsB nu outB →
+  sem_lift S outA outB → (∀ x y, S (obsA x) (obsB y) → T x y) →
   free_omega_extended_upper_rel T mu nu.
 Proof.
   intros Hl Hr Hcouple HT f g Hf Hg Hfg.
@@ -114,10 +116,10 @@ Proof.
     + apply free_omega_extended_upper_mono=> y. apply extended_fiber_lower_le. reflexivity.
 Qed.
 
-Lemma free_omega_extended_upper_rel_restrict {A B} (T U : A -> B -> Prop)
-    mu nu (P : A -> Prop) (Q : B -> Prop) :
-  free_omega_extended_upper_rel T mu nu -> free_omega_ae P mu -> free_omega_ae Q nu ->
-  (forall x y, T x y /\ P x /\ Q y -> U x y) -> free_omega_extended_upper_rel U mu nu.
+Lemma free_omega_extended_upper_rel_restrict {A B} (T U : A → B → Prop)
+    mu nu (P : A → Prop) (Q : B → Prop) :
+  free_omega_extended_upper_rel T mu nu → free_omega_ae P mu → free_omega_ae Q nu →
+  (∀ x y, T x y ∧ P x ∧ Q y → U x y) → free_omega_extended_upper_rel U mu nu.
 Proof.
   intros Hrel HP HQ HT f g Hf Hg Hfg.
   pose f' x := if pselect (P x) then f x else 0.
@@ -143,10 +145,10 @@ Proof.
   - exact: le0y.
 Qed.
 
-Lemma free_omega_extended_upper_rel_bind {A B C D} (T : A -> B -> Prop)
-    (U : C -> D -> Prop) mu nu (k : A -> FreeOmega EnumQ C) (h : B -> FreeOmega EnumQ D) :
-  free_omega_extended_upper_rel T mu nu ->
-  (forall x y, T x y -> free_omega_extended_upper_rel U (k x) (h y)) ->
+Lemma free_omega_extended_upper_rel_bind {A B C D} (T : A → B → Prop)
+    (U : C → D → Prop) mu nu (k : A → FreeOmega EnumQ C) (h : B → FreeOmega EnumQ D) :
+  free_omega_extended_upper_rel T mu nu →
+  (∀ x y, T x y → free_omega_extended_upper_rel U (k x) (h y)) →
   free_omega_extended_upper_rel U (free_omega_bind mu k) (free_omega_bind nu h).
 Proof.
   intros Hmu Hk f g Hf Hg Hfg. rewrite !free_omega_extended_upper_bind.
@@ -156,9 +158,9 @@ Proof.
   - intros x y Hxy. exact (Hk x y Hxy f g Hf Hg Hfg).
 Qed.
 
-Lemma free_omega_extended_upper_rel_sample {A B C D} (T : A -> B -> Prop)
-    (U : C -> D -> Prop) mu nu (k : A -> FreeOmega EnumQ C) (h : B -> FreeOmega EnumQ D) :
-  sem_lift T mu nu -> (forall x y, T x y -> free_omega_extended_upper_rel U (k x) (h y)) ->
+Lemma free_omega_extended_upper_rel_sample {A B C D} (T : A → B → Prop)
+    (U : C → D → Prop) mu nu (k : A → FreeOmega EnumQ C) (h : B → FreeOmega EnumQ D) :
+  sem_lift T mu nu → (∀ x y, T x y → free_omega_extended_upper_rel U (k x) (h y)) →
   free_omega_extended_upper_rel U (FOSample mu k) (FOSample nu h).
 Proof.
   intros Hmu Hk f g Hf Hg Hfg. cbn [free_omega_extended_upper].
@@ -166,8 +168,8 @@ Proof.
   intros x y Hxy. exact (Hk x y Hxy f g Hf Hg Hfg).
 Qed.
 
-Lemma free_omega_extended_upper_rel_lub {A B} (T : A -> B -> Prop) c d :
-  (forall n, free_omega_extended_upper_rel T (c n) (d n)) ->
+Lemma free_omega_extended_upper_rel_lub {A B} (T : A → B → Prop) c d :
+  (∀ n, free_omega_extended_upper_rel T (c n) (d n)) →
   free_omega_extended_upper_rel T (FOLub c) (FOLub d).
 Proof.
   intros H f g Hf Hg Hfg. cbn [free_omega_extended_upper].

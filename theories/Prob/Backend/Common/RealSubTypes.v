@@ -58,7 +58,7 @@ Ltac __nonnegreal_eq :=
 
 
 Class RealSub (T : Type) := {
-  inject : T -> R;
+  inject : T → R;
 }.
 
 

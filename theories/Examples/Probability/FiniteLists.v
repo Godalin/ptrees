@@ -1,6 +1,8 @@
 (** Role: finite probability/coupling/backend example. *)
 (** Current finite-list contracts: positions, pruning, exact operations,
     scalar transport and shared carriers. No historical nnQ conversion layer. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Prob.Backend.Common Require Import FiniteEnum FiniteSubdist
@@ -49,7 +51,7 @@ Proof. reflexivity. Qed.
 Example empty_positions : @finite_index_from rat Empty_set 7 [] = [].
 Proof. reflexivity. Qed.
 Example out_of_range_has_no_slot {W A} n (mu : list (W * A)) i :
-  nth_error mu i = None -> nth_error (finite_index_from n mu) i = None.
+  nth_error mu i = None → nth_error (finite_index_from n mu) i = None.
 Proof. intro H; by rewrite finite_index_nth H. Qed.
 
 Section LargeCarrier.
@@ -111,14 +113,14 @@ Proof. exact: finite_positions_decode. Qed.
 Example presentation_does_not_require_inhabitant :
   @finite_positions rat Empty_set [::] = [::].
 Proof. apply size0nil; by rewrite finite_positions_size. Qed.
-Example signed_observable_preserved (f : bool -> rat) :
+Example signed_observable_preserved (f : bool → rat) :
   finite_expect (fun i => f (finite_position_value duplicate_zero_list i))
     (finite_positions duplicate_zero_list) = finite_expect f duplicate_zero_list.
 Proof. exact: finite_positions_expect. Qed.
 
 Section SharedRecords.
 Variable R : numDomainType.
-Example shared_function_carrier (f : nat -> nat) :
+Example shared_function_carrier (f : nat → nat) :
   finite_enum_raw (finite_enum_map (finite_position_value (finite_enum_raw (finite_enum_ret R f)))
     (finite_enum_positions (finite_enum_ret R f))) = [:: (1,f)].
 Proof. exact: finite_enum_positions_decode. Qed.
@@ -161,7 +163,7 @@ Example native_prune_uses_shared {A} (mu : EnumQ A) :
 Proof. reflexivity. Qed.
 
 Example native_equality_unchanged {A} (mu nu : EnumQ A) :
-  enumQ_meas_eq mu nu <-> indexed_coupling eq
+  enumQ_meas_eq mu nu ↔ indexed_coupling eq
     (finite_enum_prune (fun p => p == 0) mu) (finite_enum_prune (fun p => p == 0) nu).
 Proof. reflexivity. Qed.
 
@@ -183,14 +185,14 @@ Proof. reflexivity. Qed.
 Example empty_carrier_prune : @finite_prune rat (fun p => p == 0) Empty_set [] = [].
 Proof. reflexivity. Qed.
 
-Example duplicate_signed_observation_preserved (f : bool -> rat) :
+Example duplicate_signed_observation_preserved (f : bool → rat) :
   finite_expect f (finite_prune (fun p : rat => p == 0) [(1,true); (0,false); (2,true)]) =
   finite_expect f [(1,true); (0,false); (2,true)].
 Proof. exact: finite_expect_prune_zero. Qed.
 
 Example retained_native_support {A} (mu : EnumQ A) p (x : A) :
-  List.In (p,x) (enumQ_raw (enumQ_prune mu)) <->
-  List.In (p,x) (enumQ_raw mu) /\ p <> 0.
+  List.In (p,x) (enumQ_raw (enumQ_prune mu)) ↔
+  List.In (p,x) (enumQ_raw mu) ∧ p ≠ 0.
 Proof.
   split; first exact: enumQ_prune_in_source.
   intros [Hin Hnz]; apply finite_prune_in; split; first exact Hin.
@@ -251,7 +253,7 @@ Proof. by rewrite enumQ_expect_finite finite_expect_by_atoms. Qed.
 Section ScalarTransport.
 Variable R : realType.
 Local Definition rat_to_real : {rmorphism rat -> R} := [the {rmorphism rat -> R} of ratr].
-Local Lemma rat_to_real_mono : forall x y, x <= y -> rat_to_real x <= rat_to_real y.
+Local Lemma rat_to_real_mono : ∀ x y, x <= y → rat_to_real x <= rat_to_real y.
 Proof. move=> x y H; by rewrite /rat_to_real /= ler_rat. Qed.
 
 Example ordinary_q_to_r_mass {A} (mu : FiniteSubdist rat_rat__canonical__Num_NumDomain A) :
@@ -259,7 +261,7 @@ Example ordinary_q_to_r_mass {A} (mu : FiniteSubdist rat_rat__canonical__Num_Num
   ratr (finite_subdist_expect mu (fun _ => 1)).
 Proof. exact: finite_map_weights_mass. Qed.
 Example ordinary_q_to_r_bind {A B} (mu : FiniteSubdist rat_rat__canonical__Num_NumDomain A)
-    (k : A -> FiniteSubdist rat_rat__canonical__Num_NumDomain B) :
+    (k : A → FiniteSubdist rat_rat__canonical__Num_NumDomain B) :
   finite_enum_raw (finite_subdist_enum (finite_subdist_map_weights rat_to_real_mono (finite_subdist_bind mu k))) =
   finite_enum_raw (finite_subdist_enum (finite_subdist_bind
     (finite_subdist_map_weights rat_to_real_mono mu) (fun x => finite_subdist_map_weights rat_to_real_mono (k x)))).
@@ -304,10 +306,10 @@ Example real_subdistribution_is_shared (R : realType) A :
   SubEnumR R A = FiniteSubdist R A.
 Proof. reflexivity. Qed.
 
-Example rational_bind_is_shared {A B} (mu : EnumQ A) (k : A -> EnumQ B) :
+Example rational_bind_is_shared {A B} (mu : EnumQ A) (k : A → EnumQ B) :
   bind_EnumQ mu k = finite_enum_bind mu k.
 Proof. reflexivity. Qed.
-Example rational_subbind_is_shared {A B} (mu : SubEnumQ A) (k : A -> SubEnumQ B) :
+Example rational_subbind_is_shared {A B} (mu : SubEnumQ A) (k : A → SubEnumQ B) :
   subenumQ_bind mu k = finite_subdist_bind mu k.
 Proof. reflexivity. Qed.
 

@@ -1,6 +1,8 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
 (** Arbitrary handlers, including internally returning and mixed handlers.
     Source evidence is peutt, not a handler-specific target equivalence. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -31,7 +33,7 @@ Local Notation FO := (FreeOmegaObservableSemanticOmega
 Local Notation W E A B RR := (@peutt E SubEnumQ MF FI FC FreeOmegaMixedMeasure FO A B RR).
 
 Section ReaderClient.
-Context {E : Type -> Type}.
+Context {E : Type → Type}.
 Definition reader_handler (env : bool) X (e : (readerE bool +' E) X) : ptree E SubEnumQ X :=
   match e with
   | inl1 se => match se in readerE _ X return ptree E SubEnumQ X with
@@ -43,18 +45,18 @@ Example internally_returning_reader env :
   reader_handler env (inl1 Ask) = Ret env.
 Proof. reflexivity. Qed.
 
-Example handler_return_is_internal {A} (k : bool -> ptree (readerE bool +' E) SubEnumQ A) b :
+Example handler_return_is_internal {A} (k : bool → ptree (readerE bool +' E) SubEnumQ A) b :
   handler_front_result (reader_handler b) k (FHRet b) = SHInternal (SourceConfig (k b)).
 Proof. reflexivity. Qed.
 
-Example reader_source_enters_handler {A} env (k : bool -> ptree (readerE bool +' E) SubEnumQ A) :
+Example reader_source_enters_handler {A} env (k : bool → ptree (readerE bool +' E) SubEnumQ A) :
   source_front_result (reader_handler env) (FHVis (inl1 Ask) k) =
     SHInternal (HandlerConfig (Ret env) k).
 Proof. reflexivity. Qed.
 
-Example heterogeneous_elimination {A B} (RR : A -> B -> Prop) env
+Example heterogeneous_elimination {A B} (RR : A → B → Prop) env
     (t : ptree (readerE bool +' E) SubEnumQ A) (u : ptree (readerE bool +' E) SubEnumQ B) :
-  W _ _ _ RR t u ->
+  W _ _ _ RR t u →
   W _ _ _ RR (PTree.interp (reader_handler env) t) (PTree.interp (reader_handler env) u).
 Proof. apply PTree.Interp.FreeOmega.Unrestricted.peutt_interp. Qed.
 
@@ -90,9 +92,9 @@ Definition mixed_handler {E} X (e : (readerE bool +' E) X) : ptree E SubEnumQ X 
 
 (** This has positive returning mass, missing mass, and residual effects;
     it is not the old AE-visible guarded profile. *)
-Example partial_mixed_handler {E A B} (RR : A -> B -> Prop)
+Example partial_mixed_handler {E A B} (RR : A → B → Prop)
     (t : ptree (readerE bool +' E) SubEnumQ A) (u : ptree (readerE bool +' E) SubEnumQ B) :
-  W _ _ _ RR t u -> W _ _ _ RR (PTree.interp (@mixed_handler E) t) (PTree.interp (@mixed_handler E) u).
+  W _ _ _ RR t u → W _ _ _ RR (PTree.interp (@mixed_handler E) t) (PTree.interp (@mixed_handler E) u).
 Proof. apply PTree.Interp.FreeOmega.Unrestricted.peutt_interp. Qed.
 
 (** An independent real-weight native client uses the SAME completion
@@ -100,9 +102,9 @@ Proof. apply PTree.Interp.FreeOmega.Unrestricted.peutt_interp. Qed.
 From mathcomp Require Import reals.
 From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega.
 
-Example real_arbitrary_handler (R : realType) {E F A B} (RR : A -> B -> Prop)
-    (h : forall X, E X -> ptree F (SubEnumR R) X)
+Example real_arbitrary_handler (R : realType) {E F A B} (RR : A → B → Prop)
+    (h : ∀ X, E X → ptree F (SubEnumR R) X)
     (t : ptree E (SubEnumR R) A) (u : ptree E (SubEnumR R) B) :
-  peutt (MF := FreeOmega (SubEnumR R)) RR t u ->
+  peutt (MF := FreeOmega (SubEnumR R)) RR t u →
   peutt (MF := FreeOmega (SubEnumR R)) RR (PTree.interp h t) (PTree.interp h u).
 Proof. apply PTree.Interp.FreeOmega.Unrestricted.peutt_interp. Qed.

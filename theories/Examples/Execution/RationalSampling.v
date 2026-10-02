@@ -1,6 +1,8 @@
 (** Role: concrete execution and resource-outcome example. *)
 (** Exact rational interval and ticket replay: endpoint ownership,
     duplicates, zero weights, missing mass, signed tests and exhausted entropy. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Execution.Backend Require Import SubEnumQ RationalTickets.
@@ -103,7 +105,7 @@ Example partial_loss_is_exact :
   ticket_expectation attempt_coin (fun o => match o with None => 1 | _ => 0 end) = 6^-1.
 Proof. native_compute. reflexivity. Qed.
 
-Example arbitrary_signed_observable (f : option bool -> rat) :
+Example arbitrary_signed_observable (f : option bool → rat) :
   ticket_expectation attempt_coin f =
     finite_expect (fun b => f (Some b)) attempt_entries +
     (1 - enumQ_mass (subenumQ_raw attempt_coin)) * f None.
@@ -120,12 +122,12 @@ Proof. native_compute. reflexivity. Qed.
 Definition noisy_coin := subenumQ_of_list noisy_nonnegative noisy_bounded.
 
 Example zero_duplicates_keep_mass :
-  ticket_count noisy_coin = 16%nat /\
+  ticket_count noisy_coin = 16%nat ∧
   ticket_outcomes noisy_coin = List.repeat (Some 7%nat) 8 ++ List.repeat None 8.
 Proof. split; native_compute; reflexivity. Qed.
 
 Example zero_mass_has_one_missing_ticket :
-  ticket_count (@subenumQ_zero Empty_set) = 1%nat /\
+  ticket_count (@subenumQ_zero Empty_set) = 1%nat ∧
   ticket_outcomes (@subenumQ_zero Empty_set) = [None].
 Proof. split; native_compute; reflexivity. Qed.
 

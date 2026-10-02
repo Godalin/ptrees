@@ -1,4 +1,6 @@
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -28,20 +30,20 @@ Definition subenumQ_bool_indicator (b : bool) : rat :=
   if b then (1 : rat) else (0 : rat).
 
 Definition subenumQ_finite_interaction_probability
-    {E : Type -> Type} {R}
+    {E : Type → Type} {R}
     (pattern : @finite_interaction_pattern E)
     (t : ptree E SubEnumQ R) (p : rat) : Prop :=
-  exists (query representative : FreeOmega SubEnumQ bool)
+  ∃ (query representative : FreeOmega SubEnumQ bool)
       (out : SubEnumQ bool),
     @finite_interaction_query E SubEnumQ (FreeOmega SubEnumQ)
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega R pattern t query /\
+      FreeOmegaObservableSemanticOmega R pattern t query ∧
     @sem_lift (FreeOmega SubEnumQ)
       FreeOmegaObservableSemanticMeasure bool bool eq
-      representative query /\
+      representative query ∧
     @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure
-      SubEnumQ_SemanticOmega bool bool id representative out /\
+      SubEnumQ_SemanticOmega bool bool id representative out ∧
     enumQ_expect subenumQ_bool_indicator (subenumQ_raw out) = p.
 
 Declare Scope subenumQ_probability_scope.
@@ -53,19 +55,19 @@ Notation "'Prₛ[' t '|' pattern ']' '=' p" :=
    p at next level, no associativity) : subenumQ_probability_scope.
 
 Lemma subenumQ_finite_interaction_probability_intro
-    {E : Type -> Type} {R}
+    {E : Type → Type} {R}
     (pattern : @finite_interaction_pattern E)
     (t : ptree E SubEnumQ R) p query representative out :
   @finite_interaction_query E SubEnumQ (FreeOmega SubEnumQ)
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega R pattern t query ->
+    FreeOmegaObservableSemanticOmega R pattern t query →
   @sem_lift (FreeOmega SubEnumQ)
     FreeOmegaObservableSemanticMeasure bool bool eq
-    representative query ->
+    representative query →
   @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure
-    SubEnumQ_SemanticOmega bool bool id representative out ->
-  enumQ_expect subenumQ_bool_indicator (subenumQ_raw out) = p ->
+    SubEnumQ_SemanticOmega bool bool id representative out →
+  enumQ_expect subenumQ_bool_indicator (subenumQ_raw out) = p →
   (Prₛ[ t | pattern ] = p)%subprob.
 Proof.
   intros Hquery Hlift Hdenotes Hprobability.
@@ -73,17 +75,17 @@ Proof.
 Qed.
 
 Lemma subenumQ_bool_indicator_range b :
-  is_true (0 <= subenumQ_bool_indicator b) /\
+  is_true (0 <= subenumQ_bool_indicator b) ∧
   is_true (subenumQ_bool_indicator b <= 1).
 Proof. by case: b; split.
 Qed.
 
 Theorem subenumQ_finite_interaction_probability_range
-    {E : Type -> Type} {R}
+    {E : Type → Type} {R}
     (pattern : @finite_interaction_pattern E)
     (t : ptree E SubEnumQ R) p :
-  (Prₛ[ t | pattern ] = p)%subprob ->
-  is_true (0 <= p) /\ is_true (p <= 1).
+  (Prₛ[ t | pattern ] = p)%subprob →
+  is_true (0 <= p) ∧ is_true (p <= 1).
 Proof.
   intros [query [representative [out [_ [_ [_ Hprob]]]]]].
   have Hnonnegative :

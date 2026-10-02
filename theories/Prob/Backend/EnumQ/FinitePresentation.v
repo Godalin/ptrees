@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -43,7 +45,7 @@ Qed.
 Definition subenumQ_positions {A} (mu : SubEnumQ A) : SubEnumQ (enumQ_position (subenumQ_raw mu)) :=
   finite_subdist_positions mu.
 
-Lemma enumQ_lift_decode {A B} (mu : EnumQ A) (decode : A -> B) :
+Lemma enumQ_lift_decode {A B} (mu : EnumQ A) (decode : A → B) :
   @sem_lift EnumQ EnumQ_SemanticMeasure A B (fun x y => decode x = y) mu (emap decode mu).
 Proof.
   apply (IndexedCoupling.indexed_coupling_raw
@@ -68,12 +70,12 @@ Proof.
   apply enumQ_repr_eq_implies_meas_eq; exact: enumQ_positions_decode.
 Qed.
 
-Lemma weighted_seq_expect {I A} (weights : I -> rat) (decode : I -> A) indices f :
+Lemma weighted_seq_expect {I A} (weights : I → rat) (decode : I → A) indices f :
   finite_expect f [seq (weights i,decode i) | i <- indices] =
   \sum_(i <- indices) weights i * f (decode i).
 Proof. by elim: indices=> [|i indices IH]; rewrite ?big_nil ?big_cons /= ?IH. Qed.
-Lemma finite_weighted_enumQ_expect {I : finType} {A} (weights : I -> rat)
-    (Hnn : forall i, 0 <= weights i) (decode : I -> A) f :
+Lemma finite_weighted_enumQ_expect {I : finType} {A} (weights : I → rat)
+    (Hnn : ∀ i, 0 <= weights i) (decode : I → A) f :
   enumQ_expect f (finite_weighted_enumQ Hnn decode) = \sum_i weights i * f (decode i).
 Proof.
   change (finite_expect f [seq (weights i,decode i) | i <- enum I] = \sum_i weights i * f (decode i)).

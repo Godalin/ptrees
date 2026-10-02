@@ -1,6 +1,8 @@
 (** Role: Finite real-capacity transport from finite Hall inequalities.
     Pure arithmetic/combinatorics/topology: no probability interface,
     native carrier, FreeOmega syntax, or assumed transport principle. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import all_ssreflect all_algebra finmap all_classical reals.
 From mathcomp Require Import topology normedtype function_spaces.
@@ -15,27 +17,27 @@ Local Open Scope ring_scope.
 (** Unequal total capacities are essential for rounding: all source copies
     are matched, while some target capacity may remain unused. *)
 Lemma finite_capacity_subtransport {X Y : finType}
-    (p : X -> nat) (q : Y -> nat) (edge : X -> Y -> bool) :
-  capacity_hall p q edge ->
-  exists w : X -> Y -> nat,
-    (forall x, \sum_y w x y = p x) /\
-    (forall y, (\sum_x w x y <= q y)%N) /\
-    (forall x y, (0 < w x y)%N -> edge x y).
+    (p : X → nat) (q : Y → nat) (edge : X → Y → bool) :
+  capacity_hall p q edge →
+  ∃ w : X → Y → nat,
+    (∀ x, \sum_y w x y = p x) ∧
+    (∀ y, (\sum_x w x y <= q y)%N) ∧
+    (∀ x y, (0 < w x y)%N → edge x y).
 Proof.
   intro Hall; destruct (capacity_hall_matching Hall) as [f [Hf Hinj]].
   pose CX := capacity_copies p.
   pose CY := capacity_copies q.
-  have Hex : forall i : CX, exists j : CY, (f i == Some j) && edge (tag i) (tag j).
+  have Hex : ∀ i : CX, exists j : CY, (f i == Some j) && edge (tag i) (tag j).
   { intro i; have Hi : i \in [set: CX] by rewrite inE.
     destruct (Hf i Hi) as [j [Hj [_ He]]]; exists j; by rewrite Hj eqxx He. }
   pose g i := xchoose (Hex i).
-  have Hg i : f i = Some (g i) /\ edge (tag i) (tag (g i)).
+  have Hg i : f i = Some (g i) ∧ edge (tag i) (tag (g i)).
   { have /andP [/eqP H He] := xchooseP (Hex i); by split. }
   have Hgi : injective g.
   { intros i j Hij; apply (Hinj i j); try by rewrite inE.
     by rewrite (proj1 (Hg i)) (proj1 (Hg j)) Hij. }
   pose w x y := #|[set i : CX | (tag i == x) && (tag (g i) == y)]|.
-  have Hfiber : forall (Z : finType) (r : Z -> nat) z,
+  have Hfiber : ∀ (Z : finType) (r : Z -> nat) z,
       #|[set i : capacity_copies r | tag i == z]| = r z.
   { intros Z r z; have H := capacity_fiber_card r [set z].
     have HE : [set i : capacity_copies r | tag i \in [set z]] =
@@ -63,8 +65,8 @@ Variable R : realType.
 
 Definition transport_floor (x : R) : nat := `|Num.floor x|%N.
 
-Lemma transport_floor_bounds x : 0 <= x ->
-  (transport_floor x)%:R <= x /\ x < (transport_floor x).+1%:R.
+Lemma transport_floor_bounds x : 0 <= x →
+  (transport_floor x)%:R <= x ∧ x < (transport_floor x).+1%:R.
 Proof.
   intro Hx.
   have H0 : (0 <= Num.floor x)%R by rewrite -floor_ge_int.
@@ -75,20 +77,20 @@ Proof.
   - discriminate H0.
 Qed.
 
-Context {X Y : finType} (p : X -> R) (q : Y -> R) (edge : X -> Y -> bool).
-Definition real_transport_hall := forall S : {set X},
+Context {X Y : finType} (p : X → R) (q : Y → R) (edge : X → Y → bool).
+Definition real_transport_hall := ∀ S : {set X},
   \sum_(x in S) p x <= \sum_(y in matching_neighbors edge finset.setT S) q y.
 
 (** For each positive integer denominator, construct an actual supported
     matrix, rounding demand down and capacity up. No equal-total premise. *)
 Theorem finite_real_transport_approx (d : nat) :
-  (0 < d)%N -> (forall x, 0 <= p x) -> (forall y, 0 <= q y) ->
-  real_transport_hall ->
-  exists w : X -> Y -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, p x - 1 / d%:R < \sum_y w x y /\ \sum_y w x y <= p x) /\
-    (forall y, \sum_x w x y <= q y + 1 / d%:R) /\
-    (forall x y, ~~ edge x y -> w x y = 0).
+  (0 < d)%N → (∀ x, 0 <= p x) → (∀ y, 0 <= q y) →
+  real_transport_hall →
+  ∃ w : X → Y → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, p x - 1 / d%:R < \sum_y w x y ∧ \sum_y w x y <= p x) ∧
+    (∀ y, \sum_x w x y <= q y + 1 / d%:R) ∧
+    (∀ x y, ~~ edge x y → w x y = 0).
 Proof.
   intros Hd Hp Hq Hall.
   have Hdr : (0 : R) < d%:R by rewrite ltr0n.
@@ -129,11 +131,11 @@ End Rounding.
 Local Open Scope classical_set_scope.
 Import ArrowAsProduct.
 
-Lemma transport_compact_nested (V : topologicalType) (K : set V) (C : nat -> set V) :
-  compact K -> (forall n, closed (C n)) ->
-  (forall n m, (n <= m)%N -> C m `<=` C n) ->
-  (forall n, (K `&` C n) !=set0) ->
-  exists x, K x /\ forall n, C n x.
+Lemma transport_compact_nested (V : topologicalType) (K : set V) (C : nat → set V) :
+  compact K → (∀ n, closed (C n)) →
+  (∀ n m, (n <= m)%N → C m `<=` C n) →
+  (∀ n, (K `&` C n) !=set0) →
+  ∃ x, K x ∧ ∀ n, C n x.
 Proof.
   intros HK HC Hnest Hnon.
   pose F := filter_from setT (fun n => K `&` C n).
@@ -159,14 +161,14 @@ Variable R : realType.
 Definition transport_eps n : R := 1 / n.+1%:R.
 Lemma transport_eps_pos n : 0 < transport_eps n.
 Proof. by rewrite /transport_eps div1r invr_gt0 ltr0n. Qed.
-Lemma transport_eps_antitone n m : (n <= m)%N -> transport_eps m <= transport_eps n.
+Lemma transport_eps_antitone n m : (n <= m)%N → transport_eps m <= transport_eps n.
 Proof.
   intro H; rewrite /transport_eps !div1r.
   have Hn : (0 : R) < n.+1%:R by rewrite ltr0n.
   have Hm : (0 : R) < m.+1%:R by rewrite ltr0n.
   rewrite (lef_pV2 Hm Hn) ler_nat; exact H.
 Qed.
-Lemma transport_eps_small e : 0 < e -> exists n, transport_eps n < e.
+Lemma transport_eps_small e : 0 < e → ∃ n, transport_eps n < e.
 Proof.
   intro He; exists (Num.bound e^-1).
   have Hd : (0 : R) < (Num.bound e^-1).+1%:R by rewrite ltr0n.
@@ -175,7 +177,7 @@ Proof.
   apply: lt_trans (archi_boundP Hi) _; by rewrite ltr_nat.
 Qed.
 Lemma transport_eps_limit a b :
-  (forall n, a <= b + transport_eps n) -> a <= b.
+  (∀ n, a <= b + transport_eps n) → a <= b.
 Proof.
   intro H; rewrite leNgt; apply/negP=> Hba.
   have Hpos : 0 < a - b by rewrite subr_gt0.
@@ -185,11 +187,11 @@ Proof.
   by rewrite ltxx in Hbad.
 Qed.
 
-Lemma transport_continuous_sum (V : topologicalType) (I : finType) (f : I -> V -> R) :
-  (forall i, continuous (f i)) -> continuous (fun v => \sum_i f i v).
+Lemma transport_continuous_sum (V : topologicalType) (I : finType) (f : I → V → R) :
+  (∀ i, continuous (f i)) → continuous (fun v => \sum_i f i v).
 Proof.
   intro H.
-  have HS : forall s : seq I, continuous (fun v => \sum_(i <- s) f i v).
+  have HS : ∀ s : seq I, continuous (fun v => \sum_(i <- s) f i v).
   { elim=> [|i s IH].
     - have HE : (fun v => \sum_(j <- [::]) f j v) = (fun _ : V => (0 : R)).
       { apply funext=> v; by rewrite big_nil. }
@@ -202,25 +204,25 @@ Proof.
 Qed.
 End RealTopology.
 
-Lemma transport_closed_forall (V : topologicalType) I (C : I -> set V) :
-  (forall i, closed (C i)) -> closed (fun v => forall i, C i v).
+Lemma transport_closed_forall (V : topologicalType) I (C : I → set V) :
+  (∀ i, closed (C i)) → closed (fun v => ∀ i, C i v).
 Proof.
   intro HC.
-  have HE : (fun v => forall i, C i v) = \bigcap_i C i.
+  have HE : (fun v => ∀ i, C i v) = \bigcap_i C i.
   { apply funext=> v; apply propext; split; [intros H i _; exact (H i)|intros H i; exact (H i Logic.I)]. }
   rewrite HE; apply closed_bigI=> i _; exact (HC i).
 Qed.
 
 Section RealTransportExistence.
 Variable R : realType.
-Context {X Y : finType} (p : X -> R) (q : Y -> R) (edge : X -> Y -> bool).
+Context {X Y : finType} (p : X → R) (q : Y → R) (edge : X → Y → bool).
 Local Notation W := ((X * Y)%type -> R).
 Let rows (w : W) x := \sum_y w (x,y).
 Let cols (w : W) y := \sum_x w (x,y).
 Let constraints n (w : W) :=
-  (forall x, p x - transport_eps R n <= rows w x /\ rows w x <= p x) /\
-  (forall y, cols w y <= q y + transport_eps R n) /\
-  (forall z, ~~ edge (fst z) (snd z) -> w z = 0).
+  (∀ x, p x - transport_eps R n <= rows w x ∧ rows w x <= p x) ∧
+  (∀ y, cols w y <= q y + transport_eps R n) ∧
+  (∀ z, ~~ edge (fst z) (snd z) → w z = 0).
 
 Lemma transport_rows_continuous x : continuous (fun w : W => rows w x).
 Proof. apply transport_continuous_sum=> y; exact: proj_continuous. Qed.
@@ -245,24 +247,24 @@ Proof.
 Qed.
 
 Theorem finite_real_subtransport :
-  (forall x, 0 <= p x) -> (forall y, 0 <= q y) -> real_transport_hall p q edge ->
-  exists w : X -> Y -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = p x) /\
-    (forall y, \sum_x w x y <= q y) /\
-    (forall x y, ~~ edge x y -> w x y = 0).
+  (∀ x, 0 <= p x) → (∀ y, 0 <= q y) → real_transport_hall p q edge →
+  ∃ w : X → Y → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = p x) ∧
+    (∀ y, \sum_x w x y <= q y) ∧
+    (∀ x y, ~~ edge x y → w x y = 0).
 Proof.
   intros Hp Hq Hall.
   pose bound := \sum_x p x.
-  pose box : set W := fun w => forall z, `[0, bound] (w z).
+  pose box : set W := fun w => ∀ z, `[0, bound] (w z).
   have Hcompact : compact box.
   { have H := @tychonoff _ (fun _ : (X * Y)%type => _) _
       (fun _ : (X * Y)%type => @segment_compact R 0 bound).
     exact H. }
-  have Hsum : forall (Z : finType) (f : Z -> R),
-      (forall z, 0 <= f z) -> forall z, f z <= \sum_i f i.
+  have Hsum : ∀ (Z : finType) (f : Z -> R),
+      (∀ z, 0 <= f z) -> ∀ z, f z <= \sum_i f i.
   { intros Z f Hf z; rewrite (bigD1 z) //= lerDl; apply sumr_ge0=> i _; exact (Hf i). }
-  have Hnon : forall n, (box `&` constraints n) !=set0.
+  have Hnon : ∀ n, (box `&` constraints n) !=set0.
   { intro n; destruct (finite_real_transport_approx (ltn0Sn n) Hp Hq Hall)
       as [w [Hw0 [Hwr [Hwc Hws]]]].
     exists (fun z => w (fst z) (snd z)); split.
@@ -273,7 +275,7 @@ Proof.
     - split.
       + intro x; split; [exact (ltW (proj1 (Hwr x)))|exact (proj2 (Hwr x))].
       + split; [exact Hwc|intros [x y]; exact (Hws x y)]. }
-  have Hnest : forall n m, (n <= m)%N -> constraints m `<=` constraints n.
+  have Hnest : ∀ n m, (n <= m)%N -> constraints m `<=` constraints n.
   { intros n m Hnm w [Hr [Hc Hs]]; split.
     - intro x; split; last exact (proj2 (Hr x)).
       apply: le_trans (_ : p x - transport_eps R m <= rows w x); last exact (proj1 (Hr x)).
@@ -297,14 +299,14 @@ End RealTransportExistence.
 (** Equal total mass makes every target capacity exact. This includes zero
     mass, subprobabilities, and arbitrary finite real masses. *)
 Theorem finite_real_transport (R : realType) {X Y : finType}
-    (p : X -> R) (q : Y -> R) (edge : X -> Y -> bool) :
-  (forall x, 0 <= p x) -> (forall y, 0 <= q y) -> real_transport_hall p q edge ->
-  \sum_x p x = \sum_y q y ->
-  exists w : X -> Y -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = p x) /\
-    (forall y, \sum_x w x y = q y) /\
-    (forall x y, ~~ edge x y -> w x y = 0).
+    (p : X → R) (q : Y → R) (edge : X → Y → bool) :
+  (∀ x, 0 <= p x) → (∀ y, 0 <= q y) → real_transport_hall p q edge →
+  \sum_x p x = \sum_y q y →
+  ∃ w : X → Y → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = p x) ∧
+    (∀ y, \sum_x w x y = q y) ∧
+    (∀ x y, ~~ edge x y → w x y = 0).
 Proof.
   intros Hp Hq Hall Htotal.
   destruct (finite_real_subtransport Hp Hq Hall) as [w [Hw [Hr [Hc Hs]]]].
@@ -315,7 +317,7 @@ Proof.
   { rewrite exchange_big; apply eq_bigr=> x _; exact (Hr x). }
   have Hdiff : \sum_y (q y - \sum_x w x y) = 0.
   { by rewrite sumrB Hsum Htotal subrr. }
-  have Hpos : forall y : Y, true -> 0 <= q y - \sum_x w x y.
+  have Hpos : ∀ y : Y, true -> 0 <= q y - \sum_x w x y.
   { intros y _; rewrite subr_ge0; exact (Hc y). }
   intro y; have Hz := @psumr_eq0P R Y predT (fun y => q y - \sum_x w x y) Hpos Hdiff y isT.
   apply/esym/eqP; by rewrite -subr_eq0 Hz.
@@ -324,30 +326,30 @@ Qed.
 (** The test-function premise supplies Hall using indicators. Equality of
     total masses is separate, so no implicit normalization is involved. *)
 Theorem finite_real_transport_of_tests (R : realType) {X Y : finType}
-    (p : X -> R) (q : Y -> R) (edge : X -> Y -> bool) :
-  (forall x, 0 <= p x) -> (forall y, 0 <= q y) ->
-  (forall f g,
-    (forall x, 0 <= f x /\ f x <= 1) ->
-    (forall y, 0 <= g y /\ g y <= 1) ->
-    (forall x y, edge x y -> f x <= g y) ->
-    \sum_x p x * f x <= \sum_y q y * g y) ->
-  \sum_x p x = \sum_y q y ->
-  exists w : X -> Y -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = p x) /\
-    (forall y, \sum_x w x y = q y) /\
-    (forall x y, ~~ edge x y -> w x y = 0).
+    (p : X → R) (q : Y → R) (edge : X → Y → bool) :
+  (∀ x, 0 <= p x) → (∀ y, 0 <= q y) →
+  (∀ f g,
+    (∀ x, 0 <= f x ∧ f x <= 1) →
+    (∀ y, 0 <= g y ∧ g y <= 1) →
+    (∀ x y, edge x y → f x <= g y) →
+    \sum_x p x * f x <= \sum_y q y * g y) →
+  \sum_x p x = \sum_y q y →
+  ∃ w : X → Y → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = p x) ∧
+    (∀ y, \sum_x w x y = q y) ∧
+    (∀ x y, ~~ edge x y → w x y = 0).
 Proof.
   intros Hp Hq Htests Htotal; apply finite_real_transport; auto.
   intro S.
   pose N := matching_neighbors edge finset.setT S.
   pose f x : R := if x \in S then 1 else 0.
   pose g y : R := if y \in N then 1 else 0.
-  have Hf : forall x, 0 <= f x /\ f x <= 1.
+  have Hf : ∀ x, 0 <= f x ∧ f x <= 1.
   { intro x; rewrite /f; case: (x \in S); split; try exact: lexx; exact: ler01. }
-  have Hg : forall y, 0 <= g y /\ g y <= 1.
+  have Hg : ∀ y, 0 <= g y ∧ g y <= 1.
   { intro y; rewrite /g; case: (y \in N); split; try exact: lexx; exact: ler01. }
-  have Hfg : forall x y, edge x y -> f x <= g y.
+  have Hfg : ∀ x y, edge x y -> f x <= g y.
   { intros x y Hxy; rewrite /f; case Hx: (x \in S); last exact (proj1 (Hg y)).
     have Hy : y \in N.
     { apply/matching_neighborsP; split; first by rewrite inE.
@@ -364,25 +366,25 @@ Proof.
 Qed.
 
 Corollary finite_real_transport_relation (R : realType) {X Y : finType}
-    (p : X -> R) (q : Y -> R) (T : X -> Y -> Prop) :
-  (forall x, 0 <= p x) -> (forall y, 0 <= q y) ->
-  (forall f g,
-    (forall x, 0 <= f x /\ f x <= 1) ->
-    (forall y, 0 <= g y /\ g y <= 1) ->
-    (forall x y, T x y -> f x <= g y) ->
-    \sum_x p x * f x <= \sum_y q y * g y) ->
-  \sum_x p x = \sum_y q y ->
-  exists w : X -> Y -> R,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = p x) /\
-    (forall y, \sum_x w x y = q y) /\
-    (forall x y, 0 < w x y -> T x y).
+    (p : X → R) (q : Y → R) (T : X → Y → Prop) :
+  (∀ x, 0 <= p x) → (∀ y, 0 <= q y) →
+  (∀ f g,
+    (∀ x, 0 <= f x ∧ f x <= 1) →
+    (∀ y, 0 <= g y ∧ g y <= 1) →
+    (∀ x y, T x y → f x <= g y) →
+    \sum_x p x * f x <= \sum_y q y * g y) →
+  \sum_x p x = \sum_y q y →
+  ∃ w : X → Y → R,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = p x) ∧
+    (∀ y, \sum_x w x y = q y) ∧
+    (∀ x y, 0 < w x y → T x y).
 Proof.
   intros Hp Hq Htests Htotal.
-  have Htest : forall f g,
-      (forall x, 0 <= f x /\ f x <= 1) ->
-      (forall y, 0 <= g y /\ g y <= 1) ->
-      (forall x y, asbool (T x y) -> f x <= g y) ->
+  have Htest : ∀ f g,
+      (∀ x, 0 <= f x ∧ f x <= 1) ->
+      (∀ y, 0 <= g y ∧ g y <= 1) ->
+      (∀ x y, asbool (T x y) -> f x <= g y) ->
       \sum_x p x * f x <= \sum_y q y * g y.
   { intros f g Hf Hg Hfg; apply Htests; auto.
     intros x y Hxy; apply Hfg; exact/asboolP. }

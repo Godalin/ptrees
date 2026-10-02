@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Prob.Backend.EnumQ.FreeOmega Require Import Coupling.
 (** Role: finite probability/coupling/backend example. *)
 Set Warnings "-notation-overridden".
@@ -23,7 +25,7 @@ Set Implicit Arguments.
     arbitrary cofixpoints when constructing the syntax-directed cuts. *)
 Section ExchangeRetries.
 Unset Automatic Proposition Inductives.
-Variant exchangeE : Type -> Type := .
+Variant exchangeE : Type → Type := .
 Local Notation E := exchangeE.
 Variables mu nu : SubEnumQ bool.
 Local Notation tree := (ptree E SubEnumQ bool).
@@ -39,7 +41,7 @@ Definition exchange_right_round (next : tree) : tree :=
 CoFixpoint exchange_retry_left : tree := Tau (exchange_left_round exchange_retry_left).
 CoFixpoint exchange_retry_right : tree := Tau (exchange_right_round exchange_retry_right).
 
-Inductive exchange_retry_pairs : tree -> tree -> Prop :=
+Inductive exchange_retry_pairs : tree → tree → Prop :=
 | ExchangeLoop : exchange_retry_pairs exchange_retry_left exchange_retry_right
 | ExchangeBody : exchange_retry_pairs (exchange_left_round exchange_retry_left)
     (exchange_right_round exchange_retry_right).
@@ -57,7 +59,7 @@ Definition exchange_right_cut (p : Pair) : MF tree :=
       (fun x => FORet (if Bool.eqb x y then Tau exchange_retry_right else Ret x)))
   end.
 
-Lemma exchange_left_cut_valid t u : exchange_retry_pairs t u ->
+Lemma exchange_left_cut_valid t u : exchange_retry_pairs t u →
   @finite_internal E SubEnumQ MF FI FreeOmegaMixedMeasure bool t (exchange_left_cut (t,u)).
 Proof.
   intro H. destruct H.
@@ -66,7 +68,7 @@ Proof.
     apply (@FIProb E SubEnumQ MF FI FreeOmegaMixedMeasure bool). intro y.
     apply (@FIStop E SubEnumQ MF FI FreeOmegaMixedMeasure bool).
 Qed.
-Lemma exchange_right_cut_valid t u : exchange_retry_pairs t u ->
+Lemma exchange_right_cut_valid t u : exchange_retry_pairs t u →
   @finite_internal E SubEnumQ MF FI FreeOmegaMixedMeasure bool u (exchange_right_cut (t,u)).
 Proof.
   intro H. destruct H.
@@ -90,7 +92,7 @@ Definition exchange_right_joint (p : Pair) : MF Pair :=
   | _ => FOSample nu (fun y => FOSample mu (fun x => FORet (exchange_residual_pair x y)))
   end.
 
-Lemma exchange_residual_references t u : exchange_retry_pairs t u ->
+Lemma exchange_residual_references t u : exchange_retry_pairs t u →
   free_omega_coupling_references (fun t u => pstrongF eq exchange_retry_pairs (observe t) (observe u))
     (exchange_left_cut (t,u)) (exchange_right_cut (t,u))
     (exchange_left_joint (t,u)) (exchange_right_joint (t,u)).
@@ -146,9 +148,9 @@ Qed.
     The behavioral theorem above still applies to these same measures. *)
 Example exchange_residuals_not_structural
     (mu_is_dirac : mu = subenumQ_ret false)
-    (both_values : forall P, @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool nu P ->
-      P true /\ P false) (sim : tree -> tree -> Prop) :
-  ~ free_omega_lift (fun t u => pstrongF eq sim (observe t) (observe u))
+    (both_values : ∀ P, @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool nu P →
+      P true ∧ P false) (sim : tree → tree → Prop) :
+  ¬ free_omega_lift (fun t u => pstrongF eq sim (observe t) (observe u))
     (exchange_left_cut (exchange_left_round exchange_retry_left,
       exchange_right_round exchange_retry_right))
     (exchange_right_cut (exchange_left_round exchange_retry_left,
@@ -183,13 +185,13 @@ End ExchangeRetries.
 (** Discharge the support premise on an actual probability carrier.  This
     makes the negative structural test non-vacuous: the first coin is Dirac
     false and the second is the same fair SubEnumQ coin used by other tests. *)
-Lemma exchange_fair_both_values (P : bool -> Prop) :
-  @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool subenumQ_fair P ->
-  P true /\ P false.
+Lemma exchange_fair_both_values (P : bool → Prop) :
+  @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool subenumQ_fair P →
+  P true ∧ P false.
 Proof.
   intro Hae.
   change (PTree.Prob.Backend.EnumQ.FrontierLift.enumQ_ae reg_fair P) in Hae.
-  assert (Hhalf : reg_half <> (0%R : rat.rat)).
+  assert (Hhalf : reg_half ≠ (0%R : rat.rat)).
   { intro H. vm_compute in H. discriminate H. }
   split; apply (Hae reg_half); cbn; auto.
 Qed.
@@ -205,12 +207,12 @@ Example exchange_fair_retry_equivalent :
 Proof. apply exchange_inside_unbounded_retry. Qed.
 
 Example exchange_fair_residuals_not_structural
-    (sim : ptree exchangeE SubEnumQ bool -> ptree exchangeE SubEnumQ bool -> Prop) :
+    (sim : ptree exchangeE SubEnumQ bool → ptree exchangeE SubEnumQ bool → Prop) :
   let mu := subenumQ_ret false in
   let nu := subenumQ_fair in
   let left := exchange_left_round mu nu (exchange_retry_left mu nu) in
   let right := exchange_right_round mu nu (exchange_retry_right mu nu) in
-  ~ free_omega_lift (fun t u => pstrongF eq sim (observe t) (observe u))
+  ¬ free_omega_lift (fun t u => pstrongF eq sim (observe t) (observe u))
     (exchange_left_cut mu nu (left,right))
     (exchange_right_cut mu nu (left,right)).
 Proof.

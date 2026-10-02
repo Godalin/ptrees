@@ -1,4 +1,6 @@
 (** Role: Canonical FreeOmega measure infrastructure. Depends on generic measures; not a concrete native backend or program equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
@@ -14,7 +16,7 @@ Unset Printing Implicit Defensive.
     no reflection from quotient coupling to node lifting is assumed. *)
 Section Recovery.
 Universes node node_rep frontier.
-Context {MN : Type@{node} -> Type@{node_rep}}
+Context {MN : Type@{node} → Type@{node_rep}}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
 
@@ -30,12 +32,12 @@ Local Notation qlift := (@free_omega_qlift@{
 
 Record free_omega_native_recovery {A : Type@{frontier}}
     (p : free_omega_native_presentation@{node node_rep frontier} MN A) := {
-  recovery_good : A -> Prop;
-  recovery_kernel : A -> FreeOmegaAt MN A (native_sample_type p);
+  recovery_good : A → Prop;
+  recovery_kernel : A → FreeOmegaAt MN A (native_sample_type p);
   recovery_good_ae : free_omega_ae recovery_good (free_omega_native p);
-  recovery_fiber : forall a, recovery_good a ->
+  recovery_fiber : ∀ a, recovery_good a →
     free_omega_ae (fun x => native_sample_value p x = a) (recovery_kernel a);
-  recovery_normalized : forall a, recovery_good a ->
+  recovery_normalized : ∀ a, recovery_good a →
     qlift (fun _ _ => True) (recovery_kernel a) (FORet tt);
   recovery_reconstruct : qlift eq
     (free_omega_bind (free_omega_native p) recovery_kernel)
@@ -47,8 +49,8 @@ Lemma recovery_branch_coupling {A B : Type@{frontier}}
     {p : free_omega_native_presentation MN A}
     {q : free_omega_native_presentation MN B}
     (dp : free_omega_native_recovery p) (dq : free_omega_native_recovery q)
-    (R : A -> B -> Prop) a b :
-  R a b -> recovery_good dp a -> recovery_good dq b ->
+    (R : A → B → Prop) a b :
+  R a b → recovery_good dp a → recovery_good dq b →
   qlift (fun x y => R (native_sample_value p x) (native_sample_value q y))
     (recovery_kernel dp a) (recovery_kernel dq b).
 Proof.
@@ -73,8 +75,8 @@ Theorem free_omega_native_coupling_pullback {A B : Type@{frontier}}
     {p : free_omega_native_presentation MN A}
     {q : free_omega_native_presentation MN B}
     (dp : free_omega_native_recovery p) (dq : free_omega_native_recovery q)
-    (R : A -> B -> Prop) :
-  qlift R (free_omega_native p) (free_omega_native q) ->
+    (R : A → B → Prop) :
+  qlift R (free_omega_native p) (free_omega_native q) →
   qlift (fun x y => R (native_sample_value p x) (native_sample_value q y))
     (FOSample (native_sample_measure p) (fun x => FORet x) :
       FreeOmegaAt MN A (native_sample_type p))
@@ -93,7 +95,7 @@ Proof.
       (U := eq)
       (mid := free_omega_bind (free_omega_native q) (recovery_kernel dq)).
     + eapply FOQLBind with
-        (T := fun a b => R a b /\ recovery_good dp a /\ recovery_good dq b).
+        (T := fun a b => R a b ∧ recovery_good dp a ∧ recovery_good dq b).
       * eapply FOQLAERestrict; [exact Hrel|apply recovery_good_ae|apply recovery_good_ae|].
         intros a b H. exact H.
       * intros a b [HR [Ha Hb]]. apply recovery_branch_coupling; assumption.
@@ -113,7 +115,7 @@ Definition constant_native_presentation {X : Type@{node}} {A : Type@{frontier}} 
 Lemma constant_native_collapse {X : Type@{node}} {A : Type@{frontier}} (mu : MN X) (a : A) :
   qlift (fun _ _ => True)
     (FOSample mu (fun x => FORet x) : FreeOmegaAt MN A X)
-    (FORet tt : FreeOmegaAt MN A unit) ->
+    (FORet tt : FreeOmegaAt MN A unit) →
   qlift eq (free_omega_native (constant_native_presentation mu a)) (FORet a).
 Proof.
   intro Htotal.
@@ -148,8 +150,8 @@ Defined.
 (** An actual inverse is the special case with deterministic recovery.
     No totality assumption on the ORIGINAL measure is needed. *)
 Definition inverse_native_recovery {A : Type@{frontier}} (p : free_omega_native_presentation MN A)
-    (inverse : A -> native_sample_type p)
-    (Hinverse : forall x, inverse (native_sample_value p x) = x) :
+    (inverse : A → native_sample_type p)
+    (Hinverse : ∀ x, inverse (native_sample_value p x) = x) :
     free_omega_native_recovery p.
 Proof.
   refine (@Build_free_omega_native_recovery A p

@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -27,14 +29,14 @@ Section ScalarSuprema.
 Variable R : realType.
 Local Notation upper := (@countable_upper R).
 
-Lemma countable_upper_swap (grid : nat -> nat -> R) bound :
-  (forall i j, grid i j <= bound) ->
+Lemma countable_upper_swap (grid : nat → nat → R) bound :
+  (∀ i j, grid i j <= bound) →
   upper (fun i => upper (grid i)) = upper (fun j => upper (fun i => grid i j)).
 Proof.
   intro Hb.
-  have Hrows : forall i, upper (grid i) <= bound :=
+  have Hrows : ∀ i, upper (grid i) <= bound :=
     fun i => countable_upper_le (Hb i).
-  have Hcols : forall j, upper (fun i => grid i j) <= bound :=
+  have Hcols : ∀ j, upper (fun i => grid i j) <= bound :=
     fun j => countable_upper_le (fun i => Hb i j).
   apply/eqP. rewrite eq_le. apply/andP. split.
   - apply countable_upper_le. intro i. apply countable_upper_le. intro j.
@@ -57,9 +59,9 @@ Local Notation upper := (free_omega_upper (R := R)).
     the raw term contains arbitrary (not necessarily increasing) FOLub
     nodes.  Supremum interchange is used only for suprema, not limits. *)
 Theorem free_omega_upper_continuous {A} (mu : FreeOmega SubEnumQ A)
-    (tests : nat -> A -> R) :
-  (forall n x, 0 <= tests n x /\ tests n x <= 1) ->
-  (forall n x, tests n x <= tests (S n) x) ->
+    (tests : nat → A → R) :
+  (∀ n x, 0 <= tests n x ∧ tests n x <= 1) →
+  (∀ n x, tests n x <= tests (S n) x) →
   upper mu (fun x => countable_upper (fun n => tests n x)) =
   countable_upper (fun n => upper mu (tests n)).
 Proof.
@@ -80,10 +82,10 @@ Proof.
 Qed.
 
 Theorem free_omega_sample_lub_upper {A X} (mu : SubEnumQ X)
-    (chain : X -> nat -> FreeOmega SubEnumQ A) (f : A -> R) :
+    (chain : X → nat → FreeOmega SubEnumQ A) (f : A → R) :
   enumQ_ae (subenumQ_raw mu)
-    (fun x => forall n, free_omega_approx eq (chain x n) (chain x (S n))) ->
-  (forall x, 0 <= f x /\ f x <= 1) ->
+    (fun x => ∀ n, free_omega_approx eq (chain x n) (chain x (S n))) →
+  (∀ x, 0 <= f x ∧ f x <= 1) →
   upper (FOSample mu (fun x => FOLub (chain x))) f =
   upper (FOLub (fun n => FOSample mu (fun x => chain x n))) f.
 Proof.
@@ -97,16 +99,16 @@ Qed.
     Lub nodes may occur inside each source term; only the outer source
     chain and each kernel chain must increase, as required by FOQLBindLub. *)
 Theorem free_omega_bind_lub_upper {A X}
-    (source : nat -> FreeOmega SubEnumQ X)
-    (kernels : X -> nat -> FreeOmega SubEnumQ A) (f : A -> R) :
-  (forall n, free_omega_approx eq (source n) (source (S n))) ->
-  (forall x n, free_omega_approx eq (kernels x n) (kernels x (S n))) ->
-  (forall x, 0 <= f x /\ f x <= 1) ->
+    (source : nat → FreeOmega SubEnumQ X)
+    (kernels : X → nat → FreeOmega SubEnumQ A) (f : A → R) :
+  (∀ n, free_omega_approx eq (source n) (source (S n))) →
+  (∀ x n, free_omega_approx eq (kernels x n) (kernels x (S n))) →
+  (∀ x, 0 <= f x ∧ f x <= 1) →
   upper (free_omega_bind (FOLub source) (fun x => FOLub (kernels x))) f =
   upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f.
 Proof.
   intros Hsource Hkernels Hf.
-  have Hrow : forall i,
+  have Hrow : ∀ i,
       upper (free_omega_bind (source i) (fun x => FOLub (kernels x))) f =
       upper (FOLub (fun n => free_omega_bind (source i) (fun x => kernels x n))) f.
   { intro i. rewrite free_omega_upper_bind. cbn [free_omega_upper].

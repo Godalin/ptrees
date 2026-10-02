@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Eq Require Import StableHittingRelation.
 (** Role: Comparison semantics. Depends on canonical theory; not the canonical peutt relation or interpreter theory. *)
 Set Warnings "-notation-overridden".
@@ -18,14 +20,14 @@ Unset Printing Implicit Defensive.
     for every state/action pair.
     The target fragment additionally admits observable terminal states;
     this particular encoding never returns. *)
-Record MDP (MN : Type -> Type) `{NI : SemanticMeasure MN}
+Record MDP (MN : Type → Type) `{NI : SemanticMeasure MN}
     `{NO : @SemanticOmega MN NI} := {
   mdp_states : Type;
   mdp_actions : Type;
   mdp_observations : Type;
-  mdp_observe : mdp_states -> mdp_observations;
-  mdp_transition : mdp_states -> mdp_actions -> MN mdp_states;
-  mdp_transition_total : forall s a, sem_total (mdp_transition s a)
+  mdp_observe : mdp_states → mdp_observations;
+  mdp_transition : mdp_states → mdp_actions → MN mdp_states;
+  mdp_transition_total : ∀ s a, sem_total (mdp_transition s a)
 }.
 Arguments MDP MN {NI NO}.
 Arguments mdp_states {MN NI NO} _.
@@ -35,16 +37,16 @@ Arguments mdp_observe {MN NI NO} _ _.
 Arguments mdp_transition {MN NI NO} _ _ _.
 Arguments mdp_transition_total {MN NI NO} _ _ _.
 
-Variant mdpE (O A : Type) : Type -> Type := Choose (o : O) : mdpE O A A.
+Variant mdpE (O A : Type) : Type → Type := Choose (o : O) : mdpE O A A.
 Arguments Choose {O A} _.
 
 (** One visible interaction exposes the current observation and accepts
     an action. No extra observation-only event is inserted. *)
-Lemma mdp_choose_head_rel_iff {O A MN R1 R2} (RR : R1 -> R2 -> Prop)
-    (sim : ptree (mdpE O A) MN R1 -> ptree (mdpE O A) MN R2 -> Prop)
+Lemma mdp_choose_head_rel_iff {O A MN R1 R2} (RR : R1 → R2 → Prop)
+    (sim : ptree (mdpE O A) MN R1 → ptree (mdpE O A) MN R2 → Prop)
     (o1 o2 : O) k1 k2 :
-  stable_head_rel RR sim (FHVis (Choose o1) k1) (FHVis (Choose o2) k2) <->
-  o1 = o2 /\ forall a, sim (k1 a) (k2 a).
+  stable_head_rel RR sim (FHVis (Choose o1) k1) (FHVis (Choose o2) k2) ↔
+  o1 = o2 ∧ ∀ a, sim (k1 a) (k2 a).
 Proof.
   split.
   - intro H. dependent destruction H. split; [reflexivity|assumption].
@@ -52,7 +54,7 @@ Proof.
 Qed.
 
 Section Source.
-Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
+Context {MN : Type → Type} `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI} `{NO : @SemanticOmega MN NI}.
 Variable D : MDP MN.
 
@@ -65,36 +67,36 @@ Definition mdp_encode_head s :
   FHVis (Choose (mdp_observe D s)) (fun a => Prob (mdp_transition D s a) mdp_encode).
 
 (** Independent textbook coupling bisimulation, over SOURCE states. *)
-Definition mdp_bisimF (sim : mdp_states D -> mdp_states D -> Prop) s t :=
-  mdp_observe D s = mdp_observe D t /\
-  forall a, sem_lift sim (mdp_transition D s a) (mdp_transition D t a).
+Definition mdp_bisimF (sim : mdp_states D → mdp_states D → Prop) s t :=
+  mdp_observe D s = mdp_observe D t ∧
+  ∀ a, sem_lift sim (mdp_transition D s a) (mdp_transition D t a).
 
-Program Definition fmdp_bisim : mon (mdp_states D -> mdp_states D -> Prop) :=
+Program Definition fmdp_bisim : mon (mdp_states D → mdp_states D → Prop) :=
   {| body := mdp_bisimF |}.
 Next Obligation.
   intros P Q Hsub s t [Hobs H]. split; [exact Hobs|].
   intro a. eapply sem_lift_mono; [exact Hsub|apply H].
 Qed.
 Definition mdp_bisim := gfp fmdp_bisim.
-Lemma mdp_bisim_unfold s t : mdp_bisim s t -> mdp_bisimF mdp_bisim s t.
+Lemma mdp_bisim_unfold s t : mdp_bisim s t → mdp_bisimF mdp_bisim s t.
 Proof. intro H. apply (gfp_pfp fmdp_bisim) in H. exact H. Qed.
-Lemma mdp_bisim_fold s t : mdp_bisimF mdp_bisim s t -> mdp_bisim s t.
+Lemma mdp_bisim_fold s t : mdp_bisimF mdp_bisim s t → mdp_bisim s t.
 Proof. intro H. unfold mdp_bisim. apply (gfp_fp fmdp_bisim). exact H. Qed.
-Lemma mdp_bisim_observe s t : mdp_bisim s t -> mdp_observe D s = mdp_observe D t.
+Lemma mdp_bisim_observe s t : mdp_bisim s t → mdp_observe D s = mdp_observe D t.
 Proof. intro H. exact (proj1 (mdp_bisim_unfold H)). Qed.
-Lemma mdp_bisim_step s t : mdp_bisim s t ->
-  forall a, sem_lift mdp_bisim (mdp_transition D s a) (mdp_transition D t a).
+Lemma mdp_bisim_step s t : mdp_bisim s t →
+  ∀ a, sem_lift mdp_bisim (mdp_transition D s a) (mdp_transition D t a).
 Proof. intro H. exact (proj2 (mdp_bisim_unfold H)). Qed.
-Theorem mdp_bisim_coinduction (sim : mdp_states D -> mdp_states D -> Prop)
-    (Hpost : forall s t, sim s t -> mdp_bisimF sim s t) :
-  forall s t, sim s t -> mdp_bisim s t.
+Theorem mdp_bisim_coinduction (sim : mdp_states D → mdp_states D → Prop)
+    (Hpost : ∀ s t, sim s t → mdp_bisimF sim s t) :
+  ∀ s t, sim s t → mdp_bisim s t.
 Proof.
   intros s t H. unfold mdp_bisim.
   eapply (@leq_gfp _ _ fmdp_bisim sim); eauto.
 Qed.
 
 Section Behavior.
-Context {MF : Type -> Type}
+Context {MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{ML : @MixedMeasureLaws MN MF NI FI MX}
@@ -132,7 +134,7 @@ Proof. constructor. apply mdp_sample_hitting. Qed.
 (** Exact kernel agreement, modulo the interface's equality of measures.
     No choice of a canonical complete-hitting representative is needed. *)
 Theorem mdp_encode_step_unique s a out :
-  head_step (mdp_encode_head s) (Obs (Choose (mdp_observe D s)) a) out ->
+  head_step (mdp_encode_head s) (Obs (Choose (mdp_observe D s)) a) out →
   sem_eq out (mdp_successors (mdp_transition D s a)).
 Proof.
   intro H. eapply head_step_unique; [exact H|apply mdp_encode_step].
@@ -142,12 +144,12 @@ Qed.
     interface alone says nothing about totality or AE of mixed binds.
     The SubEnumQ endpoint below discharges these premises, not axiomatizes them. *)
 Theorem mdp_encode_mdp_state
-    (Htotal : forall s a, sem_total (mdp_successors (mdp_transition D s a)))
-    (Hsupport : forall s a, sem_ae (mdp_successors (mdp_transition D s a))
-      (fun h => exists t, h = mdp_encode_head t)) :
-  forall s, mdp_state (MF := MF) (mdp_encode s).
+    (Htotal : ∀ s a, sem_total (mdp_successors (mdp_transition D s a)))
+    (Hsupport : ∀ s a, sem_ae (mdp_successors (mdp_transition D s a))
+      (fun h => ∃ t, h = mdp_encode_head t)) :
+  ∀ s, mdp_state (MF := MF) (mdp_encode s).
 Proof.
-  assert (Hhead : forall s, mdp_head (MF := MF) (mdp_encode_head s)).
+  assert (Hhead : ∀ s, mdp_head (MF := MF) (mdp_encode_head s)).
   { intro s. eapply mdp_head_coinduction with
       (P := fun h => exists t, h = mdp_encode_head t).
     - intros h [t ->]. intro a.
@@ -159,11 +161,11 @@ Proof.
 Qed.
 
 Theorem mdp_bisim_head_sound s t :
-  mdp_bisim s t -> head_bisim (MF := MF) eq (mdp_encode_head s) (mdp_encode_head t).
+  mdp_bisim s t → head_bisim (MF := MF) eq (mdp_encode_head s) (mdp_encode_head t).
 Proof.
   intro H. eapply head_bisim_coinduction with
-    (sim := fun h k => exists s t, h = mdp_encode_head s /\
-      k = mdp_encode_head t /\ mdp_bisim s t).
+    (sim := fun h k => exists s t, h = mdp_encode_head s ∧
+      k = mdp_encode_head t ∧ mdp_bisim s t).
   - intros h k [u [v [-> [-> Huv]]]].
     destruct (mdp_bisim_unfold Huv) as [Hobs Hsteps].
     unfold head_bisimF, mdp_encode_head. rewrite Hobs. constructor. intro a.
@@ -177,14 +179,14 @@ Qed.
 (** The two forms are proof states only: a selected encoded state, or an
     action's sampled successor distribution. They do not define semantics. *)
 Inductive mdp_encoding_candidate :
-    ptree' (mdpE (mdp_observations D) (mdp_actions D)) MN unit ->
-    ptree' (mdpE (mdp_observations D) (mdp_actions D)) MN unit -> Prop :=
-  | MECState s t : mdp_bisim s t ->
+    ptree' (mdpE (mdp_observations D) (mdp_actions D)) MN unit →
+    ptree' (mdpE (mdp_observations D) (mdp_actions D)) MN unit → Prop :=
+  | MECState s t : mdp_bisim s t →
       mdp_encoding_candidate (observe (mdp_encode s)) (observe (mdp_encode t))
-  | MECSample mu nu : sem_lift mdp_bisim mu nu ->
+  | MECSample mu nu : sem_lift mdp_bisim mu nu →
       mdp_encoding_candidate (ProbF mu mdp_encode) (ProbF nu mdp_encode).
 
-Lemma mdp_encoding_head_related s t : mdp_bisim s t ->
+Lemma mdp_encoding_head_related s t : mdp_bisim s t →
   ptree_stable_head_rel eq mdp_encoding_candidate
     (mdp_encode_head s) (mdp_encode_head t).
 Proof.
@@ -194,7 +196,7 @@ Proof.
 Qed.
 
 Theorem mdp_bisim_peutt_sound s t :
-  mdp_bisim s t -> peutt (MF := MF) eq (mdp_encode s) (mdp_encode t).
+  mdp_bisim s t → peutt (MF := MF) eq (mdp_encode s) (mdp_encode t).
 Proof.
   intro H. eapply peutt_coinduction with (sim := mdp_encoding_candidate).
   - intros u v Huv. destruct Huv as [u v Huv|mu nu Hlift].
@@ -215,12 +217,12 @@ End Source.
     (possibly unbounded) source measures, injective state encoding, or new
     probability class is required. Observations and actions are unchanged. *)
 Section KernelRepresentation.
-Context {MS MN : Type -> Type}
+Context {MS MN : Type → Type}
   `{SI : SemanticMeasure MS} `{SO : @SemanticOmega MS SI}
   `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI}.
 Variable D : MDP MS.
-Variable kernel : mdp_states D -> mdp_actions D -> MN (mdp_states D).
-Hypothesis kernel_total : forall s a, sem_total (kernel s a).
+Variable kernel : mdp_states D → mdp_actions D → MN (mdp_states D).
+Hypothesis kernel_total : ∀ s a, sem_total (kernel s a).
 
 Definition mdp_represent : MDP MN :=
   {| mdp_states := mdp_states D;
@@ -236,12 +238,12 @@ Context `{SC : @SemanticMeasureCoreLaws MS SI}
 (** Faithfulness is an iff for distribution lifting on the represented
     rows, for every candidate relation. It is NOT a bisimulation theorem
     assumed as a capability. *)
-Hypothesis kernel_lift : forall (rel : mdp_states D -> mdp_states D -> Prop) s t a,
-  sem_lift rel (mdp_transition D s a) (mdp_transition D t a) <->
+Hypothesis kernel_lift : ∀ (rel : mdp_states D → mdp_states D → Prop) s t a,
+  sem_lift rel (mdp_transition D s a) (mdp_transition D t a) ↔
   sem_lift rel (kernel s a) (kernel t a).
 
 Theorem mdp_represent_bisim_iff s t :
-  mdp_bisim (D := D) s t <-> mdp_bisim (D := mdp_represent) s t.
+  mdp_bisim (D := D) s t ↔ mdp_bisim (D := mdp_represent) s t.
 Proof.
   split; intro H.
   - eapply (mdp_bisim_coinduction (D := mdp_represent))

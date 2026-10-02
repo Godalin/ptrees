@@ -7,6 +7,8 @@
     Boundary: shared arithmetic is imported, not reproved by congruence.
     User navigation: docs/CASE_STUDIES.md. *)
 (** Algebraic composition of independently verified Factory components. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
@@ -43,7 +45,7 @@ Local Notation peutt := (@peutt factoryE EnumQ MF
 (** No termination hypothesis: the closed loop respects sampler equivalence. *)
 Theorem peutt_factory_sampler_congr
     (s1 s2 : ptree factoryE EnumQ bool) q :
-  peutt eq s1 s2 ->
+  peutt eq s1 s2 →
   peutt eq (factory_with_sampler s1 q) (factory_with_sampler s2 q).
 Proof.
   intro Hsampler. unfold factory_with_sampler, factory_sampler_step.

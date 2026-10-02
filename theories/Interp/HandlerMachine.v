@@ -3,6 +3,8 @@
     not an unguarded appeal to target behavioral equivalence. This module
     proves relational simulation of that machine. Adequacy with the existing
     tree interpreter is a separate obligation; it is not assumed here. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure Omega Mixed RelationalClosure.
@@ -14,15 +16,15 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section HandlerConfigurations.
-Context {E F MN : Type -> Type}.
+Context {E F MN : Type → Type}.
 
 Inductive handler_config (A : Type) : Type :=
 | SourceConfig (t : ptree E MN A)
-| HandlerConfig {X : Type} (active : ptree F MN X) (k : X -> ptree E MN A).
+| HandlerConfig {X : Type} (active : ptree F MN X) (k : X → ptree E MN A).
 Arguments SourceConfig {A} _.
 Arguments HandlerConfig {A X} _ _.
 
-Variable handler : forall X, E X -> ptree F MN X.
+Variable handler : ∀ X, E X → ptree F MN X.
 
 Definition handler_config_tree {A} (c : handler_config A) : ptree F MN A :=
   match c with
@@ -38,7 +40,7 @@ Definition source_front_result {A} (h : stable_head E MN A) :
   | @FHVis _ _ _ X e k => SHInternal (HandlerConfig (handler e) k)
   end.
 
-Definition handler_front_result {A X} (k : X -> ptree E MN A)
+Definition handler_front_result {A X} (k : X → ptree E MN A)
     (h : stable_head F MN X) : stable_target (handler_config A) (stable_head F MN A) :=
   match h with
   | FHRet x => SHInternal (SourceConfig (k x))
@@ -50,9 +52,9 @@ Arguments SourceConfig {E F MN A} _.
 Arguments HandlerConfig {E F MN A X} _ _.
 
 Section PrimitiveMachine.
-Context {E F MN MF : Type -> Type} `{FI : SemanticMeasure MF}
+Context {E F MN MF : Type → Type} `{FI : SemanticMeasure MF}
   `{MX : MixedMeasure MN MF}.
-Variable handler : forall X, E X -> ptree F MN X.
+Variable handler : ∀ X, E X → ptree F MN X.
 
 (** The physical machine performs one native operation, rather than taking
     a complete frontier. Its extra handler-return transition is silent. *)
@@ -80,7 +82,7 @@ Definition handler_primitive_kernel {A} (c : @handler_config E F MN A) :
 End PrimitiveMachine.
 
 Section CompleteFrontier.
-Context {MN MF : Type -> Type} `{FI : SemanticMeasure MF}
+Context {MN MF : Type → Type} `{FI : SemanticMeasure MF}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{Select : @SemanticOmegaSelection MF FI FO}.
@@ -96,7 +98,7 @@ Lemma handler_complete_front_hitting {E A} (t : ptree E MN A) :
   ptree_stable_hitting (MF := MF) (observe t) (handler_complete_front t).
 Proof. exact (proj2_sig (sem_lub_choose _)). Qed.
 
-Context {E F : Type -> Type} (handler : forall X, E X -> ptree F MN X).
+Context {E F : Type → Type} (handler : ∀ X, E X → ptree F MN X).
 
 Definition handler_machine_kernel {A} (c : @handler_config E F MN A) :
     MF (stable_target (@handler_config E F MN A) (stable_head F MN A)) :=
@@ -109,15 +111,15 @@ Definition handler_machine_kernel {A} (c : @handler_config E F MN A) :
 End CompleteFrontier.
 
 Section HandlerMachineSimulation.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
   `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 Variable Hbind : relational_bind FI.
-Variable handler : forall X, E X -> ptree F MN X.
-Context {A B : Type} (RR : A -> B -> Prop).
+Variable handler : ∀ X, E X → ptree F MN X.
+Context {A B : Type} (RR : A → B → Prop).
 
 Local Notation source_rel := (@peutt E MN MF FI FC MX FO A B RR).
 Local Notation candidate := (interp_bisim_candidate (MF := MF) RR handler).
@@ -125,18 +127,18 @@ Local Notation heads_rel := (@ptree_stable_head_rel F MN A B RR
   (@bind_upto_closure F MN MF FI FC MX FO A B RR candidate)).
 
 Inductive handler_config_rel :
-    @handler_config E F MN A -> @handler_config E F MN B -> Prop :=
-| SourceConfigsRelated t u : source_rel t u ->
+    @handler_config E F MN A → @handler_config E F MN B → Prop :=
+| SourceConfigsRelated t u : source_rel t u →
     handler_config_rel (SourceConfig t) (SourceConfig u)
 | HandlerConfigsRelated {X} (active : ptree F MN X)
-    (k1 : X -> ptree E MN A) (k2 : X -> ptree E MN B) :
-    (forall x, source_rel (k1 x) (k2 x)) ->
+    (k1 : X → ptree E MN A) (k2 : X → ptree E MN B) :
+    (∀ x, source_rel (k1 x) (k2 x)) →
     handler_config_rel (HandlerConfig active k1) (HandlerConfig active k2).
 
-Lemma handler_front_result_related {X} (k1 : X -> ptree E MN A)
-    (k2 : X -> ptree E MN B) :
-  (forall x, source_rel (k1 x) (k2 x)) ->
-  forall h : stable_head F MN X,
+Lemma handler_front_result_related {X} (k1 : X → ptree E MN A)
+    (k2 : X → ptree E MN B) :
+  (∀ x, source_rel (k1 x) (k2 x)) →
+  ∀ h : stable_head F MN X,
     stable_target_rel handler_config_rel heads_rel
       (handler_front_result handler k1 h) (handler_front_result handler k2 h).
 Proof.
@@ -152,7 +154,7 @@ Proof.
 Qed.
 
 Theorem handler_machine_kernel_related c d :
-  handler_config_rel c d ->
+  handler_config_rel c d →
   sem_lift (stable_target_rel handler_config_rel heads_rel)
     (handler_machine_kernel handler c) (handler_machine_kernel handler d).
 Proof.
@@ -170,7 +172,7 @@ Qed.
 Variable Hzero : relational_zero FO.
 
 Theorem handler_machine_finite_related fuel c d :
-  handler_config_rel c d ->
+  handler_config_rel c d →
   sem_lift heads_rel
     (stable_hitting_approx (handler_machine_kernel handler) fuel c)
     (stable_hitting_approx (handler_machine_kernel handler) fuel d).
@@ -185,9 +187,9 @@ Variable Hlimit : relational_lub FO.
     events are traversed by finite kernel induction and an increasing lub,
     NOT by invoking target peutt before a visible guard. *)
 Theorem handler_machine_complete_related c d mu nu :
-  handler_config_rel c d ->
-  stable_hitting (handler_machine_kernel handler) c mu ->
-  stable_hitting (handler_machine_kernel handler) d nu ->
+  handler_config_rel c d →
+  stable_hitting (handler_machine_kernel handler) c mu →
+  stable_hitting (handler_machine_kernel handler) d nu →
   sem_lift heads_rel mu nu.
 Proof.
   apply (stable_hitting_rel Hbind Hzero handler_machine_kernel_related Hlimit).

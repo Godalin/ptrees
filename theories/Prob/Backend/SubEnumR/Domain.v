@@ -1,5 +1,7 @@
 (** One-way finite-real expectation model. Native arithmetic stays independent
     of this file; FreeOmega validation reuses the generic native bridge. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -16,9 +18,9 @@ Local Open Scope ring_scope.
 Section RealDomain.
 Variable R : realType.
 
-Lemma real_enum_expect_continuous {A} (mu : list (R * A)) (f : nat -> A -> R) :
-  real_enum_nonnegative mu -> (forall n, oval_test (f n)) ->
-  (forall n x, f n x <= f (S n) x) ->
+Lemma real_enum_expect_continuous {A} (mu : list (R * A)) (f : nat → A → R) :
+  real_enum_nonnegative mu → (∀ n, oval_test (f n)) →
+  (∀ n x, f n x <= f (S n) x) →
   real_enum_expect (oval_pointwise_sup f) mu = oval_sup (fun n => real_enum_expect (f n) mu).
 Proof.
   intros Hnn Hf Hi; induction mu as [|[p x] tl IH];
@@ -54,13 +56,13 @@ Proof. intros f Hf; by rewrite /= /subenumR_expect /= mul1r addr0. Qed.
 Theorem subenumR_domain_zero {A} :
   oval_eq (subenumR_domain (@subenumR_zero R A)) (oval_bottom R).
 Proof. intros f Hf; reflexivity. Qed.
-Theorem subenumR_domain_bind {A B} (mu : SubEnumR R A) (k : A -> SubEnumR R B) :
+Theorem subenumR_domain_bind {A B} (mu : SubEnumR R A) (k : A → SubEnumR R B) :
   oval_eq (subenumR_domain (subenumR_bind mu k))
     (oval_bind (subenumR_domain mu) (fun x => subenumR_domain (k x))).
 Proof. intros f Hf; exact: subenumR_expect_bind. Qed.
 
-Lemma real_enum_expect_support_ext {A} (mu : list (R * A)) (f g : A -> R) :
-  (forall p x, List.In (p,x) mu -> p <> 0 -> f x = g x) ->
+Lemma real_enum_expect_support_ext {A} (mu : list (R * A)) (f g : A → R) :
+  (∀ p x, List.In (p,x) mu → p ≠ 0 → f x = g x) →
   real_enum_expect f mu = real_enum_expect g mu.
 Proof.
   induction mu as [|[p x] tl IH]; intros H;
@@ -68,22 +70,22 @@ Proof.
   have He : real_enum_expect f tl = real_enum_expect g tl.
   { apply IH; intros q y Hy Hq; exact (H q y (or_intror Hy) Hq). }
   rewrite He; destruct (eqVneq p 0) as [->|Hp]; first by rewrite !mul0r.
-  have Hnz : p <> 0 by move=> Hz; move/eqP: Hp; exact.
+  have Hnz : p ≠ 0 by move=> Hz; move/eqP: Hp; exact.
   by rewrite (H p x (or_introl (Logic.eq_refl _)) Hnz).
 Qed.
 
 Theorem subenumR_domain_ae {A} (mu : SubEnumR R A) P :
-  subenumR_ae mu P -> oval_ae (subenumR_domain mu) P.
+  subenumR_ae mu P → oval_ae (subenumR_domain mu) P.
 Proof.
   intros H f g Hf Hg Hfg; apply real_enum_expect_support_ext.
   intros p x Hin Hnz; exact (Hfg x (H p x Hin Hnz)).
 Qed.
 Theorem subenumR_domain_eq {A} (mu nu : SubEnumR R A) :
-  subenumR_eq mu nu -> oval_eq (subenumR_domain mu) (subenumR_domain nu).
+  subenumR_eq mu nu → oval_eq (subenumR_domain mu) (subenumR_domain nu).
 Proof. intros H f Hf; exact (H f). Qed.
 
-Theorem subenumR_domain_lift {A B} (S : A -> B -> Prop) (mu : SubEnumR R A) (nu : SubEnumR R B) f g :
-  subenumR_lift S mu nu -> (forall x y, S x y -> f x <= g y) ->
+Theorem subenumR_domain_lift {A B} (S : A → B → Prop) (mu : SubEnumR R A) (nu : SubEnumR R B) f g :
+  subenumR_lift S mu nu → (∀ x y, S x y → f x <= g y) →
   oval_eval (subenumR_domain mu) f <= oval_eval (subenumR_domain nu) g.
 Proof.
   intros [j [Hl [Hr Hj]]] Hfg; change (subenumR_expect mu f <= subenumR_expect nu g).

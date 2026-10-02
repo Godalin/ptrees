@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Logic Require Import ClassicalChoice ChoiceFacts.
@@ -19,30 +21,30 @@ Unset Printing Implicit Defensive.
     conditional joints.  No quotient-to-native reflection is assumed. *)
 Section NativeJoint.
 Universes node node_rep frontier.
-Context {E : Type -> Type} {MN : Type@{node} -> Type@{node_rep}}
+Context {E : Type → Type} {MN : Type@{node} → Type@{node_rep}}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
   `{NBAE : @SemanticMeasureBindAEExactLaws MN NI} {A B : Type}.
-Variable RR : A -> B -> Prop.
-Variable sim : ptree E MN A -> ptree E MN B -> Prop.
+Variable RR : A → B → Prop.
+Variable sim : ptree E MN A → ptree E MN B → Prop.
 Let Anchor : Type@{frontier} := (ptree E MN A * ptree E MN B)%type.
 Local Notation qlift := (@free_omega_qlift@{
   frontier frontier node node node node node node node node node node frontier frontier frontier
   node node node node node_rep node node node node node node node node
   node node node node node node node node node node} MN NI NO _ _).
 
-Hypothesis node_realizes : forall {X Y : Type@{node}} (R : X -> Y -> Prop)
-    (mu : MN X) (nu : MN Y), sem_lift R mu nu ->
-    exists joint, semantic_coupling R mu nu joint.
+Hypothesis node_realizes : ∀ {X Y : Type@{node}} (R : X → Y → Prop)
+    (mu : MN X) (nu : MN Y), sem_lift R mu nu →
+    ∃ joint, semantic_coupling R mu nu joint.
 
 Context {t : ptree E MN A} {u : ptree E MN B}.
 Variable p : finite_internal_plan t.
 Variable q : finite_internal_plan u.
 Context {Z : Type@{node}}.
 Variable joint : MN Z.
-Variable left : Z -> internal_plan_path p.
-Variable right : Z -> internal_plan_path q.
+Variable left : Z → internal_plan_path p.
+Variable right : Z → internal_plan_path q.
 Hypothesis joint_left : qlift (fun z x => left z = x)
   (FOSample joint (fun z => FORet z))
   (FOSample (internal_plan_measure p) (fun x => FORet x)).
@@ -53,15 +55,15 @@ Hypothesis joint_guard : sem_ae joint (fun z => (fun t u => pstrongF RR sim (obs
   (internal_plan_residual p (left z)) (internal_plan_residual q (right z))).
 
 Theorem finite_internal_native_joint_round :
-  exists (W : Type@{node}) (round : MN W)
-    (project_left : W -> native_sample_type (internal_plan_round_native p))
-    (project_right : W -> native_sample_type (internal_plan_round_native q)),
+  ∃ (W : Type@{node}) (round : MN W)
+    (project_left : W → native_sample_type (internal_plan_round_native p))
+    (project_right : W → native_sample_type (internal_plan_round_native q)),
     qlift (fun w x => project_left w = x)
       (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x)) /\
+      (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x)) ∧
     qlift (fun w y => project_right w = y)
       (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)) /\
+      (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)) ∧
     sem_ae round (fun w => internal_round_path_rel RR sim p q
       (project_left w) (project_right w)).
 Proof.
@@ -75,7 +77,7 @@ Proof.
     internal_round_target_rel RR sim
       (native_sample_value (internal_guard_native (internal_plan_residual p (left z))) gx)
       (native_sample_value (internal_guard_native (internal_plan_residual q (right z))) gy)).
-  assert (Hex : forall z, exists conditional : MN (U (left z) * V (right z)),
+  assert (Hex : ∀ z, exists conditional : MN (U (left z) * V (right z)),
     Good z -> semantic_coupling (Rguard z) (lk (left z)) (rk (right z)) conditional).
   { intro z. destruct (classic (Good z)) as [Hz|Hz].
     - destruct (node_realizes (internal_guard_native_coupled Hz)) as [row Hrow].

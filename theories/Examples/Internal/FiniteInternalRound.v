@@ -1,4 +1,6 @@
 (** Role: supporting compression/scheduling/recovery example; not public theory. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Arith Require Import PeanoNat.
@@ -74,9 +76,9 @@ Example zero_guard_measure_raw :
 Proof. reflexivity. Qed.
 
 Section NonuniformRound.
-Context {E MN : Type -> Type} `{NI : SemanticMeasure MN} {R : Type}.
+Context {E MN : Type → Type} `{NI : SemanticMeasure MN} {R : Type}.
 
-Definition nonuniform_round_path (mu : MN nat) (k : nat -> ptree E MN R) (n : nat) :
+Definition nonuniform_round_path (mu : MN nat) (k : nat → ptree E MN R) (n : nat) :
   native_sample_type (internal_plan_round_native (nonuniform_plan mu (fun n => Tau (k n)))).
 Proof.
   refine (existT _ (existT _ n (delay_path n (Tau (k n)))) _).
@@ -87,7 +89,7 @@ Defined.
 
 (** Branch n spends n+1 steps in compression and another in its Tau
     guard.  There is no common bound on these syntactic path costs. *)
-Example nonuniform_round_cost (mu : MN nat) (k : nat -> ptree E MN R) n :
+Example nonuniform_round_cost (mu : MN nat) (k : nat → ptree E MN R) n :
   internal_round_steps (nonuniform_plan mu (fun n => Tau (k n)))
     (nonuniform_round_path mu k n) = S (S n).
 Proof.

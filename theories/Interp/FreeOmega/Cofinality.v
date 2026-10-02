@@ -1,4 +1,6 @@
 (** Role: Interpreter compositionality. Depends on equational theory (and comparison semantics for Atomic/MDP); not primitive syntax. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -22,15 +24,15 @@ From PTree.Eq.FreeOmega Require Import Bind.
 Require Import PTree.Interp.Kernel.
 Require PTree.Interp.Scheduling.
 Section FreeOmegaInterpCofinality.
-Context {E : Type -> Type} {MN : Type -> Type}
+Context {E : Type → Type} {MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
 
 Section InterpCofinality.
-Context {F : Type -> Type}.
-Variable handler : forall X, E X -> ptree F MN X.
+Context {F : Type → Type}.
+Variable handler : ∀ X, E X → ptree F MN X.
 
 Definition ptree_interp_approx_cofinal {R}
     (t : ptree E MN R) : Prop :=

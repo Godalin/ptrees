@@ -1,6 +1,8 @@
 (** Role: One-way external validation of raw FreeOmega evaluators.
     Continuity is in bounded tests, not a claim that arbitrary raw lubs
     are additive measures. No concrete backend or joint-existence law. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -17,13 +19,13 @@ Import GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Section Continuity.
-Context {MN : Type -> Type} {R : realType}.
-Variable native : forall X, MN X -> OmegaVal R X.
+Context {MN : Type → Type} {R : realType}.
+Variable native : ∀ X, MN X → OmegaVal R X.
 Arguments native {X} _.
 Local Notation upper := (free_omega_model_upper (@native)).
 
 Lemma model_upper_mono {A} (t : FreeOmega MN A) f g :
-  oval_test f -> oval_test g -> (forall x, f x <= g x) -> upper t f <= upper t g.
+  oval_test f → oval_test g → (∀ x, f x <= g x) → upper t f <= upper t g.
 Proof.
   intros Hf Hg Hfg; induction t as [x| |X mu k IH|c IH]; cbn [free_omega_model_upper].
   - exact (Hfg x).
@@ -36,8 +38,8 @@ Proof.
     intro n; exact (proj2 (model_upper_bounds (@native) (c n) Hg)).
 Qed.
 
-Theorem model_upper_continuous {A} (t : FreeOmega MN A) (f : nat -> A -> R) :
-  (forall n, oval_test (f n)) -> (forall n x, f n x <= f (S n) x) ->
+Theorem model_upper_continuous {A} (t : FreeOmega MN A) (f : nat → A → R) :
+  (∀ n, oval_test (f n)) → (∀ n x, f n x <= f (S n) x) →
   upper t (oval_pointwise_sup f) = oval_sup (fun n => upper t (f n)).
 Proof.
   intros Hf Hi; induction t as [x| |X mu k IH|c IH]; cbn [free_omega_model_upper].
@@ -54,19 +56,19 @@ Qed.
 
 (** Null branches may be non-monotone. Totalize tests outside the good
     support, use ordinary OmegaVal continuity, then transport back by AE. *)
-Lemma model_native_continuous_ae {X} (L : OmegaVal R X) P (f : nat -> X -> R) :
-  oval_ae L P -> (forall n, oval_test (f n)) ->
-  (forall x, P x -> forall n, f n x <= f (S n) x) ->
+Lemma model_native_continuous_ae {X} (L : OmegaVal R X) P (f : nat → X → R) :
+  oval_ae L P → (∀ n, oval_test (f n)) →
+  (∀ x, P x → ∀ n, f n x <= f (S n) x) →
   oval_eval L (oval_pointwise_sup f) = oval_sup (fun n => oval_eval L (f n)).
 Proof.
   intros HP Hf Hi.
   pose g n x := if pselect (P x) then f n x else 0.
-  have Hg : forall n, oval_test (g n).
+  have Hg : ∀ n, oval_test (g n).
   { intros n x; rewrite /g; case: pselect=> Hx; [exact (Hf n x)|].
     split; [exact: lexx|exact: ler01]. }
-  have Hgi : forall n x, g n x <= g (S n) x.
+  have Hgi : ∀ n x, g n x <= g (S n) x.
   { intros n x; rewrite /g; case: pselect=> Hx; [exact (Hi x Hx n)|exact: lexx]. }
-  have He : forall n, oval_eval L (f n) = oval_eval L (g n).
+  have He : ∀ n, oval_eval L (f n) = oval_eval L (g n).
   { intro n; apply (HP _ _ (Hf n) (Hg n)); intros x Hx.
     rewrite /g; by case: pselect. }
   transitivity (oval_eval L (oval_pointwise_sup g)).
@@ -78,21 +80,21 @@ Qed.
 
 Section NativeLaws.
 Context `{NI : SemanticMeasure MN}.
-Hypothesis native_ae : forall X (mu : MN X) P, sem_ae mu P -> oval_ae (native mu) P.
-Hypothesis native_lift : forall X Y (T : X -> Y -> Prop) (mu : MN X) (nu : MN Y) f g,
-  sem_lift T mu nu -> oval_test f -> oval_test g ->
-  (forall x y, T x y -> f x <= g y) -> oval_eval (native mu) f <= oval_eval (native nu) g.
+Hypothesis native_ae : ∀ X (mu : MN X) P, sem_ae mu P → oval_ae (native mu) P.
+Hypothesis native_lift : ∀ X Y (T : X → Y → Prop) (mu : MN X) (nu : MN Y) f g,
+  sem_lift T mu nu → oval_test f → oval_test g →
+  (∀ x y, T x y → f x <= g y) → oval_eval (native mu) f <= oval_eval (native nu) g.
 
 Lemma model_approx_mono {A} (t u : FreeOmega MN A) f :
-  free_omega_approx eq t u -> oval_test f -> upper t f <= upper u f.
+  free_omega_approx eq t u → oval_test f → upper t f <= upper u f.
 Proof.
   intros H Hf; eapply model_upper_approx; [exact native_lift|exact H|exact Hf|exact Hf|].
   intros x y ->; exact: lexx.
 Qed.
 
-Theorem model_sample_lub {A X} (mu : MN X) (c : X -> nat -> FreeOmega MN A) f :
-  sem_ae mu (fun x => forall n, free_omega_approx eq (c x n) (c x (S n))) ->
-  oval_test f ->
+Theorem model_sample_lub {A X} (mu : MN X) (c : X → nat → FreeOmega MN A) f :
+  sem_ae mu (fun x => ∀ n, free_omega_approx eq (c x n) (c x (S n))) →
+  oval_test f →
   upper (FOSample mu (fun x => FOLub (c x))) f =
   upper (FOLub (fun n => FOSample mu (fun x => c x n))) f.
 Proof.
@@ -101,10 +103,10 @@ Proof.
   - intros x Hx n; exact (model_approx_mono (Hx n) Hf).
 Qed.
 
-Theorem model_diagonal_upper {A} (c : nat -> nat -> FreeOmega MN A) f :
-  (forall i j, free_omega_approx eq (c i j) (c i (S j))) ->
-  (forall i j, free_omega_approx eq (c i j) (c (S i) j)) ->
-  oval_test f -> upper (FOLub (fun i => FOLub (c i))) f =
+Theorem model_diagonal_upper {A} (c : nat → nat → FreeOmega MN A) f :
+  (∀ i j, free_omega_approx eq (c i j) (c i (S j))) →
+  (∀ i j, free_omega_approx eq (c i j) (c (S i) j)) →
+  oval_test f → upper (FOLub (fun i => FOLub (c i))) f =
     upper (FOLub (fun n => c n n)) f.
 Proof.
   intros Hr Hc Hf; apply model_upper_lub_diagonal; [| |exact Hf].
@@ -112,16 +114,16 @@ Proof.
   - intros i j g Hg; exact (model_approx_mono (Hr i j) Hg).
 Qed.
 
-Theorem model_bind_lub {A X} (s : nat -> FreeOmega MN X)
-    (k : X -> nat -> FreeOmega MN A) f :
-  (forall n, free_omega_approx eq (s n) (s (S n))) ->
-  (forall x n, free_omega_approx eq (k x n) (k x (S n))) ->
-  oval_test f ->
+Theorem model_bind_lub {A X} (s : nat → FreeOmega MN X)
+    (k : X → nat → FreeOmega MN A) f :
+  (∀ n, free_omega_approx eq (s n) (s (S n))) →
+  (∀ x n, free_omega_approx eq (k x n) (k x (S n))) →
+  oval_test f →
   upper (free_omega_bind (FOLub s) (fun x => FOLub (k x))) f =
   upper (FOLub (fun n => free_omega_bind (s n) (fun x => k x n))) f.
 Proof.
   intros Hs Hk Hf.
-  have Hrow : forall i, upper (free_omega_bind (s i) (fun x => FOLub (k x))) f =
+  have Hrow : ∀ i, upper (free_omega_bind (s i) (fun x => FOLub (k x))) f =
       upper (FOLub (fun n => free_omega_bind (s i) (fun x => k x n))) f.
   { intro i; rewrite model_upper_bind; cbn [free_omega_model_upper].
     rewrite (model_upper_continuous (s i) (f := fun n x => upper (k x n) f)).

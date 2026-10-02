@@ -1,5 +1,7 @@
 (** Exception elimination into ExtLib [eitherT]. Native sampling is lifted
     through [inr], never interpreted as an exception or normalized. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From ExtLib.Structures Require Import Monad.
 From ExtLib.Data.Monads Require Import EitherMonad.
@@ -12,9 +14,9 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section ExceptionFold.
-Context {Err : Type} {E MN T : Type -> Type} `{MT : Monad T} `{IT : MonadIter T}.
-Variable handle : forall X, E X -> T X.
-Variable sample : forall X, MN X -> T X.
+Context {Err : Type} {E MN T : Type → Type} `{MT : Monad T} `{IT : MonadIter T}.
+Variable handle : ∀ X, E X → T X.
+Variable sample : ∀ X, MN X → T X.
 
 Definition exception_effect {X} (e : (exceptE Err +' E) X) : eitherT Err T X :=
   mkEitherT (match e with

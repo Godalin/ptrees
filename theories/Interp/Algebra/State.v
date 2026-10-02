@@ -1,5 +1,7 @@
 (** Global-state equations AFTER interpretation. Source Get/Put remain
     visible events; sampling preserves each branch's current state. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From ITree.Events Require Import State.
 From ITree.Indexed Require Import Sum.
@@ -12,7 +14,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Laws.
-Context {S : Type} {E MN MF : Type -> Type}
+Context {S : Type} {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI} `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -20,15 +22,15 @@ Context {S : Type} {E MN MF : Type -> Type}
   `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}.
 Local Notation W := (peutt (MF := MF) eq).
 
-Lemma state_get_step {A} (k : S -> ptree (stateE S +' E) MN A) s :
+Lemma state_get_step {A} (k : S → ptree (stateE S +' E) MN A) s :
   W (run_state (Vis (inl1 (Get S)) k) s) (run_state (k s) s).
 Proof. eapply peutt_tau_step; [rewrite observe_run_state; reflexivity|apply peutt_refl]. Qed.
 
-Lemma state_put_step {A} (k : unit -> ptree (stateE S +' E) MN A) s s' :
+Lemma state_put_step {A} (k : unit → ptree (stateE S +' E) MN A) s s' :
   W (run_state (Vis (inl1 (Put S s')) k) s) (run_state (k tt) s').
 Proof. eapply peutt_tau_step; [rewrite observe_run_state; reflexivity|apply peutt_refl]. Qed.
 
-Theorem run_state_get_get {A} (k : S -> S -> ptree (stateE S +' E) MN A) s :
+Theorem run_state_get_get {A} (k : S → S → ptree (stateE S +' E) MN A) s :
   W (run_state (Vis (inl1 (Get S)) (fun x => Vis (inl1 (Get S)) (k x))) s)
     (run_state (Vis (inl1 (Get S)) (fun x => k x x)) s).
 Proof.
@@ -42,7 +44,7 @@ Theorem run_state_get_put {A} (k : ptree (stateE S +' E) MN A) s :
     (run_state k s).
 Proof. eapply peutt_trans; [apply state_get_step|apply state_put_step]. Qed.
 
-Theorem run_state_put_get {A} (k : S -> ptree (stateE S +' E) MN A) s s' :
+Theorem run_state_put_get {A} (k : S → ptree (stateE S +' E) MN A) s s' :
   W (run_state (Vis (inl1 (Put S s')) (fun _ => Vis (inl1 (Get S)) k)) s)
     (run_state (Vis (inl1 (Put S s')) (fun _ => k s')) s).
 Proof.
@@ -60,7 +62,7 @@ Proof.
   - apply peutt_sym. apply state_put_step.
 Qed.
 
-Theorem run_state_prob {A X} (mu : MN X) (k : X -> ptree (stateE S +' E) MN A) s :
+Theorem run_state_prob {A X} (mu : MN X) (k : X → ptree (stateE S +' E) MN A) s :
   W (run_state (Prob mu k) s) (Prob mu (fun x => run_state (k x) s)).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
@@ -70,7 +72,7 @@ Context `{NC : @SemanticMeasureCoreLaws MN NI}
   `{MO : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
 
 Theorem run_state_get_prob {A X} (mu : MN X)
-    (k : S -> X -> ptree (stateE S +' E) MN A) s :
+    (k : S → X → ptree (stateE S +' E) MN A) s :
   W (run_state (Vis (inl1 (Get S)) (fun v => Prob mu (k v))) s)
     (run_state (Prob mu (fun x => Vis (inl1 (Get S)) (fun v => k v x))) s).
 Proof.
@@ -81,7 +83,7 @@ Proof.
 Qed.
 
 Theorem run_state_put_prob {A X} (mu : MN X)
-    (k : X -> ptree (stateE S +' E) MN A) s s' :
+    (k : X → ptree (stateE S +' E) MN A) s s' :
   W (run_state (Vis (inl1 (Put S s')) (fun _ => Prob mu k)) s)
     (run_state (Prob mu (fun x => Vis (inl1 (Put S s')) (fun _ => k x))) s).
 Proof.

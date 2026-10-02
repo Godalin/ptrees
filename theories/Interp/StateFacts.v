@@ -2,6 +2,8 @@
     arbitrary source peutt is preserved by eliminating handlers: that needs
     the separate collapsed-event argument. Structural equations already
     justify stateful program rewrites without any probability axioms. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 From Coq.Program Require Import Equality.
@@ -17,7 +19,7 @@ Unset Printing Implicit Defensive.
 Notation "` R" := (elem R) (at level 10).
 
 Section StateFacts.
-Context {S : Type} {E MN : Type -> Type}.
+Context {S : Type} {E MN : Type → Type}.
 
 Lemma run_state_ret {A} (a : A) s :
   pstruct eq (@run_state S E MN A (Ret a) s) (Ret (s, a)).
@@ -28,33 +30,33 @@ Lemma run_state_tau {A} (t : ptree (stateE S +' E) MN A) s :
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Lemma run_state_prob {A X} (mu : MN X)
-    (k : X -> ptree (stateE S +' E) MN A) s :
+    (k : X → ptree (stateE S +' E) MN A) s :
   pstruct eq (run_state (Prob mu k) s) (Prob mu (fun x => run_state (k x) s)).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
-Lemma run_state_get {A} (k : S -> ptree (stateE S +' E) MN A) s :
+Lemma run_state_get {A} (k : S → ptree (stateE S +' E) MN A) s :
   pstruct eq (run_state (Vis (inl1 (Get S)) k) s) (Tau (run_state (k s) s)).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
-Lemma run_state_put {A} (k : unit -> ptree (stateE S +' E) MN A) s s' :
+Lemma run_state_put {A} (k : unit → ptree (stateE S +' E) MN A) s s' :
   pstruct eq (run_state (Vis (inl1 (Put S s')) k) s) (Tau (run_state (k tt) s')).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Lemma run_state_forward {A X} (e : E X)
-    (k : X -> ptree (stateE S +' E) MN A) s :
+    (k : X → ptree (stateE S +' E) MN A) s :
   pstruct eq (run_state (Vis (inr1 e) k) s) (Vis e (fun x => run_state (k x) s)).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
-Definition state_pstruct_candidate {A B} (RR : A -> B -> Prop)
+Definition state_pstruct_candidate {A B} (RR : A → B → Prop)
     (v : ptree E MN (S * A)) (w : ptree E MN (S * B)) : Prop :=
-  exists t u s, v = run_state t s /\ w = run_state u s /\ pstruct RR t u.
+  ∃ t u s, v = run_state t s ∧ w = run_state u s ∧ pstruct RR t u.
 
-Theorem run_state_pstruct {A B} (RR : A -> B -> Prop)
+Theorem run_state_pstruct {A B} (RR : A → B → Prop)
     (t : ptree (stateE S +' E) MN A) (u : ptree (stateE S +' E) MN B) s :
-  pstruct RR t u -> pstruct (state_result_rel RR) (run_state t s) (run_state u s).
+  pstruct RR t u → pstruct (state_result_rel RR) (run_state t s) (run_state u s).
 Proof.
   intro Htu.
-  assert (Hmain : forall (v : ptree E MN (S * A)) (w : ptree E MN (S * B)),
+  assert (Hmain : ∀ (v : ptree E MN (S * A)) (w : ptree E MN (S * B)),
     state_pstruct_candidate RR v w ->
     pstruct (state_result_rel RR) v w).
   { unfold pstruct. coinduction CH CIH.
@@ -74,18 +76,18 @@ Proof.
   apply Hmain. exists t, u, s. repeat split; auto.
 Qed.
 
-Definition state_bind_candidate {A B} (k : A -> ptree (stateE S +' E) MN B)
+Definition state_bind_candidate {A B} (k : A → ptree (stateE S +' E) MN B)
     (v w : ptree E MN (S * B)) : Prop :=
-  (exists t s, v = run_state (PTree.bind t k) s /\
-    w = PTree.bind (run_state t s) (fun sa => run_state (k (snd sa)) (fst sa))) \/
+  (∃ t s, v = run_state (PTree.bind t k) s ∧
+    w = PTree.bind (run_state t s) (fun sa => run_state (k (snd sa)) (fst sa))) ∨
     pstruct eq v w.
 
 Theorem run_state_bind {A B} (t : ptree (stateE S +' E) MN A)
-    (k : A -> ptree (stateE S +' E) MN B) s :
+    (k : A → ptree (stateE S +' E) MN B) s :
   pstruct eq (run_state (PTree.bind t k) s)
     (PTree.bind (run_state t s) (fun sa => run_state (k (snd sa)) (fst sa))).
 Proof.
-  assert (Hmain : forall (v w : ptree E MN (S * B)),
+  assert (Hmain : ∀ (v w : ptree E MN (S * B)),
     state_bind_candidate k v w -> pstruct eq v w).
   { unfold pstruct. coinduction CH CIH. intros v w [Hmain|Hdone].
     - destruct Hmain as [t0 [s0 [-> ->]]]. unfold pstruct_body.

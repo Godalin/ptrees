@@ -2,6 +2,8 @@
 (** Phase 2 contracts: common finite algebra, without migrating a backend.
     Rational and real scalars use the same records; carriers need no equality,
     inhabitation, countability or MathComp packed structure. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -38,14 +40,14 @@ Example duplicate_raw_preserved :
 Proof. reflexivity. Qed.
 Example weighting_mass_two : finite_mass duplicate_weighting = 1 + 1.
 Proof. by rewrite /finite_mass /finite_enum_expect /= !mulr1 !addr0. Qed.
-Example overweight_not_subdistribution : ~ finite_mass duplicate_weighting <= 1.
+Example overweight_not_subdistribution : ¬ finite_mass duplicate_weighting <= 1.
 Proof.
   rewrite weighting_mass_two; intro H.
   have Hlt : (1 : R) < 1 + 1 by rewrite ltrDl ltr01.
   have Hbad := lt_le_trans Hlt H; by rewrite ltxx in Hbad.
 Qed.
 
-Example negative_list_rejected : ~ @finite_nonnegative R bool [(-1,true)].
+Example negative_list_rejected : ¬ @finite_nonnegative R bool [(-1,true)].
 Proof.
   intro H; have Hn := H (-1) true (or_introl (Logic.eq_refl _)).
   by rewrite oppr_ge0 ler10 in Hn.
@@ -74,15 +76,15 @@ Proof.
     exfalso; exact (Hnz (Logic.eq_refl _)).
 Qed.
 Example bind_preserves_probability {A B} (mu : FiniteSubdist R A)
-    (k : A -> FiniteSubdist R B) :
+    (k : A → FiniteSubdist R B) :
   finite_mass (finite_subdist_enum (finite_subdist_bind mu k)) <= 1.
 Proof. exact (finite_subdist_mass_bound _). Qed.
 Example bind_preserves_nonnegative {A B} (mu : FiniteSubdist R A)
-    (k : A -> FiniteSubdist R B) :
+    (k : A → FiniteSubdist R B) :
   finite_nonnegative (finite_enum_raw (finite_subdist_enum (finite_subdist_bind mu k))).
 Proof. exact (finite_enum_nonnegative _). Qed.
 Example bind_computes_by_expectation {A B} (mu : FiniteSubdist R A)
-    (k : A -> FiniteSubdist R B) f :
+    (k : A → FiniteSubdist R B) f :
   finite_subdist_expect (finite_subdist_bind mu k) f =
   finite_subdist_expect mu (fun x => finite_subdist_expect (k x) f).
 Proof. exact: finite_subdist_expect_bind. Qed.
@@ -128,7 +130,7 @@ Section HighCarrier.
 Universe u.
 Variable R : numDomainType.
 Definition high_finite_dirac (A : Type@{u}) : FiniteSubdist R Type@{u} := finite_subdist_ret R A.
-Example high_finite_bind (A : Type@{u}) (f : Type@{u} -> R) :
+Example high_finite_bind (A : Type@{u}) (f : Type@{u} → R) :
   finite_subdist_expect
     (finite_subdist_bind (high_finite_dirac A) (fun X => finite_subdist_ret R X)) f = f A.
 Proof. by rewrite finite_subdist_bind_ret_r /high_finite_dirac finite_subdist_expect_ret. Qed.

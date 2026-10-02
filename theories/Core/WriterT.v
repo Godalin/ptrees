@@ -1,6 +1,8 @@
 (** Log-first WriterT on ITree's existing [Monads.writerT] carrier.
     Accumulation is old <> new, including in iteration. These operations
     and law constructors are explicit, not global typeclass candidates. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms RelationClasses.
 From ExtLib.Structures Require Import Monad Monoid BinOps.
@@ -11,7 +13,7 @@ Unset Strict Implicit.
 Local Open Scope type_scope.
 
 Section WriterT.
-Context {W : Type} {T : Type -> Type} (op : Monoid W).
+Context {W : Type} {T : Type → Type} (op : Monoid W).
 Context `{MT : Monad T}.
 
 Definition writerT_monad : Monad (Monads.writerT W T) := {|
@@ -21,7 +23,7 @@ Definition writerT_monad : Monad (Monads.writerT W T) := {|
       (fun wb => @ret T MT _ (monoid_plus op (fst wa) (fst wb), snd wb)))
 |}.
 
-Definition writerT_step {I A} (f : I -> Monads.writerT W T (I+A)) (wi : W*I) :
+Definition writerT_step {I A} (f : I → Monads.writerT W T (I+A)) (wi : W*I) :
     T ((W*I) + (W*A)) :=
   @bind T MT _ _ (f (snd wi)) (fun wv => @ret T MT _ (match snd wv with
     | inl i => inl (monoid_plus op (fst wi) (fst wv), i)

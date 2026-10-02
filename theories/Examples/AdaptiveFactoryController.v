@@ -12,6 +12,8 @@
     4. Full-program calculation; 5. Reusable consequences.
     For the algebraic story, read [adaptive_factory_direct] and then
     [controller_program_rewrite]. The finite/limit analysis stays in §3. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -89,12 +91,12 @@ Definition round_update s :=
 Definition after_sensor s a :=
   if a then repair_update (report_update s a) else report_update s a.
 
-Variant publicE : Type -> Type :=
+Variant publicE : Type → Type :=
 | Request : publicE unit
-| Emit : bool -> publicE unit.
-Variant internalE : Type -> Type :=
+| Emit : bool → publicE unit.
+Variant internalE : Type → Type :=
 | ChooseSource : internalE bool
-| CheckSensor : bool -> internalE bool
+| CheckSensor : bool → internalE bool
 | Maintenance : internalE unit
 | Retry : internalE unit
 | Round : internalE unit.
@@ -112,7 +114,7 @@ Definition internal {X} (e : internalE X) : tree X :=
   PTree.trigger (inr1 (inl1 e)).
 Definition public {X} (e : publicE X) : tree X :=
   PTree.trigger (inr1 (inr1 e)).
-Definition update (f : machine_state -> machine_state) : tree unit :=
+Definition update (f : machine_state → machine_state) : tree unit :=
   s <- PTree.trigger (inl1 (Get machine_state));;
   PTree.trigger (inl1 (Put machine_state (f s))).
 
@@ -179,7 +181,7 @@ Definition controller_spec q (q0 : 0 <= q) (q1 : q <= 1) :
 Lemma lower_ret {A} (a : A) s : lower (Ret a) s ≈ₚ Ret (s,a).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
-Lemma lower_bind {A B} (t : tree A) (k : A -> tree B) s :
+Lemma lower_bind {A B} (t : tree A) (k : A → tree B) s :
   lower (x <- t;; k x) s ≈ₚ
   (sa <- lower t s;; lower (k (snd sa)) (fst sa)).
 Proof.
@@ -189,7 +191,7 @@ Proof.
     (PTree.interp internal_handler t) (fun x => PTree.interp internal_handler (k x)) s).
 Qed.
 
-Lemma lower_prob {A X} (mu : SubEnumQ X) (k : X -> tree A) s :
+Lemma lower_prob {A X} (mu : SubEnumQ X) (k : X → tree A) s :
   lower (Prob mu k) s ≈ₚ Prob mu (fun x => lower (k x) s).
 Proof.
   unfold lower. setoid_rewrite peutt_interp_prob.
@@ -218,10 +220,10 @@ Proof.
   apply peutt_observe_eq. reflexivity.
 Qed.
 
-Definition lowered_step {I A} (step : I -> tree (I+A)) (si : machine_state * I) :=
+Definition lowered_step {I A} (step : I → tree (I+A)) (si : machine_state * I) :=
   sa <- lower (step (snd si)) (fst si);;
   Ret (state_iter_result sa).
-Lemma lower_iter {I A} (step : I -> tree (I+A)) i s :
+Lemma lower_iter {I A} (step : I → tree (I+A)) i s :
   lower (PTree.iter step i) s ≈ₚ PTree.iter (lowered_step step) (s,i).
 Proof.
   unfold lower. setoid_rewrite peutt_interp_iter.
@@ -324,7 +326,7 @@ Qed.
 (** 3.2. Finite probability analysis. Retain the full state/bit experiment,
     prove symmetry and a uniform geometric tail; do not assume independence. *)
 
-Lemma source_expect src (f : bool -> rat) :
+Lemma source_expect src (f : bool → rat) :
   expect f (source_coin src) =
     low_weight src * f false + high_weight src * f true.
 Proof.
@@ -334,7 +336,7 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma attempt_expect s (f : machine_state + (machine_state * bool) -> rat) :
+Lemma attempt_expect s (f : machine_state + (machine_state * bool) → rat) :
   expect f (attempt_kernel s) =
     low_weight (health s) *
       (low_weight (health s) * f (inl (retry_update (after_sensor s false))) +
@@ -416,8 +418,8 @@ Proof.
     exact: (ler_wpM2r (exprn_ge0 n Hbase) (retry_bound (health s))).
 Qed.
 
-Theorem adaptive_pending_vanishes s eps : 0 < eps ->
-  exists N, forall n, (N <= n)%coq_nat -> expect pending (attempts n s) < eps.
+Theorem adaptive_pending_vanishes s eps : 0 < eps →
+  ∃ N, ∀ n, (N <= n)%coq_nat → expect pending (attempts n s) < eps.
 Proof.
   intro Heps.
   have Hpos : (0 < 2)%coq_nat by repeat constructor.
@@ -461,8 +463,8 @@ Proof.
     rewrite subrK mulr_natr mulr2n. exact H.
 Qed.
 
-Theorem adaptive_return_limit s b eps : 0 < eps ->
-  exists N, forall n, (N <= n)%coq_nat ->
+Theorem adaptive_return_limit s b eps : 0 < eps →
+  ∃ N, ∀ n, (N <= n)%coq_nat →
     `|expect (returns b) (attempts n s) - (1/2 : rat)| < eps.
 Proof.
   intro Heps. destruct (adaptive_pending_vanishes s Heps) as [N HN].
@@ -479,11 +481,11 @@ Qed.
 (** Boundary checks: adaptation is real, and successful state is correlated
     with the returned bit. Neither fact is silently erased by the analysis. *)
 Example retry_can_switch_source :
-  health initial_state = false /\
+  health initial_state = false ∧
   health (retry_update (after_sensor initial_state true)) = true.
 Proof. split; reflexivity. Qed.
 Example successful_states_distinct :
-  after_sensor initial_state false <> after_sensor initial_state true.
+  after_sensor initial_state false ≠ after_sensor initial_state true.
 Proof. discriminate. Qed.
 Example different_retry_rates :
   low_weight false ^+ 2 + high_weight false ^+ 2 <
@@ -492,7 +494,7 @@ Proof. by vm_compute. Qed.
 
 (** 3.3. Connect complete attempts to actual stable hitting. The
     observer rejects visible heads; None is never part of the limit law. *)
-Definition bit_observer {A} (value : A -> bool)
+Definition bit_observer {A} (value : A → bool)
     (h : stable_head publicE SubEnumQ A) : option bool :=
   match h with FHRet a => Some (value a) | FHVis _ _ _ => None end.
 Definition raw_loop s := PTree.iter normalized_step (s,tt).
@@ -610,7 +612,7 @@ Proof.
   exists N. intros n Hn. rewrite loop_round_observation. exact (HN n Hn).
 Qed.
 
-Lemma source_ae_inv src P : sem_ae (source_coin src) P -> forall b, P b.
+Lemma source_ae_inv src P : sem_ae (source_coin src) P → ∀ b, P b.
 Proof.
   intros H b. destruct b.
   - apply H with (p := high_weight src).
@@ -623,8 +625,8 @@ Qed.
 Definition fair_tree : ptree publicE SubEnumQ bool := sample fair_coin.
 Definition fair_heads : FreeOmega SubEnumQ (stable_head publicE SubEnumQ bool) :=
   b ←ω fair_coin ;; ηω (FHRet b).
-Lemma loop_heads_success s P : free_omega_ae P (loop_heads s) ->
-  forall b, P (FHRet (after_sensor s b,b)).
+Lemma loop_heads_success s P : free_omega_ae P (loop_heads s) →
+  ∀ b, P (FHRet (after_sensor s b,b)).
 Proof.
   intro HP. unfold loop_heads, iteration_frontier in HP. dependent destruction HP.
   specialize (H 1%nat).
@@ -648,7 +650,7 @@ Proof.
     + constructor. reflexivity.
     + exact (loop_heads_success HP b).
   - intros Q HQ.
-    have HQb : forall b, free_omega_ae Q (ηω (FHRet b)).
+    have HQb : ∀ b, free_omega_ae Q (ηω (FHRet b)).
     { intro b. apply (free_omega_ae_sample_inv HQ) with (p := one_div_two).
       - destruct b; cbn; auto.
       - vm_compute; discriminate. }
@@ -663,7 +665,7 @@ Proof.
     (obsA := bit_observer (@snd machine_state bool))
     (obsB := bit_observer (fun b => b))
     (outA := fair_options) (outB := fair_options)
-    (S := fun x y => exists b, x = Some b /\ y = Some b).
+    (S := fun x y => exists b, x = Some b ∧ y = Some b).
   - exact (loop_heads_observes s).
   - constructor. intro b. constructor.
   - eapply sem_lift_bind with (R := eq).

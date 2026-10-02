@@ -1,6 +1,8 @@
 (** Proof-only reconciliation of ITree's post-handler Tau with PTree's
     pre-handler Tau. This is a source-interpreter square, not postcomposition
     of two PTree handlers. No restriction is imposed on the source handler. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import RelationClasses Morphisms.
@@ -17,7 +19,7 @@ Unset Strict Implicit.
 Notation "` R" := (elem R) (at level 10).
 
 Section Source.
-Context {E F : Type -> Type} (h : forall X, E X -> itree F X).
+Context {E F : Type → Type} (h : ∀ X, E X → itree F X).
 
 (** An auxiliary scheduling variant; it is not an alternative public
     elaborator. Both interpreters use the original handler unchanged. *)
@@ -44,13 +46,13 @@ Proof.
 Qed.
 
 Definition itree_interp_schedule_candidate {A} (l r : itree F A) : Prop :=
-  (exists t, l = itree_interp_before t /\ r = Interp.interp h t) \/
-  (exists X (active : itree F X) (k : X -> itree E A),
-    l = ITreeDefinition.Tau (ITree.bind active (fun x => itree_interp_before (k x))) /\
+  (∃ t, l = itree_interp_before t ∧ r = Interp.interp h t) ∨
+  (∃ X (active : itree F X) (k : X → itree E A),
+    l = ITreeDefinition.Tau (ITree.bind active (fun x => itree_interp_before (k x))) ∧
     r = ITree.bind active (fun x => ITreeDefinition.Tau (Interp.interp h (k x)))).
 
-Lemma itree_interp_schedule {A} : forall l r : itree F A,
-  itree_interp_schedule_candidate l r -> eutt eq l r.
+Lemma itree_interp_schedule {A} : ∀ l r : itree F A,
+  itree_interp_schedule_candidate l r → eutt eq l r.
 Proof.
   einit. ecofix CIH. intros l r Hlr.
   destruct Hlr as [[t [-> ->]]|[X [active [k [-> ->]]]]].
@@ -82,7 +84,7 @@ Theorem itree_interp_before_eutt {A} (t : itree E A) :
 Proof. apply itree_interp_schedule. left. exists t. split; reflexivity. Qed.
 
 Section Embedding.
-Context {MN : Type -> Type} {A : Type}.
+Context {MN : Type → Type} {A : Type}.
 Local Definition lifted_handler X (e : E X) : ptree F MN X := from_itree (h e).
 
 Lemma observe_embed_before (t : itree E A) :
@@ -99,10 +101,10 @@ Proof.
 Qed.
 
 Definition embed_interp_candidate (l r : ptree F MN A) : Prop :=
-  (exists t, l = from_itree (itree_interp_before t) /\
-    r = PTree.interp lifted_handler (from_itree t)) \/
-  (exists X (active : itree F X) (k : X -> itree E A),
-    l = from_itree (ITree.bind active (fun x => itree_interp_before (k x))) /\
+  (∃ t, l = from_itree (itree_interp_before t) ∧
+    r = PTree.interp lifted_handler (from_itree t)) ∨
+  (∃ X (active : itree F X) (k : X → itree E A),
+    l = from_itree (ITree.bind active (fun x => itree_interp_before (k x))) ∧
     r = PTree.bind (from_itree active)
       (fun x => PTree.interp lifted_handler (from_itree (k x)))).
 
@@ -110,7 +112,7 @@ Theorem from_itree_interp_before (t : itree E A) :
   pstruct eq (from_itree (itree_interp_before t))
     (PTree.interp lifted_handler (from_itree t)).
 Proof.
-  assert (H : forall l r, embed_interp_candidate l r -> pstruct eq l r).
+  assert (H : ∀ l r, embed_interp_candidate l r -> pstruct eq l r).
   { unfold pstruct. coinduction CH CIH. intros l r Hlr.
     unfold pstruct_body.
     destruct Hlr as [[s [-> ->]]|[X [active [k [-> ->]]]]].

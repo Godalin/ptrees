@@ -1,4 +1,6 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -48,8 +50,8 @@ Qed.
 (** A non-Dirac action continuation is intentionally NOT required to be
     an mdp_state. Its successor distribution is supported on mdp_heads. *)
 Example distribution_successor_coincidence :
-  ~ state hidden_choice /\
-  (W (Tau decision) decision <-> TB (Tau decision) decision).
+  ¬ state hidden_choice ∧
+  (W (Tau decision) decision ↔ TB (Tau decision) decision).
 Proof.
   split; [exact hidden_choice_not_mdp_state|].
   apply (free_mdp_state_peutt_trans_iff
@@ -70,7 +72,7 @@ Proof.
   apply delay_transition_bisim.
 Qed.
 
-Example terminal_fragment_coincidence : W (Ret tt) (Ret tt) <-> TB (Ret tt) (Ret tt).
+Example terminal_fragment_coincidence : W (Ret tt) (Ret tt) ↔ TB (Ret tt) (Ret tt).
 Proof.
   apply (free_mdp_state_peutt_trans_iff
     (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega));
@@ -80,7 +82,7 @@ Qed.
 (** The accepted strictness pair cannot satisfy both fragment premises.
     This uses the new reverse direction, not an added syntactic restriction. *)
 Example strictness_pair_outside_joint_fragment :
-  ~ (@mdp_state correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool P /\
+  ¬ (@mdp_state correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool P ∧
      @mdp_state correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool Q).
 Proof.
   intros [Hp Hq]. apply correlated_response_not_peutt.

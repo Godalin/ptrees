@@ -16,6 +16,8 @@
     This is a bisimulation example, not a pure rewrite proof or an execution
     demo. The finite analysis can be skipped on a first reading. See
     docs/CASE_STUDIES.md and docs/CASE_STUDY_STANDARD.md. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
@@ -63,7 +65,7 @@ Local Open Scope freeomega_scope.
 (** ** Protocol types and return abstraction *)
 
 (** The environment supplies an ordinary Boolean challenge and acknowledgement. *)
-Variant mixedE : Type -> Type :=
+Variant mixedE : Type → Type :=
 | Challenge : mixedE bool
 | Reply (b : bool) : mixedE bool.
 
@@ -97,7 +99,7 @@ Definition impl_return := (bool * hidden3)%type.
 Definition spec_return := (bool * bool)%type.
 
 Definition return_rel (x : impl_return) (y : spec_return) : Prop :=
-  fst x = fst y /\ bridge (snd x) (snd y).
+  fst x = fst y ∧ bridge (snd x) (snd y).
 
 (** ** Native coins and the specification kernel
 
@@ -278,16 +280,16 @@ Qed.
 
 (** Stronger than merely displaying a split joint: no deterministic map
     from these three equiprobable atoms has the required fair marginal. *)
-Lemma uniform3_no_deterministic_fair (f : hidden3 -> bool) :
-  ~ (emap f uniform3_raw ==EnumQ uniform2_raw).
+Lemma uniform3_no_deterministic_fair (f : hidden3 → bool) :
+  ¬ (emap f uniform3_raw ==EnumQ uniform2_raw).
 Proof.
   intro H. specialize (H true). cbn in H.
   destruct (f L0), (f L1), (f L2); vm_compute in H; discriminate.
 Qed.
 
 Example return_abstraction_boundary b :
-  return_rel (b,L1) (b,false) /\ return_rel (b,L1) (b,true) /\
-  ~ return_rel (b,L0) (b,true) /\ ~ return_rel (b,L1) (negb b,false).
+  return_rel (b,L1) (b,false) ∧ return_rel (b,L1) (b,true) ∧
+  ¬ return_rel (b,L0) (b,true) ∧ ¬ return_rel (b,L1) (negb b,false).
 Proof. destruct b; unfold return_rel, bridge; simpl; intuition discriminate. Qed.
 
 Lemma mixed_samples_lift c :
@@ -359,8 +361,8 @@ Theorem masked_protocol_equivalent m :
 Proof.
   (* Expose one round, then compose its prefix and continuation proofs. *)
   eapply peutt_coinduction_upto_bind_vis with
-    (sim := fun s1 s2 => exists old z, bridge old z /\
-      s1 = observe (masked_impl old) /\ s2 = observe (mixed_spec z));
+    (sim := fun s1 s2 => exists old z, bridge old z ∧
+      s1 = observe (masked_impl old) ∧ s2 = observe (mixed_spec z));
     try typeclasses eauto.
   - intros s1 s2 (old & z & Hold & -> & ->).
     apply stable_hitting_match_vis. intro answer.
@@ -422,7 +424,7 @@ Proof.
   (* Construct the specification's query and its projection together. *)
   assert (Hspec : exists query : MF bool,
     finite_interaction_query (MX := MX) (FO := FO)
-      (challenge_true_reply_trace c) (mixed_spec (abstract_state m)) query /\
+      (challenge_true_reply_trace c) (mixed_spec (abstract_state m)) query ∧
     free_omega_denotes id query (spec_true_reply_observation c)).
   {
     eexists. split.

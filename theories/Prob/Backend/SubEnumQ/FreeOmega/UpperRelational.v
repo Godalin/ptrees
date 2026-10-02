@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -25,22 +27,22 @@ Section RelationalUpper.
 Variable R : realType.
 Local Notation upper := (free_omega_upper (R := R)).
 
-Definition bounded_test {A} (f : A -> R) := forall x, 0 <= f x /\ f x <= 1.
+Definition bounded_test {A} (f : A → R) := ∀ x, 0 <= f x ∧ f x <= 1.
 
 (** Adding zero gives an inhabited supremum even for an empty fiber. *)
-Definition fiber_upper {A} (P : A -> Prop) (f : A -> R) : R :=
-  sup (fun r => r = 0 \/ exists x, P x /\ r = f x).
+Definition fiber_upper {A} (P : A → Prop) (f : A → R) : R :=
+  sup (fun r => r = 0 ∨ ∃ x, P x ∧ r = f x).
 
-Lemma fiber_upper_le {A} (P : A -> Prop) (f : A -> R) b :
-  0 <= b -> (forall x, P x -> f x <= b) -> fiber_upper P f <= b.
+Lemma fiber_upper_le {A} (P : A → Prop) (f : A → R) b :
+  0 <= b → (∀ x, P x → f x <= b) → fiber_upper P f <= b.
 Proof.
   intros Hb Hf. apply sup_le_ub.
   - exists 0. by left.
   - apply/ubP=> r [->|[x [HP ->]]]; [exact Hb|exact (Hf x HP)].
 Qed.
 
-Lemma fiber_upper_bounds {A} (P : A -> Prop) (f : A -> R) :
-  bounded_test f -> 0 <= fiber_upper P f /\ fiber_upper P f <= 1.
+Lemma fiber_upper_bounds {A} (P : A → Prop) (f : A → R) :
+  bounded_test f → 0 <= fiber_upper P f ∧ fiber_upper P f <= 1.
 Proof.
   intro Hf. split.
   - apply sup_ubound.
@@ -49,27 +51,27 @@ Proof.
   - apply fiber_upper_le; [exact: ler01|]. intros x _. exact (proj2 (Hf x)).
 Qed.
 
-Lemma fiber_upper_ge {A} (P : A -> Prop) (f : A -> R) x :
-  bounded_test f -> P x -> f x <= fiber_upper P f.
+Lemma fiber_upper_ge {A} (P : A → Prop) (f : A → R) x :
+  bounded_test f → P x → f x <= fiber_upper P f.
 Proof.
   intros Hf Hx. apply sup_ubound.
   - exists 1. apply/ubP=> r [->|[y [_ ->]]]; [exact: ler01|exact (proj2 (Hf y))].
   - right. exists x. by split.
 Qed.
 
-Lemma bounded_test_complement {A} (f : A -> R) :
-  bounded_test f -> bounded_test (fun x => 1 - f x).
+Lemma bounded_test_complement {A} (f : A → R) :
+  bounded_test f → bounded_test (fun x => 1 - f x).
 Proof.
   intros Hf x. split.
   - rewrite subr_ge0. exact (proj2 (Hf x)).
   - rewrite lerBlDr lerDl. exact (proj1 (Hf x)).
 Qed.
 
-Definition fiber_lower {A} (P : A -> Prop) (f : A -> R) : R :=
+Definition fiber_lower {A} (P : A → Prop) (f : A → R) : R :=
   1 - fiber_upper P (fun x => 1 - f x).
 
-Lemma fiber_lower_bounds {A} (P : A -> Prop) (f : A -> R) :
-  bounded_test f -> 0 <= fiber_lower P f /\ fiber_lower P f <= 1.
+Lemma fiber_lower_bounds {A} (P : A → Prop) (f : A → R) :
+  bounded_test f → 0 <= fiber_lower P f ∧ fiber_lower P f <= 1.
 Proof.
   intro Hf. have Hb := fiber_upper_bounds P (bounded_test_complement Hf).
   split.
@@ -77,17 +79,17 @@ Proof.
   - rewrite /fiber_lower lerBlDr lerDl. exact (proj1 Hb).
 Qed.
 
-Lemma fiber_lower_le {A} (P : A -> Prop) (f : A -> R) x :
-  bounded_test f -> P x -> fiber_lower P f <= f x.
+Lemma fiber_lower_le {A} (P : A → Prop) (f : A → R) x :
+  bounded_test f → P x → fiber_lower P f <= f x.
 Proof.
   intros Hf Hx. rewrite /fiber_lower lerBlDr addrC -lerBlDr.
   exact (fiber_upper_ge (bounded_test_complement Hf) Hx).
 Qed.
 
-Lemma fiber_upper_lower {A B} (P : A -> Prop) (Q : B -> Prop)
-    (f : A -> R) (g : B -> R) :
-  bounded_test f -> bounded_test g ->
-  (forall x y, P x -> Q y -> f x <= g y) ->
+Lemma fiber_upper_lower {A B} (P : A → Prop) (Q : B → Prop)
+    (f : A → R) (g : B → R) :
+  bounded_test f → bounded_test g →
+  (∀ x y, P x → Q y → f x <= g y) →
   fiber_upper P f <= fiber_lower Q g.
 Proof.
   intros Hf Hg Hfg. apply fiber_upper_le; [exact (proj1 (fiber_lower_bounds Q Hg))|].
@@ -97,23 +99,23 @@ Proof.
   - intros y Hy. rewrite lerD2l lerN2. exact (Hfg x y Hx Hy).
 Qed.
 
-Definition free_omega_upper_rel {A B} (T : A -> B -> Prop)
+Definition free_omega_upper_rel {A B} (T : A → B → Prop)
     (mu : FreeOmega SubEnumQ A) (nu : FreeOmega SubEnumQ B) : Prop :=
-  forall (f : A -> R) (g : B -> R),
-    bounded_test f -> bounded_test g ->
-    (forall x y, T x y -> f x <= g y) -> upper mu f <= upper nu g.
+  ∀ (f : A → R) (g : B → R),
+    bounded_test f → bounded_test g →
+    (∀ x y, T x y → f x <= g y) → upper mu f <= upper nu g.
 
-Lemma free_omega_upper_rel_mono {A B} (T U : A -> B -> Prop) mu nu :
-  free_omega_upper_rel T mu nu ->
-  (forall x y, T x y -> U x y) -> free_omega_upper_rel U mu nu.
+Lemma free_omega_upper_rel_mono {A B} (T U : A → B → Prop) mu nu :
+  free_omega_upper_rel T mu nu →
+  (∀ x y, T x y → U x y) → free_omega_upper_rel U mu nu.
 Proof. intros H HT f g Hf Hg Hfg. apply H; auto. Qed.
 
 (** Composition uses a bounded envelope on the intermediate carrier,
     without assuming equivalence or selecting a joint measure. *)
-Lemma free_omega_upper_rel_comp {A B C} (T : A -> B -> Prop)
-    (U : B -> C -> Prop) mu mid nu :
-  free_omega_upper_rel T mu mid -> free_omega_upper_rel U mid nu ->
-  free_omega_upper_rel (fun x z => exists y, T x y /\ U y z) mu nu.
+Lemma free_omega_upper_rel_comp {A B C} (T : A → B → Prop)
+    (U : B → C → Prop) mu mid nu :
+  free_omega_upper_rel T mu mid → free_omega_upper_rel U mid nu →
+  free_omega_upper_rel (fun x z => ∃ y, T x y ∧ U y z) mu nu.
 Proof.
   intros Hleft Hright f g Hf Hg Hfg.
   pose (h := fun y => fiber_upper (fun x => T x y) f).
@@ -128,14 +130,14 @@ Qed.
 (** The tests need not factor through the observation maps.  Upper and
     lower envelopes compare every fiber, including empty fibers. *)
 Theorem free_omega_observes_upper_rel {A B OA OB}
-    (T : A -> B -> Prop) (S : OA -> OB -> Prop)
-    (obsA : A -> OA) (obsB : B -> OB) mu nu outA outB :
+    (T : A → B → Prop) (S : OA → OB → Prop)
+    (obsA : A → OA) (obsB : B → OB) mu nu outA outB :
   @free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    A OA obsA mu outA ->
+    A OA obsA mu outA →
   @free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    B OB obsB nu outB ->
-  sem_lift S outA outB ->
-  (forall x y, S (obsA x) (obsB y) -> T x y) ->
+    B OB obsB nu outB →
+  sem_lift S outA outB →
+  (∀ x y, S (obsA x) (obsB y) → T x y) →
   free_omega_upper_rel T mu nu.
 Proof.
   intros Hleft Hright Hcouple HT f g Hf Hg Hfg.
@@ -156,11 +158,11 @@ Proof.
       intro y. apply fiber_lower_le; [exact Hg|reflexivity].
 Qed.
 
-Lemma free_omega_upper_rel_restrict {A B} (T U : A -> B -> Prop)
-    mu nu (P : A -> Prop) (Q : B -> Prop) :
-  free_omega_upper_rel T mu nu ->
-  free_omega_ae P mu -> free_omega_ae Q nu ->
-  (forall x y, T x y /\ P x /\ Q y -> U x y) ->
+Lemma free_omega_upper_rel_restrict {A B} (T U : A → B → Prop)
+    mu nu (P : A → Prop) (Q : B → Prop) :
+  free_omega_upper_rel T mu nu →
+  free_omega_ae P mu → free_omega_ae Q nu →
+  (∀ x y, T x y ∧ P x ∧ Q y → U x y) →
   free_omega_upper_rel U mu nu.
 Proof.
   intros Hrel HP HQ HT f g Hf Hg Hfg.
@@ -189,11 +191,11 @@ Proof.
   - exact: ler01.
 Qed.
 
-Lemma free_omega_upper_rel_bind {A B C D} (T : A -> B -> Prop)
-    (U : C -> D -> Prop) mu nu (k : A -> FreeOmega SubEnumQ C)
-    (h : B -> FreeOmega SubEnumQ D) :
-  free_omega_upper_rel T mu nu ->
-  (forall x y, T x y -> free_omega_upper_rel U (k x) (h y)) ->
+Lemma free_omega_upper_rel_bind {A B C D} (T : A → B → Prop)
+    (U : C → D → Prop) mu nu (k : A → FreeOmega SubEnumQ C)
+    (h : B → FreeOmega SubEnumQ D) :
+  free_omega_upper_rel T mu nu →
+  (∀ x y, T x y → free_omega_upper_rel U (k x) (h y)) →
   free_omega_upper_rel U (free_omega_bind mu k) (free_omega_bind nu h).
 Proof.
   intros Hmu Hk f g Hf Hg Hfg. rewrite !free_omega_upper_bind.
@@ -203,11 +205,11 @@ Proof.
   - intros x y Hxy. exact (Hk x y Hxy f g Hf Hg Hfg).
 Qed.
 
-Lemma free_omega_upper_rel_sample {A B C D} (T : A -> B -> Prop)
-    (U : C -> D -> Prop) mu nu (k : A -> FreeOmega SubEnumQ C)
-    (h : B -> FreeOmega SubEnumQ D) :
-  sem_lift T mu nu ->
-  (forall x y, T x y -> free_omega_upper_rel U (k x) (h y)) ->
+Lemma free_omega_upper_rel_sample {A B C D} (T : A → B → Prop)
+    (U : C → D → Prop) mu nu (k : A → FreeOmega SubEnumQ C)
+    (h : B → FreeOmega SubEnumQ D) :
+  sem_lift T mu nu →
+  (∀ x y, T x y → free_omega_upper_rel U (k x) (h y)) →
   free_omega_upper_rel U (FOSample mu k) (FOSample nu h).
 Proof.
   intros Hmu Hk f g Hf Hg Hfg. cbn [free_omega_upper].
@@ -215,8 +217,8 @@ Proof.
   intros x y Hxy. exact (Hk x y Hxy f g Hf Hg Hfg).
 Qed.
 
-Lemma free_omega_upper_rel_lub {A B} (T : A -> B -> Prop) c d :
-  (forall n, free_omega_upper_rel T (c n) (d n)) ->
+Lemma free_omega_upper_rel_lub {A B} (T : A → B → Prop) c d :
+  (∀ n, free_omega_upper_rel T (c n) (d n)) →
   free_omega_upper_rel T (FOLub c) (FOLub d).
 Proof.
   intros H f g Hf Hg Hfg. cbn [free_omega_upper].

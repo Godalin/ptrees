@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -21,7 +23,7 @@ Unset Printing Implicit Defensive.
     joint carrier.  Sampling witnesses are refined by a NODE joint, not
     by selecting a deterministic partner for an existential support fact. *)
 Section JointTruncation.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -34,17 +36,17 @@ Local Notation hit := (@ptree_hitting_approx E MN MF FI
   FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A).
 Local Notation guard_approx := (@finite_internal_guard_approx E MN NI NO A).
 
-Variable project : Z -> stable_target tree head.
+Variable project : Z → stable_target tree head.
 Local Notation finish := (fun n z => guard_approx n (project z)).
 
 Definition finite_internal_joint_approximates t (joint : MF Z)
-    (chain : nat -> MF Z) : Prop :=
-  (forall n, free_omega_approx eq (chain n) (chain (S n))) /\
-  free_omega_qlift eq joint (FOLub chain) /\
-  (forall n, free_omega_approx eq (chain n) joint) /\
-  (forall n m, free_omega_approx eq (free_omega_bind (chain n) (finish m))
-    (hit (n + m) (observe t))) /\
-  (forall n, free_omega_approx eq (hit n (observe t))
+    (chain : nat → MF Z) : Prop :=
+  (∀ n, free_omega_approx eq (chain n) (chain (S n))) ∧
+  free_omega_qlift eq joint (FOLub chain) ∧
+  (∀ n, free_omega_approx eq (chain n) joint) ∧
+  (∀ n m, free_omega_approx eq (free_omega_bind (chain n) (finish m))
+    (hit (n + m) (observe t))) ∧
+  (∀ n, free_omega_approx eq (hit n (observe t))
     (free_omega_bind (chain n) (finish n))).
 
 Lemma finite_internal_guard_approx_increasing n target :
@@ -57,16 +59,16 @@ Proof.
     FreeOmegaObservableSemanticMeasureOrderLaws A). lia.
 Qed.
 
-Hypothesis node_realizes : forall {X Y} (R : X -> Y -> Prop)
-    (mu : MN X) (nu : MN Y), sem_lift R mu nu ->
-    exists joint, semantic_coupling R mu nu joint.
+Hypothesis node_realizes : ∀ {X Y} (R : X → Y → Prop)
+    (mu : MN X) (nu : MN Y), sem_lift R mu nu →
+    ∃ joint, semantic_coupling R mu nu joint.
 
 Theorem finite_internal_joint_approximation_exists t out :
-  @finite_internal E MN MF FI FreeOmegaMixedMeasure A t out ->
-  forall joint,
+  @finite_internal E MN MF FI FreeOmegaMixedMeasure A t out →
+  ∀ joint,
   free_omega_lift (fun target z => project z = target)
-    (free_omega_bind out finite_internal_guard_transition) joint ->
-  exists chain, finite_internal_joint_approximates t joint chain.
+    (free_omega_bind out finite_internal_guard_transition) joint →
+  ∃ chain, finite_internal_joint_approximates t joint chain.
 Proof.
   intro Hcut. induction Hcut as [t|t out Hcut IH|X mu k out Hcuts IH];
     intros joint Hgraph.
@@ -104,7 +106,7 @@ Proof.
     dependent destruction Hgraph.
     rename S into Related.
     destruct (node_realizes H) as [node_joint Hjoint].
-    assert (Hex : forall p : X * Y, exists c : nat -> MF Z,
+    assert (Hex : ∀ p : X * Y, exists c : nat -> MF Z,
       Related (fst p) (snd p) ->
       finite_internal_joint_approximates (k (fst p)) (h (snd p)) c).
     { intros [x y]. destruct (classic (Related x y)) as [Hxy|Hnot].
@@ -116,16 +118,16 @@ Proof.
       match n with 0 => FOZero | Datatypes.S m => chains p m end).
     pose proof (semantic_coupling_left_supported Hjoint) as Hleft.
     pose proof (semantic_coupling_right_supported Hjoint) as Hright.
-    assert (Hrows_inc : forall p, Related (fst p) (snd p) -> forall n,
+    assert (Hrows_inc : ∀ p, Related (fst p) (snd p) -> ∀ n,
       free_omega_approx eq (rows p n) (rows p (Datatypes.S n))).
     { intros p Hp [|n]; [apply FOApproxZero|]. exact (proj1 (Hchains p Hp) n). }
-    assert (Hrows_lim : forall p, Related (fst p) (snd p) ->
+    assert (Hrows_lim : ∀ p, Related (fst p) (snd p) ->
       free_omega_qlift eq (h (snd p)) (FOLub (rows p))).
     { intros p Hp. apply finite_internal_prefix_limit.
       exact (proj1 (proj2 (Hchains p Hp))). }
     exists (fun n => FOSample node_joint (fun p => rows p n)). repeat split.
     + intro n. eapply FOApproxSample with
-        (S := fun p q => p = q /\ Related (fst p) (snd p)).
+        (S := fun p q => p = q ∧ Related (fst p) (snd p)).
       * apply sem_lift_refl_ae. exact (proj2 (proj2 Hjoint)).
       * intros p q [<- Hp]. apply Hrows_inc. exact Hp.
     + eapply FOQLComp with (T := eq) (U := eq)

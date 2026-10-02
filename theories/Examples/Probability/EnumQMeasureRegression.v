@@ -1,4 +1,6 @@
 (** Role: finite probability/coupling/backend example. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -46,7 +48,7 @@ Proof. intros []; by vm_compute. Qed.
 
 (** Ordering is representation-visible but measure-invisible. *)
 Lemma reg_reordering_not_repr_eq :
-  ~ enumQ_repr_eq reg_fair reg_fair_reordered.
+  ¬ enumQ_repr_eq reg_fair reg_fair_reordered.
 Proof. move=> H. discriminate H. Qed.
 
 Lemma reg_reordering_meas_eq :
@@ -57,7 +59,7 @@ Proof. exact: enumQ_meas_eq_of_eqenum reg_fair_reordered_eqenum. Qed.
 (** Repeated outcomes and split probability mass cannot reproduce the old
     repeated-mass bug: only their accumulated probability matters. *)
 Lemma reg_split_mass_not_repr_eq :
-  ~ enumQ_repr_eq reg_fair reg_fair_split.
+  ¬ enumQ_repr_eq reg_fair reg_fair_split.
 Proof. move=> H. discriminate H. Qed.
 
 Lemma reg_split_mass_meas_eq :
@@ -70,7 +72,7 @@ Lemma reg_split_mass_lift_eq :
 Proof. exact: enumQ_meas_eq_of_eqenum reg_fair_split_eqenum. Qed.
 
 Unset Automatic Proposition Inductives.
-Variant regE : Type -> Type := .
+Variant regE : Type → Type := .
 
 Definition reg_split_program : ptree regE EnumQ bool :=
   Prob reg_fair_split (fun b => Ret b).

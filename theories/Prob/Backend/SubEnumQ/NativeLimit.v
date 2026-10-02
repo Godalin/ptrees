@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
 From PTree.Prob.Backend.Common Require Import FiniteEnum.
 (** Role: Native rational convergence and real expectation limits. No FreeOmega dependency. *)
@@ -24,14 +26,14 @@ Local Open Scope ring_scope.
 Section RationalLimit.
 Variable R : realType.
 
-Lemma rat_monotone_limit_bound (values : nat -> rat) out :
-  (forall n, values n <= values (S n)) ->
-  (forall eps : rat, 0 < eps -> exists N,
-    forall n, Peano.le N n -> `|values n - out| < eps) ->
-  forall n, values n <= out.
+Lemma rat_monotone_limit_bound (values : nat → rat) out :
+  (∀ n, values n <= values (S n)) →
+  (∀ eps : rat, 0 < eps → ∃ N,
+    ∀ n, Peano.le N n → `|values n - out| < eps) →
+  ∀ n, values n <= out.
 Proof.
   intros Hi Hlim n.
-  have Hmono : forall i j, Peano.le i j -> values i <= values j.
+  have Hmono : ∀ i j, Peano.le i j -> values i <= values j.
   { intros i j Hle. induction Hle; [exact: lexx|].
     eapply le_trans; [exact IHHle|exact (Hi m)]. }
   case: (leP (values n) out)=> [Hyes|Hno]; [by []|].
@@ -44,14 +46,14 @@ Proof.
   rewrite ltxx in Hbad. discriminate.
 Qed.
 
-Lemma rat_monotone_limit_upper (values : nat -> rat) out :
-  (forall n, values n <= values (S n)) ->
-  (forall eps : rat, 0 < eps -> exists N,
-    forall n, Peano.le N n -> `|values n - out| < eps) ->
+Lemma rat_monotone_limit_upper (values : nat → rat) out :
+  (∀ n, values n <= values (S n)) →
+  (∀ eps : rat, 0 < eps → ∃ N,
+    ∀ n, Peano.le N n → `|values n - out| < eps) →
   countable_upper (fun n => (ratr (values n) : R)) = ratr out.
 Proof.
   intros Hi Hlim.
-  have Hb : forall n, (ratr (values n) : R) <= ratr out.
+  have Hb : ∀ n, (ratr (values n) : R) <= ratr out.
   { intro n. rewrite ler_rat. exact (rat_monotone_limit_bound Hi Hlim n). }
   apply/eqP. rewrite eq_le. apply/andP. split.
   - exact (countable_upper_le Hb).
@@ -81,13 +83,13 @@ Section FiniteAtomicLimit.
 Variable R : realType.
 Local Notation expect := (enumQ_real_expect (R := R)).
 
-Lemma enumQ_real_expect_atom_le {A : eqType} (f : A -> R) mu nu :
-  (forall x, 0 <= f x) ->
-  (forall x, ratr ((acc_mass x mu)) <= (ratr ((acc_mass x nu)) : R)) ->
+Lemma enumQ_real_expect_atom_le {A : eqType} (f : A → R) mu nu :
+  (∀ x, 0 <= f x) →
+  (∀ x, ratr ((acc_mass x mu)) <= (ratr ((acc_mass x nu)) : R)) →
   expect f mu <= expect f nu.
 Proof.
-  intro Hf. move: mu nu. refine (enumQ_size_induction (P := fun mu => forall nu,
-    (forall x, ratr ((acc_mass x mu)) <= (ratr ((acc_mass x nu)) : R)) ->
+  intro Hf. move: mu nu. refine (enumQ_size_induction (P := fun mu => ∀ nu,
+    (∀ x, ratr ((acc_mass x mu)) <= (ratr ((acc_mass x nu)) : R)) ->
     expect f mu <= expect f nu) _).
   intros mu IH nu Hmass. case Hraw: (enumQ_raw mu)=> [|[p a] tail].
   - rewrite /enumQ_real_expect Hraw /=; apply enumQ_real_expect_nonnegative. exact Hf.
@@ -110,25 +112,25 @@ Proof.
 Qed.
 
 Theorem enumQ_real_expect_atomic_lub {A : eqType} (out : EnumQ A)
-    (chain : nat -> EnumQ A) (f : A -> R) :
-  (forall x, 0 <= f x) ->
-  (forall x n, ratr ((acc_mass x (chain n))) <=
-    (ratr ((acc_mass x (chain (S n)))) : R)) ->
-  (forall x, countable_upper (fun n => (ratr ((acc_mass x (chain n))) : R)) =
-    ratr ((acc_mass x out))) ->
-  (forall x n, (ratr ((acc_mass x (chain n))) : R) <= ratr ((acc_mass x out))) ->
+    (chain : nat → EnumQ A) (f : A → R) :
+  (∀ x, 0 <= f x) →
+  (∀ x n, ratr ((acc_mass x (chain n))) <=
+    (ratr ((acc_mass x (chain (S n)))) : R)) →
+  (∀ x, countable_upper (fun n => (ratr ((acc_mass x (chain n))) : R)) =
+    ratr ((acc_mass x out))) →
+  (∀ x n, (ratr ((acc_mass x (chain n))) : R) <= ratr ((acc_mass x out))) →
   countable_upper (fun n => expect f (chain n)) = expect f out.
 Proof.
   intro Hf. revert chain.
-  refine (enumQ_size_induction (P := fun out => forall chain,
-    (forall x n, ratr ((acc_mass x (chain n))) <=
+  refine (enumQ_size_induction (P := fun out => ∀ chain,
+    (∀ x n, ratr ((acc_mass x (chain n))) <=
       (ratr ((acc_mass x (chain (S n)))) : R)) ->
-    (forall x, countable_upper (fun n => (ratr ((acc_mass x (chain n))) : R)) =
+    (∀ x, countable_upper (fun n => (ratr ((acc_mass x (chain n))) : R)) =
       ratr ((acc_mass x out))) ->
-    (forall x n, (ratr ((acc_mass x (chain n))) : R) <= ratr ((acc_mass x out))) ->
+    (∀ x n, (ratr ((acc_mass x (chain n))) : R) <= ratr ((acc_mass x out))) ->
     countable_upper (fun n => expect f (chain n)) = expect f out) _ out).
   intros target IH chain Hinc Hlim Hbound.
-  have Hexpect : forall n, expect f (chain n) <= expect f target.
+  have Hexpect : ∀ n, expect f (chain n) <= expect f target.
   { intro n. apply enumQ_real_expect_atom_le; [exact Hf|]. intro x. exact (Hbound x n). }
   case Hraw: (enumQ_raw target)=> [|[p a] tail].
   - have Hzero : expect f target = 0 by rewrite /enumQ_real_expect Hraw.
@@ -183,17 +185,17 @@ Variable R : realType.
 Local Notation expect := (enumQ_real_expect (R := R)).
 
 Lemma enumQ_monotone_converges_upper_eqtype {A : eqType}
-    (chain : nat -> EnumQ A) out (f : A -> R) :
-  enumQ_chain_increasing chain -> enumQ_converges chain out ->
-  (forall x, 0 <= f x) ->
+    (chain : nat → EnumQ A) out (f : A → R) :
+  enumQ_chain_increasing chain → enumQ_converges chain out →
+  (∀ x, 0 <= f x) →
   countable_upper (fun n => expect f (chain n)) = expect f out.
 Proof.
   intros Hmono Hlim Hf.
-  have Hstep : forall x n, (acc_mass x (chain n)) <= (acc_mass x (chain (S n))).
+  have Hstep : ∀ x n, (acc_mass x (chain n)) <= (acc_mass x (chain (S n))).
   { intros x n. rewrite -!enumQ_indicator_atom.
     exact (Hmono (fun y => y == x) n (S n) (Nat.le_succ_diag_r n)). }
-  have Hatom : forall x eps, (0 : rat) < eps -> exists N,
-      forall n, Peano.le N n ->
+  have Hatom : ∀ x eps, (0 : rat) < eps -> exists N,
+      ∀ n, Peano.le N n ->
         `|(acc_mass x (chain n)) - (acc_mass x out)| < eps.
   { intros x eps Heps. destruct (Hlim (fun y => y == x) eps Heps) as [N HN].
     exists N. intros n Hn. rewrite -!enumQ_indicator_atom. exact (HN n Hn). }
@@ -205,9 +207,9 @@ Qed.
 
 Import EnumQCouplingClassical.
 Theorem enumQ_monotone_converges_upper {A : Type}
-    (chain : nat -> EnumQ A) out (f : A -> R) :
-  enumQ_chain_increasing chain -> enumQ_converges chain out ->
-  (forall x, 0 <= f x) ->
+    (chain : nat → EnumQ A) out (f : A → R) :
+  enumQ_chain_increasing chain → enumQ_converges chain out →
+  (∀ x, 0 <= f x) →
   countable_upper (fun n => expect f (chain n)) = expect f out.
 Proof.
   exact (@enumQ_monotone_converges_upper_eqtype
@@ -215,7 +217,7 @@ Proof.
       (Equality.on (EnumQCouplingClassical.carrier A))) chain out f).
 Qed.
 
-Lemma enumQ_real_expect_indicator {A} (mu : EnumQ A) (P : A -> bool) :
+Lemma enumQ_real_expect_indicator {A} (mu : EnumQ A) (P : A → bool) :
   expect (fun x => if P x then 1 else 0) mu =
   ratr (enumQ_expect (fun x => if P x then 1 else 0) mu).
 Proof.

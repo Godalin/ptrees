@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -16,7 +18,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section CompleteMarginal.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -29,8 +31,8 @@ Local Notation head := (stable_head E MN A).
 Local Notation Hitting := (@ptree_stable_hitting E MN MF FI
   FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A).
 
-Variable front : tree -> MF head.
-Hypothesis front_hitting : forall t, Hitting (observe t) (front t).
+Variable front : tree → MF head.
+Hypothesis front_hitting : ∀ t, Hitting (observe t) (front t).
 
 Definition finite_internal_guard_complete (target : stable_target tree head) : MF head :=
   match target with
@@ -75,11 +77,11 @@ Qed.
     This is a probability-preservation result, not merely an AE invariant.
     It is still a one-round equation, not an omega acceleration theorem. *)
 Theorem finite_internal_realized_round_hitting {Z}
-    (joint : MF Z) (project : Z -> stable_target tree head)
+    (joint : MF Z) (project : Z → stable_target tree head)
     t (cut : MF tree) :
-  @finite_internal E MN MF FI FreeOmegaMixedMeasure A t cut ->
+  @finite_internal E MN MF FI FreeOmegaMixedMeasure A t cut →
   free_omega_qlift (fun z target => project z = target)
-    joint (free_omega_bind cut finite_internal_guard_transition) ->
+    joint (free_omega_bind cut finite_internal_guard_transition) →
   free_omega_qlift eq
     (free_omega_bind joint (fun z => finite_internal_guard_complete (project z)))
     (front t).
@@ -107,11 +109,11 @@ Qed.
 
 Section CorrelatedExecution.
 Context {S O : Type}.
-Variable kernel : S -> MF (stable_target S O).
-Variable project_state : S -> tree.
-Variable project_output : O -> head.
-Variable D : S -> Prop.
-Variable cut : S -> MF tree.
+Variable kernel : S → MF (stable_target S O).
+Variable project_state : S → tree.
+Variable project_output : O → head.
+Variable D : S → Prop.
+Variable cut : S → MF tree.
 
 Definition finite_internal_execution_projection (target : stable_target S O) :=
   match target with
@@ -119,11 +121,11 @@ Definition finite_internal_execution_projection (target : stable_target S O) :=
   | SHInternal s => SHInternal (project_state s)
   end.
 
-Hypothesis execution_closed : forall s, D s ->
+Hypothesis execution_closed : ∀ s, D s →
   free_omega_ae (kernel_completion_invariant D) (kernel s).
-Hypothesis cut_valid : forall s, D s ->
+Hypothesis cut_valid : ∀ s, D s →
   @finite_internal E MN MF FI FreeOmegaMixedMeasure A (project_state s) (cut s).
-Hypothesis execution_marginal : forall s, D s ->
+Hypothesis execution_marginal : ∀ s, D s →
   free_omega_qlift (fun z target => finite_internal_execution_projection z = target)
     (kernel s) (free_omega_bind (cut s) finite_internal_guard_transition).
 
@@ -131,13 +133,13 @@ Hypothesis execution_marginal : forall s, D s ->
     A state can contain both trees or extra execution history; neither the
     cut nor the choice of the next state must factor through project_state.
     The explicit [upper] avoids assuming raw order is quotient-proper. *)
-Theorem finite_internal_execution_hitting_upper s : D s ->
-  exists upper,
+Theorem finite_internal_execution_hitting_upper s : D s →
+  ∃ upper,
     free_omega_approx eq
       (free_omega_bind
         (FOLub (fun n => @stable_hitting_approx MF FI
           FreeOmegaObservableSemanticOmega S O kernel n s))
-        (fun o => FORet (project_output o))) upper /\
+        (fun o => FORet (project_output o))) upper ∧
     free_omega_qlift eq upper (front (project_state s)).
 Proof.
   intro HD. eapply kernel_hitting_limit_upper with

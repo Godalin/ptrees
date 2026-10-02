@@ -1,5 +1,7 @@
 (** Rational subdistributions use the same container as finite-real sampling.
     No scalar subtype or conversion from a legacy list is involved. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -20,15 +22,15 @@ Lemma enumQ_subprob_ret {A} (x : A) : enumQ_subprob (ret_EnumQ x).
 Proof. by rewrite /enumQ_subprob /enumQ_mass enumQ_expect_ret. Qed.
 Lemma enumQ_subprob_zero {A} : enumQ_subprob (@enumQ_zero A).
 Proof. exact: ler01. Qed.
-Lemma enumQ_expect_le_mass {A} (mu : EnumQ A) (f : A -> rat) :
-  (forall p x, List.In (p,x) (enumQ_raw mu) -> f x <= 1) ->
+Lemma enumQ_expect_le_mass {A} (mu : EnumQ A) (f : A → rat) :
+  (∀ p x, List.In (p,x) (enumQ_raw mu) → f x <= 1) →
   enumQ_expect f mu <= enumQ_mass mu.
 Proof.
   move=> H; apply finite_expect_ae_mono; first exact (enumQ_nonnegative mu).
   move=> p x Hin _; exact (H p x Hin).
 Qed.
-Lemma enumQ_expect_nonnegative {A} (mu : EnumQ A) (f : A -> rat) :
-  (forall p x, List.In (p,x) (enumQ_raw mu) -> 0 <= f x) ->
+Lemma enumQ_expect_nonnegative {A} (mu : EnumQ A) (f : A → rat) :
+  (∀ p x, List.In (p,x) (enumQ_raw mu) → 0 <= f x) →
   0 <= enumQ_expect f mu.
 Proof.
   move=> H; change (0 <= finite_expect f (enumQ_raw mu)).
@@ -36,8 +38,8 @@ Proof.
   apply finite_expect_ae_mono; first exact (enumQ_nonnegative mu).
   move=> p x Hin _; exact (H p x Hin).
 Qed.
-Lemma enumQ_subprob_bind {A B} (mu : EnumQ A) (k : A -> EnumQ B) :
-  enumQ_subprob mu -> (forall x, enumQ_subprob (k x)) ->
+Lemma enumQ_subprob_bind {A B} (mu : EnumQ A) (k : A → EnumQ B) :
+  enumQ_subprob mu → (∀ x, enumQ_subprob (k x)) →
   enumQ_subprob (bind_EnumQ mu k).
 Proof.
   move=> Hmu Hk; rewrite /enumQ_subprob /enumQ_mass enumQ_expect_bind.
@@ -51,7 +53,7 @@ Lemma subenumQ_bound {A} (mu : SubEnumQ A) : enumQ_subprob (subenumQ_raw mu).
 Proof. exact: finite_subdist_mass_bound. Qed.
 Definition subenumQ_ret {A} (x : A) : SubEnumQ A := finite_subdist_ret _ x.
 Definition subenumQ_zero {A} : SubEnumQ A := finite_subdist_zero _.
-Definition subenumQ_bind {A B} (mu : SubEnumQ A) (k : A -> SubEnumQ B) : SubEnumQ B :=
+Definition subenumQ_bind {A B} (mu : SubEnumQ A) (k : A → SubEnumQ B) : SubEnumQ B :=
   finite_subdist_bind mu k.
 Definition subenumQ_of_list {A} (mu : list (rat*A))
     (Hnn : finite_nonnegative mu) (Hmass : finite_expect (fun _ => 1) mu <= 1) : SubEnumQ A :=

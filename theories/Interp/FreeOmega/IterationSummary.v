@@ -3,6 +3,8 @@
     no client schedule, empty event signature, or totality premise is needed.
     This owner is in Interp because iteration congruence consumes the direct
     interpreter machine. Eq must not import it backwards. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
@@ -18,7 +20,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section Summary.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI} `{NO : @SemanticOmega MN NI}.
 Local Notation MF := (FreeOmega MN).
@@ -26,14 +28,14 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
 Local Notation W := (peutt (FI := FI) (FO := FO)).
 Context {I A : Type}.
-Variable transition : I -> MN (I + A).
+Variable transition : I → MN (I + A).
 
 Definition iteration_frontier_round n i :=
   @ptree_iter_round_approx E MN MF FI FreeOmegaMixedMeasure FO I A n transition i.
 Definition iteration_frontier i := FOLub (fun n => iteration_frontier_round n i).
 
 Lemma iteration_frontier_returns i :
-  free_omega_ae (fun h => exists a, h = FHRet a) (iteration_frontier i).
+  free_omega_ae (fun h => ∃ a, h = FHRet a) (iteration_frontier i).
 Proof.
   constructor. intro n. unfold iteration_frontier_round, ptree_iter_round_approx.
   apply free_omega_ae_bind with (P := fun _ => True).
@@ -55,8 +57,8 @@ Qed.
 Theorem iteration_frontier_summary
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCount : @SemanticMeasureCountableAELaws MN NI}
-    (step : I -> ptree E MN (I + A))
-    (Hstep : forall i, W eq (step i) (Prob (transition i) (fun x => Ret x))) i :
+    (step : I → ptree E MN (I + A))
+    (Hstep : ∀ i, W eq (step i) (Prob (transition i) (fun x => Ret x))) i :
   ptree_stable_hitting (FI := FI) (FO := FO)
     (observe (PTree.iter step i)) (iteration_frontier i).
 Proof.
@@ -74,8 +76,8 @@ Qed.
 Theorem iteration_frontier_summary_hitting
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCount : @SemanticMeasureCountableAELaws MN NI}
-    (step : I -> ptree E MN (I + A))
-    (Hstep : forall i, ptree_stable_hitting (FI := FI) (FO := FO)
+    (step : I → ptree E MN (I + A))
+    (Hstep : ∀ i, ptree_stable_hitting (FI := FI) (FO := FO)
       (observe (step i)) (FOSample (transition i) (fun next => FORet (FHRet next)))) i :
   ptree_stable_hitting (FI := FI) (FO := FO)
     (observe (PTree.iter step i)) (iteration_frontier i).
@@ -94,7 +96,7 @@ Qed.
 (** Only the requested observable needs a native limit. The complete
     frontier remains in MF, so neither a finite joint result distribution
     nor a finite state space is required. *)
-Fixpoint iteration_observation_round {O} (value : A -> O) n i : MN O :=
+Fixpoint iteration_observation_round {O} (value : A → O) n i : MN O :=
   match n with
   | O => sem_zero
   | S m => sem_bind (transition i) (fun next =>
@@ -104,8 +106,8 @@ Fixpoint iteration_observation_round {O} (value : A -> O) n i : MN O :=
       end)
   end.
 
-Lemma iteration_frontier_round_observes {O} (obs : stable_head E MN A -> O)
-    (value : A -> O) (Hobs : forall a, obs (FHRet a) = value a) n i :
+Lemma iteration_frontier_round_observes {O} (obs : stable_head E MN A → O)
+    (value : A → O) (Hobs : ∀ a, obs (FHRet a) = value a) n i :
   free_omega_observes obs (iteration_frontier_round n i)
     (iteration_observation_round value n i).
 Proof.
@@ -118,9 +120,9 @@ Proof.
     rewrite <- Hobs. constructor.
 Qed.
 
-Theorem iteration_frontier_observes {O} (obs : stable_head E MN A -> O)
-    (value : A -> O) (Hobs : forall a, obs (FHRet a) = value a) i out :
-  sem_lub (fun n => iteration_observation_round value n i) out ->
+Theorem iteration_frontier_observes {O} (obs : stable_head E MN A → O)
+    (value : A → O) (Hobs : ∀ a, obs (FHRet a) = value a) i out :
+  sem_lub (fun n => iteration_observation_round value n i) out →
   free_omega_observes obs (iteration_frontier i) out.
 Proof.
   intro Hlim. eapply FOOObserveLub.

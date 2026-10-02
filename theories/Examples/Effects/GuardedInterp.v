@@ -1,4 +1,6 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -45,14 +47,14 @@ Qed.
 
 (** The SAME handler preserves peutt but not trans_bisim. The source
     transition counterexample is not incorrectly assumed to be peutt. *)
-Theorem two_query_peutt_preservation t u : W t u ->
+Theorem two_query_peutt_preservation t u : W t u →
   W (PTree.interp two_query_handler t) (PTree.interp two_query_handler u).
 Proof. intro Htu. exact (peutt_interp_guarded two_query_handler_guarded Htu). Qed.
 
 Theorem two_query_compositionality_contrast :
-  GH two_query_handler /\
-  (forall t u, W t u -> W (PTree.interp two_query_handler t) (PTree.interp two_query_handler u)) /\
-  (TB P Q /\ ~ TB (PTree.interp two_query_handler P) (PTree.interp two_query_handler Q)).
+  GH two_query_handler ∧
+  (∀ t u, W t u → W (PTree.interp two_query_handler t) (PTree.interp two_query_handler u)) ∧
+  (TB P Q ∧ ¬ TB (PTree.interp two_query_handler P) (PTree.interp two_query_handler Q)).
 Proof.
   split; [exact two_query_handler_guarded|].
   split; [exact two_query_peutt_preservation|exact trans_bisim_interp_counterexample].
@@ -96,7 +98,7 @@ Proof.
     intros [] _; [constructor; exact I|constructor].
 Qed.
 
-Example probabilistic_partial_handler_preserves t u : W t u ->
+Example probabilistic_partial_handler_preserves t u : W t u →
   W (PTree.interp sample_or_diverge_handler t) (PTree.interp sample_or_diverge_handler u).
 Proof. intro Htu. exact (peutt_interp_guarded sample_or_diverge_handler_guarded Htu). Qed.
 
@@ -127,7 +129,7 @@ Qed.
 Definition returning_handler X (e : correlationE X) : ptree correlationE SubEnumQ X :=
   match e in correlationE X return ptree correlationE SubEnumQ X with Query => Ret true end.
 
-Lemma returning_handler_not_guarded : ~ GH returning_handler.
+Lemma returning_handler_not_guarded : ¬ GH returning_handler.
 Proof.
   intro Hguard.
   assert (Hret : hits (Ret true) (FORet (FHRet true))).
@@ -141,7 +143,7 @@ Qed.
 (** Heterogeneous returns are preserved, not silently specialized to eq. *)
 Example guarded_interp_heterogeneous :
   @peutt correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool nat
-    (fun b n => b = true /\ n = O)
+    (fun b n => b = true ∧ n = O)
     (PTree.interp two_query_handler (Ret true))
     (PTree.interp two_query_handler (Ret O)).
 Proof.

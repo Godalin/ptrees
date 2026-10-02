@@ -1,5 +1,7 @@
 (** Canonical WriterT agrees with the existing State-based Writer eliminator
     for the actual ITree target. No commutativity or probability law is used. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import RelationClasses Morphisms.
 From Paco Require Import paco.
@@ -16,14 +18,14 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section WriterFoldITree.
-Context {W : Type} {E MN F : Type -> Type} (op : Monoid W) (WL : MonoidLaws op).
-Variable handle : forall X, E X -> itree F X.
-Variable sample : forall X, MN X -> itree F X.
+Context {W : Type} {E MN F : Type → Type} (op : Monoid W) (WL : MonoidLaws op).
+Variable handle : ∀ X, E X → itree F X.
+Variable sample : ∀ X, MN X → itree F X.
 
 Definition itree_writer_from {A} (t : ptree (writerE W +' E) MN A) log : itree F (W*A) :=
   ITree.iter (writer_fold_step op handle sample) (log,t).
 
-Lemma itree_state_bind_ret {X A} (x : X) (k : X -> ptree (stateE W +' E) MN A) log :
+Lemma itree_state_bind_ret {X A} (x : X) (k : X → ptree (stateE W +' E) MN A) log :
   eq_itree eq (fold handle sample (run_state (PTree.bind (Ret x) k) log))
     (fold handle sample (run_state (k x) log)).
 Proof.
@@ -36,7 +38,7 @@ Lemma itree_writer_fold_observe {A} (t : ptree (writerE W +' E) MN A) log :
      | RetF a => ITreeDefinition.Ret (log,a)
      | TauF u => ITreeDefinition.Tau (itree_writer_from u log)
      | @VisF _ _ _ _ X e k => match e with
-         | inl1 we => match we in writerE _ X return (X -> _) -> _ with
+         | inl1 we => match we in writerE _ X return (X → _) → _ with
              | Tell w => fun k => ITreeDefinition.Tau (itree_writer_from (k tt) (monoid_plus op log w))
              end k
          | inr1 fe => ITree.bind (@handle X fe)
@@ -107,7 +109,7 @@ Proof.
 Qed.
 
 Lemma itree_writer_bind_from {A B} (t : ptree (writerE W +' E) MN A)
-    (k : A -> ptree (writerE W +' E) MN B) log :
+    (k : A → ptree (writerE W +' E) MN B) log :
   eq_itree eq (itree_writer_from (PTree.bind t k) log)
     (ITree.bind (itree_writer_from t log) (fun wa => itree_writer_from (k (snd wa)) (fst wa))).
 Proof.
@@ -126,7 +128,7 @@ Proof.
 Qed.
 
 Theorem itree_writer_fold_bind {A B} (t : ptree (writerE W +' E) MN A)
-    (k : A -> ptree (writerE W +' E) MN B) :
+    (k : A → ptree (writerE W +' E) MN B) :
   eq_itree eq (fold_writer op handle sample (PTree.bind t k))
     (@bind (Monads.writerT W (itree F)) (writerT_monad op) A B
       (fold_writer op handle sample t) (fun a => fold_writer op handle sample (k a))).

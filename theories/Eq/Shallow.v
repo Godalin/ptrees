@@ -14,6 +14,8 @@
 *)
 
 (* begin hide *)
+From Coq Require Import Utf8.
+
 Require Import Morphisms.
 
 From PTree.Core Require Import PTreeDefinition.
@@ -21,27 +23,27 @@ From PTree.Core Require Import PTreeDefinition.
 Set Implicit Arguments.
 (* end hide *)
 
-Definition eqeq {A : Type} (P : A -> Type) {a1 a2 : A} (p : a1 = a2) : P a1 -> P a2 -> Prop :=
+Definition eqeq {A : Type} (P : A → Type) {a1 a2 : A} (p : a1 = a2) : P a1 → P a2 → Prop :=
   match p with
   | eq_refl => eq
   end.
 
-Definition pweqeq {R1 R2} (RR : R1 -> R2 -> Prop) {X1 X2 : Type} (p : X1 = X2)
-  : (X1 -> R1) -> (X2 -> R2) -> Prop :=
+Definition pweqeq {R1 R2} (RR : R1 → R2 → Prop) {X1 X2 : Type} (p : X1 = X2)
+  : (X1 → R1) → (X2 → R2) → Prop :=
   match p with
-  | eq_refl => fun k1 k2 => forall x, RR (k1 x) (k2 x)
+  | eq_refl => fun k1 k2 => ∀ x, RR (k1 x) (k2 x)
   end.
 
-Lemma pweqeq_mon {R1 R2} (RR1 RR2 : R1 -> R2 -> Prop) X1 X2 (p : X1 = X2) k1 k2
-  : (forall r1 r2, RR1 r1 r2 -> RR2 r1 r2) -> pweqeq RR1 p k1 k2 -> pweqeq RR2 p k1 k2.
+Lemma pweqeq_mon {R1 R2} (RR1 RR2 : R1 → R2 → Prop) X1 X2 (p : X1 = X2) k1 k2
+  : (∀ r1 r2, RR1 r1 r2 → RR2 r1 r2) → pweqeq RR1 p k1 k2 → pweqeq RR2 p k1 k2.
 Proof.
   destruct p; cbn; auto.
 Qed.
 
 Lemma eq_inv_VisF_weak {E M R X1 X2} (e1 : E X1) (e2 : E X2)
-    (k1 : X1 -> ptree E M R) (k2 : X2 -> ptree E M R)
-  : VisF (R := R) (M := M) e1 k1 = VisF (R := R) e2 k2 ->
-    exists p : X1 = X2, eqeq E p e1 e2 /\ eqeq (fun X => X -> ptree E M R) p k1 k2.
+    (k1 : X1 → ptree E M R) (k2 : X2 → ptree E M R)
+  : VisF (R := R) (M := M) e1 k1 = VisF (R := R) e2 k2 →
+    ∃ p : X1 = X2, eqeq E p e1 e2 ∧ eqeq (fun X => X → ptree E M R) p k1 k2.
 Proof.
   refine (fun H =>
     match H in _ = t return
@@ -64,7 +66,7 @@ Ltac inv_Vis :=
 
 (** ** [observing]: Lift relations through [observe]. *)
 Record observing {E M R1 R2}
-           (eq_ : ptree' E M R1 -> ptree' E M R2 -> Prop)
+           (eq_ : ptree' E M R1 → ptree' E M R2 → Prop)
            (t1 : ptree E M R1) (t2 : ptree E M R2) : Prop :=
   observing_intros
   { observing_observe : eq_ (observe t1) (observe t2) }.
@@ -74,8 +76,8 @@ Record observing {E M R1 R2}
 
 Section observing_relations.
 
-Context {E M : Type -> Type} {R : Type}.
-Variable (eq_ : ptree' E M R -> ptree' E M R -> Prop).
+Context {E M : Type → Type} {R : Type}.
+Variable (eq_ : ptree' E M R → ptree' E M R → Prop).
 
 #[global]
 Instance observing_observe_ :
@@ -88,13 +90,13 @@ Proof. cbv; auto with ptree. Qed.
 
 #[global]
 Instance monotonic_observing eq_' :
-  subrelation eq_ eq_' ->
+  subrelation eq_ eq_' →
   subrelation (observing eq_) (observing eq_').
 Proof. intros ? ? ? []; cbv; eauto with ptree. Qed.
 
 #[global]
 Instance Equivalence_observing :
-  Equivalence eq_ -> Equivalence (observing eq_).
+  Equivalence eq_ → Equivalence (observing eq_).
 Proof with (auto with ptree).
   intros []; split; cbv...
   - intros ? ? []; auto...
@@ -107,7 +109,7 @@ End observing_relations.
 
 (** Unfolding lemmas for [bind] *)
 
-Lemma observe_bind {E M R S} (t : ptree E M R) (k : R -> ptree E M S)
+Lemma observe_bind {E M R S} (t : ptree E M R) (k : R → ptree E M S)
   : observe (PTree.bind t k)
   = observe (match observe t with
     | RetF r => k r
@@ -125,16 +127,16 @@ Proof.
   rewrite (observing_observe H). reflexivity.
 Qed.
 
-Lemma bind_ret_ {E M R S} (r : R) (k : R -> ptree E M S) :
+Lemma bind_ret_ {E M R S} (r : R) (k : R → ptree E M S) :
   observing eq (PTree.bind (Ret r) k) (k r).
 Proof. constructor; reflexivity. Qed.
 
-Lemma bind_tau_ {E M R} U t (k : U -> ptree E M R) :
+Lemma bind_tau_ {E M R} U t (k : U → ptree E M R) :
   observing eq (PTree.bind (Tau t) k) (Tau (PTree.bind t k)).
 Proof. constructor; reflexivity. Qed.
 
 Lemma bind_vis_ {E M R U V} (e : E V)
-  (ek : V -> ptree E M U) (k : U -> ptree E M R) :
+  (ek : V → ptree E M U) (k : U → ptree E M R) :
   observing eq
     (PTree.bind (Vis e ek) k)
     (Vis e (fun x => PTree.bind (ek x) k)).
@@ -142,7 +144,7 @@ Proof. constructor; reflexivity. Qed.
 
 (** Unfolding lemma for [aloop]. There is also a variant [unfold_aloop]
     without [Tau]. *)
-Lemma unfold_aloop_ {E M A B} (f : A -> ptree E M (A + B)) (x : A) :
+Lemma unfold_aloop_ {E M A B} (f : A → ptree E M (A + B)) (x : A) :
   observing eq
     (PTree.iter f x)
     (PTree.bind (f x) (fun lr => PTree.on_left lr l (Tau (PTree.iter f l)))).
@@ -151,7 +153,7 @@ Proof. constructor; reflexivity. Qed.
 (** Unfolding equations for event interpretation.  The visible equation
     exposes the administrative guard inserted by [PTree.interp]. *)
 Lemma observe_interp {E F M R}
-    (handler : forall X, E X -> ptree F M X) (t : ptree E M R) :
+    (handler : ∀ X, E X → ptree F M X) (t : ptree E M R) :
   observe (PTree.interp handler t) =
     match observe t with
     | RetF r => RetF r
@@ -167,28 +169,28 @@ Proof.
 Qed.
 
 Lemma interp_ret_ {E F M R}
-    (handler : forall X, E X -> ptree F M X) (r : R) :
+    (handler : ∀ X, E X → ptree F M X) (r : R) :
   observing eq (PTree.interp handler (Ret r)) (Ret r).
 Proof. constructor; reflexivity. Qed.
 
 Lemma interp_tau_ {E F M R}
-    (handler : forall X, E X -> ptree F M X)
+    (handler : ∀ X, E X → ptree F M X)
     (t : ptree E M R) :
   observing eq (PTree.interp handler (Tau t))
     (Tau (PTree.interp handler t)).
 Proof. constructor; reflexivity. Qed.
 
 Lemma interp_vis_ {E F M R X}
-    (handler : forall X, E X -> ptree F M X)
-    (e : E X) (k : X -> ptree E M R) :
+    (handler : ∀ X, E X → ptree F M X)
+    (e : E X) (k : X → ptree E M R) :
   observing eq (PTree.interp handler (Vis e k))
     (Tau (PTree.bind (handler _ e)
       (fun x => PTree.interp handler (k x)))).
 Proof. constructor; reflexivity. Qed.
 
 Lemma interp_prob_ {E F M R X}
-    (handler : forall X, E X -> ptree F M X)
-    (mu : M X) (k : X -> ptree E M R) :
+    (handler : ∀ X, E X → ptree F M X)
+    (mu : M X) (k : X → ptree E M R) :
   observing eq (PTree.interp handler (Prob mu k))
     (Prob mu (fun x => PTree.interp handler (k x))).
 Proof. constructor; reflexivity. Qed.
@@ -205,13 +207,13 @@ Proof. econstructor. reflexivity. Qed. *)
 (** [going]: Lift relations through [go]. *)
 
 Inductive going {E M R1 R2}
-    (r : ptree E M R1 -> ptree E M R2 -> Prop)
+    (r : ptree E M R1 → ptree E M R2 → Prop)
     (ot1 : ptree' E M R1) (ot2 : ptree' E M R2) : Prop :=
-  | going_intros : r (go ot1) (go ot2) -> going r ot1 ot2.
+  | going_intros : r (go ot1) (go ot2) → going r ot1 ot2.
 #[global] Hint Constructors going : ptree.
 
-Lemma observing_going {E M R1 R2} (eq_ : ptree' E M R1 -> ptree' E M R2 -> Prop) ot1 ot2 :
-  going (observing eq_) ot1 ot2 <-> eq_ ot1 ot2.
+Lemma observing_going {E M R1 R2} (eq_ : ptree' E M R1 → ptree' E M R2 → Prop) ot1 ot2 :
+  going (observing eq_) ot1 ot2 ↔ eq_ ot1 ot2.
 Proof.
   split; auto with ptree.
   intros [[]]; auto.
@@ -221,8 +223,8 @@ Qed.
 
 Section going_relations.
 
-Context {E M : Type -> Type} {R : Type}.
-Variable (eq_ : ptree E M R -> ptree E M R -> Prop).
+Context {E M : Type → Type} {R : Type}.
+Variable (eq_ : ptree E M R → ptree E M R → Prop).
 
 #[global]
 Instance going_go : Proper (going eq_ ==> eq_) (@go E M R).
@@ -230,13 +232,13 @@ Proof. intros ? ? []; auto. Qed.
 
 #[global]
 Instance monotonic_going eq_' :
-  subrelation eq_ eq_' ->
+  subrelation eq_ eq_' →
   subrelation (going eq_) (going eq_').
 Proof. intros ? ? ? []; eauto with ptree. Qed.
 
 #[global]
 Instance Equivalence_going :
-  Equivalence eq_ -> Equivalence (going eq_).
+  Equivalence eq_ → Equivalence (going eq_).
 Proof.
   intros []; constructor; cbv; eauto with ptree.
   - intros ? ? []; auto with ptree.

@@ -2,6 +2,8 @@
     proof closure, not a new behavioral relation.  A candidate must still
     progress through the complete stable-hitting generator: an internal
     [Prob] node alone is not a coinductive guard. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure Omega Mixed.
@@ -12,11 +14,11 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section UpToProb.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FO : @SemanticOmega MF FI} `{MX : MixedMeasure MN MF}.
-Context {A B : Type} (RR : A -> B -> Prop).
+Context {A B : Type} (RR : A → B → Prop).
 Local Notation state1 := (ptree' E MN A).
 Local Notation state2 := (ptree' E MN B).
 Local Notation W := (@peutt_state E MN MF FI FC MX FO A B RR).
@@ -25,24 +27,24 @@ Local Notation matches := (stable_hitting_match
   (@ptree_primitive_kernel E MN MF FI MX B)
   (@ptree_stable_head_rel E MN A B RR)).
 
-Definition prob_upto_closure (sim : state1 -> state2 -> Prop)
+Definition prob_upto_closure (sim : state1 → state2 → Prop)
     (s1 : state1) (s2 : state2) : Prop :=
-  sim s1 s2 \/ W s1 s2 \/
-  exists (X Y : Type) (XR : X -> Y -> Prop)
+  sim s1 s2 ∨ W s1 s2 ∨
+  ∃ (X Y : Type) (XR : X → Y → Prop)
     (mu : MN X) (nu : MN Y)
-    (k : X -> ptree E MN A) (h : Y -> ptree E MN B),
-    s1 = observe (Prob mu k) /\ s2 = observe (Prob nu h) /\
-    sem_lift XR mu nu /\
-    (forall x y, XR x y ->
-      sim (observe (k x)) (observe (h y)) \/ peutt RR (k x) (h y)).
+    (k : X → ptree E MN A) (h : Y → ptree E MN B),
+    s1 = observe (Prob mu k) ∧ s2 = observe (Prob nu h) ∧
+    sem_lift XR mu nu ∧
+    (∀ x y, XR x y →
+      sim (observe (k x)) (observe (h y)) ∨ peutt RR (k x) (h y)).
 
 Lemma prob_upto_closure_includes sim s1 s2 :
-  sim s1 s2 -> prob_upto_closure sim s1 s2.
+  sim s1 s2 → prob_upto_closure sim s1 s2.
 Proof. intro H. left. exact H. Qed.
 
 Lemma prob_upto_closure_mono sim1 sim2 :
-  (forall s1 s2, sim1 s1 s2 -> sim2 s1 s2) ->
-  forall s1 s2, prob_upto_closure sim1 s1 s2 ->
+  (∀ s1 s2, sim1 s1 s2 → sim2 s1 s2) →
+  ∀ s1 s2, prob_upto_closure sim1 s1 s2 →
     prob_upto_closure sim2 s1 s2.
 Proof.
   intros Hsub s1 s2 [Hr|[Hw|Hs]].
@@ -56,11 +58,11 @@ Proof.
     + right. exact Hw.
 Qed.
 
-Lemma prob_upto_closure_sample sim X Y (XR : X -> Y -> Prop)
+Lemma prob_upto_closure_sample sim X Y (XR : X → Y → Prop)
     (mu : MN X) (nu : MN Y) k h :
-  sem_lift XR mu nu ->
-  (forall x y, XR x y ->
-    sim (observe (k x)) (observe (h y)) \/ peutt RR (k x) (h y)) ->
+  sem_lift XR mu nu →
+  (∀ x y, XR x y →
+    sim (observe (k x)) (observe (h y)) ∨ peutt RR (k x) (h y)) →
   prob_upto_closure sim (observe (Prob mu k)) (observe (Prob nu h)).
 Proof.
   intros Hmu Hk. right. right.
@@ -80,12 +82,12 @@ Context `{NC : @SemanticMeasureCoreLaws MN NI}
     witnesses.  It never invokes [peutt_prob] on the candidate.  Relational
     mixed bind pushes the native coupling to the two complete frontiers. *)
 Lemma prob_upto_closure_compatible sim
-    (Hprogress : forall s1 s2, sim s1 s2 ->
+    (Hprogress : ∀ s1 s2, sim s1 s2 →
       matches (prob_upto_closure sim) s1 s2) :
-  forall s1 s2, prob_upto_closure sim s1 s2 ->
+  ∀ s1 s2, prob_upto_closure sim s1 s2 →
     matches (prob_upto_closure sim) s1 s2.
 Proof.
-  assert (Hknown : forall s1 s2, W s1 s2 ->
+  assert (Hknown : ∀ s1 s2, W s1 s2 ->
       matches (prob_upto_closure sim) s1 s2).
   { intros s1 s2 H.
     apply stable_hitting_bisim_unfold in H.
@@ -115,9 +117,9 @@ Proof.
 Qed.
 
 Theorem peutt_coinduction_upto_prob sim
-    (Hprogress : forall s1 s2, sim s1 s2 ->
+    (Hprogress : ∀ s1 s2, sim s1 s2 →
       matches (prob_upto_closure sim) s1 s2) t u :
-  sim (observe t) (observe u) -> peutt RR t u.
+  sim (observe t) (observe u) → peutt RR t u.
 Proof.
   intro Hsim. eapply peutt_coinduction_upto_closure
     with (clo := prob_upto_closure) (sim := sim).

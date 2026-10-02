@@ -4,6 +4,8 @@
     universe checking enabled. See docs/BACKENDS.md#mathcomp-mathematics-and-assumptions and Gate M.
     Native order, omega, diagonal/Fubini and relational bind are checked in
     Gate S. Only their recursive-frontier instantiation belongs to Gate M. *)
+From Coq Require Import Utf8.
+
 Local Unset Universe Checking.
 From mathcomp Require Import reals boolp.
 From PTree.Prob.Interface Require Import Measure Omega Mixed BindOrder.
@@ -39,7 +41,7 @@ Definition mathcomp_kernel {E A} := @ptree_primitive_kernel E M M NI MX A.
 Definition mathcomp_hitting {E A} := @ptree_stable_hitting E M M NI MX NO A.
 
 Lemma mathcomp_hitting_exists {E A} (t : @mathcomp_tree E A) :
-  exists out, mathcomp_hitting (observe t) out.
+  ∃ out, mathcomp_hitting (observe t) out.
 Proof. apply ptree_stable_hitting_exists. Qed.
 
 (** Gluing is a mathematical premise, independent of the universe bypass. *)
@@ -51,11 +53,11 @@ Lemma mathcomp_peutt_refl {E A} (t : @mathcomp_tree E A) :
 Proof. exact (@peutt_refl E M M NI NC MX NO A t). Qed.
 
 Section Bind.
-Context {E : Type -> Type}.
+Context {E : Type → Type}.
 (** All probability obligations are checked native instances. Only this
     recursive-frontier instantiation needs the existing Gate M relaxation. *)
 Theorem mathcomp_bind_cofinal {A B}
-    (t : ptree E M A) (k : A -> ptree E M B) :
+    (t : ptree E M A) (k : A → ptree E M B) :
   @ptree_bind_cofinal E M M NI MX NO A B t k.
 Proof.
   apply BindScheduling.ptree_bind_cofinal_all.
@@ -69,11 +71,11 @@ Qed.
 (** Fully heterogeneous eventful bind: exactly the generic theorem, not a
     second native coinduction or a separate witness-choice proof. *)
 Theorem mathcomp_peutt_bind {A B C D}
-    (RR : A -> B -> Prop) (RS : C -> D -> Prop)
+    (RR : A → B → Prop) (RS : C → D → Prop)
     (t : ptree E M A) (u : ptree E M B)
-    (k : A -> ptree E M C) (h : B -> ptree E M D) :
-  @peutt E M M NI NC MX NO A B RR t u ->
-  (forall x y, RR x y -> @peutt E M M NI NC MX NO C D RS (k x) (h y)) ->
+    (k : A → ptree E M C) (h : B → ptree E M D) :
+  @peutt E M M NI NC MX NO A B RR t u →
+  (∀ x y, RR x y → @peutt E M M NI NC MX NO C D RS (k x) (h y)) →
   @peutt E M M NI NC MX NO C D RS (PTree.bind t k) (PTree.bind u h).
 Proof. apply peutt_bind. Qed.
 End Bind.

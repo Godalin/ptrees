@@ -2,6 +2,8 @@
 (** Backend realization contracts, not a second audit of raw qlift cases.
     Real-weight unbounded retry is related to its Boolean-complement output;
     the realized joint is therefore genuinely relational, not just diagonal. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -44,18 +46,18 @@ Proof.
     intros x y ->; destruct y; [apply FOLRet; reflexivity|exact IH].
 Qed.
 
-Example real_retry_joint_exact_mass_support : exists J : OmegaVal R (bool * bool),
+Example real_retry_joint_exact_mass_support : ∃ J : OmegaVal R (bool * bool),
   oval_joint complement (free_omega_model retry_left_modelable)
-    (free_omega_model retry_right_modelable) J /\
-  oval_mass J = oval_mass (free_omega_model retry_left_modelable) /\
-  oval_mass J = oval_mass (free_omega_model retry_right_modelable) /\
-  oval_eval J (oval_indicator R (fun z => ~ complement (fst z) (snd z))) = 0.
+    (free_omega_model retry_right_modelable) J ∧
+  oval_mass J = oval_mass (free_omega_model retry_left_modelable) ∧
+  oval_mass J = oval_mass (free_omega_model retry_right_modelable) ∧
+  oval_eval J (oval_indicator R (fun z => ¬ complement (fst z) (snd z))) = 0.
 Proof. apply subenumR_qlift_joint_mass_support; exact retry_complement_qlift. Qed.
 
 (** A cover does not certify probability validity. *)
 Example invalid_real_lub_still_enumerable :
   free_omega_ae (oval_enumerated (subenumR_free_omega_enumerate (real_alternating R)))
-    (real_alternating R) /\ ~ free_omega_modelable native (real_alternating R).
+    (real_alternating R) ∧ ¬ free_omega_modelable native (real_alternating R).
 Proof. split; [apply subenumR_free_omega_enumerate_covers|exact: real_alternating_invalid]. Qed.
 
 Definition partial_term := FOSample (duplicated_half R) (fun b => FORet b).
@@ -68,9 +70,9 @@ Proof.
   have H4 : (4 : R) = 2 * 2 by rewrite -natrM.
   by rewrite H4 invfM mulrA mulfV ?pnatr_eq0 // mul1r.
 Qed.
-Example real_partial_joint_not_normalized : exists J : OmegaVal R (bool * bool),
+Example real_partial_joint_not_normalized : ∃ J : OmegaVal R (bool * bool),
   oval_joint eq (free_omega_model partial_term_modelable)
-    (free_omega_model partial_term_modelable) J /\ oval_mass J = (1 : R)/2.
+    (free_omega_model partial_term_modelable) J ∧ oval_mass J = (1 : R)/2.
 Proof.
   have Hq : free_omega_qlift eq partial_term partial_term.
   { apply FOQLStructural, free_omega_lift_refl; intros x; reflexivity. }

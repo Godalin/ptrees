@@ -3,6 +3,8 @@
     Mere convergence is insufficient: an early positive atom may disappear.
     Decidable equality on observed outcomes permits constructive singleton
     tests; no classical predicate-to-Boolean choice is needed. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -18,30 +20,30 @@ Unset Strict Implicit.
 Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
-Lemma enumQ_expect_mono {A} (mu : EnumQ A) (f g : A -> rat) :
-  (forall x, f x <= g x) -> enumQ_expect f mu <= enumQ_expect g mu.
+Lemma enumQ_expect_mono {A} (mu : EnumQ A) (f g : A → rat) :
+  (∀ x, f x <= g x) → enumQ_expect f mu <= enumQ_expect g mu.
 Proof. exact (finite_expect_mono (enumQ_nonnegative mu)). Qed.
-Lemma enumQ_indicator_nonnegative {A} (mu : EnumQ A) (P : A -> bool) :
+Lemma enumQ_indicator_nonnegative {A} (mu : EnumQ A) (P : A → bool) :
   0 <= enumQ_expect (fun x => if P x then 1 else 0) mu.
 Proof. exact (finite_indicator_nonnegative P (enumQ_nonnegative mu)). Qed.
-Lemma enumQ_indicator_positive_member {A} (mu : EnumQ A) (P : A -> bool) :
-  0 < enumQ_expect (fun x => if P x then 1 else 0) mu ->
-  exists w x, List.In (w,x) (enumQ_raw mu) /\ w <> 0 /\ P x.
+Lemma enumQ_indicator_positive_member {A} (mu : EnumQ A) (P : A → bool) :
+  0 < enumQ_expect (fun x => if P x then 1 else 0) mu →
+  ∃ w x, List.In (w,x) (enumQ_raw mu) ∧ w ≠ 0 ∧ P x.
 Proof. exact: finite_indicator_positive_member. Qed.
-Lemma enumQ_indicator_member_positive {A} (mu : EnumQ A) (P : A -> bool) w x :
-  List.In (w,x) (enumQ_raw mu) -> w <> 0 -> P x ->
+Lemma enumQ_indicator_member_positive {A} (mu : EnumQ A) (P : A → bool) w x :
+  List.In (w,x) (enumQ_raw mu) → w ≠ 0 → P x →
   0 < enumQ_expect (fun x => if P x then 1 else 0) mu.
 Proof. exact (finite_indicator_member_positive (P := P) (enumQ_nonnegative mu)). Qed.
 
-Definition enumQ_chain_increasing {A} (chain : nat -> EnumQ A) : Prop :=
-  forall (P : A -> bool) n m, Peano.le n m ->
+Definition enumQ_chain_increasing {A} (chain : nat → EnumQ A) : Prop :=
+  ∀ (P : A → bool) n m, Peano.le n m →
     enumQ_expect (fun x => if P x then 1 else 0) (chain n) <=
     enumQ_expect (fun x => if P x then 1 else 0) (chain m).
 
-Lemma enumQ_converges_positive_limit {A} (chain : nat -> EnumQ A) out P :
-  enumQ_converges chain out ->
-  0 < enumQ_expect (fun x => if P x then 1 else 0) out ->
-  exists n, 0 < enumQ_expect (fun x => if P x then 1 else 0) (chain n).
+Lemma enumQ_converges_positive_limit {A} (chain : nat → EnumQ A) out P :
+  enumQ_converges chain out →
+  0 < enumQ_expect (fun x => if P x then 1 else 0) out →
+  ∃ n, 0 < enumQ_expect (fun x => if P x then 1 else 0) (chain n).
 Proof.
   intros Hlim Hpos. destruct (Hlim P _ Hpos) as [N HN].
   exists N.
@@ -53,9 +55,9 @@ Proof.
   rewrite ltxx in HN. discriminate.
 Qed.
 
-Lemma enumQ_converges_positive_approx {A} (chain : nat -> EnumQ A) out P n :
-  enumQ_chain_increasing chain -> enumQ_converges chain out ->
-  0 < enumQ_expect (fun x => if P x then 1 else 0) (chain n) ->
+Lemma enumQ_converges_positive_approx {A} (chain : nat → EnumQ A) out P n :
+  enumQ_chain_increasing chain → enumQ_converges chain out →
+  0 < enumQ_expect (fun x => if P x then 1 else 0) (chain n) →
   0 < enumQ_expect (fun x => if P x then 1 else 0) out.
 Proof.
   intros Hmono Hlim Hpos.
@@ -70,9 +72,9 @@ Proof.
   have Hbad := le_lt_trans Hle HN. rewrite ltxx in Hbad. discriminate.
 Qed.
 
-Lemma enumQ_converges_ae_iff {A : eqType} (chain : nat -> EnumQ A) out :
-  enumQ_chain_increasing chain -> enumQ_converges chain out ->
-  forall P, enumQ_ae out P <-> forall n, enumQ_ae (chain n) P.
+Lemma enumQ_converges_ae_iff {A : eqType} (chain : nat → EnumQ A) out :
+  enumQ_chain_increasing chain → enumQ_converges chain out →
+  ∀ P, enumQ_ae out P ↔ ∀ n, enumQ_ae (chain n) P.
 Proof.
   intros Hmono Hlim P. split.
   - intros HP n w x Hin Hnz.
@@ -89,10 +91,10 @@ Proof.
     move/eqP: Heq=> Heq. subst y. exact (HP n v x Hy Hv).
 Qed.
 
-Lemma enumQ_iter_approx_increasing {I A} (step : I -> EnumQ (I + A)) i :
+Lemma enumQ_iter_approx_increasing {I A} (step : I → EnumQ (I + A)) i :
   enumQ_chain_increasing (fun n => meas_iter_approx n step i).
 Proof.
-  assert (Hsucc : forall n i (P : A -> bool),
+  assert (Hsucc : ∀ n i (P : A -> bool),
     enumQ_expect (fun x => if P x then 1 else 0) (meas_iter_approx n step i) <=
     enumQ_expect (fun x => if P x then 1 else 0) (meas_iter_approx (S n) step i)).
   { induction n as [|n IH]; intros x P.

@@ -1,4 +1,6 @@
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -19,7 +21,7 @@ Unset Printing Implicit Defensive.
     In particular, a coupling equation does not by itself license replacing
     the output argument of [stable_hitting]. *)
 Section StableHeads.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
@@ -29,7 +31,7 @@ Context {E MN MF : Type -> Type}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}.
 
 Lemma stable_hitting_ret_iff {R} (r : R) out :
-  stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe (Ret r)) out <->
+  stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe (Ret r)) out ↔
   sem_eq out (sem_ret (FHRet r)).
 Proof.
   split.
@@ -45,8 +47,8 @@ Proof.
 Qed.
 
 Lemma stable_hitting_vis_iff {R X} (e : E X)
-    (k : X -> ptree E MN R) out :
-  stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe (Vis e k)) out <->
+    (k : X → ptree E MN R) out :
+  stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe (Vis e k)) out ↔
   sem_eq out (sem_ret (FHVis e k)).
 Proof.
   split.
@@ -64,25 +66,25 @@ Qed.
 (** Tree-facing form: rewriting needs no preliminary unfolding of observe. *)
 Lemma stable_hitting_tau {R} (t : ptree E MN R) out :
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Tau t)) out <->
+    (observe (Tau t)) out ↔
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out.
 Proof. apply stable_hitting_tau_iff. Qed.
 
 Lemma stable_hitting_tau_iter {R} n (t : ptree E MN R) out :
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Nat.iter n (fun u => Tau u) t)) out <->
+    (observe (Nat.iter n (fun u => Tau u) t)) out ↔
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out.
 Proof.
   induction n as [|n IH]; [reflexivity|].
   change (stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Tau (Nat.iter n (fun u => Tau u) t))) out <->
+    (observe (Tau (Nat.iter n (fun u => Tau u) t))) out ↔
     stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out).
   rewrite stable_hitting_tau. exact IH.
 Qed.
 End StableHeads.
 
 Section ProbabilityComputation.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{FI : SemanticMeasure MF}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{FC : @SemanticMeasureCoreLaws MF FI}
@@ -98,16 +100,16 @@ Context {E MN MF : Type -> Type}
 (** Elimination uses complete branch limits, not a common finite bound.
     Introduction is [stable_hitting_prob], including its AE variant. *)
 Theorem stable_hitting_prob_decompose {R X}
-    (mu : MN X) (k : X -> ptree E MN R) out :
+    (mu : MN X) (k : X → ptree E MN R) out :
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Prob mu k)) out ->
-  exists front : X -> MF (stable_head E MN R),
-    (forall x, stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-      (observe (k x)) (front x)) /\
+    (observe (Prob mu k)) out →
+  ∃ front : X → MF (stable_head E MN R),
+    (∀ x, stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
+      (observe (k x)) (front x)) ∧
     sem_eq out (mixed_bind mu front).
 Proof.
   intro Hhit.
-  assert (Hex : forall x, exists out,
+  assert (Hex : ∀ x, exists out,
     stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
       (observe (k x)) out).
   { intro x. apply stable_hitting_exists. }
@@ -120,13 +122,13 @@ Proof.
 Qed.
 
 Theorem stable_hitting_prob_compute {R X}
-    (mu : MN X) (k : X -> ptree E MN R)
-    (front : X -> MF (stable_head E MN R)) (Good : X -> Prop) out :
-  sem_ae mu Good ->
-  (forall x, Good x -> stable_hitting
-    (@ptree_primitive_kernel E MN MF FI MX R) (observe (k x)) (front x)) ->
+    (mu : MN X) (k : X → ptree E MN R)
+    (front : X → MF (stable_head E MN R)) (Good : X → Prop) out :
+  sem_ae mu Good →
+  (∀ x, Good x → stable_hitting
+    (@ptree_primitive_kernel E MN MF FI MX R) (observe (k x)) (front x)) →
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Prob mu k)) out ->
+    (observe (Prob mu k)) out →
   sem_eq out (mixed_bind mu front).
 Proof.
   intros Hae Hfront Hhit. eapply stable_hitting_unique; [exact Hhit|].
@@ -137,11 +139,11 @@ Qed.
     [MixedMeasureUnitLaws]: equality coupling of complete outputs. *)
 Theorem stable_hitting_prob_dirac {R X}
     `{MU : @MixedMeasureUnitLaws MN MF NI FI MX}
-    (x : X) (k : X -> ptree E MN R) out1 out2 :
+    (x : X) (k : X → ptree E MN R) out1 out2 :
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Prob (sem_ret x) k)) out1 ->
+    (observe (Prob (sem_ret x) k)) out1 →
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (k x)) out2 ->
+    (observe (k x)) out2 →
   sem_lift eq out1 out2.
 Proof.
   intros H1 H2.
@@ -156,11 +158,11 @@ Qed.
     law then couples this result to the flattened native distribution. *)
 Theorem stable_hitting_prob_flatten {R X Y}
     `{NB : @MixedMeasureNodeBindLaws MN MF NI FI MX}
-    (mu : MN X) (h : X -> MN Y) (k : Y -> ptree E MN R) out1 out2 :
+    (mu : MN X) (h : X → MN Y) (k : Y → ptree E MN R) out1 out2 :
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Prob mu (fun x => Prob (h x) k))) out1 ->
+    (observe (Prob mu (fun x => Prob (h x) k))) out1 →
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Prob (sem_bind mu h) k)) out2 ->
+    (observe (Prob (sem_bind mu h) k)) out2 →
   sem_lift eq out1 out2.
 Proof.
   intros H1 H2.
@@ -180,7 +182,7 @@ Qed.
 End ProbabilityComputation.
 
 Section BehavioralEndpoint.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF}
@@ -190,11 +192,11 @@ Context {E MN MF : Type -> Type}
 
 (** A derived existential presentation, not a change to the generator's
     bidirectional matching of all complete hitting witnesses. *)
-Theorem peutt_iff_hitting {A B} (RR : A -> B -> Prop)
+Theorem peutt_iff_hitting {A B} (RR : A → B → Prop)
     (t : ptree E MN A) (u : ptree E MN B) :
-  peutt RR t u <-> exists out1 out2,
-    stable_hitting (@ptree_primitive_kernel E MN MF FI MX A) (observe t) out1 /\
-    stable_hitting (@ptree_primitive_kernel E MN MF FI MX B) (observe u) out2 /\
+  peutt RR t u ↔ ∃ out1 out2,
+    stable_hitting (@ptree_primitive_kernel E MN MF FI MX A) (observe t) out1 ∧
+    stable_hitting (@ptree_primitive_kernel E MN MF FI MX B) (observe u) out2 ∧
     sem_lift (ptree_stable_head_rel RR
       (@peutt_state E MN MF FI FC MX FO A B RR)) out1 out2.
 Proof.

@@ -1,4 +1,6 @@
 (** Role: Comparison semantics. Depends on canonical theory; not the canonical peutt relation or interpreter theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -16,7 +18,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section MDPFragment.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI}
   `{MX : MixedMeasure MN MF}
@@ -29,16 +31,16 @@ Local Notation hits t out :=
 (** A unary invariant on selected states, not a behavioral relation.
     A response yields a total DISTRIBUTION of qualifying successor heads;
     its continuation need not itself denote a Dirac state. *)
-Definition mdp_headF (P : head -> Prop) (h : head) : Prop :=
+Definition mdp_headF (P : head → Prop) (h : head) : Prop :=
   match h with
   | FHRet _ => True
-  | @FHVis _ _ _ X e k => forall x : X, exists out,
-      head_step (MF := MF) (FHVis e k) (Obs e x) out /\
-      sem_total out /\ sem_ae out P
+  | @FHVis _ _ _ X e k => ∀ x : X, ∃ out,
+      head_step (MF := MF) (FHVis e k) (Obs e x) out ∧
+      sem_total out ∧ sem_ae out P
   end.
 
 Lemma mdp_headF_mono P Q :
-  (forall h, P h -> Q h) -> forall h, mdp_headF P h -> mdp_headF Q h.
+  (∀ h, P h → Q h) → ∀ h, mdp_headF P h → mdp_headF Q h.
 Proof.
   intros Hsub h H. destruct h as [r|X e k]; simpl in *; [exact I|].
   intro x. destruct (H x) as [out [Hstep [Htotal Hae]]].
@@ -46,22 +48,22 @@ Proof.
   eapply sem_ae_mono; eauto.
 Qed.
 
-Program Definition fmdp_head : mon (head -> Prop) := {| body := mdp_headF |}.
+Program Definition fmdp_head : mon (head → Prop) := {| body := mdp_headF |}.
 Next Obligation.
   intros P Q Hsub h H. eapply mdp_headF_mono; eauto.
 Qed.
 
-Definition mdp_head : head -> Prop := gfp fmdp_head.
+Definition mdp_head : head → Prop := gfp fmdp_head.
 
-Lemma mdp_head_unfold h : mdp_head h -> mdp_headF mdp_head h.
+Lemma mdp_head_unfold h : mdp_head h → mdp_headF mdp_head h.
 Proof. intro H. apply (gfp_pfp fmdp_head) in H. exact H. Qed.
 
-Lemma mdp_head_fold h : mdp_headF mdp_head h -> mdp_head h.
+Lemma mdp_head_fold h : mdp_headF mdp_head h → mdp_head h.
 Proof. intro H. unfold mdp_head. apply (gfp_fp fmdp_head). exact H. Qed.
 
-Theorem mdp_head_coinduction (P : head -> Prop)
-    (Hpost : forall h, P h -> mdp_headF P h) :
-  forall h, P h -> mdp_head h.
+Theorem mdp_head_coinduction (P : head → Prop)
+    (Hpost : ∀ h, P h → mdp_headF P h) :
+  ∀ h, P h → mdp_head h.
 Proof.
   intros h HP. unfold mdp_head.
   eapply (@leq_gfp _ _ fmdp_head P); eauto.
@@ -70,9 +72,9 @@ Qed.
 Lemma mdp_head_ret r : mdp_head (FHRet r).
 Proof. apply mdp_head_fold. exact I. Qed.
 
-Lemma mdp_head_vis_iff {X} (e : E X) (k : X -> ptree E MN R) :
-  mdp_head (FHVis e k) <->
-  forall x, exists out, hits (k x) out /\ sem_total out /\ sem_ae out mdp_head.
+Lemma mdp_head_vis_iff {X} (e : E X) (k : X → ptree E MN R) :
+  mdp_head (FHVis e k) ↔
+  ∀ x, ∃ out, hits (k x) out ∧ sem_total out ∧ sem_ae out mdp_head.
 Proof.
   split; intro H.
   - apply mdp_head_unfold in H. intro x.
@@ -85,15 +87,15 @@ Qed.
 (** A single state, up to the backend's semantic equality. Hidden choices
     over distinct heads instead denote distributions of states. *)
 Definition mdp_state (t : ptree E MN R) : Prop :=
-  exists h out, hits t out /\ sem_eq out (sem_ret h) /\ mdp_head h.
+  ∃ h out, hits t out ∧ sem_eq out (sem_ret h) ∧ mdp_head h.
 
 Lemma mdp_state_of_hitting t h out :
-  hits t out -> sem_eq out (sem_ret h) -> mdp_head h -> mdp_state t.
+  hits t out → sem_eq out (sem_ret h) → mdp_head h → mdp_state t.
 Proof. intros Hhit Heq Hhead. exists h, out. auto. Qed.
 
 Lemma mdp_state_hitting_iff `{FOL : @SemanticOmegaLaws MF FI FO} t out
     (Hhit : hits t out) :
-  mdp_state t <-> exists h, sem_eq out (sem_ret h) /\ mdp_head h.
+  mdp_state t ↔ ∃ h, sem_eq out (sem_ret h) ∧ mdp_head h.
 Proof.
   split.
   - intros [h [w [Hw [Heq Hhead]]]]. exists h. split; [|exact Hhead].
@@ -109,8 +111,8 @@ Context `{FOL : @SemanticOmegaLaws MF FI FO}
 (** Closure holds for ANY complete successor witness, not only the
     existential representative used to unfold the invariant. *)
 Theorem mdp_head_successor_closed h label out :
-  mdp_head h -> head_step h label out ->
-  sem_total out /\ sem_ae out mdp_head.
+  mdp_head h → head_step h label out →
+  sem_total out ∧ sem_ae out mdp_head.
 Proof.
   intros Hhead Hstep. destruct Hstep as [X e k x out Hhit].
   destruct (proj1 (mdp_head_vis_iff e k) Hhead x)
@@ -126,10 +128,10 @@ Proof.
     intros a [b [-> Hb]]. exact Hb.
 Qed.
 
-Lemma mdp_head_vis_hitting_iff {X} (e : E X) (k : X -> ptree E MN R)
-    (front : X -> MF head) (Hhit : forall x, hits (k x) (front x)) :
-  mdp_head (FHVis e k) <->
-  forall x, sem_total (front x) /\ sem_ae (front x) mdp_head.
+Lemma mdp_head_vis_hitting_iff {X} (e : E X) (k : X → ptree E MN R)
+    (front : X → MF head) (Hhit : ∀ x, hits (k x) (front x)) :
+  mdp_head (FHVis e k) ↔
+  ∀ x, sem_total (front x) ∧ sem_ae (front x) mdp_head.
 Proof.
   split.
   - intros H x. eapply mdp_head_successor_closed; [exact H|].
@@ -152,8 +154,8 @@ Proof.
   - apply mdp_head_ret.
 Qed.
 
-Lemma mdp_state_vis_of_head {X} (e : E X) (k : X -> ptree E MN R) :
-  mdp_head (FHVis e k) -> mdp_state (Vis e k).
+Lemma mdp_state_vis_of_head {X} (e : E X) (k : X → ptree E MN R) :
+  mdp_head (FHVis e k) → mdp_state (Vis e k).
 Proof.
   intro H. eapply mdp_state_of_hitting with
     (h := FHVis e k) (out := sem_ret (FHVis e k)).
@@ -162,15 +164,15 @@ Proof.
   - exact H.
 Qed.
 
-Lemma mdp_state_vis {X} (e : E X) (k : X -> ptree E MN R) :
-  (forall x, exists out, hits (k x) out /\ sem_total out /\ sem_ae out mdp_head) ->
+Lemma mdp_state_vis {X} (e : E X) (k : X → ptree E MN R) :
+  (∀ x, ∃ out, hits (k x) out ∧ sem_total out ∧ sem_ae out mdp_head) →
   mdp_state (Vis e k).
 Proof.
   intro H. apply mdp_state_vis_of_head.
   exact (proj2 (mdp_head_vis_iff e k) H).
 Qed.
 
-Lemma mdp_state_tau_iff t : mdp_state (Tau t) <-> mdp_state t.
+Lemma mdp_state_tau_iff t : mdp_state (Tau t) ↔ mdp_state t.
 Proof.
   split; intros [h [out [Hhit Hrest]]]; exists h, out; split; [|exact Hrest| |exact Hrest].
   - exact (proj1 (ptree_stable_hitting_tau_iff t out) Hhit).
@@ -178,10 +180,10 @@ Proof.
 Qed.
 
 Lemma mdp_state_tau_iter_iff n t :
-  mdp_state (Nat.iter n (fun u => Tau u) t) <-> mdp_state t.
+  mdp_state (Nat.iter n (fun u => Tau u) t) ↔ mdp_state t.
 Proof.
   induction n as [|n IH]; [reflexivity|].
-  change (mdp_state (Tau (Nat.iter n (fun u => Tau u) t)) <-> mdp_state t).
+  change (mdp_state (Tau (Nat.iter n (fun u => Tau u) t)) ↔ mdp_state t).
   rewrite mdp_state_tau_iff. exact IH.
 Qed.
 End StateComputation.

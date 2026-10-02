@@ -1,4 +1,6 @@
 (** Thematic raw-upper, continuity, observation and quotient contracts. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 
 From PTree.Prob.Backend.SubEnumQ Require Import Expectation.
@@ -56,7 +58,7 @@ Qed.
 Lemma upper_escaped_row_mass n :
   upper (FOLub (fun x => EscapingMass.kernel x n)) (fun _ => 1) = 1.
 Proof.
-  have Hone : forall _ : unit, 0 <= (1 : R) /\ (1 : R) <= 1.
+  have Hone : ∀ _ : unit, 0 <= (1 : R) ∧ (1 : R) <= 1.
   { intro x. split; [exact: ler01|exact: lexx]. }
   apply/eqP. rewrite eq_le. apply/andP. split.
   - exact (proj2 (free_omega_upper_bounds _ Hone)).
@@ -69,7 +71,7 @@ Proof.
 Qed.
 
 Theorem upper_separates_big_small :
-  upper EscapingMass.big (fun _ => 1) <> upper EscapingMass.small (fun _ => 1).
+  upper EscapingMass.big (fun _ => 1) ≠ upper EscapingMass.small (fun _ => 1).
 Proof.
   rewrite upper_big_mass upper_small_mass.
   have Hhalf : (1 / 2 : R) < 1 by rewrite div1r invf_lt1 // ltr1n.
@@ -82,8 +84,8 @@ Qed.
 Definition raw_choice : FreeOmega SubEnumQ bool :=
   FOLub (fun n => FORet (match n with O => true | S _ => false end)).
 
-Lemma upper_raw_choice_test (f : bool -> R) witness :
-  (forall b, 0 <= f b /\ f b <= 1) -> f witness = 1 ->
+Lemma upper_raw_choice_test (f : bool → R) witness :
+  (∀ b, 0 <= f b ∧ f b <= 1) → f witness = 1 →
   upper raw_choice f = 1.
 Proof.
   intros Hf Hw. apply/eqP. rewrite eq_le. apply/andP. split.
@@ -118,7 +120,7 @@ Qed.
 
 (** Splitting a weight changes the enumeration, not any real-valued test.
     The proof uses the actual native coupling, not literal list equality. *)
-Theorem upper_split_mass_real_test (f : bool -> R) :
+Theorem upper_split_mass_real_test (f : bool → R) :
   enumQ_real_expect f (subenumQ_raw subenumQ_fair) =
   enumQ_real_expect f (subenumQ_raw subenumQ_fair_split).
 Proof.
@@ -150,8 +152,8 @@ Definition padded_grid (i j : nat) : FreeOmega SubEnumQ bool :=
   | _, _ => FOZero
   end.
 
-Theorem upper_padded_double_limit (f : bool -> R)
-    (Hf : forall b, 0 <= f b /\ f b <= 1) :
+Theorem upper_padded_double_limit (f : bool → R)
+    (Hf : ∀ b, 0 <= f b ∧ f b <= 1) :
   upper (FOLub (fun i => FOLub (padded_grid i))) f =
   enumQ_real_expect f (subenumQ_raw subenumQ_fair).
 Proof.
@@ -212,7 +214,7 @@ Definition null_branch_chain (b : bool) (n : nat) : FreeOmega SubEnumQ bool :=
 
 Lemma null_branch_chain_ae_increasing :
   enumQ_ae (subenumQ_raw null_branch_node)
-    (fun b => forall n, free_omega_approx eq
+    (fun b => ∀ n, free_omega_approx eq
       (null_branch_chain b n) (null_branch_chain b (S n))).
 Proof.
   intros p b Hin Hnz n. destruct Hin as [H|[H|H]]; [| |contradiction].
@@ -221,7 +223,7 @@ Proof.
 Qed.
 
 Lemma null_branch_chain_not_everywhere_increasing :
-  ~ (forall b n, free_omega_approx eq
+  ¬ (∀ b n, free_omega_approx eq
     (null_branch_chain b n) (null_branch_chain b (S n))).
 Proof.
   intro H. specialize (H false 0%nat).
@@ -232,8 +234,8 @@ Section ScalarContinuityRegression.
 Variable R : realType.
 Local Notation upper := (free_omega_upper (R := R)).
 
-Theorem null_branch_sample_limit (f : bool -> R)
-    (Hf : forall b, 0 <= f b /\ f b <= 1) :
+Theorem null_branch_sample_limit (f : bool → R)
+    (Hf : ∀ b, 0 <= f b ∧ f b <= 1) :
   upper (FOSample null_branch_node (fun b => FOLub (null_branch_chain b))) f =
   upper (FOLub (fun n => FOSample null_branch_node (fun b => null_branch_chain b n))) f.
 Proof.
@@ -253,8 +255,8 @@ Qed.
     source term.  It requires exactly increasing outer source/kernel
     chains; no hidden totality, AST or hereditary well-formedness premise
     rules out the escaping source from the previous safety audit. *)
-Theorem escaping_source_bind_limit (f : unit -> R)
-    (Hf : forall x, 0 <= f x /\ f x <= 1) :
+Theorem escaping_source_bind_limit (f : unit → R)
+    (Hf : ∀ x, 0 <= f x ∧ f x <= 1) :
   upper (free_omega_bind (FOLub (fun _ => EscapingMass.escaping))
     (fun x => FOLub (EscapingMass.kernel x))) f =
   upper (FOLub (fun n => free_omega_bind EscapingMass.escaping
@@ -294,7 +296,7 @@ Section ObservationModelRegression.
 Variable R : realType.
 Local Notation upper := (free_omega_upper (R := R)).
 
-Lemma unit_test_bounded : forall _ : unit, 0 <= (1 : R) /\ (1 : R) <= 1.
+Lemma unit_test_bounded : ∀ _ : unit, 0 <= (1 : R) ∧ (1 : R) <= 1.
 Proof. intro x. split; [exact: ler01|exact: lexx]. Qed.
 
 (** The actual unbounded, infinite-state RandomWalk example, with its
@@ -320,7 +322,7 @@ Qed.
     It deliberately does not use inversion of FOOObserveLub or the earlier
     escaped_row_not_observable theorem. *)
 Theorem escaped_row_wrong_mass_rejected_numerically n :
-  ~ @free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
+  ¬ @free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
     unit unit (fun x => x) (FOLub (fun x => EscapingMass.kernel x n))
     EscapingMass.small_out.
 Proof.
@@ -364,8 +366,8 @@ Local Notation upper := (free_omega_upper (R := R)).
 
 (** Same support does not hide missing mass, even under a universal
     result relation and arbitrary combinations of quotient rules. *)
-Theorem quotient_big_small_separated (T : unit -> unit -> Prop) :
-  ~ @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
+Theorem quotient_big_small_separated (T : unit → unit → Prop) :
+  ¬ @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
     unit unit T EscapingMass.big EscapingMass.small.
 Proof.
   intro H. apply (upper_separates_big_small (R := R)).
@@ -373,7 +375,7 @@ Proof.
 Qed.
 
 Theorem quotient_escaped_row_separated n :
-  ~ @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
+  ¬ @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
     unit unit eq (FOLub (fun x => EscapingMass.kernel x n)) EscapingMass.small.
 Proof.
   intro H. have Hmass := free_omega_qlift_upper_mass R H.
@@ -384,7 +386,7 @@ Qed.
 (** Equal total mass is not enough either: a non-increasing formal Lub
     cannot become a fair distribution by quotient reasoning. *)
 Theorem quotient_raw_choice_not_fair :
-  ~ @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
+  ¬ @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
     bool bool eq raw_choice (FOSample subenumQ_fair (fun b => FORet b)).
 Proof.
   intro H.
@@ -404,7 +406,7 @@ Qed.
     covered after quotient rewrites; no finite-support limit is assumed. *)
 Theorem rewritten_random_walk_upper_mass x y mu :
   @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    _ _ eq mu (walk_limit x y) -> upper mu (fun _ => 1) = 1.
+    _ _ eq mu (walk_limit x y) → upper mu (fun _ => 1) = 1.
 Proof.
   intro H. rewrite (free_omega_qlift_upper_mass R H).
   apply random_walk_limit_upper_mass.

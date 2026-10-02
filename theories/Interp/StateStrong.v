@@ -1,6 +1,8 @@
 (** State elimination preserves native lockstep probabilistic couplings.
     A subsequent generic structural-to-behavioral bridge is legitimate;
     this is NOT arbitrary peutt preservation by an eliminating handler. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 From Coq.Program Require Import Equality.
@@ -16,19 +18,19 @@ Unset Strict Implicit.
 Notation "` R" := (elem R) (at level 10).
 
 Section StateStrong.
-Context {S : Type} {E MN : Type -> Type}
+Context {S : Type} {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}.
 
-Definition state_pstrong_candidate {A B} (RR : A -> B -> Prop)
+Definition state_pstrong_candidate {A B} (RR : A → B → Prop)
     (v : ptree E MN (S * A)) (w : ptree E MN (S * B)) : Prop :=
-  exists t u s, v = run_state t s /\ w = run_state u s /\ pstrong RR t u.
+  ∃ t u s, v = run_state t s ∧ w = run_state u s ∧ pstrong RR t u.
 
-Theorem run_state_pstrong {A B} (RR : A -> B -> Prop)
+Theorem run_state_pstrong {A B} (RR : A → B → Prop)
     (t : ptree (stateE S +' E) MN A) (u : ptree (stateE S +' E) MN B) s :
-  pstrong RR t u -> pstrong (state_result_rel RR) (run_state t s) (run_state u s).
+  pstrong RR t u → pstrong (state_result_rel RR) (run_state t s) (run_state u s).
 Proof.
   intro Htu.
-  assert (Hmain : forall (v : ptree E MN (S * A)) (w : ptree E MN (S * B)),
+  assert (Hmain : ∀ (v : ptree E MN (S * A)) (w : ptree E MN (S * B)),
     state_pstrong_candidate RR v w -> pstrong (state_result_rel RR) v w).
   { unfold pstrong. coinduction CH CIH.
     intros v w [t0 [u0 [s0 [-> [-> Hs]]]]]. unfold pstrong_body.

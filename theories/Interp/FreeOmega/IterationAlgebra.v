@@ -1,5 +1,7 @@
 (** Explicit law constructors. Completion supplies probability certificates;
     it neither changes the PTree operations nor chooses a global Eq1. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From ITree.Basics Require Import Basics Monad.
@@ -13,7 +15,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Section Completion.
-Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
+Context {MN : Type → Type} `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
   `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
@@ -34,10 +36,10 @@ Definition free_omega_ptree_monad_laws {E} :
     free_omega_relational_zero free_omega_relational_lub.
 
 Theorem free_omega_peutt_iter_uniform {E I J A}
-    (f : I -> ptree E MN (I+A)) (g : J -> ptree E MN (J+A)) (h : I -> J) :
-  (forall i, peutt (FI := FI) eq
-    (PTree.bind (f i) (fun v => Ret (iteration_map h v))) (g (h i))) ->
-  forall i, peutt (FI := FI) eq (PTree.iter f i) (PTree.iter g (h i)).
+    (f : I → ptree E MN (I+A)) (g : J → ptree E MN (J+A)) (h : I → J) :
+  (∀ i, peutt (FI := FI) eq
+    (PTree.bind (f i) (fun v => Ret (iteration_map h v))) (g (h i))) →
+  ∀ i, peutt (FI := FI) eq (PTree.iter f i) (PTree.iter g (h i)).
 Proof.
   apply (peutt_iter_uniform free_omega_relational_mixed_bind
     free_omega_relational_zero free_omega_relational_lub).

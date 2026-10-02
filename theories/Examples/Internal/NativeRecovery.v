@@ -1,4 +1,6 @@
 (** Role: supporting compression/scheduling/recovery example; not public theory. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Classes Require Import RelationClasses.
@@ -38,15 +40,15 @@ Definition coin_left_plan := FIPStop subenumQ_direct_coin.
 Definition coin_right_plan := FIPStop subenumQ_split_coin.
 
 Example split_coin_native_joint_round :
-  exists (W : Type) (round : SubEnumQ W)
-    (left : W -> native_sample_type (internal_plan_round_native coin_left_plan))
-    (right : W -> native_sample_type (internal_plan_round_native coin_right_plan)),
+  ∃ (W : Type) (round : SubEnumQ W)
+    (left : W → native_sample_type (internal_plan_round_native coin_left_plan))
+    (right : W → native_sample_type (internal_plan_round_native coin_right_plan)),
     free_omega_qlift (fun w x => left w = x)
       (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native coin_left_plan)) (fun x => FORet x)) /\
+      (FOSample (native_sample_measure (internal_plan_round_native coin_left_plan)) (fun x => FORet x)) ∧
     free_omega_qlift (fun w y => right w = y)
       (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native coin_right_plan)) (fun y => FORet y)) /\
+      (FOSample (native_sample_measure (internal_plan_round_native coin_right_plan)) (fun y => FORet y)) ∧
     sem_ae round (fun w => internal_round_path_rel eq eq
       coin_left_plan coin_right_plan (left w) (right w)).
 Proof.
@@ -146,7 +148,7 @@ Definition partial_latent_presentation : free_omega_native_presentation SubEnumQ
 Definition partial_latent_recovery :=
   subenumQ_native_recovery partial_latent_presentation.
 
-Example partial_latent_source_is_not_total : ~ subenumQ_total partial_latent_sample.
+Example partial_latent_source_is_not_total : ¬ subenumQ_total partial_latent_sample.
 Proof. unfold subenumQ_total. native_compute. discriminate. Qed.
 
 Example partial_latent_recovery_reconstructs :
@@ -190,13 +192,13 @@ Qed.
 (** The extracted joint preserves a non-total source and a noninjective
     high-tree decoder.  Conditional rows are not assumed total everywhere. *)
 Example partial_noninjective_native_quotient_joint :
-  exists (Z : Type) (joint : SubEnumQ Z) (left : Z -> bool * bool) (right : Z -> bool),
+  ∃ (Z : Type) (joint : SubEnumQ Z) (left : Z → bool * bool) (right : Z → bool),
     free_omega_qlift (fun z bits => left z = bits)
       (FOSample joint (fun z => FORet z))
-      (FOSample partial_latent_sample (fun bits => FORet bits)) /\
+      (FOSample partial_latent_sample (fun bits => FORet bits)) ∧
     free_omega_qlift (fun z b => right z = b)
       (FOSample joint (fun z => FORet z))
-      (FOSample (native_sample_measure partial_visible_presentation) (fun b => FORet b)) /\
+      (FOSample (native_sample_measure partial_visible_presentation) (fun b => FORet b)) ∧
     sem_ae joint (fun z => (Ret (fst (left z)) : ptree planE SubEnumQ bool) = Ret (right z)).
 Proof.
   exact (subenumQ_equivalence_quotient_joint eq_equivalence partial_decoded_coupling).

@@ -1,4 +1,6 @@
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -31,18 +33,18 @@ Local Open Scope ring_scope.
 Definition enumQ_bool_indicator (b : bool) : rat :=
   if b then (1 : rat) else (0 : rat).
 
-Definition enumQ_finite_interaction_probability {E : Type -> Type} {R}
+Definition enumQ_finite_interaction_probability {E : Type → Type} {R}
     (tr : @finite_interaction_pattern E) (t : ptree E EnumQ R) (p : rat) : Prop :=
-  exists (query representative : FreeOmega EnumQ bool) (out : EnumQ bool),
+  ∃ (query representative : FreeOmega EnumQ bool) (out : EnumQ bool),
     @finite_interaction_query E EnumQ (FreeOmega EnumQ)
       FreeOmegaObservableSemanticMeasure
       FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega R tr t query /\
+      FreeOmegaObservableSemanticOmega R tr t query ∧
     @sem_lift (FreeOmega EnumQ)
       FreeOmegaObservableSemanticMeasure bool bool eq
-      representative query /\
+      representative query ∧
     @free_omega_denotes EnumQ EnumQ_SemanticMeasure
-      EnumQ_SemanticOmega bool bool id representative out /\
+      EnumQ_SemanticOmega bool bool id representative out ∧
     enumQ_expect enumQ_bool_indicator out = p.
 
 Notation "'Prₜ[' t '|' pattern ']' '=' p" :=
@@ -50,19 +52,19 @@ Notation "'Prₜ[' t '|' pattern ']' '=' p" :=
   (at level 70, t at next level, pattern at next level,
    p at next level, no associativity) : type_scope.
 
-Lemma enumQ_finite_interaction_probability_intro {E : Type -> Type} {R}
+Lemma enumQ_finite_interaction_probability_intro {E : Type → Type} {R}
     (tr : @finite_interaction_pattern E) (t : ptree E EnumQ R) p
     query representative out :
   @finite_interaction_query E EnumQ (FreeOmega EnumQ)
     FreeOmegaObservableSemanticMeasure
     FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega R tr t query ->
+    FreeOmegaObservableSemanticOmega R tr t query →
   @sem_lift (FreeOmega EnumQ)
     FreeOmegaObservableSemanticMeasure bool bool eq
-    representative query ->
+    representative query →
   @free_omega_denotes EnumQ EnumQ_SemanticMeasure
-    EnumQ_SemanticOmega bool bool id representative out ->
-  enumQ_expect enumQ_bool_indicator out = p ->
+    EnumQ_SemanticOmega bool bool id representative out →
+  enumQ_expect enumQ_bool_indicator out = p →
   Prₜ[ t | tr ] = p.
 Proof.
   intros Hquery Hlift Hdenotes Hprobability.

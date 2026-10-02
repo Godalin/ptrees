@@ -1,6 +1,8 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** Role: DS1b standard-measure correspondence and isolation regressions.
     No FreeOmega, native backend, or PTree semantic interface is used. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths,-redundant-canonical-projection".
 Local Unset Universe Minimization ToSet.
 From mathcomp Require Import all_ssreflect all_algebra reals boolp classical_sets
@@ -31,7 +33,7 @@ Example dirac_missing_mass_zero :
 Proof. by rewrite oval_probability_bottom /oval_mass /= subrr. Qed.
 
 Example distinct_returned_diracs :
-  oval_probability (oval_ret R true) (oval_values [set true]) <>
+  oval_probability (oval_ret R true) (oval_values [set true]) ≠
   oval_probability (oval_ret R false) (oval_values [set true]).
 Proof.
   rewrite !oval_probability_values /= !indicE.
@@ -43,7 +45,7 @@ Proof.
 Qed.
 
 Definition half_dirac_laws :
-  OmegaValLaws (fun f : bool -> R => 2^-1 * f true).
+  OmegaValLaws (fun f : bool → R => 2^-1 * f true).
 Proof.
   have Hp : (0 : R) <= 2^-1 by rewrite invr_ge0 ler0n.
   have Hp1 : (2^-1 : R) <= 1 by rewrite invf_le1 // ler1n.

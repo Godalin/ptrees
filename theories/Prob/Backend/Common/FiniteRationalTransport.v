@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 From mathcomp Require Import ssreflect ssrbool ssrfun eqtype choice ssrnat seq fintype finset bigop ssralg ssrnum ssrint order rat.
@@ -12,8 +14,8 @@ Local Open Scope ring_scope.
 
 (** Clear denominators by a PROVED finite common scale.  Clients need
     not supply a rationality/transport oracle. *)
-Lemma nonnegative_rat_nat_scale (q : rat) : 0 <= q ->
-  exists d n : nat, (0 < d)%N /\ q * d%:R = n%:R.
+Lemma nonnegative_rat_nat_scale (q : rat) : 0 <= q →
+  ∃ d n : nat, (0 < d)%N ∧ q * d%:R = n%:R.
 Proof.
   case: (ratP q)=> [z d Hcop]. case: z Hcop=> [n|n] Hcop Hq.
   - exists d.+1, n. split; [exact: ltn0Sn|].
@@ -25,15 +27,15 @@ Proof.
 Qed.
 
 Lemma rational_list_common_scale (values : seq rat) :
-  (forall q, q \in values -> 0 <= q) ->
-  exists d : nat, (0 < d)%N /\
-    forall q, q \in values -> exists n : nat, q * d%:R = n%:R.
+  (∀ q, q \in values → 0 <= q) →
+  ∃ d : nat, (0 < d)%N ∧
+    ∀ q, q \in values → ∃ n : nat, q * d%:R = n%:R.
 Proof.
   elim: values=> [|q qs IH] Hpos.
   - exists 1%nat. split; [reflexivity|]. by intros r; rewrite in_nil.
   - have Hq : 0 <= q by apply Hpos; rewrite in_cons eqxx.
     destruct (nonnegative_rat_nat_scale Hq) as [b [a [Hb Ha]]].
-    have Htail : forall r, r \in qs -> 0 <= r.
+    have Htail : ∀ r, r \in qs -> 0 <= r.
     { intros r Hr. apply Hpos. by rewrite in_cons Hr orbT. }
     destruct (IH Htail) as [d [Hd Hscale]].
     exists (b * d)%N. split; [by rewrite muln_gt0 Hb Hd|].
@@ -43,15 +45,15 @@ Proof.
       by rewrite natrM [b%:R * d%:R]mulrC mulrA Hn natrM.
 Qed.
 
-Theorem rational_finite_common_scale {X : finType} (p : X -> rat) :
-  (forall x, 0 <= p x) ->
-  exists (d : nat) (n : X -> nat), (0 < d)%N /\ forall x, p x * d%:R = (n x)%:R.
+Theorem rational_finite_common_scale {X : finType} (p : X → rat) :
+  (∀ x, 0 <= p x) →
+  ∃ (d : nat) (n : X → nat), (0 < d)%N ∧ ∀ x, p x * d%:R = (n x)%:R.
 Proof.
   intro Hp.
-  have Hlist : forall r, r \in [seq p x | x <- enum X] -> 0 <= r.
+  have Hlist : ∀ r, r \in [seq p x | x <- enum X] -> 0 <= r.
   { move=> r /mapP [x _ ->]. exact (Hp x). }
   destruct (rational_list_common_scale Hlist) as [d [Hd Hscale]].
-  have Hex : forall x, exists n : nat, p x * d%:R == n%:R.
+  have Hex : ∀ x, exists n : nat, p x * d%:R == n%:R.
   { intro x. have Hin : p x \in [seq p x | x <- enum X].
     { apply/mapP. exists x=> //; by rewrite mem_enum. }
     destruct (Hscale (p x) Hin) as [n Hn]. exists n. by rewrite Hn. }
@@ -59,39 +61,39 @@ Proof.
   intro x. exact (eqP (xchooseP (Hex x))).
 Qed.
 
-Lemma rational_scaled_sum {X : finType} (p : X -> rat) (n : X -> nat) d (P : pred X) :
-  (forall x, p x * d%:R = (n x)%:R) ->
+Lemma rational_scaled_sum {X : finType} (p : X → rat) (n : X → nat) d (P : pred X) :
+  (∀ x, p x * d%:R = (n x)%:R) →
   (\sum_(x | P x) p x) * d%:R = (\sum_(x | P x) n x)%:R.
 Proof.
   intro H. rewrite big_distrl natr_sum. apply eq_bigr=> x _. exact (H x).
 Qed.
 
 Section RationalTransport.
-Context {X Y : finType} (p : X -> rat) (q : Y -> rat) (edge : X -> Y -> bool).
+Context {X Y : finType} (p : X → rat) (q : Y → rat) (edge : X → Y → bool).
 
-Definition rational_hall : Prop := forall S : {set X},
+Definition rational_hall : Prop := ∀ S : {set X},
   \sum_(x in S) p x <= \sum_(y in matching_neighbors edge setT S) q y.
 
 (** A finite rational joint matrix with exact marginals.  No total-mass
     one requirement: the construction also handles subprobabilities and
     the zero measure. *)
 Theorem finite_rational_transport :
-  (forall x, 0 <= p x) -> (forall y, 0 <= q y) ->
-  rational_hall -> \sum_x p x = \sum_y q y ->
-  exists w : X -> Y -> rat,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = p x) /\
-    (forall y, \sum_x w x y = q y) /\
-    (forall x y, 0 < w x y -> edge x y).
+  (∀ x, 0 <= p x) → (∀ y, 0 <= q y) →
+  rational_hall → \sum_x p x = \sum_y q y →
+  ∃ w : X → Y → rat,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = p x) ∧
+    (∀ y, \sum_x w x y = q y) ∧
+    (∀ x y, 0 < w x y → edge x y).
 Proof.
   intros Hp Hq Hall Htotal.
   pose (both := fun z : (X + Y)%type => match z with inl x => p x | inr y => q y end).
-  have Hboth : forall z, 0 <= both z by intros [x|y]; [apply Hp|apply Hq].
+  have Hboth : ∀ z, 0 <= both z by intros [x|y]; [apply Hp|apply Hq].
   destruct (rational_finite_common_scale Hboth) as [d [counts [Hd Hscale]]].
   pose (np := fun x => counts (inl x)).
   pose (nq := fun y => counts (inr y)).
-  have Hpscale : forall x, p x * d%:R = (np x)%:R := fun x => Hscale (inl x).
-  have Hqscale : forall y, q y * d%:R = (nq y)%:R := fun y => Hscale (inr y).
+  have Hpscale : ∀ x, p x * d%:R = (np x)%:R := fun x => Hscale (inl x).
+  have Hqscale : ∀ y, q y * d%:R = (nq y)%:R := fun y => Hscale (inr y).
   have Hdr : (0 : rat) < d%:R by rewrite ltr0n.
   have Hdnz : (d%:R : rat) != 0 by rewrite gt_eqF.
   have Hnat : capacity_hall np nq edge.
@@ -127,29 +129,29 @@ Qed.
 (** Bounded test comparison supplies all Hall inequalities.  This is the
     finite endpoint to be connected to the proved quotient test model. *)
 Theorem finite_rational_transport_of_tests :
-  (forall x, 0 <= p x) -> (forall y, 0 <= q y) ->
-  (forall (f : X -> rat) (g : Y -> rat),
-    (forall x, 0 <= f x /\ f x <= 1) ->
-    (forall y, 0 <= g y /\ g y <= 1) ->
-    (forall x y, edge x y -> f x <= g y) ->
-    \sum_x p x * f x <= \sum_y q y * g y) ->
-  \sum_x p x = \sum_y q y ->
-  exists w : X -> Y -> rat,
-    (forall x y, 0 <= w x y) /\
-    (forall x, \sum_y w x y = p x) /\
-    (forall y, \sum_x w x y = q y) /\
-    (forall x y, 0 < w x y -> edge x y).
+  (∀ x, 0 <= p x) → (∀ y, 0 <= q y) →
+  (∀ (f : X → rat) (g : Y → rat),
+    (∀ x, 0 <= f x ∧ f x <= 1) →
+    (∀ y, 0 <= g y ∧ g y <= 1) →
+    (∀ x y, edge x y → f x <= g y) →
+    \sum_x p x * f x <= \sum_y q y * g y) →
+  \sum_x p x = \sum_y q y →
+  ∃ w : X → Y → rat,
+    (∀ x y, 0 <= w x y) ∧
+    (∀ x, \sum_y w x y = p x) ∧
+    (∀ y, \sum_x w x y = q y) ∧
+    (∀ x y, 0 < w x y → edge x y).
 Proof.
   intros Hp Hq Htest Htotal. apply finite_rational_transport; [exact Hp|exact Hq| |exact Htotal].
   intro S.
   pose (f := fun x => if x \in S then (1 : rat) else 0).
   pose (g := fun y => if y \in matching_neighbors edge setT S then (1 : rat) else 0).
-  have Hf : forall x, 0 <= f x /\ f x <= 1.
+  have Hf : ∀ x, 0 <= f x ∧ f x <= 1.
   { intro x. rewrite /f. case: (x \in S); split; try exact: lexx; exact: ler01. }
-  have Hg : forall y, 0 <= g y /\ g y <= 1.
+  have Hg : ∀ y, 0 <= g y ∧ g y <= 1.
   { intro y. rewrite /g. case: (y \in matching_neighbors edge setT S);
       split; try exact: lexx; exact: ler01. }
-  have Hfg : forall x y, edge x y -> f x <= g y.
+  have Hfg : ∀ x y, edge x y -> f x <= g y.
   { intros x y Hxy. rewrite /f. case Hx: (x \in S).
     - have Hy : y \in matching_neighbors edge setT S.
       { apply/matching_neighborsP. split; [by rewrite inE|]. exists x. by split. }

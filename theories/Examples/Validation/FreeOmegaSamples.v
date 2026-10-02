@@ -1,5 +1,7 @@
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 (** Private shared samples and geometric retry fixture. No final soundness regression dependency. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -71,7 +73,7 @@ Proof.
 Qed.
 
 Lemma geometric_prefix_enumerates n start :
-  exists i, free_omega_enumerate (geometric_prefix (S n) start) i = Some (Nat.add start n).
+  ∃ i, free_omega_enumerate (geometric_prefix (S n) start) i = Some (Nat.add start n).
 Proof.
   induction n in start |- *.
   - exists (pickle (O,O)); cbn [geometric_prefix free_omega_enumerate].

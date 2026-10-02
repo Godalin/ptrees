@@ -31,7 +31,7 @@ Import Order.Theory.
 #[local] Open Scope order_scope.
 
 Unset Automatic Proposition Inductives.
-Variant vnE : Type -> Type := .
+Variant vnE : Type → Type := .
 
 Definition vn_one_ninth : rat := 1/9.
 Definition vn_two_ninths : rat := 2/9.
@@ -105,15 +105,15 @@ Definition direct_fair : ptree vnE EnumQ bool :=
     never emit a visible event, exposing the ambient signature is essential
     when they are used inside an interactive client.  The historical [vnE]
     definitions above remain the closed executable API. *)
-Definition vn_step_in {E : Type -> Type} (_ : unit) :
+Definition vn_step_in {E : Type → Type} (_ : unit) :
     ptree E EnumQ (unit + bool) :=
   Prob vn_biased_coin (fun b1 =>
     Prob vn_biased_coin (fun b2 => Ret (vn_round_result b1 b2))).
 
-Definition von_neumann_third_in {E : Type -> Type} : ptree E EnumQ bool :=
+Definition von_neumann_third_in {E : Type → Type} : ptree E EnumQ bool :=
   PTree.iter vn_step_in tt.
 
-Definition direct_fair_in {E : Type -> Type} : ptree E EnumQ bool :=
+Definition direct_fair_in {E : Type → Type} : ptree E EnumQ bool :=
   Prob vn_fair (fun b => Ret b).
 
 Lemma vn_step_in_closed : @vn_step_in vnE = vn_step.
@@ -126,7 +126,7 @@ Proof. reflexivity. Qed.
 Lemma direct_fair_in_closed : @direct_fair_in vnE = direct_fair.
 Proof. reflexivity. Qed.
 
-Definition indicator {A} (P : A -> bool) (x : A) : rat :=
+Definition indicator {A} (P : A → bool) (x : A) : rat :=
   if P x then 1 else 0.
 
 Lemma vn_collect (a d z s1 s2 : rat) :
@@ -148,7 +148,7 @@ Proof.
   by rewrite -natrD.
 Qed.
 
-Lemma vn_approx_expect_succ n (P : bool -> bool) :
+Lemma vn_approx_expect_succ n (P : bool → bool) :
   enumQ_expect (indicator P)
     (meas_iter_approx (S n) (fun _ => vn_transition) tt) =
   (5 / 9 : rat) * enumQ_expect (indicator P)
@@ -170,7 +170,7 @@ Proof.
   unfold z, vn_transition, indicator. reflexivity.
 Qed.
 
-Lemma vn_fair_expect (P : bool -> bool) :
+Lemma vn_fair_expect (P : bool → bool) :
   enumQ_expect (indicator P) vn_fair =
     (1 / 2 : rat) * (indicator P false + indicator P true).
 Proof.
@@ -214,14 +214,14 @@ Proof.
   by rewrite addrC subrKA.
 Qed.
 
-Lemma vn_success_is_escape (P : bool -> bool) :
+Lemma vn_success_is_escape (P : bool → bool) :
   (2 / 9 : rat) * (indicator P false + indicator P true) =
   (1 - 5 / 9) * enumQ_expect (indicator P) vn_fair.
 Proof.
   by rewrite vn_fair_expect mulrA vn_half_escape.
 Qed.
 
-Lemma vn_approx_closed_form n (P : bool -> bool) :
+Lemma vn_approx_closed_form n (P : bool → bool) :
   enumQ_expect (indicator P)
       (meas_iter_approx n (fun _ => vn_transition) tt) =
     (1 - (5 / 9 : rat) ^+ n) * enumQ_expect (indicator P) vn_fair.
@@ -283,8 +283,8 @@ Proof.
   exact: Order.POrderTheory.le_trans Hpow (vn_two_thirds_bound n).
 Qed.
 
-Lemma vn_ratio_vanishes eps : 0 < eps ->
-  exists N, forall n, Peano.le N n -> (5 / 9 : rat) ^+ n < eps.
+Lemma vn_ratio_vanishes eps : 0 < eps →
+  ∃ N, ∀ n, Peano.le N n → (5 / 9 : rat) ^+ n < eps.
 Proof.
   move=> eps_gt0.
   pose N := Num.bound (2 / eps : rat).
@@ -316,7 +316,7 @@ Proof.
   by rewrite addrC subrK.
 Qed.
 
-Lemma vn_fair_expect_norm (P : bool -> bool) :
+Lemma vn_fair_expect_norm (P : bool → bool) :
   `|enumQ_expect (indicator P) vn_fair| <= 1.
 Proof.
   rewrite vn_fair_expect /indicator.
@@ -439,7 +439,7 @@ Proof.
   by rewrite mulrDl.
 Qed.
 
-Lemma param_round_expect (P : bool -> bool) z :
+Lemma param_round_expect (P : bool → bool) z :
   enumQ_expect
     (fun next => match next with
       | inl _ => z
@@ -457,7 +457,7 @@ Proof.
   exact: param_collect.
 Qed.
 
-Lemma param_approx_expect_succ n (P : bool -> bool) :
+Lemma param_approx_expect_succ n (P : bool → bool) :
   enumQ_expect (indicator P)
     (meas_iter_approx (S n)
       (fun _ : unit => param_round_measure) tt) =
@@ -490,7 +490,7 @@ Qed.
 
 Lemma param_success_is_escape
     (Hescape : param_success = (1 - param_retry) * (1 / 2))
-    (P : bool -> bool) :
+    (P : bool → bool) :
   param_success * (indicator P false + indicator P true) =
   (1 - param_retry) * enumQ_expect (indicator P) vn_fair.
 Proof.
@@ -500,7 +500,7 @@ Qed.
 
 Lemma param_approx_closed_form
     (Hescape : param_success = (1 - param_retry) * (1 / 2))
-    n (P : bool -> bool) :
+    n (P : bool → bool) :
   enumQ_expect (indicator P)
       (meas_iter_approx n
         (fun _ : unit => param_round_measure) tt) =

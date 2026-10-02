@@ -1,4 +1,6 @@
 (** Role: Concrete probability infrastructure. Depends on measure interfaces/realization; not PTree equality theory. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Subprobability PTree.Prob.Interface.AE PTree.Prob.Interface.Coupling PTree.Prob.Interface.Omega PTree.Prob.Interface.Mixed.
 Require Import PTree.Prob.Backend.SubEnumQ.Measure PTree.Prob.Backend.EnumQ.Disintegration.
@@ -14,9 +16,9 @@ Unset Printing Implicit Defensive.
     Reconstruction of the WHOLE native joint is the premise; support and
     normalized fibers alone would not justify this equation. *)
 Theorem free_omega_sample_disintegration {A B C}
-    (mu : SubEnumQ A) (joint : SubEnumQ B) (conditional : A -> SubEnumQ B)
-    (continue : B -> FreeOmega SubEnumQ C) :
-  sem_eq (subenumQ_bind mu conditional) joint ->
+    (mu : SubEnumQ A) (joint : SubEnumQ B) (conditional : A → SubEnumQ B)
+    (continue : B → FreeOmega SubEnumQ C) :
+  sem_eq (subenumQ_bind mu conditional) joint →
   free_omega_qlift eq
     (FOSample mu (fun a => FOSample (conditional a) continue))
     (FOSample joint continue).
@@ -39,13 +41,13 @@ Qed.
     returns the pair, so the continuation may depend on BOTH components. *)
 Theorem free_omega_resample_joint {A B C}
     (joint : SubEnumQ (A * B)) (mu : SubEnumQ A)
-    (continue : A * B -> FreeOmega SubEnumQ C) :
-  sem_lift (fun p x => fst p = x) joint mu ->
-  exists conditional : A -> SubEnumQ (A * B),
+    (continue : A * B → FreeOmega SubEnumQ C) :
+  sem_lift (fun p x => fst p = x) joint mu →
+  ∃ conditional : A → SubEnumQ (A * B),
     free_omega_qlift eq
       (FOSample mu (fun a => FOSample (conditional a) continue))
-      (FOSample joint continue) /\
-    (forall a, sem_ae (conditional a) (fun p => fst p = a)) /\
+      (FOSample joint continue) ∧
+    (∀ a, sem_ae (conditional a) (fun p => fst p = a)) ∧
     sem_ae mu (fun a => subenumQ_total (conditional a)).
 Proof.
   intro Hgraph.

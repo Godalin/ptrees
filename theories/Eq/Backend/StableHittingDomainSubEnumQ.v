@@ -3,6 +3,8 @@
     now belong to Validation/StableHitting; this file does not re-prove them.
     New clients use modelable/model_denotes; admissible/domain names remain
     compatibility endpoints for existing rational clients. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -27,7 +29,7 @@ Local Open Scope ring_scope.
 Section DomainKernel.
 Variable R : realType.
 Context {S H : Type}.
-Variable K : S -> OmegaVal R (stable_target S H).
+Variable K : S → OmegaVal R (stable_target S H).
 
 Definition domain_target_approx := @StableHitting.domain_target_approx R S H K.
 Definition domain_hitting_approx := @StableHitting.domain_hitting_approx R S H K.
@@ -54,9 +56,9 @@ Local Notation FO := (@FreeOmegaObservableSemanticOmega SubEnumQ
 Section FiniteCommutation.
 Variable R : realType.
 Context {S H : Type}.
-Variable K : S -> FreeOmega SubEnumQ (stable_target S H).
-Variable D : S -> OmegaVal R (stable_target S H).
-Hypothesis HK : forall s, free_omega_domain_denotes (K s) (D s).
+Variable K : S → FreeOmega SubEnumQ (stable_target S H).
+Variable D : S → OmegaVal R (stable_target S H).
+Hypothesis HK : ∀ s, free_omega_domain_denotes (K s) (D s).
 
 Theorem stable_target_denotational_commutation n z :
   free_omega_domain_denotes
@@ -75,7 +77,7 @@ End FiniteCommutation.
 
 Section PTreeDomain.
 Variable R : realType.
-Context {E : Type -> Type} {A : Type}.
+Context {E : Type → Type} {A : Type}.
 Local Notation state := (ptree' E SubEnumQ A).
 Local Notation head := (stable_head E SubEnumQ A).
 Local Notation K := (@ptree_primitive_kernel E SubEnumQ (FreeOmega SubEnumQ)
@@ -164,7 +166,7 @@ Qed.
 
 (** An arbitrary complete witness is not assumed valid: DS3 transports
     validity from the canonical Lub along observable quotient equality. *)
-Theorem stable_hitting_admissible s out : hits s out -> free_omega_admissible R out.
+Theorem stable_hitting_admissible s out : hits s out → free_omega_admissible R out.
 Proof.
   apply (stable_hitting_modelable (native := fun X => @subenumQ_domain R X)).
   - exact (@subenumQ_native_model_ae R).
@@ -176,7 +178,7 @@ Proof.
 Qed.
 
 Theorem stable_hitting_denotational_adequacy s out :
-  hits s out -> free_omega_domain_denotes out (ptree_domain_hitting s).
+  hits s out → free_omega_domain_denotes out (ptree_domain_hitting s).
 Proof.
   apply (StableHitting.stable_hitting_denotational_adequacy
     (native := fun X => @subenumQ_domain R X)).
@@ -189,7 +191,7 @@ Proof.
 Qed.
 
 Corollary stable_hitting_domain_eq s out (Hv : free_omega_admissible R out) :
-  hits s out -> oval_eq (free_omega_domain Hv) (ptree_domain_hitting s).
+  hits s out → oval_eq (free_omega_domain Hv) (ptree_domain_hitting s).
 Proof. intros H f Hf; exact (stable_hitting_denotational_adequacy H Hf). Qed.
 
 Corollary stable_hitting_mass_lub s out (H : hits s out) :
@@ -200,7 +202,7 @@ Proof. exact (stable_hitting_denotational_adequacy H (oval_test_one R)). Qed.
 (** Reuse a convenient complete witness; no second induction on the
     mathematical approximants is needed for elementary program laws. *)
 Theorem ptree_domain_hitting_of_denotes s out (L : OmegaVal R head) :
-  hits s out -> free_omega_domain_denotes out L ->
+  hits s out → free_omega_domain_denotes out L →
   oval_eq (ptree_domain_hitting s) L.
 Proof.
   intros Hhit Hden f Hf.
@@ -209,7 +211,7 @@ Proof.
 Qed.
 
 Corollary ptree_domain_hitting_zero s :
-  hits s FOZero -> oval_eq (ptree_domain_hitting s) (oval_bottom R).
+  hits s FOZero → oval_eq (ptree_domain_hitting s) (oval_bottom R).
 Proof.
   intro H. eapply ptree_domain_hitting_of_denotes; [exact H|].
   exact: free_omega_denote_zero.
@@ -236,7 +238,7 @@ Corollary ptree_domain_hitting_vis_mass {X} (e : E X) k :
 Proof. exact (ptree_domain_hitting_vis e k (oval_test_one R)). Qed.
 
 Theorem ptree_domain_hitting_spin (t : ptree E SubEnumQ A) :
-  observe t = TauF t ->
+  observe t = TauF t →
   oval_eq (ptree_domain_hitting (observe t)) (oval_bottom R).
 Proof.
   intro H. apply ptree_domain_hitting_zero.
@@ -245,7 +247,7 @@ Proof.
 Qed.
 
 Theorem ptree_domain_hitting_prob_empty {X} (mu : SubEnumQ X) k :
-  sem_ae mu (fun _ => False) ->
+  sem_ae mu (fun _ => False) →
   oval_eq (ptree_domain_hitting (ProbF mu k)) (oval_bottom R).
 Proof.
   intro H. apply ptree_domain_hitting_zero.
@@ -253,7 +255,7 @@ Proof.
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)). exact H.
 Qed.
 
-Corollary ptree_domain_hitting_prob_zero {X} (k : X -> ptree E SubEnumQ A) :
+Corollary ptree_domain_hitting_prob_zero {X} (k : X → ptree E SubEnumQ A) :
   oval_eq (ptree_domain_hitting (ProbF (@subenumQ_zero X) k)) (oval_bottom R).
 Proof.
   apply ptree_domain_hitting_prob_empty.
@@ -261,10 +263,10 @@ Proof.
 Qed.
 (** Canonical names for new clients; old names above are compatibility only. *)
 Corollary subenumQ_stable_hitting_modelable s out :
-  hits s out -> free_omega_modelable (fun X => @subenumQ_domain R X) out.
+  hits s out → free_omega_modelable (fun X => @subenumQ_domain R X) out.
 Proof. exact: stable_hitting_admissible. Qed.
 
 Corollary subenumQ_stable_hitting_denotational_adequacy s out :
-  hits s out -> free_omega_model_denotes (fun X => @subenumQ_domain R X) out (ptree_domain_hitting s).
+  hits s out → free_omega_model_denotes (fun X => @subenumQ_domain R X) out (ptree_domain_hitting s).
 Proof. exact: stable_hitting_denotational_adequacy. Qed.
 End PTreeDomain.

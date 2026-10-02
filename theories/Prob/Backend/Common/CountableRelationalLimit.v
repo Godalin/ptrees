@@ -1,6 +1,8 @@
 (** External validation: arbitrary-relation lifting is omega-closed for
     countably supported subprobabilities. No coherent family of joints is
     supplied or assumed; the limiting joint is obtained by transport. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -14,12 +16,12 @@ Unset Printing Implicit Defensive.
 Section CountableLimit.
 Variable R : realType.
 
-Theorem oval_coupled_lub_of_countable_limits {A B} (T : A -> B -> Prop)
-    (c : nat -> OmegaVal R A) (d : nat -> OmegaVal R B)
+Theorem oval_coupled_lub_of_countable_limits {A B} (T : A → B → Prop)
+    (c : nat → OmegaVal R A) (d : nat → OmegaVal R B)
     (Hc : oval_increasing c) (Hd : oval_increasing d) :
-  oval_countably_supported (oval_lub Hc) ->
-  oval_countably_supported (oval_lub Hd) ->
-  (forall n, oval_coupled T (c n) (d n)) ->
+  oval_countably_supported (oval_lub Hc) →
+  oval_countably_supported (oval_lub Hd) →
+  (∀ n, oval_coupled T (c n) (d n)) →
   oval_coupled T (oval_lub Hc) (oval_lub Hd).
 Proof.
   intros Hleft Hright Hcoupled.
@@ -28,12 +30,12 @@ Proof.
   destruct (Hcoupled n) as [joint Hj]; exact (oval_joint_dual Hj).
 Qed.
 
-Theorem oval_coupled_lub {A B} (T : A -> B -> Prop)
-    (c : nat -> OmegaVal R A) (d : nat -> OmegaVal R B)
+Theorem oval_coupled_lub {A B} (T : A → B → Prop)
+    (c : nat → OmegaVal R A) (d : nat → OmegaVal R B)
     (Hc : oval_increasing c) (Hd : oval_increasing d) :
-  (forall n, oval_countably_supported (c n)) ->
-  (forall n, oval_countably_supported (d n)) ->
-  (forall n, oval_coupled T (c n) (d n)) ->
+  (∀ n, oval_countably_supported (c n)) →
+  (∀ n, oval_countably_supported (d n)) →
+  (∀ n, oval_coupled T (c n) (d n)) →
   oval_coupled T (oval_lub Hc) (oval_lub Hd).
 Proof.
   intros Hleft Hright; apply oval_coupled_lub_of_countable_limits;
@@ -42,13 +44,13 @@ Qed.
 
 (** Extensional endpoint witnesses: neither record equality nor a canonical
     representative of either limit is required. *)
-Theorem oval_coupled_lub_witnesses {A B} (T : A -> B -> Prop)
-    (c : nat -> OmegaVal R A) (d : nat -> OmegaVal R B)
+Theorem oval_coupled_lub_witnesses {A B} (T : A → B → Prop)
+    (c : nat → OmegaVal R A) (d : nat → OmegaVal R B)
     (Hc : oval_increasing c) (Hd : oval_increasing d) mu nu :
-  (forall n, oval_countably_supported (c n)) ->
-  (forall n, oval_countably_supported (d n)) ->
-  (forall n, oval_coupled T (c n) (d n)) ->
-  oval_eq (oval_lub Hc) mu -> oval_eq (oval_lub Hd) nu ->
+  (∀ n, oval_countably_supported (c n)) →
+  (∀ n, oval_countably_supported (d n)) →
+  (∀ n, oval_coupled T (c n) (d n)) →
+  oval_eq (oval_lub Hc) mu → oval_eq (oval_lub Hd) nu →
   oval_coupled T mu nu.
 Proof.
   intros Hleft Hright Hcoupled Hmu Hnu.

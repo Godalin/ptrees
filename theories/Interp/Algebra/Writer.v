@@ -1,5 +1,7 @@
 (** Tell-only Writer algebra. The accumulator is always old <> new.
     This exposes the existing State implementation, not a new WriterT. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From ExtLib.Structures Require Import Monoid BinOps.
 From ITree.Events Require Import Writer State.
@@ -17,10 +19,10 @@ Definition run_writer_from {W E MN A} (op : Monoid W)
   run_state (PTree.interp (writer_handler op) t) log.
 
 Section StructuralBind.
-Context {W : Type} {E MN : Type -> Type} (op : Monoid W).
+Context {W : Type} {E MN : Type → Type} (op : Monoid W).
 
 Local Lemma state_structural_eq {A} (t u : ptree (stateE W +' E) MN A) log :
-  pstruct eq t u -> pstruct eq (run_state t log) (run_state u log).
+  pstruct eq t u → pstruct eq (run_state t log) (run_state u log).
 Proof.
   intro H.
   eapply pstruct_trans; [apply pstruct_sym; apply pstruct_bind_ret_r|].
@@ -31,7 +33,7 @@ Proof.
 Qed.
 
 Theorem run_writer_from_bind {A B} (t : ptree (writerE W +' E) MN A)
-    (k : A -> ptree (writerE W +' E) MN B) log :
+    (k : A → ptree (writerE W +' E) MN B) log :
   pstruct eq (run_writer_from op (PTree.bind t k) log)
     (PTree.bind (run_writer_from op t log)
       (fun wa => run_writer_from op (k (snd wa)) (fst wa))).
@@ -45,7 +47,7 @@ Qed.
 (** Accumulator-threading bind law of the current implementation. The
     independent WriterT append law is a separate transformer obligation. *)
 Theorem run_writer_bind {A B} (t : ptree (writerE W +' E) MN A)
-    (k : A -> ptree (writerE W +' E) MN B) :
+    (k : A → ptree (writerE W +' E) MN B) :
   pstruct eq (run_writer op (PTree.bind t k))
     (PTree.bind (run_writer op t)
       (fun wa => run_writer_from op (k (snd wa)) (fst wa))).
@@ -53,7 +55,7 @@ Proof. apply run_writer_from_bind. Qed.
 End StructuralBind.
 
 Section Laws.
-Context {W : Type} {E MN MF : Type -> Type}
+Context {W : Type} {E MN MF : Type → Type}
   `{NI : SemanticMeasure MN} `{FI : SemanticMeasure MF}
   `{FC : @SemanticMeasureCoreLaws MF FI} `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -62,7 +64,7 @@ Context {W : Type} {E MN MF : Type -> Type}
 Variable op : Monoid W.
 Local Notation B := (peutt (MF := MF) eq).
 
-Theorem run_writer_from_tell {A} w (k : unit -> ptree (writerE W +' E) MN A) log :
+Theorem run_writer_from_tell {A} w (k : unit → ptree (writerE W +' E) MN A) log :
   B (run_writer_from op (Vis (inl1 (Tell w)) k) log)
     (run_writer_from op (k tt) (monoid_plus op log w)).
 Proof.
@@ -77,12 +79,12 @@ Proof.
 Qed.
 
 Theorem run_writer_from_prob {A X} (mu : MN X)
-    (k : X -> ptree (writerE W +' E) MN A) log :
+    (k : X → ptree (writerE W +' E) MN A) log :
   B (run_writer_from op (Prob mu k) log)
     (Prob mu (fun x => run_writer_from op (k x) log)).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
-Theorem run_writer_prob {A X} (mu : MN X) (k : X -> ptree (writerE W +' E) MN A) :
+Theorem run_writer_prob {A X} (mu : MN X) (k : X → ptree (writerE W +' E) MN A) :
   B (run_writer op (Prob mu k)) (Prob mu (fun x => run_writer op (k x))).
 Proof. apply run_writer_from_prob. Qed.
 
@@ -117,7 +119,7 @@ Context `{NC : @SemanticMeasureCoreLaws MN NI}
   `{MO : @MixedMeasureOmegaLaws MN MF NI FI MX FO}.
 
 Theorem run_writer_tell_prob {A X} w (mu : MN X)
-    (k : X -> ptree (writerE W +' E) MN A) :
+    (k : X → ptree (writerE W +' E) MN A) :
   B (run_writer op (Vis (inl1 (Tell w)) (fun _ => Prob mu k)))
     (run_writer op (Prob mu (fun x => Vis (inl1 (Tell w)) (fun _ => k x)))).
 Proof.

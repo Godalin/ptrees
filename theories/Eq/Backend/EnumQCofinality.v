@@ -1,4 +1,6 @@
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -21,12 +23,12 @@ Unset Printing Implicit Defensive.
     EnumQ's finite representation, not of the semantic measure interface. *)
 Section EnumQCofinality.
 Import EnumQ.
-Context {E : Type -> Type}.
+Context {E : Type → Type}.
 
-Lemma enumQ_uniform_nat_bound {X} (mu : EnumQ X) (P : X -> nat -> Prop) :
-  (forall x, exists n, P x n) ->
-  (forall x n m, Peano.le n m -> P x n -> P x m) ->
-  exists n, forall p x, List.In (p, x) (enumQ_raw mu) -> P x n.
+Lemma enumQ_uniform_nat_bound {X} (mu : EnumQ X) (P : X → nat → Prop) :
+  (∀ x, ∃ n, P x n) →
+  (∀ x n m, Peano.le n m → P x n → P x m) →
+  ∃ n, ∀ p x, List.In (p, x) (enumQ_raw mu) → P x n.
 Proof.
   intros Hex Hmono. induction (enumQ_raw mu) as [|[p x] tail IH].
   - exists 0. intros q y Hin. inversion Hin.
@@ -38,9 +40,9 @@ Proof.
 Qed.
 
 Theorem enumQ_bind_prob_uniform {A R X}
-    (mu : EnumQ X) (c : X -> ptree E EnumQ A)
-    (k : A -> ptree E EnumQ R) :
-  (forall x, ptree_bind_approx_cofinal (c x) k) ->
+    (mu : EnumQ X) (c : X → ptree E EnumQ A)
+    (k : A → ptree E EnumQ R) :
+  (∀ x, ptree_bind_approx_cofinal (c x) k) →
   ptree_bind_prob_uniform mu c k.
 Proof.
   intro Hbranches. split.
@@ -89,9 +91,9 @@ Proof.
 Qed.
 
 Corollary enumQ_bind_prob_approx_cofinal {A R X}
-    (mu : EnumQ X) (c : X -> ptree E EnumQ A)
-    (k : A -> ptree E EnumQ R) :
-  (forall x, ptree_bind_approx_cofinal (c x) k) ->
+    (mu : EnumQ X) (c : X → ptree E EnumQ A)
+    (k : A → ptree E EnumQ R) :
+  (∀ x, ptree_bind_approx_cofinal (c x) k) →
   ptree_bind_approx_cofinal (Prob mu c) k.
 Proof.
   intro Hbranches. apply ptree_bind_prob_approx_cofinal.

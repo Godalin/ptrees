@@ -1,4 +1,6 @@
 (** Role: Retained legacy weighted-measure support. Required by explicit clients; not the native subprobability API. *)
+From Coq Require Import Utf8.
+
 Require Import List.
 Import ListNotations.
 
@@ -9,7 +11,7 @@ Import MonadLetNotation.
 
 Definition list_ret {A} (a : A) : list A := [a].
 
-Definition list_bind {A B} (xs : list A) (f : A -> list B) : list B :=
+Definition list_bind {A B} (xs : list A) (f : A → list B) : list B :=
   fold_right (fun x ys => f x ++ ys) [] xs.
 
 Global Instance MonadList : Monad list :=
@@ -39,11 +41,11 @@ End ListTR. *)
 
 (* The correct list monad transformer, with the co-Yoneda encoding *)
 
-Inductive mlist (m : Type -> Type) (A : Type) : Type :=
+Inductive mlist (m : Type → Type) (A : Type) : Type :=
 | mnil
-| mcons (a : A) {X : Type} (mx : m X) (k : X -> mlist m A).
+| mcons (a : A) {X : Type} (mx : m X) (k : X → mlist m A).
 
-Record listT (m : Type -> Type) (A : Type) :=
+Record listT (m : Type → Type) (A : Type) :=
   mkListT { runListT : m (mlist m A) }.
 
 
@@ -58,7 +60,7 @@ Arguments runListT {m A} _.
 
 Section MList.
 
-Context {m : Type -> Type}.
+Context {m : Type → Type}.
 Context {M : Monad m}.
 
 Definition mNil {A : Type} : m (mlist m A) := ret mnil.
@@ -103,7 +105,7 @@ End example.
 
 Section MListMonad.
 
-Context {m : Type -> Type}.
+Context {m : Type → Type}.
 Context {M : Monad m}.
 
 Fixpoint lift_list {A} (l : list A) : m (mlist m A) :=
@@ -114,7 +116,7 @@ Fixpoint lift_list {A} (l : list A) : m (mlist m A) :=
 
 Compute lift_list [1; 2; 3].
 
-Fixpoint mmap {A B} (f : A -> B) (xs : mlist m A) : mlist m B :=
+Fixpoint mmap {A B} (f : A → B) (xs : mlist m A) : mlist m B :=
   match xs with
   | mnil => mnil
   | mcons a mx k => mcons (f a) mx (fun x => mmap f (k x))
@@ -141,7 +143,7 @@ Definition mjoin {A} (mml : m (mlist m (m (mlist m A)))) : m (mlist m A) :=
 
 
 Definition mlist_ret {A} (a : A) : m (mlist m A) := mCons a mNil.
-Definition mlist_bind {A B} (ma : m (mlist m A)) (f : A -> m (mlist m B)) : m (mlist m B) :=
+Definition mlist_bind {A B} (ma : m (mlist m A)) (f : A → m (mlist m B)) : m (mlist m B) :=
   mjoin (bind ma (fun ml => ret (mmap f ml))).
 
 Global Instance MonadmlistT : Monad (fun a => m (mlist m a)) :=
@@ -152,7 +154,7 @@ Global Instance MonadmlistT : Monad (fun a => m (mlist m a)) :=
 
 
 Definition listT_ret {A} (a : A) : listT m A := mkListT (mCons a mNil).
-Definition listT_bind {A B} (x : listT m A) (f : A -> listT m B) : listT m B :=
+Definition listT_bind {A B} (x : listT m A) (f : A → listT m B) : listT m B :=
   mkListT (mjoin (bind (runListT x) (fun ml => ret (mmap (fun a => runListT (f a)) ml)))).
 
 Global Instance MonadListT : Monad (listT m) :=

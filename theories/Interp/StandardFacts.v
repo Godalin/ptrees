@@ -1,5 +1,7 @@
 (** Reader and Writer are clients of the completed generic handler/State
     proofs. Neither introduces its own coinduction or backend-specific law. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From ExtLib.Structures Require Import Monoid.
 From ITree.Events Require Import Reader Writer.
@@ -16,7 +18,7 @@ Lemma run_reader_ret {Env E MN A} (a : A) env :
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Lemma run_reader_bind {Env E MN A B} env (t : ptree (readerE Env +' E) MN A)
-    (k : A -> ptree (readerE Env +' E) MN B) :
+    (k : A → ptree (readerE Env +' E) MN B) :
   pstruct eq (run_reader (PTree.bind t k) env)
     (PTree.bind (run_reader t env) (fun a => run_reader (k a) env)).
 Proof. apply pstruct_interp_bind. Qed.
@@ -26,7 +28,7 @@ Lemma run_writer_ret {W E MN A} (op : Monoid W) (a : A) :
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Section Behavior.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -42,15 +44,15 @@ Context {E MN MF : Type -> Type}
 Variable Hzero : relational_zero FO.
 Variable Hlimit : relational_lub FO.
 
-Theorem run_reader_peutt {Env A B} (RR : A -> B -> Prop) env
+Theorem run_reader_peutt {Env A B} (RR : A → B → Prop) env
     (t : ptree (readerE Env +' E) MN A) (u : ptree (readerE Env +' E) MN B) :
-  @peutt (readerE Env +' E) MN MF FI FC MX FO A B RR t u ->
+  @peutt (readerE Env +' E) MN MF FI FC MX FO A B RR t u →
   @peutt E MN MF FI FC MX FO A B RR (run_reader t env) (run_reader u env).
 Proof. apply (Unrestricted.peutt_interp Hzero Hlimit). Qed.
 
-Theorem run_writer_peutt {W A B} (op : Monoid W) (RR : A -> B -> Prop)
+Theorem run_writer_peutt {W A B} (op : Monoid W) (RR : A → B → Prop)
     (t : ptree (writerE W +' E) MN A) (u : ptree (writerE W +' E) MN B) :
-  @peutt (writerE W +' E) MN MF FI FC MX FO A B RR t u ->
+  @peutt (writerE W +' E) MN MF FI FC MX FO A B RR t u →
   @peutt E MN MF FI FC MX FO (W*A) (W*B) (state_result_rel RR)
     (run_writer op t) (run_writer op u).
 Proof.

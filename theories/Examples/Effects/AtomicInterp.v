@@ -1,4 +1,6 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -78,7 +80,7 @@ Proof.
 Qed.
 
 (** Non-identity label permutation, including events with no responses. *)
-Variant swapE : Type -> Type :=
+Variant swapE : Type → Type :=
 | LeftQuery : swapE bool | RightQuery : swapE bool
 | LeftDead : swapE Empty_set | RightDead : swapE Empty_set.
 Definition swap_event X (e : swapE X) : swapE X :=
@@ -102,15 +104,15 @@ Proof.
   - intros X e x. apply delayed_response_hitting.
 Defined.
 
-Example swapping_preserves {R} (RR : R -> R -> Prop) t u :
-  @trans_bisim swapE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R RR t u ->
+Example swapping_preserves {R} (RR : R → R → Prop) t u :
+  @trans_bisim swapE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R RR t u →
   @trans_bisim swapE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R RR
     (PTree.interp swapping_handler t) (PTree.interp swapping_handler u).
 Proof. intro Htu. exact (trans_bisim_interp_atomic swapping_handler_atomic Htu). Qed.
 
 (** Negative boundary: one visible guard is insufficient. No certificate
     in this profile can exist for the accepted two-interaction witness. *)
-Theorem two_query_handler_not_atomic : AH two_query_handler -> False.
+Theorem two_query_handler_not_atomic : AH two_query_handler → False.
 Proof.
   intro atom. apply (proj2 trans_bisim_interp_counterexample).
   exact (trans_bisim_interp_atomic atom correlated_response_trans_bisim).

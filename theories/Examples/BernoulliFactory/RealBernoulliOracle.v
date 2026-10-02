@@ -28,12 +28,12 @@ Import GRing.Theory Num.Theory Order.Theory.
 #[local] Open Scope order_scope.
 
 Unset Automatic Proposition Inductives.
-Variant real_oracle_coinE : Type -> Type := .
+Variant real_oracle_coinE : Type → Type := .
 
 (** A real parameter is exposed operationally by a stream of binary digits.
     The semantic connection between this stream and a real number is stated
     separately below, so execution only needs to query the next bit. *)
-Definition binary_oracle := nat -> bool.
+Definition binary_oracle := nat → bool.
 
 (** Compare a fresh fair random bit with the next bit of [q].  At the first
     difference, [random < q] returns [true] and [random > q] returns [false];
@@ -143,8 +143,8 @@ Proof. by rewrite oracle_iter_total_mass subKr. Qed.
 
 (** Uniform quantitative AST: independently of the oracle, the probability
     of requiring more than [fuel] comparisons tends to zero geometrically. *)
-Theorem oracle_missing_mass_vanishes qbit n eps : 0 < eps ->
-  exists N, forall fuel, Peano.le N fuel ->
+Theorem oracle_missing_mass_vanishes qbit n eps : 0 < eps →
+  ∃ N, ∀ fuel, Peano.le N fuel →
     1 - enumQ_expect (fun _ : bool => 1)
           (meas_iter_approx fuel (oracle_coin_transition qbit) n) < eps.
 Proof.
@@ -162,6 +162,6 @@ Qed.
     backend theorem can instantiate [embed] with the canonical embedding
     into a MathComp [realType]. *)
 Definition oracle_represents {T : Type}
-    (embed : rat -> T) (converges : (nat -> T) -> T -> Prop)
+    (embed : rat → T) (converges : (nat → T) → T → Prop)
     (qbit : binary_oracle) (q : T) : Prop :=
   converges (fun n => embed (oracle_prefix qbit n)) q.

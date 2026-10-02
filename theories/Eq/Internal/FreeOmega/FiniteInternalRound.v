@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 (** Unit-valued guard samples must not specialize the helper lemmas to
     Set: plan paths and their PTree-valued decoders remain polymorphic. *)
@@ -21,7 +23,7 @@ Unset Printing Implicit Defensive.
     a Tau/Prob guard costs one.  This distinction enforces real progress
     whenever the round recursively continues with another tree. *)
 Section RoundCosts.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
@@ -37,7 +39,7 @@ Definition internal_guard_steps (t : tree) : nat :=
   match observe t with RetF _ | VisF _ _ _ => 0 | TauF _ | ProbF _ _ _ => 1 end.
 
 Lemma internal_guard_progress t x u :
-  native_sample_value (internal_guard_native t) x = SHInternal u ->
+  native_sample_value (internal_guard_native t) x = SHInternal u →
   0 < internal_guard_steps t.
 Proof.
   unfold internal_guard_native, internal_guard_steps in *.
@@ -51,7 +53,7 @@ Definition internal_round_steps {t} (p : @finite_internal_plan E MN R t)
 Arguments internal_round_steps {t} p _.
 
 Theorem internal_round_progress t (p : @finite_internal_plan E MN R t) z u :
-  native_sample_value (internal_plan_round_native p) z = SHInternal u ->
+  native_sample_value (internal_plan_round_native p) z = SHInternal u →
   0 < internal_round_steps p z.
 Proof.
   destruct z as [path guard].
@@ -139,7 +141,7 @@ End RoundCosts.
 Arguments internal_round_steps {E MN NI R t} p _.
 
 Section RoundAdequacy.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
@@ -184,7 +186,7 @@ Qed.
 (** Monotonicity is proved on the fixed round sample space, not by
     transporting raw approximation through quotient equality. *)
 Lemma internal_round_budget_mono t (p : @finite_internal_plan E MN R t) n m :
-  n <= m -> free_omega_approx eq (internal_round_budget p n) (internal_round_budget p m).
+  n <= m → free_omega_approx eq (internal_round_budget p n) (internal_round_budget p m).
 Proof.
   intro Hnm. unfold internal_round_budget, internal_target_budget.
   eapply FOApproxSample with (S := eq).
@@ -204,7 +206,7 @@ Qed.
 
 Theorem internal_round_stable_hitting t (p : @finite_internal_plan E MN R t) out :
   @ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega R (observe t) out ->
+    FreeOmegaObservableSemanticOmega R (observe t) out →
   free_omega_qlift eq out (FOLub (fun n => internal_round_budget p n)).
 Proof.
   intro Hhit. eapply FOQLComp with (T := eq) (U := eq); [exact Hhit| |].

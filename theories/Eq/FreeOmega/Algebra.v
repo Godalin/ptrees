@@ -1,3 +1,5 @@
+From Coq Require Import Utf8.
+
 From PTree.Prob.FreeOmega Require Import RelationalLimit.
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
 Set Warnings "-notation-overridden".
@@ -20,7 +22,7 @@ Unset Printing Implicit Defensive.
     cofinality remains in the Bind module; this file is the lightweight
     algebraic rewriting layer. *)
 Section FreeOmegaAlgebra.
-Context {E : Type -> Type} {MN : Type -> Type}
+Context {E : Type → Type} {MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
@@ -28,7 +30,7 @@ Context {E : Type -> Type} {MN : Type -> Type}
 Local Notation MF := (FreeOmega MN).
 
 Theorem peutt_bind_ret_l {A B}
-    (a : A) (k : A -> ptree E MN B) :
+    (a : A) (k : A → ptree E MN B) :
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
@@ -51,8 +53,8 @@ Proof.
 Qed.
 
 Theorem peutt_bind_assoc {A B C}
-    (t : ptree E MN A) (k : A -> ptree E MN B)
-    (h : B -> ptree E MN C) :
+    (t : ptree E MN A) (k : A → ptree E MN B)
+    (h : B → ptree E MN C) :
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
@@ -78,7 +80,7 @@ Proof.
 Qed.
 
 Theorem peutt_fmap_compose {A B C}
-    (f : A -> B) (g : B -> C) (t : ptree E MN A) :
+    (f : A → B) (g : B → C) (t : ptree E MN A) :
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
@@ -92,7 +94,7 @@ Proof.
 Qed.
 
 Theorem peutt_fmap_bind {A B C}
-    (f : B -> C) (t : ptree E MN A) (k : A -> ptree E MN B) :
+    (f : B → C) (t : ptree E MN A) (k : A → ptree E MN B) :
   @peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure

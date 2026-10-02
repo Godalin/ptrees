@@ -3,6 +3,8 @@
     In the probabilistic setting, [trans] integrates the whole stable
     frontier into an unnormalized action subkernel; it does not select one
     stable head. Return and offered-event observations remain separate. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -19,23 +21,23 @@ Unset Printing Implicit Defensive.
 
 (** An offered event is observable before a response is supplied. In
     particular this retains events whose response type is Empty_set. *)
-Inductive offered_event (E : Type -> Type) : Type :=
+Inductive offered_event (E : Type → Type) : Type :=
   | Offered {X : Type} (e : E X).
 Arguments Offered {E X} _.
 
 (** Enabling is independent of the existence/mass of successor hitting.
     A matching action whose continuation diverges is still enabled. *)
 Inductive head_enabled {E MN R} :
-    stable_head E MN R -> obs_label E -> Prop :=
-  | HeadEnabled {X} (e : E X) (k : X -> ptree E MN R) x :
+    stable_head E MN R → obs_label E → Prop :=
+  | HeadEnabled {X} (e : E X) (k : X → ptree E MN R) x :
       head_enabled (FHVis e k) (Obs e x).
 
 Lemma head_enabled_ret {E MN R} (r : R) (label : obs_label E) :
-  ~ @head_enabled E MN R (FHRet r) label.
+  ¬ @head_enabled E MN R (FHRet r) label.
 Proof. intro H. inversion H. Qed.
 
 Section TreeTransition.
-Context {E MN MF : Type -> Type}
+Context {E MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{MX : MixedMeasure MN MF}
   `{FO : @SemanticOmega MF FI}.
 Context {R : Type}.
@@ -49,17 +51,17 @@ Definition offered_event_projection (h : head) : MF (offered_event E) :=
 
 (** Observation measures retain their original mass. A nonmatching kind of
     head contributes zero, not a normalized conditional probability. *)
-Definition tree_head_observation {O} (project : head -> MF O)
+Definition tree_head_observation {O} (project : head → MF O)
     (t : ptree E MN R) (out : MF O) : Prop :=
-  exists front, hits t front /\ sem_eq (sem_bind front project) out.
+  ∃ front, hits t front ∧ sem_eq (sem_bind front project) out.
 Definition tree_return_observation := tree_head_observation return_projection.
 Definition tree_offered_event_observation := tree_head_observation offered_event_projection.
 
 (** A PER-HEAD contribution. This is not a rule for choosing one head of
     the source distribution. The whole source is integrated below. *)
 Inductive head_action_result (label : obs_label E) (h : head) (out : MF head) : Prop :=
-  | HARMatch : head_step h label out -> head_action_result label h out
-  | HARMiss : ~ head_enabled h label -> sem_eq out sem_zero ->
+  | HARMatch : head_step h label out → head_action_result label h out
+  | HARMiss : ¬ head_enabled h label → sem_eq out sem_zero →
       head_action_result label h out.
 
 (** Raw-tree, response-wise transition. First complete internal execution,
@@ -71,33 +73,33 @@ Inductive head_action_result (label : obs_label E) (h : head) (out : MF head) : 
     here is an arbitrary raw PTree. There is no mdp_state or totality premise,
     and no bisimulation is defined in this module. *)
 Definition trans (t : ptree E MN R) (label : obs_label E) (out : MF head) : Prop :=
-  exists front next,
-    hits t front /\
-    sem_ae front (fun h => head_action_result label h (next h)) /\
+  ∃ front next,
+    hits t front ∧
+    sem_ae front (fun h => head_action_result label h (next h)) ∧
     sem_eq (sem_bind front next) out.
 
 Lemma head_step_enabled (h : head) (label : obs_label E) (out : MF head) :
-  head_step h label out -> head_enabled h label.
+  head_step h label out → head_enabled h label.
 Proof. intro H. destruct H. constructor. Qed.
 
 Section Core.
 Context `{FC : @SemanticMeasureCoreLaws MF FI}.
 
 Lemma trans_from_hitting t label front next :
-  hits t front ->
-  sem_ae front (fun h => head_action_result label h (next h)) ->
+  hits t front →
+  sem_ae front (fun h => head_action_result label h (next h)) →
   trans t label (sem_bind front next).
 Proof. intros Hhit Hae. exists front, next. split; [exact Hhit|]. split; [exact Hae|apply sem_eq_refl]. Qed.
 
 Lemma trans_output_proper t label out out' :
-  sem_eq out out' -> trans t label out -> trans t label out'.
+  sem_eq out out' → trans t label out → trans t label out'.
 Proof.
   intros Heq [front [next [Hhit [Hae Hout]]]]. exists front, next.
   split; [exact Hhit|]. split; [exact Hae|]. eapply sem_eq_trans; eassumption.
 Qed.
 
-Lemma tree_head_observation_output_proper {O} (project : head -> MF O) t out out' :
-  sem_eq out out' -> tree_head_observation project t out ->
+Lemma tree_head_observation_output_proper {O} (project : head → MF O) t out out' :
+  sem_eq out out' → tree_head_observation project t out →
   tree_head_observation project t out'.
 Proof.
   intros Heq [front [Hhit Hout]]. exists front. split; [exact Hhit|].
@@ -108,7 +110,7 @@ Section Uniqueness.
 Context `{FOL : @SemanticOmegaLaws MF FI FO}.
 
 Lemma head_action_result_unique label h out1 out2 :
-  head_action_result label h out1 -> head_action_result label h out2 ->
+  head_action_result label h out1 → head_action_result label h out2 →
   sem_eq out1 out2.
 Proof.
   intros H1 H2. destruct H1 as [H1|Hnone1 Hzero1]; destruct H2 as [H2|Hnone2 Hzero2].
@@ -120,8 +122,8 @@ Qed.
 
 Context `{FB : @SemanticMeasureBindLaws MF FI}.
 
-Theorem tree_head_observation_unique {O} (project : head -> MF O) t out1 out2 :
-  tree_head_observation project t out1 -> tree_head_observation project t out2 ->
+Theorem tree_head_observation_unique {O} (project : head → MF O) t out1 out2 :
+  tree_head_observation project t out1 → tree_head_observation project t out2 →
   sem_lift eq out1 out2.
 Proof.
   intros [front1 [H1 Ho1]] [front2 [H2 Ho2]].
@@ -141,7 +143,7 @@ Context `{FCAE : @SemanticMeasureCouplingAELaws MF FI}.
     the same representation-independent uniqueness boundary as finite
     interaction observations, with no extra reflection axiom. *)
 Theorem trans_unique t label out1 out2 :
-  trans t label out1 -> trans t label out2 -> sem_lift eq out1 out2.
+  trans t label out1 → trans t label out2 → sem_lift eq out1 out2.
 Proof.
   intros [front1 [next1 [H1 [Hae1 Ho1]]]] [front2 [next2 [H2 [Hae2 Ho2]]]].
   assert (Hfront : sem_lift eq front1 front2).
@@ -165,7 +167,7 @@ Section Existence.
 Context `{FOrd : @SemanticMeasureOrderLaws MF FI FO}
   `{FOL : @SemanticOmegaLaws MF FI FO}.
 
-Lemma head_action_result_exists label h : exists out, head_action_result label h out.
+Lemma head_action_result_exists label h : ∃ out, head_action_result label h out.
 Proof.
   destruct (classic (head_enabled h label)) as [Hyes|Hno].
   - destruct Hyes as [X e k x].
@@ -173,8 +175,8 @@ Proof.
   - exists sem_zero. apply HARMiss; [exact Hno|apply sem_eq_refl].
 Qed.
 
-Theorem tree_head_observation_exists {O} (project : head -> MF O) t :
-  exists out, tree_head_observation project t out.
+Theorem tree_head_observation_exists {O} (project : head → MF O) t :
+  ∃ out, tree_head_observation project t out.
 Proof.
   destruct (stable_hitting_exists (@ptree_primitive_kernel E MN MF FI MX R) (observe t))
     as [front Hhit]. exists (sem_bind front project), front.
@@ -183,7 +185,7 @@ Qed.
 
 (** Classical choice selects complete-hitting witnesses, not one supported
     state. There is still only one transition measure up to coupling. *)
-Theorem trans_exists t label : exists out, trans t label out.
+Theorem trans_exists t label : ∃ out, trans t label out.
 Proof.
   destruct (choice _ (head_action_result_exists label)) as [next Hnext].
   destruct (stable_hitting_exists (@ptree_primitive_kernel E MN MF FI MX R) (observe t))
@@ -198,13 +200,13 @@ Context `{FB : @SemanticMeasureBindLaws MF FI}
   `{FOL : @SemanticOmegaLaws MF FI FO}
   `{FCO : @SemanticOmegaCofinalityLaws MF FI FO}.
 
-Lemma tree_head_observation_ret {O} (project : head -> MF O) r :
+Lemma tree_head_observation_ret {O} (project : head → MF O) r :
   tree_head_observation project (Ret r) (project (FHRet r)).
 Proof.
   exists (sem_ret (FHRet r)). split; [apply ptree_stable_hitting_ret|apply sem_bind_ret_l].
 Qed.
 
-Lemma tree_head_observation_vis {O X} (project : head -> MF O) (e : E X) k :
+Lemma tree_head_observation_vis {O X} (project : head → MF O) (e : E X) k :
   tree_head_observation project (Vis e k) (project (FHVis e k)).
 Proof.
   exists (sem_ret (FHVis e k)). split; [apply ptree_stable_hitting_vis|apply sem_bind_ret_l].
@@ -220,15 +222,15 @@ Lemma tree_offered_vis {X} (e : E X) k :
   tree_offered_event_observation (Vis e k) (sem_ret (Offered e)).
 Proof. exact (tree_head_observation_vis offered_event_projection e k). Qed.
 
-Lemma tree_head_observation_tau_iff {O} (project : head -> MF O) t out :
-  tree_head_observation project (Tau t) out <-> tree_head_observation project t out.
+Lemma tree_head_observation_tau_iff {O} (project : head → MF O) t out :
+  tree_head_observation project (Tau t) out ↔ tree_head_observation project t out.
 Proof.
   split; intros [front [Hhit Hout]]; exists front; split; try exact Hout.
   - exact (proj1 (ptree_stable_hitting_tau_iff t front) Hhit).
   - exact (proj2 (ptree_stable_hitting_tau_iff t front) Hhit).
 Qed.
 
-Lemma trans_tau_iff t label out : trans (Tau t) label out <-> trans t label out.
+Lemma trans_tau_iff t label out : trans (Tau t) label out ↔ trans t label out.
 Proof.
   split; intros [front [next [Hhit Hrest]]]; exists front, next; split; try exact Hrest.
   - exact (proj1 (ptree_stable_hitting_tau_iff t front) Hhit).
@@ -248,7 +250,7 @@ Qed.
 (** The raw API includes zero outputs for absent labels, whereas head_step
     itself has no step from Ret or a nonmatching event. *)
 Lemma trans_vis {X} (e : E X) k x out :
-  hits (k x) out -> trans (Vis e k) (Obs e x) out.
+  hits (k x) out → trans (Vis e k) (Obs e x) out.
 Proof.
   intro Hhit. exists (sem_ret (FHVis e k)), (fun _ : head => out).
   split; [apply ptree_stable_hitting_vis|]. split.
@@ -257,7 +259,7 @@ Proof.
 Qed.
 
 Lemma trans_vis_miss {X} (e : E X) k label :
-  ~ head_enabled (FHVis e k) label -> trans (Vis e k) label sem_zero.
+  ¬ head_enabled (FHVis e k) label → trans (Vis e k) label sem_zero.
 Proof.
   intro Hno. exists (sem_ret (FHVis e k)), (fun _ : head => (sem_zero : MF head)).
   split; [apply ptree_stable_hitting_vis|]. split.

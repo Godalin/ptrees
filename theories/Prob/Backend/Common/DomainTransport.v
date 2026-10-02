@@ -1,5 +1,7 @@
 (** One-way external-validation adapter: expectation-domain dual inequalities
     instantiate independent real transport. Not a native backend or API export. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 From mathcomp Require Import all_ssreflect all_algebra all_classical reals.
 From PTree.Prob.Backend.Common Require Import FiniteMatching RealTransport CountableRealTransport.
@@ -15,12 +17,12 @@ Variable R : realType.
 Definition oval_cut_index n i : 'I_n.+1 :=
   if (i < n)%N then inord i else ord_max.
 
-Lemma oval_cut_index_small n i : (i < n)%N -> val (oval_cut_index n i) = i.
+Lemma oval_cut_index_small n i : (i < n)%N → val (oval_cut_index n i) = i.
 Proof.
   intro Hi; rewrite /oval_cut_index Hi /= inordK //; exact: leq_trans Hi (leqnSn n).
 Qed.
 
-Lemma oval_cut_eval (L : OmegaVal R nat) n (f : 'I_n.+1 -> R) : oval_test f ->
+Lemma oval_cut_eval (L : OmegaVal R nat) n (f : 'I_n.+1 → R) : oval_test f →
   oval_eval L (fun i => f (oval_cut_index n i)) =
   \sum_(i < n.+1) transport_cut (oval_atom L) (oval_mass L) n i * f i.
 Proof.
@@ -50,7 +52,7 @@ Proof.
   by rewrite Hi.
 Qed.
 
-Lemma oval_cut_edge_lift (T : nat -> nat -> Prop) n i j : T i j ->
+Lemma oval_cut_edge_lift (T : nat → nat → Prop) n i j : T i j →
   transport_cut_edge T n (oval_cut_index n i) (oval_cut_index n j).
 Proof.
   intro HT; rewrite /oval_cut_index /transport_cut_edge.
@@ -62,8 +64,8 @@ Proof.
   - by rewrite leqnn.
 Qed.
 
-Theorem oval_bidual_cut_hall (T : nat -> nat -> Prop) (L M : OmegaVal R nat) :
-  oval_bidual T L M -> forall n,
+Theorem oval_bidual_cut_hall (T : nat → nat → Prop) (L M : OmegaVal R nat) :
+  oval_bidual T L M → ∀ n,
   real_transport_hall
     (fun i : 'I_n.+1 => transport_cut (oval_atom L) (oval_mass L) n i)
     (fun j : 'I_n.+1 => transport_cut (oval_atom M) (oval_mass L) n j)
@@ -100,15 +102,15 @@ Qed.
 
 (** Actual matrix existence from the established dual contract. The tail
     bounds are derived from OmegaVal continuity, not added as capabilities. *)
-Theorem oval_bidual_transport_matrix (T : nat -> nat -> Prop) (L M : OmegaVal R nat) :
-  oval_bidual T L M ->
-  exists w : nat -> nat -> R,
-    (forall i j, 0 <= w i j) /\
-    (forall i j, ~ T i j -> w i j = 0) /\
-    (forall i, transport_series (w i) = oval_atom L i) /\
-    (forall j, transport_series (fun i => w i j) = oval_atom M j) /\
-    (forall i m, transport_prefix (w i) m <= oval_atom L i) /\
-    (forall j m, transport_prefix (fun i => w i j) m <= oval_atom M j).
+Theorem oval_bidual_transport_matrix (T : nat → nat → Prop) (L M : OmegaVal R nat) :
+  oval_bidual T L M →
+  ∃ w : nat → nat → R,
+    (∀ i j, 0 <= w i j) ∧
+    (∀ i j, ¬ T i j → w i j = 0) ∧
+    (∀ i, transport_series (w i) = oval_atom L i) ∧
+    (∀ j, transport_series (fun i => w i j) = oval_atom M j) ∧
+    (∀ i m, transport_prefix (w i) m <= oval_atom L i) ∧
+    (∀ j m, transport_prefix (fun i => w i j) m <= oval_atom M j).
 Proof.
   intro HT; apply (@countable_real_transport R (oval_atom L) (oval_atom M) (oval_mass L) T).
   - intro i; exact (proj1 (oval_atom_bounds L i)).
@@ -123,8 +125,8 @@ End DomainTransport.
 
 (** Countable Hall/Strassen realization on nat. No supplied joint or plan,
     no finite-support premise, and no normalization to total mass one. *)
-Theorem oval_bidual_coupled_nat (R : realType) (T : nat -> nat -> Prop)
-    (L M : OmegaVal R nat) : oval_bidual T L M -> oval_coupled T L M.
+Theorem oval_bidual_coupled_nat (R : realType) (T : nat → nat → Prop)
+    (L M : OmegaVal R nat) : oval_bidual T L M → oval_coupled T L M.
 Proof.
   intro HT; destruct (oval_bidual_transport_matrix HT) as [w [H0 [Hs [Hr [Hc [Hrb Hcb]]]]]].
   apply (@oval_matrix_joint R T L M w H0); auto.

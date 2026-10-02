@@ -1,6 +1,8 @@
 (** One-way validation: the finite runner's returned distribution is exactly
     the same-fuel mathematical hitting approximant. Limits reuse DS4.
     Execution and maintained PTree reasoning never import this adapter. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -29,10 +31,10 @@ Section Validation.
 Variable R : realType.
 Context {A : Type}.
 
-Definition return_head_test (f : A -> rat) (h : stable_head void1 SubEnumQ A) : R :=
+Definition return_head_test (f : A → rat) (h : stable_head void1 SubEnumQ A) : R :=
   match h with FHRet a => ratr (f a) | FHVis _ e k => match e with end end.
 
-Theorem finite_runner_hitting n (t : ptree void1 SubEnumQ A) (f : A -> rat) :
+Theorem finite_runner_hitting n (t : ptree void1 SubEnumQ A) (f : A → rat) :
   ratr (outcome_expectation n t (returned_test f)) =
   oval_eval (ptree_domain_approx R n (observe t)) (return_head_test f).
 Proof.
@@ -69,10 +71,10 @@ Proof.
 Qed.
 
 Lemma return_head_test_bounded f :
-  (forall a, 0 <= f a <= 1) -> oval_test (return_head_test f).
+  (∀ a, 0 <= f a <= 1) → oval_test (return_head_test f).
 Proof.
   intros H [a|X e k]; [|destruct e].
-  change ((0 : R) <= ratr (f a) /\ (ratr (f a) : R) <= 1).
+  change ((0 : R) <= ratr (f a) ∧ (ratr (f a) : R) <= 1).
   have /andP [Hlo Hhi] := H a. split.
   - rewrite -(rmorph0 (ratr : {rmorphism rat -> R})) ler_rat. exact Hlo.
   - rewrite -(rmorph1 (ratr : {rmorphism rat -> R})) ler_rat. exact Hhi.
@@ -89,7 +91,7 @@ Theorem runner_stable_hitting_adequacy source (Hsource : uniform_entropy source)
     (t : ptree void1 SubEnumQ A) history out
     (Hhit : @PTreeKernel.ptree_stable_hitting void1 SubEnumQ (FreeOmega SubEnumQ)
       FI FreeOmegaMixedMeasure FO A (observe t) out)
-    f (Hf : forall a, 0 <= f a <= 1) :
+    f (Hf : ∀ a, 0 <= f a <= 1) :
   oval_eval (free_omega_domain (stable_hitting_admissible R Hhit)) (return_head_test f) =
   oval_sup (fun n => ratr (replay_expectation source n t history (returned_test f))).
 Proof.

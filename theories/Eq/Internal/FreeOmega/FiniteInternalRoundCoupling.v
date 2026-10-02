@@ -1,4 +1,6 @@
 (** Role: Internal execution/scheduling proof infrastructure. Supports hitting adequacy; not an additional behavioral equivalence. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
@@ -15,13 +17,13 @@ Unset Printing Implicit Defensive.
 
 Section RoundCoupling.
 Universes node node_rep frontier.
-Context {E : Type -> Type} {MN : Type@{node} -> Type@{node_rep}}
+Context {E : Type → Type} {MN : Type@{node} → Type@{node_rep}}
   `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NO : @SemanticOmega MN NI}
   `{ND : @SemanticMeasureDiracAELaws MN NI}
   `{NBAE : @SemanticMeasureBindAEExactLaws MN NI} {A B : Type}.
-Variable RR : A -> B -> Prop.
-Variable sim : ptree E MN A -> ptree E MN B -> Prop.
+Variable RR : A → B → Prop.
+Variable sim : ptree E MN A → ptree E MN B → Prop.
 Let treeA : Type@{frontier} := ptree E MN A.
 Let treeB : Type@{frontier} := ptree E MN B.
 
@@ -47,7 +49,7 @@ Definition internal_round_target_rel
     arbitrary quotient coupling.  In the Prob case it is precisely the
     node coupling carried by the guard premise. *)
 Lemma internal_guard_native_coupled t u :
-  (fun t u => pstrongF RR sim (observe t) (observe u)) t u ->
+  (fun t u => pstrongF RR sim (observe t) (observe u)) t u →
   sem_lift (fun x y => internal_round_target_rel
     (native_sample_value (internal_guard_native t) x)
     (native_sample_value (internal_guard_native u) y))
@@ -82,7 +84,7 @@ Theorem internal_plan_round_paths_coupled t u
   qlift
     (fun x y => (fun t u => pstrongF RR sim (observe t) (observe u)) (internal_plan_residual p x) (internal_plan_residual q y))
     (FOSample (internal_plan_measure p) (fun x => FORet x))
-    (FOSample (internal_plan_measure q) (fun y => FORet y)) ->
+    (FOSample (internal_plan_measure q) (fun y => FORet y)) →
   qlift (internal_round_path_rel p q)
     (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x))
     (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)).

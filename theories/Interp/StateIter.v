@@ -1,6 +1,8 @@
 (** State elimination commutes with guarded iteration, including probabilistic
     and still-visible loop bodies. This is structural, not a substitute for
     preservation of arbitrary behavioral source equivalence. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 From Coinduction Require Import all.
@@ -14,8 +16,8 @@ Unset Strict Implicit.
 Notation "` R" := (elem R) (at level 10).
 
 Section StateIteration.
-Context {S I A : Type} {E MN : Type -> Type}.
-Variable step : I -> ptree (stateE S +' E) MN (I + A).
+Context {S I A : Type} {E MN : Type → Type}.
+Variable step : I → ptree (stateE S +' E) MN (I + A).
 
 Definition state_iter_result (sa : S * (I + A)) : (S * I) + (S * A) :=
   match snd sa with
@@ -33,7 +35,7 @@ Definition state_iter_source_cont (ia : I + A) : ptree (stateE S +' E) MN A :=
 Definition state_iter_target_cont (lr : (S * I) + (S * A)) : ptree E MN (S * A) :=
   match lr with inl si => Tau (PTree.iter state_iter_step si) | inr sa => Ret sa end.
 
-Inductive state_iter_candidate : ptree E MN (S * A) -> ptree E MN (S * A) -> Prop :=
+Inductive state_iter_candidate : ptree E MN (S * A) → ptree E MN (S * A) → Prop :=
 | StateIterMain i s : state_iter_candidate
     (run_state (PTree.iter step i) s) (PTree.iter state_iter_step (s,i))
 | StateIterBody t s : state_iter_candidate
@@ -44,7 +46,7 @@ Inductive state_iter_candidate : ptree E MN (S * A) -> ptree E MN (S * A) -> Pro
 Theorem run_state_iter i s :
   pstruct eq (run_state (PTree.iter step i) s) (PTree.iter state_iter_step (s,i)).
 Proof.
-  assert (Hmain : forall u v, state_iter_candidate u v -> pstruct eq u v).
+  assert (Hmain : ∀ u v, state_iter_candidate u v -> pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
     intros u v Hc. inversion Hc; subst.
     - unfold pstruct_body.

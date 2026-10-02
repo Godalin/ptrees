@@ -1,6 +1,8 @@
 (** Two-handler complete-frontier fusion. This is the generic proof owner;
     the fixed-handler fusion criterion specializes both handlers to one.
     No equality of handlers or handler-preservation theorem is assumed. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Prob.Interface Require Import Measure Omega Mixed BindOrder.
@@ -12,7 +14,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section Preservation.
-Context {E F MN MF : Type -> Type}
+Context {E F MN MF : Type → Type}
   `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
   `{FB : @SemanticMeasureBindLaws MF FI}
   `{MX : MixedMeasure MN MF} `{FO : @SemanticOmega MF FI}
@@ -25,7 +27,7 @@ Context {E F MN MF : Type -> Type}
   `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 
-Local Lemma bind_cofinal_all {X A B} (t : ptree X MN A) (k : A -> ptree X MN B) :
+Local Lemma bind_cofinal_all {X A B} (t : ptree X MN A) (k : A → ptree X MN B) :
   ptree_bind_cofinal (MF := MF) t k.
 Proof.
   apply BindScheduling.ptree_bind_cofinal_all.
@@ -36,8 +38,8 @@ Proof.
   - exact (@sem_lub_cofinal MF FI FO Directed).
 Qed.
 
-Context {A B : Type} (RR : A -> B -> Prop)
-  (handler1 handler2 : forall X, E X -> ptree F MN X).
+Context {A B : Type} (RR : A → B → Prop)
+  (handler1 handler2 : ∀ X, E X → ptree F MN X).
 
 (** The smallest source-indexed candidate needed for full interpreter
     preservation.  It contains no syntax cases: a target-state pair belongs
@@ -45,9 +47,9 @@ Context {A B : Type} (RR : A -> B -> Prop)
     already related by the canonical source equivalence. *)
 Definition interp_rel_candidate
     (s1 : ptree' F MN A) (s2 : ptree' F MN B) : Prop :=
-  exists (t1 : ptree E MN A) (t2 : ptree E MN B),
-    s1 = observe (PTree.interp handler1 t1) /\
-    s2 = observe (PTree.interp handler2 t2) /\
+  ∃ (t1 : ptree E MN A) (t2 : ptree E MN B),
+    s1 = observe (PTree.interp handler1 t1) ∧
+    s2 = observe (PTree.interp handler2 t2) ∧
     @peutt E MN MF
       FI
       FC
@@ -62,13 +64,13 @@ Definition interp_rel_candidate
     This property isolates exactly that collapsed segment; Ret heads and the
     outer source stable-hitting composition are derivable from existing laws. *)
 Definition interp_rel_vis_fusion : Prop :=
-  forall X (e : E X) (k1 : X -> ptree E MN A) (k2 : X -> ptree E MN B),
-    (forall x,
+  ∀ X (e : E X) (k1 : X → ptree E MN A) (k2 : X → ptree E MN B),
+    (∀ x,
       @peutt E MN MF
         FI
         FC
         MX
-        FO A B RR (k1 x) (k2 x)) ->
+        FO A B RR (k1 x) (k2 x)) →
     @stable_hitting_match MF
       FI
       FO
@@ -96,12 +98,12 @@ Definition interp_rel_vis_fusion : Prop :=
     coupling composition; no broader generator-closure premise remains. *)
 Theorem peutt_interp_rel_of_vis_fusion
     (Hvis : interp_rel_vis_fusion) :
-  forall (t1 : ptree E MN A) (t2 : ptree E MN B),
+  ∀ (t1 : ptree E MN A) (t2 : ptree E MN B),
     @peutt E MN MF
       FI
       FC
       MX
-      FO A B RR t1 t2 ->
+      FO A B RR t1 t2 →
     @peutt F MN MF
       FI
       FC

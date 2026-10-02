@@ -1,4 +1,6 @@
 (** Role: supporting compression/scheduling/recovery example; not public theory. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq.Classes Require Import RelationClasses.
@@ -25,7 +27,7 @@ Unset Printing Implicit Defensive.
     complete stable-hitting limits are compared.  No additional program
     equivalence or native coupling-realization assumption is used. *)
 Section Retry.
-Context {E : Type -> Type} {A : Type}.
+Context {E : Type → Type} {A : Type}.
 Variable coin : SubEnumQ bool.
 Variable continuation : ptree E SubEnumQ A.
 Local Notation tree := (ptree E SubEnumQ A).
@@ -38,17 +40,17 @@ CoFixpoint retry_with_noise (noisy : bool) : tree :=
   Prob coin (fun success : bool => if success then continuation else
     if noisy then discarded_bit (retry_with_noise noisy) else Tau (retry_with_noise noisy)).
 
-Inductive retry_prefix (noisy : bool) : tree -> Prop :=
+Inductive retry_prefix (noisy : bool) : tree → Prop :=
 | RetryBase : retry_prefix noisy (retry_with_noise noisy)
-| RetryTau t : retry_prefix noisy t -> retry_prefix noisy (Tau t)
-| RetryNoise t : retry_prefix noisy t -> retry_prefix noisy (discarded_bit t).
+| RetryTau t : retry_prefix noisy t → retry_prefix noisy (Tau t)
+| RetryNoise t : retry_prefix noisy t → retry_prefix noisy (discarded_bit t).
 
-Definition retry_region t := exists noisy, retry_prefix noisy t.
-Definition retry_equiv (t u : tree) := t = u \/ (retry_region t /\ retry_region u).
+Definition retry_region t := ∃ noisy, retry_prefix noisy t.
+Definition retry_equiv (t u : tree) := t = u ∨ (retry_region t ∧ retry_region u).
 
-Lemma retry_prefix_cut noisy t : retry_prefix noisy t ->
-  exists out,
-    @finite_internal E SubEnumQ MF FI FreeOmegaMixedMeasure A t out /\
+Lemma retry_prefix_cut noisy t : retry_prefix noisy t →
+  ∃ out,
+    @finite_internal E SubEnumQ MF FI FreeOmegaMixedMeasure A t out ∧
     free_omega_qlift eq out (FORet (retry_with_noise noisy)).
 Proof.
   intro Hprefix. induction Hprefix as [|t Ht [out [Hcut Heq]]|t Ht [out [Hcut Heq]]].
@@ -82,7 +84,7 @@ Qed.
     This refutes structural lifting of THESE cuts, not every alternative
     choice of compression witnesses. *)
 Lemma retry_noise_cut_not_structural b c :
-  ~ free_omega_lift (fun t u => pstrongF eq retry_equiv (observe t) (observe u))
+  ¬ free_omega_lift (fun t u => pstrongF eq retry_equiv (observe t) (observe u))
     (FOSample subenumQ_fair (fun _ => FORet (retry_with_noise b)))
     (FORet (retry_with_noise c)).
 Proof. intro H. inversion H. Qed.
@@ -91,13 +93,13 @@ Proof. intro H. inversion H. Qed.
     Each branchwise finite certificate is kept together with its hitting
     normalization.  There is no uniform bound on prefix lengths. *)
 Lemma retry_policy_exists :
-  exists cut : tree -> MF tree,
-    (forall t, @finite_internal E SubEnumQ MF FI FreeOmegaMixedMeasure A t (cut t)) /\
-    (forall t, retry_region t -> exists b,
+  ∃ cut : tree → MF tree,
+    (∀ t, @finite_internal E SubEnumQ MF FI FreeOmegaMixedMeasure A t (cut t)) ∧
+    (∀ t, retry_region t → ∃ b,
       free_omega_qlift eq (cut t) (FORet (retry_with_noise b))).
 Proof.
-  assert (Hex : forall t : tree, exists out : MF tree,
-    @finite_internal E SubEnumQ MF FI FreeOmegaMixedMeasure A t out /\
+  assert (Hex : ∀ t : tree, exists out : MF tree,
+    @finite_internal E SubEnumQ MF FI FreeOmegaMixedMeasure A t out ∧
     (retry_region t -> exists b, free_omega_qlift eq out (FORet (retry_with_noise b)))).
   { intro t. destruct (classic (retry_region t)) as [[b Hb]|Hnot].
     - destruct (retry_prefix_cut Hb) as [out [Hcut Heq]].
@@ -111,10 +113,10 @@ Proof.
   - intros t Hreg. exact (proj2 (Hcut t) Hreg).
 Qed.
 
-Lemma retry_policy_coupled (cut : tree -> MF tree)
-    (Hroot : forall t, retry_region t -> exists b,
+Lemma retry_policy_coupled (cut : tree → MF tree)
+    (Hroot : ∀ t, retry_region t → ∃ b,
       free_omega_qlift eq (cut t) (FORet (retry_with_noise b))) t u :
-  retry_equiv t u ->
+  retry_equiv t u →
   free_omega_qlift
     (fun t u => pstrongF eq retry_equiv (observe t) (observe u)) (cut t) (cut u).
 Proof.
@@ -154,7 +156,7 @@ Proof.
 Qed.
 End Retry.
 
-Variant retry_event : Type -> Type := RetryReply : retry_event bool.
+Variant retry_event : Type → Type := RetryReply : retry_event bool.
 Definition retry_visible_continuation : ptree retry_event SubEnumQ bool :=
   Vis RetryReply (fun answer => Ret answer).
 

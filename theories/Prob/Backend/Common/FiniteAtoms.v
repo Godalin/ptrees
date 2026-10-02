@@ -1,6 +1,8 @@
 (** Atom mass for finite ordinary-scalar lists. These are algebraic identities,
     not a new equality or coupling relation. Repeated atoms are summed; the
     original representation is never rewritten into a deduplicated list. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -39,7 +41,7 @@ Lemma finite_atom_bind {A} {B : eqType} (x : B) (mu : list (R * A)) k :
 Proof. exact: finite_expect_bind. Qed.
 
 Lemma finite_atom_nonnegative {A : eqType} (x : A) mu :
-  finite_nonnegative mu -> 0 <= finite_atom x mu.
+  finite_nonnegative mu → 0 <= finite_atom x mu.
 Proof.
   move=> H; apply finite_expect_nonnegative; first exact H.
   move=> y; case: (y == x); [exact: ler01|exact: lexx].
@@ -67,13 +69,13 @@ Proof.
 Qed.
 
 Lemma finite_expect_atoms_ext {A : finType} (mu nu : list (R * A)) f :
-  (forall x, finite_atom x mu = finite_atom x nu) -> finite_expect f mu = finite_expect f nu.
+  (∀ x, finite_atom x mu = finite_atom x nu) → finite_expect f mu = finite_expect f nu.
 Proof. move=> H; rewrite !finite_expect_by_atoms; apply eq_bigr=> x _; by rewrite H. Qed.
 
 (** A finite carrier is unnecessary: the finite list supplies its own cover.
     This is purely algebraic and also holds for signed raw weightings. *)
 Lemma finite_atom_delta_sum {A : eqType} (xs : list A) a (c : R) :
-  uniq xs -> a \in xs -> \sum_(x <- xs) (if a == x then c else 0) = c.
+  uniq xs → a \in xs → \sum_(x <- xs) (if a == x then c else 0) = c.
 Proof.
   move=> Hu Ha; rewrite (bigD1_seq a Ha Hu) eq_refl.
   have Hz : \sum_(x <- xs | x != a) (if a == x then c else 0) = 0.
@@ -82,13 +84,13 @@ Proof.
 Qed.
 
 Lemma finite_expect_by_cover {A : eqType} (mu : list (R*A)) (xs : list A) f :
-  uniq xs -> (forall p x, List.In (p,x) mu -> x \in xs) ->
+  uniq xs → (∀ p x, List.In (p,x) mu → x \in xs) →
   finite_expect f mu = \sum_(x <- xs) finite_atom x mu * f x.
 Proof.
   move=> Hu; elim: mu=> [|[p a] mu IH] Hcover.
   - rewrite /= big1 // => x _; exact: mul0r.
   - have Ha := Hcover p a (or_introl (Logic.eq_refl _)).
-    have Htail : forall q x, List.In (q,x) mu -> x \in xs.
+    have Htail : ∀ q x, List.In (q,x) mu -> x \in xs.
     { move=> q x H; exact (Hcover q x (or_intror H)). }
     rewrite /= (IH Htail).
     transitivity (\sum_(x <- xs)
@@ -103,7 +105,7 @@ Proof.
 Qed.
 
 Lemma finite_raw_value_mem {A : eqType} (mu : list (R*A)) p x :
-  List.In (p,x) mu -> x \in [seq px.2 | px <- mu].
+  List.In (p,x) mu → x \in [seq px.2 | px <- mu].
 Proof.
   elim: mu=> [|[q y] mu IH]; first by move=> [].
   move=> [He|H]; rewrite /= in_cons; apply/orP.
@@ -112,15 +114,15 @@ Proof.
 Qed.
 
 Lemma finite_expect_atoms_eq {A : eqType} (mu nu : list (R*A)) f :
-  (forall x, finite_atom x mu = finite_atom x nu) ->
+  (∀ x, finite_atom x mu = finite_atom x nu) →
   finite_expect f mu = finite_expect f nu.
 Proof.
   move=> H; pose xs := undup ([seq px.2 | px <- mu] ++ [seq px.2 | px <- nu]).
   have Hu : uniq xs := undup_uniq _.
-  have Hmu : forall p x, List.In (p,x) mu -> x \in xs.
+  have Hmu : ∀ p x, List.In (p,x) mu -> x \in xs.
   { move=> p x Hin; rewrite /xs mem_undup mem_cat; apply/orP; left.
     exact (finite_raw_value_mem Hin). }
-  have Hnu : forall p x, List.In (p,x) nu -> x \in xs.
+  have Hnu : ∀ p x, List.In (p,x) nu -> x \in xs.
   { move=> p x Hin; rewrite /xs mem_undup mem_cat; apply/orP; right.
     exact (finite_raw_value_mem Hin). }
   rewrite (finite_expect_by_cover f Hu Hmu) (finite_expect_by_cover f Hu Hnu).

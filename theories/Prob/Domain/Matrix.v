@@ -1,5 +1,7 @@
 (** Direct countable sums of expectation values and matrix-joint realization.
     This is analysis of nonnegative series, not a new free representation. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -13,29 +15,29 @@ Local Open Scope ring_scope.
 
 Section Sum.
 Variable R : realType.
-Context {A : Type} (c : nat -> OmegaVal R A).
-Hypothesis Hmass : forall n, \sum_(i < n) oval_mass (c i) <= 1.
+Context {A : Type} (c : nat → OmegaVal R A).
+Hypothesis Hmass : ∀ n, \sum_(i < n) oval_mass (c i) <= 1.
 Definition oval_sum_prefix f n := \sum_(i < n) oval_eval (c i) f.
 
-Lemma oval_eval_le_mass {B} (L : OmegaVal R B) f : oval_test f -> oval_eval L f <= oval_mass L.
+Lemma oval_eval_le_mass {B} (L : OmegaVal R B) f : oval_test f → oval_eval L f <= oval_mass L.
 Proof.
   intro Hf; apply (oval_mono (oval_laws L) Hf (@oval_test_one R B))=> x; exact (proj2 (Hf x)).
 Qed.
 
-Lemma oval_sum_prefix_bound f n : oval_test f -> oval_sum_prefix f n <= 1.
+Lemma oval_sum_prefix_bound f n : oval_test f → oval_sum_prefix f n <= 1.
 Proof.
   intro Hf; apply: le_trans (Hmass n); apply ler_sum=> i _; exact: oval_eval_le_mass.
 Qed.
-Lemma oval_sum_prefix_increasing f : oval_test f -> forall n,
+Lemma oval_sum_prefix_increasing f : oval_test f → ∀ n,
   oval_sum_prefix f n <= oval_sum_prefix f n.+1.
 Proof.
   intros Hf n; rewrite /oval_sum_prefix big_ord_recr /= lerDl.
   exact (proj1 (oval_eval_bounds (c n) Hf)).
 Qed.
 
-Lemma oval_sum_prefix_continuous (f : nat -> A -> R) :
-  (forall n, oval_test (f n)) -> (forall n x, f n x <= f n.+1 x) ->
-  forall m, oval_sum_prefix (oval_pointwise_sup f) m =
+Lemma oval_sum_prefix_continuous (f : nat → A → R) :
+  (∀ n, oval_test (f n)) → (∀ n x, f n x <= f n.+1 x) →
+  ∀ m, oval_sum_prefix (oval_pointwise_sup f) m =
     oval_sup (fun n => oval_sum_prefix (f n) m).
 Proof.
   intros Hf Hi m; induction m as [|m IH].
@@ -84,8 +86,8 @@ End Sum.
 Section Matrix.
 Variable R : realType.
 
-Lemma oval_series_atom (w : nat -> R) (H0 : forall i, 0 <= w i)
-    (H1 : forall n, \sum_(i < n) w i <= 1) j :
+Lemma oval_series_atom (w : nat → R) (H0 : ∀ i, 0 <= w i)
+    (H1 : ∀ n, \sum_(i < n) w i <= 1) j :
   oval_atom (oval_series H0 H1) j = w j.
 Proof.
   have Hpref n : (\sum_(i < n) w i * (if (i : nat) == j then 1 else 0)) =
@@ -105,21 +107,21 @@ Proof.
     have H := oval_sup_ge j.+1 HB; by rewrite Hpref ltnSn in H.
 Qed.
 
-Lemma oval_eval_constant {A} (L : OmegaVal R A) a : 0 <= a -> a <= 1 ->
+Lemma oval_eval_constant {A} (L : OmegaVal R A) a : 0 <= a → a <= 1 →
   oval_eval L (fun _ => a) = a * oval_mass L.
 Proof.
   intros Ha Ha1; rewrite -(oval_scale (oval_laws L) Ha Ha1 (@oval_test_one R A)).
   apply oval_eval_ext=> x; by rewrite mulr1.
 Qed.
 
-Theorem oval_matrix_joint (T : nat -> nat -> Prop) (L M : OmegaVal R nat)
-    (w : nat -> nat -> R) :
-  (forall i j, 0 <= w i j) ->
-  (forall i j, w i j != 0 -> T i j) ->
-  (forall i, oval_sup (fun n => \sum_(j < n) w i j) = oval_atom L i) ->
-  (forall j, oval_sup (fun n => \sum_(i < n) w i j) = oval_atom M j) ->
-  (forall i n, \sum_(j < n) w i j <= oval_atom L i) ->
-  exists J, oval_joint T L M J.
+Theorem oval_matrix_joint (T : nat → nat → Prop) (L M : OmegaVal R nat)
+    (w : nat → nat → R) :
+  (∀ i j, 0 <= w i j) →
+  (∀ i j, w i j != 0 → T i j) →
+  (∀ i, oval_sup (fun n => \sum_(j < n) w i j) = oval_atom L i) →
+  (∀ j, oval_sup (fun n => \sum_(i < n) w i j) = oval_atom M j) →
+  (∀ i n, \sum_(j < n) w i j <= oval_atom L i) →
+  ∃ J, oval_joint T L M J.
 Proof.
   intros H0 HT Hr Hc Hbound.
   have H1 i n : \sum_(j < n) w i j <= 1 :=

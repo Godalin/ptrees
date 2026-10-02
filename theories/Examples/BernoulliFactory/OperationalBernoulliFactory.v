@@ -2,6 +2,8 @@
     Reading entry: peutt_factory_vn_fair; peutt_factory_standard_direct.
     Scope: EnumQ / FreeOmega; genuine support/hitting/limit proofs, not presentation wrappers.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Universe Polymorphism.
@@ -40,7 +42,7 @@ Local Open Scope ring_scope.
 
 Local Notation MF := (FreeOmega EnumQ).
 
-Definition factoryE_no_event : forall X, factoryE X -> False :=
+Definition factoryE_no_event : ∀ X, factoryE X → False :=
   fun X e => match e with end.
 
 Section FactoryOperationalNormalization.
@@ -340,8 +342,8 @@ Proof.
 Qed.
 
 Lemma enumQ_converges_bind_ret_map {A B}
-    (chain : nat -> EnumQ A) out (f : A -> B) :
-  enumQ_converges chain out ->
+    (chain : nat → EnumQ A) out (f : A → B) :
+  enumQ_converges chain out →
   enumQ_converges
     (fun n => bind_EnumQ (chain n) (fun a => ret_EnumQ (f a)))
     (bind_EnumQ out (fun a => ret_EnumQ (f a))).
@@ -535,7 +537,7 @@ Proof.
 Qed.
 
 Class OperationalFactoryStepSupportLaws := {
-  ptree_factory_binary_step_support : forall
+  ptree_factory_binary_step_support : ∀
       (pnormalized : pfalse + ptrue = 1)
       (pnontrivial : (0 < pfalse * ptrue)%Q) x,
     free_omega_support_lift eq
@@ -594,7 +596,7 @@ Definition ptree_factory_standard_q_heads : MF (factory_head bool) :=
 Lemma ptree_factory_q_row_lift
     (pnormalized : pfalse + ptrue = 1)
     (pnontrivial : (0 < pfalse * ptrue)%Q) :
-  forall outer x,
+  ∀ outer x,
     free_omega_qlift eq
       (iter_complete_rows factoryE_no_event
         ptree_factory_binary_step_heads outer x)
@@ -632,7 +634,7 @@ Proof.
   exact (ptree_factory_q_row_lift pnormalized pnontrivial outer q).
 Qed.
 
-Lemma ptree_factory_standard_q_row_observes : forall outer x,
+Lemma ptree_factory_standard_q_row_observes : ∀ outer x,
   free_omega_observes ptree_factory_head_value
     (ptree_factory_standard_q_row outer x)
     (meas_iter_approx outer binary_coin_transition x).
@@ -871,9 +873,9 @@ Qed.
 
 (** Finite approximations retain exactly the support of their concrete
     observation.  No limit reasoning or example-specific law is used here. *)
-Lemma ptree_factory_standard_q_row_ae : forall n x (P : bool -> Prop),
+Lemma ptree_factory_standard_q_row_ae : ∀ n x (P : bool → Prop),
   free_omega_ae (fun h => P (ptree_factory_head_value h))
-    (ptree_factory_standard_q_row n x) <->
+    (ptree_factory_standard_q_row n x) ↔
   @sem_ae EnumQ EnumQ_SemanticMeasure _
     (meas_iter_approx n binary_coin_transition x) P.
 Proof.
@@ -886,7 +888,7 @@ Proof.
         match next with
         | inl y => ptree_factory_standard_q_row n y
         | inr b => FORet (FHRet b)
-        end)) <->
+        end)) ↔
       sem_ae (sem_bind (binary_coin_transition x) (fun next : rat + bool =>
         match next with
         | inl y => meas_iter_approx n binary_coin_transition y
@@ -903,13 +905,13 @@ Proof.
 Qed.
 
 Lemma ptree_factory_standard_q_heads_ae
-    (q0 : 0 <= q) (q1 : q <= 1) (P : bool -> Prop) :
+    (q0 : 0 <= q) (q1 : q <= 1) (P : bool → Prop) :
   free_omega_ae (fun h => P (ptree_factory_head_value h))
-    ptree_factory_standard_q_heads <->
+    ptree_factory_standard_q_heads ↔
   @sem_ae EnumQ EnumQ_SemanticMeasure _ (rational_bernoulli_measure q0 q1) P.
 Proof.
   change (free_omega_ae (fun h => P (ptree_factory_head_value h))
-    (FOLub (fun n => ptree_factory_standard_q_row n q)) <->
+    (FOLub (fun n => ptree_factory_standard_q_row n q)) ↔
     PTree.Prob.Backend.EnumQ.FrontierLift.enumQ_ae (rational_bernoulli_measure q0 q1) P).
   rewrite (enumQ_converges_ae_iff
     (enumQ_iter_approx_increasing binary_coin_transition q)
@@ -922,9 +924,9 @@ Proof.
 Qed.
 
 Lemma ptree_factory_direct_q_heads_ae
-    (q0 : 0 <= q) (q1 : q <= 1) (P : bool -> Prop) :
+    (q0 : 0 <= q) (q1 : q <= 1) (P : bool → Prop) :
   free_omega_ae (fun h => P (ptree_factory_head_value h))
-    (ptree_factory_direct_q_heads q0 q1) <->
+    (ptree_factory_direct_q_heads q0 q1) ↔
   @sem_ae EnumQ EnumQ_SemanticMeasure _ (rational_bernoulli_measure q0 q1) P.
 Proof.
   split.
@@ -936,7 +938,7 @@ Qed.
 
 Lemma ptree_factory_standard_q_support
     (q0 : 0 <= q) (q1 : q <= 1)
-    (sim : ptree factoryE EnumQ bool -> ptree factoryE EnumQ bool -> Prop) :
+    (sim : ptree factoryE EnumQ bool → ptree factoryE EnumQ bool → Prop) :
   free_omega_support_lift (stable_head_rel eq sim)
     ptree_factory_standard_q_heads
     (ptree_factory_direct_q_heads q0 q1).
@@ -957,7 +959,7 @@ Qed.
 
 Lemma ptree_factory_standard_q_heads_lift_direct
     (q0 : 0 <= q) (q1 : q <= 1)
-    (sim : ptree factoryE EnumQ bool -> ptree factoryE EnumQ bool -> Prop) :
+    (sim : ptree factoryE EnumQ bool → ptree factoryE EnumQ bool → Prop) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)
@@ -1093,14 +1095,14 @@ Hypothesis pnormalized : pfalse + ptrue = 1.
 Hypothesis pnontrivial : 0 < pfalse * ptrue.
 
 Lemma factory_vn_fair_support
-    (sim : ptree factoryE EnumQ bool -> ptree factoryE EnumQ bool -> Prop) :
+    (sim : ptree factoryE EnumQ bool → ptree factoryE EnumQ bool → Prop) :
   free_omega_support_lift (stable_head_rel eq sim)
     (ptree_factory_raw_heads pfalse0 ptrue0) factory_fair_heads.
 Proof.
-  assert (Hpfalse : pfalse <> 0).
+  assert (Hpfalse : pfalse ≠ 0).
   { intro Hzero. pose proof pnontrivial as Hpos. rewrite Hzero in Hpos.
     rewrite mul0r ltxx in Hpos. discriminate. }
-  assert (Hptrue : ptrue <> 0).
+  assert (Hptrue : ptrue ≠ 0).
   { intro Hzero. pose proof pnontrivial as Hpos. rewrite Hzero in Hpos.
     rewrite mulr0 ltxx in Hpos. discriminate. }
   unfold free_omega_support_lift. split.
@@ -1172,7 +1174,7 @@ Proof.
 Qed.
 
 Lemma factory_vn_fair_heads_lift
-    (sim : ptree factoryE EnumQ bool -> ptree factoryE EnumQ bool -> Prop) :
+    (sim : ptree factoryE EnumQ bool → ptree factoryE EnumQ bool → Prop) :
   free_omega_qlift (stable_head_rel eq sim)
     (ptree_factory_raw_heads pfalse0 ptrue0) factory_fair_heads.
 Proof.
@@ -1226,7 +1228,7 @@ Proof.
   - exact factory_standard_step_weak.
   - unfold ptree_factory_standard_q_heads.
     apply FOQLLub. intro n.
-    assert (Hrows : forall x,
+    assert (Hrows : ∀ x,
       iter_complete_rows factoryE_no_event
         ptree_factory_standard_step_heads n x =
       ptree_factory_standard_q_row n x).

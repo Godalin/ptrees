@@ -1,5 +1,7 @@
 (** Position-indexed native semantics for finite ordinary rational weights.
     Equality and lifting still prune only zero weights before indexing. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -20,7 +22,7 @@ Lemma enumQ_prune_app {A} (mu nu : EnumQ A) :
   enumQ_raw (enumQ_prune (enumQ_app mu nu)) =
   enumQ_raw (enumQ_app (enumQ_prune mu) (enumQ_prune nu)).
 Proof. exact: finite_prune_app. Qed.
-Lemma enumQ_prune_emap {A B} (f : A -> B) (mu : EnumQ A) :
+Lemma enumQ_prune_emap {A B} (f : A → B) (mu : EnumQ A) :
   enumQ_raw (enumQ_prune (emap f mu)) = enumQ_raw (emap f (enumQ_prune mu)).
 Proof. exact: finite_prune_map. Qed.
 Lemma enumQ_prune_eqenum {A : eqType} (mu : EnumQ A) :
@@ -33,14 +35,14 @@ Lemma enumQ_prune_scale {A} p (Hp : 0 <= p) (mu : EnumQ A) :
   enumQ_raw (enumQ_prune (scale_EnumQ Hp mu)) =
   if p == 0 then nil else enumQ_raw (scale_EnumQ Hp (enumQ_prune mu)).
 Proof. exact: finite_prune_zero_scale. Qed.
-Definition enumQ_ae {A} (mu : EnumQ A) (P : A -> Prop) : Prop :=
-  forall p x, List.In (p,x) (enumQ_raw mu) -> p <> 0 -> P x.
+Definition enumQ_ae {A} (mu : EnumQ A) (P : A → Prop) : Prop :=
+  ∀ p x, List.In (p,x) (enumQ_raw mu) → p ≠ 0 → P x.
 Definition enumQ_meas_eq {A} (mu nu : EnumQ A) : Prop :=
   indexed_coupling eq (enumQ_prune mu) (enumQ_prune nu).
 Definition enumQ_repr_eq {A} (mu nu : EnumQ A) : Prop := enumQ_raw mu = enumQ_raw nu.
 
 Lemma enumQ_meas_eq_of_eqenum {A : eqType} (mu nu : EnumQ A) :
-  mu ==EnumQ nu -> enumQ_meas_eq mu nu.
+  mu ==EnumQ nu → enumQ_meas_eq mu nu.
 Proof.
   move=> H; apply indexed_coupling_of_coupling; apply coupling_of_enumQ_eq.
   eapply enumQ_eq_trans; first exact: enumQ_prune_eqenum.
@@ -48,13 +50,13 @@ Proof.
   apply enumQ_eq_sym; exact: enumQ_prune_eqenum.
 Qed.
 Lemma enumQ_prune_raw {A} (mu nu : EnumQ A) :
-  enumQ_raw mu = enumQ_raw nu -> enumQ_raw (enumQ_prune mu) = enumQ_raw (enumQ_prune nu).
+  enumQ_raw mu = enumQ_raw nu → enumQ_raw (enumQ_prune mu) = enumQ_raw (enumQ_prune nu).
 Proof.
   move=> H; change (finite_prune (fun p => p == 0) (enumQ_raw mu) =
     finite_prune (fun p => p == 0) (enumQ_raw nu)); by rewrite H.
 Qed.
 Lemma enumQ_repr_eq_implies_meas_eq {A} (mu nu : EnumQ A) :
-  enumQ_repr_eq mu nu -> enumQ_meas_eq mu nu.
+  enumQ_repr_eq mu nu → enumQ_meas_eq mu nu.
 Proof.
   move=> H; apply (indexed_coupling_raw (mu := enumQ_prune mu) (nu := enumQ_prune mu)).
   - reflexivity.
@@ -67,10 +69,10 @@ Qed.
   meas_eq := @enumQ_meas_eq; meas_ae := @enumQ_ae;
   meas_lift := fun A B R mu nu => indexed_coupling R (enumQ_prune mu) (enumQ_prune nu)
 }.
-Lemma enumQ_meas_lift_observe {A B} (R : A -> B -> Prop)
-    (obsA : A -> bool) (obsB : B -> bool) (mu : EnumQ A) (nu : EnumQ B) :
-  (forall x y, R x y -> obsA x = obsB y) ->
-  @meas_lift EnumQ EnumQ_MeasureInterface A B R mu nu ->
+Lemma enumQ_meas_lift_observe {A B} (R : A → B → Prop)
+    (obsA : A → bool) (obsB : B → bool) (mu : EnumQ A) (nu : EnumQ B) :
+  (∀ x y, R x y → obsA x = obsB y) →
+  @meas_lift EnumQ EnumQ_MeasureInterface A B R mu nu →
   @meas_eq EnumQ EnumQ_MeasureInterface bool (emap obsA mu) (emap obsB nu).
 Proof.
   move=> H Hlift; apply (indexed_coupling_raw
@@ -146,52 +148,52 @@ Proof.
       (enumQ_prune mu) (enumQ_prune nu) (enumQ_prune xi) H1 H2).
 Qed.
 
-Lemma enumQ_prune_bind_ae {A B} (mu : EnumQ A) (k1 k2 : A -> EnumQ B) :
-  enumQ_ae mu (fun x => enumQ_raw (enumQ_prune (k1 x)) = enumQ_raw (enumQ_prune (k2 x))) ->
+Lemma enumQ_prune_bind_ae {A B} (mu : EnumQ A) (k1 k2 : A → EnumQ B) :
+  enumQ_ae mu (fun x => enumQ_raw (enumQ_prune (k1 x)) = enumQ_raw (enumQ_prune (k2 x))) →
   enumQ_raw (enumQ_prune (bind_EnumQ mu k1)) = enumQ_raw (enumQ_prune (bind_EnumQ mu k2)).
 Proof. exact: finite_prune_zero_bind_ae. Qed.
-Lemma enumQ_prune_bind {A B} (mu : EnumQ A) (k : A -> EnumQ B) :
+Lemma enumQ_prune_bind {A B} (mu : EnumQ A) (k : A → EnumQ B) :
   enumQ_raw (enumQ_prune (bind_EnumQ mu k)) =
   enumQ_raw (bind_EnumQ (enumQ_prune mu) (fun x => enumQ_prune (k x))).
 Proof. exact: finite_prune_zero_bind. Qed.
-Lemma enumQ_prune_bind_coupling {A B C D} (R : C -> D -> Prop)
-    (mu : EnumQ A) (nu : EnumQ B) (k : A -> EnumQ C) (h : B -> EnumQ D) :
+Lemma enumQ_prune_bind_coupling {A B C D} (R : C → D → Prop)
+    (mu : EnumQ A) (nu : EnumQ B) (k : A → EnumQ C) (h : B → EnumQ D) :
   indexed_coupling R (bind_EnumQ (enumQ_prune mu) (fun x => enumQ_prune (k x)))
-    (bind_EnumQ (enumQ_prune nu) (fun y => enumQ_prune (h y))) ->
+    (bind_EnumQ (enumQ_prune nu) (fun y => enumQ_prune (h y))) →
   indexed_coupling R (enumQ_prune (bind_EnumQ mu k)) (enumQ_prune (bind_EnumQ nu h)).
 Proof.
   apply indexed_coupling_raw; symmetry; exact: enumQ_prune_bind.
 Qed.
 Lemma enumQ_prune_in_source {A} (mu : EnumQ A) p x :
-  List.In (p,x) (enumQ_raw (enumQ_prune mu)) -> List.In (p,x) (enumQ_raw mu) /\ p <> 0.
+  List.In (p,x) (enumQ_raw (enumQ_prune mu)) → List.In (p,x) (enumQ_raw mu) ∧ p ≠ 0.
 Proof.
   move/finite_prune_in=> [H Hp]; split; first exact H.
   move=> He; subst p; by rewrite eqxx in Hp.
 Qed.
 Lemma enumQ_prune_in {A} (mu : EnumQ A) p x :
-  List.In (p,x) (enumQ_raw mu) -> p <> 0 -> List.In (p,x) (enumQ_raw (enumQ_prune mu)).
+  List.In (p,x) (enumQ_raw mu) → p ≠ 0 → List.In (p,x) (enumQ_raw (enumQ_prune mu)).
 Proof.
   move=> Hin Hp; apply finite_prune_in; split; first exact Hin.
   apply/negP=> /eqP H; exact (Hp H).
 Qed.
 Lemma scale_entry_preimage {A} p (Hp : 0 <= p) w (x : A) (mu : EnumQ A) :
-  List.In (w,x) (enumQ_raw (scale_EnumQ Hp mu)) ->
-  exists q, List.In (q,x) (enumQ_raw mu) /\ w = p*q.
+  List.In (w,x) (enumQ_raw (scale_EnumQ Hp mu)) →
+  ∃ q, List.In (q,x) (enumQ_raw mu) ∧ w = p*q.
 Proof.
   move/List.in_map_iff=> [[q y] [He Hin]]; inversion He; subst w y; by exists q.
 Qed.
-Lemma bind_entry_preimage {A B} (mu : EnumQ A) (k : A -> EnumQ B) w (b : B) :
-  List.In (w,b) (enumQ_raw (bind_EnumQ mu k)) ->
-  exists p a q, List.In (p,a) (enumQ_raw mu) /\
-    List.In (q,b) (enumQ_raw (k a)) /\ w = p*q.
+Lemma bind_entry_preimage {A B} (mu : EnumQ A) (k : A → EnumQ B) w (b : B) :
+  List.In (w,b) (enumQ_raw (bind_EnumQ mu k)) →
+  ∃ p a q, List.In (p,a) (enumQ_raw mu) ∧
+    List.In (q,b) (enumQ_raw (k a)) ∧ w = p*q.
 Proof.
   move/List.in_flat_map=> [[p a] [Hp Hin]].
   move/List.in_map_iff: Hin=> [[q y] [He Hq]]; inversion He; subst w y.
   exists p,a,q; by repeat split.
 Qed.
-Lemma rat_mul_nonzero_left (p q : rat) : p*q != 0 -> p != 0.
+Lemma rat_mul_nonzero_left (p q : rat) : p*q != 0 → p != 0.
 Proof. rewrite mulf_eq0 negb_or=> /andP [H _]; exact H. Qed.
-Lemma rat_mul_nonzero_right (p q : rat) : p*q != 0 -> q != 0.
+Lemma rat_mul_nonzero_right (p q : rat) : p*q != 0 → q != 0.
 Proof. rewrite mulf_eq0 negb_or=> /andP [_ H]; exact H. Qed.
 
 #[global] Instance EnumQ_MeasureAEKleisliLaws :
@@ -204,9 +206,9 @@ Proof.
   { apply/negP=> /eqP Heq. exact: Hw Heq. }
   have HpB := rat_mul_nonzero_left HwB.
   have HqB := rat_mul_nonzero_right HwB.
-  have Hp0 : p <> 0.
+  have Hp0 : p ≠ 0.
   { move=> Heq. subst p. by rewrite eq_refl in HpB. }
-  have Hq0 : q <> 0.
+  have Hq0 : q ≠ 0.
   { move=> Heq. subst q. by rewrite eq_refl in HqB. }
   exact: Hk a (Hmu p a Hp Hp0) q b Hq Hq0.
 Qed.
@@ -280,7 +282,7 @@ Qed.
 #[global] Instance EnumQ_MeasureCongruenceLaws :
     @MeasureCongruenceLaws EnumQ EnumQ_MeasureInterface.
 Proof.
-  have ae_transport : forall A (mu nu : EnumQ A) (P : A -> Prop),
+  have ae_transport : ∀ A (mu nu : EnumQ A) (P : A -> Prop),
       enumQ_meas_eq mu nu -> enumQ_ae mu P -> enumQ_ae nu P.
   { move=> A mu nu P Hmn Hmu p y Hy Hp.
     have Hpb : p != 0.

@@ -1,6 +1,8 @@
 (** Native finite-real transport. Bounded tests on decoded values produce
     an actual joint on the original sample carriers, including duplicates
     and zero entries. No external domain or FreeOmega dependency. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -19,7 +21,7 @@ Local Open Scope ring_scope.
 Section Transport.
 Variable R : realType.
 
-Lemma real_expect_weighted_list {I A} (xs : seq I) (w : I -> R) (v : I -> A) f :
+Lemma real_expect_weighted_list {I A} (xs : seq I) (w : I → R) (v : I → A) f :
   finite_expect f [seq (w i, v i) | i <- xs] = \sum_(i <- xs) w i * f (v i).
 Proof.
   elim: xs=> [|i xs IH].
@@ -40,14 +42,14 @@ Qed.
 
 Theorem subenumR_transport_of_mapped_tests {X Y A B}
     (mu : SubEnumR R X) (nu : SubEnumR R Y)
-    (f : X -> A) (g : Y -> B) (T : A -> B -> Prop) :
-  (forall a b,
-    (forall x, 0 <= a x /\ a x <= 1) ->
-    (forall y, 0 <= b y /\ b y <= 1) ->
-    (forall x y, T x y -> a x <= b y) ->
+    (f : X → A) (g : Y → B) (T : A → B → Prop) :
+  (∀ a b,
+    (∀ x, 0 <= a x ∧ a x <= 1) →
+    (∀ y, 0 <= b y ∧ b y <= 1) →
+    (∀ x y, T x y → a x <= b y) →
     subenumR_expect mu (fun x => a (f x)) <=
-    subenumR_expect nu (fun y => b (g y))) ->
-  subenumR_expect mu (fun _ => 1) = subenumR_expect nu (fun _ => 1) ->
+    subenumR_expect nu (fun y => b (g y))) →
+  subenumR_expect mu (fun _ => 1) = subenumR_expect nu (fun _ => 1) →
   subenumR_lift (fun x y => T (f x) (g y)) mu nu.
 Proof.
   intros Htests Hmass.
@@ -68,13 +70,13 @@ Proof.
   pose edge (i : I) (j : J) := asbool (T (f (x i)) (g (y j))).
   have Hall : real_transport_hall p q edge.
   { intro S.
-    pose P a := exists i : I, i \in S /\ f (x i) = a.
-    pose Q b := exists i : I, i \in S /\ T (f (x i)) b.
+    pose P a := exists i : I, i \in S ∧ f (x i) = a.
+    pose Q b := exists i : I, i \in S ∧ T (f (x i)) b.
     pose a z : R := if asbool (P z) then 1 else 0.
     pose b z : R := if asbool (Q z) then 1 else 0.
-    have Ha z : 0 <= a z /\ a z <= 1.
+    have Ha z : 0 <= a z ∧ a z <= 1.
     { rewrite /a; case: (asbool (P z)); split; try exact: lexx; exact: ler01. }
-    have Hb z : 0 <= b z /\ b z <= 1.
+    have Hb z : 0 <= b z ∧ b z <= 1.
     { rewrite /b; case: (asbool (Q z)); split; try exact: lexx; exact: ler01. }
     have Hab z v : T z v -> a z <= b v.
     { intro H; rewrite /a /b; case Hpz: (asbool (P z)); last exact (proj1 (Hb v)).
@@ -128,9 +130,9 @@ Proof.
   apply/asboolP; apply/negPn/negP=> Hmiss; apply Hnz; exact (Hs i j Hmiss).
 Qed.
 
-Lemma subenumR_lift_realization {A B} (T : A -> B -> Prop)
+Lemma subenumR_lift_realization {A B} (T : A → B → Prop)
     (mu : SubEnumR R A) (nu : SubEnumR R B) :
-  subenumR_lift T mu nu -> exists joint,
+  subenumR_lift T mu nu → ∃ joint,
     @semantic_coupling (SubEnumR R) (SubEnumR_SemanticMeasure R) A B T mu nu joint.
 Proof.
   intros [j [Hl [Hr Hj]]]; exists j; split.

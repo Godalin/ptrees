@@ -1,5 +1,7 @@
 (** One-step normalization of canonical WriterT iteration. Only the base
     monad laws and ordered monoid laws are used. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From Coq Require Import Morphisms.
 From ExtLib.Structures Require Import Monad Monoid BinOps.
@@ -13,12 +15,12 @@ Unset Strict Implicit.
 Local Open Scope type_scope.
 
 Section WriterFoldFacts.
-Context {W : Type} {E MN T : Type -> Type} (op : Monoid W).
+Context {W : Type} {E MN T : Type → Type} (op : Monoid W).
 Context `{MT : Monad T} `{QT : Eq1 T}.
 Context `{QE : @Eq1Equivalence T MT QT} `{ML : @MonadLawsE T QT MT}.
 Context (WL : MonoidLaws op).
-Variable handle : forall X, E X -> T X.
-Variable sample : forall X, MN X -> T X.
+Variable handle : ∀ X, E X → T X.
+Variable sample : ∀ X, MN X → T X.
 
 Definition writer_next {A} (log : W) (t : ptree (writerE W +' E) MN A) :
     T ((W * ptree (writerE W +' E) MN A) + (W*A)) :=
@@ -26,7 +28,7 @@ Definition writer_next {A} (log : W) (t : ptree (writerE W +' E) MN A) :
   | RetF a => ret (inr (log,a))
   | TauF u => ret (inl (log,u))
   | @VisF _ _ _ _ X e k => match e with
-      | inl1 we => match we in writerE _ X return (X -> _) -> _ with
+      | inl1 we => match we in writerE _ X return (X → _) → _ with
           | Tell w => fun k => ret (inl (monoid_plus op log w,k tt)) end k
       | inr1 fe => bind (@handle X fe) (fun x => ret (inl (log,k x)))
       end

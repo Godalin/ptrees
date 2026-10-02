@@ -1,5 +1,7 @@
 (** Checked native countable limits. Returned events increase; cemetery mass
     is not part of the order. No PTree universe relaxation is used here. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths,-redundant-canonical-projection".
 From HB Require Import structures.
 From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq fintype
@@ -18,8 +20,8 @@ Local Open Scope ereal_scope.
 Section NativeSup.
 Variable R : realType.
 Local Notation M := (MathCompKernelMeasure R).
-Context {A : Type} (chain : nat -> M A).
-Hypothesis increasing : forall n, mathcomp_node_le (chain n) (chain n.+1).
+Context {A : Type} (chain : nat → M A).
+Hypothesis increasing : ∀ n, mathcomp_node_le (chain n) (chain n.+1).
 
 Definition mathcomp_lub_value (U : set (mc_carrier A)) : \bar R :=
   ereal_sup [set mathcomp_kernel_root (chain n) (U `&` mc_returned) | n in setT].
@@ -129,10 +131,10 @@ Section NativeContinuity.
 Variable R : realType.
 Local Notation M := (MathCompKernelMeasure R).
 
-Lemma mathcomp_native_sintegral_cvg {A} (chain : nat -> M A) out
+Lemma mathcomp_native_sintegral_cvg {A} (chain : nat → M A) out
     (h : {nnsfun mc_carrier A >-> R}) :
-  (forall n, mathcomp_node_le (chain n) (chain n.+1)) ->
-  mathcomp_kernel_lub chain out -> h MCBottom = 0%R ->
+  (∀ n, mathcomp_node_le (chain n) (chain n.+1)) →
+  mathcomp_kernel_lub chain out → h MCBottom = 0%R →
   (fun n => sintegral (mathcomp_kernel_root (chain n)) h) @ \oo -->
     sintegral (mathcomp_kernel_root out) h.
 Proof.
@@ -153,11 +155,11 @@ Proof.
     apply/nondecreasing_seqP => n; exact: Hi.
   Unshelve. all: by end_near.
 Qed.
-Lemma mathcomp_native_integral_lub {A} (chain : nat -> M A) out
-    (f : mc_carrier A -> \bar R) :
-  (forall n, mathcomp_node_le (chain n) (chain n.+1)) ->
-  mathcomp_kernel_lub chain out ->
-  (forall x, 0 <= f x) -> f MCBottom = 0 ->
+Lemma mathcomp_native_integral_lub {A} (chain : nat → M A) out
+    (f : mc_carrier A → \bar R) :
+  (∀ n, mathcomp_node_le (chain n) (chain n.+1)) →
+  mathcomp_kernel_lub chain out →
+  (∀ x, 0 <= f x) → f MCBottom = 0 →
   \int[mathcomp_kernel_root out]_x f x =
     ereal_sup [set \int[mathcomp_kernel_root (chain n)]_x f x | n in setT].
 Proof.
@@ -180,10 +182,10 @@ Proof.
   Unshelve. all: by end_near.
 Qed.
 
-Lemma mathcomp_native_bind_lub {A B} (chain : nat -> M A) out
-    (k : A -> M B) :
-  (forall n, mathcomp_node_le (chain n) (chain n.+1)) ->
-  mathcomp_kernel_lub chain out ->
+Lemma mathcomp_native_bind_lub {A B} (chain : nat → M A) out
+    (k : A → M B) :
+  (∀ n, mathcomp_node_le (chain n) (chain n.+1)) →
+  mathcomp_kernel_lub chain out →
   mathcomp_kernel_lub (fun n => mathcomp_kernel_bind (chain n) k)
     (mathcomp_kernel_bind out k).
 Proof.
@@ -214,9 +216,9 @@ Proof.
   - exact @mathcomp_native_bind_lub.
 Qed.
 Lemma mathcomp_native_bind_lub_k {A B} (mu : M A)
-    (chain : A -> nat -> M B) (out : A -> M B) :
-  (forall x n, mathcomp_node_le (chain x n) (chain x n.+1)) ->
-  (forall x, mathcomp_kernel_lub (chain x) (out x)) ->
+    (chain : A → nat → M B) (out : A → M B) :
+  (∀ x n, mathcomp_node_le (chain x n) (chain x n.+1)) →
+  (∀ x, mathcomp_kernel_lub (chain x) (out x)) →
   mathcomp_kernel_lub (fun n => mathcomp_kernel_bind mu (fun x => chain x n))
     (mathcomp_kernel_bind mu out).
 Proof.
@@ -245,10 +247,10 @@ Proof.
     mathcomp_kernel_root (mathcomp_kernel_bind mu (fun x => chain x n.+1)) U).
   apply: mathcomp_native_bind_le_k => // x; exact: Hi.
 Qed.
-Lemma mathcomp_native_bind_ae_eq {A B} (mu : M A) (Good : A -> Prop)
-    (k h : A -> M B) :
-  mathcomp_kernel_ae mu Good ->
-  (forall x, Good x -> mathcomp_kernel_eq (k x) (h x)) ->
+Lemma mathcomp_native_bind_ae_eq {A B} (mu : M A) (Good : A → Prop)
+    (k h : A → M B) :
+  mathcomp_kernel_ae mu Good →
+  (∀ x, Good x → mathcomp_kernel_eq (k x) (h x)) →
   mathcomp_kernel_eq (mathcomp_kernel_bind mu k) (mathcomp_kernel_bind mu h).
 Proof.
   move=> Hae He U mU Hb; rewrite !mathcomp_kernel_root_bind.
@@ -259,11 +261,11 @@ Proof.
   move=> Ha; apply: Hbad => _; exact: He.
 Qed.
 
-Lemma mathcomp_native_bind_lub_ae {A B} (mu : M A) (Good : A -> Prop)
-    (chain : A -> nat -> M B) (out : A -> M B) :
-  mathcomp_kernel_ae mu Good ->
-  (forall x, Good x -> forall n, mathcomp_node_le (chain x n) (chain x n.+1)) ->
-  (forall x, Good x -> mathcomp_kernel_lub (chain x) (out x)) ->
+Lemma mathcomp_native_bind_lub_ae {A B} (mu : M A) (Good : A → Prop)
+    (chain : A → nat → M B) (out : A → M B) :
+  mathcomp_kernel_ae mu Good →
+  (∀ x, Good x → ∀ n, mathcomp_node_le (chain x n) (chain x n.+1)) →
+  (∀ x, Good x → mathcomp_kernel_lub (chain x) (out x)) →
   mathcomp_kernel_lub (fun n => mathcomp_kernel_bind mu (fun x => chain x n))
     (mathcomp_kernel_bind mu out).
 Proof.
@@ -310,9 +312,9 @@ Section NativeDiagonal.
 Variable R : realType.
 Local Notation M := (MathCompKernelMeasure R).
 
-Lemma mathcomp_native_le_steps {A} (c : nat -> M A) :
-  (forall n, mathcomp_node_le (c n) (c n.+1)) ->
-  forall n m, (n <= m)%N -> mathcomp_node_le (c n) (c m).
+Lemma mathcomp_native_le_steps {A} (c : nat → M A) :
+  (∀ n, mathcomp_node_le (c n) (c n.+1)) →
+  ∀ n m, (n <= m)%N → mathcomp_node_le (c n) (c m).
 Proof.
   move=> Hi n m Hnm U mU Hb.
   have Hmono : nondecreasing_seq (fun i => mathcomp_kernel_root (c i) U).
@@ -320,12 +322,12 @@ Proof.
   exact: Hmono.
 Qed.
 
-Lemma mathcomp_native_double_diagonal {A} (grid : nat -> nat -> M A)
-    (rows : nat -> M A) out :
-  (forall i n, mathcomp_node_le (grid i n) (grid i n.+1)) ->
-  (forall j n, mathcomp_node_le (grid n j) (grid n.+1 j)) ->
-  (forall i, mathcomp_kernel_lub (grid i) (rows i)) ->
-  mathcomp_kernel_lub rows out ->
+Lemma mathcomp_native_double_diagonal {A} (grid : nat → nat → M A)
+    (rows : nat → M A) out :
+  (∀ i n, mathcomp_node_le (grid i n) (grid i n.+1)) →
+  (∀ j n, mathcomp_node_le (grid n j) (grid n.+1 j)) →
+  (∀ i, mathcomp_kernel_lub (grid i) (rows i)) →
+  mathcomp_kernel_lub rows out →
   mathcomp_kernel_lub (fun n => grid n n) out.
 Proof.
   move=> Hr Hc Hrows Hout U mU Hb.
@@ -353,12 +355,12 @@ Qed.
     (MathCompNodeSemanticOmega R).
 Proof. constructor; exact @mathcomp_native_double_diagonal. Qed.
 
-Lemma mathcomp_native_bind_diagonal {A B} (source : nat -> M A) source_out
-    (kernels : A -> nat -> M B) (kernel_out : A -> M B) :
-  (forall n, mathcomp_node_le (source n) (source n.+1)) ->
-  (forall x n, mathcomp_node_le (kernels x n) (kernels x n.+1)) ->
-  mathcomp_kernel_lub source source_out ->
-  (forall x, mathcomp_kernel_lub (kernels x) (kernel_out x)) ->
+Lemma mathcomp_native_bind_diagonal {A B} (source : nat → M A) source_out
+    (kernels : A → nat → M B) (kernel_out : A → M B) :
+  (∀ n, mathcomp_node_le (source n) (source n.+1)) →
+  (∀ x n, mathcomp_node_le (kernels x n) (kernels x n.+1)) →
+  mathcomp_kernel_lub source source_out →
+  (∀ x, mathcomp_kernel_lub (kernels x) (kernel_out x)) →
   mathcomp_kernel_lub
     (fun n => mathcomp_kernel_bind (source n) (fun x => kernels x n))
     (mathcomp_kernel_bind source_out kernel_out).
@@ -383,16 +385,16 @@ End NativeDiagonal.
 Section NativeOmegaAE.
 Variable R : realType.
 Local Notation M := (MathCompKernelMeasure R).
-Lemma mathcomp_native_ae_zero {A} (P : A -> Prop) :
+Lemma mathcomp_native_ae_zero {A} (P : A → Prop) :
   mathcomp_kernel_ae (@mathcomp_kernel_zero R A) P.
 Proof.
   apply/negligibleP; first by [].
   change (mathcomp_kernel_root (@mathcomp_kernel_zero R A) (~` mc_predicate P) = 0).
   apply: mathcomp_native_zero_returned => H; exact: H.
 Qed.
-Lemma mathcomp_native_ae_lub {A} (c : nat -> M A) out (P : A -> Prop) :
-  mathcomp_kernel_lub c out ->
-  (forall n, mathcomp_kernel_ae (c n) P) -> mathcomp_kernel_ae out P.
+Lemma mathcomp_native_ae_lub {A} (c : nat → M A) out (P : A → Prop) :
+  mathcomp_kernel_lub c out →
+  (∀ n, mathcomp_kernel_ae (c n) P) → mathcomp_kernel_ae out P.
 Proof.
   move=> Hl Hae; apply/negligibleP; first by [].
   change (mathcomp_kernel_root out (~` mc_predicate P) = 0).
@@ -410,10 +412,10 @@ Proof. constructor; [exact @mathcomp_native_ae_zero|exact @mathcomp_native_ae_lu
 End NativeOmegaAE.
 
 Lemma mathcomp_native_lub_cofinal (R : realType) {A}
-    (c d : nat -> MathCompKernelMeasure R A) out :
-  (forall n, exists m, mathcomp_node_le (c n) (d m)) ->
-  (forall n, exists m, mathcomp_node_le (d n) (c m)) ->
-  (mathcomp_kernel_lub c out <-> mathcomp_kernel_lub d out).
+    (c d : nat → MathCompKernelMeasure R A) out :
+  (∀ n, ∃ m, mathcomp_node_le (c n) (d m)) →
+  (∀ n, ∃ m, mathcomp_node_le (d n) (c m)) →
+  (mathcomp_kernel_lub c out ↔ mathcomp_kernel_lub d out).
 Proof.
   move=> Hcd Hdc.
   have He U (mU : measurable U) (Hb : ~ U MCBottom) :

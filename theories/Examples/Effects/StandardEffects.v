@@ -1,6 +1,8 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
 (** Standard effect clients preserve probability and observable error/output
     behavior. Concrete execution is checked in addition to theorem signatures. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -33,19 +35,19 @@ Local Notation FO := (FreeOmegaObservableSemanticOmega
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation W E A B RR := (@peutt E SubEnumQ MF FI FC FreeOmegaMixedMeasure FO A B RR).
 
-Example reader_heterogeneous {Env E A B} (RR : A -> B -> Prop) env
+Example reader_heterogeneous {Env E A B} (RR : A → B → Prop) env
     (t : ptree (readerE Env +' E) SubEnumQ A) (u : ptree (readerE Env +' E) SubEnumQ B) :
-  W _ _ _ RR t u -> W _ _ _ RR (run_reader t env) (run_reader u env).
+  W _ _ _ RR t u → W _ _ _ RR (run_reader t env) (run_reader u env).
 Proof. apply (run_reader_peutt free_omega_relational_zero free_omega_relational_lub). Qed.
 
-Example writer_heterogeneous {Log E A B} (op : Monoid Log) (RR : A -> B -> Prop)
+Example writer_heterogeneous {Log E A B} (op : Monoid Log) (RR : A → B → Prop)
     (t : ptree (writerE Log +' E) SubEnumQ A) (u : ptree (writerE Log +' E) SubEnumQ B) :
-  W _ _ _ RR t u -> W _ _ _ (state_result_rel RR) (run_writer op t) (run_writer op u).
+  W _ _ _ RR t u → W _ _ _ (state_result_rel RR) (run_writer op t) (run_writer op u).
 Proof. apply (run_writer_peutt free_omega_relational_zero free_omega_relational_lub). Qed.
 
-Example exception_heterogeneous {Err E A B} (RR : A -> B -> Prop)
+Example exception_heterogeneous {Err E A B} (RR : A → B → Prop)
     (t : ptree (exceptE Err +' E) SubEnumQ A) (u : ptree (exceptE Err +' E) SubEnumQ B) :
-  W _ _ _ RR t u -> W _ _ _ (exception_result_rel RR) (run_exception t) (run_exception u).
+  W _ _ _ RR t u → W _ _ _ (exception_result_rel RR) (run_exception t) (run_exception u).
 Proof. apply (run_exception_peutt free_omega_relational_bind). Qed.
 
 Definition read_and_sample : ptree (readerE nat +' void1) SubEnumQ nat :=
@@ -83,7 +85,7 @@ Example missing_mass_is_not_an_exception :
     [low_quantile] = (Lost, []).
 Proof. native_compute. reflexivity. Qed.
 
-Variant emitE : Type -> Type := Emit : nat -> emitE unit.
+Variant emitE : Type → Type := Emit : nat → emitE unit.
 Example reader_forwards_event :
   @reader_handler nat emitE SubEnumQ 7 unit (inr1 (Emit 3)) = Vis (Emit 3) (fun x => Ret x).
 Proof. reflexivity. Qed.

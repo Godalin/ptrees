@@ -1,4 +1,6 @@
 (** Role: finite probability/coupling/backend example. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -81,7 +83,7 @@ Proof.
 Qed.
 
 Theorem growing_weight_no_finite_observation (out : EnumQ unit) :
-  ~ @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega unit unit
+  ¬ @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega unit unit
       (fun x => x) (FOLub growing_weight) out.
 Proof.
   intro Hobs.
@@ -93,16 +95,16 @@ Qed.
 
 (** Monotone test continuity still holds through a weight-two node,
     including at an infinite limit.  No SubEnumQ bound can justify it. *)
-Example weight_two_preserves_monotone_limit (f : nat -> unit -> \bar R) :
-  (forall n x, 0 <= f n x) ->
-  (forall x, nondecreasing_seq (fun n => f n x)) ->
+Example weight_two_preserves_monotone_limit (f : nat → unit → \bar R) :
+  (∀ n x, 0 <= f n x) →
+  (∀ x, nondecreasing_seq (fun n => f n x)) →
   @enumQ_extended_expect R unit (fun x => extended_upper (fun n => f n x))
     (enumQ_cons (ler0n rat 2) tt enumQ_zero) =
   extended_upper (fun n => enumQ_extended_expect (f n) (enumQ_cons (ler0n rat 2) tt enumQ_zero)).
 Proof. intros Hf Hi. exact (@enumQ_extended_expect_countable R unit (enumQ_cons (ler0n rat 2) tt enumQ_zero) f Hf Hi). Qed.
 
-Example zero_weight_needs_no_monotonicity (f : nat -> unit -> \bar R) :
-  (forall n x, 0 <= f n x) ->
+Example zero_weight_needs_no_monotonicity (f : nat → unit → \bar R) :
+  (∀ n x, 0 <= f n x) →
   @enumQ_extended_expect R unit (fun x => extended_upper (fun n => f n x))
     (enumQ_cons (lexx (0 : rat)) tt enumQ_zero) =
   extended_upper (fun n => enumQ_extended_expect (f n) (enumQ_cons (lexx (0 : rat)) tt enumQ_zero)).

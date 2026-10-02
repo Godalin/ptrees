@@ -1,4 +1,6 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Universe Polymorphism.
 
@@ -15,7 +17,7 @@ Unset Printing Implicit Defensive.
 (** Clients compute without unfolding stable hitting.  These regressions
     apply to every qualifying native backend, not just SubEnumQ. *)
 Section ComputationRegressions.
-Context {E MN : Type -> Type}
+Context {E MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
@@ -29,8 +31,8 @@ Local Notation K R := (@ptree_primitive_kernel E MN MF FI FreeOmegaMixedMeasure 
 Local Notation hits t out :=
   (@stable_hitting MF FI FO _ _ (K _) (observe t) out).
 
-Example dirac_tau_compute {R X} (x : X) (k : X -> ptree E MN R) out :
-  hits (Prob (sem_ret x) (fun y => Tau (k y))) out <-> hits (k x) out.
+Example dirac_tau_compute {R X} (x : X) (k : X → ptree E MN R) out :
+  hits (Prob (sem_ret x) (fun y => Tau (k y))) out ↔ hits (k x) out.
 Proof.
   rewrite stable_hitting_prob_dirac_iff.
   apply (stable_hitting_tau (FI := FI) (FO := FO)
@@ -40,9 +42,9 @@ Qed.
 (** Arbitrarily many branches may require different finite Tau depths.
     The result uses branch limits, not a maximum depth or finite support. *)
 Example nonuniform_tau_depth_compute {R X}
-    (mu : MN X) (depth : X -> nat) (k : X -> ptree E MN R)
-    (front : X -> MF (stable_head E MN R)) :
-  (forall x, hits (k x) (front x)) ->
+    (mu : MN X) (depth : X → nat) (k : X → ptree E MN R)
+    (front : X → MF (stable_head E MN R)) :
+  (∀ x, hits (k x) (front x)) →
   hits (Prob mu (fun x => Nat.iter (depth x) (fun u => Tau u) (k x)))
     (FOSample mu front).
 Proof.
@@ -55,7 +57,7 @@ Qed.
 
 (** Sampling stops at Vis: its continuation is retained, not executed. *)
 Example sampled_visible_head_compute {R X Y}
-    (mu : MN X) (e : E Y) (k : X -> Y -> ptree E MN R) :
+    (mu : MN X) (e : E Y) (k : X → Y → ptree E MN R) :
   hits (Prob mu (fun x => Tau (Vis e (k x))))
     (FOSample mu (fun x => FORet (FHVis e (k x)))).
 Proof.

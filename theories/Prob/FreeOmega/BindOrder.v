@@ -1,5 +1,7 @@
 (** Probability-level obligations for generic bind reasoning. Observable
     equality and structural approximation keep their distinct meanings. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 Require Import PTree.Prob.Interface.Measure PTree.Prob.Interface.Omega
   PTree.Prob.Interface.Mixed PTree.Prob.Interface.BindOrder.
@@ -10,7 +12,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section Laws.
-Context {MN : Type -> Type} `{NI : SemanticMeasure MN}
+Context {MN : Type → Type} `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI} `{NO : @SemanticOmega MN NI}.
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).

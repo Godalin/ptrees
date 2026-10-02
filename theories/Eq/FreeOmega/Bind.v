@@ -1,4 +1,6 @@
 (** Role: Canonical equational/hitting theory. Depends on Core and Prob; does not provide comparison or interpreter semantics. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -23,7 +25,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Section FreeOmegaBind.
-Context {E : Type -> Type} {MN : Type -> Type}
+Context {E : Type → Type} {MN : Type → Type}
   `{NI : SemanticMeasure MN}
   `{NC : @SemanticMeasureCoreLaws MN NI}
   `{NAE : @SemanticMeasureAELiftLaws MN NI}
@@ -31,9 +33,9 @@ Context {E : Type -> Type} {MN : Type -> Type}
 Local Notation MF := (FreeOmega MN).
 
 Lemma ptree_hitting_pstruct_no_event {A}
-    (no_event : forall X, E X -> False) fuel
+    (no_event : ∀ X, E X → False) fuel
     (t1 t2 : ptree E MN A) :
-  pstruct eq t1 t2 ->
+  pstruct eq t1 t2 →
   free_omega_lift eq
     (ptree_hitting_approx (MF := MF) fuel (observe t1))
     (ptree_hitting_approx (MF := MF) fuel (observe t2)).
@@ -52,14 +54,14 @@ Proof.
 Qed.
 
 Theorem ptree_stable_hitting_pstruct_no_event {A}
-    (no_event : forall X, E X -> False)
+    (no_event : ∀ X, E X → False)
     (t1 t2 : ptree E MN A) :
-  pstruct eq t1 t2 ->
-  forall out,
+  pstruct eq t1 t2 →
+  ∀ out,
     @ptree_stable_hitting E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
-      FreeOmegaObservableSemanticOmega A (observe t1) out <->
+      FreeOmegaObservableSemanticOmega A (observe t1) out ↔
     @ptree_stable_hitting E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
@@ -80,14 +82,14 @@ Proof.
 Qed.
 
 Corollary ptree_stable_hitting_bind_assoc_no_event {A B C}
-    (no_event : forall X, E X -> False)
-    (t : ptree E MN A) (k : A -> ptree E MN B)
-    (h : B -> ptree E MN C) out :
+    (no_event : ∀ X, E X → False)
+    (t : ptree E MN A) (k : A → ptree E MN B)
+    (h : B → ptree E MN C) out :
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega C
-    (observe (PTree.bind (PTree.bind t k) h)) out <->
+    (observe (PTree.bind (PTree.bind t k) h)) out ↔
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -99,8 +101,8 @@ Proof.
 Qed.
 
 Lemma ptree_bind_diagonal_mono {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) n m :
-  Peano.le n m ->
+    (t : ptree E MN A) (k : A → ptree E MN R) n m :
+  Peano.le n m →
   free_omega_approx eq
     (ptree_bind_diagonal_approx (MF := MF) n t k)
     (ptree_bind_diagonal_approx (MF := MF) m t k).
@@ -115,15 +117,15 @@ Qed.
     every global-fuel approximant is contained in some diagonal approximant,
     and conversely. *)
 Definition ptree_bind_approx_cofinal {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) : Prop :=
+    (t : ptree E MN A) (k : A → ptree E MN R) : Prop :=
   free_omega_chains_cofinal eq
     (fun fuel => ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.bind t k)))
     (fun fuel => ptree_bind_diagonal_approx (MF := MF) fuel t k).
 
 Theorem ptree_bind_cofinal {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) :
-  ptree_bind_approx_cofinal t k ->
+    (t : ptree E MN A) (k : A → ptree E MN R) :
+  ptree_bind_approx_cofinal t k →
   @PTreeKernel.ptree_bind_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -141,7 +143,7 @@ Proof.
 Qed.
 
 Lemma ptree_bind_ret_approx_cofinal {A R}
-    (a : A) (k : A -> ptree E MN R) :
+    (a : A) (k : A → ptree E MN R) :
   ptree_bind_approx_cofinal (Ret a) k.
 Proof.
   split; intro n; exists n.
@@ -157,7 +159,7 @@ Proof.
 Qed.
 
 Corollary ptree_bind_ret_cofinal {A R}
-    (a : A) (k : A -> ptree E MN R) :
+    (a : A) (k : A → ptree E MN R) :
   @PTreeKernel.ptree_bind_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -170,7 +172,7 @@ Qed.
 (** Binding a pure continuation does not introduce a second unbounded
     computation.  Stable heads are mapped immediately, so global primitive
     fuel and diagonal bind fuel coincide rather than merely being cofinal. *)
-Definition pure_head_bind {A R} (f : A -> R)
+Definition pure_head_bind {A R} (f : A → R)
     (h : stable_head E MN A) : stable_head E MN R :=
   match h with
   | FHRet a => FHRet (f a)
@@ -179,7 +181,7 @@ Definition pure_head_bind {A R} (f : A -> R)
   end.
 
 Lemma ptree_hitting_bind_ret_map {A R}
-    (t : ptree E MN A) (f : A -> R) fuel :
+    (t : ptree E MN A) (f : A → R) fuel :
   ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.bind t (fun a => Ret (f a)))) =
   free_omega_bind
@@ -213,7 +215,7 @@ Proof.
 Qed.
 
 Lemma ptree_head_bind_ret_map {A R}
-    (f : A -> R) fuel (h : stable_head E MN A) :
+    (f : A → R) fuel (h : stable_head E MN A) :
   ptree_head_bind_approx (MF := MF) fuel
     (fun a => Ret (f a)) h = FORet (pure_head_bind f h).
 Proof.
@@ -227,7 +229,7 @@ Proof.
 Qed.
 
 Lemma ptree_bind_ret_diagonal_map {A R}
-    (t : ptree E MN A) (f : A -> R) fuel :
+    (t : ptree E MN A) (f : A → R) fuel :
   ptree_bind_diagonal_approx (MF := MF) fuel t
       (fun a => Ret (f a)) =
   free_omega_bind
@@ -247,7 +249,7 @@ Proof.
 Qed.
 
 Theorem ptree_bind_ret_map_approx_cofinal {A R}
-    (t : ptree E MN A) (f : A -> R) :
+    (t : ptree E MN A) (f : A → R) :
   ptree_bind_approx_cofinal t (fun a => Ret (f a)).
 Proof.
   split; intro fuel; exists fuel.
@@ -260,7 +262,7 @@ Proof.
 Qed.
 
 Corollary ptree_bind_ret_map_cofinal {A R}
-    (t : ptree E MN A) (f : A -> R) :
+    (t : ptree E MN A) (f : A → R) :
   @PTreeKernel.ptree_bind_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -275,7 +277,7 @@ Qed.
     diagonal allocation that gives the same budget to the source and to the
     continuation. *)
 Lemma ptree_bind_hitting_le_diagonal {A R}
-    (fuel : nat) (t : ptree E MN A) (k : A -> ptree E MN R) :
+    (fuel : nat) (t : ptree E MN A) (k : A → ptree E MN R) :
   free_omega_approx eq
     (ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.bind t k)))
@@ -295,7 +297,7 @@ Qed.
     implementable by their sum in the primitive global machine. *)
 Definition ptree_bind_split_approx {A R}
     (source_fuel continuation_fuel : nat)
-    (t : ptree E MN A) (k : A -> ptree E MN R) :
+    (t : ptree E MN A) (k : A → ptree E MN R) :
     MF (stable_head E MN R) :=
   free_omega_bind
     (ptree_hitting_approx (MF := MF) source_fuel (observe t))
@@ -303,7 +305,7 @@ Definition ptree_bind_split_approx {A R}
 
 Lemma ptree_bind_split_le_hitting {A R}
     (source_fuel continuation_fuel : nat)
-    (t : ptree E MN A) (k : A -> ptree E MN R) :
+    (t : ptree E MN A) (k : A → ptree E MN R) :
   free_omega_approx eq
     (ptree_bind_split_approx
       source_fuel continuation_fuel t k)
@@ -321,7 +323,7 @@ Proof.
 Qed.
 
 Lemma ptree_bind_diagonal_le_hitting {A R}
-    (fuel : nat) (t : ptree E MN A) (k : A -> ptree E MN R) :
+    (fuel : nat) (t : ptree E MN A) (k : A → ptree E MN R) :
   free_omega_approx eq
     (ptree_bind_diagonal_approx (MF := MF) fuel t k)
     (ptree_hitting_approx (MF := MF) (2 * fuel)
@@ -336,7 +338,7 @@ Proof.
 Qed.
 
 Theorem ptree_bind_approx_cofinal_all {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) :
+    (t : ptree E MN A) (k : A → ptree E MN R) :
   ptree_bind_approx_cofinal t k.
 Proof.
   split.
@@ -349,7 +351,7 @@ Proof.
 Qed.
 
 Corollary ptree_bind_cofinal_all {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) :
+    (t : ptree E MN A) (k : A → ptree E MN R) :
   @PTreeKernel.ptree_bind_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -375,7 +377,7 @@ Definition stable_head_is_ret {R}
   end.
 
 Definition stable_head_ret_bind_front {A R}
-    (front : A -> MF (stable_head E MN R))
+    (front : A → MF (stable_head E MN R))
     (h : stable_head E MN A) : MF (stable_head E MN R) :=
   match h with
   | FHRet a => front a
@@ -388,21 +390,21 @@ Definition stable_head_ret_bind_front {A R}
     [FOQLBind] merely to place a closed sampler before an eventful context. *)
 Theorem sem_lift_ret_bind_front
     {A1 A2 R1 R2}
-    (RA : A1 -> A2 -> Prop)
-    (simA : ptree E MN A1 -> ptree E MN A2 -> Prop)
-    (RR : R1 -> R2 -> Prop)
-    (simR : ptree E MN R1 -> ptree E MN R2 -> Prop)
+    (RA : A1 → A2 → Prop)
+    (simA : ptree E MN A1 → ptree E MN A2 → Prop)
+    (RR : R1 → R2 → Prop)
+    (simR : ptree E MN R1 → ptree E MN R2 → Prop)
     (hs1 : MF (stable_head E MN A1))
     (hs2 : MF (stable_head E MN A2))
-    (front1 : A1 -> MF (stable_head E MN R1))
-    (front2 : A2 -> MF (stable_head E MN R2)) :
+    (front1 : A1 → MF (stable_head E MN R1))
+    (front2 : A2 → MF (stable_head E MN R2)) :
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-    _ _ (stable_head_rel RA simA) hs1 hs2 ->
-  (forall a1 a2, RA a1 a2 ->
+    _ _ (stable_head_rel RA simA) hs1 hs2 →
+  (∀ a1 a2, RA a1 a2 →
     @sem_lift MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-      _ _ (stable_head_rel RR simR) (front1 a1) (front2 a2)) ->
+      _ _ (stable_head_rel RR simR) (front1 a1) (front2 a2)) →
   @sem_lift MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     _ _ (stable_head_rel RR simR)
@@ -424,20 +426,20 @@ Theorem stable_hitting_bind_ret_only
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCountAE : @SemanticMeasureCountableAELaws MN NI}
     {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R)
+    (t : ptree E MN A) (k : A → ptree E MN R)
     (hs : MF (stable_head E MN A))
-    (front : A -> MF (stable_head E MN R)) :
-  free_omega_ae stable_head_is_ret hs ->
+    (front : A → MF (stable_head E MN R)) :
+  free_omega_ae stable_head_is_ret hs →
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
-    FreeOmegaObservableSemanticOmega A (observe t) hs ->
-  (forall a,
+    FreeOmegaObservableSemanticOmega A (observe t) hs →
+  (∀ a,
     @ptree_stable_hitting E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega R
-      (observe (k a)) (front a)) ->
+      (observe (k a)) (front a)) →
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -463,7 +465,7 @@ Proof.
   assert (Hrestricted :
       @sem_lift MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-        _ _ (fun h1 h2 => h1 = h2 /\ stable_head_is_ret h1)
+        _ _ (fun h1 h2 => h1 = h2 ∧ stable_head_is_ret h1)
         hs hs).
   { eapply FOQLAERestrict with
       (T := eq) (P := stable_head_is_ret)
@@ -494,16 +496,16 @@ Qed.
     module supplies no competing theorem or backend-specific coinduction. *)
 
 Theorem ptree_bind_approx_cofinal_no_event {A R}
-    (no_event : forall X, E X -> False)
-    (t : ptree E MN A) (k : A -> ptree E MN R) :
+    (no_event : ∀ X, E X → False)
+    (t : ptree E MN A) (k : A → ptree E MN R) :
   ptree_bind_approx_cofinal t k.
 Proof.
   apply ptree_bind_approx_cofinal_all.
 Qed.
 
 Corollary ptree_bind_cofinal_no_event {A R}
-    (no_event : forall X, E X -> False)
-    (t : ptree E MN A) (k : A -> ptree E MN R) :
+    (no_event : ∀ X, E X → False)
+    (t : ptree E MN A) (k : A → ptree E MN R) :
   @PTreeKernel.ptree_bind_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -517,9 +519,9 @@ Section NestedNoEventGrid.
 Context {I A R : Type}.
 Context `{NCAE : @SemanticMeasureCouplingAELaws MN NI}.
 Context `{NCountAE : @SemanticMeasureCountableAELaws MN NI}.
-Variable no_event : forall X, E X -> False.
+Variable no_event : ∀ X, E X → False.
 Variable sample : ptree E MN A.
-Variable round : I -> A -> I + R.
+Variable round : I → A → I + R.
 
 Definition nested_step (i : I) : ptree E MN (I + R) :=
   PTree.bind sample (fun a => Ret (round i a)).
@@ -593,7 +595,7 @@ Definition no_event_head_value
   no_event_head_value_for h.
 
 Lemma no_event_head_ret (h : stable_head E MN A) :
-  exists a, h = FHRet a.
+  ∃ a, h = FHRet a.
 Proof.
   destruct h as [a|X e c].
   - exists a. reflexivity.
@@ -601,9 +603,9 @@ Proof.
 Qed.
 
 Lemma omega_approx_monotone_nat {X}
-    (chain : nat -> MF X)
-    (Hstep : forall n, free_omega_approx eq (chain n) (chain (S n))) :
-  forall n m, n <= m -> free_omega_approx eq (chain n) (chain m).
+    (chain : nat → MF X)
+    (Hstep : ∀ n, free_omega_approx eq (chain n) (chain (S n))) :
+  ∀ n m, n <= m → free_omega_approx eq (chain n) (chain m).
 Proof.
   intros n m Hle. induction Hle.
   - apply free_omega_approx_refl. intros x. reflexivity.
@@ -636,17 +638,17 @@ Fixpoint nested_execution_grid (outer inner : nat) (i : I) :
     global primitive budget is shared by all sampler invocations, whereas a
     grid cell grants its [inner] budget afresh in each of [outer] rounds. *)
 Record nested_productivity_certificate (i : I) := {
-  nested_ptree_to_grid_outer : nat -> nat;
-  nested_ptree_to_grid_inner : nat -> nat;
-  nested_grid_to_ptree_fuel : nat -> nat -> nat;
-  nested_ptree_to_grid_sound : forall fuel,
+  nested_ptree_to_grid_outer : nat → nat;
+  nested_ptree_to_grid_inner : nat → nat;
+  nested_grid_to_ptree_fuel : nat → nat → nat;
+  nested_ptree_to_grid_sound : ∀ fuel,
     free_omega_approx eq
       (ptree_hitting_approx (MF := MF) fuel
         (observe (nested_program i)))
       (nested_execution_grid
         (nested_ptree_to_grid_outer fuel)
         (nested_ptree_to_grid_inner fuel) i);
-  nested_grid_to_ptree_sound : forall outer inner,
+  nested_grid_to_ptree_sound : ∀ outer inner,
     free_omega_approx eq
       (nested_execution_grid outer inner i)
       (ptree_hitting_approx (MF := MF)
@@ -691,7 +693,7 @@ Lemma nested_row_out_denotes
     (Hsample : free_omega_denotes
       (@no_event_head_value_for A)
       sample_out sample_measure) :
-  forall outer i,
+  ∀ outer i,
     free_omega_denotes
       (@no_event_head_value_for R)
       (nested_row_out sample_out outer i)
@@ -714,7 +716,7 @@ End NestedRowDenotation.
 Section NestedLimitDenotation.
 Context `{DO : @FreeOmegaDenotationOmegaLaws MN NI NO}.
 
-Lemma nested_row_out_increasing sample_out outer : forall i,
+Lemma nested_row_out_increasing sample_out outer : ∀ i,
   free_omega_approx eq (nested_row_out sample_out outer i)
     (nested_row_out sample_out (S outer) i).
 Proof.
@@ -730,14 +732,14 @@ Qed.
 Lemma nested_rows_lub_denotes
     (sample_out : MF (stable_head E MN A))
     (sample_measure : MN A)
-    (Hrows : forall outer i,
+    (Hrows : ∀ outer i,
       free_omega_denotes
         (@no_event_head_value_for R)
         (nested_row_out sample_out outer i)
         (nested_measure_row sample_measure outer i))
     (i : I) out :
   sem_lub (fun outer => nested_measure_row
-      sample_measure outer i) out ->
+      sample_measure outer i) out →
   free_omega_denotes
     (@no_event_head_value_for R)
     (FOLub (fun outer => nested_row_out sample_out outer i)) out.
@@ -751,7 +753,7 @@ Qed.
 End NestedLimitDenotation.
 
 Lemma nested_execution_grid_inner_increasing outer :
-  forall i inner,
+  ∀ i inner,
     free_omega_approx eq
       (nested_execution_grid outer inner i)
       (nested_execution_grid outer (Datatypes.S inner) i).
@@ -768,7 +770,7 @@ Proof.
 Qed.
 
 Lemma canonical_nested_ptree_to_grid_sound fuel :
-  forall i,
+  ∀ i,
   free_omega_approx eq
     (ptree_hitting_approx (MF := MF) fuel
       (observe (nested_program i)))
@@ -823,7 +825,7 @@ Proof.
 Qed.
 
 Lemma nested_execution_grid_outer_increasing inner :
-  forall outer i,
+  ∀ outer i,
     free_omega_approx eq
       (nested_execution_grid outer inner i)
       (nested_execution_grid (Datatypes.S outer) inner i).
@@ -847,7 +849,7 @@ Fixpoint nested_grid_ptree_fuel
   end.
 
 Lemma canonical_nested_grid_to_ptree_sound outer :
-  forall inner i,
+  ∀ inner i,
   free_omega_approx eq
     (nested_execution_grid outer inner i)
     (ptree_hitting_approx (MF := MF)
@@ -900,7 +902,7 @@ Qed.
     program/grid omega-limit bridge.  Monotonicity in both grid coordinates
     moves arbitrary scheduled cells to the diagonal. *)
 Theorem nested_productivity_diagonal_cofinal (i : I) :
-  nested_productivity_certificate i ->
+  nested_productivity_certificate i →
   @ptree_hitting_diagonal_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -956,7 +958,7 @@ Lemma nested_execution_grid_row_lub
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A
       (observe sample) sample_out) :
-  forall outer i,
+  ∀ outer i,
     @sem_lub MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticOmega _
@@ -1009,7 +1011,7 @@ Theorem nested_execution_grid_diagonal_lub
   @sem_lub MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega _
-    (fun outer => nested_row_out sample_out outer i) out ->
+    (fun outer => nested_row_out sample_out outer i) out →
   @sem_lub MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega _
@@ -1041,11 +1043,11 @@ Theorem ptree_stable_hitting_of_nested_no_event_grid
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R (observe program)
-    (fun outer inner => nested_execution_grid outer inner i) ->
+    (fun outer inner => nested_execution_grid outer inner i) →
   @sem_lub MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega _
-    (fun outer => nested_row_out sample_out outer i) out ->
+    (fun outer => nested_row_out sample_out outer i) out →
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -1072,11 +1074,11 @@ Corollary ptree_stable_hitting_of_nested_productivity
       FreeOmegaObservableSemanticOmega A
       (observe sample) sample_out)
     (i : I) out :
-  nested_productivity_certificate i ->
+  nested_productivity_certificate i →
   @sem_lub MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega _
-    (fun outer => nested_row_out sample_out outer i) out ->
+    (fun outer => nested_row_out sample_out outer i) out →
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -1098,14 +1100,14 @@ Corollary ptree_stable_hitting_ast_of_nested_productivity
       FreeOmegaObservableSemanticOmega A
       (observe sample) sample_out)
     (i : I) out :
-  nested_productivity_certificate i ->
+  nested_productivity_certificate i →
   @sem_lub MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega _
-    (fun outer => nested_row_out sample_out outer i) out ->
+    (fun outer => nested_row_out sample_out outer i) out →
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticOmega _ out ->
+    FreeOmegaObservableSemanticOmega _ out →
   @ptree_stable_hitting_ast E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -1127,7 +1129,7 @@ Corollary ptree_stable_hitting_of_canonical_nested
   @sem_lub MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega _
-    (fun outer => nested_row_out sample_out outer i) out ->
+    (fun outer => nested_row_out sample_out outer i) out →
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -1151,10 +1153,10 @@ Corollary ptree_stable_hitting_ast_of_canonical_nested
   @sem_lub MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega _
-    (fun outer => nested_row_out sample_out outer i) out ->
+    (fun outer => nested_row_out sample_out outer i) out →
   @sem_total MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
-    FreeOmegaObservableSemanticOmega _ out ->
+    FreeOmegaObservableSemanticOmega _ out →
   @ptree_stable_hitting_ast E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -1168,7 +1170,7 @@ Qed.
 End NestedNoEventGrid.
 
 Lemma ptree_bind_vis_approx_cofinal {A R X}
-    (e : E X) (c : X -> ptree E MN A) (k : A -> ptree E MN R) :
+    (e : E X) (c : X → ptree E MN A) (k : A → ptree E MN R) :
   ptree_bind_approx_cofinal (Vis e c) k.
 Proof.
   split; intro n; exists n;
@@ -1182,7 +1184,7 @@ Proof.
 Qed.
 
 Corollary ptree_bind_vis_cofinal {A R X}
-    (e : E X) (c : X -> ptree E MN A) (k : A -> ptree E MN R) :
+    (e : E X) (c : X → ptree E MN A) (k : A → ptree E MN R) :
   @PTreeKernel.ptree_bind_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -1193,7 +1195,7 @@ Proof.
 Qed.
 
 Lemma ptree_bind_tau_diagonal_left {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) n :
+    (t : ptree E MN A) (k : A → ptree E MN R) n :
   free_omega_approx eq
     (ptree_bind_diagonal_approx (MF := MF) n t k)
     (ptree_bind_diagonal_approx (MF := MF)
@@ -1216,7 +1218,7 @@ Proof.
 Qed.
 
 Lemma ptree_bind_tau_diagonal_right {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) n :
+    (t : ptree E MN A) (k : A → ptree E MN R) n :
   free_omega_approx eq
     (ptree_bind_diagonal_approx (MF := MF)
       (Datatypes.S n) (Tau t) k)
@@ -1238,8 +1240,8 @@ Proof.
 Qed.
 
 Lemma ptree_bind_tau_approx_cofinal {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) :
-  ptree_bind_approx_cofinal t k ->
+    (t : ptree E MN A) (k : A → ptree E MN R) :
+  ptree_bind_approx_cofinal t k →
   ptree_bind_approx_cofinal (Tau t) k.
 Proof.
   intros [Hglobal Hdiagonal]. split.
@@ -1271,8 +1273,8 @@ Proof.
 Qed.
 
 Corollary ptree_bind_tau_cofinal {A R}
-    (t : ptree E MN A) (k : A -> ptree E MN R) :
-  ptree_bind_approx_cofinal t k ->
+    (t : ptree E MN A) (k : A → ptree E MN R) :
+  ptree_bind_approx_cofinal t k →
   @PTreeKernel.ptree_bind_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -1288,23 +1290,23 @@ Qed.
     obtain such a bound by taking a maximum; arbitrary measures must provide
     it analytically. *)
 Definition ptree_bind_prob_uniform {A R X}
-    (mu : MN X) (c : X -> ptree E MN A) (k : A -> ptree E MN R) : Prop :=
-  (forall n, exists m Good,
-      sem_ae mu Good /\
-      forall x, Good x -> free_omega_approx eq
+    (mu : MN X) (c : X → ptree E MN A) (k : A → ptree E MN R) : Prop :=
+  (∀ n, ∃ m Good,
+      sem_ae mu Good ∧
+      ∀ x, Good x → free_omega_approx eq
         (ptree_hitting_approx (MF := MF) n
           (observe (PTree.bind (c x) k)))
-        (ptree_bind_diagonal_approx (MF := MF) m (c x) k)) /\
-  (forall m, exists n Good,
-      sem_ae mu Good /\
-      forall x, Good x -> free_omega_approx eq
+        (ptree_bind_diagonal_approx (MF := MF) m (c x) k)) ∧
+  (∀ m, ∃ n Good,
+      sem_ae mu Good ∧
+      ∀ x, Good x → free_omega_approx eq
         (ptree_bind_diagonal_approx (MF := MF) m (c x) k)
         (ptree_hitting_approx (MF := MF) n
           (observe (PTree.bind (c x) k)))).
 
 Lemma ptree_bind_prob_approx_cofinal {A R X}
-    (mu : MN X) (c : X -> ptree E MN A) (k : A -> ptree E MN R) :
-  ptree_bind_prob_uniform mu c k ->
+    (mu : MN X) (c : X → ptree E MN A) (k : A → ptree E MN R) :
+  ptree_bind_prob_uniform mu c k →
   ptree_bind_approx_cofinal (Prob mu c) k.
 Proof.
   intros [Hglobal Hdiagonal]. split.
@@ -1316,7 +1318,7 @@ Proof.
       exists (Datatypes.S m).
       rewrite observe_bind. cbn [ptree_hitting_approx ptree_primitive_kernel].
       eapply FOApproxSample with
-        (S := fun x y => x = y /\ Good x).
+        (S := fun x y => x = y ∧ Good x).
       * apply sem_lift_refl_ae. exact Hae.
       * intros x y [-> Hgood].
         eapply free_omega_approx_trans.
@@ -1333,7 +1335,7 @@ Proof.
       eapply free_omega_approx_mono with (R := eq).
       * intros x y Hxy. symmetry. exact Hxy.
       * eapply FOApproxSample with
-          (S := fun x y => x = y /\ Good x).
+          (S := fun x y => x = y ∧ Good x).
         -- apply sem_lift_refl_ae. exact Hae.
         -- intros x y [-> Hgood].
            eapply free_omega_approx_trans.
@@ -1342,8 +1344,8 @@ Proof.
 Qed.
 
 Corollary ptree_bind_prob_cofinal {A R X}
-    (mu : MN X) (c : X -> ptree E MN A) (k : A -> ptree E MN R) :
-  ptree_bind_prob_uniform mu c k ->
+    (mu : MN X) (c : X → ptree E MN A) (k : A → ptree E MN R) :
+  ptree_bind_prob_uniform mu c k →
   @PTreeKernel.ptree_bind_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -1363,8 +1365,8 @@ Section DirectUnboundedIteration.
 Context {I R : Type}.
 Context `{NCAEIter : @SemanticMeasureCouplingAELaws MN NI}.
 Context `{NCountAEIter : @SemanticMeasureCountableAELaws MN NI}.
-Variable no_event : forall X, E X -> False.
-Variable step : I -> ptree E MN (I + R).
+Variable no_event : ∀ X, E X → False.
+Variable step : I → ptree E MN (I + R).
 
 Definition iter_after (next : I + R) : ptree E MN R :=
   match next with
@@ -1409,7 +1411,7 @@ Fixpoint iter_execution_grid (rounds inner : nat) (i : I) :
   end.
 
 Lemma iter_head_ret (h : stable_head E MN (I + R)) :
-  exists next, h = FHRet next.
+  ∃ next, h = FHRet next.
 Proof.
   destruct h as [next|X e k].
   - exists next. reflexivity.
@@ -1417,7 +1419,7 @@ Proof.
 Qed.
 
 Lemma iter_execution_grid_inner_increasing rounds :
-  forall inner i,
+  ∀ inner i,
     free_omega_approx eq
       (iter_execution_grid rounds inner i)
       (iter_execution_grid rounds (S inner) i).
@@ -1434,7 +1436,7 @@ Proof.
 Qed.
 
 Lemma iter_execution_grid_outer_increasing inner :
-  forall rounds i,
+  ∀ rounds i,
     free_omega_approx eq
       (iter_execution_grid rounds inner i)
       (iter_execution_grid (S rounds) inner i).
@@ -1450,7 +1452,7 @@ Proof.
       * apply free_omega_approx_refl. intros x. reflexivity.
 Qed.
 
-Lemma iter_ptree_to_grid_sound fuel : forall i,
+Lemma iter_ptree_to_grid_sound fuel : ∀ i,
   free_omega_approx eq
     (ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.iter step i)))
@@ -1504,7 +1506,7 @@ Fixpoint iter_grid_ptree_fuel
   | S rounds' => inner + S (iter_grid_ptree_fuel rounds' inner)
   end.
 
-Lemma iter_grid_to_ptree_sound rounds : forall inner i,
+Lemma iter_grid_to_ptree_sound rounds : ∀ inner i,
   free_omega_approx eq
     (iter_execution_grid rounds inner i)
     (ptree_hitting_approx (MF := MF)
@@ -1534,12 +1536,12 @@ Proof.
 Qed.
 
 Record iter_diagonal_productivity_certificate (i : I) := {
-  iter_ptree_to_grid : forall fuel,
+  iter_ptree_to_grid : ∀ fuel,
     free_omega_approx eq
       (ptree_hitting_approx (MF := MF) fuel
         (observe (PTree.iter step i)))
       (iter_execution_grid (S fuel) fuel i);
-  iter_grid_to_ptree_fuel : forall rounds inner,
+  iter_grid_to_ptree_fuel : ∀ rounds inner,
     free_omega_approx eq
       (iter_execution_grid rounds inner i)
       (ptree_hitting_approx (MF := MF)
@@ -1584,7 +1586,7 @@ Proof.
     + apply iter_grid_to_ptree_sound.
 Qed.
 
-Variable step_out : I -> MF (stable_head E MN (I + R)).
+Variable step_out : I → MF (stable_head E MN (I + R)).
 
 Fixpoint iter_complete_rows (rounds : nat) (i : I) :
     MF (stable_head E MN R) :=
@@ -1599,13 +1601,13 @@ Fixpoint iter_complete_rows (rounds : nat) (i : I) :
   end.
 
 Lemma iter_execution_grid_row_lub
-    (Hstep : forall i,
+    (Hstep : ∀ i,
       @ptree_stable_hitting E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure
         FreeOmegaObservableSemanticOmega (I + R)
         (observe (step i)) (step_out i)) :
-  forall rounds i,
+  ∀ rounds i,
     @sem_lub MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaObservableSemanticOmega _
@@ -1648,7 +1650,7 @@ Proof.
 Qed.
 
 Theorem iter_execution_grid_diagonal_lub
-    (Hstep : forall i,
+    (Hstep : ∀ i,
       @ptree_stable_hitting E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure
@@ -1658,7 +1660,7 @@ Theorem iter_execution_grid_diagonal_lub
   @sem_lub MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega _
-    (fun rounds => iter_complete_rows rounds i) out ->
+    (fun rounds => iter_complete_rows rounds i) out →
   @sem_lub MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega _
@@ -1678,7 +1680,7 @@ Proof.
 Qed.
 
 Theorem ptree_stable_hitting_iter_of_unbounded_steps
-    (Hstep : forall i,
+    (Hstep : ∀ i,
       @ptree_stable_hitting E MN MF
         (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure
@@ -1688,7 +1690,7 @@ Theorem ptree_stable_hitting_iter_of_unbounded_steps
   @sem_lub MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticOmega _
-    (fun rounds => iter_complete_rows rounds i) out ->
+    (fun rounds => iter_complete_rows rounds i) out →
   @ptree_stable_hitting E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -1702,7 +1704,7 @@ Qed.
 
 Section DirectUnboundedIterationDenotation.
 Context `{DB : @FreeOmegaDenotationBindLaws MN NI NO}.
-Variable transition : I -> MN (I + R).
+Variable transition : I → MN (I + R).
 
 Fixpoint iter_measure_rows (rounds : nat) (i : I) : MN R :=
   match rounds with
@@ -1715,9 +1717,9 @@ Fixpoint iter_measure_rows (rounds : nat) (i : I) : MN R :=
   end.
 
 Lemma iter_complete_rows_denotes
-    (Hstep : forall i,
+    (Hstep : ∀ i,
       free_omega_denotes iter_head_next (step_out i) (transition i)) :
-  forall rounds i,
+  ∀ rounds i,
       free_omega_denotes iter_result_value
       (iter_complete_rows rounds i)
       (iter_measure_rows rounds i).
@@ -1737,15 +1739,15 @@ End DirectUnboundedIterationDenotation.
 
 Section DirectUnboundedIterationLimitDenotation.
 Context `{DO : @FreeOmegaDenotationOmegaLaws MN NI NO}.
-Variable transition : I -> MN (I + R).
+Variable transition : I → MN (I + R).
 
 Lemma iter_complete_limit_denotes
-    (Hrows : forall rounds i,
+    (Hrows : ∀ rounds i,
       free_omega_denotes iter_result_value
         (iter_complete_rows rounds i)
         (iter_measure_rows transition rounds i))
     (i : I) out :
-  sem_lub (fun rounds => iter_measure_rows transition rounds i) out ->
+  sem_lub (fun rounds => iter_measure_rows transition rounds i) out →
   free_omega_denotes iter_result_value
     (FOLub (fun rounds => iter_complete_rows rounds i)) out.
 Proof.
@@ -1769,8 +1771,8 @@ End DirectUnboundedIteration.
 (** The analogous finite obligation for iteration rounds.  This is where
     bounded cost/productivity proofs for concrete samplers belong. *)
 Definition ptree_iter_approx_cofinal {I R}
-    (step : I -> ptree E MN (I + R))
-    (transition : I -> MN (I + R)) (i : I) : Prop :=
+    (step : I → ptree E MN (I + R))
+    (transition : I → MN (I + R)) (i : I) : Prop :=
   free_omega_chains_cofinal eq
     (fun fuel => ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.iter step i)))
@@ -1787,17 +1789,17 @@ Definition ptree_iter_approx_cofinal {I R}
     Such programs require diagonal/Fubini continuity of the two omega
     limits, rather than a maximum finite fuel. *)
 Record ptree_iter_productivity_certificate {I R}
-    (step : I -> ptree E MN (I + R))
-    (transition : I -> MN (I + R)) (i : I) := {
-  ptree_to_round_schedule : nat -> nat;
-  round_to_ptree_schedule : nat -> nat;
-  ptree_to_round_sound : forall fuel,
+    (step : I → ptree E MN (I + R))
+    (transition : I → MN (I + R)) (i : I) := {
+  ptree_to_round_schedule : nat → nat;
+  round_to_ptree_schedule : nat → nat;
+  ptree_to_round_sound : ∀ fuel,
     free_omega_approx eq
       (ptree_hitting_approx (MF := MF) fuel
         (observe (PTree.iter step i)))
       (ptree_iter_round_approx (MF := MF)
         (ptree_to_round_schedule fuel) transition i);
-  round_to_ptree_sound : forall rounds,
+  round_to_ptree_sound : ∀ rounds,
     free_omega_approx (fun y x => x = y)
       (ptree_iter_round_approx (MF := MF) rounds transition i)
       (ptree_hitting_approx (MF := MF)
@@ -1806,9 +1808,9 @@ Record ptree_iter_productivity_certificate {I R}
 }.
 
 Lemma ptree_iter_certificate_approx_cofinal {I R}
-    (step : I -> ptree E MN (I + R))
-    (transition : I -> MN (I + R)) (i : I) :
-  ptree_iter_productivity_certificate step transition i ->
+    (step : I → ptree E MN (I + R))
+    (transition : I → MN (I + R)) (i : I) :
+  ptree_iter_productivity_certificate step transition i →
   ptree_iter_approx_cofinal step transition i.
 Proof.
   intros cert. split.
@@ -1819,7 +1821,7 @@ Proof.
 Qed.
 
 Lemma ptree_iter_round_increasing {I R}
-    (transition : I -> MN (I + R)) n i :
+    (transition : I → MN (I + R)) n i :
   free_omega_approx eq
     (@ptree_iter_round_approx E MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -1841,9 +1843,9 @@ Proof.
 Qed.
 
 Corollary ptree_iter_certificate_cofinal {I R}
-    (step : I -> ptree E MN (I + R))
-    (transition : I -> MN (I + R)) (i : I) :
-  ptree_iter_productivity_certificate step transition i ->
+    (step : I → ptree E MN (I + R))
+    (transition : I → MN (I + R)) (i : I) :
+  ptree_iter_productivity_certificate step transition i →
   @PTreeKernel.ptree_iter_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure
@@ -1862,7 +1864,7 @@ Qed.
     cofinal.  This theorem is entirely semantic; no frontier-certificate derivation
     or iteration constructor occurs in its assumptions. *)
 Section PrimitiveProbIteration.
-Context {I R : Type} (transition : I -> MN (I + R)).
+Context {I R : Type} (transition : I → MN (I + R)).
 
 Definition primitive_iter_step (i : I) : ptree E MN (I + R) :=
   Prob (transition i) (fun next => Ret next).
@@ -1966,7 +1968,7 @@ Proof.
 Qed.
 
 Lemma primitive_iter_hitting_le_round fuel :
-  forall i, free_omega_approx eq
+  ∀ i, free_omega_approx eq
     (primitive_iter_hitting fuel i)
     (primitive_iter_rounds (Datatypes.S fuel) i).
 Proof.
@@ -1995,7 +1997,7 @@ Proof.
 Qed.
 
 Lemma primitive_iter_round_le_hitting rounds :
-  forall i, free_omega_approx eq
+  ∀ i, free_omega_approx eq
     (primitive_iter_rounds rounds i)
     (primitive_iter_hitting (2 * rounds) i).
 Proof.
@@ -2047,9 +2049,9 @@ Qed.
 End PrimitiveProbIteration.
 
 Theorem ptree_iter_cofinal {I R}
-    (step : I -> ptree E MN (I + R))
-    (transition : I -> MN (I + R)) (i : I) :
-  ptree_iter_approx_cofinal step transition i ->
+    (step : I → ptree E MN (I + R))
+    (transition : I → MN (I + R)) (i : I) :
+  ptree_iter_approx_cofinal step transition i →
   @PTreeKernel.ptree_iter_cofinal E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure

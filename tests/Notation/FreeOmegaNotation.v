@@ -1,6 +1,7 @@
 (** Parsing, scope and universe contracts for opt-in client notation.
     These are definitional checks, not additional FreeOmega semantic laws. *)
 Set Universe Polymorphism.
+From Coq Require Import Utf8.
 Require Import PTree.Prob.FreeOmega.Definition.
 
 Fail Check (ηω tt).
@@ -25,6 +26,22 @@ Example delimited_sup {MN A} (c : nat -> FreeOmega MN A) :
 Proof. reflexivity. Qed.
 
 Local Open Scope freeomega_scope.
+
+(** Coq's logical binders compose with native sampling and formal limits;
+    they elaborate to the same terms, not new probability operations. *)
+Example utf8_sample_contract {MN A B} (mu : MN A) (k : A → FreeOmega MN B) :
+  (∀ x, ∃ y, k x = ηω y) →
+  ∃ out, out = (x ←ω mu ;; k x) ∧ out = FOSample mu k.
+Proof. intros _. exists (FOSample mu k). split; reflexivity. Qed.
+
+Example utf8_logic_expansion (P Q : Prop) {A} (x y : A) :
+  (¬ P ∨ Q ↔ x ≠ y) = ((~ P \/ Q) <-> x <> y).
+Proof. reflexivity. Qed.
+
+Example utf8_nested_binders {MN A} (c : nat → MN A) :
+  (∀ n, (x ←ω c n ;; ηω x) = ↑ω (c n)) ∧
+  (supω n, ↑ω (c n)) = FOLub (fun n => free_omega_sample (c n)).
+Proof. split; reflexivity. Qed.
 
 Example return_expansion {MN A} (a : A) : ηω a = @FORet MN A a.
 Proof. reflexivity. Qed.

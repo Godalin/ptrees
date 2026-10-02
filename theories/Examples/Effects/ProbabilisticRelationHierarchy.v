@@ -1,4 +1,6 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Unset Automatic Proposition Inductives.
@@ -21,7 +23,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 
-Variant hierarchyE : Type -> Type := .
+Variant hierarchyE : Type → Type := .
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation W :=
   (@peutt hierarchyE SubEnumQ MF
@@ -40,7 +42,7 @@ Lemma tau_before_divergence : W (Tau hierarchy_spin) hierarchy_spin.
 Proof. apply peutt_tau_l. Qed.
 
 Lemma tau_ret_not_pstrong :
-  ~ @pstrong hierarchyE SubEnumQ SubEnumQ_SemanticMeasure
+  ¬ @pstrong hierarchyE SubEnumQ SubEnumQ_SemanticMeasure
       SubEnumQ_SemanticMeasureCoreLaws bool bool eq
       (Tau (Ret true)) (Ret true).
 Proof.
@@ -51,7 +53,7 @@ Qed.
     AST.  The first client below stops between two visible interactions;
     the second never reaches its stopping region. *)
 Section IterationStoppingRegressions.
-Context {E M : Type -> Type}.
+Context {E M : Type → Type}.
 Variable tick : E unit.
 
 Definition stopping_source (n : nat) : ptree E M (nat + unit) :=
@@ -100,8 +102,8 @@ Proof. apply peutt_tau_l. Qed.
 
 (** The registered structural inclusion works under behavioral contexts. *)
 Lemma structural_prob_context_rewrite {X} (mu : SubEnumQ X)
-    (k1 k2 : X -> ptree hierarchyE SubEnumQ bool)
-    (Hk : forall x, pstruct eq (k1 x) (k2 x)) :
+    (k1 k2 : X → ptree hierarchyE SubEnumQ bool)
+    (Hk : ∀ x, pstruct eq (k1 x) (k2 x)) :
   W (Prob mu k1) (Prob mu k2).
 Proof.
   eapply peutt_prob_rewrite with (S := pstruct eq) (XR := eq).
@@ -111,11 +113,11 @@ Proof.
 Qed.
 
 Lemma strong_prob_coupled_context_rewrite {X Y}
-    (XR : X -> Y -> Prop) (mu : SubEnumQ X) (nu : SubEnumQ Y)
-    (k1 : X -> ptree hierarchyE SubEnumQ bool)
-    (k2 : Y -> ptree hierarchyE SubEnumQ bool)
+    (XR : X → Y → Prop) (mu : SubEnumQ X) (nu : SubEnumQ Y)
+    (k1 : X → ptree hierarchyE SubEnumQ bool)
+    (k2 : Y → ptree hierarchyE SubEnumQ bool)
     (Hmu : sem_lift XR mu nu)
-    (Hk : forall x y, XR x y -> pstrong eq (k1 x) (k2 y)) :
+    (Hk : ∀ x y, XR x y → pstrong eq (k1 x) (k2 y)) :
   W (Prob mu k1) (Prob nu k2).
 Proof.
   eapply peutt_prob_rewrite with (S := pstrong eq).
@@ -137,7 +139,7 @@ Qed.
 
 Lemma tau_bind_context_rewrite
     (t : ptree hierarchyE SubEnumQ bool)
-    (k : bool -> ptree hierarchyE SubEnumQ bool) :
+    (k : bool → ptree hierarchyE SubEnumQ bool) :
   W (PTree.bind (Tau t) (fun x => Tau (k x))) (PTree.bind t k).
 Proof.
   apply peutt_bind_Proper.
@@ -145,7 +147,7 @@ Proof.
   - intro x. apply peutt_tau_l.
 Qed.
 
-Lemma tau_fmap_context_rewrite (f : bool -> bool)
+Lemma tau_fmap_context_rewrite (f : bool → bool)
     (t : ptree hierarchyE SubEnumQ bool) :
   W (PTree.fmap f (Tau t)) (PTree.fmap f t).
 Proof. apply peutt_fmap_Proper, peutt_tau_l. Qed.

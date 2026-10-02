@@ -1,6 +1,8 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
 (** Source weak proofs, including infinite interaction/divergence, feed the
     actual lowering. Source interp squares are not target postcomposition. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -23,7 +25,7 @@ From PTree.Eq.Backend Require Import SubEnumQ SubEnumR.
 From PTree.Interp.FreeOmega Require Import ITreePreservation ITreeCompletion.
 Set Implicit Arguments.
 
-Variant questionE : Type -> Type := Question : questionE bool.
+Variant questionE : Type → Type := Question : questionE bool.
 
 CoFixpoint source_service : itree questionE unit :=
   ITreeDefinition.Vis Question (fun _ => ITreeDefinition.Tau source_service).
@@ -63,14 +65,14 @@ Example divergence_has_no_head n :
 Proof. induction n; cbn; auto. Qed.
 
 Example source_divergence_not_return :
-  ~ eutt eq (@ITree.spin questionE bool) (ITreeDefinition.Ret true).
+  ¬ eutt eq (@ITree.spin questionE bool) (ITreeDefinition.Ret true).
 Proof. intro H. exact (eutt_spin_Ret_abs _ H). Qed.
 
 (** Exact correspondence on the image, not on arbitrary probability lowering.
     Neither a finite Tau budget nor termination is an assumption. *)
-Example embedded_eutt_iff {E A B} (RR : A -> B -> Prop)
+Example embedded_eutt_iff {E A B} (RR : A → B → Prop)
     (t : itree E A) (u : itree E B) :
-  eutt RR t u <-> @from_itree E SubEnumQ A t ≈ₚ[RR] from_itree u.
+  eutt RR t u ↔ @from_itree E SubEnumQ A t ≈ₚ[RR] from_itree u.
 Proof. apply free_omega_from_itree_eutt_iff. Qed.
 
 Example reflected_infinite_service : eutt eq source_service delayed_service.
@@ -80,7 +82,7 @@ Proof.
 Qed.
 
 Example embedded_divergence_not_return :
-  ~ (@from_itree questionE SubEnumQ bool ITree.spin ≈ₚ
+  ¬ (@from_itree questionE SubEnumQ bool ITree.spin ≈ₚ
       from_itree (ITreeDefinition.Ret true)).
 Proof.
   intro H. apply source_divergence_not_return.
@@ -88,7 +90,7 @@ Proof.
 Qed.
 
 Example embedded_distinct_returns :
-  ~ (@from_itree questionE SubEnumQ bool (ITreeDefinition.Ret true) ≈ₚ
+  ¬ (@from_itree questionE SubEnumQ bool (ITreeDefinition.Ret true) ≈ₚ
       from_itree (ITreeDefinition.Ret false)).
 Proof.
   intro H. apply free_omega_from_itree_eutt_reflect in H.
@@ -96,9 +98,9 @@ Proof.
 Qed.
 
 (** An offered event remains observable even with no possible response. *)
-Variant deadE : Type -> Type := Block : deadE Empty_set.
+Variant deadE : Type → Type := Block : deadE Empty_set.
 Example embedded_block_not_divergence :
-  ~ (@from_itree deadE SubEnumQ bool (ITreeDefinition.Vis Block
+  ¬ (@from_itree deadE SubEnumQ bool (ITreeDefinition.Vis Block
         (fun x : Empty_set => match x with end)) ≈ₚ from_itree ITree.spin).
 Proof.
   intro H. apply free_omega_from_itree_eutt_reflect in H.
@@ -146,13 +148,13 @@ Example lowering_partial_source_equation :
   elaborate_closed (ITree.trigger (Sample (@subenumQ_zero bool))).
 Proof. apply free_omega_elaborate_closed_eutt. apply eq_sub_eutt. apply bind_ret_r. Qed.
 
-Example lowering_heterogeneous {E A B} (RR : A -> B -> Prop)
+Example lowering_heterogeneous {E A B} (RR : A → B → Prop)
     (t : itree (probE SubEnumQ +' E) A) (u : itree (probE SubEnumQ +' E) B) :
-  eutt RR t u -> elaborate t ≈ₚ[RR] elaborate u.
+  eutt RR t u → elaborate t ≈ₚ[RR] elaborate u.
 Proof. apply free_omega_elaborate_eutt. Qed.
 
 Section LocalRewriting.
-Context {E : Type -> Type} {A : Type}.
+Context {E : Type → Type} {A : Type}.
 Local Instance lowering_rewrite :
   Proper (eutt eq ==> canonical_peutt eq) (@elaborate SubEnumQ E A).
 Proof. intros t u H. apply free_omega_elaborate_eutt. exact H. Qed.
@@ -163,30 +165,30 @@ End LocalRewriting.
 
 Section RealBackend.
 Variable R : realType.
-Example real_embedded_eutt_iff {E A B} (RR : A -> B -> Prop)
+Example real_embedded_eutt_iff {E A B} (RR : A → B → Prop)
     (t : itree E A) (u : itree E B) :
-  eutt RR t u <-> @from_itree E (SubEnumR R) A t ≈ₚ[RR] from_itree u.
+  eutt RR t u ↔ @from_itree E (SubEnumR R) A t ≈ₚ[RR] from_itree u.
 Proof. apply free_omega_from_itree_eutt_iff. Qed.
 
 Example real_embedded_service :
   @from_itree questionE (SubEnumR R) unit source_service ≈ₚ from_itree delayed_service.
 Proof. apply free_omega_from_itree_eutt. exact service_source_eutt. Qed.
-Example real_lowering_eutt {E A B} (RR : A -> B -> Prop)
+Example real_lowering_eutt {E A B} (RR : A → B → Prop)
     (t : itree (probE (SubEnumR R) +' E) A) (u : itree (probE (SubEnumR R) +' E) B) :
-  eutt RR t u -> elaborate t ≈ₚ[RR] elaborate u.
+  eutt RR t u → elaborate t ≈ₚ[RR] elaborate u.
 Proof. apply free_omega_elaborate_eutt. Qed.
 End RealBackend.
 
 Section LargeCarrier.
 Universe high.
 Constraint Set < high.
-Example high_source_eutt_iff (A B : Type@{high}) (RR : A -> B -> Prop)
+Example high_source_eutt_iff (A B : Type@{high}) (RR : A → B → Prop)
     (t : itree questionE A) (u : itree questionE B) :
-  eutt RR t u <-> @from_itree questionE SubEnumQ A t ≈ₚ[RR] from_itree u.
+  eutt RR t u ↔ @from_itree questionE SubEnumQ A t ≈ₚ[RR] from_itree u.
 Proof. apply free_omega_from_itree_eutt_iff. Qed.
 
-Example high_source_eutt (A B : Type@{high}) (RR : A -> B -> Prop)
+Example high_source_eutt (A B : Type@{high}) (RR : A → B → Prop)
     (t : itree questionE A) (u : itree questionE B) :
-  eutt RR t u -> @from_itree questionE SubEnumQ A t ≈ₚ[RR] from_itree u.
+  eutt RR t u → @from_itree questionE SubEnumQ A t ≈ₚ[RR] from_itree u.
 Proof. apply free_omega_from_itree_eutt. Qed.
 End LargeCarrier.
