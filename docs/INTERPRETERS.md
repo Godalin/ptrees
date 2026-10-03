@@ -1,8 +1,74 @@
 # Handlers, transformer folds and the ITree connection
 
-PTree behavioral interpretation and execution into another monad are distinct
-layers. Neither handler preservation nor a fold equation proves that an arbitrary
-sampling implementation has the right probability law.
+The general interpretation is `fold(handle, sample)`: it interprets external
+events and native sampling separately. `interpM handle` is its specialization
+to a target with a selected `MonadSample MN T` operation. This follows the
+[`fold`/`interp` organization of CTree](https://github.com/vellvm/ctrees/blob/cabcf9bf24b0f459204a7da19ac01b7697ff04e3/theories/Interp/Fold.v).
+Neither the sampling operation nor an interpreter equation certifies an
+arbitrary implementation's probability law.
+
+## General fold and selected sampling
+
+[`Core/MonadSample`](../theories/Core/MonadSample.v) contains only
+`msample : forall X, MN X -> T X`. It is an operation, not a probability
+interface or a realization axiom. PTree selects its existing
+`sample mu = Prob mu Ret`; `StateFold.MonadSample_stateT` reuses `state_sample`,
+threading the unchanged state around the base sampling operation.
+
+[`Core/Fold`](../theories/Core/Fold.v) provides:
+
+```text
+fold handle sample : ptree E MN A -> T A
+interpM handle     = fold handle msample
+```
+
+Definitions require Monad/MonadIter operations only. Laws need a lawful
+target; a bare MonadIter does not imply even an unfolding or bind law.
+Explicit `fold` remains useful when choosing between multiple samplers.
+There is no default instance interpreting arbitrary native measures in ITree
+or host IO: the client must choose that operation.
+
+The existing productive `PTree.interp` keeps its name and implementation.
+[`Interp/FoldPTree`](../theories/Interp/FoldPTree.v) proves, for arbitrary
+source trees and handlers:
+
+```text
+fold_ptree_interp : fold h PTree.sample t ≈ₚ PTree.interp h t
+interpM_ptree_agrees : interpM h t ≈ₚ PTree.interp h t
+```
+
+The equality is behavioral, not definitional or lockstep structural:
+fold delays after each sampling/handled operation, whereas productive interp
+delays before entering a handler. A proof-only paced tree and finite scheduling
+bounds (at most twice the depth) justify the same complete hitting limits.
+Existing iteration congruence and unrestricted handler preservation then close
+the agreement. No termination, visible-guard or total-mass condition is used.
+
+`interpM_ptree_ret/tau/vis/prob/bind/iter` and `interpM_ptree_peutt` expose the
+resulting computation, algebra and heterogeneous preservation laws. They reuse
+the generic theory rather than copying FreeOmega proofs. The common profile
+includes native Core, frontier Core/Bind/order/omega, cofinality,
+diagonal/Fubini, bind/mixed-bind order, directed cofinality, selection and
+relational mixed-bind/zero/lub. SubEnumQ and SubEnumR completion clients
+discharge it. MathComp's existing Gate M client still explicitly assumes
+coupling gluing and relational-lub closure; this work does not prove the latter
+or enlarge the unchecked boundary.
+
+`interp_stateM` is exactly the existing StateT fold with selected sampling.
+`interp_stateM_run_state` specializes the existing uniformity square:
+
+```text
+interp_stateM handle t s ≃ interpM handle (run_state t s)
+```
+
+It requires Eq1 equivalence, monad laws and iteration uniformity of the target,
+not sampling correctness. ITree and PTree clients exercise the square. For the
+PTree target, agreement then connects it to productive `PTree.interp` after
+`run_state`. Existing staged lowering in case studies is unchanged.
+
+No public `interp` rename or probability `refine` API is introduced. Arbitrary
+target laws and probability preservation remain separate from selecting an
+operation; the existing ITree fold laws also apply to `interpM` by unfolding it.
 
 ## Handler calculus
 
@@ -163,3 +229,11 @@ StateRewrite](CASE_STUDIES.md) for whole-program calculations.
 [Verification](AUDITING.md) covers handler, effect, State/transformer and
 ITree contract groups. Their existence does not discharge MathComp's explicit
 gluing/relational-limit premises or expand its two-file Gate M exception.
+
+`tests/Capabilities/MonadicInterpretation.v` checks completion clients for Q/R,
+StateT inference and commuting, high-universe returns and nonreturning
+source/handlers. The existing MathComp test file checks the conditional direct
+instance. New types/assumptions are appended to the existing `effect_execution`
+contract group; old entries are not regenerated. The generic agreement and
+its derived PTree laws depend only on the already tracked `Eq_rect_eq`
+logical axiom, besides their explicit semantic profile.

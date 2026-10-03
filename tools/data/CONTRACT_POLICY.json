@@ -1,6 +1,7 @@
 {
   "baseline": "5c1a0df",
   "classes": {
+    "theories/Core/MonadSample.v:MonadSample": "Class MonadSample@{sample native native_rep target target_rep} (MN : Type@{native} -> Type@{native_rep}) (T : Type@{target} -> Type@{target_rep}) : Type := { msample : forall {X : Type@{sample}}, MN X -> T X }.",
     "theories/Core/Utils.v:MonadBr": "Class MonadBr (M : Type -> Type) : Type := mbr : forall (b : bool) (n: nat), M (Fin.t n).",
     "theories/Core/Utils.v:MonadTrigger": "Class MonadTrigger (E : Type -> Type) (M : Type -> Type) : Type := mtrigger : forall X, E X -> M X.",
     "theories/Eq/UnifiedFrontier.v:UnifiedFrontierCoherence": "Class UnifiedFrontierCoherence := { unified_frontier_unique : forall {R} (ot : ptree' E MN R) hs1 hs2, frontier_certificate ot hs1 -> frontier_certificate ot hs2 -> sem_eq hs1 hs2; unified_frontier_tau_inv : forall {R} (t : ptree E MN R) hs, frontier_certificate (TauF t) hs -> frontier_certificate (observe t) hs }.",

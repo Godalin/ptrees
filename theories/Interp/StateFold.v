@@ -45,3 +45,24 @@ Lemma state_sample_preserves_state {X} (mu : MN X) s :
   state_sample mu s = bind (@sample X mu) (λ x, ret (s, x)).
 Proof. reflexivity. Qed.
 End StateFold.
+
+Local Unset Universe Minimization ToSet.
+
+(** Lift precisely the existing sampling algebra; state is threaded, not
+    sampled or reset. There is no additional probability-law assumption. *)
+#[global] Instance MonadSample_stateT {S MN T}
+    `{MT : Monad T} `{ST : MonadSample MN T} :
+    MonadSample MN (Monads.stateT S T) :=
+  {| msample := @state_sample S MN T MT (λ X mu, @msample MN T ST X mu) |}.
+
+Definition interp_stateM {S : Type} {E MN T : Type → Type} `{MT : Monad T} `{IT : MonadIter T}
+    `{ST : MonadSample MN T} (handle : ∀ X, E X → T X)
+    {A} (t : ptree (stateE S +' E) MN A) : S → T (S * A)%type :=
+  interpM (@state_effect S E T MT handle) t.
+
+Lemma interp_stateM_as_fold {S : Type} {E MN T : Type → Type} `{MT : Monad T} `{IT : MonadIter T}
+    `{ST : MonadSample MN T} (handle : ∀ X, E X → T X)
+    {A} (t : ptree (stateE S +' E) MN A) :
+  interp_stateM handle t =
+    fold_state handle (λ X mu, @msample MN T ST X mu) t.
+Proof. reflexivity. Qed.

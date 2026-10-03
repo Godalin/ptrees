@@ -46,6 +46,21 @@ Proof.
 Qed.
 End ArbitraryAlgebras.
 
+(** The same square through the CTree-style public view: the target selects
+    native sampling, while the argument supplies only the event handler. *)
+Section SelectedSampling.
+Context {S : Type} {E MN F : Type → Type}.
+Context `{ST : MonadSample MN (itree F)}.
+Variable handle : ∀ X, E X → itree F X.
+
+Example monadic_state_commutes {A} (t : ptree (stateE S +' E) MN A) s :
+  eutt eq (interp_stateM handle t s) (interpM handle (run_state t s)).
+Proof.
+  apply (interp_stateM_run_state (QT := Eq1_ITree)).
+  apply itree_iteration_uniform.
+Qed.
+End SelectedSampling.
+
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 From PTree.Examples Require Import StateCounter.
 

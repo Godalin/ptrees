@@ -72,3 +72,18 @@ Proof.
   apply state_fold_square.
 Qed.
 End StateFoldFacts.
+
+(** Selecting a sampling operation changes no StateT mathematics: this is
+    exactly [fold_run_state], not a second state interpreter proof. *)
+Section MonadicState.
+Context {S : Type} {E MN T : Type → Type}
+  `{MT : Monad T} `{IT : MonadIter T} `{ST : MonadSample MN T}
+  `{QT : Eq1 T} `{QE : @Eq1Equivalence T MT QT}
+  `{ML : @MonadLawsE T QT MT}.
+Variable handle : ∀ X, E X → T X.
+
+Theorem interp_stateM_run_state (Hunif : @iteration_uniform T MT IT QT)
+    {A} (t : ptree (stateE S +' E) MN A) s :
+  eq1 (interp_stateM handle t s) (interpM handle (run_state t s)).
+Proof. apply fold_run_state. exact Hunif. Qed.
+End MonadicState.

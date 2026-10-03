@@ -4,6 +4,7 @@ Require PTree.Core.Fold.
 Require PTree.Core.Handler.
 Require PTree.Core.ITreeBridge.
 Require PTree.Core.IterationLaws.
+Require PTree.Core.MonadSample.
 Require PTree.Core.PTreeDefinition.
 Require PTree.Core.ReaderT.
 Require PTree.Core.Utils.
@@ -195,6 +196,7 @@ Require PTree.Interp.ExceptionFacts.
 Require PTree.Interp.ExceptionFold.
 Require PTree.Interp.ExceptionFoldFacts.
 Require PTree.Interp.FoldITree.
+Require PTree.Interp.FoldPTree.
 Require PTree.Interp.FreeOmega.AbsorbingIteration.
 Require PTree.Interp.FreeOmega.Atomic.
 Require PTree.Interp.FreeOmega.Base.
@@ -410,6 +412,7 @@ Require PTree.Semantics.TreeTransition.
 Require PTree.Semantics.TreeTransitionBisim.
 Require PTree.Semantics.TreeTransitionSoundness.
 Require PTree.Tests.Capabilities.BackendCapabilities.
+Require PTree.Tests.Capabilities.MonadicInterpretation.
 Require PTree.Tests.Capabilities.PTreeIterationAlgebra.
 Require PTree.Tests.Capabilities.PTreeUniformity.
 Require PTree.Tests.Capabilities.RelationalConsumers.

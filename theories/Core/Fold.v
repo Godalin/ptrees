@@ -1,13 +1,15 @@
-(** Monadic execution algebra. Unlike tree-to-tree [PTree.interp], [fold]
-    consumes visible events AND native probability nodes. Probability is a
-    separate algebra, never re-encoded as a visible event. Monad/MonadIter
-    operations suffice to define it; equational laws are separate obligations. *)
+(** General monadic interpretation: [fold] takes both the event and native
+    sampling algebras; [interpM] selects the latter from the target.
+    Monad/MonadIter operations suffice to define these functions, not to
+    prove their equational laws. The productive [PTree.interp] remains the
+    tree-to-tree interface; agreement is a separate behavioral theorem. *)
 From Coq Require Import Utf8.
 
 Set Universe Polymorphism.
 From ExtLib.Structures Require Import Monad.
 From ITree.Basics Require Import Basics.
 From PTree.Core Require Import PTreeDefinition.
+From PTree.Core Require Export MonadSample.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -38,3 +40,14 @@ Lemma fold_step_prob {A X} (mu : MN X) (k : X → ptree E MN A) :
   fold_step (Prob mu k) = bind (@sample X mu) (λ x, ret (inl (k x))).
 Proof. reflexivity. Qed.
 End Fold.
+
+Definition interpM {E MN T : Type → Type}
+    `{MT : Monad T} `{IT : MonadIter T} `{ST : MonadSample MN T}
+    (handle : ∀ X, E X → T X) {A} (t : ptree E MN A) : T A :=
+  fold handle (λ X mu, @msample MN T ST X mu) t.
+
+Lemma interpM_as_fold {E MN T : Type → Type}
+    `{MT : Monad T} `{IT : MonadIter T} `{ST : MonadSample MN T}
+    (handle : ∀ X, E X → T X) {A} (t : ptree E MN A) :
+  interpM handle t = fold handle (λ X mu, @msample MN T ST X mu) t.
+Proof. reflexivity. Qed.

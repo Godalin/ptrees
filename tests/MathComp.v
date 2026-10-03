@@ -513,7 +513,8 @@ End BehavioralIterationAlgebra.
 
 (** Full Eq1-wide uniformity from the direct machine, not the protocol
     proof. Mathematical premises and the existing Gate M boundary remain. *)
-From PTree.Interp Require Import IterationUniform.
+From PTree.Interp Require Import IterationUniform FoldPTree.
+From PTree.Core Require Import Fold.
 Section FullIterationUniformity.
 Variable R : realType.
 Context `{G : MathCompCouplingGluing R}.
@@ -537,6 +538,14 @@ Example iter_Proper_of_relational_lub {I A} :
      eq ==> peutt (E := E) (FI := NI) eq)
     (@PTree.iter E M A I).
 Proof. exact (peutt_iter_Proper (@mathcomp_relational_zero R) Hlimit). Qed.
+
+Example monadic_agreement_of_relational_lub {F A}
+    (h : forall X, F X -> ptree E M X) (t : ptree F M A) :
+  peutt (FI := NI) eq (interpM h t) (PTree.interp h t).
+Proof.
+  exact (interpM_ptree_agrees (@mathcomp_relational_mixed_bind R)
+    (@mathcomp_relational_zero R) Hlimit h t).
+Qed.
 End FullIterationUniformity.
 
 (** The SAME generic MDP/atomic theorems at MN = MF. These clients add no
