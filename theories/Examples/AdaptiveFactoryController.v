@@ -389,22 +389,6 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma attempt_expect s (f : machine_state + (machine_state * bool) → rat) :
-  expect f (attempt_kernel s) =
-    low_weight (health s) *
-      (low_weight (health s) * f (inl (retry_update (after_sensor s false))) +
-       high_weight (health s) * f (inr (after_sensor s false, false))) +
-    high_weight (health s) *
-      (low_weight (health s) * f (inr (after_sensor s true, true)) +
-       high_weight (health s) * f (inl (retry_update (after_sensor s true)))).
-Proof.
-  cbn [attempt_kernel sem_bind sem_ret SubEnumQ_SemanticMeasure].
-  rewrite finite_subdist_expect_bind source_expect.
-  rewrite !finite_subdist_expect_bind !source_expect.
-  rewrite !finite_subdist_expect_ret.
-  reflexivity.
-Qed.
-
 (** A complete finite experiment: inl means all n attempts failed, inr means
     success with its actual state. This is not internal-node fuel. *)
 
@@ -434,8 +418,10 @@ Lemma attempts_expect_S n s f :
       (low_weight (health s) * f (inr (after_sensor s true, true)) +
        high_weight (health s) * expect f (attempts n (retry_update (after_sensor s true)))).
 Proof.
-  cbn [attempts sem_bind sem_ret SubEnumQ_SemanticMeasure].
-  rewrite finite_subdist_expect_bind attempt_expect /= !finite_subdist_expect_ret.
+  cbn [attempts attempt_kernel sem_bind sem_ret SubEnumQ_SemanticMeasure].
+  rewrite !finite_subdist_expect_bind !source_expect.
+  rewrite !finite_subdist_expect_bind !source_expect.
+  rewrite !finite_subdist_expect_ret.
   reflexivity.
 Qed.
 
@@ -730,18 +716,6 @@ Proof.
   exact (HN n Hn).
 Qed.
 
-Lemma source_ae_inv src P : sem_ae (source_coin src) P → ∀ b, P b.
-Proof.
-  intros H b.
-  destruct b.
-  - apply H with (p := high_weight src).
-    + cbn. auto.
-    + destruct src; vm_compute; discriminate.
-  - apply H with (p := low_weight src).
-    + cbn. auto.
-    + destruct src; vm_compute; discriminate.
-Qed.
-
 Definition fair_tree : ptree publicE SubEnumQ bool := sample fair_coin.
 
 Definition fair_heads : FreeOmega SubEnumQ (stable_head publicE SubEnumQ bool) :=
@@ -750,6 +724,15 @@ Definition fair_heads : FreeOmega SubEnumQ (stable_head publicE SubEnumQ bool) :
 Lemma loop_heads_success s P : free_omega_ae P (loop_heads s) →
   ∀ b, P (FHRet (after_sensor s b,b)).
 Proof.
+  have Hsource (Q : bool → Prop) : sem_ae (source_coin (health s)) Q → ∀ b, Q b.
+  { intros HQ b.
+    destruct b.
+    - apply HQ with (p := high_weight (health s)).
+      + cbn. auto.
+      + destruct (health s); vm_compute; discriminate.
+    - apply HQ with (p := low_weight (health s)).
+      + cbn. auto.
+      + destruct (health s); vm_compute; discriminate. }
   intro HP.
   unfold loop_heads, iteration_frontier in HP.
   dependent destruction HP.
@@ -757,11 +740,11 @@ Proof.
   pose proof (free_omega_ae_sample_inv H) as Hfirst.
   unfold loop_kernel in Hfirst.
   apply (proj1 (sem_ae_bind_iff _ _ _)) in Hfirst.
-  pose proof (source_ae_inv Hfirst) as Ha.
+  pose proof (Hsource _ Hfirst) as Ha.
   intro b.
   specialize (Ha b).
   apply (proj1 (sem_ae_bind_iff _ _ _)) in Ha.
-  pose proof (source_ae_inv Ha (negb b)) as Hb.
+  pose proof (Hsource _ Ha (negb b)) as Hb.
   apply (proj1 (sem_ae_ret_iff _ _)) in Hb.
   destruct b; cbn in Hb; dependent destruction Hb; assumption.
 Qed.
@@ -858,13 +841,12 @@ Qed.
 
 Definition factory_states (si : machine_state * rat) q := snd si = q.
 
-Definition embed_closed {A} (t : ptree factoryE SubEnumQ A) : ptree publicE SubEnumQ A :=
-  PTree.interp (λ X (e : factoryE X), match e with end) t.
-
 Lemma fair_factory_direct q (q0 : 0 <= q) (q1 : q <= 1) :
   factory_with_sampler fair_tree q ≈ₚ
     sample (bernoulli q0 q1).
 Proof.
+  pose embed_closed (t : ptree factoryE SubEnumQ bool) : ptree publicE SubEnumQ bool :=
+    PTree.interp (λ X (e : factoryE X), match e with end) t.
   have H : embed_closed (factory_with_sampler (sample fair_coin) q) ≈ₚ
       embed_closed (sample (bernoulli q0 q1)).
   { apply peutt_interp.
