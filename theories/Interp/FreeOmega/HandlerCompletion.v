@@ -5,12 +5,12 @@ From Coq Require Import Utf8.
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms.
-From PTree.Core Require Import PTreeDefinition Handler.
+From PTree.Core Require Import PTreeDefinition Handler Fold.
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure BindOrder RelationalLimit.
 From PTree.Eq Require Import PEutt.
-From PTree.Interp Require Import HandlerRelation HandlerFacts.
+From PTree.Interp Require Import HandlerRelation HandlerFacts FoldPTree.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -101,4 +101,95 @@ Proof.
     free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
+(** Public selected-sampling interpretation. These corollaries discharge the
+    same three completion certificates once; they add no behavioral proof. *)
+Theorem free_omega_interp_agrees {E F A} (h : Handler MN E F) (t : ptree E MN A) :
+  W F A A eq (interp h t) (PTree.interp_tree h t).
+Proof. apply (interp_ptree_agrees free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_ret {E F A} (h : Handler MN E F) (a : A) :
+  W F A A eq (interp h (Ret a)) (Ret a).
+Proof. apply (interp_ptree_ret free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_tau {E F A} (h : Handler MN E F) (t : ptree E MN A) :
+  W F A A eq (interp h (Tau t)) (interp h t).
+Proof. apply (interp_ptree_tau free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_bind {E F A B} (h : Handler MN E F)
+    (t : ptree E MN A) (k : A → ptree E MN B) :
+  W F B B eq (interp h (PTree.bind t k))
+    (PTree.bind (interp h t) (λ x, interp h (k x))).
+Proof. apply (interp_ptree_bind free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_vis {E F X A} (h : Handler MN E F)
+    (e : E X) (k : X → ptree E MN A) :
+  W F A A eq (interp h (Vis e k)) (PTree.bind (h X e) (λ x, interp h (k x))).
+Proof. apply (interp_ptree_vis free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_prob {E F X A} (h : Handler MN E F)
+    (mu : MN X) (k : X → ptree E MN A) :
+  W F A A eq (interp h (Prob mu k)) (Prob mu (λ x, interp h (k x))).
+Proof. apply (interp_ptree_prob free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_iter {E F I A} (h : Handler MN E F)
+    (step : I → ptree E MN (I+A)) i :
+  W F A A eq (interp h (PTree.iter step i)) (PTree.iter (λ j, interp h (step j)) i).
+Proof. apply (interp_ptree_iter free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_trigger {E F X} (h : Handler MN E F) (e : E X) :
+  W F X X eq (interp h (PTree.trigger e)) (h X e).
+Proof. apply (interp_ptree_trigger free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_sample {E F X} (h : Handler MN E F) (mu : MN X) :
+  W F X X eq (interp h (PTree.sample mu)) (PTree.sample mu).
+Proof. apply (interp_ptree_sample free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_identity {E A} (t : ptree E MN A) :
+  W E A A eq (interp Handler.id_ t) t.
+Proof. apply (interp_ptree_identity free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_compose {E F G A}
+    (h : Handler MN E F) (g : Handler MN F G) (t : ptree E MN A) :
+  W G A A eq (interp g (interp h t)) (interp (Handler.cat h g) t).
+Proof. apply (interp_ptree_compose free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_handler_rel {E F A B} (RR : A → B → Prop)
+    (h g : Handler MN E F) (t : ptree E MN A) (u : ptree E MN B) :
+  HE E F h g → W E A B RR t u → W F A B RR (interp h t) (interp g u).
+Proof. apply (interp_ptree_handler_rel free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Theorem free_omega_interp_peutt {E F A B} (RR : A → B → Prop)
+    (h : Handler MN E F) (t : ptree E MN A) (u : ptree E MN B) :
+  W E A B RR t u → W F A B RR (interp h t) (interp h u).
+Proof. apply (interp_ptree_peutt free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Lemma free_omega_interp_source_Proper {E F A} (h : Handler MN E F) :
+  Proper (W E A A eq ==> W F A A eq) (@interp E MN (ptree F MN) _ _ _ h A).
+Proof. apply (interp_ptree_Proper free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Lemma free_omega_interp_handler_Proper {E F A} :
+  Proper (HE E F ==> W E A A eq ==> W F A A eq)
+    (λ h t, @interp E MN (ptree F MN) _ _ _ h A t).
+Proof. apply (interp_ptree_handler_Proper free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
+
+Lemma free_omega_interp_handler_polymorphic_Proper {E F} :
+  Proper (HE E F ==> forall_relation (λ A, W E A A eq ==> W F A A eq))
+    (@interp E MN (ptree F MN) _ _ _).
+Proof. apply (interp_ptree_handler_polymorphic_Proper free_omega_relational_mixed_bind
+  free_omega_relational_zero free_omega_relational_lub). Qed.
 End Completion.

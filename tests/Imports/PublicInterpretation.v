@@ -24,19 +24,23 @@ From PTree.Eq.Backend Require Import SubEnumQ.
 Example public_agreement {E F A}
     (h : ∀ X, E X → ptree F SubEnumQ X) (t : ptree E SubEnumQ A) :
   interp h t ≈ₚ interp_tree h t.
-Proof.
-  apply (interp_ptree_agrees RelationalLimit.free_omega_relational_mixed_bind
-    RelationalLimit.free_omega_relational_zero RelationalLimit.free_omega_relational_lub).
-Qed.
+Proof. apply free_omega_interp_agrees. Qed.
 
 Example public_interp_bind {E F A B}
     (h : ∀ X, E X → ptree F SubEnumQ X)
     (t : ptree E SubEnumQ A) (k : A → ptree E SubEnumQ B) :
   interp h (bind t k) ≈ₚ bind (interp h t) (λ x, interp h (k x)).
-Proof.
-  apply (interp_ptree_bind RelationalLimit.free_omega_relational_mixed_bind
-    RelationalLimit.free_omega_relational_zero RelationalLimit.free_omega_relational_lub).
-Qed.
+Proof. apply free_omega_interp_bind. Qed.
+
+Example public_interp_composition {E F G A}
+    (h : ∀ X, E X → ptree F SubEnumQ X)
+    (g : ∀ X, F X → ptree G SubEnumQ X) (t : ptree E SubEnumQ A) :
+  interp g (interp h t) ≈ₚ interp (Handler.cat h g) t.
+Proof. apply free_omega_interp_compose. Qed.
+
+Example public_interp_identity {E A} (t : ptree E SubEnumQ A) :
+  interp Handler.id_ t ≈ₚ t.
+Proof. apply free_omega_interp_identity. Qed.
 
 Check interp_state.
 Check interp_state_run_state.

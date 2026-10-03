@@ -7,13 +7,14 @@ From Coq Require Import Utf8.
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms.
-From PTree.Core Require Import PTreeDefinition.
+From PTree.Core Require Import PTreeDefinition Fold.
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure BindOrder RelationalLimit.
 From PTree.Eq Require Import PEutt Algebra.
 From PTree.Interp Require Import State StatePreservation Exception ExceptionFacts
   Unrestricted IterationUniform.
+From PTree.Interp.FreeOmega Require Import HandlerCompletion.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -57,6 +58,23 @@ Local Notation W := (peutt (FI := FI) (MX := FreeOmegaMixedMeasure)
 #[export] Instance free_omega_exception_Proper {Err E A} :
   Proper (W eq ==> W eq) (@run_exception Err E MN A) :=
   run_exception_peutt_eq_Proper free_omega_relational_bind.
+
+(** The public selected-sampling interpreter; keep registrations opt-in. *)
+#[export] Instance free_omega_monadic_interp_Proper {E F A}
+    (h : ∀ X, E X → ptree F MN X) :
+  Proper (W eq ==> W eq) (@interp E MN (ptree F MN) _ _ _ h A) :=
+  HandlerCompletion.free_omega_interp_source_Proper h.
+
+#[export] Instance free_omega_monadic_interp_handler_Proper {E F} :
+  Proper (HandlerRelation.peutt_handler (FI := FI) ==>
+    forall_relation (λ A, @peutt E MN (FreeOmega MN) FI
+      (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A A eq ==>
+      @peutt F MN (FreeOmega MN) FI
+      (FreeOmegaObservableSemanticMeasureCoreLaws (NI := NI) (NO := NO))
+      FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A A eq))
+    (@interp E MN (ptree F MN) _ _ _) :=
+  free_omega_interp_handler_polymorphic_Proper.
 
 #[export] Instance free_omega_iter_Proper {E I A} :
   Proper (pointwise_relation I (W eq) ==> eq ==> W eq) (@PTree.iter E MN A I) :=

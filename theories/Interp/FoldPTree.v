@@ -9,7 +9,7 @@ From PTree.Core Require Import PTreeDefinition Fold.
 From PTree.Prob.Interface Require Import Measure Omega Mixed BindOrder RelationalClosure.
 From PTree.Eq Require Import Shallow PStruct PEutt Relation Algebra Bind BindScheduling
   UnifiedFrontier PTreeKernel PrimitiveStableHitting RelationalHitting StableHittingRelation.
-From PTree.Interp Require Import IterationUniform Unrestricted Structural.
+From PTree.Interp Require Import IterationUniform Unrestricted Structural HandlerRelation HandlerFacts.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Notation "` R" := (elem R) (at level 10).
@@ -347,3 +347,82 @@ Proof.
   apply (Unrestricted.peutt_interp Hzero Hlimit). exact H.
 Qed.
 End Agreement.
+
+(** Public handler calculus. Agreement is used here once, rather than in
+    every client. Proper proofs are deliberately not global instances. *)
+Section Calculus.
+Context {MN MF : Type → Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{FI : SemanticMeasure MF} `{FC : @SemanticMeasureCoreLaws MF FI}
+  `{FB : @SemanticMeasureBindLaws MF FI} `{MX : MixedMeasure MN MF}
+  `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
+  `{Omega : @SemanticOmegaLaws MF FI FO}
+  `{Cofinal : @SemanticOmegaCofinalityLaws MF FI FO}
+  `{Diagonal : @SemanticMeasureDiagonalLaws MF FI FO}
+  `{Fubini : @SemanticOmegaFubiniLaws MF FI FO}
+  `{BO : @SemanticMeasureBindOrderLaws MF FI FO}
+  `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}
+  `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}
+  `{Select : @SemanticOmegaSelection MF FI FO}.
+Variables (Hmixed : relational_mixed_bind NI FI MX)
+  (Hzero : relational_zero FO) (Hlimit : relational_lub FO).
+Local Notation W := (peutt (MF := MF)).
+Local Notation agreement := (interp_ptree_agrees Hmixed Hzero Hlimit).
+Local Notation structural :=
+  (Relation.peutt_of_pstruct (relational_bind_of_laws FB) Hmixed Hzero Hlimit).
+
+Theorem interp_ptree_handler_rel {E F A B} (RR : A → B → Prop)
+    (h g : ∀ X, E X → ptree F MN X)
+    (t : ptree E MN A) (u : ptree E MN B) :
+  peutt_handler (MF := MF) h g → W RR t u → W RR (interp h t) (interp g u).
+Proof.
+  intros Hh Htu. setoid_rewrite agreement.
+  eapply peutt_interp_handler_rel; eassumption.
+Qed.
+
+Lemma interp_ptree_Proper {E F A} (h : ∀ X, E X → ptree F MN X) :
+  Proper (W eq ==> W eq) (@interp E MN (ptree F MN) _ _ _ h A).
+Proof. intros t u H. exact (interp_ptree_peutt Hmixed Hzero Hlimit h H). Qed.
+
+Lemma interp_ptree_handler_Proper {E F A} :
+  Proper (peutt_handler (MF := MF) ==> W eq ==> W eq)
+    (λ h t, @interp E MN (ptree F MN) _ _ _ h A t).
+Proof. intros h g Hh t u Htu. eapply interp_ptree_handler_rel; eassumption. Qed.
+
+Lemma interp_ptree_handler_polymorphic_Proper {E F} :
+  Proper (peutt_handler (MF := MF) ==>
+    forall_relation (λ A, @peutt E MN MF FI FC MX FO A A eq ==>
+      @peutt F MN MF FI FC MX FO A A eq))
+    (@interp E MN (ptree F MN) _ _ _).
+Proof. intros h g Hh A t u Htu. eapply interp_ptree_handler_rel; eassumption. Qed.
+
+Theorem interp_ptree_trigger {E F X} (h : ∀ X, E X → ptree F MN X) (e : E X) :
+  W eq (interp h (PTree.trigger e)) (h X e).
+Proof.
+  rewrite agreement.
+  apply (peutt_interp_trigger_event Hmixed Hzero Hlimit).
+Qed.
+
+Theorem interp_ptree_sample {E F X} (h : ∀ X, E X → ptree F MN X) (mu : MN X) :
+  W eq (interp h (PTree.sample mu)) (PTree.sample mu).
+Proof.
+  rewrite agreement. apply structural.
+  apply pstruct_fold. cbn. constructor.
+  intro x. apply observe_eq_pstruct. reflexivity.
+Qed.
+
+Theorem interp_ptree_identity {E A} (t : ptree E MN A) :
+  W eq (interp Handler.id_ t) t.
+Proof. rewrite agreement. apply peutt_interp_identity. Qed.
+
+Theorem interp_ptree_compose {E F G A}
+    (h : ∀ X, E X → ptree F MN X) (g : ∀ X, F X → ptree G MN X)
+    (t : ptree E MN A) :
+  W eq (interp g (interp h t)) (interp (Handler.cat h g) t).
+Proof.
+  transitivity (PTree.interp_tree g (PTree.interp_tree h t)).
+  - rewrite (agreement g).
+    apply (Unrestricted.peutt_interp Hzero Hlimit). apply agreement.
+  - rewrite agreement. apply structural. apply pstruct_interp_compose.
+Qed.
+End Calculus.

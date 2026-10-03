@@ -57,6 +57,31 @@ discharge it. MathComp's existing Gate M client still explicitly assumes
 coupling gluing and relational-lub closure; this work does not prove the latter
 or enlarge the unchecked boundary.
 
+The public calculus also provides `interp_ptree_trigger`, `interp_ptree_sample`,
+`interp_ptree_identity`, `interp_ptree_compose` and `interp_ptree_handler_rel`.
+The last theorem replaces both the handler (pointwise) and the source program,
+with heterogeneous return relations. Fixed-handler, two-argument and
+polymorphic `Proper` lemmas live alongside these generic proofs; none is a
+global instance. Clients no longer have to rewrite to `interp_tree` themselves.
+
+For observable FreeOmega completions, the `free_omega_interp_*` corollaries in
+`Interp/FreeOmega/HandlerCompletion` discharge relational mixed-bind/zero/lub
+from native capabilities. Both rational and real finite backends use this same
+specialization, not separate interpreter proofs. For example:
+
+```coq
+rewrite free_omega_interp_bind, free_omega_interp_sample.
+setoid_rewrite free_omega_interp_trigger.
+```
+
+reduces interpretation of a sample followed by a trigger to a sample followed
+by the handler. Contextual rewriting is explicitly enabled by importing
+`FreeOmegaRewriting` from `Interp/FreeOmega/Rewriting`; alternatively activate
+the particular library `Proper` lemma locally. Loading the support file alone
+does not enable the instances. Tests check both the pre-import and post-client
+boundaries. No local Proper proof, function extensionality step, or relation
+guessing hint is required in this program calculation.
+
 `interp_state` is exactly the existing StateT fold with selected sampling.
 `interp_state_run_state` specializes the existing uniformity square:
 
@@ -111,7 +136,8 @@ peutt RR (PTree.interp_tree h1 t) (PTree.interp_tree h2 u)
 ```
 
 These existing calculus endpoints concern the productive implementation;
-`interp_ptree_agrees` transports them to the public interpretation.
+the public `interp_ptree_handler_rel` and related laws use
+`interp_ptree_agrees` internally to transport them to the public interpretation.
 Both return carriers may differ. The fixed-handler `Unrestricted.peutt_interp`
 is a specialization. Its machine separates source work from active handler
 work; eliminated events become internal transitions. Finite scheduling and
@@ -248,7 +274,9 @@ would need sample preservation.
 ## Reading and checking
 
 Use `PTree PTreeFacts` plus an explicit backend for behavioral clients;
-transformer/fold owners are opt-in. Read [FactoryController, Adaptive and
+StateT operations and agreement are already exported by `PTreeFacts`;
+other transformer owners and rewriting registrations are opt-in.
+Read [FactoryController, Adaptive and
 StateRewrite](CASE_STUDIES.md) for whole-program calculations.
 [Verification](AUDITING.md) covers handler, effect, State/transformer and
 ITree contract groups. Their existence does not discharge MathComp's explicit
@@ -261,3 +289,25 @@ instance. New types/assumptions are appended to the existing `effect_execution`
 contract group; old entries are not regenerated. The generic agreement and
 its derived PTree laws depend only on the already tracked `Eq_rect_eq`
 logical axiom, besides their explicit semantic profile.
+The FreeOmega specializations additionally inherit the existing completion
+laws' dependent functional extensionality dependency, as recorded for the old
+handler calculus. The new specialization contracts stay within that same set;
+the user-facing rewrite chain does not introduce an extensionality proof.
+
+## Remaining boundaries
+
+The public algebra and rewrite surface is complete for the operations above.
+The following are separate, optional developments, not missing proofs of the
+current interpretation:
+
+- We use a sufficient common agreement profile, not a minimality claim for
+  every elementary equation. Weakening individual signatures remains possible.
+- Only PTree and StateT currently register `MonadSample` liftings. Reader,
+  Writer and Exception retain explicit sampling algebras; adding selected
+  operations would not by itself establish new transformer commuting laws.
+- Adaptive's staged productive lowering is retained. A named monadic view of
+  that whole controller could be added via agreement without changing its
+  implementation or probability analysis.
+- MathComp still assumes gluing and relational-lub where required. Arbitrary
+  target probability preservation and arbitrary-target Reader/Writer commuting
+  are not consequences of `MonadSample` and remain outside this API closure.

@@ -546,6 +546,15 @@ Proof.
   exact (interp_ptree_agrees (@mathcomp_relational_mixed_bind R)
     (@mathcomp_relational_zero R) Hlimit h t).
 Qed.
+
+Example monadic_composition_of_relational_lub {F H A}
+    (h : forall X, F X -> ptree H M X)
+    (g : forall X, H X -> ptree E M X) (t : ptree F M A) :
+  peutt (FI := NI) eq (interp g (interp h t)) (interp (Handler.cat h g) t).
+Proof.
+  exact (interp_ptree_compose (@mathcomp_relational_mixed_bind R)
+    (@mathcomp_relational_zero R) Hlimit h g t).
+Qed.
 End FullIterationUniformity.
 
 (** The SAME generic MDP/atomic theorems at MN = MF. These clients add no

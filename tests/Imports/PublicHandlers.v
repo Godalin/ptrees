@@ -26,10 +26,7 @@ Example public_handler_replacement {A B} (RR : A -> B -> Prop)
     (t : ptree requestE SubEnumQ A) (u : ptree requestE SubEnumQ B) :
   t ≈ₚ[RR] u -> interp immediate t ≈ₚ[RR] interp delayed u.
 Proof.
-  intro H.
-  setoid_rewrite (interp_ptree_agrees RelationalLimit.free_omega_relational_mixed_bind
-    RelationalLimit.free_omega_relational_zero RelationalLimit.free_omega_relational_lub).
-  eapply free_omega_peutt_interp_handler_rel; [|exact H].
+  intro H. eapply free_omega_interp_handler_rel; [|exact H].
   intros X e. apply immediate_delayed.
 Qed.
 
@@ -47,22 +44,11 @@ Proof.
   apply public_handler_replacement. apply peutt_vis. intro b. apply peutt_ret. reflexivity.
 Qed.
 
-(** A real setoid rewrite of the handler argument, with an explicit local
-    Proper witness. No global search for handler equality is installed. *)
+(** Activate the library morphism locally; no client-side Proper proof. *)
 Definition public_handler_rel (h g : Handler SubEnumQ requestE answerE) :=
   forall X (e : requestE X), h X e ≈ₚ g X e.
 
-#[local] Instance public_interp_Proper :
-  Proper (public_handler_rel ==> forall_relation (fun A : Type =>
-    (fun t u : ptree requestE SubEnumQ A => t ≈ₚ u) ==>
-    (fun t u : ptree answerE SubEnumQ A => t ≈ₚ u)))
-    (@Fold.interp requestE SubEnumQ (ptree answerE SubEnumQ) _ _ _).
-Proof.
-  intros h g H A t u Htu.
-  setoid_rewrite (interp_ptree_agrees RelationalLimit.free_omega_relational_mixed_bind
-    RelationalLimit.free_omega_relational_zero RelationalLimit.free_omega_relational_lub).
-  eapply free_omega_peutt_interp_handler_rel; eassumption.
-Qed.
+#[local] Existing Instance free_omega_interp_handler_polymorphic_Proper.
 
 Example rewriting_handler {A} (t : ptree requestE SubEnumQ A) :
   interp immediate t ≈ₚ interp delayed t.

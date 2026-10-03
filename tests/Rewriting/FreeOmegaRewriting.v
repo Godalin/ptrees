@@ -3,13 +3,13 @@
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From Coq Require Import Morphisms.
-From PTree.Core Require Import PTreeDefinition.
+From PTree.Core Require Import PTreeDefinition Fold.
 From PTree.Prob.Interface Require Import Measure AE Coupling Omega.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Measure.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure.
 From PTree.Eq Require Import PEutt.
 From PTree.Interp Require Import State Exception.
-From PTree.Interp.FreeOmega Require Import Rewriting.
+From PTree.Interp.FreeOmega Require Import Rewriting HandlerCompletion.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -30,6 +30,11 @@ Local Notation W := (peutt (FI := FI) (MX := FreeOmegaMixedMeasure)
 
 Fail Definition no_implicit_iter_registration {E I A} :
   Proper (pointwise_relation I (W eq) ==> eq ==> W eq) (@PTree.iter E MN A I) :=
+  ltac:(typeclasses eauto).
+
+Fail Definition no_implicit_interp_registration {E F A}
+    (h : forall X, E X -> ptree F MN X) :
+  Proper (W eq ==> W eq) (@interp E MN (ptree F MN) _ _ _ h A) :=
   ltac:(typeclasses eauto).
 
 Import FreeOmegaRewriting.
@@ -61,6 +66,27 @@ Example imported_interp_proper {E F A} (h : forall X, E X -> ptree F MN X) :
   Proper (W eq ==> W eq) (@PTree.interp_tree E F MN h A).
 Proof. typeclasses eauto. Qed.
 
+Example imported_public_interp_rewrite {E F A}
+    (h : forall X, E X -> ptree F MN X) (t u : ptree E MN A) (H : W eq t u) :
+  W eq (interp h t) (interp h u).
+Proof. setoid_rewrite H. apply peutt_refl. Qed.
+
+Example imported_public_handler_rewrite {E F A}
+    (h g : forall X, E X -> ptree F MN X) (t : ptree E MN A)
+    (H : HandlerRelation.peutt_handler (FI := FI) h g) :
+  W eq (interp h t) (interp g t).
+Proof. setoid_rewrite H. apply peutt_refl. Qed.
+
+(** A whole sampling/effect program reduces by public algebra alone. *)
+Example imported_public_program_rewrite {E F X A}
+    (h : forall X, E X -> ptree F MN X) (mu : MN X) (e : X -> E A) :
+  W eq (interp h (PTree.bind (PTree.sample mu) (fun x => PTree.trigger (e x))))
+    (PTree.bind (PTree.sample mu) (fun x => h A (e x))).
+Proof.
+  rewrite free_omega_interp_bind, free_omega_interp_sample.
+  setoid_rewrite free_omega_interp_trigger. apply peutt_refl.
+Qed.
+
 Example imported_exception_proper {Err E A} :
   Proper (W eq ==> W eq) (@run_exception Err E MN A).
 Proof. typeclasses eauto. Qed.
@@ -90,6 +116,10 @@ Local Notation W := (peutt (FI := FI) (MX := FreeOmegaMixedMeasure)
   (FO := FreeOmegaObservableSemanticOmega)).
 Fail Definition no_leaked_iter_registration {E I A} :
   Proper (pointwise_relation I (W eq) ==> eq ==> W eq) (@PTree.iter E MN A I) :=
+  ltac:(typeclasses eauto).
+Fail Definition no_leaked_interp_registration {E F A}
+    (h : forall X, E X -> ptree F MN X) :
+  Proper (W eq ==> W eq) (@interp E MN (ptree F MN) _ _ _ h A) :=
   ltac:(typeclasses eauto).
 End OutsideClient.
 
