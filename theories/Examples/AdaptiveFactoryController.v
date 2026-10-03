@@ -238,13 +238,6 @@ Proof.
     apply peutt_observe_eq; reflexivity.
 Qed.
 
-Lemma lower_update f s : lower (update f) s ≈ₚ Ret (f s,tt).
-Proof.
-  repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
-  apply peutt_observe_eq.
-  reflexivity.
-Qed.
-
 Definition lowered_step {I A} (step : I → tree (I+A)) (si : machine_state * I) :=
   sa <- lower (step (snd si)) (fst si);;
   Ret (state_iter_result sa).
@@ -282,6 +275,24 @@ Theorem lower_attempt s :
   Prob (source_coin (health s)) (λ a,
     Prob (source_coin (health s)) (λ b, Ret (state_attempt_result s a b))).
 Proof.
+  (* Local equations for the update and the final retry branch. Rewriting
+     uses congruence beneath both samples; their continuations stay implicit. *)
+  have Hupdate f s' : lower (update f) s' ≈ₚ Ret (f s',tt).
+  { repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
+    apply peutt_observe_eq.
+    reflexivity. }
+  have Hfinish s' (a b : bool) :
+      lower (if a == b then internal Retry;; Ret (inl tt) else Ret (inr a)) s' ≈ₚ
+      Ret (if a == b then (retry_update s', inl tt) else (s', inr a)).
+  { destruct (a == b).
+    - setoid_rewrite lower_bind.
+      setoid_rewrite lower_internal.
+      setoid_rewrite peutt_bind_ret_l.
+      setoid_rewrite lower_ret.
+      reflexivity.
+    - setoid_rewrite lower_ret.
+      reflexivity. }
+
   unfold vn_attempt, sample.
   setoid_rewrite lower_bind.
   setoid_rewrite lower_internal.
@@ -292,14 +303,11 @@ Proof.
   setoid_rewrite peutt_bind_prob.
   setoid_rewrite lower_ret.
   setoid_rewrite peutt_bind_ret_l.
-  apply peutt_prob_Proper.
-  intros a.
-
   setoid_rewrite lower_bind.
   setoid_rewrite lower_internal.
   setoid_rewrite peutt_bind_ret_l.
   setoid_rewrite lower_bind.
-  setoid_rewrite lower_update.
+  setoid_rewrite Hupdate.
   setoid_rewrite peutt_bind_ret_l.
 
   setoid_rewrite lower_bind.
@@ -307,19 +315,8 @@ Proof.
   setoid_rewrite peutt_bind_prob.
   setoid_rewrite lower_ret.
   setoid_rewrite peutt_bind_ret_l.
-  apply peutt_prob_Proper.
-  intro b.
-
-  cbn [fst snd].
-  unfold state_attempt_result.
-  destruct (a == b).
-  - setoid_rewrite lower_bind.
-    setoid_rewrite lower_internal.
-    setoid_rewrite peutt_bind_ret_l.
-    setoid_rewrite lower_ret.
-    reflexivity.
-  - setoid_rewrite lower_ret.
-    reflexivity.
+  setoid_rewrite Hfinish.
+  reflexivity.
 Qed.
 
 (** Exact stateful kernel of one attempt. Successful states may depend on
@@ -442,16 +439,12 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma retry_bound src : low_weight src ^+ 2 + high_weight src ^+ 2 <= (5/8 : rat).
-Proof. destruct src; by vm_compute. Qed.
-
-Lemma source_normalized src : low_weight src + high_weight src = 1.
-Proof. rewrite /high_weight addrC subrK. reflexivity. Qed.
-
 Theorem attempts_total n s : expect (λ _, 1) (attempts n s) = 1.
 Proof.
+  have Hsum src : low_weight src + high_weight src = 1
+    by rewrite /high_weight addrC subrK.
   elim: n s => [|n IH] s; first reflexivity.
-  rewrite attempts_expect_S !IH !mulr1 source_normalized !mulr1 source_normalized.
+  rewrite attempts_expect_S !IH !mulr1 Hsum !mulr1 Hsum.
   reflexivity.
 Qed.
 
@@ -481,7 +474,9 @@ Proof.
     apply: le_trans (lerD Hl Hr) _.
     rewrite -mulrDl.
     have Hbase : (0 : rat) <= 5/8 by vm_compute.
-    exact: (ler_wpM2r (exprn_ge0 n Hbase) (retry_bound (health s))).
+    have Hretry : low_weight (health s) ^+ 2 + high_weight (health s) ^+ 2 <= (5/8 : rat)
+      by destruct (health s); vm_compute.
+    exact: (ler_wpM2r (exprn_ge0 n Hbase) Hretry).
 Qed.
 
 Theorem adaptive_pending_vanishes s eps : 0 < eps →
