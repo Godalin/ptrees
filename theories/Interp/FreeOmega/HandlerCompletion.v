@@ -32,7 +32,7 @@ Theorem free_omega_peutt_interp_handler_rel {E F A B}
     (RR : A → B → Prop) (h g : Handler MN E F)
     (t : ptree E MN A) (u : ptree E MN B) :
   HE E F h g → W E A B RR t u →
-  W F A B RR (PTree.interp h t) (PTree.interp g u).
+  W F A B RR (PTree.interp_tree h t) (PTree.interp_tree g u).
 Proof.
   intros H Htu.
   exact (peutt_interp_handler_rel free_omega_relational_zero free_omega_relational_lub H Htu).
@@ -40,7 +40,7 @@ Qed.
 
 Lemma free_omega_peutt_interp_handler_Proper {E F A} :
   Proper (HE E F ==> W E A A eq ==> W F A A eq)
-    (λ h t, @PTree.interp E F MN h A t).
+    (λ h t, @PTree.interp_tree E F MN h A t).
 Proof.
   apply (peutt_interp_handler_Proper free_omega_relational_zero free_omega_relational_lub).
 Qed.
@@ -95,7 +95,7 @@ Proof. apply (handler_bimap_congr free_omega_relational_zero free_omega_relation
 
 Lemma free_omega_peutt_interp_handler_polymorphic_Proper {E F} :
   Proper (HE E F ==>
-    forall_relation (λ A, W E A A eq ==> W F A A eq)) (@PTree.interp E F MN).
+    forall_relation (λ A, W E A A eq ==> W F A A eq)) (@PTree.interp_tree E F MN).
 Proof.
   apply (peutt_interp_handler_polymorphic_Proper
     free_omega_relational_zero free_omega_relational_lub).

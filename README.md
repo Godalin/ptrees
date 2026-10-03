@@ -525,6 +525,11 @@ to build the theories.
 
 The main interpretation abstraction is `Core.fold handle sample`: visible
 effects and native sampling have separate algebras into a MonadIter target.
+The public `interp handle` is `fold handle msample` for a target equipped with
+`MonadSample`; import `PTree` for these operations and `PTreeFacts` for the
+PTree-target laws and StateT interpretation. The productive tree implementation
+is explicitly named `interp_tree`, with `interp_ptree_agrees` connecting the
+two views modulo `peutt`. See the [interpretation API](docs/INTERPRETERS.md).
 The concrete runner accepts only closed trees after effect elimination.
 Its API separates completed results (`Returned`/`Lost`) from execution
 artifacts (`Timeout`/`EntropyExhausted`); ideal replay probability proofs live

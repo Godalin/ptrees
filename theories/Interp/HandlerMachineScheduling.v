@@ -67,7 +67,7 @@ Lemma handler_primitive_active_unfold {A X} n (active : ptree F MN X)
      | RetF x => handler_residual_approx n (SourceConfig (k x))
      | TauF u => handler_residual_approx n (HandlerConfig u k)
      | @VisF _ _ _ _ Y e d => sem_ret
-         (FHVis e (λ y, PTree.bind (d y) (λ x, PTree.interp handler (k x))))
+         (FHVis e (λ y, PTree.bind (d y) (λ x, PTree.interp_tree handler (k x))))
      | @ProbF _ _ _ _ Y mu d => mixed_bind mu (λ y, handler_residual_approx n (HandlerConfig (d y) k))
      end).
 Proof.

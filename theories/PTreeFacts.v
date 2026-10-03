@@ -8,3 +8,4 @@ From PTree.Eq.FreeOmega Require Export Bind Algebra Iter.
 From PTree.Interp Require Export Guarded Unrestricted HandlerRelation HandlerFacts
   State Reader Writer Exception StateFacts StatePreservation StandardFacts ExceptionFacts.
 From PTree.Interp.FreeOmega Require Export Atomic MDP HandlerCompletion.
+From PTree.Interp Require Export FoldPTree StateFold StateFoldFacts.

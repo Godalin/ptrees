@@ -391,14 +391,14 @@ Example guarded_interp {A B} (RR : A -> B -> Prop)
     (t : ptree E M A) (u : ptree E M B) :
   @peutt E M M NI NC MX NO A B RR t u ->
   @peutt F M M NI NC MX NO A B RR
-    (PTree.interp event_handler t)
-    (PTree.interp event_handler u).
+    (PTree.interp_tree event_handler t)
+    (PTree.interp_tree event_handler u).
 Proof. apply PTree.Interp.Guarded.peutt_interp_guarded. exact handler_guarded. Qed.
 
 Example guarded_tau {A} (t : ptree E M A) :
   @peutt F M M NI NC MX NO A A eq
-    (PTree.interp event_handler (Tau t))
-    (PTree.interp event_handler t).
+    (PTree.interp_tree event_handler (Tau t))
+    (PTree.interp_tree event_handler t).
 Proof. apply guarded_interp. apply peutt_tau_l. Qed.
 End GenericInterpretation.
 
@@ -541,9 +541,9 @@ Proof. exact (peutt_iter_Proper (@mathcomp_relational_zero R) Hlimit). Qed.
 
 Example monadic_agreement_of_relational_lub {F A}
     (h : forall X, F X -> ptree E M X) (t : ptree F M A) :
-  peutt (FI := NI) eq (interpM h t) (PTree.interp h t).
+  peutt (FI := NI) eq (interp h t) (PTree.interp_tree h t).
 Proof.
-  exact (interpM_ptree_agrees (@mathcomp_relational_mixed_bind R)
+  exact (interp_ptree_agrees (@mathcomp_relational_mixed_bind R)
     (@mathcomp_relational_zero R) Hlimit h t).
 Qed.
 End FullIterationUniformity.
@@ -567,7 +567,7 @@ Variable h : forall X, E X -> ptree F M X.
 Example mdp_interp (Hh : MDP.mdp_handler (FI := NI) (MX := MX) (FO := NO) (R := A) h)
     (t : ptree E M A) :
   @mdp_state E M M NI NC MX NO A t ->
-  @mdp_state F M M NI NC MX NO A (PTree.interp h t).
+  @mdp_state F M M NI NC MX NO A (PTree.interp_tree h t).
 Proof. exact (MDP.mdp_state_interp (FI := NI) (FO := NO) (MX := MX) Hh (t := t)). Qed.
 
 Example mdp_guarded_transition
@@ -577,7 +577,7 @@ Example mdp_guarded_transition
   @mdp_state E M M NI NC MX NO A t ->
   @mdp_state E M M NI NC MX NO A u ->
   @trans_bisim E M M NI NC MX NO A A eq t u ->
-  @trans_bisim F M M NI NC MX NO A A eq (PTree.interp h t) (PTree.interp h u).
+  @trans_bisim F M M NI NC MX NO A A eq (PTree.interp_tree h t) (PTree.interp_tree h u).
 Proof.
   exact (MDP.mdp_guarded_interp_trans (FI := NI) (FO := NO) (MX := MX)
     Hh Hg (t := t) (u := u)).
@@ -587,7 +587,7 @@ Variable a : forall X, E X -> ptree E M X.
 Variable atom : Atomic.atomic_handler (FI := NI) (MX := MX) (FO := NO) a.
 Example atomic_transition (RR : A -> A -> Prop) (t u : ptree E M A) :
   @trans_bisim E M M NI NC MX NO A A RR t u ->
-  @trans_bisim E M M NI NC MX NO A A RR (PTree.interp a t) (PTree.interp a u).
+  @trans_bisim E M M NI NC MX NO A A RR (PTree.interp_tree a t) (PTree.interp_tree a u).
 Proof.
   exact (Atomic.trans_bisim_interp_atomic (FI := NI) (FO := NO) (MX := MX)
     (@mathcomp_kernel_bind_ret_r R) (@mathcomp_kernel_lub_limit_proper R)
@@ -597,7 +597,7 @@ Qed.
 Example atomic_mdp
     (t : ptree E M A) :
   @mdp_state E M M NI NC MX NO A t ->
-  @mdp_state E M M NI NC MX NO A (PTree.interp a t).
+  @mdp_state E M M NI NC MX NO A (PTree.interp_tree a t).
 Proof.
   apply (MDPAtomic.mdp_state_interp_atomic (FI := NI) (FO := NO) (MX := MX)
     (@mathcomp_kernel_lub_limit_proper R) (atom := atom)).

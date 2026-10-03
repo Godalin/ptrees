@@ -55,7 +55,7 @@ Definition ptree_interp_split_approx {A} n m (t : ptree E MN A) :=
     (ptree_interp_head_approx m handler).
 
 Lemma ptree_interp_hitting_le_diagonal {A} n (t : ptree E MN A) :
-  sem_le (ptree_hitting_approx (MF := MF) n (observe (PTree.interp handler t)))
+  sem_le (ptree_hitting_approx (MF := MF) n (observe (PTree.interp_tree handler t)))
     (ptree_interp_split_approx n n t).
 Proof.
   revert t; induction n as [|n IH]; intro t;
@@ -75,7 +75,7 @@ Proof.
   - setoid_rewrite ret_equiv.
     cbn [ptree_interp_head_approx ptree_interp_head_tree observe].
     exact (proj2 (unfold_target (S n)
-      (TauF (PTree.bind (handler e) (λ x, PTree.interp handler (k x)))))).
+      (TauF (PTree.bind (handler e) (λ x, PTree.interp_tree handler (k x)))))).
   - setoid_rewrite mixed_assoc_equiv. apply mixed_bind_le_k. intro x.
     eapply sem_le_trans; [apply IH|].
     apply sem_bind_le_k. intro h. apply ptree_hitting_mono. lia.
@@ -83,7 +83,7 @@ Qed.
 
 Lemma ptree_interp_split_le_hitting {A} n m (t : ptree E MN A) :
   sem_le (ptree_interp_split_approx n m t)
-    (ptree_hitting_approx (MF := MF) (n + m) (observe (PTree.interp handler t))).
+    (ptree_hitting_approx (MF := MF) (n + m) (observe (PTree.interp_tree handler t))).
 Proof.
   revert t; induction n as [|n IH]; intro t;
     unfold ptree_interp_split_approx; rewrite observe_interp;
@@ -95,7 +95,7 @@ Proof.
   - setoid_rewrite ret_equiv.
     cbn [ptree_interp_head_approx ptree_interp_head_tree observe].
     exact (proj1 (unfold_target m
-      (TauF (PTree.bind (handler e) (λ x, PTree.interp handler (k x)))))).
+      (TauF (PTree.bind (handler e) (λ x, PTree.interp_tree handler (k x)))))).
   - setoid_rewrite mixed_assoc_equiv. apply mixed_bind_le_k. intro x.
     eapply sem_le_trans; [apply sem_bind_zero_order|apply sem_zero_le].
   - setoid_rewrite ret_equiv. cbn [ptree_interp_head_approx ptree_interp_head_tree observe].
@@ -104,10 +104,10 @@ Proof.
   - setoid_rewrite ret_equiv.
     cbn [ptree_interp_head_approx ptree_interp_head_tree observe].
     eapply sem_le_trans with (nu := ptree_hitting_approx (MF := MF) (S n + m)
-      (TauF (PTree.bind (handler e) (λ x, PTree.interp handler (k x))))).
+      (TauF (PTree.bind (handler e) (λ x, PTree.interp_tree handler (k x))))).
     + apply ptree_hitting_mono. lia.
     + exact (proj1 (unfold_target (S n + m)
-        (TauF (PTree.bind (handler e) (λ x, PTree.interp handler (k x)))))).
+        (TauF (PTree.bind (handler e) (λ x, PTree.interp_tree handler (k x)))))).
   - setoid_rewrite mixed_assoc_equiv. apply mixed_bind_le_k. intro x. apply IH.
 Qed.
 

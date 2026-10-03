@@ -80,7 +80,7 @@ Proof.
   - apply mdp_head_atomic. exact Hh.
 Qed.
 
-Theorem mdp_state_interp_atomic t : state t → state (PTree.interp handler t).
+Theorem mdp_state_interp_atomic t : state t → state (PTree.interp_tree handler t).
 Proof. exact (mdp_state_interp (FI := FI) (FO := FO) (MX := MX)
   atomic_handler_mdp (t := t)). Qed.
 

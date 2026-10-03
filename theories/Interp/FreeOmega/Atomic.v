@@ -106,7 +106,7 @@ Definition atomic_head (h : head) : head :=
   match h with
   | FHRet r => FHRet r
   | @FHVis _ _ _ X e k => FHVis (atomic_rename atom e)
-      (λ x, PTree.bind (atomic_cont atom e x) (λ a, PTree.interp handler (k a)))
+      (λ x, PTree.bind (atomic_cont atom e x) (λ a, PTree.interp_tree handler (k a)))
   end.
 Definition atomic_map (mu : MF head) : MF head :=
   free_omega_bind mu (λ h, FORet (atomic_head h)).
@@ -135,7 +135,7 @@ Proof.
 Qed.
 
 Lemma atomic_interp_hitting (t : tree) mu :
-  hits t mu → hits (PTree.interp handler t) (atomic_map mu).
+  hits t mu → hits (PTree.interp_tree handler t) (atomic_map mu).
 Proof.
   exact (PTree.Interp.Atomic.atomic_interp_hitting
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
@@ -155,7 +155,7 @@ Qed.
 Definition atomic_normalizes (target source : tree) : Prop :=
   ∃ mu, hits source mu ∧ hits target (atomic_map mu).
 
-Lemma atomic_normalizes_interp t : atomic_normalizes (PTree.interp handler t) t.
+Lemma atomic_normalizes_interp t : atomic_normalizes (PTree.interp_tree handler t) t.
 Proof.
   exact (PTree.Interp.Atomic.atomic_normalizes_interp
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
@@ -296,7 +296,7 @@ Proof.
 Qed.
 
 Theorem trans_bisim_interp_atomic (t u : tree) :
-  TB t u → TB (PTree.interp handler t) (PTree.interp handler u).
+  TB t u → TB (PTree.interp_tree handler t) (PTree.interp_tree handler u).
 Proof.
   exact (PTree.Interp.Atomic.trans_bisim_interp_atomic
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)

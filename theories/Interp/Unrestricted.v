@@ -62,7 +62,7 @@ Theorem peutt_interp {A B} (RR : A → B → Prop)
     (t : ptree E MN A) (u : ptree E MN B) :
   @peutt E MN MF FI FC MX FO A B RR t u →
   @peutt F MN MF FI FC MX FO A B RR
-    (PTree.interp handler t) (PTree.interp handler u).
+    (PTree.interp_tree handler t) (PTree.interp_tree handler u).
 Proof.
   apply (peutt_interp_handler_rel Hzero Hlimit).
   intros X e. apply peutt_refl.
@@ -71,6 +71,6 @@ Qed.
 Lemma peutt_interp_Proper {A} :
   Proper (@peutt E MN MF FI FC MX FO A A eq ==>
           @peutt F MN MF FI FC MX FO A A eq)
-    (@PTree.interp E F MN handler A).
+    (@PTree.interp_tree E F MN handler A).
 Proof. intros t u Htu. exact (peutt_interp Htu). Qed.
 End UnrestrictedInterp.

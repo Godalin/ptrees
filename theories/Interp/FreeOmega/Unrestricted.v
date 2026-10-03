@@ -29,7 +29,7 @@ Theorem peutt_interp {A B} (RR : A → B → Prop)
     (t : ptree E MN A) (u : ptree E MN B) :
   @peutt E MN MF FI FC FreeOmegaMixedMeasure FO A B RR t u →
   @peutt F MN MF FI FC FreeOmegaMixedMeasure FO A B RR
-    (PTree.interp handler t) (PTree.interp handler u).
+    (PTree.interp_tree handler t) (PTree.interp_tree handler u).
 Proof.
   apply (PTree.Interp.Unrestricted.peutt_interp
     free_omega_relational_zero free_omega_relational_lub).

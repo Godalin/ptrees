@@ -26,7 +26,10 @@ Example public_handler_replacement {A B} (RR : A -> B -> Prop)
     (t : ptree requestE SubEnumQ A) (u : ptree requestE SubEnumQ B) :
   t ≈ₚ[RR] u -> interp immediate t ≈ₚ[RR] interp delayed u.
 Proof.
-  intro H. eapply free_omega_peutt_interp_handler_rel; [|exact H].
+  intro H.
+  setoid_rewrite (interp_ptree_agrees RelationalLimit.free_omega_relational_mixed_bind
+    RelationalLimit.free_omega_relational_zero RelationalLimit.free_omega_relational_lub).
+  eapply free_omega_peutt_interp_handler_rel; [|exact H].
   intros X e. apply immediate_delayed.
 Qed.
 
@@ -53,8 +56,13 @@ Definition public_handler_rel (h g : Handler SubEnumQ requestE answerE) :=
   Proper (public_handler_rel ==> forall_relation (fun A : Type =>
     (fun t u : ptree requestE SubEnumQ A => t ≈ₚ u) ==>
     (fun t u : ptree answerE SubEnumQ A => t ≈ₚ u)))
-    (@PTree.interp requestE answerE SubEnumQ).
-Proof. apply free_omega_peutt_interp_handler_polymorphic_Proper. Qed.
+    (@Fold.interp requestE SubEnumQ (ptree answerE SubEnumQ) _ _ _).
+Proof.
+  intros h g H A t u Htu.
+  setoid_rewrite (interp_ptree_agrees RelationalLimit.free_omega_relational_mixed_bind
+    RelationalLimit.free_omega_relational_zero RelationalLimit.free_omega_relational_lub).
+  eapply free_omega_peutt_interp_handler_rel; eassumption.
+Qed.
 
 Example rewriting_handler {A} (t : ptree requestE SubEnumQ A) :
   interp immediate t ≈ₚ interp delayed t.

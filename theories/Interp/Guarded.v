@@ -69,14 +69,14 @@ Proof.
     (@ptree_primitive_kernel F MN MF FI MX X)
     (observe (handler e))) as [mu Hmu].
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-    (λ x, PTree.interp handler (k1 x))) as [front1 Hfront1].
+    (λ x, PTree.interp_tree handler (k1 x))) as [front1 Hfront1].
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-    (λ x, PTree.interp handler (k2 x))) as [front2 Hfront2].
+    (λ x, PTree.interp_tree handler (k2 x))) as [front2 Hfront2].
   eapply stable_hitting_match_of_hitting_lift
     with (out1 := sem_bind mu (bind_frontier
-      (λ x, PTree.interp handler (k1 x)) front1))
+      (λ x, PTree.interp_tree handler (k1 x)) front1))
          (out2 := sem_bind mu (bind_frontier
-      (λ x, PTree.interp handler (k2 x)) front2)).
+      (λ x, PTree.interp_tree handler (k2 x)) front2)).
   - apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
     eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO)
       (MX := MX)); [apply (Preservation.bind_cofinal_all (BindOrd := BindOrd) (MixedOrd := MixedOrd) (Directed := Directed))|exact Hmu|exact Hfront1].
@@ -91,8 +91,8 @@ Proof.
     apply (sem_lift_ret (SI := FI)). constructor. intro y.
     right. right.
     exists X, X, (@eq X), (c y), (c y),
-      (λ x, PTree.interp handler (k1 x)),
-      (λ x, PTree.interp handler (k2 x)).
+      (λ x, PTree.interp_tree handler (k1 x)),
+      (λ x, PTree.interp_tree handler (k2 x)).
     split; [reflexivity|]. split; [reflexivity|].
     split; [apply peutt_refl|].
     intros x x' ->. left.
@@ -104,7 +104,7 @@ Theorem peutt_interp_guarded {A B} (RR : A → B → Prop)
     (Hguard : guarded_handler) (t1 : ptree E MN A) (t2 : ptree E MN B) :
   @peutt E MN MF FI FC MX FO A B RR t1 t2 →
   @peutt F MN MF FI FC MX FO A B RR
-    (PTree.interp handler t1) (PTree.interp handler t2).
+    (PTree.interp_tree handler t1) (PTree.interp_tree handler t2).
 Proof.
   apply (peutt_interp_of_vis_fusion
     (BindOrd := BindOrd) (MixedOrd := MixedOrd) (Directed := Directed)).
@@ -116,6 +116,6 @@ Qed.
 Lemma peutt_interp_guarded_Proper {R} (Hguard : guarded_handler) :
   Proper (@peutt E MN MF FI FC MX FO R R eq ==>
           @peutt F MN MF FI FC MX FO R R eq)
-    (@PTree.interp E F MN handler R).
+    (@PTree.interp_tree E F MN handler R).
 Proof. intros t u Htu. exact (peutt_interp_guarded Hguard Htu). Qed.
 End GuardedInterp.

@@ -82,7 +82,7 @@ Proof. exact (elab_trigger (@sample_handler MN void1) (Sample mu)). Qed.
 
 Theorem elab_postcompose {E F G A} (h : Handler MN E F)
     (g : Handler MN F G) (t : itree E A) :
-  peutt (MF := MF) eq (PTree.interp g (interp_itree h t))
+  peutt (MF := MF) eq (PTree.interp_tree g (interp_itree h t))
     (interp_itree (Handler.cat h g) t).
 Proof. apply structural. apply interp_itree_postcompose. Qed.
 End Laws.

@@ -34,12 +34,12 @@ Definition iteration_handler {I A E MN} (step : I → ptree E MN (I+A))
 Section Structural.
 Context {E MN : Type → Type} {I A : Type} (step : I → ptree E MN (I+A)).
 Definition iteration_left (r : I+A) :=
-  PTree.interp (iteration_handler step)
+  PTree.interp_tree (iteration_handler step)
     (match r with inl j => iteration_protocol j | inr a => Ret a end).
 Definition iteration_right (r : I+A) :=
   match r with inl j => Tau (PTree.iter step j) | inr a => Ret a end.
 Definition iteration_structural_candidate (t u : ptree E MN A) : Prop :=
-  (∃ i, observe t = observe (PTree.interp (iteration_handler step) (iteration_protocol i)) ∧
+  (∃ i, observe t = observe (PTree.interp_tree (iteration_handler step) (iteration_protocol i)) ∧
     observe u = observe (Tau (PTree.iter step i))) ∨
   (∃ active : ptree E MN (I+A),
     observe t = observe (PTree.bind active iteration_left) ∧
@@ -48,7 +48,7 @@ Definition iteration_structural_candidate (t u : ptree E MN A) : Prop :=
 (** Interp guards before a step; iter guards after a retry. A single
     leading Tau aligns the two schedules, including nonreturning steps. *)
 Theorem iteration_protocol_iter i :
-  pstruct eq (PTree.interp (iteration_handler step) (iteration_protocol i)) (Tau (PTree.iter step i)).
+  pstruct eq (PTree.interp_tree (iteration_handler step) (iteration_protocol i)) (Tau (PTree.iter step i)).
 Proof.
   assert (H : ∀ t u, iteration_structural_candidate t u -> pstruct eq t u).
   { unfold pstruct. coinduction CH CIH. intros t u Htu. unfold pstruct_body.
@@ -175,7 +175,7 @@ Proof.
 Qed.
 
 Corollary iteration_protocol_related i j : SI i j →
-  peutt (MF := MF) RR (PTree.interp h1 (iteration_protocol i)) (PTree.interp h2 (iteration_protocol j)).
+  peutt (MF := MF) RR (PTree.interp_tree h1 (iteration_protocol i)) (PTree.interp_tree h2 (iteration_protocol j)).
 Proof. intro Hij. apply (iteration_machine_related (c := SourceConfig _) (d := SourceConfig _)).
   constructor. exact Hij. Qed.
 End HeterogeneousMachine.
@@ -225,10 +225,10 @@ Theorem peutt_iter_eventful_rel {I1 I2 A B}
 Proof.
   intro Hij.
   assert (HL : peutt (MF := MF) eq (PTree.iter step1 i)
-      (PTree.interp (iteration_handler step1) (iteration_protocol i))).
+      (PTree.interp_tree (iteration_handler step1) (iteration_protocol i))).
   { eapply peutt_trans; [apply peutt_tau_r|].
     apply peutt_sym. apply structural. apply iteration_protocol_iter. }
-  assert (HR : peutt (MF := MF) eq (PTree.interp (iteration_handler step2) (iteration_protocol j))
+  assert (HR : peutt (MF := MF) eq (PTree.interp_tree (iteration_handler step2) (iteration_protocol j))
       (PTree.iter step2 j)).
   { eapply peutt_trans; [apply structural; apply iteration_protocol_iter|apply peutt_tau_l]. }
   eapply (iteration_peutt_compose (R12 := eq) (R23 := RR) (R13 := RR)).

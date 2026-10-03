@@ -151,7 +151,8 @@ def permitted(module, dependency):
             "Interp/Unrestricted", "Interp/HandlerRelation", "Interp/HandlerFacts",
             "Interp/State", "Interp/Reader", "Interp/Writer", "Interp/Exception",
             "Interp/StateFacts", "Interp/StatePreservation", "Interp/StandardFacts",
-            "Interp/ExceptionFacts", "Interp/FreeOmega/HandlerCompletion"}
+            "Interp/ExceptionFacts", "Interp/FreeOmega/HandlerCompletion",
+            "Interp/FoldPTree", "Interp/StateFold", "Interp/StateFoldFacts"}
     if module == "Semantics":
         return under("Semantics")
     if module.startswith("Core/"):

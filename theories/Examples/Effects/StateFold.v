@@ -54,9 +54,9 @@ Context `{ST : MonadSample MN (itree F)}.
 Variable handle : ∀ X, E X → itree F X.
 
 Example monadic_state_commutes {A} (t : ptree (stateE S +' E) MN A) s :
-  eutt eq (interp_stateM handle t s) (interpM handle (run_state t s)).
+  eutt eq (interp_state handle t s) (interp handle (run_state t s)).
 Proof.
-  apply (interp_stateM_run_state (QT := Eq1_ITree)).
+  apply (interp_state_run_state (QT := Eq1_ITree)).
   apply itree_iteration_uniform.
 Qed.
 End SelectedSampling.

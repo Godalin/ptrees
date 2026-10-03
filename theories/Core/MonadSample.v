@@ -1,5 +1,5 @@
 (** A target operation for native sampling, not a probability-correctness
-    certificate. [fold] accepts this algebra explicitly; [interpM] selects
+    certificate. [fold] accepts this algebra explicitly; [interp] selects
     the operation supplied by the target. *)
 From Coq Require Import Utf8.
 

@@ -37,6 +37,8 @@ Proof. apply peutt_tau_r. Qed.
 Example real_infinite_sampling :
   interp sampling service ≈ₚ interp sampling_delay service.
 Proof.
+  setoid_rewrite (interp_ptree_agrees RelationalLimit.free_omega_relational_mixed_bind
+    RelationalLimit.free_omega_relational_zero RelationalLimit.free_omega_relational_lub).
   eapply free_omega_peutt_interp_handler_rel.
   - intros X e. apply real_sampling_handler_rel.
   - apply peutt_refl.
@@ -58,4 +60,3 @@ End RealClient.
 
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Fail Check PTree.Eq.Backend.MathComp.MathComp_CanonicalBehavior.
-

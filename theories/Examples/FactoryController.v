@@ -112,7 +112,7 @@ Definition controller sampler pc : tree Empty_set := PTree.iter (controller_step
 
 (** Closed source sampler is embedded by the ordinary interpreter. *)
 Definition embed {E A} (t : ptree factoryE EnumQ A) : ptree E EnumQ A :=
-  PTree.interp (λ X (e : factoryE X), match e with end) t.
+  PTree.interp_tree (λ X (e : factoryE X), match e with end) t.
 Definition implementation_sampler : tree bool := embed third_to_two_fifths.
 Definition specification_sampler : tree bool := embed direct_two_fifths.
 Definition controller_impl := controller implementation_sampler AwaitOrder.
@@ -165,7 +165,7 @@ Definition device_handler X (e : deviceE X) : script_tree X :=
   end.
 
 Definition close_controller (t : ptree deviceE EnumQ (counters * Empty_set)) s :=
-  run_exception (run_state (PTree.interp device_handler t) s).
+  run_exception (run_state (PTree.interp_tree device_handler t) s).
 Definition scripted_impl counts s := close_controller (device_controller_impl counts) s.
 Definition scripted_spec counts s := close_controller (device_controller_spec counts) s.
 Definition demo_script := Script [17;23] [Rework;Jam;Pass;Pass] [].
@@ -226,7 +226,7 @@ Variables (pc : phase) (counts : counters) (script : script_state).
 Local Notation "'Run' sampler" :=
   (run_exception
     (run_state
-      (PTree.interp device_handler
+      (PTree.interp_tree device_handler
         (run_state (controller (embed sampler) pc) counts)) script))
   (at level 10, sampler at next level).
 
@@ -337,8 +337,8 @@ Proof. apply run_state_peutt_eq. exact controller_refinement. Qed.
 (** Any device interpretation, not only the scripted demo, preserves the
     source refinement. No liveness assumption about device responses. *)
 Theorem device_handler_refinement {F} (h : ∀ X, deviceE X → ptree F EnumQ X) s :
-  PTree.interp h (device_controller_impl s) ≈ₚ
-  PTree.interp h (device_controller_spec s).
+  PTree.interp_tree h (device_controller_impl s) ≈ₚ
+  PTree.interp_tree h (device_controller_spec s).
 Proof. apply peutt_interp. apply state_controller_refinement. Qed.
 
 Theorem scripted_controller_refinement counts script :

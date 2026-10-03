@@ -16,7 +16,7 @@ Unset Strict Implicit.
 
 Definition run_writer_from {W E MN A} (op : Monoid W)
     (t : ptree (writerE W +' E) MN A) (log : W) : ptree E MN (W*A) :=
-  run_state (PTree.interp (writer_handler op) t) log.
+  run_state (PTree.interp_tree (writer_handler op) t) log.
 
 Section StructuralBind.
 Context {W : Type} {E MN : Type → Type} (op : Monoid W).
@@ -40,8 +40,8 @@ Theorem run_writer_from_bind {A B} (t : ptree (writerE W +' E) MN A)
 Proof.
   unfold run_writer_from. eapply pstruct_trans.
   - apply state_structural_eq. apply pstruct_interp_bind.
-  - exact (run_state_bind (PTree.interp (writer_handler op) t)
-      (λ a, PTree.interp (writer_handler op) (k a)) log).
+  - exact (run_state_bind (PTree.interp_tree (writer_handler op) t)
+      (λ a, PTree.interp_tree (writer_handler op) (k a)) log).
 Qed.
 
 (** Accumulator-threading bind law of the current implementation. The

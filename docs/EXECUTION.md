@@ -5,7 +5,7 @@ Vis calls `handle`, Prob calls `sample`. [`Core/Fold`](../theories/Core/Fold.v)
 is the main abstraction; the runner is a concrete closed-tree execution route,
 not an alternative canonical probability semantics. Lawful fold targets and
 transformer agreements are described in [Interpreters](INTERPRETERS.md).
-When a target selects `MonadSample MN T`, `interpM handle` is definitionally
+When a target selects `MonadSample MN T`, `interp handle` is definitionally
 this same fold with `msample`; selection does not certify the sampler's law.
 
 ## Closed execution

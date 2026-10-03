@@ -61,7 +61,7 @@ Proof. apply free_omega_interp_itree_eutt. Qed.
 Theorem free_omega_from_itree_interp {E F A}
     (h : ∀ X, E X → itree F X) (t : itree E A) :
   peutt (FI := FI) eq (from_itree (Interp.interp h t))
-    (PTree.interp (λ X e, @from_itree F MN X (h X e)) (from_itree t)).
+    (PTree.interp_tree (λ X e, @from_itree F MN X (h X e)) (from_itree t)).
 Proof.
   apply (from_itree_interp free_omega_relational_mixed_bind
     free_omega_relational_zero free_omega_relational_lub).

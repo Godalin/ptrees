@@ -23,7 +23,7 @@ CoFixpoint from_itree {E MN A} (t : itree E A) : ptree E MN A :=
   end.
 
 Definition interp_itree {E F MN A} (h : Handler MN E F) (t : itree E A) :
-    ptree F MN A := PTree.interp h (from_itree t).
+    ptree F MN A := PTree.interp_tree h (from_itree t).
 
 Definition sample_handler {MN F} : Handler MN (probE MN) F :=
   λ X e, match e with @Sample _ X mu => Prob mu (λ x, Ret x) end.

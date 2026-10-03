@@ -151,6 +151,6 @@ Example real_guarded_interp
     (t : ptree E MN A) (u : ptree E MN B) :
   @peutt E MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO A B RR t u ->
   @peutt F MN (FreeOmega MN) FI FC FreeOmegaMixedMeasure FO A B RR
-    (PTree.interp handler t) (PTree.interp handler u).
+    (PTree.interp_tree handler t) (PTree.interp_tree handler u).
 Proof. apply Guarded.peutt_interp_guarded. exact Hg. Qed.
 End RealInterpretation.

@@ -1,7 +1,7 @@
 # Handlers, transformer folds and the ITree connection
 
 The general interpretation is `fold(handle, sample)`: it interprets external
-events and native sampling separately. `interpM handle` is its specialization
+events and native sampling separately. `interp handle` is its specialization
 to a target with a selected `MonadSample MN T` operation. This follows the
 [`fold`/`interp` organization of CTree](https://github.com/vellvm/ctrees/blob/cabcf9bf24b0f459204a7da19ac01b7697ff04e3/theories/Interp/Fold.v).
 Neither the sampling operation nor an interpreter equation certifies an
@@ -19,7 +19,7 @@ threading the unchanged state around the base sampling operation.
 
 ```text
 fold handle sample : ptree E MN A -> T A
-interpM handle     = fold handle msample
+interp handle     = fold handle msample
 ```
 
 Definitions require Monad/MonadIter operations only. Laws need a lawful
@@ -28,13 +28,16 @@ Explicit `fold` remains useful when choosing between multiple samplers.
 There is no default instance interpreting arbitrary native measures in ITree
 or host IO: the client must choose that operation.
 
-The existing productive `PTree.interp` keeps its name and implementation.
+The public construction entry point `From PTree Require Import PTree` exports
+`fold`, `interp`, `MonadSample` and its PTree instance. `PTreeFacts` additionally
+exports the PTree-target laws and StateT interpretation. The former productive
+`PTree.interp` is now named `PTree.interp_tree`; its implementation is unchanged.
 [`Interp/FoldPTree`](../theories/Interp/FoldPTree.v) proves, for arbitrary
 source trees and handlers:
 
 ```text
-fold_ptree_interp : fold h PTree.sample t ≈ₚ PTree.interp h t
-interpM_ptree_agrees : interpM h t ≈ₚ PTree.interp h t
+fold_ptree_interp : fold h PTree.sample t ≈ₚ PTree.interp_tree h t
+interp_ptree_agrees : interp h t ≈ₚ PTree.interp_tree h t
 ```
 
 The equality is behavioral, not definitional or lockstep structural:
@@ -44,7 +47,7 @@ bounds (at most twice the depth) justify the same complete hitting limits.
 Existing iteration congruence and unrestricted handler preservation then close
 the agreement. No termination, visible-guard or total-mass condition is used.
 
-`interpM_ptree_ret/tau/vis/prob/bind/iter` and `interpM_ptree_peutt` expose the
+`interp_ptree_ret/tau/vis/prob/bind/iter` and `interp_ptree_peutt` expose the
 resulting computation, algebra and heterogeneous preservation laws. They reuse
 the generic theory rather than copying FreeOmega proofs. The common profile
 includes native Core, frontier Core/Bind/order/omega, cofinality,
@@ -54,21 +57,40 @@ discharge it. MathComp's existing Gate M client still explicitly assumes
 coupling gluing and relational-lub closure; this work does not prove the latter
 or enlarge the unchecked boundary.
 
-`interp_stateM` is exactly the existing StateT fold with selected sampling.
-`interp_stateM_run_state` specializes the existing uniformity square:
+`interp_state` is exactly the existing StateT fold with selected sampling.
+`interp_state_run_state` specializes the existing uniformity square:
 
 ```text
-interp_stateM handle t s ≃ interpM handle (run_state t s)
+interp_state handle t s ≃ interp handle (run_state t s)
 ```
 
 It requires Eq1 equivalence, monad laws and iteration uniformity of the target,
 not sampling correctness. ITree and PTree clients exercise the square. For the
-PTree target, agreement then connects it to productive `PTree.interp` after
+PTree target, agreement then connects it to productive `PTree.interp_tree` after
 `run_state`. Existing staged lowering in case studies is unchanged.
 
-No public `interp` rename or probability `refine` API is introduced. Arbitrary
-target laws and probability preservation remain separate from selecting an
-operation; the existing ITree fold laws also apply to `interpM` by unfolding it.
+There is no probability `refine` API. Arbitrary-target laws and probability
+preservation remain separate from selecting an operation; the existing ITree
+fold laws also apply to `interp` by unfolding it. Migration is explicit:
+`interpM` becomes `interp`, `interp_stateM` becomes `interp_state`, and
+`interpM_ptree_*` becomes `interp_ptree_*`. No export-order alias chooses
+between two meanings of `interp`.
+
+The paper-facing distinction therefore matches the code:
+
+```text
+fold h g       explicit event and native-sampling algebras
+interp h       target-selected sampling: fold h msample
+interp_state h StateT instance, with sampling lifted through state
+interp_tree h  productive PTree implementation, behaviorally agreeing with interp
+```
+
+[`PublicInterpretation`](../tests/Imports/PublicInterpretation.v) checks the
+construction and reasoning entry points without implementation imports or
+local sampling registrations. It checks the selected fold definition,
+PTree agreement/bind and StateT sampling, and rejects the removed
+`PTree.interp` name. The native and frontier probability obligations remain
+explicit in the generic laws; this API migration does not strengthen them.
 
 ## Handler calculus
 
@@ -85,9 +107,11 @@ pointwise behavioral handler equality and proves replacement:
 forall X e, peutt eq (h1 X e) (h2 X e)
 and peutt RR t u
 ------------------------------------------------
-peutt RR (interp h1 t) (interp h2 u)
+peutt RR (PTree.interp_tree h1 t) (PTree.interp_tree h2 u)
 ```
 
+These existing calculus endpoints concern the productive implementation;
+`interp_ptree_agrees` transports them to the public interpretation.
 Both return carriers may differ. The fixed-handler `Unrestricted.peutt_interp`
 is a specialization. Its machine separates source work from active handler
 work; eliminated events become internal transitions. Finite scheduling and
@@ -181,7 +205,7 @@ and blanket `peutt -> arbitrary fold equality` are **not** established.
 
 ```text
 from_itree       : itree E A -> ptree E MN A
-interp_itree h t = PTree.interp h (from_itree t)
+interp_itree h t = PTree.interp_tree h (from_itree t)
 elaborate       : itree (probE MN +' E) A -> ptree E MN A
 elaborate_closed: itree (probE MN) A -> ptree void1 MN A
 ```

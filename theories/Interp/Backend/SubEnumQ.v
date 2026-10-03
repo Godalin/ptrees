@@ -45,19 +45,19 @@ Proof.
   exact (subenumQ_free_omega_total_map (atomic_head atom) Hmu).
 Qed.
 
-Theorem subenumQ_mdp_state_interp_atomic t : state t → state (PTree.interp handler t).
+Theorem subenumQ_mdp_state_interp_atomic t : state t → state (PTree.interp_tree handler t).
 Proof. apply mdp_state_interp. exact subenumQ_atomic_handler_mdp. Qed.
 
 Theorem subenumQ_mdp_interp_peutt_trans_iff t u : state t → state u →
-  (W (PTree.interp handler t) (PTree.interp handler u) ↔
-   TB (PTree.interp handler t) (PTree.interp handler u)).
+  (W (PTree.interp_tree handler t) (PTree.interp_tree handler u) ↔
+   TB (PTree.interp_tree handler t) (PTree.interp_tree handler u)).
 Proof. apply mdp_interp_peutt_trans_iff. exact subenumQ_atomic_handler_mdp. Qed.
 
 (** The two compositionality routes meet in the preserved fragment.
     This is preservation, NOT reflection back to the source programs. *)
 Theorem subenumQ_mdp_interp_transition_to_peutt t u :
   state t → state u → TB t u →
-  W (PTree.interp handler t) (PTree.interp handler u).
+  W (PTree.interp_tree handler t) (PTree.interp_tree handler u).
 Proof.
   intros Ht Hu Htu.
   apply (proj2 (subenumQ_mdp_interp_peutt_trans_iff Ht Hu)).

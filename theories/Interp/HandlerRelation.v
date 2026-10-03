@@ -80,8 +80,8 @@ Proof.
   - constructor. apply Hk.
   - constructor. intro y. right. right.
     exists X, X, (@eq X), (c1 y), (c2 y),
-      (λ x, PTree.interp h1 (k1 x)),
-      (λ x, PTree.interp h2 (k2 x)).
+      (λ x, PTree.interp_tree h1 (k1 x)),
+      (λ x, PTree.interp_tree h2 (k2 x)).
     split; [reflexivity|]. split; [reflexivity|].
     split; [apply Hc|]. intros x x' ->. left.
     exists (k1 x'), (k2 x'). repeat split; try reflexivity. apply Hk.
@@ -140,7 +140,7 @@ Theorem peutt_interp_handler_rel
     (t : ptree E MN A) (u : ptree E MN B) :
   source_rel t u →
   @peutt F MN MF FI FC MX FO A B RR
-    (PTree.interp h1 t) (PTree.interp h2 u).
+    (PTree.interp_tree h1 t) (PTree.interp_tree h2 u).
 Proof.
   apply peutt_interp_rel_of_vis_fusion.
   apply handler_pair_vis_fusion.
@@ -169,7 +169,7 @@ Lemma peutt_interp_handler_Proper {A} :
   Proper (peutt_handler (MF := MF) ==>
     @peutt E MN MF FI FC MX FO A A eq ==>
     @peutt F MN MF FI FC MX FO A A eq)
-    (λ h t, @PTree.interp E F MN h A t).
+    (λ h t, @PTree.interp_tree E F MN h A t).
 Proof.
   intros h g H t u Htu.
   exact (peutt_interp_handler_rel Hzero Hlimit H Htu).
@@ -181,7 +181,7 @@ Lemma peutt_interp_handler_polymorphic_Proper :
   Proper (peutt_handler (MF := MF) ==>
     forall_relation (λ A,
       @peutt E MN MF FI FC MX FO A A eq ==>
-      @peutt F MN MF FI FC MX FO A A eq)) (@PTree.interp E F MN).
+      @peutt F MN MF FI FC MX FO A A eq)) (@PTree.interp_tree E F MN).
 Proof.
   intros h g H A t u Htu.
   exact (peutt_interp_handler_rel Hzero Hlimit H Htu).

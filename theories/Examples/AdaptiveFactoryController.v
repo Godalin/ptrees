@@ -148,7 +148,7 @@ Definition internal_handler X (e : implE X) : ptree targetE SubEnumQ X :=
     end
   end.
 
-Definition lower {A} (t : tree A) s := run_state (PTree.interp internal_handler t) s.
+Definition lower {A} (t : tree A) s := run_state (PTree.interp_tree internal_handler t) s.
 
 (** [src] is bound before either sample; changing health between them cannot
     change this attempt's second sampling distribution. *)
@@ -212,7 +212,7 @@ Proof.
   setoid_rewrite peutt_interp_bind.
   apply peutt_of_pstruct.
   exact (@run_state_bind machine_state publicE SubEnumQ A B
-    (PTree.interp internal_handler t) (λ x, PTree.interp internal_handler (k x)) s).
+    (PTree.interp_tree internal_handler t) (λ x, PTree.interp_tree internal_handler (k x)) s).
 Qed.
 
 Lemma lower_prob {A X} (mu : SubEnumQ X) (k : X → tree A) s :
@@ -249,7 +249,7 @@ Proof.
   setoid_rewrite peutt_interp_iter.
   apply peutt_of_pstruct.
   exact (@run_state_iter machine_state I A publicE SubEnumQ
-    (λ i, PTree.interp internal_handler (step i)) i s).
+    (λ i, PTree.interp_tree internal_handler (step i)) i s).
 Qed.
 
 Lemma lower_public {X} (e : publicE X) s :
@@ -257,7 +257,7 @@ Lemma lower_public {X} (e : publicE X) s :
 Proof.
   repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
   transitivity (Vis e (λ x, run_state
-    (PTree.bind (Ret x) (λ y, PTree.interp internal_handler (Ret y))) s)).
+    (PTree.bind (Ret x) (λ y, PTree.interp_tree internal_handler (Ret y))) s)).
   - apply peutt_observe_eq.
     reflexivity.
   - apply peutt_vis.
@@ -846,7 +846,7 @@ Lemma fair_factory_direct q (q0 : 0 <= q) (q1 : q <= 1) :
     sample (bernoulli q0 q1).
 Proof.
   pose embed_closed (t : ptree factoryE SubEnumQ bool) : ptree publicE SubEnumQ bool :=
-    PTree.interp (λ X (e : factoryE X), match e with end) t.
+    PTree.interp_tree (λ X (e : factoryE X), match e with end) t.
   have H : embed_closed (factory_with_sampler (sample fair_coin) q) ≈ₚ
       embed_closed (sample (bernoulli q0 q1)).
   { apply peutt_interp.
@@ -895,7 +895,7 @@ Qed.
 Definition state_result {A} (sa : machine_state * A) (a : A) := snd sa = a.
 
 Theorem controller_program_rewrite s q (q0 : 0 <= q) (q1 : q <= 1) :
-  (sa <- run_state (PTree.interp internal_handler (controller q)) s;;
+  (sa <- run_state (PTree.interp_tree internal_handler (controller q)) s;;
    Ret (snd sa)) ≈ₚ controller_spec q0 q1.
 Proof.
   fold (lower (controller q) s).

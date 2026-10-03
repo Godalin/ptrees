@@ -58,7 +58,7 @@ Proof. apply from_itree_bind. Qed.
 
 Example target_handler_postcomposition {E F G MN A}
     (h : Handler MN E F) (g : Handler MN F G) (t : itree E A) :
-  pstruct eq (PTree.interp g (interp_itree h t))
+  pstruct eq (PTree.interp_tree g (interp_itree h t))
     (interp_itree (Handler.cat h g) t).
 Proof. apply interp_itree_postcompose. Qed.
 

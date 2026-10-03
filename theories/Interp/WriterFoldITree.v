@@ -62,7 +62,7 @@ Qed.
 
 Theorem itree_fold_run_writer_from {A} (t : ptree (writerE W +' E) MN A) log :
   eutt eq (itree_writer_from t log)
-    (fold handle sample (run_state (PTree.interp (writer_handler op) t) log)).
+    (fold handle sample (run_state (PTree.interp_tree (writer_handler op) t) log)).
 Proof.
   revert t log. einit. ecofix CIH. intros t log.
   rewrite itree_writer_fold_observe, itree_fold_observe.

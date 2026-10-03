@@ -59,18 +59,18 @@ Proof.
 Defined.
 
 Example request_sample_reply_stays_mdp :
-  state (PTree.interp mdp_test_handler decision).
+  state (PTree.interp_tree mdp_test_handler decision).
 Proof. exact (subenumQ_mdp_state_interp_atomic mdp_test_atomic visible_sample_visible_is_mdp). Qed.
 
 Example infinite_service_stays_mdp b :
-  state (PTree.interp mdp_test_handler (service b)).
+  state (PTree.interp_tree mdp_test_handler (service b)).
 Proof. exact (subenumQ_mdp_state_interp_atomic mdp_test_atomic (infinite_service_mdp b)). Qed.
 
 Example delayed_initial_state_stays_mdp :
-  state (PTree.interp mdp_test_handler (Tau (Tau decision))).
+  state (PTree.interp_tree mdp_test_handler (Tau (Tau decision))).
 Proof. exact (subenumQ_mdp_state_interp_atomic mdp_test_atomic delayed_decision_is_mdp). Qed.
 
-Example terminal_state_stays_mdp : state (PTree.interp mdp_test_handler (Ret tt)).
+Example terminal_state_stays_mdp : state (PTree.interp_tree mdp_test_handler (Ret tt)).
 Proof.
   apply (subenumQ_mdp_state_interp_atomic mdp_test_atomic).
   apply mdp_state_ret.
@@ -80,7 +80,7 @@ Qed.
     non-Dirac hidden_choice. The fragment does not require that subtree
     itself to be a state. *)
 Example distribution_not_state_boundary :
-  ¬ state hidden_choice ∧ state (PTree.interp mdp_test_handler decision).
+  ¬ state hidden_choice ∧ state (PTree.interp_tree mdp_test_handler decision).
 Proof. split; [exact hidden_choice_not_mdp_state|exact request_sample_reply_stays_mdp]. Qed.
 
 (** A many-to-one VALUE map, independently of the event permutation.
@@ -93,10 +93,10 @@ Proof.
 Qed.
 
 Example interpreted_fragment_coincidence b :
-  (W (PTree.interp mdp_test_handler (Tau (service b)))
-     (PTree.interp mdp_test_handler (service b)) ↔
-   TB (PTree.interp mdp_test_handler (Tau (service b)))
-      (PTree.interp mdp_test_handler (service b))).
+  (W (PTree.interp_tree mdp_test_handler (Tau (service b)))
+     (PTree.interp_tree mdp_test_handler (service b)) ↔
+   TB (PTree.interp_tree mdp_test_handler (Tau (service b)))
+      (PTree.interp_tree mdp_test_handler (service b))).
 Proof.
   apply (subenumQ_mdp_interp_peutt_trans_iff mdp_test_atomic).
   - apply (proj2 (mdp_state_tau_iff (FI := FI) (FO := FO) _)).
@@ -107,8 +107,8 @@ Qed.
 (** Starts with independently constructed TRANSITION evidence, transports
     it by stage 3, and recovers peutt at the preserved MDP target. *)
 Example transition_route_recovers_peutt b :
-  W (PTree.interp mdp_test_handler (Tau (service b)))
-    (PTree.interp mdp_test_handler (service b)).
+  W (PTree.interp_tree mdp_test_handler (Tau (service b)))
+    (PTree.interp_tree mdp_test_handler (service b)).
 Proof.
   apply (subenumQ_mdp_interp_transition_to_peutt mdp_test_atomic).
   - apply (proj2 (mdp_state_tau_iff (FI := FI) (FO := FO) _)).
@@ -120,8 +120,8 @@ Qed.
 (** The other route uses guarded peutt preservation and the same fragment
     contract; it does not invoke stage 3's transition preservation. *)
 Example guarded_route_preserves_transition b :
-  TB (PTree.interp mdp_test_handler (Tau (service b)))
-     (PTree.interp mdp_test_handler (service b)).
+  TB (PTree.interp_tree mdp_test_handler (Tau (service b)))
+     (PTree.interp_tree mdp_test_handler (service b)).
 Proof.
   apply (mdp_guarded_interp_trans
     (subenumQ_atomic_handler_mdp mdp_test_atomic)
@@ -179,7 +179,7 @@ Definition hetero_head (h : SH) : TH :=
   match h with
   | FHRet r => FHRet r
   | @FHVis _ _ _ X e k => FHVis (hetero_event e)
-      (λ x, PTree.bind (Ret x) (λ a, PTree.interp hetero_handler (k a)))
+      (λ x, PTree.bind (Ret x) (λ a, PTree.interp_tree hetero_handler (k a)))
   end.
 Definition hetero_map (mu : MF SH) : MF TH :=
   free_omega_bind mu (λ h, FORet (hetero_head h)).
@@ -190,13 +190,13 @@ Proof.
   destruct h as [r|X e k].
   - apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)).
   - destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-      (λ x, PTree.interp hetero_handler (k x))) as [front Hfront].
+      (λ x, PTree.interp_tree hetero_handler (k x))) as [front Hfront].
     apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
     change (thits (PTree.bind (hetero_handler e)
-      (λ x, PTree.interp hetero_handler (k x)))
+      (λ x, PTree.interp_tree hetero_handler (k x)))
       (sem_bind (FORet (FHVis (hetero_event e) (λ x, Ret x)))
         (bind_frontier (FI := FI)
-          (λ x, PTree.interp hetero_handler (k x)) front))).
+          (λ x, PTree.interp_tree hetero_handler (k x)) front))).
     eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO)).
     + apply ptree_bind_cofinal_all.
     + apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
@@ -205,7 +205,7 @@ Proof.
 Qed.
 
 Lemma hetero_interp_hitting t mu :
-  shits t mu → thits (PTree.interp hetero_handler t) (hetero_map mu).
+  shits t mu → thits (PTree.interp_tree hetero_handler t) (hetero_map mu).
 Proof.
   intro Hhit. eapply (ptree_stable_hitting_interp (FI := FI) (FO := FO));
     [apply ptree_interp_cofinal_all|exact Hhit|apply hetero_head_hitting].
@@ -221,7 +221,7 @@ Proof.
     intro x. destruct (proj1 (mdp_head_vis_iff e k) Hgood x)
       as [mu [Hhit [Htotal Hae]]].
     exists (hetero_map mu). split.
-    + constructor. change (thits (PTree.interp hetero_handler (k x)) (hetero_map mu)).
+    + constructor. change (thits (PTree.interp_tree hetero_handler (k x)) (hetero_map mu)).
       apply hetero_interp_hitting. exact Hhit.
     + split.
       * exact (subenumQ_free_omega_total_map hetero_head Htotal).
@@ -241,13 +241,13 @@ Proof.
   - apply hetero_head_mdp. exact Hh.
 Qed.
 
-Theorem heterogeneous_mdp_preservation t : SS t → TS (PTree.interp hetero_handler t).
+Theorem heterogeneous_mdp_preservation t : SS t → TS (PTree.interp_tree hetero_handler t).
 Proof. apply mdp_state_interp. exact hetero_handler_mdp. Qed.
 
 Theorem heterogeneous_guarded_transition_preservation t u : SS t → SS u →
   @trans_bisim sourceE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq t u →
   @trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
-    (PTree.interp hetero_handler t) (PTree.interp hetero_handler u).
+    (PTree.interp_tree hetero_handler t) (PTree.interp_tree hetero_handler u).
 Proof.
   intros Ht Hu Htu.
   exact (mdp_guarded_interp_trans hetero_handler_mdp hetero_handler_guarded Ht Hu Htu).
@@ -255,9 +255,9 @@ Qed.
 
 Theorem heterogeneous_target_coincidence t u : SS t → SS u →
   (@peutt targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
-      (PTree.interp hetero_handler t) (PTree.interp hetero_handler u) ↔
+      (PTree.interp_tree hetero_handler t) (PTree.interp_tree hetero_handler u) ↔
    @trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R eq
-      (PTree.interp hetero_handler t) (PTree.interp hetero_handler u)).
+      (PTree.interp_tree hetero_handler t) (PTree.interp_tree hetero_handler u)).
 Proof. apply mdp_interp_peutt_trans_iff. exact hetero_handler_mdp. Qed.
 
 (** Instantiate the generic transition-only Tau law at a different source
@@ -305,13 +305,13 @@ Proof.
 Qed.
 
 Example heterogeneous_infinite_service_state :
-  TState (PTree.interp hetero_handler hetero_service).
+  TState (PTree.interp_tree hetero_handler hetero_service).
 Proof. exact (heterogeneous_mdp_preservation hetero_service_mdp). Qed.
 
 Example heterogeneous_infinite_service_transition :
   @trans_bisim targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit unit eq
-    (PTree.interp hetero_handler (Tau hetero_service))
-    (PTree.interp hetero_handler hetero_service).
+    (PTree.interp_tree hetero_handler (Tau hetero_service))
+    (PTree.interp_tree hetero_handler hetero_service).
 Proof.
   apply heterogeneous_guarded_transition_preservation.
   - apply (proj2 (mdp_state_tau_iff (FI := FI) (FO := FO) _)). exact hetero_service_mdp.

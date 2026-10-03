@@ -51,7 +51,7 @@ Local Notation W := (peutt (FI := FI) (MX := FreeOmegaMixedMeasure)
 
 #[export] Instance free_omega_interp_Proper {E F A}
     (h : ∀ X, E X → ptree F MN X) :
-  Proper (W eq ==> W eq) (@PTree.interp E F MN h A) :=
+  Proper (W eq ==> W eq) (@PTree.interp_tree E F MN h A) :=
   peutt_interp_Proper free_omega_relational_zero free_omega_relational_lub h.
 
 #[export] Instance free_omega_exception_Proper {Err E A} :

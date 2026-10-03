@@ -48,24 +48,24 @@ Qed.
 (** The SAME handler preserves peutt but not trans_bisim. The source
     transition counterexample is not incorrectly assumed to be peutt. *)
 Theorem two_query_peutt_preservation t u : W t u →
-  W (PTree.interp two_query_handler t) (PTree.interp two_query_handler u).
+  W (PTree.interp_tree two_query_handler t) (PTree.interp_tree two_query_handler u).
 Proof. intro Htu. exact (peutt_interp_guarded two_query_handler_guarded Htu). Qed.
 
 Theorem two_query_compositionality_contrast :
   GH two_query_handler ∧
-  (∀ t u, W t u → W (PTree.interp two_query_handler t) (PTree.interp two_query_handler u)) ∧
-  (TB P Q ∧ ¬ TB (PTree.interp two_query_handler P) (PTree.interp two_query_handler Q)).
+  (∀ t u, W t u → W (PTree.interp_tree two_query_handler t) (PTree.interp_tree two_query_handler u)) ∧
+  (TB P Q ∧ ¬ TB (PTree.interp_tree two_query_handler P) (PTree.interp_tree two_query_handler Q)).
 Proof.
   split; [exact two_query_handler_guarded|].
   split; [exact two_query_peutt_preservation|exact trans_bisim_interp_counterexample].
 Qed.
 
 #[local] Instance two_query_interp_Proper :
-  Proper (W ==> W) (@PTree.interp correlationE correlationE SubEnumQ two_query_handler bool).
+  Proper (W ==> W) (@PTree.interp_tree correlationE correlationE SubEnumQ two_query_handler bool).
 Proof. exact (peutt_interp_guarded_Proper two_query_handler_guarded). Qed.
 
 Example guarded_interp_setoid_rewrite t u (H : W t u) :
-  W (PTree.interp two_query_handler t) (PTree.interp two_query_handler u).
+  W (PTree.interp_tree two_query_handler t) (PTree.interp_tree two_query_handler u).
 Proof. setoid_rewrite H. reflexivity. Qed.
 
 (** Internal divergence has empty stable support and is allowed. *)
@@ -99,7 +99,7 @@ Proof.
 Qed.
 
 Example probabilistic_partial_handler_preserves t u : W t u →
-  W (PTree.interp sample_or_diverge_handler t) (PTree.interp sample_or_diverge_handler u).
+  W (PTree.interp_tree sample_or_diverge_handler t) (PTree.interp_tree sample_or_diverge_handler u).
 Proof. intro Htu. exact (peutt_interp_guarded sample_or_diverge_handler_guarded Htu). Qed.
 
 (** An unreachable Ret branch is not a violation: guarding is AE, not
@@ -144,8 +144,8 @@ Qed.
 Example guarded_interp_heterogeneous :
   @peutt correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool nat
     (λ b n, b = true ∧ n = O)
-    (PTree.interp two_query_handler (Ret true))
-    (PTree.interp two_query_handler (Ret O)).
+    (PTree.interp_tree two_query_handler (Ret true))
+    (PTree.interp_tree two_query_handler (Ret O)).
 Proof.
   apply (peutt_interp_guarded two_query_handler_guarded).
   apply peutt_ret. split; reflexivity.

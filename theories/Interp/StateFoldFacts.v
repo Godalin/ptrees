@@ -82,8 +82,8 @@ Context {S : Type} {E MN T : Type → Type}
   `{ML : @MonadLawsE T QT MT}.
 Variable handle : ∀ X, E X → T X.
 
-Theorem interp_stateM_run_state (Hunif : @iteration_uniform T MT IT QT)
+Theorem interp_state_run_state (Hunif : @iteration_uniform T MT IT QT)
     {A} (t : ptree (stateE S +' E) MN A) s :
-  eq1 (interp_stateM handle t s) (interpM handle (run_state t s)).
+  eq1 (interp_state handle t s) (interp handle (run_state t s)).
 Proof. apply fold_run_state. exact Hunif. Qed.
 End MonadicState.

@@ -97,7 +97,7 @@ Definition handler_identity_head {A} (h : stable_head E MN A) : stable_head E MN
   match h with
   | FHRet a => FHRet a
   | @FHVis _ _ _ X e k => FHVis e (λ x,
-      PTree.bind (Ret x) (λ y, PTree.interp Handler.id_ (k y)))
+      PTree.bind (Ret x) (λ y, PTree.interp_tree Handler.id_ (k y)))
   end.
 
 Lemma handler_identity_head_hitting {A} (h : stable_head E MN A) :
@@ -112,10 +112,10 @@ Proof.
 Qed.
 
 Theorem peutt_interp_identity {A} (t : ptree E MN A) :
-  peutt (MF := MF) eq (PTree.interp Handler.id_ t) t.
+  peutt (MF := MF) eq (PTree.interp_tree Handler.id_ t) t.
 Proof.
   eapply peutt_coinduction with (sim := λ s u,
-    exists v, s = observe (PTree.interp Handler.id_ v) ∧ u = observe v).
+    exists v, s = observe (PTree.interp_tree Handler.id_ v) ∧ u = observe v).
   - intros s u [v [-> ->]].
     destruct (ptree_stable_hitting_exists (MF := MF) (observe v)) as [mu Hmu].
     eapply stable_hitting_match_of_hitting_lift with
@@ -186,7 +186,7 @@ Local Notation structural := (Relation.peutt_of_pstruct
   (relational_bind_of_laws FB) Hmixed Hzero Hlimit).
 
 Theorem peutt_interp_trigger_event {E F X} (h : Handler MN E F) (e : E X) :
-  peutt (MF := MF) eq (PTree.interp h (PTree.trigger e)) (h X e).
+  peutt (MF := MF) eq (PTree.interp_tree h (PTree.trigger e)) (h X e).
 Proof.
   eapply peutt_trans with (y := Tau (h X e)); [|apply peutt_tau_l].
   apply structural.

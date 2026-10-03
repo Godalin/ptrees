@@ -143,7 +143,7 @@ End Interpreting.
 
 Theorem interp_itree_postcompose {E F G MN A}
     (h : Handler.Handler MN E F) (g : Handler.Handler MN F G) (t : itree E A) :
-  pstruct eq (PTree.interp g (interp_itree h t))
+  pstruct eq (PTree.interp_tree g (interp_itree h t))
     (interp_itree (Handler.cat h g) t).
 Proof. apply pstruct_interp_compose. Qed.
 

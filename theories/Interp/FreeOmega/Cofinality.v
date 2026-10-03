@@ -38,14 +38,14 @@ Definition ptree_interp_approx_cofinal {R}
     (t : ptree E MN R) : Prop :=
   free_omega_chains_cofinal eq
     (λ fuel, ptree_hitting_approx (MF := MF) fuel
-      (observe (PTree.interp handler t)))
+      (observe (PTree.interp_tree handler t)))
     (λ fuel, ptree_interp_diagonal_approx fuel handler t).
 
 Lemma ptree_interp_hitting_le_diagonal {R}
     (fuel : nat) (t : ptree E MN R) :
   free_omega_approx eq
     (ptree_hitting_approx (MF := MF) fuel
-      (observe (PTree.interp handler t)))
+      (observe (PTree.interp_tree handler t)))
     (ptree_interp_diagonal_approx fuel handler t).
 Proof.
   exact (@Scheduling.ptree_interp_hitting_le_diagonal E F MN MF
@@ -66,7 +66,7 @@ Lemma ptree_interp_split_le_hitting {R}
   free_omega_approx eq
     (ptree_interp_split_approx source_fuel head_fuel t)
     (ptree_hitting_approx (MF := MF) (source_fuel + head_fuel)
-      (observe (PTree.interp handler t))).
+      (observe (PTree.interp_tree handler t))).
 Proof.
   exact (@Scheduling.ptree_interp_split_le_hitting E F MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) FreeOmegaMixedMeasure (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO))
@@ -78,12 +78,12 @@ Lemma ptree_interp_diagonal_le_hitting {R}
   free_omega_approx eq
     (ptree_interp_diagonal_approx fuel handler t)
     (ptree_hitting_approx (MF := MF) (2 * fuel)
-      (observe (PTree.interp handler t))).
+      (observe (PTree.interp_tree handler t))).
 Proof.
   change (free_omega_approx eq
     (ptree_interp_split_approx fuel fuel t)
     (ptree_hitting_approx (MF := MF) (2 * fuel)
-      (observe (PTree.interp handler t)))).
+      (observe (PTree.interp_tree handler t)))).
   replace (2 * fuel) with (fuel + fuel) by lia.
   apply ptree_interp_split_le_hitting.
 Qed.

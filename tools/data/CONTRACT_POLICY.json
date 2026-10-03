@@ -76,6 +76,7 @@
       "exports": [
         "PTree.Core.PTreeDefinition",
         "PTree.Core.Handler",
+        "PTree.Core.Fold",
         "PTreeDefinition.PTree",
         "PTreeNotations"
       ],
@@ -125,7 +126,10 @@
         "PTree.Interp.ExceptionFacts",
         "PTree.Interp.FreeOmega.Atomic",
         "PTree.Interp.FreeOmega.MDP",
-        "PTree.Interp.FreeOmega.HandlerCompletion"
+        "PTree.Interp.FreeOmega.HandlerCompletion",
+        "PTree.Interp.FoldPTree",
+        "PTree.Interp.StateFold",
+        "PTree.Interp.StateFoldFacts"
       ],
       "aliases": {}
     },

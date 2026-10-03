@@ -51,7 +51,7 @@ Local Lemma interp_bind_ret_l A B (x : A) (k : A → MF B) :
 Proof. apply (sem_eq_refl (SI := FI)). Qed.
 
 Theorem mdp_state_interp (Hhandler : mdp_handler) (t : tree) :
-  sstate t → tstate (PTree.interp handler t).
+  sstate t → tstate (PTree.interp_tree handler t).
 Proof.
   exact (PTree.Interp.MDP.mdp_state_interp_of_ret_l (FI := FI) (FC := FC)
     (MX := FreeOmegaMixedMeasure) (FO := FO) interp_bind_ret_l Hhandler (t := t)).
@@ -62,9 +62,9 @@ Qed.
 Theorem mdp_interp_peutt_trans_iff (Hhandler : mdp_handler) t u :
   sstate t → sstate u →
   (@peutt F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
-      (PTree.interp handler t) (PTree.interp handler u) ↔
+      (PTree.interp_tree handler t) (PTree.interp_tree handler u) ↔
    @trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
-      (PTree.interp handler t) (PTree.interp handler u)).
+      (PTree.interp_tree handler t) (PTree.interp_tree handler u)).
 Proof.
   exact (PTree.Interp.MDP.mdp_interp_peutt_trans_iff
     (FI := FI) (FC := FC) (MX := FreeOmegaMixedMeasure) (FO := FO)
@@ -76,7 +76,7 @@ Theorem mdp_guarded_interp_trans (Hhandler : mdp_handler)
   sstate t → sstate u →
   @trans_bisim E MN MF FI FC FreeOmegaMixedMeasure FO R R eq t u →
   @trans_bisim F MN MF FI FC FreeOmegaMixedMeasure FO R R eq
-    (PTree.interp handler t) (PTree.interp handler u).
+    (PTree.interp_tree handler t) (PTree.interp_tree handler u).
 Proof.
   exact (PTree.Interp.MDP.mdp_guarded_interp_trans
     (FI := FI) (FC := FC) (MX := FreeOmegaMixedMeasure) (FO := FO)
@@ -140,7 +140,7 @@ Proof.
     (atom := atomic_generic atom) Htotal_map ).
 Qed.
 
-Theorem mdp_state_interp_atomic t : state t → state (PTree.interp handler t).
+Theorem mdp_state_interp_atomic t : state t → state (PTree.interp_tree handler t).
 Proof.
   exact (PTree.Interp.MDPAtomic.mdp_state_interp_atomic
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)

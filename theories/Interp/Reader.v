@@ -20,7 +20,7 @@ Definition reader_handler {Env E MN} (env : Env) X (e : (readerE Env +' E) X) : 
   end.
 
 Definition run_reader {Env E MN A} (t : ptree (readerE Env +' E) MN A) (env : Env) : ptree E MN A :=
-  PTree.interp (reader_handler env) t.
+  PTree.interp_tree (reader_handler env) t.
 
 Lemma reader_ask_returns {Env E MN} env :
   @reader_handler Env E MN env _ (inl1 Ask) = Ret env.

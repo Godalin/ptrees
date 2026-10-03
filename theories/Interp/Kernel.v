@@ -27,7 +27,7 @@ Definition ptree_interp_head_tree {R}
   | FHRet r => Ret r
   | @FHVis _ _ _ X e k =>
       Tau (PTree.bind (@handler X e)
-        (λ x, PTree.interp handler (k x)))
+        (λ x, PTree.interp_tree handler (k x)))
   end.
 
 Definition ptree_interp_head_approx {R}
@@ -49,7 +49,7 @@ Definition ptree_interp_cofinal {R}
     (t : ptree E MN R) : Prop :=
   ∀ out,
     sem_lub (λ fuel, ptree_hitting_approx (MF := MF) fuel
-      (observe (PTree.interp handler t))) out ↔
+      (observe (PTree.interp_tree handler t))) out ↔
     sem_lub (λ fuel, ptree_interp_diagonal_approx
       fuel handler t) out.
 
@@ -94,7 +94,7 @@ Theorem ptree_stable_hitting_interp {R}
   ptree_stable_hitting (MF := MF) (observe t) hs →
   (∀ h, ptree_stable_hitting (MF := MF)
     (observe (ptree_interp_head_tree handler h)) (front h)) →
-  ptree_stable_hitting (MF := MF) (observe (PTree.interp handler t))
+  ptree_stable_hitting (MF := MF) (observe (PTree.interp_tree handler t))
     (sem_bind hs front).
 Proof.
   intros Hcofinal Hsource Hfront. unfold ptree_stable_hitting in *.

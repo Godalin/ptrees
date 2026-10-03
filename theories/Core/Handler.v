@@ -14,7 +14,7 @@ Definition Handler (MN E F : Type → Type) := ∀ X, E X → ptree F MN X.
 Definition id_ {MN E} : Handler MN E E := λ X e, PTree.trigger e.
 
 Definition cat {MN E F G} (h : Handler MN E F) (g : Handler MN F G) :
-    Handler MN E G := λ X e, PTree.interp g (h X e).
+    Handler MN E G := λ X e, PTree.interp_tree g (h X e).
 
 Definition case_ {MN E F G} (h : Handler MN E G) (g : Handler MN F G) :
     Handler MN (E +' F) G :=

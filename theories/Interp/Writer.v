@@ -26,7 +26,7 @@ Definition writer_handler {W E MN} (op : Monoid W) X (e : (writerE W +' E) X) :
 
 Definition run_writer {W E MN A} (op : Monoid W) (t : ptree (writerE W +' E) MN A) :
     ptree E MN (W*A) :=
-  run_state (PTree.interp (writer_handler op) t) (monoid_unit op).
+  run_state (PTree.interp_tree (writer_handler op) t) (monoid_unit op).
 
 Lemma writer_tell_appends {W E MN} (op : Monoid W) w :
   @writer_handler W E MN op _ (inl1 (Tell w)) =

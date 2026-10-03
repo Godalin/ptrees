@@ -36,7 +36,7 @@ Variables (pc : phase) (counts : counters) (script : script_state).
 Local Notation "'Run' sampler" :=
   (run_exception
     (run_state
-      (PTree.interp device_handler
+      (PTree.interp_tree device_handler
         (run_state (controller (embed sampler) pc) counts)) script))
   (at level 10, sampler at next level).
 

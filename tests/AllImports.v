@@ -424,6 +424,7 @@ Require PTree.Tests.Imports.CapabilityBoundaries.
 Require PTree.Tests.Imports.MathCompUniverse.
 Require PTree.Tests.Imports.PublicBehavior.
 Require PTree.Tests.Imports.PublicHandlers.
+Require PTree.Tests.Imports.PublicInterpretation.
 Require PTree.Tests.Imports.PublicSemanticFacade.
 Require PTree.Tests.Imports.StructuralRegistry.
 Require PTree.Tests.Imports.UniverseSeparatedPTree.

@@ -117,19 +117,19 @@ Definition two_query_source_handler X (e : questionE X) : itree questionE X :=
 
 Example returning_source_square :
   @from_itree questionE SubEnumQ unit (Interp.interp returning_source_handler source_service) ≈ₚ
-  PTree.interp (λ X e, @from_itree questionE SubEnumQ X (returning_source_handler e))
+  PTree.interp_tree (λ X e, @from_itree questionE SubEnumQ X (returning_source_handler e))
     (from_itree source_service).
 Proof. apply free_omega_from_itree_interp. Qed.
 
 Example divergent_source_square :
   @from_itree questionE SubEnumQ unit (Interp.interp divergent_source_handler source_service) ≈ₚ
-  PTree.interp (λ X e, @from_itree questionE SubEnumQ X (divergent_source_handler e))
+  PTree.interp_tree (λ X e, @from_itree questionE SubEnumQ X (divergent_source_handler e))
     (from_itree source_service).
 Proof. apply free_omega_from_itree_interp. Qed.
 
 Example two_query_source_square :
   @from_itree questionE SubEnumQ unit (Interp.interp two_query_source_handler source_service) ≈ₚ
-  PTree.interp (λ X e, @from_itree questionE SubEnumQ X (two_query_source_handler e))
+  PTree.interp_tree (λ X e, @from_itree questionE SubEnumQ X (two_query_source_handler e))
     (from_itree source_service).
 Proof. apply free_omega_from_itree_interp. Qed.
 

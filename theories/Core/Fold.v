@@ -1,8 +1,8 @@
 (** General monadic interpretation: [fold] takes both the event and native
-    sampling algebras; [interpM] selects the latter from the target.
+    sampling algebras; [interp] selects the latter from the target.
     Monad/MonadIter operations suffice to define these functions, not to
-    prove their equational laws. The productive [PTree.interp] remains the
-    tree-to-tree interface; agreement is a separate behavioral theorem. *)
+    prove their equational laws. The productive [PTree.interp_tree] is the
+    internal tree-to-tree implementation; agreement is behavioral. *)
 From Coq Require Import Utf8.
 
 Set Universe Polymorphism.
@@ -41,13 +41,13 @@ Lemma fold_step_prob {A X} (mu : MN X) (k : X → ptree E MN A) :
 Proof. reflexivity. Qed.
 End Fold.
 
-Definition interpM {E MN T : Type → Type}
+Definition interp {E MN T : Type → Type}
     `{MT : Monad T} `{IT : MonadIter T} `{ST : MonadSample MN T}
     (handle : ∀ X, E X → T X) {A} (t : ptree E MN A) : T A :=
   fold handle (λ X mu, @msample MN T ST X mu) t.
 
-Lemma interpM_as_fold {E MN T : Type → Type}
+Lemma interp_as_fold {E MN T : Type → Type}
     `{MT : Monad T} `{IT : MonadIter T} `{ST : MonadSample MN T}
     (handle : ∀ X, E X → T X) {A} (t : ptree E MN A) :
-  interpM handle t = fold handle (λ X mu, @msample MN T ST X mu) t.
+  interp handle t = fold handle (λ X mu, @msample MN T ST X mu) t.
 Proof. reflexivity. Qed.

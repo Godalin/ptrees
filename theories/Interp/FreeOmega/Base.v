@@ -111,7 +111,7 @@ Corollary peutt_interp_trigger {R} (t : ptree E MN R) :
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
-    (PTree.interp (λ X e, @PTree.trigger E MN X e) t) t.
+    (PTree.interp_tree (λ X e, @PTree.trigger E MN X e) t) t.
 Proof.
   change (@peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -250,7 +250,7 @@ Theorem peutt_interp_structural
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A B RR
-    (PTree.interp handler t1) (PTree.interp handler t2).
+    (PTree.interp_tree handler t1) (PTree.interp_tree handler t2).
 Proof.
   intro Hstruct. apply peutt_of_pstruct.
   apply pstruct_interp. exact Hstruct.
@@ -334,14 +334,14 @@ Theorem peutt_interp_of_head_lifts
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A0 B0 RR0
-    (PTree.interp handler0 t1) (PTree.interp handler0 t2).
+    (PTree.interp_tree handler0 t1) (PTree.interp_tree handler0 t2).
 Proof.
   intros Hsource1 Hsource2 Hfront1 Hfront2 HsourceLift HfrontLift.
   assert (Htarget1 : @ptree_stable_hitting F MN MF
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A0
-      (observe (PTree.interp handler0 t1))
+      (observe (PTree.interp_tree handler0 t1))
       (free_omega_bind source1 front1)).
   { eapply (ptree_stable_hitting_interp
       (FI := FreeOmegaObservableSemanticMeasure)
@@ -354,7 +354,7 @@ Proof.
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega B0
-      (observe (PTree.interp handler0 t2))
+      (observe (PTree.interp_tree handler0 t2))
       (free_omega_bind source2 front2)).
   { eapply (ptree_stable_hitting_interp
       (FI := FreeOmegaObservableSemanticMeasure)
@@ -380,7 +380,7 @@ Theorem peutt_interp_ret {R}
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
-    (PTree.interp handler (Ret r)) (Ret r).
+    (PTree.interp_tree handler (Ret r)) (Ret r).
 Proof.
   apply peutt_of_pstruct.
   apply observe_eq_pstruct. exact (observing_observe (interp_ret_ handler r)).
@@ -393,7 +393,7 @@ Theorem peutt_interp_tau {R}
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
-    (PTree.interp handler (Tau t)) (Tau (PTree.interp handler t)).
+    (PTree.interp_tree handler (Tau t)) (Tau (PTree.interp_tree handler t)).
 Proof.
   apply peutt_of_pstruct.
   apply observe_eq_pstruct. exact (observing_observe (interp_tau_ handler t)).
@@ -407,9 +407,9 @@ Theorem peutt_interp_vis {R X}
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
-    (PTree.interp handler (Vis e k))
+    (PTree.interp_tree handler (Vis e k))
     (Tau (PTree.bind (handler _ e)
-      (λ x, PTree.interp handler (k x)))).
+      (λ x, PTree.interp_tree handler (k x)))).
 Proof.
   apply peutt_of_pstruct.
   apply observe_eq_pstruct. exact (observing_observe (interp_vis_ handler e k)).
@@ -423,8 +423,8 @@ Theorem peutt_interp_prob {R X}
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
-    (PTree.interp handler (Prob mu k))
-    (Prob mu (λ x, PTree.interp handler (k x))).
+    (PTree.interp_tree handler (Prob mu k))
+    (Prob mu (λ x, PTree.interp_tree handler (k x))).
 Proof.
   apply peutt_of_pstruct.
   apply observe_eq_pstruct. exact (observing_observe (interp_prob_ handler mu k)).
@@ -438,9 +438,9 @@ Theorem peutt_interp_bind {A B}
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega B B eq
-    (PTree.interp handler (PTree.bind t k))
-    (PTree.bind (PTree.interp handler t)
-      (λ x, PTree.interp handler (k x))).
+    (PTree.interp_tree handler (PTree.bind t k))
+    (PTree.bind (PTree.interp_tree handler t)
+      (λ x, PTree.interp_tree handler (k x))).
 Proof.
   apply peutt_of_pstruct.
   apply pstruct_interp_bind.
@@ -459,8 +459,8 @@ Theorem peutt_interp_iter {I R}
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
-    (PTree.interp handler (PTree.iter step i))
-    (PTree.iter (λ j, PTree.interp handler (step j)) i).
+    (PTree.interp_tree handler (PTree.iter step i))
+    (PTree.iter (λ j, PTree.interp_tree handler (step j)) i).
 Proof.
   apply peutt_of_pstruct.
   apply pstruct_interp_iter.
@@ -478,10 +478,10 @@ Theorem peutt_interp_compose
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
-    (PTree.interp handler2 (PTree.interp handler1 t))
-    (PTree.interp
+    (PTree.interp_tree handler2 (PTree.interp_tree handler1 t))
+    (PTree.interp_tree
       (λ (X : Type) (e : E X),
-        PTree.interp handler2 (@handler1 X e)) t).
+        PTree.interp_tree handler2 (@handler1 X e)) t).
 Proof.
   apply peutt_of_pstruct.
   apply pstruct_interp_compose.
@@ -499,7 +499,7 @@ Theorem peutt_interp_handler {R}
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
-    (PTree.interp handler1 t) (PTree.interp handler2 t).
+    (PTree.interp_tree handler1 t) (PTree.interp_tree handler2 t).
 Proof.
   apply peutt_of_pstruct.
   apply pstruct_interp_handler. exact Hhandler.
@@ -559,7 +559,7 @@ Theorem peutt_interp_of_vis_fusion
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A B RR
-      (PTree.interp handler t1) (PTree.interp handler t2).
+      (PTree.interp_tree handler t1) (PTree.interp_tree handler t2).
 Proof. apply Preservation.peutt_interp_of_vis_fusion. exact Hvis. Qed.
 
 (** Exact closure obligation for an arbitrary effectful handler.  Compared
@@ -585,7 +585,7 @@ Theorem peutt_interp_of_generator_closed
       FreeOmegaObservableSemanticMeasureCoreLaws
       FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega A B RR
-      (PTree.interp handler t1) (PTree.interp handler t2).
+      (PTree.interp_tree handler t1) (PTree.interp_tree handler t2).
 Proof. apply Preservation.peutt_interp_of_generator_closed. exact Hclosed. Qed.
 
 End FreeOmegaInterpCoinduction.

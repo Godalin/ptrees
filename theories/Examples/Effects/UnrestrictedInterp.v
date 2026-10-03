@@ -57,27 +57,27 @@ Proof. reflexivity. Qed.
 Example heterogeneous_elimination {A B} (RR : A → B → Prop) env
     (t : ptree (readerE bool +' E) SubEnumQ A) (u : ptree (readerE bool +' E) SubEnumQ B) :
   W _ _ _ RR t u →
-  W _ _ _ RR (PTree.interp (reader_handler env) t) (PTree.interp (reader_handler env) u).
+  W _ _ _ RR (PTree.interp_tree (reader_handler env) t) (PTree.interp_tree (reader_handler env) u).
 Proof. apply PTree.Interp.FreeOmega.Unrestricted.peutt_interp. Qed.
 
 CoFixpoint forever_ask : ptree (readerE bool +' E) SubEnumQ unit :=
   Vis (inl1 Ask) (λ _, forever_ask).
 
 Example infinitely_many_eliminated_events env :
-  W _ _ _ eq (PTree.interp (reader_handler env) (Tau forever_ask))
-    (PTree.interp (reader_handler env) forever_ask).
+  W _ _ _ eq (PTree.interp_tree (reader_handler env) (Tau forever_ask))
+    (PTree.interp_tree (reader_handler env) forever_ask).
 Proof. apply heterogeneous_elimination. apply peutt_tau_l. Qed.
 
 #[local] Instance reader_interp_Proper env A :
   Proper (W (readerE bool +' E) A A eq ==> W E A A eq)
-    (@PTree.interp _ _ _ (reader_handler env) A).
+    (@PTree.interp_tree _ _ _ (reader_handler env) A).
 Proof.
   apply (Unrestricted.peutt_interp_Proper free_omega_relational_zero free_omega_relational_lub).
 Qed.
 
 Example eliminating_setoid_rewrite env (t u : ptree (readerE bool +' E) SubEnumQ nat)
     (H : W _ _ _ eq t u) :
-  W _ _ _ eq (PTree.interp (reader_handler env) t) (PTree.interp (reader_handler env) u).
+  W _ _ _ eq (PTree.interp_tree (reader_handler env) t) (PTree.interp_tree (reader_handler env) u).
 Proof. setoid_rewrite H. apply peutt_refl. Qed.
 End ReaderClient.
 
@@ -94,7 +94,7 @@ Definition mixed_handler {E} X (e : (readerE bool +' E) X) : ptree E SubEnumQ X 
     it is not the old AE-visible guarded profile. *)
 Example partial_mixed_handler {E A B} (RR : A → B → Prop)
     (t : ptree (readerE bool +' E) SubEnumQ A) (u : ptree (readerE bool +' E) SubEnumQ B) :
-  W _ _ _ RR t u → W _ _ _ RR (PTree.interp (@mixed_handler E) t) (PTree.interp (@mixed_handler E) u).
+  W _ _ _ RR t u → W _ _ _ RR (PTree.interp_tree (@mixed_handler E) t) (PTree.interp_tree (@mixed_handler E) u).
 Proof. apply PTree.Interp.FreeOmega.Unrestricted.peutt_interp. Qed.
 
 (** An independent real-weight native client uses the SAME completion
@@ -106,5 +106,5 @@ Example real_arbitrary_handler (R : realType) {E F A B} (RR : A → B → Prop)
     (h : ∀ X, E X → ptree F (SubEnumR R) X)
     (t : ptree E (SubEnumR R) A) (u : ptree E (SubEnumR R) B) :
   peutt (MF := FreeOmega (SubEnumR R)) RR t u →
-  peutt (MF := FreeOmega (SubEnumR R)) RR (PTree.interp h t) (PTree.interp h u).
+  peutt (MF := FreeOmega (SubEnumR R)) RR (PTree.interp_tree h t) (PTree.interp_tree h u).
 Proof. apply PTree.Interp.FreeOmega.Unrestricted.peutt_interp. Qed.

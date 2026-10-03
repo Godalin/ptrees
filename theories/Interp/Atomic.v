@@ -91,7 +91,7 @@ Definition atomic_head (h : head) : head :=
   match h with
   | FHRet r => FHRet r
   | @FHVis _ _ _ X e k => FHVis (atomic_rename atom e)
-      (λ x, PTree.bind (atomic_cont atom e x) (λ a, PTree.interp handler (k a)))
+      (λ x, PTree.bind (atomic_cont atom e x) (λ a, PTree.interp_tree handler (k a)))
   end.
 Definition atomic_map (mu : MF head) : MF head :=
   sem_bind mu (λ h, sem_ret (atomic_head h)).
@@ -112,17 +112,17 @@ Proof.
   destruct h as [r|X e k].
   - apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)).
   - destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-      (λ x, PTree.interp handler (k x))) as [front Hfront].
+      (λ x, PTree.interp_tree handler (k x))) as [front Hfront].
     apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
     eapply hits_proper.
     + apply (sem_bind_ret_l (FHVis (atomic_rename atom e) (atomic_cont atom e))
-        (bind_frontier (FI := FI) (λ x, PTree.interp handler (k x)) front)).
+        (bind_frontier (FI := FI) (λ x, PTree.interp_tree handler (k x)) front)).
     + eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO));
         [apply Preservation.bind_cofinal_all|apply atomic_start|exact Hfront].
 Qed.
 
 Lemma atomic_interp_hitting (t : tree) mu :
-  hits t mu → hits (PTree.interp handler t) (atomic_map mu).
+  hits t mu → hits (PTree.interp_tree handler t) (atomic_map mu).
 Proof.
   intro Hhit. eapply (ptree_stable_hitting_interp (FI := FI) (FO := FO)).
   - apply Scheduling.ptree_interp_cofinal_all.
@@ -155,7 +155,7 @@ Proof. exact (atomic_finish_bind_of_ret_l (@sem_bind_ret_l MF FI FB) e (x := x) 
 Definition atomic_normalizes (target source : tree) : Prop :=
   ∃ mu, hits source mu ∧ hits target (atomic_map mu).
 
-Lemma atomic_normalizes_interp t : atomic_normalizes (PTree.interp handler t) t.
+Lemma atomic_normalizes_interp t : atomic_normalizes (PTree.interp_tree handler t) t.
 Proof.
   destruct (stable_hitting_exists (FI := FI) (FO := FO)
     (@ptree_primitive_kernel E MN MF FI MX R) (observe t)) as [mu Hmu].
@@ -361,7 +361,7 @@ Proof.
 Qed.
 
 Theorem trans_bisim_interp_atomic (t u : tree) :
-  TB t u → TB (PTree.interp handler t) (PTree.interp handler u).
+  TB t u → TB (PTree.interp_tree handler t) (PTree.interp_tree handler u).
 Proof.
   intro Htu. eapply trans_bisim_coinduction with (sim := atomic_candidate).
   - exact atomic_candidate_postfixed.

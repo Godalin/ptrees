@@ -151,18 +151,18 @@ Lemma unfold_aloop_ {E M A B} (f : A → ptree E M (A + B)) (x : A) :
 Proof. constructor; reflexivity. Qed.
 
 (** Unfolding equations for event interpretation.  The visible equation
-    exposes the administrative guard inserted by [PTree.interp]. *)
+    exposes the administrative guard inserted by [PTree.interp_tree]. *)
 Lemma observe_interp {E F M R}
     (handler : ∀ X, E X → ptree F M X) (t : ptree E M R) :
-  observe (PTree.interp handler t) =
+  observe (PTree.interp_tree handler t) =
     match observe t with
     | RetF r => RetF r
-    | TauF t' => TauF (PTree.interp handler t')
+    | TauF t' => TauF (PTree.interp_tree handler t')
     | @VisF _ _ _ _ X e k =>
         TauF (PTree.bind (handler X e)
-          (λ x, PTree.interp handler (k x)))
+          (λ x, PTree.interp_tree handler (k x)))
     | @ProbF _ _ _ _ X mu k =>
-        ProbF mu (λ x, PTree.interp handler (k x))
+        ProbF mu (λ x, PTree.interp_tree handler (k x))
     end.
 Proof.
   destruct (observe t) eqn:Ht; unfold observe; cbn; rewrite Ht; reflexivity.
@@ -170,29 +170,29 @@ Qed.
 
 Lemma interp_ret_ {E F M R}
     (handler : ∀ X, E X → ptree F M X) (r : R) :
-  observing eq (PTree.interp handler (Ret r)) (Ret r).
+  observing eq (PTree.interp_tree handler (Ret r)) (Ret r).
 Proof. constructor; reflexivity. Qed.
 
 Lemma interp_tau_ {E F M R}
     (handler : ∀ X, E X → ptree F M X)
     (t : ptree E M R) :
-  observing eq (PTree.interp handler (Tau t))
-    (Tau (PTree.interp handler t)).
+  observing eq (PTree.interp_tree handler (Tau t))
+    (Tau (PTree.interp_tree handler t)).
 Proof. constructor; reflexivity. Qed.
 
 Lemma interp_vis_ {E F M R X}
     (handler : ∀ X, E X → ptree F M X)
     (e : E X) (k : X → ptree E M R) :
-  observing eq (PTree.interp handler (Vis e k))
+  observing eq (PTree.interp_tree handler (Vis e k))
     (Tau (PTree.bind (handler _ e)
-      (λ x, PTree.interp handler (k x)))).
+      (λ x, PTree.interp_tree handler (k x)))).
 Proof. constructor; reflexivity. Qed.
 
 Lemma interp_prob_ {E F M R X}
     (handler : ∀ X, E X → ptree F M X)
     (mu : M X) (k : X → ptree E M R) :
-  observing eq (PTree.interp handler (Prob mu k))
-    (Prob mu (λ x, PTree.interp handler (k x))).
+  observing eq (PTree.interp_tree handler (Prob mu k))
+    (Prob mu (λ x, PTree.interp_tree handler (k x))).
 Proof. constructor; reflexivity. Qed.
 
 

@@ -48,8 +48,8 @@ Context {A B : Type} (RR : A → B → Prop)
 Definition interp_rel_candidate
     (s1 : ptree' F MN A) (s2 : ptree' F MN B) : Prop :=
   ∃ (t1 : ptree E MN A) (t2 : ptree E MN B),
-    s1 = observe (PTree.interp handler1 t1) ∧
-    s2 = observe (PTree.interp handler2 t2) ∧
+    s1 = observe (PTree.interp_tree handler1 t1) ∧
+    s2 = observe (PTree.interp_tree handler2 t2) ∧
     @peutt E MN MF
       FI
       FC
@@ -109,7 +109,7 @@ Theorem peutt_interp_rel_of_vis_fusion
       FC
       MX
       FO A B RR
-      (PTree.interp handler1 t1) (PTree.interp handler2 t2).
+      (PTree.interp_tree handler1 t1) (PTree.interp_tree handler2 t2).
 Proof.
   intros t1 t2 Hsource.
   eapply (peutt_coinduction_upto_bind
@@ -168,7 +168,7 @@ Proof.
       FI
       MX
       FO A
-      (observe (PTree.interp handler1 u1))
+      (observe (PTree.interp_tree handler1 u1))
       (sem_bind source1 front1)).
     { eapply (ptree_stable_hitting_interp
         (FI := FI)
@@ -182,7 +182,7 @@ Proof.
       FI
       MX
       FO B
-      (observe (PTree.interp handler2 u2))
+      (observe (PTree.interp_tree handler2 u2))
       (sem_bind source2 front2)).
     { eapply (ptree_stable_hitting_interp
         (FI := FI)

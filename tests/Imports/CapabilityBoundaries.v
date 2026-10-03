@@ -38,7 +38,7 @@ Example structural_interp_without_ae {A B} (RR : A -> B -> Prop)
     (t : ptree E MN A) (u : ptree E MN B) :
   pstruct RR t u ->
   @peutt F MN MF FI FC FreeOmegaMixedMeasure FO A B RR
-    (PTree.interp handler t) (PTree.interp handler u).
+    (PTree.interp_tree handler t) (PTree.interp_tree handler u).
 Proof. apply peutt_interp_structural. Qed.
 
 Example structural_translate_without_ae {A B} (RR : A -> B -> Prop)
@@ -71,6 +71,6 @@ Example mdp_interp_without_aelift {R}
     (handler : forall X, E X -> ptree F MN X)
     (Hhandler : mdp_handler (R := R) handler) (t : ptree E MN R) :
   @mdp_state E MN MF FI FC FreeOmegaMixedMeasure FO R t ->
-  @mdp_state F MN MF FI FC FreeOmegaMixedMeasure FO R (PTree.interp handler t).
+  @mdp_state F MN MF FI FC FreeOmegaMixedMeasure FO R (PTree.interp_tree handler t).
 Proof. apply mdp_state_interp. exact Hhandler. Qed.
 End StructuralCapabilities.

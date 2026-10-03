@@ -183,11 +183,11 @@ Local Definition before := λ X (e : E X), Tau (@h X e).
 Local Definition run (t : ptree E MN A) := fold before (@PTree.sample F MN) t.
 Local Definition finish (v : ptree E MN A + A) :=
   match v with inl t => Tau (run t) | inr a => Ret a end.
-Local Definition interpreted (t : ptree E MN A) := PTree.interp h (paced t).
+Local Definition interpreted (t : ptree E MN A) := PTree.interp_tree h (paced t).
 Local Definition active {X} (u : ptree F MN X) (k : X → ptree E MN A) :=
   PTree.bind (PTree.bind u (λ x, Ret (inl (k x)))) finish.
 Local Definition active_interp {X} (u : ptree F MN X) (k : X → ptree E MN A) :=
-  PTree.bind u (λ x, PTree.interp h (Tau (paced (k x)))).
+  PTree.bind u (λ x, PTree.interp_tree h (Tau (paced (k x)))).
 
 Local Lemma observe_run t :
   observe (run t) = match observe t with
@@ -262,7 +262,7 @@ Local Notation structural :=
 (** Neither source termination nor a guarded handler is assumed. The
     probability obligations are the existing generic relational profile. *)
 Theorem fold_ptree_interp {A} (t : ptree E MN A) :
-  W (fold h (@PTree.sample F MN) t) (PTree.interp h t).
+  W (fold h (@PTree.sample F MN) t) (PTree.interp_tree h t).
 Proof.
   transitivity (fold (before h) (@PTree.sample F MN) t).
   - unfold fold. apply (peutt_iter_Proper Hzero Hlimit); [|reflexivity].
@@ -270,80 +270,80 @@ Proof.
     eapply peutt_bind with (RR := eq).
     + apply peutt_tau_r.
     + intros x y ->. apply peutt_refl.
-  - transitivity (PTree.interp h (paced t)).
+  - transitivity (PTree.interp_tree h (paced t)).
     + apply structural. apply fold_before_structural.
     + apply (Unrestricted.peutt_interp Hzero Hlimit).
       apply (paced_peutt Hmixed Hzero Hlimit).
 Qed.
 
-Theorem interpM_ptree_agrees {A} (t : ptree E MN A) :
-  W (interpM h t) (PTree.interp h t).
+Theorem interp_ptree_agrees {A} (t : ptree E MN A) :
+  W (interp h t) (PTree.interp_tree h t).
 Proof. apply fold_ptree_interp. Qed.
 
-Theorem interpM_ptree_ret {A} (a : A) : W (interpM h (Ret a)) (Ret a).
+Theorem interp_ptree_ret {A} (a : A) : W (interp h (Ret a)) (Ret a).
 Proof.
-  transitivity (PTree.interp h (Ret a)); [apply interpM_ptree_agrees|].
+  transitivity (PTree.interp_tree h (Ret a)); [apply interp_ptree_agrees|].
   apply peutt_observe_eq. reflexivity.
 Qed.
 
-Theorem interpM_ptree_bind {A B} (t : ptree E MN A) (k : A → ptree E MN B) :
-  W (interpM h (PTree.bind t k))
-    (PTree.bind (interpM h t) (λ x, interpM h (k x))).
+Theorem interp_ptree_bind {A B} (t : ptree E MN A) (k : A → ptree E MN B) :
+  W (interp h (PTree.bind t k))
+    (PTree.bind (interp h t) (λ x, interp h (k x))).
 Proof.
-  transitivity (PTree.interp h (PTree.bind t k)); [apply interpM_ptree_agrees|].
-  transitivity (PTree.bind (PTree.interp h t) (λ x, PTree.interp h (k x))).
+  transitivity (PTree.interp_tree h (PTree.bind t k)); [apply interp_ptree_agrees|].
+  transitivity (PTree.bind (PTree.interp_tree h t) (λ x, PTree.interp_tree h (k x))).
   - apply structural. apply pstruct_interp_bind.
   - eapply peutt_bind with (RR := eq).
-    + symmetry. apply interpM_ptree_agrees.
-    + intros x y ->. symmetry. apply interpM_ptree_agrees.
+    + symmetry. apply interp_ptree_agrees.
+    + intros x y ->. symmetry. apply interp_ptree_agrees.
 Qed.
 
-Theorem interpM_ptree_tau {A} (t : ptree E MN A) :
-  W (interpM h (Tau t)) (interpM h t).
+Theorem interp_ptree_tau {A} (t : ptree E MN A) :
+  W (interp h (Tau t)) (interp h t).
 Proof.
-  rewrite !interpM_ptree_agrees.
-  transitivity (Tau (PTree.interp h t)); [apply peutt_observe_eq; reflexivity|].
+  rewrite !interp_ptree_agrees.
+  transitivity (Tau (PTree.interp_tree h t)); [apply peutt_observe_eq; reflexivity|].
   apply peutt_tau_l.
 Qed.
 
-Theorem interpM_ptree_vis {A X} (e : E X) (k : X → ptree E MN A) :
-  W (interpM h (Vis e k)) (PTree.bind (h e) (λ x, interpM h (k x))).
+Theorem interp_ptree_vis {A X} (e : E X) (k : X → ptree E MN A) :
+  W (interp h (Vis e k)) (PTree.bind (h e) (λ x, interp h (k x))).
 Proof.
-  setoid_rewrite interpM_ptree_agrees.
-  transitivity (Tau (PTree.bind (h e) (λ x, PTree.interp h (k x))));
+  setoid_rewrite interp_ptree_agrees.
+  transitivity (Tau (PTree.bind (h e) (λ x, PTree.interp_tree h (k x))));
     [apply peutt_observe_eq; reflexivity|apply peutt_tau_l].
 Qed.
 
-Theorem interpM_ptree_prob {A X} (mu : MN X) (k : X → ptree E MN A) :
-  W (interpM h (Prob mu k)) (Prob mu (λ x, interpM h (k x))).
+Theorem interp_ptree_prob {A X} (mu : MN X) (k : X → ptree E MN A) :
+  W (interp h (Prob mu k)) (Prob mu (λ x, interp h (k x))).
 Proof.
   assert (Hsample : ∀ c : X → ptree F MN A,
     W (PTree.bind (PTree.sample mu) c) (Prob mu c)).
   { intro c. apply structural. apply pstruct_fold.
     cbn. constructor. intro x. apply observe_eq_pstruct. reflexivity. }
-  transitivity (PTree.interp h (Prob mu k)); [apply interpM_ptree_agrees|].
-  transitivity (Prob mu (λ x, PTree.interp h (k x)));
+  transitivity (PTree.interp_tree h (Prob mu k)); [apply interp_ptree_agrees|].
+  transitivity (Prob mu (λ x, PTree.interp_tree h (k x)));
     [apply peutt_observe_eq; reflexivity|].
   rewrite <- !Hsample.
   eapply peutt_bind with (RR := eq); [apply peutt_refl|].
-  intros x y ->. symmetry. apply interpM_ptree_agrees.
+  intros x y ->. symmetry. apply interp_ptree_agrees.
 Qed.
 
-Theorem interpM_ptree_iter {I A} (step : I → ptree E MN (I+A)) i :
-  W (interpM h (PTree.iter step i)) (PTree.iter (λ j, interpM h (step j)) i).
+Theorem interp_ptree_iter {I A} (step : I → ptree E MN (I+A)) i :
+  W (interp h (PTree.iter step i)) (PTree.iter (λ j, interp h (step j)) i).
 Proof.
-  transitivity (PTree.interp h (PTree.iter step i)); [apply interpM_ptree_agrees|].
-  transitivity (PTree.iter (λ j, PTree.interp h (step j)) i).
+  transitivity (PTree.interp_tree h (PTree.iter step i)); [apply interp_ptree_agrees|].
+  transitivity (PTree.iter (λ j, PTree.interp_tree h (step j)) i).
   - apply structural. apply pstruct_interp_iter.
   - apply (peutt_iter_Proper Hzero Hlimit); [|reflexivity].
-    intro j. symmetry. apply interpM_ptree_agrees.
+    intro j. symmetry. apply interp_ptree_agrees.
 Qed.
 
-Theorem interpM_ptree_peutt {A B} (RR : A → B → Prop)
+Theorem interp_ptree_peutt {A B} (RR : A → B → Prop)
     (t : ptree E MN A) (u : ptree E MN B) :
-  peutt (MF := MF) RR t u → peutt (MF := MF) RR (interpM h t) (interpM h u).
+  peutt (MF := MF) RR t u → peutt (MF := MF) RR (interp h t) (interp h u).
 Proof.
-  intro H. setoid_rewrite interpM_ptree_agrees.
+  intro H. setoid_rewrite interp_ptree_agrees.
   apply (Unrestricted.peutt_interp Hzero Hlimit). exact H.
 Qed.
 End Agreement.

@@ -42,7 +42,7 @@ Theorem mdp_state_interp_of_ret_l
     (Hret_l : ∀ A B (x : A) (k : A → MF B),
       sem_eq (sem_bind (sem_ret x) k) (k x))
     (Hhandler : mdp_handler) (t : ptree E MN R) :
-  sstate t → tstate (PTree.interp handler t).
+  sstate t → tstate (PTree.interp_tree handler t).
 Proof.
   intros [h [mu [Hhit [Heq Hgood]]]].
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
@@ -61,7 +61,7 @@ Qed.
 (** Class-based convenience wrapper. The primitive proof above consumes
     only the left-unit field, not unrelated laws in the bind record. *)
 Theorem mdp_state_interp (Hhandler : mdp_handler) (t : ptree E MN R) :
-  sstate t → tstate (PTree.interp handler t).
+  sstate t → tstate (PTree.interp_tree handler t).
 Proof.
   exact (mdp_state_interp_of_ret_l (@sem_bind_ret_l MF FI FB) Hhandler (t := t)).
 Qed.
@@ -72,9 +72,9 @@ Context `{FCAE : @SemanticMeasureCouplingAELaws MF FI}
 
 Theorem mdp_interp_peutt_trans_iff (Hhandler : mdp_handler) t u :
   sstate t → sstate u →
-  (@peutt F MN MF FI FC MX FO R R eq (PTree.interp handler t) (PTree.interp handler u) ↔
+  (@peutt F MN MF FI FC MX FO R R eq (PTree.interp_tree handler t) (PTree.interp_tree handler u) ↔
    @trans_bisim F MN MF FI FC MX FO R R eq
-     (PTree.interp handler t) (PTree.interp handler u)).
+     (PTree.interp_tree handler t) (PTree.interp_tree handler u)).
 Proof.
   intros Ht Hu. apply mdp_state_peutt_trans_iff;
     apply mdp_state_interp; assumption.
@@ -85,7 +85,7 @@ Theorem mdp_guarded_interp_trans (Hhandler : mdp_handler)
   sstate t → sstate u →
   @trans_bisim E MN MF FI FC MX FO R R eq t u →
   @trans_bisim F MN MF FI FC MX FO R R eq
-    (PTree.interp handler t) (PTree.interp handler u).
+    (PTree.interp_tree handler t) (PTree.interp_tree handler u).
 Proof.
   intros Ht Hu Htu.
   apply (proj1 (mdp_interp_peutt_trans_iff Hhandler Ht Hu)).

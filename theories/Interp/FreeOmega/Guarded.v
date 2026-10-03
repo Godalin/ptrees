@@ -53,7 +53,7 @@ Theorem peutt_interp_guarded {A B} (RR : A → B → Prop)
     (Hguard : guarded_handler) (t1 : ptree E MN A) (t2 : ptree E MN B) :
   @peutt E MN MF FI FC FreeOmegaMixedMeasure FO A B RR t1 t2 →
   @peutt F MN MF FI FC FreeOmegaMixedMeasure FO A B RR
-    (PTree.interp handler t1) (PTree.interp handler t2).
+    (PTree.interp_tree handler t1) (PTree.interp_tree handler t2).
 Proof. apply Guarded.peutt_interp_guarded. exact Hguard. Qed.
 
 (** Guardedness is an explicit local premise, not a globally synthesized
@@ -61,6 +61,6 @@ Proof. apply Guarded.peutt_interp_guarded. exact Hguard. Qed.
 Lemma peutt_interp_guarded_Proper {R} (Hguard : guarded_handler) :
   Proper (@peutt E MN MF FI FC FreeOmegaMixedMeasure FO R R eq ==>
           @peutt F MN MF FI FC FreeOmegaMixedMeasure FO R R eq)
-    (@PTree.interp E F MN handler R).
+    (@PTree.interp_tree E F MN handler R).
 Proof. intros t u Htu. exact (peutt_interp_guarded Hguard Htu). Qed.
 End GuardedInterp.

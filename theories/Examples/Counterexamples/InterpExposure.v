@@ -48,9 +48,9 @@ Lemma two_query_handler_first_hitting :
     (FORet (FHVis Query (λ _, Vis Query (λ x, Ret x)))).
 Proof. apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)). Qed.
 
-Definition exposure anti : tree := PTree.interp two_query_handler (correlation_program anti).
+Definition exposure anti : tree := PTree.interp_tree two_query_handler (correlation_program anti).
 Definition exposure_resume anti b (x : bool) : tree :=
-  PTree.interp two_query_handler (Ret (answer anti b x)).
+  PTree.interp_tree two_query_handler (Ret (answer anti b x)).
 Definition exposure_last anti b (x : bool) : tree :=
   PTree.bind (Ret x) (exposure_resume anti b).
 Definition exposure_second anti b : tree :=
@@ -82,7 +82,7 @@ Qed.
 Lemma exposure_hitting anti : hits (exposure anti) (exposure_front anti).
 Proof.
   change (hits (Prob subenumQ_fair (λ b,
-    PTree.interp two_query_handler (Vis Query (λ x, Ret (answer anti b x)))))
+    PTree.interp_tree two_query_handler (Vis Query (λ x, Ret (answer anti b x)))))
     (exposure_front anti)).
   eapply (ptree_stable_hitting_prob (FI := FI) (FO := FO)
     (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
@@ -191,7 +191,7 @@ Qed.
     [~ peutt P Q] to infer a negative transition-bisimulation statement. *)
 Theorem trans_bisim_interp_counterexample :
   TB P Q ∧
-  ¬ TB (PTree.interp two_query_handler P) (PTree.interp two_query_handler Q).
+  ¬ TB (PTree.interp_tree two_query_handler P) (PTree.interp_tree two_query_handler Q).
 Proof.
   split; [exact correlated_response_trans_bisim|].
   exact two_query_interp_not_trans_bisim.
@@ -199,7 +199,7 @@ Qed.
 
 Corollary trans_bisim_not_interp_congruent :
   ¬ (∀ (handler : ∀ X, correlationE X → ptree correlationE SubEnumQ X)
-      (t u : tree), TB t u → TB (PTree.interp handler t) (PTree.interp handler u)).
+      (t u : tree), TB t u → TB (PTree.interp_tree handler t) (PTree.interp_tree handler u)).
 Proof.
   intro Hpreserve. apply two_query_interp_not_trans_bisim.
   exact (Hpreserve two_query_handler P Q correlated_response_trans_bisim).

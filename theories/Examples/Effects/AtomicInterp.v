@@ -73,7 +73,7 @@ Defined.
 (** This source pair is NOT peutt: preservation really uses transition
     bisimulation and cannot be obtained by assuming whole-head coupling. *)
 Example atomic_preserves_correlated_pair :
-  TB (PTree.interp delayed_identity P) (PTree.interp delayed_identity Q).
+  TB (PTree.interp_tree delayed_identity P) (PTree.interp_tree delayed_identity Q).
 Proof.
   exact (trans_bisim_interp_atomic delayed_identity_atomic
     correlated_response_trans_bisim).
@@ -107,7 +107,7 @@ Defined.
 Example swapping_preserves {R} (RR : R → R → Prop) t u :
   @trans_bisim swapE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R RR t u →
   @trans_bisim swapE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO R R RR
-    (PTree.interp swapping_handler t) (PTree.interp swapping_handler u).
+    (PTree.interp_tree swapping_handler t) (PTree.interp_tree swapping_handler u).
 Proof. intro Htu. exact (trans_bisim_interp_atomic swapping_handler_atomic Htu). Qed.
 
 (** Negative boundary: one visible guard is insufficient. No certificate

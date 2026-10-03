@@ -58,7 +58,7 @@ Example imported_state_proper {S E A} :
 Proof. typeclasses eauto. Qed.
 
 Example imported_interp_proper {E F A} (h : forall X, E X -> ptree F MN X) :
-  Proper (W eq ==> W eq) (@PTree.interp E F MN h A).
+  Proper (W eq ==> W eq) (@PTree.interp_tree E F MN h A).
 Proof. typeclasses eauto. Qed.
 
 Example imported_exception_proper {Err E A} :

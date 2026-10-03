@@ -102,22 +102,22 @@ Qed.
 
 Definition embed_interp_candidate (l r : ptree F MN A) : Prop :=
   (∃ t, l = from_itree (itree_interp_before t) ∧
-    r = PTree.interp lifted_handler (from_itree t)) ∨
+    r = PTree.interp_tree lifted_handler (from_itree t)) ∨
   (∃ X (active : itree F X) (k : X → itree E A),
     l = from_itree (ITree.bind active (λ x, itree_interp_before (k x))) ∧
     r = PTree.bind (from_itree active)
-      (λ x, PTree.interp lifted_handler (from_itree (k x)))).
+      (λ x, PTree.interp_tree lifted_handler (from_itree (k x)))).
 
 Theorem from_itree_interp_before (t : itree E A) :
   pstruct eq (from_itree (itree_interp_before t))
-    (PTree.interp lifted_handler (from_itree t)).
+    (PTree.interp_tree lifted_handler (from_itree t)).
 Proof.
   assert (H : ∀ l r, embed_interp_candidate l r -> pstruct eq l r).
   { unfold pstruct. coinduction CH CIH. intros l r Hlr.
     unfold pstruct_body.
     destruct Hlr as [[s [-> ->]]|[X [active [k [-> ->]]]]].
     - change (pstructF eq (` CH) (observe (from_itree (itree_interp_before s)))
-        (observe (PTree.interp lifted_handler (from_itree s)))).
+        (observe (PTree.interp_tree lifted_handler (from_itree s)))).
       rewrite observe_embed_before, observe_interp, observe_from_itree.
       destruct (ITreeDefinition.observe s) as [a|u|Y e c]; cbn.
       + constructor. reflexivity.
@@ -126,7 +126,7 @@ Proof.
     - change (pstructF eq (` CH)
         (observe (from_itree (ITree.bind active (λ x, itree_interp_before (k x)))))
         (observe (PTree.bind (from_itree active)
-          (λ x, PTree.interp lifted_handler (from_itree (k x)))))).
+          (λ x, PTree.interp_tree lifted_handler (from_itree (k x)))))).
       rewrite observe_from_itree, ITree.Eq.Shallow.observe_bind,
         PTree.Eq.Shallow.observe_bind, observe_from_itree.
       destruct (ITreeDefinition.observe active) as [x|u|Y e c]; cbn.

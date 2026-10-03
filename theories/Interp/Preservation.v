@@ -47,8 +47,8 @@ Context {A B : Type} (RR : A → B → Prop)
 Definition interp_bisim_candidate
     (s1 : ptree' F MN A) (s2 : ptree' F MN B) : Prop :=
   ∃ (t1 : ptree E MN A) (t2 : ptree E MN B),
-    s1 = observe (PTree.interp handler t1) ∧
-    s2 = observe (PTree.interp handler t2) ∧
+    s1 = observe (PTree.interp_tree handler t1) ∧
+    s2 = observe (PTree.interp_tree handler t2) ∧
     @peutt E MN MF
       FI
       FC
@@ -108,7 +108,7 @@ Theorem peutt_interp_of_vis_fusion
       FC
       MX
       FO A B RR
-      (PTree.interp handler t1) (PTree.interp handler t2).
+      (PTree.interp_tree handler t1) (PTree.interp_tree handler t2).
 Proof.
   apply (peutt_interp_rel_of_vis_fusion (handler1 := handler) (handler2 := handler)).
   exact Hvis.
@@ -139,8 +139,8 @@ Definition interp_generator_closed : Prop :=
         MX B)
       (@ptree_stable_head_rel F MN A B RR)
       interp_bisim_candidate
-      (observe (PTree.interp handler t1))
-      (observe (PTree.interp handler t2)).
+      (observe (PTree.interp_tree handler t1))
+      (observe (PTree.interp_tree handler t2)).
 
 (** Full behavioral preservation follows from precisely the candidate-level
     handler closure above.  The canonical generator is unchanged. *)
@@ -157,7 +157,7 @@ Theorem peutt_interp_of_generator_closed
       FC
       MX
       FO A B RR
-      (PTree.interp handler t1) (PTree.interp handler t2).
+      (PTree.interp_tree handler t1) (PTree.interp_tree handler t2).
 Proof.
   intros t1 t2 Hsource.
   eapply peutt_coinduction with

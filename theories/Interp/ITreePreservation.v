@@ -30,7 +30,7 @@ Variables (Hmixed : relational_mixed_bind NI FI MX)
 
 Theorem from_itree_interp {E F A} (h : ∀ X, E X → itree F X) (t : itree E A) :
   peutt (MF := MF) eq (from_itree (Interp.interp h t))
-    (PTree.interp (λ X e, @from_itree F MN X (h X e)) (from_itree t)).
+    (PTree.interp_tree (λ X e, @from_itree F MN X (h X e)) (from_itree t)).
 Proof.
   eapply peutt_trans.
   - apply (from_itree_eutt (u := itree_interp_before h t) Hzero).

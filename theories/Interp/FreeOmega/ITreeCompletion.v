@@ -99,7 +99,7 @@ Qed.
 
 Theorem free_omega_elab_postcompose {E F G A} (h : Handler MN E F)
     (g : Handler MN F G) (t : itree E A) :
-  peutt (FI := FI) eq (PTree.interp g (interp_itree h t))
+  peutt (FI := FI) eq (PTree.interp_tree g (interp_itree h t))
     (interp_itree (Handler.cat h g) t).
 Proof.
   apply (elab_postcompose free_omega_relational_mixed_bind
