@@ -25,7 +25,7 @@ Unset Printing Implicit Defensive.
     It is deterministic, total, and visibly guarded, but not atomic. *)
 Definition two_query_handler X (e : correlationE X) : ptree correlationE SubEnumQ X :=
   match e in correlationE X return ptree correlationE SubEnumQ X with
-  | Query => Vis Query (fun _ => Vis Query (fun x => Ret x))
+  | Query => Vis Query (λ _, Vis Query (λ x, Ret x))
   end.
 
 Local Notation MF := (FreeOmega SubEnumQ).
@@ -45,7 +45,7 @@ Local Notation hits t out := (@ptree_stable_hitting correlationE SubEnumQ MF FI
     congruence: the handler's complete first behavior is this Dirac Vis. *)
 Lemma two_query_handler_first_hitting :
   hits (two_query_handler Query)
-    (FORet (FHVis Query (fun _ => Vis Query (fun x => Ret x)))).
+    (FORet (FHVis Query (λ _, Vis Query (λ x, Ret x)))).
 Proof. apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)). Qed.
 
 Definition exposure anti : tree := PTree.interp two_query_handler (correlation_program anti).
@@ -54,15 +54,15 @@ Definition exposure_resume anti b (x : bool) : tree :=
 Definition exposure_last anti b (x : bool) : tree :=
   PTree.bind (Ret x) (exposure_resume anti b).
 Definition exposure_second anti b : tree :=
-  PTree.bind (Vis Query (fun x => Ret x)) (exposure_resume anti b).
+  PTree.bind (Vis Query (λ x, Ret x)) (exposure_resume anti b).
 Definition exposure_second_head anti b : head :=
   FHVis Query (exposure_last anti b).
 Definition exposure_first_head anti b : head :=
-  FHVis Query (fun _ => exposure_second anti b).
+  FHVis Query (λ _, exposure_second anti b).
 Definition exposure_front anti : MF head :=
-  FOSample subenumQ_fair (fun b => FORet (exposure_first_head anti b)).
+  FOSample subenumQ_fair (λ b, FORet (exposure_first_head anti b)).
 Definition exposure_successors anti : MF head :=
-  FOSample subenumQ_fair (fun b => FORet (exposure_second_head anti b)).
+  FOSample subenumQ_fair (λ b, FORet (exposure_second_head anti b)).
 
 Lemma exposure_last_hitting anti b x :
   hits (exposure_last anti b x) (FORet (FHRet (answer anti b x))).
@@ -81,18 +81,18 @@ Qed.
 
 Lemma exposure_hitting anti : hits (exposure anti) (exposure_front anti).
 Proof.
-  change (hits (Prob subenumQ_fair (fun b =>
-    PTree.interp two_query_handler (Vis Query (fun x => Ret (answer anti b x)))))
+  change (hits (Prob subenumQ_fair (λ b,
+    PTree.interp two_query_handler (Vis Query (λ x, Ret (answer anti b x)))))
     (exposure_front anti)).
   eapply (ptree_stable_hitting_prob (FI := FI) (FO := FO)
-    (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+    (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
   - apply sem_ae_true.
   - intros b _.
     change (hits (Tau (PTree.bind (two_query_handler Query) (exposure_resume anti b)))
       (FORet (exposure_first_head anti b))).
     apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
-    change (hits (Vis Query (fun _ => exposure_second anti b))
-      (FORet (FHVis Query (fun _ => exposure_second anti b)))).
+    change (hits (Vis Query (λ _, exposure_second anti b))
+      (FORet (FHVis Query (λ _, exposure_second anti b)))).
     apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
 Qed.
 
@@ -100,12 +100,12 @@ Qed.
     offered-event observations. Separation happens AFTER the first action. *)
 Lemma exposure_returns anti :
   @tree_return_observation correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool
-    (exposure anti) (FOSample subenumQ_fair (fun _ => FOZero)).
+    (exposure anti) (FOSample subenumQ_fair (λ _, FOZero)).
 Proof. exists (exposure_front anti). split; [apply exposure_hitting|apply sem_eq_refl]. Qed.
 
 Lemma exposure_offers anti :
   @tree_offered_event_observation correlationE SubEnumQ MF FI FreeOmegaMixedMeasure FO bool
-    (exposure anti) (FOSample subenumQ_fair (fun _ => FORet (Offered Query))).
+    (exposure anti) (FOSample subenumQ_fair (λ _, FORet (Offered Query))).
 Proof. exists (exposure_front anti). split; [apply exposure_hitting|apply sem_eq_refl]. Qed.
 
 (** A finite witness used only by this experiment. It is not a general
@@ -115,7 +115,7 @@ Definition exposure_action x (h : head) : MF head :=
   | FHRet _ => FOZero
   | @FHVis _ _ _ X e k =>
     (match e in correlationE X return (X → tree) → MF head with
-     | Query => fun k => match observe (k x) with
+     | Query => λ k, match observe (k x) with
        | @VisF _ _ _ _ Y e' k' => FORet (FHVis e' k')
        | RetF r => FORet (FHRet r)
        | _ => FOZero
@@ -128,7 +128,7 @@ Lemma exposure_first_transition anti x :
 Proof.
   exists (exposure_front anti), (exposure_action x).
   split; [apply exposure_hitting|]. split; [|apply sem_eq_refl].
-  eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  eapply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
   intros b _. apply FOAERet, HARMatch. constructor.
   exact (exposure_second_hitting anti b).
 Qed.
@@ -159,7 +159,7 @@ Proof.
       (exposure_second_transition false b x)
       (exposure_second_transition true c x)) as Hlift.
     assert (Hb : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
-      (fun h : head => h = FHRet (answer false b x))
+      (λ h : head, h = FHRet (answer false b x))
       (FORet (FHRet (answer false b x)))).
     { constructor. reflexivity. }
     pose proof (proj1 (free_omega_qlift_support Hlift) _ Hb) as Hc.
@@ -177,8 +177,8 @@ Proof.
     (exposure_first_transition false false)
     (exposure_first_transition true false)) as Hlift.
   assert (Hleft : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
-    (fun h => exists b, h = exposure_second_head false b) (exposure_successors false)).
-  { eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+    (λ h, exists b, h = exposure_second_head false b) (exposure_successors false)).
+  { eapply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros b _. apply FOAERet. exists b. reflexivity. }
   pose proof (proj1 (free_omega_qlift_support Hlift) _ Hleft) as Hright.
   apply free_omega_ae_sample_inv in Hright.

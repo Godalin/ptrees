@@ -28,10 +28,10 @@ Set Implicit Arguments.
 Variant questionE : Type → Type := Question : questionE bool.
 
 CoFixpoint source_service : itree questionE unit :=
-  ITreeDefinition.Vis Question (fun _ => ITreeDefinition.Tau source_service).
+  ITreeDefinition.Vis Question (λ _, ITreeDefinition.Tau source_service).
 CoFixpoint delayed_service : itree questionE unit :=
   ITreeDefinition.Tau (ITreeDefinition.Vis Question
-    (fun _ => ITreeDefinition.Tau (ITreeDefinition.Tau delayed_service))).
+    (λ _, ITreeDefinition.Tau (ITreeDefinition.Tau delayed_service))).
 
 Lemma service_source_eutt : eutt eq source_service delayed_service.
 Proof.
@@ -48,7 +48,7 @@ Proof. apply free_omega_from_itree_eutt. exact service_source_eutt. Qed.
 Example embedded_heterogeneous_return :
   @from_itree questionE SubEnumQ bool
     (ITreeDefinition.Tau (ITreeDefinition.Tau (ITreeDefinition.Ret true)))
-  ≈ₚ[ fun (b : bool) (n : nat) => n = if b then 1 else 0 ]
+  ≈ₚ[ λ (b : bool) (n : nat), n = if b then 1 else 0 ]
   from_itree (ITreeDefinition.Tau (ITreeDefinition.Ret 1)).
 Proof.
   apply free_omega_from_itree_eutt. repeat setoid_rewrite tau_eutt.
@@ -101,7 +101,7 @@ Qed.
 Variant deadE : Type → Type := Block : deadE Empty_set.
 Example embedded_block_not_divergence :
   ¬ (@from_itree deadE SubEnumQ bool (ITreeDefinition.Vis Block
-        (fun x : Empty_set => match x with end)) ≈ₚ from_itree ITree.spin).
+        (λ x : Empty_set, match x with end)) ≈ₚ from_itree ITree.spin).
 Proof.
   intro H. apply free_omega_from_itree_eutt_reflect in H.
   exact (eutt_Vis_spin_abs _ _ H).
@@ -112,24 +112,24 @@ Definition returning_source_handler X (e : questionE X) : itree questionE X :=
 Definition divergent_source_handler X (e : questionE X) : itree questionE X :=
   match e with Question => ITree.spin end.
 Definition two_query_source_handler X (e : questionE X) : itree questionE X :=
-  match e with Question => ITreeDefinition.Vis Question (fun _ =>
-    ITreeDefinition.Vis Question (fun x => ITreeDefinition.Ret x)) end.
+  match e with Question => ITreeDefinition.Vis Question (λ _,
+    ITreeDefinition.Vis Question (λ x, ITreeDefinition.Ret x)) end.
 
 Example returning_source_square :
   @from_itree questionE SubEnumQ unit (Interp.interp returning_source_handler source_service) ≈ₚ
-  PTree.interp (fun X e => @from_itree questionE SubEnumQ X (returning_source_handler e))
+  PTree.interp (λ X e, @from_itree questionE SubEnumQ X (returning_source_handler e))
     (from_itree source_service).
 Proof. apply free_omega_from_itree_interp. Qed.
 
 Example divergent_source_square :
   @from_itree questionE SubEnumQ unit (Interp.interp divergent_source_handler source_service) ≈ₚ
-  PTree.interp (fun X e => @from_itree questionE SubEnumQ X (divergent_source_handler e))
+  PTree.interp (λ X e, @from_itree questionE SubEnumQ X (divergent_source_handler e))
     (from_itree source_service).
 Proof. apply free_omega_from_itree_interp. Qed.
 
 Example two_query_source_square :
   @from_itree questionE SubEnumQ unit (Interp.interp two_query_source_handler source_service) ≈ₚ
-  PTree.interp (fun X e => @from_itree questionE SubEnumQ X (two_query_source_handler e))
+  PTree.interp (λ X e, @from_itree questionE SubEnumQ X (two_query_source_handler e))
     (from_itree source_service).
 Proof. apply free_omega_from_itree_interp. Qed.
 
@@ -139,12 +139,12 @@ Definition sampling_source_handler (mu : SubEnumQ bool) X (e : questionE X) :
 
 Example sampling_source_square (mu : SubEnumQ bool) :
   elaborate (Interp.interp (sampling_source_handler mu) source_service) ≈ₚ
-  interp_itree (fun X e => elaborate (sampling_source_handler mu e)) source_service.
+  interp_itree (λ X e, elaborate (sampling_source_handler mu e)) source_service.
 Proof. apply free_omega_interp_itree_source_interp. Qed.
 
 Example lowering_partial_source_equation :
   elaborate_closed (ITree.bind (ITree.trigger (Sample (@subenumQ_zero bool)))
-    (fun x => ITreeDefinition.Ret x)) ≈ₚ
+    (λ x, ITreeDefinition.Ret x)) ≈ₚ
   elaborate_closed (ITree.trigger (Sample (@subenumQ_zero bool))).
 Proof. apply free_omega_elaborate_closed_eutt. apply eq_sub_eutt. apply bind_ret_r. Qed.
 

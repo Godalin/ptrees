@@ -31,7 +31,7 @@ Definition eqeq {A : Type} (P : A → Type) {a1 a2 : A} (p : a1 = a2) : P a1 →
 Definition pweqeq {R1 R2} (RR : R1 → R2 → Prop) {X1 X2 : Type} (p : X1 = X2)
   : (X1 → R1) → (X2 → R2) → Prop :=
   match p with
-  | eq_refl => fun k1 k2 => ∀ x, RR (k1 x) (k2 x)
+  | eq_refl => λ k1 k2, ∀ x, RR (k1 x) (k2 x)
   end.
 
 Lemma pweqeq_mon {R1 R2} (RR1 RR2 : R1 → R2 → Prop) X1 X2 (p : X1 = X2) k1 k2
@@ -43,9 +43,9 @@ Qed.
 Lemma eq_inv_VisF_weak {E M R X1 X2} (e1 : E X1) (e2 : E X2)
     (k1 : X1 → ptree E M R) (k2 : X2 → ptree E M R)
   : VisF (R := R) (M := M) e1 k1 = VisF (R := R) e2 k2 →
-    ∃ p : X1 = X2, eqeq E p e1 e2 ∧ eqeq (fun X => X → ptree E M R) p k1 k2.
+    ∃ p : X1 = X2, eqeq E p e1 e2 ∧ eqeq (λ X, X → ptree E M R) p k1 k2.
 Proof.
-  refine (fun H =>
+  refine (λ H,
     match H in _ = t return
       match t with
       | VisF _ e2 k2 => _
@@ -114,8 +114,8 @@ Lemma observe_bind {E M R S} (t : ptree E M R) (k : R → ptree E M S)
   = observe (match observe t with
     | RetF r => k r
     | TauF t0 => Tau (PTree.bind t0 k)
-    | VisF _ e ke => Vis e (fun x => PTree.bind (ke x) k)
-    | ProbF _ μ k' => Prob μ (fun x => PTree.bind (k' x) k)
+    | VisF _ e ke => Vis e (λ x, PTree.bind (ke x) k)
+    | ProbF _ μ k' => Prob μ (λ x, PTree.bind (k' x) k)
     end).
 Proof. reflexivity. Qed.
 
@@ -139,7 +139,7 @@ Lemma bind_vis_ {E M R U V} (e : E V)
   (ek : V → ptree E M U) (k : U → ptree E M R) :
   observing eq
     (PTree.bind (Vis e ek) k)
-    (Vis e (fun x => PTree.bind (ek x) k)).
+    (Vis e (λ x, PTree.bind (ek x) k)).
 Proof. constructor; reflexivity. Qed.
 
 (** Unfolding lemma for [aloop]. There is also a variant [unfold_aloop]
@@ -147,7 +147,7 @@ Proof. constructor; reflexivity. Qed.
 Lemma unfold_aloop_ {E M A B} (f : A → ptree E M (A + B)) (x : A) :
   observing eq
     (PTree.iter f x)
-    (PTree.bind (f x) (fun lr => PTree.on_left lr l (Tau (PTree.iter f l)))).
+    (PTree.bind (f x) (λ lr, PTree.on_left lr l (Tau (PTree.iter f l)))).
 Proof. constructor; reflexivity. Qed.
 
 (** Unfolding equations for event interpretation.  The visible equation
@@ -160,9 +160,9 @@ Lemma observe_interp {E F M R}
     | TauF t' => TauF (PTree.interp handler t')
     | @VisF _ _ _ _ X e k =>
         TauF (PTree.bind (handler X e)
-          (fun x => PTree.interp handler (k x)))
+          (λ x, PTree.interp handler (k x)))
     | @ProbF _ _ _ _ X mu k =>
-        ProbF mu (fun x => PTree.interp handler (k x))
+        ProbF mu (λ x, PTree.interp handler (k x))
     end.
 Proof.
   destruct (observe t) eqn:Ht; unfold observe; cbn; rewrite Ht; reflexivity.
@@ -185,14 +185,14 @@ Lemma interp_vis_ {E F M R X}
     (e : E X) (k : X → ptree E M R) :
   observing eq (PTree.interp handler (Vis e k))
     (Tau (PTree.bind (handler _ e)
-      (fun x => PTree.interp handler (k x)))).
+      (λ x, PTree.interp handler (k x)))).
 Proof. constructor; reflexivity. Qed.
 
 Lemma interp_prob_ {E F M R X}
     (handler : ∀ X, E X → ptree F M X)
     (mu : M X) (k : X → ptree E M R) :
   observing eq (PTree.interp handler (Prob mu k))
-    (Prob mu (fun x => PTree.interp handler (k x))).
+    (Prob mu (λ x, PTree.interp handler (k x))).
 Proof. constructor; reflexivity. Qed.
 
 

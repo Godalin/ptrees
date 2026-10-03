@@ -23,7 +23,7 @@ Definition subenumR_lub {A} (c : nat → SubEnumR R A) (out : SubEnumR R A) :=
   ∀ f, subenumR_test f →
     (∀ n, subenumR_expect (c n) f <= subenumR_expect out f) ∧
     (∀ b, (∀ n, subenumR_expect (c n) f <= b) → subenumR_expect out f <= b).
-Definition subenumR_total {A} (mu : SubEnumR R A) := subenumR_expect mu (fun _ => 1) = 1.
+Definition subenumR_total {A} (mu : SubEnumR R A) := subenumR_expect mu (λ _, 1) = 1.
 
 #[global] Instance SubEnumR_SemanticOmega :
   @SemanticOmega (SubEnumR R) (SubEnumR_SemanticMeasure R) := {
@@ -38,7 +38,7 @@ Lemma subenumR_expect_test {A} (mu : SubEnumR R A) f :
 Proof.
   intro H; split.
   - apply real_enum_expect_nonnegative; [exact (@subenumR_nonnegative R A mu)|intro x; exact (proj1 (H x))].
-  - apply: le_trans (_ : subenumR_expect mu (fun _ => 1) <= 1).
+  - apply: le_trans (_ : subenumR_expect mu (λ _, 1) <= 1).
     + apply real_enum_expect_mono; [exact (@subenumR_nonnegative R A mu)|intro x; exact (proj2 (H x))].
     + exact (@subenumR_mass_bound R A mu).
 Qed.
@@ -61,6 +61,6 @@ Qed.
 Proof.
   constructor; intros A mu nu He.
   change (subenumR_total mu ↔ subenumR_total nu).
-  unfold subenumR_total; rewrite (He (fun _ => 1)); reflexivity.
+  unfold subenumR_total; rewrite (He (λ _, 1)); reflexivity.
 Qed.
 End NativeOmega.

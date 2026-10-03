@@ -48,31 +48,31 @@ Lemma dirac_head_total (h : stable_head decisionE SubEnumQ unit) :
   @sem_total MF FI FO _ (FORet h).
 Proof.
   apply free_omega_observable_total_intro.
-  exists unit, (fun _ => tt), (subenumQ_ret tt). split; [constructor|].
+  exists unit, (λ _, tt), (subenumQ_ret tt). split; [constructor|].
   native_compute. reflexivity.
 Qed.
 
 Lemma fair_heads_total (f : bool → stable_head decisionE SubEnumQ unit) :
-  @sem_total MF FI FO _ (FOSample subenumQ_fair (fun b => FORet (f b))).
+  @sem_total MF FI FO _ (FOSample subenumQ_fair (λ b, FORet (f b))).
 Proof.
   apply free_omega_observable_total_intro.
-  exists unit, (fun _ => tt),
-    (subenumQ_bind subenumQ_fair (fun _ => subenumQ_ret tt)).
+  exists unit, (λ _, tt),
+    (subenumQ_bind subenumQ_fair (λ _, subenumQ_ret tt)).
   split.
   - change (free_omega_observes (NI := SubEnumQ_SemanticMeasure)
-      (fun _ => tt) (FOSample subenumQ_fair (fun b => FORet (f b)))
+      (λ _, tt) (FOSample subenumQ_fair (λ b, FORet (f b)))
       (@sem_bind SubEnumQ SubEnumQ_SemanticMeasure _ _ subenumQ_fair
-        (fun _ => subenumQ_ret tt))).
+        (λ _, subenumQ_ret tt))).
     eapply FOOObserveSample. intro b. constructor.
   - native_compute. reflexivity.
 Qed.
 
-Definition leaf b : ptree decisionE SubEnumQ unit := Vis (Reply b) (fun _ => Ret tt).
+Definition leaf b : ptree decisionE SubEnumQ unit := Vis (Reply b) (λ _, Ret tt).
 Definition leaf_head b : stable_head decisionE SubEnumQ unit :=
-  FHVis (Reply b) (fun _ => Ret tt).
+  FHVis (Reply b) (λ _, Ret tt).
 Definition hidden_choice := Prob subenumQ_fair leaf.
-Definition hidden_front := FOSample subenumQ_fair (fun b => FORet (leaf_head b)).
-Definition decision := Vis Ask (fun _ => hidden_choice).
+Definition hidden_front := FOSample subenumQ_fair (λ b, FORet (leaf_head b)).
+Definition decision := Vis Ask (λ _, hidden_choice).
 
 Lemma leaf_head_mdp b : good (leaf_head b).
 Proof.
@@ -85,7 +85,7 @@ Qed.
 Lemma hidden_choice_hitting : hits hidden_choice hidden_front.
 Proof.
   eapply (ptree_stable_hitting_prob (FI := FI) (FO := FO)
-    (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+    (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
   - apply sem_ae_true.
   - intros b _. apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
 Qed.
@@ -97,7 +97,7 @@ Proof.
   apply mdp_state_vis. intro x. exists hidden_front. split.
   - apply hidden_choice_hitting.
   - split; [apply fair_heads_total|].
-    eapply FOAESample with (Good := fun _ => True).
+    eapply FOAESample with (Good := λ _, True).
     + apply sem_ae_true.
     + intros b _. constructor. apply leaf_head_mdp.
 Qed.
@@ -118,7 +118,7 @@ Proof.
   intro H. apply (proj1 (mdp_state_hitting_iff hidden_choice_hitting)) in H.
   destruct H as [h [Heq Hgood]].
   change (free_omega_qlift eq hidden_front (FORet h)) in Heq.
-  assert (Hsingle : free_omega_ae (fun y => y = h) (FORet h)).
+  assert (Hsingle : free_omega_ae (λ y, y = h) (FORet h)).
   { constructor. reflexivity. }
   pose proof (proj2 (free_omega_qlift_support Heq) _ Hsingle) as Hsupport.
   apply free_omega_ae_sample_inv in Hsupport.
@@ -137,29 +137,29 @@ Proof. split; [apply visible_sample_visible_is_mdp|apply hidden_choice_not_mdp_s
 (** Infinite interaction with a fresh random visible state after every
     response. This exercises the unary GFP, not just finite constructors. *)
 CoFixpoint service b : ptree decisionE SubEnumQ unit :=
-  Vis (Reply b) (fun _ => Prob subenumQ_fair service).
+  Vis (Reply b) (λ _, Prob subenumQ_fair service).
 Definition service_head b : stable_head decisionE SubEnumQ unit :=
-  FHVis (Reply b) (fun _ => Prob subenumQ_fair service).
+  FHVis (Reply b) (λ _, Prob subenumQ_fair service).
 
 Lemma service_hitting b : hits (service b) (FORet (service_head b)).
 Proof.
-  change (hits (Vis (Reply b) (fun _ => Prob subenumQ_fair service))
+  change (hits (Vis (Reply b) (λ _, Prob subenumQ_fair service))
     (FORet (service_head b))).
   apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
 Qed.
 
 Theorem service_head_mdp b : good (service_head b).
 Proof.
-  eapply mdp_head_coinduction with (P := fun h => exists b, h = service_head b).
+  eapply mdp_head_coinduction with (P := λ h, exists b, h = service_head b).
   - intros h [c ->]. intro x.
-    exists (FOSample subenumQ_fair (fun d => FORet (service_head d))).
+    exists (FOSample subenumQ_fair (λ d, FORet (service_head d))).
     split.
     + constructor. eapply (ptree_stable_hitting_prob (FI := FI) (FO := FO)
-        (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+        (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
       * apply sem_ae_true.
       * intros d _. apply service_hitting.
     + split; [apply fair_heads_total|].
-      eapply FOAESample with (Good := fun _ => True).
+      eapply FOAESample with (Good := λ _, True).
       * apply sem_ae_true.
       * intros d _. constructor. exists d. reflexivity.
   - exists b. reflexivity.

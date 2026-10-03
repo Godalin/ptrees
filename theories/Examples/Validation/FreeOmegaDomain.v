@@ -41,26 +41,26 @@ Proof.
   - rewrite -Hw; unfold alternating_bool; cbn [free_omega_upper].
     destruct witness.
     + exact (@countable_upper_ge R
-        (fun n => f (if Nat.even n then false else true)) 1 1%nat
-        (fun n => proj2 (Hf _))).
+        (λ n, f (if Nat.even n then false else true)) 1 1%nat
+        (λ n, proj2 (Hf _))).
     + exact (@countable_upper_ge R
-        (fun n => f (if Nat.even n then false else true)) 1 0%nat
-        (fun n => proj2 (Hf _))).
+        (λ n, f (if Nat.even n then false else true)) 1 0%nat
+        (λ n, proj2 (Hf _))).
 Qed.
 
 Theorem alternating_bool_not_admissible : ¬ free_omega_admissible R alternating_bool.
 Proof.
   intro H.
-  pose f := fun b : bool => if b then (1 : R) else 0.
-  pose g := fun b : bool => if b then (0 : R) else 1.
+  pose f := λ b : bool, if b then (1 : R) else 0.
+  pose g := λ b : bool, if b then (0 : R) else 1.
   have Hf : oval_test f by intros []; split; try exact: lexx; exact: ler01.
   have Hg : oval_test g by intros []; split; try exact: lexx; exact: ler01.
   have Hfg : ∀ b, f b + g b <= 1 by intros []; rewrite /f /g ?addr0 ?add0r.
-  have Hsum : oval_test (fun b => f b + g b) := oval_test_add Hf Hg Hfg.
+  have Hsum : oval_test (λ b, f b + g b) := oval_test_add Hf Hg Hfg.
   have Hbad := oval_add H Hf Hg Hfg.
   rewrite (@alternating_upper_test f true Hf (Logic.eq_refl _))
     (@alternating_upper_test g false Hg (Logic.eq_refl _))
-    (@alternating_upper_test (fun b => f b + g b) true Hsum (addr0 1)) in Hbad.
+    (@alternating_upper_test (λ b, f b + g b) true Hsum (addr0 1)) in Hbad.
   have Hlt : (1 : R) < 1 + 1 by rewrite ltrDr ltr01.
   by rewrite -Hbad ltxx in Hlt.
 Qed.
@@ -73,7 +73,7 @@ Proof.
 Qed.
 
 Lemma nullable_kernel_ae :
-  sem_ae null_weight_node (fun b => free_omega_admissible R (nullable_kernel b)).
+  sem_ae null_weight_node (λ b, free_omega_admissible R (nullable_kernel b)).
 Proof.
   change (∀ p b, List.In (p,b) [((1 : rat),true); (0,false)] ->
     p ≠ 0 -> free_omega_admissible R (nullable_kernel b)).
@@ -88,7 +88,7 @@ Proof. apply admissible_sample_ae; exact nullable_kernel_ae. Qed.
 
 Example null_weight_bad_branch_bind_admissible :
   free_omega_admissible R
-    (free_omega_bind (FOSample null_weight_node (fun b => FORet b)) nullable_kernel).
+    (free_omega_bind (FOSample null_weight_node (λ b, FORet b)) nullable_kernel).
 Proof.
   apply admissible_bind_ae.
   - apply admissible_sample=> b; exact: admissible_ret.
@@ -102,7 +102,7 @@ Proof. exact alternating_bool_not_admissible. Qed.
 
 Example null_weight_sample_denotes :
   free_omega_domain_denotes (FOSample null_weight_node nullable_kernel)
-    (oval_bind (subenumQ_domain R null_weight_node) (fun _ => oval_ret R true)).
+    (oval_bind (subenumQ_domain R null_weight_node) (λ _, oval_ret R true)).
 Proof.
   apply free_omega_denote_sample_ae.
   change (∀ p b, List.In (p,b) [((1 : rat),true); (0,false)] ->
@@ -118,7 +118,7 @@ Proof.
   intro H; apply alternating_bool_not_admissible.
   eapply free_omega_admissible_ext; [exact H|].
   intros f Hf; cbn [free_omega_upper].
-  change (enumQ_real_expect (fun b => free_omega_upper (nullable_kernel b) f)
+  change (enumQ_real_expect (λ b, free_omega_upper (nullable_kernel b) f)
     (EnumQ.ret_EnumQ false) = free_omega_upper alternating_bool f).
   rewrite enumQ_real_expect_ret; reflexivity.
 Qed.
@@ -148,9 +148,9 @@ Qed.
 
 Example native_bind_denotes {A B} (mu : SubEnumQ A) (k : A → SubEnumQ B) :
   free_omega_domain_denotes
-    (free_omega_bind (FOSample mu (fun x => FORet x))
-      (fun x => FOSample (k x) (fun y => FORet y)))
-    (oval_bind (subenumQ_domain R mu) (fun x => subenumQ_domain R (k x))).
+    (free_omega_bind (FOSample mu (λ x, FORet x))
+      (λ x, FOSample (k x) (λ y, FORet y)))
+    (oval_bind (subenumQ_domain R mu) (λ x, subenumQ_domain R (k x))).
 Proof. apply free_omega_denote_bind; [exact: free_omega_denote_native|].
   intro x; exact: free_omega_denote_native. Qed.
 

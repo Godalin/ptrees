@@ -62,7 +62,7 @@ Fixpoint meas_iter_approx {I A}
   match n with
   | O => meas_zero
   | S n' =>
-      meas_bind (step i) (fun next =>
+      meas_bind (step i) (λ next,
         match next with
         | inl i' => meas_iter_approx n' step i'
         | inr a => meas_ret a
@@ -74,7 +74,7 @@ Fixpoint meas_iter_approx {I A}
     such as finite rational [EnumQ] is not closed under every omega-limit. *)
 Definition meas_iter {I A} (step : I → M (I + A))
     (i : I) (out : M A) : Prop :=
-  meas_lub (fun n => meas_iter_approx n step i) out.
+  meas_lub (λ n, meas_iter_approx n step i) out.
 
 (** Almost-sure termination: the finite absorbing approximants converge and
     their limit has total mass one. *)

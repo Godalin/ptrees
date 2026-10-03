@@ -40,7 +40,7 @@ Theorem stable_hitting_subsequence {R} (t : ptree E MN R)
     (schedule : nat → nat)
     (Hmono : ∀ n, Peano.le (schedule n) (schedule (S n)))
     (Hge : ∀ n, Peano.le n (schedule n)) :
-  hits t (FOLub (fun n =>
+  hits t (FOLub (λ n,
     ptree_hitting_approx (FI := FI) (FO := FO) (schedule n) (observe t))).
 Proof.
   unfold stable_hitting.
@@ -69,7 +69,7 @@ Theorem stable_hitting_ast_of_observations {R O} (t : ptree E MN R)
     (outs n)) →
   sem_lub outs out → sem_total out →
   ptree_stable_hitting_ast (FI := FI) (FO := FO) (observe t)
-    (FOLub (fun n =>
+    (FOLub (λ n,
       ptree_hitting_approx (FI := FI) (FO := FO) (schedule n) (observe t))).
 Proof.
   intros Hobs Hlim Htotal. split.
@@ -85,7 +85,7 @@ Lemma stable_hitting_output_transport {R} (t : ptree E MN R) out out' :
 Proof.
   intros Hhit Heq. unfold stable_hitting in *.
   change (free_omega_qlift eq out'
-    (FOLub (fun fuel => stable_hitting_approx (K R) fuel (observe t)))).
+    (FOLub (λ fuel, stable_hitting_approx (K R) fuel (observe t)))).
   eapply (@sem_eq_trans MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
   - apply (@sem_eq_sym MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
     exact Heq.
@@ -109,7 +109,7 @@ Qed.
 Theorem peutt_hitting_ret_only {R} (t u : ptree E MN R) out :
   peutt (FI := FI) (FO := FO) eq t u →
   hits u out →
-  free_omega_ae (fun h => ∃ r, h = FHRet r) out →
+  free_omega_ae (λ h, ∃ r, h = FHRet r) out →
   hits t out.
 Proof.
   intros Heq Hu Hret.
@@ -132,7 +132,7 @@ Qed.
     already gives an explicit finite probabilistic round. *)
 Theorem stable_hitting_native_ret
     `{ND : @SemanticMeasureDiracAELaws MN NI} {R} (r : R) :
-  hits (Ret r) (FOSample (sem_ret r) (fun x => FORet (FHRet x))).
+  hits (Ret r) (FOSample (sem_ret r) (λ x, FORet (FHRet x))).
 Proof.
   eapply stable_hitting_output_transport; [apply stable_hitting_ret|].
   apply FOQLSym. eapply FOQLSampleRetL.
@@ -143,12 +143,12 @@ Qed.
 Theorem stable_hitting_native_sample
     `{NB : @SemanticMeasureBindAEExactLaws MN NI} {X R}
     (mu : MN X) (k : X → ptree E MN R) (front : X → MN R) :
-  (∀ x, hits (k x) (FOSample (front x) (fun r => FORet (FHRet r)))) →
+  (∀ x, hits (k x) (FOSample (front x) (λ r, FORet (FHRet r)))) →
   hits (Prob mu k)
-    (FOSample (sem_bind mu front) (fun r => FORet (FHRet r))).
+    (FOSample (sem_bind mu front) (λ r, FORet (FHRet r))).
 Proof.
   intro Hk. eapply stable_hitting_output_transport.
-  - eapply stable_hitting_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := λ _, True).
     + apply sem_ae_true.
     + intros x _. exact (Hk x).
   - apply FOQLSampleBind.
@@ -169,7 +169,7 @@ Proof.
   - intros [front [Hfront Heq]].
     eapply stable_hitting_output_transport with (out := FOSample mu front).
     + eapply (stable_hitting_prob (FI := FI) (MX := FreeOmegaMixedMeasure)
-        (FO := FO)) with (Good := fun _ => True).
+        (FO := FO)) with (Good := λ _, True).
       * apply sem_ae_true.
       * intros x _. apply Hfront.
     + apply (@sem_eq_sym MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
@@ -198,7 +198,7 @@ Qed.
 Theorem stable_hitting_prob_flatten_iff {R X Y}
     `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
     (mu : MN X) (h : X → MN Y) (k : Y → ptree E MN R) out :
-  hits (Prob mu (fun x => Prob (h x) k)) out ↔
+  hits (Prob mu (λ x, Prob (h x) k)) out ↔
   hits (Prob (sem_bind mu h) k) out.
 Proof.
   split; intro Hhit.
@@ -209,7 +209,7 @@ Proof.
     eapply (stable_hitting_prob_flatten (FI := FI)
       (MX := FreeOmegaMixedMeasure) (FO := FO)); eassumption.
   - destruct (stable_hitting_exists (FI := FI) (FO := FO) (K R)
-      (observe (Prob mu (fun x => Prob (h x) k)))) as [w Hw].
+      (observe (Prob mu (λ x, Prob (h x) k)))) as [w Hw].
     eapply stable_hitting_output_transport; [exact Hw|].
     eapply (stable_hitting_prob_flatten (FI := FI)
       (MX := FreeOmegaMixedMeasure) (FO := FO)); eassumption.

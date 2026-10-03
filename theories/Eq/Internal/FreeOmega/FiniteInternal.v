@@ -37,29 +37,29 @@ Local Notation hit := (@ptree_hitting_approx E MN MF FI
 Theorem finite_internal_hitting_covered t out :
   execute t out → ∀ n,
   free_omega_approx eq (hit n (observe t))
-    (free_omega_bind out (fun u => hit n (observe u))).
+    (free_omega_bind out (λ u, hit n (observe u))).
 Proof.
   intro Hexec. induction Hexec; intro n.
   - cbn. apply free_omega_approx_refl. intro h. reflexivity.
   - destruct n as [|n].
     + apply FOApproxZero.
     + change (free_omega_approx eq (hit n (observe t))
-        (free_omega_bind out (fun u => hit (S n) (observe u)))).
+        (free_omega_bind out (λ u, hit (S n) (observe u)))).
       eapply free_omega_approx_trans; [|apply IHHexec].
       exact (@PTreeKernel.ptree_hitting_mono E MN MF FI
         FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega
         FreeOmegaObservableSemanticMeasureOrderLaws R (observe t)
         n (S n) (Nat.le_succ_diag_r n)).
   - destruct n as [|n].
-    + change (free_omega_approx eq (FOSample mu (fun _ => FOZero))
-        (FOSample mu (fun x => free_omega_bind (out x)
-          (fun u => hit 0 (observe u))))).
+    + change (free_omega_approx eq (FOSample mu (λ _, FOZero))
+        (FOSample mu (λ x, free_omega_bind (out x)
+          (λ u, hit 0 (observe u))))).
       eapply FOApproxSample with (S := eq).
       * apply sem_lift_refl. intro x. reflexivity.
       * intros x y ->. apply FOApproxZero.
-    + change (free_omega_approx eq (FOSample mu (fun x => hit n (observe (k x))))
-        (FOSample mu (fun x => free_omega_bind (out x)
-          (fun u => hit (S n) (observe u))))).
+    + change (free_omega_approx eq (FOSample mu (λ x, hit n (observe (k x))))
+        (FOSample mu (λ x, free_omega_bind (out x)
+          (λ u, hit (S n) (observe u))))).
       eapply FOApproxSample with (S := eq).
       * apply sem_lift_refl. intro x. reflexivity.
       * intros x y ->. eapply free_omega_approx_trans; [|apply H0].
@@ -78,15 +78,15 @@ Definition finite_internal_approximates t out
   (∀ n, free_omega_approx eq (chain n) (chain (S n))) ∧
   free_omega_qlift eq out (FOLub chain) ∧
   (∀ n m, free_omega_approx eq
-    (free_omega_bind (chain n) (fun u => hit m (observe u)))
+    (free_omega_bind (chain n) (λ u, hit m (observe u)))
     (hit (n + m) (observe t))) ∧
   (∀ n, free_omega_approx eq (hit n (observe t))
-    (free_omega_bind (chain n) (fun u => hit n (observe u)))).
+    (free_omega_bind (chain n) (λ u, hit n (observe u)))).
 
 Lemma finite_internal_prefix_limit {A} (out : MF A) (chain : nat → MF A) :
   free_omega_qlift eq out (FOLub chain) →
   free_omega_qlift eq out
-    (FOLub (fun n => match n with O => FOZero | S m => chain m end)).
+    (FOLub (λ n, match n with O => FOZero | S m => chain m end)).
 Proof.
   intro Hlimit. eapply FOQLComp with (T := eq) (U := eq).
   - exact Hlimit.
@@ -99,7 +99,7 @@ Theorem finite_internal_approximation_exists t out :
   execute t out → ∃ chain, finite_internal_approximates t out chain.
 Proof.
   intro Hexec. induction Hexec.
-  - exists (fun _ => FORet t). repeat split.
+  - exists (λ _, FORet t). repeat split.
     + intro n. apply free_omega_approx_refl. intro x. reflexivity.
     + apply FOQLLubConstantR. apply free_omega_qlift_refl.
       intro x. reflexivity.
@@ -110,7 +110,7 @@ Proof.
         FreeOmegaObservableSemanticMeasureOrderLaws R). lia.
     + intro n. apply free_omega_approx_refl. intro x. reflexivity.
   - destruct IHHexec as [chain [Hinc [Hlimit [Hupper Hcover]]]].
-    exists (fun n => match n with O => FOZero | S m => chain m end).
+    exists (λ n, match n with O => FOZero | S m => chain m end).
     repeat split.
     + intros [|n]; [apply FOApproxZero|apply Hinc].
     + apply finite_internal_prefix_limit. exact Hlimit.
@@ -125,7 +125,7 @@ Proof.
           FreeOmegaObservableSemanticMeasureOrderLaws R (observe y)
           n (S n) (Nat.le_succ_diag_r n)).
   - destruct (choice _ H0) as [chains Hchains].
-    exists (fun n => FOSample mu (fun x =>
+    exists (λ n, FOSample mu (λ x,
       match n with O => FOZero | S m => chains x m end)).
     repeat split.
     + intros [|n]; eapply FOApproxSample with (S := eq).
@@ -133,7 +133,7 @@ Proof.
       * intros x y ->. apply FOApproxZero.
       * apply sem_lift_refl. intro x. reflexivity.
       * intros x y ->. exact (proj1 (Hchains y) n).
-    + apply FOQLSampleLub with (Good := fun _ => True).
+    + apply FOQLSampleLub with (Good := λ _, True).
       * apply sem_ae_true.
       * intros x _ [|n].
         -- apply FOApproxZero.
@@ -144,8 +144,8 @@ Proof.
       * destruct m as [|m].
         -- apply free_omega_approx_refl. intro x. reflexivity.
         -- change (free_omega_approx eq
-             (FOSample mu (fun _ => FOZero))
-             (FOSample mu (fun x => hit m (observe (k x))))).
+             (FOSample mu (λ _, FOZero))
+             (FOSample mu (λ x, hit m (observe (k x))))).
            eapply FOApproxSample with (S := eq).
            ++ apply sem_lift_refl. intro x. reflexivity.
            ++ intros x y ->. apply FOApproxZero.
@@ -181,7 +181,7 @@ Definition finite_internal_advance
   | RetF r => FORet (FHRet r)
   | VisF _ e k => FORet (FHVis e k)
   | TauF u => next u
-  | ProbF _ mu k => FOSample mu (fun x => next (k x))
+  | ProbF _ mu k => FOSample mu (λ x, next (k x))
   end.
 
 Fixpoint finite_internal_rounds (n : nat) (t : ptree E MN R) :
@@ -189,7 +189,7 @@ Fixpoint finite_internal_rounds (n : nat) (t : ptree E MN R) :
   free_omega_bind (cut t)
     (finite_internal_advance
       (match n with
-       | O => fun _ => FOZero
+       | O => λ _, FOZero
        | S m => finite_internal_rounds m
        end)).
 
@@ -231,9 +231,9 @@ Proof.
   - eapply free_omega_approx_trans.
     + exact (finite_internal_hitting_covered (cut_valid t) 0).
     + change (free_omega_approx eq
-        (free_omega_bind (cut t) (fun u => hit 0 (observe u)))
+        (free_omega_bind (cut t) (λ u, hit 0 (observe u)))
         (free_omega_bind (cut t)
-          (finite_internal_advance (fun _ => FOZero)))).
+          (finite_internal_advance (λ _, FOZero)))).
       eapply free_omega_approx_bind with (R := eq).
       * apply free_omega_approx_refl. intro x. reflexivity.
       * intros x y ->. unfold finite_internal_advance.
@@ -242,7 +242,7 @@ Proof.
   - eapply free_omega_approx_trans.
     + exact (finite_internal_hitting_covered (cut_valid t) (S n)).
     + change (free_omega_approx eq
-        (free_omega_bind (cut t) (fun u => hit (S n) (observe u)))
+        (free_omega_bind (cut t) (λ u, hit (S n) (observe u)))
         (free_omega_bind (cut t)
           (finite_internal_advance (finite_internal_rounds n)))).
       eapply free_omega_approx_bind with (R := eq).
@@ -271,12 +271,12 @@ Variable cut2 : ptree E MN B → FreeOmega MN (ptree E MN B).
     state.  This hypothesis must not be inferred just by choosing witnesses
     for arbitrary paired certificates: those witnesses may depend on the pair. *)
 Hypothesis cuts_coupled : ∀ t1 t2, sim t1 t2 →
-  free_omega_qlift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 t1) (cut2 t2).
+  free_omega_qlift (λ t u, pstrongF RR sim (observe t) (observe u)) (cut1 t1) (cut2 t2).
 
 Lemma finite_internal_advance_coupled next1 next2 :
   (∀ t1 t2, sim t1 t2 →
     free_omega_qlift (stable_head_rel RR sim) (next1 t1) (next2 t2)) →
-  ∀ t1 t2, (fun t u => pstrongF RR sim (observe t) (observe u)) t1 t2 →
+  ∀ t1 t2, (λ t u, pstrongF RR sim (observe t) (observe u)) t1 t2 →
     free_omega_qlift (stable_head_rel RR sim)
       (finite_internal_advance next1 t1)
       (finite_internal_advance next2 t2).
@@ -312,8 +312,8 @@ Qed.
 
 Corollary finite_internal_round_limits_coupled t1 t2 :
   sim t1 t2 → free_omega_qlift (stable_head_rel RR sim)
-    (FOLub (fun n => finite_internal_rounds cut1 n t1))
-    (FOLub (fun n => finite_internal_rounds cut2 n t2)).
+    (FOLub (λ n, finite_internal_rounds cut1 n t1))
+    (FOLub (λ n, finite_internal_rounds cut2 n t2)).
 Proof.
   intro Hsim. apply FOQLLub. intro n.
   apply finite_internal_rounds_coupled. exact Hsim.

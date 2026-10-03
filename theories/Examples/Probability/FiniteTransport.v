@@ -119,7 +119,7 @@ Defined.
     not only an external matrix certificate. *)
 Theorem split_subenumQ_joint : ∃ joint : SubEnumQ (bool * bool),
   @semantic_coupling SubEnumQ SubEnumQ_SemanticMeasure bool bool
-    (fun x y => edge x y) source_measure target_measure joint.
+    (λ x y, edge x y) source_measure target_measure joint.
 Proof.
   apply subenumQ_finite_transport_joint.
   - intro S. cbn [subenumQ_raw source_measure target_measure].
@@ -133,7 +133,7 @@ Qed.
 Theorem identity_edges_fail_hall : ¬ rational_hall source_probability target_probability eq_op.
 Proof.
   intro Hall. have H := Hall [set true].
-  have Hneighbors : matching_neighbors (fun x y : bool => x == y) setT [set true] = [set true].
+  have Hneighbors : matching_neighbors (λ x y : bool, x == y) setT [set true] = [set true].
   { apply/setP=> y. apply/idP/idP.
     - move/matching_neighborsP=> [_ [x [Hx /eqP <-]]]. exact Hx.
     - intro Hy. apply/matching_neighborsP. split; [by rewrite inE|].
@@ -152,7 +152,7 @@ Proof.
   apply (@finite_rational_transport
     (@Finite.Pack 'I_0 (Finite.on 'I_0))
     (@Finite.Pack bool (Finite.on bool))
-    (fun _ => 0) (fun _ => 0) (fun _ _ => false)).
+    (λ _, 0) (λ _, 0) (λ _ _, false)).
   - intro x. exact: lexx.
   - intro y. exact: lexx.
   - intro S. by rewrite !big1 // lexx.

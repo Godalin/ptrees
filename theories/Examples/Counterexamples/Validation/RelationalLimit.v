@@ -32,23 +32,23 @@ Example arbitrary_nat_relational_limit (T : nat → nat → Prop)
 Proof. apply oval_coupled_lub; intro n; apply oval_nat_countably_supported. Qed.
 
 Example successor_limit (c : nat → OmegaVal R nat) (Hc : oval_increasing c) :
-  oval_coupled (fun x y => y = S x) (oval_lub Hc)
-    (oval_lub (oval_bind_chain_l Hc (fun x => oval_ret R (S x)))).
+  oval_coupled (λ x y, y = S x) (oval_lub Hc)
+    (oval_lub (oval_bind_chain_l Hc (λ x, oval_ret R (S x)))).
 Proof.
   apply oval_coupled_lub; try (intro n; apply oval_nat_countably_supported).
-  intro n; exists (oval_bind (c n) (fun x => oval_ret R (x,S x))).
+  intro n; exists (oval_bind (c n) (λ x, oval_ret R (x,S x))).
   split; first by intros.
   split; first by intros.
   intros f g Hf Hg Hfg.
-  change (oval_eval (c n) (fun x => f (x,S x)) = oval_eval (c n) (fun x => g (x,S x))).
+  change (oval_eval (c n) (λ x, f (x,S x)) = oval_eval (c n) (λ x, g (x,S x))).
   apply oval_eval_ext=> x.
   apply (Hfg (x,S x)); reflexivity.
 Qed.
 
 Example empty_relation_zero_limit :
-  oval_coupled (fun (_ : Empty_set) (_ : bool) => False)
-    (oval_lub (fun n => @oval_le_refl R Empty_set (oval_bottom R)))
-    (oval_lub (fun n => @oval_le_refl R bool (oval_bottom R))).
+  oval_coupled (λ (_ : Empty_set) (_ : bool), False)
+    (oval_lub (λ n, @oval_le_refl R Empty_set (oval_bottom R)))
+    (oval_lub (λ n, @oval_le_refl R bool (oval_bottom R))).
 Proof.
   apply oval_coupled_lub.
   - intro n; apply oval_bottom_countably_supported.
@@ -116,14 +116,14 @@ Proof.
 Qed.
 
 Lemma final_joint :
-  oval_joint allowed fair fair (oval_bind fair (fun b => oval_ret R (b,negb b))).
+  oval_joint allowed fair fair (oval_bind fair (λ b, oval_ret R (b,negb b))).
 Proof.
   split; first by intros.
   split.
-  - intros f Hf; change (oval_eval fair (fun b => f (negb b)) = oval_eval fair f).
+  - intros f Hf; change (oval_eval fair (λ b, f (negb b)) = oval_eval fair f).
     by rewrite !fair_eval /= addrC.
   - intros f g Hf Hg Hfg.
-    change (oval_eval fair (fun b => f (b,negb b)) = oval_eval fair (fun b => g (b,negb b))).
+    change (oval_eval fair (λ b, f (b,negb b)) = oval_eval fair (λ b, g (b,negb b))).
     apply oval_eval_ext=> b.
     apply (Hfg (b,negb b)); destruct b; [left|right]; reflexivity.
 Qed.
@@ -137,15 +137,15 @@ Proof.
   have Hsum : ∀ p, both p + left_false p <= 1.
   { intros [[] []]; rewrite /both /left_false /bit /= ?addr0 ?add0r;
       try exact: lexx; exact: ler01. }
-  have He := Hae (fun p => bit (snd p)) (fun p => both p + left_false p)
-    (fun p => bit_test (snd p)) (oval_test_add both_test Hlf Hsum).
+  have He := Hae (λ p, bit (snd p)) (λ p, both p + left_false p)
+    (λ p, bit_test (snd p)) (oval_test_add both_test Hlf Hsum).
   have Hpoint : ∀ p, allowed (fst p) (snd p) ->
       bit (snd p) = both p + left_false p.
   { intros [[] []]; rewrite /allowed /both /left_false /bit /= ?addr0 ?add0r;
       intros H; try reflexivity; destruct H; discriminate. }
   specialize (He Hpoint).
   rewrite (oval_add (oval_laws J) both_test Hlf Hsum) in He.
-  rewrite (Hr bit bit_test) (Hl (fun b => bit (negb b)) (fun b => bit_test (negb b))) in He.
+  rewrite (Hr bit bit_test) (Hl (λ b, bit (negb b)) (λ b, bit_test (negb b))) in He.
   rewrite !fair_eval /bit /= !mulr1 !mulr0 addr0 add0r in He.
   apply (addIr (2^-1 : R)). by rewrite add0r -He.
 Qed.
@@ -160,10 +160,10 @@ Proof.
   pose bad (p : bool * bool) := if (fst p && ~~ snd p) then (1 : R) else 0.
   have Hb : oval_test bad.
   { intros [[] []]; split; try exact: lexx; exact: ler01. }
-  have Hbadle : oval_eval J bad <= oval_eval J (fun p => bit (negb (snd p))).
-  { apply (oval_mono (oval_laws J) Hb (fun p => bit_test (negb (snd p)))).
+  have Hbadle : oval_eval J bad <= oval_eval J (λ p, bit (negb (snd p))).
+  { apply (oval_mono (oval_laws J) Hb (λ p, bit_test (negb (snd p)))).
     intros [[] []]; try exact: lexx; exact: ler01. }
-  rewrite (Hr (fun b => bit (negb b)) (fun b => bit_test (negb b)))
+  rewrite (Hr (λ b, bit (negb b)) (λ b, bit_test (negb b)))
     half_eval /bit /= mulr0 in Hbadle.
   have Hbadzero : oval_eval J bad = 0.
   { apply/eqP; rewrite eq_le; apply/andP; split; first exact Hbadle.
@@ -171,7 +171,7 @@ Proof.
   have Hsum : ∀ p, both p + bad p <= 1.
   { intros [[] []]; rewrite /both /bad /= ?addr0 ?add0r;
       try exact: lexx; exact: ler01. }
-  have He : oval_eval J (fun p => bit (fst p)) = oval_eval J (fun p => both p + bad p).
+  have He : oval_eval J (λ p, bit (fst p)) = oval_eval J (λ p, both p + bad p).
   { apply oval_eval_ext; intros [[] []]; by rewrite /bit /both /bad /= ?addr0 ?add0r. }
   rewrite (Hl bit bit_test) half_eval /bit /= mulr1
     (oval_add (oval_laws J) both_test Hb Hsum) Hbadzero addr0 in He.
@@ -208,7 +208,7 @@ Example noncoherent_chain_has_limit_joint :
     (oval_lub growing_marginals_increasing).
 Proof.
   have Hcount : ∀ L : OmegaVal R bool, oval_countably_supported L.
-  { intro L; exists (fun i => Some (Nat.even i)); intros f g Hf Hg Hfg.
+  { intro L; exists (λ i, Some (Nat.even i)); intros f g Hf Hg Hfg.
     apply oval_eval_ext; intros []; apply Hfg;
       [exists O|exists (S O)]; reflexivity. }
   apply oval_coupled_lub.
@@ -234,9 +234,9 @@ Example mathcomp_coherent_joint_limit {A B} (T : A → B → Prop)
     (c : nat → M A) (d : nat → M B) (j : nat → M (A * B)) mu nu :
   @sem_increasing M MI MO _ j →
   sem_lub c mu → sem_lub d nu →
-  (∀ n, sem_eq (sem_bind (j n) (fun p => sem_ret (fst p))) (c n)) →
-  (∀ n, sem_eq (sem_bind (j n) (fun p => sem_ret (snd p))) (d n)) →
-  (∀ n, sem_ae (j n) (fun p => T (fst p) (snd p))) →
+  (∀ n, sem_eq (sem_bind (j n) (λ p, sem_ret (fst p))) (c n)) →
+  (∀ n, sem_eq (sem_bind (j n) (λ p, sem_ret (snd p))) (d n)) →
+  (∀ n, sem_ae (j n) (λ p, T (fst p) (snd p))) →
   sem_lift T mu nu.
 Proof.
   exact (sem_lift_lub_of_joint_chain (R := T) (left := c) (right := d)

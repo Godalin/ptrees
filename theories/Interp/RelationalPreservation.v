@@ -114,7 +114,7 @@ Proof.
   intros t1 t2 Hsource.
   eapply (peutt_coinduction_upto_bind
     (E := F) (MN := MN) (MF := MF)
-    (fun A0 R0 (t : ptree F MN A0) (k : A0 -> ptree F MN R0) =>
+    (λ A0 R0 (t : ptree F MN A0) (k : A0 -> ptree F MN R0),
       bind_cofinal_all t k)
     (A := A) (B := B) (RR0 := RR)
     (sim := interp_rel_candidate)).
@@ -142,13 +142,13 @@ Proof.
     destruct (stable_hitting_front_choice
       (FI := FI)
       (FO := FO)
-      (fun h : stable_head E MN A =>
+      (λ h : stable_head E MN A,
         ptree_interp_head_tree handler1 h))
       as [front1 Hfront1].
     destruct (stable_hitting_front_choice
       (FI := FI)
       (FO := FO)
-      (fun h : stable_head E MN B =>
+      (λ h : stable_head E MN B,
         ptree_interp_head_tree handler2 h))
       as [front2 Hfront2].
     assert (HsourceLift :

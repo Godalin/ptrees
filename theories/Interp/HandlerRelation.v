@@ -80,8 +80,8 @@ Proof.
   - constructor. apply Hk.
   - constructor. intro y. right. right.
     exists X, X, (@eq X), (c1 y), (c2 y),
-      (fun x => PTree.interp h1 (k1 x)),
-      (fun x => PTree.interp h2 (k2 x)).
+      (λ x, PTree.interp h1 (k1 x)),
+      (λ x, PTree.interp h2 (k2 x)).
     split; [reflexivity|]. split; [reflexivity|].
     split; [apply Hc|]. intros x x' ->. left.
     exists (k1 x'), (k2 x'). repeat split; try reflexivity. apply Hk.
@@ -169,7 +169,7 @@ Lemma peutt_interp_handler_Proper {A} :
   Proper (peutt_handler (MF := MF) ==>
     @peutt E MN MF FI FC MX FO A A eq ==>
     @peutt F MN MF FI FC MX FO A A eq)
-    (fun h t => @PTree.interp E F MN h A t).
+    (λ h t, @PTree.interp E F MN h A t).
 Proof.
   intros h g H t u Htu.
   exact (peutt_interp_handler_rel Hzero Hlimit H Htu).
@@ -179,7 +179,7 @@ Qed.
     morphism lets rewriting descend through that actual polymorphic API. *)
 Lemma peutt_interp_handler_polymorphic_Proper :
   Proper (peutt_handler (MF := MF) ==>
-    forall_relation (fun A =>
+    forall_relation (λ A,
       @peutt E MN MF FI FC MX FO A A eq ==>
       @peutt F MN MF FI FC MX FO A A eq)) (@PTree.interp E F MN).
 Proof.

@@ -91,10 +91,10 @@ Definition atomic_head (h : head) : head :=
   match h with
   | FHRet r => FHRet r
   | @FHVis _ _ _ X e k => FHVis (atomic_rename atom e)
-      (fun x => PTree.bind (atomic_cont atom e x) (fun a => PTree.interp handler (k a)))
+      (λ x, PTree.bind (atomic_cont atom e x) (λ a, PTree.interp handler (k a)))
   end.
 Definition atomic_map (mu : MF head) : MF head :=
-  sem_bind mu (fun h => sem_ret (atomic_head h)).
+  sem_bind mu (λ h, sem_ret (atomic_head h)).
 Definition atomic_head_graph (h k : head) : Prop := k = atomic_head h.
 
 Lemma atomic_map_lift mu : @sem_lift MF FI _ _ atomic_head_graph mu (atomic_map mu).
@@ -112,11 +112,11 @@ Proof.
   destruct h as [r|X e k].
   - apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)).
   - destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-      (fun x => PTree.interp handler (k x))) as [front Hfront].
+      (λ x, PTree.interp handler (k x))) as [front Hfront].
     apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
     eapply hits_proper.
     + apply (sem_bind_ret_l (FHVis (atomic_rename atom e) (atomic_cont atom e))
-        (bind_frontier (FI := FI) (fun x => PTree.interp handler (k x)) front)).
+        (bind_frontier (FI := FI) (λ x, PTree.interp handler (k x)) front)).
     + eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO));
         [apply Preservation.bind_cofinal_all|apply atomic_start|exact Hfront].
 Qed.
@@ -262,7 +262,7 @@ Lemma atomic_normalizes_returns target source mu nu :
   atomic_normalizes target source →
   @tree_return_observation E MN MF FI MX FO R source mu →
   @tree_return_observation E MN MF FI MX FO R target nu →
-  @sem_lift MF FI _ _ (fun r s => s = r) mu nu.
+  @sem_lift MF FI _ _ (λ r s, s = r) mu nu.
 Proof.
   eapply atomic_normalizes_projects. intros [r|X e k].
   - apply sem_lift_ret. reflexivity.
@@ -273,7 +273,7 @@ Lemma atomic_normalizes_offers target source mu nu :
   atomic_normalizes target source →
   @tree_offered_event_observation E MN MF FI MX FO R source mu →
   @tree_offered_event_observation E MN MF FI MX FO R target nu →
-  @sem_lift MF FI _ _ (fun e f => f = atomic_offer e) mu nu.
+  @sem_lift MF FI _ _ (λ e f, f = atomic_offer e) mu nu.
 Proof.
   eapply atomic_normalizes_projects. intros [r|X e k].
   - apply tree_transition_zero_lift.
@@ -284,9 +284,9 @@ Qed.
     coupling composition, not a whole-continuation comparison. *)
 Lemma atomic_couple {A B} (f : A → B) (AR : A → A → Prop) (BR : B → B → Prop)
     s1 s2 t1 t2 :
-  @sem_lift MF FI _ _ (fun a b => b = f a) s1 t1 →
+  @sem_lift MF FI _ _ (λ a b, b = f a) s1 t1 →
   @sem_lift MF FI _ _ AR s1 s2 →
-  @sem_lift MF FI _ _ (fun a b => b = f a) s2 t2 →
+  @sem_lift MF FI _ _ (λ a b, b = f a) s2 t2 →
   (∀ a b, AR a b → BR (f a) (f b)) → @sem_lift MF FI _ _ BR t1 t2.
 Proof.
   intros H1 Hmid H2 Hrel.
@@ -324,7 +324,7 @@ Proof.
         (return_projection (FI := FI)) s) as [mu Hmu].
       destruct (tree_head_observation_exists (FI := FI) (FO := FO)
         (return_projection (FI := FI)) v) as [nu Hnu].
-      eapply (atomic_couple (f := fun r : R => r) (AR := RR)).
+      eapply (atomic_couple (f := λ r : R, r) (AR := RR)).
       * exact (atomic_normalizes_returns Hts Hmu H1).
       * exact (trans_bisim_return_observations Hsv Hmu Hnu).
       * exact (atomic_normalizes_returns Huv Hnu H2).

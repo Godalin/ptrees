@@ -16,7 +16,7 @@ Context {Env : Type} {T : Type → Type}.
 Context `{MT : Monad T} `{QT : Eq1 T}.
 
 Definition readerT_eq1 : Eq1 (readerT Env T) :=
-  fun A x y => ∀ env, eq1 (runReaderT x env) (runReaderT y env).
+  λ A x y, ∀ env, eq1 (runReaderT x env) (runReaderT y env).
 
 Definition readerT_eq_equivalence (QE : @Eq1Equivalence T MT QT) :
     @Eq1Equivalence (readerT Env T) (@Monad_readerT Env T MT) readerT_eq1.
@@ -45,8 +45,8 @@ Theorem readerT_iteration_uniform `{IT : MonadIter T}
       (@MonadIter_readerT T Env IT) readerT_eq1.
 Proof.
   intros I J A f g h Hsquare i env.
-  apply (Hunif I J A (fun i => runReaderT (f i) env)
-    (fun j => runReaderT (g j) env) h).
+  apply (Hunif I J A (λ i, runReaderT (f i) env)
+    (λ j, runReaderT (g j) env) h).
   intro j. exact (Hsquare j env).
 Qed.
 End ReaderT.

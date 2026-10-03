@@ -64,14 +64,14 @@ Proof.
 Qed.
 
 Lemma emap_fst_diag {A : eqType} (mu : EnumQ A) :
-  enumQ_raw (emap fst (emap (fun a => (a,a)) mu)) = enumQ_raw mu.
+  enumQ_raw (emap fst (emap (λ a, (a,a)) mu)) = enumQ_raw mu.
 Proof. rewrite emap_comp; exact: emap_id. Qed.
 Lemma emap_snd_diag {A : eqType} (mu : EnumQ A) :
-  enumQ_raw (emap snd (emap (fun a => (a,a)) mu)) = enumQ_raw mu.
+  enumQ_raw (emap snd (emap (λ a, (a,a)) mu)) = enumQ_raw mu.
 Proof. rewrite emap_comp; exact: emap_id. Qed.
 Lemma coupling_refl {A : eqType} (mu : EnumQ A) : coupling eq mu mu.
 Proof.
-  exists (emap (fun a => (a,a)) mu).
+  exists (emap (λ a, (a,a)) mu).
   - apply enumQ_eq_eq; exact: emap_fst_diag.
   - apply enumQ_eq_eq; exact: emap_snd_diag.
   - move=> a b Hab.
@@ -90,7 +90,7 @@ Lemma emap_snd_swap {A B : eqType} (mu : EnumQ (A*B)) :
 Proof. rewrite emap_comp; reflexivity. Qed.
 Lemma coupling_sym {A B : eqType} (R : A → B → Prop)
     (mu : EnumQ A) (nu : EnumQ B) :
-  coupling R mu nu → coupling (fun b a => R a b) nu mu.
+  coupling R mu nu → coupling (λ b a, R a b) nu mu.
 Proof.
   move=> [j HL HR Hrel]; exists (emap swap j).
   - eapply enumQ_eq_trans; last exact HR.
@@ -108,7 +108,7 @@ Lemma coupling_emap {A B C D : eqType}
   coupling R mu nu → coupling S (emap f mu) (emap g nu).
 Proof.
   move=> H [j HL HR Hrel].
-  exists (emap (fun xy => (f xy.1,g xy.2)) j).
+  exists (emap (λ xy, (f xy.1,g xy.2)) j).
   - eapply enumQ_eq_trans; last exact (emap_proper f HL).
     apply enumQ_eq_eq; by rewrite !emap_comp.
   - eapply enumQ_eq_trans; last exact (emap_proper g HR).
@@ -193,7 +193,7 @@ Lemma coupling_bind_joint_on_nonzero {A B C D : eqType}
   (∀ a b, acc_mass (a,b) outer != 0 → coupling R (k a) (h b)) →
   coupling R (bind_EnumQ (emap fst outer) k) (bind_EnumQ (emap snd outer) h).
 Proof.
-  apply (enumQ_ind_raw (P := fun outer =>
+  apply (enumQ_ind_raw (P := λ outer,
     (∀ a b, acc_mass (a,b) outer != 0 -> coupling R (k a) (h b)) ->
     coupling R (bind_EnumQ (emap fst outer) k) (bind_EnumQ (emap snd outer) h))).
   - move=> _; apply (coupling_raw (mu := enumQ_zero) (nu := enumQ_zero));
@@ -245,11 +245,11 @@ Lemma equality_joint_marginals {A : eqType} (j : EnumQ (A*A)) :
   (∀ x y, acc_mass (x,y) j != 0 → x = y) → emap fst j ==EnumQ emap snd j.
 Proof.
   move=> H a.
-  change (enumQ_expect (fun x => if x == a then 1 else 0) (enumQ_map fst j) =
-    enumQ_expect (fun x => if x == a then 1 else 0) (enumQ_map snd j)).
+  change (enumQ_expect (λ x, if x == a then 1 else 0) (enumQ_map fst j) =
+    enumQ_expect (λ x, if x == a then 1 else 0) (enumQ_map snd j)).
   rewrite !enumQ_expect_map; change
-    (finite_expect (fun xy => if xy.1 == a then 1 else 0) (enumQ_raw j) =
-     finite_expect (fun xy => if xy.2 == a then 1 else 0) (enumQ_raw j)).
+    (finite_expect (λ xy, if xy.1 == a then 1 else 0) (enumQ_raw j) =
+     finite_expect (λ xy, if xy.2 == a then 1 else 0) (enumQ_raw j)).
   apply finite_expect_ae_ext; first exact (enumQ_nonnegative j).
   move=> p [x y] Hin Hnz.
   have Hxy : x = y.
@@ -290,14 +290,14 @@ Defined.
 Lemma glue_row_expect {A B C : eqType} (nu : EnumQ B)
     (jbc : EnumQ (B*C)) (ab : rat*(A*B)) f :
   finite_expect f (glue_row nu jbc ab) =
-  ab.1 * enumQ_expect (fun bc =>
+  ab.1 * enumQ_expect (λ bc,
     if bc.1 == ab.2.2 then (acc_mass ab.2.2 nu)^-1 * f (ab.2.1,bc.2)
     else 0) jbc.
 Proof.
   rewrite /glue_row /enumQ_expect /finite_enum_expect.
   change (finite_expect f [seq (ab.1 * bc.1 / acc_mass ab.2.2 nu, (ab.2.1,bc.2.2))
       | bc <- enumQ_raw jbc & bc.2.1 == ab.2.2] =
-    ab.1 * finite_expect (fun bc => if bc.1 == ab.2.2
+    ab.1 * finite_expect (λ bc, if bc.1 == ab.2.2
       then (acc_mass ab.2.2 nu)^-1 * f (ab.2.1,bc.2) else 0) (enumQ_raw jbc)).
   elim: (enumQ_raw jbc)=> [|[q [b c]] tl IH] /=; first by rewrite mulr0.
   case Hb: (b == ab.2.2)=> /=.
@@ -308,12 +308,12 @@ Qed.
 Lemma glue_expect {A B C : eqType} (nu : EnumQ B)
     (jab : EnumQ (A*B)) (jbc : EnumQ (B*C)) f :
   enumQ_expect f (glue nu jab jbc) =
-  enumQ_expect (fun ab => enumQ_expect (fun bc =>
+  enumQ_expect (λ ab, enumQ_expect (λ bc,
     if bc.1 == ab.2 then (acc_mass ab.2 nu)^-1 * f (ab.1,bc.2)
     else 0) jbc) jab.
 Proof.
   change (finite_expect f (List.flat_map (glue_row nu jbc) (enumQ_raw jab)) =
-    finite_expect (fun ab => enumQ_expect (fun bc =>
+    finite_expect (λ ab, enumQ_expect (λ bc,
       if bc.1 == ab.2 then (acc_mass ab.2 nu)^-1 * f (ab.1,bc.2) else 0) jbc)
       (enumQ_raw jab)).
   elim: (enumQ_raw jab)=> [|[p [a b]] tl IH] //=.
@@ -340,8 +340,8 @@ Qed.
 Lemma glue_left_expect {A B C : eqType} (nu : EnumQ B)
     (jab : EnumQ (A*B)) (jbc : EnumQ (B*C)) f :
   emap snd jab ==EnumQ nu → emap fst jbc ==EnumQ nu →
-  enumQ_expect (fun ac => f ac.1) (glue nu jab jbc) =
-  enumQ_expect (fun ab => f ab.1) jab.
+  enumQ_expect (λ ac, f ac.1) (glue nu jab jbc) =
+  enumQ_expect (λ ab, f ab.1) jab.
 Proof.
   move=> Hab Hbc; rewrite glue_expect.
   apply finite_expect_ae_ext; first exact (enumQ_nonnegative jab).
@@ -357,8 +357,8 @@ Qed.
 Lemma glue_right_expect {A B C : eqType} (nu : EnumQ B)
     (jab : EnumQ (A*B)) (jbc : EnumQ (B*C)) g :
   emap snd jab ==EnumQ nu → emap fst jbc ==EnumQ nu →
-  enumQ_expect (fun ac => g ac.2) (glue nu jab jbc) =
-  enumQ_expect (fun bc => g bc.2) jbc.
+  enumQ_expect (λ ac, g ac.2) (glue nu jab jbc) =
+  enumQ_expect (λ bc, g bc.2) jbc.
 Proof.
   move=> Hab Hbc; rewrite glue_expect.
   rewrite /enumQ_expect /finite_enum_expect finite_expect_swap.
@@ -380,9 +380,9 @@ Lemma glue_left_marginal {A B C : eqType} (nu : EnumQ B)
   emap fst (glue nu jab jbc) ==EnumQ emap fst jab.
 Proof.
   move=> H K a; change
-    (enumQ_expect (fun x => if x == a then 1 else 0) (enumQ_map fst (glue nu jab jbc)) =
-     enumQ_expect (fun x => if x == a then 1 else 0) (enumQ_map fst jab)).
-  rewrite !enumQ_expect_map; exact (glue_left_expect (fun x => if x == a then 1 else 0) H K).
+    (enumQ_expect (λ x, if x == a then 1 else 0) (enumQ_map fst (glue nu jab jbc)) =
+     enumQ_expect (λ x, if x == a then 1 else 0) (enumQ_map fst jab)).
+  rewrite !enumQ_expect_map; exact (glue_left_expect (λ x, if x == a then 1 else 0) H K).
 Qed.
 Lemma glue_right_marginal {A B C : eqType} (nu : EnumQ B)
     (jab : EnumQ (A*B)) (jbc : EnumQ (B*C)) :
@@ -390,9 +390,9 @@ Lemma glue_right_marginal {A B C : eqType} (nu : EnumQ B)
   emap snd (glue nu jab jbc) ==EnumQ emap snd jbc.
 Proof.
   move=> H K c; change
-    (enumQ_expect (fun x => if x == c then 1 else 0) (enumQ_map snd (glue nu jab jbc)) =
-     enumQ_expect (fun x => if x == c then 1 else 0) (enumQ_map snd jbc)).
-  rewrite !enumQ_expect_map; exact (glue_right_expect (fun x => if x == c then 1 else 0) H K).
+    (enumQ_expect (λ x, if x == c then 1 else 0) (enumQ_map snd (glue nu jab jbc)) =
+     enumQ_expect (λ x, if x == c then 1 else 0) (enumQ_map snd jbc)).
+  rewrite !enumQ_expect_map; exact (glue_right_expect (λ x, if x == c then 1 else 0) H K).
 Qed.
 
 Lemma glue_entry_preimage {A B C : eqType} (nu : EnumQ B)
@@ -432,7 +432,7 @@ Qed.
 Lemma coupling_comp {A B C : eqType} (R : A → B → Prop) (S : B → C → Prop)
     (mu : EnumQ A) (nu : EnumQ B) (xi : EnumQ C) :
   coupling R mu nu → coupling S nu xi →
-  coupling (fun a c => ∃ b, R a b ∧ S b c) mu xi.
+  coupling (λ a c, ∃ b, R a b ∧ S b c) mu xi.
 Proof.
   move=> [jab HL HM HR] [jbc HN HK HS]; exists (glue nu jab jbc).
   - eapply enumQ_eq_trans; [exact: glue_left_marginal HM HN|exact HL].

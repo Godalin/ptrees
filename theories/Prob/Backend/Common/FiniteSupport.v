@@ -23,14 +23,14 @@ Lemma finite_nonnegative_tail {A} (p : R) (x : A) mu :
 Proof. move=> H q y Hy; exact (H q y (or_intror Hy)). Qed.
 
 Lemma finite_indicator_nonnegative {A} (mu : list (R*A)) (P : A → bool) :
-  finite_nonnegative mu → 0 <= finite_expect (fun x => if P x then 1 else 0) mu.
+  finite_nonnegative mu → 0 <= finite_expect (λ x, if P x then 1 else 0) mu.
 Proof.
   move=> H; apply finite_expect_nonnegative; first exact H.
   move=> x; by case: (P x).
 Qed.
 
 Lemma finite_indicator_positive_member {A} (mu : list (R*A)) (P : A → bool) :
-  0 < finite_expect (fun x => if P x then 1 else 0) mu →
+  0 < finite_expect (λ x, if P x then 1 else 0) mu →
   ∃ p x, List.In (p,x) mu ∧ p ≠ 0 ∧ P x.
 Proof.
   elim: mu=> [|[p x] mu IH]; first by rewrite /= ltxx.
@@ -51,7 +51,7 @@ Qed.
 
 Lemma finite_indicator_member_positive {A} (mu : list (R*A)) (P : A → bool) p x :
   finite_nonnegative mu → List.In (p,x) mu → p ≠ 0 → P x →
-  0 < finite_expect (fun x => if P x then 1 else 0) mu.
+  0 < finite_expect (λ x, if P x then 1 else 0) mu.
 Proof.
   elim: mu=> [|[q y] mu IH]; first by move=> _ [].
   move=> Hnn [He|Hin] Hnz Hx.
@@ -77,7 +77,7 @@ Proof.
   - move/finite_indicator_positive_member=> [p [y [Hin [Hp /eqP He]]]].
     subst y; by exists p.
   - move=> [p [Hin Hp]].
-    exact (finite_indicator_member_positive (P := fun y => y == x) H Hin Hp (eqxx x)).
+    exact (finite_indicator_member_positive (P := λ y, y == x) H Hin Hp (eqxx x)).
 Qed.
 
 Lemma finite_atom_zero_iff {A : eqType} (mu : list (R*A)) x :
@@ -87,7 +87,7 @@ Proof.
   move=> H; split.
   - move=> Hz p Hin; case Hp: (p == 0); first exact (eqP Hp).
     have Hnz : p ≠ 0 by apply/eqP; rewrite Hp.
-    have Hpos := finite_indicator_member_positive (P := fun y => y == x) H Hin Hnz (eqxx x).
+    have Hpos := finite_indicator_member_positive (P := λ y, y == x) H Hin Hnz (eqxx x).
     change (is_true (0 < finite_atom x mu)) in Hpos; by rewrite Hz ltxx in Hpos.
   - move=> Hz; case Hp: (finite_atom x mu == 0); first exact (eqP Hp).
     have Hpos : 0 < finite_atom x mu.

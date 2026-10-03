@@ -21,18 +21,18 @@ Definition exception_head {Err E MN A} (h : stable_head (exceptE Err +' E) MN A)
   | FHRet a => FHRet (inr a)
   | @FHVis _ _ _ X e k => match e with
       | inl1 ex => FHRet (inl (exception_value ex))
-      | inr1 fe => FHVis fe (fun x => run_exception (k x)) end
+      | inr1 fe => FHVis fe (λ x, run_exception (k x)) end
   end.
 
 Lemma run_exception_ret {Err E MN A} (a : A) :
   pstruct eq (@run_exception Err E MN A (Ret a)) (Ret (inr a)).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 Lemma run_exception_throw {Err E MN A} (e : Err) :
-  pstruct eq (@run_exception Err E MN A (Vis (inl1 (Throw e)) (fun v : void => match v with end)))
+  pstruct eq (@run_exception Err E MN A (Vis (inl1 (Throw e)) (λ v : void, match v with end)))
     (Ret (inl e)).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 Lemma run_exception_prob {Err E MN A X} (mu : MN X) (k : X → ptree (exceptE Err +' E) MN A) :
-  pstruct eq (run_exception (Prob mu k)) (Prob mu (fun x => run_exception (k x))).
+  pstruct eq (run_exception (Prob mu k)) (Prob mu (λ x, run_exception (k x))).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Section Approximation.
@@ -56,12 +56,12 @@ Proof. apply sem_bind_ret_order. Qed.
 Local Lemma zero_equiv A B (k : A → MF B) : equiv (sem_bind sem_zero k) sem_zero.
 Proof. split; [apply sem_bind_zero_order|apply sem_zero_le]. Qed.
 Local Lemma mixed_assoc A B C (mu : MN A) (k : A → MF B) (h : B → MF C) :
-  equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)).
+  equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (λ x, sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
 Lemma exception_hitting_approx {A} n (t : ptree (exceptE Err +' E) MN A) :
   equiv (ptree_hitting_approx (MF := MF) n (observe (run_exception t)))
-    (sem_bind (ptree_hitting_approx (MF := MF) n (observe t)) (fun h => sem_ret (exception_head h))).
+    (sem_bind (ptree_hitting_approx (MF := MF) n (observe t)) (λ h, sem_ret (exception_head h))).
 Proof.
   revert t. induction n as [|n IH]; intro t; rewrite observe_run_exception;
     setoid_rewrite (hit_unfold (exceptE Err +' E));
@@ -82,17 +82,17 @@ Context `{Omega : @SemanticOmegaLaws MF FI FO}
 Theorem exception_hitting {A} (t : ptree (exceptE Err +' E) MN A) front :
   ptree_stable_hitting (MF := MF) (observe t) front →
   ptree_stable_hitting (MF := MF) (observe (run_exception t))
-    (sem_bind front (fun h => sem_ret (exception_head h))).
+    (sem_bind front (λ h, sem_ret (exception_head h))).
 Proof.
   intro H. assert (Hmap : sem_lub
-    (fun n => sem_bind (ptree_hitting_approx (MF := MF) n (observe t)) (fun h => sem_ret (exception_head h)))
-    (sem_bind front (fun h => sem_ret (exception_head h)))).
+    (λ n, sem_bind (ptree_hitting_approx (MF := MF) n (observe t)) (λ h, sem_ret (exception_head h)))
+    (sem_bind front (λ h, sem_ret (exception_head h)))).
   { apply sem_bind_lub; [apply ptree_hitting_increasing|exact H]. }
   assert (HC : sem_lub
-    (fun n => sem_bind (ptree_hitting_approx (MF := MF) n (observe t)) (fun h => sem_ret (exception_head h)))
-    (sem_bind front (fun h => sem_ret (exception_head h))) ↔
+    (λ n, sem_bind (ptree_hitting_approx (MF := MF) n (observe t)) (λ h, sem_ret (exception_head h)))
+    (sem_bind front (λ h, sem_ret (exception_head h))) ↔
     ptree_stable_hitting (MF := MF) (observe (run_exception t))
-      (sem_bind front (fun h => sem_ret (exception_head h)))).
+      (sem_bind front (λ h, sem_ret (exception_head h)))).
   { unfold ptree_stable_hitting, stable_hitting. apply sem_lub_cofinal.
     - intro n. apply sem_bind_le_mu. apply ptree_hitting_increasing.
     - apply ptree_hitting_increasing.

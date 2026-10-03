@@ -1,5 +1,7 @@
 (** Standard ITree Writer, implemented as a thin State client. Output order
     is [monoid_plus old new]; probability remains a native PTree node. *)
+From Coq Require Import Utf8.
+
 Set Universe Polymorphism.
 From ExtLib.Structures Require Import Monoid.
 From ITree.Events Require Import Writer State.
@@ -17,9 +19,9 @@ Definition writer_handler {W E MN} (op : Monoid W) X (e : (writerE W +' E) X) :
     ptree (stateE W +' E) MN X :=
   match e with
   | inl1 we => match we in writerE _ X return ptree (stateE W +' E) MN X with
-      | Tell w => Vis (inl1 (Get W)) (fun log =>
-          Vis (inl1 (Put W (monoid_plus op log w))) (fun _ => Ret tt)) end
-  | inr1 fe => Vis (inr1 fe) (fun x => Ret x)
+      | Tell w => Vis (inl1 (Get W)) (λ log,
+          Vis (inl1 (Put W (monoid_plus op log w))) (λ _, Ret tt)) end
+  | inr1 fe => Vis (inr1 fe) (λ x, Ret x)
   end.
 
 Definition run_writer {W E MN A} (op : Monoid W) (t : ptree (writerE W +' E) MN A) :
@@ -28,6 +30,6 @@ Definition run_writer {W E MN A} (op : Monoid W) (t : ptree (writerE W +' E) MN 
 
 Lemma writer_tell_appends {W E MN} (op : Monoid W) w :
   @writer_handler W E MN op _ (inl1 (Tell w)) =
-    Vis (inl1 (Get W)) (fun log =>
-      Vis (inl1 (Put W (monoid_plus op log w))) (fun _ => Ret tt)).
+    Vis (inl1 (Get W)) (λ log,
+      Vis (inl1 (Put W (monoid_plus op log w))) (λ _, Ret tt)).
 Proof. reflexivity. Qed.

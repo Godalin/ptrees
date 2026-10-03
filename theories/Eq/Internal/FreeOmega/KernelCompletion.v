@@ -56,7 +56,7 @@ Proof.
   - apply free_omega_qlift_refl. intro x. reflexivity.
   - eapply FOQLComp with (T := eq) (U := eq) (mid := kernel_completion 1 s).
     + cbn [kernel_completion]. eapply FOQLBind with
-        (T := fun p q => p = q ∧ kernel_completion_invariant p).
+        (T := λ p q, p = q ∧ kernel_completion_invariant p).
       * eapply FOQLAERestrict with (T := eq)
           (P := kernel_completion_invariant) (Q := kernel_completion_invariant).
         -- apply free_omega_qlift_refl. intro p. reflexivity.
@@ -76,7 +76,7 @@ Lemma kernel_target_approx_below_completion n target :
   free_omega_approx eq
     (free_omega_bind
       (@stable_target_approx MF FI FreeOmegaObservableSemanticOmega S O kernel n target)
-      (fun o => FORet (output o)))
+      (λ o, FORet (output o)))
     (kernel_completion_resolve (kernel_completion n) target).
 Proof.
   induction n as [|n IH] in target |- *; destruct target as [o|s].
@@ -87,7 +87,7 @@ Proof.
       (free_omega_bind
         (free_omega_bind (kernel s)
           (@stable_target_approx MF FI FreeOmegaObservableSemanticOmega S O kernel n))
-        (fun o => FORet (output o)))
+        (λ o, FORet (output o)))
       (free_omega_bind (kernel s) (kernel_completion_resolve (kernel_completion n)))).
     rewrite free_omega_bind_assoc.
     eapply free_omega_approx_bind with (R := eq).
@@ -99,7 +99,7 @@ Theorem kernel_hitting_approx_below_completion n s :
   free_omega_approx eq
     (free_omega_bind
       (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O kernel n s)
-      (fun o => FORet (output o)))
+      (λ o, FORet (output o)))
     (kernel_completion (Datatypes.S n) s).
 Proof.
   unfold stable_hitting_approx. cbn [kernel_completion].
@@ -107,7 +107,7 @@ Proof.
     (free_omega_bind
       (free_omega_bind (kernel s)
         (@stable_target_approx MF FI FreeOmegaObservableSemanticOmega S O kernel n))
-      (fun o => FORet (output o)))
+      (λ o, FORet (output o)))
     (free_omega_bind (kernel s) (kernel_completion_resolve (kernel_completion n)))).
   rewrite free_omega_bind_assoc.
   eapply free_omega_approx_bind with (R := eq).
@@ -123,15 +123,15 @@ Theorem kernel_hitting_limit_upper s : D s →
   ∃ upper,
     free_omega_approx eq
       (free_omega_bind
-        (FOLub (fun n => @stable_hitting_approx MF FI
+        (FOLub (λ n, @stable_hitting_approx MF FI
           FreeOmegaObservableSemanticOmega S O kernel n s))
-        (fun o => FORet (output o))) upper ∧
+        (λ o, FORet (output o))) upper ∧
     free_omega_qlift eq upper (tail s).
 Proof.
-  intro HD. exists (FOLub (fun n => kernel_completion (Datatypes.S n) s)). split.
+  intro HD. exists (FOLub (λ n, kernel_completion (Datatypes.S n) s)). split.
   - apply FOApproxLub. intro n. apply kernel_hitting_approx_below_completion.
   - eapply FOQLComp with (T := eq) (U := eq)
-      (mid := FOLub (fun _ => tail s)).
+      (mid := FOLub (λ _, tail s)).
     + apply FOQLLub. intro n. apply kernel_completion_eq. exact HD.
     + apply FOQLSym. apply FOQLLubConstantR.
       apply free_omega_qlift_refl. intro x. reflexivity.

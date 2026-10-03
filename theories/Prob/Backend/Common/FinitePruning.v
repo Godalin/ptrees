@@ -34,8 +34,8 @@ Proof.
 Qed.
 
 Lemma finite_prune_map {A B} (f : A → B) (mu : list (W * A)) :
-  finite_prune (List.map (fun px => (fst px, f (snd px))) mu) =
-  List.map (fun px => (fst px, f (snd px))) (finite_prune mu).
+  finite_prune (List.map (λ px, (fst px, f (snd px))) mu) =
+  List.map (λ px, (fst px, f (snd px))) (finite_prune mu).
 Proof.
   induction mu as [|[p x] tl IH]; cbn; first reflexivity.
   by case: (discard p); cbn; rewrite IH.
@@ -67,8 +67,8 @@ End RawPruning.
 Lemma finite_prune_map_weights {W V A : Type}
     (d : W → bool) (e : V → bool) (f : W → V) (mu : list (W * A)) :
   (∀ p, e (f p) = d p) →
-  finite_prune e (List.map (fun px => (f (fst px), snd px)) mu) =
-  List.map (fun px => (f (fst px), snd px)) (finite_prune d mu).
+  finite_prune e (List.map (λ px, (f (fst px), snd px)) mu) =
+  List.map (λ px, (f (fst px), snd px)) (finite_prune d mu).
 Proof.
   intro H; induction mu as [|[p x] tl IH]; cbn; first reflexivity.
   by rewrite H; case: (d p); cbn; rewrite IH.
@@ -97,7 +97,7 @@ Proof.
 Qed.
 
 Lemma finite_expect_prune_zero {A} (mu : list (R * A)) f :
-  finite_expect f (finite_prune (fun p => p == 0) mu) = finite_expect f mu.
+  finite_expect f (finite_prune (λ p, p == 0) mu) = finite_expect f mu.
 Proof.
   induction mu as [|[p x] tl IH]; cbn; first reflexivity.
   case Hp: (p == 0); last by cbn; rewrite IH.
@@ -108,8 +108,8 @@ Definition finite_enum_prune {A} d (mu : FiniteEnum R A) : FiniteEnum R A :=
   finite_enum_of_list (@finite_prune_nonnegative A d _ (finite_enum_nonnegative mu)).
 
 Lemma finite_prune_zero_scale {A} p (mu : list (R*A)) :
-  finite_prune (fun q => q == 0) (finite_weight_map p mu) =
-  if p == 0 then nil else finite_weight_map p (finite_prune (fun q => q == 0) mu).
+  finite_prune (λ q, q == 0) (finite_weight_map p mu) =
+  if p == 0 then nil else finite_weight_map p (finite_prune (λ q, q == 0) mu).
 Proof.
   case Hp: (p == 0).
   - move/eqP: Hp=> ->; elim: mu=> [|[q x] tl IH] //=.
@@ -119,9 +119,9 @@ Proof.
 Qed.
 
 Lemma finite_prune_zero_bind {A B} (mu : list (R*A)) (k : A → list (R*B)) :
-  finite_prune (fun p => p == 0) (finite_bind mu k) =
-  finite_bind (finite_prune (fun p => p == 0) mu)
-    (fun x => finite_prune (fun p => p == 0) (k x)).
+  finite_prune (λ p, p == 0) (finite_bind mu k) =
+  finite_bind (finite_prune (λ p, p == 0) mu)
+    (λ x, finite_prune (λ p, p == 0) (k x)).
 Proof.
   elim: mu=> [|[p x] tl IH] //=.
   rewrite finite_prune_app finite_prune_zero_scale IH.
@@ -130,14 +130,14 @@ Qed.
 
 Lemma finite_prune_zero_bind_ae {A B} (mu : list (R*A)) (k h : A → list (R*B)) :
   (∀ p x, List.In (p,x) mu → p ≠ 0 →
-    finite_prune (fun q => q == 0) (k x) = finite_prune (fun q => q == 0) (h x)) →
-  finite_prune (fun p => p == 0) (finite_bind mu k) =
-  finite_prune (fun p => p == 0) (finite_bind mu h).
+    finite_prune (λ q, q == 0) (k x) = finite_prune (λ q, q == 0) (h x)) →
+  finite_prune (λ p, p == 0) (finite_bind mu k) =
+  finite_prune (λ p, p == 0) (finite_bind mu h).
 Proof.
   elim: mu=> [|[p x] tl IH] H //=.
   rewrite !finite_prune_app !finite_prune_zero_scale.
   have Htl : ∀ q y, List.In (q,y) tl -> q ≠ 0 ->
-    finite_prune (fun r => r == 0) (k y) = finite_prune (fun r => r == 0) (h y).
+    finite_prune (λ r, r == 0) (k y) = finite_prune (λ r, r == 0) (h y).
   { move=> q y Hy Hq; exact (H q y (or_intror Hy) Hq). }
   rewrite (IH Htl); case Hp: (p == 0)=> //=.
   have Hnz : p ≠ 0 by apply/eqP; rewrite Hp.
@@ -149,7 +149,7 @@ Lemma finite_enum_prune_mass_le {A} d (mu : FiniteEnum R A) :
 Proof. apply finite_expect_prune_le; [exact: finite_enum_nonnegative|intro; exact: ler01]. Qed.
 
 Lemma finite_enum_prune_zero_expect {A} (mu : FiniteEnum R A) f :
-  finite_enum_expect (finite_enum_prune (fun p => p == 0) mu) f = finite_enum_expect mu f.
+  finite_enum_expect (finite_enum_prune (λ p, p == 0) mu) f = finite_enum_expect mu f.
 Proof. exact: finite_expect_prune_zero. Qed.
 
 Definition finite_subdist_prune {A} (d : R → bool) (mu : FiniteSubdist R A) : FiniteSubdist R A.
@@ -159,6 +159,6 @@ Proof.
 Defined.
 
 Lemma finite_subdist_prune_zero_expect {A} (mu : FiniteSubdist R A) f :
-  finite_subdist_expect (finite_subdist_prune (fun p => p == 0) mu) f = finite_subdist_expect mu f.
+  finite_subdist_expect (finite_subdist_prune (λ p, p == 0) mu) f = finite_subdist_expect mu f.
 Proof. exact: finite_enum_prune_zero_expect. Qed.
 End CheckedPruning.

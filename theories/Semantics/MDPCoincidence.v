@@ -40,7 +40,7 @@ Lemma mdp_ret_zero_separate {A} (a : A) :
   ¬ sem_lift eq (sem_ret a) sem_zero.
 Proof.
   intro H. pose proof (sem_lift_sym H) as Hback.
-  pose proof (sem_lift_ae_transport_r Hback (sem_ae_zero (fun _ : A => False))) as Ha.
+  pose proof (sem_lift_ae_transport_r Hback (sem_ae_zero (λ _ : A, False))) as Ha.
   apply (proj1 (sem_ae_ret_iff _ _)) in Ha.
   destruct Ha as [b [_ Hfalse]]. contradiction.
 Qed.
@@ -81,19 +81,19 @@ Qed.
 
 Lemma mdp_dirac_transition t front h label out :
   hits t front → sem_eq front (sem_ret h) → head_action_result label h out →
-  trans t label (sem_bind front (fun _ : head => out)) ∧
-  sem_lift eq (sem_bind front (fun _ : head => out)) out.
+  trans t label (sem_bind front (λ _ : head, out)) ∧
+  sem_lift eq (sem_bind front (λ _ : head, out)) out.
 Proof.
   intros Hhit Heq Haction. split.
   - apply trans_from_hitting; [exact Hhit|].
     assert (Hlift : sem_lift eq (sem_ret h) front).
     { eapply sem_lift_proper_r; [apply sem_eq_sym; exact Heq|].
       apply sem_lift_refl. intro x. reflexivity. }
-    assert (Hae : sem_ae (sem_ret h) (fun k => head_action_result label k out)).
+    assert (Hae : sem_ae (sem_ret h) (λ k, head_action_result label k out)).
     { apply (proj2 (sem_ae_ret_iff _ _)). exact Haction. }
     pose proof (sem_lift_ae_transport_r Hlift Hae) as Hfront.
     eapply sem_ae_mono; [|exact Hfront]. intros k [k' [-> Hk]]. exact Hk.
-  - exact (mdp_dirac_bind_lift (fun _ : head => out) Heq).
+  - exact (mdp_dirac_bind_lift (λ _ : head, out) Heq).
 Qed.
 
 Lemma mdp_dirac_return_match t u f g h k :

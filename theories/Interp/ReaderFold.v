@@ -18,12 +18,12 @@ Variable handle : ∀ X, E X → T X.
 Variable sample : ∀ X, MN X → T X.
 
 Definition reader_effect {X} (e : (readerE Env +' E) X) : readerT Env T X :=
-  mkReaderT (fun env => match e with
+  mkReaderT (λ env, match e with
     | inl1 re => match re in readerE _ X return T X with Ask => ret env end
     | inr1 fe => @handle X fe end).
 
 Definition reader_sample {X} (mu : MN X) : readerT Env T X :=
-  mkReaderT (fun _ => @sample X mu).
+  mkReaderT (λ _, @sample X mu).
 
 Definition fold_reader {A} (t : ptree (readerE Env +' E) MN A) env : T A :=
   runReaderT (fold (@reader_effect) (@reader_sample) t) env.

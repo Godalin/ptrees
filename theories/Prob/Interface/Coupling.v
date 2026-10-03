@@ -22,7 +22,7 @@ Polymorphic Definition sem_same_mass@{carrier representation}
     {S : Type@{carrier} → Type@{representation}}
     `{SI : SemanticMeasure S} {A B : Type@{carrier}}
     (mu : S A) (nu : S B) : Prop :=
-  sem_lift (fun _ _ => True) mu nu.
+  sem_lift (λ _ _, True) mu nu.
 
 Polymorphic Lemma sem_lift_same_mass@{carrier representation}
     {S : Type@{carrier} → Type@{representation}}
@@ -46,8 +46,8 @@ Context {S : Type → Type}
 Hypothesis Hret : ∀ A (mu : S A), sem_eq (sem_bind mu sem_ret) mu.
 
 Lemma sem_lift_map_graph {A B} (mu : S A) (f : A → B) :
-  sem_lift (fun x y => y = f x) mu
-    (sem_bind mu (fun x => sem_ret (f x))).
+  sem_lift (λ x y, y = f x) mu
+    (sem_bind mu (λ x, sem_ret (f x))).
 Proof.
   eapply sem_lift_proper_l; [apply Hret|].
   eapply sem_lift_bind.
@@ -57,9 +57,9 @@ Qed.
 
 Theorem sem_lift_map_reflect {X Y A B} (mu : S X) (nu : S Y)
     (f : X → A) (g : Y → B) (T : A → B → Prop) :
-  sem_lift T (sem_bind mu (fun x => sem_ret (f x)))
-    (sem_bind nu (fun y => sem_ret (g y))) →
-  sem_lift (fun x y => T (f x) (g y)) mu nu.
+  sem_lift T (sem_bind mu (λ x, sem_ret (f x)))
+    (sem_bind nu (λ y, sem_ret (g y))) →
+  sem_lift (λ x y, T (f x) (g y)) mu nu.
 Proof.
   intro H.
   pose proof (sem_lift_comp (sem_lift_map_graph mu f) H) as Hleft.
@@ -80,13 +80,13 @@ Polymorphic Class SemanticMeasureCouplingAELaws@{carrier representation}
   sem_lift_ae_transport_r : ∀ {A B : Type@{carrier}}
       (R : A → B → Prop) (mu : S A) (nu : S B) (P : A → Prop),
       sem_lift R mu nu → sem_ae mu P →
-      sem_ae nu (fun y => ∃ x, R x y ∧ P x);
+      sem_ae nu (λ y, ∃ x, R x y ∧ P x);
   sem_lift_ae_restrict : ∀ {A B : Type@{carrier}}
       (R : A → B → Prop) (mu : S A) (nu : S B)
       (P : A → Prop) (Q : B → Prop),
       sem_lift R mu nu →
       sem_ae mu P → sem_ae nu Q →
-      sem_lift (fun x y => R x y ∧ P x ∧ Q y) mu nu
+      sem_lift (λ x y, R x y ∧ P x ∧ Q y) mu nu
 }.
 
 (** Derived diagonal restriction. Deliberately not a global instance: clients
@@ -97,7 +97,7 @@ Lemma coupling_ae_implies_ae_lift {S : Type → Type}
   @SemanticMeasureAELiftLaws S SI.
 Proof.
   constructor. intros A mu P HP.
-  eapply sem_lift_mono with (R := fun x y => x = y ∧ P x ∧ P y).
+  eapply sem_lift_mono with (R := λ x y, x = y ∧ P x ∧ P y).
   - intros x y [Hxy [Hx Hy]]. split; assumption.
   - eapply sem_lift_ae_restrict.
     + apply sem_lift_refl. intro x. reflexivity.
@@ -115,7 +115,7 @@ Lemma sem_lift_ret_inv {S : Type → Type}
   sem_lift rel (sem_ret a) (sem_ret b) → rel a b.
 Proof.
   intro Hlift.
-  assert (Ha : sem_ae (sem_ret a) (fun x => x = a)).
+  assert (Ha : sem_ae (sem_ret a) (λ x, x = a)).
   { apply (proj2 (sem_ae_ret_iff _ _)). reflexivity. }
   pose proof (sem_lift_ae_transport_r Hlift Ha) as Hb.
   apply (proj1 (sem_ae_ret_iff _ _)) in Hb.

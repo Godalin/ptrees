@@ -133,7 +133,7 @@ Theorem ptree_peutt_iteration_uniform :
 Proof.
   intros I J A f g h Hsquare i.
   change (peutt (FI := FI) eq (PTree.iter f i) (PTree.iter g (h i))).
-  eapply (peutt_iter_direct_rel Hzero Hlimit) with (SI := fun i j => h i = j); [|reflexivity].
+  eapply (peutt_iter_direct_rel Hzero Hlimit) with (SI := λ i j, h i = j); [|reflexivity].
   intros x y <-. eapply IterationAlgebra.peutt_relation_right; [|exact (Hsquare x)].
   apply (Relation.peutt_of_pstruct (relational_bind_of_laws FB) Hmixed Hzero Hlimit).
   apply pstruct_return_map. intros [j|a]; constructor; reflexivity.

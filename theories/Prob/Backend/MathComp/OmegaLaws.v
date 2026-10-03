@@ -48,14 +48,14 @@ Proof.
 Qed.
 
 Lemma mathcomp_returned_chain_increasing U :
-  nondecreasing_seq (fun n => mathcomp_kernel_root (chain n) (U `&` mc_returned)).
+  nondecreasing_seq (λ n, mathcomp_kernel_root (chain n) (U `&` mc_returned)).
 Proof.
   apply/nondecreasing_seqP => n; apply: increasing; first by [].
   by move=> [_].
 Qed.
 
 Lemma mathcomp_lub_value_cvg U :
-  (fun n => mathcomp_kernel_root (chain n) (U `&` mc_returned)) @ \oo -->
+  (λ n, mathcomp_kernel_root (chain n) (U `&` mc_returned)) @ \oo -->
   mathcomp_lub_value U.
 Proof. exact: ereal_nondecreasing_cvgn (mathcomp_returned_chain_increasing U). Qed.
 
@@ -67,8 +67,8 @@ Proof.
     move=> x [[Ux _] [Vx _]].
     have Huv : (U `&` V) x by split.
     by rewrite Hdis in Huv. }
-  have Hseq : (fun n => mathcomp_kernel_root (chain n) ((U `|` V) `&` mc_returned)) =
-    (fun n => mathcomp_kernel_root (chain n) (U `&` mc_returned) +
+  have Hseq : (λ n, mathcomp_kernel_root (chain n) ((U `|` V) `&` mc_returned)) =
+    (λ n, mathcomp_kernel_root (chain n) (U `&` mc_returned) +
               mathcomp_kernel_root (chain n) (V `&` mc_returned)).
   { apply/funext => n; by rewrite setIUl measureU. }
   have Hc := mathcomp_lub_value_cvg (U := U `|` V).
@@ -87,7 +87,7 @@ Proof.
   move=> U F mF mU Hsub; apply: ub_ereal_sup => _ [n _ <-].
   apply: (le_trans (@measure_sigma_subadditive _ R (mc_carrier A)
     (mathcomp_kernel_root (chain n)) (U `&` mc_returned)
-    (fun i => F i `&` mc_returned) _ _ _)).
+    (λ i, F i `&` mc_returned) _ _ _)).
   - by move=> i.
   - by [].
   - move=> x [Ux Hx]; have [i _ Fix] := Hsub x Ux; exists i; first exact I.
@@ -135,7 +135,7 @@ Lemma mathcomp_native_sintegral_cvg {A} (chain : nat → M A) out
     (h : {nnsfun mc_carrier A >-> R}) :
   (∀ n, mathcomp_node_le (chain n) (chain n.+1)) →
   mathcomp_kernel_lub chain out → h MCBottom = 0%R →
-  (fun n => sintegral (mathcomp_kernel_root (chain n)) h) @ \oo -->
+  (λ n, sintegral (mathcomp_kernel_root (chain n)) h) @ \oo -->
     sintegral (mathcomp_kernel_root out) h.
 Proof.
   move=> Hi Hl Hz.
@@ -186,7 +186,7 @@ Lemma mathcomp_native_bind_lub {A B} (chain : nat → M A) out
     (k : A → M B) :
   (∀ n, mathcomp_node_le (chain n) (chain n.+1)) →
   mathcomp_kernel_lub chain out →
-  mathcomp_kernel_lub (fun n => mathcomp_kernel_bind (chain n) k)
+  mathcomp_kernel_lub (λ n, mathcomp_kernel_bind (chain n) k)
     (mathcomp_kernel_bind out k).
 Proof.
   move=> Hi Hl U mU Hb; rewrite mathcomp_kernel_root_bind.
@@ -219,22 +219,22 @@ Lemma mathcomp_native_bind_lub_k {A B} (mu : M A)
     (chain : A → nat → M B) (out : A → M B) :
   (∀ x n, mathcomp_node_le (chain x n) (chain x n.+1)) →
   (∀ x, mathcomp_kernel_lub (chain x) (out x)) →
-  mathcomp_kernel_lub (fun n => mathcomp_kernel_bind mu (fun x => chain x n))
+  mathcomp_kernel_lub (λ n, mathcomp_kernel_bind mu (λ x, chain x n))
     (mathcomp_kernel_bind mu out).
 Proof.
   move=> Hi Hl U mU Hb.
-  pose f n x := mathcomp_kernel_extend_measure (fun a => chain a n) x U.
+  pose f n x := mathcomp_kernel_extend_measure (λ a, chain a n) x U.
   have Hf n : measurable_fun setT (f n).
   { exact: measurable_mathcomp_kernel_extend. }
   have Hpos n x : setT x -> 0 <= f n x by move=> _; exact: measure_ge0.
-  have Hinc x : setT x -> nondecreasing_seq (fun n => f n x).
+  have Hinc x : setT x -> nondecreasing_seq (λ n, f n x).
   { move=> _; apply/nondecreasing_seqP => n.
     case: x => [|a]; first exact: lexx.
     exact: Hi. }
-  have Hlim x : limn (fun n => f n x) = mathcomp_kernel_extend_measure out x U.
+  have Hlim x : limn (λ n, f n x) = mathcomp_kernel_extend_measure out x U.
   { case: x => [|a]; first exact: lim_cst.
     apply: cvg_lim => //.
-    change ((fun n => mathcomp_kernel_root (chain a n) U) @ \oo -->
+    change ((λ n, mathcomp_kernel_root (chain a n) U) @ \oo -->
       mathcomp_kernel_root (out a) U).
     rewrite (Hl a U mU Hb).
     exact: ereal_nondecreasing_cvgn (Hinc (MCValue a) I). }
@@ -243,8 +243,8 @@ Proof.
   rewrite (monotone_convergence _ measurableT Hf Hpos Hinc).
   apply: cvg_lim => //; apply: ereal_nondecreasing_cvgn.
   apply/nondecreasing_seqP => n.
-  change (mathcomp_kernel_root (mathcomp_kernel_bind mu (fun x => chain x n)) U <=
-    mathcomp_kernel_root (mathcomp_kernel_bind mu (fun x => chain x n.+1)) U).
+  change (mathcomp_kernel_root (mathcomp_kernel_bind mu (λ x, chain x n)) U <=
+    mathcomp_kernel_root (mathcomp_kernel_bind mu (λ x, chain x n.+1)) U).
   apply: mathcomp_native_bind_le_k => // x; exact: Hi.
 Qed.
 Lemma mathcomp_native_bind_ae_eq {A B} (mu : M A) (Good : A → Prop)
@@ -266,7 +266,7 @@ Lemma mathcomp_native_bind_lub_ae {A B} (mu : M A) (Good : A → Prop)
   mathcomp_kernel_ae mu Good →
   (∀ x, Good x → ∀ n, mathcomp_node_le (chain x n) (chain x n.+1)) →
   (∀ x, Good x → mathcomp_kernel_lub (chain x) (out x)) →
-  mathcomp_kernel_lub (fun n => mathcomp_kernel_bind mu (fun x => chain x n))
+  mathcomp_kernel_lub (λ n, mathcomp_kernel_bind mu (λ x, chain x n))
     (mathcomp_kernel_bind mu out).
 Proof.
   move=> Hae Hi Hl.
@@ -277,8 +277,8 @@ Proof.
   have Ho x : mathcomp_kernel_lub (c x) (o x).
   { rewrite /c /o; case: asboolP => H; [exact: Hl|exact: mathcomp_native_lub_constant]. }
   have Hlim := mathcomp_native_bind_lub_k mu Hc Ho.
-  have He n : mathcomp_kernel_eq (mathcomp_kernel_bind mu (fun x => c x n))
-      (mathcomp_kernel_bind mu (fun x => chain x n)).
+  have He n : mathcomp_kernel_eq (mathcomp_kernel_bind mu (λ x, c x n))
+      (mathcomp_kernel_bind mu (λ x, chain x n)).
   { apply: mathcomp_native_bind_ae_eq Hae _ => x Hx.
     rewrite /c (asboolT Hx); exact: mathcomp_kernel_eq_refl. }
   have Heo : mathcomp_kernel_eq (mathcomp_kernel_bind mu o) (mathcomp_kernel_bind mu out).
@@ -289,7 +289,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_native_bind_zero {A B} (mu : M A) :
-  mathcomp_kernel_eq (mathcomp_kernel_bind mu (fun _ => @mathcomp_kernel_zero R B))
+  mathcomp_kernel_eq (mathcomp_kernel_bind mu (λ _, @mathcomp_kernel_zero R B))
     (mathcomp_kernel_zero R).
 Proof.
   move=> U mU Hb; rewrite mathcomp_kernel_root_bind (mathcomp_native_zero_returned R Hb).
@@ -317,7 +317,7 @@ Lemma mathcomp_native_le_steps {A} (c : nat → M A) :
   ∀ n m, (n <= m)%N → mathcomp_node_le (c n) (c m).
 Proof.
   move=> Hi n m Hnm U mU Hb.
-  have Hmono : nondecreasing_seq (fun i => mathcomp_kernel_root (c i) U).
+  have Hmono : nondecreasing_seq (λ i, mathcomp_kernel_root (c i) U).
   { apply/nondecreasing_seqP => i; exact: Hi. }
   exact: Hmono.
 Qed.
@@ -328,7 +328,7 @@ Lemma mathcomp_native_double_diagonal {A} (grid : nat → nat → M A)
   (∀ j n, mathcomp_node_le (grid n j) (grid n.+1 j)) →
   (∀ i, mathcomp_kernel_lub (grid i) (rows i)) →
   mathcomp_kernel_lub rows out →
-  mathcomp_kernel_lub (fun n => grid n n) out.
+  mathcomp_kernel_lub (λ n, grid n n) out.
 Proof.
   move=> Hr Hc Hrows Hout U mU Hb.
   rewrite (Hout U mU Hb).
@@ -341,7 +341,7 @@ Proof.
       first by exists (maxn i j).
     have H1 := @mathcomp_native_le_steps A (grid i) (Hr i)
       j (maxn i j) (leq_maxr i j) U mU Hb.
-    have H2 := @mathcomp_native_le_steps A (fun n => grid n (maxn i j))
+    have H2 := @mathcomp_native_le_steps A (λ n, grid n (maxn i j))
       (Hc (maxn i j)) i (maxn i j) (leq_maxl i j) U mU Hb.
     exact: le_trans H1 H2.
   - apply: ub_ereal_sup => _ [n _ <-].
@@ -362,13 +362,13 @@ Lemma mathcomp_native_bind_diagonal {A B} (source : nat → M A) source_out
   mathcomp_kernel_lub source source_out →
   (∀ x, mathcomp_kernel_lub (kernels x) (kernel_out x)) →
   mathcomp_kernel_lub
-    (fun n => mathcomp_kernel_bind (source n) (fun x => kernels x n))
+    (λ n, mathcomp_kernel_bind (source n) (λ x, kernels x n))
     (mathcomp_kernel_bind source_out kernel_out).
 Proof.
   move=> Hs Hk Hsl Hkl.
   apply: (@mathcomp_native_double_diagonal B
-    (fun i j => mathcomp_kernel_bind (source i) (fun x => kernels x j))
-    (fun n => mathcomp_kernel_bind (source n) kernel_out)
+    (λ i j, mathcomp_kernel_bind (source i) (λ x, kernels x j))
+    (λ n, mathcomp_kernel_bind (source n) kernel_out)
     (mathcomp_kernel_bind source_out kernel_out)).
   - move=> i n; apply: mathcomp_native_bind_le_k => x; exact: Hk.
   - move=> j n; exact: mathcomp_native_bind_le_mu.

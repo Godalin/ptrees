@@ -14,7 +14,7 @@ Context {M : Type → Type} `{MI : SemanticMeasure M}
 Context {I A : Type} (K : I → M (I+A)).
 
 Definition sem_iter_step (X : I → M A) i : M A :=
-  sem_bind (K i) (fun next =>
+  sem_bind (K i) (λ next,
     match next with inl j => X j | inr a => sem_ret a end).
 
 Fixpoint sem_iter_approx (n : nat) (i : I) : M A :=
@@ -23,7 +23,7 @@ Fixpoint sem_iter_approx (n : nat) (i : I) : M A :=
   | S m => sem_iter_step (sem_iter_approx m) i
   end.
 
-Definition sem_iter i out := sem_lub (fun n => sem_iter_approx n i) out.
+Definition sem_iter i out := sem_lub (λ n, sem_iter_approx n i) out.
 
 Context `{Ord : @SemanticMeasureOrderLaws M MI MO}.
 
@@ -35,7 +35,7 @@ Proof.
 Qed.
 
 Lemma sem_iter_approx_increasing i :
-  sem_increasing (fun n => sem_iter_approx n i).
+  sem_increasing (λ n, sem_iter_approx n i).
 Proof.
   intro n; revert i; induction n as [|n IH]; intro i.
   - apply sem_zero_le.
@@ -59,7 +59,7 @@ Theorem sem_iter_exists i : ∃ out, sem_iter i out.
 Proof. apply sem_lub_exists. apply sem_iter_approx_increasing. Qed.
 
 Lemma sem_iter_lub_shift i out :
-  sem_iter i out ↔ sem_lub (fun n => sem_iter_approx (S n) i) out.
+  sem_iter i out ↔ sem_lub (λ n, sem_iter_approx (S n) i) out.
 Proof.
   unfold sem_iter. split; intro H.
   - apply (proj2 (sem_lub_zero_prefix _ _)).
@@ -76,10 +76,10 @@ Context `{Diagonal : @SemanticMeasureDiagonalLaws M MI MO}.
 
 Lemma sem_iter_step_lub (X : I → M A)
     (HX : ∀ i, sem_iter i (X i)) i :
-  sem_lub (fun n => sem_iter_approx (S n) i) (sem_iter_step X i).
+  sem_lub (λ n, sem_iter_approx (S n) i) (sem_iter_step X i).
 Proof.
   apply (sem_bind_diagonal_lub (SI := MI) (SO := MO))
-    with (source := fun _ => K i).
+    with (source := λ _, K i).
   - intro n. apply sem_le_refl.
   - intros [j|a] n; [apply sem_iter_approx_increasing|apply sem_le_refl].
   - apply sem_lub_constant.

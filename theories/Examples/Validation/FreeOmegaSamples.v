@@ -25,7 +25,7 @@ Local Open Scope ring_scope.
 From mathcomp Require Import choice ssrnat.
 From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import CountableSupport.
 Definition alternating_bool : FreeOmega SubEnumQ bool :=
-  FOLub (fun n => FORet (if Nat.even n then false else true)).
+  FOLub (λ n, FORet (if Nat.even n then false else true)).
 
 Definition null_weight_node : SubEnumQ bool.
 Proof.
@@ -47,7 +47,7 @@ Defined.
 Fixpoint retry_approx (n : nat) : FreeOmega SubEnumQ bool :=
   match n with
   | O => FOZero
-  | S m => FOSample domain_fair (fun b => if b then FORet true else retry_approx m)
+  | S m => FOSample domain_fair (λ b, if b then FORet true else retry_approx m)
   end.
 
 Definition repeated_unit n : option unit :=
@@ -59,9 +59,9 @@ Fixpoint geometric_prefix fuel start : FreeOmega SubEnumQ nat :=
   match fuel with
   | O => FOZero
   | S n => FOSample domain_fair
-      (fun b => if b then FORet start else geometric_prefix n (S start))
+      (λ b, if b then FORet start else geometric_prefix n (S start))
   end.
-Definition geometric := FOLub (fun n => geometric_prefix n O).
+Definition geometric := FOLub (λ n, geometric_prefix n O).
 
 Lemma geometric_prefix_increasing fuel start :
   free_omega_approx eq (geometric_prefix fuel start) (geometric_prefix (S fuel) start).

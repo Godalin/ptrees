@@ -38,7 +38,7 @@ Definition reader_handler (env : bool) X (e : (readerE bool +' E) X) : ptree E S
   match e with
   | inl1 se => match se in readerE _ X return ptree E SubEnumQ X with
       | Ask => Ret env end
-  | inr1 e => Vis e (fun x => Ret x)
+  | inr1 e => Vis e (λ x, Ret x)
   end.
 
 Example internally_returning_reader env :
@@ -61,7 +61,7 @@ Example heterogeneous_elimination {A B} (RR : A → B → Prop) env
 Proof. apply PTree.Interp.FreeOmega.Unrestricted.peutt_interp. Qed.
 
 CoFixpoint forever_ask : ptree (readerE bool +' E) SubEnumQ unit :=
-  Vis (inl1 Ask) (fun _ => forever_ask).
+  Vis (inl1 Ask) (λ _, forever_ask).
 
 Example infinitely_many_eliminated_events env :
   W _ _ _ eq (PTree.interp (reader_handler env) (Tau forever_ask))
@@ -86,8 +86,8 @@ CoFixpoint diverge {E MN A} : ptree E MN A := Tau diverge.
 Definition mixed_handler {E} X (e : (readerE bool +' E) X) : ptree E SubEnumQ X :=
   match e with
   | inl1 se => match se in readerE _ X return ptree E SubEnumQ X with
-      | Ask => Prob coin (fun b => if b then Ret true else diverge) end
-  | inr1 e => Vis e (fun x => Ret x)
+      | Ask => Prob coin (λ b, if b then Ret true else diverge) end
+  | inr1 e => Vis e (λ x, Ret x)
   end.
 
 (** This has positive returning mass, missing mass, and residual effects;

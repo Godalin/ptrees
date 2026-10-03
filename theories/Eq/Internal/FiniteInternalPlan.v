@@ -39,28 +39,28 @@ Fixpoint internal_plan_path {t} (p : finite_internal_plan t) : Type@{node} :=
 Fixpoint internal_plan_residual {t} (p : finite_internal_plan t) :
     internal_plan_path p → tree :=
   match p as q return internal_plan_path q → tree with
-  | FIPStop t => fun _ => t
+  | FIPStop t => λ _, t
   | @FIPTau _ next => @internal_plan_residual _ next
-  | @FIPProb X mu k next => fun z => @internal_plan_residual _ (next (projT1 z)) (projT2 z)
+  | @FIPProb X mu k next => λ z, @internal_plan_residual _ (next (projT1 z)) (projT2 z)
   end.
 Arguments internal_plan_residual {t} p _.
 
 Fixpoint internal_plan_steps {t} (p : finite_internal_plan t) :
     internal_plan_path p → nat :=
   match p as q return internal_plan_path q → nat with
-  | FIPStop _ => fun _ => 0
-  | @FIPTau _ next => fun z => S (@internal_plan_steps _ next z)
-  | @FIPProb X mu k next => fun z => S (@internal_plan_steps _ (next (projT1 z)) (projT2 z))
+  | FIPStop _ => λ _, 0
+  | @FIPTau _ next => λ z, S (@internal_plan_steps _ next z)
+  | @FIPProb X mu k next => λ z, S (@internal_plan_steps _ (next (projT1 z)) (projT2 z))
   end.
 Arguments internal_plan_steps {t} p _.
 
 Fixpoint internal_plan_at {t} (p : finite_internal_plan t) :
     nat → internal_plan_path p → tree :=
   match p as q in finite_internal_plan s return nat → internal_plan_path q → tree with
-  | FIPStop t => fun _ _ => t
-  | @FIPTau t next => fun n z =>
+  | FIPStop t => λ _ _, t
+  | @FIPTau t next => λ n z,
       match n with 0 => Tau t | S m => @internal_plan_at _ next m z end
-  | @FIPProb X mu k next => fun n z =>
+  | @FIPProb X mu k next => λ n z,
       match n with 0 => Prob mu k
       | S m => @internal_plan_at _ (next (projT1 z)) m (projT2 z) end
   end.
@@ -132,9 +132,9 @@ Fixpoint internal_plan_measure {t} (p : finite_internal_plan t) : MN (internal_p
   match p as q return MN (internal_plan_path q) with
   | FIPStop _ => sem_ret tt
   | @FIPTau _ next => @internal_plan_measure _ next
-  | @FIPProb X mu k next => sem_bind mu (fun x =>
+  | @FIPProb X mu k next => sem_bind mu (λ x,
       sem_bind (@internal_plan_measure _ (next x))
-        (fun z => sem_ret (existT (fun x => internal_plan_path (next x)) x z)))
+        (λ z, sem_ret (existT (λ x, internal_plan_path (next x)) x z)))
   end.
 Arguments internal_plan_measure {t} p.
 
@@ -144,7 +144,7 @@ Fixpoint internal_plan_frontier {t} (p : finite_internal_plan t) : MF tree :=
   match p with
   | FIPStop t => sem_ret t
   | @FIPTau _ next => internal_plan_frontier next
-  | @FIPProb X mu k next => mixed_bind mu (fun x => internal_plan_frontier (next x))
+  | @FIPProb X mu k next => mixed_bind mu (λ x, internal_plan_frontier (next x))
   end.
 
 Theorem internal_plan_frontier_valid t (p : finite_internal_plan t) :
@@ -163,8 +163,8 @@ Proof.
   - exists (FIPStop t). reflexivity.
   - destruct IH as [p Hp]. exists (FIPTau p). exact Hp.
   - destruct (@non_dep_dep_functional_choice (@choice) X
-      (fun x => finite_internal_plan (k x))
-      (fun x p => internal_plan_frontier p = out x) IH) as [p Hp].
+      (λ x, finite_internal_plan (k x))
+      (λ x p, internal_plan_frontier p = out x) IH) as [p Hp].
     exists (FIPProb mu p). cbn. f_equal. apply functional_extensionality. exact Hp.
 Qed.
 End Plans.

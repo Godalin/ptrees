@@ -56,7 +56,7 @@ Proof.
       (MX := FreeOmegaMixedMeasure) (FO := FreeOmegaObservableSemanticOmega)).
   - apply (ptree_stable_hitting_prob (FI := FI)
       (MX := FreeOmegaMixedMeasure) (FO := FreeOmegaObservableSemanticOmega))
-      with (Good := fun _ => True).
+      with (Good := λ _, True).
     + apply sem_ae_true.
     + intros x _. apply front_hitting.
 Qed.
@@ -80,10 +80,10 @@ Theorem finite_internal_realized_round_hitting {Z}
     (joint : MF Z) (project : Z → stable_target tree head)
     t (cut : MF tree) :
   @finite_internal E MN MF FI FreeOmegaMixedMeasure A t cut →
-  free_omega_qlift (fun z target => project z = target)
+  free_omega_qlift (λ z target, project z = target)
     joint (free_omega_bind cut finite_internal_guard_transition) →
   free_omega_qlift eq
-    (free_omega_bind joint (fun z => finite_internal_guard_complete (project z)))
+    (free_omega_bind joint (λ z, finite_internal_guard_complete (project z)))
     (front t).
 Proof.
   intros Hcut Hproject.
@@ -98,7 +98,7 @@ Proof.
     + eapply FOQLBind with (T := eq).
       * apply free_omega_qlift_refl. intro x. reflexivity.
       * intros x y ->. apply finite_internal_guard_complete_eq.
-    + apply FOQLMono with (T := fun x y => y = x).
+    + apply FOQLMono with (T := λ x y, y = x).
       * apply FOQLSym.
         exact (finite_internal_hitting_lift (FI := FI) Hcut front_hitting
           (front_hitting t)).
@@ -126,7 +126,7 @@ Hypothesis execution_closed : ∀ s, D s →
 Hypothesis cut_valid : ∀ s, D s →
   @finite_internal E MN MF FI FreeOmegaMixedMeasure A (project_state s) (cut s).
 Hypothesis execution_marginal : ∀ s, D s →
-  free_omega_qlift (fun z target => finite_internal_execution_projection z = target)
+  free_omega_qlift (λ z target, finite_internal_execution_projection z = target)
     (kernel s) (free_omega_bind (cut s) finite_internal_guard_transition).
 
 (** Upper half of correlated acceleration adequacy, for actual valid cuts.
@@ -137,18 +137,18 @@ Theorem finite_internal_execution_hitting_upper s : D s →
   ∃ upper,
     free_omega_approx eq
       (free_omega_bind
-        (FOLub (fun n => @stable_hitting_approx MF FI
+        (FOLub (λ n, @stable_hitting_approx MF FI
           FreeOmegaObservableSemanticOmega S O kernel n s))
-        (fun o => FORet (project_output o))) upper ∧
+        (λ o, FORet (project_output o))) upper ∧
     free_omega_qlift eq upper (front (project_state s)).
 Proof.
   intro HD. eapply kernel_hitting_limit_upper with
-    (D := D) (tail := fun s => front (project_state s)).
+    (D := D) (tail := λ s, front (project_state s)).
   - exact execution_closed.
   - intros s' HD'.
     assert (Hresolve :
-      kernel_completion_resolve project_output (fun s => front (project_state s)) =
-      (fun z => finite_internal_guard_complete (finite_internal_execution_projection z))).
+      kernel_completion_resolve project_output (λ s, front (project_state s)) =
+      (λ z, finite_internal_guard_complete (finite_internal_execution_projection z))).
     { apply functional_extensionality. intros [o|state]; reflexivity. }
     cbn [kernel_completion]. rewrite Hresolve.
     eapply finite_internal_realized_round_hitting.

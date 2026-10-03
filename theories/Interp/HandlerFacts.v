@@ -39,7 +39,7 @@ Local Lemma zero_equiv A B (k : A → MF B) :
   equiv (sem_bind sem_zero k) sem_zero.
 Proof. split; [apply sem_bind_zero_order|apply sem_zero_le]. Qed.
 Local Lemma mixed_assoc_equiv A B C (mu : MN A) (k : A → MF B) (h : B → MF C) :
-  equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)).
+  equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (λ x, sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
 (** Right unit is derived only for finite, native-generated frontiers. *)
@@ -69,8 +69,8 @@ Lemma handler_complete_front_ret {A} (t : ptree' E MN A) mu :
 Proof.
   intro H. eapply sem_lub_unique.
   - apply sem_bind_lub; [apply ptree_hitting_increasing|exact H].
-  - assert (Hiff : sem_lub (fun n => ptree_hitting_approx (MF := MF) n t) mu ↔
-        sem_lub (fun n => sem_bind (ptree_hitting_approx (MF := MF) n t) sem_ret) mu).
+  - assert (Hiff : sem_lub (λ n, ptree_hitting_approx (MF := MF) n t) mu ↔
+        sem_lub (λ n, sem_bind (ptree_hitting_approx (MF := MF) n t) sem_ret) mu).
     { apply sem_lub_cofinal.
       - apply ptree_hitting_increasing.
       - intro n. apply sem_bind_le_mu. apply ptree_hitting_increasing.
@@ -96,8 +96,8 @@ Context {E MN MF : Type → Type}
 Definition handler_identity_head {A} (h : stable_head E MN A) : stable_head E MN A :=
   match h with
   | FHRet a => FHRet a
-  | @FHVis _ _ _ X e k => FHVis e (fun x =>
-      PTree.bind (Ret x) (fun y => PTree.interp Handler.id_ (k y)))
+  | @FHVis _ _ _ X e k => FHVis e (λ x,
+      PTree.bind (Ret x) (λ y, PTree.interp Handler.id_ (k y)))
   end.
 
 Lemma handler_identity_head_hitting {A} (h : stable_head E MN A) :
@@ -114,12 +114,12 @@ Qed.
 Theorem peutt_interp_identity {A} (t : ptree E MN A) :
   peutt (MF := MF) eq (PTree.interp Handler.id_ t) t.
 Proof.
-  eapply peutt_coinduction with (sim := fun s u =>
+  eapply peutt_coinduction with (sim := λ s u,
     exists v, s = observe (PTree.interp Handler.id_ v) ∧ u = observe v).
   - intros s u [v [-> ->]].
     destruct (ptree_stable_hitting_exists (MF := MF) (observe v)) as [mu Hmu].
     eapply stable_hitting_match_of_hitting_lift with
-      (out1 := sem_bind mu (fun h => sem_ret (handler_identity_head h))) (out2 := mu).
+      (out1 := sem_bind mu (λ h, sem_ret (handler_identity_head h))) (out2 := mu).
     + eapply ptree_stable_hitting_interp.
       * apply Scheduling.ptree_interp_cofinal_all.
       * exact Hmu.
@@ -150,7 +150,7 @@ Proof. intros H G' X [e|e]; [apply H|apply G']. Qed.
 
 Lemma handler_case_eta {E F G} (h : Handler MN (E +' F) G) :
   peutt_handler (MF := MF)
-    (Handler.case_ (fun X e => h X (inl1 e)) (fun X e => h X (inr1 e))) h.
+    (Handler.case_ (λ X e, h X (inl1 e)) (λ X e, h X (inr1 e))) h.
 Proof. intros X [e|e]; apply peutt_refl. Qed.
 
 Lemma handler_empty_unique {F} (h : Handler MN void1 F) :
@@ -192,7 +192,7 @@ Proof.
   apply structural.
   apply pstruct_fold. rewrite observe_interp. cbn.
   constructor.
-  eapply pstruct_trans with (y := PTree.bind (h X e) (fun x => Ret x)).
+  eapply pstruct_trans with (y := PTree.bind (h X e) (λ x, Ret x)).
   - eapply pstruct_bind with (RA := eq) (RB := eq).
     + intros x y ->. apply observe_eq_pstruct. reflexivity.
     + apply pstruct_refl.

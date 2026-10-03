@@ -26,8 +26,8 @@ Polymorphic Class MixedMeasureBindOrderLaws
   mixed_bind_assoc_order : ∀ A B C (mu : MN A)
       (k : A → MF B) (h : B → MF C),
     sem_le (sem_bind (mixed_bind mu k) h)
-      (mixed_bind mu (fun x => sem_bind (k x) h)) ∧
-    sem_le (mixed_bind mu (fun x => sem_bind (k x) h))
+      (mixed_bind mu (λ x, sem_bind (k x) h)) ∧
+    sem_le (mixed_bind mu (λ x, sem_bind (k x) h))
       (sem_bind (mixed_bind mu k) h);
   mixed_bind_le_k : ∀ A B (mu : MN A) (k h : A → MF B),
     (∀ x, sem_le (k x) (h x)) →

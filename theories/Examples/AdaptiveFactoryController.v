@@ -147,7 +147,7 @@ Definition vn_attempt (_ : unit) : tree (unit + bool) :=
   src <- internal ChooseSource;;
   a <- sample (source_coin src);;
   report <- internal (CheckSensor a);;
-  update (fun s => report_update s report);;
+  update (λ s, report_update s report);;
   (if report then internal Maintenance else Ret tt);;
   b <- sample (source_coin src);;
   if a == b then internal Retry;; Ret (inl tt)
@@ -164,7 +164,7 @@ Definition serve_request q : tree unit :=
   b <- eventful_factory q;;
   public (Emit b).
 Definition controller q : tree Empty_set :=
-  PTree.iter (fun _ : unit => serve_request q;; Ret (inl tt)) tt.
+  PTree.iter (λ _ : unit, serve_request q;; Ret (inl tt)) tt.
 
 Definition serve_spec q (q0 : 0 <= q) (q1 : q <= 1) : ptree publicE SubEnumQ unit :=
   PTree.trigger Request;;
@@ -172,7 +172,7 @@ Definition serve_spec q (q0 : 0 <= q) (q1 : q <= 1) : ptree publicE SubEnumQ uni
   PTree.trigger (Emit b).
 Definition controller_spec q (q0 : 0 <= q) (q1 : q <= 1) :
     ptree publicE SubEnumQ Empty_set :=
-  PTree.iter (fun _ : unit => serve_spec q0 q1;; Ret (inl tt)) tt.
+  PTree.iter (λ _ : unit, serve_spec q0 q1;; Ret (inl tt)) tt.
 
 (** 3. Analysis and local equations.
 
@@ -188,11 +188,11 @@ Proof.
   unfold lower. setoid_rewrite peutt_interp_bind.
   apply peutt_of_pstruct.
   exact (@run_state_bind machine_state publicE SubEnumQ A B
-    (PTree.interp internal_handler t) (fun x => PTree.interp internal_handler (k x)) s).
+    (PTree.interp internal_handler t) (λ x, PTree.interp internal_handler (k x)) s).
 Qed.
 
 Lemma lower_prob {A X} (mu : SubEnumQ X) (k : X → tree A) s :
-  lower (Prob mu k) s ≈ₚ Prob mu (fun x => lower (k x) s).
+  lower (Prob mu k) s ≈ₚ Prob mu (λ x, lower (k x) s).
 Proof.
   unfold lower. setoid_rewrite peutt_interp_prob.
   apply run_state_prob.
@@ -229,14 +229,14 @@ Proof.
   unfold lower. setoid_rewrite peutt_interp_iter.
   apply peutt_of_pstruct.
   exact (@run_state_iter machine_state I A publicE SubEnumQ
-    (fun i => PTree.interp internal_handler (step i)) i s).
+    (λ i, PTree.interp internal_handler (step i)) i s).
 Qed.
 Lemma lower_public {X} (e : publicE X) s :
-  lower (public e) s ≈ₚ Vis e (fun x => Ret (s,x)).
+  lower (public e) s ≈ₚ Vis e (λ x, Ret (s,x)).
 Proof.
   repeat (eapply peutt_tau_step; [cbn; reflexivity|]).
-  transitivity (Vis e (fun x => run_state
-    (PTree.bind (Ret x) (fun y => PTree.interp internal_handler (Ret y))) s)).
+  transitivity (Vis e (λ x, run_state
+    (PTree.bind (Ret x) (λ y, PTree.interp internal_handler (Ret y))) s)).
   - apply peutt_observe_eq. reflexivity.
   - apply peutt_vis. intro x. apply peutt_observe_eq. reflexivity.
 Qed.
@@ -246,8 +246,8 @@ Definition state_attempt_result s a b : machine_state * (unit + bool) :=
 
 Theorem lower_attempt s :
   lower (vn_attempt tt) s ≈ₚ
-  Prob (source_coin (health s)) (fun a =>
-    Prob (source_coin (health s)) (fun b => Ret (state_attempt_result s a b))).
+  Prob (source_coin (health s)) (λ a,
+    Prob (source_coin (health s)) (λ b, Ret (state_attempt_result s a b))).
 Proof.
   unfold vn_attempt, sample.
   setoid_rewrite lower_bind. setoid_rewrite lower_internal.
@@ -284,8 +284,8 @@ Definition decode_attempt (sa : machine_state * (unit + bool)) :
   match snd sa with inl _ => inl (fst sa) | inr b => inr (fst sa,b) end.
 Definition attempt_result s a b := decode_attempt (state_attempt_result s a b).
 Definition attempt_kernel s : SubEnumQ (machine_state + (machine_state * bool)) :=
-  source_coin (health s) >>=ₘ fun a =>
-  source_coin (health s) >>=ₘ fun b =>
+  source_coin (health s) >>=ₘ λ a,
+  source_coin (health s) >>=ₘ λ b,
   ηₘ (attempt_result s a b).
 
 Theorem lower_attempt_kernel s :
@@ -305,15 +305,15 @@ Qed.
     calculation. It retains all state; fairness is proved separately below. *)
 Definition normalized_step (si : machine_state * unit) :
     ptree publicE SubEnumQ ((machine_state * unit) + (machine_state * bool)) :=
-  Prob (source_coin (health (fst si))) (fun a =>
-  Prob (source_coin (health (fst si))) (fun b =>
+  Prob (source_coin (health (fst si))) (λ a,
+  Prob (source_coin (health (fst si))) (λ b,
     Ret (state_iter_result (state_attempt_result (fst si) a b)))).
 
 Theorem lower_adaptive_normalized s :
   lower adaptive_vn s ≈ₚ PTree.iter normalized_step (s,tt).
 Proof.
   unfold adaptive_vn. setoid_rewrite lower_iter.
-  have Hstep : pointwise_relation _ (fun t u => t ≈ₚ u)
+  have Hstep : pointwise_relation _ (λ t u, t ≈ₚ u)
       (lowered_step vn_attempt) normalized_step.
   { intros [s' []]. unfold lowered_step, normalized_step; cbn [fst snd].
     setoid_rewrite lower_attempt.
@@ -356,7 +356,7 @@ Qed.
 Fixpoint attempts (n : nat) s : SubEnumQ (machine_state + (machine_state * bool)) :=
   match n with
   | O => ηₘ (inl s)
-  | S k => attempt_kernel s >>=ₘ fun result =>
+  | S k => attempt_kernel s >>=ₘ λ result,
       match result with inl s' => attempts k s' | inr sb => ηₘ (inr sb) end
   end.
 Definition pending (x : machine_state + (machine_state * bool)) : rat :=
@@ -383,7 +383,7 @@ Proof. destruct src; by vm_compute. Qed.
 Lemma source_normalized src : low_weight src + high_weight src = 1.
 Proof. rewrite /high_weight addrC subrK. reflexivity. Qed.
 
-Theorem attempts_total n s : expect (fun _ => 1) (attempts n s) = 1.
+Theorem attempts_total n s : expect (λ _, 1) (attempts n s) = 1.
 Proof.
   elim: n s => [|n IH] s; first reflexivity.
   rewrite attempts_expect_S !IH !mulr1 source_normalized !mulr1 source_normalized.
@@ -434,14 +434,14 @@ Theorem attempts_partition n s :
   expect (returns true) (attempts n s) +
   expect pending (attempts n s) = 1.
 Proof.
-  have H : expect (fun x => returns false x + returns true x + pending x)
+  have H : expect (λ x, returns false x + returns true x + pending x)
       (attempts n s) = 1.
-  { transitivity (expect (fun _ => 1) (attempts n s)).
+  { transitivity (expect (λ _, 1) (attempts n s)).
     - apply finite_expect_ext. intros [s'|[s' b]]; first reflexivity.
       destruct b; by vm_compute.
     - apply attempts_total. }
   move: H. rewrite /finite_subdist_expect /finite_enum_expect !finite_expect_add.
-  exact (fun H => H).
+  exact (λ H, H).
 Qed.
 
 Theorem attempts_return_probability n s b :
@@ -501,8 +501,8 @@ Definition raw_loop s := PTree.iter normalized_step (s,tt).
 (** One-round kernel compilation uses finite hitting laws. The library handles all
     iteration scheduling, even though publicE is inhabited. *)
 Definition loop_kernel (si : machine_state * unit) :=
-  source_coin (health (fst si)) >>=ₘ fun a =>
-  source_coin (health (fst si)) >>=ₘ fun b =>
+  source_coin (health (fst si)) >>=ₘ λ a,
+  source_coin (health (fst si)) >>=ₘ λ b,
   ηₘ (state_iter_result (state_attempt_result (fst si) a b)).
 Definition loop_heads s := iteration_frontier (E := publicE) loop_kernel (s,tt).
 Lemma loop_hits s : raw_loop s ⇓ₕ loop_heads s.
@@ -517,28 +517,28 @@ Qed.
 Fixpoint output_row n s : SubEnumQ (option bool) :=
   match n with
   | O => ⊥ₘ
-  | S k => source_coin (health s) >>=ₘ fun a =>
-      source_coin (health s) >>=ₘ fun b =>
+  | S k => source_coin (health s) >>=ₘ λ a,
+      source_coin (health s) >>=ₘ λ b,
       if a == b then output_row k (retry_update (after_sensor s a))
       else ηₘ (Some a)
   end.
 (** The only bridge calculation left in the case is finite native
     associativity: the compiled round has the same bit observation. *)
 Lemma loop_round_observation n s :
-  iteration_observation_round loop_kernel (fun sb => Some (snd sb)) n (s,tt) =
+  iteration_observation_round loop_kernel (λ sb, Some (snd sb)) n (s,tt) =
   output_row n s.
 Proof.
   revert s. induction n as [|n IH]; intro s; [reflexivity|].
   cbn [iteration_observation_round output_row].
   unfold loop_kernel.
-  change (((source_coin (health s) >>=ₘ fun a =>
-      source_coin (health s) >>=ₘ fun b =>
+  change (((source_coin (health s) >>=ₘ λ a,
+      source_coin (health s) >>=ₘ λ b,
       ηₘ (state_iter_result (state_attempt_result s a b))) >>=ₘ
-    fun next => match next with
-      | inl si => iteration_observation_round loop_kernel (fun sb => Some (snd sb)) n si
+    λ next, match next with
+      | inl si => iteration_observation_round loop_kernel (λ sb, Some (snd sb)) n si
       | inr sb => ηₘ (Some (snd sb)) end) =
-    (source_coin (health s) >>=ₘ fun a =>
-     source_coin (health s) >>=ₘ fun b =>
+    (source_coin (health s) >>=ₘ λ a,
+     source_coin (health s) >>=ₘ λ b,
      if a == b then output_row n (retry_update (after_sensor s a))
      else ηₘ (Some a))).
   cbn [sem_bind sem_ret SubEnumQ_SemanticMeasure].
@@ -551,7 +551,7 @@ Proof.
 Qed.
 
 Lemma output_row_expect n s f : expect f (output_row n s) =
-  expect (fun z => match z with inl _ => 0 | inr sb => f (Some (snd sb)) end)
+  expect (λ z, match z with inl _ => 0 | inr sb => f (Some (snd sb)) end)
     (attempts n s).
 Proof.
   revert s. induction n as [|n IH]; intro s.
@@ -562,7 +562,7 @@ Proof.
     rewrite ?finite_subdist_expect_ret !IH. reflexivity.
 Qed.
 Definition fair_options : SubEnumQ (option bool) :=
-  fair_coin >>=ₘ fun b => ηₘ (Some b).
+  fair_coin >>=ₘ λ b, ηₘ (Some b).
 Lemma fair_options_expect f : expect f fair_options =
   (1/2 : rat) * (f (Some false) + f (Some true)).
 Proof.
@@ -574,7 +574,7 @@ Lemma output_row_factor n s f : expect f (output_row n s) =
   (1 - expect pending (attempts n s)) * expect f fair_options.
 Proof.
   rewrite output_row_expect.
-  transitivity (expect (fun z =>
+  transitivity (expect (λ z,
     f (Some false) * returns false z + f (Some true) * returns true z) (attempts n s)).
   - apply finite_expect_ext. intros [s'|[s' b]]; [|destruct b];
       cbn [returns snd]; rewrite ?mulr0 ?mulr1 ?addr0 ?add0r; reflexivity.
@@ -587,18 +587,18 @@ Proof.
     by rewrite -mulrDl mulrC -mulrA.
 Qed.
 Lemma output_row_converges s :
-  (fun n => output_row n s) ⇑ₘ fair_options.
+  (λ n, output_row n s) ⇑ₘ fair_options.
 Proof.
   intros P eps Heps. destruct (adaptive_pending_vanishes s Heps) as [N HN].
   exists N. intros n Hn.
-  change (`|expect (fun x => if P x then 1 else 0) (output_row n s) -
-    expect (fun x => if P x then 1 else 0) fair_options| < eps).
+  change (`|expect (λ x, if P x then 1 else 0) (output_row n s) -
+    expect (λ x, if P x then 1 else 0) fair_options| < eps).
   rewrite output_row_factor vn_difference normrN normrM.
   have Htail : 0 <= expect pending (attempts n s).
   { apply finite_expect_nonnegative; first exact (enumQ_nonnegative (subenumQ_raw (attempts n s))).
     intros [s'|sb]; by vm_compute. }
   rewrite (ger0_norm Htail).
-  have Hbound : `|expect (fun x => if P x then 1 else 0) fair_options| <= 1.
+  have Hbound : `|expect (λ x, if P x then 1 else 0) fair_options| <= 1.
   { rewrite fair_options_expect. destruct (P (Some false)), (P (Some true)); by vm_compute. }
   have Hle := ler_wpM2l Htail Hbound. rewrite mulr1 in Hle.
   apply: le_lt_trans Hle _. exact (HN n Hn).
@@ -606,7 +606,7 @@ Qed.
 Lemma loop_heads_observes s :
   free_omega_observes (bit_observer (@snd machine_state bool)) (loop_heads s) fair_options.
 Proof.
-  apply iteration_frontier_observes with (value := fun sb => Some (snd sb));
+  apply iteration_frontier_observes with (value := λ sb, Some (snd sb));
     [reflexivity|].
   intros P eps Heps. destruct (output_row_converges s P Heps) as [N HN].
   exists N. intros n Hn. rewrite loop_round_observation. exact (HN n Hn).
@@ -645,7 +645,7 @@ Lemma loop_heads_fair_support s sim :
   free_omega_support_lift (stable_head_rel output_related sim) (loop_heads s) fair_heads.
 Proof.
   split.
-  - intros P HP. eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  - intros P HP. eapply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros b _. constructor. exists (FHRet (after_sensor s b,b)). split.
     + constructor. reflexivity.
     + exact (loop_heads_success HP b).
@@ -663,9 +663,9 @@ Lemma loop_heads_fair_lift s sim :
 Proof.
   eapply FOQLObserve with
     (obsA := bit_observer (@snd machine_state bool))
-    (obsB := bit_observer (fun b => b))
+    (obsB := bit_observer (λ b, b))
     (outA := fair_options) (outB := fair_options)
-    (S := fun x y => exists b, x = Some b ∧ y = Some b).
+    (S := λ x y, exists b, x = Some b ∧ y = Some b).
   - exact (loop_heads_observes s).
   - constructor. intro b. constructor.
   - eapply sem_lift_bind with (R := eq).
@@ -682,7 +682,7 @@ Proof.
   - exact (loop_hits s).
   - unfold fair_tree, fair_heads.
     eapply (ptree_stable_hitting_prob (FI := FreeOmegaObservableSemanticMeasure)
-      (FO := FreeOmegaObservableSemanticOmega)) with (Good := fun _ => True).
+      (FO := FreeOmegaObservableSemanticOmega)) with (Good := λ _, True).
     + apply sem_ae_true.
     + intros b _. apply ptree_stable_hitting_ret.
   - exact (loop_heads_fair_lift s _).
@@ -697,7 +697,7 @@ Proof.
   split; [apply loop_hits|]. apply free_omega_observable_total_intro.
   exists (option bool), (bit_observer (@snd machine_state bool)), fair_options.
   split; [apply loop_heads_observes|].
-  change (expect (fun _ => 1) fair_options = 1).
+  change (expect (λ _, 1) fair_options = 1).
   rewrite fair_options_expect. by vm_compute.
 Qed.
 
@@ -708,7 +708,7 @@ Qed.
     any machine state. One fair bit is enough; state/bit independence is not. *)
 Definition factory_states (si : machine_state * rat) q := snd si = q.
 Definition embed_closed {A} (t : ptree factoryE SubEnumQ A) : ptree publicE SubEnumQ A :=
-  PTree.interp (fun X (e : factoryE X) => match e with end) t.
+  PTree.interp (λ X (e : factoryE X), match e with end) t.
 Lemma fair_factory_direct q (q0 : 0 <= q) (q1 : q <= 1) :
   factory_with_sampler fair_tree q ≈ₚ
     sample (bernoulli q0 q1).
@@ -764,7 +764,7 @@ Proof.
   - eapply peutt_bind with (RR := state_result).
     + unfold controller_spec.
       eapply (peutt_iter_direct_rel free_omega_relational_zero free_omega_relational_lub)
-        with (SI := fun _ _ => True); [|exact I].
+        with (SI := λ _ _, True); [|exact I].
       intros [s' []] [] _.
       (* One request, including its return to the outer loop. *)
       unfold lowered_step, serve_request, serve_spec; cbn [fst snd].

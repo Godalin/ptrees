@@ -43,6 +43,36 @@ Example utf8_nested_binders {MN A} (c : nat → MN A) :
   (supω n, ↑ω (c n)) = FOLub (fun n => free_omega_sample (c n)).
 Proof. split; reflexivity. Qed.
 
+(** Standard Utf8 lambdas keep the original binder and pattern semantics. *)
+Example utf8_typed_lambda :
+  (λ (A B : Type) (f : A → B) (x : A), f x) =
+  (fun (A B : Type) (f : A → B) (x : A) => f x).
+Proof. reflexivity. Qed.
+
+Definition utf8_implicit_identity := λ {A : Type} (x : A), x.
+
+Example utf8_implicit_lambda {A} (x : A) : utf8_implicit_identity x = x.
+Proof. reflexivity. Qed.
+
+Example utf8_pattern_lambda {A B} :
+  ((λ '(x,y), (y,x)) : A * B → B * A) = (fun '(x,y) => (y,x)).
+Proof. reflexivity. Qed.
+
+Example utf8_lambda_match {MN A} (x : A) :
+  (λ b, match b with true => ηω x | false => ⊥ω end) =
+  (fun b => match b with true => @FORet MN A x | false => FOZero end).
+Proof. reflexivity. Qed.
+
+Example utf8_bind_lambda {MN A B} (m : FreeOmega MN A) (k : A → FreeOmega MN B) :
+  (m >>=ω λ x, k x) = free_omega_bind m (fun x => k x).
+Proof. reflexivity. Qed.
+
+Example utf8_nested_lambda {MN A} (c : nat → MN A) :
+  (supω n, (x ←ω c n ;; ηω x) >>=ω λ y, ηω y) =
+  FOLub (fun n => free_omega_bind
+    (FOSample (c n) (fun x => FORet x)) (fun y => FORet y)).
+Proof. reflexivity. Qed.
+
 Example return_expansion {MN A} (a : A) : ηω a = @FORet MN A a.
 Proof. reflexivity. Qed.
 Example zero_expansion {MN A} : (⊥ω : FreeOmega MN A) = FOZero.

@@ -56,14 +56,14 @@ Polymorphic Class SemanticMeasureCoreLaws@{carrier representation}
   sem_eq_trans : ∀ (A : Type@{carrier}), Transitive (@sem_eq S SI A);
 
   sem_ae_true : ∀ {A : Type@{carrier}} (mu : S A),
-      sem_ae mu (fun _ => True);
+      sem_ae mu (λ _, True);
   sem_ae_mono : ∀ {A : Type@{carrier}}
       (mu : S A) (P Q : A → Prop),
       (∀ x, P x → Q x) → sem_ae mu P → sem_ae mu Q;
   sem_ae_conj : ∀ {A : Type@{carrier}}
       (mu : S A) (P Q : A → Prop),
       sem_ae mu P → sem_ae mu Q →
-      sem_ae mu (fun x => P x ∧ Q x);
+      sem_ae mu (λ x, P x ∧ Q x);
 
   sem_lift_mono : ∀ {A B : Type@{carrier}}
       (R T : A → B → Prop) mu nu,
@@ -81,11 +81,11 @@ Polymorphic Class SemanticMeasureCoreLaws@{carrier representation}
       sem_eq nu nu' → sem_lift R mu nu → sem_lift R mu nu';
   sem_lift_sym : ∀ {A B : Type@{carrier}}
       (R : A → B → Prop) mu nu,
-      sem_lift R mu nu → sem_lift (fun y x => R x y) nu mu;
+      sem_lift R mu nu → sem_lift (λ y x, R x y) nu mu;
   sem_lift_comp : ∀ {A B C : Type@{carrier}}
       (R : A → B → Prop) (T : B → C → Prop) mu nu xi,
       sem_lift R mu nu → sem_lift T nu xi →
-      sem_lift (fun x z => ∃ y, R x y ∧ T y z) mu xi
+      sem_lift (λ x z, ∃ y, R x y ∧ T y z) mu xi
 }.
 
 (** Ordinary semantic-measure Kleisli laws, used when resolving an existing
@@ -98,10 +98,10 @@ Polymorphic Class SemanticMeasureBindLaws@{carrier representation}
   sem_bind_assoc : ∀ {A B C : Type@{carrier}} (mu : S A)
       (k : A → S B) (h : B → S C),
       sem_eq (sem_bind (sem_bind mu k) h)
-        (sem_bind mu (fun x => sem_bind (k x) h));
+        (sem_bind mu (λ x, sem_bind (k x) h));
   sem_bind_ae_proper : ∀ {A B : Type@{carrier}} (mu : S A)
       (k h : A → S B),
-      sem_ae mu (fun x => sem_eq (k x) (h x)) →
+      sem_ae mu (λ x, sem_eq (k x) (h x)) →
       sem_eq (sem_bind mu k) (sem_bind mu h);
   sem_lift_bind : ∀ {A B C D : Type@{carrier}}
       (R : A → B → Prop) (T : C → D → Prop)

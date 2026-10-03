@@ -122,7 +122,7 @@ Lemma free_omega_observes_bind_ret {MN}
   free_omega_observes obsA mu out →
   (∀ x, obsB (f x) = obsA x) →
   free_omega_observes obsB
-    (free_omega_bind mu (fun x => FORet (f x))) out.
+    (free_omega_bind mu (λ x, FORet (f x))) out.
 Proof.
   intros Hobs Hf. induction Hobs; cbn.
   - rewrite <- Hf. constructor.

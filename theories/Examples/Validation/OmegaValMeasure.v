@@ -45,7 +45,7 @@ Proof.
 Qed.
 
 Definition half_dirac_laws :
-  OmegaValLaws (fun f : bool → R => 2^-1 * f true).
+  OmegaValLaws (λ f : bool → R, 2^-1 * f true).
 Proof.
   have Hp : (0 : R) <= 2^-1 by rewrite invr_ge0 ler0n.
   have Hp1 : (2^-1 : R) <= 1 by rewrite invf_le1 // ler1n.
@@ -55,10 +55,10 @@ Proof.
   - intros p f H0 H1 Hf; by rewrite !mulrA [2^-1 * p]mulrC.
   - intros f g Hf Hg Hfg; exact: mulrDr.
   - by rewrite mulr1.
-  - intros f Hf Hi; symmetry; exact (oval_sup_scale Hp (fun n => proj2 (Hf n true))).
+  - intros f Hf Hi; symmetry; exact (oval_sup_scale Hp (λ n, proj2 (Hf n true))).
 Defined.
 Definition half_dirac : OmegaVal R bool :=
-  {| oval_eval := fun f => 2^-1 * f true; oval_laws := half_dirac_laws |}.
+  {| oval_eval := λ f, 2^-1 * f true; oval_laws := half_dirac_laws |}.
 
 Example half_mass_at_bottom :
   oval_probability half_dirac [set OVBottom] = (1 - 2^-1)%:E.

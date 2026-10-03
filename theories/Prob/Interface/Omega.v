@@ -45,7 +45,7 @@ Definition sem_increasing {SM} `{SI : SemanticMeasure SM}
 Definition sem_zero_prefix {SM} `{SI : SemanticMeasure SM}
     `{SO : @SemanticOmega SM SI} {A}
     (chain : nat → SM A) : nat → SM A :=
-  fun n => match n with O => sem_zero | Datatypes.S n' => chain n' end.
+  λ n, match n with O => sem_zero | Datatypes.S n' => chain n' end.
 
 (** Minimal order theory needed to show that primitive stable-hitting
     approximants form an increasing chain.  It is independent of omega-limit
@@ -89,7 +89,7 @@ Polymorphic Class SemanticOmegaLaws@{carrier representation}
   sem_bind_lub : ∀ {A B : Type@{carrier}} (chain : nat → S A) mu
       (k : A → S B),
       sem_increasing chain → sem_lub chain mu →
-      sem_lub (fun n => sem_bind (chain n) k) (sem_bind mu k)
+      sem_lub (λ n, sem_bind (chain n) k) (sem_bind mu k)
 }.
 
 (** Almost-everywhere predicates are admissible for bottom and omega limits.
@@ -132,7 +132,7 @@ Polymorphic Class SemanticOmegaCofinalityLaws@{carrier representation}
       (chain : nat → S A) out,
       sem_lub chain out ↔ sem_lub (sem_zero_prefix chain) out;
   sem_lub_constant : ∀ {A : Type@{carrier}} (mu : S A),
-      sem_lub (fun _ => mu) mu
+      sem_lub (λ _, mu) mu
 }.
 
 
@@ -151,7 +151,7 @@ Polymorphic Class SemanticMeasureDiagonalLaws@{carrier representation}
       sem_lub source source_out →
       (∀ x, sem_lub (kernels x) (kernel_out x)) →
       sem_lub
-        (fun n => sem_bind (source n) (fun x => kernels x n))
+        (λ n, sem_bind (source n) (λ x, kernels x n))
         (sem_bind source_out kernel_out)
 }.
 
@@ -173,10 +173,10 @@ Polymorphic Class SemanticOmegaFubiniLaws@{carrier representation}
       (grid : nat → nat → S A)
       (row_out : nat → S A) (out : S A),
       (∀ outer, sem_increasing (grid outer)) →
-      (∀ inner, sem_increasing (fun outer => grid outer inner)) →
+      (∀ inner, sem_increasing (λ outer, grid outer inner)) →
       (∀ outer, sem_lub (grid outer) (row_out outer)) →
       sem_lub row_out out →
-      sem_lub (fun fuel => grid fuel fuel) out
+      sem_lub (λ fuel, grid fuel fuel) out
 }.
 
 (** General increasing-chain cofinality, separate from the constant and
@@ -214,12 +214,12 @@ Lemma sem_bind_eq_l {M} `{MI : SemanticMeasure M}
   sem_eq mu nu → sem_eq (sem_bind mu k) (sem_bind nu k).
 Proof.
   intro H.
-  assert (Hlimit : sem_lub (fun _ : nat => nu) mu).
-  { eapply sem_lub_chain_proper with (chain := fun _ => mu).
+  assert (Hlimit : sem_lub (λ _ : nat, nu) mu).
+  { eapply sem_lub_chain_proper with (chain := λ _, mu).
     - intro n. exact H.
     - apply sem_lub_constant. }
-  eapply sem_lub_unique with (chain := fun _ : nat => sem_bind nu k).
-  - eapply sem_bind_lub with (chain := fun _ : nat => nu);
+  eapply sem_lub_unique with (chain := λ _ : nat, sem_bind nu k).
+  - eapply sem_bind_lub with (chain := λ _ : nat, nu);
       [intro n; apply sem_le_refl|exact Hlimit].
   - apply sem_lub_constant.
 Qed.
@@ -236,10 +236,10 @@ Lemma sem_eq_of_le_equiv {M} `{MI : SemanticMeasure M}
   sem_le mu nu → sem_le nu mu → sem_eq mu nu.
 Proof.
   intros Hmn Hnm.
-  assert (H : sem_lub (fun _ : nat => nu) mu).
-  { apply (proj1 (sem_lub_cofinal (c := fun _ => mu) (d := fun _ => nu) mu
-      (fun _ => sem_le_refl mu) (fun _ => sem_le_refl nu)
-      (fun _ => ex_intro _ 0 Hmn) (fun _ => ex_intro _ 0 Hnm))).
+  assert (H : sem_lub (λ _ : nat, nu) mu).
+  { apply (proj1 (sem_lub_cofinal (c := λ _, mu) (d := λ _, nu) mu
+      (λ _, sem_le_refl mu) (λ _, sem_le_refl nu)
+      (λ _, ex_intro _ 0 Hmn) (λ _, ex_intro _ 0 Hnm))).
     apply sem_lub_constant. }
   eapply sem_lub_unique; [exact H|apply sem_lub_constant].
 Qed.

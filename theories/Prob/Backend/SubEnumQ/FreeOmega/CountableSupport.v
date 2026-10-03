@@ -1,6 +1,8 @@
 (** Role: External validation of countable support. Even raw formal Lubs
     have an enumerable support cover; only admissible endpoints are packaged
     as probability objects. The cover is not claimed minimal or injective. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -43,7 +45,7 @@ Proof.
   induction t as [x| |X mu k IH|c IH].
   - apply FOAERet; exists O; reflexivity.
   - apply FOAEZero.
-  - apply FOAESample with (Good := fun x => exists w, List.In (w,x) (subenumQ_data mu)).
+  - apply FOAESample with (Good := λ x, exists w, List.In (w,x) (subenumQ_data mu)).
     + intros w x Hin _; exists w; exact Hin.
     + intros x [w Hin]. apply List.In_nth_error in Hin; destruct Hin as [i Hi].
       eapply free_omega_ae_mono; [|exact (IH x)].
@@ -60,7 +62,7 @@ Variable R : realType.
 (** Canonical API: the enumerable-cover proof is representation-specific;
     concentration of the model is obtained from generic AE interpretation. *)
 Theorem subenumQ_free_omega_model_enumerated {A} (t : FreeOmega SubEnumQ A)
-    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t) :
+    (Ht : free_omega_modelable (λ X, @subenumQ_domain R X) t) :
   oval_ae (free_omega_model Ht) (oval_enumerated (free_omega_enumerate t)).
 Proof.
   intros f g Hf Hg Hfg.
@@ -70,7 +72,7 @@ Proof.
 Qed.
 
 Theorem subenumQ_free_omega_model_countable {A} (t : FreeOmega SubEnumQ A)
-    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t) :
+    (Ht : free_omega_modelable (λ X, @subenumQ_domain R X) t) :
   oval_countably_supported (free_omega_model Ht).
 Proof. exists (free_omega_enumerate t); exact: subenumQ_free_omega_model_enumerated. Qed.
 

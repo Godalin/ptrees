@@ -66,13 +66,13 @@ Hypothesis node_realizes : ∀ {X Y} (R : X → Y → Prop)
 Theorem finite_internal_joint_approximation_exists t out :
   @finite_internal E MN MF FI FreeOmegaMixedMeasure A t out →
   ∀ joint,
-  free_omega_lift (fun target z => project z = target)
+  free_omega_lift (λ target z, project z = target)
     (free_omega_bind out finite_internal_guard_transition) joint →
   ∃ chain, finite_internal_joint_approximates t joint chain.
 Proof.
   intro Hcut. induction Hcut as [t|t out Hcut IH|X mu k out Hcuts IH];
     intros joint Hgraph.
-  - exists (fun _ => joint). repeat split.
+  - exists (λ _, joint). repeat split.
     + intro n. apply free_omega_approx_refl. intro z. reflexivity.
     + apply FOQLLubConstantR, free_omega_qlift_refl. intro z. reflexivity.
     + intro n. apply free_omega_approx_refl. intro z. reflexivity.
@@ -89,7 +89,7 @@ Proof.
       * apply free_omega_lift_to_approx. exact Hgraph.
       * intros target z <-. apply free_omega_approx_refl. intro h. reflexivity.
   - destruct (IH joint Hgraph) as [chain [Hinc [Hlim [Hbelow [Hupper Hcover]]]]].
-    exists (fun n => match n with 0 => FOZero | S m => chain m end).
+    exists (λ n, match n with 0 => FOZero | S m => chain m end).
     repeat split.
     + intros [|n]; [apply FOApproxZero|apply Hinc].
     + apply finite_internal_prefix_limit. exact Hlim.
@@ -100,8 +100,8 @@ Proof.
       eapply free_omega_approx_bind with (R := eq).
       * apply free_omega_approx_refl. intro z. reflexivity.
       * intros x y ->. apply finite_internal_guard_approx_increasing.
-  - change (free_omega_lift (fun target z => project z = target)
-      (FOSample mu (fun x => free_omega_bind (out x) finite_internal_guard_transition))
+  - change (free_omega_lift (λ target z, project z = target)
+      (FOSample mu (λ x, free_omega_bind (out x) finite_internal_guard_transition))
       joint) in Hgraph.
     dependent destruction Hgraph.
     rename S into Related.
@@ -112,9 +112,9 @@ Proof.
     { intros [x y]. destruct (classic (Related x y)) as [Hxy|Hnot].
       - destruct (IH x (h y) (H0 x y Hxy)) as [c Hc].
         exists c. intros _. exact Hc.
-      - exists (fun _ => FOZero). intro Hxy. contradiction. }
+      - exists (λ _, FOZero). intro Hxy. contradiction. }
     destruct (choice _ Hex) as [chains Hchains].
-    pose (rows := fun (p : X * Y) n =>
+    pose (rows := λ (p : X * Y) n,
       match n with 0 => FOZero | Datatypes.S m => chains p m end).
     pose proof (semantic_coupling_left_supported Hjoint) as Hleft.
     pose proof (semantic_coupling_right_supported Hjoint) as Hright.
@@ -125,16 +125,16 @@ Proof.
       free_omega_qlift eq (h (snd p)) (FOLub (rows p))).
     { intros p Hp. apply finite_internal_prefix_limit.
       exact (proj1 (proj2 (Hchains p Hp))). }
-    exists (fun n => FOSample node_joint (fun p => rows p n)). repeat split.
+    exists (λ n, FOSample node_joint (λ p, rows p n)). repeat split.
     + intro n. eapply FOApproxSample with
-        (S := fun p q => p = q ∧ Related (fst p) (snd p)).
+        (S := λ p q, p = q ∧ Related (fst p) (snd p)).
       * apply sem_lift_refl_ae. exact (proj2 (proj2 Hjoint)).
       * intros p q [<- Hp]. apply Hrows_inc. exact Hp.
     + eapply FOQLComp with (T := eq) (U := eq)
-        (mid := FOSample node_joint (fun p => h (snd p))).
+        (mid := FOSample node_joint (λ p, h (snd p))).
       * eapply FOQLSample; [apply sem_lift_sym; exact Hright|].
         intros y [x z] [<- Hxz]. apply free_omega_qlift_refl. intro w. reflexivity.
-      * eapply FOQLSampleLub with (Good := fun p => Related (fst p) (snd p)).
+      * eapply FOQLSampleLub with (Good := λ p, Related (fst p) (snd p)).
         -- exact (proj2 (proj2 Hjoint)).
         -- exact Hrows_inc.
         -- exact Hrows_lim.

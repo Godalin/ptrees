@@ -64,11 +64,11 @@ Proof.
   - by rewrite /= !mulr1 !addr0.
 Defined.
 Example null_branch_ignored :
-  finite_subdist_expect null_branch (fun b => if b then 1 else -1) = 1.
+  finite_subdist_expect null_branch (λ b, if b then 1 else -1) = 1.
 Proof. by rewrite /finite_subdist_expect /finite_enum_expect /= mul1r mul0r !addr0. Qed.
 Example null_branch_ae_ext :
-  finite_subdist_expect null_branch (fun b => if b then 1 else -1) =
-  finite_subdist_expect null_branch (fun _ => 1).
+  finite_subdist_expect null_branch (λ b, if b then 1 else -1) =
+  finite_subdist_expect null_branch (λ _, 1).
 Proof.
   apply finite_expect_ae_ext.
   - exact (finite_enum_nonnegative (finite_subdist_enum null_branch)).
@@ -86,7 +86,7 @@ Proof. exact (finite_enum_nonnegative _). Qed.
 Example bind_computes_by_expectation {A B} (mu : FiniteSubdist R A)
     (k : A → FiniteSubdist R B) f :
   finite_subdist_expect (finite_subdist_bind mu k) f =
-  finite_subdist_expect mu (fun x => finite_subdist_expect (k x) f).
+  finite_subdist_expect mu (λ x, finite_subdist_expect (k x) f).
 Proof. exact: finite_subdist_expect_bind. Qed.
 Example empty_result_carrier : finite_mass (finite_subdist_enum (@finite_subdist_zero R Empty_set)) = 0.
 Proof. reflexivity. Qed.
@@ -102,7 +102,7 @@ Definition rational_half :=
 Example rational_half_mass : finite_mass (finite_subdist_enum rational_half) = (1 : rat) / 2.
 Proof. by rewrite /rational_half /= finite_mass_scale finite_mass_ret mulr1. Qed.
 Example rational_bind_quarter :
-  finite_subdist_expect (finite_subdist_bind rational_half (fun _ => rational_half)) (fun _ => 1) =
+  finite_subdist_expect (finite_subdist_bind rational_half (λ _, rational_half)) (λ _, 1) =
   ((1 : rat) / 2) * (1 / 2).
 Proof.
   rewrite finite_subdist_expect_bind /rational_half !finite_subdist_expect_scale.
@@ -122,7 +122,7 @@ Qed.
 Definition real_partial : FiniteSubdist R bool :=
   finite_subdist_scale sqrt_weight_nonnegative sqrt_weight_bounded (finite_subdist_ret R true).
 Example real_weight_without_rational_encoding :
-  finite_subdist_expect real_partial (fun _ => 1) = Num.sqrt ((1 : R) / 2).
+  finite_subdist_expect real_partial (λ _, 1) = Num.sqrt ((1 : R) / 2).
 Proof. by rewrite /real_partial finite_subdist_expect_scale finite_subdist_expect_ret mulr1. Qed.
 End RealScalar.
 
@@ -132,6 +132,6 @@ Variable R : numDomainType.
 Definition high_finite_dirac (A : Type@{u}) : FiniteSubdist R Type@{u} := finite_subdist_ret R A.
 Example high_finite_bind (A : Type@{u}) (f : Type@{u} → R) :
   finite_subdist_expect
-    (finite_subdist_bind (high_finite_dirac A) (fun X => finite_subdist_ret R X)) f = f A.
+    (finite_subdist_bind (high_finite_dirac A) (λ X, finite_subdist_ret R X)) f = f A.
 Proof. by rewrite finite_subdist_bind_ret_r /high_finite_dirac finite_subdist_expect_ret. Qed.
 End HighCarrier.

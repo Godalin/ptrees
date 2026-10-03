@@ -84,7 +84,7 @@ Example partial_map_no_normalization (q : R) (Hq : (0 <= q <= 1)%R) :
   mathcomp_kernel_root
     (mathcomp_kernel_bind
       (mathcomp_kernel_bind (mathcomp_bernoulli q) (@discard_false R))
-      (fun _ => mathcomp_kernel_ret R tt)) mc_returned = q%:E.
+      (λ _, mathcomp_kernel_ret R tt)) mc_returned = q%:E.
 Proof.
   rewrite mathcomp_kernel_map_mass.
   exact: partial_sampling_returned_mass Hq.
@@ -93,13 +93,13 @@ Qed.
 Example noninjective_map_total (q : R) :
   mathcomp_kernel_total
     (mathcomp_kernel_bind (mathcomp_bernoulli q)
-      (fun _ => mathcomp_kernel_ret R tt)).
+      (λ _, mathcomp_kernel_ret R tt)).
 Proof. apply/mathcomp_kernel_map_total. exact: mathcomp_bernoulli_total. Qed.
 
 Example empty_source_map_mass {B} (f : Empty_set → B) :
   mathcomp_kernel_root
     (mathcomp_kernel_bind (@mathcomp_kernel_zero R Empty_set)
-      (fun x => mathcomp_kernel_ret R (f x))) mc_returned = 0.
+      (λ x, mathcomp_kernel_ret R (f x))) mc_returned = 0.
 Proof.
   rewrite mathcomp_kernel_map_mass.
   exact: mathcomp_native_zero_returned.

@@ -40,13 +40,13 @@ Definition free_omega_domain_denotes {A} (t : FreeOmega SubEnumQ A)
 
 Theorem free_omega_admissible_iff_denotes {A} (t : FreeOmega SubEnumQ A) :
   free_omega_admissible t ↔ ∃ L, free_omega_domain_denotes t L.
-Proof. exact: (@modelable_iff_denotes SubEnumQ R (fun X => @subenumQ_domain R X)). Qed.
+Proof. exact: (@modelable_iff_denotes SubEnumQ R (λ X, @subenumQ_domain R X)). Qed.
 
 Lemma free_omega_admissible_ext {A} (t u : FreeOmega SubEnumQ A) :
   free_omega_admissible t →
   (∀ f : A → R, oval_test f → free_omega_upper t f = free_omega_upper u f) →
   free_omega_admissible u.
-Proof. exact: (@modelable_ext SubEnumQ R (fun X => @subenumQ_domain R X)). Qed.
+Proof. exact: (@modelable_ext SubEnumQ R (λ X, @subenumQ_domain R X)). Qed.
 
 Lemma admissible_ret {A} (x : A) : free_omega_admissible (FORet x).
 Proof. exact (oval_laws (oval_ret R x)). Qed.
@@ -56,7 +56,7 @@ Proof. exact (oval_laws (@oval_bottom R A)). Qed.
 Lemma admissible_sample {A X} (mu : SubEnumQ X) (k : X → FreeOmega SubEnumQ A) :
   (∀ x, free_omega_admissible (k x)) →
   free_omega_admissible (FOSample mu k).
-Proof. exact: (@modelable_sample SubEnumQ R (fun X => @subenumQ_domain R X)). Qed.
+Proof. exact: (@modelable_sample SubEnumQ R (λ X, @subenumQ_domain R X)). Qed.
 
 Definition free_omega_domain_increasing {A} (c : nat → FreeOmega SubEnumQ A) :=
   ∀ n (f : A → R), oval_test f →
@@ -65,7 +65,7 @@ Definition free_omega_domain_increasing {A} (c : nat → FreeOmega SubEnumQ A) :
 Lemma admissible_lub {A} (c : nat → FreeOmega SubEnumQ A)
     (H : ∀ n, free_omega_admissible (c n)) :
   free_omega_domain_increasing c → free_omega_admissible (FOLub c).
-Proof. exact: (@modelable_lub SubEnumQ R (fun X => @subenumQ_domain R X)). Qed.
+Proof. exact: (@modelable_lub SubEnumQ R (λ X, @subenumQ_domain R X)). Qed.
 
 Lemma admissible_lub_approx {A} (c : nat → FreeOmega SubEnumQ A) :
   (∀ n, free_omega_admissible (c n)) →
@@ -77,7 +77,7 @@ Lemma admissible_bind {A B} (t : FreeOmega SubEnumQ A)
     (k : A → FreeOmega SubEnumQ B) :
   free_omega_admissible t → (∀ x, free_omega_admissible (k x)) →
   free_omega_admissible (free_omega_bind t k).
-Proof. exact: (@modelable_bind SubEnumQ R (fun X => @subenumQ_domain R X)). Qed.
+Proof. exact: (@modelable_bind SubEnumQ R (λ X, @subenumQ_domain R X)). Qed.
 
 (** A proof-only replacement outside the AE support. This is not a denotation
     for inadmissible terms: replacing them by zero is sound only under the
@@ -91,18 +91,18 @@ Lemma admissible_support_kernel_valid {A} (t : FreeOmega SubEnumQ A) :
 Proof. rewrite /admissible_support_kernel; case: pselect=> H; [exact H|exact: admissible_zero]. Qed.
 Lemma admissible_support_kernel_eq {A} (t : FreeOmega SubEnumQ A) :
   free_omega_admissible t → admissible_support_kernel t = t.
-Proof. exact: (@model_support_kernel_eq SubEnumQ R (fun X => @subenumQ_domain R X)). Qed.
+Proof. exact: (@model_support_kernel_eq SubEnumQ R (λ X, @subenumQ_domain R X)). Qed.
 
 Theorem admissible_bind_ae {A B} (t : FreeOmega SubEnumQ A)
     (k : A → FreeOmega SubEnumQ B) :
   free_omega_admissible t →
-  free_omega_ae (fun x => free_omega_admissible (k x)) t →
+  free_omega_ae (λ x, free_omega_admissible (k x)) t →
   free_omega_admissible (free_omega_bind t k).
 Proof. exact: (modelable_bind_ae (@subenumQ_native_model_ae R)). Qed.
 
 Theorem admissible_sample_ae {A X} (mu : SubEnumQ X)
     (k : X → FreeOmega SubEnumQ A) :
-  sem_ae mu (fun x => free_omega_admissible (k x)) →
+  sem_ae mu (λ x, free_omega_admissible (k x)) →
   free_omega_admissible (FOSample mu k).
 Proof. exact: (modelable_sample_ae (@subenumQ_native_model_ae R)). Qed.
 End Admissibility.
@@ -137,7 +137,7 @@ Proof.
 Qed.
 
 Theorem free_omega_denote_native {A} (mu : SubEnumQ A) :
-  free_omega_domain_denotes (FOSample mu (fun x => FORet x)) (subenumQ_domain R mu).
+  free_omega_domain_denotes (FOSample mu (λ x, FORet x)) (subenumQ_domain R mu).
 Proof. intros f Hf; reflexivity. Qed.
 
 Theorem free_omega_denote_bind {A B} (t : FreeOmega SubEnumQ A)
@@ -145,18 +145,18 @@ Theorem free_omega_denote_bind {A B} (t : FreeOmega SubEnumQ A)
   free_omega_domain_denotes t L →
   (∀ x, free_omega_domain_denotes (k x) (K x)) →
   free_omega_domain_denotes (free_omega_bind t k) (oval_bind L K).
-Proof. exact: (@model_denotes_bind SubEnumQ R (fun X => @subenumQ_domain R X)). Qed.
+Proof. exact: (@model_denotes_bind SubEnumQ R (λ X, @subenumQ_domain R X)). Qed.
 
 Theorem free_omega_denote_bind_ae {A B} (t : FreeOmega SubEnumQ A)
     (k : A → FreeOmega SubEnumQ B) (L : OmegaVal R A) (K : A → OmegaVal R B) :
   free_omega_domain_denotes t L →
-  free_omega_ae (fun x => free_omega_domain_denotes (k x) (K x)) t →
+  free_omega_ae (λ x, free_omega_domain_denotes (k x) (K x)) t →
   free_omega_domain_denotes (free_omega_bind t k) (oval_bind L K).
 Proof. exact: (model_denotes_bind_ae (@subenumQ_native_model_ae R)). Qed.
 
 Theorem free_omega_denote_sample_ae {A X} (mu : SubEnumQ X)
     (k : X → FreeOmega SubEnumQ A) (K : X → OmegaVal R A) :
-  sem_ae mu (fun x => free_omega_domain_denotes (k x) (K x)) →
+  sem_ae mu (λ x, free_omega_domain_denotes (k x) (K x)) →
   free_omega_domain_denotes (FOSample mu k) (oval_bind (subenumQ_domain R mu) K).
 Proof. exact: (model_denotes_sample_ae (@subenumQ_native_model_ae R)). Qed.
 
@@ -164,7 +164,7 @@ Theorem free_omega_denote_lub {A} (c : nat → FreeOmega SubEnumQ A)
     (L : nat → OmegaVal R A) (Hi : oval_increasing L) :
   (∀ n, free_omega_domain_denotes (c n) (L n)) →
   free_omega_domain_denotes (FOLub c) (oval_lub Hi).
-Proof. exact: (@model_denotes_lub SubEnumQ R (fun X => @subenumQ_domain R X)). Qed.
+Proof. exact: (@model_denotes_lub SubEnumQ R (λ X, @subenumQ_domain R X)). Qed.
 
 (** Approximation is sound for the mathematical information order.
     The heterogeneous test inequality below is not called a joint coupling. *)
@@ -188,7 +188,7 @@ Proof. intros Ht Hu H Hf Hg Hfg; rewrite -(Ht f Hf) -(Hu g Hg).
 Theorem free_omega_domain_increasing_of_approx {A} (c : nat → FreeOmega SubEnumQ A)
     (H : ∀ n, free_omega_admissible R (c n)) :
   (∀ n, free_omega_approx eq (c n) (c (S n))) →
-  oval_increasing (fun n => free_omega_domain (H n)).
+  oval_increasing (λ n, free_omega_domain (H n)).
 Proof. intros Hi n f Hf.
   eapply (model_upper_approx (@subenumQ_native_model_lift R));
     [exact (Hi n)|exact Hf|exact Hf|]; intros x y ->; exact: lexx. Qed.
@@ -245,7 +245,7 @@ Theorem free_omega_domain_countable_representation {A} (t : FreeOmega SubEnumQ A
     (H : free_omega_admissible R t) :
   ∃ N : OmegaVal R nat,
     oval_mass N = oval_mass (free_omega_domain H) ∧
-    oval_ae N (fun n => ∃ x, free_omega_enumerate t n = Some x) ∧
+    oval_ae N (λ n, ∃ x, free_omega_enumerate t n = Some x) ∧
     oval_eq (free_omega_domain H)
       (oval_bind N (oval_decode R (free_omega_enumerate t))).
 Proof. apply oval_countable_representation; exact: free_omega_domain_enumerated. Qed.
@@ -294,7 +294,7 @@ Theorem free_omega_qlift_eq_joint {A} (t u : FreeOmega SubEnumQ A)
     (Ht : free_omega_admissible R t) (Hu : free_omega_admissible R u) :
   qlift eq t u →
   oval_joint eq (free_omega_domain Ht) (free_omega_domain Hu)
-    (oval_bind (free_omega_domain Ht) (fun x => oval_ret R (x,x))).
+    (oval_bind (free_omega_domain Ht) (λ x, oval_ret R (x,x))).
 Proof. intro H; apply oval_eq_joint; exact (free_omega_qlift_eq_sound Ht Hu H). Qed.
 
 Theorem free_omega_qlift_eq_joint_agrees_ds3 {A} (t u : FreeOmega SubEnumQ A)
@@ -329,7 +329,7 @@ Theorem free_omega_qlift_joint_mass_support {A B} (T : A → B → Prop)
     oval_joint T (free_omega_domain Ht) (free_omega_domain Hu) J ∧
     oval_mass J = oval_mass (free_omega_domain Ht) ∧
     oval_mass J = oval_mass (free_omega_domain Hu) ∧
-    oval_eval J (oval_indicator R (fun z => ¬ T (fst z) (snd z))) = 0.
+    oval_eval J (oval_indicator R (λ z, ¬ T (fst z) (snd z))) = 0.
 Proof. exact: subenumQ_qlift_joint_mass_support. Qed.
 End JointCompatibility.
 

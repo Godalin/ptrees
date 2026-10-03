@@ -24,9 +24,9 @@ Variant questionE : Type → Type := Question : questionE bool.
 (** Distinct state AND return carriers. Repeated false responses cause
     indefinitely many interactions; there is no termination assumption. *)
 Definition left_step (_ : unit) : ptree questionE SubEnumQ (unit+bool) :=
-  Vis Question (fun b : bool => Ret (if b then inr true else inl tt)).
+  Vis Question (λ b : bool, Ret (if b then inr true else inl tt)).
 Definition right_step (_ : nat) : ptree questionE SubEnumQ (nat+nat) :=
-  Vis Question (fun b : bool => Ret (if b then inr 1 else inl 0)).
+  Vis Question (λ b : bool, Ret (if b then inr 1 else inl 0)).
 Definition state_rel (_ : unit) (n : nat) := n = 0.
 Definition return_rel (b : bool) (n : nat) := n = if b then 1 else 0.
 
@@ -48,24 +48,24 @@ Qed.
     right step inserts a Tau: the premise is weak, not lockstep structural. *)
 Definition sampling_step {MN : Type → Type} (mu : MN bool) (_ : unit) :
     ptree questionE MN (unit+bool) :=
-  Vis Question (fun _ => Prob mu
-    (fun b : bool => Ret (if b then inr true else inl tt))).
+  Vis Question (λ _, Prob mu
+    (λ b : bool, Ret (if b then inr true else inl tt))).
 
 Example sampled_eventful_iteration (mu : SubEnumQ bool) :
   PTree.iter (sampling_step mu) tt ≈ₚ
-  PTree.iter (fun i => Tau (sampling_step mu i)) tt.
+  PTree.iter (λ i, Tau (sampling_step mu i)) tt.
 Proof. apply free_omega_peutt_iter_eventful. intro i. apply peutt_tau_r. Qed.
 
 Example partial_eventful_iteration :
   PTree.iter (sampling_step (@subenumQ_zero bool)) tt ≈ₚ
-  PTree.iter (fun i => Tau (sampling_step (@subenumQ_zero bool) i)) tt.
+  PTree.iter (λ i, Tau (sampling_step (@subenumQ_zero bool) i)) tt.
 Proof. apply sampled_eventful_iteration. Qed.
 
 (** A probability-algebra change, not just a Tau-prefix test. Each round
     erases a native Dirac draw after a visible response. *)
 Definition redundant_sample_step (_ : unit) : ptree questionE SubEnumQ (unit+bool) :=
-  Vis Question (fun b : bool => Prob (subenumQ_ret b)
-    (fun c : bool => Ret (if c then inr true else inl tt))).
+  Vis Question (λ b : bool, Prob (subenumQ_ret b)
+    (λ c : bool, Ret (if c then inr true else inl tt))).
 
 Example probability_algebra_inside_iteration :
   PTree.iter redundant_sample_step tt ≈ₚ PTree.iter left_step tt.
@@ -73,8 +73,8 @@ Proof.
   apply free_omega_peutt_iter_eventful. intro i.
   apply peutt_vis. intro b.
   eapply peutt_of_hitting_lift.
-  - eapply stable_hitting_prob with (Good := fun _ => True)
-      (front := fun c : bool => sem_ret (FHRet (if c then inr true else inl tt))).
+  - eapply stable_hitting_prob with (Good := λ _, True)
+      (front := λ c : bool, sem_ret (FHRet (if c then inr true else inl tt))).
     + apply sem_ae_true.
     + intros c _. apply stable_hitting_ret.
   - apply stable_hitting_ret.
@@ -84,29 +84,29 @@ Proof.
       * intro x. apply peutt_refl.
     + exact (mixed_bind_ret_l
         (NI := PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ_SemanticMeasure)
-        b (fun c : bool => sem_ret (FHRet (if c then inr true else inl tt)))).
+        b (λ c : bool, sem_ret (FHRet (if c then inr true else inl tt)))).
 Qed.
 
 (** Silent endless retry is permitted, as well as eventful recursion. *)
 Example silent_endless_iteration :
-  PTree.iter (fun _ : unit => (Ret (inl tt) : ptree questionE SubEnumQ (unit+bool))) tt ≈ₚ
-  PTree.iter (fun _ : unit => Tau (Ret (inl tt) : ptree questionE SubEnumQ (unit+bool))) tt.
+  PTree.iter (λ _ : unit, (Ret (inl tt) : ptree questionE SubEnumQ (unit+bool))) tt ≈ₚ
+  PTree.iter (λ _ : unit, Tau (Ret (inl tt) : ptree questionE SubEnumQ (unit+bool))) tt.
 Proof. apply free_omega_peutt_iter_eventful. intro i. apply peutt_tau_r. Qed.
 
 (** An infinite coinductive step need not even return to the loop entry. *)
 CoFixpoint never_returning_step : ptree questionE SubEnumQ (unit+bool) :=
-  Vis Question (fun _ => Tau never_returning_step).
+  Vis Question (λ _, Tau never_returning_step).
 
 Example infinite_active_step :
-  PTree.iter (fun _ : unit => never_returning_step) tt ≈ₚ
-  PTree.iter (fun _ : unit => Tau never_returning_step) tt.
+  PTree.iter (λ _ : unit, never_returning_step) tt ≈ₚ
+  PTree.iter (λ _ : unit, Tau never_returning_step) tt.
 Proof. apply free_omega_peutt_iter_eventful. intro i. apply peutt_tau_r. Qed.
 
 (** The old loop-entry-only candidate cannot contain even this residual
     return. This is a candidate-exclusion test, not a new negative theorem
     about all conceivable iteration proof methods. *)
 Definition exiting_step (_ : unit) : ptree questionE SubEnumQ (unit+bool) :=
-  Vis Question (fun b => Ret (inr b)).
+  Vis Question (λ b, Ret (inr b)).
 Example entry_candidate_excludes_residual b :
   ¬ iter_eventful_bisim_candidate exiting_step exiting_step eq
       (observe (Ret b)) (observe (Ret b)).
@@ -116,7 +116,7 @@ Section RealBackend.
 Variable R : realType.
 Example real_sampled_eventful_iteration (mu : SubEnumR R bool) :
   PTree.iter (sampling_step mu) tt ≈ₚ
-  PTree.iter (fun i => Tau (sampling_step mu i)) tt.
+  PTree.iter (λ i, Tau (sampling_step mu i)) tt.
 Proof. apply free_omega_peutt_iter_eventful. intro i. apply peutt_tau_r. Qed.
 
 Example real_heterogeneous_iteration {I J A B}

@@ -35,9 +35,9 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 
 Definition exchange_left_round (next : tree) : tree :=
-  Prob mu (fun x => Prob nu (fun y => if Bool.eqb x y then Tau next else Ret x)).
+  Prob mu (λ x, Prob nu (λ y, if Bool.eqb x y then Tau next else Ret x)).
 Definition exchange_right_round (next : tree) : tree :=
-  Prob nu (fun y => Prob mu (fun x => if Bool.eqb x y then Tau next else Ret x)).
+  Prob nu (λ y, Prob mu (λ x, if Bool.eqb x y then Tau next else Ret x)).
 CoFixpoint exchange_retry_left : tree := Tau (exchange_left_round exchange_retry_left).
 CoFixpoint exchange_retry_right : tree := Tau (exchange_right_round exchange_retry_right).
 
@@ -49,14 +49,14 @@ Inductive exchange_retry_pairs : tree → tree → Prop :=
 Definition exchange_left_cut (p : Pair) : MF tree :=
   match observe (fst p) with
   | TauF _ => FORet (fst p)
-  | _ => FOSample mu (fun x => FOSample nu
-      (fun y => FORet (if Bool.eqb x y then Tau exchange_retry_left else Ret x)))
+  | _ => FOSample mu (λ x, FOSample nu
+      (λ y, FORet (if Bool.eqb x y then Tau exchange_retry_left else Ret x)))
   end.
 Definition exchange_right_cut (p : Pair) : MF tree :=
   match observe (fst p) with
   | TauF _ => FORet (snd p)
-  | _ => FOSample nu (fun y => FOSample mu
-      (fun x => FORet (if Bool.eqb x y then Tau exchange_retry_right else Ret x)))
+  | _ => FOSample nu (λ y, FOSample mu
+      (λ x, FORet (if Bool.eqb x y then Tau exchange_retry_right else Ret x)))
   end.
 
 Lemma exchange_left_cut_valid t u : exchange_retry_pairs t u →
@@ -84,16 +84,16 @@ Definition exchange_residual_pair x y : Pair :=
 Definition exchange_left_joint (p : Pair) : MF Pair :=
   match observe (fst p) with
   | TauF _ => FORet p
-  | _ => FOSample mu (fun x => FOSample nu (fun y => FORet (exchange_residual_pair x y)))
+  | _ => FOSample mu (λ x, FOSample nu (λ y, FORet (exchange_residual_pair x y)))
   end.
 Definition exchange_right_joint (p : Pair) : MF Pair :=
   match observe (fst p) with
   | TauF _ => FORet p
-  | _ => FOSample nu (fun y => FOSample mu (fun x => FORet (exchange_residual_pair x y)))
+  | _ => FOSample nu (λ y, FOSample mu (λ x, FORet (exchange_residual_pair x y)))
   end.
 
 Lemma exchange_residual_references t u : exchange_retry_pairs t u →
-  free_omega_coupling_references (fun t u => pstrongF eq exchange_retry_pairs (observe t) (observe u))
+  free_omega_coupling_references (λ t u, pstrongF eq exchange_retry_pairs (observe t) (observe u))
     (exchange_left_cut (t,u)) (exchange_right_cut (t,u))
     (exchange_left_joint (t,u)) (exchange_right_joint (t,u)).
 Proof.
@@ -121,8 +121,8 @@ Proof.
            apply FOLSample with (S := eq); [apply sem_lift_refl; intro x; reflexivity|].
            intros x x' ->. unfold exchange_residual_pair. destruct (Bool.eqb x' y');
              apply FOLRet; reflexivity.
-        -- apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
-           intros x _. apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+        -- apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
+           intros x _. apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
            intros y _. apply FOAERet. unfold exchange_residual_pair.
            destruct (Bool.eqb x y); constructor; [constructor|reflexivity].
 Qed.
@@ -150,25 +150,25 @@ Example exchange_residuals_not_structural
     (mu_is_dirac : mu = subenumQ_ret false)
     (both_values : ∀ P, @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool nu P →
       P true ∧ P false) (sim : tree → tree → Prop) :
-  ¬ free_omega_lift (fun t u => pstrongF eq sim (observe t) (observe u))
+  ¬ free_omega_lift (λ t u, pstrongF eq sim (observe t) (observe u))
     (exchange_left_cut (exchange_left_round exchange_retry_left,
       exchange_right_round exchange_retry_right))
     (exchange_right_cut (exchange_left_round exchange_retry_left,
       exchange_right_round exchange_retry_right)).
 Proof.
   intro Hlift.
-  change (free_omega_lift (fun t u => pstrongF eq sim (observe t) (observe u))
-    (FOSample mu (fun x => FOSample nu
-      (fun y => FORet (if Bool.eqb x y then Tau exchange_retry_left else Ret x))))
-    (FOSample nu (fun y => FOSample mu
-      (fun x => FORet (if Bool.eqb x y then Tau exchange_retry_right else Ret x))))) in Hlift.
+  change (free_omega_lift (λ t u, pstrongF eq sim (observe t) (observe u))
+    (FOSample mu (λ x, FOSample nu
+      (λ y, FORet (if Bool.eqb x y then Tau exchange_retry_left else Ret x))))
+    (FOSample nu (λ y, FOSample mu
+      (λ x, FORet (if Bool.eqb x y then Tau exchange_retry_right else Ret x))))) in Hlift.
   rewrite mu_is_dirac in Hlift.
   dependent destruction Hlift.
   rename S into Top. rename H into Htop. rename H0 into Hbranches.
   assert (Hret : @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool
-    (subenumQ_ret false) (fun x => x = false)).
+    (subenumQ_ret false) (λ x, x = false)).
   { apply (proj2 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
-      SubEnumQ_SemanticMeasureDiracAELaws bool false (fun x => x = false))). reflexivity. }
+      SubEnumQ_SemanticMeasureDiracAELaws bool false (λ x, x = false))). reflexivity. }
   pose proof (sem_lift_ae_transport_r Htop Hret) as Hsupport.
   destruct (proj2 (both_values _ Hsupport)) as [x [Hxf ->]].
   pose proof (Hbranches false false Hxf) as Hsecond.
@@ -212,7 +212,7 @@ Example exchange_fair_residuals_not_structural
   let nu := subenumQ_fair in
   let left := exchange_left_round mu nu (exchange_retry_left mu nu) in
   let right := exchange_right_round mu nu (exchange_retry_right mu nu) in
-  ¬ free_omega_lift (fun t u => pstrongF eq sim (observe t) (observe u))
+  ¬ free_omega_lift (λ t u, pstrongF eq sim (observe t) (observe u))
     (exchange_left_cut mu nu (left,right))
     (exchange_right_cut mu nu (left,right)).
 Proof.

@@ -40,9 +40,9 @@ Fail Definition no_automatic_validation_instance :
 
 Example mapped_native_reflection {X Y A B} (mu : MN X) (nu : MN Y)
     (f : X → A) (g : Y → B) (T : A → B → Prop) :
-  free_omega_qlift T (FOSample mu (fun x => FORet (f x)))
-    (FOSample nu (fun y => FORet (g y))) →
-  sem_lift (fun x y => T (f x) (g y)) mu nu.
+  free_omega_qlift T (FOSample mu (λ x, FORet (f x)))
+    (FOSample nu (λ y, FORet (g y))) →
+  sem_lift (λ x y, T (f x) (g y)) mu nu.
 Proof.
   exact (@free_omega_sampled_heads_reflect MN NI
     (SubEnumR_SemanticMeasureCoreLaws R) (SubEnumR_SemanticMeasureCouplingAELaws R)
@@ -53,30 +53,30 @@ Qed.
     must retain the original partial/duplicate native marginals. *)
 Example duplicate_partial_decoded_joint :
   ∃ joint : MN (bool * bool),
-    @semantic_coupling MN NI bool bool (fun _ _ => tt = tt)
+    @semantic_coupling MN NI bool bool (λ _ _, tt = tt)
       (duplicated_half R) (subenumR_map negb (duplicated_half R)) joint.
 Proof.
   pose p : free_omega_native_presentation MN unit :=
     {| native_sample_type := bool; native_sample_measure := duplicated_half R;
-       native_sample_value := fun _ => tt |}.
+       native_sample_value := λ _, tt |}.
   pose q : free_omega_native_presentation MN unit :=
     {| native_sample_type := bool;
        native_sample_measure := subenumR_map negb (duplicated_half R);
-       native_sample_value := fun _ => tt |}.
+       native_sample_value := λ _, tt |}.
   apply (subenumR_native_quotient_coupling (p := p) (q := q) (T := eq)).
   eapply FOQLSample; [exact (subenumR_lift_map negb (duplicated_half R))|].
   intros x y _; apply FOQLStructural, FOLRet; reflexivity.
 Qed.
 
 Example empty_native_joint : ∃ joint : MN (Empty_set * bool),
-  @semantic_coupling MN NI Empty_set bool (fun _ _ => False)
+  @semantic_coupling MN NI Empty_set bool (λ _ _, False)
     (subenumR_zero R) (subenumR_zero R) joint.
 Proof.
   apply (subenumR_native_quotient_coupling
     (p := {| native_sample_type := Empty_set; native_sample_measure := subenumR_zero R;
-             native_sample_value := fun x => x |})
+             native_sample_value := λ x, x |})
     (q := {| native_sample_type := bool; native_sample_measure := subenumR_zero R;
-             native_sample_value := fun y => y |}) (T := fun _ _ => False)).
+             native_sample_value := λ y, y |}) (T := λ _ _, False)).
   eapply FOQLSample; [exact (zero_empty_coupling R)|].
   intros x; destruct x.
 Qed.
@@ -100,19 +100,19 @@ Example validated_encode_mdp_state s :
 Proof.
   apply (mdp_encode_mdp_state (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
   - intros t a; apply free_omega_observable_total_intro.
-    exists unit, (fun _ => tt),
-      (subenumR_bind (mdp_transition D t a) (fun _ => subenumR_ret R tt)).
+    exists unit, (λ _, tt),
+      (subenumR_bind (mdp_transition D t a) (λ _, subenumR_ret R tt)).
     split.
-    + change (free_omega_observes (NI := NI) (fun _ => tt)
-        (FOSample (mdp_transition D t a) (fun u => FORet (mdp_encode_head (D := D) u)))
-        (@sem_bind MN NI _ _ (mdp_transition D t a) (fun _ => subenumR_ret R tt))).
+    + change (free_omega_observes (NI := NI) (λ _, tt)
+        (FOSample (mdp_transition D t a) (λ u, FORet (mdp_encode_head (D := D) u)))
+        (@sem_bind MN NI _ _ (mdp_transition D t a) (λ _, subenumR_ret R tt))).
       eapply FOOObserveSample; intro u; constructor.
     + change (subenumR_expect
-        (subenumR_bind (mdp_transition D t a) (fun _ => subenumR_ret R tt)) (fun _ => 1) = 1).
+        (subenumR_bind (mdp_transition D t a) (λ _, subenumR_ret R tt)) (λ _, 1) = 1).
       rewrite subenumR_expect_bind.
-      change (subenumR_expect (mdp_transition D t a) (fun _ => 1 * 1 + 0) = 1).
+      change (subenumR_expect (mdp_transition D t a) (λ _, 1 * 1 + 0) = 1).
       rewrite mulr1 addr0; exact (mdp_transition_total D t a).
-  - intros t a; eapply FOAESample with (Good := fun _ => True).
+  - intros t a; eapply FOAESample with (Good := λ _, True).
     + apply sem_ae_true.
     + intros u _; constructor; exists u; reflexivity.
 Qed.
@@ -134,15 +134,15 @@ Variable R : realType.
 Example type_valued_native_joint (A : Type@{u}) (B : Type@{v}) :
   ∃ joint : SubEnumR R (unit * unit),
     @semantic_coupling (SubEnumR R) (SubEnumR_SemanticMeasure R) unit unit
-      (fun _ _ => True) (subenumR_ret R tt) (subenumR_ret R tt) joint.
+      (λ _ _, True) (subenumR_ret R tt) (subenumR_ret R tt) joint.
 Proof.
   pose p : free_omega_native_presentation (SubEnumR R) Type@{u} :=
     {| native_sample_type := unit; native_sample_measure := subenumR_ret R tt;
-       native_sample_value := fun _ => A |}.
+       native_sample_value := λ _, A |}.
   pose q : free_omega_native_presentation (SubEnumR R) Type@{v} :=
     {| native_sample_type := unit; native_sample_measure := subenumR_ret R tt;
-       native_sample_value := fun _ => B |}.
-  apply (subenumR_native_quotient_coupling (p := p) (q := q) (T := fun _ _ => True)).
+       native_sample_value := λ _, B |}.
+  apply (subenumR_native_quotient_coupling (p := p) (q := q) (T := λ _ _, True)).
   eapply FOQLSample; [apply sem_lift_refl; intros x; reflexivity|].
   intros x y _; apply FOQLStructural, FOLRet; exact I.
 Qed.

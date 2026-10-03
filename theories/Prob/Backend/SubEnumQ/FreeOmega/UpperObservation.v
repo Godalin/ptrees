@@ -44,20 +44,20 @@ Theorem free_omega_observes_upper {A O} (obs : A → O)
   @free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
     A O obs mu out →
   ∀ f : O → R, (∀ y, 0 <= f y ∧ f y <= 1) →
-    upper mu (fun x => f (obs x)) = expect f (subenumQ_raw out).
+    upper mu (λ x, f (obs x)) = expect f (subenumQ_raw out).
 Proof.
   intro Hobs. induction Hobs as [x| |X node k front Hobs IH|chain outs out Hobs IH Hlim Hinc];
     intros f Hf.
   - change (f (obs x) = ratr (1 : rat) * f (obs x) + 0).
     by rewrite rmorph1 mul1r addr0.
   - reflexivity.
-  - change (expect (fun x => upper (k x) (fun y => f (obs y))) (subenumQ_raw node) =
-      expect f (bind_EnumQ (subenumQ_raw node) (fun x => subenumQ_raw (front x)))).
+  - change (expect (λ x, upper (k x) (λ y, f (obs y))) (subenumQ_raw node) =
+      expect f (bind_EnumQ (subenumQ_raw node) (λ x, subenumQ_raw (front x)))).
     rewrite enumQ_real_expect_bind. f_equal. apply functional_extensionality=> x.
     exact (IH x f Hf).
   - cbn [free_omega_upper].
-    have Hrows : (fun n => upper (chain n) (fun x => f (obs x))) =
-      (fun n => expect f (subenumQ_raw (outs n))).
+    have Hrows : (λ n, upper (chain n) (λ x, f (obs x))) =
+      (λ n, expect f (subenumQ_raw (outs n))).
     { apply functional_extensionality=> n. exact (IH n f Hf). }
     rewrite Hrows. apply enumQ_monotone_converges_upper; [|exact Hlim|].
     + intros P n m Hnm.
@@ -65,8 +65,8 @@ Proof.
           (if P y then (1 : R) else 0) <= 1.
       { intro y. destruct (P y); split; try exact: ler01; exact: lexx. }
       have Hstep : ∀ i,
-          expect (fun y => if P y then 1 else 0) (subenumQ_raw (outs i)) <=
-          expect (fun y => if P y then 1 else 0) (subenumQ_raw (outs (S i))).
+          expect (λ y, if P y then 1 else 0) (subenumQ_raw (outs i)) <=
+          expect (λ y, if P y then 1 else 0) (subenumQ_raw (outs (S i))).
       { intro i. rewrite -(IH i _ HP) -(IH (S i) _ HP).
         apply free_omega_upper_approx_mono; [exact (Hinc i)|].
         intro x. exact (HP (obs x)). }
@@ -80,7 +80,7 @@ Theorem free_omega_denotes_upper {A O} (obs : A → O)
   @free_omega_denotes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
     A O obs mu out →
   (∀ y, 0 <= f y ∧ f y <= 1) →
-  upper mu (fun x => f (obs x)) = expect f (subenumQ_raw out).
+  upper mu (λ x, f (obs x)) = expect f (subenumQ_raw out).
 Proof.
   intros [represented [Hobs Heq]] Hf.
   rewrite (free_omega_observes_upper Hobs Hf).

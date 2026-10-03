@@ -47,12 +47,12 @@ Definition oval_countably_supported {A} (L : OmegaVal R A) : Prop :=
 Lemma oval_ret_countably_supported {A} (x : A) :
   oval_countably_supported (oval_ret R x).
 Proof.
-  exists (fun _ => Some x); intros f g Hf Hg Hfg; apply Hfg; exists O; reflexivity.
+  exists (λ _, Some x); intros f g Hf Hg Hfg; apply Hfg; exists O; reflexivity.
 Qed.
 
 Lemma oval_bottom_countably_supported {A} :
   oval_countably_supported (@oval_bottom R A).
-Proof. exists (fun _ => None); intros f g Hf Hg Hfg; reflexivity. Qed.
+Proof. exists (λ _, None); intros f g Hf Hg Hfg; reflexivity. Qed.
 
 (** No restriction on the support or mass of a distribution on nat. *)
 Lemma oval_nat_countably_supported (L : OmegaVal R nat) :
@@ -84,10 +84,10 @@ Theorem oval_countable_representation {A} (L : OmegaVal R A) e :
   oval_ae L (oval_enumerated e) →
   ∃ N : OmegaVal R nat,
     oval_mass N = oval_mass L ∧
-    oval_ae N (fun n => ∃ x, e n = Some x) ∧
+    oval_ae N (λ n, ∃ x, e n = Some x) ∧
     oval_eq L (oval_bind N (oval_decode e)).
 Proof.
-  intro H; exists (oval_bind L (fun x => oval_ret R (oval_code e x))).
+  intro H; exists (oval_bind L (λ x, oval_ret R (oval_code e x))).
   split; first reflexivity.
   split.
   - intros f g Hf Hg Hfg; apply H.

@@ -27,7 +27,7 @@ Definition state_fold_step {A} (st : S * ptree (stateE S +' E) MN A) :
     T ((S * ptree (stateE S +' E) MN A) + (S * A)) :=
   bind (fold_step (@state_effect S E T MT handle)
                   (@state_sample S MN T MT sample) (snd st) (fst st))
-    (fun sv => ret (match snd sv with
+    (λ sv, ret (match snd sv with
       | inl t => inl (fst sv, t)
       | inr a => inr (fst sv, a)
       end)).
@@ -39,7 +39,7 @@ Proof. reflexivity. Qed.
 Lemma state_fold_square {A} (st : S * ptree (stateE S +' E) MN A) :
   eq1
     (bind (state_fold_step st)
-      (fun v => ret (iteration_map (fun st => run_state (snd st) (fst st)) v)))
+      (λ v, ret (iteration_map (λ st, run_state (snd st) (fst st)) v)))
     (fold_step handle sample (run_state (snd st) (fst st))).
 Proof.
   destruct st as [s t].
@@ -68,7 +68,7 @@ Theorem fold_run_state (Hunif : @iteration_uniform T MT IT QT)
 Proof.
   rewrite fold_state_as_iter. unfold fold.
   apply (Hunif _ _ _ state_fold_step (fold_step handle sample)
-    (fun st => run_state (snd st) (fst st))).
+    (λ st, run_state (snd st) (fst st))).
   apply state_fold_square.
 Qed.
 End StateFoldFacts.

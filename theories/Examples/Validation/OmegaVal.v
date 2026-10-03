@@ -62,8 +62,8 @@ Fail Definition arbitrary_lub : OmegaVal R bool := oval_lub alternating.
 
 Example both_arguments_grow
     (k : nat → bool → OmegaVal R bool)
-    (Hk : ∀ x, oval_increasing (fun n => k n x)) :
-  oval_eq (oval_bind (oval_lub delayed_increasing) (fun x => oval_lub (Hk x)))
+    (Hk : ∀ x, oval_increasing (λ n, k n x)) :
+  oval_eq (oval_bind (oval_lub delayed_increasing) (λ x, oval_lub (Hk x)))
     (oval_lub (oval_bind_chain_diagonal delayed_increasing Hk)).
 Proof. apply oval_bind_double_diagonal. Qed.
 
@@ -91,8 +91,8 @@ Defined.
 Example equality_ignores_unbounded_tests : oval_eq off_test_bottom (oval_bottom R).
 Proof. intros f Hf; exact (off_test_zero f Hf). Qed.
 Example evaluators_still_differ :
-  oval_eval off_test_bottom (fun _ => 1 + 1) = 1 ∧
-  oval_eval (@oval_bottom R bool) (fun _ => 1 + 1) = 0.
+  oval_eval off_test_bottom (λ _, 1 + 1) = 1 ∧
+  oval_eval (@oval_bottom R bool) (λ _, 1 + 1) = 0.
 Proof. split; last reflexivity. change ((if (1 : R) < 1 + 1 then (1 : R) else 0) = 1).
   by rewrite ltrDl ltr01.
 Qed.
@@ -106,6 +106,6 @@ Universe u.
 Variable R : realType.
 Definition high_dirac (A : Type@{u}) : OmegaVal R Type@{u} := oval_ret R A.
 Example high_right_unit (A : Type@{u}) :
-  oval_eq (oval_bind (high_dirac A) (fun X => oval_ret R X)) (high_dirac A).
+  oval_eq (oval_bind (high_dirac A) (λ X, oval_ret R X)) (high_dirac A).
 Proof. apply oval_bind_ret_r. Qed.
 End HighCarrier.

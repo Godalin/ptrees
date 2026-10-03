@@ -26,18 +26,18 @@ Local Open Scope ring_scope.
 Definition attempt_entries : list (rat * bool) := [(3^-1,true); (2^-1,false)].
 Lemma attempt_nonnegative : finite_nonnegative attempt_entries.
 Proof. intros p b [H|[H|[]]]; inversion H; subst; native_compute; reflexivity. Qed.
-Lemma attempt_bounded : finite_expect (fun _ => 1) attempt_entries <= 1.
+Lemma attempt_bounded : finite_expect (λ _, 1) attempt_entries <= 1.
 Proof. native_compute. reflexivity. Qed.
 Definition attempt_coin : SubEnumQ bool := subenumQ_of_list attempt_nonnegative attempt_bounded.
 
 CoFixpoint rational_attempts : ptree (stateE nat +' void1) SubEnumQ unit :=
-  Vis (inl1 (Get nat)) (fun s =>
-    Vis (inl1 (Put nat (S s))) (fun _ =>
-      Prob attempt_coin (fun b => if b then Ret tt else Tau rational_attempts))).
+  Vis (inl1 (Get nat)) (λ s,
+    Vis (inl1 (Put nat (S s))) (λ _,
+      Prob attempt_coin (λ b, if b then Ret tt else Tau rational_attempts))).
 
 Definition rational_counter {Seed}
     (next : nat → Seed → option nat * Seed) fuel initial seed : outcome nat * Seed :=
-  let '(result, rest) := run (fun A => @ticket_sample Seed A next) fuel
+  let '(result, rest) := run (λ A, @ticket_sample Seed A next) fuel
     (run_state rational_attempts initial) seed in
   (match result with
    | Returned sa => Returned (fst sa)

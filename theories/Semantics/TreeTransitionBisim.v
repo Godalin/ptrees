@@ -87,7 +87,7 @@ Context {MF : Type → Type} `{FI : SemanticMeasure MF}
 
 Lemma tree_measure_match_flip {A B} (rel : A → B → Prop) left right :
   tree_measure_match rel left right →
-  tree_measure_match (fun b a => rel a b) right left.
+  tree_measure_match (λ b a, rel a b) right left.
 Proof.
   intros [Hf Hb]. split.
   - intros nu Hnu. destruct (Hb nu Hnu) as [mu [Hmu Hlift]].
@@ -99,7 +99,7 @@ Qed.
 Lemma tree_measure_match_comp {A B C}
     (rel1 : A → B → Prop) (rel2 : B → C → Prop) left middle right :
   tree_measure_match rel1 left middle → tree_measure_match rel2 middle right →
-  tree_measure_match (fun a c => ∃ b, rel1 a b ∧ rel2 b c) left right.
+  tree_measure_match (λ a c, ∃ b, rel1 a b ∧ rel2 b c) left right.
 Proof.
   intros [Hf1 Hb1] [Hf2 Hb2]. split.
   - intros mu Hmu. destruct (Hf1 mu Hmu) as [nu [Hnu H1]].
@@ -243,7 +243,7 @@ Local Notation TB := (@trans_bisim E MN MF FI FC MX FO R R eq).
 Theorem trans_bisim_sym : Symmetric TB.
 Proof.
   intros t u H. eapply trans_bisim_coinduction
-    with (sim := fun t u => TB u t); [|exact H].
+    with (sim := λ t u, TB u t); [|exact H].
   intros x y Hxy. destruct (trans_bisim_unfold Hxy) as [Hr [He Ht]].
   split.
   - eapply tree_measure_match_mono; [|exact (tree_measure_match_flip Hr)].
@@ -257,7 +257,7 @@ Qed.
 Theorem trans_bisim_trans : Transitive TB.
 Proof.
   intros t u v Htu Huv. eapply trans_bisim_coinduction
-    with (sim := fun t v => exists u, TB t u ∧ TB u v).
+    with (sim := λ t v, exists u, TB t u ∧ TB u v).
   - intros x z [y [Hxy Hyz]].
     destruct (trans_bisim_unfold Hxy) as [Hr1 [He1 Ht1]].
     destruct (trans_bisim_unfold Hyz) as [Hr2 [He2 Ht2]].
@@ -293,7 +293,7 @@ Theorem trans_bisim_tau_l {R} (t : ptree E MN R) :
   trans_bisim (MF := MF) eq (Tau t) t.
 Proof.
   eapply trans_bisim_coinduction with
-    (sim := fun a b => a = b ∨ a = Tau b); [|right; reflexivity].
+    (sim := λ a b, a = b ∨ a = Tau b); [|right; reflexivity].
   intros a b [Heq | Heq]; subst a.
   - split.
     + split; intros out Hout; exists out; split; try exact Hout;

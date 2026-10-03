@@ -53,18 +53,18 @@ Qed.
 
 Lemma pick_interval_missing {A} (mu : list (rat * A)) q :
   finite_nonnegative mu → 0 <= q →
-  (pick_interval mu q = None ↔ finite_expect (fun _ => 1) mu <= q).
+  (pick_interval mu q = None ↔ finite_expect (λ _, 1) mu <= q).
 Proof.
   revert q. induction mu as [|[p x] rest IH]; intros q Hnn Hq.
   - cbn. split; auto.
   - change ((if q < p then Some x else pick_interval rest (q-p)) = None ↔
-      p * 1 + finite_expect (fun _ => 1) rest <= q).
+      p * 1 + finite_expect (λ _, 1) rest <= q).
     rewrite mulr1.
     have Htail : finite_nonnegative rest.
     { intros w y Hy. exact (Hnn w y (or_intror Hy)). }
     case Hqp: (q < p).
     + split; [discriminate|]. intro Hmass.
-      have Hnonneg : 0 <= finite_expect (fun _ => 1) rest.
+      have Hnonneg : 0 <= finite_expect (λ _, 1) rest.
       { apply finite_expect_nonnegative; [exact Htail|intro y; exact: ler01]. }
       have Hp : p <= q.
       { apply: le_trans Hmass. by rewrite lerDl. }
@@ -100,7 +100,7 @@ Theorem replay_sample_missing {A} (mu : SubEnumQ A) q rest :
 Proof.
   change ((match pick_interval (subenumQ_data mu) (quantile_value q) with
       Some x => Drawn x | None => Missing end, rest) = (Missing, rest) ↔
-    finite_expect (fun _ => 1) (subenumQ_data mu) <= quantile_value q).
+    finite_expect (λ _, 1) (subenumQ_data mu) <= quantile_value q).
   rewrite <- (pick_interval_missing
     (enumQ_nonnegative (subenumQ_raw mu)) (quantile_nonnegative q)).
   destruct (pick_interval _ _); split; congruence.

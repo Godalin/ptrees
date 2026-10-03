@@ -33,9 +33,9 @@ Context {MN MF : Type → Type}
     not a new typeclass or a premise asserting the desired MDP theorem. *)
 Hypothesis Hreflect : ∀ {X Y A B} (mu : MN X) (nu : MN Y)
     (f : X → A) (g : Y → B) (rel : A → B → Prop),
-  sem_lift rel (mixed_bind mu (fun x => sem_ret (f x)))
-    (mixed_bind nu (fun y => sem_ret (g y))) →
-  sem_lift (fun x y => rel (f x) (g y)) mu nu.
+  sem_lift rel (mixed_bind mu (λ x, sem_ret (f x)))
+    (mixed_bind nu (λ y, sem_ret (g y))) →
+  sem_lift (λ x y, rel (f x) (g y)) mu nu.
 
 Section EncodedMDP.
 Variable D : MDP MN.
@@ -62,7 +62,7 @@ Qed.
 
 Theorem mdp_head_bisim_reflect s t : hb (ehead s) (ehead t) → mdp_bisim (D := D) s t.
 Proof.
-  intro H. eapply mdp_bisim_coinduction with (sim := fun u v => hb (ehead u) (ehead v)).
+  intro H. eapply mdp_bisim_coinduction with (sim := λ u v, hb (ehead u) (ehead v)).
   - intros u v Huv. apply head_bisim_unfold in Huv.
     apply mdp_choose_head_rel_iff in Huv. destruct Huv as [Hobs Hsteps].
     split; [exact Hobs|]. intro a.
@@ -88,7 +88,7 @@ Qed.
 
 Theorem mdp_peutt_reflect s t : pb (encode s) (encode t) → mdp_bisim (D := D) s t.
 Proof.
-  intro H. eapply mdp_bisim_coinduction with (sim := fun u v => pb (encode u) (encode v)).
+  intro H. eapply mdp_bisim_coinduction with (sim := λ u v, pb (encode u) (encode v)).
   - intros u v Huv. destruct (mdp_encoded_vis_inversion Huv) as [Hobs Hsteps].
     split; [exact Hobs|]. intro a.
     pose proof (peutt_hitting_lift (Hsteps a)
@@ -124,7 +124,7 @@ Qed.
 
 Hypothesis Htotal : ∀ s a, sem_total (mdp_successors (D := D) (mdp_transition D s a)).
 Hypothesis Hsupport : ∀ s a,
-  sem_ae (mdp_successors (D := D) (mdp_transition D s a)) (fun h => ∃ t, h = ehead t).
+  sem_ae (mdp_successors (D := D) (mdp_transition D s a)) (λ h, ∃ t, h = ehead t).
 
 Theorem mdp_trans_bisim_iff s t :
   mdp_bisim (D := D) s t ↔

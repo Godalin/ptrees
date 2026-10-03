@@ -38,7 +38,7 @@ Proof.
 Qed.
 Definition real_sqrt_coin := subenumR_coin real_sqrt_weight_nonnegative real_sqrt_weight_bounded.
 Example real_sqrt_coin_probability :
-  oval_eval (subenumR_domain real_sqrt_coin) (fun b => if b then 1 else 0) = real_sqrt_weight.
+  oval_eval (subenumR_domain real_sqrt_coin) (λ b, if b then 1 else 0) = real_sqrt_weight.
 Proof. by rewrite /= /subenumR_expect /= mulr1 mulr0 !addr0. Qed.
 Example real_sqrt_coin_total : oval_mass (subenumR_domain real_sqrt_coin) = 1.
 Proof. by rewrite /oval_mass /= /subenumR_expect /= !mulr1 addr0 addrC subrK. Qed.
@@ -48,7 +48,7 @@ Example real_bind_valid {A B} (mu : SubEnumR R A) (k : A → SubEnumR R B) :
 Proof. apply sem_subprob_all. Qed.
 
 Definition real_alternating : FreeOmega (SubEnumR R) bool :=
-  FOLub (fun n => FORet (if Nat.even n then false else true)).
+  FOLub (λ n, FORet (if Nat.even n then false else true)).
 Lemma real_alternating_test f b : oval_test f → f b = 1 →
   free_omega_model_upper native real_alternating f = 1.
 Proof.
@@ -56,13 +56,13 @@ Proof.
   - exact (proj2 (model_upper_bounds native real_alternating Hf)).
   - rewrite -Hb; unfold real_alternating; cbn [free_omega_model_upper].
     destruct b.
-    + exact (@oval_sup_ge R (fun n => f (if Nat.even n then false else true)) 1 1%nat (fun n => proj2 (Hf _))).
-    + exact (@oval_sup_ge R (fun n => f (if Nat.even n then false else true)) 1 0%nat (fun n => proj2 (Hf _))).
+    + exact (@oval_sup_ge R (λ n, f (if Nat.even n then false else true)) 1 1%nat (λ n, proj2 (Hf _))).
+    + exact (@oval_sup_ge R (λ n, f (if Nat.even n then false else true)) 1 0%nat (λ n, proj2 (Hf _))).
 Qed.
 Example real_alternating_invalid : ¬ free_omega_modelable native real_alternating.
 Proof.
-  intro H; pose f := fun b : bool => if b then (1 : R) else 0.
-  pose g := fun b : bool => if b then (0 : R) else 1.
+  intro H; pose f := λ b : bool, if b then (1 : R) else 0.
+  pose g := λ b : bool, if b then (0 : R) else 1.
   have Hf : oval_test f by intros []; split; try exact: lexx; exact: ler01.
   have Hg : oval_test g by intros []; split; try exact: lexx; exact: ler01.
   have Hfg : ∀ b, f b + g b <= 1 by intros []; rewrite /f /g ?addr0 ?add0r.
@@ -70,7 +70,7 @@ Proof.
   have Hbad := oval_add H Hf Hg Hfg.
   rewrite (@real_alternating_test f true Hf (Logic.eq_refl _))
     (@real_alternating_test g false Hg (Logic.eq_refl _))
-    (@real_alternating_test (fun b => f b + g b) true Hsum (addr0 1)) in Hbad.
+    (@real_alternating_test (λ b, f b + g b) true Hsum (addr0 1)) in Hbad.
   have Hlt : (1 : R) < 1 + 1 by rewrite ltrDr ltr01.
   by rewrite -Hbad ltxx in Hlt.
 Qed.
@@ -78,7 +78,7 @@ Qed.
 Definition real_certain_coin := subenumR_coin (R := R) ler01 (lexx 1).
 Example real_null_bad_branch_valid :
   free_omega_modelable native
-    (FOSample real_certain_coin (fun b => if b then FORet true else real_alternating)).
+    (FOSample real_certain_coin (λ b, if b then FORet true else real_alternating)).
 Proof.
   apply subenumR_free_omega_sample_ae.
   intros p b [H|[H|[]]] Hnz; inversion H; subst.
@@ -87,7 +87,7 @@ Proof.
 Qed.
 
 Definition real_delayed_dirac : FreeOmega (SubEnumR R) bool :=
-  FOLub (fun n => match n with O => FOZero | S _ => FORet true end).
+  FOLub (λ n, match n with O => FOZero | S _ => FORet true end).
 Example real_delayed_dirac_valid : free_omega_modelable native real_delayed_dirac.
 Proof.
   apply modelable_lub.
@@ -100,7 +100,7 @@ Qed.
 Fixpoint real_retry (n : nat) : FreeOmega (SubEnumR R) bool :=
   match n with
   | O => FOZero
-  | S m => FOSample real_sqrt_coin (fun b => if b then FORet true else real_retry m)
+  | S m => FOSample real_sqrt_coin (λ b, if b then FORet true else real_retry m)
   end.
 Lemma real_retry_prefix_valid n : free_omega_modelable native (real_retry n).
 Proof.
@@ -112,9 +112,9 @@ Proof.
   intro n; induction n as [|n IH]; intros f Hf.
   - exact (proj1 (model_upper_bounds native (real_retry 1) Hf)).
   - change (oval_eval (subenumR_domain real_sqrt_coin)
-      (fun b => if b then f true else free_omega_model_upper native (real_retry n) f) <=
+      (λ b, if b then f true else free_omega_model_upper native (real_retry n) f) <=
       oval_eval (subenumR_domain real_sqrt_coin)
-      (fun b => if b then f true else free_omega_model_upper native (real_retry (S n)) f)).
+      (λ b, if b then f true else free_omega_model_upper native (real_retry (S n)) f)).
     apply (oval_mono (oval_laws (subenumR_domain real_sqrt_coin))).
     + intros []; [exact (Hf true)|exact (model_upper_bounds native (real_retry n) Hf)].
     + intros []; [exact (Hf true)|exact (model_upper_bounds native (real_retry (S n)) Hf)].

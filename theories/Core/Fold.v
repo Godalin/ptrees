@@ -20,8 +20,8 @@ Definition fold_step {A} (t : ptree E MN A) : T (ptree E MN A + A) :=
   match observe t with
   | RetF a => ret (inr a)
   | TauF u => ret (inl u)
-  | @VisF _ _ _ _ X e k => bind (@handle X e) (fun x => ret (inl (k x)))
-  | @ProbF _ _ _ _ X mu k => bind (@sample X mu) (fun x => ret (inl (k x)))
+  | @VisF _ _ _ _ X e k => bind (@handle X e) (λ x, ret (inl (k x)))
+  | @ProbF _ _ _ _ X mu k => bind (@sample X mu) (λ x, ret (inl (k x)))
   end.
 
 Definition fold {A} (t : ptree E MN A) : T A :=
@@ -32,9 +32,9 @@ Proof. reflexivity. Qed.
 Lemma fold_step_tau {A} (t : ptree E MN A) : fold_step (Tau t) = ret (inl t).
 Proof. reflexivity. Qed.
 Lemma fold_step_vis {A X} (e : E X) (k : X → ptree E MN A) :
-  fold_step (Vis e k) = bind (@handle X e) (fun x => ret (inl (k x))).
+  fold_step (Vis e k) = bind (@handle X e) (λ x, ret (inl (k x))).
 Proof. reflexivity. Qed.
 Lemma fold_step_prob {A X} (mu : MN X) (k : X → ptree E MN A) :
-  fold_step (Prob mu k) = bind (@sample X mu) (fun x => ret (inl (k x))).
+  fold_step (Prob mu k) = bind (@sample X mu) (λ x, ret (inl (k x))).
 Proof. reflexivity. Qed.
 End Fold.

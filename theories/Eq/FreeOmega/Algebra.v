@@ -45,7 +45,7 @@ Theorem peutt_bind_ret_r {A} (t : ptree E MN A) :
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A A eq
-    (PTree.bind t (fun x => Ret x)) t.
+    (PTree.bind t (λ x, Ret x)) t.
 Proof.
   apply (Algebra.peutt_bind_ret_r
     free_omega_relational_bind free_omega_relational_mixed_bind
@@ -60,7 +60,7 @@ Theorem peutt_bind_assoc {A B C}
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega C C eq
     (PTree.bind (PTree.bind t k) h)
-    (PTree.bind t (fun x => PTree.bind (k x) h)).
+    (PTree.bind t (λ x, PTree.bind (k x) h)).
 Proof.
   apply (Algebra.peutt_bind_assoc
     free_omega_relational_bind free_omega_relational_mixed_bind
@@ -72,7 +72,7 @@ Theorem peutt_fmap_id {A} (t : ptree E MN A) :
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A A eq
-    (PTree.fmap (fun x => x) t) t.
+    (PTree.fmap (λ x, x) t) t.
 Proof.
   apply (Algebra.peutt_fmap_id
     free_omega_relational_bind free_omega_relational_mixed_bind
@@ -86,7 +86,7 @@ Theorem peutt_fmap_compose {A B C}
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega C C eq
     (PTree.fmap g (PTree.fmap f t))
-    (PTree.fmap (fun x => g (f x)) t).
+    (PTree.fmap (λ x, g (f x)) t).
 Proof.
   apply (Algebra.peutt_fmap_compose
     free_omega_relational_bind free_omega_relational_mixed_bind
@@ -100,7 +100,7 @@ Theorem peutt_fmap_bind {A B C}
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega C C eq
     (PTree.fmap f (PTree.bind t k))
-    (PTree.bind t (fun x => PTree.fmap f (k x))).
+    (PTree.bind t (λ x, PTree.fmap f (k x))).
 Proof.
   apply (Algebra.peutt_fmap_bind
     free_omega_relational_bind free_omega_relational_mixed_bind

@@ -17,7 +17,7 @@ Context {Err : Type} {T : Type → Type}.
 Context `{MT : Monad T} `{QT : Eq1 T}.
 
 Definition exceptT_eq1 : Eq1 (eitherT Err T) :=
-  fun A x y => eq1 (unEitherT x) (unEitherT y).
+  λ A x y, eq1 (unEitherT x) (unEitherT y).
 
 Definition exceptT_eq_equivalence
     (QE : @Eq1Equivalence T MT QT) :
@@ -36,7 +36,7 @@ Proof.
   constructor; intros; unfold eq1, exceptT_eq1;
     cbn [Monad.bind Monad.ret Monad_eitherT unEitherT].
   - rewrite (@bind_ret_l T QT MT ML). reflexivity.
-  - transitivity (bind (unEitherT x) (fun a => ret a)).
+  - transitivity (bind (unEitherT x) (λ a, ret a)).
     + apply Proper_bind; [reflexivity|]. intros [e|a]; reflexivity.
     + apply (@bind_ret_r T QT MT ML).
   - rewrite bind_bind. apply Proper_bind; [reflexivity|]. intros [e|a]; cbn.
@@ -48,7 +48,7 @@ Defined.
 
 Definition exceptT_step {I A} (f : I → eitherT Err T (I+A)) (i : I) :
     T (I + (Err+A)) :=
-  bind (unEitherT (f i)) (fun v => ret
+  bind (unEitherT (f i)) (λ v, ret
     (match v with
      | inl e => inr (inl e)
      | inr (inl j) => inl j
@@ -66,15 +66,15 @@ Proof.
   intro j. unfold exceptT_step.
   specialize (Hsquare j).
   change (eq1
-    (bind (unEitherT (f j)) (fun v => match v with
+    (bind (unEitherT (f j)) (λ v, match v with
       | inl e => ret (inl e)
       | inr v => ret (inr (iteration_map h v)) end))
     (unEitherT (g (h j)))) in Hsquare.
   transitivity (bind
-    (bind (unEitherT (f j)) (fun v => match v with
+    (bind (unEitherT (f j)) (λ v, match v with
       | inl e => ret (inl e)
       | inr v => ret (inr (iteration_map h v)) end))
-    (fun v => ret (match v with
+    (λ v, ret (match v with
       | inl e => inr (inl e)
       | inr (inl k) => inl k
       | inr (inr a) => inr (inr a) end))).

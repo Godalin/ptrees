@@ -84,10 +84,10 @@ CoFixpoint probabilistic_observation_intrinsic
       ProbabilisticTau (probabilistic_observation_intrinsic (observe next))
   | @VisF _ _ _ _ _ e k =>
       ProbabilisticVis e
-        (fun x => probabilistic_observation_intrinsic (observe (k x)))
+        (λ x, probabilistic_observation_intrinsic (observe (k x)))
   | @ProbF _ _ _ _ _ mu k =>
       ProbabilisticProb (mu := mu) (k := k) (sem_subprob_all mu)
-        (fun x => probabilistic_observation_intrinsic (observe (k x)))
+        (λ x, probabilistic_observation_intrinsic (observe (k x)))
   end.
 
 Definition probabilistic_ptree_intrinsic
@@ -108,8 +108,8 @@ Local Lemma observe_bind_probability {T U}
   observe (match observe t with
     | RetF r => k r
     | TauF t0 => Tau (PTree.bind t0 k)
-    | VisF _ e ke => Vis e (fun x => PTree.bind (ke x) k)
-    | ProbF _ mu ke => Prob mu (fun x => PTree.bind (ke x) k)
+    | VisF _ e ke => Vis e (λ x, PTree.bind (ke x) k)
+    | ProbF _ mu ke => Prob mu (λ x, PTree.bind (ke x) k)
     end).
 Proof. reflexivity. Qed.
 
@@ -144,7 +144,7 @@ Local CoFixpoint probabilistic_ptree_iter_from {I R}
     (t : ptree E M (I + R))
     (Ht : probabilistic_ptree t) :
     probabilistic_ptree
-      (PTree.bind t (fun lr =>
+      (PTree.bind t (λ lr,
         match lr with
         | inl i' => Tau (PTree.iter step i')
         | inr r => PTree.ret r

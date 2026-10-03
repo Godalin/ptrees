@@ -30,7 +30,7 @@ Lemma enumQ_size_induction {A} (P : EnumQ A → Prop) :
   (∀ mu, (∀ nu, (size (enumQ_raw nu) < size (enumQ_raw mu))%coq_nat → P nu) → P mu) →
   ∀ mu, P mu.
 Proof.
-  exact (well_founded_induction (well_founded_ltof _ (fun mu => size (enumQ_raw mu))) P).
+  exact (well_founded_induction (well_founded_ltof _ (λ mu, size (enumQ_raw mu))) P).
 Qed.
 
 Definition enumQ_of_list {A} (mu : list (rat*A)) (Hnn : finite_nonnegative mu) : EnumQ A :=
@@ -65,11 +65,11 @@ Defined.
 
 Definition enumQ_expect {A} (f : A → rat) (mu : EnumQ A) :=
   finite_enum_expect mu f.
-Definition sumq (ps : list rat) : rat := foldr (fun p q => p+q) 0 ps.
+Definition sumq (ps : list rat) : rat := foldr (λ p q, p+q) 0 ps.
 Definition acc_mass {A : eqType} (x : A) (mu : EnumQ A) : rat :=
   finite_atom x (enumQ_raw mu).
 Definition mass {A : eqType} (mu : EnumQ A) (xs : list A) : rat :=
-  sumq (List.map (fun x => acc_mass x mu) xs).
+  sumq (List.map (λ x, acc_mass x mu) xs).
 Definition EqEnumQ {A : eqType} (mu nu : EnumQ A) : Prop :=
   ∀ x, acc_mass x mu = acc_mass x nu.
 Infix "==EnumQ" := EqEnumQ (at level 70).
@@ -126,10 +126,10 @@ Lemma enumQ_expect_scale {A} (f : A → rat) p (Hp : 0 <= p) mu :
   enumQ_expect f (scale_EnumQ Hp mu) = p * enumQ_expect f mu.
 Proof. exact: finite_enum_expect_scale. Qed.
 Lemma enumQ_expect_bind {A B} (f : B → rat) (mu : EnumQ A) k :
-  enumQ_expect f (bind_EnumQ mu k) = enumQ_expect (fun x => enumQ_expect f (k x)) mu.
+  enumQ_expect f (bind_EnumQ mu k) = enumQ_expect (λ x, enumQ_expect f (k x)) mu.
 Proof. exact: finite_enum_expect_bind. Qed.
 Lemma enumQ_expect_map {A B} (f : B → rat) (h : A → B) mu :
-  enumQ_expect f (enumQ_map h mu) = enumQ_expect (fun x => f (h x)) mu.
+  enumQ_expect f (enumQ_map h mu) = enumQ_expect (λ x, f (h x)) mu.
 Proof. exact: finite_enum_expect_map. Qed.
 
 Lemma enumQ_nil_bind {A B} (k : A → EnumQ B) :
@@ -154,10 +154,10 @@ Proof.
 Qed.
 Lemma scale_bind {A B} p (Hp : 0 <= p) (mu : EnumQ A) (k : A → EnumQ B) :
   enumQ_raw (scale_EnumQ Hp (bind_EnumQ mu k)) =
-  enumQ_raw (bind_EnumQ mu (fun x => scale_EnumQ Hp (k x))).
+  enumQ_raw (bind_EnumQ mu (λ x, scale_EnumQ Hp (k x))).
 Proof.
-  change (finite_weight_map p (finite_bind (enumQ_raw mu) (fun x => enumQ_raw (k x))) =
-    finite_bind (enumQ_raw mu) (fun x => finite_weight_map p (enumQ_raw (k x)))).
+  change (finite_weight_map p (finite_bind (enumQ_raw mu) (λ x, enumQ_raw (k x))) =
+    finite_bind (enumQ_raw mu) (λ x, finite_weight_map p (enumQ_raw (k x)))).
   rewrite -!finite_bind_with_numeric -!finite_scale_with_weight_map.
   rewrite finite_scale_with_bind; [|exact: mulrA|exact: mulrC].
   apply finite_bind_with_ext=> x; exact: finite_scale_with_weight_map.

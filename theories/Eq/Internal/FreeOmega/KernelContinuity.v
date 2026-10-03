@@ -51,7 +51,7 @@ Variable chain : nat → S → MF (stable_target S O).
 Hypothesis chain_increasing : ∀ n s,
   free_omega_approx eq (chain n s) (chain (Datatypes.S n) s).
 Hypothesis kernel_limit : ∀ s,
-  free_omega_qlift eq (kernel s) (FOLub (fun n => chain n s)).
+  free_omega_qlift eq (kernel s) (FOLub (λ n, chain n s)).
 
 Lemma kernel_hitting_grid_rows n m s :
   free_omega_approx eq (hit (chain m) n s) (hit (chain (Datatypes.S m)) n s).
@@ -69,7 +69,7 @@ Context `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
 
 Lemma kernel_target_approx_limit n target :
   free_omega_qlift eq (target_approx kernel n target)
-    (FOLub (fun m => target_approx (chain m) n target)).
+    (FOLub (λ m, target_approx (chain m) n target)).
 Proof.
   induction n as [|n IH] in target |- *; destruct target as [o|s].
   - cbn [stable_target_approx].
@@ -80,7 +80,7 @@ Proof.
     apply FOQLLubConstantR, free_omega_qlift_refl. intro x. reflexivity.
   - change (free_omega_qlift eq
       (free_omega_bind (kernel s) (target_approx kernel n))
-      (FOLub (fun m => free_omega_bind (chain m s) (target_approx (chain m) n)))).
+      (FOLub (λ m, free_omega_bind (chain m s) (target_approx (chain m) n)))).
     apply FOQLBindLub.
     + intro m. apply chain_increasing.
     + intros t m. apply kernel_target_approx_mono. apply chain_increasing.
@@ -94,7 +94,7 @@ Proof.
 Qed.
 
 Theorem kernel_hitting_approx_limit n s :
-  free_omega_qlift eq (hit kernel n s) (FOLub (fun m => hit (chain m) n s)).
+  free_omega_qlift eq (hit kernel n s) (FOLub (λ m, hit (chain m) n s)).
 Proof.
   unfold stable_hitting_approx. apply FOQLBindLub.
   - intro m. apply chain_increasing.
@@ -112,11 +112,11 @@ Qed.
     the number of executed residual steps.  This is not a finite bound on
     either the kernel or an execution. *)
 Theorem kernel_hitting_limit_diagonal s :
-  free_omega_qlift eq (FOLub (fun n => hit kernel n s))
-    (FOLub (fun n => hit (chain n) n s)).
+  free_omega_qlift eq (FOLub (λ n, hit kernel n s))
+    (FOLub (λ n, hit (chain n) n s)).
 Proof.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := FOLub (fun n => FOLub (fun m => hit (chain m) n s))).
+    (mid := FOLub (λ n, FOLub (λ m, hit (chain m) n s))).
   - apply FOQLLub. intro n. apply kernel_hitting_approx_limit.
   - eapply FOQLDoubleDiagonal with (HAB := eq_refl).
     + intros n m. apply kernel_hitting_grid_rows.
@@ -131,7 +131,7 @@ Qed.
 (** Client-facing endpoint for any complete hitting representative. *)
 Theorem kernel_stable_hitting_diagonal s out :
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out →
-  free_omega_qlift eq out (FOLub (fun n => hit (chain n) n s)).
+  free_omega_qlift eq out (FOLub (λ n, hit (chain n) n s)).
 Proof.
   intro Hhit. eapply FOQLComp with (T := eq) (U := eq).
   - exact Hhit.
@@ -159,18 +159,18 @@ Theorem kernel_stable_hitting_diagonal_adequate {S' O'}
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega S' O'
     reference r reference_out →
   free_omega_chains_cofinal eq
-    (fun n => free_omega_bind (hit (chain n) n s) (fun o => FORet (project o)))
-    (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+    (λ n, free_omega_bind (hit (chain n) n s) (λ o, FORet (project o)))
+    (λ n, @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
       S' O' reference n r) →
-  free_omega_qlift eq (free_omega_bind out (fun o => FORet (project o))) reference_out.
+  free_omega_qlift eq (free_omega_bind out (λ o, FORet (project o))) reference_out.
 Proof.
   intros Hhit Hreference Hcofinal.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := FOLub (fun n => free_omega_bind (hit (chain n) n s)
-      (fun o => FORet (project o)))).
-  - change (free_omega_qlift eq (free_omega_bind out (fun o => FORet (project o)))
-      (free_omega_bind (FOLub (fun n => hit (chain n) n s))
-        (fun o => FORet (project o)))).
+    (mid := FOLub (λ n, free_omega_bind (hit (chain n) n s)
+      (λ o, FORet (project o)))).
+  - change (free_omega_qlift eq (free_omega_bind out (λ o, FORet (project o)))
+      (free_omega_bind (FOLub (λ n, hit (chain n) n s))
+        (λ o, FORet (project o)))).
     eapply FOQLBind with (T := eq).
     + apply kernel_stable_hitting_diagonal. exact Hhit.
     + intros x y ->. apply FOQLStructural, FOLRet. reflexivity.
@@ -182,7 +182,7 @@ Proof.
       * exact (@stable_hitting_increasing MF FI FreeOmegaObservableSemanticOmega
           FreeOmegaObservableSemanticMeasureOrderLaws S' O' reference r).
       * exact Hcofinal.
-    + apply FOQLMono with (T := fun x y => y = x).
+    + apply FOQLMono with (T := λ x y, y = x).
       * apply FOQLSym. exact Hreference.
       * intros x y Hxy. symmetry. exact Hxy.
     + intros x z [y [-> ->]]. reflexivity.

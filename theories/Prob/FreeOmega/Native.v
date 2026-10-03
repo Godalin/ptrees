@@ -26,7 +26,7 @@ Arguments native_sample_measure {MN A} _.
 Arguments native_sample_value {MN A} _ _.
 
 Definition free_omega_native {MN A} (p : free_omega_native_presentation MN A) :=
-  FOSample (native_sample_measure p) (fun x => FORet (native_sample_value p x)).
+  FOSample (native_sample_measure p) (λ x, FORet (native_sample_value p x)).
 
 (** AE reflection through an explicit native presentation is valid even
     though reflection of quotient COUPLING to node lifting need not be. *)
@@ -34,14 +34,14 @@ Lemma free_omega_native_ae_iff {MN}
     `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
     {A} (p : free_omega_native_presentation MN A) (P : A → Prop) :
   free_omega_ae P (free_omega_native p) ↔
-  sem_ae (native_sample_measure p) (fun x => P (native_sample_value p x)).
+  sem_ae (native_sample_measure p) (λ x, P (native_sample_value p x)).
 Proof.
   split.
   - intro Hae. apply free_omega_ae_sample_inv in Hae.
     eapply sem_ae_mono; [|exact Hae].
     intros x Hx. inversion Hx. assumption.
   - intro Hae. apply FOAESample with
-      (Good := fun x => P (native_sample_value p x)); [exact Hae|].
+      (Good := λ x, P (native_sample_value p x)); [exact Hae|].
     intros x Hx. apply FOAERet. exact Hx.
 Qed.
 
@@ -57,8 +57,8 @@ Lemma free_omega_ret_native_presentation {A} (x : A) :
     free_omega_qlift eq (FORet x) (free_omega_native p).
 Proof.
   exists {| native_sample_type := unit; native_sample_measure := sem_ret tt;
-    native_sample_value := fun _ => x |}.
-  apply FOQLMono with (T := fun a b => b = a).
+    native_sample_value := λ _, x |}.
+  apply FOQLMono with (T := λ a b, b = a).
   - apply FOQLSym, FOQLSampleRetL.
     + apply sem_ae_ret_iff.
     + apply FOQLStructural, FOLRet. reflexivity.
@@ -75,8 +75,8 @@ Lemma free_omega_sample_bind_ret_l {X Y A} (x : X) (k : X → MN Y)
     (FOSample (k x) decode).
 Proof.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := FOSample (sem_ret x) (fun y => FOSample (k y) decode)).
-  - apply FOQLMono with (T := fun a b => b = a).
+    (mid := FOSample (sem_ret x) (λ y, FOSample (k y) decode)).
+  - apply FOQLMono with (T := λ a b, b = a).
     + apply FOQLSym, FOQLSampleBind.
       * intro P. apply sem_ae_bind_iff.
       * intro y. apply free_omega_qlift_refl. intro a. reflexivity.
@@ -92,12 +92,12 @@ Qed.
 Lemma free_omega_sample_map {X Y A} (mu : MN X) (f : X → Y)
     (k : Y → FreeOmega MN A) :
   free_omega_qlift eq
-    (FOSample (sem_bind mu (fun x => sem_ret (f x))) k)
-    (FOSample mu (fun x => k (f x))).
+    (FOSample (sem_bind mu (λ x, sem_ret (f x))) k)
+    (FOSample mu (λ x, k (f x))).
 Proof.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := FOSample mu (fun x => FOSample (sem_ret (f x)) k)).
-  - apply FOQLMono with (T := fun a b => b = a).
+    (mid := FOSample mu (λ x, FOSample (sem_ret (f x)) k)).
+  - apply FOQLMono with (T := λ a b, b = a).
     + apply FOQLSym, FOQLSampleBind.
       * intro P. apply sem_ae_bind_iff.
       * intro y. apply free_omega_qlift_refl. intro a. reflexivity.
@@ -116,24 +116,24 @@ Qed.
 Theorem free_omega_sample_sigma {X} {Y : X → Type} {A}
     (mu : MN X) (nu : ∀ x, MN (Y x))
     (k : ∀ x, Y x → FreeOmega MN A) :
-  free_omega_qlift eq (FOSample mu (fun x => FOSample (nu x) (k x)))
+  free_omega_qlift eq (FOSample mu (λ x, FOSample (nu x) (k x)))
     (FOSample
-      (sem_bind mu (fun x => sem_bind (nu x) (fun y => sem_ret (existT Y x y))))
-      (fun p => k (projT1 p) (projT2 p))).
+      (sem_bind mu (λ x, sem_bind (nu x) (λ y, sem_ret (existT Y x y))))
+      (λ p, k (projT1 p) (projT2 p))).
 Proof.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := FOSample mu (fun x => FOSample
-      (sem_bind (nu x) (fun y => sem_ret (existT Y x y)))
-      (fun p => k (projT1 p) (projT2 p)))).
+    (mid := FOSample mu (λ x, FOSample
+      (sem_bind (nu x) (λ y, sem_ret (existT Y x y)))
+      (λ p, k (projT1 p) (projT2 p)))).
   - eapply FOQLSample with (T := eq).
     + apply sem_lift_refl. intro x. reflexivity.
     + intros x x' ->.
       eapply FOQLComp with (T := eq) (U := eq)
-        (mid := FOSample (nu x') (fun y => FOSample (sem_ret (existT Y x' y))
-          (fun p => k (projT1 p) (projT2 p)))).
+        (mid := FOSample (nu x') (λ y, FOSample (sem_ret (existT Y x' y))
+          (λ p, k (projT1 p) (projT2 p)))).
       * eapply FOQLSample with (T := eq).
         -- apply sem_lift_refl. intro y. reflexivity.
-        -- intros y y' ->. apply FOQLMono with (T := fun a b => b = a).
+        -- intros y y' ->. apply FOQLMono with (T := λ a b, b = a).
            ++ apply FOQLSym, FOQLSampleRetL.
               ** apply sem_ae_ret_iff.
               ** apply free_omega_qlift_refl. intro a. reflexivity.
@@ -154,26 +154,26 @@ Definition free_omega_native_bind {A B}
     free_omega_native_presentation MN B :=
   {| native_sample_type := {x : native_sample_type p &
         native_sample_type (f (native_sample_value p x))};
-     native_sample_measure := sem_bind (native_sample_measure p) (fun x =>
+     native_sample_measure := sem_bind (native_sample_measure p) (λ x,
        sem_bind (native_sample_measure (f (native_sample_value p x)))
-         (fun y => sem_ret (existT
-           (fun x => native_sample_type (f (native_sample_value p x))) x y)));
-     native_sample_value := fun z =>
+         (λ y, sem_ret (existT
+           (λ x, native_sample_type (f (native_sample_value p x))) x y)));
+     native_sample_value := λ z,
        native_sample_value (f (native_sample_value p (projT1 z))) (projT2 z) |}.
 
 Lemma free_omega_native_bind_eq {A B}
     (p : free_omega_native_presentation MN A)
     (f : A → free_omega_native_presentation MN B) :
   free_omega_qlift eq
-    (free_omega_bind (free_omega_native p) (fun x => free_omega_native (f x)))
+    (free_omega_bind (free_omega_native p) (λ x, free_omega_native (f x)))
     (free_omega_native (free_omega_native_bind p f)).
 Proof.
   unfold free_omega_native, free_omega_native_bind. cbn.
   exact (@free_omega_sample_sigma (native_sample_type p)
-    (fun x => native_sample_type (f (native_sample_value p x))) B
+    (λ x, native_sample_type (f (native_sample_value p x))) B
     (native_sample_measure p)
-    (fun x => native_sample_measure (f (native_sample_value p x)))
-    (fun x y => FORet (native_sample_value (f (native_sample_value p x)) y))).
+    (λ x, native_sample_measure (f (native_sample_value p x)))
+    (λ x y, FORet (native_sample_value (f (native_sample_value p x)) y))).
 Qed.
 
 (** Closure is at the level of full distribution equality, not just

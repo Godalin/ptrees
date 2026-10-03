@@ -25,7 +25,7 @@ Fixpoint finite_scale_with {A : Type} (p : W) (mu : list (W * A)) : list (W * A)
   end.
 
 Definition finite_bind_with {A B : Type} (mu : list (W * A)) (k : A → list (W * B)) :=
-  foldr (fun '(p,x) tl => finite_scale_with p (k x) ++ tl) [::] mu.
+  foldr (λ '(p,x) tl, finite_scale_with p (k x) ++ tl) [::] mu.
 
 Lemma finite_bind_with_ext {A B} (mu : list (W*A))
     (k h : A → list (W*B)) :
@@ -33,7 +33,7 @@ Lemma finite_bind_with_ext {A B} (mu : list (W*A))
 Proof. move=> H; by elim: mu=> [|[p x] mu IH] //=; rewrite H IH. Qed.
 
 Lemma finite_scale_with_map {A} p (mu : list (W * A)) :
-  finite_scale_with p mu = List.map (fun px => (mul p px.1, px.2)) mu.
+  finite_scale_with p mu = List.map (λ px, (mul p px.1, px.2)) mu.
 Proof. by elim: mu=> [|[q x] tl IH] //=; rewrite IH. Qed.
 
 Lemma finite_scale_with_app {A} p (mu nu : list (W * A)) :
@@ -53,7 +53,7 @@ Lemma finite_scale_with_bind {A B} p (mu : list (W * A)) (k : A → list (W * B)
   (∀ a b c, mul a (mul b c) = mul (mul a b) c) →
   (∀ a b, mul a b = mul b a) →
   finite_scale_with p (finite_bind_with mu k) =
-  finite_bind_with mu (fun x => finite_scale_with p (k x)).
+  finite_bind_with mu (λ x, finite_scale_with p (k x)).
 Proof.
   move=> Hassoc Hcomm; elim: mu=> [|[q x] tl IH] //=.
   rewrite finite_scale_with_app IH !finite_scale_with_comp //.
@@ -72,7 +72,7 @@ Lemma finite_bind_with_assoc {A B C} (mu : list (W * A))
     (k : A → list (W * B)) (h : B → list (W * C)) :
   (∀ a b c, mul a (mul b c) = mul (mul a b) c) →
   finite_bind_with (finite_bind_with mu k) h =
-  finite_bind_with mu (fun x => finite_bind_with (k x) h).
+  finite_bind_with mu (λ x, finite_bind_with (k x) h).
 Proof.
   move=> Hassoc; elim: mu=> [|[p x] tl IH] //=.
   by rewrite finite_bind_with_app finite_bind_with_scale // IH.
@@ -86,7 +86,7 @@ Proof.
 Qed.
 
 Lemma finite_bind_with_right_unit {A} one (mu : list (W * A)) :
-  (∀ p, mul p one = p) → finite_bind_with mu (fun x => [:: (one,x)]) = mu.
+  (∀ p, mul p one = p) → finite_bind_with mu (λ x, [:: (one,x)]) = mu.
 Proof. move=> H; by elim: mu=> [|[p x] tl IH] //=; rewrite H IH. Qed.
 
 Lemma finite_scale_with_length {A} p (mu : list (W * A)) :
@@ -201,16 +201,16 @@ End RawAlgebra.
 Lemma finite_scale_with_scalar_map {W V A} (mul : W → W → W)
     (mul' : V → V → V) (f : W → V) p (mu : list (W * A)) :
   (∀ p q, f (mul p q) = mul' (f p) (f q)) →
-  List.map (fun px => (f px.1, px.2)) (finite_scale_with mul p mu) =
-  finite_scale_with mul' (f p) (List.map (fun px => (f px.1, px.2)) mu).
+  List.map (λ px, (f px.1, px.2)) (finite_scale_with mul p mu) =
+  finite_scale_with mul' (f p) (List.map (λ px, (f px.1, px.2)) mu).
 Proof. move=> H; by elim: mu=> [|[q x] tl IH] //=; rewrite H IH. Qed.
 
 Lemma finite_bind_with_scalar_map {W V A B} (mul : W → W → W)
     (mul' : V → V → V) (f : W → V) (mu : list (W * A)) (k : A → list (W * B)) :
   (∀ p q, f (mul p q) = mul' (f p) (f q)) →
-  List.map (fun px => (f px.1, px.2)) (finite_bind_with mul mu k) =
-  finite_bind_with mul' (List.map (fun px => (f px.1, px.2)) mu)
-    (fun x => List.map (fun px => (f px.1, px.2)) (k x)).
+  List.map (λ px, (f px.1, px.2)) (finite_bind_with mul mu k) =
+  finite_bind_with mul' (List.map (λ px, (f px.1, px.2)) mu)
+    (λ x, List.map (λ px, (f px.1, px.2)) (k x)).
 Proof.
   move=> H; elim: mu=> [|[p x] tl IH] //=.
   by rewrite List.map_app (finite_scale_with_scalar_map (mul' := mul') _ _ H) IH.
@@ -219,10 +219,10 @@ Qed.
 Section CheckedConnection.
 Variable R : numDomainType.
 Lemma finite_scale_with_weight_map {A} (p : R) (mu : list (R * A)) :
-  finite_scale_with (fun x y => x * y) p mu = finite_weight_map p mu.
+  finite_scale_with (λ x y, x * y) p mu = finite_weight_map p mu.
 Proof. exact: finite_scale_with_map. Qed.
 Lemma finite_bind_with_numeric {A B} (mu : list (R * A)) (k : A → list (R * B)) :
-  finite_bind_with (fun x y => x * y) mu k = finite_bind mu k.
+  finite_bind_with (λ x y, x * y) mu k = finite_bind mu k.
 Proof. by elim: mu=> [|[p x] tl IH] //=; rewrite finite_scale_with_weight_map IH. Qed.
 Lemma finite_bind_ext {A B} (mu : list (R*A)) (k h : A → list (R*B)) :
   (∀ x, k x = h x) → finite_bind mu k = finite_bind mu h.
@@ -241,13 +241,13 @@ Proof.
 Qed.
 Lemma finite_bind_assoc {A B C} (mu : list (R*A))
     (k : A → list (R*B)) (h : B → list (R*C)) :
-  finite_bind (finite_bind mu k) h = finite_bind mu (fun x => finite_bind (k x) h).
+  finite_bind (finite_bind mu k) h = finite_bind mu (λ x, finite_bind (k x) h).
 Proof.
   by elim: mu=> [|[p x] tl IH] //=; rewrite finite_bind_app finite_bind_scale IH.
 Qed.
 Lemma finite_expect_swap {A B} (mu : list (R*A)) (nu : list (R*B)) f :
-  finite_expect (fun x => finite_expect (f x) nu) mu =
-  finite_expect (fun y => finite_expect (fun x => f x y) mu) nu.
+  finite_expect (λ x, finite_expect (f x) nu) mu =
+  finite_expect (λ y, finite_expect (λ x, f x y) mu) nu.
 Proof.
   elim: mu=> [|[p x] tl IH] /=.
   - symmetry; exact: finite_expect_zero.

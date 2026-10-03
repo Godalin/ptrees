@@ -30,7 +30,7 @@ Variables (Hmixed : relational_mixed_bind NI FI MX)
 
 Theorem from_itree_interp {E F A} (h : ∀ X, E X → itree F X) (t : itree E A) :
   peutt (MF := MF) eq (from_itree (Interp.interp h t))
-    (PTree.interp (fun X e => @from_itree F MN X (h X e)) (from_itree t)).
+    (PTree.interp (λ X e, @from_itree F MN X (h X e)) (from_itree t)).
 Proof.
   eapply peutt_trans.
   - apply (from_itree_eutt (u := itree_interp_before h t) Hzero).
@@ -72,7 +72,7 @@ Proof. apply interp_itree_eutt. Qed.
 Theorem interp_itree_source_interp {E F G A}
     (h : ∀ X, E X → itree F X) (g : Handler MN F G) (t : itree E A) :
   peutt (MF := MF) eq (interp_itree g (Interp.interp h t))
-    (interp_itree (fun X e => interp_itree g (h X e)) t).
+    (interp_itree (λ X e, interp_itree g (h X e)) t).
 Proof.
   unfold interp_itree at 1. eapply peutt_trans.
   - apply (Unrestricted.peutt_interp Hzero Hlimit). apply from_itree_interp.
@@ -83,7 +83,7 @@ Qed.
 Corollary elaborate_source_interp {E F A}
     (h : ∀ X, E X → itree (probE MN +' F) X) (t : itree E A) :
   peutt (MF := MF) eq (elaborate (Interp.interp h t))
-    (interp_itree (fun X e => elaborate (h X e)) t).
+    (interp_itree (λ X e, elaborate (h X e)) t).
 Proof. apply interp_itree_source_interp. Qed.
 
 Lemma elaborate_eutt_Proper {E A} :

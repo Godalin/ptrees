@@ -30,21 +30,21 @@ Hypothesis native_ae : ∀ X (mu : MN X) P, sem_ae mu P → oval_ae (native mu) 
 Hypothesis native_ret : ∀ X (x : X), oval_eq (native (sem_ret x)) (oval_ret R x).
 Hypothesis native_zero : ∀ X, oval_eq (native (@sem_zero MN NI NO X)) (@oval_bottom R X).
 Hypothesis native_bind : ∀ X Y (mu : MN X) (k : X → MN Y),
-  oval_eq (native (sem_bind mu k)) (oval_bind (native mu) (fun x => native (k x))).
+  oval_eq (native (sem_bind mu k)) (oval_bind (native mu) (λ x, native (k x))).
 Hypothesis native_lift : ∀ X Y (T : X → Y → Prop) (mu : MN X) (nu : MN Y) f g,
   sem_lift T mu nu → oval_test f → oval_test g →
   (∀ x y, T x y → f x <= g y) → oval_eval (native mu) f <= oval_eval (native nu) g.
 Hypothesis native_lub : ∀ X (c : nat → MN X) out,
   (∀ n f, oval_test f → oval_eval (native (c n)) f <= oval_eval (native (c (S n))) f) →
   sem_lub c out → ∀ f, oval_test f →
-  oval_sup (fun n => oval_eval (native (c n)) f) = oval_eval (native out) f.
+  oval_sup (λ n, oval_eval (native (c n)) f) = oval_eval (native out) f.
 Local Notation upper := (free_omega_model_upper (@native)).
 
 
 Local Notation test := (@oval_test R).
 Local Notation directed := (model_upper_rel (@native)).
 Definition model_upper_birel {A B} (T : A → B → Prop) mu nu :=
-  directed T mu nu ∧ directed (fun y x => T x y) nu mu.
+  directed T mu nu ∧ directed (λ y x, T x y) nu mu.
 Local Notation related := model_upper_birel.
 
 Lemma model_birel_mono {A B} (T U : A → B → Prop) mu nu :
@@ -120,36 +120,36 @@ Qed.
 
 Lemma upper_sample_product {A X Y} (mu : MN X) (nu : MN Y)
     (k : X → Y → FreeOmega MN A) f :
-  test f → upper (FOSample (semantic_product mu nu) (fun p => k (fst p) (snd p))) f =
-  upper (FOSample mu (fun x => FOSample nu (k x))) f.
+  test f → upper (FOSample (semantic_product mu nu) (λ p, k (fst p) (snd p))) f =
+  upper (FOSample mu (λ x, FOSample nu (k x))) f.
 Proof.
   intro Hf; cbn [free_omega_model_upper]; unfold semantic_product.
-  rewrite (native_bind mu _ (fun p => model_upper_bounds (@native) (k (fst p) (snd p)) Hf)).
-  change (oval_eval (native mu) (fun x => oval_eval (native (sem_bind nu (fun y => sem_ret (x,y))))
-    (fun p => upper (k (fst p) (snd p)) f)) =
-    oval_eval (native mu) (fun x => oval_eval (native nu) (fun y => upper (k x y) f))).
+  rewrite (native_bind mu _ (λ p, model_upper_bounds (@native) (k (fst p) (snd p)) Hf)).
+  change (oval_eval (native mu) (λ x, oval_eval (native (sem_bind nu (λ y, sem_ret (x,y))))
+    (λ p, upper (k (fst p) (snd p)) f)) =
+    oval_eval (native mu) (λ x, oval_eval (native nu) (λ y, upper (k x y) f))).
   apply oval_eval_ext=> x.
-  rewrite (native_bind nu _ (fun p => model_upper_bounds (@native) (k (fst p) (snd p)) Hf)).
-  change (oval_eval (native nu) (fun y => oval_eval (native (sem_ret (x,y)))
-    (fun p => upper (k (fst p) (snd p)) f)) =
-    oval_eval (native nu) (fun y => upper (k x y) f)).
+  rewrite (native_bind nu _ (λ p, model_upper_bounds (@native) (k (fst p) (snd p)) Hf)).
+  change (oval_eval (native nu) (λ y, oval_eval (native (sem_ret (x,y)))
+    (λ p, upper (k (fst p) (snd p)) f)) =
+    oval_eval (native nu) (λ y, upper (k x y) f)).
   apply oval_eval_ext=> y.
-  exact (native_ret (x,y) (fun p => model_upper_bounds (@native) (k (fst p) (snd p)) Hf)).
+  exact (native_ret (x,y) (λ p, model_upper_bounds (@native) (k (fst p) (snd p)) Hf)).
 Qed.
 
 Lemma upper_zero_prefix {A} (c : nat → FreeOmega MN A) f :
   test f →
-  upper (FOLub (fun n => match n with O => FOZero | S n => c n end)) f =
+  upper (FOLub (λ n, match n with O => FOZero | S n => c n end)) f =
   upper (FOLub c) f.
 Proof.
   intro Hf. cbn [free_omega_model_upper]. apply/eqP. rewrite eq_le. apply/andP. split.
   - apply oval_sup_le. intros [|n].
     + change (0 <= upper (FOLub c) f). exact (proj1 (model_upper_bounds (@native) _ Hf)).
-    + exact (@oval_sup_ge R (fun i => upper (c i) f) 1 n
-        (fun i => proj2 (model_upper_bounds (@native) _ Hf))).
+    + exact (@oval_sup_ge R (λ i, upper (c i) f) 1 n
+        (λ i, proj2 (model_upper_bounds (@native) _ Hf))).
   - apply oval_sup_le=> n.
     apply (@oval_sup_ge R
-      (fun i => upper (match i with O => FOZero | S j => c j end) f) 1 (S n)).
+      (λ i, upper (match i with O => FOZero | S j => c j end) f) 1 (S n)).
     intros [|i]; [exact: ler01|exact (proj2 (model_upper_bounds (@native) _ Hf))].
 Qed.
 
@@ -162,7 +162,7 @@ Proof.
   intros H Hf Hg Hfg; apply oval_sup_le=> n; destruct (H n) as [m Hm].
   eapply le_trans.
   - eapply model_upper_approx; [exact native_lift|exact Hm|exact Hf|exact Hg|exact Hfg].
-  - exact (oval_sup_ge m (fun i => proj2 (model_upper_bounds (@native) (d i) Hg))).
+  - exact (oval_sup_ge m (λ i, proj2 (model_upper_bounds (@native) (d i) Hg))).
 Qed.
 
 Theorem model_qlift_bidual_raw {A B} (T : A → B → Prop) mu nu :
@@ -187,17 +187,17 @@ Proof.
   - eapply model_birel_bind; eassumption.
   - eapply model_birel_sample; eassumption.
   - eapply model_birel_ext with (mu' := k x) (nu' := nu); [|reflexivity|exact IHHq].
-    intros f Hf; exact (native_ret x (fun y => model_upper_bounds (@native) (k y) Hf)).
+    intros f Hf; exact (native_ret x (λ y, model_upper_bounds (@native) (k y) Hf)).
   - eapply model_birel_ext with
         (mu' := FOSample (sem_bind mu h) k) (nu' := FOSample (sem_bind mu h) l).
-    + intros f Hf; symmetry; exact (native_bind mu h (fun y => model_upper_bounds (@native) (k y) Hf)).
+    + intros f Hf; symmetry; exact (native_bind mu h (λ y, model_upper_bounds (@native) (k y) Hf)).
     + reflexivity.
     + eapply model_birel_sample with (T := eq).
       * apply sem_lift_refl. intro y. reflexivity.
       * intros y z ->. auto.
   - eapply model_birel_ext with
-        (mu' := FOSample (semantic_product mu nu) (fun p => k (fst p) (snd p)))
-        (nu' := FOSample (semantic_product nu mu) (fun p => l (fst p) (snd p))).
+        (mu' := FOSample (semantic_product mu nu) (λ p, k (fst p) (snd p)))
+        (nu' := FOSample (semantic_product nu mu) (λ p, l (fst p) (snd p))).
     + intros f Hf. symmetry. apply upper_sample_product; assumption.
     + intros g Hg. symmetry. apply upper_sample_product; assumption.
     + eapply model_birel_sample; [exact H|].
@@ -212,10 +212,10 @@ Proof.
     + exact (upper_zero_prefix d).
     + apply model_birel_lub. assumption.
   - eapply model_birel_ext with (mu' := FOSample mu out)
-        (nu' := FOSample mu (fun x => FOLub (chain x))).
+        (nu' := FOSample mu (λ x, FOLub (chain x))).
     + reflexivity.
     + intros g Hg. symmetry. eapply model_sample_lub; [exact native_ae|exact native_lift| |exact Hg].
-      change (sem_ae mu (fun x => ∀ n, free_omega_approx eq (chain x n) (chain x (S n)))).
+      change (sem_ae mu (λ x, ∀ n, free_omega_approx eq (chain x n) (chain x (S n)))).
       eapply sem_ae_mono; [|exact H]. exact H0.
     + eapply model_birel_sample_ae; eassumption.
   - split; intros f g Hf Hg Hfg; cbn [free_omega_model_upper];
@@ -224,14 +224,14 @@ Proof.
     intros g Hg. cbn [free_omega_model_upper]. apply oval_sup_const.
   - eapply model_birel_ext with
         (mu' := free_omega_bind source_out kernel_out)
-        (nu' := free_omega_bind (FOLub source) (fun x => FOLub (kernels x))).
+        (nu' := free_omega_bind (FOLub source) (λ x, FOLub (kernels x))).
     + reflexivity.
     + intros g Hg. symmetry. eapply model_bind_lub; eassumption.
     + eapply model_birel_bind with (T := eq); [exact IHHq|]. intros x y ->. auto.
   - destruct HAB. cbn.
     eapply model_birel_ext with
-      (mu' := FOLub (fun fuel => grid fuel fuel))
-      (nu' := FOLub (fun fuel => grid fuel fuel)).
+      (mu' := FOLub (λ fuel, grid fuel fuel))
+      (nu' := FOLub (λ fuel, grid fuel fuel)).
     + intros f Hf. eapply model_diagonal_upper; eassumption.
     + reflexivity.
     + split; intros f g Hf Hg Hfg; apply model_upper_mono; [exact Hf|exact Hg| |exact Hf|exact Hg|];
@@ -262,10 +262,10 @@ Qed.
     change mass.  This covers arbitrary combinations of quotient rules. *)
 Corollary model_qlift_upper_mass {A B} (T : A → B → Prop) mu nu :
   @free_omega_qlift MN NI NO
-    A B T mu nu → upper mu (fun _ => 1) = upper nu (fun _ => 1).
+    A B T mu nu → upper mu (λ _, 1) = upper nu (λ _, 1).
 Proof.
   intro H. destruct (model_qlift_bidual_raw H) as [Hl Hr].
-  have Hone : ∀ X : Type, test (fun _ : X => (1 : R)).
+  have Hone : ∀ X : Type, test (λ _ : X, (1 : R)).
   { intros X x. split; [exact: ler01|exact: lexx]. }
   apply/eqP. rewrite eq_le. apply/andP. split.
   - apply Hl; [apply Hone|apply Hone|]. intros x y _. exact: lexx.

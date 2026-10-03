@@ -35,9 +35,9 @@ Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 
-Definition discarded_bit (t : tree) := Prob subenumQ_fair (fun _ => Tau t).
+Definition discarded_bit (t : tree) := Prob subenumQ_fair (λ _, Tau t).
 CoFixpoint retry_with_noise (noisy : bool) : tree :=
-  Prob coin (fun success : bool => if success then continuation else
+  Prob coin (λ success : bool, if success then continuation else
     if noisy then discarded_bit (retry_with_noise noisy) else Tau (retry_with_noise noisy)).
 
 Inductive retry_prefix (noisy : bool) : tree → Prop :=
@@ -58,9 +58,9 @@ Proof.
     + exact (@FIStop E SubEnumQ MF FI FreeOmegaMixedMeasure A _).
     + apply free_omega_qlift_refl. intro x. reflexivity.
   - exists out. split; [apply FITau; exact Hcut|exact Heq].
-  - exists (FOSample subenumQ_fair (fun _ => out)). split.
+  - exists (FOSample subenumQ_fair (λ _, out)). split.
     + apply (@FIProb E SubEnumQ MF FI FreeOmegaMixedMeasure A bool
-        subenumQ_fair (fun _ => Tau t) (fun _ => out)).
+        subenumQ_fair (λ _, Tau t) (λ _, out)).
       intro b. apply FITau. exact Hcut.
     + eapply free_omega_sample_to_constant with (point := false).
       * intro P. apply sem_ae_ret_iff.
@@ -68,7 +68,7 @@ Proof.
       * intro b. exact Heq.
 Qed.
 
-Lemma retry_roots_guard b c : (fun t u => pstrongF eq retry_equiv (observe t) (observe u))
+Lemma retry_roots_guard b c : (λ t u, pstrongF eq retry_equiv (observe t) (observe u))
   (retry_with_noise b) (retry_with_noise c).
 Proof.
   unfold observe. cbn. constructor.
@@ -84,8 +84,8 @@ Qed.
     This refutes structural lifting of THESE cuts, not every alternative
     choice of compression witnesses. *)
 Lemma retry_noise_cut_not_structural b c :
-  ¬ free_omega_lift (fun t u => pstrongF eq retry_equiv (observe t) (observe u))
-    (FOSample subenumQ_fair (fun _ => FORet (retry_with_noise b)))
+  ¬ free_omega_lift (λ t u, pstrongF eq retry_equiv (observe t) (observe u))
+    (FOSample subenumQ_fair (λ _, FORet (retry_with_noise b)))
     (FORet (retry_with_noise c)).
 Proof. intro H. inversion H. Qed.
 
@@ -118,7 +118,7 @@ Lemma retry_policy_coupled (cut : tree → MF tree)
       free_omega_qlift eq (cut t) (FORet (retry_with_noise b))) t u :
   retry_equiv t u →
   free_omega_qlift
-    (fun t u => pstrongF eq retry_equiv (observe t) (observe u)) (cut t) (cut u).
+    (λ t u, pstrongF eq retry_equiv (observe t) (observe u)) (cut t) (cut u).
 Proof.
   intros [->|[Ht Hu]].
   - apply free_omega_qlift_refl. intro v. destruct (observe v).
@@ -129,12 +129,12 @@ Proof.
   - destruct (Hroot t Ht) as [b Hb].
     destruct (Hroot u Hu) as [c Hc].
     eapply FOQLComp with (T := eq)
-      (U := fun t u => pstrongF eq retry_equiv (observe t) (observe u)).
+      (U := λ t u, pstrongF eq retry_equiv (observe t) (observe u)).
     + exact Hb.
     + eapply FOQLComp with
-        (T := fun t u => pstrongF eq retry_equiv (observe t) (observe u)) (U := eq).
+        (T := λ t u, pstrongF eq retry_equiv (observe t) (observe u)) (U := eq).
       * apply FOQLStructural, FOLRet. apply retry_roots_guard.
-      * apply FOQLMono with (T := fun x y => y = x).
+      * apply FOQLMono with (T := λ x y, y = x).
         -- apply FOQLSym. exact Hc.
         -- intros x y Hyx. symmetry. exact Hyx.
       * intros x z [y [Hxy ->]]. exact Hxy.
@@ -158,7 +158,7 @@ End Retry.
 
 Variant retry_event : Type → Type := RetryReply : retry_event bool.
 Definition retry_visible_continuation : ptree retry_event SubEnumQ bool :=
-  Vis RetryReply (fun answer => Ret answer).
+  Vis RetryReply (λ answer, Ret answer).
 
 Example eventful_retry_discarded_bits :
   @peutt retry_event SubEnumQ (FreeOmega SubEnumQ)

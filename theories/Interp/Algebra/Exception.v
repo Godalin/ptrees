@@ -62,17 +62,17 @@ Theorem run_exception_ret {A} (a : A) :
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
 Theorem run_exception_throw {A} (err : Err) :
-  W (@run_exception Err E MN A (Vis (inl1 (Throw err)) (fun v : void => match v with end)))
+  W (@run_exception Err E MN A (Vis (inl1 (Throw err)) (λ v : void, match v with end)))
     (Ret (inl err)).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
 Theorem run_exception_throw_bind {A B} (err : Err)
     (k : A → ptree (exceptE Err +' E) MN B) :
-  W (run_exception (PTree.bind (Vis (inl1 (Throw err)) (fun v : void => match v with end)) k))
+  W (run_exception (PTree.bind (Vis (inl1 (Throw err)) (λ v : void, match v with end)) k))
     (Ret (inl err)).
 Proof. apply peutt_observe_eq. rewrite observe_run_exception, observe_bind. reflexivity. Qed.
 
 Theorem run_exception_prob {A X} (mu : MN X) (k : X → ptree (exceptE Err +' E) MN A) :
-  W (run_exception (Prob mu k)) (Prob mu (fun x => run_exception (k x))).
+  W (run_exception (Prob mu k)) (Prob mu (λ x, run_exception (k x))).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 End Laws.

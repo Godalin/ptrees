@@ -32,13 +32,13 @@ Section RealContracts.
 Variable R : realType.
 Local Notation M := (SubEnumR R).
 Local Notation native := (fun X => @subenumR_domain R X).
-Definition real_constant_unit : FreeOmega M unit := FOLub (fun _ => FORet tt).
+Definition real_constant_unit : FreeOmega M unit := FOLub (λ _, FORet tt).
 Definition real_returns_true (_ : unit) (b : bool) := b = true.
 
 Lemma real_invalid_to_ret :
-  free_omega_qlift (fun (_ : bool) (_ : unit) => True) (real_alternating R) (FORet tt).
+  free_omega_qlift (λ (_ : bool) (_ : unit), True) (real_alternating R) (FORet tt).
 Proof.
-  eapply FOQLComp with (mid := real_constant_unit) (T := fun _ _ => True) (U := eq).
+  eapply FOQLComp with (mid := real_constant_unit) (T := λ _ _, True) (U := eq).
   - apply FOQLLub=> n; apply FOQLStructural; constructor; exact I.
   - apply FOQLSym, FOQLLubConstantR, FOQLStructural; constructor; reflexivity.
   - intros x [] _; exact I.
@@ -48,10 +48,10 @@ Lemma real_heterogeneous_invalid_middle :
   free_omega_qlift real_returns_true real_constant_unit (FORet true).
 Proof.
   eapply FOQLComp with (mid := real_alternating R)
-    (T := fun (_ : unit) (_ : bool) => True) (U := fun (_ : bool) b => b = true).
+    (T := λ (_ : unit) (_ : bool), True) (U := λ (_ : bool) b, b = true).
   - apply FOQLLub=> n; apply FOQLStructural; constructor; exact I.
   - eapply FOQLComp with (mid := FORet tt)
-      (T := fun (_ : bool) (_ : unit) => True) (U := fun (_ : unit) b => b = true).
+      (T := λ (_ : bool) (_ : unit), True) (U := λ (_ : unit) b, b = true).
     + exact real_invalid_to_ret.
     + apply FOQLStructural, FOLRet; reflexivity.
     + intros x b [y [_ Hb]]; exact Hb.
@@ -79,28 +79,28 @@ Example generic_real_missing_mass_preserved :
   ¬ free_omega_qlift eq (@FOZero M unit) (FORet tt).
 Proof.
   intro H; have Hr := proj2 (subenumR_qlift_bidual_raw H).
-  have Hbad := Hr _ _ (oval_test_one R) (oval_test_one R) (fun x y _ => lexx (1 : R)).
+  have Hbad := Hr _ _ (oval_test_one R) (oval_test_one R) (λ x y _, lexx (1 : R)).
   change (is_true ((1 : R) <= 0)) in Hbad.
   by rewrite ler10 in Hbad.
 Qed.
 
 Lemma real_crossed_qlift (mu : M bool) :
-  free_omega_qlift eq (FOSample mu (fun b => FORet b))
-    (FOSample (subenumR_map negb mu) (fun b => FORet (negb b))).
+  free_omega_qlift eq (FOSample mu (λ b, FORet b))
+    (FOSample (subenumR_map negb mu) (λ b, FORet (negb b))).
 Proof.
   apply FOQLStructural; eapply FOLSample; [exact (subenumR_lift_map negb mu)|].
   intros x y Hxy; constructor; rewrite -Hxy negbK; reflexivity.
 Qed.
 Example generic_real_crossed_sqrt_tests f : oval_test f →
-  free_omega_model_upper native (FOSample (real_sqrt_coin R) (fun b => FORet b)) f =
+  free_omega_model_upper native (FOSample (real_sqrt_coin R) (λ b, FORet b)) f =
   free_omega_model_upper native
-    (FOSample (subenumR_map negb (real_sqrt_coin R)) (fun b => FORet (negb b))) f.
+    (FOSample (subenumR_map negb (real_sqrt_coin R)) (λ b, FORet (negb b))) f.
 Proof. intro Hf; apply subenumR_qlift_eq_upper; [apply real_crossed_qlift|exact Hf]. Qed.
 
 (** This mass is 1/2, not normalized to 1 by the quotient bridge. *)
 Example generic_real_partial_sample_mass :
-  free_omega_model_upper native (FOSample (duplicated_half R) (fun b => FORet b))
-    (fun _ => 1) = (1 : R) / 2.
+  free_omega_model_upper native (FOSample (duplicated_half R) (λ b, FORet b))
+    (λ _, 1) = (1 : R) / 2.
 Proof.
   cbn [free_omega_model_upper]; change ((1 : R)/4 * 1 + ((1 : R)/4 * 1 + (0*1+0)) = 1/2).
   rewrite !mulr1 !add0r !addr0 -mulr2n -mulr_natl mulrA mulr1.
@@ -110,9 +110,9 @@ Qed.
 
 (** Exercise Observe itself, with a genuine Lub observation. *)
 Lemma real_delayed_hitting :
-  free_omega_observes (fun b => b) (real_delayed_dirac R) (subenumR_ret R true).
+  free_omega_observes (λ b, b) (real_delayed_dirac R) (subenumR_ret R true).
 Proof.
-  eapply FOOObserveLub with (outs := fun n => match n with O => subenumR_zero R | S _ => subenumR_ret R true end).
+  eapply FOOObserveLub with (outs := λ n, match n with O => subenumR_zero R | S _ => subenumR_ret R true end).
   - intros [|n]; constructor.
   - intros f Hf; split.
     + intros [|n]; [|exact: lexx].
@@ -134,20 +134,20 @@ Definition real_nullable_chain (b : bool) (n : nat) : FreeOmega M bool :=
   if b then FORet true else FORet (if Nat.even n then false else true).
 Lemma real_null_sample_lub_qlift :
   free_omega_qlift eq
-    (FOSample (real_certain_coin R) (fun _ => FORet true))
-    (FOLub (fun n => FOSample (real_certain_coin R) (fun b => real_nullable_chain b n))).
+    (FOSample (real_certain_coin R) (λ _, FORet true))
+    (FOLub (λ n, FOSample (real_certain_coin R) (λ b, real_nullable_chain b n))).
 Proof.
-  eapply FOQLSampleLub with (Good := fun b => b = true).
+  eapply FOQLSampleLub with (Good := λ b, b = true).
   - intros p b [H|[H|[]]] Hnz; inversion H; subst; [reflexivity|].
     exfalso; apply Hnz; exact: subrr.
   - intros b -> n; apply FOApproxRet; reflexivity.
-  - intros b ->; change (free_omega_qlift eq (@FORet M bool true) (FOLub (fun _ => FORet true))).
+  - intros b ->; change (free_omega_qlift eq (@FORet M bool true) (FOLub (λ _, FORet true))).
     apply FOQLLubConstantR, FOQLStructural, FOLRet; reflexivity.
 Qed.
 Example generic_real_null_nonmonotone_chain :
   ¬ free_omega_modelable native (FOLub (real_nullable_chain false)) ∧
   free_omega_modelable native
-    (FOLub (fun n => FOSample (real_certain_coin R) (fun b => real_nullable_chain b n))).
+    (FOLub (λ n, FOSample (real_certain_coin R) (λ b, real_nullable_chain b n))).
 Proof.
   split; [exact: real_alternating_invalid|].
   apply (proj1 (subenumR_qlift_eq_modelable real_null_sample_lub_qlift)).
@@ -155,10 +155,10 @@ Proof.
 Qed.
 
 Example generic_real_retry_equality_transports_validity :
-  free_omega_modelable native (FOLub (fun _ => FOLub (real_retry R))).
+  free_omega_modelable native (FOLub (λ _, FOLub (real_retry R))).
 Proof.
   apply (proj1 (subenumR_qlift_eq_modelable
-    (FOQLLubConstantR (FOQLStructural (free_omega_lift_refl (FOLub (real_retry R)) (fun x => Logic.eq_refl x)))))).
+    (FOQLLubConstantR (FOQLStructural (free_omega_lift_refl (FOLub (real_retry R)) (λ x, Logic.eq_refl x)))))).
   exact: real_unbounded_retry_valid.
 Qed.
 End RealContracts.
@@ -167,7 +167,7 @@ Section HighUniverse.
 Universe u v.
 Variable R : realType.
 Example generic_real_large_carriers (A : Type@{u}) (B : Type@{v}) :
-  model_upper_birel (fun X => @subenumR_domain R X)
-    (fun (_ : Type@{u}) (_ : Type@{v}) => True) (FORet A) (FORet B).
+  model_upper_birel (λ X, @subenumR_domain R X)
+    (λ (_ : Type@{u}) (_ : Type@{v}), True) (FORet A) (FORet B).
 Proof. apply subenumR_qlift_bidual_raw; apply FOQLStructural, FOLRet; exact I. Qed.
 End HighUniverse.

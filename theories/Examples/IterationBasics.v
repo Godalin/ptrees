@@ -54,14 +54,14 @@ Lemma round_nonnegative partial : finite_nonnegative (round_data partial).
 Proof.
   intros p x [H|[H|[]]]; inversion H; subst; destruct partial; by vm_compute.
 Qed.
-Lemma round_bounded partial : finite_expect (fun _ => 1) (round_data partial) <= 1.
+Lemma round_bounded partial : finite_expect (λ _, 1) (round_data partial) <= 1.
 Proof. destruct partial; by vm_compute. Qed.
 Definition kernel (partial : bool) (_ : unit) : MN (unit+bool) :=
   subenumQ_of_list (@round_nonnegative partial) (round_bounded partial).
 Definition result_data partial : list (rat * bool) := [(return_mass partial, true)].
 Lemma result_nonnegative partial : finite_nonnegative (result_data partial).
 Proof. intros p x [H|[]]; inversion H; subst; destruct partial; by vm_compute. Qed.
-Lemma result_bounded partial : finite_expect (fun _ => 1) (result_data partial) <= 1.
+Lemma result_bounded partial : finite_expect (λ _, 1) (result_data partial) <= 1.
 Proof. destruct partial; by vm_compute. Qed.
 Definition result (partial : bool) : MN bool :=
   subenumQ_of_list (@result_nonnegative partial) (result_bounded partial).
@@ -86,7 +86,7 @@ Lemma round_complete partial i : step partial i ⇓ₕ round_front partial i.
 Proof.
   apply stable_hitting_tau.
   eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure))
-    with (Good := fun _ => True).
+    with (Good := λ _, True).
   - apply sem_ae_true.
   - intros v _. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
 Qed.
@@ -118,7 +118,7 @@ Proof.
 Qed.
 Lemma result_expect partial f : expect (result partial) f = return_mass partial * f true.
 Proof. change (return_mass partial * f true + 0 = return_mass partial * f true). by rewrite addr0. Qed.
-Definition rows partial n := iteration_observation_round (kernel partial) (fun b => b) n tt.
+Definition rows partial n := iteration_observation_round (kernel partial) (λ b, b) n tt.
 Local Lemma geometric_update (r x z : rat) :
   r * ((1-x)*z) + (1-r)*z = (1-r*x)*z.
 Proof. rewrite mulrA -mulrDl mulrBr mulr1. by rewrite addrC subrKA. Qed.
@@ -130,7 +130,7 @@ Lemma rows_expect partial n f :
 Proof.
   induction n as [|n IH].
   - change (0 = (1 - (1/2)^+0) * expect (result partial) f). by rewrite expr0 subrr mul0r.
-  - change (expect (kernel partial tt >>=ₘ (fun v => match v with
+  - change (expect (kernel partial tt >>=ₘ (λ v, match v with
       | inl _ => rows partial n | inr b => ηₘ b end)) f =
       (1 - (1/2)^+(S n)) * expect (result partial) f).
     rewrite finite_subdist_expect_bind kernel_expect finite_subdist_expect_ret IH result_expect exprS.
@@ -138,7 +138,7 @@ Proof.
     apply geometric_update.
 Qed.
 Lemma result_indicator_bound partial (P : bool → bool) :
-  `|expect (result partial) (fun b => if P b then 1 else 0)| <= 1.
+  `|expect (result partial) (λ b, if P b then 1 else 0)| <= 1.
 Proof. rewrite result_expect; destruct partial, (P true); by vm_compute. Qed.
 Local Lemma decay_difference (x z : rat) : (1-x)*z-z = -(x*z).
 Proof. rewrite mulrBl mul1r. apply: (addrI z). by rewrite addrC subrK. Qed.
@@ -149,8 +149,8 @@ Proof.
   have Hcontract : (1/2 : rat) <= (1%:R : rat) / 2%:R by vm_compute.
   destruct (rat_contract_vanishes (K := 1%nat) (ltac:(lia)) Hhalf0 Hcontract Heps) as [N HN].
   exists N. intros n Hn.
-  change (`|expect (rows partial n) (fun b => if P b then 1 else 0) -
-    expect (result partial) (fun b => if P b then 1 else 0)| < eps).
+  change (`|expect (rows partial n) (λ b, if P b then 1 else 0) -
+    expect (result partial) (λ b, if P b then 1 else 0)| < eps).
   rewrite rows_expect decay_difference normrN normrM.
   have Hp := exprn_ge0 n Hhalf0.
   rewrite (ger0_norm Hp).
@@ -173,20 +173,20 @@ Theorem two_frontiers_agree partial : loop_front partial ≈ₘ observed_front p
 Proof. eapply ptree_stable_hitting_unique; [apply loop_frontier_exact|apply observed_front_exact]. Qed.
 Theorem loop_observation partial : free_omega_observes return_value (observed_front partial) (result partial).
 Proof.
-  apply iteration_frontier_observes with (value := fun b => b);
+  apply iteration_frontier_observes with (value := λ b, b);
     [reflexivity|apply rows_limit].
 Qed.
 Theorem loop_returns_only partial :
-  free_omega_ae (fun h => ∃ b, h = FHRet b) (observed_front partial).
+  free_omega_ae (λ h, ∃ b, h = FHRet b) (observed_front partial).
 Proof. apply iteration_frontier_returns. Qed.
 Theorem loop_probability partial :
   loop partial ⇓ₕ observed_front partial ∧
   free_omega_observes return_value (observed_front partial) (result partial) ∧
-  expect (result partial) (fun _ => 1) = return_mass partial.
+  expect (result partial) (λ _, 1) = return_mass partial.
 Proof. split; [apply observed_front_exact|]. split; [apply loop_observation|]. by rewrite result_expect mulr1. Qed.
-Corollary geometric_returns_mass_one : expect (result false) (fun _ => 1) = 1.
+Corollary geometric_returns_mass_one : expect (result false) (λ _, 1) = 1.
 Proof. exact (proj2 (proj2 (loop_probability false))). Qed.
-Corollary partial_returns_mass_half : expect (result true) (fun _ => 1) = 1/2.
+Corollary partial_returns_mass_half : expect (result true) (λ _, 1) = 1/2.
 Proof. exact (proj2 (proj2 (loop_probability true))). Qed.
 Corollary geometric_ast : loop false ⇓ₕ¹ observed_front false.
 Proof.
@@ -207,7 +207,7 @@ Theorem endless_frontier_zero : endless ⇓ₕ ⊥ω.
 Proof.
   eapply (iteration_summary_hitting (FI := FI) (FO := FO) (front := endless_front)); try typeclasses eauto.
   - intro i. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
-  - eapply sem_lub_chain_proper with (chain := fun _ => ⊥ω).
+  - eapply sem_lub_chain_proper with (chain := λ _, ⊥ω).
     + intro n. rewrite endless_round_zero. apply sem_eq_refl.
     + apply sem_lub_constant.
 Qed.

@@ -27,7 +27,7 @@ Theorem subenumR_native_quotient_coupling {A B}
   free_omega_qlift T (free_omega_native p) (free_omega_native q) →
   ∃ joint : SubEnumR R (native_sample_type p * native_sample_type q),
     @semantic_coupling (SubEnumR R) (SubEnumR_SemanticMeasure R) _ _
-      (fun x y => T (native_sample_value p x) (native_sample_value q y))
+      (λ x y, T (native_sample_value p x) (native_sample_value q y))
       (native_sample_measure p) (native_sample_measure q) joint.
 Proof.
   intro H; destruct (subenumR_qlift_bidual_raw H) as [Hl Hr].
@@ -35,12 +35,12 @@ Proof.
   apply subenumR_transport_of_mapped_tests.
   - intros f g Hf Hg Hfg; exact (Hl f g Hf Hg Hfg).
   - apply/eqP; rewrite eq_le; apply/andP; split.
-    + exact (Hl (fun _ => 1) (fun _ => 1)
-        (fun _ => conj ler01 (lexx _))
-        (fun _ => conj ler01 (lexx _)) (fun _ _ _ => lexx _)).
-    + exact (Hr (fun _ => 1) (fun _ => 1)
-        (fun _ => conj ler01 (lexx _))
-        (fun _ => conj ler01 (lexx _)) (fun _ _ _ => lexx _)).
+    + exact (Hl (λ _, 1) (λ _, 1)
+        (λ _, conj ler01 (lexx _))
+        (λ _, conj ler01 (lexx _)) (λ _ _ _, lexx _)).
+    + exact (Hr (λ _, 1) (λ _, 1)
+        (λ _, conj ler01 (lexx _))
+        (λ _, conj ler01 (lexx _)) (λ _ _ _, lexx _)).
 Qed.
 
 Definition subenumR_validated_native_coupling :

@@ -57,7 +57,7 @@ Qed.
 Lemma run_state_peutt_Proper {A} s :
   Proper (@peutt (stateE S +' E) MN MF FI FC MX FO A A eq ==>
           @peutt E MN MF FI FC MX FO (S*A) (S*A) (state_result_rel eq))
-    (fun t => run_state t s).
+    (λ t, run_state t s).
 Proof. intros t u Htu. exact (run_state_peutt s Htu). Qed.
 
 (** Ordinary equality on the state/result pair is recovered extensionally;

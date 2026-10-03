@@ -45,35 +45,35 @@ Context {Z : Type@{node}}.
 Variable joint : MN Z.
 Variable left : Z → internal_plan_path p.
 Variable right : Z → internal_plan_path q.
-Hypothesis joint_left : qlift (fun z x => left z = x)
-  (FOSample joint (fun z => FORet z))
-  (FOSample (internal_plan_measure p) (fun x => FORet x)).
-Hypothesis joint_right : qlift (fun z y => right z = y)
-  (FOSample joint (fun z => FORet z))
-  (FOSample (internal_plan_measure q) (fun y => FORet y)).
-Hypothesis joint_guard : sem_ae joint (fun z => (fun t u => pstrongF RR sim (observe t) (observe u))
+Hypothesis joint_left : qlift (λ z x, left z = x)
+  (FOSample joint (λ z, FORet z))
+  (FOSample (internal_plan_measure p) (λ x, FORet x)).
+Hypothesis joint_right : qlift (λ z y, right z = y)
+  (FOSample joint (λ z, FORet z))
+  (FOSample (internal_plan_measure q) (λ y, FORet y)).
+Hypothesis joint_guard : sem_ae joint (λ z, (λ t u, pstrongF RR sim (observe t) (observe u))
   (internal_plan_residual p (left z)) (internal_plan_residual q (right z))).
 
 Theorem finite_internal_native_joint_round :
   ∃ (W : Type@{node}) (round : MN W)
     (project_left : W → native_sample_type (internal_plan_round_native p))
     (project_right : W → native_sample_type (internal_plan_round_native q)),
-    qlift (fun w x => project_left w = x)
-      (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native p)) (fun x => FORet x)) ∧
-    qlift (fun w y => project_right w = y)
-      (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native q)) (fun y => FORet y)) ∧
-    sem_ae round (fun w => internal_round_path_rel RR sim p q
+    qlift (λ w x, project_left w = x)
+      (FOSample round (λ w, FORet w))
+      (FOSample (native_sample_measure (internal_plan_round_native p)) (λ x, FORet x)) ∧
+    qlift (λ w y, project_right w = y)
+      (FOSample round (λ w, FORet w))
+      (FOSample (native_sample_measure (internal_plan_round_native q)) (λ y, FORet y)) ∧
+    sem_ae round (λ w, internal_round_path_rel RR sim p q
       (project_left w) (project_right w)).
 Proof.
-  pose (Good := fun z => (fun t u => pstrongF RR sim (observe t) (observe u))
+  pose (Good := λ z, (λ t u, pstrongF RR sim (observe t) (observe u))
     (internal_plan_residual p (left z)) (internal_plan_residual q (right z))).
-  pose (U := fun x => native_sample_type (internal_guard_native (internal_plan_residual p x))).
-  pose (V := fun y => native_sample_type (internal_guard_native (internal_plan_residual q y))).
-  pose (lk := fun x => native_sample_measure (internal_guard_native (internal_plan_residual p x))).
-  pose (rk := fun y => native_sample_measure (internal_guard_native (internal_plan_residual q y))).
-  pose (Rguard := fun z (gx : U (left z)) (gy : V (right z)) =>
+  pose (U := λ x, native_sample_type (internal_guard_native (internal_plan_residual p x))).
+  pose (V := λ y, native_sample_type (internal_guard_native (internal_plan_residual q y))).
+  pose (lk := λ x, native_sample_measure (internal_guard_native (internal_plan_residual p x))).
+  pose (rk := λ y, native_sample_measure (internal_guard_native (internal_plan_residual q y))).
+  pose (Rguard := λ z (gx : U (left z)) (gy : V (right z)),
     internal_round_target_rel RR sim
       (native_sample_value (internal_guard_native (internal_plan_residual p (left z))) gx)
       (native_sample_value (internal_guard_native (internal_plan_residual q (right z))) gy)).
@@ -84,8 +84,8 @@ Proof.
       exists row. intros _. exact Hrow.
     - exists sem_zero. intro Hgood. contradiction. }
   destruct (@non_dep_dep_functional_choice (@choice) Z
-    (fun z => MN (U (left z) * V (right z)))
-    (fun z row => Good z -> semantic_coupling (Rguard z)
+    (λ z, MN (U (left z) * V (right z)))
+    (λ z row, Good z -> semantic_coupling (Rguard z)
       (lk (left z)) (rk (right z)) row) Hex) as [conditional Hconditional].
   exists (extended_joint_path left right U V),
     (extended_joint_measure joint conditional),

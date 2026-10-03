@@ -23,10 +23,10 @@ Definition enumQ_weightQ {A} (f : A → rat) (mu : EnumQ A) : rat := enumQ_expec
 
 Lemma enumQ_weightQ_filter_split {A : eqType} (f : A → rat) (mu : EnumQ A) a :
   enumQ_weightQ f mu = acc_mass a mu*f a +
-    enumQ_weightQ f (enumQ_filter (fun px => px.2 != a) mu).
+    enumQ_weightQ f (enumQ_filter (λ px, px.2 != a) mu).
 Proof.
   change (finite_expect f (enumQ_raw mu) = finite_atom a (enumQ_raw mu)*f a +
-    finite_expect f (List.filter (fun px => px.2 != a) (enumQ_raw mu))).
+    finite_expect f (List.filter (λ px, px.2 != a) (enumQ_raw mu))).
   elim: (enumQ_raw mu)=> [|[p x] tl IH]; first by rewrite /= mul0r add0r.
   rewrite /= finite_atom_cons.
   case Hxa: (x == a)=> /=.
@@ -46,7 +46,7 @@ Lemma acc_mass_scale {A : eqType} (x : A) p (Hp : 0 <= p) (mu : EnumQ A) :
   acc_mass x (scale_EnumQ Hp mu) = p * acc_mass x mu.
 Proof. exact: finite_atom_scale. Qed.
 Lemma acc_mass_bind_EnumQ {A} {B : eqType} (mu : EnumQ A) (k : A → EnumQ B) b :
-  acc_mass b (bind_EnumQ mu k) = enumQ_weightQ (fun a => acc_mass b (k a)) mu.
+  acc_mass b (bind_EnumQ mu k) = enumQ_weightQ (λ a, acc_mass b (k a)) mu.
 Proof. exact: finite_atom_bind. Qed.
 Lemma bind_EnumQ_outer_proper {A B : eqType} (mu nu : EnumQ A) (k : A → EnumQ B) :
   mu ==EnumQ nu → bind_EnumQ mu k ==EnumQ bind_EnumQ nu k.
@@ -58,7 +58,7 @@ Lemma bind_EnumQ_scale {A B} p (Hp : 0 <= p) (mu : EnumQ A) (k : A → EnumQ B) 
 Proof. exact: finite_bind_scale. Qed.
 Lemma bind_EnumQ_assoc {A B C} (mu : EnumQ A) (k : A → EnumQ B) (h : B → EnumQ C) :
   enumQ_raw (bind_EnumQ (bind_EnumQ mu k) h) =
-  enumQ_raw (bind_EnumQ mu (fun x => bind_EnumQ (k x) h)).
+  enumQ_raw (bind_EnumQ mu (λ x, bind_EnumQ (k x) h)).
 Proof. exact: finite_bind_assoc. Qed.
 Lemma bind_EnumQ_ext {A B} (mu : EnumQ A) (k h : A → EnumQ B) :
   (∀ x, enumQ_raw (k x) = enumQ_raw (h x)) →
@@ -69,8 +69,8 @@ Lemma bind_EnumQ_ext_in {A B} (mu : EnumQ A) (k h : A → EnumQ B) :
   enumQ_raw (bind_EnumQ mu k) = enumQ_raw (bind_EnumQ mu h).
 Proof.
   change ((∀ p x, List.In (p,x) (enumQ_raw mu) -> enumQ_raw (k x) = enumQ_raw (h x)) ->
-    finite_bind (enumQ_raw mu) (fun x => enumQ_raw (k x)) =
-    finite_bind (enumQ_raw mu) (fun x => enumQ_raw (h x))).
+    finite_bind (enumQ_raw mu) (λ x, enumQ_raw (k x)) =
+    finite_bind (enumQ_raw mu) (λ x, enumQ_raw (h x))).
   elim: (enumQ_raw mu)=> [|[p x] tl IH] H //=.
   rewrite (H p x (or_introl (Logic.eq_refl _))).
   rewrite IH // => q y Hy; exact (H q y (or_intror Hy)).
@@ -90,7 +90,7 @@ Proof.
 Qed.
 
 Definition bind_offset {A B} (mu : EnumQ A) (k : A → EnumQ B) i :=
-  finite_bind_offset (enumQ_raw mu) (fun x => enumQ_raw (k x)) i.
+  finite_bind_offset (enumQ_raw mu) (λ x, enumQ_raw (k x)) i.
 Lemma size_scale_EnumQ {A} p (Hp : 0 <= p) (mu : EnumQ A) :
   size (enumQ_raw (scale_EnumQ Hp mu)) = size (enumQ_raw mu).
 Proof. exact: size_map. Qed.
@@ -130,7 +130,7 @@ Lemma nth_error_bind_EnumQ {A B} (mu : EnumQ A) (k : A → EnumQ B) i j p a q b 
 Proof.
   change (nth_error (enumQ_raw mu) i = Some (p,a) ->
     nth_error (enumQ_raw (k a)) j = Some (q,b) ->
-    nth_error (finite_bind (enumQ_raw mu) (fun x => enumQ_raw (k x)))
+    nth_error (finite_bind (enumQ_raw mu) (λ x, enumQ_raw (k x)))
       (bind_offset mu k i+j)%N = Some (p*q,b)).
   rewrite -finite_bind_with_numeric; exact: finite_bind_with_nth.
 Qed.
@@ -140,7 +140,7 @@ Lemma nth_error_bind_EnumQ_inv {A B} (mu : EnumQ A) (k : A → EnumQ B) n w b :
     nth_error (enumQ_raw (k a)) j = Some (q,b) ∧
     n = (bind_offset mu k i+j)%N ∧ w = p*q.
 Proof.
-  change (nth_error (finite_bind (enumQ_raw mu) (fun x => enumQ_raw (k x))) n = Some (w,b) ->
+  change (nth_error (finite_bind (enumQ_raw mu) (λ x, enumQ_raw (k x))) n = Some (w,b) ->
     exists i j p a q, nth_error (enumQ_raw mu) i = Some (p,a) ∧
       nth_error (enumQ_raw (k a)) j = Some (q,b) ∧
       n = (bind_offset mu k i+j)%N ∧ w = p*q).
@@ -148,23 +148,23 @@ Proof.
 Qed.
 
 Lemma enumQ_Fubini_Tonelli {A B : eqType} (mu : EnumQ A) (nu : EnumQ B) :
-  bind_EnumQ mu (fun x => bind_EnumQ nu (fun y => ret_EnumQ (x,y))) ==EnumQ
-  bind_EnumQ nu (fun y => bind_EnumQ mu (fun x => ret_EnumQ (x,y))).
+  bind_EnumQ mu (λ x, bind_EnumQ nu (λ y, ret_EnumQ (x,y))) ==EnumQ
+  bind_EnumQ nu (λ y, bind_EnumQ mu (λ x, ret_EnumQ (x,y))).
 Proof.
   move=> z; change
-    (enumQ_expect (fun xy => if xy == z then 1 else 0)
-      (bind_EnumQ mu (fun x => bind_EnumQ nu (fun y => ret_EnumQ (x,y)))) =
-     enumQ_expect (fun xy => if xy == z then 1 else 0)
-      (bind_EnumQ nu (fun y => bind_EnumQ mu (fun x => ret_EnumQ (x,y))))).
+    (enumQ_expect (λ xy, if xy == z then 1 else 0)
+      (bind_EnumQ mu (λ x, bind_EnumQ nu (λ y, ret_EnumQ (x,y)))) =
+     enumQ_expect (λ xy, if xy == z then 1 else 0)
+      (bind_EnumQ nu (λ y, bind_EnumQ mu (λ x, ret_EnumQ (x,y))))).
   rewrite !enumQ_expect_bind.
-  transitivity (enumQ_expect (fun x => enumQ_expect
-    (fun y => if (x,y) == z then 1 else 0) nu) mu).
+  transitivity (enumQ_expect (λ x, enumQ_expect
+    (λ y, if (x,y) == z then 1 else 0) nu) mu).
   - apply finite_expect_ext=> x; rewrite enumQ_expect_bind.
     apply finite_expect_ext=> y; exact: enumQ_expect_ret.
   - rewrite /enumQ_expect /finite_enum_expect finite_expect_swap.
     apply finite_expect_ext=> y; symmetry.
-    change (enumQ_expect (fun xy => if xy == z then 1 else 0)
-      (bind_EnumQ mu (fun x => ret_EnumQ (x,y))) =
-      enumQ_expect (fun x => if (x,y) == z then 1 else 0) mu).
+    change (enumQ_expect (λ xy, if xy == z then 1 else 0)
+      (bind_EnumQ mu (λ x, ret_EnumQ (x,y))) =
+      enumQ_expect (λ x, if (x,y) == z then 1 else 0) mu).
     rewrite enumQ_expect_bind; apply finite_expect_ext=> x; exact: enumQ_expect_ret.
 Qed.

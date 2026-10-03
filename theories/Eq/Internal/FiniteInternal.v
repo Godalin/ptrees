@@ -38,8 +38,8 @@ Proof. induction n; [apply FIStop|apply FITau; exact IHn]. Qed.
 
 Lemma finite_internal_prob_tau_prefix {X} (mu : MN X)
     (depth : X → nat) (k : X → ptree E MN R) :
-  finite_internal (Prob mu (fun x => tau_prefix (depth x) (k x)))
-    (mixed_bind mu (fun x => sem_ret (k x))).
+  finite_internal (Prob mu (λ x, tau_prefix (depth x) (k x)))
+    (mixed_bind mu (λ x, sem_ret (k x))).
 Proof. apply FIProb. intro x. apply finite_internal_tau_prefix. Qed.
 
 Lemma finite_internal_ret_inv r out :

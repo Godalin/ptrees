@@ -44,10 +44,10 @@ Variable R : realType.
 (** No finite-support or total-mass premise: applies to every distribution
     on nat, including genuinely infinite supports and missing mass. *)
 Example successor_plan (L : OmegaVal R nat) :
-  oval_joint (fun i j => j = i.+1) L
-    (oval_bind L (fun i => oval_ret R i.+1))
-    (oval_bind (oval_series (fun i => proj1 (oval_atom_bounds L i))
-      (oval_atoms_summable L)) (fun i => oval_ret R (i,i.+1))).
+  oval_joint (λ i j, j = i.+1) L
+    (oval_bind L (λ i, oval_ret R i.+1))
+    (oval_bind (oval_series (λ i, proj1 (oval_atom_bounds L i))
+      (oval_atoms_summable L)) (λ i, oval_ret R (i,i.+1))).
 Proof.
   apply oval_transport_plan_joint.
   - intro x; exact (oval_series_roundtrip L (oval_singleton_test R x)).
@@ -58,7 +58,7 @@ Qed.
 
 Example subprobability_tail_is_actual_mass (L : OmegaVal R nat) eps :
   0 < eps → ∃ n,
-    oval_eval L (fun i => if (n <= i)%N then 1 else 0) < eps.
+    oval_eval L (λ i, if (n <= i)%N then 1 else 0) < eps.
 Proof.
   intro H; destruct (oval_atomic_tight L H) as [n Hn].
   exists n; by rewrite oval_atomic_tail.
@@ -66,12 +66,12 @@ Qed.
 
 (** Duplicated entries and invalid codes are both intentional. *)
 Example duplicate_decode_joint :
-  oval_joint (fun (_ : unit) b => b = true)
+  oval_joint (λ (_ : unit) b, b = true)
     (oval_ret R tt) (oval_ret R true)
     (oval_bind (oval_ret R (2%N,3%N))
       (oval_pair_decode R repeated_unit repeated_bool)).
 Proof.
-  apply (@oval_joint_decode R unit bool (fun _ b => b = true)
+  apply (@oval_joint_decode R unit bool (λ _ b, b = true)
     (oval_ret R tt) (oval_ret R true) repeated_unit repeated_bool
     (oval_ret R 2%N) (oval_ret R 3%N) (oval_ret R (2%N,3%N))).
   - intros f Hf; reflexivity.
@@ -83,7 +83,7 @@ Proof.
 Qed.
 
 Example invalid_code_not_supported j :
-  ¬ oval_code_relation repeated_unit repeated_bool (fun _ _ => True) O j.
+  ¬ oval_code_relation repeated_unit repeated_bool (λ _ _, True) O j.
 Proof. intros [x [y [H _]]]; discriminate H. Qed.
 
 Example duplicate_codes_not_injective :
@@ -92,37 +92,37 @@ Proof. split; [reflexivity|discriminate]. Qed.
 
 (** A joint with any subprobability mass survives decoding unchanged. *)
 Example decode_preserves_missing_mass (L : OmegaVal R nat) :
-  oval_joint (fun (_ : unit) b => b = true)
-    (oval_bind L (fun _ => oval_ret R tt))
-    (oval_bind L (fun _ => oval_ret R true))
-    (oval_bind (oval_bind L (fun _ => oval_ret R (2%N,3%N)))
+  oval_joint (λ (_ : unit) b, b = true)
+    (oval_bind L (λ _, oval_ret R tt))
+    (oval_bind L (λ _, oval_ret R true))
+    (oval_bind (oval_bind L (λ _, oval_ret R (2%N,3%N)))
       (oval_pair_decode R repeated_unit repeated_bool)).
 Proof.
-  apply (@oval_joint_decode R unit bool (fun _ b => b = true)
-    (oval_bind L (fun _ => oval_ret R tt))
-    (oval_bind L (fun _ => oval_ret R true)) repeated_unit repeated_bool
-    (oval_bind L (fun _ => oval_ret R 2%N))
-    (oval_bind L (fun _ => oval_ret R 3%N))
-    (oval_bind L (fun _ => oval_ret R (2%N,3%N)))).
+  apply (@oval_joint_decode R unit bool (λ _ b, b = true)
+    (oval_bind L (λ _, oval_ret R tt))
+    (oval_bind L (λ _, oval_ret R true)) repeated_unit repeated_bool
+    (oval_bind L (λ _, oval_ret R 2%N))
+    (oval_bind L (λ _, oval_ret R 3%N))
+    (oval_bind L (λ _, oval_ret R (2%N,3%N)))).
   - intros f Hf; reflexivity.
   - intros f Hf; reflexivity.
   - split; first by intros.
     split; first by intros.
     intros f g Hf Hg Hfg.
-    change (oval_eval L (fun _ => f (2%N,3%N)) = oval_eval L (fun _ => g (2%N,3%N))).
+    change (oval_eval L (λ _, f (2%N,3%N)) = oval_eval L (λ _, g (2%N,3%N))).
     apply oval_eval_ext=> i; apply (Hfg (2%N,3%N)).
     exists tt, true; repeat split.
 Qed.
 
 Example duplicated_cover_dual :
-  oval_bidual (oval_code_relation repeated_unit repeated_bool (fun (_ : unit) b => b = true))
+  oval_bidual (oval_code_relation repeated_unit repeated_bool (λ (_ : unit) b, b = true))
     (oval_coded (oval_ret R tt) repeated_unit)
     (oval_coded (oval_ret R true) repeated_bool).
 Proof.
   apply oval_coded_bidual.
   - intros f g Hf Hg Hfg; apply Hfg; exists 1%N; reflexivity.
   - intros f g Hf Hg Hfg; apply Hfg; exists 1%N; reflexivity.
-  - apply (@oval_joint_dual R unit bool (fun _ b => b = true)
+  - apply (@oval_joint_dual R unit bool (λ _ b, b = true)
       (oval_ret R tt) (oval_ret R true) (oval_ret R (tt,true))).
     split; first by intros.
     split; first by intros.
@@ -130,10 +130,10 @@ Proof.
 Qed.
 
 Example zero_decoded_joint :
-  oval_joint (fun (_ : Empty_set) (_ : bool) => False)
+  oval_joint (λ (_ : Empty_set) (_ : bool), False)
     (oval_bottom R) (oval_bottom R)
     (oval_bind (@oval_bottom R (nat * nat))
-      (oval_pair_decode R (fun _ => @None Empty_set) repeated_bool)).
+      (oval_pair_decode R (λ _, @None Empty_set) repeated_bool)).
 Proof. split; first by intros. split; first by intros. intros f g Hf Hg Hfg; reflexivity. Qed.
 
 Example atoms_determine_measure (L M : OmegaVal R nat) :
@@ -146,35 +146,35 @@ Section IndependentTests.
 Variable R : realType.
 
 Lemma successor_dual (L : OmegaVal R nat) :
-  oval_bidual (fun i j => j = i.+1) L (oval_bind L (fun i => oval_ret R i.+1)).
+  oval_bidual (λ i j, j = i.+1) L (oval_bind L (λ i, oval_ret R i.+1)).
 Proof.
   split; intros f g Hf Hg Hfg.
-  - apply (oval_mono (oval_laws L) Hf (fun i => Hg i.+1))=> i.
+  - apply (oval_mono (oval_laws L) Hf (λ i, Hg i.+1))=> i.
     exact (Hfg i i.+1 erefl).
-  - apply (oval_mono (oval_laws L) (fun i => Hf i.+1) Hg)=> i.
+  - apply (oval_mono (oval_laws L) (λ i, Hf i.+1) Hg)=> i.
     exact (Hfg i.+1 i erefl).
 Qed.
 
 Example successor_joint_exists (L : OmegaVal R nat) :
-  oval_coupled (fun i j => j = i.+1) L (oval_bind L (fun i => oval_ret R i.+1)).
+  oval_coupled (λ i j, j = i.+1) L (oval_bind L (λ i, oval_ret R i.+1)).
 Proof. apply oval_bidual_coupled_nat; exact: successor_dual. Qed.
 
 Example joint_keeps_actual_mass (L : OmegaVal R nat) :
-  ∃ J, oval_joint (fun i j => j = i.+1) L
-    (oval_bind L (fun i => oval_ret R i.+1)) J ∧ oval_mass J = oval_mass L.
+  ∃ J, oval_joint (λ i j, j = i.+1) L
+    (oval_bind L (λ i, oval_ret R i.+1)) J ∧ oval_mass J = oval_mass L.
 Proof.
   destruct (successor_joint_exists L) as [J HJ]; exists J; split; first exact HJ.
-  exact (proj1 HJ (fun _ => 1) (@oval_test_one R nat)).
+  exact (proj1 HJ (λ _, 1) (@oval_test_one R nat)).
 Qed.
 
 Example zero_mass_empty_relation :
-  oval_coupled (fun (_ _ : nat) => False) (oval_bottom R) (oval_bottom R).
+  oval_coupled (λ (_ _ : nat), False) (oval_bottom R) (oval_bottom R).
 Proof.
   apply oval_bidual_coupled_nat; split; intros f g Hf Hg Hfg; exact: lexx.
 Qed.
 
 Example unequal_mass_rejected :
-  ¬ oval_bidual (fun (_ _ : nat) => True) (oval_ret R O) (oval_bottom R).
+  ¬ oval_bidual (λ (_ _ : nat), True) (oval_ret R O) (oval_bottom R).
 Proof.
   intro H; have HE := oval_bidual_mass H.
   change ((1 : R) = 0) in HE.
@@ -208,7 +208,7 @@ Qed.
 (** Fixed target tightness disallows that sequence: its second matrix already
     violates the required lower bound on the first column prefix. *)
 Example escaping_fails_no_escape_bound :
-  ¬ ((1 : R) - transport_tail (fun j => if j == O then 1 else 0) 1 1 <=
+  ¬ ((1 : R) - transport_tail (λ j, if j == O then 1 else 0) 1 1 <=
       transport_prefix (escaping_matrix 1 O) 1).
 Proof.
   rewrite /transport_tail /transport_prefix !big_ord1 /escaping_matrix /= subrr subr0.
@@ -220,7 +220,7 @@ Example scalar_matrix_from_dual (T : nat → nat → Prop) (L M : OmegaVal R nat
     (∀ i j, 0 <= w i j) ∧
     (∀ i j, ¬ T i j → w i j = 0) ∧
     (∀ i, transport_series (w i) = oval_atom L i) ∧
-    (∀ j, transport_series (fun i => w i j) = oval_atom M j).
+    (∀ j, transport_series (λ i, w i j) = oval_atom M j).
 Proof.
   intro H; destruct (oval_bidual_transport_matrix H) as [w [Hw [Hs [Hr [Hc _]]]]].
   by exists w.
@@ -235,10 +235,10 @@ Require Import PTree.Examples.Validation.FreeOmegaSamples.
 
 Example geometric_successor_plan (R : realType) :
   let L := free_omega_domain (geometric_valid R) in
-  oval_joint (fun i j => j = i.+1) L
-    (oval_bind L (fun i => oval_ret R i.+1))
-    (oval_bind (oval_series (fun i => proj1 (oval_atom_bounds L i))
-      (oval_atoms_summable L)) (fun i => oval_ret R (i,i.+1))).
+  oval_joint (λ i j, j = i.+1) L
+    (oval_bind L (λ i, oval_ret R i.+1))
+    (oval_bind (oval_series (λ i, proj1 (oval_atom_bounds L i))
+      (oval_atoms_summable L)) (λ i, oval_ret R (i,i.+1))).
 Proof. apply successor_plan. Qed.
 
 (** Instantiation on the already checked unbounded geometric retry behavior.
@@ -248,5 +248,5 @@ Require Import PTree.Examples.Validation.FreeOmegaSamples.
 
 Example geometric_successor_joint_exists (R : realType) :
   let L := free_omega_domain (geometric_valid R) in
-  oval_coupled (fun i j => j = i.+1) L (oval_bind L (fun i => oval_ret R i.+1)).
+  oval_coupled (λ i j, j = i.+1) L (oval_bind L (λ i, oval_ret R i.+1)).
 Proof. apply successor_joint_exists. Qed.

@@ -28,7 +28,7 @@ CoFixpoint itree_interp_before {A} (t : itree E A) : itree F A :=
   | ITreeDefinition.RetF a => ITreeDefinition.Ret a
   | ITreeDefinition.TauF u => ITreeDefinition.Tau (itree_interp_before u)
   | @ITreeDefinition.VisF _ _ _ X e k =>
-      ITreeDefinition.Tau (ITree.bind (@h X e) (fun x => itree_interp_before (k x)))
+      ITreeDefinition.Tau (ITree.bind (@h X e) (λ x, itree_interp_before (k x)))
   end.
 
 Lemma itree_interp_before_unfold {A} (t : itree E A) :
@@ -37,7 +37,7 @@ Lemma itree_interp_before_unfold {A} (t : itree E A) :
     | ITreeDefinition.RetF a => ITreeDefinition.Ret a
     | ITreeDefinition.TauF u => ITreeDefinition.Tau (itree_interp_before u)
     | @ITreeDefinition.VisF _ _ _ X e k =>
-        ITreeDefinition.Tau (ITree.bind (@h X e) (fun x => itree_interp_before (k x)))
+        ITreeDefinition.Tau (ITree.bind (@h X e) (λ x, itree_interp_before (k x)))
     end).
 Proof.
   apply observing_sub_eqit. constructor.
@@ -48,8 +48,8 @@ Qed.
 Definition itree_interp_schedule_candidate {A} (l r : itree F A) : Prop :=
   (∃ t, l = itree_interp_before t ∧ r = Interp.interp h t) ∨
   (∃ X (active : itree F X) (k : X → itree E A),
-    l = ITreeDefinition.Tau (ITree.bind active (fun x => itree_interp_before (k x))) ∧
-    r = ITree.bind active (fun x => ITreeDefinition.Tau (Interp.interp h (k x)))).
+    l = ITreeDefinition.Tau (ITree.bind active (λ x, itree_interp_before (k x))) ∧
+    r = ITree.bind active (λ x, ITreeDefinition.Tau (Interp.interp h (k x)))).
 
 Lemma itree_interp_schedule {A} : ∀ l r : itree F A,
   itree_interp_schedule_candidate l r → eutt eq l r.
@@ -67,7 +67,7 @@ Proof.
       * rewrite !bind_tau. etau. ebase. right. apply CIHL.
         right. exists X, a, k. split; reflexivity.
       * rewrite !bind_vis, tau_euttge. evis. intro y.
-        rewrite <- (tau_eutt (ITree.bind (c y) (fun x => itree_interp_before (k x)))).
+        rewrite <- (tau_eutt (ITree.bind (c y) (λ x, itree_interp_before (k x)))).
         ebase. right. apply CIHH. right. exists X, (c y), k. split; reflexivity.
   - rewrite (itree_eta active). destruct (ITreeDefinition.observe active) as [x|a|Y e c]; cbn.
     + rewrite !bind_ret_l. etau. ebase. right. apply CIHL.
@@ -75,7 +75,7 @@ Proof.
     + rewrite !bind_tau. etau. ebase. right. apply CIHL.
       right. exists X, a, k. split; reflexivity.
     + rewrite !bind_vis, tau_euttge. evis. intro y.
-      rewrite <- (tau_eutt (ITree.bind (c y) (fun x => itree_interp_before (k x)))).
+      rewrite <- (tau_eutt (ITree.bind (c y) (λ x, itree_interp_before (k x)))).
       ebase. right. apply CIHH. right. exists X, (c y), k. split; reflexivity.
 Qed.
 
@@ -93,7 +93,7 @@ Lemma observe_embed_before (t : itree E A) :
   | ITreeDefinition.RetF a => RetF a
   | ITreeDefinition.TauF u => TauF (from_itree (itree_interp_before u))
   | @ITreeDefinition.VisF _ _ _ X e k =>
-      TauF (from_itree (ITree.bind (h e) (fun x => itree_interp_before (k x))))
+      TauF (from_itree (ITree.bind (h e) (λ x, itree_interp_before (k x))))
   end.
 Proof.
   rewrite observe_from_itree. unfold ITreeDefinition.observe at 1. cbn.
@@ -104,9 +104,9 @@ Definition embed_interp_candidate (l r : ptree F MN A) : Prop :=
   (∃ t, l = from_itree (itree_interp_before t) ∧
     r = PTree.interp lifted_handler (from_itree t)) ∨
   (∃ X (active : itree F X) (k : X → itree E A),
-    l = from_itree (ITree.bind active (fun x => itree_interp_before (k x))) ∧
+    l = from_itree (ITree.bind active (λ x, itree_interp_before (k x))) ∧
     r = PTree.bind (from_itree active)
-      (fun x => PTree.interp lifted_handler (from_itree (k x)))).
+      (λ x, PTree.interp lifted_handler (from_itree (k x)))).
 
 Theorem from_itree_interp_before (t : itree E A) :
   pstruct eq (from_itree (itree_interp_before t))
@@ -124,9 +124,9 @@ Proof.
       + constructor. apply CIH. left. exists u. split; reflexivity.
       + constructor. apply CIH. right. exists Y, (h e), c. split; reflexivity.
     - change (pstructF eq (` CH)
-        (observe (from_itree (ITree.bind active (fun x => itree_interp_before (k x)))))
+        (observe (from_itree (ITree.bind active (λ x, itree_interp_before (k x)))))
         (observe (PTree.bind (from_itree active)
-          (fun x => PTree.interp lifted_handler (from_itree (k x)))))).
+          (λ x, PTree.interp lifted_handler (from_itree (k x)))))).
       rewrite observe_from_itree, ITree.Eq.Shallow.observe_bind,
         PTree.Eq.Shallow.observe_bind, observe_from_itree.
       destruct (ITreeDefinition.observe active) as [x|u|Y e c]; cbn.

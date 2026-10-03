@@ -41,13 +41,13 @@ Proof. apply peutt_observe_eq. reflexivity. Qed.
 Theorem peutt_bind_vis {A B X} (e : E X)
     (h : X → ptree E MN A) (k : A → ptree E MN B) :
   peutt (MF := MF) eq (PTree.bind (Vis e h) k)
-    (Vis e (fun x => PTree.bind (h x) k)).
+    (Vis e (λ x, PTree.bind (h x) k)).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
 Theorem peutt_bind_prob {A B X} (mu : MN X)
     (h : X → ptree E MN A) (k : A → ptree E MN B) :
   peutt (MF := MF) eq (PTree.bind (Prob mu h) k)
-    (Prob mu (fun x => PTree.bind (h x) k)).
+    (Prob mu (λ x, PTree.bind (h x) k)).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
 Theorem peutt_fmap_ret {A B} (f : A → B) (a : A) :
@@ -60,12 +60,12 @@ Proof. apply peutt_observe_eq. reflexivity. Qed.
 
 Theorem peutt_fmap_vis {A B X} (f : A → B) (e : E X) (h : X → ptree E MN A) :
   peutt (MF := MF) eq (PTree.fmap f (Vis e h))
-    (Vis e (fun x => PTree.fmap f (h x))).
+    (Vis e (λ x, PTree.fmap f (h x))).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
 Theorem peutt_fmap_prob {A B X} (f : A → B) (mu : MN X) (h : X → ptree E MN A) :
   peutt (MF := MF) eq (PTree.fmap f (Prob mu h))
-    (Prob mu (fun x => PTree.fmap f (h x))).
+    (Prob mu (λ x, PTree.fmap f (h x))).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 End ShallowAlgebra.
 
@@ -108,7 +108,7 @@ Context {E MN MF : Type → Type}
 Proof. intros k h H. constructor. apply peutt_prob_Proper. exact H. Qed.
 
 Theorem peutt_sample_bind {X A} (mu : MN X) (k : X → ptree E MN A) :
-  peutt (MF := MF) eq (PTree.bind (Prob mu (fun x => Ret x)) k) (Prob mu k).
+  peutt (MF := MF) eq (PTree.bind (Prob mu (λ x, Ret x)) k) (Prob mu k).
 Proof.
   eapply peutt_trans; [apply peutt_bind_prob|].
   eapply peutt_prob with (XR := eq).
@@ -120,10 +120,10 @@ Context `{MU : @MixedMeasureUnitLaws MN MF NI FI MX}
   `{NB : @MixedMeasureNodeBindLaws MN MF NI FI MX}.
 
 Theorem peutt_prob_map {X Y A} (mu : MN X) (f : X → Y) (k : Y → ptree E MN A) :
-  peutt (MF := MF) eq (Prob mu (fun x => k (f x)))
-    (Prob (sem_bind mu (fun x => sem_ret (f x))) k).
+  peutt (MF := MF) eq (Prob mu (λ x, k (f x)))
+    (Prob (sem_bind mu (λ x, sem_ret (f x))) k).
 Proof.
-  transitivity (Prob mu (fun x => Prob (sem_ret (f x)) k)).
+  transitivity (Prob mu (λ x, Prob (sem_ret (f x)) k)).
   - eapply peutt_prob with (XR := eq).
     + apply sem_lift_refl. intro x. reflexivity.
     + intros x y ->. apply peutt_sym, peutt_prob_ret.
@@ -131,9 +131,9 @@ Proof.
 Qed.
 
 Theorem peutt_sample_map {X A} (mu : MN X) (f : X → A) :
-  peutt (E := E) (MF := MF) eq (Prob mu (fun x => Ret (f x)))
-    (Prob (sem_bind mu (fun x => sem_ret (f x))) (fun a => Ret a)).
-Proof. exact (peutt_prob_map mu f (fun a => Ret a)). Qed.
+  peutt (E := E) (MF := MF) eq (Prob mu (λ x, Ret (f x)))
+    (Prob (sem_bind mu (λ x, sem_ret (f x))) (λ a, Ret a)).
+Proof. exact (peutt_prob_map mu f (λ a, Ret a)). Qed.
 End SamplingAlgebra.
 
 Section Algebra.
@@ -193,7 +193,7 @@ Variable Hlimit : relational_lub FO.
 
 Theorem peutt_bind_ret_r {A} (t : ptree E MN A) :
   @peutt E MN MF FI FC MX FO A A eq
-    (PTree.bind t (fun x => Ret x)) t.
+    (PTree.bind t (λ x, Ret x)) t.
 Proof.
   apply (Relation.peutt_of_pstruct Hbind Hmixed Hzero Hlimit).
   apply pstruct_bind_ret_r.
@@ -204,7 +204,7 @@ Theorem peutt_bind_assoc {A B C}
     (h : B → ptree E MN C) :
   @peutt E MN MF FI FC MX FO C C eq
     (PTree.bind (PTree.bind t k) h)
-    (PTree.bind t (fun x => PTree.bind (k x) h)).
+    (PTree.bind t (λ x, PTree.bind (k x) h)).
 Proof.
   apply (Relation.peutt_of_pstruct Hbind Hmixed Hzero Hlimit).
   apply pstruct_bind_assoc.
@@ -212,21 +212,21 @@ Qed.
 
 Theorem peutt_fmap_id {A} (t : ptree E MN A) :
   @peutt E MN MF FI FC MX FO A A eq
-    (PTree.fmap (fun x => x) t) t.
+    (PTree.fmap (λ x, x) t) t.
 Proof. unfold PTree.fmap. apply peutt_bind_ret_r. Qed.
 
 Theorem peutt_fmap_compose {A B C}
     (f : A → B) (g : B → C) (t : ptree E MN A) :
   @peutt E MN MF FI FC MX FO C C eq
     (PTree.fmap g (PTree.fmap f t))
-    (PTree.fmap (fun x => g (f x)) t).
+    (PTree.fmap (λ x, g (f x)) t).
 Proof.
   apply (Relation.peutt_of_pstruct Hbind Hmixed Hzero Hlimit). unfold PTree.fmap.
   eapply pstruct_trans.
   - apply pstruct_bind_assoc.
   - eapply pstruct_bind with (RA := eq) (RB := eq).
     + intros x1 x2 ->. apply observe_eq_pstruct.
-      exact (observing_observe (bind_ret_ (f x2) (fun y => Ret (g y)))).
+      exact (observing_observe (bind_ret_ (f x2) (λ y, Ret (g y)))).
     + apply pstruct_refl.
 Qed.
 
@@ -234,7 +234,7 @@ Theorem peutt_fmap_bind {A B C}
     (f : B → C) (t : ptree E MN A) (k : A → ptree E MN B) :
   @peutt E MN MF FI FC MX FO C C eq
     (PTree.fmap f (PTree.bind t k))
-    (PTree.bind t (fun x => PTree.fmap f (k x))).
+    (PTree.bind t (λ x, PTree.fmap f (k x))).
 Proof. unfold PTree.fmap. apply peutt_bind_assoc. Qed.
 
 End RelationalAlgebra.

@@ -36,12 +36,12 @@ Record free_omega_native_recovery {A : Type@{frontier}}
   recovery_kernel : A → FreeOmegaAt MN A (native_sample_type p);
   recovery_good_ae : free_omega_ae recovery_good (free_omega_native p);
   recovery_fiber : ∀ a, recovery_good a →
-    free_omega_ae (fun x => native_sample_value p x = a) (recovery_kernel a);
+    free_omega_ae (λ x, native_sample_value p x = a) (recovery_kernel a);
   recovery_normalized : ∀ a, recovery_good a →
-    qlift (fun _ _ => True) (recovery_kernel a) (FORet tt);
+    qlift (λ _ _, True) (recovery_kernel a) (FORet tt);
   recovery_reconstruct : qlift eq
     (free_omega_bind (free_omega_native p) recovery_kernel)
-    (FOSample (native_sample_measure p) (fun x => FORet x) :
+    (FOSample (native_sample_measure p) (λ x, FORet x) :
       FreeOmegaAt MN A (native_sample_type p))
 }.
 
@@ -51,14 +51,14 @@ Lemma recovery_branch_coupling {A B : Type@{frontier}}
     (dp : free_omega_native_recovery p) (dq : free_omega_native_recovery q)
     (R : A → B → Prop) a b :
   R a b → recovery_good dp a → recovery_good dq b →
-  qlift (fun x y => R (native_sample_value p x) (native_sample_value q y))
+  qlift (λ x y, R (native_sample_value p x) (native_sample_value q y))
     (recovery_kernel dp a) (recovery_kernel dq b).
 Proof.
   intros HR Ha Hb.
-  eapply FOQLAERestrict with (T := fun _ _ => True)
-    (P := fun x => native_sample_value p x = a)
-    (Q := fun y => native_sample_value q y = b).
-  - eapply FOQLComp with (T := fun _ _ => True) (U := fun _ _ => True)
+  eapply FOQLAERestrict with (T := λ _ _, True)
+    (P := λ x, native_sample_value p x = a)
+    (Q := λ y, native_sample_value q y = b).
+  - eapply FOQLComp with (T := λ _ _, True) (U := λ _ _, True)
       (mid := FORet tt).
     + apply recovery_normalized. exact Ha.
     + apply FOQLSym. apply recovery_normalized. exact Hb.
@@ -77,25 +77,25 @@ Theorem free_omega_native_coupling_pullback {A B : Type@{frontier}}
     (dp : free_omega_native_recovery p) (dq : free_omega_native_recovery q)
     (R : A → B → Prop) :
   qlift R (free_omega_native p) (free_omega_native q) →
-  qlift (fun x y => R (native_sample_value p x) (native_sample_value q y))
-    (FOSample (native_sample_measure p) (fun x => FORet x) :
+  qlift (λ x y, R (native_sample_value p x) (native_sample_value q y))
+    (FOSample (native_sample_measure p) (λ x, FORet x) :
       FreeOmegaAt MN A (native_sample_type p))
-    (FOSample (native_sample_measure q) (fun y => FORet y) :
+    (FOSample (native_sample_measure q) (λ y, FORet y) :
       FreeOmegaAt MN B (native_sample_type q)).
 Proof.
   intro Hrel.
   eapply FOQLComp with (T := eq)
-    (U := fun x y => R (native_sample_value p x) (native_sample_value q y))
+    (U := λ x y, R (native_sample_value p x) (native_sample_value q y))
     (mid := free_omega_bind (free_omega_native p) (recovery_kernel dp)).
-  - apply FOQLMono with (T := fun x y => y = x).
+  - apply FOQLMono with (T := λ x y, y = x).
     + apply FOQLSym. apply recovery_reconstruct.
     + intros x y Hyx. symmetry. exact Hyx.
   - eapply FOQLComp with
-      (T := fun x y => R (native_sample_value p x) (native_sample_value q y))
+      (T := λ x y, R (native_sample_value p x) (native_sample_value q y))
       (U := eq)
       (mid := free_omega_bind (free_omega_native q) (recovery_kernel dq)).
     + eapply FOQLBind with
-        (T := fun a b => R a b ∧ recovery_good dp a ∧ recovery_good dq b).
+        (T := λ a b, R a b ∧ recovery_good dp a ∧ recovery_good dq b).
       * eapply FOQLAERestrict; [exact Hrel|apply recovery_good_ae|apply recovery_good_ae|].
         intros a b H. exact H.
       * intros a b [HR [Ha Hb]]. apply recovery_branch_coupling; assumption.
@@ -110,39 +110,39 @@ Qed.
 Definition constant_native_presentation {X : Type@{node}} {A : Type@{frontier}} (mu : MN X) (a : A) :
     free_omega_native_presentation MN A :=
   {| native_sample_type := X; native_sample_measure := mu;
-     native_sample_value := fun _ => a |}.
+     native_sample_value := λ _, a |}.
 
 Lemma constant_native_collapse {X : Type@{node}} {A : Type@{frontier}} (mu : MN X) (a : A) :
-  qlift (fun _ _ => True)
-    (FOSample mu (fun x => FORet x) : FreeOmegaAt MN A X)
+  qlift (λ _ _, True)
+    (FOSample mu (λ x, FORet x) : FreeOmegaAt MN A X)
     (FORet tt : FreeOmegaAt MN A unit) →
   qlift eq (free_omega_native (constant_native_presentation mu a)) (FORet a).
 Proof.
   intro Htotal.
   change (qlift eq
-    (free_omega_bind (FOSample mu (fun x => FORet x)) (fun _ => FORet a))
-    (free_omega_bind (FORet tt) (fun _ => FORet a))).
+    (free_omega_bind (FOSample mu (λ x, FORet x)) (λ _, FORet a))
+    (free_omega_bind (FORet tt) (λ _, FORet a))).
   eapply FOQLBind; [exact Htotal|].
   intros x y _. apply FOQLStructural, FOLRet. reflexivity.
 Qed.
 
 Definition constant_native_recovery {X : Type@{node}} {A : Type@{frontier}} (mu : MN X) (a : A)
-    (Htotal : qlift (fun _ _ => True)
-      (FOSample mu (fun x => FORet x) : FreeOmegaAt MN A X)
+    (Htotal : qlift (λ _ _, True)
+      (FOSample mu (λ x, FORet x) : FreeOmegaAt MN A X)
       (FORet tt : FreeOmegaAt MN A unit)) :
     free_omega_native_recovery (constant_native_presentation mu a).
 Proof.
   refine (@Build_free_omega_native_recovery A (constant_native_presentation mu a)
-    (fun b => b = a) (fun _ => FOSample mu (fun x => FORet x)) _ _ _ _).
-  - apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+    (λ b, b = a) (λ _, FOSample mu (λ x, FORet x)) _ _ _ _).
+  - apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros x _. apply FOAERet. reflexivity.
-  - intros b ->. apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  - intros b ->. apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros x _. apply FOAERet. reflexivity.
   - intros b _. exact Htotal.
   - change (qlift eq
-      (free_omega_bind (FOSample mu (fun x => FORet x))
-        (fun _ => FOSample mu (fun x => FORet x)))
-      (free_omega_bind (FORet tt) (fun _ => FOSample mu (fun x => FORet x)))).
+      (free_omega_bind (FOSample mu (λ x, FORet x))
+        (λ _, FOSample mu (λ x, FORet x)))
+      (free_omega_bind (FORet tt) (λ _, FOSample mu (λ x, FORet x)))).
     eapply FOQLBind; [exact Htotal|].
     intros x y _. apply free_omega_qlift_refl. intro z. reflexivity.
 Defined.
@@ -155,9 +155,9 @@ Definition inverse_native_recovery {A : Type@{frontier}} (p : free_omega_native_
     free_omega_native_recovery p.
 Proof.
   refine (@Build_free_omega_native_recovery A p
-    (fun a => native_sample_value p (inverse a) = a)
-    (fun a => FORet (inverse a)) _ _ _ _).
-  - apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+    (λ a, native_sample_value p (inverse a) = a)
+    (λ a, FORet (inverse a)) _ _ _ _).
+  - apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros x _. apply FOAERet. rewrite Hinverse. reflexivity.
   - intros a Ha. apply FOAERet. exact Ha.
   - intros a _. apply FOQLStructural, FOLRet. exact I.

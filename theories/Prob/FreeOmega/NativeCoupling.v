@@ -24,7 +24,7 @@ Class FreeOmegaNativeCouplingLaws {MN : Type → Type}
     @free_omega_qlift MN NI NO A B R (free_omega_native p) (free_omega_native q) →
     ∃ joint : MN (native_sample_type p * native_sample_type q)%type,
       @semantic_coupling MN NI _ _
-        (fun x y => R (native_sample_value p x) (native_sample_value q y))
+        (λ x y, R (native_sample_value p x) (native_sample_value q y))
         (native_sample_measure p) (native_sample_measure q) joint
 }.
 
@@ -39,9 +39,9 @@ Lemma free_omega_native_node_coupling {MN : Type → Type}
 Proof.
   intro Hlift.
   pose (p := {| native_sample_type := X; native_sample_measure := mu;
-                native_sample_value := fun x => x |}).
+                native_sample_value := λ x, x |}).
   pose (q := {| native_sample_type := Y; native_sample_measure := nu;
-                native_sample_value := fun y => y |}).
+                native_sample_value := λ y, y |}).
   apply (free_omega_native_coupling (p := p) (q := q) (R := R)).
   eapply FOQLSample; [exact Hlift|].
   intros x y Hxy. apply FOQLStructural, FOLRet. exact Hxy.
@@ -55,9 +55,9 @@ Lemma free_omega_sampled_heads_reflect {MN : Type → Type}
     `{NO : @SemanticOmega MN NI} `{NJ : @FreeOmegaNativeCouplingLaws MN NI NO}
     {X Y A B} (mu : MN X) (nu : MN Y) (f : X → A) (g : Y → B)
     (R : A → B → Prop) :
-  free_omega_qlift R (FOSample mu (fun x => FORet (f x)))
-    (FOSample nu (fun y => FORet (g y))) →
-  sem_lift (fun x y => R (f x) (g y)) mu nu.
+  free_omega_qlift R (FOSample mu (λ x, FORet (f x)))
+    (FOSample nu (λ y, FORet (g y))) →
+  sem_lift (λ x y, R (f x) (g y)) mu nu.
 Proof.
   intro H.
   pose (p := {| native_sample_type := X; native_sample_measure := mu;
@@ -80,8 +80,8 @@ Context {MN : Type → Type}
     This is a necessary condition, not a sufficient reflection package. *)
 Theorem native_reflection_requires_left_unit {A B}
     (reflect : ∀ mu nu : MN B,
-      free_omega_qlift eq (FOSample mu (fun y => FORet y))
-        (FOSample nu (fun y => FORet y)) → sem_lift eq mu nu)
+      free_omega_qlift eq (FOSample mu (λ y, FORet y))
+        (FOSample nu (λ y, FORet y)) → sem_lift eq mu nu)
     (x : A) (k : A → MN B) :
   sem_lift eq (sem_bind (sem_ret x) k) (k x).
 Proof. apply reflect, free_omega_sample_bind_ret_l. Qed.

@@ -20,13 +20,13 @@ Section Atomic.
 Variable R : realType.
 
 Definition oval_atom (L : OmegaVal R nat) i :=
-  oval_eval L (fun j => if j == i then 1 else 0).
+  oval_eval L (λ j, if j == i then 1 else 0).
 
 Definition oval_prefix (f : nat → R) n i :=
   if (i < n)%N then f i else 0.
 
 Lemma oval_singleton_test i :
-  oval_test (fun j : nat => if j == i then (1 : R) else 0).
+  oval_test (λ j : nat, if j == i then (1 : R) else 0).
 Proof. intro j; case: (j == i); [exact: oval_test_one|exact: oval_test_zero]. Qed.
 
 Lemma oval_atom_bounds L i : 0 <= oval_atom L i ∧ oval_atom L i <= 1.
@@ -70,7 +70,7 @@ Proof.
   intro Hf; induction n as [|n IH].
   - rewrite big_ord0; exact (oval_zero (oval_laws L)).
   - rewrite big_ord_recr /= -IH.
-    transitivity (oval_eval L (fun i => oval_prefix f n i +
+    transitivity (oval_eval L (λ i, oval_prefix f n i +
       f n * (if i == n then 1 else 0))).
     + apply oval_eval_ext=> i; exact: oval_prefix_step.
     + rewrite (oval_add (oval_laws L) (oval_prefix_test n Hf)
@@ -83,17 +83,17 @@ Qed.
 (** Countable additivity made concrete: every bounded expectation is the
     supremum of its finite atomic sums, not merely a code/decode factorization. *)
 Theorem oval_atomic_representation (L : OmegaVal R nat) f : oval_test f →
-  oval_eval L f = oval_sup (fun n => \sum_(i < n) oval_atom L i * f i).
+  oval_eval L f = oval_sup (λ n, \sum_(i < n) oval_atom L i * f i).
 Proof.
   intro Hf; transitivity (oval_eval L (oval_pointwise_sup (oval_prefix f))).
   - apply oval_eval_ext=> i; symmetry; exact: oval_prefix_sup.
-  - rewrite (oval_continuous (oval_laws L) (fun n => oval_prefix_test n Hf)
+  - rewrite (oval_continuous (oval_laws L) (λ n, oval_prefix_test n Hf)
       (oval_prefix_increasing Hf)).
     apply oval_sup_ext=> n; exact: oval_prefix_eval.
 Qed.
 
 Theorem oval_atomic_mass (L : OmegaVal R nat) :
-  oval_mass L = oval_sup (fun n => \sum_(i < n) oval_atom L i).
+  oval_mass L = oval_sup (λ n, \sum_(i < n) oval_atom L i).
 Proof.
   rewrite /oval_mass (oval_atomic_representation L (@oval_test_one R nat)).
   apply oval_sup_ext=> n; apply eq_bigr=> i _; exact: mulr1.
@@ -109,7 +109,7 @@ Qed.
 Lemma oval_prefix_mass_le (L : OmegaVal R nat) n :
   \sum_(i < n) oval_atom L i <= oval_mass L.
 Proof.
-  have He : \sum_(i < n) oval_atom L i = oval_eval L (oval_prefix (fun _ => 1) n).
+  have He : \sum_(i < n) oval_atom L i = oval_eval L (oval_prefix (λ _, 1) n).
   { rewrite (oval_prefix_eval L n (@oval_test_one R nat)); apply eq_bigr=> i _; by rewrite mulr1. }
   rewrite He; apply (oval_mono (oval_laws L) (oval_prefix_test n (@oval_test_one R nat)) (@oval_test_one R nat))=> i.
   exact (proj2 (oval_prefix_test n (@oval_test_one R nat) i)).
@@ -120,7 +120,7 @@ Theorem oval_atomic_tight (L : OmegaVal R nat) eps : 0 < eps →
   ∃ n, oval_mass L - \sum_(i < n) oval_atom L i < eps.
 Proof.
   intro Heps.
-  have Hsup : has_sup (range (fun n => \sum_(i < n) oval_atom L i)).
+  have Hsup : has_sup (range (λ n, \sum_(i < n) oval_atom L i)).
   { split.
     - exists (\sum_(i < 0%N) oval_atom L i); by exists 0%N.
     - exists (oval_mass L); apply/ubP=> x [n _ <-]; exact: oval_prefix_mass_le. }
@@ -130,16 +130,16 @@ Proof.
 Qed.
 
 Theorem oval_atomic_tail (L : OmegaVal R nat) n :
-  oval_eval L (fun i => if (n <= i)%N then 1 else 0) =
+  oval_eval L (λ i, if (n <= i)%N then 1 else 0) =
   oval_mass L - \sum_(i < n) oval_atom L i.
 Proof.
-  have Ht : oval_test (fun i => if (n <= i)%N then (1 : R) else 0).
+  have Ht : oval_test (λ i, if (n <= i)%N then (1 : R) else 0).
   { intro i; case: (n <= i)%N; [exact: oval_test_one|exact: oval_test_zero]. }
-  have Hsplit : ∀ i, oval_prefix (fun _ => (1 : R)) n i +
+  have Hsplit : ∀ i, oval_prefix (λ _, (1 : R)) n i +
       (if (n <= i)%N then 1 else 0) = 1.
   { intro i; rewrite /oval_prefix (leqNgt n i); by case: (i < n)%N; rewrite /= ?addr0 ?add0r. }
-  have He : oval_mass L = oval_eval L (oval_prefix (fun _ => 1) n) +
-      oval_eval L (fun i => if (n <= i)%N then 1 else 0).
+  have He : oval_mass L = oval_eval L (oval_prefix (λ _, 1) n) +
+      oval_eval L (λ i, if (n <= i)%N then 1 else 0).
   { rewrite -(oval_add (oval_laws L) (oval_prefix_test n (@oval_test_one R nat)) Ht).
     - apply oval_eval_ext=> i; symmetry; exact: Hsplit.
     - intro i; rewrite Hsplit; exact: lexx. }

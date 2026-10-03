@@ -29,14 +29,14 @@ Import GRing.Theory.
 Definition enumQ_converges {A} (chain : nat → EnumQ A) (mu : EnumQ A) : Prop :=
   ∀ P : A → bool, ∀ eps : rat, 0 < eps →
     ∃ N, ∀ n, (N <= n)%nat →
-      `|enumQ_expect (fun x => if P x then 1 else 0) (chain n) -
-        enumQ_expect (fun x => if P x then 1 else 0) mu| < eps.
+      `|enumQ_expect (λ x, if P x then 1 else 0) (chain n) -
+        enumQ_expect (λ x, if P x then 1 else 0) mu| < eps.
 
 #[global] Instance EnumQ_MeasureOmegaInterface :
     @MeasureOmegaInterface EnumQ EnumQ_MeasureInterface := {
-  meas_zero := fun A => enumQ_zero;
+  meas_zero := λ A, enumQ_zero;
   meas_lub := @enumQ_converges;
-  meas_total := fun A mu => enumQ_expect (fun _ : A => 1) mu = 1
+  meas_total := λ A mu, enumQ_expect (λ _ : A, 1) mu = 1
 }.
 
 (** This interface intentionally has no global [MeasureOmegaLaws] instance:

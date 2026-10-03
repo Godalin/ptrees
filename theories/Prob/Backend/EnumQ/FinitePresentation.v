@@ -46,7 +46,7 @@ Definition subenumQ_positions {A} (mu : SubEnumQ A) : SubEnumQ (enumQ_position (
   finite_subdist_positions mu.
 
 Lemma enumQ_lift_decode {A B} (mu : EnumQ A) (decode : A → B) :
-  @sem_lift EnumQ EnumQ_SemanticMeasure A B (fun x y => decode x = y) mu (emap decode mu).
+  @sem_lift EnumQ EnumQ_SemanticMeasure A B (λ x y, decode x = y) mu (emap decode mu).
 Proof.
   apply (IndexedCoupling.indexed_coupling_raw
     (mu := emap id (enumQ_prune mu)) (nu := emap decode (enumQ_prune mu))).
@@ -58,11 +58,11 @@ Proof.
 Qed.
 
 Lemma subenumQ_positions_decode {A} (mu : SubEnumQ A) :
-  sem_lift (fun i x => enumQ_position_value (subenumQ_raw mu) i = x)
+  sem_lift (λ i x, enumQ_position_value (subenumQ_raw mu) i = x)
     (subenumQ_positions mu) mu.
 Proof.
   change (@sem_lift EnumQ EnumQ_SemanticMeasure _ _
-    (fun i x => enumQ_position_value (subenumQ_raw mu) i = x)
+    (λ i x, enumQ_position_value (subenumQ_raw mu) i = x)
     (enumQ_positions (subenumQ_raw mu)) (subenumQ_raw mu)).
   have H := enumQ_lift_decode (enumQ_positions (subenumQ_raw mu))
     (enumQ_position_value (subenumQ_raw mu)).

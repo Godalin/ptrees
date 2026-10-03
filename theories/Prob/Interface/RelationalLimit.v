@@ -25,24 +25,24 @@ Theorem sem_lift_lub_of_joint_chain {A B} (R : A → B → Prop)
     (joints : nat → M (A * B)) out1 out2 :
   sem_increasing joints →
   sem_lub left out1 → sem_lub right out2 →
-  (∀ n, sem_eq (sem_bind (joints n) (fun p => sem_ret (fst p))) (left n)) →
-  (∀ n, sem_eq (sem_bind (joints n) (fun p => sem_ret (snd p))) (right n)) →
-  (∀ n, sem_ae (joints n) (fun p => R (fst p) (snd p))) →
+  (∀ n, sem_eq (sem_bind (joints n) (λ p, sem_ret (fst p))) (left n)) →
+  (∀ n, sem_eq (sem_bind (joints n) (λ p, sem_ret (snd p))) (right n)) →
+  (∀ n, sem_ae (joints n) (λ p, R (fst p) (snd p))) →
   sem_lift R out1 out2.
 Proof.
   intros Hi Hl Hr Hleft Hright Hsupport.
   destruct (sem_lub_exists Hi) as [joint Hj].
   assert (Heleft : sem_eq
-    (sem_bind joint (fun p => sem_ret (fst p))) out1).
+    (sem_bind joint (λ p, sem_ret (fst p))) out1).
   { eapply sem_lub_proper; [exact Hleft| |exact Hl].
     eapply sem_bind_lub; eassumption. }
   assert (Heright : sem_eq
-    (sem_bind joint (fun p => sem_ret (snd p))) out2).
+    (sem_bind joint (λ p, sem_ret (snd p))) out2).
   { eapply sem_lub_proper; [exact Hright| |exact Hr].
     eapply sem_bind_lub; eassumption. }
   eapply sem_lift_proper_l; [exact Heleft|].
   eapply sem_lift_proper_r; [exact Heright|].
-  eapply sem_lift_bind with (R := fun p q => p = q ∧ R (fst p) (snd p)).
+  eapply sem_lift_bind with (R := λ p q, p = q ∧ R (fst p) (snd p)).
   - apply sem_lift_refl_ae. eapply sem_ae_lub; eassumption.
   - intros p q [<- Hpq]. apply sem_lift_ret. exact Hpq.
 Qed.

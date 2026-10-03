@@ -45,8 +45,8 @@ Polymorphic Fixpoint free_omega_bind {MN A B}
   match mu with
   | FORet x => k x
   | FOZero => FOZero
-  | FOSample nu h => FOSample nu (fun x => free_omega_bind (h x) k)
-  | FOLub chain => FOLub (fun n => free_omega_bind (chain n) k)
+  | FOSample nu h => FOSample nu (λ x, free_omega_bind (h x) k)
+  | FOLub chain => FOLub (λ n, free_omega_bind (chain n) k)
   end.
 
 Polymorphic Inductive free_omega_ae {MN}
@@ -82,7 +82,7 @@ Polymorphic Inductive free_omega_lift {MN}
 Polymorphic Definition free_omega_sample@{node node_rep frontier}
     {MN : Type@{node} → Type@{node_rep}} {A : Type@{node}} (mu : MN A) :
     @FreeOmega@{node node_rep frontier} MN A :=
-  FOSample mu (fun x => FORet x).
+  FOSample mu (λ x, FORet x).
 
 (** Opt-in client notation; no scope is opened here.
     [supω] denotes raw FOLub syntax, not a certified supremum: increasingness

@@ -42,7 +42,7 @@ Proof. apply (fold_run_exception (QT := Eq1_ITree)). apply itree_iteration_unifo
 
 Example exception_throw_fold {A} (err : Err) :
   eutt eq (fold_exception handle sample
-    (Vis (inl1 (Throw err)) (fun v : void => match v return ptree _ _ A with end)))
+    (Vis (inl1 (Throw err)) (λ v : void, match v return ptree _ _ A with end)))
     (ITreeDefinition.Ret (inl err)).
 Proof.
   rewrite exception_fold_commutes, itree_fold_unfold.
@@ -54,7 +54,7 @@ Qed.
 Example exception_probability_fold {A X} (mu : MN X)
     (k : X → ptree (exceptE Err +' E) MN A) :
   eutt eq (fold_exception handle sample (Prob mu k))
-    (ITree.bind (@sample X mu) (fun x => fold_exception handle sample (k x))).
+    (ITree.bind (@sample X mu) (λ x, fold_exception handle sample (k x))).
 Proof.
   rewrite exception_fold_commutes, itree_fold_unfold.
   unfold fold_step at 1. rewrite observe_run_exception.
@@ -67,9 +67,9 @@ Qed.
     half-mass separation is independently checked in EffectAlgebra. *)
 Example sample_then_exception {X A} (mu : MN X) (err : Err) :
   eutt eq (fold_exception handle sample
-    (Prob mu (fun _ => Vis (inl1 (Throw err))
-      (fun v : void => match v return ptree _ _ A with end))))
-    (ITree.bind (@sample X mu) (fun _ => ITreeDefinition.Ret (inl err))).
+    (Prob mu (λ _, Vis (inl1 (Throw err))
+      (λ v : void, match v return ptree _ _ A with end))))
+    (ITree.bind (@sample X mu) (λ _, ITreeDefinition.Ret (inl err))).
 Proof.
   rewrite exception_probability_fold. apply eqit_bind; [reflexivity|].
   intro x. apply exception_throw_fold.
@@ -85,10 +85,10 @@ Variable sample : ∀ X, MN X → itree F X.
 Variable handle : ∀ X, requestE X → itree F X.
 
 CoFixpoint retry_or_throw : ptree (exceptE nat +' requestE) MN bool :=
-  Vis (inr1 Request) (fun continue : bool =>
+  Vis (inr1 Request) (λ continue : bool,
     if continue then
-      Prob mu (fun done : bool => if done then Ret true else Tau retry_or_throw)
-    else Vis (inl1 (Throw 7)) (fun v : void => match v with end)).
+      Prob mu (λ done : bool, if done then Ret true else Tau retry_or_throw)
+    else Vis (inl1 (Throw 7)) (λ v : void, match v with end)).
 
 Example recursive_exception_square :
   eutt eq (fold_exception handle sample retry_or_throw)

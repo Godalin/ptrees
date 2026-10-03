@@ -42,7 +42,7 @@ Lemma finite_internal_guard_approxE n t :
 Proof. unfold finite_internal_guard_transition. destruct (observe t), n; reflexivity. Qed.
 
 Lemma finite_internal_cut_guard_approxE n (cut : MF tree) :
-  free_omega_bind cut (fun t => hit n (observe t)) =
+  free_omega_bind cut (λ t, hit n (observe t)) =
   free_omega_bind (free_omega_bind cut finite_internal_guard_transition)
     (finite_internal_guard_approx n).
 Proof.
@@ -66,25 +66,25 @@ Hypothesis cut_valid : ∀ s, D s →
     approximation order. This realization premise is supplied separately;
     it does not alter the canonical behavioral relation. *)
 Hypothesis execution_marginal_structural : ∀ s, D s →
-  free_omega_lift (fun z target => projection z = target)
+  free_omega_lift (λ z target, projection z = target)
     (kernel s) (free_omega_bind (cut s) finite_internal_guard_transition).
 
 Lemma finite_internal_joint_hitting_projectionE n s :
   free_omega_bind
     (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O kernel n s)
-    (fun o => FORet (project_output o)) =
-  free_omega_bind (kernel s) (fun target => free_omega_bind
+    (λ o, FORet (project_output o)) =
+  free_omega_bind (kernel s) (λ target, free_omega_bind
     (@stable_target_approx MF FI FreeOmegaObservableSemanticOmega S O kernel n target)
-    (fun o => FORet (project_output o))).
+    (λ o, FORet (project_output o))).
 Proof. apply free_omega_bind_assoc. Qed.
 
 Lemma finite_internal_marginal_structural_supported s : D s →
   free_omega_lift
-    (fun target z => projection z = target ∧ kernel_completion_invariant D z)
+    (λ target z, projection z = target ∧ kernel_completion_invariant D z)
     (free_omega_bind (cut s) finite_internal_guard_transition) (kernel s).
 Proof.
   intro HD. eapply free_omega_lift_mono with
-    (R := fun target z => projection z = target ∧
+    (R := λ target z, projection z = target ∧
       kernel_completion_invariant D z ∧ True).
   - intros target z [Hproj [HD' _]]. split; assumption.
   - apply free_omega_lift_sym. eapply free_omega_lift_ae_restrict.
@@ -102,7 +102,7 @@ Theorem finite_internal_execution_covers_hitting n s : D s →
   free_omega_approx eq (hit n (observe (project_state s)))
     (free_omega_bind
       (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O kernel n s)
-      (fun o => FORet (project_output o))).
+      (λ o, FORet (project_output o))).
 Proof.
   induction n as [|n IH] in s |- *; intro HD;
     eapply free_omega_approx_trans.
@@ -121,11 +121,11 @@ Qed.
 
 Corollary finite_internal_execution_limit_covers s : D s →
   free_omega_approx eq
-    (FOLub (fun n => hit n (observe (project_state s))))
+    (FOLub (λ n, hit n (observe (project_state s))))
     (free_omega_bind
-      (FOLub (fun n => @stable_hitting_approx MF FI
+      (FOLub (λ n, @stable_hitting_approx MF FI
         FreeOmegaObservableSemanticOmega S O kernel n s))
-      (fun o => FORet (project_output o))).
+      (λ o, FORet (project_output o))).
 Proof.
   intro HD. apply FOApproxLub. intro n.
   apply finite_internal_execution_covers_hitting. exact HD.
@@ -146,11 +146,11 @@ Theorem finite_internal_execution_covers_modulo_eq n s : D s →
     free_omega_qlift eq covered
       (free_omega_bind
         (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
-          S O represented_kernel n s) (fun o => FORet (project_output o))).
+          S O represented_kernel n s) (λ o, FORet (project_output o))).
 Proof.
   intro HD. exists (free_omega_bind
     (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O kernel n s)
-    (fun o => FORet (project_output o))). split.
+    (λ o, FORet (project_output o))). split.
   - apply finite_internal_execution_covers_hitting. exact HD.
   - eapply FOQLBind with (T := eq).
     + eapply (kernel_hitting_approx_eq (NI := NI) (NO := NO)) with (D := D).
@@ -165,17 +165,17 @@ Qed.
 Theorem finite_internal_execution_limit_covers_modulo_eq s : D s →
   ∃ covered,
     free_omega_approx eq
-      (FOLub (fun n => hit n (observe (project_state s)))) covered ∧
+      (FOLub (λ n, hit n (observe (project_state s)))) covered ∧
     free_omega_qlift eq covered
       (free_omega_bind
-        (FOLub (fun n => @stable_hitting_approx MF FI
+        (FOLub (λ n, @stable_hitting_approx MF FI
           FreeOmegaObservableSemanticOmega S O represented_kernel n s))
-        (fun o => FORet (project_output o))).
+        (λ o, FORet (project_output o))).
 Proof.
   intro HD. exists (free_omega_bind
-    (FOLub (fun n => @stable_hitting_approx MF FI
+    (FOLub (λ n, @stable_hitting_approx MF FI
       FreeOmegaObservableSemanticOmega S O kernel n s))
-    (fun o => FORet (project_output o))). split.
+    (λ o, FORet (project_output o))). split.
   - apply finite_internal_execution_limit_covers. exact HD.
   - eapply FOQLBind with (T := eq).
     + eapply (kernel_hitting_limit_eq (NI := NI) (NO := NO)) with (D := D).

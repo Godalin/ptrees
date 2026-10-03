@@ -39,12 +39,12 @@ Theorem subenumR_qlift_joint_mass_support {A B} (T : A → B → Prop)
     oval_joint T (free_omega_model Ht) (free_omega_model Hu) J ∧
     oval_mass J = oval_mass (free_omega_model Ht) ∧
     oval_mass J = oval_mass (free_omega_model Hu) ∧
-    oval_eval J (oval_indicator R (fun z => ¬ T (fst z) (snd z))) = 0.
+    oval_eval J (oval_indicator R (λ z, ¬ T (fst z) (snd z))) = 0.
 Proof.
   intro H; destruct (subenumR_qlift_sound Ht Hu H) as [J HJ].
   exists J; split; first exact HJ.
-  split; first exact (proj1 HJ (fun _ => 1) (@oval_test_one R A)).
-  split; first exact (proj1 (proj2 HJ) (fun _ => 1) (@oval_test_one R B)).
+  split; first exact (proj1 HJ (λ _, 1) (@oval_test_one R A)).
+  split; first exact (proj1 (proj2 HJ) (λ _, 1) (@oval_test_one R B)).
   exact (oval_joint_off_relation_zero HJ).
 Qed.
 

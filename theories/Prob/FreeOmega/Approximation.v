@@ -55,7 +55,7 @@ Definition free_omega_chains_cofinal {MN}
     `{NI : SemanticMeasure MN} {A B} (R : A → B → Prop)
     (left : nat → FreeOmega MN A) (right : nat → FreeOmega MN B) : Prop :=
   (∀ n, ∃ m, free_omega_approx R (left n) (right m)) ∧
-  (∀ m, ∃ n, free_omega_approx (fun y x => R x y)
+  (∀ m, ∃ n, free_omega_approx (λ y x, R x y)
     (right m) (left n)).
 
 Lemma free_omega_approx_bind {MN}

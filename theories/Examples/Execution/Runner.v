@@ -47,8 +47,8 @@ Definition replay_one X (mu : Replay X) (entropy : list unit) :
 
 Definition test_run := @run Replay (list unit) replay_one.
 Arguments test_run {A} _ _ _.
-Definition closed_choice : ptree void1 Replay bool := Prob (Some true) (fun b => Ret b).
-Definition partial_choice : ptree void1 Replay bool := Prob None (fun b => Ret b).
+Definition closed_choice : ptree void1 Replay bool := Prob (Some true) (λ b, Ret b).
+Definition partial_choice : ptree void1 Replay bool := Prob None (λ b, Ret b).
 CoFixpoint internal_loop : ptree void1 Replay bool := Tau internal_loop.
 
 Example returned_needs_no_fuel : test_run 0 (Ret true) [] = (Returned true, []).
@@ -79,10 +79,10 @@ Example timeout_is_not_a_terminal_path :
 Proof. intro H. exact (executes_finished H). Qed.
 
 Definition state_program : ptree (stateE nat +' void1) Replay nat :=
-  Vis (inl1 (Get nat)) (fun s =>
-    Prob (Some true) (fun b : bool =>
-      Vis (inl1 (Put nat (if b then S s else s))) (fun _ =>
-        Vis (inl1 (Get nat)) (fun result => Ret result)))).
+  Vis (inl1 (Get nat)) (λ s,
+    Prob (Some true) (λ b : bool,
+      Vis (inl1 (Put nat (if b then S s else s))) (λ _,
+        Vis (inl1 (Get nat)) (λ result, Ret result)))).
 
 Example execute_state_with_sampling :
   test_run 4 (run_state state_program 9) [tt;tt] = (Returned (10,10), [tt]).
@@ -95,23 +95,23 @@ Example state_bind_uses_updated_state {A B}
     (t : ptree (stateE nat +' void1) Replay A)
     (k : A → ptree (stateE nat +' void1) Replay B) s :
   pstruct eq (run_state (PTree.bind t k) s)
-    (PTree.bind (run_state t s) (fun sa => run_state (k (snd sa)) (fst sa))).
+    (PTree.bind (run_state t s) (λ sa, run_state (k (snd sa)) (fst sa))).
 Proof. apply run_state_bind. Qed.
 
 Example standard_subevent_get :
   @get nat (stateE nat +' void1) Replay _ =
-    Vis (inl1 (Get nat)) (fun s => Ret s).
+    Vis (inl1 (Get nat)) (λ s, Ret s).
 Proof. reflexivity. Qed.
 Example standard_subevent_put s :
   @put nat (stateE nat +' void1) Replay _ s =
-    Vis (inl1 (Put nat s)) (fun x => Ret x).
+    Vis (inl1 (Put nat s)) (λ x, Ret x).
 Proof. reflexivity. Qed.
 
 Section Forwarding.
 Context {E : Type → Type} {X : Type} (e : E X).
 Example state_forwards_unhandled_event (k : X → ptree (stateE nat +' E) Replay bool) s :
   pstruct eq (run_state (Vis (inr1 e) k) s)
-    (Vis e (fun x => run_state (k x) s)).
+    (Vis e (λ x, run_state (k x) s)).
 Proof. apply run_state_forward. Qed.
 End Forwarding.
 
@@ -133,7 +133,7 @@ Definition empty_sampler {X} (_ : Replay X) (s : unit) : draw_result X * unit :=
   (NoEntropy, s).
 Definition missing_sampler {X} (_ : Replay X) (s : unit) : draw_result X * unit :=
   (Missing, s).
-Definition request : ptree void1 Replay bool := Prob (Some true) (fun b => Ret b).
+Definition request : ptree void1 Replay bool := Prob (Some true) (λ b, Ret b).
 
 Example returned_is_semantic : outcome_view (Returned true) = inl (ResultReturned true).
 Proof. reflexivity. Qed.

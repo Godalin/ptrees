@@ -32,13 +32,13 @@ Variable transition : I → MN (I + A).
 
 Definition iteration_frontier_round n i :=
   @ptree_iter_round_approx E MN MF FI FreeOmegaMixedMeasure FO I A n transition i.
-Definition iteration_frontier i := FOLub (fun n => iteration_frontier_round n i).
+Definition iteration_frontier i := FOLub (λ n, iteration_frontier_round n i).
 
 Lemma iteration_frontier_returns i :
-  free_omega_ae (fun h => ∃ a, h = FHRet a) (iteration_frontier i).
+  free_omega_ae (λ h, ∃ a, h = FHRet a) (iteration_frontier i).
 Proof.
   constructor. intro n. unfold iteration_frontier_round, ptree_iter_round_approx.
-  apply free_omega_ae_bind with (P := fun _ => True).
+  apply free_omega_ae_bind with (P := λ _, True).
   - apply (sem_ae_true (SI := FI)).
   - intros a _. constructor. exists a. reflexivity.
 Qed.
@@ -58,7 +58,7 @@ Theorem iteration_frontier_summary
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     `{NCount : @SemanticMeasureCountableAELaws MN NI}
     (step : I → ptree E MN (I + A))
-    (Hstep : ∀ i, W eq (step i) (Prob (transition i) (fun x => Ret x))) i :
+    (Hstep : ∀ i, W eq (step i) (Prob (transition i) (λ x, Ret x))) i :
   ptree_stable_hitting (FI := FI) (FO := FO)
     (observe (PTree.iter step i)) (iteration_frontier i).
 Proof.
@@ -78,14 +78,14 @@ Theorem iteration_frontier_summary_hitting
     `{NCount : @SemanticMeasureCountableAELaws MN NI}
     (step : I → ptree E MN (I + A))
     (Hstep : ∀ i, ptree_stable_hitting (FI := FI) (FO := FO)
-      (observe (step i)) (FOSample (transition i) (fun next => FORet (FHRet next)))) i :
+      (observe (step i)) (FOSample (transition i) (λ next, FORet (FHRet next)))) i :
   ptree_stable_hitting (FI := FI) (FO := FO)
     (observe (PTree.iter step i)) (iteration_frontier i).
 Proof.
   eapply iteration_frontier_summary; try typeclasses eauto.
   intro j. eapply peutt_of_hitting_lift.
   - exact (Hstep j).
-  - eapply stable_hitting_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := λ _, True).
     + apply sem_ae_true.
     + intros x _. apply stable_hitting_ret.
   - apply FOQLStructural. eapply FOLSample with (S := eq).
@@ -99,7 +99,7 @@ Qed.
 Fixpoint iteration_observation_round {O} (value : A → O) n i : MN O :=
   match n with
   | O => sem_zero
-  | S m => sem_bind (transition i) (fun next =>
+  | S m => sem_bind (transition i) (λ next,
       match next with
       | inl j => iteration_observation_round value m j
       | inr a => sem_ret (value a)
@@ -122,7 +122,7 @@ Qed.
 
 Theorem iteration_frontier_observes {O} (obs : stable_head E MN A → O)
     (value : A → O) (Hobs : ∀ a, obs (FHRet a) = value a) i out :
-  sem_lub (fun n => iteration_observation_round value n i) out →
+  sem_lub (λ n, iteration_observation_round value n i) out →
   free_omega_observes obs (iteration_frontier i) out.
 Proof.
   intro Hlim. eapply FOOObserveLub.

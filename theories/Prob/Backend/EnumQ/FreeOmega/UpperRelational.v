@@ -30,10 +30,10 @@ Local Notation upper := (@free_omega_extended_upper R).
 Definition nonnegative_test {A} (f : A → \bar R) := ∀ x, 0 <= f x.
 
 Definition extended_fiber_upper {A} (P : A → Prop) (f : A → \bar R) :=
-  ereal_sup (fun r => r = 0 ∨ ∃ x, P x ∧ r = f x).
+  ereal_sup (λ r, r = 0 ∨ ∃ x, P x ∧ r = f x).
 
 Definition extended_fiber_lower {A} (P : A → Prop) (f : A → \bar R) :=
-  ereal_inf (fun r => ∃ x, P x ∧ r = f x).
+  ereal_inf (λ r, ∃ x, P x ∧ r = f x).
 
 Lemma extended_fiber_upper_le {A} (P : A → Prop) (f : A → \bar R) b :
   0 <= b → (∀ x, P x → f x <= b) → extended_fiber_upper P f <= b.
@@ -80,10 +80,10 @@ Proof. intros H HT f g Hf Hg Hfg. apply H; auto. Qed.
 Lemma free_omega_extended_upper_rel_comp {A B C} (T : A → B → Prop)
     (U : B → C → Prop) mu mid nu :
   free_omega_extended_upper_rel T mu mid → free_omega_extended_upper_rel U mid nu →
-  free_omega_extended_upper_rel (fun x z => ∃ y, T x y ∧ U y z) mu nu.
+  free_omega_extended_upper_rel (λ x z, ∃ y, T x y ∧ U y z) mu nu.
 Proof.
   intros Hl Hr f g Hf Hg Hfg.
-  pose h y := extended_fiber_upper (fun x => T x y) f.
+  pose h y := extended_fiber_upper (λ x, T x y) f.
   have Hh : nonnegative_test h by intro y; apply extended_fiber_upper_nonnegative.
   eapply le_trans.
   - apply (Hl f h Hf Hh). intros x y Hxy. exact (extended_fiber_upper_ge f Hxy).
@@ -101,13 +101,13 @@ Theorem free_omega_observes_extended_upper_rel {A B OA OB}
   free_omega_extended_upper_rel T mu nu.
 Proof.
   intros Hl Hr Hcouple HT f g Hf Hg Hfg.
-  pose lo a := extended_fiber_upper (fun x => obsA x = a) f.
-  pose hi b := extended_fiber_lower (fun y => obsB y = b) g.
+  pose lo a := extended_fiber_upper (λ x, obsA x = a) f.
+  pose hi b := extended_fiber_lower (λ y, obsB y = b) g.
   have Hlo : nonnegative_test lo by intro a; apply extended_fiber_upper_nonnegative.
   have Hhi : nonnegative_test hi by intro b; apply extended_fiber_lower_nonnegative.
-  eapply le_trans with (y := upper mu (fun x => lo (obsA x))).
+  eapply le_trans with (y := upper mu (λ x, lo (obsA x))).
   - apply free_omega_extended_upper_mono=> x. apply extended_fiber_upper_ge. reflexivity.
-  - eapply le_trans with (y := upper nu (fun y => hi (obsB y))).
+  - eapply le_trans with (y := upper nu (λ y, hi (obsB y))).
     + rewrite (free_omega_observes_extended_upper Hl Hlo)
         (free_omega_observes_extended_upper Hr Hhi).
       eapply enumQ_lift_extended_expect; [exact Hcouple|].

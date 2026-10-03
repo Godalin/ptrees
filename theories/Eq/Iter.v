@@ -92,7 +92,7 @@ Theorem peutt_iter_unfold {I R}
     (step : I → ptree E MN (I + R)) (i : I) :
   @peutt E MN MF FI FC MX FO R R eq
     (PTree.iter step i)
-    (PTree.bind (step i) (fun lr =>
+    (PTree.bind (step i) (λ lr,
       match lr with
       | inl i' => Tau (PTree.iter step i')
       | inr r => Ret r
@@ -149,7 +149,7 @@ Qed.
 Theorem peutt_iter_codiagonal {I R}
     (step : I → ptree E MN (I + (I + R))) (i : I) :
   @peutt E MN MF FI FC MX FO R R eq
-    (PTree.iter (fun j => PTree.iter step j) i)
+    (PTree.iter (λ j, PTree.iter step j) i)
     (PTree.iter (pstruct_iter_codiagonal_flat_step step) i).
 Proof.
   apply (Relation.peutt_of_pstruct Hbind Hmixed Hzero Hlimit).

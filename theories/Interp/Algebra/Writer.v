@@ -36,12 +36,12 @@ Theorem run_writer_from_bind {A B} (t : ptree (writerE W +' E) MN A)
     (k : A → ptree (writerE W +' E) MN B) log :
   pstruct eq (run_writer_from op (PTree.bind t k) log)
     (PTree.bind (run_writer_from op t log)
-      (fun wa => run_writer_from op (k (snd wa)) (fst wa))).
+      (λ wa, run_writer_from op (k (snd wa)) (fst wa))).
 Proof.
   unfold run_writer_from. eapply pstruct_trans.
   - apply state_structural_eq. apply pstruct_interp_bind.
   - exact (run_state_bind (PTree.interp (writer_handler op) t)
-      (fun a => PTree.interp (writer_handler op) (k a)) log).
+      (λ a, PTree.interp (writer_handler op) (k a)) log).
 Qed.
 
 (** Accumulator-threading bind law of the current implementation. The
@@ -50,7 +50,7 @@ Theorem run_writer_bind {A B} (t : ptree (writerE W +' E) MN A)
     (k : A → ptree (writerE W +' E) MN B) :
   pstruct eq (run_writer op (PTree.bind t k))
     (PTree.bind (run_writer op t)
-      (fun wa => run_writer_from op (k (snd wa)) (fst wa))).
+      (λ wa, run_writer_from op (k (snd wa)) (fst wa))).
 Proof. apply run_writer_from_bind. Qed.
 End StructuralBind.
 
@@ -81,27 +81,27 @@ Qed.
 Theorem run_writer_from_prob {A X} (mu : MN X)
     (k : X → ptree (writerE W +' E) MN A) log :
   B (run_writer_from op (Prob mu k) log)
-    (Prob mu (fun x => run_writer_from op (k x) log)).
+    (Prob mu (λ x, run_writer_from op (k x) log)).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
 Theorem run_writer_prob {A X} (mu : MN X) (k : X → ptree (writerE W +' E) MN A) :
-  B (run_writer op (Prob mu k)) (Prob mu (fun x => run_writer op (k x))).
+  B (run_writer op (Prob mu k)) (Prob mu (λ x, run_writer op (k x))).
 Proof. apply run_writer_from_prob. Qed.
 
 Context `{L : MonoidLaws W op}.
 
 Theorem run_writer_tell_unit {A} (k : ptree (writerE W +' E) MN A) :
-  B (run_writer op (Vis (inl1 (Tell (monoid_unit op))) (fun _ => k))) (run_writer op k).
+  B (run_writer op (Vis (inl1 (Tell (monoid_unit op))) (λ _, k))) (run_writer op k).
 Proof.
-  change (B (run_writer_from op (Vis (inl1 (Tell (monoid_unit op))) (fun _ => k)) (monoid_unit op))
+  change (B (run_writer_from op (Vis (inl1 (Tell (monoid_unit op))) (λ _, k)) (monoid_unit op))
     (run_writer_from op k (monoid_unit op))).
   eapply peutt_trans; [apply run_writer_from_tell|].
   rewrite monoid_lunit. apply peutt_refl.
 Qed.
 
 Theorem run_writer_from_tell_append {A} w1 w2 (k : ptree (writerE W +' E) MN A) log :
-  B (run_writer_from op (Vis (inl1 (Tell w1)) (fun _ => Vis (inl1 (Tell w2)) (fun _ => k))) log)
-    (run_writer_from op (Vis (inl1 (Tell (monoid_plus op w1 w2))) (fun _ => k)) log).
+  B (run_writer_from op (Vis (inl1 (Tell w1)) (λ _, Vis (inl1 (Tell w2)) (λ _, k))) log)
+    (run_writer_from op (Vis (inl1 (Tell (monoid_plus op w1 w2))) (λ _, k)) log).
 Proof.
   eapply peutt_trans with (y := run_writer_from op k (monoid_plus op (monoid_plus op log w1) w2)).
   - eapply peutt_trans; [apply run_writer_from_tell|apply run_writer_from_tell].
@@ -109,8 +109,8 @@ Proof.
 Qed.
 
 Theorem run_writer_tell_append {A} w1 w2 (k : ptree (writerE W +' E) MN A) :
-  B (run_writer op (Vis (inl1 (Tell w1)) (fun _ => Vis (inl1 (Tell w2)) (fun _ => k))))
-    (run_writer op (Vis (inl1 (Tell (monoid_plus op w1 w2))) (fun _ => k))).
+  B (run_writer op (Vis (inl1 (Tell w1)) (λ _, Vis (inl1 (Tell w2)) (λ _, k))))
+    (run_writer op (Vis (inl1 (Tell (monoid_plus op w1 w2))) (λ _, k))).
 Proof. apply run_writer_from_tell_append. Qed.
 
 Context `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -120,11 +120,11 @@ Context `{NC : @SemanticMeasureCoreLaws MN NI}
 
 Theorem run_writer_tell_prob {A X} w (mu : MN X)
     (k : X → ptree (writerE W +' E) MN A) :
-  B (run_writer op (Vis (inl1 (Tell w)) (fun _ => Prob mu k)))
-    (run_writer op (Prob mu (fun x => Vis (inl1 (Tell w)) (fun _ => k x)))).
+  B (run_writer op (Vis (inl1 (Tell w)) (λ _, Prob mu k)))
+    (run_writer op (Prob mu (λ x, Vis (inl1 (Tell w)) (λ _, k x)))).
 Proof.
-  change (B (run_writer_from op (Vis (inl1 (Tell w)) (fun _ => Prob mu k)) (monoid_unit op))
-    (run_writer_from op (Prob mu (fun x => Vis (inl1 (Tell w)) (fun _ => k x))) (monoid_unit op))).
+  change (B (run_writer_from op (Vis (inl1 (Tell w)) (λ _, Prob mu k)) (monoid_unit op))
+    (run_writer_from op (Prob mu (λ x, Vis (inl1 (Tell w)) (λ _, k x))) (monoid_unit op))).
   eapply peutt_trans; [apply run_writer_from_tell|].
   eapply peutt_trans; [apply run_writer_from_prob|].
   apply peutt_sym. eapply peutt_trans; [apply run_writer_from_prob|].

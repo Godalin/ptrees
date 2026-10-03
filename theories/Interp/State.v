@@ -31,11 +31,11 @@ CoFixpoint run_state {S E MN A}
   match observe t with
   | RetF a => Ret (s, a)
   | TauF u => Tau (run_state u s)
-  | @ProbF _ _ _ _ X mu k => Prob mu (fun x => run_state (k x) s)
+  | @ProbF _ _ _ _ X mu k => Prob mu (λ x, run_state (k x) s)
   | @VisF _ _ _ _ X e k =>
       match e with
       | inl1 se => let '(s', x) := state_response se s in Tau (run_state (k x) s')
-      | inr1 fe => Vis fe (fun x => run_state (k x) s)
+      | inr1 fe => Vis fe (λ x, run_state (k x) s)
       end
   end.
 
@@ -49,11 +49,11 @@ Lemma observe_run_state {S E MN A} (t : ptree (stateE S +' E) MN A) s :
   match observe t with
   | RetF a => RetF (s, a)
   | TauF u => TauF (run_state u s)
-  | @ProbF _ _ _ _ X mu k => ProbF mu (fun x => run_state (k x) s)
+  | @ProbF _ _ _ _ X mu k => ProbF mu (λ x, run_state (k x) s)
   | @VisF _ _ _ _ X e k =>
       match e with
       | inl1 se => let '(s', x) := state_response se s in TauF (run_state (k x) s')
-      | inr1 fe => VisF fe (fun x => run_state (k x) s)
+      | inr1 fe => VisF fe (λ x, run_state (k x) s)
       end
   end.
 Proof.

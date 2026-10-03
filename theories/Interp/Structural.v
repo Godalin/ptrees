@@ -34,8 +34,8 @@ Inductive pstruct_interp_clo :
       (k1 : X → ptree E M R1) (k2 : X → ptree E M R2) :
       (∀ x, pstruct RR (k1 x) (k2 x)) →
       pstruct_interp_clo
-        (PTree.bind source (fun x => PTree.interp handler (k1 x)))
-        (PTree.bind source (fun x => PTree.interp handler (k2 x)))
+        (PTree.bind source (λ x, PTree.interp handler (k1 x)))
+        (PTree.bind source (λ x, PTree.interp handler (k2 x)))
   | PStInterpDone u1 u2 :
       pstruct RR u1 u2 → pstruct_interp_clo u1 u2.
 
@@ -65,9 +65,9 @@ Proof.
     - unfold pstruct_body.
       change (pstructF RR (` CH)
         (observe (PTree.bind source
-          (fun x => PTree.interp handler (k1 x))))
+          (λ x, PTree.interp handler (k1 x))))
         (observe (PTree.bind source
-          (fun x => PTree.interp handler (k2 x))))).
+          (λ x, PTree.interp handler (k2 x))))).
       rewrite !observe_bind.
       remember (observe source) as os eqn:Hos.
       destruct os as [x|source'|Y e c|Y mu c]; cbn.
@@ -104,15 +104,15 @@ Inductive pstruct_interp_bind_clo :
       pstruct_interp_bind_clo
         (PTree.interp handler (PTree.bind t k))
         (PTree.bind (PTree.interp handler t)
-          (fun x => PTree.interp handler (k x)))
+          (λ x, PTree.interp handler (k x)))
   | PStInterpBindHandler {X} (source : ptree F M X)
       (c : X → ptree E M A) (k : A → ptree E M B) :
       pstruct_interp_bind_clo
         (PTree.bind source
-          (fun x => PTree.interp handler (PTree.bind (c x) k)))
+          (λ x, PTree.interp handler (PTree.bind (c x) k)))
         (PTree.bind
-          (PTree.bind source (fun x => PTree.interp handler (c x)))
-          (fun y => PTree.interp handler (k y)))
+          (PTree.bind source (λ x, PTree.interp handler (c x)))
+          (λ y, PTree.interp handler (k y)))
   | PStInterpBindDone (u v : ptree F M B) :
       pstruct eq u v → pstruct_interp_bind_clo u v.
 
@@ -121,7 +121,7 @@ Theorem pstruct_interp_bind (t : ptree E M A)
   pstruct eq
     (PTree.interp handler (PTree.bind t k))
     (PTree.bind (PTree.interp handler t)
-      (fun x => PTree.interp handler (k x))).
+      (λ x, PTree.interp handler (k x))).
 Proof.
   assert (Hstrong : ∀ u v, pstruct_interp_bind_clo u v ->
       pstruct eq u v).
@@ -131,7 +131,7 @@ Proof.
       change (pstructF eq (` CH)
         (observe (PTree.interp handler (PTree.bind t0 k0)))
         (observe (PTree.bind (PTree.interp handler t0)
-          (fun x => PTree.interp handler (k0 x))))).
+          (λ x, PTree.interp handler (k0 x))))).
       rewrite observe_interp. rewrite !observe_bind. rewrite observe_interp.
       remember (observe t0) as ot eqn:Hot.
       destruct ot as [a|t'|X e c|X mu c]; cbn.
@@ -146,10 +146,10 @@ Proof.
     - unfold pstruct_body.
       change (pstructF eq (` CH)
         (observe (PTree.bind source
-          (fun x => PTree.interp handler (PTree.bind (c x) k0))))
+          (λ x, PTree.interp handler (PTree.bind (c x) k0))))
         (observe (PTree.bind
-          (PTree.bind source (fun x => PTree.interp handler (c x)))
-          (fun y => PTree.interp handler (k0 y))))).
+          (PTree.bind source (λ x, PTree.interp handler (c x)))
+          (λ y, PTree.interp handler (k0 y))))).
       rewrite !observe_bind.
       remember (observe source) as os eqn:Hos.
       destruct os as [x|source'|Y e d|Y mu d]; cbn.
@@ -215,10 +215,10 @@ Inductive pstruct_interp_iter_clo :
   | PStInterpIterHandler {X} (source : ptree F M X)
       (c : X → ptree E M (I + R)) :
       pstruct_interp_iter_clo
-        (PTree.bind source (fun x => PTree.interp handler
+        (PTree.bind source (λ x, PTree.interp handler
           (PTree.bind (c x) pstruct_interp_iter_source_cont)))
         (PTree.bind
-          (PTree.bind source (fun x => PTree.interp handler (c x)))
+          (PTree.bind source (λ x, PTree.interp handler (c x)))
           pstruct_interp_iter_target_cont)
   | PStInterpIterDone (u v : ptree F M R) :
       pstruct eq u v → pstruct_interp_iter_clo u v.
@@ -272,10 +272,10 @@ Proof.
       + constructor=> x. apply CIH. constructor.
     - unfold pstruct_body.
       change (pstructF eq (` CH)
-        (observe (PTree.bind source (fun x => PTree.interp handler
+        (observe (PTree.bind source (λ x, PTree.interp handler
           (PTree.bind (c x) pstruct_interp_iter_source_cont))))
         (observe (PTree.bind
-          (PTree.bind source (fun x => PTree.interp handler (c x)))
+          (PTree.bind source (λ x, PTree.interp handler (c x)))
           pstruct_interp_iter_target_cont))).
       rewrite !observe_bind.
       remember (observe source) as os eqn:Hos.
@@ -323,17 +323,17 @@ Inductive pstruct_interp_compose_clo :
       (k : X → ptree E M R) :
       pstruct_interp_compose_clo
         (PTree.interp handler2
-          (PTree.bind source (fun x => PTree.interp handler1 (k x))))
+          (PTree.bind source (λ x, PTree.interp handler1 (k x))))
         (PTree.bind (PTree.interp handler2 source)
-          (fun x => PTree.interp pstruct_interp_compose_handler (k x)))
+          (λ x, PTree.interp pstruct_interp_compose_handler (k x)))
   | PStInterpComposeHandler {X} (source : ptree G M X)
       {Y} (c : X → ptree F M Y) (k : Y → ptree E M R) :
       pstruct_interp_compose_clo
-        (PTree.bind source (fun x => PTree.interp handler2
-          (PTree.bind (c x) (fun y => PTree.interp handler1 (k y)))))
+        (PTree.bind source (λ x, PTree.interp handler2
+          (PTree.bind (c x) (λ y, PTree.interp handler1 (k y)))))
         (PTree.bind
-          (PTree.bind source (fun x => PTree.interp handler2 (c x)))
-          (fun y => PTree.interp pstruct_interp_compose_handler (k y)))
+          (PTree.bind source (λ x, PTree.interp handler2 (c x)))
+          (λ y, PTree.interp pstruct_interp_compose_handler (k y)))
   | PStInterpComposeDone (u v : ptree G M R) :
       pstruct eq u v → pstruct_interp_compose_clo u v.
 
@@ -362,9 +362,9 @@ Proof.
     - unfold pstruct_body.
       change (pstructF eq (` CH)
         (observe (PTree.interp handler2
-          (PTree.bind source (fun x => PTree.interp handler1 (k x)))))
+          (PTree.bind source (λ x, PTree.interp handler1 (k x)))))
         (observe (PTree.bind (PTree.interp handler2 source)
-          (fun x => PTree.interp pstruct_interp_compose_handler (k x))))).
+          (λ x, PTree.interp pstruct_interp_compose_handler (k x))))).
       rewrite observe_interp. rewrite !observe_bind. rewrite observe_interp.
       remember (observe source) as os eqn:Hos.
       destruct os as [x|source'|Y e c|Y mu c]; cbn.
@@ -380,11 +380,11 @@ Proof.
       + constructor=> y. apply CIH. constructor.
     - unfold pstruct_body.
       change (pstructF eq (` CH)
-        (observe (PTree.bind source (fun x => PTree.interp handler2
-          (PTree.bind (c x) (fun y => PTree.interp handler1 (k y))))))
+        (observe (PTree.bind source (λ x, PTree.interp handler2
+          (PTree.bind (c x) (λ y, PTree.interp handler1 (k y))))))
         (observe (PTree.bind
-          (PTree.bind source (fun x => PTree.interp handler2 (c x)))
-          (fun y => PTree.interp pstruct_interp_compose_handler (k y))))).
+          (PTree.bind source (λ x, PTree.interp handler2 (c x)))
+          (λ y, PTree.interp pstruct_interp_compose_handler (k y))))).
       rewrite !observe_bind.
       remember (observe source) as os eqn:Hos.
       destruct os as [x|source'|Z e d|Z mu d]; cbn.
@@ -429,8 +429,8 @@ Inductive pstruct_interp_handler_clo :
       (source1 source2 : ptree F M X) (k : X → ptree E M R) :
       pstruct eq source1 source2 →
       pstruct_interp_handler_clo
-        (PTree.bind source1 (fun x => PTree.interp handler1 (k x)))
-        (PTree.bind source2 (fun x => PTree.interp handler2 (k x)))
+        (PTree.bind source1 (λ x, PTree.interp handler1 (k x)))
+        (PTree.bind source2 (λ x, PTree.interp handler2 (k x)))
   | PStInterpHandlerDone (u v : ptree F M R) :
       pstruct eq u v → pstruct_interp_handler_clo u v.
 
@@ -458,9 +458,9 @@ Proof.
     - unfold pstruct_body.
       change (pstructF eq (` CH)
         (observe (PTree.bind source1
-          (fun x => PTree.interp handler1 (k x))))
+          (λ x, PTree.interp handler1 (k x))))
         (observe (PTree.bind source2
-          (fun x => PTree.interp handler2 (k x))))).
+          (λ x, PTree.interp handler2 (k x))))).
       rewrite !observe_bind.
       pose proof (pstruct_unfold H) as Hstep.
       dependent destruction Hstep.

@@ -22,14 +22,14 @@ Definition state_effect {X} (e : (stateE S +' E) X) : Monads.stateT S T X :=
   match e with
   | inl1 se =>
       match se in stateE _ X return Monads.stateT S T X with
-      | Get => fun s => ret (s, s)
-      | Put s' => fun _ => ret (s', tt)
+      | Get => λ s, ret (s, s)
+      | Put s' => λ _, ret (s', tt)
       end
-  | inr1 fe => fun s => bind (@handle _ fe) (fun x => ret (s, x))
+  | inr1 fe => λ s, bind (@handle _ fe) (λ x, ret (s, x))
   end.
 
 Definition state_sample {X} (mu : MN X) : Monads.stateT S T X :=
-  fun s => bind (@sample X mu) (fun x => ret (s, x)).
+  λ s, bind (@sample X mu) (λ x, ret (s, x)).
 
 Definition fold_state {A} (t : ptree (stateE S +' E) MN A) : S → T (S * A) :=
   fold (@state_effect) (@state_sample) t.
@@ -39,9 +39,9 @@ Proof. reflexivity. Qed.
 Lemma state_effect_put s s' : state_effect (inl1 (Put S s')) s = ret (s', tt).
 Proof. reflexivity. Qed.
 Lemma state_effect_forward {X} (e : E X) s :
-  state_effect (inr1 e) s = bind (@handle X e) (fun x => ret (s, x)).
+  state_effect (inr1 e) s = bind (@handle X e) (λ x, ret (s, x)).
 Proof. reflexivity. Qed.
 Lemma state_sample_preserves_state {X} (mu : MN X) s :
-  state_sample mu s = bind (@sample X mu) (fun x => ret (s, x)).
+  state_sample mu s = bind (@sample X mu) (λ x, ret (s, x)).
 Proof. reflexivity. Qed.
 End StateFold.

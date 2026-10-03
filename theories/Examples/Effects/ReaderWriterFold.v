@@ -59,7 +59,7 @@ Qed.
 Example writer_bind_keeps_order :
   eq_itree eq
     (@bind (Monads.writerT (list nat) (itree F)) (writerT_monad logs) unit unit
-      (ITreeDefinition.Ret ([1],tt)) (fun _ => ITreeDefinition.Ret ([2],tt)))
+      (ITreeDefinition.Ret ([1],tt)) (λ _, ITreeDefinition.Ret ([2],tt)))
     (ITreeDefinition.Ret ([1;2],tt)).
 Proof.
   cbn [Monad.bind writerT_monad ITreeDefinition.Monad_itree]. rewrite !bind_ret_l. reflexivity.
@@ -76,14 +76,14 @@ Variable sample : ∀ X, MN X → itree F X.
 Variable handle : ∀ X, tickE X → itree F X.
 
 CoFixpoint reader_service : ptree (readerE bool +' tickE) MN bool :=
-  Vis (inl1 Ask) (fun enabled : bool =>
-    if enabled then Vis (inr1 Tick) (fun _ =>
-      Prob mu (fun b : bool => if b then Ret b else Tau reader_service))
+  Vis (inl1 Ask) (λ enabled : bool,
+    if enabled then Vis (inr1 Tick) (λ _,
+      Prob mu (λ b : bool, if b then Ret b else Tau reader_service))
     else Ret false).
 
 CoFixpoint writer_service : ptree (writerE (list nat) +' tickE) MN bool :=
-  Vis (inr1 Tick) (fun _ => Vis (inl1 (Tell [1])) (fun _ =>
-    Prob mu (fun b : bool => if b then Vis (inl1 (Tell [2])) (fun _ => Ret b)
+  Vis (inr1 Tick) (λ _, Vis (inl1 (Tell [1])) (λ _,
+    Prob mu (λ b : bool, if b then Vis (inl1 (Tell [2])) (λ _, Ret b)
       else Tau writer_service))).
 
 Example reader_recursive_square env :
@@ -98,18 +98,18 @@ Proof. apply itree_fold_run_writer. exact logs_laws. Qed.
 Example reader_bind_square {A B} (t : ptree (readerE bool +' tickE) MN A)
     (k : A → ptree (readerE bool +' tickE) MN B) env :
   eq_itree eq (fold_reader handle sample (PTree.bind t k) env)
-    (ITree.bind (fold_reader handle sample t env) (fun a => fold_reader handle sample (k a) env)).
+    (ITree.bind (fold_reader handle sample t env) (λ a, fold_reader handle sample (k a) env)).
 Proof. apply itree_reader_fold_bind. Qed.
 Example writer_bind_square {A B} (t : ptree (writerE (list nat) +' tickE) MN A)
     (k : A → ptree (writerE (list nat) +' tickE) MN B) :
   eq_itree eq (fold_writer logs handle sample (PTree.bind t k))
     (@bind (Monads.writerT (list nat) (itree F)) (writerT_monad logs) A B
-      (fold_writer logs handle sample t) (fun a => fold_writer logs handle sample (k a))).
+      (fold_writer logs handle sample t) (λ a, fold_writer logs handle sample (k a))).
 Proof. apply itree_writer_fold_bind. exact logs_laws. Qed.
 
 Example writer_sampling_does_not_log {X} (m : MN X) :
   @writer_sample (list nat) MN (itree F) logs _ sample X m =
-    ITree.bind (@sample X m) (fun x => ITreeDefinition.Ret ([],x)).
+    ITree.bind (@sample X m) (λ x, ITreeDefinition.Ret ([],x)).
 Proof. reflexivity. Qed.
 End Services.
 

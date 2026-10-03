@@ -58,7 +58,7 @@ Qed.
 
 Context {E : Type → Type}.
 CoFixpoint scheduled_retry n : ptree E SubEnumQ unit :=
-  Prob (schedule_coin n) (fun again => if again then scheduled_retry (S n) else Ret tt).
+  Prob (schedule_coin n) (λ again, if again then scheduled_retry (S n) else Ret tt).
 
 Variable R : realType.
 Local Notation Hn := (@ptree_domain_approx R E unit).
@@ -69,18 +69,18 @@ Lemma scheduled_retry_finite_mass fuel n :
 Proof.
   induction fuel as [|fuel IH] in n |- *.
   - change (oval_eval (Hn O (ProbF (schedule_coin n)
-      (fun again => if again then scheduled_retry (S n) else Ret tt))) (fun _ => 1) =
+      (λ again, if again then scheduled_retry (S n) else Ret tt))) (λ _, 1) =
       ratr (1 - (1 - q (Nat.add n O)) / (1 - q n))).
     rewrite ptree_domain_approx_prob_zero Nat.add_0_r divff ?subrr ?rmorph0 //.
     apply/eqP=> Hz; have Hp := proj2 (q_bound n).
     have Hq : q n = 1 by move/eqP: Hz; rewrite subr_eq0=> /eqP <-.
     by rewrite Hq ltxx in Hp.
   - change (oval_eval (Hn (S fuel) (ProbF (schedule_coin n)
-      (fun again => if again then scheduled_retry (S n) else Ret tt))) (fun _ => 1) =
+      (λ again, if again then scheduled_retry (S n) else Ret tt))) (λ _, 1) =
       ratr (1 - (1 - q (Nat.add n (S fuel))) / (1 - q n))).
     rewrite ptree_domain_approx_prob_succ.
     change (ratr (1 - continue_weight n) *
-      oval_eval (Hn fuel (RetF tt)) (fun _ => 1) +
+      oval_eval (Hn fuel (RetF tt)) (λ _, 1) +
       (ratr (continue_weight n) * oval_mass (Hn fuel (observe (scheduled_retry (S n)))) + 0) =
       ratr (1 - (1 - q (Nat.add n (S fuel))) / (1 - q n))).
     rewrite ptree_domain_approx_ret mulr1 addr0 IH -rmorphM -rmorphD.
@@ -100,7 +100,7 @@ Qed.
 
 Theorem scheduled_retry_hitting_mass : q O = 0 →
   oval_mass (ptree_domain_hitting R (observe (scheduled_retry O))) =
-  oval_sup (fun n => ratr (q n) : R).
+  oval_sup (λ n, ratr (q n) : R).
 Proof.
   intro H0; apply oval_sup_ext=> n; exact (scheduled_retry_from_zero_mass n H0).
 Qed.
@@ -161,11 +161,11 @@ Proof.
   by rewrite le_max lexx orbT.
 Qed.
 
-Theorem rational_chain_sup : oval_sup (fun n => ratr (rational_chain n) : R) = alpha.
+Theorem rational_chain_sup : oval_sup (λ n, ratr (rational_chain n) : R) = alpha.
 Proof.
   have Hb n : (ratr (rational_chain n) : R) <= alpha := ltW (rational_chain_below n).
-  have Hz := @oval_sup_ge R (fun n => ratr (rational_chain n)) alpha O Hb.
-  change (is_true ((ratr (0 : rat) : R) <= oval_sup (fun n => ratr (rational_chain n) : R))) in Hz.
+  have Hz := @oval_sup_ge R (λ n, ratr (rational_chain n)) alpha O Hb.
+  change (is_true ((ratr (0 : rat) : R) <= oval_sup (λ n, ratr (rational_chain n) : R))) in Hz.
   rewrite rmorph0 in Hz.
   apply/eqP; rewrite eq_le; apply/andP; split; first exact: oval_sup_le.
   rewrite leNgt; apply/negP=> Hlt.

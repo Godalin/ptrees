@@ -28,10 +28,10 @@ Hypothesis kernels_equal : ∀ s, D s → free_omega_qlift eq (left s) (right s)
 
 Lemma kernel_equality_supported s : D s →
   free_omega_qlift
-    (fun p q => p = q ∧ kernel_completion_invariant D p) (left s) (right s).
+    (λ p q, p = q ∧ kernel_completion_invariant D p) (left s) (right s).
 Proof.
   intro HD. eapply FOQLAERestrict with (T := eq)
-    (P := kernel_completion_invariant D) (Q := fun _ => True).
+    (P := kernel_completion_invariant D) (Q := λ _, True).
   - apply kernels_equal. exact HD.
   - apply left_closed. exact HD.
   - apply (@sem_ae_true MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
@@ -62,9 +62,9 @@ Qed.
 
 Theorem kernel_hitting_limit_eq s : D s →
   free_omega_qlift eq
-    (FOLub (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+    (FOLub (λ n, @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
       S O left n s))
-    (FOLub (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+    (FOLub (λ n, @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
       S O right n s)).
 Proof.
   intro HD. apply FOQLLub. intro n. apply kernel_hitting_approx_eq. exact HD.
@@ -81,7 +81,7 @@ Proof.
   eapply FOQLComp with (T := eq) (U := eq); [exact Hleft| |].
   - eapply FOQLComp with (T := eq) (U := eq).
     + apply kernel_hitting_limit_eq. exact HD.
-    + apply FOQLMono with (T := fun x y => y = x).
+    + apply FOQLMono with (T := λ x y, y = x).
       * apply FOQLSym. exact Hright.
       * intros x y Hxy. symmetry. exact Hxy.
     + intros x z [y [-> ->]]. reflexivity.

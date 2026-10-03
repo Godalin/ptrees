@@ -20,7 +20,7 @@ Proof. apply observe_eq_pstruct. reflexivity. Qed.
 Lemma run_reader_bind {Env E MN A B} env (t : ptree (readerE Env +' E) MN A)
     (k : A → ptree (readerE Env +' E) MN B) :
   pstruct eq (run_reader (PTree.bind t k) env)
-    (PTree.bind (run_reader t env) (fun a => run_reader (k a) env)).
+    (PTree.bind (run_reader t env) (λ a, run_reader (k a) env)).
 Proof. apply pstruct_interp_bind. Qed.
 
 Lemma run_writer_ret {W E MN A} (op : Monoid W) (a : A) :

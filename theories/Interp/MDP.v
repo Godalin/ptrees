@@ -46,7 +46,7 @@ Theorem mdp_state_interp_of_ret_l
 Proof.
   intros [h [mu [Hhit [Heq Hgood]]]].
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-    (fun h : shead => ptree_interp_head_tree handler h)) as [front Hfront].
+    (λ h : shead, ptree_interp_head_tree handler h)) as [front Hfront].
   destruct (Hhandler h Hgood) as [h' [out [Hout [Hdirac Hgood']]]].
   eapply mdp_state_of_hitting with (h := h') (out := sem_bind mu front).
   - eapply (ptree_stable_hitting_interp (FI := FI) (FO := FO));

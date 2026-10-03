@@ -41,7 +41,7 @@ Proof.
   assert (Hself : sem_lift (@eq A) sem_zero sem_zero).
   { apply sem_lift_refl. intro x. reflexivity. }
   pose proof (sem_lift_ae_restrict Hself
-    (sem_ae_zero (fun _ : A => False)) (sem_ae_zero (fun _ : A => False))) as Hempty.
+    (sem_ae_zero (λ _ : A, False)) (sem_ae_zero (λ _ : A, False))) as Hempty.
   eapply sem_lift_mono; [|exact Hempty]. intros x y [_ [Hfalse _]]. contradiction.
 Qed.
 

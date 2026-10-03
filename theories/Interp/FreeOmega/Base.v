@@ -111,7 +111,7 @@ Corollary peutt_interp_trigger {R} (t : ptree E MN R) :
     FreeOmegaObservableSemanticMeasureCoreLaws
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
-    (PTree.interp (fun X e => @PTree.trigger E MN X e) t) t.
+    (PTree.interp (λ X e, @PTree.trigger E MN X e) t) t.
 Proof.
   change (@peutt E MN MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
@@ -214,7 +214,7 @@ Proof.
     pose proof (translate_hitting_lift
       (rename := compose_rename) HS HR) as Hsr.
     eapply FOQLComp
-      with (T := fun hL hS => exists hM,
+      with (T := λ hL hS, exists hM,
           translate_head_rel rename1 hS hM ∧
           @translate_head_rel F MN G rename2 R hM hL)
         (U := translate_head_rel compose_rename)
@@ -409,7 +409,7 @@ Theorem peutt_interp_vis {R X}
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.interp handler (Vis e k))
     (Tau (PTree.bind (handler _ e)
-      (fun x => PTree.interp handler (k x)))).
+      (λ x, PTree.interp handler (k x)))).
 Proof.
   apply peutt_of_pstruct.
   apply observe_eq_pstruct. exact (observing_observe (interp_vis_ handler e k)).
@@ -424,7 +424,7 @@ Theorem peutt_interp_prob {R X}
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.interp handler (Prob mu k))
-    (Prob mu (fun x => PTree.interp handler (k x))).
+    (Prob mu (λ x, PTree.interp handler (k x))).
 Proof.
   apply peutt_of_pstruct.
   apply observe_eq_pstruct. exact (observing_observe (interp_prob_ handler mu k)).
@@ -440,7 +440,7 @@ Theorem peutt_interp_bind {A B}
     FreeOmegaObservableSemanticOmega B B eq
     (PTree.interp handler (PTree.bind t k))
     (PTree.bind (PTree.interp handler t)
-      (fun x => PTree.interp handler (k x))).
+      (λ x, PTree.interp handler (k x))).
 Proof.
   apply peutt_of_pstruct.
   apply pstruct_interp_bind.
@@ -460,7 +460,7 @@ Theorem peutt_interp_iter {I R}
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.interp handler (PTree.iter step i))
-    (PTree.iter (fun j => PTree.interp handler (step j)) i).
+    (PTree.iter (λ j, PTree.interp handler (step j)) i).
 Proof.
   apply peutt_of_pstruct.
   apply pstruct_interp_iter.
@@ -480,7 +480,7 @@ Theorem peutt_interp_compose
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.interp handler2 (PTree.interp handler1 t))
     (PTree.interp
-      (fun (X : Type) (e : E X) =>
+      (λ (X : Type) (e : E X),
         PTree.interp handler2 (@handler1 X e)) t).
 Proof.
   apply peutt_of_pstruct.

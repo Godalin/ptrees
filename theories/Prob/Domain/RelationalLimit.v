@@ -24,9 +24,9 @@ Theorem oval_dual_lub {A B} (T : A → B → Prop)
   oval_dual T (oval_lub Hc) (oval_lub Hd).
 Proof.
   intros H f g Hf Hg Hfg.
-  change (oval_sup (fun n => oval_eval (c n) f) <=
-          oval_sup (fun n => oval_eval (d n) g)).
-  apply (oval_sup_mono (fun n => proj2 (oval_eval_bounds (d n) Hg))).
+  change (oval_sup (λ n, oval_eval (c n) f) <=
+          oval_sup (λ n, oval_eval (d n) g)).
+  apply (oval_sup_mono (λ n, proj2 (oval_eval_bounds (d n) Hg))).
   intro n; exact (H n f g Hf Hg Hfg).
 Qed.
 

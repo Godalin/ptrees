@@ -48,7 +48,7 @@ Proof.
   intro Hbranches. split.
   - intro fuel.
     destruct (enumQ_uniform_nat_bound mu
-      (P := fun x bound => free_omega_approx eq
+      (P := λ x bound, free_omega_approx eq
         (ptree_hitting_approx (MF := FreeOmega EnumQ) fuel
           (observe (PTree.bind (c x) k)))
         (ptree_bind_diagonal_approx (MF := FreeOmega EnumQ)
@@ -58,7 +58,7 @@ Proof.
       eapply free_omega_approx_trans; [exact Happrox|].
       apply ptree_bind_diagonal_mono. exact Hnm.
     + exists bound,
-        (fun x => free_omega_approx eq
+        (λ x, free_omega_approx eq
           (ptree_hitting_approx (MF := FreeOmega EnumQ) fuel
             (observe (PTree.bind (c x) k)))
           (ptree_bind_diagonal_approx (MF := FreeOmega EnumQ)
@@ -68,7 +68,7 @@ Proof.
       * intros x Hx. exact Hx.
   - intro fuel.
     destruct (enumQ_uniform_nat_bound mu
-      (P := fun x bound => free_omega_approx eq
+      (P := λ x bound, free_omega_approx eq
         (ptree_bind_diagonal_approx (MF := FreeOmega EnumQ)
           fuel (c x) k)
         (ptree_hitting_approx (MF := FreeOmega EnumQ) bound
@@ -80,7 +80,7 @@ Proof.
       eapply free_omega_approx_trans; [exact Happrox|].
       apply ptree_hitting_mono. exact Hnm.
     + exists bound,
-        (fun x => free_omega_approx eq
+        (λ x, free_omega_approx eq
           (ptree_bind_diagonal_approx (MF := FreeOmega EnumQ)
             fuel (c x) k)
           (ptree_hitting_approx (MF := FreeOmega EnumQ) bound

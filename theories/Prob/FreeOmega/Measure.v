@@ -24,8 +24,8 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
     SemanticMeasure (FreeOmega MN) := {
   sem_ret := @FORet MN;
   sem_bind := @free_omega_bind MN;
-  sem_eq := fun A => @free_omega_qlift MN NI NO A A eq;
-  sem_ae := fun A mu P => @free_omega_ae MN NI A P mu;
+  sem_eq := λ A, @free_omega_qlift MN NI NO A A eq;
+  sem_ae := λ A mu P, @free_omega_ae MN NI A P mu;
   sem_lift := @free_omega_qlift MN NI NO
 }.
 
@@ -73,7 +73,7 @@ Proof.
   - intros A mu. induction mu.
     + constructor. exact I.
     + constructor.
-    + eapply FOAESample with (Good := fun _ => True).
+    + eapply FOAESample with (Good := λ _, True).
       * apply sem_ae_true.
       * intros x _. exact (H x).
     + constructor. exact H.
@@ -96,7 +96,7 @@ Proof.
     intros x z [y [Hxy ->]]. exact Hxy.
   - intros A B R mu nu H. apply FOQLSym. exact H.
   - intros A B C R T mu nu xi Hmn Hnx.
-    refine (FOQLComp (R := fun x z => exists y, R x y ∧ T y z)
+    refine (FOQLComp (R := λ x z, exists y, R x y ∧ T y z)
       Hmn Hnx _).
     intros x z Hxz. exact Hxz.
 Qed.
@@ -139,13 +139,13 @@ Qed.
 Lemma free_omega_qlift_bind_ae
     `{NAE : @SemanticMeasureAELiftLaws MN NI}
     {A B} (mu : FreeOmega MN A) (k h : A → FreeOmega MN B) :
-  free_omega_ae (fun x => free_omega_qlift eq (k x) (h x)) mu →
+  free_omega_ae (λ x, free_omega_qlift eq (k x) (h x)) mu →
   free_omega_qlift eq (free_omega_bind mu k) (free_omega_bind mu h).
 Proof.
   intro Hae. induction Hae; cbn.
   - exact H.
   - apply FOQLStructural. constructor.
-  - eapply FOQLSample with (T := fun x y => x = y ∧ Good x).
+  - eapply FOQLSample with (T := λ x y, x = y ∧ Good x).
     + exact (sem_lift_refl_ae H).
     + intros x y [-> Hy]. exact (H1 y Hy).
   - apply FOQLLub. exact H0.
@@ -161,7 +161,7 @@ Proof.
   - intros A B C mu k h.
     change (free_omega_qlift eq
       (free_omega_bind (free_omega_bind mu k) h)
-      (free_omega_bind mu (fun x => free_omega_bind (k x) h))).
+      (free_omega_bind mu (λ x, free_omega_bind (k x) h))).
     rewrite free_omega_bind_assoc.
     apply free_omega_qlift_refl. intros y. reflexivity.
   - intros A B mu k h Hae. exact (free_omega_qlift_bind_ae Hae).
@@ -177,7 +177,7 @@ Qed.
 Proof.
   constructor.
   - intros A B mu k h Hae.
-    eapply FOQLSample with (T := fun x y => x = y ∧
+    eapply FOQLSample with (T := λ x y, x = y ∧
       free_omega_qlift eq (k x) (h x)).
     + exact (sem_lift_refl_ae Hae).
     + intros x y [-> Hxy]. exact Hxy.
@@ -209,7 +209,7 @@ Qed.
 Proof.
   constructor. intros A B C mu h k.
   change (free_omega_qlift eq
-    (FOSample mu (fun x => FOSample (h x) k))
+    (FOSample mu (λ x, FOSample (h x) k))
     (FOSample (sem_bind mu h) k)).
   eapply FOQLSampleBind.
   - apply sem_ae_bind_iff.
@@ -230,8 +230,8 @@ Lemma free_omega_mixed_exchange_of_product
 Proof.
   intro Hswap. intros A B R k1 k2 Hkl.
   change (free_omega_qlift R
-    (FOSample mu (fun x => FOSample nu (k1 x)))
-    (FOSample nu (fun y => FOSample mu (k2 y)))).
+    (FOSample mu (λ x, FOSample nu (k1 x)))
+    (FOSample nu (λ y, FOSample mu (k2 y)))).
   eapply FOQLSampleExchange.
   - exact Hswap.
   - exact Hkl.
@@ -243,12 +243,12 @@ Qed.
     @SemanticOmega (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) := {
   sem_zero := @FOZero MN;
-  sem_le := fun A => @free_omega_approx MN NI A A eq;
-  sem_lub := fun A chain out =>
+  sem_le := λ A, @free_omega_approx MN NI A A eq;
+  sem_lub := λ A chain out,
     @sem_eq (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) A
       out (FOLub chain);
-  sem_total := fun A mu => ∃ representative : FreeOmega MN A,
+  sem_total := λ A mu, ∃ representative : FreeOmega MN A,
     free_omega_qlift eq mu representative ∧
     ∃ (O : Type) (obs : A → O) (out : MN O),
       free_omega_observes obs representative out ∧ sem_total out
@@ -449,7 +449,7 @@ Proof.
   - intros A mu. apply free_omega_approx_refl. intros x. reflexivity.
   - intros A mu nu xi Hmn Hnx.
     eapply free_omega_approx_mono with
-      (R := fun x z => exists mid, x = mid ∧ mid = z).
+      (R := λ x z, exists mid, x = mid ∧ mid = z).
     + intros x z [mid [-> ->]]. reflexivity.
     + exact (free_omega_approx_comp (R := eq) (T := eq) Hmn Hnx).
   - intros A mu. constructor.

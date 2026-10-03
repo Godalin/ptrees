@@ -14,11 +14,11 @@ Set Implicit Arguments.
 
 Example domain_retry_least_is_bottom (R : realType) i :
   oval_eq
-    (oval_iter (fun n : nat => oval_ret R (inl (S n) : nat+bool)) i)
+    (oval_iter (λ n : nat, oval_ret R (inl (S n) : nat+bool)) i)
     (@oval_bottom R bool).
 Proof.
   apply oval_le_antisym.
-  - apply (oval_iter_least_prefixed (Y := fun _ => @oval_bottom R bool)).
+  - apply (oval_iter_least_prefixed (Y := λ _, @oval_bottom R bool)).
     intros j f Hf. exact (oval_le_refl (@oval_bottom R bool) Hf).
   - apply oval_bottom_le.
 Qed.
@@ -38,22 +38,22 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure
 Local Notation FO := (FreeOmegaObservableSemanticOmega
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation native := (fun X => @subenumQ_domain R X).
-Definition formal_kernel i := FOSample (kernel i) (fun v => FORet v).
+Definition formal_kernel i := FOSample (kernel i) (λ v, FORet v).
 
 Example rational_loop_denotes_lfp i :
   free_omega_model_denotes native
-    (FOLub (fun n => sem_iter_approx (MI := FI) (MO := FO) formal_kernel n i))
-    (oval_iter (fun j => subenumQ_domain R (kernel j)) i).
+    (FOLub (λ n, sem_iter_approx (MI := FI) (MO := FO) formal_kernel n i))
+    (oval_iter (λ j, subenumQ_domain R (kernel j)) i).
 Proof.
   apply free_omega_iteration_denotes_lfp.
   intros j f Hf. reflexivity.
 Qed.
 Example rational_loop_modelable i :
   free_omega_modelable native
-    (FOLub (fun n => sem_iter_approx (MI := FI) (MO := FO) formal_kernel n i)).
+    (FOLub (λ n, sem_iter_approx (MI := FI) (MO := FO) formal_kernel n i)).
 Proof.
   apply (proj2 (modelable_iff_denotes _ _)).
-  exists (oval_iter (fun j => subenumQ_domain R (kernel j)) i).
+  exists (oval_iter (λ j, subenumQ_domain R (kernel j)) i).
   apply rational_loop_denotes_lfp.
 Qed.
 End RationalInterpretation.

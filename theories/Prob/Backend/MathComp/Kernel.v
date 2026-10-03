@@ -119,7 +119,7 @@ Definition mathcomp_extend_measure {A B}
 Lemma measurable_mathcomp_extend {A B}
     (k : A → subprobability (mc_carrier B) R) U :
   measurable U → measurable_fun [set: mc_carrier A]
-    (fun x => mathcomp_extend_measure k x U).
+    (λ x, mathcomp_extend_measure k x U).
 Proof.
   move=> mtop Y mY.
   by [].
@@ -157,7 +157,7 @@ Definition mathcomp_source_measure {A}
 Lemma measurable_mathcomp_source {A}
     (mu : subprobability (mc_carrier A) R) U :
   measurable U → measurable_fun [set: mc_carrier unit]
-    (fun x => mathcomp_source_measure mu x U).
+    (λ x, mathcomp_source_measure mu x U).
 Proof. move=> mU mtop Y mY. by []. Qed.
 
 HB.instance Definition mathcomp_source_is_kernel {A}
@@ -256,7 +256,7 @@ Lemma mathcomp_kernel_root_le1 {A} (mu : MathCompKernelMeasure A) :
 Proof. exact: sprob_kernel_le1. Qed.
 
 Definition mathcomp_kernel_root_fun {A} (mu : MathCompKernelMeasure A) :=
-  fun U : set (mc_carrier A) => mathcomp_kernel_root mu U.
+  λ U : set (mc_carrier A), mathcomp_kernel_root mu U.
 
 Lemma mathcomp_kernel_root_fun0 {A} (mu : MathCompKernelMeasure A) :
   mathcomp_kernel_root_fun mu set0 = 0.
@@ -482,7 +482,7 @@ Definition mathcomp_kernel_extend_measure {A B}
 Lemma measurable_mathcomp_kernel_extend {A B}
     (k : A → MathCompKernelMeasure B) U :
   measurable U → measurable_fun [set: mc_carrier A]
-    (fun x => mathcomp_kernel_extend_measure k x U).
+    (λ x, mathcomp_kernel_extend_measure k x U).
 Proof. move=> mU mtop Y mY. by []. Qed.
 
 HB.instance Definition mathcomp_kernel_extend_is_kernel {A B}
@@ -524,7 +524,7 @@ Lemma measurable_mathcomp_kernel_extend_snd {X A B}
     (k : A → MathCompKernelMeasure B) U :
   measurable U → measurable_fun
     [set: (mc_carrier X * mc_carrier A)%type]
-    (fun xy => mathcomp_kernel_extend_snd_measure k xy U).
+    (λ xy, mathcomp_kernel_extend_snd_measure k xy U).
 Proof.
   move=> mU.
   exact: measurableT_comp (measurable_mathcomp_kernel_extend k mU)
@@ -613,7 +613,7 @@ Qed.
 
 Lemma mathcomp_kernel_bind_ret_r {A} (mu : MathCompKernelMeasure A) :
   mathcomp_kernel_eq
-    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret x)) mu.
+    (mathcomp_kernel_bind mu (λ x, mathcomp_kernel_ret x)) mu.
 Proof.
   move=> U mU nbot. rewrite mathcomp_kernel_root_bind.
   transitivity (\int[mathcomp_kernel_root mu]_x
@@ -634,7 +634,7 @@ Lemma mathcomp_kernel_bind_assoc {A B C}
     (h : B → MathCompKernelMeasure C) :
   mathcomp_kernel_eq
     (mathcomp_kernel_bind (mathcomp_kernel_bind mu k) h)
-    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_bind (k x) h)).
+    (mathcomp_kernel_bind mu (λ x, mathcomp_kernel_bind (k x) h)).
 Proof.
   move=> U mU nbot. rewrite !mathcomp_kernel_root_bind.
   change
@@ -643,11 +643,11 @@ Proof.
        (mathcomp_kernel_extend_measure h y U) =
      \int[mathcomp_kernel_root mu]_x
        (mathcomp_kernel_extend_measure
-         (fun a => mathcomp_kernel_bind (k a) h) x U)).
+         (λ a, mathcomp_kernel_bind (k a) h) x U)).
   rewrite (integral_kcomp
     mu (mathcomp_kernel_extend_snd k)
     (MCBottom : mc_carrier unit)
-    (f := fun y => mathcomp_kernel_extend_measure h y U)); last 2 first.
+    (f := λ y, mathcomp_kernel_extend_measure h y U)); last 2 first.
   - move=> z. exact: measure_ge0.
   - exact: measurable_mathcomp_kernel_extend mU.
   apply: eq_integral=> x _.
@@ -786,7 +786,7 @@ Proof.
       have Hnot : MCJoint (MCValue x) (MCValue y) \notin
           (~` mc_relation rel).
       { rewrite notin_setE /= /mc_relation.
-        have Hnn : ~ ~ rel x y := fun Hn => Hn Hxy.
+        have Hnn : ~ ~ rel x y := λ Hn, Hn Hxy.
         exact Hnn. }
       by rewrite (negbTE Hnot).
 Qed.
@@ -811,7 +811,7 @@ Proof.
     rewrite indicE.
     have Hnot : MCValue x \notin (~` mc_predicate P).
     { rewrite notin_setE /= /mc_predicate.
-      exact: (fun Hn => Hn Hx). }
+      exact: (λ Hn, Hn Hx). }
     by rewrite (negbTE Hnot).
   - move=> A B x k. exact: mathcomp_kernel_bind_ret_l.
   - move=> A B C mu k h. exact: mathcomp_kernel_bind_assoc.
@@ -855,13 +855,13 @@ Lemma mathcomp_kernel_eq_trans A :
 Proof. by move=> mu nu xi Hmn Hnx U mU nbot; rewrite Hmn // Hnx. Qed.
 
 Lemma mathcomp_kernel_ae_true {A} (mu : MathCompKernelMeasure A) :
-  mathcomp_kernel_ae mu (fun _ => True).
+  mathcomp_kernel_ae mu (λ _, True).
 Proof. apply: aeW=> [[|a]]; exact I. Qed.
 
 Lemma mathcomp_kernel_ae_conj {A} (mu : MathCompKernelMeasure A)
     (P Q : A → Prop) :
   mathcomp_kernel_ae mu P → mathcomp_kernel_ae mu Q →
-  mathcomp_kernel_ae mu (fun x => P x ∧ Q x).
+  mathcomp_kernel_ae mu (λ x, P x ∧ Q x).
 Proof.
   rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
   move=> HP HQ.
@@ -897,7 +897,7 @@ Qed.
 Lemma mathcomp_kernel_ae_countable {A} (mu : MathCompKernelMeasure A)
     (P : nat → A → Prop) :
   (∀ n, mathcomp_kernel_ae mu (P n)) →
-  mathcomp_kernel_ae mu (fun x => ∀ n, P n x).
+  mathcomp_kernel_ae mu (λ x, ∀ n, P n x).
 Proof.
   rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
   move=> HP.
@@ -921,7 +921,7 @@ Proof.
   change (\int[mathcomp_kernel_root mu]_z
     (mathcomp_kernel_extend_measure k z (~` mc_predicate Q)) = 0).
   have Hzero : ae_eq (mathcomp_kernel_root mu) setT
-      (fun z => mathcomp_kernel_extend_measure k z
+      (λ z, mathcomp_kernel_extend_measure k z
         (~` mc_predicate Q)) (cst 0).
   { rewrite /ae_eq /almost_everywhere.
     eapply negligibleS; [|exact Hmu].
@@ -941,7 +941,7 @@ Qed.
 Lemma mathcomp_kernel_ae_bind_iff {A B} (mu : MathCompKernelMeasure A)
     (k : A → MathCompKernelMeasure B) (Q : B → Prop) :
   mathcomp_kernel_ae (mathcomp_kernel_bind mu k) Q ↔
-  mathcomp_kernel_ae mu (fun x => mathcomp_kernel_ae (k x) Q).
+  mathcomp_kernel_ae mu (λ x, mathcomp_kernel_ae (k x) Q).
 Proof.
   split; last first.
   - move=> Hnested. eapply mathcomp_kernel_ae_bind; [exact Hnested|].
@@ -959,7 +959,7 @@ Proof.
     have Hfzero : ae_eq (mathcomp_kernel_root mu) setT f (cst 0).
     { apply/(@ae_eq_integral_abs _ _ R (mathcomp_kernel_root mu)
         setT HmT f Hmf).
-      rewrite (_ : (fun z => `|f z|) = f); first exact Hflat0.
+      rewrite (_ : (λ z, `|f z|) = f); first exact Hflat0.
       apply/funext=> z. rewrite /f gee0_abs //. }
     rewrite /ae_eq /almost_everywhere in Hfzero.
     eapply negligibleS; [|exact Hfzero].
@@ -1010,19 +1010,19 @@ Lemma mathcomp_kernel_lift_ae_transport_r {A B}
     (rel : A → B → Prop) (mu : MathCompKernelMeasure A)
     (nu : MathCompKernelMeasure B) (P : A → Prop) :
   mathcomp_kernel_lift rel mu nu → mathcomp_kernel_ae mu P →
-  mathcomp_kernel_ae nu (fun y => ∃ x, rel x y ∧ P x).
+  mathcomp_kernel_ae nu (λ y, ∃ x, rel x y ∧ P x).
 Proof.
   move=> [joint [Hleft [Hright Hrel]]] HP.
   have HjointP := mathcomp_joint_ae_left Hleft HP.
   rewrite /mathcomp_kernel_ae /mathcomp_measure_ae /almost_everywhere.
   apply/negligibleP; first by [].
   have Hm : measurable
-      (~` mc_predicate (fun y => exists x, rel x y ∧ P x)) by [].
+      (~` mc_predicate (λ y, exists x, rel x y ∧ P x)) by [].
   have Hnb : ~
-      (~` mc_predicate (fun y => exists x, rel x y ∧ P x)) MCBottom.
+      (~` mc_predicate (λ y, exists x, rel x y ∧ P x)) MCBottom.
   { move=> Hbad. exact: Hbad. }
   transitivity (joint (mc_joint_snd @^-1`
-    (~` mc_predicate (fun y => exists x, rel x y ∧ P x)))).
+    (~` mc_predicate (λ y, exists x, rel x y ∧ P x)))).
   - symmetry. exact: Hright Hm Hnb.
   - apply/negligibleP; first by [].
   rewrite /almost_everywhere in Hrel HjointP.
@@ -1039,7 +1039,7 @@ Lemma mathcomp_kernel_lift_ae_restrict {A B}
     (nu : MathCompKernelMeasure B) (P : A → Prop) (Q : B → Prop) :
   mathcomp_kernel_lift rel mu nu →
   mathcomp_kernel_ae mu P → mathcomp_kernel_ae nu Q →
-  mathcomp_kernel_lift (fun x y => rel x y ∧ P x ∧ Q y) mu nu.
+  mathcomp_kernel_lift (λ x y, rel x y ∧ P x ∧ Q y) mu nu.
 Proof.
   move=> [joint [Hleft [Hright Hrel]]] HP HQ.
   exists joint. repeat split=> //.
@@ -1084,7 +1084,7 @@ Qed.
 Lemma mathcomp_kernel_lift_sym {A B} (rel : A → B → Prop)
     (mu : MathCompKernelMeasure A) (nu : MathCompKernelMeasure B) :
   mathcomp_kernel_lift rel mu nu →
-  mathcomp_kernel_lift (fun y x => rel x y) nu mu.
+  mathcomp_kernel_lift (λ y x, rel x y) nu mu.
 Proof.
   move=> [joint [Hleft [Hright Hae]]].
   exists (mathcomp_swap_joint joint). split.
@@ -1104,9 +1104,9 @@ Proof.
     + rewrite /almost_everywhere.
       apply/negligibleP; first by [].
       change (joint (@mc_joint_swap A B @^-1`
-        (~` mc_relation (fun y x => rel x y))) = 0).
+        (~` mc_relation (λ y x, rel x y))) = 0).
       have Heq : @mc_joint_swap A B @^-1`
-          (~` mc_relation (fun y x => rel x y)) =
+          (~` mc_relation (λ y x, rel x y)) =
           (~` mc_relation rel).
       { apply/seteqP; split.
         - move=> [x y]; destruct x, y=> //=.
@@ -1131,7 +1131,7 @@ Class MathCompCouplingGluing := {
     mathcomp_kernel_lift rel mu nu →
     mathcomp_kernel_lift rel' nu xi →
     mathcomp_kernel_lift
-      (fun x z => ∃ y, rel x y ∧ rel' y z) mu xi
+      (λ x z, ∃ y, rel x y ∧ rel' y z) mu xi
 }.
 
 (** Consequently the whole abstract law package is available as soon as the
@@ -1189,7 +1189,7 @@ Definition mathcomp_kernel_total {A}
 Lemma mathcomp_kernel_map_mass {A B}
     (mu : MathCompKernelMeasure A) (f : A → B) :
   mathcomp_kernel_root
-    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret (f x)))
+    (mathcomp_kernel_bind mu (λ x, mathcomp_kernel_ret (f x)))
     (@mc_returned B) =
   mathcomp_kernel_root mu (@mc_returned A).
 Proof.
@@ -1207,7 +1207,7 @@ Qed.
 Lemma mathcomp_kernel_map_total {A B}
     (mu : MathCompKernelMeasure A) (f : A → B) :
   mathcomp_kernel_total
-    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret (f x))) ↔
+    (mathcomp_kernel_bind mu (λ x, mathcomp_kernel_ret (f x))) ↔
   mathcomp_kernel_total mu.
 Proof. by rewrite /mathcomp_kernel_total mathcomp_kernel_map_mass. Qed.
 

@@ -31,7 +31,7 @@ Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Lemma run_state_prob {A X} (mu : MN X)
     (k : X → ptree (stateE S +' E) MN A) s :
-  pstruct eq (run_state (Prob mu k) s) (Prob mu (fun x => run_state (k x) s)).
+  pstruct eq (run_state (Prob mu k) s) (Prob mu (λ x, run_state (k x) s)).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Lemma run_state_get {A} (k : S → ptree (stateE S +' E) MN A) s :
@@ -44,7 +44,7 @@ Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Lemma run_state_forward {A X} (e : E X)
     (k : X → ptree (stateE S +' E) MN A) s :
-  pstruct eq (run_state (Vis (inr1 e) k) s) (Vis e (fun x => run_state (k x) s)).
+  pstruct eq (run_state (Vis (inr1 e) k) s) (Vis e (λ x, run_state (k x) s)).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Definition state_pstruct_candidate {A B} (RR : A → B → Prop)
@@ -79,13 +79,13 @@ Qed.
 Definition state_bind_candidate {A B} (k : A → ptree (stateE S +' E) MN B)
     (v w : ptree E MN (S * B)) : Prop :=
   (∃ t s, v = run_state (PTree.bind t k) s ∧
-    w = PTree.bind (run_state t s) (fun sa => run_state (k (snd sa)) (fst sa))) ∨
+    w = PTree.bind (run_state t s) (λ sa, run_state (k (snd sa)) (fst sa))) ∨
     pstruct eq v w.
 
 Theorem run_state_bind {A B} (t : ptree (stateE S +' E) MN A)
     (k : A → ptree (stateE S +' E) MN B) s :
   pstruct eq (run_state (PTree.bind t k) s)
-    (PTree.bind (run_state t s) (fun sa => run_state (k (snd sa)) (fst sa))).
+    (PTree.bind (run_state t s) (λ sa, run_state (k (snd sa)) (fst sa))).
 Proof.
   assert (Hmain : ∀ (v w : ptree E MN (S * B)),
     state_bind_candidate k v w -> pstruct eq v w).
@@ -93,7 +93,7 @@ Proof.
     - destruct Hmain as [t0 [s0 [-> ->]]]. unfold pstruct_body.
       change (pstructF eq (` CH) (observe (run_state (PTree.bind t0 k) s0))
         (observe (PTree.bind (run_state t0 s0)
-          (fun sa => run_state (k (snd sa)) (fst sa))))).
+          (λ sa, run_state (k (snd sa)) (fst sa))))).
       rewrite observe_run_state, !observe_bind, observe_run_state.
       destruct (observe t0) as [a|u|X e c|X mu c]; cbn.
       + rewrite <- observe_run_state.

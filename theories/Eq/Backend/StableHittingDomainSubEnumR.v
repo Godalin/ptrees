@@ -65,6 +65,6 @@ Proof. intros H f Hf; exact (subenumR_stable_hitting_denotational_adequacy H Hf)
 
 Corollary subenumR_stable_hitting_mass_lub s out (H : hits s out) :
   oval_mass (free_omega_model (subenumR_stable_hitting_modelable H)) =
-  oval_sup (fun n => oval_mass (subenumR_ptree_domain_approx n s)).
+  oval_sup (λ n, oval_mass (subenumR_ptree_domain_approx n s)).
 Proof. exact (subenumR_stable_hitting_denotational_adequacy H (oval_test_one R)). Qed.
 End RealHitting.

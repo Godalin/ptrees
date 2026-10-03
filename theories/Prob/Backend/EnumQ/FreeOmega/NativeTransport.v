@@ -31,37 +31,37 @@ Variable F : realType.
 Lemma enumQ_decoded_quotient_rational_tests {A B X Y}
     (T : A → B → Prop) (mu : EnumQ X) (nu : EnumQ Y)
     (decode : X → A) (decode' : Y → B) f g :
-  free_omega_qlift T (FOSample mu (fun x => FORet (decode x)))
-    (FOSample nu (fun y => FORet (decode' y))) →
+  free_omega_qlift T (FOSample mu (λ x, FORet (decode x)))
+    (FOSample nu (λ y, FORet (decode' y))) →
   (∀ x, 0 <= f x) → (∀ y, 0 <= g y) →
   (∀ x y, T x y → f x <= g y) →
-  enumQ_expect (fun x => f (decode x)) mu <= enumQ_expect (fun y => g (decode' y)) nu.
+  enumQ_expect (λ x, f (decode x)) mu <= enumQ_expect (λ y, g (decode' y)) nu.
 Proof.
   intros Hq Hf Hg Hfg.
-  have Hf' : nonnegative_test (fun x => (ratr (f x) : F)%:E).
+  have Hf' : nonnegative_test (λ x, (ratr (f x) : F)%:E).
   { intro x. rewrite lee_fin ler0q. exact (Hf x). }
-  have Hg' : nonnegative_test (fun y => (ratr (g y) : F)%:E).
+  have Hg' : nonnegative_test (λ y, (ratr (g y) : F)%:E).
   { intro y. rewrite lee_fin ler0q. exact (Hg y). }
   have Hfg' : ∀ x y, T x y -> ((ratr (f x) : F)%:E <= (ratr (g y))%:E)%E.
   { intros x y Hxy. rewrite lee_fin ler_rat. exact (Hfg x y Hxy). }
   have H := free_omega_qlift_extended_upper Hq Hf' Hg' Hfg'.
-  change (is_true (enumQ_extended_expect (fun x => (ratr (f (decode x)) : F)%:E) mu <=
-    enumQ_extended_expect (fun y => (ratr (g (decode' y)) : F)%:E) nu)%E) in H.
-  rewrite (@enumQ_extended_expect_rat F X (fun x => f (decode x)) mu) in H.
-  rewrite (@enumQ_extended_expect_rat F Y (fun y => g (decode' y)) nu) in H.
+  change (is_true (enumQ_extended_expect (λ x, (ratr (f (decode x)) : F)%:E) mu <=
+    enumQ_extended_expect (λ y, (ratr (g (decode' y)) : F)%:E) nu)%E) in H.
+  rewrite (@enumQ_extended_expect_rat F X (λ x, f (decode x)) mu) in H.
+  rewrite (@enumQ_extended_expect_rat F Y (λ y, g (decode' y)) nu) in H.
   by rewrite lee_fin ler_rat in H.
 Qed.
 
 Lemma enumQ_decoded_quotient_equal_mass {A B X Y}
     (T : A → B → Prop) (mu : EnumQ X) (nu : EnumQ Y)
     (decode : X → A) (decode' : Y → B) :
-  free_omega_qlift T (FOSample mu (fun x => FORet (decode x)))
-    (FOSample nu (fun y => FORet (decode' y))) →
-  enumQ_expect (fun _ => 1) mu = enumQ_expect (fun _ => 1) nu.
+  free_omega_qlift T (FOSample mu (λ x, FORet (decode x)))
+    (FOSample nu (λ y, FORet (decode' y))) →
+  enumQ_expect (λ _, 1) mu = enumQ_expect (λ _, 1) nu.
 Proof.
   intro Hq. have H := free_omega_qlift_extended_upper_mass F Hq.
-  change (enumQ_extended_expect (fun _ => (1 : \bar F)%E) mu =
-    enumQ_extended_expect (fun _ => (1 : \bar F)%E) nu) in H.
+  change (enumQ_extended_expect (λ _, (1 : \bar F)%E) mu =
+    enumQ_extended_expect (λ _, (1 : \bar F)%E) nu) in H.
   rewrite !enumQ_extended_expect_one in H. injection H as Hr.
   exact (fmorph_inj (ratr : {rmorphism rat -> F}) Hr).
 Qed.
@@ -74,9 +74,9 @@ Theorem enumQ_finite_decoded_quotient_coupling {A B} {X Y : finType}
     (T : A → B → Prop) (mu : EnumQ X) (nu : EnumQ Y)
     (decode : X → A) (decode' : Y → B) (edge : X → Y → bool)
     (Hedge : ∀ x y, edge x y ↔ T (decode x) (decode' y)) :
-  free_omega_qlift T (FOSample mu (fun x => FORet (decode x)))
-    (FOSample nu (fun y => FORet (decode' y))) →
-  coupling (fun x y => edge x y) mu nu.
+  free_omega_qlift T (FOSample mu (λ x, FORet (decode x)))
+    (FOSample nu (λ y, FORet (decode' y))) →
+  coupling (λ x y, edge x y) mu nu.
 Proof.
   intro Hq. apply finite_enumQ_transport.
   - intro S.
@@ -96,13 +96,13 @@ Proof.
           as [Hyes|Hno]; [exact: lexx|].
         exfalso. apply Hno. exists x. split; [exact Hx|by rewrite Hxa].
       - destruct (excluded_middle_informative _); [exact: ler01|exact: lexx]. }
-    have Hleft : enumQ_expect (fun x => if x \in S then 1 else 0) mu <=
-        enumQ_expect (fun x => f (decode x)) mu.
+    have Hleft : enumQ_expect (λ x, if x \in S then 1 else 0) mu <=
+        enumQ_expect (λ x, f (decode x)) mu.
     { apply enumQ_expect_mono=> x. case Hx: (x \in S); last exact: Hf.
       unfold f. destruct (excluded_middle_informative _) as [Hyes|Hno]; [exact: lexx|].
       exfalso. apply Hno. exists x. split; [exact Hx|reflexivity]. }
-    have Hright : (fun y => g (decode' y)) =
-        (fun y => if y \in matching_neighbors edge setT S then 1 else 0).
+    have Hright : (λ y, g (decode' y)) =
+        (λ y, if y \in matching_neighbors edge setT S then 1 else 0).
     { apply functional_extensionality=> y. unfold g.
       destruct (excluded_middle_informative _) as [[x [Hx Hxy]]|Hnone].
       - have Hy : y \in matching_neighbors edge setT S.
@@ -130,11 +130,11 @@ Definition enumQ_finite_presentation {A}
     (p : free_omega_native_presentation EnumQ A) : free_omega_native_presentation EnumQ A :=
   {| native_sample_type := enumQ_position (native_sample_measure p);
      native_sample_measure := enumQ_positions (native_sample_measure p);
-     native_sample_value := fun i => native_sample_value p
+     native_sample_value := λ i, native_sample_value p
        (enumQ_position_value (native_sample_measure p) i) |}.
 
 Lemma enumQ_positions_lift_decode {A} (mu : EnumQ A) :
-  sem_lift (fun i x => enumQ_position_value mu i = x) (enumQ_positions mu) mu.
+  sem_lift (λ i x, enumQ_position_value mu i = x) (enumQ_positions mu) mu.
 Proof.
   have H := enumQ_lift_decode (enumQ_positions mu) (enumQ_position_value mu).
   eapply sem_lift_proper_r; last exact H.
@@ -154,14 +154,14 @@ Theorem enumQ_native_quotient_coupling {A B}
   free_omega_qlift T (free_omega_native p) (free_omega_native q) →
   ∃ joint : EnumQ (native_sample_type p * native_sample_type q),
     @semantic_coupling EnumQ EnumQ_SemanticMeasure _ _
-      (fun x y => T (native_sample_value p x) (native_sample_value q y))
+      (λ x y, T (native_sample_value p x) (native_sample_value q y))
       (native_sample_measure p) (native_sample_measure q) joint.
 Proof.
   intro Hq. pose fp := enumQ_finite_presentation p. pose fq := enumQ_finite_presentation q.
   have Hfinite : free_omega_qlift T (free_omega_native fp) (free_omega_native fq).
   { eapply FOQLComp with (T := eq) (U := T).
     - exact (enumQ_finite_presentation_correct p).
-    - eapply FOQLComp with (T := T) (U := fun x y => y = x).
+    - eapply FOQLComp with (T := T) (U := λ x y, y = x).
       + exact Hq.
       + apply FOQLSym. exact (enumQ_finite_presentation_correct q).
       + intros x z [y [Hxy <-]]. exact Hxy.
@@ -175,7 +175,7 @@ Proof.
   have Hjoint := enumQ_finite_decoded_quotient_coupling Hedge Hfinite.
   have Hlift := enumQ_sem_lift_of_coupling Hjoint.
   apply enumQ_coupling_realization.
-  eapply sem_lift_mono with (R := fun x y => exists i,
+  eapply sem_lift_mono with (R := λ x y, exists i,
     enumQ_position_value (native_sample_measure p) i = x ∧
     exists j, edge i j ∧ enumQ_position_value (native_sample_measure q) j = y).
   - intros x y [i [<- [j [Hij <-]]]]. exact (proj1 (Hedge i j) Hij).

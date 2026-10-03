@@ -34,8 +34,8 @@ Lemma delay_path_residual n t :
 Proof. induction n; cbn; congruence. Qed.
 
 Definition nonuniform_plan (mu : MN nat) (k : nat → tree) :
-    finite_internal_plan (Prob mu (fun n => tau_prefix n (k n))) :=
-  FIPProb mu (fun n => delay_plan n (k n)).
+    finite_internal_plan (Prob mu (λ n, tau_prefix n (k n))) :=
+  FIPProb mu (λ n, delay_plan n (k n)).
 
 (** Every path is finite, while path lengths over the syntax have no common
     bound.  This is not a claim that every n has positive sampling mass. *)
@@ -43,7 +43,7 @@ Example nonuniform_plan_unbounded (mu : MN nat) (k : nat → tree) bound :
   ∃ z : internal_plan_path (nonuniform_plan mu k),
     bound < internal_plan_steps (nonuniform_plan mu k) z.
 Proof.
-  exists (existT (fun n => internal_plan_path (delay_plan n (k n)))
+  exists (existT (λ n, internal_plan_path (delay_plan n (k n)))
     bound (delay_path bound (k bound))).
   cbn [nonuniform_plan internal_plan_steps].
   rewrite delay_path_steps. apply Nat.lt_succ_diag_r.
@@ -51,13 +51,13 @@ Qed.
 
 Example nonuniform_prefix_two (mu : MN nat) (k : nat → tree) :
   internal_plan_at (nonuniform_plan mu k) 2
-    (existT (fun n => internal_plan_path (delay_plan n (k n)))
+    (existT (λ n, internal_plan_path (delay_plan n (k n)))
       3 (delay_path 3 (k 3))) = Tau (Tau (k 3)).
 Proof. reflexivity. Qed.
 
 Example nonuniform_residual (mu : MN nat) (k : nat → tree) n :
   internal_plan_residual (nonuniform_plan mu k)
-    (existT (fun n => internal_plan_path (delay_plan n (k n)))
+    (existT (λ n, internal_plan_path (delay_plan n (k n)))
       n (delay_path n (k n))) = k n.
 Proof.
   change (internal_plan_residual (delay_plan n (k n)) (delay_path n (k n)) = k n).
@@ -77,7 +77,7 @@ Example nonuniform_hitting_exact (mu : MN nat) (k : nat → ptree E MN R) fuel :
   free_omega_qlift eq
     (@ptree_hitting_approx E MN (FreeOmega MN) FI FreeOmegaMixedMeasure
       FreeOmegaObservableSemanticOmega R fuel
-      (observe (Prob mu (fun n => tau_prefix n (k n)))))
+      (observe (Prob mu (λ n, tau_prefix n (k n)))))
     (internal_plan_budget (nonuniform_plan mu k) fuel).
 Proof. apply internal_plan_hitting_approx. Qed.
 End NonuniformHitting.
@@ -95,12 +95,12 @@ Example spin_prefix_stops_before_divergence :
 Proof. split; reflexivity. Qed.
 
 Definition visible_plan : finite_internal_plan
-    (Tau (Vis PlanAsk (fun b => Ret b)) : ptree planE SubEnumQ bool) :=
-  FIPTau (FIPStop (Vis PlanAsk (fun b => Ret b))).
+    (Tau (Vis PlanAsk (λ b, Ret b)) : ptree planE SubEnumQ bool) :=
+  FIPTau (FIPStop (Vis PlanAsk (λ b, Ret b))).
 
 Example visible_boundary_not_executed :
   internal_plan_steps visible_plan tt = 1 ∧
-  internal_plan_residual visible_plan tt = Vis PlanAsk (fun b => Ret b).
+  internal_plan_residual visible_plan tt = Vis PlanAsk (λ b, Ret b).
 Proof. split; reflexivity. Qed.
 
 Example visible_budget_zero :
@@ -109,7 +109,7 @@ Proof. apply FOQLSampleZero. Qed.
 
 Example visible_budget_one :
   free_omega_qlift eq (internal_plan_budget visible_plan 1)
-    (FORet (FHVis PlanAsk (fun b => Ret b))).
+    (FORet (FHVis PlanAsk (λ b, Ret b))).
 Proof.
   apply (@FOQLSampleRetL SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega).
   - apply sem_ae_ret_iff.
@@ -121,31 +121,31 @@ Qed.
     the primitive time-zero state.  Any online scheduler must account for
     this instead of claiming a mass-preserving prefix projection. *)
 Definition killed_plan :
-    finite_internal_plan (Prob (@subenumQ_zero bool) (fun _ => Ret true) : ptree planE SubEnumQ bool) :=
-  FIPProb (@subenumQ_zero bool) (fun _ => FIPStop (Ret true)).
+    finite_internal_plan (Prob (@subenumQ_zero bool) (λ _, Ret true) : ptree planE SubEnumQ bool) :=
+  FIPProb (@subenumQ_zero bool) (λ _, FIPStop (Ret true)).
 
 Example killed_plan_is_valid :
   @finite_internal planE SubEnumQ (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
     FreeOmegaMixedMeasure bool
-    (Prob (@subenumQ_zero bool) (fun _ => Ret true))
-    (FOSample (@subenumQ_zero bool) (fun _ => FORet (Ret true))).
+    (Prob (@subenumQ_zero bool) (λ _, Ret true))
+    (FOSample (@subenumQ_zero bool) (λ _, FORet (Ret true))).
 Proof. exact (internal_plan_frontier_valid killed_plan). Qed.
 
 Example completed_paths_do_not_preserve_prefix_mass :
   ¬ sem_same_mass
-      (subenumQ_bind (internal_plan_measure killed_plan) (fun _ => subenumQ_ret true))
+      (subenumQ_bind (internal_plan_measure killed_plan) (λ _, subenumQ_ret true))
       (subenumQ_ret true).
 Proof.
   intro Hmass.
   assert (Hzero : @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool
-    (subenumQ_bind (internal_plan_measure killed_plan) (fun _ => subenumQ_ret true))
-    (fun _ => False)).
+    (subenumQ_bind (internal_plan_measure killed_plan) (λ _, subenumQ_ret true))
+    (λ _, False)).
   { intros w x Hempty. contradiction. }
   pose proof (sem_lift_ae_transport_r Hmass Hzero) as Hret.
   apply (proj1 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
     SubEnumQ_SemanticMeasureDiracAELaws bool true
-    (fun y => exists x : bool, True ∧ False))) in Hret.
+    (λ y, exists x : bool, True ∧ False))) in Hret.
   destruct Hret as [x [_ Hfalse]]. exact Hfalse.
 Qed.

@@ -49,7 +49,7 @@ Local Notation "t ≈ₚ u" := (W t u) (at level 70, no associativity) : type_sc
 Definition reveal (b : bool) : tree bool :=
   if b then PTree.trigger Query else Ret false.
 Definition reveal_head b : stable_head queryE EnumQ bool :=
-  if b then FHVis Query (fun answer => Ret answer) else FHRet false.
+  if b then FHVis Query (λ answer, Ret answer) else FHRet false.
 Definition reveal_front b := ηω (reveal_head b) : MF (stable_head queryE EnumQ bool).
 Definition round := @vn_step_in queryE.
 Definition absorbing_step := pstruct_iter_natural_step round reveal.
@@ -57,7 +57,7 @@ Definition absorbing_program : tree bool := PTree.iter absorbing_step tt.
 Definition staged_program : tree bool := b <- PTree.iter round tt;; reveal b.
 Definition direct_program : tree bool := b <- direct_fair_in;; reveal b.
 Definition first_frontier := b ←ω vn_fair ;; reveal_front b.
-Definition round_frontier := absorbing_frontier (fun _ : unit => vn_transition) reveal_front tt.
+Definition round_frontier := absorbing_frontier (λ _ : unit, vn_transition) reveal_front tt.
 
 (** The whole program calculation is a rewrite chain; no new probability
     analysis or hand-written recursive bisimulation is hidden here. *)
@@ -95,7 +95,7 @@ Definition exit_round_front (v : unit+bool) : MF (stable_head queryE EnumQ (unit
   ηω (match v with
     | inl j => FHRet (inl j)
     | inr false => FHRet (inr false)
-    | inr true => FHVis Query (fun answer => PTree.bind (Ret answer) (fun b => Ret (inr b)))
+    | inr true => FHVis Query (λ answer, PTree.bind (Ret answer) (λ b, Ret (inr b)))
     end).
 Definition actual_round_front (_ : unit) := v ←ω vn_transition ;; exit_round_front v.
 
@@ -106,7 +106,7 @@ Proof.
     ((v ←ω vn_transition ;; ηω (FHRet v)) >>=ω
       stable_head_ret_bind_front exit_round_front)).
   apply stable_hitting_bind_ret_only.
-  - eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  - eapply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros v _. constructor. constructor.
   - apply round_hitting.
   - intros [[]|[]]; cbn [pstruct_iter_natural_step_handler reveal exit_round_front];
@@ -130,9 +130,9 @@ Qed.
 
 Example actual_visible_continuation :
   iteration_summary_target absorbing_step
-    (FHVis Query (fun answer => PTree.bind (Ret answer) (fun b => Ret (inr b)))) =
-  SHStable (FHVis Query (fun answer =>
-    iter_active absorbing_step (PTree.bind (Ret answer) (fun b => Ret (inr b))))).
+    (FHVis Query (λ answer, PTree.bind (Ret answer) (λ b, Ret (inr b)))) =
+  SHStable (FHVis Query (λ answer,
+    iter_active absorbing_step (PTree.bind (Ret answer) (λ b, Ret (inr b))))).
 Proof. reflexivity. Qed.
 
 Theorem staged_frontier_exact : staged_program ⇓ₕ round_frontier.
@@ -145,9 +145,9 @@ Proof. eapply absorbing_iteration_heads; [exact round_hitting|exact reveal_hitti
 Lemma direct_frontier_exact : direct_program ⇓ₕ first_frontier.
 Proof.
   unfold direct_program, direct_fair_in. rewrite observe_bind.
-  change (Prob vn_fair (fun b => reveal b) ⇓ₕ first_frontier).
+  change (Prob vn_fair (λ b, reveal b) ⇓ₕ first_frontier).
   eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure))
-    with (Good := fun _ => True).
+    with (Good := λ _, True).
   - apply sem_ae_true.
   - intros b _. exact (reveal_hitting b).
 Qed.
@@ -179,14 +179,14 @@ Proof. apply absorbing_first_frontier. exact absorbing_generic_frontier. Qed.
 
 Definition offered (h : stable_head queryE EnumQ bool) : bool :=
   match h with FHRet _ => false | FHVis _ _ _ => true end.
-Definition offer_law := vn_fair >>=ₘ (fun b => ηₘ b : EnumQ bool).
+Definition offer_law := vn_fair >>=ₘ (λ b, ηₘ b : EnumQ bool).
 Theorem first_frontier_offers : free_omega_observes offered first_frontier offer_law.
 Proof. constructor. intros []; constructor. Qed.
-Theorem offer_probability : enumQ_expect (fun b => if b then 1 else 0) offer_law = 1/2.
+Theorem offer_probability : enumQ_expect (λ b, if b then 1 else 0) offer_law = 1/2.
 Proof. by vm_compute. Qed.
 
 (** The visible branch has not consumed a response in the first frontier. *)
-Example visible_continuation_kept : reveal_head true = FHVis Query (fun answer => Ret answer).
+Example visible_continuation_kept : reveal_head true = FHVis Query (λ answer, Ret answer).
 Proof. reflexivity. Qed.
 Example returning_branch_kept : reveal_head false = FHRet false.
 Proof. reflexivity. Qed.

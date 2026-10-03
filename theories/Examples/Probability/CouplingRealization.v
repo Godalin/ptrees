@@ -42,7 +42,7 @@ Example subenumQ_relational_constant_limits_realize {A B}
   ∃ joint, @semantic_coupling (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
-    A B R (FOLub (fun _ => mu)) (FOLub (fun _ => nu)) joint.
+    A B R (FOLub (λ _, mu)) (FOLub (λ _, nu)) joint.
 Proof.
   intro Hlift. eapply free_omega_lift_realization_mod_eq.
   - exact (@subenumQ_coupling_realization).
@@ -54,7 +54,7 @@ Qed.
 (** Equality realization is genuinely quotient-level: the two expressions
     below cannot be related by the shape-preserving structural lifting. *)
 Definition point : FreeOmega SubEnumQ bool := FORet true.
-Definition point_limit : FreeOmega SubEnumQ bool := FOLub (fun _ => point).
+Definition point_limit : FreeOmega SubEnumQ bool := FOLub (λ _, point).
 
 Example point_limit_not_structural : ¬ free_omega_lift eq point point_limit.
 Proof. intro H. inversion H. Qed.
@@ -63,7 +63,7 @@ Example point_limit_quotient_realizes :
   @semantic_coupling (FreeOmega SubEnumQ)
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
-    bool bool eq point point_limit (free_omega_graph_joint (fun x => x) point).
+    bool bool eq point point_limit (free_omega_graph_joint (λ x, x) point).
 Proof.
   apply free_omega_qlift_eq_realization.
   apply FOQLLubConstantR, free_omega_qlift_refl. intro x. reflexivity.
@@ -80,15 +80,15 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure
 Example quotient_graph_bind_realizes {A B C D} (f : A → B)
     (T : C → D → Prop) (mu : MF A) (nu : MF B)
     (k : A → MF C) (h : B → MF D) :
-  free_omega_qlift (fun x y => f x = y) mu nu →
+  free_omega_qlift (λ x y, f x = y) mu nu →
   (∀ x, free_omega_lift T (k x) (h (f x))) →
   ∃ joint, @semantic_coupling MF FI C D T
     (free_omega_bind mu k)
-    (free_omega_bind nu (fun y => FOLub (fun _ => h y))) joint.
+    (free_omega_bind nu (λ y, FOLub (λ _, h y))) joint.
 Proof.
   intros Hsource Hbranches.
   eapply (semantic_coupling_bind_realization (M := MF) (MI := FI))
-    with (R := fun x y => f x = y).
+    with (R := λ x y, f x = y).
   - eexists. exact (free_omega_qlift_graph_realization Hsource).
   - intros x y <-. eapply free_omega_lift_realization_mod_eq.
     + exact (@subenumQ_coupling_realization).
@@ -105,7 +105,7 @@ Example sample_quotient_branches_realize {X Y A B}
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure X Y S mu nu →
   (∀ x y, S x y → free_omega_lift R (k x) (h y)) →
   ∃ joint, @semantic_coupling MF FI A B R
-    (FOSample mu k) (FOSample nu (fun y => FOLub (fun _ => h y))) joint.
+    (FOSample mu k) (FOSample nu (λ y, FOLub (λ _, h y))) joint.
 Proof.
   intros Hnode Hbranches. eapply free_omega_sample_coupling_realization.
   - exact (@subenumQ_coupling_realization).
@@ -118,10 +118,10 @@ Proof.
 Qed.
 
 Example point_limit_converse_realizes :
-  @semantic_coupling MF FI bool bool (fun y x => x = y)
+  @semantic_coupling MF FI bool bool (λ y x, x = y)
     point_limit point
-    (free_omega_bind (free_omega_graph_joint (fun x => x) point)
-      (fun p => FORet (snd p, fst p))).
+    (free_omega_bind (free_omega_graph_joint (λ x, x) point)
+      (λ p, FORet (snd p, fst p))).
 Proof.
   exact (free_omega_coupling_converse
     (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)
@@ -131,8 +131,8 @@ Qed.
 (** Both AE restrictions keep the original joint, including its mass. *)
 Example point_limit_restricted_same_joint :
   @semantic_coupling MF FI bool bool
-    (fun x y => x = y ∧ x = true ∧ y = true) point point_limit
-    (free_omega_graph_joint (fun x => x) point).
+    (λ x y, x = y ∧ x = true ∧ y = true) point point_limit
+    (free_omega_graph_joint (λ x, x) point).
 Proof.
   apply semantic_coupling_ae_restrict.
   - exact point_limit_quotient_realizes.
@@ -144,15 +144,15 @@ Qed.
     and no witness at unrelated source pairs. *)
 Example empty_result_bind_realizes :
   ∃ joint, @semantic_coupling MF FI Empty_set Empty_set
-    (fun _ _ => False)
-    (free_omega_bind (FOZero : MF bool) (fun _ => FOZero))
-    (free_omega_bind (FOZero : MF bool) (fun _ => FOZero)) joint.
+    (λ _ _, False)
+    (free_omega_bind (FOZero : MF bool) (λ _, FOZero))
+    (free_omega_bind (FOZero : MF bool) (λ _, FOZero)) joint.
 Proof.
   eapply (semantic_coupling_bind_realization (M := MF) (MI := FI))
-    with (R := fun _ _ : bool => False)
+    with (R := λ _ _ : bool, False)
       (mu := FOZero) (nu := FOZero)
-      (k := fun _ => FOZero : MF Empty_set)
-      (h := fun _ => FOZero : MF Empty_set).
+      (k := λ _, FOZero : MF Empty_set)
+      (h := λ _, FOZero : MF Empty_set).
   - exists FOZero. split; [apply FOQLStructural, FOLZero|].
     split; [apply FOQLStructural, FOLZero|apply FOAEZero].
   - intros x y Hfalse. contradiction.
@@ -164,7 +164,7 @@ Example quotient_rows_lub_realize {A B} (R : A → B → Prop)
     (left : nat → MF A) (right : nat → MF B) :
   (∀ n, free_omega_lift R (left n) (right n)) →
   ∃ joint, @semantic_coupling MF FI A B R
-    (FOLub left) (FOLub (fun n => FOLub (fun _ => right n))) joint.
+    (FOLub left) (FOLub (λ n, FOLub (λ _, right n))) joint.
 Proof.
   intro Hrows. apply free_omega_lub_coupling_realization. intro n.
   eapply free_omega_lift_realization_mod_eq.
@@ -182,7 +182,7 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 
 Definition embedded_node {A} (mu : SubEnumQ A) : MF A :=
-  FOSample mu (fun x => FORet x).
+  FOSample mu (λ x, FORet x).
 
 Lemma embedded_node_coupling {A B} (R : A → B → Prop)
     (mu : SubEnumQ A) (nu : SubEnumQ B) joint :
@@ -209,14 +209,14 @@ Example embedded_node_quotient_gluing {A B C}
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure A B R mu mid →
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure B C T mid nu →
   ∃ joint, @semantic_coupling MF FI A C
-    (fun x z => ∃ y, R x y ∧ T y z)
-    (FOLub (fun _ => embedded_node mu))
-    (FOLub (fun _ => embedded_node nu)) joint.
+    (λ x z, ∃ y, R x y ∧ T y z)
+    (FOLub (λ _, embedded_node mu))
+    (FOLub (λ _, embedded_node nu)) joint.
 Proof.
   intros Hleft Hright.
   destruct (subenumQ_coupling_realization Hleft) as [jl Hl].
   destruct (subenumQ_coupling_realization Hright) as [jr Hr].
-  assert (Hfiber : free_omega_lift (fun p q => snd p = fst q)
+  assert (Hfiber : free_omega_lift (λ p q, snd p = fst q)
     (embedded_node jl) (embedded_node jr)).
   { eapply FOLSample.
     - exact (semantic_coupling_fiber_lift Hl Hr).
@@ -235,9 +235,9 @@ Qed.
 Example independent_copies_fail_fiber (mu : SubEnumQ bool)
     (both_values : ∀ P, @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool mu P →
       P true ∧ P false) :
-  ¬ free_omega_ae (fun w : (bool * bool) * (bool * bool) =>
+  ¬ free_omega_ae (λ w : (bool * bool) * (bool * bool),
       snd (fst w) = fst (snd w))
-    (FOSample mu (fun x => FOSample mu (fun y => FORet ((x,x),(y,y))))).
+    (FOSample mu (λ x, FOSample mu (λ y, FORet ((x,x),(y,y))))).
 Proof.
   intro Hae. apply free_omega_ae_sample_inv in Hae.
   destruct (both_values _ Hae) as [Htrue _].

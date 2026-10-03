@@ -62,11 +62,11 @@ Proof. rewrite (finite_runner_distribution Hsource). exact: finite_runner_hittin
 Theorem replay_hitting_limit source (Hsource : uniform_entropy source)
     (t : ptree void1 SubEnumQ A) history f :
   oval_eval (ptree_domain_hitting R (observe t)) (return_head_test f) =
-  oval_sup (fun n => ratr (replay_expectation source n t history (returned_test f))).
+  oval_sup (λ n, ratr (replay_expectation source n t history (returned_test f))).
 Proof.
-  change (oval_sup (fun n => oval_eval (ptree_domain_approx R n (observe t))
+  change (oval_sup (λ n, oval_eval (ptree_domain_approx R n (observe t))
       (return_head_test f)) =
-    oval_sup (fun n => ratr (replay_expectation source n t history (returned_test f)))).
+    oval_sup (λ n, ratr (replay_expectation source n t history (returned_test f)))).
   apply oval_sup_ext=> n. symmetry. exact: replay_hitting.
 Qed.
 
@@ -93,7 +93,7 @@ Theorem runner_stable_hitting_adequacy source (Hsource : uniform_entropy source)
       FI FreeOmegaMixedMeasure FO A (observe t) out)
     f (Hf : ∀ a, 0 <= f a <= 1) :
   oval_eval (free_omega_domain (stable_hitting_admissible R Hhit)) (return_head_test f) =
-  oval_sup (fun n => ratr (replay_expectation source n t history (returned_test f))).
+  oval_sup (λ n, ratr (replay_expectation source n t history (returned_test f))).
 Proof.
   transitivity (oval_eval (ptree_domain_hitting R (observe t)) (return_head_test f)).
   - exact (stable_hitting_denotational_adequacy Hhit (return_head_test_bounded Hf)).

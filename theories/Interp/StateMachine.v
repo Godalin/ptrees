@@ -25,7 +25,7 @@ Definition state_head_result {A} s (h : stable_head (stateE S +' E) MN A) :
       match e with
       | inl1 se => let '(s',x) := state_response se s in
           @SHInternal (state_config A) (stable_head E MN (S*A)) (s',k x)
-      | inr1 fe => SHStable (FHVis fe (fun x => run_state (k x) s))
+      | inr1 fe => SHStable (FHVis fe (λ x, run_state (k x) s))
       end
   end.
 End StateConfigurations.
@@ -41,14 +41,14 @@ Definition state_primitive_kernel {A} (c : @state_config S E MN A) :
   | RetF a => sem_ret (SHStable (FHRet (s,a)))
   | TauF u => sem_ret (SHInternal (s,u))
   | @VisF _ _ _ _ X e k => sem_ret (state_head_result s (FHVis e k))
-  | @ProbF _ _ _ _ X mu k => mixed_bind mu (fun x => sem_ret (SHInternal (s,k x)))
+  | @ProbF _ _ _ _ X mu k => mixed_bind mu (λ x, sem_ret (SHInternal (s,k x)))
   end.
 
 Context `{FO : @SemanticOmega MF FI} `{Ord : @SemanticMeasureOrderLaws MF FI FO}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 Definition state_machine_kernel {A} (c : @state_config S E MN A) :
     MF (stable_target (@state_config S E MN A) (stable_head E MN (S * A))) :=
-  sem_bind (handler_complete_front (snd c)) (fun h => sem_ret (state_head_result (fst c) h)).
+  sem_bind (handler_complete_front (snd c)) (λ h, sem_ret (state_head_result (fst c) h)).
 End StateKernel.
 
 Section StateSimulation.

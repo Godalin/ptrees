@@ -54,11 +54,11 @@ Hypothesis left_equal : ∀ t u, sim t u →
 Hypothesis right_equal : ∀ t u, sim t u →
   free_omega_qlift eq (right_reference (t,u)) (kernel (t,u)).
 Hypothesis left_marginal : ∀ t u, sim t u →
-  free_omega_lift (fun z target => finite_internal_pair_left z = target)
+  free_omega_lift (λ z target, finite_internal_pair_left z = target)
     (left_reference (t,u))
     (free_omega_bind (cut1 (t,u)) finite_internal_guard_transition).
 Hypothesis right_marginal : ∀ t u, sim t u →
-  free_omega_lift (fun z target => finite_internal_pair_right z = target)
+  free_omega_lift (λ z target, finite_internal_pair_right z = target)
     (right_reference (t,u))
     (free_omega_bind (cut2 (t,u)) finite_internal_guard_transition).
 
@@ -66,7 +66,7 @@ Lemma finite_internal_reference_closed reference
     (Heq : ∀ t u, sim t u → free_omega_qlift eq (reference (t,u)) (kernel (t,u))) :
   ∀ p : Pair, sim (fst p) (snd p) →
   free_omega_ae
-    (KernelCompletion.kernel_completion_invariant (fun q => sim (fst q) (snd q)))
+    (KernelCompletion.kernel_completion_invariant (λ q, sim (fst q) (snd q)))
     (reference p).
 Proof.
   intros [t u] Hsim.
@@ -85,16 +85,16 @@ Theorem finite_internal_reference_pair_hitting t u out1 out2 :
   free_omega_qlift (stable_head_rel RR sim) out1 out2.
 Proof.
   intros Hsim Hhit1 Hhit2.
-  pose (joint_out := FOLub (fun n => @stable_hitting_approx MF FI
+  pose (joint_out := FOLub (λ n, @stable_hitting_approx MF FI
     FreeOmegaObservableSemanticOmega Pair Heads kernel n (t,u))).
   assert (Hjoint : @stable_hitting MF FI FreeOmegaObservableSemanticOmega
     Pair Heads kernel (t,u) joint_out).
   { apply free_omega_qlift_refl. intro h. reflexivity. }
   assert (Hleft : free_omega_qlift eq
-    (free_omega_bind joint_out (fun h => FORet (fst h))) out1).
+    (free_omega_bind joint_out (λ h, FORet (fst h))) out1).
   { eapply finite_internal_structural_execution_adequate_modulo_eq with
       (project_state := @fst (ptree E MN A) (ptree E MN B))
-      (D := fun p => sim (fst p) (snd p)) (cut := cut1)
+      (D := λ p, sim (fst p) (snd p)) (cut := cut1)
       (kernel := left_reference) (represented := kernel) (s := (t,u)).
     - apply finite_internal_reference_closed. exact left_equal.
     - intros [x y] Hxy. exact (cut1_valid Hxy).
@@ -105,10 +105,10 @@ Proof.
     - exact Hjoint.
     - exact Hhit1. }
   assert (Hright : free_omega_qlift eq
-    (free_omega_bind joint_out (fun h => FORet (snd h))) out2).
+    (free_omega_bind joint_out (λ h, FORet (snd h))) out2).
   { eapply finite_internal_structural_execution_adequate_modulo_eq with
       (project_state := @snd (ptree E MN A) (ptree E MN B))
-      (D := fun p => sim (fst p) (snd p)) (cut := cut2)
+      (D := λ p, sim (fst p) (snd p)) (cut := cut2)
       (kernel := right_reference) (represented := kernel) (s := (t,u)).
     - apply finite_internal_reference_closed. exact right_equal.
     - intros [x y] Hxy. exact (cut2_valid Hxy).
@@ -121,7 +121,7 @@ Proof.
   pose proof (proj2 (finite_internal_paired_hitting_coupled
     kernel_closed Hsim Hjoint)) as Hcoupled.
   eapply FOQLComp with (T := eq) (U := stable_head_rel RR sim).
-  - apply FOQLMono with (T := fun x y => y = x).
+  - apply FOQLMono with (T := λ x y, y = x).
     + apply FOQLSym. exact Hleft.
     + intros x y Hxy. symmetry. exact Hxy.
   - eapply FOQLComp with (T := stable_head_rel RR sim) (U := eq).
@@ -137,13 +137,13 @@ Theorem peutt_coinduction_finite_internal_references t u :
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A B RR t u.
 Proof.
   intro Hsim. eapply peutt_coinduction with
-    (sim := fun s1 s2 => exists x y,
+    (sim := λ s1 s2, exists x y,
       s1 = observe x ∧ s2 = observe y ∧ sim x y).
   - intros s1 s2 [x [y [-> [-> Hxy]]]].
     eapply stable_hitting_match_of_hitting_lift with
-      (out1 := FOLub (fun n => @ptree_hitting_approx E MN MF FI
+      (out1 := FOLub (λ n, @ptree_hitting_approx E MN MF FI
         FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A n (observe x)))
-      (out2 := FOLub (fun n => @ptree_hitting_approx E MN MF FI
+      (out2 := FOLub (λ n, @ptree_hitting_approx E MN MF FI
         FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega B n (observe y))).
     + apply free_omega_qlift_refl. intro h. reflexivity.
     + apply free_omega_qlift_refl. intro h. reflexivity.
@@ -181,7 +181,7 @@ Variable cut1 : Pair → MF (ptree E MN A).
 Variable cut2 : Pair → MF (ptree E MN B).
 Variables left_joint right_joint : Pair → MF Pair.
 Hypothesis cuts_references : ∀ t u, sim t u →
-  free_omega_coupling_references (fun t u => pstrongF RR sim (observe t) (observe u))
+  free_omega_coupling_references (λ t u, pstrongF RR sim (observe t) (observe u))
     (cut1 (t,u)) (cut2 (t,u)) (left_joint (t,u)) (right_joint (t,u)).
 Hypothesis node_realizes : ∀ {X Y} (R : X → Y → Prop)
     (mu : MN X) (nu : MN Y), sem_lift R mu nu →
@@ -191,28 +191,28 @@ Theorem finite_internal_reference_kernels_exists :
   ∃ left right : Pair → MF (stable_target Pair Heads),
     ∀ t u, sim t u →
       free_omega_qlift eq (left (t,u)) (right (t,u)) ∧
-      free_omega_lift (fun z target => finite_internal_pair_left z = target)
+      free_omega_lift (λ z target, finite_internal_pair_left z = target)
         (left (t,u))
         (free_omega_bind (cut1 (t,u)) finite_internal_guard_transition) ∧
-      free_omega_lift (fun z target => finite_internal_pair_right z = target)
+      free_omega_lift (λ z target, finite_internal_pair_right z = target)
         (right (t,u))
         (free_omega_bind (cut2 (t,u)) finite_internal_guard_transition) ∧
       free_omega_ae (finite_internal_pair_invariant RR sim) (left (t,u)).
 Proof.
   assert (Hex : ∀ p : Pair, exists step : MF (stable_target Pair Heads),
-    (fun t u => pstrongF RR sim (observe t) (observe u)) (fst p) (snd p) ->
-      free_omega_lift (fun z x => finite_internal_pair_left z = x)
+    (λ t u, pstrongF RR sim (observe t) (observe u)) (fst p) (snd p) ->
+      free_omega_lift (λ z x, finite_internal_pair_left z = x)
         step (finite_internal_guard_transition (fst p)) ∧
-      free_omega_lift (fun z y => finite_internal_pair_right z = y)
+      free_omega_lift (λ z y, finite_internal_pair_right z = y)
         step (finite_internal_guard_transition (snd p)) ∧
       free_omega_ae (finite_internal_pair_invariant RR sim) step).
-  { intros [t u]. destruct (classic ((fun t u => pstrongF RR sim (observe t) (observe u)) t u)) as [Hguard|Hnot].
+  { intros [t u]. destruct (classic ((λ t u, pstrongF RR sim (observe t) (observe u)) t u)) as [Hguard|Hnot].
     - destruct (finite_internal_guard_structural_joint_exists (@node_realizes) Hguard)
         as [step Hstep]. exists step. intros _. exact Hstep.
     - exists FOZero. intro Hguard. contradiction. }
   destruct (choice _ Hex) as [step Hstep].
-  exists (fun p => free_omega_bind (left_joint p) step),
-    (fun p => free_omega_bind (right_joint p) step).
+  exists (λ p, free_omega_bind (left_joint p) step),
+    (λ p, free_omega_bind (right_joint p) step).
   intros t u Hsim. pose proof (cuts_references Hsim) as Hcut. split.
   - eapply FOQLBind; [exact (proj1 Hcut)|].
     intros p q ->. apply free_omega_qlift_refl. intro z. reflexivity.
@@ -247,7 +247,7 @@ Proof.
   - exact (@node_realizes).
   - intros x y Hxy. exact (proj2 (proj2 (proj2 (Hkernels x y Hxy)))).
   - intros x y _. apply free_omega_qlift_refl. intro z. reflexivity.
-  - intros x y Hxy. apply FOQLMono with (T := fun p q => q = p).
+  - intros x y Hxy. apply FOQLMono with (T := λ p q, q = p).
     + apply FOQLSym. exact (proj1 (Hkernels x y Hxy)).
     + intros p q Hpq. symmetry. exact Hpq.
   - intros x y Hxy. exact (proj1 (proj2 (Hkernels x y Hxy))).

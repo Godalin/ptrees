@@ -25,9 +25,9 @@ Context {E MN MF : Type → Type}
 Context {I A : Type} (step : I → ptree E MN (I+A)).
 
 Definition iteration_return_map (out : MF A) : MF (stable_head E MN A) :=
-  sem_bind out (fun a => sem_ret (FHRet a)).
+  sem_bind out (λ a, sem_ret (FHRet a)).
 Definition iteration_return_front (K : I → MF (I+A)) i :=
-  sem_bind (K i) (fun v => sem_ret (FHRet v : stable_head E MN (I+A))).
+  sem_bind (K i) (λ v, sem_ret (FHRet v : stable_head E MN (I+A))).
 
 Theorem iteration_summary_round_return_only (K : I → MF (I+A)) n i :
   sem_eq (iteration_summary_round step (iteration_return_front K) n i)
@@ -43,9 +43,9 @@ Proof.
   all: intros [j|a] _.
   all: eapply sem_eq_trans; [apply sem_bind_ret_l|].
   - apply sem_eq_sym. apply sem_bind_zero_eq.
-  - apply sem_eq_sym. exact (sem_bind_ret_l a (fun a => sem_ret (FHRet a : stable_head E MN A))).
+  - apply sem_eq_sym. exact (sem_bind_ret_l a (λ a, sem_ret (FHRet a : stable_head E MN A))).
   - apply IH.
-  - apply sem_eq_sym. exact (sem_bind_ret_l a (fun a => sem_ret (FHRet a : stable_head E MN A))).
+  - apply sem_eq_sym. exact (sem_bind_ret_l a (λ a, sem_ret (FHRet a : stable_head E MN A))).
 Qed.
 
 Theorem iteration_summary_return_only (K : I → MF (I+A)) i summary_out out :
@@ -87,10 +87,10 @@ Context `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
   `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}.
 Variable transition : I → MN (I+A).
 Definition iteration_native_front i :=
-  mixed_bind (transition i) (fun v => sem_ret (FHRet v : stable_head E MN (I+A))).
+  mixed_bind (transition i) (λ v, sem_ret (FHRet v : stable_head E MN (I+A))).
 
 Lemma iteration_mixed_approx_increasing i :
-  sem_increasing (fun n => mixed_iter_approx (MF := MF) n transition i).
+  sem_increasing (λ n, mixed_iter_approx (MF := MF) n transition i).
 Proof.
   intro n; revert i; induction n as [|n IH]; intro i; [apply sem_zero_le|].
   apply mixed_bind_le_k. intros [j|a]; [apply IH|apply sem_le_refl].
@@ -110,9 +110,9 @@ Proof.
   all: intros [j|a] _.
   all: eapply sem_eq_trans; [apply sem_bind_ret_l|].
   - apply sem_eq_sym. apply sem_bind_zero_eq.
-  - apply sem_eq_sym. exact (sem_bind_ret_l a (fun a => sem_ret (FHRet a : stable_head E MN A))).
+  - apply sem_eq_sym. exact (sem_bind_ret_l a (λ a, sem_ret (FHRet a : stable_head E MN A))).
   - apply IH.
-  - apply sem_eq_sym. exact (sem_bind_ret_l a (fun a => sem_ret (FHRet a : stable_head E MN A))).
+  - apply sem_eq_sym. exact (sem_bind_ret_l a (λ a, sem_ret (FHRet a : stable_head E MN A))).
 Qed.
 
 Theorem iteration_summary_mixed_iter i summary_out out :

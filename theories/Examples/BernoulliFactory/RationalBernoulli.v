@@ -42,7 +42,7 @@ Definition binary_coin_transition (x : rat) : EnumQ (rat + bool) :=
 
 Definition binary_coin_step (x : rat) :
     ptree rational_coinE EnumQ (rat + bool) :=
-  Prob (binary_coin_transition x) (fun next => Ret next).
+  Prob (binary_coin_transition x) (λ next, Ret next).
 
 Definition binary_rational_coin (q : rat) :
     ptree rational_coinE EnumQ bool :=
@@ -79,7 +79,7 @@ Proof.
 Qed.
 
 Lemma binary_coin_transition_total x :
-  enumQ_expect (fun _ : rat + bool => 1)
+  enumQ_expect (λ _ : rat + bool, 1)
     (binary_coin_transition x) = 1.
 Proof.
   rewrite /binary_coin_transition.
@@ -91,7 +91,7 @@ Qed.
 (** At every nonterminal state the probability of another round is [1/2]. *)
 Lemma binary_coin_transition_continue_mass x :
   enumQ_expect
-    (fun next => match next with inl _ => 1 | inr _ => 0 end)
+    (λ next, match next with inl _ => 1 | inr _ => 0 end)
     (binary_coin_transition x) = 1 / 2.
 Proof.
   rewrite /binary_coin_transition.
@@ -104,7 +104,7 @@ Fixpoint binary_coin_run (n : nat) (x : rat) : EnumQ (rat + bool) :=
   match n with
   | O => ret_EnumQ (inl x)
   | S n' =>
-      bind_EnumQ (binary_coin_transition x) (fun next =>
+      bind_EnumQ (binary_coin_transition x) (λ next,
         match next with
         | inl y => binary_coin_run n' y
         | inr b => ret_EnumQ (inr b)
@@ -121,7 +121,7 @@ Proof.
   - exact: enumQ_expect_ret.
   - rewrite /= enumQ_expect_bind.
     have Hfun :
-        (fun next : rat + bool =>
+        (λ next : rat + bool,
           enumQ_expect coin_potential
             match next with
             | inl y => binary_coin_run n y
@@ -142,13 +142,13 @@ Proof.
   - by rewrite /= expr0.
   - rewrite /= enumQ_expect_bind exprS.
     have Hfun :
-        (fun next : rat + bool =>
+        (λ next : rat + bool,
           enumQ_expect unresolved_indicator
             match next with
             | inl y => binary_coin_run n y
             | inr b => ret_EnumQ (inr b)
             end) =
-        (fun next => unresolved_indicator next * (1 / 2 : rat) ^+ n).
+        (λ next, unresolved_indicator next * (1 / 2 : rat) ^+ n).
     { apply functional_extensionality=> next.
       destruct next as [y|b].
       - by rewrite /unresolved_indicator mul1r IH.
@@ -162,18 +162,18 @@ Proof.
 Qed.
 
 Lemma binary_coin_run_total n x :
-  enumQ_expect (fun _ : rat + bool => 1) (binary_coin_run n x) = 1.
+  enumQ_expect (λ _ : rat + bool, 1) (binary_coin_run n x) = 1.
 Proof.
   elim: n x=> [|n IH] x.
   - by rewrite /=.
   - rewrite /= enumQ_expect_bind.
     have Hfun :
-        (fun next : rat + bool =>
-          enumQ_expect (fun _ : rat + bool => 1)
+        (λ next : rat + bool,
+          enumQ_expect (λ _ : rat + bool, 1)
             match next with
             | inl y => binary_coin_run n y
             | inr b => ret_EnumQ (inr b)
-            end) = (fun _ => 1).
+            end) = (λ _, 1).
     { apply functional_extensionality=> next.
       destruct next as [y|b].
       - exact: IH.
@@ -182,7 +182,7 @@ Proof.
 Qed.
 
 Definition discard_unresolved (mu : EnumQ (rat + bool)) : EnumQ bool :=
-  bind_EnumQ mu (fun next =>
+  bind_EnumQ mu (λ next,
     match next with
     | inl _ => enumQ_zero
     | inr b => ret_EnumQ b
@@ -206,23 +206,23 @@ Definition absorbed_indicator (next : rat + bool) : rat :=
   match next with inl _ => 0 | inr _ => 1 end.
 
 Lemma enumQ_expect_add {A} (f g : A → rat) (mu : EnumQ A) :
-  enumQ_expect (fun x => f x + g x) mu =
+  enumQ_expect (λ x, f x + g x) mu =
   enumQ_expect f mu + enumQ_expect g mu.
 Proof. exact: finite_expect_add. Qed.
 
 Lemma enumQ_expect_zero {A} (mu : EnumQ A) :
-  enumQ_expect (fun _ : A => 0) mu = 0.
+  enumQ_expect (λ _ : A, 0) mu = 0.
 Proof. exact: finite_expect_zero. Qed.
 
 Lemma discarded_run_total n x :
-  enumQ_expect (fun _ : bool => 1)
+  enumQ_expect (λ _ : bool, 1)
       (discard_unresolved (binary_coin_run n x)) =
     1 - (1 / 2 : rat) ^+ n.
 Proof.
   rewrite /discard_unresolved enumQ_expect_bind.
   have Hfun :
-      (fun next : rat + bool =>
-        enumQ_expect (fun _ : bool => 1)
+      (λ next : rat + bool,
+        enumQ_expect (λ _ : bool, 1)
           match next with
           | inl _ => enumQ_zero
           | inr b => ret_EnumQ b
@@ -231,25 +231,25 @@ Proof.
     by destruct next as [y|b]. }
   rewrite Hfun.
   have Hsplit :
-      (fun next : rat + bool => 1) =
-      (fun next => absorbed_indicator next + unresolved_indicator next).
+      (λ next : rat + bool, 1) =
+      (λ next, absorbed_indicator next + unresolved_indicator next).
   { apply functional_extensionality=> next.
     by destruct next as [y|[]]. }
   have Hsum := enumQ_expect_add
     (absorbed_indicator) (unresolved_indicator) (binary_coin_run n x).
   rewrite -Hsplit binary_coin_run_total binary_coin_run_unresolved in Hsum.
   have Hsub := f_equal
-    (fun z : rat => z - (1 / 2 : rat) ^+ n) Hsum.
+    (λ z : rat, z - (1 / 2 : rat) ^+ n) Hsum.
   rewrite addrK in Hsub.
   exact: Logic.eq_sym Hsub.
 Qed.
 
 Lemma iter_approx_total n x :
-  enumQ_expect (fun _ : bool => 1)
+  enumQ_expect (λ _ : bool, 1)
       (meas_iter_approx n binary_coin_transition x) =
     1 - (1 / 2 : rat) ^+ n.
 Proof.
-  change (finite_expect (fun _ : bool => 1) (enumQ_raw (meas_iter_approx n binary_coin_transition x)) = 1 - (1 / 2 : rat) ^+ n).
+  change (finite_expect (λ _ : bool, 1) (enumQ_raw (meas_iter_approx n binary_coin_transition x)) = 1 - (1 / 2 : rat) ^+ n).
   rewrite iter_approx_as_discarded_run.
   exact: discarded_run_total.
 Qed.
@@ -263,7 +263,7 @@ Definition unit_state (next : rat + bool) : Prop :=
 
 Lemma binary_coin_transition_unit x :
   0 <= x → x <= 1 →
-  Forall (fun px => unit_state (snd px)) (enumQ_raw (binary_coin_transition x)).
+  Forall (λ px, unit_state (snd px)) (enumQ_raw (binary_coin_transition x)).
 Proof.
   move=> x0 x1.
   have two_pos : (0 : rat) < 2 by [].
@@ -334,7 +334,7 @@ Definition true_indicator (next : rat + bool) : rat :=
   match next with inr true => 1 | _ => 0 end.
 
 Lemma coin_potential_split :
-  coin_potential = (fun next => true_indicator next + residual_potential next).
+  coin_potential = (λ next, true_indicator next + residual_potential next).
 Proof.
   apply functional_extensionality=> next.
   destruct next as [y|[]]; rewrite /coin_potential /true_indicator
@@ -350,7 +350,7 @@ Proof.
 Qed.
 
 Lemma discarded_run_true n x :
-  enumQ_expect (fun b : bool => if b then 1 else 0)
+  enumQ_expect (λ b : bool, if b then 1 else 0)
       (discard_unresolved (binary_coin_run n x)) =
   enumQ_expect true_indicator (binary_coin_run n x).
 Proof.
@@ -362,15 +362,15 @@ Proof.
 Qed.
 
 Lemma iter_approx_true n x :
-  enumQ_expect (fun b : bool => if b then 1 else 0)
+  enumQ_expect (λ b : bool, if b then 1 else 0)
       (meas_iter_approx n binary_coin_transition x) +
   enumQ_expect residual_potential (binary_coin_run n x) = x.
 Proof.
-  change (finite_expect (fun b : bool => if b then 1 else 0)
+  change (finite_expect (λ b : bool, if b then 1 else 0)
       (enumQ_raw (meas_iter_approx n binary_coin_transition x)) +
     enumQ_expect residual_potential (binary_coin_run n x) = x).
   rewrite iter_approx_as_discarded_run.
-  change (enumQ_expect (fun b : bool => if b then 1 else 0) (discard_unresolved (binary_coin_run n x)) +
+  change (enumQ_expect (λ b : bool, if b then 1 else 0) (discard_unresolved (binary_coin_run n x)) +
     enumQ_expect residual_potential (binary_coin_run n x) = x).
   rewrite discarded_run_true.
   exact: binary_coin_run_true_plus_residual.
@@ -405,8 +405,8 @@ Qed.
 
 Lemma enumQ_bool_total_split (mu : EnumQ bool) :
   enumQ_expect false_bool_indicator mu +
-  enumQ_expect (fun b : bool => if b then 1 else 0) mu =
-  enumQ_expect (fun _ : bool => 1) mu.
+  enumQ_expect (λ b : bool, if b then 1 else 0) mu =
+  enumQ_expect (λ _ : bool, 1) mu.
 Proof.
   rewrite -enumQ_expect_add.
   congr (enumQ_expect _ mu).
@@ -426,14 +426,14 @@ Definition rational_bernoulli_measure : EnumQ bool :=
   enumQ_cons one_minus_q0 false (enumQ_cons q0 true enumQ_zero).
 
 Lemma rational_bernoulli_total :
-  enumQ_expect (fun _ : bool => 1) rational_bernoulli_measure = 1.
+  enumQ_expect (λ _ : bool, 1) rational_bernoulli_measure = 1.
 Proof.
   rewrite /rational_bernoulli_measure !enumQ_expect_cons enumQ_expect_nil !mulr1 !addr0.
   exact: subrK q 1.
 Qed.
 
 Lemma rational_bernoulli_indicator (P : bool → bool) :
-  enumQ_expect (fun b => if P b then 1 else 0)
+  enumQ_expect (λ b, if P b then 1 else 0)
     rational_bernoulli_measure =
   (if P false then 1 - q else 0) + (if P true then q else 0).
 Proof.
@@ -443,9 +443,9 @@ Proof.
 Qed.
 
 Lemma rational_iter_indicator_error n (P : bool → bool) :
-  `|enumQ_expect (fun b => if P b then 1 else 0)
+  `|enumQ_expect (λ b, if P b then 1 else 0)
        (meas_iter_approx n binary_coin_transition q) -
-     enumQ_expect (fun b => if P b then 1 else 0)
+     enumQ_expect (λ b, if P b then 1 else 0)
        rational_bernoulli_measure| <= (1 / 2 : rat) ^+ n.
 Proof.
   pose mu : EnumQ bool :=
@@ -454,28 +454,28 @@ Proof.
   pose r := enumQ_expect residual_potential (binary_coin_run n q).
   pose u : rat := (1 / 2 : rat) ^+ n.
   pose t : rat :=
-    enumQ_expect (fun b : bool => if b then 1 else 0) mu.
+    enumQ_expect (λ b : bool, if b then 1 else 0) mu.
   have half0 : (0 : rat) <= 1 / 2 by [].
   have u0 : 0 <= u by exact: half_power_nonnegative.
   have [r0 ru] : 0 <= r ∧ r <= u.
   { exact: binary_coin_run_residual_bound q0 q1. }
   have Htrue : t + r = q.
   { exact: iter_approx_true. }
-  have Htotal : enumQ_expect (fun _ : bool => 1) mu = 1 - u.
+  have Htotal : enumQ_expect (λ _ : bool, 1) mu = 1 - u.
   { exact: iter_approx_total. }
   have Hsplit := enumQ_bool_total_split mu.
   fold t in Hsplit.
   rewrite rational_bernoulli_indicator.
   case Hf: (P false); case Ht: (P true).
-  - have HP : (fun b : bool => if P b then (1 : rat) else 0) =
-        (fun _ : bool => (1 : rat)).
+  - have HP : (λ b : bool, if P b then (1 : rat) else 0) =
+        (λ _ : bool, (1 : rat)).
     { apply functional_extensionality=> b.
       destruct b; simpl; [by rewrite Ht|by rewrite Hf]. }
     rewrite HP Htotal.
     have Hu : (1 - u) - 1 = - u.
     { apply: (addrI 1). by rewrite addrC subrK. }
     by rewrite subrK Hu normrN ger0_norm.
-  - have HP : (fun b : bool => if P b then (1 : rat) else 0) =
+  - have HP : (λ b : bool, if P b then (1 : rat) else 0) =
         false_bool_indicator.
     { apply functional_extensionality=> b.
       destruct b; rewrite /false_bool_indicator /=; [by rewrite Ht|by rewrite Hf]. }
@@ -489,8 +489,8 @@ Proof.
     have Hru : r - u <= 0 by rewrite subr_le0.
     fold mu. rewrite addr0 Hdiff (ler0_norm Hru) opprB lerBlDr lerDl.
     exact r0.
-  - have HP : (fun b : bool => if P b then (1 : rat) else 0) =
-        (fun b : bool => if b then (1 : rat) else 0).
+  - have HP : (λ b : bool, if P b then (1 : rat) else 0) =
+        (λ b : bool, if b then (1 : rat) else 0).
     { apply functional_extensionality=> b.
       destruct b; simpl; [by rewrite Ht|by rewrite Hf]. }
     rewrite HP /=.
@@ -498,12 +498,12 @@ Proof.
         t - q = - r.
     { rewrite -Htrue. exact: rat_true_error_identity. }
     fold mu t. by rewrite add0r Hdiff normrN ger0_norm.
-  - have HP : (fun b : bool => if P b then (1 : rat) else 0) =
-        (fun _ : bool => (0 : rat)).
+  - have HP : (λ b : bool, if P b then (1 : rat) else 0) =
+        (λ _ : bool, (0 : rat)).
     { apply functional_extensionality=> b.
       destruct b; simpl; [by rewrite Ht|by rewrite Hf]. }
     rewrite HP /=.
-    have Hz : enumQ_expect (fun _ : bool => 0) mu = 0.
+    have Hz : enumQ_expect (λ _ : bool, 0) mu = 0.
     { exact: enumQ_expect_zero. }
     fold mu. rewrite !add0r Hz subrr normr0.
     fold u. exact u0.
@@ -539,6 +539,6 @@ Proof.
 Qed.
 
 Definition direct_rational_coin : ptree rational_coinE EnumQ bool :=
-  Prob rational_bernoulli_measure (fun b => Ret b).
+  Prob rational_bernoulli_measure (λ b, Ret b).
 
 End RationalTarget.

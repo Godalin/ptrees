@@ -30,17 +30,17 @@ Lemma coin_nonnegative : finite_nonnegative coin_entries.
 Proof.
   intros p b [H|[H|[]]]; inversion H; subst; native_compute; reflexivity.
 Qed.
-Lemma coin_bounded : finite_expect (fun _ => 1) coin_entries <= 1.
+Lemma coin_bounded : finite_expect (λ _, 1) coin_entries <= 1.
 Proof. native_compute. reflexivity. Qed.
 Definition coin : SubEnumQ bool := subenumQ_of_list coin_nonnegative coin_bounded.
 
 Definition tick : ptree (stateE nat +' void1) SubEnumQ bool :=
-  Vis (inl1 (Get nat)) (fun s =>
-    Prob coin (fun b : bool =>
-      Vis (inl1 (Put nat (if b then S s else s))) (fun _ => Ret b))).
+  Vis (inl1 (Get nat)) (λ s,
+    Prob coin (λ b : bool,
+      Vis (inl1 (Put nat (if b then S s else s))) (λ _, Ret b))).
 
 Definition tick_normal s : ptree void1 SubEnumQ (nat * bool) :=
-  Tau (Prob coin (fun b : bool => Tau (Ret ((if b then S s else s), b)))).
+  Tau (Prob coin (λ b : bool, Tau (Ret ((if b then S s else s), b)))).
 
 Theorem tick_state_equation s : pstruct eq (run_state tick s) (tick_normal s).
 Proof.
@@ -74,9 +74,9 @@ Proof. native_compute. reflexivity. Qed.
 
 (** A recursively defined stateful service, not a finite syntax-only test. *)
 CoFixpoint count_until_success : ptree (stateE nat +' void1) SubEnumQ unit :=
-  Vis (inl1 (Get nat)) (fun s =>
-    Vis (inl1 (Put nat (S s))) (fun _ =>
-      Prob coin (fun b : bool => if b then Ret tt else Tau count_until_success))).
+  Vis (inl1 (Get nat)) (λ s,
+    Vis (inl1 (Put nat (S s))) (λ _,
+      Prob coin (λ b : bool, if b then Ret tt else Tau count_until_success))).
 
 Example replay_two_attempts :
   run (@replay_sample) 7 (run_state count_until_success 0%nat)
@@ -106,7 +106,7 @@ Lemma coin_selects_bit b :
 Proof. destruct b; native_compute; reflexivity. Qed.
 
 Theorem coin_bit_expectation (f : bool → rat) :
-  finite_expect (fun b =>
+  finite_expect (λ b,
     match pick_interval (subenumQ_data coin) (quantile_value (bit_quantile b)) with
     | Some x => f x | None => 0 end) coin_entries =
   finite_expect f (subenumQ_data coin).

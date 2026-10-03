@@ -24,21 +24,21 @@ Definition checked_omega_ae : @SemanticOmegaAELaws M NI NO := _.
 
 Example null_branches_need_no_continuity {A B}
     (c : A → nat → M B) (out : A → M B) :
-  sem_lub (fun n => sem_bind (@sem_zero M NI NO A) (fun x => c x n))
+  sem_lub (λ n, sem_bind (@sem_zero M NI NO A) (λ x, c x n))
     (sem_bind sem_zero out).
 Proof.
-  apply (@mathcomp_native_bind_lub_ae R A B sem_zero (fun _ => False) c out).
+  apply (@mathcomp_native_bind_lub_ae R A B sem_zero (λ _, False) c out).
   - apply mathcomp_native_ae_zero.
   - intros x H; contradiction.
   - intros x H; contradiction.
 Qed.
 
 Example relation_survives_kernel_bind :
-  sem_lift (fun x y : bool => x = negb y)
-    (sem_bind (sem_ret true : M bool) (fun b => sem_ret b))
-    (sem_bind (sem_ret false : M bool) (fun b => sem_ret b)).
+  sem_lift (λ x y : bool, x = negb y)
+    (sem_bind (sem_ret true : M bool) (λ b, sem_ret b))
+    (sem_bind (sem_ret false : M bool) (λ b, sem_ret b)).
 Proof.
-  eapply sem_lift_bind with (R := fun x y : bool => x = negb y).
+  eapply sem_lift_bind with (R := λ x y : bool, x = negb y).
   - apply mathcomp_kernel_lift_ret; reflexivity.
   - intros x y H; apply mathcomp_kernel_lift_ret; exact H.
 Qed.
@@ -53,23 +53,23 @@ Local Notation M := (MathCompKernelMeasure R).
 
 Example noninjective_map_reflection (mu : M bool) (nu : M nat) :
   mathcomp_kernel_lift eq
-    (mathcomp_kernel_bind mu (fun _ => mathcomp_kernel_ret R tt))
-    (mathcomp_kernel_bind nu (fun _ => mathcomp_kernel_ret R tt)) →
-  mathcomp_kernel_lift (fun _ _ => True) mu nu.
+    (mathcomp_kernel_bind mu (λ _, mathcomp_kernel_ret R tt))
+    (mathcomp_kernel_bind nu (λ _, mathcomp_kernel_ret R tt)) →
+  mathcomp_kernel_lift (λ _ _, True) mu nu.
 Proof.
   intro H.
   pose proof (@mathcomp_kernel_map_reflect R G bool nat unit unit
-    mu nu (fun _ => tt) (fun _ => tt) eq H) as Hr.
+    mu nu (λ _, tt) (λ _, tt) eq H) as Hr.
   eapply (@sem_lift_mono M (MathCompNodeSemanticMeasure R)
     (@MathCompNodeSemanticMeasureCoreLaws R G)); [|exact Hr].
   intros x y _. exact I.
 Qed.
 
 Example empty_map_reflection (mu : M Empty_set) :
-  mathcomp_kernel_lift (fun _ _ => False) mu mu.
+  mathcomp_kernel_lift (λ _ _, False) mu mu.
 Proof.
   apply (@mathcomp_kernel_map_reflect R G Empty_set Empty_set
-    Empty_set Empty_set mu mu (fun x => x) (fun x => x) (fun _ _ => False)).
+    Empty_set Empty_set mu mu (λ x, x) (λ x, x) (λ _ _, False)).
   apply mathcomp_kernel_lift_refl. intros [].
 Qed.
 End NativeMapReflection.

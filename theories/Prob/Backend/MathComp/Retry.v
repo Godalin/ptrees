@@ -25,7 +25,7 @@ Qed.
 Lemma mathcomp_retry_fixed_point {A} (q : R) (mu target : MathCompKernelMeasure R A) :
   (0 < q <= 1)%R →
   mathcomp_kernel_eq mu
-    (mathcomp_kernel_bind (mathcomp_bernoulli q) (fun b => if b then target else mu)) →
+    (mathcomp_kernel_bind (mathcomp_bernoulli q) (λ b, if b then target else mu)) →
   mathcomp_kernel_eq mu target.
 Proof.
   move=> /andP[Hq Hq1] He U mU Hb.

@@ -45,8 +45,8 @@ Proof.
   - rewrite <- x0, <- x.
     change (free_omega_lift
       (@stable_head_rel E MN A B RR (@pstruct E MN A B RR))
-      (FOSample mu (fun _ => FOZero))
-      (FOSample mu (fun _ => FOZero))).
+      (FOSample mu (λ _, FOZero))
+      (FOSample mu (λ _, FOZero))).
     eapply FOLSample with (S := eq).
     + apply sem_lift_refl. intros z. reflexivity.
     + intros z z' ->. constructor.
@@ -58,9 +58,9 @@ Proof.
   - rewrite <- x0, <- x.
     change (free_omega_lift
       (@stable_head_rel E MN A B RR (@pstruct E MN A B RR))
-      (FOSample mu (fun z => ptree_hitting_approx (MF := MF)
+      (FOSample mu (λ z, ptree_hitting_approx (MF := MF)
         fuel (observe (k1 z))))
-      (FOSample mu (fun z => ptree_hitting_approx (MF := MF)
+      (FOSample mu (λ z, ptree_hitting_approx (MF := MF)
         fuel (observe (k2 z))))).
     eapply FOLSample with (S := eq).
     + apply sem_lift_refl. intros z. reflexivity.
@@ -152,10 +152,10 @@ Proof.
   - rewrite <- x0, <- x.
     change (free_omega_lift
       (@stable_head_rel E MN A B RR (@pstrong E MN NI NC A B RR))
-      (FOSample mu (fun _ => FOZero))
-      (FOSample nu (fun _ => FOZero))).
+      (FOSample mu (λ _, FOZero))
+      (FOSample nu (λ _, FOZero))).
     eapply FOLSample with
-      (S := fun a b => pstrong RR (k1 a) (k2 b)).
+      (S := λ a b, pstrong RR (k1 a) (k2 b)).
     + exact H.
     + intros a b Hab. constructor.
   - rewrite <- x0, <- x. constructor. constructor. exact H.
@@ -166,12 +166,12 @@ Proof.
   - rewrite <- x0, <- x.
     change (free_omega_lift
       (@stable_head_rel E MN A B RR (@pstrong E MN NI NC A B RR))
-      (FOSample mu (fun a => ptree_hitting_approx (MF := MF)
+      (FOSample mu (λ a, ptree_hitting_approx (MF := MF)
         fuel (observe (k1 a))))
-      (FOSample nu (fun b => ptree_hitting_approx (MF := MF)
+      (FOSample nu (λ b, ptree_hitting_approx (MF := MF)
         fuel (observe (k2 b))))).
     eapply FOLSample with
-      (S := fun a b => pstrong RR (k1 a) (k2 b)).
+      (S := λ a b, pstrong RR (k1 a) (k2 b)).
     + exact H.
     + intros a b Hab. exact (IH _ _ Hab).
 Qed.

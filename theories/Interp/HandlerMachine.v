@@ -30,7 +30,7 @@ Definition handler_config_tree {A} (c : handler_config A) : ptree F MN A :=
   match c with
   | SourceConfig t => PTree.interp handler t
   | @HandlerConfig _ _ active k =>
-      PTree.bind active (fun x => PTree.interp handler (k x))
+      PTree.bind active (λ x, PTree.interp handler (k x))
   end.
 
 Definition source_front_result {A} (h : stable_head E MN A) :
@@ -45,7 +45,7 @@ Definition handler_front_result {A X} (k : X → ptree E MN A)
   match h with
   | FHRet x => SHInternal (SourceConfig (k x))
   | @FHVis _ _ _ Y e c => SHStable (FHVis e
-      (fun y => PTree.bind (c y) (fun x => PTree.interp handler (k x))))
+      (λ y, PTree.bind (c y) (λ x, PTree.interp handler (k x))))
   end.
 End HandlerConfigurations.
 Arguments SourceConfig {E F MN A} _.
@@ -67,16 +67,16 @@ Definition handler_primitive_kernel {A} (c : @handler_config E F MN A) :
       | TauF u => sem_ret (SHInternal (SourceConfig u))
       | @VisF _ _ _ _ X e k => sem_ret (SHInternal (HandlerConfig (handler e) k))
       | @ProbF _ _ _ _ X mu k =>
-          mixed_bind mu (fun x => sem_ret (SHInternal (SourceConfig (k x))))
+          mixed_bind mu (λ x, sem_ret (SHInternal (SourceConfig (k x))))
       end
   | @HandlerConfig _ _ _ _ X active k =>
       match observe active with
       | RetF x => sem_ret (SHInternal (SourceConfig (k x)))
       | TauF u => sem_ret (SHInternal (HandlerConfig u k))
       | @VisF _ _ _ _ Y e d => sem_ret (SHStable
-          (FHVis e (fun y => PTree.bind (d y) (fun x => PTree.interp handler (k x)))))
+          (FHVis e (λ y, PTree.bind (d y) (λ x, PTree.interp handler (k x)))))
       | @ProbF _ _ _ _ Y mu d =>
-          mixed_bind mu (fun y => sem_ret (SHInternal (HandlerConfig (d y) k)))
+          mixed_bind mu (λ y, sem_ret (SHInternal (HandlerConfig (d y) k)))
       end
   end.
 End PrimitiveMachine.
@@ -91,7 +91,7 @@ Context {MN MF : Type → Type} `{FI : SemanticMeasure MF}
     not a new probability capability or an equality reflection assumption. *)
 Definition handler_complete_front {E A} (t : ptree E MN A) : MF (stable_head E MN A) :=
   proj1_sig (sem_lub_choose
-    (chain := fun n => ptree_hitting_approx (MF := MF) n (observe t))
+    (chain := λ n, ptree_hitting_approx (MF := MF) n (observe t))
     (ptree_hitting_increasing (observe t))).
 
 Lemma handler_complete_front_hitting {E A} (t : ptree E MN A) :
@@ -104,9 +104,9 @@ Definition handler_machine_kernel {A} (c : @handler_config E F MN A) :
     MF (stable_target (@handler_config E F MN A) (stable_head F MN A)) :=
   match c with
   | SourceConfig t =>
-      sem_bind (handler_complete_front t) (fun h => sem_ret (source_front_result handler h))
+      sem_bind (handler_complete_front t) (λ h, sem_ret (source_front_result handler h))
   | @HandlerConfig _ _ _ _ _ active k =>
-      sem_bind (handler_complete_front active) (fun h => sem_ret (handler_front_result handler k h))
+      sem_bind (handler_complete_front active) (λ h, sem_ret (handler_front_result handler k h))
   end.
 End CompleteFrontier.
 
@@ -146,8 +146,8 @@ Proof.
   - constructor. apply Hk.
   - constructor. intro y. right. right.
     exists X, X, (@eq X), (c y), (c y),
-      (fun x => PTree.interp handler (k1 x)),
-      (fun x => PTree.interp handler (k2 x)).
+      (λ x, PTree.interp handler (k1 x)),
+      (λ x, PTree.interp handler (k2 x)).
     split; [reflexivity|]. split; [reflexivity|].
     split; [apply peutt_refl|]. intros x x' ->. left.
     exists (k1 x'), (k2 x'). repeat split; try reflexivity. apply Hk.

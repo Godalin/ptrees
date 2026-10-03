@@ -45,29 +45,29 @@ Local Notation offers := (@tree_offered_event_observation correlationE SubEnumQ 
     two responses. P has rows (false,false), (true,true), whereas Q has
     rows (false,true), (true,false), all with probability one half. *)
 Definition answer (anti b x : bool) := if anti then (if x then negb b else b) else b.
-Definition correlation_head anti b : head := FHVis Query (fun x => Ret (answer anti b x)).
+Definition correlation_head anti b : head := FHVis Query (λ x, Ret (answer anti b x)).
 Definition correlation_program anti : tree :=
-  Prob subenumQ_fair (fun b => Vis Query (fun x => Ret (answer anti b x))).
+  Prob subenumQ_fair (λ b, Vis Query (λ x, Ret (answer anti b x))).
 Definition P := correlation_program false.
 Definition Q := correlation_program true.
 Definition correlation_front anti : MF head :=
-  FOSample subenumQ_fair (fun b => FORet (correlation_head anti b)).
+  FOSample subenumQ_fair (λ b, FORet (correlation_head anti b)).
 Definition response_front anti x : MF head :=
-  FOSample subenumQ_fair (fun b => FORet (FHRet (answer anti b x))).
+  FOSample subenumQ_fair (λ b, FORet (FHRet (answer anti b x))).
 
 Lemma correlation_hitting anti : hits (correlation_program anti) (correlation_front anti).
 Proof.
   eapply (ptree_stable_hitting_prob (FI := FI) (FO := FO)
-    (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+    (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
   - apply sem_ae_true.
   - intros b _. apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
 Qed.
 
 Lemma correlation_returns anti :
-  returns (correlation_program anti) (FOSample subenumQ_fair (fun _ => FOZero)).
+  returns (correlation_program anti) (FOSample subenumQ_fair (λ _, FOZero)).
 Proof. exists (correlation_front anti). split; [apply correlation_hitting|apply sem_eq_refl]. Qed.
 Lemma correlation_offers anti :
-  offers (correlation_program anti) (FOSample subenumQ_fair (fun _ => FORet (Offered Query))).
+  offers (correlation_program anti) (FOSample subenumQ_fair (λ _, FORet (Offered Query))).
 Proof. exists (correlation_front anti). split; [apply correlation_hitting|apply sem_eq_refl]. Qed.
 
 (** A contribution witness only for these finite supported continuations. *)
@@ -76,7 +76,7 @@ Definition respond x (h : head) : MF head :=
   | FHRet _ => FOZero
   | @FHVis _ _ _ X e k =>
     (match e in correlationE X return (X → tree) → MF head with
-     | Query => fun k => match observe (k x) with
+     | Query => λ k, match observe (k x) with
          | RetF r => FORet (FHRet r) | _ => FOZero end
      end) k
   end.
@@ -86,7 +86,7 @@ Lemma correlation_transition anti x :
 Proof.
   exists (correlation_front anti), (respond x).
   split; [apply correlation_hitting|]. split; [|apply sem_eq_refl].
-  eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  eapply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
   intros b _. apply FOAERet, HARMatch. constructor.
   apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)).
 Qed.
@@ -97,10 +97,10 @@ Local Open Scope ring_scope.
 (** Crossed coupling for the true response; false uses the diagonal one. *)
 Lemma fair_complement_coupling :
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure bool bool
-    (fun b c => b = negb c) subenumQ_fair subenumQ_fair.
+    (λ b c, b = negb c) subenumQ_fair subenumQ_fair.
 Proof.
   change (@sem_lift EnumQ EnumQ_SemanticMeasure bool bool
-    (fun b c => b = negb c) reg_fair reg_fair).
+    (λ b c, b = negb c) reg_fair reg_fair).
   apply enumQ_sem_lift_of_coupling.
   exists (unif2 (false,true) (true,false)).
   - intros []; native_compute; reflexivity.
@@ -112,7 +112,7 @@ Lemma response_marginals_equal x :
   @sem_lift MF FI head head eq (response_front false x) (response_front true x).
 Proof.
   destruct x.
-  - eapply FOQLSample with (T := fun b c => b = negb c).
+  - eapply FOQLSample with (T := λ b c, b = negb c).
     + exact fair_complement_coupling.
     + intros b c Hbc. apply FOQLStructural, FOLRet. cbn. congruence.
   - eapply FOQLSample with (T := eq).
@@ -199,8 +199,8 @@ Proof.
   pose proof (peutt_couples_complete_heads Hrel (correlation_hitting false)
     (correlation_hitting true)) as Hfront.
   assert (Hleft : free_omega_ae (NI := SubEnumQ_SemanticMeasure)
-    (fun h => exists b, h = correlation_head false b) (correlation_front false)).
-  { eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+    (λ h, exists b, h = correlation_head false b) (correlation_front false)).
+  { eapply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros b _. apply FOAERet. exists b. reflexivity. }
   pose proof (proj1 (free_omega_qlift_support Hfront) _ Hleft) as Hright.
   apply free_omega_ae_sample_inv in Hright.

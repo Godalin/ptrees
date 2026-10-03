@@ -52,13 +52,13 @@ Lemma enumQ_semantic_product_swap {X Y : eqType}
 Proof.
   change (@meas_lift EnumQ EnumQ_MeasureInterface _ _
     semantic_pair_swap_rel
-    (bind_EnumQ mu (fun x => bind_EnumQ nu
-      (fun y => ret_EnumQ (x, y))))
-    (bind_EnumQ nu (fun y => bind_EnumQ mu
-      (fun x => ret_EnumQ (y, x))))).
+    (bind_EnumQ mu (λ x, bind_EnumQ nu
+      (λ y, ret_EnumQ (x, y))))
+    (bind_EnumQ nu (λ y, bind_EnumQ mu
+      (λ x, ret_EnumQ (y, x))))).
   refine (@meas_lift_bind_ret_exchange EnumQ EnumQ_MeasureInterface
     EnumQ_MeasureCommutativeLaws X Y (X * Y)%type (Y * X)%type
     (@semantic_pair_swap_rel X Y) mu nu
-    (fun x y => (x, y)) (fun y x => (y, x)) _).
+    (λ x y, (x, y)) (λ y x, (y, x)) _).
   intros x y. split; reflexivity.
 Qed.

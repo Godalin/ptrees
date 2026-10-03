@@ -31,7 +31,7 @@ Proof. apply (fold_run_state (QT := Eq1_ITree)). apply itree_iteration_uniform. 
 
 Example sample_keeps_separate_algebra {A X} (mu : MN X) (k : X → ptree E MN A) :
   eutt eq (fold handle sample (Prob mu k))
-    (ITree.bind (@sample X mu) (fun x => fold handle sample (k x))).
+    (ITree.bind (@sample X mu) (λ x, fold handle sample (k x))).
 Proof. apply itree_fold_prob. Qed.
 
 Example state_get_fold {A} (k : S → ptree (stateE S +' E) MN A) s :
@@ -66,30 +66,30 @@ End InfiniteStatefulExample.
 From Coq Require Import ClassicalDescription.
 
 Definition option_ops : Monad option := {|
-  ret := fun A x => Some x;
-  bind := fun A B m k => match m with Some x => k x | None => None end
+  ret := λ A x, Some x;
+  bind := λ A B m k, match m with Some x => k x | None => None end
 |}.
 
 Definition nonuniform_iter : MonadIter option :=
-  fun A I step i =>
+  λ A I step i,
     if excluded_middle_informative (∀ j, ∃ a, step j = Some (inr a))
     then match step i with Some (inr a) => Some a | _ => None end
     else None.
 
-Definition option_observation : Eq1 option := fun A => @eq (option A).
+Definition option_observation : Eq1 option := λ A, @eq (option A).
 
 Lemma bare_iterator_is_not_uniform :
   ¬ @iteration_uniform option option_ops nonuniform_iter option_observation.
 Proof.
   intro H.
   specialize (H unit bool unit
-    (fun _ => Some (inr tt))
-    (fun b => if b then Some (inr tt) else None)
-    (fun _ => true)).
+    (λ _, Some (inr tt))
+    (λ b, if b then Some (inr tt) else None)
+    (λ _, true)).
   assert (Hs : ∀ i : unit,
     eq1 (Eq1 := option_observation)
       (@bind option option_ops _ _ (Some (inr tt : unit + unit))
-        (fun v => @ret option option_ops _ (iteration_map (fun _ : unit => true) v)))
+        (λ v, @ret option option_ops _ (iteration_map (λ _ : unit, true) v)))
       (Some (inr tt : bool + unit))) by reflexivity.
   specialize (H Hs tt).
   unfold eq1, option_observation, Basics.iter, nonuniform_iter in H.

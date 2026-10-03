@@ -19,14 +19,14 @@ CoFixpoint from_itree {E MN A} (t : itree E A) : ptree E MN A :=
   match ITreeDefinition.observe t with
   | ITreeDefinition.RetF a => Ret a
   | ITreeDefinition.TauF u => Tau (from_itree u)
-  | @ITreeDefinition.VisF _ _ _ X e k => Vis e (fun x => from_itree (k x))
+  | @ITreeDefinition.VisF _ _ _ X e k => Vis e (λ x, from_itree (k x))
   end.
 
 Definition interp_itree {E F MN A} (h : Handler MN E F) (t : itree E A) :
     ptree F MN A := PTree.interp h (from_itree t).
 
 Definition sample_handler {MN F} : Handler MN (probE MN) F :=
-  fun X e => match e with @Sample _ X mu => Prob mu (fun x => Ret x) end.
+  λ X e, match e with @Sample _ X mu => Prob mu (λ x, Ret x) end.
 
 Definition probability_handler {MN E} : Handler MN (probE MN +' E) E :=
   Handler.case_ sample_handler Handler.id_.
@@ -42,6 +42,6 @@ Lemma observe_from_itree {E MN A} (t : itree E A) :
   match ITreeDefinition.observe t with
   | ITreeDefinition.RetF a => RetF a
   | ITreeDefinition.TauF u => TauF (from_itree u)
-  | @ITreeDefinition.VisF _ _ _ X e k => VisF e (fun x => from_itree (k x))
+  | @ITreeDefinition.VisF _ _ _ X e k => VisF e (λ x, from_itree (k x))
   end.
 Proof. unfold observe. cbn. destruct (ITreeDefinition.observe t); reflexivity. Qed.

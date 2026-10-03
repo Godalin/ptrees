@@ -41,6 +41,21 @@ class SoundnessTests(unittest.TestCase):
                 self.assertNotEqual(soundness.classes(ascii_decl),
                                     soundness.classes(utf8_decl.replace(before, after)))
 
+    def test_class_lambda_spelling_preserves_binders_and_branches(self):
+        ascii_decl = ('Class C := { p : forall k : nat -> nat, '
+                      '(fun (f : nat -> nat) x => match x with '
+                      '| O => f O | S n => (fun y => f y) n end) k O = k O }.')
+        utf8_decl = ('Class C := { p : ∀ k : nat → nat, '
+                     '(λ (f : nat → nat) x, match x with '
+                     '| O => f O | S n => (λ y, f y) n end) k O = k O }.')
+        self.assertEqual(soundness.classes(ascii_decl), soundness.classes(utf8_decl))
+        for old, new in [('f O', 'f (S O)'), ('nat → nat) x', 'bool → nat) x')]:
+            self.assertNotEqual(soundness.classes(ascii_decl),
+                                soundness.classes(utf8_decl.replace(old, new)))
+        nested = 'Class C := { p : (fun (f : (fun T => T) nat -> nat) x => f x) = g }.'
+        expected = 'Class C := { p : (λ (f : (λ T, T) nat -> nat) x, f x) = g }.'
+        self.assertEqual(soundness.classes(nested), soundness.classes(expected))
+
     def test_ordinary_proof_refactoring_is_not_a_safety_violation(self):
         # These are valid Rocq proofs; compilation, not this source scanner,
         # checks them. In particular induction/elimination is not forbidden.

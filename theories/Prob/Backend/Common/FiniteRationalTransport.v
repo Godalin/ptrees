@@ -57,7 +57,7 @@ Proof.
   { intro x. have Hin : p x \in [seq p x | x <- enum X].
     { apply/mapP. exists x=> //; by rewrite mem_enum. }
     destruct (Hscale (p x) Hin) as [n Hn]. exists n. by rewrite Hn. }
-  exists d, (fun x => xchoose (Hex x)). split=> //.
+  exists d, (λ x, xchoose (Hex x)). split=> //.
   intro x. exact (eqP (xchooseP (Hex x))).
 Qed.
 
@@ -87,13 +87,13 @@ Theorem finite_rational_transport :
     (∀ x y, 0 < w x y → edge x y).
 Proof.
   intros Hp Hq Hall Htotal.
-  pose (both := fun z : (X + Y)%type => match z with inl x => p x | inr y => q y end).
+  pose (both := λ z : (X + Y)%type, match z with inl x => p x | inr y => q y end).
   have Hboth : ∀ z, 0 <= both z by intros [x|y]; [apply Hp|apply Hq].
   destruct (rational_finite_common_scale Hboth) as [d [counts [Hd Hscale]]].
-  pose (np := fun x => counts (inl x)).
-  pose (nq := fun y => counts (inr y)).
-  have Hpscale : ∀ x, p x * d%:R = (np x)%:R := fun x => Hscale (inl x).
-  have Hqscale : ∀ y, q y * d%:R = (nq y)%:R := fun y => Hscale (inr y).
+  pose (np := λ x, counts (inl x)).
+  pose (nq := λ y, counts (inr y)).
+  have Hpscale : ∀ x, p x * d%:R = (np x)%:R := λ x, Hscale (inl x).
+  have Hqscale : ∀ y, q y * d%:R = (nq y)%:R := λ y, Hscale (inr y).
   have Hdr : (0 : rat) < d%:R by rewrite ltr0n.
   have Hdnz : (d%:R : rat) != 0 by rewrite gt_eqF.
   have Hnat : capacity_hall np nq edge.
@@ -110,7 +110,7 @@ Proof.
         -(rational_scaled_sum predT Hqscale) Htotal. reflexivity. }
     apply/eqP. by move/eqP: Hreal; rewrite eqr_nat. }
   destruct (finite_capacity_transport Hnat Hntotal) as [c [Hrows [Hcols Hsupport]]].
-  exists (fun x y => (c x y)%:R / d%:R). split.
+  exists (λ x y, (c x y)%:R / d%:R). split.
   - intros x y. apply divr_ge0; [exact: ler0n|exact (ltW Hdr)].
   - split.
     + intro x. rewrite -big_distrl -natr_sum Hrows.
@@ -144,8 +144,8 @@ Theorem finite_rational_transport_of_tests :
 Proof.
   intros Hp Hq Htest Htotal. apply finite_rational_transport; [exact Hp|exact Hq| |exact Htotal].
   intro S.
-  pose (f := fun x => if x \in S then (1 : rat) else 0).
-  pose (g := fun y => if y \in matching_neighbors edge setT S then (1 : rat) else 0).
+  pose (f := λ x, if x \in S then (1 : rat) else 0).
+  pose (g := λ y, if y \in matching_neighbors edge setT S then (1 : rat) else 0).
   have Hf : ∀ x, 0 <= f x ∧ f x <= 1.
   { intro x. rewrite /f. case: (x \in S); split; try exact: lexx; exact: ler01. }
   have Hg : ∀ y, 0 <= g y ∧ g y <= 1.

@@ -35,7 +35,7 @@ Proof. reflexivity. Qed.
 Lemma exception_fold_square {A} (t : ptree (exceptE Err +' E) MN A) :
   eq1
     (bind (exception_fold_step t)
-      (fun v => ret (iteration_map (@run_exception Err E MN A) v)))
+      (λ v, ret (iteration_map (@run_exception Err E MN A) v)))
     (fold_step handle sample (run_exception t)).
 Proof.
   unfold exception_fold_step, exceptT_step, fold_step.

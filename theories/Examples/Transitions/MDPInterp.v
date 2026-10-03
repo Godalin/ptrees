@@ -44,13 +44,13 @@ Definition flip_reply X (e : decisionE X) : decisionE X :=
 Lemma flip_reply_involution X (e : decisionE X) : flip_reply (flip_reply e) = e.
 Proof. destruct e; [reflexivity|]. destruct b; reflexivity. Qed.
 Definition mdp_test_handler X (e : decisionE X) : ptree decisionE SubEnumQ X :=
-  Tau (Vis (flip_reply e) (fun x => delayed_response x)).
+  Tau (Vis (flip_reply e) (λ x, delayed_response x)).
 Definition mdp_test_atomic : atomic_handler
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega) mdp_test_handler.
 Proof.
   refine {| atomic_rename := @flip_reply;
             atomic_unrename := @flip_reply;
-            atomic_cont := fun X e x => delayed_response x |}.
+            atomic_cont := λ X e x, delayed_response x |}.
   - exact flip_reply_involution.
   - exact flip_reply_involution.
   - intros X e. apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
@@ -86,7 +86,7 @@ Proof. split; [exact hidden_choice_not_mdp_state|exact request_sample_reply_stay
 (** A many-to-one VALUE map, independently of the event permutation.
     Totality transport does not assume injectivity of mapped heads. *)
 Example collapsed_successors_total :
-  @sem_total MF FI FO unit (free_omega_bind hidden_front (fun _ => FORet tt)).
+  @sem_total MF FI FO unit (free_omega_bind hidden_front (λ _, FORet tt)).
 Proof.
   apply subenumQ_free_omega_total_map.
   apply fair_heads_total.
@@ -146,7 +146,7 @@ Definition hetero_event X (e : sourceE X) : targetE X :=
   | AskS => AskT | ReplyS b => ReplyT (negb b)
   end.
 Definition hetero_handler X (e : sourceE X) : ptree targetE SubEnumQ X :=
-  Tau (Vis (hetero_event e) (fun x => Ret x)).
+  Tau (Vis (hetero_event e) (λ x, Ret x)).
 
 Lemma hetero_handler_guarded : guarded_handler
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega) hetero_handler.
@@ -155,7 +155,7 @@ Proof.
     (NI := SubEnumQ_SemanticMeasure) (NC := SubEnumQ_SemanticMeasureCoreLaws)
     (NO := SubEnumQ_SemanticOmega) (NCAE := SubEnumQ_SemanticMeasureCouplingAELaws)
     (NCount := SubEnumQ_SemanticMeasureCountableAELaws)).
-  intros X e. exists (FORet (FHVis (hetero_event e) (fun x => Ret x))).
+  intros X e. exists (FORet (FHVis (hetero_event e) (λ x, Ret x))).
   split.
   - apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
     apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
@@ -179,10 +179,10 @@ Definition hetero_head (h : SH) : TH :=
   match h with
   | FHRet r => FHRet r
   | @FHVis _ _ _ X e k => FHVis (hetero_event e)
-      (fun x => PTree.bind (Ret x) (fun a => PTree.interp hetero_handler (k a)))
+      (λ x, PTree.bind (Ret x) (λ a, PTree.interp hetero_handler (k a)))
   end.
 Definition hetero_map (mu : MF SH) : MF TH :=
-  free_omega_bind mu (fun h => FORet (hetero_head h)).
+  free_omega_bind mu (λ h, FORet (hetero_head h)).
 
 Lemma hetero_head_hitting h :
   thits (ptree_interp_head_tree hetero_handler h) (FORet (hetero_head h)).
@@ -190,13 +190,13 @@ Proof.
   destruct h as [r|X e k].
   - apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)).
   - destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-      (fun x => PTree.interp hetero_handler (k x))) as [front Hfront].
+      (λ x, PTree.interp hetero_handler (k x))) as [front Hfront].
     apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
     change (thits (PTree.bind (hetero_handler e)
-      (fun x => PTree.interp hetero_handler (k x)))
-      (sem_bind (FORet (FHVis (hetero_event e) (fun x => Ret x)))
+      (λ x, PTree.interp hetero_handler (k x)))
+      (sem_bind (FORet (FHVis (hetero_event e) (λ x, Ret x)))
         (bind_frontier (FI := FI)
-          (fun x => PTree.interp hetero_handler (k x)) front))).
+          (λ x, PTree.interp hetero_handler (k x)) front))).
     eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO)).
     + apply ptree_bind_cofinal_all.
     + apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
@@ -216,7 +216,7 @@ Qed.
 Lemma hetero_head_mdp h : SG h → TG (hetero_head h).
 Proof.
   intro Hh. eapply mdp_head_coinduction with
-    (P := fun target => exists source, SG source ∧ target = hetero_head source).
+    (P := λ target, exists source, SG source ∧ target = hetero_head source).
   - intros target [source [Hgood ->]]. destruct source as [r|X e k]; [exact I|].
     intro x. destruct (proj1 (mdp_head_vis_iff e k) Hgood x)
       as [mu [Hhit [Htotal Hae]]].
@@ -270,11 +270,11 @@ End ReturnCarrier.
 
 (** An infinite protocol, with distinct source and target event types. *)
 CoFixpoint hetero_service : ptree sourceE SubEnumQ unit :=
-  Vis AskS (fun b => Vis (ReplyS b) (fun _ => hetero_service)).
+  Vis AskS (λ b, Vis (ReplyS b) (λ _, hetero_service)).
 Definition hetero_service_head : stable_head sourceE SubEnumQ unit :=
-  FHVis AskS (fun b => Vis (ReplyS b) (fun _ => hetero_service)).
+  FHVis AskS (λ b, Vis (ReplyS b) (λ _, hetero_service)).
 Definition hetero_reply_head b : stable_head sourceE SubEnumQ unit :=
-  FHVis (ReplyS b) (fun _ => hetero_service).
+  FHVis (ReplyS b) (λ _, hetero_service).
 Local Notation SState := (@mdp_state sourceE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit).
 Local Notation TState := (@mdp_state targetE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO unit).
 
@@ -282,7 +282,7 @@ Lemma hetero_dirac_total (h : stable_head sourceE SubEnumQ unit) :
   @sem_total MF FI FO _ (FORet h).
 Proof.
   apply free_omega_observable_total_intro.
-  exists unit, (fun _ => tt), (subenumQ_ret tt). split; [constructor|].
+  exists unit, (λ _, tt), (subenumQ_ret tt). split; [constructor|].
   native_compute. reflexivity.
 Qed.
 
@@ -293,7 +293,7 @@ Proof.
   - apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
   - apply (sem_eq_refl (SI := FI)).
   - eapply mdp_head_coinduction with
-      (P := fun h => h = hetero_service_head ∨ exists b, h = hetero_reply_head b).
+      (P := λ h, h = hetero_service_head ∨ exists b, h = hetero_reply_head b).
     + intros h [-> | [b ->]].
       * intro x. exists (FORet (hetero_reply_head x)). split.
         -- constructor. apply (ptree_stable_hitting_vis (FI := FI) (FO := FO)).
@@ -320,7 +320,7 @@ Proof.
 Qed.
 
 Example heterogeneous_reply_label b :
-  hetero_handler (ReplyS b) = Tau (Vis (ReplyT (negb b)) (fun x => Ret x)).
+  hetero_handler (ReplyS b) = Tau (Vis (ReplyT (negb b)) (λ x, Ret x)).
 Proof. reflexivity. Qed.
 
 End HeterogeneousEffects.

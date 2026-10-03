@@ -22,11 +22,11 @@ Definition writer_effect {X} (e : (writerE W +' E) X) : Monads.writerT W T X :=
   match e with
   | inl1 we => match we in writerE _ X return T (W*X) with
       | Tell w => @ret T MT _ (w,tt) end
-  | inr1 fe => @bind T MT _ _ (@handle X fe) (fun x => @ret T MT _ (monoid_unit op,x))
+  | inr1 fe => @bind T MT _ _ (@handle X fe) (λ x, @ret T MT _ (monoid_unit op,x))
   end.
 
 Definition writer_sample {X} (mu : MN X) : Monads.writerT W T X :=
-  @bind T MT _ _ (@sample X mu) (fun x => @ret T MT _ (monoid_unit op,x)).
+  @bind T MT _ _ (@sample X mu) (λ x, @ret T MT _ (monoid_unit op,x)).
 
 Definition fold_writer {A} (t : ptree (writerE W +' E) MN A) : T (W*A) :=
   @fold _ _ (Monads.writerT W T) (writerT_monad op) (writerT_iter op)
@@ -42,6 +42,6 @@ Lemma fold_writer_as_iter {A} (t : ptree (writerE W +' E) MN A) :
 Proof. reflexivity. Qed.
 
 Lemma writer_sample_empty_log {X} (mu : MN X) :
-  writer_sample mu = @bind T MT _ _ (@sample X mu) (fun x => @ret T MT _ (monoid_unit op,x)).
+  writer_sample mu = @bind T MT _ _ (@sample X mu) (λ x, @ret T MT _ (monoid_unit op,x)).
 Proof. reflexivity. Qed.
 End WriterFold.

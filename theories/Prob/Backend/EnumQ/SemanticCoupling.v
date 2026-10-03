@@ -133,7 +133,7 @@ Proof.
   intro Hlift. destruct (enumQ_coupling_realization Hlift) as [j Hj].
   assert (Hmass : enumQ_mass j = enumQ_mass (subenumQ_raw mu)).
   { apply enumQ_sem_same_mass_expect_one.
-    apply sem_lift_same_mass with (R := fun p x => fst p = x).
+    apply sem_lift_same_mass with (R := λ p x, fst p = x).
     exact (proj1 Hj). }
   assert (Hbound : enumQ_subprob j).
   { unfold enumQ_subprob. rewrite Hmass. exact (subenumQ_bound mu). }

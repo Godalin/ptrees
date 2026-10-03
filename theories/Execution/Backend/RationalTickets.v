@@ -56,7 +56,7 @@ Proof.
 Qed.
 
 Lemma ticket_sum_expand {A} (f : A → rat) xs n :
-  ticket_sum f (List.flat_map (fun x => List.repeat x n) xs) =
+  ticket_sum f (List.flat_map (λ x, List.repeat x n) xs) =
     n%:R * ticket_sum f xs.
 Proof.
   induction xs as [|x xs IH]; cbn [List.flat_map ticket_sum]; [by rewrite mulr0|].
@@ -64,11 +64,11 @@ Proof.
 Qed.
 
 Lemma ticket_sum_map {A B} (f : B → rat) (g : A → B) xs :
-  ticket_sum f (List.map g xs) = ticket_sum (fun x => f (g x)) xs.
+  ticket_sum f (List.map g xs) = ticket_sum (λ x, f (g x)) xs.
 Proof. induction xs; cbn; congruence. Qed.
 
 Lemma ticket_sum_size {A} (xs : list A) :
-  ticket_sum (fun _ => 1) xs = (size xs)%:R.
+  ticket_sum (λ _, 1) xs = (size xs)%:R.
 Proof.
   induction xs; cbn [ticket_sum size]; [reflexivity|].
   by rewrite IHxs -addn1 natrD addrC.
@@ -84,7 +84,7 @@ Fixpoint compile_tickets {A} (mu : list (rat * A)) : nat * list A :=
       let '(d, xs) := compile_tickets rest in
       ((ticket_den p * d)%N,
        List.repeat x (ticket_num p * d)%N ++
-       List.flat_map (fun y => List.repeat y (ticket_den p)) xs)
+       List.flat_map (λ y, List.repeat y (ticket_den p)) xs)
   end.
 
 Lemma compile_tickets_positive {A} (mu : list (rat * A)) :
@@ -119,14 +119,14 @@ Lemma compile_tickets_bound {A} (mu : SubEnumQ A) :
   (size (compile_tickets (subenumQ_data mu)).2 <=
     (compile_tickets (subenumQ_data mu)).1)%N.
 Proof.
-  have H := compile_tickets_expectation (fun _ => 1)
+  have H := compile_tickets_expectation (λ _, 1)
     (enumQ_nonnegative (subenumQ_raw mu)).
   rewrite ticket_sum_size in H.
   have Hle : ((size (compile_tickets (subenumQ_data mu)).2)%:R : rat) <=
       (compile_tickets (subenumQ_data mu)).1%:R.
   { rewrite H.
     have Hd : (0 : rat) <= (compile_tickets (subenumQ_data mu)).1%:R by rewrite ler0n.
-    have Hmass : finite_expect (fun _ => 1) (subenumQ_data mu) <= 1 := subenumQ_bound mu.
+    have Hmass : finite_expect (λ _, 1) (subenumQ_data mu) <= 1 := subenumQ_bound mu.
     have Hmul := ler_wpM2l Hd Hmass.
     by rewrite mulr1 in Hmul. }
   by move: Hle; rewrite ler_nat.
@@ -168,15 +168,15 @@ Definition ticket_expectation {A} (mu : SubEnumQ A) (f : option A → rat) : rat
     outcome explicitly, for arbitrary signed tests and arbitrary carriers. *)
 Theorem uniform_ticket_expectation {A} (mu : SubEnumQ A) (f : option A → rat) :
   ticket_expectation mu f =
-    finite_expect (fun x => f (Some x)) (subenumQ_data mu) +
+    finite_expect (λ x, f (Some x)) (subenumQ_data mu) +
     (1 - enumQ_mass (subenumQ_raw mu)) * f None.
 Proof.
   rewrite /ticket_expectation ticket_outcomes_enumerated /ticket_outcomes /ticket_count.
   have Hb := compile_tickets_bound mu.
   have Hd := compile_tickets_positive (subenumQ_data mu).
-  have He := compile_tickets_expectation (fun x => f (Some x))
+  have He := compile_tickets_expectation (λ x, f (Some x))
     (enumQ_nonnegative (subenumQ_raw mu)).
-  have Hm := compile_tickets_expectation (fun _ => 1)
+  have Hm := compile_tickets_expectation (λ _, 1)
     (enumQ_nonnegative (subenumQ_raw mu)).
   fold (subenumQ_data mu) in He, Hm.
   destruct (compile_tickets (subenumQ_data mu)) as [d xs]. cbn [fst snd] in *.
@@ -188,12 +188,12 @@ Proof.
 Qed.
 
 Theorem uniform_ticket_returns {A} (mu : SubEnumQ A) (f : A → rat) :
-  ticket_expectation mu (fun v => match v with Some x => f x | None => 0 end) =
+  ticket_expectation mu (λ v, match v with Some x => f x | None => 0 end) =
     finite_expect f (subenumQ_data mu).
 Proof. by rewrite uniform_ticket_expectation mulr0 addr0. Qed.
 
 Theorem uniform_ticket_loss {A} (mu : SubEnumQ A) :
-  ticket_expectation mu (fun v => match v with Some _ => 0 | None => 1 end) =
+  ticket_expectation mu (λ v, match v with Some _ => 0 | None => 1 end) =
     1 - enumQ_mass (subenumQ_raw mu).
 Proof. by rewrite uniform_ticket_expectation finite_expect_zero mulr1 add0r. Qed.
 

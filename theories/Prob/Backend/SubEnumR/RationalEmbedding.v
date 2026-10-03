@@ -46,14 +46,14 @@ Theorem subenumQ_to_R_zero {A} :
 Proof. intro f; reflexivity. Qed.
 Theorem subenumQ_to_R_bind {A B} (mu : SubEnumQ A) (k : A → SubEnumQ B) :
   subenumR_eq (subenumQ_to_R (subenumQ_bind mu k))
-    (subenumR_bind (subenumQ_to_R mu) (fun x => subenumQ_to_R (k x))).
+    (subenumR_bind (subenumQ_to_R mu) (λ x, subenumQ_to_R (k x))).
 Proof.
   intro f; rewrite subenumR_expect_bind !subenumQ_to_R_expect.
-  change (enumQ_real_expect f (bind_EnumQ (subenumQ_raw mu) (fun x => subenumQ_raw (k x))) =
-    enumQ_real_expect (fun x => subenumR_expect (subenumQ_to_R (k x)) f) (subenumQ_raw mu)).
+  change (enumQ_real_expect f (bind_EnumQ (subenumQ_raw mu) (λ x, subenumQ_raw (k x))) =
+    enumQ_real_expect (λ x, subenumR_expect (subenumQ_to_R (k x)) f) (subenumQ_raw mu)).
   rewrite enumQ_real_expect_bind.
-  have He : (fun x => enumQ_real_expect f (subenumQ_raw (k x))) =
-      (fun x => subenumR_expect (subenumQ_to_R (k x)) f).
+  have He : (λ x, enumQ_real_expect f (subenumQ_raw (k x))) =
+      (λ x, subenumR_expect (subenumQ_to_R (k x)) f).
   { apply functional_extensionality=> x; symmetry; exact: subenumQ_to_R_expect. }
   by rewrite He.
 Qed.

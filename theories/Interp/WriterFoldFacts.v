@@ -29,10 +29,10 @@ Definition writer_next {A} (log : W) (t : ptree (writerE W +' E) MN A) :
   | TauF u => ret (inl (log,u))
   | @VisF _ _ _ _ X e k => match e with
       | inl1 we => match we in writerE _ X return (X → _) → _ with
-          | Tell w => fun k => ret (inl (monoid_plus op log w,k tt)) end k
-      | inr1 fe => bind (@handle X fe) (fun x => ret (inl (log,k x)))
+          | Tell w => λ k, ret (inl (monoid_plus op log w,k tt)) end k
+      | inr1 fe => bind (@handle X fe) (λ x, ret (inl (log,k x)))
       end
-  | @ProbF _ _ _ _ X mu k => bind (@sample X mu) (fun x => ret (inl (log,k x)))
+  | @ProbF _ _ _ _ X mu k => bind (@sample X mu) (λ x, ret (inl (log,k x)))
   end.
 
 Theorem writer_fold_step_normalize {A} (t : ptree (writerE W +' E) MN A) log :

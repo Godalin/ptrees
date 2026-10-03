@@ -27,7 +27,7 @@ Definition ptree_interp_head_tree {R}
   | FHRet r => Ret r
   | @FHVis _ _ _ X e k =>
       Tau (PTree.bind (@handler X e)
-        (fun x => PTree.interp handler (k x)))
+        (λ x, PTree.interp handler (k x)))
   end.
 
 Definition ptree_interp_head_approx {R}
@@ -48,9 +48,9 @@ Definition ptree_interp_cofinal {R}
     (handler : ∀ X, E X → ptree F MN X)
     (t : ptree E MN R) : Prop :=
   ∀ out,
-    sem_lub (fun fuel => ptree_hitting_approx (MF := MF) fuel
+    sem_lub (λ fuel, ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.interp handler t))) out ↔
-    sem_lub (fun fuel => ptree_interp_diagonal_approx
+    sem_lub (λ fuel, ptree_interp_diagonal_approx
       fuel handler t) out.
 
 End KernelInterpDiagonal.
@@ -69,7 +69,7 @@ Context {E F : Type → Type} {MN MF : Type → Type}
 Lemma ptree_interp_head_approx_increasing {R}
     (handler : ∀ X, E X → ptree F MN X)
     (h : stable_head E MN R) :
-  sem_increasing (fun fuel => ptree_interp_head_approx
+  sem_increasing (λ fuel, ptree_interp_head_approx
     (MF := MF) fuel handler h).
 Proof.
   intro fuel. apply ptree_hitting_increasing.
@@ -80,7 +80,7 @@ Lemma ptree_interp_head_approx_lub {R}
     (front : stable_head E MN R → MF (stable_head F MN R))
     (Hfront : ∀ h, ptree_stable_hitting (MF := MF)
       (observe (ptree_interp_head_tree handler h)) (front h)) h :
-  sem_lub (fun fuel => ptree_interp_head_approx
+  sem_lub (λ fuel, ptree_interp_head_approx
       (MF := MF) fuel handler h) (front h).
 Proof.
   exact (Hfront h).

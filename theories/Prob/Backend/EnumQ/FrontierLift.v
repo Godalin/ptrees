@@ -17,7 +17,7 @@ Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Definition enumQ_prune {A} (mu : EnumQ A) : EnumQ A :=
-  finite_enum_prune (fun p => p == 0) mu.
+  finite_enum_prune (λ p, p == 0) mu.
 Lemma enumQ_prune_app {A} (mu nu : EnumQ A) :
   enumQ_raw (enumQ_prune (enumQ_app mu nu)) =
   enumQ_raw (enumQ_app (enumQ_prune mu) (enumQ_prune nu)).
@@ -52,8 +52,8 @@ Qed.
 Lemma enumQ_prune_raw {A} (mu nu : EnumQ A) :
   enumQ_raw mu = enumQ_raw nu → enumQ_raw (enumQ_prune mu) = enumQ_raw (enumQ_prune nu).
 Proof.
-  move=> H; change (finite_prune (fun p => p == 0) (enumQ_raw mu) =
-    finite_prune (fun p => p == 0) (enumQ_raw nu)); by rewrite H.
+  move=> H; change (finite_prune (λ p, p == 0) (enumQ_raw mu) =
+    finite_prune (λ p, p == 0) (enumQ_raw nu)); by rewrite H.
 Qed.
 Lemma enumQ_repr_eq_implies_meas_eq {A} (mu nu : EnumQ A) :
   enumQ_repr_eq mu nu → enumQ_meas_eq mu nu.
@@ -67,7 +67,7 @@ Qed.
 #[global] Instance EnumQ_MeasureInterface : MeasureInterface EnumQ := {
   meas_ret := @ret_EnumQ; meas_bind := @bind_EnumQ;
   meas_eq := @enumQ_meas_eq; meas_ae := @enumQ_ae;
-  meas_lift := fun A B R mu nu => indexed_coupling R (enumQ_prune mu) (enumQ_prune nu)
+  meas_lift := λ A B R mu nu, indexed_coupling R (enumQ_prune mu) (enumQ_prune nu)
 }.
 Lemma enumQ_meas_lift_observe {A B} (R : A → B → Prop)
     (obsA : A → bool) (obsB : B → bool) (mu : EnumQ A) (nu : EnumQ B) :
@@ -82,7 +82,7 @@ Proof.
   - exact: indexed_coupling_emap H Hlift.
 Qed.
 #[global] Instance EnumQ_MeasureZeroInterface : MeasureZeroInterface EnumQ := {
-  meas_empty := fun A => enumQ_zero
+  meas_empty := λ A, enumQ_zero
 }.
 
 #[global] Instance EnumQ_MeasureCoreLaws :
@@ -149,17 +149,17 @@ Proof.
 Qed.
 
 Lemma enumQ_prune_bind_ae {A B} (mu : EnumQ A) (k1 k2 : A → EnumQ B) :
-  enumQ_ae mu (fun x => enumQ_raw (enumQ_prune (k1 x)) = enumQ_raw (enumQ_prune (k2 x))) →
+  enumQ_ae mu (λ x, enumQ_raw (enumQ_prune (k1 x)) = enumQ_raw (enumQ_prune (k2 x))) →
   enumQ_raw (enumQ_prune (bind_EnumQ mu k1)) = enumQ_raw (enumQ_prune (bind_EnumQ mu k2)).
 Proof. exact: finite_prune_zero_bind_ae. Qed.
 Lemma enumQ_prune_bind {A B} (mu : EnumQ A) (k : A → EnumQ B) :
   enumQ_raw (enumQ_prune (bind_EnumQ mu k)) =
-  enumQ_raw (bind_EnumQ (enumQ_prune mu) (fun x => enumQ_prune (k x))).
+  enumQ_raw (bind_EnumQ (enumQ_prune mu) (λ x, enumQ_prune (k x))).
 Proof. exact: finite_prune_zero_bind. Qed.
 Lemma enumQ_prune_bind_coupling {A B C D} (R : C → D → Prop)
     (mu : EnumQ A) (nu : EnumQ B) (k : A → EnumQ C) (h : B → EnumQ D) :
-  indexed_coupling R (bind_EnumQ (enumQ_prune mu) (fun x => enumQ_prune (k x)))
-    (bind_EnumQ (enumQ_prune nu) (fun y => enumQ_prune (h y))) →
+  indexed_coupling R (bind_EnumQ (enumQ_prune mu) (λ x, enumQ_prune (k x)))
+    (bind_EnumQ (enumQ_prune nu) (λ y, enumQ_prune (h y))) →
   indexed_coupling R (enumQ_prune (bind_EnumQ mu k)) (enumQ_prune (bind_EnumQ nu h)).
 Proof.
   apply indexed_coupling_raw; symmetry; exact: enumQ_prune_bind.
@@ -219,8 +219,8 @@ Proof.
   constructor. move=> A B mu k1 k2 Hae.
   cbn in Hae |- *. unfold enumQ_meas_eq. apply enumQ_prune_bind_coupling.
   eapply indexed_coupling_bind_ae
-    with (P := fun x => enumQ_meas_eq (k1 x) (k2 x))
-         (Q := fun x => enumQ_meas_eq (k1 x) (k2 x)).
+    with (P := λ x, enumQ_meas_eq (k1 x) (k2 x))
+         (Q := λ x, enumQ_meas_eq (k1 x) (k2 x)).
   - apply indexed_coupling_refl. intros x. reflexivity.
   - move=> p x Hin. have [Hsrc Hnz] := enumQ_prune_in_source Hin.
     exact: Hae p x Hsrc Hnz.
@@ -330,10 +330,10 @@ Proof.
   - move=> A B x k.
     change (enumQ_meas_eq (bind_EnumQ (ret_EnumQ x) k) (k x)).
     apply enumQ_repr_eq_implies_meas_eq.
-    change (finite_bind [:: (1,x)] (fun a => enumQ_raw (k a)) = enumQ_raw (k x)).
+    change (finite_bind [:: (1,x)] (λ a, enumQ_raw (k a)) = enumQ_raw (k x)).
     rewrite -finite_bind_with_numeric.
-    exact (@finite_bind_with_left_unit rat (fun p q => p*q) A B 1 x
-      (fun a => enumQ_raw (k a)) (fun p => mul1r p)).
+    exact (@finite_bind_with_left_unit rat (λ p q, p*q) A B 1 x
+      (λ a, enumQ_raw (k a)) (λ p, mul1r p)).
   - move=> A B C mu k h.
     apply enumQ_repr_eq_implies_meas_eq; exact: bind_EnumQ_assoc.
 Qed.
@@ -344,11 +344,11 @@ Proof.
   constructor.
   move=> A B C D R mu nu f g Hfg.
   set xy : EnumQ (A * B) :=
-    bind_EnumQ mu (fun x =>
-      bind_EnumQ nu (fun y => ret_EnumQ (x, y))).
+    bind_EnumQ mu (λ x,
+      bind_EnumQ nu (λ y, ret_EnumQ (x, y))).
   set yx : EnumQ (A * B) :=
-    bind_EnumQ nu (fun y =>
-      bind_EnumQ mu (fun x => ret_EnumQ (x, y))).
+    bind_EnumQ nu (λ y,
+      bind_EnumQ mu (λ x, ret_EnumQ (x, y))).
   have Hxy : xy ==EnumQ yx.
   { exact: enumQ_Fubini_Tonelli. }
   have Hprune : enumQ_prune xy ==EnumQ enumQ_prune yx.
@@ -361,29 +361,29 @@ Proof.
     exact: coupling_of_enumQ_eq Hprune. }
   have Hmap := indexed_coupling_emap
     (R := R)
-    (f := fun xy : A * B => f (fst xy) (snd xy))
-    (g := fun xy : A * B => g (snd xy) (fst xy))
-    (fun x y (H : x = y) =>
+    (f := λ xy : A * B, f (fst xy) (snd xy))
+    (g := λ xy : A * B, g (snd xy) (fst xy))
+    (λ x y (H : x = y),
       match H with Logic.eq_refl => Hfg (fst x) (snd x) end)
     Hidx.
   cbn [EnumQ_MeasureInterface].
   have Hleft :
-      enumQ_raw (bind_EnumQ mu (fun x =>
-      bind_EnumQ nu (fun y => ret_EnumQ (f x y)))) =
-      enumQ_raw (emap (fun xy : A * B => f (fst xy) (snd xy)) xy).
+      enumQ_raw (bind_EnumQ mu (λ x,
+      bind_EnumQ nu (λ y, ret_EnumQ (f x y)))) =
+      enumQ_raw (emap (λ xy : A * B, f (fst xy) (snd xy)) xy).
   { symmetry; rewrite /xy emap_bind; apply bind_EnumQ_ext=> x.
     rewrite emap_bind; apply bind_EnumQ_ext=> y; reflexivity. }
   have Hright :
-      enumQ_raw (bind_EnumQ nu (fun y =>
-      bind_EnumQ mu (fun x => ret_EnumQ (g y x)))) =
-      enumQ_raw (emap (fun xy : A * B => g (snd xy) (fst xy)) yx).
+      enumQ_raw (bind_EnumQ nu (λ y,
+      bind_EnumQ mu (λ x, ret_EnumQ (g y x)))) =
+      enumQ_raw (emap (λ xy : A * B, g (snd xy) (fst xy)) yx).
   { symmetry; rewrite /yx emap_bind; apply bind_EnumQ_ext=> y.
     rewrite emap_bind; apply bind_EnumQ_ext=> x; reflexivity. }
   change (indexed_coupling R
-    (enumQ_prune (bind_EnumQ mu (fun x =>
-      bind_EnumQ nu (fun y => ret_EnumQ (f x y)))))
-    (enumQ_prune (bind_EnumQ nu (fun y =>
-      bind_EnumQ mu (fun x => ret_EnumQ (g y x)))))).
+    (enumQ_prune (bind_EnumQ mu (λ x,
+      bind_EnumQ nu (λ y, ret_EnumQ (f x y)))))
+    (enumQ_prune (bind_EnumQ nu (λ y,
+      bind_EnumQ mu (λ x, ret_EnumQ (g y x)))))).
   eapply indexed_coupling_raw; last exact Hmap.
   - rewrite -enumQ_prune_emap; apply enumQ_prune_raw; symmetry; exact Hleft.
   - rewrite -enumQ_prune_emap; apply enumQ_prune_raw; symmetry; exact Hright.

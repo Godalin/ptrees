@@ -35,7 +35,7 @@ Variable rename : ∀ X, E X → F X.
 
 Definition translate_cont {R X}
     (k : X → ptree E MN R) (x : X) : ptree F MN R :=
-  PTree.bind (Ret x) (fun y => PTree.translate rename (k y)).
+  PTree.bind (Ret x) (λ y, PTree.translate rename (k y)).
 
 Inductive translate_head_rel {R} :
     stable_head E MN R → stable_head F MN R → Prop :=
@@ -72,7 +72,7 @@ Qed.
 
 Lemma translate_approx_backward {R} fuel (t : ptree E MN R) :
   free_omega_approx
-    (fun hF hE => translate_head_rel hE hF)
+    (λ hF hE, translate_head_rel hE hF)
     (ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.translate rename t)))
     (ptree_hitting_approx (MF := MF) fuel (observe t)).
@@ -99,8 +99,8 @@ Qed.
 
 Lemma translate_hitting_cofinal {R} (t : ptree E MN R) :
   free_omega_chains_cofinal translate_head_rel
-    (fun fuel => ptree_hitting_approx (MF := MF) fuel (observe t))
-    (fun fuel => ptree_hitting_approx (MF := MF) fuel
+    (λ fuel, ptree_hitting_approx (MF := MF) fuel (observe t))
+    (λ fuel, ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.translate rename t))).
 Proof.
   split.
@@ -110,9 +110,9 @@ Qed.
 
 Lemma translate_canonical_lift {R} (t : ptree E MN R) :
   free_omega_qlift translate_head_rel
-    (FOLub (fun fuel => ptree_hitting_approx (MF := MF) fuel
+    (FOLub (λ fuel, ptree_hitting_approx (MF := MF) fuel
       (observe t)))
-    (FOLub (fun fuel => ptree_hitting_approx (MF := MF) fuel
+    (FOLub (λ fuel, ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.translate rename t)))).
 Proof.
   apply FOQLCofinal.
@@ -151,7 +151,7 @@ Proof.
   change (@sem_eq MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) _
     out
-    (FOLub (fun fuel => stable_hitting_approx
+    (FOLub (λ fuel, stable_hitting_approx
       (@ptree_primitive_kernel E MN MF
         (FreeOmegaObservableSemanticMeasure
           (NI := NI) (NO := NO))
@@ -159,32 +159,32 @@ Proof.
   change (@sem_eq MF
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)) _
     out'
-    (FOLub (fun fuel => stable_hitting_approx
+    (FOLub (λ fuel, stable_hitting_approx
       (@ptree_primitive_kernel F MN MF
         (FreeOmegaObservableSemanticMeasure
           (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure R) fuel
       (observe (PTree.translate rename t))))) in Hout'.
   change (free_omega_qlift eq out
-    (FOLub (fun fuel => stable_hitting_approx
+    (FOLub (λ fuel, stable_hitting_approx
       (@ptree_primitive_kernel E MN MF
         (FreeOmegaObservableSemanticMeasure
           (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure R) fuel (observe t)))) in Hout.
   change (free_omega_qlift eq out'
-    (FOLub (fun fuel => stable_hitting_approx
+    (FOLub (λ fuel, stable_hitting_approx
       (@ptree_primitive_kernel F MN MF
         (FreeOmegaObservableSemanticMeasure
           (NI := NI) (NO := NO))
         FreeOmegaMixedMeasure R) fuel
       (observe (PTree.translate rename t))))) in Hout'.
   assert (Hadequate : free_omega_qlift eq
-      (FOLub (fun fuel => stable_hitting_approx
+      (FOLub (λ fuel, stable_hitting_approx
         (@ptree_primitive_kernel E MN MF
           (FreeOmegaObservableSemanticMeasure
             (NI := NI) (NO := NO))
           FreeOmegaMixedMeasure R) fuel (observe t)))
-      (FOLub (fun fuel => ptree_hitting_approx (MF := MF) fuel
+      (FOLub (λ fuel, ptree_hitting_approx (MF := MF) fuel
         (observe t)))).
   { apply FOQLLub. intro fuel.
     exact (ptree_primitive_hitting_adequate
@@ -192,13 +192,13 @@ Proof.
       (FO := FreeOmegaObservableSemanticOmega)
       (MX := FreeOmegaMixedMeasure) fuel (observe t)). }
   assert (Hadequate' : free_omega_qlift eq
-      (FOLub (fun fuel => stable_hitting_approx
+      (FOLub (λ fuel, stable_hitting_approx
         (@ptree_primitive_kernel F MN MF
           (FreeOmegaObservableSemanticMeasure
             (NI := NI) (NO := NO))
           FreeOmegaMixedMeasure R) fuel
         (observe (PTree.translate rename t))))
-      (FOLub (fun fuel => ptree_hitting_approx (MF := MF) fuel
+      (FOLub (λ fuel, ptree_hitting_approx (MF := MF) fuel
         (observe (PTree.translate rename t))))).
   { apply FOQLLub. intro fuel.
     exact (ptree_primitive_hitting_adequate
@@ -207,25 +207,25 @@ Proof.
       (MX := FreeOmegaMixedMeasure) fuel
       (observe (PTree.translate rename t))). }
   eapply FOQLComp with (T := eq) (U := translate_head_rel)
-      (mid := FOLub (fun fuel => stable_hitting_approx
+      (mid := FOLub (λ fuel, stable_hitting_approx
         (@ptree_primitive_kernel E MN MF
           (FreeOmegaObservableSemanticMeasure
             (NI := NI) (NO := NO))
           FreeOmegaMixedMeasure R) fuel (observe t))).
   - exact Hout.
   - eapply FOQLComp with (T := translate_head_rel) (U := eq)
-        (mid := FOLub (fun fuel => stable_hitting_approx
+        (mid := FOLub (λ fuel, stable_hitting_approx
           (@ptree_primitive_kernel F MN MF
             (FreeOmegaObservableSemanticMeasure
               (NI := NI) (NO := NO))
             FreeOmegaMixedMeasure R) fuel
           (observe (PTree.translate rename t)))).
     + eapply FOQLComp with (T := eq) (U := translate_head_rel)
-          (mid := FOLub (fun fuel => ptree_hitting_approx (MF := MF)
+          (mid := FOLub (λ fuel, ptree_hitting_approx (MF := MF)
             fuel (observe t))).
       * exact Hadequate.
       * eapply FOQLComp with (T := translate_head_rel) (U := eq)
-            (mid := FOLub (fun fuel => ptree_hitting_approx (MF := MF)
+            (mid := FOLub (λ fuel, ptree_hitting_approx (MF := MF)
               fuel (observe (PTree.translate rename t)))).
         -- apply translate_canonical_lift.
         -- apply FOQLSym. eapply FOQLMono; [exact Hadequate'|].
@@ -331,8 +331,8 @@ Proof.
     pose proof (translate_hitting_lift HS1 HT1) as Hmap1.
     pose proof (translate_hitting_lift HS2 HT2) as Hmap2.
     eapply FOQLComp with
-      (T := fun hT hS => translate_head_rel rename hS hT)
-      (U := fun hS1 hT2 => exists hS2,
+      (T := λ hT hS, translate_head_rel rename hS hT)
+      (U := λ hS1 hT2, exists hS2,
         @ptree_stable_head_rel E MN R1 R2 RR
           (@peutt_state E MN MF
             (FreeOmegaObservableSemanticMeasure

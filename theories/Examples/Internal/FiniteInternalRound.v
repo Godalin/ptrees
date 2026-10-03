@@ -28,7 +28,7 @@ Proof. reflexivity. Qed.
 
 Example visible_round_target :
   native_sample_value (internal_plan_round_native visible_plan) (existT _ tt tt) =
-    SHStable (FHVis PlanAsk (fun b => Ret b)).
+    SHStable (FHVis PlanAsk (λ b, Ret b)).
 Proof. reflexivity. Qed.
 
 Example visible_round_before_boundary :
@@ -36,7 +36,7 @@ Example visible_round_before_boundary :
 Proof. exact (internal_round_hitting_approx visible_plan 0). Qed.
 
 Example visible_round_at_boundary :
-  free_omega_qlift eq (FORet (FHVis PlanAsk (fun b => Ret b)))
+  free_omega_qlift eq (FORet (FHVis PlanAsk (λ b, Ret b)))
     (internal_round_budget visible_plan 1).
 Proof. exact (internal_round_hitting_approx visible_plan 1). Qed.
 
@@ -64,8 +64,8 @@ Proof. apply internal_round_hitting_approx. Qed.
 (** Sampling in the guard also consumes one step.  A zero-mass guard
     remains zero-mass; it is not silently replaced by a total sample. *)
 Definition zero_guard_plan : finite_internal_plan
-    (Prob (@subenumQ_zero bool) (fun b => Ret b) : ptree planE SubEnumQ bool) :=
-  FIPStop (Prob (@subenumQ_zero bool) (fun b => Ret b)).
+    (Prob (@subenumQ_zero bool) (λ b, Ret b) : ptree planE SubEnumQ bool) :=
+  FIPStop (Prob (@subenumQ_zero bool) (λ b, Ret b)).
 
 Example zero_guard_cost :
   internal_round_steps zero_guard_plan (existT _ tt true) = 1.
@@ -79,7 +79,7 @@ Section NonuniformRound.
 Context {E MN : Type → Type} `{NI : SemanticMeasure MN} {R : Type}.
 
 Definition nonuniform_round_path (mu : MN nat) (k : nat → ptree E MN R) (n : nat) :
-  native_sample_type (internal_plan_round_native (nonuniform_plan mu (fun n => Tau (k n)))).
+  native_sample_type (internal_plan_round_native (nonuniform_plan mu (λ n, Tau (k n)))).
 Proof.
   refine (existT _ (existT _ n (delay_path n (Tau (k n)))) _).
   change (native_sample_type (internal_guard_native
@@ -90,7 +90,7 @@ Defined.
 (** Branch n spends n+1 steps in compression and another in its Tau
     guard.  There is no common bound on these syntactic path costs. *)
 Example nonuniform_round_cost (mu : MN nat) (k : nat → ptree E MN R) n :
-  internal_round_steps (nonuniform_plan mu (fun n => Tau (k n)))
+  internal_round_steps (nonuniform_plan mu (λ n, Tau (k n)))
     (nonuniform_round_path mu k n) = S (S n).
 Proof.
   change (S (internal_plan_steps (delay_plan n (Tau (k n)))

@@ -40,7 +40,7 @@ Qed.
 
 Lemma free_omega_peutt_interp_handler_Proper {E F A} :
   Proper (HE E F ==> W E A A eq ==> W F A A eq)
-    (fun h t => @PTree.interp E F MN h A t).
+    (λ h t, @PTree.interp E F MN h A t).
 Proof.
   apply (peutt_interp_handler_Proper free_omega_relational_zero free_omega_relational_lub).
 Qed.
@@ -95,7 +95,7 @@ Proof. apply (handler_bimap_congr free_omega_relational_zero free_omega_relation
 
 Lemma free_omega_peutt_interp_handler_polymorphic_Proper {E F} :
   Proper (HE E F ==>
-    forall_relation (fun A => W E A A eq ==> W F A A eq)) (@PTree.interp E F MN).
+    forall_relation (λ A, W E A A eq ==> W F A A eq)) (@PTree.interp E F MN).
 Proof.
   apply (peutt_interp_handler_polymorphic_Proper
     free_omega_relational_zero free_omega_relational_lub).

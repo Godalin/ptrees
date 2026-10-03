@@ -14,7 +14,7 @@ From PTree.Eq Require Import Shallow.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
-Definition itree_strong_eq1 {F} : Eq1 (itree F) := fun A => @eq_itree F A A eq.
+Definition itree_strong_eq1 {F} : Eq1 (itree F) := λ A, @eq_itree F A A eq.
 Definition itree_strong_equivalence {F} :
     @Eq1Equivalence (itree F) _ itree_strong_eq1.
 Proof. intro A. apply Equivalence_eqit; typeclasses eauto. Defined.
@@ -40,9 +40,9 @@ Lemma itree_fold_observe {A} (t : ptree E MN A) :
      | RetF a => ITreeDefinition.Ret a
      | TauF u => ITreeDefinition.Tau (fold handle sample u)
      | @VisF _ _ _ _ X e k => ITree.bind (@handle X e)
-         (fun x => ITreeDefinition.Tau (fold handle sample (k x)))
+         (λ x, ITreeDefinition.Tau (fold handle sample (k x)))
      | @ProbF _ _ _ _ X mu k => ITree.bind (@sample X mu)
-         (fun x => ITreeDefinition.Tau (fold handle sample (k x)))
+         (λ x, ITreeDefinition.Tau (fold handle sample (k x)))
      end).
 Proof.
   unfold fold at 1.
@@ -58,7 +58,7 @@ Proof. intro H. rewrite (itree_fold_observe t), (itree_fold_observe u), H. refle
 
 Lemma itree_fold_bind {A B} (t : ptree E MN A) (k : A → ptree E MN B) :
   eq_itree eq (fold handle sample (PTree.bind t k))
-    (ITree.bind (fold handle sample t) (fun a => fold handle sample (k a))).
+    (ITree.bind (fold handle sample t) (λ a, fold handle sample (k a))).
 Proof.
   revert t. ginit. pcofix CIH. intro t.
   rewrite (itree_fold_observe (PTree.bind t k)), (itree_fold_observe t).

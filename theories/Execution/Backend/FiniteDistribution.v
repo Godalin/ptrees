@@ -28,7 +28,7 @@ Fixpoint outcome_distribution {A} (fuel : nat) (t : ptree void1 SubEnumQ A)
       | O => [(1, Timeout)] | S n => outcome_distribution n u end
   | @ProbF _ _ _ _ X mu k => match fuel with
       | O => [(1, Timeout)]
-      | S n => finite_bind (subenumQ_data mu) (fun x => outcome_distribution n (k x)) ++
+      | S n => finite_bind (subenumQ_data mu) (λ x, outcome_distribution n (k x)) ++
           [(1 - enumQ_mass (subenumQ_raw mu), Lost)]
       end
   end.
@@ -48,14 +48,14 @@ Proof.
   - intros p x Hin. apply List.in_app_or in Hin. destruct Hin as [Hin|[H|[]]].
     + exact (finite_enum_nonnegative
         (finite_enum_bind (subenumQ_raw mu)
-          (fun x => finite_enum_of_list (IH (k x)))) p x Hin).
+          (λ x, finite_enum_of_list (IH (k x)))) p x Hin).
     + inversion H; subst. rewrite subr_ge0. exact: subenumQ_bound.
 Qed.
 
 Lemma outcome_expectation_prob {A X} n (mu : SubEnumQ X)
     (k : X → ptree void1 SubEnumQ A) f :
   outcome_expectation (S n) (Prob mu k) f =
-    finite_expect (fun x => outcome_expectation n (k x) f) (subenumQ_data mu) +
+    finite_expect (λ x, outcome_expectation n (k x) f) (subenumQ_data mu) +
     (1 - enumQ_mass (subenumQ_raw mu)) * f Lost.
 Proof.
   rewrite /outcome_expectation /= finite_expect_app finite_expect_bind.
@@ -63,7 +63,7 @@ Proof.
 Qed.
 
 Theorem outcome_distribution_mass {A} n (t : ptree void1 SubEnumQ A) :
-  outcome_expectation n t (fun _ => 1) = 1.
+  outcome_expectation n t (λ _, 1) = 1.
 Proof.
   unfold outcome_expectation.
   induction n as [|n IH] in t |- *;
@@ -72,13 +72,13 @@ Proof.
     try by rewrite mulr1 addr0.
   - exact: IH.
   - rewrite finite_expect_app finite_expect_bind /= mulr1 addr0.
-    rewrite (finite_expect_ext _ (fun x => IH (k x))).
+    rewrite (finite_expect_ext _ (λ x, IH (k x))).
     change (enumQ_mass (subenumQ_raw mu) + (1 - enumQ_mass (subenumQ_raw mu)) = 1).
     by rewrite addrC subrK.
 Qed.
 
 Theorem outcome_distribution_no_entropy_failure {A} n (t : ptree void1 SubEnumQ A) :
-  outcome_expectation n t (fun r => match r with EntropyExhausted => 1 | _ => 0 end) = 0.
+  outcome_expectation n t (λ r, match r with EntropyExhausted => 1 | _ => 0 end) = 0.
 Proof.
   unfold outcome_expectation.
   induction n as [|n IH] in t |- *;
@@ -87,7 +87,7 @@ Proof.
     try by rewrite mulr0 add0r.
   - exact: IH.
   - rewrite finite_expect_app finite_expect_bind /= mulr0 !addr0.
-    rewrite (finite_expect_ext _ (fun x => IH (k x))). exact: finite_expect_zero.
+    rewrite (finite_expect_ext _ (λ x, IH (k x))). exact: finite_expect_zero.
 Qed.
 
 Definition returned_test {A} (f : A → rat) (r : outcome A) :=

@@ -40,7 +40,7 @@ Hypothesis cut1_valid : ∀ t u, sim t u →
 Hypothesis cut2_valid : ∀ t u, sim t u →
   @finite_internal E MN MF FI FreeOmegaMixedMeasure B u (cut2 (t,u)).
 Hypothesis cuts_structural : ∀ t u, sim t u →
-  free_omega_lift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 (t,u)) (cut2 (t,u)).
+  free_omega_lift (λ t u, pstrongF RR sim (observe t) (observe u)) (cut1 (t,u)) (cut2 (t,u)).
 Hypothesis node_realizes : ∀ {X Y} (R : X → Y → Prop)
     (mu : MN X) (nu : MN Y), sem_lift R mu nu →
     ∃ joint, semantic_coupling R mu nu joint.
@@ -78,13 +78,13 @@ Theorem peutt_coinduction_finite_internal_structural t u :
     FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A B RR t u.
 Proof.
   intro Hsim. eapply peutt_coinduction with
-    (sim := fun s1 s2 => exists x y,
+    (sim := λ s1 s2, exists x y,
       s1 = observe x ∧ s2 = observe y ∧ sim x y).
   - intros s1 s2 [x [y [-> [-> Hxy]]]].
     eapply stable_hitting_match_of_hitting_lift with
-      (out1 := FOLub (fun n => @ptree_hitting_approx E MN MF FI
+      (out1 := FOLub (λ n, @ptree_hitting_approx E MN MF FI
         FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A n (observe x)))
-      (out2 := FOLub (fun n => @ptree_hitting_approx E MN MF FI
+      (out2 := FOLub (λ n, @ptree_hitting_approx E MN MF FI
         FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega B n (observe y))).
     + apply free_omega_qlift_refl. intro h. reflexivity.
     + apply free_omega_qlift_refl. intro h. reflexivity.

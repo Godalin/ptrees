@@ -12,7 +12,7 @@ Import MonadLetNotation.
 Definition list_ret {A} (a : A) : list A := [a].
 
 Definition list_bind {A B} (xs : list A) (f : A → list B) : list B :=
-  fold_right (fun x ys => f x ++ ys) [] xs.
+  fold_right (λ x ys, f x ++ ys) [] xs.
 
 Global Instance MonadList : Monad list :=
   { ret := @list_ret
@@ -65,7 +65,7 @@ Context {M : Monad m}.
 
 Definition mNil {A : Type} : m (mlist m A) := ret mnil.
 Definition mCons {A : Type} (a : A) (mml : m (mlist m A)) :=
-  bind mml (fun ml => ret (mcons a (ret tt) (fun _ => ml))).
+  bind mml (λ ml, ret (mcons a (ret tt) (λ _, ml))).
 
 End MList.
 
@@ -75,8 +75,8 @@ Section example.
 
 Check option.
 Global Instance MonadOption : Monad option := {|
-  ret := fun A x => Some x ;
-  bind := fun A B x f => match x with
+  ret := λ A x, Some x ;
+  bind := λ A B x f, match x with
     | None => None
     | Some y => f y
     end
@@ -85,11 +85,11 @@ Global Instance MonadOption : Monad option := {|
 Fixpoint sum_all' (x : mlist option nat) : option nat :=
   match x with
   | mnil => ret 0
-  | mcons a mx k => bind mx (fun x => bind (sum_all' (k x)) (fun n => ret (a + n)))
+  | mcons a mx k => bind mx (λ x, bind (sum_all' (k x)) (λ n, ret (a + n)))
   end.
 
 Definition sum_all (mml : option (mlist option nat)) : option nat :=
-  bind mml (fun ml => sum_all' ml).
+  bind mml (λ ml, sum_all' ml).
 
 Compute sum_all mNil.
 Compute sum_all (mCons 1 (mCons 2 mNil)).
@@ -119,34 +119,34 @@ Compute lift_list [1; 2; 3].
 Fixpoint mmap {A B} (f : A → B) (xs : mlist m A) : mlist m B :=
   match xs with
   | mnil => mnil
-  | mcons a mx k => mcons (f a) mx (fun x => mmap f (k x))
+  | mcons a mx k => mcons (f a) mx (λ x, mmap f (k x))
   end.
 
 Fixpoint mappend' {A} (xs : mlist m A) (ys : m (mlist m A)) : m (mlist m A) :=
   match xs with
   | mnil => ys
-  | mcons a mx k => bind mx (fun x => (mappend' (k x) ys))
+  | mcons a mx k => bind mx (λ x, (mappend' (k x) ys))
   end.
 
 Definition mappend {A} (mxs : m (mlist m A)) (mys : m (mlist m A)) : m (mlist m A) :=
-  bind mxs (fun xs => mappend' xs mys).
+  bind mxs (λ xs, mappend' xs mys).
 
 Fixpoint mjoin' {A} (mml : mlist m (m (mlist m A))) : m (mlist m A) :=
   match mml with
   | mnil => mNil
-  | mcons mas mx k => mappend mas (bind mx (fun x => (mjoin' (k x))))
+  | mcons mas mx k => mappend mas (bind mx (λ x, (mjoin' (k x))))
   end.
 
 Definition mjoin {A} (mml : m (mlist m (m (mlist m A)))) : m (mlist m A) :=
-  bind mml (fun ml => mjoin' ml).
+  bind mml (λ ml, mjoin' ml).
 
 
 
 Definition mlist_ret {A} (a : A) : m (mlist m A) := mCons a mNil.
 Definition mlist_bind {A B} (ma : m (mlist m A)) (f : A → m (mlist m B)) : m (mlist m B) :=
-  mjoin (bind ma (fun ml => ret (mmap f ml))).
+  mjoin (bind ma (λ ml, ret (mmap f ml))).
 
-Global Instance MonadmlistT : Monad (fun a => m (mlist m a)) :=
+Global Instance MonadmlistT : Monad (λ a, m (mlist m a)) :=
   { ret := @mlist_ret
   ; bind := @mlist_bind
   }.
@@ -155,7 +155,7 @@ Global Instance MonadmlistT : Monad (fun a => m (mlist m a)) :=
 
 Definition listT_ret {A} (a : A) : listT m A := mkListT (mCons a mNil).
 Definition listT_bind {A B} (x : listT m A) (f : A → listT m B) : listT m B :=
-  mkListT (mjoin (bind (runListT x) (fun ml => ret (mmap (fun a => runListT (f a)) ml)))).
+  mkListT (mjoin (bind (runListT x) (λ ml, ret (mmap (λ a, runListT (f a)) ml)))).
 
 Global Instance MonadListT : Monad (listT m) :=
   { ret := @listT_ret

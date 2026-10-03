@@ -47,7 +47,7 @@ Variant pstrongF
       (∀ x, sim (k1 x) (k2 x)) →
       pstrongF sim (VisF e k1) (VisF e k2)
   | PSProb {X Y : Type} (mu : M X) (nu : M Y) k1 k2 :
-      sem_lift (fun x y => sim (k1 x) (k2 y)) mu nu →
+      sem_lift (λ x y, sim (k1 x) (k2 y)) mu nu →
       pstrongF sim (ProbF mu k1) (ProbF nu k2).
 
 Definition pstrong_body
@@ -161,7 +161,7 @@ Proof. move=> ->. exact: pstrong_refl. Qed.
 Lemma pstrong_sym {R1 R2 : Type} (RR : R1 → R2 → Prop)
     (t1 : ptree E M R1) (t2 : ptree E M R2) :
   pstrong RR t1 t2 →
-  pstrong (fun y x => RR x y) t2 t1.
+  pstrong (λ y x, RR x y) t2 t1.
 Proof.
   revert t1 t2.
   unfold pstrong at 2.
@@ -170,7 +170,7 @@ Proof.
   move: (pstrong_unfold Huv) => Hstep.
   set ot1 := observe t1 in Hstep |- *.
   set ot2 := observe t2 in Hstep |- *.
-  change (pstrongF (fun y x => RR x y) (` CH) ot2 ot1).
+  change (pstrongF (λ y x, RR x y) (` CH) ot2 ot1).
   inversion Hstep as
       [r1 r2 HR | u1 u2 Hsim | X e k1 k2 Hk
        | X Y mu nu k1 k2 Hc]; subst.
@@ -212,7 +212,7 @@ Qed.
 Lemma pstrong_prob_intro {R} {X Y : Type}
     (mu : M X) (nu : M Y)
     (k1 : X → ptree E M R) (k2 : Y → ptree E M R) :
-  sem_lift (fun x y => pstrong eq (k1 x) (k2 y)) mu nu →
+  sem_lift (λ x y, pstrong eq (k1 x) (k2 y)) mu nu →
   pstrong eq (Prob mu k1) (Prob nu k2).
 Proof. move=> Hrel. apply pstrong_fold. constructor. exact Hrel. Qed.
 
@@ -220,7 +220,7 @@ Lemma pstrong_prob_inv {R} {X Y : Type}
     (mu : M X) (nu : M Y)
     (k1 : X → ptree E M R) (k2 : Y → ptree E M R) :
   pstrong eq (Prob mu k1) (Prob nu k2) →
-  sem_lift (fun x y => pstrong eq (k1 x) (k2 y)) mu nu.
+  sem_lift (λ x y, pstrong eq (k1 x) (k2 y)) mu nu.
 Proof.
   move=> Hrel.
   move: (pstrong_unfold Hrel) => Hs.

@@ -29,11 +29,11 @@ Variable R : realType.
 Local Notation upper := (@extended_upper R).
 Local Notation expect := (@enumQ_extended_expect R).
 
-Lemma extended_upper_naturals : upper (fun n => (n%:R)%:E) = +oo.
+Lemma extended_upper_naturals : upper (λ n, (n%:R)%:E) = +oo.
 Proof.
   rewrite /extended_upper.
-  have E : range (fun n : nat => (n%:R : R)%:E) =
-      EFin @` range (fun n : nat => (n%:R : R)).
+  have E : range (λ n : nat, (n%:R : R)%:E) =
+      EFin @` range (λ n : nat, (n%:R : R)).
   { rewrite -image_comp. reflexivity. }
   rewrite E. apply hasNub_ereal_sup.
   - apply/has_ubPn=> x.
@@ -43,7 +43,7 @@ Proof.
 Qed.
 
 Lemma extended_upper_scale (f : nat → \bar R) (p : R) :
-  (0 <= p)%R → upper (fun n => p%:E * f n) = p%:E * upper f.
+  (0 <= p)%R → upper (λ n, p%:E * f n) = p%:E * upper f.
 Proof.
   move=> Hp. rewrite /extended_upper -ereal_supZl //.
   - congr (ereal_sup _). rewrite -image_comp. reflexivity.
@@ -54,10 +54,10 @@ Qed.
 Lemma extended_upper_add (f g : nat → \bar R) :
   (∀ n, 0 <= f n) → (∀ n, 0 <= g n) →
   nondecreasing_seq f → nondecreasing_seq g →
-  upper (fun n => f n + g n) = upper f + upper g.
+  upper (λ n, f n + g n) = upper f + upper g.
 Proof.
   move=> Hf Hg Hfi Hgi.
-  have Hsi : nondecreasing_seq (fun n => f n + g n).
+  have Hsi : nondecreasing_seq (λ n, f n + g n).
   { move=> n m Hnm. exact: leeD (Hfi n m Hnm) (Hgi n m Hnm). }
   have Hsum := ereal_nondecreasing_cvgn Hsi.
   have Hfl := ereal_nondecreasing_cvgn Hfi.
@@ -74,24 +74,24 @@ Qed.
 Lemma enumQ_extended_expect_countable_ae {A} (mu : EnumQ A)
     (tests : nat → A → \bar R) :
   (∀ n x, 0 <= tests n x) →
-  enumQ_ae mu (fun x => nondecreasing_seq (fun n => tests n x)) →
-  expect (fun x => upper (fun n => tests n x)) mu =
-    upper (fun n => expect (tests n) mu).
+  enumQ_ae mu (λ x, nondecreasing_seq (λ n, tests n x)) →
+  expect (λ x, upper (λ n, tests n x)) mu =
+    upper (λ n, expect (tests n) mu).
 Proof.
-  move=> Hnonneg; apply (enumQ_ind_raw (P := fun mu =>
-    enumQ_ae mu (fun x => nondecreasing_seq (fun n => tests n x)) ->
-    expect (fun x => upper (fun n => tests n x)) mu = upper (fun n => expect (tests n) mu))).
+  move=> Hnonneg; apply (enumQ_ind_raw (P := λ mu,
+    enumQ_ae mu (λ x, nondecreasing_seq (λ n, tests n x)) ->
+    expect (λ x, upper (λ n, tests n x)) mu = upper (λ n, expect (tests n) mu))).
   - move=> _; symmetry; exact: extended_upper_constant.
   - move=> p Hp x tail IH Hinc; rewrite enumQ_extended_expect_cons.
-    have Htail : enumQ_ae tail (fun x => nondecreasing_seq (fun n => tests n x)).
+    have Htail : enumQ_ae tail (λ x, nondecreasing_seq (λ n, tests n x)).
     { intros q y Hy Hq. exact (Hinc q y (or_intror Hy) Hq). }
     rewrite (IH Htail).
-    have Heval : (fun n => expect (tests n) (enumQ_cons Hp x tail)) =
-      (fun n => (ratr p)%:E*tests n x+expect (tests n) tail) by reflexivity.
+    have Heval : (λ n, expect (tests n) (enumQ_cons Hp x tail)) =
+      (λ n, (ratr p)%:E*tests n x+expect (tests n) tail) by reflexivity.
     rewrite Heval; destruct (eqVneq p 0%R) as [Hz|Hnz].
     { rewrite Hz rmorph0 mul0e add0e.
       f_equal. apply functional_extensionality=> n. by rewrite mul0e add0e. }
-    have Hx : nondecreasing_seq (fun n => tests n x).
+    have Hx : nondecreasing_seq (λ n, tests n x).
     { apply (Hinc p x (or_introl (Logic.eq_refl (p,x)))).
       move=> Hz. move/eqP: Hnz=> Hneq. exact: Hneq Hz. }
     rewrite -extended_upper_scale; last by rewrite ler0q.
@@ -109,9 +109,9 @@ Qed.
 Lemma enumQ_extended_expect_countable {A} (mu : EnumQ A)
     (tests : nat → A → \bar R) :
   (∀ n x, 0 <= tests n x) →
-  (∀ x, nondecreasing_seq (fun n => tests n x)) →
-  expect (fun x => upper (fun n => tests n x)) mu =
-    upper (fun n => expect (tests n) mu).
+  (∀ x, nondecreasing_seq (λ n, tests n x)) →
+  expect (λ x, upper (λ n, tests n x)) mu =
+    upper (λ n, expect (tests n) mu).
 Proof.
   intros Hnonneg Hinc. apply enumQ_extended_expect_countable_ae; [exact Hnonneg|].
   intros p x _ _. exact (Hinc x).
@@ -120,35 +120,35 @@ Qed.
 Theorem free_omega_extended_upper_continuous {A} (mu : FreeOmega EnumQ A)
     (tests : nat → A → \bar R) :
   (∀ n x, 0 <= tests n x) →
-  (∀ x, nondecreasing_seq (fun n => tests n x)) →
-  free_omega_extended_upper mu (fun x => upper (fun n => tests n x)) =
-    upper (fun n => free_omega_extended_upper mu (tests n)).
+  (∀ x, nondecreasing_seq (λ n, tests n x)) →
+  free_omega_extended_upper mu (λ x, upper (λ n, tests n x)) =
+    upper (λ n, free_omega_extended_upper mu (tests n)).
 Proof.
   move=> Hnonneg Hinc.
   induction mu as [x| |X node k IH|c IH]; cbn [free_omega_extended_upper].
   - reflexivity.
   - symmetry; exact: extended_upper_constant.
   - have Hrows :
-      (fun x => free_omega_extended_upper (k x) (fun y => upper (fun n => tests n y))) =
-      (fun x => upper (fun n => free_omega_extended_upper (k x) (tests n))).
+      (λ x, free_omega_extended_upper (k x) (λ y, upper (λ n, tests n y))) =
+      (λ x, upper (λ n, free_omega_extended_upper (k x) (tests n))).
     { apply functional_extensionality. exact IH. }
     rewrite Hrows. apply enumQ_extended_expect_countable.
     + move=> n x. exact: free_omega_extended_upper_nonnegative.
     + move=> x n m Hnm. apply free_omega_extended_upper_mono=> y. exact (Hinc y n m Hnm).
   - have Hrows :
-      (fun i => free_omega_extended_upper (c i) (fun y => upper (fun n => tests n y))) =
-      (fun i => upper (fun n => free_omega_extended_upper (c i) (tests n))).
+      (λ i, free_omega_extended_upper (c i) (λ y, upper (λ n, tests n y))) =
+      (λ i, upper (λ n, free_omega_extended_upper (c i) (tests n))).
     { apply functional_extensionality. exact IH. }
     rewrite Hrows. exact: extended_upper_swap.
 Qed.
 
 Theorem free_omega_sample_lub_extended_upper {A X} (mu : EnumQ X)
     (chain : X → nat → FreeOmega EnumQ A) (f : A → \bar R) :
-  enumQ_ae mu (fun x => ∀ n,
+  enumQ_ae mu (λ x, ∀ n,
     free_omega_approx eq (chain x n) (chain x (S n))) →
   (∀ x, 0 <= f x) →
-  free_omega_extended_upper (FOSample mu (fun x => FOLub (chain x))) f =
-    free_omega_extended_upper (FOLub (fun n => FOSample mu (fun x => chain x n))) f.
+  free_omega_extended_upper (FOSample mu (λ x, FOLub (chain x))) f =
+    free_omega_extended_upper (FOLub (λ n, FOSample mu (λ x, chain x n))) f.
 Proof.
   move=> Hinc Hf. cbn [free_omega_extended_upper].
   apply enumQ_extended_expect_countable_ae.
@@ -160,7 +160,7 @@ Qed.
 Theorem free_omega_sample_bind_extended_upper {A X Y} (mu : EnumQ X)
     (k : X → EnumQ Y) (h : Y → FreeOmega EnumQ A) (f : A → \bar R) :
   (∀ x, 0 <= f x) →
-  free_omega_extended_upper (FOSample mu (fun x => FOSample (k x) h)) f =
+  free_omega_extended_upper (FOSample mu (λ x, FOSample (k x) h)) f =
     free_omega_extended_upper (FOSample (bind_EnumQ mu k) h) f.
 Proof.
   intro Hf. cbn [free_omega_extended_upper]. symmetry.
@@ -173,27 +173,27 @@ Theorem free_omega_bind_lub_extended_upper {A X}
   (∀ n, free_omega_approx eq (source n) (source (S n))) →
   (∀ x n, free_omega_approx eq (kernels x n) (kernels x (S n))) →
   (∀ x, 0 <= f x) →
-  free_omega_extended_upper (free_omega_bind (FOLub source) (fun x => FOLub (kernels x))) f =
-  free_omega_extended_upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f.
+  free_omega_extended_upper (free_omega_bind (FOLub source) (λ x, FOLub (kernels x))) f =
+  free_omega_extended_upper (FOLub (λ n, free_omega_bind (source n) (λ x, kernels x n))) f.
 Proof.
   intros Hsource Hkernels Hf.
   have Hrow : ∀ i,
-    free_omega_extended_upper (free_omega_bind (source i) (fun x => FOLub (kernels x))) f =
-    free_omega_extended_upper (FOLub (fun n => free_omega_bind (source i) (fun x => kernels x n))) f.
+    free_omega_extended_upper (free_omega_bind (source i) (λ x, FOLub (kernels x))) f =
+    free_omega_extended_upper (FOLub (λ n, free_omega_bind (source i) (λ x, kernels x n))) f.
   { intro i. rewrite free_omega_extended_upper_bind. cbn [free_omega_extended_upper].
     rewrite (free_omega_extended_upper_continuous (source i)
-      (tests := fun n x => free_omega_extended_upper (kernels x n) f)).
+      (tests := λ n x, free_omega_extended_upper (kernels x n) f)).
     - f_equal. apply functional_extensionality=> n. symmetry. apply free_omega_extended_upper_bind.
     - intros n x. exact: free_omega_extended_upper_nonnegative.
     - intro x. apply/nondecreasing_seqP=> n.
       exact (free_omega_extended_upper_approx_mono (Hkernels x n) Hf). }
-  change (extended_upper (fun i =>
-    free_omega_extended_upper (free_omega_bind (source i) (fun x => FOLub (kernels x))) f) =
-    free_omega_extended_upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f).
+  change (extended_upper (λ i,
+    free_omega_extended_upper (free_omega_bind (source i) (λ x, FOLub (kernels x))) f) =
+    free_omega_extended_upper (FOLub (λ n, free_omega_bind (source n) (λ x, kernels x n))) f).
   rewrite (functional_extensionality _ _ Hrow).
-  change (free_omega_extended_upper (FOLub (fun i => FOLub
-    (fun n => free_omega_bind (source i) (fun x => kernels x n)))) f =
-    free_omega_extended_upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f).
+  change (free_omega_extended_upper (FOLub (λ i, FOLub
+    (λ n, free_omega_bind (source i) (λ x, kernels x n)))) f =
+    free_omega_extended_upper (FOLub (λ n, free_omega_bind (source n) (λ x, kernels x n))) f).
   apply free_omega_diagonal_extended_upper; [| |exact Hf].
   - intros i n. eapply free_omega_approx_bind with (R := eq).
     + apply free_omega_approx_refl. intro x. reflexivity.

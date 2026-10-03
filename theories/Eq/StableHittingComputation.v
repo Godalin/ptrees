@@ -38,7 +38,7 @@ Proof.
   - intro Hhit. eapply stable_hitting_unique; [exact Hhit|].
     apply stable_hitting_ret.
   - intro Heq. unfold stable_hitting.
-    eapply sem_lub_chain_proper with (chain := fun _ => out).
+    eapply sem_lub_chain_proper with (chain := λ _, out).
     + intro n. eapply sem_eq_trans; [exact Heq|].
       apply sem_eq_sym. unfold stable_hitting_approx, ptree_primitive_kernel.
       eapply sem_eq_trans; [apply sem_bind_ret_l|].
@@ -55,7 +55,7 @@ Proof.
   - intro Hhit. eapply stable_hitting_unique; [exact Hhit|].
     apply stable_hitting_vis.
   - intro Heq. unfold stable_hitting.
-    eapply sem_lub_chain_proper with (chain := fun _ => out).
+    eapply sem_lub_chain_proper with (chain := λ _, out).
     + intro n. eapply sem_eq_trans; [exact Heq|].
       apply sem_eq_sym. unfold stable_hitting_approx, ptree_primitive_kernel.
       eapply sem_eq_trans; [apply sem_bind_ret_l|].
@@ -72,12 +72,12 @@ Proof. apply stable_hitting_tau_iff. Qed.
 
 Lemma stable_hitting_tau_iter {R} n (t : ptree E MN R) out :
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Nat.iter n (fun u => Tau u) t)) out ↔
+    (observe (Nat.iter n (λ u, Tau u) t)) out ↔
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out.
 Proof.
   induction n as [|n IH]; [reflexivity|].
   change (stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Tau (Nat.iter n (fun u => Tau u) t))) out ↔
+    (observe (Tau (Nat.iter n (λ u, Tau u) t))) out ↔
     stable_hitting (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out).
   rewrite stable_hitting_tau. exact IH.
 Qed.
@@ -116,7 +116,7 @@ Proof.
   destruct (choice _ Hex) as [front Hfront].
   exists front. split; [exact Hfront|].
   eapply stable_hitting_unique; [exact Hhit|].
-  eapply stable_hitting_prob with (Good := fun _ => True).
+  eapply stable_hitting_prob with (Good := λ _, True).
   - apply sem_ae_true.
   - intros x _. apply Hfront.
 Qed.
@@ -160,7 +160,7 @@ Theorem stable_hitting_prob_flatten {R X Y}
     `{NB : @MixedMeasureNodeBindLaws MN MF NI FI MX}
     (mu : MN X) (h : X → MN Y) (k : Y → ptree E MN R) out1 out2 :
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
-    (observe (Prob mu (fun x => Prob (h x) k))) out1 →
+    (observe (Prob mu (λ x, Prob (h x) k))) out1 →
   stable_hitting (@ptree_primitive_kernel E MN MF FI MX R)
     (observe (Prob (sem_bind mu h) k)) out2 →
   sem_lift eq out1 out2.
@@ -168,10 +168,10 @@ Proof.
   intros H1 H2.
   destruct (stable_hitting_prob_decompose H2) as [front [Hfront Heq2]].
   assert (Heq1 : sem_eq out1
-    (mixed_bind mu (fun x => mixed_bind (h x) front))).
-  { eapply stable_hitting_prob_compute with (Good := fun _ => True).
+    (mixed_bind mu (λ x, mixed_bind (h x) front))).
+  { eapply stable_hitting_prob_compute with (Good := λ _, True).
     - apply sem_ae_true.
-    - intros x _. eapply stable_hitting_prob with (Good := fun _ => True).
+    - intros x _. eapply stable_hitting_prob with (Good := λ _, True).
       + apply sem_ae_true.
       + intros y _. apply Hfront.
     - exact H1. }

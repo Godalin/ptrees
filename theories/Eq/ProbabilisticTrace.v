@@ -68,7 +68,7 @@ Definition probabilistic_head_query {R O}
       (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out ∧
     sem_eq
       (sem_bind out
-        (fun h => sem_ret (observe_stable_head on_ret on_vis h)))
+        (λ h, sem_ret (observe_stable_head on_ret on_vis h)))
       query.
 
 (** Canonical equivalence preserves every next-stable-head query whose
@@ -93,7 +93,7 @@ Proof.
   destruct Heutt as [Hforward _].
   destruct (Hforward out1 Hhit1) as [out2 [Hhit2 Hlift]].
   exists (sem_bind out2
-    (fun h => sem_ret (observe_stable_head on_ret2 on_vis h))).
+    (λ h, sem_ret (observe_stable_head on_ret2 on_vis h))).
   split.
   - exists out2. split; [exact Hhit2|apply sem_eq_refl].
   - eapply sem_lift_proper_l; [exact Hquery1|].
@@ -107,7 +107,7 @@ Qed.
 Definition next_event_query {R}
     (accept : ∀ X, E X → bool) (t : ptree E MN R)
     (query : MF bool) : Prop :=
-  probabilistic_head_query (fun _ => false) accept t query.
+  probabilistic_head_query (λ _, false) accept t query.
 
 Corollary peutt_preserves_next_event_query {R1 R2}
     (RR : R1 → R2 → Prop) (accept : ∀ X, E X → bool)
@@ -155,7 +155,7 @@ Fixpoint finite_interaction_query {R} (tr : finite_interaction_pattern)
       ∃ out branch,
         stable_hitting
           (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out ∧
-        sem_ae out (fun h =>
+        sem_ae out (λ h,
           match h with
           | FHRet _ => sem_eq (branch h) (sem_ret false)
           | @FHVis _ _ _ X e k =>
@@ -177,7 +177,7 @@ Lemma finite_interaction_query_cons_inv {R} select rest
   ∃ out branch,
     stable_hitting
       (@ptree_primitive_kernel E MN MF FI MX R) (observe t) out ∧
-    sem_ae out (fun h =>
+    sem_ae out (λ h,
       match h with
       | FHRet _ => sem_eq (branch h) (sem_ret false)
       | @FHVis _ _ _ X e k =>
@@ -187,11 +187,11 @@ Lemma finite_interaction_query_cons_inv {R} select rest
           end
       end) ∧
     sem_eq (sem_bind out branch) query.
-Proof. exact (fun Hq => Hq). Qed.
+Proof. exact (λ Hq, Hq). Qed.
 
 Definition selector_accept (select : event_selector) :
     ∀ X, E X → bool :=
-  fun X e =>
+  λ X e,
     match select X e with
     | Some _ => true
     | None => false
@@ -207,11 +207,11 @@ Lemma finite_interaction_query_vis_match `{FK : @SemanticMeasureAEKleisliLaws MF
 Proof.
   intros Hselect Hrest.
   exists (sem_ret (FHVis e k)),
-    (fun _ : stable_head E MN R => query). repeat split.
+    (λ _ : stable_head E MN R, query). repeat split.
   - apply stable_hitting_vis.
   - apply sem_ae_ret. cbn. rewrite Hselect. exact Hrest.
   - exact (sem_bind_ret_l (FHVis e k)
-      (fun _ : stable_head E MN R => query)).
+      (λ _ : stable_head E MN R, query)).
 Qed.
 
 Lemma finite_interaction_query_vis_reject `{FK : @SemanticMeasureAEKleisliLaws MF FI}
@@ -223,11 +223,11 @@ Lemma finite_interaction_query_vis_reject `{FK : @SemanticMeasureAEKleisliLaws M
 Proof.
   intro Hselect.
   exists (sem_ret (FHVis e k)),
-    (fun _ : stable_head E MN R => sem_ret false). repeat split.
+    (λ _ : stable_head E MN R, sem_ret false). repeat split.
   - apply stable_hitting_vis.
   - apply sem_ae_ret. cbn. rewrite Hselect. apply sem_eq_refl.
   - exact (sem_bind_ret_l (FHVis e k)
-      (fun _ : stable_head E MN R => sem_ret false)).
+      (λ _ : stable_head E MN R, sem_ret false)).
 Qed.
 
 (** A singleton interactive prefix is exactly the old next-event query,
@@ -251,8 +251,8 @@ Proof.
         unfold selector_accept; rewrite Hselect; exact Hg.
   - intros [out [Hhit Hquery]].
     exists out,
-      (fun h => sem_ret
-        (observe_stable_head (fun _ : R => false)
+      (λ h, sem_ret
+        (observe_stable_head (λ _ : R, false)
           (selector_accept select) h)).
     repeat split; try assumption.
     + eapply sem_ae_mono; [|apply sem_ae_true].
@@ -295,7 +295,7 @@ Proof.
     pose proof (sem_lift_proper_r
       (R := ptree_stable_head_rel RR (peutt_state RR))
       (mu := out1) (nu := out2') (nu' := out2) HoutEq Hlift) as Hlift12.
-    pose (good1 := fun h : stable_head E MN R1 =>
+    pose (good1 := λ h : stable_head E MN R1,
       match h with
       | FHRet _ => sem_eq (branch1 h) (sem_ret false)
       | @FHVis _ _ _ X e k =>
@@ -304,7 +304,7 @@ Proof.
           | None => sem_eq (branch1 h) (sem_ret false)
           end
       end).
-    pose (good2 := fun h : stable_head E MN R2 =>
+    pose (good2 := λ h : stable_head E MN R2,
       match h with
       | FHRet _ => sem_eq (branch2 h) (sem_ret false)
       | @FHVis _ _ _ X e k =>
@@ -353,7 +353,7 @@ Proof.
     apply peutt_unfold in Heutt.
     destruct Heutt as [Hforward _].
     destruct (Hforward out1 Hhit1) as [out2 [Hhit2 Hlift]].
-    pose (good1 := fun h : stable_head E MN R1 =>
+    pose (good1 := λ h : stable_head E MN R1,
       match h with
       | FHRet _ => sem_eq (branch1 h) (sem_ret false)
       | @FHVis _ _ _ X e k =>
@@ -362,7 +362,7 @@ Proof.
           | None => sem_eq (branch1 h) (sem_ret false)
           end
       end).
-    pose (reachable2 := fun h2 : stable_head E MN R2 =>
+    pose (reachable2 := λ h2 : stable_head E MN R2,
       exists h1, stable_head_rel RR (peutt RR) h1 h2 ∧
         good1 h1).
     assert (Hreachable2 : sem_ae out2 reachable2).
@@ -417,7 +417,7 @@ Proof.
           exists h1. split; assumption. }
     destruct (@choice (stable_head E MN R2) (MF bool) _ Hbranches)
       as [branch2 Hbranch2].
-    assert (Hgood2 : sem_ae out2 (fun h2 =>
+    assert (Hgood2 : sem_ae out2 (λ h2,
       match h2 with
       | FHRet _ => sem_eq (branch2 h2) (sem_ret false)
       | @FHVis _ _ _ X e k =>
@@ -498,7 +498,7 @@ Qed.
 Definition finite_interaction_sem {R} (tr : finite_interaction_pattern)
     (t : ptree E MN R) : MF bool :=
   epsilon (inhabits (sem_ret true))
-    (fun query => finite_interaction_query tr t query).
+    (λ query, finite_interaction_query tr t query).
 
 Theorem finite_interaction_sem_spec {R} tr (t : ptree E MN R) :
   finite_interaction_query tr t (finite_interaction_sem tr t).

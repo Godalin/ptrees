@@ -114,7 +114,7 @@ Example presentation_does_not_require_inhabitant :
   @finite_positions rat Empty_set [::] = [::].
 Proof. apply size0nil; by rewrite finite_positions_size. Qed.
 Example signed_observable_preserved (f : bool → rat) :
-  finite_expect (fun i => f (finite_position_value duplicate_zero_list i))
+  finite_expect (λ i, f (finite_position_value duplicate_zero_list i))
     (finite_positions duplicate_zero_list) = finite_expect f duplicate_zero_list.
 Proof. exact: finite_positions_expect. Qed.
 
@@ -159,34 +159,34 @@ Import EnumQ IndexedCoupling ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Example native_prune_uses_shared {A} (mu : EnumQ A) :
-  enumQ_raw (enumQ_prune mu) = finite_prune (fun p => p == 0) (enumQ_raw mu).
+  enumQ_raw (enumQ_prune mu) = finite_prune (λ p, p == 0) (enumQ_raw mu).
 Proof. reflexivity. Qed.
 
 Example native_equality_unchanged {A} (mu nu : EnumQ A) :
   enumQ_meas_eq mu nu ↔ indexed_coupling eq
-    (finite_enum_prune (fun p => p == 0) mu) (finite_enum_prune (fun p => p == 0) nu).
+    (finite_enum_prune (λ p, p == 0) mu) (finite_enum_prune (λ p, p == 0) nu).
 Proof. reflexivity. Qed.
 
 Example zero_pruning_preserves_order_and_duplicates :
-  finite_prune (fun p : rat => p == 0)
+  finite_prune (λ p : rat, p == 0)
     [(0,false); (1,true); (2,false); (0,true); (1,true)] =
   [(1,true); (2,false); (1,true)].
 Proof. reflexivity. Qed.
 
 Example pruning_does_not_renormalize :
-  finite_expect (fun _ : bool => (1 : rat))
-    (finite_prune (fun p : rat => p == 0) [(0,false); ((1/2)%R,true)]) = 1/2.
+  finite_expect (λ _ : bool, (1 : rat))
+    (finite_prune (λ p : rat, p == 0) [(0,false); ((1/2)%R,true)]) = 1/2.
 Proof. change ((1/2 : rat) * 1 + 0 = 1/2); by rewrite mulr1 addr0. Qed.
 
 Example all_zero_prunes_to_empty :
-  finite_prune (fun p : rat => p == 0) [(0,true); (0,false)] = [].
+  finite_prune (λ p : rat, p == 0) [(0,true); (0,false)] = [].
 Proof. reflexivity. Qed.
 
-Example empty_carrier_prune : @finite_prune rat (fun p => p == 0) Empty_set [] = [].
+Example empty_carrier_prune : @finite_prune rat (λ p, p == 0) Empty_set [] = [].
 Proof. reflexivity. Qed.
 
 Example duplicate_signed_observation_preserved (f : bool → rat) :
-  finite_expect f (finite_prune (fun p : rat => p == 0) [(1,true); (0,false); (2,true)]) =
+  finite_expect f (finite_prune (λ p : rat, p == 0) [(1,true); (0,false); (2,true)]) =
   finite_expect f [(1,true); (0,false); (2,true)].
 Proof. exact: finite_expect_prune_zero. Qed.
 
@@ -202,7 +202,7 @@ Qed.
 Section SharedRecords.
 Variable R : numDomainType.
 Example general_discard_can_lose_mass {A} (mu : FiniteEnum R A) :
-  finite_mass (finite_enum_prune (fun _ => true) mu) = 0.
+  finite_mass (finite_enum_prune (λ _, true) mu) = 0.
 Proof.
   destruct mu as [raw Hnn]; cbn; clear Hnn.
   induction raw as [|[p x] tl IH]; cbn; [reflexivity|exact IH].
@@ -213,7 +213,7 @@ Section LargeCarrier.
 Universe u.
 Variable R : numDomainType.
 Example large_carrier_prune (X : Type@{u}) :
-  finite_enum_raw (finite_enum_prune (fun p => p == 0) (finite_enum_ret R X)) = [(1,X)].
+  finite_enum_raw (finite_enum_prune (λ p, p == 0) (finite_enum_ret R X)) = [(1,X)].
 Proof. cbn; by rewrite oner_eq0. Qed.
 End LargeCarrier.
 
@@ -239,8 +239,8 @@ Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
 Example bind_keeps_zero_blocks_and_duplicates :
-  finite_bind_with (fun p q : rat => p*q) [:: (0,false); (1,true); (1,true)]
-    (fun b => [:: (2,b); (0,b)]) =
+  finite_bind_with (λ p q : rat, p*q) [:: (0,false); (1,true); (1,true)]
+    (λ b, [:: (2,b); (0,b)]) =
   [:: (0,false); (0,false); (2,true); (0,true); (2,true); (0,true)].
 Proof. reflexivity. Qed.
 Example duplicate_atom_mass :
@@ -257,14 +257,14 @@ Local Lemma rat_to_real_mono : ∀ x y, x <= y → rat_to_real x <= rat_to_real 
 Proof. move=> x y H; by rewrite /rat_to_real /= ler_rat. Qed.
 
 Example ordinary_q_to_r_mass {A} (mu : FiniteSubdist rat_rat__canonical__Num_NumDomain A) :
-  finite_subdist_expect (finite_subdist_map_weights rat_to_real_mono mu) (fun _ => 1) =
-  ratr (finite_subdist_expect mu (fun _ => 1)).
+  finite_subdist_expect (finite_subdist_map_weights rat_to_real_mono mu) (λ _, 1) =
+  ratr (finite_subdist_expect mu (λ _, 1)).
 Proof. exact: finite_map_weights_mass. Qed.
 Example ordinary_q_to_r_bind {A B} (mu : FiniteSubdist rat_rat__canonical__Num_NumDomain A)
     (k : A → FiniteSubdist rat_rat__canonical__Num_NumDomain B) :
   finite_enum_raw (finite_subdist_enum (finite_subdist_map_weights rat_to_real_mono (finite_subdist_bind mu k))) =
   finite_enum_raw (finite_subdist_enum (finite_subdist_bind
-    (finite_subdist_map_weights rat_to_real_mono mu) (fun x => finite_subdist_map_weights rat_to_real_mono (k x)))).
+    (finite_subdist_map_weights rat_to_real_mono mu) (λ x, finite_subdist_map_weights rat_to_real_mono (k x)))).
 Proof. exact: finite_subdist_map_weights_bind. Qed.
 End ScalarTransport.
 
@@ -328,7 +328,7 @@ Example pruning_only_removes_zero :
     [(1/4,true); (1/2,false); (1/4,true)].
 Proof. vm_compute; reflexivity. Qed.
 Example signed_test_is_preserved :
-  enumQ_expect (fun b => if b then -3 else 1) (subenumQ_raw zero_duplicate) = -1.
+  enumQ_expect (λ b, if b then -3 else 1) (subenumQ_raw zero_duplicate) = -1.
 Proof. vm_compute; reflexivity. Qed.
 
 Example rational_to_real_uses_shared_transport (R : realType) {A} (mu : SubEnumQ A) :

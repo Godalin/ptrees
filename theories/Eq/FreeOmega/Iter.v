@@ -36,7 +36,7 @@ Theorem peutt_iter_unfold {I R}
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
     (PTree.iter step i)
-    (PTree.bind (step i) (fun lr =>
+    (PTree.bind (step i) (λ lr,
       match lr with
       | inl i' => Tau (PTree.iter step i')
       | inr r => Ret r
@@ -109,7 +109,7 @@ Theorem peutt_iter_codiagonal {I R}
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaObservableSemanticMeasureCoreLaws FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R R eq
-    (PTree.iter (fun j => PTree.iter step j) i)
+    (PTree.iter (λ j, PTree.iter step j) i)
     (PTree.iter (pstruct_iter_codiagonal_flat_step step) i).
 Proof.
   apply (Iter.peutt_iter_codiagonal
@@ -197,9 +197,9 @@ Theorem peutt_iter_behavioral_rel_of_outputs i1 i2 :
     (PTree.iter step1 i1) (PTree.iter step2 i2).
 Proof.
   intro Hij.
-  let rows1 := constr:(fun rounds =>
+  let rows1 := constr:(λ rounds,
     iter_complete_rows no_event step_out1 rounds i1) in
-  let rows2 := constr:(fun rounds =>
+  let rows2 := constr:(λ rounds,
     iter_complete_rows no_event step_out2 rounds i2) in
   eapply peutt_of_hitting_lift
     with (out1 := FOLub rows1) (out2 := FOLub rows2).

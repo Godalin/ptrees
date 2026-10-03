@@ -30,13 +30,13 @@ Lemma itree_reader_fold_observe {A} (t : ptree (readerE Env +' E) MN A) env :
      | TauF u => ITreeDefinition.Tau (fold_reader handle sample u env)
      | @VisF _ _ _ _ X e k => match e with
          | inl1 re => match re in readerE _ X return (X → _) → _ with
-             | Ask => fun k => ITreeDefinition.Tau (fold_reader handle sample (k env) env)
+             | Ask => λ k, ITreeDefinition.Tau (fold_reader handle sample (k env) env)
              end k
          | inr1 fe => ITree.bind (@handle X fe)
-             (fun x => ITreeDefinition.Tau (fold_reader handle sample (k x) env))
+             (λ x, ITreeDefinition.Tau (fold_reader handle sample (k x) env))
          end
      | @ProbF _ _ _ _ X mu k => ITree.bind (@sample X mu)
-         (fun x => ITreeDefinition.Tau (fold_reader handle sample (k x) env))
+         (λ x, ITreeDefinition.Tau (fold_reader handle sample (k x) env))
      end).
 Proof.
   rewrite fold_reader_as_iter.
@@ -82,7 +82,7 @@ Qed.
 Theorem itree_reader_fold_bind {A B} (t : ptree (readerE Env +' E) MN A)
     (k : A → ptree (readerE Env +' E) MN B) env :
   eq_itree eq (fold_reader handle sample (PTree.bind t k) env)
-    (ITree.bind (fold_reader handle sample t env) (fun a => fold_reader handle sample (k a) env)).
+    (ITree.bind (fold_reader handle sample t env) (λ a, fold_reader handle sample (k a) env)).
 Proof.
   revert t. ginit. pcofix CIH. intro t.
   rewrite (itree_reader_fold_observe (PTree.bind t k) env),

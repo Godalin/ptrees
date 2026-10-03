@@ -22,7 +22,7 @@ Polymorphic Class SemanticMeasureAELiftLaws@{carrier representation}
   sem_lift_refl_ae : ∀ {A : Type@{carrier}}
       (mu : S A) (P : A → Prop),
       sem_ae mu P →
-      sem_lift (fun x y => x = y ∧ P x) mu mu
+      sem_lift (λ x y, x = y ∧ P x) mu mu
 }.
 
 
@@ -37,7 +37,7 @@ Polymorphic Class SemanticMeasureCountableAELaws@{carrier representation}
   sem_ae_countable : ∀ {A : Type@{carrier}} (mu : S A)
       (P : nat → A → Prop),
     (∀ n, sem_ae mu (P n)) →
-    sem_ae mu (fun x => ∀ n, P n x)
+    sem_ae mu (λ x, ∀ n, P n x)
 }.
 
 (** Predicate semantics for the monadic operations.  These laws are kept
@@ -76,5 +76,5 @@ Polymorphic Class SemanticMeasureBindAEExactLaws@{carrier representation}
   sem_ae_bind_iff : ∀ {A B : Type@{carrier}}
       (mu : S A) (k : A → S B) (P : B → Prop),
       sem_ae (sem_bind mu k) P ↔
-      sem_ae mu (fun x => sem_ae (k x) P)
+      sem_ae mu (λ x, sem_ae (k x) P)
 }.

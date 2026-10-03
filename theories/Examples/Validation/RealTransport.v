@@ -20,7 +20,7 @@ Section Tests.
 Variable R : realType.
 
 Lemma diagonal_neighbors {X : finType} (S : {set X}) :
-  matching_neighbors (fun x y : X => x == y) finset.setT S = S.
+  matching_neighbors (λ x y : X, x == y) finset.setT S = S.
 Proof.
   apply/setP=> y; apply/idP/idP.
   - move/matching_neighborsP=> [_ [x [Hx /eqP Hxy]]]; by rewrite -Hxy.
@@ -48,7 +48,7 @@ Example sqrt_weight_transport :
     (∀ x y, x != y → w x y = 0).
 Proof.
   apply (@diagonal_real_mass _
-    (fun x : bool => if x then Num.sqrt 2 else 1)).
+    (λ x : bool, if x then Num.sqrt 2 else 1)).
   intros []; simpl.
   all: first [exact: sqrtr_ge0 | exact: ler01].
 Qed.
@@ -61,14 +61,14 @@ Example unused_target_capacity (a b : R) : 0 <= a → a <= b →
     (∀ y, \sum_x w x y <= b) ∧
     (∀ x y, ~~ true → w x y = 0).
 Proof.
-  intros Ha Hab; apply (@finite_real_subtransport R _ _ (fun _ : unit => a)
-    (fun _ : unit => b) (fun _ _ => true)).
+  intros Ha Hab; apply (@finite_real_subtransport R _ _ (λ _ : unit, a)
+    (λ _ : unit, b) (λ _ _, true)).
   1: by intros.
   1: by intros; exact: le_trans Ha Hab.
   intro S; destruct (boolP (tt \in S)) as [Hin|Hout].
   - have HS : S = [set: unit].
     { apply/setP=> [[]]; by rewrite inE. }
-    have HN : matching_neighbors (fun _ _ : unit => true) [set: unit] S = [set: unit].
+    have HN : matching_neighbors (λ _ _ : unit, true) [set: unit] S = [set: unit].
     { apply/setP=> [[]]; apply/idP/idP; first by intros; rewrite inE.
       intros _; apply/matching_neighborsP; split; first by rewrite inE.
       exists tt; by split. }
@@ -86,14 +86,14 @@ Example split_real_mass (a b : R) : 0 <= a → 0 <= b →
     (∀ y, \sum_x w x y = if y then a else b) ∧
     (∀ x y, ~~ true → w x y = 0).
 Proof.
-  intros Ha Hb; apply (@finite_real_transport R _ _ (fun _ : unit => a + b)
-    (fun y : bool => if y then a else b) (fun _ _ => true)).
+  intros Ha Hb; apply (@finite_real_transport R _ _ (λ _ : unit, a + b)
+    (λ y : bool, if y then a else b) (λ _ _, true)).
   - intros; exact: addr_ge0.
   - intros []; assumption.
   - intro S; destruct (boolP (tt \in S)) as [Hin|Hout].
     + have HS : S = [set: unit].
       { apply/setP=> [[]]; by rewrite inE. }
-      have HN : matching_neighbors (fun (_ : unit) (_ : bool) => true)
+      have HN : matching_neighbors (λ (_ : unit) (_ : bool), true)
           [set: bool] S = [set: bool].
       { apply/setP=> y; apply/idP/idP; first by intros; rewrite inE.
         intros _; apply/matching_neighborsP; split; first by rewrite inE.
@@ -112,7 +112,7 @@ Example empty_source (q : bool → R) : (∀ y, 0 <= q y) →
     (∀ y, \sum_x w x y <= q y) ∧
     (∀ x y, ~~ false → w x y = 0).
 Proof.
-  intro Hq; apply (@finite_real_subtransport R _ _ (fun _ : 'I_0 => 0) q (fun _ _ => false)).
+  intro Hq; apply (@finite_real_subtransport R _ _ (λ _ : 'I_0, 0) q (λ _ _, false)).
   - intros; exact: lexx.
   - exact Hq.
   - intro S; rewrite big1; last by intros.
@@ -126,7 +126,7 @@ Example zero_demand_empty_target :
     (∀ y, \sum_x w x y <= 0) ∧
     (∀ x y, ~~ false → w x y = 0).
 Proof.
-  apply (@finite_real_subtransport R _ _ (fun _ : bool => 0) (fun _ : 'I_0 => 0) (fun _ _ => false)).
+  apply (@finite_real_subtransport R _ _ (λ _ : bool, 0) (λ _ : 'I_0, 0) (λ _ _, false)).
   - intros; exact: lexx.
   - intros; exact: lexx.
   - intro S; rewrite !big1 //; exact: lexx.

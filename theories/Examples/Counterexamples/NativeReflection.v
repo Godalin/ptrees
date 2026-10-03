@@ -48,7 +48,7 @@ Definition lift {A B} (R : A → B → Prop) (mu : M A) (nu : M B) :=
   end.
 
 #[local] Instance Measure : SemanticMeasure M := {
-  sem_ret := @ret; sem_bind := @bind; sem_eq := fun A => @eq (M A);
+  sem_ret := @ret; sem_bind := @bind; sem_eq := λ A, @eq (M A);
   sem_ae := @ae; sem_lift := @lift
 }.
 
@@ -108,7 +108,7 @@ Proof.
 Qed.
 
 #[local] Instance Subprobability : @SemanticSubprobability M Measure := {
-  sem_subprob := fun _ _ => True
+  sem_subprob := λ _ _, True
 }.
 #[local] Instance SubprobabilityLaws :
     @SemanticSubprobabilityLaws M Measure Subprobability.
@@ -119,11 +119,11 @@ Proof. constructor; intros; cbn; tauto. Qed.
 
 Definition le {A} (mu nu : M A) := mu = None ∨ mu = nu.
 #[local] Instance Omega : @SemanticOmega M Measure := {
-  sem_zero := fun _ => None;
+  sem_zero := λ _, None;
   sem_le := @le;
-  sem_lub := fun A c out => (∀ n, le (c n) out) ∧
+  sem_lub := λ A c out, (∀ n, le (c n) out) ∧
     (∀ upper, (∀ n, le (c n) upper) → le out upper);
-  sem_total := fun A mu => ∃ x : A, mu = Some (0,x)
+  sem_total := λ A mu, ∃ x : A, mu = Some (0,x)
 }.
 
 Lemma native_joints {A B} (R : A → B → Prop) (mu : M A) (nu : M B) :
@@ -134,13 +134,13 @@ Proof.
   - exists None. repeat split; exact I.
 Qed.
 
-Definition sample (mu : M unit) : FreeOmega M unit := FOSample mu (fun x => FORet x).
+Definition sample (mu : M unit) : FreeOmega M unit := FOSample mu (λ x, FORet x).
 
 Lemma quotient_forgets_extra_attenuation :
   free_omega_qlift eq (sample (bind (ret tt) ret)) (sample (ret tt)).
 Proof.
   exact (@free_omega_sample_bind_ret_l M Measure Core Omega DiracAE BindAE
-    unit unit unit tt (@ret unit) (fun x => FORet x)).
+    unit unit unit tt (@ret unit) (λ x, FORet x)).
 Qed.
 
 Lemma native_coupling_keeps_mass : ¬ sem_lift eq (bind (ret tt) ret) (ret tt).
@@ -168,8 +168,8 @@ Qed.
 Definition Event (_ : Type) := Empty_set.
 Local Notation tree := (ptree Event M bool).
 Definition sampled_plan : finite_internal_plan
-    (Prob (ret tt) (fun _ => Ret true) : tree) :=
-  FIPProb (ret tt) (fun _ => FIPStop (Ret true)).
+    (Prob (ret tt) (λ _, Ret true) : tree) :=
+  FIPProb (ret tt) (λ _, FIPStop (Ret true)).
 Definition direct_plan : finite_internal_plan (Ret true : tree) := FIPStop (Ret true).
 
 Theorem actual_plans_quotient_coupled :
@@ -180,7 +180,7 @@ Proof.
     (mid := @internal_plan_frontier Event M bool (FreeOmega M)
       (FreeOmegaObservableSemanticMeasure (NI := Measure) (NO := Omega))
       FreeOmegaMixedMeasure _ sampled_plan).
-  - apply FOQLMono with (T := fun x y => y = x).
+  - apply FOQLMono with (T := λ x y, y = x).
     + apply FOQLSym, internal_plan_native_eq.
     + intros x y Hyx. symmetry. exact Hyx.
   - eapply FOQLComp with (T := eq) (U := eq) (mid := FORet (Ret true)).
@@ -192,18 +192,18 @@ Proof.
 Qed.
 
 Theorem actual_plans_have_no_native_coupling :
-  ¬ sem_lift (fun _ _ => True)
+  ¬ sem_lift (λ _ _, True)
     (internal_plan_measure sampled_plan) (internal_plan_measure direct_plan).
 Proof. cbn. intros [H _]. discriminate. Qed.
 
 Theorem actual_plans_have_no_native_joint :
   ¬ ∃ joint,
-    semantic_coupling (fun _ _ => True)
+    semantic_coupling (λ _ _, True)
       (internal_plan_measure sampled_plan) (internal_plan_measure direct_plan) joint.
 Proof.
   intros [joint [Hleft [Hright _]]].
   apply actual_plans_have_no_native_coupling.
-  eapply sem_lift_mono with (R := fun x z => exists y, fst y = x ∧ snd y = z).
+  eapply sem_lift_mono with (R := λ x z, exists y, fst y = x ∧ snd y = z).
   - intros x z _. exact I.
   - eapply sem_lift_comp; [apply sem_lift_sym; exact Hleft|exact Hright].
 Qed.
@@ -211,7 +211,7 @@ Qed.
 (** These actual finite plans also match under the existing strong
     one-step constructor relation; their path-coupling obstruction remains. *)
 Theorem actual_plans_are_guard_coupled :
-  free_omega_qlift (fun t u => pstrongF eq eq (observe t) (observe u))
+  free_omega_qlift (λ t u, pstrongF eq eq (observe t) (observe u))
     (free_omega_native (internal_plan_native sampled_plan))
     (free_omega_native (internal_plan_native direct_plan)).
 Proof.
@@ -226,14 +226,14 @@ Qed.
 
 (** Staying in the quotient avoids the refuted reflection step. *)
 Lemma tagged_sample_ret {A} n (x : A) :
-  free_omega_qlift eq (FOSample (Some (n,x)) (fun y => FORet y)) (FORet x).
+  free_omega_qlift eq (FOSample (Some (n,x)) (λ y, FORet y)) (FORet x).
 Proof.
   induction n as [|n IH].
   - apply (@FOQLSampleRetL M Measure Omega); [intro P; reflexivity|].
     apply FOQLStructural, FOLRet. reflexivity.
   - eapply FOQLComp with (T := eq) (U := eq); [|exact IH|].
     + exact (@free_omega_sample_bind_ret_l M Measure Core Omega DiracAE BindAE
-        unit A A tt (fun _ => Some (n,x)) (fun y => FORet y)).
+        unit A A tt (λ _, Some (n,x)) (λ y, FORet y)).
     + intros a c [b [-> ->]]. reflexivity.
 Qed.
 
@@ -241,7 +241,7 @@ Definition sampled_plan_recovery :
     free_omega_native_recovery (internal_plan_native sampled_plan).
 Proof.
   apply (constant_native_recovery (mu := internal_plan_measure sampled_plan) (Ret true : tree)).
-  eapply FOQLComp with (T := eq) (U := fun _ _ => True)
+  eapply FOQLComp with (T := eq) (U := λ _ _, True)
     (mid := FORet (existT _ tt tt)).
   - apply tagged_sample_ret.
   - apply FOQLStructural, FOLRet. exact I.
@@ -252,7 +252,7 @@ Definition direct_plan_recovery :
     free_omega_native_recovery (internal_plan_native direct_plan).
 Proof.
   apply (constant_native_recovery (mu := internal_plan_measure direct_plan) (Ret true : tree)).
-  eapply FOQLComp with (T := eq) (U := fun _ _ => True) (mid := FORet tt).
+  eapply FOQLComp with (T := eq) (U := λ _ _, True) (mid := FORet tt).
   - apply tagged_sample_ret.
   - apply FOQLStructural, FOLRet. exact I.
   - intros x y _. exact I.
@@ -263,10 +263,10 @@ Defined.
     requirement rather than silently imposing node coupling. *)
 Theorem actual_plans_paths_quotient_coupled :
   free_omega_qlift
-    (fun x y => (fun t u => pstrongF eq eq (observe t) (observe u))
+    (λ x y, (λ t u, pstrongF eq eq (observe t) (observe u))
       (internal_plan_residual sampled_plan x) (internal_plan_residual direct_plan y))
-    (FOSample (internal_plan_measure sampled_plan) (fun x => FORet x))
-    (FOSample (internal_plan_measure direct_plan) (fun y => FORet y)).
+    (FOSample (internal_plan_measure sampled_plan) (λ x, FORet x))
+    (FOSample (internal_plan_measure direct_plan) (λ y, FORet y)).
 Proof.
   exact (free_omega_native_coupling_pullback sampled_plan_recovery direct_plan_recovery
     actual_plans_are_guard_coupled).
@@ -277,15 +277,15 @@ Qed.
     differ), but it is an actual native sample with quotient graph laws. *)
 Lemma tagged_sample_graph {X Y} n m (x : X) (y : Y) (f : X → Y) :
   f x = y →
-  free_omega_qlift (fun a b => f a = b)
-    (FOSample (Some (n,x)) (fun a => FORet a))
-    (FOSample (Some (m,y)) (fun b => FORet b)).
+  free_omega_qlift (λ a b, f a = b)
+    (FOSample (Some (n,x)) (λ a, FORet a))
+    (FOSample (Some (m,y)) (λ b, FORet b)).
 Proof.
-  intro Hxy. eapply FOQLComp with (T := eq) (U := fun a b => f a = b)
+  intro Hxy. eapply FOQLComp with (T := eq) (U := λ a b, f a = b)
     (mid := FORet x); [apply tagged_sample_ret| |].
-  - eapply FOQLComp with (T := fun a b => f a = b) (U := eq) (mid := FORet y).
+  - eapply FOQLComp with (T := λ a b, f a = b) (U := eq) (mid := FORet y).
     + apply FOQLStructural, FOLRet. exact Hxy.
-    + apply FOQLMono with (T := fun a b => b = a).
+    + apply FOQLMono with (T := λ a b, b = a).
       * apply FOQLSym, tagged_sample_ret.
       * intros a b Hba. symmetry. exact Hba.
     + intros a c [b [Hab ->]]. exact Hab.
@@ -296,49 +296,49 @@ Theorem actual_plans_native_round_with_quotient_marginals :
   ∃ (W : Type) (round : M W)
     (left : W → native_sample_type (internal_plan_round_native sampled_plan))
     (right : W → native_sample_type (internal_plan_round_native direct_plan)),
-    free_omega_qlift (fun w x => left w = x)
-      (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native sampled_plan)) (fun x => FORet x)) ∧
-    free_omega_qlift (fun w y => right w = y)
-      (FOSample round (fun w => FORet w))
-      (FOSample (native_sample_measure (internal_plan_round_native direct_plan)) (fun y => FORet y)) ∧
-    sem_ae round (fun w => internal_round_path_rel eq (fun _ _ => False)
+    free_omega_qlift (λ w x, left w = x)
+      (FOSample round (λ w, FORet w))
+      (FOSample (native_sample_measure (internal_plan_round_native sampled_plan)) (λ x, FORet x)) ∧
+    free_omega_qlift (λ w y, right w = y)
+      (FOSample round (λ w, FORet w))
+      (FOSample (native_sample_measure (internal_plan_round_native direct_plan)) (λ y, FORet y)) ∧
+    sem_ae round (λ w, internal_round_path_rel eq (λ _ _, False)
       sampled_plan direct_plan (left w) (right w)).
 Proof.
   eapply finite_internal_native_joint_round with (joint := ret tt)
-    (left := fun _ : unit => existT (fun _ : unit => unit) tt tt)
-    (right := fun _ : unit => tt).
+    (left := λ _ : unit, existT (λ _ : unit, unit) tt tt)
+    (right := λ _ : unit, tt).
   - exact (@native_joints).
   - apply tagged_sample_graph. reflexivity.
   - apply tagged_sample_graph. reflexivity.
-  - change ((fun t u => pstrongF eq (fun _ _ => False) (observe t) (observe u)) (Ret true : tree) (Ret true)).
+  - change ((λ t u, pstrongF eq (λ _ _, False) (observe t) (observe u)) (Ret true : tree) (Ret true)).
     cbn beta. constructor. reflexivity.
 Qed.
 
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := Measure) (NO := Omega)).
-Definition round_tree (_ : unit) : tree := Prob (ret tt) (fun _ => Ret true).
+Definition round_tree (_ : unit) : tree := Prob (ret tt) (λ _, Ret true).
 Definition round_plan (_ : unit) := sampled_plan.
 Definition round_target (_ _ : unit) : stable_target unit bool := SHStable true.
 Definition round_cost (_ _ : unit) := 1.
 
 Definition round_path_relation :=
   costed_round_path_rel (state_tree := round_tree) (plan := round_plan)
-    (fun b => @FHRet Event M bool b) round_target round_cost (s := tt).
+    (λ b, @FHRet Event M bool b) round_target round_cost (s := tt).
 
 Lemma round_path_relation_all x y : round_path_relation x y.
 Proof. split; reflexivity. Qed.
 
 Lemma attenuated_round_quotient_marginal :
   free_omega_qlift round_path_relation
-    (FOSample (ret tt) (fun x => FORet x))
+    (FOSample (ret tt) (λ x, FORet x))
     (FOSample (native_sample_measure (internal_plan_round_native sampled_plan))
-      (fun y => FORet y)).
+      (λ y, FORet y)).
 Proof.
-  eapply FOQLComp with (T := fun _ _ => True) (U := eq)
+  eapply FOQLComp with (T := λ _ _, True) (U := eq)
     (mid := FORet (existT _ (existT _ tt tt) tt)).
   - apply (@FOQLSampleRetL M Measure Omega); [intro P; reflexivity|].
     apply FOQLStructural, FOLRet. exact I.
-  - apply FOQLMono with (T := fun x y => y = x).
+  - apply FOQLMono with (T := λ x y, y = x).
     + apply FOQLSym. apply tagged_sample_ret.
     + intros x y Hyx. symmetry. exact Hyx.
   - intros x z _. apply round_path_relation_all.
@@ -355,9 +355,9 @@ Theorem attenuated_round_complete_hitting out joint_out :
   @ptree_stable_hitting Event M (FreeOmega M) FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool (observe (round_tree tt)) out →
   @stable_hitting (FreeOmega M) FI FreeOmegaObservableSemanticOmega unit bool
-    (costed_kernel (fun _ : unit => ret tt) round_target) tt joint_out →
+    (costed_kernel (λ _ : unit, ret tt) round_target) tt joint_out →
   free_omega_qlift eq out
-    (free_omega_bind joint_out (fun b => FORet (@FHRet Event M bool b))).
+    (free_omega_bind joint_out (λ b, FORet (@FHRet Event M bool b))).
 Proof.
   apply costed_round_stable_hitting with
     (state_tree := round_tree) (plan := round_plan) (cost := round_cost) (s := tt).

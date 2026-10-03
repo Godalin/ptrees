@@ -120,7 +120,7 @@ Qed.
 Lemma mathcomp_kernel_lift_refl_ae {A}
     (mu : MathCompKernelMeasure R A) (P : A → Prop) :
   mathcomp_kernel_ae mu P →
-  mathcomp_kernel_lift (fun x y => x = y ∧ P x) mu mu.
+  mathcomp_kernel_lift (λ x y, x = y ∧ P x) mu mu.
 Proof.
   move=> Hae.
   rewrite /mathcomp_kernel_ae /mathcomp_measure_ae in Hae.
@@ -132,10 +132,10 @@ Proof.
       apply/negligibleP; first by [].
       change (mathcomp_kernel_root mu
         ((mc_joint_diagonal A) @^-1`
-          (~` mc_relation (fun x y => x = y ∧ P x))) = 0).
+          (~` mc_relation (λ x y, x = y ∧ P x))) = 0).
       have Eset :
           (mc_joint_diagonal A) @^-1`
-            (~` mc_relation (fun x y => x = y ∧ P x)) =
+            (~` mc_relation (λ x y, x = y ∧ P x)) =
           (~` mc_predicate P).
       { apply/seteqP; split.
         - move=> [|a] /= Hx.

@@ -66,7 +66,7 @@ Proof. intros H1 H2 U mU Hb; exact: le_trans (H1 U mU Hb) (H2 U mU Hb). Qed.
 Lemma mathcomp_native_zero_le {A} (mu : M A) : mathcomp_node_le (mathcomp_kernel_zero R) mu.
 Proof. intros U mU Hbot; rewrite (mathcomp_native_zero_returned Hbot); exact: measure_ge0. Qed.
 
-Lemma mathcomp_native_lub_constant {A} (mu : M A) : mathcomp_kernel_lub (fun _ => mu) mu.
+Lemma mathcomp_native_lub_constant {A} (mu : M A) : mathcomp_kernel_lub (λ _, mu) mu.
 Proof.
   intros U mU Hbot; symmetry.
   have He : [set mathcomp_kernel_root mu U | n in [set: nat]] = [set mathcomp_kernel_root mu U].

@@ -62,7 +62,7 @@ Local Notation structural :=
 
 Local Notation W A B RR := (@peutt E MN MF FI FC MX FO A B RR).
 
-Definition ptree_peutt_eq1 : Eq1 (ptree E MN) := fun A => W A A eq.
+Definition ptree_peutt_eq1 : Eq1 (ptree E MN) := λ A, W A A eq.
 Definition ptree_peutt_equivalence :
   @Eq1Equivalence (ptree E MN) Monad_ptree ptree_peutt_eq1.
 Proof. intro A. apply peutt_equivalence. Defined.
@@ -100,12 +100,12 @@ Qed.
 Theorem peutt_iter_uniform {I J A}
     (f : I → ptree E MN (I+A)) (g : J → ptree E MN (J+A)) (h : I → J) :
   (∀ i, W (J+A) (J+A) eq
-    (PTree.bind (f i) (fun v => Ret (iteration_map h v))) (g (h i))) →
+    (PTree.bind (f i) (λ v, Ret (iteration_map h v))) (g (h i))) →
   ∀ i, W A A eq (PTree.iter f i) (PTree.iter g (h i)).
 Proof.
   intros Hsquare i.
   eapply (peutt_iter_eventful_rel Hmixed Hzero Hlimit)
-    with (SI := fun i j => h i = j); [|reflexivity].
+    with (SI := λ i j, h i = j); [|reflexivity].
   intros x y <-. eapply peutt_relation_right; [|exact (Hsquare x)].
   apply structural. apply pstruct_return_map.
   intros [j|a]; constructor; reflexivity.
@@ -114,7 +114,7 @@ Qed.
 (** Fixed point with the administrative retry Tau removed behaviorally. *)
 Theorem ptree_peutt_iter_unfold {I A} (step : I → ptree E MN (I+A)) i :
   W A A eq (PTree.iter step i)
-    (PTree.bind (step i) (fun v => match v with
+    (PTree.bind (step i) (λ v, match v with
       | inl j => PTree.iter step j | inr a => Ret a end)).
 Proof.
   eapply peutt_trans.
@@ -125,7 +125,7 @@ Proof.
 Qed.
 
 Theorem ptree_peutt_iter_tau_step {I A} (step : I → ptree E MN (I+A)) i :
-  W A A eq (PTree.iter (fun j => Tau (step j)) i) (PTree.iter step i).
+  W A A eq (PTree.iter (λ j, Tau (step j)) i) (PTree.iter step i).
 Proof.
   apply (peutt_iter_eventful Hmixed Hzero Hlimit). intro j. apply peutt_tau_l.
 Qed.
@@ -135,7 +135,7 @@ Qed.
 Theorem ptree_peutt_iter_finite_stutter {I A}
     (step : I → ptree E MN (I+A)) (delay : I → nat) i :
   W A A eq
-    (PTree.iter (fun j => Nat.iter (delay j) (fun t => Tau t) (step j)) i)
+    (PTree.iter (λ j, Nat.iter (delay j) (λ t, Tau t) (step j)) i)
     (PTree.iter step i).
 Proof.
   apply (peutt_iter_eventful Hmixed Hzero Hlimit). intro j.

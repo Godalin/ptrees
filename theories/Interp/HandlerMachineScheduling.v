@@ -48,7 +48,7 @@ Lemma handler_primitive_source_unfold {A} n (t : ptree E MN A) :
      | RetF a => sem_ret (FHRet a)
      | TauF u => handler_residual_approx n (SourceConfig u)
      | @VisF _ _ _ _ X e k => handler_residual_approx n (HandlerConfig (handler e) k)
-     | @ProbF _ _ _ _ X mu k => mixed_bind mu (fun x => handler_residual_approx n (SourceConfig (k x)))
+     | @ProbF _ _ _ _ X mu k => mixed_bind mu (λ x, handler_residual_approx n (SourceConfig (k x)))
      end).
 Proof.
   unfold handler_primitive_approx, stable_hitting_approx, handler_primitive_kernel.
@@ -67,8 +67,8 @@ Lemma handler_primitive_active_unfold {A X} n (active : ptree F MN X)
      | RetF x => handler_residual_approx n (SourceConfig (k x))
      | TauF u => handler_residual_approx n (HandlerConfig u k)
      | @VisF _ _ _ _ Y e d => sem_ret
-         (FHVis e (fun y => PTree.bind (d y) (fun x => PTree.interp handler (k x))))
-     | @ProbF _ _ _ _ Y mu d => mixed_bind mu (fun y => handler_residual_approx n (HandlerConfig (d y) k))
+         (FHVis e (λ y, PTree.bind (d y) (λ x, PTree.interp handler (k x))))
+     | @ProbF _ _ _ _ Y mu d => mixed_bind mu (λ y, handler_residual_approx n (HandlerConfig (d y) k))
      end).
 Proof.
   unfold handler_primitive_approx, stable_hitting_approx, handler_primitive_kernel.

@@ -38,7 +38,7 @@ Local Lemma zero_equiv A B (k : A → MF B) :
   equiv (sem_bind sem_zero k) sem_zero.
 Proof. split; [apply sem_bind_zero_order|apply sem_zero_le]. Qed.
 Local Lemma mixed_assoc_equiv A B C (mu : MN A) (k : A → MF B) (h : B → MF C) :
-  equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)).
+  equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (λ x, sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
 (** Only finite native-generated frontiers need order-level associativity.
@@ -46,7 +46,7 @@ Proof. apply mixed_bind_assoc_order. Qed.
 Lemma finite_head_bind_assoc {G A B C} n (t : ptree' G MN A)
     (k : stable_head G MN A → MF B) (h : B → MF C) :
   equiv (sem_bind (sem_bind (ptree_hitting_approx (MF := MF) n t) k) h)
-    (sem_bind (ptree_hitting_approx (MF := MF) n t) (fun x => sem_bind (k x) h)).
+    (sem_bind (ptree_hitting_approx (MF := MF) n t) (λ x, sem_bind (k x) h)).
 Proof.
   revert t. induction n as [|n IH]; intros [a|u|X e c|X mu c];
     setoid_rewrite (hit_unfold G); cbn [observe].
@@ -65,10 +65,10 @@ Definition handler_phase_kernel {A} m (c : @handler_config E F MN A) :
     MF (stable_target (@handler_config E F MN A) (stable_head F MN A)) :=
   match c with
   | SourceConfig t => sem_bind (ptree_hitting_approx (MF := MF) m (observe t))
-      (fun h => sem_ret (source_front_result handler h))
+      (λ h, sem_ret (source_front_result handler h))
   | @HandlerConfig _ _ _ _ X active k =>
       sem_bind (ptree_hitting_approx (MF := MF) m (observe active))
-        (fun h => sem_ret (handler_front_result handler k h))
+        (λ h, sem_ret (handler_front_result handler k h))
   end.
 
 Definition handler_phase_grid {A} n m (c : @handler_config E F MN A) :=
@@ -77,10 +77,10 @@ Definition handler_phase_grid {A} n m (c : @handler_config E F MN A) :=
 Definition handler_phase_split {A} j n m (c : @handler_config E F MN A) :=
   match c with
   | SourceConfig t => sem_bind (ptree_hitting_approx (MF := MF) j (observe t))
-      (fun h => stable_target_approx (handler_phase_kernel m) n (source_front_result handler h))
+      (λ h, stable_target_approx (handler_phase_kernel m) n (source_front_result handler h))
   | @HandlerConfig _ _ _ _ X active k =>
       sem_bind (ptree_hitting_approx (MF := MF) j (observe active))
-        (fun h => stable_target_approx (handler_phase_kernel m) n (handler_front_result handler k h))
+        (λ h, stable_target_approx (handler_phase_kernel m) n (handler_front_result handler k h))
   end.
 
 Lemma handler_phase_grid_split {A} n m (c : @handler_config E F MN A) :
@@ -230,14 +230,14 @@ Proof.
 Qed.
 
 Lemma handler_phase_kernel_increasing {A} (c : @handler_config E F MN A) :
-  sem_increasing (fun m => handler_phase_kernel m c).
+  sem_increasing (λ m, handler_phase_kernel m c).
 Proof.
   intro m. destruct c; unfold handler_phase_kernel; apply sem_bind_le_mu;
     apply ptree_hitting_increasing.
 Qed.
 
 Lemma handler_phase_grid_inner_increasing {A} n (c : @handler_config E F MN A) :
-  sem_increasing (fun m => handler_phase_grid n m c).
+  sem_increasing (λ m, handler_phase_grid n m c).
 Proof.
   intro m. unfold handler_phase_grid, stable_hitting_approx.
   eapply sem_le_trans; [apply sem_bind_le_mu; apply handler_phase_kernel_increasing|].
@@ -246,11 +246,11 @@ Proof.
 Qed.
 
 Lemma handler_phase_grid_outer_increasing {A} m (c : @handler_config E F MN A) :
-  sem_increasing (fun n => handler_phase_grid n m c).
+  sem_increasing (λ n, handler_phase_grid n m c).
 Proof. apply stable_hitting_increasing. Qed.
 
 Lemma handler_phase_diagonal_increasing {A} (c : @handler_config E F MN A) :
-  sem_increasing (fun n => handler_phase_grid n n c).
+  sem_increasing (λ n, handler_phase_grid n n c).
 Proof.
   intro n. eapply sem_le_trans; [apply handler_phase_grid_inner_increasing|].
   apply handler_phase_grid_outer_increasing.
@@ -259,7 +259,7 @@ Qed.
 Context `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}.
 
 Theorem handler_phase_diagonal_hitting_iff {A} (c : @handler_config E F MN A) out :
-  sem_lub (fun n => handler_phase_grid n n c) out ↔
+  sem_lub (λ n, handler_phase_grid n n c) out ↔
   stable_hitting (handler_primitive_kernel handler) c out.
 Proof.
   unfold stable_hitting. apply sem_lub_cofinal.
@@ -276,7 +276,7 @@ Context `{Omega : @SemanticOmegaLaws MF FI FO}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 
 Lemma handler_phase_kernel_lub {A} (c : @handler_config E F MN A) :
-  sem_lub (fun m => handler_phase_kernel m c) (handler_machine_kernel handler c).
+  sem_lub (λ m, handler_phase_kernel m c) (handler_machine_kernel handler c).
 Proof.
   destruct c; unfold handler_phase_kernel, handler_machine_kernel.
   all: apply sem_bind_lub; [apply ptree_hitting_increasing|apply handler_complete_front_hitting].
@@ -284,9 +284,9 @@ Qed.
 
 Local Lemma target_kernel_lub {S A}
     (ks : nat → S → MF (stable_target S A)) (k : S → MF (stable_target S A))
-    (Hi : ∀ s, sem_increasing (fun m => ks m s))
-    (Hl : ∀ s, sem_lub (fun m => ks m s) (k s)) n target :
-  sem_lub (fun m => stable_target_approx (ks m) n target) (stable_target_approx k n target).
+    (Hi : ∀ s, sem_increasing (λ m, ks m s))
+    (Hl : ∀ s, sem_lub (λ m, ks m s) (k s)) n target :
+  sem_lub (λ m, stable_target_approx (ks m) n target) (stable_target_approx k n target).
 Proof.
   revert target. induction n as [|n IH]; intros [a|s]; cbn [stable_target_approx];
     try apply sem_lub_constant.
@@ -298,7 +298,7 @@ Proof.
 Qed.
 
 Lemma handler_phase_grid_row_lub {A} n (c : @handler_config E F MN A) :
-  sem_lub (fun m => handler_phase_grid n m c)
+  sem_lub (λ m, handler_phase_grid n m c)
     (stable_hitting_approx (handler_machine_kernel handler) n c).
 Proof.
   unfold handler_phase_grid, stable_hitting_approx. apply sem_bind_diagonal_lub.
@@ -319,8 +319,8 @@ Proof.
   intro H. apply (proj1 (handler_primitive_hitting_iff (Directed := Directed) handler c out)).
   apply (proj1 (handler_phase_diagonal_hitting_iff c out)).
   eapply (sem_lub_double_diagonal (SI := FI) (SO := FO))
-    with (grid := fun n m => handler_phase_grid n m c)
-         (row_out := fun n => stable_hitting_approx (handler_machine_kernel handler) n c).
+    with (grid := λ n m, handler_phase_grid n m c)
+         (row_out := λ n, stable_hitting_approx (handler_machine_kernel handler) n c).
   - intro n. apply handler_phase_grid_inner_increasing.
   - intro m. apply handler_phase_grid_outer_increasing.
   - intro n. apply handler_phase_grid_row_lub.

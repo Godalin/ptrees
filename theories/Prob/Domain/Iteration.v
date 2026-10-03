@@ -14,7 +14,7 @@ Variable R : realType.
 Context {I A : Type} (K : I → OmegaVal R (I+A)).
 
 Definition oval_iter_step (X : I → OmegaVal R A) i :=
-  oval_bind (K i) (fun v => match v with inl j => X j | inr a => oval_ret R a end).
+  oval_bind (K i) (λ v, match v with inl j => X j | inr a => oval_ret R a end).
 Fixpoint oval_iter_approx n i : OmegaVal R A :=
   match n with O => @oval_bottom R A | S m => oval_iter_step (oval_iter_approx m) i end.
 
@@ -25,7 +25,7 @@ Proof.
   intros H i. apply oval_bind_mono; [apply oval_le_refl|].
   intros [j|a]; [apply H|apply oval_le_refl].
 Qed.
-Lemma oval_iter_increasing i : oval_increasing (fun n => oval_iter_approx n i).
+Lemma oval_iter_increasing i : oval_increasing (λ n, oval_iter_approx n i).
 Proof.
   intro n; revert i; induction n as [|n IH]; intro i; [apply oval_bottom_le|].
   apply oval_iter_step_mono. exact IH.
@@ -49,7 +49,7 @@ Qed.
 
 Local Definition next n (v : I+A) : OmegaVal R A :=
   match v with inl j => oval_iter_approx n j | inr a => oval_ret R a end.
-Local Lemma next_increasing v : oval_increasing (fun n => next n v).
+Local Lemma next_increasing v : oval_increasing (λ n, next n v).
 Proof. destruct v as [j|a]; [apply oval_iter_increasing|intro n; apply oval_le_refl]. Qed.
 
 Lemma oval_iter_step_limit i :
@@ -57,10 +57,10 @@ Lemma oval_iter_step_limit i :
     (oval_lub (oval_bind_chain_r (K i) next_increasing)).
 Proof.
   intros f Hf.
-  transitivity (oval_eval (oval_bind (K i) (fun v => oval_lub (next_increasing v))) f).
+  transitivity (oval_eval (oval_bind (K i) (λ v, oval_lub (next_increasing v))) f).
   - cbn [oval_iter_step oval_bind oval_eval].
     apply oval_eval_ext. intros [j|a]; [reflexivity|].
-    symmetry. change (oval_sup (fun _ : nat => f a) = f a). apply oval_sup_const.
+    symmetry. change (oval_sup (λ _ : nat, f a) = f a). apply oval_sup_const.
   - exact (oval_bind_lub_r (K i) next_increasing Hf).
 Qed.
 

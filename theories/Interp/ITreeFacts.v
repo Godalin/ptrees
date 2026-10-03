@@ -38,7 +38,7 @@ Qed.
 
 Theorem elab_event {E F A X} (h : Handler MN E F) (e : E X) (k : X → itree E A) :
   peutt (MF := MF) eq (interp_itree h (ITreeDefinition.Vis e k))
-    (PTree.bind (h X e) (fun x => interp_itree h (k x))).
+    (PTree.bind (h X e) (λ x, interp_itree h (k x))).
 Proof.
   eapply peutt_trans; [apply structural; apply interp_itree_vis|apply peutt_tau_l].
 Qed.
@@ -51,14 +51,14 @@ Qed.
 
 Theorem elab_sample {E A X} (mu : MN X) (k : X → itree (probE MN +' E) A) :
   peutt (MF := MF) eq (elaborate (ITreeDefinition.Vis (inl1 (Sample mu)) k))
-    (Prob mu (fun x => elaborate (k x))).
+    (Prob mu (λ x, elaborate (k x))).
 Proof.
   eapply peutt_trans; [apply structural; apply elaborate_sample_structural|apply peutt_tau_l].
 Qed.
 
 Theorem elab_vis {E A X} (e : E X) (k : X → itree (probE MN +' E) A) :
   peutt (MF := MF) eq (elaborate (ITreeDefinition.Vis (inr1 e) k))
-    (Vis e (fun x => elaborate (k x))).
+    (Vis e (λ x, elaborate (k x))).
 Proof.
   eapply peutt_trans; [apply structural; apply elaborate_vis_structural|apply peutt_tau_l].
 Qed.
@@ -66,18 +66,18 @@ Qed.
 Theorem elab_bind {E F A B} (h : Handler MN E F)
     (t : itree E A) (k : A → itree E B) :
   peutt (MF := MF) eq (interp_itree h (ITree.bind t k))
-    (PTree.bind (interp_itree h t) (fun x => interp_itree h (k x))).
+    (PTree.bind (interp_itree h t) (λ x, interp_itree h (k x))).
 Proof. apply structural. apply interp_itree_bind. Qed.
 
 Theorem elab_iter {E F I A} (h : Handler MN E F)
     (step : I → itree E (I+A)) i :
   peutt (MF := MF) eq (interp_itree h (ITree.iter step i))
-    (PTree.iter (fun j => interp_itree h (step j)) i).
+    (PTree.iter (λ j, interp_itree h (step j)) i).
 Proof. apply structural. apply interp_itree_iter. Qed.
 
 Theorem elab_sample_trigger {X} (mu : MN X) :
   peutt (MF := MF) eq (elaborate_closed (ITree.trigger (Sample mu)))
-    (Prob mu (fun x => Ret x)).
+    (Prob mu (λ x, Ret x)).
 Proof. exact (elab_trigger (@sample_handler MN void1) (Sample mu)). Qed.
 
 Theorem elab_postcompose {E F G A} (h : Handler MN E F)

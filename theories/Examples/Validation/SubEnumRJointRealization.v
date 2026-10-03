@@ -29,7 +29,7 @@ Section Contracts.
 Variable R : realType.
 Local Notation native := (fun X => @subenumR_domain R X).
 Definition retry_left := FOLub (real_retry R).
-Definition retry_right := free_omega_bind retry_left (fun b => FORet (negb b)).
+Definition retry_right := free_omega_bind retry_left (λ b, FORet (negb b)).
 Definition complement (b c : bool) := c = negb b.
 
 Lemma retry_left_modelable : free_omega_modelable native retry_left.
@@ -51,7 +51,7 @@ Example real_retry_joint_exact_mass_support : ∃ J : OmegaVal R (bool * bool),
     (free_omega_model retry_right_modelable) J ∧
   oval_mass J = oval_mass (free_omega_model retry_left_modelable) ∧
   oval_mass J = oval_mass (free_omega_model retry_right_modelable) ∧
-  oval_eval J (oval_indicator R (fun z => ¬ complement (fst z) (snd z))) = 0.
+  oval_eval J (oval_indicator R (λ z, ¬ complement (fst z) (snd z))) = 0.
 Proof. apply subenumR_qlift_joint_mass_support; exact retry_complement_qlift. Qed.
 
 (** A cover does not certify probability validity. *)
@@ -60,7 +60,7 @@ Example invalid_real_lub_still_enumerable :
     (real_alternating R) ∧ ¬ free_omega_modelable native (real_alternating R).
 Proof. split; [apply subenumR_free_omega_enumerate_covers|exact: real_alternating_invalid]. Qed.
 
-Definition partial_term := FOSample (duplicated_half R) (fun b => FORet b).
+Definition partial_term := FOSample (duplicated_half R) (λ b, FORet b).
 Lemma partial_term_modelable : free_omega_modelable native partial_term.
 Proof. apply modelable_sample=> b; apply modelable_ret. Qed.
 Lemma partial_term_mass : oval_mass (free_omega_model partial_term_modelable) = (1 : R)/2.
@@ -86,8 +86,8 @@ Section LargeCarriers.
 Universe u v.
 Variable R : realType.
 Example real_joint_large_heterogeneous (A : Type@{u}) (B : Type@{v}) :
-  oval_coupled (fun (_ : Type@{u}) (_ : Type@{v}) => True)
-    (free_omega_model (modelable_ret (fun X => @subenumR_domain R X) A))
-    (free_omega_model (modelable_ret (fun X => @subenumR_domain R X) B)).
+  oval_coupled (λ (_ : Type@{u}) (_ : Type@{v}), True)
+    (free_omega_model (modelable_ret (λ X, @subenumR_domain R X) A))
+    (free_omega_model (modelable_ret (λ X, @subenumR_domain R X) B)).
 Proof. apply subenumR_qlift_sound; apply FOQLStructural, FOLRet; exact I. Qed.
 End LargeCarriers.

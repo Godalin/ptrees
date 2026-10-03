@@ -36,16 +36,16 @@ Definition kernel_target_projection (z : stable_target S O) : stable_target T P 
 Hypothesis source_closed : ∀ s, D s →
   free_omega_ae (kernel_completion_invariant D) (source s).
 Hypothesis kernel_marginal : ∀ s, D s →
-  free_omega_qlift (fun z w => kernel_target_projection z = w)
+  free_omega_qlift (λ z w, kernel_target_projection z = w)
     (source s) (target (state_projection s)).
 
 Lemma kernel_projection_supported s : D s →
-  free_omega_qlift (fun z w => kernel_target_projection z = w ∧
+  free_omega_qlift (λ z w, kernel_target_projection z = w ∧
     kernel_completion_invariant D z) (source s) (target (state_projection s)).
 Proof.
   intro HD. eapply FOQLAERestrict with
-    (T := fun z w => kernel_target_projection z = w)
-    (P := kernel_completion_invariant D) (Q := fun _ => True).
+    (T := λ z w, kernel_target_projection z = w)
+    (P := kernel_completion_invariant D) (Q := λ _, True).
   - apply kernel_marginal. exact HD.
   - apply source_closed. exact HD.
   - apply (@sem_ae_true MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
@@ -53,7 +53,7 @@ Proof.
 Qed.
 
 Lemma kernel_target_approx_projection n z : kernel_completion_invariant D z →
-  free_omega_qlift (fun o p => output_projection o = p)
+  free_omega_qlift (λ o p, output_projection o = p)
     (@stable_target_approx MF FI FreeOmegaObservableSemanticOmega S O source n z)
     (@stable_target_approx MF FI FreeOmegaObservableSemanticOmega T P target n
       (kernel_target_projection z)).
@@ -67,7 +67,7 @@ Proof.
 Qed.
 
 Theorem kernel_hitting_approx_projection n s : D s →
-  free_omega_qlift (fun o p => output_projection o = p)
+  free_omega_qlift (λ o p, output_projection o = p)
     (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega S O source n s)
     (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega T P target n
       (state_projection s)).
@@ -77,10 +77,10 @@ Proof.
 Qed.
 
 Theorem kernel_hitting_limit_projection s : D s →
-  free_omega_qlift (fun o p => output_projection o = p)
-    (FOLub (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+  free_omega_qlift (λ o p, output_projection o = p)
+    (FOLub (λ n, @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
       S O source n s))
-    (FOLub (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+    (FOLub (λ n, @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
       T P target n (state_projection s))).
 Proof.
   intro HD. apply FOQLLub. intro n. apply kernel_hitting_approx_projection. exact HD.
@@ -91,14 +91,14 @@ Theorem kernel_stable_hitting_projection s out1 out2 : D s →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega T P target
     (state_projection s) out2 →
   free_omega_qlift eq
-    (free_omega_bind out1 (fun o => FORet (output_projection o))) out2.
+    (free_omega_bind out1 (λ o, FORet (output_projection o))) out2.
 Proof.
   intros HD Hleft Hright. apply free_omega_qlift_map_left.
-  eapply FOQLComp with (T := eq) (U := fun o p => output_projection o = p).
+  eapply FOQLComp with (T := eq) (U := λ o p, output_projection o = p).
   - exact Hleft.
-  - eapply FOQLComp with (T := fun o p => output_projection o = p) (U := eq).
+  - eapply FOQLComp with (T := λ o p, output_projection o = p) (U := eq).
     + apply kernel_hitting_limit_projection. exact HD.
-    + apply FOQLMono with (T := fun x y => y = x).
+    + apply FOQLMono with (T := λ x y, y = x).
       * apply FOQLSym. exact Hright.
       * intros x y Heq. symmetry. exact Heq.
     + intros o p [q [Hq ->]]. exact Hq.

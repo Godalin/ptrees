@@ -34,12 +34,12 @@ Example dependent_compression_round_native {X} {Y : X → Type}
     (depth : ∀ x, Y x → nat) (k : ∀ x, Y x → tree) :
   ∃ p, free_omega_qlift eq
     (free_omega_bind
-      (FOSample mu (fun x => FOSample (nu x) (fun y => FORet (k x y))))
+      (FOSample mu (λ x, FOSample (nu x) (λ y, FORet (k x y))))
       finite_internal_guard_transition) (free_omega_native p).
 Proof.
   eapply (@finite_internal_round_native_presentation E MN NI NC NO ND NBAE R) with
-    (t := Prob mu (fun x => Tau (Prob (nu x)
-      (fun y => tau_prefix (depth x y) (k x y))))).
+    (t := Prob mu (λ x, Tau (Prob (nu x)
+      (λ y, tau_prefix (depth x y) (k x y))))).
   apply (@FIProb E MN MF FI FreeOmegaMixedMeasure). intro x. apply FITau.
   apply (@FIProb E MN MF FI FreeOmegaMixedMeasure). intro y.
   apply (@finite_internal_tau_prefix E MN MF FI FreeOmegaMixedMeasure).

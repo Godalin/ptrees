@@ -73,10 +73,10 @@ Section CheckedPresentation.
 Variable R : numDomainType.
 
 Lemma finite_positions_expect {A} (mu : list (R * A)) (f : A → R) :
-  finite_expect (fun i => f (finite_position_value mu i)) (finite_positions mu) =
+  finite_expect (λ i, f (finite_position_value mu i)) (finite_positions mu) =
   finite_expect f mu.
 Proof.
-  have Hd : List.map (fun px => (px.1, finite_position_value mu px.2))
+  have Hd : List.map (λ px, (px.1, finite_position_value mu px.2))
       (finite_positions mu) = mu := finite_positions_decode mu.
   by rewrite -finite_expect_map Hd.
 Qed.
@@ -104,7 +104,7 @@ Proof. exact: finite_positions_decode. Qed.
 
 Lemma finite_enum_positions_expect {A} (mu : FiniteEnum R A) (f : A → R) :
   finite_enum_expect (finite_enum_positions mu)
-    (fun i => f (finite_position_value (finite_enum_raw mu) i)) = finite_enum_expect mu f.
+    (λ i, f (finite_position_value (finite_enum_raw mu) i)) = finite_enum_expect mu f.
 Proof. exact: finite_positions_expect. Qed.
 
 Lemma finite_enum_positions_mass {A} (mu : FiniteEnum R A) :
@@ -120,7 +120,7 @@ Defined.
 
 Lemma finite_subdist_positions_expect {A} (mu : FiniteSubdist R A) (f : A → R) :
   finite_subdist_expect (finite_subdist_positions mu)
-    (fun i => f (finite_position_value (finite_enum_raw (finite_subdist_enum mu)) i)) =
+    (λ i, f (finite_position_value (finite_enum_raw (finite_subdist_enum mu)) i)) =
   finite_subdist_expect mu f.
 Proof. exact: finite_positions_expect. Qed.
 

@@ -46,15 +46,15 @@ Record finite_internal_joint_row (t : treeA) (u : treeB) := {
     native_sample_type (internal_plan_round_native joint_row_left_plan);
   joint_row_right : joint_row_sample →
     native_sample_type (internal_plan_round_native joint_row_right_plan);
-  joint_row_left_marginal : qlift (fun z x => joint_row_left z = x)
-    (FOSample joint_row_measure (fun z => FORet z))
+  joint_row_left_marginal : qlift (λ z x, joint_row_left z = x)
+    (FOSample joint_row_measure (λ z, FORet z))
     (FOSample (native_sample_measure (internal_plan_round_native joint_row_left_plan))
-      (fun x => FORet x));
-  joint_row_right_marginal : qlift (fun z y => joint_row_right z = y)
-    (FOSample joint_row_measure (fun z => FORet z))
+      (λ x, FORet x));
+  joint_row_right_marginal : qlift (λ z y, joint_row_right z = y)
+    (FOSample joint_row_measure (λ z, FORet z))
     (FOSample (native_sample_measure (internal_plan_round_native joint_row_right_plan))
-      (fun y => FORet y));
-  joint_row_related : sem_ae joint_row_measure (fun z =>
+      (λ y, FORet y));
+  joint_row_related : sem_ae joint_row_measure (λ z,
     internal_round_path_rel RR sim joint_row_left_plan joint_row_right_plan
       (joint_row_left z) (joint_row_right z))
 }.
@@ -68,7 +68,7 @@ Definition chosen_joint_row (s : joint_state) :
   finite_internal_joint_row (joint_left_tree s) (joint_right_tree s).
 Proof.
   refine (proj1_sig (constructive_indefinite_description
-    (fun _ : finite_internal_joint_row (joint_left_tree s) (joint_right_tree s) => True) _)).
+    (λ _ : finite_internal_joint_row (joint_left_tree s) (joint_right_tree s), True) _)).
   destruct (rows_exist (proj2_sig s)) as [row]. exists row. exact I.
 Defined.
 
@@ -114,7 +114,7 @@ Lemma paired_target_closed s x y : internal_round_target_rel RR sim x y →
   end.
 Proof.
   destruct x as [h|t], y as [k|u]; cbn [internal_round_target_rel paired_target]; try contradiction.
-  - exact (fun H => H).
+  - exact (λ H, H).
   - intro H. destruct (excluded_middle_informative (sim t u)); exact I.
 Qed.
 
@@ -127,18 +127,18 @@ Definition joint_right_cost s (z : samples s) := internal_round_steps (right_pla
 Lemma chosen_joint_left_marginal s :
   qlift (costed_round_path_rel (state_tree := joint_left_tree) (plan := left_plan)
     (s := s) (@fst _ _) joint_target joint_left_cost)
-    (FOSample (measure s) (fun z => FORet z))
-    (FOSample (native_sample_measure (internal_plan_round_native (left_plan s))) (fun x => FORet x)).
+    (FOSample (measure s) (λ z, FORet z))
+    (FOSample (native_sample_measure (internal_plan_round_native (left_plan s))) (λ x, FORet x)).
 Proof.
-  eapply FOQLAERestrict with (T := fun z x => project_left s z = x)
-    (P := fun z => internal_round_path_rel RR sim (left_plan s) (right_plan s)
-      (project_left s z) (project_right s z)) (Q := fun _ => True).
+  eapply FOQLAERestrict with (T := λ z x, project_left s z = x)
+    (P := λ z, internal_round_path_rel RR sim (left_plan s) (right_plan s)
+      (project_left s z) (project_right s z)) (Q := λ _, True).
   - exact (joint_row_left_marginal (chosen_joint_row s)).
-  - apply FOAESample with (Good := fun z => internal_round_path_rel RR sim
+  - apply FOAESample with (Good := λ z, internal_round_path_rel RR sim
       (left_plan s) (right_plan s) (project_left s z) (project_right s z)).
     + exact (joint_row_related (chosen_joint_row s)).
     + intros z Hz. apply FOAERet. exact Hz.
-  - apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  - apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros x _. apply FOAERet. exact I.
   - intros z x [<- [Hz _]]. split; [reflexivity|].
     exact (proj1 (paired_target_projections s Hz)).
@@ -147,18 +147,18 @@ Qed.
 Lemma chosen_joint_right_marginal s :
   qlift (costed_round_path_rel (state_tree := joint_right_tree) (plan := right_plan)
     (s := s) (@snd _ _) joint_target joint_right_cost)
-    (FOSample (measure s) (fun z => FORet z))
-    (FOSample (native_sample_measure (internal_plan_round_native (right_plan s))) (fun x => FORet x)).
+    (FOSample (measure s) (λ z, FORet z))
+    (FOSample (native_sample_measure (internal_plan_round_native (right_plan s))) (λ x, FORet x)).
 Proof.
-  eapply FOQLAERestrict with (T := fun z x => project_right s z = x)
-    (P := fun z => internal_round_path_rel RR sim (left_plan s) (right_plan s)
-      (project_left s z) (project_right s z)) (Q := fun _ => True).
+  eapply FOQLAERestrict with (T := λ z x, project_right s z = x)
+    (P := λ z, internal_round_path_rel RR sim (left_plan s) (right_plan s)
+      (project_left s z) (project_right s z)) (Q := λ _, True).
   - exact (joint_row_right_marginal (chosen_joint_row s)).
-  - apply FOAESample with (Good := fun z => internal_round_path_rel RR sim
+  - apply FOAESample with (Good := λ z, internal_round_path_rel RR sim
       (left_plan s) (right_plan s) (project_left s z) (project_right s z)).
     + exact (joint_row_related (chosen_joint_row s)).
     + intros z Hz. apply FOAERet. exact Hz.
-  - apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  - apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros x _. apply FOAERet. exact I.
   - intros z x [<- [Hz _]]. split; [reflexivity|].
     exact (proj2 (paired_target_projections s Hz)).

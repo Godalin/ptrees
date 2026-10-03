@@ -24,7 +24,7 @@ Variant iterationE (I A : Type) : Type → Type :=
 Arguments IterateStep {I A} _.
 
 CoFixpoint iteration_protocol {I A MN} (i : I) : ptree (iterationE I A) MN A :=
-  Vis (IterateStep i) (fun r => match r with
+  Vis (IterateStep i) (λ r, match r with
     | inl j => iteration_protocol j | inr a => Ret a end).
 
 Definition iteration_handler {I A E MN} (step : I → ptree E MN (I+A))
@@ -133,7 +133,7 @@ Lemma iteration_kernel_related c d : iteration_configs c d →
     (handler_machine_kernel h1 c) (handler_machine_kernel h2 d).
 Proof.
   intro H. destruct H as [i j Hij|a b Hab|t u Htu]; unfold handler_machine_kernel.
-  - eapply sem_lift_bind with (R := fun a b =>
+  - eapply sem_lift_bind with (R := λ a b,
       a = FHVis (IterateStep i) next1 ∧ b = FHVis (IterateStep j) next2).
     + eapply chosen_head_lift.
       * apply stable_hitting_vis.
@@ -142,7 +142,7 @@ Proof.
     + intros a b [-> ->]. apply sem_lift_ret.
       change (iteration_configs (HandlerConfig (step1 i) next1) (HandlerConfig (step2 j) next2)).
       constructor. apply Hstep. exact Hij.
-  - eapply sem_lift_bind with (R := fun h j => h = FHRet a ∧ j = FHRet b).
+  - eapply sem_lift_bind with (R := λ h j, h = FHRet a ∧ j = FHRet b).
     + eapply chosen_head_lift; [apply stable_hitting_ret|apply stable_hitting_ret|split; reflexivity].
     + intros h j [-> ->]. apply sem_lift_ret. constructor. exact Hab.
   - eapply sem_lift_bind.

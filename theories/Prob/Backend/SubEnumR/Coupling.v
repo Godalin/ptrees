@@ -49,7 +49,7 @@ Lemma real_indicator_false P : ¬ P → real_indicator P = 0.
 Proof. intro H; rewrite /real_indicator; have -> : asbool P = false by apply/asboolPn. reflexivity. Qed.
 
 Lemma subenumR_ae_zero_test {A} (mu : SubEnumR R A) (P : A → Prop) :
-  subenumR_ae mu P ↔ subenumR_expect mu (fun x => real_indicator (¬ P x)) = 0.
+  subenumR_ae mu P ↔ subenumR_expect mu (λ x, real_indicator (¬ P x)) = 0.
 Proof.
   split.
   - intro H; rewrite -(real_enum_expect_zero (subenumR_raw mu)).
@@ -57,9 +57,9 @@ Proof.
     apply real_indicator_false; intro Hnot; exact (Hnot (H p x Hin Hnz)).
   - intros He p x Hin Hnz; case: (pselect (P x))=> [//|Hnot]; exfalso.
     have Hb := real_enum_expect_entry_le (@subenumR_nonnegative R A mu)
-      (fun y => real_indicator_ge0 (~ P y)) Hin.
+      (λ y, real_indicator_ge0 (~ P y)) Hin.
     rewrite (real_indicator_true Hnot) mulr1 in Hb.
-    change (is_true (p <= subenumR_expect mu (fun y => real_indicator (~ P y)))) in Hb.
+    change (is_true (p <= subenumR_expect mu (λ y, real_indicator (~ P y)))) in Hb.
     rewrite He in Hb; apply Hnz; apply/eqP; rewrite eq_le.
     apply/andP; split; [exact Hb|exact (@subenumR_nonnegative R A mu p x Hin)].
 Qed.
@@ -68,32 +68,32 @@ Lemma subenumR_ae_proper {A} (mu nu : SubEnumR R A) P :
   subenumR_eq mu nu → subenumR_ae mu P → subenumR_ae nu P.
 Proof.
   intros He H; apply subenumR_ae_zero_test.
-  rewrite -(He (fun x => real_indicator (~ P x))).
+  rewrite -(He (λ x, real_indicator (~ P x))).
   apply subenumR_ae_zero_test; exact H.
 Qed.
 
 Definition subenumR_map {A B} (f : A → B) (mu : SubEnumR R A) :=
-  subenumR_bind mu (fun x => subenumR_ret R (f x)).
+  subenumR_bind mu (λ x, subenumR_ret R (f x)).
 Lemma subenumR_expect_map {A B} (f : A → B) (mu : SubEnumR R A) g :
-  subenumR_expect (subenumR_map f mu) g = subenumR_expect mu (fun x => g (f x)).
+  subenumR_expect (subenumR_map f mu) g = subenumR_expect mu (λ x, g (f x)).
 Proof.
   rewrite subenumR_expect_bind; apply real_enum_expect_ext=> x.
   by rewrite /subenumR_expect /= mul1r addr0.
 Qed.
 Lemma subenumR_ae_map {A B} (f : A → B) (mu : SubEnumR R A) P :
-  subenumR_ae (subenumR_map f mu) P ↔ subenumR_ae mu (fun x => P (f x)).
+  subenumR_ae (subenumR_map f mu) P ↔ subenumR_ae mu (λ x, P (f x)).
 Proof.
   rewrite !subenumR_ae_zero_test subenumR_expect_map; reflexivity.
 Qed.
 
 Definition real_enum_product {A B C} (mu : list (R*A)) (nu : list (R*B))
     (w : A → B → R) (h : A → B → C) : list (R*C) :=
-  List.flat_map (fun px => List.map (fun qy =>
+  List.flat_map (λ px, List.map (λ qy,
     (fst px * (fst qy * w (snd px) (snd qy)), h (snd px) (snd qy))) nu) mu.
 
 Lemma real_enum_expect_product {A B C} (mu : list (R*A)) (nu : list (R*B)) w h (f : C → R) :
   real_enum_expect f (real_enum_product mu nu w h) =
-  real_enum_expect (fun x => real_enum_expect (fun y => w x y * f (h x y)) nu) mu.
+  real_enum_expect (λ x, real_enum_expect (λ y, w x y * f (h x y)) nu) mu.
 Proof.
   induction mu as [|[p x] tl IH]; first reflexivity.
   cbn [real_enum_product List.flat_map]; rewrite real_enum_expect_app IH.
@@ -105,8 +105,8 @@ Proof.
 Qed.
 
 Lemma real_enum_expect_swap {A B} (mu : list (R*A)) (nu : list (R*B)) f :
-  real_enum_expect (fun x => real_enum_expect (f x) nu) mu =
-  real_enum_expect (fun y => real_enum_expect (fun x => f x y) mu) nu.
+  real_enum_expect (λ x, real_enum_expect (f x) nu) mu =
+  real_enum_expect (λ y, real_enum_expect (λ x, f x y) mu) nu.
 Proof.
   induction mu as [|[p x] tl IH];
     rewrite ?real_enum_expect_cons ?real_enum_expect_nil.
@@ -115,17 +115,17 @@ Proof.
 Qed.
 
 Definition subenumR_atom {A} (mu : SubEnumR R A) (x : A) :=
-  subenumR_expect mu (fun y => real_indicator (y = x)).
+  subenumR_expect mu (λ y, real_indicator (y = x)).
 Lemma subenumR_atom_ge0 {A} (mu : SubEnumR R A) x : 0 <= subenumR_atom mu x.
 Proof. apply real_enum_expect_nonnegative; [exact (@subenumR_nonnegative R A mu)|intro y; apply real_indicator_ge0]. Qed.
 
 Lemma subenumR_project_atom_positive {A B} (mu : SubEnumR R A) (f : A → B) p x :
   List.In (p,x) (subenumR_raw mu) → p ≠ 0 →
-  0 < subenumR_expect mu (fun y => real_indicator (f y = f x)).
+  0 < subenumR_expect mu (λ y, real_indicator (f y = f x)).
 Proof.
   intros Hin Hnz.
   have Hentry := real_enum_expect_entry_le (@subenumR_nonnegative R A mu)
-    (fun y => real_indicator_ge0 (f y = f x)) Hin.
+    (λ y, real_indicator_ge0 (f y = f x)) Hin.
   rewrite (real_indicator_true (Logic.eq_refl (f x))) mulr1 in Hentry.
   apply: lt_le_trans _ Hentry.
   rewrite lt_def; apply/andP; split.
@@ -144,20 +144,20 @@ Section Gluing.
 Context {A B C : Type}.
 Variables (j : SubEnumR R (A*B)) (k : SubEnumR R (B*C)).
 Hypothesis middle : ∀ f,
-  subenumR_expect j (fun xy => f (snd xy)) = subenumR_expect k (fun yz => f (fst yz)).
+  subenumR_expect j (λ xy, f (snd xy)) = subenumR_expect k (λ yz, f (fst yz)).
 
-Let atom (y : B) := subenumR_expect k (fun yz => real_indicator (y = fst yz)).
+Let atom (y : B) := subenumR_expect k (λ yz, real_indicator (y = fst yz)).
 Let weight (xy : A*B) (yz : B*C) :=
   if asbool (snd xy = fst yz) then (atom (snd xy))^-1 else 0.
-Let raw := real_enum_product (subenumR_raw j) (subenumR_raw k) weight (fun xy yz => (fst xy,snd yz)).
+Let raw := real_enum_product (subenumR_raw j) (subenumR_raw k) weight (λ xy yz, (fst xy,snd yz)).
 
 Lemma subenumR_glue_atom_left p xy :
   List.In (p,xy) (subenumR_raw j) → p ≠ 0 → 0 < atom (snd xy).
 Proof.
   intros Hin Hnz.
   have H := subenumR_project_atom_positive snd Hin Hnz.
-  have He : subenumR_expect j (fun xy' => real_indicator (snd xy' = snd xy)) = atom (snd xy).
-  { rewrite (middle (fun y => real_indicator (y = snd xy))).
+  have He : subenumR_expect j (λ xy', real_indicator (snd xy' = snd xy)) = atom (snd xy).
+  { rewrite (middle (λ y, real_indicator (y = snd xy))).
     apply real_enum_expect_ext=> yz; exact: real_indicator_eq_sym. }
   by rewrite -He.
 Qed.
@@ -165,13 +165,13 @@ Lemma subenumR_glue_atom_right q yz :
   List.In (q,yz) (subenumR_raw k) → q ≠ 0 → 0 < atom (fst yz).
 Proof.
   intros Hin Hnz; have H := subenumR_project_atom_positive fst Hin Hnz.
-  have He : subenumR_expect k (fun yz' => real_indicator (fst yz' = fst yz)) = atom (fst yz).
+  have He : subenumR_expect k (λ yz', real_indicator (fst yz' = fst yz)) = atom (fst yz).
   { apply real_enum_expect_ext=> yz'; exact: real_indicator_eq_sym. }
   by rewrite -He.
 Qed.
 
 Lemma subenumR_glue_row xy f :
-  real_enum_expect (fun yz => weight xy yz * f (fst xy)) (subenumR_raw k) =
+  real_enum_expect (λ yz, weight xy yz * f (fst xy)) (subenumR_raw k) =
   ((atom (snd xy))^-1 * f (fst xy)) * atom (snd xy).
 Proof.
   rewrite /atom /subenumR_expect -real_enum_expect_scale.
@@ -180,10 +180,10 @@ Proof.
 Qed.
 
 Lemma subenumR_glue_column yz g :
-  real_enum_expect (fun xy => weight xy yz * g (snd yz)) (subenumR_raw j) =
+  real_enum_expect (λ xy, weight xy yz * g (snd yz)) (subenumR_raw j) =
   ((atom (fst yz))^-1 * g (snd yz)) * atom (fst yz).
 Proof.
-  transitivity (subenumR_expect j (fun xy =>
+  transitivity (subenumR_expect j (λ xy,
     ((atom (fst yz))^-1 * g (snd yz)) * real_indicator (snd xy = fst yz))).
   - apply real_enum_expect_ext=> xy; rewrite /weight /real_indicator.
     case H: (asbool (snd xy = fst yz)).
@@ -192,15 +192,15 @@ Proof.
     + by rewrite mul0r mulr0.
   - rewrite /subenumR_expect real_enum_expect_scale.
     change (((atom (fst yz))^-1 * g (snd yz)) *
-      subenumR_expect j (fun xy => real_indicator (snd xy = fst yz)) =
+      subenumR_expect j (λ xy, real_indicator (snd xy = fst yz)) =
       ((atom (fst yz))^-1 * g (snd yz)) * atom (fst yz)).
-    rewrite (middle (fun y => real_indicator (y = fst yz))).
+    rewrite (middle (λ y, real_indicator (y = fst yz))).
     congr (_ * _); apply real_enum_expect_ext=> yz'.
     exact: real_indicator_eq_sym.
 Qed.
 
 Lemma subenumR_glue_raw_left f :
-  real_enum_expect (fun xz => f (fst xz)) raw = subenumR_expect j (fun xy => f (fst xy)).
+  real_enum_expect (λ xz, f (fst xz)) raw = subenumR_expect j (λ xy, f (fst xy)).
 Proof.
   rewrite /raw real_enum_expect_product.
   apply real_enum_expect_ae_ext=> p xy Hin Hnz.
@@ -211,7 +211,7 @@ Proof.
   apply/eqP=> Hz; have H := subenumR_glue_atom_left Hin Hnz; by rewrite Hz ltxx in H.
 Qed.
 Lemma subenumR_glue_raw_right g :
-  real_enum_expect (fun xz => g (snd xz)) raw = subenumR_expect k (fun yz => g (snd yz)).
+  real_enum_expect (λ xz, g (snd xz)) raw = subenumR_expect k (λ yz, g (snd yz)).
 Proof.
   rewrite /raw real_enum_expect_product real_enum_expect_swap.
   apply real_enum_expect_ae_ext=> q yz Hin Hnz.
@@ -234,15 +234,15 @@ Proof.
     rewrite invr_ge0; apply real_enum_expect_nonnegative.
     + exact (@subenumR_nonnegative R (B*C) k).
     + intro z; apply real_indicator_ge0.
-  - have He : real_enum_expect (fun _ : A*C => 1) raw = subenumR_expect j (fun _ => 1).
-    { exact (subenumR_glue_raw_left (fun _ => 1)). }
+  - have He : real_enum_expect (λ _ : A*C, 1) raw = subenumR_expect j (λ _, 1).
+    { exact (subenumR_glue_raw_left (λ _, 1)). }
     rewrite He; exact (@subenumR_mass_bound R (A*B) j).
 Defined.
 
 Lemma subenumR_glue_support (S : A → B → Prop) (T : B → C → Prop) :
-  subenumR_ae j (fun xy => S (fst xy) (snd xy)) →
-  subenumR_ae k (fun yz => T (fst yz) (snd yz)) →
-  subenumR_ae subenumR_glue (fun xz => ∃ y, S (fst xz) y ∧ T y (snd xz)).
+  subenumR_ae j (λ xy, S (fst xy) (snd xy)) →
+  subenumR_ae k (λ yz, T (fst yz) (snd yz)) →
+  subenumR_ae subenumR_glue (λ xz, ∃ y, S (fst xz) y ∧ T y (snd xz)).
 Proof.
   intros Hj Hk r xz Hin Hnz; apply List.in_flat_map in Hin.
   destruct Hin as [[p [x y]] [Hp Hin]]; apply List.in_map_iff in Hin.
@@ -259,29 +259,29 @@ End Gluing.
 Theorem subenumR_lift_comp {A B C} (S : A → B → Prop) (T : B → C → Prop)
     (mu : SubEnumR R A) (nu : SubEnumR R B) (xi : SubEnumR R C) :
   subenumR_lift S mu nu → subenumR_lift T nu xi →
-  subenumR_lift (fun x z => ∃ y, S x y ∧ T y z) mu xi.
+  subenumR_lift (λ x z, ∃ y, S x y ∧ T y z) mu xi.
 Proof.
   intros [j [Hjl [Hjr Hj]]] [k [Hkl [Hkr Hk]]].
-  have Hmid : ∀ f, subenumR_expect j (fun xy => f (snd xy)) =
-    subenumR_expect k (fun yz => f (fst yz)) by intro f; rewrite Hjr Hkl.
+  have Hmid : ∀ f, subenumR_expect j (λ xy, f (snd xy)) =
+    subenumR_expect k (λ yz, f (fst yz)) by intro f; rewrite Hjr Hkl.
   exists (subenumR_glue Hmid); split.
-  - intro f; transitivity (subenumR_expect j (fun xy => f (fst xy))).
+  - intro f; transitivity (subenumR_expect j (λ xy, f (fst xy))).
     + exact (subenumR_glue_raw_left Hmid f).
     + exact (Hjl f).
   - split.
-    + intro g; transitivity (subenumR_expect k (fun yz => g (snd yz))).
+    + intro g; transitivity (subenumR_expect k (λ yz, g (snd yz))).
       * exact (subenumR_glue_raw_right Hmid g).
       * exact (Hkr g).
     + exact (subenumR_glue_support Hj Hk).
 Qed.
 
 Lemma subenumR_lift_diagonal {A} (mu : SubEnumR R A) (S : A → A → Prop) :
-  subenumR_ae mu (fun x => S x x) → subenumR_lift S mu mu.
+  subenumR_ae mu (λ x, S x x) → subenumR_lift S mu mu.
 Proof.
-  intro H; exists (subenumR_map (fun x => (x,x)) mu); split.
-  - intro f; exact (subenumR_expect_map (fun x => (x,x)) mu (fun xy => f (fst xy))).
+  intro H; exists (subenumR_map (λ x, (x,x)) mu); split.
+  - intro f; exact (subenumR_expect_map (λ x, (x,x)) mu (λ xy, f (fst xy))).
   - split.
-    + intro g; exact (subenumR_expect_map (fun x => (x,x)) mu (fun xy => g (snd xy))).
+    + intro g; exact (subenumR_expect_map (λ x, (x,x)) mu (λ xy, g (snd xy))).
     + apply subenumR_ae_map; exact H.
 Qed.
 Lemma subenumR_lift_ret {A B} (S : A → B → Prop) x y :
@@ -292,18 +292,18 @@ Proof.
   apply subenumR_ae_ret_iff; exact H.
 Qed.
 Lemma subenumR_lift_map {A B} (f : A → B) (mu : SubEnumR R A) :
-  subenumR_lift (fun x y => f x = y) mu (subenumR_map f mu).
+  subenumR_lift (λ x y, f x = y) mu (subenumR_map f mu).
 Proof.
-  exists (subenumR_map (fun x => (x,f x)) mu); split.
-  - intro g; exact (subenumR_expect_map (fun x => (x,f x)) mu (fun xy => g (fst xy))).
+  exists (subenumR_map (λ x, (x,f x)) mu); split.
+  - intro g; exact (subenumR_expect_map (λ x, (x,f x)) mu (λ xy, g (fst xy))).
   - split.
     + intro g; rewrite !subenumR_expect_map; reflexivity.
     + apply subenumR_ae_map; intros p x Hin Hnz; reflexivity.
 Qed.
 Lemma subenumR_lift_sym {A B} (S : A → B → Prop) (mu : SubEnumR R A) (nu : SubEnumR R B) :
-  subenumR_lift S mu nu → subenumR_lift (fun y x => S x y) nu mu.
+  subenumR_lift S mu nu → subenumR_lift (λ y x, S x y) nu mu.
 Proof.
-  intros [j [Hl [Hr Hj]]]; exists (subenumR_map (fun xy => (snd xy,fst xy)) j).
+  intros [j [Hl [Hr Hj]]]; exists (subenumR_map (λ xy, (snd xy,fst xy)) j).
   split.
   - intro g; rewrite subenumR_expect_map; exact (Hr g).
   - split.
@@ -312,11 +312,11 @@ Proof.
 Qed.
 
 Lemma subenumR_joint_ae {A B} (j : SubEnumR R (A*B)) (mu : SubEnumR R A) P :
-  (∀ f, subenumR_expect j (fun xy => f (fst xy)) = subenumR_expect mu f) →
-  subenumR_ae mu P → subenumR_ae j (fun xy => P (fst xy)).
+  (∀ f, subenumR_expect j (λ xy, f (fst xy)) = subenumR_expect mu f) →
+  subenumR_ae mu P → subenumR_ae j (λ xy, P (fst xy)).
 Proof.
   intros He Hp; apply subenumR_ae_zero_test.
-  rewrite (He (fun x => real_indicator (~ P x))); apply subenumR_ae_zero_test; exact Hp.
+  rewrite (He (λ x, real_indicator (~ P x))); apply subenumR_ae_zero_test; exact Hp.
 Qed.
 
 Theorem subenumR_lift_bind {A B C D} (S : A → B → Prop) (T : C → D → Prop)
@@ -327,9 +327,9 @@ Theorem subenumR_lift_bind {A B C D} (S : A → B → Prop) (T : C → D → Pro
 Proof.
   intros [j [Hl [Hr Hj]]] Hkh.
   pose good (xy : A*B) (z : SubEnumR R (C*D)) :=
-    (∀ f, subenumR_expect z (fun cd => f (fst cd)) = subenumR_expect (k (fst xy)) f) ∧
-    (∀ g, subenumR_expect z (fun cd => g (snd cd)) = subenumR_expect (h (snd xy)) g) ∧
-    subenumR_ae z (fun cd => T (fst cd) (snd cd)).
+    (∀ f, subenumR_expect z (λ cd, f (fst cd)) = subenumR_expect (k (fst xy)) f) ∧
+    (∀ g, subenumR_expect z (λ cd, g (snd cd)) = subenumR_expect (h (snd xy)) g) ∧
+    subenumR_ae z (λ cd, T (fst cd) (snd cd)).
   have Hex : ∀ xy, exists z, S (fst xy) (snd xy) -> good xy z.
   { intros [x y]; case: (pselect (S x y))=> H.
     - destruct (Hkh x y H) as [z Hz]; exists z; intros _; exact Hz.
@@ -337,11 +337,11 @@ Proof.
   pose joint xy := proj1_sig (cid (Hex xy)).
   have Hjoint xy : S (fst xy) (snd xy) -> good xy (joint xy) := proj2_sig (cid (Hex xy)).
   exists (subenumR_bind j joint); split.
-  - intro f; rewrite !subenumR_expect_bind -(Hl (fun x => subenumR_expect (k x) f)).
+  - intro f; rewrite !subenumR_expect_bind -(Hl (λ x, subenumR_expect (k x) f)).
     apply real_enum_expect_ae_ext=> p xy Hin Hnz.
     exact (proj1 (Hjoint xy (Hj p xy Hin Hnz)) f).
   - split.
-    + intro g; rewrite !subenumR_expect_bind -(Hr (fun y => subenumR_expect (h y) g)).
+    + intro g; rewrite !subenumR_expect_bind -(Hr (λ y, subenumR_expect (h y) g)).
       apply real_enum_expect_ae_ext=> p xy Hin Hnz.
       exact (proj1 (proj2 (Hjoint xy (Hj p xy Hin Hnz))) g).
     + apply subenumR_ae_bind_iff; intros p xy Hin Hnz.
@@ -401,8 +401,8 @@ Proof.
       exists x; split; [exact (Hj p (x,y) Hin Hnz)|exact (HjP p (x,y) Hin Hnz)].
   - intros A B S mu nu P Q [j [Hl [Hr Hj]]] HP HQ.
     have HjP := subenumR_joint_ae Hl HP.
-    have HjQ : subenumR_ae j (fun xy => Q (snd xy)).
-    { apply subenumR_ae_zero_test; rewrite (Hr (fun y => real_indicator (~ Q y))).
+    have HjQ : subenumR_ae j (λ xy, Q (snd xy)).
+    { apply subenumR_ae_zero_test; rewrite (Hr (λ y, real_indicator (~ Q y))).
       apply subenumR_ae_zero_test; exact HQ. }
     exists j; split; first exact Hl; split; first exact Hr.
     intros p xy Hin Hnz; split; first exact (Hj p xy Hin Hnz).
@@ -416,8 +416,8 @@ Proof.
   - intros [j [Hl [Hr Hj]]] f; rewrite -(Hl f) -(Hr f).
     apply real_enum_expect_ae_ext=> p [x y] Hin Hnz.
     by rewrite (Hj p (x,y) Hin Hnz).
-  - intro H; exists (subenumR_map (fun x => (x,x)) mu); split.
-    + intro f; exact (subenumR_expect_map (fun x => (x,x)) mu (fun xy => f (fst xy))).
+  - intro H; exists (subenumR_map (λ x, (x,x)) mu); split.
+    + intro f; exact (subenumR_expect_map (λ x, (x,x)) mu (λ xy, f (fst xy))).
     + split.
       * intro g; rewrite subenumR_expect_map; exact (H g).
       * apply subenumR_ae_map; intros p x Hin Hnz; reflexivity.

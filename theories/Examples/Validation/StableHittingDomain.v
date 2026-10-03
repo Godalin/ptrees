@@ -27,8 +27,8 @@ Variant domainE : Type → Type := Tick : domainE unit.
 Local Notation tree := (ptree domainE SubEnumQ unit).
 CoFixpoint silent_forever : tree := Tau silent_forever.
 CoFixpoint silent_counter (n : nat) : tree := Tau (silent_counter (S n)).
-CoFixpoint visible_forever : tree := Vis Tick (fun _ => visible_forever).
-Definition native_loss : tree := Prob (@subenumQ_zero unit) (fun _ => Ret tt).
+CoFixpoint visible_forever : tree := Vis Tick (λ _, visible_forever).
+Definition native_loss : tree := Prob (@subenumQ_zero unit) (λ _, Ret tt).
 
 Section Tests.
 Variable R : realType.
@@ -51,7 +51,7 @@ Proof.
   apply ptree_domain_hitting_zero.
   eapply (ptree_stable_hitting_tau_closed_zero (FI := FI) (FO := FO)
     (MX := FreeOmegaMixedMeasure)) with
-    (P := fun t => exists m, t = silent_counter m).
+    (P := λ t, exists m, t = silent_counter m).
   - intros t [m ->]. exists (silent_counter (S m)).
     split; [reflexivity|exists (S m); reflexivity].
   - exists n. reflexivity.
@@ -105,8 +105,8 @@ Hypotheses (Hp : 0 <= p) (Hp1 : p <= 1).
 (** p = 0 is allowed: infinite retry is still a valid subprobability.
     On success this program exposes an actual visible head. *)
 CoFixpoint real_retry : ptree domainE MN unit :=
-  Prob (subenumR_coin Hp Hp1) (fun b =>
-    if b then Vis Tick (fun _ => Ret tt) else Tau real_retry).
+  Prob (subenumR_coin Hp Hp1) (λ b,
+    if b then Vis Tick (λ _, Ret tt) else Tau real_retry).
 
 Example real_recursive_frontier_auto :
   ∃ out, hits (observe real_retry) out ∧
@@ -126,7 +126,7 @@ Qed.
 Example real_native_loss_auto :
   free_omega_modelable native
     (ptree_canonical_hitting (ProbF (@subenumR_zero R unit)
-      (fun _ => (Ret tt : ptree domainE MN unit)))).
+      (λ _, (Ret tt : ptree domainE MN unit)))).
 Proof. apply ptree_canonical_hitting_modelable. Qed.
 
 Example real_noncanonical_witness_auto :

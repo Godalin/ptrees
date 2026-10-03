@@ -42,21 +42,21 @@ Definition counter_next (n : nat) (action coin : bool) : nat :=
   if action then (n + if coin then 1 else 2)%nat
   else (n + if coin then 3 else 4)%nat.
 Definition counter_step n a :=
-  subenumQ_bind subenumQ_fair (fun b => subenumQ_ret (counter_next n a b)).
+  subenumQ_bind subenumQ_fair (λ b, subenumQ_ret (counter_next n a b)).
 
 Lemma counter_step_total n a :
   @sem_total SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega _ (counter_step n a).
 Proof.
-  change (enumQ_expect (fun _ => 1)
+  change (enumQ_expect (λ _, 1)
     (bind_EnumQ (subenumQ_raw subenumQ_fair)
-      (fun b => ret_EnumQ (counter_next n a b))) = 1).
+      (λ b, ret_EnumQ (counter_next n a b))) = 1).
   rewrite enumQ_expect_bind.
   native_compute. reflexivity.
 Qed.
 
 Definition counter_mdp : MDP SubEnumQ :=
   {| mdp_states := nat; mdp_actions := bool;
-     mdp_observations := unit; mdp_observe := fun _ => tt;
+     mdp_observations := unit; mdp_observe := λ _, tt;
      mdp_transition := counter_step; mdp_transition_total := counter_step_total |}.
 
 Local Notation MF := (FreeOmega SubEnumQ).
@@ -138,10 +138,10 @@ Definition state_label s :=
     are ordinary total states, not terminal states or hidden returns. *)
 Definition labelled_step (s : labelled_state) (_ : unit) : SubEnumQ labelled_state :=
   match s with
-  | StartHalf => subenumQ_bind subenumQ_fair (fun b => subenumQ_ret (if b then Good0 else Bad0))
-  | StartClone => subenumQ_bind subenumQ_fair (fun b => subenumQ_ret (if b then Good1 else Bad1))
-  | StartBiased => subenumQ_bind subenumQ_fair (fun b =>
-      subenumQ_bind subenumQ_fair (fun c => subenumQ_ret (if b || c then Good0 else Bad0)))
+  | StartHalf => subenumQ_bind subenumQ_fair (λ b, subenumQ_ret (if b then Good0 else Bad0))
+  | StartClone => subenumQ_bind subenumQ_fair (λ b, subenumQ_ret (if b then Good1 else Bad1))
+  | StartBiased => subenumQ_bind subenumQ_fair (λ b,
+      subenumQ_bind subenumQ_fair (λ c, subenumQ_ret (if b || c then Good0 else Bad0)))
   | _ => subenumQ_ret s
   end.
 
@@ -176,7 +176,7 @@ Proof. exact (subenumQ_encode_mdp_state (D := labelled_mdp) s). Qed.
 Definition is_good_label l := match l with Good => true | _ => false end.
 Definition is_good s := is_good_label (state_label s).
 Definition good_probability s :=
-  enumQ_expect (fun t => if is_good t then 1 else 0) (subenumQ_raw (labelled_step s tt)).
+  enumQ_expect (λ t, if is_good t then 1 else 0) (subenumQ_raw (labelled_step s tt)).
 
 Example good_probability_half : good_probability StartHalf = 1 / 2.
 Proof. native_compute. reflexivity. Qed.
@@ -195,8 +195,8 @@ Proof.
   intro H.
   pose proof (mdp_bisim_step H tt) as Hstep.
   assert (Htest : @sem_lift SubEnumQ SubEnumQ_SemanticMeasure bool bool eq
-    (subenumQ_bind (labelled_step StartHalf tt) (fun s => subenumQ_ret (is_good s)))
-    (subenumQ_bind (labelled_step StartBiased tt) (fun s => subenumQ_ret (is_good s)))).
+    (subenumQ_bind (labelled_step StartHalf tt) (λ s, subenumQ_ret (is_good s)))
+    (subenumQ_bind (labelled_step StartBiased tt) (λ s, subenumQ_ret (is_good s)))).
   { eapply (@sem_lift_bind SubEnumQ SubEnumQ_SemanticMeasure
       SubEnumQ_SemanticMeasureBindLaws _ _ _ _ source_bisim); [exact Hstep|].
     intros s t Hst. apply (@sem_lift_ret SubEnumQ SubEnumQ_SemanticMeasure
@@ -279,14 +279,14 @@ Qed.
 Definition raw_labelled_mdp : MDP EnumQ :=
   {| mdp_states := labelled_state; mdp_actions := unit;
      mdp_observations := outcome_label; mdp_observe := state_label;
-     mdp_transition := fun s a => subenumQ_raw (labelled_step s a);
+     mdp_transition := λ s a, subenumQ_raw (labelled_step s a);
      mdp_transition_total := labelled_step_total |}.
 
 Local Lemma raw_labelled_bisim_iff s t :
   mdp_bisim (D := raw_labelled_mdp) s t ↔ source_bisim s t.
 Proof.
   exact (mdp_represent_bisim_iff (D := raw_labelled_mdp) labelled_step_total
-    (fun rel s t a => iff_refl _) s t).
+    (λ rel s t a, iff_refl _) s t).
 Qed.
 
 Local Notation represented_encode :=

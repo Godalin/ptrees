@@ -58,9 +58,9 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 
 Lemma alternating_native_marginal s :
   sem_lift
-    (costed_round_path_rel (state_tree := fun s => countdown (fst s))
+    (costed_round_path_rel (state_tree := λ s, countdown (fst s))
       (plan := alternating_plan) (s := s)
-      (fun h : head => h) alternating_target alternating_cost)
+      (λ h : head, h) alternating_target alternating_cost)
     (alternating_measure s)
     (native_sample_measure (internal_plan_round_native (alternating_plan s))).
 Proof.
@@ -74,10 +74,10 @@ Theorem alternating_rounds_complete_hitting n b out rounds_out :
     FreeOmegaObservableSemanticOmega R (observe (countdown n)) out →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega State head
     (costed_kernel alternating_measure alternating_target) (n,b) rounds_out →
-  free_omega_qlift eq out (free_omega_bind rounds_out (fun h => FORet h)).
+  free_omega_qlift eq out (free_omega_bind rounds_out (λ h, FORet h)).
 Proof.
   apply costed_round_stable_hitting with
-    (state_tree := fun s => countdown (fst s)) (plan := alternating_plan)
+    (state_tree := λ s, countdown (fst s)) (plan := alternating_plan)
     (cost := alternating_cost) (s := (n,b)).
   intro s. eapply FOQLSample; [apply alternating_native_marginal|].
   intros x y Hxy. apply FOQLStructural, FOLRet. exact Hxy.
@@ -86,12 +86,12 @@ End AlternatingRounds.
 
 (** Same projected tree, but different projected round targets. *)
 Example alternating_round_is_not_unary :
-  costed_round_projection (fun s => @countdown planE SubEnumQ bool true (fst s))
-    (fun h : stable_head planE SubEnumQ bool => h)
+  costed_round_projection (λ s, @countdown planE SubEnumQ bool true (fst s))
+    (λ h : stable_head planE SubEnumQ bool, h)
     (@alternating_target planE SubEnumQ SubEnumQ_SemanticMeasure bool true
       (1, false) (existT _ tt tt)) ≠
-  costed_round_projection (fun s => @countdown planE SubEnumQ bool true (fst s))
-    (fun h : stable_head planE SubEnumQ bool => h)
+  costed_round_projection (λ s, @countdown planE SubEnumQ bool true (fst s))
+    (λ h : stable_head planE SubEnumQ bool, h)
     (@alternating_target planE SubEnumQ SubEnumQ_SemanticMeasure bool true
       (1, true) (existT _ tt tt)).
 Proof. discriminate. Qed.
@@ -109,11 +109,11 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
     over paths and no total-mass or finite-support premise on mu. *)
 Example unbounded_cost_limit :
   free_omega_qlift eq
-    (FOLub (fun n => @stable_hitting_approx (FreeOmega MN) FI
+    (FOLub (λ n, @stable_hitting_approx (FreeOmega MN) FI
       FreeOmegaObservableSemanticOmega unit nat
-      (costed_kernel (fun _ : unit => mu) (fun _ x => SHStable x)) n tt))
-    (FOLub (fun n => costed_hitting_approx (fun _ : unit => mu)
-      (fun _ x => SHStable x) (fun _ x => x) n n tt)).
+      (costed_kernel (λ _ : unit, mu) (λ _ x, SHStable x)) n tt))
+    (FOLub (λ n, costed_hitting_approx (λ _ : unit, mu)
+      (λ _ x, SHStable x) (λ _ x, x) n n tt)).
 Proof. apply costed_hitting_limit; assumption. Qed.
 End UnboundedCosts.
 
@@ -164,10 +164,10 @@ Proof. destruct z; reflexivity. Qed.
 Lemma padding_left_marginal s :
   free_omega_qlift
     (costed_round_path_rel (state_tree := @fst tree bool) (plan := padding_left_plan)
-      (s := s) (fun h : head => h) padding_target padding_left_cost)
-    (FOSample (padding_measure s) (fun x => FORet x))
+      (s := s) (λ h : head, h) padding_target padding_left_cost)
+    (FOSample (padding_measure s) (λ x, FORet x))
     (FOSample (native_sample_measure (internal_plan_round_native (padding_left_plan s)))
-      (fun x => FORet x)).
+      (λ x, FORet x)).
 Proof.
   eapply FOQLSample with (T := eq); [apply sem_lift_refl; intro x; reflexivity|].
   intros x y ->. apply FOQLStructural, FOLRet. split; [reflexivity|].
@@ -179,10 +179,10 @@ Qed.
 Lemma padding_right_marginal s :
   free_omega_qlift
     (costed_round_path_rel (state_tree := padded_tree) (plan := padding_right_plan)
-      (s := s) (fun h : head => h) padding_target padding_right_cost)
-    (FOSample (padding_measure s) (fun x => FORet x))
+      (s := s) (λ h : head, h) padding_target padding_right_cost)
+    (FOSample (padding_measure s) (λ x, FORet x))
     (FOSample (native_sample_measure (internal_plan_round_native (padding_right_plan s)))
-      (fun x => FORet x)).
+      (λ x, FORet x)).
 Proof.
   destruct s as [t b]. destruct b.
   all: eapply FOQLSample with (T := eq); [apply sem_lift_refl; intro x; reflexivity|].
@@ -200,7 +200,7 @@ Theorem padding_via_costed_coinduction (t : tree) :
 Proof.
   eapply peutt_coinduction_costed_rounds with
     (sim := padding_rel) (left_tree := @fst tree bool) (right_tree := padded_tree)
-    (left_head := fun h : head => h) (right_head := fun h : head => h)
+    (left_head := λ h : head, h) (right_head := λ h : head, h)
     (left_plan := padding_left_plan) (right_plan := padding_right_plan)
     (measure := padding_measure) (target := padding_target)
     (left_cost := padding_left_cost) (right_cost := padding_right_cost).

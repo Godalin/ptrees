@@ -27,8 +27,8 @@ Local Open Scope ring_scope.
 Definition option_model (R : realType) X (mu : option X) : OmegaVal R X :=
   match mu with None => oval_bottom R | Some x => oval_ret R x end.
 Example option_sample_denotes (R : realType) :
-  free_omega_model_denotes (fun X => @option_model R X)
-    (FOSample (Some true) (fun b => FORet (negb b))) (oval_ret R false).
+  free_omega_model_denotes (λ X, @option_model R X)
+    (FOSample (Some true) (λ b, FORet (negb b))) (oval_ret R false).
 Proof. intros f Hf; reflexivity. Qed.
 
 From PTree.Prob.Interface Require Import Measure.
@@ -44,8 +44,8 @@ Fail Check PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation.free_omega_upp
 
 Example generic_q_joint_without_legacy (R : realType) {A B}
     (T : A → B → Prop) t u
-    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t)
-    (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
+    (Ht : free_omega_modelable (λ X, @subenumQ_domain R X) t)
+    (Hu : free_omega_modelable (λ X, @subenumQ_domain R X) u) :
   free_omega_qlift T t u →
   oval_coupled T (free_omega_model Ht) (free_omega_model Hu).
 Proof. exact: subenumQ_qlift_sound. Qed.
@@ -68,7 +68,7 @@ Qed.
 
 Example generic_null_bad_bind :
   free_omega_modelable native
-    (free_omega_bind (FOSample null_weight_node (fun b => FORet b)) nullable_kernel).
+    (free_omega_bind (FOSample null_weight_node (λ b, FORet b)) nullable_kernel).
 Proof.
   apply (modelable_bind_ae (NI := SubEnumQ_SemanticMeasure)); first exact (@subenumQ_native_model_ae R).
   - apply modelable_sample=> b; exact: modelable_ret.
@@ -101,7 +101,7 @@ Section HighUniverse.
 Universe u.
 Variable R : realType.
 Example generic_high_result (A : Type@{u}) :
-  free_omega_modelable (fun X => @subenumQ_domain R X)
+  free_omega_modelable (λ X, @subenumQ_domain R X)
     (@FORet SubEnumQ Type@{u} A).
 Proof. exact: modelable_ret. Qed.
 End HighUniverse.

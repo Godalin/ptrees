@@ -78,7 +78,7 @@ Example relational_bind_heterogeneous {A B C D} (S : A → B → Prop) (T : C �
 Proof. exact: sem_lift_bind. Qed.
 
 Example zero_empty_coupling :
-  subenumR_lift (fun (_ : Empty_set) (_ : bool) => False)
+  subenumR_lift (λ (_ : Empty_set) (_ : bool), False)
     (subenumR_zero R) (subenumR_zero R).
 Proof.
   exists (@subenumR_zero R (Empty_set*bool)); split; first by intro f.
@@ -86,15 +86,15 @@ Proof.
   intros p x [].
 Qed.
 
-Example duplicate_zero_branch_ae : subenumR_ae duplicated_half (fun b => b = true).
+Example duplicate_zero_branch_ae : subenumR_ae duplicated_half (λ b, b = true).
 Proof.
   intros p b [H|[H|[H|[]]]] Hnz; inversion H; subst; try reflexivity.
   exfalso; exact (Hnz (Logic.eq_refl _)).
 Qed.
 Example duplicate_zero_branch_restrict :
-  subenumR_lift (fun x y => x = y ∧ x = true ∧ y = true) duplicated_half duplicated_half.
+  subenumR_lift (λ x y, x = y ∧ x = true ∧ y = true) duplicated_half duplicated_half.
 Proof.
-  change (@sem_lift M NI bool bool (fun x y => x = y ∧ x = true ∧ y = true)
+  change (@sem_lift M NI bool bool (λ x y, x = y ∧ x = true ∧ y = true)
     duplicated_half duplicated_half).
   apply sem_lift_ae_restrict; try exact duplicate_zero_branch_ae.
   exact duplicate_partial_coupling.
@@ -106,10 +106,10 @@ Universe u.
 Variable R : realType.
 Definition high_shared_native (A : Type@{u}) : SubEnumR R Type@{u} := finite_subdist_ret R A.
 Example high_shared_native_bind (A : Type@{u}) (f : Type@{u} → R) :
-  subenumR_expect (subenumR_bind (high_shared_native A) (fun X => finite_subdist_ret R X)) f = f A.
+  subenumR_expect (subenumR_bind (high_shared_native A) (λ X, finite_subdist_ret R X)) f = f A.
 Proof.
   change (finite_subdist_expect
-    (finite_subdist_bind (finite_subdist_ret R A) (fun X => finite_subdist_ret R X)) f = f A).
+    (finite_subdist_bind (finite_subdist_ret R A) (λ X, finite_subdist_ret R X)) f = f A).
   by rewrite finite_subdist_bind_ret_r finite_subdist_expect_ret.
 Qed.
 End HighCarrier.

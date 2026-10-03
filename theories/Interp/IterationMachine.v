@@ -27,7 +27,7 @@ Definition iter_head_result (h : stable_head E MN (I+A)) :
   match h with
   | FHRet (inl i) => SHInternal (step i)
   | FHRet (inr a) => SHStable (FHRet a)
-  | @FHVis _ _ _ X e k => SHStable (FHVis e (fun x => iter_active (k x)))
+  | @FHVis _ _ _ X e k => SHStable (FHVis e (λ x, iter_active (k x)))
   end.
 
 Definition iter_primitive_kernel (t : ptree E MN (I+A)) :
@@ -36,7 +36,7 @@ Definition iter_primitive_kernel (t : ptree E MN (I+A)) :
   | RetF v => sem_ret (iter_head_result (FHRet v))
   | TauF u => sem_ret (SHInternal u)
   | @VisF _ _ _ _ X e k => sem_ret (iter_head_result (FHVis e k))
-  | @ProbF _ _ _ _ X mu k => mixed_bind mu (fun x => sem_ret (SHInternal (k x)))
+  | @ProbF _ _ _ _ X mu k => mixed_bind mu (λ x, sem_ret (SHInternal (k x)))
   end.
 End Machine.
 
@@ -66,7 +66,7 @@ Local Lemma zero_equiv X Y (k : X → MF Y) :
   equiv (sem_bind sem_zero k) sem_zero.
 Proof. split; [apply sem_bind_zero_order|apply sem_zero_le]. Qed.
 Local Lemma mixed_assoc_equiv X Y Z (mu : MN X) (k : X → MF Y) (h : Y → MF Z) :
-  equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)).
+  equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (λ x, sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
 Definition iter_primitive_approx n t :=
@@ -79,8 +79,8 @@ Lemma iter_primitive_unfold n t :
      | RetF (inl i) => iter_after n (step i)
      | RetF (inr a) => sem_ret (FHRet a)
      | TauF u => iter_after n u
-     | @VisF _ _ _ _ X e k => sem_ret (FHVis e (fun x => iter_active step (k x)))
-     | @ProbF _ _ _ _ X mu k => mixed_bind mu (fun x => iter_after n (k x))
+     | @VisF _ _ _ _ X e k => sem_ret (FHVis e (λ x, iter_active step (k x)))
+     | @ProbF _ _ _ _ X mu k => mixed_bind mu (λ x, iter_after n (k x))
      end).
 Proof.
   unfold iter_primitive_approx, stable_hitting_approx, iter_primitive_kernel.
@@ -125,11 +125,11 @@ Local Notation hit_unfold := (@BindScheduling.hitting_unfold E MN MF FI MX FO Or
 
 Definition iter_phase_kernel m t :=
   sem_bind (ptree_hitting_approx (MF := MF) m (observe t))
-    (fun h => sem_ret (iter_head_result step h)).
+    (λ h, sem_ret (iter_head_result step h)).
 Definition iter_phase_grid n m t := stable_hitting_approx (iter_phase_kernel m) n t.
 Definition iter_phase_split j n m t :=
   sem_bind (ptree_hitting_approx (MF := MF) j (observe t))
-    (fun h => stable_target_approx (iter_phase_kernel m) n (iter_head_result step h)).
+    (λ h, stable_target_approx (iter_phase_kernel m) n (iter_head_result step h)).
 Definition iter_phase_after n m t :=
   match n with O => sem_zero | S r => iter_phase_grid r m t end.
 
@@ -213,18 +213,18 @@ Lemma iter_primitive_le_phase_grid n t :
   sem_le (iter_primitive_approx step n t) (iter_phase_grid n n t).
 Proof. setoid_rewrite iter_phase_grid_split. apply iter_primitive_le_phase_split. lia. Qed.
 
-Lemma iter_phase_kernel_increasing t : sem_increasing (fun m => iter_phase_kernel m t).
+Lemma iter_phase_kernel_increasing t : sem_increasing (λ m, iter_phase_kernel m t).
 Proof. intro m. apply sem_bind_le_mu. apply ptree_hitting_increasing. Qed.
-Lemma iter_phase_grid_inner_increasing n t : sem_increasing (fun m => iter_phase_grid n m t).
+Lemma iter_phase_grid_inner_increasing n t : sem_increasing (λ m, iter_phase_grid n m t).
 Proof.
   intro m. unfold iter_phase_grid, stable_hitting_approx.
   eapply sem_le_trans; [apply sem_bind_le_mu; apply iter_phase_kernel_increasing|].
   apply sem_bind_le_k. intro target. apply HandlerMachineAcceleration.target_kernel_mono.
   intro u. apply iter_phase_kernel_increasing.
 Qed.
-Lemma iter_phase_grid_outer_increasing m t : sem_increasing (fun n => iter_phase_grid n m t).
+Lemma iter_phase_grid_outer_increasing m t : sem_increasing (λ n, iter_phase_grid n m t).
 Proof. apply stable_hitting_increasing. Qed.
-Lemma iter_phase_diagonal_increasing t : sem_increasing (fun n => iter_phase_grid n n t).
+Lemma iter_phase_diagonal_increasing t : sem_increasing (λ n, iter_phase_grid n n t).
 Proof.
   intro n. eapply sem_le_trans; [apply iter_phase_grid_inner_increasing|].
   apply iter_phase_grid_outer_increasing.
@@ -232,7 +232,7 @@ Qed.
 
 Context `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}.
 Lemma iter_phase_diagonal_tree t out :
-  sem_lub (fun n => iter_phase_grid n n t) out ↔
+  sem_lub (λ n, iter_phase_grid n n t) out ↔
   ptree_stable_hitting (MF := MF) (observe (iter_active step t)) out.
 Proof.
   unfold ptree_stable_hitting, stable_hitting. apply sem_lub_cofinal.
@@ -253,14 +253,14 @@ Context `{Omega : @SemanticOmegaLaws MF FI FO}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 
 Definition iter_machine_kernel t :=
-  sem_bind (handler_complete_front t) (fun h => sem_ret (iter_head_result step h)).
+  sem_bind (handler_complete_front t) (λ h, sem_ret (iter_head_result step h)).
 Lemma iter_phase_kernel_lub t :
-  sem_lub (fun m => iter_phase_kernel m t) (iter_machine_kernel t).
+  sem_lub (λ m, iter_phase_kernel m t) (iter_machine_kernel t).
 Proof.
   apply sem_bind_lub; [apply ptree_hitting_increasing|apply handler_complete_front_hitting].
 Qed.
 Lemma iter_phase_grid_row_lub n t :
-  sem_lub (fun m => iter_phase_grid n m t)
+  sem_lub (λ m, iter_phase_grid n m t)
     (stable_hitting_approx iter_machine_kernel n t).
 Proof.
   unfold iter_phase_grid, stable_hitting_approx. apply sem_bind_diagonal_lub.
@@ -278,8 +278,8 @@ Theorem iter_machine_hitting_sound t out :
 Proof.
   intro H. apply (proj1 (iter_phase_diagonal_tree t out)).
   eapply (sem_lub_double_diagonal (SI := FI) (SO := FO))
-    with (grid := fun n m => iter_phase_grid n m t)
-         (row_out := fun n => stable_hitting_approx iter_machine_kernel n t).
+    with (grid := λ n m, iter_phase_grid n m t)
+         (row_out := λ n, stable_hitting_approx iter_machine_kernel n t).
   - intro n. apply iter_phase_grid_inner_increasing.
   - intro m. apply iter_phase_grid_outer_increasing.
   - intro n. apply iter_phase_grid_row_lub.

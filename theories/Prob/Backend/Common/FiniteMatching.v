@@ -78,11 +78,11 @@ Proof.
     apply (subsetP (matching_neighbors_mono V HTS)). by apply/matching_neighborsP.
 Qed.
 
-Lemma finite_matching_empty V : finite_matching set0 V (fun _ => None).
+Lemma finite_matching_empty V : finite_matching set0 V (λ _, None).
 Proof. split; [intros x; by rewrite inE|intros x y; by rewrite inE]. Qed.
 
 Lemma finite_matching_singleton x y : edge x y →
-  finite_matching [set x] [set y] (fun _ => Some y).
+  finite_matching [set x] [set y] (λ _, Some y).
 Proof.
   intro Hxy. split.
   - intros z. rewrite inE=> /eqP ->. exists y. split=> //; split=> //; by rewrite inE.
@@ -93,7 +93,7 @@ Lemma finite_matching_union L1 L2 V1 V2 f1 f2 :
   finite_matching L1 V1 f1 → finite_matching L2 V2 f2 →
   [disjoint V1 & V2] →
   finite_matching (L1 :|: L2) (V1 :|: V2)
-    (fun x => if x \in L1 then f1 x else f2 x).
+    (λ x, if x \in L1 then f1 x else f2 x).
 Proof.
   move=> [Hf1 Hi1] [Hf2 Hi2] Hd. split.
   - intros x Hx. case E: (x \in L1).
@@ -158,7 +158,7 @@ Proof.
       finite_hall L V -> exists f, finite_matching L V f.
   { elim=> [|n IH] L0 V0 Hsize Hall; [by rewrite ltn0 in Hsize|].
     case EL: (L0 == set0).
-    { move/eqP: EL=> ->. exists (fun _ => None). apply finite_matching_empty. }
+    { move/eqP: EL=> ->. exists (λ _, None). apply finite_matching_empty. }
     case Etight: [exists S : {set A},
       [&& S \proper L0, S != set0 & #|matching_neighbors V0 S| == #|S|]].
     - move/existsP: Etight=> [S /and3P [Hproper Hnonzero /eqP Htight]].
@@ -186,7 +186,7 @@ Proof.
       have Hright : matching_neighbors V0 S :|: (V0 :\: matching_neighbors V0 S) = V0.
       { rewrite -{1}(setIidPl (matching_neighbors_subset V0 S)) setIC. exact: setID. }
       rewrite Hleft Hright in Hjoined.
-      exists (fun x => if x \in S then f x else g x). exact Hjoined.
+      exists (λ x, if x \in S then f x else g x). exact Hjoined.
     - have Hnonempty : L0 != set0 by rewrite EL.
       move/set0Pn: Hnonempty=> [a Ha].
       have Hsingle : [set a] \subset L0 by rewrite sub1set.
@@ -223,7 +223,7 @@ Proof.
       have Hd : [disjoint [set b] & V0 :\ b] by rewrite disjoints1 setD11.
       have Hjoined := finite_matching_union (finite_matching_singleton Hab) Hg Hd.
       rewrite (setD1K Ha) (setD1K Hb) in Hjoined.
-      exists (fun x => if x \in [set a] then Some b else g x). exact Hjoined. }
+      exists (λ x, if x \in [set a] then Some b else g x). exact Hjoined. }
   intro Hall. exact (bounded #|L|.+1 L V (ltnSn _) Hall).
 Qed.
 End FiniteMatching.

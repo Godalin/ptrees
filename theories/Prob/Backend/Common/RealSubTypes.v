@@ -71,7 +71,7 @@ Variant Interval : Type :=
 Notation 𝕀 := R.
 
 Global Instance Interval_RealSub : RealSub Interval := {|
-  inject := fun '(mkInterval r _ _) => r
+  inject := λ '(mkInterval r _ _), r
 |}.
 
 (** The Non-Negative Real Numbers *)

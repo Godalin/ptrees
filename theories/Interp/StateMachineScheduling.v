@@ -35,7 +35,7 @@ Proof. apply sem_bind_ret_order. Qed.
 Local Lemma zero_equiv A B (k : A → MF B) : equiv (sem_bind sem_zero k) sem_zero.
 Proof. split; [apply sem_bind_zero_order|apply sem_zero_le]. Qed.
 Local Lemma mixed_assoc A B C (mu : MN A) (k : A → MF B) (h : B → MF C) :
-  equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (fun x => sem_bind (k x) h)).
+  equiv (sem_bind (mixed_bind mu k) h) (mixed_bind mu (λ x, sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
 Definition state_primitive_approx {A} n (c : cfg A) :=
@@ -50,8 +50,8 @@ Lemma state_primitive_unfold {A} n s (t : ptree (stateE St +' E) MN A) :
      | TauF u => state_after n (s,u)
      | @VisF _ _ _ _ X e k => match e with
          | inl1 se => let '(s',x) := state_response se s in state_after n (s',k x)
-         | inr1 fe => sem_ret (FHVis fe (fun x => run_state (k x) s)) end
-     | @ProbF _ _ _ _ X mu k => mixed_bind mu (fun x => state_after n (s,k x))
+         | inr1 fe => sem_ret (FHVis fe (λ x, run_state (k x) s)) end
+     | @ProbF _ _ _ _ X mu k => mixed_bind mu (λ x, state_after n (s,k x))
      end).
 Proof.
   unfold state_primitive_approx, stable_hitting_approx, state_primitive_kernel.
@@ -83,11 +83,11 @@ Qed.
 
 Definition state_phase_kernel {A} m (c : cfg A) :=
   sem_bind (ptree_hitting_approx (MF := MF) m (observe (snd c)))
-    (fun h => sem_ret (state_head_result (fst c) h)).
+    (λ h, sem_ret (state_head_result (fst c) h)).
 Definition state_phase_grid {A} n m (c : cfg A) := stable_hitting_approx (state_phase_kernel m) n c.
 Definition state_phase_split {A} j n m (c : cfg A) :=
   sem_bind (ptree_hitting_approx (MF := MF) j (observe (snd c)))
-    (fun h => stable_target_approx (state_phase_kernel m) n (state_head_result (fst c) h)).
+    (λ h, stable_target_approx (state_phase_kernel m) n (state_head_result (fst c) h)).
 Definition state_phase_after {A} n m (c : cfg A) :=
   match n with O => sem_zero | S r => state_phase_grid r m c end.
 Local Lemma phase_internalE {A} n m (c : cfg A) :
@@ -168,10 +168,10 @@ Proof.
 Qed.
 
 Lemma state_phase_kernel_increasing {A} (c : cfg A) :
-  sem_increasing (fun m => state_phase_kernel m c).
+  sem_increasing (λ m, state_phase_kernel m c).
 Proof. intro m. apply sem_bind_le_mu. apply ptree_hitting_increasing. Qed.
 Lemma state_phase_grid_inner_increasing {A} n (c : cfg A) :
-  sem_increasing (fun m => state_phase_grid n m c).
+  sem_increasing (λ m, state_phase_grid n m c).
 Proof.
   intro m. unfold state_phase_grid, stable_hitting_approx.
   eapply sem_le_trans; [apply sem_bind_le_mu; apply state_phase_kernel_increasing|].
@@ -179,7 +179,7 @@ Proof.
   intro d. apply state_phase_kernel_increasing.
 Qed.
 Lemma state_phase_diagonal_increasing {A} (c : cfg A) :
-  sem_increasing (fun n => state_phase_grid n n c).
+  sem_increasing (λ n, state_phase_grid n n c).
 Proof.
   intro n. eapply sem_le_trans; [apply state_phase_grid_inner_increasing|]. apply stable_hitting_increasing.
 Qed.
@@ -192,11 +192,11 @@ Context `{Directed : @SemanticOmegaDirectedCofinalityLaws MF FI FO}
   `{Select : @SemanticOmegaSelection MF FI FO}.
 
 Lemma state_phase_kernel_lub {A} (c : cfg A) :
-  sem_lub (fun m => state_phase_kernel m c) (state_machine_kernel c).
+  sem_lub (λ m, state_phase_kernel m c) (state_machine_kernel c).
 Proof. apply sem_bind_lub; [apply ptree_hitting_increasing|apply handler_complete_front_hitting]. Qed.
 
 Lemma state_phase_grid_row_lub {A} n (c : cfg A) :
-  sem_lub (fun m => state_phase_grid n m c) (stable_hitting_approx state_machine_kernel n c).
+  sem_lub (λ m, state_phase_grid n m c) (stable_hitting_approx state_machine_kernel n c).
 Proof.
   unfold state_phase_grid, stable_hitting_approx. apply sem_bind_diagonal_lub.
   - apply state_phase_kernel_increasing.
@@ -210,16 +210,16 @@ Theorem state_machine_hitting_sound {A} (c : cfg A) out :
   stable_hitting state_machine_kernel c out →
   ptree_stable_hitting (MF := MF) (observe (run_state (snd c) (fst c))) out.
 Proof.
-  intro H. assert (Hdiag : sem_lub (fun n => state_phase_grid n n c) out).
+  intro H. assert (Hdiag : sem_lub (λ n, state_phase_grid n n c) out).
   { eapply (sem_lub_double_diagonal (SI := FI) (SO := FO))
-      with (grid := fun n m => state_phase_grid n m c)
-           (row_out := fun n => stable_hitting_approx state_machine_kernel n c).
+      with (grid := λ n m, state_phase_grid n m c)
+           (row_out := λ n, stable_hitting_approx state_machine_kernel n c).
     - intro n. apply state_phase_grid_inner_increasing.
     - intros m n. apply stable_hitting_increasing.
     - intro n. apply state_phase_grid_row_lub.
     - exact H. }
   assert (Hphysical : stable_hitting state_primitive_kernel c out).
-  { assert (HC : sem_lub (fun n => state_phase_grid n n c) out ↔
+  { assert (HC : sem_lub (λ n, state_phase_grid n n c) out ↔
         stable_hitting state_primitive_kernel c out).
     { unfold stable_hitting. apply sem_lub_cofinal.
       - apply state_phase_diagonal_increasing.
@@ -229,8 +229,8 @@ Proof.
         apply state_primitive_le_phase_split. lia. }
     exact (proj1 HC Hdiag). }
   unfold ptree_stable_hitting, stable_hitting in *.
-  assert (HC : sem_lub (fun n => state_primitive_approx n c) out ↔
-      sem_lub (fun n => ptree_hitting_approx (MF := MF) n
+  assert (HC : sem_lub (λ n, state_primitive_approx n c) out ↔
+      sem_lub (λ n, ptree_hitting_approx (MF := MF) n
         (observe (run_state (snd c) (fst c)))) out).
   { apply sem_lub_cofinal.
     - apply stable_hitting_increasing.

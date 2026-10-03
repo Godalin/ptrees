@@ -30,7 +30,7 @@ Definition ptree_primitive_kernel {R} (ot : ptree' E MN R) :
   | VisF _ e k => sem_ret (SHStable (FHVis e k))
   | TauF t => sem_ret (SHInternal (observe t))
   | ProbF _ mu k =>
-      mixed_bind mu (fun x => sem_ret (SHInternal (observe (k x))))
+      mixed_bind mu (λ x, sem_ret (SHInternal (observe (k x))))
   end.
 
 (** Only approximants/limits need the frontier zero/omega operations. *)
@@ -76,8 +76,8 @@ Definition ptree_hitting_diagonal_cofinal {R}
     (ot : ptree' E MN R)
     (grid : nat → nat → MF (stable_head E MN R)) : Prop :=
   ∀ out,
-    sem_lub (fun fuel => ptree_hitting_approx fuel ot) out ↔
-    sem_lub (fun fuel => grid fuel fuel) out.
+    sem_lub (λ fuel, ptree_hitting_approx fuel ot) out ↔
+    sem_lub (λ fuel, grid fuel fuel) out.
 
 Section KernelNestedGrid.
 Context `{FFubini : @SemanticOmegaFubiniLaws MF FI FO}.
@@ -88,7 +88,7 @@ Theorem ptree_stable_hitting_of_nested_grid {R}
     (row_out : nat → MF (stable_head E MN R)) out :
   ptree_hitting_diagonal_cofinal ot grid →
   (∀ outer, sem_increasing (grid outer)) →
-  (∀ inner, sem_increasing (fun outer => grid outer inner)) →
+  (∀ inner, sem_increasing (λ outer, grid outer inner)) →
   (∀ outer, sem_lub (grid outer) (row_out outer)) →
   sem_lub row_out out →
   ptree_stable_hitting ot out.
@@ -105,7 +105,7 @@ Corollary ptree_stable_hitting_ast_of_nested_grid {R}
     (row_out : nat → MF (stable_head E MN R)) out :
   ptree_hitting_diagonal_cofinal ot grid →
   (∀ outer, sem_increasing (grid outer)) →
-  (∀ inner, sem_increasing (fun outer => grid outer inner)) →
+  (∀ inner, sem_increasing (λ outer, grid outer inner)) →
   (∀ outer, sem_lub (grid outer) (row_out outer)) →
   sem_lub row_out out →
   sem_total out →
@@ -136,7 +136,7 @@ Proof. reflexivity. Qed.
 Lemma ptree_kernel_probE {R X} (mu : MN X)
     (k : X → ptree E MN R) :
   ptree_primitive_kernel (ProbF mu k) =
-  mixed_bind mu (fun x => sem_ret (SHInternal (observe (k x)))).
+  mixed_bind mu (λ x, sem_ret (SHInternal (observe (k x)))).
 Proof. reflexivity. Qed.
 
 Lemma ptree_target_stableE {R} fuel
@@ -219,7 +219,7 @@ Qed.
 Lemma ptree_hitting_prob {R X} fuel (mu : MN X)
     (k : X → ptree E MN R) :
   sem_eq (ptree_hitting_approx (MF := MF) fuel (ProbF mu k))
-    (mixed_bind mu (fun x =>
+    (mixed_bind mu (λ x,
       ptree_stable_target_approx fuel (SHInternal (observe (k x))))).
 Proof.
   unfold ptree_hitting_approx, stable_hitting_approx,
@@ -234,7 +234,7 @@ Qed.
 Lemma ptree_hitting_prob_zero {R X} (mu : MN X)
     (k : X → ptree E MN R) :
   sem_eq (ptree_hitting_approx (MF := MF) O (ProbF mu k))
-    (mixed_bind mu (fun _ => sem_zero)).
+    (mixed_bind mu (λ _, sem_zero)).
 Proof.
   eapply sem_eq_trans; [apply ptree_hitting_prob|].
   apply mixed_bind_ae_proper.
@@ -246,7 +246,7 @@ Lemma ptree_hitting_prob_succ {R X} fuel (mu : MN X)
     (k : X → ptree E MN R) :
   sem_eq
     (ptree_hitting_approx (MF := MF) (Datatypes.S fuel) (ProbF mu k))
-    (mixed_bind mu (fun x =>
+    (mixed_bind mu (λ x,
       ptree_hitting_approx fuel (observe (k x)))).
 Proof.
   eapply sem_eq_trans; [apply ptree_hitting_prob|].
@@ -286,7 +286,7 @@ Theorem ptree_stable_hitting_of_zero_approximants {R} (ot : ptree' E MN R) :
   ptree_stable_hitting ot sem_zero.
 Proof.
   intro Hz. unfold ptree_stable_hitting.
-  eapply sem_lub_chain_proper with (chain := fun _ => sem_zero).
+  eapply sem_lub_chain_proper with (chain := λ _, sem_zero).
   - intro n. apply sem_eq_sym. apply Hz.
   - apply sem_lub_constant.
 Qed.
@@ -304,7 +304,7 @@ Corollary ptree_stable_hitting_spin_zero {R} (t : ptree E MN R) :
   ptree_stable_hitting (MF := MF) (observe t) sem_zero.
 Proof.
   intro Ht. eapply ptree_stable_hitting_tau_closed_zero
-    with (P := fun u => u = t); [|reflexivity].
+    with (P := λ u, u = t); [|reflexivity].
   intros u ->. exists t. split; [exact Ht|reflexivity].
 Qed.
 End KernelSilentDivergence.
@@ -326,7 +326,7 @@ Context {E MN MF : Type → Type}
     No native omega structure or normalization is required. *)
 Theorem ptree_stable_hitting_prob_empty {R X} (mu : MN X)
     (k : X → ptree E MN R) :
-  sem_ae mu (fun _ => False) →
+  sem_ae mu (λ _, False) →
   ptree_stable_hitting (MF := MF) (ProbF mu k) sem_zero.
 Proof.
   intro Hempty. apply ptree_stable_hitting_of_zero_approximants. intro n.
@@ -397,7 +397,7 @@ Qed.
 
 Theorem ptree_hitting_increasing {R} (ot : ptree' E MN R) :
   sem_increasing
-    (fun fuel => ptree_hitting_approx (MF := MF) fuel ot).
+    (λ fuel, ptree_hitting_approx (MF := MF) fuel ot).
 Proof.
   intros fuel. unfold ptree_hitting_approx.
   apply sem_bind_le_k. intros target.
@@ -496,7 +496,7 @@ Lemma ptree_hitting_tau_zero_prefix {R}
   sem_eq
     (ptree_hitting_approx (MF := MF) fuel (TauF t))
     (sem_zero_prefix
-      (fun n => ptree_hitting_approx (MF := MF) n (observe t))
+      (λ n, ptree_hitting_approx (MF := MF) n (observe t))
       fuel).
 Proof.
   destruct fuel as [|fuel].
@@ -513,14 +513,14 @@ Theorem ptree_stable_hitting_tau_iff {R} (t : ptree E MN R) out :
 Proof.
   unfold ptree_stable_hitting. split; intro Hlim.
   - apply (proj2 (sem_lub_zero_prefix
-      (fun n => ptree_hitting_approx (MF := MF) n (observe t)) out)).
+      (λ n, ptree_hitting_approx (MF := MF) n (observe t)) out)).
     eapply sem_lub_chain_proper; [|exact Hlim].
     intro n. apply ptree_hitting_tau_zero_prefix.
   - eapply sem_lub_chain_proper.
     + intro n. apply sem_eq_sym.
       apply ptree_hitting_tau_zero_prefix.
     + apply (proj1 (sem_lub_zero_prefix
-        (fun n => ptree_hitting_approx (MF := MF) n (observe t)) out)).
+        (λ n, ptree_hitting_approx (MF := MF) n (observe t)) out)).
       exact Hlim.
 Qed.
 
@@ -554,7 +554,7 @@ Lemma ptree_hitting_prob_zero_prefix {R X}
   sem_eq
     (ptree_hitting_approx (MF := MF) fuel (ProbF mu k))
     (sem_zero_prefix
-      (fun n => mixed_bind mu (fun x =>
+      (λ n, mixed_bind mu (λ x,
         ptree_hitting_approx (MF := MF) n (observe (k x))))
       fuel).
 Proof.
@@ -579,7 +579,7 @@ Proof.
   - intro n. apply sem_eq_sym.
     apply ptree_hitting_prob_zero_prefix.
   - apply (proj1 (sem_lub_zero_prefix
-      (fun n => mixed_bind mu (fun x =>
+      (λ n, mixed_bind mu (λ x,
         ptree_hitting_approx (MF := MF) n (observe (k x))))
       (mixed_bind mu front))).
     eapply mixed_bind_lub; [exact Hae| |exact Hbranch].
@@ -615,7 +615,7 @@ Definition ptree_head_bind_approx {A R} (fuel : nat)
   match h with
   | FHRet a => ptree_hitting_approx (MF := MF) fuel (observe (k a))
   | @FHVis _ _ _ X e c =>
-      sem_ret (FHVis e (fun x => PTree.bind (c x) k))
+      sem_ret (FHVis e (λ x, PTree.bind (c x) k))
   end.
 
 Definition ptree_bind_diagonal_approx {A R} (fuel : nat)
@@ -631,9 +631,9 @@ Definition ptree_bind_diagonal_approx {A R} (fuel : nat)
 Definition ptree_bind_cofinal {A R}
     (t : ptree E MN A) (k : A → ptree E MN R) : Prop :=
   ∀ out,
-    sem_lub (fun fuel => ptree_hitting_approx (MF := MF) fuel
+    sem_lub (λ fuel, ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.bind t k))) out ↔
-    sem_lub (fun fuel => ptree_bind_diagonal_approx fuel t k) out.
+    sem_lub (λ fuel, ptree_bind_diagonal_approx fuel t k) out.
 
 End KernelBindDiagonal.
 
@@ -651,7 +651,7 @@ Context {E : Type → Type} {MN MF : Type → Type}
 
 Lemma ptree_head_bind_approx_increasing {A R}
     (k : A → ptree E MN R) h :
-  sem_increasing (fun fuel => ptree_head_bind_approx
+  sem_increasing (λ fuel, ptree_head_bind_approx
     (MF := MF) fuel k h).
 Proof.
   destruct h as [a|X e c]; intro fuel; cbn [ptree_head_bind_approx].
@@ -688,7 +688,7 @@ Lemma ptree_head_bind_approx_lub {A R}
     (front : A → MF (stable_head E MN R))
     (Hfront : ∀ a,
       ptree_stable_hitting (MF := MF) (observe (k a)) (front a)) h :
-  sem_lub (fun fuel => ptree_head_bind_approx
+  sem_lub (λ fuel, ptree_head_bind_approx
       (MF := MF) fuel k h)
     (bind_frontier k front h).
 Proof.
@@ -748,15 +748,15 @@ Definition ptree_iter_round_approx {I R} (fuel : nat)
     (transition : I → MN (I + R)) (i : I) :
     MF (stable_head E MN R) :=
   sem_bind (mixed_iter_approx fuel transition i)
-    (fun r => sem_ret (FHRet r)).
+    (λ r, sem_ret (FHRet r)).
 
 Definition ptree_iter_cofinal {I R}
     (step : I → ptree E MN (I + R))
     (transition : I → MN (I + R)) (i : I) : Prop :=
   ∀ out,
-    sem_lub (fun fuel => ptree_hitting_approx (MF := MF) fuel
+    sem_lub (λ fuel, ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.iter step i))) out ↔
-    sem_lub (fun fuel => ptree_iter_round_approx
+    sem_lub (λ fuel, ptree_iter_round_approx
       fuel transition i) out.
 
 End KernelIterationCofinality.
@@ -773,11 +773,11 @@ Context {E : Type → Type} {MN MF : Type → Type}
 Theorem ptree_stable_hitting_iter {I R}
     (step : I → ptree E MN (I + R))
     (transition : I → MN (I + R)) (i : I) out :
-  sem_increasing (fun fuel => mixed_iter_approx fuel transition i) →
+  sem_increasing (λ fuel, mixed_iter_approx fuel transition i) →
   ptree_iter_cofinal (MF := MF) step transition i →
   mixed_iter transition i out →
   ptree_stable_hitting (MF := MF) (observe (PTree.iter step i))
-    (sem_bind out (fun r => sem_ret
+    (sem_bind out (λ r, sem_ret
       (FHRet r : stable_head E MN R))).
 Proof.
   intros Hinc Hcofinal Hiter. unfold ptree_stable_hitting.
@@ -788,13 +788,13 @@ Qed.
 Corollary ptree_stable_hitting_ast_iter {I R}
     (step : I → ptree E MN (I + R))
     (transition : I → MN (I + R)) (i : I) out :
-  sem_increasing (fun fuel => mixed_iter_approx fuel transition i) →
+  sem_increasing (λ fuel, mixed_iter_approx fuel transition i) →
   ptree_iter_cofinal (MF := MF) step transition i →
   mixed_iter transition i out →
-  sem_total (sem_bind out (fun r => sem_ret
+  sem_total (sem_bind out (λ r, sem_ret
     (FHRet r : stable_head E MN R))) →
   ptree_stable_hitting_ast (MF := MF) (observe (PTree.iter step i))
-    (sem_bind out (fun r => sem_ret
+    (sem_bind out (λ r, sem_ret
       (FHRet r : stable_head E MN R))).
 Proof.
   intros Hinc Hcofinal Hiter Htotal. split; [|exact Htotal].
@@ -828,8 +828,8 @@ Variable iter_productivity : ∀ I R
     (transition : I → MN (I + R)) (i : I),
     (∀ j, ptree_stable_hitting (MF := MF) (observe (step j))
       (mixed_bind (transition j)
-        (fun next => sem_ret (FHRet next)))) →
-    sem_increasing (fun fuel => mixed_iter_approx fuel transition i) ∧
+        (λ next, sem_ret (FHRet next)))) →
+    sem_increasing (λ fuel, mixed_iter_approx fuel transition i) ∧
     ptree_iter_cofinal (MF := MF) step transition i.
 
 (** Conditional end-to-end soundness of the structured certificate.  The

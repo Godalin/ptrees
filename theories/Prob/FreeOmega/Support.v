@@ -17,15 +17,15 @@ Lemma free_omega_support_lift_observation_ae {MN}
     (mu : FreeOmega MN A) (nu : FreeOmega MN B)
     (outA : MN OA) (outB : MN OB)
     (R : A → B → Prop) (S : OA → OB → Prop)
-    (HA : ∀ P, free_omega_ae (fun x => P (obsA x)) mu ↔ sem_ae outA P)
-    (HB : ∀ Q, free_omega_ae (fun y => Q (obsB y)) nu ↔ sem_ae outB Q)
+    (HA : ∀ P, free_omega_ae (λ x, P (obsA x)) mu ↔ sem_ae outA P)
+    (HB : ∀ Q, free_omega_ae (λ y, Q (obsB y)) nu ↔ sem_ae outB Q)
     (Hlift : sem_lift S outA outB)
     (Hrel : ∀ x y, S (obsA x) (obsB y) → R x y) :
   free_omega_support_lift R mu nu.
 Proof.
   split.
   - intros P HP.
-    assert (Himage : sem_ae outA (fun o => exists x, obsA x = o ∧ P x)).
+    assert (Himage : sem_ae outA (λ o, exists x, obsA x = o ∧ P x)).
     { apply (proj1 (HA _)). eapply free_omega_ae_mono; [|exact HP].
       intros x Hx. exists x. split; [reflexivity|exact Hx]. }
     pose proof (sem_lift_ae_transport_r Hlift Himage) as Htransport.
@@ -33,7 +33,7 @@ Proof.
     eapply free_omega_ae_mono; [|exact Htransport].
     intros y [o [Hsy [x [<- Hx]]]]. exists x. split; [apply Hrel|]; assumption.
   - intros Q HQ.
-    assert (Himage : sem_ae outB (fun o => exists y, obsB y = o ∧ Q y)).
+    assert (Himage : sem_ae outB (λ o, exists y, obsB y = o ∧ Q y)).
     { apply (proj1 (HB _)). eapply free_omega_ae_mono; [|exact HQ].
       intros y Hy. exists y. split; [reflexivity|exact Hy]. }
     pose proof (sem_lift_ae_transport_r (sem_lift_sym Hlift) Himage) as Htransport.

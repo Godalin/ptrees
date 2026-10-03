@@ -75,7 +75,7 @@ Inductive head_action_result (label : obs_label E) (h : head) (out : MF head) : 
 Definition trans (t : ptree E MN R) (label : obs_label E) (out : MF head) : Prop :=
   ∃ front next,
     hits t front ∧
-    sem_ae front (fun h => head_action_result label h (next h)) ∧
+    sem_ae front (λ h, head_action_result label h (next h)) ∧
     sem_eq (sem_bind front next) out.
 
 Lemma head_step_enabled (h : head) (label : obs_label E) (out : MF head) :
@@ -87,7 +87,7 @@ Context `{FC : @SemanticMeasureCoreLaws MF FI}.
 
 Lemma trans_from_hitting t label front next :
   hits t front →
-  sem_ae front (fun h => head_action_result label h (next h)) →
+  sem_ae front (λ h, head_action_result label h (next h)) →
   trans t label (sem_bind front next).
 Proof. intros Hhit Hae. exists front, next. split; [exact Hhit|]. split; [exact Hae|apply sem_eq_refl]. Qed.
 
@@ -241,9 +241,9 @@ Context `{FAE : @SemanticMeasureAEKleisliLaws MF FI}.
 
 Lemma trans_ret r label : trans (Ret r) label sem_zero.
 Proof.
-  exists (sem_ret (FHRet r)), (fun _ : head => (sem_zero : MF head)).
+  exists (sem_ret (FHRet r)), (λ _ : head, (sem_zero : MF head)).
   split; [apply ptree_stable_hitting_ret|]. split.
-  2: exact (sem_bind_ret_l (FHRet r) (fun _ : head => (sem_zero : MF head))).
+  2: exact (sem_bind_ret_l (FHRet r) (λ _ : head, (sem_zero : MF head))).
   apply sem_ae_ret. apply HARMiss; [apply head_enabled_ret|apply sem_eq_refl].
 Qed.
 
@@ -252,18 +252,18 @@ Qed.
 Lemma trans_vis {X} (e : E X) k x out :
   hits (k x) out → trans (Vis e k) (Obs e x) out.
 Proof.
-  intro Hhit. exists (sem_ret (FHVis e k)), (fun _ : head => out).
+  intro Hhit. exists (sem_ret (FHVis e k)), (λ _ : head, out).
   split; [apply ptree_stable_hitting_vis|]. split.
-  2: exact (sem_bind_ret_l (FHVis e k) (fun _ : head => out)).
+  2: exact (sem_bind_ret_l (FHVis e k) (λ _ : head, out)).
   apply sem_ae_ret. apply HARMatch. constructor. exact Hhit.
 Qed.
 
 Lemma trans_vis_miss {X} (e : E X) k label :
   ¬ head_enabled (FHVis e k) label → trans (Vis e k) label sem_zero.
 Proof.
-  intro Hno. exists (sem_ret (FHVis e k)), (fun _ : head => (sem_zero : MF head)).
+  intro Hno. exists (sem_ret (FHVis e k)), (λ _ : head, (sem_zero : MF head)).
   split; [apply ptree_stable_hitting_vis|]. split.
-  2: exact (sem_bind_ret_l (FHVis e k) (fun _ : head => (sem_zero : MF head))).
+  2: exact (sem_bind_ret_l (FHVis e k) (λ _ : head, (sem_zero : MF head))).
   apply sem_ae_ret. apply HARMiss; [exact Hno|apply sem_eq_refl].
 Qed.
 End Computation.

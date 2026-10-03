@@ -36,13 +36,13 @@ Polymorphic Class MixedMeasureLaws@{node node_rep frontier frontier_rep}
     `{MX : MixedMeasure MN MF} := {
   mixed_bind_ae_proper : ∀ {A : Type@{node}} {B : Type@{frontier}}
       (mu : MN A) (k h : A → MF B),
-      sem_ae mu (fun x => sem_eq (k x) (h x)) →
+      sem_ae mu (λ x, sem_eq (k x) (h x)) →
       sem_eq (mixed_bind mu k) (mixed_bind mu h);
   mixed_bind_assoc : ∀
       {A : Type@{node}} {B C : Type@{frontier}}
       (mu : MN A) (k : A → MF B) (h : B → MF C),
       sem_eq (sem_bind (mixed_bind mu k) h)
-        (mixed_bind mu (fun x => sem_bind (k x) h));
+        (mixed_bind mu (λ x, sem_bind (k x) h));
   mixed_lift_bind : ∀
       {A B : Type@{node}} {C D : Type@{frontier}}
       (R : A → B → Prop) (T : C → D → Prop)
@@ -81,7 +81,7 @@ Polymorphic Class MixedMeasureNodeBindLaws@{node node_rep frontier frontier_rep}
       {A B : Type@{node}} {C : Type@{frontier}}
       (mu : MN A) (h : A → MN B) (k : B → MF C),
       sem_lift eq
-        (mixed_bind mu (fun x => mixed_bind (h x) k))
+        (mixed_bind mu (λ x, mixed_bind (h x) k))
         (mixed_bind (sem_bind mu h) k)
 }.
 
@@ -97,8 +97,8 @@ Polymorphic Definition mixed_measure_exchange@{node node_rep frontier frontier_r
     (k1 : A → B → MF C) (k2 : B → A → MF D),
     (∀ x y, sem_lift R (k1 x y) (k2 y x)) →
     sem_lift R
-      (mixed_bind mu (fun x => mixed_bind nu (k1 x)))
-      (mixed_bind nu (fun y => mixed_bind mu (k2 y))).
+      (mixed_bind mu (λ x, mixed_bind nu (k1 x)))
+      (mixed_bind nu (λ y, mixed_bind mu (k2 y))).
 
 (** Uniform relational Fubini law across the node/frontier boundary.  It is
     kept optional because commutativity is not a law of every measure-like
@@ -125,13 +125,13 @@ Polymorphic Class MixedMeasureOmegaLaws@{node node_rep frontier frontier_rep}
     `{FO : @SemanticOmega MF FI} := {
   mixed_bind_zero : ∀ {A : Type@{node}} {B : Type@{frontier}}
       (mu : MN A),
-      sem_eq (mixed_bind mu (fun _ => @sem_zero MF FI FO B)) sem_zero;
+      sem_eq (mixed_bind mu (λ _, @sem_zero MF FI FO B)) sem_zero;
   mixed_bind_lub : ∀ {A : Type@{node}} {B : Type@{frontier}}
       (mu : MN A) (Good : A → Prop)
       (chain : A → nat → MF B) (out : A → MF B),
       sem_ae mu Good →
       (∀ x, Good x → sem_increasing (chain x)) →
       (∀ x, Good x → sem_lub (chain x) (out x)) →
-      sem_lub (fun n => mixed_bind mu (fun x => chain x n))
+      sem_lub (λ n, mixed_bind mu (λ x, chain x n))
         (mixed_bind mu out)
 }.

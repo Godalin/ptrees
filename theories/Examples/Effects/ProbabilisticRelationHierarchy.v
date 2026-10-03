@@ -59,19 +59,19 @@ Variable tick : E unit.
 Definition stopping_source (n : nat) : ptree E M (nat + unit) :=
   match n with
   | O => Ret (inr tt)
-  | S m => Vis tick (fun _ => Ret (inl m))
+  | S m => Vis tick (λ _, Ret (inl m))
   end.
 
 Definition stopping_prefix (first : bool) : ptree E M (bool + nat) :=
-  if first then Vis tick (fun _ => Ret (inl false)) else Ret (inr 1).
+  if first then Vis tick (λ _, Ret (inl false)) else Ret (inr 1).
 
 Lemma iter_split_eventful_regression :
   pstruct eq (PTree.iter stopping_source 2)
     (PTree.bind (PTree.iter stopping_prefix true) (PTree.iter stopping_source)).
 Proof.
   eapply pstruct_iter_split_at with
-    (SI := fun (n : nat) (first : bool) => n = if first then 2 else 1)
-    (resume := fun n => n).
+    (SI := λ (n : nat) (first : bool), n = if first then 2 else 1)
+    (resume := λ n, n).
   - intros n [] ->.
     + right. apply pstruct_fold. cbn. apply PStVis. intros [].
       apply pstruct_fold. cbn. apply PStRet. constructor. reflexivity.
@@ -81,14 +81,14 @@ Qed.
 
 Lemma iter_split_unreached_barrier_regression :
   pstruct eq
-    (PTree.iter (fun _ : unit => Ret (inl tt) : ptree E M (unit + bool)) tt)
+    (PTree.iter (λ _ : unit, Ret (inl tt) : ptree E M (unit + bool)) tt)
     (PTree.bind
-      (PTree.iter (fun _ : unit => Ret (inl tt) : ptree E M (unit + unit)) tt)
-      (fun _ => PTree.iter
-        (fun _ : unit => Ret (inl tt) : ptree E M (unit + bool)) tt)).
+      (PTree.iter (λ _ : unit, Ret (inl tt) : ptree E M (unit + unit)) tt)
+      (λ _, PTree.iter
+        (λ _ : unit, Ret (inl tt) : ptree E M (unit + bool)) tt)).
 Proof.
   eapply pstruct_iter_split_at with
-    (SI := fun (_ _ : unit) => True) (resume := fun _ => tt).
+    (SI := λ (_ _ : unit), True) (resume := λ _, tt).
   - intros [] [] _. right. apply pstruct_fold. cbn.
     apply PStRet. constructor. exact I.
   - exact I.
@@ -129,8 +129,8 @@ Qed.
 (** A local administrative rewrite is justified by hitting transparency,
     even under a probability node with a divergent continuation. *)
 Lemma tau_prob_divergent_branch (mu : SubEnumQ bool) :
-  W (Prob mu (fun b : bool => Tau (if b then Ret true else hierarchy_spin)))
-    (Prob mu (fun b : bool => if b then Ret true else hierarchy_spin)).
+  W (Prob mu (λ b : bool, Tau (if b then Ret true else hierarchy_spin)))
+    (Prob mu (λ b : bool, if b then Ret true else hierarchy_spin)).
 Proof.
   eapply peutt_prob with (XR := eq).
   - apply sem_lift_refl. intro b. reflexivity.
@@ -140,7 +140,7 @@ Qed.
 Lemma tau_bind_context_rewrite
     (t : ptree hierarchyE SubEnumQ bool)
     (k : bool → ptree hierarchyE SubEnumQ bool) :
-  W (PTree.bind (Tau t) (fun x => Tau (k x))) (PTree.bind t k).
+  W (PTree.bind (Tau t) (λ x, Tau (k x))) (PTree.bind t k).
 Proof.
   apply peutt_bind_Proper.
   - apply peutt_tau_l.

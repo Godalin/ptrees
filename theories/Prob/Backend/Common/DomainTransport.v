@@ -23,13 +23,13 @@ Proof.
 Qed.
 
 Lemma oval_cut_eval (L : OmegaVal R nat) n (f : 'I_n.+1 → R) : oval_test f →
-  oval_eval L (fun i => f (oval_cut_index n i)) =
+  oval_eval L (λ i, f (oval_cut_index n i)) =
   \sum_(i < n.+1) transport_cut (oval_atom L) (oval_mass L) n i * f i.
 Proof.
   intro Hf.
   pose test i := f (oval_cut_index n i).
   pose tail i : R := if (n <= i)%N then 1 else 0.
-  have Htest : oval_test test := fun i => Hf (oval_cut_index n i).
+  have Htest : oval_test test := λ i, Hf (oval_cut_index n i).
   have Htail : oval_test tail.
   { intro i; rewrite /tail; case: (n <= i)%N; [exact: oval_test_one|exact: oval_test_zero]. }
   have HE i : oval_prefix test n i + f ord_max * tail i = test i.
@@ -67,9 +67,9 @@ Qed.
 Theorem oval_bidual_cut_hall (T : nat → nat → Prop) (L M : OmegaVal R nat) :
   oval_bidual T L M → ∀ n,
   real_transport_hall
-    (fun i : 'I_n.+1 => transport_cut (oval_atom L) (oval_mass L) n i)
-    (fun j : 'I_n.+1 => transport_cut (oval_atom M) (oval_mass L) n j)
-    (fun i j : 'I_n.+1 => transport_cut_edge T n i j).
+    (λ i : 'I_n.+1, transport_cut (oval_atom L) (oval_mass L) n i)
+    (λ j : 'I_n.+1, transport_cut (oval_atom M) (oval_mass L) n j)
+    (λ i j : 'I_n.+1, transport_cut_edge T n i j).
 Proof.
   intros HT n S.
   pose edge (i j : 'I_n.+1) := transport_cut_edge T n i j.
@@ -86,8 +86,8 @@ Proof.
     { apply/matching_neighborsP; split; first by rewrite inE.
       exists i; by split. }
     by rewrite /g HN. }
-  have H := proj1 HT (fun i => f (oval_cut_index n i)) (fun j => g (oval_cut_index n j))
-    (fun i => Hf _) (fun j => Hg _) (fun i j Hij => Hfg _ _ (oval_cut_edge_lift n Hij)).
+  have H := proj1 HT (λ i, f (oval_cut_index n i)) (λ j, g (oval_cut_index n j))
+    (λ i, Hf _) (λ j, Hg _) (λ i j Hij, Hfg _ _ (oval_cut_edge_lift n Hij)).
   rewrite (oval_cut_eval L Hf) (oval_cut_eval M Hg) -(oval_bidual_mass HT) in H.
   have HS : (\sum_(i < n.+1) transport_cut (oval_atom L) (oval_mass L) n i * f i) =
       \sum_(i in S) transport_cut (oval_atom L) (oval_mass L) n i.
@@ -108,9 +108,9 @@ Theorem oval_bidual_transport_matrix (T : nat → nat → Prop) (L M : OmegaVal 
     (∀ i j, 0 <= w i j) ∧
     (∀ i j, ¬ T i j → w i j = 0) ∧
     (∀ i, transport_series (w i) = oval_atom L i) ∧
-    (∀ j, transport_series (fun i => w i j) = oval_atom M j) ∧
+    (∀ j, transport_series (λ i, w i j) = oval_atom M j) ∧
     (∀ i m, transport_prefix (w i) m <= oval_atom L i) ∧
-    (∀ j m, transport_prefix (fun i => w i j) m <= oval_atom M j).
+    (∀ j m, transport_prefix (λ i, w i j) m <= oval_atom M j).
 Proof.
   intro HT; apply (@countable_real_transport R (oval_atom L) (oval_atom M) (oval_mass L) T).
   - intro i; exact (proj1 (oval_atom_bounds L i)).

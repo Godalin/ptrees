@@ -50,7 +50,7 @@ Local Open Scope ring_scope.
 Lemma finite_enum_bind_assoc_eq {A B C} (mu : FiniteEnum R A)
     (k : A → FiniteEnum R B) (h : B → FiniteEnum R C) :
   finite_enum_bind (finite_enum_bind mu k) h =
-  finite_enum_bind mu (fun x => finite_enum_bind (k x) h).
+  finite_enum_bind mu (λ x, finite_enum_bind (k x) h).
 Proof. apply finite_enum_raw_eq; exact: finite_bind_assoc. Qed.
 
 Lemma finite_enum_bind_ext_eq {A B} (mu : FiniteEnum R A)
@@ -62,27 +62,27 @@ Lemma finite_enum_bind_ret_eq {A B} (x : A) (k : A → FiniteEnum R B) :
   finite_enum_bind (finite_enum_ret R x) k = k x.
 Proof.
   apply finite_enum_raw_eq.
-  change (finite_bind ((1,x)::nil) (fun a => finite_enum_raw (k a)) = finite_enum_raw (k x)).
+  change (finite_bind ((1,x)::nil) (λ a, finite_enum_raw (k a)) = finite_enum_raw (k x)).
   rewrite -finite_bind_with_numeric.
-  exact (@finite_bind_with_left_unit R (fun p q => p*q) A B 1 x
-    (fun a => finite_enum_raw (k a)) (fun p => mul1r p)).
+  exact (@finite_bind_with_left_unit R (λ p q, p*q) A B 1 x
+    (λ a, finite_enum_raw (k a)) (λ p, mul1r p)).
 Qed.
 
 Lemma finite_enum_bind_right_unit_eq {A} (mu : FiniteEnum R A) :
-  finite_enum_bind mu (fun x => finite_enum_ret R x) = mu.
+  finite_enum_bind mu (λ x, finite_enum_ret R x) = mu.
 Proof.
   apply finite_enum_raw_eq.
-  change (finite_bind (finite_enum_raw mu) (fun x => cons (1,x) nil) = finite_enum_raw mu).
+  change (finite_bind (finite_enum_raw mu) (λ x, cons (1,x) nil) = finite_enum_raw mu).
   rewrite -finite_bind_with_numeric.
-  exact (@finite_bind_with_right_unit R (fun p q => p*q) A 1
-    (finite_enum_raw mu) (fun p => mulr1 p)).
+  exact (@finite_bind_with_right_unit R (λ p q, p*q) A 1
+    (finite_enum_raw mu) (λ p, mulr1 p)).
 Qed.
 
 Lemma finite_enum_bind_zero_eq {A B} (mu : FiniteEnum R A) :
-  finite_enum_bind mu (fun _ => @finite_enum_zero R B) = @finite_enum_zero R B.
+  finite_enum_bind mu (λ _, @finite_enum_zero R B) = @finite_enum_zero R B.
 Proof.
   apply finite_enum_raw_eq.
-  change (finite_bind (finite_enum_raw mu) (fun _ => @nil (R*B)) = nil).
+  change (finite_bind (finite_enum_raw mu) (λ _, @nil (R*B)) = nil).
   by elim: (finite_enum_raw mu)=> [|[p x] tl IH] //=.
 Qed.
 End ExactAlgebra.
@@ -95,7 +95,7 @@ Context {R : numDomainType}.
 Lemma finite_subdist_bind_assoc_eq {A B C} (mu : FiniteSubdist R A)
     (k : A → FiniteSubdist R B) (h : B → FiniteSubdist R C) :
   finite_subdist_bind (finite_subdist_bind mu k) h =
-  finite_subdist_bind mu (fun x => finite_subdist_bind (k x) h).
+  finite_subdist_bind mu (λ x, finite_subdist_bind (k x) h).
 Proof. apply finite_subdist_raw_eq; exact: finite_bind_assoc. Qed.
 Lemma finite_subdist_bind_ext_eq {A B} (mu : FiniteSubdist R A)
     (k h : A → FiniteSubdist R B) :
@@ -106,7 +106,7 @@ Lemma finite_subdist_bind_ret_eq {A B} (x : A) (k : A → FiniteSubdist R B) :
 Proof.
   apply finite_subdist_raw_eq.
   change (finite_enum_raw (finite_enum_bind (finite_enum_ret R x)
-    (fun a => finite_subdist_enum (k a))) = finite_enum_raw (finite_subdist_enum (k x))).
+    (λ a, finite_subdist_enum (k a))) = finite_enum_raw (finite_subdist_enum (k x))).
   by rewrite finite_enum_bind_ret_eq.
 Qed.
 End ExactSubdistAlgebra.

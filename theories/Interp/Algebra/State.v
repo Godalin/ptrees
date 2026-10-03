@@ -31,22 +31,22 @@ Lemma state_put_step {A} (k : unit → ptree (stateE S +' E) MN A) s s' :
 Proof. eapply peutt_tau_step; [rewrite observe_run_state; reflexivity|apply peutt_refl]. Qed.
 
 Theorem run_state_get_get {A} (k : S → S → ptree (stateE S +' E) MN A) s :
-  W (run_state (Vis (inl1 (Get S)) (fun x => Vis (inl1 (Get S)) (k x))) s)
-    (run_state (Vis (inl1 (Get S)) (fun x => k x x)) s).
+  W (run_state (Vis (inl1 (Get S)) (λ x, Vis (inl1 (Get S)) (k x))) s)
+    (run_state (Vis (inl1 (Get S)) (λ x, k x x)) s).
 Proof.
   eapply peutt_trans with (y := run_state (k s s) s).
   - eapply peutt_trans; [apply state_get_step|apply state_get_step].
-  - apply peutt_sym. exact (state_get_step (fun x => k x x) s).
+  - apply peutt_sym. exact (state_get_step (λ x, k x x) s).
 Qed.
 
 Theorem run_state_get_put {A} (k : ptree (stateE S +' E) MN A) s :
-  W (run_state (Vis (inl1 (Get S)) (fun x => Vis (inl1 (Put S x)) (fun _ => k))) s)
+  W (run_state (Vis (inl1 (Get S)) (λ x, Vis (inl1 (Put S x)) (λ _, k))) s)
     (run_state k s).
 Proof. eapply peutt_trans; [apply state_get_step|apply state_put_step]. Qed.
 
 Theorem run_state_put_get {A} (k : S → ptree (stateE S +' E) MN A) s s' :
-  W (run_state (Vis (inl1 (Put S s')) (fun _ => Vis (inl1 (Get S)) k)) s)
-    (run_state (Vis (inl1 (Put S s')) (fun _ => k s')) s).
+  W (run_state (Vis (inl1 (Put S s')) (λ _, Vis (inl1 (Get S)) k)) s)
+    (run_state (Vis (inl1 (Put S s')) (λ _, k s')) s).
 Proof.
   eapply peutt_trans with (y := run_state (k s') s').
   - eapply peutt_trans; [apply state_put_step|apply state_get_step].
@@ -54,8 +54,8 @@ Proof.
 Qed.
 
 Theorem run_state_put_put {A} (k : ptree (stateE S +' E) MN A) s s1 s2 :
-  W (run_state (Vis (inl1 (Put S s1)) (fun _ => Vis (inl1 (Put S s2)) (fun _ => k))) s)
-    (run_state (Vis (inl1 (Put S s2)) (fun _ => k)) s).
+  W (run_state (Vis (inl1 (Put S s1)) (λ _, Vis (inl1 (Put S s2)) (λ _, k))) s)
+    (run_state (Vis (inl1 (Put S s2)) (λ _, k)) s).
 Proof.
   eapply peutt_trans with (y := run_state k s2).
   - eapply peutt_trans; [apply state_put_step|apply state_put_step].
@@ -63,7 +63,7 @@ Proof.
 Qed.
 
 Theorem run_state_prob {A X} (mu : MN X) (k : X → ptree (stateE S +' E) MN A) s :
-  W (run_state (Prob mu k) s) (Prob mu (fun x => run_state (k x) s)).
+  W (run_state (Prob mu k) s) (Prob mu (λ x, run_state (k x) s)).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
 Context `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -73,19 +73,19 @@ Context `{NC : @SemanticMeasureCoreLaws MN NI}
 
 Theorem run_state_get_prob {A X} (mu : MN X)
     (k : S → X → ptree (stateE S +' E) MN A) s :
-  W (run_state (Vis (inl1 (Get S)) (fun v => Prob mu (k v))) s)
-    (run_state (Prob mu (fun x => Vis (inl1 (Get S)) (fun v => k v x))) s).
+  W (run_state (Vis (inl1 (Get S)) (λ v, Prob mu (k v))) s)
+    (run_state (Prob mu (λ x, Vis (inl1 (Get S)) (λ v, k v x))) s).
 Proof.
   eapply peutt_trans; [apply state_get_step|].
   eapply peutt_trans; [apply run_state_prob|].
   apply peutt_sym. eapply peutt_trans; [apply run_state_prob|].
-  apply peutt_prob_Proper. intro x. exact (state_get_step (fun v => k v x) s).
+  apply peutt_prob_Proper. intro x. exact (state_get_step (λ v, k v x) s).
 Qed.
 
 Theorem run_state_put_prob {A X} (mu : MN X)
     (k : X → ptree (stateE S +' E) MN A) s s' :
-  W (run_state (Vis (inl1 (Put S s')) (fun _ => Prob mu k)) s)
-    (run_state (Prob mu (fun x => Vis (inl1 (Put S s')) (fun _ => k x))) s).
+  W (run_state (Vis (inl1 (Put S s')) (λ _, Prob mu k)) s)
+    (run_state (Prob mu (λ x, Vis (inl1 (Put S s')) (λ _, k x))) s).
 Proof.
   eapply peutt_trans; [apply state_put_step|].
   eapply peutt_trans; [apply run_state_prob|].

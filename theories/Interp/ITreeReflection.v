@@ -94,7 +94,7 @@ Proof.
     pose proof (peutt_hitting_lift Htu (from_itree_head_hitting Hh)
       (from_itree_no_head_hitting Hu)) as Hlift.
     pose proof (sem_lift_ae_transport_r (sem_lift_sym Hlift)
-      (sem_ae_zero (fun _ : stable_head E MN B => False))) as Hfalse.
+      (sem_ae_zero (λ _ : stable_head E MN B, False))) as Hfalse.
     apply (proj1 (sem_ae_ret_iff _ _)) in Hfalse.
     destruct Hfalse as [j [_ Hfalse]]. contradiction.
 Qed.
@@ -120,7 +120,7 @@ Proof.
       pose proof (peutt_hitting_lift Htu (from_itree_no_head_hitting Ht)
         (from_itree_head_hitting Hn)) as Hlift.
       pose proof (sem_lift_ae_transport_r Hlift
-        (sem_ae_zero (fun _ : stable_head E MN A => False))) as Hfalse.
+        (sem_ae_zero (λ _ : stable_head E MN A, False))) as Hfalse.
       apply (proj1 (sem_ae_ret_iff _ _)) in Hfalse.
       destruct Hfalse as [j [_ Hfalse]]. contradiction. }
     eapply paco2_mon; [exact (itree_no_head_eutt RR Ht Hu)|]. intros x y [].

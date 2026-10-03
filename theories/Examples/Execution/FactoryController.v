@@ -1,6 +1,8 @@
 (** Role: concrete execution and resource-outcome example. *)
 (** A single vertical-slice regression: independent device replies, State,
     exact visible probabilities and the same extracted infinite program. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -60,7 +62,7 @@ Proof. apply factory_next_action_probability. Qed.
 
 Example pass_increments_and_ships j s :
   run_state (respond j Pass) s ≈ₚ
-  Vis (Ship j) (fun _ => Ret (count_pass s, (inl AwaitOrder : phase + Empty_set))).
+  Vis (Ship j) (λ _, Ret (count_pass s, (inl AwaitOrder : phase + Empty_set))).
 Proof.
   expose_left. rewrite peutt_tau_l.
   expose_left. rewrite peutt_tau_l.
@@ -76,7 +78,7 @@ Proof.
 Qed.
 Example jam_requires_alarm_and_reset j s :
   run_state (respond j Jam) s ≈ₚ
-  Vis (Alarm j) (fun _ => Vis WaitReset (fun _ => Ret (count_jam s, (inl (Manufacturing j) : phase + Empty_set)))).
+  Vis (Alarm j) (λ _, Vis WaitReset (λ _, Ret (count_jam s, (inl (Manufacturing j) : phase + Empty_set)))).
 Proof.
   expose_left. rewrite peutt_tau_l.
   expose_left. rewrite peutt_tau_l.
@@ -88,9 +90,9 @@ Qed.
 (** The source is not changed to terminate when the harness has no orders.
     The stop is an explicit exception in the DEVICE interpretation. *)
 Example initial_offered_order : observe controller_impl =
-  VisF (inr1 ReceiveOrder) (fun j =>
+  VisF (inr1 ReceiveOrder) (λ j,
     PTree.bind (Ret ((inl (Manufacturing j) : phase + Empty_set)))
-      (fun v => match v with
+      (λ v, match v with
        | inl pc => Tau (controller implementation_sampler pc)
        | inr r => Ret r
        end)).

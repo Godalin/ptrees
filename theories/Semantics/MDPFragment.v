@@ -180,10 +180,10 @@ Proof.
 Qed.
 
 Lemma mdp_state_tau_iter_iff n t :
-  mdp_state (Nat.iter n (fun u => Tau u) t) ↔ mdp_state t.
+  mdp_state (Nat.iter n (λ u, Tau u) t) ↔ mdp_state t.
 Proof.
   induction n as [|n IH]; [reflexivity|].
-  change (mdp_state (Tau (Nat.iter n (fun u => Tau u) t)) ↔ mdp_state t).
+  change (mdp_state (Tau (Nat.iter n (λ u, Tau u) t)) ↔ mdp_state t).
   rewrite mdp_state_tau_iff. exact IH.
 Qed.
 End StateComputation.

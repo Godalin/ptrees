@@ -31,22 +31,22 @@ Local Notation upper := (@countable_upper R).
 
 Lemma countable_upper_swap (grid : nat → nat → R) bound :
   (∀ i j, grid i j <= bound) →
-  upper (fun i => upper (grid i)) = upper (fun j => upper (fun i => grid i j)).
+  upper (λ i, upper (grid i)) = upper (λ j, upper (λ i, grid i j)).
 Proof.
   intro Hb.
   have Hrows : ∀ i, upper (grid i) <= bound :=
-    fun i => countable_upper_le (Hb i).
-  have Hcols : ∀ j, upper (fun i => grid i j) <= bound :=
-    fun j => countable_upper_le (fun i => Hb i j).
+    λ i, countable_upper_le (Hb i).
+  have Hcols : ∀ j, upper (λ i, grid i j) <= bound :=
+    λ j, countable_upper_le (λ i, Hb i j).
   apply/eqP. rewrite eq_le. apply/andP. split.
   - apply countable_upper_le. intro i. apply countable_upper_le. intro j.
     eapply le_trans.
-    + exact (@countable_upper_ge R (fun k => grid k j) bound i (fun k => Hb k j)).
-    + exact (@countable_upper_ge R (fun k => upper (fun i => grid i k)) bound j Hcols).
+    + exact (@countable_upper_ge R (λ k, grid k j) bound i (λ k, Hb k j)).
+    + exact (@countable_upper_ge R (λ k, upper (λ i, grid i k)) bound j Hcols).
   - apply countable_upper_le. intro j. apply countable_upper_le. intro i.
     eapply le_trans.
     + exact (@countable_upper_ge R (grid i) bound j (Hb i)).
-    + exact (@countable_upper_ge R (fun k => upper (grid k)) bound i Hrows).
+    + exact (@countable_upper_ge R (λ k, upper (grid k)) bound i Hrows).
 Qed.
 End ScalarSuprema.
 
@@ -62,20 +62,20 @@ Theorem free_omega_upper_continuous {A} (mu : FreeOmega SubEnumQ A)
     (tests : nat → A → R) :
   (∀ n x, 0 <= tests n x ∧ tests n x <= 1) →
   (∀ n x, tests n x <= tests (S n) x) →
-  upper mu (fun x => countable_upper (fun n => tests n x)) =
-  countable_upper (fun n => upper mu (tests n)).
+  upper mu (λ x, countable_upper (λ n, tests n x)) =
+  countable_upper (λ n, upper mu (tests n)).
 Proof.
   intros Hb Hi. induction mu as [x| |X node k IH|chain IH]; cbn [free_omega_upper].
   - reflexivity.
   - symmetry. apply countable_upper_constant.
-  - have Hrows : (fun x => upper (k x) (fun y => countable_upper (fun n => tests n y))) =
-        (fun x => countable_upper (fun n => upper (k x) (tests n))).
+  - have Hrows : (λ x, upper (k x) (λ y, countable_upper (λ n, tests n y))) =
+        (λ x, countable_upper (λ n, upper (k x) (tests n))).
     { apply functional_extensionality. exact IH. }
     rewrite Hrows. apply enumQ_real_expect_countable.
     + intros n x. exact (free_omega_upper_bounds (k x) (Hb n)).
     + intros n x. apply free_omega_upper_mono; [exact (Hb (S n))|exact (Hi n)].
-  - have Hrows : (fun i => upper (chain i) (fun y => countable_upper (fun n => tests n y))) =
-        (fun i => countable_upper (fun n => upper (chain i) (tests n))).
+  - have Hrows : (λ i, upper (chain i) (λ y, countable_upper (λ n, tests n y))) =
+        (λ i, countable_upper (λ n, upper (chain i) (tests n))).
     { apply functional_extensionality. exact IH. }
     rewrite Hrows. apply countable_upper_swap with (bound := 1).
     intros i n. exact (proj2 (free_omega_upper_bounds (chain i) (Hb n))).
@@ -84,10 +84,10 @@ Qed.
 Theorem free_omega_sample_lub_upper {A X} (mu : SubEnumQ X)
     (chain : X → nat → FreeOmega SubEnumQ A) (f : A → R) :
   enumQ_ae (subenumQ_raw mu)
-    (fun x => ∀ n, free_omega_approx eq (chain x n) (chain x (S n))) →
+    (λ x, ∀ n, free_omega_approx eq (chain x n) (chain x (S n))) →
   (∀ x, 0 <= f x ∧ f x <= 1) →
-  upper (FOSample mu (fun x => FOLub (chain x))) f =
-  upper (FOLub (fun n => FOSample mu (fun x => chain x n))) f.
+  upper (FOSample mu (λ x, FOLub (chain x))) f =
+  upper (FOLub (λ n, FOSample mu (λ x, chain x n))) f.
 Proof.
   intros Hi Hf. cbn [free_omega_upper]. apply enumQ_real_expect_countable_ae.
   - intros n x. exact (free_omega_upper_bounds (chain x n) Hf).
@@ -104,26 +104,26 @@ Theorem free_omega_bind_lub_upper {A X}
   (∀ n, free_omega_approx eq (source n) (source (S n))) →
   (∀ x n, free_omega_approx eq (kernels x n) (kernels x (S n))) →
   (∀ x, 0 <= f x ∧ f x <= 1) →
-  upper (free_omega_bind (FOLub source) (fun x => FOLub (kernels x))) f =
-  upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f.
+  upper (free_omega_bind (FOLub source) (λ x, FOLub (kernels x))) f =
+  upper (FOLub (λ n, free_omega_bind (source n) (λ x, kernels x n))) f.
 Proof.
   intros Hsource Hkernels Hf.
   have Hrow : ∀ i,
-      upper (free_omega_bind (source i) (fun x => FOLub (kernels x))) f =
-      upper (FOLub (fun n => free_omega_bind (source i) (fun x => kernels x n))) f.
+      upper (free_omega_bind (source i) (λ x, FOLub (kernels x))) f =
+      upper (FOLub (λ n, free_omega_bind (source i) (λ x, kernels x n))) f.
   { intro i. rewrite free_omega_upper_bind. cbn [free_omega_upper].
     rewrite (free_omega_upper_continuous (source i)
-      (tests := fun n x => upper (kernels x n) f)).
+      (tests := λ n x, upper (kernels x n) f)).
     - f_equal. apply functional_extensionality=> n. symmetry. apply free_omega_upper_bind.
     - intros n x. exact (free_omega_upper_bounds (kernels x n) Hf).
     - intros n x. exact (free_omega_upper_approx_mono (Hkernels x n) Hf). }
-  change (countable_upper (fun i =>
-      upper (free_omega_bind (source i) (fun x => FOLub (kernels x))) f) =
-      upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f).
+  change (countable_upper (λ i,
+      upper (free_omega_bind (source i) (λ x, FOLub (kernels x))) f) =
+      upper (FOLub (λ n, free_omega_bind (source n) (λ x, kernels x n))) f).
   rewrite (functional_extensionality _ _ Hrow).
-  change (upper (FOLub (fun i => FOLub
-    (fun n => free_omega_bind (source i) (fun x => kernels x n)))) f =
-    upper (FOLub (fun n => free_omega_bind (source n) (fun x => kernels x n))) f).
+  change (upper (FOLub (λ i, FOLub
+    (λ n, free_omega_bind (source i) (λ x, kernels x n)))) f =
+    upper (FOLub (λ n, free_omega_bind (source n) (λ x, kernels x n))) f).
   apply free_omega_diagonal_upper; [| |exact Hf].
   - intros i n. eapply free_omega_approx_bind with (R := eq).
     + apply free_omega_approx_refl. intro x. reflexivity.

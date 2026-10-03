@@ -37,13 +37,13 @@ Proof. reflexivity. Qed.
 Lemma real_enum_expect_ext {A} (mu : list (R * A)) f g :
   (∀ x, f x = g x) → real_enum_expect f mu = real_enum_expect g mu.
 Proof. exact: finite_expect_ext. Qed.
-Lemma real_enum_expect_zero {A} (mu : list (R * A)) : real_enum_expect (fun _ => 0) mu = 0.
+Lemma real_enum_expect_zero {A} (mu : list (R * A)) : real_enum_expect (λ _, 0) mu = 0.
 Proof. exact: finite_expect_zero. Qed.
 Lemma real_enum_expect_add {A} (mu : list (R * A)) f g :
-  real_enum_expect (fun x => f x + g x) mu = real_enum_expect f mu + real_enum_expect g mu.
+  real_enum_expect (λ x, f x + g x) mu = real_enum_expect f mu + real_enum_expect g mu.
 Proof. exact: finite_expect_add. Qed.
 Lemma real_enum_expect_scale {A} (mu : list (R * A)) p f :
-  real_enum_expect (fun x => p * f x) mu = p * real_enum_expect f mu.
+  real_enum_expect (λ x, p * f x) mu = p * real_enum_expect f mu.
 Proof. exact: finite_expect_scale. Qed.
 Lemma real_enum_expect_mono {A} (mu : list (R * A)) f g :
   real_enum_nonnegative mu → (∀ x, f x <= g x) →
@@ -61,7 +61,7 @@ Lemma real_enum_expect_app {A} (mu nu : list (R * A)) f :
   real_enum_expect f (mu ++ nu) = real_enum_expect f mu + real_enum_expect f nu.
 Proof. exact: finite_expect_app. Qed.
 Lemma real_enum_expect_weight_map {A} (mu : list (R * A)) p f :
-  real_enum_expect f (List.map (fun qx => (p * fst qx, snd qx)) mu) = p * real_enum_expect f mu.
+  real_enum_expect f (List.map (λ qx, (p * fst qx, snd qx)) mu) = p * real_enum_expect f mu.
 Proof. exact: finite_expect_weight_map. Qed.
 
 Definition SubEnumR (A : Type) := FiniteSubdist R A.
@@ -74,7 +74,7 @@ Lemma subenumR_nonnegative {A} (mu : SubEnumR A) :
   real_enum_nonnegative (subenumR_raw mu).
 Proof. exact (finite_enum_nonnegative (finite_subdist_enum mu)). Qed.
 Lemma subenumR_mass_bound {A} (mu : SubEnumR A) :
-  real_enum_expect (fun _ => 1) (subenumR_raw mu) <= 1.
+  real_enum_expect (λ _, 1) (subenumR_raw mu) <= 1.
 Proof. exact (finite_subdist_mass_bound mu). Qed.
 Arguments subenumR_raw {A} _.
 Arguments subenumR_nonnegative {A} _.
@@ -82,7 +82,7 @@ Arguments subenumR_mass_bound {A} _.
 
 Definition subenumR_of_list {A} (mu : list (R * A))
     (Hnn : real_enum_nonnegative mu)
-    (Hmass : real_enum_expect (fun _ => 1) mu <= 1) : SubEnumR A :=
+    (Hmass : real_enum_expect (λ _, 1) mu <= 1) : SubEnumR A :=
   finite_subdist_of_list Hnn Hmass.
 
 Definition subenumR_expect {A} (mu : SubEnumR A) f := real_enum_expect f (subenumR_raw mu).
@@ -97,11 +97,11 @@ Proof.
 Defined.
 
 Definition real_enum_bind {A B} (mu : list (R * A)) (k : A → SubEnumR B) : list (R * B) :=
-  finite_bind mu (fun x => subenumR_raw (k x)).
+  finite_bind mu (λ x, subenumR_raw (k x)).
 
 Lemma real_enum_expect_bind {A B} (mu : list (R * A)) (k : A → SubEnumR B) f :
   real_enum_expect f (real_enum_bind mu k) =
-  real_enum_expect (fun x => subenumR_expect (k x) f) mu.
+  real_enum_expect (λ x, subenumR_expect (k x) f) mu.
 Proof. exact: finite_expect_bind. Qed.
 
 Definition subenumR_bind {A B} (mu : SubEnumR A) (k : A → SubEnumR B) : SubEnumR B :=
@@ -113,22 +113,22 @@ Definition subenumR_ae {A} (mu : SubEnumR A) (P : A → Prop) :=
   ∀ p x, List.In (p,x) (subenumR_raw mu) → p ≠ 0 → P x.
 Definition subenumR_lift {A B} (S : A → B → Prop) (mu : SubEnumR A) (nu : SubEnumR B) :=
   ∃ j : SubEnumR (A * B),
-    (∀ f, subenumR_expect j (fun xy => f (fst xy)) = subenumR_expect mu f) ∧
-    (∀ g, subenumR_expect j (fun xy => g (snd xy)) = subenumR_expect nu g) ∧
-    subenumR_ae j (fun xy => S (fst xy) (snd xy)).
+    (∀ f, subenumR_expect j (λ xy, f (fst xy)) = subenumR_expect mu f) ∧
+    (∀ g, subenumR_expect j (λ xy, g (snd xy)) = subenumR_expect nu g) ∧
+    subenumR_ae j (λ xy, S (fst xy) (snd xy)).
 
 Lemma subenumR_expect_bind {A B} (mu : SubEnumR A) (k : A → SubEnumR B) f :
-  subenumR_expect (subenumR_bind mu k) f = subenumR_expect mu (fun x => subenumR_expect (k x) f).
+  subenumR_expect (subenumR_bind mu k) f = subenumR_expect mu (λ x, subenumR_expect (k x) f).
 Proof. exact: finite_subdist_expect_bind. Qed.
 
 Lemma subenumR_bind_ret_l {A B} (x : A) (k : A → SubEnumR B) :
   subenumR_eq (subenumR_bind (subenumR_ret x) k) (k x).
 Proof. intro f; exact: finite_subdist_bind_ret_l. Qed.
 Lemma subenumR_bind_ret_r {A} (mu : SubEnumR A) :
-  subenumR_eq (subenumR_bind mu (fun x => subenumR_ret x)) mu.
+  subenumR_eq (subenumR_bind mu (λ x, subenumR_ret x)) mu.
 Proof. intro f; exact: finite_subdist_bind_ret_r. Qed.
 Lemma subenumR_bind_assoc {A B C} (mu : SubEnumR A) (k : A → SubEnumR B) (h : B → SubEnumR C) :
   subenumR_eq (subenumR_bind (subenumR_bind mu k) h)
-    (subenumR_bind mu (fun x => subenumR_bind (k x) h)).
+    (subenumR_bind mu (λ x, subenumR_bind (k x) h)).
 Proof. intro f; exact: finite_subdist_bind_assoc. Qed.
 End FiniteReal.

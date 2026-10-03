@@ -32,7 +32,7 @@ Local Notation hits t out :=
   (@stable_hitting MF FI FO _ _ (K _) (observe t) out).
 
 Example dirac_tau_compute {R X} (x : X) (k : X → ptree E MN R) out :
-  hits (Prob (sem_ret x) (fun y => Tau (k y))) out ↔ hits (k x) out.
+  hits (Prob (sem_ret x) (λ y, Tau (k y))) out ↔ hits (k x) out.
 Proof.
   rewrite stable_hitting_prob_dirac_iff.
   apply (stable_hitting_tau (FI := FI) (FO := FO)
@@ -45,12 +45,12 @@ Example nonuniform_tau_depth_compute {R X}
     (mu : MN X) (depth : X → nat) (k : X → ptree E MN R)
     (front : X → MF (stable_head E MN R)) :
   (∀ x, hits (k x) (front x)) →
-  hits (Prob mu (fun x => Nat.iter (depth x) (fun u => Tau u) (k x)))
+  hits (Prob mu (λ x, Nat.iter (depth x) (λ u, Tau u) (k x)))
     (FOSample mu front).
 Proof.
   intro Hfront.
   eapply (stable_hitting_prob (FI := FI) (FO := FO)
-    (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+    (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
   - apply sem_ae_true.
   - intros x _. apply (proj2 (stable_hitting_tau_iter _ _ _)). apply Hfront.
 Qed.
@@ -58,11 +58,11 @@ Qed.
 (** Sampling stops at Vis: its continuation is retained, not executed. *)
 Example sampled_visible_head_compute {R X Y}
     (mu : MN X) (e : E Y) (k : X → Y → ptree E MN R) :
-  hits (Prob mu (fun x => Tau (Vis e (k x))))
-    (FOSample mu (fun x => FORet (FHVis e (k x)))).
+  hits (Prob mu (λ x, Tau (Vis e (k x))))
+    (FOSample mu (λ x, FORet (FHVis e (k x)))).
 Proof.
   eapply (stable_hitting_prob (FI := FI) (FO := FO)
-    (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+    (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
   - apply sem_ae_true.
   - intros x _. apply (proj2 (stable_hitting_tau_iff _ _)).
     apply (stable_hitting_vis (FI := FI) (FO := FO)).

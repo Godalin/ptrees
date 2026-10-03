@@ -41,7 +41,7 @@ Local Notation hits t out := (@ptree_stable_hitting correlationE SubEnumQ MF FI
 Lemma two_query_handler_guarded : GH two_query_handler.
 Proof.
   apply guard_from_hitting. intros X e. destruct e.
-  exists (FORet (FHVis Query (fun _ => Vis Query (fun x => Ret x)))).
+  exists (FORet (FHVis Query (λ _, Vis Query (λ x, Ret x)))).
   split; [exact two_query_handler_first_hitting|constructor; exact I].
 Qed.
 
@@ -78,23 +78,23 @@ Qed.
 
 Definition sample_or_diverge_handler X (e : correlationE X) : ptree correlationE SubEnumQ X :=
   match e in correlationE X return ptree correlationE SubEnumQ X with
-  | Query => Prob subenumQ_fair (fun b : bool => if b then Tau (two_query_handler Query) else handler_spin)
+  | Query => Prob subenumQ_fair (λ b : bool, if b then Tau (two_query_handler Query) else handler_spin)
   end.
 
 Lemma sample_or_diverge_handler_guarded : GH sample_or_diverge_handler.
 Proof.
   apply guard_from_hitting. intros X e. destruct e.
-  exists (FOSample subenumQ_fair (fun b : bool => if b then
-    FORet (FHVis Query (fun _ => Vis Query (fun x => Ret x))) else FOZero)).
+  exists (FOSample subenumQ_fair (λ b : bool, if b then
+    FORet (FHVis Query (λ _, Vis Query (λ x, Ret x))) else FOZero)).
   split.
   - eapply (ptree_stable_hitting_prob (FI := FI) (FO := FO)
-      (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+      (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
     + apply sem_ae_true.
     + intros [] _.
       * apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
         exact two_query_handler_first_hitting.
       * exact handler_spin_hitting_zero.
-  - eapply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  - eapply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros [] _; [constructor; exact I|constructor].
 Qed.
 
@@ -107,21 +107,21 @@ Proof. intro Htu. exact (peutt_interp_guarded sample_or_diverge_handler_guarded 
 Definition null_return_handler X (e : correlationE X) : ptree correlationE SubEnumQ X :=
   match e in correlationE X return ptree correlationE SubEnumQ X with
   | Query => Prob (subenumQ_ret true)
-      (fun b : bool => if b then two_query_handler Query else Ret false)
+      (λ b : bool, if b then two_query_handler Query else Ret false)
   end.
 
 Lemma null_return_handler_guarded : GH null_return_handler.
 Proof.
   apply guard_from_hitting. intros X e. destruct e.
-  exists (FOSample (subenumQ_ret true) (fun b : bool => if b then
-    FORet (FHVis Query (fun _ => Vis Query (fun x => Ret x))) else FORet (FHRet false))).
+  exists (FOSample (subenumQ_ret true) (λ b : bool, if b then
+    FORet (FHVis Query (λ _, Vis Query (λ x, Ret x))) else FORet (FHRet false))).
   split.
   - eapply (ptree_stable_hitting_prob (FI := FI) (FO := FO)
-      (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+      (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
     + apply sem_ae_true.
     + intros [] _; [exact two_query_handler_first_hitting|
         apply (ptree_stable_hitting_ret (FI := FI) (FO := FO))].
-  - eapply FOAESample with (Good := fun b => b = true).
+  - eapply FOAESample with (Good := λ b, b = true).
     + apply (sem_ae_ret (SI := SubEnumQ_SemanticMeasure)). reflexivity.
     + intros b ->. constructor. exact I.
 Qed.
@@ -143,7 +143,7 @@ Qed.
 (** Heterogeneous returns are preserved, not silently specialized to eq. *)
 Example guarded_interp_heterogeneous :
   @peutt correlationE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool nat
-    (fun b n => b = true ∧ n = O)
+    (λ b n, b = true ∧ n = O)
     (PTree.interp two_query_handler (Ret true))
     (PTree.interp two_query_handler (Ret O)).
 Proof.

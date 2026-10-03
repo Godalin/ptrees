@@ -21,16 +21,16 @@ Variable R : realType.
 Lemma real_enum_expect_continuous {A} (mu : list (R * A)) (f : nat → A → R) :
   real_enum_nonnegative mu → (∀ n, oval_test (f n)) →
   (∀ n x, f n x <= f (S n) x) →
-  real_enum_expect (oval_pointwise_sup f) mu = oval_sup (fun n => real_enum_expect (f n) mu).
+  real_enum_expect (oval_pointwise_sup f) mu = oval_sup (λ n, real_enum_expect (f n) mu).
 Proof.
   intros Hnn Hf Hi; induction mu as [|[p x] tl IH];
     rewrite ?real_enum_expect_cons ?real_enum_expect_nil.
   - symmetry; exact: oval_sup_const.
   - have Hp : 0 <= p := Hnn p x (or_introl (Logic.eq_refl _)).
-    have Htl : real_enum_nonnegative tl := fun q y Hy => Hnn q y (or_intror Hy).
+    have Htl : real_enum_nonnegative tl := λ q y Hy, Hnn q y (or_intror Hy).
     rewrite (IH Htl); unfold oval_pointwise_sup.
-    rewrite -(oval_sup_scale (b := 1) Hp (fun n => proj2 (Hf n x))).
-    symmetry; apply oval_sup_add with (bc := p) (bd := real_enum_expect (fun _ => 1) tl).
+    rewrite -(oval_sup_scale (b := 1) Hp (λ n, proj2 (Hf n x))).
+    symmetry; apply oval_sup_add with (bc := p) (bd := real_enum_expect (λ _, 1) tl).
     + intro n; exact (ler_wpM2l Hp (Hi n x)).
     + intro n; apply real_enum_expect_mono; [exact Htl|exact (Hi n)].
     + intro n; apply: le_trans (ler_wpM2l Hp (proj2 (Hf n x))) _; by rewrite mulr1.
@@ -58,7 +58,7 @@ Theorem subenumR_domain_zero {A} :
 Proof. intros f Hf; reflexivity. Qed.
 Theorem subenumR_domain_bind {A B} (mu : SubEnumR R A) (k : A → SubEnumR R B) :
   oval_eq (subenumR_domain (subenumR_bind mu k))
-    (oval_bind (subenumR_domain mu) (fun x => subenumR_domain (k x))).
+    (oval_bind (subenumR_domain mu) (λ x, subenumR_domain (k x))).
 Proof. intros f Hf; exact: subenumR_expect_bind. Qed.
 
 Lemma real_enum_expect_support_ext {A} (mu : list (R * A)) (f g : A → R) :

@@ -82,13 +82,13 @@ Local Notation state := (ptree' coin_serviceE EnumQ bool).
 
 Definition publish (b : bool) (next : tree bool) :
     tree bool :=
-  Vis (CoinReply b) (fun _ => next).
+  Vis (CoinReply b) (λ _, next).
 
 (** One request is followed by a closed sampler and one visible reply. *)
 Definition serve_round (sampler : tree bool)
     (next : tree bool) :
     tree bool :=
-  Vis CoinRequest (fun _ =>
+  Vis CoinRequest (λ _,
     b <- sampler ;; publish b next).
 
 (** The recursive call is guarded by the request [Vis]. *)
@@ -100,13 +100,13 @@ CoFixpoint direct_fair_service : tree bool :=
 
 Lemma observe_von_neumann_service :
   observe von_neumann_service =
-  VisF CoinRequest (fun _ =>
+  VisF CoinRequest (λ _,
     b <- von_neumann_third_in ;; publish b von_neumann_service).
 Proof. reflexivity. Qed.
 
 Lemma observe_direct_fair_service :
   observe direct_fair_service =
-  VisF CoinRequest (fun _ =>
+  VisF CoinRequest (λ _,
     b <- direct_fair_in ;; publish b direct_fair_service).
 Proof. reflexivity. Qed.
 
@@ -143,12 +143,12 @@ Qed.
 Definition service_direct_heads : MF service_head :=
   @mixed_bind EnumQ MF FreeOmegaMixedMeasure bool service_head
     vn_fair
-    (fun b => @sem_ret MF
+    (λ b, @sem_ret MF
       FI service_head (FHRet b)).
 
 Definition service_direct_observation : EnumQ bool :=
   @sem_bind EnumQ EnumQ_SemanticMeasure _ _ vn_fair
-    (fun b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b).
+    (λ b, @sem_ret EnumQ EnumQ_SemanticMeasure bool b).
 
 Lemma service_direct_heads_observes :
   free_omega_observes service_head_value
@@ -162,9 +162,9 @@ Lemma service_direct_observation_eq :
   service_direct_observation = vn_fair.
 Proof.
   unfold service_direct_observation.
-  change (bind_EnumQ vn_fair (fun b => ret_EnumQ b) = vn_fair).
+  change (bind_EnumQ vn_fair (λ b, ret_EnumQ b) = vn_fair).
   apply finite_enum_raw_eq.
-  change (enumQ_raw (bind_EnumQ vn_fair (fun b => ret_EnumQ b)) = enumQ_raw vn_fair).
+  change (enumQ_raw (bind_EnumQ vn_fair (λ b, ret_EnumQ b)) = enumQ_raw vn_fair).
   rewrite bind_ret_emap. apply emap_id.
 Qed.
 
@@ -187,9 +187,9 @@ Theorem service_direct_fair_ast :
     (observe (@direct_fair_in coin_serviceE)) service_direct_heads.
 Proof.
   assert (Hobserve : observe (@direct_fair_in coin_serviceE) =
-    ProbF vn_fair (fun b => Ret b)) by reflexivity.
+    ProbF vn_fair (λ b, Ret b)) by reflexivity.
   rewrite Hobserve.
-  eapply ptree_stable_hitting_ast_prob with (Good := fun _ => True).
+  eapply ptree_stable_hitting_ast_prob with (Good := λ _, True).
   - apply sem_ae_true.
   - intros b _. split.
     + apply ptree_stable_hitting_ret.
@@ -198,7 +198,7 @@ Proof.
         (@sem_ret EnumQ EnumQ_SemanticMeasure bool b).
       split; [constructor|].
       change (meas_total (ret_EnumQ b)).
-      change (enumQ_expect (fun _ : bool => (1 : rat)) (ret_EnumQ b) =
+      change (enumQ_expect (λ _ : bool, (1 : rat)) (ret_EnumQ b) =
         (1 : rat)).
       rewrite enumQ_expect_ret. reflexivity.
   - exact service_direct_heads_total.
@@ -214,7 +214,7 @@ Lemma service_direct_heads_ret_only :
   free_omega_ae service_head_is_ret service_direct_heads.
 Proof.
   unfold service_direct_heads.
-  eapply FOAESample with (Good := fun _ => True).
+  eapply FOAESample with (Good := λ _, True).
   - apply sem_ae_true.
   - intros b _. constructor. exact I.
 Qed.
@@ -300,7 +300,7 @@ Definition direct_after_request : tree bool :=
 Definition direct_reply_front (b : bool) :
     MF (stable_head coin_serviceE EnumQ bool) :=
   sem_ret (FHVis (CoinReply b)
-    (fun _ => direct_fair_service)).
+    (λ _, direct_fair_service)).
 
 Local Opaque von_neumann_service direct_fair_service
   service_vn_heads service_direct_heads.
@@ -332,8 +332,8 @@ Lemma service_first_sampling_measure_not_direct :
 Proof.
   intro Heq.
   have Hmass := f_equal
-    (fun mu => enumQ_expect
-      (fun b => if b then (0 : rat) else (1 : rat)) mu) Heq.
+    (λ mu, enumQ_expect
+      (λ b, if b then (0 : rat) else (1 : rat)) mu) Heq.
   cbn [vn_biased_coin vn_fair] in Hmass.
   vm_compute in Hmass. discriminate.
 Qed.
@@ -399,8 +399,8 @@ Definition accepts_true_reply {X} (e : coin_serviceE X) : bool :=
 
 Definition direct_true_reply_query : MF bool :=
   sem_bind direct_after_request_heads
-    (fun h => sem_ret
-      (observe_stable_head (fun _ : bool => false) (@accepts_true_reply) h)).
+    (λ h, sem_ret
+      (observe_stable_head (λ _ : bool, false) (@accepts_true_reply) h)).
 
 Lemma direct_after_request_true_reply_query :
   @next_event_query coin_serviceE EnumQ MF
@@ -415,7 +415,7 @@ Proof.
 Qed.
 
 Lemma direct_true_reply_query_denotes_fair :
-  free_omega_denotes (fun b : bool => b)
+  free_omega_denotes (λ b : bool, b)
     direct_true_reply_query vn_fair.
 Proof.
   Transparent service_direct_heads.
@@ -433,7 +433,7 @@ Proof.
 Qed.
 
 Lemma direct_true_reply_probability_half :
-  enumQ_expect (indicator (fun b => b)) vn_fair = (1 / 2 : rat).
+  enumQ_expect (indicator (λ b, b)) vn_fair = (1 / 2 : rat).
 Proof.
   by rewrite vn_fair_expect /indicator /= add0r mulr1.
 Qed.
@@ -529,7 +529,7 @@ Proof.
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (cons (@select_request) (cons (@select_true_reply) nil))
-    (Vis CoinRequest (fun _ => direct_after_request))
+    (Vis CoinRequest (λ _, direct_after_request))
     direct_true_reply_query).
   eapply finite_interaction_query_vis_match.
   - exact select_request_accepts_request.
@@ -621,7 +621,7 @@ Proof.
     FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega bool
     (cons (@select_true_reply) nil)
-    (Vis CoinRequest (fun _ => direct_after_request)) (sem_ret false)).
+    (Vis CoinRequest (λ _, direct_after_request)) (sem_ret false)).
   eapply (@finite_interaction_query_vis_reject
     coin_serviceE EnumQ MF
     FreeOmegaObservableSemanticMeasure
@@ -633,7 +633,7 @@ Proof.
     FreeOmegaObservableSemanticMeasureAEKleisliLaws
     FreeOmegaObservableSemanticOmegaCofinalityLaws
     bool service_unit (@select_true_reply) nil CoinRequest
-    (fun _ => direct_after_request)).
+    (λ _, direct_after_request)).
   reflexivity.
 Qed.
 

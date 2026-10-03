@@ -26,7 +26,7 @@ Fixpoint itree_head_at {A} (n : nat) (ot : itree' E A) :
   | ITreeDefinition.TauF t =>
       match n with O => None | S m => itree_head_at m (ITreeDefinition.observe t) end
   | @ITreeDefinition.VisF _ _ _ X e k =>
-      Some (FHVis e (fun x => from_itree (k x)))
+      Some (FHVis e (λ x, from_itree (k x)))
   end.
 
 Lemma itree_head_at_succ {A} n (ot : itree' E A) h :
@@ -49,7 +49,7 @@ Proof.
     punfold Htu; red in Htu; induction Htu; intro Hhead; cbn in Hhead.
   - inversion Hhead; subst. exists 0, (FHRet r2). split; [reflexivity|constructor; assumption].
   - discriminate.
-  - inversion Hhead; subst. exists 0, (FHVis e (fun x => from_itree (k2 x))).
+  - inversion Hhead; subst. exists 0, (FHVis e (λ x, from_itree (k2 x))).
     split; [reflexivity|constructor]. intro x. exists (k1 x), (k2 x).
     split; [reflexivity|split; [reflexivity|]]. destruct (REL x) as [H|[]]. exact H.
   - discriminate.
@@ -59,7 +59,7 @@ Proof.
   - destruct REL as [Hrel|[]].
     destruct (IH _ _ _ Hrel Hhead) as [m [j [Hj Hr]]].
     exists (S m), j. split; assumption.
-  - inversion Hhead; subst. exists 0, (FHVis e (fun x => from_itree (k2 x))).
+  - inversion Hhead; subst. exists 0, (FHVis e (λ x, from_itree (k2 x))).
     split; [reflexivity|constructor]. intro x. exists (k1 x), (k2 x).
     split; [reflexivity|split; [reflexivity|]]. destruct (REL x) as [H|[]]. exact H.
   - apply IHHtu. apply itree_head_at_succ. exact Hhead.
@@ -109,7 +109,7 @@ Lemma from_itree_no_head_hitting {A} (t : itree E A) :
   ptree_stable_hitting (MF := MF) (observe (from_itree t)) sem_zero.
 Proof.
   intro H. unfold ptree_stable_hitting, stable_hitting.
-  eapply sem_lub_chain_proper with (chain := fun _ => sem_zero).
+  eapply sem_lub_chain_proper with (chain := λ _, sem_zero).
   - intro n. apply sem_eq_sym. exact (from_itree_no_head_approx n H).
   - apply sem_lub_constant.
 Qed.

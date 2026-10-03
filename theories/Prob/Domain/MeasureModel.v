@@ -59,16 +59,16 @@ Qed.
 Lemma oval_indic_bigcup {A} (F : nat → set A)
     (Hi : ∀ n, F n `<=` F n.+1) :
   ∀ x, (\1_(\bigcup_n F n) x : R) =
-    oval_sup (fun n => \1_(F n) x).
+    oval_sup (λ n, \1_(F n) x).
 Proof.
   intro x; apply/eqP; rewrite eq_le; apply/andP; split.
   - rewrite indicE; case Hmem: (x \in \bigcup_n F n).
     + move/asboolP: Hmem => [n _ Hn].
       have H1 : (\1_(F n) x : R) = 1 by rewrite indicE mem_set.
-      rewrite -H1; exact (oval_sup_ge n (fun i => proj2 (oval_test_indic (F i) x))).
-    + change (is_true (0 <= oval_sup (fun n => (\1_(F n) x : R)))).
+      rewrite -H1; exact (oval_sup_ge n (λ i, proj2 (oval_test_indic (F i) x))).
+    + change (is_true (0 <= oval_sup (λ n, (\1_(F n) x : R)))).
       exact: le_trans (proj1 (oval_test_indic (F 0%nat) x))
-        (oval_sup_ge 0%nat (fun i => proj2 (oval_test_indic (F i) x))).
+        (oval_sup_ge 0%nat (λ i, proj2 (oval_test_indic (F i) x))).
   - apply oval_sup_le=> n; apply oval_indic_mono=> y Hy.
     by exists n.
 Qed.
@@ -103,7 +103,7 @@ Proof. apply/(additive2P oval_set_measure0); exact oval_set_measure_additive2. Q
 Lemma oval_set_measure_continuous (F : nat → set T)
     (Hi : ∀ n, F n `<=` F n.+1) :
   oval_eval L (\1_(\bigcup_n F n)) =
-  oval_sup (fun n => oval_eval L (\1_(F n))).
+  oval_sup (λ n, oval_eval L (\1_(F n))).
 Proof.
   rewrite (oval_eval_ext L (oval_indic_bigcup R Hi)).
   apply (oval_continuous (oval_laws L)).
@@ -123,20 +123,20 @@ Proof.
     - intros x [n _ Hnx]; exists n.+1; first exact I.
       exact (bigsetU_sup (ltnSn n) Hnx). }
   have Hbound : ∀ n, oval_eval L (\1_(U n)) <= 1 :=
-    fun n => proj2 (oval_eval_bounds L (oval_test_indic R (U n))).
-  have Hinc : nondecreasing_seq (fun n => oval_eval L (\1_(U n))).
+    λ n, proj2 (oval_eval_bounds L (oval_test_indic R (U n))).
+  have Hinc : nondecreasing_seq (λ n, oval_eval L (\1_(U n))).
   { move=> n m /ssrnat.leP Hnm.
-    eapply (@oval_increasing_le R (fun i => oval_eval L (\1_(U i)))); [|exact Hnm].
+    eapply (@oval_increasing_le R (λ i, oval_eval L (\1_(U i)))); [|exact Hnm].
     intro i; apply (oval_mono (oval_laws L) (oval_test_indic R (U i)) (oval_test_indic R (U i.+1))).
     exact (oval_indic_mono R (HU i)). }
-  have Hub : has_ubound (range (fun n => oval_eval L (\1_(U n)))).
+  have Hub : has_ubound (range (λ n, oval_eval L (\1_(U n)))).
   { exists 1; apply/ubP=> x [n _ <-]; exact (Hbound n). }
   have Hcv := nondecreasing_cvgn Hinc Hub.
   have HS : ∀ n, oval_set_measure (U n) = \sum_(i < n) oval_set_measure (F i).
   { intro n; apply oval_set_measure_additive; try assumption.
     exact: bigsetU_measurable. }
-  have Hseq : (fun n => \sum_(0 <= i < n) oval_set_measure (F i)) =
-      (fun n => (oval_eval L (\1_(U n)))%:E).
+  have Hseq : (λ n, \sum_(0 <= i < n) oval_set_measure (F i)) =
+      (λ n, (oval_eval L (\1_(U n)))%:E).
   { apply/funext=> n; by rewrite big_mkord -HS. }
   rewrite Hseq /oval_set_measure -Heq (oval_set_measure_continuous HU).
   apply: cvg_EFin; [exact: nearW|exact Hcv].
@@ -160,13 +160,13 @@ Context {R : realType} {A : Type} (L : OmegaVal R A).
 Lemma oval_eval_sum {I : eqType} (s : seq I) (f : I → A → R) :
   (∀ i, i \in s → ∀ x, 0 <= f i x) →
   (∀ x, \sum_(i <- s) f i x <= 1) →
-  oval_eval L (fun x => \sum_(i <- s) f i x) =
+  oval_eval L (λ x, \sum_(i <- s) f i x) =
   \sum_(i <- s) oval_eval L (f i).
 Proof.
   elim: s=> [|a s IH] H0 H1.
-  - rewrite big_nil; transitivity (oval_eval L (fun _ => 0));
+  - rewrite big_nil; transitivity (oval_eval L (λ _, 0));
       [apply oval_eval_ext=> x; by rewrite big_nil|exact (oval_zero (oval_laws L))].
-  - have Ha0 : ∀ x, 0 <= f a x := fun x => H0 a (mem_head a s) x.
+  - have Ha0 : ∀ x, 0 <= f a x := λ x, H0 a (mem_head a s) x.
     have Hs0 : ∀ i, i \in s -> ∀ x, 0 <= f i x.
     { intros i Hi; apply H0; by rewrite in_cons Hi orbT. }
     have Hsum0 : ∀ x, 0 <= \sum_(i <- s) f i x.
@@ -176,15 +176,15 @@ Proof.
       apply: le_trans (_ : f a x + \sum_(i <- s) f i x <= 1).
       - by rewrite lerDl.
       - by move: (H1 x); rewrite big_cons. }
-    have Hs : oval_test (fun x => \sum_(i <- s) f i x).
+    have Hs : oval_test (λ x, \sum_(i <- s) f i x).
     { intro x; split; first exact (Hsum0 x).
       apply: le_trans (_ : f a x + \sum_(i <- s) f i x <= 1).
       - by rewrite lerDr.
       - by move: (H1 x); rewrite big_cons. }
-    transitivity (oval_eval L (fun x => f a x + \sum_(i <- s) f i x)).
+    transitivity (oval_eval L (λ x, f a x + \sum_(i <- s) f i x)).
     + apply oval_eval_ext=> x; by rewrite big_cons.
     + rewrite (oval_add (oval_laws L) Ha Hs); last by intro x; move: (H1 x); rewrite big_cons.
-      rewrite (IH Hs0 (fun x => proj2 (Hs x))) big_cons; reflexivity.
+      rewrite (IH Hs0 (λ x, proj2 (Hs x))) big_cons; reflexivity.
 Qed.
 End FiniteTests.
 
@@ -216,7 +216,7 @@ Qed.
 (** Recovery is a theorem about MathComp's Lebesgue integral, proved through
     its increasing nonnegative simple-function approximations. *)
 Theorem oval_integral_recovery (f : T → R) :
-  oval_test f → measurable_fun setT (fun x => (f x)%:E) →
+  oval_test f → measurable_fun setT (λ x, (f x)%:E) →
   (\int[oval_set_measure L]_x (f x)%:E)%E = (oval_eval L f)%:E.
 Proof.
   intros Hf Hmf.
@@ -228,34 +228,34 @@ Proof.
   have Hg : ∀ n, oval_test (g n).
   { intros n x; split; first exact: fun_ge0.
     exact: le_trans (Hg_le n x) (proj2 (Hf x)). }
-  have Hnd : ∀ x, nondecreasing_seq (fun n => g n x).
+  have Hnd : ∀ x, nondecreasing_seq (λ n, g n x).
   { intros x n m Hnm; apply/lefP; exact (nd_nnsfun_approx measurableT Hmf Hnm). }
-  have Hcvg : ∀ x, (fun n => g n x) @ \oo --> f x.
+  have Hcvg : ∀ x, (λ n, g n x) @ \oo --> f x.
   { intro x; rewrite /g; under eq_fun do rewrite nnsfun_approxE.
     exact (cvg_approx Hf0 I (ltry (f x))). }
-  have Hsup : ∀ x, f x = oval_sup (fun n => g n x).
+  have Hsup : ∀ x, f x = oval_sup (λ n, g n x).
   { intro x.
-    have Hb : has_ubound (range (fun n => g n x)).
+    have Hb : has_ubound (range (λ n, g n x)).
     { exists 1; apply/ubP=> z [n _ <-]; exact (proj2 (Hg n x)). }
-    have H1 : limn (fun n => g n x) = f x.
+    have H1 : limn (λ n, g n x) = f x.
     { exact (cvg_lim (@Rhausdorff R) (FF := eventually_filter) (Hcvg x)). }
-    have H2 : limn (fun n => g n x) = oval_sup (fun n => g n x).
+    have H2 : limn (λ n, g n x) = oval_sup (λ n, g n x).
     { exact (cvg_lim (@Rhausdorff R) (FF := eventually_filter)
         (nondecreasing_cvgn (Hnd x) Hb)). }
     by rewrite -H1 H2. }
-  have HE : oval_eval L f = oval_sup (fun n => oval_eval L (g n)).
+  have HE : oval_eval L f = oval_sup (λ n, oval_eval L (g n)).
   { rewrite (oval_eval_ext L Hsup); apply (oval_continuous (oval_laws L) Hg).
     intros n x; exact (Hnd x n n.+1 (leqnSn n)). }
-  have HndL : nondecreasing_seq (fun n => oval_eval L (g n)).
+  have HndL : nondecreasing_seq (λ n, oval_eval L (g n)).
   { intros n m Hnm; apply (oval_mono (oval_laws L) (Hg n) (Hg m)).
     intro x; exact (Hnd x n m Hnm). }
-  have HbL : has_ubound (range (fun n => oval_eval L (g n))).
+  have HbL : has_ubound (range (λ n, oval_eval L (g n))).
   { exists 1; apply/ubP=> z [n _ <-]; exact (proj2 (oval_eval_bounds L (Hg n))). }
-  have HcvL : (fun n => (oval_eval L (g n))%:E) @ \oo --> (oval_eval L f)%:E.
+  have HcvL : (λ n, (oval_eval L (g n))%:E) @ \oo --> (oval_eval L f)%:E.
   { rewrite HE; apply: cvg_EFin; [exact: nearW|exact (nondecreasing_cvgn HndL HbL)]. }
-  rewrite (@nd_ge0_integral_lim _ _ _ (oval_set_measure L) (fun x => (f x)%:E) g).
+  rewrite (@nd_ge0_integral_lim _ _ _ (oval_set_measure L) (λ x, (f x)%:E) g).
   - have Heval : (sintegral (oval_set_measure L) \o g) =
-        (fun n => (oval_eval L (g n))%:E).
+        (λ n, (oval_eval L (g n))%:E).
     { apply/funext=> n; exact (oval_simple_integral (Hg n)). }
     rewrite Heval; exact (cvg_lim (@ereal_hausdorff R)
       (FF := eventually_filter) HcvL).
@@ -323,11 +323,11 @@ Proof.
   - intros x _; rewrite lee_fin; exact: Hfg.
 Qed.
 
-Lemma measure_oval_eval_zero : measure_oval_eval (fun _ => 0) = 0.
+Lemma measure_oval_eval_zero : measure_oval_eval (λ _, 0) = 0.
 Proof. by rewrite /measure_oval_eval integral0. Qed.
 
 Lemma measure_oval_eval_scale p f : 0 <= p → p <= 1 → oval_test f →
-  measure_oval_eval (fun x => p * f x) = p * measure_oval_eval f.
+  measure_oval_eval (λ x, p * f x) = p * measure_oval_eval f.
 Proof.
   intros Hp Hp1 Hf.
   have Hpf := oval_test_scale Hp Hp1 Hf.
@@ -340,7 +340,7 @@ Qed.
 
 Lemma measure_oval_eval_add f g : oval_test f → oval_test g →
   (∀ x, f x + g x <= 1) →
-  measure_oval_eval (fun x => f x + g x) =
+  measure_oval_eval (λ x, f x + g x) =
     measure_oval_eval f + measure_oval_eval g.
 Proof.
   intros Hf Hg Hfg.
@@ -357,41 +357,41 @@ Lemma measure_oval_eval_continuous (f : nat → T → R) :
   (∀ n, oval_test (f n)) →
   (∀ n x, f n x <= f n.+1 x) →
   measure_oval_eval (oval_pointwise_sup f) =
-    oval_sup (fun n => measure_oval_eval (f n)).
+    oval_sup (λ n, measure_oval_eval (f n)).
 Proof.
   intros Hf Hi.
-  have Hnd x : nondecreasing_seq (fun n => f n x).
+  have Hnd x : nondecreasing_seq (λ n, f n x).
   { move=> n m /ssrnat.leP Hnm; exact (@oval_increasing_le R
-      (fun i => f i x) (fun i => Hi i x) n m Hnm). }
-  have Hcv x : (fun n => (f n x)%:E) @ \oo -->
+      (λ i, f i x) (λ i, Hi i x) n m Hnm). }
+  have Hcv x : (λ n, (f n x)%:E) @ \oo -->
       (oval_pointwise_sup f x)%:E.
   { apply: cvg_EFin; first exact: nearW.
     apply: nondecreasing_cvgn (Hnd x) _.
     exists 1; apply/ubP=> z [n _ <-]; exact (proj2 (Hf n x)). }
-  have Hlim x : limn (fun n => (f n x)%:E) =
+  have Hlim x : limn (λ n, (f n x)%:E) =
       (oval_pointwise_sup f x)%:E.
   { exact (cvg_lim (@ereal_hausdorff R) (FF := eventually_filter) (Hcv x)). }
-  have HndE x : nondecreasing_seq (fun n => (f n x)%:E).
+  have HndE x : nondecreasing_seq (λ n, (f n x)%:E).
   { intros n m Hnm; rewrite lee_fin; exact: Hnd. }
-  have HndL : nondecreasing_seq (fun n => measure_oval_eval (f n)).
+  have HndL : nondecreasing_seq (λ n, measure_oval_eval (f n)).
   { intros n m Hnm; apply (measure_oval_eval_mono (Hf n) (Hf m)).
     intro x; exact: Hnd. }
-  have HbL : has_ubound (range (fun n => measure_oval_eval (f n))).
+  have HbL : has_ubound (range (λ n, measure_oval_eval (f n))).
   { exists 1; apply/ubP=> z [n _ <-]; exact (proj2 (measure_oval_eval_bounds (Hf n))). }
-  have HcvL : (fun n => (measure_oval_eval (f n))%:E) @ \oo -->
-      (oval_sup (fun n => measure_oval_eval (f n)))%:E.
+  have HcvL : (λ n, (measure_oval_eval (f n))%:E) @ \oo -->
+      (oval_sup (λ n, measure_oval_eval (f n)))%:E.
   { apply: cvg_EFin; [exact: nearW|exact (nondecreasing_cvgn HndL HbL)]. }
   apply: EFin_inj; rewrite measure_oval_evalE ?(oval_test_sup Hf) //.
   have HE : (\int[mu]_x (oval_pointwise_sup f x)%:E)%E =
-      limn (fun n => (\int[mu]_x (f n x)%:E)%E).
+      limn (λ n, (\int[mu]_x (f n x)%:E)%E).
   { under eq_integral do rewrite -Hlim.
     apply: monotone_convergence; try exact: measurableT.
     - intro n; exact: oval_all_measurable.
     - intros n x _; rewrite lee_fin; exact (proj1 (Hf n x)).
     - intros x _; exact: HndE. }
   rewrite HE.
-  have Heval : (fun n => (\int[mu]_x (f n x)%:E)%E) =
-      (fun n => (measure_oval_eval (f n))%:E).
+  have Heval : (λ n, (\int[mu]_x (f n x)%:E)%E) =
+      (λ n, (measure_oval_eval (f n))%:E).
   { apply/funext=> n; symmetry; exact: measure_oval_evalE. }
   rewrite Heval; exact (cvg_lim (@ereal_hausdorff R)
     (FF := eventually_filter) HcvL).
@@ -454,36 +454,36 @@ Lemma oval_missing_mass_ge0 : 0 <= oval_missing_mass.
 Proof. rewrite /oval_missing_mass subr_ge0; exact (oval_mass_le1 (oval_laws L)). Qed.
 
 Definition oval_complete_eval (f : oval_carrier A → R) : R :=
-  oval_eval L (fun x => f (OVValue x)) + oval_missing_mass * f OVBottom.
+  oval_eval L (λ x, f (OVValue x)) + oval_missing_mass * f OVBottom.
 
 Definition oval_complete_laws : OmegaValLaws oval_complete_eval.
 Proof.
   have Hval (f : oval_carrier A -> R) :
-      oval_test f -> oval_test (fun x => f (OVValue x)).
+      oval_test f -> oval_test (λ x, f (OVValue x)).
   { intros H x; exact: H. }
   constructor.
   - by rewrite /oval_complete_eval (oval_zero (oval_laws L)) mulr0 addr0.
   - intros f g Hf Hg Hfg; rewrite /oval_complete_eval; apply: lerD.
-    + exact (oval_mono (oval_laws L) (Hval _ Hf) (Hval _ Hg) (fun x => Hfg _)).
+    + exact (oval_mono (oval_laws L) (Hval _ Hf) (Hval _ Hg) (λ x, Hfg _)).
     + exact (ler_wpM2l oval_missing_mass_ge0 (Hfg OVBottom)).
   - intros p f Hp Hp1 Hf; rewrite /oval_complete_eval
       (oval_scale (oval_laws L) Hp Hp1 (Hval _ Hf)) mulrDr.
     by rewrite !mulrA [oval_missing_mass * p]mulrC.
   - intros f g Hf Hg Hfg; rewrite /oval_complete_eval
-      (oval_add (oval_laws L) (Hval _ Hf) (Hval _ Hg) (fun x => Hfg _)) mulrDr.
+      (oval_add (oval_laws L) (Hval _ Hf) (Hval _ Hg) (λ x, Hfg _)) mulrDr.
     exact: addrACA.
   - rewrite /oval_complete_eval mulr1 /oval_missing_mass /oval_mass addrC subrK.
     exact: lexx.
   - intros f Hf Hi; rewrite /oval_complete_eval.
-    have Hsub : oval_eval L (fun x => oval_pointwise_sup f (OVValue x)) =
-        oval_sup (fun n => oval_eval L (fun x => f n (OVValue x))).
-    { exact (oval_continuous (oval_laws L) (fun n => Hval _ (Hf n))
-        (fun n x => Hi n (OVValue x))). }
+    have Hsub : oval_eval L (λ x, oval_pointwise_sup f (OVValue x)) =
+        oval_sup (λ n, oval_eval L (λ x, f n (OVValue x))).
+    { exact (oval_continuous (oval_laws L) (λ n, Hval _ (Hf n))
+        (λ n x, Hi n (OVValue x))). }
     rewrite Hsub /oval_pointwise_sup -(oval_sup_scale oval_missing_mass_ge0
-      (fun n => proj2 (Hf n OVBottom))).
+      (λ n, proj2 (Hf n OVBottom))).
     symmetry; apply: (@oval_sup_add R _ _ 1 oval_missing_mass).
     + intro n; exact (oval_mono (oval_laws L) (Hval _ (Hf n))
-        (Hval _ (Hf n.+1)) (fun x => Hi n (OVValue x))).
+        (Hval _ (Hf n.+1)) (λ x, Hi n (OVValue x))).
     + intro n; exact (ler_wpM2l oval_missing_mass_ge0 (Hi n OVBottom)).
     + intro n; exact (proj2 (oval_eval_bounds L (Hval _ (Hf n)))).
     + intro n; have H := ler_wpM2l oval_missing_mass_ge0 (proj2 (Hf n OVBottom)).
@@ -505,7 +505,7 @@ HB.instance Definition _ := Measure.on oval_probability_function.
 Lemma oval_probability_setT : oval_probability_function setT = 1%E.
 Proof.
   rewrite /oval_probability_function /oval_set_measure.
-  have H : (\1_setT : oval_carrier A -> R) = (fun _ => 1).
+  have H : (\1_setT : oval_carrier A -> R) = (λ _, 1).
   { apply/funext=> x; by rewrite indicT. }
   by rewrite H -/(oval_mass oval_complete) oval_complete_mass.
 Qed.
@@ -532,13 +532,13 @@ Proof. move=> [|a]; split; try exact: lexx; exact: ler01. Qed.
 
 Definition probability_oval (p : probability (oval_carrier A) R) : OmegaVal R A :=
   oval_bind (measure_oval oval_carrier_measurable p)
-    (fun x => match x with OVBottom => oval_bottom R | OVValue a => oval_ret R a end).
+    (λ x, match x with OVBottom => oval_bottom R | OVValue a => oval_ret R a end).
 
 Lemma probability_oval_eval (p : probability (oval_carrier A) R) f :
   oval_eval (probability_oval p) f =
     measure_oval_eval p (oval_extend f).
 Proof.
-  change (measure_oval_eval p (fun x =>
+  change (measure_oval_eval p (λ x,
     oval_eval (match x with OVBottom => oval_bottom R | OVValue a => oval_ret R a end) f)
     = measure_oval_eval p (oval_extend f)).
   congr (measure_oval_eval p _); apply/funext=> x; case: x=> [|a]; reflexivity.
@@ -564,7 +564,7 @@ Theorem oval_probability_bottom (L : OmegaVal R A) :
   oval_probability L [set OVBottom] = (1 - oval_mass L)%:E.
 Proof.
   change ((oval_complete_eval L (\1_[set OVBottom]))%:E = (1 - oval_mass L)%:E).
-  have Hval : (fun a : A => (\1_[set OVBottom] (OVValue a) : R)) = (fun _ => 0).
+  have Hval : (λ a : A, (\1_[set OVBottom] (OVValue a) : R)) = (λ _, 0).
   { apply/funext=> a; rewrite indicE.
     have H : OVValue a \notin [set OVBottom].
     { apply/asboolPn=> H; discriminate H. }
@@ -576,13 +576,13 @@ Proof.
 Qed.
 
 Definition oval_values (U : set A) : set (oval_carrier A) :=
-  fun x => match x with OVBottom => False | OVValue a => U a end.
+  λ x, match x with OVBottom => False | OVValue a => U a end.
 
 Theorem oval_probability_values (L : OmegaVal R A) (U : set A) :
   oval_probability L (oval_values U) = (oval_eval L (\1_U))%:E.
 Proof.
   change ((oval_complete_eval L (\1_(oval_values U)))%:E = (oval_eval L (\1_U))%:E).
-  have Hval : (fun a : A => (\1_(oval_values U) (OVValue a) : R)) = \1_U.
+  have Hval : (λ a : A, (\1_(oval_values U) (OVValue a) : R)) = \1_U.
   { apply/funext=> a; rewrite !indicE; congr (_%:R); apply/propext; reflexivity. }
   have Hb : (\1_(oval_values U) OVBottom : R) = 0.
   { rewrite indicE; have H : OVBottom \notin oval_values U by apply/asboolPn.
@@ -596,36 +596,36 @@ Lemma oval_complete_restrict (J : OmegaVal R (oval_carrier A)) :
   oval_mass J = 1 →
   ∀ f, oval_test f →
   oval_eval J f =
-    oval_eval J (oval_extend (fun a => f (OVValue a))) +
-    (1 - oval_eval J (oval_extend (fun _ => 1))) * f OVBottom.
+    oval_eval J (oval_extend (λ a, f (OVValue a))) +
+    (1 - oval_eval J (oval_extend (λ _, 1))) * f OVBottom.
 Proof.
   intros Hmass f Hf.
-  have Hval : oval_test (fun a => f (OVValue a)) by intro a; exact: Hf.
+  have Hval : oval_test (λ a, f (OVValue a)) by intro a; exact: Hf.
   have Hsplit : ∀ g : oval_carrier A -> R,
-    g = (fun x => oval_extend (fun a => g (OVValue a)) x +
+    g = (λ x, oval_extend (λ a, g (OVValue a)) x +
       g OVBottom * oval_bottom_test x).
   { intro g; apply/funext=> x; case: x=> [|a]; by rewrite /oval_extend /oval_bottom_test
       ?mulr1 ?mulr0 ?add0r ?addr0. }
-  have Hsum : ∀ x, oval_extend (fun a => f (OVValue a)) x +
+  have Hsum : ∀ x, oval_extend (λ a, f (OVValue a)) x +
       f OVBottom * oval_bottom_test x <= 1.
-  { intro x; rewrite -(congr1 (fun h => h x) (Hsplit f)); exact (proj2 (Hf x)). }
+  { intro x; rewrite -(congr1 (λ h, h x) (Hsplit f)); exact (proj2 (Hf x)). }
   have Heq : oval_eval J f =
-      oval_eval J (oval_extend (fun a => f (OVValue a))) +
+      oval_eval J (oval_extend (λ a, f (OVValue a))) +
       f OVBottom * oval_eval J oval_bottom_test.
   { rewrite {1}(Hsplit f) (oval_add (oval_laws J) (oval_extend_test Hval)
       (oval_test_scale (proj1 (Hf OVBottom)) (proj2 (Hf OVBottom))
         oval_bottom_test_bounded) Hsum).
     by rewrite (oval_scale (oval_laws J) (proj1 (Hf OVBottom))
       (proj2 (Hf OVBottom)) oval_bottom_test_bounded). }
-  have Htotal : oval_eval J (oval_extend (fun _ => 1)) +
+  have Htotal : oval_eval J (oval_extend (λ _, 1)) +
       oval_eval J oval_bottom_test = 1.
   { rewrite -(oval_add (oval_laws J) (oval_extend_test (oval_test_one R))
       oval_bottom_test_bounded).
     - rewrite -Hmass; apply oval_eval_ext=> x; case: x=> [|a]; by rewrite /= ?addr0 ?add0r.
     - move=> [|a]; by rewrite /= ?addr0 ?add0r. }
   have Hb : oval_eval J oval_bottom_test =
-      1 - oval_eval J (oval_extend (fun _ => 1)).
-  { have H := congr1 (fun z => z - oval_eval J (oval_extend (fun _ => 1))) Htotal.
+      1 - oval_eval J (oval_extend (λ _, 1)).
+  { have H := congr1 (λ z, z - oval_eval J (oval_extend (λ _, 1))) Htotal.
     by rewrite addrAC subrr add0r in H. }
   by rewrite Heq Hb mulrC.
 Qed.

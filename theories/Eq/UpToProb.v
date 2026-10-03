@@ -101,10 +101,10 @@ Proof.
     destruct (stable_hitting_front_choice k) as [front1 Hfront1].
     destruct (stable_hitting_front_choice h) as [front2 Hfront2].
     eapply stable_hitting_match_of_hitting_lift.
-    + eapply stable_hitting_prob with (Good := fun _ => True).
+    + eapply stable_hitting_prob with (Good := λ _, True).
       * apply sem_ae_true.
       * intros x _. exact (Hfront1 x).
-    + eapply stable_hitting_prob with (Good := fun _ => True).
+    + eapply stable_hitting_prob with (Good := λ _, True).
       * apply sem_ae_true.
       * intros y _. exact (Hfront2 y).
     + eapply mixed_lift_bind; [exact Hmu|].

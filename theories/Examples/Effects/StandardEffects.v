@@ -51,15 +51,15 @@ Example exception_heterogeneous {Err E A B} (RR : A → B → Prop)
 Proof. apply (run_exception_peutt free_omega_relational_bind). Qed.
 
 Definition read_and_sample : ptree (readerE nat +' void1) SubEnumQ nat :=
-  Vis (inl1 Ask) (fun env => Prob coin (fun b : bool => Ret (if b then env else 0))).
+  Vis (inl1 Ask) (λ env, Prob coin (λ b : bool, Ret (if b then env else 0))).
 Example reader_native_probability :
   run (@replay_sample) 2 (run_reader read_and_sample 7) [high_quantile] = (Returned 7, []).
 Proof. native_compute. reflexivity. Qed.
 
 Definition list_log : Monoid (list nat) := {| monoid_plus := @List.app nat; monoid_unit := [] |}.
 Definition log_and_sample : ptree (writerE (list nat) +' void1) SubEnumQ bool :=
-  Vis (inl1 (Tell [1])) (fun _ => Prob coin (fun b : bool =>
-    Vis (inl1 (Tell [if b then 2 else 3])) (fun _ => Ret b))).
+  Vis (inl1 (Tell [1])) (λ _, Prob coin (λ b : bool,
+    Vis (inl1 (Tell [if b then 2 else 3])) (λ _, Ret b))).
 Example writer_chronological_order :
   run (@replay_sample) 7 (run_writer list_log log_and_sample) [high_quantile] =
     (Returned ([1;2],true), []).
@@ -70,8 +70,8 @@ Example writer_probabilistic_other_branch :
 Proof. native_compute. reflexivity. Qed.
 
 Definition sample_or_throw : ptree (exceptE nat +' void1) SubEnumQ nat :=
-  Prob coin (fun b : bool => if b then
-    Vis (inl1 (Throw 42)) (fun v : void => match v with end) else Ret 7).
+  Prob coin (λ b : bool, if b then
+    Vis (inl1 (Throw 42)) (λ v : void, match v with end) else Ret 7).
 Example exception_is_a_returned_error :
   run (@replay_sample) 1 (run_exception sample_or_throw) [high_quantile] = (Returned (inl 42), []).
 Proof. native_compute. reflexivity. Qed.
@@ -81,22 +81,22 @@ Proof. native_compute. reflexivity. Qed.
 Example missing_mass_is_not_an_exception :
   run (@replay_sample) 1
     (run_exception (Prob (@subenumQ_zero bool)
-      (fun _ => (Ret 7 : ptree (exceptE nat +' void1) SubEnumQ nat))))
+      (λ _, (Ret 7 : ptree (exceptE nat +' void1) SubEnumQ nat))))
     [low_quantile] = (Lost, []).
 Proof. native_compute. reflexivity. Qed.
 
 Variant emitE : Type → Type := Emit : nat → emitE unit.
 Example reader_forwards_event :
-  @reader_handler nat emitE SubEnumQ 7 unit (inr1 (Emit 3)) = Vis (Emit 3) (fun x => Ret x).
+  @reader_handler nat emitE SubEnumQ 7 unit (inr1 (Emit 3)) = Vis (Emit 3) (λ x, Ret x).
 Proof. reflexivity. Qed.
 Example writer_forwards_event :
   @writer_handler (list nat) emitE SubEnumQ list_log unit (inr1 (Emit 3)) =
-    Vis (inr1 (Emit 3)) (fun x => Ret x).
+    Vis (inr1 (Emit 3)) (λ x, Ret x).
 Proof. reflexivity. Qed.
 
 CoFixpoint throw_after_retries : ptree (exceptE nat +' emitE) SubEnumQ nat :=
-  Prob coin (fun b => if b then Vis (inl1 (Throw 42)) (fun v : void => match v with end)
-    else Vis (inr1 (Emit 0)) (fun _ => Tau throw_after_retries)).
+  Prob coin (λ b, if b then Vis (inl1 (Throw 42)) (λ v : void, match v with end)
+    else Vis (inr1 (Emit 0)) (λ _, Tau throw_after_retries)).
 Example infinite_exception_weak_rewrite :
   W _ _ _ (exception_result_rel eq) (run_exception (Tau throw_after_retries))
     (run_exception throw_after_retries).

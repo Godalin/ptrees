@@ -40,7 +40,7 @@ Proof. apply sem_bind_ret_order. Qed.
 Local Lemma mixed_assoc_equiv A B C (mu : MN A)
     (k : A → MF B) (h : B → MF C) :
   equiv (sem_bind (mixed_bind mu k) h)
-    (mixed_bind mu (fun x => sem_bind (k x) h)).
+    (mixed_bind mu (λ x, sem_bind (k x) h)).
 Proof. apply mixed_bind_assoc_order. Qed.
 
 Local Notation unfold_source := (@BindScheduling.hitting_unfold E MN MF FI MX FO Ord
@@ -75,7 +75,7 @@ Proof.
   - setoid_rewrite ret_equiv.
     cbn [ptree_interp_head_approx ptree_interp_head_tree observe].
     exact (proj2 (unfold_target (S n)
-      (TauF (PTree.bind (handler e) (fun x => PTree.interp handler (k x)))))).
+      (TauF (PTree.bind (handler e) (λ x, PTree.interp handler (k x)))))).
   - setoid_rewrite mixed_assoc_equiv. apply mixed_bind_le_k. intro x.
     eapply sem_le_trans; [apply IH|].
     apply sem_bind_le_k. intro h. apply ptree_hitting_mono. lia.
@@ -95,7 +95,7 @@ Proof.
   - setoid_rewrite ret_equiv.
     cbn [ptree_interp_head_approx ptree_interp_head_tree observe].
     exact (proj1 (unfold_target m
-      (TauF (PTree.bind (handler e) (fun x => PTree.interp handler (k x)))))).
+      (TauF (PTree.bind (handler e) (λ x, PTree.interp handler (k x)))))).
   - setoid_rewrite mixed_assoc_equiv. apply mixed_bind_le_k. intro x.
     eapply sem_le_trans; [apply sem_bind_zero_order|apply sem_zero_le].
   - setoid_rewrite ret_equiv. cbn [ptree_interp_head_approx ptree_interp_head_tree observe].
@@ -104,10 +104,10 @@ Proof.
   - setoid_rewrite ret_equiv.
     cbn [ptree_interp_head_approx ptree_interp_head_tree observe].
     eapply sem_le_trans with (nu := ptree_hitting_approx (MF := MF) (S n + m)
-      (TauF (PTree.bind (handler e) (fun x => PTree.interp handler (k x))))).
+      (TauF (PTree.bind (handler e) (λ x, PTree.interp handler (k x))))).
     + apply ptree_hitting_mono. lia.
     + exact (proj1 (unfold_target (S n + m)
-        (TauF (PTree.bind (handler e) (fun x => PTree.interp handler (k x)))))).
+        (TauF (PTree.bind (handler e) (λ x, PTree.interp handler (k x)))))).
   - setoid_rewrite mixed_assoc_equiv. apply mixed_bind_le_k. intro x. apply IH.
 Qed.
 

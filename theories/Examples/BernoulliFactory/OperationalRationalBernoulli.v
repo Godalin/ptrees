@@ -61,7 +61,7 @@ Definition ptree_rational_head_approx (fuel : nat) : MF rational_head :=
       (NI := EnumQ_SemanticMeasure)
       (NO := EnumQ_SemanticOmega)) _ _
     (ptree_rational_iter_approx fuel)
-    (fun b => @sem_ret MF
+    (λ b, @sem_ret MF
       (FreeOmegaObservableSemanticMeasure
         (NI := EnumQ_SemanticMeasure)
         (NO := EnumQ_SemanticOmega)) rational_head (FHRet b)).
@@ -103,7 +103,7 @@ Proof.
 Qed.
 
 Lemma ptree_rational_approx_observes fuel : ∀ x,
-  free_omega_observes (fun b : bool => b)
+  free_omega_observes (λ b : bool, b)
     (@mixed_iter_approx EnumQ MF
       (FreeOmegaObservableSemanticMeasure
         (NI := EnumQ_SemanticMeasure)
@@ -118,9 +118,9 @@ Proof.
   - cbn [mixed_iter_approx meas_iter_approx mixed_bind
       FreeOmegaMixedMeasure sem_bind
       EnumQ_SemanticMeasure].
-    change (free_omega_observes (fun b : bool => b)
+    change (free_omega_observes (λ b : bool, b)
       (FOSample (binary_coin_transition x)
-        (fun next : rat + bool =>
+        (λ next : rat + bool,
           match next with
           | inl x' => @mixed_iter_approx EnumQ MF
               (FreeOmegaObservableSemanticMeasure
@@ -133,13 +133,13 @@ Proof.
           end))
       (@sem_bind EnumQ EnumQ_SemanticMeasure _ _
         (binary_coin_transition x)
-        (fun next : rat + bool =>
+        (λ next : rat + bool,
           match next with
           | inl x' => meas_iter_approx fuel binary_coin_transition x'
           | inr b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b
           end))).
     eapply FOOObserveSample with
-      (front := fun next : rat + bool =>
+      (front := λ next : rat + bool,
         match next with
         | inl x' => meas_iter_approx fuel binary_coin_transition x'
         | inr b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b
@@ -150,7 +150,7 @@ Proof.
 Qed.
 
 Lemma ptree_rational_limit_observes :
-  free_omega_observes (fun b : bool => b)
+  free_omega_observes (λ b : bool, b)
     ptree_rational_limit (rational_bernoulli_measure q0 q1).
 Proof.
   unfold ptree_rational_limit. eapply FOOObserveLub.
@@ -165,18 +165,18 @@ Definition ptree_rational_heads : MF rational_head :=
       (NI := EnumQ_SemanticMeasure)
       (NO := EnumQ_SemanticOmega)) _ _
     ptree_rational_limit
-    (fun b => @sem_ret MF
+    (λ b, @sem_ret MF
       (FreeOmegaObservableSemanticMeasure
         (NI := EnumQ_SemanticMeasure)
         (NO := EnumQ_SemanticOmega)) rational_head (FHRet b)).
 
 Definition ptree_rational_direct : ptree rational_coinE EnumQ bool :=
-  Prob (rational_bernoulli_measure q0 q1) (fun b => Ret b).
+  Prob (rational_bernoulli_measure q0 q1) (λ b, Ret b).
 
 Definition ptree_rational_direct_heads : MF rational_head :=
   @mixed_bind EnumQ MF FreeOmegaMixedMeasure bool rational_head
     (rational_bernoulli_measure q0 q1)
-    (fun b => @sem_ret MF
+    (λ b, @sem_ret MF
       (FreeOmegaObservableSemanticMeasure
         (NI := EnumQ_SemanticMeasure)
         (NO := EnumQ_SemanticOmega)) rational_head (FHRet b)).
@@ -190,7 +190,7 @@ Definition ptree_rational_head_value (h : rational_head) : bool :=
 Definition ptree_rational_direct_observation : EnumQ bool :=
   @sem_bind EnumQ EnumQ_SemanticMeasure _ _
     (rational_bernoulli_measure q0 q1)
-    (fun b => @sem_ret EnumQ EnumQ_SemanticMeasure bool b).
+    (λ b, @sem_ret EnumQ EnumQ_SemanticMeasure bool b).
 
 (** The implementation and specification already differ at finite fuel.
     One unit of primitive fuel exposes exactly one binary-algorithm round on
@@ -223,7 +223,7 @@ Lemma ptree_rational_direct_hitting_one :
 Proof. reflexivity. Qed.
 
 Lemma ptree_rational_first_round_mass :
-  enumQ_expect (fun _ : bool => (1 : rat))
+  enumQ_expect (λ _ : bool, (1 : rat))
     (meas_iter_approx 1 binary_coin_transition q) = 1 / 2.
 Proof.
   rewrite /meas_iter_approx /binary_coin_transition.
@@ -240,7 +240,7 @@ Lemma ptree_rational_first_round_not_direct :
 Proof.
   intro Heq.
   pose proof (rational_bernoulli_total q0 q1) as Htotal.
-  change (enumQ_expect (fun _ : bool => (1 : rat))
+  change (enumQ_expect (λ _ : bool, (1 : rat))
     (rational_bernoulli_measure q0 q1) = 1) in Htotal.
   rewrite <- Heq, ptree_rational_first_round_mass in Htotal.
   have Hlt : (1 / 2 : rat) < 1.
@@ -254,7 +254,7 @@ Lemma ptree_rational_heads_observes :
 Proof.
   unfold ptree_rational_heads.
   eapply free_omega_observes_bind_ret
-    with (obsA := fun b : bool => b).
+    with (obsA := λ b : bool, b).
   - exact ptree_rational_limit_observes.
   - intros b. reflexivity.
 Qed.
@@ -276,7 +276,7 @@ Proof.
   unfold ptree_rational_direct_observation.
   apply finite_enum_raw_eq.
   change (enumQ_raw (bind_EnumQ (rational_bernoulli_measure q0 q1)
-    (fun b => ret_EnumQ b)) = enumQ_raw (rational_bernoulli_measure q0 q1)).
+    (λ b, ret_EnumQ b)) = enumQ_raw (rational_bernoulli_measure q0 q1)).
   rewrite bind_ret_emap. apply emap_id.
 Qed.
 
@@ -366,9 +366,9 @@ Theorem ptree_rational_direct_ast :
 Proof.
   assert (Hobserve : observe ptree_rational_direct =
     ProbF (rational_bernoulli_measure q0 q1)
-      (fun b => Ret b)) by reflexivity.
+      (λ b, Ret b)) by reflexivity.
   rewrite Hobserve.
-  eapply ptree_stable_hitting_ast_prob with (Good := fun _ => True).
+  eapply ptree_stable_hitting_ast_prob with (Good := λ _, True).
   - apply sem_ae_true.
   - intros b _. split.
     + apply ptree_stable_hitting_ret.
@@ -376,7 +376,7 @@ Proof.
       exists bool, ptree_rational_head_value,
         (@sem_ret EnumQ EnumQ_SemanticMeasure bool b).
       split; [constructor|].
-      change (enumQ_expect (fun _ : bool => (1 : rat)) (ret_EnumQ b) =
+      change (enumQ_expect (λ _ : bool, (1 : rat)) (ret_EnumQ b) =
         (1 : rat)).
       rewrite enumQ_expect_ret. reflexivity.
   - exact ptree_rational_direct_heads_total.
@@ -405,7 +405,7 @@ Qed.
 Lemma ptree_rational_heads_lift
     (Hsupport : free_omega_support_lift eq ptree_rational_limit
       (FOSample (rational_bernoulli_measure q0 q1)
-        (fun b => FORet b)))
+        (λ b, FORet b)))
     (sim : ptree rational_coinE EnumQ bool →
       ptree rational_coinE EnumQ bool → Prop) :
   @sem_lift MF
@@ -433,11 +433,11 @@ Proof.
   - unfold ptree_rational_heads, ptree_rational_direct_heads.
     change (free_omega_support_lift (stable_head_rel eq sim)
       (free_omega_bind ptree_rational_limit
-        (fun b => FORet (FHRet b)))
+        (λ b, FORet (FHRet b)))
       (free_omega_bind
         (FOSample (rational_bernoulli_measure q0 q1)
-          (fun b => FORet b))
-        (fun b => FORet (FHRet b)))).
+          (λ b, FORet b))
+        (λ b, FORet (FHRet b)))).
     eapply free_omega_support_lift_bind with (T := eq).
     + exact Hsupport.
     + intros b1 b2 ->. split.
@@ -449,7 +449,7 @@ Qed.
 
 Theorem peutt_binary_rational_coin_direct :
   free_omega_support_lift eq ptree_rational_limit
-    (FOSample (rational_bernoulli_measure q0 q1) (fun b => FORet b)) →
+    (FOSample (rational_bernoulli_measure q0 q1) (λ b, FORet b)) →
   @peutt rational_coinE EnumQ MF
     (FreeOmegaObservableSemanticMeasure
       (NI := EnumQ_SemanticMeasure)

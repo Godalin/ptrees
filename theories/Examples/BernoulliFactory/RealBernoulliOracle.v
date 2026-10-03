@@ -48,7 +48,7 @@ Definition oracle_coin_transition (qbit : binary_oracle) (n : nat) :
 Definition oracle_coin_step (qbit : binary_oracle) (n : nat) :
     ptree real_oracle_coinE EnumQ (nat + bool) :=
   Prob (oracle_coin_transition qbit n)
-    (fun next : nat + bool => Ret next).
+    (λ next : nat + bool, Ret next).
 
 Definition binary_oracle_coin (qbit : binary_oracle) :
     ptree real_oracle_coinE EnumQ bool :=
@@ -61,7 +61,7 @@ Definition oracle_true (next : nat + bool) : rat :=
   match next with inl _ => 0 | inr b => if b then 1 else 0 end.
 
 Lemma oracle_transition_total qbit n :
-  enumQ_expect (fun _ : nat + bool => 1)
+  enumQ_expect (λ _ : nat + bool, 1)
     (oracle_coin_transition qbit n) = 1.
 Proof.
   rewrite /oracle_coin_transition.
@@ -122,7 +122,7 @@ Proof.
 Qed.
 
 Lemma oracle_iter_total_mass qbit fuel n :
-  enumQ_expect (fun _ : bool => 1)
+  enumQ_expect (λ _ : bool, 1)
     (meas_iter_approx fuel (oracle_coin_transition qbit) n) =
   1 - (1 / 2 : rat) ^+ fuel.
 Proof.
@@ -136,7 +136,7 @@ Proof.
 Qed.
 
 Lemma oracle_iter_missing_mass qbit fuel n :
-  1 - enumQ_expect (fun _ : bool => 1)
+  1 - enumQ_expect (λ _ : bool, 1)
         (meas_iter_approx fuel (oracle_coin_transition qbit) n) =
   (1 / 2 : rat) ^+ fuel.
 Proof. by rewrite oracle_iter_total_mass subKr. Qed.
@@ -145,7 +145,7 @@ Proof. by rewrite oracle_iter_total_mass subKr. Qed.
     of requiring more than [fuel] comparisons tends to zero geometrically. *)
 Theorem oracle_missing_mass_vanishes qbit n eps : 0 < eps →
   ∃ N, ∀ fuel, Peano.le N fuel →
-    1 - enumQ_expect (fun _ : bool => 1)
+    1 - enumQ_expect (λ _ : bool, 1)
           (meas_iter_approx fuel (oracle_coin_transition qbit) n) < eps.
 Proof.
   move=> eps0.
@@ -164,4 +164,4 @@ Qed.
 Definition oracle_represents {T : Type}
     (embed : rat → T) (converges : (nat → T) → T → Prop)
     (qbit : binary_oracle) (q : T) : Prop :=
-  converges (fun n => embed (oracle_prefix qbit n)) q.
+  converges (λ n, embed (oracle_prefix qbit n)) q.

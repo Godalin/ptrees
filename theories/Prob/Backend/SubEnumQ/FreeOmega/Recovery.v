@@ -55,11 +55,11 @@ Let X := native_sample_type p.
 Let mu := native_sample_measure p.
 Let decode := native_sample_value p.
 Let code := small_fiber_code decode.
-Let label := fun x => code (decode x).
-Let joint := subenumQ_bind mu (fun x => subenumQ_ret (label x, x)).
-Let marginal := subenumQ_bind mu (fun x => subenumQ_ret (label x)).
+Let label := λ x, code (decode x).
+Let joint := subenumQ_bind mu (λ x, subenumQ_ret (label x, x)).
+Let marginal := subenumQ_bind mu (λ x, subenumQ_ret (label x)).
 
-Lemma coded_joint_marginal : sem_lift (fun pair c => fst pair = c) joint marginal.
+Lemma coded_joint_marginal : sem_lift (λ pair c, fst pair = c) joint marginal.
 Proof.
   unfold joint, marginal.
   eapply (@sem_lift_bind SubEnumQ SubEnumQ_SemanticMeasure
@@ -69,7 +69,7 @@ Proof.
       SubEnumQ_SemanticMeasureCoreLaws). reflexivity.
 Qed.
 
-Lemma coded_joint_support : sem_ae joint (fun pair => fst pair = label (snd pair)).
+Lemma coded_joint_support : sem_ae joint (λ pair, fst pair = label (snd pair)).
 Proof.
   unfold joint. apply (@sem_ae_bind_iff SubEnumQ SubEnumQ_SemanticMeasure
     SubEnumQ_SemanticMeasureBindAEExactLaws).
@@ -87,8 +87,8 @@ Proof.
     (subenumQ_disintegration_over coded_joint_marginal))
     as [conditional [Hreconstruct [Hfiber [Hsupport Htotal]]]].
   refine (@Build_free_omega_native_recovery _ _ _ A p
-    (fun a => subenumQ_total (conditional (code a)))
-    (fun a => FOSample (conditional (code a)) (fun pair => FORet (snd pair)))
+    (λ a, subenumQ_total (conditional (code a)))
+    (λ a, FOSample (conditional (code a)) (λ pair, FORet (snd pair)))
     _ _ _ _).
   - apply free_omega_native_ae_iff.
     unfold marginal in Htotal.
@@ -98,7 +98,7 @@ Proof.
     intros x Hx. exact (proj1 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
       SubEnumQ_SemanticMeasureDiracAELaws _ (label x) _) Hx).
   - intros a _. apply FOAESample with
-      (Good := fun pair => fst pair = code a ∧ fst pair = label (snd pair)).
+      (Good := λ pair, fst pair = code a ∧ fst pair = label (snd pair)).
     + apply sem_ae_conj; [apply Hfiber|]. apply Hsupport, coded_joint_support.
     + intros [c x] [Hc Hx]. apply FOAERet.
       apply small_fiber_code_sound. change (label x = code a).
@@ -108,24 +108,24 @@ Proof.
     + apply subenumQ_total_same_mass. exact Ha.
     + intros pair. apply FOQLStructural, FOLRet. exact I.
   - change (free_omega_qlift eq
-      (FOSample mu (fun x => FOSample (conditional (label x)) (fun pair => FORet (snd pair))))
-      (FOSample mu (fun x => FORet x))).
+      (FOSample mu (λ x, FOSample (conditional (label x)) (λ pair, FORet (snd pair))))
+      (FOSample mu (λ x, FORet x))).
     eapply FOQLComp with (T := eq) (U := eq)
-      (mid := FOSample marginal (fun c => FOSample (conditional c) (fun pair => FORet (snd pair)))).
-    + apply FOQLMono with (T := fun a b => b = a).
+      (mid := FOSample marginal (λ c, FOSample (conditional c) (λ pair, FORet (snd pair)))).
+    + apply FOQLMono with (T := λ a b, b = a).
       * apply FOQLSym. exact (@free_omega_sample_map SubEnumQ
           SubEnumQ_SemanticMeasure SubEnumQ_SemanticMeasureCoreLaws
           SubEnumQ_SemanticOmega SubEnumQ_SemanticMeasureDiracAELaws
           SubEnumQ_SemanticMeasureBindAEExactLaws _ _ _ mu label _).
       * intros x y Hyx. symmetry. exact Hyx.
     + eapply FOQLComp with (T := eq) (U := eq)
-        (mid := FOSample joint (fun pair => FORet (snd pair))).
+        (mid := FOSample joint (λ pair, FORet (snd pair))).
       * apply free_omega_sample_disintegration. exact Hreconstruct.
       * exact (@free_omega_sample_map SubEnumQ
           SubEnumQ_SemanticMeasure SubEnumQ_SemanticMeasureCoreLaws
           SubEnumQ_SemanticOmega SubEnumQ_SemanticMeasureDiracAELaws
           SubEnumQ_SemanticMeasureBindAEExactLaws _ _ _ mu
-          (fun x => (label x, x)) (fun pair => FORet (snd pair))).
+          (λ x, (label x, x)) (λ pair, FORet (snd pair))).
       * intros x z [y [-> ->]]. reflexivity.
     + intros x z [y [-> ->]]. reflexivity.
 Defined.
@@ -139,10 +139,10 @@ Theorem subenumQ_native_coupling_pullback {A B}
     (q : free_omega_native_presentation SubEnumQ B) (R : A → B → Prop) :
   free_omega_qlift R (free_omega_native p) (free_omega_native q) →
   free_omega_qlift
-    (fun x y => R (native_sample_value p x) (native_sample_value q y))
-    (FOSample (native_sample_measure p) (fun x => FORet x) :
+    (λ x y, R (native_sample_value p x) (native_sample_value q y))
+    (FOSample (native_sample_measure p) (λ x, FORet x) :
       FreeOmegaAt SubEnumQ A (native_sample_type p))
-    (FOSample (native_sample_measure q) (fun y => FORet y) :
+    (FOSample (native_sample_measure q) (λ y, FORet y) :
       FreeOmegaAt SubEnumQ B (native_sample_type q)).
 Proof.
   intro H. exact (free_omega_native_coupling_pullback

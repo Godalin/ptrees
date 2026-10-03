@@ -28,9 +28,9 @@ Local Notation MF := (FreeOmega SubEnumQ).
     result yields the Dirac distribution. *)
 Lemma fair_discard_node :
   @sem_lift SubEnumQ SubEnumQ_SemanticMeasure bool bool eq
-    (subenumQ_bind subenumQ_fair (fun _ => subenumQ_ret false)) (subenumQ_ret false).
+    (subenumQ_bind subenumQ_fair (λ _, subenumQ_ret false)) (subenumQ_ret false).
 Proof.
-  change (enumQ_meas_eq (bind_EnumQ reg_fair (fun _ => ret_EnumQ false)) (ret_EnumQ false)).
+  change (enumQ_meas_eq (bind_EnumQ reg_fair (λ _, ret_EnumQ false)) (ret_EnumQ false)).
   apply enumQ_meas_eq_of_eqenum.
   intro b. destruct b; vm_compute; reflexivity.
 Qed.
@@ -44,29 +44,29 @@ Proof.
   { change (enumQ_meas_eq (bind_EnumQ reg_fair ret_EnumQ) reg_fair).
     apply enumQ_meas_eq_of_eqenum.
     intro b. destruct b; vm_compute; reflexivity. }
-  assert (Hbind : @sem_lift SubEnumQ SubEnumQ_SemanticMeasure bool bool (fun _ _ => True)
+  assert (Hbind : @sem_lift SubEnumQ SubEnumQ_SemanticMeasure bool bool (λ _ _, True)
     (subenumQ_bind subenumQ_fair subenumQ_ret)
-    (subenumQ_bind subenumQ_fair (fun _ => subenumQ_ret false))).
+    (subenumQ_bind subenumQ_fair (λ _, subenumQ_ret false))).
   { eapply (@sem_lift_bind SubEnumQ SubEnumQ_SemanticMeasure
       SubEnumQ_SemanticMeasureBindLaws bool bool bool bool eq
-      (fun _ _ => True) subenumQ_fair subenumQ_fair subenumQ_ret
-      (fun _ => subenumQ_ret false)).
+      (λ _ _, True) subenumQ_fair subenumQ_fair subenumQ_ret
+      (λ _, subenumQ_ret false)).
     - apply sem_lift_refl. intro b. reflexivity.
     - intros x y _. apply (@sem_lift_ret SubEnumQ SubEnumQ_SemanticMeasure
         SubEnumQ_SemanticMeasureCoreLaws). exact I. }
-  eapply sem_lift_mono with (R := fun x z => exists y, True ∧ y = z).
+  eapply sem_lift_mono with (R := λ x z, exists y, True ∧ y = z).
   - intros x z _. exact I.
   - eapply sem_lift_comp; [|exact fair_discard_node].
     eapply sem_lift_proper_l; [exact Hret|exact Hbind].
 Qed.
 
-Definition reference_coin : MF bool := FOSample subenumQ_fair (fun b => FORet b).
+Definition reference_coin : MF bool := FOSample subenumQ_fair (λ b, FORet b).
 
 Example reference_coin_quotient_discard :
-  free_omega_qlift (fun _ _ : bool => True) reference_coin (FORet false).
+  free_omega_qlift (λ _ _ : bool, True) reference_coin (FORet false).
 Proof.
-  eapply FOQLObserve with (obsA := fun _ : bool => false) (obsB := fun b : bool => b)
-    (outA := subenumQ_bind subenumQ_fair (fun _ => subenumQ_ret false))
+  eapply FOQLObserve with (obsA := λ _ : bool, false) (obsB := λ b : bool, b)
+    (outA := subenumQ_bind subenumQ_fair (λ _, subenumQ_ret false))
     (outB := subenumQ_ret false) (S := eq).
   - apply (FOOObserveSample (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
     intro b. apply (FOOObserveRet (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
@@ -79,7 +79,7 @@ Proof.
       pose proof (proj1 (exchange_fair_both_values HP)) as Htrue.
       dependent destruction Htrue. exists true. split; [exact I|assumption].
     + intros P HP. dependent destruction HP.
-      apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+      apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
       intros b _. apply FOAERet. exists false. split; [exact I|assumption].
 Qed.
 
@@ -87,7 +87,7 @@ Qed.
     quotient coupling.  This refutes the proposed general reference-
     extraction shortcut, not behavioral equivalence. *)
 Example reference_coin_discard_has_no_references :
-  ¬ ∃ left right, free_omega_coupling_references (fun _ _ : bool => True)
+  ¬ ∃ left right, free_omega_coupling_references (λ _ _ : bool, True)
     reference_coin (FORet false) left right.
 Proof.
   intros [left [right H]].
@@ -104,16 +104,16 @@ Example reference_coin_discard_ordinary_joint :
   @SemanticCoupling.semantic_coupling MF
     (FreeOmegaObservableSemanticMeasure
       (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
-    bool bool (fun _ _ => True) reference_coin (FORet false)
-    (free_omega_graph_joint (fun _ : bool => false) reference_coin).
+    bool bool (λ _ _, True) reference_coin (FORet false)
+    (free_omega_graph_joint (λ _ : bool, false) reference_coin).
 Proof.
   eapply SemanticCoupling.semantic_coupling_mono;
     [|apply free_omega_qlift_graph_realization].
   - intros x y _. exact I.
-  - eapply FOQLAERestrict with (T := fun _ _ : bool => True)
-      (P := fun _ => True) (Q := fun y => y = false).
+  - eapply FOQLAERestrict with (T := λ _ _ : bool, True)
+      (P := λ _, True) (Q := λ y, y = false).
     + exact reference_coin_quotient_discard.
-    + apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+    + apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
       intros b _. apply FOAERet. exact I.
     + apply FOAERet. reflexivity.
     + intros x y [_ [_ ->]]. reflexivity.
@@ -122,9 +122,9 @@ Qed.
 (** Equality, in contrast, always admits references; their representations
     may be entirely different, as in this constant-Lub test. *)
 Example reference_constant_limit {A} (mu : MF A) :
-  free_omega_coupling_references eq mu (FOLub (fun _ => mu))
-    (free_omega_graph_joint (fun x => x) mu)
-    (free_omega_graph_joint (fun x => x) (FOLub (fun _ => mu))).
+  free_omega_coupling_references eq mu (FOLub (λ _, mu))
+    (free_omega_graph_joint (λ x, x) mu)
+    (free_omega_graph_joint (λ x, x) (FOLub (λ _, mu))).
 Proof.
   apply free_omega_eq_coupling_references.
   apply FOQLLubConstantR, free_omega_qlift_refl. intro x. reflexivity.
@@ -145,7 +145,7 @@ Local Notation residual := (@peutt exchangeE SubEnumQ MF FI
 Definition discarded_coin_delay (b : bool) : tree :=
   if b then Tau (Tau (Ret false)) else Tau (Ret false).
 Definition discarded_coin_cut : MF tree :=
-  FOSample subenumQ_fair (fun b => FORet (discarded_coin_delay b)).
+  FOSample subenumQ_fair (λ b, FORet (discarded_coin_delay b)).
 
 Definition discarded_left_observation (t : tree) : bool :=
   if excluded_middle_informative
@@ -168,7 +168,7 @@ Proof.
 Qed.
 
 Lemma discarded_coin_guard b :
-  (fun t u => pstrongF eq residual (observe t) (observe u)) (discarded_coin_delay b) (discarded_coin_delay false).
+  (λ t u, pstrongF eq residual (observe t) (observe u)) (discarded_coin_delay b) (discarded_coin_delay false).
 Proof.
   unfold discarded_coin_delay. destruct b; cbn; constructor.
   - apply peutt_tau_l.
@@ -176,13 +176,13 @@ Proof.
 Qed.
 
 Lemma discarded_coin_residual_lift :
-  free_omega_qlift (fun t u => pstrongF eq residual (observe t) (observe u))
+  free_omega_qlift (λ t u, pstrongF eq residual (observe t) (observe u))
     discarded_coin_cut (FORet (discarded_coin_delay false)).
 Proof.
   eapply FOQLObserve with
     (obsA := discarded_left_observation) (obsB := discarded_right_observation)
-    (outA := subenumQ_bind subenumQ_fair (fun _ => subenumQ_ret false))
-    (outB := subenumQ_ret false) (S := fun x y => x = y ∧ y = false).
+    (outA := subenumQ_bind subenumQ_fair (λ _, subenumQ_ret false))
+    (outB := subenumQ_ret false) (S := λ x y, x = y ∧ y = false).
   - apply (FOOObserveSample (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
     intro b. rewrite <- (discarded_left_observationE b).
     apply (FOOObserveRet (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
@@ -190,11 +190,11 @@ Proof.
       (subenumQ_ret (discarded_right_observation (discarded_coin_delay false)))
       by (rewrite discarded_right_observationE; reflexivity).
     apply (FOOObserveRet (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
-  - eapply sem_lift_mono with (R := fun x y => x = y ∧ True ∧ y = false).
+  - eapply sem_lift_mono with (R := λ x y, x = y ∧ True ∧ y = false).
     + intros x y [Heq [_ Hy]]. split; assumption.
     + eapply sem_lift_ae_restrict; [exact fair_discard_node|apply sem_ae_true|].
       apply (proj2 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
-        SubEnumQ_SemanticMeasureDiracAELaws bool false (fun y => y = false))).
+        SubEnumQ_SemanticMeasureDiracAELaws bool false (λ y, y = false))).
       reflexivity.
   - intros t u [Heq Hu].
     unfold discarded_left_observation, discarded_right_observation in *.
@@ -210,7 +210,7 @@ Proof.
       dependent destruction Htrue. exists (discarded_coin_delay true).
       split; [apply discarded_coin_guard|assumption].
     + intros P HP. dependent destruction HP.
-      apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+      apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
       intros b _. apply FOAERet. exists (discarded_coin_delay false).
       split; [apply discarded_coin_guard|assumption].
 Qed.
@@ -222,11 +222,11 @@ Example discarded_coin_delay_peutt :
 Proof.
   eapply (peutt_of_hitting_lift (FI := FI)
     (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)) with
-    (out1 := FOSample subenumQ_fair (fun _ => FORet (FHRet false)))
+    (out1 := FOSample subenumQ_fair (λ _, FORet (FHRet false)))
     (out2 := FORet (FHRet false)).
   - eapply (stable_hitting_prob (FI := FI)
       (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure))
-      with (Good := fun _ => True).
+      with (Good := λ _, True).
     + apply sem_ae_true.
     + intros [] _; unfold discarded_coin_delay.
       * apply (proj2 (stable_hitting_tau_iff _ _)).
@@ -247,7 +247,7 @@ Proof.
 Qed.
 
 Example discarded_coin_cuts_have_no_references :
-  ¬ ∃ left right, free_omega_coupling_references (fun t u => pstrongF eq residual (observe t) (observe u))
+  ¬ ∃ left right, free_omega_coupling_references (λ t u, pstrongF eq residual (observe t) (observe u))
     discarded_coin_cut (FORet (discarded_coin_delay false)) left right.
 Proof.
   intros [left [right H]].
@@ -266,13 +266,13 @@ Example discarded_coin_rounds_have_no_reference_kernels :
       (tree * tree) (UnifiedFrontier.stable_head exchangeE SubEnumQ bool *
                     UnifiedFrontier.stable_head exchangeE SubEnumQ bool)),
     free_omega_qlift eq left right ∧
-    free_omega_lift (fun z target => finite_internal_pair_left z = target)
+    free_omega_lift (λ z target, finite_internal_pair_left z = target)
       left (free_omega_bind discarded_coin_cut finite_internal_guard_transition) ∧
-    free_omega_lift (fun z target => finite_internal_pair_right z = target)
+    free_omega_lift (λ z target, finite_internal_pair_right z = target)
       right (finite_internal_guard_transition (discarded_coin_delay false)).
 Proof.
   intros [left [right [Heq [Hl Hr]]]].
-  change (free_omega_lift (fun z target => finite_internal_pair_right z = target)
+  change (free_omega_lift (λ z target, finite_internal_pair_right z = target)
     right (FORet (PrimitiveStableHitting.SHInternal (Ret false : tree)))) in Hr.
   destruct (free_omega_reference_marginals_ret_deterministic Heq Hl Hr) as [z Hae].
   apply free_omega_ae_sample_inv in Hae.

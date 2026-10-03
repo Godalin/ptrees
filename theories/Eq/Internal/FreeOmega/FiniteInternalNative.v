@@ -38,7 +38,7 @@ Lemma internal_plan_native_eq t (p : @finite_internal_plan E MN R t) :
     (free_omega_native (internal_plan_native p)).
 Proof.
   induction p as [t|t next IH|X mu k next IH].
-  - apply FOQLMono with (T := fun x y => y = x).
+  - apply FOQLMono with (T := λ x y, y = x).
     + apply FOQLSym, FOQLSampleRetL.
       * apply sem_ae_ret_iff.
       * apply FOQLStructural, FOLRet. reflexivity.
@@ -46,15 +46,15 @@ Proof.
   - exact IH.
   - cbn [internal_plan_frontier].
     eapply FOQLComp with (T := eq) (U := eq)
-      (mid := FOSample mu (fun x => free_omega_native (internal_plan_native (next x)))).
+      (mid := FOSample mu (λ x, free_omega_native (internal_plan_native (next x)))).
     + eapply FOQLSample with (T := eq).
       * apply sem_lift_refl. intro x. reflexivity.
       * intros x y ->. apply IH.
     + unfold free_omega_native, internal_plan_native. cbn.
       exact (@free_omega_sample_sigma MN NI NC NO ND NBAE X
-        (fun x => internal_plan_path (next x)) tree mu
-        (fun x => internal_plan_measure (next x))
-        (fun x y => FORet (internal_plan_residual (next x) y))).
+        (λ x, internal_plan_path (next x)) tree mu
+        (λ x, internal_plan_measure (next x))
+        (λ x y, FORet (internal_plan_residual (next x) y))).
     + intros x z [y [-> ->]]. reflexivity.
 Qed.
 
@@ -82,13 +82,13 @@ Definition internal_guard_native (t : tree) :
       (PrimitiveStableHitting.stable_target tree (UnifiedFrontier.stable_head E MN R)) :=
   match observe t with
   | RetF r => {| native_sample_type := unit; native_sample_measure := sem_ret tt;
-      native_sample_value := fun _ => PrimitiveStableHitting.SHStable (UnifiedFrontier.FHRet r) |}
+      native_sample_value := λ _, PrimitiveStableHitting.SHStable (UnifiedFrontier.FHRet r) |}
   | TauF u => {| native_sample_type := unit; native_sample_measure := sem_ret tt;
-      native_sample_value := fun _ => PrimitiveStableHitting.SHInternal u |}
+      native_sample_value := λ _, PrimitiveStableHitting.SHInternal u |}
   | VisF _ e k => {| native_sample_type := unit; native_sample_measure := sem_ret tt;
-      native_sample_value := fun _ => PrimitiveStableHitting.SHStable (UnifiedFrontier.FHVis e k) |}
+      native_sample_value := λ _, PrimitiveStableHitting.SHStable (UnifiedFrontier.FHVis e k) |}
   | ProbF _ mu k => {| native_sample_type := _; native_sample_measure := mu;
-      native_sample_value := fun x => PrimitiveStableHitting.SHInternal (k x) |}
+      native_sample_value := λ x, PrimitiveStableHitting.SHInternal (k x) |}
   end.
 
 Lemma internal_guard_native_eq t :
@@ -98,7 +98,7 @@ Proof.
   unfold finite_internal_guard_transition, internal_guard_native.
   destruct (observe t) as [r|u|X e k|X mu k].
   all: try solve [apply free_omega_qlift_refl; intro z; reflexivity].
-  all: apply FOQLMono with (T := fun x y => y = x).
+  all: apply FOQLMono with (T := λ x y, y = x).
   all: try solve [intros x y Hyx; symmetry; exact Hyx].
   all: apply FOQLSym, FOQLSampleRetL; [apply sem_ae_ret_iff|].
   all: apply FOQLStructural, FOLRet; reflexivity.

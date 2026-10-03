@@ -39,7 +39,7 @@ Definition mathcomp_half_coin : M bool :=
 
 Definition mathcomp_oracle_transition
     (qbit : binary_oracle) (n : nat) : M (nat + bool) :=
-  meas_bind mathcomp_half_coin (fun random =>
+  meas_bind mathcomp_half_coin (λ random,
     if qbit n then
       if random then meas_ret (inl n.+1) else meas_ret (inr true)
     else
@@ -49,7 +49,7 @@ Definition mathcomp_oracle_step
     (qbit : binary_oracle) (n : nat) :
     ptree real_mathcomp_coinE M (nat + bool) :=
   Prob (mathcomp_oracle_transition qbit n)
-    (fun next : nat + bool => Ret next).
+    (λ next : nat + bool, Ret next).
 
 Definition mathcomp_binary_oracle_coin (qbit : binary_oracle) :
     ptree real_mathcomp_coinE M bool :=
@@ -59,13 +59,13 @@ Definition mathcomp_binary_oracle_coin (qbit : binary_oracle) :
     real-valued Bernoulli probability measure. *)
 Definition mathcomp_direct_bernoulli (q : R) :
     ptree real_mathcomp_coinE M bool :=
-  Prob (@mathcomp_bernoulli R q) (fun b : bool => Ret b).
+  Prob (@mathcomp_bernoulli R q) (λ b : bool, Ret b).
 
 (** Concrete interpretation of the abstract oracle representation from
     [RealBernoulliOracle]: rational binary prefixes converge in [R]. *)
 Definition mathcomp_oracle_represents
     (qbit : binary_oracle) (q : R) : Prop :=
-  (fun n => ratr (oracle_prefix qbit n)) @ \oo --> q.
+  (λ n, ratr (oracle_prefix qbit n)) @ \oo --> q.
 
 (** Result-valued absorbing approximants.  Unlike a frontier measure, this
     stays in [M bool] and therefore avoids raising the carrier universe; it is
@@ -91,7 +91,7 @@ Fixpoint mathcomp_oracle_unfolded_approx
   match fuel with
   | 0 => meas_zero
   | fuel'.+1 =>
-      meas_bind mathcomp_half_coin (fun random =>
+      meas_bind mathcomp_half_coin (λ random,
         if qbit n then
           if random then
             mathcomp_oracle_unfolded_approx qbit fuel' n.+1
@@ -118,7 +118,7 @@ Lemma mathcomp_oracle_unfolded_mass qbit fuel n
         (mathcomp_oracle_unfolded_approx qbit fuel n.+1) U.
 Proof.
   move=> mU. cbn [mathcomp_oracle_unfolded_approx].
-  set k := fun random : bool =>
+  set k := λ random : bool,
     if qbit n then
       if random then mathcomp_oracle_unfolded_approx qbit fuel n.+1
       else meas_ret true
@@ -281,7 +281,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_oracle_prefix_nondecreasing qbit n :
-  nondecreasing_seq (fun fuel =>
+  nondecreasing_seq (λ fuel,
     (mathcomp_oracle_prefix_from qbit n fuel)%:E).
 Proof.
   apply/nondecreasing_seqP=> fuel.
@@ -316,7 +316,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_oracle_false_prefix_nondecreasing qbit n :
-  nondecreasing_seq (fun fuel =>
+  nondecreasing_seq (λ fuel,
     (mathcomp_oracle_false_prefix_from qbit n fuel)%:E).
 Proof.
   apply/nondecreasing_seqP=> fuel.
@@ -325,16 +325,16 @@ Qed.
 
 Lemma mathcomp_oracle_prefix_sup qbit q :
   mathcomp_oracle_represents qbit q →
-  ereal_sup (range (fun fuel =>
+  ereal_sup (range (λ fuel,
     (mathcomp_oracle_prefix_from qbit 0 fuel)%:E)) = q%:E.
 Proof.
   move=> Hrep.
   have Hsup := ereal_nondecreasing_cvgn
     (mathcomp_oracle_prefix_nondecreasing qbit 0).
-  have Hq : (fun fuel =>
+  have Hq : (λ fuel,
       (mathcomp_oracle_prefix_from qbit 0 fuel)%:E) @ \oo --> q%:E.
   { apply: cvg_EFin; first exact: nearW.
-    change ((fun fuel => mathcomp_oracle_prefix_from qbit 0 fuel)
+    change ((λ fuel, mathcomp_oracle_prefix_from qbit 0 fuel)
       @ \oo --> q).
     under eq_cvg do rewrite mathcomp_oracle_prefix_from_rat.
     exact Hrep. }
@@ -355,7 +355,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_total_nondecreasing :
-  nondecreasing_seq (fun fuel =>
+  nondecreasing_seq (λ fuel,
     (1 - (1 / 2 : R) ^+ fuel)%:E).
 Proof.
   apply/nondecreasing_seqP=> fuel. rewrite lee_fin.
@@ -364,7 +364,7 @@ Proof.
 Qed.
 
 Lemma mathcomp_total_cvg :
-  (fun fuel => (1 - (1 / 2 : R) ^+ fuel)%R) @ \oo --> (1 : R)%R.
+  (λ fuel, (1 - (1 / 2 : R) ^+ fuel)%R) @ \oo --> (1 : R)%R.
 Proof.
   have Hpow : (GRing.exp (1 / 2 : R) : R ^nat) @ \oo --> (0 : R)%R.
   { apply: cvg_expr. rewrite ger0_norm; first last.
@@ -376,11 +376,11 @@ Proof.
 Qed.
 
 Lemma mathcomp_total_sup :
-  ereal_sup (range (fun fuel =>
+  ereal_sup (range (λ fuel,
     (1 - (1 / 2 : R) ^+ fuel)%:E)) = 1.
 Proof.
   have Hsup := ereal_nondecreasing_cvgn mathcomp_total_nondecreasing.
-  have HE : (fun fuel => (1 - (1 / 2 : R) ^+ fuel)%:E)
+  have HE : (λ fuel, (1 - (1 / 2 : R) ^+ fuel)%:E)
       @ \oo --> (1 : R)%:E.
   { apply: cvg_EFin; first exact: nearW. exact mathcomp_total_cvg. }
   exact: cvg_unique Hsup HE.
@@ -460,22 +460,22 @@ Qed.
 
 Lemma mathcomp_oracle_false_prefix_sup qbit q :
   mathcomp_oracle_represents qbit q →
-  ereal_sup (range (fun fuel =>
+  ereal_sup (range (λ fuel,
     (mathcomp_oracle_false_prefix_from qbit 0 fuel)%:E)) =
   (1 - q)%:E.
 Proof.
   move=> Hrep.
   have Hsup := ereal_nondecreasing_cvgn
     (mathcomp_oracle_false_prefix_nondecreasing qbit 0).
-  have Htrue : (fun fuel => mathcomp_oracle_prefix_from qbit 0 fuel)
+  have Htrue : (λ fuel, mathcomp_oracle_prefix_from qbit 0 fuel)
       @ \oo --> q.
   { under eq_cvg do rewrite mathcomp_oracle_prefix_from_rat.
     exact Hrep. }
-  have Hfalse : (fun fuel =>
+  have Hfalse : (λ fuel,
       mathcomp_oracle_false_prefix_from qbit 0 fuel) @ \oo --> (1 - q)%R.
   { under eq_cvg do rewrite mathcomp_oracle_false_prefixE.
     exact: cvgB mathcomp_total_cvg Htrue. }
-  have HE : (fun fuel =>
+  have HE : (λ fuel,
       (mathcomp_oracle_false_prefix_from qbit 0 fuel)%:E)
       @ \oo --> (1 - q)%:E.
   { apply: cvg_EFin; first exact: nearW. exact Hfalse. }
@@ -506,16 +506,16 @@ Lemma mathcomp_oracle_result_unfolded_eq qbit fuel n :
 Proof.
   elim: fuel n=> [|fuel IH] n.
   - exact: mathcomp_kernel_eq_refl.
-  - set f : bool -> M (nat + bool) := fun random : bool =>
+  - set f : bool -> M (nat + bool) := λ random : bool,
       if qbit n then
         if random then meas_ret (inl n.+1) else meas_ret (inr true)
       else if random then meas_ret (inr false) else meas_ret (inl n.+1).
-    set g : (nat + bool) -> M bool := fun next : nat + bool =>
+    set g : (nat + bool) -> M bool := λ next : nat + bool,
       match next with
       | inl n' => mathcomp_oracle_result_approx qbit fuel n'
       | inr b => meas_ret b
       end.
-    set h : bool -> M bool := fun random : bool =>
+    set h : bool -> M bool := λ random : bool,
       if qbit n then
         if random then mathcomp_oracle_unfolded_approx qbit fuel n.+1
         else meas_ret true
@@ -567,13 +567,13 @@ Qed.
 
 Lemma mathcomp_oracle_result_true_sup qbit q :
   mathcomp_oracle_represents qbit q →
-  ereal_sup (range (fun fuel => mathcomp_kernel_root
+  ereal_sup (range (λ fuel, mathcomp_kernel_root
     (mathcomp_oracle_result_approx qbit fuel 0) [set MCValue true])) = q%:E.
 Proof.
   move=> Hrep.
-  have -> : range (fun fuel => mathcomp_kernel_root
+  have -> : range (λ fuel, mathcomp_kernel_root
       (mathcomp_oracle_result_approx qbit fuel 0) [set MCValue true]) =
-      range (fun fuel =>
+      range (λ fuel,
         (mathcomp_oracle_prefix_from qbit 0 fuel)%:E).
   { apply/seteqP; split=> z [fuel _ <-].
     - exists fuel; first by []. symmetry.
@@ -584,14 +584,14 @@ Qed.
 
 Lemma mathcomp_oracle_result_false_sup qbit q :
   mathcomp_oracle_represents qbit q →
-  ereal_sup (range (fun fuel => mathcomp_kernel_root
+  ereal_sup (range (λ fuel, mathcomp_kernel_root
     (mathcomp_oracle_result_approx qbit fuel 0) [set MCValue false])) =
     (1 - q)%:E.
 Proof.
   move=> Hrep.
-  have -> : range (fun fuel => mathcomp_kernel_root
+  have -> : range (λ fuel, mathcomp_kernel_root
       (mathcomp_oracle_result_approx qbit fuel 0) [set MCValue false]) =
-      range (fun fuel =>
+      range (λ fuel,
         (mathcomp_oracle_false_prefix_from qbit 0 fuel)%:E).
   { apply/seteqP; split=> z [fuel _ <-].
     - exists fuel; first by []. symmetry.
@@ -601,12 +601,12 @@ Proof.
 Qed.
 
 Lemma mathcomp_oracle_result_total_sup qbit :
-  ereal_sup (range (fun fuel => mathcomp_kernel_root
+  ereal_sup (range (λ fuel, mathcomp_kernel_root
     (mathcomp_oracle_result_approx qbit fuel 0) (@mc_returned bool))) = 1.
 Proof.
-  have -> : range (fun fuel => mathcomp_kernel_root
+  have -> : range (λ fuel, mathcomp_kernel_root
       (mathcomp_oracle_result_approx qbit fuel 0) (@mc_returned bool)) =
-      range (fun fuel => (1 - (1 / 2 : R) ^+ fuel)%:E).
+      range (λ fuel, (1 - (1 / 2 : R) ^+ fuel)%:E).
   { apply/seteqP; split=> z [fuel _ <-].
     - exists fuel; first by []. symmetry.
       exact: mathcomp_oracle_result_total_mass.
@@ -668,20 +668,20 @@ Lemma mathcomp_binary_oracle_lub qbit q
 Proof.
   move=> Hrep.
   change (mathcomp_kernel_lub
-    (fun fuel => mathcomp_oracle_result_approx qbit fuel 0)
+    (λ fuel, mathcomp_oracle_result_approx qbit fuel 0)
     (mathcomp_bernoulli q)).
   move=> U mU nbot.
   have [Ht|Hnt] := pselect (U (MCValue true)).
   - have [Hf|Hnf] := pselect (U (MCValue false)).
     + rewrite (mc_bool_set_both nbot Ht Hf) mathcomp_bernoulli_total.
-      change (1 = ereal_sup (range (fun fuel =>
+      change (1 = ereal_sup (range (λ fuel,
         mathcomp_kernel_root
           (mathcomp_oracle_result_approx qbit fuel 0)
           (@mc_returned bool)))).
       symmetry. exact: mathcomp_oracle_result_total_sup.
     + rewrite (mc_bool_set_true nbot Ht Hnf)
         (mathcomp_bernoulli_true_mass q01).
-      change (q%:E = ereal_sup (range (fun fuel =>
+      change (q%:E = ereal_sup (range (λ fuel,
         mathcomp_kernel_root
           (mathcomp_oracle_result_approx qbit fuel 0)
           [set MCValue true]))).
@@ -689,7 +689,7 @@ Proof.
   - have [Hf|Hnf] := pselect (U (MCValue false)).
     + rewrite (mc_bool_set_false nbot Hnt Hf)
         (mathcomp_bernoulli_false_mass q01).
-      change ((1 - q)%:E = ereal_sup (range (fun fuel =>
+      change ((1 - q)%:E = ereal_sup (range (λ fuel,
         mathcomp_kernel_root
           (mathcomp_oracle_result_approx qbit fuel 0)
           [set MCValue false]))).
@@ -697,14 +697,14 @@ Proof.
     + rewrite (mc_bool_set_neither nbot Hnt Hnf) measure0.
       have Hrange : [set mathcomp_kernel_root
           (mathcomp_oracle_result_approx qbit fuel 0) set0 |
-          fuel in [set: nat]] = range (fun _ : nat => (0 : \bar R)).
+          fuel in [set: nat]] = range (λ _ : nat, (0 : \bar R)).
       { apply/seteqP; split=> z [fuel _ <-].
         - exists fuel; first by [].
           symmetry. exact: mathcomp_kernel_root_empty.
         - exists fuel; first by []. symmetry.
           symmetry. exact: mathcomp_kernel_root_empty. }
       rewrite Hrange.
-      have -> : range (fun _ : nat => (0 : \bar R)) = [set 0].
+      have -> : range (λ _ : nat, (0 : \bar R)) = [set 0].
       { apply/seteqP; split=> z.
         - by move=> [fuel _ <-].
         - move=> ->. exists 0%N; by []. }

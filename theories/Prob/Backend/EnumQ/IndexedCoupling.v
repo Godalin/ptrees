@@ -52,7 +52,7 @@ Proof.
   - rewrite -addnE; exact: leq_addr.
 Qed.
 Lemma coupling_value_index {A : eqType} (mu : EnumQ A) :
-  coupling (fun a i => ∃ p, nth_error (enumQ_raw mu) i = Some (p,a)) mu (indexed mu).
+  coupling (λ a i, ∃ p, nth_error (enumQ_raw mu) i = Some (p,a)) mu (indexed mu).
 Proof.
   exists (value_index_joint_from 0 mu).
   - apply enumQ_eq_eq; exact: emap_fst_value_index_joint_from.
@@ -114,7 +114,7 @@ Lemma nth_error_emap_inv {A B} (f : A → B) (mu : EnumQ A) i p b :
   nth_error (enumQ_raw (emap f mu)) i = Some (p,b) →
   ∃ a, nth_error (enumQ_raw mu) i = Some (p,a) ∧ b = f a.
 Proof.
-  change (nth_error (List.map (fun px => (px.1,f px.2)) (enumQ_raw mu)) i = Some (p,b) ->
+  change (nth_error (List.map (λ px, (px.1,f px.2)) (enumQ_raw mu)) i = Some (p,b) ->
     exists a, nth_error (enumQ_raw mu) i = Some (p,a) ∧ b = f a).
   rewrite nth_error_map; case H: (nth_error (enumQ_raw mu) i)=> [[q a]|] //=.
   move=> He; inversion He; subst; by exists a.
@@ -123,7 +123,7 @@ Lemma nth_error_emap {A B} (f : A → B) (mu : EnumQ A) i p a :
   nth_error (enumQ_raw mu) i = Some (p,a) →
   nth_error (enumQ_raw (emap f mu)) i = Some (p,f a).
 Proof.
-  move=> H; change (nth_error (List.map (fun px => (px.1,f px.2)) (enumQ_raw mu)) i = Some (p,f a)).
+  move=> H; change (nth_error (List.map (λ px, (px.1,f px.2)) (enumQ_raw mu)) i = Some (p,f a)).
   by rewrite nth_error_map H.
 Qed.
 
@@ -158,12 +158,12 @@ Lemma indexed_bind_EnumQ {A B} (mu : EnumQ A) (k : A → EnumQ B) :
 Proof. reflexivity. Qed.
 Lemma indexed_bind_blocks_data {A B} (mu : EnumQ A) (k : A → EnumQ B) offset :
   enumQ_raw (indexed_bind_blocks mu k offset) =
-  finite_indexed_bind_blocks (fun p q : rat => p*q) (enumQ_raw mu)
-    (fun x => enumQ_raw (k x)) offset.
+  finite_indexed_bind_blocks (λ p q : rat, p*q) (enumQ_raw mu)
+    (λ x, enumQ_raw (k x)) offset.
 Proof.
-  change (finite_index_from offset (finite_bind (enumQ_raw mu) (fun x => enumQ_raw (k x))) =
-    finite_indexed_bind_blocks (fun p q : rat => p*q) (enumQ_raw mu)
-      (fun x => enumQ_raw (k x)) offset).
+  change (finite_index_from offset (finite_bind (enumQ_raw mu) (λ x, enumQ_raw (k x))) =
+    finite_indexed_bind_blocks (λ p q : rat, p*q) (enumQ_raw mu)
+      (λ x, enumQ_raw (k x)) offset).
   rewrite -finite_bind_with_numeric; exact: finite_index_bind.
 Qed.
 
@@ -171,7 +171,7 @@ Definition indexed_bind_block_from {A B} (mu : EnumQ A) (k : A → EnumQ B)
     (start offset i : nat) : EnumQ nat.
 Proof.
   refine (enumQ_of_list (mu := finite_indexed_bind_block_from (enumQ_raw mu)
-    (fun x => enumQ_raw (k x)) start offset i) _).
+    (λ x, enumQ_raw (k x)) start offset i) _).
   elim: (enumQ_raw mu) start offset=> [|[p a] tl IH] start offset /=.
   - by move=> q j [].
   - case: (Nat.eqb i start).
@@ -182,9 +182,9 @@ Lemma index_from_bind_as_position_bind {A B} (mu : EnumQ A) (k : A → EnumQ B) 
   enumQ_raw (index_from offset (bind_EnumQ mu k)) =
   enumQ_raw (bind_EnumQ (index_from start mu) (indexed_bind_block_from mu k start offset)).
 Proof.
-  change (finite_index_from offset (finite_bind (enumQ_raw mu) (fun x => enumQ_raw (k x))) =
+  change (finite_index_from offset (finite_bind (enumQ_raw mu) (λ x, enumQ_raw (k x))) =
     finite_bind (finite_index_from start (enumQ_raw mu))
-      (finite_indexed_bind_block_from (enumQ_raw mu) (fun x => enumQ_raw (k x)) start offset)).
+      (finite_indexed_bind_block_from (enumQ_raw mu) (λ x, enumQ_raw (k x)) start offset)).
   rewrite -!finite_bind_with_numeric; exact: finite_index_bind_as_position_bind.
 Qed.
 Definition indexed_bind_block {A B} (mu : EnumQ A) (k : A → EnumQ B) i :=
@@ -461,7 +461,7 @@ Qed.
 Lemma at_index_sym {A B}
     (R : A → B → Prop) (mu : EnumQ A) (nu : EnumQ B) i j :
   at_index R mu nu i j →
-  at_index (fun b a => R a b) nu mu j i.
+  at_index (λ b a, R a b) nu mu j i.
 Proof.
   move=> [HL HR]. split.
   - exact HR.
@@ -471,7 +471,7 @@ Qed.
 Lemma indexed_coupling_sym {A B}
     (R : A → B → Prop) (mu : EnumQ A) (nu : EnumQ B) :
   indexed_coupling R mu nu →
-  indexed_coupling (fun b a => R a b) nu mu.
+  indexed_coupling (λ b a, R a b) nu mu.
 Proof.
   move=> H.
   eapply coupling_mono.
@@ -484,7 +484,7 @@ Lemma at_index_comp {A B C}
     (mu : EnumQ A) (nu : EnumQ B) (xi : EnumQ C) i j k :
   at_index R mu nu i j →
   at_index S nu xi j k →
-  at_index (fun a c => ∃ b, R a b ∧ S b c) mu xi i k.
+  at_index (λ a c, ∃ b, R a b ∧ S b c) mu xi i k.
 Proof.
   move=> [HAB HBA] [HBC HCB]. split.
   - move=> p a Hi.
@@ -505,7 +505,7 @@ Lemma indexed_coupling_comp {A B C}
   indexed_coupling R mu nu →
   indexed_coupling S nu xi →
   indexed_coupling
-    (fun a c => ∃ b, R a b ∧ S b c) mu xi.
+    (λ a c, ∃ b, R a b ∧ S b c) mu xi.
 Proof.
   move=> HAB HBC.
   have Hcomp := coupling_comp HAB HBC.

@@ -19,26 +19,26 @@ Local Open Scope ring_scope.
 Module LimitSafety.
 
 Definition big : FreeOmega EnumQ unit :=
-  FOSample rw_coin_raw (fun _ => FORet tt).
+  FOSample rw_coin_raw (λ _, FORet tt).
 Definition small : FreeOmega EnumQ unit :=
-  FOSample rw_coin_raw (fun b : bool => if b then FORet tt else FOZero).
+  FOSample rw_coin_raw (λ b : bool, if b then FORet tt else FOZero).
 Definition dropping n := match n with O => big | S _ => small end.
 
-Definition big_out : EnumQ unit := sem_bind rw_coin_raw (fun _ => sem_ret tt).
+Definition big_out : EnumQ unit := sem_bind rw_coin_raw (λ _, sem_ret tt).
 Definition small_out : EnumQ unit := sem_bind rw_coin_raw
-  (fun b : bool => if b then sem_ret tt else sem_zero).
+  (λ b : bool, if b then sem_ret tt else sem_zero).
 
 Example source_is_subprobability : enumQ_subprob rw_coin_raw.
 Proof. exact rw_coin_subprob. Qed.
 
 Example different_masses :
-  enumQ_expect (fun _ => 1) big_out ≠ enumQ_expect (fun _ => 1) small_out.
+  enumQ_expect (λ _, 1) big_out ≠ enumQ_expect (λ _, 1) small_out.
 Proof. vm_compute. discriminate. Qed.
 
-Example big_mass_one : enumQ_expect (fun _ => 1) big_out = 1.
+Example big_mass_one : enumQ_expect (λ _, 1) big_out = 1.
 Proof. vm_compute. reflexivity. Qed.
 
-Example small_mass_two_thirds : enumQ_expect (fun _ => 1) small_out = 2 / 3.
+Example small_mass_two_thirds : enumQ_expect (λ _, 1) small_out = 2 / 3.
 Proof. vm_compute. reflexivity. Qed.
 
 Lemma small_below_big : free_omega_approx eq small big.
@@ -50,7 +50,7 @@ Qed.
 
 (** This old side condition really holds, despite the invalid drop. *)
 Lemma dropping_cofinal_constant :
-  free_omega_chains_cofinal eq dropping (fun _ => big).
+  free_omega_chains_cofinal eq dropping (λ _, big).
 Proof.
   split.
   - intros [|n]; exists O.
@@ -94,7 +94,7 @@ Proof. intro H. exact (big_not_below_small (H O O)). Qed.
 
 (** A cofinality certificate alone must no longer apply the rule. *)
 Example cofinality_alone_is_not_a_limit_rule
-    (Hcofinal : free_omega_chains_cofinal eq dropping (fun _ => big)) : True.
+    (Hcofinal : free_omega_chains_cofinal eq dropping (λ _, big)) : True.
 Proof.
   Fail pose proof (FOQLCofinal Hcofinal).
   exact I.
@@ -108,8 +108,8 @@ Example support_and_limits_alone_do_not_diagonalize
       (kernel_out x) (FOLub (moving_kernel x)))
     (Hsupport : free_omega_support_lift eq
       (free_omega_bind source_out kernel_out)
-      (FOLub (fun n => free_omega_bind (moving_source n)
-        (fun x => moving_kernel x n)))) : True.
+      (FOLub (λ n, free_omega_bind (moving_source n)
+        (λ x, moving_kernel x n)))) : True.
 Proof.
   Fail pose proof (FOQLBindLub Hsource Hkernels Hsupport).
   exact I.

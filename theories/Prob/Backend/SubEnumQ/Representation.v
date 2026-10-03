@@ -15,7 +15,7 @@ Unset Printing Implicit Defensive.
 Import EnumQ GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 
-Definition enumQ_mass {A} (mu : EnumQ A) : rat := enumQ_expect (fun _ => 1) mu.
+Definition enumQ_mass {A} (mu : EnumQ A) : rat := enumQ_expect (λ _, 1) mu.
 Definition enumQ_subprob {A} (mu : EnumQ A) : Prop := enumQ_mass mu <= 1.
 
 Lemma enumQ_subprob_ret {A} (x : A) : enumQ_subprob (ret_EnumQ x).
@@ -56,7 +56,7 @@ Definition subenumQ_zero {A} : SubEnumQ A := finite_subdist_zero _.
 Definition subenumQ_bind {A B} (mu : SubEnumQ A) (k : A → SubEnumQ B) : SubEnumQ B :=
   finite_subdist_bind mu k.
 Definition subenumQ_of_list {A} (mu : list (rat*A))
-    (Hnn : finite_nonnegative mu) (Hmass : finite_expect (fun _ => 1) mu <= 1) : SubEnumQ A :=
+    (Hnn : finite_nonnegative mu) (Hmass : finite_expect (λ _, 1) mu <= 1) : SubEnumQ A :=
   finite_subdist_of_list Hnn Hmass.
 Definition enumQ_as_subprob {A} (mu : EnumQ A) (Hmu : enumQ_subprob mu) : SubEnumQ A :=
   @Build_FiniteSubdist rat_rat__canonical__Num_NumDomain A mu Hmu.

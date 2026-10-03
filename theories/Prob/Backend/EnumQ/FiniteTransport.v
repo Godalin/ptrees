@@ -38,7 +38,7 @@ Proof. by rewrite /acc_mass /finite_weighted_enumQ /= weighted_seq_atom big_enum
 Lemma finite_weighted_enumQ_map {I : finType} {A B} (weights : I → rat)
     (Hnn : ∀ i, 0 <= weights i) (decode : I → A) (f : A → B) :
   enumQ_raw (emap f (finite_weighted_enumQ Hnn decode)) =
-  enumQ_raw (finite_weighted_enumQ Hnn (fun i => f (decode i))).
+  enumQ_raw (finite_weighted_enumQ Hnn (λ i, f (decode i))).
 Proof. exact: List.map_map. Qed.
 Lemma finite_weighted_enumQ_identity_atom {I : finType} (weights : I → rat)
     (Hnn : ∀ i, 0 <= weights i) i :
@@ -52,15 +52,15 @@ Proof. apply eq_bigr=> i _; exact: finite_weighted_enumQ_identity_atom. Qed.
 
 Section MatrixEnumQ.
 Context {X Y : finType} (w : X → Y → rat) (Hnn : ∀ x y, 0 <= w x y).
-Let joint := finite_weighted_enumQ (fun xy : X*Y => Hnn xy.1 xy.2) id.
+Let joint := finite_weighted_enumQ (λ xy : X*Y, Hnn xy.1 xy.2) id.
 Lemma finite_matrix_left_atom x :
   acc_mass x (emap fst joint) = \sum_y w x y.
 Proof.
-  have Hdata := finite_weighted_enumQ_map (fun xy : X*Y => Hnn xy.1 xy.2) id fst.
-  change (acc_mass x (emap fst (finite_weighted_enumQ (fun xy : X*Y => Hnn xy.1 xy.2) id)) = \sum_y w x y).
-  rewrite /acc_mass Hdata -/(acc_mass x (finite_weighted_enumQ (fun xy : X*Y => Hnn xy.1 xy.2) fst)).
+  have Hdata := finite_weighted_enumQ_map (λ xy : X*Y, Hnn xy.1 xy.2) id fst.
+  change (acc_mass x (emap fst (finite_weighted_enumQ (λ xy : X*Y, Hnn xy.1 xy.2) id)) = \sum_y w x y).
+  rewrite /acc_mass Hdata -/(acc_mass x (finite_weighted_enumQ (λ xy : X*Y, Hnn xy.1 xy.2) fst)).
   rewrite finite_weighted_enumQ_atom.
-  rewrite -(@pair_bigA rat 0 _ X Y (fun i j => if i == x then w i j else 0)).
+  rewrite -(@pair_bigA rat 0 _ X Y (λ i j, if i == x then w i j else 0)).
   transitivity (\sum_i (if i == x then \sum_y w i y else 0)).
   - apply eq_bigr=> i _; case: (i == x); [reflexivity|by rewrite big1].
   - by rewrite -big_mkcond big_pred1_eq.
@@ -68,11 +68,11 @@ Qed.
 Lemma finite_matrix_right_atom y :
   acc_mass y (emap snd joint) = \sum_x w x y.
 Proof.
-  have Hdata := finite_weighted_enumQ_map (fun xy : X*Y => Hnn xy.1 xy.2) id snd.
-  change (acc_mass y (emap snd (finite_weighted_enumQ (fun xy : X*Y => Hnn xy.1 xy.2) id)) = \sum_x w x y).
-  rewrite /acc_mass Hdata -/(acc_mass y (finite_weighted_enumQ (fun xy : X*Y => Hnn xy.1 xy.2) snd)).
+  have Hdata := finite_weighted_enumQ_map (λ xy : X*Y, Hnn xy.1 xy.2) id snd.
+  change (acc_mass y (emap snd (finite_weighted_enumQ (λ xy : X*Y, Hnn xy.1 xy.2) id)) = \sum_x w x y).
+  rewrite /acc_mass Hdata -/(acc_mass y (finite_weighted_enumQ (λ xy : X*Y, Hnn xy.1 xy.2) snd)).
   rewrite finite_weighted_enumQ_atom.
-  rewrite -(@pair_bigA rat 0 _ X Y (fun i j => if j == y then w i j else 0)) exchange_big.
+  rewrite -(@pair_bigA rat 0 _ X Y (λ i j, if j == y then w i j else 0)) exchange_big.
   transitivity (\sum_j (if j == y then \sum_x w x j else 0)).
   - apply eq_bigr=> j _; case: (j == y); [reflexivity|by rewrite big1].
   - by rewrite -big_mkcond big_pred1_eq.
@@ -81,14 +81,14 @@ End MatrixEnumQ.
 
 Theorem finite_enumQ_transport {X Y : finType} (edge : X → Y → bool)
     (mu : EnumQ X) (nu : EnumQ Y) :
-  rational_hall (fun x => acc_mass x mu) (fun y => acc_mass y nu) edge →
+  rational_hall (λ x, acc_mass x mu) (λ y, acc_mass y nu) edge →
   \sum_x acc_mass x mu = \sum_y acc_mass y nu →
-  coupling (fun x y => edge x y) mu nu.
+  coupling (λ x y, edge x y) mu nu.
 Proof.
   move=> Hall Htotal.
   have [w [Hpos [Hrows [Hcols Hsupport]]]] := finite_rational_transport
-    (fun x => acc_mass_nonnegative x mu) (fun y => acc_mass_nonnegative y nu) Hall Htotal.
-  exists (finite_weighted_enumQ (fun xy : X*Y => Hpos xy.1 xy.2) id).
+    (λ x, acc_mass_nonnegative x mu) (λ y, acc_mass_nonnegative y nu) Hall Htotal.
+  exists (finite_weighted_enumQ (λ xy : X*Y, Hpos xy.1 xy.2) id).
   - move=> x; rewrite finite_matrix_left_atom; exact: Hrows.
   - move=> y; rewrite finite_matrix_right_atom; exact: Hcols.
   - move=> x y Hxy; apply Hsupport.
@@ -98,14 +98,14 @@ Qed.
 
 Theorem subenumQ_finite_transport_joint {X Y : finType} (edge : X → Y → bool)
     (mu : SubEnumQ X) (nu : SubEnumQ Y) :
-  rational_hall (fun x => acc_mass x (subenumQ_raw mu))
-    (fun y => acc_mass y (subenumQ_raw nu)) edge →
+  rational_hall (λ x, acc_mass x (subenumQ_raw mu))
+    (λ y, acc_mass y (subenumQ_raw nu)) edge →
   \sum_x acc_mass x (subenumQ_raw mu) = \sum_y acc_mass y (subenumQ_raw nu) →
   ∃ joint : SubEnumQ (X*Y), @semantic_coupling SubEnumQ SubEnumQ_SemanticMeasure X Y
-    (fun x y => edge x y) mu nu joint.
+    (λ x y, edge x y) mu nu joint.
 Proof.
   move=> Hall Htotal; apply subenumQ_coupling_realization.
-  change (@sem_lift EnumQ EnumQ_SemanticMeasure X Y (fun x y => edge x y)
+  change (@sem_lift EnumQ EnumQ_SemanticMeasure X Y (λ x y, edge x y)
     (subenumQ_raw mu) (subenumQ_raw nu)).
   apply enumQ_sem_lift_of_coupling; exact: finite_enumQ_transport Hall Htotal.
 Qed.

@@ -27,14 +27,14 @@ Section ExtendedEnumQRegression.
 Variable R : realType.
 
 Example extended_enumQ_keeps_weight_two :
-  @enumQ_extended_expect R unit (fun _ => 1) (enumQ_cons (ler0n rat 2) tt enumQ_zero) = 2%:E.
+  @enumQ_extended_expect R unit (λ _, 1) (enumQ_cons (ler0n rat 2) tt enumQ_zero) = 2%:E.
 Proof.
   change ((ratr (2 : rat) : R)%:E * 1 + 0 = 2%:E).
   by rewrite rmorph_nat mule1 adde0.
 Qed.
 
 Example extended_enumQ_zero_times_infinity :
-  @enumQ_extended_expect R unit (fun _ => +oo) (enumQ_cons (lexx (0 : rat)) tt enumQ_zero) = 0.
+  @enumQ_extended_expect R unit (λ _, +oo) (enumQ_cons (lexx (0 : rat)) tt enumQ_zero) = 0.
 Proof.
   change ((ratr (0 : rat) : R)%:E * +oo + 0 = 0).
   by rewrite rmorph0 mul0e add0e.
@@ -47,7 +47,7 @@ Fixpoint growing_weight (n : nat) : FreeOmega EnumQ unit :=
   match n with
   | O => FOZero
   | S m => FOSample (enumQ_cons (ler01 : ((0 : rat) <= 1)%R) true (enumQ_cons (ler01 : ((0 : rat) <= 1)%R) false enumQ_zero))
-      (fun b => if b then FORet tt else growing_weight m)
+      (λ b, if b then FORet tt else growing_weight m)
   end.
 
 Lemma growing_weight_increasing n :
@@ -61,35 +61,35 @@ Proof.
 Qed.
 
 Lemma growing_weight_value n :
-  @free_omega_extended_upper R unit (growing_weight n) (fun _ => 1) = (n%:R)%:E.
+  @free_omega_extended_upper R unit (growing_weight n) (λ _, 1) = (n%:R)%:E.
 Proof.
   induction n as [|n IH]; cbn [growing_weight free_omega_extended_upper enumQ_extended_expect].
   - reflexivity.
   - change ((ratr (1 : rat) : R)%:E * 1 +
-      ((ratr (1 : rat) : R)%:E * free_omega_extended_upper (growing_weight n) (fun _ => 1) + 0)
+      ((ratr (1 : rat) : R)%:E * free_omega_extended_upper (growing_weight n) (λ _, 1) + 0)
       = ((S n)%:R)%:E).
     rewrite rmorph1 !mul1e adde0 IH -EFinD.
     congr (_%:E). by rewrite addrC natr1.
 Qed.
 
 Example growing_weight_has_infinite_upper :
-  @free_omega_extended_upper R unit (FOLub growing_weight) (fun _ => 1) = +oo.
+  @free_omega_extended_upper R unit (FOLub growing_weight) (λ _, 1) = +oo.
 Proof.
   cbn [free_omega_extended_upper].
-  rewrite (_ : (fun n => free_omega_extended_upper (growing_weight n) (fun _ => 1)) =
-      (fun n => (n%:R : R)%:E));
+  rewrite (_ : (λ n, free_omega_extended_upper (growing_weight n) (λ _, 1)) =
+      (λ n, (n%:R : R)%:E));
     last by apply functional_extensionality=> n; apply growing_weight_value.
   exact: extended_upper_naturals.
 Qed.
 
 Theorem growing_weight_no_finite_observation (out : EnumQ unit) :
   ¬ @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega unit unit
-      (fun x => x) (FOLub growing_weight) out.
+      (λ x, x) (FOLub growing_weight) out.
 Proof.
   intro Hobs.
   have Hvalue := @free_omega_observes_extended_real R unit unit
-    (fun x => x) (FOLub growing_weight) out Hobs (fun _ => 1%R)
-    (fun _ => ler01).
+    (λ x, x) (FOLub growing_weight) out Hobs (λ _, 1%R)
+    (λ _, ler01).
   rewrite growing_weight_has_infinite_upper in Hvalue. discriminate Hvalue.
 Qed.
 
@@ -97,17 +97,17 @@ Qed.
     including at an infinite limit.  No SubEnumQ bound can justify it. *)
 Example weight_two_preserves_monotone_limit (f : nat → unit → \bar R) :
   (∀ n x, 0 <= f n x) →
-  (∀ x, nondecreasing_seq (fun n => f n x)) →
-  @enumQ_extended_expect R unit (fun x => extended_upper (fun n => f n x))
+  (∀ x, nondecreasing_seq (λ n, f n x)) →
+  @enumQ_extended_expect R unit (λ x, extended_upper (λ n, f n x))
     (enumQ_cons (ler0n rat 2) tt enumQ_zero) =
-  extended_upper (fun n => enumQ_extended_expect (f n) (enumQ_cons (ler0n rat 2) tt enumQ_zero)).
+  extended_upper (λ n, enumQ_extended_expect (f n) (enumQ_cons (ler0n rat 2) tt enumQ_zero)).
 Proof. intros Hf Hi. exact (@enumQ_extended_expect_countable R unit (enumQ_cons (ler0n rat 2) tt enumQ_zero) f Hf Hi). Qed.
 
 Example zero_weight_needs_no_monotonicity (f : nat → unit → \bar R) :
   (∀ n x, 0 <= f n x) →
-  @enumQ_extended_expect R unit (fun x => extended_upper (fun n => f n x))
+  @enumQ_extended_expect R unit (λ x, extended_upper (λ n, f n x))
     (enumQ_cons (lexx (0 : rat)) tt enumQ_zero) =
-  extended_upper (fun n => enumQ_extended_expect (f n) (enumQ_cons (lexx (0 : rat)) tt enumQ_zero)).
+  extended_upper (λ n, enumQ_extended_expect (f n) (enumQ_cons (lexx (0 : rat)) tt enumQ_zero)).
 Proof.
   intro Hf. apply enumQ_extended_expect_countable_ae; [exact Hf|].
   intros p x [Heq|[]] Hnz. inversion Heq; subst p x.

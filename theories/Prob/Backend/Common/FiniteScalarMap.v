@@ -21,7 +21,7 @@ Variable f : {rmorphism R -> S}.
 Hypothesis f_mono : ∀ x y, x <= y → f x <= f y.
 
 Definition finite_map_weights {A} (mu : list (R * A)) : list (S * A) :=
-  List.map (fun px => (f px.1, px.2)) mu.
+  List.map (λ px, (f px.1, px.2)) mu.
 
 Lemma finite_map_weights_nonnegative {A} (mu : list (R * A)) :
   finite_nonnegative mu → finite_nonnegative (finite_map_weights mu).
@@ -32,14 +32,14 @@ Proof.
 Qed.
 
 Lemma finite_map_weights_expect {A} (mu : list (R * A)) (g : A → R) :
-  finite_expect (fun x => f (g x)) (finite_map_weights mu) = f (finite_expect g mu).
+  finite_expect (λ x, f (g x)) (finite_map_weights mu) = f (finite_expect g mu).
 Proof.
   elim: mu=> [|[p x] tl IH] /=; first by rewrite rmorph0.
   by rewrite rmorphD rmorphM IH.
 Qed.
 
 Lemma finite_map_weights_mass {A} (mu : list (R * A)) :
-  finite_expect (fun _ => 1) (finite_map_weights mu) = f (finite_expect (fun _ => 1) mu).
+  finite_expect (λ _, 1) (finite_map_weights mu) = f (finite_expect (λ _, 1) mu).
 Proof. rewrite -finite_map_weights_expect; apply finite_expect_ext=> x; by rewrite rmorph1. Qed.
 
 Lemma finite_map_weights_ret {A} (x : A) :
@@ -48,7 +48,7 @@ Proof. by rewrite /finite_map_weights /= rmorph1. Qed.
 
 Lemma finite_map_weights_bind {A B} (mu : list (R * A)) (k : A → list (R * B)) :
   finite_map_weights (finite_bind mu k) =
-  finite_bind (finite_map_weights mu) (fun x => finite_map_weights (k x)).
+  finite_bind (finite_map_weights mu) (λ x, finite_map_weights (k x)).
 Proof.
   rewrite -!finite_bind_with_numeric.
   apply finite_bind_with_scalar_map=> p q; exact: rmorphM.
@@ -66,22 +66,22 @@ Lemma finite_map_weights_scale {A} p (mu : list (R*A)) :
   finite_weight_map (f p) (finite_map_weights mu).
 Proof. by elim: mu=> [|[q x] tl IH] //=; rewrite rmorphM IH. Qed.
 Lemma finite_map_weights_map {A B} (g : A → B) (mu : list (R*A)) :
-  finite_map_weights (List.map (fun px => (px.1,g px.2)) mu) =
-  List.map (fun px => (px.1,g px.2)) (finite_map_weights mu).
+  finite_map_weights (List.map (λ px, (px.1,g px.2)) mu) =
+  List.map (λ px, (px.1,g px.2)) (finite_map_weights mu).
 Proof. by elim: mu=> [|[p x] tl IH] //=; rewrite IH. Qed.
 Lemma finite_map_weights_app {A} (mu nu : list (R*A)) :
   finite_map_weights (mu++nu) = finite_map_weights mu ++ finite_map_weights nu.
 Proof. exact: List.map_app. Qed.
 Lemma finite_map_weights_filter {A} (P : A → bool) (mu : list (R*A)) :
-  finite_map_weights (List.filter (fun px => P px.2) mu) =
-  List.filter (fun px => P px.2) (finite_map_weights mu).
+  finite_map_weights (List.filter (λ px, P px.2) mu) =
+  List.filter (λ px, P px.2) (finite_map_weights mu).
 Proof. by elim: mu=> [|[p x] tl IH] //=; case: (P x)=> /=; rewrite IH. Qed.
 
 Definition finite_enum_map_weights {A} (mu : FiniteEnum R A) : FiniteEnum S A :=
   finite_enum_of_list (finite_map_weights_nonnegative (finite_enum_nonnegative mu)).
 
 Lemma finite_enum_map_weights_expect {A} (mu : FiniteEnum R A) (g : A → R) :
-  finite_enum_expect (finite_enum_map_weights mu) (fun x => f (g x)) =
+  finite_enum_expect (finite_enum_map_weights mu) (λ x, f (g x)) =
   f (finite_enum_expect mu g).
 Proof. exact: finite_map_weights_expect. Qed.
 
@@ -99,7 +99,7 @@ Proof. reflexivity. Qed.
 
 Lemma finite_enum_map_weights_bind {A B} (mu : FiniteEnum R A) (k : A → FiniteEnum R B) :
   finite_enum_raw (finite_enum_map_weights (finite_enum_bind mu k)) =
-  finite_enum_raw (finite_enum_bind (finite_enum_map_weights mu) (fun x => finite_enum_map_weights (k x))).
+  finite_enum_raw (finite_enum_bind (finite_enum_map_weights mu) (λ x, finite_enum_map_weights (k x))).
 Proof. exact: finite_map_weights_bind. Qed.
 
 Definition finite_subdist_map_weights {A} (mu : FiniteSubdist R A) : FiniteSubdist S A.
@@ -110,7 +110,7 @@ Proof.
 Defined.
 
 Lemma finite_subdist_map_weights_expect {A} (mu : FiniteSubdist R A) (g : A → R) :
-  finite_subdist_expect (finite_subdist_map_weights mu) (fun x => f (g x)) =
+  finite_subdist_expect (finite_subdist_map_weights mu) (λ x, f (g x)) =
   f (finite_subdist_expect mu g).
 Proof. exact: finite_map_weights_expect. Qed.
 
@@ -127,6 +127,6 @@ Proof. reflexivity. Qed.
 Lemma finite_subdist_map_weights_bind {A B} (mu : FiniteSubdist R A) (k : A → FiniteSubdist R B) :
   finite_enum_raw (finite_subdist_enum (finite_subdist_map_weights (finite_subdist_bind mu k))) =
   finite_enum_raw (finite_subdist_enum
-    (finite_subdist_bind (finite_subdist_map_weights mu) (fun x => finite_subdist_map_weights (k x)))).
+    (finite_subdist_bind (finite_subdist_map_weights mu) (λ x, finite_subdist_map_weights (k x)))).
 Proof. exact: finite_map_weights_bind. Qed.
 End ScalarMap.

@@ -37,15 +37,15 @@ Local Notation hit := (@ptree_hitting_approx E MN MF FI
   FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R).
 
 Lemma finite_internal_hitting_zero :
-  (fun t => hit 0 (observe t)) = finite_internal_advance (fun _ => FOZero).
+  (λ t, hit 0 (observe t)) = finite_internal_advance (λ _, FOZero).
 Proof.
   apply functional_extensionality. intro t.
   unfold finite_internal_advance. destruct (observe t); reflexivity.
 Qed.
 
 Lemma finite_internal_hitting_succ n :
-  (fun t => hit (S n) (observe t)) =
-  finite_internal_advance (fun t => hit n (observe t)).
+  (λ t, hit (S n) (observe t)) =
+  finite_internal_advance (λ t, hit n (observe t)).
 Proof.
   apply functional_extensionality. intro t.
   unfold finite_internal_advance. destruct (observe t); reflexivity.
@@ -95,7 +95,7 @@ Variable trunc : ptree E MN R → nat → MF (ptree E MN R).
 Hypothesis trunc_spec : ∀ t, finite_internal_approximates t (cut t) (trunc t).
 
 Definition finite_internal_grid n m t :=
-  finite_internal_rounds (fun u => trunc u m) n t.
+  finite_internal_rounds (λ u, trunc u m) n t.
 
 Lemma finite_internal_grid_inner n m t :
   free_omega_approx eq (finite_internal_grid n m t)
@@ -124,13 +124,13 @@ Proof.
         FreeOmegaObservableSemanticMeasureOrderLaws R). lia.
   - eapply free_omega_approx_trans with
       (nu := free_omega_bind (trunc t m)
-        (fun u => hit (S ((S n) * (S m))) (observe u))).
+        (λ u, hit (S ((S n) * (S m))) (observe u))).
     + rewrite finite_internal_hitting_succ.
       change (free_omega_approx eq
         (free_omega_bind (trunc t m)
           (finite_internal_advance (finite_internal_grid n m)))
         (free_omega_bind (trunc t m)
-          (finite_internal_advance (fun u => hit ((S n) * (S m)) (observe u))))).
+          (finite_internal_advance (λ u, hit ((S n) * (S m)) (observe u))))).
       eapply free_omega_approx_bind with (R := eq).
       * apply free_omega_approx_refl. intro u. reflexivity.
       * intros u v ->. apply finite_internal_advance_mono. exact IH.
@@ -159,8 +159,8 @@ Proof.
   - unfold finite_internal_grid. cbn [finite_internal_rounds].
     rewrite <- finite_internal_hitting_zero.
     change (free_omega_approx eq
-      (free_omega_bind (trunc t 0) (fun u => hit 0 (observe u)))
-      (free_omega_bind (trunc t m) (fun u => hit 0 (observe u)))).
+      (free_omega_bind (trunc t 0) (λ u, hit 0 (observe u)))
+      (free_omega_bind (trunc t m) (λ u, hit 0 (observe u)))).
     eapply free_omega_approx_bind with (R := eq).
     + apply finite_internal_trunc_mono. exact Hnm.
     + intros u v ->. apply free_omega_approx_refl. intro h. reflexivity.
@@ -168,7 +168,7 @@ Proof.
   - rewrite finite_internal_hitting_succ.
     change (free_omega_approx eq
       (free_omega_bind (trunc t (S n))
-        (finite_internal_advance (fun u => hit n (observe u))))
+        (finite_internal_advance (λ u, hit n (observe u))))
       (free_omega_bind (trunc t m)
         (finite_internal_advance (finite_internal_grid n m)))).
     eapply free_omega_approx_bind with (R := eq).
@@ -179,7 +179,7 @@ Qed.
 
 Theorem finite_internal_grid_cofinal t :
   free_omega_chains_cofinal eq
-    (fun n => hit n (observe t)) (fun n => finite_internal_grid n n t).
+    (λ n, hit n (observe t)) (λ n, finite_internal_grid n n t).
 Proof.
   split.
   - intro n. exists n. apply finite_internal_grid_covers. reflexivity.
@@ -194,8 +194,8 @@ Context `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
 
 Lemma finite_internal_round_kernel_increasing n t :
   free_omega_approx eq
-    (finite_internal_round_kernel (fun u => trunc u n) t)
-    (finite_internal_round_kernel (fun u => trunc u (S n)) t).
+    (finite_internal_round_kernel (λ u, trunc u n) t)
+    (finite_internal_round_kernel (λ u, trunc u (S n)) t).
 Proof.
   eapply free_omega_approx_bind with (R := eq).
   - exact (proj1 (trunc_spec t) n).
@@ -204,7 +204,7 @@ Qed.
 
 Lemma finite_internal_round_kernel_limit t :
   free_omega_qlift eq (finite_internal_round_kernel cut t)
-    (FOLub (fun n => finite_internal_round_kernel (fun u => trunc u n) t)).
+    (FOLub (λ n, finite_internal_round_kernel (λ u, trunc u n) t)).
 Proof.
   unfold finite_internal_round_kernel.
   change (free_omega_qlift eq (free_omega_bind (cut t) finite_internal_guard_transition)
@@ -216,13 +216,13 @@ Qed.
 
 Lemma finite_internal_rounds_limit n t :
   free_omega_qlift eq (finite_internal_rounds cut n t)
-    (FOLub (fun m => finite_internal_grid n m t)).
+    (FOLub (λ m, finite_internal_grid n m t)).
 Proof.
   unfold finite_internal_grid. rewrite finite_internal_rounds_kernelE.
-  assert (Hrows : (fun m => finite_internal_rounds (fun u => trunc u m) n t) =
-    (fun m => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+  assert (Hrows : (λ m, finite_internal_rounds (λ u, trunc u m) n t) =
+    (λ m, @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
       (ptree E MN R) (stable_head E MN R)
-      (finite_internal_round_kernel (fun u => trunc u m)) n t)).
+      (finite_internal_round_kernel (λ u, trunc u m)) n t)).
   { apply functional_extensionality. intro m. apply finite_internal_rounds_kernelE. }
   rewrite Hrows.
   exact (kernel_hitting_approx_limit finite_internal_round_kernel_increasing
@@ -231,14 +231,14 @@ Qed.
 
 Theorem finite_internal_acceleration_limit t :
   free_omega_qlift eq
-    (FOLub (fun n => finite_internal_rounds cut n t))
-    (FOLub (fun n => hit n (observe t))).
+    (FOLub (λ n, finite_internal_rounds cut n t))
+    (FOLub (λ n, hit n (observe t))).
 Proof.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := FOLub (fun n => FOLub (fun m => finite_internal_grid n m t))).
+    (mid := FOLub (λ n, FOLub (λ m, finite_internal_grid n m t))).
   - apply FOQLLub. intro n. apply finite_internal_rounds_limit.
   - eapply FOQLComp with (T := eq) (U := eq)
-      (mid := FOLub (fun n => finite_internal_grid n n t)).
+      (mid := FOLub (λ n, finite_internal_grid n n t)).
     + eapply FOQLDoubleDiagonal with (HAB := eq_refl).
       * intros n m. apply finite_internal_grid_inner.
       * intros n m. apply finite_internal_grid_outer.
@@ -277,8 +277,8 @@ Theorem finite_internal_acceleration
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     FreeOmegaMixedMeasure R t (cut t)) →
   ∀ t, free_omega_qlift eq
-    (FOLub (fun n => finite_internal_rounds cut n t))
-    (FOLub (fun n => @ptree_hitting_approx E MN (FreeOmega MN)
+    (FOLub (λ n, finite_internal_rounds cut n t))
+    (FOLub (λ n, @ptree_hitting_approx E MN (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R n (observe t))).
 Proof.
@@ -306,8 +306,8 @@ Corollary finite_internal_acceleration_joint
   ∃ joint, @semantic_coupling (FreeOmega MN)
     (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
     (stable_head E MN R) (stable_head E MN R) eq
-    (FOLub (fun n => finite_internal_rounds cut n t))
-    (FOLub (fun n => @ptree_hitting_approx E MN (FreeOmega MN)
+    (FOLub (λ n, finite_internal_rounds cut n t))
+    (FOLub (λ n, @ptree_hitting_approx E MN (FreeOmega MN)
       (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO))
       FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega R n (observe t))) joint.
 Proof.
@@ -332,7 +332,7 @@ Hypothesis cut1_valid : ∀ t,
 Hypothesis cut2_valid : ∀ t,
   @finite_internal E MN MF FI FreeOmegaMixedMeasure B t (cut2 t).
 Hypothesis cuts_coupled : ∀ t1 t2, sim t1 t2 →
-  free_omega_qlift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 t1) (cut2 t2).
+  free_omega_qlift (λ t u, pstrongF RR sim (observe t) (observe u)) (cut1 t1) (cut2 t2).
 
 (** A sound guarded coinduction rule allowing internal progress forever,
     not merely between visible events.  The marginal policies are explicit:
@@ -345,24 +345,24 @@ Theorem peutt_coinduction_finite_internal_policies t1 t2 :
 Proof.
   intro Hsim.
   eapply peutt_coinduction with
-    (sim := fun s1 s2 => exists u v,
+    (sim := λ s1 s2, exists u v,
       s1 = observe u ∧ s2 = observe v ∧ sim u v).
   - intros s1 s2 [u [v [-> [-> Huv]]]].
     eapply stable_hitting_match_of_hitting_lift with
-      (out1 := FOLub (fun n => @ptree_hitting_approx E MN MF FI
+      (out1 := FOLub (λ n, @ptree_hitting_approx E MN MF FI
         FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega A n (observe u)))
-      (out2 := FOLub (fun n => @ptree_hitting_approx E MN MF FI
+      (out2 := FOLub (λ n, @ptree_hitting_approx E MN MF FI
         FreeOmegaMixedMeasure FreeOmegaObservableSemanticOmega B n (observe v))).
     + apply free_omega_qlift_refl. intro h. reflexivity.
     + apply free_omega_qlift_refl. intro h. reflexivity.
     + eapply FOQLMono with (T := stable_head_rel RR sim).
       * eapply FOQLComp with (T := eq) (U := stable_head_rel RR sim)
-          (mid := FOLub (fun n => finite_internal_rounds cut1 n u)).
+          (mid := FOLub (λ n, finite_internal_rounds cut1 n u)).
         -- apply FOQLSym. eapply FOQLMono.
            ++ exact (finite_internal_acceleration cut1_valid u).
            ++ intros x y ->. reflexivity.
         -- eapply FOQLComp with (T := stable_head_rel RR sim) (U := eq)
-             (mid := FOLub (fun n => finite_internal_rounds cut2 n v)).
+             (mid := FOLub (λ n, finite_internal_rounds cut2 n v)).
            ++ exact (finite_internal_round_limits_coupled cuts_coupled Huv).
            ++ exact (finite_internal_acceleration cut2_valid v).
            ++ intros x z [y [Hxy ->]]. exact Hxy.

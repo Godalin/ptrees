@@ -23,16 +23,16 @@ Unset Strict Implicit.
 
 Definition count_sample (mu : SubEnumQ bool) :
     itree (probE SubEnumQ +' (stateE nat +' void1)) bool :=
-  ITreeDefinition.Vis (inl1 (Sample mu)) (fun b =>
-  ITreeDefinition.Vis (inr1 (inl1 (Get nat))) (fun n =>
-  ITreeDefinition.Vis (inr1 (inl1 (Put nat (S n)))) (fun _ =>
+  ITreeDefinition.Vis (inl1 (Sample mu)) (λ b,
+  ITreeDefinition.Vis (inr1 (inl1 (Get nat))) (λ n,
+  ITreeDefinition.Vis (inr1 (inl1 (Put nat (S n)))) (λ _,
   ITreeDefinition.Ret b))).
 
 (** Local State calculation, independent of the distribution that supplied b. *)
 Lemma lower_count_tail (b : bool) n :
   run_state (elaborate
-    (ITreeDefinition.Vis (inr1 (inl1 (Get nat))) (fun s =>
-     ITreeDefinition.Vis (inr1 (inl1 (Put nat (S s)))) (fun _ =>
+    (ITreeDefinition.Vis (inr1 (inl1 (Get nat))) (λ s,
+     ITreeDefinition.Vis (inr1 (inl1 (Put nat (S s)))) (λ _,
      ITreeDefinition.Ret b)))) n ≈ₚ
   (Ret (S n,b) : ptree void1 SubEnumQ (nat * bool)).
 Proof.
@@ -45,7 +45,7 @@ Qed.
 
 Theorem lower_then_count (mu : SubEnumQ bool) n :
   run_state (elaborate (count_sample mu)) n ≈ₚ
-  Prob mu (fun b => Ret (S n,b)).
+  Prob mu (λ b, Ret (S n,b)).
 Proof.
   unfold count_sample.
   setoid_rewrite free_omega_elab_sample.

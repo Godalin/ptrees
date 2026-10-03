@@ -26,17 +26,17 @@ Lemma from_itree_tau {A} (t : itree E A) :
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 Lemma from_itree_vis {A X} (e : E X) (k : X → itree E A) :
   pstruct eq (@from_itree E MN A (ITreeDefinition.Vis e k))
-    (Vis e (fun x => from_itree (k x))).
+    (Vis e (λ x, from_itree (k x))).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Definition from_itree_bind_candidate {A B} (t u : ptree E MN B) : Prop :=
   (∃ (s : itree E A) (k : A → itree E B),
     t = from_itree (ITree.bind s k) ∧
-    u = PTree.bind (from_itree s) (fun x => from_itree (k x))) ∨ pstruct eq t u.
+    u = PTree.bind (from_itree s) (λ x, from_itree (k x))) ∨ pstruct eq t u.
 
 Theorem from_itree_bind {A B} (t : itree E A) (k : A → itree E B) :
   pstruct eq (@from_itree E MN B (ITree.bind t k))
-    (PTree.bind (from_itree t) (fun x => from_itree (k x))).
+    (PTree.bind (from_itree t) (λ x, from_itree (k x))).
 Proof.
   assert (H : ∀ u v, @from_itree_bind_candidate A B u v -> pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
@@ -44,7 +44,7 @@ Proof.
     - unfold pstruct_body.
       change (pstructF eq (` CH)
         (observe (from_itree (ITree.bind s c)))
-        (observe (PTree.bind (from_itree s) (fun x => from_itree (c x))))).
+        (observe (PTree.bind (from_itree s) (λ x, from_itree (c x))))).
       rewrite observe_from_itree, ITree.Eq.Shallow.observe_bind, PTree.Eq.Shallow.observe_bind.
       try rewrite observe_from_itree.
       destruct (ITreeDefinition.observe s) as [a|s'|X e d]; cbn.
@@ -64,18 +64,18 @@ Local Definition left_cont (v : I+A) : itree E A :=
   match v with inl i => ITreeDefinition.Tau (ITree.iter step i)
   | inr a => ITreeDefinition.Ret a end.
 Local Definition right_cont (v : I+A) : ptree E MN A :=
-  match v with inl i => Tau (PTree.iter (fun j => from_itree (step j)) i)
+  match v with inl i => Tau (PTree.iter (λ j, from_itree (step j)) i)
   | inr a => Ret a end.
 Inductive from_itree_iter_candidate : ptree E MN A → ptree E MN A → Prop :=
 | IterMain i : from_itree_iter_candidate
-    (from_itree (ITree.iter step i)) (PTree.iter (fun j => from_itree (step j)) i)
+    (from_itree (ITree.iter step i)) (PTree.iter (λ j, from_itree (step j)) i)
 | IterBind s : from_itree_iter_candidate
     (from_itree (ITree.bind s left_cont))
     (PTree.bind (from_itree s) right_cont).
 
 Theorem from_itree_iter i :
   pstruct eq (@from_itree E MN A (ITree.iter step i))
-    (PTree.iter (fun j => from_itree (step j)) i).
+    (PTree.iter (λ j, from_itree (step j)) i).
 Proof.
   assert (H : ∀ u v, from_itree_iter_candidate u v -> pstruct eq u v).
   { unfold pstruct. coinduction CH CIH.
@@ -119,12 +119,12 @@ Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Lemma interp_itree_vis {A X} (e : E X) (k : X → itree E A) :
   pstruct eq (interp_itree h (ITreeDefinition.Vis e k))
-    (Tau (PTree.bind (h e) (fun x => interp_itree h (k x)))).
+    (Tau (PTree.bind (h e) (λ x, interp_itree h (k x)))).
 Proof. apply observe_eq_pstruct. reflexivity. Qed.
 
 Theorem interp_itree_bind {A B} (t : itree E A) (k : A → itree E B) :
   pstruct eq (interp_itree h (ITree.bind t k))
-    (PTree.bind (interp_itree h t) (fun x => interp_itree h (k x))).
+    (PTree.bind (interp_itree h t) (λ x, interp_itree h (k x))).
 Proof.
   unfold interp_itree. eapply pstruct_trans.
   - apply pstruct_interp. apply from_itree_bind.
@@ -133,7 +133,7 @@ Qed.
 
 Theorem interp_itree_iter {I A} (step : I → itree E (I+A)) i :
   pstruct eq (interp_itree h (ITree.iter step i))
-    (PTree.iter (fun j => interp_itree h (step j)) i).
+    (PTree.iter (λ j, interp_itree h (step j)) i).
 Proof.
   unfold interp_itree. eapply pstruct_trans.
   - apply pstruct_interp. apply from_itree_iter.
@@ -151,7 +151,7 @@ Proof. apply pstruct_interp_compose. Qed.
 Lemma elaborate_sample_structural {MN E A X} (mu : MN X)
     (k : X → itree (probE MN +' E) A) :
   pstruct eq (elaborate (ITreeDefinition.Vis (inl1 (Sample mu)) k))
-    (Tau (Prob mu (fun x => elaborate (k x)))).
+    (Tau (Prob mu (λ x, elaborate (k x)))).
 Proof.
   eapply pstruct_trans; [apply interp_itree_vis|].
   apply pstruct_fold. constructor.
@@ -163,7 +163,7 @@ Qed.
 Lemma elaborate_vis_structural {MN E A X} (e : E X)
     (k : X → itree (probE MN +' E) A) :
   pstruct eq (elaborate (ITreeDefinition.Vis (inr1 e) k))
-    (Tau (Vis e (fun x => elaborate (k x)))).
+    (Tau (Vis e (λ x, elaborate (k x)))).
 Proof.
   eapply pstruct_trans; [apply interp_itree_vis|].
   apply pstruct_fold. constructor.
@@ -178,7 +178,7 @@ Lemma interp_itree_trigger_structural {E F MN X}
 Proof.
   eapply pstruct_trans; [apply interp_itree_vis|].
   apply pstruct_fold. constructor.
-  eapply pstruct_trans with (y := PTree.bind (h X e) (fun x => Ret x)).
+  eapply pstruct_trans with (y := PTree.bind (h X e) (λ x, Ret x)).
   - eapply pstruct_bind with (RA := eq) (RB := eq).
     + intros x y ->. apply interp_itree_ret.
     + apply pstruct_refl.

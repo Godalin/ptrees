@@ -66,8 +66,8 @@ Proof.
   (* The representation-specific calculation is confined to this local
      analysis endpoint; clients rewrite the program equation above. *)
   change (peutt eq
-    (Prob (bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)))
-      (fun a => Ret a)) (factory_standard_step x)).
+    (Prob (bind_EnumQ vn_fair (λ b, ret_EnumQ (binary_round_result x b)))
+      (λ a, Ret a)) (factory_standard_step x)).
   unfold factory_standard_step. rewrite fair_binary_round_measure. reflexivity.
 Qed.
 

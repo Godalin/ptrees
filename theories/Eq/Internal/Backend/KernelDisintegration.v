@@ -39,19 +39,19 @@ Hypothesis closed : ∀ s, D s →
 Theorem kernel_resampling_stable_hitting s out1 out2 :
   D s →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O
-    (fun s => FOSample (joint s) (continue s)) s out1 →
+    (λ s, FOSample (joint s) (continue s)) s out1 →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O
-    (fun s => FOSample (marginal s)
-      (fun a => FOSample (conditional s a) (continue s))) s out2 →
+    (λ s, FOSample (marginal s)
+      (λ a, FOSample (conditional s a) (continue s))) s out2 →
   free_omega_qlift eq out1 out2.
 Proof.
   intros HD Hleft Hright.
   eapply kernel_stable_hitting_eq with (D := D)
-    (left := fun s => FOSample (joint s) (continue s))
-    (right := fun s => FOSample (marginal s)
-      (fun a => FOSample (conditional s a) (continue s))).
+    (left := λ s, FOSample (joint s) (continue s))
+    (right := λ s, FOSample (marginal s)
+      (λ a, FOSample (conditional s a) (continue s))).
   - exact closed.
-  - intros q Hq. apply FOQLMono with (T := fun x y => y = x).
+  - intros q Hq. apply FOQLMono with (T := λ x y, y = x).
     + apply FOQLSym. apply free_omega_sample_disintegration.
       apply reconstruct. exact Hq.
     + intros x y Hyx. symmetry. exact Hyx.
@@ -67,29 +67,29 @@ End Resampling.
 Theorem kernel_disintegration_exists {S O A B : Type}
     (joint : S → SubEnumQ (A * B)) (marginal : S → SubEnumQ A)
     (continue : S → A * B → FreeOmega SubEnumQ (stable_target S O))
-    (Hgraph : ∀ s, sem_lift (fun p x => fst p = x) (joint s) (marginal s)) :
+    (Hgraph : ∀ s, sem_lift (λ p x, fst p = x) (joint s) (marginal s)) :
   ∃ conditional : S → A → SubEnumQ (A * B),
     (∀ s, sem_eq (subenumQ_bind (marginal s) (conditional s)) (joint s)) ∧
-    (∀ s a, sem_ae (conditional s a) (fun p => fst p = a)) ∧
-    (∀ s, sem_ae (marginal s) (fun a => subenumQ_total (conditional s a))) ∧
+    (∀ s a, sem_ae (conditional s a) (λ p, fst p = a)) ∧
+    (∀ s, sem_ae (marginal s) (λ a, subenumQ_total (conditional s a))) ∧
     ∀ s out1 out2,
       @stable_hitting (FreeOmega SubEnumQ)
         (FreeOmegaObservableSemanticMeasure
           (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
         FreeOmegaObservableSemanticOmega S O
-        (fun s => FOSample (joint s) (continue s)) s out1 →
+        (λ s, FOSample (joint s) (continue s)) s out1 →
       @stable_hitting (FreeOmega SubEnumQ)
         (FreeOmegaObservableSemanticMeasure
           (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
         FreeOmegaObservableSemanticOmega S O
-        (fun s => FOSample (marginal s)
-          (fun a => FOSample (conditional s a) (continue s))) s out2 →
+        (λ s, FOSample (marginal s)
+          (λ a, FOSample (conditional s a) (continue s))) s out2 →
       free_omega_qlift eq out1 out2.
 Proof.
   assert (Hex : ∀ s, exists k : A -> SubEnumQ (A * B),
     sem_eq (subenumQ_bind (marginal s) k) (joint s) ∧
-    (∀ a, sem_ae (k a) (fun p => fst p = a)) ∧
-    sem_ae (marginal s) (fun a => subenumQ_total (k a))).
+    (∀ a, sem_ae (k a) (λ p, fst p = a)) ∧
+    sem_ae (marginal s) (λ a, subenumQ_total (k a))).
   { intro s. destruct (subenumQ_disintegration_over (Hgraph s))
       as [k [Hr [Hf [_ Ht]]]].
     exists k. repeat split; assumption. }
@@ -98,9 +98,9 @@ Proof.
   split; [intro s; exact (proj1 (proj2 (Hk s)))|].
   split; [intro s; exact (proj2 (proj2 (Hk s)))|].
   intros s out1 out2 Hleft Hright.
-  eapply kernel_resampling_stable_hitting with (D := fun _ => True).
+  eapply kernel_resampling_stable_hitting with (D := λ _, True).
   - intros q _. exact (proj1 (Hk q)).
-  - intros q _. eapply free_omega_ae_mono with (P := fun _ => True).
+  - intros q _. eapply free_omega_ae_mono with (P := λ _, True).
     + intros [o|q'] _; exact I.
     + apply (@sem_ae_true (FreeOmega SubEnumQ)
         (FreeOmegaObservableSemanticMeasure

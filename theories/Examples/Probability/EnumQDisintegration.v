@@ -17,7 +17,7 @@ Local Open Scope ring_scope.
 (** Conditioning on a constant visible component must retain the latent
     fair bit.  Picking just one supported partner would fail this test. *)
 Definition latent_coin : SubEnumQ (bool * bool) :=
-  subenumQ_bind subenumQ_fair (fun b => subenumQ_ret (true,b)).
+  subenumQ_bind subenumQ_fair (λ b, subenumQ_ret (true,b)).
 
 Example conditional_latent_coin :
   sem_eq (subenumQ_fiber_kernel latent_coin true) latent_coin.
@@ -52,7 +52,7 @@ Example function_state_disintegration
   ∃ conditional,
     sem_eq (subenumQ_bind (subenumQ_first_marginal joint) conditional) joint ∧
     sem_ae (subenumQ_first_marginal joint)
-      (fun a => subenumQ_total (conditional a)).
+      (λ a, subenumQ_total (conditional a)).
 Proof.
   destruct (subenumQ_disintegration joint) as [k [Hreconstruct [_ [_ Htotal]]]].
   exists k. split; assumption.

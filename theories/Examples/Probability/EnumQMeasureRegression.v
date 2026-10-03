@@ -75,4 +75,4 @@ Unset Automatic Proposition Inductives.
 Variant regE : Type → Type := .
 
 Definition reg_split_program : ptree regE EnumQ bool :=
-  Prob reg_fair_split (fun b => Ret b).
+  Prob reg_fair_split (λ b, Ret b).

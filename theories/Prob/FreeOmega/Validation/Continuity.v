@@ -40,7 +40,7 @@ Qed.
 
 Theorem model_upper_continuous {A} (t : FreeOmega MN A) (f : nat → A → R) :
   (∀ n, oval_test (f n)) → (∀ n x, f n x <= f (S n) x) →
-  upper t (oval_pointwise_sup f) = oval_sup (fun n => upper t (f n)).
+  upper t (oval_pointwise_sup f) = oval_sup (λ n, upper t (f n)).
 Proof.
   intros Hf Hi; induction t as [x| |X mu k IH|c IH]; cbn [free_omega_model_upper].
   - reflexivity.
@@ -59,7 +59,7 @@ Qed.
 Lemma model_native_continuous_ae {X} (L : OmegaVal R X) P (f : nat → X → R) :
   oval_ae L P → (∀ n, oval_test (f n)) →
   (∀ x, P x → ∀ n, f n x <= f (S n) x) →
-  oval_eval L (oval_pointwise_sup f) = oval_sup (fun n => oval_eval L (f n)).
+  oval_eval L (oval_pointwise_sup f) = oval_sup (λ n, oval_eval L (f n)).
 Proof.
   intros HP Hf Hi.
   pose g n x := if pselect (P x) then f n x else 0.
@@ -93,10 +93,10 @@ Proof.
 Qed.
 
 Theorem model_sample_lub {A X} (mu : MN X) (c : X → nat → FreeOmega MN A) f :
-  sem_ae mu (fun x => ∀ n, free_omega_approx eq (c x n) (c x (S n))) →
+  sem_ae mu (λ x, ∀ n, free_omega_approx eq (c x n) (c x (S n))) →
   oval_test f →
-  upper (FOSample mu (fun x => FOLub (c x))) f =
-  upper (FOLub (fun n => FOSample mu (fun x => c x n))) f.
+  upper (FOSample mu (λ x, FOLub (c x))) f =
+  upper (FOLub (λ n, FOSample mu (λ x, c x n))) f.
 Proof.
   intros Hi Hf; apply (model_native_continuous_ae (native_ae Hi)).
   - intros n x; exact (model_upper_bounds (@native) (c x n) Hf).
@@ -106,8 +106,8 @@ Qed.
 Theorem model_diagonal_upper {A} (c : nat → nat → FreeOmega MN A) f :
   (∀ i j, free_omega_approx eq (c i j) (c i (S j))) →
   (∀ i j, free_omega_approx eq (c i j) (c (S i) j)) →
-  oval_test f → upper (FOLub (fun i => FOLub (c i))) f =
-    upper (FOLub (fun n => c n n)) f.
+  oval_test f → upper (FOLub (λ i, FOLub (c i))) f =
+    upper (FOLub (λ n, c n n)) f.
 Proof.
   intros Hr Hc Hf; apply model_upper_lub_diagonal; [| |exact Hf].
   - intros j i g Hg; exact (model_approx_mono (Hc i j) Hg).
@@ -119,23 +119,23 @@ Theorem model_bind_lub {A X} (s : nat → FreeOmega MN X)
   (∀ n, free_omega_approx eq (s n) (s (S n))) →
   (∀ x n, free_omega_approx eq (k x n) (k x (S n))) →
   oval_test f →
-  upper (free_omega_bind (FOLub s) (fun x => FOLub (k x))) f =
-  upper (FOLub (fun n => free_omega_bind (s n) (fun x => k x n))) f.
+  upper (free_omega_bind (FOLub s) (λ x, FOLub (k x))) f =
+  upper (FOLub (λ n, free_omega_bind (s n) (λ x, k x n))) f.
 Proof.
   intros Hs Hk Hf.
-  have Hrow : ∀ i, upper (free_omega_bind (s i) (fun x => FOLub (k x))) f =
-      upper (FOLub (fun n => free_omega_bind (s i) (fun x => k x n))) f.
+  have Hrow : ∀ i, upper (free_omega_bind (s i) (λ x, FOLub (k x))) f =
+      upper (FOLub (λ n, free_omega_bind (s i) (λ x, k x n))) f.
   { intro i; rewrite model_upper_bind; cbn [free_omega_model_upper].
-    rewrite (model_upper_continuous (s i) (f := fun n x => upper (k x n) f)).
+    rewrite (model_upper_continuous (s i) (f := λ n x, upper (k x n) f)).
     - apply oval_sup_ext=> n; symmetry; exact: model_upper_bind.
     - intros n x; exact (model_upper_bounds (@native) (k x n) Hf).
     - intros n x; exact (model_approx_mono (Hk x n) Hf). }
-  change (oval_sup (fun i => upper (free_omega_bind (s i) (fun x => FOLub (k x))) f) =
-    upper (FOLub (fun n => free_omega_bind (s n) (fun x => k x n))) f).
+  change (oval_sup (λ i, upper (free_omega_bind (s i) (λ x, FOLub (k x))) f) =
+    upper (FOLub (λ n, free_omega_bind (s n) (λ x, k x n))) f).
   rewrite (functional_extensionality _ _ Hrow).
   apply model_upper_lub_diagonal; [| |exact Hf].
   - intros j i g Hg; rewrite !model_upper_bind.
-    exact (model_approx_mono (Hs i) (fun x => model_upper_bounds (@native) (k x j) Hg)).
+    exact (model_approx_mono (Hs i) (λ x, model_upper_bounds (@native) (k x j) Hg)).
   - intros i j g Hg; rewrite !model_upper_bind.
     apply model_upper_mono.
     + intro x; exact (model_upper_bounds (@native) (k x j) Hg).

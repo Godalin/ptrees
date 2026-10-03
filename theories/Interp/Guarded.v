@@ -69,14 +69,14 @@ Proof.
     (@ptree_primitive_kernel F MN MF FI MX X)
     (observe (handler e))) as [mu Hmu].
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-    (fun x => PTree.interp handler (k1 x))) as [front1 Hfront1].
+    (λ x, PTree.interp handler (k1 x))) as [front1 Hfront1].
   destruct (stable_hitting_front_choice (FI := FI) (FO := FO)
-    (fun x => PTree.interp handler (k2 x))) as [front2 Hfront2].
+    (λ x, PTree.interp handler (k2 x))) as [front2 Hfront2].
   eapply stable_hitting_match_of_hitting_lift
     with (out1 := sem_bind mu (bind_frontier
-      (fun x => PTree.interp handler (k1 x)) front1))
+      (λ x, PTree.interp handler (k1 x)) front1))
          (out2 := sem_bind mu (bind_frontier
-      (fun x => PTree.interp handler (k2 x)) front2)).
+      (λ x, PTree.interp handler (k2 x)) front2)).
   - apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
     eapply (ptree_stable_hitting_bind (FI := FI) (FO := FO)
       (MX := MX)); [apply (Preservation.bind_cofinal_all (BindOrd := BindOrd) (MixedOrd := MixedOrd) (Directed := Directed))|exact Hmu|exact Hfront1].
@@ -91,8 +91,8 @@ Proof.
     apply (sem_lift_ret (SI := FI)). constructor. intro y.
     right. right.
     exists X, X, (@eq X), (c y), (c y),
-      (fun x => PTree.interp handler (k1 x)),
-      (fun x => PTree.interp handler (k2 x)).
+      (λ x, PTree.interp handler (k1 x)),
+      (λ x, PTree.interp handler (k2 x)).
     split; [reflexivity|]. split; [reflexivity|].
     split; [apply peutt_refl|].
     intros x x' ->. left.

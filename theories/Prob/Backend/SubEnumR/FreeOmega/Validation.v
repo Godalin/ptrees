@@ -38,11 +38,11 @@ Theorem subenumR_native_model_lift {X Y} (S : X → Y → Prop)
 Proof. intros H _ _ Hfg; exact (subenumR_domain_lift H Hfg). Qed.
 
 Theorem subenumR_free_omega_sample_ae {A X} (mu : SubEnumR R X) (k : X → FreeOmega (SubEnumR R) A) :
-  sem_ae mu (fun x => free_omega_modelable native (k x)) →
+  sem_ae mu (λ x, free_omega_modelable native (k x)) →
   free_omega_modelable native (FOSample mu k).
 Proof. intro H; exact (modelable_sample_ae (@subenumR_native_model_ae) H). Qed.
 Theorem subenumR_free_omega_bind_ae {A B} (t : FreeOmega (SubEnumR R) A) (k : A → FreeOmega (SubEnumR R) B) :
-  free_omega_modelable native t → free_omega_ae (fun x => free_omega_modelable native (k x)) t →
+  free_omega_modelable native t → free_omega_ae (λ x, free_omega_modelable native (k x)) t →
   free_omega_modelable native (free_omega_bind t k).
 Proof. intros H Hk; exact (modelable_bind_ae (@subenumR_native_model_ae) H Hk). Qed.
 Theorem subenumR_free_omega_lub {A} (c : nat → FreeOmega (SubEnumR R) A) :
@@ -59,13 +59,13 @@ Lemma subenumR_native_model_lub {A} (c : nat → SubEnumR R A) out :
   (∀ n f, oval_test f → oval_eval (subenumR_domain (c n)) f <=
     oval_eval (subenumR_domain (c (S n))) f) →
   sem_lub c out → ∀ f, oval_test f →
-  oval_sup (fun n => oval_eval (subenumR_domain (c n)) f) = oval_eval (subenumR_domain out) f.
+  oval_sup (λ n, oval_eval (subenumR_domain (c n)) f) = oval_eval (subenumR_domain out) f.
 Proof.
   intros _ Hl f Hf; destruct (Hl f Hf) as [Hub Hleast].
   apply/eqP; rewrite eq_le; apply/andP; split.
   - exact: oval_sup_le Hub.
   - apply Hleast=> n.
-    exact (oval_sup_ge n (fun i => proj2 (oval_eval_bounds (subenumR_domain (c i)) Hf))).
+    exact (oval_sup_ge n (λ i, proj2 (oval_eval_bounds (subenumR_domain (c i)) Hf))).
 Qed.
 
 Theorem subenumR_qlift_bidual_raw {A B} (T : A → B → Prop)

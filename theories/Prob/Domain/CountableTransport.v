@@ -20,7 +20,7 @@ Variable R : realType.
 Lemma oval_dual_ae_restrict {A B} (T : A → B → Prop)
     (L : OmegaVal R A) (M : OmegaVal R B) P Q :
   oval_ae L P → oval_ae M Q → oval_dual T L M →
-  oval_dual (fun x y => T x y ∧ P x ∧ Q y) L M.
+  oval_dual (λ x y, T x y ∧ P x ∧ Q y) L M.
 Proof.
   intros HP HQ HT f g Hf Hg Hfg.
   pose f' x := if pselect (P x) then f x else 0.
@@ -43,7 +43,7 @@ Proof.
 Qed.
 
 Definition oval_coded {A} (L : OmegaVal R A) (e : nat → option A) :=
-  oval_bind L (fun x => oval_ret R (oval_code e x)).
+  oval_bind L (λ x, oval_ret R (oval_code e x)).
 
 Definition oval_code_relation {A B} (e : nat → option A)
     (d : nat → option B) (T : A → B → Prop) i j :=
@@ -107,28 +107,28 @@ Theorem oval_joint_decode {A B} (T : A → B → Prop)
 Proof.
   intros HL HM [HJl [HJr HJS]]; split.
   - intros f Hf; rewrite (HL f Hf).
-    transitivity (oval_eval J (fun ij => oval_eval (oval_decode R e (fst ij)) f)).
+    transitivity (oval_eval J (λ ij, oval_eval (oval_decode R e (fst ij)) f)).
     + apply HJS.
-      * intro ij; exact (oval_eval_bounds (oval_pair_decode e d ij) (fun z => Hf (fst z))).
+      * intro ij; exact (oval_eval_bounds (oval_pair_decode e d ij) (λ z, Hf (fst z))).
       * intro ij; exact (oval_eval_bounds (oval_decode R e (fst ij)) Hf).
       * intros [i j] [x [y [Hx [Hy Hxy]]]].
-        change (oval_eval (oval_pair_decode e d (i,j)) (fun z => f (fst z)) =
+        change (oval_eval (oval_pair_decode e d (i,j)) (λ z, f (fst z)) =
           oval_eval (oval_decode R e i) f).
         by rewrite /oval_pair_decode /oval_decode /= Hx Hy.
-    + exact (HJl (fun i => oval_eval (oval_decode R e i) f)
-        (fun i => oval_eval_bounds (oval_decode R e i) Hf)).
+    + exact (HJl (λ i, oval_eval (oval_decode R e i) f)
+        (λ i, oval_eval_bounds (oval_decode R e i) Hf)).
   - split.
     + intros g Hg; rewrite (HM g Hg).
-      transitivity (oval_eval J (fun ij => oval_eval (oval_decode R d (snd ij)) g)).
+      transitivity (oval_eval J (λ ij, oval_eval (oval_decode R d (snd ij)) g)).
       * apply HJS.
-        -- intro ij; exact (oval_eval_bounds (oval_pair_decode e d ij) (fun z => Hg (snd z))).
+        -- intro ij; exact (oval_eval_bounds (oval_pair_decode e d ij) (λ z, Hg (snd z))).
         -- intro ij; exact (oval_eval_bounds (oval_decode R d (snd ij)) Hg).
         -- intros [i j] [x [y [Hx [Hy Hxy]]]].
-           change (oval_eval (oval_pair_decode e d (i,j)) (fun z => g (snd z)) =
+           change (oval_eval (oval_pair_decode e d (i,j)) (λ z, g (snd z)) =
              oval_eval (oval_decode R d j) g).
            by rewrite /oval_pair_decode /oval_decode /= Hx Hy.
-      * exact (HJr (fun j => oval_eval (oval_decode R d j) g)
-          (fun j => oval_eval_bounds (oval_decode R d j) Hg)).
+      * exact (HJr (λ j, oval_eval (oval_decode R d j) g)
+          (λ j, oval_eval_bounds (oval_decode R d j) Hg)).
     + intros f g Hf Hg Hfg; apply HJS.
       * intro ij; exact (oval_eval_bounds (oval_pair_decode e d ij) Hf).
       * intro ij; exact (oval_eval_bounds (oval_pair_decode e d ij) Hg).

@@ -30,10 +30,10 @@ Local Notation qlift := (@free_omega_qlift@{
 Lemma native_sigma_identity {X : Type@{node}} {Y : X → Type@{node}}
     (mu : MN X) (k : ∀ x, MN (Y x)) :
   qlift eq
-    (FOSample mu (fun x => FOSample (k x) (fun y => FORet (existT Y x y))) :
+    (FOSample mu (λ x, FOSample (k x) (λ y, FORet (existT Y x y))) :
       FreeOmegaAt MN Anchor {x : X & Y x})
-    (FOSample (sem_bind mu (fun x => sem_bind (k x) (fun y => sem_ret (existT Y x y))))
-      (fun z => FORet z)).
+    (FOSample (sem_bind mu (λ x, sem_bind (k x) (λ y, sem_ret (existT Y x y))))
+      (λ z, FORet z)).
 Proof.
   eapply FOQLComp with (T := eq) (U := eq).
   - apply free_omega_sample_sigma.
@@ -57,10 +57,10 @@ Variable conditional : ∀ z, MN (U (left z) * V (right z)).
 Variable related : ∀ z, U (left z) → V (right z) → Prop.
 Arguments related z _ _ : clear implicits.
 
-Hypothesis joint_left : qlift (fun z x => left z = x)
-  (FOSample joint (fun z => FORet z)) (FOSample mu (fun x => FORet x)).
-Hypothesis joint_right : qlift (fun z y => right z = y)
-  (FOSample joint (fun z => FORet z)) (FOSample nu (fun y => FORet y)).
+Hypothesis joint_left : qlift (λ z x, left z = x)
+  (FOSample joint (λ z, FORet z)) (FOSample mu (λ x, FORet x)).
+Hypothesis joint_right : qlift (λ z y, right z = y)
+  (FOSample joint (λ z, FORet z)) (FOSample nu (λ y, FORet y)).
 Hypothesis joint_good : sem_ae joint Good.
 Hypothesis conditional_joint : ∀ z, Good z →
   semantic_coupling (related z) (left_kernel (left z)) (right_kernel (right z))
@@ -69,25 +69,25 @@ Hypothesis conditional_joint : ∀ z, Good z →
 Definition extended_joint_path : Type@{node} :=
   {z : Z & (U (left z) * V (right z))%type}.
 Definition extended_joint_measure : MN extended_joint_path :=
-  sem_bind joint (fun z => sem_bind (conditional z)
-    (fun uv => sem_ret (existT _ z uv))).
+  sem_bind joint (λ z, sem_bind (conditional z)
+    (λ uv, sem_ret (existT _ z uv))).
 Definition extended_joint_left (w : extended_joint_path) : {x : X & U x} :=
   existT U (left (projT1 w)) (fst (projT2 w)).
 Definition extended_joint_right (w : extended_joint_path) : {y : Y & V y} :=
   existT V (right (projT1 w)) (snd (projT2 w)).
 Definition extended_left_measure : MN {x : X & U x} :=
-  sem_bind mu (fun x => sem_bind (left_kernel x) (fun u => sem_ret (existT U x u))).
+  sem_bind mu (λ x, sem_bind (left_kernel x) (λ u, sem_ret (existT U x u))).
 Definition extended_right_measure : MN {y : Y & V y} :=
-  sem_bind nu (fun y => sem_bind (right_kernel y) (fun v => sem_ret (existT V y v))).
+  sem_bind nu (λ y, sem_bind (right_kernel y) (λ v, sem_ret (existT V y v))).
 
 Let joint_nested : FreeOmegaAt MN Anchor extended_joint_path :=
-  FOSample joint (fun z => FOSample (conditional z) (fun uv => FORet (existT _ z uv))).
+  FOSample joint (λ z, FOSample (conditional z) (λ uv, FORet (existT _ z uv))).
 Let left_nested : FreeOmegaAt MN Anchor {x : X & U x} :=
-  FOSample mu (fun x => FOSample (left_kernel x) (fun u => FORet (existT U x u))).
+  FOSample mu (λ x, FOSample (left_kernel x) (λ u, FORet (existT U x u))).
 Let right_nested : FreeOmegaAt MN Anchor {y : Y & V y} :=
-  FOSample nu (fun y => FOSample (right_kernel y) (fun v => FORet (existT V y v))).
+  FOSample nu (λ y, FOSample (right_kernel y) (λ v, FORet (existT V y v))).
 
-Lemma extended_joint_support : sem_ae extended_joint_measure (fun w =>
+Lemma extended_joint_support : sem_ae extended_joint_measure (λ w,
   Good (projT1 w) ∧ related (projT1 w) (fst (projT2 w)) (snd (projT2 w))).
 Proof.
   apply sem_ae_bind_iff. eapply sem_ae_mono; [|exact joint_good].
@@ -97,20 +97,20 @@ Proof.
 Qed.
 
 Lemma extended_joint_nested_left :
-  qlift (fun w x => extended_joint_left w = x) joint_nested left_nested.
+  qlift (λ w x, extended_joint_left w = x) joint_nested left_nested.
 Proof.
-  change (qlift (fun w x => extended_joint_left w = x)
-    (free_omega_bind (FOSample joint (fun z => FORet z))
-      (fun z => FOSample (conditional z) (fun uv => FORet (existT _ z uv))))
-    (free_omega_bind (FOSample mu (fun x => FORet x))
-      (fun x => FOSample (left_kernel x) (fun u => FORet (existT U x u))))).
-  eapply FOQLBind with (T := fun z x => left z = x ∧ Good z).
-  - eapply FOQLAERestrict with (T := fun z x => left z = x)
-      (P := Good) (Q := fun _ => True).
+  change (qlift (λ w x, extended_joint_left w = x)
+    (free_omega_bind (FOSample joint (λ z, FORet z))
+      (λ z, FOSample (conditional z) (λ uv, FORet (existT _ z uv))))
+    (free_omega_bind (FOSample mu (λ x, FORet x))
+      (λ x, FOSample (left_kernel x) (λ u, FORet (existT U x u))))).
+  eapply FOQLBind with (T := λ z x, left z = x ∧ Good z).
+  - eapply FOQLAERestrict with (T := λ z x, left z = x)
+      (P := Good) (Q := λ _, True).
     + exact joint_left.
     + apply FOAESample with (Good := Good); [exact joint_good|].
       intros z Hz. apply FOAERet. exact Hz.
-    + apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+    + apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
       intros x _. apply FOAERet. exact I.
     + intros z x [Heq [Hz _]]. split; assumption.
   - intros z x [<- Hz].
@@ -120,20 +120,20 @@ Proof.
 Qed.
 
 Lemma extended_joint_nested_right :
-  qlift (fun w y => extended_joint_right w = y) joint_nested right_nested.
+  qlift (λ w y, extended_joint_right w = y) joint_nested right_nested.
 Proof.
-  change (qlift (fun w y => extended_joint_right w = y)
-    (free_omega_bind (FOSample joint (fun z => FORet z))
-      (fun z => FOSample (conditional z) (fun uv => FORet (existT _ z uv))))
-    (free_omega_bind (FOSample nu (fun y => FORet y))
-      (fun y => FOSample (right_kernel y) (fun v => FORet (existT V y v))))).
-  eapply FOQLBind with (T := fun z y => right z = y ∧ Good z).
-  - eapply FOQLAERestrict with (T := fun z y => right z = y)
-      (P := Good) (Q := fun _ => True).
+  change (qlift (λ w y, extended_joint_right w = y)
+    (free_omega_bind (FOSample joint (λ z, FORet z))
+      (λ z, FOSample (conditional z) (λ uv, FORet (existT _ z uv))))
+    (free_omega_bind (FOSample nu (λ y, FORet y))
+      (λ y, FOSample (right_kernel y) (λ v, FORet (existT V y v))))).
+  eapply FOQLBind with (T := λ z y, right z = y ∧ Good z).
+  - eapply FOQLAERestrict with (T := λ z y, right z = y)
+      (P := Good) (Q := λ _, True).
     + exact joint_right.
     + apply FOAESample with (Good := Good); [exact joint_good|].
       intros z Hz. apply FOAERet. exact Hz.
-    + apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+    + apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
       intros y _. apply FOAERet. exact I.
     + intros z y [Heq [Hz _]]. split; assumption.
   - intros z y [<- Hz].
@@ -143,16 +143,16 @@ Proof.
 Qed.
 
 Theorem extended_joint_left_marginal :
-  qlift (fun w x => extended_joint_left w = x)
-    (FOSample extended_joint_measure (fun w => FORet w))
-    (FOSample extended_left_measure (fun x => FORet x)).
+  qlift (λ w x, extended_joint_left w = x)
+    (FOSample extended_joint_measure (λ w, FORet w))
+    (FOSample extended_left_measure (λ x, FORet x)).
 Proof.
-  eapply FOQLComp with (T := eq) (U := fun w x => extended_joint_left w = x)
+  eapply FOQLComp with (T := eq) (U := λ w x, extended_joint_left w = x)
     (mid := joint_nested).
-  - apply FOQLMono with (T := fun x y => y = x).
+  - apply FOQLMono with (T := λ x y, y = x).
     + apply FOQLSym, native_sigma_identity.
     + intros x y Hyx. symmetry. exact Hyx.
-  - eapply FOQLComp with (T := fun w x => extended_joint_left w = x) (U := eq)
+  - eapply FOQLComp with (T := λ w x, extended_joint_left w = x) (U := eq)
       (mid := left_nested).
     + apply extended_joint_nested_left.
     + apply native_sigma_identity.
@@ -161,16 +161,16 @@ Proof.
 Qed.
 
 Theorem extended_joint_right_marginal :
-  qlift (fun w y => extended_joint_right w = y)
-    (FOSample extended_joint_measure (fun w => FORet w))
-    (FOSample extended_right_measure (fun y => FORet y)).
+  qlift (λ w y, extended_joint_right w = y)
+    (FOSample extended_joint_measure (λ w, FORet w))
+    (FOSample extended_right_measure (λ y, FORet y)).
 Proof.
-  eapply FOQLComp with (T := eq) (U := fun w y => extended_joint_right w = y)
+  eapply FOQLComp with (T := eq) (U := λ w y, extended_joint_right w = y)
     (mid := joint_nested).
-  - apply FOQLMono with (T := fun x y => y = x).
+  - apply FOQLMono with (T := λ x y, y = x).
     + apply FOQLSym, native_sigma_identity.
     + intros x y Hyx. symmetry. exact Hyx.
-  - eapply FOQLComp with (T := fun w y => extended_joint_right w = y) (U := eq)
+  - eapply FOQLComp with (T := λ w y, extended_joint_right w = y) (U := eq)
       (mid := right_nested).
     + apply extended_joint_nested_right.
     + apply native_sigma_identity.

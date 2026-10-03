@@ -36,17 +36,17 @@ Definition fused_preparation : SubEnumQ bool := subenumQ_bind coin preparation_c
 Definition after_preparation (s : nat) (b : bool) :
     ptree (stateE nat +' void1) SubEnumQ unit :=
   Vis (inl1 (Put nat (if b then (s + 10)%nat else s)))
-    (fun _ => rational_attempts).
+    (λ _, rational_attempts).
 
 Definition original_state_program : ptree (stateE nat +' void1) SubEnumQ unit :=
-  Vis (inl1 (Get nat)) (fun s =>
-    Prob coin (fun b => Prob (preparation_coin b) (after_preparation s))).
+  Vis (inl1 (Get nat)) (λ s,
+    Prob coin (λ b, Prob (preparation_coin b) (after_preparation s))).
 
 Definition rewritten_state_program : ptree (stateE nat +' void1) SubEnumQ unit :=
-  Vis (inl1 (Get nat)) (fun s => Prob fused_preparation (after_preparation s)).
+  Vis (inl1 (Get nat)) (λ s, Prob fused_preparation (after_preparation s)).
 
 Theorem preparation_sampling_fusion s :
-  Prob coin (fun b => Prob (preparation_coin b) (after_preparation s))
+  Prob coin (λ b, Prob (preparation_coin b) (after_preparation s))
     ≈ₚ Prob fused_preparation (after_preparation s).
 Proof.
   apply (peutt_prob_flatten (NI := PTree.Prob.Backend.SubEnumQ.Measure.SubEnumQ_SemanticMeasure)).
@@ -67,7 +67,7 @@ Qed.
 Definition execute_state_program {Seed}
     (program : ptree (stateE nat +' void1) SubEnumQ unit)
     (next : nat → Seed → option nat * Seed) fuel initial seed : outcome nat * Seed :=
-  let '(result, rest) := run (fun A => @ticket_sample Seed A next) fuel
+  let '(result, rest) := run (λ A, @ticket_sample Seed A next) fuel
     (run_state program initial) seed in
   (match result with
    | Returned sa => Returned (fst sa)
@@ -88,7 +88,7 @@ Example rewritten_preparation_trace :
 Proof. native_compute. reflexivity. Qed.
 
 Theorem rewritten_trace_has_operational_path :
-  executes (fun A => @ticket_sample (list nat) A ticket_replay_source)
+  executes (λ A, @ticket_sample (list nat) A ticket_replay_source)
     (run_state rewritten_state_program 0%nat) [24%nat;0%nat]
     (Returned (11%nat,tt)) [].
 Proof.
@@ -108,13 +108,13 @@ Proof. native_compute. reflexivity. Qed.
 Local Open Scope ring_scope.
 Example preparation_success_probability :
   ticket_expectation fused_preparation
-    (fun o => match o with Some true => 1 | _ => 0 end) = 6^-1.
+    (λ o, match o with Some true => 1 | _ => 0 end) = 6^-1.
 Proof. native_compute. reflexivity. Qed.
 Example preparation_other_probability :
   ticket_expectation fused_preparation
-    (fun o => match o with Some false => 1 | _ => 0 end) = 3 * 4^-1.
+    (λ o, match o with Some false => 1 | _ => 0 end) = 3 * 4^-1.
 Proof. native_compute. reflexivity. Qed.
 Example preparation_lost_probability :
   ticket_expectation fused_preparation
-    (fun o => match o with None => 1 | _ => 0 end) = 12^-1.
+    (λ o, match o with None => 1 | _ => 0 end) = 12^-1.
 Proof. native_compute. reflexivity. Qed.

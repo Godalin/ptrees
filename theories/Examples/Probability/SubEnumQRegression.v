@@ -52,10 +52,10 @@ Definition subenumQ_fair_split : SubEnumQ bool :=
   @enumQ_as_subprob bool reg_fair_split reg_fair_split_subprob.
 
 Definition subenumQ_direct_coin : ptree subenumQE SubEnumQ bool :=
-  Prob subenumQ_fair (fun b : bool => Ret b).
+  Prob subenumQ_fair (λ b : bool, Ret b).
 
 Definition subenumQ_split_coin : ptree subenumQE SubEnumQ bool :=
-  Prob subenumQ_fair_split (fun b : bool => Ret b).
+  Prob subenumQ_fair_split (λ b : bool, Ret b).
 
 Local Notation SubMF := (FreeOmega SubEnumQ).
 Local Notation subpeutt :=
@@ -100,7 +100,7 @@ Proof.
 Qed.
 
 Definition enumQ_overweight_program : ptree subenumQE EnumQ bool :=
-  Prob enumQ_overweight_flip (fun b : bool => Ret b).
+  Prob enumQ_overweight_flip (λ b : bool, Ret b).
 
 Lemma enumQ_overweight_program_not_probabilistic :
   ¬ @probabilistic_ptree subenumQE EnumQ EnumQ_SemanticMeasure
@@ -119,8 +119,8 @@ Proof. apply probabilistic_ptree_intrinsic. Qed.
 (** Bind remains inside the carrier without asking clients to re-establish
     a global mass inequality after every probabilistic composition. *)
 Definition subenumQ_two_coins : SubEnumQ (bool * bool) :=
-  subenumQ_bind subenumQ_fair (fun b1 =>
-    subenumQ_bind subenumQ_fair (fun b2 => subenumQ_ret (b1, b2))).
+  subenumQ_bind subenumQ_fair (λ b1,
+    subenumQ_bind subenumQ_fair (λ b2, subenumQ_ret (b1, b2))).
 
 Lemma subenumQ_two_coins_bounded :
   enumQ_subprob (subenumQ_raw subenumQ_two_coins).

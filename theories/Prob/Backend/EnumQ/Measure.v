@@ -183,15 +183,15 @@ Qed.
     operations but no unconditional [SemanticOmegaLaws] instance. *)
 Definition enumQ_sem_le {A} (mu nu : EnumQ A) : Prop :=
   ∀ P : A → bool,
-    enumQ_expect (fun x => if P x then 1 else 0) mu <=
-    enumQ_expect (fun x => if P x then 1 else 0) nu.
+    enumQ_expect (λ x, if P x then 1 else 0) mu <=
+    enumQ_expect (λ x, if P x then 1 else 0) nu.
 
 #[global] Instance EnumQ_SemanticOmega :
     @SemanticOmega EnumQ EnumQ_SemanticMeasure := {
-  sem_zero := fun A => @enumQ_zero A;
+  sem_zero := λ A, @enumQ_zero A;
   sem_le := @enumQ_sem_le;
   sem_lub := @enumQ_converges;
-  sem_total := fun A mu => enumQ_expect (fun _ : A => 1) mu = 1
+  sem_total := λ A mu, enumQ_expect (λ _ : A, 1) mu = 1
 }.
 
 #[global] Instance EnumQ_SemanticMeasureBindLaws :
@@ -255,28 +255,28 @@ Qed.
     carriers have no decidable equality.  This is the concrete numeric
     reflection of the abstract [sem_same_mass] predicate. *)
 Lemma enumQ_expect_one_emap {A B} (f : A → B) (mu : EnumQ A) :
-  enumQ_expect (fun _ : B => 1) (emap f mu) =
-  enumQ_expect (fun _ : A => 1) mu.
+  enumQ_expect (λ _ : B, 1) (emap f mu) =
+  enumQ_expect (λ _ : A, 1) mu.
 Proof. exact: enumQ_expect_map. Qed.
 
 Lemma enumQ_expect_one_indexed {A} (mu : EnumQ A) :
-  enumQ_expect (fun _ : nat => 1) (indexed mu) =
-  enumQ_expect (fun _ : A => 1) mu.
+  enumQ_expect (λ _ : nat, 1) (indexed mu) =
+  enumQ_expect (λ _ : A, 1) mu.
 Proof. exact: finite_index_mass. Qed.
 
 Lemma enumQ_expect_one_prune {A} (mu : EnumQ A) :
-  enumQ_expect (fun _ : A => 1) (enumQ_prune mu) =
-  enumQ_expect (fun _ : A => 1) mu.
+  enumQ_expect (λ _ : A, 1) (enumQ_prune mu) =
+  enumQ_expect (λ _ : A, 1) mu.
 Proof. exact: finite_expect_prune_zero. Qed.
 
 Lemma enumQ_expect_one_eqenum {A : eqType} (mu nu : EnumQ A) :
   mu ==EnumQ nu →
-  enumQ_expect (fun _ : A => 1) mu = enumQ_expect (fun _ : A => 1) nu.
+  enumQ_expect (λ _ : A, 1) mu = enumQ_expect (λ _ : A, 1) nu.
 Proof. exact: enumQ_weightQ_proper. Qed.
 
 Lemma enumQ_sem_same_mass_expect_one {A B} (mu : EnumQ A) (nu : EnumQ B) :
   @sem_same_mass EnumQ EnumQ_SemanticMeasure A B mu nu →
-  enumQ_expect (fun _ : A => 1) mu = enumQ_expect (fun _ : B => 1) nu.
+  enumQ_expect (λ _ : A, 1) mu = enumQ_expect (λ _ : B, 1) nu.
 Proof.
   unfold sem_same_mass. cbn. unfold indexed_coupling.
   intros [j HjL HjR _].
@@ -298,6 +298,6 @@ Lemma enumQ_sem_same_mass_zero_ret_bool :
       (@enumQ_zero bool) (sem_ret true).
 Proof.
   move=> H; have He := enumQ_sem_same_mass_expect_one H.
-  change (0 = enumQ_expect (fun _ : bool => 1) (ret_EnumQ true)) in He.
+  change (0 = enumQ_expect (λ _ : bool, 1) (ret_EnumQ true)) in He.
   rewrite enumQ_expect_ret in He; discriminate.
 Qed.

@@ -119,13 +119,13 @@ Qed.
     simpler return type back to the original program. *)
 Lemma pstruct_converse {A B} (RR : A → B → Prop)
     (t1 : ptree E M A) (t2 : ptree E M B) :
-  pstruct RR t1 t2 → pstruct (fun b a => RR a b) t2 t1.
+  pstruct RR t1 t2 → pstruct (λ b a, RR a b) t2 t1.
 Proof.
   revert t1 t2. unfold pstruct at 2. coinduction CH CIH.
   move=> t1 t2 Hrel. move: (pstruct_unfold Hrel)=> Hstep.
   set ot1 := observe t1 in Hstep |- *.
   set ot2 := observe t2 in Hstep |- *.
-  change (pstructF (fun b a => RR a b) (` CH) ot2 ot1).
+  change (pstructF (λ b a, RR a b) (` CH) ot2 ot1).
   inversion Hstep as
       [r1 r2 HR | u1 u2 Hsim | X e k1 k2 Hk
        | X mu k1 k2 Hk]; subst.
@@ -255,13 +255,13 @@ Variables (k : A → ptree E M B) (h : B → ptree E M C).
 Definition pstruct_bind_assoc_clo
     (u v : ptree E M C) : Prop :=
   (∃ t, u = PTree.bind (PTree.bind t k) h ∧
-    v = PTree.bind t (fun a => PTree.bind (k a) h)) ∨
+    v = PTree.bind t (λ a, PTree.bind (k a) h)) ∨
   pstruct eq u v.
 
 Theorem pstruct_bind_assoc (t : ptree E M A) :
   pstruct eq
     (PTree.bind (PTree.bind t k) h)
-    (PTree.bind t (fun a => PTree.bind (k a) h)).
+    (PTree.bind t (λ a, PTree.bind (k a) h)).
 Proof.
   assert (Hstrong : ∀ u v, pstruct_bind_assoc_clo u v ->
       pstruct eq u v).
@@ -271,7 +271,7 @@ Proof.
     - unfold pstruct_body.
       change (pstructF eq (` CH)
         (observe (PTree.bind (PTree.bind s k) h))
-        (observe (PTree.bind s (fun a => PTree.bind (k a) h)))).
+        (observe (PTree.bind s (λ a, PTree.bind (k a) h)))).
       rewrite !observe_bind.
       remember (observe s) as ot eqn:Hot.
       destruct ot as [a|s'|X e c|X mu c]; cbn.
@@ -297,11 +297,11 @@ Context {E : Type → Type} {M : Type → Type} {A : Type}.
 
 Definition pstruct_bind_ret_r_clo
     (u v : ptree E M A) : Prop :=
-  (∃ t, u = PTree.bind t (fun x => Ret x) ∧ v = t) ∨
+  (∃ t, u = PTree.bind t (λ x, Ret x) ∧ v = t) ∨
   pstruct eq u v.
 
 Theorem pstruct_bind_ret_r (t : ptree E M A) :
-  pstruct eq (PTree.bind t (fun x => Ret x)) t.
+  pstruct eq (PTree.bind t (λ x, Ret x)) t.
 Proof.
   assert (Hstrong : ∀ u v, pstruct_bind_ret_r_clo u v ->
       pstruct eq u v).
@@ -309,7 +309,7 @@ Proof.
     intros u v Hclo. destruct Hclo as [[s [-> ->]]|Hdone].
     - unfold pstruct_body.
       change (pstructF eq (` CH)
-        (observe (PTree.bind s (fun x => Ret x))) (observe s)).
+        (observe (PTree.bind s (λ x, Ret x))) (observe s)).
       rewrite observe_bind.
       remember (observe s) as os eqn:Hos.
       destruct os as [a|s'|X e k|X mu k]; cbn.
@@ -523,7 +523,7 @@ Definition pstruct_iter_natural_step_handler
     (ia : I + A) : ptree E M (I + B) :=
   match ia with
   | inl j => Ret (inl j)
-  | inr a => PTree.bind (k a) (fun b => Ret (inr b))
+  | inr a => PTree.bind (k a) (λ b, Ret (inr b))
   end.
 
 Definition pstruct_iter_natural_step (i : I) : ptree E M (I + B) :=
@@ -555,7 +555,7 @@ Inductive pstruct_iter_natural_clo :
 Lemma pstruct_iter_natural_return (a : A) :
   pstruct eq (k a)
     (PTree.bind
-      (PTree.bind (k a) (fun b => Ret (inr b)))
+      (PTree.bind (k a) (λ b, Ret (inr b)))
       pstruct_iter_natural_target_handler).
 Proof.
   apply pstruct_sym.
@@ -636,7 +636,7 @@ Context {I R : Type}.
 Variable step : I → ptree E M (I + (I + R)).
 
 Definition pstruct_iter_codiagonal_nested (i : I) : ptree E M R :=
-  PTree.iter (fun j => PTree.iter step j) i.
+  PTree.iter (λ j, PTree.iter step j) i.
 
 Definition pstruct_iter_codiagonal_inner_handler
     (x : I + (I + R)) : ptree E M (I + R) :=
@@ -663,7 +663,7 @@ Definition pstruct_iter_codiagonal_flatten
 Definition pstruct_iter_codiagonal_flat_step
     (i : I) : ptree E M (I + R) :=
   PTree.bind (step i)
-    (fun x => Ret (pstruct_iter_codiagonal_flatten x)).
+    (λ x, Ret (pstruct_iter_codiagonal_flatten x)).
 
 Definition pstruct_iter_codiagonal_flat_handler
     (x : I + R) : ptree E M R :=
@@ -690,7 +690,7 @@ Inductive pstruct_iter_codiagonal_clo :
           pstruct_iter_codiagonal_outer_handler)
         (PTree.bind
           (PTree.bind t
-            (fun x => Ret (pstruct_iter_codiagonal_flatten x)))
+            (λ x, Ret (pstruct_iter_codiagonal_flatten x)))
           pstruct_iter_codiagonal_flat_handler)
   | PStIterCodiagonalDone t1 t2 :
       pstruct eq t1 t2 → pstruct_iter_codiagonal_clo t1 t2.
@@ -707,10 +707,10 @@ Proof.
     inversion Hclo as [j|j|t|t1 t2 Hdone]; subst.
     - unfold pstruct_body, pstruct_iter_codiagonal_nested.
       change (pstructF eq (` CH)
-        (observe (PTree.iter (fun j0 => PTree.iter step j0) j))
+        (observe (PTree.iter (λ j0, PTree.iter step j0) j))
         (observe (PTree.iter pstruct_iter_codiagonal_flat_step j))).
       rewrite (observing_observe
-        (unfold_aloop_ (fun j0 => PTree.iter step j0) j)).
+        (unfold_aloop_ (λ j0, PTree.iter step j0) j)).
       rewrite (observing_observe
         (unfold_aloop_ pstruct_iter_codiagonal_flat_step j)).
       rewrite !observe_bind.
@@ -751,7 +751,7 @@ Proof.
           pstruct_iter_codiagonal_outer_handler))
         (observe (PTree.bind
           (PTree.bind t
-            (fun x => Ret (pstruct_iter_codiagonal_flatten x)))
+            (λ x, Ret (pstruct_iter_codiagonal_flatten x)))
           pstruct_iter_codiagonal_flat_handler))).
       rewrite !observe_bind.
       remember (observe t) as ot eqn:Hot.
@@ -788,7 +788,7 @@ Variables (step : I → ptree E M (I + R))
   (prefix : J → ptree E M (J + B)) (resume : B → I).
 Variable SI : I → J → Prop.
 
-Let next_rel := pstruct_iter_sum_rel SI (fun (_ : R) (_ : B) => False).
+Let next_rel := pstruct_iter_sum_rel SI (λ (_ : R) (_ : B), False).
 Let source_cont (v : I + R) :=
   match v with inl i => Tau (PTree.iter step i) | inr r => Ret r end.
 Let prefix_cont (v : J + B) :=
@@ -831,7 +831,7 @@ Qed.
 
 Theorem pstruct_iter_split_at i j :
   SI i j → pstruct eq (PTree.iter step i)
-    (PTree.bind (PTree.iter prefix j) (fun b => PTree.iter step (resume b))).
+    (PTree.bind (PTree.iter prefix j) (λ b, PTree.iter step (resume b))).
 Proof.
   intro Hij.
   assert (Hsound : ∀ t1 t2, pstruct_iter_split_clo t1 t2 -> pstruct eq t1 t2).

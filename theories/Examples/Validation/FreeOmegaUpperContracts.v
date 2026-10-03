@@ -31,23 +31,23 @@ Section ScalarAudit.
 Variable R : realType.
 Local Notation upper := (free_omega_upper (R := R)).
 
-Lemma upper_big_mass : upper EscapingMass.big (fun _ => 1) = 1.
+Lemma upper_big_mass : upper EscapingMass.big (λ _, 1) = 1.
 Proof.
-  change (enumQ_real_expect (R := R) (fun _ : bool => 1) (subenumQ_raw subenumQ_fair) = 1).
+  change (enumQ_real_expect (R := R) (λ _ : bool, 1) (subenumQ_raw subenumQ_fair) = 1).
   rewrite enumQ_real_expect_one.
   have Hmass : enumQ_mass (subenumQ_raw subenumQ_fair) = 1 by vm_compute; reflexivity.
   by rewrite Hmass rmorph1.
 Qed.
 
-Lemma upper_small_mass : upper EscapingMass.small (fun _ => 1) = 1 / 2.
+Lemma upper_small_mass : upper EscapingMass.small (λ _, 1) = 1 / 2.
 Proof.
-  change (enumQ_real_expect (R := R) (fun b : bool => if b then 1 else 0)
+  change (enumQ_real_expect (R := R) (λ b : bool, if b then 1 else 0)
     (subenumQ_raw subenumQ_fair) = 1 / 2).
-  rewrite (_ : (fun b : bool => if b then (1 : R) else 0) =
-    (fun b : bool => ratr (if b then (1 : rat) else 0)));
+  rewrite (_ : (λ b : bool, if b then (1 : R) else 0) =
+    (λ b : bool, ratr (if b then (1 : rat) else 0)));
     last by apply functional_extensionality; intros []; cbn; rewrite ?rmorph1 ?rmorph0.
   rewrite enumQ_real_expect_rat.
-  have Hmass : enumQ_expect (fun b : bool => if b then (1 : rat) else 0)
+  have Hmass : enumQ_expect (λ b : bool, if b then (1 : rat) else 0)
       (subenumQ_raw subenumQ_fair) = 1 / 2 by vm_compute; reflexivity.
   by rewrite Hmass fmorph_div ?rmorphD ?rmorph1 ?ratr_nat.
 Qed.
@@ -56,22 +56,22 @@ Qed.
     eventual value (mass one half).  This model therefore distinguishes
     the exact native endpoints of the previous mass-collapse audit. *)
 Lemma upper_escaped_row_mass n :
-  upper (FOLub (fun x => EscapingMass.kernel x n)) (fun _ => 1) = 1.
+  upper (FOLub (λ x, EscapingMass.kernel x n)) (λ _, 1) = 1.
 Proof.
   have Hone : ∀ _ : unit, 0 <= (1 : R) ∧ (1 : R) <= 1.
   { intro x. split; [exact: ler01|exact: lexx]. }
   apply/eqP. rewrite eq_le. apply/andP. split.
   - exact (proj2 (free_omega_upper_bounds _ Hone)).
   - rewrite -{1}upper_big_mass.
-    change (upper (EscapingMass.kernel 0%nat n) (fun _ => 1) <=
-      countable_upper (fun x => upper (EscapingMass.kernel x n) (fun _ => 1))).
+    change (upper (EscapingMass.kernel 0%nat n) (λ _, 1) <=
+      countable_upper (λ x, upper (EscapingMass.kernel x n) (λ _, 1))).
     exact (@countable_upper_ge R
-      (fun x => upper (EscapingMass.kernel x n) (fun _ => 1)) 1 0%nat
-      (fun x => proj2 (free_omega_upper_bounds (EscapingMass.kernel x n) Hone))).
+      (λ x, upper (EscapingMass.kernel x n) (λ _, 1)) 1 0%nat
+      (λ x, proj2 (free_omega_upper_bounds (EscapingMass.kernel x n) Hone))).
 Qed.
 
 Theorem upper_separates_big_small :
-  upper EscapingMass.big (fun _ => 1) ≠ upper EscapingMass.small (fun _ => 1).
+  upper EscapingMass.big (λ _, 1) ≠ upper EscapingMass.small (λ _, 1).
 Proof.
   rewrite upper_big_mass upper_small_mass.
   have Hhalf : (1 / 2 : R) < 1 by rewrite div1r invf_lt1 // ltr1n.
@@ -82,7 +82,7 @@ Qed.
     Both singleton tests below have upper value one, although their sum
     is the constant-one test. *)
 Definition raw_choice : FreeOmega SubEnumQ bool :=
-  FOLub (fun n => FORet (match n with O => true | S _ => false end)).
+  FOLub (λ n, FORet (match n with O => true | S _ => false end)).
 
 Lemma upper_raw_choice_test (f : bool → R) witness :
   (∀ b, 0 <= f b ∧ f b <= 1) → f witness = 1 →
@@ -93,26 +93,26 @@ Proof.
   - rewrite -Hw. unfold raw_choice. cbn [free_omega_upper].
     destruct witness.
     + exact (@countable_upper_ge R
-        (fun n => f (match n with O => true | S _ => false end)) 1 0%nat
-        (fun n => proj2 (Hf (match n with O => true | S _ => false end)))).
+        (λ n, f (match n with O => true | S _ => false end)) 1 0%nat
+        (λ n, proj2 (Hf (match n with O => true | S _ => false end)))).
     + exact (@countable_upper_ge R
-        (fun n => f (match n with O => true | S _ => false end)) 1 1%nat
-        (fun n => proj2 (Hf (match n with O => true | S _ => false end)))).
+        (λ n, f (match n with O => true | S _ => false end)) 1 1%nat
+        (λ n, proj2 (Hf (match n with O => true | S _ => false end)))).
 Qed.
 
 Theorem raw_upper_is_not_additive :
-  upper raw_choice (fun _ => 1) <
-  upper raw_choice (fun b => if b then 1 else 0) +
-  upper raw_choice (fun b => if b then 0 else 1).
+  upper raw_choice (λ _, 1) <
+  upper raw_choice (λ b, if b then 1 else 0) +
+  upper raw_choice (λ b, if b then 0 else 1).
 Proof.
-  have H1 : upper raw_choice (fun _ => 1) = 1.
-  { apply (@upper_raw_choice_test (fun _ => 1) true); [|reflexivity].
+  have H1 : upper raw_choice (λ _, 1) = 1.
+  { apply (@upper_raw_choice_test (λ _, 1) true); [|reflexivity].
     intros []. all: split; [exact: ler01|exact: lexx]. }
-  have Htrue : upper raw_choice (fun b => if b then 1 else 0) = 1.
-  { apply (@upper_raw_choice_test (fun b => if b then 1 else 0) true); [|reflexivity].
+  have Htrue : upper raw_choice (λ b, if b then 1 else 0) = 1.
+  { apply (@upper_raw_choice_test (λ b, if b then 1 else 0) true); [|reflexivity].
     intros []; split; try exact: ler01; exact: lexx. }
-  have Hfalse : upper raw_choice (fun b => if b then 0 else 1) = 1.
-  { apply (@upper_raw_choice_test (fun b => if b then 0 else 1) false); [|reflexivity].
+  have Hfalse : upper raw_choice (λ b, if b then 0 else 1) = 1.
+  { apply (@upper_raw_choice_test (λ b, if b then 0 else 1) false); [|reflexivity].
     intros []; split; try exact: ler01; exact: lexx. }
   rewrite H1 Htrue Hfalse. change ((1%:R : R) < 2%:R).
   by rewrite ltr_nat.
@@ -132,38 +132,38 @@ Proof.
 Qed.
 
 Theorem upper_unreachable_test_change :
-  upper (FOSample (subenumQ_ret true) (fun b : bool => FORet b)) (fun _ => 1) =
-  upper (FOSample (subenumQ_ret true) (fun b : bool => FORet b))
-    (fun b => if b then 1 else 0).
+  upper (FOSample (subenumQ_ret true) (λ b : bool, FORet b)) (λ _, 1) =
+  upper (FOSample (subenumQ_ret true) (λ b : bool, FORet b))
+    (λ b, if b then 1 else 0).
 Proof.
   apply free_omega_upper_ae_ext.
   - intro b. split; [exact: ler01|exact: lexx].
   - intros []; split; try exact: ler01; exact: lexx.
-  - apply FOAESample with (Good := fun b => b = true).
+  - apply FOAESample with (Good := λ b, b = true).
     + apply (@sem_ae_ret SubEnumQ SubEnumQ_SemanticMeasure
-        SubEnumQ_SemanticMeasureAEKleisliLaws bool (fun b => b = true) true).
+        SubEnumQ_SemanticMeasureAEKleisliLaws bool (λ b, b = true) true).
       reflexivity.
     + intros b ->. apply FOAERet. reflexivity.
 Qed.
 
 Definition padded_grid (i j : nat) : FreeOmega SubEnumQ bool :=
   match i, j with
-  | S _, S _ => FOSample subenumQ_fair (fun b => FORet b)
+  | S _, S _ => FOSample subenumQ_fair (λ b, FORet b)
   | _, _ => FOZero
   end.
 
 Theorem upper_padded_double_limit (f : bool → R)
     (Hf : ∀ b, 0 <= f b ∧ f b <= 1) :
-  upper (FOLub (fun i => FOLub (padded_grid i))) f =
+  upper (FOLub (λ i, FOLub (padded_grid i))) f =
   enumQ_real_expect f (subenumQ_raw subenumQ_fair).
 Proof.
   rewrite (@free_omega_diagonal_upper R _ padded_grid f).
-  - change (upper (FOLub (fun n => padded_grid n n)) f =
-      upper (FOSample subenumQ_fair (fun b => FORet b)) f).
+  - change (upper (FOLub (λ n, padded_grid n n)) f =
+      upper (FOSample subenumQ_fair (λ b, FORet b)) f).
     rewrite -(@countable_upper_constant R
-      (upper (FOSample subenumQ_fair (fun b => FORet b)) f)).
-    change (upper (FOLub (fun n => padded_grid n n)) f =
-      upper (FOLub (fun _ => FOSample subenumQ_fair (fun b => FORet b))) f).
+      (upper (FOSample subenumQ_fair (λ b, FORet b)) f)).
+    change (upper (FOLub (λ n, padded_grid n n)) f =
+      upper (FOLub (λ _, FOSample subenumQ_fair (λ b, FORet b))) f).
     apply free_omega_cofinal_upper_eq; [split|exact Hf].
     + intros [|n]; exists 0%nat; cbn [padded_grid].
       * apply FOApproxZero.
@@ -214,7 +214,7 @@ Definition null_branch_chain (b : bool) (n : nat) : FreeOmega SubEnumQ bool :=
 
 Lemma null_branch_chain_ae_increasing :
   enumQ_ae (subenumQ_raw null_branch_node)
-    (fun b => ∀ n, free_omega_approx eq
+    (λ b, ∀ n, free_omega_approx eq
       (null_branch_chain b n) (null_branch_chain b (S n))).
 Proof.
   intros p b Hin Hnz n. destruct Hin as [H|[H|H]]; [| |contradiction].
@@ -236,17 +236,17 @@ Local Notation upper := (free_omega_upper (R := R)).
 
 Theorem null_branch_sample_limit (f : bool → R)
     (Hf : ∀ b, 0 <= f b ∧ f b <= 1) :
-  upper (FOSample null_branch_node (fun b => FOLub (null_branch_chain b))) f =
-  upper (FOLub (fun n => FOSample null_branch_node (fun b => null_branch_chain b n))) f.
+  upper (FOSample null_branch_node (λ b, FOLub (null_branch_chain b))) f =
+  upper (FOLub (λ n, FOSample null_branch_node (λ b, null_branch_chain b n))) f.
 Proof.
   apply free_omega_sample_lub_upper; [exact null_branch_chain_ae_increasing|exact Hf].
 Qed.
 
 Theorem null_branch_sample_mass :
-  upper (FOSample null_branch_node (fun b => FOLub (null_branch_chain b))) (fun _ => 1) = 1.
+  upper (FOSample null_branch_node (λ b, FOLub (null_branch_chain b))) (λ _, 1) = 1.
 Proof.
-  change ((ratr (1 : rat) : R) * countable_upper (fun _ => (1 : R)) +
-    ((ratr (0 : rat) : R) * countable_upper (fun n => upper (null_branch_chain false n) (fun _ => 1)) + 0) = 1).
+  change ((ratr (1 : rat) : R) * countable_upper (λ _, (1 : R)) +
+    ((ratr (0 : rat) : R) * countable_upper (λ n, upper (null_branch_chain false n) (λ _, 1)) + 0) = 1).
   rewrite rmorph1 rmorph0 mul1r mul0r !addr0.
   apply countable_upper_constant.
 Qed.
@@ -257,10 +257,10 @@ Qed.
     rules out the escaping source from the previous safety audit. *)
 Theorem escaping_source_bind_limit (f : unit → R)
     (Hf : ∀ x, 0 <= f x ∧ f x <= 1) :
-  upper (free_omega_bind (FOLub (fun _ => EscapingMass.escaping))
-    (fun x => FOLub (EscapingMass.kernel x))) f =
-  upper (FOLub (fun n => free_omega_bind EscapingMass.escaping
-    (fun x => EscapingMass.kernel x n))) f.
+  upper (free_omega_bind (FOLub (λ _, EscapingMass.escaping))
+    (λ x, FOLub (EscapingMass.kernel x))) f =
+  upper (FOLub (λ n, free_omega_bind EscapingMass.escaping
+    (λ x, EscapingMass.kernel x n))) f.
 Proof.
   apply free_omega_bind_lub_upper.
   - intro n. apply free_omega_approx_refl. intro x. reflexivity.
@@ -302,19 +302,19 @@ Proof. intro x. split; [exact: ler01|exact: lexx]. Qed.
 (** The actual unbounded, infinite-state RandomWalk example, with its
     high-universe stable-head carrier, has numeric mass one.  This uses
     the direct hitting observation, not unproved quotient invariance. *)
-Theorem random_walk_limit_upper_mass x y : upper (walk_limit x y) (fun _ => 1) = 1.
+Theorem random_walk_limit_upper_mass x y : upper (walk_limit x y) (λ _, 1) = 1.
 Proof.
   rewrite (free_omega_observes_upper (walk_limit_observes_unit x y)
-    (f := fun _ : unit => (1 : R)) unit_test_bounded).
+    (f := λ _ : unit, (1 : R)) unit_test_bounded).
   change (ratr (1 : rat) * (1 : R) + 0 = 1).
   by rewrite rmorph1 mul1r addr0.
 Qed.
 
 Theorem increasing_kernel_observation_upper_mass x :
-  upper (FOLub (EscapingMass.kernel x)) (fun _ => 1) = 1.
+  upper (FOLub (EscapingMass.kernel x)) (λ _, 1) = 1.
 Proof.
   rewrite (free_omega_observes_upper (EscapingMass.increasing_kernel_observable x)
-    (f := fun _ : unit => (1 : R)) unit_test_bounded).
+    (f := λ _ : unit, (1 : R)) unit_test_bounded).
   by rewrite enumQ_real_expect_one EscapingMass.big_mass_one rmorph1.
 Qed.
 
@@ -323,12 +323,12 @@ Qed.
     escaped_row_not_observable theorem. *)
 Theorem escaped_row_wrong_mass_rejected_numerically n :
   ¬ @free_omega_observes SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    unit unit (fun x => x) (FOLub (fun x => EscapingMass.kernel x n))
+    unit unit (λ x, x) (FOLub (λ x, EscapingMass.kernel x n))
     EscapingMass.small_out.
 Proof.
   intro Hobs.
   have Hnumeric := free_omega_observes_upper Hobs
-    (f := fun _ : unit => (1 : R)) unit_test_bounded.
+    (f := λ _ : unit, (1 : R)) unit_test_bounded.
   rewrite upper_escaped_row_mass enumQ_real_expect_one
     EscapingMass.small_mass_half ?fmorph_div ?rmorphD ?rmorph1 ?ratr_nat in Hnumeric.
   apply (upper_separates_big_small (R := R)).
@@ -376,7 +376,7 @@ Qed.
 
 Theorem quotient_escaped_row_separated n :
   ¬ @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    unit unit eq (FOLub (fun x => EscapingMass.kernel x n)) EscapingMass.small.
+    unit unit eq (FOLub (λ x, EscapingMass.kernel x n)) EscapingMass.small.
 Proof.
   intro H. have Hmass := free_omega_qlift_upper_mass R H.
   apply (upper_separates_big_small (R := R)).
@@ -387,17 +387,17 @@ Qed.
     cannot become a fair distribution by quotient reasoning. *)
 Theorem quotient_raw_choice_not_fair :
   ¬ @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    bool bool eq raw_choice (FOSample subenumQ_fair (fun b => FORet b)).
+    bool bool eq raw_choice (FOSample subenumQ_fair (λ b, FORet b)).
 Proof.
   intro H.
-  have Hf : bounded_test (fun b : bool => if b then (1 : R) else 0).
+  have Hf : bounded_test (λ b : bool, if b then (1 : R) else 0).
   { intros []; split; try exact: ler01; exact: lexx. }
   have Heq := free_omega_qlift_eq_upper H Hf.
-  have Hleft : upper raw_choice (fun b : bool => if b then 1 else 0) = 1.
-  { apply (@upper_raw_choice_test R (fun b : bool => if b then 1 else 0) true);
+  have Hleft : upper raw_choice (λ b : bool, if b then 1 else 0) = 1.
+  { apply (@upper_raw_choice_test R (λ b : bool, if b then 1 else 0) true);
       [exact Hf|reflexivity]. }
-  change (upper raw_choice (fun b : bool => if b then 1 else 0) =
-    upper EscapingMass.small (fun _ => 1)) in Heq.
+  change (upper raw_choice (λ b : bool, if b then 1 else 0) =
+    upper EscapingMass.small (λ _, 1)) in Heq.
   apply (upper_separates_big_small (R := R)).
   rewrite Hleft in Heq. rewrite upper_big_mass. exact Heq.
 Qed.
@@ -406,7 +406,7 @@ Qed.
     covered after quotient rewrites; no finite-support limit is assumed. *)
 Theorem rewritten_random_walk_upper_mass x y mu :
   @free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega
-    _ _ eq mu (walk_limit x y) → upper mu (fun _ => 1) = 1.
+    _ _ eq mu (walk_limit x y) → upper mu (λ _, 1) = 1.
 Proof.
   intro H. rewrite (free_omega_qlift_upper_mass R H).
   apply random_walk_limit_upper_mass.

@@ -23,7 +23,7 @@ Import GRing.Theory Num.Theory Order.Theory ListNotations.
 Local Open Scope ring_scope.
 
 CoFixpoint retry : ptree void1 SubEnumQ unit :=
-  Prob attempt_coin (fun b => if b then Ret tt else Tau retry).
+  Prob attempt_coin (λ b, if b then Ret tt else Tau retry).
 CoFixpoint spin : ptree void1 SubEnumQ unit := Tau spin.
 Definition is_return {A} (r : outcome A) : rat := match r with Returned _ => 1 | _ => 0 end.
 Definition is_lost {A} (r : outcome A) : rat := match r with Lost => 1 | _ => 0 end.
@@ -42,14 +42,14 @@ Example two_attempt_outcomes :
 Proof. repeat split; reflexivity. Qed.
 
 Example actual_runner_two_attempts :
-  replay_expectation (fun _ d => uniform_indices d) 3 retry [] is_return = 2^-1.
+  replay_expectation (λ _ d, uniform_indices d) 3 retry [] is_return = 2^-1.
 Proof.
   rewrite (finite_runner_distribution fresh_uniform_entropy).
   exact (proj1 two_attempt_outcomes).
 Qed.
 
 Example eliminated_state_distribution :
-  replay_expectation (fun _ d => uniform_indices d) 3
+  replay_expectation (λ _ d, uniform_indices d) 3
     (run_state rational_attempts 0%nat) [] is_return = 3^-1.
 Proof.
   rewrite (finite_runner_distribution fresh_uniform_entropy).
@@ -64,7 +64,7 @@ Proof. repeat split; reflexivity. Qed.
 
 Example missing_mass_is_not_timeout :
   outcome_expectation 1 (Prob (@subenumQ_zero Empty_set)
-    (fun x => match x return ptree void1 SubEnumQ unit with end)) is_lost = 1.
+    (λ x, match x return ptree void1 SubEnumQ unit with end)) is_lost = 1.
 Proof. reflexivity. Qed.
 
 Example ret_requires_no_fuel :
@@ -72,13 +72,13 @@ Example ret_requires_no_fuel :
 Proof. reflexivity. Qed.
 
 Example zero_fuel_draw_requests_no_entropy :
-  trace_distribution (fun _ d => uniform_indices d) 0 retry [] = [(1,[])].
+  trace_distribution (λ _ d, uniform_indices d) 0 retry [] = [(1,[])].
 Proof. reflexivity. Qed.
 
 Definition unfair_source (_ : list nat) (_ : nat) : list (rat * nat) := [(1,0%nat)].
 Example biased_entropy_rejected : ¬ uniform_entropy unfair_source.
 Proof.
-  intro H. have Hlaw := proj2 (H [] 2%nat (Logic.eq_refl true)) (fun i => if i == 0%nat then 1 else 0).
+  intro H. have Hlaw := proj2 (H [] 2%nat (Logic.eq_refl true)) (λ i, if i == 0%nat then 1 else 0).
   have Hbad : ((1 : rat) == 2^-1) = false by reflexivity.
   have Heq : (1 : rat) = 2^-1.
   { exact Hlaw. }
@@ -92,7 +92,7 @@ Definition correlated_source (h : list nat) d : list (rat * nat) :=
   match h with [] => uniform_indices d | i :: _ => [(1,i)] end.
 Example correlated_history_rejected : ¬ uniform_entropy correlated_source.
 Proof.
-  intro H. have Hlaw := proj2 (H [0%nat] 2%nat (Logic.eq_refl true)) (fun i => if i == 0%nat then 1 else 0).
+  intro H. have Hlaw := proj2 (H [0%nat] 2%nat (Logic.eq_refl true)) (λ i, if i == 0%nat then 1 else 0).
   have Hbad : ((1 : rat) == 2^-1) = false by reflexivity.
   have Heq : (1 : rat) = 2^-1.
   { exact Hlaw. }
@@ -104,7 +104,7 @@ Section LargeCarrier.
 Universe u.
 Example higher_universe_execution (t : ptree void1 SubEnumQ Type@{u}) n
     (f : outcome Type@{u} → rat) :
-  replay_expectation (fun _ d => uniform_indices d) n t [] f =
+  replay_expectation (λ _ d, uniform_indices d) n t [] f =
   outcome_expectation n t f.
 Proof. apply finite_runner_distribution. exact fresh_uniform_entropy. Qed.
 End LargeCarrier.
@@ -114,12 +114,12 @@ From PTree.Prob.Domain Require Import Expectation.
 From PTree.Eq.Backend Require Import StableHittingDomainSubEnumQ.
 
 Example arbitrary_fuel_hitting (R : realType) n :
-  ratr (replay_expectation (fun _ d => uniform_indices d) n retry [] (returned_test (fun _ => 1))) =
-  oval_eval (ptree_domain_approx R n (observe retry)) (return_head_test R (fun _ => 1)).
+  ratr (replay_expectation (λ _ d, uniform_indices d) n retry [] (returned_test (λ _, 1))) =
+  oval_eval (ptree_domain_approx R n (observe retry)) (return_head_test R (λ _, 1)).
 Proof. apply replay_hitting. exact fresh_uniform_entropy. Qed.
 
 Example unbounded_retry_limit (R : realType) :
-  oval_eval (ptree_domain_hitting R (observe retry)) (return_head_test R (fun _ => 1)) =
-  oval_sup (fun n => ratr (replay_expectation (fun _ d => uniform_indices d) n retry []
-    (returned_test (fun _ => 1)))).
+  oval_eval (ptree_domain_hitting R (observe retry)) (return_head_test R (λ _, 1)) =
+  oval_sup (λ n, ratr (replay_expectation (λ _ d, uniform_indices d) n retry []
+    (returned_test (λ _, 1)))).
 Proof. apply replay_hitting_limit. exact fresh_uniform_entropy. Qed.

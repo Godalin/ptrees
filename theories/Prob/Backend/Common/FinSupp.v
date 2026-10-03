@@ -36,13 +36,13 @@ Arguments runFinSupp {A} _.
 Section finSuppMonad.
 
 Definition finSupp_fmap {A B} (f : A → B) (x : finSupp A) : finSupp B :=
-  mkFinSupp (map (fun '(a, p) => (f a, p)) (runFinSupp x)).
+  mkFinSupp (map (λ '(a, p), (f a, p)) (runFinSupp x)).
 
 Definition finSupp_ret {A} (a : A) : finSupp A :=
   mkFinSupp [(a, 1)].
 
 Definition finSupp_bind {A B} (x : finSupp A) (f : A → finSupp B) : finSupp B :=
-  mkFinSupp (flat_map (fun '(a, p) => map (fun '(b, q) => (b, p * q)) (runFinSupp (f a))) (runFinSupp x)).
+  mkFinSupp (flat_map (λ '(a, p), map (λ '(b, q), (b, p * q)) (runFinSupp (f a))) (runFinSupp x)).
 
 Global Instance Functor_finSupp : Functor finSupp :=
   { fmap := @finSupp_fmap
@@ -74,7 +74,7 @@ Arguments runFinSuppT {m A} _.
 Definition sequence {m : Type → Type} `{M : Monad m}
   {A : Type} (l : list (m A))
   : m (list A) :=
-  fold_right (fun x acc => bind x (fun a => fmap (fun l => a :: l) acc)) (ret []) l.
+  fold_right (λ x acc, bind x (λ a, fmap (λ l, a :: l) acc)) (ret []) l.
 
 
 
@@ -86,7 +86,7 @@ Context (A B : Type).
 
 Definition finSuppT_fmap (f : A → B) (x : finSuppT m A)
   : finSuppT m B
-  := mkFinSuppT (fmap (fun l => map (fun '(a, p) => (f a, p)) l) (runFinSuppT x)).
+  := mkFinSuppT (fmap (λ l, map (λ '(a, p), (f a, p)) l) (runFinSuppT x)).
 
 Definition finSuppT_ret (a : A) : finSuppT m A
   := mkFinSuppT (ret [(a, 1)]).
@@ -117,10 +117,10 @@ End finSuppTMonad.
 
 
 Definition integrate {A} (f : A → R) (μ : finSupp A) : R :=
-  fold_left (fun acc '(a, p) => acc + p * f a) (runFinSupp μ) 0.
+  fold_left (λ acc '(a, p), acc + p * f a) (runFinSupp μ) 0.
 
 Definition uniform {A} (l : list A) : finSupp A :=
-  mkFinSupp (map (fun x => (x, 1 / INR (length l))) l).
+  mkFinSupp (map (λ x, (x, 1 / INR (length l))) l).
 
 Definition pChoice (p : R) {A : Type} (x : A) (y : A) : finSupp A :=
   mkFinSupp [(x, p); (y, 1 - p)].

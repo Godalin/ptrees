@@ -44,7 +44,7 @@ Definition absorbing_frontier i :=
 Theorem absorbing_iteration_summary
     (step : I → ptree E MN (I + B)) (exit : B → ptree E MN A)
     (Hstep : ∀ i, hits (step i)
-      (FOSample (transition i) (fun next => FORet (FHRet next))))
+      (FOSample (transition i) (λ next, FORet (FHRet next))))
     (Hexit : ∀ b, hits (exit b) (exit_front b)) i :
   hits (PTree.bind (PTree.iter step i) exit) (absorbing_frontier i).
 Proof.
@@ -61,7 +61,7 @@ Qed.
 Theorem absorbing_iteration_heads
     (step : I → ptree E MN (I + B)) (exit : B → ptree E MN A)
     (Hstep : ∀ i, hits (step i)
-      (FOSample (transition i) (fun next => FORet (FHRet next))))
+      (FOSample (transition i) (λ next, FORet (FHRet next))))
     (Hexit : ∀ b, hits (exit b) (exit_front b)) i out :
   hits (PTree.iter (pstruct_iter_natural_step step exit) i) out →
   @sem_lift MF FI _ _ (stable_head_rel eq W) out (absorbing_frontier i).
@@ -75,7 +75,7 @@ Qed.
 Theorem absorbing_iteration_exists
     (step : I → ptree E MN (I + B)) (exit : B → ptree E MN A)
     (Hstep : ∀ i, hits (step i)
-      (FOSample (transition i) (fun next => FORet (FHRet next))))
+      (FOSample (transition i) (λ next, FORet (FHRet next))))
     (Hexit : ∀ b, hits (exit b) (exit_front b)) i :
   ∃ out, hits (PTree.iter (pstruct_iter_natural_step step exit) i) out ∧
     @sem_lift MF FI _ _ (stable_head_rel eq W) out (absorbing_frontier i).
@@ -102,7 +102,7 @@ Context {I A : Type} (step : I → ptree E MN (I+A)).
 Variable front : I → MF (stable_head E MN (I+A)).
 
 Definition complete_iteration_frontier i :=
-  FOLub (fun n => iteration_summary_round (FI := FI) (FO := FO) step front n i).
+  FOLub (λ n, iteration_summary_round (FI := FI) (FO := FO) step front n i).
 
 Theorem complete_iteration_hitting
     (Hfront : ∀ i, ptree_stable_hitting (FI := FI) (FO := FO)

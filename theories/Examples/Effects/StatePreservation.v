@@ -69,7 +69,7 @@ Qed.
 Example state_bind_algebra {A B} (t : ptree (stateE S +' E) SubEnumQ A)
     (k : A → ptree (stateE S +' E) SubEnumQ B) s :
   W _ _ _ eq (run_state (PTree.bind t k) s)
-    (PTree.bind (run_state t s) (fun sa => run_state (k (snd sa)) (fst sa))).
+    (PTree.bind (run_state t s) (λ sa, run_state (k (snd sa)) (fst sa))).
 Proof. apply peutt_of_pstruct. apply run_state_bind. Qed.
 
 Example state_iter_algebra {I A} (step : I → ptree (stateE S +' E) SubEnumQ (I+A)) i s :
@@ -78,9 +78,9 @@ Proof. apply peutt_of_pstruct. apply run_state_iter. Qed.
 End GenericClient.
 
 Definition boolean_result : ptree (stateE nat +' void1) SubEnumQ bool :=
-  Vis (inl1 (Put nat 9)) (fun _ => Ret true).
+  Vis (inl1 (Put nat 9)) (λ _, Ret true).
 Definition numeric_result : ptree (stateE nat +' void1) SubEnumQ nat :=
-  Vis (inl1 (Put nat 9)) (fun _ => Ret 1).
+  Vis (inl1 (Put nat 9)) (λ _, Ret 1).
 Definition bool_nat (b : bool) (n : nat) := n = if b then 1 else 0.
 
 Example heterogeneous_state_result :
@@ -94,7 +94,7 @@ Example retry_source_weak_rewrite s :
 Proof. apply PTree.Interp.FreeOmega.State.run_state_peutt_eq. apply peutt_tau_l. Qed.
 
 Definition put_then_get : ptree (stateE nat +' void1) SubEnumQ nat :=
-  Vis (inl1 (Put nat 9)) (fun _ => Vis (inl1 (Get nat)) (fun s => Ret s)).
+  Vis (inl1 (Put nat 9)) (λ _, Vis (inl1 (Get nat)) (λ s, Ret s)).
 Example state_update_is_not_reordered :
   run (@replay_sample) 2 (run_state put_then_get 3) [] = (Returned (9,9), []).
 Proof. native_compute. reflexivity. Qed.

@@ -22,7 +22,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Definition uniform_indices (d : nat) : list (rat * nat) :=
-  List.map (fun i => (d%:R^-1, i)) (iota 0 d).
+  List.map (λ i, (d%:R^-1, i)) (iota 0 d).
 
 Lemma uniform_indices_expect d f :
   finite_expect f (uniform_indices d) = d%:R^-1 * ticket_sum f (iota 0 d).
@@ -57,7 +57,7 @@ Definition uniform_entropy (source : list nat → nat → list (rat * nat)) :=
     finite_nonnegative (source h d) ∧
     ∀ f, finite_expect f (source h d) = finite_expect f (uniform_indices d).
 
-Lemma fresh_uniform_entropy : uniform_entropy (fun _ d => uniform_indices d).
+Lemma fresh_uniform_entropy : uniform_entropy (λ _ d, uniform_indices d).
 Proof.
   intros h d Hd; split; last reflexivity.
   intros p i Hin. apply List.in_map_iff in Hin.
@@ -80,10 +80,10 @@ Fixpoint trace_distribution {A} (fuel : nat) (t : ptree void1 SubEnumQ A)
       | O => [(1, [])] | S n => trace_distribution n u history end
   | @ProbF _ _ _ _ X mu k => match fuel with
       | O => [(1, [])]
-      | S n => finite_bind (source history (ticket_count mu)) (fun i =>
+      | S n => finite_bind (source history (ticket_count mu)) (λ i,
           if (i < ticket_count mu)%N then
             match draw_ticket mu i with
-            | Some x => List.map (fun ws => (fst ws, i :: snd ws))
+            | Some x => List.map (λ ws, (fst ws, i :: snd ws))
                 (trace_distribution n (k x) (i :: history))
             | None => [(1, [i])]
             end
@@ -92,7 +92,7 @@ Fixpoint trace_distribution {A} (fuel : nat) (t : ptree void1 SubEnumQ A)
   end.
 
 Definition replay_expectation {A} n (t : ptree void1 SubEnumQ A) history f :=
-  finite_expect (fun trace => f (fst (run (@ticket_replay) n t trace)))
+  finite_expect (λ trace, f (fst (run (@ticket_replay) n t trace)))
     (trace_distribution n t history).
 
 Lemma replay_prob_cons {A X} n (mu : SubEnumQ X)
@@ -126,7 +126,7 @@ Proof.
       (compile_tickets_positive (subenumQ_data mu))))|].
     etransitivity; [apply uniform_indices_expect|].
     transitivity (ticket_expectation mu
-      (fun v => match v with Some x => outcome_expectation n (k x) f | None => f Lost end)).
+      (λ v, match v with Some x => outcome_expectation n (k x) f | None => f Lost end)).
     + rewrite /ticket_expectation ticket_sum_map.
       congr (_ * _). apply ticket_sum_ext_in.
       intros i Hi. have Hib : (i < ticket_count mu)%N.
@@ -145,14 +145,14 @@ Proof.
 Qed.
 
 Theorem trace_distribution_mass {A} n (t : ptree void1 SubEnumQ A) history :
-  finite_expect (fun _ => 1) (trace_distribution n t history) = 1.
+  finite_expect (λ _, 1) (trace_distribution n t history) = 1.
 Proof.
-  change (replay_expectation n t history (fun _ => 1) = 1).
+  change (replay_expectation n t history (λ _, 1) = 1).
   rewrite finite_runner_distribution. exact: outcome_distribution_mass.
 Qed.
 
 Corollary replay_no_entropy_failure {A} n (t : ptree void1 SubEnumQ A) history :
-  replay_expectation n t history (fun r => match r with EntropyExhausted => 1 | _ => 0 end) = 0.
+  replay_expectation n t history (λ r, match r with EntropyExhausted => 1 | _ => 0 end) = 0.
 Proof. rewrite finite_runner_distribution. exact: outcome_distribution_no_entropy_failure. Qed.
 
 Theorem trace_distribution_nonnegative {A} n (t : ptree void1 SubEnumQ A) history :
@@ -166,7 +166,7 @@ Proof.
   - have Hbranch : ∀ i, finite_nonnegative
         (if (i < ticket_count mu)%N then
           match draw_ticket mu i with
-          | Some x => List.map (fun ws => (fst ws, i :: snd ws))
+          | Some x => List.map (λ ws, (fst ws, i :: snd ws))
               (trace_distribution n (k x) (i :: history))
           | None => [(1,[i])]
           end else [(1,[i])]).
@@ -181,6 +181,6 @@ Proof.
       (finite_enum_bind
         (finite_enum_of_list (proj1 (Hsource history
           (compile_tickets_positive (subenumQ_data mu)))))
-        (fun i => finite_enum_of_list (Hbranch i)))).
+        (λ i, finite_enum_of_list (Hbranch i)))).
 Qed.
 End EntropyTraces.

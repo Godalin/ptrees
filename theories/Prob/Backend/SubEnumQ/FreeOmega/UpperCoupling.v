@@ -33,7 +33,7 @@ Local Notation upper := (free_omega_upper (R := F)).
 
 Theorem free_omega_sample_bind_upper {A X Y} (mu : SubEnumQ X)
     (k : X → SubEnumQ Y) (h : Y → FreeOmega SubEnumQ A) (f : A → F) :
-  upper (FOSample mu (fun x => FOSample (k x) h)) f =
+  upper (FOSample mu (λ x, FOSample (k x) h)) f =
   upper (FOSample (subenumQ_bind mu k) h) f.
 Proof. cbn [free_omega_upper subenumQ_bind subenumQ_raw]. symmetry. apply enumQ_real_expect_bind. Qed.
 
@@ -49,8 +49,8 @@ Proof.
   - exact (Hfg x y H).
   - apply (subenumQ_lift_real_expect H). exact H1.
   - apply countable_upper_le. intro n. apply: le_trans (H0 n) _.
-    exact (@countable_upper_ge F (fun i => upper (d i) g) 1 n
-      (fun i => proj2 (free_omega_upper_bounds (d i) Hg))).
+    exact (@countable_upper_ge F (λ i, upper (d i) g) 1 n
+      (λ i, proj2 (free_omega_upper_bounds (d i) Hg))).
 Qed.
 
 Theorem free_omega_structural_upper {A B} (T : A → B → Prop)
@@ -64,7 +64,7 @@ Proof. intro H. apply free_omega_approx_upper. exact (free_omega_lift_to_approx 
 Theorem free_omega_upper_ae_mono {A} (mu : FreeOmega SubEnumQ A)
     (f g : A → F) :
   (∀ y, 0 <= g y ∧ g y <= 1) →
-  free_omega_ae (fun x => f x <= g x) mu → upper mu f <= upper mu g.
+  free_omega_ae (λ x, f x <= g x) mu → upper mu f <= upper mu g.
 Proof.
   intro Hg. induction mu as [x| |X node k IH|chain IH]; intro Hae;
     cbn [free_omega_upper].
@@ -72,20 +72,20 @@ Proof.
   - exact: lexx.
   - apply enumQ_real_expect_ae_mono.
     change (@sem_ae SubEnumQ SubEnumQ_SemanticMeasure X node
-      (fun x => upper (k x) f <= upper (k x) g)).
+      (λ x, upper (k x) f <= upper (k x) g)).
     eapply sem_ae_mono; [|exact (free_omega_ae_sample_inv Hae)].
     intros x Hx. exact (IH x Hx).
   - dependent destruction Hae. apply countable_upper_le. intro n.
     apply: le_trans (IH n (H n)) _.
-    exact (@countable_upper_ge F (fun i => upper (chain i) g) 1 n
-      (fun i => proj2 (free_omega_upper_bounds (chain i) Hg))).
+    exact (@countable_upper_ge F (λ i, upper (chain i) g) 1 n
+      (λ i, proj2 (free_omega_upper_bounds (chain i) Hg))).
 Qed.
 
 Theorem free_omega_upper_ae_ext {A} (mu : FreeOmega SubEnumQ A)
     (f g : A → F) :
   (∀ x, 0 <= f x ∧ f x <= 1) →
   (∀ y, 0 <= g y ∧ g y <= 1) →
-  free_omega_ae (fun x => f x = g x) mu → upper mu f = upper mu g.
+  free_omega_ae (λ x, f x = g x) mu → upper mu f = upper mu g.
 Proof.
   intros Hf Hg Hae. apply/eqP. rewrite eq_le. apply/andP. split.
   - apply free_omega_upper_ae_mono; [exact Hg|].
@@ -118,8 +118,8 @@ Proof.
   intros Hcover Hg Hfg. cbn [free_omega_upper]. apply countable_upper_le. intro n.
   destruct (Hcover n) as [m Hnm].
   eapply le_trans; [exact (free_omega_approx_upper Hnm Hg Hfg)|].
-  exact (@countable_upper_ge F (fun i => upper (right i) g) 1 m
-    (fun i => proj2 (free_omega_upper_bounds (right i) Hg))).
+  exact (@countable_upper_ge F (λ i, upper (right i) g) 1 m
+    (λ i, proj2 (free_omega_upper_bounds (right i) Hg))).
 Qed.
 
 Theorem free_omega_cofinal_upper_eq {A}
@@ -144,28 +144,28 @@ Theorem free_omega_diagonal_upper {A}
   (∀ i j, free_omega_approx eq (grid i j) (grid i (S j))) →
   (∀ i j, free_omega_approx eq (grid i j) (grid (S i) j)) →
   (∀ x, 0 <= f x ∧ f x <= 1) →
-  upper (FOLub (fun i => FOLub (grid i))) f =
-  upper (FOLub (fun n => grid n n)) f.
+  upper (FOLub (λ i, FOLub (grid i))) f =
+  upper (FOLub (λ n, grid n n)) f.
 Proof.
   intros Hrow Hcol Hf.
   have Hbound : ∀ i j, upper (grid i j) f <= 1 :=
-    fun i j => proj2 (free_omega_upper_bounds (grid i j) Hf).
+    λ i j, proj2 (free_omega_upper_bounds (grid i j) Hf).
   have Hcover : ∀ i j, free_omega_approx eq (grid i j)
       (grid (Nat.add i j) (Nat.add i j)).
   { intros i j. eapply free_omega_approx_trans with (nu := grid i (Nat.add i j)).
     - pose proof (free_omega_approx_steps (Hrow i) j i) as Hr.
       rewrite (Nat.add_comm j i) in Hr. exact Hr.
-    - exact (free_omega_approx_steps (fun k => Hcol k (Nat.add i j)) i j). }
+    - exact (free_omega_approx_steps (λ k, Hcol k (Nat.add i j)) i j). }
   apply/eqP. rewrite eq_le. apply/andP. split; cbn [free_omega_upper].
   - apply countable_upper_le. intro i. apply countable_upper_le. intro j.
     eapply le_trans; [exact (free_omega_upper_approx_mono (Hcover i j) Hf)|].
-    exact (@countable_upper_ge F (fun n => upper (grid n n) f) 1 (Nat.add i j)
-      (fun n => Hbound n n)).
+    exact (@countable_upper_ge F (λ n, upper (grid n n) f) 1 (Nat.add i j)
+      (λ n, Hbound n n)).
   - apply countable_upper_le. intro n.
     eapply le_trans.
-    + exact (@countable_upper_ge F (fun j => upper (grid n j) f) 1 n (Hbound n)).
+    + exact (@countable_upper_ge F (λ j, upper (grid n j) f) 1 n (Hbound n)).
     + exact (@countable_upper_ge F
-        (fun i => countable_upper (fun j => upper (grid i j) f)) 1 n
-        (fun i => countable_upper_le (Hbound i))).
+        (λ i, countable_upper (λ j, upper (grid i j) f)) 1 n
+        (λ i, countable_upper_le (Hbound i))).
 Qed.
 End RawScalarCoupling.

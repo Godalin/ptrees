@@ -42,15 +42,15 @@ Lemma subenumQ_native_model_lub {A} (c : nat → SubEnumQ A) out :
   (∀ n f, oval_test f → oval_eval (subenumQ_domain R (c n)) f <=
     oval_eval (subenumQ_domain R (c (S n))) f) →
   sem_lub c out → ∀ f, oval_test f →
-  oval_sup (fun n => oval_eval (subenumQ_domain R (c n)) f) = oval_eval (subenumQ_domain R out) f.
+  oval_sup (λ n, oval_eval (subenumQ_domain R (c n)) f) = oval_eval (subenumQ_domain R out) f.
 Proof.
   intros Hi Hl f Hf; apply enumQ_monotone_converges_upper; [|exact Hl|].
   - intros P n m Hnm.
-    have HP : oval_test (fun x => if P x then (1 : R) else 0).
+    have HP : oval_test (λ x, if P x then (1 : R) else 0).
     { intro x; case: (P x); split; try exact: ler01; exact: lexx. }
     have Hstep : ∀ i,
-      enumQ_real_expect (fun x => if P x then (1 : R) else 0) (subenumQ_raw (c i)) <=
-      enumQ_real_expect (fun x => if P x then (1 : R) else 0) (subenumQ_raw (c (S i))).
+      enumQ_real_expect (λ x, if P x then (1 : R) else 0) (subenumQ_raw (c i)) <=
+      enumQ_real_expect (λ x, if P x then (1 : R) else 0) (subenumQ_raw (c (S i))).
     { intro i; exact (Hi i _ HP). }
     have Hreal := scalar_increasing_le Hstep Hnm.
     rewrite !enumQ_real_expect_indicator ler_rat in Hreal; exact Hreal.

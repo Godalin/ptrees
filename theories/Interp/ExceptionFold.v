@@ -21,11 +21,11 @@ Variable sample : ∀ X, MN X → T X.
 Definition exception_effect {X} (e : (exceptE Err +' E) X) : eitherT Err T X :=
   mkEitherT (match e with
     | inl1 ex => ret (inl (exception_value ex))
-    | inr1 fe => bind (@handle X fe) (fun x => ret (inr x))
+    | inr1 fe => bind (@handle X fe) (λ x, ret (inr x))
     end).
 
 Definition exception_sample {X} (mu : MN X) : eitherT Err T X :=
-  mkEitherT (bind (@sample X mu) (fun x => ret (inr x))).
+  mkEitherT (bind (@sample X mu) (λ x, ret (inr x))).
 
 Definition fold_exception {A} (t : ptree (exceptE Err +' E) MN A) : T (Err+A) :=
   unEitherT (fold (@exception_effect) (@exception_sample) t).
@@ -34,9 +34,9 @@ Lemma exception_effect_throw err :
   unEitherT (exception_effect (inl1 (Throw err))) = ret (inl err).
 Proof. reflexivity. Qed.
 Lemma exception_effect_forward {X} (e : E X) :
-  unEitherT (exception_effect (inr1 e)) = bind (@handle X e) (fun x => ret (inr x)).
+  unEitherT (exception_effect (inr1 e)) = bind (@handle X e) (λ x, ret (inr x)).
 Proof. reflexivity. Qed.
 Lemma exception_sample_success {X} (mu : MN X) :
-  unEitherT (exception_sample mu) = bind (@sample X mu) (fun x => ret (inr x)).
+  unEitherT (exception_sample mu) = bind (@sample X mu) (λ x, ret (inr x)).
 Proof. reflexivity. Qed.
 End ExceptionFold.

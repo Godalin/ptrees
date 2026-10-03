@@ -30,11 +30,11 @@ Proof.
   intro H. eapply FOQLMono; [apply FOQLSym; exact H|].
   intros x y Hyx. symmetry. exact Hyx.
 Qed.
-Definition big : MF unit := FOSample subenumQ_fair (fun _ => FORet tt).
-Definition small : MF unit := FOSample subenumQ_fair (fun b : bool => if b then FORet tt else FOZero).
-Definition big_out := subenumQ_bind subenumQ_fair (fun _ => subenumQ_ret tt).
+Definition big : MF unit := FOSample subenumQ_fair (λ _, FORet tt).
+Definition small : MF unit := FOSample subenumQ_fair (λ b : bool, if b then FORet tt else FOZero).
+Definition big_out := subenumQ_bind subenumQ_fair (λ _, subenumQ_ret tt).
 Definition small_out := subenumQ_bind subenumQ_fair
-  (fun b : bool => if b then subenumQ_ret tt else subenumQ_zero).
+  (λ b : bool, if b then subenumQ_ret tt else subenumQ_zero).
 
 Lemma big_observes : observe_unit big big_out.
 Proof.
@@ -67,7 +67,7 @@ Proof.
   split.
   - intro H. apply free_omega_ae_sample_inv in H.
     pose proof (fair_true_ae H) as HP. inversion HP. assumption.
-  - intro H. apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  - intro H. apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros b _. apply FOAERet. exact H.
 Qed.
 Lemma small_ae P : free_omega_ae P small ↔ P tt.
@@ -75,7 +75,7 @@ Proof.
   split.
   - intro H. apply free_omega_ae_sample_inv in H.
     pose proof (fair_true_ae H) as HP. inversion HP. assumption.
-  - intro H. apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  - intro H. apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
     intros [] _; [apply FOAERet; exact H|apply FOAEZero].
 Qed.
 Lemma unit_support (mu nu : MF unit)
@@ -110,7 +110,7 @@ Lemma eventually_observed_constant (chain : nat → MF unit) outs mu out N
     (Hsupport : free_omega_support_lift eq (FOLub chain) mu) :
   free_omega_qlift eq (FOLub chain) mu.
 Proof.
-  eapply FOQLObserve with (obsA := fun x : unit => x) (obsB := fun x : unit => x)
+  eapply FOQLObserve with (obsA := λ x : unit, x) (obsB := λ x : unit, x)
     (outA := out) (outB := out) (S := eq).
   - eapply unrestricted_observe_lub; [exact Hrows|].
     intros P eps Heps. exists N. intros n Hn. rewrite (Heventual n Hn).
@@ -148,9 +148,9 @@ Proof.
   - intros n Hn. unfold kernel_out. apply Nat.leb_le in Hn. rewrite Hn. reflexivity.
   - apply unit_support; [intros P; apply lub_unit_ae; intros; apply kernel_ae|apply big_ae].
 Qed.
-Lemma escaped_row_limit n : free_omega_qlift eq (FOLub (fun x => kernel x n)) small.
+Lemma escaped_row_limit n : free_omega_qlift eq (FOLub (λ x, kernel x n)) small.
 Proof.
-  eapply eventually_observed_constant with (outs := fun x => kernel_out x n) (N := S n).
+  eapply eventually_observed_constant with (outs := λ x, kernel_out x n) (N := S n).
   - intro x. apply kernel_observes.
   - apply small_observes.
   - intros x Hx. unfold kernel_out. assert (H : Nat.leb x n = false) by (apply Nat.leb_gt; lia).
@@ -161,13 +161,13 @@ Qed.
 (** The source itself is not an increasing distribution chain.  Placing
     its formal Lub inside a CONSTANT outer source chain passes the
     existing local monotonicity premise of FOQLBindLub. *)
-Definition escaping : MF nat := FOLub (fun n => FORet n).
-Definition diagonal : MF unit := FOLub (fun n => free_omega_bind escaping (fun x => kernel x n)).
+Definition escaping : MF nat := FOLub (λ n, FORet n).
+Definition diagonal : MF unit := FOLub (λ n, free_omega_bind escaping (λ x, kernel x n)).
 
 Lemma escaping_bind_diagonal : free_omega_qlift eq
-    (free_omega_bind escaping (fun _ => big)) diagonal.
+    (free_omega_bind escaping (λ _, big)) diagonal.
 Proof.
-  eapply FOQLBindLub with (source := fun _ => escaping) (kernels := kernel).
+  eapply FOQLBindLub with (source := λ _, escaping) (kernels := kernel).
   - intro n. apply free_omega_approx_refl. intro x. reflexivity.
   - exact kernel_increasing.
   - apply FOQLLubConstantR, free_omega_qlift_refl. intro x. reflexivity.
@@ -182,11 +182,11 @@ Qed.
 Theorem unrestricted_observation_collapses_mass : free_omega_qlift eq big small.
 Proof.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := free_omega_bind escaping (fun _ => big)).
-  - change (free_omega_qlift eq big (FOLub (fun _ => big))).
+    (mid := free_omega_bind escaping (λ _, big)).
+  - change (free_omega_qlift eq big (FOLub (λ _, big))).
     apply FOQLLubConstantR, free_omega_qlift_refl. intro x. reflexivity.
   - eapply FOQLComp with (T := eq) (U := eq); [apply escaping_bind_diagonal| |].
-    + eapply FOQLComp with (T := eq) (U := eq) (mid := FOLub (fun _ => small)).
+    + eapply FOQLComp with (T := eq) (U := eq) (mid := FOLub (λ _, small)).
       * apply FOQLLub. intro n. apply escaped_row_limit.
       * apply qsym, FOQLLubConstantR, free_omega_qlift_refl. intro x. reflexivity.
       * intros x z [y [-> ->]]. reflexivity.
@@ -234,7 +234,7 @@ Qed.
 (** After the repair, no observation of the offending row can be
     constructed, even though its native observable sequence converges. *)
 Theorem escaped_row_not_observable n out :
-  ¬ observe_unit (FOLub (fun x => kernel x n)) out.
+  ¬ observe_unit (FOLub (λ x, kernel x n)) out.
 Proof.
   intro H. dependent destruction H. exact (escaped_rows_not_increasing H1).
 Qed.
@@ -245,7 +245,7 @@ Theorem unrestricted_observation_rule_rejected :
     subenumQ_sem_lub outs out → observe_unit (FOLub chain) out).
 Proof.
   intro Hrule. apply (@escaped_row_not_observable O small_out).
-  eapply Hrule with (outs := fun x => kernel_out x O).
+  eapply Hrule with (outs := λ x, kernel_out x O).
   - intro x. apply kernel_observes.
   - intros P eps Heps. exists 1%nat. intros [|x] Hx; [lia|].
     cbn [kernel_out Nat.leb]. rewrite subrr normr0. exact Heps.

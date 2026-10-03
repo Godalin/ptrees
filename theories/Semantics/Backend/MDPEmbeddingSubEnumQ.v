@@ -39,9 +39,9 @@ Local Notation FO := (@FreeOmegaObservableSemanticOmega
 Lemma subenumQ_sampled_heads_reflect {X Y A B}
     (mu : SubEnumQ X) (nu : SubEnumQ Y) (f : X → A) (g : Y → B)
     (R : A → B → Prop) :
-  free_omega_qlift R (FOSample mu (fun x => FORet (f x)))
-    (FOSample nu (fun y => FORet (g y))) →
-  @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ (fun x y => R (f x) (g y)) mu nu.
+  free_omega_qlift R (FOSample mu (λ x, FORet (f x)))
+    (FOSample nu (λ y, FORet (g y))) →
+  @sem_lift SubEnumQ SubEnumQ_SemanticMeasure _ _ (λ x y, R (f x) (g y)) mu nu.
 Proof.
   exact: free_omega_sampled_heads_reflect.
 Qed.
@@ -51,7 +51,7 @@ Lemma subenumQ_dirac_heads_reflect {A B} (R : A → B → Prop) x y :
     A B R (FORet x) (FORet y) → R x y.
 Proof.
   intro H.
-  assert (Hx : free_omega_ae (fun a => a = x) (FORet x)).
+  assert (Hx : free_omega_ae (λ a, a = x) (FORet x)).
   { constructor. reflexivity. }
   pose proof (proj1 (free_omega_qlift_support H) _ Hx) as Hy.
   dependent destruction Hy. destruct H0 as [z [Hz ->]]. exact Hz.
@@ -60,10 +60,10 @@ Qed.
 Lemma subenumQ_total_forget {X} (mu : SubEnumQ X) :
   @sem_total SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega _ mu →
   @sem_total SubEnumQ SubEnumQ_SemanticMeasure SubEnumQ_SemanticOmega _
-    (subenumQ_bind mu (fun _ => subenumQ_ret tt)).
+    (subenumQ_bind mu (λ _, subenumQ_ret tt)).
 Proof.
-  intro H. change (enumQ_expect (fun _ => 1)
-    (bind_EnumQ (subenumQ_raw mu) (fun _ => ret_EnumQ tt)) = 1).
+  intro H. change (enumQ_expect (λ _, 1)
+    (bind_EnumQ (subenumQ_raw mu) (λ _, ret_EnumQ tt)) = 1).
   rewrite enumQ_expect_bind enumQ_expect_ret. exact H.
 Qed.
 
@@ -87,16 +87,16 @@ Proof.
   apply (mdp_encode_mdp_state (FI := FI) (FO := FO)
     (MX := FreeOmegaMixedMeasure)).
   - intros t a. apply free_omega_observable_total_intro.
-    exists unit, (fun _ => tt),
-      (subenumQ_bind (mdp_transition D t a) (fun _ => subenumQ_ret tt)).
+    exists unit, (λ _, tt),
+      (subenumQ_bind (mdp_transition D t a) (λ _, subenumQ_ret tt)).
     split.
     + change (free_omega_observes (NI := SubEnumQ_SemanticMeasure)
-        (fun _ => tt) (FOSample (mdp_transition D t a) (fun u => FORet (ehead u)))
+        (λ _, tt) (FOSample (mdp_transition D t a) (λ u, FORet (ehead u)))
         (@sem_bind SubEnumQ SubEnumQ_SemanticMeasure _ _ (mdp_transition D t a)
-          (fun _ => subenumQ_ret tt))).
+          (λ _, subenumQ_ret tt))).
       eapply FOOObserveSample. intro u. constructor.
     + apply subenumQ_total_forget. apply mdp_transition_total.
-  - intros t a. eapply FOAESample with (Good := fun _ => True).
+  - intros t a. eapply FOAESample with (Good := λ _, True).
     + apply sem_ae_true.
     + intros u _. constructor. exists u. reflexivity.
 Qed.
@@ -174,10 +174,10 @@ Theorem subenumQ_unlabelled_mdp_universal
     (Hconstant : ∀ s t, mdp_observe D s = mdp_observe D t)
     s t : mdp_bisim (D := D) s t.
 Proof.
-  eapply mdp_bisim_coinduction with (sim := fun _ _ => True).
+  eapply mdp_bisim_coinduction with (sim := λ _ _, True).
   - intros u v _. split; [apply Hconstant|]. intro a.
     eapply sem_lift_mono with
-      (R := fun _ _ => exists z : unit, True ∧ True).
+      (R := λ _ _, exists z : unit, True ∧ True).
     + intros x y _. exact I.
     + eapply sem_lift_comp with (nu := subenumQ_ret tt).
       * apply subenumQ_total_same_mass. exact (mdp_transition_total D u a).

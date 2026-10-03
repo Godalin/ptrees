@@ -49,7 +49,7 @@ Proof.
   - apply oval_bind_mono; [apply oval_le_refl|exact IH].
 Qed.
 
-Lemma domain_hitting_approx_increasing s : oval_increasing (fun n => domain_hitting_approx n s).
+Lemma domain_hitting_approx_increasing s : oval_increasing (λ n, domain_hitting_approx n s).
 Proof.
   intro n; apply oval_bind_mono; [apply oval_le_refl|intro z].
   exact: domain_target_approx_increasing.
@@ -113,7 +113,7 @@ Definition ptree_model_kernel (s : state) : OmegaVal R (stable_target state head
   | VisF _ e k => oval_ret R (SHStable (FHVis e k))
   | TauF t => oval_ret R (SHInternal (observe t))
   | ProbF X mu k => oval_bind (native X mu)
-      (fun x => oval_ret R (SHInternal (observe (k x))))
+      (λ x, oval_ret R (SHInternal (observe (k x))))
   end.
 Definition ptree_model_approx := domain_hitting_approx ptree_model_kernel.
 Definition ptree_model_hitting := domain_hitting ptree_model_kernel.
@@ -133,7 +133,7 @@ Proof.
 Qed.
 
 Theorem ptree_hitting_approx_model_increasing s :
-  model_chain_increasing native (fun n => approx n s).
+  model_chain_increasing native (λ n, approx n s).
 Proof.
   intros n f Hf.
   rewrite (ptree_hitting_model_commutation n s Hf)
@@ -141,7 +141,7 @@ Proof.
   exact (domain_hitting_approx_increasing ptree_model_kernel s n Hf).
 Qed.
 
-Definition ptree_canonical_hitting (s : state) := FOLub (fun n => approx n s).
+Definition ptree_canonical_hitting (s : state) := FOLub (λ n, approx n s).
 
 Theorem ptree_canonical_hitting_spec s : hits s (ptree_canonical_hitting s).
 Proof. apply free_omega_qlift_refl; intros h; reflexivity. Qed.
@@ -166,14 +166,14 @@ Hypothesis native_ret : ∀ X (x : X),
 Hypothesis native_zero : ∀ X,
   oval_eq (native X (@sem_zero MN NI NO X)) (@oval_bottom R X).
 Hypothesis native_bind : ∀ X Y (mu : MN X) (k : X → MN Y),
-  oval_eq (native Y (sem_bind mu k)) (oval_bind (native X mu) (fun x => native Y (k x))).
+  oval_eq (native Y (sem_bind mu k)) (oval_bind (native X mu) (λ x, native Y (k x))).
 Hypothesis native_lift : ∀ X Y (T : X → Y → Prop) (mu : MN X) (nu : MN Y) f g,
   sem_lift T mu nu → oval_test f → oval_test g →
   (∀ x y, T x y → f x <= g y) → oval_eval (native X mu) f <= oval_eval (native Y nu) g.
 Hypothesis native_lub : ∀ X (c : nat → MN X) out,
   (∀ n f, oval_test f → oval_eval (native X (c n)) f <= oval_eval (native X (c (S n))) f) →
   sem_lub c out → ∀ f, oval_test f →
-  oval_sup (fun n => oval_eval (native X (c n)) f) = oval_eval (native X out) f.
+  oval_sup (λ n, oval_eval (native X (c n)) f) = oval_eval (native X out) f.
 
 Theorem stable_hitting_modelable s out : hits s out → free_omega_modelable native out.
 Proof.
@@ -198,7 +198,7 @@ Proof. intros H f Hf; exact (stable_hitting_denotational_adequacy H Hf). Qed.
 
 Corollary stable_hitting_model_mass_lub s out (H : hits s out) :
   oval_mass (free_omega_model (stable_hitting_modelable H)) =
-  oval_sup (fun n => oval_mass (ptree_model_approx n s)).
+  oval_sup (λ n, oval_mass (ptree_model_approx n s)).
 Proof. exact (stable_hitting_denotational_adequacy H (oval_test_one R)). Qed.
 End PTreeModel.
 End Validation.

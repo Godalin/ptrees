@@ -37,9 +37,9 @@ Variable handler : ∀ X, E X → ptree F MN X.
 Definition ptree_interp_approx_cofinal {R}
     (t : ptree E MN R) : Prop :=
   free_omega_chains_cofinal eq
-    (fun fuel => ptree_hitting_approx (MF := MF) fuel
+    (λ fuel, ptree_hitting_approx (MF := MF) fuel
       (observe (PTree.interp handler t)))
-    (fun fuel => ptree_interp_diagonal_approx fuel handler t).
+    (λ fuel, ptree_interp_diagonal_approx fuel handler t).
 
 Lemma ptree_interp_hitting_le_diagonal {R}
     (fuel : nat) (t : ptree E MN R) :

@@ -46,17 +46,17 @@ Lemma finite_index_length {A} n (mu : list (W * A)) : length (finite_index_from 
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
 
 Lemma finite_value_index_fst {A} n (mu : list (W * A)) :
-  List.map (fun px => (fst px, fst (snd px))) (finite_value_index_from n mu) = mu.
+  List.map (λ px, (fst px, fst (snd px))) (finite_value_index_from n mu) = mu.
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
 
 Lemma finite_value_index_snd {A} n (mu : list (W * A)) :
-  List.map (fun px => (fst px, snd (snd px))) (finite_value_index_from n mu) =
+  List.map (λ px, (fst px, snd (snd px))) (finite_value_index_from n mu) =
   finite_index_from n mu.
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
 
 Lemma finite_index_nth {A} n (mu : list (W * A)) i :
   nth_error (finite_index_from n mu) i =
-  option_map (fun px => (fst px, Nat.add n i)) (nth_error mu i).
+  option_map (λ px, (fst px, Nat.add n i)) (nth_error mu i).
 Proof.
   induction mu as [|[p x] tl IH] in n, i |- *; destruct i; cbn; try reflexivity.
   - by rewrite Nat.add_0_r.
@@ -65,7 +65,7 @@ Qed.
 
 Lemma finite_value_index_nth {A} n (mu : list (W * A)) i :
   nth_error (finite_value_index_from n mu) i =
-  option_map (fun px => (fst px, (snd px, Nat.add n i))) (nth_error mu i).
+  option_map (λ px, (fst px, (snd px, Nat.add n i))) (nth_error mu i).
 Proof.
   induction mu as [|[p x] tl IH] in n, i |- *; destruct i; cbn; try reflexivity.
   - by rewrite Nat.add_0_r.
@@ -74,13 +74,13 @@ Qed.
 End RawPositions.
 
 Lemma finite_index_map_weights {W V A : Type} (f : W → V) n (mu : list (W * A)) :
-  finite_index_from n (List.map (fun px => (f (fst px), snd px)) mu) =
-  List.map (fun pi => (f (fst pi), snd pi)) (finite_index_from n mu).
+  finite_index_from n (List.map (λ px, (f (fst px), snd px)) mu) =
+  List.map (λ pi, (f (fst pi), snd pi)) (finite_index_from n mu).
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
 
 Lemma finite_value_index_map_weights {W V A : Type} (f : W → V) n (mu : list (W * A)) :
-  finite_value_index_from n (List.map (fun px => (f (fst px), snd px)) mu) =
-  List.map (fun pxi => (f (fst pxi), snd pxi)) (finite_value_index_from n mu).
+  finite_value_index_from n (List.map (λ px, (f (fst px), snd px)) mu) =
+  List.map (λ pxi, (f (fst pxi), snd pxi)) (finite_value_index_from n mu).
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
 
 Section CheckedPositions.
@@ -107,11 +107,11 @@ Proof.
 Qed.
 
 Lemma finite_index_mass {A} n (mu : list (R * A)) :
-  finite_expect (fun _ => 1) (finite_index_from n mu) = finite_expect (fun _ => 1) mu.
+  finite_expect (λ _, 1) (finite_index_from n mu) = finite_expect (λ _, 1) mu.
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
 
 Lemma finite_value_index_expect {A} n (mu : list (R * A)) (f : A → R) :
-  finite_expect (fun xi => f (fst xi)) (finite_value_index_from n mu) = finite_expect f mu.
+  finite_expect (λ xi, f (fst xi)) (finite_value_index_from n mu) = finite_expect f mu.
 Proof. induction mu as [|[p x] tl IH] in n |- *; cbn; [reflexivity|by rewrite IH]. Qed.
 
 Definition finite_enum_index_from {A} n (mu : FiniteEnum R A) : FiniteEnum R nat :=

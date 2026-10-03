@@ -25,8 +25,8 @@ Hypothesis bind_zero_order : ∀ A B (k : A → MF B),
 Hypothesis mixed_assoc_order : ∀ A B C (mu : MN A)
     (k : A → MF B) (h : B → MF C),
   sem_le (sem_bind (mixed_bind mu k) h)
-    (mixed_bind mu (fun x => sem_bind (k x) h)) ∧
-  sem_le (mixed_bind mu (fun x => sem_bind (k x) h))
+    (mixed_bind mu (λ x, sem_bind (k x) h)) ∧
+  sem_le (mixed_bind mu (λ x, sem_bind (k x) h))
     (sem_bind (mixed_bind mu k) h).
 Hypothesis mixed_bind_mono : ∀ A B (mu : MN A) (k h : A → MF B),
   (∀ x, sem_le (k x) (h x)) →
@@ -70,7 +70,7 @@ Proof. apply bind_ret_order. Qed.
 Local Lemma mixed_assoc_equiv A B C (mu : MN A)
     (k : A → MF B) (h : B → MF C) :
   equiv (sem_bind (mixed_bind mu k) h)
-    (mixed_bind mu (fun x => sem_bind (k x) h)).
+    (mixed_bind mu (λ x, sem_bind (k x) h)).
 Proof. apply mixed_assoc_order. Qed.
 
 Local Lemma hitting_unfold {A} n (t : ptree' E MN A) :
@@ -80,7 +80,7 @@ Local Lemma hitting_unfold {A} n (t : ptree' E MN A) :
      | VisF _ e k => sem_ret (FHVis e k)
      | TauF u => match n with O => sem_zero
                     | S m => ptree_hitting_approx m (observe u) end
-     | ProbF _ mu k => mixed_bind mu (fun x => match n with
+     | ProbF _ mu k => mixed_bind mu (λ x, match n with
           O => sem_zero | S m => ptree_hitting_approx m (observe (k x)) end)
      end).
 Proof.
@@ -91,7 +91,7 @@ Proof.
   - destruct n; apply bind_ret_order.
   - etransitivity; [apply ret_equiv|].
     rewrite stable_target_stableE. reflexivity.
-  - transitivity (mixed_bind mu (fun x => sem_bind
+  - transitivity (mixed_bind mu (λ x, sem_bind
         (sem_ret (SHInternal (observe (c x))))
         (stable_target_approx (@ptree_primitive_kernel E MN MF FI MX A) n))).
     + apply mixed_assoc_order.

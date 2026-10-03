@@ -47,10 +47,10 @@ Theorem subenumR_transport_of_mapped_tests {X Y A B}
     (∀ x, 0 <= a x ∧ a x <= 1) →
     (∀ y, 0 <= b y ∧ b y <= 1) →
     (∀ x y, T x y → a x <= b y) →
-    subenumR_expect mu (fun x => a (f x)) <=
-    subenumR_expect nu (fun y => b (g y))) →
-  subenumR_expect mu (fun _ => 1) = subenumR_expect nu (fun _ => 1) →
-  subenumR_lift (fun x y => T (f x) (g y)) mu nu.
+    subenumR_expect mu (λ x, a (f x)) <=
+    subenumR_expect nu (λ y, b (g y))) →
+  subenumR_expect mu (λ _, 1) = subenumR_expect nu (λ _, 1) →
+  subenumR_lift (λ x y, T (f x) (g y)) mu nu.
 Proof.
   intros Htests Hmass.
   pose I := finite_position (subenumR_raw mu).
@@ -112,17 +112,17 @@ Proof.
   have Hraw h : real_enum_expect h raw =
       \sum_i \sum_j w i j * h (x i,y j).
   { by rewrite /raw /real_enum_expect real_expect_weighted_list big_enum pair_big. }
-  have Hleft h : real_enum_expect (fun xy => h (fst xy)) raw = subenumR_expect mu h.
+  have Hleft h : real_enum_expect (λ xy, h (fst xy)) raw = subenumR_expect mu h.
   { rewrite Hraw subenumR_expect_positions; apply eq_bigr=> i _.
     by rewrite /= -mulr_suml Hr. }
-  have Hright h : real_enum_expect (fun xy => h (snd xy)) raw = subenumR_expect nu h.
+  have Hright h : real_enum_expect (λ xy, h (snd xy)) raw = subenumR_expect nu h.
   { rewrite Hraw exchange_big subenumR_expect_positions; apply eq_bigr=> j _.
     by rewrite /= -mulr_suml Hc. }
   have Hnn : real_enum_nonnegative raw.
   { intros r z Hz; apply List.in_map_iff in Hz.
     destruct Hz as [[i j] [He _]]; inversion He; subst; exact: Hw. }
-  have Hbound : real_enum_expect (fun _ => 1) raw <= 1.
-  { rewrite (Hleft (fun _ => 1)); exact: subenumR_mass_bound. }
+  have Hbound : real_enum_expect (λ _, 1) raw <= 1.
+  { rewrite (Hleft (λ _, 1)); exact: subenumR_mass_bound. }
   exists (subenumR_of_list Hnn Hbound); split; first exact Hleft.
   split; first exact Hright.
   intros r z Hz Hnz; apply List.in_map_iff in Hz.

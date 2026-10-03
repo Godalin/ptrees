@@ -64,7 +64,7 @@ Proof.
   unfold zero_free_limit.
   eapply (@FOOObserveLub EnumQ EnumQ_SemanticMeasure
     EnumQ_SemanticOmega bool bool id zero_free_chain
-    (fun _ : nat => (@enumQ_zero bool)) enumQ_zero).
+    (λ _ : nat, (@enumQ_zero bool)) enumQ_zero).
   - intro n. constructor.
   - intros P eps Heps. exists O. intros n _. cbn. exact Heps.
   - intro n. apply FOApproxZero.
@@ -72,7 +72,7 @@ Qed.
 
 Lemma enumQ_empty_lift_false :
   @sem_lift EnumQ EnumQ_SemanticMeasure bool bool
-    (fun _ _ => False) enumQ_zero enumQ_zero.
+    (λ _ _, False) enumQ_zero enumQ_zero.
 Proof.
   cbn; unfold indexed_coupling.
   eapply coupling_raw with (mu := enumQ_zero) (nu := enumQ_zero);
@@ -80,11 +80,11 @@ Proof.
 Qed.
 
 Lemma zero_chain_ae_true : ∀ n,
-  free_omega_ae (fun b => b = true) (zero_free_chain n).
+  free_omega_ae (λ b, b = true) (zero_free_chain n).
 Proof. intro n. constructor. Qed.
 
 Lemma transient_bad_limit_not_ae_true :
-  ¬ free_omega_ae (fun b => b = true) transient_bad_limit.
+  ¬ free_omega_ae (λ b, b = true) transient_bad_limit.
 Proof.
   intro Hae. dependent destruction Hae.
   specialize (H O). dependent destruction H.
@@ -99,7 +99,7 @@ Theorem transient_bad_support_zero_impossible :
       transient_bad_limit zero_free_limit.
 Proof.
   intro Hsupport.
-  assert (Hzero : free_omega_ae (fun b => b = true) zero_free_limit).
+  assert (Hzero : free_omega_ae (λ b, b = true) zero_free_limit).
   { unfold zero_free_limit. constructor. exact zero_chain_ae_true. }
   pose proof ((proj2 Hsupport) _ Hzero) as Himage.
   apply transient_bad_limit_not_ae_true.
@@ -113,6 +113,6 @@ Check FreeOmegaObservableSemanticOmegaAELaws.
 Example transient_observation_not_increasing :
   ¬ enumQ_chain_increasing transient_observation.
 Proof.
-  intro H. specialize (H (fun _ => true) O (S O) (Peano.le_0_n _)).
+  intro H. specialize (H (λ _, true) O (S O) (Peano.le_0_n _)).
   vm_compute in H. discriminate.
 Qed.

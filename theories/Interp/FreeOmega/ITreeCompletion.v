@@ -42,7 +42,7 @@ Qed.
 
 Theorem free_omega_elab_event {E F A X} (h : Handler MN E F) (e : E X) (k : X → itree E A) :
   peutt (FI := FI) eq (interp_itree h (ITreeDefinition.Vis e k))
-    (PTree.bind (h X e) (fun x => interp_itree h (k x))).
+    (PTree.bind (h X e) (λ x, interp_itree h (k x))).
 Proof.
   apply (elab_event free_omega_relational_mixed_bind
     free_omega_relational_zero free_omega_relational_lub).
@@ -57,7 +57,7 @@ Qed.
 
 Theorem free_omega_elab_sample {E A X} (mu : MN X) (k : X → itree (probE MN +' E) A) :
   peutt (FI := FI) eq (elaborate (ITreeDefinition.Vis (inl1 (Sample mu)) k))
-    (Prob mu (fun x => elaborate (k x))).
+    (Prob mu (λ x, elaborate (k x))).
 Proof.
   apply (elab_sample free_omega_relational_mixed_bind
     free_omega_relational_zero free_omega_relational_lub).
@@ -65,7 +65,7 @@ Qed.
 
 Theorem free_omega_elab_vis {E A X} (e : E X) (k : X → itree (probE MN +' E) A) :
   peutt (FI := FI) eq (elaborate (ITreeDefinition.Vis (inr1 e) k))
-    (Vis e (fun x => elaborate (k x))).
+    (Vis e (λ x, elaborate (k x))).
 Proof.
   apply (elab_vis free_omega_relational_mixed_bind
     free_omega_relational_zero free_omega_relational_lub).
@@ -74,7 +74,7 @@ Qed.
 Theorem free_omega_elab_bind {E F A B} (h : Handler MN E F)
     (t : itree E A) (k : A → itree E B) :
   peutt (FI := FI) eq (interp_itree h (ITree.bind t k))
-    (PTree.bind (interp_itree h t) (fun x => interp_itree h (k x))).
+    (PTree.bind (interp_itree h t) (λ x, interp_itree h (k x))).
 Proof.
   apply (elab_bind free_omega_relational_mixed_bind
     free_omega_relational_zero free_omega_relational_lub).
@@ -83,7 +83,7 @@ Qed.
 Theorem free_omega_elab_iter {E F I A} (h : Handler MN E F)
     (step : I → itree E (I+A)) i :
   peutt (FI := FI) eq (interp_itree h (ITree.iter step i))
-    (PTree.iter (fun j => interp_itree h (step j)) i).
+    (PTree.iter (λ j, interp_itree h (step j)) i).
 Proof.
   apply (elab_iter free_omega_relational_mixed_bind
     free_omega_relational_zero free_omega_relational_lub).
@@ -91,7 +91,7 @@ Qed.
 
 Theorem free_omega_elab_sample_trigger {X} (mu : MN X) :
   peutt (FI := FI) eq (elaborate_closed (ITree.trigger (Sample mu)))
-    (Prob mu (fun x => Ret x)).
+    (Prob mu (λ x, Ret x)).
 Proof.
   apply (elab_sample_trigger free_omega_relational_mixed_bind
     free_omega_relational_zero free_omega_relational_lub).

@@ -65,7 +65,7 @@ Qed.
 
 #[global] Instance SubEnumQ_SemanticSubprobability :
     @SemanticSubprobability SubEnumQ SubEnumQ_SemanticMeasure := {
-  sem_subprob := fun A mu => enumQ_subprob (subenumQ_raw mu)
+  sem_subprob := λ A mu, enumQ_subprob (subenumQ_raw mu)
 }.
 
 #[global] Instance SubEnumQ_SemanticSubprobabilityLaws :
@@ -135,20 +135,20 @@ Qed.
 Proof.
   constructor; cbn.
   - intros A B x k. exact (@sem_bind_ret_l EnumQ EnumQ_SemanticMeasure
-      EnumQ_SemanticMeasureBindLaws A B x (fun y => subenumQ_raw (k y))).
+      EnumQ_SemanticMeasureBindLaws A B x (λ y, subenumQ_raw (k y))).
   - intros A B C mu k h. exact (@sem_bind_assoc EnumQ
       EnumQ_SemanticMeasure EnumQ_SemanticMeasureBindLaws A B C
-      (subenumQ_raw mu) (fun x => subenumQ_raw (k x))
-      (fun y => subenumQ_raw (h y))).
+      (subenumQ_raw mu) (λ x, subenumQ_raw (k x))
+      (λ y, subenumQ_raw (h y))).
   - intros A B mu k h Hae. exact (@sem_bind_ae_proper EnumQ
       EnumQ_SemanticMeasure EnumQ_SemanticMeasureBindLaws A B
-      (subenumQ_raw mu) (fun x => subenumQ_raw (k x))
-      (fun x => subenumQ_raw (h x)) Hae).
+      (subenumQ_raw mu) (λ x, subenumQ_raw (k x))
+      (λ x, subenumQ_raw (h x)) Hae).
   - intros A B C D R T mu nu k h Hmn Hkh.
     exact (@sem_lift_bind EnumQ EnumQ_SemanticMeasure
       EnumQ_SemanticMeasureBindLaws A B C D R T
       (subenumQ_raw mu) (subenumQ_raw nu)
-      (fun x => subenumQ_raw (k x)) (fun y => subenumQ_raw (h y)) Hmn Hkh).
+      (λ x, subenumQ_raw (k x)) (λ y, subenumQ_raw (h y)) Hmn Hkh).
 Qed.
 
 #[global] Instance SubEnumQ_SemanticMeasureAELiftLaws :
@@ -167,7 +167,7 @@ Proof.
       EnumQ_SemanticMeasureAEKleisliLaws).
   - intros A B mu k P Q HP HK. exact (@sem_ae_bind EnumQ
       EnumQ_SemanticMeasure EnumQ_SemanticMeasureAEKleisliLaws
-      A B (subenumQ_raw mu) (fun x => subenumQ_raw (k x)) P Q HP HK).
+      A B (subenumQ_raw mu) (λ x, subenumQ_raw (k x)) P Q HP HK).
 Qed.
 
 #[global] Instance SubEnumQ_SemanticMeasureDiracAELaws :
@@ -204,7 +204,7 @@ Qed.
 Proof.
   constructor. intros A B mu k P. exact (@sem_ae_bind_iff EnumQ
     EnumQ_SemanticMeasure EnumQ_SemanticMeasureBindAEExactLaws
-    A B (subenumQ_raw mu) (fun x => subenumQ_raw (k x)) P).
+    A B (subenumQ_raw mu) (λ x, subenumQ_raw (k x)) P).
 Qed.
 
 Definition subenumQ_sem_le {A} (mu nu : SubEnumQ A) : Prop :=
@@ -212,7 +212,7 @@ Definition subenumQ_sem_le {A} (mu nu : SubEnumQ A) : Prop :=
 
 Definition subenumQ_sem_lub {A}
     (chain : nat → SubEnumQ A) (mu : SubEnumQ A) : Prop :=
-  enumQ_converges (fun n => subenumQ_raw (chain n)) (subenumQ_raw mu).
+  enumQ_converges (λ n, subenumQ_raw (chain n)) (subenumQ_raw mu).
 
 Definition subenumQ_total {A} (mu : SubEnumQ A) : Prop :=
   enumQ_mass (subenumQ_raw mu) = 1.

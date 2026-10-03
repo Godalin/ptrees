@@ -19,7 +19,7 @@ Section FiniteAtoms.
 Variable R : numDomainType.
 
 Definition finite_atom {A : eqType} (x : A) (mu : list (R * A)) : R :=
-  finite_expect (fun y => if y == x then 1 else 0) mu.
+  finite_expect (λ y, if y == x then 1 else 0) mu.
 
 Lemma finite_atom_nil {A : eqType} (x : A) : finite_atom x [::] = 0.
 Proof. reflexivity. Qed.
@@ -37,7 +37,7 @@ Lemma finite_atom_scale {A : eqType} (x : A) p mu :
 Proof. exact: finite_expect_weight_map. Qed.
 
 Lemma finite_atom_bind {A} {B : eqType} (x : B) (mu : list (R * A)) k :
-  finite_atom x (finite_bind mu k) = finite_expect (fun a => finite_atom x (k a)) mu.
+  finite_atom x (finite_bind mu k) = finite_expect (λ a, finite_atom x (k a)) mu.
 Proof. exact: finite_expect_bind. Qed.
 
 Lemma finite_atom_nonnegative {A : eqType} (x : A) mu :
@@ -54,7 +54,7 @@ Proof.
   - rewrite /= big1 // => x _. exact: mul0r.
   - rewrite /= IH. transitivity
       (\sum_x ((if a == x then p else 0) * f x + finite_atom x mu * f x)).
-    + rewrite big_split. apply congr1 with (f := fun z => z + \sum_x finite_atom x mu * f x).
+    + rewrite big_split. apply congr1 with (f := λ z, z + \sum_x finite_atom x mu * f x).
       transitivity (\sum_x (if a == x then p * f x else 0)).
       * by rewrite -big_mkcond (big_pred1 a).
       * apply eq_bigr=> x _. by case: (a == x); rewrite ?mul0r.
@@ -130,7 +130,7 @@ Proof.
 Qed.
 Lemma finite_expect_atom_split {A : eqType} (mu : list (R*A)) f a :
   finite_expect f mu = finite_atom a mu * f a +
-    finite_expect f (List.filter (fun px => px.2 != a) mu).
+    finite_expect f (List.filter (λ px, px.2 != a) mu).
 Proof.
   elim: mu=> [|[p x] tl IH]; first by rewrite /= mul0r add0r.
   rewrite /= finite_atom_cons; case H: (x == a)=> /=.

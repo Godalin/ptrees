@@ -17,5 +17,5 @@ Definition iteration_uniform {T : Type → Type}
     `{MT : Monad T} `{IT : MonadIter T} `{QT : Eq1 T} : Prop :=
   ∀ (I J A : Type) (f : I → T (I + A)) (g : J → T (J + A))
     (h : I → J),
-    (∀ i, eq1 (bind (f i) (fun v => ret (iteration_map h v))) (g (h i))) →
+    (∀ i, eq1 (bind (f i) (λ v, ret (iteration_map h v))) (g (h i))) →
     ∀ i, eq1 (iter f i) (iter g (h i)).

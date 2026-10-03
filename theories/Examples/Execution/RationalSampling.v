@@ -51,12 +51,12 @@ Proof. native_compute. reflexivity. Qed.
 Definition half_entries : list (rat * unit) := [(2^-1,tt)].
 Lemma half_nonnegative : finite_nonnegative half_entries.
 Proof. intros p x [H|[]]; inversion H; subst; native_compute; reflexivity. Qed.
-Lemma half_bounded : finite_expect (fun _ => 1) half_entries <= 1.
+Lemma half_bounded : finite_expect (λ _, 1) half_entries <= 1.
 Proof. native_compute. reflexivity. Qed.
 Definition half : SubEnumQ unit := subenumQ_of_list half_nonnegative half_bounded.
 Definition high : quantile.
 Proof. refine (@Build_quantile (3 * 4^-1) _ _); native_compute; reflexivity. Defined.
-Definition closed_half : ptree void1 SubEnumQ unit := Prob half (fun x => Ret x).
+Definition closed_half : ptree void1 SubEnumQ unit := Prob half (λ x, Ret x).
 
 Example half_mass_execution_is_lost :
   run (@replay_sample) 10 closed_half
@@ -94,20 +94,20 @@ Import EnumQ GRing.Theory Num.Theory Order.Theory ListNotations.
 Local Open Scope ring_scope.
 
 Example nonfair_success_mass :
-  ticket_expectation attempt_coin (fun o => match o with Some true => 1 | _ => 0 end) = 3^-1.
+  ticket_expectation attempt_coin (λ o, match o with Some true => 1 | _ => 0 end) = 3^-1.
 Proof. native_compute. reflexivity. Qed.
 
 Example nonfair_retry_mass :
-  ticket_expectation attempt_coin (fun o => match o with Some false => 1 | _ => 0 end) = 2^-1.
+  ticket_expectation attempt_coin (λ o, match o with Some false => 1 | _ => 0 end) = 2^-1.
 Proof. native_compute. reflexivity. Qed.
 
 Example partial_loss_is_exact :
-  ticket_expectation attempt_coin (fun o => match o with None => 1 | _ => 0 end) = 6^-1.
+  ticket_expectation attempt_coin (λ o, match o with None => 1 | _ => 0 end) = 6^-1.
 Proof. native_compute. reflexivity. Qed.
 
 Example arbitrary_signed_observable (f : option bool → rat) :
   ticket_expectation attempt_coin f =
-    finite_expect (fun b => f (Some b)) attempt_entries +
+    finite_expect (λ b, f (Some b)) attempt_entries +
     (1 - enumQ_mass (subenumQ_raw attempt_coin)) * f None.
 Proof. apply uniform_ticket_expectation. Qed.
 
@@ -117,7 +117,7 @@ Lemma noisy_nonnegative : finite_nonnegative noisy_entries.
 Proof.
   intros p x [H|[H|[H|[H|[]]]]]; inversion H; subst; native_compute; reflexivity.
 Qed.
-Lemma noisy_bounded : finite_expect (fun _ => 1) noisy_entries <= 1.
+Lemma noisy_bounded : finite_expect (λ _, 1) noisy_entries <= 1.
 Proof. native_compute. reflexivity. Qed.
 Definition noisy_coin := subenumQ_of_list noisy_nonnegative noisy_bounded.
 

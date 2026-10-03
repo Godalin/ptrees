@@ -57,7 +57,7 @@ Definition bind_frontier {E MN MF}
   match h with
   | FHRet a => front a
   | @FHVis _ _ _ X e c =>
-      sem_ret (FHVis e (fun x => PTree.bind (c x) k))
+      sem_ret (FHVis e (λ x, PTree.bind (c x) k))
   end.
 
 Section MixedIteration.
@@ -75,7 +75,7 @@ Fixpoint mixed_iter_approx {I R} (n : nat)
   match n with
   | O => sem_zero
   | Datatypes.S n' =>
-      mixed_bind (transition i) (fun next =>
+      mixed_bind (transition i) (λ next,
         match next with
         | inl i' => mixed_iter_approx n' transition i'
         | inr r => sem_ret r
@@ -84,7 +84,7 @@ Fixpoint mixed_iter_approx {I R} (n : nat)
 
 Definition mixed_iter {I R} (transition : I → MN (I + R))
     (i : I) (out : MF R) : Prop :=
-  sem_lub (fun n => mixed_iter_approx n transition i) out.
+  sem_lub (λ n, mixed_iter_approx n transition i) out.
 
 End MixedIteration.
 
@@ -121,11 +121,11 @@ Inductive frontier_certificate {R} :
       (∀ j,
         frontier_certificate (observe (step j))
           (mixed_bind (transition j)
-            (fun next => sem_ret (FHRet next)))) →
+            (λ next, sem_ret (FHRet next)))) →
       mixed_iter transition i out →
       sem_total out →
       frontier_certificate (observe (PTree.iter step i))
-        (sem_bind out (fun r => sem_ret (FHRet r)))
+        (sem_bind out (λ r, sem_ret (FHRet r)))
   | UFBind {A : Type}
       (t : ptree E MN A) (k : A → ptree E MN R)
       hs (front : A → MF (stable_head E MN R)) :
@@ -158,11 +158,11 @@ Lemma certificate_iter_intro {R I}
   (∀ j,
     frontier_certificate (observe (step j))
       (mixed_bind (transition j)
-        (fun next => sem_ret (FHRet next)))) →
+        (λ next, sem_ret (FHRet next)))) →
   mixed_iter transition i out →
   sem_total out →
   frontier_certificate (observe (PTree.iter step i))
-    (sem_bind out (fun r => sem_ret (FHRet r))).
+    (sem_bind out (λ r, sem_ret (FHRet r))).
 Proof. intros Hstep Hiter Htotal. eapply UFIter; eassumption. Qed.
 
 End UnifiedFrontier.

@@ -17,12 +17,12 @@ Context {W : Type}.
 Variable mul : W → W → W.
 
 Lemma finite_index_map_values {A B} (f : A → B) n (mu : list (W*A)) :
-  finite_index_from n (List.map (fun px => (px.1,f px.2)) mu) = finite_index_from n mu.
+  finite_index_from n (List.map (λ px, (px.1,f px.2)) mu) = finite_index_from n mu.
 Proof. by elim: mu n=> [|[p x] tl IH] n //=; rewrite IH. Qed.
 
 Lemma finite_index_shift_from {A} offset start (mu : list (W*A)) :
   finite_index_from (Nat.add offset start) mu =
-  List.map (fun pi => (pi.1,Nat.add offset pi.2)) (finite_index_from start mu).
+  List.map (λ pi, (pi.1,Nat.add offset pi.2)) (finite_index_from start mu).
 Proof.
   elim: mu offset start=> [|[p x] tl IH] offset start //=.
   by rewrite -Nat.add_succ_r IH.

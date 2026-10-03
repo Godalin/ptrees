@@ -44,7 +44,7 @@ Proof. reflexivity. Qed.
 Lemma enumQ_extended_expect_nonnegative {A} (f : A → \bar R) mu :
   (∀ x, 0 <= f x) → 0 <= enumQ_extended_expect f mu.
 Proof.
-  move=> Hf; apply (enumQ_ind_raw (P := fun mu => 0 <= enumQ_extended_expect f mu)).
+  move=> Hf; apply (enumQ_ind_raw (P := λ mu, 0 <= enumQ_extended_expect f mu)).
   - exact: lexx.
   - move=> p Hp x tail IH; change (0 <= (ratr p)%:E * f x + enumQ_extended_expect f tail).
     apply: adde_ge0 IH; apply: mule_ge0 (Hf x).
@@ -54,7 +54,7 @@ Qed.
 Lemma enumQ_extended_expect_mono {A} (f g : A → \bar R) mu :
   (∀ x, f x <= g x) → enumQ_extended_expect f mu <= enumQ_extended_expect g mu.
 Proof.
-  move=> Hfg; apply (enumQ_ind_raw (P := fun mu =>
+  move=> Hfg; apply (enumQ_ind_raw (P := λ mu,
     enumQ_extended_expect f mu <= enumQ_extended_expect g mu)).
   - exact: lexx.
   - move=> p Hp x tail IH; change
@@ -65,7 +65,7 @@ Proof.
   - move=> a b He IH; by rewrite /enumQ_extended_expect -He.
 Qed.
 Lemma enumQ_extended_expect_zero {A} (mu : EnumQ A) :
-  enumQ_extended_expect (fun _ => 0) mu = 0.
+  enumQ_extended_expect (λ _, 0) mu = 0.
 Proof.
   rewrite /enumQ_extended_expect; elim: (enumQ_raw mu)=> [|[p x] tail IH] //=.
   by rewrite mule0 IH adde0.
@@ -82,7 +82,7 @@ Lemma enumQ_extended_expect_scale {A} (f : A → \bar R) p (Hp : (0 <= p)%R) mu 
   (∀ x, 0 <= f x) →
   enumQ_extended_expect f (scale_EnumQ Hp mu) = (ratr p)%:E * enumQ_extended_expect f mu.
 Proof.
-  move=> Hf; apply (enumQ_ind_raw (P := fun mu =>
+  move=> Hf; apply (enumQ_ind_raw (P := λ mu,
     enumQ_extended_expect f (scale_EnumQ Hp mu) =
     (ratr p)%:E * enumQ_extended_expect f mu)).
   - by rewrite /enumQ_extended_expect /= mule0.
@@ -104,37 +104,37 @@ Lemma enumQ_extended_expect_bind {A B} (f : B → \bar R)
     (mu : EnumQ A) (k : A → EnumQ B) :
   (∀ x, 0 <= f x) →
   enumQ_extended_expect f (bind_EnumQ mu k) =
-    enumQ_extended_expect (fun x => enumQ_extended_expect f (k x)) mu.
+    enumQ_extended_expect (λ x, enumQ_extended_expect f (k x)) mu.
 Proof.
-  move=> Hf; apply (enumQ_ind_raw (P := fun mu =>
+  move=> Hf; apply (enumQ_ind_raw (P := λ mu,
     enumQ_extended_expect f (bind_EnumQ mu k) =
-    enumQ_extended_expect (fun x => enumQ_extended_expect f (k x)) mu)).
+    enumQ_extended_expect (λ x, enumQ_extended_expect f (k x)) mu)).
   - reflexivity.
   - move=> p Hp x tail IH.
     change (enumQ_extended_expect f (enumQ_app (scale_EnumQ Hp (k x)) (bind_EnumQ tail k)) =
       (ratr p)%:E*enumQ_extended_expect f (k x)+
-      enumQ_extended_expect (fun x => enumQ_extended_expect f (k x)) tail).
+      enumQ_extended_expect (λ x, enumQ_extended_expect f (k x)) tail).
     by rewrite enumQ_extended_expect_app enumQ_extended_expect_scale // IH.
   - move=> a b He IH; move: IH.
-    change (enumQ_extended_raw f (finite_bind (enumQ_raw a) (fun x => enumQ_raw (k x))) =
-      enumQ_extended_raw (fun x => enumQ_extended_expect f (k x)) (enumQ_raw a) ->
-      enumQ_extended_raw f (finite_bind (enumQ_raw b) (fun x => enumQ_raw (k x))) =
-      enumQ_extended_raw (fun x => enumQ_extended_expect f (k x)) (enumQ_raw b)).
+    change (enumQ_extended_raw f (finite_bind (enumQ_raw a) (λ x, enumQ_raw (k x))) =
+      enumQ_extended_raw (λ x, enumQ_extended_expect f (k x)) (enumQ_raw a) ->
+      enumQ_extended_raw f (finite_bind (enumQ_raw b) (λ x, enumQ_raw (k x))) =
+      enumQ_extended_raw (λ x, enumQ_extended_expect f (k x)) (enumQ_raw b)).
     by rewrite He.
 Qed.
 Lemma enumQ_extended_expect_rat {A} (f : A → rat) mu :
-  enumQ_extended_expect (fun x => (ratr (f x))%:E) mu = (ratr (enumQ_expect f mu))%:E.
+  enumQ_extended_expect (λ x, (ratr (f x))%:E) mu = (ratr (enumQ_expect f mu))%:E.
 Proof.
-  change (enumQ_extended_raw (fun x => (ratr (f x))%:E) (enumQ_raw mu) =
+  change (enumQ_extended_raw (λ x, (ratr (f x))%:E) (enumQ_raw mu) =
     (ratr (finite_expect f (enumQ_raw mu)))%:E).
   elim: (enumQ_raw mu)=> [|[p x] tail IH] /=; first by rewrite rmorph0.
   by rewrite IH rmorphD rmorphM EFinD EFinM.
 Qed.
 
 Lemma enumQ_extended_expect_one {A} (mu : EnumQ A) :
-  enumQ_extended_expect (fun _ => 1) mu = (ratr (enumQ_expect (fun _ => 1) mu))%:E.
+  enumQ_extended_expect (λ _, 1) mu = (ratr (enumQ_expect (λ _, 1) mu))%:E.
 Proof.
-  rewrite (_ : (fun _ : A => (1 : \bar R)) = (fun _ => (ratr (1 : rat))%:E));
+  rewrite (_ : (λ _ : A, (1 : \bar R)) = (λ _, (ratr (1 : rat))%:E));
     last by apply functional_extensionality=> x; rewrite rmorph1.
   exact: enumQ_extended_expect_rat.
 Qed.
@@ -148,11 +148,11 @@ Proof. move=> Hb. apply ub_ereal_sup=> x [n _ <-]. exact: Hb. Qed.
 Lemma extended_upper_ge c n : c n <= extended_upper c.
 Proof. apply ereal_sup_ubound. by exists n. Qed.
 
-Lemma extended_upper_constant x : extended_upper (fun _ => x) = x.
+Lemma extended_upper_constant x : extended_upper (λ _, x) = x.
 Proof.
   apply/eqP. rewrite eq_le. apply/andP; split.
   - apply extended_upper_le=> n. exact: lexx.
-  - exact: (extended_upper_ge (fun _ => x) 0%nat).
+  - exact: (extended_upper_ge (λ _, x) 0%nat).
 Qed.
 
 Lemma extended_upper_mono c d :
@@ -163,12 +163,12 @@ Proof.
 Qed.
 
 Lemma extended_upper_swap (grid : nat → nat → \bar R) :
-  extended_upper (fun i => extended_upper (grid i)) =
-  extended_upper (fun j => extended_upper (fun i => grid i j)).
+  extended_upper (λ i, extended_upper (grid i)) =
+  extended_upper (λ j, extended_upper (λ i, grid i j)).
 Proof.
   apply/eqP. rewrite eq_le. apply/andP; split;
     apply extended_upper_le=> i; apply extended_upper_le=> j.
-  - eapply le_trans; [apply (extended_upper_ge (fun k => grid k j) i)|].
+  - eapply le_trans; [apply (extended_upper_ge (λ k, grid k j) i)|].
     exact: extended_upper_ge.
   - eapply le_trans; [apply (extended_upper_ge (grid j) i)|].
     exact: extended_upper_ge.
@@ -180,8 +180,8 @@ Fixpoint free_omega_extended_upper {A} (mu : FreeOmega EnumQ A)
   | FORet x => f x
   | FOZero => 0
   | @FOSample _ _ X node k =>
-      enumQ_extended_expect (fun x => free_omega_extended_upper (k x) f) node
-  | FOLub c => extended_upper (fun n => free_omega_extended_upper (c n) f)
+      enumQ_extended_expect (λ x, free_omega_extended_upper (k x) f) node
+  | FOLub c => extended_upper (λ n, free_omega_extended_upper (c n) f)
   end.
 
 Lemma free_omega_extended_upper_nonnegative {A} (mu : FreeOmega EnumQ A)
@@ -210,7 +210,7 @@ Qed.
 Lemma free_omega_extended_upper_bind {A B} (mu : FreeOmega EnumQ A)
     (k : A → FreeOmega EnumQ B) (f : B → \bar R) :
   free_omega_extended_upper (free_omega_bind mu k) f =
-  free_omega_extended_upper mu (fun x => free_omega_extended_upper (k x) f).
+  free_omega_extended_upper mu (λ x, free_omega_extended_upper (k x) f).
 Proof.
   induction mu as [x| |X node h IH|c IH]; cbn [free_omega_bind free_omega_extended_upper].
   - reflexivity.

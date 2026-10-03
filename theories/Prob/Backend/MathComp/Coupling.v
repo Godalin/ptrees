@@ -86,18 +86,18 @@ Proof.
   pose packed := coupling_pushforward j mpack.
   exists (mathcomp_source_kernel packed).
   have mleft : measurable_fun setT
-      (fun z : mc_joint A B => MCJoint (mc_joint_pack z) (mc_joint_fst z)) by [].
+      (λ z : mc_joint A B, MCJoint (mc_joint_pack z) (mc_joint_fst z)) by [].
   have mright : measurable_fun setT
-      (fun z : mc_joint A B => MCJoint (mc_joint_pack z) (mc_joint_snd z)) by [].
+      (λ z : mc_joint A B, MCJoint (mc_joint_pack z) (mc_joint_snd z)) by [].
   split.
   - exists (coupling_pushforward j mleft). split.
     + move=> V _ _. reflexivity.
     + split.
       * move=> V mV nV. exact: Hl mV nV.
       * rewrite /almost_everywhere. apply/negligibleP; first by [].
-        change (j ((fun z : mc_joint A B =>
+        change (j ((λ z : mc_joint A B,
           MCJoint (mc_joint_pack z) (mc_joint_fst z)) @^-1`
-          (~` mc_relation (fun p x => fst p = x))) = 0).
+          (~` mc_relation (λ p x, fst p = x))) = 0).
         apply/negligibleP; first by [].
         eapply negligibleS; [|exact Hrel].
         move=> [[|a] [|b]] /=; unfold mc_relation, mc_joint_pack; simpl; tauto.
@@ -107,9 +107,9 @@ Proof.
       * split.
         -- move=> V mV nV. exact: Hr mV nV.
         -- rewrite /almost_everywhere. apply/negligibleP; first by [].
-           change (j ((fun z : mc_joint A B =>
+           change (j ((λ z : mc_joint A B,
              MCJoint (mc_joint_pack z) (mc_joint_snd z)) @^-1`
-             (~` mc_relation (fun p y => snd p = y))) = 0).
+             (~` mc_relation (λ p y, snd p = y))) = 0).
            apply/negligibleP; first by [].
            eapply negligibleS; [|exact Hrel].
            move=> [[|a] [|b]] /=; unfold mc_relation, mc_joint_pack; simpl; tauto.
@@ -117,7 +117,7 @@ Proof.
         /mathcomp_measure_ae /almost_everywhere.
       apply/negligibleP; first by [].
       change (j (@mc_joint_pack A B @^-1`
-        (~` mc_predicate (fun p => rel (fst p) (snd p)))) = 0).
+        (~` mc_predicate (λ p, rel (fst p) (snd p)))) = 0).
       apply/negligibleP; first by [].
       eapply negligibleS; [|exact Hrel].
       move=> [[|a] [|b]] /=; unfold mc_predicate, mc_relation, mc_joint_pack;

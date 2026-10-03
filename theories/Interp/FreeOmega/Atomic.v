@@ -106,10 +106,10 @@ Definition atomic_head (h : head) : head :=
   match h with
   | FHRet r => FHRet r
   | @FHVis _ _ _ X e k => FHVis (atomic_rename atom e)
-      (fun x => PTree.bind (atomic_cont atom e x) (fun a => PTree.interp handler (k a)))
+      (λ x, PTree.bind (atomic_cont atom e x) (λ a, PTree.interp handler (k a)))
   end.
 Definition atomic_map (mu : MF head) : MF head :=
-  free_omega_bind mu (fun h => FORet (atomic_head h)).
+  free_omega_bind mu (λ h, FORet (atomic_head h)).
 Definition atomic_head_graph (h k : head) : Prop := k = atomic_head h.
 
 Lemma atomic_map_lift mu : @sem_lift MF FI _ _ atomic_head_graph mu (atomic_map mu).
@@ -118,7 +118,7 @@ Proof.
       bind rule needs no native AELift capability. *)
   unfold atomic_map.
   eapply FOQLComp with (T := eq) (U := atomic_head_graph)
-    (mid := free_omega_bind mu (fun x => FORet x)).
+    (mid := free_omega_bind mu (λ x, FORet x)).
   - apply (sem_eq_sym (SI := FI)), FOQLStructural, free_omega_bind_return_lift.
   - eapply FOQLBind.
     + apply free_omega_qlift_refl. intro x. reflexivity.
@@ -250,7 +250,7 @@ Lemma atomic_normalizes_returns target source mu nu :
   atomic_normalizes target source →
   @tree_return_observation E MN MF FI FreeOmegaMixedMeasure FO R source mu →
   @tree_return_observation E MN MF FI FreeOmegaMixedMeasure FO R target nu →
-  @sem_lift MF FI _ _ (fun r s => s = r) mu nu.
+  @sem_lift MF FI _ _ (λ r s, s = r) mu nu.
 Proof.
   exact (PTree.Interp.Atomic.atomic_normalizes_returns
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
@@ -261,7 +261,7 @@ Lemma atomic_normalizes_offers target source mu nu :
   atomic_normalizes target source →
   @tree_offered_event_observation E MN MF FI FreeOmegaMixedMeasure FO R source mu →
   @tree_offered_event_observation E MN MF FI FreeOmegaMixedMeasure FO R target nu →
-  @sem_lift MF FI _ _ (fun e f => f = atomic_offer e) mu nu.
+  @sem_lift MF FI _ _ (λ e f, f = atomic_offer e) mu nu.
 Proof.
   exact (PTree.Interp.Atomic.atomic_normalizes_offers
     (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)
@@ -272,9 +272,9 @@ Qed.
     coupling composition, not a whole-continuation comparison. *)
 Lemma atomic_couple {A B} (f : A → B) (AR : A → A → Prop) (BR : B → B → Prop)
     s1 s2 t1 t2 :
-  @sem_lift MF FI _ _ (fun a b => b = f a) s1 t1 →
+  @sem_lift MF FI _ _ (λ a b, b = f a) s1 t1 →
   @sem_lift MF FI _ _ AR s1 s2 →
-  @sem_lift MF FI _ _ (fun a b => b = f a) s2 t2 →
+  @sem_lift MF FI _ _ (λ a b, b = f a) s2 t2 →
   (∀ a b, AR a b → BR (f a) (f b)) → @sem_lift MF FI _ _ BR t1 t2.
 Proof.
   exact (PTree.Interp.Atomic.atomic_couple (FI := FI)

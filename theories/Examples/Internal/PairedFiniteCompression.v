@@ -40,10 +40,10 @@ Inductive candidate : tree → tree → Prop :=
 | candidate_source b : candidate source (partner b)
 | candidate_done : candidate done done.
 
-Definition mu : MF tree := FOSample rw_coin_raw (fun _ => FORet source).
-Definition nu : MF tree := FOSample rw_coin_raw (fun b => FORet (partner b)).
+Definition mu : MF tree := FOSample rw_coin_raw (λ _, FORet source).
+Definition nu : MF tree := FOSample rw_coin_raw (λ b, FORet (partner b)).
 Definition joint : MF (tree * tree) :=
-  FOSample rw_coin_raw (fun b => FORet (source, partner b)).
+  FOSample rw_coin_raw (λ b, FORet (source, partner b)).
 
 Lemma joint_spec : @semantic_coupling MF FI _ _ candidate mu nu joint.
 Proof.
@@ -55,7 +55,7 @@ Proof.
     + apply FOQLSample with (T := eq).
       * apply sem_lift_refl. intro b. reflexivity.
       * intros x y ->. apply FOQLStructural. constructor. reflexivity.
-    + apply FOAESample with (Good := fun _ => True).
+    + apply FOAESample with (Good := λ _, True).
       * apply sem_ae_true.
       * intros b _. constructor. apply candidate_source.
 Qed.
@@ -80,7 +80,7 @@ Qed.
 Lemma right_cut_valid t u : candidate t u → execute u (right_cut (t,u)).
 Proof. intros _. exact (@FIStop event EnumQ MF FI FreeOmegaMixedMeasure bool u). Qed.
 
-Lemma partner_guarded t u : candidate t u → (fun t u => pstrongF eq candidate (observe t) (observe u)) u u.
+Lemma partner_guarded t u : candidate t u → (λ t u, pstrongF eq candidate (observe t) (observe u)) u u.
 Proof.
   intro H. cbn beta. destruct H as [b|].
   - destruct b.
@@ -90,14 +90,14 @@ Proof.
 Qed.
 
 Lemma cuts_guarded t u : candidate t u →
-  free_omega_qlift (fun t u => pstrongF eq candidate (observe t) (observe u))
+  free_omega_qlift (λ t u, pstrongF eq candidate (observe t) (observe u))
     (left_cut (t,u)) (right_cut (t,u)).
 Proof.
   intro H. apply FOQLStructural, FOLRet. exact (partner_guarded H).
 Qed.
 
 Theorem paired_residuals_guarded :
-  free_omega_qlift (fun t u => pstrongF eq candidate (observe t) (observe u))
+  free_omega_qlift (λ t u, pstrongF eq candidate (observe t) (observe u))
     (free_omega_bind joint left_cut) (free_omega_bind joint right_cut).
 Proof.
   exact (finite_internal_joint_guarded
@@ -108,7 +108,7 @@ Definition residual_joint (p : tree * tree) : MF (tree * tree) :=
   FORet (snd p, snd p).
 
 Theorem paired_residual_joint_spec :
-  @semantic_coupling MF FI _ _ (fun t u => pstrongF eq candidate (observe t) (observe u))
+  @semantic_coupling MF FI _ _ (λ t u, pstrongF eq candidate (observe t) (observe u))
     (free_omega_bind joint left_cut) (free_omega_bind joint right_cut)
     (free_omega_bind joint residual_joint).
 Proof.
@@ -123,7 +123,7 @@ Qed.
 (** In the structural case, the joint needed by correlated execution is
     now extracted from the coupling proof, rather than supplied by hand. *)
 Theorem paired_residual_joint_exists :
-  ∃ out, @semantic_coupling MF FI _ _ (fun t u => pstrongF eq candidate (observe t) (observe u))
+  ∃ out, @semantic_coupling MF FI _ _ (λ t u, pstrongF eq candidate (observe t) (observe u))
     (free_omega_bind joint left_cut) (free_omega_bind joint right_cut) out.
 Proof.
   apply free_enumQ_structural_coupling_realization.
@@ -149,7 +149,7 @@ Theorem correlated_left_cut_is_not_unary :
 Proof.
   intro H.
   change (execute (tau_prefix 2 (Ret true))
-    (FOSample rw_coin_raw (fun b => FORet (partner b)))) in H.
+    (FOSample rw_coin_raw (λ b, FORet (partner b)))) in H.
   destruct (deterministic_prefix_cannot_sample H) as [t Ht]. discriminate Ht.
 Qed.
 
@@ -183,10 +183,10 @@ Proof.
   change (execute (tau_prefix 2 (Ret true)) out) in Hcut.
   destruct (deterministic_prefix_cannot_sample Hcut) as [t ->].
   pose proof (free_omega_qlift_support Hlift) as [_ Hback].
-  assert (Hret : free_omega_ae (fun u : tree => u = t) (@FORet EnumQ tree t)).
+  assert (Hret : free_omega_ae (λ u : tree, u = t) (@FORet EnumQ tree t)).
   { constructor. reflexivity. }
   specialize (Hback _ Hret).
-  assert (Hae : free_omega_ae (fun u => u = t) (free_omega_bind joint left_cut)).
+  assert (Hae : free_omega_ae (λ u, u = t) (free_omega_bind joint left_cut)).
   { eapply free_omega_ae_mono; [|exact Hback].
     intros x [y [-> ->]]. reflexivity. }
   destruct (correlated_left_support Hae) as [Hd Hdelay].

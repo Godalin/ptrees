@@ -38,9 +38,9 @@ Fixpoint free_omega_upper {A} (mu : FreeOmega SubEnumQ A) (f : A → R) : R :=
   match mu with
   | FORet x => f x
   | FOZero => 0
-  | @FOSample _ _ X node k => enumQ_real_expect (fun x => free_omega_upper (k x) f)
+  | @FOSample _ _ X node k => enumQ_real_expect (λ x, free_omega_upper (k x) f)
       (subenumQ_raw node)
-  | FOLub chain => countable_upper (fun n => free_omega_upper (chain n) f)
+  | FOLub chain => countable_upper (λ n, free_omega_upper (chain n) f)
   end.
 
 Lemma free_omega_upper_bounds {A} (mu : FreeOmega SubEnumQ A) (f : A → R) :
@@ -55,8 +55,8 @@ Proof.
     + apply subenumQ_real_expect_bound. intro x. exact (proj2 (IH x)).
   - split.
     + apply: le_trans (proj1 (IH 0%nat)) _.
-      exact (@countable_upper_ge (fun n => free_omega_upper (chain n) f)
-        1 0%nat (fun n => proj2 (IH n))).
+      exact (@countable_upper_ge (λ n, free_omega_upper (chain n) f)
+        1 0%nat (λ n, proj2 (IH n))).
     + apply countable_upper_le. intro n. exact (proj2 (IH n)).
 Qed.
 
@@ -69,8 +69,8 @@ Proof.
   - exact: lexx.
   - apply enumQ_real_expect_mono. exact IH.
   - apply countable_upper_le. intro n. apply: le_trans (IH n) _.
-    exact (@countable_upper_ge (fun i => free_omega_upper (chain i) g)
-      1 n (fun i => proj2 (free_omega_upper_bounds (chain i) Hg))).
+    exact (@countable_upper_ge (λ i, free_omega_upper (chain i) g)
+      1 n (λ i, proj2 (free_omega_upper_bounds (chain i) Hg))).
 Qed.
 
 (** This identity is structural, including for arbitrary formal Lub nodes.
@@ -78,7 +78,7 @@ Qed.
 Lemma free_omega_upper_bind {A B} (mu : FreeOmega SubEnumQ A)
     (k : A → FreeOmega SubEnumQ B) (f : B → R) :
   free_omega_upper (free_omega_bind mu k) f =
-  free_omega_upper mu (fun x => free_omega_upper (k x) f).
+  free_omega_upper mu (λ x, free_omega_upper (k x) f).
 Proof.
   induction mu as [x| |X node h IH|chain IH]; cbn [free_omega_bind free_omega_upper].
   - reflexivity.
@@ -88,13 +88,13 @@ Proof.
 Qed.
 
 Lemma free_omega_upper_zero {A} (mu : FreeOmega SubEnumQ A) :
-  free_omega_upper mu (fun _ => 0) = 0.
+  free_omega_upper mu (λ _, 0) = 0.
 Proof.
   induction mu as [x| |X node k IH|chain IH]; cbn [free_omega_upper]; try reflexivity.
-  - rewrite (_ : (fun x => free_omega_upper (k x) (fun _ => 0)) = (fun _ => 0));
+  - rewrite (_ : (λ x, free_omega_upper (k x) (λ _, 0)) = (λ _, 0));
       last by apply functional_extensionality.
     apply enumQ_real_expect_zero.
-  - rewrite (_ : (fun n => free_omega_upper (chain n) (fun _ => 0)) = (fun _ => 0));
+  - rewrite (_ : (λ n, free_omega_upper (chain n) (λ _, 0)) = (λ _, 0));
       last by apply functional_extensionality.
     apply countable_upper_constant.
 Qed.
@@ -102,7 +102,7 @@ Qed.
 (** On native presentations this interpretation is the actual weighted
     finite expectation, not a support-only test. *)
 Lemma free_omega_upper_native_rat {A} (mu : SubEnumQ A) (f : A → rat) :
-  free_omega_upper (FOSample mu (fun x => FORet x)) (fun x => ratr (f x)) =
+  free_omega_upper (FOSample mu (λ x, FORet x)) (λ x, ratr (f x)) =
   ratr (enumQ_expect f (subenumQ_raw mu)).
 Proof. exact: enumQ_real_expect_rat. Qed.
 

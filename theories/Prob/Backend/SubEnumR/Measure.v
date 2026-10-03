@@ -26,7 +26,7 @@ Variable R : realType.
   sem_lift := @subenumR_lift R
 }.
 #[global] Instance SubEnumR_SemanticSubprobability : @SemanticSubprobability (SubEnumR R) SubEnumR_SemanticMeasure := {
-  sem_subprob := fun A mu => subenumR_expect mu (fun _ => 1) <= 1
+  sem_subprob := λ A mu, subenumR_expect mu (λ _, 1) <= 1
 }.
 #[global] Instance SubEnumR_SemanticSubprobabilityCarrierLaws : @SemanticSubprobabilityCarrierLaws (SubEnumR R) SubEnumR_SemanticMeasure SubEnumR_SemanticSubprobability.
 Proof. constructor; intros A mu; exact (subenumR_mass_bound mu). Qed.
@@ -46,7 +46,7 @@ Proof.
 Qed.
 
 Lemma subenumR_ae_bind_iff {A B} (mu : SubEnumR R A) (k : A → SubEnumR R B) P :
-  subenumR_ae (subenumR_bind mu k) P ↔ subenumR_ae mu (fun x => subenumR_ae (k x) P).
+  subenumR_ae (subenumR_bind mu k) P ↔ subenumR_ae mu (λ x, subenumR_ae (k x) P).
 Proof.
   split.
   - intros H p x Hp Hpn q y Hq Hqn.

@@ -22,13 +22,13 @@ Variable R : realType.
 Variable mu : SubEnumR R bool.
 Definition sampling X (e : sourceE X) : ptree targetE (SubEnumR R) X :=
   match e with
-  | Sample => Prob mu (fun b => Vis (Emit b) (fun _ => Ret b))
+  | Sample => Prob mu (λ b, Vis (Emit b) (λ _, Ret b))
   end.
 Definition sampling_delay X (e : sourceE X) : ptree targetE (SubEnumR R) X :=
   Tau (sampling e).
 
 CoFixpoint service : ptree sourceE (SubEnumR R) unit :=
-  Vis Sample (fun _ => service).
+  Vis Sample (λ _, service).
 
 Example real_sampling_handler_rel X (e : sourceE X) :
   sampling e ≈ₚ sampling_delay e.
@@ -43,8 +43,8 @@ Proof.
 Qed.
 
 Example real_handler_bind_client :
-  bind (interp sampling service) (fun _ => Ret true) ≈ₚ
-  bind (interp sampling_delay service) (fun _ => Ret true).
+  bind (interp sampling service) (λ _, Ret true) ≈ₚ
+  bind (interp sampling_delay service) (λ _, Ret true).
 Proof.
   eapply peutt_bind with (RR := eq).
   - apply real_infinite_sampling.

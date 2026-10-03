@@ -29,16 +29,16 @@ Proof.
 Qed.
 
 Theorem run_reader_ask_ask {A} (k : Env → Env → ptree (readerE Env +' E) MN A) env :
-  W (run_reader (Vis (inl1 Ask) (fun x => Vis (inl1 Ask) (k x))) env)
-    (run_reader (Vis (inl1 Ask) (fun x => k x x)) env).
+  W (run_reader (Vis (inl1 Ask) (λ x, Vis (inl1 Ask) (k x))) env)
+    (run_reader (Vis (inl1 Ask) (λ x, k x x)) env).
 Proof.
   eapply peutt_trans with (y := run_reader (k env env) env).
   - eapply peutt_trans; [apply run_reader_ask|apply run_reader_ask].
-  - apply peutt_sym. exact (run_reader_ask (fun x => k x x) env).
+  - apply peutt_sym. exact (run_reader_ask (λ x, k x x) env).
 Qed.
 
 Theorem run_reader_prob {A X} (mu : MN X) (k : X → ptree (readerE Env +' E) MN A) env :
-  W (run_reader (Prob mu k) env) (Prob mu (fun x => run_reader (k x) env)).
+  W (run_reader (Prob mu k) env) (Prob mu (λ x, run_reader (k x) env)).
 Proof. apply peutt_observe_eq. reflexivity. Qed.
 
 Context `{NC : @SemanticMeasureCoreLaws MN NI}
@@ -48,12 +48,12 @@ Context `{NC : @SemanticMeasureCoreLaws MN NI}
 
 Theorem run_reader_ask_prob {A X} (mu : MN X)
     (k : Env → X → ptree (readerE Env +' E) MN A) env :
-  W (run_reader (Vis (inl1 Ask) (fun v => Prob mu (k v))) env)
-    (run_reader (Prob mu (fun x => Vis (inl1 Ask) (fun v => k v x))) env).
+  W (run_reader (Vis (inl1 Ask) (λ v, Prob mu (k v))) env)
+    (run_reader (Prob mu (λ x, Vis (inl1 Ask) (λ v, k v x))) env).
 Proof.
   eapply peutt_trans; [apply run_reader_ask|].
   eapply peutt_trans; [apply run_reader_prob|].
   apply peutt_sym. eapply peutt_trans; [apply run_reader_prob|].
-  apply peutt_prob_Proper. intro x. exact (run_reader_ask (fun v => k v x) env).
+  apply peutt_prob_Proper. intro x. exact (run_reader_ask (λ v, k v x) env).
 Qed.
 End Laws.

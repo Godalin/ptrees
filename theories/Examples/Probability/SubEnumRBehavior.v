@@ -58,16 +58,16 @@ Proof. apply stable_hitting_exists. Qed.
     through the existing generic theorem to canonical peutt. *)
 Example real_crossed_sample_strong (mu : MN bool) :
   @pstrong E MN NI (SubEnumR_SemanticMeasureCoreLaws R) bool bool eq
-    (Prob mu (fun b => Ret b))
-    (Prob (subenumR_map negb mu) (fun b => Ret (negb b))).
+    (Prob mu (λ b, Ret b))
+    (Prob (subenumR_map negb mu) (λ b, Ret (negb b))).
 Proof.
   apply pstrong_prob_intro; eapply sem_lift_mono; [|exact (subenumR_lift_map negb mu)].
   intros x y Hxy; apply pstrong_ret_intro.
   rewrite -Hxy negbK; reflexivity.
 Qed.
 Example real_crossed_sample_peutt (mu : MN bool) :
-  W bool bool eq (Prob mu (fun b => Ret b))
-    (Prob (subenumR_map negb mu) (fun b => Ret (negb b))).
+  W bool bool eq (Prob mu (λ b, Ret b))
+    (Prob (subenumR_map negb mu) (λ b, Ret (negb b))).
 Proof. apply peutt_of_pstrong; exact: real_crossed_sample_strong. Qed.
 End GenericTrees.
 
@@ -81,12 +81,12 @@ Proof.
 Qed.
 Definition sqrt_coin := subenumR_coin (proj1 sqrt_weight_valid) (proj2 sqrt_weight_valid).
 CoFixpoint real_service (b : bool) : ptree real_serviceE MN unit :=
-  Vis (RealReply b) (fun _ => Prob sqrt_coin (fun c => Tau (real_service c))).
+  Vis (RealReply b) (λ _, Prob sqrt_coin (λ c, Tau (real_service c))).
 
 Example real_crossed_infinite_service :
   @peutt real_serviceE MN MF FI real_completion_core FreeOmegaMixedMeasure FO unit unit eq
-    (PTree.bind (Prob sqrt_coin (fun b => Ret b)) real_service)
-    (PTree.bind (Prob (subenumR_map negb sqrt_coin) (fun b => Ret (negb b))) real_service).
+    (PTree.bind (Prob sqrt_coin (λ b, Ret b)) real_service)
+    (PTree.bind (Prob (subenumR_map negb sqrt_coin) (λ b, Ret (negb b))) real_service).
 Proof.
   eapply (PTree.Eq.Bind.peutt_bind (MF := MF) (FI := FI) (FO := FO)) with (RR := eq).
   - apply real_crossed_sample_peutt.

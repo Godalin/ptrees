@@ -27,7 +27,7 @@ Definition state_iter_result (sa : S * (I + A)) : (S * I) + (S * A) :=
 
 Definition state_iter_step (si : S * I) : ptree E MN ((S * I) + (S * A)) :=
   PTree.bind (run_state (step (snd si)) (fst si))
-    (fun sa => Ret (state_iter_result sa)).
+    (λ sa, Ret (state_iter_result sa)).
 
 Definition state_iter_source_cont (ia : I + A) : ptree (stateE S +' E) MN A :=
   match ia with inl i => Tau (PTree.iter step i) | inr a => Ret a end.
@@ -40,7 +40,7 @@ Inductive state_iter_candidate : ptree E MN (S * A) → ptree E MN (S * A) → P
     (run_state (PTree.iter step i) s) (PTree.iter state_iter_step (s,i))
 | StateIterBody t s : state_iter_candidate
     (run_state (PTree.bind t state_iter_source_cont) s)
-    (PTree.bind (PTree.bind (run_state t s) (fun sa => Ret (state_iter_result sa)))
+    (PTree.bind (PTree.bind (run_state t s) (λ sa, Ret (state_iter_result sa)))
       state_iter_target_cont).
 
 Theorem run_state_iter i s :
@@ -71,7 +71,7 @@ Proof.
       change (pstructF eq (` CH)
         (observe (run_state (PTree.bind t state_iter_source_cont) s0))
         (observe (PTree.bind
-          (PTree.bind (run_state t s0) (fun sa => Ret (state_iter_result sa)))
+          (PTree.bind (run_state t s0) (λ sa, Ret (state_iter_result sa)))
           state_iter_target_cont))).
       rewrite observe_run_state, !observe_bind, observe_run_state.
       destruct (observe t) as [lr|t'|X e k|X mu k]; cbn.

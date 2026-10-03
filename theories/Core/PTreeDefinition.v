@@ -121,8 +121,8 @@ Definition subst {E M T U} (k : T → ptree E M U)
     match observe u with
     | RetF r => k r
     | TauF t => Tau (_subst t)
-    | VisF _ e h => Vis e (fun x => _subst (h x))
-    | ProbF _ μ h => Prob μ (fun x => _subst (h x))
+    | VisF _ e h => Vis e (λ x, _subst (h x))
+    | ProbF _ μ h => Prob μ (λ x, _subst (h x))
     end.
 
 Definition bind {E M T U} (u : ptree E M T) (k : T → ptree E M U)
@@ -130,7 +130,7 @@ Definition bind {E M T U} (u : ptree E M T) (k : T → ptree E M U)
 
 Definition cat {E M T U V} (k : T → ptree E M U) (h : U → ptree E M V)
   : (T → ptree E M V)
-  := fun x => bind (k x) h.
+  := λ x, bind (k x) h.
 
 
 
@@ -144,7 +144,7 @@ Notation on_left lr l t :=
 
 Definition iter {E M R I} (step : I → ptree E M (I + R))
   : I → ptree E M R
-  := cofix iter_ i := bind (step i) (fun lr =>
+  := cofix iter_ i := bind (step i) (λ lr,
     on_left lr l (Tau (iter_ l))).
 
 
@@ -152,20 +152,20 @@ Definition iter {E M R I} (step : I → ptree E M (I + R))
 (** Functorial Mapping *)
 
 Definition fmap {E M T U} (f : T → U) : ptree E M T → ptree E M U
-  := fun u => bind u (fun x => ret (f x)).
+  := λ u, bind u (λ x, ret (f x)).
 
 
 (** trigger plain events *)
 
 Definition trigger {E M} : E ~> ptree E M :=
-  fun _ e => Vis e (fun x => Ret x).
+  λ _ e, Vis e (λ x, Ret x).
 Arguments trigger {E M T} _.
 
 (** Atomic native sampling, parallel to [trigger] for visible events.
     This is a syntax combinator: it needs no probability laws or backend
     instance. Sequence it with [bind] to consume the sampled value. *)
 Definition sample {E M} : M ~> ptree E M :=
-  fun _ mu => Prob mu (fun x => Ret x).
+  λ _ mu, Prob mu (λ x, Ret x).
 Arguments sample {E M T} _.
 
 (** Interpret visible events with a PTree handler.  The administrative
@@ -177,14 +177,14 @@ CoFixpoint interp {E F M} (handler : E ~> ptree F M) {R}
     | RetF r => Ret r
     | TauF t' => Tau (interp handler t')
     | @VisF _ _ _ _ X e k =>
-        Tau (bind (handler _ e) (fun x => interp handler (k x)))
-    | @ProbF _ _ _ _ X mu k => Prob mu (fun x => interp handler (k x))
+        Tau (bind (handler _ e) (λ x, interp handler (k x)))
+    | @ProbF _ _ _ _ X mu k => Prob mu (λ x, interp handler (k x))
     end.
 
 (** Event renaming is the pure-handler instance of [interp]. *)
 Definition translate {E F M} (f : E ~> F) {R}
     (t : ptree E M R) : ptree F M R :=
-  interp (fun _ e => @trigger F M _ (f _ e)) t.
+  interp (λ _ e, @trigger F M _ (f _ e)) t.
 
 End PTree.
 
@@ -210,9 +210,9 @@ Global Instance Functor_ptree {E M} : Functor (ptree E M) := {|
 |*)
 
 Global Instance Applicative_ptree {E M} : Applicative (ptree E M) := {|
-  pure := fun _ x => Ret x;
-  ap   := fun _ _ f x =>
-    PTree.bind f (fun f => PTree.bind x (fun x => Ret (f x)))
+  pure := λ _ x, Ret x;
+  ap   := λ _ _ f x,
+    PTree.bind f (λ f, PTree.bind x (λ x, Ret (f x)))
 |}.
 
 Global Instance Monad_ptree {E M} : Monad (ptree E M) := {|
@@ -221,7 +221,7 @@ Global Instance Monad_ptree {E M} : Monad (ptree E M) := {|
 |}.
 
 Global Instance MonadIter_ptree {E M} : MonadIter (ptree E M) :=
-  fun _ _ => PTree.iter.
+  λ _ _, PTree.iter.
 
 Global Instance MonadTrigger_ptree {E M} : MonadTrigger E (ptree E M) :=
   @PTree.trigger E M.

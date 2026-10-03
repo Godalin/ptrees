@@ -28,8 +28,8 @@ Local Notation qlift := (@free_omega_qlift SubEnumQ SubEnumQ_SemanticMeasure Sub
     this module does not load the specialized evaluator. *)
 Theorem subenumQ_qlift_sound {A B} (T : A → B → Prop)
     (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)
-    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t)
-    (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
+    (Ht : free_omega_modelable (λ X, @subenumQ_domain R X) t)
+    (Hu : free_omega_modelable (λ X, @subenumQ_domain R X) u) :
   qlift T t u → oval_coupled T (free_omega_model Ht) (free_omega_model Hu).
 Proof.
   intro H.
@@ -40,7 +40,7 @@ Qed.
 (** Recover DS3 bounded equality through general joint realization. No claim
     identifies the existential joint with the separately constructed diagonal. *)
 Theorem subenumQ_qlift_eq_sound_via_joint {A} (t u : FreeOmega SubEnumQ A)
-    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t) (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
+    (Ht : free_omega_modelable (λ X, @subenumQ_domain R X) t) (Hu : free_omega_modelable (λ X, @subenumQ_domain R X) u) :
   qlift eq t u → oval_eq (free_omega_model Ht) (free_omega_model Hu).
 Proof.
   intro H; apply (proj1 (oval_eq_coupled_iff _ _)).
@@ -51,17 +51,17 @@ Qed.
     its complement-of-relation observable has expectation zero. *)
 Theorem subenumQ_qlift_joint_mass_support {A B} (T : A → B → Prop)
     (t : FreeOmega SubEnumQ A) (u : FreeOmega SubEnumQ B)
-    (Ht : free_omega_modelable (fun X => @subenumQ_domain R X) t) (Hu : free_omega_modelable (fun X => @subenumQ_domain R X) u) :
+    (Ht : free_omega_modelable (λ X, @subenumQ_domain R X) t) (Hu : free_omega_modelable (λ X, @subenumQ_domain R X) u) :
   qlift T t u → ∃ J : OmegaVal R (A * B),
     oval_joint T (free_omega_model Ht) (free_omega_model Hu) J ∧
     oval_mass J = oval_mass (free_omega_model Ht) ∧
     oval_mass J = oval_mass (free_omega_model Hu) ∧
-    oval_eval J (oval_indicator R (fun z => ¬ T (fst z) (snd z))) = 0.
+    oval_eval J (oval_indicator R (λ z, ¬ T (fst z) (snd z))) = 0.
 Proof.
   intro H; destruct (subenumQ_qlift_sound Ht Hu H) as [J HJ].
   exists J; split; first exact HJ.
-  split; first exact (proj1 HJ (fun _ => 1) (@oval_test_one R A)).
-  split; first exact (proj1 (proj2 HJ) (fun _ => 1) (@oval_test_one R B)).
+  split; first exact (proj1 HJ (λ _, 1) (@oval_test_one R A)).
+  split; first exact (proj1 (proj2 HJ) (λ _, 1) (@oval_test_one R B)).
   exact (oval_joint_off_relation_zero HJ).
 Qed.
 End Soundness.

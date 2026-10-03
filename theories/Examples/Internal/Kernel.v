@@ -32,7 +32,7 @@ Definition returning_tail (_ : unit) : MF bool := FORet true.
     Hence a completion equation cannot identify the least hitting limit. *)
 Example spin_returning_completion_step s :
   free_omega_qlift eq
-    (kernel_completion spinning_kernel (fun _ => true) returning_tail 1 s)
+    (kernel_completion spinning_kernel (λ _, true) returning_tail 1 s)
     (returning_tail s).
 Proof. apply free_omega_qlift_refl. intro x. reflexivity. Qed.
 
@@ -52,11 +52,11 @@ Definition two_stage_kernel (done : bool) : MF (stable_target bool unit) :=
   if done then FORet (SHStable tt) else FORet (SHInternal true).
 
 Definition two_stage_tail (done : bool) : MF bool :=
-  if done then FOLub (fun _ => FORet true) else FORet true.
+  if done then FOLub (λ _, FORet true) else FORet true.
 
 Example two_stage_completion_step s :
   free_omega_qlift eq
-    (kernel_completion two_stage_kernel (fun _ => true) two_stage_tail 1 s)
+    (kernel_completion two_stage_kernel (λ _, true) two_stage_tail 1 s)
     (two_stage_tail s).
 Proof.
   destruct s.
@@ -67,22 +67,22 @@ Qed.
 
 Example completed_rounds_need_not_be_raw_increasing :
   ¬ free_omega_approx eq
-    (kernel_completion two_stage_kernel (fun _ => true) two_stage_tail 1 false)
-    (kernel_completion two_stage_kernel (fun _ => true) two_stage_tail 2 false).
+    (kernel_completion two_stage_kernel (λ _, true) two_stage_tail 1 false)
+    (kernel_completion two_stage_kernel (λ _, true) two_stage_tail 2 false).
 Proof. intro H. inversion H. Qed.
 
 Definition spinning_limit : MF unit :=
-  FOLub (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+  FOLub (λ n, @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
     unit unit spinning_kernel n tt).
 
 Example spin_limit_not_returning_tail :
   ¬ free_omega_qlift eq
-    (free_omega_bind spinning_limit (fun _ => FORet true)) (returning_tail tt).
+    (free_omega_bind spinning_limit (λ _, FORet true)) (returning_tail tt).
 Proof.
   intro Hlift. pose proof (proj1 (free_omega_qlift_support Hlift)) as Hsupport.
   assert (Hzero : @free_omega_ae SubEnumQ SubEnumQ_SemanticMeasure bool
-    (fun _ => False)
-    (free_omega_bind spinning_limit (fun _ => FORet true))).
+    (λ _, False)
+    (free_omega_bind spinning_limit (λ _, FORet true))).
   { apply FOAELub. intro n. rewrite spinning_approx_zero. apply FOAEZero. }
   specialize (Hsupport _ Hzero). dependent destruction Hsupport.
   destruct H as [x [_ Hfalse]]. exact Hfalse.
@@ -93,10 +93,10 @@ Qed.
 Example spin_limit_has_returning_upper :
   ∃ upper,
     free_omega_approx eq
-      (free_omega_bind spinning_limit (fun _ => FORet true)) upper ∧
+      (free_omega_bind spinning_limit (λ _, FORet true)) upper ∧
     free_omega_qlift eq upper (returning_tail tt).
 Proof.
-  exists (FOLub (fun _ => returning_tail tt)). split.
+  exists (FOLub (λ _, returning_tail tt)). split.
   - apply FOApproxLub. intro n. rewrite spinning_approx_zero. apply FOApproxZero.
   - apply FOQLSym, FOQLLubConstantR, free_omega_qlift_refl.
     intro x. reflexivity.
@@ -153,10 +153,10 @@ Proof.
 Qed.
 
 Lemma ranked_kernel_limit s :
-  free_omega_qlift eq (kernel s) (FOLub (fun n => ranked_kernel n s)).
+  free_omega_qlift eq (kernel s) (FOLub (λ n, ranked_kernel n s)).
 Proof.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := FOLub (fun _ => kernel s)).
+    (mid := FOLub (λ _, kernel s)).
   - apply FOQLLubConstantR, free_omega_qlift_refl. intro x. reflexivity.
   - apply FOQLCofinal.
     + intro n. apply free_omega_approx_refl. intro x. reflexivity.
@@ -173,7 +173,7 @@ Qed.
 Example state_truncation_recovers_complete_hitting s out :
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out →
   free_omega_qlift eq out
-    (FOLub (fun n => @stable_hitting_approx MF FI
+    (FOLub (λ n, @stable_hitting_approx MF FI
       FreeOmegaObservableSemanticOmega S O (ranked_kernel n) n s)).
 Proof.
   intro Hhit. exact (kernel_stable_hitting_diagonal
@@ -195,16 +195,16 @@ Definition return_index_kernel (s : nat) : MF (stable_target nat nat) :=
 
 Example no_uniform_state_cutoff n :
   ¬ free_omega_qlift eq
-    (FOLub (fun fuel => @stable_hitting_approx MF FI
+    (FOLub (λ fuel, @stable_hitting_approx MF FI
       FreeOmegaObservableSemanticOmega nat nat
-      (ranked_kernel return_index_kernel (fun s => s) n) fuel (Datatypes.S n)))
+      (ranked_kernel return_index_kernel (λ s, s) n) fuel (Datatypes.S n)))
     (FORet (Datatypes.S n)).
 Proof.
   intro Hlift.
-  assert (Hzero : free_omega_ae (fun _ : nat => False)
-    (FOLub (fun fuel => @stable_hitting_approx MF FI
+  assert (Hzero : free_omega_ae (λ _ : nat, False)
+    (FOLub (λ fuel, @stable_hitting_approx MF FI
       FreeOmegaObservableSemanticOmega nat nat
-      (ranked_kernel return_index_kernel (fun s => s) n) fuel (Datatypes.S n)))).
+      (ranked_kernel return_index_kernel (λ s, s) n) fuel (Datatypes.S n)))).
   { apply FOAELub. intro fuel. unfold stable_hitting_approx, ranked_kernel.
     assert (Hcut : Nat.leb (Datatypes.S n) n = false) by
       (apply Nat.leb_gt; lia).
@@ -248,9 +248,9 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 
 Definition first_sample_kernel s : MF (stable_target S O) :=
-  FOSample mu (fun x => FOSample nu (fun y => FORet (next s x y))).
+  FOSample mu (λ x, FOSample nu (λ y, FORet (next s x y))).
 Definition swapped_sample_kernel s : MF (stable_target S O) :=
-  FOSample nu (fun y => FOSample mu (fun x => FORet (next s x y))).
+  FOSample nu (λ y, FOSample mu (λ x, FORet (next s x y))).
 
 Lemma sample_exchange_kernel_equal s :
   free_omega_qlift eq (first_sample_kernel s) (swapped_sample_kernel s).
@@ -261,11 +261,11 @@ Proof.
 Qed.
 
 Lemma first_sample_kernel_closed s :
-  free_omega_ae (kernel_completion_invariant (fun _ : S => True))
+  free_omega_ae (kernel_completion_invariant (λ _ : S, True))
     (first_sample_kernel s).
 Proof.
-  apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
-  intros x _. apply FOAESample with (Good := fun _ => True); [apply sem_ae_true|].
+  apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
+  intros x _. apply FOAESample with (Good := λ _, True); [apply sem_ae_true|].
   intros y _. apply FOAERet. destruct (next s x y); exact I.
 Qed.
 
@@ -279,7 +279,7 @@ Proof.
   intros Hleft Hright.
   eapply (kernel_stable_hitting_eq
     (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega))
-    with (D := fun _ => True) (s := s).
+    with (D := λ _, True) (s := s).
   - intros state _. apply first_sample_kernel_closed.
   - intros state _. apply sample_exchange_kernel_equal.
   - exact I.

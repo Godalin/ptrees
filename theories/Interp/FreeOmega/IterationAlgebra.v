@@ -38,7 +38,7 @@ Definition free_omega_ptree_monad_laws {E} :
 Theorem free_omega_peutt_iter_uniform {E I J A}
     (f : I → ptree E MN (I+A)) (g : J → ptree E MN (J+A)) (h : I → J) :
   (∀ i, peutt (FI := FI) eq
-    (PTree.bind (f i) (fun v => Ret (iteration_map h v))) (g (h i))) →
+    (PTree.bind (f i) (λ v, Ret (iteration_map h v))) (g (h i))) →
   ∀ i, peutt (FI := FI) eq (PTree.iter f i) (PTree.iter g (h i)).
 Proof.
   apply (peutt_iter_uniform free_omega_relational_mixed_bind

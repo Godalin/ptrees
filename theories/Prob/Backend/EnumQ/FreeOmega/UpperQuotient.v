@@ -31,7 +31,7 @@ Local Notation test := (nonnegative_test (R := F)).
 Local Notation directed := (free_omega_extended_upper_rel F).
 
 Definition free_omega_extended_upper_birel {A B} (T : A → B → Prop) mu nu :=
-  directed T mu nu ∧ directed (fun y x => T x y) nu mu.
+  directed T mu nu ∧ directed (λ y x, T x y) nu mu.
 Local Notation related := free_omega_extended_upper_birel.
 
 Lemma extended_upper_birel_mono {A B} (T U : A → B → Prop) mu nu :
@@ -96,24 +96,24 @@ Lemma extended_upper_birel_sample_ae {A B C} (T : A → B → Prop) (mu : EnumQ 
 Proof.
   intros HGood Hk. split; intros f g Hf Hg Hfg; cbn [free_omega_extended_upper];
     apply enumQ_extended_expect_ae_mono.
-  - change (sem_ae mu (fun x => upper (k x) f <= upper (h x) g)).
+  - change (sem_ae mu (λ x, upper (k x) f <= upper (h x) g)).
     eapply sem_ae_mono; [|exact HGood]. intros x Hx. exact (proj1 (Hk x Hx) f g Hf Hg Hfg).
-  - change (sem_ae mu (fun x => upper (h x) f <= upper (k x) g)).
+  - change (sem_ae mu (λ x, upper (h x) f <= upper (k x) g)).
     eapply sem_ae_mono; [|exact HGood]. intros x Hx. exact (proj2 (Hk x Hx) f g Hf Hg Hfg).
 Qed.
 
 Lemma extended_upper_sample_product {A X Y} (mu : EnumQ X) (nu : EnumQ Y)
     (k : X → Y → FreeOmega EnumQ A) f :
   test f →
-  upper (FOSample (semantic_product mu nu) (fun p => k (fst p) (snd p))) f =
-  upper (FOSample mu (fun x => FOSample nu (k x))) f.
+  upper (FOSample (semantic_product mu nu) (λ p, k (fst p) (snd p))) f =
+  upper (FOSample mu (λ x, FOSample nu (k x))) f.
 Proof.
   intro Hf.
   change (enumQ_extended_expect
-    (fun p => upper (k (fst p) (snd p)) f)
-    (EnumQ.bind_EnumQ mu (fun x =>
-      EnumQ.bind_EnumQ nu (fun y => EnumQ.ret_EnumQ (x,y)))) =
-    enumQ_extended_expect (fun x => enumQ_extended_expect (fun y => upper (k x y) f)
+    (λ p, upper (k (fst p) (snd p)) f)
+    (EnumQ.bind_EnumQ mu (λ x,
+      EnumQ.bind_EnumQ nu (λ y, EnumQ.ret_EnumQ (x,y)))) =
+    enumQ_extended_expect (λ x, enumQ_extended_expect (λ y, upper (k x y) f)
       nu) mu).
   rewrite enumQ_extended_expect_bind; last by intros [x y]; apply free_omega_extended_upper_nonnegative.
   f_equal. apply functional_extensionality=> x.
@@ -125,16 +125,16 @@ Qed.
 
 Lemma extended_upper_zero_prefix {A} (c : nat → FreeOmega EnumQ A) f :
   test f →
-  upper (FOLub (fun n => match n with O => FOZero | S n => c n end)) f =
+  upper (FOLub (λ n, match n with O => FOZero | S n => c n end)) f =
   upper (FOLub c) f.
 Proof.
   intro Hf. cbn [free_omega_extended_upper]. apply/eqP. rewrite eq_le. apply/andP. split.
   - apply extended_upper_le. intros [|n].
     + change (0 <= upper (FOLub c) f). exact: free_omega_extended_upper_nonnegative.
-    + exact (@extended_upper_ge F (fun i => upper (c i) f) n).
+    + exact (@extended_upper_ge F (λ i, upper (c i) f) n).
   - apply extended_upper_le=> n.
     apply (@extended_upper_ge F
-      (fun i => upper (match i with O => FOZero | S j => c j end) f) (S n)).
+      (λ i, upper (match i with O => FOZero | S j => c j end) f) (S n)).
 Qed.
 
 Theorem free_omega_qlift_extended_upper_birel {A B} (T : A → B → Prop) mu nu :
@@ -169,8 +169,8 @@ Proof.
       * apply sem_lift_refl. intro y. reflexivity.
       * intros y z ->. auto.
   - eapply extended_upper_birel_ext with
-        (mu' := FOSample (semantic_product mu nu) (fun p => k (fst p) (snd p)))
-        (nu' := FOSample (semantic_product nu mu) (fun p => l (fst p) (snd p))).
+        (mu' := FOSample (semantic_product mu nu) (λ p, k (fst p) (snd p)))
+        (nu' := FOSample (semantic_product nu mu) (λ p, l (fst p) (snd p))).
     + intros f Hf. symmetry. apply extended_upper_sample_product. exact Hf.
     + intros g Hg. symmetry. apply extended_upper_sample_product. exact Hg.
     + eapply extended_upper_birel_sample; [exact H|].
@@ -185,10 +185,10 @@ Proof.
     + exact (extended_upper_zero_prefix d).
     + apply extended_upper_birel_lub. assumption.
   - eapply extended_upper_birel_ext with (mu' := FOSample mu out)
-        (nu' := FOSample mu (fun x => FOLub (chain x))).
+        (nu' := FOSample mu (λ x, FOLub (chain x))).
     + reflexivity.
     + intros g Hg. symmetry. apply free_omega_sample_lub_extended_upper; [|exact Hg].
-      change (sem_ae mu (fun x => ∀ n, free_omega_approx eq (chain x n) (chain x (S n)))).
+      change (sem_ae mu (λ x, ∀ n, free_omega_approx eq (chain x n) (chain x (S n)))).
       eapply sem_ae_mono; [|exact H]. exact H0.
     + eapply extended_upper_birel_sample_ae; eassumption.
   - split; intros f g Hf Hg Hfg; cbn [free_omega_extended_upper];
@@ -197,14 +197,14 @@ Proof.
     intros g Hg. cbn [free_omega_extended_upper]. apply extended_upper_constant.
   - eapply extended_upper_birel_ext with
         (mu' := free_omega_bind source_out kernel_out)
-        (nu' := free_omega_bind (FOLub source) (fun x => FOLub (kernels x))).
+        (nu' := free_omega_bind (FOLub source) (λ x, FOLub (kernels x))).
     + reflexivity.
     + intros g Hg. symmetry. apply free_omega_bind_lub_extended_upper; assumption.
     + eapply extended_upper_birel_bind with (T := eq); [exact IHHq|]. intros x y ->. auto.
   - destruct HAB. cbn.
     eapply extended_upper_birel_ext with
-      (mu' := FOLub (fun fuel => grid fuel fuel))
-      (nu' := FOLub (fun fuel => grid fuel fuel)).
+      (mu' := FOLub (λ fuel, grid fuel fuel))
+      (nu' := FOLub (λ fuel, grid fuel fuel)).
     + intros f Hf. apply free_omega_diagonal_extended_upper; assumption.
     + reflexivity.
     + split; intros f g Hf Hg Hfg; apply free_omega_extended_upper_mono;
@@ -235,10 +235,10 @@ Qed.
     change mass.  This covers arbitrary combinations of quotient rules. *)
 Corollary free_omega_qlift_extended_upper_mass {A B} (T : A → B → Prop) mu nu :
   @free_omega_qlift EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
-    A B T mu nu → upper mu (fun _ => 1) = upper nu (fun _ => 1).
+    A B T mu nu → upper mu (λ _, 1) = upper nu (λ _, 1).
 Proof.
   intro H. destruct (free_omega_qlift_extended_upper_birel H) as [Hl Hr].
-  have Hone : ∀ X : Type, test (fun _ : X => (1 : \bar F)).
+  have Hone : ∀ X : Type, test (λ _ : X, (1 : \bar F)).
   { intros X x. exact: lee01. }
   apply/eqP. rewrite eq_le. apply/andP. split.
   - apply Hl; [apply Hone|apply Hone|]. intros x y _. exact: lexx.

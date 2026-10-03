@@ -28,7 +28,7 @@ Arguments finite_subdist_mass_bound {A} _.
 
 Definition finite_subdist_of_list {A} mu
     (Hnn : @finite_nonnegative R A mu)
-    (Hmass : finite_expect (fun _ => 1) mu <= 1) : FiniteSubdist A :=
+    (Hmass : finite_expect (λ _, 1) mu <= 1) : FiniteSubdist A :=
   @Build_FiniteSubdist A (finite_enum_of_list Hnn) Hmass.
 
 Definition finite_subdist_expect {A} (mu : FiniteSubdist A) f :=
@@ -49,7 +49,7 @@ Definition finite_subdist_bind {A B} (mu : FiniteSubdist A)
     (k : A → FiniteSubdist B) : FiniteSubdist B.
 Proof.
   refine (@Build_FiniteSubdist B
-    (finite_enum_bind (finite_subdist_enum mu) (fun x => finite_subdist_enum (k x))) _).
+    (finite_enum_bind (finite_subdist_enum mu) (λ x, finite_subdist_enum (k x))) _).
   rewrite finite_mass_bind.
   apply: le_trans (finite_subdist_mass_bound mu).
   apply finite_expect_mono; first exact (finite_enum_nonnegative (finite_subdist_enum mu)).
@@ -79,10 +79,10 @@ Lemma finite_subdist_expect_zero {A} f :
 Proof. reflexivity. Qed.
 Lemma finite_subdist_expect_bind {A B} (mu : FiniteSubdist A) (k : A → FiniteSubdist B) f :
   finite_subdist_expect (finite_subdist_bind mu k) f =
-  finite_subdist_expect mu (fun x => finite_subdist_expect (k x) f).
+  finite_subdist_expect mu (λ x, finite_subdist_expect (k x) f).
 Proof. exact: finite_enum_expect_bind. Qed.
 Lemma finite_subdist_expect_map {A B} (h : A → B) (mu : FiniteSubdist A) f :
-  finite_subdist_expect (finite_subdist_map h mu) f = finite_subdist_expect mu (fun x => f (h x)).
+  finite_subdist_expect (finite_subdist_map h mu) f = finite_subdist_expect mu (λ x, f (h x)).
 Proof. exact: finite_enum_expect_map. Qed.
 Lemma finite_subdist_expect_scale {A} p (Hp : 0 <= p) (Hp1 : p <= 1) (mu : FiniteSubdist A) f :
   finite_subdist_expect (finite_subdist_scale Hp Hp1 mu) f = p * finite_subdist_expect mu f.
@@ -95,7 +95,7 @@ Lemma finite_subdist_bind_ret_l {A B} (x : A) (k : A → FiniteSubdist B) f :
   finite_subdist_expect (k x) f.
 Proof. by rewrite finite_subdist_expect_bind finite_subdist_expect_ret. Qed.
 Lemma finite_subdist_bind_ret_r {A} (mu : FiniteSubdist A) f :
-  finite_subdist_expect (finite_subdist_bind mu (fun x => finite_subdist_ret x)) f =
+  finite_subdist_expect (finite_subdist_bind mu (λ x, finite_subdist_ret x)) f =
   finite_subdist_expect mu f.
 Proof.
   rewrite finite_subdist_expect_bind; apply finite_expect_ext=> x.
@@ -104,7 +104,7 @@ Qed.
 Lemma finite_subdist_bind_assoc {A B C} (mu : FiniteSubdist A)
     (k : A → FiniteSubdist B) (h : B → FiniteSubdist C) f :
   finite_subdist_expect (finite_subdist_bind (finite_subdist_bind mu k) h) f =
-  finite_subdist_expect (finite_subdist_bind mu (fun x => finite_subdist_bind (k x) h)) f.
+  finite_subdist_expect (finite_subdist_bind mu (λ x, finite_subdist_bind (k x) h)) f.
 Proof.
   rewrite !finite_subdist_expect_bind; apply finite_expect_ext=> x.
   symmetry; exact: finite_subdist_expect_bind.

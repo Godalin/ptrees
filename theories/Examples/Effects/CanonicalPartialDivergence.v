@@ -51,10 +51,10 @@ Lemma observe_canonical_spin :
 Proof. reflexivity. Qed.
 
 Definition half_return_half_diverge : ptree regE EnumQ bool :=
-  Prob reg_fair (fun b => if b then Ret true else canonical_spin).
+  Prob reg_fair (λ b, if b then Ret true else canonical_spin).
 
 Definition half_return_heads : MF (stable_head regE EnumQ bool) :=
-  FOSample reg_fair (fun b => if b then FORet (FHRet true) else FOZero).
+  FOSample reg_fair (λ b, if b then FORet (FHRet true) else FOZero).
 
 Lemma canonical_spin_stable_hitting_zero : hits canonical_spin FOZero.
 Proof.
@@ -72,7 +72,7 @@ Lemma canonical_spin_nonempty_trace_query_zero :
   @finite_interaction_query regE EnumQ MF FI FreeOmegaMixedMeasure FO bool
     divergent_one_event_trace canonical_spin divergent_trace_query.
 Proof.
-  exists FOZero, (fun _ : stable_head regE EnumQ bool => FOZero).
+  exists FOZero, (λ _ : stable_head regE EnumQ bool, FOZero).
   repeat split.
   - exact canonical_spin_stable_hitting_zero.
   - apply FOAEZero.
@@ -82,15 +82,15 @@ Qed.
 Lemma divergent_trace_query_mass_zero :
   ∃ out : EnumQ bool,
     @free_omega_observes EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
-      bool bool (fun b => b) divergent_trace_query out ∧
-    enumQ_expect (fun _ : bool => (1 : rat)) out = 0.
+      bool bool (λ b, b) divergent_trace_query out ∧
+    enumQ_expect (λ _ : bool, (1 : rat)) out = 0.
 Proof. exists enumQ_zero. split; [constructor|reflexivity]. Qed.
 
 Lemma divergent_trace_query_not_rejection_mass :
   ¬ @sem_same_mass MF FI bool bool divergent_trace_query (FORet false).
 Proof.
   intro Hmass.
-  pose proof ((proj1 (free_omega_qlift_support Hmass)) (fun _ => False)
+  pose proof ((proj1 (free_omega_qlift_support Hmass)) (λ _, False)
     (FOAEZero _)) as Hbad.
   dependent destruction Hbad.
   destruct H as [x [_ Hfalse]]. exact Hfalse.
@@ -104,7 +104,7 @@ Lemma half_return_half_diverge_stable_hitting :
 Proof.
   unfold half_return_half_diverge, half_return_heads.
   apply (stable_hitting_prob (FI := FI) (FO := FO)
-    (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+    (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
   - apply sem_ae_true.
   - intros [] _; [exact enumQ_ret_true_stable_hitting|exact canonical_spin_stable_hitting_zero].
 Qed.
@@ -120,7 +120,7 @@ Proof.
   intro Hmass.
   have Hweight := free_omega_qlift_extended_upper_mass scalar Hmass.
   change (enumQ_extended_expect (R := scalar)
-    (fun b : bool => if b then 1 else 0) reg_fair = 1)%E in Hweight.
+    (λ b : bool, if b then 1 else 0) reg_fair = 1)%E in Hweight.
   change ((ratr (1 / 2 : rat) : scalar)%:E * 0 +
     ((ratr (1 / 2 : rat) : scalar)%:E * 1 + 0) = 1)%E in Hweight.
   rewrite mule0 mule1 !adde0 add0e in Hweight.
@@ -193,7 +193,7 @@ Proof.
       FreeOmegaObservableSemanticOmegaCofinalityLaws bool true). }
   pose proof (peutt_hitting_lift Hpeutt Hspin Hret) as Hlift.
   pose proof (proj1 (free_omega_qlift_support Hlift)) as Hsupport.
-  assert (Hempty : free_omega_ae (fun _ => False) out).
+  assert (Hempty : free_omega_ae (λ _, False) out).
   { apply FOAEZero. }
   specialize (Hsupport _ Hempty). dependent destruction Hsupport.
   destruct H as [x [_ Hfalse]]. exact Hfalse.

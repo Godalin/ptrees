@@ -39,12 +39,12 @@ Lemma itree_writer_fold_observe {A} (t : ptree (writerE W +' E) MN A) log :
      | TauF u => ITreeDefinition.Tau (itree_writer_from u log)
      | @VisF _ _ _ _ X e k => match e with
          | inl1 we => match we in writerE _ X return (X → _) → _ with
-             | Tell w => fun k => ITreeDefinition.Tau (itree_writer_from (k tt) (monoid_plus op log w))
+             | Tell w => λ k, ITreeDefinition.Tau (itree_writer_from (k tt) (monoid_plus op log w))
              end k
          | inr1 fe => ITree.bind (@handle X fe)
-             (fun x => ITreeDefinition.Tau (itree_writer_from (k x) log)) end
+             (λ x, ITreeDefinition.Tau (itree_writer_from (k x) log)) end
      | @ProbF _ _ _ _ X mu k => ITree.bind (@sample X mu)
-         (fun x => ITreeDefinition.Tau (itree_writer_from (k x) log))
+         (λ x, ITreeDefinition.Tau (itree_writer_from (k x) log))
      end).
 Proof.
   unfold itree_writer_from at 1. rewrite unfold_iter.
@@ -92,7 +92,7 @@ Proof. apply itree_fold_run_writer_from. Qed.
 Lemma itree_writer_prefix {A} (t : ptree (writerE W +' E) MN A) prefix log :
   eq_itree eq (itree_writer_from t (monoid_plus op prefix log))
     (ITree.bind (itree_writer_from t log)
-      (fun wa => ITreeDefinition.Ret (monoid_plus op prefix (fst wa),snd wa))).
+      (λ wa, ITreeDefinition.Ret (monoid_plus op prefix (fst wa),snd wa))).
 Proof.
   revert t log. ginit. pcofix CIH. intros t log.
   rewrite !itree_writer_fold_observe.
@@ -111,7 +111,7 @@ Qed.
 Lemma itree_writer_bind_from {A B} (t : ptree (writerE W +' E) MN A)
     (k : A → ptree (writerE W +' E) MN B) log :
   eq_itree eq (itree_writer_from (PTree.bind t k) log)
-    (ITree.bind (itree_writer_from t log) (fun wa => itree_writer_from (k (snd wa)) (fst wa))).
+    (ITree.bind (itree_writer_from t log) (λ wa, itree_writer_from (k (snd wa)) (fst wa))).
 Proof.
   revert t log. ginit. pcofix CIH. intros t log.
   rewrite (itree_writer_fold_observe (PTree.bind t k) log),
@@ -131,12 +131,12 @@ Theorem itree_writer_fold_bind {A B} (t : ptree (writerE W +' E) MN A)
     (k : A → ptree (writerE W +' E) MN B) :
   eq_itree eq (fold_writer op handle sample (PTree.bind t k))
     (@bind (Monads.writerT W (itree F)) (writerT_monad op) A B
-      (fold_writer op handle sample t) (fun a => fold_writer op handle sample (k a))).
+      (fold_writer op handle sample t) (λ a, fold_writer op handle sample (k a))).
 Proof.
   change (eq_itree eq (itree_writer_from (PTree.bind t k) (monoid_unit op))
-    (ITree.bind (itree_writer_from t (monoid_unit op)) (fun wa =>
+    (ITree.bind (itree_writer_from t (monoid_unit op)) (λ wa,
       ITree.bind (itree_writer_from (k (snd wa)) (monoid_unit op))
-        (fun wb => ITreeDefinition.Ret (monoid_plus op (fst wa) (fst wb),snd wb))))).
+        (λ wb, ITreeDefinition.Ret (monoid_plus op (fst wa) (fst wb),snd wb))))).
   rewrite itree_writer_bind_from. apply eqit_bind; [reflexivity|]. intros [w a]. cbn.
   rewrite <- itree_writer_prefix, (@monoid_runit W op WL). reflexivity.
 Qed.

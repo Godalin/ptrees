@@ -154,7 +154,7 @@ Hypothesis AR21_mono : ∀ sim1 sim2,
   ∀ a2 a1, AR21 sim1 a2 a1 → AR21 sim2 a2 a1.
 Hypothesis AR_converse : ∀ sim a1 a2,
   AR12 sim a1 a2 →
-  AR21 (fun s2 s1 => sim s1 s2) a2 a1.
+  AR21 (λ s2 s1, sim s1 s2) a2 a1.
 
 Theorem stable_hitting_bisim_converse : ∀ s1 s2,
   @stable_hitting_bisim MF FI FC FO S1 S2 A1 A2
@@ -273,7 +273,7 @@ Definition ptree_stable_head_rel
     (sim : ptree' E MN R1 → ptree' E MN R2 → Prop) :
     stable_head E MN R1 → stable_head E MN R2 → Prop :=
   stable_head_rel RR
-    (fun t1 t2 => sim (observe t1) (observe t2)).
+    (λ t1 t2, sim (observe t1) (observe t2)).
 
 Lemma ptree_stable_head_rel_mono sim1 sim2 :
   (∀ t1 t2, sim1 t1 t2 → sim2 t1 t2) →
@@ -355,14 +355,14 @@ Theorem peutt_coinduction_upto
         (@ptree_primitive_kernel E MN MF FI MX R1)
         (@ptree_primitive_kernel E MN MF FI MX R2)
         ptree_stable_head_rel
-        (fun x1 x2 => sim x1 x2 ∨ peutt_state x1 x2)
+        (λ x1 x2, sim x1 x2 ∨ peutt_state x1 x2)
         s1 s2) :
   ∀ t1 t2, sim (observe t1) (observe t2) →
     peutt t1 t2.
 Proof.
   intros t1 t2 Hsim.
   eapply peutt_coinduction with
-    (sim := fun x1 x2 => sim x1 x2 ∨ peutt_state x1 x2).
+    (sim := λ x1 x2, sim x1 x2 ∨ peutt_state x1 x2).
   - intros s1 s2 [Hcandidate|Hknown].
     + exact (Hpost _ _ Hcandidate).
     + apply stable_hitting_bisim_unfold in Hknown.
@@ -598,10 +598,10 @@ Proof.
   destruct (choice _ Hexists1) as [front1 Hfront1].
   destruct (choice _ Hexists2) as [front2 Hfront2].
   eapply peutt_of_hitting_lift.
-  - eapply stable_hitting_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := λ _, True).
     + apply sem_ae_true.
     + intros x _. exact (Hfront1 x).
-  - eapply stable_hitting_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := λ _, True).
     + apply sem_ae_true.
     + intros x _. exact (Hfront2 x).
   - eapply mixed_lift_bind; [exact Hmu|].
@@ -647,7 +647,7 @@ Lemma stable_hitting_ret {R} (r : R) :
 Proof.
   unfold stable_hitting.
   eapply sem_lub_chain_proper with
-      (chain := fun _ => sem_ret (FHRet r)).
+      (chain := λ _, sem_ret (FHRet r)).
   - intro fuel. apply sem_eq_sym.
     eapply sem_eq_trans; [apply sem_bind_ret_l|].
     rewrite stable_target_stableE. apply sem_eq_refl.
@@ -662,7 +662,7 @@ Lemma stable_hitting_vis {R X} (e : E X)
 Proof.
   unfold stable_hitting.
   eapply sem_lub_chain_proper with
-      (chain := fun _ => sem_ret (FHVis e k)).
+      (chain := λ _, sem_ret (FHVis e k)).
   - intro fuel. apply sem_eq_sym.
     eapply sem_eq_trans; [apply sem_bind_ret_l|].
     rewrite stable_target_stableE. apply sem_eq_refl.
@@ -705,7 +705,7 @@ Lemma stable_hitting_tau_chain {R} (t : ptree E MN R) fuel :
   sem_eq
     (stable_hitting_approx
       (@ptree_primitive_kernel E MN MF FI MX R) fuel (TauF t))
-    (sem_zero_prefix (fun n => stable_hitting_approx
+    (sem_zero_prefix (λ n, stable_hitting_approx
       (@ptree_primitive_kernel E MN MF FI MX R) n (observe t)) fuel).
 Proof.
   unfold stable_hitting_approx, ptree_primitive_kernel.
@@ -721,16 +721,16 @@ Theorem stable_hitting_tau_iff {R} (t : ptree E MN R) out :
 Proof.
   unfold stable_hitting. split; intro Hhit.
   - apply (proj2 (sem_lub_zero_prefix
-      (fun n => stable_hitting_approx
+      (λ n, stable_hitting_approx
         (@ptree_primitive_kernel E MN MF FI MX R) n (observe t)) out)).
     eapply sem_lub_chain_proper; [|exact Hhit].
     intro fuel. exact (stable_hitting_tau_chain t fuel).
   - eapply sem_lub_chain_proper with
-      (chain := sem_zero_prefix (fun n => stable_hitting_approx
+      (chain := sem_zero_prefix (λ n, stable_hitting_approx
         (@ptree_primitive_kernel E MN MF FI MX R) n (observe t))).
     + intro fuel. apply sem_eq_sym. exact (stable_hitting_tau_chain t fuel).
     + apply (proj1 (sem_lub_zero_prefix
-        (fun n => stable_hitting_approx
+        (λ n, stable_hitting_approx
           (@ptree_primitive_kernel E MN MF FI MX R) n (observe t)) out)).
       exact Hhit.
 Qed.
@@ -799,7 +799,7 @@ Qed.
 Lemma ptree_stable_head_rel_converse
     (sim : ptree' E MN R → ptree' E MN R → Prop) :
   ∀ h1 h2, ptree_stable_head_rel eq sim h1 h2 →
-    ptree_stable_head_rel eq (fun s2 s1 => sim s1 s2) h2 h1.
+    ptree_stable_head_rel eq (λ s2 s1, sim s1 s2) h2 h1.
 Proof.
   intros h1 h2 Hrel. dependent destruction Hrel.
   - constructor. reflexivity.
@@ -1042,7 +1042,7 @@ Qed.
 
 #[global] Instance peutt_tau_Proper {R} :
   Proper (peutt eq ==> peutt eq)
-    (fun t : ptree E MN R => Tau t).
+    (λ t : ptree E MN R, Tau t).
 Proof.
   intros t1 t2 Ht. eapply peutt_trans.
   - apply peutt_tau_l.
@@ -1053,7 +1053,7 @@ Qed.
 #[global] Instance peutt_vis_Proper {R X} (e : E X) :
   Proper (pointwise_relation X (peutt eq) ==>
     peutt eq)
-    (fun k : X → ptree E MN R => Vis e k).
+    (λ k : X → ptree E MN R, Vis e k).
 Proof.
   intros k1 k2 Hk. apply peutt_vis. exact Hk.
 Qed.
@@ -1102,7 +1102,7 @@ Proof.
   { intro y. apply stable_hitting_exists. }
   destruct (choice _ Hexists) as [front Hfront].
   eapply peutt_of_hitting_lift.
-  - eapply stable_hitting_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := λ _, True).
     + apply sem_ae_true.
     + intros y _. exact (Hfront y).
   - exact (Hfront x).
@@ -1119,7 +1119,7 @@ Theorem peutt_prob_flatten {R X Y}
     `{NB : @MixedMeasureNodeBindLaws MN MF NI FI MX}
     (mu : MN X) (h : X → MN Y) (k : Y → ptree E MN R) :
   peutt eq
-    (Prob mu (fun x => Prob (h x) k))
+    (Prob mu (λ x, Prob (h x) k))
     (Prob (sem_bind mu h) k).
 Proof.
   assert (Hexists : ∀ y, exists out,
@@ -1129,13 +1129,13 @@ Proof.
   { intro y. apply stable_hitting_exists. }
   destruct (choice _ Hexists) as [front Hfront].
   eapply peutt_of_hitting_lift.
-  - eapply stable_hitting_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := λ _, True).
     + apply sem_ae_true.
     + intros x _. eapply stable_hitting_prob with
-          (Good := fun _ => True).
+          (Good := λ _, True).
       * apply sem_ae_true.
       * intros y _. exact (Hfront y).
-  - eapply stable_hitting_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := λ _, True).
     + apply sem_ae_true.
     + intros y _. exact (Hfront y).
   - eapply sem_lift_mono.
@@ -1152,8 +1152,8 @@ Theorem peutt_prob_interchange_of {R X Y}
     (Hexchange : mixed_measure_exchange mu nu)
     (k : X → Y → ptree E MN R) :
   peutt eq
-    (Prob mu (fun x => Prob nu (fun y => k x y)))
-    (Prob nu (fun y => Prob mu (fun x => k x y))).
+    (Prob mu (λ x, Prob nu (λ y, k x y)))
+    (Prob nu (λ y, Prob mu (λ x, k x y))).
 Proof.
   assert (Hexists : ∀ p : X * Y, exists out,
       stable_hitting
@@ -1162,16 +1162,16 @@ Proof.
   { intro p. apply stable_hitting_exists. }
   destruct (choice _ Hexists) as [front Hfront].
   eapply peutt_of_hitting_lift.
-  - eapply stable_hitting_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := λ _, True).
     + apply sem_ae_true.
     + intros x _. eapply stable_hitting_prob with
-          (Good := fun _ => True).
+          (Good := λ _, True).
       * apply sem_ae_true.
       * intros y _. exact (Hfront (x, y)).
-  - eapply stable_hitting_prob with (Good := fun _ => True).
+  - eapply stable_hitting_prob with (Good := λ _, True).
     + apply sem_ae_true.
     + intros y _. eapply stable_hitting_prob with
-          (Good := fun _ => True).
+          (Good := λ _, True).
       * apply sem_ae_true.
       * intros x _. exact (Hfront (x, y)).
   - eapply Hexchange.
@@ -1185,8 +1185,8 @@ Corollary peutt_prob_interchange {R X Y}
     (mu : MN X) (nu : MN Y)
     (k : X → Y → ptree E MN R) :
   peutt eq
-    (Prob mu (fun x => Prob nu (fun y => k x y)))
-    (Prob nu (fun y => Prob mu (fun x => k x y))).
+    (Prob mu (λ x, Prob nu (λ y, k x y)))
+    (Prob nu (λ y, Prob mu (λ x, k x y))).
 Proof.
   eapply peutt_prob_interchange_of.
   apply mixed_lift_exchange.
@@ -1194,7 +1194,7 @@ Qed.
 
 #[global] Instance peutt_prob_Proper {R X} (mu : MN X) :
   Proper (pointwise_relation X (peutt eq) ==>
-    peutt eq) (fun k : X → ptree E MN R => Prob mu k).
+    peutt eq) (λ k : X → ptree E MN R, Prob mu k).
 Proof.
   intros k1 k2 Hk. eapply peutt_prob with (XR := eq).
   - apply sem_lift_refl. intro x. reflexivity.
@@ -1210,7 +1210,7 @@ Proof.
     eapply sem_lift_mono; [|exact H]. intros x y Hxy. symmetry. exact Hxy.
   - intros mu nu xi Hmn Hnx.
     eapply sem_lift_mono with
-      (R := fun x z => exists y, x = y ∧ y = z).
+      (R := λ x z, exists y, x = y ∧ y = z).
     + intros x z [y [-> ->]]. reflexivity.
     + eapply sem_lift_comp; eassumption.
 Qed.
@@ -1220,7 +1220,7 @@ Qed.
     (@sem_lift MN NI X X eq ==>
       pointwise_relation X (peutt eq) ==>
       peutt eq)
-    (fun (mu : MN X) (k : X → ptree E MN R) => Prob mu k).
+    (λ (mu : MN X) (k : X → ptree E MN R), Prob mu k).
 Proof.
   intros mu1 mu2 Hmu k1 k2 Hk.
   eapply peutt_prob with (XR := eq).
@@ -1257,11 +1257,11 @@ Lemma stable_hitting_front_choice {A R} (k : A → ptree E MN R) :
       (@ptree_primitive_kernel E MN MF FI MX R)
       (observe (k a)) (front a).
 Proof.
-  exists (fun a => proj1_sig (sem_lub_choose
-    (chain := fun n => ptree_hitting_approx (MF := MF) n (observe (k a)))
+  exists (λ a, proj1_sig (sem_lub_choose
+    (chain := λ n, ptree_hitting_approx (MF := MF) n (observe (k a)))
     (ptree_hitting_increasing (observe (k a))))).
   intro a. exact (proj2_sig (sem_lub_choose
-    (chain := fun n => ptree_hitting_approx (MF := MF) n (observe (k a)))
+    (chain := λ n, ptree_hitting_approx (MF := MF) n (observe (k a)))
     (ptree_hitting_increasing (observe (k a))))).
 Qed.
 
@@ -1639,10 +1639,10 @@ Proof.
     (@ptree_primitive_kernel E MN MF FI MX A)
     (@ptree_primitive_kernel E MN MF FI MX B)
     (@ptree_stable_head_rel_mono E MN A B RS))
-    (bind_upto_closure RS (fun _ _ => False))).
+    (bind_upto_closure RS (λ _ _, False))).
   - exact (bind_upto_closure_compatible
-      (RR0 := RS) (sim := fun _ _ => False)
-      (fun _ _ Hfalse => False_rect _ Hfalse)).
+      (RR0 := RS) (sim := λ _ _, False)
+      (λ _ _ Hfalse, False_rect _ Hfalse)).
   - right. right. exists R1, R2, RR, t1, t2, k1, k2.
     repeat split; try reflexivity; try assumption.
     intros r1 r2 Hr. right. exact (Hk r1 r2 Hr).
@@ -1765,8 +1765,8 @@ Variable iter_productivity : ∀ I R
     (transition : I → MN (I + R)) (i : I),
     (∀ j, ptree_stable_hitting (MF := MF) (observe (step j))
       (mixed_bind (transition j)
-        (fun next => sem_ret (FHRet next)))) →
-    sem_increasing (fun fuel => mixed_iter_approx fuel transition i) ∧
+        (λ next, sem_ret (FHRet next)))) →
+    sem_increasing (λ fuel, mixed_iter_approx fuel transition i) ∧
     ptree_iter_cofinal (MF := MF) step transition i.
 
 (** Structured frontiers are proof certificates for the canonical
@@ -1803,19 +1803,19 @@ Lemma peutt_of_iter_certificates
   (∀ j,
     frontier_certificate (observe (step1 j))
       (mixed_bind (transition1 j)
-        (fun next => sem_ret (FHRet next)))) →
+        (λ next, sem_ret (FHRet next)))) →
   mixed_iter transition1 i1 out1 →
   sem_total out1 →
   (∀ j,
     frontier_certificate (observe (step2 j))
       (mixed_bind (transition2 j)
-        (fun next => sem_ret (FHRet next)))) →
+        (λ next, sem_ret (FHRet next)))) →
   mixed_iter transition2 i2 out2 →
   sem_total out2 →
   sem_lift (ptree_stable_head_rel RR
     (@peutt_state E MN MF FI FC MX FO R1 R2 RR))
-    (sem_bind out1 (fun r => sem_ret (FHRet r)))
-    (sem_bind out2 (fun r => sem_ret (FHRet r))) →
+    (sem_bind out1 (λ r, sem_ret (FHRet r)))
+    (sem_bind out2 (λ r, sem_ret (FHRet r))) →
   peutt RR (PTree.iter step1 i1) (PTree.iter step2 i2).
 Proof.
   intros Hstep1 Hiter1 Htotal1 Hstep2 Hiter2 Htotal2 Hlift.

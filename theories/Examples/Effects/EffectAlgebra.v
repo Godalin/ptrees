@@ -20,24 +20,24 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 
 Example reader_repeated {E A} (k : nat → nat → ptree (readerE nat +' E) SubEnumQ A) env :
-  run_reader (Vis (inl1 Ask) (fun x => Vis (inl1 Ask) (k x))) env ≈ₚ
-  run_reader (Vis (inl1 Ask) (fun x => k x x)) env.
+  run_reader (Vis (inl1 Ask) (λ x, Vis (inl1 Ask) (k x))) env ≈ₚ
+  run_reader (Vis (inl1 Ask) (λ x, k x x)) env.
 Proof. apply run_reader_ask_ask. Qed.
 
 Example state_restore {E A} (k : ptree (stateE nat +' E) SubEnumQ A) s :
-  run_state (Vis (inl1 (Get nat)) (fun x => Vis (inl1 (Put nat x)) (fun _ => k))) s ≈ₚ
+  run_state (Vis (inl1 (Get nat)) (λ x, Vis (inl1 (Put nat x)) (λ _, k))) s ≈ₚ
   run_state k s.
 Proof. apply run_state_get_put. Qed.
 
 Example state_overwrite {E A} (k : ptree (stateE nat +' E) SubEnumQ A) s a b :
-  run_state (Vis (inl1 (Put nat a)) (fun _ => Vis (inl1 (Put nat b)) (fun _ => k))) s ≈ₚ
-  run_state (Vis (inl1 (Put nat b)) (fun _ => k)) s.
+  run_state (Vis (inl1 (Put nat a)) (λ _, Vis (inl1 (Put nat b)) (λ _, k))) s ≈ₚ
+  run_state (Vis (inl1 (Put nat b)) (λ _, k)) s.
 Proof. apply run_state_put_put. Qed.
 
 Example state_draw_swap {E A X} (mu : SubEnumQ X)
     (k : nat → X → ptree (stateE nat +' E) SubEnumQ A) s :
-  run_state (Vis (inl1 (Get nat)) (fun v => Prob mu (k v))) s ≈ₚ
-  run_state (Prob mu (fun x => Vis (inl1 (Get nat)) (fun v => k v x))) s.
+  run_state (Vis (inl1 (Get nat)) (λ v, Prob mu (k v))) s ≈ₚ
+  run_state (Prob mu (λ x, Vis (inl1 (Get nat)) (λ v, k v x))) s.
 Proof. apply run_state_get_prob. Qed.
 
 Definition log_op : Monoid (list nat) := {| monoid_plus := @app nat; monoid_unit := [] |}.
@@ -50,12 +50,12 @@ Proof.
 Qed.
 
 Example writer_fusion {E A} a b (k : ptree (writerE (list nat) +' E) SubEnumQ A) :
-  run_writer log_op (Vis (inl1 (Tell a)) (fun _ => Vis (inl1 (Tell b)) (fun _ => k))) ≈ₚ
-  run_writer log_op (Vis (inl1 (Tell (a ++ b))) (fun _ => k)).
+  run_writer log_op (Vis (inl1 (Tell a)) (λ _, Vis (inl1 (Tell b)) (λ _, k))) ≈ₚ
+  run_writer log_op (Vis (inl1 (Tell (a ++ b))) (λ _, k)).
 Proof. apply run_writer_tell_append. exact log_laws. Qed.
 
 Example writer_unit {E A} (k : ptree (writerE (list nat) +' E) SubEnumQ A) :
-  run_writer log_op (Vis (inl1 (Tell [])) (fun _ => k)) ≈ₚ run_writer log_op k.
+  run_writer log_op (Vis (inl1 (Tell [])) (λ _, k)) ≈ₚ run_writer log_op k.
 Proof. apply run_writer_tell_unit. exact log_laws. Qed.
 
 Example log_monoid_not_commutative : monoid_plus log_op [1] [2] ≠ monoid_plus log_op [2] [1].
@@ -63,11 +63,11 @@ Proof. discriminate. Qed.
 
 Example writer_log_order :
   run_writer log_op
-    (Vis (inl1 (Tell [1])) (fun _ => Vis (inl1 (Tell [2])) (fun _ =>
+    (Vis (inl1 (Tell [1])) (λ _, Vis (inl1 (Tell [2])) (λ _,
       (Ret tt : ptree (writerE (list nat) +' void1) SubEnumQ unit)))) ≈ₚ Ret ([1;2],tt).
 Proof.
   change (run_writer_from log_op
-    (Vis (inl1 (Tell [1])) (fun _ => Vis (inl1 (Tell [2])) (fun _ => Ret tt))) [] ≈ₚ
+    (Vis (inl1 (Tell [1])) (λ _, Vis (inl1 (Tell [2])) (λ _, Ret tt))) [] ≈ₚ
       (Ret ([1;2],tt) : ptree void1 SubEnumQ (list nat * unit))).
   eapply peutt_trans; [apply run_writer_from_tell|].
   eapply peutt_trans; [apply run_writer_from_tell|].
@@ -76,12 +76,12 @@ Qed.
 
 Example writer_draw_swap {E A X} (mu : SubEnumQ X) w
     (k : X → ptree (writerE (list nat) +' E) SubEnumQ A) :
-  run_writer log_op (Vis (inl1 (Tell w)) (fun _ => Prob mu k)) ≈ₚ
-  run_writer log_op (Prob mu (fun x => Vis (inl1 (Tell w)) (fun _ => k x))).
+  run_writer log_op (Vis (inl1 (Tell w)) (λ _, Prob mu k)) ≈ₚ
+  run_writer log_op (Prob mu (λ x, Vis (inl1 (Tell w)) (λ _, k x))).
 Proof. apply run_writer_tell_prob; typeclasses eauto. Qed.
 
 Example exception_left_zero {E A B} err (k : A → ptree (exceptE nat +' E) SubEnumQ B) :
-  run_exception (PTree.bind (Vis (inl1 (Throw err)) (fun v : void => match v with end)) k) ≈ₚ
+  run_exception (PTree.bind (Vis (inl1 (Throw err)) (λ v : void, match v with end)) k) ≈ₚ
   Ret (inl err).
 Proof. apply run_exception_throw_bind. Qed.
 
@@ -101,12 +101,12 @@ Local Open Scope ring_scope.
 Definition half_entries : list (rat * unit) := [(2^-1,tt)].
 Lemma half_nonnegative : finite_nonnegative half_entries.
 Proof. intros p x [H|[]]; inversion H; subst; native_compute; reflexivity. Qed.
-Lemma half_bounded : finite_expect (fun _ => 1) half_entries <= 1.
+Lemma half_bounded : finite_expect (λ _, 1) half_entries <= 1.
 Proof. native_compute; reflexivity. Qed.
 Definition half_sample := subenumQ_of_list half_nonnegative half_bounded.
 Definition raises : ptree (exceptE nat +' void1) SubEnumQ unit :=
-  Vis (inl1 (Throw 7%nat)) (fun v : void => match v with end).
-Definition sample_then_raise := Prob half_sample (fun _ => raises).
+  Vis (inl1 (Throw 7%nat)) (λ v : void, match v with end).
+Definition sample_then_raise := Prob half_sample (λ _, raises).
 
 Local Notation MF := (FreeOmega SubEnumQ).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
@@ -115,16 +115,16 @@ Local Notation FO := (FreeOmegaObservableSemanticOmega
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Definition error_head : stable_head void1 SubEnumQ (nat+unit) := FHRet (inl 7%nat).
 Definition partial_error_front : MF (stable_head void1 SubEnumQ (nat+unit)) :=
-  FOSample half_sample (fun _ => FORet error_head).
+  FOSample half_sample (λ _, FORet error_head).
 
 Lemma partial_error_hitting :
   ptree_stable_hitting (FI := FI) (FO := FO)
     (observe (run_exception sample_then_raise)) partial_error_front.
 Proof.
   change (ptree_stable_hitting (FI := FI) (FO := FO)
-    (observe (Prob half_sample (fun _ => run_exception raises))) partial_error_front).
+    (observe (Prob half_sample (λ _, run_exception raises))) partial_error_front).
   apply (stable_hitting_prob (FI := FI) (MX := FreeOmegaMixedMeasure)
-    (front := fun _ : unit => FORet error_head) (Good := fun _ => True)).
+    (front := λ _ : unit, FORet error_head) (Good := λ _, True)).
   - apply sem_ae_true.
   - intros [] _. change (ptree_stable_hitting (FI := FI) (FO := FO)
       (observe (Ret (inl 7%nat))) (FORet error_head)).
@@ -150,15 +150,15 @@ From PTree.Eq.Backend Require Import SubEnumR.
 
 Example real_state_draw_swap (R : realType) {E A X} (mu : SubEnumR R X)
     (k : nat → X → ptree (stateE nat +' E) (SubEnumR R) A) s :
-  run_state (Vis (inl1 (Get nat)) (fun v => Prob mu (k v))) s ≈ₚ
-  run_state (Prob mu (fun x => Vis (inl1 (Get nat)) (fun v => k v x))) s.
+  run_state (Vis (inl1 (Get nat)) (λ v, Prob mu (k v))) s ≈ₚ
+  run_state (Prob mu (λ x, Vis (inl1 (Get nat)) (λ v, k v x))) s.
 Proof. apply run_state_get_prob. Qed.
 
 Section HighCarrier.
 Universe hi.
 Constraint Set < hi.
 Example high_reader (A : Type@{hi}) (k : nat → nat → ptree (readerE nat +' void1) SubEnumQ A) env :
-  run_reader (Vis (inl1 Ask) (fun x => Vis (inl1 Ask) (k x))) env ≈ₚ
-  run_reader (Vis (inl1 Ask) (fun x => k x x)) env.
+  run_reader (Vis (inl1 Ask) (λ x, Vis (inl1 Ask) (k x))) env ≈ₚ
+  run_reader (Vis (inl1 Ask) (λ x, k x x)) env.
 Proof. apply run_reader_ask_ask. Qed.
 End HighCarrier.

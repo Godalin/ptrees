@@ -71,7 +71,7 @@ Definition internal_target_budget fuel cost (target : stable_target tree head) :
   else FOZero.
 
 Definition internal_guard_budget t fuel : MF head :=
-  FOSample (native_sample_measure (internal_guard_native t)) (fun x =>
+  FOSample (native_sample_measure (internal_guard_native t)) (λ x,
     internal_target_budget fuel (internal_guard_steps t)
       (native_sample_value (internal_guard_native t) x)).
 
@@ -82,14 +82,14 @@ Proof.
   destruct (observe t); destruct fuel; unfold internal_target_budget; cbn;
     rewrite ?Nat.sub_0_r.
   all: try solve [apply free_omega_qlift_refl; intro h; reflexivity].
-  all: apply FOQLMono with (T := fun x y => y = x).
+  all: apply FOQLMono with (T := λ x y, y = x).
   all: try solve [intros x y Hyx; symmetry; exact Hyx].
   all: apply FOQLSym, FOQLSampleRetL; [apply sem_ae_ret_iff|].
   all: apply free_omega_qlift_refl; intro h; reflexivity.
 Qed.
 
 Definition internal_round_budget {t} (p : @finite_internal_plan E MN R t) fuel : MF head :=
-  FOSample (native_sample_measure (internal_plan_round_native p)) (fun z =>
+  FOSample (native_sample_measure (internal_plan_round_native p)) (λ z,
     internal_target_budget fuel (internal_round_steps p z)
       (native_sample_value (internal_plan_round_native p) z)).
 
@@ -112,7 +112,7 @@ Qed.
 Lemma internal_guard_budget_prefix t fuel prefix :
   free_omega_qlift eq
     (if Nat.leb prefix fuel then hit (fuel - prefix) (observe t) else FOZero)
-    (FOSample (native_sample_measure (internal_guard_native t)) (fun x =>
+    (FOSample (native_sample_measure (internal_guard_native t)) (λ x,
       internal_target_budget fuel (prefix + internal_guard_steps t)
         (native_sample_value (internal_guard_native t) x))).
 Proof.
@@ -125,8 +125,8 @@ Proof.
         apply free_omega_qlift_refl. intro h. reflexivity.
     + intros x z [y [-> ->]]. reflexivity.
   - eapply FOQLComp with (T := eq) (U := eq)
-      (mid := FOSample (native_sample_measure (internal_guard_native t)) (fun _ => FOZero)).
-    + apply FOQLMono with (T := fun x y => y = x).
+      (mid := FOSample (native_sample_measure (internal_guard_native t)) (λ _, FOZero)).
+    + apply FOQLMono with (T := λ x y, y = x).
       * apply FOQLSym, FOQLSampleZero.
       * intros x y Hyx. symmetry. exact Hyx.
     + eapply FOQLSample with (T := eq).
@@ -160,9 +160,9 @@ Theorem internal_round_hitting_approx t (p : @finite_internal_plan E MN R t) fue
 Proof.
   eapply FOQLComp with (T := eq) (U := eq); [apply internal_plan_hitting_approx| |].
   - eapply FOQLComp with (T := eq) (U := eq)
-      (mid := FOSample (internal_plan_measure p) (fun path =>
+      (mid := FOSample (internal_plan_measure p) (λ path,
         FOSample (native_sample_measure (internal_guard_native (internal_plan_residual p path)))
-          (fun x => internal_target_budget fuel
+          (λ x, internal_target_budget fuel
             (internal_plan_steps p path + internal_guard_steps (internal_plan_residual p path))
             (native_sample_value (internal_guard_native (internal_plan_residual p path)) x)))).
     + unfold internal_plan_budget. eapply FOQLSample with (T := eq).
@@ -173,10 +173,10 @@ Proof.
         free_omega_native_bind, internal_plan_native. cbn.
       exact (@free_omega_sample_sigma MN NI NC NO ND NBAE
         (internal_plan_path p)
-        (fun path => native_sample_type (internal_guard_native (internal_plan_residual p path)))
+        (λ path, native_sample_type (internal_guard_native (internal_plan_residual p path)))
         head (internal_plan_measure p)
-        (fun path => native_sample_measure (internal_guard_native (internal_plan_residual p path)))
-        (fun path x => internal_target_budget fuel
+        (λ path, native_sample_measure (internal_guard_native (internal_plan_residual p path)))
+        (λ path x, internal_target_budget fuel
           (internal_plan_steps p path + internal_guard_steps (internal_plan_residual p path))
           (native_sample_value (internal_guard_native (internal_plan_residual p path)) x))).
     + intros x z [y [-> ->]]. reflexivity.
@@ -207,7 +207,7 @@ Qed.
 Theorem internal_round_stable_hitting t (p : @finite_internal_plan E MN R t) out :
   @ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega R (observe t) out →
-  free_omega_qlift eq out (FOLub (fun n => internal_round_budget p n)).
+  free_omega_qlift eq out (FOLub (λ n, internal_round_budget p n)).
 Proof.
   intro Hhit. eapply FOQLComp with (T := eq) (U := eq); [exact Hhit| |].
   - apply FOQLLub. intro n. apply internal_round_hitting_approx.

@@ -52,7 +52,7 @@ Polymorphic Inductive free_omega_qlift {MN}
       (∀ x y, T x y → R x y) →
       free_omega_qlift R mu nu
   | FOQLSym mu nu :
-      free_omega_qlift (fun y x => R x y) nu mu →
+      free_omega_qlift (λ y x, R x y) nu mu →
       free_omega_qlift R mu nu
   | FOQLComp {C} (T : A → C → Prop) (U : C → B → Prop) mu mid nu :
       free_omega_qlift T mu mid →
@@ -79,10 +79,10 @@ Polymorphic Inductive free_omega_qlift {MN}
   | FOQLSampleBind {C D} (mu : MN C) (h : C → MN D)
       (k : D → FreeOmega MN A) (l : D → FreeOmega MN B) :
       (∀ P, sem_ae (sem_bind mu h) P ↔
-        sem_ae mu (fun x => sem_ae (h x) P)) →
+        sem_ae mu (λ x, sem_ae (h x) P)) →
       (∀ y, free_omega_qlift R (k y) (l y)) →
       free_omega_qlift R
-        (FOSample mu (fun x => FOSample (h x) k))
+        (FOSample mu (λ x, FOSample (h x) k))
         (FOSample (sem_bind mu h) l)
   | FOQLSampleExchange {C D} (mu : MN C) (nu : MN D)
       (k : C → D → FreeOmega MN A)
@@ -91,11 +91,11 @@ Polymorphic Inductive free_omega_qlift {MN}
         (semantic_product mu nu) (semantic_product nu mu) →
       (∀ x y, free_omega_qlift R (k x y) (l y x)) →
       free_omega_support_lift R
-        (FOSample mu (fun x => FOSample nu (k x)))
-        (FOSample nu (fun y => FOSample mu (l y))) →
+        (FOSample mu (λ x, FOSample nu (k x)))
+        (FOSample nu (λ y, FOSample mu (l y))) →
       free_omega_qlift R
-        (FOSample mu (fun x => FOSample nu (k x)))
-        (FOSample nu (fun y => FOSample mu (l y)))
+        (FOSample mu (λ x, FOSample nu (k x)))
+        (FOSample nu (λ y, FOSample mu (l y)))
   | FOQLLub (c : nat → FreeOmega MN A) (d : nat → FreeOmega MN B) :
       (∀ n, free_omega_qlift R (c n) (d n)) →
       free_omega_qlift R (FOLub c) (FOLub d)
@@ -103,7 +103,7 @@ Polymorphic Inductive free_omega_qlift {MN}
       (d : nat → FreeOmega MN B) :
       (∀ n, free_omega_qlift R (c n) (d n)) →
       free_omega_qlift R
-        (FOLub (fun n => match n with O => FOZero
+        (FOLub (λ n, match n with O => FOZero
           | Datatypes.S n' => c n' end))
         (FOLub d)
   | FOQLLubZeroPrefixR (c : nat → FreeOmega MN A)
@@ -111,7 +111,7 @@ Polymorphic Inductive free_omega_qlift {MN}
       (∀ n, free_omega_qlift R (c n) (d n)) →
       free_omega_qlift R
         (FOLub c)
-        (FOLub (fun n => match n with O => FOZero
+        (FOLub (λ n, match n with O => FOZero
           | Datatypes.S n' => d n' end))
   | FOQLSampleLub {C} (mu : MN C) (Good : C → Prop)
       (chain : C → nat → FreeOmega MN B)
@@ -123,12 +123,12 @@ Polymorphic Inductive free_omega_qlift {MN}
         free_omega_qlift R (out x) (FOLub (chain x))) →
       free_omega_qlift R
         (FOSample mu out)
-        (FOLub (fun n => FOSample mu (fun x => chain x n)))
+        (FOLub (λ n, FOSample mu (λ x, chain x n)))
   | FOQLSampleZero {C} (mu : MN C) :
-      free_omega_qlift R (FOSample mu (fun _ => FOZero)) FOZero
+      free_omega_qlift R (FOSample mu (λ _, FOZero)) FOZero
   | FOQLLubConstantR (mu : FreeOmega MN A) (nu : FreeOmega MN B) :
       free_omega_qlift R mu nu →
-      free_omega_qlift R mu (FOLub (fun _ => nu))
+      free_omega_qlift R mu (FOLub (λ _, nu))
   | FOQLBindLub {C} (source : nat → FreeOmega MN C)
       (source_out : FreeOmega MN C)
       (kernels : C → nat → FreeOmega MN B)
@@ -142,12 +142,12 @@ Polymorphic Inductive free_omega_qlift {MN}
       (∀ x, free_omega_qlift R (kernel_out x) (FOLub (kernels x))) →
       free_omega_support_lift R
         (free_omega_bind source_out kernel_out)
-        (FOLub (fun n => free_omega_bind (source n)
-          (fun x => kernels x n))) →
+        (FOLub (λ n, free_omega_bind (source n)
+          (λ x, kernels x n))) →
       free_omega_qlift R
         (free_omega_bind source_out kernel_out)
-        (FOLub (fun n => free_omega_bind (source n)
-          (fun x => kernels x n)))
+        (FOLub (λ n, free_omega_bind (source n)
+          (λ x, kernels x n)))
   | FOQLDoubleDiagonal (HAB : A = B)
       (grid : nat → nat → FreeOmega MN A) :
       (∀ outer inner,
@@ -156,15 +156,15 @@ Polymorphic Inductive free_omega_qlift {MN}
       (∀ outer inner,
         free_omega_approx eq (grid outer inner)
           (grid (Datatypes.S outer) inner)) →
-      (∀ x, R x (eq_rect A (fun T => T) x B HAB)) →
+      (∀ x, R x (eq_rect A (λ T, T) x B HAB)) →
       free_omega_support_lift R
-        (FOLub (fun outer => FOLub (grid outer)))
-        (eq_rect A (fun T => FreeOmega MN T)
-          (FOLub (fun fuel => grid fuel fuel)) B HAB) →
+        (FOLub (λ outer, FOLub (grid outer)))
+        (eq_rect A (λ T, FreeOmega MN T)
+          (FOLub (λ fuel, grid fuel fuel)) B HAB) →
       free_omega_qlift R
-        (FOLub (fun outer => FOLub (grid outer)))
-        (eq_rect A (fun T => FreeOmega MN T)
-          (FOLub (fun fuel => grid fuel fuel)) B HAB)
+        (FOLub (λ outer, FOLub (grid outer)))
+        (eq_rect A (λ T, FreeOmega MN T)
+          (FOLub (λ fuel, grid fuel fuel)) B HAB)
   | FOQLCofinal (left : nat → FreeOmega MN A)
       (right : nat → FreeOmega MN B) :
       (* Mutual finite domination preserves increasing limits, not
@@ -202,8 +202,8 @@ Proof.
       apply (proj1 IHHq). apply H1. apply (proj1 (H Good)). exact H0.
     + intros Q HQ.
       pose proof ((proj2 IHHq) Q HQ) as Hbranch.
-      eapply FOAESample with (Good := fun z => z = x).
-      * apply (proj2 (H (fun z => z = x))). reflexivity.
+      eapply FOAESample with (Good := λ z, z = x).
+      * apply (proj2 (H (λ z, z = x))). reflexivity.
       * intros z ->. exact Hbranch.
   - eapply free_omega_support_lift_sample_bind; eauto.
   - assumption.

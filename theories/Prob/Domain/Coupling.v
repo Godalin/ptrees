@@ -22,13 +22,13 @@ Definition oval_dual {A B} (T : A → B → Prop) (L : OmegaVal R A) (M : OmegaV
     (∀ x y, T x y → f x <= g y) → oval_eval L f <= oval_eval M g.
 
 Definition oval_bidual {A B} (T : A → B → Prop) (L : OmegaVal R A) (M : OmegaVal R B) :=
-  oval_dual T L M ∧ oval_dual (fun y x => T x y) M L.
+  oval_dual T L M ∧ oval_dual (λ y x, T x y) M L.
 
 Definition oval_joint {A B} (T : A → B → Prop) (L : OmegaVal R A) (M : OmegaVal R B)
     (J : OmegaVal R (A * B)) : Prop :=
-  (∀ f, oval_test f → oval_eval J (fun z => f (fst z)) = oval_eval L f) ∧
-  (∀ g, oval_test g → oval_eval J (fun z => g (snd z)) = oval_eval M g) ∧
-  oval_ae J (fun z => T (fst z) (snd z)).
+  (∀ f, oval_test f → oval_eval J (λ z, f (fst z)) = oval_eval L f) ∧
+  (∀ g, oval_test g → oval_eval J (λ z, g (snd z)) = oval_eval M g) ∧
+  oval_ae J (λ z, T (fst z) (snd z)).
 
 Definition oval_coupled {A B} (T : A → B → Prop) (L : OmegaVal R A) (M : OmegaVal R B) :=
   ∃ J, oval_joint T L M J.
@@ -62,7 +62,7 @@ Proof. intro x; unfold oval_indicator; destruct (pselect (P x)); split; [exact: 
 (** Under DS1b this is exactly zero measure of the complement of T. *)
 Theorem oval_joint_off_relation_zero {A B} (T : A → B → Prop) L M J :
   oval_joint T L M J →
-  oval_eval J (oval_indicator (fun z => ¬ T (fst z) (snd z))) = 0.
+  oval_eval J (oval_indicator (λ z, ¬ T (fst z) (snd z))) = 0.
 Proof.
   intros [_ [_ HS]]; rewrite -(oval_zero (oval_laws J)).
   apply HS; [apply oval_indicator_test|apply oval_test_zero|].
@@ -96,12 +96,12 @@ Qed.
 (** Equality has an explicit diagonal joint, with no existence theorem for
     general relations hidden in a capability or constructor. *)
 Theorem oval_eq_joint {A} (L M : OmegaVal R A) : oval_eq L M →
-  oval_joint eq L M (oval_bind L (fun x => oval_ret R (x,x))).
+  oval_joint eq L M (oval_bind L (λ x, oval_ret R (x,x))).
 Proof.
   intro H; split; first by intros.
   split; first exact H.
   intros f g Hf Hg Hfg.
-  change (oval_eval L (fun x => f (x,x)) = oval_eval L (fun x => g (x,x))).
+  change (oval_eval L (λ x, f (x,x)) = oval_eval L (λ x, g (x,x))).
   apply oval_eval_ext=> x; apply Hfg; reflexivity.
 Qed.
 

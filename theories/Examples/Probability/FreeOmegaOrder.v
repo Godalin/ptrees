@@ -16,15 +16,15 @@ Section NegativeOrderBoundary.
 Context {MN : Type → Type} `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI}.
 
 Example constant_lub_quotient_equal :
-  free_omega_qlift eq (@FORet MN unit tt) (FOLub (fun _ => FORet tt)).
+  free_omega_qlift eq (@FORet MN unit tt) (FOLub (λ _, FORet tt)).
 Proof. apply FOQLLubConstantR, FOQLStructural; constructor; reflexivity. Qed.
 
 Example constant_lub_not_approx_forward :
-  ¬ free_omega_approx eq (@FORet MN unit tt) (FOLub (fun _ => FORet tt)).
+  ¬ free_omega_approx eq (@FORet MN unit tt) (FOLub (λ _, FORet tt)).
 Proof. intro H; inversion H. Qed.
 
 Example constant_lub_not_approx_backward :
-  ¬ free_omega_approx eq (FOLub (fun _ => @FORet MN unit tt)) (FORet tt).
+  ¬ free_omega_approx eq (FOLub (λ _, @FORet MN unit tt)) (FORet tt).
 Proof. intro H; inversion H. Qed.
 
 Example observable_equality_does_not_imply_order :
@@ -38,10 +38,10 @@ Proof.
 Qed.
 
 Example sampled_zero_quotient_equal {A B} (mu : MN A) :
-  free_omega_qlift (@eq B) (FOSample mu (fun _ => FOZero)) FOZero.
+  free_omega_qlift (@eq B) (FOSample mu (λ _, FOZero)) FOZero.
 Proof. apply FOQLSampleZero. Qed.
 
 Example sampled_zero_not_approx_bottom {A B} (mu : MN A) :
-  ¬ free_omega_approx (@eq B) (FOSample mu (fun _ => FOZero)) FOZero.
+  ¬ free_omega_approx (@eq B) (FOSample mu (λ _, FOZero)) FOZero.
 Proof. intro H; inversion H. Qed.
 End NegativeOrderBoundary.

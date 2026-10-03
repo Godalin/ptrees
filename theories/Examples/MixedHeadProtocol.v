@@ -171,8 +171,8 @@ Defined.
     Native bind describes the flattened finite law; the main up-to-bind
     proof consumes the sampler relation, without expanding lists. *)
 Definition mixed_samples {H} (hidden : SubEnumQ H) c : SubEnumQ (bool * H + bool * H) :=
-  mixed_outcomes c >>=ₘ (fun o =>
-    hidden >>=ₘ (fun h =>
+  mixed_outcomes c >>=ₘ (λ o,
+    hidden >>=ₘ (λ h,
       ηₘ (match o with Stop b => inl (b,h) | Continue b => inr (b,h) end))).
 
 Definition mixed_sample_rel (x : impl_return + impl_return)
@@ -227,7 +227,7 @@ CoFixpoint masked_impl (m : hidden3) : tree impl_return :=
         Ret (if continue then inr (bit, payload) else inl (bit, payload)));;
   match x with
   | inl result => Ret result
-  | inr (b,h) => Vis (Reply b) (fun ack => masked_impl (if ack then h else m))
+  | inr (b,h) => Vis (Reply b) (λ ack, masked_impl (if ack then h else m))
   end.
 
 CoFixpoint mixed_spec (z : bool) : tree spec_return :=
@@ -235,7 +235,7 @@ CoFixpoint mixed_spec (z : bool) : tree spec_return :=
   x <- sample (mixed_samples uniform2 c);;
   match x with
   | inl result => Ret result
-  | inr (b,j) => Vis (Reply b) (fun ack => mixed_spec (if ack then j else z))
+  | inr (b,j) => Vis (Reply b) (λ ack, mixed_spec (if ack then j else z))
   end.
 
 (** Initialization only; not a deterministic transport of uniform3. *)
@@ -303,11 +303,11 @@ Proof.
 Qed.
 
 Definition draw_distribution c : SubEnumQ (impl_return + impl_return) :=
-  coin_three_quarters >>=ₘ (fun s =>
-    uniform2 >>=ₘ (fun q =>
-      coin_third >>=ₘ (fun x =>
+  coin_three_quarters >>=ₘ (λ s,
+    uniform2 >>=ₘ (λ q,
+      coin_third >>=ₘ (λ x,
         if x then ηₘ (if q then inr (xorb c s,L0) else inl (xorb c s,L0))
-        else uniform2 >>=ₘ (fun y =>
+        else uniform2 >>=ₘ (λ y,
           ηₘ (if q then inr (xorb c s,if y then L1 else L2)
                         else inl (xorb c s,if y then L1 else L2)))))).
 
@@ -344,7 +344,7 @@ Definition challenge_true_reply_trace c : @finite_interaction_pattern mixedE :=
   cons (@select_challenge c) (cons (@select_true_reply) nil).
 
 Definition spec_true_reply_observation c : SubEnumQ bool :=
-  subenumQ_bind (mixed_outcomes c) (fun o =>
+  subenumQ_bind (mixed_outcomes c) (λ o,
     subenumQ_ret (match o with Stop _ => false | Continue b => b end)).
 
 (** * 4. Final theorems
@@ -361,7 +361,7 @@ Theorem masked_protocol_equivalent m :
 Proof.
   (* Expose one round, then compose its prefix and continuation proofs. *)
   eapply peutt_coinduction_upto_bind_vis with
-    (sim := fun s1 s2 => exists old z, bridge old z ∧
+    (sim := λ s1 s2, exists old z, bridge old z ∧
       s1 = observe (masked_impl old) ∧ s2 = observe (mixed_spec z));
     try typeclasses eauto.
   - intros s1 s2 (old & z & Hold & -> & ->).
@@ -381,7 +381,7 @@ Proof.
         -- rewrite observe_bind.
            apply stable_hitting_native_sample. intro second.
            apply stable_hitting_native_ret.
-      * eapply (stable_hitting_prob (FO := FO) (MX := MX)) with (Good := fun _ => True).
+      * eapply (stable_hitting_prob (FO := FO) (MX := MX)) with (Good := λ _, True).
         -- apply sem_ae_true.
         -- intros x _. apply (stable_hitting_ret (FO := FO) (MX := MX)).
       * eapply FOQLSample with (T := mixed_sample_rel).
@@ -407,8 +407,8 @@ Qed.
 (** Erasing the abstracted payload recovers ordinary Boolean equivalence,
     using the library's heterogeneous bind law, not a second coinduction. *)
 Theorem masked_public_protocol_equivalent m :
-  PTree.bind (masked_impl m) (fun r => Ret (fst r)) ≈ₚ
-  PTree.bind (mixed_spec (abstract_state m)) (fun u => Ret (fst u)).
+  PTree.bind (masked_impl m) (λ r, Ret (fst r)) ≈ₚ
+  PTree.bind (mixed_spec (abstract_state m)) (λ u, Ret (fst u)).
 Proof.
   eapply peutt_bind with (RR := return_rel).
   - apply masked_protocol_equivalent.
@@ -436,8 +436,8 @@ Proof.
         rewrite observe_bind.
         (* Infer each head, including Reply's continuation, from its branch. *)
         eapply (stable_hitting_prob (FO := FO) (MX := MX)) with
-          (Good := fun _ => True)
-          (front := fun x => match x with inl result => _ | inr (b,j) => _ end).
+          (Good := λ _, True)
+          (front := λ x, match x with inl result => _ | inr (b,j) => _ end).
         * apply sem_ae_true.
         * intros [result|[b j]] _; rewrite observe_bind.
           -- apply (stable_hitting_ret (FO := FO) (MX := MX)).
@@ -446,7 +446,7 @@ Proof.
     - (* Infer the native Boolean outcomes from those observed heads. *)
       eexists. split.
       + eapply FOOObserveSample with
-          (front := fun x => match x with inl result => _ | inr (b,j) => _ end).
+          (front := λ x, match x with inl result => _ | inr (b,j) => _ end).
         intros [[b j]|[b j]]; constructor.
       + apply enumQ_meas_eq_of_eqenum. intros []; destruct c;
           apply val_inj; vm_compute; reflexivity.

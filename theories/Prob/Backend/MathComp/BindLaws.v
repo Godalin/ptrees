@@ -26,7 +26,7 @@ Context {A B C D : Type}.
 Definition mathcomp_joint_source (j : subprobability (mc_joint A B) R)
     (_ : mc_carrier unit) : measure (mc_joint A B) R := j.
 Lemma mathcomp_joint_source_measurable j U : measurable U →
-  measurable_fun setT (fun x => mathcomp_joint_source j x U).
+  measurable_fun setT (λ x, mathcomp_joint_source j x U).
 Proof. by move=> mU mtop V mV. Qed.
 HB.instance Definition _ j := @isKernel.Build _ _ _ _ R
   (mathcomp_joint_source j) (mathcomp_joint_source_measurable j).
@@ -40,7 +40,7 @@ Definition mathcomp_joint_kernel
     (k : mc_joint A B → subprobability (mc_joint C D) R)
     (x : mc_joint A B) : measure (mc_joint C D) R := k x.
 Lemma mathcomp_joint_kernel_measurable k U : measurable U →
-  measurable_fun setT (fun x => mathcomp_joint_kernel k x U).
+  measurable_fun setT (λ x, mathcomp_joint_kernel k x U).
 Proof. by move=> mU mtop V mV. Qed.
 HB.instance Definition _ k := @isKernel.Build _ _ _ _ R
   (mathcomp_joint_kernel k) (mathcomp_joint_kernel_measurable k).
@@ -246,7 +246,7 @@ Proof.
   - exact (@mathcomp_kernel_bind_ret_l R).
   - exact (@mathcomp_kernel_bind_assoc R).
   - move=> A B mu k h H.
-    exact: (@mathcomp_native_bind_ae_eq R A B mu _ k h H (fun x Hx => Hx)).
+    exact: (@mathcomp_native_bind_ae_eq R A B mu _ k h H (λ x Hx, Hx)).
   - exact @mathcomp_native_lift_bind.
 Qed.
 
@@ -269,9 +269,9 @@ Theorem mathcomp_kernel_map_reflect (R : realType)
     (mu : MathCompKernelMeasure R X) (nu : MathCompKernelMeasure R Y)
     (f : X → A) (g : Y → B) (T : A → B → Prop) :
   mathcomp_kernel_lift T
-    (mathcomp_kernel_bind mu (fun x => mathcomp_kernel_ret R (f x)))
-    (mathcomp_kernel_bind nu (fun y => mathcomp_kernel_ret R (g y))) →
-  mathcomp_kernel_lift (fun x y => T (f x) (g y)) mu nu.
+    (mathcomp_kernel_bind mu (λ x, mathcomp_kernel_ret R (f x)))
+    (mathcomp_kernel_bind nu (λ y, mathcomp_kernel_ret R (g y))) →
+  mathcomp_kernel_lift (λ x y, T (f x) (g y)) mu nu.
 Proof.
   exact (@sem_lift_map_reflect _ (MathCompNodeSemanticMeasure R)
     (@MathCompNodeSemanticMeasureCoreLaws R G) (@MathCompNativeBindLaws R)

@@ -105,14 +105,14 @@ Definition attempt (sampler : tree bool) job : tree (phase + Empty_set) :=
   Vis (inr1 (RunMachine job fast)) (respond job).
 Definition controller_step sampler (pc : phase) : tree (phase + Empty_set) :=
   match pc with
-  | AwaitOrder => Vis (inr1 ReceiveOrder) (fun job => Ret (inl (Manufacturing job)))
+  | AwaitOrder => Vis (inr1 ReceiveOrder) (λ job, Ret (inl (Manufacturing job)))
   | Manufacturing job => attempt sampler job
   end.
 Definition controller sampler pc : tree Empty_set := PTree.iter (controller_step sampler) pc.
 
 (** Closed source sampler is embedded by the ordinary interpreter. *)
 Definition embed {E A} (t : ptree factoryE EnumQ A) : ptree E EnumQ A :=
-  PTree.interp (fun X (e : factoryE X) => match e with end) t.
+  PTree.interp (λ X (e : factoryE X), match e with end) t.
 Definition implementation_sampler : tree bool := embed third_to_two_fifths.
 Definition specification_sampler : tree bool := embed direct_two_fifths.
 Definition controller_impl := controller implementation_sampler AwaitOrder.
@@ -203,11 +203,11 @@ Local Notation "t ≈ₚ u" := (W eq t u)
 (** Local analysis endpoint: the native finite-round calculation is isolated
     here; the program calculation consumes only its behavioral equation. *)
 Lemma fair_binary_round_step x :
-  sample (vn_fair >>=ₘ fun b => ηₘ (binary_round_result x b))
+  sample (vn_fair >>=ₘ λ b, ηₘ (binary_round_result x b))
     ≈ₚ factory_standard_step x.
 Proof.
   change (Prob (bind_EnumQ vn_fair
-    (fun b => ret_EnumQ (binary_round_result x b))) (fun a => Ret a)
+    (λ b, ret_EnumQ (binary_round_result x b))) (λ a, Ret a)
     ≈ₚ factory_standard_step x).
   unfold factory_standard_step.
   rewrite fair_binary_round_measure. reflexivity.
@@ -298,7 +298,7 @@ Theorem implementation_sampler_correct : implementation_sampler ≈ₚ specifica
 Proof. apply embed_preserves. exact peutt_third_to_two_fifths_compositional. Qed.
 
 #[local] Instance attempt_Proper job :
-  Proper (canonical_peutt eq ==> canonical_peutt eq) (fun sampler => attempt sampler job).
+  Proper (canonical_peutt eq ==> canonical_peutt eq) (λ sampler, attempt sampler job).
 Proof.
   intros s t H. unfold attempt. eapply peutt_bind; [exact H|].
   intros x y ->. reflexivity.
@@ -452,12 +452,12 @@ Definition after_receive sampler job : tree Empty_set :=
 
 Lemma controller_order_unfold sampler :
   controller sampler AwaitOrder ≈ₚ
-  Vis (inr1 ReceiveOrder) (fun job => controller sampler (Manufacturing job)).
+  Vis (inr1 ReceiveOrder) (λ job, controller sampler (Manufacturing job)).
 Proof.
   unfold controller at 1. rewrite peutt_iter_unfold.
   change (Vis (inr1 ReceiveOrder)
-    (fun job => PTree.bind (Ret (inl (Manufacturing job))) (resume sampler)) ≈ₚ
-    Vis (inr1 ReceiveOrder) (fun job => controller sampler (Manufacturing job))).
+    (λ job, PTree.bind (Ret (inl (Manufacturing job))) (resume sampler)) ≈ₚ
+    Vis (inr1 ReceiveOrder) (λ job, controller sampler (Manufacturing job))).
   apply peutt_vis. intro job.
   transitivity (resume sampler (inl (Manufacturing job))).
   - exact (PTree.Eq.Algebra.peutt_bind_ret_l _ (resume sampler)).
@@ -491,42 +491,42 @@ Qed.
 (** The simple normal form keeps the actual implementation continuation.
     Only the finite pre-Vis sampling computation is replaced. *)
 Definition next_normal sampler job : tree Empty_set :=
-  Prob coin (fun fast => Vis (inr1 (RunMachine job fast)) (machine_cont sampler job)).
+  Prob coin (λ fast, Vis (inr1 (RunMachine job fast)) (machine_cont sampler job)).
 
 Lemma next_normal_form sampler job : sampler ≈ₚ native_sampler →
   after_receive sampler job ≈ₚ next_normal sampler job.
 Proof.
   intro H. unfold after_receive.
   transitivity (PTree.bind native_sampler
-    (fun fast => Vis (inr1 (RunMachine job fast)) (machine_cont sampler job))).
+    (λ fast, Vis (inr1 (RunMachine job fast)) (machine_cont sampler job))).
   - eapply peutt_bind; [exact H|]. intros b c ->. reflexivity.
-  - change (Prob coin (fun b => PTree.bind (Ret b)
-      (fun fast => Vis (inr1 (RunMachine job fast)) (machine_cont sampler job))) ≈ₚ
+  - change (Prob coin (λ b, PTree.bind (Ret b)
+      (λ fast, Vis (inr1 (RunMachine job fast)) (machine_cont sampler job))) ≈ₚ
       next_normal sampler job).
     eapply peutt_prob with (XR := eq).
     + apply sem_lift_refl. intro b. reflexivity.
     + intros b c ->. exact (PTree.Eq.Algebra.peutt_bind_ret_l c
-        (fun fast => Vis (inr1 (RunMachine job fast)) (machine_cont sampler job))).
+        (λ fast, Vis (inr1 (RunMachine job fast)) (machine_cont sampler job))).
 Qed.
 
 Definition next_device sampler job s := run_state (next_normal sampler job) s.
 Definition device_front sampler job s :=
   fast ←ω coin ;;
   ηω (FHVis (RunMachine job fast)
-    (fun reply => run_state (machine_cont sampler job reply) s)).
+    (λ reply, run_state (machine_cont sampler job reply) s)).
 
 Lemma next_device_hitting sampler job s :
   next_device sampler job s ⇓ₕ device_front sampler job s.
 Proof.
-  change (Prob coin (fun fast =>
-    Vis (RunMachine job fast) (fun reply => run_state (machine_cont sampler job reply) s))
+  change (Prob coin (λ fast,
+    Vis (RunMachine job fast) (λ reply, run_state (machine_cont sampler job reply) s))
     ⇓ₕ device_front sampler job s).
   unfold device_front.
   apply (stable_hitting_prob (FI := FreeOmegaObservableSemanticMeasure)
     (FO := FreeOmegaObservableSemanticOmega) (MX := FreeOmegaMixedMeasure)
-    (front := fun fast => ηω (FHVis (RunMachine job fast)
-      (fun reply => run_state (machine_cont sampler job reply) s))))
-    with (Good := fun _ => True).
+    (front := λ fast, ηω (FHVis (RunMachine job fast)
+      (λ reply, run_state (machine_cont sampler job reply) s))))
+    with (Good := λ _, True).
   - apply sem_ae_true.
   - intros b _. apply (stable_hitting_vis
       (FI := FreeOmegaObservableSemanticMeasure) (FO := FreeOmegaObservableSemanticOmega)).
@@ -537,7 +537,7 @@ Qed.
 Theorem next_device_frontier sampler job s out :
   sampler ≈ₚ native_sampler →
   run_state (controller sampler (Manufacturing job)) s ⇓ₕ out →
-  out ≈[stable_head_rel eq (fun t u => t ≈ₚ u)]ₘ device_front sampler job s.
+  out ≈[stable_head_rel eq (λ t u, t ≈ₚ u)]ₘ device_front sampler job s.
 Proof.
   intros H Hhit. eapply peutt_hitting_lift.
   - apply run_state_peutt_eq. transitivity (after_receive sampler job).
@@ -550,8 +550,8 @@ Qed.
 Definition accepts_mode (fast : bool) {X} (e : deviceE X) : bool :=
   match e with RunMachine _ b => Bool.eqb b fast | _ => false end.
 Definition mode_query sampler job s fast :=
-  device_front sampler job s >>=ₘ fun h =>
-  ηₘ (observe_stable_head (fun _ => false) (@accepts_mode fast) h).
+  device_front sampler job s >>=ₘ λ h,
+  ηₘ (observe_stable_head (λ _, false) (@accepts_mode fast) h).
 
 Lemma next_device_query sampler job s fast :
   next_event_query (MF := FreeOmega EnumQ)
@@ -560,10 +560,10 @@ Lemma next_device_query sampler job s fast :
 Proof. exists (device_front sampler job s). split; [apply next_device_hitting|apply sem_eq_refl]. Qed.
 
 Definition mode_measure fast : EnumQ bool :=
-  coin >>=ₘ fun b => ηₘ (Bool.eqb b fast).
+  coin >>=ₘ λ b, ηₘ (Bool.eqb b fast).
 Lemma mode_query_denotes sampler job s fast :
   free_omega_denotes (NI := EnumQ_SemanticMeasure) (NO := EnumQ_SemanticOmega)
-    (fun b : bool => b) (mode_query sampler job s fast) (mode_measure fast).
+    (λ b : bool, b) (mode_query sampler job s fast) (mode_measure fast).
 Proof.
   exists (mode_measure fast). split; [|apply sem_eq_refl].
   unfold mode_query, device_front, mode_measure.
@@ -571,20 +571,20 @@ Proof.
     observe_stable_head accepts_mode].
   constructor. intro b.
   exact (@FOOObserveRet EnumQ EnumQ_SemanticMeasure EnumQ_SemanticOmega
-    bool bool (fun x => x) (Bool.eqb b fast)).
+    bool bool (λ x, x) (Bool.eqb b fast)).
 Qed.
 
 Lemma mode_measure_probability fast :
   enumQ_expect enumQ_bool_indicator (mode_measure fast) = if fast then q else 1-q.
 Proof.
   change (enumQ_expect enumQ_bool_indicator
-    (bind_EnumQ coin (fun b => ret_EnumQ (Bool.eqb b fast))) =
+    (bind_EnumQ coin (λ b, ret_EnumQ (Bool.eqb b fast))) =
     if fast then q else 1-q).
   rewrite enumQ_expect_bind.
-  replace (fun b => enumQ_expect enumQ_bool_indicator (ret_EnumQ (Bool.eqb b fast)))
-    with (fun b => if Bool.eqb b fast then 1 else 0 : rat).
+  replace (λ b, enumQ_expect enumQ_bool_indicator (ret_EnumQ (Bool.eqb b fast)))
+    with (λ b, if Bool.eqb b fast then 1 else 0 : rat).
   2: { apply functional_extensionality. intro b. rewrite enumQ_expect_ret. reflexivity. }
-  change (enumQ_expect (fun b => if Bool.eqb b fast then 1 else 0) coin =
+  change (enumQ_expect (λ b, if Bool.eqb b fast then 1 else 0) coin =
     if fast then q else 1-q).
   rewrite rational_bernoulli_indicator. by destruct fast; rewrite /= ?addr0 ?add0r.
 Qed.

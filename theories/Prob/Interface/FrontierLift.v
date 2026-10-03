@@ -57,20 +57,20 @@ Class MeasureLaws (M : Type → Type) `{MI : MeasureInterface M}
   meas_eq_sym : ∀ A, Symmetric (@meas_eq M MI A);
   meas_eq_trans : ∀ A, Transitive (@meas_eq M MI A);
 
-  meas_ae_true : ∀ {A} (mu : M A), meas_ae mu (fun _ => True);
+  meas_ae_true : ∀ {A} (mu : M A), meas_ae mu (λ _, True);
   meas_ae_conj : ∀ {A} (mu : M A) (P Q : A → Prop),
       meas_ae mu P → meas_ae mu Q →
-      meas_ae mu (fun x => P x ∧ Q x);
+      meas_ae mu (λ x, P x ∧ Q x);
   meas_lift_proper_l : ∀ {A B} (R : A → B → Prop) mu mu' nu,
       meas_eq mu mu' → meas_lift R mu nu → meas_lift R mu' nu;
   meas_lift_proper_r : ∀ {A B} (R : A → B → Prop) mu nu nu',
       meas_eq nu nu' → meas_lift R mu nu → meas_lift R mu nu';
   meas_lift_sym : ∀ {A B} (R : A → B → Prop) mu nu,
-      meas_lift R mu nu → meas_lift (fun y x => R x y) nu mu;
+      meas_lift R mu nu → meas_lift (λ y x, R x y) nu mu;
   meas_lift_comp : ∀ {A B C}
       (R : A → B → Prop) (S : B → C → Prop) mu nu xi,
       meas_lift R mu nu → meas_lift S nu xi →
-      meas_lift (fun x z => ∃ y, R x y ∧ S y z) mu xi
+      meas_lift (λ x z, ∃ y, R x y ∧ S y z) mu xi
 }.
 
 (** Congruence of integration/bind under almost-everywhere equality.  It is
@@ -79,7 +79,7 @@ Class MeasureLaws (M : Type → Type) `{MI : MeasureInterface M}
 Class MeasureBindLaws (M : Type → Type) `{MI : MeasureInterface M} := {
   meas_bind_ae_proper : ∀ {A B} (mu : M A)
       (k1 k2 : A → M B),
-      meas_ae mu (fun x => meas_eq (k1 x) (k2 x)) →
+      meas_ae mu (λ x, meas_eq (k1 x) (k2 x)) →
       meas_eq (meas_bind mu k1) (meas_bind mu k2)
 }.
 
@@ -107,7 +107,7 @@ Class MeasureLiftAELaws (M : Type → Type)
   meas_lift_ae_transport_r : ∀ {A B}
       (R : A → B → Prop) (mu : M A) (nu : M B) (P : A → Prop),
       meas_lift R mu nu → meas_ae mu P →
-      meas_ae nu (fun y => ∃ x, R x y ∧ P x);
+      meas_ae nu (λ y, ∃ x, R x y ∧ P x);
   meas_lift_bind_ae : ∀ {A B C D}
       (R : A → B → Prop) (S : C → D → Prop)
       (mu : M A) (nu : M B) (k : A → M C) (h : B → M D)
@@ -147,7 +147,7 @@ Class MeasureMonadLaws (M : Type → Type)
       (k : A → M B) (h : B → M C),
       meas_eq
         (meas_bind (meas_bind mu k) h)
-        (meas_bind mu (fun x => meas_bind (k x) h))
+        (meas_bind mu (λ x, meas_bind (k x) h))
 }.
 
 (** Kleisli extension of almost-everywhere predicates. *)
@@ -172,10 +172,10 @@ Class MeasureCommutativeLaws (M : Type → Type)
       (f : A → B → C) (g : B → A → D),
       (∀ x y, R (f x y) (g y x)) →
       meas_lift R
-        (meas_bind mu (fun x =>
-          meas_bind nu (fun y => meas_ret (f x y))))
-        (meas_bind nu (fun y =>
-          meas_bind mu (fun x => meas_ret (g y x))))
+        (meas_bind mu (λ x,
+          meas_bind nu (λ y, meas_ret (f x y))))
+        (meas_bind nu (λ y,
+          meas_bind mu (λ x, meas_ret (g y x))))
 }.
 
 (** Full relational Fubini law for Kleisli kernels.  Unlike
@@ -191,8 +191,8 @@ Class MeasureKleisliCommutativeLaws (M : Type → Type)
       (k1 : A → B → M C) (k2 : B → A → M D),
       (∀ x y, meas_lift R (k1 x y) (k2 y x)) →
       meas_lift R
-        (meas_bind mu (fun x => meas_bind nu (fun y => k1 x y)))
-        (meas_bind nu (fun y => meas_bind mu (fun x => k2 y x)))
+        (meas_bind mu (λ x, meas_bind nu (λ y, k1 x y)))
+        (meas_bind nu (λ y, meas_bind mu (λ x, k2 y x)))
 }.
 
 #[global] Instance meas_eq_equivalence

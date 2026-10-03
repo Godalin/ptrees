@@ -1,6 +1,8 @@
 (** Backend-specific external validation: raw finite-real completion syntax
     has an enumerable cover, independently of modelability. Only modelable
     endpoints induce countably supported OmegaVal values. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
@@ -49,7 +51,7 @@ Proof.
   induction t as [x| |X mu k IH|c IH].
   - apply FOAERet; exists O; reflexivity.
   - apply FOAEZero.
-  - apply FOAESample with (Good := fun x => exists w, List.In (w,x) (subenumR_raw mu)).
+  - apply FOAESample with (Good := λ x, exists w, List.In (w,x) (subenumR_raw mu)).
     + intros w x Hin _; exists w; exact Hin.
     + intros x [w Hin]. apply List.In_nth_error in Hin; destruct Hin as [i Hi].
       eapply free_omega_ae_mono; [|exact (IH x)].

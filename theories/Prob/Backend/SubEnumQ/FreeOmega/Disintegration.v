@@ -20,7 +20,7 @@ Theorem free_omega_sample_disintegration {A B C}
     (continue : B → FreeOmega SubEnumQ C) :
   sem_eq (subenumQ_bind mu conditional) joint →
   free_omega_qlift eq
-    (FOSample mu (fun a => FOSample (conditional a) continue))
+    (FOSample mu (λ a, FOSample (conditional a) continue))
     (FOSample joint continue).
 Proof.
   intro Hreconstruct.
@@ -42,13 +42,13 @@ Qed.
 Theorem free_omega_resample_joint {A B C}
     (joint : SubEnumQ (A * B)) (mu : SubEnumQ A)
     (continue : A * B → FreeOmega SubEnumQ C) :
-  sem_lift (fun p x => fst p = x) joint mu →
+  sem_lift (λ p x, fst p = x) joint mu →
   ∃ conditional : A → SubEnumQ (A * B),
     free_omega_qlift eq
-      (FOSample mu (fun a => FOSample (conditional a) continue))
+      (FOSample mu (λ a, FOSample (conditional a) continue))
       (FOSample joint continue) ∧
-    (∀ a, sem_ae (conditional a) (fun p => fst p = a)) ∧
-    sem_ae mu (fun a => subenumQ_total (conditional a)).
+    (∀ a, sem_ae (conditional a) (λ p, fst p = a)) ∧
+    sem_ae mu (λ a, subenumQ_total (conditional a)).
 Proof.
   intro Hgraph.
   destruct (subenumQ_disintegration_over Hgraph)

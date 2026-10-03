@@ -31,10 +31,10 @@ Proof.
   revert i; induction n as [|n IH]; intro i.
   - intros f Hf. reflexivity.
   - change (free_omega_model_denotes native
-      (free_omega_bind (K i) (fun v => match v with
+      (free_omega_bind (K i) (λ v, match v with
         | inl j => sem_iter_approx (MI := FI) (MO := FO) K n j
         | inr a => FORet a end))
-      (oval_bind (V i) (fun v => match v with
+      (oval_bind (V i) (λ v, match v with
         | inl j => oval_iter_approx V n j | inr a => oval_ret R a end))).
     apply model_denotes_bind; [apply HK|].
     intros [j|a]; [apply IH|intros f Hf; reflexivity].
@@ -42,12 +42,12 @@ Qed.
 
 Theorem free_omega_iteration_denotes_lfp i :
   free_omega_model_denotes native
-    (FOLub (fun n => sem_iter_approx (MI := FI) (MO := FO) K n i)) (oval_iter V i).
+    (FOLub (λ n, sem_iter_approx (MI := FI) (MO := FO) K n i)) (oval_iter V i).
 Proof. apply model_denotes_lub. intro n. apply free_omega_iter_approx_denotes. Qed.
 
 Corollary free_omega_iteration_modelable i :
   free_omega_modelable native
-    (FOLub (fun n => sem_iter_approx (MI := FI) (MO := FO) K n i)).
+    (FOLub (λ n, sem_iter_approx (MI := FI) (MO := FO) K n i)).
 Proof.
   apply (proj2 (modelable_iff_denotes _ _)).
   exists (oval_iter V i). apply free_omega_iteration_denotes_lfp.

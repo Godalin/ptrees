@@ -61,7 +61,7 @@ Class ProbRelLift (M : Type → Type) `{DiscreteInterface M} := {
   prob_lift_sym : ∀ {A B : eqType}
       (R : A → B → Prop) (mu : M A) (nu : M B),
       prob_lift R mu nu →
-      prob_lift (fun b a => R a b) nu mu
+      prob_lift (λ b a, R a b) nu mu
 }.
 
 (** Composition is separated because many measure libraries expose coupling
@@ -74,6 +74,6 @@ Class ComposableProbRelLift (M : Type → Type)
       prob_lift R mu nu →
       prob_lift S nu xi →
       prob_lift
-        (fun a c => ∃ b, R a b ∧ S b c)
+        (λ a c, ∃ b, R a b ∧ S b c)
         mu xi
 }.

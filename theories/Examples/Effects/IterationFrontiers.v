@@ -49,16 +49,16 @@ Section UnboundedMixedStep.
     before exposing a retry, a return, or an offered event. *)
 Variable coin : SubEnumQ bool.
 CoFixpoint search (n : nat) : tree (nat + nat) :=
-  Prob coin (fun b =>
-    if b then Prob coin (fun c => Ret (if c then inl (S n) else inr n))
-    else Prob coin (fun c =>
-      if c then Vis (At n) (fun answer : bool => Ret (if answer then inl n else inr n))
+  Prob coin (λ b,
+    if b then Prob coin (λ c, Ret (if c then inl (S n) else inr n))
+    else Prob coin (λ c,
+      if c then Vis (At n) (λ answer : bool, Ret (if answer then inl n else inr n))
       else Tau (search (S n)))).
 
 (** This is a full MF-valued frontier, retaining the entire visible
     continuation. No finite native state/result distribution is supplied. *)
 Definition search_front n : MF (stable_head probeE SubEnumQ (nat + nat)) :=
-  FOLub (fun fuel => ptree_hitting_approx (FI := FI) (FO := FO)
+  FOLub (λ fuel, ptree_hitting_approx (FI := FI) (FO := FO)
     fuel (observe (search n))).
 
 Lemma search_front_hitting n : hits (search n) (search_front n).
@@ -76,14 +76,14 @@ Example return_is_absorbing n :
 Proof. reflexivity. Qed.
 Example visible_continuation_is_recursive n :
   iteration_summary_target search
-    (FHVis (At n) (fun b : bool => Ret (if b then inl n else inr n))) =
-  SHStable (FHVis (At n) (fun b : bool =>
+    (FHVis (At n) (λ b : bool, Ret (if b then inl n else inr n))) =
+  SHStable (FHVis (At n) (λ b : bool,
     iter_active search (Ret (if b then inl n else inr n)))).
 Proof. reflexivity. Qed.
 Example empty_response_is_absorbing :
   iteration_summary_target search
-    (FHVis Dead (fun x : Empty_set => match x with end)) =
-  SHStable (FHVis Dead (fun x : Empty_set =>
+    (FHVis Dead (λ x : Empty_set, match x with end)) =
+  SHStable (FHVis Dead (λ x : Empty_set,
     iter_active search (match x with end))).
 Proof. reflexivity. Qed.
 End UnboundedMixedStep.
@@ -166,21 +166,21 @@ Lemma retry_approx_zero n i : sem_iter_approx (MI := FI) (MO := FO) retry n i = 
 Proof. revert i; induction n; intro i; [reflexivity|apply IHn]. Qed.
 Example endless_retry_is_zero i : sem_iter (MI := FI) (MO := FO) retry i FOZero.
 Proof.
-  eapply sem_lub_chain_proper with (chain := fun _ => FOZero).
+  eapply sem_lub_chain_proper with (chain := λ _, FOZero).
   - intro n. rewrite retry_approx_zero. apply sem_eq_refl.
   - apply sem_lub_constant.
 Qed.
 (** Fixed-point equations alone do not characterize divergence: the
     endlessly retrying loop also has this spurious, nonleast solution. *)
 Example endless_retry_has_other_fixed_point i :
-  sem_iter_step (MI := FI) retry (fun _ => FORet true) i = FORet true.
+  sem_iter_step (MI := FI) retry (λ _, FORet true) i = FORet true.
 Proof. reflexivity. Qed.
 Definition lost (_ : nat) : MF (nat+bool) := FOZero.
 Lemma lost_approx_zero n i : sem_iter_approx (MI := FI) (MO := FO) lost n i = FOZero.
 Proof. destruct n; reflexivity. Qed.
 Example lost_kernel_is_zero i : sem_iter (MI := FI) (MO := FO) lost i FOZero.
 Proof.
-  eapply sem_lub_chain_proper with (chain := fun _ => FOZero).
+  eapply sem_lub_chain_proper with (chain := λ _, FOZero).
   - intro n. rewrite lost_approx_zero. apply sem_eq_refl.
   - apply sem_lub_constant.
 Qed.
@@ -226,7 +226,7 @@ Local Notation hits t out := (ptree_stable_hitting (FI := FI) (FO := FO) (observ
 Section ArbitraryKernel.
 Variable kernel : nat → SubEnumQ (nat + (nat * bool)).
 Definition delayed_round i : ptree questionE SubEnumQ (nat + (nat * bool)) :=
-  Tau (Prob (kernel i) (fun x => Ret x)).
+  Tau (Prob (kernel i) (λ x, Ret x)).
 
 Example delayed_kernel_summary i :
   hits (PTree.iter delayed_round i) (iteration_frontier kernel i).
@@ -234,7 +234,7 @@ Proof.
   eapply iteration_frontier_summary_hitting; try typeclasses eauto.
   intro j. apply stable_hitting_tau.
   eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure))
-    with (Good := fun _ => True).
+    with (Good := λ _, True).
   - apply sem_ae_true.
   - intros x _. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
 Qed.
@@ -245,8 +245,8 @@ Definition only_bit (h : stable_head questionE SubEnumQ (nat * bool)) :=
 (** Only the bit projection has a supplied native limit, not the nat/bit
     joint distribution. The state and returned nat remain unbounded. *)
 Example projected_limit i (out : SubEnumQ (option bool)) :
-  sem_lub (fun n => iteration_observation_round kernel
-    (fun sb => Some (snd sb)) n i) out →
+  sem_lub (λ n, iteration_observation_round kernel
+    (λ sb, Some (snd sb)) n i) out →
   free_omega_observes only_bit (iteration_frontier kernel i) out.
 Proof. apply iteration_frontier_observes. reflexivity. Qed.
 
@@ -256,14 +256,14 @@ End ArbitraryKernel.
 
 (** Zero is a legitimate partial kernel; the summary does not assert totality. *)
 Example zero_mass_summary :
-  hits (PTree.iter (delayed_round (fun _ => sem_zero)) 0)
-    (iteration_frontier (fun _ : nat => @sem_zero SubEnumQ NI NO (nat + (nat * bool))%type) 0).
+  hits (PTree.iter (delayed_round (λ _, sem_zero)) 0)
+    (iteration_frontier (λ _ : nat, @sem_zero SubEnumQ NI NO (nat + (nat * bool))%type) 0).
 Proof. apply delayed_kernel_summary. Qed.
 
 (** Every round returns a retry, but the loop never returns a value. *)
 Definition retry_kernel (i : nat) : SubEnumQ (nat + bool) := sem_ret (inl (S i)).
 Example endless_retry_summary i :
-  hits (PTree.iter (fun j => (Ret (inl (S j)) : ptree questionE SubEnumQ (nat + bool))) i)
+  hits (PTree.iter (λ j, (Ret (inl (S j)) : ptree questionE SubEnumQ (nat + bool))) i)
     (iteration_frontier retry_kernel i).
 Proof.
   eapply iteration_frontier_summary_hitting; try typeclasses eauto.
@@ -304,19 +304,19 @@ Local Notation FO := (FreeOmegaObservableSemanticOmega
 Local Notation hits t out := (ptree_stable_hitting (FI := FI) (FO := FO) (observe t) out).
 
 Definition dead_exit (_ : unit) : ptree deadE SubEnumQ bool :=
-  Vis DeadA (fun x : Empty_set => match x with end).
+  Vis DeadA (λ x : Empty_set, match x with end).
 Definition dead_front (_ : unit) :=
-  FORet (FHVis DeadA (fun x : Empty_set => match x with end)) :
+  FORet (FHVis DeadA (λ x : Empty_set, match x with end)) :
     FreeOmega SubEnumQ (stable_head deadE SubEnumQ bool).
 
 Section Kernels.
 (** No totality premise: includes zero-mass and partial native kernels. *)
 Variable kernel : nat → SubEnumQ (nat + unit).
-Definition round i : ptree deadE SubEnumQ (nat + unit) := Prob (kernel i) (fun v => Ret v).
-Lemma round_hits i : hits (round i) (FOSample (kernel i) (fun v => FORet (FHRet v))).
+Definition round i : ptree deadE SubEnumQ (nat + unit) := Prob (kernel i) (λ v, Ret v).
+Lemma round_hits i : hits (round i) (FOSample (kernel i) (λ v, FORet (FHRet v))).
 Proof.
   eapply (stable_hitting_prob (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure))
-    with (Good := fun _ => True).
+    with (Good := λ _, True).
   - apply sem_ae_true.
   - intros v _. apply (stable_hitting_ret (FI := FI) (FO := FO) (MX := FreeOmegaMixedMeasure)).
 Qed.
@@ -337,16 +337,16 @@ Proof. eapply absorbing_iteration_exists; [exact round_hits|exact dead_exit_hits
 End Kernels.
 
 Example zero_kernel_allowed :
-  hits (PTree.bind (PTree.iter (round (fun _ => subenumQ_zero)) 0) dead_exit)
-    (absorbing_frontier (fun _ : nat => @subenumQ_zero (nat + unit)%type) dead_front 0).
+  hits (PTree.bind (PTree.iter (round (λ _, subenumQ_zero)) 0) dead_exit)
+    (absorbing_frontier (λ _ : nat, @subenumQ_zero (nat + unit)%type) dead_front 0).
 Proof. apply empty_response_frontier. Qed.
 
 (** No response is executed to form the offered-event head. *)
-Example dead_event_is_visible : dead_front tt = FORet (FHVis DeadA (fun x : Empty_set => match x with end)).
+Example dead_event_is_visible : dead_front tt = FORet (FHVis DeadA (λ x : Empty_set, match x with end)).
 Proof. reflexivity. Qed.
 Example distinct_dead_heads :
-  (FHVis DeadA (fun x : Empty_set => match x with end) : stable_head deadE SubEnumQ bool) ≠
-  FHVis DeadB (fun x : Empty_set => match x with end).
+  (FHVis DeadA (λ x : Empty_set, match x with end) : stable_head deadE SubEnumQ bool) ≠
+  FHVis DeadB (λ x : Empty_set, match x with end).
 Proof. discriminate. Qed.
 
 Fail Check PTree.Eq.Backend.MathComp.mathcomp_peutt.

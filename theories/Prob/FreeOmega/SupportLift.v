@@ -27,9 +27,9 @@ Polymorphic Definition free_omega_support_lift {MN}
     `{NI : SemanticMeasure MN} {A B}
     (R : A → B → Prop) (mu : FreeOmega MN A) (nu : FreeOmega MN B) : Prop :=
   (∀ P, free_omega_ae P mu →
-    free_omega_ae (fun y => ∃ x, R x y ∧ P x) nu) ∧
+    free_omega_ae (λ y, ∃ x, R x y ∧ P x) nu) ∧
   (∀ Q, free_omega_ae Q nu →
-    free_omega_ae (fun x => ∃ y, R x y ∧ Q y) mu).
+    free_omega_ae (λ x, ∃ y, R x y ∧ Q y) mu).
 
 Lemma free_omega_lift_support_lift {MN}
     `{NI : SemanticMeasure MN}
@@ -54,16 +54,16 @@ Lemma free_omega_approx_ae_backward {MN}
     `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     {A B} (R : A → B → Prop) mu nu (Q : B → Prop) :
   free_omega_approx R mu nu → free_omega_ae Q nu →
-  free_omega_ae (fun x => ∃ y, R x y ∧ Q y) mu.
+  free_omega_ae (λ x, ∃ y, R x y ∧ Q y) mu.
 Proof.
   intros Happrox. induction Happrox; intro HQ.
   - constructor.
   - dependent destruction HQ. constructor. exists y. split; assumption.
   - dependent destruction HQ.
     eapply FOAESample with
-      (Good := fun x => exists y, S x y ∧ Good y).
+      (Good := λ x, exists y, S x y ∧ Good y).
     + apply sem_lift_ae_transport_r with
-        (R := fun y x => S x y) (mu := nu) (nu := mu).
+        (R := λ y x, S x y) (mu := nu) (nu := mu).
       * apply sem_lift_sym. exact H.
       * exact H2.
     + intros x [y [Hxy Hy]]. eapply H1; eauto.
@@ -88,7 +88,7 @@ Lemma free_omega_support_lift_sym {MN}
     `{NI : SemanticMeasure MN} {A B}
     (R : A → B → Prop) mu nu :
   free_omega_support_lift R mu nu →
-  free_omega_support_lift (fun y x => R x y) nu mu.
+  free_omega_support_lift (λ y x, R x y) nu mu.
 Proof. intros [Hright Hleft]. split; assumption. Qed.
 
 Lemma free_omega_support_lift_comp {MN}
@@ -97,7 +97,7 @@ Lemma free_omega_support_lift_comp {MN}
   free_omega_support_lift R mu mid →
   free_omega_support_lift T mid nu →
   free_omega_support_lift
-    (fun x z => ∃ y, R x y ∧ T y z) mu nu.
+    (λ x z, ∃ y, R x y ∧ T y z) mu nu.
 Proof.
   intros [HRr HRl] [HTr HTl]. split.
   - intros P HP. specialize (HRr P HP). specialize (HTr _ HRr).
@@ -116,7 +116,7 @@ Lemma free_omega_support_lift_restrict {MN}
     {A B} (R : A → B → Prop) mu nu (P : A → Prop) (Q : B → Prop) :
   free_omega_support_lift R mu nu →
   free_omega_ae P mu → free_omega_ae Q nu →
-  free_omega_support_lift (fun x y => R x y ∧ P x ∧ Q y) mu nu.
+  free_omega_support_lift (λ x y, R x y ∧ P x ∧ Q y) mu nu.
 Proof.
   intros [Hright Hleft] HP HQ. split.
   - intros P0 HP0.
@@ -176,15 +176,15 @@ Proof.
   intros HT Hkh. split.
   - intros P HP. dependent destruction HP.
     eapply FOAESample with
-      (Good := fun y => exists x, T x y ∧ Good x).
+      (Good := λ y, exists x, T x y ∧ Good x).
     + eapply sem_lift_ae_transport_r; eassumption.
     + intros y [x [Hxy Hx]].
       apply (proj1 (Hkh x y Hxy) P). eauto.
   - intros Q HQ. dependent destruction HQ.
     eapply FOAESample with
-      (Good := fun x => exists y, T x y ∧ Good y).
+      (Good := λ x, exists y, T x y ∧ Good y).
     + eapply sem_lift_ae_transport_r with
-        (R := fun y x => T x y) (mu := nu) (nu := mu).
+        (R := λ y x, T x y) (mu := nu) (nu := mu).
       * apply sem_lift_sym. exact HT.
       * eassumption.
     + intros x [y [Hxy Hy]].
@@ -196,7 +196,7 @@ Lemma free_omega_ae_sample_inv {MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     {A C} (mu : MN C) (k : C → FreeOmega MN A) (P : A → Prop) :
   free_omega_ae P (FOSample mu k) →
-  sem_ae mu (fun x => free_omega_ae P (k x)).
+  sem_ae mu (λ x, free_omega_ae P (k x)).
 Proof.
   intro HP. dependent destruction HP.
   eapply sem_ae_mono; [|eassumption]. intros x Hx. eauto.
@@ -214,19 +214,19 @@ Lemma free_omega_support_lift_sample_lub {MN}
     free_omega_support_lift R (out x) (FOLub (chain x))) →
   free_omega_support_lift R
     (FOSample mu out)
-    (FOLub (fun n => FOSample mu (fun x => chain x n))).
+    (FOLub (λ n, FOSample mu (λ x, chain x n))).
 Proof.
   intros HGood Hout. split.
   - intros P HP. apply free_omega_ae_sample_inv in HP. constructor. intro n.
     eapply FOAESample with
-      (Good := fun x => Good x ∧ free_omega_ae P (out x)).
+      (Good := λ x, Good x ∧ free_omega_ae P (out x)).
     + apply sem_ae_conj; assumption.
     + intros x [HxGood HxP].
       pose proof ((proj1 (Hout x HxGood)) P HxP) as Hlub.
       dependent destruction Hlub. eauto.
   - intros Q HQ. dependent destruction HQ.
     eapply FOAESample with
-      (Good := fun x => Good x ∧
+      (Good := λ x, Good x ∧
         ∀ n, free_omega_ae Q (chain x n)).
     + apply sem_ae_conj; [exact HGood|].
       apply sem_ae_countable. intro n.
@@ -252,7 +252,7 @@ Lemma free_omega_support_lift_lub_zero_prefix_l {MN}
     (d : nat → FreeOmega MN B) :
   (∀ n, free_omega_support_lift R (c n) (d n)) →
   free_omega_support_lift R
-    (FOLub (fun n => match n with O => FOZero
+    (FOLub (λ n, match n with O => FOZero
       | Datatypes.S n' => c n' end)) (FOLub d).
 Proof.
   intro Hcd. split.
@@ -275,12 +275,12 @@ Lemma free_omega_support_lift_sample_zero {MN}
     `{NI : SemanticMeasure MN}
     `{NC : @SemanticMeasureCoreLaws MN NI}
     {A B C} (R : A → B → Prop) (mu : MN C) :
-  free_omega_support_lift R (FOSample mu (fun _ => @FOZero MN A))
+  free_omega_support_lift R (FOSample mu (λ _, @FOZero MN A))
     (@FOZero MN B).
 Proof.
   split; intros P HP.
   - constructor.
-  - eapply FOAESample with (Good := fun _ => True).
+  - eapply FOAESample with (Good := λ _, True).
     + apply sem_ae_true.
     + intros. constructor.
 Qed.
@@ -289,7 +289,7 @@ Lemma free_omega_support_lift_lub_constant_r {MN}
     `{NI : SemanticMeasure MN} {A B}
     (R : A → B → Prop) mu nu :
   free_omega_support_lift R mu nu →
-  free_omega_support_lift R mu (FOLub (fun _ => nu)).
+  free_omega_support_lift R mu (FOLub (λ _, nu)).
 Proof.
   intros [Hright Hleft]. split.
   - intros P HP. constructor. intro n. exact (Hright P HP).
@@ -316,8 +316,8 @@ Lemma free_omega_support_lift_bind_diagonal {MN}
     (kernel_out x) (FOLub (kernels x))) →
   free_omega_support_lift R
     (free_omega_bind source_out kernel_out)
-    (FOLub (fun n => free_omega_bind (source n)
-      (fun x => kernels x n))).
+    (FOLub (λ n, free_omega_bind (source n)
+      (λ x, kernels x n))).
 Proof.
   intros Hsource_inc Hkernels_inc Hsource Hkernels. split.
   - intros P HP. apply free_omega_ae_bind_inv in HP.
@@ -330,14 +330,14 @@ Proof.
     dependent destruction HkernelP. eauto.
   - intros Q HQ. dependent destruction HQ.
     apply free_omega_ae_bind with
-      (P := fun x => ∀ j, free_omega_ae Q (kernels x j)).
+      (P := λ x, ∀ j, free_omega_ae Q (kernels x j)).
     + eapply free_omega_ae_mono.
       2: { apply (proj2 Hsource). constructor. intro i.
         apply free_omega_ae_countable. intro j.
       pose (fuel := i + j).
       assert (Hdiag : free_omega_ae Q
           (free_omega_bind (source fuel)
-            (fun x => kernels x fuel))) by eauto.
+            (λ x, kernels x fuel))) by eauto.
       apply free_omega_ae_bind_inv in Hdiag.
       pose proof (free_omega_approx_steps Hsource_inc i j) as Hsrc.
       pose proof (free_omega_approx_ae_backward
@@ -366,8 +366,8 @@ Lemma free_omega_support_lift_double_diagonal {MN}
   (∀ outer inner,
     free_omega_approx eq (grid outer inner) (grid (S outer) inner)) →
   free_omega_support_lift eq
-    (FOLub (fun outer => FOLub (grid outer)))
-    (FOLub (fun fuel => grid fuel fuel)).
+    (FOLub (λ outer, FOLub (grid outer)))
+    (FOLub (λ fuel, grid fuel fuel)).
 Proof.
   intros Hrows Hcols. split.
   - intros P HP. dependent destruction HP. constructor. intro fuel.
@@ -384,7 +384,7 @@ Proof.
     replace (inner + outer) with fuel in Hrow by
       (unfold fuel; apply Nat.add_comm).
     pose proof (free_omega_approx_steps
-      (fun n => Hcols n fuel) outer inner) as Hcol.
+      (λ n, Hcols n fuel) outer inner) as Hcol.
     pose proof (free_omega_approx_trans Hrow Hcol) as Happrox.
     pose proof (free_omega_approx_ae_backward
       (R := eq) Happrox Hfuel) as Hback.
@@ -399,10 +399,10 @@ Lemma free_omega_support_lift_sample_bind {MN}
     (mu : MN C) (h : C → MN D)
     (k : D → FreeOmega MN A) (l : D → FreeOmega MN B) :
   (∀ P, sem_ae (sem_bind mu h) P ↔
-    sem_ae mu (fun x => sem_ae (h x) P)) →
+    sem_ae mu (λ x, sem_ae (h x) P)) →
   (∀ y, free_omega_support_lift R (k y) (l y)) →
   free_omega_support_lift R
-    (FOSample mu (fun x => FOSample (h x) k))
+    (FOSample mu (λ x, FOSample (h x) k))
     (FOSample (sem_bind mu h) l).
 Proof.
   intros Hbind Hkl. split.
@@ -411,7 +411,7 @@ Proof.
     | Houter : sem_ae mu ?Good,
       Hinner : ∀ x, ?Good x -> _ |- _ =>
       eapply FOAESample with
-        (Good := fun y => exists x, Good x ∧
+        (Good := λ y, exists x, Good x ∧
           free_omega_ae P (k y));
       [apply (proj2 (Hbind _));
        eapply sem_ae_mono; [|exact Houter];
@@ -425,7 +425,7 @@ Proof.
   - intros Q HQ. dependent destruction HQ.
     apply (proj1 (Hbind _)) in H.
     eapply FOAESample with
-      (Good := fun x => sem_ae (h x) Good).
+      (Good := λ x, sem_ae (h x) Good).
     + exact H.
     + intros x Hx. eapply FOAESample with (Good := Good).
       * exact Hx.
@@ -435,7 +435,7 @@ Qed.
 Definition semantic_product {MN}
     `{NI : SemanticMeasure MN} {X Y}
     (mu : MN X) (nu : MN Y) : MN (X * Y)%type :=
-  sem_bind mu (fun x => sem_bind nu (fun y => sem_ret (x, y))).
+  sem_bind mu (λ x, sem_bind nu (λ y, sem_ret (x, y))).
 
 Lemma free_omega_ae_sample2_product_iff {MN}
     `{NI : SemanticMeasure MN}
@@ -444,9 +444,9 @@ Lemma free_omega_ae_sample2_product_iff {MN}
     `{NBAE : @SemanticMeasureBindAEExactLaws MN NI}
     {A X Y} (P : A → Prop) (mu : MN X) (nu : MN Y)
     (k : X → Y → FreeOmega MN A) :
-  free_omega_ae P (FOSample mu (fun x => FOSample nu (k x))) ↔
+  free_omega_ae P (FOSample mu (λ x, FOSample nu (k x))) ↔
   sem_ae (semantic_product mu nu)
-    (fun p => free_omega_ae P (k (fst p) (snd p))).
+    (λ p, free_omega_ae P (k (fst p) (snd p))).
 Proof.
   split.
   - intro Hnested. dependent destruction Hnested.
@@ -459,15 +459,15 @@ Proof.
   - intro Hproduct.
     apply (proj1 (sem_ae_bind_iff _ _ _)) in Hproduct.
     eapply FOAESample with
-      (Good := fun x => sem_ae
-        (sem_bind nu (fun y => sem_ret (x, y)))
-        (fun p => free_omega_ae P (k (fst p) (snd p)))).
+      (Good := λ x, sem_ae
+        (sem_bind nu (λ y, sem_ret (x, y)))
+        (λ p, free_omega_ae P (k (fst p) (snd p)))).
     + exact Hproduct.
     + intros x Hx.
       apply (proj1 (sem_ae_bind_iff _ _ _)) in Hx.
       eapply FOAESample with
-        (Good := fun y => sem_ae (sem_ret (x, y))
-          (fun p => free_omega_ae P (k (fst p) (snd p)))).
+        (Good := λ y, sem_ae (sem_ret (x, y))
+          (λ p, free_omega_ae P (k (fst p) (snd p)))).
       * exact Hx.
       * intros y Hy. apply (proj1 (sem_ae_ret_iff _ _)) in Hy.
         exact Hy.
@@ -491,13 +491,13 @@ Lemma free_omega_support_lift_sample_exchange {MN}
     (semantic_product mu nu) (semantic_product nu mu) →
   (∀ x y, free_omega_support_lift R (k1 x y) (k2 y x)) →
   free_omega_support_lift R
-    (FOSample mu (fun x => FOSample nu (k1 x)))
-    (FOSample nu (fun y => FOSample mu (k2 y))).
+    (FOSample mu (λ x, FOSample nu (k1 x)))
+    (FOSample nu (λ y, FOSample mu (k2 y))).
 Proof.
   intros Hswap Hkl. split.
   - intros P HP.
     apply (proj2 (free_omega_ae_sample2_product_iff
-      (fun b => exists a, R a b ∧ P a) nu mu k2)).
+      (λ b, exists a, R a b ∧ P a) nu mu k2)).
     pose proof (proj1 (free_omega_ae_sample2_product_iff
       P mu nu k1) HP) as Hprod.
     pose proof (sem_lift_ae_transport_r Hswap Hprod) as Htransport.
@@ -506,7 +506,7 @@ Proof.
     subst x'. subst y'. apply (proj1 (Hkl x y) P). exact HPxy.
   - intros Q HQ.
     apply (proj2 (free_omega_ae_sample2_product_iff
-      (fun a => exists b, R a b ∧ Q b) mu nu k1)).
+      (λ a, exists b, R a b ∧ Q b) mu nu k1)).
     pose proof (proj1 (free_omega_ae_sample2_product_iff
       Q nu mu k2) HQ) as Hprod.
     pose proof (sem_lift_ae_transport_r (sem_lift_sym Hswap) Hprod)

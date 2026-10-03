@@ -1,5 +1,7 @@
 (** Checked native relational certificates. Relational lub is deliberately
     absent: ordinary omega completeness does not prove coupling compactness. *)
+From Coq Require Import Utf8.
+
 From mathcomp Require Import reals.
 From PTree.Prob.Interface Require Import Measure Omega Mixed RelationalClosure.
 From PTree.Prob.Backend.MathComp Require Import Kernel Measure NativeLaws BindLaws.
@@ -20,8 +22,8 @@ Proof. apply relational_mixed_bind_of_laws. typeclasses eauto. Qed.
 Theorem mathcomp_relational_zero : relational_zero NO.
 Proof.
   intros A B T.
-  pose (k := fun x : Empty_set => match x return MathCompKernelMeasure R A with end).
-  pose (h := fun x : Empty_set => match x return MathCompKernelMeasure R B with end).
+  pose (k := λ x : Empty_set, match x return MathCompKernelMeasure R A with end).
+  pose (h := λ x : Empty_set, match x return MathCompKernelMeasure R B with end).
   eapply mathcomp_kernel_lift_proper_l with
     (mu := mathcomp_kernel_bind (mathcomp_kernel_zero R) k).
   - apply mathcomp_native_bind_zero_left.

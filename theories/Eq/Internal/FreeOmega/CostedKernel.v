@@ -34,14 +34,14 @@ Local Notation hit :=
   (@stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega State Out).
 
 Definition costed_kernel s : MF (stable_target State Out) :=
-  FOSample (measure s) (fun x => FORet (target s x)).
+  FOSample (measure s) (λ x, FORet (target s x)).
 
 Definition costed_kernel_cut cap s : MF (stable_target State Out) :=
-  FOSample (measure s) (fun x =>
+  FOSample (measure s) (λ x,
     if Nat.leb (cost s x) cap then FORet (target s x) else FOZero).
 
 Fixpoint costed_hitting_approx rounds fuel s : MF Out :=
-  FOSample (measure s) (fun x =>
+  FOSample (measure s) (λ x,
     if Nat.leb (cost s x) fuel then
       match target s x with
       | SHStable o => FORet o
@@ -123,11 +123,11 @@ Qed.
 
 Lemma costed_cut_target_limit s x :
   free_omega_qlift eq (FORet (target s x))
-    (FOLub (fun n => if Nat.leb (cost s x) (S n)
+    (FOLub (λ n, if Nat.leb (cost s x) (S n)
       then FORet (target s x) else FOZero)).
 Proof.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := FOLub (fun _ => FORet (target s x))).
+    (mid := FOLub (λ _, FORet (target s x))).
   - apply FOQLLubConstantR, FOQLStructural, FOLRet. reflexivity.
   - apply FOQLCofinal.
     + intro n. apply FOApproxRet. reflexivity.
@@ -147,10 +147,10 @@ Qed.
 
 Lemma costed_kernel_limit s :
   free_omega_qlift eq (costed_kernel s)
-    (FOLub (fun n => costed_kernel_cut (S n) s)).
+    (FOLub (λ n, costed_kernel_cut (S n) s)).
 Proof.
   unfold costed_kernel, costed_kernel_cut.
-  apply FOQLSampleLub with (Good := fun _ => True).
+  apply FOQLSampleLub with (Good := λ _, True).
   - apply sem_ae_true.
   - intros x _ n. destruct (Nat.leb (cost s x) (S n)) eqn:Hn;
       destruct (Nat.leb (cost s x) (S (S n))) eqn:Hsn;
@@ -173,8 +173,8 @@ Qed.
 
 Theorem costed_hitting_cofinal s :
   free_omega_chains_cofinal eq
-    (fun n => hit (costed_kernel_cut (S n)) n s)
-    (fun n => costed_hitting_approx n n s).
+    (λ n, hit (costed_kernel_cut (S n)) n s)
+    (λ n, costed_hitting_approx n n s).
 Proof.
   split.
   - intro n. exists ((S n) * (S n)).
@@ -194,11 +194,11 @@ Context `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
     not agree.  In particular this theorem does not assert equality of
     prefix-state masses, which can fail for subprobability kernels. *)
 Theorem costed_hitting_limit s :
-  free_omega_qlift eq (FOLub (fun n => hit costed_kernel n s))
-    (FOLub (fun n => costed_hitting_approx n n s)).
+  free_omega_qlift eq (FOLub (λ n, hit costed_kernel n s))
+    (FOLub (λ n, costed_hitting_approx n n s)).
 Proof.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := FOLub (fun n => hit (costed_kernel_cut (S n)) n s)).
+    (mid := FOLub (λ n, hit (costed_kernel_cut (S n)) n s)).
   - apply kernel_hitting_limit_diagonal.
     + intros n u. apply costed_kernel_cut_mono. lia.
     + apply costed_kernel_limit.
@@ -213,7 +213,7 @@ Qed.
 
 Theorem costed_stable_hitting s out :
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega State Out costed_kernel s out →
-  free_omega_qlift eq out (FOLub (fun n => costed_hitting_approx n n s)).
+  free_omega_qlift eq out (FOLub (λ n, costed_hitting_approx n n s)).
 Proof.
   intro Hhit. eapply FOQLComp with (T := eq) (U := eq).
   - exact Hhit.
@@ -236,7 +236,7 @@ Hypothesis internal_progress : ∀ s,
   sem_ae (measure s) (costed_internal_progress s).
 Hypothesis reference_round : ∀ fuel s,
   free_omega_qlift eq (reference fuel s)
-    (FOSample (measure s) (fun x =>
+    (FOSample (measure s) (λ x,
       if Nat.leb (cost s x) fuel then
         match target s x with
         | SHStable o => FORet (project o)
@@ -245,11 +245,11 @@ Hypothesis reference_round : ∀ fuel s,
       else FOZero)).
 
 Lemma costed_progress_coupling s :
-  sem_lift (fun x y => x = y ∧ costed_internal_progress s x)
+  sem_lift (λ x y, x = y ∧ costed_internal_progress s x)
     (measure s) (measure s).
 Proof.
   eapply sem_lift_mono with
-    (R := fun x y => x = y ∧ costed_internal_progress s x ∧ True).
+    (R := λ x y, x = y ∧ costed_internal_progress s x ∧ True).
   - intros x y [Hxy [Hx _]]. split; assumption.
   - apply sem_lift_ae_restrict.
     + apply sem_lift_refl. intro x. reflexivity.
@@ -260,13 +260,13 @@ Qed.
 Theorem costed_hitting_reference fuel : ∀ rounds s,
   fuel <= rounds → free_omega_qlift eq (reference fuel s)
     (free_omega_bind (costed_hitting_approx rounds fuel s)
-      (fun o => FORet (project o))).
+      (λ o, FORet (project o))).
 Proof.
   induction fuel as [fuel IH] using lt_wf_ind.
   intros rounds s Hrounds.
   eapply FOQLComp with (T := eq) (U := eq); [apply reference_round| |].
   - destruct rounds as [|rounds]; cbn [costed_hitting_approx free_omega_bind];
-      eapply FOQLSample with (T := fun x y => x = y ∧ costed_internal_progress s x);
+      eapply FOQLSample with (T := λ x y, x = y ∧ costed_internal_progress s x);
       try solve [apply costed_progress_coupling]; intros x y [-> Hprogress];
       destruct (Nat.leb (cost s y) fuel) eqn:Hcost;
       try solve [apply FOQLStructural, FOLZero];
@@ -284,16 +284,16 @@ Qed.
     suffice for full multiround adequacy.  The reference may depend on
     the entire correlated state, as may its costs and sampled round. *)
 Theorem costed_hitting_reference_limit s :
-  free_omega_qlift eq (FOLub (fun n => reference n s))
-    (free_omega_bind (FOLub (fun n => hit costed_kernel n s))
-      (fun o => FORet (project o))).
+  free_omega_qlift eq (FOLub (λ n, reference n s))
+    (free_omega_bind (FOLub (λ n, hit costed_kernel n s))
+      (λ o, FORet (project o))).
 Proof.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := free_omega_bind (FOLub (fun n => costed_hitting_approx n n s))
-      (fun o => FORet (project o))).
+    (mid := free_omega_bind (FOLub (λ n, costed_hitting_approx n n s))
+      (λ o, FORet (project o))).
   - cbn [free_omega_bind]. apply FOQLLub. intro n.
     apply costed_hitting_reference. reflexivity.
-  - apply FOQLMono with (T := fun x y => y = x).
+  - apply FOQLMono with (T := λ x y, y = x).
     + apply FOQLSym. eapply FOQLBind with (T := eq).
       * apply costed_hitting_limit.
       * intros x y ->. apply FOQLStructural, FOLRet. reflexivity.

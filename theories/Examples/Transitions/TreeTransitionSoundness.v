@@ -1,4 +1,6 @@
 (** Role: supporting program/semantic example, not a flagship claim. *)
+From Coq Require Import Utf8.
+
 Set Warnings "-notation-overridden".
 Set Warnings "-ambiguous-paths".
 Set Universe Polymorphism.
@@ -48,10 +50,10 @@ Qed.
     than silently baking equality into the comparison theorem. *)
 Example related_returns_transition_bisim :
   @trans_bisim rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool
-    (fun x y => x = negb y) (Ret true) (Ret false).
+    (λ x y, x = negb y) (Ret true) (Ret false).
 Proof.
   assert (Hret : @peutt rawE SubEnumQ MF FI FC FreeOmegaMixedMeasure FO bool bool
-    (fun x y => x = negb y) (Ret true) (Ret false)).
+    (λ x y, x = negb y) (Ret true) (Ret false)).
   { apply peutt_ret. reflexivity. }
   exact (peutt_trans_bisim (FI := FI) (FC := FC) (FO := FO) Hret).
 Qed.

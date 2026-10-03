@@ -41,14 +41,14 @@ Definition factory_biased_coin : EnumQ bool :=
   enumQ_cons pfalse0 false (enumQ_cons ptrue0 true enumQ_zero).
 
 Definition factory_round_measure : EnumQ (unit + bool) :=
-  bind_EnumQ factory_biased_coin (fun b1 =>
-    bind_EnumQ factory_biased_coin (fun b2 =>
+  bind_EnumQ factory_biased_coin (λ b1,
+    bind_EnumQ factory_biased_coin (λ b2,
       ret_EnumQ (vn_round_result b1 b2))).
 
 Definition factory_vn_step (_ : unit) :
     ptree factoryE EnumQ (unit + bool) :=
-  Prob factory_biased_coin (fun b1 =>
-    Prob factory_biased_coin (fun b2 => Ret (vn_round_result b1 b2))).
+  Prob factory_biased_coin (λ b1,
+    Prob factory_biased_coin (λ b2, Ret (vn_round_result b1 b2))).
 
 Definition factory_fair_coin : ptree factoryE EnumQ bool :=
   PTree.iter factory_vn_step tt.
@@ -67,7 +67,7 @@ Definition binary_round_result (x : rat) (b : bool) : rat + bool :=
     if b then inl (2 * x - 1) else inr true.
 
 Lemma fair_binary_round_measure x :
-  bind_EnumQ vn_fair (fun b => ret_EnumQ (binary_round_result x b)) =
+  bind_EnumQ vn_fair (λ b, ret_EnumQ (binary_round_result x b)) =
   binary_coin_transition x.
 Proof.
   apply finite_enum_raw_eq.
@@ -78,14 +78,14 @@ Qed.
 (** The algorithm only depends on the behavior of its Boolean sampler. *)
 Definition factory_sampler_step {E MN : Type → Type}
     (sampler : ptree E MN bool) (x : rat) : ptree E MN (rat + bool) :=
-  PTree.bind sampler (fun b => Ret (binary_round_result x b)).
+  PTree.bind sampler (λ b, Ret (binary_round_result x b)).
 
 Definition factory_with_sampler {E MN : Type → Type}
     (sampler : ptree E MN bool) (target : rat) : ptree E MN bool :=
   PTree.iter (factory_sampler_step sampler) target.
 
 Definition factory_direct_fair : ptree factoryE EnumQ bool :=
-  Prob vn_fair (fun b => Ret b).
+  Prob vn_fair (λ b, Ret b).
 
 Definition factory_binary_step (x : rat) :
     ptree factoryE EnumQ (rat + bool) :=
@@ -96,7 +96,7 @@ Definition biased_to_rational_coin : ptree factoryE EnumQ bool :=
 
 Definition factory_direct_q (q0 : 0 <= q) (q1 : q <= 1) :
     ptree factoryE EnumQ bool :=
-  Prob (rational_bernoulli_measure q0 q1) (fun b => Ret b).
+  Prob (rational_bernoulli_measure q0 q1) (λ b, Ret b).
 
 End Factory.
 

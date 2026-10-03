@@ -60,11 +60,11 @@ Variable D : MDP MN.
 
 CoFixpoint mdp_encode (s : mdp_states D) :
     ptree (mdpE (mdp_observations D) (mdp_actions D)) MN unit :=
-  Vis (Choose (mdp_observe D s)) (fun a => Prob (mdp_transition D s a) mdp_encode).
+  Vis (Choose (mdp_observe D s)) (λ a, Prob (mdp_transition D s a) mdp_encode).
 
 Definition mdp_encode_head s :
     stable_head (mdpE (mdp_observations D) (mdp_actions D)) MN unit :=
-  FHVis (Choose (mdp_observe D s)) (fun a => Prob (mdp_transition D s a) mdp_encode).
+  FHVis (Choose (mdp_observe D s)) (λ a, Prob (mdp_transition D s a) mdp_encode).
 
 (** Independent textbook coupling bisimulation, over SOURCE states. *)
 Definition mdp_bisimF (sim : mdp_states D → mdp_states D → Prop) s t :=
@@ -108,12 +108,12 @@ Context {MF : Type → Type}
 Local Notation hits t out := (ptree_stable_hitting (MF := MF) (observe t) out).
 
 Definition mdp_successors (mu : MN (mdp_states D)) :=
-  mixed_bind mu (fun s => sem_ret (mdp_encode_head s)).
+  mixed_bind mu (λ s, sem_ret (mdp_encode_head s)).
 
 Lemma mdp_encode_hitting s : hits (mdp_encode s) (sem_ret (mdp_encode_head s)).
 Proof.
   change (ptree_stable_hitting (MF := MF)
-    (VisF (Choose (mdp_observe D s)) (fun a => Prob (mdp_transition D s a) mdp_encode))
+    (VisF (Choose (mdp_observe D s)) (λ a, Prob (mdp_transition D s a) mdp_encode))
     (sem_ret (mdp_encode_head s))).
   apply ptree_stable_hitting_vis.
 Qed.
@@ -121,7 +121,7 @@ Qed.
 Lemma mdp_sample_hitting mu :
   hits (Prob mu mdp_encode) (mdp_successors mu).
 Proof.
-  eapply ptree_stable_hitting_prob with (Good := fun _ => True).
+  eapply ptree_stable_hitting_prob with (Good := λ _, True).
   - apply sem_ae_true.
   - intros s _. apply mdp_encode_hitting.
 Qed.
@@ -146,12 +146,12 @@ Qed.
 Theorem mdp_encode_mdp_state
     (Htotal : ∀ s a, sem_total (mdp_successors (mdp_transition D s a)))
     (Hsupport : ∀ s a, sem_ae (mdp_successors (mdp_transition D s a))
-      (fun h => ∃ t, h = mdp_encode_head t)) :
+      (λ h, ∃ t, h = mdp_encode_head t)) :
   ∀ s, mdp_state (MF := MF) (mdp_encode s).
 Proof.
   assert (Hhead : ∀ s, mdp_head (MF := MF) (mdp_encode_head s)).
   { intro s. eapply mdp_head_coinduction with
-      (P := fun h => exists t, h = mdp_encode_head t).
+      (P := λ h, exists t, h = mdp_encode_head t).
     - intros h [t ->]. intro a.
       exists (mdp_successors (mdp_transition D t a)).
       split; [apply mdp_encode_step|]. split; [apply Htotal|apply Hsupport].
@@ -164,7 +164,7 @@ Theorem mdp_bisim_head_sound s t :
   mdp_bisim s t → head_bisim (MF := MF) eq (mdp_encode_head s) (mdp_encode_head t).
 Proof.
   intro H. eapply head_bisim_coinduction with
-    (sim := fun h k => exists s t, h = mdp_encode_head s ∧
+    (sim := λ h k, exists s t, h = mdp_encode_head s ∧
       k = mdp_encode_head t ∧ mdp_bisim s t).
   - intros h k [u [v [-> [-> Huv]]]].
     destruct (mdp_bisim_unfold Huv) as [Hobs Hsteps].

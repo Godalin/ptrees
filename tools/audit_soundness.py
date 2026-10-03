@@ -29,10 +29,31 @@ def classes(text):
 
 def logic_spelling(text):
     """Standard Coq Utf8 spellings only; do not erase logical structure."""
-    return text.translate(str.maketrans({
+    text = text.translate(str.maketrans({
         '∀': 'forall', '∃': 'exists', '→': '->', '↔': '<->',
         '∧': '/\\', '∨': '\\/', '¬': '~', '≠': '<>',
     }))
+    # Class fields contain terms, not Ltac functions. Normalize a lambda's
+    # own delimiter only: arrows in match branches or nested binders survive.
+    parts = re.findall(r"\w[\w']*|=>|\s+|.", text, re.S)
+    for i, token in enumerate(parts):
+        if token != 'fun':
+            continue
+        depth = 0
+        for j in range(i + 1, len(parts)):
+            if parts[j] in ('(', '[', '{'):
+                depth += 1
+            elif parts[j] in (')', ']', '}'):
+                depth -= 1
+            elif parts[j] == '=>' and depth == 0:
+                parts[i], parts[j] = 'λ', ','
+                if parts[j - 1].isspace():
+                    parts[j - 1] = ''
+                break
+            assert depth >= 0, 'Unrecognized lambda binder in class contract'
+        else:
+            raise AssertionError('Unrecognized lambda in class contract')
+    return ' '.join(''.join(parts).split())
 
 
 def independent_math(sources):

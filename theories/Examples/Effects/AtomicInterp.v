@@ -32,7 +32,7 @@ Local Notation TB := (@trans_bisim correlationE SubEnumQ MF FI FC
 (** A semantic, not syntactic, one-interaction handler. There are Tau and
     Prob nodes after the event; the sample is Dirac and preserves response. *)
 Definition delayed_response {E X} (x : X) : ptree E SubEnumQ X :=
-  Prob (@sem_ret SubEnumQ SubEnumQ_SemanticMeasure unit tt) (fun _ => Tau (Ret x)).
+  Prob (@sem_ret SubEnumQ SubEnumQ_SemanticMeasure unit tt) (λ _, Tau (Ret x)).
 
 Lemma delayed_response_hitting {E X} (x : X) :
   @ptree_stable_hitting E SubEnumQ MF FI FreeOmegaMixedMeasure FO X
@@ -41,9 +41,9 @@ Proof.
   assert (Hhit : @ptree_stable_hitting E SubEnumQ MF FI FreeOmegaMixedMeasure FO X
     (observe (delayed_response x))
     (FOSample (@sem_ret SubEnumQ SubEnumQ_SemanticMeasure unit tt)
-      (fun _ => FORet (FHRet x)))).
+      (λ _, FORet (FHRet x)))).
   { eapply (ptree_stable_hitting_prob (FI := FI) (FO := FO)
-      (MX := FreeOmegaMixedMeasure)) with (Good := fun _ => True).
+      (MX := FreeOmegaMixedMeasure)) with (Good := λ _, True).
     - apply sem_ae_true.
     - intros [] _. apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
       apply (ptree_stable_hitting_ret (FI := FI) (FO := FO)). }
@@ -56,13 +56,13 @@ Proof.
 Qed.
 
 Definition delayed_identity {E} X (e : E X) : ptree E SubEnumQ X :=
-  Tau (Vis e (fun x => delayed_response x)).
+  Tau (Vis e (λ x, delayed_response x)).
 
 Definition delayed_identity_atomic {E} : AH (@delayed_identity E).
 Proof.
-  refine {| atomic_rename := fun X e => e;
-            atomic_unrename := fun X e => e;
-            atomic_cont := fun X e x => delayed_response x |}.
+  refine {| atomic_rename := λ X e, e;
+            atomic_unrename := λ X e, e;
+            atomic_cont := λ X e x, delayed_response x |}.
   - reflexivity.
   - reflexivity.
   - intros X e. apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).
@@ -91,12 +91,12 @@ Definition swap_event X (e : swapE X) : swapE X :=
 Lemma swap_event_involution X (e : swapE X) : swap_event (swap_event e) = e.
 Proof. destruct e; reflexivity. Qed.
 Definition swapping_handler X (e : swapE X) : ptree swapE SubEnumQ X :=
-  Tau (Vis (swap_event e) (fun x => delayed_response x)).
+  Tau (Vis (swap_event e) (λ x, delayed_response x)).
 Definition swapping_handler_atomic : AH swapping_handler.
 Proof.
   refine {| atomic_rename := @swap_event;
             atomic_unrename := @swap_event;
-            atomic_cont := fun X e x => delayed_response x |}.
+            atomic_cont := λ X e x, delayed_response x |}.
   - exact swap_event_involution.
   - exact swap_event_involution.
   - intros X e. apply (proj2 (ptree_stable_hitting_tau_iff (FI := FI) (FO := FO) _ _)).

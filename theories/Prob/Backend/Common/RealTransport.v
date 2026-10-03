@@ -45,12 +45,12 @@ Proof.
     { by apply/setP=> i; rewrite !inE. }
     by rewrite HE big_set1 in H. }
   exists w; split.
-  - intro x; rewrite -(Hfiber X p x) (finite_card_partition (fun i : CX => tag (g i))).
+  - intro x; rewrite -(Hfiber X p x) (finite_card_partition (λ i : CX, tag (g i))).
     apply eq_bigr=> y _; apply eq_card=> i; by rewrite !inE.
   - split.
     + intro y.
       have HE : \sum_x w x y = #|[set i : CX | tag (g i) == y]|.
-      { rewrite (finite_card_partition (fun i : CX => tag i)).
+      { rewrite (finite_card_partition (λ i : CX, tag i)).
         apply eq_bigr=> x _; apply eq_card=> i; by rewrite !inE andbC. }
       rewrite HE -(Hfiber Y q y) -(card_imset _ Hgi).
       apply subset_leq_card; apply/fintype.subsetP=> j /imsetP [i Hi ->].
@@ -107,7 +107,7 @@ Proof.
       + rewrite -!big_distrl; exact (ler_wpM2r (ltW Hdr) (Hall S)).
       + apply ler_sum=> y _; exact (ltW (proj2 (Hqb y))). }
   destruct (finite_capacity_subtransport Hnat) as [c [Hrow [Hcol Hsupp]]].
-  exists (fun x y => (c x y)%:R / d%:R); split.
+  exists (λ x y, (c x y)%:R / d%:R); split.
   - intros x y; apply divr_ge0; [exact: ler0n|exact: ltW].
   - split.
     + intro x; rewrite -big_distrl -natr_sum Hrow.
@@ -138,7 +138,7 @@ Lemma transport_compact_nested (V : topologicalType) (K : set V) (C : nat → se
   ∃ x, K x ∧ ∀ n, C n x.
 Proof.
   intros HK HC Hnest Hnon.
-  pose F := filter_from setT (fun n => K `&` C n).
+  pose F := filter_from setT (λ n, K `&` C n).
   have HF : ProperFilter F.
   { apply filter_from_proper.
     - apply filter_from_filter.
@@ -188,16 +188,16 @@ Proof.
 Qed.
 
 Lemma transport_continuous_sum (V : topologicalType) (I : finType) (f : I → V → R) :
-  (∀ i, continuous (f i)) → continuous (fun v => \sum_i f i v).
+  (∀ i, continuous (f i)) → continuous (λ v, \sum_i f i v).
 Proof.
   intro H.
-  have HS : ∀ s : seq I, continuous (fun v => \sum_(i <- s) f i v).
+  have HS : ∀ s : seq I, continuous (λ v, \sum_(i <- s) f i v).
   { elim=> [|i s IH].
-    - have HE : (fun v => \sum_(j <- [::]) f j v) = (fun _ : V => (0 : R)).
+    - have HE : (λ v, \sum_(j <- [::]) f j v) = (λ _ : V, (0 : R)).
       { apply funext=> v; by rewrite big_nil. }
       rewrite HE; exact: cst_continuous.
-    - have HE : (fun v => \sum_(j <- i :: s) f j v) =
-        (fun v => f i v + \sum_(j <- s) f j v).
+    - have HE : (λ v, \sum_(j <- i :: s) f j v) =
+        (λ v, f i v + \sum_(j <- s) f j v).
       { apply funext=> v; by rewrite big_cons. }
       rewrite HE; intro v; exact (continuousD (H i v) (IH v)). }
   apply HS.
@@ -205,10 +205,10 @@ Qed.
 End RealTopology.
 
 Lemma transport_closed_forall (V : topologicalType) I (C : I → set V) :
-  (∀ i, closed (C i)) → closed (fun v => ∀ i, C i v).
+  (∀ i, closed (C i)) → closed (λ v, ∀ i, C i v).
 Proof.
   intro HC.
-  have HE : (fun v => ∀ i, C i v) = \bigcap_i C i.
+  have HE : (λ v, ∀ i, C i v) = \bigcap_i C i.
   { apply funext=> v; apply propext; split; [intros H i _; exact (H i)|intros H i; exact (H i Logic.I)]. }
   rewrite HE; apply closed_bigI=> i _; exact (HC i).
 Qed.
@@ -224,25 +224,25 @@ Let constraints n (w : W) :=
   (∀ y, cols w y <= q y + transport_eps R n) ∧
   (∀ z, ~~ edge (fst z) (snd z) → w z = 0).
 
-Lemma transport_rows_continuous x : continuous (fun w : W => rows w x).
+Lemma transport_rows_continuous x : continuous (λ w : W, rows w x).
 Proof. apply transport_continuous_sum=> y; exact: proj_continuous. Qed.
-Lemma transport_cols_continuous y : continuous (fun w : W => cols w y).
+Lemma transport_cols_continuous y : continuous (λ w : W, cols w y).
 Proof. apply transport_continuous_sum=> x; exact: proj_continuous. Qed.
 
 Lemma transport_constraints_closed n : closed (constraints n).
 Proof.
   apply closedI.
   - apply transport_closed_forall=> x; apply closedI.
-    + apply (@closed_comp _ _ (fun w : W => rows w x) [set r | p x - transport_eps R n <= r]);
+    + apply (@closed_comp _ _ (λ w : W, rows w x) [set r | p x - transport_eps R n <= r]);
         [intros w _; exact: transport_rows_continuous|exact: closed_ge].
-    + apply (@closed_comp _ _ (fun w : W => rows w x) [set r | r <= p x]);
+    + apply (@closed_comp _ _ (λ w : W, rows w x) [set r | r <= p x]);
         [intros w _; exact: transport_rows_continuous|exact: closed_le].
   - apply closedI.
     + apply transport_closed_forall=> y.
-      apply (@closed_comp _ _ (fun w : W => cols w y) [set r | r <= q y + transport_eps R n]);
+      apply (@closed_comp _ _ (λ w : W, cols w y) [set r | r <= q y + transport_eps R n]);
         [intros w _; exact: transport_cols_continuous|exact: closed_le].
     + apply transport_closed_forall=> z; apply transport_closed_forall=> Hz.
-      apply (@closed_comp _ _ (fun w : W => w z) [set r | r = 0]);
+      apply (@closed_comp _ _ (λ w : W, w z) [set r | r = 0]);
         [intros w _; exact: proj_continuous|exact: closed_eq].
 Qed.
 
@@ -256,10 +256,10 @@ Theorem finite_real_subtransport :
 Proof.
   intros Hp Hq Hall.
   pose bound := \sum_x p x.
-  pose box : set W := fun w => ∀ z, `[0, bound] (w z).
+  pose box : set W := λ w, ∀ z, `[0, bound] (w z).
   have Hcompact : compact box.
-  { have H := @tychonoff _ (fun _ : (X * Y)%type => _) _
-      (fun _ : (X * Y)%type => @segment_compact R 0 bound).
+  { have H := @tychonoff _ (λ _ : (X * Y)%type, _) _
+      (λ _ : (X * Y)%type, @segment_compact R 0 bound).
     exact H. }
   have Hsum : ∀ (Z : finType) (f : Z -> R),
       (∀ z, 0 <= f z) -> ∀ z, f z <= \sum_i f i.
@@ -267,7 +267,7 @@ Proof.
   have Hnon : ∀ n, (box `&` constraints n) !=set0.
   { intro n; destruct (finite_real_transport_approx (ltn0Sn n) Hp Hq Hall)
       as [w [Hw0 [Hwr [Hwc Hws]]]].
-    exists (fun z => w (fst z) (snd z)); split.
+    exists (λ z, w (fst z) (snd z)); split.
     - intros [x y]; change (is_true (0 <= w x y <= bound)).
       apply/andP; split; first exact (Hw0 x y).
       apply: le_trans (@Hsum Y (w x) (Hw0 x) y) _.
@@ -284,7 +284,7 @@ Proof.
       intro y; apply: le_trans (Hc y) _; rewrite lerD2l; exact: transport_eps_antitone. }
   destruct (transport_compact_nested Hcompact transport_constraints_closed Hnest Hnon)
     as [w [Hw HC]].
-  exists (fun x y => w (x,y)); split.
+  exists (λ x y, w (x,y)); split.
   - intros x y; have /andP [H _] := Hw (x,y); exact H.
   - split.
     + intro x; apply/eqP; rewrite eq_le; apply/andP; split.
@@ -319,7 +319,7 @@ Proof.
   { by rewrite sumrB Hsum Htotal subrr. }
   have Hpos : ∀ y : Y, true -> 0 <= q y - \sum_x w x y.
   { intros y _; rewrite subr_ge0; exact (Hc y). }
-  intro y; have Hz := @psumr_eq0P R Y predT (fun y => q y - \sum_x w x y) Hpos Hdiff y isT.
+  intro y; have Hz := @psumr_eq0P R Y predT (λ y, q y - \sum_x w x y) Hpos Hdiff y isT.
   apply/esym/eqP; by rewrite -subr_eq0 Hz.
 Qed.
 

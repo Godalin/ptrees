@@ -29,10 +29,10 @@ Variant residualE : Type → Type := .
     between retries.  Each failed toss has one administrative Tau on the
     left and two on the right. *)
 CoFixpoint residual_retry_left : ptree residualE SubEnumQ bool :=
-  Prob rw_coin (fun b : bool => if b then Ret true else Tau residual_retry_left).
+  Prob rw_coin (λ b : bool, if b then Ret true else Tau residual_retry_left).
 
 CoFixpoint residual_retry_right : ptree residualE SubEnumQ bool :=
-  Prob rw_coin (fun b : bool => if b then Ret true else Tau (Tau residual_retry_right)).
+  Prob rw_coin (λ b : bool, if b then Ret true else Tau (Tau residual_retry_right)).
 
 (** Select only the explicit administrative prefixes.  Propositional
     equality avoids assuming an eta law or dependent elimination for the
@@ -82,7 +82,7 @@ Inductive residual_retry_pairs :
 
 Lemma residual_retry_cuts_structural t1 t2 :
   residual_retry_pairs t1 t2 →
-  free_omega_lift (fun t u => pstrongF eq residual_retry_pairs (observe t) (observe u))
+  free_omega_lift (λ t u, pstrongF eq residual_retry_pairs (observe t) (observe u))
     (residual_retry_cut1 t1) (residual_retry_cut2 t2).
 Proof.
   intro Hpair. destruct Hpair;
@@ -100,7 +100,7 @@ Qed.
 
 Lemma residual_retry_cuts_coupled t1 t2 :
   residual_retry_pairs t1 t2 →
-  free_omega_qlift (fun t u => pstrongF eq residual_retry_pairs (observe t) (observe u))
+  free_omega_qlift (λ t u, pstrongF eq residual_retry_pairs (observe t) (observe u))
     (residual_retry_cut1 t1) (residual_retry_cut2 t2).
 Proof. intro Hpair. apply FOQLStructural, residual_retry_cuts_structural, Hpair. Qed.
 
@@ -125,10 +125,10 @@ Qed.
 Variant residual_tickE : Type → Type := ResidualTick : residual_tickE unit.
 
 CoFixpoint residual_service_left : ptree residual_tickE SubEnumQ bool :=
-  Vis ResidualTick (fun _ => Tau residual_service_left).
+  Vis ResidualTick (λ _, Tau residual_service_left).
 
 CoFixpoint residual_service_right : ptree residual_tickE SubEnumQ bool :=
-  Vis ResidualTick (fun _ => Tau (Tau residual_service_right)).
+  Vis ResidualTick (λ _, Tau (Tau residual_service_right)).
 
 Lemma residual_services_peutt :
   @peutt residual_tickE SubEnumQ (FreeOmega SubEnumQ)
@@ -139,7 +139,7 @@ Lemma residual_services_peutt :
     residual_service_left residual_service_right.
 Proof.
   eapply peutt_coinduction_upto_finite_internal with
-    (sim := fun s1 s2 =>
+    (sim := λ s1 s2,
       s1 = observe residual_service_left ∧ s2 = observe residual_service_right).
   - intros s1 s2 [-> ->].
     apply stable_hitting_match_vis. intros [].

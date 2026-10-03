@@ -23,7 +23,9 @@ effects/handlers、主结论与适用范围。
 
 逻辑公式统一优先使用 Coq 标准 `Utf8`：显式 `From Coq Require Import Utf8.`，
 用 `∀ / ∃ / → / ↔ / ∧ / ∨ / ¬ / ≠` 缩短签名和命题。它们只是标准语法，
-不改变关系、假设或证明。保留 `fun ... =>` 和 tactic 的 `exists`、
+不改变关系、假设或证明。函数表达式使用 `λ x, t`、`λ x y, t` 或
+`λ (x : A), t`，包括嵌套 lambda 和模式 binder；不另造 lambda 记号。
+保留 `match` 分支的 `=>`、Ltac 函数语法，以及 tactic 的 `exists`、
 `rewrite ->`、`intros ->`；MathComp 的 `[forall ...]` 等布尔记号也不替换。
 `{rmorphism R -> S}` 等专用语法仍保留其规定的 ASCII token。
 不要把 MathComp 的数值比较机械改成 Utf8 专用于 `nat` 的 `≤ / ≥`。

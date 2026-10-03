@@ -51,8 +51,8 @@ Proof.
   - apply IHHexec. apply (proj1 (stable_hitting_tau_iff t target)).
     exact Htarget.
   - assert (Hprob : stable_hitting K (observe (Prob mu k))
-        (mixed_bind mu (fun x => front (k x)))).
-    { eapply stable_hitting_prob with (Good := fun _ => True).
+        (mixed_bind mu (λ x, front (k x)))).
+    { eapply stable_hitting_prob with (Good := λ _, True).
       - apply sem_ae_true.
       - intros x _. apply Hfront. }
     eapply sem_lift_proper_l.
@@ -97,13 +97,13 @@ Proof.
   destruct (choice _ Hex2) as [front2 Hfront2].
   eapply stable_hitting_match_of_hitting_lift; [apply Hfront1|apply Hfront2|].
   eapply sem_lift_mono with
-    (R := fun x z => exists y, x = y ∧ ptree_stable_head_rel RR sim y z).
+    (R := λ x z, exists y, x = y ∧ ptree_stable_head_rel RR sim y z).
   - intros x z [y [-> Hyz]]. exact Hyz.
   - eapply sem_lift_comp.
     + eapply finite_internal_hitting_lift;
         [exact Hexec1|exact Hfront1|apply Hfront1].
     + eapply sem_lift_mono with
-        (R := fun x z => exists y, ptree_stable_head_rel RR sim x y ∧ z = y).
+        (R := λ x z, exists y, ptree_stable_head_rel RR sim x y ∧ z = y).
       * intros x z [y [Hxy Heq]]. subst y. exact Hxy.
       * eapply sem_lift_comp.
         -- eapply sem_lift_bind; [exact Hres|].
@@ -134,7 +134,7 @@ Definition finite_internal_closure
   ∃ t1 t2 out1 out2,
     s1 = observe t1 ∧ s2 = observe t2 ∧
     finite_internal t1 out1 ∧ finite_internal t2 out2 ∧
-    sem_lift (fun u v => sim (observe u) (observe v)) out1 out2.
+    sem_lift (λ u v, sim (observe u) (observe v)) out1 out2.
 
 Lemma finite_internal_closure_includes sim s1 s2 :
   sim s1 s2 → finite_internal_closure sim s1 s2.

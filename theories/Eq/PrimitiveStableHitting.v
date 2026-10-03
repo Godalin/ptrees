@@ -49,7 +49,7 @@ Definition stable_hitting_approx (fuel : nat) (state : S) : MF A :=
   sem_bind (kernel state) (stable_target_approx fuel).
 
 Definition stable_hitting (state : S) (out : MF A) : Prop :=
-  sem_lub (fun fuel => stable_hitting_approx fuel state) out.
+  sem_lub (λ fuel, stable_hitting_approx fuel state) out.
 
 Definition stable_hitting_ast (state : S) (out : MF A) : Prop :=
   stable_hitting state out ∧ sem_total out.
@@ -90,7 +90,7 @@ Proof.
 Qed.
 
 Theorem stable_hitting_increasing state :
-  sem_increasing (fun fuel => stable_hitting_approx kernel fuel state).
+  sem_increasing (λ fuel, stable_hitting_approx kernel fuel state).
 Proof.
   intro fuel. unfold stable_hitting_approx.
   apply sem_bind_le_k. intro target.

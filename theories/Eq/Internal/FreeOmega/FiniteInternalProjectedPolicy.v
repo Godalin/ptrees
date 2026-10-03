@@ -41,21 +41,21 @@ Hypothesis kernel_closed : ∀ s, D s →
   free_omega_ae (kernel_completion_invariant D) (kernel s).
 Hypothesis kernel_marginal : ∀ s, D s →
   free_omega_qlift
-    (fun z target => kernel_target_projection project_state project_output z = target)
+    (λ z target, kernel_target_projection project_state project_output z = target)
     (kernel s) (free_omega_bind (policy (project_state s)) finite_internal_guard_transition).
 
 Theorem finite_internal_projected_policy_adequate s out original : D s →
   @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s out →
   @ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A (observe (project_state s)) original →
-  free_omega_qlift eq (free_omega_bind out (fun o => FORet (project_output o))) original.
+  free_omega_qlift eq (free_omega_bind out (λ o, FORet (project_output o))) original.
 Proof.
   intros HD Hout Horiginal.
   pose (macro := finite_internal_round_kernel policy).
-  pose (macro_out := FOLub (fun n => @stable_hitting_approx MF FI
+  pose (macro_out := FOLub (λ n, @stable_hitting_approx MF FI
     FreeOmegaObservableSemanticOmega tree head macro n (project_state s))).
   assert (Hproject : free_omega_qlift eq
-    (free_omega_bind out (fun o => FORet (project_output o))) macro_out).
+    (free_omega_bind out (λ o, FORet (project_output o))) macro_out).
   { eapply kernel_stable_hitting_projection with
       (state_projection := project_state) (D := D) (target := macro) (s := s).
     - exact kernel_closed.
@@ -64,14 +64,14 @@ Proof.
     - exact Hout.
     - apply free_omega_qlift_refl. intro h. reflexivity. }
   pose proof (finite_internal_acceleration policy_valid (project_state s)) as Hacc.
-  assert (Hrounds : (fun n => finite_internal_rounds policy n (project_state s)) =
-    (fun n => @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
+  assert (Hrounds : (λ n, finite_internal_rounds policy n (project_state s)) =
+    (λ n, @stable_hitting_approx MF FI FreeOmegaObservableSemanticOmega
       tree head macro n (project_state s))).
   { apply functional_extensionality. intro n. apply finite_internal_rounds_kernelE. }
   rewrite Hrounds in Hacc.
   eapply FOQLComp with (T := eq) (U := eq); [exact Hproject| |].
   - eapply FOQLComp with (T := eq) (U := eq); [exact Hacc| |].
-    + apply FOQLMono with (T := fun x y => y = x).
+    + apply FOQLMono with (T := λ x y, y = x).
       * apply FOQLSym. exact Horiginal.
       * intros x y Heq. symmetry. exact Heq.
     + intros x z [y [-> ->]]. reflexivity.

@@ -38,8 +38,8 @@ Hypothesis Hcut2 : ∀ t u, sim t u → finite_internal u (cut2 (t,u)).
 
 Theorem finite_internal_joint_guarded (RR : A → B → Prop)
     (Hguard : ∀ t u, sim t u →
-      sem_lift (fun t u => pstrongF RR sim (observe t) (observe u)) (cut1 (t,u)) (cut2 (t,u))) :
-  sem_lift (fun t u => pstrongF RR sim (observe t) (observe u))
+      sem_lift (λ t u, pstrongF RR sim (observe t) (observe u)) (cut1 (t,u)) (cut2 (t,u))) :
+  sem_lift (λ t u, pstrongF RR sim (observe t) (observe u))
     (sem_bind joint cut1) (sem_bind joint cut2).
 Proof. eapply semantic_coupling_dependent_bind; eassumption. Qed.
 
@@ -56,7 +56,7 @@ Proof.
   eapply sem_lift_proper_l.
   - apply sem_eq_sym. apply sem_bind_assoc.
   - eapply semantic_coupling_dependent_bind_left; [exact Hjoint|].
-    intros t u Hsim. eapply sem_lift_mono with (R := fun x y => y = x).
+    intros t u Hsim. eapply sem_lift_mono with (R := λ x y, y = x).
     + intros x y Hxy. symmetry. exact Hxy.
     + apply sem_lift_sym. eapply finite_internal_hitting_lift;
         [apply Hcut1; exact Hsim|exact Hfront|apply Hfront].
@@ -71,7 +71,7 @@ Proof.
   eapply sem_lift_proper_l.
   - apply sem_eq_sym. apply sem_bind_assoc.
   - eapply semantic_coupling_dependent_bind_right; [exact Hjoint|].
-    intros t u Hsim. eapply sem_lift_mono with (R := fun x y => y = x).
+    intros t u Hsim. eapply sem_lift_mono with (R := λ x y, y = x).
     + intros x y Hxy. symmetry. exact Hxy.
     + apply sem_lift_sym. eapply finite_internal_hitting_lift;
         [apply Hcut2; exact Hsim|exact Hfront|apply Hfront].

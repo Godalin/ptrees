@@ -18,9 +18,9 @@ Context {M : Type → Type} `{MI : SemanticMeasure M}.
 
 Definition semantic_coupling {A B} (R : A → B → Prop)
     (mu : M A) (nu : M B) (joint : M (A * B)) : Prop :=
-  sem_lift (fun p x => fst p = x) joint mu ∧
-  sem_lift (fun p y => snd p = y) joint nu ∧
-  sem_ae joint (fun p => R (fst p) (snd p)).
+  sem_lift (λ p x, fst p = x) joint mu ∧
+  sem_lift (λ p y, snd p = y) joint nu ∧
+  sem_ae joint (λ p, R (fst p) (snd p)).
 
 Context `{MC : @SemanticMeasureCoreLaws M MI}
   `{MCAE : @SemanticMeasureCouplingAELaws M MI}.
@@ -39,7 +39,7 @@ Qed.
 Lemma semantic_coupling_ae_restrict {A B} (R : A → B → Prop)
     (mu : M A) (nu : M B) joint (P : A → Prop) (Q : B → Prop) :
   semantic_coupling R mu nu joint → sem_ae mu P → sem_ae nu Q →
-  semantic_coupling (fun x y => R x y ∧ P x ∧ Q y) mu nu joint.
+  semantic_coupling (λ x y, R x y ∧ P x ∧ Q y) mu nu joint.
 Proof.
   intros [Hl [Hr Hae]] HP HQ. split; [exact Hl|]. split; [exact Hr|].
   apply sem_ae_conj; [exact Hae|]. apply sem_ae_conj.
@@ -59,12 +59,12 @@ Lemma semantic_coupling_transport {A B} (R : A → B → Prop)
 Proof.
   intros Hmu Hnu [Hl [Hr Hae]]. split.
   - eapply sem_lift_mono with
-      (R := fun p x => exists z, fst p = z ∧ z = x).
+      (R := λ p x, exists z, fst p = z ∧ z = x).
     + intros p x [z [Hp ->]]. exact Hp.
     + eapply sem_lift_comp; eassumption.
   - split.
     + eapply sem_lift_mono with
-        (R := fun p y => exists z, snd p = z ∧ z = y).
+        (R := λ p y, exists z, snd p = z ∧ z = y).
       * intros p y [z [Hp ->]]. exact Hp.
       * eapply sem_lift_comp; eassumption.
     + exact Hae.
@@ -73,10 +73,10 @@ Qed.
 Lemma semantic_coupling_left_supported {A B} (R : A → B → Prop)
     (mu : M A) (nu : M B) joint :
   semantic_coupling R mu nu joint →
-  sem_lift (fun p x => fst p = x ∧ R (fst p) (snd p)) joint mu.
+  sem_lift (λ p x, fst p = x ∧ R (fst p) (snd p)) joint mu.
 Proof.
   intros [Hl [Hr Hae]]. eapply sem_lift_mono with
-    (R := fun p x => fst p = x ∧ R (fst p) (snd p) ∧ True).
+    (R := λ p x, fst p = x ∧ R (fst p) (snd p) ∧ True).
   - intros p x [Hpx [Hp _]]. split; assumption.
   - eapply sem_lift_ae_restrict; [exact Hl|exact Hae|apply sem_ae_true].
 Qed.
@@ -84,10 +84,10 @@ Qed.
 Lemma semantic_coupling_right_supported {A B} (R : A → B → Prop)
     (mu : M A) (nu : M B) joint :
   semantic_coupling R mu nu joint →
-  sem_lift (fun p y => snd p = y ∧ R (fst p) (snd p)) joint nu.
+  sem_lift (λ p y, snd p = y ∧ R (fst p) (snd p)) joint nu.
 Proof.
   intros [Hl [Hr Hae]]. eapply sem_lift_mono with
-    (R := fun p y => snd p = y ∧ R (fst p) (snd p) ∧ True).
+    (R := λ p y, snd p = y ∧ R (fst p) (snd p) ∧ True).
   - intros p y [Hpy [Hp _]]. split; assumption.
   - eapply sem_lift_ae_restrict; [exact Hr|exact Hae|apply sem_ae_true].
 Qed.
@@ -97,7 +97,7 @@ Lemma semantic_coupling_sound {A B} (R : A → B → Prop)
   semantic_coupling R mu nu joint → sem_lift R mu nu.
 Proof.
   intro Hjoint. eapply sem_lift_mono with
-    (R := fun x y => exists p : A * B,
+    (R := λ x y, exists p : A * B,
       (fst p = x ∧ R (fst p) (snd p)) ∧ snd p = y).
   - intros x y [p [[Hx HR] Hy]]. subst x y. exact HR.
   - eapply sem_lift_comp.
@@ -114,10 +114,10 @@ Lemma semantic_coupling_fiber_lift {A B C}
     (mu : M A) (mid : M B) (nu : M C) left_joint right_joint :
   semantic_coupling R mu mid left_joint →
   semantic_coupling T mid nu right_joint →
-  sem_lift (fun p q => snd p = fst q) left_joint right_joint.
+  sem_lift (λ p q, snd p = fst q) left_joint right_joint.
 Proof.
   intros [_ [Hl _]] [Hr _]. eapply sem_lift_mono with
-    (R := fun p q => exists y, snd p = y ∧ fst q = y).
+    (R := λ p q, exists y, snd p = y ∧ fst q = y).
   - intros p q [y [Hp Hq]]. now rewrite Hp, Hq.
   - eapply sem_lift_comp; [exact Hl|apply sem_lift_sym; exact Hr].
 Qed.
@@ -129,9 +129,9 @@ Lemma semantic_coupling_fiber_support {A B C}
     (mu : M A) (mid : M B) (nu : M C) left_joint right_joint fiber_joint :
   semantic_coupling R mu mid left_joint →
   semantic_coupling T mid nu right_joint →
-  semantic_coupling (fun p q => snd p = fst q)
+  semantic_coupling (λ p q, snd p = fst q)
     left_joint right_joint fiber_joint →
-  sem_ae fiber_joint (fun w =>
+  sem_ae fiber_joint (λ w,
     snd (fst w) = fst (snd w) ∧
     R (fst (fst w)) (snd (fst w)) ∧
     T (fst (snd w)) (snd (snd w))).
@@ -156,9 +156,9 @@ Lemma semantic_coupling_dependent_bind {A B C D}
 Proof.
   intros [_ [_ Hae]] Hstep.
   eapply sem_lift_bind with
-    (R := fun p q => p = q ∧ R (fst p) (snd p)).
+    (R := λ p q, p = q ∧ R (fst p) (snd p)).
   - eapply sem_lift_mono with
-      (R := fun p q => p = q ∧ R (fst p) (snd p) ∧ True).
+      (R := λ p q, p = q ∧ R (fst p) (snd p) ∧ True).
     + intros p q [-> [Hp _]]. split; [reflexivity|exact Hp].
     + eapply sem_lift_ae_restrict;
         [apply sem_lift_refl; intros p; reflexivity|exact Hae|apply sem_ae_true].
@@ -211,7 +211,7 @@ Proof.
   - split.
     + eapply semantic_coupling_dependent_bind; [exact Hjoint|].
       intros x y Hxy. exact (proj1 (proj2 (Hnext x y Hxy))).
-    + eapply sem_ae_bind with (P := fun p => R (fst p) (snd p)).
+    + eapply sem_ae_bind with (P := λ p, R (fst p) (snd p)).
       * exact (proj2 (proj2 Hjoint)).
       * intros [x y] Hxy. exact (proj2 (proj2 (Hnext x y Hxy))).
 Qed.
@@ -236,7 +236,7 @@ Proof.
   - split.
     + eapply sem_lift_bind; [exact (semantic_coupling_right_supported Hjoint)|].
       intros [x y] z [<- Hxy]. exact (proj1 (proj2 (Hnext x y Hxy))).
-    + eapply sem_ae_bind with (P := fun p => R (fst p) (snd p)).
+    + eapply sem_ae_bind with (P := λ p, R (fst p) (snd p)).
       * exact (proj2 (proj2 Hjoint)).
       * intros [x y] Hxy. exact (proj2 (proj2 (Hnext x y Hxy))).
 Qed.
@@ -258,7 +258,7 @@ Proof.
   { intros [x y]. destruct (classic (R x y)) as [Hxy|Hnot].
     - destruct (Hbranches x y Hxy) as [branch Hbranch].
       exists branch. intros _. exact Hbranch.
-    - exists (sem_bind (k x) (fun c => sem_bind (h y) (fun d => sem_ret (c,d)))).
+    - exists (sem_bind (k x) (λ c, sem_bind (h y) (λ d, sem_ret (c,d)))).
       intro Hxy. contradiction. }
   destruct (choice _ Hex) as [next_joint Hnext].
   exists (sem_bind joint next_joint).

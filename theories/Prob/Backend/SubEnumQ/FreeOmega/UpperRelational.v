@@ -31,7 +31,7 @@ Definition bounded_test {A} (f : A → R) := ∀ x, 0 <= f x ∧ f x <= 1.
 
 (** Adding zero gives an inhabited supremum even for an empty fiber. *)
 Definition fiber_upper {A} (P : A → Prop) (f : A → R) : R :=
-  sup (fun r => r = 0 ∨ ∃ x, P x ∧ r = f x).
+  sup (λ r, r = 0 ∨ ∃ x, P x ∧ r = f x).
 
 Lemma fiber_upper_le {A} (P : A → Prop) (f : A → R) b :
   0 <= b → (∀ x, P x → f x <= b) → fiber_upper P f <= b.
@@ -60,7 +60,7 @@ Proof.
 Qed.
 
 Lemma bounded_test_complement {A} (f : A → R) :
-  bounded_test f → bounded_test (fun x => 1 - f x).
+  bounded_test f → bounded_test (λ x, 1 - f x).
 Proof.
   intros Hf x. split.
   - rewrite subr_ge0. exact (proj2 (Hf x)).
@@ -68,7 +68,7 @@ Proof.
 Qed.
 
 Definition fiber_lower {A} (P : A → Prop) (f : A → R) : R :=
-  1 - fiber_upper P (fun x => 1 - f x).
+  1 - fiber_upper P (λ x, 1 - f x).
 
 Lemma fiber_lower_bounds {A} (P : A → Prop) (f : A → R) :
   bounded_test f → 0 <= fiber_lower P f ∧ fiber_lower P f <= 1.
@@ -115,10 +115,10 @@ Proof. intros H HT f g Hf Hg Hfg. apply H; auto. Qed.
 Lemma free_omega_upper_rel_comp {A B C} (T : A → B → Prop)
     (U : B → C → Prop) mu mid nu :
   free_omega_upper_rel T mu mid → free_omega_upper_rel U mid nu →
-  free_omega_upper_rel (fun x z => ∃ y, T x y ∧ U y z) mu nu.
+  free_omega_upper_rel (λ x z, ∃ y, T x y ∧ U y z) mu nu.
 Proof.
   intros Hleft Hright f g Hf Hg Hfg.
-  pose (h := fun y => fiber_upper (fun x => T x y) f).
+  pose (h := λ y, fiber_upper (λ x, T x y) f).
   have Hh : bounded_test h by intro y; apply fiber_upper_bounds.
   eapply le_trans.
   - apply (Hleft f h Hf Hh). intros x y Hxy. exact (fiber_upper_ge Hf Hxy).
@@ -141,14 +141,14 @@ Theorem free_omega_observes_upper_rel {A B OA OB}
   free_omega_upper_rel T mu nu.
 Proof.
   intros Hleft Hright Hcouple HT f g Hf Hg Hfg.
-  pose (lo := fun a => fiber_upper (fun x => obsA x = a) f).
-  pose (hi := fun b => fiber_lower (fun y => obsB y = b) g).
+  pose (lo := λ a, fiber_upper (λ x, obsA x = a) f).
+  pose (hi := λ b, fiber_lower (λ y, obsB y = b) g).
   have Hlo : bounded_test lo by intro a; apply fiber_upper_bounds.
   have Hhi : bounded_test hi by intro b; apply fiber_lower_bounds.
-  eapply le_trans with (y := upper mu (fun x => lo (obsA x))).
+  eapply le_trans with (y := upper mu (λ x, lo (obsA x))).
   - apply free_omega_upper_mono; [intro x; apply Hlo|].
     intro x. apply fiber_upper_ge; [exact Hf|reflexivity].
-  - eapply le_trans with (y := upper nu (fun y => hi (obsB y))).
+  - eapply le_trans with (y := upper nu (λ y, hi (obsB y))).
     + rewrite (free_omega_observes_upper Hleft Hlo)
         (free_omega_observes_upper Hright Hhi).
       eapply subenumQ_lift_real_expect; [exact Hcouple|].
@@ -166,8 +166,8 @@ Lemma free_omega_upper_rel_restrict {A B} (T U : A → B → Prop)
   free_omega_upper_rel U mu nu.
 Proof.
   intros Hrel HP HQ HT f g Hf Hg Hfg.
-  pose (f' := fun x => if pselect (P x) then f x else 0).
-  pose (g' := fun y => if pselect (Q y) then g y else 1).
+  pose (f' := λ x, if pselect (P x) then f x else 0).
+  pose (g' := λ y, if pselect (Q y) then g y else 1).
   have Hf' : bounded_test f'.
   { intro x. rewrite /f'. destruct (pselect (P x)) as [Hx|Hnot]; [exact (Hf x)|].
     split; [exact: lexx|exact: ler01]. }
@@ -223,7 +223,7 @@ Lemma free_omega_upper_rel_lub {A B} (T : A → B → Prop) c d :
 Proof.
   intros H f g Hf Hg Hfg. cbn [free_omega_upper].
   apply countable_upper_le=> n. eapply le_trans; [exact (H n f g Hf Hg Hfg)|].
-  exact (@countable_upper_ge R (fun i => upper (d i) g) 1 n
-    (fun i => proj2 (free_omega_upper_bounds (d i) Hg))).
+  exact (@countable_upper_ge R (λ i, upper (d i) g) 1 n
+    (λ i, proj2 (free_omega_upper_bounds (d i) Hg))).
 Qed.
 End RelationalUpper.

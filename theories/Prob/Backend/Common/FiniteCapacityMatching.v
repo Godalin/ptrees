@@ -23,9 +23,9 @@ Proof.
   rewrite -sum1dep_card.
   transitivity (\sum_(i : CX | (tag i \in S) && true) 1).
   { apply eq_bigl=> i. by rewrite andbT. }
-  rewrite -(@sig_big_dep nat 0 _ X (fun x => @Finite.Pack 'I_(p x) (Finite.on 'I_(p x)))
-    (fun x => x \in S) (fun x (j : 'I_(p x)) => true)
-    (fun x (j : 'I_(p x)) => 1)).
+  rewrite -(@sig_big_dep nat 0 _ X (λ x, @Finite.Pack 'I_(p x) (Finite.on 'I_(p x)))
+    (λ x, x \in S) (λ x (j : 'I_(p x)), true)
+    (λ x (j : 'I_(p x)), 1)).
   apply eq_bigr=> x Hx.
   by rewrite sum1_card card_ord.
 Qed.
@@ -115,7 +115,7 @@ Proof.
   have Hex : ∀ i : CX, exists j : CY, (f i == Some j) && expanded i j.
   { intro i. destruct (Hf i (Hvalid i)) as [j [Hij [_ He]]].
     exists j. by rewrite Hij eqxx He. }
-  pose (g := fun i => xchoose (Hex i)).
+  pose (g := λ i, xchoose (Hex i)).
   have Hspec : ∀ i, f i = Some (g i) ∧ expanded i (g i).
   { intro i. have /andP [/eqP Hsome He] := xchooseP (Hex i). by split. }
   have Hgi : injective g.
@@ -167,7 +167,7 @@ Theorem finite_capacity_transport :
 Proof.
   intros Hall Htotal.
   destruct (capacity_hall_bijection Hall Htotal) as [g [Hbij Hedges]].
-  pose (w := fun x y => #|[set i : CX | (tag i == x) && (tag (g i) == y)]|).
+  pose (w := λ x y, #|[set i : CX | (tag i == x) && (tag (g i) == y)]|).
   have Hfiber : ∀ (Z : finType) (r : Z -> nat) z,
       #|[set i : capacity_copies r | tag i == z]| = r z.
   { intros Z r z.
@@ -177,7 +177,7 @@ Proof.
     { by apply/setP=> i; rewrite !inE. }
     rewrite HE big_set1 in H. exact H. }
   exists w. split.
-  - intro x. rewrite -(Hfiber X p x) (finite_card_partition (fun i : CX => tag (g i))).
+  - intro x. rewrite -(Hfiber X p x) (finite_card_partition (λ i : CX, tag (g i))).
     apply eq_bigr=> y _. rewrite /w. apply eq_card=> i.
     by rewrite !inE.
   - split.
@@ -188,7 +188,7 @@ Proof.
             [set i : CX | g i \in [set j : CY | tag j == y]].
         { by apply/setP=> i; rewrite !inE. }
         rewrite HE. exact (finite_bijection_preimage_card _ Hbij). }
-      rewrite -Hcard (finite_card_partition (fun i : CX => tag i)).
+      rewrite -Hcard (finite_card_partition (λ i : CX, tag i)).
       apply eq_bigr=> x _. rewrite /w. apply eq_card=> i.
       by rewrite !inE andbC.
     + intros x y Hpos. move: Hpos; rewrite /w card_gt0=> /set0Pn [i Hi].

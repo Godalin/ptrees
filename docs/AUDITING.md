@@ -19,7 +19,9 @@ clients; they do not replace inference, rewriting or import-order tests.
 | Examples/tests/kernel | Rocq examples and root `tests/`, `test_*.py`, `audit_api.py --kernel` | mathematical examples/counterexamples, isolated compilation clients, tool failure modes, extracted program behavior, selected joint kernel checks |
 
 The source-level class check normalizes only the eight standard Coq Utf8
-logical spellings (`∀ ∃ → ↔ ∧ ∨ ¬ ≠`) to their ASCII counterparts. It still
+logical spellings (`∀ ∃ → ↔ ∧ ∨ ¬ ≠`) to their ASCII counterparts, and
+`fun binders => body` to standard `λ binders, body`. Lambda normalization
+preserves nested binders, bodies and match-branch arrows. It still
 compares every field and premise; compiled type/assumption snapshots are
 unchanged and compared exactly.
 

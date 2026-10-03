@@ -96,8 +96,8 @@ Local Notation K R := (@ptree_primitive_kernel E MN MF FI MX R).
     witness-independent without choosing a canonical measure representative. *)
 Definition head_successor_match (sim : head1 → head2 → Prop)
     (t1 : ptree E MN R1) (t2 : ptree E MN R2) : Prop :=
-  stable_hitting_match (K R1) (K R2) (fun _ => sim)
-    (fun _ _ => False) (observe t1) (observe t2).
+  stable_hitting_match (K R1) (K R2) (λ _, sim)
+    (λ _ _, False) (observe t1) (observe t2).
 
 Lemma head_successor_match_mono sim1 sim2 :
   (∀ h1 h2, sim1 h1 h2 → sim2 h1 h2) →
@@ -252,7 +252,7 @@ Qed.
 Theorem head_bisim_sym : Symmetric hb.
 Proof.
   intros h1 h2 H12.
-  eapply head_bisim_coinduction with (sim := fun a b => hb b a); [|exact H12].
+  eapply head_bisim_coinduction with (sim := λ a b, hb b a); [|exact H12].
   intros a b Hab. apply head_bisim_unfold in Hab.
   dependent destruction Hab; constructor.
   - reflexivity.
@@ -267,7 +267,7 @@ Theorem head_bisim_trans : Transitive hb.
 Proof.
   intros h1 h2 h3 H12 H23.
   eapply head_bisim_coinduction with
-    (sim := fun a c => exists b, hb a b ∧ hb b c); [|eauto].
+    (sim := λ a c, exists b, hb a b ∧ hb b c); [|eauto].
   intros a c [b [Hab Hbc]]. apply head_bisim_unfold in Hab, Hbc.
   dependent destruction Hab; dependent destruction Hbc; constructor.
   - congruence.

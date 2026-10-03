@@ -40,13 +40,13 @@ Variable base : S → MF (stable_target S O).
 Definition add_random_state (z : stable_target S O) : MF (stable_target (S * X) O) :=
   match z with
   | SHStable o => FORet (SHStable o)
-  | SHInternal s => FOSample hidden (fun x => FORet (SHInternal (s,x)))
+  | SHInternal s => FOSample hidden (λ x, FORet (SHInternal (s,x)))
   end.
 Definition random_state_kernel (p : S * X) := free_omega_bind (base (fst p)) add_random_state.
 
 Lemma random_state_target_marginal z :
   free_omega_qlift
-    (fun w v => kernel_target_projection (@fst S X) (fun o : O => o) w = v)
+    (λ w v, kernel_target_projection (@fst S X) (λ o : O, o) w = v)
     (add_random_state z) (FORet z).
 Proof.
   destruct z as [o|s].
@@ -59,12 +59,12 @@ Qed.
 
 Lemma random_state_kernel_marginal p :
   free_omega_qlift
-    (fun w v => kernel_target_projection (@fst S X) (fun o : O => o) w = v)
+    (λ w v, kernel_target_projection (@fst S X) (λ o : O, o) w = v)
     (random_state_kernel p) (base (fst p)).
 Proof.
   eapply FOQLComp with
-    (T := fun w v => kernel_target_projection (@fst S X) (fun o : O => o) w = v)
-    (U := eq) (mid := free_omega_bind (base (fst p)) (fun z => FORet z)).
+    (T := λ w v, kernel_target_projection (@fst S X) (λ o : O, o) w = v)
+    (U := eq) (mid := free_omega_bind (base (fst p)) (λ z, FORet z)).
   - eapply FOQLBind with (T := eq).
     + apply free_omega_qlift_refl. intro z. reflexivity.
     + intros z w ->. apply random_state_target_marginal.
@@ -80,12 +80,12 @@ Theorem random_state_complete_hitting s x out1 out2 :
 Proof.
   intros Hleft Hright.
   assert (Hproject : free_omega_qlift eq
-    (free_omega_bind out1 (fun o => FORet o)) out2).
+    (free_omega_bind out1 (λ o, FORet o)) out2).
   { eapply kernel_stable_hitting_projection with
       (source := random_state_kernel) (target := base)
-      (state_projection := @fst S X) (output_projection := fun o : O => o)
-      (D := fun _ => True) (s := (s,x)).
-    - intros p _. eapply free_omega_ae_mono with (P := fun _ => True).
+      (state_projection := @fst S X) (output_projection := λ o : O, o)
+      (D := λ _, True) (s := (s,x)).
+    - intros p _. eapply free_omega_ae_mono with (P := λ _, True).
       + intros [o|q] _; exact I.
       + apply (@sem_ae_true MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
     - intros p _. apply random_state_kernel_marginal.
@@ -93,7 +93,7 @@ Proof.
     - exact Hleft.
     - exact Hright. }
   eapply FOQLComp with (T := eq) (U := eq); [|exact Hproject|].
-  - apply FOQLMono with (T := fun x y => y = x).
+  - apply FOQLMono with (T := λ x y, y = x).
     + apply FOQLSym, FOQLStructural, free_omega_bind_return_lift.
     + intros a b Heq. symmetry. exact Heq.
   - intros a c [b [-> ->]]. reflexivity.
@@ -145,21 +145,21 @@ Example fair_hidden_compressed_hitting t b out original :
     (random_state_kernel subenumQ_fair (finite_internal_round_kernel policy)) (t,b) out →
   @ptree_stable_hitting E SubEnumQ MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A (observe t) original →
-  free_omega_qlift eq (free_omega_bind out (fun h => FORet h)) original.
+  free_omega_qlift eq (free_omega_bind out (λ h, FORet h)) original.
 Proof.
   intros Hout Horiginal.
   eapply finite_internal_projected_policy_adequate with
     (kernel := random_state_kernel subenumQ_fair (finite_internal_round_kernel policy))
-    (project_state := @fst tree bool) (project_output := fun h : head => h)
-    (policy := policy) (D := fun _ => True) (s := (t,b)).
+    (project_state := @fst tree bool) (project_output := λ h : head, h)
+    (policy := policy) (D := λ _, True) (s := (t,b)).
   - exact policy_valid.
-  - intros p _. eapply free_omega_ae_mono with (P := fun _ => True).
+  - intros p _. eapply free_omega_ae_mono with (P := λ _, True).
     + intros [h|q] _; exact I.
     + apply (@sem_ae_true MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
   - intros p _. exact (@random_state_kernel_marginal SubEnumQ SubEnumQ_SemanticMeasure
       SubEnumQ_SemanticMeasureCoreLaws SubEnumQ_SemanticOmega bool bool tree head
       subenumQ_fair false fair_discard_same_mass
-      (fun P => @sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
+      (λ P, @sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
         SubEnumQ_SemanticMeasureDiracAELaws bool false P)
       (finite_internal_round_kernel policy) p).
   - exact I.
@@ -180,7 +180,7 @@ Example hidden_step_has_no_structural_reference :
     free_omega_qlift eq
       (random_state_kernel subenumQ_fair delayed_return_kernel (true,false)) reference ∧
     free_omega_lift
-      (fun z target => kernel_target_projection (@fst bool bool) (fun b : bool => b) z = target)
+      (λ z target, kernel_target_projection (@fst bool bool) (λ b : bool, b) z = target)
       reference (delayed_return_kernel true).
 Proof.
   intros [reference [Heq Hmarginal]].
@@ -189,7 +189,7 @@ Proof.
     (random_state_kernel subenumQ_fair delayed_return_kernel (true,false))).
   { apply free_omega_lift_refl. intro z. reflexivity. }
   pose proof (free_omega_reference_marginals_ret_deterministic
-    (project_left := fun z : stable_target (bool * bool) bool => z)
+    (project_left := λ z : stable_target (bool * bool) bool, z)
     Heq Hself Hmarginal)
     as Hconstant.
   destruct Hconstant as [z Hae]. apply free_omega_ae_sample_inv in Hae.
@@ -205,11 +205,11 @@ Example zero_hidden_sample_rejected :
 Proof.
   intro Hmass.
   assert (Hzero : @sem_ae SubEnumQ SubEnumQ_SemanticMeasure bool subenumQ_zero
-    (fun _ => False)).
+    (λ _, False)).
   { intros p x Hempty. contradiction. }
   pose proof (sem_lift_ae_transport_r Hmass Hzero) as Hret.
   apply (proj1 (@sem_ae_ret_iff SubEnumQ SubEnumQ_SemanticMeasure
     SubEnumQ_SemanticMeasureDiracAELaws bool false
-    (fun y => exists x : bool, True ∧ False))) in Hret.
+    (λ y, exists x : bool, True ∧ False))) in Hret.
   destruct Hret as [x [_ Hfalse]]. exact Hfalse.
 Qed.

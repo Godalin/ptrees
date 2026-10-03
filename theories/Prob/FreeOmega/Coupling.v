@@ -67,7 +67,7 @@ Proof.
       * eapply FOLSample.
         -- exact (semantic_coupling_right_supported Hjoint).
         -- intros [x y] z [<- Hxy]. exact (proj1 (proj2 (Hnext (x,y) Hxy))).
-      * apply FOAESample with (Good := fun p => S (fst p) (snd p)).
+      * apply FOAESample with (Good := λ p, S (fst p) (snd p)).
         -- exact (proj2 (proj2 Hjoint)).
         -- intros [x y] Hxy. exact (proj2 (proj2 (Hnext (x,y) Hxy))).
   - destruct (choice _ IH) as [joint Hjoint].
@@ -133,7 +133,7 @@ Proof.
   - split.
     + eapply FOQLSample; [exact (semantic_coupling_right_supported Hjoint)|].
       intros [x y] z [<- Hxy]. exact (proj1 (proj2 (Hnext (x,y) Hxy))).
-    + apply FOAESample with (Good := fun p => S (fst p) (snd p)).
+    + apply FOAESample with (Good := λ p, S (fst p) (snd p)).
       * exact (proj2 (proj2 Hjoint)).
       * intros [x y] Hxy. exact (proj2 (proj2 (Hnext (x,y) Hxy))).
 Qed.
@@ -164,7 +164,7 @@ Local Notation MF := (FreeOmega MN).
 Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 
 Lemma free_omega_bind_return_lift {A} (mu : MF A) :
-  free_omega_lift eq (free_omega_bind mu (fun x => FORet x)) mu.
+  free_omega_lift eq (free_omega_bind mu (λ x, FORet x)) mu.
 Proof.
   induction mu as [x| |X mu k IH|chain IH]; cbn.
   - apply FOLRet. reflexivity.
@@ -176,10 +176,10 @@ Proof.
 Qed.
 
 Definition free_omega_graph_joint {A B} (f : A → B) (mu : MF A) : MF (A * B) :=
-  free_omega_bind mu (fun x => FORet (x, f x)).
+  free_omega_bind mu (λ x, FORet (x, f x)).
 
 Lemma free_omega_graph_joint_left {A B} (f : A → B) (mu : MF A) :
-  free_omega_lift (fun p x => fst p = x) (free_omega_graph_joint f mu) mu.
+  free_omega_lift (λ p x, fst p = x) (free_omega_graph_joint f mu) mu.
 Proof.
   unfold free_omega_graph_joint. induction mu as [x| |X mu k IH|chain IH]; cbn.
   - apply FOLRet. reflexivity.
@@ -191,12 +191,12 @@ Proof.
 Qed.
 
 Lemma free_omega_graph_joint_support {A B} (f : A → B) (mu : MF A) :
-  free_omega_ae (fun p => f (fst p) = snd p) (free_omega_graph_joint f mu).
+  free_omega_ae (λ p, f (fst p) = snd p) (free_omega_graph_joint f mu).
 Proof.
   unfold free_omega_graph_joint. induction mu as [x| |X mu k IH|chain IH]; cbn.
   - apply FOAERet. reflexivity.
   - apply FOAEZero.
-  - apply FOAESample with (Good := fun _ => True).
+  - apply FOAESample with (Good := λ _, True).
     + apply sem_ae_true.
     + intros x _. apply IH.
   - apply FOAELub. exact IH.
@@ -216,7 +216,7 @@ Theorem free_omega_sample_to_constant {X Y A B}
 Proof.
   intros Hdirac Hmass Hbranches.
   eapply FOQLComp with (T := R) (U := eq)
-    (mid := FOSample (sem_ret point) (fun _ => nu)).
+    (mid := FOSample (sem_ret point) (λ _, nu)).
   - eapply FOQLSample; [exact Hmass|]. intros x y _. apply Hbranches.
   - apply FOQLSampleRetL; [exact Hdirac|].
     apply free_omega_qlift_refl. intro b. reflexivity.
@@ -228,15 +228,15 @@ Qed.
     arbitrary relational couplings are not assumed to be functional. *)
 Theorem free_omega_qlift_graph_realization {A B} (f : A → B)
     (mu : MF A) (nu : MF B) :
-  free_omega_qlift (fun x y => f x = y) mu nu →
-  @semantic_coupling MF FI A B (fun x y => f x = y) mu nu
+  free_omega_qlift (λ x y, f x = y) mu nu →
+  @semantic_coupling MF FI A B (λ x y, f x = y) mu nu
     (free_omega_graph_joint f mu).
 Proof.
   intro Hlift. split.
   - apply FOQLStructural. apply free_omega_graph_joint_left.
   - split.
-    + eapply FOQLComp with (T := fun p y => snd p = y) (U := eq)
-        (mid := free_omega_bind nu (fun y => FORet y)).
+    + eapply FOQLComp with (T := λ p y, snd p = y) (U := eq)
+        (mid := free_omega_bind nu (λ y, FORet y)).
       * unfold free_omega_graph_joint. eapply FOQLBind; [exact Hlift|].
         intros x y Hxy. apply FOQLStructural, FOLRet. exact Hxy.
       * apply FOQLStructural. apply free_omega_bind_return_lift.
@@ -247,9 +247,9 @@ Qed.
 Corollary free_omega_qlift_eq_realization {A} (mu nu : MF A) :
   free_omega_qlift eq mu nu →
   @semantic_coupling MF FI A A eq mu nu
-    (free_omega_graph_joint (fun x => x) mu).
+    (free_omega_graph_joint (λ x, x) mu).
 Proof.
-  intro H. exact (free_omega_qlift_graph_realization (f := fun x => x) H).
+  intro H. exact (free_omega_qlift_graph_realization (f := λ x, x) H).
 Qed.
 
 (** Converse is realized by swapping the sampled pair.  Marginal bind/Ret
@@ -258,19 +258,19 @@ Qed.
 Theorem free_omega_coupling_converse {A B} (R : A → B → Prop)
     (mu : MF A) (nu : MF B) joint :
   @semantic_coupling MF FI A B R mu nu joint →
-  @semantic_coupling MF FI B A (fun y x => R x y) nu mu
-    (free_omega_bind joint (fun p => FORet (snd p, fst p))).
+  @semantic_coupling MF FI B A (λ y x, R x y) nu mu
+    (free_omega_bind joint (λ p, FORet (snd p, fst p))).
 Proof.
   intros [Hl [Hr Hae]]. split.
-  - eapply FOQLComp with (T := fun p y => fst p = y) (U := eq)
-      (mid := free_omega_bind nu (fun y => FORet y)).
+  - eapply FOQLComp with (T := λ p y, fst p = y) (U := eq)
+      (mid := free_omega_bind nu (λ y, FORet y)).
     + eapply FOQLBind; [exact Hr|].
       intros p y Hpy. apply FOQLStructural, FOLRet. exact Hpy.
     + apply FOQLStructural, free_omega_bind_return_lift.
     + intros p y [z [Hp ->]]. exact Hp.
   - split.
-    + eapply FOQLComp with (T := fun p x => snd p = x) (U := eq)
-        (mid := free_omega_bind mu (fun x => FORet x)).
+    + eapply FOQLComp with (T := λ p x, snd p = x) (U := eq)
+        (mid := free_omega_bind mu (λ x, FORet x)).
       * eapply FOQLBind; [exact Hl|].
         intros p x Hpx. apply FOQLStructural, FOLRet. exact Hpx.
       * apply FOQLStructural, free_omega_bind_return_lift.
@@ -295,11 +295,11 @@ Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
 
 Lemma free_omega_qlift_map_left {A B C} (f : A → B) (R : B → C → Prop)
     (mu : MF A) (nu : MF C) :
-  free_omega_qlift (fun x y => R (f x) y) mu nu →
-  free_omega_qlift R (free_omega_bind mu (fun x => FORet (f x))) nu.
+  free_omega_qlift (λ x y, R (f x) y) mu nu →
+  free_omega_qlift R (free_omega_bind mu (λ x, FORet (f x))) nu.
 Proof.
   intro Hlift. eapply FOQLComp with (T := R) (U := eq)
-    (mid := free_omega_bind nu (fun y => FORet y)).
+    (mid := free_omega_bind nu (λ y, FORet y)).
   - eapply FOQLBind; [exact Hlift|].
     intros x y Hxy. apply FOQLStructural, FOLRet. exact Hxy.
   - apply FOQLStructural, free_omega_bind_return_lift.
@@ -315,21 +315,21 @@ Theorem free_omega_coupling_glue {A B C}
   @semantic_coupling MF FI A B R mu mid left_joint →
   @semantic_coupling MF FI B C T mid nu right_joint →
   @semantic_coupling MF FI (A * B) (B * C)
-    (fun p q => snd p = fst q) left_joint right_joint fiber_joint →
-  @semantic_coupling MF FI A C (fun x z => ∃ y, R x y ∧ T y z) mu nu
-    (free_omega_bind fiber_joint (fun w => FORet (fst (fst w), snd (snd w)))).
+    (λ p q, snd p = fst q) left_joint right_joint fiber_joint →
+  @semantic_coupling MF FI A C (λ x z, ∃ y, R x y ∧ T y z) mu nu
+    (free_omega_bind fiber_joint (λ w, FORet (fst (fst w), snd (snd w)))).
 Proof.
   intros Hl Hr Hfiber. split.
   - apply free_omega_qlift_map_left.
-    eapply FOQLComp with (T := fun w p => fst w = p)
-      (U := fun p x => fst p = x) (mid := left_joint).
+    eapply FOQLComp with (T := λ w p, fst w = p)
+      (U := λ p x, fst p = x) (mid := left_joint).
     + exact (proj1 Hfiber).
     + exact (proj1 Hl).
     + intros w x [p [<- Hp]]. exact Hp.
   - split.
     + apply free_omega_qlift_map_left.
-      eapply FOQLComp with (T := fun w q => snd w = q)
-        (U := fun q z => snd q = z) (mid := right_joint).
+      eapply FOQLComp with (T := λ w q, snd w = q)
+        (U := λ q z, snd q = z) (mid := right_joint).
       * exact (proj1 (proj2 Hfiber)).
       * exact (proj1 (proj2 Hr)).
       * intros w z [q [<- Hq]]. exact Hq.
@@ -350,9 +350,9 @@ Theorem free_omega_coupling_glue_structural {A B C}
       ∃ joint, semantic_coupling S mu nu joint) :
   @semantic_coupling MF FI A B R mu mid left_joint →
   @semantic_coupling MF FI B C T mid nu right_joint →
-  free_omega_lift (fun p q => snd p = fst q) left_joint right_joint →
+  free_omega_lift (λ p q, snd p = fst q) left_joint right_joint →
   ∃ joint, @semantic_coupling MF FI A C
-    (fun x z => ∃ y, R x y ∧ T y z) mu nu joint.
+    (λ x z, ∃ y, R x y ∧ T y z) mu nu joint.
 Proof.
   intros Hl Hr Hfiber.
   destruct (free_omega_lift_realization node_realizes Hfiber) as [joint Hjoint].
@@ -378,14 +378,14 @@ Local Notation SI := (FreeOmegaSemanticMeasure (NI := NI)).
 Definition free_omega_coupling_references {A B} (R : A → B → Prop)
     (mu : MF A) (nu : MF B) (left right : MF (A * B)) : Prop :=
   free_omega_qlift eq left right ∧
-  free_omega_lift (fun p x => fst p = x) left mu ∧
-  free_omega_lift (fun p y => snd p = y) right nu ∧
-  free_omega_ae (fun p => R (fst p) (snd p)) left.
+  free_omega_lift (λ p x, fst p = x) left mu ∧
+  free_omega_lift (λ p y, snd p = y) right nu ∧
+  free_omega_ae (λ p, R (fst p) (snd p)) left.
 
 Lemma free_omega_coupling_references_right_ae {A B} (R : A → B → Prop)
     (mu : MF A) (nu : MF B) left right :
   free_omega_coupling_references R mu nu left right →
-  free_omega_ae (fun p => R (fst p) (snd p)) right.
+  free_omega_ae (λ p, R (fst p) (snd p)) right.
 Proof.
   intros [Heq [_ [_ Hae]]].
   pose proof (proj1 (free_omega_qlift_support Heq) _ Hae) as Hsupport.
@@ -396,7 +396,7 @@ Qed.
 Lemma free_omega_coupling_references_left_supported {A B} (R : A → B → Prop)
     (mu : MF A) (nu : MF B) left right :
   free_omega_coupling_references R mu nu left right →
-  free_omega_lift (fun p x => fst p = x ∧ R (fst p) (snd p)) left mu.
+  free_omega_lift (λ p x, fst p = x ∧ R (fst p) (snd p)) left mu.
 Proof.
   intros [_ [Hl [_ Hae]]].
   eapply free_omega_lift_mono;
@@ -408,7 +408,7 @@ Qed.
 Lemma free_omega_coupling_references_right_supported {A B} (R : A → B → Prop)
     (mu : MF A) (nu : MF B) left right :
   free_omega_coupling_references R mu nu left right →
-  free_omega_lift (fun p y => snd p = y ∧ R (fst p) (snd p)) right nu.
+  free_omega_lift (λ p y, snd p = y ∧ R (fst p) (snd p)) right nu.
 Proof.
   intro H. pose proof (free_omega_coupling_references_right_ae H) as Hright.
   destruct H as [Heq [Hl [Hr Hae]]].
@@ -425,7 +425,7 @@ Theorem free_omega_coupling_references_realize {A B} (R : A → B → Prop)
 Proof.
   intros [Heq [Hl [Hr Hae]]]. split; [apply FOQLStructural; exact Hl|].
   split; [|exact Hae].
-  eapply FOQLComp with (T := eq) (U := fun p y => snd p = y).
+  eapply FOQLComp with (T := eq) (U := λ p y, snd p = y).
   - exact Heq.
   - apply FOQLStructural. exact Hr.
   - intros p y [q [-> Hq]]. exact Hq.
@@ -444,8 +444,8 @@ Qed.
 Theorem free_omega_eq_coupling_references {A} (mu nu : MF A) :
   free_omega_qlift eq mu nu →
   free_omega_coupling_references eq mu nu
-    (free_omega_graph_joint (fun x => x) mu)
-    (free_omega_graph_joint (fun x => x) nu).
+    (free_omega_graph_joint (λ x, x) mu)
+    (free_omega_graph_joint (λ x, x) nu).
 Proof.
   intro H. split.
   - unfold free_omega_graph_joint. eapply FOQLBind; [exact H|].
@@ -457,7 +457,7 @@ Proof.
            apply free_omega_graph_joint_support|
            apply (@sem_ae_true MF FI FreeOmegaObservableSemanticMeasureCoreLaws)]].
       intros p y [Hp [Hdiag _]]. cbn in Hdiag. now rewrite <- Hdiag.
-    + exact (free_omega_graph_joint_support (fun x : A => x) mu).
+    + exact (free_omega_graph_joint_support (λ x : A, x) mu).
 Qed.
 
 (** Both branch presentations depend on the full sampled pair.  No
@@ -475,9 +475,9 @@ Theorem free_omega_coupling_references_bind {A B C D}
     (free_omega_bind left branch_left) (free_omega_bind right branch_right).
 Proof.
   intros Hsource Hbranch. split.
-  - eapply FOQLBind with (T := fun p q => p = q ∧ R (fst p) (snd p)).
+  - eapply FOQLBind with (T := λ p q, p = q ∧ R (fst p) (snd p)).
     + eapply FOQLAERestrict with (T := eq)
-        (P := fun p => R (fst p) (snd p)) (Q := fun _ => True).
+        (P := λ p, R (fst p) (snd p)) (Q := λ _, True).
       * exact (proj1 Hsource).
       * exact (proj2 (proj2 (proj2 Hsource))).
       * apply (@sem_ae_true MF FI FreeOmegaObservableSemanticMeasureCoreLaws).
@@ -503,16 +503,16 @@ Theorem free_omega_reference_marginals_ret_deterministic {A B J}
     (project_left : J → A) (project_right : J → B)
     (mu : MF A) (b : B) left right :
   free_omega_qlift eq left right →
-  free_omega_lift (fun p x => project_left p = x) left mu →
-  free_omega_lift (fun p y => project_right p = y) right (FORet b) →
-  ∃ a, free_omega_ae (fun x => x = a) mu.
+  free_omega_lift (λ p x, project_left p = x) left mu →
+  free_omega_lift (λ p y, project_right p = y) right (FORet b) →
+  ∃ a, free_omega_ae (λ x, x = a) mu.
 Proof.
   intros Heq Hl Hr. dependent destruction Hr.
   exists (project_left x).
-  assert (Hright : free_omega_ae (fun p : J => project_left p = project_left x) (FORet x)).
+  assert (Hright : free_omega_ae (λ p : J, project_left p = project_left x) (FORet x)).
   { apply FOAERet. reflexivity. }
   pose proof (proj2 (free_omega_qlift_support Heq) _ Hright) as Hleft.
-  assert (Hleft' : free_omega_ae (fun p : J => project_left p = project_left x) left).
+  assert (Hleft' : free_omega_ae (λ p : J, project_left p = project_left x) left).
   { eapply free_omega_ae_mono; [|exact Hleft].
     intros p [q [-> Hq]]. exact Hq. }
   pose proof (free_omega_lift_ae_transport_r Hl Hleft') as Hmu.
@@ -523,7 +523,7 @@ Qed.
 Corollary free_omega_coupling_references_ret_deterministic {A B}
     (R : A → B → Prop) (mu : MF A) (b : B) left right :
   free_omega_coupling_references R mu (FORet b) left right →
-  ∃ a, free_omega_ae (fun x => x = a) mu.
+  ∃ a, free_omega_ae (λ x, x = a) mu.
 Proof.
   intros [Heq [Hl [Hr Hae]]].
   exact (free_omega_reference_marginals_ret_deterministic Heq Hl Hr).

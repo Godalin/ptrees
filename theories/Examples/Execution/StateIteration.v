@@ -16,9 +16,9 @@ From PTree.Examples Require Import StateCounter.
 Import ListNotations.
 
 Definition retry_step (_ : unit) : ptree (stateE nat +' void1) SubEnumQ (unit + unit) :=
-  Vis (inl1 (Get nat)) (fun s =>
-    Vis (inl1 (Put nat (S s))) (fun _ =>
-      Prob coin (fun b : bool => Ret (if b then inr tt else inl tt)))).
+  Vis (inl1 (Get nat)) (λ s,
+    Vis (inl1 (Put nat (S s))) (λ _,
+      Prob coin (λ b : bool, Ret (if b then inr tt else inl tt)))).
 
 Example eliminate_state_before_or_after_iter :
   pstruct eq (run_state (PTree.iter retry_step tt) 0)
@@ -38,10 +38,10 @@ Proof. native_compute. reflexivity. Qed.
 Section Eventful.
 Context {E MN : Type → Type} (e : E unit) (mu : MN bool).
 Definition eventful_step (_ : unit) : ptree (stateE nat +' E) MN (unit + nat) :=
-  Vis (inl1 (Get nat)) (fun s =>
-    Vis (inl1 (Put nat (S s))) (fun _ =>
-      Vis (inr1 e) (fun _ =>
-        Prob mu (fun b : bool => Ret (if b then inr s else inl tt))))).
+  Vis (inl1 (Get nat)) (λ s,
+    Vis (inl1 (Put nat (S s))) (λ _,
+      Vis (inr1 e) (λ _,
+        Prob mu (λ b : bool, Ret (if b then inr s else inl tt))))).
 
 Example eventful_probabilistic_iter_commutes s :
   pstruct eq (run_state (PTree.iter eventful_step tt) s)

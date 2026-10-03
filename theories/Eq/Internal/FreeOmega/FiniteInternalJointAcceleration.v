@@ -55,14 +55,14 @@ Hypothesis trunc_spec : ∀ s, D s →
   finite_internal_joint_approximates projection (project_state s) (kernel s) (trunc s).
 
 Definition finite_internal_joint_grid n m s :=
-  free_omega_bind (kernel_hit (fun u => trunc u m) n s)
-    (fun o => FORet (project_output o)).
+  free_omega_bind (kernel_hit (λ u, trunc u m) n s)
+    (λ o, FORet (project_output o)).
 
 Lemma finite_internal_trunc_closed s m : D s →
   free_omega_ae (kernel_completion_invariant D) (trunc s m).
 Proof.
   intro HD. eapply free_omega_ae_mono with
-    (P := fun x => exists y, x = y ∧ kernel_completion_invariant D y).
+    (P := λ x, exists y, x = y ∧ kernel_completion_invariant D y).
   - intros x [y [-> Hy]]. exact Hy.
   - eapply free_omega_approx_ae_backward.
     + exact (proj1 (proj2 (proj2 (trunc_spec HD))) m).
@@ -70,11 +70,11 @@ Proof.
 Qed.
 
 Lemma finite_internal_trunc_supported s m : D s →
-  free_omega_approx (fun x y => x = y ∧ kernel_completion_invariant D x)
+  free_omega_approx (λ x y, x = y ∧ kernel_completion_invariant D x)
     (trunc s m) (trunc s m).
 Proof.
   intro HD. apply free_omega_lift_to_approx. eapply free_omega_lift_mono with
-    (R := fun x y => x = y ∧ kernel_completion_invariant D x ∧ True).
+    (R := λ x y, x = y ∧ kernel_completion_invariant D x ∧ True).
   - intros x y [Hxy [HD' _]]. split; assumption.
   - eapply free_omega_lift_ae_restrict.
     + apply free_omega_lift_refl. intro x. reflexivity.
@@ -92,8 +92,8 @@ Qed.
 
 Lemma finite_internal_joint_gridE n m s :
   finite_internal_joint_grid n m s = free_omega_bind (trunc s m)
-    (fun target => free_omega_bind (target_approx (fun u => trunc u m) n target)
-      (fun o => FORet (project_output o))).
+    (λ target, free_omega_bind (target_approx (λ u, trunc u m) n target)
+      (λ o, FORet (project_output o))).
 Proof. apply free_omega_bind_assoc. Qed.
 
 Lemma finite_internal_joint_grid_upper n m s : D s →
@@ -102,7 +102,7 @@ Lemma finite_internal_joint_grid_upper n m s : D s →
 Proof.
   induction n as [|n IH] in s |- *; intro HD.
   - eapply free_omega_approx_trans with
-      (nu := free_omega_bind (trunc s m) (fun z => guard_approx 0 (projection z))).
+      (nu := free_omega_bind (trunc s m) (λ z, guard_approx 0 (projection z))).
     + rewrite finite_internal_joint_gridE.
       eapply free_omega_approx_bind with (R := eq).
       * apply free_omega_approx_refl. intro z. reflexivity.
@@ -113,7 +113,7 @@ Proof.
           FreeOmegaObservableSemanticOmega FreeOmegaObservableSemanticMeasureOrderLaws A). lia.
   - eapply free_omega_approx_trans with
       (nu := free_omega_bind (trunc s m)
-        (fun z => guard_approx (Datatypes.S ((Datatypes.S n) * (Datatypes.S m)))
+        (λ z, guard_approx (Datatypes.S ((Datatypes.S n) * (Datatypes.S m)))
           (projection z))).
     + rewrite finite_internal_joint_gridE.
       eapply free_omega_approx_bind; [apply finite_internal_trunc_supported; exact HD|].
@@ -133,7 +133,7 @@ Lemma finite_internal_joint_grid_covers n m s : D s → n <= m →
 Proof.
   induction n as [|n IH] in s |- *; intros HD Hnm;
     eapply free_omega_approx_trans with
-      (nu := free_omega_bind (trunc s m) (fun z => guard_approx _ (projection z))).
+      (nu := free_omega_bind (trunc s m) (λ z, guard_approx _ (projection z))).
   - eapply free_omega_approx_trans.
     + exact (proj2 (proj2 (proj2 (proj2 (trunc_spec HD)))) 0).
     + eapply free_omega_approx_bind with (R := eq).
@@ -156,8 +156,8 @@ Proof.
 Qed.
 
 Theorem finite_internal_joint_grid_cofinal s : D s →
-  free_omega_chains_cofinal eq (fun n => finite_internal_joint_grid n n s)
-    (fun n => hit n (observe (project_state s))).
+  free_omega_chains_cofinal eq (λ n, finite_internal_joint_grid n n s)
+    (λ n, hit n (observe (project_state s))).
 Proof.
   intro HD. split.
   - intro n. exists ((Datatypes.S n) * (Datatypes.S n)).
@@ -173,7 +173,7 @@ Theorem finite_internal_joint_truncated_execution_adequate s out reference_out :
   @ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A (observe (project_state s)) reference_out →
   free_omega_qlift eq
-    (free_omega_bind out (fun o => FORet (project_output o))) reference_out.
+    (free_omega_bind out (λ o, FORet (project_output o))) reference_out.
 Proof.
   intros HD Hhit Hreference.
   eapply (kernel_stable_hitting_diagonal_adequate trunc_increasing trunc_limit
@@ -190,7 +190,7 @@ Variable cut : S → MF tree.
 Hypothesis cut_valid : ∀ s, D s →
   @finite_internal E MN MF FI FreeOmegaMixedMeasure A (project_state s) (cut s).
 Hypothesis marginal_structural : ∀ s, D s →
-  free_omega_lift (fun z target => projection z = target)
+  free_omega_lift (λ z target, projection z = target)
     (kernel s) (free_omega_bind (cut s) finite_internal_guard_transition).
 Hypothesis node_realizes : ∀ {X Y} (R : X → Y → Prop)
     (mu : MN X) (nu : MN Y), sem_lift R mu nu →
@@ -215,7 +215,7 @@ Proof.
         (cut_valid HD) (free_omega_lift_sym (marginal_structural HD))) as [c Hc].
       exists c. split; [exact (proj1 Hc)|].
       split; [exact (proj1 (proj2 Hc))|]. intros _. exact Hc.
-    - exists (fun _ => kernel s). split.
+    - exists (λ _, kernel s). split.
       + intro n. apply free_omega_approx_refl. intro z. reflexivity.
       + split.
         * apply FOQLLubConstantR, free_omega_qlift_refl. intro z. reflexivity.
@@ -237,7 +237,7 @@ Theorem finite_internal_structural_execution_adequate s out reference_out :
   @ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A (observe (project_state s)) reference_out →
   free_omega_qlift eq
-    (free_omega_bind out (fun o => FORet (project_output o))) reference_out.
+    (free_omega_bind out (λ o, FORet (project_output o))) reference_out.
 Proof.
   intros HD Hhit Hreference.
   destruct finite_internal_structural_execution_truncations as [trunc [Hinc [Hlim Hspec]]].
@@ -257,16 +257,16 @@ Theorem finite_internal_structural_execution_adequate_modulo_eq
   @ptree_stable_hitting E MN MF FI FreeOmegaMixedMeasure
     FreeOmegaObservableSemanticOmega A (observe (project_state s)) reference_out →
   free_omega_qlift eq
-    (free_omega_bind out (fun o => FORet (project_output o))) reference_out.
+    (free_omega_bind out (λ o, FORet (project_output o))) reference_out.
 Proof.
   intros HD Hout Hreference.
-  pose (front := FOLub (fun n => kernel_hit kernel n s)).
+  pose (front := FOLub (λ n, kernel_hit kernel n s)).
   assert (Hfront : @stable_hitting MF FI FreeOmegaObservableSemanticOmega S O kernel s front).
   { apply free_omega_qlift_refl. intro o. reflexivity. }
   pose proof (kernel_stable_hitting_eq kernel_closed kernels_equal HD Hfront Hout) as Heq.
   eapply FOQLComp with (T := eq) (U := eq)
-    (mid := free_omega_bind front (fun o => FORet (project_output o))).
-  - eapply FOQLBind with (T := fun x y => y = x).
+    (mid := free_omega_bind front (λ o, FORet (project_output o))).
+  - eapply FOQLBind with (T := λ x y, y = x).
     + apply FOQLSym. exact Heq.
     + intros x y <-. apply FOQLStructural, FOLRet. reflexivity.
   - eapply finite_internal_structural_execution_adequate;

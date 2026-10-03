@@ -19,7 +19,7 @@ Local Open Scope ring_scope.
 
 Example function_values_have_indicator_support
     (mu : FiniteEnum rat_rat__canonical__Num_NumDomain (nat → nat)) P :
-  0 < finite_enum_expect mu (fun f => if P f then 1 else 0) →
+  0 < finite_enum_expect mu (λ f, if P f then 1 else 0) →
     ∃ p f, List.In (p,f) (finite_enum_raw mu) ∧ p ≠ 0 ∧ P f.
 Proof. exact: finite_indicator_positive_member. Qed.
 
@@ -50,7 +50,7 @@ Section Universes.
 Universe u.
 Example high_carrier_indicator_support
     (mu : FiniteEnum rat_rat__canonical__Num_NumDomain Type@{u}) P :
-  0 < finite_enum_expect mu (fun X => if P X then 1 else 0) →
+  0 < finite_enum_expect mu (λ X, if P X then 1 else 0) →
     ∃ p X, List.In (p,X) (finite_enum_raw mu) ∧ p ≠ 0 ∧ P X.
 Proof. exact: finite_indicator_positive_member. Qed.
 End Universes.
