@@ -51,6 +51,14 @@ Classical/extensional dependencies are recorded per compiled endpoint in
 [the registry](tools/data/CONTRACT_SUITES.json). Conditional generic theorems
 are not claims of constructive or assumption-free concrete instantiations.
 
+## Deferred TODO
+
+- **MonadSample transformer liftings — deferred:** add ReaderT, WriterT and
+  ExceptionT liftings, reusing their existing explicit sampling algebras.
+  PTree and StateT already have instances. This is future API work, not a
+  blocker for the current interpretation; it does not include proving new
+  transformer commuting laws. See [interpreter boundaries](docs/INTERPRETERS.md#remaining-boundaries).
+
 ## Remaining limits
 
 The maintained artifact does not establish:

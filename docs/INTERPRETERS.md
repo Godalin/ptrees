@@ -302,9 +302,11 @@ current interpretation:
 
 - We use a sufficient common agreement profile, not a minimality claim for
   every elementary equation. Weakening individual signatures remains possible.
-- Only PTree and StateT currently register `MonadSample` liftings. Reader,
-  Writer and Exception retain explicit sampling algebras; adding selected
-  operations would not by itself establish new transformer commuting laws.
+- **TODO (deferred):** add `MonadSample` liftings for ReaderT, WriterT and
+  ExceptionT using their existing explicit sampling algebras. Only PTree and
+  StateT currently register these liftings. This is tracked future API work,
+  not a current blocker; adding selected operations would not by itself
+  establish new transformer commuting laws.
 - Adaptive's staged productive lowering is retained. A named monadic view of
   that whole controller could be added via agreement without changing its
   implementation or probability analysis.
