@@ -3,6 +3,11 @@
   "description": "Current contracts. Contexts preserve original safe/unchecked and joint/owner loading. No migration replay.",
   "groups": [
     {
+      "id": "pgcl",
+      "snapshot": "tools/data/PGCL_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
       "id": "bind_profile",
       "snapshot": "tools/data/BIND_PROFILE_CONTRACTS.json",
       "context": "owners"
@@ -179,6 +184,42 @@
     }
   ],
   "axiom_exceptions": {
+    "PTree.Examples.PGCL.RandomWalk.walk_classical_frontier": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.PGCL.StateInterpretation.run_execute": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.PGCL.FreeOmega.pgcl_run_denotes_iff": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.PGCL.FreeOmega.pgcl_denotation_peutt": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.PGCL.Finite.rational_pgcl_hitting": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.PGCL.Finite.real_pgcl_hitting": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.PGCL.Programs.CoinLoops.partial_frontier": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.PGCL.Programs.CoinLoops.endless_frontier": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.PGCL.RandomWalk.walk_run": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
     "PTree.Eq.FreeOmega.Iter.peutt_iter_behavioral_rel": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"

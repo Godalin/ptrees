@@ -29,6 +29,24 @@ Definition iteration_return_map (out : MF A) : MF (stable_head E MN A) :=
 Definition iteration_return_front (K : I → MF (I+A)) i :=
   sem_bind (K i) (λ v, sem_ret (FHRet v : stable_head E MN (I+A))).
 
+(** A complete step witness may only be equal to a return-only presentation.
+    Work with its actual witness instead of assuming sem_lub is closed under
+    arbitrary output replacement (not part of the generic interface). *)
+Lemma iteration_summary_round_front_proper
+    (F G : I → MF (stable_head E MN (I+A)))
+    (HFG : ∀ i, sem_eq (F i) (G i)) n i :
+  sem_eq (iteration_summary_round step F n i)
+    (iteration_summary_round step G n i).
+Proof.
+  revert i; induction n as [|n IH]; intro i.
+  all: eapply sem_eq_trans; [apply (iteration_summary_round_unfold step (FC := FC) (FB := FB))|].
+  all: eapply sem_eq_trans; [|apply sem_eq_sym; apply (iteration_summary_round_unfold step (FC := FC) (FB := FB))].
+  all: eapply sem_eq_trans; [apply sem_bind_eq_l; apply HFG|].
+  all: apply sem_bind_ae_proper; eapply sem_ae_mono; [|apply sem_ae_true].
+  all: intros [[j|a]|X e k] _; try apply sem_eq_refl.
+  apply IH.
+Qed.
+
 Theorem iteration_summary_round_return_only (K : I → MF (I+A)) n i :
   sem_eq (iteration_summary_round step (iteration_return_front K) n i)
     (iteration_return_map (sem_iter_approx K (S n) i)).
@@ -79,6 +97,26 @@ Proof.
   destruct (iteration_summary_exists (step := step) Hstep i) as [hs [Hsummary Hhit]].
   exists hs; split; [exact Hhit|].
   eapply iteration_summary_return_only; eassumption.
+Qed.
+
+Theorem ptree_iter_return_only_equiv
+    `{MO : @MixedMeasureBindOrderLaws MN MF FI MX FO}
+    `{Diagonal : @SemanticMeasureDiagonalLaws MF FI FO}
+    `{Fubini : @SemanticOmegaFubiniLaws MF FI FO}
+    (front : I → MF (stable_head E MN (I+A))) (K : I → MF (I+A))
+    (Hstep : ∀ i, ptree_stable_hitting (MF := MF) (observe (step i)) (front i))
+    (Hfront : ∀ i, sem_eq (front i) (iteration_return_front K i)) i out :
+  sem_iter K i out → ∃ summary_out,
+    ptree_stable_hitting (MF := MF) (observe (PTree.iter step i)) summary_out ∧
+    sem_eq summary_out (iteration_return_map out).
+Proof.
+  intro Hiter.
+  destruct (iteration_summary_exists (step := step) Hstep i) as [hs [Hsummary Hhit]].
+  exists hs; split; [exact Hhit|].
+  eapply iteration_summary_return_only; [|exact Hiter].
+  unfold iteration_summary in *.
+  eapply sem_lub_chain_proper; [|exact Hsummary].
+  intro n. apply iteration_summary_round_front_proper. exact Hfront.
 Qed.
 
 Section Native.

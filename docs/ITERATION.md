@@ -106,6 +106,9 @@ sem_iter K i out = sem_lub (approx · i) out
   `mixed_iter`.
 - `ptree_iter_return_only` / `ptree_iter_mixed_iter`: complete certificates for
   actual steps yield an actual loop hitting witness and that equality.
+- `ptree_iter_return_only_equiv`: the actual complete step witness need only
+  be `sem_eq` to the return image of the kernel. This avoids assuming generic
+  output saturation and supports compositional language denotations.
 
 The condition is local to the step frontier, not that the entire signature is
 empty. Zero-prefix cofinality removes the finite index shift at the limit.
@@ -129,6 +132,82 @@ Two mathematical models provide genuine leastness:
   `oval_iter_least_prefixed`. `FreeOmega/Validation/Iteration` proves that the
   canonical formal iteration denotes this lfp and is modelable. Other
   quotient-equal witnesses require the quotient-validation obligations.
+
+## pGCL forward semantics (no wp or external model)
+
+[`Examples/PGCL`](../theories/Examples/PGCL) implements the purely probabilistic
+fragment: skip, divergence, state update, sequencing, conditionals, probabilistic
+choice and unbounded while. State expressions are shallow functions; commands
+are an inductive syntax. There is no demonic choice or conditioning. Parameters
+of probabilistic choices are abstract; the finite instances supply bounded
+rational/real Bernoulli coins, including probabilities zero and one.
+
+The proof chain is:
+
+```text
+command
+  -> elaborate : PTree (stateE S + E) MN unit
+  -> run       : PTree E MN S       (public interp_state, then state projection)
+       ≈ execute                    (explicit-state normal form)
+       -> complete hitting frontier = map FHRet (denote command state)
+```
+
+`Forward.v` independently defines `denotes coin command K`, where `K : S -> MF S`.
+It uses only the abstract probability interfaces. Sequential composition is
+Kleisli composition; `forward K mu := sem_bind mu K` transports an initial
+distribution. While is **bottom-started** `sem_iter (while_kernel b K)`, not
+an arbitrary solution of its unfolding equation. An existing omega-selection
+capability supplies a convenient `denote` function; existence and uniqueness
+up to `sem_eq` are proved. The relational specification itself needs no selection.
+
+Opt in to `PGCLNotations` / `pgcl_scope` and `PGCLDenotationNotations` /
+`pgcl_denotation_scope`:
+
+```coq
+UPDATE f ;; WHILE b DO (c ⊕[ p ] d) OD
+IF b THEN c ELSE d ENDIF
+x ::= e
+⟦ c ⟧[ coin ] s          (* selected forward kernel *)
+c ⇓[ coin ] K            (* relational forward denotation *)
+```
+
+The explicit coin argument avoids another canonical-backend selection mechanism.
+`ENDIF` deliberately does not reserve the common interface name `FI`.
+
+Main endpoints and their boundaries:
+
+- `Adequacy.pgcl_forward_correspondence`: arbitrary `MN/MF`, any complete
+  hitting witness of `execute`, whole-frontier equality with the forward kernel.
+  `returns_iter` uses the existing return-only iteration bridge, including its
+  finite `n` versus `S n` shift. No bounded-body, AST, native finite-limit or
+  empty-event-signature assumption is needed.
+- `StateInterpretation.run_execute`: generic behavioral State elimination,
+  using existing relational mixed-bind/zero/lub certificates and uniform iteration.
+- `FreeOmega.pgcl_run_denotes_iff`: for any native backend satisfying the
+  maintained FreeOmega profile, relational forward denotation iff its return
+  image is an actual complete frontier of `run`. Exact witness replacement
+  here uses FreeOmega's existing saturated limit predicate; it is not asserted
+  for an arbitrary abstract `sem_lub`.
+- `Finite.rational_pgcl_hitting` / `real_pgcl_hitting`: SubEnumQ/SubEnumR
+  specializations of that same theorem. No new completion or coupling proof.
+- `Forward.denote_while_unfold` / `denote_while_approximants`: classical
+  Kleisli equations. `denote_while_least` additionally exposes genuine lub
+  upper/least properties, just like `sem_iter_least_fixed_point`; those
+  properties are **not** silently assumed of raw FreeOmega.
+
+`Programs.v` demonstrates retry, nested loops, partial termination and zero
+frontier for endless skip. `RandomWalk.v` proves the State-interpreted source
+program equivalent to the maintained `random_walk`; `walk_classical_frontier`
+gives that existing PTree itself the pGCL forward frontier. Its
+infinite-support/harmonic analysis remains in its original
+owner; the limit is not forced into a finite native distribution.
+
+All these modules are Gate S and import no external validation model. The generic
+forward correspondence and conditional leastness theorem are closed under their
+explicit contexts. State/behavioral assembly inherits existing dependent equality
+and relational/unique choice dependencies; completion and finite instances also
+inherit existing extensionality/MathComp choice. Compiled contracts record these
+per endpoint, without broadening the external-soundness whitelist.
 
 Start with [IterationBasics and AbsorbingFrontier](CASE_STUDIES.md) for actual
 program proofs. Contracts are in the generic-algebra and iteration groups;

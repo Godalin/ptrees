@@ -131,6 +131,15 @@ Require PTree.Examples.Internal.ResidualJointCoinduction.
 Require PTree.Examples.IterationBasics.
 Require PTree.Examples.MathCompPrograms.
 Require PTree.Examples.MixedHeadProtocol.
+Require PTree.Examples.PGCL.Adequacy.
+Require PTree.Examples.PGCL.Finite.
+Require PTree.Examples.PGCL.Forward.
+Require PTree.Examples.PGCL.FreeOmega.
+Require PTree.Examples.PGCL.Interpretation.
+Require PTree.Examples.PGCL.Programs.
+Require PTree.Examples.PGCL.RandomWalk.
+Require PTree.Examples.PGCL.StateInterpretation.
+Require PTree.Examples.PGCL.Syntax.
 Require PTree.Examples.Probability.ConditionalResampling.
 Require PTree.Examples.Probability.CorrelatedSampleAlgebra.
 Require PTree.Examples.Probability.CouplingRealization.
@@ -422,6 +431,7 @@ Require PTree.Tests.ImportOrder.CanonicalBehaviorStructuralFirst.
 Require PTree.Tests.Imports.ArchitectureBoundaries.
 Require PTree.Tests.Imports.CapabilityBoundaries.
 Require PTree.Tests.Imports.MathCompUniverse.
+Require PTree.Tests.Imports.PGCL.
 Require PTree.Tests.Imports.PublicBehavior.
 Require PTree.Tests.Imports.PublicHandlers.
 Require PTree.Tests.Imports.PublicInterpretation.

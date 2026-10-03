@@ -13,6 +13,7 @@ records remain in Git; old counts are not current verification results.
 | Iteration | Eventful relational congruence and full iteration_uniform | Relational zero/lub plus the proved scheduling/continuity profile |
 | Frontier analysis | Generic complete-step iteration summaries; return-only Kleisli compatibility | Actual step certificates; no AST, no_event or finite-native-limit requirement |
 | Least fixed points | Native MathComp and independent OmegaVal leastness; FreeOmega interpretation into the latter | Not leastness of every raw syntactic FreeOmega relation |
+| pGCL forward semantics | Generic kernels and State elaboration; exact complete-frontier correspondence for native-parametric FreeOmega, instantiated for Q/R | Pure probabilistic fragment; no wp/validation dependency; order-theoretic leastness keeps genuine supremum premises |
 | Interpretation | Public `interp = fold handle msample`, productive `interp_tree` agreement, handler algebra, State preservation | Target-specific laws and appropriate generic profiles; sampling selection is not a correctness axiom |
 | ITree | from_itree_eutt_iff on the probability-free embedding's image | Separating probability laws, not an arbitrary positive lifting interface |
 | MDP | Generic fragment coincidence and faithful source-kernel correspondence | Native/frontier reflection, total source rows and fragment support |

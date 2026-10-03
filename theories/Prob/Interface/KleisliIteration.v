@@ -127,6 +127,37 @@ Proof.
 Qed.
 End Iteration.
 
+(** Kernel replacement is observational: it does not assume that sem_eq
+    implies approximation order. Useful for compositional language semantics. *)
+Section KernelReplacement.
+Context {M : Type → Type} `{MI : SemanticMeasure M}
+  `{MC : @SemanticMeasureCoreLaws M MI}
+  `{MB : @SemanticMeasureBindLaws M MI}
+  `{MO : @SemanticOmega M MI}
+  `{Ord : @SemanticMeasureOrderLaws M MI MO}
+  `{Omega : @SemanticOmegaLaws M MI MO}
+  `{Cofinal : @SemanticOmegaCofinalityLaws M MI MO}.
+
+Lemma sem_iter_approx_proper {I A} (K L : I → M (I+A))
+    (HK : ∀ i, sem_eq (K i) (L i)) n i :
+  sem_eq (sem_iter_approx K n i) (sem_iter_approx L n i).
+Proof.
+  revert i; induction n as [|n IH]; intro i; cbn [sem_iter_approx sem_iter_step].
+  - apply sem_eq_refl.
+  - eapply sem_eq_trans; [apply sem_bind_eq_l; apply HK|].
+    apply sem_bind_ae_proper. eapply sem_ae_mono; [|apply sem_ae_true].
+    intros [j|a] _; [apply IH|apply sem_eq_refl].
+Qed.
+
+Theorem sem_iter_proper {I A} (K L : I → M (I+A))
+    (HK : ∀ i, sem_eq (K i) (L i)) i out out' :
+  sem_iter K i out → sem_iter L i out' → sem_eq out out'.
+Proof.
+  intros H H'. eapply sem_lub_proper; [|exact H|exact H'].
+  intro n. apply sem_iter_approx_proper. exact HK.
+Qed.
+End KernelReplacement.
+
 Lemma sem_bind_zero_eq {M} `{MI : SemanticMeasure M}
     `{MO : @SemanticOmega M MI} `{Ord : @SemanticMeasureOrderLaws M MI MO}
     `{Omega : @SemanticOmegaLaws M MI MO}
