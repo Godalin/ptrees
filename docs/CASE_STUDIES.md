@@ -381,6 +381,25 @@ support suffice: there is no artificial requirement to solve for an explicit
 finite joint limit of state and bit. State is not reset between retries, and
 no independence assumption may replace the correlated-state proof.
 
+The private state contains `health : bool`, selecting the next attempt's
+source (`1/3` or `1/4`), and a single `retries : nat` counter. The counter is
+updated only by `Retry` on a failed attempt; it never feeds into sampling or
+control flow. `ChooseSource` binds `src` once; both draws in that
+attempt use it even though `CheckSensor` and the health update occur between
+them. Equal draws retry with the updated health, unequal draws return the
+first bit with the actual private state. The recurrence remains state-dependent;
+symmetry and the uniform `5/8` retry bound yield the fair-bit law.
+`lower_attempt` exposes the shared source and `failed_branches_persist` checks
+the two retry successors. `two_attempts_are_adaptive` computes unresolved mass
+`55/162` after two attempts, different from the fixed-source value `(5/9)^2`.
+The `repairs`/`rounds` counters and `Maintenance`/`Round` events have been
+removed. `Retry` remains as the one bookkeeping effect; iteration itself
+expresses retry control flow and factory rounds.
+The sampler, factory and persistent `Request`/`Emit` refinement endpoint names
+are unchanged. Sampler/factory refinement relates the returned bit without
+constraining the private health or retry count; service/controller refinement
+preserves the public interaction while hiding that state.
+
 For MixedHead, read `masked_protocol_equivalent` in the single case file.
 The implementation's multi-draw Boolean sampler and specification's one-shot
 sample have different internal shapes. The proof builds the finite sampler

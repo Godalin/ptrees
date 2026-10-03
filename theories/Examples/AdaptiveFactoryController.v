@@ -76,20 +76,14 @@ Proof. reflexivity. Qed.
 Lemma source_coin_total src : sem_total (source_coin src).
 Proof. destruct src; by vm_compute. Qed.
 
-Record machine_state := MachineState {
-  health : bool; retries : nat; repairs : nat; rounds : nat
-}.
-Definition initial_state := MachineState false 0 0 0.
-Definition report_update s a :=
-  MachineState (xorb (health s) a) (retries s) (repairs s) (rounds s).
-Definition repair_update s :=
-  MachineState (health s) (retries s) (S (repairs s)) (rounds s).
-Definition retry_update s :=
-  MachineState (health s) (S (retries s)) (repairs s) (rounds s).
-Definition round_update s :=
-  MachineState (health s) (retries s) (repairs s) (S (rounds s)).
-Definition after_sensor s a :=
-  if a then repair_update (report_update s a) else report_update s a.
+(** Health feeds back into sampling; retries is private bookkeeping only.
+    Both persist across attempts, factory rounds and public requests. The
+    specification returns just a bit, related by [output_related] below. *)
+Record machine_state := MachineState { health : bool; retries : nat }.
+Definition initial_state := MachineState false 0.
+Definition after_sensor s report :=
+  MachineState (xorb (health s) report) (retries s).
+Definition retry_update s := MachineState (health s) (S (retries s)).
 
 Variant publicE : Type → Type :=
 | Request : publicE unit
@@ -97,9 +91,7 @@ Variant publicE : Type → Type :=
 Variant internalE : Type → Type :=
 | ChooseSource : internalE bool
 | CheckSensor : bool → internalE bool
-| Maintenance : internalE unit
-| Retry : internalE unit
-| Round : internalE unit.
+| Retry : internalE unit.
 Definition implE := stateE machine_state +' (internalE +' publicE).
 Definition targetE := stateE machine_state +' publicE.
 Local Notation tree := (ptree implE SubEnumQ).
@@ -128,15 +120,9 @@ Definition internal_handler X (e : implE X) : ptree targetE SubEnumQ X :=
         s <- PTree.trigger (inl1 (Get machine_state));;
         Ret (health s)
     | CheckSensor a => Ret a
-    | Maintenance =>
-        s <- PTree.trigger (inl1 (Get machine_state));;
-        PTree.trigger (inl1 (Put machine_state (repair_update s)))
     | Retry =>
         s <- PTree.trigger (inl1 (Get machine_state));;
         PTree.trigger (inl1 (Put machine_state (retry_update s)))
-    | Round =>
-        s <- PTree.trigger (inl1 (Get machine_state));;
-        PTree.trigger (inl1 (Put machine_state (round_update s)))
     end
   end.
 Definition lower {A} (t : tree A) s := run_state (PTree.interp internal_handler t) s.
@@ -147,8 +133,7 @@ Definition vn_attempt (_ : unit) : tree (unit + bool) :=
   src <- internal ChooseSource;;
   a <- sample (source_coin src);;
   report <- internal (CheckSensor a);;
-  update (λ s, report_update s report);;
-  (if report then internal Maintenance else Ret tt);;
+  update (λ s, after_sensor s report);;
   b <- sample (source_coin src);;
   if a == b then internal Retry;; Ret (inl tt)
   else Ret (inr a).
@@ -156,7 +141,6 @@ Definition adaptive_vn : tree bool := PTree.iter vn_attempt tt.
 
 Definition factory_step (x : rat) : tree (rat + bool) :=
   b <- adaptive_vn;;
-  internal Round;;
   Ret (binary_round_result x b).
 Definition eventful_factory q : tree bool := PTree.iter factory_step q.
 Definition serve_request q : tree unit :=
@@ -205,9 +189,7 @@ Lemma lower_internal {X} (e : internalE X) s :
     (match e in internalE Y return machine_state * Y with
      | ChooseSource => (s, health s)
      | CheckSensor a => (s, a)
-     | Maintenance => (repair_update s, tt)
      | Retry => (retry_update s, tt)
-     | Round => (round_update s, tt)
      end).
 Proof.
   destruct e; repeat (eapply peutt_tau_step; [cbn; reflexivity|]);
@@ -261,20 +243,14 @@ Proof.
   setoid_rewrite peutt_bind_ret_l.
   setoid_rewrite lower_bind.
   setoid_rewrite lower_update. setoid_rewrite peutt_bind_ret_l.
-  destruct a; cbn [fst snd].
-  all: setoid_rewrite lower_bind.
-  all: try setoid_rewrite lower_internal.
-  all: try setoid_rewrite lower_ret.
-  all: try setoid_rewrite peutt_bind_ret_l.
-  all: setoid_rewrite lower_bind.
-  all: setoid_rewrite lower_prob.
-  all: setoid_rewrite peutt_bind_prob.
-  all: setoid_rewrite lower_ret; setoid_rewrite peutt_bind_ret_l.
-  all: apply peutt_prob_Proper; intros b; destruct b; cbn [fst snd].
-  all: try setoid_rewrite lower_bind.
-  all: try setoid_rewrite lower_internal.
-  all: try setoid_rewrite peutt_bind_ret_l.
-  all: setoid_rewrite lower_ret; reflexivity.
+  setoid_rewrite lower_bind. setoid_rewrite lower_prob.
+  setoid_rewrite peutt_bind_prob.
+  setoid_rewrite lower_ret. setoid_rewrite peutt_bind_ret_l.
+  apply peutt_prob_Proper. intro b.
+  cbn [fst snd]. unfold state_attempt_result. destruct (a == b).
+  - setoid_rewrite lower_bind. setoid_rewrite lower_internal.
+    setoid_rewrite peutt_bind_ret_l. setoid_rewrite lower_ret. reflexivity.
+  - setoid_rewrite lower_ret. reflexivity.
 Qed.
 
 (** Exact stateful kernel of one attempt. Successful states may depend on
@@ -484,6 +460,10 @@ Example retry_can_switch_source :
   health initial_state = false ∧
   health (retry_update (after_sensor initial_state true)) = true.
 Proof. split; reflexivity. Qed.
+Example failed_branches_persist s :
+  attempt_result s false false = inl (MachineState (health s) (S (retries s))) ∧
+  attempt_result s true true = inl (MachineState (negb (health s)) (S (retries s))).
+Proof. destruct s as [[] n]; split; reflexivity. Qed.
 Example successful_states_distinct :
   after_sensor initial_state false ≠ after_sensor initial_state true.
 Proof. discriminate. Qed.
@@ -491,6 +471,13 @@ Example different_retry_rates :
   low_weight false ^+ 2 + high_weight false ^+ 2 <
   low_weight true ^+ 2 + high_weight true ^+ 2.
 Proof. by vm_compute. Qed.
+
+(** A true/true failure flips health, so two attempts do NOT have the
+    fixed-source tail [(5/9)^2]. This checks the actual stateful experiment. *)
+Example two_attempts_are_adaptive :
+  expect pending (attempts 2 initial_state) = (55/162 : rat) ∧
+  expect pending (attempts 2 initial_state) ≠ (5/9 : rat) ^+ 2.
+Proof. split; by vm_compute. Qed.
 
 (** 3.3. Connect complete attempts to actual stable hitting. The
     observer rejects visible heads; None is never part of the limit law. *)
@@ -736,7 +723,6 @@ Proof.
   intros [s' x] y <-.
   unfold lowered_step, factory_step, factory_sampler_step; cbn [fst snd].
   repeat setoid_rewrite lower_bind.
-  setoid_rewrite lower_internal. setoid_rewrite peutt_bind_ret_l.
   setoid_rewrite lower_ret. setoid_rewrite peutt_bind_assoc.
   setoid_rewrite peutt_bind_ret_l.
   (* Relational bind retains the actual state on the implementation side. *)
