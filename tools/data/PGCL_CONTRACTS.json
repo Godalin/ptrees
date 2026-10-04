@@ -140,6 +140,21 @@
       "name": "PTree.Examples.PGCL.RandomWalk.walk_denote_closed_form",
       "type": "RandomWalk.walk_denote_closed_form\n     : @Measure.sem_eq (Definition.FreeOmega Representation.SubEnumQ)\n         (@Measure.FreeOmegaObservableSemanticMeasure Representation.SubEnumQ\n            Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega)\n         RandomWalkAnalysis.rw_state\n         (@Forward.denote RandomWalkAnalysis.rw_state unit Representation.SubEnumQ\n            (Definition.FreeOmega Representation.SubEnumQ)\n            (@Measure.FreeOmegaObservableSemanticMeasure Representation.SubEnumQ\n               Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega)\n            (@StructuralMeasure.FreeOmegaMixedMeasure Representation.SubEnumQ)\n            (@Measure.FreeOmegaObservableSemanticOmega Representation.SubEnumQ\n               Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticOmega)\n            (@Measure.FreeOmegaObservableSemanticMeasureOrderLaws Representation.SubEnumQ\n               Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n               Measure.SubEnumQ_SemanticOmega)\n            (@BindOrder.FreeOmegaObservableOmegaSelection Representation.SubEnumQ\n               Measure.SubEnumQ_SemanticMeasure Measure.SubEnumQ_SemanticMeasureCoreLaws\n               Measure.SubEnumQ_SemanticOmega) RandomWalk.walk_coin RandomWalk.walk_source (\n            1, 0))\n         (@Definition.FOLub Representation.SubEnumQ RandomWalkAnalysis.rw_state\n            (fun n : nat => RandomWalk.walk_round n (1, 0))) /\\\n       (forall n : nat,\n        @Observation.free_omega_observes Representation.SubEnumQ Measure.SubEnumQ_SemanticMeasure\n          Measure.SubEnumQ_SemanticOmega RandomWalkAnalysis.rw_state RandomWalkAnalysis.rw_state\n          (fun s : RandomWalkAnalysis.rw_state => s) (RandomWalk.walk_round n (1, 0))\n          (RandomWalkAnalysis.random_walk_outputs n)) /\\\n       (forall s : RandomWalkAnalysis.rw_state,\n        RandomWalkAnalysis.rational_limit\n          (fun n : nat =>\n           @FiniteSubdist.finite_subdist_expect rat.rat_rat__canonical__Num_NumDomain\n             RandomWalkAnalysis.rw_state (RandomWalkAnalysis.random_walk_outputs n)\n             (RandomWalkAnalysis.state_indicator s)) (RandomWalkAnalysis.joint_pmf s)) /\\\n       RandomWalkAnalysis.rational_limit RandomWalkAnalysis.geometric_partial_mass\n         (ssralg.GRing.one rat.rat_rat__canonical__GRing_SemiRing)",
       "assumptions": "Axioms:\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Examples.PGCL.Frontend.pgcl",
+      "type": "Frontend.pgcl\n     : Type",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.PGCL.Frontend.check_probability",
+      "type": "Frontend.check_probability\n     : nat -> nat -> option Finite.rational_probability",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Examples.PGCL.Frontend.compile",
+      "type": "Frontend.compile\n     : Frontend.source -> option Frontend.pgcl",
+      "assumptions": "Closed under the global context"
     }
   ]
 }

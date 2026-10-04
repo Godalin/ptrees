@@ -37,6 +37,7 @@ class ExtractionSafetyTests(unittest.TestCase):
             ('rational-state', 'rational.ml'),
             ('factory-controller', 'controller.ml'),
             ('unbounded', 'simulation.ml'),
+            ('pgcl', 'pgcl.ml'),
         ]:
             with self.subTest(target=target):
                 source = without_comments(
@@ -342,6 +343,101 @@ class UnboundedExecutionTests(ExecutableTestCase):
             self.assertEqual(process.returncode, 130)
             self.assertEqual(out, '')
             self.assertIn('Interrupted (not a program result)', err)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.communicate()
+
+
+class PGCLSimulatorTests(ExecutableTestCase):
+    target = 'pgcl'
+    programs = ROOT / 'extraction/pgcl/programs'
+
+    def source(self, text, *args, success=True):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'input.pgcl'
+            path.write_text(text)
+            return self.cli(path, *args, success=success)
+
+    def test_input_program_not_preselected_root(self):
+        result = self.source(
+            '(seq (set x0 (- x3 9)) (set x1 (* (* 100000 100000) (* 100000 100000))))',
+            '--init', 'x3=2,x3=5', '--observe', 'x0,x1', '--fuel', 500)
+        self.assertIn('Returned x0=-4,x1=100000000000000000000 count=1', result.stdout)
+
+    def test_deterministic_loop_bounded_and_unbounded(self):
+        program = '(while (< x0 5) (set x0 (+ x0 1)))'
+        bounded = self.source(program, '--seed', 1, '--fuel', 1000).stdout
+        unbounded = self.source(program, '--seed', 1, '--unbounded').stdout
+        self.assertEqual(bounded, unbounded)
+        self.assertIn('Returned x0=5 count=1', bounded)
+
+    def test_invalid_inputs_including_unreachable_probabilities(self):
+        for source in ['(choice 1 0 skip skip)', '(choice 3 2 skip skip)',
+                       '(if true skip (choice 1 0 skip skip))',
+                       '(choice -1 2 skip skip)', '(choice 1 257 skip skip)',
+                       '(set x0 (+ 1))', 'skip skip', '(while true skip']:
+            with self.subTest(source=source):
+                self.source(source, success=False)
+
+    def test_probability_endpoints(self):
+        for numerator, expected in [(0, 9), (1, 7)]:
+            result = self.source(f'(choice {numerator} 1 (set x0 7) (set x0 9))', '--seed', 4)
+            self.assertIn(f'Returned x0={expected} count=1', result.stdout)
+
+    def test_arbitrary_probability_and_all_trial_statistics(self):
+        output = self.cli(self.programs / 'coin.pgcl', '--trials', 1000, '--seed', 42).stdout
+        rows = [line for line in output.splitlines() if line.startswith('Returned ')]
+        counts = {line.split()[1]: int(line.split('count=')[1].split()[0]) for line in rows}
+        self.assertEqual(sum(counts.values()), 1000)
+        self.assertTrue(330 < counts['x0=1'] < 470)
+        self.assertNotIn('Lost count=', output)
+
+    def test_replay_of_runtime_program_and_trace_no_overwrite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            trace = Path(directory) / 'tickets'
+            program = self.programs / 'retry.pgcl'
+            options = ['--unbounded', '--observe', 'x0,x1', '--trials', 20]
+            seeded = self.cli(program, *options, '--seed', 42, '--trace', trace)
+            self.assertEqual(seeded.stdout, self.cli(program, *options, '--replay', trace).stdout)
+            before = trace.read_bytes()
+            self.cli(program, '--trace', trace, success=False)
+            self.assertEqual(trace.read_bytes(), before)
+
+    def test_entropy_failure_is_not_loss_and_bound_is_checked(self):
+        with tempfile.TemporaryDirectory() as directory:
+            trace = Path(directory) / 'empty'
+            trace.write_text('')
+            output = self.cli(self.programs / 'coin.pgcl', '--replay', trace).stdout
+            self.assertIn('EntropyExhausted count=1', output)
+            self.assertNotIn('Lost count=', output)
+            trace.write_text('99 0\n')
+            self.assertIn('bound mismatch', self.cli(
+                self.programs / 'coin.pgcl', '--replay', trace, success=False).stderr)
+
+    def test_random_walk_from_file(self):
+        output = self.cli(self.programs / 'walk.pgcl', '--init', 'x0=1',
+                          '--unbounded', '--trials', 30, '--seed', 42,
+                          '--observe', 'x0,x1').stdout
+        rows = [line for line in output.splitlines() if line.startswith('Returned ')]
+        self.assertTrue(rows)
+        self.assertTrue(all('x0=0,' in line for line in rows))
+        self.assertEqual(sum(int(line.split('count=')[1].split()[0]) for line in rows), 30)
+
+    def test_divergence_timeout_and_interrupt(self):
+        program = self.programs / 'diverge.pgcl'
+        result = self.cli(program, '--fuel', 20, '--trials', 3)
+        self.assertIn('Timeout count=3 frequency=1.000000', result.stdout)
+        process = subprocess.Popen([str(self.exe), str(program), '--unbounded'],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        try:
+            with self.assertRaises(subprocess.TimeoutExpired):
+                process.communicate(timeout=0.3)
+            process.send_signal(signal.SIGINT)
+            out, err = process.communicate(timeout=10)
+            self.assertEqual(process.returncode, 130)
+            self.assertEqual(out, '')
+            self.assertIn('Interrupted', err)
         finally:
             if process.poll() is None:
                 process.kill()

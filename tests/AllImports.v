@@ -136,6 +136,7 @@ Require PTree.Examples.PGCL.Algebra.
 Require PTree.Examples.PGCL.Finite.
 Require PTree.Examples.PGCL.Forward.
 Require PTree.Examples.PGCL.FreeOmega.
+Require PTree.Examples.PGCL.Frontend.
 Require PTree.Examples.PGCL.Interpretation.
 Require PTree.Examples.PGCL.Programs.
 Require PTree.Examples.PGCL.RandomWalk.

@@ -1,0 +1,2 @@
+; Run with --trials 1000 --observe x0.
+(choice 2 5 (set x0 1) (set x0 0))

@@ -1,0 +1,6 @@
+; x0 = height, x1 = current consecutive downward steps.
+; Same transition as PGCL.RandomWalk.walk, with downward probability 2/3.
+(while (not (= x0 0))
+  (choice 2 3
+    (seq (set x0 (- x0 1)) (set x1 (+ x1 1)))
+    (seq (set x0 (+ x0 1)) (set x1 0))))

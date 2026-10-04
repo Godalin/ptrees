@@ -76,6 +76,88 @@ forgets Lost/Timeout; finite Lost probability is **not** total missing hitting
 mass, which can also contain divergence. These adapters are one-way external
 validation and are not imported by ordinary execution or extracted.
 
+## A runtime-input pGCL simulator
+
+`extraction/pgcl` extracts one interpreter, rather than a fixed program root.
+It fixes `store = nat -> Z`, rational probability parameters, and the native
+`SubEnumQ` backend. The library's generic `command S P` is unchanged.
+
+```text
+source file -> OCaml parser -> Frontend.source
+            -> extracted compile -> command store rational_probability
+            -> extracted PGCL.run (State interpretation)
+            -> ptree void1 SubEnumQ store -> ticket sampler / runner
+```
+
+[`Examples/PGCL/Frontend`](../theories/Examples/PGCL/Frontend.v) supplies deep
+integer/Boolean expressions and a checked elaboration into the existing
+shallow commands. It checks every choice, including unreachable branches:
+zero denominators and probabilities outside [0,1] are rejected before running.
+`run`, not `denote` or a FreeOmega limit, is executed. The resulting checked
+command is covered by `Finite.rational_pgcl_hitting`; the bounded execution is
+an instance of the existing runner. No new distribution semantics, wp layer,
+or validation dependency is introduced into program reasoning.
+
+Build once and supply different programs without re-extraction:
+
+```sh
+opam exec -- dune build extraction/pgcl/main.exe
+_build/default/extraction/pgcl/main.exe extraction/pgcl/programs/walk.pgcl \
+  --init x0=1 --observe x0,x1 --unbounded --trials 100 --seed 42
+_build/default/extraction/pgcl/main.exe extraction/pgcl/programs/retry.pgcl \
+  --observe x0,x1 --fuel 1000 --seed 42 --trace /tmp/new-pgcl.trace
+_build/default/extraction/pgcl/main.exe extraction/pgcl/programs/retry.pgcl \
+  --observe x0,x1 --fuel 1000 --replay /tmp/new-pgcl.trace
+```
+
+The small S-expression grammar is deliberately independent of the Coq
+notations. Variables are `x0`, `x1`, etc.; `;` starts a line comment.
+
+```text
+arithmetic ::= INTEGER | xN | (+ a b) | (- a b) | (* a b)
+condition  ::= true | false | (= a b) | (< a b) | (<= a b)
+             | (not c) | (and c d) | (or c d)
+command    ::= skip | diverge | (set xN a) | (seq command ...)
+             | (if condition yes no) | (choice NUM DEN left right)
+             | (while condition body)
+```
+
+`choice NUM DEN` selects its left command with probability NUM/DEN. Initial
+stores default to zero; repeated `--init` entries within a list use the last
+write. `--observe x0,x1` projects final states for reporting. Arithmetic uses
+extracted arbitrary-precision integers, not unchecked OCaml integer arithmetic.
+The supplied walk file uses the same transition as the paper's RandomWalk
+source; parsing that file is not itself a verified compiler theorem.
+
+Default fuel is 10000, per trial. It counts Tau/Prob transitions of the
+interpreted tree, not source statements or while iterations. `--unbounded`
+instead uses a tail-recursive host scheduler over the extracted step; it
+imposes no transition limit. An individual divergent run may block an entire
+batch. Interruptions and resource errors are not semantic Lost results.
+
+Counts/frequencies include **all trials**, separately reporting Returned,
+Lost, Timeout and EntropyExhausted. They do not silently condition on success
+or identify timeout with divergence. Standard source choices here have mass
+one; divergence can still lose eventual return mass, without producing a
+finite Lost outcome. Replay checks requested bounds as well as ticket ranges;
+trace creation refuses to overwrite existing files. `--seed` and `--replay`
+are mutually exclusive. Omitting both selects host-generated randomness.
+
+This is a reference simulator: input files are limited to 1 MB and nesting
+depth 256; natural inputs/fuel/trials/variable IDs are bounded by 100000
+(trials must be positive), integer literals by absolute value 100000, and
+input probability denominators by 256. The denominator check happens BEFORE
+ticket expansion: a binary rational coin needs at most DEN² tickets. These
+are explicit host resource limits, not restrictions of pGCL semantics.
+Functional stores and expanded tickets are not optimized for long runs.
+
+The parser, PRNG, file I/O, reporting and unbounded scheduler remain host
+code. Conditional-uniformity assumptions of execution validation remain in
+force; this artifact does not prove the OCaml PRNG or parser correct. Neither
+the external OmegaVal model nor a proof of an infinite OCaml scheduler is
+required to run the simulator. Runtime tests cover dynamically supplied
+programs, replay, invalid inputs, partial execution and interruptible divergence.
+
 ## Fuel-free OCaml simulation
 
 The unbounded executable extracts the same proved VN/factory programs and an
