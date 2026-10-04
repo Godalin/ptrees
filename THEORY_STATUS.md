@@ -11,7 +11,7 @@ records remain in Git; old counts are not current verification results.
 | --- | --- | --- |
 | Behavioral theory | Stable hitting, pstruct/pstrong-to-peutt, heterogeneous bind and generic algebra | Explicit probability-level laws; structural bridges need relational limits |
 | Iteration | Eventful relational congruence and full iteration_uniform | Relational zero/lub plus the proved scheduling/continuity profile |
-| Frontier analysis | Generic complete-step iteration summaries; return-only Kleisli compatibility | Actual step certificates; no AST, no_event or finite-native-limit requirement |
+| Frontier analysis | Generic complete-step iteration summaries; return-only Kleisli compatibility; FreeOmega complete Ret/Vis summary least fixed point under `⊑ω` | Actual step certificates; no AST, no_event or finite-native-limit requirement; leastness includes visible absorbing heads, not just return-only kernels |
 | Least fixed points | Public FreeOmega semantic preorder and canonical iteration leastness; native MathComp and independent OmegaVal leastness | Old structural order unchanged; new preorder only promises suprema for structural chains, not arbitrary-chain completeness or qlift antisymmetry |
 | pGCL forward semantics | Generic kernels, source algebra and State elaboration; Q/R frontier correspondence; FreeOmega while and RandomWalk semantic lfp | Pure probabilistic fragment; no wp/validation dependency; generic old-order leastness still conditional; FreeOmega-specific new-order leastness proved |
 | Interpretation | Public `interp = fold handle msample`, productive `interp_tree` agreement, handler algebra, State preservation | Target-specific laws and appropriate generic profiles; sampling selection is not a correctness axiom |
@@ -19,7 +19,7 @@ records remain in Git; old counts are not current verification results.
 | MDP | Generic fragment coincidence and faithful source-kernel correspondence | Native/frontier reflection, total source rows and fragment support |
 | External soundness | Native-parametric modelability, qlift bounded-test soundness, stable-hitting adequacy | Compatible interpretation into independent OmegaVal |
 | Concrete external joints | General relational realization for modelable Q/R completions | Countable support; no arbitrary-native joint-existence assertion |
-| Execution | Exact rational tickets, actual bounded replay law and hitting-limit correspondence | History-conditionally uniform ideal entropy; not a host-PRNG theorem |
+| Execution | Exact rational tickets, actual bounded replay law and hitting-limit correspondence; runtime-input checked pGCL frontend and reusable extracted simulator | History-conditionally uniform ideal entropy for the probability theorem; textual parser, host PRNG and fuel-free scheduler remain outside the proof |
 
 [Generic theory](docs/THEORY.md), [iteration](docs/ITERATION.md),
 [interpreters](docs/INTERPRETERS.md), [MDP](docs/MDP.md),

@@ -217,7 +217,7 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Examples.PGCL.Frontend.compile_hitting": [
+    "PTree.Examples.PGCL.FrontendAdequacy.compile_hitting": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],

@@ -191,6 +191,9 @@ candidate; the sampler equivalence discharges the bind prefix.
 `Examples/PGCL/RandomWalk.v` presents an infinite-state loop in pGCL syntax: with probability
 `2/3`, decrement the height and increment a streak; otherwise increment the
 height and reset the streak. Starting from `(1,0)`, it stops at height zero.
+`walk_denote_least_fixed_point` identifies its forward denotation as the
+least fixed point of the classical walk functional under FreeOmega's
+semantic preorder `⊑ω`, without changing the structural approximation order.
 `walk_denote_closed_form` characterizes its forward `denote` by finite Kleisli
 rounds, exact native observations and the normalized joint limit
 `Pr[(0,n)] = 2/3^n` for `n >= 1`. `walk_forward` connects the same denotation
@@ -213,6 +216,13 @@ a rational contraction bound proves their limits without a random-walk
 library or an additional measure axiom.  This is an output-distribution
 endpoint, **not** a claim of `peutt` equivalence to a countably supported
 distribution node or a geometric sampler.
+
+The [runtime-input pGCL simulator](docs/EXECUTION.md#a-runtime-input-pgcl-simulator)
+accepts program files through an extracted checked frontend, then executes
+the same State-interpreted `PGCL.run` path. Its supplied integer-store walk
+implements the same transition; no formal representation bridge to the
+pair-state case above is claimed. The textual parser, host PRNG and fuel-free
+scheduler are outside the formal execution guarantee.
 
 `Examples/MixedHeadProtocol.v` is the canonical mixed-head bisimulation
 example. After a Boolean challenge, the implementation executes three or
@@ -414,8 +424,11 @@ MathComp instantiate one adequacy proof; clients need no fuel schedule
 or empty event signature.
 For return-only step frontiers, [classical iteration compatibility](docs/ITERATION.md#return-only-frontiers-and-classical-iteration)
 identifies the summary with Kleisli iteration (with a one-round finite index
-shift), and connects its limit to genuine least fixed points in MathComp
-and the independent expectation domain.
+shift), and connects its limit to genuine least fixed points in FreeOmega's
+semantic preorder, MathComp and the independent expectation domain.
+FreeOmega also proves leastness for complete mixed Ret/Vis frontier summaries,
+not merely return-only iteration; arbitrary semantic-chain completeness is
+not asserted.
 Its [two-round interpretation experiment](docs/INTERPRETERS.md#handler-calculus)
 also proves that response-wise transition bisimulation is not preserved by
 arbitrary effectful interpretation.

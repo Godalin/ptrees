@@ -23,6 +23,14 @@ Arguments Lost {A}.
 Arguments Timeout {A}.
 Arguments EntropyExhausted {A}.
 
+(** One fuel-free machine observation. Continue consumes one Tau/Prob step;
+    Done reports a return, native loss or unavailable entropy, never timeout. *)
+Inductive step_result (MN : Type → Type) (A Seed : Type) :=
+| Continue (t : ptree void1 MN A) (seed : Seed)
+| Done (result : outcome A) (seed : Seed).
+Arguments Continue {MN A Seed} _ _.
+Arguments Done {MN A Seed} _ _.
+
 Definition finished {A} (r : outcome A) : Prop :=
   match r with Returned _ | Lost => True | _ => False end.
 
@@ -91,6 +99,21 @@ Section Runner.
 Context {MN : Type → Type} {Seed : Type}.
 Variable sample : ∀ X, MN X → Seed → draw_result X * Seed.
 
+Definition runner_step {A} (t : ptree void1 MN A) (seed : Seed) :
+    step_result MN A Seed :=
+  match observe t with
+  | RetF a => Done (Returned a) seed
+  | TauF u => Continue u seed
+  | @VisF _ _ _ _ X e _ => match e with end
+  | @ProbF _ _ _ _ X mu k =>
+      let '(choice, seed') := @sample X mu seed in
+      match choice with
+      | Drawn x => Continue (k x) seed'
+      | Missing => Done Lost seed'
+      | NoEntropy => Done EntropyExhausted seed'
+      end
+  end.
+
 (** A returned node requires no further transition fuel. Tau and Prob each
     consume one unit. A timeout never calls the sampler. *)
 Fixpoint run {A} (fuel : nat) (t : ptree void1 MN A) (seed : Seed) : outcome A * Seed :=
@@ -110,6 +133,23 @@ Fixpoint run {A} (fuel : nat) (t : ptree void1 MN A) (seed : Seed) : outcome A *
           end
       end
   end.
+
+(** The existing bounded implementation agrees with the shared one-step
+    machine. The S n premise matters: at zero fuel, run must NOT sample. *)
+Theorem run_step {A} n (t : ptree void1 MN A) seed :
+  run (S n) t seed =
+  match runner_step t seed with
+  | Continue u next => run n u next
+  | Done result next => (result, next)
+  end.
+Proof.
+  unfold runner_step. destruct (observe t) as [a|u|X e k|X mu k] eqn:Ht.
+  - cbn [run]. rewrite Ht. reflexivity.
+  - cbn [run]. rewrite Ht. reflexivity.
+  - destruct e.
+  - cbn [run]. rewrite Ht.
+    destruct (@sample X mu seed) as [[x| |] next]; reflexivity.
+Qed.
 
 (** Fuel-free finite operational paths. There is intentionally no timeout
     rule: a resource limit is not a terminal behavior of the program. *)

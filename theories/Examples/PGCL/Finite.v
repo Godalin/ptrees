@@ -1,5 +1,5 @@
 (** Two concrete instances of the SAME pGCL theorem. Probability parameters
-    are bounded scalars; native list representation is confined to this file.
+    and native finite coins come from the executable [Probability] module.
     The semantic result remains FreeOmega, not a finite distribution. *)
 From Coq Require Import Utf8 List.
 Set Warnings "-notation-overridden,-ambiguous-paths".
@@ -16,33 +16,11 @@ From PTree.Prob.FreeOmega Require Import StructuralMeasure Measure.
 From PTree.Eq Require Import PTreeKernel.
 From PTree.Interp Require Import ReturnIteration.
 From PTree.Examples.PGCL Require Import Syntax Forward Interpretation FreeOmega.
+From PTree.Examples.PGCL Require Export Probability.
 Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Set Implicit Arguments.
 Unset Strict Implicit.
-
-Record probability (W : numDomainType) := Probability {
-  bias : W;
-  bias_nonnegative : 0 <= bias;
-  bias_bounded : bias <= 1
-}.
-
-Definition bernoulli {W : numDomainType} (p : probability W) : FiniteSubdist W bool.
-Proof.
-  refine (finite_subdist_of_list
-    (mu := [(bias p,true); (1-bias p,false)]) _ _).
-  - intros q b [H|[H|[]]]; inversion H; subst.
-    + exact (bias_nonnegative p).
-    + by rewrite subr_ge0; apply bias_bounded.
-  - cbn. by rewrite !mulr1 addr0 addrC subrK.
-Defined.
-
-Lemma bernoulli_expect {W : numDomainType} (p : probability W) (f : bool → W) :
-  finite_subdist_expect (bernoulli p) f = bias p * f true + (1-bias p) * f false.
-Proof. by rewrite /finite_subdist_expect /finite_enum_expect /= addr0. Qed.
-
-Definition rational_probability := probability rat_rat__canonical__Num_NumDomain.
-Definition rational_coin : rational_probability → SubEnumQ bool := @bernoulli _.
 
 Section Rational.
 Context {S : Type} {E : Type → Type}.

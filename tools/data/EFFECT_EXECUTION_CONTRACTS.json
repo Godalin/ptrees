@@ -496,6 +496,16 @@
       "name": "PTree.Interp.FreeOmega.HandlerCompletion.free_omega_interp_peutt",
       "type": "@HandlerCompletion.free_omega_interp_peutt\n     : forall (MN : Type -> Type) (NI : Measure.SemanticMeasure MN)\n         (NC : @Measure.SemanticMeasureCoreLaws MN NI),\n       @AE.SemanticMeasureAELiftLaws MN NI ->\n       @Coupling.SemanticMeasureCouplingAELaws MN NI ->\n       @AE.SemanticMeasureCountableAELaws MN NI ->\n       forall (NO : @Omega.SemanticOmega MN NI) (E F : Type -> Type) (A B : Type)\n         (RR : A -> B -> Prop) (h : Core.Handler.Handler MN E F) (t : PTreeDefinition.ptree E MN A)\n         (u : PTreeDefinition.ptree E MN B),\n       @PEutt.peutt E MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR t u ->\n       @PEutt.peutt F MN (Definition.FreeOmega MN)\n         (@Measure.FreeOmegaObservableSemanticMeasure MN NI NO)\n         (@Measure.FreeOmegaObservableSemanticMeasureCoreLaws MN NI NC NO)\n         (@StructuralMeasure.FreeOmegaMixedMeasure MN)\n         (@Measure.FreeOmegaObservableSemanticOmega MN NI NO) A B RR\n         (@Fold.interp E MN (PTreeDefinition.ptree F MN) (@PTreeDefinition.Monad_ptree F MN)\n            (@PTreeDefinition.MonadIter_ptree F MN) (@MonadSample.MonadSample_ptree F MN) h A t)\n         (@Fold.interp E MN (PTreeDefinition.ptree F MN) (@PTreeDefinition.Monad_ptree F MN)\n            (@PTreeDefinition.MonadIter_ptree F MN) (@MonadSample.MonadSample_ptree F MN) h B u)",
       "assumptions": "Axioms:\nFunctionalExtensionality.functional_extensionality_dep :\n  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x), (forall x : A, f x = g x) -> f = g\nEqdep.Eq_rect_eq.eq_rect_eq :\n  forall (U : Type) (p : U) (Q : U -> Type) (x : Q p) (h : p = p), x = @eq_rect U p Q x p h"
+    },
+    {
+      "name": "PTree.Execution.Runner.runner_step",
+      "type": "@Runner.runner_step\n     : forall (MN : Type -> Type) (Seed : Type),\n       (forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed) ->\n       forall A : Type,\n       PTreeDefinition.ptree Sum.void1 MN A -> Seed -> Runner.step_result MN A Seed",
+      "assumptions": "Closed under the global context"
+    },
+    {
+      "name": "PTree.Execution.Runner.run_step",
+      "type": "@Runner.run_step\n     : forall (MN : Type -> Type) (Seed : Type)\n         (sample : forall X : Type, MN X -> Seed -> Runner.draw_result X * Seed)\n         (A : Type) (n : nat) (t : PTreeDefinition.ptree Sum.void1 MN A)\n         (seed : Seed),\n       @Runner.run MN Seed sample A (S n) t seed =\n       match @Runner.runner_step MN Seed sample A t seed with\n       | @Runner.Continue _ _ _ u next => @Runner.run MN Seed sample A n u next\n       | @Runner.Done _ _ _ result next => (result, next)\n       end",
+      "assumptions": "Closed under the global context"
     }
   ],
   "state_iteration_followup": "b23c852: first forty endpoint contracts and all ten operational modules remain frozen"

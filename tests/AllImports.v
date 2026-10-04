@@ -137,7 +137,9 @@ Require PTree.Examples.PGCL.Finite.
 Require PTree.Examples.PGCL.Forward.
 Require PTree.Examples.PGCL.FreeOmega.
 Require PTree.Examples.PGCL.Frontend.
+Require PTree.Examples.PGCL.FrontendAdequacy.
 Require PTree.Examples.PGCL.Interpretation.
+Require PTree.Examples.PGCL.Probability.
 Require PTree.Examples.PGCL.Programs.
 Require PTree.Examples.PGCL.RandomWalk.
 Require PTree.Examples.PGCL.RandomWalkAnalysis.

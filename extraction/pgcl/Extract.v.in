@@ -3,7 +3,7 @@
 From Coq Require Import Extraction ExtrOcamlBasic.
 From ITree.Indexed Require Import Sum.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Examples.PGCL Require Import Frontend Interpretation Finite.
+From PTree.Examples.PGCL Require Import Frontend Interpretation Probability.
 From PTree.Examples.PGCL Require Import Syntax.
 From PTree.Prob.Backend.SubEnumQ Require Import Representation.
 From PTree.Execution Require Import Runner.
@@ -16,26 +16,9 @@ Definition bounded {Seed} (next : nat -> Seed -> option nat * Seed)
     fuel (c : pgcl) s seed :=
   Runner.run (fun X => @ticket_sample Seed X next) fuel (start c s) seed.
 
-Inductive step_result (Seed : Type) :=
-| Continue (t : ptree void1 SubEnumQ store) (seed : Seed)
-| Done (result : outcome store) (seed : Seed).
-Arguments Continue {Seed} _ _.
-Arguments Done {Seed} _ _.
-
 Definition machine_step {Seed} (next : nat -> Seed -> option nat * Seed)
-    (t : ptree void1 SubEnumQ store) (seed : Seed) : step_result Seed :=
-  match observe t with
-  | RetF s => Done (Returned s) seed
-  | TauF t => Continue t seed
-  | @VisF _ _ _ _ X e _ => match e with end
-  | @ProbF _ _ _ _ X mu k =>
-      let '(draw, rest) := ticket_sample next mu seed in
-      match draw with
-      | Drawn x => Continue (k x) rest
-      | Missing => Done Lost rest
-      | NoEntropy => Done EntropyExhausted rest
-      end
-  end.
+    (t : ptree void1 SubEnumQ store) (seed : Seed) :=
+  runner_step (fun X => @ticket_sample Seed X next) t seed.
 
 Extraction Language OCaml.
 Set Warnings "-extraction-reserved-identifier".

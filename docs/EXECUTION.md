@@ -94,7 +94,7 @@ integer/Boolean expressions and a checked elaboration into the existing
 shallow commands. It checks every choice, including unreachable branches:
 zero denominators and probabilities outside [0,1] are rejected before running.
 `run`, not `denote` or a FreeOmega limit, is executed. The resulting checked
-command is covered directly by `Frontend.compile_hitting`:
+command is covered directly by `FrontendAdequacy.compile_hitting`:
 
 ```text
 compile src = Some c
@@ -107,6 +107,18 @@ holds for every well-typed command. It is not a verified-parser theorem or a
 preservation proof against a second source semantics. The bounded execution is
 an instance of the existing runner. No new distribution semantics, wp layer,
 or validation dependency is introduced into program reasoning.
+
+`Frontend.v` depends only on source syntax and the executable bounded-coin
+definitions in `Probability.v`; it does not load PTree, FreeOmega or forward
+proofs. `Finite.v` owns the Q/R semantic instantiations, and
+`FrontendAdequacy.v` owns the wrapper above. Extraction imports the frontend
+and interpreter, not either adequacy module.
+
+The fuel-free glue specializes the generic `Execution.Runner.runner_step`.
+`Runner.run_step` proves that `run (S n)` performs this step, continuing with
+fuel `n` or returning its result. `run` itself is unchanged: at zero fuel it
+can return a `Ret`, but never invokes the sampler. This correspondence does
+not verify the host scheduler or its randomness.
 
 Build once and supply different programs without re-extraction:
 

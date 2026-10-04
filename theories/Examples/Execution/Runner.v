@@ -51,6 +51,16 @@ Definition closed_choice : ptree void1 Replay bool := Prob (Some true) (λ b, Re
 Definition partial_choice : ptree void1 Replay bool := Prob None (λ b, Ret b).
 CoFixpoint internal_loop : ptree void1 Replay bool := Tau internal_loop.
 
+Example step_draw_continues :
+  runner_step replay_one closed_choice [tt;tt] = Continue (Ret true) [tt].
+Proof. reflexivity. Qed.
+Example step_loss_finishes :
+  runner_step replay_one partial_choice [tt] = Done Lost [].
+Proof. reflexivity. Qed.
+Example step_entropy_failure :
+  runner_step replay_one closed_choice [] = Done EntropyExhausted [].
+Proof. reflexivity. Qed.
+
 Example returned_needs_no_fuel : test_run 0 (Ret true) [] = (Returned true, []).
 Proof. reflexivity. Qed.
 Example sampling_consumes_one_token :
