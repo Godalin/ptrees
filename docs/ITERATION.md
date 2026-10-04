@@ -181,6 +181,47 @@ Unlike generic `denote_while_least`, it needs no supplied supremum laws.
 random-walk functional, with its infinite-support result still in FreeOmega.
 No external validation module enters these program proofs.
 
+### Complete Ret/Vis summaries inherit the semantic lfp
+
+[`Interp/FreeOmega/FrontierOrder`](../theories/Interp/FreeOmega/FrontierOrder.v)
+strengthens the existing `complete_iteration_frontier`; it does not replace
+`sem_le` or introduce another summary construction. Its functional is:
+
+```text
+Phi X i = bind (front i) [Ret(inl j) => X j
+                       | Ret(inr a) => ret (Ret a)
+                       | Vis e k    => ret (Vis e (iter_active step . k))]
+```
+
+The proof encodes the absorbing heads as ordinary Kleisli results and proves
+`round n ≈ sem_iter_approx (S n)`. Thus `free_omega_summary_kleisli` identifies
+the **existing** summary relation with classical iteration. The fixed-point
+proof is reused, not redeveloped with a separate limit argument.
+
+- `free_omega_summary_least_fixed_point`: the canonical summary satisfies
+  `summary ≈ Phi summary` and lies below every `Phi Y ⊑ω Y`.
+- `free_omega_summary_fixed_point` / `free_omega_summary_least_prefixed`:
+  the same rules for any family of summary witnesses.
+- `free_omega_summary_hitting_bound`: any actual loop hitting witness lies
+  below a pre-fixed bound, given the complete-step hitting certificate.
+- `free_omega_summary_return_only`: a return-only summary equals
+  `iteration_return_map (free_omega_iter K i)`, with **no supplied `sem_iter`**.
+- `free_omega_summary_return_bound`: a pre-fixed return kernel bounds that
+  summary; `free_omega_iter_return_only` constructs its program witness.
+
+Leastness requires native Core/AELift plus the native omega operations;
+fixed-point/hitting results additionally use native CouplingAE/CountableAE.
+FreeOmega supplies the frontier continuity laws. Neither native completeness,
+totality, `no_event`, a finite native limit nor extra lub upper/least axioms
+are premises. A program still must justify its actual complete-step frontier.
+
+`IterationBasics.loop_classical_lfp` covers the rational return-only example
+(including partial mass). `AbsorbingFrontier.absorbing_frontier_fixed_point`
+and `absorbing_frontier_bound` use actual mixed Ret/Vis heads. A private import
+client also checks SubEnumR specialization and absence of OmegaVal imports.
+External validation remains separate; none of these reasoning proofs imports
+it. These theorems do not assert completeness for arbitrary `⊑ω`-chains.
+
 ## pGCL forward semantics (no wp or external model)
 
 [`Examples/PGCL`](../theories/Examples/PGCL) implements the purely probabilistic

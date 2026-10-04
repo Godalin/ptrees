@@ -27,3 +27,27 @@ Example structural_order_unchanged {A} (t u : FreeOmega MN A) :
     FreeOmegaObservableSemanticOmega _ t u ↔ free_omega_approx eq t u.
 Proof. reflexivity. Qed.
 End Client.
+
+(** The PTree specialization is opt-in and still does not load validation.
+    Real weights discharge the same native profile as the rational example,
+    without native omega-completeness or a supplied supremum axiom. *)
+From PTree.Core Require Import PTreeDefinition.
+From PTree.Eq Require Import UnifiedFrontier.
+From PTree.Interp.FreeOmega Require Import AbsorbingIteration FrontierOrder.
+Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
+From mathcomp Require Import reals.
+From PTree.Prob.Backend.SubEnumR Require Import Representation Measure Coupling Omega.
+
+Section RealClient.
+Variable R : realType.
+Context {E : Type → Type} {I A : Type}
+  (step : I → ptree E (SubEnumR R) (I+A))
+  (front : I → FreeOmega (SubEnumR R) (stable_head E (SubEnumR R) (I+A))).
+
+Example real_summary_bound Y :
+  (∀ i, free_omega_summary_step step front Y i ⊑ω Y i) →
+  ∀ i, complete_iteration_frontier step front i ⊑ω Y i.
+Proof. exact (proj2 (free_omega_summary_least_fixed_point step front) Y). Qed.
+End RealClient.
+
+Fail Check PTree.Prob.Domain.Expectation.OmegaVal.

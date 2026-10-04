@@ -22,11 +22,13 @@ From PTree.Prob.Backend.EnumQ Require Import Representation Measure.
 From PTree.Prob.Backend.Common Require Import FiniteRecordExtensionality.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import Measure StructuralMeasure Observation.
-From PTree.Interp.FreeOmega Require Import Rewriting IterationSummary AbsorbingIteration.
+From PTree.Interp.FreeOmega Require Import Rewriting IterationSummary AbsorbingIteration FrontierOrder.
+From PTree.Prob.FreeOmega Require Import DomainOrder.
 From PTree.Interp Require Import FrontierIteration IterationMachine.
 From PTree.Examples.BernoulliFactory Require Import VonNeumannUnbounded OperationalVonNeumann.
 Set Implicit Arguments.
 Import EnumQ FreeOmegaRewriting GRing.Theory.
+Import FreeOmegaOrderNotations.
 Local Open Scope ring_scope.
 Local Open Scope freeomega_scope.
 Import SemanticMeasureNotations.
@@ -126,6 +128,22 @@ Proof.
     (front := actual_round_front)); try typeclasses eauto.
   - exact actual_round_complete.
   - apply sem_eq_refl.
+Qed.
+
+(** Ret and Vis are absorbing outcomes of the SAME least-fixed-point rule;
+    visible continuations are neither executed nor discarded here. *)
+Theorem absorbing_frontier_fixed_point :
+  actual_iteration_front ≈ₘ
+    free_omega_summary_step absorbing_step actual_round_front
+      (complete_iteration_frontier absorbing_step actual_round_front) tt.
+Proof. exact (proj1 (free_omega_summary_least_fixed_point absorbing_step actual_round_front) tt). Qed.
+
+Theorem absorbing_frontier_bound Y out :
+  (∀ i, free_omega_summary_step absorbing_step actual_round_front Y i ⊑ω Y i) →
+  absorbing_program ⇓ₕ out → out ⊑ω Y tt.
+Proof.
+  apply (free_omega_summary_hitting_bound (NCAE := _) (NCount := _)).
+  exact actual_round_complete.
 Qed.
 
 Example actual_visible_continuation :

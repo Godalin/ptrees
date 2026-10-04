@@ -23,7 +23,8 @@ From PTree.Prob.FreeOmega Require Import Measure StructuralMeasure Observation.
 From PTree.Eq Require Import PTreeKernel UnifiedFrontier.
 From PTree.Eq.FreeOmega Require Import Hitting Bind.
 From PTree.Interp Require Import FrontierIteration ReturnIteration.
-From PTree.Interp.FreeOmega Require Import IterationSummary AbsorbingIteration.
+From PTree.Interp.FreeOmega Require Import IterationSummary AbsorbingIteration FrontierOrder.
+From PTree.Prob.FreeOmega Require Import IterationOrder.
 Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Local Open Scope freeomega_scope.
@@ -105,6 +106,16 @@ Theorem loop_round_is_classical partial n :
 Proof.
   exact (iteration_summary_round_mixed_iter (FI := FI) (FO := FO)
     (step partial) (NI := NI) (kernel partial) n tt).
+Qed.
+
+(** The same summary is the classical FreeOmega lfp, without supplying a
+    [sem_iter] witness. This works both with and without missing mass. *)
+Theorem loop_classical_lfp partial :
+  loop_front partial ≈ₘ iteration_return_map
+    (free_omega_iter (λ i, ↑ω (kernel partial i)) tt).
+Proof.
+  apply (free_omega_summary_return_only (step := step partial)).
+  apply sem_eq_refl.
 Qed.
 
 (** Analysis: finite expectations, geometric decay, and the resulting

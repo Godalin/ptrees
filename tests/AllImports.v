@@ -211,6 +211,7 @@ Require PTree.Interp.FreeOmega.AbsorbingIteration.
 Require PTree.Interp.FreeOmega.Atomic.
 Require PTree.Interp.FreeOmega.Base.
 Require PTree.Interp.FreeOmega.Cofinality.
+Require PTree.Interp.FreeOmega.FrontierOrder.
 Require PTree.Interp.FreeOmega.Guarded.
 Require PTree.Interp.FreeOmega.HandlerCompletion.
 Require PTree.Interp.FreeOmega.ITreeCompletion.
