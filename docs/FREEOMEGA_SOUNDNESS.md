@@ -11,6 +11,17 @@ results; it does not add a second free syntax, probability interface, or an
 actual-joint-existence assumption. Maintained PTree reasoning never imports
 external validation. See [architecture](ARCHITECTURE.md).
 
+The public internal preorder `free_omega_sem_le` (`⊑ω`) is validated separately
+in `Validation/DomainOrder.v`. `free_omega_sem_le_upper` proves bounded-test
+inequalities for **all raw derivations**, including raw intermediate terms.
+`free_omega_sem_le_sound` interprets these as `oval_le` only when both endpoints
+are modelable; mutual inequalities then give `oval_eq`. The same six native
+compatibility obligations as quotient validation suffice. Q/R adapters expose
+`subenumQ_sem_le_sound` and `subenumR_sem_le_sound` without client obligations.
+The compatible model also proves `free_omega_sem_ret_not_bottom`, so the
+rule-generated order is not collapsed. No converse/antisymmetry theorem for
+qlift is asserted. See [public lfp tools](ITERATION.md#public-freeomega-semantic-order).
+
 ## 1. Generic external model
 
 `Prob/FreeOmega/Validation/Model.v` owns the canonical validation vocabulary:

@@ -371,6 +371,8 @@ Require PTree.Prob.FreeOmega.Approximation.
 Require PTree.Prob.FreeOmega.BindOrder.
 Require PTree.Prob.FreeOmega.Coupling.
 Require PTree.Prob.FreeOmega.Definition.
+Require PTree.Prob.FreeOmega.DomainOrder.
+Require PTree.Prob.FreeOmega.IterationOrder.
 Require PTree.Prob.FreeOmega.JointExtension.
 Require PTree.Prob.FreeOmega.Measure.
 Require PTree.Prob.FreeOmega.Native.
@@ -383,6 +385,7 @@ Require PTree.Prob.FreeOmega.StructuralMeasure.
 Require PTree.Prob.FreeOmega.Support.
 Require PTree.Prob.FreeOmega.SupportLift.
 Require PTree.Prob.FreeOmega.Validation.Continuity.
+Require PTree.Prob.FreeOmega.Validation.DomainOrder.
 Require PTree.Prob.FreeOmega.Validation.Iteration.
 Require PTree.Prob.FreeOmega.Validation.Model.
 Require PTree.Prob.FreeOmega.Validation.Observation.
@@ -431,6 +434,7 @@ Require PTree.Tests.ImportOrder.CanonicalBehaviorNativeFirst.
 Require PTree.Tests.ImportOrder.CanonicalBehaviorStructuralFirst.
 Require PTree.Tests.Imports.ArchitectureBoundaries.
 Require PTree.Tests.Imports.CapabilityBoundaries.
+Require PTree.Tests.Imports.FreeOmegaOrder.
 Require PTree.Tests.Imports.MathCompUniverse.
 Require PTree.Tests.Imports.PGCL.
 Require PTree.Tests.Imports.PublicBehavior.

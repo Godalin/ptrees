@@ -6,16 +6,18 @@ From Coq Require Import Utf8 Morphisms.
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Prob.Interface Require Import Measure AE Coupling Omega Mixed.
+From PTree.Prob.Interface Require Import Measure AE Coupling Omega Mixed KleisliIteration.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure Measure
-  BindOrder RelationalLimit Coupling Quotient.
+  BindOrder RelationalLimit Coupling Quotient IterationOrder.
 From PTree.Eq Require Import PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import Hitting.
 From PTree.Interp Require Import HandlerMachine ReturnIteration.
 From PTree.Examples.PGCL Require Import Syntax Forward Algebra Interpretation Adequacy StateInterpretation.
 Set Implicit Arguments.
 Unset Strict Implicit.
+Import FreeOmegaOrderNotations.
+Local Open Scope freeomega_scope.
 
 Section Completion.
 Context {S P : Type} {MN E : Type → Type}
@@ -107,3 +109,51 @@ Proof.
   apply free_omega_bind_return_lift.
 Qed.
 End Completion.
+
+(** Leastness uses the public completion preorder, NOT the structural
+    SemanticOmega order. This part needs only the native core laws;
+    the fixed-point equation additionally uses the existing diagonal laws. *)
+Section WhileOrder.
+Context {S P : Type} {MN : Type → Type}
+  `{NI : SemanticMeasure MN} `{NC : @SemanticMeasureCoreLaws MN NI}
+  `{NO : @SemanticOmega MN NI}.
+Variable coin : P → MN bool.
+Local Notation FI := (FreeOmegaObservableSemanticMeasure (NI := NI) (NO := NO)).
+Local Notation FO := (FreeOmegaObservableSemanticOmega (NI := NI) (NO := NO)).
+Local Notation D := (denote (S := S) (FI := FI) (FO := FO) coin).
+
+Theorem pgcl_while_least_prefixed (b : S → bool) c (Y : S → FreeOmega MN S) :
+  (∀ s, (if b s then sem_bind (D c s) Y else sem_ret s) ⊑ω Y s) →
+  ∀ s, D (CWhile b c) s ⊑ω Y s.
+Proof.
+  intro HY. apply (free_omega_sem_iter_least_prefixed
+    (K := while_kernel b (D c))).
+  - intro s. apply iterate_spec.
+  - intro s. eapply free_omega_sem_le_trans; [apply free_omega_sem_eq_le|apply HY].
+    change (@sem_eq (FreeOmega MN) FI _
+      (sem_iter_step (MI := FI) (while_kernel b (D c)) Y s)
+      (if b s then sem_bind (D c s) Y else sem_ret s)).
+    unfold sem_iter_step, while_kernel. destruct (b s).
+    + change (free_omega_qlift eq
+        (free_omega_bind (free_omega_bind (D c s) (λ t, FORet (inl t)))
+          (λ v : S+S, match v with inl j => Y j | inr a => FORet a end))
+        (free_omega_bind (D c s) Y)).
+      rewrite free_omega_bind_assoc. apply free_omega_qlift_refl. intro x; reflexivity.
+    + apply free_omega_qlift_refl. intro x; reflexivity.
+Qed.
+
+Context `{NCAE : @SemanticMeasureCouplingAELaws MN NI}
+  `{NCount : @SemanticMeasureCountableAELaws MN NI}.
+
+Theorem pgcl_while_least_fixed_point b c :
+  (∀ s, @sem_eq (FreeOmega MN) FI _ (D (CWhile b c) s)
+    (if b s then sem_bind (D c s) (D (CWhile b c)) else sem_ret s)) ∧
+  (∀ Y : S → FreeOmega MN S,
+    (∀ s, (if b s then sem_bind (D c s) Y else sem_ret s) ⊑ω Y s) →
+    ∀ s, D (CWhile b c) s ⊑ω Y s).
+Proof.
+  split; [|apply pgcl_while_least_prefixed].
+  pose proof (coupling_ae_implies_ae_lift (S := MN)) as NAE.
+  exact (denote_while_unfold (FI := FI) (FO := FO) coin b c).
+Qed.
+End WhileOrder.

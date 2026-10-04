@@ -9,7 +9,7 @@ From mathcomp Require Import reals.
 From PTree.Prob.Interface Require Import Measure Omega KleisliIteration.
 From PTree.Prob.Domain Require Import Expectation Iteration.
 Require Import PTree.Prob.FreeOmega.Definition.
-From PTree.Prob.FreeOmega Require Import Measure.
+From PTree.Prob.FreeOmega Require Import Measure IterationOrder.
 From PTree.Prob.FreeOmega.Validation Require Import Model.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -53,3 +53,13 @@ Proof.
   exists (oval_iter V i). apply free_omega_iteration_denotes_lfp.
 Qed.
 End Validation.
+
+(** Public iteration spelling: this is definitionally the existing formal
+    approximant limit, so its independent lfp validation is reused verbatim. *)
+Corollary free_omega_iter_denotes_lfp {MN : Type → Type}
+    `{NI : SemanticMeasure MN} `{NO : @SemanticOmega MN NI}
+    (R : realType) (native : ∀ X, MN X → OmegaVal R X)
+    {I A} (K : I → FreeOmega MN (I+A)) (V : I → OmegaVal R (I+A)) :
+  (∀ i, free_omega_model_denotes native (K i) (V i)) → ∀ i,
+  free_omega_model_denotes native (free_omega_iter K i) (oval_iter V i).
+Proof. apply free_omega_iteration_denotes_lfp. Qed.

@@ -2,6 +2,8 @@
     Only native AE/return/zero/bind/lift/lub obligations are discharged here.
     No legacy evaluator or backend-specific quotient induction is used. *)
 From Coq Require Import Utf8.
+From PTree.Prob.FreeOmega Require Import DomainOrder.
+From PTree.Prob.FreeOmega.Validation Require Import DomainOrder.
 
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
@@ -97,5 +99,26 @@ Theorem subenumQ_qlift_eq_sound {A} (t u : FreeOmega SubEnumQ A)
     (Ht : free_omega_modelable native t) (Hu : free_omega_modelable native u) :
   free_omega_qlift eq t u → oval_eq (free_omega_model Ht) (free_omega_model Hu).
 Proof. intros H f Hf; exact (subenumQ_qlift_eq_upper H Hf). Qed.
+
+(** Backend instance of the public semantic approximation order. *)
+Theorem subenumQ_sem_le_upper {A} (t u : FreeOmega SubEnumQ A) f :
+  free_omega_sem_le t u → oval_test f →
+  free_omega_model_upper native t f <= free_omega_model_upper native u f.
+Proof.
+  intros H Hf. eapply free_omega_sem_le_upper.
+  - exact (@subenumQ_native_model_ae).
+  - exact (@subenumQ_domain_ret R).
+  - exact (@subenumQ_domain_zero R).
+  - exact (@subenumQ_domain_bind R).
+  - exact (@subenumQ_native_model_lift).
+  - exact (@subenumQ_native_model_lub).
+  - exact H.
+  - exact Hf.
+Qed.
+
+Theorem subenumQ_sem_le_sound {A} (t u : FreeOmega SubEnumQ A)
+    (Ht : free_omega_modelable native t) (Hu : free_omega_modelable native u) :
+  free_omega_sem_le t u → oval_le (free_omega_model Ht) (free_omega_model Hu).
+Proof. intros H f Hf; exact (subenumQ_sem_le_upper H Hf). Qed.
 
 End RationalValidation.

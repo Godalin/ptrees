@@ -124,7 +124,8 @@ is not leastness. `sem_iter_least_fixed_point` additionally consumes explicit
 upper-bound and least-upper-bound properties of `sem_lub`.
 
 These properties are not silently asserted for raw FreeOmega approximation.
-Two mathematical models provide genuine leastness:
+FreeOmega now has a separate internal preorder (below); two independent
+mathematical models also provide genuine leastness:
 
 - Safe `Prob/Backend/MathComp/Iteration` constructs native measure iteration and
   proves leastness without gluing; recursive PTree assembly remains Gate M.
@@ -132,6 +133,53 @@ Two mathematical models provide genuine leastness:
   `oval_iter_least_prefixed`. `FreeOmega/Validation/Iteration` proves that the
   canonical formal iteration denotes this lfp and is modelable. Other
   quotient-equal witnesses require the quotient-validation obligations.
+
+### Public FreeOmega semantic order
+
+Import `Prob/FreeOmega/Definition` and `Prob/FreeOmega/IterationOrder` (the latter
+exports `DomainOrder`), then opt in with `Import FreeOmegaOrderNotations` and
+`Local Open Scope freeomega_scope`.
+`t ⊑ω u` is `free_omega_sem_le t u`. The existing `sem_le = free_omega_approx eq`
+and `sem_eq = free_omega_qlift eq` are unchanged.
+
+The new preorder is the least **rule-generated relation on the existing
+carrier**, not another free completion or an interpretation into OmegaVal.
+Its rules include structural approximation, observable equality, transitivity,
+sample/raw-Lub congruence, and upper/least rules for **structurally increasing**
+chains. The supremum rules are part of this relation's definition; their
+independent mathematical soundness is proved in `Validation/DomainOrder`.
+Bind monotonicity on both sides is derived, not an additional rule or axiom.
+
+Public proof rules:
+
+- `free_omega_approx_sem_le`, `free_omega_sem_eq_le`: old proofs embed.
+- `free_omega_sem_eq_le_proper`: quotient rewriting inside inequalities.
+- `free_omega_lub_upper` / `free_omega_lub_least`: literal `FOLub` supremum.
+- `free_omega_sem_lub_upper` / `free_omega_sem_lub_least`: any existing lub witness.
+- `free_omega_bind_sem_mono`: monotonicity in source and continuation.
+- `free_omega_iter_least_prefixed`: `Phi Y ⊑ω Y` bounds the canonical iteration.
+- `free_omega_iter_least_fixed_point`: existing qlift fixed-point equation
+  **and** new-preorder leastness. `free_omega_sem_iter_least_prefixed` works
+  with any selected/quotient-equivalent iteration witness.
+
+Leastness needs native Core laws, not native omega-completeness or a model.
+The qlift fixed-point equation additionally uses the existing native coupling-AE
+and countable-AE profile. A pre-fixed bound may be any raw term.
+
+This is deliberately not an arbitrary-chain omega-CPO theorem. We do not claim
+antisymmetry up to qlift, completeness for evaluator order, or validity of raw
+terms. Modelability remains separate: structural increasingness alone does not
+make an invalid constant chain valid. With modelable terms, existing validation
+supplies the genuine OmegaVal limit; the new preorder soundly implies its order.
+`Validation/Iteration.free_omega_iter_denotes_lfp` identifies the public
+iteration with `oval_iter` by directly reusing that earlier validation proof.
+
+`Examples/PGCL/FreeOmega.pgcl_while_least_fixed_point` applies this public tool
+to the ordinary functional `Phi Y s = if b s then bind (D c s) Y else ret s`.
+Unlike generic `denote_while_least`, it needs no supplied supremum laws.
+`RandomWalk.walk_denote_least_fixed_point` instantiates it for the forward
+random-walk functional, with its infinite-support result still in FreeOmega.
+No external validation module enters these program proofs.
 
 ## pGCL forward semantics (no wp or external model)
 

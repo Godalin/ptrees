@@ -3,6 +3,11 @@
   "description": "Current contracts. Contexts preserve original safe/unchecked and joint/owner loading. No migration replay.",
   "groups": [
     {
+      "id": "freeomega_order",
+      "snapshot": "tools/data/FREEOMEGA_ORDER_CONTRACTS.json",
+      "context": "owners"
+    },
+    {
       "id": "pgcl",
       "snapshot": "tools/data/PGCL_CONTRACTS.json",
       "context": "owners"

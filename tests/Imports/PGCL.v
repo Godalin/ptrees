@@ -20,5 +20,7 @@ Check @CoinLoops.partial_frontier.
 Check @walk_run.
 Check @walk_denote_closed_form.
 Check @pgcl_run_Proper.
+Check @pgcl_while_least_fixed_point.
+Check @PTree.Prob.FreeOmega.IterationOrder.free_omega_iter_least_fixed_point.
 Fail Check PTree.Prob.Domain.Expectation.OmegaVal.
 Fail Check PTree.Eq.Backend.MathComp.mathcomp_tree.

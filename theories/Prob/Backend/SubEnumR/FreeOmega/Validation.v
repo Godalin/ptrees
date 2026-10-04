@@ -1,6 +1,8 @@
 (** Thin specialization only: all completion validity/limit proofs live in
     Prob/FreeOmega/Validation, and are not copied from the rational backend. *)
 From Coq Require Import Utf8.
+From PTree.Prob.FreeOmega Require Import DomainOrder.
+From PTree.Prob.FreeOmega.Validation Require Import DomainOrder.
 
 Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
@@ -101,4 +103,25 @@ Proof.
   intro H; split; intro Hv; eapply modelable_ext; [exact Hv| |exact Hv|];
     intros f Hf; [exact (subenumR_qlift_eq_upper H Hf)|symmetry; exact (subenumR_qlift_eq_upper H Hf)].
 Qed.
+(** Backend instance of the public semantic approximation order. *)
+Theorem subenumR_sem_le_upper {A} (t u : FreeOmega (SubEnumR R) A) f :
+  free_omega_sem_le t u → oval_test f →
+  free_omega_model_upper native t f <= free_omega_model_upper native u f.
+Proof.
+  intros H Hf. eapply free_omega_sem_le_upper.
+  - exact (@subenumR_native_model_ae R).
+  - exact (@subenumR_domain_ret R).
+  - exact (@subenumR_domain_zero R).
+  - exact (@subenumR_domain_bind R).
+  - exact (@subenumR_native_model_lift R).
+  - exact (@subenumR_native_model_lub).
+  - exact H.
+  - exact Hf.
+Qed.
+
+Theorem subenumR_sem_le_sound {A} (t u : FreeOmega (SubEnumR R) A)
+    (Ht : free_omega_modelable native t) (Hu : free_omega_modelable native u) :
+  free_omega_sem_le t u → oval_le (free_omega_model Ht) (free_omega_model Hu).
+Proof. intros H f Hf; exact (subenumR_sem_le_upper H Hf). Qed.
+
 End RealValidation.

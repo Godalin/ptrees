@@ -14,11 +14,12 @@ From PTree.Prob.Interface Require Import Measure Omega KleisliIteration.
 From PTree.Prob.Backend.Common Require Import FiniteSubdist.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 Require Import PTree.Prob.FreeOmega.Definition.
-From PTree.Prob.FreeOmega Require Import Measure StructuralMeasure RelationalLimit Observation.
+From PTree.Prob.FreeOmega Require Import Measure StructuralMeasure RelationalLimit Observation Quotient IterationOrder.
 From PTree.Interp Require Import ReturnIteration.
 From PTree.Examples.PGCL Require Import RandomWalkAnalysis.
 From PTree.Examples.PGCL Require Import Syntax Forward Algebra Interpretation StateInterpretation FreeOmega.
 Import PGCLNotations PGCLDenotationNotations PGCLAlgebraNotations SemanticMeasureNotations.
+Import FreeOmegaOrderNotations.
 Import GRing.Theory Num.Theory.
 Local Open Scope ring_scope.
 Local Open Scope semantic_measure_scope.
@@ -62,6 +63,38 @@ Qed.
     Round zero already observes an absorbing state; hence these finite
     observations are the S n (not n) Kleisli approximants. *)
 Local Notation D := (denote (FI := FI) (FO := FO) walk_coin).
+
+(** The classical forward functional: absorb at height zero, otherwise
+    move down/up and continue. The result remains in MF, not a finite list. *)
+Definition walk_functional (Y : rw_state → FreeOmega SubEnumQ rw_state) s :=
+  if Nat.eqb (fst s) 0 then ηω s else
+    b ←ω walk_coin tt ;;
+    Y (if b then (Nat.pred (fst s), S (snd s)) else (S (fst s), 0%nat)).
+
+Theorem walk_denote_least_fixed_point :
+  (∀ s, D walk_source s ≈ₘ walk_functional (D walk_source) s) ∧
+  (∀ Y, (∀ s, walk_functional Y s ⊑ω Y s) → ∀ s, D walk_source s ⊑ω Y s).
+Proof.
+  assert (Hstep : ∀ (Y : rw_state → FreeOmega SubEnumQ rw_state) s,
+    (if negb (Nat.eqb (fst s) 0) then
+      D ((UPDATE (λ s, (Nat.pred (fst s), S (snd s))))
+        ⊕[ tt ] (UPDATE (λ s, (S (fst s), 0)))) s >>=ₘ Y
+     else ηₘ s) ≈ₘ walk_functional Y s).
+  { intros Y s. unfold walk_functional. destruct (Nat.eqb (fst s) 0).
+    - apply sem_eq_refl.
+    - apply FOQLSample with (T := eq).
+      + apply sem_lift_refl. intro b; reflexivity.
+      + intros x y ->. destruct y; apply free_omega_qlift_refl; intro a; reflexivity. }
+  destruct (pgcl_while_least_fixed_point (S := rw_state)
+    (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)
+    walk_coin (λ s, negb (Nat.eqb (fst s) 0))
+    ((UPDATE (λ s, (Nat.pred (fst s), S (snd s))))
+      ⊕[ tt ] (UPDATE (λ s, (S (fst s), 0))))) as [Hfix Hleast].
+  split.
+  - intro s. eapply sem_eq_trans; [apply Hfix|apply Hstep].
+  - intros Y HY. apply Hleast. intro s.
+    eapply free_omega_sem_le_trans; [apply free_omega_sem_eq_le, Hstep|apply HY].
+Qed.
 
 Definition walk_round n s :=
   sem_iter_approx (MI := FI)

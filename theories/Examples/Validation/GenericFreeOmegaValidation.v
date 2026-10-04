@@ -34,7 +34,9 @@ Proof. intros f Hf; reflexivity. Qed.
 From PTree.Prob.Interface Require Import Measure.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure Domain.
 From PTree.Prob.Backend.SubEnumQ.FreeOmega Require Import Validation CountableSupport JointRealization.
-From PTree.Prob.FreeOmega Require Import Quotient.
+From PTree.Prob.FreeOmega Require Import Quotient DomainOrder StructuralMeasure.
+Import FreeOmegaOrderNotations.
+Local Open Scope freeomega_scope.
 From PTree.Prob.Domain Require Import Coupling.
 
 (** The actual-joint endpoint is available without the old evaluator or
@@ -78,6 +80,33 @@ Qed.
 
 Example generic_rejects_raw_alternation : ¬ free_omega_modelable native alternating_bool.
 Proof. intro H; apply (@alternating_bool_not_admissible R); exact (proj1 (subenumQ_modelable_iff_admissible R _) H). Qed.
+
+(** Being above a valid value in the new order is NOT a validity certificate. *)
+Example semantic_order_does_not_imply_modelability :
+  FOZero ⊑ω alternating_bool ∧ ¬ free_omega_modelable native alternating_bool.
+Proof. split; [apply free_omega_sem_le_bottom|apply generic_rejects_raw_alternation]. Qed.
+
+Example structural_chain_does_not_certify_members :
+  free_omega_struct_increasing (λ _, alternating_bool) ∧
+  ¬ free_omega_modelable native alternating_bool.
+Proof.
+  split; [intro n; apply free_omega_approx_refl; intro b; reflexivity|
+    apply generic_rejects_raw_alternation].
+Qed.
+
+Example semantic_dirac_not_bottom : ¬ (@FORet SubEnumQ bool true ⊑ω FOZero).
+Proof.
+  intro H. have Hbad := subenumQ_sem_le_upper (R := R) H (@oval_test_one R bool).
+  change (is_true ((1 : R) <= 0)) in Hbad. by move: Hbad; rewrite ler10.
+Qed.
+
+Example semantic_distinct_diracs : ¬ (@FORet SubEnumQ bool true ⊑ω FORet false).
+Proof.
+  intro H. have Hf : oval_test (λ b : bool, if b then (1 : R) else 0).
+  { intros []; split; try exact: ler01; exact: lexx. }
+  have Hbad := subenumQ_sem_le_upper (R := R) H Hf.
+  change (is_true ((1 : R) <= 0)) in Hbad. by move: Hbad; rewrite ler10.
+Qed.
 
 Example generic_geometric_modelable : free_omega_modelable native geometric.
 Proof.
