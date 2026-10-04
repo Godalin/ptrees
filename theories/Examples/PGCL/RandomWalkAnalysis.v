@@ -1,5 +1,5 @@
-(** Case role: paper case study.
-    Reading entry: random_walk_as_successive_passages; random_walk_closed_form.
+(** Supporting analysis for PGCL/RandomWalk.v, the public source-language case.
+    Reading entry here: walk_harmonic_limit; random_walk_output_dist.
     Scope: Generic structural control flow, then SubEnumQ probability analysis; no distribution-to-bisimulation converse.
     See docs/CASE_STUDY_STANDARD.md and docs/CASE_STUDIES.md. *)
 (** Learn: passage algebra followed by genuinely infinite-state harmonic analysis.

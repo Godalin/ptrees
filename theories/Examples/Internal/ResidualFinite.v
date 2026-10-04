@@ -17,7 +17,7 @@ Require Import PTree.Prob.Backend.EnumQ.Representation.
 From PTree.Eq.Internal Require Import FiniteInternal FiniteInternalHitting.
 From PTree.Eq Require Import PStrong PEutt.
 From PTree.Eq.Internal.FreeOmega Require Import FiniteInternalAcceleration.
-From PTree.Examples Require Import RandomWalk.
+From PTree.Examples.PGCL Require Import RandomWalkAnalysis.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

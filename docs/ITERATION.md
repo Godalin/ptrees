@@ -169,6 +169,7 @@ IF b THEN c ELSE d ENDIF
 x ::= e
 ⟦ c ⟧[ coin ] s          (* selected forward kernel *)
 c ⇓[ coin ] K            (* relational forward denotation *)
+c ≈g[ coin ] d          (* equal forward kernels; PGCLAlgebraNotations *)
 ```
 
 The explicit coin argument avoids another canonical-backend selection mechanism.
@@ -195,12 +196,30 @@ Main endpoints and their boundaries:
   upper/least properties, just like `sem_iter_least_fixed_point`; those
   properties are **not** silently assumed of raw FreeOmega.
 
-`Programs.v` demonstrates retry, nested loops, partial termination and zero
-frontier for endless skip. `RandomWalk.v` proves the State-interpreted source
-program equivalent to the maintained `random_walk`; `walk_classical_frontier`
-gives that existing PTree itself the pGCL forward frontier. Its
-infinite-support/harmonic analysis remains in its original
-owner; the limit is not forced into a finite native distribution.
+`Algebra.v` is the backend-parametric source equational library. `cequiv` is
+pointwise `sem_eq`, not syntax equality or functional extensionality. Sequence,
+conditionals, probabilistic choice and while have `Proper` instances, so source
+equations rewrite below program contexts. Laws include skip/assignment equations,
+sequence associativity, postcomposition distribution over conditionals/choices,
+while unfolding and endless skip. The minimal `BindLaws` does not include right
+unit: `seq_skip_r` exposes that ordinary measure law; `FreeOmega.pgcl_seq_skip_r`
+discharges it from the existing completion proof. `pgcl_run_Proper` transports
+source rewrites into behavioral State-interpreted programs.
+The abstract coin need not have mass one, so the library does not silently
+assume choice idempotence for arbitrary subprobabilistic samplers. Concrete
+rational/real Bernoulli clients use normalized coins.
+
+`Programs.v` demonstrates source rewrites, retry, nested loops, partial termination
+and zero frontier for endless skip. The public random-walk entry is now
+`PGCL/RandomWalk.v`: `walk_source` is pGCL syntax and `walk_denote_closed_form`
+starts with its **forward denotation**. It represents this denotation by the
+`S n` Kleisli approximants, observes their exact finite native distributions,
+and reuses the normalized geometric atom limits. `RandomWalkAnalysis.v` contains
+the preserved passage/harmonic analysis. No second convergence proof or finite
+native representation of the infinite-support limit is introduced. `walk_run`
+and `walk_classical_frontier` retain the connection with the analysed PTree.
+The old import `PTree.Examples.RandomWalk` moves to
+`PTree.Examples.PGCL.RandomWalkAnalysis`; no compatibility facade is retained.
 
 All these modules are Gate S and import no external validation model. The generic
 forward correspondence and conditional leastness theorem are closed under their

@@ -184,6 +184,14 @@
     }
   ],
   "axiom_exceptions": {
+    "PTree.Examples.PGCL.FreeOmega.pgcl_run_Proper": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
+    "PTree.Examples.PGCL.Programs.CoinLoops.source_rewrite_run": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
     "PTree.Examples.PGCL.RandomWalk.walk_classical_frontier": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"

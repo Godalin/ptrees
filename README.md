@@ -188,9 +188,15 @@ infinite sequence of request/reply events and proves
 coinduction up to bind: only service roots and reply states enter the
 candidate; the sampler equivalence discharges the bind prefix.
 
-`Examples/RandomWalk.v` studies an infinite-state loop: with probability
+`Examples/PGCL/RandomWalk.v` presents an infinite-state loop in pGCL syntax: with probability
 `2/3`, decrement the height and increment a streak; otherwise increment the
-height and reset the streak.  Starting from `(1,0)`, it stops at height zero.
+height and reset the streak. Starting from `(1,0)`, it stops at height zero.
+`walk_denote_closed_form` characterizes its forward `denote` by finite Kleisli
+rounds, exact native observations and the normalized joint limit
+`Pr[(0,n)] = 2/3^n` for `n >= 1`. `walk_forward` connects the same denotation
+to the State-interpreted PTree. `PGCL/Algebra.v` supplies source equivalence,
+congruences and rewrite laws, including rewriting under while.
+The supporting `PGCL/RandomWalkAnalysis.v` retains the existing analysis:
 `run_split` factors a descent through an intermediate level using `pstruct`,
 and `passage_unfold` proves the genuine `peutt` renewal equation
 `D_y ≈ₚ Prob coin (fun down => if down then Ret (y+1) else D_0 >>= D)`.
@@ -375,7 +381,7 @@ form four groups:
 
 - [MixedHeadProtocol](theories/Examples/MixedHeadProtocol.v): the flagship
   mixed Ret/Vis, whole-continuation coupling example;
-- [RandomWalk](theories/Examples/RandomWalk.v): infinite-state descent,
+- [RandomWalk](theories/Examples/PGCL/RandomWalk.v): pGCL forward semantics and infinite-state descent,
   compositional equations and an analytic joint output law;
 - [InteractiveVonNeumann](theories/Examples/InteractiveVonNeumann/):
   unbounded internal sampling between infinitely many interactions;

@@ -2,7 +2,7 @@
     backend with the maintained FreeOmega profile. This is an instance of
     the generic proofs, not a second language semantics. No validation
     model participates in this development. *)
-From Coq Require Import Utf8.
+From Coq Require Import Utf8 Morphisms.
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From PTree.Core Require Import PTreeDefinition.
@@ -13,7 +13,7 @@ From PTree.Prob.FreeOmega Require Import StructuralMeasure Measure
 From PTree.Eq Require Import PTreeKernel PEutt.
 From PTree.Eq.FreeOmega Require Import Hitting.
 From PTree.Interp Require Import HandlerMachine ReturnIteration.
-From PTree.Examples.PGCL Require Import Syntax Forward Interpretation Adequacy StateInterpretation.
+From PTree.Examples.PGCL Require Import Syntax Forward Algebra Interpretation Adequacy StateInterpretation.
 Set Implicit Arguments.
 Unset Strict Implicit.
 
@@ -91,5 +91,19 @@ Proof.
   unfold iteration_return_map. eapply sem_lift_bind.
   - exact (Heq s).
   - intros a b ->. apply sem_lift_ret. constructor. reflexivity.
+Qed.
+
+(** Source rewrites also work below the public State interpretation. *)
+#[global] Instance pgcl_run_Proper :
+  Proper (cequiv (FI := FI) (FO := FO) coin ==> eq ==>
+    peutt (FI := FI) (FO := FO) (@eq S)) (run (E := E) coin).
+Proof. intros c d H s s' ->. apply pgcl_denotation_peutt, H. Qed.
+
+(** Discharge the ordinary monad right unit once for the completion. *)
+Theorem pgcl_seq_skip_r (c : command S P) :
+  cequiv (FI := FI) (FO := FO) coin (CSeq c CSkip) c.
+Proof.
+  apply seq_skip_r. intro mu. apply FOQLStructural.
+  apply free_omega_bind_return_lift.
 Qed.
 End Completion.

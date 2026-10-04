@@ -276,7 +276,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype ssralg ssrnum order rat re
 Require Import PTree.Prob.Backend.SubEnumQ.Measure.
 Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximation PTree.Prob.FreeOmega.Observation PTree.Prob.FreeOmega.StructuralMeasure PTree.Prob.FreeOmega.SupportLift PTree.Prob.FreeOmega.Quotient PTree.Prob.FreeOmega.Measure.
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperObservation.
-From PTree.Examples Require Import RandomWalk.
+From PTree.Examples.PGCL Require Import RandomWalkAnalysis.
 Require Import PTree.Examples.Counterexamples.Validation.FreeOmegaEscapingMass.
 Module ObservationTests.
 (** Role: external mathematical-model example, not a reasoning dependency. *)
@@ -345,7 +345,7 @@ Require Import PTree.Prob.FreeOmega.Definition PTree.Prob.FreeOmega.Approximatio
 Require Import PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperExpectation PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperRelational PTree.Prob.Backend.SubEnumQ.FreeOmega.UpperQuotient.
 Require Import PTree.Examples.Probability.SubEnumQRegression.
 Require Import PTree.Examples.Counterexamples.Validation.FreeOmegaEscapingMass.
-From PTree.Examples Require Import RandomWalk.
+From PTree.Examples.PGCL Require Import RandomWalkAnalysis.
 Module QuotientTests.
 (** Role: external mathematical-model example, not a reasoning dependency. *)
 Set Warnings "-notation-overridden".

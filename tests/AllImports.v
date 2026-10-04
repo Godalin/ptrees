@@ -132,12 +132,14 @@ Require PTree.Examples.IterationBasics.
 Require PTree.Examples.MathCompPrograms.
 Require PTree.Examples.MixedHeadProtocol.
 Require PTree.Examples.PGCL.Adequacy.
+Require PTree.Examples.PGCL.Algebra.
 Require PTree.Examples.PGCL.Finite.
 Require PTree.Examples.PGCL.Forward.
 Require PTree.Examples.PGCL.FreeOmega.
 Require PTree.Examples.PGCL.Interpretation.
 Require PTree.Examples.PGCL.Programs.
 Require PTree.Examples.PGCL.RandomWalk.
+Require PTree.Examples.PGCL.RandomWalkAnalysis.
 Require PTree.Examples.PGCL.StateInterpretation.
 Require PTree.Examples.PGCL.Syntax.
 Require PTree.Examples.Probability.ConditionalResampling.
@@ -156,7 +158,6 @@ Require PTree.Examples.Probability.MathCompOrder.
 Require PTree.Examples.Probability.SubEnumQRegression.
 Require PTree.Examples.Probability.SubEnumRBehavior.
 Require PTree.Examples.Probability.SubEnumRRelational.
-Require PTree.Examples.RandomWalk.
 Require PTree.Examples.RationalState.
 Require PTree.Examples.RealSamplingHandler.
 Require PTree.Examples.StateCounter.

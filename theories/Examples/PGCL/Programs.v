@@ -16,7 +16,7 @@ From PTree.Prob.Interface Require Import Measure Omega Mixed.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure Measure Quotient.
 From PTree.Interp Require Import ReturnIteration.
-From PTree.Examples.PGCL Require Import Syntax Forward Interpretation FreeOmega Finite.
+From PTree.Examples.PGCL Require Import Syntax Forward Algebra Interpretation FreeOmega Finite.
 Import GRing.Theory Num.Theory Order.Theory.
 Import PGCLNotations PGCLDenotationNotations SemanticMeasureNotations HittingNotations.
 Local Open Scope ring_scope.
@@ -57,6 +57,28 @@ Local Notation FO := (FreeOmegaObservableSemanticOmega
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
 Local Notation D := (denote (FI := FI) (FO := FO) rational_coin).
 Local Notation run := (Interpretation.run (E := E) rational_coin).
+Local Notation "c '≈g' d" :=
+  (cequiv (FI := FI) (FO := FO) rational_coin c d) (at level 70).
+
+(** Source algebra, including rewriting underneath both a choice and an
+    unbounded while. No program semantics is unfolded in this proof. *)
+Theorem source_rewrite (b : bool → bool) (f g : bool → bool) :
+  (WHILE b DO
+     (SKIP ;; UPDATE f) ⊕[ half ] ((UPDATE (λ s, s) ;; UPDATE g) ;; SKIP)
+   OD) ≈g
+  (WHILE b DO (UPDATE f) ⊕[ half ] (UPDATE g) OD).
+Proof.
+  rewrite (assign_id (FI := FI) (FO := FO) rational_coin)
+    !(seq_skip_l (FI := FI) (FO := FO) rational_coin)
+    (pgcl_seq_skip_r rational_coin). reflexivity.
+Qed.
+
+(** The same source rewrite can be consumed under the State interpreter. *)
+Theorem source_rewrite_run (b : bool → bool) (f g : bool → bool) s :
+  run (WHILE b DO
+    (SKIP ;; UPDATE f) ⊕[ half ] ((UPDATE (λ s, s) ;; UPDATE g) ;; SKIP)
+  OD) s ≈ₚ run (WHILE b DO (UPDATE f) ⊕[ half ] (UPDATE g) OD) s.
+Proof. setoid_rewrite (source_rewrite b f g). reflexivity. Qed.
 
 (** The denotation brackets and the relational notation agree. *)
 Example toss_denotes : toss ⇓[ rational_coin ] ⟦ toss ⟧[ rational_coin ].

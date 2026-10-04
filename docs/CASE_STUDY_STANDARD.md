@@ -219,7 +219,7 @@ Regression 不自动纳入论文 case 迁移，也不删其负向测试。
 | 工厂共享分析 | 同目录 `VonNeumannUnbounded.v`, `RationalBernoulli.v`, `OperationalVonNeumann.v`, `OperationalRationalBernoulli.v`, `OperationalBernoulliFactory.v` | 保留必要概率分析；整理其面向 rewrite 的端点，不强求把极限证明改成重写 |
 | 实权采样变体 | 同目录 `RealBernoulliOracle.v`, `RealBernoulliMathComp.v` | 接口条件、与有理模型的关系、数学与 backend 实现边界 |
 | 无限协议 | `InteractiveVonNeumann/InteractiveVonNeumannService.v`, `MixedHeadProtocol.v` | 尽可能复用组件等式；真正需要的 coinduction/coupling 单独标明 |
-| 随机游走 | `RandomWalk.v` | passage/control-flow 等式链与 harmonic/limit 分析分区 |
+| 随机游走 | `PGCL/RandomWalk.v` | pGCL source/denote 主线；`RandomWalkAnalysis.v` 保留 passage/harmonic 分析 |
 | MathComp 程序 | `MathCompPrograms.v` | 明确这是程序定义/方程还是完整 case；链接已有安全/直接验证端点，不凭空补 claim |
 
 具体合并路径、主定理名、需要补充的 generic lemma，逐批读取证明后确定。
