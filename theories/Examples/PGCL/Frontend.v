@@ -7,7 +7,13 @@ Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssralg ssrnum rat.
-From PTree.Examples.PGCL Require Import Syntax Finite Interpretation.
+From ITree.Indexed Require Import Sum.
+From PTree.Core Require Import PTreeDefinition.
+From PTree.Prob.Backend.SubEnumQ Require Import Measure.
+From PTree.Prob.FreeOmega Require Import Measure.
+From PTree.Eq Require Import PTreeKernel.
+From PTree.Interp Require Import ReturnIteration.
+From PTree.Examples.PGCL Require Import Syntax Finite Interpretation Forward.
 Import GRing.Theory Num.Theory.
 Local Open Scope ring_scope.
 
@@ -101,3 +107,21 @@ Example reject_unreachable_bad_choice :
 Proof. reflexivity. Qed.
 Example store_last_write : initial_store ((0, 2%Z) :: (0, 3%Z) :: nil) 0 = 3%Z.
 Proof. reflexivity. Qed.
+
+(** A successful checked input uses the existing forward semantics. The
+    compile premise is the frontend entry condition; the semantic result
+    already holds for every well-typed [pgcl] command. This wrapper neither
+    specifies the textual parser nor proves preservation of an independent
+    source semantics. Execution still follows [run], including State interp. *)
+Local Notation FI := (FreeOmegaObservableSemanticMeasure
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+Local Notation FO := (FreeOmegaObservableSemanticOmega
+  (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).
+
+Theorem compile_hitting (src : source) (c : pgcl) (s : store) :
+  compile src = Some c →
+  ptree_stable_hitting (FI := FI) (FO := FO)
+    (observe (run (E := void1) rational_coin c s))
+    (iteration_return_map (E := void1) (MN := SubEnumQ)
+      (denote (FI := FI) (FO := FO) rational_coin c s)).
+Proof. intros _. apply rational_pgcl_hitting. Qed.

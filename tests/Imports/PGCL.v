@@ -12,7 +12,8 @@ Check @cequiv_denotes.
 Check @while_Proper.
 Check @seq_skip_r.
 
-From PTree.Examples.PGCL Require Import FreeOmega Finite Programs RandomWalk.
+From PTree.Examples.PGCL Require Import FreeOmega Finite Programs RandomWalk Frontend.
+Check @compile_hitting.
 Check @pgcl_run_denotes_iff.
 Check @rational_pgcl_hitting.
 Check @real_pgcl_hitting.

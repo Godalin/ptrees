@@ -94,7 +94,17 @@ integer/Boolean expressions and a checked elaboration into the existing
 shallow commands. It checks every choice, including unreachable branches:
 zero denominators and probabilities outside [0,1] are rejected before running.
 `run`, not `denote` or a FreeOmega limit, is executed. The resulting checked
-command is covered by `Finite.rational_pgcl_hitting`; the bounded execution is
+command is covered directly by `Frontend.compile_hitting`:
+
+```text
+compile src = Some c
+-------------------
+run rational_coin c s ⇓ₕ map FHRet (denote rational_coin c s)
+```
+
+This is a thin specialization of `Finite.rational_pgcl_hitting`, which already
+holds for every well-typed command. It is not a verified-parser theorem or a
+preservation proof against a second source semantics. The bounded execution is
 an instance of the existing runner. No new distribution semantics, wp layer,
 or validation dependency is introduced into program reasoning.
 

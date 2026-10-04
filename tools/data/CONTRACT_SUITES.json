@@ -217,6 +217,10 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
+    "PTree.Examples.PGCL.Frontend.compile_hitting": [
+      "ClassicalUniqueChoice.dependent_unique_choice",
+      "RelationalChoice.relational_choice"
+    ],
     "PTree.Examples.PGCL.Finite.real_pgcl_hitting": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
