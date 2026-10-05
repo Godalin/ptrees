@@ -12,7 +12,9 @@ From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 From PTree.Prob.FreeOmega Require Import Measure.
 From PTree.Eq Require Import PTreeKernel.
 From PTree.Interp Require Import ReturnIteration.
-From PTree.Examples.PGCL Require Import Syntax Finite Frontend Interpretation Forward.
+From PTree.Examples.PGCL Require Import Syntax Interpretation Forward.
+From PTree.Examples.PGCL.Backend Require Import Finite.
+From PTree.Examples.PGCL.Runtime Require Import Frontend.
 
 Local Notation FI := (FreeOmegaObservableSemanticMeasure
   (NI := SubEnumQ_SemanticMeasure) (NO := SubEnumQ_SemanticOmega)).

@@ -3,8 +3,9 @@
 From Coq Require Import Extraction ExtrOcamlBasic.
 From ITree.Indexed Require Import Sum.
 From PTree.Core Require Import PTreeDefinition.
-From PTree.Examples.PGCL Require Import Frontend Interpretation Probability.
-From PTree.Examples.PGCL Require Import Syntax.
+From PTree.Examples.PGCL Require Import Syntax Interpretation.
+From PTree.Examples.PGCL.Backend Require Import Probability.
+From PTree.Examples.PGCL.Runtime Require Import Frontend.
 From PTree.Prob.Backend.SubEnumQ Require Import Representation.
 From PTree.Execution Require Import Runner.
 From PTree.Execution.Backend Require Import RationalTickets.

@@ -16,7 +16,8 @@ From PTree.Prob.Interface Require Import Measure Omega Mixed.
 Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure Measure Quotient.
 From PTree.Interp Require Import ReturnIteration.
-From PTree.Examples.PGCL Require Import Syntax Forward Algebra Interpretation FreeOmega Finite.
+From PTree.Examples.PGCL Require Import Syntax Forward Algebra Interpretation FreeOmega.
+From PTree.Examples.PGCL.Backend Require Import Finite.
 Import GRing.Theory Num.Theory Order.Theory.
 Import PGCLNotations PGCLDenotationNotations SemanticMeasureNotations HittingNotations.
 Local Open Scope ring_scope.

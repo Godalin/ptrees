@@ -213,15 +213,15 @@
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Examples.PGCL.Finite.rational_pgcl_hitting": [
+    "PTree.Examples.PGCL.Backend.Finite.rational_pgcl_hitting": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Examples.PGCL.FrontendAdequacy.compile_hitting": [
+    "PTree.Examples.PGCL.Runtime.Adequacy.compile_hitting": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],
-    "PTree.Examples.PGCL.Finite.real_pgcl_hitting": [
+    "PTree.Examples.PGCL.Backend.Finite.real_pgcl_hitting": [
       "ClassicalUniqueChoice.dependent_unique_choice",
       "RelationalChoice.relational_choice"
     ],

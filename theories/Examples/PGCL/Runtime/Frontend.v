@@ -7,7 +7,8 @@ Set Warnings "-notation-overridden,-ambiguous-paths".
 Set Universe Polymorphism.
 Local Unset Universe Minimization ToSet.
 From mathcomp Require Import ssralg ssrnum rat.
-From PTree.Examples.PGCL Require Import Syntax Probability.
+From PTree.Examples.PGCL Require Import Syntax.
+From PTree.Examples.PGCL.Backend Require Import Probability.
 Import GRing.Theory Num.Theory.
 Local Open Scope ring_scope.
 

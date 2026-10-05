@@ -16,7 +16,7 @@ From PTree.Prob.FreeOmega Require Import StructuralMeasure Measure.
 From PTree.Eq Require Import PTreeKernel.
 From PTree.Interp Require Import ReturnIteration.
 From PTree.Examples.PGCL Require Import Syntax Forward Interpretation FreeOmega.
-From PTree.Examples.PGCL Require Export Probability.
+From PTree.Examples.PGCL.Backend Require Export Probability.
 Import ListNotations GRing.Theory Num.Theory Order.Theory.
 Local Open Scope ring_scope.
 Set Implicit Arguments.

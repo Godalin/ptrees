@@ -1,7 +1,7 @@
 (** The language's generic mathematics is independent of both completion
     syntax and validating models. Concrete clients remain ordinary Gate S. *)
 From Coq Require Import Utf8.
-From PTree.Examples.PGCL Require Import Frontend.
+From PTree.Examples.PGCL.Runtime Require Import Frontend.
 Check @compile.
 Fail Check PTree.Core.PTreeDefinition.ptree.
 Fail Check PTree.Examples.PGCL.Forward.denote.
@@ -20,7 +20,9 @@ Check @cequiv_denotes.
 Check @while_Proper.
 Check @seq_skip_r.
 
-From PTree.Examples.PGCL Require Import FreeOmega Finite Programs RandomWalk FrontendAdequacy.
+From PTree.Examples.PGCL Require Import FreeOmega Programs RandomWalk.
+From PTree.Examples.PGCL.Backend Require Import Finite.
+From PTree.Examples.PGCL.Runtime Require Import Adequacy.
 Check @compile_hitting.
 Check @pgcl_run_denotes_iff.
 Check @rational_pgcl_hitting.

@@ -89,12 +89,12 @@ source file -> OCaml parser -> Frontend.source
             -> ptree void1 SubEnumQ store -> ticket sampler / runner
 ```
 
-[`Examples/PGCL/Frontend`](../theories/Examples/PGCL/Frontend.v) supplies deep
+[`Examples/PGCL/Runtime/Frontend`](../theories/Examples/PGCL/Runtime/Frontend.v) supplies deep
 integer/Boolean expressions and a checked elaboration into the existing
 shallow commands. It checks every choice, including unreachable branches:
 zero denominators and probabilities outside [0,1] are rejected before running.
 `run`, not `denote` or a FreeOmega limit, is executed. The resulting checked
-command is covered directly by `FrontendAdequacy.compile_hitting`:
+command is covered directly by `Runtime.Adequacy.compile_hitting`:
 
 ```text
 compile src = Some c
@@ -102,16 +102,16 @@ compile src = Some c
 run rational_coin c s ⇓ₕ map FHRet (denote rational_coin c s)
 ```
 
-This is a thin specialization of `Finite.rational_pgcl_hitting`, which already
+This is a thin specialization of `Backend.Finite.rational_pgcl_hitting`, which already
 holds for every well-typed command. It is not a verified-parser theorem or a
 preservation proof against a second source semantics. The bounded execution is
 an instance of the existing runner. No new distribution semantics, wp layer,
 or validation dependency is introduced into program reasoning.
 
-`Frontend.v` depends only on source syntax and the executable bounded-coin
-definitions in `Probability.v`; it does not load PTree, FreeOmega or forward
-proofs. `Finite.v` owns the Q/R semantic instantiations, and
-`FrontendAdequacy.v` owns the wrapper above. Extraction imports the frontend
+`Runtime/Frontend.v` depends only on source syntax and the executable bounded-coin
+definitions in `Backend/Probability.v`; it does not load PTree, FreeOmega or forward
+proofs. `Backend/Finite.v` owns the Q/R semantic instantiations, and
+`Runtime/Adequacy.v` owns the wrapper above. Extraction imports the frontend
 and interpreter, not either adequacy module.
 
 The fuel-free glue specializes the generic `Execution.Runner.runner_step`.

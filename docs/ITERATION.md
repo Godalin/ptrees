@@ -264,6 +264,13 @@ c ≈g[ coin ] d          (* equal forward kernels; PGCLAlgebraNotations *)
 The explicit coin argument avoids another canonical-backend selection mechanism.
 `ENDIF` deliberately does not reserve the common interface name `FI`.
 
+The directory keeps the language, generic semantics and public cases at its
+top level. `Backend/Probability.v` contains executable bounded coins;
+`Backend/Finite.v` proves their Q/R semantic instances. `Runtime/Frontend.v`
+is the checked simulator input layer, while `Runtime/Adequacy.v` separately
+connects compiled inputs to the existing semantics. Generic `Adequacy.v`
+remains distinct from this runtime wrapper; extraction does not import either.
+
 Main endpoints and their boundaries:
 
 - `Adequacy.pgcl_forward_correspondence`: arbitrary `MN/MF`, any complete
@@ -278,7 +285,7 @@ Main endpoints and their boundaries:
   image is an actual complete frontier of `run`. Exact witness replacement
   here uses FreeOmega's existing saturated limit predicate; it is not asserted
   for an arbitrary abstract `sem_lub`.
-- `Finite.rational_pgcl_hitting` / `real_pgcl_hitting`: SubEnumQ/SubEnumR
+- `Backend.Finite.rational_pgcl_hitting` / `real_pgcl_hitting`: SubEnumQ/SubEnumR
   specializations of that same theorem. No new completion or coupling proof.
 - `Forward.denote_while_unfold` / `denote_while_approximants`: classical
   Kleisli equations. `denote_while_least` additionally exposes genuine lub
