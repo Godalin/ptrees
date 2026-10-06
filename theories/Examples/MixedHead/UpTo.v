@@ -4,7 +4,7 @@
       masked_impl -- up to bind --> kernel_impl
                   -- native coupling --> mixed_spec.
 
-    MixedHeadProtocol retains the original direct proof unchanged. Here we
+    Protocol.v retains the original direct proof unchanged. Here we
     reuse only its programs and finite-distribution calculations, not its
     final protocol equivalence. Challenge/Reply provide visible progress;
     sampling itself is NOT a coinductive guard. *)
@@ -20,7 +20,7 @@ Require Import PTree.Prob.FreeOmega.Definition.
 From PTree.Prob.FreeOmega Require Import StructuralMeasure Quotient Measure.
 From PTree.Eq Require Import Shallow UnifiedFrontier PEutt StableHittingRelation PTreeKernel.
 From PTree.Eq.FreeOmega Require Import Base Hitting Relation Bind.
-From PTree.Examples Require Import MixedHeadProtocol.
+From PTree.Examples.MixedHead Require Import Protocol.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Import PTree MonadNotation SemanticMeasureNotations.
@@ -176,7 +176,7 @@ Qed.
 
 (** * 4. Same public claim, obtained by composing the two refinements
 
-    This proof does not call MixedHeadProtocol.masked_protocol_equivalent. *)
+    This proof does not call Protocol.masked_protocol_equivalent. *)
 Theorem masked_protocol_equivalent_upto m :
   masked_impl m ≈ₚ[return_rel] mixed_spec (abstract_state m).
 Proof.

@@ -224,7 +224,7 @@ implements the same transition; no formal representation bridge to the
 pair-state case above is claimed. The textual parser, host PRNG and fuel-free
 scheduler are outside the formal execution guarantee.
 
-`Examples/MixedHeadProtocol.v` is the canonical mixed-head bisimulation
+`Examples/MixedHead/Protocol.v` is the canonical mixed-head bisimulation
 example. After a Boolean challenge, the implementation executes three or
 four Boolean draws: a `3/4` mask, a fair Stop/Continue decision, and a ternary
 sampler implemented by a `1/3` coin followed, on failure, by a fair coin.
@@ -261,7 +261,7 @@ in place: true uses the fresh joint support, false keeps the old invariant.
 or a symmetry assumption on the heterogeneous relation.
 Erasing both payloads gives ordinary Boolean equivalence through
 `masked_public_protocol_equivalent`.
-An independent [appendix proof](theories/Examples/MixedHeadUpTo.v) preserves
+An independent [appendix proof](theories/Examples/MixedHead/UpTo.v) preserves
 this original proof and factors the argument into up-to-bind sampler replacement,
 then ordinary coinduction with native frontier coupling. Its endpoint is
 `masked_protocol_equivalent_upto`; it does not invoke the original final theorem.
@@ -393,7 +393,7 @@ See [generic bind extraction](docs/THEORY.md#bind-and-rewriting) and
 Experts may import owners directly. Paper-facing programs
 form four groups:
 
-- [MixedHeadProtocol](theories/Examples/MixedHeadProtocol.v): the flagship
+- [MixedHead](theories/Examples/MixedHead/Protocol.v): the flagship
   mixed Ret/Vis, whole-continuation coupling example;
 - [RandomWalk](theories/Examples/PGCL/RandomWalk.v): pGCL forward semantics and infinite-state descent,
   compositional equations and an analytic joint output law;

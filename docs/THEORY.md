@@ -129,7 +129,7 @@ guards**: the premise is complete stable-hitting progress. MixedHead uses a
 proved relation on multi-node samplers inside up-to-bind/Vis; the interactive
 VN service reuses sampler equivalence between visible request/reply boundaries.
 
-The alternative `Examples/MixedHeadUpTo` proof separates up-to-bind context
+The alternative `Examples/MixedHead/UpTo` proof separates up-to-bind context
 reasoning from ordinary coinduction with native coupling of complete frontiers.
 It does not need the probability up-to closure: coupling handles the probability
 layer, while Challenge/Reply supply visible progress. The probability closure

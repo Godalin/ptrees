@@ -130,8 +130,8 @@ Require PTree.Examples.Internal.ResidualFinite.
 Require PTree.Examples.Internal.ResidualJointCoinduction.
 Require PTree.Examples.IterationBasics.
 Require PTree.Examples.MathCompPrograms.
-Require PTree.Examples.MixedHeadProtocol.
-Require PTree.Examples.MixedHeadUpTo.
+Require PTree.Examples.MixedHead.Protocol.
+Require PTree.Examples.MixedHead.UpTo.
 Require PTree.Examples.PGCL.Adequacy.
 Require PTree.Examples.PGCL.Algebra.
 Require PTree.Examples.PGCL.Backend.Finite.

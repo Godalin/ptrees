@@ -14,7 +14,7 @@ which proof method a case is allowed to use.
   for the analysis that a general iteration theorem does not do for you.
 - **Relate persistent interaction while maintaining a recursive relation:**
   coinduction up to bind or coupled Prob. Start with InteractiveVonNeumannService,
-  then MixedHeadProtocol.
+  then MixedHead.
 - **All three occur:** normalize local computations, summarize loops, prove a
   component endpoint, then compose it into the outer protocol. AdaptiveFactoryController
   is the integrated example, not the introductory tutorial.
@@ -37,13 +37,13 @@ semantic algebra rather than repeatedly opening its finite-list representation.
 | [BernoulliFactoryComposition](../theories/Examples/BernoulliFactory/BernoulliFactoryComposition.v) | `peutt_factory_correct`, `peutt_factory_vn_direct` | Reuses sampler endpoints under bind/iteration; shared arithmetic remains in its analysis owners. |
 | [AbsorbingFrontier](../theories/Examples/AbsorbingFrontier.v) | `absorbing_program_rewrite`, `absorbing_generic_frontier` | `absorbing_generic_frontier_reference` joins algebraic and exact-frontier views by whole-head lifting. `offer_probability` is 1/2. |
 | [InteractiveVonNeumannService](../theories/Examples/InteractiveVonNeumann/InteractiveVonNeumannService.v) | `interactive_von_neumann_service_equivalent` | Up-to-bind consumes `service_sampler_equivalent`. `von_neumann_request_true_reply_trace_probability` supplies a quantitative interaction result. |
-| [MixedHeadProtocol](../theories/Examples/MixedHeadProtocol.v) | Complete programs (§2), then the in-place compositional proof `masked_protocol_equivalent` (§4), with no bridge premise | A branching Boolean sampler versus a one-shot specification, related through finite stable hitting and up-to-bind. The same non-functional 3-to-2 joint abstracts heterogeneous Ret payloads and recursive Vis continuations. `masked_public_protocol_equivalent` erases the payload; `masked_challenge_true_reply_probability` retains the `3/8` and `1/8` queries. No execution endpoint is claimed. |
+| [MixedHead](../theories/Examples/MixedHead/Protocol.v) | Complete programs (§2), then the in-place compositional proof `masked_protocol_equivalent` (§4), with no bridge premise | A branching Boolean sampler versus a one-shot specification, related through finite stable hitting and up-to-bind. The same non-functional 3-to-2 joint abstracts heterogeneous Ret payloads and recursive Vis continuations. `masked_public_protocol_equivalent` erases the payload; `masked_challenge_true_reply_probability` retains the `3/8` and `1/8` queries. No execution endpoint is claimed. |
 | [FactoryController](../theories/Examples/FactoryController.v) | `Rewriting.factory_controller_program_rewrite` | Full sampler/handler calculation; `Observation.factory_next_action_probability`; concrete scripted/extraction entries. |
 | [RandomWalk](../theories/Examples/PGCL/RandomWalk.v) | `walk_source`, `walk_denote_least_fixed_point`, `walk_denote_closed_form`, `walk_forward` | pGCL source, classical semantic lfp, exact finite rounds and infinite-support output law. Passage/harmonic proofs are supporting [analysis](../theories/Examples/PGCL/RandomWalkAnalysis.v). The simulator's integer-store walk implements the same transition, without a proved representation bridge to this pair-state case. |
 | [AdaptiveFactoryController](../theories/Examples/AdaptiveFactoryController.v) | `Adaptive.controller_program_rewrite` | `loop_hits`, `raw_loop_fair`, `adaptive_factory_direct`, `controller_refinement`. Preserve correlated state; no new simulator/PRNG claim. |
 
 For an appendix-oriented alternative to MixedHead's in-place proof, read
-[`MixedHeadUpTo.v`](../theories/Examples/MixedHeadUpTo.v):
+[`UpTo.v`](../theories/Examples/MixedHead/UpTo.v):
 `draw_impl_kernel` verifies the finite sampler, `masked_kernel_equivalent`
 uses **coinduction up to bind**, and `kernel_spec_equivalent` uses **ordinary
 coinduction with native coupling of complete Ret/Vis frontiers**. Their
@@ -276,7 +276,7 @@ needs that exact visible continuation or finite-step observation.
   next-device frontier and its query use the measure notation.
 - **AdaptiveFactoryController:** sequential interleaving of samples and events;
   finite distribution algebra and fair frontiers stay visually separate.
-- **MixedHeadProtocol:** the explicit 3-to-2 joint and up-to proof remain visible;
+- **MixedHead:** the explicit 3-to-2 joint and up-to proof remain visible;
   the two sampled frontiers now use the same syntax as the tutorials.
 - **IterationBasics / AbsorbingFrontier:** atomic samples, program composition
   and formal limits; exact visible continuations are retained in head values.
@@ -411,7 +411,8 @@ are unchanged. Sampler/factory refinement relates the returned bit without
 constraining the private health or retry count; service/controller refinement
 preserves the public interaction while hiding that state.
 
-For MixedHead, read `masked_protocol_equivalent` in the single case file.
+For MixedHead, read `masked_protocol_equivalent` in `MixedHead/Protocol.v`;
+`MixedHead/UpTo.v` provides the independent staged appendix proof.
 The implementation's multi-draw Boolean sampler and specification's one-shot
 sample have different internal shapes. The proof builds the finite sampler
 coupling where needed, then uses up-to-bind/Vis at loop entries. The same
