@@ -32,7 +32,7 @@ From mathcomp Require Import ssreflect ssrbool eqtype seq ssralg ssrnum order ra
 From PTree.Core Require Import PTreeDefinition.
 From PTree.Eq Require Import WellFormedness.
 From PTree.Prob.Backend.EnumQ Require Import
-  Representation Bind Map Coupling IndexedCoupling FrontierLift Iteration.
+  Representation Bind Map Coupling IndexedCoupling FrontierLift SemanticCoupling Iteration.
 From PTree.Prob.Interface Require Import Measure Subprobability AE Coupling Omega Mixed.
 From PTree.Prob.Backend.SubEnumQ Require Import Measure.
 Require Import PTree.Prob.FreeOmega.Definition.
@@ -281,9 +281,10 @@ Qed.
 (** Stronger than merely displaying a split joint: no deterministic map
     from these three equiprobable atoms has the required fair marginal. *)
 Lemma uniform3_no_deterministic_fair (f : hidden3 → bool) :
-  ¬ (emap f uniform3_raw ==EnumQ uniform2_raw).
+  ¬ ((uniform3 >>=ₘ (λ x, ηₘ (f x))) ≈ₘ uniform2).
 Proof.
-  intro H. specialize (H true). cbn in H.
+  intro H. apply enumQ_sem_lift_to_coupling in H.
+  apply coupling_eq_enumQ_eq in H. specialize (H true). cbn in H.
   destruct (f L0), (f L1), (f L2); vm_compute in H; discriminate.
 Qed.
 
@@ -344,8 +345,8 @@ Definition challenge_true_reply_trace c : @finite_interaction_pattern mixedE :=
   cons (@select_challenge c) (cons (@select_true_reply) nil).
 
 Definition spec_true_reply_observation c : SubEnumQ bool :=
-  subenumQ_bind (mixed_outcomes c) (λ o,
-    subenumQ_ret (match o with Stop _ => false | Continue b => b end)).
+  mixed_outcomes c >>=ₘ (λ o,
+    ηₘ (match o with Stop _ => false | Continue b => b end)).
 
 (** * 4. Final theorems
 

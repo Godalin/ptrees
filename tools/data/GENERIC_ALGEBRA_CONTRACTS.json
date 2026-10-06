@@ -604,7 +604,7 @@
     },
     {
       "name": "PTree.Examples.MixedHeadProtocol.uniform3_no_deterministic_fair",
-      "type": "MixedHeadProtocol.uniform3_no_deterministic_fair\n     : forall f : MixedHeadProtocol.hidden3 -> bool,\n       ~\n       @Representation.EnumQ.EqEnumQ eqtype.Datatypes_bool__canonical__eqtype_Equality\n         (@Map.EnumQMap.emap MixedHeadProtocol.hidden3 bool f MixedHeadProtocol.uniform3_raw)\n         MixedHeadProtocol.uniform2_raw",
+      "type": "MixedHeadProtocol.uniform3_no_deterministic_fair\n     : forall f : MixedHeadProtocol.hidden3 -> bool,\n       ~\n       @Measure.sem_eq Representation.SubEnumQ Measure.SubEnumQ_SemanticMeasure bool\n         (@Measure.sem_bind Representation.SubEnumQ Measure.SubEnumQ_SemanticMeasure\n            MixedHeadProtocol.hidden3 bool MixedHeadProtocol.uniform3\n            (fun x : MixedHeadProtocol.hidden3 =>\n             @Measure.sem_ret Representation.SubEnumQ Measure.SubEnumQ_SemanticMeasure bool (f x)))\n         MixedHeadProtocol.uniform2",
       "assumptions": "Closed under the global context"
     },
     {
